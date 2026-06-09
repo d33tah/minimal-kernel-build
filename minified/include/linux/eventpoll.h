@@ -1,15 +1,9 @@
 #ifndef _LINUX_EVENTPOLL_H
 #define _LINUX_EVENTPOLL_H
 
-#include <linux/fcntl.h>
 #include <linux/types.h>
 
-/* Inlined from uapi/linux/eventpoll.h */
-#define EPOLL_CLOEXEC O_CLOEXEC
-#define EPOLL_CTL_ADD 1
-#define EPOLL_CTL_DEL 2
-#define EPOLL_CTL_MOD 3
-
+/* Inlined from uapi/linux/eventpoll.h (EPOLL bits used by poll users) */
 #define EPOLLIN		(__force __poll_t)0x00000001
 #define EPOLLPRI	(__force __poll_t)0x00000002
 #define EPOLLOUT	(__force __poll_t)0x00000004
@@ -27,10 +21,4 @@
 #define EPOLLONESHOT	((__force __poll_t)(1U << 30))
 #define EPOLLET		((__force __poll_t)(1U << 31))
 
-struct file;
-
-
-
-static inline void eventpoll_release(struct file *file) {}
-
-#endif  
+#endif

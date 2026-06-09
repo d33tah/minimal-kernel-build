@@ -8,7 +8,6 @@
 #include <linux/fs.h>
 #include <linux/security.h>
 #include <linux/cred.h>
-#include <linux/eventpoll.h>
 #include <linux/rcupdate.h>
 #include <linux/mount.h>
 #include <linux/capability.h>
@@ -164,8 +163,6 @@ static void __fput(struct file *file)
 		goto out;
 
 	might_sleep();
-
-	eventpoll_release(file);
 
 	ima_file_free(file);
 	if (unlikely(file->f_flags & FASYNC)) {

@@ -170,8 +170,6 @@ static void __folio_activate(struct folio *folio, struct lruvec *lruvec)
 		lruvec_add_folio(lruvec, folio);
 
 		__count_vm_events(PGACTIVATE, nr_pages);
-		__count_memcg_events(lruvec_memcg(lruvec), PGACTIVATE,
-				     nr_pages);
 	}
 }
 
@@ -285,8 +283,6 @@ static void lru_deactivate_file_fn(struct page *page, struct lruvec *lruvec)
 
 	if (active) {
 		__count_vm_events(PGDEACTIVATE, nr_pages);
-		__count_memcg_events(lruvec_memcg(lruvec), PGDEACTIVATE,
-				     nr_pages);
 	}
 }
 
@@ -301,8 +297,6 @@ static void lru_deactivate_fn(struct page *page, struct lruvec *lruvec)
 		add_page_to_lru_list(page, lruvec);
 
 		__count_vm_events(PGDEACTIVATE, nr_pages);
-		__count_memcg_events(lruvec_memcg(lruvec), PGDEACTIVATE,
-				     nr_pages);
 	}
 }
 
@@ -320,8 +314,6 @@ static void lru_lazyfree_fn(struct page *page, struct lruvec *lruvec)
 		add_page_to_lru_list(page, lruvec);
 
 		__count_vm_events(PGLAZYFREE, nr_pages);
-		__count_memcg_events(lruvec_memcg(lruvec), PGLAZYFREE,
-				     nr_pages);
 	}
 }
 
@@ -455,7 +447,6 @@ void release_pages(struct page **pages, int nr)
 	if (lruvec)
 		unlock_page_lruvec_irqrestore(lruvec, flags);
 
-	mem_cgroup_uncharge_list(&pages_to_free);
 	free_unref_page_list(&pages_to_free);
 }
 

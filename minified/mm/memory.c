@@ -1302,9 +1302,8 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 	__set_current_state(TASK_RUNNING);
 
 	count_vm_event(PGFAULT);
-	count_memcg_event_mm(vma->vm_mm, PGFAULT);
 
-	
+
 	check_sync_rss_stat(current);
 
 	if (!arch_vma_access_permitted(vma, flags & FAULT_FLAG_WRITE,
@@ -1312,18 +1311,7 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 					    flags & FAULT_FLAG_REMOTE))
 		return VM_FAULT_SIGSEGV;
 
-	
-	if (flags & FAULT_FLAG_USER)
-		mem_cgroup_enter_user_fault();
-
 	ret = __handle_mm_fault(vma, address, flags);
-
-	if (flags & FAULT_FLAG_USER) {
-		mem_cgroup_exit_user_fault();
-		
-		if (task_in_memcg_oom(current) && !(ret & VM_FAULT_OOM))
-			mem_cgroup_oom_synchronize(false);
-	}
 
 	mm_account_fault(regs, address, flags, ret);
 

@@ -340,9 +340,7 @@ void page_add_anon_rmap(struct page *page,
 	bool compound = flags & RMAP_COMPOUND;
 	bool first;
 
-	if (unlikely(PageKsm(page)))
-		lock_page_memcg(page);
-	else
+	if (!unlikely(PageKsm(page)))
 		VM_BUG_ON_PAGE(!PageLocked(page), page);
 
 	if (compound) {
@@ -365,14 +363,13 @@ void page_add_anon_rmap(struct page *page,
 		__mod_lruvec_page_state(page, NR_ANON_MAPPED, nr);
 	}
 
-	if (unlikely(PageKsm(page)))
-		unlock_page_memcg(page);
-
-	else if (first)
-		__page_set_anon_rmap(page, vma, address,
-				     !!(flags & RMAP_EXCLUSIVE));
-	else
-		__page_check_anon_rmap(page, vma, address);
+	if (!unlikely(PageKsm(page))) {
+		if (first)
+			__page_set_anon_rmap(page, vma, address,
+					     !!(flags & RMAP_EXCLUSIVE));
+		else
+			__page_check_anon_rmap(page, vma, address);
+	}
 
 	mlock_vma_page(page, vma, compound);
 }
@@ -406,7 +403,6 @@ void page_add_file_rmap(struct page *page,
 	int i, nr = 0;
 
 	VM_BUG_ON_PAGE(compound && !PageTransHuge(page), page);
-	lock_page_memcg(page);
 	if (compound && PageTransHuge(page)) {
 		int nr_pages = thp_nr_pages(page);
 
@@ -438,7 +434,6 @@ void page_add_file_rmap(struct page *page,
 out:
 	if (nr)
 		__mod_lruvec_page_state(page, NR_FILE_MAPPED, nr);
-	unlock_page_memcg(page);
 
 	mlock_vma_page(page, vma, compound);
 }

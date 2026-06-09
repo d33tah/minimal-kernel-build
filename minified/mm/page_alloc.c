@@ -379,8 +379,6 @@ static __always_inline bool free_pages_prepare(struct page *page,
 	/* Stub: minimal page freeing for simple system */
 	if (PageMappingFlags(page))
 		page->mapping = NULL;
-	if (memcg_kmem_enabled() && PageMemcgKmem(page))
-		__memcg_kmem_uncharge_page(page, order);
 
 	page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
 	reset_page_owner(page, order);
@@ -859,7 +857,6 @@ void split_page(struct page *page, unsigned int order)
 	for (i = 1; i < (1 << order); i++)
 		set_page_refcounted(page + i);
 	split_page_owner(page, 1 << order);
-	split_page_memcg(page, 1 << order);
 }
 
 
@@ -1227,12 +1224,6 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 	page = __alloc_pages_slowpath(alloc_gfp, order, &ac);
 
 out:
-	if (memcg_kmem_enabled() && (gfp & __GFP_ACCOUNT) && page &&
-	    unlikely(__memcg_kmem_charge_page(page, gfp, order) != 0)) {
-		__free_pages(page, order);
-		page = NULL;
-	}
-
 
 	return page;
 }

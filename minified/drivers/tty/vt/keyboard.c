@@ -36,11 +36,6 @@ void vt_reset_keyboard(int console)
 	 
 }
 
-void vt_set_leds_compute_shiftstate(void)
-{
-
-}
-
 /* vt_do_diacrit, vt_do_kdskbmode, vt_do_kdskbmeta, vt_do_kbkeycode_ioctl,
    vt_do_kdsk_ioctl, vt_do_kdgkb_ioctl, vt_do_kdskled, vt_do_kdgkbmode,
    vt_do_kdgkbmeta removed - unused (keyboard ioctls not needed) */

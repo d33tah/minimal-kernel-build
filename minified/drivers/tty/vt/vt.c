@@ -95,11 +95,6 @@ static void notify_write(struct vc_data *vc, unsigned int unicode)
 	/* Stub: skip VT notifications for minimal kernel */
 }
 
-static void notify_update(struct vc_data *vc)
-{
-	/* Stub: skip VT notifications for minimal kernel */
-}
-
 static inline bool con_is_fg(const struct vc_data *vc)
 {
 	return vc->vc_num == fg_console;
@@ -357,62 +352,34 @@ static void clear_buffer_attributes(struct vc_data *vc)
 {
 }
 
-#define update_screen(x) redraw_screen(x, 0)
-#define switch_screen(x) redraw_screen(x, 1)
+#define update_screen(x) redraw_screen(x)
 
-static void redraw_screen(struct vc_data *vc, int is_switch)
+static void redraw_screen(struct vc_data *vc)
 {
-	int redraw = 0;
+	int update;
+	int old_was_color;
 
 	WARN_CONSOLE_UNLOCKED();
 
-	if (!vc) {
-		
-		
+	if (!vc)
 		return;
+
+	hide_cursor(vc);
+
+	old_was_color = vc->vc_can_do_color;
+	set_origin(vc);
+	update = vc->vc_sw->con_switch(vc);
+	set_palette(vc);
+
+	if (old_was_color != vc->vc_can_do_color) {
+		update_attr(vc);
+		clear_buffer_attributes(vc);
 	}
 
-	if (is_switch) {
-		struct vc_data *old_vc = vc_cons[fg_console].d;
-		if (old_vc == vc)
-			return;
-		if (!con_is_visible(vc))
-			redraw = 1;
-		*vc->vc_display_fg = vc;
-		fg_console = vc->vc_num;
-		hide_cursor(old_vc);
-		if (!con_is_visible(old_vc)) {
-			save_screen(old_vc);
-			set_origin(old_vc);
-		}
-		if (tty0dev)
-			sysfs_notify(&tty0dev->kobj, NULL, "active");
-	} else {
-		hide_cursor(vc);
-		redraw = 1;
-	}
+	if (update && vc->vc_mode != KD_GRAPHICS)
+		do_update_region(vc, vc->vc_origin, vc->vc_screenbuf_size / 2);
 
-	if (redraw) {
-		int update;
-		int old_was_color = vc->vc_can_do_color;
-
-		set_origin(vc);
-		update = vc->vc_sw->con_switch(vc);
-		set_palette(vc);
-		
-		if (old_was_color != vc->vc_can_do_color) {
-			update_attr(vc);
-			clear_buffer_attributes(vc);
-		}
-
-		if (update && vc->vc_mode != KD_GRAPHICS)
-			do_update_region(vc, vc->vc_origin, vc->vc_screenbuf_size / 2);
-	}
 	set_cursor(vc);
-	if (is_switch) {
-		vt_set_leds_compute_shiftstate();
-		notify_update(vc);
-	}
 }
 
 int vc_cons_allocated(unsigned int i)

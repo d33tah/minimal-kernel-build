@@ -42,13 +42,6 @@ static inline u64 cc_mkdec(u64 val)
 }
 #include <linux/page_table_check.h>
 
-/* uffd stubs - only keep functions used in .c files and headers */
-static __always_inline pte_t pte_mkuffd_wp(pte_t pte) { return pte; }
-static __always_inline int pte_swp_uffd_wp(pte_t pte) { return 0; }
-static __always_inline pte_t pte_swp_clear_uffd_wp(pte_t pte) { return pte; }
-/* pte_uffd_wp, pmd_uffd_wp, pmd_mkuffd_wp, pte_clear_uffd_wp, pmd_clear_uffd_wp,
-   pte_swp_mkuffd_wp, pmd_swp_* removed - never called */
-
 extern pgd_t early_top_pgt[PTRS_PER_PGD];
 
 void ptdump_walk_pgd_level_debugfs(struct seq_file *m, struct mm_struct *mm,

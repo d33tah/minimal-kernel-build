@@ -185,10 +185,6 @@ struct kmem_cache {
 /* sysfs_slab_unlink/release removed - unused */
 
 #include <linux/memcontrol.h>
-int should_failslab(struct kmem_cache *s, gfp_t gfpflags);
-static inline bool __should_failslab(struct kmem_cache *s, gfp_t gfpflags)
-{ return false; }
-/* end fault-inject.h */
 #include <linux/random.h>
 #include <linux/sched/mm.h>
 #include <linux/list_lru.h>
@@ -393,9 +389,6 @@ static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
 	flags &= gfp_allowed_mask;
 
 	might_alloc(flags);
-
-	if (should_failslab(s, flags))
-		return NULL;
 
 	if (!memcg_slab_pre_alloc_hook(s, lru, objcgp, size, flags))
 		return NULL;

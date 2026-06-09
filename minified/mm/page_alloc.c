@@ -958,17 +958,6 @@ failed:
 	return NULL;
 }
 
-static inline bool __should_fail_alloc_page(gfp_t gfp_mask, unsigned int order)
-{
-	return false;
-}
-
-noinline bool should_fail_alloc_page(gfp_t gfp_mask, unsigned int order)
-{
-	return __should_fail_alloc_page(gfp_mask, order);
-}
-ALLOW_ERROR_INJECTION(should_fail_alloc_page, TRUE);
-
 bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 			 int highest_zoneidx, unsigned int alloc_flags,
 			 long free_pages)
@@ -1145,10 +1134,6 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 	fs_reclaim_release(gfp_mask);
 
 	might_sleep_if(gfp_mask & __GFP_DIRECT_RECLAIM);
-
-	if (should_fail_alloc_page(gfp_mask, order))
-		return false;
-
 
 	ac->spread_dirty_pages = (gfp_mask & __GFP_WRITE);
 

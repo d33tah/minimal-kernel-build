@@ -494,10 +494,3 @@ void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)
 
 
 
-int should_failslab(struct kmem_cache *s, gfp_t gfpflags)
-{
-	if (__should_failslab(s, gfpflags))
-		return -ENOMEM;
-	return 0;
-}
-ALLOW_ERROR_INJECTION(should_failslab, ERRNO);

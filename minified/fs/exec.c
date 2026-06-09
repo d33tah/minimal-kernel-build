@@ -28,7 +28,6 @@ static inline void task_numa_free(struct task_struct *p, bool final) {}
 #include <linux/mount.h>
 #include <linux/security.h>
 #include <linux/syscalls.h>
-static inline void acct_update_integrals(struct task_struct *tsk) {}
 static inline void proc_exec_connector(struct task_struct *task) {}
 #include <linux/kmod.h>
 #include <linux/fs_struct.h>
@@ -1097,8 +1096,6 @@ static int bprm_execve(struct linux_binprm *bprm,
 
 	current->fs->in_exec = 0;
 	current->in_execve = 0;
-	rseq_execve(current);
-	acct_update_integrals(current);
 	task_numa_free(current, false);
 	return retval;
 

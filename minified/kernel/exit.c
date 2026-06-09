@@ -16,10 +16,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/tty.h>
 #include <linux/iocontext.h>
 #include <linux/cpu.h>
-#define acct_collect(x,y)	do { } while (0)
-#define acct_process()		do { } while (0)
-#define acct_exit_ns(ns)	do { } while (0)
-static inline void acct_update_integrals(struct task_struct *tsk) {}
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/freezer.h>
@@ -31,7 +27,6 @@ static inline void acct_update_integrals(struct task_struct *tsk) {}
 #include <linux/proc_fs.h>
 #include <linux/kthread.h>
 #include <linux/mempolicy.h>
-static inline void taskstats_exit(struct task_struct *tsk, int group_dead) {}
 #include <linux/cgroup.h>
 #include <linux/syscalls.h>
 #include <linux/signal.h>
@@ -403,7 +398,6 @@ void __noreturn do_exit(long code)
 
 	if (tsk->mm)
 		sync_mm_rss(tsk->mm);
-	acct_update_integrals(tsk);
 	group_dead = atomic_dec_and_test(&tsk->signal->live);
 	if (group_dead) {
 		
@@ -414,18 +408,14 @@ void __noreturn do_exit(long code)
 		if (tsk->mm)
 			setmax_mm_hiwater_rss(&tsk->signal->maxrss, tsk->mm);
 	}
-	acct_collect(code, group_dead);
 	if (group_dead)
 		tty_audit_exit();
 
 	tsk->exit_code = code;
-	taskstats_exit(tsk, group_dead);
 
 	exit_mm();
 
-	if (group_dead)
-		acct_process();
-	
+
 
 	exit_sem(tsk);
 	exit_shm(tsk);

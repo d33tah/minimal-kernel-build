@@ -30,8 +30,6 @@ extern void sched_init_smp(void);
 #include <linux/blkdev.h>
 #include <linux/context_tracking.h>
 #include <linux/cpuset.h>
-static inline void delayacct_blkio_start(void) {}
-static inline void delayacct_blkio_end(struct task_struct *p) {}
 #include <linux/init_task.h>
 #include <linux/interrupt.h>
 #include <linux/ioprio.h>
@@ -420,7 +418,6 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
 		rq->nr_uninterruptible--;
 
 	if (p->in_iowait) {
-		delayacct_blkio_end(p);
 		atomic_dec(&task_rq(p)->nr_iowait);
 	}
 
@@ -604,8 +601,7 @@ void sched_cgroup_fork(struct task_struct *p, struct kernel_clone_args *kargs)
 
 	
 	raw_spin_lock_irqsave(&p->pi_lock, flags);
-	rseq_migrate(p);
-	
+
 	__set_task_cpu(p, smp_processor_id());
 	if (p->sched_class->task_fork)
 		p->sched_class->task_fork(p);
@@ -707,8 +703,7 @@ prepare_task_switch(struct rq *rq, struct task_struct *prev,
 		    struct task_struct *next)
 {
 	sched_info_switch(rq, prev, next);
-	
-	rseq_preempt(prev);
+
 	fire_sched_out_preempt_notifiers(prev, next);
 	kmap_local_sched_out();
 	prepare_task(next);
@@ -1010,7 +1005,6 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 
 			if (prev->in_iowait) {
 				atomic_inc(&rq->nr_iowait);
-				delayacct_blkio_start();
 			}
 		}
 		switch_count = &prev->nvcsw;

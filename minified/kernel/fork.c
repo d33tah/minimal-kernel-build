@@ -51,16 +51,9 @@ static inline void task_io_accounting_init(struct task_io_accounting *ioac) {}
 #include <linux/proc_fs.h>
 #include <linux/rmap.h>
 #include <linux/ksm.h>
-#define acct_collect(x,y)	do { } while (0)
-#define acct_process()		do { } while (0)
-#define acct_exit_ns(ns)	do { } while (0)
 #include <linux/userfaultfd_k.h>
-static inline void acct_clear_integrals(struct task_struct *tsk) {}
 static inline void proc_fork_connector(struct task_struct *task) {}
 #include <linux/freezer.h>
-static inline void delayacct_tsk_init(struct task_struct *tsk) {}
-static inline void delayacct_tsk_free(struct task_struct *tsk) {}
-static inline void taskstats_tgid_free(struct signal_struct *sig) {}
 #include <linux/random.h>
 #include <linux/tty.h>
 #include <linux/fs_struct.h>
@@ -420,7 +413,6 @@ static void mmdrop_async(struct mm_struct *mm)
 
 static inline void free_signal_struct(struct signal_struct *sig)
 {
-	taskstats_tgid_free(sig);
 	/* sched_autogroup_exit - stubbed */
 	if (sig->oom_mm)
 		mmdrop_async(sig->oom_mm);
@@ -444,7 +436,6 @@ void __put_task_struct(struct task_struct *tsk)
 	task_numa_free(tsk, true);
 
 	exit_creds(tsk);
-	delayacct_tsk_free(tsk);
 	put_signal_struct(tsk->signal);
 	sched_core_free(tsk);
 	free_task(tsk);
@@ -1147,7 +1138,6 @@ static __latent_entropy struct task_struct *copy_process(
 	if (data_race(nr_threads >= max_threads))
 		goto bad_fork_cleanup_count;
 
-	delayacct_tsk_init(p);	
 	p->flags &= ~(PF_SUPERPRIV | PF_WQ_WORKER | PF_IDLE | PF_NO_SETAFFINITY);
 	p->flags |= PF_FORKNOEXEC;
 	INIT_LIST_HEAD(&p->children);
@@ -1168,7 +1158,6 @@ static __latent_entropy struct task_struct *copy_process(
 	p->default_timer_slack_ns = current->timer_slack_ns;
 
 	task_io_accounting_init(&p->ioac);
-	acct_clear_integrals(p);
 
 	posix_cputimers_init(&p->posix_cputimers);
 
@@ -1286,9 +1275,7 @@ static __latent_entropy struct task_struct *copy_process(
 
 	spin_lock(&current->sighand->siglock);
 
-	rseq_fork(p, clone_flags);
 
-	
 	if (unlikely(!(ns_of_pid(pid)->pid_allocated & PIDNS_ADDING))) {
 		retval = -ENOMEM;
 		goto bad_fork_cancel_cgroup;
@@ -1386,7 +1373,6 @@ bad_fork_cleanup_security:
 bad_fork_cleanup_policy:
 	lockdep_free_task(p);
 bad_fork_cleanup_delayacct:
-	delayacct_tsk_free(p);
 bad_fork_cleanup_count:
 	dec_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
 	exit_creds(p);

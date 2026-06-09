@@ -41,8 +41,6 @@ static inline void init_vmlinux_build_id(void) { }
 #include <linux/tick.h>
 #include <linux/sched/isolation.h>
 #include <linux/interrupt.h>
-static inline void taskstats_init_early(void) {}
-static inline void delayacct_init(void) {}
 #include <linux/unistd.h>
 #include <linux/utsname.h>
 #include <linux/rmap.h>
@@ -608,8 +606,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	seq_file_init();
 	proc_root_init();
 	cpuset_init();
-	taskstats_init_early();
-	delayacct_init();
 
 	poking_init();
 	check_bugs();

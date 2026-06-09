@@ -21,9 +21,6 @@ void account_user_time(struct task_struct *p, u64 cputime)
 
 	 
 	task_group_account_field(p, index, cputime);
-
-	 
-	acct_account_cputime(p);
 }
 
 void account_guest_time(struct task_struct *p, u64 cputime)
@@ -54,9 +51,6 @@ void account_system_index_time(struct task_struct *p,
 
 	 
 	task_group_account_field(p, index, cputime);
-
-	 
-	acct_account_cputime(p);
 }
 
 void account_system_time(struct task_struct *p, int hardirq_offset, u64 cputime)

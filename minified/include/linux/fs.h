@@ -879,7 +879,6 @@ struct dir_context {
 
 
 struct iov_iter;
-struct io_uring_cmd;
 
 struct file_operations {
 	struct module *owner;

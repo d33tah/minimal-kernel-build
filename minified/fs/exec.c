@@ -34,7 +34,6 @@ static inline void proc_exec_connector(struct task_struct *task) {}
 #include <linux/oom.h>
 #include <linux/compat.h>
 #include <linux/vmalloc.h>
-#include <linux/io_uring.h>
 #include <linux/syscall_user_dispatch.h>
 
 #include <linux/uaccess.h>
@@ -778,8 +777,6 @@ int begin_new_exec(struct linux_binprm * bprm)
 	retval = de_thread(me);
 	if (retval)
 		goto out;
-
-	io_uring_task_cancel();
 
 	retval = unshare_files();
 	if (retval)

@@ -72,7 +72,6 @@ static inline void clear_user_return_notifier(struct task_struct *p) {}
 #include <linux/sysctl.h>
 #include <linux/init_task.h>
 #include <linux/thread_info.h>
-#include <linux/io_uring.h>
 static inline void scs_init(void) {}
 static inline int scs_prepare(struct task_struct *tsk, int node) { return 0; }
 static inline void scs_release(struct task_struct *tsk) {}
@@ -427,7 +426,6 @@ void __put_task_struct(struct task_struct *tsk)
 	WARN_ON(refcount_read(&tsk->usage));
 	WARN_ON(tsk == current);
 
-	io_uring_free(tsk);
 	cgroup_free(tsk);
 	task_numa_free(tsk, true);
 

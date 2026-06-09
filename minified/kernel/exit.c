@@ -50,7 +50,6 @@ static inline void exit_sem(struct task_struct *tsk) { }
 #include <linux/random.h>
 #include <linux/rcuwait.h>
 #include <linux/compat.h>
-#include <linux/io_uring.h>
 #include <linux/kprobes.h>
 #include <linux/rethook.h>
 
@@ -390,8 +389,7 @@ void __noreturn do_exit(long code)
 
 	validate_creds_for_do_exit(tsk);
 
-	io_uring_files_cancel();
-	exit_signals(tsk);  
+	exit_signals(tsk);
 
 	if (tsk->mm)
 		sync_mm_rss(tsk->mm);

@@ -1,5 +1,4 @@
 
-#include <linux/anon_inodes.h>
 #include <linux/slab.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
@@ -1053,26 +1052,6 @@ static inline void rcu_copy_process(struct task_struct *p)
 {
 }
 
-static int pidfd_release(struct inode *inode, struct file *file)
-{
-	struct pid *pid = file->private_data;
-
-	file->private_data = NULL;
-	put_pid(pid);
-	return 0;
-}
-
-static __poll_t pidfd_poll(struct file *file, struct poll_table_struct *pts)
-{
-	/* Stub: minimal pidfd polling */
-	return 0;
-}
-
-const struct file_operations pidfd_fops = {
-	.release = pidfd_release,
-	.poll = pidfd_poll,
-};
-
 static __always_inline void delayed_free_task(struct task_struct *tsk)
 {
 	free_task(tsk);
@@ -1089,10 +1068,9 @@ static __latent_entropy struct task_struct *copy_process(
 					int node,
 					struct kernel_clone_args *args)
 {
-	int pidfd = -1, retval;
+	int retval;
 	struct task_struct *p;
 	struct multiprocess_signals delayed;
-	struct file *pidfile = NULL;
 	const u64 clone_flags = args->flags;
 	struct nsproxy *nsp = current->nsproxy;
 
@@ -1129,13 +1107,7 @@ static __latent_entropy struct task_struct *copy_process(
 			return ERR_PTR(-EINVAL);
 	}
 
-	if (clone_flags & CLONE_PIDFD) {
-		
-		if (clone_flags & (CLONE_DETACHED | CLONE_THREAD))
-			return ERR_PTR(-EINVAL);
-	}
 
-	
 	sigemptyset(&delayed.signal);
 	INIT_HLIST_NODE(&delayed.node);
 
@@ -1274,27 +1246,6 @@ static __latent_entropy struct task_struct *copy_process(
 	}
 
 	
-	if (clone_flags & CLONE_PIDFD) {
-		retval = get_unused_fd_flags(O_RDWR | O_CLOEXEC);
-		if (retval < 0)
-			goto bad_fork_free_pid;
-
-		pidfd = retval;
-
-		pidfile = anon_inode_getfile("[pidfd]", &pidfd_fops, pid,
-					      O_RDWR | O_CLOEXEC);
-		if (IS_ERR(pidfile)) {
-			put_unused_fd(pidfd);
-			retval = PTR_ERR(pidfile);
-			goto bad_fork_free_pid;
-		}
-		get_pid(pid);	
-
-		retval = put_user(pidfd, args->pidfd);
-		if (retval)
-			goto bad_fork_put_pidfd;
-	}
-
 	futex_init_task(p);
 
 	
@@ -1423,9 +1374,6 @@ static __latent_entropy struct task_struct *copy_process(
 	syscall_tracepoint_update(p);
 	write_unlock_irq(&tasklist_lock);
 
-	if (pidfile)
-		fd_install(pidfd, pidfile);
-
 	proc_fork_connector(p);
 	sched_post_fork(p);
 	cgroup_post_fork(p, args);
@@ -1444,10 +1392,6 @@ bad_fork_cancel_cgroup:
 	write_unlock_irq(&tasklist_lock);
 	cgroup_cancel_fork(p, args);
 bad_fork_put_pidfd:
-	if (clone_flags & CLONE_PIDFD) {
-		fput(pidfile);
-		put_unused_fd(pidfd);
-	}
 bad_fork_free_pid:
 	if (pid != &init_struct_pid)
 		free_pid(pid);

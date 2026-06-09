@@ -23,7 +23,7 @@
 #include <linux/shmem_fs.h>
 #include <linux/mnt_idmapping.h>
 
-#include "pnode.h"
+#include "mount.h"
 #include "internal.h"
 
 
@@ -36,15 +36,11 @@ static __initdata unsigned long mhash_entries;
 
 static __initdata unsigned long mphash_entries;
 
-static u64 event;
 static DEFINE_IDA(mnt_id_ida);
 
 static struct hlist_head *mount_hashtable __read_mostly;
 static struct hlist_head *mountpoint_hashtable __read_mostly;
 static struct kmem_cache *mnt_cache __read_mostly;
-static DECLARE_RWSEM(namespace_sem);
-static HLIST_HEAD(unmounted);	
-static LIST_HEAD(ex_mountpoints); 
 
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(mount_lock);
 
@@ -343,23 +339,11 @@ static void __put_mountpoint(struct mountpoint *mp, struct list_head *list)
 	}
 }
 
-static void put_mountpoint(struct mountpoint *mp)
-{
-	__put_mountpoint(mp, &ex_mountpoints);
-}
-
 static inline int check_mnt(struct mount *mnt)
 {
 	return mnt->mnt_ns == current->nsproxy->mnt_ns;
 }
 
-static void __touch_mnt_namespace(struct mnt_namespace *ns)
-{
-	if (ns && ns->event != event) {
-		ns->event = event;
-		wake_up_interruptible(&ns->poll);
-	}
-}
 
 static struct mountpoint *unhash_mnt(struct mount *mnt)
 {
@@ -372,27 +356,6 @@ static struct mountpoint *unhash_mnt(struct mount *mnt)
 	mp = mnt->mnt_mp;
 	mnt->mnt_mp = NULL;
 	return mp;
-}
-
-static void umount_mnt(struct mount *mnt)
-{
-	put_mountpoint(unhash_mnt(mnt));
-}
-
-static struct mount *next_mnt(struct mount *p, struct mount *root)
-{
-	struct list_head *next = p->mnt_mounts.next;
-	if (next == &p->mnt_mounts) {
-		while (1) {
-			if (p == root)
-				return NULL;
-			next = p->mnt_child.next;
-			if (next != &p->mnt_parent->mnt_mounts)
-				break;
-			p = p->mnt_parent;
-		}
-	}
-	return list_entry(next, struct mount, mnt_child);
 }
 
 struct vfsmount *vfs_create_mount(struct fs_context *fc)
@@ -578,152 +541,11 @@ struct vfsmount *mntget(struct vfsmount *mnt)
 
 
 
-static void namespace_unlock(void)
-{
-	struct hlist_head head;
-	struct hlist_node *p;
-	struct mount *m;
-	LIST_HEAD(list);
-
-	hlist_move_list(&unmounted, &head);
-	list_splice_init(&ex_mountpoints, &list);
-
-	up_write(&namespace_sem);
-
-	shrink_dentry_list(&list);
-
-	if (likely(hlist_empty(&head)))
-		return;
-
-	synchronize_rcu_expedited();
-
-	hlist_for_each_entry_safe(m, p, &head, mnt_umount) {
-		hlist_del(&m->mnt_umount);
-		mntput(&m->mnt);
-	}
-}
-
-static inline void namespace_lock(void)
-{
-	down_write(&namespace_sem);
-}
-
-enum umount_tree_flags {
-	UMOUNT_SYNC = 1,
-	UMOUNT_PROPAGATE = 2,
-	UMOUNT_CONNECTED = 4,
-};
-
-static bool disconnect_mount(struct mount *mnt, enum umount_tree_flags how)
-{
-	
-	if (how & UMOUNT_SYNC)
-		return true;
-
-	
-	if (!mnt_has_parent(mnt))
-		return true;
-
-	
-	if (!(mnt->mnt_parent->mnt.mnt_flags & MNT_UMOUNT))
-		return true;
-
-	
-	if (how & UMOUNT_CONNECTED)
-		return false;
-
-	
-	if (IS_MNT_LOCKED(mnt))
-		return false;
-
-	
-	return true;
-}
-
-static void umount_tree(struct mount *mnt, enum umount_tree_flags how)
-{
-	LIST_HEAD(tmp_list);
-	struct mount *p;
-
-	if (how & UMOUNT_PROPAGATE)
-		propagate_mount_unlock(mnt);
-
-	
-	for (p = mnt; p; p = next_mnt(p, mnt)) {
-		p->mnt.mnt_flags |= MNT_UMOUNT;
-		list_move(&p->mnt_list, &tmp_list);
-	}
-
-	
-	list_for_each_entry(p, &tmp_list, mnt_list) {
-		list_del_init(&p->mnt_child);
-	}
-
-	
-	if (how & UMOUNT_PROPAGATE)
-		propagate_umount(&tmp_list);
-
-	while (!list_empty(&tmp_list)) {
-		struct mnt_namespace *ns;
-		bool disconnect;
-		p = list_first_entry(&tmp_list, struct mount, mnt_list);
-		list_del_init(&p->mnt_expire);
-		list_del_init(&p->mnt_list);
-		ns = p->mnt_ns;
-		if (ns) {
-			ns->mounts--;
-			__touch_mnt_namespace(ns);
-		}
-		p->mnt_ns = NULL;
-		if (how & UMOUNT_SYNC)
-			p->mnt.mnt_flags |= MNT_SYNC_UMOUNT;
-
-		disconnect = disconnect_mount(p, how);
-		if (mnt_has_parent(p)) {
-			mnt_add_count(p->mnt_parent, -1);
-			if (!disconnect) {
-				
-				list_add_tail(&p->mnt_child, &p->mnt_parent->mnt_mounts);
-			} else {
-				umount_mnt(p);
-			}
-		}
-		change_mnt_propagation(p, MS_PRIVATE);
-		if (disconnect)
-			hlist_add_head(&p->mnt_umount, &unmounted);
-	}
-}
 
 /* Stub: __detach_mounts not used externally */
 void __detach_mounts(struct dentry *dentry)
 {
 }
-
-
-
-static void free_mnt_ns(struct mnt_namespace *);
-static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *, bool);
-
-void dissolve_on_fput(struct vfsmount *mnt)
-{
-	struct mnt_namespace *ns;
-	namespace_lock();
-	lock_mount_hash();
-	ns = real_mount(mnt)->mnt_ns;
-	if (ns) {
-		if (is_anon_ns(ns))
-			umount_tree(real_mount(mnt), UMOUNT_CONNECTED);
-		else
-			ns = NULL;
-	}
-	unlock_mount_hash();
-	namespace_unlock();
-	if (ns)
-		free_mnt_ns(ns);
-}
-
-
-
 
 static struct ucounts *inc_mnt_namespaces(struct user_namespace *ns)
 {

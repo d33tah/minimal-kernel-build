@@ -184,8 +184,6 @@ static void __fput(struct file *file)
 		__mnt_drop_write(mnt);
 	}
 	dput(dentry);
-	if (unlikely(mode & FMODE_NEED_UNMOUNT))
-		dissolve_on_fput(mnt);
 	mntput(mnt);
 out:
 	file_free(file);

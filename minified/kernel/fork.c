@@ -24,7 +24,6 @@ static inline void shm_init_task(struct task_struct *task) { }
 #include <linux/iocontext.h>
 #include <linux/binfmts.h>
 #include <linux/mman.h>
-#include <linux/mmu_notifier.h>
 #include <linux/fs.h>
 #include <linux/poll.h>
 #include <linux/mm.h>
@@ -383,7 +382,6 @@ void __mmdrop(struct mm_struct *mm)
 	WARN_ON_ONCE(mm == current->active_mm);
 	mm_free_pgd(mm);
 	destroy_context(mm);
-	mmu_notifier_subscriptions_destroy(mm);
 	check_mm(mm);
 	put_user_ns(mm->user_ns);
 	mm_pasid_drop(mm);
@@ -634,7 +632,6 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	mm_init_owner(mm, p);
 	mm_pasid_init(mm);
 	RCU_INIT_POINTER(mm->exe_file, NULL);
-	mmu_notifier_subscriptions_init(mm);
 	init_tlb_flush_pending(mm);
 	mm_init_uprobes_state(mm);
 	hugetlb_count_init(mm);

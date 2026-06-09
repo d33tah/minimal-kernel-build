@@ -22,7 +22,6 @@
 #include <linux/export.h>
 #include <linux/mount.h>
 #include <linux/rmap.h>
-#include <linux/mmu_notifier.h>
 #include <linux/mmdebug.h>
 #include <linux/perf_event.h>
 #include <linux/khugepaged.h>
@@ -1569,9 +1568,6 @@ void exit_mmap(struct mm_struct *mm)
 	struct mmu_gather tlb;
 	struct vm_area_struct *vma;
 	unsigned long nr_accounted = 0;
-
-	
-	mmu_notifier_release(mm);
 
 	if (unlikely(mm_is_oom_victim(mm))) {
 		

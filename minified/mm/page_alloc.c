@@ -38,7 +38,6 @@ void set_pageblock_migratetype(struct page *page, int migratetype);
 struct alloc_context;
 
 #include <linux/mm_inline.h>
-#include <linux/mmu_notifier.h>
 #include <linux/migrate.h>
 #include <linux/hugetlb.h>
 #include <linux/sched/rt.h>

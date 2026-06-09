@@ -2,7 +2,6 @@
 #ifndef _ASM_X86_TLB_H
 #define _ASM_X86_TLB_H
 
-#include <linux/mmu_notifier.h>
 #include <linux/swap.h>
 #include <linux/pagemap.h>
 #include <asm/tlbflush.h>
@@ -134,7 +133,6 @@ static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
 		return;
 
 	tlb_flush(tlb);
-	mmu_notifier_invalidate_range(tlb->mm, tlb->start, tlb->end);
 	__tlb_reset_range(tlb);
 }
 

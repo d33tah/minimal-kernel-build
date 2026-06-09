@@ -9,17 +9,6 @@
    removed - unused */
 
 
-int perf_event_init_task(struct task_struct *child, u64 clone_flags) { return 0; }
-void perf_event_fork(struct task_struct *task) { }
-void perf_event_free_task(struct task_struct *task) { }
-void perf_event_delayed_put(struct task_struct *task) { }
-void perf_event_exit_task(struct task_struct *task) { }
-
-void perf_event_mmap(struct vm_area_struct *vma) { }
-void perf_event_exec(void) { }
-void perf_event_comm(struct task_struct *task, bool exec) { }
-void perf_event_init(void) { }
-
 void perf_clear_dirty_counters(void) { }
 DEFINE_STATIC_KEY_TRUE(rdpmc_never_available_key);
 DEFINE_STATIC_KEY_FALSE(rdpmc_always_available_key);

@@ -145,8 +145,7 @@ static void delayed_put_task_struct(struct rcu_head *rhp)
 
 	kprobe_flush_task(tsk);
 	rethook_flush_task(tsk);
-	perf_event_delayed_put(tsk);
-	
+
 	put_task_struct(tsk);
 }
 
@@ -441,8 +440,6 @@ void __noreturn do_exit(long code)
 	exit_task_namespaces(tsk);
 	exit_task_work(tsk);
 	exit_thread(tsk);
-
-	perf_event_exit_task(tsk);
 
 	/* sched_autogroup_exit_task - stubbed */
 	cgroup_exit(tsk);

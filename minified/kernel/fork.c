@@ -1194,10 +1194,6 @@ static __latent_entropy struct task_struct *copy_process(
 	if (retval)
 		goto bad_fork_cleanup_policy;
 
-	retval = perf_event_init_task(p, clone_flags);
-	if (retval)
-		goto bad_fork_cleanup_policy;
-
 	shm_init_task(p);
 	retval = copy_semundo(clone_flags, p);
 	if (retval)
@@ -1368,9 +1364,8 @@ static __latent_entropy struct task_struct *copy_process(
 	proc_fork_connector(p);
 	sched_post_fork(p);
 	cgroup_post_fork(p, args);
-	perf_event_fork(p);
 
-	
+
 	uprobe_copy_process(p, clone_flags);
 
 	copy_oom_score_adj(clone_flags, p);
@@ -1410,7 +1405,6 @@ bad_fork_cleanup_files:
 bad_fork_cleanup_semundo:
 	exit_sem(p);
 bad_fork_cleanup_security:
-	perf_event_free_task(p);
 bad_fork_cleanup_policy:
 	lockdep_free_task(p);
 bad_fork_cleanup_delayacct:

@@ -768,7 +768,6 @@ void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
 	
 	strscpy_pad(tsk->comm, buf, sizeof(tsk->comm));
 	task_unlock(tsk);
-	perf_event_comm(tsk, exec);
 }
 
 int begin_new_exec(struct linux_binprm * bprm)
@@ -835,7 +834,6 @@ int begin_new_exec(struct linux_binprm * bprm)
 	else
 		set_dumpable(current->mm, SUID_DUMP_USER);
 
-	perf_event_exec();
 	__set_task_comm(me, kbasename(bprm->filename), true);
 
 	WRITE_ONCE(me->self_exec_id, me->self_exec_id + 1);
@@ -847,9 +845,6 @@ int begin_new_exec(struct linux_binprm * bprm)
 
 	commit_creds(bprm->cred);
 	bprm->cred = NULL;
-
-	if (get_dumpable(me->mm) != SUID_DUMP_USER)
-		perf_event_exit_task(me);
 
 	return 0;
 

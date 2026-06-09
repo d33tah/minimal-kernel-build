@@ -34,7 +34,6 @@ static inline int profile_init(void) { return 0; }
 static inline void init_vmlinux_build_id(void) { }
 #include <linux/writeback.h>
 #include <linux/cpu.h>
-#include <linux/cpuset.h>
 #include <linux/cgroup.h>
 #include <linux/efi.h>
 #include <linux/tick.h>
@@ -599,7 +598,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	signals_init();
 	seq_file_init();
 	proc_root_init();
-	cpuset_init();
 
 	poking_init();
 	check_bugs();
@@ -761,7 +759,6 @@ static void __init do_initcalls(void)
 
 static void __init do_basic_setup(void)
 {
-	cpuset_init_smp();
 	driver_init();
 	init_irq_proc();
 	do_ctors();
@@ -896,9 +893,6 @@ static noinline void __init kernel_init_freeable(void)
 {
 	 
 	gfp_allowed_mask = __GFP_BITS_MASK;
-
-
-	set_mems_allowed(node_states[N_MEMORY]);
 
 	/* cad_pid removed - only set, never read */
 

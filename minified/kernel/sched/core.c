@@ -28,7 +28,6 @@ extern void sched_init_smp(void);
 #include <linux/sched/rt.h>
 
 #include <linux/blkdev.h>
-#include <linux/cpuset.h>
 #include <linux/init_task.h>
 #include <linux/interrupt.h>
 #include <linux/ioprio.h>

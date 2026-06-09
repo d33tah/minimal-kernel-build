@@ -7,7 +7,6 @@
 
 #include <linux/sched/task_stack.h>
 
-#include <linux/cpuset.h>
 #include <linux/ctype.h>
 #include <linux/debugfs.h>
 

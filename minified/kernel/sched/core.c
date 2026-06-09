@@ -28,7 +28,6 @@ extern void sched_init_smp(void);
 #include <linux/sched/rt.h>
 
 #include <linux/blkdev.h>
-#include <linux/context_tracking.h>
 #include <linux/cpuset.h>
 #include <linux/init_task.h>
 #include <linux/interrupt.h>
@@ -893,8 +892,6 @@ static inline void schedule_debug(struct task_struct *prev, bool preempt)
 		preempt_count_set(PREEMPT_DISABLED);
 	}
 	rcu_sleep_check();
-	SCHED_WARN_ON(ct_state() == CONTEXT_USER);
-
 
 	schedstat_inc(this_rq()->sched_count);
 }
@@ -1128,12 +1125,7 @@ static void __sched notrace preempt_schedule_common(void)
 
 asmlinkage __visible void __sched preempt_schedule_irq(void)
 {
-	enum ctx_state prev_state;
-
-	
 	BUG_ON(preempt_count() || !irqs_disabled());
-
-	prev_state = exception_enter();
 
 	do {
 		preempt_disable();
@@ -1142,8 +1134,6 @@ asmlinkage __visible void __sched preempt_schedule_irq(void)
 		local_irq_disable();
 		sched_preempt_enable_no_resched();
 	} while (need_resched());
-
-	exception_exit(prev_state);
 }
 
 int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flags,

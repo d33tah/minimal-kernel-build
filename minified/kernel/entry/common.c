@@ -1,5 +1,4 @@
 
-#include <linux/context_tracking.h>
 #include <linux/entry-common.h>
 #include <linux/resume_user_mode.h>
 #include <linux/highmem.h>
@@ -15,11 +14,6 @@ static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 {
 	arch_enter_from_user_mode(regs);
 	lockdep_hardirqs_off(CALLER_ADDR0);
-
-	CT_WARN_ON(ct_state() != CONTEXT_USER);
-	user_exit_irqoff();
-
-	 
 }
 
 void noinstr enter_from_user_mode(struct pt_regs *regs)
@@ -87,10 +81,9 @@ noinstr void syscall_enter_from_user_mode_prepare(struct pt_regs *regs)
 
 static __always_inline void __exit_to_user_mode(void)
 {
-	 
+
 	lockdep_hardirqs_on_prepare();
 
-	user_enter_irqoff();
 	arch_exit_to_user_mode();
 	lockdep_hardirqs_on(CALLER_ADDR0);
 }
@@ -194,8 +187,6 @@ static void syscall_exit_to_user_mode_prepare(struct pt_regs *regs)
 {
 	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
 	unsigned long nr = syscall_get_nr(current, regs);
-
-	CT_WARN_ON(ct_state() != CONTEXT_KERNEL);
 
 	if (IS_ENABLED(CONFIG_PROVE_LOCKING)) {
 		if (WARN(irqs_disabled(), "syscall %lu left IRQs disabled", nr))

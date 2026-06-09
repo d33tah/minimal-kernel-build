@@ -1,7 +1,6 @@
 #ifndef LINUX_HARDIRQ_H
 #define LINUX_HARDIRQ_H
 
-#include <linux/context_tracking_state.h>
 #include <linux/preempt.h>
 #include <linux/lockdep.h>
 #include <linux/sched.h>
@@ -9,12 +8,8 @@
 #include <asm/hardirq.h>
 
 
-static inline void __rcu_irq_enter_check_tick(void) { }
-
 static __always_inline void rcu_irq_enter_check_tick(void)
 {
-	if (context_tracking_enabled())
-		__rcu_irq_enter_check_tick();
 }
 
 #define __irq_enter()					\

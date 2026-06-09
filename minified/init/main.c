@@ -73,7 +73,6 @@ static inline void kprobe_free_init_mem(void) { }
 #include <linux/sched/clock.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
-#include <linux/context_tracking.h>
 #include <linux/random.h>
 #include <linux/list.h>
 #include <linux/proc_ns.h>
@@ -534,7 +533,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	if (initcall_debug)
 		initcall_debug_enable();
 
-	context_tracking_init();
 	 
 	early_irq_init();
 	init_IRQ();

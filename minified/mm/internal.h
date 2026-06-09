@@ -262,7 +262,6 @@ unsigned int reclaim_clean_pages_from_list(struct zone *zone,
 
 #define ALLOC_HARDER		 0x10  
 #define ALLOC_HIGH		 0x20
-#define ALLOC_CPUSET		 0x40
 #define ALLOC_KSWAPD		0x800
 
 enum ttu_flags;

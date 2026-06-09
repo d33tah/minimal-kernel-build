@@ -1031,7 +1031,7 @@ void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...)
 static inline unsigned int
 gfp_to_alloc_flags(gfp_t gfp_mask)
 {
-	unsigned int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
+	unsigned int alloc_flags = ALLOC_WMARK_MIN;
 
 	
 	BUILD_BUG_ON(__GFP_HIGH != (__force gfp_t) ALLOC_HIGH);
@@ -1042,11 +1042,9 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
 		(gfp_mask & (__GFP_HIGH | __GFP_KSWAPD_RECLAIM));
 
 	if (gfp_mask & __GFP_ATOMIC) {
-		
+
 		if (!(gfp_mask & __GFP_NOMEMALLOC))
 			alloc_flags |= ALLOC_HARDER;
-		
-		alloc_flags &= ~ALLOC_CPUSET;
 	} else if (unlikely(rt_task(current)) && in_task())
 		alloc_flags |= ALLOC_HARDER;
 

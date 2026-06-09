@@ -228,14 +228,6 @@ struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
 					FS_CONTEXT_FOR_MOUNT);
 }
 
-void fc_drop_locked(struct fs_context *fc)
-{
-	struct super_block *sb = fc->root->d_sb;
-	dput(fc->root);
-	fc->root = NULL;
-	deactivate_locked_super(sb);
-}
-
 static void legacy_fs_context_free(struct fs_context *fc);
 
 

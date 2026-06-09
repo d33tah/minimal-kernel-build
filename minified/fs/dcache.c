@@ -554,19 +554,6 @@ static void d_walk(struct dentry *parent, void *data,
 	/* Stub: not needed for minimal boot */
 }
 
-int d_set_mounted(struct dentry *dentry)
-{
-	/* Stub: simplified mount point marking for minimal kernel */
-	spin_lock(&dentry->d_lock);
-	if (!d_unlinked(dentry) && !d_mountpoint(dentry)) {
-		dentry->d_flags |= DCACHE_MOUNTED;
-		spin_unlock(&dentry->d_lock);
-		return 0;
-	}
-	spin_unlock(&dentry->d_lock);
-	return -EBUSY;
-}
-
 struct select_data {
 	struct dentry *start;
 	union {

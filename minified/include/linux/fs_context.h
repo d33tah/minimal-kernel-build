@@ -108,7 +108,6 @@ extern int vfs_get_tree(struct fs_context *fc);
 extern void put_fs_context(struct fs_context *fc);
 extern int vfs_parse_fs_param_source(struct fs_context *fc,
 				     struct fs_parameter *param);
-extern void fc_drop_locked(struct fs_context *fc);
 
 enum vfs_get_super_keying {
 	vfs_get_single_super,

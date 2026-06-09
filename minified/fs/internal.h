@@ -37,25 +37,18 @@ int do_unlinkat(int dfd, struct filename *name);
 int may_linkat(struct user_namespace *mnt_userns, struct path *link);
 
  
-extern struct vfsmount *lookup_mnt(const struct path *);
-
 extern void __init mnt_init(void);
 
 extern int __mnt_want_write_file(struct file *);
 extern void __mnt_drop_write_file(struct file *);
 
 extern void dissolve_on_fput(struct vfsmount *);
-extern bool may_mount(void);
 
-int path_mount(const char *dev_name, struct path *path,
-		const char *type_page, unsigned long flags, void *data_page);
 
- 
 extern struct file *alloc_empty_file(int, const struct cred *);
 
 /* reconfigure_super, user_get_super removed - unused */
 void put_super(struct super_block *sb);
-extern bool mount_capable(struct fs_context *);
 
  
 struct open_flags {
@@ -81,7 +74,6 @@ extern int dentry_needs_remove_privs(struct dentry *dentry);
  
 
  
-extern int d_set_mounted(struct dentry *dentry);
 extern struct dentry *d_alloc_cursor(struct dentry *);
 extern struct dentry * d_alloc_pseudo(struct super_block *, const struct qstr *);
 extern char *simple_dname(struct dentry *, char *, int);

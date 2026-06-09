@@ -1238,11 +1238,6 @@ int notify_change(struct user_namespace *, struct dentry *,
 		  struct iattr *, struct inode **);
 int inode_permission(struct user_namespace *, struct inode *, int);
 int generic_permission(struct user_namespace *, struct inode *, int);
-static inline int path_permission(const struct path *path, int mask)
-{
-	return inode_permission(mnt_user_ns(path->mnt),
-				d_inode(path->dentry), mask);
-}
 
 static inline void file_start_write(struct file *file)
 {

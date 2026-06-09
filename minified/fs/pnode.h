@@ -23,17 +23,10 @@ static inline void set_mnt_shared(struct mount *mnt)
 }
 
 void change_mnt_propagation(struct mount *, int);
-int propagate_mnt(struct mount *, struct mountpoint *, struct mount *,
-		struct hlist_head *);
 int propagate_umount(struct list_head *);
-int propagate_mount_busy(struct mount *, int);
 void propagate_mount_unlock(struct mount *);
 /* mnt_release_group_id now static in namespace.c */
 /* get_dominating_id removed - unused */
 int mnt_get_count(struct mount *mnt);
-void mnt_set_mountpoint(struct mount *, struct mountpoint *,
-			struct mount *);
-void mnt_change_mountpoint(struct mount *parent, struct mountpoint *mp,
-			   struct mount *mnt);
 /* count_mounts removed - unused */
 #endif  

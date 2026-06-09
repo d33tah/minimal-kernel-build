@@ -4,7 +4,6 @@
 #include <linux/preempt.h>
 #include <linux/lockdep.h>
 #include <linux/sched.h>
-#include <linux/vtime.h>
 #include <asm/hardirq.h>
 
 
@@ -16,7 +15,6 @@ static __always_inline void rcu_irq_enter_check_tick(void)
 	do {						\
 		preempt_count_add(HARDIRQ_OFFSET);	\
 		lockdep_hardirq_enter();		\
-		account_hardirq_enter(current);		\
 	} while (0)
 
 #define __irq_enter_raw()				\
@@ -30,7 +28,6 @@ void irq_enter_rcu(void);
 
 #define __irq_exit()					\
 	do {						\
-		account_hardirq_exit(current);		\
 		lockdep_hardirq_exit();			\
 		preempt_count_sub(HARDIRQ_OFFSET);	\
 	} while (0)

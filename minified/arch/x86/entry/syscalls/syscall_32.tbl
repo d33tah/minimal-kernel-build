@@ -53,7 +53,7 @@
 86	i386	uselib			sys_uselib
 87	i386	swapon			sys_swapon
 88	i386	reboot
-89	i386	readdir			sys_old_readdir			compat_sys_old_readdir
+# 89	i386	readdir			sys_old_readdir			compat_sys_old_readdir
 90	i386	mmap			sys_old_mmap			compat_sys_ia32_mmap
 91	i386	munmap			sys_munmap
 98	i386	profil
@@ -78,7 +78,7 @@
 135	i386	sysfs			sys_sysfs
 137	i386	afs_syscall
 # 140	i386	_llseek			sys_llseek
-141	i386	getdents		sys_getdents			compat_sys_getdents
+# 141	i386	getdents		sys_getdents			compat_sys_getdents
 143	i386	flock			sys_flock
 144	i386	msync			sys_msync
 145	i386	readv
@@ -100,7 +100,7 @@
 # 202 getegid32 removed (unreachable)
 218	i386	mincore			sys_mincore
 219	i386	madvise			sys_madvise
-220	i386	getdents64		sys_getdents64
+# 220	i386	getdents64		sys_getdents64
 221	i386	fcntl64			sys_fcntl64			compat_sys_fcntl64
 # 222 is unused
 # 223 is unused

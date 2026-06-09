@@ -767,9 +767,6 @@ struct dentry *d_alloc_anon(struct super_block *sb)
 	return __d_alloc(sb, NULL);
 }
 
-/* Stub: d_alloc_cursor not used in minimal kernel */
-struct dentry *d_alloc_cursor(struct dentry *parent) { return NULL; }
-
 struct dentry *d_alloc_pseudo(struct super_block *sb, const struct qstr *name)
 {
 	struct dentry *dentry = __d_alloc(sb, name);

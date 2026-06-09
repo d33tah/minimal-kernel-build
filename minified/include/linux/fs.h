@@ -1353,10 +1353,6 @@ extern struct file_system_type *get_fs_type(const char *name);
 /* Removed: get_super, get_active_super, drop_super, drop_super_exclusive,
    iterate_supers, iterate_supers_type - never called */
 
-extern int dcache_dir_open(struct inode *, struct file *);
-extern int dcache_dir_close(struct inode *, struct file *);
-extern loff_t dcache_dir_lseek(struct file *, loff_t, int);
-extern int dcache_readdir(struct file *, struct dir_context *);
 extern int simple_setattr(struct user_namespace *, struct dentry *,
 			  struct iattr *);
 extern int simple_getattr(struct user_namespace *, const struct path *,
@@ -1378,8 +1374,6 @@ extern int always_delete_dentry(const struct dentry *);
 extern const struct dentry_operations simple_dentry_operations;
 
 extern struct dentry *simple_lookup(struct inode *, struct dentry *, unsigned int flags);
-extern ssize_t generic_read_dir(struct file *, char __user *, size_t, loff_t *);
-extern const struct file_operations simple_dir_operations;
 
 
 
@@ -1420,14 +1414,6 @@ static inline int iocb_flags(struct file *file)
 }
 
 
-static inline ino_t parent_ino(struct dentry *dentry)
-{
-	ino_t res;
-	spin_lock(&dentry->d_lock);
-	res = dentry->d_parent->d_inode->i_ino;
-	spin_unlock(&dentry->d_lock);
-	return res;
-}
 
 
 struct ctl_table;
@@ -1450,36 +1436,6 @@ static inline void inode_has_no_xattr(struct inode *inode)
 		inode->i_flags |= S_NOSEC;
 }
 
-static inline bool dir_emit(struct dir_context *ctx,
-			    const char *name, int namelen,
-			    u64 ino, unsigned type)
-{
-	return ctx->actor(ctx, name, namelen, ctx->pos, ino, type) == 0;
-}
-static inline bool dir_emit_dot(struct file *file, struct dir_context *ctx)
-{
-	return ctx->actor(ctx, ".", 1, ctx->pos,
-			  file->f_path.dentry->d_inode->i_ino, DT_DIR) == 0;
-}
-static inline bool dir_emit_dotdot(struct file *file, struct dir_context *ctx)
-{
-	return ctx->actor(ctx, "..", 2, ctx->pos,
-			  parent_ino(file->f_path.dentry), DT_DIR) == 0;
-}
-static inline bool dir_emit_dots(struct file *file, struct dir_context *ctx)
-{
-	if (ctx->pos == 0) {
-		if (!dir_emit_dot(file, ctx))
-			return false;
-		ctx->pos = 1;
-	}
-	if (ctx->pos == 1) {
-		if (!dir_emit_dotdot(file, ctx))
-			return false;
-		ctx->pos = 2;
-	}
-	return true;
-}
 extern bool path_noexec(const struct path *path);
 extern void inode_nohighmem(struct inode *inode);
 

@@ -72,7 +72,6 @@ extern int dentry_needs_remove_privs(struct dentry *dentry);
  
 
  
-extern struct dentry *d_alloc_cursor(struct dentry *);
 extern struct dentry * d_alloc_pseudo(struct super_block *, const struct qstr *);
 extern char *simple_dname(struct dentry *, char *, int);
 extern void dput_to_list(struct dentry *, struct list_head *);

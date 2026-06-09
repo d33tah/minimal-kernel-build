@@ -95,19 +95,9 @@ void free_kthread_struct(struct task_struct *k)
 	kfree(kthread);
 }
 
-bool kthread_should_stop(void)
-{
-	return test_bit(KTHREAD_SHOULD_STOP, &to_kthread(current)->flags);
-}
-
 bool __kthread_should_park(struct task_struct *k)
 {
 	return test_bit(KTHREAD_SHOULD_PARK, &to_kthread(k)->flags);
-}
-
-void *kthread_data(struct task_struct *task)
-{
-	return to_kthread(task)->data;
 }
 
 
@@ -272,28 +262,6 @@ struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 	return task;
 }
 
-static void __kthread_bind_mask(struct task_struct *p, const struct cpumask *mask, unsigned int state)
-{
-	unsigned long flags;
-
-	if (!wait_task_inactive(p, state)) {
-		WARN_ON(1);
-		return;
-	}
-
-	 
-	raw_spin_lock_irqsave(&p->pi_lock, flags);
-	do_set_cpus_allowed(p, mask);
-	p->flags |= PF_NO_SETAFFINITY;
-	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
-}
-
-static void __kthread_bind(struct task_struct *p, unsigned int cpu, unsigned int state)
-{
-	__kthread_bind_mask(p, cpumask_of(cpu), state);
-}
-
-
 void kthread_set_per_cpu(struct task_struct *k, int cpu)
 {
 	struct kthread *kthread = to_kthread(k);
@@ -311,40 +279,6 @@ void kthread_set_per_cpu(struct task_struct *k, int cpu)
 	set_bit(KTHREAD_IS_PER_CPU, &kthread->flags);
 }
 
-
-void kthread_unpark(struct task_struct *k)
-{
-	struct kthread *kthread = to_kthread(k);
-
-	 
-	if (test_bit(KTHREAD_IS_PER_CPU, &kthread->flags))
-		__kthread_bind(k, kthread->cpu, TASK_PARKED);
-
-	clear_bit(KTHREAD_SHOULD_PARK, &kthread->flags);
-	 
-	wake_up_state(k, TASK_PARKED);
-}
-
-
-int kthread_stop(struct task_struct *k)
-{
-	struct kthread *kthread;
-	int ret;
-
-	 
-
-	get_task_struct(k);
-	kthread = to_kthread(k);
-	set_bit(KTHREAD_SHOULD_STOP, &kthread->flags);
-	kthread_unpark(k);
-	wake_up_process(k);
-	wait_for_completion(&kthread->exited);
-	ret = kthread->result;
-	put_task_struct(k);
-
-	 
-	return ret;
-}
 
 int kthreadd(void *unused)
 {

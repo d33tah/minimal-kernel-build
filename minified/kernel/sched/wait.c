@@ -88,11 +88,6 @@ void __wake_up(struct wait_queue_head *wq_head, unsigned int mode,
 	__wake_up_common_lock(wq_head, mode, nr_exclusive, 0, key);
 }
 
-void __wake_up_locked(struct wait_queue_head *wq_head, unsigned int mode, int nr)
-{
-	__wake_up_common(wq_head, mode, nr, 0, NULL, NULL);
-}
-
 void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 		unsigned int mode, void *key, wait_queue_entry_t *bookmark)
 {

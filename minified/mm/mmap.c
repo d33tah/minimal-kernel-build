@@ -24,7 +24,7 @@
 #include <linux/rmap.h>
 #include <linux/mmdebug.h>
 #include <linux/perf_event.h>
-#include <linux/khugepaged.h>
+#include <linux/sched/coredump.h>
 #include <linux/uprobes.h>
 #include <linux/rbtree_augmented.h>
 #include <linux/notifier.h>
@@ -502,7 +502,6 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm,
 					 end, prev->vm_pgoff, NULL, prev);
 		if (err)
 			return NULL;
-		khugepaged_enter_vma(prev, vm_flags);
 		return prev;
 	}
 
@@ -522,7 +521,6 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm,
 		}
 		if (err)
 			return NULL;
-		khugepaged_enter_vma(area, vm_flags);
 		return area;
 	}
 
@@ -1205,7 +1203,6 @@ int expand_downwards(struct vm_area_struct *vma,
 		}
 	}
 	anon_vma_unlock_write(vma->anon_vma);
-	khugepaged_enter_vma(vma, vma->vm_flags);
 	validate_mm(mm);
 	return error;
 }

@@ -65,7 +65,6 @@ static inline void fire_user_return_notifiers(void) {}
 static inline void clear_user_return_notifier(struct task_struct *p) {}
 #endif
 #include <linux/oom.h>
-#include <linux/khugepaged.h>
 #include <linux/uprobes.h>
 #include <linux/compiler.h>
 #include <linux/sysctl.h>
@@ -678,7 +677,6 @@ static inline void __mmput(struct mm_struct *mm)
 
 	uprobe_clear_state(mm);
 	ksm_exit(mm);
-	khugepaged_exit(mm); 
 	exit_mmap(mm);
 	mm_put_huge_zero_page(mm);
 	set_mm_exe_file(mm, NULL);

@@ -49,7 +49,6 @@ static inline void split_page_owner(struct page *page, unsigned short order) {}
 #include <linux/memcontrol.h>
 #include <linux/lockdep.h>
 #include <linux/nmi.h>
-#include <linux/khugepaged.h>
 static inline void buffer_init(void) {}
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
@@ -2168,8 +2167,6 @@ int __meminit init_per_zone_wmark_min(void)
 	setup_per_zone_wmarks();
 	refresh_zone_stat_thresholds();
 	setup_per_zone_lowmem_reserve();
-
-	khugepaged_min_free_kbytes_update();
 
 	return 0;
 }

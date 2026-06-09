@@ -111,11 +111,6 @@ static int class_add_groups(struct class *cls,
 	return 0;
 }
 
-static void class_remove_groups(struct class *cls,
-				const struct attribute_group **groups)
-{
-}
-
 int __class_register(struct class *cls, struct lock_class_key *key)
 {
 	struct subsys_private *cp;
@@ -151,12 +146,6 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 	error = class_add_groups(class_get(cls), cls->class_groups);
 	class_put(cls);
 	return error;
-}
-
-void class_unregister(struct class *cls)
-{
-	class_remove_groups(cls, cls->class_groups);
-	kset_unregister(&cls->p->subsys);
 }
 
 static void class_create_release(struct class *cls)
@@ -250,34 +239,9 @@ struct device *class_find_device(struct class *class, struct device *start,
 	return dev;
 }
 
-int class_interface_register(struct class_interface *class_intf)
-{
-	struct class *parent;
-	struct class_dev_iter iter;
-	struct device *dev;
-
-	if (!class_intf || !class_intf->class)
-		return -ENODEV;
-
-	parent = class_get(class_intf->class);
-	if (!parent)
-		return -EINVAL;
-
-	mutex_lock(&parent->p->mutex);
-	list_add_tail(&class_intf->node, &parent->p->interfaces);
-	if (class_intf->add_dev) {
-		class_dev_iter_init(&iter, parent, NULL, NULL);
-		while ((dev = class_dev_iter_next(&iter)))
-			class_intf->add_dev(dev, class_intf);
-		class_dev_iter_exit(&iter);
-	}
-	mutex_unlock(&parent->p->mutex);
-
-	return 0;
-}
-
-/* class_interface_unregister, show_class_attr_string, class_compat_register,
-   class_compat_unregister, class_compat_create_link, class_compat_remove_link removed - unused */
+/* Removed: class_interface_register - sole caller was the devlink class
+ * registration, which has been removed. class_interface_unregister,
+ * show_class_attr_string, class_compat_* were already removed - unused. */
 
 int __init classes_init(void)
 {

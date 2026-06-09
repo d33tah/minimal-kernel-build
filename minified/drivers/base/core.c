@@ -29,129 +29,19 @@ static const struct attribute_group dev_attr_physical_location_group = {};
 
 /* Removed: fwnode_link_add, fwnode_links_purge, fw_devlink_purge_absent_suppliers - no callers */
 
-DEFINE_STATIC_SRCU(device_links_srcu);
-
-
-static int device_links_read_lock(void) __acquires(&device_links_srcu)
-{
-	return srcu_read_lock(&device_links_srcu);
-}
-
-static void device_links_read_unlock(int idx) __releases(&device_links_srcu)
-{
-	srcu_read_unlock(&device_links_srcu, idx);
-}
-
-
-static void device_link_synchronize_removal(void)
-{
-	synchronize_srcu(&device_links_srcu);
-}
-
-
-static int device_reorder_to_tail(struct device *dev, void *not_used)
-{
-	/* Minimal stub */
-	(void)dev;
-	(void)not_used;
-	return 0;
-}
+/* Removed: devlink class infrastructure (device_links_read_lock/unlock,
+ * device_link_synchronize_removal, device_reorder_to_tail, to_devlink,
+ * devlink_attrs/groups, device_link_release_fn, devlink_dev_release,
+ * devlink_class, devlink_add/remove_symlinks, devlink_class_intf,
+ * devlink_class_init, DL_*_FLAGS / FW_DEVLINK_FLAGS_*) - no device_link is ever
+ * created (device_link_add has no callers), so the whole devlink class is dead.
+ */
 
 void device_pm_move_to_tail(struct device *dev)
 {
-	int idx;
-
-	idx = device_links_read_lock();
-	device_pm_lock();
-	device_reorder_to_tail(dev, NULL);
-	device_pm_unlock();
-	device_links_read_unlock(idx);
+	/* Minimal stub: device reordering is a no-op (no device links). */
+	(void)dev;
 }
-
-#define to_devlink(dev)	container_of((dev), struct device_link, link_dev)
-
-/* Stub: device link sysfs attributes not needed for minimal kernel */
-static struct attribute *devlink_attrs[] = { NULL };
-ATTRIBUTE_GROUPS(devlink);
-
-static void device_link_release_fn(struct work_struct *work)
-{
-	struct device_link *link = container_of(work, struct device_link, rm_work);
-
-	
-	device_link_synchronize_removal();
-
-	pm_runtime_release_supplier(link);
-	
-	if (link->supplier_preactivated)
-		pm_runtime_put_noidle(link->supplier);
-
-	pm_request_idle(link->supplier);
-
-	put_device(link->consumer);
-	put_device(link->supplier);
-	kfree(link);
-}
-
-static void devlink_dev_release(struct device *dev)
-{
-	struct device_link *link = to_devlink(dev);
-
-	INIT_WORK(&link->rm_work, device_link_release_fn);
-	
-	queue_work(system_long_wq, &link->rm_work);
-}
-
-static struct class devlink_class = {
-	.name = "devlink",
-	.owner = THIS_MODULE,
-	.dev_groups = devlink_groups,
-	.dev_release = devlink_dev_release,
-};
-
-static int devlink_add_symlinks(struct device *dev,
-				struct class_interface *class_intf)
-{
-	/* Stubbed: device link symlinks not needed for minimal boot */
-	return 0;
-}
-
-static void devlink_remove_symlinks(struct device *dev,
-				   struct class_interface *class_intf)
-{
-	/* Stubbed: device link symlinks removal not needed (add is stubbed) */
-}
-
-static struct class_interface devlink_class_intf = {
-	.class = &devlink_class,
-	.add_dev = devlink_add_symlinks,
-	.remove_dev = devlink_remove_symlinks,
-};
-
-static int __init devlink_class_init(void)
-{
-	int ret;
-
-	ret = class_register(&devlink_class);
-	if (ret)
-		return ret;
-
-	ret = class_interface_register(&devlink_class_intf);
-	if (ret)
-		class_unregister(&devlink_class);
-
-	return ret;
-}
-postcore_initcall(devlink_class_init);
-
-#define DL_MANAGED_LINK_FLAGS (DL_FLAG_AUTOREMOVE_CONSUMER | \
-			       DL_FLAG_AUTOREMOVE_SUPPLIER | \
-			       DL_FLAG_AUTOPROBE_CONSUMER  | \
-			       DL_FLAG_SYNC_STATE_ONLY | \
-			       DL_FLAG_INFERRED)
-
-#define DL_ADD_VALID_FLAGS (DL_MANAGED_LINK_FLAGS | DL_FLAG_STATELESS | \
-			    DL_FLAG_PM_RUNTIME | DL_FLAG_RPM_ACTIVE)
 
 
 /* Stub: no device links since device_link_add returns NULL */
@@ -192,15 +82,6 @@ static void device_links_purge(struct device *dev)
 {
 	/* Stub: no device links to purge since device_link_add returns NULL */
 }
-
-#define FW_DEVLINK_FLAGS_PERMISSIVE	(DL_FLAG_INFERRED | \
-					 DL_FLAG_SYNC_STATE_ONLY)
-#define FW_DEVLINK_FLAGS_ON		(DL_FLAG_INFERRED | \
-					 DL_FLAG_AUTOPROBE_CONSUMER)
-#define FW_DEVLINK_FLAGS_RPM		(FW_DEVLINK_FLAGS_ON | \
-					 DL_FLAG_PM_RUNTIME)
-
-
 
 /* Stub: firmware device link functions not needed for minimal kernel */
 void fw_devlink_drivers_done(void)

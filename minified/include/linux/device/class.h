@@ -45,13 +45,9 @@ extern struct kobject *sysfs_dev_block_kobj;
 extern struct kobject *sysfs_dev_char_kobj;
 extern int __must_check __class_register(struct class *class,
 					 struct lock_class_key *key);
-extern void class_unregister(struct class *class);
 
-#define class_register(class)			\
-({						\
-	static struct lock_class_key __key;	\
-	__class_register(class, &__key);	\
-})
+/* class_register macro + class_unregister removed - sole user was the
+   devlink class registration, which has been removed. */
 
 /* struct class_compat, class_compat_register, class_compat_unregister,
    class_compat_create_link, class_compat_remove_link removed - unused */
@@ -111,8 +107,6 @@ struct class_interface {
 	int (*add_dev)		(struct device *, struct class_interface *);
 	void (*remove_dev)	(struct device *, struct class_interface *);
 };
-
-extern int __must_check class_interface_register(struct class_interface *);
 
 extern struct class * __must_check __class_create(struct module *owner,
 						  const char *name,

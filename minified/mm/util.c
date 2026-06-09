@@ -81,47 +81,6 @@ char *kmemdup_nul(const char *s, size_t len, gfp_t gfp)
 	return buf;
 }
 
-void *memdup_user(const void __user *src, size_t len)
-{
-	void *p;
-
-	p = kmalloc_track_caller(len, GFP_USER | __GFP_NOWARN);
-	if (!p)
-		return ERR_PTR(-ENOMEM);
-
-	if (copy_from_user(p, src, len)) {
-		kfree(p);
-		return ERR_PTR(-EFAULT);
-	}
-
-	return p;
-}
-
-
-char *strndup_user(const char __user *s, long n)
-{
-	char *p;
-	long length;
-
-	length = strnlen_user(s, n);
-
-	if (!length)
-		return ERR_PTR(-EFAULT);
-
-	if (length > n)
-		return ERR_PTR(-EINVAL);
-
-	p = memdup_user(s, length);
-
-	if (IS_ERR(p))
-		return p;
-
-	p[length - 1] = '\0';
-
-	return p;
-}
-
-
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		struct vm_area_struct *prev)
 {

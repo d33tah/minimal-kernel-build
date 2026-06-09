@@ -710,11 +710,9 @@ struct super_block {
 	
 	const char *s_subtype;
 
-	const struct dentry_operations *s_d_op; 
+	const struct dentry_operations *s_d_op;
 
-	struct shrinker s_shrink;	
 
-	
 	atomic_long_t s_remove_count;
 
 	
@@ -988,10 +986,6 @@ struct super_operations {
 
 	int (*show_options)(struct seq_file *, struct dentry *);
 	/* show_devname, show_path, show_stats removed - unused */
-	long (*nr_cached_objects)(struct super_block *,
-				  struct shrink_control *);
-	long (*free_cached_objects)(struct super_block *,
-				    struct shrink_control *);
 };
 
 #define S_NOATIME	(1 << 1)

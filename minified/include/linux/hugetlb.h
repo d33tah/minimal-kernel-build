@@ -28,16 +28,6 @@ static inline unsigned long hugetlb_total_pages(void)
 
 
 
-static inline long follow_hugetlb_page(struct mm_struct *mm,
-			struct vm_area_struct *vma, struct page **pages,
-			struct vm_area_struct **vmas, unsigned long *position,
-			unsigned long *nr_pages, long i, unsigned int flags,
-			int *nonblocking)
-{
-	BUG();
-	return 0;
-}
-
 static inline struct page *follow_huge_addr(struct mm_struct *mm,
 					unsigned long address, int write)
 {
@@ -45,32 +35,9 @@ static inline struct page *follow_huge_addr(struct mm_struct *mm,
 }
 
 
-static inline int move_hugetlb_page_tables(struct vm_area_struct *vma,
-					   struct vm_area_struct *new_vma,
-					   unsigned long old_addr,
-					   unsigned long new_addr,
-					   unsigned long len)
-{
-	BUG();
-	return 0;
-}
-
-
 static inline struct page *follow_huge_pd(struct vm_area_struct *vma,
 				unsigned long address, hugepd_t hpd, int flags,
 				int pdshift)
-{
-	return NULL;
-}
-
-static inline struct page *follow_huge_pmd(struct mm_struct *mm,
-				unsigned long address, pmd_t *pmd, int flags)
-{
-	return NULL;
-}
-
-static inline struct page *follow_huge_pud(struct mm_struct *mm,
-				unsigned long address, pud_t *pud, int flags)
 {
 	return NULL;
 }
@@ -82,29 +49,11 @@ static inline struct page *follow_huge_pgd(struct mm_struct *mm,
 }
 
 
-static inline int pmd_huge(pmd_t pmd)
-{
-	return 0;
-}
-
-static inline int pud_huge(pud_t pud)
-{
-	return 0;
-}
-
 static inline int is_hugepage_only_range(struct mm_struct *mm,
 					unsigned long addr, unsigned long len)
 {
 	return 0;
 }
-
-static inline void hugetlb_free_pgd_range(struct mmu_gather *tlb,
-				unsigned long addr, unsigned long end,
-				unsigned long floor, unsigned long ceiling)
-{
-	BUG();
-}
-
 
 static inline pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr,
 					unsigned long sz)
@@ -112,23 +61,6 @@ static inline pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr,
 	return NULL;
 }
 
-
-
-static inline void __unmap_hugepage_range_final(struct mmu_gather *tlb,
-			struct vm_area_struct *vma, unsigned long start,
-			unsigned long end, struct page *ref_page,
-			zap_flags_t zap_flags)
-{
-	BUG();
-}
-
-static inline vm_fault_t hugetlb_fault(struct mm_struct *mm,
-			struct vm_area_struct *vma, unsigned long address,
-			unsigned int flags)
-{
-	BUG();
-	return 0;
-}
 
 
 #ifndef pgd_huge

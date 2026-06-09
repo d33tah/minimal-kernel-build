@@ -11,9 +11,6 @@
 #include <linux/bitops.h>
 #include <linux/hardirq.h>
 
-/* Inlined from hugetlb_inline.h */
-static inline bool is_vm_hugetlb_page(struct vm_area_struct *vma) { return false; }
-
 struct folio_batch;
 
 unsigned long invalidate_mapping_pages(struct address_space *mapping,
@@ -248,15 +245,10 @@ static inline loff_t folio_pos(struct folio *folio)
 }
 
 
-extern pgoff_t linear_hugepage_index(struct vm_area_struct *vma,
-				     unsigned long address);
-
 static inline pgoff_t linear_page_index(struct vm_area_struct *vma,
 					unsigned long address)
 {
 	pgoff_t pgoff;
-	if (unlikely(is_vm_hugetlb_page(vma)))
-		return linear_hugepage_index(vma, address);
 	pgoff = (address - vma->vm_start) >> PAGE_SHIFT;
 	pgoff += vma->vm_pgoff;
 	return pgoff;

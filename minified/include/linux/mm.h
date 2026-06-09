@@ -1412,23 +1412,6 @@ static inline bool want_init_on_free(void)
 				   &init_on_free);
 }
 
-extern bool _debug_pagealloc_enabled_early;
-DECLARE_STATIC_KEY_FALSE(_debug_pagealloc_enabled);
-
-static inline bool debug_pagealloc_enabled(void)
-{
-	return IS_ENABLED(CONFIG_DEBUG_PAGEALLOC) &&
-		_debug_pagealloc_enabled_early;
-}
-
-static inline bool debug_pagealloc_enabled_static(void)
-{
-	if (!IS_ENABLED(CONFIG_DEBUG_PAGEALLOC))
-		return false;
-
-	return static_branch_unlikely(&_debug_pagealloc_enabled);
-}
-
 #ifdef __HAVE_ARCH_GATE_AREA
 extern struct vm_area_struct *get_gate_vma(struct mm_struct *mm);
 extern int in_gate_area_no_mm(unsigned long addr);

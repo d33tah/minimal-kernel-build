@@ -166,7 +166,7 @@ static inline void cr4_set_bits_and_update_boot(unsigned long mask)
 static void __init probe_page_size_mask(void)
 {
 	 
-	if (boot_cpu_has(X86_FEATURE_PSE) && !debug_pagealloc_enabled())
+	if (boot_cpu_has(X86_FEATURE_PSE))
 		page_size_mask |= 1 << PG_LEVEL_2M;
 	else
 		direct_gbpages = 0;
@@ -554,19 +554,11 @@ void free_init_pages(const char *what, unsigned long begin, unsigned long end)
 	if (begin >= end)
 		return;
 
-	 
-	if (debug_pagealloc_enabled()) {
-		pr_info("debug: unmapping init [mem %#010lx-%#010lx]\n",
-			begin, end - 1);
-		set_memory_np(begin, (end - begin) >> PAGE_SHIFT);
-	} else {
-		 
-		set_memory_nx(begin, (end - begin) >> PAGE_SHIFT);
-		set_memory_rw(begin, (end - begin) >> PAGE_SHIFT);
+	set_memory_nx(begin, (end - begin) >> PAGE_SHIFT);
+	set_memory_rw(begin, (end - begin) >> PAGE_SHIFT);
 
-		free_reserved_area((void *)begin, (void *)end,
-				   POISON_FREE_INITMEM, what);
-	}
+	free_reserved_area((void *)begin, (void *)end,
+			   POISON_FREE_INITMEM, what);
 }
 
 /* Stub: free_kernel_image_pages not called in minimal kernel */

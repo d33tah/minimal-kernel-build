@@ -386,10 +386,7 @@ static __always_inline bool free_pages_prepare(struct page *page,
 
 static bool free_pcp_prepare(struct page *page, unsigned int order)
 {
-	if (debug_pagealloc_enabled_static())
-		return free_pages_prepare(page, order, true, FPI_NONE);
-	else
-		return free_pages_prepare(page, order, false, FPI_NONE);
+	return free_pages_prepare(page, order, false, FPI_NONE);
 }
 
 

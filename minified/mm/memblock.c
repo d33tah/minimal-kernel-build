@@ -6,7 +6,6 @@
 #include <linux/poison.h>
 #include <linux/pfn.h>
 #include <linux/debugfs.h>
-#include <linux/kmemleak.h>
 #include <linux/seq_file.h>
 #include <linux/memblock.h>
 
@@ -499,7 +498,6 @@ int __init_memblock memblock_phys_free(phys_addr_t base, phys_addr_t size)
 	memblock_dbg("%s: [%pa-%pa] %pS\n", __func__,
 		     &base, &end, (void *)_RET_IP_);
 
-	kmemleak_free_part_phys(base, size);
 	return memblock_remove_range(&memblock.reserved, base, size);
 }
 
@@ -764,10 +762,6 @@ again:
 	return 0;
 
 done:
-	
-	if (end != MEMBLOCK_ALLOC_NOLEAKTRACE)
-		
-		kmemleak_alloc_phys(found, size, 0, 0);
 
 	return found;
 }
@@ -861,7 +855,6 @@ void __init memblock_free_late(phys_addr_t base, phys_addr_t size)
 	end = base + size - 1;
 	memblock_dbg("%s: [%pa-%pa] %pS\n",
 		     __func__, &base, &end, (void *)_RET_IP_);
-	kmemleak_free_part_phys(base, size);
 	cursor = PFN_UP(base);
 	end = PFN_DOWN(base + size);
 

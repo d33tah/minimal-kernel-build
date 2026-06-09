@@ -18,7 +18,6 @@ unsigned long lcm_not_zero(unsigned long a, unsigned long b) __attribute_const__
 #include <linux/spinlock.h>
 #include <linux/vmalloc.h>
 #include <linux/workqueue.h>
-#include <linux/kmemleak.h>
 #include <linux/sched.h>
 #include <linux/sched/mm.h>
 #include <linux/memcontrol.h>
@@ -1274,8 +1273,6 @@ area_found:
 		memset((void *)pcpu_chunk_addr(chunk, cpu, 0) + off, 0, size);
 
 	ptr = __addr_to_pcpu_ptr(chunk->base_addr + off);
-	kmemleak_alloc_percpu(ptr, size, gfp);
-
 
 	pcpu_memcg_post_alloc_hook(objcg, chunk, off, size);
 
@@ -1526,8 +1523,6 @@ void free_percpu(void __percpu *ptr)
 
 	if (!ptr)
 		return;
-
-	kmemleak_free_percpu(ptr);
 
 	addr = __pcpu_ptr_to_addr(ptr);
 
@@ -1784,8 +1779,6 @@ void __init setup_per_cpu_areas(void)
 	fc = memblock_alloc_from(unit_size, PAGE_SIZE, __pa(MAX_DMA_ADDRESS));
 	if (!ai || !fc)
 		panic("Failed to allocate memory for percpu areas.");
-	
-	kmemleak_free(fc);
 
 	ai->dyn_size = unit_size;
 	ai->unit_size = unit_size;

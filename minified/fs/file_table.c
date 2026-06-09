@@ -19,7 +19,6 @@
 #include <linux/task_work.h>
 static inline void ima_file_free(struct file *file) {}
 #include <linux/swap.h>
-#include <linux/kmemleak.h>
 
 #include <linux/atomic.h>
 

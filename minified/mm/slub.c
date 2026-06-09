@@ -266,15 +266,12 @@ static bool freelist_corrupted(struct kmem_cache *s, struct slab *slab,
 
 static __always_inline void kfree_hook(void *x)
 {
-	kmemleak_free(x);
 	kasan_kfree_large(x);
 }
 
 static __always_inline bool slab_free_hook(struct kmem_cache *s,
 						void *x, bool init)
 {
-	kmemleak_free_recursive(x, s->flags);
-
 	debug_check_no_locks_freed(x, s->object_size);
 
 	if (init) {

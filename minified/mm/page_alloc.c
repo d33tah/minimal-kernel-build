@@ -33,7 +33,6 @@
 #include <linux/sort.h>
 #include <linux/pfn.h>
 #include <linux/backing-dev.h>
-#include <linux/kmemleak.h>
 
 /* --- 2025-12-08 00:14 --- Inlined from page-isolation.h */
 void set_pageblock_migratetype(struct page *page, int migratetype);

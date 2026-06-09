@@ -48,7 +48,7 @@ static inline void init_vmlinux_build_id(void) { }
 #include <linux/page_ext.h>
 #include <linux/debug_locks.h>
 #include <linux/lockdep.h>
-#include <linux/kmemleak.h>
+#include <linux/vmalloc.h>
 #include <linux/pid_namespace.h>
 
 /* --- 2025-12-08 00:37 --- padata.h stubbed out */
@@ -445,7 +445,6 @@ static void __init mm_init(void)
 	kmem_cache_init();
 	 
 	page_ext_init_flatmem_late();
-	kmemleak_init();
 	pgtable_init();
 	vmalloc_init();
 	 

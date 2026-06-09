@@ -183,14 +183,6 @@ enum lru_list {
 	NR_LRU_LISTS
 };
 
-enum vmscan_throttle_state {
-	VMSCAN_THROTTLE_WRITEBACK,
-	VMSCAN_THROTTLE_ISOLATED,
-	VMSCAN_THROTTLE_NOPROGRESS,
-	VMSCAN_THROTTLE_CONGESTED,
-	NR_VMSCAN_THROTTLE,
-};
-
 #define for_each_lru(lru) for (lru = 0; lru < NR_LRU_LISTS; lru++)
 
 
@@ -378,9 +370,6 @@ typedef struct pglist_data {
 	int node_id;
 	wait_queue_head_t kswapd_wait;
 	wait_queue_head_t pfmemalloc_wait;
-
-	 
-	wait_queue_head_t reclaim_wait[NR_VMSCAN_THROTTLE];
 
 	struct task_struct *kswapd;
 	int kswapd_order;

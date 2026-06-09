@@ -382,9 +382,7 @@ typedef struct pglist_data {
 	 
 	wait_queue_head_t reclaim_wait[NR_VMSCAN_THROTTLE];
 
-	atomic_t nr_writeback_throttled; 
-	unsigned long nr_reclaim_start;	 
-	struct task_struct *kswapd;	 
+	struct task_struct *kswapd;
 	int kswapd_order;
 	enum zone_type kswapd_highest_zoneidx;
 

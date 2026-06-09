@@ -26,12 +26,6 @@ void register_shrinker_prepared(struct shrinker *shrinker)
 }
 
 
-void __acct_reclaim_writeback(pg_data_t *pgdat, struct folio *folio,
-			       int nr_throttled)
-{
-
-}
-
 long remove_mapping(struct address_space *mapping, struct folio *folio)
 {
 	return 0;

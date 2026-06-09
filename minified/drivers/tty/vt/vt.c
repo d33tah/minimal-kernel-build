@@ -518,15 +518,6 @@ static int vt_resize(struct tty_struct *tty, struct winsize *ws)
 
 enum { EPecma = 0, EPdec, EPeq, EPgt, EPlt};
 
-#define set_kbd(vc, x)	vt_set_kbd_mode_bit((vc)->vc_num, (x))
-#define clr_kbd(vc, x)	vt_clr_kbd_mode_bit((vc)->vc_num, (x))
-#define is_kbd(vc, x)	vt_get_kbd_mode_bit((vc)->vc_num, (x))
-
-#define decarm		VC_REPEAT
-#define decckm		VC_CKMODE
-#define kbdapplic	VC_APPLIC
-#define lnm		VC_CRLF
-
 const unsigned char color_table[] = { 0, 4, 2, 6, 1, 5, 3, 7,
 				       8,12,10,14, 9,13,11,15 };
 

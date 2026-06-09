@@ -959,12 +959,6 @@ struct page *rmqueue(struct zone *preferred_zone,
 	zone_statistics(preferred_zone, zone, 1);
 
 out:
-	
-	if (test_bit(ZONE_BOOSTED_WATERMARK, &zone->flags)) {
-		clear_bit(ZONE_BOOSTED_WATERMARK, &zone->flags);
-		wakeup_kswapd(zone, 0, 0, zone_idx(zone));
-	}
-
 	VM_BUG_ON_PAGE(page && bad_range(zone, page), page);
 	return page;
 

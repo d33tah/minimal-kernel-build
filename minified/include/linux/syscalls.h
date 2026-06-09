@@ -151,7 +151,5 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 			      unsigned long fd, unsigned long pgoff);
 
 
-extern long do_sys_ftruncate(unsigned int fd, loff_t length, int small);
-
 
 #endif

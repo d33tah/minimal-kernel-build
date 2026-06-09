@@ -104,50 +104,6 @@ out:
 	return error;
 }
 
-long do_sys_ftruncate(unsigned int fd, loff_t length, int small)
-{
-	struct inode *inode;
-	struct dentry *dentry;
-	struct fd f;
-	int error;
-
-	error = -EINVAL;
-	if (length < 0)
-		goto out;
-	error = -EBADF;
-	f = fdget(fd);
-	if (!f.file)
-		goto out;
-
-	 
-	if (f.file->f_flags & O_LARGEFILE)
-		small = 0;
-
-	dentry = f.file->f_path.dentry;
-	inode = dentry->d_inode;
-	error = -EINVAL;
-	if (!S_ISREG(inode->i_mode) || !(f.file->f_mode & FMODE_WRITE))
-		goto out_putf;
-
-	error = -EINVAL;
-	 
-	if (small && length > MAX_NON_LFS)
-		goto out_putf;
-
-	error = -EPERM;
-	 
-	if (IS_APPEND(file_inode(f.file)))
-		goto out_putf;
-	sb_start_write(inode->i_sb);
-	error = do_truncate(file_mnt_user_ns(f.file), dentry, length,
-			    ATTR_MTIME | ATTR_CTIME, f.file);
-	sb_end_write(inode->i_sb);
-out_putf:
-	fdput(f);
-out:
-	return error;
-}
-
 int chmod_common(const struct path *path, umode_t mode)
 {
 	/* Stub: chmod not needed for minimal kernel */

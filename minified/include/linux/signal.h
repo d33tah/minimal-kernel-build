@@ -210,8 +210,6 @@ extern int group_send_sig_info(int sig, struct kernel_siginfo *info,
 			       struct task_struct *p, enum pid_type type);
 extern int send_signal_locked(int sig, struct kernel_siginfo *info,
 			      struct task_struct *p, enum pid_type type);
-extern void set_current_blocked(sigset_t *);
-extern void __set_current_blocked(const sigset_t *);
 extern int show_unhandled_signals;
 
 extern bool get_signal(struct ksignal *ksig);

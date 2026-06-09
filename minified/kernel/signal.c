@@ -565,33 +565,6 @@ bool get_signal(struct ksignal *ksig)
 	return false;
 }
 
-static void retarget_shared_pending(struct task_struct *tsk, sigset_t *which)
-{
-	sigset_t retarget;
-	struct task_struct *t;
-
-	sigandsets(&retarget, &tsk->signal->shared_pending.signal, which);
-	if (sigisemptyset(&retarget))
-		return;
-
-	t = tsk;
-	while_each_thread(tsk, t) {
-		if (t->flags & PF_EXITING)
-			continue;
-
-		if (!has_pending_signals(&retarget, &t->blocked))
-			continue;
-		
-		sigandsets(&retarget, &retarget, &t->blocked);
-
-		if (!task_sigpending(t))
-			signal_wake_up(t, 0);
-
-		if (sigisemptyset(&retarget))
-			break;
-	}
-}
-
 void exit_signals(struct task_struct *tsk)
 {
 	/* Minimal stub: just mark as exiting */
@@ -607,37 +580,6 @@ SYSCALL_DEFINE0(restart_syscall)
 long do_no_restart_syscall(struct restart_block *param)
 {
 	return -EINTR;
-}
-
-static void __set_task_blocked(struct task_struct *tsk, const sigset_t *newset)
-{
-	if (task_sigpending(tsk) && !thread_group_empty(tsk)) {
-		sigset_t newblocked;
-		
-		sigandnsets(&newblocked, newset, &current->blocked);
-		retarget_shared_pending(tsk, &newblocked);
-	}
-	tsk->blocked = *newset;
-	recalc_sigpending();
-}
-
-void set_current_blocked(sigset_t *newset)
-{
-	sigdelsetmask(newset, sigmask(SIGKILL) | sigmask(SIGSTOP));
-	__set_current_blocked(newset);
-}
-
-void __set_current_blocked(const sigset_t *newset)
-{
-	struct task_struct *tsk = current;
-
-	
-	if (sigequalsets(&tsk->blocked, newset))
-		return;
-
-	spin_lock_irq(&tsk->sighand->siglock);
-	__set_task_blocked(tsk, newset);
-	spin_unlock_irq(&tsk->sighand->siglock);
 }
 
 static inline void siginfo_buildtime_checks(void)

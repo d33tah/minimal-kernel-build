@@ -927,23 +927,6 @@ static vm_fault_t __do_fault(struct vm_fault *vmf)
 			    VM_FAULT_DONE_COW)))
 		return ret;
 
-	if (unlikely(PageHWPoison(vmf->page))) {
-		struct page *page = vmf->page;
-		vm_fault_t poisonret = VM_FAULT_HWPOISON;
-		if (ret & VM_FAULT_LOCKED) {
-			if (page_mapped(page))
-				unmap_mapping_pages(page_mapping(page),
-						    page->index, 1, false);
-			
-			if (invalidate_inode_page(page))
-				poisonret = VM_FAULT_NOPAGE;
-			unlock_page(page);
-		}
-		put_page(page);
-		vmf->page = NULL;
-		return poisonret;
-	}
-
 	if (unlikely(!(ret & VM_FAULT_LOCKED)))
 		lock_page(vmf->page);
 	else

@@ -80,7 +80,5 @@ extern struct vfsmount *vfs_kern_mount(struct file_system_type *type,
 
 
 extern struct vfsmount *kern_mount(struct file_system_type *);
-extern long do_mount(const char *, const char __user *,
-		     const char *, unsigned long, void *);
 
 #endif  

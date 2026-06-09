@@ -861,26 +861,6 @@ bool may_mount(void)
 }
 
 
-static int ksys_umount(char __user *name, int flags)
-{
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE2(umount, char __user *, name, int, flags)
-{
-	return ksys_umount(name, flags);
-}
-
-#ifdef __ARCH_WANT_SYS_OLDUMOUNT
-
-SYSCALL_DEFINE1(oldumount, char __user *, name)
-{
-	return ksys_umount(name, 0);
-}
-
-#endif
-
-
 static void free_mnt_ns(struct mnt_namespace *);
 static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *, bool);
 
@@ -1214,44 +1194,6 @@ static int do_new_mount(struct path *path, const char *fstype, int sb_flags,
 	return err;
 }
 
-static void *copy_mount_options(const void __user * data)
-{
-	char *copy;
-	unsigned left, offset;
-
-	if (!data)
-		return NULL;
-
-	copy = kmalloc(PAGE_SIZE, GFP_KERNEL);
-	if (!copy)
-		return ERR_PTR(-ENOMEM);
-
-	left = copy_from_user(copy, data, PAGE_SIZE);
-
-	
-	offset = PAGE_SIZE - left;
-	while (left) {
-		char c;
-		if (get_user(c, (const char __user *)data + offset))
-			break;
-		copy[offset] = c;
-		left--;
-		offset++;
-	}
-
-	if (left == PAGE_SIZE) {
-		kfree(copy);
-		return ERR_PTR(-EFAULT);
-	}
-
-	return copy;
-}
-
-static char *copy_mount_string(const void __user *data)
-{
-	return data ? strndup_user(data, PATH_MAX) : NULL;
-}
-
 int path_mount(const char *dev_name, struct path *path,
 		const char *type_page, unsigned long flags, void *data_page)
 {
@@ -1318,12 +1260,6 @@ int path_mount(const char *dev_name, struct path *path,
 			    data_page);
 }
 
-long do_mount(const char *dev_name, const char __user *dir_name,
-		const char *type_page, unsigned long flags, void *data_page)
-{
-	return -ENOSYS;
-}
-
 static struct ucounts *inc_mnt_namespaces(struct user_namespace *ns)
 {
 	return inc_ucount(ns, current_euid(), UCOUNT_MNT_NAMESPACES);
@@ -1380,50 +1316,6 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns, bool a
 }
 
 __latent_entropy
-SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
-		char __user *, type, unsigned long, flags, void __user *, data)
-{
-	int ret;
-	char *kernel_type;
-	char *kernel_dev;
-	void *options;
-
-	kernel_type = copy_mount_string(type);
-	ret = PTR_ERR(kernel_type);
-	if (IS_ERR(kernel_type))
-		goto out_type;
-
-	kernel_dev = copy_mount_string(dev_name);
-	ret = PTR_ERR(kernel_dev);
-	if (IS_ERR(kernel_dev))
-		goto out_dev;
-
-	options = copy_mount_options(data);
-	ret = PTR_ERR(options);
-	if (IS_ERR(options))
-		goto out_data;
-
-	ret = do_mount(kernel_dev, dir_name, kernel_type, flags, options);
-
-	kfree(options);
-out_data:
-	kfree(kernel_dev);
-out_dev:
-	kfree(kernel_type);
-out_type:
-	return ret;
-}
-
-
-
-SYSCALL_DEFINE5(mount_setattr, int, dfd, const char __user *, path,
-		unsigned int, flags, struct mount_attr __user *, uattr,
-		size_t, usize)
-{
-	/* Stubbed: mount_setattr not needed for minimal kernel */
-	return -ENOSYS;
-}
-
 static void __init init_mount_tree(void)
 {
 	struct vfsmount *mnt;

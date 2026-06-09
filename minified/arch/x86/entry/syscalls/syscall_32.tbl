@@ -23,8 +23,8 @@
 17	i386	break
 19	i386	lseek			sys_lseek			compat_sys_lseek
 # 20 getpid removed (unreachable)
-21	i386	mount			sys_mount
-22	i386	umount			sys_oldumount
+# 21 mount removed (unreachable)
+# 22 umount removed (unreachable)
 25	i386	stime			sys_stime32
 26	i386	ptrace			sys_ptrace			compat_sys_ptrace
 27	i386	alarm			sys_alarm
@@ -37,7 +37,7 @@
 44	i386	prof
 45	i386	brk			sys_brk
 51	i386	acct			sys_acct
-52	i386	umount2			sys_umount
+# 52 umount2 removed (unreachable)
 53	i386	lock
 54	i386	ioctl			sys_ioctl			compat_sys_ioctl
 55	i386	fcntl			sys_fcntl			compat_sys_fcntl64
@@ -167,5 +167,5 @@
 437	i386	openat2			sys_openat2
 438	i386	pidfd_getfd		sys_pidfd_getfd
 440	i386	process_madvise		sys_process_madvise
-442	i386	mount_setattr		sys_mount_setattr
+# 442 mount_setattr removed (unreachable)
 448	i386	process_mrelease	sys_process_mrelease

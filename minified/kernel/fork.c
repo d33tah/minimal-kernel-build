@@ -47,7 +47,6 @@ static inline void task_io_accounting_init(struct task_io_accounting *ioac) {}
 #include <linux/memcontrol.h>
 #include <linux/proc_fs.h>
 #include <linux/rmap.h>
-#include <linux/ksm.h>
 #include <linux/userfaultfd_k.h>
 static inline void proc_fork_connector(struct task_struct *task) {}
 #include <linux/freezer.h>
@@ -676,7 +675,6 @@ static inline void __mmput(struct mm_struct *mm)
 	VM_BUG_ON(atomic_read(&mm->mm_users));
 
 	uprobe_clear_state(mm);
-	ksm_exit(mm);
 	exit_mmap(mm);
 	mm_put_huge_zero_page(mm);
 	set_mm_exe_file(mm, NULL);

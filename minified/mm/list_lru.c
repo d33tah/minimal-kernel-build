@@ -16,18 +16,6 @@ static void list_lru_unregister(struct list_lru *lru)
 {
 }
 
-static int lru_shrinker_id(struct list_lru *lru)
-{
-	return -1;
-}
-
-
-static inline struct list_lru_one *
-list_lru_from_memcg_idx(struct list_lru *lru, int nid, int idx)
-{
-	return &lru->node[nid].lru;
-}
-
 static inline struct list_lru_one *
 list_lru_from_kmem(struct list_lru *lru, int nid, void *ptr,
 		   struct mem_cgroup **memcg_ptr)
@@ -75,103 +63,6 @@ bool list_lru_del(struct list_lru *lru, struct list_head *item)
 	}
 	spin_unlock(&nlru->lock);
 	return false;
-}
-
-void list_lru_isolate(struct list_lru_one *list, struct list_head *item)
-{
-	list_del_init(item);
-	list->nr_items--;
-}
-
-void list_lru_isolate_move(struct list_lru_one *list, struct list_head *item,
-			   struct list_head *head)
-{
-	list_move(item, head);
-	list->nr_items--;
-}
-
-unsigned long list_lru_count_one(struct list_lru *lru,
-				 int nid, struct mem_cgroup *memcg)
-{
-	struct list_lru_one *l;
-	long count;
-
-	rcu_read_lock();
-	l = list_lru_from_memcg_idx(lru, nid, memcg_kmem_id(memcg));
-	count = l ? READ_ONCE(l->nr_items) : 0;
-	rcu_read_unlock();
-
-	if (unlikely(count < 0))
-		count = 0;
-
-	return count;
-}
-
-static unsigned long
-__list_lru_walk_one(struct list_lru *lru, int nid, int memcg_idx,
-		    list_lru_walk_cb isolate, void *cb_arg,
-		    unsigned long *nr_to_walk)
-{
-	struct list_lru_node *nlru = &lru->node[nid];
-	struct list_lru_one *l;
-	struct list_head *item, *n;
-	unsigned long isolated = 0;
-
-restart:
-	l = list_lru_from_memcg_idx(lru, nid, memcg_idx);
-	if (!l)
-		goto out;
-
-	list_for_each_safe(item, n, &l->list) {
-		enum lru_status ret;
-
-		 
-		if (!*nr_to_walk)
-			break;
-		--*nr_to_walk;
-
-		ret = isolate(item, l, &nlru->lock, cb_arg);
-		switch (ret) {
-		case LRU_REMOVED_RETRY:
-			assert_spin_locked(&nlru->lock);
-			fallthrough;
-		case LRU_REMOVED:
-			isolated++;
-			nlru->nr_items--;
-			 
-			if (ret == LRU_REMOVED_RETRY)
-				goto restart;
-			break;
-		case LRU_ROTATE:
-			list_move_tail(item, &l->list);
-			break;
-		case LRU_SKIP:
-			break;
-		case LRU_RETRY:
-			 
-			assert_spin_locked(&nlru->lock);
-			goto restart;
-		default:
-			BUG();
-		}
-	}
-out:
-	return isolated;
-}
-
-unsigned long
-list_lru_walk_one(struct list_lru *lru, int nid, struct mem_cgroup *memcg,
-		  list_lru_walk_cb isolate, void *cb_arg,
-		  unsigned long *nr_to_walk)
-{
-	struct list_lru_node *nlru = &lru->node[nid];
-	unsigned long ret;
-
-	spin_lock(&nlru->lock);
-	ret = __list_lru_walk_one(lru, nid, memcg_kmem_id(memcg), isolate,
-				  cb_arg, nr_to_walk);
-	spin_unlock(&nlru->lock);
-	return ret;
 }
 
 static void init_one_lru(struct list_lru_one *l)

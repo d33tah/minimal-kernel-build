@@ -26,7 +26,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/mount.h>
 #include <linux/proc_fs.h>
 #include <linux/kthread.h>
-#include <linux/mempolicy.h>
 #include <linux/cgroup.h>
 #include <linux/syscalls.h>
 #include <linux/signal.h>
@@ -432,8 +431,7 @@ void __noreturn do_exit(long code)
 	exit_tasks_rcu_start();
 	exit_notify(tsk, group_dead);
 	proc_exit_connector(tsk);
-	mpol_put_task_policy(tsk);
-	
+
 	debug_check_no_locks_held();
 
 	if (tsk->io_context)

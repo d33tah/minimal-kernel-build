@@ -16,7 +16,6 @@ static inline void rt_mutex_debug_task_free(struct task_struct *tsk) { }
 #include <linux/vmalloc.h>
 #include <linux/completion.h>
 #include <linux/personality.h>
-#include <linux/mempolicy.h>
 static inline int copy_semundo(unsigned long clone_flags, struct task_struct *tsk) { return 0; }
 static inline void exit_sem(struct task_struct *tsk) { }
 static inline void shm_init_task(struct task_struct *task) { }

@@ -12,7 +12,6 @@
 
 #include <linux/cpuidle.h>
 #include <linux/interrupt.h>
-#include <linux/mempolicy.h>
 #include <linux/ratelimit.h>
 #include <linux/task_work.h>
 

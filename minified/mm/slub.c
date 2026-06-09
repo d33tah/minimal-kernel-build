@@ -11,7 +11,6 @@
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/cpu.h>
-#include <linux/mempolicy.h>
 #include <linux/ctype.h>
 #include <linux/stackdepot.h>
 #include <linux/kallsyms.h>

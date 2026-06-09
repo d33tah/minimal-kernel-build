@@ -3,7 +3,6 @@
 
 #include <linux/file.h>
 #include <linux/swap.h>
-#include <linux/mempolicy.h>
 #include <linux/pagemap.h>
 #include <linux/percpu_counter.h>
 #include <linux/xattr.h>

@@ -13,7 +13,6 @@
 
 #include <linux/irq.h>
 
-#include <linux/mempolicy.h>
 #include <linux/nmi.h>
 #include <linux/nospec.h>
 #include <linux/proc_fs.h>

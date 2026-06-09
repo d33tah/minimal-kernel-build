@@ -2,7 +2,6 @@
 #define _LINUX_MIGRATE_H
 
 #include <linux/mm.h>
-#include <linux/mempolicy.h>
 /* migrate_mode.h included via fs.h already */
 #include <linux/hugetlb.h>
 

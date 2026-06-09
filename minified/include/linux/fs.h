@@ -588,21 +588,6 @@ struct file_lock_context;
 
 #define locks_inode(f) file_inode(f)
 
-static inline void
-locks_free_lock_context(struct inode *inode)
-{
-}
-
-static inline void locks_remove_posix(struct file *filp, fl_owner_t owner)
-{
-	return;
-}
-
-static inline void locks_remove_file(struct file *filp)
-{
-	return;
-}
-
 struct files_struct;
 static inline struct inode *file_inode(const struct file *f)
 {

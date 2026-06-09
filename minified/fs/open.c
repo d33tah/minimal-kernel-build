@@ -22,9 +22,6 @@
 
 #include <linux/fs_struct.h>
 
-/* Inlined from dnotify.h - only dnotify_flush kept (used by __fput) */
-static inline void dnotify_flush(struct file *filp, fl_owner_t id) {}
-
 #include <linux/compat.h>
 #include <linux/mnt_idmapping.h>
 
@@ -524,10 +521,6 @@ int filp_close(struct file *filp, fl_owner_t id)
 	if (filp->f_op->flush)
 		retval = filp->f_op->flush(filp, id);
 
-	if (likely(!(filp->f_mode & FMODE_PATH))) {
-		dnotify_flush(filp, id);
-		locks_remove_posix(filp, id);
-	}
 	fput(filp);
 	return retval;
 }

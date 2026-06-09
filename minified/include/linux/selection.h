@@ -66,7 +66,6 @@ static inline void clear_selection(void) { }
 
 static inline bool vc_is_sel(struct vc_data *vc) { return false; }
 
-extern int console_blanked;
 
 extern const unsigned char color_table[];
 extern unsigned char default_red[];

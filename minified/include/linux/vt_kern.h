@@ -135,7 +135,6 @@ int vc_allocate(unsigned int console);
 int vc_cons_allocated(unsigned int console);
 int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int lines);
 void reset_palette(struct vc_data *vc);
-void do_unblank_screen(int leaving_gfx);
 void unblank_screen(void);
 
 struct unipair;

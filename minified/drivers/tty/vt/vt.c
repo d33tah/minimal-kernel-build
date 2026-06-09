@@ -76,7 +76,6 @@ static int printable;
 int default_utf8 = true;
 int global_cursor_default = -1;
 static int cur_default = CUR_UNDERLINE;
-int console_blanked;
 
 static DECLARE_WORK(console_work, console_callback);
 
@@ -108,7 +107,7 @@ static inline bool con_is_fg(const struct vc_data *vc)
 
 static inline bool con_should_update(const struct vc_data *vc)
 {
-	return con_is_visible(vc) && !console_blanked;
+	return con_is_visible(vc);
 }
 
 
@@ -306,7 +305,7 @@ static void hide_cursor(struct vc_data *vc)
 
 static void set_cursor(struct vc_data *vc)
 {
-	if (!con_is_fg(vc) || console_blanked || vc->vc_mode == KD_GRAPHICS)
+	if (!con_is_fg(vc) || vc->vc_mode == KD_GRAPHICS)
 		return;
 	if (vc->vc_deccm) {
 		if (vc_is_sel(vc))
@@ -1312,14 +1311,9 @@ postcore_initcall(vtconsole_class_init);
 
 
 
-void do_unblank_screen(int leaving_gfx)
-{
-	/* Stubbed: screen unblanking not needed for minimal boot */
-}
-
 void unblank_screen(void)
 {
-	do_unblank_screen(0);
+	/* Stubbed: screen unblanking not needed for minimal boot */
 }
 
 static void set_palette(struct vc_data *vc)

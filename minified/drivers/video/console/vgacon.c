@@ -49,7 +49,6 @@ static unsigned int	vga_video_num_lines;
 static bool		vga_can_do_color;			 
 static unsigned int	vga_default_font_height __read_mostly;	 
 static unsigned char	vga_video_type		__read_mostly;	 
-static bool 		vga_palette_blanked;
 static bool 		vga_is_gfx;
 static bool 		vga_512_chars;
 static int 		vga_video_font_height;
@@ -546,8 +545,7 @@ static void vga_set_palette(struct vc_data *vc, const unsigned char *table)
 
 static void vgacon_set_palette(struct vc_data *vc, const unsigned char *table)
 {
-	if (vga_video_type != VIDEO_TYPE_VGAC || vga_palette_blanked
-	    || !con_is_visible(vc))
+	if (vga_video_type != VIDEO_TYPE_VGAC || !con_is_visible(vc))
 		return;
 	vga_set_palette(vc, table);
 }
@@ -584,8 +582,7 @@ static int vgacon_resize(struct vc_data *c, unsigned int width,
 
 static int vgacon_set_origin(struct vc_data *c)
 {
-	if (vga_is_gfx ||	 
-	    (console_blanked && !vga_palette_blanked))	 
+	if (vga_is_gfx)
 		return 0;
 	c->vc_origin = c->vc_visible_origin = vga_vram_base;
 	vga_set_mem_top(c);

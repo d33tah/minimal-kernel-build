@@ -237,7 +237,7 @@ static bool panic_in_progress(void)
 	return unlikely(atomic_read(&panic_cpu) != PANIC_CPU_INVALID);
 }
 
-static int console_locked, console_suspended;
+static int console_locked;
 
 
 #define MAX_CMDLINECONSOLES 8
@@ -308,8 +308,6 @@ void console_lock(void)
 	might_sleep();
 
 	down_console_sem();
-	if (console_suspended)
-		return;
 	console_locked = 1;
 	console_may_schedule = 1;
 }
@@ -318,10 +316,6 @@ int console_trylock(void)
 {
 	if (down_trylock_console_sem())
 		return 0;
-	if (console_suspended) {
-		up_console_sem();
-		return 0;
-	}
 	console_locked = 1;
 	console_may_schedule = 0;
 	return 1;
@@ -482,12 +476,7 @@ void console_unlock(void)
 	bool flushed;
 	u64 next_seq;
 
-	if (console_suspended) {
-		up_console_sem();
-		return;
-	}
 
-	 
 	do_cond_resched = console_may_schedule;
 
 	do {

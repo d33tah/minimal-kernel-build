@@ -1342,9 +1342,8 @@ vm_fault_t vmf_insert_mixed_mkwrite(struct vm_area_struct *vma,
 #define FOLL_FORCE	0x10	
 #define FOLL_NOWAIT	0x20	
 #define FOLL_NOFAULT	0x80	
-#define FOLL_HWPOISON	0x100	
-#define FOLL_NUMA	0x200	
-#define FOLL_MIGRATION	0x400	
+#define FOLL_HWPOISON	0x100
+#define FOLL_MIGRATION	0x400
 #define FOLL_TRIED	0x800	
 #define FOLL_REMOTE	0x2000	
 #define FOLL_COW	0x4000	

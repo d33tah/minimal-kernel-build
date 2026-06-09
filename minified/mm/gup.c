@@ -117,8 +117,6 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 	pte = *ptep;
 	if (!pte_present(pte))
 		goto no_page;
-	if ((flags & FOLL_NUMA) && pte_protnone(pte))
-		goto no_page;
 	if ((flags & FOLL_WRITE) && !can_follow_write_pte(pte, flags)) {
 		pte_unmap_unlock(ptep, ptl);
 		return NULL;
@@ -213,9 +211,6 @@ static struct page *follow_pmd_mask(struct vm_area_struct *vma,
 	}
 	if (likely(!pmd_trans_huge(pmdval)))
 		return follow_page_pte(vma, address, pmd, flags, &ctx->pgmap);
-
-	if ((flags & FOLL_NUMA) && pmd_protnone(pmdval))
-		return no_page_table(vma, flags);
 
 	ptl = pmd_lock(mm, pmd);
 	if (unlikely(pmd_none(*pmd))) {
@@ -471,10 +466,6 @@ static long __get_user_pages(struct mm_struct *mm,
 	start = untagged_addr(start);
 
 	VM_BUG_ON(!!pages != !!(gup_flags & (FOLL_GET | FOLL_PIN)));
-
-	
-	if (!(gup_flags & FOLL_FORCE))
-		gup_flags |= FOLL_NUMA;
 
 	do {
 		struct page *page;

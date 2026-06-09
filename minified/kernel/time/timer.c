@@ -408,12 +408,6 @@ out_unlock:
 	return ret;
 }
 
-int mod_timer(struct timer_list *timer, unsigned long expires)
-{
-	return __mod_timer(timer, expires, 0);
-}
-
-
 void add_timer_on(struct timer_list *timer, int cpu)
 {
 	struct timer_base *new_base, *base;
@@ -698,12 +692,6 @@ signed long __sched schedule_timeout(signed long timeout)
 
  out:
 	return timeout < 0 ? 0 : timeout;
-}
-
-signed long __sched schedule_timeout_interruptible(signed long timeout)
-{
-	__set_current_state(TASK_INTERRUPTIBLE);
-	return schedule_timeout(timeout);
 }
 
 signed long __sched schedule_timeout_uninterruptible(signed long timeout)

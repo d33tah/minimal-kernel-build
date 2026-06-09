@@ -29,17 +29,12 @@
 
 static unsigned int m_hash_mask __read_mostly;
 static unsigned int m_hash_shift __read_mostly;
-static unsigned int mp_hash_mask __read_mostly;
-static unsigned int mp_hash_shift __read_mostly;
 
 static __initdata unsigned long mhash_entries;
-
-static __initdata unsigned long mphash_entries;
 
 static DEFINE_IDA(mnt_id_ida);
 
 static struct hlist_head *mount_hashtable __read_mostly;
-static struct hlist_head *mountpoint_hashtable __read_mostly;
 static struct kmem_cache *mnt_cache __read_mostly;
 
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(mount_lock);
@@ -60,13 +55,6 @@ static inline struct hlist_head *m_hash(struct vfsmount *mnt, struct dentry *den
 	tmp += ((unsigned long)dentry / L1_CACHE_BYTES);
 	tmp = tmp + (tmp >> m_hash_shift);
 	return &mount_hashtable[tmp & m_hash_mask];
-}
-
-static inline struct hlist_head *mp_hash(struct dentry *dentry)
-{
-	unsigned long tmp = ((unsigned long)dentry / L1_CACHE_BYTES);
-	tmp = tmp + (tmp >> mp_hash_shift);
-	return &mountpoint_hashtable[tmp & mp_hash_mask];
 }
 
 static int mnt_alloc_id(struct mount *mnt)
@@ -645,13 +633,8 @@ void __init mnt_init(void)
 				mhash_entries, 19,
 				HASH_ZERO,
 				&m_hash_shift, &m_hash_mask, 0, 0);
-	mountpoint_hashtable = alloc_large_system_hash("Mountpoint-cache",
-				sizeof(struct hlist_head),
-				mphash_entries, 19,
-				HASH_ZERO,
-				&mp_hash_shift, &mp_hash_mask, 0, 0);
 
-	if (!mount_hashtable || !mountpoint_hashtable)
+	if (!mount_hashtable)
 		panic("Failed to allocate mount hash table\n");
 
 	kernfs_init();

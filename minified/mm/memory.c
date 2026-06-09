@@ -21,7 +21,6 @@
 #include <linux/swapops.h>
 #include <linux/elf.h>
 #include <linux/gfp.h>
-#include <linux/migrate.h>
 #include <linux/string.h>
 #include <linux/debugfs.h>
 #include <linux/userfaultfd_k.h>

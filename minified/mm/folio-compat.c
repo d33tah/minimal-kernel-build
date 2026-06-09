@@ -1,5 +1,4 @@
 
-#include <linux/migrate.h>
 #include <linux/pagemap.h>
 #include <linux/swap.h>
 #include "internal.h"

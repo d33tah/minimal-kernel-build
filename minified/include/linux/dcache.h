@@ -183,9 +183,6 @@ extern struct dentry *__d_lookup_rcu(const struct dentry *parent,
 				const struct qstr *name, unsigned *seq);
 
 
-extern __printf(4, 5)
-char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
-
 static inline struct dentry *dget_dlock(struct dentry *dentry)
 {
 	if (dentry)

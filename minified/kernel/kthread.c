@@ -176,7 +176,6 @@ static int kthread(void *_create)
 
 	ret = -EINTR;
 	if (!test_bit(KTHREAD_SHOULD_STOP, &self->flags)) {
-		cgroup_kthread_ready();
 		__kthread_parkme(self);
 		ret = threadfn(data);
 	}
@@ -360,7 +359,6 @@ int kthreadd(void *unused)
 	set_mems_allowed(node_states[N_MEMORY]);
 
 	current->flags |= PF_NOFREEZE;
-	cgroup_init_kthreadd();
 
 	for (;;) {
 		set_current_state(TASK_INTERRUPTIBLE);

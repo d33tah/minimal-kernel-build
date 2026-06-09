@@ -763,9 +763,7 @@ static int wait_for_vfork_done(struct task_struct *child,
 	int killed;
 
 	freezer_do_not_count();
-	cgroup_enter_frozen();
 	killed = wait_for_completion_killable(vfork);
-	cgroup_leave_frozen(false);
 	freezer_count();
 
 	if (killed) {
@@ -1263,12 +1261,6 @@ static __latent_entropy struct task_struct *copy_process(
 	p->task_works = NULL;
 	clear_posix_cputimers_work(p);
 
-	
-	retval = cgroup_can_fork(p, args);
-	if (retval)
-		goto bad_fork_put_pidfd;
-
-	
 	sched_cgroup_fork(p, args);
 
 	
@@ -1362,8 +1354,6 @@ static __latent_entropy struct task_struct *copy_process(
 
 	proc_fork_connector(p);
 	sched_post_fork(p);
-	cgroup_post_fork(p, args);
-
 
 	uprobe_copy_process(p, clone_flags);
 
@@ -1375,9 +1365,6 @@ bad_fork_cancel_cgroup:
 	sched_core_free(p);
 	spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);
-	cgroup_cancel_fork(p, args);
-bad_fork_put_pidfd:
-bad_fork_free_pid:
 	if (pid != &init_struct_pid)
 		free_pid(pid);
 bad_fork_cleanup_thread:

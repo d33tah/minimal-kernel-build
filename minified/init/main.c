@@ -475,8 +475,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	smp_setup_processor_id();
 	init_vmlinux_build_id();
 
-	cgroup_init_early();
-
 	local_irq_disable();
 	early_boot_irqs_disabled = true;
 
@@ -610,7 +608,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	seq_file_init();
 	proc_root_init();
 	cpuset_init();
-	cgroup_init();
 	taskstats_init_early();
 	delayacct_init();
 

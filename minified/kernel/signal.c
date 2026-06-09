@@ -102,8 +102,7 @@ static bool recalc_sigpending_tsk(struct task_struct *t)
 {
 	if ((t->jobctl & (JOBCTL_PENDING_MASK | JOBCTL_TRAP_FREEZE)) ||
 	    PENDING(&t->pending, &t->blocked) ||
-	    PENDING(&t->signal->shared_pending, &t->blocked) ||
-	    cgroup_task_frozen(t)) {
+	    PENDING(&t->signal->shared_pending, &t->blocked)) {
 		set_tsk_thread_flag(t, TIF_SIGPENDING);
 		return true;
 	}
@@ -597,9 +596,7 @@ static void retarget_shared_pending(struct task_struct *tsk, sigset_t *which)
 void exit_signals(struct task_struct *tsk)
 {
 	/* Minimal stub: just mark as exiting */
-	cgroup_threadgroup_change_begin(tsk);
 	tsk->flags |= PF_EXITING;
-	cgroup_threadgroup_change_end(tsk);
 }
 
 SYSCALL_DEFINE0(restart_syscall)

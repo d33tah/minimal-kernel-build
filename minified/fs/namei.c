@@ -1569,53 +1569,6 @@ static int handle_truncate(struct user_namespace *mnt_userns, struct file *filp)
 	return error;
 }
 
-static inline int open_to_namei_flags(int flag)
-{
-	if ((flag & O_ACCMODE) == 3)
-		flag--;
-	return flag;
-}
-
-static struct dentry *atomic_open(struct nameidata *nd, struct dentry *dentry,
-				  struct file *file,
-				  int open_flag, umode_t mode)
-{
-	struct dentry *const DENTRY_NOT_SET = (void *) -1UL;
-	struct inode *dir =  nd->path.dentry->d_inode;
-	int error;
-
-	if (nd->flags & LOOKUP_DIRECTORY)
-		open_flag |= O_DIRECTORY;
-
-	file->f_path.dentry = DENTRY_NOT_SET;
-	file->f_path.mnt = nd->path.mnt;
-	error = dir->i_op->atomic_open(dir, dentry, file,
-				       open_to_namei_flags(open_flag), mode);
-	d_lookup_done(dentry);
-	if (!error) {
-		if (file->f_mode & FMODE_OPENED) {
-			if (unlikely(dentry != file->f_path.dentry)) {
-				dput(dentry);
-				dentry = dget(file->f_path.dentry);
-			}
-		} else if (WARN_ON(file->f_path.dentry == DENTRY_NOT_SET)) {
-			error = -EIO;
-		} else {
-			if (file->f_path.dentry) {
-				dput(dentry);
-				dentry = file->f_path.dentry;
-			}
-			if (unlikely(d_is_negative(dentry)))
-				error = -ENOENT;
-		}
-	}
-	if (error) {
-		dput(dentry);
-		dentry = ERR_PTR(error);
-	}
-	return dentry;
-}
-
 static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 				  const struct open_flags *op,
 				  bool got_write)
@@ -1649,11 +1602,6 @@ static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 	if (open_flag & O_CREAT) {
 		if (!IS_POSIXACL(dir->d_inode))
 			mode &= ~current_umask();
-
-		if (dir_inode->i_op->atomic_open) {
-			dentry = atomic_open(nd, dentry, file, open_flag, mode);
-			return dentry;
-		}
 
 		if (d_in_lookup(dentry)) {
 			struct dentry *res = dir_inode->i_op->lookup(dir_inode, dentry, nd->flags);

@@ -554,44 +554,12 @@ bool do_notify_parent(struct task_struct *tsk, int sig)
 	return false;
 }
 
-static int ptrace_stop(int exit_code, int why, unsigned long message,
-		       kernel_siginfo_t *info)
-	__releases(&current->sighand->siglock)
-	__acquires(&current->sighand->siglock)
-{
-	/* Stub: ptrace not needed for minimal boot */
-	if (!current->ptrace || __fatal_signal_pending(current))
-		return exit_code;
-
-	return exit_code;
-}
-
-static int ptrace_do_notify(int signr, int exit_code, int why, unsigned long message)
-{
-	kernel_siginfo_t info;
-
-	clear_siginfo(&info);
-	info.si_signo = signr;
-	info.si_code = exit_code;
-	info.si_pid = task_pid_vnr(current);
-	info.si_uid = from_kuid_munged(current_user_ns(), current_uid());
-
-	
-	return ptrace_stop(exit_code, why, message, &info);
-}
-
 int ptrace_notify(int exit_code, unsigned long message)
 {
-	int signr;
-
-	BUG_ON((exit_code & (0x7f | ~0xffff)) != SIGTRAP);
-	if (unlikely(task_work_pending(current)))
-		task_work_run();
-
-	spin_lock_irq(&current->sighand->siglock);
-	signr = ptrace_do_notify(SIGTRAP, exit_code, CLD_TRAPPED, message);
-	spin_unlock_irq(&current->sighand->siglock);
-	return signr;
+	/* Stub: no task is ever ptraced in this minimal boot, so the
+	 * header callers (ptrace_event/ptrace_report_syscall, both gated by
+	 * current->ptrace) never reach here. */
+	return 0;
 }
 
 bool get_signal(struct ksignal *ksig)

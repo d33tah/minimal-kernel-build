@@ -111,7 +111,6 @@ static inline size_t slab_size(const struct slab *slab)
 
 
 
-#include <linux/kfence.h>
 #include <linux/kobject.h>
 #include <linux/reciprocal_div.h>
 #include <linux/local_lock.h>

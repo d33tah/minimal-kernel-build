@@ -6,7 +6,6 @@
 #include <linux/memory.h>
 #include <linux/cache.h>
 #include <linux/compiler.h>
-#include <linux/kfence.h>
 #include <linux/module.h>
 #include <linux/cpu.h>
 #include <linux/uaccess.h>

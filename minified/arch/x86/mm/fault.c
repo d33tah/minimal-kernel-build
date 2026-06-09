@@ -3,7 +3,6 @@
 #include <linux/kdebug.h>		 
 #include <linux/extable.h>		 
 #include <linux/memblock.h>		 
-#include <linux/kfence.h>		 
 #include <linux/kprobes.h>
 static inline int is_kmmio_active(void) { return 0; }
 static inline int kmmio_handler(struct pt_regs *regs, unsigned long addr) { return 0; }

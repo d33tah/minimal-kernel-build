@@ -17,7 +17,6 @@
 #include <linux/ctype.h>
 #include <linux/stackdepot.h>
 #include <linux/kallsyms.h>
-#include <linux/kfence.h>
 #include <linux/memory.h>
 #include <linux/math64.h>
 #include <linux/stacktrace.h>
@@ -296,12 +295,6 @@ static inline bool slab_free_freelist_hook(struct kmem_cache *s,
 	void *next = *head;
 	void *old_tail = *tail ? *tail : *head;
 
-	if (is_kfence_address(next)) {
-		slab_free_hook(s, next, false);
-		return true;
-	}
-
-	
 	*head = NULL;
 	*tail = NULL;
 
@@ -947,10 +940,6 @@ static __always_inline void *slab_alloc_node(struct kmem_cache *s, struct list_l
 	if (!s)
 		return NULL;
 
-	object = kfence_alloc(s, orig_size, gfpflags);
-	if (unlikely(object))
-		goto out;
-
 redo:
 	
 	c = raw_cpu_ptr(s->cpu_slab);
@@ -986,7 +975,6 @@ redo:
 	maybe_wipe_obj_freeptr(s, object);
 	init = slab_want_init_on_alloc(gfpflags, s);
 
-out:
 	slab_post_alloc_hook(s, objcg, gfpflags, 1, &object, init);
 
 	return object;
@@ -1032,9 +1020,6 @@ static void __slab_free(struct kmem_cache *s, struct slab *slab,
 	unsigned long flags;
 
 	stat(s, FREE_SLOWPATH);
-
-	if (kfence_free(head))
-		return;
 
 	do {
 		if (unlikely(n)) {

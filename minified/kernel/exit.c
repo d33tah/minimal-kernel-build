@@ -319,8 +319,7 @@ static void reparent_leader(struct task_struct *father, struct task_struct *p,
 
 	p->exit_signal = SIGCHLD;
 
-	if (!p->ptrace &&
-	    p->exit_state == EXIT_ZOMBIE && thread_group_empty(p)) {
+	if (p->exit_state == EXIT_ZOMBIE && thread_group_empty(p)) {
 		if (do_notify_parent(p, p->exit_signal)) {
 			p->exit_state = EXIT_DEAD;
 			list_add(&p->ptrace_entry, dead);
@@ -335,9 +334,6 @@ static void forget_original_parent(struct task_struct *father,
 {
 	struct task_struct *p, *t, *reaper;
 
-	if (unlikely(!list_empty(&father->ptraced)))
-		exit_ptrace(father, dead);
-
 	reaper = find_child_reaper(father, dead);
 	if (list_empty(&father->children))
 		return;
@@ -346,9 +342,7 @@ static void forget_original_parent(struct task_struct *father,
 	list_for_each_entry(p, &father->children, sibling) {
 		for_each_thread(p, t) {
 			RCU_INIT_POINTER(t->real_parent, reaper);
-			BUG_ON((!t->ptrace) != (rcu_access_pointer(t->parent) == father));
-			if (likely(!t->ptrace))
-				t->parent = t->real_parent;
+			t->parent = t->real_parent;
 			if (t->pdeath_signal)
 				group_send_sig_info(t->pdeath_signal,
 						    SEND_SIG_NOINFO, t,
@@ -374,13 +368,7 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 		kill_orphaned_pgrp(tsk->group_leader, NULL);
 
 	tsk->exit_state = EXIT_ZOMBIE;
-	if (unlikely(tsk->ptrace)) {
-		int sig = thread_group_leader(tsk) &&
-				thread_group_empty(tsk) &&
-				!ptrace_reparented(tsk) ?
-			tsk->exit_signal : SIGCHLD;
-		autoreap = do_notify_parent(tsk, sig);
-	} else if (thread_group_leader(tsk)) {
+	if (thread_group_leader(tsk)) {
 		autoreap = thread_group_empty(tsk) &&
 			do_notify_parent(tsk, tsk->exit_signal);
 	} else {

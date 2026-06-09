@@ -131,23 +131,3 @@ char *parse_args(const char *doing,
 
 	return err;
 }
-
-#define to_module_attr(n) container_of(n, struct module_attribute, attr)
-#define to_module_kobject(n) container_of(n, struct module_kobject, kobj)
-
-struct param_attribute
-{
-	struct module_attribute mattr;
-	const struct kernel_param *param;
-};
-
-struct module_param_attrs
-{
-	unsigned int num;
-	struct attribute_group grp;
-	struct param_attribute attrs[];
-};
-
-
-#define __modinit __init
-

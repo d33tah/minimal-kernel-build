@@ -6,9 +6,6 @@
 #include <linux/vmalloc.h>
 #include <linux/reboot.h>
 
-BLOCKING_NOTIFIER_HEAD(reboot_notifier_list);
-
-
 static int notifier_chain_register(struct notifier_block **nl,
 				   struct notifier_block *n,
 				   bool unique_priority)

@@ -79,7 +79,5 @@ extern int raw_notifier_call_chain(struct raw_notifier_head *nh,
 
 
 
-extern struct blocking_notifier_head reboot_notifier_list;
-
-#endif  
+#endif
 #endif  

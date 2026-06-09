@@ -52,9 +52,7 @@ enum {
 extern struct resource ioport_resource;
 extern struct resource iomem_resource;
 
-extern struct resource *request_resource_conflict(struct resource *root, struct resource *new);
 extern int request_resource(struct resource *root, struct resource *new);
-extern struct resource *insert_resource_conflict(struct resource *parent, struct resource *new);
 extern int insert_resource(struct resource *parent, struct resource *new);
 static inline unsigned long resource_type(const struct resource *res)
 {

@@ -67,21 +67,13 @@ static struct resource * __request_resource(struct resource *root, struct resour
 }
 
 
-struct resource *request_resource_conflict(struct resource *root, struct resource *new)
+int request_resource(struct resource *root, struct resource *new)
 {
 	struct resource *conflict;
 
 	write_lock(&resource_lock);
 	conflict = __request_resource(root, new);
 	write_unlock(&resource_lock);
-	return conflict;
-}
-
-int request_resource(struct resource *root, struct resource *new)
-{
-	struct resource *conflict;
-
-	conflict = request_resource_conflict(root, new);
 	return conflict ? -EBUSY : 0;
 }
 
@@ -137,20 +129,12 @@ static struct resource * __insert_resource(struct resource *parent, struct resou
 	return NULL;
 }
 
-struct resource *insert_resource_conflict(struct resource *parent, struct resource *new)
+int insert_resource(struct resource *parent, struct resource *new)
 {
 	struct resource *conflict;
 
 	write_lock(&resource_lock);
 	conflict = __insert_resource(parent, new);
 	write_unlock(&resource_lock);
-	return conflict;
-}
-
-int insert_resource(struct resource *parent, struct resource *new)
-{
-	struct resource *conflict;
-
-	conflict = insert_resource_conflict(parent, new);
 	return conflict ? -EBUSY : 0;
 }

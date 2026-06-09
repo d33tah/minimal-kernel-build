@@ -84,9 +84,7 @@ static void __put_compound_page(struct page *page)
 
 void __put_page(struct page *page)
 {
-	if (unlikely(is_zone_device_page(page)))
-		free_zone_device_page(page);
-	else if (unlikely(PageCompound(page)))
+	if (unlikely(PageCompound(page)))
 		__put_compound_page(page);
 	else
 		__put_single_page(page);
@@ -357,18 +355,6 @@ void release_pages(struct page **pages, int nr)
 		page = &folio->page;
 		if (is_huge_zero_page(page))
 			continue;
-
-		if (is_zone_device_page(page)) {
-			if (lruvec) {
-				unlock_page_lruvec_irqrestore(lruvec, flags);
-				lruvec = NULL;
-			}
-			if (put_devmap_managed_page(page))
-				continue;
-			if (put_page_testzero(page))
-				free_zone_device_page(page);
-			continue;
-		}
 
 		if (!put_page_testzero(page))
 			continue;

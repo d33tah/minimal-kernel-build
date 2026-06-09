@@ -21,20 +21,13 @@ struct linux_binprm {
 	unsigned long p;  
 	unsigned long argmin;  
 	unsigned int
-		 
-		have_execfd:1,
 
-		 
-		execfd_creds:1,
-		 
 		secureexec:1,
-		 
+
 		point_of_no_return:1;
 #ifdef __alpha__
 	unsigned int taso:1;
 #endif
-	struct file *executable;  
-	struct file *interpreter;
 	struct file *file;
 	struct cred *cred;	 
 	int unsafe;		 
@@ -44,7 +37,6 @@ struct linux_binprm {
 	const char *interp;	 
 	const char *fdpath;	 
 	unsigned interp_flags;
-	int execfd;		 
 	unsigned long loader, exec;
 
 	struct rlimit rlim_stack;  

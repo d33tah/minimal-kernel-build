@@ -802,8 +802,6 @@ int begin_new_exec(struct linux_binprm * bprm)
 		goto out;
 
 	would_dump(bprm, bprm->file);
-	if (bprm->have_execfd)
-		would_dump(bprm, bprm->executable);
 
 	acct_arg_size(bprm, 0);
 	retval = exec_mmap(bprm->mm);
@@ -862,14 +860,6 @@ int begin_new_exec(struct linux_binprm * bprm)
 	
 	security_bprm_committed_creds(bprm);
 
-	if (bprm->have_execfd) {
-		retval = get_unused_fd_flags(0);
-		if (retval < 0)
-			goto out_unlock;
-		fd_install(retval, bprm->executable);
-		bprm->executable = NULL;
-		bprm->execfd = retval;
-	}
 	return 0;
 
 out_unlock:
@@ -933,9 +923,7 @@ static void free_bprm(struct linux_binprm *bprm)
 		allow_write_access(bprm->file);
 		fput(bprm->file);
 	}
-	if (bprm->executable)
-		fput(bprm->executable);
-	
+
 	if (bprm->interp != bprm->filename)
 		kfree(bprm->interp);
 	kfree(bprm->fdpath);
@@ -1033,7 +1021,7 @@ static void bprm_fill_uid(struct linux_binprm *bprm, struct file *file)
 static int bprm_creds_from_file(struct linux_binprm *bprm)
 {
 	
-	struct file *file = bprm->execfd_creds ? bprm->executable : bprm->file;
+	struct file *file = bprm->file;
 
 	bprm_fill_uid(bprm, file);
 	return security_bprm_creds_from_file(bprm, file);
@@ -1084,41 +1072,19 @@ static int search_binary_handler(struct linux_binprm *bprm)
 static int exec_binprm(struct linux_binprm *bprm)
 {
 	pid_t old_pid, old_vpid;
-	int ret, depth;
+	int ret;
 
 	old_pid = current->pid;
 	rcu_read_lock();
 	old_vpid = task_pid_nr_ns(current, task_active_pid_ns(current->parent));
 	rcu_read_unlock();
 
-	for (depth = 0;; depth++) {
-		struct file *exec;
-		if (depth > 5)
-			return -ELOOP;
-
-		ret = search_binary_handler(bprm);
-		if (ret < 0)
-			return ret;
-		if (!bprm->interpreter)
-			break;
-
-		exec = bprm->file;
-		bprm->file = bprm->interpreter;
-		bprm->interpreter = NULL;
-
-		allow_write_access(exec);
-		if (unlikely(bprm->have_execfd)) {
-			if (bprm->executable) {
-				fput(exec);
-				return -ENOEXEC;
-			}
-			bprm->executable = exec;
-		} else
-			fput(exec);
-	}
+	ret = search_binary_handler(bprm);
+	if (ret < 0)
+		return ret;
 
 	audit_bprm(bprm);
-	
+
 	ptrace_event(PTRACE_EVENT_EXEC, old_vpid);
 	proc_exec_connector(current);
 	return 0;

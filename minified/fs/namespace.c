@@ -1386,17 +1386,6 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns, bool a
 }
 
 __latent_entropy
-struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
-		struct user_namespace *user_ns, struct fs_struct *new_fs)
-{
-	/* Stubbed: namespace cloning not needed for minimal boot */
-	if (likely(!(flags & CLONE_NEWNS))) {
-		get_mnt_ns(ns);
-		return ns;
-	}
-	return ERR_PTR(-EINVAL);
-}
-
 SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
 		char __user *, type, unsigned long, flags, void __user *, data)
 {

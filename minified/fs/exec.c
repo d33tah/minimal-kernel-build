@@ -19,7 +19,6 @@ static inline void task_numa_free(struct task_struct *p, bool final) {}
 #include <linux/perf_event.h>
 #include <linux/highmem.h>
 #include <linux/spinlock.h>
-#include <linux/key.h>
 #include <linux/personality.h>
 #include <linux/binfmts.h>
 #include <linux/utsname.h>

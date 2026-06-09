@@ -15,7 +15,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/personality.h>
 #include <linux/tty.h>
 #include <linux/iocontext.h>
-#include <linux/key.h>
 #include <linux/cpu.h>
 #define acct_collect(x,y)	do { } while (0)
 #define acct_process()		do { } while (0)

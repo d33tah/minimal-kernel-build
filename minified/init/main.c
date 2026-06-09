@@ -47,7 +47,6 @@ static inline void delayacct_init(void) {}
 #include <linux/utsname.h>
 #include <linux/rmap.h>
 #include <linux/mempolicy.h>
-#include <linux/key.h>
 #include <linux/page_ext.h>
 #include <linux/debug_locks.h>
 #include <linux/lockdep.h>
@@ -603,7 +602,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	fork_init();
 	proc_caches_init();
 	uts_ns_init();
-	key_init();
 	security_init();
 	dbg_late_init();
 	vfs_caches_init();

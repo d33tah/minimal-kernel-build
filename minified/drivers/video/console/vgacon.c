@@ -33,7 +33,6 @@ static void vgacon_init(struct vc_data *c, int init);
 static void vgacon_deinit(struct vc_data *c);
 static void vgacon_cursor(struct vc_data *c, int mode);
 static int vgacon_switch(struct vc_data *c);
-static int vgacon_blank(struct vc_data *c, int blank, int mode_switch);
 static void vgacon_scrolldelta(struct vc_data *c, int lines);
 static int vgacon_set_origin(struct vc_data *c);
 static void vgacon_save_screen(struct vc_data *c);
@@ -50,7 +49,6 @@ static unsigned int	vga_video_num_lines;
 static bool		vga_can_do_color;			 
 static unsigned int	vga_default_font_height __read_mostly;	 
 static unsigned char	vga_video_type		__read_mostly;	 
-static int		vga_vesa_blanked;
 static bool 		vga_palette_blanked;
 static bool 		vga_is_gfx;
 static bool 		vga_512_chars;
@@ -555,60 +553,6 @@ static void vgacon_set_palette(struct vc_data *vc, const unsigned char *table)
 }
 
 
-static void vga_vesa_blank(struct vgastate *state, int mode)
-{
-	/* Stub: VESA blanking not needed for minimal kernel */
-}
-
-static void vga_vesa_unblank(struct vgastate *state)
-{
-	/* Stub: VESA unblanking not needed for minimal kernel */
-}
-
-static void vga_pal_blank(struct vgastate *state)
-{
-	/* Stub: palette blanking not needed for minimal kernel */
-}
-
-static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
-{
-	switch (blank) {
-	case 0:		 
-		if (vga_vesa_blanked) {
-			vga_vesa_unblank(&vgastate);
-			vga_vesa_blanked = 0;
-		}
-		if (vga_palette_blanked) {
-			vga_set_palette(c, color_table);
-			vga_palette_blanked = false;
-			return 0;
-		}
-		vga_is_gfx = false;
-		 
-		return 1;
-	case 1:		 
-	case -1:	 
-		if (!mode_switch && vga_video_type == VIDEO_TYPE_VGAC) {
-			vga_pal_blank(&vgastate);
-			vga_palette_blanked = true;
-			return 0;
-		}
-		vgacon_set_origin(c);
-		scr_memsetw((void *) vga_vram_base, BLANK,
-			    c->vc_screenbuf_size);
-		if (mode_switch)
-			vga_is_gfx = true;
-		return 1;
-	default:		 
-		if (vga_video_type == VIDEO_TYPE_VGAC) {
-			vga_vesa_blank(&vgastate, blank - 1);
-			vga_vesa_blanked = blank;
-		}
-		return 0;
-	}
-}
-
-
 #define colourmap 0xa0000
 #define blackwmap 0xa0000
 #define cmapsz 8192
@@ -733,7 +677,6 @@ const struct consw vga_con = {
 	.con_cursor = vgacon_cursor,
 	.con_scroll = vgacon_scroll,
 	.con_switch = vgacon_switch,
-	.con_blank = vgacon_blank,
 	/* .con_font_set, .con_font_get removed - never called */
 	.con_resize = vgacon_resize,
 	.con_set_palette = vgacon_set_palette,

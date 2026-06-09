@@ -196,69 +196,6 @@ const struct file_operations simple_dir_operations = {
 	.fsync		= noop_fsync,
 };
 
-static const struct super_operations simple_super_operations = {
-	.statfs		= simple_statfs,
-};
-
-static int pseudo_fs_fill_super(struct super_block *s, struct fs_context *fc)
-{
-	struct pseudo_fs_context *ctx = fc->fs_private;
-	struct inode *root;
-
-	s->s_maxbytes = MAX_LFS_FILESIZE;
-	s->s_blocksize = PAGE_SIZE;
-	s->s_blocksize_bits = PAGE_SHIFT;
-	s->s_magic = ctx->magic;
-	s->s_op = ctx->ops ?: &simple_super_operations;
-	s->s_xattr = ctx->xattr;
-	s->s_time_gran = 1;
-	root = new_inode(s);
-	if (!root)
-		return -ENOMEM;
-
-	 
-	root->i_ino = 1;
-	root->i_mode = S_IFDIR | S_IRUSR | S_IWUSR;
-	root->i_atime = root->i_mtime = root->i_ctime = current_time(root);
-	s->s_root = d_make_root(root);
-	if (!s->s_root)
-		return -ENOMEM;
-	s->s_d_op = ctx->dops;
-	return 0;
-}
-
-static int pseudo_fs_get_tree(struct fs_context *fc)
-{
-	return get_tree_nodev(fc, pseudo_fs_fill_super);
-}
-
-static void pseudo_fs_free(struct fs_context *fc)
-{
-	kfree(fc->fs_private);
-}
-
-static const struct fs_context_operations pseudo_fs_context_ops = {
-	.free		= pseudo_fs_free,
-	.get_tree	= pseudo_fs_get_tree,
-};
-
-struct pseudo_fs_context *init_pseudo(struct fs_context *fc,
-					unsigned long magic)
-{
-	struct pseudo_fs_context *ctx;
-
-	ctx = kzalloc(sizeof(struct pseudo_fs_context), GFP_KERNEL);
-	if (likely(ctx)) {
-		ctx->magic = magic;
-		fc->fs_private = ctx;
-		fc->ops = &pseudo_fs_context_ops;
-		fc->sb_flags |= SB_NOUSER;
-		fc->global = true;
-	}
-	return ctx;
-}
-
-
 int simple_link(struct dentry *old_dentry, struct inode *dir, struct dentry *dentry)
 {
 	struct inode *inode = d_inode(old_dentry);
@@ -432,70 +369,12 @@ const struct address_space_operations ram_aops = {
 	.dirty_folio	= noop_dirty_folio,
 };
 
-static DEFINE_SPINLOCK(pin_fs_lock);
-
-int simple_pin_fs(struct file_system_type *type, struct vfsmount **mount, int *count)
-{
-	struct vfsmount *mnt = NULL;
-	spin_lock(&pin_fs_lock);
-	if (unlikely(!*mount)) {
-		spin_unlock(&pin_fs_lock);
-		mnt = vfs_kern_mount(type, SB_KERNMOUNT, type->name, NULL);
-		if (IS_ERR(mnt))
-			return PTR_ERR(mnt);
-		spin_lock(&pin_fs_lock);
-		if (!*mount)
-			*mount = mnt;
-	}
-	mntget(*mount);
-	++*count;
-	spin_unlock(&pin_fs_lock);
-	mntput(mnt);
-	return 0;
-}
-
-void simple_release_fs(struct vfsmount **mount, int *count)
-{
-	struct vfsmount *mnt;
-	spin_lock(&pin_fs_lock);
-	mnt = *mount;
-	if (!--*count)
-		*mount = NULL;
-	spin_unlock(&pin_fs_lock);
-	mntput(mnt);
-}
-
 /* simple_read_from_buffer, __generic_file_fsync, generic_file_fsync,
  * generic_check_addressable removed - unused */
 
 int noop_fsync(struct file *file, loff_t start, loff_t end, int datasync)
 {
 	return 0;
-}
-
-
-
-struct inode *alloc_anon_inode(struct super_block *s)
-{
-	static const struct address_space_operations anon_aops = {
-		.dirty_folio	= noop_dirty_folio,
-	};
-	struct inode *inode = new_inode_pseudo(s);
-
-	if (!inode)
-		return ERR_PTR(-ENOMEM);
-
-	inode->i_ino = get_next_ino();
-	inode->i_mapping->a_ops = &anon_aops;
-
-	 
-	inode->i_state = I_DIRTY;
-	inode->i_mode = S_IRUSR | S_IWUSR;
-	inode->i_uid = current_fsuid();
-	inode->i_gid = current_fsgid();
-	inode->i_flags |= S_PRIVATE;
-	inode->i_atime = inode->i_mtime = inode->i_ctime = current_time(inode);
-	return inode;
 }
 
 static struct dentry *empty_dir_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)

@@ -40,7 +40,6 @@ static inline u64 cc_mkdec(u64 val)
 {
 	return val;
 }
-#include <linux/page_table_check.h>
 
 extern pgd_t early_top_pgt[PTRS_PER_PGD];
 
@@ -600,7 +599,6 @@ static inline pud_t native_local_pudp_get_and_clear(pud_t *pudp)
 static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 			      pte_t *ptep, pte_t pte)
 {
-	page_table_check_pte_set(mm, addr, ptep, pte);
 	set_pte(ptep, pte);
 }
 
@@ -627,7 +625,6 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
 				       pte_t *ptep)
 {
 	pte_t pte = native_ptep_get_and_clear(ptep);
-	page_table_check_pte_clear(mm, addr, pte);
 	return pte;
 }
 
@@ -640,7 +637,6 @@ static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm,
 	if (full) {
 		 
 		pte = native_local_ptep_get_and_clear(ptep);
-		page_table_check_pte_clear(mm, addr, pte);
 	} else {
 		pte = ptep_get_and_clear(mm, addr, ptep);
 	}
@@ -687,7 +683,6 @@ static inline pmd_t pmdp_establish(struct vm_area_struct *vma,
 {
 	pmd_t old = *pmdp;
 
-	page_table_check_pmd_set(vma->vm_mm, address, pmdp, pmd);
 	WRITE_ONCE(*pmdp, pmd);
 	return old;
 }

@@ -49,7 +49,6 @@ struct alloc_context;
 static inline void reset_page_owner(struct page *page, unsigned short order) {}
 static inline void set_page_owner(struct page *page, unsigned int order, gfp_t gfp_mask) {}
 static inline void split_page_owner(struct page *page, unsigned short order) {}
-#include <linux/page_table_check.h>
 #include <linux/kthread.h>
 #include <linux/memcontrol.h>
 #include <linux/lockdep.h>
@@ -380,7 +379,6 @@ static __always_inline bool free_pages_prepare(struct page *page,
 
 	page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
 	reset_page_owner(page, order);
-	page_table_check_free(page, order);
 
 	arch_free_page(page, order);
 	return true;
@@ -567,7 +565,6 @@ inline void post_alloc_hook(struct page *page, unsigned int order,
 	set_page_refcounted(page);
 	arch_alloc_page(page, order);
 	set_page_owner(page, order, gfp_flags);
-	page_table_check_alloc(page, order);
 }
 
 static void prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags,

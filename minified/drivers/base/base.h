@@ -103,19 +103,6 @@ static inline void module_remove_driver(struct device_driver *drv) { }
 static inline int devtmpfs_init(void) { return 0; }
 
  
-/* device_links_read_lock, device_links_read_unlock now static in core.c */
-/* device_links_read_lock_held removed - unused */
-extern int device_links_check_suppliers(struct device *dev);
-/* device_links_force_bind, device_links_driver_bound removed - unused */
-extern void device_links_driver_cleanup(struct device *dev);
-extern void device_links_no_driver(struct device *dev);
-extern bool device_links_busy(struct device *dev);
-extern void device_links_unbind_consumers(struct device *dev);
-extern void fw_devlink_drivers_done(void);
-
- 
-void device_pm_move_to_tail(struct device *dev);
-
 /* devtmpfs_create_node removed - unused */
 static inline int devtmpfs_delete_node(struct device *dev) { return 0; }
 

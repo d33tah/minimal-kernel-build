@@ -52,9 +52,6 @@ static void deferred_probe_work_func(struct work_struct *work)
 		 
 		mutex_unlock(&deferred_probe_mutex);
 
-		 
-		device_pm_move_to_tail(dev);
-
 		dev_dbg(dev, "Retrying from deferred list\n");
 		bus_probe_device(dev);
 		mutex_lock(&deferred_probe_mutex);
@@ -115,8 +112,6 @@ static void deferred_probe_timeout_work_func(struct work_struct *work)
 {
 	struct device_private *p;
 
-	fw_devlink_drivers_done();
-
 	driver_deferred_probe_timeout = 0;
 	driver_deferred_probe_trigger();
 	flush_work(&deferred_probe_work);
@@ -141,7 +136,6 @@ static int deferred_probe_initcall(void)
 {
 	driver_deferred_probe_enable = true;
 	initcalls_done = true;
-	fw_devlink_drivers_done();
 	return 0;
 }
 late_initcall(deferred_probe_initcall);
@@ -240,10 +234,6 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 		return -EPROBE_DEFER;
 	}
 
-	ret = device_links_check_suppliers(dev);
-	if (ret)
-		return ret;
-
 	if (!list_empty(&dev->devres_head)) {
 		dev_crit(dev, "Resources present before probing\n");
 		ret = -EBUSY;
@@ -321,7 +311,6 @@ sysfs_failed:
 	if (dev->bus && dev->bus->dma_cleanup)
 		dev->bus->dma_cleanup(dev);
 pinctrl_bind_failed:
-	device_links_no_driver(dev);
 	device_unbind_cleanup(dev);
 done:
 	return ret;
@@ -594,26 +583,13 @@ int driver_attach(struct device_driver *drv)
 	return bus_for_each_dev(drv->bus, NULL, drv, __driver_attach);
 }
 
-static void __device_release_driver(struct device *dev, struct device *parent)
+static void __device_release_driver(struct device *dev)
 {
 	struct device_driver *drv;
 
 	drv = dev->driver;
 	if (drv) {
 		pm_runtime_get_sync(dev);
-
-		while (device_links_busy(dev)) {
-			__device_driver_unlock(dev, parent);
-
-			device_links_unbind_consumers(dev);
-
-			__device_driver_lock(dev, parent);
-			 
-			if (dev->driver != drv) {
-				pm_runtime_put(dev);
-				return;
-			}
-		}
 
 		driver_sysfs_remove(dev);
 
@@ -629,7 +605,6 @@ static void __device_release_driver(struct device *dev, struct device *parent)
 		if (dev->bus && dev->bus->dma_cleanup)
 			dev->bus->dma_cleanup(dev);
 
-		device_links_driver_cleanup(dev);
 		device_unbind_cleanup(dev);
 
 		klist_remove(&dev->p->knode_driver);
@@ -650,7 +625,7 @@ void device_release_driver_internal(struct device *dev,
 	__device_driver_lock(dev, parent);
 
 	if (!drv || drv == dev->driver)
-		__device_release_driver(dev, parent);
+		__device_release_driver(dev);
 
 	__device_driver_unlock(dev, parent);
 }

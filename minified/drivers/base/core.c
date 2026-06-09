@@ -37,57 +37,6 @@ static const struct attribute_group dev_attr_physical_location_group = {};
  * created (device_link_add has no callers), so the whole devlink class is dead.
  */
 
-void device_pm_move_to_tail(struct device *dev)
-{
-	/* Minimal stub: device reordering is a no-op (no device links). */
-	(void)dev;
-}
-
-
-/* Stub: no device links since device_link_add returns NULL */
-int device_links_check_suppliers(struct device *dev)
-{
-	return 0;
-}
-
-
-
-void device_links_no_driver(struct device *dev)
-{
-	/* Minimal stub */
-	(void)dev;
-}
-
-void device_links_driver_cleanup(struct device *dev)
-{
-	/* Minimal stub */
-	(void)dev;
-}
-
-bool device_links_busy(struct device *dev)
-{
-	/* Minimal stub: never busy */
-	(void)dev;
-	return false;
-}
-
-void device_links_unbind_consumers(struct device *dev)
-{
-	/* Minimal stub */
-	(void)dev;
-}
-
-static void device_links_purge(struct device *dev)
-{
-	/* Stub: no device links to purge since device_link_add returns NULL */
-}
-
-/* Stub: firmware device link functions not needed for minimal kernel */
-void fw_devlink_drivers_done(void)
-{
-	/* fw_devlink_drv_reg_done assignment removed - never read */
-}
-
 static struct kobject *dev_kobj;
 struct kobject *sysfs_dev_char_kobj;
 struct kobject *sysfs_dev_block_kobj;
@@ -514,7 +463,6 @@ void device_del(struct device *dev)
 	device_pm_remove(dev);
 	driver_deferred_probe_del(dev);
 	device_platform_notify_remove(dev);
-	device_links_purge(dev);
 
 	if (dev->bus)
 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,

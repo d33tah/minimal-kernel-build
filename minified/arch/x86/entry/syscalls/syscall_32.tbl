@@ -21,7 +21,7 @@
 8	i386	creat			sys_creat
 13	i386	time			sys_time32
 17	i386	break
-19	i386	lseek			sys_lseek			compat_sys_lseek
+# 19	i386	lseek			sys_lseek			compat_sys_lseek
 # 20 getpid removed (unreachable)
 # 21 mount removed (unreachable)
 # 22 umount removed (unreachable)
@@ -77,7 +77,7 @@
 134	i386	bdflush			sys_ni_syscall
 135	i386	sysfs			sys_sysfs
 137	i386	afs_syscall
-140	i386	_llseek			sys_llseek
+# 140	i386	_llseek			sys_llseek
 141	i386	getdents		sys_getdents			compat_sys_getdents
 143	i386	flock			sys_flock
 144	i386	msync			sys_msync

@@ -9,7 +9,6 @@
 #include <linux/pid_namespace.h>	 
 #include <linux/types.h>
 #include <asm/ptrace.h>
-#include <linux/seccomp.h>
 
 #define PTRACE_EVENT_FORK	1
 #define PTRACE_EVENT_VFORK	2

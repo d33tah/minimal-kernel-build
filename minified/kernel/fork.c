@@ -37,7 +37,6 @@ static inline void shm_init_task(struct task_struct *task) { }
 #include <linux/cgroup.h>
 #include <linux/security.h>
 #include <linux/hugetlb.h>
-#include <linux/seccomp.h>
 #include <linux/swap.h>
 #include <linux/syscalls.h>
 #include <linux/jiffies.h>
@@ -1010,10 +1009,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	return 0;
 }
 
-static void copy_seccomp(struct task_struct *p)
-{
-}
-
 SYSCALL_DEFINE1(set_tid_address, int __user *, tidptr)
 {
 	current->clear_child_tid = tidptr;
@@ -1290,9 +1285,6 @@ static __latent_entropy struct task_struct *copy_process(
 	sched_core_fork(p);
 
 	spin_lock(&current->sighand->siglock);
-
-	
-	copy_seccomp(p);
 
 	rseq_fork(p, clone_flags);
 

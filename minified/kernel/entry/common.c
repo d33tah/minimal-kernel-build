@@ -45,14 +45,7 @@ static long syscall_trace_enter(struct pt_regs *regs, long syscall,
 			return -1L;
 	}
 
-	 
-	if (work & SYSCALL_WORK_SECCOMP) {
-		ret = __secure_computing(NULL);
-		if (ret == -1L)
-			return ret;
-	}
 
-	 
 	syscall = syscall_get_nr(current, regs);
 
 	return ret ? : syscall;

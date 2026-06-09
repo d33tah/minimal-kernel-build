@@ -181,7 +181,6 @@ repeat:
 	}
 
 	write_unlock_irq(&tasklist_lock);
-	seccomp_filter_release(p);
 	proc_flush_pid(thread_pid);
 	put_pid(thread_pid);
 	release_thread(p);

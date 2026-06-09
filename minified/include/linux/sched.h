@@ -61,7 +61,6 @@ struct clone_args {
 #include <linux/mutex.h>
 #include <linux/hrtimer.h>
 #include <linux/irqflags.h>
-#include <linux/seccomp.h>
 #include <linux/nodemask.h>
 #include <linux/rcupdate.h>
 #include <linux/refcount.h>
@@ -461,7 +460,6 @@ struct task_struct {
 
 	struct callback_head		*task_works;
 
-	struct seccomp			seccomp;
 	struct syscall_user_dispatch	syscall_dispatch;
 
 	 

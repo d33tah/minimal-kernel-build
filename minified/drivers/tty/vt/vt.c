@@ -1223,7 +1223,6 @@ static const struct tty_operations con_ops = {
 	.write_room = con_write_room,
 	.put_char = con_put_char,
 	.flush_chars = con_flush_chars,
-	.ioctl = vt_ioctl,
 	.stop = con_stop,
 	.start = con_start,
 	.throttle = con_throttle,

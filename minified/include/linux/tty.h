@@ -247,8 +247,6 @@ int n_tty_ioctl_helper(struct tty_struct *tty, unsigned int cmd,
 		unsigned long arg);
 
 
-int vt_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
-
 void tty_lock(struct tty_struct *tty);
 int  tty_lock_interruptible(struct tty_struct *tty);
 void tty_unlock(struct tty_struct *tty);

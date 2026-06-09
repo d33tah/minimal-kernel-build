@@ -26,7 +26,6 @@
 #include <linux/fcntl.h>
 #include <linux/rculist_bl.h>
 #include <linux/atomic.h>
-#include <linux/shrinker.h>
 enum migrate_mode { MIGRATE_MODE_LAST };
 #include <linux/uidgid.h>
 #include <linux/lockdep.h>

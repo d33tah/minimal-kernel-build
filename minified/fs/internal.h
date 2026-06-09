@@ -8,7 +8,6 @@ struct iomap_ops;
 struct linux_binprm;
 struct path;
 struct mount;
-struct shrink_control;
 struct fs_context;
 struct user_namespace;
 struct pipe_inode_info;

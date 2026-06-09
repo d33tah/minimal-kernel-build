@@ -3,7 +3,6 @@
 
 #include <linux/list.h>
 #include <linux/nodemask.h>
-#include <linux/shrinker.h>
 #include <linux/xarray.h>
 
 struct mem_cgroup;
@@ -28,14 +27,14 @@ struct list_lru {
 
 void list_lru_destroy(struct list_lru *lru);
 int __list_lru_init(struct list_lru *lru, bool memcg_aware,
-		    struct lock_class_key *key, struct shrinker *shrinker);
+		    struct lock_class_key *key);
 
 #define list_lru_init(lru)				\
-	__list_lru_init((lru), false, NULL, NULL)
+	__list_lru_init((lru), false, NULL)
 #define list_lru_init_key(lru, key)			\
-	__list_lru_init((lru), false, (key), NULL)
+	__list_lru_init((lru), false, (key))
 #define list_lru_init_memcg(lru, shrinker)		\
-	__list_lru_init((lru), true, NULL, shrinker)
+	__list_lru_init((lru), true, NULL)
 
 bool list_lru_add(struct list_lru *lru, struct list_head *item);
 

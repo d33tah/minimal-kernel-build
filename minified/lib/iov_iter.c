@@ -250,35 +250,6 @@ size_t copy_page_from_iter_atomic(struct page *page, unsigned offset, size_t byt
 	return bytes;
 }
 
-static void iov_iter_iovec_advance(struct iov_iter *i, size_t size)
-{
-	const struct iovec *iov, *end;
-
-	if (!i->count)
-		return;
-	i->count -= size;
-
-	size += i->iov_offset;  
-	for (iov = i->iov, end = iov + i->nr_segs; iov < end; iov++) {
-		if (likely(size < iov->iov_len))
-			break;
-		size -= iov->iov_len;
-	}
-	i->iov_offset = size;
-	i->nr_segs -= iov - i->iov;
-	i->iov = iov;
-}
-
-void iov_iter_advance(struct iov_iter *i, size_t size)
-{
-	if (unlikely(i->count < size))
-		size = i->count;
-	if (likely(iter_is_iovec(i) || iov_iter_is_kvec(i))) {
-
-		iov_iter_iovec_advance(i, size);
-	}
-}
-
 void iov_iter_revert(struct iov_iter *i, size_t unroll)
 {
 	if (!unroll)

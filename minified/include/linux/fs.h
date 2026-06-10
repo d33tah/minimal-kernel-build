@@ -1197,16 +1197,7 @@ extern const struct file_operations def_chr_fops;
 
 extern int alloc_chrdev_region(dev_t *, unsigned, unsigned, const char *);
 extern int register_chrdev_region(dev_t, unsigned, const char *);
-extern int __register_chrdev(unsigned int major, unsigned int baseminor,
-			     unsigned int count, const char *name,
-			     const struct file_operations *fops);
 extern void unregister_chrdev_region(dev_t, unsigned);
-
-static inline int register_chrdev(unsigned int major, const char *name,
-				  const struct file_operations *fops)
-{
-	return __register_chrdev(major, 0, 256, name, fops);
-}
 
 extern void init_special_inode(struct inode *, umode_t, dev_t);
 

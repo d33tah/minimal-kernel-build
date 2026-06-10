@@ -669,7 +669,6 @@ static inline int task_nice(const struct task_struct *p)
 }
 
 extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);
-extern void sched_set_fifo(struct task_struct *p);
 
 static __always_inline bool is_idle_task(const struct task_struct *p)
 {

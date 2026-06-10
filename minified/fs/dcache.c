@@ -998,23 +998,6 @@ next:
  	return found;
 }
 
-void d_delete(struct dentry * dentry)
-{
-	struct inode *inode = dentry->d_inode;
-
-	spin_lock(&inode->i_lock);
-	spin_lock(&dentry->d_lock);
-	
-	if (dentry->d_lockref.count == 1) {
-		dentry->d_flags &= ~DCACHE_CANT_MOUNT;
-		dentry_unlink_inode(dentry);
-	} else {
-		__d_drop(dentry);
-		spin_unlock(&dentry->d_lock);
-		spin_unlock(&inode->i_lock);
-	}
-}
-
 static void __d_rehash(struct dentry *entry)
 {
 	struct hlist_bl_head *b = d_hash(entry->d_name.hash);

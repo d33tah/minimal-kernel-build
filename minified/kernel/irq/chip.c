@@ -52,11 +52,6 @@ static void irq_state_clr_masked(struct irq_desc *desc)
 	irqd_clear(&desc->irq_data, IRQD_IRQ_MASKED);
 }
 
-static void irq_state_clr_started(struct irq_desc *desc)
-{
-	irqd_clear(&desc->irq_data, IRQD_IRQ_STARTED);
-}
-
 static void irq_state_set_started(struct irq_desc *desc)
 {
 	irqd_set(&desc->irq_data, IRQD_IRQ_STARTED);
@@ -145,28 +140,6 @@ int irq_activate_and_startup(struct irq_desc *desc, bool resend)
 
 static void __irq_disable(struct irq_desc *desc, bool mask);
 
-void irq_shutdown(struct irq_desc *desc)
-{
-	if (irqd_is_started(&desc->irq_data)) {
-		desc->depth = 1;
-		if (desc->irq_data.chip->irq_shutdown) {
-			desc->irq_data.chip->irq_shutdown(&desc->irq_data);
-			irq_state_set_disabled(desc);
-			irq_state_set_masked(desc);
-		} else {
-			__irq_disable(desc, true);
-		}
-		irq_state_clr_started(desc);
-	}
-}
-
-
-void irq_shutdown_and_deactivate(struct irq_desc *desc)
-{
-	irq_shutdown(desc);
-	 
-	irq_domain_deactivate_irq(&desc->irq_data);
-}
 
 void irq_enable(struct irq_desc *desc)
 {

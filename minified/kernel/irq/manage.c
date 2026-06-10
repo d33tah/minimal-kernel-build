@@ -31,9 +31,9 @@ void __enable_irq(struct irq_desc *desc)
 	case 1: {
 		if (desc->istate & IRQS_SUSPENDED)
 			goto err_out;
-		
+
 		irq_settings_set_noprobe(desc);
-		
+
 		irq_startup(desc, IRQ_RESEND, IRQ_START_FORCE);
 		break;
 	}
@@ -347,25 +347,6 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 }
 
 
-int __irq_get_irqchip_state(struct irq_data *data, enum irqchip_irq_state which,
-			    bool *state)
-{
-	struct irq_chip *chip;
-	int err = -EINVAL;
-
-	do {
-		chip = irq_data_get_irq_chip(data);
-		if (WARN_ON_ONCE(!chip))
-			return -ENODEV;
-		if (chip->irq_get_irqchip_state)
-			break;
-		data = NULL;
-	} while (data);
-
-	if (data)
-		err = chip->irq_get_irqchip_state(data, which, state);
-	return err;
-}
 
 /* irq_get_irqchip_state, irq_set_irqchip_state, irq_has_action,
  * irq_check_status_bit removed - not called */

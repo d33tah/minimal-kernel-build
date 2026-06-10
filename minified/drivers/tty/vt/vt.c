@@ -878,7 +878,7 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int co
 		return 0;
 	}
 
-	while (!tty->flow.stopped && count--) {
+	while (count--) {
 		c = *buf++;
 		n++;
 		tc = vc_translate(vc, &c, NULL);
@@ -958,8 +958,6 @@ static int con_write(struct tty_struct *tty, const unsigned char *buf, int count
 
 static unsigned int con_write_room(struct tty_struct *tty)
 {
-	if (tty->flow.stopped)
-		return 0;
 	return 32768;
 }
 

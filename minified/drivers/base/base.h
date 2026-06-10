@@ -79,8 +79,6 @@ static inline int driver_match_device(struct device_driver *drv,
 {
 	return drv->bus->match ? drv->bus->match(dev, drv) : 1;
 }
-extern bool driver_allows_async_probing(struct device_driver *drv);
-
 extern int devres_release_all(struct device *dev);
 
 

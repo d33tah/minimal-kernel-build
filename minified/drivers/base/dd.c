@@ -345,35 +345,19 @@ static int driver_probe_device(struct device_driver *drv, struct device *dev)
 
 
 
-/* Stub: driver_allows_async_probing not used in minimal kernel */
-bool driver_allows_async_probing(struct device_driver *drv)
-{
-	return false;
-}
-
 struct device_attach_data {
 	struct device *dev;
-
-	 
-	bool check_async;
-
-	 
-	bool want_async;
-
-	 
-	bool have_async;
 };
 
 static int __device_attach_driver(struct device_driver *drv, void *_data)
 {
 	struct device_attach_data *data = _data;
 	struct device *dev = data->dev;
-	bool async_allowed;
 	int ret;
 
 	ret = driver_match_device(drv, dev);
 	if (ret == 0) {
-		 
+
 		return 0;
 	} else if (ret == -EPROBE_DEFER) {
 		dev_dbg(dev, "Device match requests probe deferral\n");
@@ -382,58 +366,18 @@ static int __device_attach_driver(struct device_driver *drv, void *_data)
 	} else if (ret < 0) {
 		dev_dbg(dev, "Bus failed to match device: %d\n", ret);
 		return ret;
-	}  
+	}
 
-	async_allowed = driver_allows_async_probing(drv);
 
-	if (async_allowed)
-		data->have_async = true;
-
-	if (data->check_async && async_allowed != data->want_async)
-		return 0;
-
-	 
 	ret = driver_probe_device(drv, dev);
 	if (ret < 0)
 		return ret;
 	return ret == 0;
 }
 
-static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
-{
-	struct device *dev = _dev;
-	struct device_attach_data data = {
-		.dev		= dev,
-		.check_async	= true,
-		.want_async	= true,
-	};
-
-	device_lock(dev);
-
-	 
-	if (dev->p->dead || dev->driver)
-		goto out_unlock;
-
-	if (dev->parent)
-		pm_runtime_get_sync(dev->parent);
-
-	bus_for_each_drv(dev->bus, NULL, &data, __device_attach_driver);
-	dev_dbg(dev, "async probe completed\n");
-
-	pm_request_idle(dev);
-
-	if (dev->parent)
-		pm_runtime_put(dev->parent);
-out_unlock:
-	device_unlock(dev);
-
-	put_device(dev);
-}
-
 static int __device_attach(struct device *dev, bool allow_async)
 {
 	int ret = 0;
-	bool async = false;
 
 	device_lock(dev);
 	if (dev->p->dead) {
@@ -453,8 +397,6 @@ static int __device_attach(struct device *dev, bool allow_async)
 	} else {
 		struct device_attach_data data = {
 			.dev = dev,
-			.check_async = allow_async,
-			.want_async = false,
 		};
 
 		if (dev->parent)
@@ -462,22 +404,13 @@ static int __device_attach(struct device *dev, bool allow_async)
 
 		ret = bus_for_each_drv(dev->bus, NULL, &data,
 					__device_attach_driver);
-		if (!ret && allow_async && data.have_async) {
-			 
-			dev_dbg(dev, "scheduling asynchronous probe\n");
-			get_device(dev);
-			async = true;
-		} else {
-			pm_request_idle(dev);
-		}
+		pm_request_idle(dev);
 
 		if (dev->parent)
 			pm_runtime_put(dev->parent);
 	}
 out_unlock:
 	device_unlock(dev);
-	if (async)
-		async_schedule_dev(__device_attach_async_helper, dev);
 	return ret;
 }
 

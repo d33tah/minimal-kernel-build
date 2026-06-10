@@ -695,32 +695,8 @@ redo:
 	}
 }
 
-static inline void unfreeze_partials(struct kmem_cache *s) { }
 static inline void unfreeze_partials_cpu(struct kmem_cache *s,
 				  struct kmem_cache_cpu *c) { }
-
-static inline void flush_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
-{
-	unsigned long flags;
-	struct slab *slab;
-	void *freelist;
-
-	local_lock_irqsave(&s->cpu_slab->lock, flags);
-
-	slab = c->slab;
-	freelist = c->freelist;
-
-	c->slab = NULL;
-	c->freelist = NULL;
-	c->tid = next_tid(c->tid);
-
-	local_unlock_irqrestore(&s->cpu_slab->lock, flags);
-
-	if (slab) {
-		deactivate_slab(s, slab, freelist);
-		stat(s, CPUSLAB_FLUSH);
-	}
-}
 
 static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
 {
@@ -738,69 +714,6 @@ static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
 	}
 
 	unfreeze_partials_cpu(s, c);
-}
-
-struct slub_flush_work {
-	struct work_struct work;
-	struct kmem_cache *s;
-	bool skip;
-};
-
-static void flush_cpu_slab(struct work_struct *w)
-{
-	struct kmem_cache *s;
-	struct kmem_cache_cpu *c;
-	struct slub_flush_work *sfw;
-
-	sfw = container_of(w, struct slub_flush_work, work);
-
-	s = sfw->s;
-	c = this_cpu_ptr(s->cpu_slab);
-
-	if (c->slab)
-		flush_slab(s, c);
-
-	unfreeze_partials(s);
-}
-
-static bool has_cpu_slab(int cpu, struct kmem_cache *s)
-{
-	struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, cpu);
-
-	return c->slab || slub_percpu_partial(c);
-}
-
-static DEFINE_MUTEX(flush_lock);
-static DEFINE_PER_CPU(struct slub_flush_work, slub_flush);
-
-static void flush_all_cpus_locked(struct kmem_cache *s)
-{
-	struct slub_flush_work *sfw;
-	unsigned int cpu;
-
-	lockdep_assert_cpus_held();
-	mutex_lock(&flush_lock);
-
-	for_each_online_cpu(cpu) {
-		sfw = &per_cpu(slub_flush, cpu);
-		if (!has_cpu_slab(cpu, s)) {
-			sfw->skip = true;
-			continue;
-		}
-		INIT_WORK(&sfw->work, flush_cpu_slab);
-		sfw->skip = false;
-		sfw->s = s;
-		schedule_work_on(cpu, &sfw->work);
-	}
-
-	for_each_online_cpu(cpu) {
-		sfw = &per_cpu(slub_flush, cpu);
-		if (sfw->skip)
-			continue;
-		flush_work(&sfw->work);
-	}
-
-	mutex_unlock(&flush_lock);
 }
 
 static int slub_cpu_dead(unsigned int cpu)
@@ -1408,48 +1321,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 error:
 	__kmem_cache_release(s);
 	return -EINVAL;
-}
-
-static void list_slab_objects(struct kmem_cache *s, struct slab *slab,
-			      const char *text)
-{
-}
-
-static void free_partial(struct kmem_cache *s, struct kmem_cache_node *n)
-{
-	LIST_HEAD(discard);
-	struct slab *slab, *h;
-
-	BUG_ON(irqs_disabled());
-	spin_lock_irq(&n->list_lock);
-	list_for_each_entry_safe(slab, h, &n->partial, slab_list) {
-		if (!slab->inuse) {
-			remove_partial(n, slab);
-			list_add(&slab->slab_list, &discard);
-		} else {
-			list_slab_objects(s, slab,
-			  "Objects remaining in %s on __kmem_cache_shutdown()");
-		}
-	}
-	spin_unlock_irq(&n->list_lock);
-
-	list_for_each_entry_safe(slab, h, &discard, slab_list)
-		discard_slab(s, slab);
-}
-
-int __kmem_cache_shutdown(struct kmem_cache *s)
-{
-	int node;
-	struct kmem_cache_node *n;
-
-	flush_all_cpus_locked(s);
-	
-	for_each_kmem_cache_node(s, node, n) {
-		free_partial(s, n);
-		if (n->nr_partial || slabs_node(s, node))
-			return 1;
-	}
-	return 0;
 }
 
 /* setup_slub_min_order, setup_slub_max_order, setup_slub_min_objects and __setup

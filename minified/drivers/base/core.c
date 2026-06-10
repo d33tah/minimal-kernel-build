@@ -133,57 +133,11 @@ static struct kobj_type device_ktype = {
 	.get_ownership	= device_get_ownership,
 };
 
-static int dev_uevent_filter(struct kobject *kobj)
-{
-	const struct kobj_type *ktype = get_ktype(kobj);
-
-	if (ktype == &device_ktype) {
-		struct device *dev = kobj_to_dev(kobj);
-		if (dev->bus)
-			return 1;
-		if (dev->class)
-			return 1;
-	}
-	return 0;
-}
-
-static const char *dev_uevent_name(struct kobject *kobj)
-{
-	struct device *dev = kobj_to_dev(kobj);
-
-	if (dev->bus)
-		return dev->bus->name;
-	if (dev->class)
-		return dev->class->name;
-	return NULL;
-}
-
-static int dev_uevent(struct kobject *kobj, struct kobj_uevent_env *env)
-{
-	/* Stub: uevent environment setup not needed for minimal kernel */
-	return 0;
-}
-
-static const struct kset_uevent_ops device_uevent_ops = {
-	.filter =	dev_uevent_filter,
-	.name =		dev_uevent_name,
-	.uevent =	dev_uevent,
-};
-
-static ssize_t uevent_show(struct device *dev, struct device_attribute *attr,
-			   char *buf)
-{
-	/* Stub: sysfs uevent display not needed for minimal kernel */
-	return 0;
-}
-
-/* Stub: uevent_store simplified for minimal kernel */
-static ssize_t uevent_store(struct device *dev, struct device_attribute *attr,
-			    const char *buf, size_t count)
-{
-	return count;
-}
-static DEVICE_ATTR_RW(uevent);
+/* Removed: dev_uevent_filter / dev_uevent_name / dev_uevent / device_uevent_ops
+ * - the kset_uevent_ops table was stored in devices_kset but never dispatched:
+ * kobject_uevent_env (lib/kobject_uevent.c) is a stub that never derefs uevent_ops.
+ * Removed: uevent_show / uevent_store / dev_attr_uevent - the uevent sysfs attr
+ * was only fed to the device_remove_file no-op stub, never created/read. */
 
 /* Stub: online sysfs attributes simplified for minimal kernel */
 
@@ -206,23 +160,14 @@ static void device_remove_attrs(struct device *dev)
 		kfree(dev->physical_location);
 }
 
-static ssize_t dev_show(struct device *dev, struct device_attribute *attr,
-			char *buf)
-{
-	return print_dev_t(buf, dev->devt);
-}
-static DEVICE_ATTR_RO(dev);
+/* Removed: dev_show / dev_attr_dev - the "dev" sysfs attr was only fed to the
+ * device_remove_file no-op stub, never created or read. */
 
 struct kset *devices_kset;
 
 
-/* Stub: device_remove_file not needed for minimal kernel */
-void device_remove_file(struct device *dev,
-			const struct device_attribute *attr)
-{
-}
-
-/* Removed: device_remove_file_self, device_create_bin_file, device_remove_bin_file - no callers */
+/* Removed: device_remove_file (0-caller no-op stub after dev_attr_dev/uevent
+ * removal), device_remove_file_self, device_create_bin_file, device_remove_bin_file. */
 
 static void klist_children_get(struct klist_node *n)
 {
@@ -442,7 +387,6 @@ void device_del(struct device *dev)
 	if (MAJOR(dev->devt)) {
 		devtmpfs_delete_node(dev);
 		device_remove_sys_dev_entry(dev);
-		device_remove_file(dev, &dev_attr_dev);
 	}
 	if (dev->class) {
 		device_remove_class_symlinks(dev);
@@ -457,7 +401,6 @@ void device_del(struct device *dev)
 		klist_del(&dev->p->knode_class);
 		mutex_unlock(&dev->class->p->mutex);
 	}
-	device_remove_file(dev, &dev_attr_uevent);
 	device_remove_attrs(dev);
 	bus_remove_device(dev);
 	device_pm_remove(dev);
@@ -485,7 +428,7 @@ void device_unregister(struct device *dev)
 
 int __init devices_init(void)
 {
-	devices_kset = kset_create_and_add("devices", &device_uevent_ops, NULL);
+	devices_kset = kset_create_and_add("devices", NULL, NULL);
 	if (!devices_kset)
 		return -ENOMEM;
 	dev_kobj = kobject_create_and_add("dev", NULL);

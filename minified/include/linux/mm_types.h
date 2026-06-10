@@ -140,11 +140,6 @@ struct page {
 	atomic_t _refcount;
 
 
-	 
-#if defined(WANT_PAGE_VIRTUAL)
-	void *virtual;			 
-#endif  
-
 #ifdef LAST_CPUPID_NOT_IN_PAGE_FLAGS
 	int _last_cpupid;
 #endif

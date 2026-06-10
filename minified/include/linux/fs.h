@@ -1406,6 +1406,5 @@ static inline void inode_has_no_xattr(struct inode *inode)
 }
 
 extern bool path_noexec(const struct path *path);
-extern void inode_nohighmem(struct inode *inode);
 
 #endif

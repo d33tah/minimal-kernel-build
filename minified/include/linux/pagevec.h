@@ -85,5 +85,4 @@ static inline void folio_batch_release(struct folio_batch *fbatch)
 	pagevec_release((struct pagevec *)fbatch);
 }
 
-void folio_batch_remove_exceptionals(struct folio_batch *fbatch);
 #endif  

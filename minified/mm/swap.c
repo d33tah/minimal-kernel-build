@@ -396,14 +396,14 @@ static void __pagevec_lru_add_fn(struct folio *folio, struct lruvec *lruvec)
 	VM_BUG_ON_FOLIO(folio_test_lru(folio), folio);
 
 	folio_set_lru(folio);
-	 
+
 	if (folio_evictable(folio)) {
 		if (was_unevictable)
 			__count_vm_events(UNEVICTABLE_PGRESCUED, nr_pages);
 	} else {
 		folio_clear_active(folio);
 		folio_set_unevictable(folio);
-		 
+
 		folio->mlock_count = 0;
 		if (!was_unevictable)
 			__count_vm_events(UNEVICTABLE_PGCULLED, nr_pages);
@@ -429,18 +429,5 @@ void __pagevec_lru_add(struct pagevec *pvec)
 	release_pages(pvec->pages, pvec->nr);
 	pagevec_reinit(pvec);
 }
-
-void folio_batch_remove_exceptionals(struct folio_batch *fbatch)
-{
-	unsigned int i, j;
-
-	for (i = 0, j = 0; i < folio_batch_count(fbatch); i++) {
-		struct folio *folio = fbatch->folios[i];
-		if (!xa_is_value(folio))
-			fbatch->folios[j++] = folio;
-	}
-	fbatch->nr = j;
-}
-
 
 

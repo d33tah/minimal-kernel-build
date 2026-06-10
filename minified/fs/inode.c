@@ -811,11 +811,6 @@ bool inode_owner_or_capable(struct user_namespace *mnt_userns,
 	return false;
 }
 
-void inode_nohighmem(struct inode *inode)
-{
-	mapping_set_gfp_mask(inode->i_mapping, GFP_USER);
-}
-
 struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode)
 {
 	struct super_block *sb = inode->i_sb;

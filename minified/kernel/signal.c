@@ -492,19 +492,6 @@ void force_fatal_sig(int sig)
 	force_sig_info_to_task(&info, current, HANDLER_SIG_DFL);
 }
 
-void force_exit_sig(int sig)
-{
-	struct kernel_siginfo info;
-
-	clear_siginfo(&info);
-	info.si_signo = sig;
-	info.si_errno = 0;
-	info.si_code = SI_KERNEL;
-	info.si_pid = 0;
-	info.si_uid = 0;
-	force_sig_info_to_task(&info, current, HANDLER_EXIT);
-}
-
 int force_sig_fault(int sig, int code, void __user *addr
 	___ARCH_SI_IA64(int imm, unsigned int flags, unsigned long isr))
 {

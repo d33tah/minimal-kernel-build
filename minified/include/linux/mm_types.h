@@ -341,7 +341,6 @@ struct mm_struct {
 		 
 		atomic_t tlb_flush_batched;
 		struct uprobes_state uprobes_state;
-		struct work_struct async_put_work;
 
 	} __randomize_layout;
 

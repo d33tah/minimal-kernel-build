@@ -1392,12 +1392,6 @@ void exit_mmap(struct mm_struct *mm)
 	struct vm_area_struct *vma;
 	unsigned long nr_accounted = 0;
 
-	if (unlikely(mm_is_oom_victim(mm))) {
-		
-		(void)__oom_reap_task_mm(mm);
-		set_bit(MMF_OOM_SKIP, &mm->flags);
-	}
-
 	mmap_write_lock(mm);
 	arch_exit_mmap(mm);
 

@@ -460,16 +460,6 @@ static void __put_unused_fd(struct files_struct *files, unsigned int fd)
 		files->next_fd = fd;
 }
 
-void put_unused_fd(unsigned int fd)
-{
-	struct files_struct *files = current->files;
-	spin_lock(&files->file_lock);
-	__put_unused_fd(files, fd);
-	spin_unlock(&files->file_lock);
-}
-
-
-
 void fd_install(unsigned int fd, struct file *file)
 {
 	struct files_struct *files = current->files;
@@ -583,18 +573,6 @@ static inline struct file *__fget(unsigned int fd, fmode_t mask)
 	return __fget_files(current->files, fd, mask);
 }
 
-struct file *fget(unsigned int fd)
-{
-	return __fget(fd, FMODE_PATH);
-}
-
-/* fget_raw - used internally by replace_fd */
-static struct file *fget_raw(unsigned int fd)
-{
-	return __fget(fd, 0);  /* No FMODE_PATH filter */
-}
-
-
 static unsigned long __fget_light(unsigned int fd, fmode_t mask)
 {
 	struct files_struct *files = current->files;
@@ -655,104 +633,4 @@ bool get_close_on_exec(unsigned int fd)
 	return res;
 }
 
-static int do_dup2(struct files_struct *files,
-	struct file *file, unsigned fd, unsigned flags)
-__releases(&files->file_lock)
-{
-	struct file *tofree;
-	struct fdtable *fdt;
-
-	 
-	fdt = files_fdtable(files);
-	tofree = fdt->fd[fd];
-	if (!tofree && fd_is_open(fd, fdt))
-		goto Ebusy;
-	get_file(file);
-	rcu_assign_pointer(fdt->fd[fd], file);
-	__set_open_fd(fd, fdt);
-	if (flags & O_CLOEXEC)
-		__set_close_on_exec(fd, fdt);
-	else
-		__clear_close_on_exec(fd, fdt);
-	spin_unlock(&files->file_lock);
-
-	if (tofree)
-		filp_close(tofree, files);
-
-	return fd;
-
-Ebusy:
-	spin_unlock(&files->file_lock);
-	return -EBUSY;
-}
-
-
-static int ksys_dup3(unsigned int oldfd, unsigned int newfd, int flags)
-{
-	int err = -EBADF;
-	struct file *file;
-	struct files_struct *files = current->files;
-
-	if ((flags & ~O_CLOEXEC) != 0)
-		return -EINVAL;
-
-	if (unlikely(oldfd == newfd))
-		return -EINVAL;
-
-	if (newfd >= rlimit(RLIMIT_NOFILE))
-		return -EBADF;
-
-	spin_lock(&files->file_lock);
-	err = expand_files(files, newfd);
-	file = files_lookup_fd_locked(files, oldfd);
-	if (unlikely(!file))
-		goto Ebadf;
-	if (unlikely(err < 0)) {
-		if (err == -EMFILE)
-			goto Ebadf;
-		goto out_unlock;
-	}
-	return do_dup2(files, file, newfd, flags);
-
-Ebadf:
-	err = -EBADF;
-out_unlock:
-	spin_unlock(&files->file_lock);
-	return err;
-}
-
-SYSCALL_DEFINE3(dup3, unsigned int, oldfd, unsigned int, newfd, int, flags)
-{
-	return ksys_dup3(oldfd, newfd, flags);
-}
-
-SYSCALL_DEFINE2(dup2, unsigned int, oldfd, unsigned int, newfd)
-{
-	if (unlikely(newfd == oldfd)) {  
-		struct files_struct *files = current->files;
-		int retval = oldfd;
-
-		rcu_read_lock();
-		if (!files_lookup_fd_rcu(files, oldfd))
-			retval = -EBADF;
-		rcu_read_unlock();
-		return retval;
-	}
-	return ksys_dup3(oldfd, newfd, 0);
-}
-
-SYSCALL_DEFINE1(dup, unsigned int, fildes)
-{
-	int ret = -EBADF;
-	struct file *file = fget_raw(fildes);
-
-	if (file) {
-		ret = get_unused_fd_flags(0);
-		if (ret >= 0)
-			fd_install(ret, file);
-		else
-			fput(file);
-	}
-	return ret;
-}
 

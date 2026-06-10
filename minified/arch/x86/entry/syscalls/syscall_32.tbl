@@ -32,7 +32,7 @@
 31	i386	stty
 32	i386	gtty
 35	i386	ftime
-41	i386	dup			sys_dup
+#41	i386	dup			sys_dup
 42	i386	pipe			sys_pipe
 44	i386	prof
 # 45 brk removed (unreachable: init does not call brk; exec sets mm->brk internally)
@@ -44,7 +44,7 @@
 56	i386	mpx
 58	i386	ulimit
 # 60 umask removed (unreachable)
-63	i386	dup2			sys_dup2
+#63	i386	dup2			sys_dup2
 # 64 getppid removed (unreachable)
 68	i386	sgetmask		sys_sgetmask
 69	i386	ssetmask		sys_ssetmask
@@ -135,7 +135,7 @@
 309	i386	ppoll			sys_ppoll_time32		compat_sys_ppoll_time32
 310	i386	unshare			sys_unshare
 320	i386	utimensat		sys_utimensat_time32
-330	i386	dup3			sys_dup3
+#330	i386	dup3			sys_dup3
 331	i386	pipe2			sys_pipe2
 333	i386	preadv
 334	i386	pwritev

@@ -28,10 +28,6 @@ enum pageblock_bits {
 #define pageblock_order		(MAX_ORDER-1)
 #define pageblock_nr_pages	(1UL << pageblock_order)
 
-unsigned long get_pfnblock_flags_mask(const struct page *page,
-				unsigned long pfn,
-				unsigned long mask);
-
 void set_pfnblock_flags_mask(struct page *page,
 				unsigned long flags,
 				unsigned long pfn,
@@ -73,9 +69,6 @@ enum migratetype {
 extern int page_group_by_mobility_disabled;
 
 #define MIGRATETYPE_MASK ((1UL << PB_migratetype_bits) - 1)
-
-#define get_pageblock_migratetype(page)					\
-	get_pfnblock_flags_mask(page, page_to_pfn(page), MIGRATETYPE_MASK)
 
 struct free_area {
 	struct list_head	free_list[MIGRATE_TYPES];

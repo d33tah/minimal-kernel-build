@@ -279,7 +279,6 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 
 int folio_put_wait_locked(struct folio *folio, int state);
 void folio_wait_writeback(struct folio *folio);
-void folio_end_writeback(struct folio *folio);
 void folio_wait_stable(struct folio *folio);
 void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb);
 void __folio_cancel_dirty(struct folio *folio);
@@ -297,7 +296,6 @@ void filemap_remove_folio(struct folio *folio);
 void __filemap_remove_folio(struct folio *folio, void *shadow);
 void delete_from_page_cache_batch(struct address_space *mapping,
 				  struct folio_batch *fbatch);
-bool filemap_release_folio(struct folio *folio, gfp_t gfp);
 
 int __filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp, void **shadowp);

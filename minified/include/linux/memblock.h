@@ -211,7 +211,6 @@ static inline __init_memblock bool memblock_bottom_up(void)
 }
 
 phys_addr_t memblock_start_of_DRAM(void);
-phys_addr_t memblock_end_of_DRAM(void);
 bool memblock_is_region_memory(phys_addr_t base, phys_addr_t size);
 bool memblock_is_region_reserved(phys_addr_t base, phys_addr_t size);
 

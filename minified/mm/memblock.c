@@ -870,15 +870,6 @@ phys_addr_t __init_memblock memblock_start_of_DRAM(void)
 	return memblock.memory.regions[0].base;
 }
 
-phys_addr_t __init_memblock memblock_end_of_DRAM(void)
-{
-	int idx = memblock.memory.cnt - 1;
-
-	return (memblock.memory.regions[idx].base + memblock.memory.regions[idx].size);
-}
-
-
-
 static int __init_memblock memblock_search(struct memblock_type *type, phys_addr_t addr)
 {
 	unsigned int left = 0, right = type->cnt;

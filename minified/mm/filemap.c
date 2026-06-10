@@ -31,8 +31,6 @@ static inline void folio_clear_idle(struct folio *folio) { }
 #include <asm/tlbflush.h>
 #include "internal.h"
 
-static inline bool try_to_free_buffers(struct folio *folio) { return true; }
-
 #include <asm/mman.h>
 
 static void page_cache_delete(struct address_space *mapping,
@@ -528,23 +526,6 @@ void folio_unlock(struct folio *folio)
 		folio_wake_bit(folio, PG_locked);
 }
 
-void folio_end_writeback(struct folio *folio)
-{
-	
-	if (folio_test_reclaim(folio)) {
-		folio_clear_reclaim(folio);
-		folio_rotate_reclaimable(folio);
-	}
-
-	
-	folio_get(folio);
-	if (!__folio_end_writeback(folio))
-		BUG();
-
-	smp_mb__after_atomic();
-	folio_wake(folio, PG_writeback);
-	folio_put(folio);
-}
 
 
 void __folio_lock(struct folio *folio)
@@ -1377,15 +1358,3 @@ ssize_t generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 	return ret;
 }
 
-bool filemap_release_folio(struct folio *folio, gfp_t gfp)
-{
-	struct address_space * const mapping = folio->mapping;
-
-	BUG_ON(!folio_test_locked(folio));
-	if (folio_test_writeback(folio))
-		return false;
-
-	if (mapping && mapping->a_ops->release_folio)
-		return mapping->a_ops->release_folio(folio, gfp);
-	return try_to_free_buffers(folio);
-}

@@ -167,12 +167,6 @@ static inline void update_mmu_tlb(struct vm_area_struct *vma,
 #define __HAVE_ARCH_UPDATE_MMU_TLB
 #endif
 
-#ifndef __HAVE_ARCH_PTEP_CLEAR_FLUSH
-extern pte_t ptep_clear_flush(struct vm_area_struct *vma,
-			      unsigned long address,
-			      pte_t *ptep);
-#endif
-
 
 #ifndef __HAVE_ARCH_PTEP_SET_WRPROTECT
 struct mm_struct;

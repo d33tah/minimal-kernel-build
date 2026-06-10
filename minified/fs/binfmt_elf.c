@@ -305,23 +305,6 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
 	return(map_addr);
 }
 
-static unsigned long total_mapping_size(const struct elf_phdr *phdr, int nr)
-{
-	elf_addr_t min_addr = -1;
-	elf_addr_t max_addr = 0;
-	bool pt_load = false;
-	int i;
-
-	for (i = 0; i < nr; i++) {
-		if (phdr[i].p_type == PT_LOAD) {
-			min_addr = min(min_addr, ELF_PAGESTART(phdr[i].p_vaddr));
-			max_addr = max(max_addr, phdr[i].p_vaddr + phdr[i].p_memsz);
-			pt_load = true;
-		}
-	}
-	return pt_load ? (max_addr - min_addr) : 0;
-}
-
 static int elf_read(struct file *file, void *buf, size_t len, loff_t pos)
 {
 	ssize_t rv;
@@ -565,25 +548,12 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		elf_flags = MAP_PRIVATE;
 
 		vaddr = elf_ppnt->p_vaddr;
-		 
+
 		if (!first_pt_load) {
 			elf_flags |= MAP_FIXED;
-		} else if (elf_ex->e_type == ET_EXEC) {
-			 
+		} else {
+			/* init ELF is a static ET_EXEC; no ET_DYN/PIE here */
 			elf_flags |= MAP_FIXED_NOREPLACE;
-		} else if (elf_ex->e_type == ET_DYN) {
-			load_bias = 0;
-
-
-			load_bias = ELF_PAGESTART(load_bias - vaddr);
-
-			 
-			total_size = total_mapping_size(elf_phdata,
-							elf_ex->e_phnum);
-			if (!total_size) {
-				retval = -EINVAL;
-				goto out_free_dentry;
-			}
 		}
 
 		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
@@ -594,14 +564,8 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			goto out_free_dentry;
 		}
 
-		if (first_pt_load) {
+		if (first_pt_load)
 			first_pt_load = 0;
-			if (elf_ex->e_type == ET_DYN) {
-				load_bias += error -
-				             ELF_PAGESTART(load_bias + vaddr);
-				reloc_func_desc = load_bias;
-			}
-		}
 
 		 
 		if (elf_ppnt->p_offset <= elf_ex->e_phoff &&
@@ -687,12 +651,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	mm->start_stack = bprm->p;
 
 	if ((current->flags & PF_RANDOMIZE) && (randomize_va_space > 1)) {
-		 
-		if (IS_ENABLED(CONFIG_ARCH_HAS_ELF_RANDOMIZE) &&
-		    elf_ex->e_type == ET_DYN) {
-			mm->brk = mm->start_brk = ELF_ET_DYN_BASE;
-		}
-
 		mm->brk = mm->start_brk = arch_randomize_brk(mm);
 #ifdef compat_brk_randomized
 		current->brk_randomized = 1;

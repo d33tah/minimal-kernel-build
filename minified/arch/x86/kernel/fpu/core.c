@@ -105,47 +105,6 @@ void fpu_reset_from_exception_fixup(void)
 	restore_fpregs_from_fpstate(&init_fpstate, XFEATURE_MASK_FPSTATE);
 }
 
-#if IS_ENABLED(CONFIG_KVM)
-static void __fpstate_reset(struct fpstate *fpstate, u64 xfd);
-
-bool fpu_alloc_guest_fpstate(struct fpu_guest *gfpu)
-{
-	/* Stub: KVM guest FPU not needed for minimal kernel */
-	return false;
-}
-
-void fpu_free_guest_fpstate(struct fpu_guest *gfpu)
-{
-	/* Stub: KVM guest FPU not needed for minimal kernel */
-}
-
-int fpu_enable_guest_xfd_features(struct fpu_guest *guest_fpu, u64 xfeatures)
-{
-	/* Stub: KVM guest FPU not needed for minimal kernel */
-	return -ENOSYS;
-}
-
-
-int fpu_swap_kvm_fpstate(struct fpu_guest *guest_fpu, bool enter_guest)
-{
-	/* Stub: KVM guest FPU not needed for minimal kernel */
-	return -ENOSYS;
-}
-
-void fpu_copy_guest_fpstate_to_uabi(struct fpu_guest *gfpu, void *buf,
-				    unsigned int size, u32 pkru)
-{
-	/* Stub: KVM guest FPU not needed for minimal kernel */
-}
-
-int fpu_copy_uabi_to_guest_fpstate(struct fpu_guest *gfpu, const void *buf,
-				   u64 xcr0, u32 *vpkru)
-{
-	/* Stub: KVM guest FPU not needed for minimal kernel */
-	return -ENOSYS;
-}
-#endif  
-
 void kernel_fpu_begin_mask(unsigned int kfpu_mask)
 {
 	preempt_disable();
@@ -250,8 +209,6 @@ void fpstate_reset(struct fpu *fpu)
 	fpu->perm.__state_perm		= fpu_kernel_cfg.default_features;
 	fpu->perm.__state_size		= fpu_kernel_cfg.default_size;
 	fpu->perm.__user_state_size	= fpu_user_cfg.default_size;
-	 
-	fpu->guest_perm = fpu->perm;
 }
 
 static inline void fpu_inherit_perms(struct fpu *dst_fpu)
@@ -262,7 +219,6 @@ static inline void fpu_inherit_perms(struct fpu *dst_fpu)
 		spin_lock_irq(&current->sighand->siglock);
 		 
 		dst_fpu->perm = src_fpu->perm;
-		dst_fpu->guest_perm = src_fpu->guest_perm;
 		spin_unlock_irq(&current->sighand->siglock);
 	}
 }

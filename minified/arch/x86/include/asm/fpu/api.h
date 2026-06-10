@@ -72,15 +72,7 @@ DECLARE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
 
 
 
-extern bool fpu_alloc_guest_fpstate(struct fpu_guest *gfpu);
-extern void fpu_free_guest_fpstate(struct fpu_guest *gfpu);
-extern int fpu_swap_kvm_fpstate(struct fpu_guest *gfpu, bool enter_guest);
-extern int fpu_enable_guest_xfd_features(struct fpu_guest *guest_fpu, u64 xfeatures);
 
-extern void fpu_copy_guest_fpstate_to_uabi(struct fpu_guest *gfpu, void *buf, unsigned int size, u32 pkru);
-extern int fpu_copy_uabi_to_guest_fpstate(struct fpu_guest *gfpu, const void *buf, u64 xcr0, u32 *vpkru);
-
- 
 extern long fpu_xstate_prctl(int option, unsigned long arg2);
 
 #endif  

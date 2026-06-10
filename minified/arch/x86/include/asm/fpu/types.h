@@ -192,8 +192,6 @@ struct fpstate {
 	 
 } __aligned(64);
 
-#define FPU_GUEST_PERM_LOCKED		BIT_ULL(63)
-
 struct fpu_state_perm {
 	 
 	u64				__state_perm;
@@ -219,36 +217,15 @@ struct fpu {
 	 
 	struct fpstate			*__task_fpstate;
 
-	 
+
 	struct fpu_state_perm		perm;
 
-	 
-	struct fpu_state_perm		guest_perm;
 
-	 
 	struct fpstate			__fpstate;
-	 
+
 };
 
- 
-struct fpu_guest {
-	 
-	u64				xfeatures;
 
-	 
-	u64				perm;
-
-	 
-	u64				xfd_err;
-
-	 
-	unsigned int			uabi_size;
-
-	 
-	struct fpstate			*fpstate;
-};
-
- 
 struct fpu_state_config {
 	 
 	unsigned int		max_size;

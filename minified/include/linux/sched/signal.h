@@ -149,7 +149,6 @@ int force_sig_pkuerr(void __user *addr, u32 pkey);
 extern int send_sig_info(int, struct kernel_siginfo *, struct task_struct *);
 /* force_sigsegv now static in signal.c */
 extern int force_sig_info(struct kernel_siginfo *);
-extern int kill_pgrp(struct pid *pid, int sig, int priv);
 extern __must_check bool do_notify_parent(struct task_struct *, int);
 extern void __wake_up_parent(struct task_struct *p, struct task_struct *parent);
 extern void force_sig(int);

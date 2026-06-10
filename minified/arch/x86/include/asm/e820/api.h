@@ -45,7 +45,6 @@ extern struct e820_table *e820_table;
 
 extern unsigned long pci_mem_start;
 
-extern bool e820__mapped_any(u64 start, u64 end, enum e820_type type);
 extern bool e820__mapped_all(u64 start, u64 end, enum e820_type type);
 
 extern void e820__range_add   (u64 start, u64 size, enum e820_type type);
@@ -54,10 +53,8 @@ extern u64  e820__range_remove(u64 start, u64 size, enum e820_type old_type, boo
 
 extern void e820__print_table(char *who);
 extern int  e820__update_table(struct e820_table *table);
-extern void e820__update_table_print(void);
 
 extern unsigned long e820__end_of_ram_pfn(void);
-extern unsigned long e820__end_of_low_ram_pfn(void);
 
 extern void e820__memblock_setup(void);
 

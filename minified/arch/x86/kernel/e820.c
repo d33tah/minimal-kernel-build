@@ -16,11 +16,6 @@ struct e820_table *e820_table __refdata			= &e820_table_init;
 unsigned long pci_mem_start = 0xaeedbabe;
 
 
-bool e820__mapped_any(u64 start, u64 end, enum e820_type type)
-{
-	return false;
-}
-
 static struct e820_entry *__e820__mapped_all(u64 start, u64 end,
 					     enum e820_type type)
 {
@@ -372,13 +367,6 @@ u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type, bool
 	return real_removed_size;
 }
 
-void __init e820__update_table_print(void)
-{
-	/* Stub: e820 table update printing not needed for minimal kernel */
-	e820__update_table(e820_table);
-}
-
-
 #define MAX_GAP_END 0x100000000ull
 
 static int __init e820_search_gap(unsigned long *gapstart, unsigned long *gapsize)
@@ -503,10 +491,6 @@ unsigned long __init e820__end_of_ram_pfn(void)
 	return e820_end_pfn(MAX_ARCH_PFN, E820_TYPE_RAM);
 }
 
-unsigned long __init e820__end_of_low_ram_pfn(void)
-{
-	return e820_end_pfn(1UL << (32 - PAGE_SHIFT), E820_TYPE_RAM);
-}
 
 static void __init early_panic(char *msg)
 {

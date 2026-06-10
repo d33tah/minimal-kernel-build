@@ -733,23 +733,6 @@ static void complete_vfork_done(struct task_struct *tsk)
 	task_unlock(tsk);
 }
 
-static int wait_for_vfork_done(struct task_struct *child,
-				struct completion *vfork)
-{
-	int killed;
-
-	killed = wait_for_completion_killable(vfork);
-
-	if (killed) {
-		task_lock(child);
-		child->vfork_done = NULL;
-		task_unlock(child);
-	}
-
-	put_task_struct(child);
-	return killed;
-}
-
 static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {
 	uprobe_free_utask(tsk);
@@ -1359,23 +1342,20 @@ struct mm_struct *copy_init_mm(void)
 pid_t kernel_clone(struct kernel_clone_args *args)
 {
 	u64 clone_flags = args->flags;
-	struct completion vfork;
 	struct pid *pid;
 	struct task_struct *p;
 	int trace = 0;
 	pid_t nr;
 
-	
+
 	if ((args->flags & CLONE_PIDFD) &&
 	    (args->flags & CLONE_PARENT_SETTID) &&
 	    (args->pidfd == args->parent_tid))
 		return -EINVAL;
 
-	
+
 	if (!(clone_flags & CLONE_UNTRACED)) {
-		if (clone_flags & CLONE_VFORK)
-			trace = PTRACE_EVENT_VFORK;
-		else if (args->exit_signal != SIGCHLD)
+		if (args->exit_signal != SIGCHLD)
 			trace = PTRACE_EVENT_CLONE;
 		else
 			trace = PTRACE_EVENT_FORK;
@@ -1399,22 +1379,11 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 	if (clone_flags & CLONE_PARENT_SETTID)
 		put_user(nr, args->parent_tid);
 
-	if (clone_flags & CLONE_VFORK) {
-		p->vfork_done = &vfork;
-		init_completion(&vfork);
-		get_task_struct(p);
-	}
-
 	wake_up_new_task(p);
 
-	
+
 	if (unlikely(trace))
 		ptrace_event_pid(trace, pid);
-
-	if (clone_flags & CLONE_VFORK) {
-		if (!wait_for_vfork_done(p, &vfork))
-			ptrace_event_pid(PTRACE_EVENT_VFORK_DONE, pid);
-	}
 
 	put_pid(pid);
 	return nr;

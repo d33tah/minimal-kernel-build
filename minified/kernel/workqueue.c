@@ -42,17 +42,6 @@ bool cancel_work_sync(struct work_struct *work)
     return test_and_clear_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work));
 }
 
-bool flush_delayed_work(struct delayed_work *dwork)
-{
-    return flush_work(&dwork->work);
-}
-
-bool cancel_delayed_work(struct delayed_work *dwork)
-{
-    return cancel_work_sync(&dwork->work);
-}
-
-
 __printf(1, 4) struct workqueue_struct *
 alloc_workqueue(const char *fmt, unsigned int flags, int max_active, ...)
 {
@@ -74,11 +63,9 @@ void destroy_workqueue(struct workqueue_struct *wq)
 }
 
 static struct workqueue_struct system_wq_storage = { .name = "events" };
-static struct workqueue_struct system_long_wq_storage = { .name = "events_long" };
 static struct workqueue_struct system_unbound_wq_storage = { .name = "events_unbound" };
 
 struct workqueue_struct *system_wq = &system_wq_storage;
-struct workqueue_struct *system_long_wq = &system_long_wq_storage;
 struct workqueue_struct *system_unbound_wq = &system_unbound_wq_storage;
 
 void __init workqueue_init_early(void)

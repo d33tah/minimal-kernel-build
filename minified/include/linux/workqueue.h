@@ -160,7 +160,6 @@ enum {
 };
 
 extern struct workqueue_struct *system_wq;
-extern struct workqueue_struct *system_long_wq;
 extern struct workqueue_struct *system_unbound_wq;
 
 __printf(1, 4) struct workqueue_struct *
@@ -178,9 +177,6 @@ extern bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 extern bool flush_work(struct work_struct *work);
 extern bool cancel_work_sync(struct work_struct *work);
 
-extern bool flush_delayed_work(struct delayed_work *dwork);
-extern bool cancel_delayed_work(struct delayed_work *dwork);
-
 static inline bool queue_work(struct workqueue_struct *wq,
 			      struct work_struct *work)
 {
@@ -192,14 +188,6 @@ static inline bool queue_delayed_work(struct workqueue_struct *wq,
 				      unsigned long delay)
 {
 	return queue_delayed_work_on(WORK_CPU_UNBOUND, wq, dwork, delay);
-}
-
-static inline bool mod_delayed_work(struct workqueue_struct *wq,
-				    struct delayed_work *dwork,
-				    unsigned long delay)
-{
-	cancel_delayed_work(dwork);
-	return queue_delayed_work(wq, dwork, delay);
 }
 
 static inline bool schedule_work_on(int cpu, struct work_struct *work)

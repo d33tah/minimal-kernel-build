@@ -25,14 +25,6 @@ static atomic_t deferred_trigger_count = ATOMIC_INIT(0);
 static bool initcalls_done;
 
 
-static bool defer_all_probes;
-
-static void __device_set_deferred_probe_reason(const struct device *dev, char *reason)
-{
-	kfree(dev->p->deferred_probe_reason);
-	dev->p->deferred_probe_reason = reason;
-}
-
 static void deferred_probe_work_func(struct work_struct *work)
 {
 	struct device *dev;
@@ -47,9 +39,7 @@ static void deferred_probe_work_func(struct work_struct *work)
 
 		get_device(dev);
 
-		__device_set_deferred_probe_reason(dev, NULL);
 
-		 
 		mutex_unlock(&deferred_probe_mutex);
 
 		dev_dbg(dev, "Retrying from deferred list\n");
@@ -81,7 +71,6 @@ void driver_deferred_probe_del(struct device *dev)
 	if (!list_empty(&dev->p->deferred_probe)) {
 		dev_dbg(dev, "Removed from deferred list\n");
 		list_del_init(&dev->p->deferred_probe);
-		__device_set_deferred_probe_reason(dev, NULL);
 	}
 	mutex_unlock(&deferred_probe_mutex);
 }
@@ -208,12 +197,6 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 			   !drv->suppress_bind_attrs;
 	int ret;
 
-	if (defer_all_probes) {
-		 
-		dev_dbg(dev, "Driver %s force probe deferral\n", drv->name);
-		return -EPROBE_DEFER;
-	}
-
 	if (!list_empty(&dev->devres_head)) {
 		dev_crit(dev, "Resources present before probing\n");
 		ret = -EBUSY;
@@ -333,9 +316,8 @@ static int driver_probe_device(struct device_driver *drv, struct device *dev)
 	if (ret == -EPROBE_DEFER || ret == EPROBE_DEFER) {
 		driver_deferred_probe_add(dev);
 
-		 
-		if (trigger_count != atomic_read(&deferred_trigger_count) &&
-		    !defer_all_probes)
+
+		if (trigger_count != atomic_read(&deferred_trigger_count))
 			driver_deferred_probe_trigger();
 	}
 	atomic_dec(&probe_count);

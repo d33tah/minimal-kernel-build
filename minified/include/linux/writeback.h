@@ -85,7 +85,6 @@ static inline void cgroup_writeback_umount(void)
 }
 
 
-void wb_update_bandwidth(struct bdi_writeback *wb);
 void balance_dirty_pages_ratelimited(struct address_space *mapping);
 
 typedef int (*writepage_t)(struct page *page, struct writeback_control *wbc,
@@ -93,8 +92,6 @@ typedef int (*writepage_t)(struct page *page, struct writeback_control *wbc,
 
 int do_writepages(struct address_space *mapping, struct writeback_control *wbc);
 
-bool filemap_dirty_folio(struct address_space *mapping, struct folio *folio);
-bool folio_redirty_for_writepage(struct writeback_control *, struct folio *);
 
 
 

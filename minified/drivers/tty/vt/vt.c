@@ -956,49 +956,11 @@ static int con_write(struct tty_struct *tty, const unsigned char *buf, int count
 	return retval;
 }
 
-static int con_put_char(struct tty_struct *tty, unsigned char ch)
-{
-	return do_con_write(tty, &ch, 1);
-}
-
 static unsigned int con_write_room(struct tty_struct *tty)
 {
 	if (tty->flow.stopped)
 		return 0;
-	return 32768;		
-}
-
-static void con_throttle(struct tty_struct *tty)
-{
-}
-
-static void con_unthrottle(struct tty_struct *tty)
-{
-	struct vc_data *vc = tty->driver_data;
-
-	wake_up_interruptible(&vc->paste_wait);
-}
-
-static void con_stop(struct tty_struct *tty)
-{
-	int console_num;
-	if (!tty)
-		return;
-	console_num = tty->index;
-	if (!vc_cons_allocated(console_num))
-		return;
-	vt_kbd_con_stop(console_num);
-}
-
-static void con_start(struct tty_struct *tty)
-{
-	int console_num;
-	if (!tty)
-		return;
-	console_num = tty->index;
-	if (!vc_cons_allocated(console_num))
-		return;
-	vt_kbd_con_start(console_num);
+	return 32768;
 }
 
 static void con_flush_chars(struct tty_struct *tty)
@@ -1108,8 +1070,7 @@ static void vc_init(struct vc_data *vc, unsigned int rows,
 	vc->vc_def_color       = default_color;
 	vc->vc_ulcolor         = default_underline_color;
 	vc->vc_itcolor         = default_italic_color;
-	vc->vc_halfcolor       = 0x08;   
-	init_waitqueue_head(&vc->paste_wait);
+	vc->vc_halfcolor       = 0x08;
 	reset_terminal(vc, do_clear);
 }
 
@@ -1177,12 +1138,7 @@ static const struct tty_operations con_ops = {
 	.close = con_close,
 	.write = con_write,
 	.write_room = con_write_room,
-	.put_char = con_put_char,
 	.flush_chars = con_flush_chars,
-	.stop = con_stop,
-	.start = con_start,
-	.throttle = con_throttle,
-	.unthrottle = con_unthrottle,
 	.resize = vt_resize,
 	.shutdown = con_shutdown,
 	.cleanup = con_cleanup,

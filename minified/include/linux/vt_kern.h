@@ -73,7 +73,6 @@ struct vc_data {
 	struct vt_mode	vt_mode;
 	struct pid 	*vt_pid;
 	int		vt_newvt;
-	wait_queue_head_t paste_wait;
 	unsigned int	vc_disp_ctrl	: 1;
 	unsigned int	vc_toggle_meta	: 1;
 	unsigned int	vc_decscnm	: 1;
@@ -160,8 +159,6 @@ struct vt_notifier_param {
 
 int vt_reset_unicode(unsigned int console);
 void vt_reset_keyboard(unsigned int console);
-void vt_kbd_con_start(unsigned int console);
-void vt_kbd_con_stop(unsigned int console);
 
 void vc_scrolldelta_helper(struct vc_data *c, int lines,
 		unsigned int rolled_over, void *_base, unsigned int size);

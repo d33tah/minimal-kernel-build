@@ -5,16 +5,6 @@
 /* register_keyboard_notifier, unregister_keyboard_notifier, kd_mksound,
    vt_get_leds removed - unused */
 
-void vt_kbd_con_start(int console)
-{
-	 
-}
-
-void vt_kbd_con_stop(int console)
-{
-	 
-}
-
 void vt_reset_keyboard(int console)
 {
 	 

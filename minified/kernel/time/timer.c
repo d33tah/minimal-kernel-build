@@ -296,67 +296,28 @@ static struct timer_base *lock_timer_base(struct timer_list *timer,
 	}
 }
 
-#define MOD_TIMER_PENDING_ONLY		0x01
-#define MOD_TIMER_REDUCE		0x02
 #define MOD_TIMER_NOTPENDING		0x04
 
 static inline int
 __mod_timer(struct timer_list *timer, unsigned long expires, unsigned int options)
 {
-	unsigned long clk = 0, flags, bucket_expiry;
+	unsigned long flags;
 	struct timer_base *base, *new_base;
-	unsigned int idx = UINT_MAX;
-	int ret = 0;
+	int ret;
 
 	BUG_ON(!timer->function);
 
-	 
-	if (!(options & MOD_TIMER_NOTPENDING) && timer_pending(timer)) {
-		 
-		long diff = timer->expires - expires;
-
-		if (!diff)
-			return 1;
-		if (options & MOD_TIMER_REDUCE && diff <= 0)
-			return 1;
-
-		 
-		base = lock_timer_base(timer, &flags);
-		forward_timer_base(base);
-
-		if (timer_pending(timer) && (options & MOD_TIMER_REDUCE) &&
-		    time_before_eq(timer->expires, expires)) {
-			ret = 1;
-			goto out_unlock;
-		}
-
-		clk = base->clk;
-		idx = calc_wheel_index(expires, clk, &bucket_expiry);
-
-		 
-		if (idx == timer_get_idx(timer)) {
-			if (!(options & MOD_TIMER_REDUCE))
-				timer->expires = expires;
-			else if (time_after(timer->expires, expires))
-				timer->expires = expires;
-			ret = 1;
-			goto out_unlock;
-		}
-	} else {
-		base = lock_timer_base(timer, &flags);
-		forward_timer_base(base);
-	}
+	base = lock_timer_base(timer, &flags);
+	forward_timer_base(base);
 
 	ret = detach_if_pending(timer, base, false);
-	if (!ret && (options & MOD_TIMER_PENDING_ONLY))
-		goto out_unlock;
 
 	new_base = get_target_base(base, timer->flags);
 
 	if (base != new_base) {
-		 
+
 		if (likely(base->running_timer != timer)) {
-			 
+
 			timer->flags |= TIMER_MIGRATING;
 
 			raw_spin_unlock(&base->lock);
@@ -369,13 +330,8 @@ __mod_timer(struct timer_list *timer, unsigned long expires, unsigned int option
 	}
 
 	timer->expires = expires;
-	 
-	if (idx != UINT_MAX && clk == base->clk)
-		enqueue_timer(base, timer, idx, bucket_expiry);
-	else
-		internal_add_timer(base, timer);
+	internal_add_timer(base, timer);
 
-out_unlock:
 	raw_spin_unlock_irqrestore(&base->lock, flags);
 
 	return ret;

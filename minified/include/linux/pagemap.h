@@ -14,11 +14,6 @@
 struct folio_batch;
 
 int write_inode_now(struct inode *, int sync);
-int filemap_fdatawait_range(struct address_space *, loff_t lstart, loff_t lend);
-int filemap_write_and_wait_range(struct address_space *mapping,
-		loff_t lstart, loff_t lend);
-int filemap_fdatawrite_wbc(struct address_space *mapping,
-			   struct writeback_control *wbc);
 
 static inline errseq_t filemap_sample_wb_err(struct address_space *mapping)
 {
@@ -179,9 +174,6 @@ static inline bool folio_contains(struct folio *folio, pgoff_t index)
 	return index - folio_index(folio) < folio_nr_pages(folio);
 }
 
-unsigned find_get_pages_range_tag(struct address_space *mapping, pgoff_t *index,
-			pgoff_t end, xa_mark_t tag, unsigned int nr_pages,
-			struct page **pages);
 struct page *grab_cache_page_write_begin(struct address_space *mapping,
 			pgoff_t index);
 

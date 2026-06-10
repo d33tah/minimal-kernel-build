@@ -365,9 +365,6 @@ void kset_unregister(struct kset *k)
 	kobject_put(&k->kobj);
 }
 
-/* Stub: kset_find_obj not used in minimal kernel */
-struct kobject *kset_find_obj(struct kset *kset, const char *name) { return NULL; }
-
 static void kset_release(struct kobject *kobj)
 {
 	struct kset *kset = container_of(kobj, struct kset, kobj);

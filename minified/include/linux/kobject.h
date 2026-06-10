@@ -125,8 +125,6 @@ static inline const struct kobj_type *get_ktype(struct kobject *kobj)
 	return kobj->ktype;
 }
 
-extern struct kobject *kset_find_obj(struct kset *, const char *);
-
 
 int kobject_uevent(struct kobject *kobj, enum kobject_action action);
 int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,

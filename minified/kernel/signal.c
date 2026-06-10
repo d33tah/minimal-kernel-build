@@ -137,11 +137,6 @@ static inline void print_dropped_signal(int sig)
 }
 
 /* Stubbed - not used externally */
-bool task_set_jobctl_pending(struct task_struct *task, unsigned long mask)
-{
-	return false;
-}
-
 /* Stubbed - not used externally */
 void task_clear_jobctl_pending(struct task_struct *task, unsigned long mask)
 {

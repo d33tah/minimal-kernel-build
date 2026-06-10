@@ -31,16 +31,7 @@ extern int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,
 #define PT_EVENT_FLAG(event)	(1 << (PT_OPT_FLAG_SHIFT + (event)))
 #define PT_TRACESYSGOOD		PT_EVENT_FLAG(0)
 
-extern long arch_ptrace(struct task_struct *child, long request,
-			unsigned long addr, unsigned long data);
-extern void ptrace_disable(struct task_struct *);
-extern int ptrace_request(struct task_struct *child, long request,
-			  unsigned long addr, unsigned long data);
 extern int ptrace_notify(int exit_code, unsigned long message);
-extern void __ptrace_link(struct task_struct *child,
-			  struct task_struct *new_parent,
-			  const struct cred *ptracer_cred);
-extern void __ptrace_unlink(struct task_struct *child);
 #define PTRACE_MODE_READ	0x01
 #define PTRACE_MODE_ATTACH	0x02
 #define PTRACE_MODE_NOAUDIT	0x04
@@ -51,8 +42,6 @@ extern void __ptrace_unlink(struct task_struct *child);
 
 static inline void ptrace_unlink(struct task_struct *child)
 {
-	if (unlikely(child->ptrace))
-		__ptrace_unlink(child);
 }
 
 
@@ -96,17 +85,7 @@ static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
 	child->ptrace = 0;
 	child->parent = child->real_parent;
 
-	if (unlikely(ptrace) && current->ptrace) {
-		child->ptrace = current->ptrace;
-		__ptrace_link(child, current->parent, current->ptracer_cred);
-
-		if (child->ptrace & PT_SEIZED)
-			task_set_jobctl_pending(child, JOBCTL_TRAP_STOP);
-		else
-			sigaddset(&child->pending.signal, SIGSTOP);
-	}
-	else
-		child->ptracer_cred = NULL;
+	child->ptracer_cred = NULL;
 }
 
 static inline void ptrace_release_task(struct task_struct *task)

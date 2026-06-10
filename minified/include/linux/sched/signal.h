@@ -21,7 +21,6 @@
 #define JOBCTL_TRACED		(1UL << JOBCTL_TRACED_BIT)
 #define JOBCTL_TRAP_MASK	(JOBCTL_TRAP_STOP)
 #define JOBCTL_PENDING_MASK	(JOBCTL_STOP_PENDING | JOBCTL_TRAP_MASK)
-extern bool task_set_jobctl_pending(struct task_struct *task, unsigned long mask);
 extern void task_clear_jobctl_pending(struct task_struct *task, unsigned long mask);
 #include <linux/cred.h>
 #include <linux/refcount.h>

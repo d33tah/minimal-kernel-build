@@ -317,17 +317,6 @@ struct pid *get_task_pid(struct task_struct *task, enum pid_type type)
 	return pid;
 }
 
-struct task_struct *get_pid_task(struct pid *pid, enum pid_type type)
-{
-	struct task_struct *result;
-	rcu_read_lock();
-	result = pid_task(pid, type);
-	if (result)
-		get_task_struct(result);
-	rcu_read_unlock();
-	return result;
-}
-
 pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
 {
 	struct upid *upid;

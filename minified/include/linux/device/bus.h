@@ -68,9 +68,6 @@ struct bus_attribute {
 int device_match_devt(struct device *dev, const void *pdevt);
 
 
-int bus_for_each_dev(struct bus_type *bus, struct device *start, void *data,
-		     int (*fn)(struct device *dev, void *data));
-
 int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 		     void *data, int (*fn)(struct device_driver *, void *));
 

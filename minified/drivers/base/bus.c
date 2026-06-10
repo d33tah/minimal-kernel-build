@@ -56,37 +56,6 @@ static const struct kset_uevent_ops bus_uevent_ops = {
 
 static struct kset *bus_kset;
 
-static struct device *next_device(struct klist_iter *i)
-{
-	struct klist_node *n = klist_next(i);
-	struct device *dev = NULL;
-	struct device_private *dev_prv;
-
-	if (n) {
-		dev_prv = to_device_private_bus(n);
-		dev = dev_prv->device;
-	}
-	return dev;
-}
-
-int bus_for_each_dev(struct bus_type *bus, struct device *start,
-		     void *data, int (*fn)(struct device *, void *))
-{
-	struct klist_iter i;
-	struct device *dev;
-	int error = 0;
-
-	if (!bus || !bus->p)
-		return -EINVAL;
-
-	klist_iter_init_node(&bus->p->klist_devices, &i,
-			     (start ? &start->p->knode_bus : NULL));
-	while (!error && (dev = next_device(&i)))
-		error = fn(dev, data);
-	klist_iter_exit(&i);
-	return error;
-}
-
 static struct device_driver *next_driver(struct klist_iter *i)
 {
 	struct klist_node *n = klist_next(i);

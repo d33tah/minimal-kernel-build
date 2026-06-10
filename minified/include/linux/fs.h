@@ -1316,7 +1316,6 @@ extern int vfs_getattr(const struct path *, struct kstat *, u32, unsigned int);
 
 extern struct file_system_type *get_filesystem(struct file_system_type *fs);
 extern void put_filesystem(struct file_system_type *fs);
-extern struct file_system_type *get_fs_type(const char *name);
 /* Removed: get_super, get_active_super, drop_super, drop_super_exclusive,
    iterate_supers, iterate_supers_type - never called */
 

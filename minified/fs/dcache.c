@@ -767,14 +767,6 @@ struct dentry *d_alloc_anon(struct super_block *sb)
 	return __d_alloc(sb, NULL);
 }
 
-struct dentry *d_alloc_pseudo(struct super_block *sb, const struct qstr *name)
-{
-	struct dentry *dentry = __d_alloc(sb, name);
-	if (likely(dentry))
-		dentry->d_flags |= DCACHE_NORCU;
-	return dentry;
-}
-
 void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op)
 {
 	WARN_ON_ONCE(dentry->d_op);

@@ -13,11 +13,6 @@ void unlock_page(struct page *page)
 	return folio_unlock(page_folio(page));
 }
 
-void wait_on_page_writeback(struct page *page)
-{
-	return folio_wait_writeback(page_folio(page));
-}
-
 
 bool page_mapped(struct page *page)
 {

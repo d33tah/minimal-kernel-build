@@ -278,7 +278,6 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 }
 
 int folio_put_wait_locked(struct folio *folio, int state);
-void wait_on_page_writeback(struct page *page);
 void folio_wait_writeback(struct folio *folio);
 void folio_end_writeback(struct folio *folio);
 void folio_wait_stable(struct folio *folio);

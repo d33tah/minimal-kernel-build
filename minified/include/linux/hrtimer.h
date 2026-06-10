@@ -135,13 +135,6 @@ static inline void hrtimer_cancel_wait_running(struct hrtimer *timer)
 }
 
 
-extern void hrtimer_init(struct hrtimer *timer, clockid_t which_clock,
-			 enum hrtimer_mode mode);
-
-extern void hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
-				   u64 range_ns, const enum hrtimer_mode mode);
-
-
 static inline int hrtimer_callback_running(struct hrtimer *timer)
 {
 	return timer->base->running == timer;

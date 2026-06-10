@@ -293,18 +293,6 @@ void fpu__drop(struct fpu *fpu)
 	preempt_enable();
 }
 
-static inline void restore_fpregs_from_init_fpstate(u64 features_mask)
-{
-	if (use_xsave())
-		os_xrstor(&init_fpstate, features_mask);
-	else if (use_fxsr())
-		fxrstor(&init_fpstate.regs.fxsave);
-	else
-		frstor(&init_fpstate.regs.fsave);
-
-	pkru_write_default();
-}
-
 static void fpu_reset_fpregs(void)
 {
 	struct fpu *fpu = &current->thread.fpu;
@@ -314,30 +302,6 @@ static void fpu_reset_fpregs(void)
 	 
 	memcpy(&fpu->fpstate->regs, &init_fpstate.regs, init_fpstate_copy_size());
 	set_thread_flag(TIF_NEED_FPU_LOAD);
-	fpregs_unlock();
-}
-
-void fpu__clear_user_states(struct fpu *fpu)
-{
-	WARN_ON_FPU(fpu != &current->thread.fpu);
-
-	fpregs_lock();
-	if (!cpu_feature_enabled(X86_FEATURE_FPU)) {
-		fpu_reset_fpregs();
-		fpregs_unlock();
-		return;
-	}
-
-	 
-	if (xfeatures_mask_supervisor() &&
-	    !fpregs_state_valid(fpu, smp_processor_id()))
-		os_xrstor_supervisor(fpu->fpstate);
-
-	 
-	restore_fpregs_from_init_fpstate(XFEATURE_MASK_USER_RESTORE);
-
-	 
-	fpregs_mark_activate();
 	fpregs_unlock();
 }
 

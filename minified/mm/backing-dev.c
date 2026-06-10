@@ -13,37 +13,6 @@
 
 struct backing_dev_info noop_backing_dev_info;
 
-static struct class *bdi_class;
-
-struct workqueue_struct *bdi_wq;
-
-static inline void bdi_debug_init(void)
-{
-}
-
-static __init int bdi_class_init(void)
-{
-	bdi_class = class_create(THIS_MODULE, "bdi");
-	if (IS_ERR(bdi_class))
-		return PTR_ERR(bdi_class);
-
-	bdi_debug_init();
-
-	return 0;
-}
-postcore_initcall(bdi_class_init);
-
-static int __init default_bdi_init(void)
-{
-	bdi_wq = alloc_workqueue("writeback", WQ_MEM_RECLAIM | WQ_UNBOUND |
-				 WQ_SYSFS, 0);
-	if (!bdi_wq)
-		return -ENOMEM;
-	return 0;
-}
-subsys_initcall(default_bdi_init);
-
-
 int bdi_init(struct backing_dev_info *bdi)
 {
 	bdi->dev = NULL;

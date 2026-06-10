@@ -207,21 +207,6 @@ int kobject_add(struct kobject *kobj, struct kobject *parent,
 	return retval;
 }
 
-int kobject_init_and_add(struct kobject *kobj, const struct kobj_type *ktype,
-			 struct kobject *parent, const char *fmt, ...)
-{
-	va_list args;
-	int retval;
-
-	kobject_init(kobj, ktype);
-
-	va_start(args, fmt);
-	retval = kobject_add_varg(kobj, parent, fmt, args);
-	va_end(args);
-
-	return retval;
-}
-
 /* Simplified: sysfs functions are already stubs */
 static void __kobject_del(struct kobject *kobj)
 {
@@ -318,7 +303,6 @@ static void dynamic_kobj_release(struct kobject *kobj)
 
 static struct kobj_type dynamic_kobj_ktype = {
 	.release	= dynamic_kobj_release,
-	.sysfs_ops	= &kobj_sysfs_ops,
 };
 
 static struct kobject *kobject_create(void)
@@ -357,35 +341,6 @@ void kset_init(struct kset *k)
 	INIT_LIST_HEAD(&k->list);
 	spin_lock_init(&k->list_lock);
 }
-
-static ssize_t kobj_attr_show(struct kobject *kobj, struct attribute *attr,
-			      char *buf)
-{
-	struct kobj_attribute *kattr;
-	ssize_t ret = -EIO;
-
-	kattr = container_of(attr, struct kobj_attribute, attr);
-	if (kattr->show)
-		ret = kattr->show(kobj, kattr, buf);
-	return ret;
-}
-
-static ssize_t kobj_attr_store(struct kobject *kobj, struct attribute *attr,
-			       const char *buf, size_t count)
-{
-	struct kobj_attribute *kattr;
-	ssize_t ret = -EIO;
-
-	kattr = container_of(attr, struct kobj_attribute, attr);
-	if (kattr->store)
-		ret = kattr->store(kobj, kattr, buf, count);
-	return ret;
-}
-
-const struct sysfs_ops kobj_sysfs_ops = {
-	.show	= kobj_attr_show,
-	.store	= kobj_attr_store,
-};
 
 int kset_register(struct kset *k)
 {
@@ -426,7 +381,6 @@ static void kset_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
 }
 
 static struct kobj_type kset_ktype = {
-	.sysfs_ops	= &kobj_sysfs_ops,
 	.release	= kset_release,
 	.get_ownership	= kset_get_ownership,
 };

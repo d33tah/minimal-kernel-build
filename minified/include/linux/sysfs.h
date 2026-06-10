@@ -111,11 +111,6 @@ struct bin_attribute {
 
 #define sysfs_bin_attr_init(bin_attr) sysfs_attr_init(&(bin_attr)->attr)
 
-struct sysfs_ops {
-	ssize_t	(*show)(struct kobject *, struct attribute *, char *);
-	ssize_t	(*store)(struct kobject *, struct attribute *, const char *, size_t);
-};
-
 
 
 

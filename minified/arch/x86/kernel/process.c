@@ -15,13 +15,7 @@
 #include <linux/pm.h>
 #include <linux/tick.h>
 #include <linux/random.h>
-#ifndef _URN_INLINE
-#define _URN_INLINE
-struct user_return_notifier {};
 static inline void propagate_user_return_notify(struct task_struct *prev, struct task_struct *next) {}
-static inline void fire_user_return_notifiers(void) {}
-static inline void clear_user_return_notifier(struct task_struct *p) {}
-#endif
 #include <linux/dmi.h>
 #include <linux/utsname.h>
 static inline void boot_init_stack_canary(void) {}

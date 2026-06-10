@@ -37,7 +37,7 @@ CFLAGS_init-mm.o += $(call cc-disable-warning, override-init)
 CFLAGS_init-mm.o += $(call cc-disable-warning, initializer-overrides)
 
 mmu-y			:= nommu.o
-mmu-$(CONFIG_MMU)	:= highmem.o memory.o \
+mmu-$(CONFIG_MMU)	:= memory.o \
 			   mlock.o mmap.o mmu_gather.o mprotect.o mremap.o \
 			   pgtable-generic.o rmap.o vmalloc.o
 

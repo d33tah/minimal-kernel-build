@@ -258,10 +258,6 @@ struct wake_q_node {
 	struct wake_q_node *next;
 };
 
-struct kmap_ctrl {
-	int				idx;
-	pte_t				pteval[KM_MAX_IDX];
-};
 
 struct task_struct {
 	 
@@ -524,7 +520,6 @@ struct task_struct {
 
 
 
-	struct kmap_ctrl		kmap_ctrl;
 	int				pagefault_disabled;
 	struct task_struct		*oom_reaper_list;
 	struct timer_list		oom_reaper_timer;

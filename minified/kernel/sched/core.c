@@ -673,24 +673,11 @@ static inline void finish_lock_switch(struct rq *rq)
 # define finish_arch_post_lock_switch()	do { } while (0)
 #endif
 
-static inline void kmap_local_sched_out(void)
-{
-	if (unlikely(current->kmap_ctrl.idx))
-		__kmap_local_sched_out();
-}
-
-static inline void kmap_local_sched_in(void)
-{
-	if (unlikely(current->kmap_ctrl.idx))
-		__kmap_local_sched_in();
-}
-
 static inline void
 prepare_task_switch(struct rq *rq, struct task_struct *prev,
 		    struct task_struct *next)
 {
 	fire_sched_out_preempt_notifiers(prev, next);
-	kmap_local_sched_out();
 	prepare_task(next);
 	prepare_arch_switch(next);
 }
@@ -717,8 +704,6 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 	tick_nohz_task_switch();
 	finish_lock_switch(rq);
 	finish_arch_post_lock_switch();
-
-	kmap_local_sched_in();
 
 	fire_sched_in_preempt_notifiers(current);
 	

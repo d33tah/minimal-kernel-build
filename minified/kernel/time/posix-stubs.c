@@ -21,32 +21,12 @@ asmlinkage long sys_ni_posix_timers(void)
 #define SYS_NI(name)  SYSCALL_ALIAS(sys_##name, sys_ni_posix_timers)
 #endif
 
-#ifndef COMPAT_SYS_NI
-#define COMPAT_SYS_NI(name)  SYSCALL_ALIAS(compat_sys_##name, sys_ni_posix_timers)
-#endif
-
-SYS_NI(timer_create);
-SYS_NI(timer_gettime);
-SYS_NI(timer_getoverrun);
-SYS_NI(timer_settime);
-SYS_NI(timer_delete);
-SYS_NI(clock_adjtime);
-SYS_NI(getitimer);
-SYS_NI(setitimer);
-SYS_NI(clock_adjtime32);
-#ifdef __ARCH_WANT_SYS_ALARM
-SYS_NI(alarm);
-#endif
-
-
-SYS_NI(clock_settime);
+/*
+ * Only clock_gettime / clock_getres remain wired up: the x86 vDSO fallback
+ * (asm/vdso/gettimeofday.h) references __NR_clock_gettime[64] and
+ * __NR_clock_getres[_time64], so their syscall table entries must stay even
+ * though the syscalls themselves are unreachable (-ENOSYS). All other posix
+ * timer/itimer syscalls are removed from syscall_32.tbl (-> sys_ni).
+ */
 SYS_NI(clock_gettime);
 SYS_NI(clock_getres);
-SYS_NI(clock_nanosleep);
-
-
-#if defined(CONFIG_COMPAT) || defined(CONFIG_ALPHA)
-COMPAT_SYS_NI(getitimer);
-COMPAT_SYS_NI(setitimer);
-#endif
-

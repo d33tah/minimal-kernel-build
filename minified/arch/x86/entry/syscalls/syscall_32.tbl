@@ -27,7 +27,7 @@
 # 22 umount removed (unreachable)
 25	i386	stime			sys_stime32
 26	i386	ptrace			sys_ptrace			compat_sys_ptrace
-27	i386	alarm			sys_alarm
+# 27	i386	alarm			sys_alarm  (posix timers: unreachable, -> sys_ni)
 30	i386	utime			sys_utime32
 31	i386	stty
 32	i386	gtty
@@ -59,8 +59,8 @@
 98	i386	profil
 101	i386	ioperm			sys_ioperm
 103	i386	syslog			sys_syslog
-104	i386	setitimer		sys_setitimer			compat_sys_setitimer
-105	i386	getitimer		sys_getitimer			compat_sys_getitimer
+# 104	i386	setitimer		sys_setitimer			compat_sys_setitimer  (posix timers: unreachable, -> sys_ni)
+# 105	i386	getitimer		sys_getitimer			compat_sys_getitimer  (posix timers: unreachable, -> sys_ni)
 110	i386	iopl			sys_iopl
 112	i386	idle
 113	i386	vm86old			sys_vm86old			sys_ni_syscall
@@ -111,15 +111,15 @@
 252	i386	exit_group		sys_exit_group
 253	i386	lookup_dcookie		sys_lookup_dcookie		compat_sys_lookup_dcookie
 258	i386	set_tid_address		sys_set_tid_address
-259	i386	timer_create		sys_timer_create		compat_sys_timer_create
-260	i386	timer_settime		sys_timer_settime32
-261	i386	timer_gettime		sys_timer_gettime32
-262	i386	timer_getoverrun	sys_timer_getoverrun
-263	i386	timer_delete		sys_timer_delete
-264	i386	clock_settime		sys_clock_settime32
+# 259	i386	timer_create		sys_timer_create		compat_sys_timer_create  (posix timers: unreachable, -> sys_ni)
+# 260	i386	timer_settime		sys_timer_settime32  (posix timers: unreachable, -> sys_ni)
+# 261	i386	timer_gettime		sys_timer_gettime32  (posix timers: unreachable, -> sys_ni)
+# 262	i386	timer_getoverrun	sys_timer_getoverrun  (posix timers: unreachable, -> sys_ni)
+# 263	i386	timer_delete		sys_timer_delete  (posix timers: unreachable, -> sys_ni)
+# 264	i386	clock_settime		sys_clock_settime32  (posix timers: unreachable, -> sys_ni)
 265	i386	clock_gettime		sys_clock_gettime32
 266	i386	clock_getres		sys_clock_getres_time32
-267	i386	clock_nanosleep		sys_clock_nanosleep_time32
+# 267	i386	clock_nanosleep		sys_clock_nanosleep_time32  (posix timers: unreachable, -> sys_ni)
 271	i386	utimes			sys_utimes_time32
 273	i386	vserver
 # 277-282 mq_* removed (unreachable)
@@ -139,7 +139,7 @@
 331	i386	pipe2			sys_pipe2
 333	i386	preadv
 334	i386	pwritev
-343	i386	clock_adjtime		sys_clock_adjtime32
+# 343	i386	clock_adjtime		sys_clock_adjtime32  (posix timers: unreachable, -> sys_ni)
 346	i386	setns			sys_setns
 349	i386	kcmp			sys_kcmp
 350	i386	finit_module		sys_finit_module
@@ -151,12 +151,12 @@
 386	i386	rseq			sys_rseq
 # 393-402 SysV IPC (sem/shm/msg) removed (unreachable)
 403	i386	clock_gettime64		sys_clock_gettime
-404	i386	clock_settime64		sys_clock_settime
-405	i386	clock_adjtime64		sys_clock_adjtime
+# 404	i386	clock_settime64		sys_clock_settime  (posix timers: unreachable, -> sys_ni)
+# 405	i386	clock_adjtime64		sys_clock_adjtime  (posix timers: unreachable, -> sys_ni)
 406	i386	clock_getres_time64	sys_clock_getres
-407	i386	clock_nanosleep_time64	sys_clock_nanosleep
-408	i386	timer_gettime64		sys_timer_gettime
-409	i386	timer_settime64		sys_timer_settime
+# 407	i386	clock_nanosleep_time64	sys_clock_nanosleep  (posix timers: unreachable, -> sys_ni)
+# 408	i386	timer_gettime64		sys_timer_gettime  (posix timers: unreachable, -> sys_ni)
+# 409	i386	timer_settime64		sys_timer_settime  (posix timers: unreachable, -> sys_ni)
 412	i386	utimensat_time64	sys_utimensat
 413	i386	pselect6_time64		sys_pselect6			compat_sys_pselect6_time64
 414	i386	ppoll_time64		sys_ppoll			compat_sys_ppoll_time64

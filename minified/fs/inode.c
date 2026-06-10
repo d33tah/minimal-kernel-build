@@ -207,14 +207,6 @@ void drop_nlink(struct inode *inode)
 		atomic_long_inc(&inode->i_sb->s_remove_count);
 }
 
-void clear_nlink(struct inode *inode)
-{
-	if (inode->i_nlink) {
-		inode->__i_nlink = 0;
-		atomic_long_inc(&inode->i_sb->s_remove_count);
-	}
-}
-
 void inc_nlink(struct inode *inode)
 {
 	if (unlikely(inode->i_nlink == 0)) {

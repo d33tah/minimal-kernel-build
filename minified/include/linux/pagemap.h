@@ -243,9 +243,6 @@ static inline bool wake_page_match(struct wait_page_queue *wait_page,
 }
 
 void __folio_lock(struct folio *folio);
-int __folio_lock_killable(struct folio *folio);
-bool __folio_lock_or_retry(struct folio *folio, struct mm_struct *mm,
-				unsigned int flags);
 void unlock_page(struct page *page);
 void folio_unlock(struct folio *folio);
 
@@ -271,14 +268,7 @@ static inline void lock_page(struct page *page)
 		__folio_lock(folio);
 }
 
-void folio_wait_bit(struct folio *folio, int bit_nr);
 int folio_wait_bit_killable(struct folio *folio, int bit_nr);
-
-static inline void folio_wait_locked(struct folio *folio)
-{
-	if (folio_test_locked(folio))
-		folio_wait_bit(folio, PG_locked);
-}
 
 static inline int folio_wait_locked_killable(struct folio *folio)
 {

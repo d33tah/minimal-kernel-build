@@ -495,11 +495,6 @@ repeat:
 	return wait->flags & WQ_FLAG_WOKEN ? 0 : -EINTR;
 }
 
-void folio_wait_bit(struct folio *folio, int bit_nr)
-{
-	folio_wait_bit_common(folio, bit_nr, TASK_UNINTERRUPTIBLE, SHARED);
-}
-
 int folio_wait_bit_killable(struct folio *folio, int bit_nr)
 {
 	return folio_wait_bit_common(folio, bit_nr, TASK_KILLABLE, SHARED);
@@ -558,12 +553,6 @@ void __folio_lock(struct folio *folio)
 				EXCLUSIVE);
 }
 
-int __folio_lock_killable(struct folio *folio)
-{
-	return folio_wait_bit_common(folio, PG_locked, TASK_KILLABLE,
-					EXCLUSIVE);
-}
-
 static int __folio_lock_async(struct folio *folio, struct wait_page_queue *wait)
 {
 	struct wait_queue_head *q = folio_waitqueue(folio);
@@ -584,37 +573,6 @@ static int __folio_lock_async(struct folio *folio, struct wait_page_queue *wait)
 	spin_unlock_irq(&q->lock);
 	return ret;
 }
-
-bool __folio_lock_or_retry(struct folio *folio, struct mm_struct *mm,
-			 unsigned int flags)
-{
-	if (fault_flag_allow_retry_first(flags)) {
-		
-		if (flags & FAULT_FLAG_RETRY_NOWAIT)
-			return false;
-
-		mmap_read_unlock(mm);
-		if (flags & FAULT_FLAG_KILLABLE)
-			folio_wait_locked_killable(folio);
-		else
-			folio_wait_locked(folio);
-		return false;
-	}
-	if (flags & FAULT_FLAG_KILLABLE) {
-		bool ret;
-
-		ret = __folio_lock_killable(folio);
-		if (ret) {
-			mmap_read_unlock(mm);
-			return false;
-		}
-	} else {
-		__folio_lock(folio);
-	}
-
-	return true;
-}
-
 
 static void *mapping_get_entry(struct address_space *mapping, pgoff_t index)
 {

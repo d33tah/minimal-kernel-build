@@ -33,7 +33,6 @@ static inline void proc_exec_connector(struct task_struct *task) {}
 #include <linux/oom.h>
 #include <linux/compat.h>
 #include <linux/vmalloc.h>
-#include <linux/syscall_user_dispatch.h>
 
 #include <linux/uaccess.h>
 #include <asm/mmu_context.h>
@@ -653,8 +652,6 @@ int begin_new_exec(struct linux_binprm * bprm)
 					PF_NOFREEZE | PF_NO_SETAFFINITY);
 	flush_thread();
 	me->personality &= ~bprm->per_clear;
-
-	clear_syscall_work_syscall_user_dispatch(me);
 
 	do_close_on_exec(me->files);
 

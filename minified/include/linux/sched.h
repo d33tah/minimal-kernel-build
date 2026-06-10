@@ -77,7 +77,6 @@ static inline void clear_tsk_latency_tracing(struct task_struct *p) {}
 /* end sched/prio.h */
 #include <linux/sched/types.h>
 #include <linux/signal_types.h>
-#include <linux/syscall_user_dispatch.h>
 #include <linux/mm_types_task.h>
 struct task_io_accounting { };
 #include <linux/posix-timers.h>
@@ -455,9 +454,7 @@ struct task_struct {
 
 	struct callback_head		*task_works;
 
-	struct syscall_user_dispatch	syscall_dispatch;
 
-	 
 	u64				parent_exec_id;
 	u64				self_exec_id;
 

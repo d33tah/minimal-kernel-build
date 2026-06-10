@@ -30,8 +30,6 @@ extern void tick_check_new_device(struct clock_event_device *dev);
 /* tick_suspend, tick_resume removed - unused */
 extern bool tick_check_replacement(struct clock_event_device *curdev,
 				   struct clock_event_device *newdev);
-extern void tick_install_replacement(struct clock_event_device *dev);
-extern struct tick_device *tick_get_device(int cpu);
 
 static inline int tick_device_is_functional(struct clock_event_device *dev)
 {

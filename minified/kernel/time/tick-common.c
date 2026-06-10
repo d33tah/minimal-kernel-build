@@ -18,11 +18,6 @@ ktime_t tick_next_period;
 
 int tick_do_timer_cpu __read_mostly = TICK_DO_TIMER_BOOT;
 
-struct tick_device *tick_get_device(int cpu)
-{
-	return &per_cpu(tick_cpu_device, cpu);
-}
-
 static void tick_periodic(int cpu)
 {
 	if (tick_do_timer_cpu == cpu) {
@@ -133,17 +128,6 @@ static void tick_setup_device(struct tick_device *td,
 		tick_setup_periodic(newdev, 0);
 	else
 		tick_setup_oneshot(newdev, handler, next_event);
-}
-
-void tick_install_replacement(struct clock_event_device *newdev)
-{
-	struct tick_device *td = this_cpu_ptr(&tick_cpu_device);
-	int cpu = smp_processor_id();
-
-	clockevents_exchange_device(td->evtdev, newdev);
-	tick_setup_device(td, newdev, cpu, cpumask_of(cpu));
-	if (newdev->features & CLOCK_EVT_FEAT_ONESHOT)
-		tick_oneshot_notify();
 }
 
 static bool tick_check_percpu(struct clock_event_device *curdev,

@@ -50,7 +50,6 @@ static inline void kstat_incr_softirqs_this_cpu(unsigned int irq)
 
 
 extern void account_user_time(struct task_struct *, u64);
-extern void account_guest_time(struct task_struct *, u64);
 extern void account_system_time(struct task_struct *, int, u64);
 extern void account_system_index_time(struct task_struct *, u64,
 				      enum cpu_usage_stat);

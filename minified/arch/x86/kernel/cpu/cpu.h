@@ -48,11 +48,9 @@ extern void __init tsx_init(void);
 
 extern void get_cpu_cap(struct cpuinfo_x86 *c);
 extern void get_cpu_address_sizes(struct cpuinfo_x86 *c);
-extern void cpu_detect_cache_sizes(struct cpuinfo_x86 *c);
 extern void init_scattered_cpuid_features(struct cpuinfo_x86 *c);
 /* init_intel_cacheinfo, init_amd_cacheinfo, init_hygon_cacheinfo removed - no callers */
 
-extern void detect_num_cpu_cores(struct cpuinfo_x86 *c);
 extern int detect_extended_topology_early(struct cpuinfo_x86 *c);
 extern int detect_extended_topology(struct cpuinfo_x86 *c);
 /* detect_ht_early, detect_ht, check_null_seg_clears_base, x86_read_arch_cap_msr, aperfmperf_get_khz removed - no callers */

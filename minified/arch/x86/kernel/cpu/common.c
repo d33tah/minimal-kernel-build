@@ -64,8 +64,6 @@ static inline void uv_cpu_init(void) { }
 
 u32 elf_hwcap2 __read_mostly;
 
-cpumask_var_t cpu_initialized_mask;
-
 int smp_num_siblings = 1;
 
 DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_llc_id) = BAD_APICID;
@@ -75,12 +73,6 @@ DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_l2c_id) = BAD_APICID;
 /* Stub: PPIN (Protected Processor Inventory Number) not needed for minimal kernel */
 static void ppin_init(struct cpuinfo_x86 *c)
 {
-}
-
-void __init setup_cpu_local_masks(void)
-{
-	alloc_bootmem_cpumask_var(&cpu_initialized_mask);
-	/* cpu_callin_mask, cpu_callout_mask, cpu_sibling_setup_mask allocations removed - unused */
 }
 
 static void default_init(struct cpuinfo_x86 *c)
@@ -264,20 +256,6 @@ unsigned long cr4_read_shadow(void)
 	return this_cpu_read(cpu_tlbstate.cr4);
 }
 
-void cr4_init(void)
-{
-	unsigned long cr4 = __read_cr4();
-
-	if (boot_cpu_has(X86_FEATURE_PCID))
-		cr4 |= X86_CR4_PCIDE;
-	if (static_branch_likely(&cr_pinning))
-		cr4 = (cr4 & ~cr4_pinned_mask) | cr4_pinned_bits;
-
-	__write_cr4(cr4);
-
-	this_cpu_write(cpu_tlbstate.cr4, cr4);
-}
-
 static void __init setup_cr_pinning(void)
 {
 	cr4_pinned_bits = this_cpu_read(cpu_tlbstate.cr4) & cr4_pinned_mask;
@@ -445,18 +423,6 @@ static void get_model_name(struct cpuinfo_x86 *c)
 	}
 
 	*(s + 1) = '\0';
-}
-
-/* Stub: detect_num_cpu_cores not called in minimal kernel */
-void detect_num_cpu_cores(struct cpuinfo_x86 *c)
-{
-	c->x86_max_cores = 1;
-}
-
-/* Stub: cpu_detect_cache_sizes not called in minimal kernel */
-void cpu_detect_cache_sizes(struct cpuinfo_x86 *c)
-{
-	c->x86_cache_size = 0;
 }
 
 static void get_cpu_vendor(struct cpuinfo_x86 *c)

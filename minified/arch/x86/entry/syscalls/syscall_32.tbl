@@ -35,7 +35,7 @@
 41	i386	dup			sys_dup
 42	i386	pipe			sys_pipe
 44	i386	prof
-45	i386	brk			sys_brk
+# 45 brk removed (unreachable: init does not call brk; exec sets mm->brk internally)
 51	i386	acct			sys_acct
 # 52 umount2 removed (unreachable)
 53	i386	lock
@@ -55,7 +55,7 @@
 88	i386	reboot
 # 89	i386	readdir			sys_old_readdir			compat_sys_old_readdir
 # 90	i386	mmap			sys_old_mmap			compat_sys_ia32_mmap	(removed: init does not mmap via syscall; exec uses vm_mmap internally)
-91	i386	munmap			sys_munmap
+# 91 munmap removed (unreachable: init does write(2)+exit only; exec uses vm_munmap internally)
 98	i386	profil
 101	i386	ioperm			sys_ioperm
 103	i386	syslog			sys_syslog

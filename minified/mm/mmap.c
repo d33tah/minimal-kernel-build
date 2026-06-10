@@ -110,81 +110,6 @@ static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
 	return next;
 }
 
-static int do_brk_flags(unsigned long addr, unsigned long request, unsigned long flags,
-		struct list_head *uf);
-SYSCALL_DEFINE1(brk, unsigned long, brk)
-{
-	unsigned long newbrk, oldbrk, origbrk;
-	struct mm_struct *mm = current->mm;
-	struct vm_area_struct *next;
-	unsigned long min_brk;
-	bool populate;
-	bool downgraded = false;
-	LIST_HEAD(uf);
-
-	if (mmap_write_lock_killable(mm))
-		return -EINTR;
-
-	origbrk = mm->brk;
-
-	min_brk = mm->start_brk;
-	if (brk < min_brk)
-		goto out;
-
-	
-	if (check_data_rlimit(rlimit(RLIMIT_DATA), brk, mm->start_brk,
-			      mm->end_data, mm->start_data))
-		goto out;
-
-	newbrk = PAGE_ALIGN(brk);
-	oldbrk = PAGE_ALIGN(mm->brk);
-	if (oldbrk == newbrk) {
-		mm->brk = brk;
-		goto success;
-	}
-
-	
-	if (brk <= mm->brk) {
-		int ret;
-
-		
-		mm->brk = brk;
-		ret = __do_munmap(mm, newbrk, oldbrk-newbrk, &uf, true);
-		if (ret < 0) {
-			mm->brk = origbrk;
-			goto out;
-		} else if (ret == 1) {
-			downgraded = true;
-		}
-		goto success;
-	}
-
-	
-	next = find_vma(mm, oldbrk);
-	if (next && newbrk + PAGE_SIZE > vm_start_gap(next))
-		goto out;
-
-	
-	if (do_brk_flags(oldbrk, newbrk-oldbrk, 0, &uf) < 0)
-		goto out;
-	mm->brk = brk;
-
-success:
-	populate = newbrk > oldbrk && (mm->def_flags & VM_LOCKED) != 0;
-	if (downgraded)
-		mmap_read_unlock(mm);
-	else
-		mmap_write_unlock(mm);
-	userfaultfd_unmap_complete(mm, &uf);
-	if (populate)
-		mm_populate(oldbrk, newbrk - oldbrk);
-	return brk;
-
-out:
-	mmap_write_unlock(mm);
-	return origbrk;
-}
-
 static inline unsigned long vma_compute_gap(struct vm_area_struct *vma)
 {
 	unsigned long gap, prev_end;
@@ -1377,12 +1302,6 @@ static int __vm_munmap(unsigned long start, size_t len, bool downgrade)
 int vm_munmap(unsigned long start, size_t len)
 {
 	return __vm_munmap(start, len, false);
-}
-
-SYSCALL_DEFINE2(munmap, unsigned long, addr, size_t, len)
-{
-	addr = untagged_addr(addr);
-	return __vm_munmap(addr, len, true);
 }
 
 static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long flags, struct list_head *uf)

@@ -19,8 +19,6 @@ const struct file_operations ramfs_file_operations = {
 	.write_iter	= generic_file_write_iter,
 	.mmap		= generic_file_mmap,
 	.fsync		= noop_fsync,
-	.splice_read	= generic_file_splice_read,
-	.splice_write	= iter_file_splice_write,
 	.get_unmapped_area	= ramfs_mmu_get_unmapped_area,
 };
 

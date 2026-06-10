@@ -14,7 +14,6 @@
 #include <linux/highmem.h>
 #include <linux/backing-dev.h>
 #include <linux/shmem_fs.h>
-#include <linux/splice.h>
 #include <linux/pfn.h>
 #include <linux/export.h>
 #include <linux/io.h>
@@ -50,18 +49,6 @@ static ssize_t write_iter_null(struct kiocb *iocb, struct iov_iter *from)
 	size_t count = iov_iter_count(from);
 	iov_iter_advance(from, count);
 	return count;
-}
-
-static int pipe_to_null(struct pipe_inode_info *info, struct pipe_buffer *buf,
-			struct splice_desc *sd)
-{
-	return sd->len;
-}
-
-static ssize_t splice_write_null(struct pipe_inode_info *pipe, struct file *out,
-				 loff_t *ppos, size_t len, unsigned int flags)
-{
-	return splice_from_pipe(pipe, out, ppos, len, flags, pipe_to_null);
 }
 
 static ssize_t read_iter_zero(struct kiocb *iocb, struct iov_iter *iter)
@@ -160,7 +147,6 @@ static const struct file_operations null_fops = {
 	.write		= write_null,
 	.read_iter	= read_iter_null,
 	.write_iter	= write_iter_null,
-	.splice_write	= splice_write_null,
 };
 
 static const struct file_operations zero_fops = {

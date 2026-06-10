@@ -7,7 +7,6 @@
 #include <linux/export.h>
 #include <linux/syscalls.h>
 #include <linux/pagemap.h>
-#include <linux/splice.h>
 #include <linux/compat.h>
 #include <linux/mount.h>
 #include <linux/fs.h>

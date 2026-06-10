@@ -5,7 +5,6 @@
 #include <linux/highmem.h>
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
-#include <linux/splice.h>
 #include <linux/compat.h>
 
 /* Inlined from net/checksum.h */

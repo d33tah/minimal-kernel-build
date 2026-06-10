@@ -43,11 +43,6 @@ enum ttu_flags {
 	TTU_RMAP_LOCKED		= 0x80,
 };
 
-static inline void get_anon_vma(struct anon_vma *anon_vma)
-{
-	atomic_inc(&anon_vma->refcount);
-}
-
 void __put_anon_vma(struct anon_vma *anon_vma);
 
 static inline void put_anon_vma(struct anon_vma *anon_vma)
@@ -70,7 +65,6 @@ void anon_vma_init(void);
 int  __anon_vma_prepare(struct vm_area_struct *);
 void unlink_anon_vmas(struct vm_area_struct *);
 int anon_vma_clone(struct vm_area_struct *, struct vm_area_struct *);
-int anon_vma_fork(struct vm_area_struct *, struct vm_area_struct *);
 
 static inline int anon_vma_prepare(struct vm_area_struct *vma)
 {

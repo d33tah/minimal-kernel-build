@@ -187,28 +187,6 @@ static void internal_add_timer(struct timer_base *base, struct timer_list *timer
 	enqueue_timer(base, timer, idx, bucket_expiry);
 }
 
-static inline void debug_timer_init(struct timer_list *timer) { }
-static inline void debug_timer_activate(struct timer_list *timer) { }
-static inline void debug_timer_deactivate(struct timer_list *timer) { }
-static inline void debug_timer_assert_init(struct timer_list *timer) { }
-
-static inline void debug_init(struct timer_list *timer)
-{
-	debug_timer_init(timer);
-	 
-}
-
-static inline void debug_deactivate(struct timer_list *timer)
-{
-	debug_timer_deactivate(timer);
-	 
-}
-
-static inline void debug_assert_init(struct timer_list *timer)
-{
-	debug_timer_assert_init(timer);
-}
-
 static void do_init_timer(struct timer_list *timer,
 			  void (*func)(struct timer_list *),
 			  unsigned int flags,
@@ -226,15 +204,12 @@ void init_timer_key(struct timer_list *timer,
 		    void (*func)(struct timer_list *), unsigned int flags,
 		    const char *name, struct lock_class_key *key)
 {
-	debug_init(timer);
 	do_init_timer(timer, func, flags, name, key);
 }
 
 static inline void detach_timer(struct timer_list *timer, bool clear_pending)
 {
 	struct hlist_node *entry = &timer->entry;
-
-	debug_deactivate(timer);
 
 	__hlist_del(entry);
 	if (clear_pending)
@@ -393,8 +368,6 @@ __mod_timer(struct timer_list *timer, unsigned long expires, unsigned int option
 		}
 	}
 
-	debug_timer_activate(timer);
-
 	timer->expires = expires;
 	 
 	if (idx != UINT_MAX && clk == base->clk)
@@ -430,7 +403,6 @@ void add_timer_on(struct timer_list *timer, int cpu)
 	}
 	forward_timer_base(base);
 
-	debug_timer_activate(timer);
 	internal_add_timer(base, timer);
 	raw_spin_unlock_irqrestore(&base->lock, flags);
 }
@@ -440,8 +412,6 @@ int del_timer(struct timer_list *timer)
 	struct timer_base *base;
 	unsigned long flags;
 	int ret = 0;
-
-	debug_assert_init(timer);
 
 	if (timer_pending(timer)) {
 		base = lock_timer_base(timer, &flags);

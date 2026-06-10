@@ -396,13 +396,6 @@ static void folio_wake_bit(struct folio *folio, int bit_nr)
 	spin_unlock_irqrestore(&q->lock, flags);
 }
 
-static void folio_wake(struct folio *folio, int bit)
-{
-	if (!folio_test_waiters(folio))
-		return;
-	folio_wake_bit(folio, bit);
-}
-
 enum behavior {
 	EXCLUSIVE,	
 	SHARED,		

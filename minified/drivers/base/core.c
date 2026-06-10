@@ -22,8 +22,6 @@
 #include <linux/dma-map-ops.h> 
 
 #include "base.h"
-static const struct attribute_group dev_attr_physical_location_group = {};
-/* end physical_location.h */
 #include "power/power.h"
 
 

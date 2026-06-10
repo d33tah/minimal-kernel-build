@@ -140,7 +140,6 @@ bool copy_from_iter_full(void *addr, size_t bytes, struct iov_iter *i)
 
 #define _copy_mc_to_iter _copy_to_iter
 
-size_t iov_iter_zero(size_t bytes, struct iov_iter *);
 unsigned long iov_iter_alignment(const struct iov_iter *i);
 unsigned long iov_iter_gap_alignment(const struct iov_iter *i);
 void iov_iter_init(struct iov_iter *i, unsigned int direction, const struct iovec *iov,

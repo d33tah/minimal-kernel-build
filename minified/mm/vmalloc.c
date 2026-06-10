@@ -717,17 +717,6 @@ insert:
 	return va;
 }
 
-static __always_inline struct vmap_area *
-merge_or_add_vmap_area_augment(struct vmap_area *va,
-	struct rb_root *root, struct list_head *head)
-{
-	va = merge_or_add_vmap_area(va, root, head);
-	if (va)
-		augment_tree_propagate_from(va);
-
-	return va;
-}
-
 static __always_inline bool
 is_within_this_va(struct vmap_area *va, unsigned long size,
 	unsigned long align, unsigned long vstart)
@@ -916,19 +905,6 @@ __alloc_vmap_area(unsigned long size, unsigned long align,
 		return vend;
 
 	return nva_start_addr;
-}
-
-static void free_vmap_area(struct vmap_area *va)
-{
-	
-	spin_lock(&vmap_area_lock);
-	unlink_va(va, &vmap_area_root);
-	spin_unlock(&vmap_area_lock);
-
-	
-	spin_lock(&free_vmap_area_lock);
-	merge_or_add_vmap_area_augment(va, &free_vmap_area_root, &free_vmap_area_list);
-	spin_unlock(&free_vmap_area_lock);
 }
 
 static inline void

@@ -234,16 +234,6 @@ size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes,
 	return res;
 }
 
-size_t iov_iter_zero(size_t bytes, struct iov_iter *i)
-{
-	iterate_and_advance(i, bytes, base, len, count,
-		clear_user(base, len),
-		memset(base, 0, len)
-	)
-
-	return bytes;
-}
-
 size_t copy_page_from_iter_atomic(struct page *page, unsigned offset, size_t bytes,
 				  struct iov_iter *i)
 {

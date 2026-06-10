@@ -21,7 +21,6 @@ CFLAGS_common.o		:= -fno-stack-protector
 
 obj-y			:= cacheinfo.o scattered.o topology.o
 obj-y			+= common.o
-obj-y			+= match.o
 obj-y			+= bugs.o
 # aperfmperf.o removed - inlined in topology.h
 obj-y			+= cpuid-deps.o

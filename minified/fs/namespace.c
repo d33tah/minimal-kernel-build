@@ -296,22 +296,6 @@ struct mount *__lookup_mnt(struct vfsmount *mnt, struct dentry *dentry)
 }
 
 
-static inline void lock_ns_list(struct mnt_namespace *ns)
-{
-	spin_lock(&ns->ns_lock);
-}
-
-static inline void unlock_ns_list(struct mnt_namespace *ns)
-{
-	spin_unlock(&ns->ns_lock);
-}
-
-static inline bool mnt_is_cursor(struct mount *mnt)
-{
-	return mnt->mnt.mnt_flags & MNT_CURSOR;
-}
-
-
 
 static void __put_mountpoint(struct mountpoint *mp, struct list_head *list)
 {
@@ -584,7 +568,6 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns, bool a
 	refcount_set(&new_ns->ns.count, 1);
 	INIT_LIST_HEAD(&new_ns->list);
 	init_waitqueue_head(&new_ns->poll);
-	spin_lock_init(&new_ns->ns_lock);
 	new_ns->user_ns = get_user_ns(user_ns);
 	new_ns->ucounts = ucounts;
 	return new_ns;

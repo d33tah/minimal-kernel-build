@@ -11,7 +11,6 @@ struct mnt_namespace {
 	struct mount *	root;
 	 
 	struct list_head	list;
-	spinlock_t		ns_lock;
 	struct user_namespace	*user_ns;
 	struct ucounts		*ucounts;
 	u64			seq;	 

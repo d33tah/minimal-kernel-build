@@ -125,20 +125,6 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 	return retval;
 }
 
-static __poll_t n_tty_poll(struct tty_struct *tty, struct file *file,
-			  poll_table *wait)
-{
-	__poll_t mask = 0;
-
-	poll_wait(file, &tty->read_wait, wait);
-	poll_wait(file, &tty->write_wait, wait);
-
-	 
-	mask |= EPOLLOUT | EPOLLWRNORM;
-
-	return mask;
-}
-
 static int n_tty_ioctl(struct tty_struct *tty, unsigned int cmd,
 		       unsigned long arg)
 {
@@ -176,7 +162,6 @@ static struct tty_ldisc_ops n_tty_ops = {
 	.write           = n_tty_write,
 	.ioctl           = n_tty_ioctl,
 	.set_termios     = n_tty_set_termios,
-	.poll            = n_tty_poll,
 	.receive_buf     = n_tty_receive_buf,
 	.receive_buf2	 = n_tty_receive_buf2,
 };

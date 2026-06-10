@@ -65,7 +65,6 @@ DEFINE_MUTEX(tty_mutex);
 
 static ssize_t tty_read(struct kiocb *, struct iov_iter *);
 static ssize_t tty_write(struct kiocb *, struct iov_iter *);
-static __poll_t tty_poll(struct file *, poll_table *);
 static int tty_open(struct inode *, struct file *);
 #define tty_compat_ioctl NULL
 static int __tty_fasync(int fd, struct file *filp, int on);
@@ -210,11 +209,6 @@ static ssize_t hung_up_tty_write(struct kiocb *iocb, struct iov_iter *from)
 	return -EIO;
 }
 
-static __poll_t hung_up_tty_poll(struct file *filp, poll_table *wait)
-{
-	return EPOLLIN | EPOLLOUT | EPOLLERR | EPOLLHUP | EPOLLRDNORM | EPOLLWRNORM;
-}
-
 static long hung_up_tty_ioctl(struct file *file, unsigned int cmd,
 		unsigned long arg)
 {
@@ -234,7 +228,6 @@ static const struct file_operations tty_fops = {
 	.llseek		= no_llseek,
 	.read_iter	= tty_read,
 	.write_iter	= tty_write,
-	.poll		= tty_poll,
 	.unlocked_ioctl	= tty_ioctl,
 	.compat_ioctl	= tty_compat_ioctl,
 	.open		= tty_open,
@@ -246,7 +239,6 @@ static const struct file_operations console_fops = {
 	.llseek		= no_llseek,
 	.read_iter	= tty_read,
 	.write_iter	= redirected_tty_write,
-	.poll		= tty_poll,
 	.unlocked_ioctl	= tty_ioctl,
 	.compat_ioctl	= tty_compat_ioctl,
 	.open		= tty_open,
@@ -258,7 +250,6 @@ static const struct file_operations hung_up_tty_fops = {
 	.llseek		= no_llseek,
 	.read_iter	= hung_up_tty_read,
 	.write_iter	= hung_up_tty_write,
-	.poll		= hung_up_tty_poll,
 	.unlocked_ioctl	= hung_up_tty_ioctl,
 	.compat_ioctl	= hung_up_tty_compat_ioctl,
 	.release	= tty_release,
@@ -1030,24 +1021,6 @@ retry_open:
 		tty_open_proc_set_tty(filp, tty);
 	tty_unlock(tty);
 	return 0;
-}
-
-static __poll_t tty_poll(struct file *filp, poll_table *wait)
-{
-	struct tty_struct *tty = file_tty(filp);
-	struct tty_ldisc *ld;
-	__poll_t ret = 0;
-
-	if (tty_paranoia_check(tty, file_inode(filp), "tty_poll"))
-		return 0;
-
-	ld = tty_ldisc_ref_wait(tty);
-	if (!ld)
-		return hung_up_tty_poll(filp, wait);
-	if (ld->ops->poll)
-		ret = ld->ops->poll(tty, filp, wait);
-	tty_ldisc_deref(ld);
-	return ret;
 }
 
 static int __tty_fasync(int fd, struct file *filp, int on)

@@ -778,8 +778,6 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
 #define perf_domain_span(pd) NULL
 
 
-/* swake_up_all_locked removed - unused */
-extern void __prepare_to_swait(struct swait_queue_head *q, struct swait_queue *wait);
 
 
 #endif  

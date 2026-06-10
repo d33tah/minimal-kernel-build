@@ -1,8 +1,6 @@
 
 #include <linux/blkdev.h>
 #include <linux/wait.h>
-#include <linux/rbtree.h>
-#include <linux/kthread.h>
 #include <linux/backing-dev.h>
 #include <linux/fs.h>
 #include <linux/pagemap.h>
@@ -17,18 +15,9 @@ struct backing_dev_info noop_backing_dev_info;
 
 static struct class *bdi_class;
 
-DEFINE_SPINLOCK(bdi_lock);
-static struct rb_root bdi_tree = RB_ROOT;
-LIST_HEAD(bdi_list);
-
 struct workqueue_struct *bdi_wq;
 
-#define K(x) ((x) << (PAGE_SHIFT - 10))
-
 static inline void bdi_debug_init(void)
-{
-}
-static inline void bdi_debug_unregister(struct backing_dev_info *bdi)
 {
 }
 
@@ -109,49 +98,9 @@ out_destroy_stat:
 	return err;
 }
 
-static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb);
-
-static void wb_shutdown(struct bdi_writeback *wb)
-{
-	 
-	spin_lock_bh(&wb->work_lock);
-	if (!test_and_clear_bit(WB_registered, &wb->state)) {
-		spin_unlock_bh(&wb->work_lock);
-		return;
-	}
-	spin_unlock_bh(&wb->work_lock);
-
-	cgwb_remove_from_bdi_list(wb);
-	 
-	mod_delayed_work(bdi_wq, &wb->dwork, 0);
-	flush_delayed_work(&wb->dwork);
-	WARN_ON(!list_empty(&wb->work_list));
-	flush_delayed_work(&wb->bw_dwork);
-}
-
-static void wb_exit(struct bdi_writeback *wb)
-{
-	int i;
-
-	WARN_ON(delayed_work_pending(&wb->dwork));
-
-	for (i = 0; i < NR_WB_STAT_ITEMS; i++)
-		percpu_counter_destroy(&wb->stat[i]);
-
-	fprop_local_destroy_percpu(&wb->completions);
-}
-
-
 static int cgwb_bdi_init(struct backing_dev_info *bdi)
 {
 	return wb_init(&bdi->wb, bdi, GFP_KERNEL);
-}
-
-static void cgwb_bdi_unregister(struct backing_dev_info *bdi) { }
-
-static void cgwb_remove_from_bdi_list(struct bdi_writeback *wb)
-{
-	list_del_rcu(&wb->bdi_node);
 }
 
 
@@ -172,77 +121,6 @@ int bdi_init(struct backing_dev_info *bdi)
 	ret = cgwb_bdi_init(bdi);
 
 	return ret;
-}
-
-struct backing_dev_info *bdi_alloc(int node_id)
-{
-	struct backing_dev_info *bdi;
-
-	bdi = kzalloc_node(sizeof(*bdi), GFP_KERNEL, node_id);
-	if (!bdi)
-		return NULL;
-
-	if (bdi_init(bdi)) {
-		kfree(bdi);
-		return NULL;
-	}
-	bdi->capabilities = BDI_CAP_WRITEBACK | BDI_CAP_WRITEBACK_ACCT;
-	bdi->ra_pages = VM_READAHEAD_PAGES;
-	bdi->io_pages = VM_READAHEAD_PAGES;
-	timer_setup(&bdi->laptop_mode_wb_timer, laptop_mode_timer_fn, 0);
-	return bdi;
-}
-
-
-static void bdi_remove_from_list(struct backing_dev_info *bdi)
-{
-	spin_lock_bh(&bdi_lock);
-	rb_erase(&bdi->rb_node, &bdi_tree);
-	list_del_rcu(&bdi->bdi_list);
-	spin_unlock_bh(&bdi_lock);
-
-	synchronize_rcu_expedited();
-}
-
-void bdi_unregister(struct backing_dev_info *bdi)
-{
-	del_timer_sync(&bdi->laptop_mode_wb_timer);
-
-	 
-	bdi_remove_from_list(bdi);
-	wb_shutdown(&bdi->wb);
-	cgwb_bdi_unregister(bdi);
-
-	 
-	if (bdi->min_ratio)
-		bdi_set_min_ratio(bdi, 0);
-
-	if (bdi->dev) {
-		bdi_debug_unregister(bdi);
-		device_unregister(bdi->dev);
-		bdi->dev = NULL;
-	}
-
-	if (bdi->owner) {
-		put_device(bdi->owner);
-		bdi->owner = NULL;
-	}
-}
-
-static void release_bdi(struct kref *ref)
-{
-	struct backing_dev_info *bdi =
-			container_of(ref, struct backing_dev_info, refcnt);
-
-	WARN_ON_ONCE(test_bit(WB_registered, &bdi->wb.state));
-	WARN_ON_ONCE(bdi->dev);
-	wb_exit(&bdi->wb);
-	kfree(bdi);
-}
-
-void bdi_put(struct backing_dev_info *bdi)
-{
-	kref_put(&bdi->refcnt, release_bdi);
 }
 
 struct backing_dev_info *inode_to_bdi(struct inode *inode)

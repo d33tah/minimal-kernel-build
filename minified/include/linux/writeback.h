@@ -85,8 +85,6 @@ static inline void cgroup_writeback_umount(void)
 }
 
 
-void laptop_mode_timer_fn(struct timer_list *t);
-
 void wb_update_bandwidth(struct bdi_writeback *wb);
 void balance_dirty_pages_ratelimited(struct address_space *mapping);
 

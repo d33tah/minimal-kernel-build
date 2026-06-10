@@ -166,7 +166,6 @@ struct tty_struct {
 	int closing;
 	unsigned char *write_buf;
 	int write_cnt;
-	struct work_struct SAK_work;
 	struct tty_port *port;
 } __randomize_layout;
 

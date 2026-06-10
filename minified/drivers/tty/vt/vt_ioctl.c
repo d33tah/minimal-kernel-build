@@ -44,8 +44,3 @@ void reset_vc(struct vc_data *vc)
 	reset_palette(vc);
 }
 
-void vc_SAK(struct work_struct *work)
-{
-	/* Stub: SAK (Secure Attention Key) never called in minimal kernel */
-}
-

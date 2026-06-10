@@ -103,11 +103,9 @@ struct vc_data {
 
 struct vc {
 	struct vc_data *d;
-	struct work_struct SAK_work;
 };
 
 extern struct vc vc_cons [MAX_NR_CONSOLES];
-extern void vc_SAK(struct work_struct *work);
 
 #define CUR_SIZE(c)		 ((c) & 0x00000f)
 # define CUR_DEF			       0

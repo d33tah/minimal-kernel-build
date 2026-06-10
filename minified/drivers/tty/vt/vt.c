@@ -460,7 +460,6 @@ int vc_allocate(unsigned int currcons)
 	vc_cons[currcons].d = vc;
 	tty_port_init(&vc->port);
 	vc->port.ops = &vc_port_ops;
-	INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
 
 	visual_init(vc, currcons, 1);
 
@@ -1149,7 +1148,6 @@ static int __init con_init(void)
 
 	for (currcons = 0; currcons < MIN_NR_CONSOLES; currcons++) {
 		vc_cons[currcons].d = vc = kzalloc(sizeof(struct vc_data), GFP_NOWAIT);
-		INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
 		tty_port_init(&vc->port);
 		visual_init(vc, currcons, 1);
 		

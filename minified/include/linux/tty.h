@@ -202,7 +202,6 @@ static inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
 
 const char *tty_driver_name(const struct tty_struct *tty);
 unsigned int tty_chars_in_buffer(struct tty_struct *tty);
-int tty_hung_up_p(struct file *filp);
 speed_t tty_termios_baud_rate(struct ktermios *termios);
 
 static inline speed_t tty_get_baud_rate(struct tty_struct *tty)

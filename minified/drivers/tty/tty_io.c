@@ -199,31 +199,6 @@ static struct tty_driver *get_tty_driver(dev_t device, int *index)
 }
 
 
-static ssize_t hung_up_tty_read(struct kiocb *iocb, struct iov_iter *to)
-{
-	return 0;
-}
-
-static ssize_t hung_up_tty_write(struct kiocb *iocb, struct iov_iter *from)
-{
-	return -EIO;
-}
-
-static long hung_up_tty_ioctl(struct file *file, unsigned int cmd,
-		unsigned long arg)
-{
-	return cmd == TIOCSPGRP ? -ENOTTY : -EIO;
-}
-
-/* hung_up_tty_compat_ioctl merged with hung_up_tty_ioctl - identical behavior */
-#define hung_up_tty_compat_ioctl hung_up_tty_ioctl
-
-static int hung_up_tty_fasync(int fd, struct file *file, int on)
-{
-	return -ENOTTY;
-}
-
-
 static const struct file_operations tty_fops = {
 	.llseek		= no_llseek,
 	.read_iter	= tty_read,
@@ -246,23 +221,8 @@ static const struct file_operations console_fops = {
 	.fasync		= tty_fasync,
 };
 
-static const struct file_operations hung_up_tty_fops = {
-	.llseek		= no_llseek,
-	.read_iter	= hung_up_tty_read,
-	.write_iter	= hung_up_tty_write,
-	.unlocked_ioctl	= hung_up_tty_ioctl,
-	.compat_ioctl	= hung_up_tty_compat_ioctl,
-	.release	= tty_release,
-	.fasync		= hung_up_tty_fasync,
-};
-
 static DEFINE_SPINLOCK(redirect_lock);
 static struct file *redirect;
-
-int tty_hung_up_p(struct file *filp)
-{
-	return (filp && filp->f_op == &hung_up_tty_fops);
-}
 
 static void tty_update_time(struct timespec64 *time)
 {
@@ -334,7 +294,7 @@ static ssize_t tty_read(struct kiocb *iocb, struct iov_iter *to)
 	
 	ld = tty_ldisc_ref_wait(tty);
 	if (!ld)
-		return hung_up_tty_read(iocb, to);
+		return 0;
 	i = -EIO;
 	if (ld->ops->read)
 		i = iterate_tty_read(ld, tty, file, to);
@@ -457,7 +417,7 @@ static ssize_t file_tty_write(struct file *file, struct kiocb *iocb, struct iov_
 		tty_err(tty, "missing write_room method\n");
 	ld = tty_ldisc_ref_wait(tty);
 	if (!ld)
-		return hung_up_tty_write(iocb, from);
+		return -EIO;
 	if (!ld->ops->write)
 		ret = -EIO;
 	else
@@ -1005,9 +965,7 @@ retry_open:
 			return retval;
 
 		schedule();
-		
-		if (tty_hung_up_p(filp))
-			filp->f_op = &tty_fops;
+
 		goto retry_open;
 	}
 	clear_bit(TTY_HUPPED, &tty->flags);
@@ -1061,11 +1019,10 @@ out:
 static int tty_fasync(int fd, struct file *filp, int on)
 {
 	struct tty_struct *tty = file_tty(filp);
-	int retval = -ENOTTY;
+	int retval;
 
 	tty_lock(tty);
-	if (!tty_hung_up_p(filp))
-		retval = __tty_fasync(fd, filp, on);
+	retval = __tty_fasync(fd, filp, on);
 	tty_unlock(tty);
 
 	return retval;

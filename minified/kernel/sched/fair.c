@@ -245,16 +245,6 @@ struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq)
 	return __node_2_se(left);
 }
 
-static struct sched_entity *__pick_next_entity(struct sched_entity *se)
-{
-	struct rb_node *next = rb_next(&se->run_node);
-
-	if (!next)
-		return NULL;
-
-	return __node_2_se(next);
-}
-
 static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se)
 {
 	if (unlikely(se->load.weight != NICE_0_LOAD))
@@ -571,17 +561,6 @@ static void __clear_buddies_next(struct sched_entity *se)
 	}
 }
 
-static void __clear_buddies_skip(struct sched_entity *se)
-{
-	for_each_sched_entity(se) {
-		struct cfs_rq *cfs_rq = cfs_rq_of(se);
-		if (cfs_rq->skip != se)
-			break;
-
-		cfs_rq->skip = NULL;
-	}
-}
-
 static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	if (cfs_rq->last == se)
@@ -589,9 +568,6 @@ static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
 
 	if (cfs_rq->next == se)
 		__clear_buddies_next(se);
-
-	if (cfs_rq->skip == se)
-		__clear_buddies_skip(se);
 }
 
 static void
@@ -676,22 +652,7 @@ pick_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 	if (!left || (curr && entity_before(curr, left)))
 		left = curr;
 
-	se = left; 
-
-	if (cfs_rq->skip && cfs_rq->skip == se) {
-		struct sched_entity *second;
-
-		if (se == curr) {
-			second = __pick_first_entity(cfs_rq);
-		} else {
-			second = __pick_next_entity(se);
-			if (!second || (curr && entity_before(curr, second)))
-				second = curr;
-		}
-
-		if (second && wakeup_preempt_entity(second, left) < 1)
-			se = second;
-	}
+	se = left;
 
 	if (cfs_rq->next && wakeup_preempt_entity(cfs_rq->next, left) < 1) {
 		
@@ -906,12 +867,6 @@ static void set_next_buddy(struct sched_entity *se)
 			return;
 		cfs_rq_of(se)->next = se;
 	}
-}
-
-static void set_skip_buddy(struct sched_entity *se)
-{
-	for_each_sched_entity(se)
-		cfs_rq_of(se)->skip = se;
 }
 
 static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_flags)

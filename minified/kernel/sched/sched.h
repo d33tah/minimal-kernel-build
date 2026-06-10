@@ -197,7 +197,6 @@ struct cfs_rq {
 	struct sched_entity	*curr;
 	struct sched_entity	*next;
 	struct sched_entity	*last;
-	struct sched_entity	*skip;
 
 
 

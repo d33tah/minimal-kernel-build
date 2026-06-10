@@ -125,19 +125,6 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 	return retval;
 }
 
-static int n_tty_ioctl(struct tty_struct *tty, unsigned int cmd,
-		       unsigned long arg)
-{
-	switch (cmd) {
-	case TIOCOUTQ:
-		return put_user(tty_chars_in_buffer(tty), (int __user *) arg);
-	case TIOCINQ:
-		return put_user(0, (unsigned int __user *) arg);
-	default:
-		return n_tty_ioctl_helper(tty, cmd, arg);
-	}
-}
-
 static void n_tty_receive_buf(struct tty_struct *tty, const unsigned char *cp,
 			      const char *fp, int count)
 {
@@ -160,7 +147,6 @@ static struct tty_ldisc_ops n_tty_ops = {
 	.flush_buffer    = n_tty_flush_buffer,
 	.read            = n_tty_read,
 	.write           = n_tty_write,
-	.ioctl           = n_tty_ioctl,
 	.set_termios     = n_tty_set_termios,
 	.receive_buf     = n_tty_receive_buf,
 	.receive_buf2	 = n_tty_receive_buf2,

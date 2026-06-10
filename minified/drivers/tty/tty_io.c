@@ -66,7 +66,6 @@ DEFINE_MUTEX(tty_mutex);
 static ssize_t tty_read(struct kiocb *, struct iov_iter *);
 static ssize_t tty_write(struct kiocb *, struct iov_iter *);
 static int tty_open(struct inode *, struct file *);
-#define tty_compat_ioctl NULL
 static int __tty_fasync(int fd, struct file *filp, int on);
 static int tty_fasync(int fd, struct file *filp, int on);
 static void release_tty(struct tty_struct *tty, int idx);
@@ -203,8 +202,6 @@ static const struct file_operations tty_fops = {
 	.llseek		= no_llseek,
 	.read_iter	= tty_read,
 	.write_iter	= tty_write,
-	.unlocked_ioctl	= tty_ioctl,
-	.compat_ioctl	= tty_compat_ioctl,
 	.open		= tty_open,
 	.release	= tty_release,
 	.fasync		= tty_fasync,
@@ -214,8 +211,6 @@ static const struct file_operations console_fops = {
 	.llseek		= no_llseek,
 	.read_iter	= tty_read,
 	.write_iter	= redirected_tty_write,
-	.unlocked_ioctl	= tty_ioctl,
-	.compat_ioctl	= tty_compat_ioctl,
 	.open		= tty_open,
 	.release	= tty_release,
 	.fasync		= tty_fasync,
@@ -1027,94 +1022,6 @@ static int tty_fasync(int fd, struct file *filp, int on)
 
 	return retval;
 }
-
-static int tiocgwinsz(struct tty_struct *tty, struct winsize __user *arg)
-{
-	int err;
-
-	mutex_lock(&tty->winsize_mutex);
-	err = copy_to_user(arg, &tty->winsize, sizeof(*arg));
-	mutex_unlock(&tty->winsize_mutex);
-
-	return err ? -EFAULT : 0;
-}
-
-static int tty_do_resize(struct tty_struct *tty, struct winsize *ws)
-{
-	struct pid *pgrp;
-
-	
-	mutex_lock(&tty->winsize_mutex);
-	if (!memcmp(ws, &tty->winsize, sizeof(*ws)))
-		goto done;
-
-	
-	pgrp = tty_get_pgrp(tty);
-	if (pgrp)
-		kill_pgrp(pgrp, SIGWINCH, 1);
-	put_pid(pgrp);
-
-	tty->winsize = *ws;
-done:
-	mutex_unlock(&tty->winsize_mutex);
-	return 0;
-}
-
-static int tiocswinsz(struct tty_struct *tty, struct winsize __user *arg)
-{
-	struct winsize tmp_ws;
-
-	if (copy_from_user(&tmp_ws, arg, sizeof(*arg)))
-		return -EFAULT;
-
-	if (tty->ops->resize)
-		return tty->ops->resize(tty, &tmp_ws);
-	else
-		return tty_do_resize(tty, &tmp_ws);
-}
-
-
-static struct tty_struct *tty_pair_get_tty(struct tty_struct *tty)
-{
-	if (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
-	    tty->driver->subtype == PTY_TYPE_MASTER)
-		tty = tty->link;
-	return tty;
-}
-
-long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-{
-	/* Minimal stub: handle only essential ioctl operations */
-	struct tty_struct *tty = file_tty(file);
-	struct tty_struct *real_tty;
-	void __user *p = (void __user *)arg;
-	int retval;
-
-	if (tty_paranoia_check(tty, file_inode(file), "tty_ioctl"))
-		return -EINVAL;
-
-	real_tty = tty_pair_get_tty(tty);
-
-	/* Handle minimal set of ioctls needed for basic console */
-	switch (cmd) {
-	case TIOCGWINSZ:
-		return tiocgwinsz(real_tty, p);
-	case TIOCSWINSZ:
-		return tiocswinsz(real_tty, p);
-	default:
-		break;
-	}
-
-	/* Delegate to driver-specific ioctl if available */
-	if (tty->ops->ioctl) {
-		retval = tty->ops->ioctl(tty, cmd, arg);
-		if (retval != -ENOIOCTLCMD)
-			return retval;
-	}
-
-	return -ENOTTY;
-}
-
 
 static dev_t tty_devnum(struct tty_struct *tty);
 

@@ -54,10 +54,6 @@ struct tty_ldisc_ops {
 			void **cookie, unsigned long offset);
 	ssize_t	(*write)(struct tty_struct *tty, struct file *file,
 			 const unsigned char *buf, size_t nr);
-	int	(*ioctl)(struct tty_struct *tty, unsigned int cmd,
-			unsigned long arg);
-	int	(*compat_ioctl)(struct tty_struct *tty, unsigned int cmd,
-			unsigned long arg);
 	void	(*set_termios)(struct tty_struct *tty, struct ktermios *old);
 	void	(*hangup)(struct tty_struct *tty);
 	void	(*receive_buf)(struct tty_struct *tty, const unsigned char *cp,
@@ -201,7 +197,6 @@ static inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
 }
 
 const char *tty_driver_name(const struct tty_struct *tty);
-unsigned int tty_chars_in_buffer(struct tty_struct *tty);
 speed_t tty_termios_baud_rate(struct ktermios *termios);
 
 static inline speed_t tty_get_baud_rate(struct tty_struct *tty)
@@ -210,7 +205,6 @@ static inline speed_t tty_get_baud_rate(struct tty_struct *tty)
 }
 
 
-int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
 struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx);
 void tty_init_termios(struct tty_struct *tty);
 int tty_standard_install(struct tty_driver *driver,
@@ -226,9 +220,6 @@ static inline void tty_audit_exit(void)
 static inline void tty_audit_fork(struct signal_struct *sig)
 {
 }
-int n_tty_ioctl_helper(struct tty_struct *tty, unsigned int cmd,
-		unsigned long arg);
-
 
 void tty_lock(struct tty_struct *tty);
 int  tty_lock_interruptible(struct tty_struct *tty);

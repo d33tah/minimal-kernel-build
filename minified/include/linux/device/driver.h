@@ -43,10 +43,6 @@ struct device_driver {
 };
 
 
-extern int __must_check driver_register(struct device_driver *drv);
-
-extern struct device_driver *driver_find(const char *name,
-					 struct bus_type *bus);
 
 
 struct driver_attribute {
@@ -62,12 +58,6 @@ struct driver_attribute {
 	struct driver_attribute driver_attr_##_name = __ATTR_RO(_name)
 #define DRIVER_ATTR_WO(_name) \
 	struct driver_attribute driver_attr_##_name = __ATTR_WO(_name)
-
-extern int __must_check driver_create_file(struct device_driver *driver,
-					const struct driver_attribute *attr);
-extern void driver_remove_file(struct device_driver *driver,
-			       const struct driver_attribute *attr);
-
 
 extern int driver_deferred_probe_timeout;
 void driver_deferred_probe_add(struct device *dev);

@@ -2,7 +2,7 @@
 # Makefile for the Linux device tree
 
 obj-y			:= core.o bus.o dd.o \
-			   driver.o class.o platform.o \
+			   class.o platform.o \
 			   cpu.o init.o map.o devres.o \
 			   swnode.o
 obj-$(CONFIG_AUXILIARY_BUS) += auxiliary.o

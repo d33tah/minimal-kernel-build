@@ -17,68 +17,14 @@ static struct kset *system_kset;
 #define to_bus_attr(_attr) container_of(_attr, struct bus_attribute, attr)
 
 
-#define to_drv_attr(_attr) container_of(_attr, struct driver_attribute, attr)
-
-#define DRIVER_ATTR_IGNORE_LOCKDEP(_name, _mode, _show, _store) \
-	struct driver_attribute driver_attr_##_name =		\
-		__ATTR_IGNORE_LOCKDEP(_name, _mode, _show, _store)
-
-
-static struct bus_type *bus_get(struct bus_type *bus)
-{
-	if (bus) {
-		kset_get(&bus->p->subsys);
-		return bus;
-	}
-	return NULL;
-}
-
 static void bus_put(struct bus_type *bus)
 {
 	if (bus)
 		kset_put(&bus->p->subsys);
 }
 
-static ssize_t drv_attr_show(struct kobject *kobj, struct attribute *attr,
-			     char *buf)
-{
-	struct driver_attribute *drv_attr = to_drv_attr(attr);
-	struct driver_private *drv_priv = to_driver(kobj);
-	ssize_t ret = -EIO;
-
-	if (drv_attr->show)
-		ret = drv_attr->show(drv_priv->driver, buf);
-	return ret;
-}
-
-static ssize_t drv_attr_store(struct kobject *kobj, struct attribute *attr,
-			      const char *buf, size_t count)
-{
-	struct driver_attribute *drv_attr = to_drv_attr(attr);
-	struct driver_private *drv_priv = to_driver(kobj);
-	ssize_t ret = -EIO;
-
-	if (drv_attr->store)
-		ret = drv_attr->store(drv_priv->driver, buf, count);
-	return ret;
-}
-
-static const struct sysfs_ops driver_sysfs_ops = {
-	.show	= drv_attr_show,
-	.store	= drv_attr_store,
-};
-
-static void driver_release(struct kobject *kobj)
-{
-	struct driver_private *drv_priv = to_driver(kobj);
-
-	kfree(drv_priv);
-}
-
-static struct kobj_type driver_ktype = {
-	.sysfs_ops	= &driver_sysfs_ops,
-	.release	= driver_release,
-};
+/* Removed: bus_get + the driver_ktype kobj_type (drv_attr_show/store,
+   driver_sysfs_ops, driver_release) - only used by the dead bus_add_driver */
 
 static ssize_t bus_attr_show(struct kobject *kobj, struct attribute *attr,
 			     char *buf)
@@ -143,22 +89,6 @@ static const struct kset_uevent_ops bus_uevent_ops = {
 };
 
 static struct kset *bus_kset;
-
-static ssize_t unbind_store(struct device_driver *drv, const char *buf,
-			    size_t count)
-{
-	/* Stub: sysfs driver unbind not needed for minimal kernel */
-	return -ENOSYS;
-}
-static DRIVER_ATTR_IGNORE_LOCKDEP(unbind, 0200, NULL, unbind_store);
-
-static ssize_t bind_store(struct device_driver *drv, const char *buf,
-			  size_t count)
-{
-	/* Stub: sysfs driver bind not needed for minimal kernel */
-	return -ENOSYS;
-}
-static DRIVER_ATTR_IGNORE_LOCKDEP(bind, 0200, NULL, bind_store);
 
 /* Stub: drivers_autoprobe simplified for minimal kernel */
 static ssize_t drivers_autoprobe_show(struct bus_type *bus, char *buf)
@@ -281,25 +211,6 @@ void bus_remove_device(struct device *dev)
 	bus_put(dev->bus);
 }
 
-static int __must_check add_bind_files(struct device_driver *drv)
-{
-	int ret;
-
-	ret = driver_create_file(drv, &driver_attr_unbind);
-	if (ret == 0) {
-		ret = driver_create_file(drv, &driver_attr_bind);
-		if (ret)
-			driver_remove_file(drv, &driver_attr_unbind);
-	}
-	return ret;
-}
-
-static void remove_bind_files(struct device_driver *drv)
-{
-	driver_remove_file(drv, &driver_attr_bind);
-	driver_remove_file(drv, &driver_attr_unbind);
-}
-
 static BUS_ATTR_WO(drivers_probe);
 static BUS_ATTR_RW(drivers_autoprobe);
 
@@ -324,97 +235,8 @@ static void remove_probe_files(struct bus_type *bus)
 	bus_remove_file(bus, &bus_attr_drivers_probe);
 }
 
-static ssize_t uevent_store(struct device_driver *drv, const char *buf,
-			    size_t count)
-{
-	int rc;
-
-	rc = kobject_synth_uevent(&drv->p->kobj, buf, count);
-	return rc ? rc : count;
-}
-static DRIVER_ATTR_WO(uevent);
-
-int bus_add_driver(struct device_driver *drv)
-{
-	struct bus_type *bus;
-	struct driver_private *priv;
-	int error = 0;
-
-	bus = bus_get(drv->bus);
-	if (!bus)
-		return -EINVAL;
-
-	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-	if (!priv) {
-		error = -ENOMEM;
-		goto out_put_bus;
-	}
-	klist_init(&priv->klist_devices, NULL, NULL);
-	priv->driver = drv;
-	drv->p = priv;
-	priv->kobj.kset = bus->p->drivers_kset;
-	error = kobject_init_and_add(&priv->kobj, &driver_ktype, NULL,
-				     "%s", drv->name);
-	if (error)
-		goto out_unregister;
-
-	klist_add_tail(&priv->knode_bus, &bus->p->klist_drivers);
-	if (drv->bus->p->drivers_autoprobe) {
-		error = driver_attach(drv);
-		if (error)
-			goto out_del_list;
-	}
-	module_add_driver(drv->owner, drv);
-
-	error = driver_create_file(drv, &driver_attr_uevent);
-	if (error) {
-		printk(KERN_ERR "%s: uevent attr (%s) failed\n",
-			__func__, drv->name);
-	}
-	error = driver_add_groups(drv, bus->drv_groups);
-	if (error) {
-		 
-		printk(KERN_ERR "%s: driver_add_groups(%s) failed\n",
-			__func__, drv->name);
-	}
-
-	if (!drv->suppress_bind_attrs) {
-		error = add_bind_files(drv);
-		if (error) {
-			 
-			printk(KERN_ERR "%s: add_bind_files(%s) failed\n",
-				__func__, drv->name);
-		}
-	}
-
-	return 0;
-
-out_del_list:
-	klist_del(&priv->knode_bus);
-out_unregister:
-	kobject_put(&priv->kobj);
-	 
-	drv->p = NULL;
-out_put_bus:
-	bus_put(bus);
-	return error;
-}
-
-void bus_remove_driver(struct device_driver *drv)
-{
-	if (!drv->bus)
-		return;
-
-	if (!drv->suppress_bind_attrs)
-		remove_bind_files(drv);
-	driver_remove_groups(drv, drv->bus->drv_groups);
-	driver_remove_file(drv, &driver_attr_uevent);
-	klist_remove(&drv->p->knode_bus);
-	driver_detach(drv);
-	module_remove_driver(drv);
-	kobject_put(&drv->p->kobj);
-	bus_put(drv->bus);
-}
+/* Removed: bus_add_driver + bus_remove_driver - no driver registers in this
+   minimal kernel, so driver_register (their only caller) is gone */
 
 
 /* Stub: sysfs functions are stubs */

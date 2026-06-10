@@ -108,28 +108,8 @@ int driver_deferred_probe_timeout;
 
 
 
-static void deferred_probe_timeout_work_func(struct work_struct *work)
-{
-	struct device_private *p;
-
-	driver_deferred_probe_timeout = 0;
-	driver_deferred_probe_trigger();
-	flush_work(&deferred_probe_work);
-
-	mutex_lock(&deferred_probe_mutex);
-	list_for_each_entry(p, &deferred_probe_pending_list, deferred_probe);
-	mutex_unlock(&deferred_probe_mutex);
-}
-static DECLARE_DELAYED_WORK(deferred_probe_timeout_work, deferred_probe_timeout_work_func);
-
-void deferred_probe_extend_timeout(void)
-{
-	 
-	if (cancel_delayed_work(&deferred_probe_timeout_work)) {
-		schedule_delayed_work(&deferred_probe_timeout_work,
-				driver_deferred_probe_timeout * HZ);
-	}
-}
+/* Removed: deferred_probe_timeout_work[_func] + deferred_probe_extend_timeout
+   - only caller was driver_register, which is dead */
 
 /* Stub: simplified deferred probe for minimal kernel */
 static int deferred_probe_initcall(void)
@@ -521,67 +501,8 @@ static void __device_driver_unlock(struct device *dev, struct device *parent)
 }
 
 
-static void __driver_attach_async_helper(void *_dev, async_cookie_t cookie)
-{
-	struct device *dev = _dev;
-	struct device_driver *drv;
-	int ret;
-
-	__device_driver_lock(dev, dev->parent);
-	drv = dev->p->async_driver;
-	dev->p->async_driver = NULL;
-	ret = driver_probe_device(drv, dev);
-	__device_driver_unlock(dev, dev->parent);
-
-	dev_dbg(dev, "driver %s async attach completed: %d\n", drv->name, ret);
-
-	put_device(dev);
-}
-
-static int __driver_attach(struct device *dev, void *data)
-{
-	struct device_driver *drv = data;
-	int ret;
-
-	 
-
-	ret = driver_match_device(drv, dev);
-	if (ret == 0) {
-		 
-		return 0;
-	} else if (ret == -EPROBE_DEFER) {
-		dev_dbg(dev, "Device match requests probe deferral\n");
-		dev->can_match = true;
-		driver_deferred_probe_add(dev);
-	} else if (ret < 0) {
-		dev_dbg(dev, "Bus failed to match device: %d\n", ret);
-		return ret;
-	}  
-
-	if (driver_allows_async_probing(drv)) {
-		 
-		dev_dbg(dev, "probing driver %s asynchronously\n", drv->name);
-		device_lock(dev);
-		if (!dev->driver && !dev->p->async_driver) {
-			get_device(dev);
-			dev->p->async_driver = drv;
-			async_schedule_dev(__driver_attach_async_helper, dev);
-		}
-		device_unlock(dev);
-		return 0;
-	}
-
-	__device_driver_lock(dev, dev->parent);
-	driver_probe_device(drv, dev);
-	__device_driver_unlock(dev, dev->parent);
-
-	return 0;
-}
-
-int driver_attach(struct device_driver *drv)
-{
-	return bus_for_each_dev(drv->bus, NULL, drv, __driver_attach);
-}
+/* Removed: __driver_attach_async_helper, __driver_attach, driver_attach -
+   only reached via bus_add_driver, which is dead (no driver registers) */
 
 static void __device_release_driver(struct device *dev)
 {
@@ -637,27 +558,4 @@ void device_release_driver(struct device *dev)
 }
 
 
-void driver_detach(struct device_driver *drv)
-{
-	struct device_private *dev_prv;
-	struct device *dev;
-
-	if (driver_allows_async_probing(drv))
-		async_synchronize_full();
-
-	for (;;) {
-		spin_lock(&drv->p->klist_devices.k_lock);
-		if (list_empty(&drv->p->klist_devices.k_list)) {
-			spin_unlock(&drv->p->klist_devices.k_lock);
-			break;
-		}
-		dev_prv = list_last_entry(&drv->p->klist_devices.k_list,
-				     struct device_private,
-				     knode_driver.n_node);
-		dev = dev_prv->device;
-		get_device(dev);
-		spin_unlock(&drv->p->klist_devices.k_lock);
-		device_release_driver_internal(dev, drv, dev->parent);
-		put_device(dev);
-	}
-}
+/* Removed: driver_detach - only reached via bus_remove_driver, which is dead */

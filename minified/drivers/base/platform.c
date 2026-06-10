@@ -42,14 +42,8 @@ struct device platform_bus = {
    platform_device_del, platform_device_register, platform_device_unregister,
    platform_device_register_full - no external callers */
 
-int __platform_driver_register(struct platform_driver *drv,
-				struct module *owner)
-{
-	drv->driver.owner = owner;
-	drv->driver.bus = &platform_bus_type;
-
-	return driver_register(&drv->driver);
-}
+/* Removed: __platform_driver_register - no callers (no platform driver
+   registers in this minimal kernel) */
 
 
 /* Removed: __platform_driver_probe, __platform_create_bundle,

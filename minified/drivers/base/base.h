@@ -28,7 +28,6 @@ struct driver_private {
 	struct module_kobject *mkobj;
 	struct device_driver *driver;
 };
-#define to_driver(obj) container_of(obj, struct driver_private, kobj)
 
  
 struct device_private {
@@ -68,13 +67,10 @@ static inline void auxiliary_bus_init(void) { }
 extern void bus_probe_device(struct device *dev);
 extern void bus_remove_device(struct device *dev);
 
-extern int bus_add_driver(struct device_driver *drv);
-extern void bus_remove_driver(struct device_driver *drv);
 extern void device_release_driver_internal(struct device *dev,
 					   struct device_driver *drv,
 					   struct device *parent);
 
-extern void driver_detach(struct device_driver *drv);
 extern void driver_deferred_probe_del(struct device *dev);
 extern void device_set_deferred_probe_reason(const struct device *dev,
 					     struct va_format *vaf);
@@ -85,13 +81,7 @@ static inline int driver_match_device(struct device_driver *drv,
 }
 extern bool driver_allows_async_probing(struct device_driver *drv);
 
-extern int driver_add_groups(struct device_driver *drv,
-			     const struct attribute_group **groups);
-extern void driver_remove_groups(struct device_driver *drv,
-				 const struct attribute_group **groups);
-
 extern int devres_release_all(struct device *dev);
-extern void deferred_probe_extend_timeout(void);
 
 
 extern struct kset *devices_kset;

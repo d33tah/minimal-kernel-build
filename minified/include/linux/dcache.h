@@ -170,8 +170,6 @@ extern void d_invalidate(struct dentry *);
 
 extern struct dentry * d_make_root(struct inode *);
 
-extern void d_tmpfile(struct dentry *, struct inode *);
-
 
 extern void d_add(struct dentry *, struct inode *);
 extern struct dentry *d_ancestor(struct dentry *, struct dentry *);

@@ -926,8 +926,6 @@ struct inode_operations {
 	ssize_t (*listxattr) (struct dentry *, char *, size_t);
 	/* fiemap removed - unused */
 	int (*update_time)(struct inode *, struct timespec64 *, int);
-	int (*tmpfile) (struct user_namespace *, struct inode *,
-			struct dentry *, umode_t);
 	/* set_acl, fileattr_set, fileattr_get removed - unused */
 } ____cacheline_aligned;
 

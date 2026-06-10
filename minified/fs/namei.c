@@ -1761,13 +1761,6 @@ static int do_open(struct nameidata *nd,
 	return error;
 }
 
-static int do_tmpfile(struct nameidata *nd, unsigned flags,
-		const struct open_flags *op,
-		struct file *file)
-{
-	return -EOPNOTSUPP;
-}
-
 static int do_o_path(struct nameidata *nd, unsigned flags, struct file *file)
 {
 	struct path path;
@@ -1789,9 +1782,7 @@ static struct file *path_openat(struct nameidata *nd,
 	if (IS_ERR(file))
 		return file;
 
-	if (unlikely(file->f_flags & __O_TMPFILE)) {
-		error = do_tmpfile(nd, flags, op, file);
-	} else if (unlikely(file->f_flags & O_PATH)) {
+	if (unlikely(file->f_flags & O_PATH)) {
 		error = do_o_path(nd, flags, file);
 	} else {
 		const char *s = path_init(nd, flags);

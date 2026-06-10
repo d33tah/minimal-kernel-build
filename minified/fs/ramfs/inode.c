@@ -91,18 +91,6 @@ static int ramfs_create(struct user_namespace *mnt_userns, struct inode *dir,
 	return ramfs_mknod(&init_user_ns, dir, dentry, mode | S_IFREG, 0);
 }
 
-static int ramfs_tmpfile(struct user_namespace *mnt_userns,
-			 struct inode *dir, struct dentry *dentry, umode_t mode)
-{
-	struct inode *inode;
-
-	inode = ramfs_get_inode(dir->i_sb, dir, mode, 0);
-	if (!inode)
-		return -ENOSPC;
-	d_tmpfile(dentry, inode);
-	return 0;
-}
-
 static const struct inode_operations ramfs_dir_inode_operations = {
 	.create		= ramfs_create,
 	.lookup		= simple_lookup,
@@ -112,7 +100,6 @@ static const struct inode_operations ramfs_dir_inode_operations = {
 	.rmdir		= simple_rmdir,
 	.mknod		= ramfs_mknod,
 	.rename		= simple_rename,
-	.tmpfile	= ramfs_tmpfile,
 };
 
 static int ramfs_show_options(struct seq_file *m, struct dentry *root)

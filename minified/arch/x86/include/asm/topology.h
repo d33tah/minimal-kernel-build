@@ -33,8 +33,6 @@ static inline int numa_node_id(void)
 #define topology_core_id(cpu)			(cpu_data(cpu).cpu_core_id)
 #define topology_ppin(cpu)			(cpu_data(cpu).ppin)
 
-extern unsigned int __max_die_per_package;
-
 #define topology_max_packages()			(1)
 
 struct pci_bus;

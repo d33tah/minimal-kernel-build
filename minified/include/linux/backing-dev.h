@@ -11,8 +11,6 @@
 #include <linux/slab.h>
 
 
-void wb_workfn(struct work_struct *work);
-
 /* wb_has_dirty_io, bdi_has_dirty_io, wb_stat_mod, inc_wb_stat, dec_wb_stat,
    wb_stat, wb_stat_sum, wb_stat_error removed - never called */
 

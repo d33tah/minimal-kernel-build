@@ -20,10 +20,8 @@ struct user_namespace;
 struct fs_context;
 struct fs_parameter;
 
-extern int cap_capable(const struct cred *cred, struct user_namespace *ns,
-		       int cap, unsigned int opts);
-/* cap_settime, cap_ptrace_*, cap_capget, cap_capset, cap_inode_*,
-   cap_mmap_addr, cap_vm_enough_memory removed - unused */
+/* cap_capable, cap_settime, cap_ptrace_*, cap_capget, cap_capset,
+   cap_inode_*, cap_mmap_addr, cap_vm_enough_memory removed - unused */
 extern int cap_bprm_creds_from_file(struct linux_binprm *bprm, struct file *file);
 
 extern unsigned long mmap_min_addr;

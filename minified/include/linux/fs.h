@@ -29,7 +29,6 @@
 enum migrate_mode { MIGRATE_MODE_LAST };
 #include <linux/uidgid.h>
 #include <linux/lockdep.h>
-#include <linux/percpu-rwsem.h>
 #include <linux/workqueue.h>
 
 /* Inlined from delayed_call.h */
@@ -640,19 +639,13 @@ extern void __f_setown(struct file *filp, struct pid *, enum pid_type, int force
 #define SB_I_PERSB_BDI	0x00000200
 
 enum {
-	SB_UNFROZEN = 0,		
-	SB_FREEZE_WRITE	= 1,		
-	SB_FREEZE_PAGEFAULT = 2,	
-	SB_FREEZE_FS = 3,		
-	SB_FREEZE_COMPLETE = 4,		
+	SB_FREEZE_WRITE	= 1,
+	SB_FREEZE_PAGEFAULT = 2,
 };
 
-#define SB_FREEZE_LEVELS (SB_FREEZE_COMPLETE - 1)
-
 struct sb_writers {
-	int				frozen;		
-	wait_queue_head_t		wait_unfrozen;	
-	struct percpu_rw_semaphore	rw_sem[SB_FREEZE_LEVELS];
+	int				frozen;
+	wait_queue_head_t		wait_unfrozen;
 };
 
 struct super_block {
@@ -806,17 +799,15 @@ extern struct timespec64 current_time(struct inode *inode);
 
 static inline void __sb_end_write(struct super_block *sb, int level)
 {
-	percpu_up_read(sb->s_writers.rw_sem + level-1);
 }
 
 static inline void __sb_start_write(struct super_block *sb, int level)
 {
-	percpu_down_read(sb->s_writers.rw_sem + level - 1);
 }
 
 static inline bool __sb_start_write_trylock(struct super_block *sb, int level)
 {
-	return percpu_down_read_trylock(sb->s_writers.rw_sem + level - 1);
+	return true;
 }
 
 static inline void sb_end_write(struct super_block *sb)
@@ -1105,7 +1096,6 @@ struct file_system_type {
 	struct lock_class_key s_lock_key;
 	struct lock_class_key s_umount_key;
 	struct lock_class_key s_vfs_rename_key;
-	struct lock_class_key s_writers_key[SB_FREEZE_LEVELS];
 
 	struct lock_class_key i_lock_key;
 	struct lock_class_key i_mutex_key;

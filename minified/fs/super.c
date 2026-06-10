@@ -18,20 +18,11 @@
 static LIST_HEAD(super_blocks);
 static DEFINE_SPINLOCK(sb_lock);
 
-static char *sb_writers_name[SB_FREEZE_LEVELS] = {
-	"sb_writers",
-	"sb_pagefaults",
-	"sb_internal",
-};
-
 static void destroy_super_work(struct work_struct *work)
 {
 	struct super_block *s = container_of(work, struct super_block,
 							destroy_work);
-	int i;
 
-	for (i = 0; i < SB_FREEZE_LEVELS; i++)
-		percpu_free_rwsem(&s->s_writers.rw_sem[i]);
 	kfree(s);
 }
 
@@ -59,7 +50,6 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 {
 	struct super_block *s = kzalloc(sizeof(struct super_block),  GFP_USER);
 	static const struct super_operations default_op;
-	int i;
 
 	if (!s)
 		return NULL;
@@ -71,12 +61,6 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	
 	down_write_nested(&s->s_umount, SINGLE_DEPTH_NESTING);
 
-	for (i = 0; i < SB_FREEZE_LEVELS; i++) {
-		if (__percpu_init_rwsem(&s->s_writers.rw_sem[i],
-					sb_writers_name[i],
-					&type->s_writers_key[i]))
-			goto fail;
-	}
 	init_waitqueue_head(&s->s_writers.wait_unfrozen);
 	s->s_bdi = &noop_backing_dev_info;
 	s->s_flags = flags;

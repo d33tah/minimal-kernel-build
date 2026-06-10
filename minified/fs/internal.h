@@ -25,8 +25,7 @@ int __block_write_begin_int(struct folio *folio, loff_t pos, unsigned len,
  
 extern void __init chrdev_init(void);
 
- 
-extern const struct fs_context_operations legacy_fs_context_ops;
+
 extern int parse_monolithic_mount_data(struct fs_context *, void *);
 
  

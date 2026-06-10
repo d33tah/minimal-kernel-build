@@ -40,28 +40,6 @@ void klist_init(struct klist *k, void (*get)(struct klist_node *),
 	k->put = put;
 }
 
-static void add_tail(struct klist *k, struct klist_node *n)
-{
-	spin_lock(&k->k_lock);
-	list_add_tail(&n->n_node, &k->k_list);
-	spin_unlock(&k->k_lock);
-}
-
-static void klist_node_init(struct klist *k, struct klist_node *n)
-{
-	INIT_LIST_HEAD(&n->n_node);
-	kref_init(&n->n_ref);
-	knode_set_klist(n, k);
-	if (k->get)
-		k->get(n);
-}
-
-void klist_add_tail(struct klist_node *n, struct klist *k)
-{
-	klist_node_init(k, n);
-	add_tail(k, n);
-}
-
 struct klist_waiter {
 	struct list_head list;
 	struct klist_node *node;

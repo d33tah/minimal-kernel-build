@@ -14,9 +14,6 @@
 
 static struct kset *system_kset;
 
-#define to_bus_attr(_attr) container_of(_attr, struct bus_attribute, attr)
-
-
 static void bus_put(struct bus_type *bus)
 {
 	if (bus)
@@ -26,40 +23,10 @@ static void bus_put(struct bus_type *bus)
 /* Removed: bus_get + the driver_ktype kobj_type (drv_attr_show/store,
    driver_sysfs_ops, driver_release) - only used by the dead bus_add_driver */
 
-static ssize_t bus_attr_show(struct kobject *kobj, struct attribute *attr,
-			     char *buf)
-{
-	struct bus_attribute *bus_attr = to_bus_attr(attr);
-	struct subsys_private *subsys_priv = to_subsys_private(kobj);
-	ssize_t ret = 0;
-
-	if (bus_attr->show)
-		ret = bus_attr->show(subsys_priv->bus, buf);
-	return ret;
-}
-
-static ssize_t bus_attr_store(struct kobject *kobj, struct attribute *attr,
-			      const char *buf, size_t count)
-{
-	struct bus_attribute *bus_attr = to_bus_attr(attr);
-	struct subsys_private *subsys_priv = to_subsys_private(kobj);
-	ssize_t ret = 0;
-
-	if (bus_attr->store)
-		ret = bus_attr->store(subsys_priv->bus, buf, count);
-	return ret;
-}
-
-static const struct sysfs_ops bus_sysfs_ops = {
-	.show	= bus_attr_show,
-	.store	= bus_attr_store,
-};
-
-/* Static: bus_create_file only used internally */
-static int bus_create_file(struct bus_type *bus, struct bus_attribute *attr) { return 0; }
-
-/* Static: bus_remove_file only used internally */
-static void bus_remove_file(struct bus_type *bus, struct bus_attribute *attr) { }
+/* Removed: bus_attr_show/store + bus_sysfs_ops + bus_create_file/bus_remove_file
+   - no bus_attribute is ever registered (the create/remove helpers were no-op
+   stubs), so the sysfs_ops dispatcher and the bus_attribute show/store callbacks
+   were never reached. */
 
 static void bus_release(struct kobject *kobj)
 {
@@ -71,7 +38,6 @@ static void bus_release(struct kobject *kobj)
 }
 
 static struct kobj_type bus_ktype = {
-	.sysfs_ops	= &bus_sysfs_ops,
 	.release	= bus_release,
 };
 
@@ -89,25 +55,6 @@ static const struct kset_uevent_ops bus_uevent_ops = {
 };
 
 static struct kset *bus_kset;
-
-/* Stub: drivers_autoprobe simplified for minimal kernel */
-static ssize_t drivers_autoprobe_show(struct bus_type *bus, char *buf)
-{
-	return sysfs_emit(buf, "1\n");
-}
-
-static ssize_t drivers_autoprobe_store(struct bus_type *bus,
-				       const char *buf, size_t count)
-{
-	return count;
-}
-
-/* Stubbed: drivers_probe_store relies on bus_rescan_devices_helper */
-static ssize_t drivers_probe_store(struct bus_type *bus,
-				   const char *buf, size_t count)
-{
-	return -ENOSYS;
-}
 
 static struct device *next_device(struct klist_iter *i)
 {
@@ -211,29 +158,9 @@ void bus_remove_device(struct device *dev)
 	bus_put(dev->bus);
 }
 
-static BUS_ATTR_WO(drivers_probe);
-static BUS_ATTR_RW(drivers_autoprobe);
-
-static int add_probe_files(struct bus_type *bus)
-{
-	int retval;
-
-	retval = bus_create_file(bus, &bus_attr_drivers_probe);
-	if (retval)
-		goto out;
-
-	retval = bus_create_file(bus, &bus_attr_drivers_autoprobe);
-	if (retval)
-		bus_remove_file(bus, &bus_attr_drivers_probe);
-out:
-	return retval;
-}
-
-static void remove_probe_files(struct bus_type *bus)
-{
-	bus_remove_file(bus, &bus_attr_drivers_autoprobe);
-	bus_remove_file(bus, &bus_attr_drivers_probe);
-}
+/* Removed: drivers_probe/drivers_autoprobe bus_attributes + add_probe_files/
+   remove_probe_files - the sysfs files were never created (bus_create_file was
+   a no-op stub) so the attributes' show/store were never dispatched. */
 
 /* Removed: bus_add_driver + bus_remove_driver - no driver registers in this
    minimal kernel, so driver_register (their only caller) is gone */
@@ -267,16 +194,8 @@ static void klist_devices_put(struct klist_node *n)
 	put_device(dev);
 }
 
-static ssize_t bus_uevent_store(struct bus_type *bus,
-				const char *buf, size_t count)
-{
-	int rc;
-
-	rc = kobject_synth_uevent(&bus->p->subsys.kobj, buf, count);
-	return rc ? rc : count;
-}
-static struct bus_attribute bus_attr_uevent = __ATTR(uevent, 0200, NULL,
-						     bus_uevent_store);
+/* Removed: bus_uevent_store + bus_attr_uevent - the "uevent" sysfs file was
+   never created (bus_create_file no-op), so the store callback was never run. */
 
 int bus_register(struct bus_type *bus)
 {
@@ -305,10 +224,6 @@ int bus_register(struct bus_type *bus)
 	if (retval)
 		goto out;
 
-	retval = bus_create_file(bus, &bus_attr_uevent);
-	if (retval)
-		goto bus_uevent_fail;
-
 	priv->devices_kset = kset_create_and_add("devices", NULL,
 						 &priv->subsys.kobj);
 	if (!priv->devices_kset) {
@@ -328,10 +243,6 @@ int bus_register(struct bus_type *bus)
 	klist_init(&priv->klist_devices, klist_devices_get, klist_devices_put);
 	klist_init(&priv->klist_drivers, NULL, NULL);
 
-	retval = add_probe_files(bus);
-	if (retval)
-		goto bus_probe_files_fail;
-
 	retval = bus_add_groups(bus, bus->bus_groups);
 	if (retval)
 		goto bus_groups_fail;
@@ -339,14 +250,10 @@ int bus_register(struct bus_type *bus)
 	return 0;
 
 bus_groups_fail:
-	remove_probe_files(bus);
-bus_probe_files_fail:
 	kset_unregister(bus->p->drivers_kset);
 bus_drivers_fail:
 	kset_unregister(bus->p->devices_kset);
 bus_devices_fail:
-	bus_remove_file(bus, &bus_attr_uevent);
-bus_uevent_fail:
 	kset_unregister(&bus->p->subsys);
 out:
 	kfree(bus->p);
@@ -359,10 +266,8 @@ void bus_unregister(struct bus_type *bus)
 	if (bus->dev_root)
 		device_unregister(bus->dev_root);
 	bus_remove_groups(bus, bus->bus_groups);
-	remove_probe_files(bus);
 	kset_unregister(bus->p->drivers_kset);
 	kset_unregister(bus->p->devices_kset);
-	bus_remove_file(bus, &bus_attr_uevent);
 	kset_unregister(&bus->p->subsys);
 }
 

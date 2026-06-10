@@ -159,19 +159,6 @@ static inline void prb_rec_init_rd(struct printk_record *r,
 	r->text_buf_size = text_buf_size;
 }
 
-#define prb_for_each_record(from, rb, s, r) \
-for ((s) = from; prb_read_valid(rb, s, r); (s) = (r)->info->seq + 1)
-
-#define prb_for_each_info(from, rb, s, i, lc) \
-for ((s) = from; prb_read_valid_info(rb, s, i, lc); (s) = (i)->seq + 1)
-
-bool prb_read_valid(struct printk_ringbuffer *rb, u64 seq,
-		    struct printk_record *r);
-bool prb_read_valid_info(struct printk_ringbuffer *rb, u64 seq,
-			 struct printk_info *info, unsigned int *line_count);
-
-u64 prb_first_valid_seq(struct printk_ringbuffer *rb);
-u64 prb_next_seq(struct printk_ringbuffer *rb);
 /* end printk_ringbuffer.h */
 struct console_cmdline { char name[16]; int index; bool user_specified; char *options; };
 /* end console_cmdline.h */
@@ -196,7 +183,6 @@ struct console *console_drivers;
 static int __read_mostly suppress_panic_printk;
 
 
-static int nr_ext_console_drivers;
 
 #define down_console_sem() do { \
 	down(&console_sem);\
@@ -679,9 +665,6 @@ void register_console(struct console *newcon)
 		newcon->next = console_drivers->next;
 		console_drivers->next = newcon;
 	}
-
-	if (newcon->flags & CON_EXTENDED)
-		nr_ext_console_drivers++;
 
 	newcon->dropped = 0;
 	if (newcon->flags & CON_PRINTBUFFER) {

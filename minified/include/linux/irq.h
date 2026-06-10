@@ -284,9 +284,6 @@ __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 		  const char *name);
 
 
-void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set);
-
-
 extern int irq_set_chip(unsigned int irq, const struct irq_chip *chip);
 
 static inline struct irq_chip *irq_data_get_irq_chip(struct irq_data *d)

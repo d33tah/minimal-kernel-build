@@ -530,56 +530,6 @@ static int vgacon_switch(struct vc_data *c)
 	return 0;		 
 }
 
-static void vga_set_palette(struct vc_data *vc, const unsigned char *table)
-{
-	int i, j;
-
-	vga_w(vgastate.vgabase, VGA_PEL_MSK, 0xff);
-	for (i = j = 0; i < 16; i++) {
-		vga_w(vgastate.vgabase, VGA_PEL_IW, table[i]);
-		vga_w(vgastate.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
-		vga_w(vgastate.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
-		vga_w(vgastate.vgabase, VGA_PEL_D, vc->vc_palette[j++] >> 2);
-	}
-}
-
-static void vgacon_set_palette(struct vc_data *vc, const unsigned char *table)
-{
-	if (vga_video_type != VIDEO_TYPE_VGAC || !con_is_visible(vc))
-		return;
-	vga_set_palette(vc, table);
-}
-
-
-#define colourmap 0xa0000
-#define blackwmap 0xa0000
-#define cmapsz 8192
-
-
-
-static int vgacon_resize(struct vc_data *c, unsigned int width,
-			 unsigned int height, unsigned int user)
-{
-	if ((width << 1) * height > vga_vram_size)
-		return -EINVAL;
-
-	if (user) {
-		 
-		screen_info.orig_video_cols = width;
-		screen_info.orig_video_lines = height;
-		vga_default_font_height = c->vc_cell_height;
-		return 0;
-	}
-	if (width % 2 || width > screen_info.orig_video_cols ||
-	    height > (screen_info.orig_video_lines * vga_default_font_height)/
-	    c->vc_cell_height)
-		return -EINVAL;
-
-	if (con_is_visible(c) && !vga_is_gfx)  
-		vgacon_doresize(c, width, height);
-	return 0;
-}
-
 static int vgacon_set_origin(struct vc_data *c)
 {
 	if (vga_is_gfx)
@@ -657,8 +607,6 @@ static bool vgacon_scroll(struct vc_data *c, unsigned int t, unsigned int b,
 }
 
 
-static void vgacon_clear(struct vc_data *vc, int sy, int sx, int height,
-			 int width) { }
 static void vgacon_putc(struct vc_data *vc, int c, int ypos, int xpos) { }
 static void vgacon_putcs(struct vc_data *vc, const unsigned short *s,
 			 int count, int ypos, int xpos) { }
@@ -668,15 +616,13 @@ const struct consw vga_con = {
 	.con_startup = vgacon_startup,
 	.con_init = vgacon_init,
 	.con_deinit = vgacon_deinit,
-	.con_clear = vgacon_clear,
 	.con_putc = vgacon_putc,
 	.con_putcs = vgacon_putcs,
 	.con_cursor = vgacon_cursor,
 	.con_scroll = vgacon_scroll,
 	.con_switch = vgacon_switch,
 	/* .con_font_set, .con_font_get removed - never called */
-	.con_resize = vgacon_resize,
-	.con_set_palette = vgacon_set_palette,
+	/* .con_resize, .con_set_palette removed - never dispatched */
 	/* .con_scrolldelta removed - never called through vc_sw */
 	.con_set_origin = vgacon_set_origin,
 	.con_save_screen = vgacon_save_screen,

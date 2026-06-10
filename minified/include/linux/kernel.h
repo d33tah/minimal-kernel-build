@@ -109,7 +109,6 @@ const char *kvasprintf_const(gfp_t gfp, const char *fmt, va_list args);
 extern __scanf(2, 3)
 int sscanf(const char *, const char *, ...);
 
-extern bool parse_option_str(const char *str, const char *option);
 extern char *next_arg(char *args, char **param, char **val);
 
 extern int __kernel_text_address(unsigned long addr);

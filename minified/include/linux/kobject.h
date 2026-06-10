@@ -131,7 +131,6 @@ extern struct kobject *kset_find_obj(struct kset *, const char *);
 int kobject_uevent(struct kobject *kobj, enum kobject_action action);
 int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 			char *envp[]);
-int kobject_synth_uevent(struct kobject *kobj, const char *buf, size_t count);
 
 
 #endif  

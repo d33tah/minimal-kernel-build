@@ -74,8 +74,6 @@ extern void lru_add_drain_cpu(int cpu);
 extern void lru_cache_add_inactive_or_unevictable(struct page *page,
 						struct vm_area_struct *vma);
 
-long remove_mapping(struct address_space *mapping, struct folio *folio);
-
 #define node_reclaim_mode 0
 
 

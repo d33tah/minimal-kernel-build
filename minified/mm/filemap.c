@@ -248,13 +248,6 @@ static int __filemap_fdatawrite_range(struct address_space *mapping, loff_t star
 
 
 
-/* filemap_range_has_page used internally */
-static bool filemap_range_has_page(struct address_space *mapping,
-			   loff_t start_byte, loff_t end_byte)
-{
-	return false;
-}
-
 static void __filemap_fdatawait_range(struct address_space *mapping,
 				     loff_t start_byte, loff_t end_byte)
 {
@@ -1311,41 +1304,7 @@ generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 	ssize_t retval = 0;
 
 	if (!count)
-		return 0; 
-
-	if (iocb->ki_flags & IOCB_DIRECT) {
-		struct file *file = iocb->ki_filp;
-		struct address_space *mapping = file->f_mapping;
-		struct inode *inode = mapping->host;
-
-		if (iocb->ki_flags & IOCB_NOWAIT) {
-			if (filemap_range_needs_writeback(mapping, iocb->ki_pos,
-						iocb->ki_pos + count - 1))
-				return -EAGAIN;
-		} else {
-			retval = filemap_write_and_wait_range(mapping,
-						iocb->ki_pos,
-					        iocb->ki_pos + count - 1);
-			if (retval < 0)
-				return retval;
-		}
-
-		file_accessed(file);
-
-		retval = mapping->a_ops->direct_IO(iocb, iter);
-		if (retval >= 0) {
-			iocb->ki_pos += retval;
-			count -= retval;
-		}
-		if (retval != -EIOCBQUEUED)
-			iov_iter_revert(iter, count - iov_iter_count(iter));
-
-		
-		if (retval < 0 || !count)
-			return retval;
-		if (iocb->ki_pos >= i_size_read(inode))
-			return retval;
-	}
+		return 0;
 
 	return filemap_read(iocb, iter, retval);
 }
@@ -1547,70 +1506,6 @@ int generic_file_mmap(struct file *file, struct vm_area_struct *vma)
 	return 0;
 }
 
-static void dio_warn_stale_pagecache(struct file *filp)
-{
-	/* Stub: direct I/O warning not needed for minimal kernel */
-	errseq_set(&filp->f_mapping->wb_err, -EIO);
-}
-
-ssize_t
-generic_file_direct_write(struct kiocb *iocb, struct iov_iter *from)
-{
-	struct file	*file = iocb->ki_filp;
-	struct address_space *mapping = file->f_mapping;
-	struct inode	*inode = mapping->host;
-	loff_t		pos = iocb->ki_pos;
-	ssize_t		written;
-	size_t		write_len;
-	pgoff_t		end;
-
-	write_len = iov_iter_count(from);
-	end = (pos + write_len - 1) >> PAGE_SHIFT;
-
-	if (iocb->ki_flags & IOCB_NOWAIT) {
-		
-		if (filemap_range_has_page(file->f_mapping, pos,
-					   pos + write_len - 1))
-			return -EAGAIN;
-	} else {
-		written = filemap_write_and_wait_range(mapping, pos,
-							pos + write_len - 1);
-		if (written)
-			goto out;
-	}
-
-	
-	written = invalidate_inode_pages2_range(mapping,
-					pos >> PAGE_SHIFT, end);
-	
-	if (written) {
-		if (written == -EBUSY)
-			return 0;
-		goto out;
-	}
-
-	written = mapping->a_ops->direct_IO(iocb, from);
-
-	
-	if (written > 0 && mapping->nrpages &&
-	    invalidate_inode_pages2_range(mapping, pos >> PAGE_SHIFT, end))
-		dio_warn_stale_pagecache(file);
-
-	if (written > 0) {
-		pos += written;
-		write_len -= written;
-		if (pos > i_size_read(inode) && !S_ISBLK(inode->i_mode)) {
-			i_size_write(inode, pos);
-			mark_inode_dirty(inode);
-		}
-		iocb->ki_pos = pos;
-	}
-	if (written != -EIOCBQUEUED)
-		iov_iter_revert(from, write_len - iov_iter_count(from));
-out:
-	return written;
-}
-
 ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
 {
 	struct file *file = iocb->ki_filp;
@@ -1635,9 +1530,8 @@ ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 	struct inode 	*inode = mapping->host;
 	ssize_t		written = 0;
 	ssize_t		err;
-	ssize_t		status;
 
-	
+
 	current->backing_dev_info = inode_to_bdi(inode);
 	err = file_remove_privs(file);
 	if (err)
@@ -1647,38 +1541,9 @@ ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 	if (err)
 		goto out;
 
-	if (iocb->ki_flags & IOCB_DIRECT) {
-		loff_t pos, endbyte;
-
-		written = generic_file_direct_write(iocb, from);
-		
-		if (written < 0 || !iov_iter_count(from))
-			goto out;
-
-		pos = iocb->ki_pos;
-		status = generic_perform_write(iocb, from);
-		
-		if (unlikely(status < 0)) {
-			err = status;
-			goto out;
-		}
-		
-		endbyte = pos + status - 1;
-		err = filemap_write_and_wait_range(mapping, pos, endbyte);
-		if (err == 0) {
-			iocb->ki_pos = endbyte + 1;
-			written += status;
-			invalidate_mapping_pages(mapping,
-						 pos >> PAGE_SHIFT,
-						 endbyte >> PAGE_SHIFT);
-		} else {
-			
-		}
-	} else {
-		written = generic_perform_write(iocb, from);
-		if (likely(written > 0))
-			iocb->ki_pos += written;
-	}
+	written = generic_perform_write(iocb, from);
+	if (likely(written > 0))
+		iocb->ki_pos += written;
 out:
 	current->backing_dev_info = NULL;
 	return written ? written : err;

@@ -5,8 +5,3 @@
 #include <linux/swap.h>
 #include <linux/pagemap.h>
 
-long remove_mapping(struct address_space *mapping, struct folio *folio)
-{
-	return 0;
-}
-

@@ -13,11 +13,6 @@
 
 struct folio_batch;
 
-unsigned long invalidate_mapping_pages(struct address_space *mapping,
-					pgoff_t start, pgoff_t end);
-
-int invalidate_inode_pages2_range(struct address_space *mapping,
-		pgoff_t start, pgoff_t end);
 int write_inode_now(struct inode *, int sync);
 int filemap_fdatawait_range(struct address_space *, loff_t lstart, loff_t lend);
 int filemap_write_and_wait_range(struct address_space *mapping,
@@ -328,18 +323,6 @@ bool filemap_release_folio(struct folio *folio, gfp_t gfp);
 int __filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp, void **shadowp);
 
-
-static inline bool filemap_range_needs_writeback(struct address_space *mapping,
-						 loff_t start_byte,
-						 loff_t end_byte)
-{
-	if (!mapping->nrpages)
-		return false;
-	if (!mapping_tagged(mapping, PAGECACHE_TAG_DIRTY) &&
-	    !mapping_tagged(mapping, PAGECACHE_TAG_WRITEBACK))
-		return false;
-	return false; /* simplified - no writeback in minimal kernel */
-}
 
 struct readahead_control {
 	struct file *file;

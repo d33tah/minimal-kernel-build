@@ -57,7 +57,6 @@ static inline void clear_delayed_call(struct delayed_call *call)
 
 /* Inlined from errseq.h */
 typedef u32	errseq_t;
-errseq_t errseq_set(errseq_t *eseq, int err);
 errseq_t errseq_sample(errseq_t *eseq);
 #include <linux/build_bug.h>
 
@@ -1322,7 +1321,6 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *to,
 extern ssize_t generic_file_read_iter(struct kiocb *, struct iov_iter *);
 extern ssize_t __generic_file_write_iter(struct kiocb *, struct iov_iter *);
 extern ssize_t generic_file_write_iter(struct kiocb *, struct iov_iter *);
-extern ssize_t generic_file_direct_write(struct kiocb *, struct iov_iter *);
 ssize_t generic_perform_write(struct kiocb *, struct iov_iter *);
 
 extern ssize_t generic_file_splice_read(struct file *, loff_t *,

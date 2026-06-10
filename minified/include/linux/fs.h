@@ -1277,7 +1277,6 @@ extern ssize_t kernel_read(struct file *, void *, size_t, loff_t *);
 ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos);
 extern ssize_t kernel_write(struct file *, const void *, size_t, loff_t *);
 extern ssize_t __kernel_write(struct file *, const void *, size_t, loff_t *);
-extern struct file * open_exec(const char *);
 
 extern bool is_subdir(struct dentry *, struct dentry *);
 

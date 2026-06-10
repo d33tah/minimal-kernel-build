@@ -65,12 +65,5 @@ void __bitmap_clear(unsigned long *map, unsigned int start, int len)
 	}
 }
 
-int bitmap_print_to_pagebuf(bool list, char *buf, const unsigned long *maskp,
-			    int nmaskbits)
-{
-	/* Stub - returns 0 bytes written */
-	return 0;
-}
-
 /* bitmap_parselist, bitmap_parselist_user, bitmap_parse,
    bitmap_from_arr32, bitmap_to_arr32, bitmap_from_arr64, bitmap_to_arr64 removed - unused */

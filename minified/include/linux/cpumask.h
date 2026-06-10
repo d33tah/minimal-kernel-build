@@ -210,14 +210,6 @@ static inline bool cpu_possible(unsigned int cpu)
 	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\
 }
 
-static inline ssize_t
-cpumap_print_to_pagebuf(bool list, char *buf, const struct cpumask *mask)
-{
-	return bitmap_print_to_pagebuf(list, buf, cpumask_bits(mask),
-				      nr_cpu_ids);
-}
-
-
 /* NR_CPUS <= BITS_PER_LONG always true */
 #define CPU_MASK_ALL							\
 (cpumask_t) { {								\

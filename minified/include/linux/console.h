@@ -32,28 +32,13 @@ struct consw {
 			unsigned int bottom, enum con_scroll dir,
 			unsigned int lines);
 	int	(*con_switch)(struct vc_data *vc);
-	int	(*con_blank)(struct vc_data *vc, int blank, int mode_switch);
-	int	(*con_font_set)(struct vc_data *vc, struct console_font *font,
-			unsigned int flags);
-	int	(*con_font_get)(struct vc_data *vc, struct console_font *font);
-	int	(*con_font_default)(struct vc_data *vc,
-			struct console_font *font, char *name);
-	void	(*con_scrolldelta)(struct vc_data *vc, int lines);
 	int	(*con_set_origin)(struct vc_data *vc);
 	void	(*con_save_screen)(struct vc_data *vc);
 	u8	(*con_build_attr)(struct vc_data *vc, u8 color,
 			enum vc_intensity intensity,
 			bool blink, bool underline, bool reverse, bool italic);
-	void	(*con_invert_region)(struct vc_data *vc, u16 *p, int count);
-	u16    *(*con_screen_pos)(const struct vc_data *vc, int offset);
 	unsigned long (*con_getxy)(struct vc_data *vc, unsigned long position,
 			int *px, int *py);
-	 
-	void	(*con_flush_scrollback)(struct vc_data *vc);
-	 
-	int	(*con_debug_enter)(struct vc_data *vc);
-	 
-	int	(*con_debug_leave)(struct vc_data *vc);
 };
 
 extern const struct consw *conswitchp;

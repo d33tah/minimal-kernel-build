@@ -621,13 +621,9 @@ const struct consw vga_con = {
 	.con_cursor = vgacon_cursor,
 	.con_scroll = vgacon_scroll,
 	.con_switch = vgacon_switch,
-	/* .con_font_set, .con_font_get removed - never called */
-	/* .con_resize, .con_set_palette removed - never dispatched */
-	/* .con_scrolldelta removed - never called through vc_sw */
 	.con_set_origin = vgacon_set_origin,
 	.con_save_screen = vgacon_save_screen,
 	.con_build_attr = vgacon_build_attr,
-	/* .con_invert_region removed - never called through struct */
 };
 
 MODULE_LICENSE("GPL");

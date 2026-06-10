@@ -176,7 +176,6 @@ static inline bool tty_io_error(struct tty_struct *tty)
 }
 
 void tty_kref_put(struct tty_struct *tty);
-struct pid *tty_get_pgrp(struct tty_struct *tty);
 void disassociate_ctty(int priv);
 struct tty_struct *get_current_tty(void);
 int __init tty_init(void);

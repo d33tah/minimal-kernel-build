@@ -20,8 +20,3 @@ struct tty_struct *get_current_tty(void)
 void disassociate_ctty(int on_exit)
 {
 }
-
-struct pid *tty_get_pgrp(struct tty_struct *tty)
-{
-	return NULL;
-}

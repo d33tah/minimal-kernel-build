@@ -164,11 +164,6 @@ u64 native_sched_clock(void)
 	return (jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ);
 }
 
-u64 native_sched_clock_from_tsc(u64 tsc)
-{
-	return cycles_2_ns(tsc);
-}
-
 unsigned long long
 sched_clock(void) __attribute__((alias("native_sched_clock")));
 

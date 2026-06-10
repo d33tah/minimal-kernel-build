@@ -357,11 +357,6 @@ static void update_curr(struct cfs_rq *cfs_rq)
 	}
 }
 
-static void update_curr_fair(struct rq *rq)
-{
-	update_curr(cfs_rq_of(&rq->curr->se));
-}
-
 static inline void
 update_stats_curr_start(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
@@ -1042,42 +1037,6 @@ static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
 	}
 }
 
-static void yield_task_fair(struct rq *rq)
-{
-	struct task_struct *curr = rq->curr;
-	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
-	struct sched_entity *se = &curr->se;
-
-	if (unlikely(rq->nr_running == 1))
-		return;
-
-	clear_buddies(cfs_rq, se);
-
-	if (curr->policy != SCHED_BATCH) {
-		update_rq_clock(rq);
-		
-		update_curr(cfs_rq);
-		
-		rq_clock_skip_update(rq);
-	}
-
-	set_skip_buddy(se);
-}
-
-static bool yield_to_task_fair(struct rq *rq, struct task_struct *p)
-{
-	struct sched_entity *se = &p->se;
-
-	if (!se->on_rq)
-		return false;
-
-	set_next_buddy(se);
-
-	yield_task_fair(rq);
-
-	return true;
-}
-
 static inline void task_tick_core(struct rq *rq, struct task_struct *curr) {}
 
 static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
@@ -1238,23 +1197,10 @@ void init_cfs_rq(struct cfs_rq *cfs_rq)
 }
 
 
-static unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task)
-{
-	struct sched_entity *se = &task->se;
-	unsigned int rr_interval = 0;
-
-	if (rq->cfs.load.weight)
-		rr_interval = NS_TO_JIFFIES(sched_slice(cfs_rq_of(se), se));
-
-	return rr_interval;
-}
-
 DEFINE_SCHED_CLASS(fair) = {
 
 	.enqueue_task		= enqueue_task_fair,
 	.dequeue_task		= dequeue_task_fair,
-	.yield_task		= yield_task_fair,
-	.yield_to_task		= yield_to_task_fair,
 
 	.check_preempt_curr	= check_preempt_wakeup,
 
@@ -1268,10 +1214,6 @@ DEFINE_SCHED_CLASS(fair) = {
 	.prio_changed		= prio_changed_fair,
 	.switched_from		= switched_from_fair,
 	.switched_to		= switched_to_fair,
-
-	.get_rr_interval	= get_rr_interval_fair,
-
-	.update_curr		= update_curr_fair,
 
 };
 

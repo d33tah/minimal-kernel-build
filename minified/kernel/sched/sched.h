@@ -617,8 +617,6 @@ struct sched_class {
 
 	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int flags);
 	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int flags);
-	void (*yield_task)   (struct rq *rq);
-	bool (*yield_to_task)(struct rq *rq, struct task_struct *p);
 
 	void (*check_preempt_curr)(struct rq *rq, struct task_struct *p, int flags);
 
@@ -637,11 +635,6 @@ struct sched_class {
 	void (*switched_to)  (struct rq *this_rq, struct task_struct *task);
 	void (*prio_changed) (struct rq *this_rq, struct task_struct *task,
 			      int oldprio);
-
-	unsigned int (*get_rr_interval)(struct rq *rq,
-					struct task_struct *task);
-
-	void (*update_curr)(struct rq *rq);
 };
 
 static inline void put_prev_task(struct rq *rq, struct task_struct *prev)

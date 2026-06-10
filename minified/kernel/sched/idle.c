@@ -190,10 +190,6 @@ prio_changed_idle(struct rq *rq, struct task_struct *p, int oldprio)
 	BUG();
 }
 
-static void update_curr_idle(struct rq *rq)
-{
-}
-
 DEFINE_SCHED_CLASS(idle) = {
 
 	 
@@ -212,5 +208,4 @@ DEFINE_SCHED_CLASS(idle) = {
 
 	.prio_changed		= prio_changed_idle,
 	.switched_to		= switched_to_idle,
-	.update_curr		= update_curr_idle,
 };

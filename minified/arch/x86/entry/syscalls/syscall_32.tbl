@@ -105,8 +105,8 @@
 # 222 is unused
 # 223 is unused
 # 224 gettid removed (unreachable)
-243	i386	set_thread_area		sys_set_thread_area
-244	i386	get_thread_area		sys_get_thread_area
+# 243 set_thread_area removed (unreachable)
+# 244 get_thread_area removed (unreachable)
 # 251 is available for reuse (was briefly sys_set_zone_reclaim)
 252	i386	exit_group		sys_exit_group
 253	i386	lookup_dcookie		sys_lookup_dcookie		compat_sys_lookup_dcookie

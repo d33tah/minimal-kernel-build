@@ -146,9 +146,6 @@ static inline void addr_limit_user_check(void)
 
 
 
-unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
-			      unsigned long prot, unsigned long flags,
-			      unsigned long fd, unsigned long pgoff);
 
 
 

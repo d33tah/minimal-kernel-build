@@ -762,55 +762,6 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	return addr;
 }
 
-unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
-			      unsigned long prot, unsigned long flags,
-			      unsigned long fd, unsigned long pgoff)
-{
-	struct file *file = NULL;
-	unsigned long retval;
-
-	if (!(flags & MAP_ANONYMOUS)) {
-		file = fget(fd);
-		if (!file)
-			return -EBADF;
-	}
-
-	retval = vm_mmap_pgoff(file, addr, len, prot, flags, pgoff);
-	if (file)
-		fput(file);
-	return retval;
-}
-
-SYSCALL_DEFINE6(mmap_pgoff, unsigned long, addr, unsigned long, len,
-		unsigned long, prot, unsigned long, flags,
-		unsigned long, fd, unsigned long, pgoff)
-{
-	return ksys_mmap_pgoff(addr, len, prot, flags, fd, pgoff);
-}
-
-#ifdef __ARCH_WANT_SYS_OLD_MMAP
-struct mmap_arg_struct {
-	unsigned long addr;
-	unsigned long len;
-	unsigned long prot;
-	unsigned long flags;
-	unsigned long fd;
-	unsigned long offset;
-};
-
-SYSCALL_DEFINE1(old_mmap, struct mmap_arg_struct __user *, arg)
-{
-	struct mmap_arg_struct a;
-
-	if (copy_from_user(&a, arg, sizeof(a)))
-		return -EFAULT;
-	if (offset_in_page(a.offset))
-		return -EINVAL;
-
-	return ksys_mmap_pgoff(a.addr, a.len, a.prot, a.flags, a.fd,
-			       a.offset >> PAGE_SHIFT);
-}
-#endif
 
 /* Removed: vma_wants_writenotify - was used only by vma_set_page_prot (~4 LOC) */
 

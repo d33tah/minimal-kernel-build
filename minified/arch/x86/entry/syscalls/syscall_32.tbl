@@ -54,7 +54,7 @@
 87	i386	swapon			sys_swapon
 88	i386	reboot
 # 89	i386	readdir			sys_old_readdir			compat_sys_old_readdir
-90	i386	mmap			sys_old_mmap			compat_sys_ia32_mmap
+# 90	i386	mmap			sys_old_mmap			compat_sys_ia32_mmap	(removed: init does not mmap via syscall; exec uses vm_mmap internally)
 91	i386	munmap			sys_munmap
 98	i386	profil
 101	i386	ioperm			sys_ioperm
@@ -93,7 +93,7 @@
 185	i386	capset			sys_capset
 188	i386	getpmsg
 189	i386	putpmsg
-192	i386	mmap2			sys_mmap_pgoff
+# 192	i386	mmap2			sys_mmap_pgoff	(removed: init does not mmap via syscall; exec uses vm_mmap_pgoff internally)
 # 199 getuid32 removed (unreachable)
 # 200 getgid32 removed (unreachable)
 # 201 geteuid32 removed (unreachable)

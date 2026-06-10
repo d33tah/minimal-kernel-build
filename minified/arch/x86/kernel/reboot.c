@@ -7,18 +7,6 @@
 
 void (*pm_power_off)(void);
 
-bool port_cf9_safe = false;
-
-void __noreturn machine_real_restart(unsigned int type)
-{
-	while (1)
-		halt();
-}
-
-void __attribute__((weak)) mach_reboot_fixups(void)
-{
-}
-
 void native_machine_shutdown(void)
 {
 }

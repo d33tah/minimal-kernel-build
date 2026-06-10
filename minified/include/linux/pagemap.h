@@ -290,7 +290,6 @@ static inline void folio_cancel_dirty(struct folio *folio)
 		__folio_cancel_dirty(folio);
 }
 void folio_invalidate(struct folio *folio, size_t offset, size_t length);
-bool noop_dirty_folio(struct address_space *mapping, struct folio *folio);
 
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp);
@@ -324,8 +323,6 @@ struct readahead_control {
 #define VM_READAHEAD_PAGES	(SZ_128K / PAGE_SIZE)
 
 void page_cache_sync_ra(struct readahead_control *, unsigned long req_count);
-void page_cache_async_ra(struct readahead_control *, struct folio *,
-		unsigned long req_count);
 
 static inline
 void page_cache_sync_readahead(struct address_space *mapping,

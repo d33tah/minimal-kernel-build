@@ -224,7 +224,6 @@ const struct address_space_operations ram_aops = {
 	.read_folio	= simple_read_folio,
 	.write_begin	= simple_write_begin,
 	.write_end	= simple_write_end,
-	.dirty_folio	= noop_dirty_folio,
 };
 
 /* simple_read_from_buffer, __generic_file_fsync, generic_file_fsync,

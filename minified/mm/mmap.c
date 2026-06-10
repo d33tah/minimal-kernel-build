@@ -6,7 +6,6 @@
 #include <linux/backing-dev.h>
 #include <linux/mm.h>
 #include <linux/mm_inline.h>
-#include <linux/vmacache.h>
 #include <linux/mman.h>
 #include <linux/pagemap.h>
 #include <linux/swap.h>
@@ -930,13 +929,9 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 {
 	struct rb_node *rb_node;
-	struct vm_area_struct *vma;
+	struct vm_area_struct *vma = NULL;
 
 	mmap_assert_locked(mm);
-	
-	vma = vmacache_find(mm, addr);
-	if (likely(vma))
-		return vma;
 
 	rb_node = mm->mm_rb.rb_node;
 
@@ -954,8 +949,6 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 			rb_node = rb_node->rb_right;
 	}
 
-	if (vma)
-		vmacache_update(addr, vma);
 	return vma;
 }
 
@@ -1137,9 +1130,6 @@ detach_vmas_to_be_unmapped(struct mm_struct *mm, struct vm_area_struct *vma,
 	} else
 		mm->highest_vm_end = prev ? vm_end_gap(prev) : 0;
 	tail_vma->vm_next = NULL;
-
-	
-	vmacache_invalidate(mm);
 
 	
 	if (vma && (vma->vm_flags & VM_GROWSDOWN))

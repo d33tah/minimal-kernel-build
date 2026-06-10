@@ -51,7 +51,6 @@ obj-y			:= filemap.o oom_kill.o \
 			   readahead.o swap.o truncate.o vmscan.o shmem.o \
 			   util.o mmzone.o vmstat.o backing-dev.o \
 			   percpu.o slab_common.o \
-			   vmacache.o \
 			   interval_tree.o list_lru.o workingset.o \
 			   gup.o $(mmu-y)
 

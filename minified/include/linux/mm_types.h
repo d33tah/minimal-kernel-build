@@ -279,7 +279,6 @@ struct mm_struct {
 	struct {
 		struct vm_area_struct *mmap;		 
 		struct rb_root mm_rb;
-		u64 vmacache_seqnum;                    
 		unsigned long (*get_unmapped_area) (struct file *filp,
 				unsigned long addr, unsigned long len,
 				unsigned long pgoff, unsigned long flags);

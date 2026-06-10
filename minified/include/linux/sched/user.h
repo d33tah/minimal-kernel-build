@@ -10,10 +10,8 @@
 struct user_struct {
 	refcount_t __count;	 
 	unsigned long unix_inflight;	 
-	atomic_long_t pipe_bufs;   
+	atomic_long_t pipe_bufs;
 
-	 
-	struct hlist_node uidhash_node;
 	kuid_t uid;
 
 #if defined(CONFIG_PERF_EVENTS) || defined(CONFIG_BPF_SYSCALL) || \

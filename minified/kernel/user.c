@@ -1,10 +1,7 @@
 
 #include <linux/init.h>
 #include <linux/sched.h>
-#include <linux/slab.h>
-#include <linux/bitops.h>
 #include <linux/sched/user.h>
-#include <linux/interrupt.h>
 #include <linux/export.h>
 #include <linux/user_namespace.h>
 #include <linux/proc_ns.h>
@@ -48,81 +45,24 @@ struct user_namespace init_user_ns = {
 };
 
 
-#define UIDHASH_BITS	(CONFIG_BASE_SMALL ? 3 : 7)
-#define UIDHASH_SZ	(1 << UIDHASH_BITS)
-#define UIDHASH_MASK		(UIDHASH_SZ - 1)
-#define __uidhashfn(uid)	(((uid >> UIDHASH_BITS) + uid) & UIDHASH_MASK)
-#define uidhashentry(uid)	(uidhash_table + __uidhashfn((__kuid_val(uid))))
-
-static struct kmem_cache *uid_cachep;
-static struct hlist_head uidhash_table[UIDHASH_SZ];
-
-static DEFINE_SPINLOCK(uidhash_lock);
-
 struct user_struct root_user = {
 	.__count	= REFCOUNT_INIT(1),
 	.uid		= GLOBAL_ROOT_UID,
 	.ratelimit	= RATELIMIT_STATE_INIT(root_user.ratelimit, 0, 0),
 };
 
-static void uid_hash_insert(struct user_struct *up, struct hlist_head *hashent)
-{
-	hlist_add_head(&up->uidhash_node, hashent);
-}
-
-static void uid_hash_remove(struct user_struct *up)
-{
-	hlist_del_init(&up->uidhash_node);
-}
-
-static int user_epoll_alloc(struct user_struct *up)
-{
-	return 0;
-}
-
-static void user_epoll_free(struct user_struct *up)
-{
-}
-
-static void free_user(struct user_struct *up, unsigned long flags)
-	__releases(&uidhash_lock)
-{
-	uid_hash_remove(up);
-	spin_unlock_irqrestore(&uidhash_lock, flags);
-	user_epoll_free(up);
-	kmem_cache_free(uid_cachep, up);
-}
-
-
+/*
+ * The only user_struct in this kernel is the static root_user: alloc_uid()
+ * is never called, so every cred->user points at &root_user (see INIT_USER /
+ * prepare_creds). root_user therefore must never be kmem_cache_free()d, and
+ * its refcount never reaches 0 (init_cred holds a permanent reference). So
+ * free_uid() only needs to balance get_uid()'s refcount_inc(); the freeing
+ * path (uid cache, uid hash) is unreachable and removed.
+ */
 void free_uid(struct user_struct *up)
 {
-	unsigned long flags;
-
 	if (!up)
 		return;
 
-	if (refcount_dec_and_lock_irqsave(&up->__count, &uidhash_lock, &flags))
-		free_user(up, flags);
+	refcount_dec_and_test(&up->__count);
 }
-
-static int __init uid_cache_init(void)
-{
-	int n;
-
-	uid_cachep = kmem_cache_create("uid_cache", sizeof(struct user_struct),
-			0, SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
-
-	for(n = 0; n < UIDHASH_SZ; ++n)
-		INIT_HLIST_HEAD(uidhash_table + n);
-
-	if (user_epoll_alloc(&root_user))
-		panic("root_user epoll percpu counter alloc failed");
-
-	 
-	spin_lock_irq(&uidhash_lock);
-	uid_hash_insert(&root_user, uidhashentry(GLOBAL_ROOT_UID));
-	spin_unlock_irq(&uidhash_lock);
-
-	return 0;
-}
-subsys_initcall(uid_cache_init);

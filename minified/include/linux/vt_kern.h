@@ -13,7 +13,6 @@
 #include <linux/notifier.h>
 
 struct uni_pagedir;
-struct uni_screen;
 
 #define NPAR 16
 #define VC_TABSTOPS_COUNT	256U
@@ -97,7 +96,6 @@ struct vc_data {
 	struct vc_data **vc_display_fg;
 	struct uni_pagedir *vc_uni_pagedir;
 	struct uni_pagedir **vc_uni_pagedir_loc;
-	struct uni_screen *vc_uni_screen;
 };
 
 struct vc {

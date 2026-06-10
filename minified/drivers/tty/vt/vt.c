@@ -106,41 +106,6 @@ static inline bool con_should_update(const struct vc_data *vc)
 }
 
 
-#ifdef NO_VC_UNI_SCREEN
-
-#define get_vc_uniscr(vc) NULL
-#else
-#define get_vc_uniscr(vc) vc->vc_uni_screen
-#endif
-
-#define VC_UNI_SCREEN_DEBUG 0
-
-typedef uint32_t char32_t;
-
-struct uni_screen {
-	char32_t *lines[0];
-};
-
-
-static void vc_uniscr_clear_line(struct vc_data *vc, unsigned int x,
-				 unsigned int nr)
-{
-	/* Stub: skip unicode screen buffer clear for minimal kernel */
-}
-
-static void vc_uniscr_clear_lines(struct vc_data *vc, unsigned int y,
-				  unsigned int nr)
-{
-	/* Stub: skip unicode screen buffer clear for minimal kernel */
-}
-
-static void vc_uniscr_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
-			     enum con_scroll dir, unsigned int nr)
-{
-	/* Stub: skip unicode screen buffer scroll for minimal kernel */
-}
-
-
 static void con_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 		enum con_scroll dir, unsigned int nr)
 {
@@ -150,7 +115,6 @@ static void con_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 		nr = b - t - 1;
 	if (b > vc->vc_rows || t >= b || nr < 1)
 		return;
-	vc_uniscr_scroll(vc, t, b, dir, nr);
 	if (con_is_visible(vc) && vc->vc_sw->con_scroll(vc, t, b, dir, nr))
 		return;
 
@@ -581,25 +545,18 @@ static void csi_J(struct vc_data *vc, int vpar)
 	unsigned short * start;
 
 	switch (vpar) {
-		case 0:	
-			vc_uniscr_clear_line(vc, vc->state.x,
-					     vc->vc_cols - vc->state.x);
-			vc_uniscr_clear_lines(vc, vc->state.y + 1,
-					      vc->vc_rows - vc->state.y - 1);
+		case 0:
 			count = (vc->vc_scr_end - vc->vc_pos) >> 1;
 			start = (unsigned short *)vc->vc_pos;
 			break;
-		case 1:	
-			vc_uniscr_clear_line(vc, 0, vc->state.x + 1);
-			vc_uniscr_clear_lines(vc, 0, vc->state.y);
+		case 1:
 			count = ((vc->vc_pos - vc->vc_origin) >> 1) + 1;
 			start = (unsigned short *)vc->vc_origin;
 			break;
-		case 3: 
+		case 3:
 			flush_scrollback(vc);
 			fallthrough;
-		case 2: 
-			vc_uniscr_clear_lines(vc, 0, vc->vc_rows);
+		case 2:
 			count = vc->vc_cols * vc->vc_rows;
 			start = (unsigned short *)vc->vc_origin;
 			break;

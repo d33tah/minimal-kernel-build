@@ -20,7 +20,6 @@
 #include <linux/irq_work.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/sysctl.h>
-static inline void wake_up_nohz_cpu(int cpu) { }
 #include <linux/sched/debug.h>
 #include <linux/slab.h>
 #include <linux/compat.h>
@@ -74,15 +73,12 @@ struct timer_base {
 	unsigned long		next_expiry;
 	unsigned int		cpu;
 	bool			next_expiry_recalc;
-	bool			is_idle;
 	bool			timers_pending;
 	DECLARE_BITMAP(pending_map, WHEEL_SIZE);
 	struct hlist_head	vectors[WHEEL_SIZE];
 } ____cacheline_aligned;
 
 static DEFINE_PER_CPU(struct timer_base, timer_bases[NR_BASES]);
-
-static inline bool is_timers_nohz_active(void) { return false; }
 
 static inline unsigned int timer_get_idx(struct timer_list *timer)
 {
@@ -140,24 +136,6 @@ static int calc_wheel_index(unsigned long expires, unsigned long clk,
 	return idx;
 }
 
-static void
-trigger_dyntick_cpu(struct timer_base *base, struct timer_list *timer)
-{
-	if (!is_timers_nohz_active())
-		return;
-
-	 
-	if (timer->flags & TIMER_DEFERRABLE) {
-		if (tick_nohz_full_cpu(base->cpu))
-			wake_up_nohz_cpu(base->cpu);
-		return;
-	}
-
-	 
-	if (base->is_idle)
-		wake_up_nohz_cpu(base->cpu);
-}
-
 static void enqueue_timer(struct timer_base *base, struct timer_list *timer,
 			  unsigned int idx, unsigned long bucket_expiry)
 {
@@ -174,7 +152,6 @@ static void enqueue_timer(struct timer_base *base, struct timer_list *timer,
 		base->next_expiry = bucket_expiry;
 		base->timers_pending = true;
 		base->next_expiry_recalc = false;
-		trigger_dyntick_cpu(base, timer);
 	}
 }
 

@@ -23,7 +23,6 @@
 # define __flush_tlb_local		native_flush_tlb_local
 # define __flush_tlb_global		native_flush_tlb_global
 # define __flush_tlb_one_user(addr)	native_flush_tlb_one_user(addr)
-# define __flush_tlb_multi(msk, info)	native_flush_tlb_multi(msk, info)
 
 
 #define LAST_USER_MM_IBPB	0x1UL
@@ -470,32 +469,7 @@ static void flush_tlb_func(void *info)
 done:
 }
 
-static bool tlb_is_not_lazy(int cpu, void *data)
-{
-	return !per_cpu(cpu_tlbstate_shared.is_lazy, cpu);
-}
-
 DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
-
-STATIC_NOPV void native_flush_tlb_multi(const struct cpumask *cpumask,
-					 const struct flush_tlb_info *info)
-{
-	 
-	count_vm_tlb_event(NR_TLB_REMOTE_FLUSH);
-
-	 
-	if (info->freed_tables)
-		on_each_cpu_mask(cpumask, flush_tlb_func, (void *)info, true);
-	else
-		on_each_cpu_cond_mask(tlb_is_not_lazy, flush_tlb_func,
-				(void *)info, 1, cpumask);
-}
-
-void flush_tlb_multi(const struct cpumask *cpumask,
-		      const struct flush_tlb_info *info)
-{
-	__flush_tlb_multi(cpumask, info);
-}
 
 unsigned long tlb_single_page_flush_ceiling __read_mostly = 33;
 
@@ -531,9 +505,8 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 {
 	struct flush_tlb_info *info;
 	u64 new_tlb_gen;
-	int cpu;
 
-	cpu = get_cpu();
+	get_cpu();
 
 	 
 	if ((end == TLB_FLUSH_ALL) ||
@@ -548,10 +521,8 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 	info = get_flush_tlb_info(mm, start, end, stride_shift, freed_tables,
 				  new_tlb_gen);
 
-	 
-	if (cpumask_any_but(mm_cpumask(mm), cpu) < nr_cpu_ids) {
-		flush_tlb_multi(mm_cpumask(mm), info);
-	} else if (mm == this_cpu_read(cpu_tlbstate.loaded_mm)) {
+
+	if (mm == this_cpu_read(cpu_tlbstate.loaded_mm)) {
 		lockdep_assert_irqs_enabled();
 		local_irq_disable();
 		flush_tlb_func(info);

@@ -143,18 +143,14 @@ static __always_inline void __slab_unlock(struct slab *slab)
 	__bit_spin_unlock(PG_locked, &page->flags);
 }
 
-static __always_inline void slab_lock(struct slab *slab, unsigned long *flags)
+static __always_inline void slab_lock(struct slab *slab)
 {
-	if (IS_ENABLED(CONFIG_PREEMPT_RT))
-		local_irq_save(*flags);
 	__slab_lock(slab);
 }
 
-static __always_inline void slab_unlock(struct slab *slab, unsigned long *flags)
+static __always_inline void slab_unlock(struct slab *slab)
 {
 	__slab_unlock(slab);
-	if (IS_ENABLED(CONFIG_PREEMPT_RT))
-		local_irq_restore(*flags);
 }
 
 static inline bool __cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab,
@@ -162,8 +158,7 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab
 		void *freelist_new, unsigned long counters_new,
 		const char *n)
 {
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
-		lockdep_assert_irqs_disabled();
+	lockdep_assert_irqs_disabled();
 #if defined(CONFIG_HAVE_CMPXCHG_DOUBLE) && \
     defined(CONFIG_HAVE_ALIGNED_STRUCT_PAGE)
 	if (s->flags & __CMPXCHG_DOUBLE) {
@@ -174,18 +169,15 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab
 	} else
 #endif
 	{
-		
-		unsigned long flags = 0;
-
-		slab_lock(slab, &flags);
+		slab_lock(slab);
 		if (slab->freelist == freelist_old &&
 					slab->counters == counters_old) {
 			slab->freelist = freelist_new;
 			slab->counters = counters_new;
-			slab_unlock(slab, &flags);
+			slab_unlock(slab);
 			return true;
 		}
-		slab_unlock(slab, &flags);
+		slab_unlock(slab);
 	}
 
 	cpu_relax();

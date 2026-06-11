@@ -321,64 +321,28 @@ static unsigned long zap_pte_range(struct mmu_gather *tlb,
 	return addr;
 }
 
-static inline unsigned long zap_pmd_range(struct mmu_gather *tlb,
-				struct vm_area_struct *vma, pud_t *pud,
-				unsigned long addr, unsigned long end,
-				struct zap_details *details)
-{
-	pmd_t *pmd;
-	unsigned long next;
-
-	pmd = pmd_offset(pud, addr);
-	do {
-		next = pmd_addr_end(addr, end);
-		if (pmd_none_or_trans_huge_or_clear_bad(pmd))
-			goto next;
-		next = zap_pte_range(tlb, vma, pmd, addr, next, details);
-next:
-		cond_resched();
-	} while (pmd++, addr = next, addr != end);
-
-	return addr;
-}
-
-static inline unsigned long zap_pud_range(struct mmu_gather *tlb,
-				struct vm_area_struct *vma, p4d_t *p4d,
-				unsigned long addr, unsigned long end,
-				struct zap_details *details)
-{
-	pud_t *pud;
-	unsigned long next;
-
-	pud = pud_offset(p4d, addr);
-	do {
-		next = pud_addr_end(addr, end);
-		if (pud_none_or_clear_bad(pud))
-			continue;
-		next = zap_pmd_range(tlb, vma, pud, addr, next, details);
-		cond_resched();
-	} while (pud++, addr = next, addr != end);
-
-	return addr;
-}
-
-static inline unsigned long zap_p4d_range(struct mmu_gather *tlb,
+/*
+ * 2-level x86_32 paging (no PAE) folds P4D/PUD/PMD onto the PGD:
+ * __PAGETABLE_{P4D,PUD,PMD}_FOLDED=1, so p4d_offset/pud_offset/pmd_offset all
+ * return the same cast pointer, {p4d,pud,pmd}_addr_end(addr,end)==end (each
+ * nested do-while ran exactly once) and p4d_none_or_clear_bad/
+ * pud_none_or_clear_bad are constant 0 (p4d/pud none/bad are 0). The former
+ * zap_p4d_range/zap_pud_range walkers were therefore single-pass no-op
+ * pass-throughs. Collapsed to a direct walk to the only real level, the PMD,
+ * which still reads the live PTE via pmd_none_or_trans_huge_or_clear_bad.
+ */
+static inline unsigned long zap_folded_range(struct mmu_gather *tlb,
 				struct vm_area_struct *vma, pgd_t *pgd,
 				unsigned long addr, unsigned long end,
 				struct zap_details *details)
 {
-	p4d_t *p4d;
-	unsigned long next;
+	pmd_t *pmd = pmd_offset(pud_offset(p4d_offset(pgd, addr), addr), addr);
 
-	p4d = p4d_offset(pgd, addr);
-	do {
-		next = p4d_addr_end(addr, end);
-		if (p4d_none_or_clear_bad(p4d))
-			continue;
-		next = zap_pud_range(tlb, vma, p4d, addr, next, details);
-	} while (p4d++, addr = next, addr != end);
+	if (!pmd_none_or_trans_huge_or_clear_bad(pmd))
+		zap_pte_range(tlb, vma, pmd, addr, end, details);
+	cond_resched();
 
-	return addr;
+	return end;
 }
 
 void unmap_page_range(struct mmu_gather *tlb,
@@ -396,7 +360,7 @@ void unmap_page_range(struct mmu_gather *tlb,
 		next = pgd_addr_end(addr, end);
 		if (pgd_none_or_clear_bad(pgd))
 			continue;
-		next = zap_p4d_range(tlb, vma, pgd, addr, next, details);
+		next = zap_folded_range(tlb, vma, pgd, addr, next, details);
 	} while (pgd++, addr = next, addr != end);
 	tlb_end_vma(tlb, vma);
 }

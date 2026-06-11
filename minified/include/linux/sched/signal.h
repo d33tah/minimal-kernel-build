@@ -144,7 +144,6 @@ int force_sig_fault(int sig, int code, void __user *addr
 /* send_sig_fault, force_sig_mceerr, send_sig_mceerr, force_sig_bnderr, send_sig_perf,
    force_sig_ptrace_errno_trap, force_sig_fault_trapno, send_sig_fault_trapno,
    force_sig_seccomp removed - unused */
-int force_sig_pkuerr(void __user *addr, u32 pkey);
 
 extern int send_sig_info(int, struct kernel_siginfo *, struct task_struct *);
 /* force_sigsegv now static in signal.c */

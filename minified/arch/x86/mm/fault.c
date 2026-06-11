@@ -198,32 +198,26 @@ page_fault_oops(struct pt_regs *regs, unsigned long error_code,
 
 static noinline void
 kernelmode_fixup_or_oops(struct pt_regs *regs, unsigned long error_code,
-			 unsigned long address, int signal, int si_code,
-			 u32 pkey)
+			 unsigned long address, int signal, int si_code)
 {
 	WARN_ON_ONCE(user_mode(regs));
 
-	 
+
 	if (fixup_exception(regs, X86_TRAP_PF, error_code, address)) {
-		 
+
 		if (in_interrupt())
 			return;
 
-		 
+
 		if (current->thread.sig_on_uaccess_err && signal) {
 			sanitize_error_code(address, &error_code);
 
 			set_signal_archinfo(address, error_code);
 
-			if (si_code == SEGV_PKUERR) {
-				force_sig_pkuerr((void __user *)address, pkey);
-			} else {
-				 
-				force_sig_fault(signal, si_code, (void __user *)address);
-			}
+			force_sig_fault(signal, si_code, (void __user *)address);
 		}
 
-		 
+
 		return;
 	}
 
@@ -243,13 +237,13 @@ show_signal_msg(struct pt_regs *regs, unsigned long error_code,
 
 static void
 __bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code,
-		       unsigned long address, u32 pkey, int si_code)
+		       unsigned long address, int si_code)
 {
 	struct task_struct *tsk = current;
 
 	if (!user_mode(regs)) {
 		kernelmode_fixup_or_oops(regs, error_code, address,
-					 SIGSEGV, si_code, pkey);
+					 SIGSEGV, si_code);
 		return;
 	}
 
@@ -279,10 +273,7 @@ __bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code,
 
 	set_signal_archinfo(address, error_code);
 
-	if (si_code == SEGV_PKUERR)
-		force_sig_pkuerr((void __user *)address, pkey);
-	else
-		force_sig_fault(SIGSEGV, si_code, (void __user *)address);
+	force_sig_fault(SIGSEGV, si_code, (void __user *)address);
 
 	local_irq_disable();
 }
@@ -291,56 +282,35 @@ static noinline void
 bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code,
 		     unsigned long address)
 {
-	__bad_area_nosemaphore(regs, error_code, address, 0, SEGV_MAPERR);
+	__bad_area_nosemaphore(regs, error_code, address, SEGV_MAPERR);
 }
 
 static void
 __bad_area(struct pt_regs *regs, unsigned long error_code,
-	   unsigned long address, u32 pkey, int si_code)
+	   unsigned long address, int si_code)
 {
 	struct mm_struct *mm = current->mm;
-	 
+
 	mmap_read_unlock(mm);
 
-	__bad_area_nosemaphore(regs, error_code, address, pkey, si_code);
+	__bad_area_nosemaphore(regs, error_code, address, si_code);
 }
 
 static noinline void
 bad_area(struct pt_regs *regs, unsigned long error_code, unsigned long address)
 {
-	__bad_area(regs, error_code, address, 0, SEGV_MAPERR);
-}
-
-static inline bool bad_area_access_from_pkeys(unsigned long error_code,
-		struct vm_area_struct *vma)
-{
-	 
-	bool foreign = false;
-
-	if (!cpu_feature_enabled(X86_FEATURE_OSPKE))
-		return false;
-	if (error_code & X86_PF_PK)
-		return true;
-	 
-	if (!arch_vma_access_permitted(vma, (error_code & X86_PF_WRITE),
-				       (error_code & X86_PF_INSTR), foreign))
-		return true;
-	return false;
+	__bad_area(regs, error_code, address, SEGV_MAPERR);
 }
 
 static noinline void
 bad_area_access_error(struct pt_regs *regs, unsigned long error_code,
 		      unsigned long address, struct vm_area_struct *vma)
 {
-	 
-	if (bad_area_access_from_pkeys(error_code, vma)) {
-		 
-		u32 pkey = vma_pkey(vma);
-
-		__bad_area(regs, error_code, address, pkey, SEGV_PKUERR);
-	} else {
-		__bad_area(regs, error_code, address, 0, SEGV_ACCERR);
-	}
+	/*
+	 * Protection keys are compile-time disabled (OSPKE in DISABLED_MASK),
+	 * so a fault can never be a pkey access error -- always SEGV_ACCERR.
+	 */
+	__bad_area(regs, error_code, address, SEGV_ACCERR);
 }
 
 static void
@@ -350,7 +320,7 @@ do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address,
 	 
 	if (!user_mode(regs)) {
 		kernelmode_fixup_or_oops(regs, error_code, address,
-					 SIGBUS, BUS_ADRERR, ARCH_DEFAULT_PKEY);
+					 SIGBUS, BUS_ADRERR);
 		return;
 	}
 
@@ -603,8 +573,7 @@ good_area:
 		 
 		if (!user_mode(regs))
 			kernelmode_fixup_or_oops(regs, error_code, address,
-						 SIGBUS, BUS_ADRERR,
-						 ARCH_DEFAULT_PKEY);
+						 SIGBUS, BUS_ADRERR);
 		return;
 	}
 
@@ -620,7 +589,7 @@ good_area:
 
 	if (fatal_signal_pending(current) && !user_mode(regs)) {
 		kernelmode_fixup_or_oops(regs, error_code, address,
-					 0, 0, ARCH_DEFAULT_PKEY);
+					 0, 0);
 		return;
 	}
 
@@ -628,8 +597,7 @@ good_area:
 		 
 		if (!user_mode(regs)) {
 			kernelmode_fixup_or_oops(regs, error_code, address,
-						 SIGSEGV, SEGV_MAPERR,
-						 ARCH_DEFAULT_PKEY);
+						 SIGSEGV, SEGV_MAPERR);
 			return;
 		}
 

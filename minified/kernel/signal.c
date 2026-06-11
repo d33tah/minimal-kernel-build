@@ -504,12 +504,6 @@ int force_sig_fault(int sig, int code, void __user *addr
 	return force_sig_info_to_task(&info, current, HANDLER_CURRENT);
 }
 
-
-/* Stub: PKU signal - used by fault.c */
-#ifdef SEGV_PKUERR
-int force_sig_pkuerr(void __user *addr, u32 pkey) { return 0; }
-#endif
-
 bool do_notify_parent(struct task_struct *tsk, int sig)
 {
 	return false;

@@ -527,27 +527,6 @@ void __folio_lock(struct folio *folio)
 				EXCLUSIVE);
 }
 
-static int __folio_lock_async(struct folio *folio, struct wait_page_queue *wait)
-{
-	struct wait_queue_head *q = folio_waitqueue(folio);
-	int ret = 0;
-
-	wait->folio = folio;
-	wait->bit_nr = PG_locked;
-
-	spin_lock_irq(&q->lock);
-	__add_wait_queue_entry_tail(q, &wait->wait);
-	folio_set_waiters(folio);
-	ret = !folio_trylock(folio);
-	
-	if (!ret)
-		__remove_wait_queue(q, &wait->wait);
-	else
-		ret = -EIOCBQUEUED;
-	spin_unlock_irq(&q->lock);
-	return ret;
-}
-
 static void *mapping_get_entry(struct address_space *mapping, pgoff_t index)
 {
 	XA_STATE(xas, &mapping->i_pages, index);
@@ -854,15 +833,13 @@ static int filemap_update_page(struct kiocb *iocb,
 		error = -EAGAIN;
 		if (iocb->ki_flags & (IOCB_NOWAIT | IOCB_NOIO))
 			goto unlock_mapping;
-		if (!(iocb->ki_flags & IOCB_WAITQ)) {
-			filemap_invalidate_unlock_shared(mapping);
-			
-			folio_put_wait_locked(folio, TASK_KILLABLE);
-			return AOP_TRUNCATED_PAGE;
-		}
-		error = __folio_lock_async(folio, iocb->ki_waitq);
-		if (error)
-			goto unlock_mapping;
+		/*
+		 * IOCB_WAITQ (io_uring async) is never set in this tree, so the
+		 * async __folio_lock path is unreachable; always wait sync.
+		 */
+		filemap_invalidate_unlock_shared(mapping);
+		folio_put_wait_locked(folio, TASK_KILLABLE);
+		return AOP_TRUNCATED_PAGE;
 	}
 
 	error = AOP_TRUNCATED_PAGE;

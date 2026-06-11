@@ -63,10 +63,7 @@ static void truncate_folio_batch_exceptionals(struct address_space *mapping,
 
 void folio_invalidate(struct folio *folio, size_t offset, size_t length)
 {
-	const struct address_space_operations *aops = folio->mapping->a_ops;
-
-	if (aops->invalidate_folio)
-		aops->invalidate_folio(folio, offset, length);
+	/* No filesystem in this tree defines a_ops->invalidate_folio. */
 }
 
 static void truncate_cleanup_folio(struct folio *folio)

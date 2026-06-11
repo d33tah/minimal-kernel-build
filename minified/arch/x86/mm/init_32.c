@@ -47,8 +47,6 @@ static inline void olpc_dt_build_devicetree(void) { }
 
 #include "mm_internal.h"
 
-unsigned long highstart_pfn, highend_pfn;
-
 bool __read_mostly __vmalloc_start_set = false;
 
 static pmd_t * __init one_md_table_init(pgd_t *pgd)
@@ -253,10 +251,6 @@ repeat:
 	return last_map_addr;
 }
 
-static inline void permanent_kmaps_init(pgd_t *pgd_base)
-{
-}
-
 void __init sync_initial_page_table(void)
 {
 	clone_pgd_range(initial_page_table + KERNEL_PGD_BOUNDARY,
@@ -318,13 +312,6 @@ void __init early_ioremap_page_table_range_init(void)
 	end = (FIXADDR_TOP + PMD_SIZE - 1) & PMD_MASK;
 	page_table_range_init(vaddr, end, pgd_base);
 	early_ioremap_reset();
-}
-
-static void __init pagetable_init(void)
-{
-	pgd_t *pgd_base = swapper_pg_dir;
-
-	permanent_kmaps_init(pgd_base);
 }
 
 #define DEFAULT_PTE_MASK ~(_PAGE_NX | _PAGE_GLOBAL)
@@ -396,7 +383,7 @@ void __init initmem_init(void)
 
 	memblock_set_node(0, PHYS_ADDR_MAX, &memblock.memory, 0);
 
-	max_mapnr = IS_ENABLED(CONFIG_HIGHMEM) ? highend_pfn : max_low_pfn;
+	max_mapnr = max_low_pfn;
 	__vmalloc_start_set = true;
 
 	setup_bootmem_allocator();
@@ -408,8 +395,6 @@ void __init setup_bootmem_allocator(void)
 
 void __init paging_init(void)
 {
-	pagetable_init();
-
 	__flush_tlb_all();
 
 	 

@@ -29,11 +29,6 @@
 #define slub_get_cpu_ptr(var)	get_cpu_ptr(var)
 #define slub_put_cpu_ptr(var)	put_cpu_ptr(var)
 
-static inline bool kmem_cache_has_cpu_partial(struct kmem_cache *s)
-{
-	return false;
-}
-
 #define MIN_PARTIAL 5
 
 #define MAX_PARTIAL 10
@@ -506,8 +501,6 @@ static inline void *acquire_slab(struct kmem_cache *s,
 	return freelist;
 }
 
-static inline void put_cpu_partial(struct kmem_cache *s, struct slab *slab,
-				   int drain) { }
 static inline bool pfmemalloc_match(struct slab *slab, gfp_t gfpflags);
 
 static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
@@ -516,9 +509,8 @@ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
 	struct slab *slab, *slab2;
 	void *object = NULL;
 	unsigned long flags;
-	unsigned int partial_slabs = 0;
 
-	
+
 	if (!n || !n->nr_partial)
 		return NULL;
 
@@ -529,19 +521,13 @@ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
 		if (!pfmemalloc_match(slab, gfpflags))
 			continue;
 
-		t = acquire_slab(s, n, slab, object == NULL);
+		t = acquire_slab(s, n, slab, 1);
 		if (!t)
 			break;
 
-		if (!object) {
-			*ret_slab = slab;
-			stat(s, ALLOC_FROM_PARTIAL);
-			object = t;
-		} else {
-			put_cpu_partial(s, slab, 0);
-			stat(s, CPU_PARTIAL_NODE);
-			partial_slabs++;
-		}
+		*ret_slab = slab;
+		stat(s, ALLOC_FROM_PARTIAL);
+		object = t;
 		break;
 
 	}
@@ -878,19 +864,9 @@ static void __slab_free(struct kmem_cache *s, struct slab *slab,
 		was_frozen = new.frozen;
 		new.inuse -= cnt;
 		if ((!new.inuse || !prior) && !was_frozen) {
+			n = get_node(s, slab_nid(slab));
 
-			if (kmem_cache_has_cpu_partial(s) && !prior) {
-
-				
-				new.frozen = 1;
-
-			} else { 
-
-				n = get_node(s, slab_nid(slab));
-				
-				spin_lock_irqsave(&n->list_lock, flags);
-
-			}
+			spin_lock_irqsave(&n->list_lock, flags);
 		}
 
 	} while (!cmpxchg_double_slab(s, slab,
@@ -900,14 +876,8 @@ static void __slab_free(struct kmem_cache *s, struct slab *slab,
 
 	if (likely(!n)) {
 
-		if (likely(was_frozen)) {
-			
+		if (likely(was_frozen))
 			stat(s, FREE_FROZEN);
-		} else if (new.frozen) {
-			
-			put_cpu_partial(s, slab, 1);
-			stat(s, CPU_PARTIAL_FREE);
-		}
 
 		return;
 	}
@@ -915,8 +885,8 @@ static void __slab_free(struct kmem_cache *s, struct slab *slab,
 	if (unlikely(!new.inuse && n->nr_partial >= s->min_partial))
 		goto slab_empty;
 
-	
-	if (!kmem_cache_has_cpu_partial(s) && unlikely(!prior)) {
+
+	if (unlikely(!prior)) {
 		add_partial(n, slab, DEACTIVATE_TO_TAIL);
 		stat(s, FREE_ADD_PARTIAL);
 	}
@@ -1175,10 +1145,6 @@ static int init_kmem_cache_nodes(struct kmem_cache *s)
 	return 1;
 }
 
-static void set_cpu_partial(struct kmem_cache *s)
-{
-}
-
 static int calculate_sizes(struct kmem_cache *s)
 {
 	slab_flags_t flags = s->flags;
@@ -1257,9 +1223,7 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 	s->min_partial = min_t(unsigned long, MAX_PARTIAL, ilog2(s->size) / 2);
 	s->min_partial = max_t(unsigned long, MIN_PARTIAL, s->min_partial);
 
-	set_cpu_partial(s);
 
-	
 	if (slab_state >= UP) {
 		if (init_cache_random_seq(s))
 			goto error;

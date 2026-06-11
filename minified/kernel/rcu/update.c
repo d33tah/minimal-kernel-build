@@ -103,11 +103,6 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 	}
 }
 
-void finish_rcuwait(struct rcuwait *w)
-{
-	rcu_assign_pointer(w->task, NULL);
-	__set_current_state(TASK_RUNNING);
-}
 
 
 #if defined(CONFIG_TREE_RCU) || defined(CONFIG_RCU_TRACE)
@@ -122,16 +117,6 @@ void do_trace_rcu_torture_read(const char *rcutorturename, struct rcu_head *rhp,
 	do { } while (0)
 #endif
 
-#if IS_ENABLED(CONFIG_RCU_TORTURE_TEST) || IS_MODULE(CONFIG_RCU_TORTURE_TEST)
-long rcutorture_sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
-{
-	int ret;
-
-	ret = sched_setaffinity(pid, in_mask);
-	WARN_ONCE(ret, "%s: sched_setaffinity() returned %d\n", __func__, ret);
-	return ret;
-}
-#endif
 
 
 int rcu_cpu_stall_suppress_at_boot __read_mostly;

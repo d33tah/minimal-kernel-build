@@ -945,43 +945,6 @@ void __init memblock_allow_resize(void)
 	memblock_can_resize = 1;
 }
 
-
-static void __init free_memmap(unsigned long start_pfn, unsigned long end_pfn)
-{
-	struct page *start_pg, *end_pg;
-	phys_addr_t pg, pgend;
-
-	start_pg = pfn_to_page(start_pfn - 1) + 1;
-	end_pg = pfn_to_page(end_pfn - 1) + 1;
-
-	pg = PAGE_ALIGN(__pa(start_pg));
-	pgend = __pa(end_pg) & PAGE_MASK;
-
-	if (pg < pgend)
-		memblock_phys_free(pg, pgend - pg);
-}
-
-static void __init free_unused_memmap(void)
-{
-	unsigned long start, end, prev_end = 0;
-	int i;
-
-	if (!IS_ENABLED(CONFIG_HAVE_ARCH_PFN_VALID) ||
-	    IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP))
-		return;
-
-	for_each_mem_pfn_range(i, MAX_NUMNODES, &start, &end, NULL) {
-		
-		start = round_down(start, pageblock_nr_pages);
-
-		if (prev_end && prev_end < start)
-			free_memmap(prev_end, start);
-
-		prev_end = ALIGN(end, pageblock_nr_pages);
-	}
-
-}
-
 static void __init __free_pages_memory(unsigned long start, unsigned long end)
 {
 	int order;
@@ -1056,7 +1019,6 @@ void __init memblock_free_all(void)
 {
 	unsigned long pages;
 
-	free_unused_memmap();
 	reset_all_zones_managed_pages();
 
 	pages = free_low_memory_core_early();

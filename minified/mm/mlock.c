@@ -11,11 +11,6 @@ void mlock_page_drain_local(void)
 	 
 }
 
-void mlock_page_drain_remote(int cpu)
-{
-	 
-}
-
 void mlock_folio(struct folio *folio)
 {
 	 

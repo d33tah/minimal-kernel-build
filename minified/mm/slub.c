@@ -714,17 +714,6 @@ static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
 	unfreeze_partials_cpu(s, c);
 }
 
-static int slub_cpu_dead(unsigned int cpu)
-{
-	struct kmem_cache *s;
-
-	mutex_lock(&slab_mutex);
-	list_for_each_entry(s, &slab_caches, list)
-		__flush_cpu_slab(s, cpu);
-	mutex_unlock(&slab_mutex);
-	return 0;
-}
-
 static inline int node_match(struct slab *slab, int node)
 {
 	return 1;
@@ -1423,9 +1412,6 @@ void __init kmem_cache_init(void)
 
 	
 	init_freelist_randomization();
-
-	cpuhp_setup_state_nocalls(CPUHP_SLUB_DEAD, "slub:dead", NULL,
-				  slub_cpu_dead);
 }
 
 void __init kmem_cache_init_late(void)

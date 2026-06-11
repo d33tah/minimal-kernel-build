@@ -697,12 +697,6 @@ static int rmqueue_bulk(struct zone *zone, unsigned int order,
 }
 
 
-static void drain_pages(unsigned int cpu)
-{
-	/* Stub: skip per-CPU page draining for minimal kernel */
-}
-
-
 static bool free_unref_page_prepare(struct page *page, unsigned long pfn,
 							unsigned int order)
 {
@@ -2046,38 +2040,13 @@ void __init mem_init_print_info(void)
 }
 
 
-static int page_alloc_cpu_dead(unsigned int cpu)
-{
-	lru_add_drain_cpu(cpu);
-	mlock_page_drain_remote(cpu);
-	drain_pages(cpu);
-
-	
-	vm_events_fold_cpu(cpu);
-
-	
-	cpu_vm_stats_fold(cpu);
-
-	/* zone_pcp_update removed - not needed for single CPU minimal kernel */
-
-	return 0;
-}
-
-static int page_alloc_cpu_online(unsigned int cpu)
-{
-	/* zone_pcp_update removed - not needed for single CPU minimal kernel */
-	return 0;
-}
-
 void __init page_alloc_init(void)
 {
-	int ret;
-
-	ret = cpuhp_setup_state_nocalls(CPUHP_PAGE_ALLOC,
-					"mm/page_alloc:pcp",
-					page_alloc_cpu_online,
-					page_alloc_cpu_dead);
-	WARN_ON(ret < 0);
+	/*
+	 * Single-CPU build with no CPU hotplug: the CPUHP_PAGE_ALLOC
+	 * dead/online callbacks would only ever run on a hotplug event,
+	 * which never happens here, so nothing needs to be registered.
+	 */
 }
 
 static void calculate_totalreserve_pages(void)

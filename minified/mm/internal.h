@@ -185,7 +185,6 @@ static inline void mlock_vma_page(struct page *page,
 
 void mlock_new_page(struct page *page);
 void mlock_page_drain_local(void);
-void mlock_page_drain_remote(int cpu);
 
 /* maybe_pmd_mkwrite removed - unused */
 

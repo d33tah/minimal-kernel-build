@@ -9,12 +9,9 @@
 #include <stdbool.h>
 #include <errno.h>
 #include "modpost.h"
-static bool modversions;
-static bool external_module;
 
 static int sec_mismatch_count;
 static bool sec_mismatch_warn_only = true;
-static bool ignore_missing_files;
 
 static bool error_occurred;
 
@@ -100,8 +97,6 @@ struct symbol {
 	struct list_head list;	 
 	struct module *module;
 	char *namespace;
-	unsigned int crc;
-	bool crc_valid;
 	bool weak;
 	bool is_gpl_only;	 
 	char name[];
@@ -220,7 +215,7 @@ static struct symbol *sym_add_exported(const char *name, struct module *mod,
 {
 	struct symbol *s = find_symbol(name);
 
-	if (s && (!external_module || s->module->is_vmlinux || s->module == mod)) {
+	if (s) {
 		error("%s: '%s' exported twice. Previous export was in %s%s\n",
 		      mod->name, name, s->module->name,
 		      s->module->is_vmlinux ? "" : ".ko");
@@ -272,11 +267,6 @@ static int parse_elf(struct elf_info *info, const char *filename)
 
 	hdr = grab_file(filename, &info->size);
 	if (!hdr) {
-		if (ignore_missing_files) {
-			fprintf(stderr, "%s: %s (ignored)\n", filename,
-				strerror(errno));
-			return 0;
-		}
 		perror(filename);
 		exit(1);
 	}
@@ -1413,29 +1403,6 @@ void buf_write(struct buffer *buf, const char *s, int len)
 	buf->pos += len;
 }
 
-static void add_exported_symbols(struct buffer *buf, struct module *mod)
-{
-	struct symbol *sym;
-
-	if (!modversions)
-		return;
-
-	 
-	buf_printf(buf, "\n");
-	list_for_each_entry(sym, &mod->exported_symbols, list) {
-		if (!sym->crc_valid) {
-			warn("EXPORT symbol \"%s\" [%s%s] version generation failed, symbol will not be versioned.\n"
-			     "Is \"%s\" prototyped in <asm/asm-prototypes.h>?\n",
-			     sym->name, mod->name, mod->is_vmlinux ? "" : ".ko",
-			     sym->name);
-			continue;
-		}
-
-		buf_printf(buf, "SYMBOL_CRC(%s, 0x%08x, \"%s\");\n",
-			   sym->name, sym->crc, sym->is_gpl_only ? "_gpl" : "");
-	}
-}
-
 static void write_buf(struct buffer *b, const char *fname)
 {
 	FILE *file;
@@ -1500,7 +1467,6 @@ static void write_vmlinux_export_c_file(struct module *mod)
 	buf_printf(&buf,
 		   "#include <linux/export-internal.h>\n");
 
-	add_exported_symbols(&buf, mod);
 	write_if_changed(&buf, ".vmlinux.export.c");
 	free(buf.p);
 }
@@ -1516,7 +1482,7 @@ static void write_dump(const char *fname)
 			continue;
 		list_for_each_entry(sym, &mod->exported_symbols, list) {
 			buf_printf(&buf, "0x%08x\t%s\t%s\tEXPORT_SYMBOL%s\t%s\n",
-				   sym->crc, sym->name, mod->name,
+				   0, sym->name, mod->name,
 				   sym->is_gpl_only ? "_GPL" : "",
 				   sym->namespace ?: "");
 		}

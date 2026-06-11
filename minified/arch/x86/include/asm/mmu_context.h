@@ -20,9 +20,6 @@ static inline void paravirt_activate_mm(struct mm_struct *prev,
 {
 }
 
-DECLARE_STATIC_KEY_FALSE(rdpmc_never_available_key);
-DECLARE_STATIC_KEY_FALSE(rdpmc_always_available_key);
-
 static inline void init_new_context_ldt(struct mm_struct *mm) { }
 static inline void destroy_context_ldt(struct mm_struct *mm) { }
 static inline void ldt_arch_exit_mmap(struct mm_struct *mm) { }

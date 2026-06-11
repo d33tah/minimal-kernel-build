@@ -8,9 +8,7 @@
 #include <asm/stacktrace.h>
 
 
-extern void perf_clear_dirty_counters(void);
 
- 
 static inline unsigned long perf_misc_flags(struct pt_regs *regs) { return 0; }
 
 #define perf_misc_flags(regs) perf_misc_flags(regs)

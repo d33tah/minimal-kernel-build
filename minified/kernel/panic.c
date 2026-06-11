@@ -304,19 +304,6 @@ void oops_exit(void)
 	kmsg_dump(KMSG_DUMP_OOPS);
 }
 
-struct warn_args {
-	const char *fmt;
-	va_list args;
-};
-
-void __warn(const char *file, int line, void *caller, unsigned taint,
-	    struct pt_regs *regs, struct warn_args *args)
-{
-	/* Stub: minimal warning for tiny kernel */
-	if (panic_on_warn)
-		panic("panic_on_warn set ...\n");
-	add_taint(taint, LOCKDEP_STILL_OK);
-}
 
 
 

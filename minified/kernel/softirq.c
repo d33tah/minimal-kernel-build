@@ -230,12 +230,6 @@ void irq_enter_rcu(void)
 		tick_irq_enter();
 }
 
-void irq_enter(void)
-{
-	rcu_irq_enter();
-	irq_enter_rcu();
-}
-
 static inline void tick_irq_exit(void)
 {
 }
@@ -257,14 +251,6 @@ static inline void __irq_exit_rcu(void)
 void irq_exit_rcu(void)
 {
 	__irq_exit_rcu();
-	  
-	lockdep_hardirq_exit();
-}
-
-void irq_exit(void)
-{
-	__irq_exit_rcu();
-	rcu_irq_exit();
 	  
 	lockdep_hardirq_exit();
 }

@@ -517,8 +517,3 @@ SYSCALL_DEFINE1(exit_group, int, error_code)
 }
 
 
-void __wake_up_parent(struct task_struct *p, struct task_struct *parent)
-{
-	__wake_up_sync_key(&parent->signal->wait_chldexit,
-			   TASK_INTERRUPTIBLE, p);
-}

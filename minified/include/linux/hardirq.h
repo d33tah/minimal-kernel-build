@@ -23,7 +23,6 @@ static __always_inline void rcu_irq_enter_check_tick(void)
 		lockdep_hardirq_enter();		\
 	} while (0)
 
-void irq_enter(void);
 void irq_enter_rcu(void);
 
 #define __irq_exit()					\
@@ -37,8 +36,6 @@ void irq_enter_rcu(void);
 		lockdep_hardirq_exit();			\
 		preempt_count_sub(HARDIRQ_OFFSET);	\
 	} while (0)
-
-void irq_exit(void);
 
 void irq_exit_rcu(void);
 

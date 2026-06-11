@@ -36,11 +36,7 @@ do {								\
 #include <linux/panic.h>
 #include <linux/printk.h>
 
-struct warn_args;
 struct pt_regs;
-
-void __warn(const char *file, int line, void *caller, unsigned taint,
-	    struct pt_regs *regs, struct warn_args *args);
 
 #ifndef HAVE_ARCH_BUG
 #define BUG() do {} while (1)

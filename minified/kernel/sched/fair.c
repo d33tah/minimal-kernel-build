@@ -745,19 +745,14 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		flags = ENQUEUE_WAKEUP;
 	}
 
-	for_each_sched_entity(se) {
-		cfs_rq = cfs_rq_of(se);
-
-		update_load_avg(cfs_rq, se, UPDATE_TG);
-		se_update_runnable(se);
-		update_cfs_group(se);
-
-		cfs_rq->h_nr_running++;
-		cfs_rq->idle_h_nr_running += idle_h_nr_running;
-
-		if (cfs_rq_is_idle(cfs_rq))
-			idle_h_nr_running = 1;
-	}
+	/*
+	 * Without task-group scheduling for_each_sched_entity() iterates at
+	 * most once. enqueue_entity() sets @se->on_rq before the loop sets
+	 * @se = NULL, and a fresh enqueue starts with @se->on_rq == 0 (the
+	 * break never fires), so the loop above always leaves @se NULL. The
+	 * upstream "second pass" updating parent entities is therefore dead
+	 * here.
+	 */
 
 	add_nr_running(rq, 1);
 

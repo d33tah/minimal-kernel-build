@@ -1195,7 +1195,7 @@ int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 
 
 int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
-		struct list_head *uf, bool downgrade)
+		struct list_head *uf)
 {
 	unsigned long end;
 	struct vm_area_struct *vma, *prev, *last;
@@ -1247,28 +1247,24 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 			return error;
 	}
 
-	
-	if (!detach_vmas_to_be_unmapped(mm, vma, prev, end))
-		downgrade = false;
 
-	if (downgrade)
-		mmap_write_downgrade(mm);
+	detach_vmas_to_be_unmapped(mm, vma, prev, end);
 
 	unmap_region(mm, vma, prev, start, end);
 
-	
+
 	remove_vma_list(mm, vma);
 
-	return downgrade ? 1 : 0;
+	return 0;
 }
 
 int do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	      struct list_head *uf)
 {
-	return __do_munmap(mm, start, len, uf, false);
+	return __do_munmap(mm, start, len, uf);
 }
 
-static int __vm_munmap(unsigned long start, size_t len, bool downgrade)
+int vm_munmap(unsigned long start, size_t len)
 {
 	int ret;
 	struct mm_struct *mm = current->mm;
@@ -1277,21 +1273,11 @@ static int __vm_munmap(unsigned long start, size_t len, bool downgrade)
 	if (mmap_write_lock_killable(mm))
 		return -EINTR;
 
-	ret = __do_munmap(mm, start, len, &uf, downgrade);
-	
-	if (ret == 1) {
-		mmap_read_unlock(mm);
-		ret = 0;
-	} else
-		mmap_write_unlock(mm);
+	ret = __do_munmap(mm, start, len, &uf);
+	mmap_write_unlock(mm);
 
 	userfaultfd_unmap_complete(mm, &uf);
 	return ret;
-}
-
-int vm_munmap(unsigned long start, size_t len)
-{
-	return __vm_munmap(start, len, false);
 }
 
 static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long flags, struct list_head *uf)

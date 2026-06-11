@@ -69,8 +69,6 @@ extern void up_read(struct rw_semaphore *sem);
 
 extern void up_write(struct rw_semaphore *sem);
 
-extern void downgrade_write(struct rw_semaphore *sem);
-
 # define down_write_nested(sem, subclass)	down_write(sem)
 
 #endif  

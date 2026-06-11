@@ -540,22 +540,6 @@ static struct rw_semaphore *rwsem_wake(struct rw_semaphore *sem)
 	return sem;
 }
 
-static struct rw_semaphore *rwsem_downgrade_wake(struct rw_semaphore *sem)
-{
-	unsigned long flags;
-	DEFINE_WAKE_Q(wake_q);
-
-	raw_spin_lock_irqsave(&sem->wait_lock, flags);
-
-	if (!list_empty(&sem->wait_list))
-		rwsem_mark_wake(sem, RWSEM_WAKE_READ_OWNED, &wake_q);
-
-	raw_spin_unlock_irqrestore(&sem->wait_lock, flags);
-	wake_up_q(&wake_q);
-
-	return sem;
-}
-
 static inline int __down_read_common(struct rw_semaphore *sem, int state)
 {
 	long count;
@@ -654,19 +638,6 @@ static inline void __up_write(struct rw_semaphore *sem)
 		rwsem_wake(sem);
 }
 
-static inline void __downgrade_write(struct rw_semaphore *sem)
-{
-	long tmp;
-
-	 
-	DEBUG_RWSEMS_WARN_ON(rwsem_owner(sem) != current, sem);
-	tmp = atomic_long_fetch_add_release(
-		-RWSEM_WRITER_LOCKED+RWSEM_READER_BIAS, &sem->count);
-	rwsem_set_reader_owned(sem);
-	if (tmp & RWSEM_FLAG_WAITERS)
-		rwsem_downgrade_wake(sem);
-}
-
 
 void __sched down_read(struct rw_semaphore *sem)
 {
@@ -730,11 +701,5 @@ void up_write(struct rw_semaphore *sem)
 {
 	rwsem_release(&sem->dep_map, _RET_IP_);
 	__up_write(sem);
-}
-
-/* downgrade_write - called by __do_munmap */
-void downgrade_write(struct rw_semaphore *sem)
-{
-	__downgrade_write(sem);
 }
 

@@ -107,9 +107,6 @@ enum irqchip_irq_state {
 };
 
 
-DECLARE_STATIC_KEY_FALSE(force_irqthreads_key);
-#  define force_irqthreads()	(static_branch_unlikely(&force_irqthreads_key))
-
 #ifndef local_softirq_pending
 
 #ifndef local_softirq_pending_ref

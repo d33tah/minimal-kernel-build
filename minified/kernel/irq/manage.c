@@ -17,8 +17,6 @@
 
 #include "internals.h"
 
-DEFINE_STATIC_KEY_FALSE(force_irqthreads_key);
-
 
 void __enable_irq(struct irq_desc *desc)
 {

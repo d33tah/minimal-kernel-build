@@ -118,12 +118,12 @@ static inline void invoke_softirq(void)
 	if (ksoftirqd_running(local_softirq_pending()))
 		return;
 
-	if (!force_irqthreads() || !__this_cpu_read(ksoftirqd)) {
-		 
-		do_softirq_own_stack();
-	} else {
-		wakeup_softirqd();
-	}
+	/*
+	 * force_irqthreads() is constant false (force_irqthreads_key is a
+	 * never-enabled DEFINE_STATIC_KEY_FALSE; the "threadirqs" boot path is
+	 * absent), so the softirq always runs inline here.
+	 */
+	do_softirq_own_stack();
 }
 
 asmlinkage __visible void do_softirq(void)

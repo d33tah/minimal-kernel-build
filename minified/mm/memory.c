@@ -1226,64 +1226,11 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 	return ret;
 }
 
-#ifndef __PAGETABLE_P4D_FOLDED
-
-int __p4d_alloc(struct mm_struct *mm, pgd_t *pgd, unsigned long address)
-{
-	p4d_t *new = p4d_alloc_one(mm, address);
-	if (!new)
-		return -ENOMEM;
-
-	spin_lock(&mm->page_table_lock);
-	if (pgd_present(*pgd)) {	
-		p4d_free(mm, new);
-	} else {
-		smp_wmb(); 
-		pgd_populate(mm, pgd, new);
-	}
-	spin_unlock(&mm->page_table_lock);
-	return 0;
-}
-#endif 
-
-#ifndef __PAGETABLE_PUD_FOLDED
-
-int __pud_alloc(struct mm_struct *mm, p4d_t *p4d, unsigned long address)
-{
-	pud_t *new = pud_alloc_one(mm, address);
-	if (!new)
-		return -ENOMEM;
-
-	spin_lock(&mm->page_table_lock);
-	if (!p4d_present(*p4d)) {
-		mm_inc_nr_puds(mm);
-		smp_wmb(); 
-		p4d_populate(mm, p4d, new);
-	} else	
-		pud_free(mm, new);
-	spin_unlock(&mm->page_table_lock);
-	return 0;
-}
-#endif 
-
-#ifndef __PAGETABLE_PMD_FOLDED
-
-int __pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
-{
-	spinlock_t *ptl;
-	pmd_t *new = pmd_alloc_one(mm, address);
-	if (!new)
-		return -ENOMEM;
-
-	ptl = pud_lock(mm, pud);
-	if (!pud_present(*pud)) {
-		mm_inc_nr_pmds(mm);
-		smp_wmb(); 
-		pud_populate(mm, pud, new);
-	} else {	
-		pmd_free(mm, new);
-	}
-	spin_unlock(ptl);
-	return 0;
-}
-#endif
+/*
+ * __p4d_alloc / __pud_alloc / __pmd_alloc were here. On this build all three
+ * page-table levels are folded (CONFIG_PGTABLE_LEVELS=2, no PAE), so
+ * __PAGETABLE_{P4D,PUD,PMD}_FOLDED are all defined and mm.h supplies the
+ * inline `return 0` stubs that p4d_alloc/pud_alloc/pmd_alloc actually use.
+ * The out-of-line versions were guarded by #ifndef __PAGETABLE_*_FOLDED and
+ * thus never compiled or linked -- removed as dead code.
+ */

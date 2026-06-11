@@ -12,21 +12,13 @@ void pgd_clear_bad(pgd_t *pgd)
 	pgd_clear(pgd);
 }
 
-#ifndef __PAGETABLE_P4D_FOLDED
-void p4d_clear_bad(p4d_t *p4d)
-{
-	p4d_ERROR(*p4d);
-	p4d_clear(p4d);
-}
-#endif
-
-#ifndef __PAGETABLE_PUD_FOLDED
-void pud_clear_bad(pud_t *pud)
-{
-	pud_ERROR(*pud);
-	pud_clear(pud);
-}
-#endif
+/*
+ * p4d_clear_bad / pud_clear_bad were here. Both page-table levels are folded
+ * on this build, so __PAGETABLE_{P4D,PUD}_FOLDED are defined and pgtable.h
+ * #defines p4d_clear_bad/pud_clear_bad to do {} while (0). The out-of-line
+ * versions were guarded by #ifndef __PAGETABLE_*_FOLDED and never compiled --
+ * removed as dead code.
+ */
 
 void pmd_clear_bad(pmd_t *pmd)
 {

@@ -1,27 +1,10 @@
 /* Minimal RT scheduler stub */
 
 int sched_rr_timeslice = RR_TIMESLICE;
-unsigned int sysctl_sched_rt_period = 1000000;
 int sysctl_sched_rt_runtime = 950000;
-struct rt_bandwidth def_rt_bandwidth;
-
-void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime)
-{
-	rt_b->rt_runtime = runtime;
-	raw_spin_lock_init(&rt_b->rt_runtime_lock);
-}
 
 void init_rt_rq(struct rt_rq *rt_rq)
 {
-	struct rt_prio_array *array;
-	int i;
-
-	array = &rt_rq->active;
-	for (i = 0; i < MAX_RT_PRIO; i++) {
-		INIT_LIST_HEAD(array->queue + i);
-		__clear_bit(i, array->bitmap);
-	}
-	__set_bit(MAX_RT_PRIO, array->bitmap);
 }
 
 

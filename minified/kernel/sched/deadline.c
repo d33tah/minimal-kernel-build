@@ -1,14 +1,10 @@
 /* Minimal deadline scheduler stub */
 
-static unsigned int sysctl_sched_dl_period_max = 1 << 22;
-static unsigned int sysctl_sched_dl_period_min = 100;
-
 /* __dl_update, __dl_sub, __dl_add, add_rq_bw, sub_rq_bw, add_running_bw, sub_running_bw,
-   init_dl_bandwidth, init_dl_bw removed - unused */
+   init_dl_bandwidth, init_dl_bw, sysctl_sched_dl_period_max/min removed - unused */
 
 void init_dl_rq(struct dl_rq *dl_rq)
 {
-	dl_rq->root = RB_ROOT_CACHED;
 }
 
 void init_dl_task_timer(struct sched_dl_entity *dl_se) { }

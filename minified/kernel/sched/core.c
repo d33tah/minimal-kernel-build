@@ -1191,8 +1191,6 @@ void __init sched_init(void)
 
 	}
 
-	init_rt_bandwidth(&def_rt_bandwidth, global_rt_period(), global_rt_runtime());
-
 	for_each_possible_cpu(i) {
 		struct rq *rq;
 

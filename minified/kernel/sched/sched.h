@@ -90,7 +90,6 @@ extern void calc_global_load_tick(struct rq *this_rq);
 
 /* call_trace_sched_update_nr_running removed - unused */
 
-extern unsigned int sysctl_sched_rt_period;
 extern int sysctl_sched_rt_runtime;
 extern int sched_rr_timeslice;
 
@@ -104,8 +103,6 @@ extern int sched_rr_timeslice;
 
  
 #define NICE_0_LOAD		(1L << NICE_0_LOAD_SHIFT)
-
-#define RUNTIME_INF		((u64)~0ULL)
 
 static inline int idle_policy(int policy)
 {
@@ -151,20 +148,6 @@ static inline int task_has_dl_policy(struct task_struct *p)
 #define shr_bound(val, shift)							\
 	(val >> min_t(typeof(shift), shift, BITS_PER_TYPE(typeof(val)) - 1))
 
-struct rt_prio_array {
-	DECLARE_BITMAP(bitmap, MAX_RT_PRIO+1);  
-	struct list_head queue[MAX_RT_PRIO];
-};
-
-struct rt_bandwidth {
-	 
-	raw_spinlock_t		rt_runtime_lock;
-	ktime_t			rt_period;
-	u64			rt_runtime;
-	struct hrtimer		rt_period_timer;
-	unsigned int		rt_period_active;
-};
-
 void __dl_clear_params(struct task_struct *p);
 
 struct dl_bw {
@@ -199,11 +182,9 @@ struct cfs_rq {
 
 
 struct rt_rq {
-	struct rt_prio_array	active;
 };
 
 struct dl_rq {
-	struct rb_root_cached	root;
 };
 
 #define entity_is_task(se)	1
@@ -515,19 +496,6 @@ static const_debug __maybe_unused unsigned int sysctl_sched_features =
 
 
 
-static inline u64 global_rt_period(void)
-{
-	return (u64)sysctl_sched_rt_period * NSEC_PER_USEC;
-}
-
-static inline u64 global_rt_runtime(void)
-{
-	if (sysctl_sched_rt_runtime < 0)
-		return RUNTIME_INF;
-
-	return (u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
-}
-
 static inline int task_current(struct rq *rq, struct task_struct *p)
 {
 	return rq->curr == p;
@@ -646,9 +614,6 @@ extern void reweight_task(struct task_struct *p, int prio);
 
 extern void resched_curr(struct rq *rq);
 extern void resched_cpu(int cpu);
-
-extern struct rt_bandwidth def_rt_bandwidth;
-extern void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime);
 
 extern void init_dl_task_timer(struct sched_dl_entity *dl_se);
 extern void init_dl_inactive_task_timer(struct sched_dl_entity *dl_se);

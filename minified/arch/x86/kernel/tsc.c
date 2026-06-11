@@ -6,10 +6,6 @@
 #include <linux/init.h>
 #include <linux/export.h>
 #include <linux/timer.h>
-/* Inlined from acpi_pmtmr.h */
-#define PMTMR_TICKS_PER_SEC 3579545
-#define ACPI_PM_OVRRUN	(1<<24)
-static inline u32 acpi_pm_read_early(void) { return 0; }
 #include <linux/delay.h>
 #include <linux/clocksource.h>
 #include <linux/percpu.h>
@@ -17,10 +13,6 @@ static inline u32 acpi_pm_read_early(void) { return 0; }
 #include <linux/jump_label.h>
 #include <linux/static_call.h>
 
-static inline int is_hpet_enabled(void) { return 0; }
-#define hpet_readl(a) 0
-#define HPET_COUNTER 0
-#define HPET_PERIOD 0
 #include <asm/timer.h>
 #include <asm/vgtod.h>
 #include <asm/time.h>
@@ -173,59 +165,6 @@ bool using_native_sched_clock(void) { return true; }
 
 static int no_sched_irq_time;
 static int no_tsc_watchdog;
-
-#define MAX_RETRIES		5
-#define TSC_DEFAULT_THRESHOLD	0x20000
-
-static u64 tsc_read_refs(u64 *p, int hpet)
-{
-	u64 t1, t2;
-	u64 thresh = tsc_khz ? tsc_khz >> 5 : TSC_DEFAULT_THRESHOLD;
-	int i;
-
-	for (i = 0; i < MAX_RETRIES; i++) {
-		t1 = get_cycles();
-		if (hpet)
-			*p = hpet_readl(HPET_COUNTER) & 0xFFFFFFFF;
-		else
-			*p = acpi_pm_read_early();
-		t2 = get_cycles();
-		if ((t2 - t1) < thresh)
-			return t2;
-	}
-	return ULLONG_MAX;
-}
-
-static unsigned long calc_hpet_ref(u64 deltatsc, u64 hpet1, u64 hpet2)
-{
-	u64 tmp;
-
-	if (hpet2 < hpet1)
-		hpet2 += 0x100000000ULL;
-	hpet2 -= hpet1;
-	tmp = ((u64)hpet2 * hpet_readl(HPET_PERIOD));
-	do_div(tmp, 1000000);
-	deltatsc = div64_u64(deltatsc, tmp);
-
-	return (unsigned long) deltatsc;
-}
-
-static unsigned long calc_pmtimer_ref(u64 deltatsc, u64 pm1, u64 pm2)
-{
-	u64 tmp;
-
-	if (!pm1 && !pm2)
-		return ULONG_MAX;
-
-	if (pm2 < pm1)
-		pm2 += (u64)ACPI_PM_OVRRUN;
-	pm2 -= pm1;
-	tmp = pm2 * 1000000000LL;
-	do_div(tmp, PMTMR_TICKS_PER_SEC);
-	do_div(deltatsc, tmp);
-
-	return (unsigned long) deltatsc;
-}
 
 #define CAL_MS		10
 #define CAL_LATCH	(PIT_TICK_RATE / (1000 / CAL_MS))
@@ -438,14 +377,14 @@ static unsigned long cpu_khz_from_cpuid(void)
 
 static unsigned long pit_hpet_ptimer_calibrate_cpu(void)
 {
-	u64 tsc1, tsc2, delta, ref1, ref2;
-	unsigned long tsc_pit_min = ULONG_MAX, tsc_ref_min = ULONG_MAX;
+	unsigned long tsc_pit_min = ULONG_MAX;
 	unsigned long flags, latch, ms;
-	int hpet = is_hpet_enabled(), i, loopmin;
+	int i, loopmin;
 
-	 
-
-	 
+	/*
+	 * No HPET/PMTIMER reference is available on this build, so the
+	 * reference-based calibration is dead and only the PIT path runs.
+	 */
 	latch = CAL_LATCH;
 	ms = CAL_MS;
 	loopmin = CAL_PIT_LOOPS;
@@ -453,44 +392,12 @@ static unsigned long pit_hpet_ptimer_calibrate_cpu(void)
 	for (i = 0; i < 3; i++) {
 		unsigned long tsc_pit_khz;
 
-		 
 		local_irq_save(flags);
-		tsc1 = tsc_read_refs(&ref1, hpet);
 		tsc_pit_khz = pit_calibrate_tsc(latch, ms, loopmin);
-		tsc2 = tsc_read_refs(&ref2, hpet);
 		local_irq_restore(flags);
 
-		 
 		tsc_pit_min = min(tsc_pit_min, tsc_pit_khz);
 
-		 
-		if (ref1 == ref2)
-			continue;
-
-		 
-		if (tsc1 == ULLONG_MAX || tsc2 == ULLONG_MAX)
-			continue;
-
-		tsc2 = (tsc2 - tsc1) * 1000000LL;
-		if (hpet)
-			tsc2 = calc_hpet_ref(tsc2, ref1, ref2);
-		else
-			tsc2 = calc_pmtimer_ref(tsc2, ref1, ref2);
-
-		tsc_ref_min = min(tsc_ref_min, (unsigned long) tsc2);
-
-		 
-		delta = ((u64) tsc_pit_min) * 100;
-		do_div(delta, tsc_ref_min);
-
-		 
-		if (delta >= 90 && delta <= 110) {
-			pr_info("PIT calibration matches %s. %d loops\n",
-				hpet ? "HPET" : "PMTIMER", i + 1);
-			return tsc_ref_min;
-		}
-
-		 
 		if (i == 1 && tsc_pit_min == ULONG_MAX) {
 			latch = CAL2_LATCH;
 			ms = CAL2_MS;
@@ -498,45 +405,12 @@ static unsigned long pit_hpet_ptimer_calibrate_cpu(void)
 		}
 	}
 
-	 
 	if (tsc_pit_min == ULONG_MAX) {
-		 
 		pr_warn("Unable to calibrate against PIT\n");
-
-		 
-		if (!hpet && !ref1 && !ref2) {
-			pr_notice("No reference (HPET/PMTIMER) available\n");
-			return 0;
-		}
-
-		 
-		if (tsc_ref_min == ULONG_MAX) {
-			pr_warn("HPET/PMTIMER calibration failed\n");
-			return 0;
-		}
-
-		 
-		pr_info("using %s reference calibration\n",
-			hpet ? "HPET" : "PMTIMER");
-
-		return tsc_ref_min;
+		pr_notice("No reference (HPET/PMTIMER) available\n");
+		return 0;
 	}
 
-	 
-	if (!hpet && !ref1 && !ref2) {
-		pr_info("Using PIT calibration value\n");
-		return tsc_pit_min;
-	}
-
-	 
-	if (tsc_ref_min == ULONG_MAX) {
-		pr_warn("HPET/PMTIMER calibration failed. Using PIT calibration.\n");
-		return tsc_pit_min;
-	}
-
-	 
-	pr_warn("PIT calibration deviates from %s: %lu %lu\n",
-		hpet ? "HPET" : "PMTIMER", tsc_pit_min, tsc_ref_min);
 	pr_info("Using PIT calibration value\n");
 	return tsc_pit_min;
 }

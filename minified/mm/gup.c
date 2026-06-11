@@ -185,62 +185,12 @@ no_page:
 	return no_page_table(vma, flags);
 }
 
-static struct page *follow_pmd_mask(struct vm_area_struct *vma,
-				    unsigned long address, pud_t *pudp,
-				    unsigned int flags,
-				    struct follow_page_context *ctx)
-{
-	pmd_t *pmd, pmdval;
-
-	pmd = pmd_offset(pudp, address);
-
-	pmdval = READ_ONCE(*pmd);
-	if (pmd_none(pmdval))
-		return no_page_table(vma, flags);
-	if (!pmd_present(pmdval))
-		return no_page_table(vma, flags);
-	return follow_page_pte(vma, address, pmd, flags, &ctx->pgmap);
-}
-
-static struct page *follow_pud_mask(struct vm_area_struct *vma,
-				    unsigned long address, p4d_t *p4dp,
-				    unsigned int flags,
-				    struct follow_page_context *ctx)
-{
-	pud_t *pud;
-
-	pud = pud_offset(p4dp, address);
-	if (pud_none(*pud))
-		return no_page_table(vma, flags);
-	if (unlikely(pud_bad(*pud)))
-		return no_page_table(vma, flags);
-
-	return follow_pmd_mask(vma, address, pud, flags, ctx);
-}
-
-static struct page *follow_p4d_mask(struct vm_area_struct *vma,
-				    unsigned long address, pgd_t *pgdp,
-				    unsigned int flags,
-				    struct follow_page_context *ctx)
-{
-	p4d_t *p4d;
-	struct page *page;
-
-	p4d = p4d_offset(pgdp, address);
-	if (p4d_none(*p4d))
-		return no_page_table(vma, flags);
-	BUILD_BUG_ON(p4d_huge(*p4d));
-	if (unlikely(p4d_bad(*p4d)))
-		return no_page_table(vma, flags);
-
-	return follow_pud_mask(vma, address, p4d, flags, ctx);
-}
-
 static struct page *follow_page_mask(struct vm_area_struct *vma,
 			      unsigned long address, unsigned int flags,
 			      struct follow_page_context *ctx)
 {
 	pgd_t *pgd;
+	pmd_t *pmd, pmdval;
 	struct mm_struct *mm = vma->vm_mm;
 
 	ctx->page_mask = 0;
@@ -250,7 +200,21 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
 		return no_page_table(vma, flags);
 
-	return follow_p4d_mask(vma, address, pgd, flags, ctx);
+	/*
+	 * CONFIG_PGTABLE_LEVELS=2 (X86_32, no PAE) folds P4D/PUD/PMD onto
+	 * PGD: p4d_offset/pud_offset/pmd_offset all return the same pointer
+	 * cast and p4d_none/p4d_bad/pud_none/pud_bad are constant 0, so the
+	 * intervening follow_p4d_mask/follow_pud_mask levels reach the PMD
+	 * level directly.  Only the PMD entry read is real work.
+	 */
+	pmd = pmd_offset(pud_offset(p4d_offset(pgd, address), address), address);
+
+	pmdval = READ_ONCE(*pmd);
+	if (pmd_none(pmdval))
+		return no_page_table(vma, flags);
+	if (!pmd_present(pmdval))
+		return no_page_table(vma, flags);
+	return follow_page_pte(vma, address, pmd, flags, &ctx->pgmap);
 }
 
 

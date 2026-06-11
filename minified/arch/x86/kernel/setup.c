@@ -482,10 +482,6 @@ void __init setup_arch(char **cmdline_p)
 
 	parse_early_param();
 
-	if (efi_enabled(EFI_BOOT))
-		efi_memblock_x86_reserve_range();
-
-
 	x86_report_nx();
 
 	if (acpi_mps_check()) {
@@ -494,9 +490,6 @@ void __init setup_arch(char **cmdline_p)
 
 	e820__reserve_setup_data();
 	e820__finish_early_params();
-
-	if (efi_enabled(EFI_BOOT))
-		efi_init();
 
 	dmi_setup();
 
@@ -561,15 +554,7 @@ void __init setup_arch(char **cmdline_p)
 	 
 	sev_setup_arch();
 
-	efi_fake_memmap();
-	efi_find_mirror();
-	efi_esrt_init();
-	efi_mokvar_table_init();
 
-	 
-	efi_reserve_boot_services();
-
-	 
 	e820__memblock_alloc_reserved_mpc_new();
 
 
@@ -592,20 +577,6 @@ void __init setup_arch(char **cmdline_p)
 
 	 
 	setup_log_buf(1);
-
-	if (efi_enabled(EFI_BOOT)) {
-		switch (boot_params.secure_boot) {
-		case efi_secureboot_mode_disabled:
-			pr_info("Secure boot disabled\n");
-			break;
-		case efi_secureboot_mode_enabled:
-			pr_info("Secure boot enabled\n");
-			break;
-		default:
-			pr_info("Secure boot could not be determined\n");
-			break;
-		}
-	}
 
 	reserve_initrd();
 
@@ -664,8 +635,7 @@ void __init setup_arch(char **cmdline_p)
 
 	e820__setup_pci_gap();
 
-	if (!efi_enabled(EFI_BOOT) || (efi_mem_type(0xa0000) != EFI_CONVENTIONAL_MEMORY))
-		conswitchp = &vga_con;
+	conswitchp = &vga_con;
 	x86_init.oem.banner();
 
 	x86_init.timers.wallclock_init();

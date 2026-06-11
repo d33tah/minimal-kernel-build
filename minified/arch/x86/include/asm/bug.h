@@ -7,8 +7,6 @@
 
  
 #define ASM_UD2		".byte 0x0f, 0x0b"
-#define INSN_UD2	0x0b0f
-#define LEN_UD2		2
 
 
 #define _BUG_FLAGS(ins, flags, extra)  asm volatile(ins)

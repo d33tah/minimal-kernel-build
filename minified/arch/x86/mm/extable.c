@@ -257,15 +257,11 @@ void __init early_fixup_exception(struct pt_regs *regs, int trapnr)
 	if (fixup_exception(regs, trapnr, regs->orig_ax, 0))
 		return;
 
-	if (trapnr == X86_TRAP_UD) {
-		if (report_bug(regs->ip, regs) == BUG_TRAP_TYPE_WARN) {
-			 
-			regs->ip += LEN_UD2;
-			return;
-		}
-
-		 
-	}
+	/*
+	 * report_bug() is a stub returning BUG_TRAP_TYPE_BUG (no
+	 * CONFIG_GENERIC_BUG), so the X86_TRAP_UD WARN-recovery branch was
+	 * always dead; fall straight through to the panic path.
+	 */
 
 fail:
 	early_printk("PANIC: early exception 0x%02x IP %lx:%lx error %lx cr2 0x%lx\n",

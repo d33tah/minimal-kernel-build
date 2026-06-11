@@ -37,14 +37,8 @@
 
 #define ASM_BARRIER_NOSPEC ALTERNATIVE "", "lfence", X86_FEATURE_LFENCE_RDTSC
 
-#ifdef CONFIG_X86_5LEVEL
-#define LOAD_TASK_SIZE_MINUS_N(n) \
-	ALTERNATIVE __stringify(mov $((1 << 47) - 4096 - (n)),%rdx), \
-		    __stringify(mov $((1 << 56) - 4096 - (n)),%rdx), X86_FEATURE_LA57
-#else
 #define LOAD_TASK_SIZE_MINUS_N(n) \
 	mov $(TASK_SIZE_MAX - (n)),%_ASM_DX
-#endif
 
 	.text
 SYM_FUNC_START(__get_user_1)
@@ -90,18 +84,6 @@ SYM_FUNC_END(__get_user_4)
 EXPORT_SYMBOL(__get_user_4)
 
 SYM_FUNC_START(__get_user_8)
-#ifdef CONFIG_X86_64
-	LOAD_TASK_SIZE_MINUS_N(7)
-	cmp %_ASM_DX,%_ASM_AX
-	jae bad_get_user
-	sbb %_ASM_DX, %_ASM_DX		/* array_index_mask_nospec() */
-	and %_ASM_DX, %_ASM_AX
-	ASM_STAC
-4:	movq (%_ASM_AX),%rdx
-	xor %eax,%eax
-	ASM_CLAC
-	RET
-#else
 	LOAD_TASK_SIZE_MINUS_N(7)
 	cmp %_ASM_DX,%_ASM_AX
 	jae bad_get_user_8
@@ -113,7 +95,6 @@ SYM_FUNC_START(__get_user_8)
 	xor %eax,%eax
 	ASM_CLAC
 	RET
-#endif
 SYM_FUNC_END(__get_user_8)
 EXPORT_SYMBOL(__get_user_8)
 
@@ -151,12 +132,8 @@ EXPORT_SYMBOL(__get_user_nocheck_4)
 SYM_FUNC_START(__get_user_nocheck_8)
 	ASM_STAC
 	ASM_BARRIER_NOSPEC
-#ifdef CONFIG_X86_64
-9:	movq (%_ASM_AX),%rdx
-#else
 9:	movl (%_ASM_AX),%edx
 10:	movl 4(%_ASM_AX),%ecx
-#endif
 	xor %eax,%eax
 	ASM_CLAC
 	RET
@@ -172,7 +149,6 @@ bad_get_user:
 	RET
 SYM_CODE_END(.Lbad_get_user_clac)
 
-#ifdef CONFIG_X86_32
 SYM_CODE_START_LOCAL(.Lbad_get_user_8_clac)
 	ASM_CLAC
 bad_get_user_8:
@@ -181,26 +157,17 @@ bad_get_user_8:
 	mov $(-EFAULT),%_ASM_AX
 	RET
 SYM_CODE_END(.Lbad_get_user_8_clac)
-#endif
 
 /* get_user */
 	_ASM_EXTABLE_UA(1b, .Lbad_get_user_clac)
 	_ASM_EXTABLE_UA(2b, .Lbad_get_user_clac)
 	_ASM_EXTABLE_UA(3b, .Lbad_get_user_clac)
-#ifdef CONFIG_X86_64
-	_ASM_EXTABLE_UA(4b, .Lbad_get_user_clac)
-#else
 	_ASM_EXTABLE_UA(4b, .Lbad_get_user_8_clac)
 	_ASM_EXTABLE_UA(5b, .Lbad_get_user_8_clac)
-#endif
 
 /* __get_user */
 	_ASM_EXTABLE_UA(6b, .Lbad_get_user_clac)
 	_ASM_EXTABLE_UA(7b, .Lbad_get_user_clac)
 	_ASM_EXTABLE_UA(8b, .Lbad_get_user_clac)
-#ifdef CONFIG_X86_64
-	_ASM_EXTABLE_UA(9b, .Lbad_get_user_clac)
-#else
 	_ASM_EXTABLE_UA(9b, .Lbad_get_user_8_clac)
 	_ASM_EXTABLE_UA(10b, .Lbad_get_user_8_clac)
-#endif

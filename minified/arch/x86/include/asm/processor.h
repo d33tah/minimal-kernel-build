@@ -7,7 +7,6 @@
  
 struct task_struct;
 struct mm_struct;
-struct io_bitmap;
 struct vm86;
 
 /* Inlined from asm/math_emu.h */
@@ -293,13 +292,7 @@ struct thread_struct {
 	unsigned long		cr2;
 	unsigned long		trap_nr;
 	unsigned long		error_code;
-	 
-	struct io_bitmap	*io_bitmap;
 
-	 
-	unsigned long		iopl_emul;
-
-	unsigned int		iopl_warn:1;
 	unsigned int		sig_on_uaccess_err:1;
 
 	 

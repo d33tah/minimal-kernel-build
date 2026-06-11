@@ -39,7 +39,6 @@ static inline void boot_init_stack_canary(void) {}
 #include <asm/desc.h>
 #include <asm/prctl.h>
 #include <asm/spec-ctrl.h>
-#include <asm/io_bitmap.h>
 #include <asm/proto.h>
 /* --- 2025-12-07 20:47 --- Inlined frame.h */
 #include <asm/asm.h>
@@ -86,9 +85,6 @@ void exit_thread(struct task_struct *tsk)
 	struct thread_struct *t = &tsk->thread;
 	struct fpu *fpu = &t->fpu;
 
-	if (test_thread_flag(TIF_IO_BITMAP))
-		io_bitmap_exit(tsk);
-
 	free_vm86(t);
 
 	fpu__drop(fpu);
@@ -110,8 +106,6 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 	frame->bp = encode_frame_pointer(childregs);
 	frame->ret_addr = (unsigned long) ret_from_fork;
 	p->thread.sp = (unsigned long) fork_frame;
-	p->thread.io_bitmap = NULL;
-	p->thread.iopl_warn = 0;
 	memset(p->thread.ptrace_bps, 0, sizeof(p->thread.ptrace_bps));
 
 	p->thread.sp0 = (unsigned long) (childregs + 1);
@@ -145,9 +139,6 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 		kthread_frame_init(frame, args->fn, args->fn_arg);
 		return 0;
 	}
-
-	if (unlikely(test_tsk_thread_flag(current, TIF_IO_BITMAP)))
-		io_bitmap_share(p);
 
 	return ret;
 }

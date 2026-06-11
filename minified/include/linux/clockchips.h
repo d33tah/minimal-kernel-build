@@ -84,14 +84,6 @@ extern void clockevents_config_and_register(struct clock_event_device *dev,
 					    u32 freq, unsigned long min_delta,
 					    unsigned long max_delta);
 
-static inline void
-clockevents_calc_mult_shift(struct clock_event_device *ce, u32 freq, u32 maxsec)
-{
-	return clocks_calc_mult_shift(&ce->mult, &ce->shift, NSEC_PER_SEC, freq, maxsec);
-}
-
-
-
 static inline int tick_check_broadcast_expired(void) { return 0; }
 
 

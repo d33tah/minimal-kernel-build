@@ -13,31 +13,6 @@ static LIST_HEAD(clockevents_released);
 static DEFINE_RAW_SPINLOCK(clockevents_lock);
 static DEFINE_MUTEX(clockevents_mutex);
 
-static u64 cev_delta2ns(unsigned long latch, struct clock_event_device *evt,
-			bool ismax)
-{
-	u64 clc = (u64) latch << evt->shift;
-	u64 rnd;
-
-	if (WARN_ON(!evt->mult))
-		evt->mult = 1;
-	rnd = (u64) evt->mult - 1;
-
-	 
-	if ((clc >> evt->shift) != (u64)latch)
-		clc = ~0ULL;
-
-	 
-	if ((~0ULL - clc > rnd) &&
-	    (!ismax || evt->mult <= (1ULL << evt->shift)))
-		clc += rnd;
-
-	do_div(clc, evt->mult);
-
-	 
-	return clc > 1000 ? clc : 1000;
-}
-
 static int __clockevents_switch_state(struct clock_event_device *dev,
 				      enum clock_event_state state)
 {
@@ -137,33 +112,18 @@ void clockevents_register_device(struct clock_event_device *dev)
 	raw_spin_unlock_irqrestore(&clockevents_lock, flags);
 }
 
-static void clockevents_config(struct clock_event_device *dev, u32 freq)
-{
-	u64 sec;
-
-	if (!(dev->features & CLOCK_EVT_FEAT_ONESHOT))
-		return;
-
-	 
-	sec = dev->max_delta_ticks;
-	do_div(sec, freq);
-	if (!sec)
-		sec = 1;
-	else if (sec > 600 && dev->max_delta_ticks > UINT_MAX)
-		sec = 600;
-
-	clockevents_calc_mult_shift(dev, freq, sec);
-	dev->min_delta_ns = cev_delta2ns(dev->min_delta_ticks, dev, false);
-	dev->max_delta_ns = cev_delta2ns(dev->max_delta_ticks, dev, true);
-}
-
+/*
+ * The tick device is only ever switched to PERIODIC (oneshot/high-res/no-hz
+ * unset, broadcast off), so set_next_event/clockevents_program_event are never
+ * invoked.  The per-device mult/shift + min_delta_ns/max_delta_ns that
+ * clockevents_config() computed were only read by that dead next-event
+ * reprogramming path, so the freq/min_delta/max_delta arguments here are dead;
+ * config_and_register just registers the device.
+ */
 void clockevents_config_and_register(struct clock_event_device *dev,
 				     u32 freq, unsigned long min_delta,
 				     unsigned long max_delta)
 {
-	dev->min_delta_ticks = min_delta;
-	dev->max_delta_ticks = max_delta;
-	clockevents_config(dev, freq);
 	clockevents_register_device(dev);
 }
 

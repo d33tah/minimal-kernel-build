@@ -128,105 +128,25 @@ static void free_pte_range(struct mmu_gather *tlb, pmd_t *pmd,
 	mm_dec_nr_ptes(tlb->mm);
 }
 
-static inline void free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
-				unsigned long addr, unsigned long end,
-				unsigned long floor, unsigned long ceiling)
+/*
+ * P4D/PUD/PMD are all folded onto the PGD on this 2-level x86_32 build
+ * (__PAGETABLE_{P4D,PUD,PMD}_FOLDED=1, see asm/pgtable_types.h). With the
+ * levels folded: p4d_offset/pud_offset/pmd_offset return the same pointer,
+ * {p4d,pud,pmd}_addr_end(addr,end) == end (each level loop runs once),
+ * {p4d,pud}_none_or_clear_bad() == 0 (p4d/pud none/bad are constant 0), and
+ * the per-level table free ({p4d,pud}_clear / {p4d,pud,pmd}_free_tlb /
+ * mm_dec_nr_{puds,pmds}) are all no-ops. So the three nested range walkers
+ * collapse to a single pass over the (real) PMD/PTE level, and only the PTE
+ * page is actually freed. This is free_pmd_range with its dead folded tail
+ * stripped, reached straight from free_pgd_range.
+ */
+static inline void free_folded_range(struct mmu_gather *tlb, pgd_t *pgd,
+				unsigned long addr, unsigned long end)
 {
-	pmd_t *pmd;
-	unsigned long next;
-	unsigned long start;
+	pmd_t *pmd = pmd_offset(pud_offset(p4d_offset(pgd, addr), addr), addr);
 
-	start = addr;
-	pmd = pmd_offset(pud, addr);
-	do {
-		next = pmd_addr_end(addr, end);
-		if (pmd_none_or_clear_bad(pmd))
-			continue;
+	if (!pmd_none_or_clear_bad(pmd))
 		free_pte_range(tlb, pmd, addr);
-	} while (pmd++, addr = next, addr != end);
-
-	start &= PUD_MASK;
-	if (start < floor)
-		return;
-	if (ceiling) {
-		ceiling &= PUD_MASK;
-		if (!ceiling)
-			return;
-	}
-	if (end - 1 > ceiling - 1)
-		return;
-
-	pmd = pmd_offset(pud, start);
-	pud_clear(pud);
-	pmd_free_tlb(tlb, pmd, start);
-	mm_dec_nr_pmds(tlb->mm);
-}
-
-static inline void free_pud_range(struct mmu_gather *tlb, p4d_t *p4d,
-				unsigned long addr, unsigned long end,
-				unsigned long floor, unsigned long ceiling)
-{
-	pud_t *pud;
-	unsigned long next;
-	unsigned long start;
-
-	start = addr;
-	pud = pud_offset(p4d, addr);
-	do {
-		next = pud_addr_end(addr, end);
-		if (pud_none_or_clear_bad(pud))
-			continue;
-		free_pmd_range(tlb, pud, addr, next, floor, ceiling);
-	} while (pud++, addr = next, addr != end);
-
-	start &= P4D_MASK;
-	if (start < floor)
-		return;
-	if (ceiling) {
-		ceiling &= P4D_MASK;
-		if (!ceiling)
-			return;
-	}
-	if (end - 1 > ceiling - 1)
-		return;
-
-	pud = pud_offset(p4d, start);
-	p4d_clear(p4d);
-	pud_free_tlb(tlb, pud, start);
-	mm_dec_nr_puds(tlb->mm);
-}
-
-static inline void free_p4d_range(struct mmu_gather *tlb, pgd_t *pgd,
-				unsigned long addr, unsigned long end,
-				unsigned long floor, unsigned long ceiling)
-{
-	p4d_t *p4d;
-	unsigned long next;
-	unsigned long start;
-
-	start = addr;
-	p4d = p4d_offset(pgd, addr);
-	do {
-		next = p4d_addr_end(addr, end);
-		if (p4d_none_or_clear_bad(p4d))
-			continue;
-		free_pud_range(tlb, p4d, addr, next, floor, ceiling);
-	} while (p4d++, addr = next, addr != end);
-
-	start &= PGDIR_MASK;
-	if (start < floor)
-		return;
-	if (ceiling) {
-		ceiling &= PGDIR_MASK;
-		if (!ceiling)
-			return;
-	}
-	if (end - 1 > ceiling - 1)
-		return;
-
-	p4d = p4d_offset(pgd, start);
-	pgd_clear(pgd);
-	p4d_free_tlb(tlb, p4d, start);
 }
 
 void free_pgd_range(struct mmu_gather *tlb,
@@ -260,7 +180,7 @@ void free_pgd_range(struct mmu_gather *tlb,
 		next = pgd_addr_end(addr, end);
 		if (pgd_none_or_clear_bad(pgd))
 			continue;
-		free_p4d_range(tlb, pgd, addr, next, floor, ceiling);
+		free_folded_range(tlb, pgd, addr, next);
 	} while (pgd++, addr = next, addr != end);
 }
 

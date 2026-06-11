@@ -382,17 +382,6 @@ static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
 		__pcpu_chunk_move(chunk, nslot, oslot < nslot);
 }
 
-static void pcpu_isolate_chunk(struct pcpu_chunk *chunk)
-{
-	lockdep_assert_held(&pcpu_lock);
-
-	if (!chunk->isolated) {
-		chunk->isolated = true;
-		pcpu_nr_empty_pop_pages -= chunk->nr_empty_pop_pages;
-	}
-	list_move(&chunk->list, &pcpu_chunk_lists[pcpu_to_depopulate_slot]);
-}
-
 static void pcpu_reintegrate_chunk(struct pcpu_chunk *chunk)
 {
 	lockdep_assert_held(&pcpu_lock);
@@ -1082,8 +1071,6 @@ static int pcpu_populate_chunk(struct pcpu_chunk *chunk,
 			       int page_start, int page_end, gfp_t gfp);
 static void pcpu_depopulate_chunk(struct pcpu_chunk *chunk,
 				  int page_start, int page_end);
-static void pcpu_post_unmap_tlb_flush(struct pcpu_chunk *chunk,
-				      int page_start, int page_end);
 static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp);
 static void pcpu_destroy_chunk(struct pcpu_chunk *chunk);
 static struct page *pcpu_addr_to_page(void *addr);
@@ -1414,92 +1401,13 @@ retry_pop:
 	}
 }
 
-static void pcpu_reclaim_populated(void)
-{
-	struct pcpu_chunk *chunk;
-	struct pcpu_block_md *block;
-	int freed_page_start, freed_page_end;
-	int i, end;
-	bool reintegrate;
-
-	lockdep_assert_held(&pcpu_lock);
-
-	
-	while (!list_empty(&pcpu_chunk_lists[pcpu_to_depopulate_slot])) {
-		chunk = list_first_entry(&pcpu_chunk_lists[pcpu_to_depopulate_slot],
-					 struct pcpu_chunk, list);
-		WARN_ON(chunk->immutable);
-
-		
-		freed_page_start = chunk->nr_pages;
-		freed_page_end = 0;
-		reintegrate = false;
-		for (i = chunk->nr_pages - 1, end = -1; i >= 0; i--) {
-			
-			if (chunk->nr_empty_pop_pages == 0)
-				break;
-
-			
-			if (pcpu_nr_empty_pop_pages < PCPU_EMPTY_POP_PAGES_HIGH) {
-				reintegrate = true;
-				goto end_chunk;
-			}
-
-			
-			block = chunk->md_blocks + i;
-			if (block->contig_hint == PCPU_BITMAP_BLOCK_BITS &&
-			    test_bit(i, chunk->populated)) {
-				if (end == -1)
-					end = i;
-				if (i > 0)
-					continue;
-				i--;
-			}
-
-			
-			if (end == -1)
-				continue;
-
-			spin_unlock_irq(&pcpu_lock);
-			pcpu_depopulate_chunk(chunk, i + 1, end + 1);
-			cond_resched();
-			spin_lock_irq(&pcpu_lock);
-
-			pcpu_chunk_depopulated(chunk, i + 1, end + 1);
-			freed_page_start = min(freed_page_start, i + 1);
-			freed_page_end = max(freed_page_end, end + 1);
-
-			
-			end = -1;
-		}
-
-end_chunk:
-		
-		if (freed_page_start < freed_page_end) {
-			spin_unlock_irq(&pcpu_lock);
-			pcpu_post_unmap_tlb_flush(chunk,
-						  freed_page_start,
-						  freed_page_end);
-			cond_resched();
-			spin_lock_irq(&pcpu_lock);
-		}
-
-		if (reintegrate || chunk->free_bytes == pcpu_unit_size)
-			pcpu_reintegrate_chunk(chunk);
-		else
-			list_move_tail(&chunk->list,
-				       &pcpu_chunk_lists[pcpu_sidelined_slot]);
-	}
-}
-
 static void pcpu_balance_workfn(struct work_struct *work)
 {
-	
+
 	mutex_lock(&pcpu_alloc_mutex);
 	spin_lock_irq(&pcpu_lock);
 
 	pcpu_balance_free(false);
-	pcpu_reclaim_populated();
 	pcpu_balance_populated();
 	pcpu_balance_free(true);
 
@@ -1538,9 +1446,6 @@ void free_percpu(void __percpu *ptr)
 				need_balance = true;
 				break;
 			}
-	} else if (pcpu_should_reclaim_chunk(chunk)) {
-		pcpu_isolate_chunk(chunk);
-		need_balance = true;
 	}
 
 

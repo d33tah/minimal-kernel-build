@@ -52,11 +52,6 @@ static unsigned long arch_rnd(unsigned int rndbits)
 	return (get_random_long() & ((1UL << rndbits) - 1)) << PAGE_SHIFT;
 }
 
-unsigned long arch_mmap_rnd(void)
-{
-	return arch_rnd(mmap_is_ia32() ? mmap32_rnd_bits : mmap64_rnd_bits);
-}
-
 static unsigned long mmap_base(unsigned long rnd, unsigned long task_size,
 			       struct rlimit *rlim_stack)
 {
@@ -109,23 +104,6 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 			rlim_stack);
 
 }
-
-unsigned long get_mmap_base(int is_legacy)
-{
-	struct mm_struct *mm = current->mm;
-
-	return is_legacy ? mm->mmap_legacy_base : mm->mmap_base;
-}
-
-
-bool mmap_address_hint_valid(unsigned long addr, unsigned long len)
-{
-	if (TASK_SIZE - len < addr)
-		return false;
-
-	return (addr > DEFAULT_MAP_WINDOW) == (addr + len > DEFAULT_MAP_WINDOW);
-}
-
 
 bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
 {

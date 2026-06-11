@@ -56,77 +56,21 @@ static inline u16 user_pcid(u16 asid)
 
 static inline unsigned long build_cr3(pgd_t *pgd, u16 asid)
 {
-	if (static_cpu_has(X86_FEATURE_PCID)) {
-		return __sme_pa(pgd) | kern_pcid(asid);
-	} else {
-		VM_WARN_ON_ONCE(asid != 0);
-		return __sme_pa(pgd);
-	}
-}
-
-static inline unsigned long build_cr3_noflush(pgd_t *pgd, u16 asid)
-{
-	VM_WARN_ON_ONCE(asid > MAX_ASID_AVAILABLE);
-	 
-	VM_WARN_ON_ONCE(!boot_cpu_has(X86_FEATURE_PCID));
-	return __sme_pa(pgd) | kern_pcid(asid) | CR3_NOFLUSH;
-}
-
-static void clear_asid_other(void)
-{
-	u16 asid;
-
-	 
-	if (!static_cpu_has(X86_FEATURE_PTI)) {
-		WARN_ON_ONCE(1);
-		return;
-	}
-
-	for (asid = 0; asid < TLB_NR_DYN_ASIDS; asid++) {
-		 
-		if (asid == this_cpu_read(cpu_tlbstate.loaded_mm_asid))
-			continue;
-		 
-		this_cpu_write(cpu_tlbstate.ctxs[asid].ctx_id, 0);
-	}
-	this_cpu_write(cpu_tlbstate.invalidate_other, false);
+	/* PCID is unconditionally cleared at boot (setup_clear_cpu_cap in
+	 * arch/x86/kernel/cpu/common.c), so the kernel never runs with PCIDs
+	 * and asid is always 0. */
+	VM_WARN_ON_ONCE(asid != 0);
+	return __sme_pa(pgd);
 }
 
 atomic64_t last_mm_ctx_id = ATOMIC64_INIT(1);
 
 
 static void choose_new_asid(struct mm_struct *next, u64 next_tlb_gen,
-			    u16 *new_asid, bool *need_flush)
+			    u16 *new_asid)
 {
-	u16 asid;
-
-	if (!static_cpu_has(X86_FEATURE_PCID)) {
-		*new_asid = 0;
-		*need_flush = true;
-		return;
-	}
-
-	if (this_cpu_read(cpu_tlbstate.invalidate_other))
-		clear_asid_other();
-
-	for (asid = 0; asid < TLB_NR_DYN_ASIDS; asid++) {
-		if (this_cpu_read(cpu_tlbstate.ctxs[asid].ctx_id) !=
-		    next->context.ctx_id)
-			continue;
-
-		*new_asid = asid;
-		*need_flush = (this_cpu_read(cpu_tlbstate.ctxs[asid].tlb_gen) <
-			       next_tlb_gen);
-		return;
-	}
-
-	 
-	*new_asid = this_cpu_add_return(cpu_tlbstate.next_asid, 1) - 1;
-	if (*new_asid >= TLB_NR_DYN_ASIDS) {
-		*new_asid = 0;
-		this_cpu_write(cpu_tlbstate.next_asid, 1);
-	}
-	*need_flush = true;
+	/* No PCID (cleared at boot): always use ASID 0 and force a flush. */
+	*new_asid = 0;
 }
 
 static inline void invalidate_user_asid(u16 asid)
@@ -134,19 +78,11 @@ static inline void invalidate_user_asid(u16 asid)
 
 }
 
-static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid, bool need_flush)
+static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid)
 {
-	unsigned long new_mm_cr3;
-
-	if (need_flush) {
-		invalidate_user_asid(new_asid);
-		new_mm_cr3 = build_cr3(pgdir, new_asid);
-	} else {
-		new_mm_cr3 = build_cr3_noflush(pgdir, new_asid);
-	}
-
-	 
-	write_cr3(new_mm_cr3);
+	/* Without PCID every switch reloads CR3 (always a full flush). */
+	invalidate_user_asid(new_asid);
+	write_cr3(build_cr3(pgdir, new_asid));
 }
 
 void leave_mm(int cpu)
@@ -262,7 +198,6 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 	bool was_lazy = this_cpu_read(cpu_tlbstate_shared.is_lazy);
 	unsigned cpu = smp_processor_id();
 	u64 next_tlb_gen;
-	bool need_flush;
 	u16 new_asid;
 
 	 
@@ -296,9 +231,8 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 				next_tlb_gen)
 			return;
 
-		 
+
 		new_asid = prev_asid;
-		need_flush = true;
 	} else {
 		 
 		cond_mitigation(tsk);
@@ -315,27 +249,19 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 			cpumask_set_cpu(cpu, mm_cpumask(next));
 		next_tlb_gen = atomic64_read(&next->context.tlb_gen);
 
-		choose_new_asid(next, next_tlb_gen, &new_asid, &need_flush);
+		choose_new_asid(next, next_tlb_gen, &new_asid);
 
 		 
 		this_cpu_write(cpu_tlbstate.loaded_mm, LOADED_MM_SWITCHING);
 		barrier();
 	}
 
-	if (need_flush) {
-		this_cpu_write(cpu_tlbstate.ctxs[new_asid].ctx_id, next->context.ctx_id);
-		this_cpu_write(cpu_tlbstate.ctxs[new_asid].tlb_gen, next_tlb_gen);
-		load_new_mm_cr3(next->pgd, new_asid, true);
+	/* need_flush is always true: no PCID, so every switch reloads CR3. */
+	this_cpu_write(cpu_tlbstate.ctxs[new_asid].ctx_id, next->context.ctx_id);
+	this_cpu_write(cpu_tlbstate.ctxs[new_asid].tlb_gen, next_tlb_gen);
+	load_new_mm_cr3(next->pgd, new_asid);
 
 
-	} else {
-		 
-		load_new_mm_cr3(next->pgd, new_asid, false);
-
-
-	}
-
-	 
 	barrier();
 
 	this_cpu_write(cpu_tlbstate.loaded_mm, next);

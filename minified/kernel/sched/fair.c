@@ -802,19 +802,12 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		flags |= DEQUEUE_SLEEP;
 	}
 
-	for_each_sched_entity(se) {
-		cfs_rq = cfs_rq_of(se);
-
-		update_load_avg(cfs_rq, se, UPDATE_TG);
-		se_update_runnable(se);
-		update_cfs_group(se);
-
-		cfs_rq->h_nr_running--;
-		cfs_rq->idle_h_nr_running -= idle_h_nr_running;
-
-		if (cfs_rq_is_idle(cfs_rq))
-			idle_h_nr_running = 1;
-	}
+	/*
+	 * Without task-group scheduling for_each_sched_entity() iterates at
+	 * most once, and the loop above always leaves @se NULL (it either
+	 * runs to completion or breaks after se = parent_entity(se) == NULL),
+	 * so the upstream "second pass" walking parent entities is dead here.
+	 */
 
 	sub_nr_running(rq, 1);
 

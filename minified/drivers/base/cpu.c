@@ -38,20 +38,12 @@ module_init(cpu_feature_match_ ## x ## _init)
 
 #include "base.h"
 
-static int cpu_subsys_match(struct device *dev, struct device_driver *drv)
-{
-	 
-	if (acpi_driver_match_device(dev, drv))
-		return 1;
-
-	return 0;
-}
-
+/* Removed: cpu_subsys_match - bus->match is only called from the driver-bind
+   path (bus_for_each_drv / driver_match_device), which is gone, so it is dead. */
 
 struct bus_type cpu_subsys = {
 	.name = "cpu",
 	.dev_name = "cpu",
-	.match = cpu_subsys_match,
 };
 
 

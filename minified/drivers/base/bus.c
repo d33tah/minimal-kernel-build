@@ -133,15 +133,12 @@ int bus_register(struct bus_type *bus)
 	priv->bus = bus;
 	bus->p = priv;
 
-	BLOCKING_INIT_NOTIFIER_HEAD(&priv->bus_notifier);
-
 	retval = kobject_set_name(&priv->subsys.kobj, "%s", bus->name);
 	if (retval)
 		goto out;
 
 	priv->subsys.kobj.kset = bus_kset;
 	priv->subsys.kobj.ktype = &bus_ktype;
-	priv->drivers_autoprobe = 1;
 
 	retval = kset_register(&priv->subsys);
 	if (retval)
@@ -154,17 +151,8 @@ int bus_register(struct bus_type *bus)
 		goto bus_devices_fail;
 	}
 
-	priv->drivers_kset = kset_create_and_add("drivers", NULL,
-						 &priv->subsys.kobj);
-	if (!priv->drivers_kset) {
-		retval = -ENOMEM;
-		goto bus_drivers_fail;
-	}
-
-	INIT_LIST_HEAD(&priv->interfaces);
 	__mutex_init(&priv->mutex, "subsys mutex", key);
 	klist_init(&priv->klist_devices, klist_devices_get, klist_devices_put);
-	klist_init(&priv->klist_drivers, NULL, NULL);
 
 	retval = bus_add_groups(bus, bus->bus_groups);
 	if (retval)
@@ -173,8 +161,6 @@ int bus_register(struct bus_type *bus)
 	return 0;
 
 bus_groups_fail:
-	kset_unregister(bus->p->drivers_kset);
-bus_drivers_fail:
 	kset_unregister(bus->p->devices_kset);
 bus_devices_fail:
 	kset_unregister(&bus->p->subsys);
@@ -189,7 +175,6 @@ void bus_unregister(struct bus_type *bus)
 	if (bus->dev_root)
 		device_unregister(bus->dev_root);
 	bus_remove_groups(bus, bus->bus_groups);
-	kset_unregister(bus->p->drivers_kset);
 	kset_unregister(bus->p->devices_kset);
 	kset_unregister(&bus->p->subsys);
 }

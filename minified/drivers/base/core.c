@@ -327,7 +327,6 @@ void device_del(struct device *dev)
 {
 	struct device *parent = dev->parent;
 	struct kobject *glue_dir = NULL;
-	struct class_interface *class_intf;
 	unsigned int noio_flag;
 
 	device_lock(dev);
@@ -337,11 +336,9 @@ void device_del(struct device *dev)
 	if (dev->fwnode && dev->fwnode->dev == dev)
 		dev->fwnode->dev = NULL;
 
-	
+	/* bus_notifier is never registered on (no notifier callers), so the
+	   BUS_NOTIFY_{DEL,REMOVED}_DEVICE call chains were no-ops - removed. */
 	noio_flag = memalloc_noio_save();
-	if (dev->bus)
-		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-					     BUS_NOTIFY_DEL_DEVICE, dev);
 
 	dpm_sysfs_remove(dev);
 	if (parent)
@@ -354,12 +351,8 @@ void device_del(struct device *dev)
 		device_remove_class_symlinks(dev);
 
 		mutex_lock(&dev->class->p->mutex);
-		
-		list_for_each_entry(class_intf,
-				    &dev->class->p->interfaces, node)
-			if (class_intf->remove_dev)
-				class_intf->remove_dev(dev, class_intf);
-		
+		/* class->p->interfaces is always empty (class_interface_register
+		   is gone), so the remove_dev loop was dead - removed. */
 		klist_del(&dev->p->knode_class);
 		mutex_unlock(&dev->class->p->mutex);
 	}
@@ -369,9 +362,6 @@ void device_del(struct device *dev)
 	driver_deferred_probe_del(dev);
 	device_platform_notify_remove(dev);
 
-	if (dev->bus)
-		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-					     BUS_NOTIFY_REMOVED_DEVICE, dev);
 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
 	glue_dir = get_glue_dir(dev);
 	kobject_del(&dev->kobj);

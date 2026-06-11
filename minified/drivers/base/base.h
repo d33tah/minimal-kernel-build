@@ -3,17 +3,17 @@
 #include <linux/notifier.h>
 
  
+/* Trimmed: interfaces, drivers_kset, klist_drivers, bus_notifier and
+   drivers_autoprobe were write-only on this build - no driver registers
+   (subsys_interface_register / class_interface_register are gone, so the
+   interfaces list and the drivers klist/kset stay empty) and nothing ever
+   registers on bus_notifier. */
 struct subsys_private {
 	struct kset subsys;
 	struct kset *devices_kset;
-	struct list_head interfaces;
 	struct mutex mutex;
 
-	struct kset *drivers_kset;
 	struct klist klist_devices;
-	struct klist klist_drivers;
-	struct blocking_notifier_head bus_notifier;
-	unsigned int drivers_autoprobe:1;
 	struct bus_type *bus;
 
 	struct kset glue_dirs;
@@ -21,30 +21,21 @@ struct subsys_private {
 };
 #define to_subsys_private(obj) container_of(obj, struct subsys_private, subsys.kobj)
 
-struct driver_private {
-	struct kobject kobj;
-	struct klist klist_devices;
-	struct klist_node knode_bus;
-	struct module_kobject *mkobj;
-	struct device_driver *driver;
-};
+/* Removed: struct driver_private - the driver-side klist/kobj is never built
+   (no driver_register/bus_add_driver), and driver->p is never dereferenced. */
 
- 
+
 struct device_private {
 	struct klist klist_children;
 	struct klist_node knode_parent;
-	struct klist_node knode_driver;
 	struct klist_node knode_bus;
 	struct klist_node knode_class;
 	struct list_head deferred_probe;
-	struct device_driver *async_driver;
 	struct device *device;
 	u8 dead:1;
 };
 #define to_device_private_parent(obj)	\
 	container_of(obj, struct device_private, knode_parent)
-#define to_device_private_driver(obj)	\
-	container_of(obj, struct device_private, knode_driver)
 #define to_device_private_bus(obj)	\
 	container_of(obj, struct device_private, knode_bus)
 #define to_device_private_class(obj)	\
@@ -66,11 +57,7 @@ extern void bus_probe_device(struct device *dev);
 extern void bus_remove_device(struct device *dev);
 
 extern void driver_deferred_probe_del(struct device *dev);
-static inline int driver_match_device(struct device_driver *drv,
-				      struct device *dev)
-{
-	return drv->bus->match ? drv->bus->match(dev, drv) : 1;
-}
+/* Removed: driver_match_device - 0 callers (driver-side bind machinery is gone). */
 extern int devres_release_all(struct device *dev);
 
 

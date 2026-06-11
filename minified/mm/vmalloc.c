@@ -223,72 +223,30 @@ static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 	*mask |= PGTBL_PTE_MODIFIED;
 }
 
-static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
-			     pgtbl_mod_mask *mask)
+/*
+ * 2-level x86_32 fold (CONFIG_PGTABLE_LEVELS=2, no PAE): the P4D/PUD/PMD
+ * levels are folded onto the PGD. p4d_offset/pud_offset/pmd_offset all
+ * return the same pointer cast; {p4d,pud,pmd}_addr_end(addr,end)==end so
+ * each former nested loop ran exactly once; p4d_none/p4d_bad/pud_none/
+ * pud_bad are constant 0 (so {p4d,pud}_none_or_clear_bad()==0 and the
+ * per-iteration continues never fired); p4d_clear_huge is a no-op and
+ * pud_clear_huge/pmd_clear_huge return 0 (huge vmap disabled). So the
+ * vunmap_p4d_range -> vunmap_pud_range -> vunmap_pmd_range descent
+ * collapses to a single PMD-level pass reaching the only real work.
+ */
+static void vunmap_folded_range(pgd_t *pgd, unsigned long addr,
+				unsigned long end, pgtbl_mod_mask *mask)
 {
-	pmd_t *pmd;
-	unsigned long next;
-	int cleared;
+	pmd_t *pmd = pmd_offset(pud_offset(p4d_offset(pgd, addr), addr), addr);
 
-	pmd = pmd_offset(pud, addr);
-	do {
-		next = pmd_addr_end(addr, end);
+	if (pmd_bad(*pmd))
+		*mask |= PGTBL_PMD_MODIFIED;
 
-		cleared = pmd_clear_huge(pmd);
-		if (cleared || pmd_bad(*pmd))
-			*mask |= PGTBL_PMD_MODIFIED;
+	if (pmd_none_or_clear_bad(pmd))
+		return;
+	vunmap_pte_range(pmd, addr, end, mask);
 
-		if (cleared)
-			continue;
-		if (pmd_none_or_clear_bad(pmd))
-			continue;
-		vunmap_pte_range(pmd, addr, next, mask);
-
-		cond_resched();
-	} while (pmd++, addr = next, addr != end);
-}
-
-static void vunmap_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
-			     pgtbl_mod_mask *mask)
-{
-	pud_t *pud;
-	unsigned long next;
-	int cleared;
-
-	pud = pud_offset(p4d, addr);
-	do {
-		next = pud_addr_end(addr, end);
-
-		cleared = pud_clear_huge(pud);
-		if (cleared || pud_bad(*pud))
-			*mask |= PGTBL_PUD_MODIFIED;
-
-		if (cleared)
-			continue;
-		if (pud_none_or_clear_bad(pud))
-			continue;
-		vunmap_pmd_range(pud, addr, next, mask);
-	} while (pud++, addr = next, addr != end);
-}
-
-static void vunmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
-			     pgtbl_mod_mask *mask)
-{
-	p4d_t *p4d;
-	unsigned long next;
-
-	p4d = p4d_offset(pgd, addr);
-	do {
-		next = p4d_addr_end(addr, end);
-
-		p4d_clear_huge(p4d);
-		if (p4d_bad(*p4d))
-			*mask |= PGTBL_P4D_MODIFIED;
-
-		if (p4d_none_or_clear_bad(p4d))
-			continue;
-		vunmap_pud_range(p4d, addr, next, mask);
-	} while (p4d++, addr = next, addr != end);
+	cond_resched();
 }
 
 void vunmap_range_noflush(unsigned long start, unsigned long end)
@@ -306,7 +264,7 @@ void vunmap_range_noflush(unsigned long start, unsigned long end)
 			mask |= PGTBL_PGD_MODIFIED;
 		if (pgd_none_or_clear_bad(pgd))
 			continue;
-		vunmap_p4d_range(pgd, addr, next, &mask);
+		vunmap_folded_range(pgd, addr, next, &mask);
 	} while (pgd++, addr = next, addr != end);
 
 	if (mask & ARCH_PAGE_TABLE_SYNC_MASK)

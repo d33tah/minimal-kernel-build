@@ -705,12 +705,6 @@ static inline void hrtick_update(struct rq *rq)
 
 static inline void update_overutilized_status(struct rq *rq) { }
 
-static int sched_idle_rq(struct rq *rq)
-{
-	return unlikely(rq->nr_running == rq->cfs.idle_h_nr_running &&
-			rq->nr_running);
-}
-
 static bool sched_idle_cfs_rq(struct cfs_rq *cfs_rq)
 {
 	return cfs_rq->nr_running &&
@@ -772,7 +766,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	struct sched_entity *se = &p->se;
 	int task_sleep = flags & DEQUEUE_SLEEP;
 	int idle_h_nr_running = task_has_idle_policy(p);
-	bool was_sched_idle = sched_idle_rq(rq);
 
 	util_est_dequeue(&rq->cfs, p);
 
@@ -805,9 +798,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	 */
 
 	sub_nr_running(rq, 1);
-
-	if (unlikely(!was_sched_idle && sched_idle_rq(rq)))
-		rq->next_balance = jiffies;
 
 	util_est_update(&rq->cfs, p, task_sleep);
 	hrtick_update(rq);

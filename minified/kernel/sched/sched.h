@@ -242,10 +242,8 @@ struct rq {
 	 
 	raw_spinlock_t		__lock;
 
-	 
-	unsigned int		nr_running;
 
-	u64			nr_switches;
+	unsigned int		nr_running;
 
 
 	struct cfs_rq		cfs;
@@ -253,21 +251,16 @@ struct rq {
 	struct dl_rq		dl;
 
 
-	 
-	unsigned int		nr_uninterruptible;
-
 	struct task_struct __rcu	*curr;
 	struct task_struct	*idle;
 	struct task_struct	*stop;
-	unsigned long		next_balance;
 	struct mm_struct	*prev_mm;
 
 	unsigned int		clock_update_flags;
 	u64			clock;
-	 
+
 	u64			clock_task ____cacheline_aligned;
 	u64			clock_pelt;
-	unsigned long		lost_idle_time;
 
 	atomic_t		nr_iowait;
 
@@ -275,15 +268,9 @@ struct rq {
 
 
 
-	 
-	unsigned long		calc_load_update;
-	long			calc_load_active;
 
 
 
-
-	unsigned int		push_busy;
-	struct cpu_stop_work	push_work;
 
 };
 

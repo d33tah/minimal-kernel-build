@@ -341,58 +341,34 @@ static int vmap_pages_pte_range(pmd_t *pmd, unsigned long addr,
 	return 0;
 }
 
-static int vmap_pages_pmd_range(pud_t *pud, unsigned long addr,
-		unsigned long end, pgprot_t prot, struct page **pages, int *nr,
-		pgtbl_mod_mask *mask)
-{
-	pmd_t *pmd;
-	unsigned long next;
-
-	pmd = pmd_alloc_track(&init_mm, pud, addr, mask);
-	if (!pmd)
-		return -ENOMEM;
-	do {
-		next = pmd_addr_end(addr, end);
-		if (vmap_pages_pte_range(pmd, addr, next, prot, pages, nr, mask))
-			return -ENOMEM;
-	} while (pmd++, addr = next, addr != end);
-	return 0;
-}
-
-static int vmap_pages_pud_range(p4d_t *p4d, unsigned long addr,
-		unsigned long end, pgprot_t prot, struct page **pages, int *nr,
-		pgtbl_mod_mask *mask)
-{
-	pud_t *pud;
-	unsigned long next;
-
-	pud = pud_alloc_track(&init_mm, p4d, addr, mask);
-	if (!pud)
-		return -ENOMEM;
-	do {
-		next = pud_addr_end(addr, end);
-		if (vmap_pages_pmd_range(pud, addr, next, prot, pages, nr, mask))
-			return -ENOMEM;
-	} while (pud++, addr = next, addr != end);
-	return 0;
-}
-
-static int vmap_pages_p4d_range(pgd_t *pgd, unsigned long addr,
+/*
+ * 2-level paging (CONFIG_PGTABLE_LEVELS=2, X86_32, no PAE) folds the
+ * P4D/PUD/PMD levels onto the PGD: *_offset return the same pointer,
+ * {p4d,pud,pmd}_addr_end(addr,end)==end (each nested loop ran exactly once)
+ * and the *_alloc_track helpers are no-ops (p4d/pud_none are constant 0, so
+ * __pud_alloc/__pmd_alloc never run; __p4d_alloc is the folded return-0 stub).
+ * So the per-page-table-level walkers collapse to a single descent reaching
+ * the only real work, the PMD/PTE level (vmap_pages_pte_range allocates the
+ * PTE page via pte_alloc_kernel_track, which sets PGTBL_PMD_MODIFIED).
+ */
+static int vmap_pages_folded_range(pgd_t *pgd, unsigned long addr,
 		unsigned long end, pgprot_t prot, struct page **pages, int *nr,
 		pgtbl_mod_mask *mask)
 {
 	p4d_t *p4d;
-	unsigned long next;
+	pud_t *pud;
+	pmd_t *pmd;
 
 	p4d = p4d_alloc_track(&init_mm, pgd, addr, mask);
 	if (!p4d)
 		return -ENOMEM;
-	do {
-		next = p4d_addr_end(addr, end);
-		if (vmap_pages_pud_range(p4d, addr, next, prot, pages, nr, mask))
-			return -ENOMEM;
-	} while (p4d++, addr = next, addr != end);
-	return 0;
+	pud = pud_alloc_track(&init_mm, p4d, addr, mask);
+	if (!pud)
+		return -ENOMEM;
+	pmd = pmd_alloc_track(&init_mm, pud, addr, mask);
+	if (!pmd)
+		return -ENOMEM;
+	return vmap_pages_pte_range(pmd, addr, end, prot, pages, nr, mask);
 }
 
 static int vmap_small_pages_range_noflush(unsigned long addr, unsigned long end,
@@ -411,7 +387,7 @@ static int vmap_small_pages_range_noflush(unsigned long addr, unsigned long end,
 		next = pgd_addr_end(addr, end);
 		if (pgd_bad(*pgd))
 			mask |= PGTBL_PGD_MODIFIED;
-		err = vmap_pages_p4d_range(pgd, addr, next, prot, pages, &nr, &mask);
+		err = vmap_pages_folded_range(pgd, addr, next, prot, pages, &nr, &mask);
 		if (err)
 			return err;
 	} while (pgd++, addr = next, addr != end);

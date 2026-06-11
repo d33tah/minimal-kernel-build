@@ -58,14 +58,13 @@ static __refdata struct memblock_type *memblock_memory = &memblock.memory;
 	} while (0)
 
 static int memblock_debug __initdata_memblock;
-static bool system_has_some_mirror __initdata_memblock = false;
 static int memblock_can_resize __initdata_memblock;
 static int memblock_memory_in_slab __initdata_memblock = 0;
 static int memblock_reserved_in_slab __initdata_memblock = 0;
 
 static enum memblock_flags __init_memblock choose_memblock_flags(void)
 {
-	return system_has_some_mirror ? MEMBLOCK_MIRROR : MEMBLOCK_NONE;
+	return MEMBLOCK_NONE;
 }
 
 static inline phys_addr_t memblock_cap_size(phys_addr_t base, phys_addr_t *size)
@@ -162,21 +161,8 @@ static phys_addr_t __init_memblock memblock_find_in_range(phys_addr_t start,
 					phys_addr_t end, phys_addr_t size,
 					phys_addr_t align)
 {
-	phys_addr_t ret;
-	enum memblock_flags flags = choose_memblock_flags();
-
-again:
-	ret = memblock_find_in_range_node(size, align, start, end,
-					    NUMA_NO_NODE, flags);
-
-	if (!ret && (flags & MEMBLOCK_MIRROR)) {
-		pr_warn("Could not allocate %pap bytes of mirrored memory\n",
-			&size);
-		flags &= ~MEMBLOCK_MIRROR;
-		goto again;
-	}
-
-	return ret;
+	return memblock_find_in_range_node(size, align, start, end,
+					   NUMA_NO_NODE, choose_memblock_flags());
 }
 
 static void __init_memblock memblock_remove_region(struct memblock_type *type, unsigned long r)
@@ -523,13 +509,6 @@ static bool should_skip_region(struct memblock_type *type,
 	if (nid != NUMA_NO_NODE && nid != m_nid)
 		return true;
 
-	if (movable_node_is_enabled() && memblock_is_hotpluggable(m) &&
-	    !(flags & MEMBLOCK_HOTPLUG))
-		return true;
-
-	if ((flags & MEMBLOCK_MIRROR) && !memblock_is_mirror(m))
-		return true;
-
 	if (!(flags & MEMBLOCK_NOMAP) && memblock_is_nomap(m))
 		return true;
 
@@ -733,37 +712,25 @@ phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size,
 		nid = NUMA_NO_NODE;
 
 	if (!align) {
-		
+
 		dump_stack();
 		align = SMP_CACHE_BYTES;
 	}
 
-again:
 	found = memblock_find_in_range_node(size, align, start, end, nid,
 					    flags);
 	if (found && !memblock_reserve(found, size))
-		goto done;
+		return found;
 
 	if (nid != NUMA_NO_NODE && !exact_nid) {
 		found = memblock_find_in_range_node(size, align, start,
 						    end, NUMA_NO_NODE,
 						    flags);
 		if (found && !memblock_reserve(found, size))
-			goto done;
-	}
-
-	if (flags & MEMBLOCK_MIRROR) {
-		flags &= ~MEMBLOCK_MIRROR;
-		pr_warn("Could not allocate %pap bytes of mirrored memory\n",
-			&size);
-		goto again;
+			return found;
 	}
 
 	return 0;
-
-done:
-
-	return found;
 }
 
 phys_addr_t __init memblock_phys_alloc_range(phys_addr_t size,

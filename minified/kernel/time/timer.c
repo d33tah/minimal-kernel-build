@@ -211,25 +211,9 @@ static int detach_if_pending(struct timer_list *timer, struct timer_base *base,
 	return 1;
 }
 
-static inline struct timer_base *get_timer_cpu_base(u32 tflags, u32 cpu)
-{
-	return per_cpu_ptr(&timer_bases[BASE_STD], cpu);
-}
-
-static inline struct timer_base *get_timer_this_cpu_base(u32 tflags)
-{
-	return this_cpu_ptr(&timer_bases[BASE_STD]);
-}
-
 static inline struct timer_base *get_timer_base(u32 tflags)
 {
-	return get_timer_cpu_base(tflags, tflags & TIMER_CPUMASK);
-}
-
-static inline struct timer_base *
-get_target_base(struct timer_base *base, unsigned tflags)
-{
-	return get_timer_this_cpu_base(tflags);
+	return per_cpu_ptr(&timer_bases[BASE_STD], tflags & TIMER_CPUMASK);
 }
 
 static inline void forward_timer_base(struct timer_base *base)
@@ -279,7 +263,7 @@ static inline int
 __mod_timer(struct timer_list *timer, unsigned long expires, unsigned int options)
 {
 	unsigned long flags;
-	struct timer_base *base, *new_base;
+	struct timer_base *base;
 	int ret;
 
 	BUG_ON(!timer->function);
@@ -288,23 +272,6 @@ __mod_timer(struct timer_list *timer, unsigned long expires, unsigned int option
 	forward_timer_base(base);
 
 	ret = detach_if_pending(timer, base, false);
-
-	new_base = get_target_base(base, timer->flags);
-
-	if (base != new_base) {
-
-		if (likely(base->running_timer != timer)) {
-
-			timer->flags |= TIMER_MIGRATING;
-
-			raw_spin_unlock(&base->lock);
-			base = new_base;
-			raw_spin_lock(&base->lock);
-			WRITE_ONCE(timer->flags,
-				   (timer->flags & ~TIMER_BASEMASK) | base->cpu);
-			forward_timer_base(base);
-		}
-	}
 
 	timer->expires = expires;
 	internal_add_timer(base, timer);
@@ -316,24 +283,13 @@ __mod_timer(struct timer_list *timer, unsigned long expires, unsigned int option
 
 void add_timer_on(struct timer_list *timer, int cpu)
 {
-	struct timer_base *new_base, *base;
+	struct timer_base *base;
 	unsigned long flags;
 
 	BUG_ON(timer_pending(timer) || !timer->function);
 
-	new_base = get_timer_cpu_base(timer->flags, cpu);
 
-	 
 	base = lock_timer_base(timer, &flags);
-	if (base != new_base) {
-		timer->flags |= TIMER_MIGRATING;
-
-		raw_spin_unlock(&base->lock);
-		base = new_base;
-		raw_spin_lock(&base->lock);
-		WRITE_ONCE(timer->flags,
-			   (timer->flags & ~TIMER_BASEMASK) | cpu);
-	}
 	forward_timer_base(base);
 
 	internal_add_timer(base, timer);

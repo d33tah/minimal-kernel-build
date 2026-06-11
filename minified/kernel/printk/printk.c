@@ -33,133 +33,10 @@
 
 
 
-/* --- 2025-12-07 23:45 --- Inlined from printk_ringbuffer.h */
-struct printk_info {
-	u64	seq;
-	u64	ts_nsec;
-	u16	text_len;
-	u8	facility;
-	u8	flags:5;
-	u8	level:3;
-	u32	caller_id;
-	struct dev_printk_info	dev_info;
-};
-
-struct printk_record {
-	struct printk_info	*info;
-	char			*text_buf;
-	unsigned int		text_buf_size;
-};
-
-struct prb_data_blk_lpos {
-	unsigned long	begin;
-	unsigned long	next;
-};
-
-struct prb_desc {
-	atomic_long_t			state_var;
-	struct prb_data_blk_lpos	text_blk_lpos;
-};
-
-struct prb_data_ring {
-	unsigned int	size_bits;
-	char		*data;
-	atomic_long_t	head_lpos;
-	atomic_long_t	tail_lpos;
-};
-
-struct prb_desc_ring {
-	unsigned int		count_bits;
-	struct prb_desc		*descs;
-	struct printk_info	*infos;
-	atomic_long_t		head_id;
-	atomic_long_t		tail_id;
-	atomic_long_t		last_finalized_id;
-};
-
-struct printk_ringbuffer {
-	struct prb_desc_ring	desc_ring;
-	struct prb_data_ring	text_data_ring;
-	atomic_long_t		fail;
-};
-
-enum desc_state {
-	desc_miss	=  -1,
-	desc_reserved	= 0x0,
-	desc_committed	= 0x1,
-	desc_finalized	= 0x2,
-	desc_reusable	= 0x3,
-};
-
-#define _DATA_SIZE(sz_bits)	(1UL << (sz_bits))
-#define _DESCS_COUNT(ct_bits)	(1U << (ct_bits))
-#define DESC_SV_BITS		(sizeof(unsigned long) * 8)
-#define DESC_FLAGS_SHIFT	(DESC_SV_BITS - 2)
-#define DESC_FLAGS_MASK		(3UL << DESC_FLAGS_SHIFT)
-#define DESC_SV(id, state)	(((unsigned long)state << DESC_FLAGS_SHIFT) | id)
-#define DESC_ID_MASK		(~DESC_FLAGS_MASK)
-#define DESC_ID(sv)		((sv) & DESC_ID_MASK)
-#define FAILED_LPOS		0x1
-
-#define FAILED_BLK_LPOS	\
-{				\
-	.begin	= FAILED_LPOS,	\
-	.next	= FAILED_LPOS,	\
-}
-
-#define BLK0_LPOS(sz_bits)	(-(_DATA_SIZE(sz_bits)))
-#define DESC0_ID(ct_bits)	DESC_ID(-(_DESCS_COUNT(ct_bits) + 1))
-#define DESC0_SV(ct_bits)	DESC_SV(DESC0_ID(ct_bits), desc_reusable)
-
-#define _DEFINE_PRINTKRB(name, descbits, avgtextbits, text_buf)			\
-static struct prb_desc _##name##_descs[_DESCS_COUNT(descbits)] = {				\
-	[_DESCS_COUNT(descbits) - 1] = {							\
-		.state_var	= ATOMIC_INIT(DESC0_SV(descbits)),				\
-		.text_blk_lpos	= FAILED_BLK_LPOS,						\
-	},											\
-};												\
-static struct printk_info _##name##_infos[_DESCS_COUNT(descbits)] = {				\
-	[0] = {											\
-		.seq = -(u64)_DESCS_COUNT(descbits),						\
-	},											\
-	[_DESCS_COUNT(descbits) - 1] = {							\
-		.seq = 0,									\
-	},											\
-};												\
-static struct printk_ringbuffer name = {							\
-	.desc_ring = {										\
-		.count_bits	= descbits,							\
-		.descs		= &_##name##_descs[0],						\
-		.infos		= &_##name##_infos[0],						\
-		.head_id	= ATOMIC_INIT(DESC0_ID(descbits)),				\
-		.tail_id	= ATOMIC_INIT(DESC0_ID(descbits)),				\
-		.last_finalized_id = ATOMIC_INIT(DESC0_ID(descbits)),				\
-	},											\
-	.text_data_ring = {									\
-		.size_bits	= (avgtextbits) + (descbits),					\
-		.data		= text_buf,							\
-		.head_lpos	= ATOMIC_LONG_INIT(BLK0_LPOS((avgtextbits) + (descbits))),	\
-		.tail_lpos	= ATOMIC_LONG_INIT(BLK0_LPOS((avgtextbits) + (descbits))),	\
-	},											\
-	.fail			= ATOMIC_LONG_INIT(0),						\
-}
-
-#define DEFINE_PRINTKRB(name, descbits, avgtextbits)				\
-static char _##name##_text[1U << ((avgtextbits) + (descbits))]			\
-			__aligned(__alignof__(unsigned long));			\
-_DEFINE_PRINTKRB(name, descbits, avgtextbits, &_##name##_text[0])
-
-
-static inline void prb_rec_init_rd(struct printk_record *r,
-				   struct printk_info *info,
-				   char *text_buf, unsigned int text_buf_size)
-{
-	r->info = info;
-	r->text_buf = text_buf;
-	r->text_buf_size = text_buf_size;
-}
-
-/* end printk_ringbuffer.h */
+/* The printk ring buffer (printk_ringbuffer.h structs/macros) was removed:
+ * CONFIG_PRINTK is unset, so prb_read_valid()/prb_next_seq()/prb_first_valid_seq()
+ * are constant stubs, no struct printk_ringbuffer is ever instantiated, and the
+ * record-emit path (console_emit_next_record) never reads a record. */
 struct console_cmdline { char name[16]; int index; bool user_specified; char *options; };
 /* end console_cmdline.h */
 static inline int _braille_register_console(struct console *console, struct console_cmdline *c) { return 0; }
@@ -179,8 +56,6 @@ int oops_in_progress;
 
 static DEFINE_SEMAPHORE(console_sem);
 struct console *console_drivers;
-
-static int __read_mostly suppress_panic_printk;
 
 
 
@@ -234,39 +109,15 @@ static int preferred_console = -1;
 
 static int console_may_schedule;
 
-enum con_msg_format_flags {
-	MSG_FORMAT_DEFAULT	= 0,
-	MSG_FORMAT_SYSLOG	= (1 << 0),
-};
-
-static int console_msg_format = MSG_FORMAT_DEFAULT;
-
-
 static DEFINE_MUTEX(syslog_lock);
 
 
-#define CONSOLE_LOG_MAX		0
-#define DROPPED_TEXT_MAX	0
-#define printk_time		false
-
+/* No ring buffer on this !CONFIG_PRINTK build: reads always fail. */
 #define prb_read_valid(rb, seq, r)	false
 #define prb_first_valid_seq(rb)		0
 #define prb_next_seq(rb)		0
 
 static u64 syslog_seq;
-
-static size_t record_print_text(const struct printk_record *r,
-				bool syslog, bool time)
-{
-	return 0;
-}
-static void console_lock_spinning_enable(void) { }
-static int console_lock_spinning_disable_and_check(void) { return 0; }
-static void call_console_driver(struct console *con, const char *text, size_t len,
-				char *dropped_text)
-{
-}
-static bool suppress_message_printing(int level) { return false; }
 
 
 
@@ -335,60 +186,16 @@ static void __console_unlock(void)
 	up_console_sem();
 }
 
-static bool console_emit_next_record(struct console *con, char *text,
-				     char *dropped_text, bool *handover)
+static bool console_emit_next_record(struct console *con, bool *handover)
 {
-	static int panic_console_dropped;
-	struct printk_info info;
-	struct printk_record r;
-	unsigned long flags;
-	char *write_text;
-	size_t len;
-
-	prb_rec_init_rd(&r, &info, text, CONSOLE_LOG_MAX);
-
+	/* prb_read_valid() is a constant `false` stub on this !CONFIG_PRINTK
+	 * build (no ring buffer), so there is never a record to emit. */
 	*handover = false;
-
-	if (!prb_read_valid(prb, con->seq, &r))
-		return false;
-
-	if (con->seq != r.info->seq) {
-		con->dropped += r.info->seq - con->seq;
-		con->seq = r.info->seq;
-		if (panic_in_progress() && panic_console_dropped++ > 10) {
-			suppress_panic_printk = 1;
-		}
-	}
-
-
-	if (suppress_message_printing(r.info->level)) {
-		con->seq++;
-		goto skip;
-	}
-
-	write_text = text;
-	len = record_print_text(&r, console_msg_format & MSG_FORMAT_SYSLOG, printk_time);
-
-
-	printk_safe_enter_irqsave(flags);
-	console_lock_spinning_enable();
-
-	stop_critical_timings();	 
-	call_console_driver(con, write_text, len, dropped_text);
-	start_critical_timings();
-
-	con->seq++;
-
-	*handover = console_lock_spinning_disable_and_check();
-	printk_safe_exit_irqrestore(flags);
-skip:
-	return true;
+	return false;
 }
 
 static bool console_flush_all(bool do_cond_resched, u64 *next_seq, bool *handover)
 {
-	static char dropped_text[DROPPED_TEXT_MAX];
-	static char text[CONSOLE_LOG_MAX];
 	bool any_usable = false;
 	struct console *con;
 	bool any_progress;
@@ -406,9 +213,7 @@ static bool console_flush_all(bool do_cond_resched, u64 *next_seq, bool *handove
 				continue;
 			any_usable = true;
 
-			progress = console_emit_next_record(con, &text[0],
-							    &dropped_text[0],
-							    handover);
+			progress = console_emit_next_record(con, handover);
 			if (*handover)
 				return false;
 

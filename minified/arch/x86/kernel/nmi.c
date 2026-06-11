@@ -24,32 +24,6 @@
 #include <asm/sev.h>
 
 
-struct nmi_desc {
-	raw_spinlock_t lock;
-	struct list_head head;
-};
-
-static struct nmi_desc nmi_desc[NMI_MAX] = 
-{
-	{
-		.lock = __RAW_SPIN_LOCK_UNLOCKED(&nmi_desc[0].lock),
-		.head = LIST_HEAD_INIT(nmi_desc[0].head),
-	},
-	{
-		.lock = __RAW_SPIN_LOCK_UNLOCKED(&nmi_desc[1].lock),
-		.head = LIST_HEAD_INIT(nmi_desc[1].head),
-	},
-	{
-		.lock = __RAW_SPIN_LOCK_UNLOCKED(&nmi_desc[2].lock),
-		.head = LIST_HEAD_INIT(nmi_desc[2].head),
-	},
-	{
-		.lock = __RAW_SPIN_LOCK_UNLOCKED(&nmi_desc[3].lock),
-		.head = LIST_HEAD_INIT(nmi_desc[3].head),
-	},
-
-};
-
 struct nmi_stats {
 	unsigned int normal;
 	unsigned int unknown;
@@ -65,51 +39,17 @@ int unknown_nmi_panic;
 static DEFINE_RAW_SPINLOCK(nmi_reason_lock);
 
 
-#define nmi_to_desc(type) (&nmi_desc[type])
-
-/* Stub: nmi_warning_debugfs and nmi_check_duration not needed for minimal kernel */
-
+/*
+ * No NMI handlers are ever registered in this minimal kernel (the only
+ * registrar, arch/x86/kernel/apic/hw_nmi.c, is compiled out because
+ * arch_trigger_cpumask_backtrace is undefined), so the per-type handler
+ * lists are permanently empty and nmi_handle() always reports 0 handled.
+ */
 static int nmi_handle(unsigned int type, struct pt_regs *regs)
 {
-	struct nmi_desc *desc = nmi_to_desc(type);
-	struct nmiaction *a;
-	int handled=0;
-
-	rcu_read_lock();
-
-	/* Simplified: no timing check for minimal kernel */
-	list_for_each_entry_rcu(a, &desc->head, list)
-		handled += a->handler(type, regs);
-
-	rcu_read_unlock();
-
-	return handled;
-}
-NOKPROBE_SYMBOL(nmi_handle);
-
-int __register_nmi_handler(unsigned int type, struct nmiaction *action)
-{
-	struct nmi_desc *desc = nmi_to_desc(type);
-	unsigned long flags;
-
-	if (WARN_ON_ONCE(!action->handler || !list_empty(&action->list)))
-		return -EINVAL;
-
-	raw_spin_lock_irqsave(&desc->lock, flags);
-
-	 
-	WARN_ON_ONCE(type == NMI_SERR && !list_empty(&desc->head));
-	WARN_ON_ONCE(type == NMI_IO_CHECK && !list_empty(&desc->head));
-
-	 
-	if (action->flags & NMI_FLAG_FIRST)
-		list_add_rcu(&action->list, &desc->head);
-	else
-		list_add_tail_rcu(&action->list, &desc->head);
-
-	raw_spin_unlock_irqrestore(&desc->lock, flags);
 	return 0;
 }
+NOKPROBE_SYMBOL(nmi_handle);
 
 static void
 pci_serr_error(unsigned char reason, struct pt_regs *regs)

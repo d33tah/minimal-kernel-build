@@ -8,8 +8,6 @@
 #include <asm/io.h>
 
 
-#define NMI_FLAG_FIRST	1
-
 enum {
 	NMI_LOCAL=0,
 	NMI_UNKNOWN,
@@ -17,32 +15,6 @@ enum {
 	NMI_IO_CHECK,
 	NMI_MAX
 };
-
-#define NMI_DONE	0
-#define NMI_HANDLED	1
-
-typedef int (*nmi_handler_t)(unsigned int, struct pt_regs *);
-
-struct nmiaction {
-	struct list_head	list;
-	nmi_handler_t		handler;
-	u64			max_duration;
-	unsigned long		flags;
-	const char		*name;
-};
-
-#define register_nmi_handler(t, fn, fg, n, init...)	\
-({							\
-	static struct nmiaction init fn##_na = {	\
-		.list = LIST_HEAD_INIT(fn##_na.list),	\
-		.handler = (fn),			\
-		.name = (n),				\
-		.flags = (fg),				\
-	};						\
-	__register_nmi_handler((t), &fn##_na);		\
-})
-
-int __register_nmi_handler(unsigned int, struct nmiaction *);
 
 void local_touch_nmi(void);
 

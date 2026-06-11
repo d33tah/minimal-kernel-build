@@ -56,74 +56,28 @@ static const struct kset_uevent_ops bus_uevent_ops = {
 
 static struct kset *bus_kset;
 
-static struct device_driver *next_driver(struct klist_iter *i)
-{
-	struct klist_node *n = klist_next(i);
-	struct driver_private *drv_priv;
+/* Removed: next_driver + bus_for_each_drv - klist_drivers is always empty (no
+   driver_register), so the only caller (__device_attach, also removed) iterated
+   nothing. */
 
-	if (n) {
-		drv_priv = container_of(n, struct driver_private, knode_bus);
-		return drv_priv->driver;
-	}
-	return NULL;
-}
-
-int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
-		     void *data, int (*fn)(struct device_driver *, void *))
-{
-	struct klist_iter i;
-	struct device_driver *drv;
-	int error = 0;
-
-	if (!bus)
-		return -EINVAL;
-
-	klist_iter_init_node(&bus->p->klist_drivers, &i,
-			     start ? &start->p->knode_bus : NULL);
-	while ((drv = next_driver(&i)) && !error)
-		error = fn(drv, data);
-	klist_iter_exit(&i);
-	return error;
-}
-
-/* Simplified: sysfs functions are stubs, so no error paths needed */
+/* Simplified: sysfs functions are stubs, so no error paths needed.
+   device_initial_probe() was a no-op (empty driver klist + stubbed PM runtime)
+   and bus->p->interfaces is always empty (subsys_interface_register is gone),
+   so both the autoprobe and the add_dev loop are dead. */
 void bus_probe_device(struct device *dev)
 {
-	struct bus_type *bus = dev->bus;
-	struct subsys_interface *sif;
-
-	if (!bus)
-		return;
-
-	if (bus->p->drivers_autoprobe)
-		device_initial_probe(dev);
-
-	mutex_lock(&bus->p->mutex);
-	list_for_each_entry(sif, &bus->p->interfaces, node)
-		if (sif->add_dev)
-			sif->add_dev(dev, sif);
-	mutex_unlock(&bus->p->mutex);
 }
 
-/* Simplified: sysfs functions are stubs */
+/* Simplified: sysfs functions are stubs; bus->p->interfaces is always empty
+   (subsys_interface_register is gone), knode_bus is never klist_add'd, and no
+   driver ever binds so device_release_driver was a no-op (now removed). */
 void bus_remove_device(struct device *dev)
 {
 	struct bus_type *bus = dev->bus;
-	struct subsys_interface *sif;
 
 	if (!bus)
 		return;
 
-	mutex_lock(&bus->p->mutex);
-	list_for_each_entry(sif, &bus->p->interfaces, node)
-		if (sif->remove_dev)
-			sif->remove_dev(dev, sif);
-	mutex_unlock(&bus->p->mutex);
-
-	if (klist_node_attached(&dev->p->knode_bus))
-		klist_del(&dev->p->knode_bus);
-
-	device_release_driver(dev);
 	bus_put(dev->bus);
 }
 

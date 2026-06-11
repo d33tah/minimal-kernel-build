@@ -67,10 +67,6 @@ struct bus_attribute {
    device_match_acpi_dev, device_match_acpi_handle, device_match_any removed - unused */
 int device_match_devt(struct device *dev, const void *pdevt);
 
-
-int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
-		     void *data, int (*fn)(struct device_driver *, void *));
-
 #define BUS_NOTIFY_DEL_DEVICE		0x00000002
 #define BUS_NOTIFY_REMOVED_DEVICE	0x00000003
 #define BUS_NOTIFY_UNBIND_DRIVER	0x00000006

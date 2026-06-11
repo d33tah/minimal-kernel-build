@@ -65,10 +65,6 @@ static inline void auxiliary_bus_init(void) { }
 extern void bus_probe_device(struct device *dev);
 extern void bus_remove_device(struct device *dev);
 
-extern void device_release_driver_internal(struct device *dev,
-					   struct device_driver *drv,
-					   struct device *parent);
-
 extern void driver_deferred_probe_del(struct device *dev);
 static inline int driver_match_device(struct device_driver *drv,
 				      struct device *dev)

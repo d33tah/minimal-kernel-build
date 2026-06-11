@@ -270,9 +270,6 @@ void device_del(struct device *dev);
    device_set_of_node_from_dev, device_set_node, __root_device_register,
    root_device_unregister removed - unused */
 
-void device_release_driver(struct device *dev);
-void device_initial_probe(struct device *dev);
-
 __printf(5, 6) struct device *
 device_create(struct class *cls, struct device *parent, dev_t devt,
 	      void *drvdata, const char *fmt, ...);

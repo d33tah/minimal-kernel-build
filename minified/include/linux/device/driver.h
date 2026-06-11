@@ -60,7 +60,6 @@ struct driver_attribute {
 	struct driver_attribute driver_attr_##_name = __ATTR_WO(_name)
 
 extern int driver_deferred_probe_timeout;
-void driver_deferred_probe_add(struct device *dev);
 void driver_init(void);
 
 #endif	 

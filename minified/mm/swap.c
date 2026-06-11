@@ -76,9 +76,7 @@ static void __put_single_page(struct page *page)
 
 static void __put_compound_page(struct page *page)
 {
-	 
-	if (!PageHuge(page))
-		__page_cache_release(page);
+	__page_cache_release(page);
 	destroy_compound_page(page);
 }
 
@@ -319,8 +317,6 @@ void release_pages(struct page **pages, int nr)
 		}
 
 		page = &folio->page;
-		if (is_huge_zero_page(page))
-			continue;
 
 		if (!put_page_testzero(page))
 			continue;

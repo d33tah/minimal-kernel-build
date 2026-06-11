@@ -93,11 +93,6 @@ static void __up_console_sem(unsigned long ip)
 }
 #define up_console_sem() __up_console_sem(_RET_IP_)
 
-static bool panic_in_progress(void)
-{
-	return unlikely(atomic_read(&panic_cpu) != PANIC_CPU_INVALID);
-}
-
 static int console_locked;
 
 
@@ -107,14 +102,10 @@ static struct console_cmdline console_cmdline[MAX_CMDLINECONSOLES];
 
 static int preferred_console = -1;
 
-static int console_may_schedule;
-
 static DEFINE_MUTEX(syslog_lock);
 
 
-/* No ring buffer on this !CONFIG_PRINTK build: reads always fail. */
-#define prb_read_valid(rb, seq, r)	false
-#define prb_first_valid_seq(rb)		0
+/* No ring buffer on this !CONFIG_PRINTK build. */
 #define prb_next_seq(rb)		0
 
 static u64 syslog_seq;
@@ -138,7 +129,6 @@ void console_lock(void)
 
 	down_console_sem();
 	console_locked = 1;
-	console_may_schedule = 1;
 }
 
 int console_trylock(void)
@@ -146,7 +136,6 @@ int console_trylock(void)
 	if (down_trylock_console_sem())
 		return 0;
 	console_locked = 1;
-	console_may_schedule = 0;
 	return 1;
 }
 
@@ -155,111 +144,20 @@ int is_console_locked(void)
 	return console_locked;
 }
 
-static bool abandon_console_lock_in_panic(void)
-{
-	if (!panic_in_progress())
-		return false;
-
-	 
-	return atomic_read(&panic_cpu) != raw_smp_processor_id();
-}
-
-static inline bool console_is_usable(struct console *con)
-{
-	if (!(con->flags & CON_ENABLED))
-		return false;
-
-	if (!con->write)
-		return false;
-
-	 
-	if (!cpu_online(raw_smp_processor_id()) &&
-	    !(con->flags & CON_ANYTIME))
-		return false;
-
-	return true;
-}
-
 static void __console_unlock(void)
 {
 	console_locked = 0;
 	up_console_sem();
 }
 
-static bool console_emit_next_record(struct console *con, bool *handover)
-{
-	/* prb_read_valid() is a constant `false` stub on this !CONFIG_PRINTK
-	 * build (no ring buffer), so there is never a record to emit. */
-	*handover = false;
-	return false;
-}
-
-static bool console_flush_all(bool do_cond_resched, u64 *next_seq, bool *handover)
-{
-	bool any_usable = false;
-	struct console *con;
-	bool any_progress;
-
-	*next_seq = 0;
-	*handover = false;
-
-	do {
-		any_progress = false;
-
-		for_each_console(con) {
-			bool progress;
-
-			if (!console_is_usable(con))
-				continue;
-			any_usable = true;
-
-			progress = console_emit_next_record(con, handover);
-			if (*handover)
-				return false;
-
-			 
-			if (con->seq > *next_seq)
-				*next_seq = con->seq;
-
-			if (!progress)
-				continue;
-			any_progress = true;
-
-			 
-			if (abandon_console_lock_in_panic())
-				return false;
-
-			if (do_cond_resched)
-				cond_resched();
-		}
-	} while (any_progress);
-
-	return any_usable;
-}
-
 void console_unlock(void)
 {
-	bool do_cond_resched;
-	bool handover;
-	bool flushed;
-	u64 next_seq;
-
-
-	do_cond_resched = console_may_schedule;
-
-	do {
-		console_may_schedule = 0;
-
-		flushed = console_flush_all(do_cond_resched, &next_seq, &handover);
-		if (!handover)
-			__console_unlock();
-
-		 
-		if (!flushed)
-			break;
-
-		 
-	} while (prb_read_valid(prb, next_seq, NULL) && console_trylock());
+	/*
+	 * On this !CONFIG_PRINTK build there is no ring buffer, so
+	 * console_emit_next_record() never reads a record and the flush
+	 * loop has nothing to do. Just release the console lock.
+	 */
+	__console_unlock();
 }
 
 
@@ -275,7 +173,6 @@ void console_unblank(void)
 		console_lock();
 
 	console_locked = 1;
-	console_may_schedule = 0;
 	for_each_console(c)
 		if ((c->flags & CON_ENABLED) && c->unblank)
 			c->unblank();
@@ -287,18 +184,11 @@ void console_unblank(void)
 
 void console_flush_on_panic(enum con_flush_mode mode)
 {
-	 
+	/*
+	 * The only caller passes CONSOLE_FLUSH_PENDING, and with no ring
+	 * buffer there is nothing to flush — just take and drop the lock.
+	 */
 	console_trylock();
-	console_may_schedule = 0;
-
-	if (mode == CONSOLE_REPLAY_ALL) {
-		struct console *c;
-		u64 seq;
-
-		seq = prb_first_valid_seq(prb);
-		for_each_console(c)
-			c->seq = seq;
-	}
 	console_unlock();
 }
 

@@ -17,7 +17,6 @@ static inline int kmmio_handler(struct pt_regs *regs, unsigned long addr) { retu
 #include <asm/traps.h>			 
 #include <asm/fixmap.h>			 
 #include <asm/vsyscall.h>		 
-#include <asm/vm86.h>			 
 #include <asm/mmu_context.h>		 
 #include <asm/efi.h>			 
 #include <asm/desc.h>			 

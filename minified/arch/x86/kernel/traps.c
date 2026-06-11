@@ -44,7 +44,6 @@
 #include <asm/mach_traps.h>
 #include <asm/alternative.h>
 #include <asm/fpu/xstate.h>
-#include <asm/vm86.h>
 #include <asm/vdso.h>
 #include <asm/tdx.h>
 
@@ -79,14 +78,7 @@ static nokprobe_inline int
 do_trap_no_signal(struct task_struct *tsk, int trapnr, const char *str,
 		  struct pt_regs *regs,	long error_code)
 {
-	if (v8086_mode(regs)) {
-		 
-		if (trapnr < X86_TRAP_UD) {
-			if (!handle_vm86_trap((struct kernel_vm86_regs *) regs,
-						error_code, trapnr))
-				return 0;
-		}
-	} else if (!user_mode(regs)) {
+	if (!user_mode(regs)) {
 		if (fixup_exception(regs, trapnr, error_code, 0))
 			return 0;
 
@@ -347,13 +339,6 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 	 * was a return-false stub, so the UMIP GP fixup was dead -- dropped.
 	 */
 
-	if (v8086_mode(regs)) {
-		local_irq_enable();
-		handle_vm86_fault((struct kernel_vm86_regs *) regs, error_code);
-		local_irq_disable();
-		return;
-	}
-
 	if (user_mode(regs)) {
 		if (fixup_iopl_exception(regs))
 			goto exit;
@@ -527,21 +512,15 @@ static __always_inline void exc_debug_user(struct pt_regs *regs,
 	 
 	local_irq_enable();
 
-	if (v8086_mode(regs)) {
-		handle_vm86_trap((struct kernel_vm86_regs *)regs, 0, X86_TRAP_DB);
-		goto out_irq;
-	}
 
-	 
 	if (dr6 & DR_BUS_LOCK)
 		handle_bus_lock(regs);
 
-	 
+
 	dr6 |= current->thread.virtual_dr6;
 	if (dr6 & (DR_STEP | DR_TRAP_BITS) || icebp)
 		send_sigtrap(regs, 0, get_si_code(dr6));
 
-out_irq:
 	local_irq_disable();
 out:
 	irqentry_exit_to_user_mode(regs);

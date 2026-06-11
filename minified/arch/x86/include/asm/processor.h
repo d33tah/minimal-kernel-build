@@ -7,7 +7,6 @@
  
 struct task_struct;
 struct mm_struct;
-struct vm86;
 
 /* Inlined from asm/math_emu.h */
 struct math_emu_info {

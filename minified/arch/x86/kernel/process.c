@@ -34,7 +34,6 @@ static inline void boot_init_stack_canary(void) {}
 #include <asm/nmi.h>
 #include <asm/tlbflush.h>
 #include <asm/mce.h>
-#include <asm/vm86.h>
 #include <asm/switch_to.h>
 #include <asm/desc.h>
 #include <asm/prctl.h>
@@ -84,8 +83,6 @@ void exit_thread(struct task_struct *tsk)
 {
 	struct thread_struct *t = &tsk->thread;
 	struct fpu *fpu = &t->fpu;
-
-	free_vm86(t);
 
 	fpu__drop(fpu);
 }

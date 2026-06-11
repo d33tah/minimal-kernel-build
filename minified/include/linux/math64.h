@@ -23,7 +23,6 @@ __iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
 }
 
 /* BITS_PER_LONG == 32 (i386) */
-#define div64_long(x, y) div_s64((x), (y))
 #define div64_ul(x, y)   div_u64((x), (y))
 
 #ifndef div_u64_rem
@@ -34,20 +33,8 @@ static inline u64 div_u64_rem(u64 dividend, u32 divisor, u32 *remainder)
 }
 #endif
 
-#ifndef div_s64_rem
-extern s64 div_s64_rem(s64 dividend, s32 divisor, s32 *remainder);
-#endif
-
-#ifndef div64_u64_rem
-extern u64 div64_u64_rem(u64 dividend, u64 divisor, u64 *remainder);
-#endif
-
 #ifndef div64_u64
 extern u64 div64_u64(u64 dividend, u64 divisor);
-#endif
-
-#ifndef div64_s64
-extern s64 div64_s64(s64 dividend, s64 divisor);
 #endif
 
 #ifndef div_u64
@@ -57,16 +44,6 @@ static inline u64 div_u64(u64 dividend, u32 divisor)
 	return div_u64_rem(dividend, divisor, &remainder);
 }
 #endif
-
-#ifndef div_s64
-static inline s64 div_s64(s64 dividend, s32 divisor)
-{
-	s32 remainder;
-	return div_s64_rem(dividend, divisor, &remainder);
-}
-#endif
-
-u32 iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder);
 
 #ifndef mul_u32_u32
 static inline u64 mul_u32_u32(u32 a, u32 b)
@@ -193,8 +170,6 @@ static inline u64 mul_u64_u32_div(u64 a, u32 mul, u32 divisor)
 }
 #endif  
 
-u64 mul_u64_u64_div_u64(u64 a, u64 mul, u64 div);
-
 #define DIV64_U64_ROUND_UP(ll, d)	\
 	({ u64 _tmp = (d); div64_u64((ll) + _tmp - 1, _tmp); })
 
@@ -203,14 +178,4 @@ u64 mul_u64_u64_div_u64(u64 a, u64 mul, u64 div);
 
 #define DIV_U64_ROUND_CLOSEST(dividend, divisor)	\
 	({ u32 _tmp = (divisor); div_u64((u64)(dividend) + _tmp / 2, _tmp); })
-
-#define DIV_S64_ROUND_CLOSEST(dividend, divisor)(	\
-{							\
-	s64 __x = (dividend);				\
-	s32 __d = (divisor);				\
-	((__x > 0) == (__d > 0)) ?			\
-		div_s64((__x + (__d / 2)), __d) :	\
-		div_s64((__x - (__d / 2)), __d);	\
-}							\
-)
-#endif  
+#endif

@@ -40,8 +40,6 @@ DEFINE_SCHED_CLASS(dl) = {
 	.switched_to		= switched_to_dl,
 };
 
-void __setparam_dl(struct task_struct *p, const struct sched_attr *attr) { }
-
 void __dl_clear_params(struct task_struct *p)
 {
 	struct sched_dl_entity *dl_se = &p->dl;

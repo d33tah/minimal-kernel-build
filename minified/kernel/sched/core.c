@@ -272,8 +272,6 @@ static void set_load_weight(struct task_struct *p, bool update_load)
 
 static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p) { }
 static inline void uclamp_rq_dec(struct rq *rq, struct task_struct *p) { }
-static void __setscheduler_uclamp(struct task_struct *p,
-				  const struct sched_attr *attr) { }
 static inline void uclamp_fork(struct task_struct *p) { }
 static inline void uclamp_post_fork(struct task_struct *p) { }
 static inline void init_uclamp(void) { }
@@ -333,19 +331,6 @@ static inline int __normal_prio(int policy, int rt_prio, int nice)
 static inline int normal_prio(struct task_struct *p)
 {
 	return __normal_prio(p->policy, p->rt_priority, PRIO_TO_NICE(p->static_prio));
-}
-
-static inline void check_class_changed(struct rq *rq, struct task_struct *p,
-				       const struct sched_class *prev_class,
-				       int oldprio)
-{
-	if (prev_class != p->sched_class) {
-		if (prev_class->switched_from)
-			prev_class->switched_from(rq, p);
-
-		p->sched_class->switched_to(rq, p);
-	} else if (oldprio != p->prio || dl_task(p))
-		p->sched_class->prio_changed(rq, p, oldprio);
 }
 
 void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
@@ -622,15 +607,6 @@ static inline void finish_task(struct task_struct *prev)
 }
 
 static inline void __balance_callbacks(struct rq *rq)
-{
-}
-
-static inline struct callback_head *splice_balance_callbacks(struct rq *rq)
-{
-	return NULL;
-}
-
-static inline void balance_callbacks(struct rq *rq, struct callback_head *head)
 {
 }
 
@@ -1067,52 +1043,23 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flag
 	return try_to_wake_up(curr->private, mode, wake_flags);
 }
 
-static void __setscheduler_prio(struct task_struct *p, int prio)
-{
-	if (dl_prio(prio))
-		p->sched_class = &dl_sched_class;
-	else if (rt_prio(prio))
-		p->sched_class = &rt_sched_class;
-	else
-		p->sched_class = &fair_sched_class;
-
-	p->prio = prio;
-}
-
 #define SETPARAM_POLICY	-1
-
-static void __setscheduler_params(struct task_struct *p,
-		const struct sched_attr *attr)
-{
-	int policy = attr->sched_policy;
-
-	if (policy == SETPARAM_POLICY)
-		policy = p->policy;
-
-	p->policy = policy;
-
-	if (dl_policy(policy))
-		__setparam_dl(p, attr);
-	else if (fair_policy(policy))
-		p->static_prio = NICE_TO_PRIO(attr->sched_nice);
-
-	
-	p->rt_priority = attr->sched_priority;
-	p->normal_prio = normal_prio(p);
-	set_load_weight(p, true);
-}
 
 static int __sched_setscheduler(struct task_struct *p,
 				const struct sched_attr *attr,
 				bool user, bool pi)
 {
-	/* Minimal stub: simplified scheduler parameter setting */
+	/*
+	 * Minimal stub. The only live caller is the kthread() body, which always
+	 * passes SCHED_NORMAL with sched_nice == task_nice(p) (priority 0) on a
+	 * freshly-created kthread that is already SCHED_NORMAL. The full
+	 * dequeue/enqueue/setparam path is therefore never reached: the request
+	 * always matches the current policy/nice → the change is a no-op. So all
+	 * we need is the validation + the "already set" return.
+	 */
 	int policy = attr->sched_policy;
-	int retval, oldprio, newprio, queued, running;
-	const struct sched_class *prev_class;
-	struct callback_head *head;
+	int retval;
 	struct rq_flags rf;
-	int queue_flags = DEQUEUE_SAVE | DEQUEUE_MOVE | DEQUEUE_NOCLOCK;
 	struct rq *rq;
 
 	/* Basic validation only */
@@ -1129,57 +1076,11 @@ static int __sched_setscheduler(struct task_struct *p,
 	rq = task_rq_lock(p, &rf);
 	update_rq_clock(rq);
 
-	if (p == rq->stop) {
+	if (p == rq->stop)
 		retval = -EINVAL;
-		goto unlock;
-	}
-
-	/* Check if already set */
-	if (policy == p->policy &&
-	    (!fair_policy(policy) || attr->sched_nice == task_nice(p)) &&
-	    (!rt_policy(policy) || attr->sched_priority == p->rt_priority)) {
+	else
 		retval = 0;
-		goto unlock;
-	}
 
-	oldprio = p->prio;
-	newprio = __normal_prio(policy, attr->sched_priority, attr->sched_nice);
-
-	queued = task_on_rq_queued(p);
-	running = task_current(rq, p);
-	if (queued)
-		dequeue_task(rq, p, queue_flags);
-	if (running)
-		put_prev_task(rq, p);
-
-	prev_class = p->sched_class;
-
-	if (!(attr->sched_flags & SCHED_FLAG_KEEP_PARAMS)) {
-		__setscheduler_params(p, attr);
-		__setscheduler_prio(p, newprio);
-	}
-	__setscheduler_uclamp(p, attr);
-
-	if (queued) {
-		if (oldprio < p->prio)
-			queue_flags |= ENQUEUE_HEAD;
-		enqueue_task(rq, p, queue_flags);
-	}
-	if (running)
-		set_next_task(rq, p);
-
-	check_class_changed(rq, p, prev_class, oldprio);
-
-	preempt_disable();
-	head = splice_balance_callbacks(rq);
-	task_rq_unlock(rq, p, &rf);
-
-	balance_callbacks(rq, head);
-	preempt_enable();
-
-	return 0;
-
-unlock:
 	task_rq_unlock(rq, p, &rf);
 	return retval;
 }

@@ -73,7 +73,6 @@ struct vc_data {
 	struct pid 	*vt_pid;
 	int		vt_newvt;
 	unsigned int	vc_disp_ctrl	: 1;
-	unsigned int	vc_toggle_meta	: 1;
 	unsigned int	vc_decscnm	: 1;
 	unsigned int	vc_decom	: 1;
 	unsigned int	vc_decawm	: 1;
@@ -88,7 +87,6 @@ struct vc_data {
 		 int	vc_utf_char;
 	DECLARE_BITMAP(vc_tab_stop, VC_TABSTOPS_COUNT);
 	unsigned char   vc_palette[16*3];
-	unsigned short * vc_translate;
 	unsigned int    vc_resize_user;
 	unsigned int	vc_bell_pitch;
 	unsigned int	vc_bell_duration;

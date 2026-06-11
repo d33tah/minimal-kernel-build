@@ -596,7 +596,6 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	vc->vc_bottom		= vc->vc_rows;
 	vc->vc_state		= ESnormal;
 	vc->vc_priv		= EPecma;
-	vc->vc_translate	= set_translate(LAT1_MAP, vc);
 	vc->state.Gx_charset[0]	= LAT1_MAP;
 	vc->state.Gx_charset[1]	= GRAF_MAP;
 	vc->state.charset	= 0;
@@ -606,7 +605,6 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	vc->vc_utf_count	= 0;
 
 	vc->vc_disp_ctrl	= 0;
-	vc->vc_toggle_meta	= 0;
 
 	vc->vc_decscnm		= 0;
 	vc->vc_decom		= 0;
@@ -654,13 +652,6 @@ static void con_flush(struct vc_data *vc, struct vc_draw_region *draw)
 
 static inline int vc_translate_ascii(const struct vc_data *vc, int c)
 {
-	if (IS_ENABLED(CONFIG_CONSOLE_TRANSLATIONS)) {
-		if (vc->vc_toggle_meta)
-			c |= 0x80;
-
-		return vc->vc_translate[c];
-	}
-
 	return c;
 }
 

@@ -462,12 +462,6 @@ extern pteval_t __supported_pte_mask;
 extern pteval_t __default_kernel_pte_mask;
 /* set_nx, nx_enabled removed - unused */
 
-#define pgprot_writecombine	pgprot_writecombine
-extern pgprot_t pgprot_writecombine(pgprot_t prot);
-
-#define pgprot_writethrough	pgprot_writethrough
-extern pgprot_t pgprot_writethrough(pgprot_t prot);
-
 #define __HAVE_PFNMAP_TRACKING
 
 #define __HAVE_PHYS_MEM_ACCESS_PROT

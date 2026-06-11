@@ -24,20 +24,6 @@
 #include <asm/memtype.h>
 #include <asm/io.h>
 
-/* --- Inlined from memtype.h (2025-12-08 01:55) --- */
-int pat_debug_enable;
-
-#define dprintk(fmt, arg...) \
-	do { if (pat_debug_enable) pr_info("x86/PAT: " fmt, ##arg); } while (0)
-
-struct memtype {
-	u64			start;
-	u64			end;
-	u64			subtree_max_end;
-	enum page_cache_mode	type;
-	struct rb_node		rb;
-};
-
 #include "../mm_internal.h"
 
 #undef pr_fmt
@@ -45,74 +31,9 @@ struct memtype {
 
 void pat_disable(const char *msg_reason) { }
 
-
-bool pat_enabled(void)
-{
-	return false;
-}
-
 void init_cache_modes(void) { }
-
-void pat_init(void) { }
-
-int memtype_reserve(u64 start, u64 end, enum page_cache_mode req_type,
-		    enum page_cache_mode *new_type)
-{
-	if (new_type)
-		*new_type = req_type;
-	return 0;
-}
-
-int memtype_free(u64 start, u64 end)
-{
-	return 0;
-}
-
-bool pat_pfn_immune_to_uc_mtrr(unsigned long pfn)
-{
-	return false;
-}
-
-int memtype_reserve_io(resource_size_t start, resource_size_t end,
-		       enum page_cache_mode *pcm)
-{
-	if (pcm)
-		*pcm = _PAGE_CACHE_MODE_UC_MINUS;
-	return 0;
-}
-
-void memtype_free_io(resource_size_t start, resource_size_t end) { }
-
-
-int memtype_kernel_map_sync(u64 base, unsigned long size,
-			     enum page_cache_mode pcm)
-{
-	return 0;
-}
-
-int track_pfn_copy(struct vm_area_struct *vma)
-{
-	return 0;
-}
-
-int track_pfn_remap(struct vm_area_struct *vma, pgprot_t *prot,
-		    unsigned long pfn, unsigned long addr, unsigned long size)
-{
-	return 0;
-}
 
 void track_pfn_insert(struct vm_area_struct *vma, pgprot_t *prot, pfn_t pfn) { }
 
 void untrack_pfn(struct vm_area_struct *vma, unsigned long pfn,
 		 unsigned long size) { }
-
-
-pgprot_t pgprot_writecombine(pgprot_t prot)
-{
-	return pgprot_noncached(prot);
-}
-
-pgprot_t pgprot_writethrough(pgprot_t prot)
-{
-	return pgprot_noncached(prot);
-}

@@ -152,13 +152,8 @@ do {									\
 	preempt_enable();						\
 } while (0)
 
-DECLARE_STATIC_KEY_FALSE(switch_mm_cond_ibpb);
-DECLARE_STATIC_KEY_FALSE(switch_mm_always_ibpb);
-
 DECLARE_STATIC_KEY_FALSE(mds_user_clear);
 DECLARE_STATIC_KEY_FALSE(mds_idle_clear);
-
-DECLARE_STATIC_KEY_FALSE(switch_mm_cond_l1d_flush);
 
 #include <asm/segment.h>
 

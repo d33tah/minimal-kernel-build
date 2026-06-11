@@ -75,12 +75,6 @@ struct tlb_state {
 
 #define LOADED_MM_SWITCHING ((struct mm_struct *)1UL)
 
-	 
-	union {
-		struct mm_struct	*last_user_mm;
-		unsigned long		last_user_mm_spec;
-	};
-
 	u16 loaded_mm_asid;
 	u16 next_asid;
 

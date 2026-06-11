@@ -16,9 +16,6 @@ DEFINE_PER_CPU(u64, x86_spec_ctrl_current);
 u64 __ro_after_init x86_amd_ls_cfg_base;
 u64 __ro_after_init x86_amd_ls_cfg_ssbd_mask;
 
-DEFINE_STATIC_KEY_FALSE(switch_mm_cond_ibpb);
-DEFINE_STATIC_KEY_FALSE(switch_mm_always_ibpb);
-
 DEFINE_STATIC_KEY_FALSE(mds_user_clear);
 
 DEFINE_STATIC_KEY_FALSE(mds_idle_clear);
@@ -48,5 +45,3 @@ void __init check_bugs(void)
 
 /* x86_virt_spec_ctrl, x86_spec_ctrl_setup_ap, itlb_multihit_kvm_mitigation,
  * l1tf_vmx_mitigation, vmx_l1d_flush_state removed - unused in minimal kernel */
-
-DEFINE_STATIC_KEY_FALSE(switch_mm_cond_l1d_flush);

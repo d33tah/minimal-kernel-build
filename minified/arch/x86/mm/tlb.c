@@ -25,13 +25,6 @@
 # define __flush_tlb_one_user(addr)	native_flush_tlb_one_user(addr)
 
 
-#define LAST_USER_MM_IBPB	0x1UL
-#define LAST_USER_MM_L1D_FLUSH	0x2UL
-#define LAST_USER_MM_SPEC_MASK	(LAST_USER_MM_IBPB | LAST_USER_MM_L1D_FLUSH)
-
-#define LAST_USER_MM_INIT	LAST_USER_MM_IBPB
-
-
 static inline unsigned long build_cr3(pgd_t *pgd, u16 asid)
 {
 	/* PCID is unconditionally cleared at boot (setup_clear_cpu_cap in
@@ -87,74 +80,13 @@ void switch_mm(struct mm_struct *prev, struct mm_struct *next,
 	local_irq_restore(flags);
 }
 
-static void l1d_flush_force_sigbus(struct callback_head *ch)
-{
-	force_sig(SIGBUS);
-}
-
-static void l1d_flush_evaluate(unsigned long prev_mm, unsigned long next_mm,
-				struct task_struct *next)
-{
-	 
-	if (prev_mm & LAST_USER_MM_L1D_FLUSH)
-		wrmsrl(MSR_IA32_FLUSH_CMD, L1D_FLUSH);
-
-	 
-	if (likely(!(next_mm & LAST_USER_MM_L1D_FLUSH)))
-		return;
-
-	 
-	if (this_cpu_read(cpu_info.smt_active)) {
-		clear_ti_thread_flag(&next->thread_info, TIF_SPEC_L1D_FLUSH);
-		next->l1d_flush_kill.func = l1d_flush_force_sigbus;
-		task_work_add(next, &next->l1d_flush_kill, TWA_RESUME);
-	}
-}
-
-static unsigned long mm_mangle_tif_spec_bits(struct task_struct *next)
-{
-	unsigned long next_tif = read_task_thread_flags(next);
-	unsigned long spec_bits = (next_tif >> TIF_SPEC_IB) & LAST_USER_MM_SPEC_MASK;
-
-	 
-	BUILD_BUG_ON(TIF_SPEC_L1D_FLUSH != TIF_SPEC_IB + 1);
-
-	return (unsigned long)next->mm | spec_bits;
-}
-
-static void cond_mitigation(struct task_struct *next)
-{
-	unsigned long prev_mm, next_mm;
-
-	if (!next || !next->mm)
-		return;
-
-	next_mm = mm_mangle_tif_spec_bits(next);
-	prev_mm = this_cpu_read(cpu_tlbstate.last_user_mm_spec);
-
-	 
-	if (static_branch_likely(&switch_mm_cond_ibpb)) {
-		 
-		if (next_mm != prev_mm &&
-		    (next_mm | prev_mm) & LAST_USER_MM_IBPB)
-			indirect_branch_prediction_barrier();
-	}
-
-	if (static_branch_unlikely(&switch_mm_always_ibpb)) {
-		 
-		if ((prev_mm & ~LAST_USER_MM_SPEC_MASK) !=
-					(unsigned long)next->mm)
-			indirect_branch_prediction_barrier();
-	}
-
-	if (static_branch_unlikely(&switch_mm_cond_l1d_flush)) {
-		 
-		if (unlikely((prev_mm | next_mm) & LAST_USER_MM_L1D_FLUSH))
-			l1d_flush_evaluate(prev_mm, next_mm, next);
-	}
-
-	this_cpu_write(cpu_tlbstate.last_user_mm_spec, next_mm);
-}
+/* Speculation-mitigation switch_mm path removed: CONFIG_SPECULATION_MITIGATIONS
+ * is unset, so switch_mm_cond_ibpb / switch_mm_always_ibpb /
+ * switch_mm_cond_l1d_flush are DEFINE_STATIC_KEY_FALSE and never enabled. With
+ * all three keys off, cond_mitigation's only observable effect was writing the
+ * never-read last_user_mm_spec field, so the whole helper chain
+ * (cond_mitigation / mm_mangle_tif_spec_bits / l1d_flush_evaluate /
+ * l1d_flush_force_sigbus) was dead. */
 
 static inline void cr4_update_pce_mm(struct mm_struct *mm)
 {
@@ -212,10 +144,7 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 
 		new_asid = prev_asid;
 	} else {
-		 
-		cond_mitigation(tsk);
 
-		 
 		if (real_prev != &init_mm) {
 			VM_WARN_ON_ONCE(!cpumask_test_cpu(cpu,
 						mm_cpumask(real_prev)));
@@ -276,8 +205,7 @@ void initialize_tlbstate_and_flush(void)
 	 
 	write_cr3(build_cr3(mm->pgd, 0));
 
-	 
-	this_cpu_write(cpu_tlbstate.last_user_mm_spec, LAST_USER_MM_INIT);
+
 	this_cpu_write(cpu_tlbstate.loaded_mm_asid, 0);
 	this_cpu_write(cpu_tlbstate.next_asid, 1);
 	this_cpu_write(cpu_tlbstate.ctxs[0].ctx_id, mm->context.ctx_id);

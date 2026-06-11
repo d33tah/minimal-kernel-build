@@ -276,9 +276,6 @@ static void hrtimer_reprogram(struct hrtimer *timer, bool reprogram)
 	if (expires >= cpu_base->expires_next)
 		return;
 
-	if (cpu_base->in_hrtirq)
-		return;
-
 	cpu_base->next_timer = timer;
 
 	__hrtimer_reprogram(cpu_base, timer, expires);
@@ -460,8 +457,6 @@ int hrtimers_prepare_cpu(unsigned int cpu)
 
 	cpu_base->cpu = cpu;
 	cpu_base->active_bases = 0;
-	cpu_base->hres_active = 0;
-	cpu_base->hang_detected = 0;
 	cpu_base->next_timer = NULL;
 	cpu_base->softirq_next_timer = NULL;
 	cpu_base->expires_next = KTIME_MAX;

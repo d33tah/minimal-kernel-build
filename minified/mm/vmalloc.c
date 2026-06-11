@@ -34,8 +34,6 @@
 #include "internal.h"
 #include "pgalloc-track.h"
 
-static const bool vmap_allow_huge = false;
-
 bool is_vmalloc_addr(const void *x)
 {
 	unsigned long addr = (unsigned long)x;
@@ -1533,8 +1531,6 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 	struct vm_struct *area;
 	void *ret;
 	unsigned long real_size = size;
-	unsigned long real_align = align;
-	unsigned int shift = PAGE_SHIFT;
 
 	if (WARN_ON_ONCE(!size))
 		return NULL;
@@ -1546,25 +1542,8 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 		return NULL;
 	}
 
-	if (vmap_allow_huge && (vm_flags & VM_ALLOW_HUGE_VMAP)) {
-		unsigned long size_per_node;
-
-		
-
-		size_per_node = size;
-		if (node == NUMA_NO_NODE)
-			size_per_node /= num_online_nodes();
-		if (arch_vmap_pmd_supported(prot) && size_per_node >= PMD_SIZE)
-			shift = PMD_SHIFT;
-		else
-			shift = arch_vmap_pte_supported_shift(size_per_node);
-
-		align = max(real_align, 1UL << shift);
-		size = ALIGN(real_size, 1UL << shift);
-	}
-
 again:
-	area = __get_vm_area_node(real_size, align, shift, VM_ALLOC |
+	area = __get_vm_area_node(real_size, align, PAGE_SHIFT, VM_ALLOC |
 				  VM_UNINITIALIZED | vm_flags, start, end, node,
 				  gfp_mask, caller);
 	if (!area) {
@@ -1579,7 +1558,7 @@ again:
 		goto fail;
 	}
 
-	ret = __vmalloc_area_node(area, gfp_mask, prot, shift, node);
+	ret = __vmalloc_area_node(area, gfp_mask, prot, PAGE_SHIFT, node);
 	if (!ret)
 		goto fail;
 
@@ -1588,13 +1567,6 @@ again:
 	return area->addr;
 
 fail:
-	if (shift > PAGE_SHIFT) {
-		shift = PAGE_SHIFT;
-		align = real_align;
-		size = real_size;
-		goto again;
-	}
-
 	return NULL;
 }
 

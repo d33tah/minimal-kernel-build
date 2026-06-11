@@ -1,35 +1,10 @@
 
 extern char __cpuidle_text_start[], __cpuidle_text_end[];
 
-static int __read_mostly cpu_idle_force_poll;
-
-static noinline int __cpuidle cpu_idle_poll(void)
-{
-	 
-	stop_critical_timings();
-	rcu_idle_enter();
-	local_irq_enable();
-
-	while (!tif_need_resched() &&
-	       (cpu_idle_force_poll || tick_check_broadcast_expired()))
-		cpu_relax();
-
-	rcu_idle_exit();
-	start_critical_timings();
-	 
-
-	return 1;
-}
-
 void __weak arch_cpu_idle_prepare(void) { }
 void __weak arch_cpu_idle_enter(void) { }
 void __weak arch_cpu_idle_exit(void) { }
 void __weak arch_cpu_idle_dead(void) { }
-void __weak arch_cpu_idle(void)
-{
-	cpu_idle_force_poll = 1;
-	raw_local_irq_enable();
-}
 
 void __cpuidle default_idle_call(void)
 {
@@ -106,13 +81,8 @@ static void do_idle(void)
 		arch_cpu_idle_enter();
 		rcu_nocb_flush_deferred_wakeup();
 
-		 
-		if (cpu_idle_force_poll || tick_check_broadcast_expired()) {
-			tick_nohz_idle_restart_tick();
-			cpu_idle_poll();
-		} else {
-			cpuidle_idle_call();
-		}
+
+		cpuidle_idle_call();
 		arch_cpu_idle_exit();
 	}
 

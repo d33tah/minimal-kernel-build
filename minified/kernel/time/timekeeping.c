@@ -640,8 +640,7 @@ out:
 
 void update_wall_time(void)
 {
-	if (timekeeping_advance(TK_ADV_TICK))
-		clock_was_set_delayed();
+	timekeeping_advance(TK_ADV_TICK);
 }
 
 

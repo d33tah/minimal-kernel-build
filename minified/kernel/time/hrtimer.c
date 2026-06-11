@@ -284,24 +284,6 @@ static void hrtimer_reprogram(struct hrtimer *timer, bool reprogram)
 	__hrtimer_reprogram(cpu_base, timer, expires);
 }
 
-/* Stub: clock_was_set simplified for minimal kernel */
-void clock_was_set(unsigned int bases)
-{
-	timerfd_clock_was_set();
-}
-
-static void clock_was_set_work(struct work_struct *work)
-{
-	clock_was_set(CLOCK_SET_WALL);
-}
-
-static DECLARE_WORK(hrtimer_work, clock_was_set_work);
-
-void clock_was_set_delayed(void)
-{
-	schedule_work(&hrtimer_work);
-}
-
 
 static int enqueue_hrtimer(struct hrtimer *timer,
 			   struct hrtimer_clock_base *base,

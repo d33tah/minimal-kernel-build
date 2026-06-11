@@ -239,22 +239,10 @@ static struct timer_base *lock_timer_base(struct timer_list *timer,
 					  unsigned long *flags)
 	__acquires(timer->base->lock)
 {
-	for (;;) {
-		struct timer_base *base;
-		u32 tf;
+	struct timer_base *base = get_timer_base(READ_ONCE(timer->flags));
 
-		 
-		tf = READ_ONCE(timer->flags);
-
-		if (!(tf & TIMER_MIGRATING)) {
-			base = get_timer_base(tf);
-			raw_spin_lock_irqsave(&base->lock, *flags);
-			if (timer->flags == tf)
-				return base;
-			raw_spin_unlock_irqrestore(&base->lock, *flags);
-		}
-		cpu_relax();
-	}
+	raw_spin_lock_irqsave(&base->lock, *flags);
+	return base;
 }
 
 #define MOD_TIMER_NOTPENDING		0x04

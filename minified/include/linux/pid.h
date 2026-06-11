@@ -58,9 +58,6 @@ extern struct pid *get_task_pid(struct task_struct *task, enum pid_type type);
 
 extern void attach_pid(struct task_struct *task, enum pid_type);
 extern void detach_pid(struct task_struct *task, enum pid_type);
-extern void exchange_tids(struct task_struct *task, struct task_struct *old);
-extern void transfer_pid(struct task_struct *old, struct task_struct *new,
-			 enum pid_type);
 
 struct pid_namespace;
 extern struct pid_namespace init_pid_ns;

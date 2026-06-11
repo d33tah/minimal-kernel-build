@@ -259,34 +259,6 @@ void detach_pid(struct task_struct *task, enum pid_type type)
 	__change_pid(task, type, NULL);
 }
 
-
-void exchange_tids(struct task_struct *left, struct task_struct *right)
-{
-	struct pid *pid1 = left->thread_pid;
-	struct pid *pid2 = right->thread_pid;
-	struct hlist_head *head1 = &pid1->tasks[PIDTYPE_PID];
-	struct hlist_head *head2 = &pid2->tasks[PIDTYPE_PID];
-
-	 
-	hlists_swap_heads_rcu(head1, head2);
-
-	 
-	rcu_assign_pointer(left->thread_pid, pid2);
-	rcu_assign_pointer(right->thread_pid, pid1);
-
-	 
-	WRITE_ONCE(left->pid, pid_nr(pid2));
-	WRITE_ONCE(right->pid, pid_nr(pid1));
-}
-
-void transfer_pid(struct task_struct *old, struct task_struct *new,
-			   enum pid_type type)
-{
-	if (type == PIDTYPE_PID)
-		new->thread_pid = old->thread_pid;
-	hlist_replace_rcu(&old->pid_links[type], &new->pid_links[type]);
-}
-
 struct task_struct *pid_task(struct pid *pid, enum pid_type type)
 {
 	struct task_struct *result = NULL;

@@ -46,44 +46,6 @@ static struct timekeeper shadow_timekeeper;
 
 static int __read_mostly timekeeping_suspended;
 
-struct tk_fast {
-	seqcount_latch_t	seq;
-	struct tk_read_base	base[2];
-};
-
-static u64 cycles_at_suspend;
-
-static u64 dummy_clock_read(struct clocksource *cs)
-{
-	if (timekeeping_suspended)
-		return cycles_at_suspend;
-	return local_clock();
-}
-
-static struct clocksource dummy_clock = {
-	.read = dummy_clock_read,
-};
-
-#define FAST_TK_INIT						\
-	{							\
-		.clock		= &dummy_clock,			\
-		.mask		= CLOCKSOURCE_MASK(64),		\
-		.mult		= 1,				\
-		.shift		= 0,				\
-	}
-
-static struct tk_fast tk_fast_mono ____cacheline_aligned = {
-	.seq     = SEQCNT_LATCH_ZERO(tk_fast_mono.seq),
-	.base[0] = FAST_TK_INIT,
-	.base[1] = FAST_TK_INIT,
-};
-
-static struct tk_fast tk_fast_raw  ____cacheline_aligned = {
-	.seq     = SEQCNT_LATCH_ZERO(tk_fast_raw.seq),
-	.base[0] = FAST_TK_INIT,
-	.base[1] = FAST_TK_INIT,
-};
-
 static inline void tk_normalize_xtime(struct timekeeper *tk)
 {
 	while (tk->tkr_mono.xtime_nsec >= ((u64)NSEC_PER_SEC << tk->tkr_mono.shift)) {
@@ -220,24 +182,6 @@ static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr)
 }
 
 
-/* Stub: update_fast_timekeeper - fast path functions are stubbed */
-static void update_fast_timekeeper(const struct tk_read_base *tkr,
-				   struct tk_fast *tkf)
-{
-}
-
-
-/* Removed: ktime_get_boot_fast_ns, ktime_get_tai_fast_ns, ktime_get_real_fast_ns,
-   ktime_get_fast_timestamps - no callers */
-
-static RAW_NOTIFIER_HEAD(pvclock_gtod_chain);
-
-static void update_pvclock_gtod(struct timekeeper *tk, bool was_set)
-{
-	raw_notifier_call_chain(&pvclock_gtod_chain, was_set, tk);
-}
-
-
 static inline void tk_update_leap_state(struct timekeeper *tk)
 {
 	tk->next_leap_ktime = ntp_get_next_leap();
@@ -274,11 +218,8 @@ static void timekeeping_update(struct timekeeper *tk, unsigned int action)
 	tk_update_ktime_data(tk);
 
 	update_vsyscall(tk);
-	update_pvclock_gtod(tk, action & TK_CLOCK_WAS_SET);
 
 	tk->tkr_mono.base_real = tk->tkr_mono.base + tk->offs_real;
-	update_fast_timekeeper(&tk->tkr_mono, &tk_fast_mono);
-	update_fast_timekeeper(&tk->tkr_raw,  &tk_fast_raw);
 
 	if (action & TK_CLOCK_WAS_SET)
 		tk->clock_was_set_seq++;

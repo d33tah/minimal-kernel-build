@@ -164,9 +164,7 @@ void unmap_mapping_folio(struct folio *folio);
 extern long populate_vma_page_range(struct vm_area_struct *vma,
 		unsigned long start, unsigned long end, int *locked);
 /* faultin_vma_page_range removed - unused */
-extern int mlock_future_check(struct mm_struct *mm, unsigned long flags,
-			      unsigned long len);
- 
+
 void mlock_folio(struct folio *folio);
 static inline void mlock_vma_folio(struct folio *folio,
 			struct vm_area_struct *vma, bool compound)

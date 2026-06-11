@@ -67,11 +67,8 @@ static inline void tick_set_periodic_handler(struct clock_event_device *dev, int
 }
 
 
-static inline int tick_program_event(ktime_t expires, int force) { return 0; }
 static inline void tick_oneshot_notify(void) { }
-static inline int tick_oneshot_mode_active(void) { return 0; }
 static inline void tick_clock_notify(void) { }
-static inline int tick_check_oneshot_change(int allow_nohz) { return 0; }
 
  
 static inline int tick_broadcast_oneshot_active(void) { return 0; }

@@ -492,18 +492,16 @@ static inline void clocksource_update_max_deferment(struct clocksource *cs)
 						&cs->max_cycles);
 }
 
-static struct clocksource *clocksource_find_best(bool oneshot, bool skipcur)
+static struct clocksource *clocksource_find_best(bool skipcur)
 {
 	struct clocksource *cs;
 
 	if (!finished_booting || list_empty(&clocksource_list))
 		return NULL;
 
-	 
+
 	list_for_each_entry(cs, &clocksource_list, list) {
 		if (skipcur && cs == curr_clocksource)
-			continue;
-		if (oneshot && !(cs->flags & CLOCK_SOURCE_VALID_FOR_HRES))
 			continue;
 		return cs;
 	}
@@ -512,36 +510,24 @@ static struct clocksource *clocksource_find_best(bool oneshot, bool skipcur)
 
 static void __clocksource_select(bool skipcur)
 {
-	bool oneshot = tick_oneshot_mode_active();
 	struct clocksource *best, *cs;
 
-	 
-	best = clocksource_find_best(oneshot, skipcur);
+
+	best = clocksource_find_best(skipcur);
 	if (!best)
 		return;
 
 	if (!strlen(override_name))
 		goto found;
 
-	 
+
 	list_for_each_entry(cs, &clocksource_list, list) {
 		if (skipcur && cs == curr_clocksource)
 			continue;
 		if (strcmp(cs->name, override_name) != 0)
 			continue;
-		 
-		if (!(cs->flags & CLOCK_SOURCE_VALID_FOR_HRES) && oneshot) {
-			 
-			if (cs->flags & CLOCK_SOURCE_UNSTABLE) {
-				pr_warn("Override clocksource %s is unstable and not HRT compatible - cannot switch while in HRT/NOHZ mode\n",
-					cs->name);
-				override_name[0] = 0;
-			} else {
-				 
-			}
-		} else
-			 
-			best = cs;
+
+		best = cs;
 		break;
 	}
 

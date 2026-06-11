@@ -62,8 +62,6 @@ static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
 {
 	unsigned index = pgd_index(address);
 	pgd_t *pgd_k;
-	p4d_t *p4d, *p4d_k;
-	pud_t *pud, *pud_k;
 	pmd_t *pmd, *pmd_k;
 
 	pgd += index;
@@ -72,19 +70,15 @@ static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
 	if (!pgd_present(*pgd_k))
 		return NULL;
 
-	 
-	p4d = p4d_offset(pgd, address);
-	p4d_k = p4d_offset(pgd_k, address);
-	if (!p4d_present(*p4d_k))
-		return NULL;
-
-	pud = pud_offset(p4d, address);
-	pud_k = pud_offset(p4d_k, address);
-	if (!pud_present(*pud_k))
-		return NULL;
-
-	pmd = pmd_offset(pud, address);
-	pmd_k = pmd_offset(pud_k, address);
+	/*
+	 * 2-level x86_32 (P4D/PUD/PMD folded): p4d_offset/pud_offset are
+	 * pass-through casts and p4d_present/pud_present are constant 1, so
+	 * the intermediate descents and presence checks were no-ops.  Descend
+	 * straight to the (real) PMD entry, which folds back to the pgd slot.
+	 */
+	pmd = pmd_offset(pud_offset(p4d_offset(pgd, address), address), address);
+	pmd_k = pmd_offset(pud_offset(p4d_offset(pgd_k, address), address),
+			   address);
 
 	if (pmd_present(*pmd) != pmd_present(*pmd_k))
 		set_pmd(pmd, *pmd_k);
@@ -389,36 +383,24 @@ static noinline int
 spurious_kernel_fault(unsigned long error_code, unsigned long address)
 {
 	pgd_t *pgd;
-	p4d_t *p4d;
-	pud_t *pud;
 	pmd_t *pmd;
 	pte_t *pte;
 	int ret;
 
-	 
+
 	if (error_code != (X86_PF_WRITE | X86_PF_PROT) &&
 	    error_code != (X86_PF_INSTR | X86_PF_PROT))
 		return 0;
 
 	pgd = init_mm.pgd + pgd_index(address);
-	if (!pgd_present(*pgd))
-		return 0;
 
-	p4d = p4d_offset(pgd, address);
-	if (!p4d_present(*p4d))
-		return 0;
-
-	if (p4d_large(*p4d))
-		return spurious_kernel_fault_check(error_code, (pte_t *) p4d);
-
-	pud = pud_offset(p4d, address);
-	if (!pud_present(*pud))
-		return 0;
-
-	if (pud_large(*pud))
-		return spurious_kernel_fault_check(error_code, (pte_t *) pud);
-
-	pmd = pmd_offset(pud, address);
+	/*
+	 * 2-level x86_32 (P4D/PUD/PMD folded): pgd_present/p4d_present/
+	 * pud_present are constant 1 and p4d_large/pud_large are constant 0,
+	 * so every upper-level check and leaf branch above the PMD was dead.
+	 * Descend straight to the (real) PMD entry.
+	 */
+	pmd = pmd_offset(pud_offset(p4d_offset(pgd, address), address), address);
 	if (!pmd_present(*pmd))
 		return 0;
 

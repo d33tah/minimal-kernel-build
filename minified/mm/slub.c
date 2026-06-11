@@ -724,32 +724,6 @@ static inline bool pfmemalloc_match(struct slab *slab, gfp_t gfpflags)
 	return true;
 }
 
-static inline void *get_freelist(struct kmem_cache *s, struct slab *slab)
-{
-	struct slab new;
-	unsigned long counters;
-	void *freelist;
-
-	lockdep_assert_held(this_cpu_ptr(&s->cpu_slab->lock));
-
-	do {
-		freelist = slab->freelist;
-		counters = slab->counters;
-
-		new.counters = counters;
-		VM_BUG_ON(!new.frozen);
-
-		new.inuse = slab->objects;
-		new.frozen = freelist != NULL;
-
-	} while (!__cmpxchg_double_slab(s, slab,
-		freelist, counters,
-		NULL, new.counters,
-		"get_freelist"));
-
-	return freelist;
-}
-
 static void *___slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
 			  unsigned long addr, struct kmem_cache_cpu *c)
 {

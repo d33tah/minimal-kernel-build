@@ -155,11 +155,6 @@ find_matching_se(struct sched_entity **se, struct sched_entity **pse)
 {
 }
 
-static int cfs_rq_is_idle(struct cfs_rq *cfs_rq)
-{
-	return 0;
-}
-
 static int se_is_idle(struct sched_entity *se)
 {
 	return 0;
@@ -216,8 +211,6 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
 	}
 
 	cfs_rq->min_vruntime = max_vruntime(cfs_rq->min_vruntime, vruntime);
-	smp_wmb();
-	cfs_rq->min_vruntime_copy = cfs_rq->min_vruntime;
 }
 
 static inline bool __entity_less(struct rb_node *a, const struct rb_node *b)
@@ -716,7 +709,6 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
-	int idle_h_nr_running = task_has_idle_policy(p);
 	int task_new = !(flags & ENQUEUE_WAKEUP);
 
 	util_est_enqueue(&rq->cfs, p);
@@ -731,10 +723,6 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		enqueue_entity(cfs_rq, se, flags);
 
 		cfs_rq->h_nr_running++;
-		cfs_rq->idle_h_nr_running += idle_h_nr_running;
-
-		if (cfs_rq_is_idle(cfs_rq))
-			idle_h_nr_running = 1;
 
 		flags = ENQUEUE_WAKEUP;
 	}
@@ -765,7 +753,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
 	int task_sleep = flags & DEQUEUE_SLEEP;
-	int idle_h_nr_running = task_has_idle_policy(p);
 
 	util_est_dequeue(&rq->cfs, p);
 
@@ -774,10 +761,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		dequeue_entity(cfs_rq, se, flags);
 
 		cfs_rq->h_nr_running--;
-		cfs_rq->idle_h_nr_running -= idle_h_nr_running;
-
-		if (cfs_rq_is_idle(cfs_rq))
-			idle_h_nr_running = 1;
 
 		if (cfs_rq->load.weight) {
 
@@ -1126,7 +1109,6 @@ void init_cfs_rq(struct cfs_rq *cfs_rq)
 {
 	cfs_rq->tasks_timeline = RB_ROOT_CACHED;
 	cfs_rq->min_vruntime = (u64)(-(1LL << 20));
-	cfs_rq->min_vruntime_copy = cfs_rq->min_vruntime;
 }
 
 

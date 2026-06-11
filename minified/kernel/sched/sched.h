@@ -181,14 +181,10 @@ struct dl_bw {
 struct cfs_rq {
 	struct load_weight	load;
 	unsigned int		nr_running;
-	unsigned int		h_nr_running;       
-	unsigned int		idle_nr_running;    
-	unsigned int		idle_h_nr_running;  
+	unsigned int		h_nr_running;
+	unsigned int		idle_nr_running;
 
-	u64			exec_clock;
 	u64			min_vruntime;
-
-	u64			min_vruntime_copy;
 
 	struct rb_root_cached	tasks_timeline;
 

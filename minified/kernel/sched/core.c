@@ -180,12 +180,6 @@ static inline void hrtick_rq_init(struct rq *rq)
 {
 }
 
-static bool set_nr_and_not_polling(struct task_struct *p)
-{
-	set_tsk_need_resched(p);
-	return true;
-}
-
 static bool __wake_q_add(struct wake_q_head *head, struct task_struct *task)
 {
 	struct wake_q_node *node = &task->wake_q;
@@ -234,23 +228,14 @@ void wake_up_q(struct wake_q_head *head)
 void resched_curr(struct rq *rq)
 {
 	struct task_struct *curr = rq->curr;
-	int cpu;
 
 	lockdep_assert_rq_held(rq);
 
 	if (test_tsk_need_resched(curr))
 		return;
 
-	cpu = cpu_of(rq);
-
-	if (cpu == smp_processor_id()) {
-		set_tsk_need_resched(curr);
-		set_preempt_need_resched();
-		return;
-	}
-
-	if (set_nr_and_not_polling(curr))
-		smp_send_reschedule(cpu);
+	set_tsk_need_resched(curr);
+	set_preempt_need_resched();
 }
 
 void resched_cpu(int cpu)

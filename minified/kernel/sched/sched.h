@@ -232,7 +232,6 @@ struct rq {
 	u64			clock;
 
 	u64			clock_task ____cacheline_aligned;
-	u64			clock_pelt;
 
 	atomic_t		nr_iowait;
 

@@ -152,8 +152,6 @@ static void update_rq_clock_task(struct rq *rq, s64 delta)
 	s64 __maybe_unused steal = 0, irq_delta = 0;
 
 	rq->clock_task += delta;
-
-	update_rq_clock_pelt(rq, delta);
 }
 
 void update_rq_clock(struct rq *rq)

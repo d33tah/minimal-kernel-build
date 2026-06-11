@@ -98,14 +98,13 @@ struct signal_struct {
 
 	 
 	seqlock_t stats_lock;
-	u64 utime, stime, cutime, cstime;
+	u64 utime, stime;
 	u64 gtime;
-	u64 cgtime;
 	struct prev_cputime prev_cputime;
-	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
-	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
-	unsigned long inblock, oublock, cinblock, coublock;
-	unsigned long maxrss, cmaxrss;
+	unsigned long nvcsw, nivcsw;
+	unsigned long min_flt, maj_flt;
+	unsigned long inblock, oublock;
+	unsigned long maxrss;
 	struct task_io_accounting ioac;
 
 	 

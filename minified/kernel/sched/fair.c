@@ -932,8 +932,6 @@ idle:
 	if (new_tasks > 0)
 		goto again;
 
-	update_idle_rq_clock_pelt(rq);
-
 	return NULL;
 }
 

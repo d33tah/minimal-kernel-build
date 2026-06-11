@@ -149,31 +149,24 @@ static int vmap_pages_pte_range(pmd_t *pmd, unsigned long addr,
 
 /*
  * 2-level paging (CONFIG_PGTABLE_LEVELS=2, X86_32, no PAE) folds the
- * P4D/PUD/PMD levels onto the PGD: *_offset return the same pointer,
- * {p4d,pud,pmd}_addr_end(addr,end)==end (each nested loop ran exactly once)
- * and the *_alloc_track helpers are no-ops (p4d/pud_none are constant 0, so
- * __pud_alloc/__pmd_alloc never run; __p4d_alloc is the folded return-0 stub).
- * So the per-page-table-level walkers collapse to a single descent reaching
- * the only real work, the PMD/PTE level (vmap_pages_pte_range allocates the
- * PTE page via pte_alloc_kernel_track, which sets PGTBL_PMD_MODIFIED).
+ * P4D/PUD/PMD levels onto the PGD: *_offset return the same pointer and
+ * p4d_none/pud_none are constant 0, so the pud/pmd "alloc_track" descents
+ * never allocate (the folded __pud_alloc/__pmd_alloc are return-0 stubs).
+ * Only the pgd level has a real guard: when pgd_none, the folded __p4d_alloc
+ * is a return-0 stub but PGTBL_PGD_MODIFIED is still flagged. So this collapses
+ * to a single identity descent to the PMD plus that one pgd side effect, then
+ * the only real work at the PTE level (vmap_pages_pte_range allocates the PTE
+ * page via pte_alloc_kernel_track, which sets PGTBL_PMD_MODIFIED).
  */
 static int vmap_pages_folded_range(pgd_t *pgd, unsigned long addr,
 		unsigned long end, pgprot_t prot, struct page **pages, int *nr,
 		pgtbl_mod_mask *mask)
 {
-	p4d_t *p4d;
-	pud_t *pud;
 	pmd_t *pmd;
 
-	p4d = p4d_alloc_track(&init_mm, pgd, addr, mask);
-	if (!p4d)
-		return -ENOMEM;
-	pud = pud_alloc_track(&init_mm, p4d, addr, mask);
-	if (!pud)
-		return -ENOMEM;
-	pmd = pmd_alloc_track(&init_mm, pud, addr, mask);
-	if (!pmd)
-		return -ENOMEM;
+	if (unlikely(pgd_none(*pgd)))
+		*mask |= PGTBL_PGD_MODIFIED;
+	pmd = pmd_offset(pud_offset(p4d_offset(pgd, addr), addr), addr);
 	return vmap_pages_pte_range(pmd, addr, end, prot, pages, nr, mask);
 }
 

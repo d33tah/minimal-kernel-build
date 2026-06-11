@@ -37,7 +37,6 @@
 #include <asm/tlb.h>
 #include <asm/tlbflush.h>
 
-#include "pgalloc-track.h"
 #include "internal.h"
 #include "swap.h"
 

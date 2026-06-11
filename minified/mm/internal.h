@@ -161,9 +161,7 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		struct vm_area_struct *prev);
 
 void unmap_mapping_folio(struct folio *folio);
-extern long populate_vma_page_range(struct vm_area_struct *vma,
-		unsigned long start, unsigned long end, int *locked);
-/* faultin_vma_page_range removed - unused */
+/* populate_vma_page_range / faultin_vma_page_range removed - unused */
 
 void mlock_folio(struct folio *folio);
 static inline void mlock_vma_folio(struct folio *folio,

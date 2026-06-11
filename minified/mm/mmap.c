@@ -670,10 +670,11 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	}
 
 	addr = mmap_region(file, addr, len, vm_flags, pgoff, uf);
-	if (!IS_ERR_VALUE(addr) &&
-	    ((vm_flags & VM_LOCKED) ||
-	     (flags & (MAP_POPULATE | MAP_NONBLOCK)) == MAP_POPULATE))
-		*populate = len;
+	/*
+	 * VM_LOCKED is never set (no mmap syscall, ELF loader passes only
+	 * MAP_PRIVATE/MAP_FIXED) and MAP_POPULATE is never passed, so *populate
+	 * stays 0 (initialised above); the populate path is dead.
+	 */
 	return addr;
 }
 
@@ -1013,8 +1014,6 @@ int expand_downwards(struct vm_area_struct *vma,
 			if (!error) {
 				
 				spin_lock(&mm->page_table_lock);
-				if (vma->vm_flags & VM_LOCKED)
-					mm->locked_vm += grow;
 				vm_stat_account(mm, vma->vm_flags, grow);
 				anon_vma_interval_tree_pre_update_vma(vma);
 				vma->vm_start = address;
@@ -1041,7 +1040,6 @@ struct vm_area_struct *
 find_extend_vma(struct mm_struct *mm, unsigned long addr)
 {
 	struct vm_area_struct *vma;
-	unsigned long start;
 
 	addr &= PAGE_MASK;
 	vma = find_vma(mm, addr);
@@ -1051,11 +1049,8 @@ find_extend_vma(struct mm_struct *mm, unsigned long addr)
 		return vma;
 	if (!(vma->vm_flags & VM_GROWSDOWN))
 		return NULL;
-	start = vma->vm_start;
 	if (expand_stack(vma, addr))
 		return NULL;
-	if (vma->vm_flags & VM_LOCKED)
-		populate_vma_page_range(vma, addr, start, NULL);
 	return vma;
 }
 
@@ -1105,8 +1100,6 @@ detach_vmas_to_be_unmapped(struct mm_struct *mm, struct vm_area_struct *vma,
 	vma->vm_prev = NULL;
 	do {
 		vma_rb_erase(vma, &mm->mm_rb);
-		if (vma->vm_flags & VM_LOCKED)
-			mm->locked_vm -= vma_pages(vma);
 		mm->map_count--;
 		tail_vma = vma;
 		vma = vma->vm_next;
@@ -1330,7 +1323,6 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 	struct mm_struct *mm = current->mm;
 	unsigned long len;
 	int ret;
-	bool populate;
 	LIST_HEAD(uf);
 
 	len = PAGE_ALIGN(request);
@@ -1343,11 +1335,12 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 		return -EINTR;
 
 	ret = do_brk_flags(addr, len, flags, &uf);
-	populate = ((mm->def_flags & VM_LOCKED) != 0);
 	mmap_write_unlock(mm);
 	userfaultfd_unmap_complete(mm, &uf);
-	if (populate && !ret)
-		mm_populate(addr, len);
+	/*
+	 * def_flags never carries VM_LOCKED (mlockall removed), so the populate
+	 * path is dead.
+	 */
 	return ret;
 }
 

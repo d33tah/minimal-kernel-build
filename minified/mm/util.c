@@ -157,8 +157,7 @@ unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 		      &uf);
 	mmap_write_unlock(mm);
 	userfaultfd_unmap_complete(mm, &uf);
-	if (populate)
-		mm_populate(ret, populate);
+	/* populate is always 0 here (VM_LOCKED/MAP_POPULATE never set). */
 	return ret;
 }
 

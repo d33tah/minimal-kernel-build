@@ -25,6 +25,4 @@ static inline u64 ssbd_tif_to_amd_ls_cfg(u64 tifn)
 
 /* speculative_store_bypass_ht_init removed - unused */
 
-extern void speculation_ctrl_update(unsigned long tif);
-
 #endif

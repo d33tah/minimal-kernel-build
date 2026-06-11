@@ -214,18 +214,9 @@ static int set_cpuid_mode(unsigned long cpuid_enabled)
 
 void arch_setup_new_exec(void)
 {
-	 
+
 	if (test_thread_flag(TIF_NOCPUID))
 		enable_cpuid();
-
-	 
-	if (test_thread_flag(TIF_SSBD) &&
-	    task_spec_ssb_noexec(current)) {
-		clear_thread_flag(TIF_SSBD);
-		task_clear_spec_ssb_disable(current);
-		task_clear_spec_ssb_noexec(current);
-		speculation_ctrl_update(read_thread_flags());
-	}
 }
 
 static inline void switch_to_bitmap(unsigned long tifp) { }
@@ -269,34 +260,6 @@ static __always_inline void __speculation_ctrl_update(unsigned long tifp,
 		write_spec_ctrl_current(msr, false);
 }
 
-static unsigned long speculation_ctrl_update_tif(struct task_struct *tsk)
-{
-	if (test_and_clear_tsk_thread_flag(tsk, TIF_SPEC_FORCE_UPDATE)) {
-		if (task_spec_ssb_disable(tsk))
-			set_tsk_thread_flag(tsk, TIF_SSBD);
-		else
-			clear_tsk_thread_flag(tsk, TIF_SSBD);
-
-		if (task_spec_ib_disable(tsk))
-			set_tsk_thread_flag(tsk, TIF_SPEC_IB);
-		else
-			clear_tsk_thread_flag(tsk, TIF_SPEC_IB);
-	}
-	 
-	return read_task_thread_flags(tsk);
-}
-
-void speculation_ctrl_update(unsigned long tif)
-{
-	unsigned long flags;
-
-	 
-	local_irq_save(flags);
-	__speculation_ctrl_update(~tif, tif);
-	local_irq_restore(flags);
-}
-
-
 static inline void cr4_toggle_bits_irqsoff(unsigned long mask)
 {
 	unsigned long newval, cr4 = this_cpu_read(cpu_tlbstate.cr4);
@@ -336,15 +299,7 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 	if ((tifp ^ tifn) & _TIF_NOCPUID)
 		set_cpuid_faulting(!!(tifn & _TIF_NOCPUID));
 
-	if (likely(!((tifp | tifn) & _TIF_SPEC_FORCE_UPDATE))) {
-		__speculation_ctrl_update(tifp, tifn);
-	} else {
-		speculation_ctrl_update_tif(prev_p);
-		tifn = speculation_ctrl_update_tif(next_p);
-
-		 
-		__speculation_ctrl_update(~tifn, tifn);
-	}
+	__speculation_ctrl_update(tifp, tifn);
 }
 
 static void (*x86_idle)(void);

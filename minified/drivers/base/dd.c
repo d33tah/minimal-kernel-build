@@ -11,46 +11,16 @@
 #include <linux/pm_runtime.h>
 #include <linux/slab.h>
 
-/* Inlined from pinctrl/devinfo.h - stubs for no PINCTRL */
-static inline int pinctrl_bind_pins(struct device *dev) { return 0; }
-static inline int pinctrl_init_done(struct device *dev) { return 0; }
-
 #include "base.h"
 #include "power/power.h"
 
 static DEFINE_MUTEX(deferred_probe_mutex);
 static LIST_HEAD(deferred_probe_pending_list);
-static LIST_HEAD(deferred_probe_active_list);
-static atomic_t deferred_trigger_count = ATOMIC_INIT(0);
-static bool initcalls_done;
 
-
-static void deferred_probe_work_func(struct work_struct *work)
-{
-	struct device *dev;
-	struct device_private *private;
-	 
-	mutex_lock(&deferred_probe_mutex);
-	while (!list_empty(&deferred_probe_active_list)) {
-		private = list_first_entry(&deferred_probe_active_list,
-					typeof(*dev->p), deferred_probe);
-		dev = private->device;
-		list_del_init(&private->deferred_probe);
-
-		get_device(dev);
-
-
-		mutex_unlock(&deferred_probe_mutex);
-
-		dev_dbg(dev, "Retrying from deferred list\n");
-		bus_probe_device(dev);
-		mutex_lock(&deferred_probe_mutex);
-
-		put_device(dev);
-	}
-	mutex_unlock(&deferred_probe_mutex);
-}
-static DECLARE_WORK(deferred_probe_work, deferred_probe_work_func);
+/* Removed: deferred_probe_active_list, deferred_trigger_count, initcalls_done,
+   deferred_probe_work[_func] + driver_deferred_probe_trigger. The trigger and
+   work were only ever reached from driver_probe_device (now dead, no driver
+   registers), so the active list was never populated and the work never ran. */
 
 void driver_deferred_probe_add(struct device *dev)
 {
@@ -75,24 +45,6 @@ void driver_deferred_probe_del(struct device *dev)
 	mutex_unlock(&deferred_probe_mutex);
 }
 
-static bool driver_deferred_probe_enable;
-static void driver_deferred_probe_trigger(void)
-{
-	if (!driver_deferred_probe_enable)
-		return;
-
-	 
-	mutex_lock(&deferred_probe_mutex);
-	atomic_inc(&deferred_trigger_count);
-	list_splice_tail_init(&deferred_probe_pending_list,
-			      &deferred_probe_active_list);
-	mutex_unlock(&deferred_probe_mutex);
-
-	 
-	queue_work(system_unbound_wq, &deferred_probe_work);
-}
-
-
 int driver_deferred_probe_timeout;
 
 
@@ -103,229 +55,16 @@ int driver_deferred_probe_timeout;
 /* Stub: simplified deferred probe for minimal kernel */
 static int deferred_probe_initcall(void)
 {
-	driver_deferred_probe_enable = true;
-	initcalls_done = true;
 	return 0;
 }
 late_initcall(deferred_probe_initcall);
 
-bool device_is_bound(struct device *dev)
-{
-	return dev->p && klist_node_attached(&dev->p->knode_driver);
-}
-
-static void driver_bound(struct device *dev)
-{
-	 
-}
-
-
-/* Stub: driver_sysfs_add/remove not needed for minimal kernel (no sysfs browsing) */
-static int driver_sysfs_add(struct device *dev)
-{
-	return 0;
-}
-
-static void driver_sysfs_remove(struct device *dev)
-{
-}
-
-/* Stub: device_bind_driver not used externally */
-int device_bind_driver(struct device *dev)
-{
-	return 0;
-}
-
-static atomic_t probe_count = ATOMIC_INIT(0);
-static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
-
-/* Stub: state_synced_show not needed for minimal kernel */
-
-static void device_unbind_cleanup(struct device *dev)
-{
-	devres_release_all(dev);
-	arch_teardown_dma_ops(dev);
-	kfree(dev->dma_range_map);
-	dev->dma_range_map = NULL;
-	dev->driver = NULL;
-	dev_set_drvdata(dev, NULL);
-	if (dev->pm_domain && dev->pm_domain->dismiss)
-		dev->pm_domain->dismiss(dev);
-	pm_runtime_reinit(dev);
-	dev_pm_set_driver_flags(dev, 0);
-}
-
-static void device_remove(struct device *dev)
-{
-	device_remove_groups(dev, dev->driver->dev_groups);
-
-	if (dev->bus && dev->bus->remove)
-		dev->bus->remove(dev);
-	else if (dev->driver->remove)
-		dev->driver->remove(dev);
-}
-
-static int call_driver_probe(struct device *dev, struct device_driver *drv)
-{
-	int ret = 0;
-
-	if (dev->bus->probe)
-		ret = dev->bus->probe(dev);
-	else if (drv->probe)
-		ret = drv->probe(dev);
-
-	switch (ret) {
-	case 0:
-		break;
-	case -EPROBE_DEFER:
-		 
-		dev_dbg(dev, "Driver %s requests probe deferral\n", drv->name);
-		break;
-	case -ENODEV:
-	case -ENXIO:
-		break;
-	default:
-		break;
-	}
-
-	return ret;
-}
-
-static int really_probe(struct device *dev, struct device_driver *drv)
-{
-	bool test_remove = IS_ENABLED(CONFIG_DEBUG_TEST_DRIVER_REMOVE) &&
-			   !drv->suppress_bind_attrs;
-	int ret;
-
-	if (!list_empty(&dev->devres_head)) {
-		dev_crit(dev, "Resources present before probing\n");
-		ret = -EBUSY;
-		goto done;
-	}
-
-re_probe:
-	dev->driver = drv;
-
-	 
-	ret = pinctrl_bind_pins(dev);
-	if (ret)
-		goto pinctrl_bind_failed;
-
-	if (dev->bus->dma_configure) {
-		ret = dev->bus->dma_configure(dev);
-		if (ret)
-			goto pinctrl_bind_failed;
-	}
-
-	ret = driver_sysfs_add(dev);
-	if (ret) {
-		pr_err("%s: driver_sysfs_add(%s) failed\n",
-		       __func__, dev_name(dev));
-		goto sysfs_failed;
-	}
-
-	if (dev->pm_domain && dev->pm_domain->activate) {
-		ret = dev->pm_domain->activate(dev);
-		if (ret)
-			goto probe_failed;
-	}
-
-	ret = call_driver_probe(dev, drv);
-	if (ret) {
-		 
-		ret = -ret;
-		goto probe_failed;
-	}
-
-	ret = device_add_groups(dev, drv->dev_groups);
-	if (ret) {
-		dev_err(dev, "device_add_groups() failed\n");
-		goto dev_groups_failed;
-	}
-
-	/* Stub: state_synced sysfs attribute not created for minimal kernel */
-
-	if (test_remove) {
-		test_remove = false;
-
-		device_remove(dev);
-		driver_sysfs_remove(dev);
-		device_unbind_cleanup(dev);
-
-		goto re_probe;
-	}
-
-	pinctrl_init_done(dev);
-
-	if (dev->pm_domain && dev->pm_domain->sync)
-		dev->pm_domain->sync(dev);
-
-	driver_bound(dev);
-	goto done;
-
-dev_groups_failed:
-	device_remove(dev);
-probe_failed:
-	driver_sysfs_remove(dev);
-sysfs_failed:
-	if (dev->bus)
-		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-					     BUS_NOTIFY_DRIVER_NOT_BOUND, dev);
-	if (dev->bus && dev->bus->dma_cleanup)
-		dev->bus->dma_cleanup(dev);
-pinctrl_bind_failed:
-	device_unbind_cleanup(dev);
-done:
-	return ret;
-}
-
-
-static int __driver_probe_device(struct device_driver *drv, struct device *dev)
-{
-	int ret = 0;
-
-	if (dev->p->dead || !device_is_registered(dev))
-		return -ENODEV;
-	if (dev->driver)
-		return -EBUSY;
-
-	dev->can_match = true;
-
-	pm_runtime_get_suppliers(dev);
-	if (dev->parent)
-		pm_runtime_get_sync(dev->parent);
-
-	pm_runtime_barrier(dev);
-	ret = really_probe(dev, drv);
-	pm_request_idle(dev);
-
-	if (dev->parent)
-		pm_runtime_put(dev->parent);
-
-	pm_runtime_put_suppliers(dev);
-	return ret;
-}
-
-static int driver_probe_device(struct device_driver *drv, struct device *dev)
-{
-	int trigger_count = atomic_read(&deferred_trigger_count);
-	int ret;
-
-	atomic_inc(&probe_count);
-	ret = __driver_probe_device(drv, dev);
-	if (ret == -EPROBE_DEFER || ret == EPROBE_DEFER) {
-		driver_deferred_probe_add(dev);
-
-
-		if (trigger_count != atomic_read(&deferred_trigger_count))
-			driver_deferred_probe_trigger();
-	}
-	atomic_dec(&probe_count);
-	wake_up_all(&probe_waitqueue);
-	return ret;
-}
-
-
+/* Removed: device_is_bound, driver_bound, driver_sysfs_add/remove,
+   device_bind_driver, device_unbind_cleanup, device_remove, call_driver_probe,
+   really_probe, __driver_probe_device, driver_probe_device + probe_count/
+   probe_waitqueue. No driver registers on any bus (driver_register/bus_add_driver
+   are gone), so bus_for_each_drv()'s klist is always empty, the __device_attach
+   callback never fires, and the entire probe/bind machinery below it is dead. */
 
 struct device_attach_data {
 	struct device *dev;
@@ -333,28 +72,9 @@ struct device_attach_data {
 
 static int __device_attach_driver(struct device_driver *drv, void *_data)
 {
-	struct device_attach_data *data = _data;
-	struct device *dev = data->dev;
-	int ret;
-
-	ret = driver_match_device(drv, dev);
-	if (ret == 0) {
-
-		return 0;
-	} else if (ret == -EPROBE_DEFER) {
-		dev_dbg(dev, "Device match requests probe deferral\n");
-		dev->can_match = true;
-		driver_deferred_probe_add(dev);
-	} else if (ret < 0) {
-		dev_dbg(dev, "Bus failed to match device: %d\n", ret);
-		return ret;
-	}
-
-
-	ret = driver_probe_device(drv, dev);
-	if (ret < 0)
-		return ret;
-	return ret == 0;
+	/* No driver ever registers on any bus, so bus_for_each_drv()'s klist is
+	   always empty and this callback is never invoked. */
+	return 0;
 }
 
 static int __device_attach(struct device *dev, bool allow_async)
@@ -362,21 +82,7 @@ static int __device_attach(struct device *dev, bool allow_async)
 	int ret = 0;
 
 	device_lock(dev);
-	if (dev->p->dead) {
-		goto out_unlock;
-	} else if (dev->driver) {
-		if (device_is_bound(dev)) {
-			ret = 1;
-			goto out_unlock;
-		}
-		ret = device_bind_driver(dev);
-		if (ret == 0)
-			ret = 1;
-		else {
-			dev->driver = NULL;
-			ret = 0;
-		}
-	} else {
+	if (!dev->p->dead) {
 		struct device_attach_data data = {
 			.dev = dev,
 		};
@@ -391,7 +97,6 @@ static int __device_attach(struct device *dev, bool allow_async)
 		if (dev->parent)
 			pm_runtime_put(dev->parent);
 	}
-out_unlock:
 	device_unlock(dev);
 	return ret;
 }
@@ -421,37 +126,9 @@ static void __device_driver_unlock(struct device *dev, struct device *parent)
 
 static void __device_release_driver(struct device *dev)
 {
-	struct device_driver *drv;
-
-	drv = dev->driver;
-	if (drv) {
-		pm_runtime_get_sync(dev);
-
-		driver_sysfs_remove(dev);
-
-		if (dev->bus)
-			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-						     BUS_NOTIFY_UNBIND_DRIVER,
-						     dev);
-
-		pm_runtime_put_sync(dev);
-
-		device_remove(dev);
-
-		if (dev->bus && dev->bus->dma_cleanup)
-			dev->bus->dma_cleanup(dev);
-
-		device_unbind_cleanup(dev);
-
-		klist_remove(&dev->p->knode_driver);
-		device_pm_check_callbacks(dev);
-		if (dev->bus)
-			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-						     BUS_NOTIFY_UNBOUND_DRIVER,
-						     dev);
-
-		kobject_uevent(&dev->kobj, KOBJ_UNBIND);
-	}
+	/* No driver ever binds in this minimal kernel (no driver registers,
+	   so really_probe never runs and dev->driver stays NULL), making the
+	   release path dead. */
 }
 
 void device_release_driver_internal(struct device *dev,

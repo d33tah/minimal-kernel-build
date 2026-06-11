@@ -175,21 +175,10 @@ static __always_inline void setup_smap(struct cpuinfo_x86 *c)
 
 static __always_inline void setup_umip(struct cpuinfo_x86 *c)
 {
-	
-	if (!cpu_feature_enabled(X86_FEATURE_UMIP))
-		goto out;
-
-	if (!cpu_has(c, X86_FEATURE_UMIP))
-		goto out;
-
-	cr4_set_bits(X86_CR4_UMIP);
-
-	pr_info_once("x86/cpu: User Mode Instruction Prevention (UMIP) activated\n");
-
-	return;
-
-out:
-	
+	/*
+	 * UMIP is in DISABLED_MASK16, so cpu_feature_enabled(X86_FEATURE_UMIP)
+	 * is constant 0 -- the activate path was dead; only the clear remains.
+	 */
 	cr4_clear_bits(X86_CR4_UMIP);
 }
 
@@ -263,41 +252,19 @@ static void __init setup_cr_pinning(void)
 }
 
 
-static bool pku_disabled;
-
+/*
+ * Protection keys (PKU/OSPKE) are compile-time disabled on this tree
+ * (both in DISABLED_MASK16), so cpu_feature_enabled(X86_FEATURE_PKU) and
+ * cpu_feature_enabled(X86_FEATURE_OSPKE) are constant 0 -- setup_pku always
+ * returned before touching CR4.PKE. Likewise CET/IBT: HAS_KERNEL_IBT == 0
+ * (asm/ibt.h), so setup_cet always returned. Both collapse to no-ops.
+ */
 static __always_inline void setup_pku(struct cpuinfo_x86 *c)
 {
-	if (c == &boot_cpu_data) {
-		if (pku_disabled || !cpu_feature_enabled(X86_FEATURE_PKU))
-			return;
-		
-		setup_force_cpu_cap(X86_FEATURE_OSPKE);
-
-	} else if (!cpu_feature_enabled(X86_FEATURE_OSPKE)) {
-		return;
-	}
-
-	cr4_set_bits(X86_CR4_PKE);
-	
-	pkru_write_default();
 }
 
 static __always_inline void setup_cet(struct cpuinfo_x86 *c)
 {
-	u64 msr = CET_ENDBR_EN;
-
-	if (!HAS_KERNEL_IBT ||
-	    !cpu_feature_enabled(X86_FEATURE_IBT))
-		return;
-
-	wrmsrl(MSR_IA32_S_CET, msr);
-	cr4_set_bits(X86_CR4_CET);
-
-	if (!ibt_selftest()) {
-		pr_err("IBT selftest: Failed!\n");
-		setup_clear_cpu_cap(X86_FEATURE_IBT);
-		return;
-	}
 }
 
 

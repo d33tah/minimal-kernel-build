@@ -19,9 +19,6 @@ enum x86_pf_error_code {
 	X86_PF_SGX	=		1 << 15,
 };
 
-extern bool ibt_selftest(void);
-
-
 static inline int get_si_code(unsigned long condition)
 {
 	if (condition & DR_STEP)

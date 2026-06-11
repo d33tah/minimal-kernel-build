@@ -45,8 +45,6 @@
 #include <asm/alternative.h>
 #include <asm/fpu/xstate.h>
 #include <asm/vm86.h>
-/* Inlined from asm/umip.h */
-static inline bool fixup_umip_exception(struct pt_regs *regs) { return false; }
 #include <asm/vdso.h>
 #include <asm/tdx.h>
 
@@ -344,10 +342,10 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 
 	cond_local_irq_enable(regs);
 
-	if (static_cpu_has(X86_FEATURE_UMIP)) {
-		if (user_mode(regs) && fixup_umip_exception(regs))
-			goto exit;
-	}
+	/*
+	 * UMIP is in DISABLED_MASK16 (never enabled) and fixup_umip_exception
+	 * was a return-false stub, so the UMIP GP fixup was dead -- dropped.
+	 */
 
 	if (v8086_mode(regs)) {
 		local_irq_enable();

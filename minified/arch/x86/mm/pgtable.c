@@ -117,106 +117,6 @@ static void pgd_dtor(pgd_t *pgd)
 
 
 
-#define PREALLOCATED_PMDS	0
-#define MAX_PREALLOCATED_PMDS	0
-#define PREALLOCATED_USER_PMDS	 0
-#define MAX_PREALLOCATED_USER_PMDS 0
-
-static void free_pmds(struct mm_struct *mm, pmd_t *pmds[], int count)
-{
-	int i;
-
-	for (i = 0; i < count; i++)
-		if (pmds[i]) {
-			pgtable_pmd_page_dtor(virt_to_page(pmds[i]));
-			free_page((unsigned long)pmds[i]);
-			mm_dec_nr_pmds(mm);
-		}
-}
-
-static int preallocate_pmds(struct mm_struct *mm, pmd_t *pmds[], int count)
-{
-	int i;
-	bool failed = false;
-	gfp_t gfp = GFP_PGTABLE_USER;
-
-	if (mm == &init_mm)
-		gfp &= ~__GFP_ACCOUNT;
-
-	for (i = 0; i < count; i++) {
-		pmd_t *pmd = (pmd_t *)__get_free_page(gfp);
-		if (!pmd)
-			failed = true;
-		if (pmd && !pgtable_pmd_page_ctor(virt_to_page(pmd))) {
-			free_page((unsigned long)pmd);
-			pmd = NULL;
-			failed = true;
-		}
-		if (pmd)
-			mm_inc_nr_pmds(mm);
-		pmds[i] = pmd;
-	}
-
-	if (failed) {
-		free_pmds(mm, pmds, count);
-		return -ENOMEM;
-	}
-
-	return 0;
-}
-
-static void mop_up_one_pmd(struct mm_struct *mm, pgd_t *pgdp)
-{
-	pgd_t pgd = *pgdp;
-
-	if (pgd_val(pgd) != 0) {
-		pmd_t *pmd = (pmd_t *)pgd_page_vaddr(pgd);
-
-		pgd_clear(pgdp);
-
-		paravirt_release_pmd(pgd_val(pgd) >> PAGE_SHIFT);
-		pmd_free(mm, pmd);
-		mm_dec_nr_pmds(mm);
-	}
-}
-
-static void pgd_mop_up_pmds(struct mm_struct *mm, pgd_t *pgdp)
-{
-	int i;
-
-	for (i = 0; i < PREALLOCATED_PMDS; i++)
-		mop_up_one_pmd(mm, &pgdp[i]);
-
-}
-
-static void pgd_prepopulate_pmd(struct mm_struct *mm, pgd_t *pgd, pmd_t *pmds[])
-{
-	p4d_t *p4d;
-	pud_t *pud;
-	int i;
-
-	if (PREALLOCATED_PMDS == 0)  
-		return;
-
-	p4d = p4d_offset(pgd, 0);
-	pud = pud_offset(p4d, 0);
-
-	for (i = 0; i < PREALLOCATED_PMDS; i++, pud++) {
-		pmd_t *pmd = pmds[i];
-
-		if (i >= KERNEL_PGD_BOUNDARY)
-			memcpy(pmd, (pmd_t *)pgd_page_vaddr(swapper_pg_dir[i]),
-			       sizeof(pmd_t) * PTRS_PER_PMD);
-
-		pud_populate(mm, pud, pmd);
-	}
-}
-
-static void pgd_prepopulate_user_pmd(struct mm_struct *mm,
-				     pgd_t *k_pgd, pmd_t *pmds[])
-{
-}
-
 static inline pgd_t *_pgd_alloc(void)
 {
 	return (pgd_t *)__get_free_pages(GFP_PGTABLE_USER,
@@ -231,51 +131,26 @@ static inline void _pgd_free(pgd_t *pgd)
 pgd_t *pgd_alloc(struct mm_struct *mm)
 {
 	pgd_t *pgd;
-	pmd_t *u_pmds[MAX_PREALLOCATED_USER_PMDS];
-	pmd_t *pmds[MAX_PREALLOCATED_PMDS];
 
 	pgd = _pgd_alloc();
 
 	if (pgd == NULL)
-		goto out;
+		return NULL;
 
 	mm->pgd = pgd;
 
-	if (preallocate_pmds(mm, pmds, PREALLOCATED_PMDS) != 0)
-		goto out_free_pgd;
-
-	if (preallocate_pmds(mm, u_pmds, PREALLOCATED_USER_PMDS) != 0)
-		goto out_free_pmds;
-
-	if (paravirt_pgd_alloc(mm) != 0)
-		goto out_free_user_pmds;
-
-	 
 	spin_lock(&pgd_lock);
 
 	pgd_ctor(mm, pgd);
-	pgd_prepopulate_pmd(mm, pgd, pmds);
-	pgd_prepopulate_user_pmd(mm, pgd, u_pmds);
 
 	spin_unlock(&pgd_lock);
 
 	return pgd;
-
-out_free_user_pmds:
-	free_pmds(mm, u_pmds, PREALLOCATED_USER_PMDS);
-out_free_pmds:
-	free_pmds(mm, pmds, PREALLOCATED_PMDS);
-out_free_pgd:
-	_pgd_free(pgd);
-out:
-	return NULL;
 }
 
 void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 {
-	pgd_mop_up_pmds(mm, pgd);
 	pgd_dtor(pgd);
-	paravirt_pgd_free(mm, pgd);
 	_pgd_free(pgd);
 }
 

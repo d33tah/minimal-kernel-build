@@ -303,12 +303,7 @@ struct mm_struct {
 		unsigned long hiwater_rss;  
 		unsigned long hiwater_vm;   
 
-		unsigned long total_vm;	    
-		unsigned long locked_vm;    
-		atomic64_t    pinned_vm;    
-		unsigned long data_vm;	    
-		unsigned long exec_vm;	    
-		unsigned long stack_vm;	    
+		unsigned long total_vm;
 		unsigned long def_flags;
 
 		 

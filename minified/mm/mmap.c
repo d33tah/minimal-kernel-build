@@ -1313,7 +1313,6 @@ static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long fla
 	vma_link(mm, vma, prev, rb_link, rb_parent);
 out:
 	mm->total_vm += len >> PAGE_SHIFT;
-	mm->data_vm += len >> PAGE_SHIFT;
 	vma->vm_flags |= VM_SOFTDIRTY;
 	return 0;
 }

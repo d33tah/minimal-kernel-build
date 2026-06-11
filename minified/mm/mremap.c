@@ -21,22 +21,18 @@
 static pud_t *get_old_pud(struct mm_struct *mm, unsigned long addr)
 {
 	pgd_t *pgd;
-	p4d_t *p4d;
-	pud_t *pud;
 
+	/*
+	 * PGTABLE_LEVELS=2 (x86_32, no PAE): P4D/PUD are folded onto the PGD,
+	 * so p4d_offset()/pud_offset() are identity casts and
+	 * p4d_none_or_clear_bad()/pud_none_or_clear_bad() are constant 0. Only
+	 * the PGD check does real work; descend straight to the PUD slot.
+	 */
 	pgd = pgd_offset(mm, addr);
 	if (pgd_none_or_clear_bad(pgd))
 		return NULL;
 
-	p4d = p4d_offset(pgd, addr);
-	if (p4d_none_or_clear_bad(p4d))
-		return NULL;
-
-	pud = pud_offset(p4d, addr);
-	if (pud_none_or_clear_bad(pud))
-		return NULL;
-
-	return pud;
+	return pud_offset(p4d_offset(pgd, addr), addr);
 }
 
 static pmd_t *get_old_pmd(struct mm_struct *mm, unsigned long addr)
@@ -59,14 +55,15 @@ static pud_t *alloc_new_pud(struct mm_struct *mm, struct vm_area_struct *vma,
 			    unsigned long addr)
 {
 	pgd_t *pgd;
-	p4d_t *p4d;
 
+	/*
+	 * P4D/PUD folded onto the PGD (see get_old_pud): p4d_alloc()/pud_alloc()
+	 * never allocate and just cast the PGD slot, so this reduces to the
+	 * folded PUD offset.
+	 */
 	pgd = pgd_offset(mm, addr);
-	p4d = p4d_alloc(mm, pgd, addr);
-	if (!p4d)
-		return NULL;
 
-	return pud_alloc(mm, p4d, addr);
+	return pud_offset(p4d_offset(pgd, addr), addr);
 }
 
 static pmd_t *alloc_new_pmd(struct mm_struct *mm, struct vm_area_struct *vma,

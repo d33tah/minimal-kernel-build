@@ -13,9 +13,7 @@ extern int pci_routeirq;
 extern int noioapicquirk;
 extern int noioapicreroute;
 
-extern unsigned long pci_mem_start;
 #define PCIBIOS_MIN_IO		0x1000
-#define PCIBIOS_MIN_MEM		(pci_mem_start)
 #define PCIBIOS_MIN_CARDBUS_IO	0x4000
 
 extern int pcibios_enabled;

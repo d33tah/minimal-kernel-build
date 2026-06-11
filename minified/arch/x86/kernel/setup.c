@@ -633,8 +633,6 @@ void __init setup_arch(char **cmdline_p)
 
 	x86_init.resources.reserve_resources();
 
-	e820__setup_pci_gap();
-
 	conswitchp = &vga_con;
 	x86_init.oem.banner();
 

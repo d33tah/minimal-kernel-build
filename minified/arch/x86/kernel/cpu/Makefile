@@ -19,7 +19,7 @@ KCSAN_SANITIZE_common.o := n
 # Make sure load_percpu_segment has no stackprotector
 CFLAGS_common.o		:= -fno-stack-protector
 
-obj-y			:= cacheinfo.o scattered.o
+obj-y			:= scattered.o
 obj-y			+= common.o
 obj-y			+= bugs.o
 # aperfmperf.o removed - inlined in topology.h

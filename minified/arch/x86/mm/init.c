@@ -197,27 +197,6 @@ static void __init probe_page_size_mask(void)
 	}
 }
 
-static void setup_pcid(void)
-{
-	if (!IS_ENABLED(CONFIG_X86_64))
-		return;
-
-	if (!boot_cpu_has(X86_FEATURE_PCID))
-		return;
-
-	if (boot_cpu_has(X86_FEATURE_PGE)) {
-		 
-		cr4_set_bits(X86_CR4_PCIDE);
-
-		 
-		if (boot_cpu_has(X86_FEATURE_INVPCID))
-			setup_force_cpu_cap(X86_FEATURE_INVPCID_SINGLE);
-	} else {
-		 
-		setup_clear_cpu_cap(X86_FEATURE_PCID);
-	}
-}
-
 #define NR_RANGE_MR 3
 
 static int __meminit save_mr(struct map_range *mr, int nr_range,
@@ -484,7 +463,6 @@ void __init init_mem_mapping(void)
 
 	pti_check_boottime_disable();
 	probe_page_size_mask();
-	setup_pcid();
 
 	end = max_low_pfn << PAGE_SHIFT;
 

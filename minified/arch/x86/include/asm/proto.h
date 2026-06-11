@@ -6,11 +6,6 @@
 
 struct task_struct;
 
- 
-
-void syscall_init(void);
-
-
 void entry_INT80_32(void);
 void entry_SYSENTER_32(void);
 void __begin_SYSENTER_singlestep_region(void);

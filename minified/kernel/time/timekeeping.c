@@ -317,9 +317,6 @@ time64_t ktime_get_real_seconds(void)
 	time64_t seconds;
 	unsigned int seq;
 
-	if (IS_ENABLED(CONFIG_64BIT))
-		return tk->xtime_sec;
-
 	do {
 		seq = read_seqcount_begin(&tk_core.seq);
 		seconds = tk->xtime_sec;

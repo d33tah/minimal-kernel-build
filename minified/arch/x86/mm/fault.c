@@ -247,11 +247,6 @@ show_signal_msg(struct pt_regs *regs, unsigned long error_code,
 	/* Stub: verbose segfault messages not needed for minimal kernel */
 }
 
-static bool is_vsyscall_vaddr(unsigned long vaddr)
-{
-	return unlikely((vaddr & PAGE_MASK) == VSYSCALL_ADDR);
-}
-
 static void
 __bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code,
 		       unsigned long address, u32 pkey, int si_code)
@@ -487,10 +482,6 @@ access_error(unsigned long error_code, struct vm_area_struct *vma)
 
 bool fault_in_kernel_space(unsigned long address)
 {
-	 
-	if (IS_ENABLED(CONFIG_X86_64) && is_vsyscall_vaddr(address))
-		return false;
-
 	return address >= TASK_SIZE_MAX;
 }
 

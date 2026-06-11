@@ -149,17 +149,12 @@ static inline unsigned int get_secindex(const struct elf_info *info,
 	return info->symtab_shndx_start[sym - info->symtab_start];
 }
 
- 
+
 void handle_moddevtable(struct module *mod, struct elf_info *info,
 			Elf_Sym *sym, const char *symname);
-void add_moddevtable(struct buffer *buf, struct module *mod);
 
- 
+
 void get_src_version(const char *modname, char sum[], unsigned sumlen);
-
- 
-char *read_text_file(const char *filename);
-char *get_line(char **stringp);
 
 enum loglevel {
 	LOG_WARN,

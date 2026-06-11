@@ -7,9 +7,3 @@ void handle_moddevtable(struct module *mod, struct elf_info *info,
 {
 	/* No-op for modular device tables */
 }
-
-/* Output empty moddevtable section */
-void add_moddevtable(struct buffer *buf, struct module *mod)
-{
-	buf_printf(buf, "\n");
-}

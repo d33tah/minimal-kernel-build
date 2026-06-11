@@ -131,19 +131,7 @@ static void choose_new_asid(struct mm_struct *next, u64 next_tlb_gen,
 
 static inline void invalidate_user_asid(u16 asid)
 {
-	 
-	if (!IS_ENABLED(CONFIG_PAGE_TABLE_ISOLATION))
-		return;
 
-	 
-	if (!cpu_feature_enabled(X86_FEATURE_PCID))
-		return;
-
-	if (!static_cpu_has(X86_FEATURE_PTI))
-		return;
-
-	__set_bit(kern_pcid(asid),
-		  (unsigned long *)this_cpu_ptr(&cpu_tlbstate.user_pcid_flush_mask));
 }
 
 static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid, bool need_flush)

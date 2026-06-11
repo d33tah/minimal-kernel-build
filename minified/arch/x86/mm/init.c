@@ -182,13 +182,10 @@ static void __init probe_page_size_mask(void)
 		__supported_pte_mask |= _PAGE_GLOBAL;
 	}
 
-	 
-	__default_kernel_pte_mask = __supported_pte_mask;
-	 
-	if (cpu_feature_enabled(X86_FEATURE_PTI))
-		__default_kernel_pte_mask &= ~_PAGE_GLOBAL;
 
-	 
+	__default_kernel_pte_mask = __supported_pte_mask;
+
+
 	if (direct_gbpages && boot_cpu_has(X86_FEATURE_GBPAGES)) {
 		printk(KERN_INFO "Using GB pages for direct mapping\n");
 		page_size_mask |= 1 << PG_LEVEL_1G;

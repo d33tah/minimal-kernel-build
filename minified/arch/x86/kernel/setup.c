@@ -257,19 +257,13 @@ static void __init parse_setup_data(void)
 		pa_next = data->next;
 		early_memunmap(data, sizeof(*data));
 
-		switch (data_type) {
-		case SETUP_E820_EXT:
+		/*
+		 * CONFIG_OF and CONFIG_EFI are both absent on this build, so the
+		 * SETUP_DTB (add_dtb) and SETUP_EFI (parse_efi_setup) handlers were
+		 * empty stubs -- only SETUP_E820_EXT does real work here.
+		 */
+		if (data_type == SETUP_E820_EXT)
 			e820__memory_setup_extended(pa_data, data_len);
-			break;
-		case SETUP_DTB:
-			add_dtb(pa_data);
-			break;
-		case SETUP_EFI:
-			parse_efi_setup(pa_data, data_len);
-			break;
-		default:
-			break;
-		}
 		pa_data = pa_next;
 	}
 }
@@ -611,7 +605,6 @@ void __init setup_arch(char **cmdline_p)
 
 	 
 	acpi_boot_init();
-	x86_dtb_init();
 
 	 
 	get_smp_config();

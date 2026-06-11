@@ -22,11 +22,6 @@ void init_rt_rq(struct rt_rq *rt_rq)
 		__clear_bit(i, array->bitmap);
 	}
 	__set_bit(MAX_RT_PRIO, array->bitmap);
-	rt_rq->rt_queued = 0;
-	rt_rq->rt_time = 0;
-	rt_rq->rt_throttled = 0;
-	rt_rq->rt_runtime = 0;
-	raw_spin_lock_init(&rt_rq->rt_runtime_lock);
 }
 
 

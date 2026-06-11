@@ -490,9 +490,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	p->se.exec_start		= 0;
 	p->se.sum_exec_runtime		= 0;
 	p->se.prev_sum_exec_runtime	= 0;
-	p->se.nr_migrations		= 0;
 	p->se.vruntime			= 0;
-	INIT_LIST_HEAD(&p->se.group_node);
 
 	RB_CLEAR_NODE(&p->dl.rb_node);
 	init_dl_task_timer(&p->dl);
@@ -1207,7 +1205,6 @@ void __init sched_init(void)
 		init_rt_rq(&rq->rt);
 		init_dl_rq(&rq->dl);
 
-		rq->rt.rt_runtime = def_rt_bandwidth.rt_runtime;
 		hrtick_rq_init(rq);
 		atomic_set(&rq->nr_iowait, 0);
 

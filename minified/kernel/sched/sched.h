@@ -200,34 +200,10 @@ struct cfs_rq {
 
 struct rt_rq {
 	struct rt_prio_array	active;
-	unsigned int		rt_nr_running;
-	unsigned int		rr_nr_running;
-	int			rt_queued;
-
-	int			rt_throttled;
-	u64			rt_time;
-	u64			rt_runtime;
-	 
-	raw_spinlock_t		rt_runtime_lock;
-
 };
 
 struct dl_rq {
-	 
 	struct rb_root_cached	root;
-
-	unsigned int		dl_nr_running;
-
-	struct dl_bw		dl_bw;
-	 
-	u64			running_bw;
-
-	 
-	u64			this_bw;
-	u64			extra_bw;
-
-	 
-	u64			bw_ratio;
 };
 
 #define entity_is_task(se)	1

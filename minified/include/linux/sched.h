@@ -175,9 +175,6 @@ struct prev_cputime {
 
 
 
-struct sched_info {
-};
-
 # define SCHED_FIXEDPOINT_SHIFT		10
 
 # define SCHED_CAPACITY_SHIFT		SCHED_FIXEDPOINT_SHIFT
@@ -198,17 +195,12 @@ struct sched_entity {
 	 
 	struct load_weight		load;
 	struct rb_node			run_node;
-	struct list_head		group_node;
 	unsigned int			on_rq;
 
 	u64				exec_start;
 	u64				sum_exec_runtime;
 	u64				vruntime;
 	u64				prev_sum_exec_runtime;
-
-	u64				nr_migrations;
-
-
 };
 
 struct sched_rt_entity {
@@ -298,13 +290,6 @@ struct task_struct {
 	const cpumask_t			*cpus_ptr;
 	cpumask_t			*user_cpus_ptr;
 	cpumask_t			cpus_mask;
-	void				*migration_pending;
-	unsigned short			migration_flags;
-
-
-
-
-	struct sched_info		sched_info;
 
 	struct list_head		tasks;
 

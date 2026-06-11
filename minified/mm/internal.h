@@ -49,8 +49,6 @@ static inline void *folio_raw_mapping(struct folio *folio)
 
 /* acct_reclaim_writeback removed - reclaim throttling never engaged */
 
-vm_fault_t do_swap_page(struct vm_fault *vmf);
-
 void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *start_vma,
 		unsigned long floor, unsigned long ceiling);
 void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte);

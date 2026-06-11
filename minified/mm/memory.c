@@ -843,12 +843,6 @@ void unmap_mapping_range(struct address_space *mapping,
 	unmap_mapping_pages(mapping, hba, hlen, even_cows);
 }
 
-vm_fault_t do_swap_page(struct vm_fault *vmf)
-{
-	/* Stub: swap not configured, should never be called */
-	return VM_FAULT_SIGBUS;
-}
-
 static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 {
 	/* Minimal stub: simplified anonymous page fault handling */
@@ -1134,9 +1128,11 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 	if (!vmf->pte)
 		return vma_is_anonymous(vmf->vma) ? do_anonymous_page(vmf) : do_fault(vmf);
 
-	if (!pte_present(vmf->orig_pte))
-		return do_swap_page(vmf);
-
+	/*
+	 * A mapped PTE is always present on this build: there is no swap,
+	 * migration, NUMA-hinting or PTE-marker source of !present entries, so
+	 * the legacy do_swap_page() path is unreachable and has been removed.
+	 */
 	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
 	spin_lock(vmf->ptl);
 	if ((vmf->flags & (FAULT_FLAG_WRITE|FAULT_FLAG_UNSHARE)) && !pte_write(vmf->orig_pte))

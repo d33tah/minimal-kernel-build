@@ -152,34 +152,6 @@ do {									\
 	preempt_enable();						\
 } while (0)
 
-DECLARE_STATIC_KEY_FALSE(mds_user_clear);
-DECLARE_STATIC_KEY_FALSE(mds_idle_clear);
-
-#include <asm/segment.h>
-
- 
-static __always_inline void mds_clear_cpu_buffers(void)
-{
-	static const u16 ds = __KERNEL_DS;
-
-	 
-	asm volatile("verw %[ds]" : : [ds] "m" (ds) : "cc");
-}
-
- 
-static __always_inline void mds_user_clear_cpu_buffers(void)
-{
-	if (static_branch_likely(&mds_user_clear))
-		mds_clear_cpu_buffers();
-}
-
- 
-static inline void mds_idle_clear_cpu_buffers(void)
-{
-	if (static_branch_likely(&mds_idle_clear))
-		mds_clear_cpu_buffers();
-}
-
-#endif  
+#endif
 
 #endif  

@@ -16,10 +16,6 @@ DEFINE_PER_CPU(u64, x86_spec_ctrl_current);
 u64 __ro_after_init x86_amd_ls_cfg_base;
 u64 __ro_after_init x86_amd_ls_cfg_ssbd_mask;
 
-DEFINE_STATIC_KEY_FALSE(mds_user_clear);
-
-DEFINE_STATIC_KEY_FALSE(mds_idle_clear);
-
 void write_spec_ctrl_current(u64 val, bool force)
 {
 }

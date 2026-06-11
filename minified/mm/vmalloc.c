@@ -1070,19 +1070,6 @@ static struct vmap_area *find_vmap_area(unsigned long addr)
 	return va;
 }
 
-static void _vm_unmap_aliases(unsigned long start, unsigned long end, int flush)
-{
-	if (unlikely(!vmap_initialized))
-		return;
-
-	might_sleep();
-
-	mutex_lock(&vmap_purge_lock);
-	if (!__purge_vmap_area_lazy(start, end) && flush)
-		flush_tlb_kernel_range(start, end);
-	mutex_unlock(&vmap_purge_lock);
-}
-
 static struct vm_struct *vmlist __initdata;
 
 static inline unsigned int vm_area_page_order(struct vm_struct *vm)
@@ -1261,56 +1248,6 @@ struct vm_struct *remove_vm_area(const void *addr)
 	return NULL;
 }
 
-static inline void set_area_direct_map(const struct vm_struct *area,
-				       int (*set_direct_map)(struct page *page))
-{
-	int i;
-
-	
-	for (i = 0; i < area->nr_pages; i++)
-		if (page_address(area->pages[i]))
-			set_direct_map(area->pages[i]);
-}
-
-static void vm_remove_mappings(struct vm_struct *area, int deallocate_pages)
-{
-	unsigned long start = ULONG_MAX, end = 0;
-	unsigned int page_order = vm_area_page_order(area);
-	int flush_reset = area->flags & VM_FLUSH_RESET_PERMS;
-	int flush_dmap = 0;
-	int i;
-
-	remove_vm_area(area->addr);
-
-	
-	if (!flush_reset)
-		return;
-
-
-	if (!deallocate_pages) {
-		_vm_unmap_aliases(ULONG_MAX, 0, 1);
-		return;
-	}
-
-	
-	for (i = 0; i < area->nr_pages; i += 1U << page_order) {
-		unsigned long addr = (unsigned long)page_address(area->pages[i]);
-		if (addr) {
-			unsigned long page_size;
-
-			page_size = PAGE_SIZE << page_order;
-			start = min(addr, start);
-			end = max(addr + page_size, end);
-			flush_dmap = 1;
-		}
-	}
-
-	
-	set_area_direct_map(area, set_direct_map_invalid_noflush);
-	_vm_unmap_aliases(start, end, flush_dmap);
-	set_area_direct_map(area, set_direct_map_default_noflush);
-}
-
 static void __vunmap(const void *addr, int deallocate_pages)
 {
 	struct vm_struct *area;
@@ -1331,7 +1268,7 @@ static void __vunmap(const void *addr, int deallocate_pages)
 
 	debug_check_no_locks_freed(area->addr, get_vm_area_size(area));
 
-	vm_remove_mappings(area, deallocate_pages);
+	remove_vm_area(area->addr);
 
 	if (deallocate_pages) {
 		int i;

@@ -19,9 +19,7 @@ int set_memory_decrypted(unsigned long addr, int numpages);
 
 /* set_pages_array_uc, set_pages_array_wc, set_pages_array_wb, set_pages_uc, set_pages_wb, set_pages_rw removed - never called */
 int set_pages_ro(struct page *page, int numpages);
-
-int set_direct_map_invalid_noflush(struct page *page);
-int set_direct_map_default_noflush(struct page *page);
+/* set_direct_map_*_noflush removed - never called */
 /* kernel_page_present removed - never called */
 
 extern int kernel_set_to_readonly;

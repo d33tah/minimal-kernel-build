@@ -42,7 +42,3 @@ int set_memory_decrypted(unsigned long addr, int numpages) { return 0; }
 
 int set_pages_ro(struct page *page, int numpages) { return 0; }
 
-// Stub: direct map manipulation
-int set_direct_map_invalid_noflush(struct page *page) { return 0; }
-int set_direct_map_default_noflush(struct page *page) { return 0; }
-

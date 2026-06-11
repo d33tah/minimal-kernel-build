@@ -105,17 +105,8 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 
 
 
-#if defined(CONFIG_TREE_RCU) || defined(CONFIG_RCU_TRACE)
-void do_trace_rcu_torture_read(const char *rcutorturename, struct rcu_head *rhp,
-			       unsigned long secs,
-			       unsigned long c_old, unsigned long c)
-{
-	 
-}
-#else
 #define do_trace_rcu_torture_read(rcutorturename, rhp, secs, c_old, c) \
 	do { } while (0)
-#endif
 
 
 

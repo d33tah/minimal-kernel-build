@@ -202,52 +202,15 @@ static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
 	return true;
 }
 
-#if CONFIG_PGTABLE_LEVELS > 2 && defined(CONFIG_HAVE_MOVE_PUD)
-static bool move_normal_pud(struct vm_area_struct *vma, unsigned long old_addr,
-		  unsigned long new_addr, pud_t *old_pud, pud_t *new_pud)
-{
-	spinlock_t *old_ptl, *new_ptl;
-	struct mm_struct *mm = vma->vm_mm;
-	pud_t pud;
-
-	if (!arch_supports_page_table_move())
-		return false;
-	 
-	if (WARN_ON_ONCE(!pud_none(*new_pud)))
-		return false;
-
-	 
-	old_ptl = pud_lock(vma->vm_mm, old_pud);
-	new_ptl = pud_lockptr(mm, new_pud);
-	if (new_ptl != old_ptl)
-		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
-
-	 
-	pud = *old_pud;
-	pud_clear(old_pud);
-
-	VM_BUG_ON(!pud_none(*new_pud));
-
-	pud_populate(mm, new_pud, pud_pgtable(pud));
-	flush_tlb_range(vma, old_addr, old_addr + PUD_SIZE);
-	if (new_ptl != old_ptl)
-		spin_unlock(new_ptl);
-	spin_unlock(old_ptl);
-
-	return true;
-}
-#else
-static inline bool move_normal_pud(struct vm_area_struct *vma,
-		unsigned long old_addr, unsigned long new_addr, pud_t *old_pud,
-		pud_t *new_pud)
-{
-	return false;
-}
-#endif
+/*
+ * move_normal_pud removed: PUD page-table moves require
+ * CONFIG_PGTABLE_LEVELS > 2, but this is a 2-level (folded) build, so the
+ * PUD-move fast path was a compile-time `return false` stub and the
+ * NORMAL_PUD walk in move_page_tables could never move anything.
+ */
 
 enum pgt_entry {
 	NORMAL_PMD,
-	NORMAL_PUD,
 };
 
 static __always_inline unsigned long get_extent(enum pgt_entry entry,
@@ -260,10 +223,6 @@ static __always_inline unsigned long get_extent(enum pgt_entry entry,
 	case NORMAL_PMD:
 		mask = PMD_MASK;
 		size = PMD_SIZE;
-		break;
-	case NORMAL_PUD:
-		mask = PUD_MASK;
-		size = PUD_SIZE;
 		break;
 	default:
 		BUILD_BUG();
@@ -296,10 +255,6 @@ static bool move_pgt_entry(enum pgt_entry entry, struct vm_area_struct *vma,
 		moved = move_normal_pmd(vma, old_addr, new_addr, old_entry,
 					new_entry);
 		break;
-	case NORMAL_PUD:
-		moved = move_normal_pud(vma, old_addr, new_addr, old_entry,
-					new_entry);
-		break;
 
 	default:
 		WARN_ON_ONCE(1);
@@ -319,7 +274,6 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 {
 	unsigned long extent, old_end;
 	pmd_t *old_pmd, *new_pmd;
-	pud_t *old_pud, *new_pud;
 
 	if (!len)
 		return 0;
@@ -330,21 +284,6 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 
 	for (; old_addr < old_end; old_addr += extent, new_addr += extent) {
 		cond_resched();
-		 
-		extent = get_extent(NORMAL_PUD, old_addr, old_end, new_addr);
-
-		old_pud = get_old_pud(vma->vm_mm, old_addr);
-		if (!old_pud)
-			continue;
-		new_pud = alloc_new_pud(vma->vm_mm, vma, new_addr);
-		if (!new_pud)
-			break;
-		if (IS_ENABLED(CONFIG_HAVE_MOVE_PUD) && extent == PUD_SIZE) {
-
-			if (move_pgt_entry(NORMAL_PUD, vma, old_addr, new_addr,
-					   old_pud, new_pud, true))
-				continue;
-		}
 
 		extent = get_extent(NORMAL_PMD, old_addr, old_end, new_addr);
 		old_pmd = get_old_pmd(vma->vm_mm, old_addr);

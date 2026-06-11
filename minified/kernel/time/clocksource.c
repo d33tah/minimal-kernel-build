@@ -167,11 +167,6 @@ skip_test:
 	return WD_READ_SKIP;
 }
 
-/* Stub: per-CPU clocksource verification not needed for minimal single-CPU kernel */
-void clocksource_verify_percpu(struct clocksource *cs)
-{
-}
-
 static void clocksource_watchdog(struct timer_list *unused)
 {
 	u64 csnow, wdnow, cslast, wdlast, delta;
@@ -384,12 +379,6 @@ static int __clocksource_watchdog_kthread(void)
 	struct clocksource *cs, *tmp;
 	unsigned long flags;
 	int select = 0;
-
-	 
-	if (curr_clocksource &&
-	    curr_clocksource->flags & CLOCK_SOURCE_UNSTABLE &&
-	    curr_clocksource->flags & CLOCK_SOURCE_VERIFY_PERCPU)
-		clocksource_verify_percpu(curr_clocksource);
 
 	spin_lock_irqsave(&watchdog_lock, flags);
 	list_for_each_entry_safe(cs, tmp, &watchdog_list, wd_list) {

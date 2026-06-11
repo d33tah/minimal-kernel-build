@@ -17,11 +17,7 @@ static inline void __invpcid(unsigned long pcid, unsigned long addr, unsigned lo
 	struct { u64 d[2]; } desc = { { pcid, addr } };
 	asm volatile("invpcid %[desc], %[type]" :: [desc] "m" (desc), [type] "r" (type) : "memory");
 }
-#define INVPCID_TYPE_INDIV_ADDR		0
-#define INVPCID_TYPE_SINGLE_CTXT	1
 #define INVPCID_TYPE_ALL_INCL_GLOBAL	2
-#define INVPCID_TYPE_ALL_NON_GLOBAL	3
-static inline void invpcid_flush_one(unsigned long pcid, unsigned long addr) { __invpcid(pcid, addr, INVPCID_TYPE_INDIV_ADDR); }
 static inline void invpcid_flush_all(void) { __invpcid(0, 0, INVPCID_TYPE_ALL_INCL_GLOBAL); }
 /* End of invpcid.h */
 
@@ -88,10 +84,7 @@ struct tlb_state {
 	u16 loaded_mm_asid;
 	u16 next_asid;
 
-	 
-	bool invalidate_other;
 
-	 
 	unsigned short user_pcid_flush_mask;
 
 	 

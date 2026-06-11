@@ -32,28 +32,6 @@
 #define LAST_USER_MM_INIT	LAST_USER_MM_IBPB
 
 
-#define CR3_HW_ASID_BITS		12
-
-# define PTI_CONSUMED_PCID_BITS	0
-
-#define CR3_AVAIL_PCID_BITS (X86_CR3_PCID_BITS - PTI_CONSUMED_PCID_BITS)
-
-#define MAX_ASID_AVAILABLE ((1 << CR3_AVAIL_PCID_BITS) - 2)
-
-static inline u16 kern_pcid(u16 asid)
-{
-	VM_WARN_ON_ONCE(asid > MAX_ASID_AVAILABLE);
-
-	 
-	return asid + 1;
-}
-
-static inline u16 user_pcid(u16 asid)
-{
-	u16 ret = kern_pcid(asid);
-	return ret;
-}
-
 static inline unsigned long build_cr3(pgd_t *pgd, u16 asid)
 {
 	/* PCID is unconditionally cleared at boot (setup_clear_cpu_cap in
@@ -505,30 +483,21 @@ void flush_tlb_one_kernel(unsigned long addr)
 {
 	count_vm_tlb_event(NR_TLB_LOCAL_FLUSH_ONE);
 
-	 
+	/*
+	 * PAGE_TABLE_ISOLATION is unset on this build, so X86_FEATURE_PTI is
+	 * never set and the user-mapping invalidation below is dead.
+	 */
 	flush_tlb_one_user(addr);
-
-	if (!static_cpu_has(X86_FEATURE_PTI))
-		return;
-
-	 
-	this_cpu_write(cpu_tlbstate.invalidate_other, true);
 }
 
 STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr)
 {
-	u32 loaded_mm_asid = this_cpu_read(cpu_tlbstate.loaded_mm_asid);
-
 	asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
 
-	if (!static_cpu_has(X86_FEATURE_PTI))
-		return;
-
-	 
-	if (!this_cpu_has(X86_FEATURE_INVPCID_SINGLE))
-		invalidate_user_asid(loaded_mm_asid);
-	else
-		invpcid_flush_one(user_pcid(loaded_mm_asid), addr);
+	/*
+	 * PAGE_TABLE_ISOLATION is unset, so X86_FEATURE_PTI is never set and the
+	 * user-PCID invalidation that would otherwise follow here is dead.
+	 */
 }
 
 void flush_tlb_one_user(unsigned long addr)

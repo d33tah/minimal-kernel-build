@@ -71,40 +71,37 @@ static void tick_setup_device(struct tick_device *td,
 			      struct clock_event_device *newdev, int cpu,
 			      const struct cpumask *cpumask)
 {
-	void (*handler)(struct clock_event_device *) = NULL;
-	ktime_t next_event = 0;
 
-	 
 	if (!td->evtdev) {
-		 
+
 		if (tick_do_timer_cpu == TICK_DO_TIMER_BOOT) {
 			tick_do_timer_cpu = cpu;
 
 			tick_next_period = ktime_get();
 		}
 
-		 
+
 		td->mode = TICKDEV_MODE_PERIODIC;
 	} else {
-		handler = td->evtdev->event_handler;
-		next_event = td->evtdev->next_event;
 		td->evtdev->event_handler = clockevents_handle_noop;
 	}
 
 	td->evtdev = newdev;
 
-	 
+
 	if (!cpumask_equal(newdev->cpumask, cpumask))
 		irq_set_affinity(newdev->irq, cpumask);
 
-	 
+
 	if (tick_device_uses_broadcast(newdev, cpu))
 		return;
 
-	if (td->mode == TICKDEV_MODE_PERIODIC)
-		tick_setup_periodic(newdev, 0);
-	else
-		tick_setup_oneshot(newdev, handler, next_event);
+	/*
+	 * TICK_ONESHOT/NO_HZ are unset, so td->mode is only ever set to
+	 * TICKDEV_MODE_PERIODIC (no path sets TICKDEV_MODE_ONESHOT) -- the
+	 * oneshot setup branch was dead.
+	 */
+	tick_setup_periodic(newdev, 0);
 }
 
 static bool tick_check_percpu(struct clock_event_device *curdev,

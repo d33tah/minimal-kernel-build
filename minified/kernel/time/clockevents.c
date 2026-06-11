@@ -55,33 +55,19 @@ static int __clockevents_switch_state(struct clock_event_device *dev,
 		return 0;
 
 	case CLOCK_EVT_STATE_PERIODIC:
-		 
+
 		if (!(dev->features & CLOCK_EVT_FEAT_PERIODIC))
 			return -ENOSYS;
 		if (dev->set_state_periodic)
 			return dev->set_state_periodic(dev);
 		return 0;
 
-	case CLOCK_EVT_STATE_ONESHOT:
-		 
-		if (!(dev->features & CLOCK_EVT_FEAT_ONESHOT))
-			return -ENOSYS;
-		if (dev->set_state_oneshot)
-			return dev->set_state_oneshot(dev);
-		return 0;
-
-	case CLOCK_EVT_STATE_ONESHOT_STOPPED:
-		 
-		if (WARN_ONCE(!clockevent_state_oneshot(dev),
-			      "Current state: %d\n",
-			      clockevent_get_state(dev)))
-			return -EINVAL;
-
-		if (dev->set_state_oneshot_stopped)
-			return dev->set_state_oneshot_stopped(dev);
-		else
-			return -ENOSYS;
-
+	/*
+	 * TICK_ONESHOT/HIGH_RES_TIMERS/NO_HZ are unset and broadcast is off, so
+	 * the tick device is never switched to ONESHOT/ONESHOT_STOPPED -- the
+	 * only clockevents_switch_state() callers pass PERIODIC/SHUTDOWN/
+	 * DETACHED, so those cases were unreachable.
+	 */
 	default:
 		return -ENOSYS;
 	}
@@ -95,12 +81,6 @@ void clockevents_switch_state(struct clock_event_device *dev,
 			return;
 
 		clockevent_set_state(dev, state);
-
-		 
-		if (clockevent_state_oneshot(dev)) {
-			if (WARN_ON(!dev->mult))
-				dev->mult = 1;
-		}
 	}
 }
 

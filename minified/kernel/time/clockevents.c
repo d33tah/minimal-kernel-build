@@ -110,96 +110,13 @@ void clockevents_shutdown(struct clock_event_device *dev)
 	dev->next_event = KTIME_MAX;
 }
 
-#define MIN_DELTA_LIMIT		(NSEC_PER_SEC / HZ)
-
-static int clockevents_increase_min_delta(struct clock_event_device *dev)
-{
-	 
-	if (dev->min_delta_ns >= MIN_DELTA_LIMIT) {
-		printk_deferred(KERN_WARNING
-				"CE: Reprogramming failure. Giving up\n");
-		dev->next_event = KTIME_MAX;
-		return -ETIME;
-	}
-
-	if (dev->min_delta_ns < 5000)
-		dev->min_delta_ns = 5000;
-	else
-		dev->min_delta_ns += dev->min_delta_ns >> 1;
-
-	if (dev->min_delta_ns > MIN_DELTA_LIMIT)
-		dev->min_delta_ns = MIN_DELTA_LIMIT;
-
-	printk_deferred(KERN_WARNING
-			"CE: %s increased min_delta_ns to %llu nsec\n",
-			dev->name ? dev->name : "?",
-			(unsigned long long) dev->min_delta_ns);
-	return 0;
-}
-
-static int clockevents_program_min_delta(struct clock_event_device *dev)
-{
-	unsigned long long clc;
-	int64_t delta;
-	int i;
-
-	for (i = 0;;) {
-		delta = dev->min_delta_ns;
-		dev->next_event = ktime_add_ns(ktime_get(), delta);
-
-		if (clockevent_state_shutdown(dev))
-			return 0;
-
-		dev->retries++;
-		clc = ((unsigned long long) delta * dev->mult) >> dev->shift;
-		if (dev->set_next_event((unsigned long) clc, dev) == 0)
-			return 0;
-
-		if (++i > 2) {
-			 
-			if (clockevents_increase_min_delta(dev))
-				return -ETIME;
-			i = 0;
-		}
-	}
-}
-
-
-int clockevents_program_event(struct clock_event_device *dev, ktime_t expires,
-			      bool force)
-{
-	unsigned long long clc;
-	int64_t delta;
-	int rc;
-
-	if (WARN_ON_ONCE(expires < 0))
-		return -ETIME;
-
-	dev->next_event = expires;
-
-	if (clockevent_state_shutdown(dev))
-		return 0;
-
-	 
-	WARN_ONCE(!clockevent_state_oneshot(dev), "Current state: %d\n",
-		  clockevent_get_state(dev));
-
-	 
-	if (dev->features & CLOCK_EVT_FEAT_KTIME)
-		return dev->set_next_ktime(expires, dev);
-
-	delta = ktime_to_ns(ktime_sub(expires, ktime_get()));
-	if (delta <= 0)
-		return force ? clockevents_program_min_delta(dev) : -ETIME;
-
-	delta = min(delta, (int64_t) dev->max_delta_ns);
-	delta = max(delta, (int64_t) dev->min_delta_ns);
-
-	clc = ((unsigned long long) delta * dev->mult) >> dev->shift;
-	rc = dev->set_next_event((unsigned long) clc, dev);
-
-	return (rc && force) ? clockevents_program_min_delta(dev) : rc;
-}
+/*
+ * TICK_ONESHOT/HIGH_RES_TIMERS/NO_HZ are all unset and broadcast is off, so the
+ * tick device is only ever switched to PERIODIC state (tick_setup_periodic) and
+ * its handler (tick_handle_periodic) never reprograms a next-event.  The only
+ * callers of clockevents_program_event() were those dead oneshot tick paths, so
+ * it and its min-delta reprogramming helpers were removed as unreachable.
+ */
 
 static void clockevents_notify_released(void)
 {

@@ -125,21 +125,12 @@ static void __init cyc2ns_init_boot_cpu(void)
 	__set_cyc2ns_scale(tsc_khz, smp_processor_id(), rdtsc());
 }
 
-static void __init cyc2ns_init_secondary_cpus(void)
-{
-	unsigned int cpu, this_cpu = smp_processor_id();
-	struct cyc2ns *c2n = this_cpu_ptr(&cyc2ns);
-	struct cyc2ns_data *data = c2n->data;
-
-	for_each_possible_cpu(cpu) {
-		if (cpu != this_cpu) {
-			seqcount_latch_init(&c2n->seq);
-			c2n = per_cpu_ptr(&cyc2ns, cpu);
-			c2n->data[0] = data[0];
-			c2n->data[1] = data[1];
-		}
-	}
-}
+/*
+ * cyc2ns_init_secondary_cpus() removed: NR_CPUS=1 / SMP off, so there are
+ * no secondary CPUs. Its for_each_possible_cpu() loop only ever visited the
+ * boot CPU (cpu == this_cpu), whose per-CPU cyc2ns was already set up by
+ * cyc2ns_init_boot_cpu(); the cpu != this_cpu body never ran.
+ */
 
 u64 native_sched_clock(void)
 {
@@ -696,8 +687,6 @@ void __init tsc_init(void)
 		}
 		tsc_enable_sched_clock();
 	}
-
-	cyc2ns_init_secondary_cpus();
 
 	if (!no_sched_irq_time)
 		enable_sched_clock_irqtime();

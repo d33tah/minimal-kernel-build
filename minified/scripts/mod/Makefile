@@ -5,19 +5,11 @@ CFLAGS_REMOVE_empty.o += $(CC_FLAGS_LTO)
 hostprogs-always-y	+= modpost mk_elfconfig
 always-y		+= empty.o
 
-modpost-objs	:= modpost.o file2alias.o sumversion.o
-
-devicetable-offsets-file := devicetable-offsets.h
-
-$(obj)/$(devicetable-offsets-file): $(obj)/devicetable-offsets.s FORCE
-	$(call filechk,offsets,__DEVICETABLE_OFFSETS_H__)
-
-targets += $(devicetable-offsets-file) devicetable-offsets.s
+modpost-objs	:= modpost.o
 
 # dependencies on generated files need to be listed explicitly
 
-$(obj)/modpost.o $(obj)/file2alias.o $(obj)/sumversion.o: $(obj)/elfconfig.h
-$(obj)/file2alias.o: $(obj)/$(devicetable-offsets-file)
+$(obj)/modpost.o: $(obj)/elfconfig.h
 
 quiet_cmd_elfconfig = MKELF   $@
       cmd_elfconfig = $(obj)/mk_elfconfig < $< > $@

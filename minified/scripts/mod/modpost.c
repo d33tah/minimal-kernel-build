@@ -9,25 +9,12 @@
 #include <stdbool.h>
 #include <errno.h>
 #include "modpost.h"
-static inline int license_is_gpl_compatible(const char *license)
-{
-	return (strcmp(license, "GPL") == 0
-		|| strcmp(license, "GPL v2") == 0
-		|| strcmp(license, "GPL and additional rights") == 0
-		|| strcmp(license, "Dual BSD/GPL") == 0
-		|| strcmp(license, "Dual MIT/GPL") == 0
-		|| strcmp(license, "Dual MPL/GPL") == 0);
-}
-
 static bool modversions;
-static bool all_versions;
 static bool external_module;
-static bool warn_unresolved;
 
 static int sec_mismatch_count;
 static bool sec_mismatch_warn_only = true;
 static bool ignore_missing_files;
-static bool allow_missing_ns_imports;
 
 static bool error_occurred;
 
@@ -95,15 +82,10 @@ static struct module *new_module(const char *name, size_t namelen)
 
 	INIT_LIST_HEAD(&mod->exported_symbols);
 	INIT_LIST_HEAD(&mod->unresolved_symbols);
-	INIT_LIST_HEAD(&mod->missing_namespaces);
-	INIT_LIST_HEAD(&mod->imported_namespaces);
 
 	memcpy(mod->name, name, namelen);
 	mod->name[namelen] = '\0';
 	mod->is_vmlinux = (strcmp(mod->name, "vmlinux") == 0);
-
-	 
-	mod->is_gpl_compatible = true;
 
 	list_add_tail(&mod->list, &modules);
 
@@ -186,35 +168,6 @@ static struct symbol *sym_find_with_module(const char *name, struct module *mod)
 static struct symbol *find_symbol(const char *name)
 {
 	return sym_find_with_module(name, NULL);
-}
-
-struct namespace_list {
-	struct list_head list;
-	char namespace[];
-};
-
-static bool contains_namespace(struct list_head *head, const char *namespace)
-{
-	struct namespace_list *list;
-
-	list_for_each_entry(list, head, list) {
-		if (!strcmp(list->namespace, namespace))
-			return true;
-	}
-
-	return false;
-}
-
-static void add_namespace(struct list_head *head, const char *namespace)
-{
-	struct namespace_list *ns_entry;
-
-	if (!contains_namespace(head, namespace)) {
-		ns_entry = NOFAIL(malloc(sizeof(*ns_entry) +
-					 strlen(namespace) + 1));
-		strcpy(ns_entry->namespace, namespace);
-		list_add_tail(&ns_entry->list, head);
-	}
 }
 
 static void *sym_get_data_by_offset(const struct elf_info *info,
@@ -315,7 +268,6 @@ static int parse_elf(struct elf_info *info, const char *filename)
 	Elf_Ehdr *hdr;
 	Elf_Shdr *sechdrs;
 	Elf_Sym  *sym;
-	const char *secstrings;
 	unsigned int symtab_idx = ~0U, symtab_shndx_idx = ~0U;
 
 	hdr = grab_file(filename, &info->size);
@@ -392,10 +344,7 @@ static int parse_elf(struct elf_info *info, const char *filename)
 		sechdrs[i].sh_addralign = TO_NATIVE(sechdrs[i].sh_addralign);
 		sechdrs[i].sh_entsize   = TO_NATIVE(sechdrs[i].sh_entsize);
 	}
-	 
-	secstrings = (void *)hdr + sechdrs[info->secindex_strings].sh_offset;
 	for (i = 1; i < info->num_sections; i++) {
-		const char *secname;
 		int nobits = sechdrs[i].sh_type == SHT_NOBITS;
 
 		if (!nobits && sechdrs[i].sh_offset > info->size) {
@@ -404,13 +353,6 @@ static int parse_elf(struct elf_info *info, const char *filename)
 			      (unsigned long)sechdrs[i].sh_offset,
 			      sizeof(*hdr));
 			return 0;
-		}
-		secname = secstrings + sechdrs[i].sh_name;
-		if (strcmp(secname, ".modinfo") == 0) {
-			if (nobits)
-				fatal("%s has NOBITS .modinfo\n", filename);
-			info->modinfo = (void *)hdr + sechdrs[i].sh_offset;
-			info->modinfo_len = sechdrs[i].sh_size;
 		}
 
 		if (sechdrs[i].sh_type == SHT_SYMTAB) {
@@ -545,56 +487,8 @@ static void handle_symbol(struct module *mod, struct elf_info *info,
 			else if (strstarts(secname, "___ksymtab+"))
 				sym_add_exported(name, mod, false);
 		}
-		if (strcmp(symname, "init_module") == 0)
-			mod->has_init = true;
-		if (strcmp(symname, "cleanup_module") == 0)
-			mod->has_cleanup = true;
 		break;
 	}
-}
-
-static char *next_string(char *string, unsigned long *secsize)
-{
-	 
-	while (string[0]) {
-		string++;
-		if ((*secsize)-- <= 1)
-			return NULL;
-	}
-
-	 
-	while (!string[0]) {
-		string++;
-		if ((*secsize)-- <= 1)
-			return NULL;
-	}
-	return string;
-}
-
-static char *get_next_modinfo(struct elf_info *info, const char *tag,
-			      char *prev)
-{
-	char *p;
-	unsigned int taglen = strlen(tag);
-	char *modinfo = info->modinfo;
-	unsigned long size = info->modinfo_len;
-
-	if (prev) {
-		size -= prev - modinfo;
-		modinfo = next_string(prev, &size);
-	}
-
-	for (p = modinfo; p; p = next_string(p, &size)) {
-		if (strncmp(p, tag, taglen) == 0 && p[taglen] == '=')
-			return p + taglen + 1;
-	}
-	return NULL;
-}
-
-static char *get_modinfo(struct elf_info *info, const char *tag)
-
-{
-	return get_next_modinfo(info, tag, NULL);
 }
 
 static const char *sym_name(struct elf_info *elf, Elf_Sym *sym)
@@ -1452,9 +1346,6 @@ static char *remove_dot(char *s)
 static void read_symbols(const char *modname)
 {
 	const char *symname;
-	char *version;
-	char *license;
-	char *namespace;
 	struct module *mod;
 	struct elf_info info = { };
 	Elf_Sym *sym;
@@ -1467,34 +1358,19 @@ static void read_symbols(const char *modname)
 		return;
 	}
 
-	 
+
 	mod = new_module(modname, strlen(modname) - strlen(".o"));
 
-	if (!mod->is_vmlinux) {
-		license = get_modinfo(&info, "license");
-		if (!license)
-			error("missing MODULE_LICENSE() in %s\n", modname);
-		while (license) {
-			if (!license_is_gpl_compatible(license)) {
-				mod->is_gpl_compatible = false;
-				break;
-			}
-			license = get_next_modinfo(&info, "license", license);
-		}
-
-		namespace = get_modinfo(&info, "import_ns");
-		while (namespace) {
-			add_namespace(&mod->imported_namespaces, namespace);
-			namespace = get_next_modinfo(&info, "import_ns",
-						     namespace);
-		}
-	}
+	/*
+	 * This build only ever processes vmlinux.o (mod->is_vmlinux is always
+	 * true), so the per-module MODULE_LICENSE()/import_ns and source-version
+	 * passes never run and have been dropped.
+	 */
 
 	for (sym = info.symtab_start; sym < info.symtab_stop; sym++) {
 		symname = remove_dot(info.strtab + sym->st_name);
 
 		handle_symbol(mod, &info, sym, symname);
-		handle_moddevtable(mod, &info, sym, symname);
 	}
 
 	for (sym = info.symtab_start; sym < info.symtab_stop; sym++) {
@@ -1507,13 +1383,6 @@ static void read_symbols(const char *modname)
 	}
 
 	check_sec_ref(modname, &info);
-
-	if (!mod->is_vmlinux) {
-		version = get_modinfo(&info, "version");
-		if (version || all_versions)
-			get_src_version(mod->name, mod->srcversion,
-					sizeof(mod->srcversion) - 1);
-	}
 
 	parse_elf_finish(&info);
 }

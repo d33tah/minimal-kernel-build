@@ -96,18 +96,8 @@ struct module {
 	struct list_head list;
 	struct list_head exported_symbols;
 	struct list_head unresolved_symbols;
-	bool is_gpl_compatible;
-	bool from_dump;		 
+	bool from_dump;
 	bool is_vmlinux;
-	bool seen;
-	bool has_init;
-	bool has_cleanup;
-	struct buffer dev_table_buf;
-	char	     srcversion[25];
-	 
-	struct list_head missing_namespaces;
-	 
-	struct list_head imported_namespaces;
 	char name[];
 };
 
@@ -118,10 +108,8 @@ struct elf_info {
 	Elf_Sym      *symtab_start;
 	Elf_Sym      *symtab_stop;
 	char         *strtab;
-	char	     *modinfo;
-	unsigned int modinfo_len;
 
-	 
+
 
 	unsigned int num_sections;  
 	unsigned int secindex_strings;
@@ -148,13 +136,6 @@ static inline unsigned int get_secindex(const struct elf_info *info,
 		return sym->st_shndx;
 	return info->symtab_shndx_start[sym - info->symtab_start];
 }
-
-
-void handle_moddevtable(struct module *mod, struct elf_info *info,
-			Elf_Sym *sym, const char *symname);
-
-
-void get_src_version(const char *modname, char sum[], unsigned sumlen);
 
 enum loglevel {
 	LOG_WARN,

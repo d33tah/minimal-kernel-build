@@ -106,13 +106,6 @@ static inline pte_t *virt_to_kpte(unsigned long vaddr)
 	return pmd_none(*pmd) ? NULL : pte_offset_kernel(pmd, vaddr);
 }
 
-#ifndef __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
-extern int ptep_set_access_flags(struct vm_area_struct *vma,
-				 unsigned long address, pte_t *ptep,
-				 pte_t entry, int dirty);
-#endif
-
-
 #ifndef __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
 static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
 					    unsigned long address,
@@ -126,12 +119,6 @@ static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
 		set_pte_at(vma->vm_mm, address, ptep, pte_mkold(pte));
 	return r;
 }
-#endif
-
-
-#ifndef __HAVE_ARCH_PTEP_CLEAR_YOUNG_FLUSH
-int ptep_clear_flush_young(struct vm_area_struct *vma,
-			   unsigned long address, pte_t *ptep);
 #endif
 
 

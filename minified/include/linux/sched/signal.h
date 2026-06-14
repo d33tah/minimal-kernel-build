@@ -69,13 +69,10 @@ struct signal_struct {
 	 
 	struct hlist_head	multiprocess;
 
-	 
-	int			group_exit_code;
-	 
-	int			notify_count;
-	struct task_struct	*group_exec_task;
 
-	 
+	int			group_exit_code;
+
+
 	int			group_stop_count;
 	unsigned int		flags;  
 

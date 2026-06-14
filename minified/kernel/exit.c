@@ -88,10 +88,6 @@ static void __exit_signal(struct task_struct *tsk)
 		tty = sig->tty;
 		sig->tty = NULL;
 	} else {
-		
-		if (sig->notify_count > 0 && !--sig->notify_count)
-			wake_up_process(sig->group_exec_task);
-
 		if (tsk == sig->curr_target)
 			sig->curr_target = next_thread(tsk);
 	}
@@ -360,8 +356,6 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 		list_add(&tsk->ptrace_entry, &dead);
 	}
 
-	if (unlikely(tsk->signal->notify_count < 0))
-		wake_up_process(tsk->signal->group_exec_task);
 	write_unlock_irq(&tasklist_lock);
 
 	list_for_each_entry_safe(p, n, &dead, ptrace_entry) {
@@ -486,17 +480,13 @@ do_group_exit(int exit_code)
 
 	if (sig->flags & SIGNAL_GROUP_EXIT)
 		exit_code = sig->group_exit_code;
-	else if (sig->group_exec_task)
-		exit_code = 0;
 	else if (!thread_group_empty(current)) {
 		struct sighand_struct *const sighand = current->sighand;
 
 		spin_lock_irq(&sighand->siglock);
 		if (sig->flags & SIGNAL_GROUP_EXIT)
-			
+
 			exit_code = sig->group_exit_code;
-		else if (sig->group_exec_task)
-			exit_code = 0;
 		else {
 			sig->group_exit_code = exit_code;
 			sig->flags = SIGNAL_GROUP_EXIT;

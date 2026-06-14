@@ -328,7 +328,6 @@ static inline void mapping_allow_writable(struct address_space *mapping)
 struct posix_acl;
 
 
-#define IOP_FASTPERM	0x0001
 #define IOP_LOOKUP	0x0002
 #define IOP_NOFOLLOW	0x0004
 #define IOP_XATTR	0x0008

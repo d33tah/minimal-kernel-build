@@ -210,15 +210,7 @@ int generic_permission(struct user_namespace *mnt_userns, struct inode *inode,
 static inline int do_inode_permission(struct user_namespace *mnt_userns,
 				      struct inode *inode, int mask)
 {
-	if (unlikely(!(inode->i_opflags & IOP_FASTPERM))) {
-		if (likely(inode->i_op->permission))
-			return inode->i_op->permission(mnt_userns, inode, mask);
-
-		
-		spin_lock(&inode->i_lock);
-		inode->i_opflags |= IOP_FASTPERM;
-		spin_unlock(&inode->i_lock);
-	}
+	/* No live inode_operations sets ->permission; always generic. */
 	return generic_permission(mnt_userns, inode, mask);
 }
 

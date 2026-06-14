@@ -493,8 +493,7 @@ static int generic_update_time(struct inode *inode, struct timespec64 *time, int
 
 int inode_update_time(struct inode *inode, struct timespec64 *time, int flags)
 {
-	if (inode->i_op->update_time)
-		return inode->i_op->update_time(inode, time, flags);
+	/* No live inode_operations sets ->update_time; always generic. */
 	return generic_update_time(inode, time, flags);
 }
 

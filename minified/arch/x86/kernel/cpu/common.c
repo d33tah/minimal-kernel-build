@@ -282,26 +282,6 @@ static void filter_cpuid_features(struct cpuinfo_x86 *c, bool warn)
 	}
 }
 
-static const char *table_lookup_model(struct cpuinfo_x86 *c)
-{
-	const struct legacy_cpu_model_info *info;
-
-	if (c->x86_model >= 16)
-		return NULL;	
-
-	if (!this_cpu)
-		return NULL;
-
-	info = this_cpu->legacy_models;
-
-	while (info->family) {
-		if (info->family == c->x86)
-			return info->model_names[c->x86_model];
-		info++;
-	}
-	return NULL;		
-}
-
 __u32 cpu_caps_cleared[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 __u32 cpu_caps_set[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 
@@ -372,26 +352,12 @@ static void get_model_name(struct cpuinfo_x86 *c)
 
 static void get_cpu_vendor(struct cpuinfo_x86 *c)
 {
-	char *v = c->x86_vendor_id;
-	int i;
-
-	for (i = 0; i < X86_VENDOR_NUM; i++) {
-		if (!cpu_devs[i])
-			break;
-
-		if (!strcmp(v, cpu_devs[i]->c_ident[0]) ||
-		    (cpu_devs[i]->c_ident[1] &&
-		     !strcmp(v, cpu_devs[i]->c_ident[1]))) {
-
-			this_cpu = cpu_devs[i];
-			c->x86_vendor = this_cpu->c_x86_vendor;
-			return;
-		}
-	}
-
-	pr_err_once("CPU: vendor_id '%s' unknown, using generic init.\n" \
-		    "CPU: Your system may be unstable.\n", v);
-
+	/*
+	 * No vendor cpu_dev is registered on this build (cpu_dev_register
+	 * has zero invocations -> the .x86_cpu_dev.init section is empty ->
+	 * cpu_devs[] stays all-NULL and this_cpu is always &default_cpu), so
+	 * the vendor-string match loop never finds an entry. Always generic.
+	 */
 	c->x86_vendor = X86_VENDOR_UNKNOWN;
 	this_cpu = &default_cpu;
 }
@@ -515,22 +481,15 @@ void get_cpu_address_sizes(struct cpuinfo_x86 *c)
 
 static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
 {
-	int i;
-
 	if (flag_is_changeable_p(X86_EFLAGS_AC))
 		c->x86 = 4;
 	else
 		c->x86 = 3;
 
-	for (i = 0; i < X86_VENDOR_NUM; i++)
-		if (cpu_devs[i] && cpu_devs[i]->c_identify) {
-			c->x86_vendor_id[0] = 0;
-			cpu_devs[i]->c_identify(c);
-			if (c->x86_vendor_id[0]) {
-				get_cpu_vendor(c);
-				break;
-			}
-		}
+	/*
+	 * The per-vendor c_identify probe loop is dead: cpu_devs[] is empty
+	 * on this build (no cpu_dev_register), so no entry has ->c_identify.
+	 */
 }
 
 
@@ -570,14 +529,12 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 		setup_force_cpu_cap(X86_FEATURE_CPUID);
 		cpu_parse_early_param();
 
-		if (this_cpu->c_early_init)
-			this_cpu->c_early_init(c);
-
+		/*
+		 * this_cpu is always &default_cpu here (empty cpu_devs[]),
+		 * which sets neither ->c_early_init nor ->c_bsp_init.
+		 */
 		c->cpu_index = 0;
 		filter_cpuid_features(c, false);
-
-		if (this_cpu->c_bsp_init)
-			this_cpu->c_bsp_init(c);
 	} else {
 		setup_clear_cpu_cap(X86_FEATURE_CPUID);
 	}
@@ -666,8 +623,7 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 
 	generic_identify(c);
 
-	if (this_cpu->c_identify)
-		this_cpu->c_identify(c);
+	/* this_cpu is always &default_cpu, which sets no ->c_identify. */
 
 	apply_forced_caps(c);
 
@@ -686,14 +642,14 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	filter_cpuid_features(c, true);
 
 	if (!c->x86_model_id[0]) {
-		const char *p;
-		p = table_lookup_model(c);
-		if (p)
-			strcpy(c->x86_model_id, p);
-		else
-			
-			sprintf(c->x86_model_id, "%02x/%02x",
-				c->x86, c->x86_model);
+		/*
+		 * table_lookup_model() walked this_cpu->legacy_models, but
+		 * this_cpu is always &default_cpu whose legacy_models table is
+		 * zero-initialized (->family == 0) -> the lookup always returned
+		 * NULL, so synthesize the family/model name directly.
+		 */
+		sprintf(c->x86_model_id, "%02x/%02x",
+			c->x86, c->x86_model);
 	}
 
 	apply_forced_caps(c);

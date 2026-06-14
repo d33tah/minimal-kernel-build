@@ -6,24 +6,8 @@
 struct cpu_dev {
 	const char	*c_vendor;
 
-	 
-	const char	*c_ident[2];
-
-	void            (*c_early_init)(struct cpuinfo_x86 *);
-	void		(*c_bsp_init)(struct cpuinfo_x86 *);
 	void		(*c_init)(struct cpuinfo_x86 *);
-	void		(*c_identify)(struct cpuinfo_x86 *);
-	void		(*c_detect_tlb)(struct cpuinfo_x86 *);
 	int		c_x86_vendor;
-	 
-	unsigned int	(*legacy_cache_size)(struct cpuinfo_x86 *,
-					     unsigned int);
-
-	 
-	struct legacy_cpu_model_info {
-		int		family;
-		const char	*model_names[16];
-	}		legacy_models[5];
 };
 
 #define cpu_dev_register(cpu_devX) \

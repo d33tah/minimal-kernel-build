@@ -139,32 +139,19 @@ static void free_inode_nonrcu(struct inode *inode)
 static void i_callback(struct rcu_head *head)
 {
 	struct inode *inode = container_of(head, struct inode, i_rcu);
-	if (inode->free_inode)
-		inode->free_inode(inode);
-	else
-		free_inode_nonrcu(inode);
+	free_inode_nonrcu(inode);
 }
 
 static struct inode *alloc_inode(struct super_block *sb)
 {
-	const struct super_operations *ops = sb->s_op;
 	struct inode *inode;
 
-	if (ops->alloc_inode)
-		inode = ops->alloc_inode(sb);
-	else
-		inode = alloc_inode_sb(sb, inode_cachep, GFP_KERNEL);
+	inode = alloc_inode_sb(sb, inode_cachep, GFP_KERNEL);
 
 	if (!inode)
 		return NULL;
 
 	if (unlikely(inode_init_always(sb, inode))) {
-		if (ops->destroy_inode) {
-			ops->destroy_inode(inode);
-			if (!ops->free_inode)
-				return NULL;
-		}
-		inode->free_inode = ops->free_inode;
 		i_callback(&inode->i_rcu);
 		return NULL;
 	}
@@ -186,16 +173,8 @@ void __destroy_inode(struct inode *inode)
 
 static void destroy_inode(struct inode *inode)
 {
-	const struct super_operations *ops = inode->i_sb->s_op;
-
 	BUG_ON(!list_empty(&inode->i_lru));
 	__destroy_inode(inode);
-	if (ops->destroy_inode) {
-		ops->destroy_inode(inode);
-		if (!ops->free_inode)
-			return;
-	}
-	inode->free_inode = ops->free_inode;
 	call_rcu(&inode->i_rcu, i_callback);
 }
 
@@ -323,8 +302,6 @@ void clear_inode(struct inode *inode)
 
 static void evict(struct inode *inode)
 {
-	const struct super_operations *op = inode->i_sb->s_op;
-
 	BUG_ON(!(inode->i_state & I_FREEING));
 	BUG_ON(!list_empty(&inode->i_lru));
 
@@ -335,12 +312,8 @@ static void evict(struct inode *inode)
 
 	inode_wait_for_writeback(inode);
 
-	if (op->evict_inode) {
-		op->evict_inode(inode);
-	} else {
-		truncate_inode_pages_final(&inode->i_data);
-		clear_inode(inode);
-	}
+	truncate_inode_pages_final(&inode->i_data);
+	clear_inode(inode);
 	if (S_ISCHR(inode->i_mode) && inode->i_cdev)
 		cd_forget(inode);
 

@@ -269,8 +269,11 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 	 */
 	if (likely(!pte_special(pte)))
 		goto check_pfn;
-	if (vma->vm_ops && vma->vm_ops->find_special_page)
-		return vma->vm_ops->find_special_page(vma, addr);
+	/*
+	 * vm_ops->find_special_page is never set by any vm_operations_struct on
+	 * this build, so the pte_special path falls straight through to the
+	 * VM_PFNMAP/zero_pfn/devmap checks below.
+	 */
 	if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
 		return NULL;
 	if (is_zero_pfn(pfn))

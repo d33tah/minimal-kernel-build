@@ -350,10 +350,6 @@ struct vm_operations_struct {
 
 	
 	const char *(*name)(struct vm_area_struct *vma);
-
-	
-	struct page *(*find_special_page)(struct vm_area_struct *vma,
-					  unsigned long addr);
 };
 
 static inline void vma_init(struct vm_area_struct *vma, struct mm_struct *mm)

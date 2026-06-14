@@ -219,8 +219,6 @@ static inline void signal_wake_up(struct task_struct *t, bool fatal)
 	signal_wake_up_state(t, state);
 }
 
-void task_join_group_stop(struct task_struct *task);
-
 #ifdef TIF_RESTORE_SIGMASK
 
 static inline void set_restore_sigmask(void)

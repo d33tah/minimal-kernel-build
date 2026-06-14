@@ -139,11 +139,6 @@ void task_clear_jobctl_pending(struct task_struct *task, unsigned long mask)
 {
 }
 
-/* Stubbed - not used externally */
-void task_join_group_stop(struct task_struct *task)
-{
-}
-
 static struct sigqueue *
 __sigqueue_alloc(int sig, struct task_struct *t, gfp_t gfp_flags,
 		 int override_rlimit, const unsigned int sigqueue_flags)

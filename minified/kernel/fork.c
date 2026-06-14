@@ -903,34 +903,14 @@ static __latent_entropy struct task_struct *copy_process(
 	const u64 clone_flags = args->flags;
 	struct nsproxy *nsp = current->nsproxy;
 
-	
-	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
-		return ERR_PTR(-EINVAL);
-
-	if ((clone_flags & (CLONE_NEWUSER|CLONE_FS)) == (CLONE_NEWUSER|CLONE_FS))
-		return ERR_PTR(-EINVAL);
-
-	
-	if ((clone_flags & CLONE_THREAD) && !(clone_flags & CLONE_SIGHAND))
-		return ERR_PTR(-EINVAL);
-
-	
-	if ((clone_flags & CLONE_SIGHAND) && !(clone_flags & CLONE_VM))
-		return ERR_PTR(-EINVAL);
-
-	
-	if ((clone_flags & CLONE_PARENT) &&
-				current->signal->flags & SIGNAL_UNKILLABLE)
-		return ERR_PTR(-EINVAL);
-
-	
-	if (clone_flags & CLONE_THREAD) {
-		if ((clone_flags & (CLONE_NEWUSER | CLONE_NEWPID)) ||
-		    (task_active_pid_ns(current) != nsp->pid_ns_for_children))
-			return ERR_PTR(-EINVAL);
-	}
-
-	
+	/*
+	 * The CLONE_NEWNS/NEWUSER/THREAD/SIGHAND/PARENT/NEWPID validation
+	 * checks here are dead on this build: none of those flags is ever
+	 * set (the only spawns pass CLONE_FS|CLONE_FILES|CLONE_VM|
+	 * CLONE_UNTRACED|SIGCHLD), so all the early -EINVAL returns are
+	 * unreachable. CLONE_VM IS always set, so the time_ns check below
+	 * is kept (its body is always-false but reachable).
+	 */
 	if (clone_flags & (CLONE_THREAD | CLONE_VM)) {
 		if (nsp->time_ns != nsp->time_ns_for_children)
 			return ERR_PTR(-EINVAL);
@@ -941,8 +921,8 @@ static __latent_entropy struct task_struct *copy_process(
 	INIT_HLIST_NODE(&delayed.node);
 
 	spin_lock_irq(&current->sighand->siglock);
-	if (!(clone_flags & CLONE_THREAD))
-		hlist_add_head(&delayed.node, &current->signal->multiprocess);
+	/* CLONE_THREAD never set -> always register the delayed-signal node */
+	hlist_add_head(&delayed.node, &current->signal->multiprocess);
 	recalc_sigpending();
 	spin_unlock_irq(&current->sighand->siglock);
 	retval = -ERESTARTNOINTR;
@@ -962,9 +942,9 @@ static __latent_entropy struct task_struct *copy_process(
 		siginitsetinv(&p->blocked, sigmask(SIGKILL)|sigmask(SIGSTOP));
 	}
 
-	p->set_child_tid = (clone_flags & CLONE_CHILD_SETTID) ? args->child_tid : NULL;
-
-	p->clear_child_tid = (clone_flags & CLONE_CHILD_CLEARTID) ? args->child_tid : NULL;
+	/* CLONE_CHILD_SETTID/CLEARTID never set on this build -> always NULL */
+	p->set_child_tid = NULL;
+	p->clear_child_tid = NULL;
 
 	rt_mutex_init_task(p);
 
@@ -1071,13 +1051,9 @@ static __latent_entropy struct task_struct *copy_process(
 
 	
 	p->pid = pid_nr(pid);
-	if (clone_flags & CLONE_THREAD) {
-		p->group_leader = current->group_leader;
-		p->tgid = current->tgid;
-	} else {
-		p->group_leader = p;
-		p->tgid = p->pid;
-	}
+	/* CLONE_THREAD never set -> always a new thread-group leader */
+	p->group_leader = p;
+	p->tgid = p->pid;
 
 	p->nr_dirtied = 0;
 	p->nr_dirtied_pause = 128 >> (PAGE_SHIFT - 10);
@@ -1098,18 +1074,10 @@ static __latent_entropy struct task_struct *copy_process(
 	write_lock_irq(&tasklist_lock);
 
 	
-	if (clone_flags & (CLONE_PARENT|CLONE_THREAD)) {
-		p->real_parent = current->real_parent;
-		p->parent_exec_id = current->parent_exec_id;
-		if (clone_flags & CLONE_THREAD)
-			p->exit_signal = -1;
-		else
-			p->exit_signal = current->group_leader->exit_signal;
-	} else {
-		p->real_parent = current;
-		p->parent_exec_id = current->self_exec_id;
-		p->exit_signal = args->exit_signal;
-	}
+	/* CLONE_PARENT|CLONE_THREAD never set -> parent is always current */
+	p->real_parent = current;
+	p->parent_exec_id = current->self_exec_id;
+	p->exit_signal = args->exit_signal;
 
 	klp_copy_process(p);
 
@@ -1134,36 +1102,32 @@ static __latent_entropy struct task_struct *copy_process(
 		ptrace_init_task(p, (clone_flags & CLONE_PTRACE) || trace);
 
 		init_task_pid(p, PIDTYPE_PID, pid);
-		if (thread_group_leader(p)) {
-			init_task_pid(p, PIDTYPE_TGID, pid);
-			init_task_pid(p, PIDTYPE_PGID, task_pgrp(current));
-			init_task_pid(p, PIDTYPE_SID, task_session(current));
+		/*
+		 * thread_group_leader(p) == (p->exit_signal >= 0) is always
+		 * true here: CLONE_THREAD is never set, so p->exit_signal =
+		 * args->exit_signal = (flags & CSIGNAL) >= 0. The CLONE_THREAD
+		 * else-arm (thread-join) is therefore unreachable and was
+		 * removed (it was the sole caller of task_join_group_stop).
+		 */
+		init_task_pid(p, PIDTYPE_TGID, pid);
+		init_task_pid(p, PIDTYPE_PGID, task_pgrp(current));
+		init_task_pid(p, PIDTYPE_SID, task_session(current));
 
-			if (is_child_reaper(pid)) {
-				ns_of_pid(pid)->child_reaper = p;
-				p->signal->flags |= SIGNAL_UNKILLABLE;
-			}
-			p->signal->shared_pending.signal = delayed.signal;
-			p->signal->tty = tty_kref_get(current->signal->tty);
-			
-			p->signal->has_child_subreaper = p->real_parent->signal->has_child_subreaper ||
-							 p->real_parent->signal->is_child_subreaper;
-			list_add_tail(&p->sibling, &p->real_parent->children);
-			list_add_tail_rcu(&p->tasks, &init_task.tasks);
-			attach_pid(p, PIDTYPE_TGID);
-			attach_pid(p, PIDTYPE_PGID);
-			attach_pid(p, PIDTYPE_SID);
-			__this_cpu_inc(process_counts);
-		} else {
-			current->signal->nr_threads++;
-			atomic_inc(&current->signal->live);
-			refcount_inc(&current->signal->sigcnt);
-			task_join_group_stop(p);
-			list_add_tail_rcu(&p->thread_group,
-					  &p->group_leader->thread_group);
-			list_add_tail_rcu(&p->thread_node,
-					  &p->signal->thread_head);
+		if (is_child_reaper(pid)) {
+			ns_of_pid(pid)->child_reaper = p;
+			p->signal->flags |= SIGNAL_UNKILLABLE;
 		}
+		p->signal->shared_pending.signal = delayed.signal;
+		p->signal->tty = tty_kref_get(current->signal->tty);
+
+		p->signal->has_child_subreaper = p->real_parent->signal->has_child_subreaper ||
+						 p->real_parent->signal->is_child_subreaper;
+		list_add_tail(&p->sibling, &p->real_parent->children);
+		list_add_tail_rcu(&p->tasks, &init_task.tasks);
+		attach_pid(p, PIDTYPE_TGID);
+		attach_pid(p, PIDTYPE_PGID);
+		attach_pid(p, PIDTYPE_SID);
+		__this_cpu_inc(process_counts);
 		attach_pid(p, PIDTYPE_PID);
 		nr_threads++;
 	}
@@ -1200,8 +1164,8 @@ bad_fork_cleanup_mm:
 		mmput(p->mm);
 	}
 bad_fork_cleanup_signal:
-	if (!(clone_flags & CLONE_THREAD))
-		free_signal_struct(p->signal);
+	/* CLONE_THREAD never set -> signal_struct is always private here */
+	free_signal_struct(p->signal);
 bad_fork_cleanup_sighand:
 	__cleanup_sighand(p->sighand);
 bad_fork_cleanup_fs:

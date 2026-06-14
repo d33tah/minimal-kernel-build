@@ -209,25 +209,6 @@ up_fail:
 }
 
 
-int map_vdso_once(const struct vdso_image *image, unsigned long addr)
-{
-	struct mm_struct *mm = current->mm;
-	struct vm_area_struct *vma;
-
-	mmap_write_lock(mm);
-	 
-	for (vma = mm->mmap; vma; vma = vma->vm_next) {
-		if (vma_is_special_mapping(vma, &vdso_mapping) ||
-				vma_is_special_mapping(vma, &vvar_mapping)) {
-			mmap_write_unlock(mm);
-			return -EEXIST;
-		}
-	}
-	mmap_write_unlock(mm);
-
-	return map_vdso(image, addr);
-}
-
 static int load_vdso32(void)
 {
 	if (vdso32_enabled != 1)   
@@ -239,10 +220,5 @@ static int load_vdso32(void)
 int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
 {
 	return load_vdso32();
-}
-
-bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
-{
-	return false;
 }
 

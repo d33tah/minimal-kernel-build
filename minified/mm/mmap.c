@@ -1453,27 +1453,17 @@ static const struct vm_operations_struct special_mapping_vmops = {
 	.may_split = special_mapping_split,
 };
 
-static const struct vm_operations_struct legacy_special_mapping_vmops = {
-	.close = special_mapping_close,
-	.fault = special_mapping_fault,
-};
-
 static vm_fault_t special_mapping_fault(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	pgoff_t pgoff;
 	struct page **pages;
+	struct vm_special_mapping *sm = vma->vm_private_data;
 
-	if (vma->vm_ops == &legacy_special_mapping_vmops) {
-		pages = vma->vm_private_data;
-	} else {
-		struct vm_special_mapping *sm = vma->vm_private_data;
+	if (sm->fault)
+		return sm->fault(sm, vmf->vma, vmf);
 
-		if (sm->fault)
-			return sm->fault(sm, vmf->vma, vmf);
-
-		pages = sm->pages;
-	}
+	pages = sm->pages;
 
 	for (pgoff = vmf->pgoff; pgoff && *pages; ++pages)
 		pgoff--;
@@ -1522,14 +1512,6 @@ static struct vm_area_struct *__install_special_mapping(
 out:
 	vm_area_free(vma);
 	return ERR_PTR(ret);
-}
-
-bool vma_is_special_mapping(const struct vm_area_struct *vma,
-	const struct vm_special_mapping *sm)
-{
-	return vma->vm_private_data == sm &&
-		(vma->vm_ops == &special_mapping_vmops ||
-		 vma->vm_ops == &legacy_special_mapping_vmops);
 }
 
 struct vm_area_struct *_install_special_mapping(

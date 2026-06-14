@@ -56,11 +56,7 @@ struct tty_ldisc_ops {
 			 const unsigned char *buf, size_t nr);
 	void	(*set_termios)(struct tty_struct *tty, struct ktermios *old);
 	void	(*hangup)(struct tty_struct *tty);
-	void	(*receive_buf)(struct tty_struct *tty, const unsigned char *cp,
-			       const char *fp, int count);
 	void	(*dcd_change)(struct tty_struct *tty, unsigned int status);
-	int	(*receive_buf2)(struct tty_struct *tty, const unsigned char *cp,
-				const char *fp, int count);
 	struct  module *owner;
 };
 

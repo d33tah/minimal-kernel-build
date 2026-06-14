@@ -16,33 +16,6 @@
 
 #include "tty.h"
 
-static int tty_port_default_receive_buf(struct tty_port *port,
-					const unsigned char *p,
-					const unsigned char *f, size_t count)
-{
-	int ret;
-	struct tty_struct *tty;
-	struct tty_ldisc *disc;
-
-	tty = READ_ONCE(port->itty);
-	if (!tty)
-		return 0;
-
-	disc = tty_ldisc_ref(tty);
-	if (!disc)
-		return 0;
-
-	ret = tty_ldisc_receive_buf(disc, p, (char *)f, count);
-
-	tty_ldisc_deref(disc);
-
-	return ret;
-}
-
-const struct tty_port_client_operations tty_port_default_client_ops = {
-	.receive_buf = tty_port_default_receive_buf,
-};
-
 void tty_port_init(struct tty_port *port)
 {
 	memset(port, 0, sizeof(*port));
@@ -54,7 +27,6 @@ void tty_port_init(struct tty_port *port)
 	spin_lock_init(&port->lock);
 	port->close_delay = (50 * HZ) / 100;
 	port->closing_wait = (3000 * HZ) / 100;
-	port->client_ops = &tty_port_default_client_ops;
 	kref_init(&port->kref);
 }
 

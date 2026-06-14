@@ -6,8 +6,5 @@
 
 struct tty_ldisc;
 
-int tty_ldisc_receive_buf(struct tty_ldisc *ld, const unsigned char *p,
-		const char *f, int count);
 
-
-#endif  
+#endif

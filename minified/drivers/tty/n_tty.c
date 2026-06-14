@@ -117,19 +117,6 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 	return retval;
 }
 
-static void n_tty_receive_buf(struct tty_struct *tty, const unsigned char *cp,
-			      const char *fp, int count)
-{
-	 
-}
-
-static int n_tty_receive_buf2(struct tty_struct *tty, const unsigned char *cp,
-			      const char *fp, int count)
-{
-	 
-	return 0;
-}
-
 static struct tty_ldisc_ops n_tty_ops = {
 	.owner		 = THIS_MODULE,
 	.num		 = N_TTY,
@@ -139,8 +126,6 @@ static struct tty_ldisc_ops n_tty_ops = {
 	.flush_buffer    = n_tty_flush_buffer,
 	.write           = n_tty_write,
 	.set_termios     = n_tty_set_termios,
-	.receive_buf     = n_tty_receive_buf,
-	.receive_buf2	 = n_tty_receive_buf2,
 };
 
 void __init n_tty_init(void)

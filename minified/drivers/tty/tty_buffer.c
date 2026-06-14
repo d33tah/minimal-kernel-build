@@ -61,89 +61,6 @@ void tty_buffer_free_all(struct tty_port *port)
 			still_used - freed);
 }
 
-static void tty_buffer_free(struct tty_port *port, struct tty_buffer *b)
-{
-	struct tty_bufhead *buf = &port->buf;
-
-	 
-	WARN_ON(atomic_sub_return(b->size, &buf->mem_used) < 0);
-
-	if (b->size > MIN_TTYB_SIZE)
-		kfree(b);
-	else if (b->size > 0)
-		llist_add(&b->free, &buf->free);
-}
-
-int tty_ldisc_receive_buf(struct tty_ldisc *ld, const unsigned char *p,
-			  const char *f, int count)
-{
-	if (ld->ops->receive_buf2)
-		count = ld->ops->receive_buf2(ld->tty, p, f, count);
-	else {
-		count = min_t(int, count, ld->tty->receive_room);
-		if (count && ld->ops->receive_buf)
-			ld->ops->receive_buf(ld->tty, p, f, count);
-	}
-	return count;
-}
-
-static int
-receive_buf(struct tty_port *port, struct tty_buffer *head, int count)
-{
-	unsigned char *p = char_buf_ptr(head, head->read);
-	const char *f = NULL;
-	int n;
-
-	if (~head->flags & TTYB_NORMAL)
-		f = flag_buf_ptr(head, head->read);
-
-	n = port->client_ops->receive_buf(port, p, f, count);
-	if (n > 0)
-		memset(p, 0, n);
-	return n;
-}
-
-static void flush_to_ldisc(struct work_struct *work)
-{
-	struct tty_port *port = container_of(work, struct tty_port, buf.work);
-	struct tty_bufhead *buf = &port->buf;
-
-	mutex_lock(&buf->lock);
-
-	while (1) {
-		struct tty_buffer *head = buf->head;
-		struct tty_buffer *next;
-		int count;
-
-		 
-		if (atomic_read(&buf->priority))
-			break;
-
-		 
-		next = smp_load_acquire(&head->next);
-		 
-		count = smp_load_acquire(&head->commit) - head->read;
-		if (!count) {
-			if (next == NULL)
-				break;
-			buf->head = next;
-			tty_buffer_free(port, head);
-			continue;
-		}
-
-		count = receive_buf(port, head, count);
-		if (!count)
-			break;
-		head->read += count;
-
-		if (need_resched())
-			cond_resched();
-	}
-
-	mutex_unlock(&buf->lock);
-
-}
-
 void tty_buffer_init(struct tty_port *port)
 {
 	struct tty_bufhead *buf = &port->buf;
@@ -155,7 +72,7 @@ void tty_buffer_init(struct tty_port *port)
 	init_llist_head(&buf->free);
 	atomic_set(&buf->mem_used, 0);
 	atomic_set(&buf->priority, 0);
-	INIT_WORK(&buf->work, flush_to_ldisc);
+	INIT_WORK(&buf->work, NULL);
 	buf->mem_limit = TTYB_DEFAULT_MEM_LIMIT;
 }
 

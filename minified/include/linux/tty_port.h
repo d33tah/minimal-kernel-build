@@ -60,18 +60,11 @@ struct tty_port_operations {
 	void (*destruct)(struct tty_port *port);
 };
 
-struct tty_port_client_operations {
-	int (*receive_buf)(struct tty_port *port, const unsigned char *, const unsigned char *, size_t);
-};
-
-extern const struct tty_port_client_operations tty_port_default_client_ops;
-
 struct tty_port {
 	struct tty_bufhead	buf;
 	struct tty_struct	*tty;
 	struct tty_struct	*itty;
 	const struct tty_port_operations *ops;
-	const struct tty_port_client_operations *client_ops;
 	spinlock_t		lock;
 	int			blocked_open;
 	int			count;

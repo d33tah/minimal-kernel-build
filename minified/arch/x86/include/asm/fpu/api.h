@@ -16,7 +16,6 @@
 extern void kernel_fpu_begin_mask(unsigned int kfpu_mask);
 extern void kernel_fpu_end(void);
 extern bool irq_fpu_usable(void);
-extern void fpregs_mark_activate(void);
 
  
 static inline void kernel_fpu_begin(void)
@@ -47,10 +46,7 @@ static inline void fpregs_assert_state_consistent(void) { }
  
 extern void switch_fpu_return(void);
 
- 
-extern int cpu_has_xfeatures(u64 xfeatures_mask, const char **feature_name);
 
- 
 extern int  fpu__exception_code(struct fpu *fpu, int trap_nr);
 extern void fpu_sync_fpstate(struct fpu *fpu);
 extern void fpu_reset_from_exception_fixup(void);

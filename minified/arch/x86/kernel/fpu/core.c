@@ -319,16 +319,6 @@ void switch_fpu_return(void)
 }
 
 
-void fpregs_mark_activate(void)
-{
-	struct fpu *fpu = &current->thread.fpu;
-
-	fpregs_activate(fpu);
-	fpu->last_cpu = smp_processor_id();
-	clear_thread_flag(TIF_NEED_FPU_LOAD);
-}
-
-
 int fpu__exception_code(struct fpu *fpu, int trap_nr)
 {
 	int err;

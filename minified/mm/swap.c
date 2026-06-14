@@ -28,18 +28,9 @@ static inline void folio_clear_idle(struct folio *folio) { }
 #include "internal.h"
 
 
-struct lru_rotate {
-	local_lock_t lock;
-	struct pagevec pvec;
-};
-static DEFINE_PER_CPU(struct lru_rotate, lru_rotate) = {
-	.lock = INIT_LOCAL_LOCK(lock),
-};
-
 struct lru_pvecs {
 	local_lock_t lock;
 	struct pagevec lru_add;
-	struct pagevec lru_deactivate_file;
 };
 static DEFINE_PER_CPU(struct lru_pvecs, lru_pvecs) = {
 	.lock = INIT_LOCAL_LOCK(lock),
@@ -86,44 +77,6 @@ void __put_page(struct page *page)
 		__put_compound_page(page);
 	else
 		__put_single_page(page);
-}
-
-static void pagevec_lru_move_fn(struct pagevec *pvec,
-	void (*move_fn)(struct page *page, struct lruvec *lruvec))
-{
-	int i;
-	struct lruvec *lruvec = NULL;
-	unsigned long flags = 0;
-
-	for (i = 0; i < pagevec_count(pvec); i++) {
-		struct page *page = pvec->pages[i];
-		struct folio *folio = page_folio(page);
-
-		 
-		if (!TestClearPageLRU(page))
-			continue;
-
-		lruvec = folio_lruvec_relock_irqsave(folio, lruvec, &flags);
-		(*move_fn)(page, lruvec);
-
-		SetPageLRU(page);
-	}
-	if (lruvec)
-		unlock_page_lruvec_irqrestore(lruvec, flags);
-	release_pages(pvec->pages, pvec->nr);
-	pagevec_reinit(pvec);
-}
-
-static void pagevec_move_tail_fn(struct page *page, struct lruvec *lruvec)
-{
-	struct folio *folio = page_folio(page);
-
-	if (!folio_test_unevictable(folio)) {
-		lruvec_del_folio(lruvec, folio);
-		folio_clear_active(folio);
-		lruvec_add_folio_tail(lruvec, folio);
-		__count_vm_events(PGROTATED, folio_nr_pages(folio));
-	}
 }
 
 static bool pagevec_add_and_need_flush(struct pagevec *pvec, struct page *page)
@@ -232,58 +185,12 @@ void lru_cache_add_inactive_or_unevictable(struct page *page,
 		lru_cache_add(page);
 }
 
-static void lru_deactivate_file_fn(struct page *page, struct lruvec *lruvec)
-{
-	bool active = PageActive(page);
-	int nr_pages = thp_nr_pages(page);
-
-	if (PageUnevictable(page))
-		return;
-
-	 
-	if (page_mapped(page))
-		return;
-
-	del_page_from_lru_list(page, lruvec);
-	ClearPageActive(page);
-	ClearPageReferenced(page);
-
-	if (PageWriteback(page) || PageDirty(page)) {
-		 
-		add_page_to_lru_list(page, lruvec);
-		SetPageReclaim(page);
-	} else {
-		 
-		add_page_to_lru_list_tail(page, lruvec);
-		__count_vm_events(PGROTATED, nr_pages);
-	}
-
-	if (active) {
-		__count_vm_events(PGDEACTIVATE, nr_pages);
-	}
-}
-
 void lru_add_drain_cpu(int cpu)
 {
 	struct pagevec *pvec = &per_cpu(lru_pvecs.lru_add, cpu);
 
 	if (pagevec_count(pvec))
 		__pagevec_lru_add(pvec);
-
-	pvec = &per_cpu(lru_rotate.pvec, cpu);
-	 
-	if (data_race(pagevec_count(pvec))) {
-		unsigned long flags;
-
-		 
-		local_lock_irqsave(&lru_rotate.lock, flags);
-		pagevec_lru_move_fn(pvec, pagevec_move_tail_fn);
-		local_unlock_irqrestore(&lru_rotate.lock, flags);
-	}
-
-	pvec = &per_cpu(lru_pvecs.lru_deactivate_file, cpu);
-	if (pagevec_count(pvec))
-		pagevec_lru_move_fn(pvec, lru_deactivate_file_fn);
 
 	activate_page_drain(cpu);
 }

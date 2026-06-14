@@ -309,10 +309,6 @@ void init_entity_runnable_average(struct sched_entity *se)
 void post_init_entity_util_avg(struct task_struct *p)
 {
 }
-static void update_tg_load_avg(struct cfs_rq *cfs_rq)
-{
-}
-
 static void update_curr(struct cfs_rq *cfs_rq)
 {
 	struct sched_entity *curr = cfs_rq->curr;
@@ -997,101 +993,6 @@ static void task_fork_fair(struct task_struct *p)
 	rq_unlock(rq, &rf);
 }
 
-static void
-prio_changed_fair(struct rq *rq, struct task_struct *p, int oldprio)
-{
-	if (!task_on_rq_queued(p))
-		return;
-
-	if (rq->cfs.nr_running == 1)
-		return;
-
-	if (task_current(rq, p)) {
-		if (p->prio > oldprio)
-			resched_curr(rq);
-	} else
-		check_preempt_curr(rq, p, 0);
-}
-
-static inline bool vruntime_normalized(struct task_struct *p)
-{
-	struct sched_entity *se = &p->se;
-
-	if (p->on_rq)
-		return true;
-
-	if (!se->sum_exec_runtime ||
-	    (READ_ONCE(p->__state) == TASK_WAKING && p->sched_remote_wakeup))
-		return true;
-
-	return false;
-}
-
-static void propagate_entity_cfs_rq(struct sched_entity *se) { }
-
-static void detach_entity_cfs_rq(struct sched_entity *se)
-{
-	struct cfs_rq *cfs_rq = cfs_rq_of(se);
-
-	update_load_avg(cfs_rq, se, 0);
-	detach_entity_load_avg(cfs_rq, se);
-	update_tg_load_avg(cfs_rq);
-	propagate_entity_cfs_rq(se);
-}
-
-static void attach_entity_cfs_rq(struct sched_entity *se)
-{
-	struct cfs_rq *cfs_rq = cfs_rq_of(se);
-
-	update_load_avg(cfs_rq, se, sched_feat(ATTACH_AGE_LOAD) ? 0 : SKIP_AGE_LOAD);
-	attach_entity_load_avg(cfs_rq, se);
-	update_tg_load_avg(cfs_rq);
-	propagate_entity_cfs_rq(se);
-}
-
-static void detach_task_cfs_rq(struct task_struct *p)
-{
-	struct sched_entity *se = &p->se;
-	struct cfs_rq *cfs_rq = cfs_rq_of(se);
-
-	if (!vruntime_normalized(p)) {
-		
-		place_entity(cfs_rq, se, 0);
-		se->vruntime -= cfs_rq->min_vruntime;
-	}
-
-	detach_entity_cfs_rq(se);
-}
-
-static void attach_task_cfs_rq(struct task_struct *p)
-{
-	struct sched_entity *se = &p->se;
-	struct cfs_rq *cfs_rq = cfs_rq_of(se);
-
-	attach_entity_cfs_rq(se);
-
-	if (!vruntime_normalized(p))
-		se->vruntime += cfs_rq->min_vruntime;
-}
-
-static void switched_from_fair(struct rq *rq, struct task_struct *p)
-{
-	detach_task_cfs_rq(p);
-}
-
-static void switched_to_fair(struct rq *rq, struct task_struct *p)
-{
-	attach_task_cfs_rq(p);
-
-	if (task_on_rq_queued(p)) {
-		
-		if (task_current(rq, p))
-			resched_curr(rq);
-		else
-			check_preempt_curr(rq, p, 0);
-	}
-}
-
 static void set_next_task_fair(struct rq *rq, struct task_struct *p, bool first)
 {
 	struct sched_entity *se = &p->se;
@@ -1123,10 +1024,6 @@ DEFINE_SCHED_CLASS(fair) = {
 
 	.task_tick		= task_tick_fair,
 	.task_fork		= task_fork_fair,
-
-	.prio_changed		= prio_changed_fair,
-	.switched_from		= switched_from_fair,
-	.switched_to		= switched_to_fair,
 
 };
 

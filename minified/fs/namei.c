@@ -341,19 +341,6 @@ static void restore_nameidata(void)
 		kfree(now->stack);
 }
 
-static bool nd_alloc_stack(struct nameidata *nd)
-{
-	struct saved *p;
-
-	p= kmalloc_array(MAXSYMLINKS, sizeof(struct saved),
-			 nd->flags & LOOKUP_RCU ? GFP_ATOMIC : GFP_KERNEL);
-	if (unlikely(!p))
-		return false;
-	memcpy(p, nd->internal, sizeof(nd->internal));
-	nd->stack = p;
-	return true;
-}
-
 static bool path_connected(struct vfsmount *mnt, struct dentry *dentry)
 {
 	struct super_block *sb = mnt->mnt_sb;
@@ -591,12 +578,6 @@ static inline void put_link(struct nameidata *nd)
 	do_delayed_call(&last->done);
 	if (!(nd->flags & LOOKUP_RCU))
 		path_put(&last->link);
-}
-
-static inline int may_follow_link(struct nameidata *nd, const struct inode *inode)
-{
-	/* Stub: allow following links */
-	return 0;
 }
 
 int may_linkat(struct user_namespace *mnt_userns, struct path *link)
@@ -882,100 +863,7 @@ static inline int may_lookup(struct user_namespace *mnt_userns,
 	return inode_permission(mnt_userns, nd->inode, MAY_EXEC);
 }
 
-static int reserve_stack(struct nameidata *nd, struct path *link, unsigned seq)
-{
-	if (unlikely(nd->total_link_count++ >= MAXSYMLINKS))
-		return -ELOOP;
-
-	if (likely(nd->depth != EMBEDDED_LEVELS))
-		return 0;
-	if (likely(nd->stack != nd->internal))
-		return 0;
-	if (likely(nd_alloc_stack(nd)))
-		return 0;
-
-	if (nd->flags & LOOKUP_RCU) {
-		 
-		 
-		bool grabbed_link = legitimize_path(nd, link, seq);
-
-		if (!try_to_unlazy(nd) || !grabbed_link)
-			return -ECHILD;
-
-		if (nd_alloc_stack(nd))
-			return 0;
-	}
-	return -ENOMEM;
-}
-
 enum {WALK_TRAILING = 1, WALK_MORE = 2, WALK_NOFOLLOW = 4};
-
-static const char *pick_link(struct nameidata *nd, struct path *link,
-		     struct inode *inode, unsigned seq, int flags)
-{
-	struct saved *last;
-	const char *res;
-	int error = reserve_stack(nd, link, seq);
-
-	if (unlikely(error)) {
-		if (!(nd->flags & LOOKUP_RCU))
-			path_put(link);
-		return ERR_PTR(error);
-	}
-	last = nd->stack + nd->depth++;
-	last->link = *link;
-	clear_delayed_call(&last->done);
-	last->seq = seq;
-
-	if (flags & WALK_TRAILING) {
-		error = may_follow_link(nd, inode);
-		if (unlikely(error))
-			return ERR_PTR(error);
-	}
-
-	if (unlikely(nd->flags & LOOKUP_NO_SYMLINKS) ||
-			unlikely(link->mnt->mnt_flags & MNT_NOSYMFOLLOW))
-		return ERR_PTR(-ELOOP);
-
-	if (!(nd->flags & LOOKUP_RCU)) {
-		touch_atime(&last->link);
-		cond_resched();
-	} else if (atime_needs_update(&last->link, inode)) {
-		if (!try_to_unlazy(nd))
-			return ERR_PTR(-ECHILD);
-		touch_atime(&last->link);
-	}
-
-	res = READ_ONCE(inode->i_link);
-	if (!res) {
-		const char * (*get)(struct dentry *, struct inode *,
-				struct delayed_call *);
-		get = inode->i_op->get_link;
-		if (nd->flags & LOOKUP_RCU) {
-			res = get(NULL, inode, &last->done);
-			if (res == ERR_PTR(-ECHILD) && try_to_unlazy(nd))
-				res = get(link->dentry, inode, &last->done);
-		} else {
-			res = get(link->dentry, inode, &last->done);
-		}
-		if (!res)
-			goto all_done;
-		if (IS_ERR(res))
-			return res;
-	}
-	if (*res == '/') {
-		error = nd_jump_root(nd);
-		if (unlikely(error))
-			return ERR_PTR(error);
-		while (unlikely(*++res == '/'))
-			;
-	}
-	if (*res)
-		return res;
-all_done:  
-	put_link(nd);
-	return NULL;
-}
 
 static const char *step_into(struct nameidata *nd, int flags,
 		     struct dentry *dentry, struct inode *inode, unsigned seq)
@@ -985,29 +873,21 @@ static const char *step_into(struct nameidata *nd, int flags,
 
 	if (err < 0)
 		return ERR_PTR(err);
-	if (likely(!d_is_symlink(path.dentry)) ||
-	   ((flags & WALK_TRAILING) && !(nd->flags & LOOKUP_FOLLOW)) ||
-	   (flags & WALK_NOFOLLOW)) {
-		
-		if (!(nd->flags & LOOKUP_RCU)) {
-			dput(nd->path.dentry);
-			if (nd->path.mnt != path.mnt)
-				mntput(nd->path.mnt);
-		}
-		nd->path = path;
-		nd->inode = inode;
-		nd->seq = seq;
-		return NULL;
+	/*
+	 * No symlink inode can ever exist on this build (vfs_symlink is a stub
+	 * returning -EPERM and no i_op->get_link is set anywhere), so
+	 * d_is_symlink() is always false: the symlink-follow arm (pick_link)
+	 * is unreachable and has been removed.
+	 */
+	if (!(nd->flags & LOOKUP_RCU)) {
+		dput(nd->path.dentry);
+		if (nd->path.mnt != path.mnt)
+			mntput(nd->path.mnt);
 	}
-	if (nd->flags & LOOKUP_RCU) {
-		
-		if (read_seqcount_retry(&path.dentry->d_seq, seq))
-			return ERR_PTR(-ECHILD);
-	} else {
-		if (path.mnt == nd->path.mnt)
-			mntget(path.mnt);
-	}
-	return pick_link(nd, &path, inode, seq, flags);
+	nd->path = path;
+	nd->inode = inode;
+	nd->seq = seq;
+	return NULL;
 }
 
 static struct dentry *follow_dotdot_rcu(struct nameidata *nd,

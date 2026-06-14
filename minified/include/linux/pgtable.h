@@ -106,46 +106,6 @@ static inline pte_t *virt_to_kpte(unsigned long vaddr)
 	return pmd_none(*pmd) ? NULL : pte_offset_kernel(pmd, vaddr);
 }
 
-#ifndef __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
-static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
-					    unsigned long address,
-					    pte_t *ptep)
-{
-	pte_t pte = *ptep;
-	int r = 1;
-	if (!pte_young(pte))
-		r = 0;
-	else
-		set_pte_at(vma->vm_mm, address, ptep, pte_mkold(pte));
-	return r;
-}
-#endif
-
-
-#ifndef __HAVE_ARCH_PTEP_GET_AND_CLEAR
-static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
-				       unsigned long address,
-				       pte_t *ptep)
-{
-	pte_t pte = *ptep;
-	pte_clear(mm, address, ptep);
-	return pte;
-}
-#endif
-
-
-#ifndef __HAVE_ARCH_PTEP_GET_AND_CLEAR_FULL
-static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm,
-					    unsigned long address, pte_t *ptep,
-					    int full)
-{
-	pte_t pte;
-	pte = ptep_get_and_clear(mm, address, ptep);
-	return pte;
-}
-#endif
-
-
 #ifndef __HAVE_ARCH_UPDATE_MMU_TLB
 static inline void update_mmu_tlb(struct vm_area_struct *vma,
 				unsigned long address, pte_t *ptep)
@@ -154,15 +114,6 @@ static inline void update_mmu_tlb(struct vm_area_struct *vma,
 #define __HAVE_ARCH_UPDATE_MMU_TLB
 #endif
 
-
-#ifndef __HAVE_ARCH_PTEP_SET_WRPROTECT
-struct mm_struct;
-static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long address, pte_t *ptep)
-{
-	pte_t old_pte = *ptep;
-	set_pte_at(mm, address, ptep, pte_wrprotect(old_pte));
-}
-#endif
 
 #ifndef pte_sw_mkyoung
 static inline pte_t pte_sw_mkyoung(pte_t pte)
@@ -179,14 +130,6 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 #endif
 
 
-
-
-#ifndef __HAVE_ARCH_PTE_SAME
-static inline int pte_same(pte_t pte_a, pte_t pte_b)
-{
-	return pte_val(pte_a) == pte_val(pte_b);
-}
-#endif
 
 
 #ifndef pte_access_permitted
@@ -439,36 +382,10 @@ static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
 	return pte;
 }
 
-#ifndef __HAVE_PFNMAP_TRACKING
-
-static inline int track_pfn_remap(struct vm_area_struct *vma, pgprot_t *prot,
-				  unsigned long pfn, unsigned long addr,
-				  unsigned long size)
-{
-	return 0;
-}
-
-static inline void track_pfn_insert(struct vm_area_struct *vma, pgprot_t *prot,
-				    pfn_t pfn)
-{
-}
-
-static inline int track_pfn_copy(struct vm_area_struct *vma)
-{
-	return 0;
-}
-
-static inline void untrack_pfn(struct vm_area_struct *vma,
-			       unsigned long pfn, unsigned long size)
-{
-}
-
-#else
 extern void track_pfn_insert(struct vm_area_struct *vma, pgprot_t *prot,
 			     pfn_t pfn);
 extern void untrack_pfn(struct vm_area_struct *vma, unsigned long pfn,
 			unsigned long size);
-#endif
 
 #ifdef __HAVE_COLOR_ZERO_PAGE
 static inline int is_zero_pfn(unsigned long pfn)
@@ -555,15 +472,6 @@ static inline int pmd_clear_huge(pmd_t *pmd)
 static inline void init_espfix_bsp(void) { }
 
 extern void __init pgtable_cache_init(void);
-
-#ifndef __HAVE_ARCH_PFN_MODIFY_ALLOWED
-static inline bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
-{
-	return true;
-}
-
-#endif  
-
 
 #ifndef PAGE_KERNEL_RO
 # define PAGE_KERNEL_RO PAGE_KERNEL

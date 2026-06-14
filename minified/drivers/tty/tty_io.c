@@ -63,7 +63,6 @@ LIST_HEAD(tty_drivers);
 
 DEFINE_MUTEX(tty_mutex);
 
-static ssize_t tty_read(struct kiocb *, struct iov_iter *);
 static ssize_t tty_write(struct kiocb *, struct iov_iter *);
 static int tty_open(struct inode *, struct file *);
 static int __tty_fasync(int fd, struct file *filp, int on);
@@ -200,7 +199,6 @@ static struct tty_driver *get_tty_driver(dev_t device, int *index)
 
 static const struct file_operations tty_fops = {
 	.llseek		= no_llseek,
-	.read_iter	= tty_read,
 	.write_iter	= tty_write,
 	.open		= tty_open,
 	.release	= tty_release,
@@ -209,7 +207,6 @@ static const struct file_operations tty_fops = {
 
 static const struct file_operations console_fops = {
 	.llseek		= no_llseek,
-	.read_iter	= tty_read,
 	.write_iter	= redirected_tty_write,
 	.open		= tty_open,
 	.release	= tty_release,
@@ -226,79 +223,6 @@ static void tty_update_time(struct timespec64 *time)
 	
 	if ((sec ^ time->tv_sec) & ~7)
 		time->tv_sec = sec;
-}
-
-static int iterate_tty_read(struct tty_ldisc *ld, struct tty_struct *tty,
-		struct file *file, struct iov_iter *to)
-{
-	int retval = 0;
-	void *cookie = NULL;
-	unsigned long offset = 0;
-	char kernel_buf[64];
-	size_t count = iov_iter_count(to);
-
-	do {
-		int size, copied;
-
-		size = count > sizeof(kernel_buf) ? sizeof(kernel_buf) : count;
-		size = ld->ops->read(tty, file, kernel_buf, size, &cookie, offset);
-		if (!size)
-			break;
-
-		if (size < 0) {
-			
-			if (retval)
-				break;
-			retval = size;
-
-			
-			if (retval == -EOVERFLOW)
-				offset = 0;
-			break;
-		}
-
-		copied = copy_to_iter(kernel_buf, size, to);
-		offset += copied;
-		count -= copied;
-
-		
-		if (unlikely(copied != size)) {
-			count = 0;
-			retval = -EFAULT;
-		}
-	} while (cookie);
-
-	
-	memzero_explicit(kernel_buf, sizeof(kernel_buf));
-	return offset ? offset : retval;
-}
-
-static ssize_t tty_read(struct kiocb *iocb, struct iov_iter *to)
-{
-	int i;
-	struct file *file = iocb->ki_filp;
-	struct inode *inode = file_inode(file);
-	struct tty_struct *tty = file_tty(file);
-	struct tty_ldisc *ld;
-
-	if (tty_paranoia_check(tty, inode, "tty_read"))
-		return -EIO;
-	if (!tty || tty_io_error(tty))
-		return -EIO;
-
-	
-	ld = tty_ldisc_ref_wait(tty);
-	if (!ld)
-		return 0;
-	i = -EIO;
-	if (ld->ops->read)
-		i = iterate_tty_read(ld, tty, file, to);
-	tty_ldisc_deref(ld);
-
-	if (i > 0)
-		tty_update_time(&inode->i_atime);
-
-	return i;
 }
 
 static void tty_write_unlock(struct tty_struct *tty)

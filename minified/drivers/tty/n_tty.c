@@ -73,14 +73,6 @@ static int n_tty_open(struct tty_struct *tty)
 	return 0;
 }
 
-static ssize_t n_tty_read(struct tty_struct *tty, struct file *file,
-			 unsigned char *buf, size_t nr,
-			 void **cookie, unsigned long offset)
-{
-	 
-	return 0;
-}
-
 static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 			   const unsigned char *buf, size_t nr)
 {
@@ -145,7 +137,6 @@ static struct tty_ldisc_ops n_tty_ops = {
 	.open            = n_tty_open,
 	.close           = n_tty_close,
 	.flush_buffer    = n_tty_flush_buffer,
-	.read            = n_tty_read,
 	.write           = n_tty_write,
 	.set_termios     = n_tty_set_termios,
 	.receive_buf     = n_tty_receive_buf,

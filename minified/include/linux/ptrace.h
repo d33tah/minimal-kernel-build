@@ -31,7 +31,6 @@ extern int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,
 #define PT_EVENT_FLAG(event)	(1 << (PT_OPT_FLAG_SHIFT + (event)))
 #define PT_TRACESYSGOOD		PT_EVENT_FLAG(0)
 
-extern int ptrace_notify(int exit_code, unsigned long message);
 #define PTRACE_MODE_READ	0x01
 #define PTRACE_MODE_ATTACH	0x02
 #define PTRACE_MODE_NOAUDIT	0x04
@@ -48,33 +47,16 @@ static inline void ptrace_unlink(struct task_struct *child)
 
 static inline bool ptrace_event_enabled(struct task_struct *task, int event)
 {
-	return task->ptrace & PT_EVENT_FLAG(event);
+	/* task->ptrace is never set in this minimal boot (no ptrace(2)). */
+	return false;
 }
 
 static inline void ptrace_event(int event, unsigned long message)
 {
-	if (unlikely(ptrace_event_enabled(current, event))) {
-		ptrace_notify((event << 8) | SIGTRAP, message);
-	} else if (event == PTRACE_EVENT_EXEC) {
-		 
-		if ((current->ptrace & (PT_PTRACED|PT_SEIZED)) == PT_PTRACED)
-			send_sig(SIGTRAP, current, 0);
-	}
 }
 
 static inline void ptrace_event_pid(int event, struct pid *pid)
 {
-	 
-	unsigned long message = 0;
-	struct pid_namespace *ns;
-
-	rcu_read_lock();
-	ns = task_active_pid_ns(rcu_dereference(current->parent));
-	if (ns)
-		message = pid_nr_ns(pid, ns);
-	rcu_read_unlock();
-
-	ptrace_event(event, message);
 }
 
 static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
@@ -170,20 +152,8 @@ static inline void user_single_step_report(struct pt_regs *regs)
 
 static inline int ptrace_report_syscall(unsigned long message)
 {
-	int ptrace = current->ptrace;
-	int signr;
-
-	if (!(ptrace & PT_PTRACED))
-		return 0;
-
-	signr = ptrace_notify(SIGTRAP | ((ptrace & PT_TRACESYSGOOD) ? 0x80 : 0),
-			      message);
-
-	 
-	if (signr)
-		send_sig(signr, current, 1);
-
-	return fatal_signal_pending(current);
+	/* task->ptrace is never set (no ptrace(2)), so this is a no-op. */
+	return 0;
 }
 
 static inline __must_check int ptrace_report_syscall_entry(

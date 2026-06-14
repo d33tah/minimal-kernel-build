@@ -62,10 +62,7 @@ static bool sig_ignored(struct task_struct *t, int sig, bool force)
 	if (sigismember(&t->blocked, sig) || sigismember(&t->real_blocked, sig))
 		return false;
 
-	
-	if (t->ptrace && sig != SIGKILL)
-		return false;
-
+	/* t->ptrace is never set (no ptrace(2)), so the ptrace gate is gone. */
 	return sig_task_ignored(t, sig, force);
 }
 
@@ -378,8 +375,8 @@ force_sig_info_to_task(struct kernel_siginfo *info, struct task_struct *t,
 		}
 	}
 	
-	if (action->sa.sa_handler == SIG_DFL &&
-	    (!t->ptrace || (handler == HANDLER_EXIT)))
+	/* t->ptrace is never set, so (!t->ptrace || ...) is always true. */
+	if (action->sa.sa_handler == SIG_DFL)
 		t->signal->flags &= ~SIGNAL_UNKILLABLE;
 	ret = send_signal_locked(sig, info, t, PIDTYPE_PID);
 	spin_unlock_irqrestore(&t->sighand->siglock, flags);
@@ -507,14 +504,6 @@ int force_sig_fault(int sig, int code, void __user *addr
 bool do_notify_parent(struct task_struct *tsk, int sig)
 {
 	return false;
-}
-
-int ptrace_notify(int exit_code, unsigned long message)
-{
-	/* Stub: no task is ever ptraced in this minimal boot, so the
-	 * header callers (ptrace_event/ptrace_report_syscall, both gated by
-	 * current->ptrace) never reach here. */
-	return 0;
 }
 
 bool get_signal(struct ksignal *ksig)

@@ -40,34 +40,12 @@ void klist_init(struct klist *k, void (*get)(struct klist_node *),
 	k->put = put;
 }
 
-struct klist_waiter {
-	struct list_head list;
-	struct klist_node *node;
-	struct task_struct *process;
-	int woken;
-};
-
-static DEFINE_SPINLOCK(klist_remove_lock);
-static LIST_HEAD(klist_remove_waiters);
-
 static void klist_release(struct kref *kref)
 {
-	struct klist_waiter *waiter, *tmp;
 	struct klist_node *n = container_of(kref, struct klist_node, n_ref);
 
 	WARN_ON(!knode_dead(n));
 	list_del(&n->n_node);
-	spin_lock(&klist_remove_lock);
-	list_for_each_entry_safe(waiter, tmp, &klist_remove_waiters, list) {
-		if (waiter->node != n)
-			continue;
-
-		list_del(&waiter->list);
-		waiter->woken = 1;
-		mb();
-		wake_up_process(waiter->process);
-	}
-	spin_unlock(&klist_remove_lock);
 	knode_set_klist(n, NULL);
 }
 
@@ -94,33 +72,6 @@ static void klist_put(struct klist_node *n, bool kill)
 void klist_del(struct klist_node *n)
 {
 	klist_put(n, true);
-}
-
-void klist_remove(struct klist_node *n)
-{
-	struct klist_waiter waiter;
-
-	waiter.node = n;
-	waiter.process = current;
-	waiter.woken = 0;
-	spin_lock(&klist_remove_lock);
-	list_add(&waiter.list, &klist_remove_waiters);
-	spin_unlock(&klist_remove_lock);
-
-	klist_del(n);
-
-	for (;;) {
-		set_current_state(TASK_UNINTERRUPTIBLE);
-		if (waiter.woken)
-			break;
-		schedule();
-	}
-	__set_current_state(TASK_RUNNING);
-}
-
-int klist_node_attached(struct klist_node *n)
-{
-	return (n->n_klist != NULL);
 }
 
 void klist_iter_init_node(struct klist *k, struct klist_iter *i,

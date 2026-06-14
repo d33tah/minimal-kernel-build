@@ -8,7 +8,4 @@
 extern void pat_disable(const char *reason);
 extern void init_cache_modes(void);
 
-bool x86_has_pat_wp(void);
-enum page_cache_mode pgprot2cachemode(pgprot_t pgprot);
-
-#endif  
+#endif

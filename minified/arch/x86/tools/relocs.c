@@ -111,59 +111,6 @@ static void regex_init(int use_real_mode)
         }
 }
 
-static const char *sym_type(unsigned type)
-{
-	static const char *type_name[] = {
-#define SYM_TYPE(X) [X] = #X
-		SYM_TYPE(STT_NOTYPE),
-		SYM_TYPE(STT_OBJECT),
-		SYM_TYPE(STT_FUNC),
-		SYM_TYPE(STT_SECTION),
-		SYM_TYPE(STT_FILE),
-		SYM_TYPE(STT_COMMON),
-		SYM_TYPE(STT_TLS),
-#undef SYM_TYPE
-	};
-	const char *name = "unknown sym type name";
-	if (type < ARRAY_SIZE(type_name)) {
-		name = type_name[type];
-	}
-	return name;
-}
-
-static const char *sym_bind(unsigned bind)
-{
-	static const char *bind_name[] = {
-#define SYM_BIND(X) [X] = #X
-		SYM_BIND(STB_LOCAL),
-		SYM_BIND(STB_GLOBAL),
-		SYM_BIND(STB_WEAK),
-#undef SYM_BIND
-	};
-	const char *name = "unknown sym bind name";
-	if (bind < ARRAY_SIZE(bind_name)) {
-		name = bind_name[bind];
-	}
-	return name;
-}
-
-static const char *sym_visibility(unsigned visibility)
-{
-	static const char *visibility_name[] = {
-#define SYM_VISIBILITY(X) [X] = #X
-		SYM_VISIBILITY(STV_DEFAULT),
-		SYM_VISIBILITY(STV_INTERNAL),
-		SYM_VISIBILITY(STV_HIDDEN),
-		SYM_VISIBILITY(STV_PROTECTED),
-#undef SYM_VISIBILITY
-	};
-	const char *name = "unknown sym visibility name";
-	if (visibility < ARRAY_SIZE(visibility_name)) {
-		name = visibility_name[visibility];
-	}
-	return name;
-}
-
 static const char *rel_type(unsigned type)
 {
 	static const char *type_name[] = {
@@ -494,43 +441,6 @@ static void read_relocs(FILE *fp)
 }
 
 
-static void print_absolute_symbols(void)
-{
-	int i;
-	const char *format;
-
-	format = "%5d %08"PRIx32"  %5"PRId32" %10s %10s %12s %s\n";
-
-	printf("Absolute symbols\n");
-	printf(" Num:    Value Size  Type       Bind        Visibility  Name\n");
-	for (i = 0; i < shnum; i++) {
-		struct section *sec = &secs[i];
-		char *sym_strtab;
-		int j;
-
-		if (sec->shdr.sh_type != SHT_SYMTAB) {
-			continue;
-		}
-		sym_strtab = sec->link->strtab;
-		for (j = 0; j < sec->shdr.sh_size/sizeof(Elf_Sym); j++) {
-			Elf_Sym *sym;
-			const char *name;
-			sym = &sec->symtab[j];
-			name = sym_name(sym_strtab, sym);
-			if (sym->st_shndx != SHN_ABS) {
-				continue;
-			}
-			printf(format,
-				j, sym->st_value, sym->st_size,
-				sym_type(ELF_ST_TYPE(sym->st_info)),
-				sym_bind(ELF_ST_BIND(sym->st_info)),
-				sym_visibility(ELF_ST_VISIBILITY(sym->st_other)),
-				name);
-		}
-	}
-	printf("\n");
-}
-
 static void print_absolute_relocs(void)
 {
 	int i, printed = 0;
@@ -758,12 +668,7 @@ static int write32(uint32_t v, FILE *f)
 	return fwrite(buf, 1, 4, f) == 4 ? 0 : -1;
 }
 
-static int write32_as_text(uint32_t v, FILE *f)
-{
-	return fprintf(f, "\t.long 0x%08"PRIx32"\n", v) > 0 ? 0 : -1;
-}
-
-static void emit_relocs(int as_text, int use_real_mode)
+static void emit_relocs(int use_real_mode)
 {
 	int i;
 	int (*write_reloc)(uint32_t, FILE *) = write32;
@@ -785,14 +690,6 @@ static void emit_relocs(int as_text, int use_real_mode)
 	sort_relocs(&relocs32);
 	sort_relocs(&relocs16);
 
-	 
-	if (as_text) {
-		 
-		printf(".section \".data.reloc\",\"a\"\n");
-		printf(".balign 4\n");
-		write_reloc = write32_as_text;
-	}
-
 	if (use_real_mode) {
 		write_reloc(relocs16.count, stdout);
 		for (i = 0; i < relocs16.count; i++)
@@ -811,28 +708,9 @@ static void emit_relocs(int as_text, int use_real_mode)
 	}
 }
 
-static int do_reloc_info(struct section *sec, Elf_Rel *rel, ElfW(Sym) *sym,
-				const char *symname)
-{
-	printf("%s\t%s\t%s\t%s\n",
-		sec_name(sec->shdr.sh_info),
-		rel_type(ELF_R_TYPE(rel->r_info)),
-		symname,
-		sec_name(sym_index(sym)));
-	return 0;
-}
-
-static void print_reloc_info(void)
-{
-	printf("reloc section\treloc type\tsymbol\tsymbol section\n");
-	walk_relocs(do_reloc_info);
-}
-
 # define process process_32
 
-void process(FILE *fp, int use_real_mode, int as_text,
-	     int show_absolute_syms, int show_absolute_relocs,
-	     int show_reloc_info)
+void process(FILE *fp, int use_real_mode, int show_absolute_relocs)
 {
 	regex_init(use_real_mode);
 	read_ehdr(fp);
@@ -840,17 +718,9 @@ void process(FILE *fp, int use_real_mode, int as_text,
 	read_strtabs(fp);
 	read_symtabs(fp);
 	read_relocs(fp);
-	if (show_absolute_syms) {
-		print_absolute_symbols();
-		return;
-	}
 	if (show_absolute_relocs) {
 		print_absolute_relocs();
 		return;
 	}
-	if (show_reloc_info) {
-		print_reloc_info();
-		return;
-	}
-	emit_relocs(as_text, use_real_mode);
+	emit_relocs(use_real_mode);
 }

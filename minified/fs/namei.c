@@ -352,24 +352,15 @@ static bool path_connected(struct vfsmount *mnt, struct dentry *dentry)
 	return is_subdir(dentry, mnt->mnt_root);
 }
 
-static void drop_links(struct nameidata *nd)
-{
-	int i = nd->depth;
-	while (i--) {
-		struct saved *last = nd->stack + i;
-		do_delayed_call(&last->done);
-		clear_delayed_call(&last->done);
-	}
-}
-
 static void terminate_walk(struct nameidata *nd)
 {
-	drop_links(nd);
+	/*
+	 * nd->depth is always 0 on this build (no symlink is ever followed --
+	 * see step_into), so drop_links() and the nd->stack[] path_put loop
+	 * were no-ops and have been removed.
+	 */
 	if (!(nd->flags & LOOKUP_RCU)) {
-		int i;
 		path_put(&nd->path);
-		for (i = 0; i < nd->depth; i++)
-			path_put(&nd->stack[i].link);
 		if (nd->state & ND_ROOT_GRABBED) {
 			path_put(&nd->root);
 			nd->state &= ~ND_ROOT_GRABBED;
@@ -407,20 +398,13 @@ static inline bool legitimize_path(struct nameidata *nd,
 
 static bool legitimize_links(struct nameidata *nd)
 {
-	int i;
-	if (unlikely(nd->flags & LOOKUP_CACHED)) {
-		drop_links(nd);
-		nd->depth = 0;
+	/*
+	 * nd->depth is always 0 on this build (no symlink is ever followed),
+	 * so the per-link legitimize loop is dead. Only the LOOKUP_CACHED
+	 * bail-out remains live.
+	 */
+	if (unlikely(nd->flags & LOOKUP_CACHED))
 		return false;
-	}
-	for (i = 0; i < nd->depth; i++) {
-		struct saved *last = nd->stack + i;
-		if (unlikely(!legitimize_path(nd, &last->link, last->seq))) {
-			drop_links(nd);
-			nd->depth = i + 1;
-			return false;
-		}
-	}
 	return true;
 }
 
@@ -563,14 +547,6 @@ static int nd_jump_root(struct nameidata *nd)
 	return 0;
 }
 
-
-static inline void put_link(struct nameidata *nd)
-{
-	struct saved *last = nd->stack + --nd->depth;
-	do_delayed_call(&last->done);
-	if (!(nd->flags & LOOKUP_RCU))
-		path_put(&last->link);
-}
 
 int may_linkat(struct user_namespace *mnt_userns, struct path *link)
 {
@@ -985,11 +961,8 @@ static const char *walk_component(struct nameidata *nd, int flags)
 	struct inode *inode;
 	unsigned seq;
 	
-	if (unlikely(nd->last_type != LAST_NORM)) {
-		if (!(flags & WALK_MORE) && nd->depth)
-			put_link(nd);
+	if (unlikely(nd->last_type != LAST_NORM))
 		return handle_dots(nd, nd->last_type);
-	}
 	dentry = lookup_fast(nd, &inode, &seq);
 	if (IS_ERR(dentry))
 		return ERR_CAST(dentry);
@@ -998,8 +971,6 @@ static const char *walk_component(struct nameidata *nd, int flags)
 		if (IS_ERR(dentry))
 			return ERR_CAST(dentry);
 	}
-	if (!(flags & WALK_MORE) && nd->depth)
-		put_link(nd);
 	return step_into(nd, flags, dentry, inode, seq);
 }
 
@@ -1491,11 +1462,8 @@ static const char *open_last_lookups(struct nameidata *nd,
 
 	nd->flags |= op->intent;
 
-	if (nd->last_type != LAST_NORM) {
-		if (nd->depth)
-			put_link(nd);
+	if (nd->last_type != LAST_NORM)
 		return handle_dots(nd, nd->last_type);
-	}
 
 	if (!(open_flag & O_CREAT)) {
 		if (nd->last.name[nd->last.len])
@@ -1545,8 +1513,6 @@ static const char *open_last_lookups(struct nameidata *nd,
 	}
 
 finish_lookup:
-	if (nd->depth)
-		put_link(nd);
 	res = step_into(nd, WALK_TRAILING, dentry, inode, seq);
 	if (unlikely(res))
 		nd->flags &= ~(LOOKUP_OPEN|LOOKUP_CREATE|LOOKUP_EXCL);

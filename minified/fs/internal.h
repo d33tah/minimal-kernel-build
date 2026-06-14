@@ -71,9 +71,6 @@ extern int dentry_needs_remove_privs(struct dentry *dentry);
  
 
  
-extern void shrink_dentry_list(struct list_head *);
-
- 
 extern const struct file_operations pipefifo_fops;
 
 

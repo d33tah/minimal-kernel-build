@@ -192,14 +192,6 @@ static void d_lru_del(struct dentry *dentry)
 	WARN_ON_ONCE(!list_lru_del(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
 }
 
-static void d_shrink_add(struct dentry *dentry, struct list_head *list)
-{
-	D_FLAG_VERIFY(dentry, 0);
-	list_add(&dentry->d_lru, list);
-	dentry->d_flags |= DCACHE_SHRINK_LIST | DCACHE_LRU_LIST;
-	this_cpu_inc(nr_dentry_unused);
-}
-
 static void ___d_drop(struct dentry *dentry)
 {
 	struct hlist_bl_head *b;
@@ -508,101 +500,6 @@ repeat:
 	return ret;
 }
 
-
-void shrink_dentry_list(struct list_head *list)
-{
-	/* Stub: not needed for minimal boot */
-}
-
-enum d_walk_ret {
-	D_WALK_CONTINUE,
-	D_WALK_QUIT,
-	D_WALK_NORETRY,
-	D_WALK_SKIP,
-};
-
-static void d_walk(struct dentry *parent, void *data,
-		   enum d_walk_ret (*enter)(void *, struct dentry *))
-{
-	/* Stub: not needed for minimal boot */
-}
-
-struct select_data {
-	struct dentry *start;
-	union {
-		long found;
-		struct dentry *victim;
-	};
-	struct list_head dispose;
-};
-
-static enum d_walk_ret select_collect(void *_data, struct dentry *dentry)
-{
-	/* Stub: simplified dentry collection for minimal kernel */
-	struct select_data *data = _data;
-
-	if (data->start == dentry)
-		return D_WALK_CONTINUE;
-
-	if (!(dentry->d_flags & DCACHE_SHRINK_LIST) && !dentry->d_lockref.count) {
-		d_shrink_add(dentry, &data->dispose);
-		data->found++;
-	}
-	return D_WALK_CONTINUE;
-}
-
-void shrink_dcache_parent(struct dentry *parent)
-{
-	/* Stub: minimal dcache shrinking for simple kernel */
-	struct select_data data = {.start = parent};
-
-	INIT_LIST_HEAD(&data.dispose);
-	d_walk(parent, &data, select_collect);
-	if (!list_empty(&data.dispose))
-		shrink_dentry_list(&data.dispose);
-}
-
-
-static enum d_walk_ret find_submount(void *_data, struct dentry *dentry)
-{
-	struct dentry **victim = _data;
-	if (d_mountpoint(dentry)) {
-		__dget_dlock(dentry);
-		*victim = dentry;
-		return D_WALK_QUIT;
-	}
-	return D_WALK_CONTINUE;
-}
-
-void d_invalidate(struct dentry *dentry)
-{
-	bool had_submounts = false;
-	spin_lock(&dentry->d_lock);
-	if (d_unhashed(dentry)) {
-		spin_unlock(&dentry->d_lock);
-		return;
-	}
-	__d_drop(dentry);
-	spin_unlock(&dentry->d_lock);
-
-	
-	if (!dentry->d_inode)
-		return;
-
-	shrink_dcache_parent(dentry);
-	for (;;) {
-		struct dentry *victim = NULL;
-		d_walk(dentry, &victim, find_submount);
-		if (!victim) {
-			if (had_submounts)
-				shrink_dcache_parent(dentry);
-			return;
-		}
-		had_submounts = true;
-		detach_mounts(victim);
-		dput(victim);
-	}
-}
 
 static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 {

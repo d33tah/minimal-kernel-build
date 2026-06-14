@@ -163,10 +163,6 @@ extern struct dentry * d_alloc(struct dentry *, const struct qstr *);
 extern struct dentry * d_alloc_anon(struct super_block *);
 extern struct dentry * d_alloc_parallel(struct dentry *, const struct qstr *,
 					wait_queue_head_t *);
-extern void shrink_dcache_parent(struct dentry *);
-extern void d_invalidate(struct dentry *);
-
-
 extern struct dentry * d_make_root(struct inode *);
 
 

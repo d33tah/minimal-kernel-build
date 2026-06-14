@@ -226,9 +226,6 @@ LIST_HEAD(vmap_area_list);
 static struct rb_root vmap_area_root = RB_ROOT;
 static bool vmap_initialized __read_mostly;
 
-static struct rb_root purge_vmap_area_root = RB_ROOT;
-static LIST_HEAD(purge_vmap_area_list);
-static DEFINE_SPINLOCK(purge_vmap_area_lock);
 
 static struct kmem_cache *vmap_area_cachep;
 
@@ -320,19 +317,6 @@ find_va_links(struct vmap_area *va,
 	return link;
 }
 
-static __always_inline struct list_head *
-get_va_next_sibling(struct rb_node *parent, struct rb_node **link)
-{
-	struct list_head *list;
-
-	if (unlikely(!parent))
-		
-		return NULL;
-
-	list = &rb_entry(parent, struct vmap_area, rb_node)->list;
-	return (&parent->rb_right == link ? list->next : list);
-}
-
 static __always_inline void
 link_va(struct vmap_area *va, struct rb_root *root,
 	struct rb_node *parent, struct rb_node **link, struct list_head *head)
@@ -410,67 +394,6 @@ insert_vmap_area_augment(struct vmap_area *va,
 		link_va(va, root, parent, link, head);
 		augment_tree_propagate_from(va);
 	}
-}
-
-static __always_inline struct vmap_area *
-merge_or_add_vmap_area(struct vmap_area *va,
-	struct rb_root *root, struct list_head *head)
-{
-	struct vmap_area *sibling;
-	struct list_head *next;
-	struct rb_node **link;
-	struct rb_node *parent;
-	bool merged = false;
-
-	
-	link = find_va_links(va, root, NULL, &parent);
-	if (!link)
-		return NULL;
-
-	
-	next = get_va_next_sibling(parent, link);
-	if (unlikely(next == NULL))
-		goto insert;
-
-	
-	if (next != head) {
-		sibling = list_entry(next, struct vmap_area, list);
-		if (sibling->va_start == va->va_end) {
-			sibling->va_start = va->va_start;
-
-			
-			kmem_cache_free(vmap_area_cachep, va);
-
-			
-			va = sibling;
-			merged = true;
-		}
-	}
-
-	
-	if (next->prev != head) {
-		sibling = list_entry(next->prev, struct vmap_area, list);
-		if (sibling->va_end == va->va_start) {
-			
-			if (merged)
-				unlink_va(va, root);
-
-			sibling->va_end = va->va_end;
-
-			
-			kmem_cache_free(vmap_area_cachep, va);
-
-			
-			va = sibling;
-			merged = true;
-		}
-	}
-
-insert:
-	if (!merged)
-		link_va(va, root, parent, link, head);
-
-	return va;
 }
 
 static __always_inline bool
@@ -753,11 +676,11 @@ static void free_vmap_area_noflush(struct vmap_area *va)
 	unlink_va(va, &vmap_area_root);
 	spin_unlock(&vmap_area_lock);
 
-
-	spin_lock(&purge_vmap_area_lock);
-	merge_or_add_vmap_area(va,
-		&purge_vmap_area_root, &purge_vmap_area_list);
-	spin_unlock(&purge_vmap_area_lock);
+	/*
+	 * The lazy-purge list this va used to be merged into was never drained
+	 * (__purge_vmap_area_lazy is gone), so just release the descriptor.
+	 */
+	kmem_cache_free(vmap_area_cachep, va);
 }
 
 static void free_unmap_vmap_area(struct vmap_area *va)

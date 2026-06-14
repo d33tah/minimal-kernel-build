@@ -1084,9 +1084,7 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 
 	might_sleep_if(gfp_mask & __GFP_DIRECT_RECLAIM);
 
-	ac->spread_dirty_pages = (gfp_mask & __GFP_WRITE);
 
-	
 	ac->preferred_zoneref = first_zones_zonelist(ac->zonelist,
 					ac->highest_zoneidx, ac->nodemask);
 
@@ -1144,9 +1142,8 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 		goto out;
 
 	alloc_gfp = gfp;
-	ac.spread_dirty_pages = false;
 
-	
+
 	ac.nodemask = nodemask;
 
 	page = __alloc_pages_slowpath(alloc_gfp, order, &ac);

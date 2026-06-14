@@ -117,7 +117,6 @@ struct alloc_context {
 
 	 
 	enum zone_type highest_zoneidx;
-	bool spread_dirty_pages;
 };
 
  

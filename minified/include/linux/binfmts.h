@@ -52,7 +52,6 @@ struct linux_binfmt {
 	struct list_head lh;
 	struct module *module;
 	int (*load_binary)(struct linux_binprm *);
-	int (*load_shlib)(struct file *);
 } __randomize_layout;
 
 extern void __register_binfmt(struct linux_binfmt *fmt, int insert);

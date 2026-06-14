@@ -793,27 +793,13 @@ static int filemap_read_folio(struct file *file, struct address_space *mapping,
 static bool filemap_range_uptodate(struct address_space *mapping,
 		loff_t pos, struct iov_iter *iter, struct folio *folio)
 {
-	int count;
-
-	if (folio_test_uptodate(folio))
-		return true;
-	
-	if (iov_iter_is_pipe(iter))
-		return false;
-	if (!mapping->a_ops->is_partially_uptodate)
-		return false;
-	if (mapping->host->i_blkbits >= folio_shift(folio))
-		return false;
-
-	count = iter->count;
-	if (folio_pos(folio) > pos) {
-		count -= folio_pos(folio) - pos;
-		pos = 0;
-	} else {
-		pos -= folio_pos(folio);
-	}
-
-	return mapping->a_ops->is_partially_uptodate(folio, pos, count);
+	/*
+	 * No address_space_operations on this build sets
+	 * ->is_partially_uptodate (ram_aops only sets read_folio/write_begin/
+	 * write_end), so a folio that isn't fully uptodate is never partially
+	 * uptodate here.
+	 */
+	return folio_test_uptodate(folio);
 }
 
 static int filemap_update_page(struct kiocb *iocb,

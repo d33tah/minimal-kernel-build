@@ -189,14 +189,15 @@ static int do_dentry_open(struct file *f,
 	if ((f->f_mode & FMODE_WRITE) &&
 	     likely(f->f_op->write || f->f_op->write_iter))
 		f->f_mode |= FMODE_CAN_WRITE;
-	if (f->f_mapping->a_ops && f->f_mapping->a_ops->direct_IO)
-		f->f_mode |= FMODE_CAN_ODIRECT;
-
+	/*
+	 * No address_space_operations on this build sets ->direct_IO, so
+	 * FMODE_CAN_ODIRECT is never set and O_DIRECT is always rejected.
+	 */
 	f->f_flags &= ~(O_CREAT | O_EXCL | O_NOCTTY | O_TRUNC);
 
 	file_ra_state_init(&f->f_ra, f->f_mapping->host->i_mapping);
 
-	if ((f->f_flags & O_DIRECT) && !(f->f_mode & FMODE_CAN_ODIRECT))
+	if (f->f_flags & O_DIRECT)
 		return -EINVAL;
 
 	 

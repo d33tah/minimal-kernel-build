@@ -12,7 +12,6 @@ extern bool crash_kexec_post_notifiers;
 #include <linux/pci.h>
 #include <linux/root_dev.h>
 #include <linux/hugetlb.h>
-#define tboot_probe() do { } while (0)
 #include <linux/static_call.h>
 #include <linux/swiotlb.h>
 
@@ -485,9 +484,7 @@ void __init setup_arch(char **cmdline_p)
 	e820__reserve_setup_data();
 	e820__finish_early_params();
 
-	dmi_setup();
 
-	 
 	init_hypervisor_platform();
 
 	tsc_early_init();
@@ -512,11 +509,8 @@ void __init setup_arch(char **cmdline_p)
 	 
 	max_pfn = e820__end_of_ram_pfn();
 
-	 
-	if (IS_ENABLED(CONFIG_MTRR))
-		mtrr_bp_init();
-	else
-		pat_disable("PAT support disabled because CONFIG_MTRR is disabled in the kernel.");
+
+	pat_disable("PAT support disabled because CONFIG_MTRR is disabled in the kernel.");
 
 	if (mtrr_trim_uncached_memory(max_pfn))
 		max_pfn = e820__end_of_ram_pfn();
@@ -574,18 +568,6 @@ void __init setup_arch(char **cmdline_p)
 
 	reserve_initrd();
 
-	acpi_table_upgrade();
-	 
-	acpi_boot_table_init();
-
-	vsmp_init();
-
-	io_delay_init();
-
-	early_platform_quirks();
-
-	early_acpi_boot_init();
-
 	initmem_init();
 
 	/* dma_contiguous_reserve, hugetlb_cma_reserve, reserve_crashkernel - stubs */
@@ -594,30 +576,6 @@ void __init setup_arch(char **cmdline_p)
 
 
 	sync_initial_page_table();
-
-	tboot_probe();
-
-	map_vsyscall();
-
-	generic_apic_probe();
-
-	early_quirks();
-
-	 
-	acpi_boot_init();
-
-	 
-	get_smp_config();
-
-	 
-	init_apic_mappings();
-
-	prefill_possible_map();
-
-	init_cpu_to_node();
-	init_gi_nodes();
-
-	io_apic_init_mappings();
 
 	x86_init.hyper.guest_late_init();
 
@@ -631,14 +589,7 @@ void __init setup_arch(char **cmdline_p)
 
 	x86_init.timers.wallclock_init();
 
-	 
-
-	mcheck_init();
-
 	register_refined_jiffies(CLOCK_TICK_RATE);
-
-
-	unwind_init();
 }
 
 

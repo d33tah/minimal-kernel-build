@@ -136,13 +136,11 @@ int force_sig_fault(int sig, int code, void __user *addr
    force_sig_ptrace_errno_trap, force_sig_fault_trapno, send_sig_fault_trapno,
    force_sig_seccomp removed - unused */
 
-extern int send_sig_info(int, struct kernel_siginfo *, struct task_struct *);
 /* force_sigsegv now static in signal.c */
 extern int force_sig_info(struct kernel_siginfo *);
 extern __must_check bool do_notify_parent(struct task_struct *, int);
 extern void force_sig(int);
 extern void force_fatal_sig(int);
-extern int send_sig(int, struct task_struct *, int);
 extern int zap_other_threads(struct task_struct *p);
 
 static inline bool __set_notify_signal(struct task_struct *task)

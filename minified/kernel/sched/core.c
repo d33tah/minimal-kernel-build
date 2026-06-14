@@ -312,25 +312,6 @@ void deactivate_task(struct rq *rq, struct task_struct *p, int flags)
 	dequeue_task(rq, p, flags);
 }
 
-static inline int __normal_prio(int policy, int rt_prio, int nice)
-{
-	int prio;
-
-	if (dl_policy(policy))
-		prio = MAX_DL_PRIO - 1;
-	else if (rt_policy(policy))
-		prio = MAX_RT_PRIO - 1 - rt_prio;
-	else
-		prio = NICE_TO_PRIO(nice);
-
-	return prio;
-}
-
-static inline int normal_prio(struct task_struct *p)
-{
-	return __normal_prio(p->policy, p->rt_priority, PRIO_TO_NICE(p->static_prio));
-}
-
 void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 {
 	if (p->sched_class == rq->curr->sched_class)

@@ -468,33 +468,6 @@ void dput(struct dentry *dentry)
 	}
 }
 
-static void __dput_to_list(struct dentry *dentry, struct list_head *list)
-__must_hold(&dentry->d_lock)
-{
-	if (dentry->d_flags & DCACHE_SHRINK_LIST) {
-		
-		--dentry->d_lockref.count;
-	} else {
-		if (dentry->d_flags & DCACHE_LRU_LIST)
-			d_lru_del(dentry);
-		if (!--dentry->d_lockref.count)
-			d_shrink_add(dentry, list);
-	}
-}
-
-void dput_to_list(struct dentry *dentry, struct list_head *list)
-{
-	rcu_read_lock();
-	if (likely(fast_dput(dentry))) {
-		rcu_read_unlock();
-		return;
-	}
-	rcu_read_unlock();
-	if (!retain_dentry(dentry))
-		__dput_to_list(dentry, list);
-	spin_unlock(&dentry->d_lock);
-}
-
 static inline void __dget_dlock(struct dentry *dentry)
 {
 	dentry->d_lockref.count++;

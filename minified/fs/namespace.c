@@ -141,11 +141,6 @@ static inline void mnt_dec_writers(struct mount *mnt)
 	mnt->mnt_writers--;
 }
 
-static unsigned int mnt_get_writers(struct mount *mnt)
-{
-	return mnt->mnt_writers;
-}
-
 static int mnt_is_readonly(struct vfsmount *mnt)
 {
 	if (mnt->mnt_sb->s_readonly_remount)
@@ -228,22 +223,6 @@ void __mnt_drop_write_file(struct file *file)
 		__mnt_drop_write(file->f_path.mnt);
 }
 
-static void free_vfsmnt(struct mount *mnt)
-{
-	struct user_namespace *mnt_userns;
-
-	mnt_userns = mnt_user_ns(&mnt->mnt);
-	if (!initial_idmapping(mnt_userns))
-		put_user_ns(mnt_userns);
-	kfree_const(mnt->mnt_devname);
-	kmem_cache_free(mnt_cache, mnt);
-}
-
-static void delayed_free_vfsmnt(struct rcu_head *head)
-{
-	free_vfsmnt(container_of(head, struct mount, mnt_rcu));
-}
-
 int __legitimize_mnt(struct vfsmount *bastard, unsigned seq)
 {
 	struct mount *mnt;
@@ -297,37 +276,9 @@ struct mount *__lookup_mnt(struct vfsmount *mnt, struct dentry *dentry)
 
 
 
-static void __put_mountpoint(struct mountpoint *mp, struct list_head *list)
-{
-	if (!--mp->m_count) {
-		struct dentry *dentry = mp->m_dentry;
-		BUG_ON(!hlist_empty(&mp->m_list));
-		spin_lock(&dentry->d_lock);
-		dentry->d_flags &= ~DCACHE_MOUNTED;
-		spin_unlock(&dentry->d_lock);
-		dput_to_list(dentry, list);
-		hlist_del(&mp->m_hash);
-		kfree(mp);
-	}
-}
-
 static inline int check_mnt(struct mount *mnt)
 {
 	return mnt->mnt_ns == current->nsproxy->mnt_ns;
-}
-
-
-static struct mountpoint *unhash_mnt(struct mount *mnt)
-{
-	struct mountpoint *mp;
-	mnt->mnt_parent = mnt;
-	mnt->mnt_mountpoint = mnt->mnt.mnt_root;
-	list_del_init(&mnt->mnt_child);
-	hlist_del_init_rcu(&mnt->mnt_hash);
-	hlist_del_init(&mnt->mnt_mp_list);
-	mp = mnt->mnt_mp;
-	mnt->mnt_mp = NULL;
-	return mp;
 }
 
 struct vfsmount *vfs_create_mount(struct fs_context *fc)
@@ -402,93 +353,20 @@ struct vfsmount *vfs_kern_mount(struct file_system_type *type,
 
 
 
-static void cleanup_mnt(struct mount *mnt)
-{
-	struct hlist_node *p;
-	struct mount *m;
-
-	WARN_ON(mnt_get_writers(mnt));
-	hlist_for_each_entry_safe(m, p, &mnt->mnt_stuck_children, mnt_umount) {
-		hlist_del(&m->mnt_umount);
-		mntput(&m->mnt);
-	}
-	dput(mnt->mnt.mnt_root);
-	deactivate_super(mnt->mnt.mnt_sb);
-	mnt_free_id(mnt);
-	call_rcu(&mnt->mnt_rcu, delayed_free_vfsmnt);
-}
-
-static void __cleanup_mnt(struct rcu_head *head)
-{
-	cleanup_mnt(container_of(head, struct mount, mnt_rcu));
-}
-
-static LLIST_HEAD(delayed_mntput_list);
-static void delayed_mntput(struct work_struct *unused)
-{
-	struct llist_node *node = llist_del_all(&delayed_mntput_list);
-	struct mount *m, *t;
-
-	llist_for_each_entry_safe(m, t, node, mnt_llist)
-		cleanup_mnt(m);
-}
-static DECLARE_DELAYED_WORK(delayed_mntput_work, delayed_mntput);
-
 static void mntput_no_expire(struct mount *mnt)
 {
-	LIST_HEAD(list);
-	int count;
-
+	/*
+	 * Every mount on this minimal kernel is attached to a namespace:
+	 * the rootfs mount carries the initial mnt_namespace and the shmem
+	 * kern_mount carries MNT_NS_INTERNAL, both non-NULL. There is no
+	 * umount / move_mount / detach machinery, so no mount is ever put
+	 * with mnt_ns == NULL. The teardown tail (refcount-to-zero,
+	 * unhash, free) is therefore unreachable; only the decrement-count
+	 * fast path runs.
+	 */
 	rcu_read_lock();
-	if (likely(READ_ONCE(mnt->mnt_ns))) {
-		
-		mnt_add_count(mnt, -1);
-		rcu_read_unlock();
-		return;
-	}
-	lock_mount_hash();
-	
-	smp_mb();
 	mnt_add_count(mnt, -1);
-	count = mnt_get_count(mnt);
-	if (count != 0) {
-		WARN_ON(count < 0);
-		rcu_read_unlock();
-		unlock_mount_hash();
-		return;
-	}
-	if (unlikely(mnt->mnt.mnt_flags & MNT_DOOMED)) {
-		rcu_read_unlock();
-		unlock_mount_hash();
-		return;
-	}
-	mnt->mnt.mnt_flags |= MNT_DOOMED;
 	rcu_read_unlock();
-
-	list_del(&mnt->mnt_instance);
-
-	if (unlikely(!list_empty(&mnt->mnt_mounts))) {
-		struct mount *p, *tmp;
-		list_for_each_entry_safe(p, tmp, &mnt->mnt_mounts,  mnt_child) {
-			__put_mountpoint(unhash_mnt(p), &list);
-			hlist_add_head(&p->mnt_umount, &mnt->mnt_stuck_children);
-		}
-	}
-	unlock_mount_hash();
-	shrink_dentry_list(&list);
-
-	if (likely(!(mnt->mnt.mnt_flags & MNT_INTERNAL))) {
-		struct task_struct *task = current;
-		if (likely(!(task->flags & PF_KTHREAD))) {
-			init_task_work(&mnt->mnt_rcu, __cleanup_mnt);
-			if (!task_work_add(task, &mnt->mnt_rcu, TWA_RESUME))
-				return;
-		}
-		if (llist_add(&mnt->mnt_llist, &delayed_mntput_list))
-			schedule_delayed_work(&delayed_mntput_work, 1);
-		return;
-	}
-	cleanup_mnt(mnt);
 }
 
 void mntput(struct vfsmount *mnt)

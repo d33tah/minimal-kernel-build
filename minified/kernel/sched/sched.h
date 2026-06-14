@@ -79,9 +79,6 @@ struct cpuidle_state;
 
 extern __read_mostly int scheduler_running;
 
-extern unsigned long calc_load_update;
-extern atomic_long_t calc_load_tasks;
-
 extern unsigned int sysctl_sched_child_runs_first;
 
 extern void calc_global_load_tick(struct rq *this_rq);

@@ -54,7 +54,7 @@ ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 	if (!(file->f_mode & FMODE_CAN_READ))
 		return -EINVAL;
 	 
-	if (unlikely(!file->f_op->read_iter || file->f_op->read))
+	if (unlikely(!file->f_op->read_iter))
 		return warn_unsupported(file, "read");
 
 	init_sync_kiocb(&kiocb, file);
@@ -111,7 +111,7 @@ ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t 
 	if (!(file->f_mode & FMODE_CAN_WRITE))
 		return -EINVAL;
 	 
-	if (unlikely(!file->f_op->write_iter || file->f_op->write))
+	if (unlikely(!file->f_op->write_iter))
 		return warn_unsupported(file, "write");
 
 	init_sync_kiocb(&kiocb, file);
@@ -157,12 +157,12 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 	if (count > MAX_RW_COUNT)
 		count =  MAX_RW_COUNT;
 	file_start_write(file);
-	if (file->f_op->write)
-		ret = file->f_op->write(file, buf, count, pos);
-	else if (file->f_op->write_iter)
-		ret = new_sync_write(file, buf, count, pos);
-	else
-		ret = -EINVAL;
+	/*
+	 * No file_operations on this build sets the non-iter ->write op (ramfs
+	 * and tty both expose only ->write_iter), so the dispatch always goes
+	 * through new_sync_write().
+	 */
+	ret = new_sync_write(file, buf, count, pos);
 	file_end_write(file);
 	return ret;
 }

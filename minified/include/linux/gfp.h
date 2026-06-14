@@ -245,7 +245,6 @@ static inline struct page *alloc_page_vma(gfp_t gfp,
 }
 
 extern unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order);
-extern unsigned long get_zeroed_page(gfp_t gfp_mask);
 
 void *alloc_pages_exact(size_t size, gfp_t gfp_mask) __alloc_size(1);
 

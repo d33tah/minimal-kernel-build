@@ -24,15 +24,4 @@ struct resource;
 #define arch_has_dev_port()     (1)
 #endif
 
-enum {
-	MEMREMAP_WB = 1 << 0,
-	MEMREMAP_WT = 1 << 1,
-	MEMREMAP_WC = 1 << 2,
-	MEMREMAP_ENC = 1 << 3,
-	MEMREMAP_DEC = 1 << 4,
-};
-
-void *memremap(resource_size_t offset, size_t size, unsigned long flags);
-void memunmap(void *addr);
-
-#endif  
+#endif

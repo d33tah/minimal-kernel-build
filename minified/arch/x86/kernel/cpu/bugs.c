@@ -11,18 +11,11 @@
 
 u64 x86_spec_ctrl_base;
 
-DEFINE_PER_CPU(u64, x86_spec_ctrl_current);
-
 u64 __ro_after_init x86_amd_ls_cfg_base;
 u64 __ro_after_init x86_amd_ls_cfg_ssbd_mask;
 
 void write_spec_ctrl_current(u64 val, bool force)
 {
-}
-
-u64 spec_ctrl_current(void)
-{
-	return 0;
 }
 
 void __init check_bugs(void)

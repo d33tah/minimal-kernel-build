@@ -109,48 +109,9 @@ extern void entry_ibpb(void);
 extern char __indirect_thunk_start[];
 extern char __indirect_thunk_end[];
 
-static __always_inline
-void alternative_msr_write(unsigned int msr, u64 val, unsigned int feature)
-{
-	asm volatile(ALTERNATIVE("", "wrmsr", %c[feature])
-		: : "c" (msr),
-		    "a" ((u32)val),
-		    "d" ((u32)(val >> 32)),
-		    [feature] "i" (feature)
-		: "memory");
-}
 
-static inline void indirect_branch_prediction_barrier(void)
-{
-	u64 val = PRED_CMD_IBPB;
-
-	alternative_msr_write(MSR_IA32_PRED_CMD, val, X86_FEATURE_USE_IBPB);
-}
-
- 
 extern u64 x86_spec_ctrl_base;
-DECLARE_PER_CPU(u64, x86_spec_ctrl_current);
 extern void write_spec_ctrl_current(u64 val, bool force);
-extern u64 spec_ctrl_current(void);
-
- 
-#define firmware_restrict_branch_speculation_start()			\
-do {									\
-	preempt_disable();						\
-	alternative_msr_write(MSR_IA32_SPEC_CTRL,			\
-			      spec_ctrl_current() | SPEC_CTRL_IBRS,	\
-			      X86_FEATURE_USE_IBRS_FW);			\
-	alternative_msr_write(MSR_IA32_PRED_CMD, PRED_CMD_IBPB,		\
-			      X86_FEATURE_USE_IBPB_FW);			\
-} while (0)
-
-#define firmware_restrict_branch_speculation_end()			\
-do {									\
-	alternative_msr_write(MSR_IA32_SPEC_CTRL,			\
-			      spec_ctrl_current(),			\
-			      X86_FEATURE_USE_IBRS_FW);			\
-	preempt_enable();						\
-} while (0)
 
 #endif
 

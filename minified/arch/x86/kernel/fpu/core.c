@@ -25,26 +25,7 @@ struct fpu_state_config fpu_user_cfg __ro_after_init;
 
 struct fpstate init_fpstate __ro_after_init;
 
-static DEFINE_PER_CPU(bool, in_kernel_fpu);
-
 DEFINE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
-
-bool irq_fpu_usable(void)
-{
-	if (WARN_ON_ONCE(in_nmi()))
-		return false;
-
-	 
-	if (this_cpu_read(in_kernel_fpu))
-		return false;
-
-	 
-	if (!in_hardirq())
-		return true;
-
-	 
-	return !softirq_count();
-}
 
 static void update_avx_timestamp(struct fpu *fpu)
 {
@@ -99,38 +80,6 @@ void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask)
 void fpu_reset_from_exception_fixup(void)
 {
 	restore_fpregs_from_fpstate(&init_fpstate, XFEATURE_MASK_FPSTATE);
-}
-
-void kernel_fpu_begin_mask(unsigned int kfpu_mask)
-{
-	preempt_disable();
-
-	WARN_ON_FPU(!irq_fpu_usable());
-	WARN_ON_FPU(this_cpu_read(in_kernel_fpu));
-
-	this_cpu_write(in_kernel_fpu, true);
-
-	if (!(current->flags & PF_KTHREAD) &&
-	    !test_thread_flag(TIF_NEED_FPU_LOAD)) {
-		set_thread_flag(TIF_NEED_FPU_LOAD);
-		save_fpregs_to_fpstate(&current->thread.fpu);
-	}
-	__cpu_invalidate_fpregs_state();
-
-	 
-	if (likely(kfpu_mask & KFPU_MXCSR) && boot_cpu_has(X86_FEATURE_XMM))
-		ldmxcsr(MXCSR_DEFAULT);
-
-	if (unlikely(kfpu_mask & KFPU_387) && boot_cpu_has(X86_FEATURE_FPU))
-		asm volatile ("fninit");
-}
-
-void kernel_fpu_end(void)
-{
-	WARN_ON_FPU(!this_cpu_read(in_kernel_fpu));
-
-	this_cpu_write(in_kernel_fpu, false);
-	preempt_enable();
 }
 
 void fpu_sync_fpstate(struct fpu *fpu)

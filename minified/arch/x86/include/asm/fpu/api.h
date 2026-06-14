@@ -9,22 +9,7 @@
 
  
 
- 
-#define KFPU_387	_BITUL(0)	 
-#define KFPU_MXCSR	_BITUL(1)	 
 
-extern void kernel_fpu_begin_mask(unsigned int kfpu_mask);
-extern void kernel_fpu_end(void);
-extern bool irq_fpu_usable(void);
-
- 
-static inline void kernel_fpu_begin(void)
-{
-	 
-	kernel_fpu_begin_mask(KFPU_387 | KFPU_MXCSR);
-}
-
- 
 static inline void fpregs_lock(void)
 {
 	if (!IS_ENABLED(CONFIG_PREEMPT_RT))

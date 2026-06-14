@@ -183,8 +183,6 @@ extern int mmap_rnd_bits __read_mostly;
 extern int sysctl_max_map_count;
 
 extern int sysctl_overcommit_memory;
-extern int sysctl_overcommit_ratio;
-extern unsigned long sysctl_overcommit_kbytes;
 
 #define nth_page(page,n) ((page) + (n))
 

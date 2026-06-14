@@ -271,62 +271,26 @@ int __page_mapcount(struct page *page)
 }
 
 int sysctl_overcommit_memory __read_mostly = OVERCOMMIT_GUESS;
-int sysctl_overcommit_ratio __read_mostly = 50;
-unsigned long sysctl_overcommit_kbytes __read_mostly;
 int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
-unsigned long sysctl_user_reserve_kbytes __read_mostly = 1UL << 17;  
-unsigned long sysctl_admin_reserve_kbytes __read_mostly = 1UL << 13;  
-
-unsigned long vm_commit_limit(void)
-{
-	unsigned long allowed;
-
-	if (sysctl_overcommit_kbytes)
-		allowed = sysctl_overcommit_kbytes >> (PAGE_SHIFT - 10);
-	else
-		allowed = ((totalram_pages() - hugetlb_total_pages())
-			   * sysctl_overcommit_ratio / 100);
-	allowed += total_swap_pages;
-
-	return allowed;
-}
 
 struct percpu_counter vm_committed_as ____cacheline_aligned_in_smp;
 
+/*
+ * sysctl_overcommit_memory stays at its OVERCOMMIT_GUESS default on this build
+ * (no sysctl writer), so __vm_enough_memory only ever runs the GUESS path. The
+ * OVERCOMMIT_ALWAYS short-circuit and the OVERCOMMIT_NEVER commit-limit tail
+ * (vm_commit_limit() + the admin/user reserve accounting) are unreachable.
+ */
 int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
 {
-	long allowed;
-
 	vm_acct_memory(pages);
 
-	 
-	if (sysctl_overcommit_memory == OVERCOMMIT_ALWAYS)
-		return 0;
-
-	if (sysctl_overcommit_memory == OVERCOMMIT_GUESS) {
-		if (pages > totalram_pages() + total_swap_pages)
-			goto error;
-		return 0;
+	if (pages > totalram_pages() + total_swap_pages) {
+		vm_unacct_memory(pages);
+		return -ENOMEM;
 	}
 
-	allowed = vm_commit_limit();
-	 
-	if (!cap_sys_admin)
-		allowed -= sysctl_admin_reserve_kbytes >> (PAGE_SHIFT - 10);
-
-	 
-	if (mm) {
-		long reserve = sysctl_user_reserve_kbytes >> (PAGE_SHIFT - 10);
-
-		allowed -= min_t(long, mm->total_vm / 32, reserve);
-	}
-
-	if (percpu_counter_read_positive(&vm_committed_as) < allowed)
-		return 0;
-error:
-	vm_unacct_memory(pages);
-
-	return -ENOMEM;
+	return 0;
 }
 
 

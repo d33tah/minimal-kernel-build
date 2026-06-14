@@ -55,8 +55,6 @@
 		| MAP_HUGE_1GB)
 
 extern int sysctl_overcommit_memory;
-extern int sysctl_overcommit_ratio;
-extern unsigned long sysctl_overcommit_kbytes;
 extern struct percpu_counter vm_committed_as;
 
 #define vm_committed_as_batch 0
@@ -119,5 +117,4 @@ calc_vm_flag_bits(unsigned long flags)
 	       arch_calc_vm_flag_bits(flags);
 }
 
-unsigned long vm_commit_limit(void);
-#endif  
+#endif

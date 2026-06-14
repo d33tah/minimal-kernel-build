@@ -354,51 +354,18 @@ static void evict(struct inode *inode)
 	destroy_inode(inode);
 }
 
-static void dispose_list(struct list_head *head)
-{
-	while (!list_empty(head)) {
-		struct inode *inode;
-
-		inode = list_first_entry(head, struct inode, i_lru);
-		list_del_init(&inode->i_lru);
-
-		evict(inode);
-		cond_resched();
-	}
-}
-
+/*
+ * Stub: evict_inodes() is reached only from generic_shutdown_super()
+ * (fs/super.c) on superblock DESTRUCTION, which only happens when a
+ * filesystem is unmounted (fs->kill_sb -> deactivate_locked_super ->
+ * generic_shutdown_super, dispatched at fs/super.c:123 only when
+ * s_active hits 0). This minimal kernel mounts rootfs/devtmpfs/proc/sysfs
+ * and never unmounts any of them before halt, so the whole sb-teardown
+ * path is unreachable -> evict_inodes (and its dispose_list helper) is
+ * dead. The live per-inode eviction (iput_final -> evict) is unaffected.
+ */
 void evict_inodes(struct super_block *sb)
 {
-	struct inode *inode, *next;
-	LIST_HEAD(dispose);
-
-again:
-	spin_lock(&sb->s_inode_list_lock);
-	list_for_each_entry_safe(inode, next, &sb->s_inodes, i_sb_list) {
-		if (atomic_read(&inode->i_count))
-			continue;
-
-		spin_lock(&inode->i_lock);
-		if (inode->i_state & (I_NEW | I_FREEING | I_WILL_FREE)) {
-			spin_unlock(&inode->i_lock);
-			continue;
-		}
-
-		inode->i_state |= I_FREEING;
-		inode_lru_list_del(inode);
-		spin_unlock(&inode->i_lock);
-		list_add(&inode->i_lru, &dispose);
-
-		if (need_resched()) {
-			spin_unlock(&sb->s_inode_list_lock);
-			cond_resched();
-			dispose_list(&dispose);
-			goto again;
-		}
-	}
-	spin_unlock(&sb->s_inode_list_lock);
-
-	dispose_list(&dispose);
 }
 
 

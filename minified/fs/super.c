@@ -156,35 +156,19 @@ static int grab_super(struct super_block *s) __releases(sb_lock)
 	return 0;
 }
 
+/*
+ * generic_shutdown_super() runs only on superblock DESTRUCTION, reached via
+ * fs->kill_sb() -> deactivate_locked_super (dispatched at deactivate_locked_super
+ * only when s_active drops to 0). This minimal kernel never unmounts the boot
+ * filesystems, so this is unreachable; the umount-only teardown body (dcache/
+ * inode eviction, dio workqueue, put_super) is dead and has been removed. Only
+ * the sb-list unlink tail is kept so the symbol still links for the kill_sb
+ * function-pointer table entries.
+ */
 void generic_shutdown_super(struct super_block *sb)
 {
-	const struct super_operations *sop = sb->s_op;
-
-	if (sb->s_root) {
-		shrink_dcache_for_umount(sb);
-		sync_filesystem(sb);
-		sb->s_flags &= ~SB_ACTIVE;
-
-		cgroup_writeback_umount();
-
-		evict_inodes(sb);
-
-		if (sb->s_dio_done_wq) {
-			destroy_workqueue(sb->s_dio_done_wq);
-			sb->s_dio_done_wq = NULL;
-		}
-
-		if (sop->put_super)
-			sop->put_super(sb);
-
-		if (!list_empty(&sb->s_inodes)) {
-			printk("VFS: Busy inodes after unmount of %s. "
-			   "Self-destruct in 5 seconds.  Have a nice day...\n",
-			   sb->s_id);
-		}
-	}
 	spin_lock(&sb_lock);
-	
+
 	hlist_del_init(&sb->s_instances);
 	spin_unlock(&sb_lock);
 	up_write(&sb->s_umount);

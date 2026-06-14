@@ -562,14 +562,6 @@ void shrink_dcache_parent(struct dentry *parent)
 		shrink_dentry_list(&data.dispose);
 }
 
-void shrink_dcache_for_umount(struct super_block *sb)
-{
-	/*
-	 * Stub: the minimal kernel mounts rootfs/devtmpfs/proc/sysfs and
-	 * never unmounts them before halt, so the umount dcache teardown
-	 * (do_one_tree/umount_check) is unreachable.
-	 */
-}
 
 static enum d_walk_ret find_submount(void *_data, struct dentry *dentry)
 {

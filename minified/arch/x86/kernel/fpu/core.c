@@ -75,15 +75,11 @@ void save_fpregs_to_fpstate(struct fpu *fpu)
 
 void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask)
 {
-	 
-	if (unlikely(static_cpu_has_bug(X86_BUG_FXSAVE_LEAK))) {
-		asm volatile(
-			"fnclex\n\t"
-			"emms\n\t"
-			"fildl %P[addr]"	 
-			: : [addr] "m" (fpstate));
-	}
-
+	/*
+	 * The FXSAVE_LEAK workaround (fnclex/emms/fildl) was gated on
+	 * static_cpu_has_bug(X86_BUG_FXSAVE_LEAK). That bug bit (an old K7 erratum)
+	 * is never set anywhere in this tree, so the block was dead.
+	 */
 	if (use_xsave()) {
 		 
 		xfd_update_state(fpstate);

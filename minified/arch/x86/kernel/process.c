@@ -340,21 +340,13 @@ void select_idle_routine(const struct cpuinfo_x86 *c)
 
 void __init arch_post_acpi_subsys_init(void)
 {
-	u32 lo, hi;
-
-	if (!boot_cpu_has_bug(X86_BUG_AMD_E400))
-		return;
-
-	 
-	rdmsr(MSR_K8_INT_PENDING_MSG, lo, hi);
-	if (!(lo & K8_INTP_C1E_ACTIVE_MASK))
-		return;
-
-	boot_cpu_set_bug(X86_BUG_AMD_APIC_C1E);
-
-	if (!boot_cpu_has(X86_FEATURE_NONSTOP_TSC))
-		mark_tsc_unstable("TSC halt in AMD C1E");
-	pr_info("System has AMD C1E enabled\n");
+	/*
+	 * The only work here was the AMD C1E (Erratum 400) detection, gated on
+	 * boot_cpu_has_bug(X86_BUG_AMD_E400). That bug bit is never set anywhere
+	 * in this tree (all CPU-bug detection in cpu_set_bug_bits() was removed),
+	 * so the guard always returned early -- the whole body was dead. The bit
+	 * it would have set (X86_BUG_AMD_APIC_C1E) is likewise never read.
+	 */
 }
 
 

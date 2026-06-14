@@ -107,14 +107,11 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 
 bool pfn_modify_allowed(unsigned long pfn, pgprot_t prot)
 {
-	if (!boot_cpu_has_bug(X86_BUG_L1TF))
-		return true;
-	if (!__pte_needs_invert(pgprot_val(prot)))
-		return true;
-	 
-	if (pfn_valid(pfn))
-		return true;
-	if (pfn >= l1tf_pfn_limit() && !capable(CAP_SYS_ADMIN))
-		return false;
+	/*
+	 * The L1TF PROT_NONE pfn-inversion check is gated on
+	 * boot_cpu_has_bug(X86_BUG_L1TF). That bug bit is never set anywhere in
+	 * this tree (CPU-bug detection removed), so the guard always returned
+	 * true -- the inversion / pfn-limit body was dead.
+	 */
 	return true;
 }

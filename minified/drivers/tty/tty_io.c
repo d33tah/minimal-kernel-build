@@ -65,8 +65,6 @@ DEFINE_MUTEX(tty_mutex);
 
 static ssize_t tty_write(struct kiocb *, struct iov_iter *);
 static int tty_open(struct inode *, struct file *);
-static int __tty_fasync(int fd, struct file *filp, int on);
-static int tty_fasync(int fd, struct file *filp, int on);
 static void release_tty(struct tty_struct *tty, int idx);
 
 static void free_tty_struct(struct tty_struct *tty)
@@ -202,7 +200,6 @@ static const struct file_operations tty_fops = {
 	.write_iter	= tty_write,
 	.open		= tty_open,
 	.release	= tty_release,
-	.fasync		= tty_fasync,
 };
 
 static const struct file_operations console_fops = {
@@ -210,7 +207,6 @@ static const struct file_operations console_fops = {
 	.write_iter	= redirected_tty_write,
 	.open		= tty_open,
 	.release	= tty_release,
-	.fasync		= tty_fasync,
 };
 
 static DEFINE_SPINLOCK(redirect_lock);
@@ -898,53 +894,6 @@ retry_open:
 		tty_open_proc_set_tty(filp, tty);
 	tty_unlock(tty);
 	return 0;
-}
-
-static int __tty_fasync(int fd, struct file *filp, int on)
-{
-	struct tty_struct *tty = file_tty(filp);
-	unsigned long flags;
-	int retval = 0;
-
-	if (tty_paranoia_check(tty, file_inode(filp), "tty_fasync"))
-		goto out;
-
-	retval = fasync_helper(fd, filp, on, &tty->fasync);
-	if (retval <= 0)
-		goto out;
-
-	if (on) {
-		enum pid_type type;
-		struct pid *pid;
-
-		spin_lock_irqsave(&tty->ctrl.lock, flags);
-		if (tty->ctrl.pgrp) {
-			pid = tty->ctrl.pgrp;
-			type = PIDTYPE_PGID;
-		} else {
-			pid = task_pid(current);
-			type = PIDTYPE_TGID;
-		}
-		get_pid(pid);
-		spin_unlock_irqrestore(&tty->ctrl.lock, flags);
-		__f_setown(filp, pid, type, 0);
-		put_pid(pid);
-		retval = 0;
-	}
-out:
-	return retval;
-}
-
-static int tty_fasync(int fd, struct file *filp, int on)
-{
-	struct tty_struct *tty = file_tty(filp);
-	int retval;
-
-	tty_lock(tty);
-	retval = __tty_fasync(fd, filp, on);
-	tty_unlock(tty);
-
-	return retval;
 }
 
 static dev_t tty_devnum(struct tty_struct *tty);

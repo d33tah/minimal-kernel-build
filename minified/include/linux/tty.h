@@ -132,7 +132,6 @@ struct tty_struct {
 	unsigned int receive_room;
 
 	struct tty_struct *link;
-	struct fasync_struct *fasync;
 	wait_queue_head_t write_wait;
 	wait_queue_head_t read_wait;
 	struct work_struct hangup_work;

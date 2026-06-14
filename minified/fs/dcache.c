@@ -589,51 +589,13 @@ void shrink_dcache_parent(struct dentry *parent)
 		shrink_dentry_list(&data.dispose);
 }
 
-static enum d_walk_ret umount_check(void *_data, struct dentry *dentry)
-{
-	
-	if (!list_empty(&dentry->d_subdirs))
-		return D_WALK_CONTINUE;
-
-	
-	if (dentry == _data && dentry->d_lockref.count == 1)
-		return D_WALK_CONTINUE;
-
-	printk(KERN_ERR "BUG: Dentry %p{i=%lx,n=%pd} "
-			" still in use (%d) [unmount of %s %s]\n",
-		       dentry,
-		       dentry->d_inode ?
-		       dentry->d_inode->i_ino : 0UL,
-		       dentry,
-		       dentry->d_lockref.count,
-		       dentry->d_sb->s_type->name,
-		       dentry->d_sb->s_id);
-	WARN_ON(1);
-	return D_WALK_CONTINUE;
-}
-
-static void do_one_tree(struct dentry *dentry)
-{
-	shrink_dcache_parent(dentry);
-	d_walk(dentry, dentry, umount_check);
-	d_drop(dentry);
-	dput(dentry);
-}
-
 void shrink_dcache_for_umount(struct super_block *sb)
 {
-	struct dentry *dentry;
-
-	WARN(down_read_trylock(&sb->s_umount), "s_umount should've been locked");
-
-	dentry = sb->s_root;
-	sb->s_root = NULL;
-	do_one_tree(dentry);
-
-	while (!hlist_bl_empty(&sb->s_roots)) {
-		dentry = dget(hlist_bl_entry(hlist_bl_first(&sb->s_roots), struct dentry, d_hash));
-		do_one_tree(dentry);
-	}
+	/*
+	 * Stub: the minimal kernel mounts rootfs/devtmpfs/proc/sysfs and
+	 * never unmounts them before halt, so the umount dcache teardown
+	 * (do_one_tree/umount_check) is unreachable.
+	 */
 }
 
 static enum d_walk_ret find_submount(void *_data, struct dentry *dentry)

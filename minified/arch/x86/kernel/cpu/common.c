@@ -22,7 +22,6 @@
 
 #include <asm/perf_event.h>
 #include <asm/mmu_context.h>
-static inline void x86_init_rdrand(struct cpuinfo_x86 *c) { }
 
 /* Inlined from asm/doublefault.h */
 extern void doublefault_init_cpu_tss(void);
@@ -152,11 +151,6 @@ int have_cpuid_p(void)
 	return flag_is_changeable_p(X86_EFLAGS_ID);
 }
 
-static void squash_the_stupid_serial_number(struct cpuinfo_x86 *c)
-{
-	/* Stub: CPU serial number feature not relevant for minimal kernel */
-}
-
 static __always_inline void setup_smep(struct cpuinfo_x86 *c)
 {
 	if (cpu_has(c, X86_FEATURE_SMEP))
@@ -249,22 +243,6 @@ static void __init setup_cr_pinning(void)
 {
 	cr4_pinned_bits = this_cpu_read(cpu_tlbstate.cr4) & cr4_pinned_mask;
 	static_key_enable(&cr_pinning.key);
-}
-
-
-/*
- * Protection keys (PKU/OSPKE) are compile-time disabled on this tree
- * (both in DISABLED_MASK16), so cpu_feature_enabled(X86_FEATURE_PKU) and
- * cpu_feature_enabled(X86_FEATURE_OSPKE) are constant 0 -- setup_pku always
- * returned before touching CR4.PKE. Likewise CET/IBT: HAS_KERNEL_IBT == 0
- * (asm/ibt.h), so setup_cet always returned. Both collapse to no-ops.
- */
-static __always_inline void setup_pku(struct cpuinfo_x86 *c)
-{
-}
-
-static __always_inline void setup_cet(struct cpuinfo_x86 *c)
-{
 }
 
 
@@ -453,11 +431,6 @@ static void apply_forced_caps(struct cpuinfo_x86 *c)
 	}
 }
 
-static void init_speculation_control(struct cpuinfo_x86 *c)
-{
-	/* Stub: speculation control not needed for minimal kernel */
-}
-
 void get_cpu_cap(struct cpuinfo_x86 *c)
 {
 	u32 eax, ebx, ecx, edx;
@@ -521,7 +494,6 @@ void get_cpu_cap(struct cpuinfo_x86 *c)
 		c->x86_capability[CPUID_8000_001F_EAX] = cpuid_eax(0x8000001f);
 
 	init_scattered_cpuid_features(c);
-	init_speculation_control(c);
 
 	apply_forced_caps(c);
 }
@@ -676,8 +648,6 @@ static void generic_identify(struct cpuinfo_x86 *c)
 
 static void identify_cpu(struct cpuinfo_x86 *c)
 {
-	int i;
-
 	c->loops_per_jiffy = loops_per_jiffy;
 	c->x86_cache_size = 0;
 	c->x86_vendor = X86_VENDOR_UNKNOWN;
@@ -704,8 +674,6 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	if (this_cpu->c_init)
 		this_cpu->c_init(c);
 
-	squash_the_stupid_serial_number(c);
-
 	setup_smep(c);
 	setup_smap(c);
 	setup_umip(c);
@@ -728,20 +696,14 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 				c->x86, c->x86_model);
 	}
 
-	x86_init_rdrand(c);
-	setup_pku(c);
-	setup_cet(c);
-
 	apply_forced_caps(c);
 
-	if (c != &boot_cpu_data) {
-		
-		for (i = 0; i < NCAPINTS; i++)
-			boot_cpu_data.x86_capability[i] &= c->x86_capability[i];
-
-		for (i = NCAPINTS; i < NCAPINTS + NBUGINTS; i++)
-			c->x86_capability[i] |= boot_cpu_data.x86_capability[i];
-	}
+	/*
+	 * identify_cpu() runs only for the boot CPU on this UP build
+	 * (identify_boot_cpu -> identify_cpu(&boot_cpu_data)); SMP=n means
+	 * there is no secondary-CPU caller, so the c != &boot_cpu_data
+	 * capability-intersection path was statically unreachable.
+	 */
 
 	ppin_init(c);
 

@@ -76,12 +76,7 @@ struct signal_struct {
 	int			group_stop_count;
 	unsigned int		flags;  
 
-	struct core_state *core_state;  
-
-	 
-	unsigned int		is_child_subreaper:1;
-	unsigned int		has_child_subreaper:1;
-
+	struct core_state *core_state;
 
 	struct pid *pids[PIDTYPE_MAX];
 

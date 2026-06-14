@@ -256,10 +256,7 @@ get_subtree_max_size(struct rb_node *node)
 RB_DECLARE_CALLBACKS_MAX(static, free_vmap_area_rb_augment_cb,
 	struct vmap_area, rb_node, unsigned long, subtree_max_size, va_size)
 
-static void purge_vmap_area_lazy(void);
 static BLOCKING_NOTIFIER_HEAD(vmap_notify_list);
-static void drain_vmap_area_work(struct work_struct *work);
-static DECLARE_WORK(drain_vmap_work, drain_vmap_area_work);
 
 static atomic_long_t nr_vmalloc_pages;
 
@@ -730,7 +727,6 @@ retry:
 
 overflow:
 	if (!purged) {
-		purge_vmap_area_lazy();
 		purged = 1;
 		goto retry;
 	}
@@ -751,65 +747,17 @@ overflow:
 	return ERR_PTR(-EBUSY);
 }
 
-static unsigned long lazy_max_pages(void)
-{
-	unsigned int log;
-
-	log = fls(num_online_cpus());
-
-	return log * (32UL * 1024 * 1024 / PAGE_SIZE);
-}
-
-static atomic_long_t vmap_lazy_nr = ATOMIC_LONG_INIT(0);
-
-static DEFINE_MUTEX(vmap_purge_lock);
-
-static bool __purge_vmap_area_lazy(unsigned long start, unsigned long end)
-{
-	return false;
-}
-
-static void purge_vmap_area_lazy(void)
-{
-	mutex_lock(&vmap_purge_lock);
-	__purge_vmap_area_lazy(ULONG_MAX, 0);
-	mutex_unlock(&vmap_purge_lock);
-}
-
-static void drain_vmap_area_work(struct work_struct *work)
-{
-	unsigned long nr_lazy;
-
-	do {
-		mutex_lock(&vmap_purge_lock);
-		__purge_vmap_area_lazy(ULONG_MAX, 0);
-		mutex_unlock(&vmap_purge_lock);
-
-		
-		nr_lazy = atomic_long_read(&vmap_lazy_nr);
-	} while (nr_lazy > lazy_max_pages());
-}
-
 static void free_vmap_area_noflush(struct vmap_area *va)
 {
-	unsigned long nr_lazy;
-
 	spin_lock(&vmap_area_lock);
 	unlink_va(va, &vmap_area_root);
 	spin_unlock(&vmap_area_lock);
 
-	nr_lazy = atomic_long_add_return((va->va_end - va->va_start) >>
-				PAGE_SHIFT, &vmap_lazy_nr);
 
-	
 	spin_lock(&purge_vmap_area_lock);
 	merge_or_add_vmap_area(va,
 		&purge_vmap_area_root, &purge_vmap_area_list);
 	spin_unlock(&purge_vmap_area_lock);
-
-	
-	if (unlikely(nr_lazy > lazy_max_pages()))
-		schedule_work(&drain_vmap_work);
 }
 
 static void free_unmap_vmap_area(struct vmap_area *va)

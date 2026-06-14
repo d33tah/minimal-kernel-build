@@ -385,22 +385,6 @@ int timekeeping_notify(struct clocksource *clock)
 	return tk->tkr_mono.clock == clock ? 0 : -1;
 }
 
-int timekeeping_valid_for_hres(void)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	unsigned int seq;
-	int ret;
-
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-
-		ret = tk->tkr_mono.clock->flags & CLOCK_SOURCE_VALID_FOR_HRES;
-
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
-	return ret;
-}
-
 void __weak read_persistent_clock64(struct timespec64 *ts)
 {
 	ts->tv_sec = 0;

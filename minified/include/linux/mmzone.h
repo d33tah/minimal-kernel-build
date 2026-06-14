@@ -368,13 +368,10 @@ typedef struct pglist_data {
 	int kswapd_order;
 	enum zone_type kswapd_highest_zoneidx;
 
-	int kswapd_failures;		 
-
-	 
-	unsigned long		totalreserve_pages;
+	int kswapd_failures;
 
 
-	 
+
 	ZONE_PADDING(_pad1_)
 
 

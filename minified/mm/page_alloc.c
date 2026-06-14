@@ -86,7 +86,6 @@ nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
 };
 
 atomic_long_t _totalram_pages __read_mostly;
-unsigned long totalreserve_pages __read_mostly;
 gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
 DEFINE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_ALLOC_DEFAULT_ON, init_on_alloc);
 
@@ -2006,18 +2005,6 @@ void __init page_alloc_init(void)
 	 */
 }
 
-static void calculate_totalreserve_pages(void)
-{
-	/* Stub: skip complex reserve calculation for minimal system */
-	totalreserve_pages = 0;
-}
-
-static void setup_per_zone_lowmem_reserve(void)
-{
-	/* Stub: skip lowmem reserve setup for minimal system */
-	calculate_totalreserve_pages();
-}
-
 static void __setup_per_zone_wmarks(void)
 {
 	/* Minimal stub: set basic watermarks without complex calculations */
@@ -2033,7 +2020,6 @@ static void __setup_per_zone_wmarks(void)
 		zone->watermark_boost = 0;
 		spin_unlock_irqrestore(&zone->lock, flags);
 	}
-	calculate_totalreserve_pages();
 }
 
 static void setup_per_zone_wmarks(void)
@@ -2064,7 +2050,6 @@ int __meminit init_per_zone_wmark_min(void)
 	calculate_min_free_kbytes();
 	setup_per_zone_wmarks();
 	refresh_zone_stat_thresholds();
-	setup_per_zone_lowmem_reserve();
 
 	return 0;
 }

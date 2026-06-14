@@ -29,9 +29,8 @@ struct linux_binprm {
 	unsigned int taso:1;
 #endif
 	struct file *file;
-	struct cred *cred;	 
-	int unsafe;		 
-	unsigned int per_clear;	 
+	struct cred *cred;
+	unsigned int per_clear;
 	int argc, envc;
 	const char *filename;	 
 	const char *interp;	 

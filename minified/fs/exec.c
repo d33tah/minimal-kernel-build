@@ -687,12 +687,6 @@ static void check_unsafe_exec(struct linux_binprm *bprm)
 	struct task_struct *p = current, *t;
 	unsigned n_fs;
 
-	if (p->ptrace)
-		bprm->unsafe |= LSM_UNSAFE_PTRACE;
-
-	if (task_no_new_privs(current))
-		bprm->unsafe |= LSM_UNSAFE_NO_NEW_PRIVS;
-
 	t = p;
 	n_fs = 1;
 	spin_lock(&p->fs->lock);
@@ -703,9 +697,7 @@ static void check_unsafe_exec(struct linux_binprm *bprm)
 	}
 	rcu_read_unlock();
 
-	if (p->fs->users > n_fs)
-		bprm->unsafe |= LSM_UNSAFE_SHARE;
-	else
+	if (p->fs->users <= n_fs)
 		p->fs->in_exec = 1;
 	spin_unlock(&p->fs->lock);
 }
@@ -716,7 +708,7 @@ static void bprm_fill_uid(struct linux_binprm *bprm, struct file *file)
 	struct inode *inode;
 	unsigned int mode;
 
-	if (!mnt_may_suid(file->f_path.mnt) || task_no_new_privs(current))
+	if (!mnt_may_suid(file->f_path.mnt))
 		return;
 
 	inode = file->f_path.dentry->d_inode;

@@ -494,14 +494,6 @@ out_dput:
 	return false;
 }
 
-static inline int d_revalidate(struct dentry *dentry, unsigned int flags)
-{
-	if (unlikely(dentry->d_flags & DCACHE_OP_REVALIDATE))
-		return dentry->d_op->d_revalidate(dentry, flags);
-	else
-		return 1;
-}
-
 static int complete_walk(struct nameidata *nd)
 {
 	/* Stub: simplified walk completion for minimal kernel */
@@ -714,17 +706,14 @@ static struct dentry *lookup_dcache(const struct qstr *name,
 				    struct dentry *dir,
 				    unsigned int flags)
 {
-	struct dentry *dentry = d_lookup(dir, name);
-	if (dentry) {
-		int error = d_revalidate(dentry, flags);
-		if (unlikely(error <= 0)) {
-			if (!error)
-				d_invalidate(dentry);
-			dput(dentry);
-			return ERR_PTR(error);
-		}
-	}
-	return dentry;
+	/*
+	 * No dentry_operations on this build defines ->d_revalidate
+	 * (the only ops object, simple_dentry_operations, sets only
+	 * ->d_delete), so DCACHE_OP_REVALIDATE is never set and a
+	 * cached dentry is always valid -- the revalidate/invalidate
+	 * arm is unreachable.
+	 */
+	return d_lookup(dir, name);
 }
 
 static struct dentry *__lookup_hash(const struct qstr *name,
@@ -758,9 +747,13 @@ static struct dentry *lookup_fast(struct nameidata *nd,
 			          unsigned *seqp)
 {
 	struct dentry *dentry, *parent = nd->path.dentry;
-	int status = 1;
 
-	
+	/*
+	 * d_revalidate() is always 1 on this build (no ->d_revalidate
+	 * ops object exists, so DCACHE_OP_REVALIDATE is never set), so a
+	 * found dentry is always valid -- the unlazy-retry / invalidate
+	 * arms are unreachable.
+	 */
 	if (nd->flags & LOOKUP_RCU) {
 		unsigned seq;
 		dentry = __d_lookup_rcu(parent, &nd->last, &seq);
@@ -770,35 +763,20 @@ static struct dentry *lookup_fast(struct nameidata *nd,
 			return NULL;
 		}
 
-		
+
 		*inode = d_backing_inode(dentry);
 		if (unlikely(read_seqcount_retry(&dentry->d_seq, seq)))
 			return ERR_PTR(-ECHILD);
 
-		
+
 		if (unlikely(__read_seqcount_retry(&parent->d_seq, nd->seq)))
 			return ERR_PTR(-ECHILD);
 
 		*seqp = seq;
-		status = d_revalidate(dentry, nd->flags);
-		if (likely(status > 0))
-			return dentry;
-		if (!try_to_unlazy_next(nd, dentry, seq))
-			return ERR_PTR(-ECHILD);
-		if (status == -ECHILD)
-			
-			status = d_revalidate(dentry, nd->flags);
 	} else {
 		dentry = __d_lookup(parent, &nd->last);
 		if (unlikely(!dentry))
 			return NULL;
-		status = d_revalidate(dentry, nd->flags);
-	}
-	if (unlikely(status <= 0)) {
-		if (!status)
-			d_invalidate(dentry);
-		dput(dentry);
-		return ERR_PTR(status);
 	}
 	return dentry;
 }
@@ -814,22 +792,16 @@ static struct dentry *__lookup_slow(const struct qstr *name,
 	
 	if (unlikely(IS_DEADDIR(inode)))
 		return ERR_PTR(-ENOENT);
-again:
 	dentry = d_alloc_parallel(dir, name, &wq);
 	if (IS_ERR(dentry))
 		return dentry;
-	if (unlikely(!d_in_lookup(dentry))) {
-		int error = d_revalidate(dentry, flags);
-		if (unlikely(error <= 0)) {
-			if (!error) {
-				d_invalidate(dentry);
-				dput(dentry);
-				goto again;
-			}
-			dput(dentry);
-			dentry = ERR_PTR(error);
-		}
-	} else {
+	/*
+	 * d_revalidate() is always 1 on this build (no ->d_revalidate
+	 * ops object exists), so a dentry that was already resolved (not
+	 * in-lookup) is always valid -- only the in-lookup arm runs the
+	 * real ->lookup.
+	 */
+	if (likely(d_in_lookup(dentry))) {
 		old = inode->i_op->lookup(inode, dentry, flags);
 		d_lookup_done(dentry);
 		if (unlikely(old)) {
@@ -1119,16 +1091,12 @@ static int link_path_walk(const char *name, struct nameidata *nd)
 				type = LAST_DOT;
 		}
 		if (likely(type == LAST_NORM)) {
-			struct dentry *parent = nd->path.dentry;
+			/*
+			 * DCACHE_OP_HASH is never set on this build (no
+			 * ->d_hash ops object exists), so the per-dentry
+			 * name-hash override is unreachable.
+			 */
 			nd->state &= ~ND_JUMPED;
-			if (unlikely(parent->d_flags & DCACHE_OP_HASH)) {
-				struct qstr this = { { .hash_len = hash_len }, .name = name };
-				err = parent->d_op->d_hash(parent, &this);
-				if (err < 0)
-					return err;
-				hash_len = this.hash_len;
-				name = this.name;
-			}
 		}
 
 		nd->last.hash_len = hash_len;

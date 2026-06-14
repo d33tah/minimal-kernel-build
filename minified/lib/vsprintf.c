@@ -569,14 +569,6 @@ static char *default_pointer(char *buf, char *end, const void *ptr,
 
 
 static noinline_for_stack
-char *dentry_name(char *buf, char *end, const struct dentry *d, struct printf_spec spec,
-		  const char *fmt)
-{
-	 
-	return error_string(buf, end, "(dentry)", spec);
-}
-
-static noinline_for_stack
 char *file_dentry_name(char *buf, char *end, const struct file *f,
 			struct printf_spec spec, const char *fmt)
 {
@@ -595,15 +587,6 @@ char *symbol_string(char *buf, char *end, void *ptr,
 	value = (unsigned long)ptr;
 
 	return special_hex_number(buf, end, value, sizeof(void *));
-}
-
-
-static noinline_for_stack
-char *bitmap_string(char *buf, char *end, unsigned long *bitmap,
-		    struct printf_spec spec, const char *fmt)
-{
-
-	return error_string(buf, end, "(bitmap)", spec);
 }
 
 static char *va_format(char *buf, char *end, struct va_format *va_fmt,
@@ -649,14 +632,10 @@ char *pointer(const char *fmt, char *buf, char *end, void *ptr,
 		fallthrough;
 	case 'B':
 		return symbol_string(buf, end, ptr, spec, fmt);
-	case 'b':
-		return bitmap_string(buf, end, ptr, spec, fmt);
 	case 'V':
 		return va_format(buf, end, ptr, spec, fmt);
 	case 'a':
 		return address_val(buf, end, ptr, spec, fmt);
-	case 'd':
-		return dentry_name(buf, end, ptr, spec, fmt);
 	case 'D':
 		return file_dentry_name(buf, end, ptr, spec, fmt);
 

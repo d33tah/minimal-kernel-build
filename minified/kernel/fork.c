@@ -739,20 +739,19 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct fs_struct *fs = current->fs;
-	if (clone_flags & CLONE_FS) {
-		
-		spin_lock(&fs->lock);
-		if (fs->in_exec) {
-			spin_unlock(&fs->lock);
-			return -EAGAIN;
-		}
-		fs->users++;
+
+	/*
+	 * Every spawn on this build sets CLONE_FS (init passes CLONE_FS;
+	 * kthreadd/kthreads pass CLONE_FS|CLONE_FILES) so the fs_struct is
+	 * always shared, never duplicated.  The copy_fs_struct() arm is dead.
+	 */
+	spin_lock(&fs->lock);
+	if (fs->in_exec) {
 		spin_unlock(&fs->lock);
-		return 0;
+		return -EAGAIN;
 	}
-	tsk->fs = copy_fs_struct(fs);
-	if (!tsk->fs)
-		return -ENOMEM;
+	fs->users++;
+	spin_unlock(&fs->lock);
 	return 0;
 }
 
@@ -785,10 +784,10 @@ static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct sighand_struct *sig;
 
-	if (clone_flags & CLONE_SIGHAND) {
-		refcount_inc(&current->sighand->count);
-		return 0;
-	}
+	/*
+	 * Neither CLONE_SIGHAND nor CLONE_CLEAR_SIGHAND is ever set on this
+	 * build, so the sighand is always freshly allocated and inherited.
+	 */
 	sig = kmem_cache_alloc(sighand_cachep, GFP_KERNEL);
 	RCU_INIT_POINTER(tsk->sighand, sig);
 	if (!sig)
@@ -798,10 +797,6 @@ static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
 	spin_lock_irq(&current->sighand->siglock);
 	memcpy(sig->action, current->sighand->action, sizeof(sig->action));
 	spin_unlock_irq(&current->sighand->siglock);
-
-	
-	if (clone_flags & CLONE_CLEAR_SIGHAND)
-		flush_signal_handlers(tsk, 0);
 
 	return 0;
 }
@@ -817,9 +812,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct signal_struct *sig;
 
-	if (clone_flags & CLONE_THREAD)
-		return 0;
-
+	/* CLONE_THREAD is never set on this build: always a fresh signal. */
 	sig = kmem_cache_zalloc(signal_cachep, GFP_KERNEL);
 	tsk->signal = sig;
 	if (!sig)

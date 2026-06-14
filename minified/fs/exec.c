@@ -499,33 +499,6 @@ static int de_thread(struct task_struct *tsk)
 	return 0;
 }
 
-static int unshare_sighand(struct task_struct *me)
-{
-	struct sighand_struct *oldsighand = me->sighand;
-
-	if (refcount_read(&oldsighand->count) != 1) {
-		struct sighand_struct *newsighand;
-		
-		newsighand = kmem_cache_alloc(sighand_cachep, GFP_KERNEL);
-		if (!newsighand)
-			return -ENOMEM;
-
-		refcount_set(&newsighand->count, 1);
-		memcpy(newsighand->action, oldsighand->action,
-		       sizeof(newsighand->action));
-
-		write_lock_irq(&tasklist_lock);
-		spin_lock(&oldsighand->siglock);
-		rcu_assign_pointer(me->sighand, newsighand);
-		spin_unlock(&oldsighand->siglock);
-		write_unlock_irq(&tasklist_lock);
-
-		__cleanup_sighand(oldsighand);
-	}
-	return 0;
-}
-
-
 void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
 {
 	task_lock(tsk);
@@ -562,9 +535,11 @@ int begin_new_exec(struct linux_binprm * bprm)
 
 	bprm->mm = NULL;
 
-	retval = unshare_sighand(me);
-	if (retval)
-		goto out_unlock;
+	/*
+	 * unshare_sighand() removed: the only execve() callers (init via
+	 * user_mode_thread, kernel_execve) never pass CLONE_SIGHAND, so
+	 * sighand->count is always 1 and the unshare branch was dead.
+	 */
 
 	me->flags &= ~(PF_RANDOMIZE | PF_FORKNOEXEC |
 					PF_NOFREEZE | PF_NO_SETAFFINITY);

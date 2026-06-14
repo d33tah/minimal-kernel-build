@@ -37,10 +37,6 @@
  * CONFIG_PRINTK is unset, so prb_read_valid()/prb_next_seq()/prb_first_valid_seq()
  * are constant stubs, no struct printk_ringbuffer is ever instantiated, and the
  * record-emit path (console_emit_next_record) never reads a record. */
-struct console_cmdline { char name[16]; int index; bool user_specified; char *options; };
-/* end console_cmdline.h */
-static inline int _braille_register_console(struct console *console, struct console_cmdline *c) { return 0; }
-/* end braille.h */
 #include "internal.h"
 
 int console_printk[4] = {
@@ -96,11 +92,6 @@ static void __up_console_sem(unsigned long ip)
 static int console_locked;
 
 
-#define MAX_CMDLINECONSOLES 8
-
-static struct console_cmdline console_cmdline[MAX_CMDLINECONSOLES];
-
-static int preferred_console = -1;
 
 static DEFINE_MUTEX(syslog_lock);
 
@@ -215,41 +206,13 @@ static int __read_mostly keep_bootcon;
 static int try_enable_preferred_console(struct console *newcon,
 					bool user_specified)
 {
-	struct console_cmdline *c;
-	int i, err;
-
-	for (i = 0, c = console_cmdline;
-	     i < MAX_CMDLINECONSOLES && c->name[0];
-	     i++, c++) {
-		if (c->user_specified != user_specified)
-			continue;
-		if (!newcon->match ||
-		    newcon->match(newcon, c->name, c->index, c->options) != 0) {
-			 
-			BUILD_BUG_ON(sizeof(c->name) != sizeof(newcon->name));
-			if (strcmp(c->name, newcon->name) != 0)
-				continue;
-			if (newcon->index >= 0 &&
-			    newcon->index != c->index)
-				continue;
-			if (newcon->index < 0)
-				newcon->index = c->index;
-
-			if (_braille_register_console(newcon, c))
-				return 0;
-
-			if (newcon->setup &&
-			    (err = newcon->setup(newcon, c->options)) != 0)
-				return err;
-		}
-		newcon->flags |= CON_ENABLED;
-		if (i == preferred_console)
-			newcon->flags |= CON_CONSDEV;
-		return 0;
-	}
-
-	 
-	if (newcon->flags & CON_ENABLED && c->user_specified ==	user_specified)
+	/*
+	 * console_cmdline[] is never populated on this build (no console=
+	 * boot-param parser / __add_preferred_console), so the cmdline-match
+	 * loop never iterates. With c->user_specified always false, the
+	 * post-loop check folds to (CON_ENABLED && !user_specified).
+	 */
+	if (newcon->flags & CON_ENABLED && !user_specified)
 		return 0;
 
 	return -ENOENT;
@@ -299,12 +262,10 @@ void register_console(struct console *newcon)
 		return;
 	}
 
-	 
-	if (preferred_console < 0) {
-		if (!console_drivers || !console_drivers->device ||
-		    console_drivers->flags & CON_BOOT) {
-			try_enable_default_console(newcon);
-		}
+	/* preferred_console is always -1 here (no console= cmdline param). */
+	if (!console_drivers || !console_drivers->device ||
+	    console_drivers->flags & CON_BOOT) {
+		try_enable_default_console(newcon);
 	}
 
 	 

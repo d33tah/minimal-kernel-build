@@ -54,10 +54,6 @@ void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 {
 	tick_set_periodic_handler(dev, broadcast);
 
-
-	if (!tick_device_is_functional(dev))
-		return;
-
 	/*
 	 * The clock event device always carries CLOCK_EVT_FEAT_PERIODIC and
 	 * broadcast is off (tick_broadcast_oneshot_active() == 0), so the device
@@ -120,13 +116,11 @@ static bool tick_check_percpu(struct clock_event_device *curdev,
 static bool tick_check_preferred(struct clock_event_device *curdev,
 				 struct clock_event_device *newdev)
 {
-	 
-	if (!(newdev->features & CLOCK_EVT_FEAT_ONESHOT)) {
-		if (curdev && (curdev->features & CLOCK_EVT_FEAT_ONESHOT))
-			return false;
-	}
-
-	 
+	/*
+	 * No clockevent device on this build carries CLOCK_EVT_FEAT_ONESHOT
+	 * (the only device, i8253, is PERIODIC-only), so neither newdev nor
+	 * curdev is ever oneshot -- the oneshot preference check was dead.
+	 */
 	return !curdev ||
 		newdev->rating > curdev->rating ||
 	       !cpumask_equal(curdev->cpumask, newdev->cpumask);
@@ -164,8 +158,6 @@ void tick_check_new_device(struct clock_event_device *newdev)
 
 	clockevents_exchange_device(curdev, newdev);
 	tick_setup_device(td, newdev, cpu, cpumask_of(cpu));
-	if (newdev->features & CLOCK_EVT_FEAT_ONESHOT)
-		tick_oneshot_notify();
 }
 
 

@@ -16,10 +16,10 @@ static DEFINE_MUTEX(clockevents_mutex);
 static int __clockevents_switch_state(struct clock_event_device *dev,
 				      enum clock_event_state state)
 {
-	if (dev->features & CLOCK_EVT_FEAT_DUMMY)
-		return 0;
-
-	 
+	/*
+	 * No device sets CLOCK_EVT_FEAT_DUMMY on this build, so the dummy
+	 * short-circuit was dead.
+	 */
 	switch (state) {
 	case CLOCK_EVT_STATE_DETACHED:
 		 

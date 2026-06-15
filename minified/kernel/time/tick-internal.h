@@ -31,11 +31,6 @@ extern void tick_check_new_device(struct clock_event_device *dev);
 extern bool tick_check_replacement(struct clock_event_device *curdev,
 				   struct clock_event_device *newdev);
 
-static inline int tick_device_is_functional(struct clock_event_device *dev)
-{
-	return !(dev->features & CLOCK_EVT_FEAT_DUMMY);
-}
-
 static inline enum clock_event_state clockevent_get_state(struct clock_event_device *dev)
 {
 	return dev->state_use_accessors;
@@ -64,7 +59,6 @@ static inline void tick_set_periodic_handler(struct clock_event_device *dev, int
 }
 
 
-static inline void tick_oneshot_notify(void) { }
 static inline void tick_clock_notify(void) { }
 
  

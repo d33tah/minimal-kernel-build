@@ -777,11 +777,6 @@ static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
 {
 	long val = atomic_long_read(&mm->rss_stat.count[member]);
 
-#ifdef SPLIT_RSS_COUNTING
-	
-	if (val < 0)
-		val = 0;
-#endif
 	return (unsigned long)val;
 }
 
@@ -851,13 +846,9 @@ static inline void setmax_mm_hiwater_rss(unsigned long *maxrss,
 		*maxrss = hiwater_rss;
 }
 
-#if defined(SPLIT_RSS_COUNTING)
-void sync_mm_rss(struct mm_struct *mm);
-#else
 static inline void sync_mm_rss(struct mm_struct *mm)
 {
 }
-#endif
 
 static inline int pte_devmap(pte_t pte)
 {

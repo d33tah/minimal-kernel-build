@@ -27,14 +27,6 @@ enum {
 	NR_MM_COUNTERS
 };
 
-#if USE_SPLIT_PTE_PTLOCKS && defined(CONFIG_MMU)
-#define SPLIT_RSS_COUNTING
-struct task_rss_stat {
-	int events;	 
-	int count[NR_MM_COUNTERS];
-};
-#endif  
-
 struct mm_rss_stat {
 	atomic_long_t count[NR_MM_COUNTERS];
 };

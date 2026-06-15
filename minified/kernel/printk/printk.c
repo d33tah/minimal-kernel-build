@@ -201,8 +201,6 @@ struct tty_driver *console_device(int *index)
 }
 
 
-static int __read_mostly keep_bootcon;
-
 static int try_enable_preferred_console(struct console *newcon,
 					bool user_specified)
 {
@@ -240,8 +238,6 @@ static void try_enable_default_console(struct console *newcon)
 void register_console(struct console *newcon)
 {
 	struct console *con;
-	bool bootcon_enabled = false;
-	bool realcon_enabled = false;
 	int err;
 
 	for_each_console(con) {
@@ -250,23 +246,16 @@ void register_console(struct console *newcon)
 			return;
 	}
 
-	for_each_console(con) {
-		if (con->flags & CON_BOOT)
-			bootcon_enabled = true;
-		else
-			realcon_enabled = true;
-	}
-
-	 
-	if (newcon->flags & CON_BOOT && realcon_enabled) {
-		return;
-	}
-
-	/* preferred_console is always -1 here (no console= cmdline param). */
-	if (!console_drivers || !console_drivers->device ||
-	    console_drivers->flags & CON_BOOT) {
+	/*
+	 * No console on this build sets CON_BOOT (the only registrant is
+	 * vt_console_driver, CON_PRINTBUFFER) so there is never a boot console
+	 * to track or unregister; the bootcon machinery below is statically
+	 * dead and has been folded out.
+	 *
+	 * preferred_console is always -1 here (no console= cmdline param).
+	 */
+	if (!console_drivers || !console_drivers->device)
 		try_enable_default_console(newcon);
-	}
 
 	 
 	err = try_enable_preferred_console(newcon, true);
@@ -279,13 +268,7 @@ void register_console(struct console *newcon)
 	if (err || newcon->flags & CON_BRL)
 		return;
 
-	 
-	if (bootcon_enabled &&
-	    ((newcon->flags & (CON_CONSDEV | CON_BOOT)) == CON_CONSDEV)) {
-		newcon->flags &= ~CON_PRINTBUFFER;
-	}
 
-	 
 	console_lock();
 	if ((newcon->flags & CON_CONSDEV) || console_drivers == NULL) {
 		newcon->next = console_drivers;
@@ -312,22 +295,7 @@ void register_console(struct console *newcon)
 	console_unlock();
 	console_sysfs_notify();
 
-	 
 	con_printk(KERN_INFO, newcon, "enabled\n");
-	if (bootcon_enabled &&
-	    ((newcon->flags & (CON_CONSDEV | CON_BOOT)) == CON_CONSDEV) &&
-	    !keep_bootcon) {
-		 
-		for_each_console(con)
-			if (con->flags & CON_BOOT)
-				unregister_console(con);
-	}
-}
-
-int unregister_console(struct console *console)
-{
-	/* Stub: console unregistration not needed for minimal kernel */
-	return 0;
 }
 
 void __init console_init(void)

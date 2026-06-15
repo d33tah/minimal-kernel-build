@@ -82,7 +82,6 @@ enum con_flush_mode {
 };
 
 extern void register_console(struct console *);
-extern int unregister_console(struct console *);
 extern struct console *console_drivers;
 extern void console_lock(void);
 extern int console_trylock(void);

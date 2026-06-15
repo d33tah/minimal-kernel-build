@@ -102,8 +102,4 @@ static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
 	return __pkru_allows_pkey(vma_pkey(vma), write);
 }
 
-unsigned long __get_current_cr3_fast(void);
-
-
-
-#endif  
+#endif

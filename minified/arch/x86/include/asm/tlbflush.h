@@ -95,10 +95,7 @@ struct tlb_state_shared {
 };
 DECLARE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
 
-bool nmi_uaccess_okay(void);
-#define nmi_uaccess_okay nmi_uaccess_okay
 
- 
 static inline void cr4_init_shadow(void)
 {
 	this_cpu_write(cpu_tlbstate.cr4, __read_cr4());
@@ -135,11 +132,9 @@ void flush_tlb_one_kernel(unsigned long addr);
 				? huge_page_shift(hstate_vma(vma))	\
 				: PAGE_SHIFT, false)
 
-extern void flush_tlb_all(void);
 extern void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 				unsigned long end, unsigned int stride_shift,
 				bool freed_tables);
-extern void flush_tlb_kernel_range(unsigned long start, unsigned long end);
 
 static inline void flush_tlb_page(struct vm_area_struct *vma, unsigned long a)
 {

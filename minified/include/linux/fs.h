@@ -1265,11 +1265,10 @@ alloc_inode_sb(struct super_block *sb, struct kmem_cache *cache, gfp_t gfp)
 	return kmem_cache_alloc_lru(cache, &sb->s_inode_lru, gfp);
 }
 
-extern void __remove_inode_hash(struct inode *);
 static inline void remove_inode_hash(struct inode *inode)
 {
-	if (!inode_unhashed(inode) && !hlist_fake(&inode->i_hash))
-		__remove_inode_hash(inode);
+	/* Inodes are never hashed on this build (no __insert_inode_hash),
+	 * so inode_unhashed() is always true -> nothing to remove. */
 }
 
 extern void inode_sb_list_add(struct inode *inode);

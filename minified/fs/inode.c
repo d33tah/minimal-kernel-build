@@ -48,11 +48,12 @@ static inline bool inode_iversion_need_inc(struct inode *inode)
 	return inode_peek_iversion_raw(inode) & I_VERSION_QUERIED;
 }
 
-static unsigned int i_hash_mask __read_mostly;
-static unsigned int i_hash_shift __read_mostly;
-static struct hlist_head *inode_hashtable __read_mostly;
-static __cacheline_aligned_in_smp DEFINE_SPINLOCK(inode_hash_lock);
-
+/*
+ * Inode hashing removed: this build has no __insert_inode_hash, so every inode's
+ * i_hash stays INIT_HLIST_NODE (inode_unhashed() always true). The hash table was
+ * write-only (inode_hashtable never read), so the alloc + __remove_inode_hash were
+ * pure dead work.
+ */
 const struct address_space_operations empty_aops = {
 };
 
@@ -272,16 +273,6 @@ static inline void inode_sb_list_del(struct inode *inode)
 		list_del_init(&inode->i_sb_list);
 		spin_unlock(&inode->i_sb->s_inode_list_lock);
 	}
-}
-
-
-void __remove_inode_hash(struct inode *inode)
-{
-	spin_lock(&inode_hash_lock);
-	spin_lock(&inode->i_lock);
-	hlist_del_init_rcu(&inode->i_hash);
-	spin_unlock(&inode->i_lock);
-	spin_unlock(&inode_hash_lock);
 }
 
 
@@ -644,24 +635,8 @@ int file_update_time(struct file *file)
 }
 
 
-static __initdata unsigned long ihash_entries;
-
 void __init inode_init_early(void)
 {
-	
-	if (hashdist)
-		return;
-
-	inode_hashtable =
-		alloc_large_system_hash("Inode-cache",
-					sizeof(struct hlist_head),
-					ihash_entries,
-					14,
-					HASH_EARLY | HASH_ZERO,
-					&i_hash_shift,
-					&i_hash_mask,
-					0,
-					0);
 }
 
 void __init inode_init(void)
@@ -673,20 +648,6 @@ void __init inode_init(void)
 					 (SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|
 					 SLAB_MEM_SPREAD|SLAB_ACCOUNT),
 					 init_once);
-
-	if (!hashdist)
-		return;
-
-	inode_hashtable =
-		alloc_large_system_hash("Inode-cache",
-					sizeof(struct hlist_head),
-					ihash_entries,
-					14,
-					HASH_ZERO,
-					&i_hash_shift,
-					&i_hash_mask,
-					0,
-					0);
 }
 
 void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)

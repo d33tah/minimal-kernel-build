@@ -576,14 +576,8 @@ static int fallbacks[MIGRATE_TYPES][3] = {
 	[MIGRATE_RECLAIMABLE] = { MIGRATE_UNMOVABLE,   MIGRATE_MOVABLE,   MIGRATE_TYPES },
 };
 
-static bool can_steal_fallback(unsigned int order, int start_mt)
-{
-	/* Stub: always allow fallback for minimal kernel */
-	return true;
-}
-
 static void steal_suitable_fallback(struct zone *zone, struct page *page,
-		unsigned int alloc_flags, int start_type, bool whole_block)
+		unsigned int alloc_flags, int start_type)
 {
 	/* Minimal stub: just move page to target type */
 	unsigned int current_order = buddy_order(page);
@@ -591,7 +585,7 @@ static void steal_suitable_fallback(struct zone *zone, struct page *page,
 }
 
 static int find_suitable_fallback(struct free_area *area, unsigned int order,
-			int migratetype, bool only_stealable, bool *can_steal)
+			int migratetype)
 {
 	int i;
 	int fallback_mt;
@@ -599,7 +593,6 @@ static int find_suitable_fallback(struct free_area *area, unsigned int order,
 	if (area->nr_free == 0)
 		return -1;
 
-	*can_steal = false;
 	for (i = 0;; i++) {
 		fallback_mt = fallbacks[migratetype][i];
 		if (fallback_mt == MIGRATE_TYPES)
@@ -608,14 +601,7 @@ static int find_suitable_fallback(struct free_area *area, unsigned int order,
 		if (free_area_empty(area, fallback_mt))
 			continue;
 
-		if (can_steal_fallback(order, migratetype))
-			*can_steal = true;
-
-		if (!only_stealable)
-			return fallback_mt;
-
-		if (*can_steal)
-			return fallback_mt;
+		return fallback_mt;
 	}
 
 	return -1;
@@ -631,18 +617,17 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype,
 	struct free_area *area;
 	int current_order;
 	int fallback_mt;
-	bool can_steal;
 	struct page *page;
 
 	for (current_order = MAX_ORDER - 1; current_order >= order; --current_order) {
 		area = &(zone->free_area[current_order]);
 		fallback_mt = find_suitable_fallback(area, current_order,
-				start_migratetype, false, &can_steal);
+				start_migratetype);
 		if (fallback_mt == -1)
 			continue;
 
 		page = get_page_from_free_area(area, fallback_mt);
-		steal_suitable_fallback(zone, page, alloc_flags, start_migratetype, can_steal);
+		steal_suitable_fallback(zone, page, alloc_flags, start_migratetype);
 		return true;
 	}
 

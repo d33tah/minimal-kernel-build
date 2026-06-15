@@ -115,7 +115,6 @@ struct fs_parameter_spec;
 struct fileattr;
 
 extern void __init inode_init(void);
-extern void __init inode_init_early(void);
 extern void __init files_init(void);
 extern void __init files_maxfiles_init(void);
 extern unsigned int sysctl_nr_open;
@@ -1251,8 +1250,6 @@ static inline int generic_drop_inode(struct inode *inode)
 	return !inode->i_nlink || inode_unhashed(inode);
 }
 extern unsigned int get_next_ino(void);
-extern void evict_inodes(struct super_block *sb);
-
 extern void clear_inode(struct inode *);
 extern void __destroy_inode(struct inode *);
 extern struct inode *new_inode_pseudo(struct super_block *sb);

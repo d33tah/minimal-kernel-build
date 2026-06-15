@@ -318,21 +318,6 @@ static void evict(struct inode *inode)
 	destroy_inode(inode);
 }
 
-/*
- * Stub: evict_inodes() is reached only from generic_shutdown_super()
- * (fs/super.c) on superblock DESTRUCTION, which only happens when a
- * filesystem is unmounted (fs->kill_sb -> deactivate_locked_super ->
- * generic_shutdown_super, dispatched at fs/super.c:123 only when
- * s_active hits 0). This minimal kernel mounts rootfs/devtmpfs/proc/sysfs
- * and never unmounts any of them before halt, so the whole sb-teardown
- * path is unreachable -> evict_inodes (and its dispose_list helper) is
- * dead. The live per-inode eviction (iput_final -> evict) is unaffected.
- */
-void evict_inodes(struct super_block *sb)
-{
-}
-
-
 static DEFINE_PER_CPU(unsigned int, last_ino);
 
 unsigned int get_next_ino(void)
@@ -341,7 +326,7 @@ unsigned int get_next_ino(void)
 	unsigned int res = *p;
 
 	res++;
-	
+
 	if (unlikely(!res))
 		res++;
 	*p = res;
@@ -634,10 +619,6 @@ int file_update_time(struct file *file)
 	return ret;
 }
 
-
-void __init inode_init_early(void)
-{
-}
 
 void __init inode_init(void)
 {

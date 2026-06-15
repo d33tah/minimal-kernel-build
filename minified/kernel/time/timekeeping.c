@@ -620,7 +620,6 @@ void ktime_get_coarse_real_ts64(struct timespec64 *ts)
 void do_timer(unsigned long ticks)
 {
 	jiffies_64 += ticks;
-	calc_global_load();
 }
 
 ktime_t ktime_get_update_offsets_now(unsigned int *cwsseq, ktime_t *offs_real,

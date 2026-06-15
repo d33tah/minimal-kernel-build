@@ -47,8 +47,6 @@ static const u32 runnable_avg_yN_inv[] __maybe_unused = {
 
 
 
-
-#include "loadavg.c"
 #include "completion.c"
 #include "swait.c"
 #include "wait_bit.c"

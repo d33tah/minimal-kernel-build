@@ -26,8 +26,6 @@ extern struct atomic_notifier_head panic_notifier_list;
 #define PANIC_TIMER_STEP 100
 #define PANIC_BLINK_SPD 18
 
-#define sysctl_oops_all_cpu_backtrace 0
-
 int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
 static unsigned long tainted_mask =
 	IS_ENABLED(CONFIG_RANDSTRUCT) ? (1 << TAINT_RANDSTRUCT) : 0;
@@ -41,7 +39,6 @@ int panic_timeout = CONFIG_PANIC_TIMEOUT;
 #define PANIC_PRINT_FTRACE_INFO		0x00000010
 #define PANIC_PRINT_ALL_PRINTK_MSG	0x00000020
 #define PANIC_PRINT_ALL_CPU_BT		0x00000040
-unsigned long panic_print;
 
 ATOMIC_NOTIFIER_HEAD(panic_notifier_list);
 
@@ -156,9 +153,7 @@ void panic(const char *fmt, ...)
 		}
 	}
 	if (panic_timeout != 0) {
-		 
-		if (panic_reboot_mode != REBOOT_UNDEFINED)
-			reboot_mode = panic_reboot_mode;
+
 		emergency_restart();
 	}
 #ifdef __sparc__
@@ -201,9 +196,6 @@ void oops_enter(void)
 	tracing_off();
 
 	debug_locks_off();
-
-	if (sysctl_oops_all_cpu_backtrace)
-		trigger_all_cpu_backtrace();
 }
 
 static void print_oops_end_marker(void)

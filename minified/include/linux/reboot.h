@@ -34,8 +34,6 @@ enum reboot_mode {
 	REBOOT_SOFT,
 	REBOOT_GPIO,
 };
-extern enum reboot_mode reboot_mode;
-extern enum reboot_mode panic_reboot_mode;
 
 enum reboot_type {
 	BOOT_TRIPLE	= 't',

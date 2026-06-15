@@ -16,10 +16,6 @@
 
 /* Removed: C_A_D, cad_pid - only set but never read */
 
-#define DEFAULT_REBOOT_MODE
-enum reboot_mode reboot_mode DEFAULT_REBOOT_MODE;
-enum reboot_mode panic_reboot_mode = REBOOT_UNDEFINED;
-
 void __weak (*pm_power_off)(void);
 
 void emergency_restart(void)

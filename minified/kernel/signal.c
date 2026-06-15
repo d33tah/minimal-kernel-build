@@ -123,12 +123,6 @@ void calculate_sigpending(void)
 	spin_unlock_irq(&current->sighand->siglock);
 }
 
-/* Stubbed - not used externally */
-/* Stubbed - not used externally */
-void task_clear_jobctl_pending(struct task_struct *task, unsigned long mask)
-{
-}
-
 static struct sigqueue *
 __sigqueue_alloc(int sig, struct task_struct *t, gfp_t gfp_flags,
 		 int override_rlimit, const unsigned int sigqueue_flags)
@@ -338,7 +332,6 @@ int zap_other_threads(struct task_struct *p)
 	p->signal->group_stop_count = 0;
 
 	while_each_thread(p, t) {
-		task_clear_jobctl_pending(t, JOBCTL_PENDING_MASK);
 		count++;
 
 		

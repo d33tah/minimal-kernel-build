@@ -204,10 +204,6 @@ struct timespec;
 struct pt_regs;
 enum pid_type;
 
-extern int do_send_sig_info(int sig, struct kernel_siginfo *info,
-				struct task_struct *p, enum pid_type type);
-extern int group_send_sig_info(int sig, struct kernel_siginfo *info,
-			       struct task_struct *p, enum pid_type type);
 extern int send_signal_locked(int sig, struct kernel_siginfo *info,
 			      struct task_struct *p, enum pid_type type);
 extern int show_unhandled_signals;

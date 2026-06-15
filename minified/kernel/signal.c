@@ -232,31 +232,6 @@ void signal_wake_up_state(struct task_struct *t, unsigned int state)
 }
 
 
-static inline int is_si_special(const struct kernel_siginfo *info)
-{
-	return info <= SEND_SIG_PRIV;
-}
-
-static inline bool si_fromuser(const struct kernel_siginfo *info)
-{
-	return info == SEND_SIG_NOINFO ||
-		(!is_si_special(info) && SI_FROMUSER(info));
-}
-
-static int check_kill_permission(int sig, struct kernel_siginfo *info,
-				 struct task_struct *t)
-{
-	/* Minimal stub: simplified signal permission checking */
-	if (!valid_signal(sig))
-		return -EINVAL;
-
-	if (!si_fromuser(info))
-		return 0;
-
-	/* Skip session/cred checks for minimal kernel */
-	return 0;
-}
-
 static bool prepare_signal(int sig, struct task_struct *p, bool force)
 {
 	return !sig_ignored(p, sig, force);
@@ -326,20 +301,6 @@ int send_signal_locked(int sig, struct kernel_siginfo *info,
 }
 
 /* Removed: setup_print_fatal_signals and __setup - never used */
-
-int do_send_sig_info(int sig, struct kernel_siginfo *info, struct task_struct *p,
-			enum pid_type type)
-{
-	unsigned long flags;
-	int ret = -ESRCH;
-
-	if (lock_task_sighand(p, &flags)) {
-		ret = send_signal_locked(sig, info, p, type);
-		unlock_task_sighand(p, &flags);
-	}
-
-	return ret;
-}
 
 enum sig_handler {
 	HANDLER_CURRENT, 
@@ -417,21 +378,6 @@ struct sighand_struct *__lock_task_sighand(struct task_struct *tsk,
 	rcu_read_unlock();
 
 	return sighand;
-}
-
-int group_send_sig_info(int sig, struct kernel_siginfo *info,
-			struct task_struct *p, enum pid_type type)
-{
-	int ret;
-
-	rcu_read_lock();
-	ret = check_kill_permission(sig, info, p);
-	rcu_read_unlock();
-
-	if (!ret && sig)
-		ret = do_send_sig_info(sig, info, p, type);
-
-	return ret;
 }
 
 void force_sig(int sig)

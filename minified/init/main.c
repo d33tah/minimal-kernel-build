@@ -410,16 +410,6 @@ void __init __weak pgtable_cache_init(void) { }
 
 void __init __weak trap_init(void) { }
 
-bool initcall_debug;
-
-#ifdef TRACEPOINTS_ENABLED
-static void __init initcall_debug_enable(void);
-#else
-static inline void initcall_debug_enable(void)
-{
-}
-#endif
-
 static void __init report_meminit(void)
 {
 	/* Stub: mem auto-init reporting not needed for minimal kernel */
@@ -519,10 +509,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	rcu_init();
 
-	if (initcall_debug)
-		initcall_debug_enable();
 
-	 
 	early_irq_init();
 	init_IRQ();
 	tick_init();
@@ -597,42 +584,6 @@ static void __init do_ctors(void)
 
 static bool __init_or_module initcall_blacklisted(initcall_t fn) { return false; }
 
-/* trace_initcall_start_cb and trace_initcall_finish_cb - stub only */
-static __init_or_module void
-trace_initcall_start_cb(void *data, initcall_t fn) { }
-static __init_or_module void
-trace_initcall_finish_cb(void *data, initcall_t fn, int ret) { }
-
-static ktime_t initcall_calltime;
-
-#ifdef TRACEPOINTS_ENABLED
-static void __init initcall_debug_enable(void)
-{
-	int ret;
-
-	ret = register_trace_initcall_start(trace_initcall_start_cb,
-					    &initcall_calltime);
-	ret |= register_trace_initcall_finish(trace_initcall_finish_cb,
-					      &initcall_calltime);
-	WARN(ret, "Failed to register initcall tracepoints\n");
-}
-# define do_trace_initcall_start	trace_initcall_start
-# define do_trace_initcall_finish	trace_initcall_finish
-#else
-static inline void do_trace_initcall_start(initcall_t fn)
-{
-	if (!initcall_debug)
-		return;
-	trace_initcall_start_cb(&initcall_calltime, fn);
-}
-static inline void do_trace_initcall_finish(initcall_t fn, int ret)
-{
-	if (!initcall_debug)
-		return;
-	trace_initcall_finish_cb(&initcall_calltime, fn, ret);
-}
-#endif  
-
 int __init_or_module do_one_initcall(initcall_t fn)
 {
 	int count = preempt_count();
@@ -642,9 +593,7 @@ int __init_or_module do_one_initcall(initcall_t fn)
 	if (initcall_blacklisted(fn))
 		return -EPERM;
 
-	do_trace_initcall_start(fn);
 	ret = fn();
-	do_trace_initcall_finish(fn, ret);
 
 	msgbuf[0] = 0;
 

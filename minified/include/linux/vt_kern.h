@@ -66,7 +66,6 @@ struct vc_data {
 	unsigned char	vc_utf		: 1;
 	unsigned char	vc_utf_count;
 		 int	vc_utf_char;
-	unsigned char   vc_palette[16*3];
 	unsigned int    vc_resize_user;
 	struct vc_data **vc_display_fg;
 	struct uni_pagedir *vc_uni_pagedir;

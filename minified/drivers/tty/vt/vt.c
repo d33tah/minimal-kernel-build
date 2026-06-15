@@ -64,7 +64,6 @@ static void reset_terminal(struct vc_data *vc, int do_clear);
 static void con_flush_chars(struct tty_struct *tty);
 static void set_cursor(struct vc_data *vc);
 static void hide_cursor(struct vc_data *vc);
-static void set_palette(struct vc_data *vc);
 
 static int printable;
 int default_utf8 = true;
@@ -278,7 +277,6 @@ static void redraw_screen(struct vc_data *vc)
 	old_was_color = vc->vc_can_do_color;
 	set_origin(vc);
 	update = vc->vc_sw->con_switch(vc);
-	set_palette(vc);
 
 	if (old_was_color != vc->vc_can_do_color) {
 		update_attr(vc);
@@ -884,8 +882,6 @@ static int default_color = 7;
 static void vc_init(struct vc_data *vc, unsigned int rows,
 		    unsigned int cols, int do_clear)
 {
-	int j, k ;
-
 	vc->vc_cols = cols;
 	vc->vc_rows = rows;
 	vc->vc_size_row = cols << 1;
@@ -894,11 +890,6 @@ static void vc_init(struct vc_data *vc, unsigned int rows,
 	set_origin(vc);
 	vc->vc_pos = vc->vc_origin;
 	reset_vc(vc);
-	for (j=k=0; j<16; j++) {
-		vc->vc_palette[k++] = default_red[j] ;
-		vc->vc_palette[k++] = default_grn[j] ;
-		vc->vc_palette[k++] = default_blu[j] ;
-	}
 	vc->vc_def_color       = default_color;
 	reset_terminal(vc, do_clear);
 }
@@ -1056,19 +1047,13 @@ void unblank_screen(void)
 	/* Stubbed: screen unblanking not needed for minimal boot */
 }
 
-static void set_palette(struct vc_data *vc)
-{
-	/* Stub: no palette setting in minimal kernel */
-}
-
-
+/*
+ * set_palette() was a no-op stub and the per-console vc_palette[] buffer it
+ * (and reset_palette/vc_init) filled was never read anywhere -- the VGA console
+ * programs the hardware DAC straight from default_red/grn/blu (vgacon.c). So the
+ * whole vc_palette write path is dead; reset_palette is kept callable (vt_ioctl)
+ * as an empty body.
+ */
 void reset_palette(struct vc_data *vc)
 {
-	int j, k;
-	for (j=k=0; j<16; j++) {
-		vc->vc_palette[k++] = default_red[j];
-		vc->vc_palette[k++] = default_grn[j];
-		vc->vc_palette[k++] = default_blu[j];
-	}
-	set_palette(vc);
 }

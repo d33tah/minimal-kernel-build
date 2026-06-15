@@ -6,12 +6,7 @@
 struct xz_dec_bcj {
 	 
 	enum {
-		BCJ_X86 = 4,         
-		BCJ_POWERPC = 5,     
-		BCJ_IA64 = 6,        
-		BCJ_ARM = 7,         
-		BCJ_ARMTHUMB = 8,    
-		BCJ_SPARC = 9        
+		BCJ_X86 = 4,
 	} type;
 
 	 

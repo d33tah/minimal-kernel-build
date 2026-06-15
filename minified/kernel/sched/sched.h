@@ -86,8 +86,6 @@ extern void calc_global_load_tick(struct rq *this_rq);
 
 /* call_trace_sched_update_nr_running removed - unused */
 
-extern int sysctl_sched_rt_runtime;
-extern int sched_rr_timeslice;
 
  
 #define NS_TO_JIFFIES(TIME)	((unsigned long)(TIME) / (NSEC_PER_SEC / HZ))
@@ -143,8 +141,6 @@ static inline int task_has_dl_policy(struct task_struct *p)
 
 #define shr_bound(val, shift)							\
 	(val >> min_t(typeof(shift), shift, BITS_PER_TYPE(typeof(val)) - 1))
-
-void __dl_clear_params(struct task_struct *p);
 
 struct dl_bw {
 	raw_spinlock_t		lock;
@@ -547,8 +543,6 @@ extern struct sched_class __sched_class_lowest[];
 
 #define sched_class_above(_a, _b)	((_a) < (_b))
 
-extern const struct sched_class dl_sched_class;
-extern const struct sched_class rt_sched_class;
 extern const struct sched_class fair_sched_class;
 extern const struct sched_class idle_sched_class;
 
@@ -629,8 +623,6 @@ extern struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq);
 static inline void resched_latency_warn(int cpu, u64 latency) {}
 
 extern void init_cfs_rq(struct cfs_rq *cfs_rq);
-extern void init_rt_rq(struct rt_rq *rt_rq);
-extern void init_dl_rq(struct dl_rq *dl_rq);
 
 /* nohz_balance_exit_idle removed - unused */
 

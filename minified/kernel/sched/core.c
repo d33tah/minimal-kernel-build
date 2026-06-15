@@ -413,15 +413,6 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	p->se.sum_exec_runtime		= 0;
 	p->se.prev_sum_exec_runtime	= 0;
 	p->se.vruntime			= 0;
-
-	RB_CLEAR_NODE(&p->dl.rb_node);
-	__dl_clear_params(p);
-
-	INIT_LIST_HEAD(&p->rt.run_list);
-	p->rt.timeout		= 0;
-	p->rt.time_slice	= sched_rr_timeslice;
-	p->rt.on_rq		= 0;
-	p->rt.on_list		= 0;
 }
 
 
@@ -450,12 +441,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 		p->sched_reset_on_fork = 0;
 	}
 
-	if (dl_prio(p->prio))
-		return -EAGAIN;
-	else if (rt_prio(p->prio))
-		p->sched_class = &rt_sched_class;
-	else
-		p->sched_class = &fair_sched_class;
+	p->sched_class = &fair_sched_class;
 
 	init_entity_runnable_average(&p->se);
 
@@ -1027,9 +1013,7 @@ void __init sched_init(void)
 	int i;
 
 
-	BUG_ON(&idle_sched_class != &fair_sched_class + 1 ||
-	       &fair_sched_class != &rt_sched_class + 1 ||
-	       &rt_sched_class   != &dl_sched_class + 1);
+	BUG_ON(&idle_sched_class != &fair_sched_class + 1);
 
 	wait_bit_init();
 
@@ -1040,8 +1024,6 @@ void __init sched_init(void)
 		raw_spin_lock_init(&rq->__lock);
 		rq->nr_running = 0;
 		init_cfs_rq(&rq->cfs);
-		init_rt_rq(&rq->rt);
-		init_dl_rq(&rq->dl);
 
 		hrtick_rq_init(rq);
 		atomic_set(&rq->nr_iowait, 0);

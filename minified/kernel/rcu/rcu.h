@@ -7,8 +7,6 @@
 #define RCU_SEQ_CTR_SHIFT	2
 #define RCU_SEQ_STATE_MASK	((1 << RCU_SEQ_CTR_SHIFT) - 1)
 
-extern int sysctl_sched_rt_runtime;
-
 /* rcu_seq_ctr/set_state/start/end/endval/snap/current/started/done,
  * rcu_seq_completed_gp, rcu_seq_new_gp, rcu_seq_diff removed - unused */
 

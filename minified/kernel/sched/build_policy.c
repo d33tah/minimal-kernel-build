@@ -23,9 +23,5 @@
 
 #include "idle.c"
 
-#include "rt.c"
-
-
 #include "cputime.c"
-#include "deadline.c"
 

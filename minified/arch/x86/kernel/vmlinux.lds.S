@@ -84,12 +84,6 @@ SECTIONS
 		SOFTIRQENTRY_TEXT
 		STATIC_CALL_TEXT
 		*(.gnu.warning)
-
-#ifdef CONFIG_RETPOLINE
-		__indirect_thunk_start = .;
-		*(.text.__x86.*)
-		__indirect_thunk_end = .;
-#endif
 	} :text =0xcccc
 
 	/* End of text section, which should occupy whole number of pages */
@@ -181,15 +175,6 @@ SECTIONS
 		__x86_cpu_dev_end = .;
 	}
 
-#ifdef CONFIG_X86_INTEL_MID
-	.x86_intel_mid_dev.init : AT(ADDR(.x86_intel_mid_dev.init) - \
-								LOAD_OFFSET) {
-		__x86_intel_mid_dev_start = .;
-		*(.x86_intel_mid_dev.init)
-		__x86_intel_mid_dev_end = .;
-	}
-#endif
-
 	/*
 	 * start address and size of operations which during runtime
 	 * can be patched with virtualization friendly instructions or
@@ -202,36 +187,6 @@ SECTIONS
 		*(.parainstructions)
 		__parainstructions_end = .;
 	}
-
-#ifdef CONFIG_RETPOLINE
-	/*
-	 * List of instructions that call/jmp/jcc to retpoline thunks
-	 * __x86_indirect_thunk_*(). These instructions can be patched along
-	 * with alternatives, after which the section can be freed.
-	 */
-	. = ALIGN(8);
-	.retpoline_sites : AT(ADDR(.retpoline_sites) - LOAD_OFFSET) {
-		__retpoline_sites = .;
-		*(.retpoline_sites)
-		__retpoline_sites_end = .;
-	}
-
-	. = ALIGN(8);
-	.return_sites : AT(ADDR(.return_sites) - LOAD_OFFSET) {
-		__return_sites = .;
-		*(.return_sites)
-		__return_sites_end = .;
-	}
-#endif
-
-#ifdef CONFIG_X86_KERNEL_IBT
-	. = ALIGN(8);
-	.ibt_endbr_seal : AT(ADDR(.ibt_endbr_seal) - LOAD_OFFSET) {
-		__ibt_endbr_seal = .;
-		*(.ibt_endbr_seal)
-		__ibt_endbr_seal_end = .;
-	}
-#endif
 
 	/*
 	 * struct alt_inst entries. From the header (alternative.h):
@@ -326,31 +281,6 @@ SECTIONS
 	. = ALIGN(PAGE_SIZE);		/* keep VO_INIT_SIZE page aligned */
 	_end = .;
 
-#ifdef CONFIG_AMD_MEM_ENCRYPT
-	/*
-	 * Early scratch/workarea section: Lives outside of the kernel proper
-	 * (_text - _end).
-	 *
-	 * Resides after _end because even though the .brk section is after
-	 * __end_of_kernel_reserve, the .brk section is later reserved as a
-	 * part of the kernel. Since it is located after __end_of_kernel_reserve
-	 * it will be discarded and become part of the available memory. As
-	 * such, it can only be used by very early boot code and must not be
-	 * needed afterwards.
-	 *
-	 * Currently used by SME for performing in-place encryption of the
-	 * kernel during boot. Resides on a 2MB boundary to simplify the
-	 * pagetable setup used for SME in-place encryption.
-	 */
-	. = ALIGN(HPAGE_SIZE);
-	.init.scratch : AT(ADDR(.init.scratch) - LOAD_OFFSET) {
-		__init_scratch_begin = .;
-		*(.init.scratch)
-		. = ALIGN(HPAGE_SIZE);
-		__init_scratch_end = .;
-	}
-#endif
-
 	STABS_DEBUG
 	DWARF_DEBUG
 	ELF_DETAILS
@@ -396,11 +326,4 @@ SECTIONS
  */
 . = ASSERT((_end - LOAD_OFFSET <= KERNEL_IMAGE_SIZE),
 	   "kernel image bigger than KERNEL_IMAGE_SIZE");
-
-#ifdef CONFIG_KEXEC_CORE
-#include <asm/kexec.h>
-
-. = ASSERT(kexec_control_code_size <= KEXEC_CONTROL_CODE_MAX_SIZE,
-           "kexec control code size is too big");
-#endif
 

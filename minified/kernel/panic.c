@@ -31,8 +31,6 @@ extern struct atomic_notifier_head panic_notifier_list;
 int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
 static unsigned long tainted_mask =
 	IS_ENABLED(CONFIG_RANDSTRUCT) ? (1 << TAINT_RANDSTRUCT) : 0;
-int panic_on_warn __read_mostly;
-unsigned long panic_on_taint;
 
 int panic_timeout = CONFIG_PANIC_TIMEOUT;
 
@@ -95,12 +93,6 @@ void panic(const char *fmt, ...)
 	int state = 0;
 	int old_cpu, this_cpu;
 
-	if (panic_on_warn) {
-		 
-		panic_on_warn = 0;
-	}
-
-	 
 	local_irq_disable();
 	preempt_disable_notrace();
 
@@ -200,11 +192,6 @@ void add_taint(unsigned flag, enum lockdep_ok lockdep_ok)
 		__debug_locks_off();
 
 	set_bit(flag, &tainted_mask);
-
-	if (tainted_mask & panic_on_taint) {
-		panic_on_taint = 0;
-		panic("panic_on_taint set ...");
-	}
 }
 
 /* Removed: oops_may_print - never called */

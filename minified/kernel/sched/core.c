@@ -617,8 +617,6 @@ static inline void preempt_latency_stop(int val) { }
 static noinline void __schedule_bug(struct task_struct *prev)
 {
 	/* Stub: skip detailed scheduling bug reporting for minimal kernel */
-	if (panic_on_warn)
-		panic("scheduling while atomic\n");
 }
 
 static inline void schedule_debug(struct task_struct *prev, bool preempt)

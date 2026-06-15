@@ -126,16 +126,6 @@ unsigned int nr_online_nodes __read_mostly = 1;
 
 int page_group_by_mobility_disabled __read_mostly;
 
-static inline bool early_page_uninitialised(unsigned long pfn)
-{
-	return false;
-}
-
-static inline bool defer_init(int nid, unsigned long pfn, unsigned long end_pfn)
-{
-	return false;
-}
-
 static inline unsigned long *get_pageblock_bitmap(const struct page *page,
 							unsigned long pfn)
 {
@@ -451,8 +441,6 @@ void __free_pages_core(struct page *page, unsigned int order)
 void __init memblock_free_pages(struct page *page, unsigned long pfn,
 							unsigned int order)
 {
-	if (early_page_uninitialised(pfn))
-		return;
 	__free_pages_core(page, order);
 }
 
@@ -1321,13 +1309,6 @@ void __ref build_all_zonelists(pg_data_t *pgdat)
 		page_group_by_mobility_disabled = 0;
 }
 
-static bool __meminit
-overlap_memmap_init(unsigned long zone, unsigned long *pfn)
-{
-	/* Stub: no mirrored kernel core support */
-	return false;
-}
-
 static void __meminit memmap_init_range(unsigned long size, int nid, unsigned long zone,
 		unsigned long start_pfn, unsigned long zone_end_pfn,
 		enum meminit_context context,
@@ -1340,14 +1321,6 @@ static void __meminit memmap_init_range(unsigned long size, int nid, unsigned lo
 		highest_memmap_pfn = end_pfn - 1;
 
 	for (pfn = start_pfn; pfn < end_pfn; ) {
-		
-		if (context == MEMINIT_EARLY) {
-			if (overlap_memmap_init(zone, &pfn))
-				continue;
-			if (defer_init(nid, pfn, zone_end_pfn))
-				break;
-		}
-
 		page = pfn_to_page(pfn);
 		__init_single_page(page, pfn, zone, nid);
 		if (context == MEMINIT_HOTPLUG)

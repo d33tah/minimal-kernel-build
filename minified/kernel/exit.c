@@ -165,12 +165,6 @@ void release_task(struct task_struct *p)
 
 
 
-/* Stub: orphaned pgrp handling not needed for minimal kernel */
-static void
-kill_orphaned_pgrp(struct task_struct *tsk, struct task_struct *parent)
-{
-}
-
 static void coredump_task_exit(struct task_struct *tsk)
 {
 	/* Stub: coredumps not needed for minimal kernel */
@@ -270,9 +264,6 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 
 	write_lock_irq(&tasklist_lock);
 	forget_original_parent(tsk, &dead);
-
-	if (group_dead)
-		kill_orphaned_pgrp(tsk->group_leader, NULL);
 
 	tsk->exit_state = EXIT_ZOMBIE;
 	/*

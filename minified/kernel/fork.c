@@ -294,11 +294,6 @@ static inline void mm_free_pgd(struct mm_struct *mm)
 	pgd_free(mm, mm->pgd);
 }
 
-static void check_mm(struct mm_struct *mm)
-{
-	/* Stub: mm validation not needed for minimal kernel */
-}
-
 #define allocate_mm()	(kmem_cache_alloc(mm_cachep, GFP_KERNEL))
 #define free_mm(mm)	(kmem_cache_free(mm_cachep, (mm)))
 
@@ -309,7 +304,6 @@ void __mmdrop(struct mm_struct *mm)
 	WARN_ON_ONCE(mm == current->active_mm);
 	mm_free_pgd(mm);
 	destroy_context(mm);
-	check_mm(mm);
 	put_user_ns(mm->user_ns);
 	mm_pasid_drop(mm);
 	free_mm(mm);

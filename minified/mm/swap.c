@@ -98,10 +98,6 @@ static void __folio_activate(struct folio *folio, struct lruvec *lruvec)
 	}
 }
 
-static inline void activate_page_drain(int cpu)
-{
-}
-
 static void folio_activate(struct folio *folio)
 {
 	struct lruvec *lruvec;
@@ -186,8 +182,6 @@ void lru_add_drain_cpu(int cpu)
 
 	if (pagevec_count(pvec))
 		__pagevec_lru_add(pvec);
-
-	activate_page_drain(cpu);
 }
 
 void lru_add_drain(void)

@@ -112,45 +112,15 @@ SYM_CODE_START(startup_32)
 	movsl
 1:
 
-#ifdef CONFIG_OLPC
-	/* save OFW's pgdir table for later use when calling into OFW */
-	movl %cr3, %eax
-	movl %eax, pa(olpc_ofw_pgd)
-#endif
-
-#ifdef CONFIG_MICROCODE
-	/* Early load ucode on BSP. */
-	call load_ucode_bsp
-#endif
-
 	/* Create early pagetables. */
 	call  mk_early_pgtbl_32
 
 	/* Do early initialization of the fixmap area */
 	movl $pa(initial_pg_fixmap)+PDE_IDENT_ATTR,%eax
-#ifdef  CONFIG_X86_PAE
-#define KPMDS (((-__PAGE_OFFSET) >> 30) & 3) /* Number of kernel PMDs */
-	movl %eax,pa(initial_pg_pmd+0x1000*KPMDS-8)
-#else
 	movl %eax,pa(initial_page_table+0xffc)
-#endif
 
 	jmp .Ldefault_entry
 SYM_CODE_END(startup_32)
-
-#ifdef CONFIG_HOTPLUG_CPU
-/*
- * Boot CPU0 entry point. It's called from play_dead(). Everything has been set
- * up already except stack. We just set up stack here. Then call
- * start_secondary().
- */
-SYM_FUNC_START(start_cpu0)
-	movl initial_stack, %ecx
-	movl %ecx, %esp
-	call *(initial_code)
-1:	jmp 1b
-SYM_FUNC_END(start_cpu0)
-#endif
 
 /*
  * Non-boot CPU entry point; entered from trampoline.S
@@ -170,11 +140,6 @@ SYM_FUNC_START(startup_32_smp)
 	movl pa(initial_stack),%ecx
 	movl %eax,%ss
 	leal -__PAGE_OFFSET(%ecx),%esp
-
-#ifdef CONFIG_MICROCODE
-	/* Early load ucode on AP. */
-	call load_ucode_ap
-#endif
 
 .Ldefault_entry:
 	movl $(CR0_STATE & ~X86_CR0_PG),%eax
@@ -416,34 +381,6 @@ SYM_CODE_END(early_idt_handler_common)
 /* This is the default interrupt "handler" :-) */
 SYM_FUNC_START(early_ignore_irq)
 	cld
-#ifdef CONFIG_PRINTK
-	pushl %eax
-	pushl %ecx
-	pushl %edx
-	pushl %es
-	pushl %ds
-	movl $(__KERNEL_DS),%eax
-	movl %eax,%ds
-	movl %eax,%es
-	cmpl $2,early_recursion_flag
-	je hlt_loop
-	incl early_recursion_flag
-	pushl 16(%esp)
-	pushl 24(%esp)
-	pushl 32(%esp)
-	pushl 40(%esp)
-	pushl $int_msg
-	call _printk
-
-	call dump_stack
-
-	addl $(5*4),%esp
-	popl %ds
-	popl %es
-	popl %edx
-	popl %ecx
-	popl %eax
-#endif
 	iret
 
 hlt_loop:
@@ -460,27 +397,16 @@ __REFDATA
 SYM_DATA(initial_code,		.long i386_start_kernel)
 SYM_DATA(setup_once_ref,	.long setup_once)
 
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-#define	PGD_ALIGN	(2 * PAGE_SIZE)
-#define PTI_USER_PGD_FILL	1024
-#else
 #define	PGD_ALIGN	(PAGE_SIZE)
 #define PTI_USER_PGD_FILL	0
-#endif
 /*
  * BSS section
  */
 __PAGE_ALIGNED_BSS
 	.align PGD_ALIGN
-#ifdef CONFIG_X86_PAE
-.globl initial_pg_pmd
-initial_pg_pmd:
-	.fill 1024*KPMDS,4,0
-#else
 .globl initial_page_table
 initial_page_table:
 	.fill 1024,4,0
-#endif
 	.align PGD_ALIGN
 initial_pg_fixmap:
 	.fill 1024,4,0
@@ -497,40 +423,6 @@ EXPORT_SYMBOL(empty_zero_page)
 /*
  * This starts the data section.
  */
-#ifdef CONFIG_X86_PAE
-__PAGE_ALIGNED_DATA
-	/* Page-aligned for the benefit of paravirt? */
-	.align PGD_ALIGN
-SYM_DATA_START(initial_page_table)
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR),0	/* low identity map */
-# if KPMDS == 3
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR),0
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR+0x1000),0
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR+0x2000),0
-# elif KPMDS == 2
-	.long	0,0
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR),0
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR+0x1000),0
-# elif KPMDS == 1
-	.long	0,0
-	.long	0,0
-	.long	pa(initial_pg_pmd+PGD_IDENT_ATTR),0
-# else
-#  error "Kernel PMDs should be 1, 2 or 3"
-# endif
-	.align PAGE_SIZE		/* needs to be page-sized too */
-
-#ifdef CONFIG_PAGE_TABLE_ISOLATION
-	/*
-	 * PTI needs another page so sync_initial_pagetable() works correctly
-	 * and does not scribble over the data which is placed behind the
-	 * actual initial_page_table. See clone_pgd_range().
-	 */
-	.fill 1024, 4, 0
-#endif
-
-SYM_DATA_END(initial_page_table)
-#endif
 
 .data
 .balign 4
@@ -541,10 +433,6 @@ SYM_DATA_END(initial_page_table)
 SYM_DATA(initial_stack,
 		.long init_thread_union + THREAD_SIZE -
 		SIZEOF_PTREGS - TOP_OF_KERNEL_STACK_PADDING)
-
-__INITRODATA
-int_msg:
-	.asciz "Unknown interrupt or fault at: %p %p %p\n"
 
 /*
  * The IDT and GDT 'descriptors' are a strange 48-bit object

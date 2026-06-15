@@ -1492,12 +1492,6 @@ void __init pcpu_free_alloc_info(struct pcpu_alloc_info *ai)
 	memblock_free(ai, ai->__ai_size);
 }
 
-static void pcpu_dump_alloc_info(const char *lvl,
-				 const struct pcpu_alloc_info *ai)
-{
-	/* Stub: per-CPU allocation info dump not needed for minimal kernel */
-}
-
 void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 				   void *base_addr)
 {
@@ -1519,7 +1513,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 		pr_emerg("failed to initialize, %s\n", #cond);		\
 		pr_emerg("cpu_possible_mask=%*pb\n",			\
 			 cpumask_pr_args(cpu_possible_mask));		\
-		pcpu_dump_alloc_info(KERN_EMERG, ai);			\
 		BUG();							\
 	}								\
 } while (0)
@@ -1604,7 +1597,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 
 	
 #undef PCPU_SETUP_BUG_ON
-	pcpu_dump_alloc_info(KERN_DEBUG, ai);
 
 	pcpu_nr_groups = ai->nr_groups;
 	pcpu_group_offsets = group_offsets;

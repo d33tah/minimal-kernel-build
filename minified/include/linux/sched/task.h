@@ -25,7 +25,6 @@ struct kernel_clone_args {
 	 
 	size_t set_tid_size;
 	int cgroup;
-	int io_thread;
 	int kthread;
 	int idle;
 	int (*fn)(void *);

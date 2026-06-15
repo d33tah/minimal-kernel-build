@@ -935,11 +935,6 @@ static __latent_entropy struct task_struct *copy_process(
 	p->flags &= ~PF_KTHREAD;
 	if (args->kthread)
 		p->flags |= PF_KTHREAD;
-	if (args->io_thread) {
-		
-		p->flags |= PF_IO_WORKER;
-		siginitsetinv(&p->blocked, sigmask(SIGKILL)|sigmask(SIGSTOP));
-	}
 
 	/* CLONE_CHILD_SETTID/CLEARTID never set on this build -> always NULL */
 	p->set_child_tid = NULL;

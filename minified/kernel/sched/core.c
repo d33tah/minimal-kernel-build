@@ -59,10 +59,6 @@ static inline void psi_init(void) {}
 #include "../workqueue_internal.h"
 #include "../smpboot.h"
 
-/* --- 2025-12-07 23:42 --- Inlined from fs/io-wq.h (stubs only, CONFIG_IO_WQ not set) */
-static inline void io_wq_worker_sleeping(struct task_struct *tsk) { }
-static inline void io_wq_worker_running(struct task_struct *tsk) { }
-
 DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
 __read_mostly int scheduler_running;
@@ -814,35 +810,14 @@ void __noreturn do_task_dead(void)
 
 static inline void sched_submit_work(struct task_struct *tsk)
 {
-	unsigned int task_flags;
-
 	if (task_is_running(tsk))
 		return;
-
-	task_flags = tsk->flags;
-	
-	if (task_flags & (PF_WQ_WORKER | PF_IO_WORKER)) {
-		if (task_flags & PF_WQ_WORKER)
-			wq_worker_sleeping(tsk);
-		else
-			io_wq_worker_sleeping(tsk);
-	}
 
 	if (tsk_is_pi_blocked(tsk))
 		return;
 
-	
-	blk_flush_plug(tsk->plug, true);
-}
 
-static void sched_update_worker(struct task_struct *tsk)
-{
-	if (tsk->flags & (PF_WQ_WORKER | PF_IO_WORKER)) {
-		if (tsk->flags & PF_WQ_WORKER)
-			wq_worker_running(tsk);
-		else
-			io_wq_worker_running(tsk);
-	}
+	blk_flush_plug(tsk->plug, true);
 }
 
 asmlinkage __visible void __sched schedule(void)
@@ -855,7 +830,6 @@ asmlinkage __visible void __sched schedule(void)
 		__schedule(SM_NONE);
 		sched_preempt_enable_no_resched();
 	} while (need_resched());
-	sched_update_worker(tsk);
 }
 
 void __sched schedule_idle(void)

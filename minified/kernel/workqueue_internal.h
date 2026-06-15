@@ -46,8 +46,4 @@ struct worker {
 	work_func_t		last_func;
 };
 
-
-void wq_worker_running(struct task_struct *task);
-void wq_worker_sleeping(struct task_struct *task);
-
-#endif  
+#endif

@@ -975,34 +975,14 @@ void d_add(struct dentry *entry, struct inode *inode)
 }
 
 
-/* Stubbed - not used in minimal kernel */
-struct dentry *d_ancestor(struct dentry *p1, struct dentry *p2)
-{
-	return NULL;
-}
-
-
 bool is_subdir(struct dentry *new_dentry, struct dentry *old_dentry)
 {
-	bool result;
-	unsigned seq;
-
-	if (new_dentry == old_dentry)
-		return true;
-
-	do {
-		
-		seq = read_seqbegin(&rename_lock);
-		
-		rcu_read_lock();
-		if (d_ancestor(old_dentry, new_dentry))
-			result = true;
-		else
-			result = false;
-		rcu_read_unlock();
-	} while (read_seqretry(&rename_lock, seq));
-
-	return result;
+	/*
+	 * d_ancestor() was a stub that always returned NULL on this minimal
+	 * kernel (no rename tree to walk), so the only way two dentries can be
+	 * "subdir" related is identity.
+	 */
+	return new_dentry == old_dentry;
 }
 
 static __initdata unsigned long dhash_entries;

@@ -166,7 +166,6 @@ extern struct dentry * d_make_root(struct inode *);
 
 
 extern void d_add(struct dentry *, struct inode *);
-extern struct dentry *d_ancestor(struct dentry *, struct dentry *);
 
 extern struct dentry *d_lookup(const struct dentry *, const struct qstr *);
 extern struct dentry *__d_lookup(const struct dentry *, const struct qstr *);

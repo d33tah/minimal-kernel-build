@@ -355,12 +355,6 @@ static bool free_pcp_prepare(struct page *page, unsigned int order)
 }
 
 
-static void free_pcppages_bulk(struct zone *zone, int count,
-					struct per_cpu_pages *pcp,
-					int pindex)
-{
-	/* Stub: per-CPU page caching optimization not needed for minimal kernel */
-}
 
 static void __meminit __init_single_page(struct page *page, unsigned long pfn,
 				unsigned long zone, int nid)
@@ -647,43 +641,17 @@ static bool free_unref_page_prepare(struct page *page, unsigned long pfn,
 	return true;
 }
 
-static int nr_pcp_free(struct per_cpu_pages *pcp, int high, int batch,
-		       bool free_high)
-{
-	/* Stub: simple PCP freeing for minimal kernel */
-	return free_high ? pcp->count : batch;
-}
-
-static int nr_pcp_high(struct per_cpu_pages *pcp, struct zone *zone,
-		       bool free_high)
-{
-	/* Stub: simple PCP high watermark for minimal kernel */
-	return free_high ? 0 : READ_ONCE(pcp->high);
-}
-
 static void free_unref_page_commit(struct page *page, int migratetype,
 				   unsigned int order)
 {
 	struct zone *zone = page_zone(page);
 	struct per_cpu_pages *pcp;
-	int high;
 	int pindex;
-	bool free_high;
 
 	pcp = this_cpu_ptr(zone->per_cpu_pageset);
 	pindex = order_to_pindex(migratetype, order);
 	list_add(&page->lru, &pcp->lists[pindex]);
 	pcp->count += 1 << order;
-
-	
-	free_high = (pcp->free_factor && order && order <= PAGE_ALLOC_COSTLY_ORDER);
-
-	high = nr_pcp_high(pcp, zone, free_high);
-	if (pcp->count >= high) {
-		int batch = READ_ONCE(pcp->batch);
-
-		free_pcppages_bulk(zone, nr_pcp_free(pcp, high, batch, free_high), pcp, pindex);
-	}
 }
 
 void free_unref_page(struct page *page, unsigned int order)

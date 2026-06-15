@@ -80,9 +80,6 @@ extern int set_cred_ucounts(struct cred *);
 static inline void validate_creds(const struct cred *cred)
 {
 }
-static inline void validate_creds_for_do_exit(struct task_struct *tsk)
-{
-}
 static inline void validate_process_creds(void)
 {
 }

@@ -29,7 +29,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/syscalls.h>
 #include <linux/signal.h>
 #include <linux/posix-timers.h>
-static inline void proc_exit_connector(struct task_struct *task) {}
 #include <linux/mutex.h>
 #include <linux/pipe_fs_i.h>
 #include <linux/resource.h>
@@ -348,9 +347,6 @@ void __noreturn do_exit(long code)
 	WARN_ON(tsk->plug);
 
 	coredump_task_exit(tsk);
-	ptrace_event(PTRACE_EVENT_EXIT, code);
-
-	validate_creds_for_do_exit(tsk);
 
 	exit_signals(tsk);
 
@@ -366,8 +362,6 @@ void __noreturn do_exit(long code)
 		if (tsk->mm)
 			setmax_mm_hiwater_rss(&tsk->signal->maxrss, tsk->mm);
 	}
-	if (group_dead)
-		tty_audit_exit();
 
 	tsk->exit_code = code;
 
@@ -391,9 +385,6 @@ void __noreturn do_exit(long code)
 
 	exit_tasks_rcu_start();
 	exit_notify(tsk, group_dead);
-	proc_exit_connector(tsk);
-
-	debug_check_no_locks_held();
 
 	if (tsk->io_context)
 		exit_io_context(tsk);
@@ -404,7 +395,6 @@ void __noreturn do_exit(long code)
 	if (tsk->task_frag.page)
 		put_page(tsk->task_frag.page);
 
-	validate_creds_for_do_exit(tsk);
 	exit_task_stack_account(tsk);
 
 	check_stack_usage();

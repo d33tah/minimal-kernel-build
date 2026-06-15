@@ -37,9 +37,4 @@ debug_check_no_locks_freed(const void *from, unsigned long len)
 {
 }
 
-static inline void
-debug_check_no_locks_held(void)
-{
-}
-
 #endif

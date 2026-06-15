@@ -208,9 +208,6 @@ extern struct mutex tty_mutex;
 
 void __init n_tty_init(void);
 
-static inline void tty_audit_exit(void)
-{
-}
 static inline void tty_audit_fork(struct signal_struct *sig)
 {
 }

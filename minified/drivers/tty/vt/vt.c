@@ -127,15 +127,9 @@ static void do_update_region(struct vc_data *vc, unsigned long start, int count)
 	u16 *p;
 
 	p = (u16 *) start;
-	if (!vc->vc_sw->con_getxy) {
-		offset = (start - vc->vc_origin) / 2;
-		xx = offset % vc->vc_cols;
-		yy = offset / vc->vc_cols;
-	} else {
-		int nxx, nyy;
-		start = vc->vc_sw->con_getxy(vc, start, &nxx, &nyy);
-		xx = nxx; yy = nyy;
-	}
+	offset = (start - vc->vc_origin) / 2;
+	xx = offset % vc->vc_cols;
+	yy = offset / vc->vc_cols;
 	for(;;) {
 		u16 attrib = scr_readw(p) & 0xff00;
 		int startx = xx;
@@ -158,10 +152,6 @@ static void do_update_region(struct vc_data *vc, unsigned long start, int count)
 			break;
 		xx = 0;
 		yy++;
-		if (vc->vc_sw->con_getxy) {
-			p = (u16 *)start;
-			start = vc->vc_sw->con_getxy(vc, start, NULL, NULL);
-		}
 	}
 }
 

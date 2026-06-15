@@ -290,14 +290,6 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 }
 
 
-static inline void migrate_disable_switch(struct rq *rq, struct task_struct *p) { }
-
-static void
-ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
-{
-	/* Stub: wake-up statistics not needed for minimal kernel */
-}
-
 static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 			   struct rq_flags *rf)
 {
@@ -341,18 +333,10 @@ static int ttwu_runnable(struct task_struct *p, int wake_flags)
 	return ret;
 }
 
-static inline bool ttwu_queue_wakelist(struct task_struct *p, int cpu, int wake_flags)
-{
-	return false;
-}
-
 static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
 {
 	struct rq *rq = cpu_rq(cpu);
 	struct rq_flags rf;
-
-	if (ttwu_queue_wakelist(p, cpu, wake_flags))
-		return;
 
 	rq_lock(rq, &rf);
 	update_rq_clock(rq);
@@ -408,8 +392,6 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 
 	ttwu_queue(p, cpu, wake_flags);
 out:
-	if (success)
-		ttwu_stat(p, task_cpu(p), wake_flags);
 	preempt_enable();
 
 	return success;
@@ -837,11 +819,6 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 		
 		++*switch_count;
 
-		migrate_disable_switch(rq, prev);
-
-
-
-		
 		rq = context_switch(rq, prev, next, &rf);
 	} else {
 		rq->clock_update_flags &= ~(RQCF_ACT_SKIP|RQCF_REQ_SKIP);

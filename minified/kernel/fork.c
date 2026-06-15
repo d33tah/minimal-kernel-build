@@ -893,7 +893,6 @@ static void copy_oom_score_adj(u64 clone_flags, struct task_struct *tsk)
 
 static __latent_entropy struct task_struct *copy_process(
 					struct pid *pid,
-					int trace,
 					int node,
 					struct kernel_clone_args *args)
 {
@@ -1099,7 +1098,12 @@ static __latent_entropy struct task_struct *copy_process(
 
 	init_task_pid_links(p);
 	if (likely(p->pid)) {
-		ptrace_init_task(p, (clone_flags & CLONE_PTRACE) || trace);
+		/*
+		 * No ptrace on this build: there is no ptrace(2), no
+		 * fork/clone/vfork syscall, and kernel_thread/user_mode_thread
+		 * always pass CLONE_UNTRACED, so the child is never traced.
+		 */
+		ptrace_init_task(p, false);
 
 		init_task_pid(p, PIDTYPE_PID, pid);
 		/*
@@ -1201,7 +1205,6 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 	u64 clone_flags = args->flags;
 	struct pid *pid;
 	struct task_struct *p;
-	int trace = 0;
 	pid_t nr;
 
 
@@ -1210,18 +1213,12 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 	    (args->pidfd == args->parent_tid))
 		return -EINVAL;
 
-
-	if (!(clone_flags & CLONE_UNTRACED)) {
-		if (args->exit_signal != SIGCHLD)
-			trace = PTRACE_EVENT_CLONE;
-		else
-			trace = PTRACE_EVENT_FORK;
-
-		if (likely(!ptrace_event_enabled(current, trace)))
-			trace = 0;
-	}
-
-	p = copy_process(NULL, trace, NUMA_NO_NODE, args);
+	/*
+	 * The only spawners (kernel_thread / user_mode_thread) always set
+	 * CLONE_UNTRACED and there is no fork/clone/vfork syscall, so the
+	 * ptrace-event clone notification (PTRACE_EVENT_CLONE/FORK) is dead.
+	 */
+	p = copy_process(NULL, NUMA_NO_NODE, args);
 	add_latent_entropy();
 
 	if (IS_ERR(p))
@@ -1237,10 +1234,6 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 		put_user(nr, args->parent_tid);
 
 	wake_up_new_task(p);
-
-
-	if (unlikely(trace))
-		ptrace_event_pid(trace, pid);
 
 	put_pid(pid);
 	return nr;

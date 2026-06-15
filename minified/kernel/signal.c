@@ -107,11 +107,6 @@ static bool recalc_sigpending_tsk(struct task_struct *t)
 	return false;
 }
 
-/* Stubbed - only used internally */
-static void recalc_sigpending_and_wake(struct task_struct *t)
-{
-}
-
 void recalc_sigpending(void)
 {
 	if (!recalc_sigpending_tsk(current))
@@ -126,11 +121,6 @@ void calculate_sigpending(void)
 	set_tsk_thread_flag(current, TIF_SIGPENDING);
 	recalc_sigpending();
 	spin_unlock_irq(&current->sighand->siglock);
-}
-
-static inline void print_dropped_signal(int sig)
-{
-	/* Stub: skip signal drop reporting for minimal kernel */
 }
 
 /* Stubbed - not used externally */
@@ -155,11 +145,8 @@ __sigqueue_alloc(int sig, struct task_struct *t, gfp_t gfp_flags,
 	if (!sigpending)
 		return NULL;
 
-	if (override_rlimit || likely(sigpending <= task_rlimit(t, RLIMIT_SIGPENDING))) {
+	if (override_rlimit || likely(sigpending <= task_rlimit(t, RLIMIT_SIGPENDING)))
 		q = kmem_cache_alloc(sigqueue_cachep, gfp_flags);
-	} else {
-		print_dropped_signal(sig);
-	}
 
 	if (unlikely(q == NULL)) {
 		dec_rlimit_put_ucounts(ucounts, UCOUNT_RLIMIT_SIGPENDING);
@@ -325,10 +312,8 @@ force_sig_info_to_task(struct kernel_siginfo *info, struct task_struct *t,
 		action->sa.sa_handler = SIG_DFL;
 		if (handler == HANDLER_EXIT)
 			action->sa.sa_flags |= SA_IMMUTABLE;
-		if (blocked) {
+		if (blocked)
 			sigdelset(&t->blocked, sig);
-			recalc_sigpending_and_wake(t);
-		}
 	}
 	
 	/* t->ptrace is never set, so (!t->ptrace || ...) is always true. */

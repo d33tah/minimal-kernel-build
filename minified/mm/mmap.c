@@ -590,76 +590,34 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	vm_flags = calc_vm_prot_bits(prot, pkey) | calc_vm_flag_bits(flags) |
 			mm->def_flags | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC;
 
-	if (flags & MAP_LOCKED)
-		if (!can_do_mlock())
-			return -EPERM;
-
+	/*
+	 * MAP_TYPE is always MAP_PRIVATE on this build: there is no mmap(2)
+	 * syscall (removed from syscall_32.tbl) and the only in-kernel callers
+	 * (binfmt_elf via vm_mmap) pass MAP_PRIVATE[|MAP_FIXED]. So the
+	 * MAP_SHARED / MAP_SHARED_VALIDATE arms are dead, and so is the
+	 * MAP_LOCKED check (MAP_LOCKED is never set, and can_do_mlock() is a
+	 * permanent false stub). Fold to the MAP_PRIVATE path.
+	 */
 	if (file) {
 		struct inode *inode = file_inode(file);
-		unsigned long flags_mask;
 
 		if (!file_mmap_ok(file, inode, pgoff, len))
 			return -EOVERFLOW;
 
-		flags_mask = LEGACY_MAP_MASK | file->f_op->mmap_supported_flags;
-
-		switch (flags & MAP_TYPE) {
-		case MAP_SHARED:
-			
-			flags &= LEGACY_MAP_MASK;
-			fallthrough;
-		case MAP_SHARED_VALIDATE:
-			if (flags & ~flags_mask)
-				return -EOPNOTSUPP;
-			if (prot & PROT_WRITE) {
-				if (!(file->f_mode & FMODE_WRITE))
-					return -EACCES;
-				if (IS_SWAPFILE(file->f_mapping->host))
-					return -ETXTBSY;
-			}
-
-			
-			if (IS_APPEND(inode) && (file->f_mode & FMODE_WRITE))
-				return -EACCES;
-
-			vm_flags |= VM_SHARED | VM_MAYSHARE;
-			if (!(file->f_mode & FMODE_WRITE))
-				vm_flags &= ~(VM_MAYWRITE | VM_SHARED);
-			fallthrough;
-		case MAP_PRIVATE:
-			if (!(file->f_mode & FMODE_READ))
-				return -EACCES;
-			if (path_noexec(&file->f_path)) {
-				if (vm_flags & VM_EXEC)
-					return -EPERM;
-				vm_flags &= ~VM_MAYEXEC;
-			}
-
-			if (!file->f_op->mmap)
-				return -ENODEV;
-			if (vm_flags & (VM_GROWSDOWN|VM_GROWSUP))
-				return -EINVAL;
-			break;
-
-		default:
-			return -EINVAL;
+		if (!(file->f_mode & FMODE_READ))
+			return -EACCES;
+		if (path_noexec(&file->f_path)) {
+			if (vm_flags & VM_EXEC)
+				return -EPERM;
+			vm_flags &= ~VM_MAYEXEC;
 		}
+
+		if (!file->f_op->mmap)
+			return -ENODEV;
+		if (vm_flags & (VM_GROWSDOWN|VM_GROWSUP))
+			return -EINVAL;
 	} else {
-		switch (flags & MAP_TYPE) {
-		case MAP_SHARED:
-			if (vm_flags & (VM_GROWSDOWN|VM_GROWSUP))
-				return -EINVAL;
-			
-			pgoff = 0;
-			vm_flags |= VM_SHARED | VM_MAYSHARE;
-			break;
-		case MAP_PRIVATE:
-			
-			pgoff = addr >> PAGE_SHIFT;
-			break;
-		default:
-			return -EINVAL;
-		}
+		pgoff = addr >> PAGE_SHIFT;
 	}
 
 	

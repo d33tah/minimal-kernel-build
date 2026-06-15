@@ -79,11 +79,6 @@ static inline void mnt_add_count(struct mount *mnt, int n)
 	preempt_enable();
 }
 
-int mnt_get_count(struct mount *mnt)
-{
-	return mnt->mnt_count;
-}
-
 static struct mount *alloc_vfsmnt(const char *name)
 {
 	struct mount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
@@ -391,11 +386,6 @@ struct vfsmount *mntget(struct vfsmount *mnt)
 
 
 
-
-/* Stub: __detach_mounts not used externally */
-void __detach_mounts(struct dentry *dentry)
-{
-}
 
 static struct ucounts *inc_mnt_namespaces(struct user_namespace *ns)
 {

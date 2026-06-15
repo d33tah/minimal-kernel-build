@@ -215,13 +215,6 @@ void __d_drop(struct dentry *dentry)
 	}
 }
 
-void d_drop(struct dentry *dentry)
-{
-	spin_lock(&dentry->d_lock);
-	__d_drop(dentry);
-	spin_unlock(&dentry->d_lock);
-}
-
 static inline void dentry_unlist(struct dentry *dentry, struct dentry *parent)
 {
 	struct dentry *next;

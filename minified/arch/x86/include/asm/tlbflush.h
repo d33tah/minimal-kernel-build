@@ -113,7 +113,6 @@ struct flush_tlb_info {
 	unsigned long		start;
 	unsigned long		end;
 	u64			new_tlb_gen;
-	unsigned int		initiating_cpu;
 	u8			stride_shift;
 	u8			freed_tables;
 };

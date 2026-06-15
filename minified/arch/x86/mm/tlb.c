@@ -206,18 +206,12 @@ static void flush_tlb_func(void *info)
 	u32 loaded_mm_asid = this_cpu_read(cpu_tlbstate.loaded_mm_asid);
 	u64 mm_tlb_gen = atomic64_read(&loaded_mm->context.tlb_gen);
 	u64 local_tlb_gen = this_cpu_read(cpu_tlbstate.ctxs[loaded_mm_asid].tlb_gen);
-	bool local = smp_processor_id() == f->initiating_cpu;
 
+	/* SMP=n: flush_tlb_mm_range only ever invokes this on the initiating CPU,
+	 * so the remote-IPI (!local) arm that inc'd irq_tlb_count and bailed on a
+	 * non-matching mm was unreachable. */
 
 	VM_WARN_ON(!irqs_disabled());
-
-	if (!local) {
-		inc_irq_stat(irq_tlb_count);
-
-
-		if (f->mm && f->mm != loaded_mm)
-			return;
-	}
 
 	if (unlikely(loaded_mm == &init_mm))
 		return;
@@ -282,7 +276,6 @@ static struct flush_tlb_info *get_flush_tlb_info(struct mm_struct *mm,
 	info->stride_shift	= stride_shift;
 	info->freed_tables	= freed_tables;
 	info->new_tlb_gen	= new_tlb_gen;
-	info->initiating_cpu	= smp_processor_id();
 
 	return info;
 }

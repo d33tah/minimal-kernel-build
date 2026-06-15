@@ -13,7 +13,6 @@ typedef struct {
 	unsigned int x86_platform_ipis;	 
 	unsigned int apic_perf_irqs;
 	unsigned int apic_irq_work_irqs;
-	unsigned int irq_tlb_count;
 #if IS_ENABLED(CONFIG_HYPERV)
 	unsigned int irq_hv_reenlightenment_count;
 	unsigned int hyperv_stimer0_count;

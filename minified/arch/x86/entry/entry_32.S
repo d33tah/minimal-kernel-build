@@ -64,21 +64,6 @@
 .endm
 
 .macro BUG_IF_WRONG_CR3 no_user_check=0
-#ifdef CONFIG_DEBUG_ENTRY
-	ALTERNATIVE "jmp .Lend_\@", "", X86_FEATURE_PTI
-	.if \no_user_check == 0
-	/* coming from usermode? */
-	testl	$USER_SEGMENT_RPL_MASK, PT_CS(%esp)
-	jz	.Lend_\@
-	.endif
-	/* On user-cr3? */
-	movl	%cr3, %eax
-	testl	$PTI_SWITCH_MASK, %eax
-	jnz	.Lend_\@
-	/* From userspace with kernel cr3 - BUG */
-	ud2
-.Lend_\@:
-#endif
 .endm
 
 /*
@@ -109,10 +94,6 @@
 	 */
 	andl	$0x0000ffff, 4*4(%esp)
 
-#ifdef CONFIG_VM86
-	testl	$X86_EFLAGS_VM, 5*4(%esp)
-	jnz	.Lfrom_usermode_no_fixup_\@
-#endif
 	testl	$USER_SEGMENT_RPL_MASK, 4*4(%esp)
 	jnz	.Lfrom_usermode_no_fixup_\@
 
@@ -345,31 +326,14 @@
 	movl	TSS_entry2task_stack(%edi), %edi
 
 	/* Special case - entry from kernel mode via entry stack */
-#ifdef CONFIG_VM86
-	movl	PT_EFLAGS(%esp), %ecx		# mix EFLAGS and CS
-	movb	PT_CS(%esp), %cl
-	andl	$(X86_EFLAGS_VM | SEGMENT_RPL_MASK), %ecx
-#else
 	movl	PT_CS(%esp), %ecx
 	andl	$SEGMENT_RPL_MASK, %ecx
-#endif
 	cmpl	$USER_RPL, %ecx
 	jb	.Lentry_from_kernel_\@
 
 	/* Bytes to copy */
 	movl	$PTREGS_SIZE, %ecx
 
-#ifdef CONFIG_VM86
-	testl	$X86_EFLAGS_VM, PT_EFLAGS(%esi)
-	jz	.Lcopy_pt_regs_\@
-
-	/*
-	 * Stack-frame contains 4 additional segment registers when
-	 * coming from VM86 mode
-	 */
-	addl	$(4 * 4), %ecx
-
-#endif
 .Lcopy_pt_regs_\@:
 
 	/* Allocate frame on task-stack */
@@ -467,16 +431,6 @@
 
 	/* Bytes to copy */
 	movl	$PTREGS_SIZE, %ecx
-
-#ifdef CONFIG_VM86
-	testl	$(X86_EFLAGS_VM), PT_EFLAGS(%esp)
-	jz	.Lcopy_pt_regs_\@
-
-	/* Additional 4 registers to copy when returning to VM86 mode */
-	addl    $(4 * 4), %ecx
-
-.Lcopy_pt_regs_\@:
-#endif
 
 	/* Initialize source and destination for movsl */
 	movl	PER_CPU_VAR(cpu_tss_rw + TSS_sp0), %edi
@@ -644,11 +598,6 @@ SYM_CODE_START(__switch_to_asm)
 	/* switch stack */
 	movl	%esp, TASK_threadsp(%eax)
 	movl	TASK_threadsp(%edx), %esp
-
-#ifdef CONFIG_STACKPROTECTOR
-	movl	TASK_stack_canary(%edx), %ebx
-	movl	%ebx, PER_CPU_VAR(__stack_chk_guard)
-#endif
 
 	/*
 	 * When switching from a shallower to a deeper call stack
@@ -945,18 +894,6 @@ restore_all_switch_stack:
 	pushl	$0				# no error code
 	pushl	$iret_error
 
-#ifdef CONFIG_DEBUG_ENTRY
-	/*
-	 * The stack-frame here is the one that iret faulted on, so its a
-	 * return-to-user frame. We are on kernel-cr3 because we come here from
-	 * the fixup code. This confuses the CR3 checker, so switch to user-cr3
-	 * as the checker expects it.
-	 */
-	pushl	%eax
-	SWITCH_TO_USER_CR3 scratch_reg=%eax
-	popl	%eax
-#endif
-
 	jmp	handle_exception
 
 	_ASM_EXTABLE(.Lirq_return, .Lasm_iret_error)
@@ -983,17 +920,11 @@ SYM_CODE_START_LOCAL_NOALIGN(handle_exception)
 	CALL_NOSPEC edi
 
 handle_exception_return:
-#ifdef CONFIG_VM86
-	movl	PT_EFLAGS(%esp), %eax		# mix EFLAGS and CS
-	movb	PT_CS(%esp), %al
-	andl	$(X86_EFLAGS_VM | SEGMENT_RPL_MASK), %eax
-#else
 	/*
 	 * We can be coming here from child spawned by kernel_thread().
 	 */
 	movl	PT_CS(%esp), %eax
 	andl	$SEGMENT_RPL_MASK, %eax
-#endif
 	cmpl	$USER_RPL, %eax			# returning to v8086 or userspace ?
 	jnb	ret_to_user
 

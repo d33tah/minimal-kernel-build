@@ -3,7 +3,6 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
-#include <regex.h>
 
 #include "lkc.h"
 
@@ -774,80 +773,6 @@ struct symbol *sym_find(const char *name)
 	}
 
 	return symbol;
-}
-
-struct sym_match {
-	struct symbol	*sym;
-	off_t		so, eo;
-};
-
-static int sym_rel_comp(const void *sym1, const void *sym2)
-{
-	const struct sym_match *s1 = sym1;
-	const struct sym_match *s2 = sym2;
-	int exact1, exact2;
-
-	 
-	exact1 = (s1->eo - s1->so) == strlen(s1->sym->name);
-	exact2 = (s2->eo - s2->so) == strlen(s2->sym->name);
-	if (exact1 && !exact2)
-		return -1;
-	if (!exact1 && exact2)
-		return 1;
-
-	 
-	return strcmp(s1->sym->name, s2->sym->name);
-}
-
-struct symbol **sym_re_search(const char *pattern)
-{
-	struct symbol *sym, **sym_arr = NULL;
-	struct sym_match *sym_match_arr = NULL;
-	int i, cnt, size;
-	regex_t re;
-	regmatch_t match[1];
-
-	cnt = size = 0;
-	 
-	if (strlen(pattern) == 0)
-		return NULL;
-	if (regcomp(&re, pattern, REG_EXTENDED|REG_ICASE))
-		return NULL;
-
-	for_all_symbols(i, sym) {
-		if (sym->flags & SYMBOL_CONST || !sym->name)
-			continue;
-		if (regexec(&re, sym->name, 1, match, 0))
-			continue;
-		if (cnt >= size) {
-			void *tmp;
-			size += 16;
-			tmp = realloc(sym_match_arr, size * sizeof(struct sym_match));
-			if (!tmp)
-				goto sym_re_search_free;
-			sym_match_arr = tmp;
-		}
-		sym_calc_value(sym);
-		 
-		sym_match_arr[cnt].so = match[0].rm_so;
-		sym_match_arr[cnt].eo = match[0].rm_eo;
-		sym_match_arr[cnt++].sym = sym;
-	}
-	if (sym_match_arr) {
-		qsort(sym_match_arr, cnt, sizeof(struct sym_match), sym_rel_comp);
-		sym_arr = malloc((cnt+1) * sizeof(struct symbol *));
-		if (!sym_arr)
-			goto sym_re_search_free;
-		for (i = 0; i < cnt; i++)
-			sym_arr[i] = sym_match_arr[i].sym;
-		sym_arr[cnt] = NULL;
-	}
-sym_re_search_free:
-	 
-	free(sym_match_arr);
-	regfree(&re);
-
-	return sym_arr;
 }
 
 static struct dep_stack {

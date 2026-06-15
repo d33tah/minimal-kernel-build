@@ -635,7 +635,7 @@ static char *escape_string_value(const char *in)
 	return out;
 }
 
-enum output_n { OUTPUT_N, OUTPUT_N_AS_UNSET, OUTPUT_N_NONE };
+enum output_n { OUTPUT_N_AS_UNSET, OUTPUT_N_NONE };
 
 static void __print_symbol(FILE *fp, struct symbol *sym, enum output_n output_n,
 			   bool escape_string)
@@ -649,7 +649,7 @@ static void __print_symbol(FILE *fp, struct symbol *sym, enum output_n output_n,
 	val = sym_get_string_value(sym);
 
 	if ((sym->type == S_BOOLEAN || sym->type == S_TRISTATE) &&
-	    output_n != OUTPUT_N && *val == 'n') {
+	    *val == 'n') {
 		if (output_n == OUTPUT_N_AS_UNSET)
 			fprintf(fp, "# %s%s is not set\n", CONFIG_, sym->name);
 		return;
@@ -673,11 +673,6 @@ static void print_symbol_for_dotconfig(FILE *fp, struct symbol *sym)
 static void print_symbol_for_autoconf(FILE *fp, struct symbol *sym)
 {
 	__print_symbol(fp, sym, OUTPUT_N_NONE, false);
-}
-
-void print_symbol_for_listconfig(struct symbol *sym)
-{
-	__print_symbol(stdout, sym, OUTPUT_N, true);
 }
 
 static void print_symbol_for_c(FILE *fp, struct symbol *sym)

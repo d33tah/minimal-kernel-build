@@ -51,9 +51,6 @@ extern int register_refined_jiffies(long clock_tick_rate);
 extern u64 __cacheline_aligned_in_smp jiffies_64;
 extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffies;
 
-/* BITS_PER_LONG == 32 */
-u64 get_jiffies_64(void);
-
 #define time_after(a,b)		\
 	(typecheck(unsigned long, a) && \
 	 typecheck(unsigned long, b) && \

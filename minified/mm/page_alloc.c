@@ -1791,11 +1791,8 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 
 		
 		memmap_pages = calc_memmap_size(size, freesize);
-		if (!is_highmem_idx(j)) {
-			if (freesize >= memmap_pages) {
-				freesize -= memmap_pages;
-			}
-		}
+		if (freesize >= memmap_pages)
+			freesize -= memmap_pages;
 
 		/* dma_reserve, nr_kernel_pages, nr_all_pages removed - never read */
 
@@ -1844,8 +1841,6 @@ static void __init alloc_node_mem_map(struct pglist_data *pgdat)
 	}
 }
 
-static inline void pgdat_set_deferred_range(pg_data_t *pgdat) {}
-
 static void __init free_area_init_node(int nid)
 {
 	pg_data_t *pgdat = NODE_DATA(nid);
@@ -1864,7 +1859,6 @@ static void __init free_area_init_node(int nid)
 	calculate_node_totalpages(pgdat, start_pfn, end_pfn);
 
 	alloc_node_mem_map(pgdat);
-	pgdat_set_deferred_range(pgdat);
 
 	free_area_init_core(pgdat);
 }

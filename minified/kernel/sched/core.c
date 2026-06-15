@@ -145,14 +145,6 @@ void update_rq_clock(struct rq *rq)
 	update_rq_clock_task(rq, delta);
 }
 
-static inline void hrtick_clear(struct rq *rq)
-{
-}
-
-static inline void hrtick_rq_init(struct rq *rq)
-{
-}
-
 static bool __wake_q_add(struct wake_q_head *head, struct task_struct *task)
 {
 	struct wake_q_node *node = &task->wake_q;
@@ -707,9 +699,6 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 
 	schedule_debug(prev, !!sched_mode);
 
-	if (sched_feat(HRTICK) || sched_feat(HRTICK_DL))
-		hrtick_clear(rq);
-
 	local_irq_disable();
 	rcu_note_context_switch(!!sched_mode);
 
@@ -1004,7 +993,6 @@ void __init sched_init(void)
 		rq->nr_running = 0;
 		init_cfs_rq(&rq->cfs);
 
-		hrtick_rq_init(rq);
 		atomic_set(&rq->nr_iowait, 0);
 
 	}

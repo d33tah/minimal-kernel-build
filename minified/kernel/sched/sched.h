@@ -595,11 +595,6 @@ extern void deactivate_task(struct rq *rq, struct task_struct *p, int flags);
 
 extern void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags);
 
-static inline int hrtick_enabled_fair(struct rq *rq)
-{
-	return 0;
-}
-
 
 #ifndef arch_scale_freq_tick
 static __always_inline

@@ -584,15 +584,6 @@ entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
 		check_preempt_tick(cfs_rq, curr);
 }
 
-static inline void
-hrtick_start_fair(struct rq *rq, struct task_struct *p)
-{
-}
-
-static inline void hrtick_update(struct rq *rq)
-{
-}
-
 static void
 enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
@@ -623,8 +614,6 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	 */
 
 	add_nr_running(rq, 1);
-
-	hrtick_update(rq);
 }
 
 static void set_next_buddy(struct sched_entity *se);
@@ -652,8 +641,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	 */
 
 	sub_nr_running(rq, 1);
-
-	hrtick_update(rq);
 }
 
 static unsigned long wakeup_gran(struct sched_entity *se)
@@ -757,9 +744,6 @@ again:
 	p = task_of(se);
 
 done: __maybe_unused;
-
-	if (hrtick_enabled_fair(rq))
-		hrtick_start_fair(rq, p);
 
 	return p;
 

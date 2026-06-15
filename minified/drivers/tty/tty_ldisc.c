@@ -76,8 +76,6 @@ static void put_ldops(struct tty_ldisc_ops *ldops)
 	raw_spin_unlock_irqrestore(&tty_ldiscs_lock, flags);
 }
 
-static int tty_ldisc_autoload = IS_BUILTIN(CONFIG_LDISC_AUTOLOAD);
-
 static struct tty_ldisc *tty_ldisc_get(struct tty_struct *tty, int disc)
 {
 	struct tty_ldisc *ld;
@@ -86,16 +84,14 @@ static struct tty_ldisc *tty_ldisc_get(struct tty_struct *tty, int disc)
 	if (disc < N_TTY || disc >= NR_LDISCS)
 		return ERR_PTR(-EINVAL);
 
-	 
+	/*
+	 * Modules are off and request_module() is a no-op (-ENOSYS), so the
+	 * ldisc-autoload retry path could never register a new ldisc; an
+	 * unregistered disc just fails here.
+	 */
 	ldops = get_ldops(disc);
-	if (IS_ERR(ldops)) {
-		if (!capable(CAP_SYS_MODULE) && !tty_ldisc_autoload)
-			return ERR_PTR(-EPERM);
-		request_module("tty-ldisc-%d", disc);
-		ldops = get_ldops(disc);
-		if (IS_ERR(ldops))
-			return ERR_CAST(ldops);
-	}
+	if (IS_ERR(ldops))
+		return ERR_CAST(ldops);
 
 	 
 	ld = kmalloc(sizeof(struct tty_ldisc), GFP_KERNEL | __GFP_NOFAIL);

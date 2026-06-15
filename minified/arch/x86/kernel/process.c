@@ -301,9 +301,6 @@ void __cpuidle default_idle(void)
 {
 	raw_safe_halt();
 }
-#if defined(CONFIG_APM_MODULE) || defined(CONFIG_HALTPOLL_CPUIDLE_MODULE)
-#endif
-
 
 /* Simplified: just use default_idle for minimal kernel */
 void select_idle_routine(const struct cpuinfo_x86 *c)

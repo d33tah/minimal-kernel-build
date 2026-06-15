@@ -172,34 +172,15 @@ static void do_update_region(struct vc_data *vc, unsigned long start, int count)
 	}
 }
 
-static u8 build_attr(struct vc_data *vc, u8 _color,
-		enum vc_intensity _intensity, bool _blink, bool _underline,
-		bool _reverse, bool _italic)
+static u8 build_attr(struct vc_data *vc, u8 _color)
 {
 	if (vc->vc_sw->con_build_attr)
-		return vc->vc_sw->con_build_attr(vc, _color, _intensity,
-		       _blink, _underline, _reverse, _italic);
+		return vc->vc_sw->con_build_attr(vc, _color);
 
 	{
 	u8 a = _color;
 	if (!vc->vc_can_do_color)
-		return _intensity |
-		       (_italic    << 1) |
-		       (_underline << 2) |
-		       (_reverse   << 3) |
-		       (_blink     << 7);
-	if (_italic)
-		a = (a & 0xF0) | vc->vc_itcolor;
-	else if (_underline)
-		a = (a & 0xf0) | vc->vc_ulcolor;
-	else if (_intensity == VCI_HALF_BRIGHT)
-		a = (a & 0xf0) | vc->vc_halfcolor;
-	if (_reverse)
-		a = (a & 0x88) | (((a >> 4) | (a << 4)) & 0x77);
-	if (_blink)
-		a ^= 0x80;
-	if (_intensity == VCI_BOLD)
-		a ^= 0x08;
+		return VCI_NORMAL;
 	if (vc->vc_hi_font_mask == 0x100)
 		a <<= 1;
 	return a;
@@ -208,12 +189,8 @@ static u8 build_attr(struct vc_data *vc, u8 _color,
 
 static void update_attr(struct vc_data *vc)
 {
-	vc->vc_attr = build_attr(vc, vc->state.color, vc->state.intensity,
-	              vc->state.blink, vc->state.underline,
-	              vc->state.reverse ^ vc->vc_decscnm, vc->state.italic);
-	vc->vc_video_erase_char = ' ' | (build_attr(vc, vc->state.color,
-				VCI_NORMAL, vc->state.blink, false,
-				vc->vc_decscnm, false) << 8);
+	vc->vc_attr = build_attr(vc, vc->state.color);
+	vc->vc_video_erase_char = ' ' | (build_attr(vc, vc->state.color) << 8);
 }
 
 
@@ -568,11 +545,6 @@ static void csi_J(struct vc_data *vc, int vpar)
 
 static void default_attr(struct vc_data *vc)
 {
-	vc->state.intensity = VCI_NORMAL;
-	vc->state.italic = false;
-	vc->state.underline = false;
-	vc->state.reverse = false;
-	vc->state.blink = false;
 	vc->state.color = vc->vc_def_color;
 }
 
@@ -592,7 +564,6 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 
 	vc->vc_disp_ctrl	= 0;
 
-	vc->vc_decscnm		= 0;
 	vc->vc_decom		= 0;
 	vc->vc_decawm		= 1;
 	vc->vc_deccm		= global_cursor_default;
@@ -970,8 +941,6 @@ static void con_cleanup(struct tty_struct *tty)
 }
 
 static int default_color = 7;
-static int default_italic_color = 2;
-static int default_underline_color = 3;
 
 static void vc_init(struct vc_data *vc, unsigned int rows,
 		    unsigned int cols, int do_clear)
@@ -992,9 +961,6 @@ static void vc_init(struct vc_data *vc, unsigned int rows,
 		vc->vc_palette[k++] = default_blu[j] ;
 	}
 	vc->vc_def_color       = default_color;
-	vc->vc_ulcolor         = default_underline_color;
-	vc->vc_itcolor         = default_italic_color;
-	vc->vc_halfcolor       = 0x08;
 	reset_terminal(vc, do_clear);
 }
 

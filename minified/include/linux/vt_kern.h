@@ -29,11 +29,6 @@ struct vc_state {
 	unsigned char	color;
 	unsigned char	Gx_charset[2];
 	unsigned int	charset		: 1;
-	enum vc_intensity intensity;
-	bool		italic;
-	bool		underline;
-	bool		blink;
-	bool		reverse;
 };
 
 struct vc_data {
@@ -57,9 +52,6 @@ struct vc_data {
 	unsigned char	vc_mode;
 	unsigned char	vc_attr;
 	unsigned char	vc_def_color;
-	unsigned char	vc_ulcolor;
-	unsigned char   vc_itcolor;
-	unsigned char	vc_halfcolor;
 	unsigned int	vc_cursor_type;
 	unsigned short	vc_complement_mask;
 	unsigned short	vc_s_complement_mask;
@@ -72,7 +64,6 @@ struct vc_data {
 	struct pid 	*vt_pid;
 	int		vt_newvt;
 	unsigned int	vc_disp_ctrl	: 1;
-	unsigned int	vc_decscnm	: 1;
 	unsigned int	vc_decom	: 1;
 	unsigned int	vc_decawm	: 1;
 	unsigned int	vc_deccm	: 1;

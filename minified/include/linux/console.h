@@ -17,8 +17,6 @@ enum con_scroll {
 	SM_DOWN,
 };
 
-enum vc_intensity;
-
 struct consw {
 	struct module *owner;
 	const char *(*con_startup)(void);
@@ -34,9 +32,7 @@ struct consw {
 	int	(*con_switch)(struct vc_data *vc);
 	int	(*con_set_origin)(struct vc_data *vc);
 	void	(*con_save_screen)(struct vc_data *vc);
-	u8	(*con_build_attr)(struct vc_data *vc, u8 color,
-			enum vc_intensity intensity,
-			bool blink, bool underline, bool reverse, bool italic);
+	u8	(*con_build_attr)(struct vc_data *vc, u8 color);
 	unsigned long (*con_getxy)(struct vc_data *vc, unsigned long position,
 			int *px, int *py);
 };

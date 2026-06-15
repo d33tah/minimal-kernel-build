@@ -235,9 +235,6 @@ static inline void register_handler_proc(unsigned int irq,
 static inline void unregister_handler_proc(unsigned int irq,
 					   struct irqaction *action) { }
 
-extern int irq_do_set_affinity(struct irq_data *data,
-			       const struct cpumask *dest, bool force);
-
 static inline int irq_setup_affinity(struct irq_desc *desc) { return 0; }
 
  

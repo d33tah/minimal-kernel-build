@@ -246,63 +246,20 @@ static struct task_struct *find_child_reaper(struct task_struct *father,
 	return father;
 }
 
-static struct task_struct *find_new_reaper(struct task_struct *father,
-					   struct task_struct *child_reaper)
-{
-	struct task_struct *thread;
-
-	/*
-	 * The child-subreaper walk is dead on this build: no PR_SET_CHILD_SUBREAPER
-	 * exists, so signal->is_child_subreaper is never set and signal->
-	 * has_child_subreaper (an OR-propagation from init_task, which is 0) stays 0
-	 * for every task. Only the alive-thread / child_reaper fallback can be taken.
-	 */
-	thread = find_alive_thread(father);
-	if (thread)
-		return thread;
-
-	return child_reaper;
-}
-
-static void reparent_leader(struct task_struct *father, struct task_struct *p)
-{
-	if (unlikely(p->exit_state == EXIT_DEAD))
-		return;
-
-	p->exit_signal = SIGCHLD;
-
-	/*
-	 * The EXIT_ZOMBIE auto-reap arm is dead: do_notify_parent() is a
-	 * permanent `return false;` stub, so it never sets EXIT_DEAD / queues
-	 * the task on the dead list.
-	 */
-	kill_orphaned_pgrp(p, father);
-}
-
 static void forget_original_parent(struct task_struct *father,
 					struct list_head *dead)
 {
-	struct task_struct *p, *t, *reaper;
-
-	reaper = find_child_reaper(father, dead);
-	if (list_empty(&father->children))
-		return;
-
-	reaper = find_new_reaper(father, reaper);
-	list_for_each_entry(p, &father->children, sibling) {
-		for_each_thread(p, t) {
-			RCU_INIT_POINTER(t->real_parent, reaper);
-			t->parent = t->real_parent;
-			if (t->pdeath_signal)
-				group_send_sig_info(t->pdeath_signal,
-						    SEND_SIG_NOINFO, t,
-						    PIDTYPE_TGID);
-		}
-		
-		if (!same_thread_group(reaper, father))
-			reparent_leader(father, p);
-	}
-	list_splice_tail_init(&father->children, &reaper->children);
+	/*
+	 * The child-reparenting walk is runtime-dead on this build: the only
+	 * exiting tasks are PID-1 init (which forks nothing -- it just execs the
+	 * static init ELF that does write(2)+exit) and individual kthreads, none
+	 * of which ever have children. kthreadd (the sole parent of kthreads)
+	 * runs an infinite loop and never exits. So father->children is always
+	 * empty here and find_child_reaper()'s early return is the only live path;
+	 * the reparent loop, find_new_reaper() and reparent_leader() were
+	 * statically reachable but never executed.
+	 */
+	find_child_reaper(father, dead);
 }
 
 static void exit_notify(struct task_struct *tsk, int group_dead)

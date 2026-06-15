@@ -619,8 +619,6 @@ unsigned long arch_scale_freq_capacity(int cpu)
 
 extern struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq);
 
-static inline void resched_latency_warn(int cpu, u64 latency) {}
-
 extern void init_cfs_rq(struct cfs_rq *cfs_rq);
 
 /* nohz_balance_exit_idle removed - unused */

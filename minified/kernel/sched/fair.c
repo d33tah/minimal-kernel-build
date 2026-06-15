@@ -424,10 +424,6 @@ void reweight_task(struct task_struct *p, int prio)
 	load->inv_weight = sched_prio_to_wmult[prio];
 }
 
-static inline void update_cfs_group(struct sched_entity *se)
-{
-}
-
 static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq, int flags)
 {
 	struct rq *rq = rq_of(cfs_rq);
@@ -439,7 +435,6 @@ static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq, int flags)
 }
 
 #define UPDATE_TG	0x0
-#define SKIP_AGE_LOAD	0x0
 #define DO_ATTACH	0x0
 
 static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int not_used1)
@@ -447,29 +442,9 @@ static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
 	cfs_rq_util_change(cfs_rq, 0);
 }
 
-static inline void
-attach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se) {}
-static inline void
-detach_entity_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se) {}
-
 static inline int newidle_balance(struct rq *rq, struct rq_flags *rf)
 {
 	return 0;
-}
-
-static inline void
-util_est_enqueue(struct cfs_rq *cfs_rq, struct task_struct *p) {}
-
-static inline void
-util_est_dequeue(struct cfs_rq *cfs_rq, struct task_struct *p) {}
-
-static inline void
-util_est_update(struct cfs_rq *cfs_rq, struct task_struct *p,
-		bool task_sleep) {}
-static inline void update_misfit_status(struct task_struct *p, struct rq *rq) {}
-
-static void check_spread(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
 }
 
 static void
@@ -513,13 +488,11 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 
 	update_load_avg(cfs_rq, se, UPDATE_TG | DO_ATTACH);
 	se_update_runnable(se);
-	update_cfs_group(se);
 	account_entity_enqueue(cfs_rq, se);
 
 	if (flags & ENQUEUE_WAKEUP)
 		place_entity(cfs_rq, se, 0);
 
-	check_spread(cfs_rq, se);
 	if (!curr)
 		__enqueue_entity(cfs_rq, se);
 	se->on_rq = 1;
@@ -577,8 +550,6 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 
 	if (!(flags & DEQUEUE_SLEEP))
 		se->vruntime -= cfs_rq->min_vruntime;
-
-	update_cfs_group(se);
 
 	if ((flags & (DEQUEUE_SAVE | DEQUEUE_MOVE)) != DEQUEUE_SAVE)
 		update_min_vruntime(cfs_rq);
@@ -660,8 +631,6 @@ static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 	if (prev->on_rq)
 		update_curr(cfs_rq);
 
-	check_spread(cfs_rq, prev);
-
 	if (prev->on_rq) {
 		__enqueue_entity(cfs_rq, prev);
 		
@@ -677,7 +646,6 @@ entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
 	update_curr(cfs_rq);
 
 	update_load_avg(cfs_rq, curr, UPDATE_TG);
-	update_cfs_group(curr);
 
 	if (cfs_rq->nr_running > 1)
 		check_preempt_tick(cfs_rq, curr);
@@ -692,8 +660,6 @@ static inline void hrtick_update(struct rq *rq)
 {
 }
 
-static inline void update_overutilized_status(struct rq *rq) { }
-
 static bool sched_idle_cfs_rq(struct cfs_rq *cfs_rq)
 {
 	return cfs_rq->nr_running &&
@@ -705,9 +671,6 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
-	int task_new = !(flags & ENQUEUE_WAKEUP);
-
-	util_est_enqueue(&rq->cfs, p);
 
 	if (p->in_iowait)
 		cpufreq_update_util(rq, SCHED_CPUFREQ_IOWAIT);
@@ -734,9 +697,6 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 	add_nr_running(rq, 1);
 
-	if (!task_new)
-		update_overutilized_status(rq);
-
 	assert_list_leaf_cfs_rq(rq);
 
 	hrtick_update(rq);
@@ -749,8 +709,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
 	int task_sleep = flags & DEQUEUE_SLEEP;
-
-	util_est_dequeue(&rq->cfs, p);
 
 	for_each_sched_entity(se) {
 		cfs_rq = cfs_rq_of(se);
@@ -778,7 +736,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 	sub_nr_running(rq, 1);
 
-	util_est_update(&rq->cfs, p, task_sleep);
 	hrtick_update(rq);
 }
 
@@ -912,8 +869,6 @@ done: __maybe_unused;
 	if (hrtick_enabled_fair(rq))
 		hrtick_start_fair(rq, p);
 
-	update_misfit_status(p, rq);
-
 	return p;
 
 idle:
@@ -947,8 +902,6 @@ static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
 	}
 }
 
-static inline void task_tick_core(struct rq *rq, struct task_struct *curr) {}
-
 static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 {
 	struct cfs_rq *cfs_rq;
@@ -958,11 +911,6 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 		cfs_rq = cfs_rq_of(se);
 		entity_tick(cfs_rq, se, queued);
 	}
-
-	update_misfit_status(curr, rq);
-	update_overutilized_status(task_rq(curr));
-
-	task_tick_core(rq, curr);
 }
 
 static void task_fork_fair(struct task_struct *p)

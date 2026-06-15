@@ -428,8 +428,6 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	p->rt.time_slice	= sched_rr_timeslice;
 	p->rt.on_rq		= 0;
 	p->rt.on_list		= 0;
-
-	init_numa_balancing(clone_flags, p);
 }
 
 
@@ -478,7 +476,6 @@ void sched_cgroup_fork(struct task_struct *p, struct kernel_clone_args *kargs)
 	
 	raw_spin_lock_irqsave(&p->pi_lock, flags);
 
-	__set_task_cpu(p, smp_processor_id());
 	if (p->sched_class->task_fork)
 		p->sched_class->task_fork(p);
 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
@@ -1033,11 +1030,6 @@ void __init init_idle(struct task_struct *idle, int cpu)
 	
 	idle->flags |= PF_IDLE | PF_KTHREAD | PF_NO_SETAFFINITY;
 	kthread_set_per_cpu(idle, cpu);
-
-	
-	rcu_read_lock();
-	__set_task_cpu(idle, cpu);
-	rcu_read_unlock();
 
 	rq->idle = idle;
 	rcu_assign_pointer(rq->curr, idle);

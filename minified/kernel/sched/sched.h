@@ -423,30 +423,16 @@ rq_unlock(struct rq *rq, struct rq_flags *rf)
 
 /* sched_init_numa, sched_update_numa, sched_domains_numa_masks_set/clear, sched_numa_find_closest removed - unused */
 
-static inline void
-init_numa_balancing(unsigned long clone_flags, struct task_struct *p)
-{
-}
-
+/* init_numa_balancing removed - NUMA_BALANCING off, empty stub */
 
 #include "stats.h"
 
 
 /* sched_core_account_forceidle removed - unused */
 
-static inline void set_task_rq(struct task_struct *p, unsigned int cpu) { }
-static inline struct task_group *task_group(struct task_struct *p)
-{
-	return NULL;
-}
+/* set_task_rq / task_group / __set_task_cpu removed - no CGROUP_SCHED, UP build (all no-ops, 0 callers) */
 
 
-static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
-{
-	set_task_rq(p, cpu);
-}
-
- 
 # define const_debug const
 
 #define SCHED_FEAT(name, enabled)	\

@@ -502,28 +502,6 @@ void wake_up_new_task(struct task_struct *p)
 	task_rq_unlock(rq, p, &rf);
 }
 
-static inline void fire_sched_in_preempt_notifiers(struct task_struct *curr)
-{
-}
-
-static inline void
-fire_sched_out_preempt_notifiers(struct task_struct *curr,
-				 struct task_struct *next)
-{
-}
-
-static inline void prepare_task(struct task_struct *next)
-{
-}
-
-static inline void finish_task(struct task_struct *prev)
-{
-}
-
-static inline void __balance_callbacks(struct rq *rq)
-{
-}
-
 static inline void
 prepare_lock_switch(struct rq *rq, struct task_struct *next, struct rq_flags *rf)
 {
@@ -536,7 +514,6 @@ static inline void finish_lock_switch(struct rq *rq)
 {
 	
 	spin_acquire(&__rq_lockp(rq)->dep_map, 0, 0, _THIS_IP_);
-	__balance_callbacks(rq);
 	raw_spin_rq_unlock_irq(rq);
 }
 
@@ -552,8 +529,6 @@ static inline void
 prepare_task_switch(struct rq *rq, struct task_struct *prev,
 		    struct task_struct *next)
 {
-	fire_sched_out_preempt_notifiers(prev, next);
-	prepare_task(next);
 	prepare_arch_switch(next);
 }
 
@@ -575,13 +550,11 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 	
 	prev_state = READ_ONCE(prev->__state);
 
-	finish_task(prev);
 	tick_nohz_task_switch();
 	finish_lock_switch(rq);
 	finish_arch_post_lock_switch();
 
-	fire_sched_in_preempt_notifiers(current);
-	
+
 	if (mm) {
 		mmdrop_sched(mm);
 	}
@@ -824,7 +797,6 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 		rq->clock_update_flags &= ~(RQCF_ACT_SKIP|RQCF_REQ_SKIP);
 
 		rq_unpin_lock(rq, &rf);
-		__balance_callbacks(rq);
 		raw_spin_rq_unlock_irq(rq);
 	}
 }

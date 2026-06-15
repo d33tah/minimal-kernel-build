@@ -148,42 +148,17 @@ error:
 }
 
 
-void class_dev_iter_init(struct class_dev_iter *iter, struct class *class,
-			 struct device *start, const struct device_type *type)
-{
-	struct klist_node *start_knode = NULL;
-
-	if (start)
-		start_knode = &start->p->knode_class;
-	klist_iter_init_node(&class->p->klist_devices, &iter->ki, start_knode);
-	iter->type = type;
-}
-
-struct device *class_dev_iter_next(struct class_dev_iter *iter)
-{
-	struct klist_node *knode;
-	struct device *dev;
-
-	while (1) {
-		knode = klist_next(&iter->ki);
-		if (!knode)
-			return NULL;
-		dev = klist_class_to_dev(knode);
-		if (!iter->type || iter->type == dev->type)
-			return dev;
-	}
-}
-
-void class_dev_iter_exit(struct class_dev_iter *iter)
-{
-	klist_iter_exit(&iter->ki);
-}
+/* Removed: class_dev_iter_init/next/exit - the device-iteration helpers were
+   only ever called from class_find_device below (no external callers), so they
+   are folded inline here. */
 
 struct device *class_find_device(struct class *class, struct device *start,
 				 const void *data,
 				 int (*match)(struct device *, const void *))
 {
-	struct class_dev_iter iter;
+	struct klist_iter ki;
+	struct klist_node *start_knode = NULL;
+	struct klist_node *knode;
 	struct device *dev;
 
 	if (!class)
@@ -194,14 +169,19 @@ struct device *class_find_device(struct class *class, struct device *start,
 		return NULL;
 	}
 
-	class_dev_iter_init(&iter, class, start, NULL);
-	while ((dev = class_dev_iter_next(&iter))) {
+	if (start)
+		start_knode = &start->p->knode_class;
+	klist_iter_init_node(&class->p->klist_devices, &ki, start_knode);
+	while ((knode = klist_next(&ki))) {
+		dev = klist_class_to_dev(knode);
 		if (match(dev, data)) {
 			get_device(dev);
-			break;
+			goto out;
 		}
 	}
-	class_dev_iter_exit(&iter);
+	dev = NULL;
+out:
+	klist_iter_exit(&ki);
 
 	return dev;
 }

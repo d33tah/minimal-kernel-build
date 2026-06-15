@@ -267,20 +267,6 @@ static void save_screen(struct vc_data *vc)
 		vc->vc_sw->con_save_screen(vc);
 }
 
-static void flush_scrollback(struct vc_data *vc)
-{
-	WARN_CONSOLE_UNLOCKED();
-
-	set_origin(vc);
-	/* con_flush_scrollback never assigned in any driver */
-	if (con_is_visible(vc)) {
-		
-		hide_cursor(vc);
-		vc->vc_sw->con_switch(vc);
-		set_cursor(vc);
-	}
-}
-
 static void clear_buffer_attributes(struct vc_data *vc)
 {
 }
@@ -514,9 +500,6 @@ static void csi_J(struct vc_data *vc, int vpar)
 			count = ((vc->vc_pos - vc->vc_origin) >> 1) + 1;
 			start = (unsigned short *)vc->vc_origin;
 			break;
-		case 3:
-			flush_scrollback(vc);
-			fallthrough;
 		case 2:
 			count = vc->vc_cols * vc->vc_rows;
 			start = (unsigned short *)vc->vc_origin;
@@ -1098,16 +1081,4 @@ void reset_palette(struct vc_data *vc)
 		vc->vc_palette[k++] = default_blu[j];
 	}
 	set_palette(vc);
-}
-
-
-
-
-
-void vc_scrolldelta_helper(struct vc_data *c, int lines,
-		unsigned int rolled_over, void *base, unsigned int size)
-{
-	/* Stubbed: scrollback not needed for minimal boot */
-	if (!lines)
-		c->vc_visible_origin = c->vc_origin;
 }

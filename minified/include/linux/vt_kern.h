@@ -133,7 +133,4 @@ struct vt_notifier_param {
 int vt_reset_unicode(unsigned int console);
 void vt_reset_keyboard(unsigned int console);
 
-void vc_scrolldelta_helper(struct vc_data *c, int lines,
-		unsigned int rolled_over, void *_base, unsigned int size);
-
-#endif  
+#endif

@@ -33,7 +33,6 @@ static void vgacon_init(struct vc_data *c, int init);
 static void vgacon_deinit(struct vc_data *c);
 static void vgacon_cursor(struct vc_data *c, int mode);
 static int vgacon_switch(struct vc_data *c);
-static void vgacon_scrolldelta(struct vc_data *c, int lines);
 static int vgacon_set_origin(struct vc_data *c);
 static void vgacon_save_screen(struct vc_data *c);
 static struct uni_pagedir *vgacon_uni_pagedir;
@@ -53,7 +52,6 @@ static bool 		vga_is_gfx;
 static bool 		vga_512_chars;
 static int 		vga_video_font_height;
 static int 		vga_scan_lines		__read_mostly;
-static unsigned int 	vga_rolled_over;  
 
 static bool vga_hardscroll_enabled;
 static bool vga_hardscroll_user_enable = true;
@@ -76,19 +74,6 @@ static inline void write_vga(unsigned char reg, unsigned int val)
 static inline void vga_set_mem_top(struct vc_data *c)
 {
 	write_vga(12, (c->vc_visible_origin - vga_vram_base) / 2);
-}
-
-static void vgacon_restore_screen(struct vc_data *c)
-{
-	if (c->vc_origin != c->vc_visible_origin)
-		vgacon_scrolldelta(c, 0);
-}
-
-static void vgacon_scrolldelta(struct vc_data *c, int lines)
-{
-	vc_scrolldelta_helper(c, lines, vga_rolled_over, (void *)vga_vram_base,
-			vga_vram_size);
-	vga_set_mem_top(c);
 }
 
 static const char *vgacon_startup(void)
@@ -352,8 +337,6 @@ static void vgacon_cursor(struct vc_data *c, int mode)
 	if (c->vc_mode != KD_TEXT)
 		return;
 
-	vgacon_restore_screen(c);
-
 	switch (mode) {
 	case CM_ERASE:
 		write_vga(14, (c->vc_pos - vga_vram_base) / 2);
@@ -507,7 +490,6 @@ static int vgacon_set_origin(struct vc_data *c)
 		return 0;
 	c->vc_origin = c->vc_visible_origin = vga_vram_base;
 	vga_set_mem_top(c);
-	vga_rolled_over = 0;
 	return 1;
 }
 
@@ -541,7 +523,6 @@ static bool vgacon_scroll(struct vc_data *c, unsigned int t, unsigned int b,
 	if (!vga_hardscroll_enabled || lines >= c->vc_rows / 2)
 		return false;
 
-	vgacon_restore_screen(c);
 	oldo = c->vc_origin;
 	delta = lines * c->vc_size_row;
 	if (dir == SM_UP) {
@@ -550,7 +531,6 @@ static bool vgacon_scroll(struct vc_data *c, unsigned int t, unsigned int b,
 				    (u16 *) (oldo + delta),
 				    c->vc_screenbuf_size - delta);
 			c->vc_origin = vga_vram_base;
-			vga_rolled_over = oldo - vga_vram_base;
 		} else
 			c->vc_origin += delta;
 		scr_memsetw((u16 *) (c->vc_origin + c->vc_screenbuf_size -
@@ -563,7 +543,6 @@ static bool vgacon_scroll(struct vc_data *c, unsigned int t, unsigned int b,
 					      delta), (u16 *) oldo,
 				     c->vc_screenbuf_size - delta);
 			c->vc_origin = vga_vram_end - c->vc_screenbuf_size;
-			vga_rolled_over = 0;
 		} else
 			c->vc_origin -= delta;
 		c->vc_scr_end = c->vc_origin + c->vc_screenbuf_size;

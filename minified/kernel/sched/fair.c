@@ -131,23 +131,6 @@ const struct sched_class fair_sched_class;
 #define for_each_sched_entity(se) \
 		for (; se; se = NULL)
 
-static inline bool list_add_leaf_cfs_rq(struct cfs_rq *cfs_rq)
-{
-	return true;
-}
-
-static inline void assert_list_leaf_cfs_rq(struct rq *rq)
-{
-}
-
-#define for_each_leaf_cfs_rq_safe(rq, cfs_rq, pos)	\
-		for (cfs_rq = &rq->cfs, pos = NULL; cfs_rq; cfs_rq = pos)
-
-static inline struct sched_entity *parent_entity(struct sched_entity *se)
-{
-	return NULL;
-}
-
 static inline u64 max_vruntime(u64 max_vruntime, u64 vruntime)
 {
 	s64 delta = (s64)(vruntime - max_vruntime);
@@ -471,9 +454,6 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	if (!curr)
 		__enqueue_entity(cfs_rq, se);
 	se->on_rq = 1;
-
-	if (cfs_rq->nr_running == 1)
-		list_add_leaf_cfs_rq(cfs_rq);
 }
 
 static void __clear_buddies_last(struct sched_entity *se)
@@ -666,8 +646,6 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 	add_nr_running(rq, 1);
 
-	assert_list_leaf_cfs_rq(rq);
-
 	hrtick_update(rq);
 }
 
@@ -677,7 +655,6 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
-	int task_sleep = flags & DEQUEUE_SLEEP;
 
 	for_each_sched_entity(se) {
 		cfs_rq = cfs_rq_of(se);
@@ -685,22 +662,15 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 		cfs_rq->h_nr_running--;
 
-		if (cfs_rq->load.weight) {
-
-			se = parent_entity(se);
-
-			if (task_sleep && se)
-				set_next_buddy(se);
+		if (cfs_rq->load.weight)
 			break;
-		}
 		flags |= DEQUEUE_SLEEP;
 	}
 
 	/*
 	 * Without task-group scheduling for_each_sched_entity() iterates at
-	 * most once, and the loop above always leaves @se NULL (it either
-	 * runs to completion or breaks after se = parent_entity(se) == NULL),
-	 * so the upstream "second pass" walking parent entities is dead here.
+	 * most once, and the loop above always leaves @se NULL, so the
+	 * upstream "second pass" walking parent entities is dead here.
 	 */
 
 	sub_nr_running(rq, 1);
@@ -811,11 +781,8 @@ again:
 	if (prev)
 		put_prev_task(rq, prev);
 
-	do {
-		se = pick_next_entity(cfs_rq, NULL);
-		set_next_entity(cfs_rq, se);
-		cfs_rq = group_cfs_rq(se);
-	} while (cfs_rq);
+	se = pick_next_entity(cfs_rq, NULL);
+	set_next_entity(cfs_rq, se);
 
 	p = task_of(se);
 

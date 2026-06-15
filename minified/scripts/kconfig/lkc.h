@@ -95,10 +95,6 @@ bool menu_has_prompt(struct menu *menu);
 const char *menu_get_prompt(struct menu *menu);
 struct menu *menu_get_root_menu(struct menu *menu);
 struct menu *menu_get_parent_menu(struct menu *menu);
-bool menu_has_help(struct menu *menu);
-const char *menu_get_help(struct menu *menu);
-struct gstr get_relations_str(struct symbol **sym_arr, struct list_head *head);
-void menu_get_ext_help(struct menu *menu, struct gstr *help);
 
  
 void sym_clear_all_valid(void);

@@ -64,7 +64,6 @@ static int con_open(struct tty_struct *, struct file *);
 static void vc_init(struct vc_data *vc, unsigned int rows,
 		    unsigned int cols, int do_clear);
 static void gotoxy(struct vc_data *vc, int new_x, int new_y);
-static void save_cur(struct vc_data *vc);
 static void reset_terminal(struct vc_data *vc, int do_clear);
 static void con_flush_chars(struct tty_struct *tty);
 static void set_cursor(struct vc_data *vc);
@@ -479,8 +478,6 @@ static int vt_resize(struct tty_struct *tty, struct winsize *ws)
 }
 
 
-enum { EPecma = 0, EPdec, EPeq, EPgt, EPlt};
-
 const unsigned char color_table[] = { 0, 4, 2, 6, 1, 5, 3, 7,
 				       8,12,10,14, 9,13,11,15 };
 
@@ -579,23 +576,12 @@ static void default_attr(struct vc_data *vc)
 	vc->state.color = vc->vc_def_color;
 }
 
-static void save_cur(struct vc_data *vc)
-{
-	memcpy(&vc->saved_state, &vc->state, sizeof(vc->state));
-}
-
-enum { ESnormal, ESesc, ESsquare, ESgetpars, ESfunckey,
-	EShash, ESsetG0, ESsetG1, ESpercent, EScsiignore, ESnonstd,
-	ESpalette, ESosc, ESapc, ESpm, ESdcs };
-
 static void reset_terminal(struct vc_data *vc, int do_clear)
 {
 	unsigned int i;
 
 	vc->vc_top		= 0;
 	vc->vc_bottom		= vc->vc_rows;
-	vc->vc_state		= ESnormal;
-	vc->vc_priv		= EPecma;
 	vc->state.Gx_charset[0]	= LAT1_MAP;
 	vc->state.Gx_charset[1]	= GRAF_MAP;
 	vc->state.charset	= 0;
@@ -629,7 +615,6 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	vc->vc_cur_blink_ms = DEFAULT_CURSOR_BLINK_MS;
 
 	gotoxy(vc, 0, 0);
-	save_cur(vc);
 	if (do_clear)
 	    csi_J(vc, 2);
 }
@@ -731,10 +716,6 @@ need_more_bytes:
 
 static int vc_translate(struct vc_data *vc, int *c, bool *rescan)
 {
-	
-	if (vc->vc_state != ESnormal)
-		return *c;
-
 	if (vc->vc_utf && !vc->vc_disp_ctrl)
 		return *c = vc_translate_unicode(vc, *c, rescan);
 
@@ -748,9 +729,6 @@ static bool vc_is_control(struct vc_data *vc, int tc, int c)
 	static const u32 CTRL_ACTION = 0x0d00ff81;
 	
 	static const u32 CTRL_ALWAYS = 0x0800f501;
-
-	if (vc->vc_state != ESnormal)
-		return true;
 
 	if (!tc)
 		return true;

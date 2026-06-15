@@ -39,7 +39,7 @@ struct vc_state {
 struct vc_data {
 	struct tty_port port;
 
-	struct vc_state state, saved_state;
+	struct vc_state state;
 
 	unsigned short	vc_num;
 	unsigned int	vc_cols;
@@ -67,8 +67,7 @@ struct vc_data {
 	unsigned short	vc_hi_font_mask;
 	struct console_font vc_font;
 	unsigned short	vc_video_erase_char;
-	unsigned int	vc_state;
-	unsigned int	vc_npar,vc_par[NPAR];
+	unsigned int	vc_npar;
 	struct vt_mode	vt_mode;
 	struct pid 	*vt_pid;
 	int		vt_newvt;
@@ -78,7 +77,6 @@ struct vc_data {
 	unsigned int	vc_decawm	: 1;
 	unsigned int	vc_deccm	: 1;
 	unsigned int	vc_decim	: 1;
-	unsigned int	vc_priv		: 3;
 	unsigned int	vc_need_wrap	: 1;
 	unsigned int	vc_can_do_color	: 1;
 	unsigned int	vc_report_mouse : 2;

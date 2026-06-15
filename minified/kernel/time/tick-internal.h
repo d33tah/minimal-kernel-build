@@ -54,10 +54,7 @@ extern void clockevents_switch_state(struct clock_event_device *dev,
 				     enum clock_event_state state);
 extern void clockevents_handle_noop(struct clock_event_device *dev);
 
- 
-static inline void tick_install_broadcast_device(struct clock_event_device *dev, int cpu) { }
-static inline int tick_is_broadcast_device(struct clock_event_device *dev) { return 0; }
-static inline int tick_device_uses_broadcast(struct clock_event_device *dev, int cpu) { return 0; }
+
 static inline void tick_broadcast_init(void) { }
 
  

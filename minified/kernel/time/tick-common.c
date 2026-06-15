@@ -92,14 +92,11 @@ static void tick_setup_device(struct tick_device *td,
 	if (!cpumask_equal(newdev->cpumask, cpumask))
 		irq_set_affinity(newdev->irq, cpumask);
 
-
-	if (tick_device_uses_broadcast(newdev, cpu))
-		return;
-
 	/*
-	 * TICK_ONESHOT/NO_HZ are unset, so td->mode is only ever set to
-	 * TICKDEV_MODE_PERIODIC (no path sets TICKDEV_MODE_ONESHOT) -- the
-	 * oneshot setup branch was dead.
+	 * No broadcast device on this build (tick_device_uses_broadcast always
+	 * false), and TICK_ONESHOT/NO_HZ are unset so td->mode is only ever set
+	 * to TICKDEV_MODE_PERIODIC -- the broadcast and oneshot setup branches
+	 * were dead.
 	 */
 	tick_setup_periodic(newdev, 0);
 }
@@ -154,26 +151,21 @@ void tick_check_new_device(struct clock_event_device *newdev)
 	td = &per_cpu(tick_cpu_device, cpu);
 	curdev = td->evtdev;
 
+	/*
+	 * No broadcast device on this build, so a rejected replacement just
+	 * returns (tick_install_broadcast_device was a no-op) and curdev is
+	 * never a broadcast device (tick_is_broadcast_device always false).
+	 */
 	if (!tick_check_replacement(curdev, newdev))
-		goto out_bc;
+		return;
 
 	if (!try_module_get(newdev->owner))
 		return;
 
-	 
-	if (tick_is_broadcast_device(curdev)) {
-		clockevents_shutdown(curdev);
-		curdev = NULL;
-	}
 	clockevents_exchange_device(curdev, newdev);
 	tick_setup_device(td, newdev, cpu, cpumask_of(cpu));
 	if (newdev->features & CLOCK_EVT_FEAT_ONESHOT)
 		tick_oneshot_notify();
-	return;
-
-out_bc:
-	 
-	tick_install_broadcast_device(newdev, cpu);
 }
 
 

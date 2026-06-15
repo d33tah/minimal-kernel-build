@@ -7,5 +7,3 @@
 
 #include "internals.h"
 
-bool noirqdebug __read_mostly;
-

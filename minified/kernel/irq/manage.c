@@ -214,9 +214,6 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 				irq_settings_set_no_debug(desc);
 		}
 
-		if (noirqdebug)
-			irq_settings_set_no_debug(desc);
-
 		if (new->flags & IRQF_ONESHOT)
 			desc->istate |= IRQS_ONESHOT;
 

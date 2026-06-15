@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 # Makefile for the Linux device tree
 
-obj-y			:= core.o bus.o dd.o \
+obj-y			:= core.o bus.o \
 			   class.o \
 			   init.o map.o devres.o \
 			   swnode.o

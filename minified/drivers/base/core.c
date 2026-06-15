@@ -455,3 +455,20 @@ void device_destroy(struct class *class, dev_t devt)
 }
 
 int device_match_devt(struct device *dev, const void *pdevt) { return 0; }
+
+/*
+ * Moved from drivers/base/dd.c (deleted): the deferred-probe list is never
+ * populated on this build (no driver registers on any bus), so this is the
+ * only live remnant of the driver-bind machinery. Called from device_del().
+ */
+static DEFINE_MUTEX(deferred_probe_mutex);
+
+void driver_deferred_probe_del(struct device *dev)
+{
+	mutex_lock(&deferred_probe_mutex);
+	if (!list_empty(&dev->p->deferred_probe)) {
+		dev_dbg(dev, "Removed from deferred list\n");
+		list_del_init(&dev->p->deferred_probe);
+	}
+	mutex_unlock(&deferred_probe_mutex);
+}

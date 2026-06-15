@@ -26,12 +26,10 @@ static inline void boot_init_stack_canary(void) {}
 #include <linux/percpu.h>
 #include <linux/security.h>
 #include <linux/smp.h>
-static inline int profile_init(void) { return 0; }
 #include <linux/rcupdate.h>
 #include <linux/srcu.h>
 #include <linux/moduleparam.h>
 #include <linux/kallsyms.h>
-static inline void init_vmlinux_build_id(void) { }
 #include <linux/writeback.h>
 #include <linux/cpu.h>
 #include <linux/cgroup.h>
@@ -57,7 +55,6 @@ extern void sched_init(void);
 extern void sched_init_smp(void);
 #include <linux/signal.h>
 #include <linux/idr.h>
-#define dbg_late_init() do { } while (0)
 static inline void kgdb_free_init_mem(void) { }
 static inline void kprobe_free_init_mem(void) { }
 #include <linux/async.h>
@@ -464,7 +461,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	set_task_stack_end_magic(&init_task);
 	smp_setup_processor_id();
-	init_vmlinux_build_id();
 
 	local_irq_disable();
 	early_boot_irqs_disabled = true;
@@ -473,7 +469,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	boot_cpu_init();
 	page_address_init();
 	pr_notice("%s", linux_banner);
-	early_security_init();
 	setup_arch(&command_line);
 	setup_boot_config();
 	setup_command_line(command_line);
@@ -543,7 +538,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	random_init(command_line);
 	boot_init_stack_canary();
 
-	profile_init();
 	call_function_init();
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 
@@ -558,12 +552,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		panic("Too many boot %s vars at `%s'", panic_later,
 		      panic_param);
 
-	lockdep_init();
 
-	 
-	locking_selftest();
-
-	 
 	mem_encrypt_init();
 
 	if (initrd_start && !initrd_below_start_ok &&
@@ -574,7 +563,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		initrd_start = 0;
 	}
 	setup_per_cpu_pageset();
-	acpi_early_init();
 	if (late_time_init)
 		late_time_init();
 	sched_clock_init();
@@ -587,19 +575,14 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	cred_init();
 	fork_init();
 	proc_caches_init();
-	uts_ns_init();
-	security_init();
-	dbg_late_init();
 	vfs_caches_init();
 	pagecache_init();
 	signals_init();
-	seq_file_init();
 	proc_root_init();
 
 	poking_init();
 	check_bugs();
 
-	acpi_subsystem_init();
 	arch_post_acpi_subsys_init();
 
 	 

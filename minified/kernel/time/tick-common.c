@@ -153,9 +153,6 @@ void tick_check_new_device(struct clock_event_device *newdev)
 	if (!tick_check_replacement(curdev, newdev))
 		return;
 
-	if (!try_module_get(newdev->owner))
-		return;
-
 	clockevents_exchange_device(curdev, newdev);
 	tick_setup_device(td, newdev, cpu, cpumask_of(cpu));
 }

@@ -218,24 +218,13 @@ static DEFINE_SPINLOCK(cdev_lock);
 
 static struct kobject *cdev_get(struct cdev *p)
 {
-	struct module *owner = p->owner;
-	struct kobject *kobj;
-
-	if (owner && !try_module_get(owner))
-		return NULL;
-	kobj = kobject_get_unless_zero(&p->kobj);
-	if (!kobj)
-		module_put(owner);
-	return kobj;
+	return kobject_get_unless_zero(&p->kobj);
 }
 
 void cdev_put(struct cdev *p)
 {
-	if (p) {
-		struct module *owner = p->owner;
+	if (p)
 		kobject_put(&p->kobj);
-		module_put(owner);
-	}
 }
 
 static int chrdev_open(struct inode *inode, struct file *filp)

@@ -757,8 +757,6 @@ static int search_binary_handler(struct linux_binprm *bprm)
 	retval = -ENOENT;
 	read_lock(&binfmt_lock);
 	list_for_each_entry(fmt, &formats, lh) {
-		if (!try_module_get(fmt->module))
-			continue;
 		read_unlock(&binfmt_lock);
 
 		retval = fmt->load_binary(bprm);

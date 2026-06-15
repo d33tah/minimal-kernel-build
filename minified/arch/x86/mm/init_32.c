@@ -285,63 +285,13 @@ void __init early_ioremap_page_table_range_init(void)
 pteval_t __supported_pte_mask __read_mostly = DEFAULT_PTE_MASK;
 pteval_t __default_kernel_pte_mask __read_mostly = DEFAULT_PTE_MASK;
 
-static unsigned int highmem_pages = -1;
-
-
-#define MSG_HIGHMEM_TOO_BIG \
-	"highmem size (%luMB) is bigger than pages available (%luMB)!\n"
-
-#define MSG_LOWMEM_TOO_SMALL \
-	"highmem size (%luMB) results in <64MB lowmem, ignoring it!\n"
-static void __init lowmem_pfn_init(void)
-{
-	 
-	max_low_pfn = max_pfn;
-
-	if (highmem_pages == -1)
-		highmem_pages = 0;
-	if (highmem_pages)
-		printk(KERN_ERR "ignoring highmem size on non-highmem kernel!\n");
-}
-
-#define MSG_HIGHMEM_TOO_SMALL \
-	"only %luMB highmem pages available, ignoring highmem size of %luMB!\n"
-
-#define MSG_HIGHMEM_TRIMMED \
-	"Warning: only 4GB will be used. Use a HIGHMEM64G enabled kernel!\n"
-static void __init highmem_pfn_init(void)
-{
-	max_low_pfn = MAXMEM_PFN;
-
-	if (highmem_pages == -1)
-		highmem_pages = max_pfn - MAXMEM_PFN;
-
-	if (highmem_pages + MAXMEM_PFN < max_pfn)
-		max_pfn = MAXMEM_PFN + highmem_pages;
-
-	if (highmem_pages + MAXMEM_PFN > max_pfn) {
-		printk(KERN_WARNING MSG_HIGHMEM_TOO_SMALL,
-			pages_to_mb(max_pfn - MAXMEM_PFN),
-			pages_to_mb(highmem_pages));
-		highmem_pages = 0;
-	}
-	 
-	printk(KERN_WARNING "Warning only %ldMB will be used.\n", MAXMEM>>20);
-	if (max_pfn > MAX_NONPAE_PFN)
-		printk(KERN_WARNING "Use a HIGHMEM64G enabled kernel.\n");
-	else
-		printk(KERN_WARNING "Use a HIGHMEM enabled kernel.\n");
-	max_pfn = MAXMEM_PFN;
-}
-
 void __init find_low_pfn_range(void)
 {
-	 
-
-	if (max_pfn <= MAXMEM_PFN)
-		lowmem_pfn_init();
-	else
-		highmem_pfn_init();
+	/*
+	 * CONFIG_HIGHMEM=n: no highmem can ever be mapped, so all RAM is
+	 * low memory. (The highmem-trimming branch is dropped as dead.)
+	 */
+	max_low_pfn = max_pfn;
 }
 
 void __init initmem_init(void)

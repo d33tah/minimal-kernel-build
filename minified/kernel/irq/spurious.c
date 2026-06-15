@@ -9,9 +9,3 @@
 
 bool noirqdebug __read_mostly;
 
-/* Stub: irq_wait_for_poll - not needed for minimal kernel */
-bool irq_wait_for_poll(struct irq_desc *desc)
-{
-	return false;
-}
-

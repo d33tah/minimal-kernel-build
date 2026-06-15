@@ -191,9 +191,7 @@ void unmask_irq(struct irq_desc *desc)
 
 static bool irq_check_poll(struct irq_desc *desc)
 {
-	if (!(desc->istate & IRQS_POLL_INPROGRESS))
-		return false;
-	return irq_wait_for_poll(desc);
+	return false;
 }
 
 static bool irq_may_run(struct irq_desc *desc)

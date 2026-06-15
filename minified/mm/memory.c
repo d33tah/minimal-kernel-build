@@ -79,10 +79,6 @@ early_initcall(init_zero_pfn);
 #define inc_mm_counter_fast(mm, member) inc_mm_counter(mm, member)
 #define dec_mm_counter_fast(mm, member) dec_mm_counter(mm, member)
 
-static void check_sync_rss_stat(struct task_struct *task)
-{
-}
-
 static void free_pte_range(struct mmu_gather *tlb, pmd_t *pmd,
 			   unsigned long addr)
 {
@@ -216,12 +212,6 @@ int __pte_alloc_kernel(pmd_t *pmd)
 }
 
 
-static void print_bad_pte(struct vm_area_struct *vma, unsigned long addr,
-			  pte_t pte, struct page *page)
-{
-	/* Stub: skip bad PTE reporting for minimal kernel */
-}
-
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 			    pte_t pte)
 {
@@ -246,14 +236,11 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 	if (pte_devmap(pte))
 		return NULL;
 
-	print_bad_pte(vma, addr, pte, NULL);
 	return NULL;
 
 check_pfn:
-	if (unlikely(pfn > highest_memmap_pfn)) {
-		print_bad_pte(vma, addr, pte, NULL);
+	if (unlikely(pfn > highest_memmap_pfn))
 		return NULL;
-	}
 
 	return pfn_to_page(pfn);
 }
@@ -1058,8 +1045,6 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 	vm_fault_t ret;
 
 	__set_current_state(TASK_RUNNING);
-
-	check_sync_rss_stat(current);
 
 	if (!arch_vma_access_permitted(vma, flags & FAULT_FLAG_WRITE,
 					    flags & FAULT_FLAG_INSTRUCTION,

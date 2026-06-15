@@ -535,26 +535,20 @@ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
 	return object;
 }
 
-static void *get_any_partial(struct kmem_cache *s, gfp_t flags,
-			     struct slab **ret_slab)
-{
-	return NULL;
-}
-
 static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
 			 struct slab **ret_slab)
 {
-	void *object;
 	int searchnode = node;
 
 	if (node == NUMA_NO_NODE)
 		searchnode = numa_mem_id();
 
-	object = get_partial_node(s, get_node(s, searchnode), ret_slab, flags);
-	if (object || node != NUMA_NO_NODE)
-		return object;
-
-	return get_any_partial(s, flags, ret_slab);
+	/*
+	 * On this build CONFIG_NUMA is off: there is a single node, so the
+	 * cross-node fallback scan (get_any_partial) can only ever return NULL.
+	 * The local partial list is the only source, so return it directly.
+	 */
+	return get_partial_node(s, get_node(s, searchnode), ret_slab, flags);
 }
 
 #define TID_STEP 1
@@ -1084,10 +1078,10 @@ static void early_kmem_cache_node_alloc(int node)
 	slab = new_slab(kmem_cache_node, GFP_NOWAIT, node);
 
 	BUG_ON(!slab);
-	if (slab_nid(slab) != node) {
-		pr_err("SLUB: Unable to allocate memory from node %d\n", node);
-		pr_err("SLUB: Allocating a useless per node structure in order to be able to continue\n");
-	}
+	/*
+	 * CONFIG_NUMA is off here: there is a single node, so slab_nid(slab)
+	 * always equals node and the wrong-node diagnostic can never fire.
+	 */
 
 	n = slab->freelist;
 	BUG_ON(!n);

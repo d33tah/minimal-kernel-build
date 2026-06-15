@@ -182,14 +182,6 @@ static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr)
 }
 
 
-static inline void tk_update_leap_state(struct timekeeper *tk)
-{
-	tk->next_leap_ktime = ntp_get_next_leap();
-	if (tk->next_leap_ktime != KTIME_MAX)
-		
-		tk->next_leap_ktime = ktime_sub(tk->next_leap_ktime, tk->offs_real);
-}
-
 static inline void tk_update_ktime_data(struct timekeeper *tk)
 {
 	u64 seconds;
@@ -214,7 +206,6 @@ static void timekeeping_update(struct timekeeper *tk, unsigned int action)
 		ntp_clear();
 	}
 
-	tk_update_leap_state(tk);
 	tk_update_ktime_data(tk);
 
 	update_vsyscall(tk);
@@ -510,8 +501,6 @@ static inline unsigned int accumulate_nsecs_to_secs(struct timekeeper *tk)
 	unsigned int clock_set = 0;
 
 	while (tk->tkr_mono.xtime_nsec >= nsecps) {
-		int leap;
-
 		tk->tkr_mono.xtime_nsec -= nsecps;
 		tk->xtime_sec++;
 
@@ -520,21 +509,11 @@ static inline unsigned int accumulate_nsecs_to_secs(struct timekeeper *tk)
 			continue;
 		}
 
-		leap = second_overflow(tk->xtime_sec);
-		if (unlikely(leap)) {
-			struct timespec64 ts;
-
-			tk->xtime_sec += leap;
-
-			ts.tv_sec = leap;
-			ts.tv_nsec = 0;
-			tk_set_wall_to_mono(tk,
-				timespec64_sub(tk->wall_to_monotonic, ts));
-
-			__timekeeping_set_tai_offset(tk, tk->tai_offset - leap);
-
-			clock_set = TK_CLOCK_WAS_SET;
-		}
+		/*
+		 * Leap-second handling removed: second_overflow() is a
+		 * permanent return-0 stub on this build (NTP gutted), so the
+		 * leap correction never fired.
+		 */
 	}
 	return clock_set;
 }
@@ -665,9 +644,6 @@ ktime_t ktime_get_update_offsets_now(unsigned int *cwsseq, ktime_t *offs_real,
 			*offs_boot = tk->offs_boot;
 			*offs_tai = tk->offs_tai;
 		}
-
-		if (unlikely(base >= tk->next_leap_ktime))
-			*offs_real = ktime_sub(tk->offs_real, ktime_set(1, 0));
 
 	} while (read_seqcount_retry(&tk_core.seq, seq));
 

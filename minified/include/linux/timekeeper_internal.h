@@ -29,7 +29,6 @@ struct timekeeper {
 	s32			tai_offset;
 	unsigned int		clock_was_set_seq;
 	u8			cs_was_changed_seq;
-	ktime_t			next_leap_ktime;
 	u64			raw_sec;
 	struct timespec64	monotonic_to_boot;
 

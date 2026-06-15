@@ -1149,9 +1149,6 @@ extern void exit_mmap(struct mm_struct *);
 extern int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file);
 extern struct file *get_mm_exe_file(struct mm_struct *mm);
 
-extern bool may_expand_vm(struct mm_struct *, vm_flags_t, unsigned long npages);
-extern void vm_stat_account(struct mm_struct *, vm_flags_t, long npages);
-
 extern struct vm_area_struct *_install_special_mapping(struct mm_struct *mm,
 				   unsigned long addr, unsigned long len,
 				   unsigned long flags,

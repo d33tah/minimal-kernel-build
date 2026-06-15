@@ -27,8 +27,6 @@ enum vc_intensity {
 struct vc_state {
 	unsigned int	x, y;
 	unsigned char	color;
-	unsigned char	Gx_charset[2];
-	unsigned int	charset		: 1;
 };
 
 struct vc_data {
@@ -64,22 +62,16 @@ struct vc_data {
 	struct pid 	*vt_pid;
 	int		vt_newvt;
 	unsigned int	vc_disp_ctrl	: 1;
-	unsigned int	vc_decom	: 1;
 	unsigned int	vc_decawm	: 1;
 	unsigned int	vc_deccm	: 1;
-	unsigned int	vc_decim	: 1;
 	unsigned int	vc_need_wrap	: 1;
 	unsigned int	vc_can_do_color	: 1;
-	unsigned int	vc_report_mouse : 2;
 	unsigned char	vc_utf		: 1;
 	unsigned char	vc_utf_count;
 		 int	vc_utf_char;
 	DECLARE_BITMAP(vc_tab_stop, VC_TABSTOPS_COUNT);
 	unsigned char   vc_palette[16*3];
 	unsigned int    vc_resize_user;
-	unsigned int	vc_bell_pitch;
-	unsigned int	vc_bell_duration;
-	unsigned short	vc_cur_blink_ms;
 	struct vc_data **vc_display_fg;
 	struct uni_pagedir *vc_uni_pagedir;
 	struct uni_pagedir **vc_uni_pagedir_loc;

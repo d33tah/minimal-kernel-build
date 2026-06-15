@@ -50,10 +50,6 @@ struct con_driver {
 static struct con_driver registered_con_driver[MAX_NR_CON_DRIVER];
 const struct consw *conswitchp;
 
-#define DEFAULT_BELL_PITCH	750
-#define DEFAULT_BELL_DURATION	(HZ/8)
-#define DEFAULT_CURSOR_BLINK_MS	200
-
 struct vc vc_cons [MAX_NR_CONSOLES];
 
 #ifndef VT_SINGLE_DRIVER
@@ -347,7 +343,6 @@ static void visual_init(struct vc_data *vc, int num, int init)
 	vc->vc_hi_font_mask = 0;
 	vc->vc_complement_mask = 0;
 	vc->vc_can_do_color = 0;
-	vc->vc_cur_blink_ms = DEFAULT_CURSOR_BLINK_MS;
 	vc->vc_sw->con_init(vc, init);
 	if (!vc->vc_complement_mask)
 		vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
@@ -475,13 +470,8 @@ static void gotoxy(struct vc_data *vc, int new_x, int new_y)
 			vc->state.x = new_x;
 	}
 
- 	if (vc->vc_decom) {
-		min_y = vc->vc_top;
-		max_y = vc->vc_bottom;
-	} else {
-		min_y = 0;
-		max_y = vc->vc_rows;
-	}
+	min_y = 0;
+	max_y = vc->vc_rows;
 	if (new_y < min_y)
 		vc->state.y = min_y;
 	else if (new_y >= max_y)
@@ -554,20 +544,14 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 
 	vc->vc_top		= 0;
 	vc->vc_bottom		= vc->vc_rows;
-	vc->state.Gx_charset[0]	= LAT1_MAP;
-	vc->state.Gx_charset[1]	= GRAF_MAP;
-	vc->state.charset	= 0;
 	vc->vc_need_wrap	= 0;
-	vc->vc_report_mouse	= 0;
 	vc->vc_utf              = default_utf8;
 	vc->vc_utf_count	= 0;
 
 	vc->vc_disp_ctrl	= 0;
 
-	vc->vc_decom		= 0;
 	vc->vc_decawm		= 1;
 	vc->vc_deccm		= global_cursor_default;
-	vc->vc_decim		= 0;
 
 	vt_reset_keyboard(vc->vc_num);
 
@@ -580,10 +564,6 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	bitmap_zero(vc->vc_tab_stop, VC_TABSTOPS_COUNT);
 	for (i = 0; i < VC_TABSTOPS_COUNT; i += 8)
 		set_bit(i, vc->vc_tab_stop);
-
-	vc->vc_bell_pitch = DEFAULT_BELL_PITCH;
-	vc->vc_bell_duration = DEFAULT_BELL_DURATION;
-	vc->vc_cur_blink_ms = DEFAULT_CURSOR_BLINK_MS;
 
 	gotoxy(vc, 0, 0);
 	if (do_clear)

@@ -52,20 +52,6 @@ XZ_EXTERN void xz_dec_reset(struct xz_dec *s);
 
 XZ_EXTERN void xz_dec_end(struct xz_dec *s);
 
-struct xz_dec_microlzma;
-
-extern struct xz_dec_microlzma *xz_dec_microlzma_alloc(enum xz_mode mode,
-						       uint32_t dict_size);
-
-extern void xz_dec_microlzma_reset(struct xz_dec_microlzma *s,
-				   uint32_t comp_size, uint32_t uncomp_size,
-				   int uncomp_size_is_exact);
-
-extern enum xz_ret xz_dec_microlzma_run(struct xz_dec_microlzma *s,
-					struct xz_buf *b);
-
-extern void xz_dec_microlzma_end(struct xz_dec_microlzma *s);
-
 #ifndef XZ_INTERNAL_CRC32
 #	ifdef __KERNEL__
 #		define XZ_INTERNAL_CRC32 0

@@ -122,17 +122,6 @@ struct xz_dec {
 #endif
 };
 
-#ifdef XZ_DEC_ANY_CHECK
-static const uint8_t check_sizes[16] = {
-	0,
-	4, 4, 4,
-	8, 8, 8,
-	16, 16, 16,
-	32, 32, 32,
-	64, 64, 64
-};
-#endif
-
 static bool fill_temp(struct xz_dec *s, struct xz_buf *b)
 {
 	size_t copy_size = min_t(size_t,
@@ -222,12 +211,8 @@ static enum xz_ret dec_block(struct xz_dec *s, struct xz_buf *b)
 		s->block.hash.unpadded += s->block_header.size
 				+ s->block.compressed;
 
-#ifdef XZ_DEC_ANY_CHECK
-		s->block.hash.unpadded += check_sizes[s->check_type];
-#else
 		if (s->check_type == XZ_CHECK_CRC32)
 			s->block.hash.unpadded += 4;
-#endif
 
 		s->block.hash.uncompressed += s->block.uncompressed;
 		s->block.hash.crc32 = xz_crc32(
@@ -308,23 +293,6 @@ static enum xz_ret crc32_validate(struct xz_dec *s, struct xz_buf *b)
 	return XZ_STREAM_END;
 }
 
-#ifdef XZ_DEC_ANY_CHECK
-static bool check_skip(struct xz_dec *s, struct xz_buf *b)
-{
-	while (s->pos < check_sizes[s->check_type]) {
-		if (b->in_pos == b->in_size)
-			return false;
-
-		++b->in_pos;
-		++s->pos;
-	}
-
-	s->pos = 0;
-
-	return true;
-}
-#endif
-
 static enum xz_ret dec_stream_header(struct xz_dec *s)
 {
 	if (!memeq(s->temp.buf, HEADER_MAGIC, HEADER_MAGIC_SIZE))
@@ -343,13 +311,8 @@ static enum xz_ret dec_stream_header(struct xz_dec *s)
 
 	s->check_type = s->temp.buf[HEADER_MAGIC_SIZE + 1];
 
-#ifdef XZ_DEC_ANY_CHECK
-	if (s->check_type > XZ_CHECK_CRC32)
-		return XZ_UNSUPPORTED_CHECK;
-#else
 	if (s->check_type > XZ_CHECK_CRC32)
 		return XZ_OPTIONS_ERROR;
-#endif
 
 	return XZ_OK;
 }
@@ -552,11 +515,6 @@ static enum xz_ret dec_main(struct xz_dec *s, struct xz_buf *b)
 				if (ret != XZ_STREAM_END)
 					return ret;
 			}
-#ifdef XZ_DEC_ANY_CHECK
-			else if (!check_skip(s, b)) {
-				return XZ_OK;
-			}
-#endif
 
 			s->sequence = SEQ_BLOCK_START;
 			break;

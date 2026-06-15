@@ -64,15 +64,12 @@ static void reset_terminal(struct vc_data *vc, int do_clear);
 static void con_flush_chars(struct tty_struct *tty);
 static void set_cursor(struct vc_data *vc);
 static void hide_cursor(struct vc_data *vc);
-static void console_callback(struct work_struct *ignored);
 static void set_palette(struct vc_data *vc);
 
 static int printable;
 int default_utf8 = true;
 int global_cursor_default = -1;
 static int cur_default = CUR_UNDERLINE;
-
-static DECLARE_WORK(console_work, console_callback);
 
 int fg_console;
 int last_console;
@@ -540,8 +537,6 @@ static void default_attr(struct vc_data *vc)
 
 static void reset_terminal(struct vc_data *vc, int do_clear)
 {
-	unsigned int i;
-
 	vc->vc_top		= 0;
 	vc->vc_bottom		= vc->vc_rows;
 	vc->vc_need_wrap	= 0;
@@ -560,10 +555,6 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 
 	default_attr(vc);
 	update_attr(vc);
-
-	bitmap_zero(vc->vc_tab_stop, VC_TABSTOPS_COUNT);
-	for (i = 0; i < VC_TABSTOPS_COUNT; i += 8)
-		set_bit(i, vc->vc_tab_stop);
 
 	gotoxy(vc, 0, 0);
 	if (do_clear)
@@ -765,11 +756,6 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int co
 	con_flush(vc, &draw);
 	console_unlock();
 	return n;
-}
-
-static void console_callback(struct work_struct *ignored)
-{
-	/* Stub: console_work never scheduled */
 }
 
 struct tty_driver *console_driver;

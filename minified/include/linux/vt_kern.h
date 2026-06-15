@@ -14,9 +14,6 @@
 
 struct uni_pagedir;
 
-#define NPAR 16
-#define VC_TABSTOPS_COUNT	256U
-
 enum vc_intensity {
 	VCI_HALF_BRIGHT,
 	VCI_NORMAL,
@@ -69,7 +66,6 @@ struct vc_data {
 	unsigned char	vc_utf		: 1;
 	unsigned char	vc_utf_count;
 		 int	vc_utf_char;
-	DECLARE_BITMAP(vc_tab_stop, VC_TABSTOPS_COUNT);
 	unsigned char   vc_palette[16*3];
 	unsigned int    vc_resize_user;
 	struct vc_data **vc_display_fg;

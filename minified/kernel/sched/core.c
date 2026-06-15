@@ -425,21 +425,11 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	
 	p->prio = current->normal_prio;
 
-
-	if (unlikely(p->sched_reset_on_fork)) {
-		if (task_has_dl_policy(p) || task_has_rt_policy(p)) {
-			p->policy = SCHED_NORMAL;
-			p->static_prio = NICE_TO_PRIO(0);
-			p->rt_priority = 0;
-		} else if (PRIO_TO_NICE(p->static_prio) < 0)
-			p->static_prio = NICE_TO_PRIO(0);
-
-		p->prio = p->normal_prio = p->static_prio;
-		set_load_weight(p, false);
-
-		
-		p->sched_reset_on_fork = 0;
-	}
+	/*
+	 * sched_reset_on_fork is never set on this build (it has no setter
+	 * tree-wide -- only ever read here and cleared), so the reset block
+	 * was unreachable and has been removed.
+	 */
 
 	p->sched_class = &fair_sched_class;
 

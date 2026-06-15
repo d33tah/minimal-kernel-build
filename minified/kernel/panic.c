@@ -31,9 +31,6 @@ extern struct atomic_notifier_head panic_notifier_list;
 int panic_on_oops = CONFIG_PANIC_ON_OOPS_VALUE;
 static unsigned long tainted_mask =
 	IS_ENABLED(CONFIG_RANDSTRUCT) ? (1 << TAINT_RANDSTRUCT) : 0;
-static int pause_on_oops;
-static int pause_on_oops_flag;
-static DEFINE_SPINLOCK(pause_on_oops_lock);
 int panic_on_warn __read_mostly;
 unsigned long panic_on_taint;
 
@@ -210,59 +207,13 @@ void add_taint(unsigned flag, enum lockdep_ok lockdep_ok)
 	}
 }
 
-static void spin_msec(int msecs)
-{
-	int i;
-
-	for (i = 0; i < msecs; i++) {
-		touch_nmi_watchdog();
-		mdelay(1);
-	}
-}
-
-static void do_oops_enter_exit(void)
-{
-	unsigned long flags;
-	static int spin_counter;
-
-	if (!pause_on_oops)
-		return;
-
-	spin_lock_irqsave(&pause_on_oops_lock, flags);
-	if (pause_on_oops_flag == 0) {
-		 
-		pause_on_oops_flag = 1;
-	} else {
-		 
-		if (!spin_counter) {
-			 
-			spin_counter = pause_on_oops;
-			do {
-				spin_unlock(&pause_on_oops_lock);
-				spin_msec(MSEC_PER_SEC);
-				spin_lock(&pause_on_oops_lock);
-			} while (--spin_counter);
-			pause_on_oops_flag = 0;
-		} else {
-			 
-			while (spin_counter) {
-				spin_unlock(&pause_on_oops_lock);
-				spin_msec(1);
-				spin_lock(&pause_on_oops_lock);
-			}
-		}
-	}
-	spin_unlock_irqrestore(&pause_on_oops_lock, flags);
-}
-
 /* Removed: oops_may_print - never called */
 
 void oops_enter(void)
 {
 	tracing_off();
-	 
+
 	debug_locks_off();
-	do_oops_enter_exit();
 
 	if (sysctl_oops_all_cpu_backtrace)
 		trigger_all_cpu_backtrace();
@@ -274,7 +225,6 @@ static void print_oops_end_marker(void)
 
 void oops_exit(void)
 {
-	do_oops_enter_exit();
 	print_oops_end_marker();
 	kmsg_dump(KMSG_DUMP_OOPS);
 }

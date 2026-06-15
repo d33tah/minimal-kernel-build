@@ -133,13 +133,6 @@ unsigned long randomize_page(unsigned long start, unsigned long range)
 	return start + (get_random_long() % range << PAGE_SHIFT);
 }
 
-#if   defined(CONFIG_MMU) && !defined(HAVE_ARCH_PICK_MMAP_LAYOUT)
-void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
-{
-	mm->mmap_base = TASK_UNMAPPED_BASE;
-	mm->get_unmapped_area = arch_get_unmapped_area;
-}
-#endif
 
 
 unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
@@ -292,14 +285,3 @@ int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
 
 	return 0;
 }
-
-
-#ifndef ARCH_IMPLEMENTS_FLUSH_DCACHE_FOLIO
-void flush_dcache_folio(struct folio *folio)
-{
-	long i, nr = folio_nr_pages(folio);
-
-	for (i = 0; i < nr; i++)
-		flush_dcache_page(folio_page(folio, i));
-}
-#endif

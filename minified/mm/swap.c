@@ -54,7 +54,6 @@ static void __page_cache_release(struct page *page)
 
 		__ClearPageMlocked(page);
 		mod_zone_page_state(page_zone(page), NR_MLOCK, -nr_pages);
-		count_vm_events(UNEVICTABLE_PGCLEARED, nr_pages);
 	}
 }
 
@@ -93,13 +92,9 @@ static bool pagevec_add_and_need_flush(struct pagevec *pvec, struct page *page)
 static void __folio_activate(struct folio *folio, struct lruvec *lruvec)
 {
 	if (!folio_test_active(folio) && !folio_test_unevictable(folio)) {
-		long nr_pages = folio_nr_pages(folio);
-
 		lruvec_del_folio(lruvec, folio);
 		folio_set_active(folio);
 		lruvec_add_folio(lruvec, folio);
-
-		__count_vm_events(PGACTIVATE, nr_pages);
 	}
 }
 
@@ -253,7 +248,6 @@ void release_pages(struct page **pages, int nr)
 		if (unlikely(PageMlocked(page))) {
 			__ClearPageMlocked(page);
 			dec_zone_page_state(page, NR_MLOCK);
-			count_vm_event(UNEVICTABLE_PGCLEARED);
 		}
 
 		list_add(&page->lru, &pages_to_free);
@@ -276,23 +270,17 @@ void __pagevec_release(struct pagevec *pvec)
 
 static void __pagevec_lru_add_fn(struct folio *folio, struct lruvec *lruvec)
 {
-	int was_unevictable = folio_test_clear_unevictable(folio);
-	long nr_pages = folio_nr_pages(folio);
+	folio_test_clear_unevictable(folio);
 
 	VM_BUG_ON_FOLIO(folio_test_lru(folio), folio);
 
 	folio_set_lru(folio);
 
-	if (folio_evictable(folio)) {
-		if (was_unevictable)
-			__count_vm_events(UNEVICTABLE_PGRESCUED, nr_pages);
-	} else {
+	if (!folio_evictable(folio)) {
 		folio_clear_active(folio);
 		folio_set_unevictable(folio);
 
 		folio->mlock_count = 0;
-		if (!was_unevictable)
-			__count_vm_events(UNEVICTABLE_PGCULLED, nr_pages);
 	}
 
 	lruvec_add_folio(lruvec, folio);

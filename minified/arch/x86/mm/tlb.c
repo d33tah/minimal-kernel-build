@@ -221,16 +221,14 @@ static void flush_tlb_func(void *info)
 	u64 mm_tlb_gen = atomic64_read(&loaded_mm->context.tlb_gen);
 	u64 local_tlb_gen = this_cpu_read(cpu_tlbstate.ctxs[loaded_mm_asid].tlb_gen);
 	bool local = smp_processor_id() == f->initiating_cpu;
-	unsigned long nr_invalidate = 0;
 
-	 
+
 	VM_WARN_ON(!irqs_disabled());
 
 	if (!local) {
 		inc_irq_stat(irq_tlb_count);
-		count_vm_tlb_event(NR_TLB_REMOTE_FLUSH_RECEIVED);
 
-		 
+
 		if (f->mm && f->mm != loaded_mm)
 			return;
 	}
@@ -262,21 +260,12 @@ static void flush_tlb_func(void *info)
 		 
 		unsigned long addr = f->start;
 
-		nr_invalidate = (f->end - f->start) >> f->stride_shift;
-
 		while (addr < f->end) {
 			flush_tlb_one_user(addr);
 			addr += 1UL << f->stride_shift;
 		}
-		if (local)
-			count_vm_tlb_events(NR_TLB_LOCAL_FLUSH_ONE, nr_invalidate);
 	} else {
-		 
-		nr_invalidate = TLB_FLUSH_ALL;
-
 		flush_tlb_local();
-		if (local)
-			count_vm_tlb_event(NR_TLB_LOCAL_FLUSH_ALL);
 	}
 
 	 
@@ -353,13 +342,11 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 
 static void do_flush_tlb_all(void *info)
 {
-	count_vm_tlb_event(NR_TLB_REMOTE_FLUSH_RECEIVED);
 	__flush_tlb_all();
 }
 
 void flush_tlb_all(void)
 {
-	count_vm_tlb_event(NR_TLB_REMOTE_FLUSH);
 	on_each_cpu(do_flush_tlb_all, NULL, 1);
 }
 
@@ -406,8 +393,6 @@ unsigned long __get_current_cr3_fast(void)
 
 void flush_tlb_one_kernel(unsigned long addr)
 {
-	count_vm_tlb_event(NR_TLB_LOCAL_FLUSH_ONE);
-
 	/*
 	 * PAGE_TABLE_ISOLATION is unset on this build, so X86_FEATURE_PTI is
 	 * never set and the user-mapping invalidation below is dead.

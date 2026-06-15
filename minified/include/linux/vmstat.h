@@ -6,47 +6,8 @@
 #include <linux/mmzone.h>
 #include <linux/atomic.h>
 
-/* Inlined from vm_event_item.h */
-#define FOR_ALL_ZONES(xx) xx##_NORMAL, xx##_MOVABLE
-
-enum vm_event_item {
-	FOR_ALL_ZONES(PGALLOC),
-	PGFREE, PGACTIVATE, PGDEACTIVATE, PGLAZYFREE,
-	PGFAULT, PGREUSE, PGROTATED,
-	UNEVICTABLE_PGCULLED, UNEVICTABLE_PGRESCUED, UNEVICTABLE_PGCLEARED,
-	NR_VM_EVENT_ITEMS
-};
-#include <linux/jump_label.h>
 #include <linux/mmdebug.h>
 
-
-
-struct reclaim_stat;
-
-
-static inline void count_vm_event(enum vm_event_item item)
-{
-}
-static inline void count_vm_events(enum vm_event_item item, long delta)
-{
-}
-static inline void __count_vm_event(enum vm_event_item item)
-{
-}
-static inline void __count_vm_events(enum vm_event_item item, long delta)
-{
-}
-static inline void vm_events_fold_cpu(int cpu)
-{
-}
-
-
-
-#define count_vm_tlb_event(x)     do {} while (0)
-#define count_vm_tlb_events(x, y) do { (void)(y); } while (0)
-
-#define __count_zid_vm_events(item, zid, delta) \
-	__count_vm_events(item##_NORMAL - ZONE_NORMAL + zid, delta)
 
 extern atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS];
 extern atomic_long_t vm_node_stat[NR_VM_NODE_STAT_ITEMS];

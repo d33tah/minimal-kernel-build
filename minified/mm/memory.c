@@ -613,7 +613,6 @@ static inline void wp_page_reuse(struct vm_fault *vmf)
 	if (ptep_set_access_flags(vma, vmf->address, vmf->pte, entry, 1))
 		update_mmu_cache(vma, vmf->address, vmf->pte);
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
-	count_vm_event(PGREUSE);
 }
 
 static vm_fault_t wp_page_copy(struct vm_fault *vmf)
@@ -1094,9 +1093,6 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 	vm_fault_t ret;
 
 	__set_current_state(TASK_RUNNING);
-
-	count_vm_event(PGFAULT);
-
 
 	check_sync_rss_stat(current);
 

@@ -1037,9 +1037,6 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 	}
 
 	if (!area->pages) {
-		warn_alloc(gfp_mask, NULL,
-			"vmalloc error: size %lu, failed to allocated page array size %lu",
-			nr_small_pages * PAGE_SIZE, array_size);
 		free_vm_area(area);
 		return NULL;
 	}
@@ -1054,9 +1051,6 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 
 
 	if (area->nr_pages != nr_small_pages) {
-		warn_alloc(gfp_mask, NULL,
-			"vmalloc error: size %lu, page order %u, failed to allocate pages",
-			area->nr_pages * PAGE_SIZE, page_order);
 		goto fail;
 	}
 
@@ -1079,9 +1073,6 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 		memalloc_noio_restore(flags);
 
 	if (ret < 0) {
-		warn_alloc(gfp_mask, NULL,
-			"vmalloc error: size %lu, failed to map pages",
-			area->nr_pages * PAGE_SIZE);
 		goto fail;
 	}
 
@@ -1105,9 +1096,6 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 		return NULL;
 
 	if ((size >> PAGE_SHIFT) > totalram_pages()) {
-		warn_alloc(gfp_mask, NULL,
-			"vmalloc error: size %lu, exceeds total pages",
-			real_size);
 		return NULL;
 	}
 
@@ -1117,9 +1105,6 @@ again:
 				  gfp_mask, caller);
 	if (!area) {
 		bool nofail = gfp_mask & __GFP_NOFAIL;
-		warn_alloc(gfp_mask, NULL,
-			"vmalloc error: size %lu, vm_struct allocation failed%s",
-			real_size, (nofail) ? ". Retrying." : "");
 		if (nofail) {
 			schedule_timeout_uninterruptible(1);
 			goto again;

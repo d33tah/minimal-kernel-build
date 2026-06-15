@@ -921,11 +921,6 @@ get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags,
 }
 
 
-void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...)
-{
-	/* Stub: allocation warning not needed for minimal kernel */
-}
-
 static inline unsigned int
 gfp_to_alloc_flags(gfp_t gfp_mask)
 {

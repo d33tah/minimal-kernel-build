@@ -1099,9 +1099,6 @@ extern int __meminit init_per_zone_wmark_min(void);
 extern void mem_init(void);
 extern void __init mmap_init(void);
 
-extern __printf(3, 4)
-void warn_alloc(gfp_t gfp_mask, nodemask_t *nodemask, const char *fmt, ...);
-
 extern void setup_per_cpu_pageset(void);
 
 extern int min_free_kbytes;

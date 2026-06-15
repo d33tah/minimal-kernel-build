@@ -443,15 +443,6 @@ unsigned long __init e820__end_of_ram_pfn(void)
 }
 
 
-static void __init early_panic(char *msg)
-{
-	early_printk(msg);
-	panic(msg);
-}
-
-static int userdef __initdata;
-
-
 void __init e820__reserve_setup_data(void)
 {
 	struct setup_indirect *indirect;
@@ -504,13 +495,12 @@ void __init e820__reserve_setup_data(void)
 
 void __init e820__finish_early_params(void)
 {
-	if (userdef) {
-		if (e820__update_table(e820_table) < 0)
-			early_panic("Invalid user supplied memory map");
-
-		pr_info("user-defined physical RAM map:\n");
-		e820__print_table("user");
-	}
+	/*
+	 * The user-supplied-memory-map path (mem=/memmap= early params) is
+	 * gone on this build: `userdef` was write-never (no parse_memmap/mem=
+	 * __setup handler survives), so the `if (userdef)` body -- the e820
+	 * re-validate + early_panic + user-map print -- was statically dead.
+	 */
 }
 
 static const char *__init e820_type_to_string(struct e820_entry *entry)

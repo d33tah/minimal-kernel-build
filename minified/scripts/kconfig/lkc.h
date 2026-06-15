@@ -29,7 +29,6 @@ static inline const char *CONFIG_prefix(void)
 #define CONFIG_ CONFIG_prefix()
 
 extern int yylineno;
-void zconfdump(FILE *out);
 void zconf_starthelp(void);
 FILE *zconf_fopen(const char *name);
 void zconf_initscan(const char *name);

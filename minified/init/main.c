@@ -26,32 +26,24 @@ static inline void boot_init_stack_canary(void) {}
 #include <linux/percpu.h>
 #include <linux/security.h>
 #include <linux/smp.h>
-static inline int profile_init(void) { return 0; }
-#include <linux/kfence.h>
 #include <linux/rcupdate.h>
 #include <linux/srcu.h>
 #include <linux/moduleparam.h>
 #include <linux/kallsyms.h>
-static inline void init_vmlinux_build_id(void) { }
 #include <linux/writeback.h>
 #include <linux/cpu.h>
-#include <linux/cpuset.h>
 #include <linux/cgroup.h>
 #include <linux/efi.h>
 #include <linux/tick.h>
 #include <linux/sched/isolation.h>
 #include <linux/interrupt.h>
-static inline void taskstats_init_early(void) {}
-static inline void delayacct_init(void) {}
 #include <linux/unistd.h>
 #include <linux/utsname.h>
 #include <linux/rmap.h>
-#include <linux/mempolicy.h>
-#include <linux/key.h>
 #include <linux/page_ext.h>
 #include <linux/debug_locks.h>
 #include <linux/lockdep.h>
-#include <linux/kmemleak.h>
+#include <linux/vmalloc.h>
 #include <linux/pid_namespace.h>
 
 /* --- 2025-12-08 00:37 --- padata.h stubbed out */
@@ -63,7 +55,6 @@ extern void sched_init(void);
 extern void sched_init_smp(void);
 #include <linux/signal.h>
 #include <linux/idr.h>
-#define dbg_late_init() do { } while (0)
 static inline void kgdb_free_init_mem(void) { }
 static inline void kprobe_free_init_mem(void) { }
 #include <linux/async.h>
@@ -76,7 +67,6 @@ static inline void kprobe_free_init_mem(void) { }
 #include <linux/sched/clock.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
-#include <linux/context_tracking.h>
 #include <linux/random.h>
 #include <linux/list.h>
 #include <linux/proc_ns.h>
@@ -346,7 +336,6 @@ noinline void __ref rest_init(void)
 	set_cpus_allowed_ptr(tsk, cpumask_of(smp_processor_id()));
 	rcu_read_unlock();
 
-	numa_default_policy();
 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
 	rcu_read_lock();
 	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
@@ -421,16 +410,6 @@ void __init __weak pgtable_cache_init(void) { }
 
 void __init __weak trap_init(void) { }
 
-bool initcall_debug;
-
-#ifdef TRACEPOINTS_ENABLED
-static void __init initcall_debug_enable(void);
-#else
-static inline void initcall_debug_enable(void)
-{
-}
-#endif
-
 static void __init report_meminit(void)
 {
 	/* Stub: mem auto-init reporting not needed for minimal kernel */
@@ -440,8 +419,6 @@ static void __init mm_init(void)
 {
 	 
 	page_ext_init_flatmem();
-	init_mem_debugging_and_hardening();
-	kfence_alloc_pool();
 	report_meminit();
 	stack_depot_early_init();
 	mem_init();
@@ -449,7 +426,6 @@ static void __init mm_init(void)
 	kmem_cache_init();
 	 
 	page_ext_init_flatmem_late();
-	kmemleak_init();
 	pgtable_init();
 	vmalloc_init();
 	 
@@ -474,9 +450,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	set_task_stack_end_magic(&init_task);
 	smp_setup_processor_id();
-	init_vmlinux_build_id();
-
-	cgroup_init_early();
 
 	local_irq_disable();
 	early_boot_irqs_disabled = true;
@@ -485,7 +458,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	boot_cpu_init();
 	page_address_init();
 	pr_notice("%s", linux_banner);
-	early_security_init();
 	setup_arch(&command_line);
 	setup_boot_config();
 	setup_command_line(command_line);
@@ -536,11 +508,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	rcu_init();
 
-	if (initcall_debug)
-		initcall_debug_enable();
 
-	context_tracking_init();
-	 
 	early_irq_init();
 	init_IRQ();
 	tick_init();
@@ -550,15 +518,12 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	hrtimers_init();
 	softirq_init();
 	timekeeping_init();
-	kfence_init();
 	time_init();
 
 	 
 	random_init(command_line);
 	boot_init_stack_canary();
 
-	perf_event_init();
-	profile_init();
 	call_function_init();
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 
@@ -573,12 +538,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		panic("Too many boot %s vars at `%s'", panic_later,
 		      panic_param);
 
-	lockdep_init();
 
-	 
-	locking_selftest();
-
-	 
 	mem_encrypt_init();
 
 	if (initrd_start && !initrd_below_start_ok &&
@@ -589,8 +549,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		initrd_start = 0;
 	}
 	setup_per_cpu_pageset();
-	numa_policy_init();
-	acpi_early_init();
 	if (late_time_init)
 		late_time_init();
 	sched_clock_init();
@@ -603,24 +561,14 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	cred_init();
 	fork_init();
 	proc_caches_init();
-	uts_ns_init();
-	key_init();
-	security_init();
-	dbg_late_init();
 	vfs_caches_init();
 	pagecache_init();
 	signals_init();
-	seq_file_init();
 	proc_root_init();
-	cpuset_init();
-	cgroup_init();
-	taskstats_init_early();
-	delayacct_init();
 
 	poking_init();
 	check_bugs();
 
-	acpi_subsystem_init();
 	arch_post_acpi_subsys_init();
 
 	 
@@ -635,42 +583,6 @@ static void __init do_ctors(void)
 
 static bool __init_or_module initcall_blacklisted(initcall_t fn) { return false; }
 
-/* trace_initcall_start_cb and trace_initcall_finish_cb - stub only */
-static __init_or_module void
-trace_initcall_start_cb(void *data, initcall_t fn) { }
-static __init_or_module void
-trace_initcall_finish_cb(void *data, initcall_t fn, int ret) { }
-
-static ktime_t initcall_calltime;
-
-#ifdef TRACEPOINTS_ENABLED
-static void __init initcall_debug_enable(void)
-{
-	int ret;
-
-	ret = register_trace_initcall_start(trace_initcall_start_cb,
-					    &initcall_calltime);
-	ret |= register_trace_initcall_finish(trace_initcall_finish_cb,
-					      &initcall_calltime);
-	WARN(ret, "Failed to register initcall tracepoints\n");
-}
-# define do_trace_initcall_start	trace_initcall_start
-# define do_trace_initcall_finish	trace_initcall_finish
-#else
-static inline void do_trace_initcall_start(initcall_t fn)
-{
-	if (!initcall_debug)
-		return;
-	trace_initcall_start_cb(&initcall_calltime, fn);
-}
-static inline void do_trace_initcall_finish(initcall_t fn, int ret)
-{
-	if (!initcall_debug)
-		return;
-	trace_initcall_finish_cb(&initcall_calltime, fn, ret);
-}
-#endif  
-
 int __init_or_module do_one_initcall(initcall_t fn)
 {
 	int count = preempt_count();
@@ -680,9 +592,7 @@ int __init_or_module do_one_initcall(initcall_t fn)
 	if (initcall_blacklisted(fn))
 		return -EPERM;
 
-	do_trace_initcall_start(fn);
 	ret = fn();
-	do_trace_initcall_finish(fn, ret);
 
 	msgbuf[0] = 0;
 
@@ -777,7 +687,6 @@ static void __init do_initcalls(void)
 
 static void __init do_basic_setup(void)
 {
-	cpuset_init_smp();
 	driver_init();
 	init_irq_proc();
 	do_ctors();
@@ -852,7 +761,6 @@ static int __ref kernel_init(void *unused)
 	mark_readonly();
 
 	system_state = SYSTEM_RUNNING;
-	numa_default_policy();
 
 	rcu_end_inkernel_boot();
 
@@ -913,9 +821,6 @@ static noinline void __init kernel_init_freeable(void)
 	 
 	gfp_allowed_mask = __GFP_BITS_MASK;
 
-
-	set_mems_allowed(node_states[N_MEMORY]);
-
 	/* cad_pid removed - only set, never read */
 
 	smp_prepare_cpus(setup_max_cpus);
@@ -941,13 +846,7 @@ static noinline void __init kernel_init_freeable(void)
 	wait_for_initramfs();
 	console_on_rootfs();
 
-	 
-	if (init_eaccess(ramdisk_execute_command) != 0) {
-		ramdisk_execute_command = NULL;
-		prepare_namespace();
-	}
 
-	 
 
 	integrity_load_keys();
 }

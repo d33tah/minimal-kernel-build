@@ -28,10 +28,6 @@ extern void sched_init_smp(void);
 #include <linux/sched/rt.h>
 
 #include <linux/blkdev.h>
-#include <linux/context_tracking.h>
-#include <linux/cpuset.h>
-static inline void delayacct_blkio_start(void) {}
-static inline void delayacct_blkio_end(struct task_struct *p) {}
 #include <linux/init_task.h>
 #include <linux/interrupt.h>
 #include <linux/ioprio.h>
@@ -48,7 +44,6 @@ static inline void psi_init(void) {}
 #include <linux/sched/wake_q.h>
 #include <linux/slab.h>
 #include <linux/syscalls.h>
-#include <linux/vtime.h>
 
 #include <linux/sched/types.h>
 
@@ -64,41 +59,16 @@ static inline void psi_init(void) {}
 #include "../workqueue_internal.h"
 #include "../smpboot.h"
 
-/* --- 2025-12-07 23:42 --- Inlined from fs/io-wq.h (stubs only, CONFIG_IO_WQ not set) */
-static inline void io_wq_worker_sleeping(struct task_struct *tsk) { }
-static inline void io_wq_worker_running(struct task_struct *tsk) { }
-
 DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
 __read_mostly int scheduler_running;
 
-static inline void sched_core_enqueue(struct rq *rq, struct task_struct *p) { }
-static inline void
-sched_core_dequeue(struct rq *rq, struct task_struct *p, int flags) { }
-
 void raw_spin_rq_lock_nested(struct rq *rq, int subclass)
 {
-	raw_spinlock_t *lock;
-
-	
+	/* SCHED_CORE off: rq lock is always rq->__lock, no core-cookie retry */
 	preempt_disable();
-	if (sched_core_disabled()) {
-		raw_spin_lock_nested(&rq->__lock, subclass);
-		
-		preempt_enable_no_resched();
-		return;
-	}
-
-	for (;;) {
-		lock = __rq_lockp(rq);
-		raw_spin_lock_nested(lock, subclass);
-		if (likely(lock == __rq_lockp(rq))) {
-			
-			preempt_enable_no_resched();
-			return;
-		}
-		raw_spin_unlock(lock);
-	}
+	raw_spin_lock_nested(&rq->__lock, subclass);
+	preempt_enable_no_resched();
 }
 
 
@@ -157,8 +127,6 @@ static void update_rq_clock_task(struct rq *rq, s64 delta)
 	s64 __maybe_unused steal = 0, irq_delta = 0;
 
 	rq->clock_task += delta;
-
-	update_rq_clock_pelt(rq, delta);
 }
 
 void update_rq_clock(struct rq *rq)
@@ -183,27 +151,6 @@ static inline void hrtick_clear(struct rq *rq)
 
 static inline void hrtick_rq_init(struct rq *rq)
 {
-}
-
-#define fetch_or(ptr, mask)						\
-	({								\
-		typeof(ptr) _ptr = (ptr);				\
-		typeof(mask) _mask = (mask);				\
-		typeof(*_ptr) _old, _val = *_ptr;			\
-									\
-		for (;;) {						\
-			_old = cmpxchg(_ptr, _val, _val | _mask);	\
-			if (_old == _val)				\
-				break;					\
-			_val = _old;					\
-		}							\
-	_old;								\
-})
-
-static bool set_nr_and_not_polling(struct task_struct *p)
-{
-	set_tsk_need_resched(p);
-	return true;
 }
 
 static bool __wake_q_add(struct wake_q_head *head, struct task_struct *task)
@@ -254,23 +201,14 @@ void wake_up_q(struct wake_q_head *head)
 void resched_curr(struct rq *rq)
 {
 	struct task_struct *curr = rq->curr;
-	int cpu;
 
 	lockdep_assert_rq_held(rq);
 
 	if (test_tsk_need_resched(curr))
 		return;
 
-	cpu = cpu_of(rq);
-
-	if (cpu == smp_processor_id()) {
-		set_tsk_need_resched(curr);
-		set_preempt_need_resched();
-		return;
-	}
-
-	if (set_nr_and_not_polling(curr))
-		smp_send_reschedule(cpu);
+	set_tsk_need_resched(curr);
+	set_preempt_need_resched();
 }
 
 void resched_cpu(int cpu)
@@ -305,45 +243,19 @@ static void set_load_weight(struct task_struct *p, bool update_load)
 	}
 }
 
-static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p) { }
-static inline void uclamp_rq_dec(struct rq *rq, struct task_struct *p) { }
-static void __setscheduler_uclamp(struct task_struct *p,
-				  const struct sched_attr *attr) { }
-static inline void uclamp_fork(struct task_struct *p) { }
-static inline void uclamp_post_fork(struct task_struct *p) { }
-static inline void init_uclamp(void) { }
-
 static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 {
 	if (!(flags & ENQUEUE_NOCLOCK))
 		update_rq_clock(rq);
 
-	if (!(flags & ENQUEUE_RESTORE)) {
-		sched_info_enqueue(rq, p);
-		psi_enqueue(p, flags & ENQUEUE_WAKEUP);
-	}
-
-	uclamp_rq_inc(rq, p);
 	p->sched_class->enqueue_task(rq, p, flags);
-
-	if (sched_core_enabled(rq))
-		sched_core_enqueue(rq, p);
 }
 
 static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 {
-	if (sched_core_enabled(rq))
-		sched_core_dequeue(rq, p, flags);
-
 	if (!(flags & DEQUEUE_NOCLOCK))
 		update_rq_clock(rq);
 
-	if (!(flags & DEQUEUE_SAVE)) {
-		sched_info_dequeue(rq, p);
-		psi_dequeue(p, flags & DEQUEUE_SLEEP);
-	}
-
-	uclamp_rq_dec(rq, p);
 	p->sched_class->dequeue_task(rq, p, flags);
 }
 
@@ -361,38 +273,6 @@ void deactivate_task(struct rq *rq, struct task_struct *p, int flags)
 	dequeue_task(rq, p, flags);
 }
 
-static inline int __normal_prio(int policy, int rt_prio, int nice)
-{
-	int prio;
-
-	if (dl_policy(policy))
-		prio = MAX_DL_PRIO - 1;
-	else if (rt_policy(policy))
-		prio = MAX_RT_PRIO - 1 - rt_prio;
-	else
-		prio = NICE_TO_PRIO(nice);
-
-	return prio;
-}
-
-static inline int normal_prio(struct task_struct *p)
-{
-	return __normal_prio(p->policy, p->rt_priority, PRIO_TO_NICE(p->static_prio));
-}
-
-static inline void check_class_changed(struct rq *rq, struct task_struct *p,
-				       const struct sched_class *prev_class,
-				       int oldprio)
-{
-	if (prev_class != p->sched_class) {
-		if (prev_class->switched_from)
-			prev_class->switched_from(rq, p);
-
-		p->sched_class->switched_to(rq, p);
-	} else if (oldprio != p->prio || dl_task(p))
-		p->sched_class->prio_changed(rq, p, oldprio);
-}
-
 void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 {
 	if (p->sched_class == rq->curr->sched_class)
@@ -405,14 +285,6 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 		rq_clock_skip_update(rq);
 }
 
-
-static inline void migrate_disable_switch(struct rq *rq, struct task_struct *p) { }
-
-static void
-ttwu_stat(struct task_struct *p, int cpu, int wake_flags)
-{
-	/* Stub: wake-up statistics not needed for minimal kernel */
-}
 
 static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 			   struct rq_flags *rf)
@@ -431,11 +303,7 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
 
 	lockdep_assert_rq_held(rq);
 
-	if (p->sched_contributes_to_load)
-		rq->nr_uninterruptible--;
-
 	if (p->in_iowait) {
-		delayacct_blkio_end(p);
 		atomic_dec(&task_rq(p)->nr_iowait);
 	}
 
@@ -461,18 +329,10 @@ static int ttwu_runnable(struct task_struct *p, int wake_flags)
 	return ret;
 }
 
-static inline bool ttwu_queue_wakelist(struct task_struct *p, int cpu, int wake_flags)
-{
-	return false;
-}
-
 static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
 {
 	struct rq *rq = cpu_rq(cpu);
 	struct rq_flags rf;
-
-	if (ttwu_queue_wakelist(p, cpu, wake_flags))
-		return;
 
 	rq_lock(rq, &rf);
 	update_rq_clock(rq);
@@ -528,8 +388,6 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
 
 	ttwu_queue(p, cpu, wake_flags);
 out:
-	if (success)
-		ttwu_stat(p, task_cpu(p), wake_flags);
 	preempt_enable();
 
 	return success;
@@ -554,13 +412,9 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	p->se.exec_start		= 0;
 	p->se.sum_exec_runtime		= 0;
 	p->se.prev_sum_exec_runtime	= 0;
-	p->se.nr_migrations		= 0;
 	p->se.vruntime			= 0;
-	INIT_LIST_HEAD(&p->se.group_node);
 
 	RB_CLEAR_NODE(&p->dl.rb_node);
-	init_dl_task_timer(&p->dl);
-	init_dl_inactive_task_timer(&p->dl);
 	__dl_clear_params(p);
 
 	INIT_LIST_HEAD(&p->rt.run_list);
@@ -568,11 +422,8 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	p->rt.time_slice	= sched_rr_timeslice;
 	p->rt.on_rq		= 0;
 	p->rt.on_list		= 0;
-
-	init_numa_balancing(clone_flags, p);
 }
 
-DEFINE_STATIC_KEY_FALSE(sched_numa_balancing);
 
 int sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
@@ -583,9 +434,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	
 	p->prio = current->normal_prio;
 
-	uclamp_fork(p);
 
-	
 	if (unlikely(p->sched_reset_on_fork)) {
 		if (task_has_dl_policy(p) || task_has_rt_policy(p)) {
 			p->policy = SCHED_NORMAL;
@@ -620,17 +469,10 @@ void sched_cgroup_fork(struct task_struct *p, struct kernel_clone_args *kargs)
 
 	
 	raw_spin_lock_irqsave(&p->pi_lock, flags);
-	rseq_migrate(p);
-	
-	__set_task_cpu(p, smp_processor_id());
+
 	if (p->sched_class->task_fork)
 		p->sched_class->task_fork(p);
 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
-}
-
-void sched_post_fork(struct task_struct *p)
-{
-	uclamp_post_fork(p);
 }
 
 
@@ -651,37 +493,6 @@ void wake_up_new_task(struct task_struct *p)
 	task_rq_unlock(rq, p, &rf);
 }
 
-static inline void fire_sched_in_preempt_notifiers(struct task_struct *curr)
-{
-}
-
-static inline void
-fire_sched_out_preempt_notifiers(struct task_struct *curr,
-				 struct task_struct *next)
-{
-}
-
-static inline void prepare_task(struct task_struct *next)
-{
-}
-
-static inline void finish_task(struct task_struct *prev)
-{
-}
-
-static inline void __balance_callbacks(struct rq *rq)
-{
-}
-
-static inline struct callback_head *splice_balance_callbacks(struct rq *rq)
-{
-	return NULL;
-}
-
-static inline void balance_callbacks(struct rq *rq, struct callback_head *head)
-{
-}
-
 static inline void
 prepare_lock_switch(struct rq *rq, struct task_struct *next, struct rq_flags *rf)
 {
@@ -694,7 +505,6 @@ static inline void finish_lock_switch(struct rq *rq)
 {
 	
 	spin_acquire(&__rq_lockp(rq)->dep_map, 0, 0, _THIS_IP_);
-	__balance_callbacks(rq);
 	raw_spin_rq_unlock_irq(rq);
 }
 
@@ -706,28 +516,10 @@ static inline void finish_lock_switch(struct rq *rq)
 # define finish_arch_post_lock_switch()	do { } while (0)
 #endif
 
-static inline void kmap_local_sched_out(void)
-{
-	if (unlikely(current->kmap_ctrl.idx))
-		__kmap_local_sched_out();
-}
-
-static inline void kmap_local_sched_in(void)
-{
-	if (unlikely(current->kmap_ctrl.idx))
-		__kmap_local_sched_in();
-}
-
 static inline void
 prepare_task_switch(struct rq *rq, struct task_struct *prev,
 		    struct task_struct *next)
 {
-	sched_info_switch(rq, prev, next);
-	
-	rseq_preempt(prev);
-	fire_sched_out_preempt_notifiers(prev, next);
-	kmap_local_sched_out();
-	prepare_task(next);
 	prepare_arch_switch(next);
 }
 
@@ -748,19 +540,13 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 
 	
 	prev_state = READ_ONCE(prev->__state);
-	vtime_task_switch(prev);
-	
-	finish_task(prev);
+
 	tick_nohz_task_switch();
 	finish_lock_switch(rq);
 	finish_arch_post_lock_switch();
 
-	kmap_local_sched_in();
 
-	fire_sched_in_preempt_notifiers(current);
-	
 	if (mm) {
-		membarrier_mm_sync_core_before_usermode(mm);
 		mmdrop_sched(mm);
 	}
 	if (unlikely(prev_state == TASK_DEAD)) {
@@ -808,9 +594,7 @@ context_switch(struct rq *rq, struct task_struct *prev,
 			mmgrab(prev->active_mm);
 		else
 			prev->active_mm = NULL;
-	} else {                                         
-		membarrier_switch_mm(rq, prev->active_mm, next->mm);
-		
+	} else {
 		switch_mm_irqs_off(prev->active_mm, next->mm, next);
 
 		if (!prev->mm) {                         
@@ -829,32 +613,6 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	barrier();
 
 	return finish_task_switch(prev);
-}
-
-unsigned int nr_running(void)
-{
-	unsigned int i, sum = 0;
-
-	for_each_online_cpu(i)
-		sum += cpu_rq(i)->nr_running;
-
-	return sum;
-}
-
-
-unsigned int nr_iowait_cpu(int cpu)
-{
-	return atomic_read(&cpu_rq(cpu)->nr_iowait);
-}
-
-unsigned int nr_iowait(void)
-{
-	unsigned int i, sum = 0;
-
-	for_each_possible_cpu(i)
-		sum += nr_iowait_cpu(i);
-
-	return sum;
 }
 
 DEFINE_PER_CPU(struct kernel_stat, kstat);
@@ -885,7 +643,6 @@ void scheduler_tick(void)
 	if (sched_feat(LATENCY_WARN))
 		resched_latency = cpu_resched_latency(rq);
 	calc_global_load_tick(rq);
-	sched_core_tick(rq);
 
 	rq_unlock(rq, &rf);
 
@@ -896,36 +653,8 @@ void scheduler_tick(void)
 
 }
 
-#if defined(CONFIG_PREEMPTION) && (defined(CONFIG_DEBUG_PREEMPT) || \
-				defined(CONFIG_TRACE_PREEMPT_TOGGLE))
-
-static inline void preempt_latency_start(int val)
-{
-}
-
-void preempt_count_add(int val)
-{
-	__preempt_count_add(val);
-	preempt_latency_start(val);
-}
-NOKPROBE_SYMBOL(preempt_count_add);
-
-static inline void preempt_latency_stop(int val)
-{
-}
-
-void preempt_count_sub(int val)
-{
-
-	preempt_latency_stop(val);
-	__preempt_count_sub(val);
-}
-NOKPROBE_SYMBOL(preempt_count_sub);
-
-#else
 static inline void preempt_latency_start(int val) { }
 static inline void preempt_latency_stop(int val) { }
-#endif
 
 
 static noinline void __schedule_bug(struct task_struct *prev)
@@ -943,10 +672,6 @@ static inline void schedule_debug(struct task_struct *prev, bool preempt)
 		preempt_count_set(PREEMPT_DISABLED);
 	}
 	rcu_sleep_check();
-	SCHED_WARN_ON(ct_state() == CONTEXT_USER);
-
-
-	schedstat_inc(this_rq()->sched_count);
 }
 
 static void put_prev_task_balance(struct rq *rq, struct task_struct *prev,
@@ -999,7 +724,6 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 
 #define SM_NONE			0x0
 #define SM_PREEMPT		0x1
-#define SM_RTLOCK_WAIT		0x2
 
 # define SM_MASK_PREEMPT	(~0U)
 
@@ -1040,20 +764,11 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 		if (signal_pending_state(prev_state, prev)) {
 			WRITE_ONCE(prev->__state, TASK_RUNNING);
 		} else {
-			prev->sched_contributes_to_load =
-				(prev_state & TASK_UNINTERRUPTIBLE) &&
-				!(prev_state & TASK_NOLOAD) &&
-				!(prev->flags & PF_FROZEN);
 
-			if (prev->sched_contributes_to_load)
-				rq->nr_uninterruptible++;
-
-			
 			deactivate_task(rq, prev, DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);
 
 			if (prev->in_iowait) {
 				atomic_inc(&rq->nr_iowait);
-				delayacct_blkio_start();
 			}
 		}
 		switch_count = &prev->nvcsw;
@@ -1064,24 +779,15 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 	clear_preempt_need_resched();
 
 	if (likely(prev != next)) {
-		rq->nr_switches++;
-		
 		RCU_INIT_POINTER(rq->curr, next);
 		
 		++*switch_count;
 
-		migrate_disable_switch(rq, prev);
-		psi_sched_switch(prev, next, !task_on_rq_queued(prev));
-
-		
-
-		
 		rq = context_switch(rq, prev, next, &rf);
 	} else {
 		rq->clock_update_flags &= ~(RQCF_ACT_SKIP|RQCF_REQ_SKIP);
 
 		rq_unpin_lock(rq, &rf);
-		__balance_callbacks(rq);
 		raw_spin_rq_unlock_irq(rq);
 	}
 }
@@ -1104,35 +810,14 @@ void __noreturn do_task_dead(void)
 
 static inline void sched_submit_work(struct task_struct *tsk)
 {
-	unsigned int task_flags;
-
 	if (task_is_running(tsk))
 		return;
-
-	task_flags = tsk->flags;
-	
-	if (task_flags & (PF_WQ_WORKER | PF_IO_WORKER)) {
-		if (task_flags & PF_WQ_WORKER)
-			wq_worker_sleeping(tsk);
-		else
-			io_wq_worker_sleeping(tsk);
-	}
 
 	if (tsk_is_pi_blocked(tsk))
 		return;
 
-	
-	blk_flush_plug(tsk->plug, true);
-}
 
-static void sched_update_worker(struct task_struct *tsk)
-{
-	if (tsk->flags & (PF_WQ_WORKER | PF_IO_WORKER)) {
-		if (tsk->flags & PF_WQ_WORKER)
-			wq_worker_running(tsk);
-		else
-			io_wq_worker_running(tsk);
-	}
+	blk_flush_plug(tsk->plug, true);
 }
 
 asmlinkage __visible void __sched schedule(void)
@@ -1145,7 +830,6 @@ asmlinkage __visible void __sched schedule(void)
 		__schedule(SM_NONE);
 		sched_preempt_enable_no_resched();
 	} while (need_resched());
-	sched_update_worker(tsk);
 }
 
 void __sched schedule_idle(void)
@@ -1180,12 +864,7 @@ static void __sched notrace preempt_schedule_common(void)
 
 asmlinkage __visible void __sched preempt_schedule_irq(void)
 {
-	enum ctx_state prev_state;
-
-	
 	BUG_ON(preempt_count() || !irqs_disabled());
-
-	prev_state = exception_enter();
 
 	do {
 		preempt_disable();
@@ -1194,8 +873,6 @@ asmlinkage __visible void __sched preempt_schedule_irq(void)
 		local_irq_disable();
 		sched_preempt_enable_no_resched();
 	} while (need_resched());
-
-	exception_exit(prev_state);
 }
 
 int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flags,
@@ -1205,64 +882,23 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flag
 	return try_to_wake_up(curr->private, mode, wake_flags);
 }
 
-static void __setscheduler_prio(struct task_struct *p, int prio)
-{
-	if (dl_prio(prio))
-		p->sched_class = &dl_sched_class;
-	else if (rt_prio(prio))
-		p->sched_class = &rt_sched_class;
-	else
-		p->sched_class = &fair_sched_class;
-
-	p->prio = prio;
-}
-
-#ifdef __ARCH_WANT_SYS_NICE
-
-SYSCALL_DEFINE1(nice, int, increment)
-{
-	/* Stub: nice not needed for minimal kernel */
-	return 0;
-}
-
-#endif
-
-
-
 #define SETPARAM_POLICY	-1
-
-static void __setscheduler_params(struct task_struct *p,
-		const struct sched_attr *attr)
-{
-	int policy = attr->sched_policy;
-
-	if (policy == SETPARAM_POLICY)
-		policy = p->policy;
-
-	p->policy = policy;
-
-	if (dl_policy(policy))
-		__setparam_dl(p, attr);
-	else if (fair_policy(policy))
-		p->static_prio = NICE_TO_PRIO(attr->sched_nice);
-
-	
-	p->rt_priority = attr->sched_priority;
-	p->normal_prio = normal_prio(p);
-	set_load_weight(p, true);
-}
 
 static int __sched_setscheduler(struct task_struct *p,
 				const struct sched_attr *attr,
 				bool user, bool pi)
 {
-	/* Minimal stub: simplified scheduler parameter setting */
+	/*
+	 * Minimal stub. The only live caller is the kthread() body, which always
+	 * passes SCHED_NORMAL with sched_nice == task_nice(p) (priority 0) on a
+	 * freshly-created kthread that is already SCHED_NORMAL. The full
+	 * dequeue/enqueue/setparam path is therefore never reached: the request
+	 * always matches the current policy/nice → the change is a no-op. So all
+	 * we need is the validation + the "already set" return.
+	 */
 	int policy = attr->sched_policy;
-	int retval, oldprio, newprio, queued, running;
-	const struct sched_class *prev_class;
-	struct callback_head *head;
+	int retval;
 	struct rq_flags rf;
-	int queue_flags = DEQUEUE_SAVE | DEQUEUE_MOVE | DEQUEUE_NOCLOCK;
 	struct rq *rq;
 
 	/* Basic validation only */
@@ -1279,57 +915,11 @@ static int __sched_setscheduler(struct task_struct *p,
 	rq = task_rq_lock(p, &rf);
 	update_rq_clock(rq);
 
-	if (p == rq->stop) {
+	if (p == rq->stop)
 		retval = -EINVAL;
-		goto unlock;
-	}
-
-	/* Check if already set */
-	if (policy == p->policy &&
-	    (!fair_policy(policy) || attr->sched_nice == task_nice(p)) &&
-	    (!rt_policy(policy) || attr->sched_priority == p->rt_priority)) {
+	else
 		retval = 0;
-		goto unlock;
-	}
 
-	oldprio = p->prio;
-	newprio = __normal_prio(policy, attr->sched_priority, attr->sched_nice);
-
-	queued = task_on_rq_queued(p);
-	running = task_current(rq, p);
-	if (queued)
-		dequeue_task(rq, p, queue_flags);
-	if (running)
-		put_prev_task(rq, p);
-
-	prev_class = p->sched_class;
-
-	if (!(attr->sched_flags & SCHED_FLAG_KEEP_PARAMS)) {
-		__setscheduler_params(p, attr);
-		__setscheduler_prio(p, newprio);
-	}
-	__setscheduler_uclamp(p, attr);
-
-	if (queued) {
-		if (oldprio < p->prio)
-			queue_flags |= ENQUEUE_HEAD;
-		enqueue_task(rq, p, queue_flags);
-	}
-	if (running)
-		set_next_task(rq, p);
-
-	check_class_changed(rq, p, prev_class, oldprio);
-
-	preempt_disable();
-	head = splice_balance_callbacks(rq);
-	task_rq_unlock(rq, p, &rf);
-
-	balance_callbacks(rq, head);
-	preempt_enable();
-
-	return 0;
-
-unlock:
 	task_rq_unlock(rq, p, &rf);
 	return retval;
 }
@@ -1353,117 +943,10 @@ static int _sched_setscheduler(struct task_struct *p, int policy,
 	return __sched_setscheduler(p, &attr, check, true);
 }
 
-int sched_setscheduler(struct task_struct *p, int policy,
-		       const struct sched_param *param)
-{
-	return _sched_setscheduler(p, policy, param, true);
-}
-
-int sched_setattr(struct task_struct *p, const struct sched_attr *attr)
-{
-	return __sched_setscheduler(p, attr, true, true);
-}
-
 int sched_setscheduler_nocheck(struct task_struct *p, int policy,
 			       const struct sched_param *param)
 {
 	return _sched_setscheduler(p, policy, param, false);
-}
-
-void sched_set_fifo(struct task_struct *p)
-{
-	struct sched_param sp = { .sched_priority = MAX_RT_PRIO / 2 };
-	WARN_ON_ONCE(sched_setscheduler_nocheck(p, SCHED_FIFO, &sp) != 0);
-}
-
-SYSCALL_DEFINE3(sched_setscheduler, pid_t, pid, int, policy, struct sched_param __user *, param)
-{
-	/* Stub: sched_setscheduler not needed for minimal kernel */
-	return 0;
-}
-
-SYSCALL_DEFINE2(sched_setparam, pid_t, pid, struct sched_param __user *, param)
-{
-	/* Stub: sched_setparam not needed for minimal kernel */
-	return 0;
-}
-
-SYSCALL_DEFINE3(sched_setattr, pid_t, pid, struct sched_attr __user *, uattr,
-			       unsigned int, flags)
-{
-	/* Stubbed: sched_setattr not needed for minimal kernel */
-	return -ENOSYS;
-}
-
-SYSCALL_DEFINE1(sched_getscheduler, pid_t, pid)
-{
-	/* Stub: sched_getscheduler not needed for minimal kernel */
-	return SCHED_NORMAL;
-}
-
-SYSCALL_DEFINE2(sched_getparam, pid_t, pid, struct sched_param __user *, param)
-{
-	/* Stub: sched_getparam not needed for minimal kernel */
-	struct sched_param lp = { .sched_priority = 0 };
-	if (!param || pid < 0)
-		return -EINVAL;
-	return copy_to_user(param, &lp, sizeof(*param)) ? -EFAULT : 0;
-}
-
-SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
-		unsigned int, usize, unsigned int, flags)
-{
-	/* Stubbed: sched_getattr not needed for minimal kernel */
-	return -ENOSYS;
-}
-
-long sched_setaffinity(pid_t pid, const struct cpumask *in_mask)
-{
-	/* Stub: not needed for minimal kernel */
-	return 0;
-}
-
-/* Stub: setaffinity not needed for single-CPU minimal kernel */
-SYSCALL_DEFINE3(sched_setaffinity, pid_t, pid, unsigned int, len,
-		unsigned long __user *, user_mask_ptr)
-{
-	return 0;
-}
-
-long sched_getaffinity(pid_t pid, struct cpumask *mask)
-{
-	/* Stub: not needed for minimal kernel */
-	return -ESRCH;
-}
-
-SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
-		unsigned long __user *, user_mask_ptr)
-{
-	/* Stub: just return success for minimal kernel */
-	return -ENOSYS;
-}
-
-static void do_sched_yield(void)
-{
-	struct rq_flags rf;
-	struct rq *rq;
-
-	rq = this_rq_lock_irq(&rf);
-
-	schedstat_inc(rq->yld_count);
-	current->sched_class->yield_task(rq);
-
-	preempt_disable();
-	rq_unlock_irq(rq, &rf);
-	sched_preempt_enable_no_resched();
-
-	schedule();
-}
-
-SYSCALL_DEFINE0(sched_yield)
-{
-	do_sched_yield();
-	return 0;
 }
 
 int __sched __cond_resched(void)
@@ -1504,35 +987,6 @@ void __sched io_schedule(void)
 	io_schedule_finish(token);
 }
 
-SYSCALL_DEFINE1(sched_get_priority_max, int, policy)
-{
-	/* Stub: just return 0 for minimal kernel */
-	return 0;
-}
-
-SYSCALL_DEFINE1(sched_get_priority_min, int, policy)
-{
-	/* Stub: just return 0 for minimal kernel */
-	return 0;
-}
-
-static int sched_rr_get_interval(pid_t pid, struct timespec64 *t)
-{
-	return -EINVAL;
-}
-
-SYSCALL_DEFINE2(sched_rr_get_interval, pid_t, pid,
-		struct __kernel_timespec __user *, interval)
-{
-	struct timespec64 t;
-	int retval = sched_rr_get_interval(pid, &t);
-
-	if (retval == 0)
-		retval = put_timespec64(&t, interval);
-
-	return retval;
-}
-
 void __init init_idle(struct task_struct *idle, int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);
@@ -1549,11 +1003,6 @@ void __init init_idle(struct task_struct *idle, int cpu)
 	idle->flags |= PF_IDLE | PF_KTHREAD | PF_NO_SETAFFINITY;
 	kthread_set_per_cpu(idle, cpu);
 
-	
-	rcu_read_lock();
-	__set_task_cpu(idle, cpu);
-	rcu_read_unlock();
-
 	rq->idle = idle;
 	rcu_assign_pointer(rq->curr, idle);
 	idle->on_rq = TASK_ON_RQ_QUEUED;
@@ -1565,7 +1014,6 @@ void __init init_idle(struct task_struct *idle, int cpu)
 
 
 	idle->sched_class = &idle_sched_class;
-	vtime_init_idle(idle, cpu);
 }
 
 void __init sched_init_smp(void)
@@ -1574,27 +1022,16 @@ void __init sched_init_smp(void)
 }
 
 
-DECLARE_PER_CPU(cpumask_var_t, load_balance_mask);
-DECLARE_PER_CPU(cpumask_var_t, select_idle_mask);
-
 void __init sched_init(void)
 {
-	unsigned long ptr = 0;
 	int i;
 
-	
+
 	BUG_ON(&idle_sched_class != &fair_sched_class + 1 ||
 	       &fair_sched_class != &rt_sched_class + 1 ||
 	       &rt_sched_class   != &dl_sched_class + 1);
 
 	wait_bit_init();
-
-	if (ptr) {
-		ptr = (unsigned long)kzalloc(ptr, GFP_NOWAIT);
-
-	}
-
-	init_rt_bandwidth(&def_rt_bandwidth, global_rt_period(), global_rt_runtime());
 
 	for_each_possible_cpu(i) {
 		struct rq *rq;
@@ -1602,13 +1039,10 @@ void __init sched_init(void)
 		rq = cpu_rq(i);
 		raw_spin_lock_init(&rq->__lock);
 		rq->nr_running = 0;
-		rq->calc_load_active = 0;
-		rq->calc_load_update = jiffies + LOAD_FREQ;
 		init_cfs_rq(&rq->cfs);
 		init_rt_rq(&rq->rt);
 		init_dl_rq(&rq->dl);
 
-		rq->rt.rt_runtime = def_rt_bandwidth.rt_runtime;
 		hrtick_rq_init(rq);
 		atomic_set(&rq->nr_iowait, 0);
 
@@ -1626,13 +1060,9 @@ void __init sched_init(void)
 	
 	init_idle(current, smp_processor_id());
 
-	calc_load_update = jiffies + LOAD_FREQ;
-
 	init_sched_fair_class();
 
 	psi_init();
-
-	init_uclamp();
 
 	preempt_dynamic_init();
 

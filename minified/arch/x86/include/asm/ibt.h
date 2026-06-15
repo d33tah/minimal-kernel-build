@@ -14,12 +14,7 @@
 
 #define __noendbr
 
-static inline bool is_endbr(u32 val) { return false; }
-
-static inline u64 ibt_save(void) { return 0; }
-static inline void ibt_restore(u64 save) { }
-
-#else  
+#else
 
 #define ENDBR
 

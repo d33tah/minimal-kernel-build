@@ -1,13 +1,13 @@
 #include <linux/init_task.h>
 #include <linux/export.h>
 #include <linux/sched.h>
+#include <linux/sched/signal.h>
 #include <linux/sched/sysctl.h>
 #include <linux/sched/rt.h>
 #include <linux/sched/task.h>
 #include <linux/init.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
-#include <linux/audit.h>
 #include <linux/numa.h>
 
 #include <linux/uaccess.h>
@@ -24,7 +24,6 @@ static struct signal_struct init_signals = {
 	.rlim		= INIT_RLIMITS,
 	.cred_guard_mutex = __MUTEX_INITIALIZER(init_signals.cred_guard_mutex),
 	.exec_update_lock = __RWSEM_INITIALIZER(init_signals.exec_update_lock),
-	INIT_CPU_TIMERS(init_signals)
 	.pids = {
 		[PIDTYPE_PID]	= &init_struct_pid,
 		[PIDTYPE_TGID]	= &init_struct_pid,
@@ -64,9 +63,6 @@ struct task_struct init_task
 	.restart_block	= {
 		.fn = do_no_restart_syscall,
 	},
-	.se		= {
-		.group_node 	= LIST_HEAD_INIT(init_task.se.group_node),
-	},
 	.rt		= {
 		.run_list	= LIST_HEAD_INIT(init_task.rt.run_list),
 		.time_slice	= RR_TIMESLICE,
@@ -95,7 +91,6 @@ struct task_struct init_task
 	.blocked	= {{0}},
 	.alloc_lock	= __SPIN_LOCK_UNLOCKED(init_task.alloc_lock),
 	.journal_info	= NULL,
-	INIT_CPU_TIMERS(init_task)
 	.pi_lock	= __RAW_SPIN_LOCK_UNLOCKED(init_task.pi_lock),
 	.timer_slack_ns = 50000,  
 	.thread_pid	= &init_struct_pid,

@@ -189,11 +189,6 @@ unsigned long __alloc_pages_bulk(gfp_t gfp, int preferred_nid,
 				struct list_head *page_list,
 				struct page **page_array);
 
-unsigned long alloc_pages_bulk_array_mempolicy(gfp_t gfp,
-				unsigned long nr_pages,
-				struct page **page_array);
-
-
 static inline unsigned long
 alloc_pages_bulk_array_node(gfp_t gfp, int nid, unsigned long nr_pages, struct page **page_array)
 {
@@ -250,7 +245,6 @@ static inline struct page *alloc_page_vma(gfp_t gfp,
 }
 
 extern unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order);
-extern unsigned long get_zeroed_page(gfp_t gfp_mask);
 
 void *alloc_pages_exact(size_t size, gfp_t gfp_mask) __alloc_size(1);
 

@@ -17,7 +17,6 @@
 #include <linux/stop_machine.h>
 
 #include <linux/compiler.h>
-#include <linux/audit.h>
 
 #include "tick-internal.h"
 #include "ntp_internal.h"
@@ -46,44 +45,6 @@ static struct {
 static struct timekeeper shadow_timekeeper;
 
 static int __read_mostly timekeeping_suspended;
-
-struct tk_fast {
-	seqcount_latch_t	seq;
-	struct tk_read_base	base[2];
-};
-
-static u64 cycles_at_suspend;
-
-static u64 dummy_clock_read(struct clocksource *cs)
-{
-	if (timekeeping_suspended)
-		return cycles_at_suspend;
-	return local_clock();
-}
-
-static struct clocksource dummy_clock = {
-	.read = dummy_clock_read,
-};
-
-#define FAST_TK_INIT						\
-	{							\
-		.clock		= &dummy_clock,			\
-		.mask		= CLOCKSOURCE_MASK(64),		\
-		.mult		= 1,				\
-		.shift		= 0,				\
-	}
-
-static struct tk_fast tk_fast_mono ____cacheline_aligned = {
-	.seq     = SEQCNT_LATCH_ZERO(tk_fast_mono.seq),
-	.base[0] = FAST_TK_INIT,
-	.base[1] = FAST_TK_INIT,
-};
-
-static struct tk_fast tk_fast_raw  ____cacheline_aligned = {
-	.seq     = SEQCNT_LATCH_ZERO(tk_fast_raw.seq),
-	.base[0] = FAST_TK_INIT,
-	.base[1] = FAST_TK_INIT,
-};
 
 static inline void tk_normalize_xtime(struct timekeeper *tk)
 {
@@ -221,24 +182,6 @@ static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr)
 }
 
 
-/* Stub: update_fast_timekeeper - fast path functions are stubbed */
-static void update_fast_timekeeper(const struct tk_read_base *tkr,
-				   struct tk_fast *tkf)
-{
-}
-
-
-/* Removed: ktime_get_boot_fast_ns, ktime_get_tai_fast_ns, ktime_get_real_fast_ns,
-   ktime_get_fast_timestamps - no callers */
-
-static RAW_NOTIFIER_HEAD(pvclock_gtod_chain);
-
-static void update_pvclock_gtod(struct timekeeper *tk, bool was_set)
-{
-	raw_notifier_call_chain(&pvclock_gtod_chain, was_set, tk);
-}
-
-
 static inline void tk_update_leap_state(struct timekeeper *tk)
 {
 	tk->next_leap_ktime = ntp_get_next_leap();
@@ -275,11 +218,8 @@ static void timekeeping_update(struct timekeeper *tk, unsigned int action)
 	tk_update_ktime_data(tk);
 
 	update_vsyscall(tk);
-	update_pvclock_gtod(tk, action & TK_CLOCK_WAS_SET);
 
 	tk->tkr_mono.base_real = tk->tkr_mono.base + tk->offs_real;
-	update_fast_timekeeper(&tk->tkr_mono, &tk_fast_mono);
-	update_fast_timekeeper(&tk->tkr_raw,  &tk_fast_raw);
 
 	if (action & TK_CLOCK_WAS_SET)
 		tk->clock_was_set_seq++;
@@ -343,22 +283,6 @@ ktime_t ktime_get(void)
 	return ktime_add_ns(base, nsecs);
 }
 
-u32 ktime_get_resolution_ns(void)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	unsigned int seq;
-	u32 nsecs;
-
-	WARN_ON(timekeeping_suspended);
-
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-		nsecs = tk->tkr_mono.mult >> tk->tkr_mono.shift;
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
-	return nsecs;
-}
-
 static ktime_t *offsets[TK_OFFS_MAX] = {
 	[TK_OFFS_REAL]	= &tk_core.timekeeper.offs_real,
 	[TK_OFFS_BOOT]	= &tk_core.timekeeper.offs_boot,
@@ -387,44 +311,11 @@ ktime_t ktime_get_with_offset(enum tk_offsets offs)
 
 /* Removed: ktime_get_coarse_with_offset, ktime_mono_to_any, ktime_get_raw - no callers */
 
-void ktime_get_ts64(struct timespec64 *ts)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	struct timespec64 tomono;
-	unsigned int seq;
-	u64 nsec;
-
-	WARN_ON(timekeeping_suspended);
-
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-		ts->tv_sec = tk->xtime_sec;
-		nsec = timekeeping_get_ns(&tk->tkr_mono);
-		tomono = tk->wall_to_monotonic;
-
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
-	ts->tv_sec += tomono.tv_sec;
-	ts->tv_nsec = 0;
-	timespec64_add_ns(ts, nsec + tomono.tv_nsec);
-}
-
-time64_t ktime_get_seconds(void)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-
-	WARN_ON(timekeeping_suspended);
-	return tk->ktime_sec;
-}
-
 time64_t ktime_get_real_seconds(void)
 {
 	struct timekeeper *tk = &tk_core.timekeeper;
 	time64_t seconds;
 	unsigned int seq;
-
-	if (IS_ENABLED(CONFIG_64BIT))
-		return tk->xtime_sec;
 
 	do {
 		seq = read_seqcount_begin(&tk_core.seq);
@@ -492,22 +383,6 @@ int timekeeping_notify(struct clocksource *clock)
 	stop_machine(change_clocksource, clock, NULL);
 	tick_clock_notify();
 	return tk->tkr_mono.clock == clock ? 0 : -1;
-}
-
-int timekeeping_valid_for_hres(void)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	unsigned int seq;
-	int ret;
-
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-
-		ret = tk->tkr_mono.clock->flags & CLOCK_SOURCE_VALID_FOR_HRES;
-
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
-	return ret;
 }
 
 void __weak read_persistent_clock64(struct timespec64 *ts)
@@ -746,8 +621,7 @@ out:
 
 void update_wall_time(void)
 {
-	if (timekeeping_advance(TK_ADV_TICK))
-		clock_was_set_delayed();
+	timekeeping_advance(TK_ADV_TICK);
 }
 
 
@@ -798,15 +672,5 @@ ktime_t ktime_get_update_offsets_now(unsigned int *cwsseq, ktime_t *offs_real,
 	} while (read_seqcount_retry(&tk_core.seq, seq));
 
 	return base;
-}
-
-unsigned long random_get_entropy_fallback(void)
-{
-	struct tk_read_base *tkr = &tk_core.timekeeper.tkr_mono;
-	struct clocksource *clock = READ_ONCE(tkr->clock);
-
-	if (unlikely(timekeeping_suspended || !clock))
-		return 0;
-	return clock->read(clock);
 }
 

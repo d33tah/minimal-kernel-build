@@ -10,203 +10,6 @@
 #include <asm/hw_irq.h>
 #include <linux/irqdomain.h>
 
-/* --- 2025-12-08 02:10 --- Inlined from asm/msi.h */
-#define native_create_pci_msi_domain	NULL
-#define x86_pci_msi_default_domain	NULL
-
-typedef struct irq_alloc_info msi_alloc_info_t;
-
-int pci_msi_prepare(struct irq_domain *domain, struct device *dev, int nvec,
-		    msi_alloc_info_t *arg);
-
-typedef struct x86_msi_data {
-	union {
-		struct {
-			u32	vector			:  8,
-				delivery_mode		:  3,
-				dest_mode_logical	:  1,
-				reserved		:  2,
-				active_low		:  1,
-				is_level		:  1;
-		};
-		u32	dmar_subhandle;
-	};
-} __attribute__ ((packed)) arch_msi_msg_data_t;
-#define arch_msi_msg_data	x86_msi_data
-
-typedef struct x86_msi_addr_lo {
-	union {
-		struct {
-			u32	reserved_0		:  2,
-				dest_mode_logical	:  1,
-				redirect_hint		:  1,
-				reserved_1		:  1,
-				virt_destid_8_14	:  7,
-				destid_0_7		:  8,
-				base_address		: 12;
-		};
-		struct {
-			u32	dmar_reserved_0		:  2,
-				dmar_index_15		:  1,
-				dmar_subhandle_valid	:  1,
-				dmar_format		:  1,
-				dmar_index_0_14		: 15,
-				dmar_base_address	: 12;
-		};
-	};
-} __attribute__ ((packed)) arch_msi_msg_addr_lo_t;
-#define arch_msi_msg_addr_lo	x86_msi_addr_lo
-
-#define X86_MSI_BASE_ADDRESS_LOW	(0xfee00000 >> 20)
-
-typedef struct x86_msi_addr_hi {
-	u32	reserved		:  8,
-		destid_8_31		: 24;
-} __attribute__ ((packed)) arch_msi_msg_addr_hi_t;
-#define arch_msi_msg_addr_hi	x86_msi_addr_hi
-
-#define X86_MSI_BASE_ADDRESS_HIGH	(0)
-
-struct msi_msg;
-u32 x86_msi_msg_get_destid(struct msi_msg *msg, bool extid);
-
-#ifndef arch_msi_msg_addr_lo
-typedef struct arch_msi_msg_addr_lo {
-	u32	address_lo;
-} __attribute__ ((packed)) arch_msi_msg_addr_lo_t;
-#endif
-
-#ifndef arch_msi_msg_addr_hi
-typedef struct arch_msi_msg_addr_hi {
-	u32	address_hi;
-} __attribute__ ((packed)) arch_msi_msg_addr_hi_t;
-#endif
-
-#ifndef arch_msi_msg_data
-typedef struct arch_msi_msg_data {
-	u32	data;
-} __attribute__ ((packed)) arch_msi_msg_data_t;
-#endif
-
-struct msi_msg {
-	union {
-		u32			address_lo;
-		arch_msi_msg_addr_lo_t	arch_addr_lo;
-	};
-	union {
-		u32			address_hi;
-		arch_msi_msg_addr_hi_t	arch_addr_hi;
-	};
-	union {
-		u32			data;
-		arch_msi_msg_data_t	arch_data;
-	};
-};
-
-extern int pci_msi_ignore_mask;
-struct irq_data;
-struct pci_dev;
-struct platform_msi_priv_data;
-struct device_attribute;
-
-typedef void (*irq_write_msi_msg_t)(struct msi_desc *desc,
-				    struct msi_msg *msg);
-
-struct pci_msi_desc {
-	union {
-		u32 msi_mask;
-		u32 msix_ctrl;
-	};
-	struct {
-		u8	is_msix		: 1;
-		u8	multiple	: 3;
-		u8	multi_cap	: 3;
-		u8	can_mask	: 1;
-		u8	is_64		: 1;
-		u8	is_virtual	: 1;
-		unsigned default_irq;
-	} msi_attrib;
-	union {
-		u8	mask_pos;
-		void __iomem *mask_base;
-	};
-};
-
-#define MSI_MAX_INDEX		((unsigned int)USHRT_MAX)
-
-struct msi_desc {
-	unsigned int			irq;
-	unsigned int			nvec_used;
-	struct device			*dev;
-	struct msi_msg			msg;
-	struct irq_affinity_desc	*affinity;
-
-	void (*write_msi_msg)(struct msi_desc *entry, void *data);
-	void *write_msi_msg_data;
-
-	u16				msi_index;
-	struct pci_msi_desc		pci;
-};
-
-enum msi_desc_filter {
-	MSI_DESC_ALL,
-	MSI_DESC_NOTASSOCIATED,
-	MSI_DESC_ASSOCIATED,
-};
-
-struct msi_device_data {
-	unsigned long			properties;
-	struct platform_msi_priv_data	*platform_data;
-	struct mutex			mutex;
-	struct xarray			__store;
-	unsigned long			__iter_idx;
-};
-
-int msi_setup_device_data(struct device *dev);
-unsigned int msi_get_virq(struct device *dev, unsigned int index);
-void msi_lock_descs(struct device *dev);
-void msi_unlock_descs(struct device *dev);
-struct msi_desc *msi_first_desc(struct device *dev, enum msi_desc_filter filter);
-struct msi_desc *msi_next_desc(struct device *dev, enum msi_desc_filter filter);
-
-#define msi_for_each_desc(desc, dev, filter)			\
-	for ((desc) = msi_first_desc((dev), (filter)); (desc);	\
-	     (desc) = msi_next_desc((dev), (filter)))
-
-#define msi_desc_to_dev(desc)		((desc)->dev)
-
-static inline const void *msi_desc_get_iommu_cookie(struct msi_desc *desc)
-{
-	return NULL;
-}
-
-static inline void msi_desc_set_iommu_cookie(struct msi_desc *desc,
-					     const void *iommu_cookie)
-{
-}
-
-static inline void pci_write_msi_msg(unsigned int irq, struct msi_msg *msg)
-{
-}
-
-int msi_add_msi_desc(struct device *dev, struct msi_desc *init_desc);
-void msi_free_msi_descs_range(struct device *dev, enum msi_desc_filter filter,
-			      unsigned int first_index, unsigned int last_index);
-
-static inline void msi_free_msi_descs(struct device *dev)
-{
-	msi_free_msi_descs_range(dev, MSI_DESC_ALL, 0, MSI_MAX_INDEX);
-}
-
-/* MSI-related declarations removed - never defined or called:
- * __pci_read_msi_msg, __pci_write_msi_msg, pci_msi_mask_irq,
- * pci_msi_unmask_irq, arch_restore_msi_irqs */
-
-static inline struct irq_domain *pci_msi_get_device_domain(struct pci_dev *pdev)
-{
-	return NULL;
-}
-/* end msi.h */
 #include <linux/interrupt.h>
 #include <linux/kernel_stat.h>
 #include <linux/irqdomain.h>
@@ -239,39 +42,6 @@ int irq_set_chip(unsigned int irq, const struct irq_chip *chip)
 	return 0;
 }
 
-int irq_set_irq_type(unsigned int irq, unsigned int type)
-{
-	unsigned long flags;
-	struct irq_desc *desc = irq_get_desc_buslock(irq, &flags, IRQ_GET_DESC_CHECK_GLOBAL);
-	int ret = 0;
-
-	if (!desc)
-		return -EINVAL;
-
-	ret = __irq_set_trigger(desc, type);
-	irq_put_desc_busunlock(desc, flags);
-	return ret;
-}
-
-int irq_set_chip_data(unsigned int irq, void *data)
-{
-	unsigned long flags;
-	struct irq_desc *desc = irq_get_desc_lock(irq, &flags, 0);
-
-	if (!desc)
-		return -EINVAL;
-	desc->irq_data.chip_data = data;
-	irq_put_desc_unlock(desc, flags);
-	return 0;
-}
-
-struct irq_data *irq_get_irq_data(unsigned int irq)
-{
-	struct irq_desc *desc = irq_to_desc(irq);
-
-	return desc ? &desc->irq_data : NULL;
-}
-
 static void irq_state_clr_disabled(struct irq_desc *desc)
 {
 	irqd_clear(&desc->irq_data, IRQD_IRQ_DISABLED);
@@ -280,11 +50,6 @@ static void irq_state_clr_disabled(struct irq_desc *desc)
 static void irq_state_clr_masked(struct irq_desc *desc)
 {
 	irqd_clear(&desc->irq_data, IRQD_IRQ_MASKED);
-}
-
-static void irq_state_clr_started(struct irq_desc *desc)
-{
-	irqd_clear(&desc->irq_data, IRQD_IRQ_STARTED);
 }
 
 static void irq_state_set_started(struct irq_desc *desc)
@@ -375,28 +140,6 @@ int irq_activate_and_startup(struct irq_desc *desc, bool resend)
 
 static void __irq_disable(struct irq_desc *desc, bool mask);
 
-void irq_shutdown(struct irq_desc *desc)
-{
-	if (irqd_is_started(&desc->irq_data)) {
-		desc->depth = 1;
-		if (desc->irq_data.chip->irq_shutdown) {
-			desc->irq_data.chip->irq_shutdown(&desc->irq_data);
-			irq_state_set_disabled(desc);
-			irq_state_set_masked(desc);
-		} else {
-			__irq_disable(desc, true);
-		}
-		irq_state_clr_started(desc);
-	}
-}
-
-
-void irq_shutdown_and_deactivate(struct irq_desc *desc)
-{
-	irq_shutdown(desc);
-	 
-	irq_domain_deactivate_irq(&desc->irq_data);
-}
 
 void irq_enable(struct irq_desc *desc)
 {
@@ -467,16 +210,6 @@ void unmask_irq(struct irq_desc *desc)
 		desc->irq_data.chip->irq_unmask(&desc->irq_data);
 		irq_state_clr_masked(desc);
 	}
-}
-
-void unmask_threaded_irq(struct irq_desc *desc)
-{
-	struct irq_chip *chip = desc->irq_data.chip;
-
-	if (chip->flags & IRQCHIP_EOI_THREADED)
-		chip->irq_eoi(&desc->irq_data);
-
-	unmask_irq(desc);
 }
 
 static bool irq_check_poll(struct irq_desc *desc)
@@ -610,42 +343,6 @@ irq_set_chip_and_handler_name(unsigned int irq, const struct irq_chip *chip,
 	irq_set_chip(irq, chip);
 	__irq_set_handler(irq, handle, 0, name);
 }
-
-void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set)
-{
-	unsigned long flags, trigger, tmp;
-	struct irq_desc *desc = irq_get_desc_lock(irq, &flags, 0);
-
-	if (!desc)
-		return;
-
-	 
-	WARN_ON_ONCE(!desc->depth && (set & _IRQ_NOAUTOEN));
-
-	irq_settings_clr_and_set(desc, clr, set);
-
-	trigger = irqd_get_trigger_type(&desc->irq_data);
-
-	irqd_clear(&desc->irq_data, IRQD_NO_BALANCING | IRQD_PER_CPU |
-		   IRQD_TRIGGER_MASK | IRQD_LEVEL | IRQD_MOVE_PCNTXT);
-	if (irq_settings_has_no_balance_set(desc))
-		irqd_set(&desc->irq_data, IRQD_NO_BALANCING);
-	if (irq_settings_is_per_cpu(desc))
-		irqd_set(&desc->irq_data, IRQD_PER_CPU);
-	if (irq_settings_can_move_pcntxt(desc))
-		irqd_set(&desc->irq_data, IRQD_MOVE_PCNTXT);
-	if (irq_settings_is_level(desc))
-		irqd_set(&desc->irq_data, IRQD_LEVEL);
-
-	tmp = irq_settings_get_trigger_mask(desc);
-	if (tmp != IRQ_TYPE_NONE)
-		trigger = tmp;
-
-	irqd_set(&desc->irq_data, trigger);
-
-	irq_put_desc_unlock(desc, flags);
-}
-
 
 
 

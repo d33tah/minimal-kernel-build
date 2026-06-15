@@ -63,14 +63,6 @@ struct wb_domain {
 
 
 struct bdi_writeback;
-void writeback_inodes_sb(struct super_block *, enum wb_reason reason);
-void writeback_inodes_sb_nr(struct super_block *, unsigned long nr,
-							enum wb_reason reason);
-void try_to_writeback_inodes_sb(struct super_block *sb, enum wb_reason reason);
-void sync_inodes_sb(struct super_block *);
-void wakeup_flusher_threads(enum wb_reason reason);
-void wakeup_flusher_threads_bdi(struct backing_dev_info *bdi,
-				enum wb_reason reason);
 void inode_wait_for_writeback(struct inode *inode);
 void inode_io_list_del(struct inode *inode);
 
@@ -93,18 +85,12 @@ static inline void cgroup_writeback_umount(void)
 }
 
 
-void laptop_mode_timer_fn(struct timer_list *t);
-
-void wb_update_bandwidth(struct bdi_writeback *wb);
 void balance_dirty_pages_ratelimited(struct address_space *mapping);
 
 typedef int (*writepage_t)(struct page *page, struct writeback_control *wbc,
 				void *data);
 
-int do_writepages(struct address_space *mapping, struct writeback_control *wbc);
 
-bool filemap_dirty_folio(struct address_space *mapping, struct folio *folio);
-bool folio_redirty_for_writepage(struct writeback_control *, struct folio *);
 
 
 

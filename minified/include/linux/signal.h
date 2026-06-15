@@ -21,8 +21,6 @@ static inline void clear_siginfo(kernel_siginfo_t *info)
 }
 
 
-int copy_siginfo_to_user(siginfo_t __user *to, const kernel_siginfo_t *from);
-int copy_siginfo_from_user(kernel_siginfo_t *to, const siginfo_t __user *from);
 
 enum siginfo_layout {
 	SIL_KILL,
@@ -167,28 +165,12 @@ static inline void sigemptyset(sigset_t *set)
 
 
 
-static inline void sigaddsetmask(sigset_t *set, unsigned long mask)
-{
-	set->sig[0] |= mask;
-}
 
 static inline void sigdelsetmask(sigset_t *set, unsigned long mask)
 {
 	set->sig[0] &= ~mask;
 }
 
-static inline void siginitset(sigset_t *set, unsigned long mask)
-{
-	set->sig[0] = mask;
-	switch (_NSIG_WORDS) {
-	default:
-		memset(&set->sig[1], 0, sizeof(long)*(_NSIG_WORDS-1));
-		break;
-	case 2: set->sig[1] = 0;
-		break;
-	case 1: ;
-	}
-}
 
 static inline void siginitsetinv(sigset_t *set, unsigned long mask)
 {
@@ -228,13 +210,9 @@ extern int group_send_sig_info(int sig, struct kernel_siginfo *info,
 			       struct task_struct *p, enum pid_type type);
 extern int send_signal_locked(int sig, struct kernel_siginfo *info,
 			      struct task_struct *p, enum pid_type type);
-extern int sigprocmask(int, sigset_t *, sigset_t *);
-extern void set_current_blocked(sigset_t *);
-extern void __set_current_blocked(const sigset_t *);
 extern int show_unhandled_signals;
 
 extern bool get_signal(struct ksignal *ksig);
-extern void signal_setup_done(int failed, struct ksignal *ksig, int stepping);
 extern void exit_signals(struct task_struct *tsk);
 
 #define SIG_KTHREAD_KERNEL ((__force __sighandler_t)3)
@@ -242,12 +220,6 @@ extern void exit_signals(struct task_struct *tsk);
 
 extern struct kmem_cache *sighand_cachep;
 
-
-#ifdef SIGEMT
-#define SIGEMT_MASK	rt_sigmask(SIGEMT)
-#else
-#define SIGEMT_MASK	0
-#endif
 
 /* SIGRTMIN == BITS_PER_LONG == 32 */
 #define rt_sigmask(sig)	sigmask(sig)
@@ -262,39 +234,15 @@ extern struct kmem_cache *sighand_cachep;
 	rt_sigmask(SIGSTOP)   |  rt_sigmask(SIGTSTP)   | \
 	rt_sigmask(SIGTTIN)   |  rt_sigmask(SIGTTOU)   )
 
-#define SIG_KERNEL_COREDUMP_MASK (\
-        rt_sigmask(SIGQUIT)   |  rt_sigmask(SIGILL)    | \
-	rt_sigmask(SIGTRAP)   |  rt_sigmask(SIGABRT)   | \
-        rt_sigmask(SIGFPE)    |  rt_sigmask(SIGSEGV)   | \
-	rt_sigmask(SIGBUS)    |  rt_sigmask(SIGSYS)    | \
-        rt_sigmask(SIGXCPU)   |  rt_sigmask(SIGXFSZ)   | \
-	SIGEMT_MASK				       )
-
 #define SIG_KERNEL_IGNORE_MASK (\
         rt_sigmask(SIGCONT)   |  rt_sigmask(SIGCHLD)   | \
 	rt_sigmask(SIGWINCH)  |  rt_sigmask(SIGURG)    )
 
 
 #define sig_kernel_only(sig)		siginmask(sig, SIG_KERNEL_ONLY_MASK)
-#define sig_kernel_coredump(sig)	siginmask(sig, SIG_KERNEL_COREDUMP_MASK)
 #define sig_kernel_ignore(sig)		siginmask(sig, SIG_KERNEL_IGNORE_MASK)
 
-#define sig_fatal(t, signr) \
-	(!siginmask(signr, SIG_KERNEL_IGNORE_MASK|SIG_KERNEL_STOP_MASK) && \
-	 (t)->sighand->action[(signr)-1].sa.sa_handler == SIG_DFL)
-
 void signals_init(void);
-
-int restore_altstack(const stack_t __user *);
-int __save_altstack(stack_t __user *, unsigned long);
-
-#define unsafe_save_altstack(uss, sp, label) do { \
-	stack_t __user *__uss = uss; \
-	struct task_struct *t = current; \
-	unsafe_put_user((void __user *)t->sas_ss_sp, &__uss->ss_sp, label); \
-	unsafe_put_user(t->sas_ss_flags, &__uss->ss_flags, label); \
-	unsafe_put_user(t->sas_ss_size, &__uss->ss_size, label); \
-} while (0);
 
 
 #endif  

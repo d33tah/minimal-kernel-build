@@ -15,13 +15,7 @@
 #include <linux/pm.h>
 #include <linux/tick.h>
 #include <linux/random.h>
-#ifndef _URN_INLINE
-#define _URN_INLINE
-struct user_return_notifier {};
 static inline void propagate_user_return_notify(struct task_struct *prev, struct task_struct *next) {}
-static inline void fire_user_return_notifiers(void) {}
-static inline void clear_user_return_notifier(struct task_struct *p) {}
-#endif
 #include <linux/dmi.h>
 #include <linux/utsname.h>
 static inline void boot_init_stack_canary(void) {}
@@ -40,12 +34,10 @@ static inline void boot_init_stack_canary(void) {}
 #include <asm/nmi.h>
 #include <asm/tlbflush.h>
 #include <asm/mce.h>
-#include <asm/vm86.h>
 #include <asm/switch_to.h>
 #include <asm/desc.h>
 #include <asm/prctl.h>
 #include <asm/spec-ctrl.h>
-#include <asm/io_bitmap.h>
 #include <asm/proto.h>
 /* --- 2025-12-07 20:47 --- Inlined frame.h */
 #include <asm/asm.h>
@@ -92,29 +84,13 @@ void exit_thread(struct task_struct *tsk)
 	struct thread_struct *t = &tsk->thread;
 	struct fpu *fpu = &t->fpu;
 
-	if (test_thread_flag(TIF_IO_BITMAP))
-		io_bitmap_exit(tsk);
-
-	free_vm86(t);
-
 	fpu__drop(fpu);
-}
-
-static int set_new_tls(struct task_struct *p, unsigned long tls)
-{
-	struct user_desc __user *utls = (struct user_desc __user *)tls;
-
-	if (in_ia32_syscall())
-		return do_set_thread_area(p, -1, utls, 0);
-	else
-		return do_set_thread_area_64(p, ARCH_SET_FS, tls);
 }
 
 int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 {
 	unsigned long clone_flags = args->flags;
 	unsigned long sp = args->stack;
-	unsigned long tls = args->tls;
 	struct inactive_task_frame *frame;
 	struct fork_frame *fork_frame;
 	struct pt_regs *childregs;
@@ -127,8 +103,6 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 	frame->bp = encode_frame_pointer(childregs);
 	frame->ret_addr = (unsigned long) ret_from_fork;
 	p->thread.sp = (unsigned long) fork_frame;
-	p->thread.io_bitmap = NULL;
-	p->thread.iopl_warn = 0;
 	memset(p->thread.ptrace_bps, 0, sizeof(p->thread.ptrace_bps));
 
 	p->thread.sp0 = (unsigned long) (childregs + 1);
@@ -162,13 +136,6 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 		kthread_frame_init(frame, args->fn, args->fn_arg);
 		return 0;
 	}
-
-	 
-	if (clone_flags & CLONE_SETTLS)
-		ret = set_new_tls(p, tls);
-
-	if (!ret && unlikely(test_tsk_thread_flag(current, TIF_IO_BITMAP)))
-		io_bitmap_share(p);
 
 	return ret;
 }
@@ -244,18 +211,9 @@ static int set_cpuid_mode(unsigned long cpuid_enabled)
 
 void arch_setup_new_exec(void)
 {
-	 
+
 	if (test_thread_flag(TIF_NOCPUID))
 		enable_cpuid();
-
-	 
-	if (test_thread_flag(TIF_SSBD) &&
-	    task_spec_ssb_noexec(current)) {
-		clear_thread_flag(TIF_SSBD);
-		task_clear_spec_ssb_disable(current);
-		task_clear_spec_ssb_noexec(current);
-		speculation_ctrl_update(read_thread_flags());
-	}
 }
 
 static inline void switch_to_bitmap(unsigned long tifp) { }
@@ -295,54 +253,8 @@ static __always_inline void __speculation_ctrl_update(unsigned long tifp,
 		msr |= ssbd_tif_to_spec_ctrl(tifn);
 	}
 
-	 
-	if (IS_ENABLED(CONFIG_SMP) &&
-	    static_branch_unlikely(&switch_to_cond_stibp)) {
-		updmsr |= !!(tif_diff & _TIF_SPEC_IB);
-		msr |= stibp_tif_to_spec_ctrl(tifn);
-	}
-
 	if (updmsr)
 		write_spec_ctrl_current(msr, false);
-}
-
-static unsigned long speculation_ctrl_update_tif(struct task_struct *tsk)
-{
-	if (test_and_clear_tsk_thread_flag(tsk, TIF_SPEC_FORCE_UPDATE)) {
-		if (task_spec_ssb_disable(tsk))
-			set_tsk_thread_flag(tsk, TIF_SSBD);
-		else
-			clear_tsk_thread_flag(tsk, TIF_SSBD);
-
-		if (task_spec_ib_disable(tsk))
-			set_tsk_thread_flag(tsk, TIF_SPEC_IB);
-		else
-			clear_tsk_thread_flag(tsk, TIF_SPEC_IB);
-	}
-	 
-	return read_task_thread_flags(tsk);
-}
-
-void speculation_ctrl_update(unsigned long tif)
-{
-	unsigned long flags;
-
-	 
-	local_irq_save(flags);
-	__speculation_ctrl_update(~tif, tif);
-	local_irq_restore(flags);
-}
-
-
-static inline void cr4_toggle_bits_irqsoff(unsigned long mask)
-{
-	unsigned long newval, cr4 = this_cpu_read(cpu_tlbstate.cr4);
-
-	newval = cr4 ^ mask;
-	if (newval != cr4) {
-		this_cpu_write(cpu_tlbstate.cr4, newval);
-		__write_cr4(newval);
-	}
 }
 
 void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
@@ -356,32 +268,10 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 
 	propagate_user_return_notify(prev_p, next_p);
 
-	if ((tifp & _TIF_BLOCKSTEP || tifn & _TIF_BLOCKSTEP) &&
-	    arch_has_block_step()) {
-		unsigned long debugctl, msk;
-
-		rdmsrl(MSR_IA32_DEBUGCTLMSR, debugctl);
-		debugctl &= ~DEBUGCTLMSR_BTF;
-		msk = tifn & _TIF_BLOCKSTEP;
-		debugctl |= (msk >> TIF_BLOCKSTEP) << DEBUGCTLMSR_BTF_SHIFT;
-		wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctl);
-	}
-
-	if ((tifp ^ tifn) & _TIF_NOTSC)
-		cr4_toggle_bits_irqsoff(X86_CR4_TSD);
-
 	if ((tifp ^ tifn) & _TIF_NOCPUID)
 		set_cpuid_faulting(!!(tifn & _TIF_NOCPUID));
 
-	if (likely(!((tifp | tifn) & _TIF_SPEC_FORCE_UPDATE))) {
-		__speculation_ctrl_update(tifp, tifn);
-	} else {
-		speculation_ctrl_update_tif(prev_p);
-		tifn = speculation_ctrl_update_tif(next_p);
-
-		 
-		__speculation_ctrl_update(~tifn, tifn);
-	}
+	__speculation_ctrl_update(tifp, tifn);
 }
 
 static void (*x86_idle)(void);
@@ -415,23 +305,6 @@ void __cpuidle default_idle(void)
 #endif
 
 
-void __noreturn stop_this_cpu(void *dummy)
-{
-	local_irq_disable();
-	 
-	set_cpu_online(smp_processor_id(), false);
-	disable_local_APIC();
-	mcheck_cpu_clear(this_cpu_ptr(&cpu_info));
-
-	 
-	if (cpuid_eax(0x8000001f) & BIT(0))
-		native_wbinvd();
-	for (;;) {
-		 
-		native_halt();
-	}
-}
-
 /* Simplified: just use default_idle for minimal kernel */
 void select_idle_routine(const struct cpuinfo_x86 *c)
 {
@@ -442,21 +315,13 @@ void select_idle_routine(const struct cpuinfo_x86 *c)
 
 void __init arch_post_acpi_subsys_init(void)
 {
-	u32 lo, hi;
-
-	if (!boot_cpu_has_bug(X86_BUG_AMD_E400))
-		return;
-
-	 
-	rdmsr(MSR_K8_INT_PENDING_MSG, lo, hi);
-	if (!(lo & K8_INTP_C1E_ACTIVE_MASK))
-		return;
-
-	boot_cpu_set_bug(X86_BUG_AMD_APIC_C1E);
-
-	if (!boot_cpu_has(X86_FEATURE_NONSTOP_TSC))
-		mark_tsc_unstable("TSC halt in AMD C1E");
-	pr_info("System has AMD C1E enabled\n");
+	/*
+	 * The only work here was the AMD C1E (Erratum 400) detection, gated on
+	 * boot_cpu_has_bug(X86_BUG_AMD_E400). That bug bit is never set anywhere
+	 * in this tree (all CPU-bug detection in cpu_set_bug_bits() was removed),
+	 * so the guard always returned early -- the whole body was dead. The bit
+	 * it would have set (X86_BUG_AMD_APIC_C1E) is likewise never read.
+	 */
 }
 
 

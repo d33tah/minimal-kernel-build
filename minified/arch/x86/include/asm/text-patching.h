@@ -6,24 +6,15 @@
 #include <linux/stddef.h>
 #include <asm/ptrace.h>
 
-struct paravirt_patch_site;
-static inline void apply_paravirt(struct paravirt_patch_site *start,
-				  struct paravirt_patch_site *end)
-{}
 #define __parainstructions	NULL
 #define __parainstructions_end	NULL
 
  
 #define POKE_MAX_OPCODE_SIZE	5
 
-extern void text_poke_early(void *addr, const void *opcode, size_t len);
-
-
-extern void *text_poke(void *addr, const void *opcode, size_t len);
-/* text_poke_sync, text_poke_kgdb, text_poke_copy, text_poke_set removed - unused */
 extern int poke_int3_handler(struct pt_regs *regs);
-extern void text_poke_bp(void *addr, const void *opcode, size_t len, const void *emulate);
-/* text_poke_queue, text_poke_finish removed - unused */
+/* text_poke_early, text_poke, text_poke_bp, text_poke_sync, text_poke_kgdb,
+   text_poke_copy, text_poke_set, text_poke_queue, text_poke_finish removed - unused */
 
 #define INT3_INSN_SIZE		1
 #define INT3_INSN_OPCODE	0xCC

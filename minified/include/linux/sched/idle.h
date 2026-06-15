@@ -3,13 +3,6 @@
 
 #include <linux/sched.h>
 
-enum cpu_idle_type {
-	CPU_IDLE,
-	CPU_NOT_IDLE,
-	CPU_NEWLY_IDLE,
-	CPU_MAX_IDLE_TYPES
-};
-
 #ifdef TIF_POLLING_NRFLAG
 
 static inline void __current_set_polling(void)
@@ -56,14 +49,5 @@ static inline bool __must_check current_clr_polling_and_test(void)
 }
 #endif
 
-static inline void current_clr_polling(void)
-{
-	__current_clr_polling();
-
-	 
-	smp_mb();  
-
-	preempt_fold_need_resched();
-}
 
 #endif  

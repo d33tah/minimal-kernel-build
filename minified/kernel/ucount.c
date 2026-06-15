@@ -4,7 +4,6 @@
 #include <linux/slab.h>
 #include <linux/cred.h>
 #include <linux/hash.h>
-#include <linux/kmemleak.h>
 #include <linux/user_namespace.h>
 
 struct ucounts init_ucounts = {
@@ -24,15 +23,6 @@ static DEFINE_SPINLOCK(ucounts_lock);
 	(ucounts_hashtable + ucounts_hashfn(ns, uid))
 
 
-
-bool setup_userns_sysctls(struct user_namespace *ns)
-{
-	return true;
-}
-
-void retire_userns_sysctls(struct user_namespace *ns)
-{
-}
 
 static struct ucounts *find_ucounts(struct user_namespace *ns, kuid_t uid, struct hlist_head *hashent)
 {

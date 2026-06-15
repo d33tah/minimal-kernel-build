@@ -10,7 +10,6 @@
 #include <linux/notifier.h>
 #include <linux/percpu.h>
 #include <linux/cpu.h>
-#include <linux/freezer.h>
 #include <linux/kthread.h>
 #include <linux/rcupdate.h>
 #include <linux/smp.h>
@@ -119,12 +118,12 @@ static inline void invoke_softirq(void)
 	if (ksoftirqd_running(local_softirq_pending()))
 		return;
 
-	if (!force_irqthreads() || !__this_cpu_read(ksoftirqd)) {
-		 
-		do_softirq_own_stack();
-	} else {
-		wakeup_softirqd();
-	}
+	/*
+	 * force_irqthreads() is constant false (force_irqthreads_key is a
+	 * never-enabled DEFINE_STATIC_KEY_FALSE; the "threadirqs" boot path is
+	 * absent), so the softirq always runs inline here.
+	 */
+	do_softirq_own_stack();
 }
 
 asmlinkage __visible void do_softirq(void)
@@ -169,7 +168,6 @@ asmlinkage __visible void __softirq_entry __do_softirq(void)
 
 	softirq_handle_begin();
 	in_hardirq = lockdep_softirq_start();
-	account_softirq_enter(current);
 
 restart:
 	 
@@ -218,7 +216,6 @@ restart:
 		wakeup_softirqd();
 	}
 
-	account_softirq_exit(current);
 	lockdep_softirq_end(in_hardirq);
 	softirq_handle_end();
 	current_restore_flags(old_flags, PF_MEMALLOC);
@@ -231,14 +228,6 @@ void irq_enter_rcu(void)
 	if (tick_nohz_full_cpu(smp_processor_id()) ||
 	    (is_idle_task(current) && (irq_count() == HARDIRQ_OFFSET)))
 		tick_irq_enter();
-
-	account_hardirq_enter(current);
-}
-
-void irq_enter(void)
-{
-	rcu_irq_enter();
-	irq_enter_rcu();
 }
 
 static inline void tick_irq_exit(void)
@@ -252,7 +241,6 @@ static inline void __irq_exit_rcu(void)
 #else
 	lockdep_assert_irqs_disabled();
 #endif
-	account_hardirq_exit(current);
 	preempt_count_sub(HARDIRQ_OFFSET);
 	if (!in_interrupt() && local_softirq_pending())
 		invoke_softirq();
@@ -263,14 +251,6 @@ static inline void __irq_exit_rcu(void)
 void irq_exit_rcu(void)
 {
 	__irq_exit_rcu();
-	  
-	lockdep_hardirq_exit();
-}
-
-void irq_exit(void)
-{
-	__irq_exit_rcu();
-	rcu_irq_exit();
 	  
 	lockdep_hardirq_exit();
 }
@@ -364,7 +344,3 @@ int __init __weak arch_early_irq_init(void)
 	return 0;
 }
 
-unsigned int __weak arch_dynirq_lower_bound(unsigned int from)
-{
-	return from;
-}

@@ -83,11 +83,6 @@ struct ctl_table_root {
 	int (*permissions)(struct ctl_table_header *head, struct ctl_table *table);
 };
 
-struct ctl_path {
-	const char *procname;
-};
-
-
 static inline void do_sysctl_args(void)
 {
 }

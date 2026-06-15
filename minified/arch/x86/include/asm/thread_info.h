@@ -51,9 +51,8 @@ struct thread_info {
 #define TIF_NOTSC		16	 
 #define TIF_NOTIFY_SIGNAL	17	 
 #define TIF_MEMDIE		20	 
-#define TIF_POLLING_NRFLAG	21	 
-#define TIF_IO_BITMAP		22	 
-#define TIF_SPEC_FORCE_UPDATE	23	 
+#define TIF_POLLING_NRFLAG	21
+#define TIF_SPEC_FORCE_UPDATE	23
 #define TIF_FORCED_TF		24	 
 #define TIF_BLOCKSTEP		25	 
 #define TIF_LAZY_MMU_UPDATES	27	 
@@ -74,7 +73,6 @@ struct thread_info {
 #define _TIF_NOTSC		(1 << TIF_NOTSC)
 #define _TIF_NOTIFY_SIGNAL	(1 << TIF_NOTIFY_SIGNAL)
 #define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
-#define _TIF_IO_BITMAP		(1 << TIF_IO_BITMAP)
 #define _TIF_SPEC_FORCE_UPDATE	(1 << TIF_SPEC_FORCE_UPDATE)
 #define _TIF_FORCED_TF		(1 << TIF_FORCED_TF)
 #define _TIF_BLOCKSTEP		(1 << TIF_BLOCKSTEP)

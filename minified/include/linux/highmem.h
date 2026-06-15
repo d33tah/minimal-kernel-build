@@ -19,14 +19,8 @@ static inline void flush_dcache_folio(struct folio *folio) {}
 #include <linux/hardirq.h>
 
 /* Inlined from highmem-internal.h */
-void *__kmap_local_pfn_prot(unsigned long pfn, pgprot_t prot);
-void *__kmap_local_page_prot(struct page *page, pgprot_t prot);
-void kmap_local_fork(struct task_struct *tsk);
-void __kmap_local_sched_out(void);
-void __kmap_local_sched_in(void);
 static inline void kmap_assert_nomap(void)
 {
-	DEBUG_LOCKS_WARN_ON(current->kmap_ctrl.idx);
 }
 
 

@@ -21,30 +21,21 @@ struct linux_binprm {
 	unsigned long p;  
 	unsigned long argmin;  
 	unsigned int
-		 
-		have_execfd:1,
 
-		 
-		execfd_creds:1,
-		 
 		secureexec:1,
-		 
+
 		point_of_no_return:1;
 #ifdef __alpha__
 	unsigned int taso:1;
 #endif
-	struct file *executable;  
-	struct file *interpreter;
 	struct file *file;
-	struct cred *cred;	 
-	int unsafe;		 
-	unsigned int per_clear;	 
+	struct cred *cred;
+	unsigned int per_clear;
 	int argc, envc;
 	const char *filename;	 
 	const char *interp;	 
 	const char *fdpath;	 
 	unsigned interp_flags;
-	int execfd;		 
 	unsigned long loader, exec;
 
 	struct rlimit rlim_stack;  
@@ -60,7 +51,6 @@ struct linux_binfmt {
 	struct list_head lh;
 	struct module *module;
 	int (*load_binary)(struct linux_binprm *);
-	int (*load_shlib)(struct file *);
 } __randomize_layout;
 
 extern void __register_binfmt(struct linux_binfmt *fmt, int insert);

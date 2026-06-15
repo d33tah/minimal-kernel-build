@@ -9,8 +9,6 @@
 #include <linux/mutex.h>
 #include <linux/backing-dev.h>
 #include <linux/rculist_bl.h>
-#include <linux/fscrypt.h>
-#include <linux/fsnotify.h>
 #include <linux/lockdep.h>
 #include <linux/user_namespace.h>
 #include <linux/fs_context.h>
@@ -20,90 +18,11 @@
 static LIST_HEAD(super_blocks);
 static DEFINE_SPINLOCK(sb_lock);
 
-static char *sb_writers_name[SB_FREEZE_LEVELS] = {
-	"sb_writers",
-	"sb_pagefaults",
-	"sb_internal",
-};
-
-static unsigned long super_cache_scan(struct shrinker *shrink,
-				      struct shrink_control *sc)
-{
-	struct super_block *sb;
-	long	fs_objects = 0;
-	long	total_objects;
-	long	freed = 0;
-	long	dentries;
-	long	inodes;
-
-	sb = container_of(shrink, struct super_block, s_shrink);
-
-	if (!(sc->gfp_mask & __GFP_FS))
-		return SHRINK_STOP;
-
-	if (!trylock_super(sb))
-		return SHRINK_STOP;
-
-	if (sb->s_op->nr_cached_objects)
-		fs_objects = sb->s_op->nr_cached_objects(sb, sc);
-
-	inodes = list_lru_shrink_count(&sb->s_inode_lru, sc);
-	dentries = list_lru_shrink_count(&sb->s_dentry_lru, sc);
-	total_objects = dentries + inodes + fs_objects + 1;
-	if (!total_objects)
-		total_objects = 1;
-
-	dentries = mult_frac(sc->nr_to_scan, dentries, total_objects);
-	inodes = mult_frac(sc->nr_to_scan, inodes, total_objects);
-	fs_objects = mult_frac(sc->nr_to_scan, fs_objects, total_objects);
-
-	sc->nr_to_scan = dentries + 1;
-	freed = prune_dcache_sb(sb, sc);
-	sc->nr_to_scan = inodes + 1;
-	freed += prune_icache_sb(sb, sc);
-
-	if (fs_objects) {
-		sc->nr_to_scan = fs_objects + 1;
-		freed += sb->s_op->free_cached_objects(sb, sc);
-	}
-
-	up_read(&sb->s_umount);
-	return freed;
-}
-
-static unsigned long super_cache_count(struct shrinker *shrink,
-				       struct shrink_control *sc)
-{
-	struct super_block *sb;
-	long	total_objects = 0;
-
-	sb = container_of(shrink, struct super_block, s_shrink);
-
-	if (!(sb->s_flags & SB_BORN))
-		return 0;
-	smp_rmb();
-
-	if (sb->s_op && sb->s_op->nr_cached_objects)
-		total_objects = sb->s_op->nr_cached_objects(sb, sc);
-
-	total_objects += list_lru_shrink_count(&sb->s_dentry_lru, sc);
-	total_objects += list_lru_shrink_count(&sb->s_inode_lru, sc);
-
-	if (!total_objects)
-		return SHRINK_EMPTY;
-
-	total_objects = vfs_pressure_ratio(total_objects);
-	return total_objects;
-}
-
 static void destroy_super_work(struct work_struct *work)
 {
 	struct super_block *s = container_of(work, struct super_block,
 							destroy_work);
-	int i;
 
-	for (i = 0; i < SB_FREEZE_LEVELS; i++)
-		percpu_free_rwsem(&s->s_writers.rw_sem[i]);
 	kfree(s);
 }
 
@@ -121,11 +40,8 @@ static void destroy_unused_super(struct super_block *s)
 	up_write(&s->s_umount);
 	list_lru_destroy(&s->s_dentry_lru);
 	list_lru_destroy(&s->s_inode_lru);
-	security_sb_free(s);
 	put_user_ns(s->s_user_ns);
 	kfree(s->s_subtype);
-	free_prealloced_shrinker(&s->s_shrink);
-	
 	destroy_super_work(&s->destroy_work);
 }
 
@@ -134,7 +50,6 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 {
 	struct super_block *s = kzalloc(sizeof(struct super_block),  GFP_USER);
 	static const struct super_operations default_op;
-	int i;
 
 	if (!s)
 		return NULL;
@@ -146,15 +61,6 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	
 	down_write_nested(&s->s_umount, SINGLE_DEPTH_NESTING);
 
-	if (security_sb_alloc(s))
-		goto fail;
-
-	for (i = 0; i < SB_FREEZE_LEVELS; i++) {
-		if (__percpu_init_rwsem(&s->s_writers.rw_sem[i],
-					sb_writers_name[i],
-					&type->s_writers_key[i]))
-			goto fail;
-	}
 	init_waitqueue_head(&s->s_writers.wait_unfrozen);
 	s->s_bdi = &noop_backing_dev_info;
 	s->s_flags = flags;
@@ -179,16 +85,9 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	s->s_time_min = TIME64_MIN;
 	s->s_time_max = TIME64_MAX;
 
-	s->s_shrink.seeks = DEFAULT_SEEKS;
-	s->s_shrink.scan_objects = super_cache_scan;
-	s->s_shrink.count_objects = super_cache_count;
-	s->s_shrink.batch = 1024;
-	s->s_shrink.flags = SHRINKER_NUMA_AWARE | SHRINKER_MEMCG_AWARE;
-	if (prealloc_shrinker(&s->s_shrink))
+	if (list_lru_init_memcg(&s->s_dentry_lru, NULL))
 		goto fail;
-	if (list_lru_init_memcg(&s->s_dentry_lru, &s->s_shrink))
-		goto fail;
-	if (list_lru_init_memcg(&s->s_inode_lru, &s->s_shrink))
+	if (list_lru_init_memcg(&s->s_inode_lru, NULL))
 		goto fail;
 	return s;
 
@@ -204,8 +103,6 @@ static void __put_super(struct super_block *s)
 		WARN_ON(s->s_dentry_lru.node);
 		WARN_ON(s->s_inode_lru.node);
 		WARN_ON(!list_empty(&s->s_mounts));
-		security_sb_free(s);
-		fscrypt_sb_free(s);
 		put_user_ns(s->s_user_ns);
 		kfree(s->s_subtype);
 		call_rcu(&s->rcu, destroy_super_rcu);
@@ -223,7 +120,6 @@ void deactivate_locked_super(struct super_block *s)
 {
 	struct file_system_type *fs = s->s_type;
 	if (atomic_dec_and_test(&s->s_active)) {
-		unregister_shrinker(&s->s_shrink);
 		fs->kill_sb(s);
 
 		list_lru_destroy(&s->s_dentry_lru);
@@ -260,60 +156,22 @@ static int grab_super(struct super_block *s) __releases(sb_lock)
 	return 0;
 }
 
-bool trylock_super(struct super_block *sb) {
-	return down_read_trylock(&sb->s_umount) && sb->s_root && (sb->s_flags & SB_BORN);
-}
-
+/*
+ * generic_shutdown_super() runs only on superblock DESTRUCTION, reached via
+ * fs->kill_sb() -> deactivate_locked_super (dispatched at deactivate_locked_super
+ * only when s_active drops to 0). This minimal kernel never unmounts the boot
+ * filesystems, so this is unreachable; the umount-only teardown body (dcache/
+ * inode eviction, dio workqueue, put_super) is dead and has been removed. Only
+ * the sb-list unlink tail is kept so the symbol still links for the kill_sb
+ * function-pointer table entries.
+ */
 void generic_shutdown_super(struct super_block *sb)
 {
-	const struct super_operations *sop = sb->s_op;
-
-	if (sb->s_root) {
-		shrink_dcache_for_umount(sb);
-		sync_filesystem(sb);
-		sb->s_flags &= ~SB_ACTIVE;
-
-		cgroup_writeback_umount();
-
-		evict_inodes(sb);
-		
-		fsnotify_sb_delete(sb);
-		security_sb_delete(sb);
-
-		if (sb->s_dio_done_wq) {
-			destroy_workqueue(sb->s_dio_done_wq);
-			sb->s_dio_done_wq = NULL;
-		}
-
-		if (sop->put_super)
-			sop->put_super(sb);
-
-		if (!list_empty(&sb->s_inodes)) {
-			printk("VFS: Busy inodes after unmount of %s. "
-			   "Self-destruct in 5 seconds.  Have a nice day...\n",
-			   sb->s_id);
-		}
-	}
 	spin_lock(&sb_lock);
-	
+
 	hlist_del_init(&sb->s_instances);
 	spin_unlock(&sb_lock);
 	up_write(&sb->s_umount);
-	if (sb->s_bdi != &noop_backing_dev_info) {
-		if (sb->s_iflags & SB_I_PERSB_BDI)
-			bdi_unregister(sb->s_bdi);
-		bdi_put(sb->s_bdi);
-		sb->s_bdi = &noop_backing_dev_info;
-	}
-}
-
-
-bool mount_capable(struct fs_context *fc)
-{
-	if (!(fc->fs_type->fs_flags & FS_USERNS_MOUNT))
-		return capable(CAP_SYS_ADMIN);
-	else
-		return ns_capable(fc->user_ns, CAP_SYS_ADMIN);
 }
 
 struct super_block *sget_fc(struct fs_context *fc,
@@ -357,7 +215,6 @@ retry:
 	hlist_add_head(&s->s_instances, &s->s_type->fs_supers);
 	spin_unlock(&sb_lock);
 	get_filesystem(s->s_type);
-	register_shrinker_prepared(&s->s_shrink);
 	return s;
 
 share_extant_sb:
@@ -372,69 +229,9 @@ share_extant_sb:
 	return old;
 }
 
-struct super_block *sget(struct file_system_type *type,
-			int (*test)(struct super_block *,void *),
-			int (*set)(struct super_block *,void *),
-			int flags,
-			void *data)
-{
-	struct user_namespace *user_ns = current_user_ns();
-	struct super_block *s = NULL;
-	struct super_block *old;
-	int err;
-
-	if (flags & SB_SUBMOUNT)
-		user_ns = &init_user_ns;
-
-retry:
-	spin_lock(&sb_lock);
-	if (test) {
-		hlist_for_each_entry(old, &type->fs_supers, s_instances) {
-			if (!test(old, data))
-				continue;
-			if (user_ns != old->s_user_ns) {
-				spin_unlock(&sb_lock);
-				destroy_unused_super(s);
-				return ERR_PTR(-EBUSY);
-			}
-			if (!grab_super(old))
-				goto retry;
-			destroy_unused_super(s);
-			return old;
-		}
-	}
-	if (!s) {
-		spin_unlock(&sb_lock);
-		s = alloc_super(type, (flags & ~SB_SUBMOUNT), user_ns);
-		if (!s)
-			return ERR_PTR(-ENOMEM);
-		goto retry;
-	}
-
-	err = set(s, data);
-	if (err) {
-		spin_unlock(&sb_lock);
-		destroy_unused_super(s);
-		return ERR_PTR(err);
-	}
-	s->s_type = type;
-	strlcpy(s->s_id, type->name, sizeof(s->s_id));
-	list_add_tail(&s->s_list, &super_blocks);
-	hlist_add_head(&s->s_instances, &type->fs_supers);
-	spin_unlock(&sb_lock);
-	get_filesystem(type);
-	register_shrinker_prepared(&s->s_shrink);
-	return s;
-}
-
-void drop_super(struct super_block *sb)
-{
-	up_read(&sb->s_umount);
-	put_super(sb);
-}
-
-/* Removed: drop_super_exclusive, iterate_supers, iterate_supers_type,
-   get_super, get_active_super, user_get_super - never called */
+/* Removed: sget, drop_super, drop_super_exclusive, iterate_supers,
+   iterate_supers_type, get_super, get_active_super, user_get_super -
+   never called */
 
 
 static DEFINE_IDA(unnamed_dev_ida);
@@ -571,11 +368,6 @@ int vfs_get_tree(struct fs_context *fc)
 	smp_wmb();
 	sb->s_flags |= SB_BORN;
 
-	error = security_sb_set_mnt_opts(sb, fc->security, 0, NULL);
-	if (unlikely(error)) {
-		fc_drop_locked(fc);
-		return error;
-	}
 
 	WARN((sb->s_maxbytes < 0), "%s set sb->s_maxbytes to "
 		"negative value (%lld)\n", fc->fs_type->name, sb->s_maxbytes);

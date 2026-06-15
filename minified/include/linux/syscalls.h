@@ -32,7 +32,6 @@ struct old_linux_dirent;
 #include <asm/siginfo.h>
 #include <linux/unistd.h>
 #include <linux/quota.h>
-#include <linux/key.h>
 #include <linux/personality.h>
 #include <linux/fcntl.h>
 
@@ -147,31 +146,7 @@ static inline void addr_limit_user_check(void)
 
 
 
-void ksys_sync(void);
-int ksys_sync_file_range(int fd, loff_t offset, loff_t nbytes,
-			 unsigned int flags);
-ssize_t ksys_pread64(unsigned int fd, char __user *buf, size_t count,
-		     loff_t pos);
-ssize_t ksys_pwrite64(unsigned int fd, const char __user *buf,
-		      size_t count, loff_t pos);
-int ksys_fallocate(int fd, int mode, loff_t offset, loff_t len);
-static inline int ksys_fadvise64_64(int fd, loff_t offset, loff_t len,
-				    int advice)
-{
-	return -EINVAL;
-}
-unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
-			      unsigned long prot, unsigned long flags,
-			      unsigned long fd, unsigned long pgoff);
-ssize_t ksys_readahead(int fd, loff_t offset, size_t count);
 
-
-extern long do_sys_ftruncate(unsigned int fd, loff_t length, int small);
-
-static inline long ksys_ftruncate(unsigned int fd, loff_t length)
-{
-	return do_sys_ftruncate(fd, length, 1);
-}
 
 
 #endif

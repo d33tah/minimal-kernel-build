@@ -32,12 +32,7 @@ struct klist_node {
 	struct kref		n_ref;
 };
 
-extern void klist_add_tail(struct klist_node *n, struct klist *k);
-
 extern void klist_del(struct klist_node *n);
-extern void klist_remove(struct klist_node *n);
-
-extern int klist_node_attached(struct klist_node *n);
 
 
 struct klist_iter {
@@ -46,7 +41,6 @@ struct klist_iter {
 };
 
 
-extern void klist_iter_init(struct klist *k, struct klist_iter *i);
 extern void klist_iter_init_node(struct klist *k, struct klist_iter *i,
 				 struct klist_node *n);
 extern void klist_iter_exit(struct klist_iter *i);

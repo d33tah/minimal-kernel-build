@@ -18,11 +18,6 @@ ktime_t tick_next_period;
 
 int tick_do_timer_cpu __read_mostly = TICK_DO_TIMER_BOOT;
 
-struct tick_device *tick_get_device(int cpu)
-{
-	return &per_cpu(tick_cpu_device, cpu);
-}
-
 static void tick_periodic(int cpu)
 {
 	if (tick_do_timer_cpu == cpu) {
@@ -45,53 +40,30 @@ static void tick_periodic(int cpu)
 void tick_handle_periodic(struct clock_event_device *dev)
 {
 	int cpu = smp_processor_id();
-	ktime_t next = dev->next_event;
 
 	tick_periodic(cpu);
 
-
-	if (!clockevent_state_oneshot(dev))
-		return;
-	for (;;) {
-		 
-		next = ktime_add_ns(next, TICK_NSEC);
-
-		if (!clockevents_program_event(dev, next, false))
-			return;
-		 
-		if (timekeeping_valid_for_hres())
-			tick_periodic(cpu);
-	}
+	/*
+	 * TICK_ONESHOT/NO_HZ are unset, so the tick device is never switched to
+	 * oneshot state -- clockevent_state_oneshot() is always false here and the
+	 * oneshot reprogramming loop was unreachable.
+	 */
 }
 
 void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 {
 	tick_set_periodic_handler(dev, broadcast);
 
-	 
+
 	if (!tick_device_is_functional(dev))
 		return;
 
-	if ((dev->features & CLOCK_EVT_FEAT_PERIODIC) &&
-	    !tick_broadcast_oneshot_active()) {
-		clockevents_switch_state(dev, CLOCK_EVT_STATE_PERIODIC);
-	} else {
-		unsigned int seq;
-		ktime_t next;
-
-		do {
-			seq = read_seqcount_begin(&jiffies_seq);
-			next = tick_next_period;
-		} while (read_seqcount_retry(&jiffies_seq, seq));
-
-		clockevents_switch_state(dev, CLOCK_EVT_STATE_ONESHOT);
-
-		for (;;) {
-			if (!clockevents_program_event(dev, next, false))
-				return;
-			next = ktime_add_ns(next, TICK_NSEC);
-		}
-	}
+	/*
+	 * The clock event device always carries CLOCK_EVT_FEAT_PERIODIC and
+	 * broadcast is off (tick_broadcast_oneshot_active() == 0), so the device
+	 * is always put in PERIODIC state; the oneshot setup branch was dead.
+	 */
+	clockevents_switch_state(dev, CLOCK_EVT_STATE_PERIODIC);
 }
 
 
@@ -99,51 +71,37 @@ static void tick_setup_device(struct tick_device *td,
 			      struct clock_event_device *newdev, int cpu,
 			      const struct cpumask *cpumask)
 {
-	void (*handler)(struct clock_event_device *) = NULL;
-	ktime_t next_event = 0;
 
-	 
 	if (!td->evtdev) {
-		 
+
 		if (tick_do_timer_cpu == TICK_DO_TIMER_BOOT) {
 			tick_do_timer_cpu = cpu;
 
 			tick_next_period = ktime_get();
 		}
 
-		 
+
 		td->mode = TICKDEV_MODE_PERIODIC;
 	} else {
-		handler = td->evtdev->event_handler;
-		next_event = td->evtdev->next_event;
 		td->evtdev->event_handler = clockevents_handle_noop;
 	}
 
 	td->evtdev = newdev;
 
-	 
+
 	if (!cpumask_equal(newdev->cpumask, cpumask))
 		irq_set_affinity(newdev->irq, cpumask);
 
-	 
+
 	if (tick_device_uses_broadcast(newdev, cpu))
 		return;
 
-	if (td->mode == TICKDEV_MODE_PERIODIC)
-		tick_setup_periodic(newdev, 0);
-	else
-		tick_setup_oneshot(newdev, handler, next_event);
-}
-
-void tick_install_replacement(struct clock_event_device *newdev)
-{
-	struct tick_device *td = this_cpu_ptr(&tick_cpu_device);
-	int cpu = smp_processor_id();
-
-	clockevents_exchange_device(td->evtdev, newdev);
-	tick_setup_device(td, newdev, cpu, cpumask_of(cpu));
-	if (newdev->features & CLOCK_EVT_FEAT_ONESHOT)
-		tick_oneshot_notify();
+	/*
+	 * TICK_ONESHOT/NO_HZ are unset, so td->mode is only ever set to
+	 * TICKDEV_MODE_PERIODIC (no path sets TICKDEV_MODE_ONESHOT) -- the
+	 * oneshot setup branch was dead.
+	 */
+	tick_setup_periodic(newdev, 0);
 }
 
 static bool tick_check_percpu(struct clock_event_device *curdev,
@@ -168,8 +126,6 @@ static bool tick_check_preferred(struct clock_event_device *curdev,
 	 
 	if (!(newdev->features & CLOCK_EVT_FEAT_ONESHOT)) {
 		if (curdev && (curdev->features & CLOCK_EVT_FEAT_ONESHOT))
-			return false;
-		if (tick_oneshot_mode_active())
 			return false;
 	}
 

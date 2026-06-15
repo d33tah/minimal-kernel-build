@@ -6,32 +6,8 @@
 struct cpu_dev {
 	const char	*c_vendor;
 
-	 
-	const char	*c_ident[2];
-
-	void            (*c_early_init)(struct cpuinfo_x86 *);
-	void		(*c_bsp_init)(struct cpuinfo_x86 *);
 	void		(*c_init)(struct cpuinfo_x86 *);
-	void		(*c_identify)(struct cpuinfo_x86 *);
-	void		(*c_detect_tlb)(struct cpuinfo_x86 *);
 	int		c_x86_vendor;
-	 
-	unsigned int	(*legacy_cache_size)(struct cpuinfo_x86 *,
-					     unsigned int);
-
-	 
-	struct legacy_cpu_model_info {
-		int		family;
-		const char	*model_names[16];
-	}		legacy_models[5];
-};
-
-struct _tlb_table {
-	unsigned char descriptor;
-	char tlb_type;
-	unsigned int entries;
-	 
-	char info[128];
 };
 
 #define cpu_dev_register(cpu_devX) \
@@ -56,13 +32,9 @@ extern void __init tsx_init(void);
 
 extern void get_cpu_cap(struct cpuinfo_x86 *c);
 extern void get_cpu_address_sizes(struct cpuinfo_x86 *c);
-extern void cpu_detect_cache_sizes(struct cpuinfo_x86 *c);
 extern void init_scattered_cpuid_features(struct cpuinfo_x86 *c);
 /* init_intel_cacheinfo, init_amd_cacheinfo, init_hygon_cacheinfo removed - no callers */
 
-extern void detect_num_cpu_cores(struct cpuinfo_x86 *c);
-extern int detect_extended_topology_early(struct cpuinfo_x86 *c);
-extern int detect_extended_topology(struct cpuinfo_x86 *c);
-/* detect_ht_early, detect_ht, check_null_seg_clears_base, x86_read_arch_cap_msr, aperfmperf_get_khz removed - no callers */
+/* detect_extended_topology_early, detect_extended_topology, detect_ht_early, detect_ht, check_null_seg_clears_base, x86_read_arch_cap_msr, aperfmperf_get_khz removed - no callers */
 
 #endif  

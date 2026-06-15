@@ -8,7 +8,6 @@
 #include <linux/fs.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>
-#include <linux/elfcore.h>
 #include <linux/smp.h>
 #include <linux/stddef.h>
 #include <linux/slab.h>
@@ -39,7 +38,6 @@
 #include <asm/cpu.h>
 #include <asm/debugreg.h>
 #include <asm/switch_to.h>
-#include <asm/vm86.h>
 #include <asm/proto.h>
 
 /* Inlined from asm/resctrl.h */
@@ -56,7 +54,6 @@ void __show_regs(struct pt_regs *regs, enum show_regs_mode mode,
 void release_thread(struct task_struct *dead_task)
 {
 	BUG_ON(dead_task->mm);
-	release_vm86_irqs(dead_task);
 }
 
 void

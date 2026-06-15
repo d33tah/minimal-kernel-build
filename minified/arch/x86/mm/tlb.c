@@ -23,143 +23,37 @@
 # define __flush_tlb_local		native_flush_tlb_local
 # define __flush_tlb_global		native_flush_tlb_global
 # define __flush_tlb_one_user(addr)	native_flush_tlb_one_user(addr)
-# define __flush_tlb_multi(msk, info)	native_flush_tlb_multi(msk, info)
 
-
-#define LAST_USER_MM_IBPB	0x1UL
-#define LAST_USER_MM_L1D_FLUSH	0x2UL
-#define LAST_USER_MM_SPEC_MASK	(LAST_USER_MM_IBPB | LAST_USER_MM_L1D_FLUSH)
-
-#define LAST_USER_MM_INIT	LAST_USER_MM_IBPB
-
-
-#define CR3_HW_ASID_BITS		12
-
-# define PTI_CONSUMED_PCID_BITS	0
-
-#define CR3_AVAIL_PCID_BITS (X86_CR3_PCID_BITS - PTI_CONSUMED_PCID_BITS)
-
-#define MAX_ASID_AVAILABLE ((1 << CR3_AVAIL_PCID_BITS) - 2)
-
-static inline u16 kern_pcid(u16 asid)
-{
-	VM_WARN_ON_ONCE(asid > MAX_ASID_AVAILABLE);
-
-	 
-	return asid + 1;
-}
-
-static inline u16 user_pcid(u16 asid)
-{
-	u16 ret = kern_pcid(asid);
-	return ret;
-}
 
 static inline unsigned long build_cr3(pgd_t *pgd, u16 asid)
 {
-	if (static_cpu_has(X86_FEATURE_PCID)) {
-		return __sme_pa(pgd) | kern_pcid(asid);
-	} else {
-		VM_WARN_ON_ONCE(asid != 0);
-		return __sme_pa(pgd);
-	}
-}
-
-static inline unsigned long build_cr3_noflush(pgd_t *pgd, u16 asid)
-{
-	VM_WARN_ON_ONCE(asid > MAX_ASID_AVAILABLE);
-	 
-	VM_WARN_ON_ONCE(!boot_cpu_has(X86_FEATURE_PCID));
-	return __sme_pa(pgd) | kern_pcid(asid) | CR3_NOFLUSH;
-}
-
-static void clear_asid_other(void)
-{
-	u16 asid;
-
-	 
-	if (!static_cpu_has(X86_FEATURE_PTI)) {
-		WARN_ON_ONCE(1);
-		return;
-	}
-
-	for (asid = 0; asid < TLB_NR_DYN_ASIDS; asid++) {
-		 
-		if (asid == this_cpu_read(cpu_tlbstate.loaded_mm_asid))
-			continue;
-		 
-		this_cpu_write(cpu_tlbstate.ctxs[asid].ctx_id, 0);
-	}
-	this_cpu_write(cpu_tlbstate.invalidate_other, false);
+	/* PCID is unconditionally cleared at boot (setup_clear_cpu_cap in
+	 * arch/x86/kernel/cpu/common.c), so the kernel never runs with PCIDs
+	 * and asid is always 0. */
+	VM_WARN_ON_ONCE(asid != 0);
+	return __sme_pa(pgd);
 }
 
 atomic64_t last_mm_ctx_id = ATOMIC64_INIT(1);
 
 
 static void choose_new_asid(struct mm_struct *next, u64 next_tlb_gen,
-			    u16 *new_asid, bool *need_flush)
+			    u16 *new_asid)
 {
-	u16 asid;
-
-	if (!static_cpu_has(X86_FEATURE_PCID)) {
-		*new_asid = 0;
-		*need_flush = true;
-		return;
-	}
-
-	if (this_cpu_read(cpu_tlbstate.invalidate_other))
-		clear_asid_other();
-
-	for (asid = 0; asid < TLB_NR_DYN_ASIDS; asid++) {
-		if (this_cpu_read(cpu_tlbstate.ctxs[asid].ctx_id) !=
-		    next->context.ctx_id)
-			continue;
-
-		*new_asid = asid;
-		*need_flush = (this_cpu_read(cpu_tlbstate.ctxs[asid].tlb_gen) <
-			       next_tlb_gen);
-		return;
-	}
-
-	 
-	*new_asid = this_cpu_add_return(cpu_tlbstate.next_asid, 1) - 1;
-	if (*new_asid >= TLB_NR_DYN_ASIDS) {
-		*new_asid = 0;
-		this_cpu_write(cpu_tlbstate.next_asid, 1);
-	}
-	*need_flush = true;
+	/* No PCID (cleared at boot): always use ASID 0 and force a flush. */
+	*new_asid = 0;
 }
 
 static inline void invalidate_user_asid(u16 asid)
 {
-	 
-	if (!IS_ENABLED(CONFIG_PAGE_TABLE_ISOLATION))
-		return;
 
-	 
-	if (!cpu_feature_enabled(X86_FEATURE_PCID))
-		return;
-
-	if (!static_cpu_has(X86_FEATURE_PTI))
-		return;
-
-	__set_bit(kern_pcid(asid),
-		  (unsigned long *)this_cpu_ptr(&cpu_tlbstate.user_pcid_flush_mask));
 }
 
-static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid, bool need_flush)
+static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid)
 {
-	unsigned long new_mm_cr3;
-
-	if (need_flush) {
-		invalidate_user_asid(new_asid);
-		new_mm_cr3 = build_cr3(pgdir, new_asid);
-	} else {
-		new_mm_cr3 = build_cr3_noflush(pgdir, new_asid);
-	}
-
-	 
-	write_cr3(new_mm_cr3);
+	/* Without PCID every switch reloads CR3 (always a full flush). */
+	invalidate_user_asid(new_asid);
+	write_cr3(build_cr3(pgdir, new_asid));
 }
 
 void leave_mm(int cpu)
@@ -186,85 +80,21 @@ void switch_mm(struct mm_struct *prev, struct mm_struct *next,
 	local_irq_restore(flags);
 }
 
-static void l1d_flush_force_sigbus(struct callback_head *ch)
-{
-	force_sig(SIGBUS);
-}
-
-static void l1d_flush_evaluate(unsigned long prev_mm, unsigned long next_mm,
-				struct task_struct *next)
-{
-	 
-	if (prev_mm & LAST_USER_MM_L1D_FLUSH)
-		wrmsrl(MSR_IA32_FLUSH_CMD, L1D_FLUSH);
-
-	 
-	if (likely(!(next_mm & LAST_USER_MM_L1D_FLUSH)))
-		return;
-
-	 
-	if (this_cpu_read(cpu_info.smt_active)) {
-		clear_ti_thread_flag(&next->thread_info, TIF_SPEC_L1D_FLUSH);
-		next->l1d_flush_kill.func = l1d_flush_force_sigbus;
-		task_work_add(next, &next->l1d_flush_kill, TWA_RESUME);
-	}
-}
-
-static unsigned long mm_mangle_tif_spec_bits(struct task_struct *next)
-{
-	unsigned long next_tif = read_task_thread_flags(next);
-	unsigned long spec_bits = (next_tif >> TIF_SPEC_IB) & LAST_USER_MM_SPEC_MASK;
-
-	 
-	BUILD_BUG_ON(TIF_SPEC_L1D_FLUSH != TIF_SPEC_IB + 1);
-
-	return (unsigned long)next->mm | spec_bits;
-}
-
-static void cond_mitigation(struct task_struct *next)
-{
-	unsigned long prev_mm, next_mm;
-
-	if (!next || !next->mm)
-		return;
-
-	next_mm = mm_mangle_tif_spec_bits(next);
-	prev_mm = this_cpu_read(cpu_tlbstate.last_user_mm_spec);
-
-	 
-	if (static_branch_likely(&switch_mm_cond_ibpb)) {
-		 
-		if (next_mm != prev_mm &&
-		    (next_mm | prev_mm) & LAST_USER_MM_IBPB)
-			indirect_branch_prediction_barrier();
-	}
-
-	if (static_branch_unlikely(&switch_mm_always_ibpb)) {
-		 
-		if ((prev_mm & ~LAST_USER_MM_SPEC_MASK) !=
-					(unsigned long)next->mm)
-			indirect_branch_prediction_barrier();
-	}
-
-	if (static_branch_unlikely(&switch_mm_cond_l1d_flush)) {
-		 
-		if (unlikely((prev_mm | next_mm) & LAST_USER_MM_L1D_FLUSH))
-			l1d_flush_evaluate(prev_mm, next_mm, next);
-	}
-
-	this_cpu_write(cpu_tlbstate.last_user_mm_spec, next_mm);
-}
+/* Speculation-mitigation switch_mm path removed: CONFIG_SPECULATION_MITIGATIONS
+ * is unset, so switch_mm_cond_ibpb / switch_mm_always_ibpb /
+ * switch_mm_cond_l1d_flush are DEFINE_STATIC_KEY_FALSE and never enabled. With
+ * all three keys off, cond_mitigation's only observable effect was writing the
+ * never-read last_user_mm_spec field, so the whole helper chain
+ * (cond_mitigation / mm_mangle_tif_spec_bits / l1d_flush_evaluate /
+ * l1d_flush_force_sigbus) was dead. */
 
 static inline void cr4_update_pce_mm(struct mm_struct *mm)
 {
-	if (static_branch_unlikely(&rdpmc_always_available_key) ||
-	    (!static_branch_unlikely(&rdpmc_never_available_key) &&
-	     atomic_read(&mm->context.perf_rdpmc_allowed))) {
-		 
-		perf_clear_dirty_counters();
-		cr4_set_bits_irqsoff(X86_CR4_PCE);
-	} else
-		cr4_clear_bits_irqsoff(X86_CR4_PCE);
+	/* rdpmc_always_available_key is DEFINE_STATIC_KEY_FALSE and never
+	 * enabled (constant false); rdpmc_never_available_key is
+	 * DEFINE_STATIC_KEY_TRUE and never disabled (constant true), so the
+	 * RDPMC-enable condition is always false and CR4.PCE stays cleared. */
+	cr4_clear_bits_irqsoff(X86_CR4_PCE);
 }
 
 void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
@@ -275,7 +105,6 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 	bool was_lazy = this_cpu_read(cpu_tlbstate_shared.is_lazy);
 	unsigned cpu = smp_processor_id();
 	u64 next_tlb_gen;
-	bool need_flush;
 	u16 new_asid;
 
 	 
@@ -309,14 +138,10 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 				next_tlb_gen)
 			return;
 
-		 
-		new_asid = prev_asid;
-		need_flush = true;
-	} else {
-		 
-		cond_mitigation(tsk);
 
-		 
+		new_asid = prev_asid;
+	} else {
+
 		if (real_prev != &init_mm) {
 			VM_WARN_ON_ONCE(!cpumask_test_cpu(cpu,
 						mm_cpumask(real_prev)));
@@ -328,27 +153,19 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 			cpumask_set_cpu(cpu, mm_cpumask(next));
 		next_tlb_gen = atomic64_read(&next->context.tlb_gen);
 
-		choose_new_asid(next, next_tlb_gen, &new_asid, &need_flush);
+		choose_new_asid(next, next_tlb_gen, &new_asid);
 
 		 
 		this_cpu_write(cpu_tlbstate.loaded_mm, LOADED_MM_SWITCHING);
 		barrier();
 	}
 
-	if (need_flush) {
-		this_cpu_write(cpu_tlbstate.ctxs[new_asid].ctx_id, next->context.ctx_id);
-		this_cpu_write(cpu_tlbstate.ctxs[new_asid].tlb_gen, next_tlb_gen);
-		load_new_mm_cr3(next->pgd, new_asid, true);
+	/* need_flush is always true: no PCID, so every switch reloads CR3. */
+	this_cpu_write(cpu_tlbstate.ctxs[new_asid].ctx_id, next->context.ctx_id);
+	this_cpu_write(cpu_tlbstate.ctxs[new_asid].tlb_gen, next_tlb_gen);
+	load_new_mm_cr3(next->pgd, new_asid);
 
 
-	} else {
-		 
-		load_new_mm_cr3(next->pgd, new_asid, false);
-
-
-	}
-
-	 
 	barrier();
 
 	this_cpu_write(cpu_tlbstate.loaded_mm, next);
@@ -385,8 +202,7 @@ void initialize_tlbstate_and_flush(void)
 	 
 	write_cr3(build_cr3(mm->pgd, 0));
 
-	 
-	this_cpu_write(cpu_tlbstate.last_user_mm_spec, LAST_USER_MM_INIT);
+
 	this_cpu_write(cpu_tlbstate.loaded_mm_asid, 0);
 	this_cpu_write(cpu_tlbstate.next_asid, 1);
 	this_cpu_write(cpu_tlbstate.ctxs[0].ctx_id, mm->context.ctx_id);
@@ -405,16 +221,14 @@ static void flush_tlb_func(void *info)
 	u64 mm_tlb_gen = atomic64_read(&loaded_mm->context.tlb_gen);
 	u64 local_tlb_gen = this_cpu_read(cpu_tlbstate.ctxs[loaded_mm_asid].tlb_gen);
 	bool local = smp_processor_id() == f->initiating_cpu;
-	unsigned long nr_invalidate = 0;
 
-	 
+
 	VM_WARN_ON(!irqs_disabled());
 
 	if (!local) {
 		inc_irq_stat(irq_tlb_count);
-		count_vm_tlb_event(NR_TLB_REMOTE_FLUSH_RECEIVED);
 
-		 
+
 		if (f->mm && f->mm != loaded_mm)
 			return;
 	}
@@ -446,21 +260,12 @@ static void flush_tlb_func(void *info)
 		 
 		unsigned long addr = f->start;
 
-		nr_invalidate = (f->end - f->start) >> f->stride_shift;
-
 		while (addr < f->end) {
 			flush_tlb_one_user(addr);
 			addr += 1UL << f->stride_shift;
 		}
-		if (local)
-			count_vm_tlb_events(NR_TLB_LOCAL_FLUSH_ONE, nr_invalidate);
 	} else {
-		 
-		nr_invalidate = TLB_FLUSH_ALL;
-
 		flush_tlb_local();
-		if (local)
-			count_vm_tlb_event(NR_TLB_LOCAL_FLUSH_ALL);
 	}
 
 	 
@@ -470,32 +275,7 @@ static void flush_tlb_func(void *info)
 done:
 }
 
-static bool tlb_is_not_lazy(int cpu, void *data)
-{
-	return !per_cpu(cpu_tlbstate_shared.is_lazy, cpu);
-}
-
 DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
-
-STATIC_NOPV void native_flush_tlb_multi(const struct cpumask *cpumask,
-					 const struct flush_tlb_info *info)
-{
-	 
-	count_vm_tlb_event(NR_TLB_REMOTE_FLUSH);
-
-	 
-	if (info->freed_tables)
-		on_each_cpu_mask(cpumask, flush_tlb_func, (void *)info, true);
-	else
-		on_each_cpu_cond_mask(tlb_is_not_lazy, flush_tlb_func,
-				(void *)info, 1, cpumask);
-}
-
-void flush_tlb_multi(const struct cpumask *cpumask,
-		      const struct flush_tlb_info *info)
-{
-	__flush_tlb_multi(cpumask, info);
-}
 
 unsigned long tlb_single_page_flush_ceiling __read_mostly = 33;
 
@@ -531,9 +311,8 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 {
 	struct flush_tlb_info *info;
 	u64 new_tlb_gen;
-	int cpu;
 
-	cpu = get_cpu();
+	get_cpu();
 
 	 
 	if ((end == TLB_FLUSH_ALL) ||
@@ -548,10 +327,8 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 	info = get_flush_tlb_info(mm, start, end, stride_shift, freed_tables,
 				  new_tlb_gen);
 
-	 
-	if (cpumask_any_but(mm_cpumask(mm), cpu) < nr_cpu_ids) {
-		flush_tlb_multi(mm_cpumask(mm), info);
-	} else if (mm == this_cpu_read(cpu_tlbstate.loaded_mm)) {
+
+	if (mm == this_cpu_read(cpu_tlbstate.loaded_mm)) {
 		lockdep_assert_irqs_enabled();
 		local_irq_disable();
 		flush_tlb_func(info);
@@ -565,13 +342,11 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 
 static void do_flush_tlb_all(void *info)
 {
-	count_vm_tlb_event(NR_TLB_REMOTE_FLUSH_RECEIVED);
 	__flush_tlb_all();
 }
 
 void flush_tlb_all(void)
 {
-	count_vm_tlb_event(NR_TLB_REMOTE_FLUSH);
 	on_each_cpu(do_flush_tlb_all, NULL, 1);
 }
 
@@ -618,32 +393,21 @@ unsigned long __get_current_cr3_fast(void)
 
 void flush_tlb_one_kernel(unsigned long addr)
 {
-	count_vm_tlb_event(NR_TLB_LOCAL_FLUSH_ONE);
-
-	 
+	/*
+	 * PAGE_TABLE_ISOLATION is unset on this build, so X86_FEATURE_PTI is
+	 * never set and the user-mapping invalidation below is dead.
+	 */
 	flush_tlb_one_user(addr);
-
-	if (!static_cpu_has(X86_FEATURE_PTI))
-		return;
-
-	 
-	this_cpu_write(cpu_tlbstate.invalidate_other, true);
 }
 
 STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr)
 {
-	u32 loaded_mm_asid = this_cpu_read(cpu_tlbstate.loaded_mm_asid);
-
 	asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
 
-	if (!static_cpu_has(X86_FEATURE_PTI))
-		return;
-
-	 
-	if (!this_cpu_has(X86_FEATURE_INVPCID_SINGLE))
-		invalidate_user_asid(loaded_mm_asid);
-	else
-		invpcid_flush_one(user_pcid(loaded_mm_asid), addr);
+	/*
+	 * PAGE_TABLE_ISOLATION is unset, so X86_FEATURE_PTI is never set and the
+	 * user-PCID invalidation that would otherwise follow here is dead.
+	 */
 }
 
 void flush_tlb_one_user(unsigned long addr)

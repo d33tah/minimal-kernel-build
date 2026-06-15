@@ -133,104 +133,6 @@ enum xfeature {
 
 #define FIRST_EXTENDED_XFEATURE	XFEATURE_YMM
 
-struct reg_128_bit {
-	u8      regbytes[128/8];
-};
-struct reg_256_bit {
-	u8	regbytes[256/8];
-};
-struct reg_512_bit {
-	u8	regbytes[512/8];
-};
-struct reg_1024_byte {
-	u8	regbytes[1024];
-};
-
- 
-struct ymmh_struct {
-	struct reg_128_bit              hi_ymm[16];
-} __packed;
-
- 
-
-struct mpx_bndreg {
-	u64				lower_bound;
-	u64				upper_bound;
-} __packed;
- 
-struct mpx_bndreg_state {
-	struct mpx_bndreg		bndreg[4];
-} __packed;
-
- 
-struct mpx_bndcsr {
-	u64				bndcfgu;
-	u64				bndstatus;
-} __packed;
-
- 
-struct mpx_bndcsr_state {
-	union {
-		struct mpx_bndcsr		bndcsr;
-		u8				pad_to_64_bytes[64];
-	};
-} __packed;
-
- 
-
- 
-struct avx_512_opmask_state {
-	u64				opmask_reg[8];
-} __packed;
-
- 
-struct avx_512_zmm_uppers_state {
-	struct reg_256_bit		zmm_upper[16];
-} __packed;
-
- 
-struct avx_512_hi16_state {
-	struct reg_512_bit		hi16_zmm[16];
-} __packed;
-
- 
-struct pkru_state {
-	u32				pkru;
-	u32				pad;
-} __packed;
-
- 
-
-struct lbr_entry {
-	u64 from;
-	u64 to;
-	u64 info;
-};
-
-struct arch_lbr_state {
-	u64 lbr_ctl;
-	u64 lbr_depth;
-	u64 ler_from;
-	u64 ler_to;
-	u64 ler_info;
-	struct lbr_entry		entries[];
-};
-
- 
-struct xtile_cfg {
-	u64				tcfg[8];
-} __packed;
-
- 
-struct xtile_data {
-	struct reg_1024_byte		tmm;
-} __packed;
-
- 
-struct ia32_pasid_state {
-	u64 pasid;
-} __packed;
-
 struct xstate_header {
 	u64				xfeatures;
 	u64				xcomp_bv;
@@ -290,8 +192,6 @@ struct fpstate {
 	 
 } __aligned(64);
 
-#define FPU_GUEST_PERM_LOCKED		BIT_ULL(63)
-
 struct fpu_state_perm {
 	 
 	u64				__state_perm;
@@ -317,36 +217,15 @@ struct fpu {
 	 
 	struct fpstate			*__task_fpstate;
 
-	 
+
 	struct fpu_state_perm		perm;
 
-	 
-	struct fpu_state_perm		guest_perm;
 
-	 
 	struct fpstate			__fpstate;
-	 
+
 };
 
- 
-struct fpu_guest {
-	 
-	u64				xfeatures;
 
-	 
-	u64				perm;
-
-	 
-	u64				xfd_err;
-
-	 
-	unsigned int			uabi_size;
-
-	 
-	struct fpstate			*fpstate;
-};
-
- 
 struct fpu_state_config {
 	 
 	unsigned int		max_size;

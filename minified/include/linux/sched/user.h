@@ -10,10 +10,8 @@
 struct user_struct {
 	refcount_t __count;	 
 	unsigned long unix_inflight;	 
-	atomic_long_t pipe_bufs;   
+	atomic_long_t pipe_bufs;
 
-	 
-	struct hlist_node uidhash_node;
 	kuid_t uid;
 
 #if defined(CONFIG_PERF_EVENTS) || defined(CONFIG_BPF_SYSCALL) || \
@@ -30,7 +28,6 @@ extern struct user_struct root_user;
 #define INIT_USER (&root_user)
 
 
-extern struct user_struct * alloc_uid(kuid_t);
 static inline struct user_struct *get_uid(struct user_struct *u)
 {
 	refcount_inc(&u->__count);

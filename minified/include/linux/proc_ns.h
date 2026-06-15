@@ -20,8 +20,6 @@ struct proc_ns_operations {
 	struct ns_common *(*get_parent)(struct ns_common *ns);
 } __randomize_layout;
 
-extern const struct proc_ns_operations mntns_operations;
-
 enum {
 	PROC_ROOT_INO		= 1,
 	PROC_IPC_INIT_INO	= 0xEFFFFFFFU,
@@ -52,6 +50,5 @@ static inline int ns_alloc_inum(struct ns_common *ns)
 #define get_proc_ns(inode) ((struct ns_common *)(inode)->i_private)
 typedef struct ns_common *ns_get_path_helper_t(void *);
 
-extern void nsfs_init(void);
 
 #endif  

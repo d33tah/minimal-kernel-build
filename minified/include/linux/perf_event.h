@@ -19,17 +19,6 @@ typedef void (*perf_overflow_handler_t)(struct perf_event *,
 struct perf_event { int state; };
 struct perf_event_context { int dummy; };
 
-extern void perf_event_fork(struct task_struct *tsk);
-extern void perf_event_init(void);
-extern void perf_event_exit_task(struct task_struct *child);
-extern void perf_event_delayed_put(struct task_struct *tsk);
-extern int perf_event_init_task(struct task_struct *child, u64 flags);
-extern void perf_event_free_task(struct task_struct *task);
-/* perf_event_namespaces, perf_event_task_disable/enable, perf_event_refresh,
- * perf_event_release_kernel removed - unused */
-extern void perf_event_mmap(struct vm_area_struct *vma);
-extern void perf_event_exec(void);
-extern void perf_event_comm(struct task_struct *tsk, bool exec);
 /* perf_bp_event, perf_event_text_poke, __perf_sw_event, perf_tp_event,
  * perf_event_print_debug, perf_register/unregister_guest_info_callbacks,
  * perf_event_task_sched_in/out removed - unused */

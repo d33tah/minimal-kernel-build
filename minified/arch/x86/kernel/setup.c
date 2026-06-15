@@ -12,7 +12,6 @@ extern bool crash_kexec_post_notifiers;
 #include <linux/pci.h>
 #include <linux/root_dev.h>
 #include <linux/hugetlb.h>
-#define tboot_probe() do { } while (0)
 #include <linux/static_call.h>
 #include <linux/swiotlb.h>
 
@@ -27,17 +26,6 @@ extern bool crash_kexec_post_notifiers;
 #include <asm/gart.h>
 #include <asm/hypervisor.h>
 #include <asm/io_apic.h>
-/* --- 2025-12-07 20:48 --- Inlined kasan.h */
-#include <linux/const.h>
-#define KASAN_SHADOW_OFFSET _AC(CONFIG_KASAN_SHADOW_OFFSET, UL)
-#define KASAN_SHADOW_SCALE_SHIFT 3
-#define KASAN_SHADOW_START      (KASAN_SHADOW_OFFSET + \
-				((-1UL << __VIRTUAL_MASK_SHIFT) >> \
-					KASAN_SHADOW_SCALE_SHIFT))
-#define KASAN_SHADOW_END        (KASAN_SHADOW_START + \
-				(1ULL << (__VIRTUAL_MASK_SHIFT - \
-					  KASAN_SHADOW_SCALE_SHIFT)))
-static inline void kasan_init(void) { }
 static inline void kernel_randomize_memory(void) { }
 #include <asm/mce.h>
 #include <asm/memtype.h>
@@ -45,15 +33,6 @@ static inline void kernel_randomize_memory(void) { }
 #include <asm/realmode.h>
 static inline void olpc_ofw_detect(void) { }
 static inline void setup_olpc_ofw_pgd(void) { }
-/* --- 2025-12-07 20:54 --- Inlined pci-direct.h */
-#include <linux/types.h>
-extern u32 read_pci_config(u8 bus, u8 slot, u8 func, u8 offset);
-extern u8 read_pci_config_byte(u8 bus, u8 slot, u8 func, u8 offset);
-extern u16 read_pci_config_16(u8 bus, u8 slot, u8 func, u8 offset);
-extern void write_pci_config(u8 bus, u8 slot, u8 func, u8 offset, u32 val);
-extern void write_pci_config_byte(u8 bus, u8 slot, u8 func, u8 offset, u8 val);
-extern void write_pci_config_16(u8 bus, u8 slot, u8 func, u8 offset, u16 val);
-extern int early_pci_allowed(void);
 #include <asm/prom.h>
 #include <asm/proto.h>
 #include <asm/unwind.h>
@@ -108,12 +87,7 @@ unsigned int def_to_bigsmp;
 
 struct apm_info apm_info;
 
-#if defined(CONFIG_X86_SPEEDSTEP_SMI) || \
-	defined(CONFIG_X86_SPEEDSTEP_SMI_MODULE)
 struct ist_info ist_info;
-#else
-struct ist_info ist_info;
-#endif
 
 
 
@@ -282,19 +256,13 @@ static void __init parse_setup_data(void)
 		pa_next = data->next;
 		early_memunmap(data, sizeof(*data));
 
-		switch (data_type) {
-		case SETUP_E820_EXT:
+		/*
+		 * CONFIG_OF and CONFIG_EFI are both absent on this build, so the
+		 * SETUP_DTB (add_dtb) and SETUP_EFI (parse_efi_setup) handlers were
+		 * empty stubs -- only SETUP_E820_EXT does real work here.
+		 */
+		if (data_type == SETUP_E820_EXT)
 			e820__memory_setup_extended(pa_data, data_len);
-			break;
-		case SETUP_DTB:
-			add_dtb(pa_data);
-			break;
-		case SETUP_EFI:
-			parse_efi_setup(pa_data, data_len);
-			break;
-		default:
-			break;
-		}
 		pa_data = pa_next;
 	}
 }
@@ -507,10 +475,6 @@ void __init setup_arch(char **cmdline_p)
 
 	parse_early_param();
 
-	if (efi_enabled(EFI_BOOT))
-		efi_memblock_x86_reserve_range();
-
-
 	x86_report_nx();
 
 	if (acpi_mps_check()) {
@@ -520,12 +484,7 @@ void __init setup_arch(char **cmdline_p)
 	e820__reserve_setup_data();
 	e820__finish_early_params();
 
-	if (efi_enabled(EFI_BOOT))
-		efi_init();
 
-	dmi_setup();
-
-	 
 	init_hypervisor_platform();
 
 	tsc_early_init();
@@ -550,11 +509,8 @@ void __init setup_arch(char **cmdline_p)
 	 
 	max_pfn = e820__end_of_ram_pfn();
 
-	 
-	if (IS_ENABLED(CONFIG_MTRR))
-		mtrr_bp_init();
-	else
-		pat_disable("PAT support disabled because CONFIG_MTRR is disabled in the kernel.");
+
+	pat_disable("PAT support disabled because CONFIG_MTRR is disabled in the kernel.");
 
 	if (mtrr_trim_uncached_memory(max_pfn))
 		max_pfn = e820__end_of_ram_pfn();
@@ -586,15 +542,7 @@ void __init setup_arch(char **cmdline_p)
 	 
 	sev_setup_arch();
 
-	efi_fake_memmap();
-	efi_find_mirror();
-	efi_esrt_init();
-	efi_mokvar_table_init();
 
-	 
-	efi_reserve_boot_services();
-
-	 
 	e820__memblock_alloc_reserved_mpc_new();
 
 
@@ -618,33 +566,7 @@ void __init setup_arch(char **cmdline_p)
 	 
 	setup_log_buf(1);
 
-	if (efi_enabled(EFI_BOOT)) {
-		switch (boot_params.secure_boot) {
-		case efi_secureboot_mode_disabled:
-			pr_info("Secure boot disabled\n");
-			break;
-		case efi_secureboot_mode_enabled:
-			pr_info("Secure boot enabled\n");
-			break;
-		default:
-			pr_info("Secure boot could not be determined\n");
-			break;
-		}
-	}
-
 	reserve_initrd();
-
-	acpi_table_upgrade();
-	 
-	acpi_boot_table_init();
-
-	vsmp_init();
-
-	io_delay_init();
-
-	early_platform_quirks();
-
-	early_acpi_boot_init();
 
 	initmem_init();
 
@@ -652,35 +574,8 @@ void __init setup_arch(char **cmdline_p)
 
 	x86_init.paging.pagetable_init();
 
-	kasan_init();
 
-	 
 	sync_initial_page_table();
-
-	tboot_probe();
-
-	map_vsyscall();
-
-	generic_apic_probe();
-
-	early_quirks();
-
-	 
-	acpi_boot_init();
-	x86_dtb_init();
-
-	 
-	get_smp_config();
-
-	 
-	init_apic_mappings();
-
-	prefill_possible_map();
-
-	init_cpu_to_node();
-	init_gi_nodes();
-
-	io_apic_init_mappings();
 
 	x86_init.hyper.guest_late_init();
 
@@ -689,22 +584,12 @@ void __init setup_arch(char **cmdline_p)
 
 	x86_init.resources.reserve_resources();
 
-	e820__setup_pci_gap();
-
-	if (!efi_enabled(EFI_BOOT) || (efi_mem_type(0xa0000) != EFI_CONVENTIONAL_MEMORY))
-		conswitchp = &vga_con;
+	conswitchp = &vga_con;
 	x86_init.oem.banner();
 
 	x86_init.timers.wallclock_init();
 
-	 
-
-	mcheck_init();
-
 	register_refined_jiffies(CLOCK_TICK_RATE);
-
-
-	unwind_init();
 }
 
 

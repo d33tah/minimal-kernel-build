@@ -19,15 +19,6 @@ struct arch_tlbflush_unmap_batch {
 		IS_ENABLED(CONFIG_ARCH_ENABLE_SPLIT_PMD_PTLOCK))
 #define ALLOC_SPLIT_PTLOCKS	(SPINLOCK_SIZE > BITS_PER_LONG/8)
 
-#define VMACACHE_BITS 2
-#define VMACACHE_SIZE (1U << VMACACHE_BITS)
-#define VMACACHE_MASK (VMACACHE_SIZE - 1)
-
-struct vmacache {
-	u64 seqnum;
-	struct vm_area_struct *vmas[VMACACHE_SIZE];
-};
-
 enum {
 	MM_FILEPAGES,	 
 	MM_ANONPAGES,	 
@@ -35,14 +26,6 @@ enum {
 	MM_SHMEMPAGES,	 
 	NR_MM_COUNTERS
 };
-
-#if USE_SPLIT_PTE_PTLOCKS && defined(CONFIG_MMU)
-#define SPLIT_RSS_COUNTING
-struct task_rss_stat {
-	int events;	 
-	int count[NR_MM_COUNTERS];
-};
-#endif  
 
 struct mm_rss_stat {
 	atomic_long_t count[NR_MM_COUNTERS];

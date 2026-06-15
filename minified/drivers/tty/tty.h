@@ -30,26 +30,15 @@ enum {
 int tty_ldisc_lock(struct tty_struct *tty, unsigned long timeout);
 void tty_ldisc_unlock(struct tty_struct *tty);
 
-int __tty_check_change(struct tty_struct *tty, int sig);
 int tty_check_change(struct tty_struct *tty);
 /* __stop_tty, __start_tty removed - unused */
-void tty_vhangup_session(struct tty_struct *tty);
 void tty_open_proc_set_tty(struct file *filp, struct tty_struct *tty);
-int tty_signal_session_leader(struct tty_struct *tty, int exit_session);
-void session_clear_tty(struct pid *session);
 void tty_buffer_free_all(struct tty_port *port);
-void tty_buffer_flush(struct tty_struct *tty, struct tty_ldisc *ld);
 void tty_buffer_init(struct tty_port *port);
-void tty_buffer_set_lock_subclass(struct tty_port *port);
-bool tty_buffer_restart_work(struct tty_port *port);
 bool tty_buffer_cancel_work(struct tty_port *port);
 /* tty_buffer_flush_work removed - unused */
 speed_t tty_termios_input_baud_rate(struct ktermios *termios);
-void tty_ldisc_hangup(struct tty_struct *tty, bool reset);
 int tty_ldisc_reinit(struct tty_struct *tty, int disc);
-long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
-long tty_jobctrl_ioctl(struct tty_struct *tty, struct tty_struct *real_tty,
-		       struct file *file, unsigned int cmd, unsigned long arg);
 struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx);
 int tty_alloc_file(struct file *file);
 void tty_add_file(struct tty_struct *tty, struct file *file);

@@ -11,26 +11,11 @@
 
 u64 x86_spec_ctrl_base;
 
-DEFINE_PER_CPU(u64, x86_spec_ctrl_current);
-
 u64 __ro_after_init x86_amd_ls_cfg_base;
 u64 __ro_after_init x86_amd_ls_cfg_ssbd_mask;
 
-DEFINE_STATIC_KEY_FALSE(switch_to_cond_stibp);
-DEFINE_STATIC_KEY_FALSE(switch_mm_cond_ibpb);
-DEFINE_STATIC_KEY_FALSE(switch_mm_always_ibpb);
-
-DEFINE_STATIC_KEY_FALSE(mds_user_clear);
-
-DEFINE_STATIC_KEY_FALSE(mds_idle_clear);
-
 void write_spec_ctrl_current(u64 val, bool force)
 {
-}
-
-u64 spec_ctrl_current(void)
-{
-	return 0;
 }
 
 void __init check_bugs(void)
@@ -49,17 +34,3 @@ void __init check_bugs(void)
 
 /* x86_virt_spec_ctrl, x86_spec_ctrl_setup_ap, itlb_multihit_kvm_mitigation,
  * l1tf_vmx_mitigation, vmx_l1d_flush_state removed - unused in minimal kernel */
-
-int arch_prctl_spec_ctrl_get(struct task_struct *task, unsigned long which)
-{
-	return -ENODEV;
-}
-
-int arch_prctl_spec_ctrl_set(struct task_struct *task, unsigned long which,
-			      unsigned long ctrl)
-{
-	return -ENODEV;
-}
-
-
-DEFINE_STATIC_KEY_FALSE(switch_mm_cond_l1d_flush);

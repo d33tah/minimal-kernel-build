@@ -83,13 +83,7 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
 }
 
-extern const void *free_irq(unsigned int, void *);
-
 struct device;
-
-bool irq_has_action(unsigned int irq);
-extern void disable_irq_nosync(unsigned int irq);
-extern void enable_irq(unsigned int irq);
 
 struct irq_affinity_desc {
 	struct cpumask	mask;
@@ -112,9 +106,6 @@ enum irqchip_irq_state {
 	IRQCHIP_STATE_ACTIVE,
 };
 
-
-DECLARE_STATIC_KEY_FALSE(force_irqthreads_key);
-#  define force_irqthreads()	(static_branch_unlikely(&force_irqthreads_key))
 
 #ifndef local_softirq_pending
 
@@ -174,8 +165,6 @@ static inline void init_irq_proc(void)
 
 
 struct seq_file;
-int show_interrupts(struct seq_file *p, void *v);
-int arch_show_interrupts(struct seq_file *p, int prec);
 
 extern int early_irq_init(void);
 extern int arch_probe_nr_irqs(void);

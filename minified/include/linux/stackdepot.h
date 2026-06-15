@@ -21,6 +21,5 @@ unsigned int stack_depot_fetch(depot_stack_handle_t handle,
 int stack_depot_snprint(depot_stack_handle_t handle, char *buf, size_t size,
 		       int spaces);
 
-void stack_depot_print(depot_stack_handle_t stack);
 
 #endif

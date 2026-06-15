@@ -4,7 +4,6 @@
 #include <linux/static_call_types.h>
 #include <linux/ptrace.h>
 #include <linux/syscalls.h>
-#include <linux/seccomp.h>
 #include <linux/sched.h>
 
 #include <asm/entry-common.h>
@@ -30,12 +29,10 @@
 				 SYSCALL_WORK_SYSCALL_TRACE |		\
 				 SYSCALL_WORK_SYSCALL_EMU |		\
 				 SYSCALL_WORK_SYSCALL_AUDIT |		\
-				 SYSCALL_WORK_SYSCALL_USER_DISPATCH |	\
 				 ARCH_SYSCALL_WORK_ENTER)
 #define SYSCALL_WORK_EXIT	(SYSCALL_WORK_SYSCALL_TRACEPOINT |	\
 				 SYSCALL_WORK_SYSCALL_TRACE |		\
 				 SYSCALL_WORK_SYSCALL_AUDIT |		\
-				 SYSCALL_WORK_SYSCALL_USER_DISPATCH |	\
 				 SYSCALL_WORK_SYSCALL_EXIT_TRAP	|	\
 				 ARCH_SYSCALL_WORK_EXIT)
 

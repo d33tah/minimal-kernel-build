@@ -50,10 +50,6 @@ struct con_driver {
 static struct con_driver registered_con_driver[MAX_NR_CON_DRIVER];
 const struct consw *conswitchp;
 
-#define DEFAULT_BELL_PITCH	750
-#define DEFAULT_BELL_DURATION	(HZ/8)
-#define DEFAULT_CURSOR_BLINK_MS	200
-
 struct vc vc_cons [MAX_NR_CONSOLES];
 
 #ifndef VT_SINGLE_DRIVER
@@ -64,39 +60,22 @@ static int con_open(struct tty_struct *, struct file *);
 static void vc_init(struct vc_data *vc, unsigned int rows,
 		    unsigned int cols, int do_clear);
 static void gotoxy(struct vc_data *vc, int new_x, int new_y);
-static void save_cur(struct vc_data *vc);
 static void reset_terminal(struct vc_data *vc, int do_clear);
 static void con_flush_chars(struct tty_struct *tty);
 static void set_cursor(struct vc_data *vc);
 static void hide_cursor(struct vc_data *vc);
-static void console_callback(struct work_struct *ignored);
-static void blank_screen_t(struct timer_list *unused);
 static void set_palette(struct vc_data *vc);
 
 static int printable;
 int default_utf8 = true;
 int global_cursor_default = -1;
 static int cur_default = CUR_UNDERLINE;
-int console_blanked;
-static int blankinterval;
-
-static DECLARE_WORK(console_work, console_callback);
 
 int fg_console;
 int last_console;
 int want_console = -1;
 
 static struct vc_data *master_display_fg;
-
-int (*console_blank_hook)(int);
-
-static DEFINE_TIMER(console_timer, blank_screen_t);
-static int blank_state;
-enum {
-	blank_off = 0,
-	blank_normal_wait,
-	blank_vesa_wait,
-};
 
 static struct device *tty0dev;
 
@@ -108,11 +87,6 @@ static void notify_write(struct vc_data *vc, unsigned int unicode)
 	/* Stub: skip VT notifications for minimal kernel */
 }
 
-static void notify_update(struct vc_data *vc)
-{
-	/* Stub: skip VT notifications for minimal kernel */
-}
-
 static inline bool con_is_fg(const struct vc_data *vc)
 {
 	return vc->vc_num == fg_console;
@@ -120,42 +94,7 @@ static inline bool con_is_fg(const struct vc_data *vc)
 
 static inline bool con_should_update(const struct vc_data *vc)
 {
-	return con_is_visible(vc) && !console_blanked;
-}
-
-
-#ifdef NO_VC_UNI_SCREEN
-
-#define get_vc_uniscr(vc) NULL
-#else
-#define get_vc_uniscr(vc) vc->vc_uni_screen
-#endif
-
-#define VC_UNI_SCREEN_DEBUG 0
-
-typedef uint32_t char32_t;
-
-struct uni_screen {
-	char32_t *lines[0];
-};
-
-
-static void vc_uniscr_clear_line(struct vc_data *vc, unsigned int x,
-				 unsigned int nr)
-{
-	/* Stub: skip unicode screen buffer clear for minimal kernel */
-}
-
-static void vc_uniscr_clear_lines(struct vc_data *vc, unsigned int y,
-				  unsigned int nr)
-{
-	/* Stub: skip unicode screen buffer clear for minimal kernel */
-}
-
-static void vc_uniscr_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
-			     enum con_scroll dir, unsigned int nr)
-{
-	/* Stub: skip unicode screen buffer scroll for minimal kernel */
+	return con_is_visible(vc);
 }
 
 
@@ -168,7 +107,6 @@ static void con_scroll(struct vc_data *vc, unsigned int t, unsigned int b,
 		nr = b - t - 1;
 	if (b > vc->vc_rows || t >= b || nr < 1)
 		return;
-	vc_uniscr_scroll(vc, t, b, dir, nr);
 	if (con_is_visible(vc) && vc->vc_sw->con_scroll(vc, t, b, dir, nr))
 		return;
 
@@ -189,15 +127,9 @@ static void do_update_region(struct vc_data *vc, unsigned long start, int count)
 	u16 *p;
 
 	p = (u16 *) start;
-	if (!vc->vc_sw->con_getxy) {
-		offset = (start - vc->vc_origin) / 2;
-		xx = offset % vc->vc_cols;
-		yy = offset / vc->vc_cols;
-	} else {
-		int nxx, nyy;
-		start = vc->vc_sw->con_getxy(vc, start, &nxx, &nyy);
-		xx = nxx; yy = nyy;
-	}
+	offset = (start - vc->vc_origin) / 2;
+	xx = offset % vc->vc_cols;
+	yy = offset / vc->vc_cols;
 	for(;;) {
 		u16 attrib = scr_readw(p) & 0xff00;
 		int startx = xx;
@@ -220,41 +152,18 @@ static void do_update_region(struct vc_data *vc, unsigned long start, int count)
 			break;
 		xx = 0;
 		yy++;
-		if (vc->vc_sw->con_getxy) {
-			p = (u16 *)start;
-			start = vc->vc_sw->con_getxy(vc, start, NULL, NULL);
-		}
 	}
 }
 
-static u8 build_attr(struct vc_data *vc, u8 _color,
-		enum vc_intensity _intensity, bool _blink, bool _underline,
-		bool _reverse, bool _italic)
+static u8 build_attr(struct vc_data *vc, u8 _color)
 {
 	if (vc->vc_sw->con_build_attr)
-		return vc->vc_sw->con_build_attr(vc, _color, _intensity,
-		       _blink, _underline, _reverse, _italic);
+		return vc->vc_sw->con_build_attr(vc, _color);
 
 	{
 	u8 a = _color;
 	if (!vc->vc_can_do_color)
-		return _intensity |
-		       (_italic    << 1) |
-		       (_underline << 2) |
-		       (_reverse   << 3) |
-		       (_blink     << 7);
-	if (_italic)
-		a = (a & 0xF0) | vc->vc_itcolor;
-	else if (_underline)
-		a = (a & 0xf0) | vc->vc_ulcolor;
-	else if (_intensity == VCI_HALF_BRIGHT)
-		a = (a & 0xf0) | vc->vc_halfcolor;
-	if (_reverse)
-		a = (a & 0x88) | (((a >> 4) | (a << 4)) & 0x77);
-	if (_blink)
-		a ^= 0x80;
-	if (_intensity == VCI_BOLD)
-		a ^= 0x08;
+		return VCI_NORMAL;
 	if (vc->vc_hi_font_mask == 0x100)
 		a <<= 1;
 	return a;
@@ -263,12 +172,8 @@ static u8 build_attr(struct vc_data *vc, u8 _color,
 
 static void update_attr(struct vc_data *vc)
 {
-	vc->vc_attr = build_attr(vc, vc->state.color, vc->state.intensity,
-	              vc->state.blink, vc->state.underline,
-	              vc->state.reverse ^ vc->vc_decscnm, vc->state.italic);
-	vc->vc_video_erase_char = ' ' | (build_attr(vc, vc->state.color,
-				VCI_NORMAL, vc->state.blink, false,
-				vc->vc_decscnm, false) << 8);
+	vc->vc_attr = build_attr(vc, vc->state.color);
+	vc->vc_video_erase_char = ' ' | (build_attr(vc, vc->state.color) << 8);
 }
 
 
@@ -318,7 +223,7 @@ static void hide_cursor(struct vc_data *vc)
 
 static void set_cursor(struct vc_data *vc)
 {
-	if (!con_is_fg(vc) || console_blanked || vc->vc_mode == KD_GRAPHICS)
+	if (!con_is_fg(vc) || vc->vc_mode == KD_GRAPHICS)
 		return;
 	if (vc->vc_deccm) {
 		if (vc_is_sel(vc))
@@ -352,80 +257,38 @@ static void save_screen(struct vc_data *vc)
 		vc->vc_sw->con_save_screen(vc);
 }
 
-static void flush_scrollback(struct vc_data *vc)
-{
-	WARN_CONSOLE_UNLOCKED();
-
-	set_origin(vc);
-	/* con_flush_scrollback never assigned in any driver */
-	if (con_is_visible(vc)) {
-		
-		hide_cursor(vc);
-		vc->vc_sw->con_switch(vc);
-		set_cursor(vc);
-	}
-}
-
 static void clear_buffer_attributes(struct vc_data *vc)
 {
 }
 
-#define update_screen(x) redraw_screen(x, 0)
-#define switch_screen(x) redraw_screen(x, 1)
+#define update_screen(x) redraw_screen(x)
 
-static void redraw_screen(struct vc_data *vc, int is_switch)
+static void redraw_screen(struct vc_data *vc)
 {
-	int redraw = 0;
+	int update;
+	int old_was_color;
 
 	WARN_CONSOLE_UNLOCKED();
 
-	if (!vc) {
-		
-		
+	if (!vc)
 		return;
+
+	hide_cursor(vc);
+
+	old_was_color = vc->vc_can_do_color;
+	set_origin(vc);
+	update = vc->vc_sw->con_switch(vc);
+	set_palette(vc);
+
+	if (old_was_color != vc->vc_can_do_color) {
+		update_attr(vc);
+		clear_buffer_attributes(vc);
 	}
 
-	if (is_switch) {
-		struct vc_data *old_vc = vc_cons[fg_console].d;
-		if (old_vc == vc)
-			return;
-		if (!con_is_visible(vc))
-			redraw = 1;
-		*vc->vc_display_fg = vc;
-		fg_console = vc->vc_num;
-		hide_cursor(old_vc);
-		if (!con_is_visible(old_vc)) {
-			save_screen(old_vc);
-			set_origin(old_vc);
-		}
-		if (tty0dev)
-			sysfs_notify(&tty0dev->kobj, NULL, "active");
-	} else {
-		hide_cursor(vc);
-		redraw = 1;
-	}
+	if (update && vc->vc_mode != KD_GRAPHICS)
+		do_update_region(vc, vc->vc_origin, vc->vc_screenbuf_size / 2);
 
-	if (redraw) {
-		int update;
-		int old_was_color = vc->vc_can_do_color;
-
-		set_origin(vc);
-		update = vc->vc_sw->con_switch(vc);
-		set_palette(vc);
-		
-		if (old_was_color != vc->vc_can_do_color) {
-			update_attr(vc);
-			clear_buffer_attributes(vc);
-		}
-
-		if (update && vc->vc_mode != KD_GRAPHICS)
-			do_update_region(vc, vc->vc_origin, vc->vc_screenbuf_size / 2);
-	}
 	set_cursor(vc);
-	if (is_switch) {
-		vt_set_leds_compute_shiftstate();
-		notify_update(vc);
-	}
 }
 
 int vc_cons_allocated(unsigned int i)
@@ -453,7 +316,6 @@ static void visual_init(struct vc_data *vc, int num, int init)
 	vc->vc_hi_font_mask = 0;
 	vc->vc_complement_mask = 0;
 	vc->vc_can_do_color = 0;
-	vc->vc_cur_blink_ms = DEFAULT_CURSOR_BLINK_MS;
 	vc->vc_sw->con_init(vc, init);
 	if (!vc->vc_complement_mask)
 		vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
@@ -506,7 +368,6 @@ int vc_allocate(unsigned int currcons)
 	vc_cons[currcons].d = vc;
 	tty_port_init(&vc->port);
 	vc->port.ops = &vc_port_ops;
-	INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
 
 	visual_init(vc, currcons, 1);
 
@@ -562,17 +423,6 @@ static int vt_resize(struct tty_struct *tty, struct winsize *ws)
 }
 
 
-enum { EPecma = 0, EPdec, EPeq, EPgt, EPlt};
-
-#define set_kbd(vc, x)	vt_set_kbd_mode_bit((vc)->vc_num, (x))
-#define clr_kbd(vc, x)	vt_clr_kbd_mode_bit((vc)->vc_num, (x))
-#define is_kbd(vc, x)	vt_get_kbd_mode_bit((vc)->vc_num, (x))
-
-#define decarm		VC_REPEAT
-#define decckm		VC_CKMODE
-#define kbdapplic	VC_APPLIC
-#define lnm		VC_CRLF
-
 const unsigned char color_table[] = { 0, 4, 2, 6, 1, 5, 3, 7,
 				       8,12,10,14, 9,13,11,15 };
 
@@ -593,13 +443,8 @@ static void gotoxy(struct vc_data *vc, int new_x, int new_y)
 			vc->state.x = new_x;
 	}
 
- 	if (vc->vc_decom) {
-		min_y = vc->vc_top;
-		max_y = vc->vc_bottom;
-	} else {
-		min_y = 0;
-		max_y = vc->vc_rows;
-	}
+	min_y = 0;
+	max_y = vc->vc_rows;
 	if (new_y < min_y)
 		vc->state.y = min_y;
 	else if (new_y >= max_y)
@@ -637,25 +482,15 @@ static void csi_J(struct vc_data *vc, int vpar)
 	unsigned short * start;
 
 	switch (vpar) {
-		case 0:	
-			vc_uniscr_clear_line(vc, vc->state.x,
-					     vc->vc_cols - vc->state.x);
-			vc_uniscr_clear_lines(vc, vc->state.y + 1,
-					      vc->vc_rows - vc->state.y - 1);
+		case 0:
 			count = (vc->vc_scr_end - vc->vc_pos) >> 1;
 			start = (unsigned short *)vc->vc_pos;
 			break;
-		case 1:	
-			vc_uniscr_clear_line(vc, 0, vc->state.x + 1);
-			vc_uniscr_clear_lines(vc, 0, vc->state.y);
+		case 1:
 			count = ((vc->vc_pos - vc->vc_origin) >> 1) + 1;
 			start = (unsigned short *)vc->vc_origin;
 			break;
-		case 3: 
-			flush_scrollback(vc);
-			fallthrough;
-		case 2: 
-			vc_uniscr_clear_lines(vc, 0, vc->vc_rows);
+		case 2:
 			count = vc->vc_cols * vc->vc_rows;
 			start = (unsigned short *)vc->vc_origin;
 			break;
@@ -670,48 +505,21 @@ static void csi_J(struct vc_data *vc, int vpar)
 
 static void default_attr(struct vc_data *vc)
 {
-	vc->state.intensity = VCI_NORMAL;
-	vc->state.italic = false;
-	vc->state.underline = false;
-	vc->state.reverse = false;
-	vc->state.blink = false;
 	vc->state.color = vc->vc_def_color;
 }
 
-static void save_cur(struct vc_data *vc)
-{
-	memcpy(&vc->saved_state, &vc->state, sizeof(vc->state));
-}
-
-enum { ESnormal, ESesc, ESsquare, ESgetpars, ESfunckey,
-	EShash, ESsetG0, ESsetG1, ESpercent, EScsiignore, ESnonstd,
-	ESpalette, ESosc, ESapc, ESpm, ESdcs };
-
 static void reset_terminal(struct vc_data *vc, int do_clear)
 {
-	unsigned int i;
-
 	vc->vc_top		= 0;
 	vc->vc_bottom		= vc->vc_rows;
-	vc->vc_state		= ESnormal;
-	vc->vc_priv		= EPecma;
-	vc->vc_translate	= set_translate(LAT1_MAP, vc);
-	vc->state.Gx_charset[0]	= LAT1_MAP;
-	vc->state.Gx_charset[1]	= GRAF_MAP;
-	vc->state.charset	= 0;
 	vc->vc_need_wrap	= 0;
-	vc->vc_report_mouse	= 0;
 	vc->vc_utf              = default_utf8;
 	vc->vc_utf_count	= 0;
 
 	vc->vc_disp_ctrl	= 0;
-	vc->vc_toggle_meta	= 0;
 
-	vc->vc_decscnm		= 0;
-	vc->vc_decom		= 0;
 	vc->vc_decawm		= 1;
 	vc->vc_deccm		= global_cursor_default;
-	vc->vc_decim		= 0;
 
 	vt_reset_keyboard(vc->vc_num);
 
@@ -721,16 +529,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	default_attr(vc);
 	update_attr(vc);
 
-	bitmap_zero(vc->vc_tab_stop, VC_TABSTOPS_COUNT);
-	for (i = 0; i < VC_TABSTOPS_COUNT; i += 8)
-		set_bit(i, vc->vc_tab_stop);
-
-	vc->vc_bell_pitch = DEFAULT_BELL_PITCH;
-	vc->vc_bell_duration = DEFAULT_BELL_DURATION;
-	vc->vc_cur_blink_ms = DEFAULT_CURSOR_BLINK_MS;
-
 	gotoxy(vc, 0, 0);
-	save_cur(vc);
 	if (do_clear)
 	    csi_J(vc, 2);
 }
@@ -753,13 +552,6 @@ static void con_flush(struct vc_data *vc, struct vc_draw_region *draw)
 
 static inline int vc_translate_ascii(const struct vc_data *vc, int c)
 {
-	if (IS_ENABLED(CONFIG_CONSOLE_TRANSLATIONS)) {
-		if (vc->vc_toggle_meta)
-			c |= 0x80;
-
-		return vc->vc_translate[c];
-	}
-
 	return c;
 }
 
@@ -839,10 +631,6 @@ need_more_bytes:
 
 static int vc_translate(struct vc_data *vc, int *c, bool *rescan)
 {
-	
-	if (vc->vc_state != ESnormal)
-		return *c;
-
 	if (vc->vc_utf && !vc->vc_disp_ctrl)
 		return *c = vc_translate_unicode(vc, *c, rescan);
 
@@ -856,9 +644,6 @@ static bool vc_is_control(struct vc_data *vc, int tc, int c)
 	static const u32 CTRL_ACTION = 0x0d00ff81;
 	
 	static const u32 CTRL_ALWAYS = 0x0800f501;
-
-	if (vc->vc_state != ESnormal)
-		return true;
 
 	if (!tc)
 		return true;
@@ -934,7 +719,7 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int co
 		return 0;
 	}
 
-	while (!tty->flow.stopped && count--) {
+	while (count--) {
 		c = *buf++;
 		n++;
 		tc = vc_translate(vc, &c, NULL);
@@ -944,17 +729,6 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int co
 	con_flush(vc, &draw);
 	console_unlock();
 	return n;
-}
-
-static void console_callback(struct work_struct *ignored)
-{
-	/* Stub: console_work never scheduled */
-}
-
-int set_console(int nr)
-{
-	/* Stub: no console switching in minimal kernel */
-	return -EINVAL;
 }
 
 struct tty_driver *console_driver;
@@ -1018,49 +792,9 @@ static int con_write(struct tty_struct *tty, const unsigned char *buf, int count
 	return retval;
 }
 
-static int con_put_char(struct tty_struct *tty, unsigned char ch)
-{
-	return do_con_write(tty, &ch, 1);
-}
-
 static unsigned int con_write_room(struct tty_struct *tty)
 {
-	if (tty->flow.stopped)
-		return 0;
-	return 32768;		
-}
-
-static void con_throttle(struct tty_struct *tty)
-{
-}
-
-static void con_unthrottle(struct tty_struct *tty)
-{
-	struct vc_data *vc = tty->driver_data;
-
-	wake_up_interruptible(&vc->paste_wait);
-}
-
-static void con_stop(struct tty_struct *tty)
-{
-	int console_num;
-	if (!tty)
-		return;
-	console_num = tty->index;
-	if (!vc_cons_allocated(console_num))
-		return;
-	vt_kbd_con_stop(console_num);
-}
-
-static void con_start(struct tty_struct *tty)
-{
-	int console_num;
-	if (!tty)
-		return;
-	console_num = tty->index;
-	if (!vc_cons_allocated(console_num))
-		return;
-	vt_kbd_con_start(console_num);
+	return 32768;
 }
 
 static void con_flush_chars(struct tty_struct *tty)
@@ -1146,8 +880,6 @@ static void con_cleanup(struct tty_struct *tty)
 }
 
 static int default_color = 7;
-static int default_italic_color = 2;
-static int default_underline_color = 3;
 
 static void vc_init(struct vc_data *vc, unsigned int rows,
 		    unsigned int cols, int do_clear)
@@ -1168,10 +900,6 @@ static void vc_init(struct vc_data *vc, unsigned int rows,
 		vc->vc_palette[k++] = default_blu[j] ;
 	}
 	vc->vc_def_color       = default_color;
-	vc->vc_ulcolor         = default_underline_color;
-	vc->vc_itcolor         = default_italic_color;
-	vc->vc_halfcolor       = 0x08;   
-	init_waitqueue_head(&vc->paste_wait);
 	reset_terminal(vc, do_clear);
 }
 
@@ -1208,14 +936,8 @@ static int __init con_init(void)
 	for (i = 0; i < MAX_NR_CONSOLES; i++)
 		con_driver_map[i] = conswitchp;
 
-	if (blankinterval) {
-		blank_state = blank_normal_wait;
-		mod_timer(&console_timer, jiffies + (blankinterval * HZ));
-	}
-
 	for (currcons = 0; currcons < MIN_NR_CONSOLES; currcons++) {
 		vc_cons[currcons].d = vc = kzalloc(sizeof(struct vc_data), GFP_NOWAIT);
-		INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
 		tty_port_init(&vc->port);
 		visual_init(vc, currcons, 1);
 		
@@ -1245,13 +967,7 @@ static const struct tty_operations con_ops = {
 	.close = con_close,
 	.write = con_write,
 	.write_room = con_write_room,
-	.put_char = con_put_char,
 	.flush_chars = con_flush_chars,
-	.ioctl = vt_ioctl,
-	.stop = con_stop,
-	.start = con_start,
-	.throttle = con_throttle,
-	.unthrottle = con_unthrottle,
 	.resize = vt_resize,
 	.shutdown = con_shutdown,
 	.cleanup = con_cleanup,
@@ -1335,21 +1051,10 @@ postcore_initcall(vtconsole_class_init);
 
 
 
-void do_unblank_screen(int leaving_gfx)
+void unblank_screen(void)
 {
 	/* Stubbed: screen unblanking not needed for minimal boot */
 }
-
-void unblank_screen(void)
-{
-	do_unblank_screen(0);
-}
-
-static void blank_screen_t(struct timer_list *unused)
-{
-	/* Stub: no screen blanking in minimal kernel */
-}
-
 
 static void set_palette(struct vc_data *vc)
 {
@@ -1366,16 +1071,4 @@ void reset_palette(struct vc_data *vc)
 		vc->vc_palette[k++] = default_blu[j];
 	}
 	set_palette(vc);
-}
-
-
-
-
-
-void vc_scrolldelta_helper(struct vc_data *c, int lines,
-		unsigned int rolled_over, void *base, unsigned int size)
-{
-	/* Stubbed: scrollback not needed for minimal boot */
-	if (!lines)
-		c->vc_visible_origin = c->vc_origin;
 }

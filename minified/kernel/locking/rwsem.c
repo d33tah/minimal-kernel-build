@@ -28,8 +28,6 @@ enum lock_events {
 /* end lock_events headers */
 
 #define RWSEM_READER_OWNED	(1UL << 0)
-#define RWSEM_NONSPINNABLE	(1UL << 1)
-#define RWSEM_OWNER_FLAGS_MASK	(RWSEM_READER_OWNED | RWSEM_NONSPINNABLE)
 
 # define DEBUG_RWSEMS_WARN_ON(c, sem)
 
@@ -56,16 +54,10 @@ static inline void rwsem_clear_owner(struct rw_semaphore *sem)
 	atomic_long_set(&sem->owner, 0);
 }
 
-static inline bool rwsem_test_oflags(struct rw_semaphore *sem, long flags)
-{
-	return atomic_long_read(&sem->owner) & flags;
-}
-
 static inline void __rwsem_set_reader_owned(struct rw_semaphore *sem,
 					    struct task_struct *owner)
 {
-	unsigned long val = (unsigned long)owner | RWSEM_READER_OWNED |
-		(atomic_long_read(&sem->owner) & RWSEM_NONSPINNABLE);
+	unsigned long val = (unsigned long)owner | RWSEM_READER_OWNED;
 
 	atomic_long_set(&sem->owner, val);
 }
@@ -75,34 +67,11 @@ static inline void rwsem_set_reader_owned(struct rw_semaphore *sem)
 	__rwsem_set_reader_owned(sem, current);
 }
 
-static inline bool is_rwsem_reader_owned(struct rw_semaphore *sem)
-{
-	return rwsem_test_oflags(sem, RWSEM_READER_OWNED);
-}
-
-static inline void rwsem_clear_reader_owned(struct rw_semaphore *sem)
-{
-}
-
-static inline void rwsem_set_nonspinnable(struct rw_semaphore *sem)
-{
-	unsigned long owner = atomic_long_read(&sem->owner);
-
-	do {
-		if (!(owner & RWSEM_READER_OWNED))
-			break;
-		if (owner & RWSEM_NONSPINNABLE)
-			break;
-	} while (!atomic_long_try_cmpxchg(&sem->owner, &owner,
-					  owner | RWSEM_NONSPINNABLE));
-}
-
 static inline bool rwsem_read_trylock(struct rw_semaphore *sem, long *cntp)
 {
 	*cntp = atomic_long_add_return_acquire(RWSEM_READER_BIAS, &sem->count);
 
-	if (WARN_ON_ONCE(*cntp < 0))
-		rwsem_set_nonspinnable(sem);
+	WARN_ON_ONCE(*cntp < 0);
 
 	if (!(*cntp & RWSEM_READ_FAILED_MASK)) {
 		rwsem_set_reader_owned(sem);
@@ -123,22 +92,6 @@ static inline bool rwsem_write_trylock(struct rw_semaphore *sem)
 
 	return false;
 }
-
-static inline struct task_struct *rwsem_owner(struct rw_semaphore *sem)
-{
-	return (struct task_struct *)
-		(atomic_long_read(&sem->owner) & ~RWSEM_OWNER_FLAGS_MASK);
-}
-
-static inline struct task_struct *
-rwsem_owner_flags(struct rw_semaphore *sem, unsigned long *pflags)
-{
-	unsigned long owner = atomic_long_read(&sem->owner);
-
-	*pflags = owner & RWSEM_OWNER_FLAGS_MASK;
-	return (struct task_struct *)(owner & ~RWSEM_OWNER_FLAGS_MASK);
-}
-
 
 void __init_rwsem(struct rw_semaphore *sem, const char *name,
 		  struct lock_class_key *key)
@@ -358,31 +311,6 @@ static inline bool rwsem_try_write_lock(struct rw_semaphore *sem,
 	return true;
 }
 
-enum owner_state {
-	OWNER_NULL		= 1 << 0,
-	OWNER_WRITER		= 1 << 1,
-	OWNER_READER		= 1 << 2,
-	OWNER_NONSPINNABLE	= 1 << 3,
-};
-
-static inline bool rwsem_can_spin_on_owner(struct rw_semaphore *sem)
-{
-	return false;
-}
-
-static inline bool rwsem_optimistic_spin(struct rw_semaphore *sem)
-{
-	return false;
-}
-
-static inline void clear_nonspinnable(struct rw_semaphore *sem) { }
-
-static inline enum owner_state
-rwsem_spin_on_owner(struct rw_semaphore *sem)
-{
-	return OWNER_NONSPINNABLE;
-}
-
 static inline void rwsem_cond_wake_waiter(struct rw_semaphore *sem, long count,
 					  struct wake_q_head *wake_q)
 {
@@ -391,12 +319,10 @@ static inline void rwsem_cond_wake_waiter(struct rw_semaphore *sem, long count,
 	if (count & RWSEM_WRITER_MASK)
 		return;
 
-	if (count & RWSEM_READER_MASK) {
+	if (count & RWSEM_READER_MASK)
 		wake_type = RWSEM_WAKE_READERS;
-	} else {
+	else
 		wake_type = RWSEM_WAKE_ANY;
-		clear_nonspinnable(sem);
-	}
 	rwsem_mark_wake(sem, wake_type, wake_q);
 }
 
@@ -499,13 +425,6 @@ rwsem_down_write_slowpath(struct rw_semaphore *sem, int state)
 	struct rwsem_waiter waiter;
 	DEFINE_WAKE_Q(wake_q);
 
-	 
-	if (rwsem_can_spin_on_owner(sem) && rwsem_optimistic_spin(sem)) {
-		 
-		return sem;
-	}
-
-	 
 	waiter.task = current;
 	waiter.type = RWSEM_WAITING_FOR_WRITE;
 	waiter.timeout = jiffies + RWSEM_WAIT_TIMEOUT;
@@ -543,22 +462,9 @@ rwsem_down_write_slowpath(struct rw_semaphore *sem, int state)
 		if (signal_pending_state(state, current))
 			goto out_nolock;
 
-		 
-		if (waiter.handoff_set) {
-			enum owner_state owner_state;
-
-			preempt_disable();
-			owner_state = rwsem_spin_on_owner(sem);
-			preempt_enable();
-
-			if (owner_state == OWNER_NULL)
-				goto trylock_again;
-		}
-
 		schedule();
 		lockevent_inc(rwsem_sleep_writer);
 		set_current_state(state);
-trylock_again:
 		raw_spin_lock_irq(&sem->wait_lock);
 	}
 	__set_current_state(TASK_RUNNING);
@@ -592,22 +498,6 @@ static struct rw_semaphore *rwsem_wake(struct rw_semaphore *sem)
 	return sem;
 }
 
-static struct rw_semaphore *rwsem_downgrade_wake(struct rw_semaphore *sem)
-{
-	unsigned long flags;
-	DEFINE_WAKE_Q(wake_q);
-
-	raw_spin_lock_irqsave(&sem->wait_lock, flags);
-
-	if (!list_empty(&sem->wait_list))
-		rwsem_mark_wake(sem, RWSEM_WAKE_READ_OWNED, &wake_q);
-
-	raw_spin_unlock_irqrestore(&sem->wait_lock, flags);
-	wake_up_q(&wake_q);
-
-	return sem;
-}
-
 static inline int __down_read_common(struct rw_semaphore *sem, int state)
 {
 	long count;
@@ -615,7 +505,6 @@ static inline int __down_read_common(struct rw_semaphore *sem, int state)
 	if (!rwsem_read_trylock(sem, &count)) {
 		if (IS_ERR(rwsem_down_read_slowpath(sem, count, state)))
 			return -EINTR;
-		DEBUG_RWSEMS_WARN_ON(!is_rwsem_reader_owned(sem), sem);
 	}
 	return 0;
 }
@@ -679,14 +568,11 @@ static inline void __up_read(struct rw_semaphore *sem)
 	long tmp;
 
 	DEBUG_RWSEMS_WARN_ON(sem->magic != sem, sem);
-	DEBUG_RWSEMS_WARN_ON(!is_rwsem_reader_owned(sem), sem);
 
-	rwsem_clear_reader_owned(sem);
 	tmp = atomic_long_add_return_release(-RWSEM_READER_BIAS, &sem->count);
 	DEBUG_RWSEMS_WARN_ON(tmp < 0, sem);
 	if (unlikely((tmp & (RWSEM_LOCK_MASK|RWSEM_FLAG_WAITERS)) ==
 		      RWSEM_FLAG_WAITERS)) {
-		clear_nonspinnable(sem);
 		rwsem_wake(sem);
 	}
 }
@@ -696,27 +582,11 @@ static inline void __up_write(struct rw_semaphore *sem)
 	long tmp;
 
 	DEBUG_RWSEMS_WARN_ON(sem->magic != sem, sem);
-	 
-	DEBUG_RWSEMS_WARN_ON((rwsem_owner(sem) != current) &&
-			    !rwsem_test_oflags(sem, RWSEM_NONSPINNABLE), sem);
 
 	rwsem_clear_owner(sem);
 	tmp = atomic_long_fetch_add_release(-RWSEM_WRITER_LOCKED, &sem->count);
 	if (unlikely(tmp & RWSEM_FLAG_WAITERS))
 		rwsem_wake(sem);
-}
-
-static inline void __downgrade_write(struct rw_semaphore *sem)
-{
-	long tmp;
-
-	 
-	DEBUG_RWSEMS_WARN_ON(rwsem_owner(sem) != current, sem);
-	tmp = atomic_long_fetch_add_release(
-		-RWSEM_WRITER_LOCKED+RWSEM_READER_BIAS, &sem->count);
-	rwsem_set_reader_owned(sem);
-	if (tmp & RWSEM_FLAG_WAITERS)
-		rwsem_downgrade_wake(sem);
 }
 
 
@@ -772,16 +642,6 @@ int __sched down_write_killable(struct rw_semaphore *sem)
 	return 0;
 }
 
-int down_write_trylock(struct rw_semaphore *sem)
-{
-	int ret = __down_write_trylock(sem);
-
-	if (ret == 1)
-		rwsem_acquire(&sem->dep_map, 0, 1, _RET_IP_);
-
-	return ret;
-}
-
 void up_read(struct rw_semaphore *sem)
 {
 	rwsem_release(&sem->dep_map, _RET_IP_);
@@ -792,11 +652,5 @@ void up_write(struct rw_semaphore *sem)
 {
 	rwsem_release(&sem->dep_map, _RET_IP_);
 	__up_write(sem);
-}
-
-/* downgrade_write - called by __do_munmap */
-void downgrade_write(struct rw_semaphore *sem)
-{
-	__downgrade_write(sem);
 }
 

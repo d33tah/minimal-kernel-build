@@ -10,43 +10,6 @@
 #include <linux/security.h>
 
 
-struct kmalloced_param {
-	struct list_head list;
-	char val[];
-};
-static LIST_HEAD(kmalloced_params);
-static DEFINE_SPINLOCK(kmalloced_params_lock);
-
-static void *kmalloc_parameter(unsigned int size)
-{
-	struct kmalloced_param *p;
-
-	p = kmalloc(sizeof(*p) + size, GFP_KERNEL);
-	if (!p)
-		return NULL;
-
-	spin_lock(&kmalloced_params_lock);
-	list_add(&p->list, &kmalloced_params);
-	spin_unlock(&kmalloced_params_lock);
-
-	return p->val;
-}
-
-static void maybe_kfree_parameter(void *param)
-{
-	struct kmalloced_param *p;
-
-	spin_lock(&kmalloced_params_lock);
-	list_for_each_entry(p, &kmalloced_params, list) {
-		if (p->val == param) {
-			list_del(&p->list);
-			kfree(p);
-			break;
-		}
-	}
-	spin_unlock(&kmalloced_params_lock);
-}
-
 static char dash2underscore(char c)
 {
 	if (c == '-')
@@ -72,10 +35,6 @@ bool parameq(const char *a, const char *b)
 
 static bool param_check_unsafe(const struct kernel_param *kp)
 {
-	if (kp->flags & KERNEL_PARAM_FL_HWPARAM &&
-	    security_locked_down(LOCKDOWN_MODULE_PARAMETERS))
-		return false;
-
 	if (kp->flags & KERNEL_PARAM_FL_UNSAFE) {
 		add_taint(TAINT_USER, LOCKDEP_STILL_OK);
 	}
@@ -172,112 +131,3 @@ char *parse_args(const char *doing,
 
 	return err;
 }
-
-#define STANDARD_PARAM_DEF(name, type, format, strtolfn)      		\
-	int param_set_##name(const char *val, const struct kernel_param *kp) \
-	{								\
-		return strtolfn(val, 0, (type *)kp->arg);		\
-	}								\
-	int param_get_##name(char *buffer, const struct kernel_param *kp) \
-	{								\
-		return scnprintf(buffer, PAGE_SIZE, format "\n",	\
-				*((type *)kp->arg));			\
-	}								\
-	const struct kernel_param_ops param_ops_##name = {			\
-		.set = param_set_##name,				\
-		.get = param_get_##name,				\
-	};								\
-	EXPORT_SYMBOL(param_set_##name);				\
-	EXPORT_SYMBOL(param_get_##name);				\
-	EXPORT_SYMBOL(param_ops_##name)
-
-
-STANDARD_PARAM_DEF(byte,	unsigned char,		"%hhu",		kstrtou8);
-STANDARD_PARAM_DEF(short,	short,			"%hi",		kstrtos16);
-STANDARD_PARAM_DEF(ushort,	unsigned short,		"%hu",		kstrtou16);
-STANDARD_PARAM_DEF(int,		int,			"%i",		kstrtoint);
-STANDARD_PARAM_DEF(uint,	unsigned int,		"%u",		kstrtouint);
-STANDARD_PARAM_DEF(long,	long,			"%li",		kstrtol);
-STANDARD_PARAM_DEF(ulong,	unsigned long,		"%lu",		kstrtoul);
-STANDARD_PARAM_DEF(ullong,	unsigned long long,	"%llu",		kstrtoull);
-STANDARD_PARAM_DEF(hexint,	unsigned int,		"%#08x", 	kstrtouint);
-
-
-int param_set_charp(const char *val, const struct kernel_param *kp)
-{
-	if (strlen(val) > 1024) {
-		pr_err("%s: string parameter too long\n", kp->name);
-		return -ENOSPC;
-	}
-
-	maybe_kfree_parameter(*(char **)kp->arg);
-
-	 
-	if (slab_is_available()) {
-		*(char **)kp->arg = kmalloc_parameter(strlen(val)+1);
-		if (!*(char **)kp->arg)
-			return -ENOMEM;
-		strcpy(*(char **)kp->arg, val);
-	} else
-		*(const char **)kp->arg = val;
-
-	return 0;
-}
-
-int param_get_charp(char *buffer, const struct kernel_param *kp)
-{
-	return scnprintf(buffer, PAGE_SIZE, "%s\n", *((char **)kp->arg));
-}
-
-static void param_free_charp(void *arg)
-{
-	maybe_kfree_parameter(*((char **)arg));
-}
-
-const struct kernel_param_ops param_ops_charp = {
-	.set = param_set_charp,
-	.get = param_get_charp,
-	.free = param_free_charp,
-};
-
-int param_set_bool(const char *val, const struct kernel_param *kp)
-{
-	 
-	if (!val) val = "1";
-
-	 
-	return strtobool(val, kp->arg);
-}
-
-int param_get_bool(char *buffer, const struct kernel_param *kp)
-{
-	 
-	return sprintf(buffer, "%c\n", *(bool *)kp->arg ? 'Y' : 'N');
-}
-
-const struct kernel_param_ops param_ops_bool = {
-	.flags = KERNEL_PARAM_OPS_FL_NOARG,
-	.set = param_set_bool,
-	.get = param_get_bool,
-};
-
-
-#define to_module_attr(n) container_of(n, struct module_attribute, attr)
-#define to_module_kobject(n) container_of(n, struct module_kobject, kobj)
-
-struct param_attribute
-{
-	struct module_attribute mattr;
-	const struct kernel_param *param;
-};
-
-struct module_param_attrs
-{
-	unsigned int num;
-	struct attribute_group grp;
-	struct param_attribute attrs[];
-};
-
-
-#define __modinit __init
-

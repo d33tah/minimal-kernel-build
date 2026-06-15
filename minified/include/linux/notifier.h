@@ -31,12 +31,6 @@ struct raw_notifier_head {
 	struct notifier_block __rcu *head;
 };
 
-struct srcu_notifier_head {
-	struct mutex mutex;
-	struct srcu_struct srcu;
-	struct notifier_block __rcu *head;
-};
-
 #define BLOCKING_INIT_NOTIFIER_HEAD(name) do {	\
 		init_rwsem(&(name)->rwsem);	\
 		(name)->head = NULL;		\
@@ -67,8 +61,6 @@ struct srcu_notifier_head {
 
 extern int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
 		struct notifier_block *nb);
-extern int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
-		struct notifier_block *nb);
 
 
 extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
@@ -79,8 +71,6 @@ extern int raw_notifier_call_chain(struct raw_notifier_head *nh,
 		unsigned long val, void *v);
 
 
-extern bool atomic_notifier_call_chain_is_empty(struct atomic_notifier_head *nh);
-
 #define NOTIFY_DONE		0x0000
 #define NOTIFY_OK		0x0001
 #define NOTIFY_STOP_MASK	0x8000
@@ -89,7 +79,5 @@ extern bool atomic_notifier_call_chain_is_empty(struct atomic_notifier_head *nh)
 
 
 
-extern struct blocking_notifier_head reboot_notifier_list;
-
-#endif  
+#endif
 #endif  

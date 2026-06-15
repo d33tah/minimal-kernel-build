@@ -101,10 +101,6 @@ void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 
 extern void vfree(const void *addr);
 
-extern void *vmap(struct page **pages, unsigned int count,
-			unsigned long flags, pgprot_t prot);
-extern void vunmap(const void *addr);
-
 
 #ifndef ARCH_PAGE_TABLE_SYNC_MASK
 #define ARCH_PAGE_TABLE_SYNC_MASK 0
@@ -123,8 +119,6 @@ static inline size_t get_vm_area_size(const struct vm_struct *area)
 
 }
 
-extern struct vm_struct *get_vm_area_caller(unsigned long size,
-					unsigned long flags, const void *caller);
 void free_vm_area(struct vm_struct *area);
 extern struct vm_struct *remove_vm_area(const void *addr);
 extern struct vm_struct *find_vm_area(const void *addr);

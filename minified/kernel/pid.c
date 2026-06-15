@@ -10,7 +10,6 @@
 #include <linux/syscalls.h>
 #include <linux/proc_ns.h>
 #include <linux/refcount.h>
-#include <linux/anon_inodes.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
 #include <linux/ptrace.h>
@@ -223,11 +222,6 @@ struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
 	return idr_find(&ns->idr, nr);
 }
 
-struct pid *find_vpid(int nr)
-{
-	return find_pid_ns(nr, task_active_pid_ns(current));
-}
-
 static struct pid **task_pid_ptr(struct task_struct *task, enum pid_type type)
 {
 	return (type == PIDTYPE_PID) ?
@@ -265,34 +259,6 @@ void detach_pid(struct task_struct *task, enum pid_type type)
 	__change_pid(task, type, NULL);
 }
 
-
-void exchange_tids(struct task_struct *left, struct task_struct *right)
-{
-	struct pid *pid1 = left->thread_pid;
-	struct pid *pid2 = right->thread_pid;
-	struct hlist_head *head1 = &pid1->tasks[PIDTYPE_PID];
-	struct hlist_head *head2 = &pid2->tasks[PIDTYPE_PID];
-
-	 
-	hlists_swap_heads_rcu(head1, head2);
-
-	 
-	rcu_assign_pointer(left->thread_pid, pid2);
-	rcu_assign_pointer(right->thread_pid, pid1);
-
-	 
-	WRITE_ONCE(left->pid, pid_nr(pid2));
-	WRITE_ONCE(right->pid, pid_nr(pid1));
-}
-
-void transfer_pid(struct task_struct *old, struct task_struct *new,
-			   enum pid_type type)
-{
-	if (type == PIDTYPE_PID)
-		new->thread_pid = old->thread_pid;
-	hlist_replace_rcu(&old->pid_links[type], &new->pid_links[type]);
-}
-
 struct task_struct *pid_task(struct pid *pid, enum pid_type type)
 {
 	struct task_struct *result = NULL;
@@ -320,28 +286,6 @@ struct pid *get_task_pid(struct task_struct *task, enum pid_type type)
 	rcu_read_lock();
 	pid = get_pid(rcu_dereference(*task_pid_ptr(task, type)));
 	rcu_read_unlock();
-	return pid;
-}
-
-struct task_struct *get_pid_task(struct pid *pid, enum pid_type type)
-{
-	struct task_struct *result;
-	rcu_read_lock();
-	result = pid_task(pid, type);
-	if (result)
-		get_task_struct(result);
-	rcu_read_unlock();
-	return result;
-}
-
-struct pid *find_get_pid(pid_t nr)
-{
-	struct pid *pid;
-
-	rcu_read_lock();
-	pid = get_pid(find_vpid(nr));
-	rcu_read_unlock();
-
 	return pid;
 }
 
@@ -381,26 +325,6 @@ struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
 {
 	return ns_of_pid(task_pid(tsk));
 }
-
-struct pid *pidfd_get_pid(unsigned int fd, unsigned int *flags)
-{
-	struct fd f;
-	struct pid *pid;
-
-	f = fdget(fd);
-	if (!f.file)
-		return ERR_PTR(-EBADF);
-
-	pid = pidfd_pid(f.file);
-	if (!IS_ERR(pid)) {
-		get_pid(pid);
-		*flags = f.file->f_flags;
-	}
-
-	fdput(f);
-	return pid;
-}
-
 
 SYSCALL_DEFINE2(pidfd_open, pid_t, pid, unsigned int, flags)
 {

@@ -60,19 +60,11 @@ struct tty_port_operations {
 	void (*destruct)(struct tty_port *port);
 };
 
-struct tty_port_client_operations {
-	int (*receive_buf)(struct tty_port *port, const unsigned char *, const unsigned char *, size_t);
-	void (*write_wakeup)(struct tty_port *port);
-};
-
-extern const struct tty_port_client_operations tty_port_default_client_ops;
-
 struct tty_port {
 	struct tty_bufhead	buf;
 	struct tty_struct	*tty;
 	struct tty_struct	*itty;
 	const struct tty_port_operations *ops;
-	const struct tty_port_client_operations *client_ops;
 	spinlock_t		lock;
 	int			blocked_open;
 	int			count;
@@ -101,26 +93,6 @@ struct tty_port {
 #define TTY_PORT_KOPENED	5	 
 
 void tty_port_init(struct tty_port *port);
-void tty_port_link_device(struct tty_port *port, struct tty_driver *driver,
-		unsigned index);
-struct device *tty_port_register_device(struct tty_port *port,
-		struct tty_driver *driver, unsigned index,
-		struct device *device);
-struct device *tty_port_register_device_attr(struct tty_port *port,
-		struct tty_driver *driver, unsigned index,
-		struct device *device, void *drvdata,
-		const struct attribute_group **attr_grp);
-struct device *tty_port_register_device_serdev(struct tty_port *port,
-		struct tty_driver *driver, unsigned index,
-		struct device *device);
-struct device *tty_port_register_device_attr_serdev(struct tty_port *port,
-		struct tty_driver *driver, unsigned index,
-		struct device *device, void *drvdata,
-		const struct attribute_group **attr_grp);
-void tty_port_unregister_device(struct tty_port *port,
-		struct tty_driver *driver, unsigned index);
-int tty_port_alloc_xmit_buf(struct tty_port *port);
-void tty_port_free_xmit_buf(struct tty_port *port);
 void tty_port_destroy(struct tty_port *port);
 void tty_port_put(struct tty_port *port);
 
@@ -154,25 +126,8 @@ static inline bool tty_port_kopened(const struct tty_port *port)
 }
 
 
-struct tty_struct *tty_port_tty_get(struct tty_port *port);
-void tty_port_tty_set(struct tty_port *port, struct tty_struct *tty);
-int tty_port_carrier_raised(struct tty_port *port);
-void tty_port_raise_dtr_rts(struct tty_port *port);
-void tty_port_lower_dtr_rts(struct tty_port *port);
-void tty_port_hangup(struct tty_port *port);
-void tty_port_tty_hangup(struct tty_port *port, bool check_clocal);
-void tty_port_tty_wakeup(struct tty_port *port);
-int tty_port_block_til_ready(struct tty_port *port, struct tty_struct *tty,
-		struct file *filp);
-int tty_port_close_start(struct tty_port *port, struct tty_struct *tty,
-		struct file *filp);
-void tty_port_close_end(struct tty_port *port, struct tty_struct *tty);
-void tty_port_close(struct tty_port *port, struct tty_struct *tty,
-		struct file *filp);
 int tty_port_install(struct tty_port *port, struct tty_driver *driver,
 		struct tty_struct *tty);
-int tty_port_open(struct tty_port *port, struct tty_struct *tty,
-		struct file *filp);
 
 
 #endif

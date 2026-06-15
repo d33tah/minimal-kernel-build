@@ -19,10 +19,6 @@ struct pagevec {
 void __pagevec_release(struct pagevec *pvec);
 void __pagevec_lru_add(struct pagevec *pvec);
 
-unsigned pagevec_lookup_range_tag(struct pagevec *pvec,
-		struct address_space *mapping, pgoff_t *index, pgoff_t end,
-		xa_mark_t tag);
-
 static inline void pagevec_init(struct pagevec *pvec)
 {
 	pvec->nr = 0;
@@ -89,5 +85,4 @@ static inline void folio_batch_release(struct folio_batch *fbatch)
 	pagevec_release((struct pagevec *)fbatch);
 }
 
-void folio_batch_remove_exceptionals(struct folio_batch *fbatch);
 #endif  

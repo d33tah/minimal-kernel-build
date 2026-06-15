@@ -7,13 +7,10 @@
 #include <linux/swapops.h>
 #include <linux/slab.h>
 #include <linux/init.h>
-#include <linux/ksm.h>
 #include <linux/rmap.h>
 #include <linux/rcupdate.h>
 #include <linux/export.h>
 #include <linux/memcontrol.h>
-#include <linux/mmu_notifier.h>
-#include <linux/migrate.h>
 #include <linux/hugetlb.h>
 #include <linux/huge_mm.h>
 #include <linux/backing-dev.h>
@@ -179,51 +176,6 @@ int anon_vma_clone(struct vm_area_struct *dst, struct vm_area_struct *src)
 	return -ENOMEM;
 }
 
-int anon_vma_fork(struct vm_area_struct *vma, struct vm_area_struct *pvma)
-{
-	struct anon_vma_chain *avc;
-	struct anon_vma *anon_vma;
-	int error;
-
-	if (!pvma->anon_vma)
-		return 0;
-
-	vma->anon_vma = NULL;
-
-	error = anon_vma_clone(vma, pvma);
-	if (error)
-		return error;
-
-	if (vma->anon_vma)
-		return 0;
-
-	anon_vma = anon_vma_alloc();
-	if (!anon_vma)
-		goto out_error;
-	avc = anon_vma_chain_alloc(GFP_KERNEL);
-	if (!avc)
-		goto out_error_free_anon_vma;
-
-	anon_vma->root = pvma->anon_vma->root;
-	anon_vma->parent = pvma->anon_vma;
-	
-	get_anon_vma(anon_vma->root);
-	
-	vma->anon_vma = anon_vma;
-	anon_vma_lock_write(anon_vma);
-	anon_vma_chain_link(vma, avc, anon_vma);
-	anon_vma->parent->degree++;
-	anon_vma_unlock_write(anon_vma);
-
-	return 0;
-
- out_error_free_anon_vma:
-	put_anon_vma(anon_vma);
- out_error:
-	unlink_anon_vmas(vma);
-	return -ENOMEM;
-}
-
 void unlink_anon_vmas(struct vm_area_struct *vma)
 {
 	struct anon_vma_chain *avc, *next;
@@ -299,13 +251,6 @@ void flush_tlb_batched_pending(struct mm_struct *mm)
 }
 
 
-struct folio_referenced_arg {
-	int mapcount;
-	int referenced;
-	unsigned long vm_flags;
-	struct mem_cgroup *memcg;
-};
-
 /* Stubbed: folio_mkclean used by truncate.c */
 int folio_mkclean(struct folio *folio) { return 0; }
 
@@ -328,60 +273,6 @@ static void __page_set_anon_rmap(struct page *page,
 out:
 	if (exclusive)
 		SetPageAnonExclusive(page);
-}
-
-static void __page_check_anon_rmap(struct page *page,
-	struct vm_area_struct *vma, unsigned long address)
-{
-	struct folio *folio = page_folio(page);
-	
-	VM_BUG_ON_FOLIO(folio_anon_vma(folio)->root != vma->anon_vma->root,
-			folio);
-	VM_BUG_ON_PAGE(page_to_pgoff(page) != linear_page_index(vma, address),
-		       page);
-}
-
-void page_add_anon_rmap(struct page *page,
-	struct vm_area_struct *vma, unsigned long address, rmap_t flags)
-{
-	bool compound = flags & RMAP_COMPOUND;
-	bool first;
-
-	if (unlikely(PageKsm(page)))
-		lock_page_memcg(page);
-	else
-		VM_BUG_ON_PAGE(!PageLocked(page), page);
-
-	if (compound) {
-		atomic_t *mapcount;
-		VM_BUG_ON_PAGE(!PageLocked(page), page);
-		VM_BUG_ON_PAGE(!PageTransHuge(page), page);
-		mapcount = compound_mapcount_ptr(page);
-		first = atomic_inc_and_test(mapcount);
-	} else {
-		first = atomic_inc_and_test(&page->_mapcount);
-	}
-	VM_BUG_ON_PAGE(!first && (flags & RMAP_EXCLUSIVE), page);
-	VM_BUG_ON_PAGE(!first && PageAnonExclusive(page), page);
-
-	if (first) {
-		int nr = compound ? thp_nr_pages(page) : 1;
-		
-		if (compound)
-			__mod_lruvec_page_state(page, NR_ANON_THPS, nr);
-		__mod_lruvec_page_state(page, NR_ANON_MAPPED, nr);
-	}
-
-	if (unlikely(PageKsm(page)))
-		unlock_page_memcg(page);
-
-	else if (first)
-		__page_set_anon_rmap(page, vma, address,
-				     !!(flags & RMAP_EXCLUSIVE));
-	else
-		__page_check_anon_rmap(page, vma, address);
-
-	mlock_vma_page(page, vma, compound);
 }
 
 void page_add_new_anon_rmap(struct page *page,
@@ -410,143 +301,15 @@ void page_add_new_anon_rmap(struct page *page,
 void page_add_file_rmap(struct page *page,
 	struct vm_area_struct *vma, bool compound)
 {
-	int i, nr = 0;
+	int nr = 0;
 
-	VM_BUG_ON_PAGE(compound && !PageTransHuge(page), page);
-	lock_page_memcg(page);
-	if (compound && PageTransHuge(page)) {
-		int nr_pages = thp_nr_pages(page);
-
-		for (i = 0; i < nr_pages; i++) {
-			if (atomic_inc_and_test(&page[i]._mapcount))
-				nr++;
-		}
-		if (!atomic_inc_and_test(compound_mapcount_ptr(page)))
-			goto out;
-
-		VM_WARN_ON_ONCE(!PageLocked(page));
-		if (nr == nr_pages && PageDoubleMap(page))
-			ClearPageDoubleMap(page);
-
-		if (PageSwapBacked(page))
-			__mod_lruvec_page_state(page, NR_SHMEM_PMDMAPPED,
-						nr_pages);
-		else
-			__mod_lruvec_page_state(page, NR_FILE_PMDMAPPED,
-						nr_pages);
-	} else {
-		if (PageTransCompound(page) && page_mapping(page)) {
-			VM_WARN_ON_ONCE(!PageLocked(page));
-			SetPageDoubleMap(compound_head(page));
-		}
-		if (atomic_inc_and_test(&page->_mapcount))
-			nr++;
-	}
-out:
+	if (atomic_inc_and_test(&page->_mapcount))
+		nr++;
 	if (nr)
 		__mod_lruvec_page_state(page, NR_FILE_MAPPED, nr);
-	unlock_page_memcg(page);
 
 	mlock_vma_page(page, vma, compound);
 }
-
-static void page_remove_file_rmap(struct page *page, bool compound)
-{
-	int i, nr = 0;
-
-	VM_BUG_ON_PAGE(compound && !PageHead(page), page);
-
-	if (unlikely(PageHuge(page))) {
-		
-		atomic_dec(compound_mapcount_ptr(page));
-		return;
-	}
-
-	if (compound && PageTransHuge(page)) {
-		int nr_pages = thp_nr_pages(page);
-
-		for (i = 0; i < nr_pages; i++) {
-			if (atomic_add_negative(-1, &page[i]._mapcount))
-				nr++;
-		}
-		if (!atomic_add_negative(-1, compound_mapcount_ptr(page)))
-			goto out;
-		if (PageSwapBacked(page))
-			__mod_lruvec_page_state(page, NR_SHMEM_PMDMAPPED,
-						-nr_pages);
-		else
-			__mod_lruvec_page_state(page, NR_FILE_PMDMAPPED,
-						-nr_pages);
-	} else {
-		if (atomic_add_negative(-1, &page->_mapcount))
-			nr++;
-	}
-out:
-	if (nr)
-		__mod_lruvec_page_state(page, NR_FILE_MAPPED, -nr);
-}
-
-static void page_remove_anon_compound_rmap(struct page *page)
-{
-	int i, nr;
-
-	if (!atomic_add_negative(-1, compound_mapcount_ptr(page)))
-		return;
-
-	if (unlikely(PageHuge(page)))
-		return;
-
-	if (!IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE))
-		return;
-
-	__mod_lruvec_page_state(page, NR_ANON_THPS, -thp_nr_pages(page));
-
-	if (TestClearPageDoubleMap(page)) {
-		
-		for (i = 0, nr = 0; i < thp_nr_pages(page); i++) {
-			if (atomic_add_negative(-1, &page[i]._mapcount))
-				nr++;
-		}
-
-		if (nr && nr < thp_nr_pages(page))
-			deferred_split_huge_page(page);
-	} else {
-		nr = thp_nr_pages(page);
-	}
-
-	if (nr)
-		__mod_lruvec_page_state(page, NR_ANON_MAPPED, -nr);
-}
-
-void page_remove_rmap(struct page *page,
-	struct vm_area_struct *vma, bool compound)
-{
-	lock_page_memcg(page);
-
-	if (!PageAnon(page)) {
-		page_remove_file_rmap(page, compound);
-		goto out;
-	}
-
-	if (compound) {
-		page_remove_anon_compound_rmap(page);
-		goto out;
-	}
-
-	if (!atomic_add_negative(-1, &page->_mapcount))
-		goto out;
-
-	__dec_lruvec_page_state(page, NR_ANON_MAPPED);
-
-	if (PageTransCompound(page))
-		deferred_split_huge_page(compound_head(page));
-
-out:
-	unlock_page_memcg(page);
-
-	munlock_vma_page(page, vma, compound);
-}
-
 
 void __put_anon_vma(struct anon_vma *anon_vma)
 {

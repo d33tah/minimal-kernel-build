@@ -18,14 +18,4 @@ void string_get_size(u64 size, u64 blk_size, enum string_size_units units,
 		     char *buf, int len);
 
 
-char *kstrdup_quotable(const char *src, gfp_t gfp);
-char *kstrdup_quotable_cmdline(struct task_struct *task, gfp_t gfp);
-char *kstrdup_quotable_file(struct file *file, gfp_t gfp);
-
-char **kasprintf_strarray(gfp_t gfp, const char *prefix, size_t n);
-void kfree_strarray(char **array, size_t n);
-
-char **devm_kasprintf_strarray(struct device *dev, const char *prefix, size_t n);
-
-
 #endif

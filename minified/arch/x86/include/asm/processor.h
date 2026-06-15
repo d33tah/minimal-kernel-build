@@ -7,8 +7,6 @@
  
 struct task_struct;
 struct mm_struct;
-struct io_bitmap;
-struct vm86;
 
 /* Inlined from asm/math_emu.h */
 struct math_emu_info {
@@ -48,10 +46,6 @@ struct math_emu_info {
 # define ARCH_MIN_TASKALIGN		__alignof__(union fpregs_state)
 # define ARCH_MIN_MMSTRUCT_ALIGN	0
 
-enum tlb_infos {
-	ENTRIES,
-	NR_INFO
-};
 /* TLB arrays removed - never used in minimal kernel */
 
 struct cpuinfo_x86 {
@@ -110,17 +104,6 @@ struct cpuinfo_x86 {
 	u8			x86_cache_bits;
 	unsigned		initialized : 1;
 } __randomize_layout;
-
-struct cpuid_regs {
-	u32 eax, ebx, ecx, edx;
-};
-
-enum cpuid_regs_idx {
-	CPUID_EAX = 0,
-	CPUID_EBX,
-	CPUID_ECX,
-	CPUID_EDX,
-};
 
 #define X86_VENDOR_INTEL	0
 /* X86_VENDOR_CYRIX, UMC, CENTAUR, TRANSMETA, NSC, HYGON, ZHAOXIN, VORTEX removed - unused */
@@ -308,13 +291,7 @@ struct thread_struct {
 	unsigned long		cr2;
 	unsigned long		trap_nr;
 	unsigned long		error_code;
-	 
-	struct io_bitmap	*io_bitmap;
 
-	 
-	unsigned long		iopl_emul;
-
-	unsigned int		iopl_warn:1;
 	unsigned int		sig_on_uaccess_err:1;
 
 	 
@@ -413,9 +390,6 @@ static inline unsigned int cpuid_edx(unsigned int op)
 extern void select_idle_routine(const struct cpuinfo_x86 *c);
 /* amd_e400_c1e_apic_setup declaration removed - implementation was removed */
 
-enum idle_boot_override {IDLE_NO_OVERRIDE=0, IDLE_HALT, IDLE_NOMWAIT,
-			 IDLE_POLL};
-
 extern void enable_sep_cpu(void);
 extern int sysenter_setup(void);
 
@@ -430,7 +404,6 @@ extern void load_percpu_segment(int);
 extern void cpu_init(void);
 /* cpu_init_secondary declaration removed - no implementation */
 extern void cpu_init_exception_handling(void);
-extern void cr4_init(void);
 /* set_task_blockstep, bootloader_type, bootloader_version removed - unused */
 
 #define HAVE_ARCH_PICK_MMAP_LAYOUT 1
@@ -496,15 +469,6 @@ extern void free_kernel_image_pages(const char *what, void *begin, void *end);
 
 void default_idle(void);
 #define xen_set_default_idle 0
-
-void __noreturn stop_this_cpu(void *dummy);
-void microcode_check(void);
-
-enum mds_mitigations {
-	MDS_MITIGATION_OFF,
-	MDS_MITIGATION_FULL,
-	MDS_MITIGATION_VMWERV,
-};
 
 
 #endif  

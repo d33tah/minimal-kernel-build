@@ -6,12 +6,6 @@
 
 /* Minimal quota.h stub - CONFIG_QUOTA is disabled */
 
-enum quota_type {
-	USRQUOTA = 0,
-	GRPQUOTA = 1,
-	PRJQUOTA = 2,
-};
-
 #define MAXQUOTAS 3
 
 struct mem_dqinfo {

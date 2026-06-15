@@ -140,11 +140,6 @@ struct page {
 	atomic_t _refcount;
 
 
-	 
-#if defined(WANT_PAGE_VIRTUAL)
-	void *virtual;			 
-#endif  
-
 #ifdef LAST_CPUPID_NOT_IN_PAGE_FLAGS
 	int _last_cpupid;
 #endif
@@ -279,7 +274,6 @@ struct mm_struct {
 	struct {
 		struct vm_area_struct *mmap;		 
 		struct rb_root mm_rb;
-		u64 vmacache_seqnum;                    
 		unsigned long (*get_unmapped_area) (struct file *filp,
 				unsigned long addr, unsigned long len,
 				unsigned long pgoff, unsigned long flags);
@@ -309,12 +303,7 @@ struct mm_struct {
 		unsigned long hiwater_rss;  
 		unsigned long hiwater_vm;   
 
-		unsigned long total_vm;	    
-		unsigned long locked_vm;    
-		atomic64_t    pinned_vm;    
-		unsigned long data_vm;	    
-		unsigned long exec_vm;	    
-		unsigned long stack_vm;	    
+		unsigned long total_vm;
 		unsigned long def_flags;
 
 		 
@@ -347,7 +336,6 @@ struct mm_struct {
 		 
 		atomic_t tlb_flush_batched;
 		struct uprobes_state uprobes_state;
-		struct work_struct async_put_work;
 
 	} __randomize_layout;
 
@@ -414,8 +402,6 @@ struct vm_special_mapping {
 	int (*mremap)(const struct vm_special_mapping *sm,
 		     struct vm_area_struct *new_vma);
 };
-
-enum tlb_flush_reason { NR_TLB_FLUSH_REASONS };
 
   
 typedef struct {

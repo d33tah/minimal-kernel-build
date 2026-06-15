@@ -14,84 +14,9 @@ struct pvclock_vcpu_time_info {
 	u8    flags;
 	u8    pad[2];
 } __attribute__((__packed__));
-struct pvclock_wall_clock {
-	u32   version;
-	u32   sec;
-	u32   nsec;
-} __attribute__((__packed__));
-#define PVCLOCK_TSC_STABLE_BIT	(1 << 0)
-#define PVCLOCK_GUEST_STOPPED	(1 << 1)
-#define PVCLOCK_COUNTS_FROM_ZERO (1 << 2)
-
- 
-u64 pvclock_clocksource_read(struct pvclock_vcpu_time_info *src);
-u8 pvclock_read_flags(struct pvclock_vcpu_time_info *src);
-void pvclock_set_flags(u8 flags);
-unsigned long pvclock_tsc_khz(struct pvclock_vcpu_time_info *src);
-void pvclock_read_wallclock(struct pvclock_wall_clock *wall,
-			    struct pvclock_vcpu_time_info *vcpu,
-			    struct timespec64 *ts);
-void pvclock_resume(void);
-
-void pvclock_touch_watchdogs(void);
-
-static __always_inline
-unsigned pvclock_read_begin(const struct pvclock_vcpu_time_info *src)
-{
-	unsigned version = src->version & ~1;
-	 
-	virt_rmb();
-	return version;
-}
-
-static __always_inline
-bool pvclock_read_retry(const struct pvclock_vcpu_time_info *src,
-			unsigned version)
-{
-	 
-	virt_rmb();
-	return unlikely(version != src->version);
-}
-
-/* 32-bit only kernel - removed x86_64 assembly */
-static inline u64 pvclock_scale_delta(u64 delta, u32 mul_frac, int shift)
-{
-	u64 product;
-	u32 tmp1, tmp2;
-
-	if (shift < 0)
-		delta >>= -shift;
-	else
-		delta <<= shift;
-
-	__asm__ (
-		"mul  %5       ; "
-		"mov  %4,%%eax ; "
-		"mov  %%edx,%4 ; "
-		"mul  %5       ; "
-		"xor  %5,%5    ; "
-		"add  %4,%%eax ; "
-		"adc  %5,%%edx ; "
-		: "=A" (product), "=r" (tmp1), "=r" (tmp2)
-		: "a" ((u32)delta), "1" ((u32)(delta >> 32)), "2" (mul_frac) );
-
-	return product;
-}
-
-static __always_inline
-u64 __pvclock_read_cycles(const struct pvclock_vcpu_time_info *src, u64 tsc)
-{
-	u64 delta = tsc - src->tsc_timestamp;
-	u64 offset = pvclock_scale_delta(delta, src->tsc_to_system_mul,
-					     src->tsc_shift);
-	return src->system_time + offset;
-}
-
 struct pvclock_vsyscall_time_info {
 	struct pvclock_vcpu_time_info pvti;
 } __attribute__((__aligned__(SMP_CACHE_BYTES)));
-
-#define PVTI_SIZE sizeof(struct pvclock_vsyscall_time_info)
 
 static inline struct pvclock_vsyscall_time_info *pvclock_get_pvti_cpu0_va(void)
 {

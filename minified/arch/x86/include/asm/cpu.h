@@ -17,13 +17,8 @@ static inline void prefill_possible_map(void) {}
 #define safe_smp_processor_id()			0
 
 
-struct x86_cpu {
-	struct cpu cpu;
-};
-
 /* ap_init_aperfmperf removed - never defined or called */
 
-int mwait_usable(const struct cpuinfo_x86 *);
 
 unsigned int x86_family(unsigned int sig);
 unsigned int x86_model(unsigned int sig);

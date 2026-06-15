@@ -81,47 +81,6 @@ char *kmemdup_nul(const char *s, size_t len, gfp_t gfp)
 	return buf;
 }
 
-void *memdup_user(const void __user *src, size_t len)
-{
-	void *p;
-
-	p = kmalloc_track_caller(len, GFP_USER | __GFP_NOWARN);
-	if (!p)
-		return ERR_PTR(-ENOMEM);
-
-	if (copy_from_user(p, src, len)) {
-		kfree(p);
-		return ERR_PTR(-EFAULT);
-	}
-
-	return p;
-}
-
-
-char *strndup_user(const char __user *s, long n)
-{
-	char *p;
-	long length;
-
-	length = strnlen_user(s, n);
-
-	if (!length)
-		return ERR_PTR(-EFAULT);
-
-	if (length > n)
-		return ERR_PTR(-EINVAL);
-
-	p = memdup_user(s, length);
-
-	if (IS_ERR(p))
-		return p;
-
-	p[length - 1] = '\0';
-
-	return p;
-}
-
-
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		struct vm_area_struct *prev)
 {
@@ -139,21 +98,6 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 	if (next)
 		next->vm_prev = vma;
 }
-
-void __vma_unlink_list(struct mm_struct *mm, struct vm_area_struct *vma)
-{
-	struct vm_area_struct *prev, *next;
-
-	next = vma->vm_next;
-	prev = vma->vm_prev;
-	if (prev)
-		prev->vm_next = next;
-	else
-		mm->mmap = next;
-	if (next)
-		next->vm_prev = prev;
-}
-
 
 #ifndef STACK_RND_MASK
 #define STACK_RND_MASK (0x7ff >> (PAGE_SHIFT - 12))      
@@ -207,17 +151,13 @@ unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 	unsigned long populate;
 	LIST_HEAD(uf);
 
-	ret = security_mmap_file(file, prot, flag);
-	if (!ret) {
-		if (mmap_write_lock_killable(mm))
-			return -EINTR;
-		ret = do_mmap(file, addr, len, prot, flag, pgoff, &populate,
-			      &uf);
-		mmap_write_unlock(mm);
-		userfaultfd_unmap_complete(mm, &uf);
-		if (populate)
-			mm_populate(ret, populate);
-	}
+	if (mmap_write_lock_killable(mm))
+		return -EINTR;
+	ret = do_mmap(file, addr, len, prot, flag, pgoff, &populate,
+		      &uf);
+	mmap_write_unlock(mm);
+	userfaultfd_unmap_complete(mm, &uf);
+	/* populate is always 0 here (VM_LOCKED/MAP_POPULATE never set). */
 	return ret;
 }
 
@@ -301,14 +241,6 @@ bool folio_mapped(struct folio *folio)
 	return false;
 }
 
-struct anon_vma *folio_anon_vma(struct folio *folio)
-{
-	unsigned long mapping = (unsigned long)folio->mapping;
-
-	if ((mapping & PAGE_MAPPING_FLAGS) != PAGE_MAPPING_ANON)
-		return NULL;
-	return (void *)(mapping - PAGE_MAPPING_ANON);
-}
 
 struct address_space *folio_mapping(struct folio *folio)
 {
@@ -330,73 +262,35 @@ int __page_mapcount(struct page *page)
 	int ret;
 
 	ret = atomic_read(&page->_mapcount) + 1;
-	 
-	if (!PageAnon(page) && !PageHuge(page))
+
+	if (!PageAnon(page))
 		return ret;
 	page = compound_head(page);
 	ret += atomic_read(compound_mapcount_ptr(page)) + 1;
-	if (PageDoubleMap(page))
-		ret--;
 	return ret;
 }
 
 int sysctl_overcommit_memory __read_mostly = OVERCOMMIT_GUESS;
-int sysctl_overcommit_ratio __read_mostly = 50;
-unsigned long sysctl_overcommit_kbytes __read_mostly;
 int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
-unsigned long sysctl_user_reserve_kbytes __read_mostly = 1UL << 17;  
-unsigned long sysctl_admin_reserve_kbytes __read_mostly = 1UL << 13;  
-
-unsigned long vm_commit_limit(void)
-{
-	unsigned long allowed;
-
-	if (sysctl_overcommit_kbytes)
-		allowed = sysctl_overcommit_kbytes >> (PAGE_SHIFT - 10);
-	else
-		allowed = ((totalram_pages() - hugetlb_total_pages())
-			   * sysctl_overcommit_ratio / 100);
-	allowed += total_swap_pages;
-
-	return allowed;
-}
 
 struct percpu_counter vm_committed_as ____cacheline_aligned_in_smp;
 
+/*
+ * sysctl_overcommit_memory stays at its OVERCOMMIT_GUESS default on this build
+ * (no sysctl writer), so __vm_enough_memory only ever runs the GUESS path. The
+ * OVERCOMMIT_ALWAYS short-circuit and the OVERCOMMIT_NEVER commit-limit tail
+ * (vm_commit_limit() + the admin/user reserve accounting) are unreachable.
+ */
 int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
 {
-	long allowed;
-
 	vm_acct_memory(pages);
 
-	 
-	if (sysctl_overcommit_memory == OVERCOMMIT_ALWAYS)
-		return 0;
-
-	if (sysctl_overcommit_memory == OVERCOMMIT_GUESS) {
-		if (pages > totalram_pages() + total_swap_pages)
-			goto error;
-		return 0;
+	if (pages > totalram_pages() + total_swap_pages) {
+		vm_unacct_memory(pages);
+		return -ENOMEM;
 	}
 
-	allowed = vm_commit_limit();
-	 
-	if (!cap_sys_admin)
-		allowed -= sysctl_admin_reserve_kbytes >> (PAGE_SHIFT - 10);
-
-	 
-	if (mm) {
-		long reserve = sysctl_user_reserve_kbytes >> (PAGE_SHIFT - 10);
-
-		allowed -= min_t(long, mm->total_vm / 32, reserve);
-	}
-
-	if (percpu_counter_read_positive(&vm_committed_as) < allowed)
-		return 0;
-error:
-	vm_unacct_memory(pages);
-
-	return -ENOMEM;
+	return 0;
 }
 
 

@@ -3,9 +3,7 @@
 #define _ASM_X86_DELAY_H
 
 extern void __bad_udelay(void);
-extern void __bad_ndelay(void);
 extern void __udelay(unsigned long usecs);
-extern void __ndelay(unsigned long nsecs);
 extern void __const_udelay(unsigned long xloops);
 extern void __delay(unsigned long loops);
 
@@ -21,17 +19,6 @@ extern void __delay(unsigned long loops);
 		}							\
 	})
 
-#define ndelay(n)							\
-	({								\
-		if (__builtin_constant_p(n)) {				\
-			if ((n) / 20000 >= 1)				\
-				__bad_ndelay();				\
-			else						\
-				__const_udelay((n) * 5ul);		\
-		} else {						\
-			__ndelay(n);					\
-		}							\
-	})
 #include <linux/init.h>
 
 void __init use_tsc_delay(void);

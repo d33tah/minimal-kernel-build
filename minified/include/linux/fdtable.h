@@ -73,40 +73,14 @@ static inline struct file *files_lookup_fd_raw(struct files_struct *files, unsig
 	return NULL;
 }
 
-static inline struct file *files_lookup_fd_locked(struct files_struct *files, unsigned int fd)
-{
-	RCU_LOCKDEP_WARN(!lockdep_is_held(&files->file_lock),
-			   "suspicious rcu_dereference_check() usage");
-	return files_lookup_fd_raw(files, fd);
-}
-
-static inline struct file *files_lookup_fd_rcu(struct files_struct *files, unsigned int fd)
-{
-	RCU_LOCKDEP_WARN(!rcu_read_lock_held(),
-			   "suspicious rcu_dereference_check() usage");
-	return files_lookup_fd_raw(files, fd);
-}
-
-static inline struct file *lookup_fd_rcu(unsigned int fd)
-{
-	return files_lookup_fd_rcu(current->files, fd);
-}
-
-struct file *task_lookup_fd_rcu(struct task_struct *task, unsigned int fd);
-struct file *task_lookup_next_fd_rcu(struct task_struct *task, unsigned int *fd);
-
 struct task_struct;
 
 void put_files_struct(struct files_struct *fs);
-int unshare_files(void);
 struct files_struct *dup_fd(struct files_struct *, unsigned, int *) __latent_entropy;
 void do_close_on_exec(struct files_struct *);
 int iterate_fd(struct files_struct *, unsigned,
 		int (*)(const void *, struct file *, unsigned),
 		const void *);
-
-extern int close_fd(unsigned int fd);
-extern int __close_range(unsigned int fd, unsigned int max_fd, unsigned int flags);
 
 extern struct kmem_cache *files_cachep;
 

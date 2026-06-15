@@ -1,14 +1,10 @@
 
 
-#define sched_clock_irqtime	(0)
-
 static inline void task_group_account_field(struct task_struct *p, int index,
 					    u64 tmp)
 {
 	 
 	__this_cpu_add(kernel_cpustat.cpustat[index], tmp);
-
-	cgroup_account_cputime_field(p, index, tmp);
 }
 
 void account_user_time(struct task_struct *p, u64 cputime)
@@ -23,28 +19,6 @@ void account_user_time(struct task_struct *p, u64 cputime)
 
 	 
 	task_group_account_field(p, index, cputime);
-
-	 
-	acct_account_cputime(p);
-}
-
-void account_guest_time(struct task_struct *p, u64 cputime)
-{
-	u64 *cpustat = kcpustat_this_cpu->cpustat;
-
-	 
-	p->utime += cputime;
-	account_group_user_time(p, cputime);
-	p->gtime += cputime;
-
-	 
-	if (task_nice(p) > 0) {
-		task_group_account_field(p, CPUTIME_NICE, cputime);
-		cpustat[CPUTIME_GUEST_NICE] += cputime;
-	} else {
-		task_group_account_field(p, CPUTIME_USER, cputime);
-		cpustat[CPUTIME_GUEST] += cputime;
-	}
 }
 
 void account_system_index_time(struct task_struct *p,
@@ -56,19 +30,11 @@ void account_system_index_time(struct task_struct *p,
 
 	 
 	task_group_account_field(p, index, cputime);
-
-	 
-	acct_account_cputime(p);
 }
 
 void account_system_time(struct task_struct *p, int hardirq_offset, u64 cputime)
 {
 	int index;
-
-	if ((p->flags & PF_VCPU) && (irq_count() - hardirq_offset == 0)) {
-		account_guest_time(p, cputime);
-		return;
-	}
 
 	if (hardirq_count() - hardirq_offset)
 		index = CPUTIME_IRQ;
@@ -91,36 +57,9 @@ void account_idle_time(u64 cputime)
 		cpustat[CPUTIME_IDLE] += cputime;
 }
 
-static __always_inline u64 steal_account_process_time(u64 maxtime)
-{
-	return 0;
-}
-
-
-static inline void irqtime_account_idle_ticks(int ticks) { }
-static inline void irqtime_account_process_tick(struct task_struct *p, int user_tick,
-						int nr_ticks) { }
-
-
 void account_process_tick(struct task_struct *p, int user_tick)
 {
-	u64 cputime, steal;
-
-	if (vtime_accounting_enabled_this_cpu())
-		return;
-
-	if (sched_clock_irqtime) {
-		irqtime_account_process_tick(p, user_tick, 1);
-		return;
-	}
-
-	cputime = TICK_NSEC;
-	steal = steal_account_process_time(ULONG_MAX);
-
-	if (steal >= cputime)
-		return;
-
-	cputime -= steal;
+	u64 cputime = TICK_NSEC;
 
 	if (user_tick)
 		account_user_time(p, cputime);
@@ -128,13 +67,5 @@ void account_process_tick(struct task_struct *p, int user_tick)
 		account_system_time(p, HARDIRQ_OFFSET, cputime);
 	else
 		account_idle_time(cputime);
-}
-
-
-/* thread_group_cputime_adjusted - used by exit.c */
-void thread_group_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st)
-{
-	*ut = 0;
-	*st = 0;
 }
 

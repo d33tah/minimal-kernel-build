@@ -1,7 +1,6 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/audit.h>
 #include <linux/capability.h>
 #include <linux/mm.h>
 #include <linux/export.h>

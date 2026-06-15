@@ -18,8 +18,6 @@ struct timer_list {
 #define __TIMER_LOCKDEP_MAP_INITIALIZER(_kn)
 
 #define TIMER_CPUMASK		0x0003FFFF
-#define TIMER_MIGRATING		0x00040000
-#define TIMER_BASEMASK		(TIMER_CPUMASK | TIMER_MIGRATING)
 #define TIMER_DEFERRABLE	0x00080000
 #define TIMER_IRQSAFE		0x00200000
 #define TIMER_INIT_FLAGS	(TIMER_DEFERRABLE | TIMER_IRQSAFE)
@@ -75,7 +73,6 @@ static inline int timer_pending(const struct timer_list * timer)
 
 extern void add_timer_on(struct timer_list *timer, int cpu);
 extern int del_timer(struct timer_list * timer);
-extern int mod_timer(struct timer_list *timer, unsigned long expires);
 
 
 #define NEXT_TIMER_MAX_DELTA	((1UL << 30) - 1)

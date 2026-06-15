@@ -47,44 +47,6 @@ bool rng_is_initialized(void)
 }
 
 
-static ssize_t random_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
-{
-	if (clear_user(buf, nbytes))
-		return -EFAULT;
-	return nbytes;
-}
-
-static ssize_t random_write(struct file *file, const char __user *buffer, size_t count, loff_t *ppos)
-{
-	return count;
-}
-
-static __poll_t random_poll(struct file *file, poll_table *wait)
-{
-	return EPOLLIN | EPOLLRDNORM | EPOLLOUT | EPOLLWRNORM;
-}
-
-static long random_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
-{
-	return -EINVAL;
-}
-
-const struct file_operations random_fops = {
-	.read = random_read,
-	.write = random_write,
-	.poll = random_poll,
-	.unlocked_ioctl = random_ioctl,
-	.llseek = noop_llseek,
-};
-
-const struct file_operations urandom_fops = {
-	.read = random_read,
-	.write = random_write,
-	.unlocked_ioctl = random_ioctl,
-	.llseek = noop_llseek,
-};
-
-
 SYSCALL_DEFINE3(getrandom, char __user *, buf, size_t, count, unsigned int, flags)
 {
 	if (clear_user(buf, count))

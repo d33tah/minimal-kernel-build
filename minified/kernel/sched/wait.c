@@ -17,15 +17,6 @@ void add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq
 	spin_unlock_irqrestore(&wq_head->lock, flags);
 }
 
-void remove_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
-{
-	unsigned long flags;
-
-	spin_lock_irqsave(&wq_head->lock, flags);
-	__remove_wait_queue(wq_head, wq_entry);
-	spin_unlock_irqrestore(&wq_head->lock, flags);
-}
-
 #define WAITQUEUE_WALK_BREAK_CNT 64
 
 static int __wake_up_common(struct wait_queue_head *wq_head, unsigned int mode,
@@ -97,36 +88,10 @@ void __wake_up(struct wait_queue_head *wq_head, unsigned int mode,
 	__wake_up_common_lock(wq_head, mode, nr_exclusive, 0, key);
 }
 
-void __wake_up_locked(struct wait_queue_head *wq_head, unsigned int mode, int nr)
-{
-	__wake_up_common(wq_head, mode, nr, 0, NULL, NULL);
-}
-
-void __wake_up_locked_key(struct wait_queue_head *wq_head, unsigned int mode, void *key)
-{
-	__wake_up_common(wq_head, mode, 1, 0, key, NULL);
-}
-
 void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 		unsigned int mode, void *key, wait_queue_entry_t *bookmark)
 {
 	__wake_up_common(wq_head, mode, 1, 0, key, bookmark);
-}
-
-/* Used by __wake_up_parent and begin_new_exec */
-void __wake_up_sync_key(struct wait_queue_head *wq_head, unsigned int mode, void *key) { }
-
-void
-prepare_to_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state)
-{
-	unsigned long flags;
-
-	wq_entry->flags &= ~WQ_FLAG_EXCLUSIVE;
-	spin_lock_irqsave(&wq_head->lock, flags);
-	if (list_empty(&wq_entry->entry))
-		__add_wait_queue(wq_head, wq_entry);
-	set_current_state(state);
-	spin_unlock_irqrestore(&wq_head->lock, flags);
 }
 
 void init_wait_entry(struct wait_queue_entry *wq_entry, int flags)

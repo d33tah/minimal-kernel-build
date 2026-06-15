@@ -8,19 +8,16 @@
 #include <linux/fs.h>
 #include <linux/security.h>
 #include <linux/cred.h>
-#include <linux/eventpoll.h>
 #include <linux/rcupdate.h>
 #include <linux/mount.h>
 #include <linux/capability.h>
 #include <linux/cdev.h>
-#include <linux/fsnotify.h>
 #include <linux/sysctl.h>
 #include <linux/percpu_counter.h>
 #include <linux/percpu.h>
 #include <linux/task_work.h>
 static inline void ima_file_free(struct file *file) {}
 #include <linux/swap.h>
-#include <linux/kmemleak.h>
 
 #include <linux/atomic.h>
 
@@ -44,7 +41,6 @@ static void file_free_rcu(struct rcu_head *head)
 
 static inline void file_free(struct file *f)
 {
-	security_file_free(f);
 	if (!(f->f_mode & FMODE_NOACCOUNT))
 		percpu_counter_dec(&nr_files);
 	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
@@ -58,18 +54,12 @@ static long get_nr_files(void)
 static struct file *__alloc_file(int flags, const struct cred *cred)
 {
 	struct file *f;
-	int error;
 
 	f = kmem_cache_zalloc(filp_cachep, GFP_KERNEL);
 	if (unlikely(!f))
 		return ERR_PTR(-ENOMEM);
 
 	f->f_cred = get_cred(cred);
-	error = security_file_alloc(f);
-	if (unlikely(error)) {
-		file_free_rcu(&f->f_u.fu_rcuhead);
-		return ERR_PTR(error);
-	}
 
 	atomic_long_set(&f->f_count, 1);
 	rwlock_init(&f->f_owner.lock);
@@ -108,58 +98,6 @@ over:
 }
 
 
-static struct file *alloc_file(const struct path *path, int flags,
-		const struct file_operations *fop)
-{
-	struct file *file;
-
-	file = alloc_empty_file(flags, current_cred());
-	if (IS_ERR(file))
-		return file;
-
-	file->f_path = *path;
-	file->f_inode = path->dentry->d_inode;
-	file->f_mapping = path->dentry->d_inode->i_mapping;
-	file->f_wb_err = filemap_sample_wb_err(file->f_mapping);
-	file->f_sb_err = file_sample_sb_err(file);
-	if ((file->f_mode & FMODE_READ) &&
-	     likely(fop->read || fop->read_iter))
-		file->f_mode |= FMODE_CAN_READ;
-	if ((file->f_mode & FMODE_WRITE) &&
-	     likely(fop->write || fop->write_iter))
-		file->f_mode |= FMODE_CAN_WRITE;
-	file->f_mode |= FMODE_OPENED;
-	file->f_op = fop;
-	if ((file->f_mode & (FMODE_READ | FMODE_WRITE)) == FMODE_READ)
-		i_readcount_inc(path->dentry->d_inode);
-	return file;
-}
-
-struct file *alloc_file_pseudo(struct inode *inode, struct vfsmount *mnt,
-				const char *name, int flags,
-				const struct file_operations *fops)
-{
-	static const struct dentry_operations anon_ops = {
-		.d_dname = simple_dname
-	};
-	struct qstr this = QSTR_INIT(name, strlen(name));
-	struct path path;
-	struct file *file;
-
-	path.dentry = d_alloc_pseudo(mnt->mnt_sb, &this);
-	if (!path.dentry)
-		return ERR_PTR(-ENOMEM);
-	if (!mnt->mnt_sb->s_d_op)
-		d_set_d_op(path.dentry, &anon_ops);
-	path.mnt = mntget(mnt);
-	d_instantiate(path.dentry, inode);
-	file = alloc_file(&path, flags, fops);
-	if (IS_ERR(file)) {
-		ihold(inode);
-		path_put(&path);
-	}
-	return file;
-}
 
 
 static void __fput(struct file *file)
@@ -173,11 +111,6 @@ static void __fput(struct file *file)
 		goto out;
 
 	might_sleep();
-
-	fsnotify_close(file);
-	 
-	eventpoll_release(file);
-	locks_remove_file(file);
 
 	ima_file_free(file);
 	if (unlikely(file->f_flags & FASYNC)) {
@@ -199,8 +132,6 @@ static void __fput(struct file *file)
 		__mnt_drop_write(mnt);
 	}
 	dput(dentry);
-	if (unlikely(mode & FMODE_NEED_UNMOUNT))
-		dissolve_on_fput(mnt);
 	mntput(mnt);
 out:
 	file_free(file);

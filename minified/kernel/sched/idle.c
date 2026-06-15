@@ -1,35 +1,10 @@
 
 extern char __cpuidle_text_start[], __cpuidle_text_end[];
 
-static int __read_mostly cpu_idle_force_poll;
-
-static noinline int __cpuidle cpu_idle_poll(void)
-{
-	 
-	stop_critical_timings();
-	rcu_idle_enter();
-	local_irq_enable();
-
-	while (!tif_need_resched() &&
-	       (cpu_idle_force_poll || tick_check_broadcast_expired()))
-		cpu_relax();
-
-	rcu_idle_exit();
-	start_critical_timings();
-	 
-
-	return 1;
-}
-
 void __weak arch_cpu_idle_prepare(void) { }
 void __weak arch_cpu_idle_enter(void) { }
 void __weak arch_cpu_idle_exit(void) { }
 void __weak arch_cpu_idle_dead(void) { }
-void __weak arch_cpu_idle(void)
-{
-	cpu_idle_force_poll = 1;
-	raw_local_irq_enable();
-}
 
 void __cpuidle default_idle_call(void)
 {
@@ -60,90 +35,22 @@ void __cpuidle default_idle_call(void)
 	}
 }
 
-static int call_cpuidle_s2idle(struct cpuidle_driver *drv,
-			       struct cpuidle_device *dev)
-{
-	if (current_clr_polling_and_test())
-		return -EBUSY;
-
-	return cpuidle_enter_s2idle(drv, dev);
-}
-
-static int call_cpuidle(struct cpuidle_driver *drv, struct cpuidle_device *dev,
-		      int next_state)
-{
-	 
-	if (current_clr_polling_and_test()) {
-		dev->last_residency_ns = 0;
-		local_irq_enable();
-		return -EBUSY;
-	}
-
-	 
-	return cpuidle_enter(drv, dev, next_state);
-}
-
 static void cpuidle_idle_call(void)
 {
-	struct cpuidle_device *dev = cpuidle_get_device();
-	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
-	int next_state, entered_state;
 
-	 
 	if (need_resched()) {
 		local_irq_enable();
 		return;
 	}
 
-	 
 
-	if (cpuidle_not_available(drv, dev)) {
-		tick_nohz_idle_stop_tick();
+	tick_nohz_idle_stop_tick();
 
-		default_idle_call();
-		goto exit_idle;
-	}
+	default_idle_call();
 
-	 
-
-	if (idle_should_enter_s2idle() || dev->forced_idle_latency_limit_ns) {
-		u64 max_latency_ns;
-
-		if (idle_should_enter_s2idle()) {
-
-			entered_state = call_cpuidle_s2idle(drv, dev);
-			if (entered_state > 0)
-				goto exit_idle;
-
-			max_latency_ns = U64_MAX;
-		} else {
-			max_latency_ns = dev->forced_idle_latency_limit_ns;
-		}
-
-		tick_nohz_idle_stop_tick();
-
-		next_state = cpuidle_find_deepest_state(drv, dev, max_latency_ns);
-		call_cpuidle(drv, dev, next_state);
-	} else {
-		bool stop_tick = true;
-
-		 
-		next_state = cpuidle_select(drv, dev, &stop_tick);
-
-		if (stop_tick || tick_nohz_tick_stopped())
-			tick_nohz_idle_stop_tick();
-		else
-			tick_nohz_idle_retain_tick();
-
-		entered_state = call_cpuidle(drv, dev, next_state);
-		 
-		cpuidle_reflect(dev, entered_state);
-	}
-
-exit_idle:
 	__current_set_polling();
 
-	 
+
 	if (WARN_ON_ONCE(irqs_disabled()))
 		local_irq_enable();
 }
@@ -174,13 +81,8 @@ static void do_idle(void)
 		arch_cpu_idle_enter();
 		rcu_nocb_flush_deferred_wakeup();
 
-		 
-		if (cpu_idle_force_poll || tick_check_broadcast_expired()) {
-			tick_nohz_idle_restart_tick();
-			cpu_idle_poll();
-		} else {
-			cpuidle_idle_call();
-		}
+
+		cpuidle_idle_call();
 		arch_cpu_idle_exit();
 	}
 
@@ -198,12 +100,6 @@ static void do_idle(void)
 
 	if (unlikely(klp_patch_pending(current)))
 		klp_update_patch_state(current);
-}
-
-bool cpu_in_idle(unsigned long pc)
-{
-	return pc >= (unsigned long)__cpuidle_text_start &&
-		pc < (unsigned long)__cpuidle_text_end;
 }
 
 void cpu_startup_entry(enum cpuhp_state state)
@@ -228,7 +124,6 @@ static void put_prev_task_idle(struct rq *rq, struct task_struct *prev)
 static void set_next_task_idle(struct rq *rq, struct task_struct *next, bool first)
 {
 	update_idle_core(rq);
-	schedstat_inc(rq->sched_goidle);
 }
 
 
@@ -254,21 +149,6 @@ static void task_tick_idle(struct rq *rq, struct task_struct *curr, int queued)
 {
 }
 
-static void switched_to_idle(struct rq *rq, struct task_struct *p)
-{
-	BUG();
-}
-
-static void
-prio_changed_idle(struct rq *rq, struct task_struct *p, int oldprio)
-{
-	BUG();
-}
-
-static void update_curr_idle(struct rq *rq)
-{
-}
-
 DEFINE_SCHED_CLASS(idle) = {
 
 	 
@@ -284,8 +164,4 @@ DEFINE_SCHED_CLASS(idle) = {
 
 
 	.task_tick		= task_tick_idle,
-
-	.prio_changed		= prio_changed_idle,
-	.switched_to		= switched_to_idle,
-	.update_curr		= update_curr_idle,
 };

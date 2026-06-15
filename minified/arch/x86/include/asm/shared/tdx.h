@@ -15,21 +15,5 @@
 
 #ifndef __ASSEMBLY__
 
- 
-struct tdx_hypercall_args {
-	u64 r10;
-	u64 r11;
-	u64 r12;
-	u64 r13;
-	u64 r14;
-	u64 r15;
-};
-
- 
-u64 __tdx_hypercall(struct tdx_hypercall_args *args, unsigned long flags);
-
- 
-void __tdx_hypercall_failed(void);
-
-#endif  
+#endif
 #endif  

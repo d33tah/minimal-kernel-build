@@ -61,11 +61,6 @@ struct kbdiacruc {
 	unsigned int diacr, base, result;
 };
 
-struct kbdiacrsuc {
-	unsigned int kb_cnt;
-	struct kbdiacruc kbdiacruc[256];
-};
-
 /* kbkeycode used by keyboard.c, vt_ioctl.c, vt_kern.h */
 struct kbkeycode {
 	unsigned int scancode, keycode;

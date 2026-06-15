@@ -10,13 +10,8 @@
 #include <linux/sched/mm.h>
 
 #include <linux/sched/signal.h>
-extern unsigned long total_forks;
 extern int nr_threads;
 DECLARE_PER_CPU(unsigned long, process_counts);
-extern unsigned int nr_running(void);
-/* single_task_running removed - unused */
-extern unsigned int nr_iowait(void);
-extern unsigned int nr_iowait_cpu(int cpu);
 /* end sched/stat.h */
 #include <linux/sched/sysctl.h>
 
@@ -45,7 +40,6 @@ extern unsigned int nr_iowait_cpu(int cpu);
 #include <linux/mm.h>
 #include <linux/module.h>
 
-#include <linux/plist.h>
 #include <linux/poll.h>
 #include <linux/proc_fs.h>
 #include <linux/rcupdate.h>
@@ -85,9 +79,6 @@ struct cpuidle_state;
 
 extern __read_mostly int scheduler_running;
 
-extern unsigned long calc_load_update;
-extern atomic_long_t calc_load_tasks;
-
 extern unsigned int sysctl_sched_child_runs_first;
 
 extern void calc_global_load_tick(struct rq *this_rq);
@@ -95,7 +86,6 @@ extern void calc_global_load_tick(struct rq *this_rq);
 
 /* call_trace_sched_update_nr_running removed - unused */
 
-extern unsigned int sysctl_sched_rt_period;
 extern int sysctl_sched_rt_runtime;
 extern int sched_rr_timeslice;
 
@@ -109,8 +99,6 @@ extern int sched_rr_timeslice;
 
  
 #define NICE_0_LOAD		(1L << NICE_0_LOAD_SHIFT)
-
-#define RUNTIME_INF		((u64)~0ULL)
 
 static inline int idle_policy(int policy)
 {
@@ -156,28 +144,7 @@ static inline int task_has_dl_policy(struct task_struct *p)
 #define shr_bound(val, shift)							\
 	(val >> min_t(typeof(shift), shift, BITS_PER_TYPE(typeof(val)) - 1))
 
-struct rt_prio_array {
-	DECLARE_BITMAP(bitmap, MAX_RT_PRIO+1);  
-	struct list_head queue[MAX_RT_PRIO];
-};
-
-struct rt_bandwidth {
-	 
-	raw_spinlock_t		rt_runtime_lock;
-	ktime_t			rt_period;
-	u64			rt_runtime;
-	struct hrtimer		rt_period_timer;
-	unsigned int		rt_period_active;
-};
-
 void __dl_clear_params(struct task_struct *p);
-
-struct dl_bandwidth {
-	raw_spinlock_t		dl_runtime_lock;
-	u64			dl_runtime;
-	u64			dl_period;
-};
-
 
 struct dl_bw {
 	raw_spinlock_t		lock;
@@ -188,24 +155,14 @@ struct dl_bw {
 /* init_dl_bw, sched_dl_global_validate, sched_dl_do_global, sched_dl_overflow,
    __getparam_dl, __checkparam_dl, dl_param_changed, dl_cpuset_cpumask_can_shrink,
    dl_cpu_busy removed - never defined/called */
-extern void __setparam_dl(struct task_struct *p, const struct sched_attr *attr);
 
 
-struct cfs_bandwidth { };
-
-
- 
 struct cfs_rq {
 	struct load_weight	load;
 	unsigned int		nr_running;
-	unsigned int		h_nr_running;       
-	unsigned int		idle_nr_running;    
-	unsigned int		idle_h_nr_running;  
+	unsigned int		h_nr_running;
 
-	u64			exec_clock;
 	u64			min_vruntime;
-
-	u64			min_vruntime_copy;
 
 	struct rb_root_cached	tasks_timeline;
 
@@ -213,7 +170,6 @@ struct cfs_rq {
 	struct sched_entity	*curr;
 	struct sched_entity	*next;
 	struct sched_entity	*last;
-	struct sched_entity	*skip;
 
 
 
@@ -221,35 +177,9 @@ struct cfs_rq {
 
 
 struct rt_rq {
-	struct rt_prio_array	active;
-	unsigned int		rt_nr_running;
-	unsigned int		rr_nr_running;
-	int			rt_queued;
-
-	int			rt_throttled;
-	u64			rt_time;
-	u64			rt_runtime;
-	 
-	raw_spinlock_t		rt_runtime_lock;
-
 };
 
 struct dl_rq {
-	 
-	struct rb_root_cached	root;
-
-	unsigned int		dl_nr_running;
-
-	struct dl_bw		dl_bw;
-	 
-	u64			running_bw;
-
-	 
-	u64			this_bw;
-	u64			extra_bw;
-
-	 
-	u64			bw_ratio;
 };
 
 #define entity_is_task(se)	1
@@ -260,10 +190,8 @@ struct rq {
 	 
 	raw_spinlock_t		__lock;
 
-	 
-	unsigned int		nr_running;
 
-	u64			nr_switches;
+	unsigned int		nr_running;
 
 
 	struct cfs_rq		cfs;
@@ -271,21 +199,15 @@ struct rq {
 	struct dl_rq		dl;
 
 
-	 
-	unsigned int		nr_uninterruptible;
-
 	struct task_struct __rcu	*curr;
 	struct task_struct	*idle;
 	struct task_struct	*stop;
-	unsigned long		next_balance;
 	struct mm_struct	*prev_mm;
 
 	unsigned int		clock_update_flags;
 	u64			clock;
-	 
+
 	u64			clock_task ____cacheline_aligned;
-	u64			clock_pelt;
-	unsigned long		lost_idle_time;
 
 	atomic_t		nr_iowait;
 
@@ -293,15 +215,9 @@ struct rq {
 
 
 
-	 
-	unsigned long		calc_load_update;
-	long			calc_load_active;
 
 
 
-
-	unsigned int		push_busy;
-	struct cpu_stop_work	push_work;
 
 };
 
@@ -317,16 +233,6 @@ static inline int cpu_of(struct rq *rq)
 }
 
 struct sched_group;
-
-static inline bool sched_core_enabled(struct rq *rq)
-{
-	return false;
-}
-
-static inline bool sched_core_disabled(void)
-{
-	return true;
-}
 
 static inline raw_spinlock_t *rq_lockp(struct rq *rq)
 {
@@ -413,11 +319,6 @@ static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se)
 }
 
  
-static inline struct cfs_rq *group_cfs_rq(struct sched_entity *grp)
-{
-	return NULL;
-}
-
 extern void update_rq_clock(struct rq *rq);
 
  
@@ -480,12 +381,6 @@ static inline void rq_unpin_lock(struct rq *rq, struct rq_flags *rf)
 	lockdep_unpin_lock(__rq_lockp(rq), rf->cookie);
 }
 
-static inline void rq_repin_lock(struct rq *rq, struct rq_flags *rf)
-{
-	lockdep_repin_lock(__rq_lockp(rq), rf->cookie);
-
-}
-
 struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 	__acquires(rq->lock);
 
@@ -511,43 +406,11 @@ task_rq_unlock(struct rq *rq, struct task_struct *p, struct rq_flags *rf)
 }
 
 static inline void
-rq_lock_irqsave(struct rq *rq, struct rq_flags *rf)
-	__acquires(rq->lock)
-{
-	raw_spin_rq_lock_irqsave(rq, rf->flags);
-	rq_pin_lock(rq, rf);
-}
-
-static inline void
-rq_lock_irq(struct rq *rq, struct rq_flags *rf)
-	__acquires(rq->lock)
-{
-	raw_spin_rq_lock_irq(rq);
-	rq_pin_lock(rq, rf);
-}
-
-static inline void
 rq_lock(struct rq *rq, struct rq_flags *rf)
 	__acquires(rq->lock)
 {
 	raw_spin_rq_lock(rq);
 	rq_pin_lock(rq, rf);
-}
-
-static inline void
-rq_unlock_irqrestore(struct rq *rq, struct rq_flags *rf)
-	__releases(rq->lock)
-{
-	rq_unpin_lock(rq, rf);
-	raw_spin_rq_unlock_irqrestore(rq, rf->flags);
-}
-
-static inline void
-rq_unlock_irq(struct rq *rq, struct rq_flags *rf)
-	__releases(rq->lock)
-{
-	rq_unpin_lock(rq, rf);
-	raw_spin_rq_unlock_irq(rq);
 }
 
 static inline void
@@ -558,48 +421,18 @@ rq_unlock(struct rq *rq, struct rq_flags *rf)
 	raw_spin_rq_unlock(rq);
 }
 
-static inline struct rq *
-this_rq_lock_irq(struct rq_flags *rf)
-	__acquires(rq->lock)
-{
-	struct rq *rq;
-
-	local_irq_disable();
-	rq = this_rq();
-	rq_lock(rq, rf);
-	return rq;
-}
-
 /* sched_init_numa, sched_update_numa, sched_domains_numa_masks_set/clear, sched_numa_find_closest removed - unused */
 
-static inline void
-init_numa_balancing(unsigned long clone_flags, struct task_struct *p)
-{
-}
-
+/* init_numa_balancing removed - NUMA_BALANCING off, empty stub */
 
 #include "stats.h"
 
 
 /* sched_core_account_forceidle removed - unused */
 
-static inline void sched_core_tick(struct rq *rq) {}
+/* set_task_rq / task_group / __set_task_cpu removed - no CGROUP_SCHED, UP build (all no-ops, 0 callers) */
 
 
-
-static inline void set_task_rq(struct task_struct *p, unsigned int cpu) { }
-static inline struct task_group *task_group(struct task_struct *p)
-{
-	return NULL;
-}
-
-
-static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
-{
-	set_task_rq(p, cpu);
-}
-
- 
 # define const_debug const
 
 #define SCHED_FEAT(name, enabled)	\
@@ -624,29 +457,10 @@ static const_debug __maybe_unused unsigned int sysctl_sched_features =
 #define sched_feat(x) !!(sysctl_sched_features & (1UL << __SCHED_FEAT_##x))
 
 
-extern struct static_key_false sched_numa_balancing;
-
-static inline u64 global_rt_period(void)
-{
-	return (u64)sysctl_sched_rt_period * NSEC_PER_USEC;
-}
-
-static inline u64 global_rt_runtime(void)
-{
-	if (sysctl_sched_rt_runtime < 0)
-		return RUNTIME_INF;
-
-	return (u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
-}
 
 static inline int task_current(struct rq *rq, struct task_struct *p)
 {
 	return rq->curr == p;
-}
-
-static inline int task_running(struct rq *rq, struct task_struct *p)
-{
-	return task_current(rq, p);
 }
 
 static inline int task_on_rq_queued(struct task_struct *p)
@@ -689,8 +503,6 @@ struct sched_class {
 
 	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int flags);
 	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int flags);
-	void (*yield_task)   (struct rq *rq);
-	bool (*yield_to_task)(struct rq *rq, struct task_struct *p);
 
 	void (*check_preempt_curr)(struct rq *rq, struct task_struct *p, int flags);
 
@@ -703,17 +515,6 @@ struct sched_class {
 	void (*task_tick)(struct rq *rq, struct task_struct *p, int queued);
 	void (*task_fork)(struct task_struct *p);
 	void (*task_dead)(struct task_struct *p);
-
-	 
-	void (*switched_from)(struct rq *this_rq, struct task_struct *task);
-	void (*switched_to)  (struct rq *this_rq, struct task_struct *task);
-	void (*prio_changed) (struct rq *this_rq, struct task_struct *task,
-			      int oldprio);
-
-	unsigned int (*get_rr_interval)(struct rq *rq,
-					struct task_struct *task);
-
-	void (*update_curr)(struct rq *rq);
 };
 
 static inline void put_prev_task(struct rq *rq, struct task_struct *prev)
@@ -769,12 +570,6 @@ extern void reweight_task(struct task_struct *p, int prio);
 
 extern void resched_curr(struct rq *rq);
 extern void resched_cpu(int cpu);
-
-extern struct rt_bandwidth def_rt_bandwidth;
-extern void init_rt_bandwidth(struct rt_bandwidth *rt_b, u64 period, u64 runtime);
-
-extern void init_dl_task_timer(struct sched_dl_entity *dl_se);
-extern void init_dl_inactive_task_timer(struct sched_dl_entity *dl_se);
 
 extern void init_entity_runnable_average(struct sched_entity *se);
 extern void post_init_entity_util_avg(struct task_struct *p);
@@ -858,15 +653,6 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
 #define perf_domain_span(pd) NULL
 
 
-static inline void membarrier_switch_mm(struct rq *rq,
-					struct mm_struct *prev_mm,
-					struct mm_struct *next_mm)
-{
-}
-
-
-/* swake_up_all_locked removed - unused */
-extern void __prepare_to_swait(struct swait_queue_head *q, struct swait_queue *wait);
 
 
 #endif  

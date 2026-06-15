@@ -13,14 +13,6 @@ struct ipc_namespace {
 	struct user_namespace *user_ns;
 	struct ns_common ns;
 };
-extern struct ipc_namespace init_ipc_ns;
-static inline struct ipc_namespace *copy_ipcs(unsigned long flags,
-	struct user_namespace *user_ns, struct ipc_namespace *ns)
-{
-	if (flags & CLONE_NEWIPC)
-		return ERR_PTR(-EINVAL);
-	return ns;
-}
 static inline void put_ipc_ns(struct ipc_namespace *ns) {}
 #include <linux/fs_struct.h>
 #include <linux/proc_fs.h>
@@ -39,125 +31,28 @@ struct nsproxy init_nsproxy = {
 	.pid_ns_for_children	= &init_pid_ns,
 };
 
-static inline struct nsproxy *create_nsproxy(void)
-{
-	struct nsproxy *nsproxy;
-
-	nsproxy = kmem_cache_alloc(nsproxy_cachep, GFP_KERNEL);
-	if (nsproxy)
-		atomic_set(&nsproxy->count, 1);
-	return nsproxy;
-}
-
-static struct nsproxy *create_new_namespaces(unsigned long flags,
-	struct task_struct *tsk, struct user_namespace *user_ns,
-	struct fs_struct *new_fs)
-{
-	struct nsproxy *new_nsp;
-	int err;
-
-	new_nsp = create_nsproxy();
-	if (!new_nsp)
-		return ERR_PTR(-ENOMEM);
-
-	new_nsp->mnt_ns = copy_mnt_ns(flags, tsk->nsproxy->mnt_ns, user_ns, new_fs);
-	if (IS_ERR(new_nsp->mnt_ns)) {
-		err = PTR_ERR(new_nsp->mnt_ns);
-		goto out_ns;
-	}
-
-	new_nsp->uts_ns = copy_utsname(flags, user_ns, tsk->nsproxy->uts_ns);
-	if (IS_ERR(new_nsp->uts_ns)) {
-		err = PTR_ERR(new_nsp->uts_ns);
-		goto out_uts;
-	}
-
-	new_nsp->ipc_ns = copy_ipcs(flags, user_ns, tsk->nsproxy->ipc_ns);
-	if (IS_ERR(new_nsp->ipc_ns)) {
-		err = PTR_ERR(new_nsp->ipc_ns);
-		goto out_ipc;
-	}
-
-	new_nsp->pid_ns_for_children =
-		copy_pid_ns(flags, user_ns, tsk->nsproxy->pid_ns_for_children);
-	if (IS_ERR(new_nsp->pid_ns_for_children)) {
-		err = PTR_ERR(new_nsp->pid_ns_for_children);
-		goto out_pid;
-	}
-
-	new_nsp->cgroup_ns = copy_cgroup_ns(flags, user_ns,
-					    tsk->nsproxy->cgroup_ns);
-	if (IS_ERR(new_nsp->cgroup_ns)) {
-		err = PTR_ERR(new_nsp->cgroup_ns);
-		goto out_cgroup;
-	}
-
-	new_nsp->net_ns = copy_net_ns(flags, user_ns, tsk->nsproxy->net_ns);
-	if (IS_ERR(new_nsp->net_ns)) {
-		err = PTR_ERR(new_nsp->net_ns);
-		goto out_net;
-	}
-
-	new_nsp->time_ns_for_children = copy_time_ns(flags, user_ns,
-					tsk->nsproxy->time_ns_for_children);
-	if (IS_ERR(new_nsp->time_ns_for_children)) {
-		err = PTR_ERR(new_nsp->time_ns_for_children);
-		goto out_time;
-	}
-	new_nsp->time_ns = get_time_ns(tsk->nsproxy->time_ns);
-
-	return new_nsp;
-
-out_time:
-	put_net(new_nsp->net_ns);
-out_net:
-	put_cgroup_ns(new_nsp->cgroup_ns);
-out_cgroup:
-	if (new_nsp->pid_ns_for_children)
-		put_pid_ns(new_nsp->pid_ns_for_children);
-out_pid:
-	if (new_nsp->ipc_ns)
-		put_ipc_ns(new_nsp->ipc_ns);
-out_ipc:
-	if (new_nsp->uts_ns)
-		put_uts_ns(new_nsp->uts_ns);
-out_uts:
-	if (new_nsp->mnt_ns)
-		put_mnt_ns(new_nsp->mnt_ns);
-out_ns:
-	kmem_cache_free(nsproxy_cachep, new_nsp);
-	return ERR_PTR(err);
-}
-
 int copy_namespaces(unsigned long flags, struct task_struct *tsk)
 {
 	struct nsproxy *old_ns = tsk->nsproxy;
 	struct user_namespace *user_ns = task_cred_xxx(tsk, user_ns);
-	struct nsproxy *new_ns;
 
-	if (likely(!(flags & (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC |
-			      CLONE_NEWPID | CLONE_NEWNET |
-			      CLONE_NEWCGROUP | CLONE_NEWTIME)))) {
-		if (likely(old_ns->time_ns_for_children == old_ns->time_ns)) {
-			get_nsproxy(old_ns);
-			return 0;
-		}
-	} else if (!ns_capable(user_ns, CAP_SYS_ADMIN))
+	/*
+	 * This minimal kernel never clones namespaces: no task ever passes a
+	 * CLONE_NEW* flag and no time namespace is ever created (CONFIG_TIME_NS
+	 * off, so time_ns_for_children == time_ns always). The shared nsproxy
+	 * is simply pinned and inherited.
+	 */
+	if (!(flags & (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC |
+		       CLONE_NEWPID | CLONE_NEWNET |
+		       CLONE_NEWCGROUP | CLONE_NEWTIME))) {
+		get_nsproxy(old_ns);
+		return 0;
+	}
+
+	if (!ns_capable(user_ns, CAP_SYS_ADMIN))
 		return -EPERM;
 
-	 
-	if ((flags & (CLONE_NEWIPC | CLONE_SYSVSEM)) ==
-		(CLONE_NEWIPC | CLONE_SYSVSEM))
-		return -EINVAL;
-
-	new_ns = create_new_namespaces(flags, tsk, user_ns, tsk->fs);
-	if (IS_ERR(new_ns))
-		return  PTR_ERR(new_ns);
-
-	timens_on_fork(new_ns, tsk);
-
-	tsk->nsproxy = new_ns;
-	return 0;
+	return -EINVAL;
 }
 
 void free_nsproxy(struct nsproxy *ns)
@@ -174,7 +69,6 @@ void free_nsproxy(struct nsproxy *ns)
 		put_time_ns(ns->time_ns);
 	if (ns->time_ns_for_children)
 		put_time_ns(ns->time_ns_for_children);
-	put_cgroup_ns(ns->cgroup_ns);
 	put_net(ns->net_ns);
 	kmem_cache_free(nsproxy_cachep, ns);
 }

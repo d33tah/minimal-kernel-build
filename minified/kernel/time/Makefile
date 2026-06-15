@@ -3,11 +3,11 @@ obj-y += time.o timer.o hrtimer.o
 obj-y += timekeeping.o ntp.o clocksource.o jiffies.o
 # timeconv.o removed
 
-ifeq ($(CONFIG_POSIX_TIMERS),y)
- obj-y += posix-timers.o posix-cpu-timers.o posix-clock.o itimer.o
-else
- obj-y += posix-stubs.o
-endif
+# posix timers removed: setitimer/getitimer/timer_*/itimer/most clock_* syscalls
+# are unreachable (init does write(2)+exit) and commented out in syscall_32.tbl
+# (-> sys_ni). posix-stubs.o keeps only clock_gettime/clock_getres because the
+# x86 vDSO fallback still references their __NR_ macros.
+obj-y += posix-stubs.o
 
 obj-$(CONFIG_GENERIC_CLOCKEVENTS)		+= clockevents.o tick-common.o
 ifeq ($(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST),y)

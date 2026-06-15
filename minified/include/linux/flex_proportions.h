@@ -19,26 +19,4 @@ struct fprop_global {
 	seqcount_t sequence;
 };
 
-int fprop_global_init(struct fprop_global *p, gfp_t gfp);
-void fprop_global_destroy(struct fprop_global *p);
-bool fprop_new_period(struct fprop_global *p, int periods);
-
-struct fprop_local_percpu {
-	 
-	struct percpu_counter events;
-	 
-	unsigned int period;
-	raw_spinlock_t lock;	 
-};
-
-int fprop_local_init_percpu(struct fprop_local_percpu *pl, gfp_t gfp);
-void fprop_local_destroy_percpu(struct fprop_local_percpu *pl);
-void __fprop_add_percpu(struct fprop_global *p, struct fprop_local_percpu *pl,
-		long nr);
-void __fprop_add_percpu_max(struct fprop_global *p,
-		struct fprop_local_percpu *pl, int max_frac, long nr);
-void fprop_fraction_percpu(struct fprop_global *p,
-	struct fprop_local_percpu *pl, unsigned long *numerator,
-	unsigned long *denominator);
-
 #endif

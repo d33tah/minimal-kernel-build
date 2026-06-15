@@ -14,9 +14,8 @@ enum { MAX_NESTED_LINKS = 8 };
 enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT};
 
 #define LOOKUP_FOLLOW		0x0001	 
-#define LOOKUP_DIRECTORY	0x0002	 
-#define LOOKUP_AUTOMOUNT	0x0004   
-#define LOOKUP_EMPTY		0x4000	 
+#define LOOKUP_DIRECTORY	0x0002
+#define LOOKUP_EMPTY		0x4000
 #define LOOKUP_DOWN		0x8000	 
 #define LOOKUP_MOUNTPOINT	0x0080	 
 
@@ -25,8 +24,7 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT};
 
 #define LOOKUP_OPEN		0x0100	 
 #define LOOKUP_CREATE		0x0200	 
-#define LOOKUP_EXCL		0x0400	 
-#define LOOKUP_RENAME_TARGET	0x0800	 
+#define LOOKUP_EXCL		0x0400
 
 #define LOOKUP_PARENT		0x0010
 
@@ -46,12 +44,6 @@ extern void done_path_create(struct path *, struct dentry *);
 /* try_lookup_one_len, lookup_one_len, lookup_one_len_unlocked, lookup_positive_unlocked,
    lookup_one, lookup_one_unlocked, lookup_one_positive_unlocked removed - no callers */
 
-
-
-static inline void nd_terminate_link(void *name, size_t len, size_t maxlen)
-{
-	((char *) name)[min(len, maxlen)] = '\0';
-}
 
 
 #endif

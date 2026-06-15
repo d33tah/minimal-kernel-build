@@ -32,8 +32,3 @@ void __init x86_early_init_platform_quirks(void)
 		x86_platform.set_legacy_features();
 }
 
-bool __init x86_pnpbios_disabled(void)
-{
-	return x86_platform.legacy.devices.pnpbios == 0;
-}
-

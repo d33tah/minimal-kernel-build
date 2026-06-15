@@ -22,11 +22,6 @@ struct static_key {
 
 #ifndef __ASSEMBLY__
 
-enum jump_label_type {
-	JUMP_LABEL_NOP = 0,
-	JUMP_LABEL_JMP,
-};
-
 struct module;
 
 

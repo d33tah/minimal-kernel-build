@@ -17,14 +17,8 @@ static inline void __invpcid(unsigned long pcid, unsigned long addr, unsigned lo
 	struct { u64 d[2]; } desc = { { pcid, addr } };
 	asm volatile("invpcid %[desc], %[type]" :: [desc] "m" (desc), [type] "r" (type) : "memory");
 }
-#define INVPCID_TYPE_INDIV_ADDR		0
-#define INVPCID_TYPE_SINGLE_CTXT	1
 #define INVPCID_TYPE_ALL_INCL_GLOBAL	2
-#define INVPCID_TYPE_ALL_NON_GLOBAL	3
-static inline void invpcid_flush_one(unsigned long pcid, unsigned long addr) { __invpcid(pcid, addr, INVPCID_TYPE_INDIV_ADDR); }
-static inline void invpcid_flush_single_context(unsigned long pcid) { __invpcid(pcid, 0, INVPCID_TYPE_SINGLE_CTXT); }
 static inline void invpcid_flush_all(void) { __invpcid(0, 0, INVPCID_TYPE_ALL_INCL_GLOBAL); }
-static inline void invpcid_flush_all_nonglobals(void) { __invpcid(0, 0, INVPCID_TYPE_ALL_NON_GLOBAL); }
 /* End of invpcid.h */
 
 void __flush_tlb_all(void);
@@ -81,19 +75,10 @@ struct tlb_state {
 
 #define LOADED_MM_SWITCHING ((struct mm_struct *)1UL)
 
-	 
-	union {
-		struct mm_struct	*last_user_mm;
-		unsigned long		last_user_mm_spec;
-	};
-
 	u16 loaded_mm_asid;
 	u16 next_asid;
 
-	 
-	bool invalidate_other;
 
-	 
 	unsigned short user_pcid_flush_mask;
 
 	 
@@ -139,8 +124,6 @@ struct flush_tlb_info {
 void flush_tlb_local(void);
 void flush_tlb_one_user(unsigned long addr);
 void flush_tlb_one_kernel(unsigned long addr);
-void flush_tlb_multi(const struct cpumask *cpumask,
-		      const struct flush_tlb_info *info);
 
 
 #define flush_tlb_mm(mm)						\
@@ -169,12 +152,6 @@ static inline u64 inc_mm_tlb_gen(struct mm_struct *mm)
 	return atomic64_inc_return(&mm->context.tlb_gen);
 }
 
-static inline void arch_tlbbatch_add_mm(struct arch_tlbflush_unmap_batch *batch,
-					struct mm_struct *mm)
-{
-	inc_mm_tlb_gen(mm);
-	cpumask_or(&batch->cpumask, &batch->cpumask, mm_cpumask(mm));
-}
 /* arch_tlbbatch_flush declaration removed - no implementation */
 
 static inline bool pte_flags_need_flush(unsigned long oldflags,

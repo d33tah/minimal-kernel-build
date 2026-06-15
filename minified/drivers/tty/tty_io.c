@@ -63,13 +63,8 @@ LIST_HEAD(tty_drivers);
 
 DEFINE_MUTEX(tty_mutex);
 
-static ssize_t tty_read(struct kiocb *, struct iov_iter *);
 static ssize_t tty_write(struct kiocb *, struct iov_iter *);
-static __poll_t tty_poll(struct file *, poll_table *);
 static int tty_open(struct inode *, struct file *);
-#define tty_compat_ioctl NULL
-static int __tty_fasync(int fd, struct file *filp, int on);
-static int tty_fasync(int fd, struct file *filp, int on);
 static void release_tty(struct tty_struct *tty, int idx);
 
 static void free_tty_struct(struct tty_struct *tty)
@@ -200,126 +195,22 @@ static struct tty_driver *get_tty_driver(dev_t device, int *index)
 }
 
 
-static ssize_t hung_up_tty_read(struct kiocb *iocb, struct iov_iter *to)
-{
-	return 0;
-}
-
-static ssize_t hung_up_tty_write(struct kiocb *iocb, struct iov_iter *from)
-{
-	return -EIO;
-}
-
-static __poll_t hung_up_tty_poll(struct file *filp, poll_table *wait)
-{
-	return EPOLLIN | EPOLLOUT | EPOLLERR | EPOLLHUP | EPOLLRDNORM | EPOLLWRNORM;
-}
-
-static long hung_up_tty_ioctl(struct file *file, unsigned int cmd,
-		unsigned long arg)
-{
-	return cmd == TIOCSPGRP ? -ENOTTY : -EIO;
-}
-
-/* hung_up_tty_compat_ioctl merged with hung_up_tty_ioctl - identical behavior */
-#define hung_up_tty_compat_ioctl hung_up_tty_ioctl
-
-static int hung_up_tty_fasync(int fd, struct file *file, int on)
-{
-	return -ENOTTY;
-}
-
-
 static const struct file_operations tty_fops = {
 	.llseek		= no_llseek,
-	.read_iter	= tty_read,
 	.write_iter	= tty_write,
-	.splice_read	= generic_file_splice_read,
-	.splice_write	= iter_file_splice_write,
-	.poll		= tty_poll,
-	.unlocked_ioctl	= tty_ioctl,
-	.compat_ioctl	= tty_compat_ioctl,
 	.open		= tty_open,
 	.release	= tty_release,
-	.fasync		= tty_fasync,
 };
 
 static const struct file_operations console_fops = {
 	.llseek		= no_llseek,
-	.read_iter	= tty_read,
 	.write_iter	= redirected_tty_write,
-	.splice_read	= generic_file_splice_read,
-	.splice_write	= iter_file_splice_write,
-	.poll		= tty_poll,
-	.unlocked_ioctl	= tty_ioctl,
-	.compat_ioctl	= tty_compat_ioctl,
 	.open		= tty_open,
 	.release	= tty_release,
-	.fasync		= tty_fasync,
-};
-
-static const struct file_operations hung_up_tty_fops = {
-	.llseek		= no_llseek,
-	.read_iter	= hung_up_tty_read,
-	.write_iter	= hung_up_tty_write,
-	.poll		= hung_up_tty_poll,
-	.unlocked_ioctl	= hung_up_tty_ioctl,
-	.compat_ioctl	= hung_up_tty_compat_ioctl,
-	.release	= tty_release,
-	.fasync		= hung_up_tty_fasync,
 };
 
 static DEFINE_SPINLOCK(redirect_lock);
 static struct file *redirect;
-
-void tty_wakeup(struct tty_struct *tty)
-{
-	struct tty_ldisc *ld;
-
-	if (test_bit(TTY_DO_WRITE_WAKEUP, &tty->flags)) {
-		ld = tty_ldisc_ref(tty);
-		if (ld) {
-			if (ld->ops->write_wakeup)
-				ld->ops->write_wakeup(tty);
-			tty_ldisc_deref(ld);
-		}
-	}
-	wake_up_interruptible_poll(&tty->write_wait, EPOLLOUT);
-}
-
-static void __tty_hangup(struct tty_struct *tty, int exit_session)
-{
-	/* Stub: minimal TTY hangup for simple kernel */
-	if (!tty)
-		return;
-
-	tty_lock(tty);
-	set_bit(TTY_HUPPED, &tty->flags);
-	if (tty->ops->hangup)
-		tty->ops->hangup(tty);
-	tty_unlock(tty);
-}
-
-static void do_tty_hangup(struct work_struct *work)
-{
-	struct tty_struct *tty =
-		container_of(work, struct tty_struct, hangup_work);
-
-	__tty_hangup(tty, 0);
-}
-
-void tty_hangup(struct tty_struct *tty)
-{
-	tty_debug_hangup(tty, "hangup\n");
-	schedule_work(&tty->hangup_work);
-}
-
-
-int tty_hung_up_p(struct file *filp)
-{
-	return (filp && filp->f_op == &hung_up_tty_fops);
-}
-
 
 static void tty_update_time(struct timespec64 *time)
 {
@@ -328,79 +219,6 @@ static void tty_update_time(struct timespec64 *time)
 	
 	if ((sec ^ time->tv_sec) & ~7)
 		time->tv_sec = sec;
-}
-
-static int iterate_tty_read(struct tty_ldisc *ld, struct tty_struct *tty,
-		struct file *file, struct iov_iter *to)
-{
-	int retval = 0;
-	void *cookie = NULL;
-	unsigned long offset = 0;
-	char kernel_buf[64];
-	size_t count = iov_iter_count(to);
-
-	do {
-		int size, copied;
-
-		size = count > sizeof(kernel_buf) ? sizeof(kernel_buf) : count;
-		size = ld->ops->read(tty, file, kernel_buf, size, &cookie, offset);
-		if (!size)
-			break;
-
-		if (size < 0) {
-			
-			if (retval)
-				break;
-			retval = size;
-
-			
-			if (retval == -EOVERFLOW)
-				offset = 0;
-			break;
-		}
-
-		copied = copy_to_iter(kernel_buf, size, to);
-		offset += copied;
-		count -= copied;
-
-		
-		if (unlikely(copied != size)) {
-			count = 0;
-			retval = -EFAULT;
-		}
-	} while (cookie);
-
-	
-	memzero_explicit(kernel_buf, sizeof(kernel_buf));
-	return offset ? offset : retval;
-}
-
-static ssize_t tty_read(struct kiocb *iocb, struct iov_iter *to)
-{
-	int i;
-	struct file *file = iocb->ki_filp;
-	struct inode *inode = file_inode(file);
-	struct tty_struct *tty = file_tty(file);
-	struct tty_ldisc *ld;
-
-	if (tty_paranoia_check(tty, inode, "tty_read"))
-		return -EIO;
-	if (!tty || tty_io_error(tty))
-		return -EIO;
-
-	
-	ld = tty_ldisc_ref_wait(tty);
-	if (!ld)
-		return hung_up_tty_read(iocb, to);
-	i = -EIO;
-	if (ld->ops->read)
-		i = iterate_tty_read(ld, tty, file, to);
-	tty_ldisc_deref(ld);
-
-	if (i > 0)
-		tty_update_time(&inode->i_atime);
-
-	return i;
 }
 
 static void tty_write_unlock(struct tty_struct *tty)
@@ -514,7 +332,7 @@ static ssize_t file_tty_write(struct file *file, struct kiocb *iocb, struct iov_
 		tty_err(tty, "missing write_room method\n");
 	ld = tty_ldisc_ref_wait(tty);
 	if (!ld)
-		return hung_up_tty_write(iocb, from);
+		return -EIO;
 	if (!ld->ops->write)
 		ret = -EIO;
 	else
@@ -749,10 +567,8 @@ static void tty_save_termios(struct tty_struct *tty)
 
 static void tty_flush_works(struct tty_struct *tty)
 {
-	flush_work(&tty->SAK_work);
 	flush_work(&tty->hangup_work);
 	if (tty->link) {
-		flush_work(&tty->link->SAK_work);
 		flush_work(&tty->link->hangup_work);
 	}
 }
@@ -1064,9 +880,7 @@ retry_open:
 			return retval;
 
 		schedule();
-		
-		if (tty_hung_up_p(filp))
-			filp->f_op = &tty_fops;
+
 		goto retry_open;
 	}
 	clear_bit(TTY_HUPPED, &tty->flags);
@@ -1081,166 +895,6 @@ retry_open:
 	tty_unlock(tty);
 	return 0;
 }
-
-static __poll_t tty_poll(struct file *filp, poll_table *wait)
-{
-	struct tty_struct *tty = file_tty(filp);
-	struct tty_ldisc *ld;
-	__poll_t ret = 0;
-
-	if (tty_paranoia_check(tty, file_inode(filp), "tty_poll"))
-		return 0;
-
-	ld = tty_ldisc_ref_wait(tty);
-	if (!ld)
-		return hung_up_tty_poll(filp, wait);
-	if (ld->ops->poll)
-		ret = ld->ops->poll(tty, filp, wait);
-	tty_ldisc_deref(ld);
-	return ret;
-}
-
-static int __tty_fasync(int fd, struct file *filp, int on)
-{
-	struct tty_struct *tty = file_tty(filp);
-	unsigned long flags;
-	int retval = 0;
-
-	if (tty_paranoia_check(tty, file_inode(filp), "tty_fasync"))
-		goto out;
-
-	retval = fasync_helper(fd, filp, on, &tty->fasync);
-	if (retval <= 0)
-		goto out;
-
-	if (on) {
-		enum pid_type type;
-		struct pid *pid;
-
-		spin_lock_irqsave(&tty->ctrl.lock, flags);
-		if (tty->ctrl.pgrp) {
-			pid = tty->ctrl.pgrp;
-			type = PIDTYPE_PGID;
-		} else {
-			pid = task_pid(current);
-			type = PIDTYPE_TGID;
-		}
-		get_pid(pid);
-		spin_unlock_irqrestore(&tty->ctrl.lock, flags);
-		__f_setown(filp, pid, type, 0);
-		put_pid(pid);
-		retval = 0;
-	}
-out:
-	return retval;
-}
-
-static int tty_fasync(int fd, struct file *filp, int on)
-{
-	struct tty_struct *tty = file_tty(filp);
-	int retval = -ENOTTY;
-
-	tty_lock(tty);
-	if (!tty_hung_up_p(filp))
-		retval = __tty_fasync(fd, filp, on);
-	tty_unlock(tty);
-
-	return retval;
-}
-
-static int tiocgwinsz(struct tty_struct *tty, struct winsize __user *arg)
-{
-	int err;
-
-	mutex_lock(&tty->winsize_mutex);
-	err = copy_to_user(arg, &tty->winsize, sizeof(*arg));
-	mutex_unlock(&tty->winsize_mutex);
-
-	return err ? -EFAULT : 0;
-}
-
-static int tty_do_resize(struct tty_struct *tty, struct winsize *ws)
-{
-	struct pid *pgrp;
-
-	
-	mutex_lock(&tty->winsize_mutex);
-	if (!memcmp(ws, &tty->winsize, sizeof(*ws)))
-		goto done;
-
-	
-	pgrp = tty_get_pgrp(tty);
-	if (pgrp)
-		kill_pgrp(pgrp, SIGWINCH, 1);
-	put_pid(pgrp);
-
-	tty->winsize = *ws;
-done:
-	mutex_unlock(&tty->winsize_mutex);
-	return 0;
-}
-
-static int tiocswinsz(struct tty_struct *tty, struct winsize __user *arg)
-{
-	struct winsize tmp_ws;
-
-	if (copy_from_user(&tmp_ws, arg, sizeof(*arg)))
-		return -EFAULT;
-
-	if (tty->ops->resize)
-		return tty->ops->resize(tty, &tmp_ws);
-	else
-		return tty_do_resize(tty, &tmp_ws);
-}
-
-
-static struct tty_struct *tty_pair_get_tty(struct tty_struct *tty)
-{
-	if (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
-	    tty->driver->subtype == PTY_TYPE_MASTER)
-		tty = tty->link;
-	return tty;
-}
-
-long tty_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-{
-	/* Minimal stub: handle only essential ioctl operations */
-	struct tty_struct *tty = file_tty(file);
-	struct tty_struct *real_tty;
-	void __user *p = (void __user *)arg;
-	int retval;
-
-	if (tty_paranoia_check(tty, file_inode(file), "tty_ioctl"))
-		return -EINVAL;
-
-	real_tty = tty_pair_get_tty(tty);
-
-	/* Handle minimal set of ioctls needed for basic console */
-	switch (cmd) {
-	case TIOCGWINSZ:
-		return tiocgwinsz(real_tty, p);
-	case TIOCSWINSZ:
-		return tiocswinsz(real_tty, p);
-	default:
-		break;
-	}
-
-	/* Delegate to driver-specific ioctl if available */
-	if (tty->ops->ioctl) {
-		retval = tty->ops->ioctl(tty, cmd, arg);
-		if (retval != -ENOIOCTLCMD)
-			return retval;
-	}
-
-	return -ENOTTY;
-}
-
-
-static void do_SAK_work(struct work_struct *work)
-{
-	/* Stub: SAK_work never scheduled in minimal kernel */
-}
-
 
 static dev_t tty_devnum(struct tty_struct *tty);
 
@@ -1268,19 +922,15 @@ struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 	tty->ctrl.session = NULL;
 	tty->ctrl.pgrp = NULL;
 	mutex_init(&tty->legacy_mutex);
-	mutex_init(&tty->throttle_mutex);
 	init_rwsem(&tty->termios_rwsem);
 	mutex_init(&tty->winsize_mutex);
 	init_ldsem(&tty->ldisc_sem);
 	init_waitqueue_head(&tty->write_wait);
 	init_waitqueue_head(&tty->read_wait);
-	INIT_WORK(&tty->hangup_work, do_tty_hangup);
 	mutex_init(&tty->atomic_write_lock);
 	spin_lock_init(&tty->ctrl.lock);
-	spin_lock_init(&tty->flow.lock);
 	spin_lock_init(&tty->files_lock);
 	INIT_LIST_HEAD(&tty->tty_files);
-	INIT_WORK(&tty->SAK_work, do_SAK_work);
 
 	tty->driver = driver;
 	tty->ops = driver->ops;

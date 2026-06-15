@@ -240,7 +240,6 @@ static inline bool xa_is_retry(const void *entry)
 
 typedef void (*xa_update_node_t)(struct xa_node *node);
 
-void xa_delete_node(struct xa_node *, xa_update_node_t);
 
 struct xa_state {
 	struct xarray *xa;

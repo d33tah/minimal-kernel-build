@@ -23,17 +23,6 @@
 struct ms_hyperv_tsc_page;
 static inline struct ms_hyperv_tsc_page *hv_get_tsc_page(void) { return NULL; }
 
-#undef _ASM_X86_VVAR_H
-#define EMIT_VVAR(name, offset)	\
-	const size_t name ## _offset = offset;
-#include <asm/vvar.h>
-
-struct vdso_data *arch_get_vdso_data(void *vvar_page)
-{
-	return (struct vdso_data *)(vvar_page + _vdso_data_offset);
-}
-#undef EMIT_VVAR
-
 unsigned int vclocks_used __read_mostly;
 
 
@@ -220,25 +209,6 @@ up_fail:
 }
 
 
-int map_vdso_once(const struct vdso_image *image, unsigned long addr)
-{
-	struct mm_struct *mm = current->mm;
-	struct vm_area_struct *vma;
-
-	mmap_write_lock(mm);
-	 
-	for (vma = mm->mmap; vma; vma = vma->vm_next) {
-		if (vma_is_special_mapping(vma, &vdso_mapping) ||
-				vma_is_special_mapping(vma, &vvar_mapping)) {
-			mmap_write_unlock(mm);
-			return -EEXIST;
-		}
-	}
-	mmap_write_unlock(mm);
-
-	return map_vdso(image, addr);
-}
-
 static int load_vdso32(void)
 {
 	if (vdso32_enabled != 1)   
@@ -250,18 +220,5 @@ static int load_vdso32(void)
 int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
 {
 	return load_vdso32();
-}
-
-bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs)
-{
-	const struct vdso_image *image = current->mm->context.vdso_image;
-	unsigned long vdso = (unsigned long) current->mm->context.vdso;
-
-	if (in_ia32_syscall() && image == &vdso_image_32) {
-		if (regs->ip == vdso + image->sym_vdso32_sigreturn_landing_pad ||
-		    regs->ip == vdso + image->sym_vdso32_rt_sigreturn_landing_pad)
-			return true;
-	}
-	return false;
 }
 

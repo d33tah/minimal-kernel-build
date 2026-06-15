@@ -145,11 +145,6 @@ static inline void irq_settings_set_norequest(struct irq_desc *desc)
 	desc->status_use_accessors |= _IRQ_NOREQUEST;
 }
 
-static inline bool irq_settings_can_thread(struct irq_desc *desc)
-{
-	return !(desc->status_use_accessors & _IRQ_NOTHREAD);
-}
-
 /* irq_settings_clr_nothread removed - unused */
 
 static inline void irq_settings_set_nothread(struct irq_desc *desc)
@@ -204,8 +199,6 @@ static inline bool irq_settings_no_debug(struct irq_desc *desc)
 }
 
 extern int __irq_set_trigger(struct irq_desc *desc, unsigned long flags);
-extern void __disable_irq(struct irq_desc *desc);
-extern void __enable_irq(struct irq_desc *desc);
 
 #define IRQ_RESEND	true
 #define IRQ_NORESEND	false
@@ -217,21 +210,12 @@ extern int irq_activate(struct irq_desc *desc);
 extern int irq_activate_and_startup(struct irq_desc *desc, bool resend);
 extern int irq_startup(struct irq_desc *desc, bool resend, bool force);
 
-extern void irq_shutdown(struct irq_desc *desc);
-extern void irq_shutdown_and_deactivate(struct irq_desc *desc);
 extern void irq_enable(struct irq_desc *desc);
 extern void irq_disable(struct irq_desc *desc);
 extern void mask_irq(struct irq_desc *desc);
 extern void unmask_irq(struct irq_desc *desc);
-extern void unmask_threaded_irq(struct irq_desc *desc);
 
 static inline void irq_mark_irq(unsigned int irq) { }
-
-extern int __irq_get_irqchip_state(struct irq_data *data,
-				   enum irqchip_irq_state which,
-				   bool *state);
-
-extern void init_kstat_irqs(struct irq_desc *desc, int node, int nr);
 
 irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc);
 irqreturn_t handle_irq_event_percpu(struct irq_desc *desc);
@@ -243,7 +227,6 @@ static inline int check_irq_resend(struct irq_desc *desc, bool inject)
 	return 0;
 }
 bool irq_wait_for_poll(struct irq_desc *desc);
-void __irq_wake_thread(struct irq_desc *desc, struct irqaction *action);
 
 static inline void register_irq_proc(unsigned int irq, struct irq_desc *desc) { }
 static inline void unregister_irq_proc(unsigned int irq, struct irq_desc *desc) { }
@@ -251,10 +234,6 @@ static inline void register_handler_proc(unsigned int irq,
 					 struct irqaction *action) { }
 static inline void unregister_handler_proc(unsigned int irq,
 					   struct irqaction *action) { }
-
-extern bool irq_can_set_affinity_usr(unsigned int irq);
-
-extern void irq_set_thread_affinity(struct irq_desc *desc);
 
 extern int irq_do_set_affinity(struct irq_data *data,
 			       const struct cpumask *dest, bool force);
@@ -314,30 +293,9 @@ irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags)
 
 #define __irqd_to_state(d) ACCESS_PRIVATE((d)->common, state_use_accessors)
 
-static inline unsigned int irqd_get(struct irq_data *d)
-{
-	return __irqd_to_state(d);
-}
-
- 
-static inline void irqd_set_move_pending(struct irq_data *d)
-{
-	__irqd_to_state(d) |= IRQD_SETAFFINITY_PENDING;
-}
-
-static inline void irqd_clr_move_pending(struct irq_data *d)
-{
-	__irqd_to_state(d) &= ~IRQD_SETAFFINITY_PENDING;
-}
-
 static inline void irqd_set_managed_shutdown(struct irq_data *d)
 {
 	__irqd_to_state(d) |= IRQD_MANAGED_SHUTDOWN;
-}
-
-static inline void irqd_clr_managed_shutdown(struct irq_data *d)
-{
-	__irqd_to_state(d) &= ~IRQD_MANAGED_SHUTDOWN;
 }
 
 static inline void irqd_clear(struct irq_data *d, unsigned int mask)

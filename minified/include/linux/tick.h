@@ -4,29 +4,13 @@
 #include <linux/clockchips.h>
 #include <linux/irqflags.h>
 #include <linux/percpu.h>
-#include <linux/context_tracking_state.h>
 #include <linux/cpumask.h>
 #include <linux/sched.h>
 #include <linux/rcupdate.h>
 
 extern void __init tick_init(void);
-extern void tick_handover_do_timer(void);
 
 static inline void tick_irq_enter(void) { }
-
-
-enum tick_broadcast_mode {
-	TICK_BROADCAST_OFF,
-	TICK_BROADCAST_ON,
-	TICK_BROADCAST_FORCE,
-};
-
-enum tick_broadcast_state {
-	TICK_BROADCAST_EXIT,
-	TICK_BROADCAST_ENTER,
-};
-
-
 
 
 enum tick_dep_bits {

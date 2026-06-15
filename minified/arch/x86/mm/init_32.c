@@ -47,21 +47,11 @@ static inline void olpc_dt_build_devicetree(void) { }
 
 #include "mm_internal.h"
 
-unsigned long highstart_pfn, highend_pfn;
-
 bool __read_mostly __vmalloc_start_set = false;
 
 static pmd_t * __init one_md_table_init(pgd_t *pgd)
 {
-	p4d_t *p4d;
-	pud_t *pud;
-	pmd_t *pmd_table;
-
-	p4d = p4d_offset(pgd, 0);
-	pud = pud_offset(p4d, 0);
-	pmd_table = pmd_offset(pud, 0);
-
-	return pmd_table;
+	return pmd_offset(pud_offset(p4d_offset(pgd, 0), 0), 0);
 }
 
 static pte_t * __init one_page_table_init(pmd_t *pmd)
@@ -94,20 +84,6 @@ pte_t * __init populate_extra_pte(unsigned long vaddr)
 	return one_page_table_init(pmd) + pte_idx;
 }
 
-static unsigned long __init
-page_table_range_init_count(unsigned long start, unsigned long end)
-{
-	unsigned long count = 0;
-	return count;
-}
-
-static pte_t *__init page_table_kmap_check(pte_t *pte, pmd_t *pmd,
-					   unsigned long vaddr, pte_t *lastpte,
-					   void **adr)
-{
-	return pte;
-}
-
 static void __init
 page_table_range_init(unsigned long start, unsigned long end, pgd_t *pgd_base)
 {
@@ -115,12 +91,6 @@ page_table_range_init(unsigned long start, unsigned long end, pgd_t *pgd_base)
 	unsigned long vaddr;
 	pgd_t *pgd;
 	pmd_t *pmd;
-	pte_t *pte = NULL;
-	unsigned long count = page_table_range_init_count(start, end);
-	void *adr = NULL;
-
-	if (count)
-		adr = alloc_low_pages(count);
 
 	vaddr = start;
 	pgd_idx = pgd_index(vaddr);
@@ -132,8 +102,7 @@ page_table_range_init(unsigned long start, unsigned long end, pgd_t *pgd_base)
 		pmd = pmd + pmd_index(vaddr);
 		for (; (pmd_idx < PTRS_PER_PMD) && (vaddr != end);
 							pmd++, pmd_idx++) {
-			pte = page_table_kmap_check(one_page_table_init(pmd),
-						    pmd, vaddr, pte, &adr);
+			one_page_table_init(pmd);
 
 			vaddr += PMD_SIZE;
 		}
@@ -253,10 +222,6 @@ repeat:
 	return last_map_addr;
 }
 
-static inline void permanent_kmaps_init(pgd_t *pgd_base)
-{
-}
-
 void __init sync_initial_page_table(void)
 {
 	clone_pgd_range(initial_page_table + KERNEL_PGD_BOUNDARY,
@@ -273,21 +238,17 @@ void __init native_pagetable_init(void)
 {
 	unsigned long pfn, va;
 	pgd_t *pgd, *base = swapper_pg_dir;
-	p4d_t *p4d;
-	pud_t *pud;
 	pmd_t *pmd;
 	pte_t *pte;
 
-	 
+
 	for (pfn = max_low_pfn; pfn < 1<<(32-PAGE_SHIFT); pfn++) {
 		va = PAGE_OFFSET + (pfn<<PAGE_SHIFT);
 		pgd = base + pgd_index(va);
 		if (!pgd_present(*pgd))
 			break;
 
-		p4d = p4d_offset(pgd, va);
-		pud = pud_offset(p4d, va);
-		pmd = pmd_offset(pud, va);
+		pmd = pmd_offset(pud_offset(p4d_offset(pgd, va), va), va);
 		if (!pmd_present(*pmd))
 			break;
 
@@ -318,13 +279,6 @@ void __init early_ioremap_page_table_range_init(void)
 	end = (FIXADDR_TOP + PMD_SIZE - 1) & PMD_MASK;
 	page_table_range_init(vaddr, end, pgd_base);
 	early_ioremap_reset();
-}
-
-static void __init pagetable_init(void)
-{
-	pgd_t *pgd_base = swapper_pg_dir;
-
-	permanent_kmaps_init(pgd_base);
 }
 
 #define DEFAULT_PTE_MASK ~(_PAGE_NX | _PAGE_GLOBAL)
@@ -396,7 +350,7 @@ void __init initmem_init(void)
 
 	memblock_set_node(0, PHYS_ADDR_MAX, &memblock.memory, 0);
 
-	max_mapnr = IS_ENABLED(CONFIG_HIGHMEM) ? highend_pfn : max_low_pfn;
+	max_mapnr = max_low_pfn;
 	__vmalloc_start_set = true;
 
 	setup_bootmem_allocator();
@@ -408,8 +362,6 @@ void __init setup_bootmem_allocator(void)
 
 void __init paging_init(void)
 {
-	pagetable_init();
-
 	__flush_tlb_all();
 
 	 

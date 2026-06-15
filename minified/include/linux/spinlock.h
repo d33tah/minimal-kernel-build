@@ -209,10 +209,6 @@ static __always_inline void spin_unlock_irqrestore(spinlock_t *lock, unsigned lo
 	raw_spin_unlock_irqrestore(&lock->rlock, flags);
 }
 
-static __always_inline int spin_is_locked(spinlock_t *lock)
-{
-	return raw_spin_is_locked(&lock->rlock);
-}
 
 #define spin_trylock_irqsave(lock, flags)			\
 ({								\
@@ -247,6 +243,5 @@ int __alloc_bucket_spinlocks(spinlock_t **locks, unsigned int *lock_mask,
 		ret;							     \
 	})
 
-void free_bucket_spinlocks(spinlock_t *locks);
 
 #endif  

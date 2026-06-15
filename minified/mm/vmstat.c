@@ -2,7 +2,6 @@
 #include <linux/mm.h>
 #include <linux/vmstat.h>
 #include <linux/workqueue.h>
-#include <linux/migrate.h>
 
 
 
@@ -30,7 +29,5 @@ void __init init_mm_internals(void)
 	int ret __maybe_unused;
 
 	mm_percpu_wq = alloc_workqueue("mm_percpu_wq", WQ_MEM_RECLAIM, 0);
-
-	migrate_on_reclaim_init();
 }
 

@@ -9,21 +9,18 @@
 /* Inlined from sched/jobctl.h - trimmed to used flags only */
 #define JOBCTL_STOP_PENDING_BIT	17
 #define JOBCTL_TRAP_STOP_BIT	19
-#define JOBCTL_LISTENING_BIT	22
 #define JOBCTL_TRAP_FREEZE_BIT	23
 #define JOBCTL_PTRACE_FROZEN_BIT	24
 #define JOBCTL_STOPPED_BIT	26
 #define JOBCTL_TRACED_BIT	27
 #define JOBCTL_STOP_PENDING	(1UL << JOBCTL_STOP_PENDING_BIT)
 #define JOBCTL_TRAP_STOP	(1UL << JOBCTL_TRAP_STOP_BIT)
-#define JOBCTL_LISTENING	(1UL << JOBCTL_LISTENING_BIT)
 #define JOBCTL_TRAP_FREEZE	(1UL << JOBCTL_TRAP_FREEZE_BIT)
 #define JOBCTL_PTRACE_FROZEN	(1UL << JOBCTL_PTRACE_FROZEN_BIT)
 #define JOBCTL_STOPPED		(1UL << JOBCTL_STOPPED_BIT)
 #define JOBCTL_TRACED		(1UL << JOBCTL_TRACED_BIT)
 #define JOBCTL_TRAP_MASK	(JOBCTL_TRAP_STOP)
 #define JOBCTL_PENDING_MASK	(JOBCTL_STOP_PENDING | JOBCTL_TRAP_MASK)
-extern bool task_set_jobctl_pending(struct task_struct *task, unsigned long mask);
 extern void task_clear_jobctl_pending(struct task_struct *task, unsigned long mask);
 #include <linux/cred.h>
 #include <linux/refcount.h>
@@ -37,26 +34,6 @@ struct sighand_struct {
 	refcount_t		count;
 	wait_queue_head_t	signalfd_wqh;
 	struct k_sigaction	action[_NSIG];
-};
-
-struct pacct_struct;
-
-struct cpu_itimer;
-
-struct task_cputime_atomic {
-	atomic64_t utime;
-	atomic64_t stime;
-	atomic64_t sum_exec_runtime;
-};
-
-#define INIT_CPUTIME_ATOMIC \
-	(struct task_cputime_atomic) {				\
-		.utime = ATOMIC64_INIT(0),			\
-		.stime = ATOMIC64_INIT(0),			\
-		.sum_exec_runtime = ATOMIC64_INIT(0),		\
-	}
-struct thread_group_cputimer {
-	struct task_cputime_atomic cputime_atomic;
 };
 
 struct multiprocess_signals {
@@ -92,26 +69,15 @@ struct signal_struct {
 	 
 	struct hlist_head	multiprocess;
 
-	 
-	int			group_exit_code;
-	 
-	int			notify_count;
-	struct task_struct	*group_exec_task;
 
-	 
+	int			group_exit_code;
+
+
 	int			group_stop_count;
 	unsigned int		flags;  
 
-	struct core_state *core_state;  
+	struct core_state *core_state;
 
-	 
-	unsigned int		is_child_subreaper:1;
-	unsigned int		has_child_subreaper:1;
-
-	 
-	struct posix_cputimers posix_cputimers;
-
-	 
 	struct pid *pids[PIDTYPE_MAX];
 
 
@@ -124,14 +90,13 @@ struct signal_struct {
 
 	 
 	seqlock_t stats_lock;
-	u64 utime, stime, cutime, cstime;
+	u64 utime, stime;
 	u64 gtime;
-	u64 cgtime;
 	struct prev_cputime prev_cputime;
-	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
-	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
-	unsigned long inblock, oublock, cinblock, coublock;
-	unsigned long maxrss, cmaxrss;
+	unsigned long nvcsw, nivcsw;
+	unsigned long min_flt, maj_flt;
+	unsigned long inblock, oublock;
+	unsigned long maxrss;
 	struct task_io_accounting ioac;
 
 	 
@@ -151,17 +116,9 @@ struct signal_struct {
 	struct rw_semaphore exec_update_lock;	 
 } __randomize_layout;
 
-#define SIGNAL_STOP_STOPPED	0x00000001  
-#define SIGNAL_STOP_CONTINUED	0x00000002  
-#define SIGNAL_GROUP_EXIT	0x00000004  
-#define SIGNAL_CLD_STOPPED	0x00000010
-#define SIGNAL_CLD_CONTINUED	0x00000020
-#define SIGNAL_CLD_MASK		(SIGNAL_CLD_STOPPED|SIGNAL_CLD_CONTINUED)
+#define SIGNAL_GROUP_EXIT	0x00000004
 
-#define SIGNAL_UNKILLABLE	0x00000040  
-
-#define SIGNAL_STOP_MASK (SIGNAL_CLD_MASK | SIGNAL_STOP_STOPPED | \
-			  SIGNAL_STOP_CONTINUED)
+#define SIGNAL_UNKILLABLE	0x00000040
 
 
 extern void ignore_signals(struct task_struct *);
@@ -178,21 +135,12 @@ int force_sig_fault(int sig, int code, void __user *addr
 /* send_sig_fault, force_sig_mceerr, send_sig_mceerr, force_sig_bnderr, send_sig_perf,
    force_sig_ptrace_errno_trap, force_sig_fault_trapno, send_sig_fault_trapno,
    force_sig_seccomp removed - unused */
-int force_sig_pkuerr(void __user *addr, u32 pkey);
 
-extern int send_sig_info(int, struct kernel_siginfo *, struct task_struct *);
 /* force_sigsegv now static in signal.c */
 extern int force_sig_info(struct kernel_siginfo *);
-extern int kill_pid_info(int sig, struct kernel_siginfo *info, struct pid *pid);
-extern int kill_pgrp(struct pid *pid, int sig, int priv);
-extern __must_check bool do_notify_parent(struct task_struct *, int);
-extern void __wake_up_parent(struct task_struct *p, struct task_struct *parent);
 extern void force_sig(int);
 extern void force_fatal_sig(int);
-extern void force_exit_sig(int);
-extern int send_sig(int, struct task_struct *, int);
 extern int zap_other_threads(struct task_struct *p);
-extern int do_sigaction(int, struct k_sigaction *, struct k_sigaction *);
 
 static inline bool __set_notify_signal(struct task_struct *task)
 {
@@ -263,8 +211,6 @@ static inline void signal_wake_up(struct task_struct *t, bool fatal)
 	signal_wake_up_state(t, state);
 }
 
-void task_join_group_stop(struct task_struct *task);
-
 #ifdef TIF_RESTORE_SIGMASK
 
 static inline void set_restore_sigmask(void)
@@ -291,10 +237,6 @@ static inline void clear_restore_sigmask(void)
 {
 	current->restore_sigmask = false;
 }
-static inline bool test_restore_sigmask(void)
-{
-	return current->restore_sigmask;
-}
 static inline bool test_and_clear_restore_sigmask(void)
 {
 	if (!current->restore_sigmask)
@@ -304,19 +246,7 @@ static inline bool test_and_clear_restore_sigmask(void)
 }
 #endif
 
-static inline void restore_saved_sigmask(void)
-{
-	if (test_and_clear_restore_sigmask())
-		__set_current_blocked(&current->saved_sigmask);
-}
 
-static inline sigset_t *sigmask_to_save(void)
-{
-	sigset_t *res = &current->blocked;
-	if (unlikely(test_restore_sigmask()))
-		res = &current->saved_sigmask;
-	return res;
-}
 
 #define SEND_SIG_NOINFO ((struct kernel_siginfo *) 0)
 #define SEND_SIG_PRIV	((struct kernel_siginfo *) 1)
@@ -376,21 +306,7 @@ extern void __cleanup_sighand(struct sighand_struct *);
 	__for_each_thread((p)->signal, t)
 
 
-static inline
-struct pid *task_pid_type(struct task_struct *task, enum pid_type type)
-{
-	struct pid *pid;
-	if (type == PIDTYPE_PID)
-		pid = task_pid(task);
-	else
-		pid = task->signal->pids[type];
-	return pid;
-}
 
-static inline struct pid *task_tgid(struct task_struct *task)
-{
-	return task->signal->pids[PIDTYPE_TGID];
-}
 
 static inline struct pid *task_pgrp(struct task_struct *task)
 {

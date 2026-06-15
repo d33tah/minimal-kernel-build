@@ -29,14 +29,6 @@ static int pit_shutdown(struct clock_event_device *evt)
 	return 0;
 }
 
-static int pit_set_oneshot(struct clock_event_device *evt)
-{
-	raw_spin_lock(&i8253_lock);
-	outb_p(0x38, PIT_MODE);
-	raw_spin_unlock(&i8253_lock);
-	return 0;
-}
-
 static int pit_set_periodic(struct clock_event_device *evt)
 {
 	raw_spin_lock(&i8253_lock);
@@ -50,31 +42,20 @@ static int pit_set_periodic(struct clock_event_device *evt)
 	return 0;
 }
 
-static int pit_next_event(unsigned long delta, struct clock_event_device *evt)
-{
-	raw_spin_lock(&i8253_lock);
-	outb_p(delta & 0xff , PIT_CH0);	 
-	outb_p(delta >> 8 , PIT_CH0);		 
-	raw_spin_unlock(&i8253_lock);
-
-	return 0;
-}
-
 struct clock_event_device i8253_clockevent = {
 	.name			= "pit",
 	.features		= CLOCK_EVT_FEAT_PERIODIC,
 	.set_state_shutdown	= pit_shutdown,
 	.set_state_periodic	= pit_set_periodic,
-	.set_next_event		= pit_next_event,
 };
 
+/*
+ * The tick is only ever PERIODIC here, so the oneshot path (set_state_oneshot/
+ * set_next_event dispatch) is never taken; the oneshot arg is dead and the
+ * device is registered PERIODIC-only.
+ */
 void __init clockevent_i8253_init(bool oneshot)
 {
-	if (oneshot) {
-		i8253_clockevent.features |= CLOCK_EVT_FEAT_ONESHOT;
-		i8253_clockevent.set_state_oneshot = pit_set_oneshot;
-	}
-	 
 	i8253_clockevent.cpumask = cpumask_of(smp_processor_id());
 
 	clockevents_config_and_register(&i8253_clockevent, PIT_TICK_RATE,

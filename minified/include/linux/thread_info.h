@@ -67,7 +67,6 @@ enum syscall_work_bit {
 	SYSCALL_WORK_BIT_SYSCALL_TRACE,
 	SYSCALL_WORK_BIT_SYSCALL_EMU,
 	SYSCALL_WORK_BIT_SYSCALL_AUDIT,
-	SYSCALL_WORK_BIT_SYSCALL_USER_DISPATCH,
 	SYSCALL_WORK_BIT_SYSCALL_EXIT_TRAP,
 };
 
@@ -76,7 +75,6 @@ enum syscall_work_bit {
 #define SYSCALL_WORK_SYSCALL_TRACE	BIT(SYSCALL_WORK_BIT_SYSCALL_TRACE)
 #define SYSCALL_WORK_SYSCALL_EMU	BIT(SYSCALL_WORK_BIT_SYSCALL_EMU)
 #define SYSCALL_WORK_SYSCALL_AUDIT	BIT(SYSCALL_WORK_BIT_SYSCALL_AUDIT)
-#define SYSCALL_WORK_SYSCALL_USER_DISPATCH BIT(SYSCALL_WORK_BIT_SYSCALL_USER_DISPATCH)
 #define SYSCALL_WORK_SYSCALL_EXIT_TRAP	BIT(SYSCALL_WORK_BIT_SYSCALL_EXIT_TRAP)
 
 #include <asm/thread_info.h>
@@ -87,13 +85,6 @@ enum syscall_work_bit {
 #define arch_set_restart_data(restart) do { } while (0)
 #endif
 
-static inline long set_restart_fn(struct restart_block *restart,
-					long (*fn)(struct restart_block *))
-{
-	restart->fn = fn;
-	arch_set_restart_data(restart);
-	return -ERESTART_RESTARTBLOCK;
-}
 
 #ifndef THREAD_ALIGN
 #define THREAD_ALIGN	THREAD_SIZE

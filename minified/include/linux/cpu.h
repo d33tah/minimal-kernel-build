@@ -65,13 +65,10 @@ extern void trap_init(void);
 static inline void cpus_read_lock(void) { }
 static inline void cpus_read_unlock(void) { }
 static inline void lockdep_assert_cpus_held(void) { }
-static inline void cpu_hotplug_disable(void) { }
 
 void __noreturn cpu_startup_entry(enum cpuhp_state state);
 
 #define __cpuidle	__section(".cpuidle.text")
-
-bool cpu_in_idle(unsigned long pc);
 
 void arch_cpu_idle(void);
 void arch_cpu_idle_prepare(void);

@@ -13,7 +13,6 @@
 #include <linux/pagemap.h>
 #include <linux/atomic.h>
 #include <linux/page-flags.h>
-#include <linux/mempolicy.h>
 #include <asm/page.h>
 
 struct notifier_block;
@@ -50,7 +49,7 @@ void workingset_activation(struct folio *folio);
 void workingset_update_node(struct xa_node *node);
 extern struct list_lru shadow_nodes;
 #define mapping_set_update(xas, mapping) do {				\
-	if (!dax_mapping(mapping) && !shmem_mapping(mapping)) {		\
+	if (!shmem_mapping(mapping)) {					\
 		xas_set_update(xas, workingset_update_node);		\
 		xas_set_lru(xas, &shadow_nodes);			\
 	}								\
@@ -74,10 +73,6 @@ extern void lru_add_drain(void);
 extern void lru_add_drain_cpu(int cpu);
 extern void lru_cache_add_inactive_or_unevictable(struct page *page,
 						struct vm_area_struct *vma);
-
-extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
-					gfp_t gfp_mask, nodemask_t *mask);
-long remove_mapping(struct address_space *mapping, struct folio *folio);
 
 #define node_reclaim_mode 0
 

@@ -24,12 +24,6 @@ extern struct module __this_module;
 	    "	.long	__kstrtabns_" #sym "- .			\n"	\
 	    "	.previous					\n")
 
-struct kernel_symbol {
-	int value_offset;
-	int name_offset;
-	int namespace_offset;
-};
-
 #ifdef __GENKSYMS__
 
 #define ___EXPORT_SYMBOL(sym, sec, ns)	__GENKSYMS_EXPORT_SYMBOL(sym)

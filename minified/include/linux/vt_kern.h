@@ -13,10 +13,6 @@
 #include <linux/notifier.h>
 
 struct uni_pagedir;
-struct uni_screen;
-
-#define NPAR 16
-#define VC_TABSTOPS_COUNT	256U
 
 enum vc_intensity {
 	VCI_HALF_BRIGHT,
@@ -28,19 +24,12 @@ enum vc_intensity {
 struct vc_state {
 	unsigned int	x, y;
 	unsigned char	color;
-	unsigned char	Gx_charset[2];
-	unsigned int	charset		: 1;
-	enum vc_intensity intensity;
-	bool		italic;
-	bool		underline;
-	bool		blink;
-	bool		reverse;
 };
 
 struct vc_data {
 	struct tty_port port;
 
-	struct vc_state state, saved_state;
+	struct vc_state state;
 
 	unsigned short	vc_num;
 	unsigned int	vc_cols;
@@ -58,9 +47,6 @@ struct vc_data {
 	unsigned char	vc_mode;
 	unsigned char	vc_attr;
 	unsigned char	vc_def_color;
-	unsigned char	vc_ulcolor;
-	unsigned char   vc_itcolor;
-	unsigned char	vc_halfcolor;
 	unsigned int	vc_cursor_type;
 	unsigned short	vc_complement_mask;
 	unsigned short	vc_s_complement_mask;
@@ -68,49 +54,31 @@ struct vc_data {
 	unsigned short	vc_hi_font_mask;
 	struct console_font vc_font;
 	unsigned short	vc_video_erase_char;
-	unsigned int	vc_state;
-	unsigned int	vc_npar,vc_par[NPAR];
+	unsigned int	vc_npar;
 	struct vt_mode	vt_mode;
 	struct pid 	*vt_pid;
 	int		vt_newvt;
-	wait_queue_head_t paste_wait;
 	unsigned int	vc_disp_ctrl	: 1;
-	unsigned int	vc_toggle_meta	: 1;
-	unsigned int	vc_decscnm	: 1;
-	unsigned int	vc_decom	: 1;
 	unsigned int	vc_decawm	: 1;
 	unsigned int	vc_deccm	: 1;
-	unsigned int	vc_decim	: 1;
-	unsigned int	vc_priv		: 3;
 	unsigned int	vc_need_wrap	: 1;
 	unsigned int	vc_can_do_color	: 1;
-	unsigned int	vc_report_mouse : 2;
 	unsigned char	vc_utf		: 1;
 	unsigned char	vc_utf_count;
 		 int	vc_utf_char;
-	DECLARE_BITMAP(vc_tab_stop, VC_TABSTOPS_COUNT);
 	unsigned char   vc_palette[16*3];
-	unsigned short * vc_translate;
 	unsigned int    vc_resize_user;
-	unsigned int	vc_bell_pitch;
-	unsigned int	vc_bell_duration;
-	unsigned short	vc_cur_blink_ms;
 	struct vc_data **vc_display_fg;
 	struct uni_pagedir *vc_uni_pagedir;
 	struct uni_pagedir **vc_uni_pagedir_loc;
-	struct uni_screen *vc_uni_screen;
 };
 
 struct vc {
 	struct vc_data *d;
-	struct work_struct SAK_work;
 };
 
 extern struct vc vc_cons [MAX_NR_CONSOLES];
-extern void vc_SAK(struct work_struct *work);
 
-#define CUR_MAKE(size, change, set)	((size) | ((change) << 8) |	\
-		((set) << 16))
 #define CUR_SIZE(c)		 ((c) & 0x00000f)
 # define CUR_DEF			       0
 # define CUR_NONE			       1
@@ -137,21 +105,12 @@ int vc_allocate(unsigned int console);
 int vc_cons_allocated(unsigned int console);
 int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int lines);
 void reset_palette(struct vc_data *vc);
-void do_unblank_screen(int leaving_gfx);
 void unblank_screen(void);
 
 struct unipair;
 
-int con_set_trans_old(unsigned char __user * table);
-int con_get_trans_old(unsigned char __user * table);
-int con_set_trans_new(unsigned short __user * table);
-int con_get_trans_new(unsigned short __user * table);
-int con_clear_unimap(struct vc_data *vc);
-int con_set_unimap(struct vc_data *vc, ushort ct, struct unipair __user *list);
-int con_get_unimap(struct vc_data *vc, ushort ct, ushort __user *uct, struct unipair __user *list);
 int con_set_default_unimap(struct vc_data *vc);
 void con_free_unimap(struct vc_data *vc);
-int con_copy_unimap(struct vc_data *dst_vc, struct vc_data *src_vc);
 
 
 void reset_vc(struct vc_data *vc);
@@ -173,13 +132,5 @@ struct vt_notifier_param {
 
 int vt_reset_unicode(unsigned int console);
 void vt_reset_keyboard(unsigned int console);
-int vt_get_kbd_mode_bit(unsigned int console, int bit);
-void vt_set_kbd_mode_bit(unsigned int console, int bit);
-void vt_clr_kbd_mode_bit(unsigned int console, int bit);
-void vt_kbd_con_start(unsigned int console);
-void vt_kbd_con_stop(unsigned int console);
 
-void vc_scrolldelta_helper(struct vc_data *c, int lines,
-		unsigned int rolled_over, void *_base, unsigned int size);
-
-#endif  
+#endif

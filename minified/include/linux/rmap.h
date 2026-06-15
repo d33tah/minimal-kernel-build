@@ -43,11 +43,6 @@ enum ttu_flags {
 	TTU_RMAP_LOCKED		= 0x80,
 };
 
-static inline void get_anon_vma(struct anon_vma *anon_vma)
-{
-	atomic_inc(&anon_vma->refcount);
-}
-
 void __put_anon_vma(struct anon_vma *anon_vma);
 
 static inline void put_anon_vma(struct anon_vma *anon_vma)
@@ -70,7 +65,6 @@ void anon_vma_init(void);
 int  __anon_vma_prepare(struct vm_area_struct *);
 void unlink_anon_vmas(struct vm_area_struct *);
 int anon_vma_clone(struct vm_area_struct *, struct vm_area_struct *);
-int anon_vma_fork(struct vm_area_struct *, struct vm_area_struct *);
 
 static inline int anon_vma_prepare(struct vm_area_struct *vma)
 {
@@ -80,55 +74,12 @@ static inline int anon_vma_prepare(struct vm_area_struct *vma)
 	return __anon_vma_prepare(vma);
 }
 
-typedef int __bitwise rmap_t;
-
-#define RMAP_NONE		((__force rmap_t)0)
-
-#define RMAP_EXCLUSIVE		((__force rmap_t)BIT(0))
-
-#define RMAP_COMPOUND		((__force rmap_t)BIT(1))
-
-void page_add_anon_rmap(struct page *, struct vm_area_struct *,
-		unsigned long address, rmap_t flags);
 void page_add_new_anon_rmap(struct page *, struct vm_area_struct *,
 		unsigned long address);
 void page_add_file_rmap(struct page *, struct vm_area_struct *,
 		bool compound);
-void page_remove_rmap(struct page *, struct vm_area_struct *,
-		bool compound);
-
-#define PVMW_SYNC		(1 << 0)
-#define PVMW_MIGRATION		(1 << 1)
-
-struct page_vma_mapped_walk {
-	unsigned long pfn;
-	unsigned long nr_pages;
-	pgoff_t pgoff;
-	struct vm_area_struct *vma;
-	unsigned long address;
-	pmd_t *pmd;
-	pte_t *pte;
-	spinlock_t *ptl;
-	unsigned int flags;
-};
-
-static inline void page_vma_mapped_walk_done(struct page_vma_mapped_walk *pvmw)
-{
-	 
-	if (pvmw->pte && !is_vm_hugetlb_page(pvmw->vma))
-		pte_unmap(pvmw->pte);
-	if (pvmw->ptl)
-		spin_unlock(pvmw->ptl);
-}
-
-bool page_vma_mapped_walk(struct page_vma_mapped_walk *pvmw);
-
 
 int folio_mkclean(struct folio *);
-
-void remove_migration_ptes(struct folio *src, struct folio *dst, bool locked);
-
-int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma);
 
 
 static inline int page_mkclean(struct page *page)

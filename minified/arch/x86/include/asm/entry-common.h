@@ -12,7 +12,6 @@ static inline void clear_user_return_notifier(struct task_struct *p) {}
 #include <linux/sched/task_stack.h>
 
 #include <asm/nospec-branch.h>
-#include <asm/io_bitmap.h>
 #include <asm/fpu/api.h>
 
  
@@ -46,9 +45,6 @@ static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
 	if (ti_work & _TIF_USER_RETURN_NOTIFY)
 		fire_user_return_notifiers();
 
-	if (unlikely(ti_work & _TIF_IO_BITMAP))
-		tss_update_io_bitmap();
-
 	fpregs_assert_state_consistent();
 	if (unlikely(ti_work & _TIF_NEED_FPU_LOAD))
 		switch_fpu_return();
@@ -60,7 +56,6 @@ static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
 
 static __always_inline void arch_exit_to_user_mode(void)
 {
-	mds_user_clear_cpu_buffers();
 }
 #define arch_exit_to_user_mode arch_exit_to_user_mode
 

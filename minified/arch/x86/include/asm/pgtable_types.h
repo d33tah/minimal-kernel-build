@@ -455,38 +455,12 @@ static inline pteval_t pte_flags(pte_t pte)
 
 unsigned long cachemode2protval(enum page_cache_mode pcm);
 
-static inline pgprotval_t protval_4k_2_large(pgprotval_t val)
-{
-	return (val & ~(_PAGE_PAT | _PAGE_PAT_LARGE)) |
-		((val & _PAGE_PAT) << (_PAGE_BIT_PAT_LARGE - _PAGE_BIT_PAT));
-}
-static inline pgprot_t pgprot_4k_2_large(pgprot_t pgprot)
-{
-	return __pgprot(protval_4k_2_large(pgprot_val(pgprot)));
-}
-static inline pgprotval_t protval_large_2_4k(pgprotval_t val)
-{
-	return (val & ~(_PAGE_PAT | _PAGE_PAT_LARGE)) |
-		((val & _PAGE_PAT_LARGE) >>
-		 (_PAGE_BIT_PAT_LARGE - _PAGE_BIT_PAT));
-}
-static inline pgprot_t pgprot_large_2_4k(pgprot_t pgprot)
-{
-	return __pgprot(protval_large_2_4k(pgprot_val(pgprot)));
-}
-
 
 typedef struct page *pgtable_t;
 
 extern pteval_t __supported_pte_mask;
 extern pteval_t __default_kernel_pte_mask;
 /* set_nx, nx_enabled removed - unused */
-
-#define pgprot_writecombine	pgprot_writecombine
-extern pgprot_t pgprot_writecombine(pgprot_t prot);
-
-#define pgprot_writethrough	pgprot_writethrough
-extern pgprot_t pgprot_writethrough(pgprot_t prot);
 
 #define __HAVE_PFNMAP_TRACKING
 

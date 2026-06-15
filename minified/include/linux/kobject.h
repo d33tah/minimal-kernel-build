@@ -54,11 +54,6 @@ extern void kobject_init(struct kobject *kobj, const struct kobj_type *ktype);
 extern __printf(3, 4) __must_check
 int kobject_add(struct kobject *kobj, struct kobject *parent,
 		const char *fmt, ...);
-extern __printf(4, 5) __must_check
-int kobject_init_and_add(struct kobject *kobj,
-			 const struct kobj_type *ktype, struct kobject *parent,
-			 const char *fmt, ...);
-
 extern void kobject_del(struct kobject *kobj);
 
 extern struct kobject * __must_check kobject_create_and_add(const char *name,
@@ -73,7 +68,6 @@ extern void kobject_put(struct kobject *kobj);
 
 struct kobj_type {
 	void (*release)(struct kobject *kobj);
-	const struct sysfs_ops *sysfs_ops;
 	const struct attribute_group **default_groups;
 	const struct kobj_ns_type_operations *(*child_ns_type)(struct kobject *kobj);
 	const void *(*namespace)(struct kobject *kobj);
@@ -94,15 +88,6 @@ struct kset_uevent_ops {
 	int (* const uevent)(struct kobject *kobj, struct kobj_uevent_env *env);
 };
 
-struct kobj_attribute {
-	struct attribute attr;
-	ssize_t (*show)(struct kobject *kobj, struct kobj_attribute *attr,
-			char *buf);
-	ssize_t (*store)(struct kobject *kobj, struct kobj_attribute *attr,
-			 const char *buf, size_t count);
-};
-
-extern const struct sysfs_ops kobj_sysfs_ops;
 
 struct sock;
 
@@ -140,13 +125,10 @@ static inline const struct kobj_type *get_ktype(struct kobject *kobj)
 	return kobj->ktype;
 }
 
-extern struct kobject *kset_find_obj(struct kset *, const char *);
-
 
 int kobject_uevent(struct kobject *kobj, enum kobject_action action);
 int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 			char *envp[]);
-int kobject_synth_uevent(struct kobject *kobj, const char *buf, size_t count);
 
 
 #endif  

@@ -12,18 +12,6 @@
 #include <linux/spinlock.h>		 
 extern spinlock_t rtc_lock;		 
 
-struct cmos_rtc_board_info {
-	void	(*wake_on)(struct device *dev);
-	void	(*wake_off)(struct device *dev);
-
-	u32	flags;
-#define CMOS_RTC_FLAGS_NOFREQ	(1 << 0)
-	int	address_space;
-
-	u8	rtc_day_alarm;		 
-	u8	rtc_mon_alarm;		 
-	u8	rtc_century;		 
-};
 #endif
 
 #define RTC_SECONDS		0
@@ -87,12 +75,6 @@ struct cmos_rtc_board_info {
 
 #else
 #define RTC_IO_EXTENT_USED      RTC_IO_EXTENT
-#endif  
+#endif
 
-int mc146818_get_time(struct rtc_time *time);
-int mc146818_set_time(struct rtc_time *time);
-
-bool mc146818_avoid_UIP(void (*callback)(unsigned char seconds, void *param),
-			void *param);
-
-#endif  
+#endif

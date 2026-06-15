@@ -75,7 +75,7 @@ unsigned char rtc_cmos_read(unsigned char addr)
 	return val;
 }
 
-/* rtc_cmos_write stubbed - mc146818_set_time (only caller) is now a stub */
+/* rtc_cmos_write stubbed - no in-kernel caller in minimal kernel */
 void rtc_cmos_write(unsigned char val, unsigned char addr) { }
 
 

@@ -8,71 +8,6 @@
 #include <linux/security.h>
 #include "internal.h"
 
-int __init init_mount(const char *dev_name, const char *dir_name,
-		const char *type_page, unsigned long flags, void *data_page)
-{
-	struct path path;
-	int ret;
-
-	ret = kern_path(dir_name, LOOKUP_FOLLOW, &path);
-	if (ret)
-		return ret;
-	ret = path_mount(dev_name, &path, type_page, flags, data_page);
-	path_put(&path);
-	return ret;
-}
-
-int __init init_umount(const char *name, int flags)
-{
-	int lookup_flags = LOOKUP_MOUNTPOINT;
-	struct path path;
-	int ret;
-
-	if (!(flags & UMOUNT_NOFOLLOW))
-		lookup_flags |= LOOKUP_FOLLOW;
-	ret = kern_path(name, lookup_flags, &path);
-	if (ret)
-		return ret;
-	return path_umount(&path, flags);
-}
-
-int __init init_chdir(const char *filename)
-{
-	struct path path;
-	int error;
-
-	error = kern_path(filename, LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &path);
-	if (error)
-		return error;
-	error = path_permission(&path, MAY_EXEC | MAY_CHDIR);
-	if (!error)
-		set_fs_pwd(current->fs, &path);
-	path_put(&path);
-	return error;
-}
-
-int __init init_chroot(const char *filename)
-{
-	struct path path;
-	int error;
-
-	error = kern_path(filename, LOOKUP_FOLLOW | LOOKUP_DIRECTORY, &path);
-	if (error)
-		return error;
-	error = path_permission(&path, MAY_EXEC | MAY_CHDIR);
-	if (error)
-		goto dput_and_out;
-	error = -EPERM;
-	if (!ns_capable(current_user_ns(), CAP_SYS_CHROOT))
-		goto dput_and_out;
-	error = security_path_chroot(&path);
-	if (error)
-		goto dput_and_out;
-	set_fs_root(current->fs, &path);
-dput_and_out:
-	path_put(&path);
-	return error;
-}
 
 int __init init_chown(const char *filename, uid_t user, gid_t group, int flags)
 {
@@ -101,19 +36,6 @@ int __init init_chmod(const char *filename, umode_t mode)
 	if (error)
 		return error;
 	error = chmod_common(&path, mode);
-	path_put(&path);
-	return error;
-}
-
-int __init init_eaccess(const char *filename)
-{
-	struct path path;
-	int error;
-
-	error = kern_path(filename, LOOKUP_FOLLOW, &path);
-	if (error)
-		return error;
-	error = path_permission(&path, MAY_ACCESS);
 	path_put(&path);
 	return error;
 }
@@ -150,10 +72,8 @@ int __init init_mknod(const char *filename, umode_t mode, unsigned int dev)
 
 	if (!IS_POSIXACL(path.dentry->d_inode))
 		mode &= ~current_umask();
-	error = security_path_mknod(&path, dentry, mode, dev);
-	if (!error)
-		error = vfs_mknod(mnt_user_ns(path.mnt), path.dentry->d_inode,
-				  dentry, mode, new_decode_dev(dev));
+	error = vfs_mknod(mnt_user_ns(path.mnt), path.dentry->d_inode,
+			  dentry, mode, new_decode_dev(dev));
 	done_path_create(&path, dentry);
 	return error;
 }
@@ -181,9 +101,6 @@ int __init init_link(const char *oldname, const char *newname)
 	error = may_linkat(mnt_userns, &old_path);
 	if (unlikely(error))
 		goto out_dput;
-	error = security_path_link(old_path.dentry, &new_path, new_dentry);
-	if (error)
-		goto out_dput;
 	error = vfs_link(old_path.dentry, mnt_userns, new_path.dentry->d_inode,
 			 new_dentry, NULL);
 out_dput:
@@ -202,10 +119,8 @@ int __init init_symlink(const char *oldname, const char *newname)
 	dentry = kern_path_create(AT_FDCWD, newname, &path, 0);
 	if (IS_ERR(dentry))
 		return PTR_ERR(dentry);
-	error = security_path_symlink(&path, dentry, oldname);
-	if (!error)
-		error = vfs_symlink(mnt_user_ns(path.mnt), path.dentry->d_inode,
-				    dentry, oldname);
+	error = vfs_symlink(mnt_user_ns(path.mnt), path.dentry->d_inode,
+			    dentry, oldname);
 	done_path_create(&path, dentry);
 	return error;
 }
@@ -226,10 +141,8 @@ int __init init_mkdir(const char *pathname, umode_t mode)
 		return PTR_ERR(dentry);
 	if (!IS_POSIXACL(path.dentry->d_inode))
 		mode &= ~current_umask();
-	error = security_path_mkdir(&path, dentry, mode);
-	if (!error)
-		error = vfs_mkdir(mnt_user_ns(path.mnt), path.dentry->d_inode,
-				  dentry, mode);
+	error = vfs_mkdir(mnt_user_ns(path.mnt), path.dentry->d_inode,
+			  dentry, mode);
 	done_path_create(&path, dentry);
 	return error;
 }
@@ -237,19 +150,6 @@ int __init init_mkdir(const char *pathname, umode_t mode)
 int __init init_rmdir(const char *pathname)
 {
 	return do_rmdir(AT_FDCWD, getname_kernel(pathname));
-}
-
-int __init init_utimes(char *filename, struct timespec64 *ts)
-{
-	struct path path;
-	int error;
-
-	error = kern_path(filename, 0, &path);
-	if (error)
-		return error;
-	error = vfs_utimes(&path, ts);
-	path_put(&path);
-	return error;
 }
 
 int __init init_dup(struct file *file)

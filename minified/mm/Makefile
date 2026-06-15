@@ -37,9 +37,8 @@ CFLAGS_init-mm.o += $(call cc-disable-warning, override-init)
 CFLAGS_init-mm.o += $(call cc-disable-warning, initializer-overrides)
 
 mmu-y			:= nommu.o
-mmu-$(CONFIG_MMU)	:= highmem.o memory.o \
+mmu-$(CONFIG_MMU)	:= memory.o \
 			   mlock.o mmap.o mmu_gather.o mprotect.o mremap.o \
-			   page_vma_mapped.o \
 			   pgtable-generic.o rmap.o vmalloc.o
 
 
@@ -52,7 +51,6 @@ obj-y			:= filemap.o oom_kill.o \
 			   readahead.o swap.o truncate.o vmscan.o shmem.o \
 			   util.o mmzone.o vmstat.o backing-dev.o \
 			   percpu.o slab_common.o \
-			   vmacache.o \
 			   interval_tree.o list_lru.o workingset.o \
 			   gup.o $(mmu-y)
 

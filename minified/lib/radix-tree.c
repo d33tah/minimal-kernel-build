@@ -8,7 +8,6 @@
 #include <linux/idr.h>
 #include <linux/init.h>
 #include <linux/kernel.h>
-#include <linux/kmemleak.h>
 #include <linux/percpu.h>
 #include <linux/preempt.h>		
 #include <linux/radix-tree.h>
@@ -195,8 +194,6 @@ radix_tree_node_alloc(gfp_t gfp_mask, struct radix_tree_node *parent,
 			rtp->nodes = ret->parent;
 			rtp->nr--;
 		}
-		
-		kmemleak_update_trace(ret);
 		goto out;
 	}
 	ret = kmem_cache_alloc(radix_tree_node_cachep, gfp_mask);
@@ -532,16 +529,6 @@ void *__radix_tree_lookup(const struct radix_tree_root *root,
 	return node;
 }
 
-void __rcu **radix_tree_lookup_slot(const struct radix_tree_root *root,
-				unsigned long index)
-{
-	void __rcu **slot;
-
-	if (!__radix_tree_lookup(root, index, NULL, &slot))
-		return NULL;
-	return slot;
-}
-
 void *radix_tree_lookup(const struct radix_tree_root *root, unsigned long index)
 {
 	return __radix_tree_lookup(root, index, NULL, NULL);
@@ -703,83 +690,6 @@ static void set_iter_tags(struct radix_tree_iter *iter,
 }
 
 
-void __rcu **radix_tree_next_chunk(const struct radix_tree_root *root,
-			     struct radix_tree_iter *iter, unsigned flags)
-{
-	unsigned tag = flags & RADIX_TREE_ITER_TAG_MASK;
-	struct radix_tree_node *node, *child;
-	unsigned long index, offset, maxindex;
-
-	if ((flags & RADIX_TREE_ITER_TAGGED) && !root_tag_get(root, tag))
-		return NULL;
-
-	index = iter->next_index;
-	if (!index && iter->index)
-		return NULL;
-
- restart:
-	radix_tree_load_root(root, &child, &maxindex);
-	if (index > maxindex)
-		return NULL;
-	if (!child)
-		return NULL;
-
-	if (!radix_tree_is_internal_node(child)) {
-		
-		iter->index = index;
-		iter->next_index = maxindex + 1;
-		iter->tags = 1;
-		iter->node = NULL;
-		return (void __rcu **)&root->xa_head;
-	}
-
-	do {
-		node = entry_to_node(child);
-		offset = radix_tree_descend(node, &child, index);
-
-		if ((flags & RADIX_TREE_ITER_TAGGED) ?
-				!tag_get(node, tag, offset) : !child) {
-			
-			if (flags & RADIX_TREE_ITER_CONTIG)
-				return NULL;
-
-			if (flags & RADIX_TREE_ITER_TAGGED)
-				offset = radix_tree_find_next_bit(node, tag,
-						offset + 1);
-			else
-				while (++offset	< RADIX_TREE_MAP_SIZE) {
-					void *slot = rcu_dereference_raw(
-							node->slots[offset]);
-					if (slot)
-						break;
-				}
-			index &= ~node_maxindex(node);
-			index += offset << node->shift;
-			
-			if (!index)
-				return NULL;
-			if (offset == RADIX_TREE_MAP_SIZE)
-				goto restart;
-			child = rcu_dereference_raw(node->slots[offset]);
-		}
-
-		if (!child)
-			goto restart;
-		if (child == RADIX_TREE_RETRY)
-			break;
-	} while (node->shift && radix_tree_is_internal_node(child));
-
-	iter->index = (index &~ node_maxindex(node)) | offset;
-	iter->next_index = (index | node_maxindex(node)) + 1;
-	iter->node = node;
-
-	if (flags & RADIX_TREE_ITER_TAGGED)
-		set_iter_tags(iter, node, offset, tag);
-
-	return node->slots + offset;
-}
-
-
 static bool __radix_tree_delete(struct radix_tree_root *root,
 				struct radix_tree_node *node, void __rcu **slot)
 {
@@ -819,11 +729,6 @@ void *radix_tree_delete_item(struct radix_tree_root *root,
 	__radix_tree_delete(root, node, slot);
 
 	return entry;
-}
-
-void *radix_tree_delete(struct radix_tree_root *root, unsigned long index)
-{
-	return radix_tree_delete_item(root, index, NULL);
 }
 
 /* radix_tree_tagged used internally by idr_get_free */
@@ -919,25 +824,8 @@ radix_tree_node_ctor(void *arg)
 	INIT_LIST_HEAD(&node->private_list);
 }
 
-static int radix_tree_cpu_dead(unsigned int cpu)
-{
-	struct radix_tree_preload *rtp;
-	struct radix_tree_node *node;
-
-	rtp = &per_cpu(radix_tree_preloads, cpu);
-	while (rtp->nr) {
-		node = rtp->nodes;
-		rtp->nodes = node->parent;
-		kmem_cache_free(radix_tree_node_cachep, node);
-		rtp->nr--;
-	}
-	return 0;
-}
-
 void __init radix_tree_init(void)
 {
-	int ret;
-
 	BUILD_BUG_ON(RADIX_TREE_MAX_TAGS + __GFP_BITS_SHIFT > 32);
 	BUILD_BUG_ON(ROOT_IS_IDR & ~GFP_ZONEMASK);
 	BUILD_BUG_ON(XA_CHUNK_SIZE > 255);
@@ -945,7 +833,4 @@ void __init radix_tree_init(void)
 			sizeof(struct radix_tree_node), 0,
 			SLAB_PANIC | SLAB_RECLAIM_ACCOUNT,
 			radix_tree_node_ctor);
-	ret = cpuhp_setup_state_nocalls(CPUHP_RADIX_DEAD, "lib/radix:dead",
-					NULL, radix_tree_cpu_dead);
-	WARN_ON(ret < 0);
 }

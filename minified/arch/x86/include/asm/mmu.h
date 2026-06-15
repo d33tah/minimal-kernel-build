@@ -25,9 +25,7 @@ typedef struct {
 
 	struct mutex lock;
 	void __user *vdso;			 
-	const struct vdso_image *vdso_image;	 
-
-	atomic_t perf_rdpmc_allowed;	 
+	const struct vdso_image *vdso_image;
 } mm_context_t;
 
 #define INIT_MM_CONTEXT(mm)						\

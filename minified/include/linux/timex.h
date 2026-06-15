@@ -42,16 +42,10 @@ struct __kernel_timex {
 #include <linux/types.h>
 #include <linux/param.h>
 
-unsigned long random_get_entropy_fallback(void);
-
 #include <asm/timex.h>
 
 #ifndef random_get_entropy
-#ifdef get_cycles
 #define random_get_entropy()	((unsigned long)get_cycles())
-#else
-#define random_get_entropy()	random_get_entropy_fallback()
-#endif
 #endif
 
 /* NTP tuning macros removed - unused:

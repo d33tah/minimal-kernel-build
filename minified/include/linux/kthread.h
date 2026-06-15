@@ -31,12 +31,7 @@ void kthread_set_per_cpu(struct task_struct *k, int cpu);
 
 
 void free_kthread_struct(struct task_struct *k);
-int kthread_stop(struct task_struct *k);
-bool kthread_should_stop(void);
-bool kthread_should_park(void);
 bool __kthread_should_park(struct task_struct *k);
-void *kthread_data(struct task_struct *k);
-void kthread_unpark(struct task_struct *k);
 void kthread_exit(long result) __noreturn;
 
 int kthreadd(void *unused);
@@ -114,37 +109,5 @@ extern void __kthread_init_worker(struct kthread_worker *worker,
 			     kthread_delayed_work_timer_fn,		\
 			     TIMER_IRQSAFE);				\
 	} while (0)
-
-int kthread_worker_fn(void *worker_ptr);
-
-__printf(2, 3)
-struct kthread_worker *
-kthread_create_worker(unsigned int flags, const char namefmt[], ...);
-
-__printf(3, 4) struct kthread_worker *
-kthread_create_worker_on_cpu(int cpu, unsigned int flags,
-			     const char namefmt[], ...);
-
-bool kthread_queue_work(struct kthread_worker *worker,
-			struct kthread_work *work);
-
-bool kthread_queue_delayed_work(struct kthread_worker *worker,
-				struct kthread_delayed_work *dwork,
-				unsigned long delay);
-
-bool kthread_mod_delayed_work(struct kthread_worker *worker,
-			      struct kthread_delayed_work *dwork,
-			      unsigned long delay);
-
-void kthread_flush_work(struct kthread_work *work);
-void kthread_flush_worker(struct kthread_worker *worker);
-
-bool kthread_cancel_work_sync(struct kthread_work *work);
-bool kthread_cancel_delayed_work_sync(struct kthread_delayed_work *work);
-
-void kthread_destroy_worker(struct kthread_worker *worker);
-
-void kthread_use_mm(struct mm_struct *mm);
-void kthread_unuse_mm(struct mm_struct *mm);
 
 #endif  

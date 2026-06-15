@@ -26,31 +26,17 @@ build_mmio_read(readb, "b", unsigned char, "=q", :"memory")
 build_mmio_read(readw, "w", unsigned short, "=r", :"memory")
 build_mmio_read(readl, "l", unsigned int, "=r", :"memory")
 
-build_mmio_read(__readb, "b", unsigned char, "=q", )
-build_mmio_read(__readw, "w", unsigned short, "=r", )
-build_mmio_read(__readl, "l", unsigned int, "=r", )
-
 build_mmio_write(writeb, "b", unsigned char, "q", :"memory")
 build_mmio_write(writew, "w", unsigned short, "r", :"memory")
 build_mmio_write(writel, "l", unsigned int, "r", :"memory")
 
-build_mmio_write(__writeb, "b", unsigned char, "q", )
-build_mmio_write(__writew, "w", unsigned short, "r", )
-build_mmio_write(__writel, "l", unsigned int, "r", )
-
 #define readb readb
 #define readw readw
 #define readl readl
-#define readb_relaxed(a) __readb(a)
-#define readw_relaxed(a) __readw(a)
-#define readl_relaxed(a) __readl(a)
 #define writeb writeb
 #define writew writew
 #define writel writel
-#define writeb_relaxed(v, a) __writeb(v, a)
-#define writew_relaxed(v, a) __writew(v, a)
-#define writel_relaxed(v, a) __writel(v, a)
-/* __raw_read*, __raw_write* removed - unused */
+/* __read, __write, _relaxed and __raw_ accessors removed - unused */
 /* ARCH_HAS_VALID_PHYS_ADDR_RANGE, valid_*_range removed - unused */
 
  
@@ -68,35 +54,6 @@ static inline void *phys_to_virt(phys_addr_t address)
 	return __va(address);
 }
 #define phys_to_virt phys_to_virt
-
-#define page_to_phys(page)    ((dma_addr_t)page_to_pfn(page) << PAGE_SHIFT)
-
-extern void __iomem *ioremap_prot(resource_size_t offset, unsigned long size, unsigned long prot_val);
-#define ioremap_prot ioremap_prot
-/* ioremap_uc, ioremap_cache, ioremap_encrypted declarations removed - no callers */
-
-void __iomem *ioremap(resource_size_t offset, unsigned long size);
-#define ioremap ioremap
-
-extern void iounmap(volatile void __iomem *addr);
-#define iounmap iounmap
-
-#ifdef __KERNEL__
-
-void memcpy_fromio(void *, const volatile void __iomem *, size_t);
-void memcpy_toio(volatile void __iomem *, const void *, size_t);
-void memset_io(volatile void __iomem *, int, size_t);
-
-#define memcpy_fromio memcpy_fromio
-#define memcpy_toio memcpy_toio
-#define memset_io memset_io
-
-
-
- 
-#define __ISA_IO_base ((char __iomem *)(PAGE_OFFSET))
-
-#endif  
 
 extern void native_io_delay(void);
 extern void io_delay_init(void);
@@ -165,18 +122,7 @@ BUILDIO(l,  , u32)
 #undef BUILDIO
 
 #define inb_p inb_p
-#define inw_p inw_p
-#define inl_p inl_p
-#define insb insb
-#define insw insw
-#define insl insl
-
 #define outb_p outb_p
-#define outw_p outw_p
-#define outl_p outl_p
-#define outsb outsb
-#define outsw outsw
-#define outsl outsl
 
 extern void *xlate_dev_mem_ptr(phys_addr_t phys);
 extern void unxlate_dev_mem_ptr(phys_addr_t phys, void *addr);

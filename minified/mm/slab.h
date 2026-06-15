@@ -111,39 +111,13 @@ static inline size_t slab_size(const struct slab *slab)
 
 
 
-#include <linux/kfence.h>
 #include <linux/kobject.h>
 #include <linux/reciprocal_div.h>
 #include <linux/local_lock.h>
 
-enum stat_item {
-	ALLOC_FASTPATH,
-	ALLOC_SLOWPATH,
-	FREE_FASTPATH,
-	FREE_SLOWPATH,
-	FREE_FROZEN,
-	FREE_ADD_PARTIAL,
-	FREE_REMOVE_PARTIAL,
-	ALLOC_FROM_PARTIAL,
-	ALLOC_SLAB,
-	ALLOC_REFILL,
-	ALLOC_NODE_MISMATCH,
-	FREE_SLAB,
-	CPUSLAB_FLUSH,
-	DEACTIVATE_FULL,
-	DEACTIVATE_EMPTY,
+enum slab_deactivate_mode {
 	DEACTIVATE_TO_HEAD,
-	DEACTIVATE_TO_TAIL,
-	DEACTIVATE_REMOTE_FREES,
-	DEACTIVATE_BYPASS,
-	ORDER_FALLBACK,
-	CMPXCHG_DOUBLE_CPU_FAIL,
-	CMPXCHG_DOUBLE_FAIL,
-	CPU_PARTIAL_ALLOC,
-	CPU_PARTIAL_FREE,
-	CPU_PARTIAL_NODE,
-	CPU_PARTIAL_DRAIN,
-	NR_SLUB_STAT_ITEMS };
+	DEACTIVATE_TO_TAIL };
 
 struct kmem_cache_cpu {
 	void **freelist;
@@ -185,47 +159,7 @@ struct kmem_cache {
 
 /* sysfs_slab_unlink/release removed - unused */
 
-void *fixup_red_left(struct kmem_cache *s, void *p);
-
-static inline void *nearest_obj(struct kmem_cache *cache, const struct slab *slab,
-				void *x) {
-	void *object = x - (x - slab_address(slab)) % cache->size;
-	void *last_object = slab_address(slab) +
-		(slab->objects - 1) * cache->size;
-	void *result = (unlikely(object > last_object)) ? last_object : object;
-
-	result = fixup_red_left(cache, result);
-	return result;
-}
-
-static inline unsigned int __obj_to_index(const struct kmem_cache *cache,
-					  void *addr, void *obj)
-{
-	return reciprocal_divide(kasan_reset_tag(obj) - addr,
-				 cache->reciprocal_size);
-}
-
-static inline unsigned int obj_to_index(const struct kmem_cache *cache,
-					const struct slab *slab, void *obj)
-{
-	if (is_kfence_address(obj))
-		return 0;
-	return __obj_to_index(cache, slab_address(slab), obj);
-}
-
-static inline int objs_per_slab(const struct kmem_cache *cache,
-				     const struct slab *slab)
-{
-	return slab->objects;
-}
-
 #include <linux/memcontrol.h>
-int should_failslab(struct kmem_cache *s, gfp_t gfpflags);
-static inline bool __should_failslab(struct kmem_cache *s, gfp_t gfpflags)
-{ return false; }
-/* end fault-inject.h */
-#include <linux/kasan.h>
-#include <linux/kmemleak.h>
 #include <linux/random.h>
 #include <linux/sched/mm.h>
 #include <linux/list_lru.h>
@@ -312,29 +246,8 @@ slab_flags_t kmem_cache_flags(unsigned int object_size,
 			      SLAB_ACCOUNT | \
 			      SLAB_NO_USER_FLAGS)
 
-bool __kmem_cache_empty(struct kmem_cache *);
-int __kmem_cache_shutdown(struct kmem_cache *);
 void __kmem_cache_release(struct kmem_cache *);
-int __kmem_cache_shrink(struct kmem_cache *);
-void slab_kmem_cache_release(struct kmem_cache *);
 
-struct seq_file;
-struct file;
-
-struct slabinfo {
-	unsigned long active_objs;
-	unsigned long num_objs;
-	unsigned long active_slabs;
-	unsigned long num_slabs;
-	unsigned long shared_avail;
-	unsigned int limit;
-	unsigned int batchcount;
-	unsigned int shared;
-	unsigned int objects_per_slab;
-	unsigned int cache_order;
-};
-
-/* get_slabinfo, slabinfo_show_stats, slabinfo_write removed - never called/defined */
 
 /* __kmem_cache_free_bulk, __kmem_cache_alloc_bulk removed - never called */
 
@@ -442,17 +355,6 @@ static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 	return cachep;
 }
 
-static inline size_t slab_ksize(const struct kmem_cache *s)
-{
-	if (s->flags & SLAB_KASAN)
-		return s->object_size;
-	 
-	if (s->flags & (SLAB_TYPESAFE_BY_RCU | SLAB_STORE_USER))
-		return s->inuse;
-	 
-	return s->size;
-}
-
 static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
 						     struct list_lru *lru,
 						     struct obj_cgroup **objcgp,
@@ -461,9 +363,6 @@ static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
 	flags &= gfp_allowed_mask;
 
 	might_alloc(flags);
-
-	if (should_failslab(s, flags))
-		return NULL;
 
 	if (!memcg_slab_pre_alloc_hook(s, lru, objcgp, size, flags))
 		return NULL;
@@ -481,11 +380,8 @@ static inline void slab_post_alloc_hook(struct kmem_cache *s,
 
 	 
 	for (i = 0; i < size; i++) {
-		p[i] = kasan_slab_alloc(s, p[i], flags, init);
-		if (p[i] && init && !kasan_has_integrated_init())
+		if (p[i] && init)
 			memset(p[i], 0, s->object_size);
-		kmemleak_alloc_recursive(p[i], s->object_size, 1,
-					 s->flags, flags);
 	}
 
 	memcg_slab_post_alloc_hook(s, objcg, flags, size, p);
@@ -514,38 +410,17 @@ static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
 
 /* dump_unreclaimable_slab removed - unused */
 
-void ___cache_free(struct kmem_cache *cache, void *x, unsigned long addr);
-
-static inline int cache_random_seq_create(struct kmem_cache *cachep,
-					unsigned int count, gfp_t gfp)
-{
-	return 0;
-}
 static inline void cache_random_seq_destroy(struct kmem_cache *cachep) { }
 
 static inline bool slab_want_init_on_alloc(gfp_t flags, struct kmem_cache *c)
 {
-	if (static_branch_maybe(CONFIG_INIT_ON_ALLOC_DEFAULT_ON,
-				&init_on_alloc)) {
-		if (c->ctor)
-			return false;
-		if (c->flags & (SLAB_TYPESAFE_BY_RCU | SLAB_POISON))
-			return flags & __GFP_ZERO;
-		return true;
-	}
 	return flags & __GFP_ZERO;
 }
 
 static inline bool slab_want_init_on_free(struct kmem_cache *c)
 {
-	if (static_branch_maybe(CONFIG_INIT_ON_FREE_DEFAULT_ON,
-				&init_on_free))
-		return !(c->ctor ||
-			 (c->flags & (SLAB_TYPESAFE_BY_RCU | SLAB_POISON)));
 	return false;
 }
-
-static inline void debugfs_slab_release(struct kmem_cache *s) { }
 
 
 void __check_heap_object(const void *ptr, unsigned long n,

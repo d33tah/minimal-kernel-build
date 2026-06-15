@@ -60,7 +60,5 @@ static inline struct llist_node *llist_del_all(struct llist_head *head)
 	return xchg(&head->first, NULL);
 }
 
-extern struct llist_node *llist_del_first(struct llist_head *head);
 
-
-#endif  
+#endif

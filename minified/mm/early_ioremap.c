@@ -162,12 +162,6 @@ void __init early_iounmap(void __iomem *addr, unsigned long size)
 	prev_map[slot] = NULL;
 }
 
-void __init __iomem *
-early_ioremap(resource_size_t phys_addr, unsigned long size)
-{
-	return __early_ioremap(phys_addr, size, FIXMAP_PAGE_IO);
-}
-
 void __init *
 early_memremap(resource_size_t phys_addr, unsigned long size)
 {

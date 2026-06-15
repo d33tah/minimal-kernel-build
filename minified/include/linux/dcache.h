@@ -156,7 +156,6 @@ extern seqlock_t rename_lock;
 extern void d_instantiate(struct dentry *, struct inode *);
 extern void __d_drop(struct dentry *dentry);
 extern void d_drop(struct dentry *dentry);
-extern void d_delete(struct dentry *);
 extern void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op);
 
 
@@ -164,17 +163,9 @@ extern struct dentry * d_alloc(struct dentry *, const struct qstr *);
 extern struct dentry * d_alloc_anon(struct super_block *);
 extern struct dentry * d_alloc_parallel(struct dentry *, const struct qstr *,
 					wait_queue_head_t *);
-extern void shrink_dcache_parent(struct dentry *);
-extern void shrink_dcache_for_umount(struct super_block *);
-extern void d_invalidate(struct dentry *);
-
-
 extern struct dentry * d_make_root(struct inode *);
 
-extern void d_tmpfile(struct dentry *, struct inode *);
 
-
-extern void d_rehash(struct dentry *);
 extern void d_add(struct dentry *, struct inode *);
 extern struct dentry *d_ancestor(struct dentry *, struct dentry *);
 
@@ -183,11 +174,6 @@ extern struct dentry *__d_lookup(const struct dentry *, const struct qstr *);
 extern struct dentry *__d_lookup_rcu(const struct dentry *parent,
 				const struct qstr *name, unsigned *seq);
 
-
-extern __printf(4, 5)
-char *dynamic_dname(struct dentry *, char *, int, const char *, ...);
-
-extern char *d_path(const struct path *, char *, int);
 
 static inline struct dentry *dget_dlock(struct dentry *dentry)
 {

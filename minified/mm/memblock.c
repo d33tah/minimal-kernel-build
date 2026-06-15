@@ -6,7 +6,6 @@
 #include <linux/poison.h>
 #include <linux/pfn.h>
 #include <linux/debugfs.h>
-#include <linux/kmemleak.h>
 #include <linux/seq_file.h>
 #include <linux/memblock.h>
 
@@ -16,7 +15,6 @@
 #include "internal.h"
 
 #define INIT_MEMBLOCK_REGIONS			128
-#define INIT_PHYSMEM_REGIONS			4
 
 #ifndef INIT_MEMBLOCK_RESERVED_REGIONS
 # define INIT_MEMBLOCK_RESERVED_REGIONS		INIT_MEMBLOCK_REGIONS
@@ -60,14 +58,13 @@ static __refdata struct memblock_type *memblock_memory = &memblock.memory;
 	} while (0)
 
 static int memblock_debug __initdata_memblock;
-static bool system_has_some_mirror __initdata_memblock = false;
 static int memblock_can_resize __initdata_memblock;
 static int memblock_memory_in_slab __initdata_memblock = 0;
 static int memblock_reserved_in_slab __initdata_memblock = 0;
 
 static enum memblock_flags __init_memblock choose_memblock_flags(void)
 {
-	return system_has_some_mirror ? MEMBLOCK_MIRROR : MEMBLOCK_NONE;
+	return MEMBLOCK_NONE;
 }
 
 static inline phys_addr_t memblock_cap_size(phys_addr_t base, phys_addr_t *size)
@@ -164,21 +161,8 @@ static phys_addr_t __init_memblock memblock_find_in_range(phys_addr_t start,
 					phys_addr_t end, phys_addr_t size,
 					phys_addr_t align)
 {
-	phys_addr_t ret;
-	enum memblock_flags flags = choose_memblock_flags();
-
-again:
-	ret = memblock_find_in_range_node(size, align, start, end,
-					    NUMA_NO_NODE, flags);
-
-	if (!ret && (flags & MEMBLOCK_MIRROR)) {
-		pr_warn("Could not allocate %pap bytes of mirrored memory\n",
-			&size);
-		flags &= ~MEMBLOCK_MIRROR;
-		goto again;
-	}
-
-	return ret;
+	return memblock_find_in_range_node(size, align, start, end,
+					   NUMA_NO_NODE, choose_memblock_flags());
 }
 
 static void __init_memblock memblock_remove_region(struct memblock_type *type, unsigned long r)
@@ -409,17 +393,6 @@ repeat:
 	}
 }
 
-int __init_memblock memblock_add_node(phys_addr_t base, phys_addr_t size,
-				      int nid, enum memblock_flags flags)
-{
-	phys_addr_t end = base + size - 1;
-
-	memblock_dbg("%s: [%pa-%pa] nid=%d flags=%x %pS\n", __func__,
-		     &base, &end, nid, flags, (void *)_RET_IP_);
-
-	return memblock_add_range(&memblock.memory, base, size, nid, flags);
-}
-
 int __init_memblock memblock_add(phys_addr_t base, phys_addr_t size)
 {
 	phys_addr_t end = base + size - 1;
@@ -498,16 +471,6 @@ static int __init_memblock memblock_remove_range(struct memblock_type *type,
 	return 0;
 }
 
-int __init_memblock memblock_remove(phys_addr_t base, phys_addr_t size)
-{
-	phys_addr_t end = base + size - 1;
-
-	memblock_dbg("%s: [%pa-%pa] %pS\n", __func__,
-		     &base, &end, (void *)_RET_IP_);
-
-	return memblock_remove_range(&memblock.memory, base, size);
-}
-
 void __init_memblock memblock_free(void *ptr, size_t size)
 {
 	if (ptr)
@@ -521,7 +484,6 @@ int __init_memblock memblock_phys_free(phys_addr_t base, phys_addr_t size)
 	memblock_dbg("%s: [%pa-%pa] %pS\n", __func__,
 		     &base, &end, (void *)_RET_IP_);
 
-	kmemleak_free_part_phys(base, size);
 	return memblock_remove_range(&memblock.reserved, base, size);
 }
 
@@ -545,13 +507,6 @@ static bool should_skip_region(struct memblock_type *type,
 		return false;
 
 	if (nid != NUMA_NO_NODE && nid != m_nid)
-		return true;
-
-	if (movable_node_is_enabled() && memblock_is_hotpluggable(m) &&
-	    !(flags & MEMBLOCK_HOTPLUG))
-		return true;
-
-	if ((flags & MEMBLOCK_MIRROR) && !memblock_is_mirror(m))
 		return true;
 
 	if (!(flags & MEMBLOCK_NOMAP) && memblock_is_nomap(m))
@@ -757,41 +712,25 @@ phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size,
 		nid = NUMA_NO_NODE;
 
 	if (!align) {
-		
+
 		dump_stack();
 		align = SMP_CACHE_BYTES;
 	}
 
-again:
 	found = memblock_find_in_range_node(size, align, start, end, nid,
 					    flags);
 	if (found && !memblock_reserve(found, size))
-		goto done;
+		return found;
 
 	if (nid != NUMA_NO_NODE && !exact_nid) {
 		found = memblock_find_in_range_node(size, align, start,
 						    end, NUMA_NO_NODE,
 						    flags);
 		if (found && !memblock_reserve(found, size))
-			goto done;
-	}
-
-	if (flags & MEMBLOCK_MIRROR) {
-		flags &= ~MEMBLOCK_MIRROR;
-		pr_warn("Could not allocate %pap bytes of mirrored memory\n",
-			&size);
-		goto again;
+			return found;
 	}
 
 	return 0;
-
-done:
-	
-	if (end != MEMBLOCK_ALLOC_NOLEAKTRACE)
-		
-		kmemleak_alloc_phys(found, size, 0, 0);
-
-	return found;
 }
 
 phys_addr_t __init memblock_phys_alloc_range(phys_addr_t size,
@@ -883,7 +822,6 @@ void __init memblock_free_late(phys_addr_t base, phys_addr_t size)
 	end = base + size - 1;
 	memblock_dbg("%s: [%pa-%pa] %pS\n",
 		     __func__, &base, &end, (void *)_RET_IP_);
-	kmemleak_free_part_phys(base, size);
 	cursor = PFN_UP(base);
 	end = PFN_DOWN(base + size);
 
@@ -898,15 +836,6 @@ phys_addr_t __init_memblock memblock_start_of_DRAM(void)
 {
 	return memblock.memory.regions[0].base;
 }
-
-phys_addr_t __init_memblock memblock_end_of_DRAM(void)
-{
-	int idx = memblock.memory.cnt - 1;
-
-	return (memblock.memory.regions[idx].base + memblock.memory.regions[idx].size);
-}
-
-
 
 static int __init_memblock memblock_search(struct memblock_type *type, phys_addr_t addr)
 {
@@ -973,11 +902,6 @@ void __init_memblock memblock_set_current_limit(phys_addr_t limit)
 	memblock.current_limit = limit;
 }
 
-phys_addr_t __init_memblock memblock_get_current_limit(void)
-{
-	return memblock.current_limit;
-}
-
 void __init_memblock memblock_dump_all(void)
 {
 	/* Stub: memblock debug dump not needed for minimal kernel */
@@ -986,43 +910,6 @@ void __init_memblock memblock_dump_all(void)
 void __init memblock_allow_resize(void)
 {
 	memblock_can_resize = 1;
-}
-
-
-static void __init free_memmap(unsigned long start_pfn, unsigned long end_pfn)
-{
-	struct page *start_pg, *end_pg;
-	phys_addr_t pg, pgend;
-
-	start_pg = pfn_to_page(start_pfn - 1) + 1;
-	end_pg = pfn_to_page(end_pfn - 1) + 1;
-
-	pg = PAGE_ALIGN(__pa(start_pg));
-	pgend = __pa(end_pg) & PAGE_MASK;
-
-	if (pg < pgend)
-		memblock_phys_free(pg, pgend - pg);
-}
-
-static void __init free_unused_memmap(void)
-{
-	unsigned long start, end, prev_end = 0;
-	int i;
-
-	if (!IS_ENABLED(CONFIG_HAVE_ARCH_PFN_VALID) ||
-	    IS_ENABLED(CONFIG_SPARSEMEM_VMEMMAP))
-		return;
-
-	for_each_mem_pfn_range(i, MAX_NUMNODES, &start, &end, NULL) {
-		
-		start = round_down(start, pageblock_nr_pages);
-
-		if (prev_end && prev_end < start)
-			free_memmap(prev_end, start);
-
-		prev_end = ALIGN(end, pageblock_nr_pages);
-	}
-
 }
 
 static void __init __free_pages_memory(unsigned long start, unsigned long end)
@@ -1099,7 +986,6 @@ void __init memblock_free_all(void)
 {
 	unsigned long pages;
 
-	free_unused_memmap();
 	reset_all_zones_managed_pages();
 
 	pages = free_low_memory_core_early();

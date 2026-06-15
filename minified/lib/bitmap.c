@@ -25,12 +25,6 @@ bool __bitmap_equal(const unsigned long *bitmap1,
 	return false;
 }
 
-/* Stub: __bitmap_or not used in minimal kernel */
-void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
-				const unsigned long *bitmap2, unsigned int bits)
-{
-}
-
 void __bitmap_set(unsigned long *map, unsigned int start, int len)
 {
 	unsigned long *p = map + BIT_WORD(start);
@@ -69,39 +63,6 @@ void __bitmap_clear(unsigned long *map, unsigned int start, int len)
 		mask_to_clear &= BITMAP_LAST_WORD_MASK(size);
 		*p &= ~mask_to_clear;
 	}
-}
-
-unsigned long bitmap_find_next_zero_area_off(unsigned long *map,
-					     unsigned long size,
-					     unsigned long start,
-					     unsigned int nr,
-					     unsigned long align_mask,
-					     unsigned long align_offset)
-{
-	unsigned long index, end, i;
-again:
-	index = find_next_zero_bit(map, size, start);
-
-	 
-	index = __ALIGN_MASK(index + align_offset, align_mask) - align_offset;
-
-	end = index + nr;
-	if (end > size)
-		return end;
-	i = find_next_bit(map, end, index);
-	if (i < end) {
-		start = i + 1;
-		goto again;
-	}
-	return index;
-}
-
-
-int bitmap_print_to_pagebuf(bool list, char *buf, const unsigned long *maskp,
-			    int nmaskbits)
-{
-	/* Stub - returns 0 bytes written */
-	return 0;
 }
 
 /* bitmap_parselist, bitmap_parselist_user, bitmap_parse,

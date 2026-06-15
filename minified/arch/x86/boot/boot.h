@@ -202,10 +202,7 @@ int validate_cpu(void);
 extern int early_serial_base;
 void console_init(void);
 
- 
-void query_edd(void);
 
- 
 void __attribute__((noreturn)) die(void);
 
  

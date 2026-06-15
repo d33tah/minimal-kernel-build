@@ -25,7 +25,6 @@ struct kernel_clone_args {
 	 
 	size_t set_tid_size;
 	int cgroup;
-	int io_thread;
 	int kthread;
 	int idle;
 	int (*fn)(void *);
@@ -47,7 +46,6 @@ extern void init_idle(struct task_struct *idle, int cpu);
 
 extern int sched_fork(unsigned long clone_flags, struct task_struct *p);
 extern void sched_cgroup_fork(struct task_struct *p, struct kernel_clone_args *kargs);
-extern void sched_post_fork(struct task_struct *p);
 
 void __noreturn do_task_dead(void);
 void __noreturn make_task_dead(int signr);
@@ -96,11 +94,6 @@ void put_task_struct_rcu_user(struct task_struct *task);
 
 extern int arch_task_struct_size __read_mostly;
 
-
-static inline struct vm_struct *task_stack_vm_area(const struct task_struct *t)
-{
-	return NULL;
-}
 
 static inline void task_lock(struct task_struct *p)
 {

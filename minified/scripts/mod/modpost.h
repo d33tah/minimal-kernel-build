@@ -52,28 +52,6 @@
 #define ELF_R_TYPE  ELF64_R_TYPE
 #endif
 
- 
-typedef struct
-{
-	Elf32_Word    r_sym;	 
-	unsigned char r_ssym;	 
-	unsigned char r_type3;	 
-	unsigned char r_type2;	 
-	unsigned char r_type1;	 
-} _Elf64_Mips_R_Info;
-
-typedef union
-{
-	Elf64_Xword		r_info_number;
-	_Elf64_Mips_R_Info	r_info_fields;
-} _Elf64_Mips_R_Info_union;
-
-#define ELF64_MIPS_R_SYM(i) \
-  ((__extension__ (_Elf64_Mips_R_Info_union)(i)).r_info_fields.r_sym)
-
-#define ELF64_MIPS_R_TYPE(i) \
-  ((__extension__ (_Elf64_Mips_R_Info_union)(i)).r_info_fields.r_type1)
-
 #if KERNEL_ELFDATA != HOST_ELFDATA
 
 static inline void __endian(const void *src, void *dest, unsigned int size)
@@ -118,18 +96,8 @@ struct module {
 	struct list_head list;
 	struct list_head exported_symbols;
 	struct list_head unresolved_symbols;
-	bool is_gpl_compatible;
-	bool from_dump;		 
+	bool from_dump;
 	bool is_vmlinux;
-	bool seen;
-	bool has_init;
-	bool has_cleanup;
-	struct buffer dev_table_buf;
-	char	     srcversion[25];
-	 
-	struct list_head missing_namespaces;
-	 
-	struct list_head imported_namespaces;
 	char name[];
 };
 
@@ -140,10 +108,8 @@ struct elf_info {
 	Elf_Sym      *symtab_start;
 	Elf_Sym      *symtab_stop;
 	char         *strtab;
-	char	     *modinfo;
-	unsigned int modinfo_len;
 
-	 
+
 
 	unsigned int num_sections;  
 	unsigned int secindex_strings;
@@ -170,18 +136,6 @@ static inline unsigned int get_secindex(const struct elf_info *info,
 		return sym->st_shndx;
 	return info->symtab_shndx_start[sym - info->symtab_start];
 }
-
- 
-void handle_moddevtable(struct module *mod, struct elf_info *info,
-			Elf_Sym *sym, const char *symname);
-void add_moddevtable(struct buffer *buf, struct module *mod);
-
- 
-void get_src_version(const char *modname, char sum[], unsigned sumlen);
-
- 
-char *read_text_file(const char *filename);
-char *get_line(char **stringp);
 
 enum loglevel {
 	LOG_WARN,

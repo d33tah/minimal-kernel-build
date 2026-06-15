@@ -9,7 +9,6 @@
 #include <linux/pid_namespace.h>	 
 #include <linux/types.h>
 #include <asm/ptrace.h>
-#include <linux/seccomp.h>
 
 #define PTRACE_EVENT_FORK	1
 #define PTRACE_EVENT_VFORK	2
@@ -32,17 +31,6 @@ extern int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,
 #define PT_EVENT_FLAG(event)	(1 << (PT_OPT_FLAG_SHIFT + (event)))
 #define PT_TRACESYSGOOD		PT_EVENT_FLAG(0)
 
-extern long arch_ptrace(struct task_struct *child, long request,
-			unsigned long addr, unsigned long data);
-extern void ptrace_disable(struct task_struct *);
-extern int ptrace_request(struct task_struct *child, long request,
-			  unsigned long addr, unsigned long data);
-extern int ptrace_notify(int exit_code, unsigned long message);
-extern void __ptrace_link(struct task_struct *child,
-			  struct task_struct *new_parent,
-			  const struct cred *ptracer_cred);
-extern void __ptrace_unlink(struct task_struct *child);
-extern void exit_ptrace(struct task_struct *tracer, struct list_head *dead);
 #define PTRACE_MODE_READ	0x01
 #define PTRACE_MODE_ATTACH	0x02
 #define PTRACE_MODE_NOAUDIT	0x04
@@ -50,50 +38,25 @@ extern void exit_ptrace(struct task_struct *tracer, struct list_head *dead);
 #define PTRACE_MODE_REALCREDS	0x10
 
 
-extern bool ptrace_may_access(struct task_struct *task, unsigned int mode);
-
-static inline int ptrace_reparented(struct task_struct *child)
-{
-	return !same_thread_group(child->real_parent, child->parent);
-}
 
 static inline void ptrace_unlink(struct task_struct *child)
 {
-	if (unlikely(child->ptrace))
-		__ptrace_unlink(child);
 }
 
 
 
 static inline bool ptrace_event_enabled(struct task_struct *task, int event)
 {
-	return task->ptrace & PT_EVENT_FLAG(event);
+	/* task->ptrace is never set in this minimal boot (no ptrace(2)). */
+	return false;
 }
 
 static inline void ptrace_event(int event, unsigned long message)
 {
-	if (unlikely(ptrace_event_enabled(current, event))) {
-		ptrace_notify((event << 8) | SIGTRAP, message);
-	} else if (event == PTRACE_EVENT_EXEC) {
-		 
-		if ((current->ptrace & (PT_PTRACED|PT_SEIZED)) == PT_PTRACED)
-			send_sig(SIGTRAP, current, 0);
-	}
 }
 
 static inline void ptrace_event_pid(int event, struct pid *pid)
 {
-	 
-	unsigned long message = 0;
-	struct pid_namespace *ns;
-
-	rcu_read_lock();
-	ns = task_active_pid_ns(rcu_dereference(current->parent));
-	if (ns)
-		message = pid_nr_ns(pid, ns);
-	rcu_read_unlock();
-
-	ptrace_event(event, message);
 }
 
 static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
@@ -104,17 +67,7 @@ static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
 	child->ptrace = 0;
 	child->parent = child->real_parent;
 
-	if (unlikely(ptrace) && current->ptrace) {
-		child->ptrace = current->ptrace;
-		__ptrace_link(child, current->parent, current->ptracer_cred);
-
-		if (child->ptrace & PT_SEIZED)
-			task_set_jobctl_pending(child, JOBCTL_TRAP_STOP);
-		else
-			sigaddset(&child->pending.signal, SIGSTOP);
-	}
-	else
-		child->ptracer_cred = NULL;
+	child->ptracer_cred = NULL;
 }
 
 static inline void ptrace_release_task(struct task_struct *task)
@@ -199,20 +152,8 @@ static inline void user_single_step_report(struct pt_regs *regs)
 
 static inline int ptrace_report_syscall(unsigned long message)
 {
-	int ptrace = current->ptrace;
-	int signr;
-
-	if (!(ptrace & PT_PTRACED))
-		return 0;
-
-	signr = ptrace_notify(SIGTRAP | ((ptrace & PT_TRACESYSGOOD) ? 0x80 : 0),
-			      message);
-
-	 
-	if (signr)
-		send_sig(signr, current, 1);
-
-	return fatal_signal_pending(current);
+	/* task->ptrace is never set (no ptrace(2)), so this is a no-op. */
+	return 0;
 }
 
 static inline __must_check int ptrace_report_syscall_entry(

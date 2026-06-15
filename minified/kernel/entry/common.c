@@ -1,11 +1,9 @@
 
-#include <linux/context_tracking.h>
 #include <linux/entry-common.h>
 #include <linux/resume_user_mode.h>
 #include <linux/highmem.h>
 #include <linux/jump_label.h>
 #include <linux/init_task.h>
-#include <linux/audit.h>
 #include <linux/tick.h>
 #include <linux/tracepoint.h>
 
@@ -16,11 +14,6 @@ static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 {
 	arch_enter_from_user_mode(regs);
 	lockdep_hardirqs_off(CALLER_ADDR0);
-
-	CT_WARN_ON(ct_state() != CONTEXT_USER);
-	user_exit_irqoff();
-
-	 
 }
 
 void noinstr enter_from_user_mode(struct pt_regs *regs)
@@ -28,48 +21,20 @@ void noinstr enter_from_user_mode(struct pt_regs *regs)
 	__enter_from_user_mode(regs);
 }
 
-static inline void syscall_enter_audit(struct pt_regs *regs, long syscall)
-{
-	if (unlikely(audit_context())) {
-		unsigned long args[6];
-
-		syscall_get_arguments(current, regs, args);
-		audit_syscall_entry(syscall, args[0], args[1], args[2], args[3]);
-	}
-}
-
 static long syscall_trace_enter(struct pt_regs *regs, long syscall,
 				unsigned long work)
 {
 	long ret = 0;
 
-	 
-	if (work & SYSCALL_WORK_SYSCALL_USER_DISPATCH) {
-		if (syscall_user_dispatch(regs))
-			return -1L;
-	}
 
-	 
 	if (work & (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)) {
 		ret = ptrace_report_syscall_entry(regs);
 		if (ret || (work & SYSCALL_WORK_SYSCALL_EMU))
 			return -1L;
 	}
 
-	 
-	if (work & SYSCALL_WORK_SECCOMP) {
-		ret = __secure_computing(NULL);
-		if (ret == -1L)
-			return ret;
-	}
 
-	 
 	syscall = syscall_get_nr(current, regs);
-
-	if (unlikely(work & SYSCALL_WORK_SYSCALL_TRACEPOINT))
-		 
-
-	syscall_enter_audit(regs, syscall);
 
 	return ret ? : syscall;
 }
@@ -110,10 +75,9 @@ noinstr void syscall_enter_from_user_mode_prepare(struct pt_regs *regs)
 
 static __always_inline void __exit_to_user_mode(void)
 {
-	 
+
 	lockdep_hardirqs_on_prepare();
 
-	user_enter_irqoff();
 	arch_exit_to_user_mode();
 	lockdep_hardirqs_on(CALLER_ADDR0);
 }
@@ -197,15 +161,6 @@ static void syscall_exit_work(struct pt_regs *regs, unsigned long work)
 {
 	bool step;
 
-	 
-	if (work & SYSCALL_WORK_SYSCALL_USER_DISPATCH) {
-		if (unlikely(current->syscall_dispatch.on_dispatch)) {
-			current->syscall_dispatch.on_dispatch = false;
-			return;
-		}
-	}
-
-	audit_syscall_exit(regs);
 
 	if (work & SYSCALL_WORK_SYSCALL_TRACEPOINT)
 		trace_sys_exit(regs, syscall_get_return_value(current, regs));
@@ -220,16 +175,11 @@ static void syscall_exit_to_user_mode_prepare(struct pt_regs *regs)
 	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
 	unsigned long nr = syscall_get_nr(current, regs);
 
-	CT_WARN_ON(ct_state() != CONTEXT_KERNEL);
-
 	if (IS_ENABLED(CONFIG_PROVE_LOCKING)) {
 		if (WARN(irqs_disabled(), "syscall %lu left IRQs disabled", nr))
 			local_irq_enable();
 	}
 
-	rseq_syscall(regs);
-
-	 
 	if (unlikely(work & SYSCALL_WORK_EXIT))
 		syscall_exit_work(regs, work);
 }

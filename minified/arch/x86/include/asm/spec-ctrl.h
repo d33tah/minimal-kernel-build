@@ -16,13 +16,7 @@ static inline u64 ssbd_tif_to_spec_ctrl(u64 tifn)
 	return (tifn & _TIF_SSBD) >> (TIF_SSBD - SPEC_CTRL_SSBD_SHIFT);
 }
 
-static inline u64 stibp_tif_to_spec_ctrl(u64 tifn)
-{
-	BUILD_BUG_ON(TIF_SPEC_IB < SPEC_CTRL_STIBP_SHIFT);
-	return (tifn & _TIF_SPEC_IB) >> (TIF_SPEC_IB - SPEC_CTRL_STIBP_SHIFT);
-}
-
-/* ssbd_spec_ctrl_to_tif, stibp_spec_ctrl_to_tif removed - unused */
+/* stibp_tif_to_spec_ctrl, ssbd_spec_ctrl_to_tif, stibp_spec_ctrl_to_tif removed - unused */
 
 static inline u64 ssbd_tif_to_amd_ls_cfg(u64 tifn)
 {
@@ -30,7 +24,5 @@ static inline u64 ssbd_tif_to_amd_ls_cfg(u64 tifn)
 }
 
 /* speculative_store_bypass_ht_init removed - unused */
-
-extern void speculation_ctrl_update(unsigned long tif);
 
 #endif

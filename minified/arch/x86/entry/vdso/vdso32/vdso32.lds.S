@@ -33,8 +33,6 @@ VERSION
 	LINUX_2.5 {
 	global:
 		__kernel_vsyscall;
-		__kernel_sigreturn;
-		__kernel_rt_sigreturn;
 	local: *;
 	};
 }

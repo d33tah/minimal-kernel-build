@@ -40,56 +40,12 @@ void klist_init(struct klist *k, void (*get)(struct klist_node *),
 	k->put = put;
 }
 
-static void add_tail(struct klist *k, struct klist_node *n)
-{
-	spin_lock(&k->k_lock);
-	list_add_tail(&n->n_node, &k->k_list);
-	spin_unlock(&k->k_lock);
-}
-
-static void klist_node_init(struct klist *k, struct klist_node *n)
-{
-	INIT_LIST_HEAD(&n->n_node);
-	kref_init(&n->n_ref);
-	knode_set_klist(n, k);
-	if (k->get)
-		k->get(n);
-}
-
-void klist_add_tail(struct klist_node *n, struct klist *k)
-{
-	klist_node_init(k, n);
-	add_tail(k, n);
-}
-
-struct klist_waiter {
-	struct list_head list;
-	struct klist_node *node;
-	struct task_struct *process;
-	int woken;
-};
-
-static DEFINE_SPINLOCK(klist_remove_lock);
-static LIST_HEAD(klist_remove_waiters);
-
 static void klist_release(struct kref *kref)
 {
-	struct klist_waiter *waiter, *tmp;
 	struct klist_node *n = container_of(kref, struct klist_node, n_ref);
 
 	WARN_ON(!knode_dead(n));
 	list_del(&n->n_node);
-	spin_lock(&klist_remove_lock);
-	list_for_each_entry_safe(waiter, tmp, &klist_remove_waiters, list) {
-		if (waiter->node != n)
-			continue;
-
-		list_del(&waiter->list);
-		waiter->woken = 1;
-		mb();
-		wake_up_process(waiter->process);
-	}
-	spin_unlock(&klist_remove_lock);
 	knode_set_klist(n, NULL);
 }
 
@@ -118,33 +74,6 @@ void klist_del(struct klist_node *n)
 	klist_put(n, true);
 }
 
-void klist_remove(struct klist_node *n)
-{
-	struct klist_waiter waiter;
-
-	waiter.node = n;
-	waiter.process = current;
-	waiter.woken = 0;
-	spin_lock(&klist_remove_lock);
-	list_add(&waiter.list, &klist_remove_waiters);
-	spin_unlock(&klist_remove_lock);
-
-	klist_del(n);
-
-	for (;;) {
-		set_current_state(TASK_UNINTERRUPTIBLE);
-		if (waiter.woken)
-			break;
-		schedule();
-	}
-	__set_current_state(TASK_RUNNING);
-}
-
-int klist_node_attached(struct klist_node *n)
-{
-	return (n->n_klist != NULL);
-}
-
 void klist_iter_init_node(struct klist *k, struct klist_iter *i,
 			  struct klist_node *n)
 {
@@ -152,11 +81,6 @@ void klist_iter_init_node(struct klist *k, struct klist_iter *i,
 	i->i_cur = NULL;
 	if (n && kref_get_unless_zero(&n->n_ref))
 		i->i_cur = n;
-}
-
-void klist_iter_init(struct klist *k, struct klist_iter *i)
-{
-	klist_iter_init_node(k, i, NULL);
 }
 
 void klist_iter_exit(struct klist_iter *i)

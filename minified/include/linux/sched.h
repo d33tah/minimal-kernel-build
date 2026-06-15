@@ -59,10 +59,8 @@ struct clone_args {
 
 #include <linux/pid.h>
 #include <linux/mutex.h>
-#include <linux/plist.h>
 #include <linux/hrtimer.h>
 #include <linux/irqflags.h>
-#include <linux/seccomp.h>
 #include <linux/nodemask.h>
 #include <linux/rcupdate.h>
 #include <linux/refcount.h>
@@ -79,14 +77,12 @@ static inline void clear_tsk_latency_tracing(struct task_struct *p) {}
 /* end sched/prio.h */
 #include <linux/sched/types.h>
 #include <linux/signal_types.h>
-#include <linux/syscall_user_dispatch.h>
 #include <linux/mm_types_task.h>
 struct task_io_accounting { };
 #include <linux/posix-timers.h>
 #include <linux/seqlock.h>
 #include <asm/kmap_size.h>
 
-struct audit_context;
 struct backing_dev_info;
 struct bio_list;
 struct blk_plug;
@@ -112,11 +108,9 @@ struct task_group;
 #define TASK_RUNNING			0x0000
 #define TASK_INTERRUPTIBLE		0x0001
 #define TASK_UNINTERRUPTIBLE		0x0002
-#define __TASK_STOPPED			0x0004
 #define __TASK_TRACED			0x0008
 #define EXIT_DEAD			0x0010
 #define EXIT_ZOMBIE			0x0020
-#define EXIT_TRACE			(EXIT_ZOMBIE | EXIT_DEAD)
 #define TASK_PARKED			0x0040
 #define TASK_DEAD			0x0080
 #define TASK_WAKEKILL			0x0100
@@ -131,17 +125,8 @@ struct task_group;
 
 #define task_is_running(task)		(READ_ONCE((task)->__state) == TASK_RUNNING)
 
-#define task_is_traced(task)		((READ_ONCE(task->jobctl) & JOBCTL_TRACED) != 0)
-#define task_is_stopped(task)		((READ_ONCE(task->jobctl) & JOBCTL_STOPPED) != 0)
-#define task_is_stopped_or_traced(task)	((READ_ONCE(task->jobctl) & (JOBCTL_STOPPED | JOBCTL_TRACED)) != 0)
-
-#define is_special_task_state(state)				\
-	((state) & (__TASK_STOPPED | __TASK_TRACED | TASK_PARKED | TASK_DEAD))
-
 # define debug_normal_state_change(cond)	do { } while (0)
 # define debug_special_state_change(cond)	do { } while (0)
-# define debug_rtlock_wait_set_state()		do { } while (0)
-# define debug_rtlock_wait_restore_state()	do { } while (0)
 
 #define __set_current_state(state_value)				\
 	do {								\
@@ -165,28 +150,6 @@ struct task_group;
 		raw_spin_unlock_irqrestore(&current->pi_lock, flags);	\
 	} while (0)
 
-#define current_save_and_set_rtlock_wait_state()			\
-	do {								\
-		lockdep_assert_irqs_disabled();				\
-		raw_spin_lock(&current->pi_lock);			\
-		current->saved_state = current->__state;		\
-		debug_rtlock_wait_set_state();				\
-		WRITE_ONCE(current->__state, TASK_RTLOCK_WAIT);		\
-		raw_spin_unlock(&current->pi_lock);			\
-	} while (0);
-
-#define current_restore_rtlock_saved_state()				\
-	do {								\
-		lockdep_assert_irqs_disabled();				\
-		raw_spin_lock(&current->pi_lock);			\
-		debug_rtlock_wait_restore_state();			\
-		WRITE_ONCE(current->__state, current->saved_state);	\
-		current->saved_state = TASK_RUNNING;			\
-		raw_spin_unlock(&current->pi_lock);			\
-	} while (0);
-
-#define get_current_state()	READ_ONCE(current->__state)
-
 enum {
 	TASK_COMM_LEN = 16,
 };
@@ -196,7 +159,6 @@ extern void scheduler_tick(void);
 #define	MAX_SCHEDULE_TIMEOUT		LONG_MAX
 
 extern long schedule_timeout(long timeout);
-extern long schedule_timeout_interruptible(long timeout);
 extern long schedule_timeout_uninterruptible(long timeout);
 asmlinkage void schedule(void);
 extern void schedule_preempt_disabled(void);
@@ -211,14 +173,9 @@ struct prev_cputime {
 };
 
 
-enum uclamp_id { UCLAMP_CNT };
 
-
-struct sched_info {
-};
 
 # define SCHED_FIXEDPOINT_SHIFT		10
-# define SCHED_FIXEDPOINT_SCALE		(1L << SCHED_FIXEDPOINT_SHIFT)
 
 # define SCHED_CAPACITY_SHIFT		SCHED_FIXEDPOINT_SHIFT
 # define SCHED_CAPACITY_SCALE		(1L << SCHED_CAPACITY_SHIFT)
@@ -238,17 +195,12 @@ struct sched_entity {
 	 
 	struct load_weight		load;
 	struct rb_node			run_node;
-	struct list_head		group_node;
 	unsigned int			on_rq;
 
 	u64				exec_start;
 	u64				sum_exec_runtime;
 	u64				vruntime;
 	u64				prev_sum_exec_runtime;
-
-	u64				nr_migrations;
-
-
 };
 
 struct sched_rt_entity {
@@ -292,26 +244,12 @@ struct sched_dl_entity {
 };
 
 
-union rcu_special {
-	struct {
-		u8			blocked;
-		u8			need_qs;
-		u8			exp_hint;  
-		u8			need_mb;  
-	} b;  
-	u32 s;  
-};
-
 enum perf_event_task_context { perf_nr_task_contexts };
 
 struct wake_q_node {
 	struct wake_q_node *next;
 };
 
-struct kmap_ctrl {
-	int				idx;
-	pte_t				pteval[KM_MAX_IDX];
-};
 
 struct task_struct {
 	 
@@ -352,25 +290,12 @@ struct task_struct {
 	const cpumask_t			*cpus_ptr;
 	cpumask_t			*user_cpus_ptr;
 	cpumask_t			cpus_mask;
-	void				*migration_pending;
-	unsigned short			migration_flags;
-
-
-
-
-	struct sched_info		sched_info;
 
 	struct list_head		tasks;
 
 	struct mm_struct		*mm;
 	struct mm_struct		*active_mm;
 
-	 
-	struct vmacache			vmacache;
-
-#ifdef SPLIT_RSS_COUNTING
-	struct task_rss_stat		rss_stat;
-#endif
 	int				exit_state;
 	int				exit_code;
 	int				exit_signal;
@@ -384,7 +309,6 @@ struct task_struct {
 
 	 
 	unsigned			sched_reset_on_fork:1;
-	unsigned			sched_contributes_to_load:1;
 	unsigned			sched_migrated:1;
 
 	 
@@ -464,7 +388,6 @@ struct task_struct {
 	unsigned long			maj_flt;
 
 	 
-	struct posix_cputimers		posix_cputimers;
 
 
 	 
@@ -508,10 +431,7 @@ struct task_struct {
 
 	struct callback_head		*task_works;
 
-	struct seccomp			seccomp;
-	struct syscall_user_dispatch	syscall_dispatch;
 
-	 
 	u64				parent_exec_id;
 	u64				self_exec_id;
 
@@ -581,7 +501,6 @@ struct task_struct {
 
 
 
-	struct kmap_ctrl		kmap_ctrl;
 	int				pagefault_disabled;
 	struct task_struct		*oom_reaper_list;
 	struct timer_list		oom_reaper_timer;
@@ -653,7 +572,6 @@ static inline int is_global_init(struct task_struct *tsk)
 #define PF_SUPERPRIV		0x00000100
 #define PF_MEMALLOC		0x00000800
 #define PF_NPROC_EXCEEDED	0x00001000
-#define PF_USED_MATH		0x00002000
 #define PF_NOFREEZE		0x00008000
 #define PF_FROZEN		0x00010000
 #define PF_MEMALLOC_NOFS	0x00040000
@@ -661,23 +579,7 @@ static inline int is_global_init(struct task_struct *tsk)
 #define PF_KTHREAD		0x00200000
 #define PF_RANDOMIZE		0x00400000
 #define PF_NO_SETAFFINITY	0x04000000
-#define PF_MEMALLOC_PIN		0x10000000       
-
-#define clear_stopped_child_used_math(child)	do { (child)->flags &= ~PF_USED_MATH; } while (0)
-#define set_stopped_child_used_math(child)	do { (child)->flags |= PF_USED_MATH; } while (0)
-#define clear_used_math()			clear_stopped_child_used_math(current)
-#define set_used_math()				set_stopped_child_used_math(current)
-
-#define conditional_stopped_child_used_math(condition, child) \
-	do { (child)->flags &= ~PF_USED_MATH, (child)->flags |= (condition) ? PF_USED_MATH : 0; } while (0)
-
-#define conditional_used_math(condition)	conditional_stopped_child_used_math(condition, current)
-
-#define copy_to_stopped_child_used_math(child) \
-	do { (child)->flags &= ~PF_USED_MATH, (child)->flags |= current->flags & PF_USED_MATH; } while (0)
-
-#define tsk_used_math(p)			((p)->flags & PF_USED_MATH)
-#define used_math()				tsk_used_math(current)
+#define PF_MEMALLOC_PIN		0x10000000
 
 
 #define PFA_NO_NEW_PRIVS		0
@@ -736,9 +638,7 @@ static inline int task_nice(const struct task_struct *p)
 	return PRIO_TO_NICE((p)->static_prio);
 }
 
-extern int sched_setscheduler(struct task_struct *, int, const struct sched_param *);
 extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);
-extern void sched_set_fifo(struct task_struct *p);
 
 static __always_inline bool is_idle_task(const struct task_struct *p)
 {
@@ -845,41 +745,12 @@ static inline unsigned int task_cpu(const struct task_struct *p)
 	return 0;
 }
 
-extern long sched_setaffinity(pid_t pid, const struct cpumask *new_mask);
-extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
 
 #ifndef TASK_SIZE_OF
 #define TASK_SIZE_OF(tsk)	TASK_SIZE
 #endif
 
 
-
-static inline void rseq_handle_notify_resume(struct ksignal *ksig,
-					     struct pt_regs *regs)
-{
-}
-static inline void rseq_signal_deliver(struct ksignal *ksig,
-				       struct pt_regs *regs)
-{
-}
-static inline void rseq_preempt(struct task_struct *t)
-{
-}
-static inline void rseq_migrate(struct task_struct *t)
-{
-}
-static inline void rseq_fork(struct task_struct *t, unsigned long clone_flags)
-{
-}
-static inline void rseq_execve(struct task_struct *t)
-{
-}
-
-
-
-static inline void rseq_syscall(struct pt_regs *regs)
-{
-}
 
 
 static inline void sched_core_free(struct task_struct *tsk) { }

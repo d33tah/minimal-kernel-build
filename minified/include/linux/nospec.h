@@ -29,9 +29,4 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 	(typeof(_i)) (_i & _mask);					\
 })
 
-int arch_prctl_spec_ctrl_get(struct task_struct *task, unsigned long which);
-int arch_prctl_spec_ctrl_set(struct task_struct *task, unsigned long which,
-			     unsigned long ctrl);
-void arch_seccomp_spec_mitigate(struct task_struct *task);
-
-#endif  
+#endif

@@ -69,12 +69,8 @@
 
 extern u64 xstate_fx_sw_bytes[USER_XSTATE_FX_SW_WORDS];
 
-int xfeature_size(int xfeature_nr);
 
-void xsaves(struct xregs_state *xsave, u64 mask);
-void xrstors(struct xregs_state *xsave, u64 mask);
 
-int xfd_enable_feature(u64 xfd_err);
 
 
 static __always_inline __pure bool fpu_state_size_dynamic(void)

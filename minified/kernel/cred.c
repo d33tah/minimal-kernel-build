@@ -3,7 +3,6 @@
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/sched/coredump.h>
-#include <linux/key.h>
 
 #include <linux/init_task.h>
 #include <linux/security.h>
@@ -12,13 +11,6 @@
 #define PROC_EVENT_GID  0x00000040
 static inline void proc_id_connector(struct task_struct *task, int which_id) {}
 #include <linux/uidgid.h>
-
-#define kdebug(FMT, ...)						\
-do {									\
-	if (0)								\
-		no_printk("[%-5.5s%5u] " FMT "\n",			\
-			  current->comm, current->pid, ##__VA_ARGS__);	\
-} while (0)
 
 static struct kmem_cache *cred_jar;
 
@@ -45,34 +37,14 @@ struct cred init_cred = {
 	.ucounts		= &init_ucounts,
 };
 
-static inline void set_cred_subscribers(struct cred *cred, int n)
-{
-}
-
-static inline int read_cred_subscribers(const struct cred *cred)
-{
-	return 0;
-}
-
-static inline void alter_cred_subscribers(const struct cred *_cred, int n)
-{
-}
-
 static void put_cred_rcu(struct rcu_head *rcu)
 {
 	struct cred *cred = container_of(rcu, struct cred, rcu);
-
-	kdebug("put_cred_rcu(%p)", cred);
 
 	if (atomic_read(&cred->usage) != 0)
 		panic("CRED: put_cred_rcu() sees %p with usage %d\n",
 		      cred, atomic_read(&cred->usage));
 
-	security_cred_free(cred);
-	key_put(cred->session_keyring);
-	key_put(cred->process_keyring);
-	key_put(cred->thread_keyring);
-	key_put(cred->request_key_auth);
 	if (cred->group_info)
 		put_group_info(cred->group_info);
 	free_uid(cred->user);
@@ -84,10 +56,6 @@ static void put_cred_rcu(struct rcu_head *rcu)
 
 void __put_cred(struct cred *cred)
 {
-	kdebug("__put_cred(%p{%d,%d})", cred,
-	       atomic_read(&cred->usage),
-	       read_cred_subscribers(cred));
-
 	BUG_ON(atomic_read(&cred->usage) != 0);
 	BUG_ON(cred == current->cred);
 	BUG_ON(cred == current->real_cred);
@@ -102,20 +70,12 @@ void exit_creds(struct task_struct *tsk)
 {
 	struct cred *cred;
 
-	kdebug("exit_creds(%u,%p,%p,{%d,%d})", tsk->pid, tsk->real_cred, tsk->cred,
-	       atomic_read(&tsk->cred->usage),
-	       read_cred_subscribers(tsk->cred));
-
 	cred = (struct cred *) tsk->real_cred;
 	tsk->real_cred = NULL;
-	validate_creds(cred);
-	alter_cred_subscribers(cred, -1);
 	put_cred(cred);
 
 	cred = (struct cred *) tsk->cred;
 	tsk->cred = NULL;
-	validate_creds(cred);
-	alter_cred_subscribers(cred, -1);
 	put_cred(cred);
 
 }
@@ -128,20 +88,15 @@ struct cred *prepare_creds(void)
 	const struct cred *old;
 	struct cred *new;
 
-	validate_process_creds();
-
 	new = kmem_cache_alloc(cred_jar, GFP_KERNEL);
 	if (!new)
 		return NULL;
-
-	kdebug("prepare_creds() alloc %p", new);
 
 	old = task->cred;
 	memcpy(new, old, sizeof(struct cred));
 
 	new->non_rcu = 0;
 	atomic_set(&new->usage, 1);
-	set_cred_subscribers(new, 0);
 	get_group_info(new->group_info);
 	get_uid(new->user);
 	get_user_ns(new->user_ns);
@@ -152,10 +107,6 @@ struct cred *prepare_creds(void)
 	if (!new->ucounts)
 		goto error;
 
-	if (security_prepare_creds(new, old, GFP_KERNEL_ACCOUNT) < 0)
-		goto error;
-
-	validate_creds(new);
 	return new;
 
 error:
@@ -189,10 +140,6 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
 	    ) {
 		p->real_cred = get_cred(p->cred);
 		get_cred(p->cred);
-		alter_cred_subscribers(p->cred, 2);
-		kdebug("share_creds(%p{%d,%d})",
-		       p->cred, atomic_read(&p->cred->usage),
-		       read_cred_subscribers(p->cred));
 		inc_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
 		return 0;
 	}
@@ -213,8 +160,6 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
 
 	p->cred = p->real_cred = get_cred(new);
 	inc_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
-	alter_cred_subscribers(new, 2);
-	validate_creds(new);
 	return 0;
 
 error_put:
@@ -246,10 +191,6 @@ int commit_creds(struct cred *new)
 	struct task_struct *task = current;
 	const struct cred *old = task->real_cred;
 
-	kdebug("commit_creds(%p{%d,%d})", new,
-	       atomic_read(&new->usage),
-	       read_cred_subscribers(new));
-
 	BUG_ON(task->cred != old);
 	BUG_ON(atomic_read(&new->usage) < 1);
 
@@ -268,21 +209,13 @@ int commit_creds(struct cred *new)
 		smp_wmb();
 	}
 
-	 
-	if (!uid_eq(new->fsuid, old->fsuid))
-		key_fsuid_changed(new);
-	if (!gid_eq(new->fsgid, old->fsgid))
-		key_fsgid_changed(new);
 
-	 
-	alter_cred_subscribers(new, 2);
 	if (new->user != old->user || new->user_ns != old->user_ns)
 		inc_rlimit_ucounts(new->ucounts, UCOUNT_RLIMIT_NPROC, 1);
 	rcu_assign_pointer(task->real_cred, new);
 	rcu_assign_pointer(task->cred, new);
 	if (new->user != old->user || new->user_ns != old->user_ns)
 		dec_rlimit_ucounts(old->ucounts, UCOUNT_RLIMIT_NPROC, 1);
-	alter_cred_subscribers(old, -2);
 
 	 
 	if (!uid_eq(new->uid,   old->uid)  ||
@@ -305,10 +238,6 @@ int commit_creds(struct cred *new)
 
 void abort_creds(struct cred *new)
 {
-	kdebug("abort_creds(%p{%d,%d})", new,
-	       atomic_read(&new->usage),
-	       read_cred_subscribers(new));
-
 	BUG_ON(atomic_read(&new->usage) < 1);
 	put_cred(new);
 }

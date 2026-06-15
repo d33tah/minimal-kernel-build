@@ -37,18 +37,6 @@ static inline bool vdso_cycles_ok(u64 cycles)
 }
 #endif
 
-static __always_inline
-const struct vdso_data *__arch_get_timens_vdso_data(const struct vdso_data *vd)
-{
-	return NULL;
-}
-
-static __always_inline int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
-					  struct __kernel_timespec *ts)
-{
-	return -EINVAL;
-}
-
 static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
 				   struct __kernel_timespec *ts)
 {
@@ -62,12 +50,8 @@ static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
 
 	do {
 		 
-		while (unlikely((seq = READ_ONCE(vd->seq)) & 1)) {
-			if (IS_ENABLED(CONFIG_TIME_NS) &&
-			    vd->clock_mode == VDSO_CLOCKMODE_TIMENS)
-				return do_hres_timens(vd, clk, ts);
+		while (unlikely((seq = READ_ONCE(vd->seq)) & 1))
 			cpu_relax();
-		}
 		smp_rmb();
 
 		if (unlikely(!vdso_clocksource_ok(vd)))
@@ -90,12 +74,6 @@ static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
 	return 0;
 }
 
-static __always_inline int do_coarse_timens(const struct vdso_data *vdns, clockid_t clk,
-					    struct __kernel_timespec *ts)
-{
-	return -1;
-}
-
 static __always_inline int do_coarse(const struct vdso_data *vd, clockid_t clk,
 				     struct __kernel_timespec *ts)
 {
@@ -104,12 +82,8 @@ static __always_inline int do_coarse(const struct vdso_data *vd, clockid_t clk,
 
 	do {
 		 
-		while ((seq = READ_ONCE(vd->seq)) & 1) {
-			if (IS_ENABLED(CONFIG_TIME_NS) &&
-			    vd->clock_mode == VDSO_CLOCKMODE_TIMENS)
-				return do_coarse_timens(vd, clk, ts);
+		while ((seq = READ_ONCE(vd->seq)) & 1)
 			cpu_relax();
-		}
 		smp_rmb();
 
 		ts->tv_sec = vdso_ts->sec;
@@ -203,10 +177,6 @@ __cvdso_gettimeofday_data(const struct vdso_data *vd,
 	}
 
 	if (unlikely(tz != NULL)) {
-		if (IS_ENABLED(CONFIG_TIME_NS) &&
-		    vd->clock_mode == VDSO_CLOCKMODE_TIMENS)
-			vd = __arch_get_timens_vdso_data(vd);
-
 		tz->tz_minuteswest = vd[CS_HRES_COARSE].tz_minuteswest;
 		tz->tz_dsttime = vd[CS_HRES_COARSE].tz_dsttime;
 	}
@@ -225,10 +195,6 @@ static __maybe_unused __kernel_old_time_t
 __cvdso_time_data(const struct vdso_data *vd, __kernel_old_time_t *time)
 {
 	__kernel_old_time_t t;
-
-	if (IS_ENABLED(CONFIG_TIME_NS) &&
-	    vd->clock_mode == VDSO_CLOCKMODE_TIMENS)
-		vd = __arch_get_timens_vdso_data(vd);
 
 	t = READ_ONCE(vd[CS_HRES_COARSE].basetime[CLOCK_REALTIME].sec);
 
@@ -256,11 +222,7 @@ int __cvdso_clock_getres_common(const struct vdso_data *vd, clockid_t clock,
 	if (unlikely((u32) clock >= MAX_CLOCKS))
 		return -1;
 
-	if (IS_ENABLED(CONFIG_TIME_NS) &&
-	    vd->clock_mode == VDSO_CLOCKMODE_TIMENS)
-		vd = __arch_get_timens_vdso_data(vd);
 
-	 
 	msk = 1U << clock;
 	if (msk & (VDSO_HRES | VDSO_RAW)) {
 		 
@@ -277,23 +239,6 @@ int __cvdso_clock_getres_common(const struct vdso_data *vd, clockid_t clock,
 		res->tv_nsec = ns;
 	}
 	return 0;
-}
-
-static __maybe_unused
-int __cvdso_clock_getres_data(const struct vdso_data *vd, clockid_t clock,
-			      struct __kernel_timespec *res)
-{
-	int ret = __cvdso_clock_getres_common(vd, clock, res);
-
-	if (unlikely(ret))
-		return clock_getres_fallback(clock, res);
-	return 0;
-}
-
-static __maybe_unused
-int __cvdso_clock_getres(clockid_t clock, struct __kernel_timespec *res)
-{
-	return __cvdso_clock_getres_data(__arch_get_vdso_data(), clock, res);
 }
 
 #ifdef BUILD_VDSO32

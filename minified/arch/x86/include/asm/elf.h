@@ -128,8 +128,6 @@ static inline int mmap_is_ia32(void)
 
 extern unsigned long task_size_32bit(void);
 extern unsigned long task_size_64bit(int full_addr_space);
-extern unsigned long get_mmap_base(int is_legacy);
-extern bool mmap_address_hint_valid(unsigned long addr, unsigned long len);
 extern unsigned long get_sigframe_size(void);
 
 
@@ -152,6 +150,5 @@ struct linux_binprm;
 #define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
 extern int arch_setup_additional_pages(struct linux_binprm *bprm,
 				       int uses_interp);
-extern bool arch_syscall_is_vdso_sigreturn(struct pt_regs *regs);
 
 #endif

@@ -59,6 +59,7 @@ struct iommu_group;
 struct dev_pin_info;
 struct dev_iommu;
 struct msi_device_data;
+struct bus_dma_region;
 
 struct subsys_interface {
 	const char *name;
@@ -98,32 +99,9 @@ struct device_attribute {
 #define DEVICE_ATTR_RO(_name) \
 	struct device_attribute dev_attr_##_name = __ATTR_RO(_name)
 
-void device_remove_file(struct device *dev,
-			const struct device_attribute *attr);
+/* Removed: device_remove_file (0-caller no-op). */
 
-typedef void (*dr_release_t)(struct device *dev, void *res);
-typedef int (*dr_match_t)(struct device *dev, void *res, void *match_data);
-
-void *__devres_alloc_node(dr_release_t release, size_t size, gfp_t gfp,
-			  int nid, const char *name) __malloc;
-#define devres_alloc(release, size, gfp) \
-	__devres_alloc_node(release, size, gfp, NUMA_NO_NODE, #release)
-#define devres_alloc_node(release, size, gfp, nid) \
-	__devres_alloc_node(release, size, gfp, nid, #release)
-
-/* devres_for_each_res, devres_find, devres_get, devres_remove,
-   devres_destroy, devres_release removed - never called */
-void devres_free(void *res);
-void devres_add(struct device *dev, void *res);
-
-
-__printf(3, 4) char *devm_kasprintf(struct device *dev, gfp_t gfp,
-				    const char *fmt, ...) __malloc;
-char *devm_kstrdup(struct device *dev, const char *s, gfp_t gfp) __malloc;
-
-/* devm_kmalloc, devm_krealloc, devm_kvasprintf, devm_kfree,
-   devm_kstrdup_const, devm_kmemdup, devm_get_free_pages,
-   devm_free_pages removed - none are called in minimal kernel */
+/* devres alloc/add/free + devm_kstrdup/devm_kasprintf removed - never called */
 
 void __iomem *devm_ioremap_resource(struct device *dev,
 				    const struct resource *res);
@@ -135,31 +113,8 @@ struct device_dma_parameters {
 	unsigned long segment_boundary_mask;
 };
 
-enum device_link_state {
-	DL_STATE_NONE = -1,
-};
-
-#define DL_FLAG_PM_RUNTIME		BIT(2)
-#define DL_FLAG_RPM_ACTIVE		BIT(3)
-#define DL_FLAG_AUTOREMOVE_SUPPLIER	BIT(4)
-#define DL_FLAG_AUTOPROBE_CONSUMER	BIT(5)
-#define DL_FLAG_SYNC_STATE_ONLY		BIT(7)
-#define DL_FLAG_INFERRED		BIT(8)
-
-enum dl_dev_state {
-	DL_DEV_NO_DRIVER = 0,
-	DL_DEV_PROBING,
-};
-
 enum device_removable {
 	DEVICE_REMOVABLE_NOT_SUPPORTED = 0,
-};
-
-struct dev_links_info {
-	struct list_head suppliers;
-	struct list_head consumers;
-	struct list_head defer_sync;
-	enum dl_dev_state status;
 };
 
 struct dev_msi_info {
@@ -183,7 +138,6 @@ struct device {
 	void		*driver_data;	 
 	struct mutex		mutex;	 
 
-	struct dev_links_info	links;
 	struct dev_pm_info	power;
 	struct dev_pm_domain	*pm_domain;
 
@@ -233,20 +187,6 @@ struct device {
 #endif
 };
 
-struct device_link {
-	struct device *supplier;
-	struct list_head s_node;
-	struct device *consumer;
-	struct list_head c_node;
-	struct device link_dev;
-	enum device_link_state status;
-	u32 flags;
-	refcount_t rpm_active;
-	struct kref kref;
-	struct work_struct rm_work;
-	bool supplier_preactivated;  
-};
-
 static inline struct device *kobj_to_dev(struct kobject *kobj)
 {
 	return container_of(kobj, struct device, kobj);
@@ -273,11 +213,6 @@ static inline int dev_to_node(struct device *dev)
 }
 static inline void set_dev_node(struct device *dev, int node)
 {
-}
-
-static inline void *dev_get_drvdata(const struct device *dev)
-{
-	return dev->driver_data;
 }
 
 static inline void dev_set_drvdata(struct device *dev, void *data)
@@ -335,10 +270,6 @@ void device_del(struct device *dev);
    device_set_of_node_from_dev, device_set_node, __root_device_register,
    root_device_unregister removed - unused */
 
-void device_release_driver(struct device *dev);
-int __must_check driver_attach(struct device_driver *drv);
-void device_initial_probe(struct device *dev);
-
 __printf(5, 6) struct device *
 device_create(struct class *cls, struct device *parent, dev_t devt,
 	      void *drvdata, const char *fmt, ...);
@@ -359,12 +290,7 @@ void put_device(struct device *dev);
 
 static inline int devtmpfs_mount(void) { return 0; }
 
-void device_shutdown(void);
-
 /* device_link_add, device_link_del, device_link_remove,
    device_links_supplier_sync_state_pause, device_links_supplier_sync_state_resume removed - unused */
-
-extern __printf(3, 4)
-int dev_err_probe(const struct device *dev, int err, const char *fmt, ...);
 
 #endif  

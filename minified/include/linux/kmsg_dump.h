@@ -13,11 +13,6 @@ enum kmsg_dump_reason {
 	KMSG_DUMP_MAX
 };
 
-struct kmsg_dump_iter {
-	u64	cur_seq;
-	u64	next_seq;
-};
-
 struct kmsg_dumper {
 	struct list_head list;
 	void (*dump)(struct kmsg_dumper *dumper, enum kmsg_dump_reason reason);
@@ -29,9 +24,5 @@ static inline void kmsg_dump(enum kmsg_dump_reason reason)
 {
 }
 
-static inline const char *kmsg_dump_reason_str(enum kmsg_dump_reason reason)
-{
-	return "Disabled";
-}
 
 #endif  

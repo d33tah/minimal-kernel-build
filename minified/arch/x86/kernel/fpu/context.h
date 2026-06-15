@@ -3,7 +3,6 @@
 #define __X86_KERNEL_FPU_CONTEXT_H
 
 #include <asm/fpu/xstate.h>
-#include <asm/trace/fpu.h>
 
  
 
@@ -11,11 +10,6 @@
 static inline void __cpu_invalidate_fpregs_state(void)
 {
 	__this_cpu_write(fpu_fpregs_owner_ctx, NULL);
-}
-
-static inline void __fpu_invalidate_fpregs_state(struct fpu *fpu)
-{
-	fpu->last_cpu = -1;
 }
 
 static inline int fpregs_state_valid(struct fpu *fpu, unsigned int cpu)
@@ -26,13 +20,11 @@ static inline int fpregs_state_valid(struct fpu *fpu, unsigned int cpu)
 static inline void fpregs_deactivate(struct fpu *fpu)
 {
 	__this_cpu_write(fpu_fpregs_owner_ctx, NULL);
-	trace_x86_fpu_regs_deactivated(fpu);
 }
 
 static inline void fpregs_activate(struct fpu *fpu)
 {
 	__this_cpu_write(fpu_fpregs_owner_ctx, fpu);
-	trace_x86_fpu_regs_activated(fpu);
 }
 
  

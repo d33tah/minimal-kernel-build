@@ -6,7 +6,6 @@
 #include <linux/memblock.h>
 #include <linux/err.h>
 unsigned long lcm(unsigned long a, unsigned long b) __attribute_const__;
-unsigned long lcm_not_zero(unsigned long a, unsigned long b) __attribute_const__;
 #include <linux/list.h>
 #include <linux/log2.h>
 #include <linux/mm.h>
@@ -18,7 +17,6 @@ unsigned long lcm_not_zero(unsigned long a, unsigned long b) __attribute_const__
 #include <linux/spinlock.h>
 #include <linux/vmalloc.h>
 #include <linux/workqueue.h>
-#include <linux/kmemleak.h>
 #include <linux/sched.h>
 #include <linux/sched/mm.h>
 #include <linux/memcontrol.h>
@@ -382,17 +380,6 @@ static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
 
 	if (oslot != nslot)
 		__pcpu_chunk_move(chunk, nslot, oslot < nslot);
-}
-
-static void pcpu_isolate_chunk(struct pcpu_chunk *chunk)
-{
-	lockdep_assert_held(&pcpu_lock);
-
-	if (!chunk->isolated) {
-		chunk->isolated = true;
-		pcpu_nr_empty_pop_pages -= chunk->nr_empty_pop_pages;
-	}
-	list_move(&chunk->list, &pcpu_chunk_lists[pcpu_to_depopulate_slot]);
 }
 
 static void pcpu_reintegrate_chunk(struct pcpu_chunk *chunk)
@@ -1084,8 +1071,6 @@ static int pcpu_populate_chunk(struct pcpu_chunk *chunk,
 			       int page_start, int page_end, gfp_t gfp);
 static void pcpu_depopulate_chunk(struct pcpu_chunk *chunk,
 				  int page_start, int page_end);
-static void pcpu_post_unmap_tlb_flush(struct pcpu_chunk *chunk,
-				      int page_start, int page_end);
 static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp);
 static void pcpu_destroy_chunk(struct pcpu_chunk *chunk);
 static struct page *pcpu_addr_to_page(void *addr);
@@ -1274,8 +1259,6 @@ area_found:
 		memset((void *)pcpu_chunk_addr(chunk, cpu, 0) + off, 0, size);
 
 	ptr = __addr_to_pcpu_ptr(chunk->base_addr + off);
-	kmemleak_alloc_percpu(ptr, size, gfp);
-
 
 	pcpu_memcg_post_alloc_hook(objcg, chunk, off, size);
 
@@ -1303,11 +1286,6 @@ fail:
 	pcpu_memcg_post_alloc_hook(objcg, NULL, 0, size);
 
 	return NULL;
-}
-
-void __percpu *__alloc_percpu_gfp(size_t size, size_t align, gfp_t gfp)
-{
-	return pcpu_alloc(size, align, false, gfp);
 }
 
 void __percpu *__alloc_percpu(size_t size, size_t align)
@@ -1423,92 +1401,13 @@ retry_pop:
 	}
 }
 
-static void pcpu_reclaim_populated(void)
-{
-	struct pcpu_chunk *chunk;
-	struct pcpu_block_md *block;
-	int freed_page_start, freed_page_end;
-	int i, end;
-	bool reintegrate;
-
-	lockdep_assert_held(&pcpu_lock);
-
-	
-	while (!list_empty(&pcpu_chunk_lists[pcpu_to_depopulate_slot])) {
-		chunk = list_first_entry(&pcpu_chunk_lists[pcpu_to_depopulate_slot],
-					 struct pcpu_chunk, list);
-		WARN_ON(chunk->immutable);
-
-		
-		freed_page_start = chunk->nr_pages;
-		freed_page_end = 0;
-		reintegrate = false;
-		for (i = chunk->nr_pages - 1, end = -1; i >= 0; i--) {
-			
-			if (chunk->nr_empty_pop_pages == 0)
-				break;
-
-			
-			if (pcpu_nr_empty_pop_pages < PCPU_EMPTY_POP_PAGES_HIGH) {
-				reintegrate = true;
-				goto end_chunk;
-			}
-
-			
-			block = chunk->md_blocks + i;
-			if (block->contig_hint == PCPU_BITMAP_BLOCK_BITS &&
-			    test_bit(i, chunk->populated)) {
-				if (end == -1)
-					end = i;
-				if (i > 0)
-					continue;
-				i--;
-			}
-
-			
-			if (end == -1)
-				continue;
-
-			spin_unlock_irq(&pcpu_lock);
-			pcpu_depopulate_chunk(chunk, i + 1, end + 1);
-			cond_resched();
-			spin_lock_irq(&pcpu_lock);
-
-			pcpu_chunk_depopulated(chunk, i + 1, end + 1);
-			freed_page_start = min(freed_page_start, i + 1);
-			freed_page_end = max(freed_page_end, end + 1);
-
-			
-			end = -1;
-		}
-
-end_chunk:
-		
-		if (freed_page_start < freed_page_end) {
-			spin_unlock_irq(&pcpu_lock);
-			pcpu_post_unmap_tlb_flush(chunk,
-						  freed_page_start,
-						  freed_page_end);
-			cond_resched();
-			spin_lock_irq(&pcpu_lock);
-		}
-
-		if (reintegrate || chunk->free_bytes == pcpu_unit_size)
-			pcpu_reintegrate_chunk(chunk);
-		else
-			list_move_tail(&chunk->list,
-				       &pcpu_chunk_lists[pcpu_sidelined_slot]);
-	}
-}
-
 static void pcpu_balance_workfn(struct work_struct *work)
 {
-	
+
 	mutex_lock(&pcpu_alloc_mutex);
 	spin_lock_irq(&pcpu_lock);
 
 	pcpu_balance_free(false);
-	pcpu_reclaim_populated();
 	pcpu_balance_populated();
 	pcpu_balance_free(true);
 
@@ -1526,8 +1425,6 @@ void free_percpu(void __percpu *ptr)
 
 	if (!ptr)
 		return;
-
-	kmemleak_free_percpu(ptr);
 
 	addr = __pcpu_ptr_to_addr(ptr);
 
@@ -1549,9 +1446,6 @@ void free_percpu(void __percpu *ptr)
 				need_balance = true;
 				break;
 			}
-	} else if (pcpu_should_reclaim_chunk(chunk)) {
-		pcpu_isolate_chunk(chunk);
-		need_balance = true;
 	}
 
 
@@ -1784,8 +1678,6 @@ void __init setup_per_cpu_areas(void)
 	fc = memblock_alloc_from(unit_size, PAGE_SIZE, __pa(MAX_DMA_ADDRESS));
 	if (!ai || !fc)
 		panic("Failed to allocate memory for percpu areas.");
-	
-	kmemleak_free(fc);
 
 	ai->dyn_size = unit_size;
 	ai->unit_size = unit_size;

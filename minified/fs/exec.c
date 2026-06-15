@@ -1,10 +1,8 @@
 
-#include <linux/kernel_read_file.h>
 #include <linux/slab.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/mm.h>
-#include <linux/vmacache.h>
 #include <linux/stat.h>
 #include <linux/fcntl.h>
 #include <linux/swap.h>
@@ -20,7 +18,6 @@ static inline void task_numa_free(struct task_struct *p, bool final) {}
 #include <linux/perf_event.h>
 #include <linux/highmem.h>
 #include <linux/spinlock.h>
-#include <linux/key.h>
 #include <linux/personality.h>
 #include <linux/binfmts.h>
 #include <linux/utsname.h>
@@ -30,17 +27,12 @@ static inline void task_numa_free(struct task_struct *p, bool final) {}
 #include <linux/mount.h>
 #include <linux/security.h>
 #include <linux/syscalls.h>
-static inline void acct_update_integrals(struct task_struct *tsk) {}
 static inline void proc_exec_connector(struct task_struct *task) {}
-#include <linux/audit.h>
 #include <linux/kmod.h>
-#include <linux/fsnotify.h>
 #include <linux/fs_struct.h>
 #include <linux/oom.h>
 #include <linux/compat.h>
 #include <linux/vmalloc.h>
-#include <linux/io_uring.h>
-#include <linux/syscall_user_dispatch.h>
 
 #include <linux/uaccess.h>
 #include <asm/mmu_context.h>
@@ -151,7 +143,7 @@ static int __bprm_mm_init(struct linux_binprm *bprm)
 	if (err)
 		goto err;
 
-	mm->stack_vm = mm->total_vm = 1;
+	mm->total_vm = 1;
 	mmap_write_unlock(mm);
 	bprm->p = vma->vm_end - sizeof(void *);
 	return 0;
@@ -197,48 +189,6 @@ err:
 	return err;
 }
 
-struct user_arg_ptr {
-	union {
-		const char __user *const __user *native;
-	} ptr;
-};
-
-static const char __user *get_user_arg_ptr(struct user_arg_ptr argv, int nr)
-{
-	const char __user *native;
-
-	if (get_user(native, argv.ptr.native + nr))
-		return ERR_PTR(-EFAULT);
-
-	return native;
-}
-
-static int count(struct user_arg_ptr argv, int max)
-{
-	int i = 0;
-
-	if (argv.ptr.native != NULL) {
-		for (;;) {
-			const char __user *p = get_user_arg_ptr(argv, i);
-
-			if (!p)
-				break;
-
-			if (IS_ERR(p))
-				return -EFAULT;
-
-			if (i >= max)
-				return -E2BIG;
-			++i;
-
-			if (fatal_signal_pending(current))
-				return -ERESTARTNOHAND;
-			cond_resched();
-		}
-	}
-	return i;
-}
-
 static int count_strings_kernel(const char *const *argv)
 {
 	int i;
@@ -272,95 +222,6 @@ static int bprm_stack_limits(struct linux_binprm *bprm)
 
 	bprm->argmin = bprm->p - limit;
 	return 0;
-}
-
-static int copy_strings(int argc, struct user_arg_ptr argv,
-			struct linux_binprm *bprm)
-{
-	struct page *kmapped_page = NULL;
-	char *kaddr = NULL;
-	unsigned long kpos = 0;
-	int ret;
-
-	while (argc-- > 0) {
-		const char __user *str;
-		int len;
-		unsigned long pos;
-
-		ret = -EFAULT;
-		str = get_user_arg_ptr(argv, argc);
-		if (IS_ERR(str))
-			goto out;
-
-		len = strnlen_user(str, MAX_ARG_STRLEN);
-		if (!len)
-			goto out;
-
-		ret = -E2BIG;
-		if (!valid_arg_len(bprm, len))
-			goto out;
-
-		pos = bprm->p;
-		str += len;
-		bprm->p -= len;
-		if (bprm->p < bprm->argmin)
-			goto out;
-
-		while (len > 0) {
-			int offset, bytes_to_copy;
-
-			if (fatal_signal_pending(current)) {
-				ret = -ERESTARTNOHAND;
-				goto out;
-			}
-			cond_resched();
-
-			offset = pos % PAGE_SIZE;
-			if (offset == 0)
-				offset = PAGE_SIZE;
-
-			bytes_to_copy = offset;
-			if (bytes_to_copy > len)
-				bytes_to_copy = len;
-
-			offset -= bytes_to_copy;
-			pos -= bytes_to_copy;
-			str -= bytes_to_copy;
-			len -= bytes_to_copy;
-
-			if (!kmapped_page || kpos != (pos & PAGE_MASK)) {
-				struct page *page;
-
-				page = get_arg_page(bprm, pos, 1);
-				if (!page) {
-					ret = -E2BIG;
-					goto out;
-				}
-
-				if (kmapped_page) {
-					flush_dcache_page(kmapped_page);
-					kunmap(kmapped_page);
-					put_arg_page(kmapped_page);
-				}
-				kmapped_page = page;
-				kaddr = kmap(kmapped_page);
-				kpos = pos & PAGE_MASK;
-				flush_arg_page(bprm, kpos, kmapped_page);
-			}
-			if (copy_from_user(kaddr+offset, str, bytes_to_copy)) {
-				ret = -EFAULT;
-				goto out;
-			}
-		}
-	}
-	ret = 0;
-out:
-	if (kmapped_page) {
-		flush_dcache_page(kmapped_page);
-		kunmap(kmapped_page);
-		put_arg_page(kmapped_page);
-	}
-	return ret;
 }
 
 int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
@@ -566,27 +427,12 @@ static struct file *do_open_execat(int fd, struct filename *name, int flags)
 	if (err)
 		goto exit;
 
-	if (name->name[0] != '\0')
-		fsnotify_open(file);
-
 out:
 	return file;
 
 exit:
 	fput(file);
 	return ERR_PTR(err);
-}
-
-struct file *open_exec(const char *name)
-{
-	struct filename *filename = getname_kernel(name);
-	struct file *f = ERR_CAST(filename);
-
-	if (!IS_ERR(filename)) {
-		f = do_open_execat(AT_FDCWD, filename, 0);
-		putname(filename);
-	}
-	return f;
 }
 
 static int exec_mmap(struct mm_struct *mm)
@@ -615,7 +461,6 @@ static int exec_mmap(struct mm_struct *mm)
 	}
 
 	task_lock(tsk);
-	membarrier_exec_mmap(mm);
 
 	local_irq_disable();
 	active_mm = tsk->active_mm;
@@ -627,8 +472,6 @@ static int exec_mmap(struct mm_struct *mm)
 	activate_mm(active_mm, mm);
 	if (IS_ENABLED(CONFIG_ARCH_WANT_IRQS_OFF_ACTIVATE_MM))
 		local_irq_enable();
-	tsk->mm->vmacache_seqnum = 0;
-	vmacache_flush(tsk);
 	task_unlock(tsk);
 	if (old_mm) {
 		mmap_read_unlock(old_mm);
@@ -644,129 +487,17 @@ static int exec_mmap(struct mm_struct *mm)
 
 static int de_thread(struct task_struct *tsk)
 {
-	struct signal_struct *sig = tsk->signal;
-	struct sighand_struct *oldsighand = tsk->sighand;
-	spinlock_t *lock = &oldsighand->siglock;
-
-	if (thread_group_empty(tsk))
-		goto no_thread_group;
-
-	spin_lock_irq(lock);
-	if ((sig->flags & SIGNAL_GROUP_EXIT) || sig->group_exec_task) {
-		
-		spin_unlock_irq(lock);
-		return -EAGAIN;
-	}
-
-	sig->group_exec_task = tsk;
-	sig->notify_count = zap_other_threads(tsk);
-	if (!thread_group_leader(tsk))
-		sig->notify_count--;
-
-	while (sig->notify_count) {
-		__set_current_state(TASK_KILLABLE);
-		spin_unlock_irq(lock);
-		schedule();
-		if (__fatal_signal_pending(tsk))
-			goto killed;
-		spin_lock_irq(lock);
-	}
-	spin_unlock_irq(lock);
-
-	if (!thread_group_leader(tsk)) {
-		struct task_struct *leader = tsk->group_leader;
-
-		for (;;) {
-			cgroup_threadgroup_change_begin(tsk);
-			write_lock_irq(&tasklist_lock);
-			
-			sig->notify_count = -1;
-			if (likely(leader->exit_state))
-				break;
-			__set_current_state(TASK_KILLABLE);
-			write_unlock_irq(&tasklist_lock);
-			cgroup_threadgroup_change_end(tsk);
-			schedule();
-			if (__fatal_signal_pending(tsk))
-				goto killed;
-		}
-
-		tsk->start_time = leader->start_time;
-		tsk->start_boottime = leader->start_boottime;
-
-		BUG_ON(!same_thread_group(leader, tsk));
-		
-
-		exchange_tids(tsk, leader);
-		transfer_pid(leader, tsk, PIDTYPE_TGID);
-		transfer_pid(leader, tsk, PIDTYPE_PGID);
-		transfer_pid(leader, tsk, PIDTYPE_SID);
-
-		list_replace_rcu(&leader->tasks, &tsk->tasks);
-		list_replace_init(&leader->sibling, &tsk->sibling);
-
-		tsk->group_leader = tsk;
-		leader->group_leader = tsk;
-
-		tsk->exit_signal = SIGCHLD;
-		leader->exit_signal = -1;
-
-		BUG_ON(leader->exit_state != EXIT_ZOMBIE);
-		leader->exit_state = EXIT_DEAD;
-
-		if (unlikely(leader->ptrace))
-			__wake_up_parent(leader, leader->parent);
-		write_unlock_irq(&tasklist_lock);
-		cgroup_threadgroup_change_end(tsk);
-
-		release_task(leader);
-	}
-
-	sig->group_exec_task = NULL;
-	sig->notify_count = 0;
-
-no_thread_group:
-	
+	/*
+	 * The only execve() callers in this kernel (init via user_mode_thread,
+	 * kernel_execve) are always single-threaded thread-group leaders, so
+	 * thread_group_empty(tsk) is always true and the multi-thread teardown
+	 * path (zap_other_threads / leader exchange) is never reached.
+	 */
 	tsk->exit_signal = SIGCHLD;
 
 	BUG_ON(!thread_group_leader(tsk));
 	return 0;
-
-killed:
-	
-	read_lock(&tasklist_lock);
-	sig->group_exec_task = NULL;
-	sig->notify_count = 0;
-	read_unlock(&tasklist_lock);
-	return -EAGAIN;
 }
-
-static int unshare_sighand(struct task_struct *me)
-{
-	struct sighand_struct *oldsighand = me->sighand;
-
-	if (refcount_read(&oldsighand->count) != 1) {
-		struct sighand_struct *newsighand;
-		
-		newsighand = kmem_cache_alloc(sighand_cachep, GFP_KERNEL);
-		if (!newsighand)
-			return -ENOMEM;
-
-		refcount_set(&newsighand->count, 1);
-		memcpy(newsighand->action, oldsighand->action,
-		       sizeof(newsighand->action));
-
-		write_lock_irq(&tasklist_lock);
-		spin_lock(&oldsighand->siglock);
-		rcu_assign_pointer(me->sighand, newsighand);
-		spin_unlock(&oldsighand->siglock);
-		write_unlock_irq(&tasklist_lock);
-
-		__cleanup_sighand(oldsighand);
-	}
-	return 0;
-}
-
 
 void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
 {
@@ -774,7 +505,6 @@ void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
 	
 	strscpy_pad(tsk->comm, buf, sizeof(tsk->comm));
 	task_unlock(tsk);
-	perf_event_comm(tsk, exec);
 }
 
 int begin_new_exec(struct linux_binprm * bprm)
@@ -792,19 +522,11 @@ int begin_new_exec(struct linux_binprm * bprm)
 	if (retval)
 		goto out;
 
-	io_uring_task_cancel();
-
-	retval = unshare_files();
-	if (retval)
-		goto out;
-
 	retval = set_mm_exe_file(bprm->mm, bprm->file);
 	if (retval)
 		goto out;
 
 	would_dump(bprm, bprm->file);
-	if (bprm->have_execfd)
-		would_dump(bprm, bprm->executable);
 
 	acct_arg_size(bprm, 0);
 	retval = exec_mmap(bprm->mm);
@@ -813,16 +535,16 @@ int begin_new_exec(struct linux_binprm * bprm)
 
 	bprm->mm = NULL;
 
-	retval = unshare_sighand(me);
-	if (retval)
-		goto out_unlock;
+	/*
+	 * unshare_sighand() removed: the only execve() callers (init via
+	 * user_mode_thread, kernel_execve) never pass CLONE_SIGHAND, so
+	 * sighand->count is always 1 and the unshare branch was dead.
+	 */
 
 	me->flags &= ~(PF_RANDOMIZE | PF_FORKNOEXEC |
 					PF_NOFREEZE | PF_NO_SETAFFINITY);
 	flush_thread();
 	me->personality &= ~bprm->per_clear;
-
-	clear_syscall_work_syscall_user_dispatch(me);
 
 	do_close_on_exec(me->files);
 
@@ -843,7 +565,6 @@ int begin_new_exec(struct linux_binprm * bprm)
 	else
 		set_dumpable(current->mm, SUID_DUMP_USER);
 
-	perf_event_exec();
 	__set_task_comm(me, kbasename(bprm->filename), true);
 
 	WRITE_ONCE(me->self_exec_id, me->self_exec_id + 1);
@@ -853,24 +574,9 @@ int begin_new_exec(struct linux_binprm * bprm)
 	if (retval < 0)
 		goto out_unlock;
 
-	security_bprm_committing_creds(bprm);
-
 	commit_creds(bprm->cred);
 	bprm->cred = NULL;
 
-	if (get_dumpable(me->mm) != SUID_DUMP_USER)
-		perf_event_exit_task(me);
-	
-	security_bprm_committed_creds(bprm);
-
-	if (bprm->have_execfd) {
-		retval = get_unused_fd_flags(0);
-		if (retval < 0)
-			goto out_unlock;
-		fd_install(retval, bprm->executable);
-		bprm->executable = NULL;
-		bprm->execfd = retval;
-	}
 	return 0;
 
 out_unlock:
@@ -934,9 +640,7 @@ static void free_bprm(struct linux_binprm *bprm)
 		allow_write_access(bprm->file);
 		fput(bprm->file);
 	}
-	if (bprm->executable)
-		fput(bprm->executable);
-	
+
 	if (bprm->interp != bprm->filename)
 		kfree(bprm->interp);
 	kfree(bprm->fdpath);
@@ -983,12 +687,6 @@ static void check_unsafe_exec(struct linux_binprm *bprm)
 	struct task_struct *p = current, *t;
 	unsigned n_fs;
 
-	if (p->ptrace)
-		bprm->unsafe |= LSM_UNSAFE_PTRACE;
-
-	if (task_no_new_privs(current))
-		bprm->unsafe |= LSM_UNSAFE_NO_NEW_PRIVS;
-
 	t = p;
 	n_fs = 1;
 	spin_lock(&p->fs->lock);
@@ -999,9 +697,7 @@ static void check_unsafe_exec(struct linux_binprm *bprm)
 	}
 	rcu_read_unlock();
 
-	if (p->fs->users > n_fs)
-		bprm->unsafe |= LSM_UNSAFE_SHARE;
-	else
+	if (p->fs->users <= n_fs)
 		p->fs->in_exec = 1;
 	spin_unlock(&p->fs->lock);
 }
@@ -1012,7 +708,7 @@ static void bprm_fill_uid(struct linux_binprm *bprm, struct file *file)
 	struct inode *inode;
 	unsigned int mode;
 
-	if (!mnt_may_suid(file->f_path.mnt) || task_no_new_privs(current))
+	if (!mnt_may_suid(file->f_path.mnt))
 		return;
 
 	inode = file->f_path.dentry->d_inode;
@@ -1034,7 +730,7 @@ static void bprm_fill_uid(struct linux_binprm *bprm, struct file *file)
 static int bprm_creds_from_file(struct linux_binprm *bprm)
 {
 	
-	struct file *file = bprm->execfd_creds ? bprm->executable : bprm->file;
+	struct file *file = bprm->file;
 
 	bprm_fill_uid(bprm, file);
 	return security_bprm_creds_from_file(bprm, file);
@@ -1056,10 +752,6 @@ static int search_binary_handler(struct linux_binprm *bprm)
 
 	retval = prepare_binprm(bprm);
 	if (retval < 0)
-		return retval;
-
-	retval = security_bprm_check(bprm);
-	if (retval)
 		return retval;
 
 	retval = -ENOENT;
@@ -1085,41 +777,17 @@ static int search_binary_handler(struct linux_binprm *bprm)
 static int exec_binprm(struct linux_binprm *bprm)
 {
 	pid_t old_pid, old_vpid;
-	int ret, depth;
+	int ret;
 
 	old_pid = current->pid;
 	rcu_read_lock();
 	old_vpid = task_pid_nr_ns(current, task_active_pid_ns(current->parent));
 	rcu_read_unlock();
 
-	for (depth = 0;; depth++) {
-		struct file *exec;
-		if (depth > 5)
-			return -ELOOP;
+	ret = search_binary_handler(bprm);
+	if (ret < 0)
+		return ret;
 
-		ret = search_binary_handler(bprm);
-		if (ret < 0)
-			return ret;
-		if (!bprm->interpreter)
-			break;
-
-		exec = bprm->file;
-		bprm->file = bprm->interpreter;
-		bprm->interpreter = NULL;
-
-		allow_write_access(exec);
-		if (unlikely(bprm->have_execfd)) {
-			if (bprm->executable) {
-				fput(exec);
-				return -ENOEXEC;
-			}
-			bprm->executable = exec;
-		} else
-			fput(exec);
-	}
-
-	audit_bprm(bprm);
-	
 	ptrace_event(PTRACE_EVENT_EXEC, old_vpid);
 	proc_exec_connector(current);
 	return 0;
@@ -1150,18 +818,12 @@ static int bprm_execve(struct linux_binprm *bprm,
 	if (bprm->fdpath && get_close_on_exec(fd))
 		bprm->interp_flags |= BINPRM_FLAGS_PATH_INACCESSIBLE;
 
-	retval = security_bprm_creds_for_exec(bprm);
-	if (retval)
-		goto out;
-
 	retval = exec_binprm(bprm);
 	if (retval < 0)
 		goto out;
 
 	current->fs->in_exec = 0;
 	current->in_execve = 0;
-	rseq_execve(current);
-	acct_update_integrals(current);
 	task_numa_free(current, false);
 	return retval;
 
@@ -1174,74 +836,6 @@ out_unmark:
 	current->fs->in_exec = 0;
 	current->in_execve = 0;
 
-	return retval;
-}
-
-static int do_execveat_common(int fd, struct filename *filename,
-			      struct user_arg_ptr argv,
-			      struct user_arg_ptr envp,
-			      int flags)
-{
-	struct linux_binprm *bprm;
-	int retval;
-
-	if (IS_ERR(filename))
-		return PTR_ERR(filename);
-
-	if ((current->flags & PF_NPROC_EXCEEDED) &&
-	    is_ucounts_overlimit(current_ucounts(), UCOUNT_RLIMIT_NPROC, rlimit(RLIMIT_NPROC))) {
-		retval = -EAGAIN;
-		goto out_ret;
-	}
-
-	current->flags &= ~PF_NPROC_EXCEEDED;
-
-	bprm = alloc_bprm(fd, filename);
-	if (IS_ERR(bprm)) {
-		retval = PTR_ERR(bprm);
-		goto out_ret;
-	}
-
-	retval = count(argv, MAX_ARG_STRINGS);
-	if (retval < 0)
-		goto out_free;
-	bprm->argc = retval;
-
-	retval = count(envp, MAX_ARG_STRINGS);
-	if (retval < 0)
-		goto out_free;
-	bprm->envc = retval;
-
-	retval = bprm_stack_limits(bprm);
-	if (retval < 0)
-		goto out_free;
-
-	retval = copy_string_kernel(bprm->filename, bprm);
-	if (retval < 0)
-		goto out_free;
-	bprm->exec = bprm->p;
-
-	retval = copy_strings(bprm->envc, envp, bprm);
-	if (retval < 0)
-		goto out_free;
-
-	retval = copy_strings(bprm->argc, argv, bprm);
-	if (retval < 0)
-		goto out_free;
-
-	if (bprm->argc == 0) {
-		retval = copy_string_kernel("", bprm);
-		if (retval < 0)
-			goto out_free;
-		bprm->argc = 1;
-	}
-
-	retval = bprm_execve(bprm, fd, filename, flags);
-out_free:
-	free_bprm(bprm);
-
-out_ret:
-	putname(filename);
 	return retval;
 }
 
@@ -1303,15 +897,6 @@ out_ret:
 	return retval;
 }
 
-static int do_execve(struct filename *filename,
-	const char __user *const __user *__argv,
-	const char __user *const __user *__envp)
-{
-	struct user_arg_ptr argv = { .ptr.native = __argv };
-	struct user_arg_ptr envp = { .ptr.native = __envp };
-	return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);
-}
-
 void set_binfmt(struct linux_binfmt *new)
 {
 	struct mm_struct *mm = current->mm;
@@ -1330,22 +915,4 @@ void set_dumpable(struct mm_struct *mm, int value)
 		return;
 
 	set_mask_bits(&mm->flags, MMF_DUMPABLE_MASK, value);
-}
-
-SYSCALL_DEFINE3(execve,
-		const char __user *, filename,
-		const char __user *const __user *, argv,
-		const char __user *const __user *, envp)
-{
-	return do_execve(getname(filename), argv, envp);
-}
-
-SYSCALL_DEFINE5(execveat,
-		int, fd, const char __user *, filename,
-		const char __user *const __user *, argv,
-		const char __user *const __user *, envp,
-		int, flags)
-{
-	/* Stub: execveat not needed for minimal kernel, execve suffices */
-	return -ENOSYS;
 }

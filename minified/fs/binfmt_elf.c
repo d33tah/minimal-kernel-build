@@ -12,7 +12,7 @@
 #include <linux/file.h>
 #include <linux/slab.h>
 #include <linux/personality.h>
-#include <linux/elfcore.h>
+#include <linux/ptrace.h>
 #include <linux/init.h>
 #include <linux/highuid.h>
 #include <linux/compiler.h>
@@ -51,10 +51,6 @@
 
 static int load_elf_binary(struct linux_binprm *bprm);
 
-#define load_elf_library NULL
-
-#define elf_core_dump	NULL
-
 #if ELF_EXEC_PAGESIZE > PAGE_SIZE
 #define ELF_MIN_ALIGN	ELF_EXEC_PAGESIZE
 #else
@@ -72,7 +68,6 @@ static int load_elf_binary(struct linux_binprm *bprm);
 static struct linux_binfmt elf_format = {
 	.module		= THIS_MODULE,
 	.load_binary	= load_elf_binary,
-	.load_shlib	= load_elf_library,
 };
 
 #define BAD_ADDR(x) (unlikely((unsigned long)(x) >= TASK_SIZE))
@@ -210,9 +205,6 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 		NEW_AUX_ENT(AT_BASE_PLATFORM,
 			    (elf_addr_t)(unsigned long)u_base_platform);
 	}
-	if (bprm->have_execfd) {
-		NEW_AUX_ENT(AT_EXECFD, bprm->execfd);
-	}
 #undef NEW_AUX_ENT
 	 
 	memset(elf_info, 0, (char *)mm->saved_auxv +
@@ -310,23 +302,6 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
 	return(map_addr);
 }
 
-static unsigned long total_mapping_size(const struct elf_phdr *phdr, int nr)
-{
-	elf_addr_t min_addr = -1;
-	elf_addr_t max_addr = 0;
-	bool pt_load = false;
-	int i;
-
-	for (i = 0; i < nr; i++) {
-		if (phdr[i].p_type == PT_LOAD) {
-			min_addr = min(min_addr, ELF_PAGESTART(phdr[i].p_vaddr));
-			max_addr = max(max_addr, phdr[i].p_vaddr + phdr[i].p_memsz);
-			pt_load = true;
-		}
-	}
-	return pt_load ? (max_addr - min_addr) : 0;
-}
-
 static int elf_read(struct file *file, void *buf, size_t len, loff_t pos)
 {
 	ssize_t rv;
@@ -336,26 +311,6 @@ static int elf_read(struct file *file, void *buf, size_t len, loff_t pos)
 		return (rv < 0) ? rv : -EIO;
 	}
 	return 0;
-}
-
-static unsigned long maximum_alignment(struct elf_phdr *cmds, int nr)
-{
-	unsigned long alignment = 0;
-	int i;
-
-	for (i = 0; i < nr; i++) {
-		if (cmds[i].p_type == PT_LOAD) {
-			unsigned long p_align = cmds[i].p_align;
-
-			 
-			if (!is_power_of_2(p_align))
-				continue;
-			alignment = max(alignment, p_align);
-		}
-	}
-
-	 
-	return ELF_PAGEALIGN(alignment);
 }
 
 static struct elf_phdr *load_elf_phdrs(const struct elfhdr *elf_ex,
@@ -438,110 +393,6 @@ static inline int make_prot(u32 p_flags, struct arch_elf_state *arch_state,
 }
 
 
-static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
-		struct file *interpreter,
-		unsigned long no_base, struct elf_phdr *interp_elf_phdata,
-		struct arch_elf_state *arch_state)
-{
-	struct elf_phdr *eppnt;
-	unsigned long load_addr = 0;
-	int load_addr_set = 0;
-	unsigned long last_bss = 0, elf_bss = 0;
-	int bss_prot = 0;
-	unsigned long error = ~0UL;
-	unsigned long total_size;
-	int i;
-
-	 
-	if (interp_elf_ex->e_type != ET_EXEC &&
-	    interp_elf_ex->e_type != ET_DYN)
-		goto out;
-	if (!elf_check_arch(interp_elf_ex) ||
-	    elf_check_fdpic(interp_elf_ex))
-		goto out;
-	if (!interpreter->f_op->mmap)
-		goto out;
-
-	total_size = total_mapping_size(interp_elf_phdata,
-					interp_elf_ex->e_phnum);
-	if (!total_size) {
-		error = -EINVAL;
-		goto out;
-	}
-
-	eppnt = interp_elf_phdata;
-	for (i = 0; i < interp_elf_ex->e_phnum; i++, eppnt++) {
-		if (eppnt->p_type == PT_LOAD) {
-			int elf_type = MAP_PRIVATE;
-			int elf_prot = make_prot(eppnt->p_flags, arch_state,
-						 true, true);
-			unsigned long vaddr = 0;
-			unsigned long k, map_addr;
-
-			vaddr = eppnt->p_vaddr;
-			if (interp_elf_ex->e_type == ET_EXEC || load_addr_set)
-				elf_type |= MAP_FIXED;
-			else if (no_base && interp_elf_ex->e_type == ET_DYN)
-				load_addr = -vaddr;
-
-			map_addr = elf_map(interpreter, load_addr + vaddr,
-					eppnt, elf_prot, elf_type, total_size);
-			total_size = 0;
-			error = map_addr;
-			if (BAD_ADDR(map_addr))
-				goto out;
-
-			if (!load_addr_set &&
-			    interp_elf_ex->e_type == ET_DYN) {
-				load_addr = map_addr - ELF_PAGESTART(vaddr);
-				load_addr_set = 1;
-			}
-
-			 
-			k = load_addr + eppnt->p_vaddr;
-			if (BAD_ADDR(k) ||
-			    eppnt->p_filesz > eppnt->p_memsz ||
-			    eppnt->p_memsz > TASK_SIZE ||
-			    TASK_SIZE - eppnt->p_memsz < k) {
-				error = -ENOMEM;
-				goto out;
-			}
-
-			 
-			k = load_addr + eppnt->p_vaddr + eppnt->p_filesz;
-			if (k > elf_bss)
-				elf_bss = k;
-
-			 
-			k = load_addr + eppnt->p_vaddr + eppnt->p_memsz;
-			if (k > last_bss) {
-				last_bss = k;
-				bss_prot = elf_prot;
-			}
-		}
-	}
-
-	 
-	if (padzero(elf_bss)) {
-		error = -EFAULT;
-		goto out;
-	}
-	 
-	elf_bss = ELF_PAGEALIGN(elf_bss);
-	last_bss = ELF_PAGEALIGN(last_bss);
-	 
-	if (last_bss > elf_bss) {
-		error = vm_brk_flags(elf_bss, last_bss - elf_bss,
-				bss_prot & PROT_EXEC ? VM_EXEC : 0);
-		if (error)
-			goto out;
-	}
-
-	error = load_addr;
-out:
-	return error;
-}
-
 static int parse_elf_properties(struct file *f, const struct elf_phdr *phdr,
 				struct arch_elf_state *arch)
 {
@@ -551,23 +402,20 @@ static int parse_elf_properties(struct file *f, const struct elf_phdr *phdr,
 
 static int load_elf_binary(struct linux_binprm *bprm)
 {
-	struct file *interpreter = NULL;  
 	unsigned long load_bias = 0, phdr_addr = 0;
 	int first_pt_load = 1;
 	unsigned long error;
-	struct elf_phdr *elf_ppnt, *elf_phdata, *interp_elf_phdata = NULL;
+	struct elf_phdr *elf_ppnt, *elf_phdata;
 	struct elf_phdr *elf_property_phdata = NULL;
 	unsigned long elf_bss, elf_brk;
 	int bss_prot = 0;
 	int retval, i;
 	unsigned long elf_entry;
 	unsigned long e_entry;
-	unsigned long interp_load_addr = 0;
 	unsigned long start_code, end_code, start_data, end_data;
 	unsigned long reloc_func_desc __maybe_unused = 0;
 	int executable_stack = EXSTACK_DEFAULT;
 	struct elfhdr *elf_ex = (struct elfhdr *)bprm->buf;
-	struct elfhdr *interp_elf_ex = NULL;
 	struct arch_elf_state arch_state = INIT_ARCH_ELF_STATE;
 	struct mm_struct *mm;
 	struct pt_regs *regs;
@@ -590,63 +438,16 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	if (!elf_phdata)
 		goto out;
 
+	/*
+	 * The init ELF is a static ET_EXEC with no PT_INTERP, so no
+	 * interpreter is ever loaded here; only record PT_GNU_PROPERTY.
+	 */
 	elf_ppnt = elf_phdata;
 	for (i = 0; i < elf_ex->e_phnum; i++, elf_ppnt++) {
-		char *elf_interpreter;
-
 		if (elf_ppnt->p_type == PT_GNU_PROPERTY) {
 			elf_property_phdata = elf_ppnt;
-			continue;
+			break;
 		}
-
-		if (elf_ppnt->p_type != PT_INTERP)
-			continue;
-
-		 
-		retval = -ENOEXEC;
-		if (elf_ppnt->p_filesz > PATH_MAX || elf_ppnt->p_filesz < 2)
-			goto out_free_ph;
-
-		retval = -ENOMEM;
-		elf_interpreter = kmalloc(elf_ppnt->p_filesz, GFP_KERNEL);
-		if (!elf_interpreter)
-			goto out_free_ph;
-
-		retval = elf_read(bprm->file, elf_interpreter, elf_ppnt->p_filesz,
-				  elf_ppnt->p_offset);
-		if (retval < 0)
-			goto out_free_interp;
-		 
-		retval = -ENOEXEC;
-		if (elf_interpreter[elf_ppnt->p_filesz - 1] != '\0')
-			goto out_free_interp;
-
-		interpreter = open_exec(elf_interpreter);
-		kfree(elf_interpreter);
-		retval = PTR_ERR(interpreter);
-		if (IS_ERR(interpreter))
-			goto out_free_ph;
-
-		 
-		would_dump(bprm, interpreter);
-
-		interp_elf_ex = kmalloc(sizeof(*interp_elf_ex), GFP_KERNEL);
-		if (!interp_elf_ex) {
-			retval = -ENOMEM;
-			goto out_free_ph;
-		}
-
-		 
-		retval = elf_read(interpreter, interp_elf_ex,
-				  sizeof(*interp_elf_ex), 0);
-		if (retval < 0)
-			goto out_free_dentry;
-
-		break;
-
-out_free_interp:
-		kfree(elf_interpreter);
-		goto out_free_ph;
 	}
 
 	elf_ppnt = elf_phdata;
@@ -668,51 +469,13 @@ out_free_interp:
 			break;
 		}
 
-	 
-	if (interpreter) {
-		retval = -ELIBBAD;
-		 
-		if (memcmp(interp_elf_ex->e_ident, ELFMAG, SELFMAG) != 0)
-			goto out_free_dentry;
-		 
-		if (!elf_check_arch(interp_elf_ex) ||
-		    elf_check_fdpic(interp_elf_ex))
-			goto out_free_dentry;
-
-		 
-		interp_elf_phdata = load_elf_phdrs(interp_elf_ex,
-						   interpreter);
-		if (!interp_elf_phdata)
-			goto out_free_dentry;
-
-		 
-		elf_property_phdata = NULL;
-		elf_ppnt = interp_elf_phdata;
-		for (i = 0; i < interp_elf_ex->e_phnum; i++, elf_ppnt++)
-			switch (elf_ppnt->p_type) {
-			case PT_GNU_PROPERTY:
-				elf_property_phdata = elf_ppnt;
-				break;
-
-			case PT_LOPROC ... PT_HIPROC:
-				retval = arch_elf_pt_proc(interp_elf_ex,
-							  elf_ppnt, interpreter,
-							  true, &arch_state);
-				if (retval)
-					goto out_free_dentry;
-				break;
-			}
-	}
-
-	retval = parse_elf_properties(interpreter ?: bprm->file,
+	retval = parse_elf_properties(bprm->file,
 				      elf_property_phdata, &arch_state);
 	if (retval)
 		goto out_free_dentry;
 
-	 
-	retval = arch_check_elf(elf_ex,
-				!!interpreter, interp_elf_ex,
-				&arch_state);
+
+	retval = arch_check_elf(elf_ex, false, NULL, &arch_state);
 	if (retval)
 		goto out_free_dentry;
 
@@ -751,7 +514,6 @@ out_free_interp:
 		int elf_prot, elf_flags;
 		unsigned long k, vaddr;
 		unsigned long total_size = 0;
-		unsigned long alignment;
 
 		if (elf_ppnt->p_type != PT_LOAD)
 			continue;
@@ -778,40 +540,17 @@ out_free_interp:
 		}
 
 		elf_prot = make_prot(elf_ppnt->p_flags, &arch_state,
-				     !!interpreter, false);
+				     false, false);
 
 		elf_flags = MAP_PRIVATE;
 
 		vaddr = elf_ppnt->p_vaddr;
-		 
+
 		if (!first_pt_load) {
 			elf_flags |= MAP_FIXED;
-		} else if (elf_ex->e_type == ET_EXEC) {
-			 
+		} else {
+			/* init ELF is a static ET_EXEC; no ET_DYN/PIE here */
 			elf_flags |= MAP_FIXED_NOREPLACE;
-		} else if (elf_ex->e_type == ET_DYN) {
-			 
-			if (interpreter) {
-				load_bias = ELF_ET_DYN_BASE;
-				if (current->flags & PF_RANDOMIZE)
-					load_bias += arch_mmap_rnd();
-				alignment = maximum_alignment(elf_phdata, elf_ex->e_phnum);
-				if (alignment)
-					load_bias &= ~(alignment - 1);
-				elf_flags |= MAP_FIXED_NOREPLACE;
-			} else
-				load_bias = 0;
-
-			 
-			load_bias = ELF_PAGESTART(load_bias - vaddr);
-
-			 
-			total_size = total_mapping_size(elf_phdata,
-							elf_ex->e_phnum);
-			if (!total_size) {
-				retval = -EINVAL;
-				goto out_free_dentry;
-			}
 		}
 
 		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
@@ -822,14 +561,8 @@ out_free_interp:
 			goto out_free_dentry;
 		}
 
-		if (first_pt_load) {
+		if (first_pt_load)
 			first_pt_load = 0;
-			if (elf_ex->e_type == ET_DYN) {
-				load_bias += error -
-				             ELF_PAGESTART(load_bias + vaddr);
-				reloc_func_desc = load_bias;
-			}
-		}
 
 		 
 		if (elf_ppnt->p_offset <= elf_ex->e_phoff &&
@@ -886,34 +619,10 @@ out_free_interp:
 		goto out_free_dentry;
 	}
 
-	if (interpreter) {
-		elf_entry = load_elf_interp(interp_elf_ex,
-					    interpreter,
-					    load_bias, interp_elf_phdata,
-					    &arch_state);
-		if (!IS_ERR((void *)elf_entry)) {
-			 
-			interp_load_addr = elf_entry;
-			elf_entry += interp_elf_ex->e_entry;
-		}
-		if (BAD_ADDR(elf_entry)) {
-			retval = IS_ERR((void *)elf_entry) ?
-					(int)elf_entry : -EINVAL;
-			goto out_free_dentry;
-		}
-		reloc_func_desc = interp_load_addr;
-
-		allow_write_access(interpreter);
-		fput(interpreter);
-
-		kfree(interp_elf_ex);
-		kfree(interp_elf_phdata);
-	} else {
-		elf_entry = e_entry;
-		if (BAD_ADDR(elf_entry)) {
-			retval = -EINVAL;
-			goto out_free_dentry;
-		}
+	elf_entry = e_entry;
+	if (BAD_ADDR(elf_entry)) {
+		retval = -EINVAL;
+		goto out_free_dentry;
 	}
 
 	kfree(elf_phdata);
@@ -921,12 +630,12 @@ out_free_interp:
 	set_binfmt(&elf_format);
 
 #ifdef ARCH_HAS_SETUP_ADDITIONAL_PAGES
-	retval = ARCH_SETUP_ADDITIONAL_PAGES(bprm, elf_ex, !!interpreter);
+	retval = ARCH_SETUP_ADDITIONAL_PAGES(bprm, elf_ex, 0);
 	if (retval < 0)
 		goto out;
 #endif  
 
-	retval = create_elf_tables(bprm, elf_ex, interp_load_addr,
+	retval = create_elf_tables(bprm, elf_ex, 0,
 				   e_entry, phdr_addr);
 	if (retval < 0)
 		goto out;
@@ -939,12 +648,6 @@ out_free_interp:
 	mm->start_stack = bprm->p;
 
 	if ((current->flags & PF_RANDOMIZE) && (randomize_va_space > 1)) {
-		 
-		if (IS_ENABLED(CONFIG_ARCH_HAS_ELF_RANDOMIZE) &&
-		    elf_ex->e_type == ET_DYN && !interpreter) {
-			mm->brk = mm->start_brk = ELF_ET_DYN_BASE;
-		}
-
 		mm->brk = mm->start_brk = arch_randomize_brk(mm);
 #ifdef compat_brk_randomized
 		current->brk_randomized = 1;
@@ -969,13 +672,7 @@ out_free_interp:
 out:
 	return retval;
 
-	 
 out_free_dentry:
-	kfree(interp_elf_ex);
-	kfree(interp_elf_phdata);
-	allow_write_access(interpreter);
-	if (interpreter)
-		fput(interpreter);
 out_free_ph:
 	kfree(elf_phdata);
 	goto out;

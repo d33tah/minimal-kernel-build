@@ -34,12 +34,6 @@ enum iter_type {
 	ITER_DISCARD,
 };
 
-struct iov_iter_state {
-	size_t iov_offset;
-	size_t count;
-	unsigned long nr_segs;
-};
-
 struct iov_iter {
 	u8 iter_type;
 	bool nofault;
@@ -101,11 +95,8 @@ static inline bool iov_iter_is_xarray(const struct iov_iter *i)
 
 size_t copy_page_from_iter_atomic(struct page *page, unsigned offset,
 				  size_t bytes, struct iov_iter *i);
-void iov_iter_advance(struct iov_iter *i, size_t bytes);
 void iov_iter_revert(struct iov_iter *i, size_t bytes);
 size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes,
-			 struct iov_iter *i);
-size_t copy_page_from_iter(struct page *page, size_t offset, size_t bytes,
 			 struct iov_iter *i);
 
 size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i);
@@ -148,7 +139,6 @@ bool copy_from_iter_full(void *addr, size_t bytes, struct iov_iter *i)
 
 #define _copy_mc_to_iter _copy_to_iter
 
-size_t iov_iter_zero(size_t bytes, struct iov_iter *);
 unsigned long iov_iter_alignment(const struct iov_iter *i);
 unsigned long iov_iter_gap_alignment(const struct iov_iter *i);
 void iov_iter_init(struct iov_iter *i, unsigned int direction, const struct iovec *iov,

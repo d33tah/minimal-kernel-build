@@ -17,9 +17,7 @@ typedef int fs_param_type(struct p_log *,
 			  const struct fs_parameter_spec *,
 			  struct fs_parameter *,
 			  struct fs_parse_result *);
-fs_param_type fs_param_is_bool, fs_param_is_u32, fs_param_is_s32, fs_param_is_u64,
-	fs_param_is_enum, fs_param_is_string, fs_param_is_blob, fs_param_is_blockdev,
-	fs_param_is_path, fs_param_is_fd;
+fs_param_type fs_param_is_u32;
 
 struct fs_parameter_spec {
 	const char		*name;
@@ -55,11 +53,6 @@ static inline int fs_parse(struct fs_context *fc,
 	return __fs_parse(&fc->log, desc, param, result);
 }
 
-extern int fs_lookup_param(struct fs_context *fc,
-			   struct fs_parameter *param,
-			   bool want_bdev,
-			   struct path *_path);
-
 extern int lookup_constant(const struct constant_table tbl[], const char *name, int not_found);
 
 static inline bool fs_validate_description(const char *name,
@@ -75,23 +68,7 @@ static inline bool fs_validate_description(const char *name,
 		.data = DATA \
 	}
 
-#define fsparam_flag(NAME, OPT)	__fsparam(NULL, NAME, OPT, 0, NULL)
-#define fsparam_flag_no(NAME, OPT) \
-			__fsparam(NULL, NAME, OPT, fs_param_neg_with_no, NULL)
-#define fsparam_bool(NAME, OPT)	__fsparam(fs_param_is_bool, NAME, OPT, 0, NULL)
-#define fsparam_u32(NAME, OPT)	__fsparam(fs_param_is_u32, NAME, OPT, 0, NULL)
 #define fsparam_u32oct(NAME, OPT) \
 			__fsparam(fs_param_is_u32, NAME, OPT, 0, (void *)8)
-#define fsparam_u32hex(NAME, OPT) \
-			__fsparam(fs_param_is_u32_hex, NAME, OPT, 0, (void *)16)
-#define fsparam_s32(NAME, OPT)	__fsparam(fs_param_is_s32, NAME, OPT, 0, NULL)
-#define fsparam_u64(NAME, OPT)	__fsparam(fs_param_is_u64, NAME, OPT, 0, NULL)
-#define fsparam_enum(NAME, OPT, array)	__fsparam(fs_param_is_enum, NAME, OPT, 0, array)
-#define fsparam_string(NAME, OPT) \
-				__fsparam(fs_param_is_string, NAME, OPT, 0, NULL)
-#define fsparam_blob(NAME, OPT)	__fsparam(fs_param_is_blob, NAME, OPT, 0, NULL)
-#define fsparam_bdev(NAME, OPT)	__fsparam(fs_param_is_blockdev, NAME, OPT, 0, NULL)
-#define fsparam_path(NAME, OPT)	__fsparam(fs_param_is_path, NAME, OPT, 0, NULL)
-#define fsparam_fd(NAME, OPT)	__fsparam(fs_param_is_fd, NAME, OPT, 0, NULL)
 
 #endif  

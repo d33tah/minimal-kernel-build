@@ -28,10 +28,6 @@ enum pageblock_bits {
 #define pageblock_order		(MAX_ORDER-1)
 #define pageblock_nr_pages	(1UL << pageblock_order)
 
-unsigned long get_pfnblock_flags_mask(const struct page *page,
-				unsigned long pfn,
-				unsigned long mask);
-
 void set_pfnblock_flags_mask(struct page *page,
 				unsigned long flags,
 				unsigned long pfn,
@@ -73,9 +69,6 @@ enum migratetype {
 extern int page_group_by_mobility_disabled;
 
 #define MIGRATETYPE_MASK ((1UL << PB_migratetype_bits) - 1)
-
-#define get_pageblock_migratetype(page)					\
-	get_pfnblock_flags_mask(page, page_to_pfn(page), MIGRATETYPE_MASK)
 
 struct free_area {
 	struct list_head	free_list[MIGRATE_TYPES];
@@ -183,20 +176,8 @@ enum lru_list {
 	NR_LRU_LISTS
 };
 
-enum vmscan_throttle_state {
-	VMSCAN_THROTTLE_WRITEBACK,
-	VMSCAN_THROTTLE_ISOLATED,
-	VMSCAN_THROTTLE_NOPROGRESS,
-	VMSCAN_THROTTLE_CONGESTED,
-	NR_VMSCAN_THROTTLE,
-};
-
 #define for_each_lru(lru) for (lru = 0; lru < NR_LRU_LISTS; lru++)
 
-
-enum lruvec_flags {
-	LRUVEC_CONGESTED,
-};
 
 struct lruvec {
 	struct list_head		lists[NR_LRU_LISTS];
@@ -328,12 +309,6 @@ struct zone {
 	atomic_long_t		vm_numa_event[NR_VM_NUMA_EVENT_ITEMS];
 } ____cacheline_internodealigned_in_smp;
 
-enum pgdat_flags {
-	PGDAT_DIRTY,			 
-	PGDAT_WRITEBACK,		 
-	PGDAT_RECLAIM_LOCKED,		 
-};
-
 enum zone_flags {
 	ZONE_BOOSTED_WATERMARK,		 
 	ZONE_RECLAIM_ACTIVE,		 
@@ -389,22 +364,14 @@ typedef struct pglist_data {
 	wait_queue_head_t kswapd_wait;
 	wait_queue_head_t pfmemalloc_wait;
 
-	 
-	wait_queue_head_t reclaim_wait[NR_VMSCAN_THROTTLE];
-
-	atomic_t nr_writeback_throttled; 
-	unsigned long nr_reclaim_start;	 
-	struct task_struct *kswapd;	 
+	struct task_struct *kswapd;
 	int kswapd_order;
 	enum zone_type kswapd_highest_zoneidx;
 
-	int kswapd_failures;		 
-
-	 
-	unsigned long		totalreserve_pages;
+	int kswapd_failures;
 
 
-	 
+
 	ZONE_PADDING(_pad1_)
 
 
@@ -437,8 +404,6 @@ static inline unsigned long pgdat_end_pfn(pg_data_t *pgdat)
 #include <linux/memory_hotplug.h>
 
 void build_all_zonelists(pg_data_t *pgdat);
-void wakeup_kswapd(struct zone *zone, gfp_t gfp_mask, int order,
-		   enum zone_type highest_zoneidx);
 bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 			 int highest_zoneidx, unsigned int alloc_flags,
 			 long free_pages);
@@ -473,8 +438,6 @@ static inline int zone_to_nid(struct zone *zone)
 }
 
 static inline void zone_set_nid(struct zone *zone, int nid) {}
-
-extern int movable_zone;
 
 static inline int is_highmem_idx(enum zone_type idx)
 {

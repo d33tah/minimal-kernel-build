@@ -4,7 +4,6 @@
 #include <linux/swap.h>
 #include <linux/memblock.h>
 #include <linux/swapops.h>
-#include <linux/kmemleak.h>
 #include <linux/sched/task.h>
 
 #include <asm/set_memory.h>
@@ -19,7 +18,6 @@
 #include <asm/microcode.h>
 unsigned long kaslr_get_random_long(const char *purpose);
 static inline void kernel_randomize_memory(void) { }
-static inline void init_trampoline_kaslr(void) {}
 /* end kaslr.h */
 #include <asm/hypervisor.h>
 #include <asm/cpufeature.h>
@@ -45,34 +43,6 @@ unsigned long cachemode2protval(enum page_cache_mode pcm)
 	if (likely(pcm == 0))
 		return 0;
 	return __cachemode2pte_tbl[pcm];
-}
-
-static uint8_t __pte2cachemode_tbl[8] = {
-	[__pte2cm_idx( 0        | 0         | 0        )] = _PAGE_CACHE_MODE_WB,
-	[__pte2cm_idx(_PAGE_PWT | 0         | 0        )] = _PAGE_CACHE_MODE_UC_MINUS,
-	[__pte2cm_idx( 0        | _PAGE_PCD | 0        )] = _PAGE_CACHE_MODE_UC_MINUS,
-	[__pte2cm_idx(_PAGE_PWT | _PAGE_PCD | 0        )] = _PAGE_CACHE_MODE_UC,
-	[__pte2cm_idx( 0        | 0         | _PAGE_PAT)] = _PAGE_CACHE_MODE_WB,
-	[__pte2cm_idx(_PAGE_PWT | 0         | _PAGE_PAT)] = _PAGE_CACHE_MODE_UC_MINUS,
-	[__pte2cm_idx(0         | _PAGE_PCD | _PAGE_PAT)] = _PAGE_CACHE_MODE_UC_MINUS,
-	[__pte2cm_idx(_PAGE_PWT | _PAGE_PCD | _PAGE_PAT)] = _PAGE_CACHE_MODE_UC,
-};
-
-bool x86_has_pat_wp(void)
-{
-	uint16_t prot = __cachemode2pte_tbl[_PAGE_CACHE_MODE_WP];
-
-	return __pte2cachemode_tbl[__pte2cm_idx(prot)] == _PAGE_CACHE_MODE_WP;
-}
-
-enum page_cache_mode pgprot2cachemode(pgprot_t pgprot)
-{
-	unsigned long masked;
-
-	masked = pgprot_val(pgprot) & _PAGE_CACHE_MASK;
-	if (likely(masked == 0))
-		return 0;
-	return __pte2cachemode_tbl[__pte2cm_idx(masked)];
 }
 
 static unsigned long __initdata pgt_buf_start;
@@ -168,7 +138,7 @@ static inline void cr4_set_bits_and_update_boot(unsigned long mask)
 static void __init probe_page_size_mask(void)
 {
 	 
-	if (boot_cpu_has(X86_FEATURE_PSE) && !debug_pagealloc_enabled())
+	if (boot_cpu_has(X86_FEATURE_PSE))
 		page_size_mask |= 1 << PG_LEVEL_2M;
 	else
 		direct_gbpages = 0;
@@ -184,39 +154,15 @@ static void __init probe_page_size_mask(void)
 		__supported_pte_mask |= _PAGE_GLOBAL;
 	}
 
-	 
-	__default_kernel_pte_mask = __supported_pte_mask;
-	 
-	if (cpu_feature_enabled(X86_FEATURE_PTI))
-		__default_kernel_pte_mask &= ~_PAGE_GLOBAL;
 
-	 
+	__default_kernel_pte_mask = __supported_pte_mask;
+
+
 	if (direct_gbpages && boot_cpu_has(X86_FEATURE_GBPAGES)) {
 		printk(KERN_INFO "Using GB pages for direct mapping\n");
 		page_size_mask |= 1 << PG_LEVEL_1G;
 	} else {
 		direct_gbpages = 0;
-	}
-}
-
-static void setup_pcid(void)
-{
-	if (!IS_ENABLED(CONFIG_X86_64))
-		return;
-
-	if (!boot_cpu_has(X86_FEATURE_PCID))
-		return;
-
-	if (boot_cpu_has(X86_FEATURE_PGE)) {
-		 
-		cr4_set_bits(X86_CR4_PCIDE);
-
-		 
-		if (boot_cpu_has(X86_FEATURE_INVPCID))
-			setup_force_cpu_cap(X86_FEATURE_INVPCID_SINGLE);
-	} else {
-		 
-		setup_clear_cpu_cap(X86_FEATURE_PCID);
 	}
 }
 
@@ -486,7 +432,6 @@ void __init init_mem_mapping(void)
 
 	pti_check_boottime_disable();
 	probe_page_size_mask();
-	setup_pcid();
 
 	end = max_low_pfn << PAGE_SHIFT;
 
@@ -556,21 +501,11 @@ void free_init_pages(const char *what, unsigned long begin, unsigned long end)
 	if (begin >= end)
 		return;
 
-	 
-	if (debug_pagealloc_enabled()) {
-		pr_info("debug: unmapping init [mem %#010lx-%#010lx]\n",
-			begin, end - 1);
-		 
-		kmemleak_free_part((void *)begin, end - begin);
-		set_memory_np(begin, (end - begin) >> PAGE_SHIFT);
-	} else {
-		 
-		set_memory_nx(begin, (end - begin) >> PAGE_SHIFT);
-		set_memory_rw(begin, (end - begin) >> PAGE_SHIFT);
+	set_memory_nx(begin, (end - begin) >> PAGE_SHIFT);
+	set_memory_rw(begin, (end - begin) >> PAGE_SHIFT);
 
-		free_reserved_area((void *)begin, (void *)end,
-				   POISON_FREE_INITMEM, what);
-	}
+	free_reserved_area((void *)begin, (void *)end,
+			   POISON_FREE_INITMEM, what);
 }
 
 /* Stub: free_kernel_image_pages not called in minimal kernel */

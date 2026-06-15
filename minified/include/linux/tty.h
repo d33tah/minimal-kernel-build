@@ -37,7 +37,6 @@ do {								\
 int ldsem_down_read(struct ld_semaphore *sem, long timeout);
 int ldsem_down_read_trylock(struct ld_semaphore *sem);
 int ldsem_down_write(struct ld_semaphore *sem, long timeout);
-int ldsem_down_write_trylock(struct ld_semaphore *sem);
 void ldsem_up_read(struct ld_semaphore *sem);
 void ldsem_up_write(struct ld_semaphore *sem);
 
@@ -55,20 +54,9 @@ struct tty_ldisc_ops {
 			void **cookie, unsigned long offset);
 	ssize_t	(*write)(struct tty_struct *tty, struct file *file,
 			 const unsigned char *buf, size_t nr);
-	int	(*ioctl)(struct tty_struct *tty, unsigned int cmd,
-			unsigned long arg);
-	int	(*compat_ioctl)(struct tty_struct *tty, unsigned int cmd,
-			unsigned long arg);
 	void	(*set_termios)(struct tty_struct *tty, struct ktermios *old);
-	__poll_t (*poll)(struct tty_struct *tty, struct file *file,
-			     struct poll_table_struct *wait);
 	void	(*hangup)(struct tty_struct *tty);
-	void	(*receive_buf)(struct tty_struct *tty, const unsigned char *cp,
-			       const char *fp, int count);
-	void	(*write_wakeup)(struct tty_struct *tty);
 	void	(*dcd_change)(struct tty_struct *tty, unsigned int status);
-	int	(*receive_buf2)(struct tty_struct *tty, const unsigned char *cp,
-				const char *fp, int count);
 	struct  module *owner;
 };
 
@@ -82,8 +70,6 @@ struct tty_ldisc *tty_ldisc_ref(struct tty_struct *);
 void tty_ldisc_deref(struct tty_ldisc *);
 struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *);
 
-void tty_ldisc_flush(struct tty_struct *tty);
-
 int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
 #include <linux/mutex.h>
 #include <linux/tty_flags.h>
@@ -95,9 +81,6 @@ int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
 #define NR_LDISCS	31
 #include <linux/llist.h>
 
-
-
-#define __DISABLED_CHAR '\0'
 
 
 /* Flag accessor macros - only keep used ones */
@@ -129,7 +112,6 @@ struct tty_struct {
 
 	struct mutex atomic_write_lock;
 	struct mutex legacy_mutex;
-	struct mutex throttle_mutex;
 	struct rw_semaphore termios_rwsem;
 	struct mutex winsize_mutex;
 	struct ktermios termios, termios_locked;
@@ -140,13 +122,6 @@ struct tty_struct {
 
 	struct {
 		spinlock_t lock;
-		bool stopped;
-		bool tco_stopped;
-		unsigned long unused[0];
-	} __aligned(sizeof(unsigned long)) flow;
-
-	struct {
-		spinlock_t lock;
 		struct pid *pgrp;
 		struct pid *session;
 		unsigned char pktstatus;
@@ -154,12 +129,9 @@ struct tty_struct {
 		unsigned long unused[0];
 	} __aligned(sizeof(unsigned long)) ctrl;
 
-	int hw_stopped;
 	unsigned int receive_room;
-	int flow_change;
 
 	struct tty_struct *link;
-	struct fasync_struct *fasync;
 	wait_queue_head_t write_wait;
 	wait_queue_head_t read_wait;
 	struct work_struct hangup_work;
@@ -173,7 +145,6 @@ struct tty_struct {
 	int closing;
 	unsigned char *write_buf;
 	int write_cnt;
-	struct work_struct SAK_work;
 	struct tty_port *port;
 } __randomize_layout;
 
@@ -187,14 +158,10 @@ struct tty_file_private {
 
 #define TTY_THROTTLED		0
 #define TTY_IO_ERROR		1
-#define TTY_OTHER_CLOSED	2
 #define TTY_EXCLUSIVE		3
-#define TTY_DO_WRITE_WAKEUP	5
 #define TTY_LDISC_OPEN		11
-#define TTY_PTY_LOCK		16
 #define TTY_NO_WRITE_SPLIT	17
 #define TTY_HUPPED		18
-#define TTY_HUPPING		19
 #define TTY_LDISC_CHANGING	20
 #define TTY_LDISC_HALTED	22
 
@@ -204,9 +171,7 @@ static inline bool tty_io_error(struct tty_struct *tty)
 }
 
 void tty_kref_put(struct tty_struct *tty);
-struct pid *tty_get_pgrp(struct tty_struct *tty);
 void disassociate_ctty(int priv);
-void proc_clear_tty(struct task_struct *p);
 struct tty_struct *get_current_tty(void);
 int __init tty_init(void);
 const char *tty_name(const struct tty_struct *tty);
@@ -226,14 +191,6 @@ static inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
 }
 
 const char *tty_driver_name(const struct tty_struct *tty);
-void tty_wait_until_sent(struct tty_struct *tty, long timeout);
-unsigned int tty_chars_in_buffer(struct tty_struct *tty);
-unsigned int tty_write_room(struct tty_struct *tty);
-void tty_driver_flush_buffer(struct tty_struct *tty);
-void tty_unthrottle(struct tty_struct *tty);
-void tty_hangup(struct tty_struct *tty);
-int tty_hung_up_p(struct file *filp);
-void no_tty(void);
 speed_t tty_termios_baud_rate(struct ktermios *termios);
 
 static inline speed_t tty_get_baud_rate(struct tty_struct *tty)
@@ -241,15 +198,7 @@ static inline speed_t tty_get_baud_rate(struct tty_struct *tty)
 	return tty_termios_baud_rate(&tty->termios);
 }
 
-unsigned char tty_get_char_size(unsigned int cflag);
-unsigned char tty_get_frame_size(unsigned int cflag);
 
-void tty_termios_copy_hw(struct ktermios *new, struct ktermios *old);
-int tty_termios_hw_change(const struct ktermios *a, const struct ktermios *b);
-
-void tty_wakeup(struct tty_struct *tty);
-
-int tty_mode_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
 struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx);
 void tty_init_termios(struct tty_struct *tty);
 int tty_standard_install(struct tty_driver *driver,
@@ -257,23 +206,11 @@ int tty_standard_install(struct tty_driver *driver,
 
 extern struct mutex tty_mutex;
 
-void n_tty_inherit_ops(struct tty_ldisc_ops *ops);
 void __init n_tty_init(void);
 
-static inline void tty_audit_exit(void)
-{
-}
 static inline void tty_audit_fork(struct signal_struct *sig)
 {
 }
-int n_tty_ioctl_helper(struct tty_struct *tty, unsigned int cmd,
-		unsigned long arg);
-
-
-int vt_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg);
-
-long vt_compat_ioctl(struct tty_struct *tty, unsigned int cmd,
-		unsigned long arg);
 
 void tty_lock(struct tty_struct *tty);
 int  tty_lock_interruptible(struct tty_struct *tty);

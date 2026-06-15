@@ -19,7 +19,6 @@
 #include <asm/cpufeature.h>
 #include <asm/fpu/api.h>
 #include <asm/nospec-branch.h>
-#include <asm/io_bitmap.h>
 #include <asm/syscall.h>
 #include <asm/irq_stack.h>
 
@@ -65,15 +64,8 @@ static noinstr bool __do_fast_syscall_32(struct pt_regs *regs)
 	 
 	syscall_enter_from_user_mode_prepare(regs);
 
-	 
-	if (IS_ENABLED(CONFIG_X86_64)) {
-		 
-		res = __get_user(*(u32 *)&regs->bp,
-			 (u32 __user __force *)(unsigned long)(u32)regs->sp);
-	} else {
-		res = get_user(*(u32 *)&regs->bp,
+	res = get_user(*(u32 *)&regs->bp,
 		       (u32 __user __force *)(unsigned long)(u32)regs->sp);
-	}
 
 	if (res) {
 		 

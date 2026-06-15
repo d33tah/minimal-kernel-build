@@ -1,27 +1,20 @@
 #ifndef LINUX_HARDIRQ_H
 #define LINUX_HARDIRQ_H
 
-#include <linux/context_tracking_state.h>
 #include <linux/preempt.h>
 #include <linux/lockdep.h>
 #include <linux/sched.h>
-#include <linux/vtime.h>
 #include <asm/hardirq.h>
 
 
-static inline void __rcu_irq_enter_check_tick(void) { }
-
 static __always_inline void rcu_irq_enter_check_tick(void)
 {
-	if (context_tracking_enabled())
-		__rcu_irq_enter_check_tick();
 }
 
 #define __irq_enter()					\
 	do {						\
 		preempt_count_add(HARDIRQ_OFFSET);	\
 		lockdep_hardirq_enter();		\
-		account_hardirq_enter(current);		\
 	} while (0)
 
 #define __irq_enter_raw()				\
@@ -30,12 +23,10 @@ static __always_inline void rcu_irq_enter_check_tick(void)
 		lockdep_hardirq_enter();		\
 	} while (0)
 
-void irq_enter(void);
 void irq_enter_rcu(void);
 
 #define __irq_exit()					\
 	do {						\
-		account_hardirq_exit(current);		\
 		lockdep_hardirq_exit();			\
 		preempt_count_sub(HARDIRQ_OFFSET);	\
 	} while (0)
@@ -45,8 +36,6 @@ void irq_enter_rcu(void);
 		lockdep_hardirq_exit();			\
 		preempt_count_sub(HARDIRQ_OFFSET);	\
 	} while (0)
-
-void irq_exit(void);
 
 void irq_exit_rcu(void);
 

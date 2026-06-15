@@ -2,7 +2,6 @@
 #ifndef _ASM_X86_TLB_H
 #define _ASM_X86_TLB_H
 
-#include <linux/mmu_notifier.h>
 #include <linux/swap.h>
 #include <linux/pagemap.h>
 #include <asm/tlbflush.h>
@@ -91,7 +90,7 @@ static inline void __tlb_reset_range(struct mmu_gather *tlb)
 static inline void
 tlb_update_vma_flags(struct mmu_gather *tlb, struct vm_area_struct *vma)
 {
-	tlb->vma_huge = is_vm_hugetlb_page(vma);
+	tlb->vma_huge = 0;
 	tlb->vma_exec = !!(vma->vm_flags & VM_EXEC);
 	tlb->vma_pfn  = !!(vma->vm_flags & (VM_PFNMAP|VM_MIXEDMAP));
 }
@@ -134,7 +133,6 @@ static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
 		return;
 
 	tlb_flush(tlb);
-	mmu_notifier_invalidate_range(tlb->mm, tlb->start, tlb->end);
 	__tlb_reset_range(tlb);
 }
 
@@ -145,10 +143,6 @@ static inline void tlb_remove_page_size(struct mmu_gather *tlb,
 		tlb_flush_mmu(tlb);
 }
 
-static inline bool __tlb_remove_page(struct mmu_gather *tlb, struct page *page)
-{
-	return __tlb_remove_page_size(tlb, page, PAGE_SIZE);
-}
 
 static inline void tlb_remove_page(struct mmu_gather *tlb, struct page *page)
 {
@@ -271,9 +265,5 @@ static inline bool huge_pmd_needs_flush(pmd_t oldpmd, pmd_t newpmd)
 }
 #endif
 
-static inline void __tlb_remove_table(void *table)
-{
-	free_page_and_swap_cache(table);
-}
 
 #endif /* _ASM_X86_TLB_H */

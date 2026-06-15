@@ -284,13 +284,7 @@ __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 		  const char *name);
 
 
-void irq_modify_status(unsigned int irq, unsigned long clr, unsigned long set);
-
-
 extern int irq_set_chip(unsigned int irq, const struct irq_chip *chip);
-extern int irq_set_chip_data(unsigned int irq, void *data);
-extern int irq_set_irq_type(unsigned int irq, unsigned int type);
-extern struct irq_data *irq_get_irq_data(unsigned int irq);
 
 static inline struct irq_chip *irq_data_get_irq_chip(struct irq_data *d)
 {
@@ -304,12 +298,4 @@ static inline struct cpumask *irq_data_get_affinity_mask(struct irq_data *d)
 }
 
 
-unsigned int arch_dynirq_lower_bound(unsigned int from);
-
-int __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
-		      struct module *owner,
-		      const struct irq_affinity_desc *affinity);
-
-void irq_free_descs(unsigned int irq, unsigned int cnt);
-
-#endif  
+#endif

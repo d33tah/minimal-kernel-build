@@ -1,9 +1,6 @@
 #ifndef _ASM_X86_STATFS_H
 #define _ASM_X86_STATFS_H
 
-/* x86-specific */
-#define ARCH_PACK_COMPAT_STATFS64 __attribute__((packed,aligned(4)))
-
 /* Inlined from asm-generic/statfs.h */
 #include <linux/types.h>
 
@@ -44,21 +41,6 @@ struct statfs64 {
 	__statfs_word f_flags;
 	__statfs_word f_spare[4];
 } ARCH_PACK_STATFS64;
-
-struct compat_statfs64 {
-	__u32 f_type;
-	__u32 f_bsize;
-	__u64 f_blocks;
-	__u64 f_bfree;
-	__u64 f_bavail;
-	__u64 f_files;
-	__u64 f_ffree;
-	__kernel_fsid_t f_fsid;
-	__u32 f_namelen;
-	__u32 f_frsize;
-	__u32 f_flags;
-	__u32 f_spare[4];
-} ARCH_PACK_COMPAT_STATFS64;
 
 typedef __kernel_fsid_t	fsid_t;
 #endif  

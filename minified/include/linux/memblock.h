@@ -51,10 +51,7 @@ extern struct memblock memblock;
 void memblock_discard(void);
 
 void memblock_allow_resize(void);
-int memblock_add_node(phys_addr_t base, phys_addr_t size, int nid,
-		      enum memblock_flags flags);
 int memblock_add(phys_addr_t base, phys_addr_t size);
-int memblock_remove(phys_addr_t base, phys_addr_t size);
 int memblock_phys_free(phys_addr_t base, phys_addr_t size);
 int memblock_reserve(phys_addr_t base, phys_addr_t size);
 void memblock_trim_memory(phys_addr_t align);
@@ -172,14 +169,7 @@ phys_addr_t memblock_phys_alloc_range(phys_addr_t size, phys_addr_t align,
 phys_addr_t memblock_alloc_range_nid(phys_addr_t size,
 				      phys_addr_t align, phys_addr_t start,
 				      phys_addr_t end, int nid, bool exact_nid);
-phys_addr_t memblock_phys_alloc_try_nid(phys_addr_t size, phys_addr_t align, int nid);
 
-static __always_inline phys_addr_t memblock_phys_alloc(phys_addr_t size,
-						       phys_addr_t align)
-{
-	return memblock_phys_alloc_range(size, align, 0,
-					 MEMBLOCK_ALLOC_ACCESSIBLE);
-}
 
 void *memblock_alloc_exact_nid_raw(phys_addr_t size, phys_addr_t align,
 				 phys_addr_t min_addr, phys_addr_t max_addr,
@@ -221,7 +211,6 @@ static inline __init_memblock bool memblock_bottom_up(void)
 }
 
 phys_addr_t memblock_start_of_DRAM(void);
-phys_addr_t memblock_end_of_DRAM(void);
 bool memblock_is_region_memory(phys_addr_t base, phys_addr_t size);
 bool memblock_is_region_reserved(phys_addr_t base, phys_addr_t size);
 
@@ -230,7 +219,6 @@ void memblock_dump_all(void);
 void memblock_set_current_limit(phys_addr_t limit);
 
 
-phys_addr_t memblock_get_current_limit(void);
 
 
 

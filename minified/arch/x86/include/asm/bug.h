@@ -7,8 +7,6 @@
 
  
 #define ASM_UD2		".byte 0x0f, 0x0b"
-#define INSN_UD2	0x0b0f
-#define LEN_UD2		2
 
 
 #define _BUG_FLAGS(ins, flags, extra)  asm volatile(ins)
@@ -36,11 +34,7 @@ do {								\
 #include <linux/panic.h>
 #include <linux/printk.h>
 
-struct warn_args;
 struct pt_regs;
-
-void __warn(const char *file, int line, void *caller, unsigned taint,
-	    struct pt_regs *regs, struct warn_args *args);
 
 #ifndef HAVE_ARCH_BUG
 #define BUG() do {} while (1)

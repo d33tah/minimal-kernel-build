@@ -30,7 +30,7 @@ endif
 lib-y := ctype.o string.o vsprintf.o cmdline.o \
 	 rbtree.o radix-tree.o timerqueue.o xarray.o \
 	 idr.o extable.o irq_regs.o \
-	 flex_proportions.o ratelimit.o \
+	 ratelimit.o \
 	 decompress.o kobject_uevent.o \
 	 siphash.o dec_and_lock.o
 	 # argv_split.o - Removed: not used
@@ -43,7 +43,7 @@ lib-y	+= kobject.o klist.o
 obj-y	+= lockref.o
 
 obj-y += bcd.o sort.o debug_locks.o \
-	 bust_spinlocks.o kasprintf.o bitmap.o scatterlist.o \
+	 bust_spinlocks.o kasprintf.o bitmap.o \
 	 iov_iter.o \
 	 bsearch.o find_bit.o llist.o \
 	 refcount.o usercopy.o errseq.o

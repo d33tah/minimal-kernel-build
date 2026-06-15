@@ -22,7 +22,6 @@
 
 #include <asm/perf_event.h>
 #include <asm/mmu_context.h>
-static inline void x86_init_rdrand(struct cpuinfo_x86 *c) { }
 
 /* Inlined from asm/doublefault.h */
 extern void doublefault_init_cpu_tss(void);
@@ -64,8 +63,6 @@ static inline void uv_cpu_init(void) { }
 
 u32 elf_hwcap2 __read_mostly;
 
-cpumask_var_t cpu_initialized_mask;
-
 int smp_num_siblings = 1;
 
 DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_llc_id) = BAD_APICID;
@@ -75,12 +72,6 @@ DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_l2c_id) = BAD_APICID;
 /* Stub: PPIN (Protected Processor Inventory Number) not needed for minimal kernel */
 static void ppin_init(struct cpuinfo_x86 *c)
 {
-}
-
-void __init setup_cpu_local_masks(void)
-{
-	alloc_bootmem_cpumask_var(&cpu_initialized_mask);
-	/* cpu_callin_mask, cpu_callout_mask, cpu_sibling_setup_mask allocations removed - unused */
 }
 
 static void default_init(struct cpuinfo_x86 *c)
@@ -160,11 +151,6 @@ int have_cpuid_p(void)
 	return flag_is_changeable_p(X86_EFLAGS_ID);
 }
 
-static void squash_the_stupid_serial_number(struct cpuinfo_x86 *c)
-{
-	/* Stub: CPU serial number feature not relevant for minimal kernel */
-}
-
 static __always_inline void setup_smep(struct cpuinfo_x86 *c)
 {
 	if (cpu_has(c, X86_FEATURE_SMEP))
@@ -183,21 +169,10 @@ static __always_inline void setup_smap(struct cpuinfo_x86 *c)
 
 static __always_inline void setup_umip(struct cpuinfo_x86 *c)
 {
-	
-	if (!cpu_feature_enabled(X86_FEATURE_UMIP))
-		goto out;
-
-	if (!cpu_has(c, X86_FEATURE_UMIP))
-		goto out;
-
-	cr4_set_bits(X86_CR4_UMIP);
-
-	pr_info_once("x86/cpu: User Mode Instruction Prevention (UMIP) activated\n");
-
-	return;
-
-out:
-	
+	/*
+	 * UMIP is in DISABLED_MASK16, so cpu_feature_enabled(X86_FEATURE_UMIP)
+	 * is constant 0 -- the activate path was dead; only the clear remains.
+	 */
 	cr4_clear_bits(X86_CR4_UMIP);
 }
 
@@ -264,62 +239,10 @@ unsigned long cr4_read_shadow(void)
 	return this_cpu_read(cpu_tlbstate.cr4);
 }
 
-void cr4_init(void)
-{
-	unsigned long cr4 = __read_cr4();
-
-	if (boot_cpu_has(X86_FEATURE_PCID))
-		cr4 |= X86_CR4_PCIDE;
-	if (static_branch_likely(&cr_pinning))
-		cr4 = (cr4 & ~cr4_pinned_mask) | cr4_pinned_bits;
-
-	__write_cr4(cr4);
-
-	this_cpu_write(cpu_tlbstate.cr4, cr4);
-}
-
 static void __init setup_cr_pinning(void)
 {
 	cr4_pinned_bits = this_cpu_read(cpu_tlbstate.cr4) & cr4_pinned_mask;
 	static_key_enable(&cr_pinning.key);
-}
-
-
-static bool pku_disabled;
-
-static __always_inline void setup_pku(struct cpuinfo_x86 *c)
-{
-	if (c == &boot_cpu_data) {
-		if (pku_disabled || !cpu_feature_enabled(X86_FEATURE_PKU))
-			return;
-		
-		setup_force_cpu_cap(X86_FEATURE_OSPKE);
-
-	} else if (!cpu_feature_enabled(X86_FEATURE_OSPKE)) {
-		return;
-	}
-
-	cr4_set_bits(X86_CR4_PKE);
-	
-	pkru_write_default();
-}
-
-static __always_inline void setup_cet(struct cpuinfo_x86 *c)
-{
-	u64 msr = CET_ENDBR_EN;
-
-	if (!HAS_KERNEL_IBT ||
-	    !cpu_feature_enabled(X86_FEATURE_IBT))
-		return;
-
-	wrmsrl(MSR_IA32_S_CET, msr);
-	cr4_set_bits(X86_CR4_CET);
-
-	if (!ibt_selftest()) {
-		pr_err("IBT selftest: Failed!\n");
-		setup_clear_cpu_cap(X86_FEATURE_IBT);
-		return;
-	}
 }
 
 
@@ -357,26 +280,6 @@ static void filter_cpuid_features(struct cpuinfo_x86 *c, bool warn)
 		pr_warn("CPU: CPU feature " X86_CAP_FMT " disabled, no CPUID level 0x%x\n",
 			x86_cap_flag(df->feature), df->level);
 	}
-}
-
-static const char *table_lookup_model(struct cpuinfo_x86 *c)
-{
-	const struct legacy_cpu_model_info *info;
-
-	if (c->x86_model >= 16)
-		return NULL;	
-
-	if (!this_cpu)
-		return NULL;
-
-	info = this_cpu->legacy_models;
-
-	while (info->family) {
-		if (info->family == c->x86)
-			return info->model_names[c->x86_model];
-		info++;
-	}
-	return NULL;		
 }
 
 __u32 cpu_caps_cleared[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
@@ -447,40 +350,14 @@ static void get_model_name(struct cpuinfo_x86 *c)
 	*(s + 1) = '\0';
 }
 
-/* Stub: detect_num_cpu_cores not called in minimal kernel */
-void detect_num_cpu_cores(struct cpuinfo_x86 *c)
-{
-	c->x86_max_cores = 1;
-}
-
-/* Stub: cpu_detect_cache_sizes not called in minimal kernel */
-void cpu_detect_cache_sizes(struct cpuinfo_x86 *c)
-{
-	c->x86_cache_size = 0;
-}
-
 static void get_cpu_vendor(struct cpuinfo_x86 *c)
 {
-	char *v = c->x86_vendor_id;
-	int i;
-
-	for (i = 0; i < X86_VENDOR_NUM; i++) {
-		if (!cpu_devs[i])
-			break;
-
-		if (!strcmp(v, cpu_devs[i]->c_ident[0]) ||
-		    (cpu_devs[i]->c_ident[1] &&
-		     !strcmp(v, cpu_devs[i]->c_ident[1]))) {
-
-			this_cpu = cpu_devs[i];
-			c->x86_vendor = this_cpu->c_x86_vendor;
-			return;
-		}
-	}
-
-	pr_err_once("CPU: vendor_id '%s' unknown, using generic init.\n" \
-		    "CPU: Your system may be unstable.\n", v);
-
+	/*
+	 * No vendor cpu_dev is registered on this build (cpu_dev_register
+	 * has zero invocations -> the .x86_cpu_dev.init section is empty ->
+	 * cpu_devs[] stays all-NULL and this_cpu is always &default_cpu), so
+	 * the vendor-string match loop never finds an entry. Always generic.
+	 */
 	c->x86_vendor = X86_VENDOR_UNKNOWN;
 	this_cpu = &default_cpu;
 }
@@ -518,11 +395,6 @@ static void apply_forced_caps(struct cpuinfo_x86 *c)
 		c->x86_capability[i] &= ~cpu_caps_cleared[i];
 		c->x86_capability[i] |= cpu_caps_set[i];
 	}
-}
-
-static void init_speculation_control(struct cpuinfo_x86 *c)
-{
-	/* Stub: speculation control not needed for minimal kernel */
 }
 
 void get_cpu_cap(struct cpuinfo_x86 *c)
@@ -588,7 +460,6 @@ void get_cpu_cap(struct cpuinfo_x86 *c)
 		c->x86_capability[CPUID_8000_001F_EAX] = cpuid_eax(0x8000001f);
 
 	init_scattered_cpuid_features(c);
-	init_speculation_control(c);
 
 	apply_forced_caps(c);
 }
@@ -610,22 +481,15 @@ void get_cpu_address_sizes(struct cpuinfo_x86 *c)
 
 static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
 {
-	int i;
-
 	if (flag_is_changeable_p(X86_EFLAGS_AC))
 		c->x86 = 4;
 	else
 		c->x86 = 3;
 
-	for (i = 0; i < X86_VENDOR_NUM; i++)
-		if (cpu_devs[i] && cpu_devs[i]->c_identify) {
-			c->x86_vendor_id[0] = 0;
-			cpu_devs[i]->c_identify(c);
-			if (c->x86_vendor_id[0]) {
-				get_cpu_vendor(c);
-				break;
-			}
-		}
+	/*
+	 * The per-vendor c_identify probe loop is dead: cpu_devs[] is empty
+	 * on this build (no cpu_dev_register), so no entry has ->c_identify.
+	 */
 }
 
 
@@ -665,14 +529,12 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 		setup_force_cpu_cap(X86_FEATURE_CPUID);
 		cpu_parse_early_param();
 
-		if (this_cpu->c_early_init)
-			this_cpu->c_early_init(c);
-
+		/*
+		 * this_cpu is always &default_cpu here (empty cpu_devs[]),
+		 * which sets neither ->c_early_init nor ->c_bsp_init.
+		 */
 		c->cpu_index = 0;
 		filter_cpuid_features(c, false);
-
-		if (this_cpu->c_bsp_init)
-			this_cpu->c_bsp_init(c);
 	} else {
 		setup_clear_cpu_cap(X86_FEATURE_CPUID);
 	}
@@ -743,8 +605,6 @@ static void generic_identify(struct cpuinfo_x86 *c)
 
 static void identify_cpu(struct cpuinfo_x86 *c)
 {
-	int i;
-
 	c->loops_per_jiffy = loops_per_jiffy;
 	c->x86_cache_size = 0;
 	c->x86_vendor = X86_VENDOR_UNKNOWN;
@@ -763,15 +623,12 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 
 	generic_identify(c);
 
-	if (this_cpu->c_identify)
-		this_cpu->c_identify(c);
+	/* this_cpu is always &default_cpu, which sets no ->c_identify. */
 
 	apply_forced_caps(c);
 
 	if (this_cpu->c_init)
 		this_cpu->c_init(c);
-
-	squash_the_stupid_serial_number(c);
 
 	setup_smep(c);
 	setup_smap(c);
@@ -785,30 +642,24 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	filter_cpuid_features(c, true);
 
 	if (!c->x86_model_id[0]) {
-		const char *p;
-		p = table_lookup_model(c);
-		if (p)
-			strcpy(c->x86_model_id, p);
-		else
-			
-			sprintf(c->x86_model_id, "%02x/%02x",
-				c->x86, c->x86_model);
+		/*
+		 * table_lookup_model() walked this_cpu->legacy_models, but
+		 * this_cpu is always &default_cpu whose legacy_models table is
+		 * zero-initialized (->family == 0) -> the lookup always returned
+		 * NULL, so synthesize the family/model name directly.
+		 */
+		sprintf(c->x86_model_id, "%02x/%02x",
+			c->x86, c->x86_model);
 	}
-
-	x86_init_rdrand(c);
-	setup_pku(c);
-	setup_cet(c);
 
 	apply_forced_caps(c);
 
-	if (c != &boot_cpu_data) {
-		
-		for (i = 0; i < NCAPINTS; i++)
-			boot_cpu_data.x86_capability[i] &= c->x86_capability[i];
-
-		for (i = NCAPINTS; i < NCAPINTS + NBUGINTS; i++)
-			c->x86_capability[i] |= boot_cpu_data.x86_capability[i];
-	}
+	/*
+	 * identify_cpu() runs only for the boot CPU on this UP build
+	 * (identify_boot_cpu -> identify_cpu(&boot_cpu_data)); SMP=n means
+	 * there is no secondary-CPU caller, so the c != &boot_cpu_data
+	 * capability-intersection path was statically unreachable.
+	 */
 
 	ppin_init(c);
 
@@ -918,23 +769,11 @@ void cpu_init(void)
 
 	ucode_cpu_init(cpu);
 
-	if (IS_ENABLED(CONFIG_X86_64) || cpu_feature_enabled(X86_FEATURE_VME) ||
+	if (cpu_feature_enabled(X86_FEATURE_VME) ||
 	    boot_cpu_has(X86_FEATURE_TSC) || boot_cpu_has(X86_FEATURE_DE))
 		cr4_clear_bits(X86_CR4_VME|X86_CR4_PVI|X86_CR4_TSD|X86_CR4_DE);
 
 	switch_to_new_gdt(cpu);
-
-	if (IS_ENABLED(CONFIG_X86_64)) {
-		loadsegment(fs, 0);
-		memset(cur->thread.tls_array, 0, GDT_ENTRY_TLS_ENTRIES * 8);
-		syscall_init();
-
-		wrmsrl(MSR_FS_BASE, 0);
-		wrmsrl(MSR_KERNEL_GS_BASE, 0);
-		barrier();
-
-		x2apic_setup();
-	}
 
 	mmgrab(&init_mm);
 	cur->active_mm = &init_mm;

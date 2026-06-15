@@ -8,7 +8,6 @@
 #include <linux/security.h>
 #include <linux/cdev.h>
 #include <linux/memblock.h>
-#include <linux/fsnotify.h>
 #include <linux/mount.h>
 #include <linux/tracepoint.h>
 
@@ -102,8 +101,6 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	inode->i_rdev = 0;
 	inode->dirtied_when = 0;
 
-	if (security_inode_alloc(inode))
-		goto out;
 	spin_lock_init(&inode->i_lock);
 	lockdep_set_class(&inode->i_lock, &sb->s_type->i_lock_key);
 
@@ -132,8 +129,6 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	this_cpu_inc(nr_inodes);
 
 	return 0;
-out:
-	return -ENOMEM;
 }
 
 static void free_inode_nonrcu(struct inode *inode)
@@ -144,32 +139,19 @@ static void free_inode_nonrcu(struct inode *inode)
 static void i_callback(struct rcu_head *head)
 {
 	struct inode *inode = container_of(head, struct inode, i_rcu);
-	if (inode->free_inode)
-		inode->free_inode(inode);
-	else
-		free_inode_nonrcu(inode);
+	free_inode_nonrcu(inode);
 }
 
 static struct inode *alloc_inode(struct super_block *sb)
 {
-	const struct super_operations *ops = sb->s_op;
 	struct inode *inode;
 
-	if (ops->alloc_inode)
-		inode = ops->alloc_inode(sb);
-	else
-		inode = alloc_inode_sb(sb, inode_cachep, GFP_KERNEL);
+	inode = alloc_inode_sb(sb, inode_cachep, GFP_KERNEL);
 
 	if (!inode)
 		return NULL;
 
 	if (unlikely(inode_init_always(sb, inode))) {
-		if (ops->destroy_inode) {
-			ops->destroy_inode(inode);
-			if (!ops->free_inode)
-				return NULL;
-		}
-		inode->free_inode = ops->free_inode;
 		i_callback(&inode->i_rcu);
 		return NULL;
 	}
@@ -181,9 +163,6 @@ void __destroy_inode(struct inode *inode)
 {
 	BUG_ON(inode_has_buffers(inode));
 	inode_detach_wb(inode);
-	security_inode_free(inode);
-	fsnotify_inode_delete(inode);
-	locks_free_lock_context(inode);
 	if (!inode->i_nlink) {
 		WARN_ON(atomic_long_read(&inode->i_sb->s_remove_count) == 0);
 		atomic_long_dec(&inode->i_sb->s_remove_count);
@@ -194,16 +173,8 @@ void __destroy_inode(struct inode *inode)
 
 static void destroy_inode(struct inode *inode)
 {
-	const struct super_operations *ops = inode->i_sb->s_op;
-
 	BUG_ON(!list_empty(&inode->i_lru));
 	__destroy_inode(inode);
-	if (ops->destroy_inode) {
-		ops->destroy_inode(inode);
-		if (!ops->free_inode)
-			return;
-	}
-	inode->free_inode = ops->free_inode;
 	call_rcu(&inode->i_rcu, i_callback);
 }
 
@@ -213,14 +184,6 @@ void drop_nlink(struct inode *inode)
 	inode->__i_nlink--;
 	if (!inode->i_nlink)
 		atomic_long_inc(&inode->i_sb->s_remove_count);
-}
-
-void clear_nlink(struct inode *inode)
-{
-	if (inode->i_nlink) {
-		inode->__i_nlink = 0;
-		atomic_long_inc(&inode->i_sb->s_remove_count);
-	}
 }
 
 void inc_nlink(struct inode *inode)
@@ -260,11 +223,6 @@ static void init_once(void *foo)
 	struct inode *inode = (struct inode *) foo;
 
 	inode_init_once(inode);
-}
-
-void __iget(struct inode *inode)
-{
-	atomic_inc(&inode->i_count);
 }
 
 void ihold(struct inode *inode)
@@ -344,8 +302,6 @@ void clear_inode(struct inode *inode)
 
 static void evict(struct inode *inode)
 {
-	const struct super_operations *op = inode->i_sb->s_op;
-
 	BUG_ON(!(inode->i_state & I_FREEING));
 	BUG_ON(!list_empty(&inode->i_lru));
 
@@ -356,12 +312,8 @@ static void evict(struct inode *inode)
 
 	inode_wait_for_writeback(inode);
 
-	if (op->evict_inode) {
-		op->evict_inode(inode);
-	} else {
-		truncate_inode_pages_final(&inode->i_data);
-		clear_inode(inode);
-	}
+	truncate_inode_pages_final(&inode->i_data);
+	clear_inode(inode);
 	if (S_ISCHR(inode->i_mode) && inode->i_cdev)
 		cd_forget(inode);
 
@@ -375,91 +327,21 @@ static void evict(struct inode *inode)
 	destroy_inode(inode);
 }
 
-static void dispose_list(struct list_head *head)
-{
-	while (!list_empty(head)) {
-		struct inode *inode;
-
-		inode = list_first_entry(head, struct inode, i_lru);
-		list_del_init(&inode->i_lru);
-
-		evict(inode);
-		cond_resched();
-	}
-}
-
+/*
+ * Stub: evict_inodes() is reached only from generic_shutdown_super()
+ * (fs/super.c) on superblock DESTRUCTION, which only happens when a
+ * filesystem is unmounted (fs->kill_sb -> deactivate_locked_super ->
+ * generic_shutdown_super, dispatched at fs/super.c:123 only when
+ * s_active hits 0). This minimal kernel mounts rootfs/devtmpfs/proc/sysfs
+ * and never unmounts any of them before halt, so the whole sb-teardown
+ * path is unreachable -> evict_inodes (and its dispose_list helper) is
+ * dead. The live per-inode eviction (iput_final -> evict) is unaffected.
+ */
 void evict_inodes(struct super_block *sb)
 {
-	struct inode *inode, *next;
-	LIST_HEAD(dispose);
-
-again:
-	spin_lock(&sb->s_inode_list_lock);
-	list_for_each_entry_safe(inode, next, &sb->s_inodes, i_sb_list) {
-		if (atomic_read(&inode->i_count))
-			continue;
-
-		spin_lock(&inode->i_lock);
-		if (inode->i_state & (I_NEW | I_FREEING | I_WILL_FREE)) {
-			spin_unlock(&inode->i_lock);
-			continue;
-		}
-
-		inode->i_state |= I_FREEING;
-		inode_lru_list_del(inode);
-		spin_unlock(&inode->i_lock);
-		list_add(&inode->i_lru, &dispose);
-
-		if (need_resched()) {
-			spin_unlock(&sb->s_inode_list_lock);
-			cond_resched();
-			dispose_list(&dispose);
-			goto again;
-		}
-	}
-	spin_unlock(&sb->s_inode_list_lock);
-
-	dispose_list(&dispose);
 }
 
 
-static enum lru_status inode_lru_isolate(struct list_head *item,
-		struct list_lru_one *lru, spinlock_t *lru_lock, void *arg)
-{
-	/* Stub: simplified inode LRU isolation for minimal kernel */
-	struct list_head *freeable = arg;
-	struct inode	*inode = container_of(item, struct inode, i_lru);
-
-	if (!spin_trylock(&inode->i_lock))
-		return LRU_SKIP;
-
-	if (atomic_read(&inode->i_count) || (inode->i_state & ~I_REFERENCED)) {
-		list_lru_isolate(lru, &inode->i_lru);
-		spin_unlock(&inode->i_lock);
-		this_cpu_dec(nr_unused);
-		return LRU_REMOVED;
-	}
-
-	inode->i_state |= I_FREEING;
-	list_lru_isolate_move(lru, &inode->i_lru, freeable);
-	spin_unlock(&inode->i_lock);
-	this_cpu_dec(nr_unused);
-	return LRU_REMOVED;
-}
-
-long prune_icache_sb(struct super_block *sb, struct shrink_control *sc)
-{
-	LIST_HEAD(freeable);
-	long freed;
-
-	freed = list_lru_shrink_walk(&sb->s_inode_lru, sc,
-				     inode_lru_isolate, &freeable);
-	dispose_list(&freeable);
-	return freed;
-}
-
-
-#define LAST_INO_BATCH 1024
 static DEFINE_PER_CPU(unsigned int, last_ino);
 
 unsigned int get_next_ino(void)
@@ -500,19 +382,6 @@ struct inode *new_inode(struct super_block *sb)
 		inode_sb_list_add(inode);
 	return inode;
 }
-
-void unlock_new_inode(struct inode *inode)
-{
-	lockdep_annotate_inode_mutex_key(inode);
-	spin_lock(&inode->i_lock);
-	WARN_ON(!(inode->i_state & I_NEW));
-	inode->i_state &= ~I_NEW & ~I_CREATING;
-	smp_mb();
-	wake_up_bit(&inode->i_state, __I_NEW);
-	spin_unlock(&inode->i_lock);
-}
-
-
 
 /* Used by ramfs */
 int generic_delete_inode(struct inode *inode) { return 1; }
@@ -624,8 +493,7 @@ static int generic_update_time(struct inode *inode, struct timespec64 *time, int
 
 int inode_update_time(struct inode *inode, struct timespec64 *time, int flags)
 {
-	if (inode->i_op->update_time)
-		return inode->i_op->update_time(inode, time, flags);
+	/* No live inode_operations sets ->update_time; always generic. */
 	return generic_update_time(inode, time, flags);
 }
 
@@ -704,17 +572,11 @@ int dentry_needs_remove_privs(struct dentry *dentry)
 {
 	struct inode *inode = d_inode(dentry);
 	int mask = 0;
-	int ret;
 
 	if (IS_NOSEC(inode))
 		return 0;
 
 	mask = should_remove_suid(dentry);
-	ret = security_inode_need_killpriv(dentry);
-	if (ret < 0)
-		return ret;
-	if (ret)
-		mask |= ATTR_KILL_PRIV;
 	return mask;
 }
 
@@ -878,11 +740,6 @@ bool inode_owner_or_capable(struct user_namespace *mnt_userns,
 	if (kuid_has_mapping(ns, i_uid) && ns_capable(ns, CAP_FOWNER))
 		return true;
 	return false;
-}
-
-void inode_nohighmem(struct inode *inode)
-{
-	mapping_set_gfp_mask(inode->i_mapping, GFP_USER);
 }
 
 struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode)

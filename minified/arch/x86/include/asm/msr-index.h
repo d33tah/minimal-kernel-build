@@ -12,17 +12,13 @@
 #define MSR_KERNEL_GS_BASE	0xc0000102
 
 /* EFER bits */
-#define _EFER_SCE		0
 #define _EFER_LME		8
-#define _EFER_LMA		10
 #define _EFER_NX		11
-/* _EFER_SVME, _EFER_LMSLE, _EFER_FFXSR - unused (SVM/AMD only) */
+/* _EFER_SCE, _EFER_LMA, _EFER_SVME, _EFER_LMSLE, _EFER_FFXSR - unused */
 
-#define EFER_SCE		(1<<_EFER_SCE)
 #define EFER_LME		(1<<_EFER_LME)
-#define EFER_LMA		(1<<_EFER_LMA)
 #define EFER_NX			(1<<_EFER_NX)
-/* EFER_SVME, EFER_LMSLE, EFER_FFXSR - unused (SVM/AMD only) */
+/* EFER_SCE, EFER_LMA, EFER_SVME, EFER_LMSLE, EFER_FFXSR - unused */
 
 /* Speculation control MSRs */
 #define MSR_IA32_SPEC_CTRL		0x00000048
@@ -31,8 +27,6 @@
 #define SPEC_CTRL_STIBP			BIT(SPEC_CTRL_STIBP_SHIFT)
 #define SPEC_CTRL_SSBD_SHIFT		2
 #define SPEC_CTRL_SSBD			BIT(SPEC_CTRL_SSBD_SHIFT)
-#define SPEC_CTRL_RRSBA_DIS_S_SHIFT	6
-#define SPEC_CTRL_RRSBA_DIS_S		BIT(SPEC_CTRL_RRSBA_DIS_S_SHIFT)
 
 #define MSR_IA32_PRED_CMD		0x00000049
 #define PRED_CMD_IBPB			BIT(0)
@@ -48,12 +42,8 @@
 
 /* Debug control */
 #define MSR_IA32_DEBUGCTLMSR		0x000001d9
-#define DEBUGCTLMSR_LBR			(1UL <<  0)
 #define DEBUGCTLMSR_BTF_SHIFT		1
 #define DEBUGCTLMSR_BTF			(1UL <<  1)
-
-/* TSC adjust */
-#define MSR_IA32_TSC_ADJUST		0x0000003b
 
 /* Microcode revision */
 #define MSR_IA32_UCODE_REV		0x0000008b
@@ -70,8 +60,7 @@
 
 /* CET (Control-flow Enforcement Technology) */
 #define MSR_IA32_S_CET			0x000006a2
-#define CET_SHSTK_EN			BIT_ULL(0)
-/* CET_WRSS_EN - unused */
+/* CET_SHSTK_EN, CET_WRSS_EN - unused */
 #define CET_ENDBR_EN			BIT_ULL(2)
 /* CET_LEG_IW_EN through CET_WAIT_ENDBR - unused */
 

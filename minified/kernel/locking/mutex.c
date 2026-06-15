@@ -179,12 +179,6 @@ void __sched mutex_lock(struct mutex *lock)
 		__mutex_lock_slowpath(lock);
 }
 
-static __always_inline bool
-mutex_optimistic_spin(struct mutex *lock, struct mutex_waiter *waiter)
-{
-	return false;
-}
-
 static noinline void __sched __mutex_unlock_slowpath(struct mutex *lock, unsigned long ip);
 
 void __sched mutex_unlock(struct mutex *lock)
@@ -208,8 +202,7 @@ __mutex_lock_common(struct mutex *lock, unsigned int state, unsigned int subclas
 	preempt_disable();
 	mutex_acquire_nest(&lock->dep_map, subclass, 0, nest_lock, ip);
 
-	if (__mutex_trylock(lock) ||
-	    mutex_optimistic_spin(lock, NULL)) {
+	if (__mutex_trylock(lock)) {
 		lock_acquired(&lock->dep_map, ip);
 		preempt_enable();
 		return 0;
@@ -246,11 +239,6 @@ __mutex_lock_common(struct mutex *lock, unsigned int state, unsigned int subclas
 		set_current_state(state);
 		if (__mutex_trylock_or_handoff(lock, first))
 			break;
-
-		if (first) {
-			if (mutex_optimistic_spin(lock, &waiter))
-				break;
-		}
 
 		raw_spin_lock(&lock->wait_lock);
 	}

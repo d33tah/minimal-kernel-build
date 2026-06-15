@@ -33,7 +33,6 @@ extern int unsynchronized_tsc(void);
 /* check_tsc_unstable, mark_tsc_async_resets removed - unused */
 extern unsigned long native_calibrate_cpu_early(void);
 extern unsigned long native_calibrate_tsc(void);
-extern unsigned long long native_sched_clock_from_tsc(u64 tsc);
 
 extern int tsc_clocksource_reliable;
 extern bool tsc_async_resets;
@@ -43,7 +42,6 @@ extern bool tsc_store_and_check_tsc_adjust(bool bootcpu);
 extern void tsc_verify_tsc_adjust(bool resume);
 /* check_tsc_sync_source, check_tsc_sync_target removed - unused (SMP) */
 
-extern int notsc_setup(char *);
 extern void tsc_save_sched_clock_state(void);
 extern void tsc_restore_sched_clock_state(void);
 

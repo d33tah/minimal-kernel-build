@@ -11,9 +11,7 @@
 
 /* Inlined from asm/user32.h */
 struct user_i387_ia32_struct { u32 cwd; u32 swd; u32 twd; u32 fip; u32 fcs; u32 foo; u32 fos; u32 st_space[20]; };
-struct user32_fxsr_struct { unsigned short cwd; unsigned short swd; unsigned short twd; unsigned short fop; int fip; int fcs; int foo; int fos; int mxcsr; int reserved; int st_space[32]; int xmm_space[32]; int padding[56]; };
 struct user_regs_struct32 { __u32 ebx, ecx, edx, esi, edi, ebp, eax; unsigned short ds, __ds, es, __es; unsigned short fs, __fs, gs, __gs; __u32 orig_eax, eip; unsigned short cs, __cs; __u32 eflags, esp; unsigned short ss, __ss; };
-struct user32 { struct user_regs_struct32 regs; int u_fpvalid; struct user_i387_ia32_struct i387; __u32 u_tsize; __u32 u_dsize; __u32 u_ssize; __u32 start_code; __u32 start_stack; __u32 signal; int reserved; __u32 u_ar0; __u32 u_fpstate; __u32 magic; char u_comm[32]; int u_debugreg[8]; };
 /* End of user32.h */
 
 #define compat_mode_t	compat_mode_t
@@ -101,81 +99,7 @@ typedef s32 compat_ipc_pid_t;
 typedef __kernel_fsid_t	compat_fsid_t;
 #endif
 
-#ifndef compat_statfs
-struct compat_statfs {
-	compat_int_t	f_type;
-	compat_int_t	f_bsize;
-	compat_int_t	f_blocks;
-	compat_int_t	f_bfree;
-	compat_int_t	f_bavail;
-	compat_int_t	f_files;
-	compat_int_t	f_ffree;
-	compat_fsid_t	f_fsid;
-	compat_int_t	f_namelen;
-	compat_int_t	f_frsize;
-	compat_int_t	f_flags;
-	compat_int_t	f_spare[4];
-};
-#endif
-
 /* end asm-generic/compat.h */
 
-#define COMPAT_UTS_MACHINE	"i686\0\0"
 
-typedef u16		compat_nlink_t;
-
-struct compat_stat {
-	u32		st_dev;
-	compat_ino_t	st_ino;
-	compat_mode_t	st_mode;
-	compat_nlink_t	st_nlink;
-	__compat_uid_t	st_uid;
-	__compat_gid_t	st_gid;
-	u32		st_rdev;
-	u32		st_size;
-	u32		st_blksize;
-	u32		st_blocks;
-	u32		st_atime;
-	u32		st_atime_nsec;
-	u32		st_mtime;
-	u32		st_mtime_nsec;
-	u32		st_ctime;
-	u32		st_ctime_nsec;
-	u32		__unused4;
-	u32		__unused5;
-};
-
- 
-#define __ARCH_NEED_COMPAT_FLOCK64_PACKED
-
-struct compat_statfs {
-	int		f_type;
-	int		f_bsize;
-	int		f_blocks;
-	int		f_bfree;
-	int		f_bavail;
-	int		f_files;
-	int		f_ffree;
-	compat_fsid_t	f_fsid;
-	int		f_namelen;	 
-	int		f_frsize;
-	int		f_flags;
-	int		f_spare[4];
-};
-
-
-static inline bool in_x32_syscall(void)
-{
-	return false;
-}
-
-static inline bool in_32bit_syscall(void)
-{
-	return in_ia32_syscall() || in_x32_syscall();
-}
-
-
-struct compat_siginfo;
-
-
-#endif  
+#endif

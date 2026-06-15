@@ -4,31 +4,13 @@
 #include <linux/poll.h>
 #include <linux/ns_common.h>
 
-struct fs_pin {
-	wait_queue_head_t	wait;
-	int			done;
-	struct hlist_node	s_list;
-	struct hlist_node	m_list;
-	void (*kill)(struct fs_pin *);
-};
 struct vfsmount;
-static inline void init_fs_pin(struct fs_pin *p, void (*kill)(struct fs_pin *))
-{
-	init_waitqueue_head(&p->wait);
-	INIT_HLIST_NODE(&p->s_list);
-	INIT_HLIST_NODE(&p->m_list);
-	p->kill = kill;
-}
-void pin_remove(struct fs_pin *);
-void pin_insert(struct fs_pin *, struct vfsmount *);
-void pin_kill(struct fs_pin *);
 
 struct mnt_namespace {
 	struct ns_common	ns;
 	struct mount *	root;
 	 
 	struct list_head	list;
-	spinlock_t		ns_lock;
 	struct user_namespace	*user_ns;
 	struct ucounts		*ucounts;
 	u64			seq;	 
@@ -37,11 +19,6 @@ struct mnt_namespace {
 	unsigned int		mounts;  
 	unsigned int		pending_mounts;
 } __randomize_layout;
-
-struct mnt_pcp {
-	int mnt_count;
-	int mnt_writers;
-};
 
 struct mountpoint {
 	struct hlist_node m_hash;
@@ -81,7 +58,6 @@ struct mount {
 	int mnt_id;			 
 	int mnt_group_id;		 
 	int mnt_expiry_mark;		 
-	struct hlist_head mnt_pins;
 	struct hlist_head mnt_stuck_children;
 } __randomize_layout;
 
@@ -97,22 +73,10 @@ static inline int mnt_has_parent(struct mount *mnt)
 	return mnt != mnt->mnt_parent;
 }
 
-static inline int is_mounted(struct vfsmount *mnt)
-{
-	 
-	return !IS_ERR_OR_NULL(real_mount(mnt)->mnt_ns);
-}
-
 extern struct mount *__lookup_mnt(struct vfsmount *, struct dentry *);
 
 extern int __legitimize_mnt(struct vfsmount *, unsigned);
 extern bool legitimize_mnt(struct vfsmount *, unsigned);
-
-static inline bool __path_is_mountpoint(const struct path *path)
-{
-	struct mount *m = __lookup_mnt(path->mnt, path->dentry);
-	return m && likely(!(m->mnt.mnt_flags & MNT_SYNC_UMOUNT));
-}
 
 extern void __detach_mounts(struct dentry *dentry);
 
@@ -130,18 +94,7 @@ static inline void get_mnt_ns(struct mnt_namespace *ns)
 
 extern seqlock_t mount_lock;
 
-struct proc_mounts {
-	struct mnt_namespace *ns;
-	struct path root;
-	int (*show)(struct seq_file *, struct vfsmount *);
-	struct mount cursor;
-};
-
-extern const struct seq_operations mounts_op;
-
 static inline bool is_anon_ns(struct mnt_namespace *ns)
 {
 	return ns->seq == 0;
 }
-
-extern void mnt_cursor_del(struct mnt_namespace *ns, struct mount *cursor);

@@ -45,10 +45,6 @@ struct bus_type {
 	bool need_parent_lock;
 };
 
-extern int __must_check bus_register(struct bus_type *bus);
-
-extern void bus_unregister(struct bus_type *bus);
-
 struct bus_attribute {
 	struct attribute	attr;
 	ssize_t (*show)(struct bus_type *bus, char *buf);

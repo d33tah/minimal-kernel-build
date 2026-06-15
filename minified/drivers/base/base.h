@@ -47,7 +47,6 @@ extern int buses_init(void);
 extern int classes_init(void);
 static inline int firmware_init(void) { return 0; }
 static inline int hypervisor_init(void) { return 0; }
-extern void cpu_dev_init(void);
 static inline void container_dev_init(void) { }
 static inline void auxiliary_bus_init(void) { }
 

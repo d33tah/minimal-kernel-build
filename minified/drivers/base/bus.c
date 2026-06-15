@@ -12,8 +12,6 @@
 #include "base.h"
 #include "power/power.h"
 
-static struct kset *system_kset;
-
 static void bus_put(struct bus_type *bus)
 {
 	if (bus)
@@ -89,161 +87,17 @@ void bus_remove_device(struct device *dev)
    minimal kernel, so driver_register (their only caller) is gone */
 
 
-/* Stub: sysfs functions are stubs */
-static int bus_add_groups(struct bus_type *bus,
-			  const struct attribute_group **groups)
-{
-	return 0;
-}
-
-static void bus_remove_groups(struct bus_type *bus,
-			      const struct attribute_group **groups)
-{
-}
-
-static void klist_devices_get(struct klist_node *n)
-{
-	struct device_private *dev_prv = to_device_private_bus(n);
-	struct device *dev = dev_prv->device;
-
-	get_device(dev);
-}
-
-static void klist_devices_put(struct klist_node *n)
-{
-	struct device_private *dev_prv = to_device_private_bus(n);
-	struct device *dev = dev_prv->device;
-
-	put_device(dev);
-}
-
-/* Removed: bus_uevent_store + bus_attr_uevent - the "uevent" sysfs file was
-   never created (bus_create_file no-op), so the store callback was never run. */
-
-int bus_register(struct bus_type *bus)
-{
-	int retval;
-	struct subsys_private *priv;
-	struct lock_class_key *key = &bus->lock_key;
-
-	priv = kzalloc(sizeof(struct subsys_private), GFP_KERNEL);
-	if (!priv)
-		return -ENOMEM;
-
-	priv->bus = bus;
-	bus->p = priv;
-
-	retval = kobject_set_name(&priv->subsys.kobj, "%s", bus->name);
-	if (retval)
-		goto out;
-
-	priv->subsys.kobj.kset = bus_kset;
-	priv->subsys.kobj.ktype = &bus_ktype;
-
-	retval = kset_register(&priv->subsys);
-	if (retval)
-		goto out;
-
-	priv->devices_kset = kset_create_and_add("devices", NULL,
-						 &priv->subsys.kobj);
-	if (!priv->devices_kset) {
-		retval = -ENOMEM;
-		goto bus_devices_fail;
-	}
-
-	__mutex_init(&priv->mutex, "subsys mutex", key);
-	klist_init(&priv->klist_devices, klist_devices_get, klist_devices_put);
-
-	retval = bus_add_groups(bus, bus->bus_groups);
-	if (retval)
-		goto bus_groups_fail;
-
-	return 0;
-
-bus_groups_fail:
-	kset_unregister(bus->p->devices_kset);
-bus_devices_fail:
-	kset_unregister(&bus->p->subsys);
-out:
-	kfree(bus->p);
-	bus->p = NULL;
-	return retval;
-}
-
-void bus_unregister(struct bus_type *bus)
-{
-	if (bus->dev_root)
-		device_unregister(bus->dev_root);
-	bus_remove_groups(bus, bus->bus_groups);
-	kset_unregister(bus->p->devices_kset);
-	kset_unregister(&bus->p->subsys);
-}
-
-/* Removed: bus_get_device_klist, bus_unregister_notifier, bus_get_kset, bus_sort_breadthfirst,
-   subsys_dev_iter_init/next/exit, subsys_interface_register/unregister - no external callers */
-
-static void system_root_device_release(struct device *dev)
-{
-	kfree(dev);
-}
-
-static int subsys_register(struct bus_type *subsys,
-			   const struct attribute_group **groups,
-			   struct kobject *parent_of_root)
-{
-	struct device *dev;
-	int err;
-
-	err = bus_register(subsys);
-	if (err < 0)
-		return err;
-
-	dev = kzalloc(sizeof(struct device), GFP_KERNEL);
-	if (!dev) {
-		err = -ENOMEM;
-		goto err_dev;
-	}
-
-	err = dev_set_name(dev, "%s", subsys->name);
-	if (err < 0)
-		goto err_name;
-
-	dev->kobj.parent = parent_of_root;
-	dev->groups = groups;
-	dev->release = system_root_device_release;
-
-	err = device_register(dev);
-	if (err < 0)
-		goto err_dev_reg;
-
-	subsys->dev_root = dev;
-	return 0;
-
-err_dev_reg:
-	put_device(dev);
-	dev = NULL;
-err_name:
-	kfree(dev);
-err_dev:
-	bus_unregister(subsys);
-	return err;
-}
-
-int subsys_system_register(struct bus_type *subsys,
-			   const struct attribute_group **groups)
-{
-	return subsys_register(subsys, groups, &system_kset->kobj);
-}
-
+/* Removed: bus_add_groups/bus_remove_groups/klist_devices_get/klist_devices_put
+   + bus_register/bus_unregister + subsys_register/subsys_system_register +
+   system_root_device_release - the cpu_subsys was the only bus ever registered
+   (via cpu_dev_init); with that gone no bus is registered, so the entire
+   bus-registration machinery is dead. The "system" kset it parented is likewise
+   unused. */
 
 int __init buses_init(void)
 {
 	bus_kset = kset_create_and_add("bus", &bus_uevent_ops, NULL);
 	if (!bus_kset)
-		return -ENOMEM;
-
-	system_kset = kset_create_and_add("system", NULL, &devices_kset->kobj);
-	if (!system_kset)
 		return -ENOMEM;
 
 	return 0;

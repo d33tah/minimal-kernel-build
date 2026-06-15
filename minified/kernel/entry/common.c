@@ -224,21 +224,10 @@ noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 		return ret;
 	}
 
-	 
-	if (!IS_ENABLED(CONFIG_TINY_RCU) && is_idle_task(current)) {
-		 
-		lockdep_hardirqs_off(CALLER_ADDR0);
-		rcu_irq_enter();
-		 
 
-		ret.exit_rcu = true;
-		return ret;
-	}
-
-	 
 	lockdep_hardirqs_off(CALLER_ADDR0);
 	rcu_irq_enter_check_tick();
-	 
+
 
 	return ret;
 }
@@ -263,25 +252,8 @@ noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 	if (user_mode(regs)) {
 		irqentry_exit_to_user_mode(regs);
 	} else if (!regs_irqs_disabled(regs)) {
-		 
-		if (state.exit_rcu) {
-			 
-			 
-			lockdep_hardirqs_on_prepare();
-			rcu_irq_exit();
-			lockdep_hardirqs_on(CALLER_ADDR0);
-			return;
-		}
-
 		if (IS_ENABLED(CONFIG_PREEMPTION))
 			irqentry_exit_cond_resched();
-
-		 
-		 
-	} else {
-		 
-		if (state.exit_rcu)
-			rcu_irq_exit();
 	}
 }
 

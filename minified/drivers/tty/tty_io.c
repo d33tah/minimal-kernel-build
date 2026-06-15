@@ -164,10 +164,6 @@ static int check_tty_count(struct tty_struct *tty, const char *routine)
 		count++;
 	}
 	spin_unlock(&tty->files_lock);
-	if (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
-	    tty->driver->subtype == PTY_TYPE_SLAVE &&
-	    tty->link && tty->link->count)
-		count++;
 	if (tty_port_kopened(tty->port))
 		kopen_count++;
 	if (tty->count != (count + kopen_count)) {
@@ -366,16 +362,6 @@ ssize_t redirected_tty_write(struct kiocb *iocb, struct iov_iter *iter)
 	return tty_write(iocb, iter);
 }
 
-static void pty_line_name(struct tty_driver *driver, int index, char *p)
-{
-	static const char ptychar[] = "pqrstuvwxyzabcde";
-	int i = index + driver->name_base;
-	
-	sprintf(p, "%s%c%x",
-		driver->subtype == PTY_TYPE_SLAVE ? "tty" : driver->name,
-		ptychar[i >> 4 & 0xf], i & 0xf);
-}
-
 static ssize_t tty_line_name(struct tty_driver *driver, int index, char *p)
 {
 	if (driver->flags & TTY_DRIVER_UNNUMBERED_NODE)
@@ -450,13 +436,8 @@ static void tty_driver_remove_tty(struct tty_driver *driver, struct tty_struct *
 
 static int tty_reopen(struct tty_struct *tty)
 {
-	struct tty_driver *driver = tty->driver;
 	struct tty_ldisc *ld;
 	int retval = 0;
-
-	if (driver->type == TTY_DRIVER_TYPE_PTY &&
-	    driver->subtype == PTY_TYPE_MASTER)
-		return -EIO;
 
 	if (!tty->count)
 		return -EAGAIN;
@@ -887,9 +868,7 @@ retry_open:
 
 	noctty = (filp->f_flags & O_NOCTTY) ||
 		 (IS_ENABLED(CONFIG_VT) && device == MKDEV(TTY_MAJOR, 0)) ||
-		 device == MKDEV(TTYAUX_MAJOR, 1) ||
-		 (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
-		  tty->driver->subtype == PTY_TYPE_MASTER);
+		 device == MKDEV(TTYAUX_MAJOR, 1);
 	if (!noctty)
 		tty_open_proc_set_tty(filp, tty);
 	tty_unlock(tty);
@@ -990,10 +969,7 @@ struct device *tty_register_device_attr(struct tty_driver *driver,
 		return ERR_PTR(-EINVAL);
 	}
 
-	if (driver->type == TTY_DRIVER_TYPE_PTY)
-		pty_line_name(driver, index, name);
-	else
-		tty_line_name(driver, index, name);
+	tty_line_name(driver, index, name);
 
 	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
 	if (!dev)

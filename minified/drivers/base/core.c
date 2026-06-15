@@ -167,45 +167,10 @@ void device_initialize(struct device *dev)
 
 
 
-static DEFINE_MUTEX(gdp_mutex);
-
-static inline bool live_in_glue_dir(struct kobject *kobj,
-				    struct device *dev)
-{
-	if (!kobj || !dev->class ||
-	    kobj->kset != &dev->class->p->glue_dirs)
-		return false;
-	return true;
-}
-
-static inline struct kobject *get_glue_dir(struct device *dev)
-{
-	return dev->kobj.parent;
-}
-
-static inline bool kobject_has_children(struct kobject *kobj)
-{
-	WARN_ON_ONCE(kref_read(&kobj->kref) == 0);
-
-	return kobj->sd && kobj->sd->dir.subdirs;
-}
-
-static void cleanup_glue_dir(struct device *dev, struct kobject *glue_dir)
-{
-	unsigned int ref;
-
-	
-	if (!live_in_glue_dir(glue_dir, dev))
-		return;
-
-	mutex_lock(&gdp_mutex);
-	
-	ref = kref_read(&glue_dir->kref);
-	if (!kobject_has_children(glue_dir) && !--ref)
-		kobject_del(glue_dir);
-	kobject_put(glue_dir);
-	mutex_unlock(&gdp_mutex);
-}
+/* Removed: gdp_mutex, live_in_glue_dir, get_glue_dir, kobject_has_children,
+   cleanup_glue_dir - class glue_dirs are never populated (SYSFS=n; dev->kobj.kset
+   is unconditionally devices_kset, never &class->p->glue_dirs), so
+   live_in_glue_dir always returned false and cleanup_glue_dir early-returned. */
 
 static void device_remove_class_symlinks(struct device *dev)
 {
@@ -326,7 +291,6 @@ static bool kill_device(struct device *dev)
 void device_del(struct device *dev)
 {
 	struct device *parent = dev->parent;
-	struct kobject *glue_dir = NULL;
 	unsigned int noio_flag;
 
 	device_lock(dev);
@@ -363,9 +327,7 @@ void device_del(struct device *dev)
 	device_platform_notify_remove(dev);
 
 	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
-	glue_dir = get_glue_dir(dev);
 	kobject_del(&dev->kobj);
-	cleanup_glue_dir(dev, glue_dir);
 	memalloc_noio_restore(noio_flag);
 	put_device(parent);
 }

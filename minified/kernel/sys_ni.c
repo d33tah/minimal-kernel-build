@@ -15,85 +15,39 @@ asmlinkage long sys_ni_syscall(void)
 
 #ifndef COND_SYSCALL
 #define COND_SYSCALL(name) cond_syscall(sys_##name)
-#endif  
+#endif
 
 #ifndef COND_SYSCALL_COMPAT
 #define COND_SYSCALL_COMPAT(name) cond_syscall(compat_sys_##name)
-#endif  
+#endif
 
-
-
-
+/*
+ * Only the cond_syscall() weak -ENOSYS fallbacks for syscalls that still
+ * have an active slot in arch/x86/entry/syscalls/syscall_32.tbl are kept.
+ * Entries for syscalls no longer in the table need no weak fallback.
+ */
 
 COND_SYSCALL(lookup_dcookie);
 COND_SYSCALL_COMPAT(lookup_dcookie);
-
-
-
-
-
 
 COND_SYSCALL(ioprio_set);
 COND_SYSCALL(ioprio_get);
 
 COND_SYSCALL(flock);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 COND_SYSCALL(acct);
 
 COND_SYSCALL(capget);
 COND_SYSCALL(capset);
 
-
-
-COND_SYSCALL(clone3);
-
-
-
-
 COND_SYSCALL(init_module);
 COND_SYSCALL(delete_module);
 
-
 COND_SYSCALL(syslog);
-
-
-
-
-
-
-
-
-COND_SYSCALL(mremap);
-
-
-
-
-COND_SYSCALL(fadvise64_64);
 
 COND_SYSCALL(swapon);
 COND_SYSCALL(swapoff);
-COND_SYSCALL(mprotect);
 COND_SYSCALL(msync);
-COND_SYSCALL(mlock);
-COND_SYSCALL(munlock);
-COND_SYSCALL(mlockall);
-COND_SYSCALL(munlockall);
 COND_SYSCALL(mincore);
 COND_SYSCALL(madvise);
 COND_SYSCALL(process_madvise);
@@ -103,65 +57,19 @@ COND_SYSCALL(kcmp);
 
 COND_SYSCALL(finit_module);
 
-
-
-
-COND_SYSCALL(execveat);
-
-
-
-COND_SYSCALL(mlock2);
-
-COND_SYSCALL(copy_file_range);
-
-
-
-
-COND_SYSCALL(pciconfig_read);
-COND_SYSCALL(pciconfig_write);
-COND_SYSCALL(pciconfig_iobase);
-
-
-
-COND_SYSCALL(vm86old);
 COND_SYSCALL(modify_ldt);
+COND_SYSCALL(vm86old);
 COND_SYSCALL(vm86);
-COND_SYSCALL(kexec_file_load);
 
-COND_SYSCALL(s390_pci_mmio_read);
-COND_SYSCALL(s390_pci_mmio_write);
-COND_SYSCALL(s390_ipc);
-COND_SYSCALL_COMPAT(s390_ipc);
-
-COND_SYSCALL(rtas);
-COND_SYSCALL(spu_run);
-COND_SYSCALL(spu_create);
-COND_SYSCALL(subpage_prot);
-
-
-
-
-COND_SYSCALL(fadvise64);
-
-COND_SYSCALL(recv);
-COND_SYSCALL_COMPAT(recv);
-COND_SYSCALL(send);
 COND_SYSCALL(uselib);
 
 COND_SYSCALL(time32);
 COND_SYSCALL(stime32);
 COND_SYSCALL(utime32);
 COND_SYSCALL(adjtimex_time32);
-COND_SYSCALL(sched_rr_get_interval_time32);
 COND_SYSCALL(nanosleep_time32);
-COND_SYSCALL(rt_sigtimedwait_time32);
-COND_SYSCALL_COMPAT(rt_sigtimedwait_time32);
-COND_SYSCALL(timer_settime32);
-COND_SYSCALL(timer_gettime32);
-COND_SYSCALL(clock_settime32);
 COND_SYSCALL(clock_gettime32);
 COND_SYSCALL(clock_getres_time32);
-COND_SYSCALL(clock_nanosleep_time32);
 COND_SYSCALL(utimes_time32);
 COND_SYSCALL(futimesat_time32);
 COND_SYSCALL(pselect6_time32);
@@ -169,8 +77,6 @@ COND_SYSCALL_COMPAT(pselect6_time32);
 COND_SYSCALL(ppoll_time32);
 COND_SYSCALL_COMPAT(ppoll_time32);
 COND_SYSCALL(utimensat_time32);
-COND_SYSCALL(clock_adjtime32);
-
 
 COND_SYSCALL(sgetmask);
 COND_SYSCALL(ssetmask);

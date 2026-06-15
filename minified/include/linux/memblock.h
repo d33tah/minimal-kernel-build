@@ -38,7 +38,6 @@ struct memblock_type {
 };
 
 struct memblock {
-	bool bottom_up;   
 	phys_addr_t current_limit;
 	struct memblock_type memory;
 	struct memblock_type reserved;
@@ -204,11 +203,6 @@ static inline void *memblock_alloc_node(phys_addr_t size,
 				      MEMBLOCK_ALLOC_ACCESSIBLE, nid);
 }
 
-
-static inline __init_memblock bool memblock_bottom_up(void)
-{
-	return memblock.bottom_up;
-}
 
 phys_addr_t memblock_start_of_DRAM(void);
 bool memblock_is_region_memory(phys_addr_t base, phys_addr_t size);

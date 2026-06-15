@@ -40,7 +40,6 @@ struct memblock memblock __initdata_memblock = {
 	.reserved.max		= INIT_MEMBLOCK_RESERVED_REGIONS,
 	.reserved.name		= "reserved",
 
-	.bottom_up		= false,
 	.current_limit		= MEMBLOCK_ALLOC_ANYWHERE,
 };
 
@@ -92,26 +91,12 @@ bool __init_memblock memblock_overlaps_region(struct memblock_type *type,
 	return i < type->cnt;
 }
 
-static phys_addr_t __init_memblock
-__memblock_find_range_bottom_up(phys_addr_t start, phys_addr_t end,
-				phys_addr_t size, phys_addr_t align, int nid,
-				enum memblock_flags flags)
-{
-	phys_addr_t this_start, this_end, cand;
-	u64 i;
-
-	for_each_free_mem_range(i, nid, flags, &this_start, &this_end, NULL) {
-		this_start = clamp(this_start, start, end);
-		this_end = clamp(this_end, start, end);
-
-		cand = round_up(this_start, align);
-		if (cand < this_end && this_end - cand >= size)
-			return cand;
-	}
-
-	return 0;
-}
-
+/*
+ * The bottom-up allocator (__memblock_find_range_bottom_up) was removed: this
+ * build never sets memblock.bottom_up (initialised to false, no setter
+ * tree-wide), so memblock_bottom_up() is always false and only the top-down
+ * search below is ever reached.
+ */
 static phys_addr_t __init_memblock
 __memblock_find_range_top_down(phys_addr_t start, phys_addr_t end,
 			       phys_addr_t size, phys_addr_t align, int nid,
@@ -149,12 +134,8 @@ static phys_addr_t __init_memblock memblock_find_in_range_node(phys_addr_t size,
 	start = max_t(phys_addr_t, start, PAGE_SIZE);
 	end = max(start, end);
 
-	if (memblock_bottom_up())
-		return __memblock_find_range_bottom_up(start, end, size, align,
-						       nid, flags);
-	else
-		return __memblock_find_range_top_down(start, end, size, align,
-						      nid, flags);
+	return __memblock_find_range_top_down(start, end, size, align,
+					      nid, flags);
 }
 
 static phys_addr_t __init_memblock memblock_find_in_range(phys_addr_t start,

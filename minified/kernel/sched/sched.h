@@ -161,7 +161,6 @@ struct cfs_rq {
 	struct load_weight	load;
 	unsigned int		nr_running;
 	unsigned int		h_nr_running;
-	unsigned int		idle_nr_running;
 
 	u64			min_vruntime;
 

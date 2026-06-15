@@ -29,8 +29,6 @@ unsigned int sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_LOG;
 unsigned int sysctl_sched_min_granularity			= 750000ULL;
 static unsigned int normalized_sysctl_sched_min_granularity	= 750000ULL;
 
-unsigned int sysctl_sched_idle_min_granularity			= 750000ULL;
-
 static unsigned int sched_nr_latency = 8;
 
 unsigned int sysctl_sched_child_runs_first __read_mostly;
@@ -150,11 +148,6 @@ static inline struct sched_entity *parent_entity(struct sched_entity *se)
 	return NULL;
 }
 
-static int se_is_idle(struct sched_entity *se)
-{
-	return 0;
-}
-
 static inline u64 max_vruntime(u64 max_vruntime, u64 vruntime)
 {
 	s64 delta = (s64)(vruntime - max_vruntime);
@@ -249,12 +242,9 @@ static u64 __sched_period(unsigned long nr_running)
 		return sysctl_sched_latency;
 }
 
-static bool sched_idle_cfs_rq(struct cfs_rq *cfs_rq);
-
 static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	unsigned int nr_running = cfs_rq->nr_running;
-	struct sched_entity *init_se = se;
 	unsigned int min_gran;
 	u64 slice;
 
@@ -281,10 +271,7 @@ static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	}
 
 	if (sched_feat(BASE_SLICE)) {
-		if (se_is_idle(init_se) && !sched_idle_cfs_rq(cfs_rq))
-			min_gran = sysctl_sched_idle_min_granularity;
-		else
-			min_gran = sysctl_sched_min_granularity;
+		min_gran = sysctl_sched_min_granularity;
 
 		slice = max_t(u64, slice, min_gran);
 	}
@@ -343,8 +330,6 @@ account_entity_enqueue(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	update_load_add(&cfs_rq->load, se->load.weight);
 	cfs_rq->nr_running++;
-	if (se_is_idle(se))
-		cfs_rq->idle_nr_running++;
 }
 
 static void
@@ -352,8 +337,6 @@ account_entity_dequeue(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	update_load_sub(&cfs_rq->load, se->load.weight);
 	cfs_rq->nr_running--;
-	if (se_is_idle(se))
-		cfs_rq->idle_nr_running--;
 }
 
 #define add_positive(_ptr, _val) do {                           \
@@ -453,10 +436,7 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
 	if (!initial) {
 		unsigned long thresh;
 
-		if (se_is_idle(se))
-			thresh = sysctl_sched_min_granularity;
-		else
-			thresh = sysctl_sched_latency;
+		thresh = sysctl_sched_latency;
 
 		if (sched_feat(GENTLE_FAIR_SLEEPERS))
 			thresh >>= 1;
@@ -655,12 +635,6 @@ static inline void hrtick_update(struct rq *rq)
 {
 }
 
-static bool sched_idle_cfs_rq(struct cfs_rq *cfs_rq)
-{
-	return cfs_rq->nr_running &&
-		cfs_rq->nr_running == cfs_rq->idle_nr_running;
-}
-
 static void
 enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
@@ -761,8 +735,6 @@ static void set_last_buddy(struct sched_entity *se)
 	for_each_sched_entity(se) {
 		if (SCHED_WARN_ON(!se->on_rq))
 			return;
-		if (se_is_idle(se))
-			return;
 		cfs_rq_of(se)->last = se;
 	}
 }
@@ -771,8 +743,6 @@ static void set_next_buddy(struct sched_entity *se)
 {
 	for_each_sched_entity(se) {
 		if (SCHED_WARN_ON(!se->on_rq))
-			return;
-		if (se_is_idle(se))
 			return;
 		cfs_rq_of(se)->next = se;
 	}

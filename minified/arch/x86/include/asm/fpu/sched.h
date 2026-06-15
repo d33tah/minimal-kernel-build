@@ -7,8 +7,6 @@
 #include <asm/cpufeature.h>
 #include <asm/fpu/types.h>
 
-#include <asm/trace/fpu.h>
-
 extern void save_fpregs_to_fpstate(struct fpu *fpu);
 extern void fpu__drop(struct fpu *fpu);
 extern int  fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal);
@@ -22,8 +20,6 @@ static inline void switch_fpu_prepare(struct fpu *old_fpu, int cpu)
 		save_fpregs_to_fpstate(old_fpu);
 		 
 		old_fpu->last_cpu = cpu;
-
-		trace_x86_fpu_regs_deactivated(old_fpu);
 	}
 }
 

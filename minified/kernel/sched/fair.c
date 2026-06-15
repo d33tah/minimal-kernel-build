@@ -150,11 +150,6 @@ static inline struct sched_entity *parent_entity(struct sched_entity *se)
 	return NULL;
 }
 
-static inline void
-find_matching_se(struct sched_entity **se, struct sched_entity **pse)
-{
-}
-
 static int se_is_idle(struct sched_entity *se)
 {
 	return 0;
@@ -790,7 +785,6 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
 	int scale = cfs_rq->nr_running >= sched_nr_latency;
 	int next_buddy_marked = 0;
-	int cse_is_idle, pse_is_idle;
 
 	if (unlikely(se == pse))
 		return;
@@ -810,16 +804,7 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 	if (unlikely(p->policy != SCHED_NORMAL) || !sched_feat(WAKEUP_PREEMPTION))
 		return;
 
-	find_matching_se(&se, &pse);
 	BUG_ON(!pse);
-
-	cse_is_idle = se_is_idle(se);
-	pse_is_idle = se_is_idle(pse);
-
-	if (cse_is_idle && !pse_is_idle)
-		goto preempt;
-	if (cse_is_idle != pse_is_idle)
-		return;
 
 	update_curr(cfs_rq_of(se));
 	if (wakeup_preempt_entity(se, pse) == 1) {

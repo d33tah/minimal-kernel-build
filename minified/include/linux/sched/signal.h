@@ -138,7 +138,6 @@ int force_sig_fault(int sig, int code, void __user *addr
 
 /* force_sigsegv now static in signal.c */
 extern int force_sig_info(struct kernel_siginfo *);
-extern __must_check bool do_notify_parent(struct task_struct *, int);
 extern void force_sig(int);
 extern void force_fatal_sig(int);
 extern int zap_other_threads(struct task_struct *p);

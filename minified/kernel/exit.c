@@ -141,11 +141,8 @@ void put_task_struct_rcu_user(struct task_struct *task)
 
 void release_task(struct task_struct *p)
 {
-	struct task_struct *leader;
 	struct pid *thread_pid;
-	int zap_leader;
-repeat:
-	
+
 	rcu_read_lock();
 	dec_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
 	rcu_read_unlock();
@@ -155,25 +152,16 @@ repeat:
 	thread_pid = get_pid(p->thread_pid);
 	__exit_signal(p);
 
-	zap_leader = 0;
-	leader = p->group_leader;
-	if (leader != p && thread_group_empty(leader)
-			&& leader->exit_state == EXIT_ZOMBIE) {
-		
-		zap_leader = do_notify_parent(leader, leader->exit_signal);
-		if (zap_leader)
-			leader->exit_state = EXIT_DEAD;
-	}
-
+	/*
+	 * do_notify_parent() is a permanent `return false;` stub on this build,
+	 * so the leader-zombie reap arm and the zap_leader/goto-repeat loop are
+	 * dead; release_task always processes exactly one task.
+	 */
 	write_unlock_irq(&tasklist_lock);
 	proc_flush_pid(thread_pid);
 	put_pid(thread_pid);
 	release_thread(p);
 	put_task_struct_rcu_user(p);
-
-	p = leader;
-	if (unlikely(zap_leader))
-		goto repeat;
 }
 
 
@@ -277,21 +265,18 @@ static struct task_struct *find_new_reaper(struct task_struct *father,
 	return child_reaper;
 }
 
-static void reparent_leader(struct task_struct *father, struct task_struct *p,
-				struct list_head *dead)
+static void reparent_leader(struct task_struct *father, struct task_struct *p)
 {
 	if (unlikely(p->exit_state == EXIT_DEAD))
 		return;
 
 	p->exit_signal = SIGCHLD;
 
-	if (p->exit_state == EXIT_ZOMBIE && thread_group_empty(p)) {
-		if (do_notify_parent(p, p->exit_signal)) {
-			p->exit_state = EXIT_DEAD;
-			list_add(&p->ptrace_entry, dead);
-		}
-	}
-
+	/*
+	 * The EXIT_ZOMBIE auto-reap arm is dead: do_notify_parent() is a
+	 * permanent `return false;` stub, so it never sets EXIT_DEAD / queues
+	 * the task on the dead list.
+	 */
 	kill_orphaned_pgrp(p, father);
 }
 
@@ -316,7 +301,7 @@ static void forget_original_parent(struct task_struct *father,
 		}
 		
 		if (!same_thread_group(reaper, father))
-			reparent_leader(father, p, dead);
+			reparent_leader(father, p);
 	}
 	list_splice_tail_init(&father->children, &reaper->children);
 }
@@ -334,12 +319,11 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 		kill_orphaned_pgrp(tsk->group_leader, NULL);
 
 	tsk->exit_state = EXIT_ZOMBIE;
-	if (thread_group_leader(tsk)) {
-		autoreap = thread_group_empty(tsk) &&
-			do_notify_parent(tsk, tsk->exit_signal);
-	} else {
-		autoreap = true;
-	}
+	/*
+	 * do_notify_parent() is a permanent `return false;` stub, so a
+	 * thread-group leader never auto-reaps; only a non-leader does.
+	 */
+	autoreap = !thread_group_leader(tsk);
 
 	if (autoreap) {
 		tsk->exit_state = EXIT_DEAD;

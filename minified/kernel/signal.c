@@ -478,11 +478,6 @@ int force_sig_fault(int sig, int code, void __user *addr
 	return force_sig_info_to_task(&info, current, HANDLER_CURRENT);
 }
 
-bool do_notify_parent(struct task_struct *tsk, int sig)
-{
-	return false;
-}
-
 bool get_signal(struct ksignal *ksig)
 {
 	/* Minimal stub: init doesn't use signals */

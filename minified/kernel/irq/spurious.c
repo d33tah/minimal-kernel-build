@@ -15,9 +15,3 @@ bool irq_wait_for_poll(struct irq_desc *desc)
 	return false;
 }
 
-/* Stub: note_interrupt - spurious IRQ detection not needed for minimal kernel */
-void note_interrupt(struct irq_desc *desc, irqreturn_t action_ret)
-{
-	/* Stub: no spurious IRQ tracking for minimal kernel */
-}
-

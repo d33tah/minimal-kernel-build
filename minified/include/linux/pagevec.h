@@ -19,12 +19,6 @@ struct pagevec {
 void __pagevec_release(struct pagevec *pvec);
 void __pagevec_lru_add(struct pagevec *pvec);
 
-static inline void pagevec_init(struct pagevec *pvec)
-{
-	pvec->nr = 0;
-	pvec->percpu_pvec_drained = false;
-}
-
 static inline void pagevec_reinit(struct pagevec *pvec)
 {
 	pvec->nr = 0;

@@ -701,7 +701,6 @@ static inline void *folio_address(const struct folio *folio)
 
 extern void *page_rmapping(struct page *page);
 
-bool page_mapped(struct page *page);
 bool folio_mapped(struct folio *folio);
 
 static inline bool page_is_pfmemalloc(const struct page *page)

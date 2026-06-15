@@ -3,20 +3,9 @@
 #include <linux/swap.h>
 #include "internal.h"
 
-struct address_space *page_mapping(struct page *page)
-{
-	return folio_mapping(page_folio(page));
-}
-
 void unlock_page(struct page *page)
 {
 	return folio_unlock(page_folio(page));
-}
-
-
-bool page_mapped(struct page *page)
-{
-	return folio_mapped(page_folio(page));
 }
 
 void mark_page_accessed(struct page *page)

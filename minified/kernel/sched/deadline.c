@@ -7,9 +7,6 @@ void init_dl_rq(struct dl_rq *dl_rq)
 {
 }
 
-void init_dl_task_timer(struct sched_dl_entity *dl_se) { }
-void init_dl_inactive_task_timer(struct sched_dl_entity *dl_se) { }
-
 /*
  * No task is ever DEADLINE on this build, so the dl runqueue is never
  * populated. Only pick_next_task is dispatched (via for_each_class, returning

@@ -47,13 +47,6 @@ kmmio_fault(struct pt_regs *regs, unsigned long addr)
 }
 
 
-static int
-is_prefetch(struct pt_regs *regs, unsigned long error_code, unsigned long addr)
-{
-	/* Stub: AMD K8 prefetch quirk not needed for minimal kernel */
-	return 0;
-}
-
 DEFINE_SPINLOCK(pgd_lock);
 LIST_HEAD(pgd_list);
 
@@ -141,22 +134,6 @@ void arch_sync_kernel_mappings(unsigned long start, unsigned long end)
 	}
 }
 
-static int is_errata93(struct pt_regs *regs, unsigned long address)
-{
-	return 0;
-}
-
-static int is_errata100(struct pt_regs *regs, unsigned long address)
-{
-	return 0;
-}
-
-static int is_f00f_bug(struct pt_regs *regs, unsigned long error_code,
-		       unsigned long address)
-{
-	return 0;
-}
-
 static noinline void
 pgtable_bad(struct pt_regs *regs, unsigned long error_code,
 	    unsigned long address)
@@ -220,10 +197,6 @@ kernelmode_fixup_or_oops(struct pt_regs *regs, unsigned long error_code,
 		return;
 	}
 
-	 
-	if (is_prefetch(regs, error_code, address))
-		return;
-
 	page_fault_oops(regs, error_code, address);
 }
 
@@ -254,13 +227,6 @@ __bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code,
 
 	 
 	local_irq_enable();
-
-	 
-	if (is_prefetch(regs, error_code, address))
-		return;
-
-	if (is_errata100(regs, address))
-		return;
 
 	sanitize_error_code(address, &error_code);
 
@@ -322,10 +288,6 @@ do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address,
 					 SIGBUS, BUS_ADRERR);
 		return;
 	}
-
-	 
-	if (is_prefetch(regs, error_code, address))
-		return;
 
 	sanitize_error_code(address, &error_code);
 
@@ -449,10 +411,7 @@ do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code,
 			return;
 	}
 
-	if (is_f00f_bug(regs, hw_error_code, address))
-		return;
 
-	 
 	if (spurious_kernel_fault(hw_error_code, address))
 		return;
 
@@ -480,10 +439,6 @@ void do_user_addr_fault(struct pt_regs *regs,
 	mm = tsk->mm;
 
 	if (unlikely((error_code & (X86_PF_USER | X86_PF_INSTR)) == X86_PF_INSTR)) {
-		 
-		if (is_errata93(regs, address))
-			return;
-
 		page_fault_oops(regs, error_code, address);
 		return;
 	}

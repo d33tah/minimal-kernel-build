@@ -247,18 +247,11 @@ static void set_load_weight(struct task_struct *p, bool update_load)
 	}
 }
 
-static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p) { }
-static inline void uclamp_rq_dec(struct rq *rq, struct task_struct *p) { }
-static inline void uclamp_fork(struct task_struct *p) { }
-static inline void uclamp_post_fork(struct task_struct *p) { }
-static inline void init_uclamp(void) { }
-
 static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 {
 	if (!(flags & ENQUEUE_NOCLOCK))
 		update_rq_clock(rq);
 
-	uclamp_rq_inc(rq, p);
 	p->sched_class->enqueue_task(rq, p, flags);
 }
 
@@ -267,7 +260,6 @@ static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 	if (!(flags & DEQUEUE_NOCLOCK))
 		update_rq_clock(rq);
 
-	uclamp_rq_dec(rq, p);
 	p->sched_class->dequeue_task(rq, p, flags);
 }
 
@@ -468,9 +460,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	
 	p->prio = current->normal_prio;
 
-	uclamp_fork(p);
 
-	
 	if (unlikely(p->sched_reset_on_fork)) {
 		if (task_has_dl_policy(p) || task_has_rt_policy(p)) {
 			p->policy = SCHED_NORMAL;
@@ -510,11 +500,6 @@ void sched_cgroup_fork(struct task_struct *p, struct kernel_clone_args *kargs)
 	if (p->sched_class->task_fork)
 		p->sched_class->task_fork(p);
 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
-}
-
-void sched_post_fork(struct task_struct *p)
-{
-	uclamp_post_fork(p);
 }
 
 
@@ -1174,8 +1159,6 @@ void __init sched_init(void)
 	init_sched_fair_class();
 
 	psi_init();
-
-	init_uclamp();
 
 	preempt_dynamic_init();
 

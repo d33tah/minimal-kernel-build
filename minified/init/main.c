@@ -419,7 +419,6 @@ static void __init mm_init(void)
 {
 	 
 	page_ext_init_flatmem();
-	init_mem_debugging_and_hardening();
 	report_meminit();
 	stack_depot_early_init();
 	mem_init();

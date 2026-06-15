@@ -87,9 +87,6 @@ nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
 
 atomic_long_t _totalram_pages __read_mostly;
 gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
-DEFINE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_ALLOC_DEFAULT_ON, init_on_alloc);
-
-DEFINE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_FREE_DEFAULT_ON, init_on_free);
 
 
 static inline int get_pcppage_migratetype(struct page *page)
@@ -281,13 +278,6 @@ void prep_compound_page(struct page *page, unsigned int order)
 
 static inline bool set_page_guard(struct zone *zone, struct page *page,
 			unsigned int order, int migratetype) { return false; }
-
-void init_mem_debugging_and_hardening(void)
-{
-	/* Stub: memory debugging/hardening not needed for minimal kernel */
-	static_branch_disable(&init_on_alloc);
-	static_branch_disable(&init_on_free);
-}
 
 static inline void set_buddy_order(struct page *page, unsigned int order)
 {

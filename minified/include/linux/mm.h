@@ -1325,24 +1325,6 @@ static inline bool gup_must_unshare(unsigned int flags, struct page *page)
 
 typedef int (*pte_fn_t)(pte_t *pte, unsigned long addr, void *data);
 
-extern void init_mem_debugging_and_hardening(void);
-
-DECLARE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_ALLOC_DEFAULT_ON, init_on_alloc);
-static inline bool want_init_on_alloc(gfp_t flags)
-{
-	if (static_branch_maybe(CONFIG_INIT_ON_ALLOC_DEFAULT_ON,
-				&init_on_alloc))
-		return true;
-	return flags & __GFP_ZERO;
-}
-
-DECLARE_STATIC_KEY_MAYBE(CONFIG_INIT_ON_FREE_DEFAULT_ON, init_on_free);
-static inline bool want_init_on_free(void)
-{
-	return static_branch_maybe(CONFIG_INIT_ON_FREE_DEFAULT_ON,
-				   &init_on_free);
-}
-
 #ifdef __HAVE_ARCH_GATE_AREA
 extern struct vm_area_struct *get_gate_vma(struct mm_struct *mm);
 extern int in_gate_area_no_mm(unsigned long addr);

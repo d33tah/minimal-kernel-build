@@ -478,62 +478,6 @@ bool sym_tristate_within_range(struct symbol *sym, tristate val)
 	return val >= sym->rev_dep.tri && val <= sym->visible;
 }
 
-bool sym_set_tristate_value(struct symbol *sym, tristate val)
-{
-	tristate oldval = sym_get_tristate_value(sym);
-
-	if (oldval != val && !sym_tristate_within_range(sym, val))
-		return false;
-
-	if (!(sym->flags & SYMBOL_DEF_USER)) {
-		sym->flags |= SYMBOL_DEF_USER;
-		sym_set_changed(sym);
-	}
-	 
-	if (sym_is_choice_value(sym) && val == yes) {
-		struct symbol *cs = prop_get_symbol(sym_get_choice_prop(sym));
-		struct property *prop;
-		struct expr *e;
-
-		cs->def[S_DEF_USER].val = sym;
-		cs->flags |= SYMBOL_DEF_USER;
-		prop = sym_get_choice_prop(cs);
-		for (e = prop->expr; e; e = e->left.expr) {
-			if (e->right.sym->visible != no)
-				e->right.sym->flags |= SYMBOL_DEF_USER;
-		}
-	}
-
-	sym->def[S_DEF_USER].tri = val;
-	if (oldval != val)
-		sym_clear_all_valid();
-
-	return true;
-}
-
-tristate sym_toggle_tristate_value(struct symbol *sym)
-{
-	tristate oldval, newval;
-
-	oldval = newval = sym_get_tristate_value(sym);
-	do {
-		switch (newval) {
-		case no:
-			newval = mod;
-			break;
-		case mod:
-			newval = yes;
-			break;
-		case yes:
-			newval = no;
-			break;
-		}
-		if (sym_set_tristate_value(sym, newval))
-			break;
-	} while (oldval != newval);
-	return newval;
-}
-
 bool sym_string_valid(struct symbol *sym, const char *str)
 {
 	signed char ch;
@@ -619,56 +563,6 @@ bool sym_string_within_range(struct symbol *sym, const char *str)
 	}
 }
 
-bool sym_set_string_value(struct symbol *sym, const char *newval)
-{
-	const char *oldval;
-	char *val;
-	int size;
-
-	switch (sym->type) {
-	case S_BOOLEAN:
-	case S_TRISTATE:
-		switch (newval[0]) {
-		case 'y': case 'Y':
-			return sym_set_tristate_value(sym, yes);
-		case 'm': case 'M':
-			return sym_set_tristate_value(sym, mod);
-		case 'n': case 'N':
-			return sym_set_tristate_value(sym, no);
-		}
-		return false;
-	default:
-		;
-	}
-
-	if (!sym_string_within_range(sym, newval))
-		return false;
-
-	if (!(sym->flags & SYMBOL_DEF_USER)) {
-		sym->flags |= SYMBOL_DEF_USER;
-		sym_set_changed(sym);
-	}
-
-	oldval = sym->def[S_DEF_USER].val;
-	size = strlen(newval) + 1;
-	if (sym->type == S_HEX && (newval[0] != '0' || (newval[1] != 'x' && newval[1] != 'X'))) {
-		size += 2;
-		sym->def[S_DEF_USER].val = val = xmalloc(size);
-		*val++ = '0';
-		*val++ = 'x';
-	} else if (!oldval || strcmp(oldval, newval))
-		sym->def[S_DEF_USER].val = val = xmalloc(size);
-	else
-		return true;
-
-	strcpy(val, newval);
-	free((void *)oldval);
-	sym_clear_all_valid();
-
-	return true;
-}
-
-
 const char *sym_get_string_value(struct symbol *sym)
 {
 	tristate val;
@@ -691,11 +585,6 @@ const char *sym_get_string_value(struct symbol *sym)
 		;
 	}
 	return (const char *)sym->curr.val;
-}
-
-bool sym_is_changeable(struct symbol *sym)
-{
-	return sym->visible > sym->rev_dep.tri;
 }
 
 static unsigned strhash(const char *s)

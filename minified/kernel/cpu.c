@@ -18,98 +18,12 @@ static DEFINE_PER_CPU(struct cpuhp_cpu_state, cpuhp_state);
 
 
 
-struct cpuhp_step {
-	const char		*name;
-	union {
-		int		(*single)(unsigned int cpu);
-		int		(*multi)(unsigned int cpu,
-					 struct hlist_node *node);
-	} startup;
-	union {
-		int		(*single)(unsigned int cpu);
-		int		(*multi)(unsigned int cpu,
-					 struct hlist_node *node);
-	} teardown;
-	 
-	struct hlist_head	list;
-
-	bool			multi_instance;
-};
-
-static DEFINE_MUTEX(cpuhp_state_mutex);
-static struct cpuhp_step cpuhp_hp_states[];
-
-static struct cpuhp_step *cpuhp_get_step(enum cpuhp_state state)
-{
-	return cpuhp_hp_states + state;
-}
-
-static struct cpuhp_step cpuhp_hp_states[] = {
-	[CPUHP_OFFLINE] = {
-		.name			= "offline",
-		.startup.single		= NULL,
-		.teardown.single	= NULL,
-	},
-	 
-
-
-	 
-	[CPUHP_ONLINE] = {
-		.name			= "online",
-		.startup.single		= NULL,
-		.teardown.single	= NULL,
-	},
-};
-
-static int cpuhp_cb_check(enum cpuhp_state state)
-{
-	if (state <= CPUHP_OFFLINE || state >= CPUHP_ONLINE)
-		return -EINVAL;
-	return 0;
-}
-
-int __cpuhp_setup_state_cpuslocked(enum cpuhp_state state,
-				   const char *name, bool invoke,
-				   int (*startup)(unsigned int cpu),
-				   int (*teardown)(unsigned int cpu),
-				   bool multi_instance)
-{
-	struct cpuhp_step *sp;
-
-	lockdep_assert_cpus_held();
-
-	if (cpuhp_cb_check(state) || !name)
-		return -EINVAL;
-
-	mutex_lock(&cpuhp_state_mutex);
-
-	sp = cpuhp_get_step(state);
-	sp->startup.single = startup;
-	sp->teardown.single = teardown;
-	sp->name = name;
-	sp->multi_instance = multi_instance;
-	INIT_HLIST_HEAD(&sp->list);
-
-	mutex_unlock(&cpuhp_state_mutex);
-	return 0;
-}
-
-int __cpuhp_setup_state(enum cpuhp_state state,
-			const char *name, bool invoke,
-			int (*startup)(unsigned int cpu),
-			int (*teardown)(unsigned int cpu),
-			bool multi_instance)
-{
-	int ret;
-
-	cpus_read_lock();
-	ret = __cpuhp_setup_state_cpuslocked(state, name, invoke, startup,
-					     teardown, multi_instance);
-	cpus_read_unlock();
-	return ret;
-}
-
-
+/*
+ * CPU hotplug is off (SMP=n) and the only cpuhp_setup_state caller (softirq's
+ * NULL SOFTIRQ_DEAD teardown) was a no-op, so the cpuhp_step state table and
+ * the __cpuhp_setup_state[_cpuslocked] registration helpers were unreachable
+ * and were removed.
+ */
 
 #define MASK_DECLARE_1(x)	[x+1][0] = (1UL << (x))
 #define MASK_DECLARE_2(x)	MASK_DECLARE_1(x), MASK_DECLARE_1(x+1)

@@ -20,26 +20,6 @@ enum cpuhp_state {
 	CPUHP_ONLINE,
 };
 
-int __cpuhp_setup_state(enum cpuhp_state state,	const char *name, bool invoke,
-			int (*startup)(unsigned int cpu),
-			int (*teardown)(unsigned int cpu), bool multi_instance);
-
-int __cpuhp_setup_state_cpuslocked(enum cpuhp_state state, const char *name,
-				   bool invoke,
-				   int (*startup)(unsigned int cpu),
-				   int (*teardown)(unsigned int cpu),
-				   bool multi_instance);
-
-static inline int cpuhp_setup_state_nocalls(enum cpuhp_state state,
-					    const char *name,
-					    int (*startup)(unsigned int cpu),
-					    int (*teardown)(unsigned int cpu))
-{
-	return __cpuhp_setup_state(state, name, false, startup, teardown,
-				   false);
-}
-
-
 static inline void cpuhp_online_idle(enum cpuhp_state state) { }
 
 struct device;

@@ -309,8 +309,6 @@ static void run_ksoftirqd(unsigned int cpu)
 	ksoftirqd_run_end();
 }
 
-#define takeover_tasklets	NULL
-
 static struct smp_hotplug_thread softirq_threads = {
 	.store			= &ksoftirqd,
 	.thread_should_run	= ksoftirqd_should_run,
@@ -320,8 +318,11 @@ static struct smp_hotplug_thread softirq_threads = {
 
 static __init int spawn_ksoftirqd(void)
 {
-	cpuhp_setup_state_nocalls(CPUHP_SOFTIRQ_DEAD, "softirq:dead", NULL,
-				  takeover_tasklets);
+	/*
+	 * CPU hotplug is off (SMP=n), so the SOFTIRQ_DEAD teardown callback
+	 * (takeover_tasklets) never fired and was NULL anyway -- the whole
+	 * cpuhp_setup_state registration was a no-op, so it was dropped.
+	 */
 	BUG_ON(smpboot_register_percpu_thread(&softirq_threads));
 
 	return 0;

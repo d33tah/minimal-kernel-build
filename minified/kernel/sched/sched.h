@@ -235,16 +235,6 @@ static inline int cpu_of(struct rq *rq)
 
 struct sched_group;
 
-static inline bool sched_core_enabled(struct rq *rq)
-{
-	return false;
-}
-
-static inline bool sched_core_disabled(void)
-{
-	return true;
-}
-
 static inline raw_spinlock_t *rq_lockp(struct rq *rq)
 {
 	return &rq->__lock;
@@ -449,10 +439,6 @@ init_numa_balancing(unsigned long clone_flags, struct task_struct *p)
 
 
 /* sched_core_account_forceidle removed - unused */
-
-static inline void sched_core_tick(struct rq *rq) {}
-
-
 
 static inline void set_task_rq(struct task_struct *p, unsigned int cpu) { }
 static inline struct task_group *task_group(struct task_struct *p)

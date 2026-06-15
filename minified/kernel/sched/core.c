@@ -67,33 +67,12 @@ DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
 __read_mostly int scheduler_running;
 
-static inline void sched_core_enqueue(struct rq *rq, struct task_struct *p) { }
-static inline void
-sched_core_dequeue(struct rq *rq, struct task_struct *p, int flags) { }
-
 void raw_spin_rq_lock_nested(struct rq *rq, int subclass)
 {
-	raw_spinlock_t *lock;
-
-	
+	/* SCHED_CORE off: rq lock is always rq->__lock, no core-cookie retry */
 	preempt_disable();
-	if (sched_core_disabled()) {
-		raw_spin_lock_nested(&rq->__lock, subclass);
-		
-		preempt_enable_no_resched();
-		return;
-	}
-
-	for (;;) {
-		lock = __rq_lockp(rq);
-		raw_spin_lock_nested(lock, subclass);
-		if (likely(lock == __rq_lockp(rq))) {
-			
-			preempt_enable_no_resched();
-			return;
-		}
-		raw_spin_unlock(lock);
-	}
+	raw_spin_lock_nested(&rq->__lock, subclass);
+	preempt_enable_no_resched();
 }
 
 
@@ -281,16 +260,10 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 
 	uclamp_rq_inc(rq, p);
 	p->sched_class->enqueue_task(rq, p, flags);
-
-	if (sched_core_enabled(rq))
-		sched_core_enqueue(rq, p);
 }
 
 static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
 {
-	if (sched_core_enabled(rq))
-		sched_core_dequeue(rq, p, flags);
-
 	if (!(flags & DEQUEUE_NOCLOCK))
 		update_rq_clock(rq);
 
@@ -739,7 +712,6 @@ void scheduler_tick(void)
 	if (sched_feat(LATENCY_WARN))
 		resched_latency = cpu_resched_latency(rq);
 	calc_global_load_tick(rq);
-	sched_core_tick(rq);
 
 	rq_unlock(rq, &rf);
 

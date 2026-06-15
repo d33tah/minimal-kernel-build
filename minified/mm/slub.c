@@ -50,10 +50,6 @@ static inline int sysfs_slab_alias(struct kmem_cache *s, const char *p)
 
 static inline void debugfs_slab_add(struct kmem_cache *s) { }
 
-static inline void stat(const struct kmem_cache *s, enum stat_item si)
-{
-}
-
 static nodemask_t slab_nodes;
 
 static inline void *freelist_ptr(const struct kmem_cache *s, void *ptr,
@@ -176,7 +172,6 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab
 	}
 
 	cpu_relax();
-	stat(s, CMPXCHG_DOUBLE_FAIL);
 	return false;
 }
 
@@ -212,7 +207,6 @@ static inline bool cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab,
 	}
 
 	cpu_relax();
-	stat(s, CMPXCHG_DOUBLE_FAIL);
 	return false;
 }
 
@@ -357,7 +351,6 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 		slab = alloc_slab_page(alloc_gfp, node, oo);
 		if (unlikely(!slab))
 			goto out;
-		stat(s, ORDER_FALLBACK);
 	}
 
 	slab->objects = oo_objects(oo);
@@ -526,7 +519,6 @@ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
 			break;
 
 		*ret_slab = slab;
-		stat(s, ALLOC_FROM_PARTIAL);
 		object = t;
 		break;
 
@@ -566,7 +558,6 @@ static inline unsigned int init_tid(int cpu)
 static inline void note_cmpxchg_failure(const char *n,
 		const struct kmem_cache *s, unsigned long tid)
 {
-	stat(s, CMPXCHG_DOUBLE_CPU_FAIL);
 }
 
 static void init_kmem_cache_cpus(struct kmem_cache *s)
@@ -595,7 +586,6 @@ static void deactivate_slab(struct kmem_cache *s, struct slab *slab,
 	struct slab old;
 
 	if (slab->freelist) {
-		stat(s, DEACTIVATE_REMOTE_FREES);
 		tail = DEACTIVATE_TO_TAIL;
 	}
 
@@ -655,13 +645,8 @@ redo:
 	if (mode == M_PARTIAL) {
 		add_partial(n, slab, tail);
 		spin_unlock_irqrestore(&n->list_lock, flags);
-		stat(s, tail);
 	} else if (mode == M_FREE) {
-		stat(s, DEACTIVATE_EMPTY);
 		discard_slab(s, slab);
-		stat(s, FREE_SLAB);
-	} else if (mode == M_FULL_NOLIST) {
-		stat(s, DEACTIVATE_FULL);
 	}
 }
 
@@ -680,7 +665,6 @@ static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
 
 	if (slab) {
 		deactivate_slab(s, slab, freelist);
-		stat(s, CPUSLAB_FLUSH);
 	}
 
 	unfreeze_partials_cpu(s, c);
@@ -794,7 +778,6 @@ redo:
 			goto redo;
 		}
 		prefetch_freepointer(s, next_object);
-		stat(s, ALLOC_FASTPATH);
 	}
 
 	maybe_wipe_obj_freeptr(s, object);
@@ -844,8 +827,6 @@ static void __slab_free(struct kmem_cache *s, struct slab *slab,
 	struct kmem_cache_node *n = NULL;
 	unsigned long flags;
 
-	stat(s, FREE_SLOWPATH);
-
 	do {
 		if (unlikely(n)) {
 			spin_unlock_irqrestore(&n->list_lock, flags);
@@ -869,10 +850,6 @@ static void __slab_free(struct kmem_cache *s, struct slab *slab,
 		"__slab_free"));
 
 	if (likely(!n)) {
-
-		if (likely(was_frozen))
-			stat(s, FREE_FROZEN);
-
 		return;
 	}
 
@@ -882,20 +859,17 @@ static void __slab_free(struct kmem_cache *s, struct slab *slab,
 
 	if (unlikely(!prior)) {
 		add_partial(n, slab, DEACTIVATE_TO_TAIL);
-		stat(s, FREE_ADD_PARTIAL);
 	}
 	spin_unlock_irqrestore(&n->list_lock, flags);
 	return;
 
 slab_empty:
 	if (prior) {
-		
+
 		remove_partial(n, slab);
-		stat(s, FREE_REMOVE_PARTIAL);
 	}
 
 	spin_unlock_irqrestore(&n->list_lock, flags);
-	stat(s, FREE_SLAB);
 	discard_slab(s, slab);
 }
 
@@ -931,7 +905,6 @@ redo:
 			note_cmpxchg_failure("slab_free", s, tid);
 			goto redo;
 		}
-		stat(s, FREE_FASTPATH);
 	} else
 		__slab_free(s, slab, head, tail_obj, cnt, addr);
 

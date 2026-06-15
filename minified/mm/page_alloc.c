@@ -266,9 +266,6 @@ void prep_compound_page(struct page *page, unsigned int order)
 	prep_compound_head(page, order);
 }
 
-static inline bool set_page_guard(struct zone *zone, struct page *page,
-			unsigned int order, int migratetype) { return false; }
-
 static inline void set_buddy_order(struct page *page, unsigned int order)
 {
 	set_page_private(page, order);
@@ -336,7 +333,7 @@ static inline void __free_one_page(struct page *page,
 
 
 static __always_inline bool free_pages_prepare(struct page *page,
-			unsigned int order, bool check_free, fpi_t fpi_flags)
+			unsigned int order)
 {
 	/* Stub: minimal page freeing for simple system */
 	if (PageMappingFlags(page))
@@ -348,13 +345,6 @@ static __always_inline bool free_pages_prepare(struct page *page,
 	arch_free_page(page, order);
 	return true;
 }
-
-static bool free_pcp_prepare(struct page *page, unsigned int order)
-{
-	return free_pages_prepare(page, order, false, FPI_NONE);
-}
-
-
 
 static void __meminit __init_single_page(struct page *page, unsigned long pfn,
 				unsigned long zone, int nid)
@@ -400,7 +390,7 @@ static void __free_pages_ok(struct page *page, unsigned int order,
 	unsigned long pfn = page_to_pfn(page);
 	struct zone *zone = page_zone(page);
 
-	if (!free_pages_prepare(page, order, true, fpi_flags))
+	if (!free_pages_prepare(page, order))
 		return;
 
 	migratetype = get_pfnblock_migratetype(page, pfn);
@@ -466,10 +456,6 @@ static inline void expand(struct zone *zone, struct page *page,
 		high--;
 		size >>= 1;
 		VM_BUG_ON_PAGE(bad_range(zone, &page[size]), &page[size]);
-
-		
-		if (set_page_guard(zone, &page[size], high, migratetype))
-			continue;
 
 		add_to_free_list(&page[size], zone, high, migratetype);
 		set_buddy_order(&page[size], high);
@@ -633,7 +619,7 @@ static bool free_unref_page_prepare(struct page *page, unsigned long pfn,
 {
 	int migratetype;
 
-	if (!free_pcp_prepare(page, order))
+	if (!free_pages_prepare(page, order))
 		return false;
 
 	migratetype = get_pfnblock_migratetype(page, pfn);

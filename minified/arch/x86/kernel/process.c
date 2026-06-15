@@ -257,17 +257,6 @@ static __always_inline void __speculation_ctrl_update(unsigned long tifp,
 		write_spec_ctrl_current(msr, false);
 }
 
-static inline void cr4_toggle_bits_irqsoff(unsigned long mask)
-{
-	unsigned long newval, cr4 = this_cpu_read(cpu_tlbstate.cr4);
-
-	newval = cr4 ^ mask;
-	if (newval != cr4) {
-		this_cpu_write(cpu_tlbstate.cr4, newval);
-		__write_cr4(newval);
-	}
-}
-
 void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 {
 	unsigned long tifp, tifn;
@@ -278,20 +267,6 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 	switch_to_bitmap(tifp);
 
 	propagate_user_return_notify(prev_p, next_p);
-
-	if ((tifp & _TIF_BLOCKSTEP || tifn & _TIF_BLOCKSTEP) &&
-	    arch_has_block_step()) {
-		unsigned long debugctl, msk;
-
-		rdmsrl(MSR_IA32_DEBUGCTLMSR, debugctl);
-		debugctl &= ~DEBUGCTLMSR_BTF;
-		msk = tifn & _TIF_BLOCKSTEP;
-		debugctl |= (msk >> TIF_BLOCKSTEP) << DEBUGCTLMSR_BTF_SHIFT;
-		wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctl);
-	}
-
-	if ((tifp ^ tifn) & _TIF_NOTSC)
-		cr4_toggle_bits_irqsoff(X86_CR4_TSD);
 
 	if ((tifp ^ tifn) & _TIF_NOCPUID)
 		set_cpuid_faulting(!!(tifn & _TIF_NOCPUID));

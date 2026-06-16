@@ -9,8 +9,3 @@ void native_io_delay(void)
 {
 	asm volatile ("outb %al, $0x80");
 }
-
-void __init io_delay_init(void)
-{
-	/* Stub: no DMI detection needed for minimal kernel */
-}

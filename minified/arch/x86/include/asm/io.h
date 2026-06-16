@@ -56,7 +56,6 @@ static inline void *phys_to_virt(phys_addr_t address)
 #define phys_to_virt phys_to_virt
 
 extern void native_io_delay(void);
-extern void io_delay_init(void);
 
 
 static inline void slow_down_io(void)

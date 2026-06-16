@@ -29,8 +29,6 @@ extern u64 relocated_ramdisk;
 
 struct pt_regs;
 
-void early_platform_quirks(void);
-
 extern unsigned long saved_video_mode;
 
 extern void reserve_standard_io_resources(void);

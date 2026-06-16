@@ -732,8 +732,6 @@ void cpu_init_exception_handling(void)
 
 	load_TR_desc();
 
-	setup_ghcb();
-
 	load_current_idt();
 }
 

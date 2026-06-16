@@ -97,9 +97,4 @@ static inline bool memcg_kmem_enabled(void)
 	return false;
 }
 
-static inline int memcg_kmem_id(struct mem_cgroup *memcg)
-{
-	return -1;
-}
-
 #endif /* _LINUX_MEMCONTROL_H */

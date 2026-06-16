@@ -96,12 +96,6 @@ extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
 extern char *kmemdup_nul(const char *s, size_t len, gfp_t gfp);
 
 
-static inline void memzero_explicit(void *s, size_t count)
-{
-	memset(s, 0, count);
-	barrier_data(s);
-}
-
 static inline const char *kbasename(const char *path)
 {
 	const char *tail = strrchr(path, '/');

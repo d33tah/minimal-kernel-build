@@ -526,8 +526,6 @@ int begin_new_exec(struct linux_binprm * bprm)
 	if (retval)
 		goto out;
 
-	would_dump(bprm, bprm->file);
-
 	acct_arg_size(bprm, 0);
 	retval = exec_mmap(bprm->mm);
 	if (retval)
@@ -583,11 +581,6 @@ out_unlock:
 	up_write(&me->signal->exec_update_lock);
 out:
 	return retval;
-}
-
-void would_dump(struct linux_binprm *bprm, struct file *file)
-{
-	/* Stub: coredump security checks not needed for minimal kernel */
 }
 
 void setup_new_exec(struct linux_binprm * bprm)

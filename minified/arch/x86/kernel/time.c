@@ -11,7 +11,6 @@
 #include <asm/x86_init.h>
 #include <asm/i8259.h>
 #include <asm/timer.h>
-static inline int hpet_enable(void) { return 0; }
 #include <asm/time.h>
 
 /* profile_pc stubbed - never called */
@@ -34,10 +33,8 @@ static void __init setup_default_timer_irq(void)
 
 void __init hpet_time_init(void)
 {
-	if (!hpet_enable()) {
-		if (!pit_timer_init())
-			return;
-	}
+	if (!pit_timer_init())
+		return;
 
 	setup_default_timer_irq();
 }

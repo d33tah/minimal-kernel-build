@@ -12,10 +12,7 @@ struct fs_context;
 struct user_namespace;
 struct pipe_inode_info;
 
- 
-static inline void bdev_cache_init(void)
-{
-}
+
 /* emergency_thaw_bdev removed - unused */
 
  

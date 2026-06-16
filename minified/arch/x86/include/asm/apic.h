@@ -13,10 +13,6 @@
 #include <asm/msr.h>
 #include <asm/hardirq.h>
 
-static inline void generic_apic_probe(void)
-{
-}
-
 /* Only keeping APIC functions that are actually called */
 static inline void init_apic_mappings(void) { }
 # define setup_boot_APIC_clock x86_init_noop

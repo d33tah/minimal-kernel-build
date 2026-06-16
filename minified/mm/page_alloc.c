@@ -1178,8 +1178,6 @@ build_all_zonelists_init(void)
 	
 	for_each_possible_cpu(cpu)
 		per_cpu_pages_init(&per_cpu(boot_pageset, cpu), &per_cpu(boot_zonestats, cpu));
-
-	mminit_verify_zonelist();
 }
 
 void __ref build_all_zonelists(pg_data_t *pgdat)

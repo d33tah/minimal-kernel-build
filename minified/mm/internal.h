@@ -211,10 +211,6 @@ static inline void mminit_dprintk(enum mminit_level level,
 {
 }
 
-static inline void mminit_verify_zonelist(void)
-{
-}
-
 extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
         unsigned long, unsigned long,
         unsigned long, unsigned long);

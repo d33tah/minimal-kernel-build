@@ -41,11 +41,6 @@ static inline void boot_init_stack_canary(void) {}
 #include <asm/proto.h>
 /* --- 2025-12-07 20:47 --- Inlined frame.h */
 #include <asm/asm.h>
-#define ENCODE_FRAME_POINTER
-static inline unsigned long encode_frame_pointer(struct pt_regs *regs)
-{
-	return 0;
-}
 #define FRAME_BEGIN
 #define FRAME_END
 #define FRAME_OFFSET 0
@@ -100,7 +95,7 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 	fork_frame = container_of(childregs, struct fork_frame, regs);
 	frame = &fork_frame->frame;
 
-	frame->bp = encode_frame_pointer(childregs);
+	frame->bp = 0;
 	frame->ret_addr = (unsigned long) ret_from_fork;
 	p->thread.sp = (unsigned long) fork_frame;
 	memset(p->thread.ptrace_bps, 0, sizeof(p->thread.ptrace_bps));

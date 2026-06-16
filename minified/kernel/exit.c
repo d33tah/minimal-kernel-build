@@ -165,14 +165,6 @@ void release_task(struct task_struct *p)
 
 
 
-static void coredump_task_exit(struct task_struct *tsk)
-{
-	/* Stub: coredumps not needed for minimal kernel */
-	spin_lock_irq(&tsk->sighand->siglock);
-	tsk->flags |= PF_POSTCOREDUMP;
-	spin_unlock_irq(&tsk->sighand->siglock);
-}
-
 static void exit_mm(void)
 {
 	struct mm_struct *mm = current->mm;
@@ -293,8 +285,6 @@ void __noreturn do_exit(long code)
 	int group_dead;
 
 	WARN_ON(tsk->plug);
-
-	coredump_task_exit(tsk);
 
 	exit_signals(tsk);
 

@@ -36,7 +36,6 @@ static inline void smp_send_stop(void) { }
 
 static inline void smp_send_reschedule(int cpu) { }
 #define smp_prepare_boot_cpu()			do {} while (0)
-static inline void call_function_init(void) { }
 
 static inline void smp_init(void) { }
 

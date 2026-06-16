@@ -428,8 +428,6 @@ static void __init mm_init(void)
 	page_ext_init_flatmem_late();
 	pgtable_init();
 	vmalloc_init();
-	 
-	init_espfix_bsp();
 }
 
 
@@ -523,7 +521,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	random_init(command_line);
 	boot_init_stack_canary();
 
-	call_function_init();
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 
 	early_boot_irqs_disabled = false;
@@ -828,9 +825,7 @@ static noinline void __init kernel_init_freeable(void)
 
 	init_mm_internals();
 
-	rcu_init_tasks_generic();
 	do_pre_smp_initcalls();
-	lockup_detector_init();
 
 	smp_init();
 	sched_init_smp();

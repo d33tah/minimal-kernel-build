@@ -6,8 +6,6 @@
 #include <linux/mutex.h>
 
 
-static inline void memory_dev_init(void) { }
-
 extern struct mutex text_mutex;
 
 #endif

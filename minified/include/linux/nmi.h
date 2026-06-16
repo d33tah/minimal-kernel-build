@@ -7,7 +7,6 @@
 #include <asm/nmi.h>
 #endif
 
-static inline void lockup_detector_init(void) { }
 static inline void touch_softlockup_watchdog(void) { }
 
 

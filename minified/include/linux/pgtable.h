@@ -469,8 +469,6 @@ static inline int pmd_clear_huge(pmd_t *pmd)
 
 
 
-static inline void init_espfix_bsp(void) { }
-
 extern void __init pgtable_cache_init(void);
 
 #ifndef PAGE_KERNEL_RO

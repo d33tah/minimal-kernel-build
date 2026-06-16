@@ -244,17 +244,12 @@ static inline bool slab_free_freelist_hook(struct kmem_cache *s,
 		object = next;
 		next = get_freepointer(s, object);
 
-		
-		if (!slab_free_hook(s, object, slab_want_init_on_free(s))) {
-			
-			set_freepointer(s, object, *head);
-			*head = object;
-			if (!*tail)
-				*tail = object;
-		} else {
-			
-			--(*cnt);
-		}
+
+		slab_free_hook(s, object, slab_want_init_on_free(s));
+		set_freepointer(s, object, *head);
+		*head = object;
+		if (!*tail)
+			*tail = object;
 	} while (object != old_tail);
 
 	if (*head == *tail)

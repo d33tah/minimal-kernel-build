@@ -136,9 +136,6 @@ static inline void __dec_node_page_state(struct page *page,
 
 #define set_pgdat_percpu_threshold(pgdat, callback) { }
 
-static inline void refresh_zone_stat_thresholds(void) { }
-static inline void cpu_vm_stats_fold(int cpu) { }
-
 static inline void node_stat_mod_folio(struct folio *folio,
 		enum node_stat_item item, long nr)
 {

@@ -392,10 +392,6 @@ static void __init memory_map_top_down(unsigned long map_start,
 		init_range_memory_mapping(real_end, map_end);
 }
 
-static void __init init_trampoline(void)
-{
-}
-
 void __init init_mem_mapping(void)
 {
 	unsigned long end;
@@ -406,9 +402,6 @@ void __init init_mem_mapping(void)
 
 	 
 	init_memory_mapping(0, ISA_END_ADDRESS, PAGE_KERNEL);
-
-	 
-	init_trampoline();
 
 	/*
 	 * memblock_bottom_up() is always false on this build (no setter), so the

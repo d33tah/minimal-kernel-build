@@ -44,15 +44,9 @@ static void choose_new_asid(struct mm_struct *next, u64 next_tlb_gen,
 	*new_asid = 0;
 }
 
-static inline void invalidate_user_asid(u16 asid)
-{
-
-}
-
 static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid)
 {
 	/* Without PCID every switch reloads CR3 (always a full flush). */
-	invalidate_user_asid(new_asid);
 	write_cr3(build_cr3(pgdir, new_asid));
 }
 
@@ -361,9 +355,7 @@ STATIC_NOPV void native_flush_tlb_local(void)
 	 
 	WARN_ON_ONCE(preemptible());
 
-	invalidate_user_asid(this_cpu_read(cpu_tlbstate.loaded_mm_asid));
 
-	 
 	native_write_cr3(__native_read_cr3());
 }
 

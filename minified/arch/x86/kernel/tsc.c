@@ -23,7 +23,6 @@
 #include <asm/apic.h>
 #include <asm/intel-family.h>
 #include <asm/i8259.h>
-static inline bool is_early_uv_system(void) { return 0; }
 
 unsigned int __read_mostly cpu_khz;	 
 
@@ -445,10 +444,6 @@ void tsc_restore_sched_clock_state(void)
 }
 
 
-/* detect_art stubbed out - ART feature not needed for minimal kernel
-   (convert_art_to_tsc was removed) */
-static void __init detect_art(void) { }
-
 
 
 static void tsc_resume(struct clocksource *cs)
@@ -659,9 +654,7 @@ void __init tsc_early_init(void)
 {
 	if (!boot_cpu_has(X86_FEATURE_TSC))
 		return;
-	 
-	if (is_early_uv_system())
-		return;
+
 	if (!determine_cpu_tsc_frequencies(true))
 		return;
 	tsc_enable_sched_clock();
@@ -704,6 +697,5 @@ void __init tsc_init(void)
 		tsc_disable_clocksource_watchdog();
 
 	clocksource_register_khz(&clocksource_tsc_early, tsc_khz);
-	detect_art();
 }
 

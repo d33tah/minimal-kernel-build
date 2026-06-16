@@ -315,12 +315,6 @@ time64_t ktime_get_real_seconds(void)
 }
 
 
-static void __timekeeping_set_tai_offset(struct timekeeper *tk, s32 tai_offset)
-{
-	tk->tai_offset = tai_offset;
-	tk->offs_tai = ktime_add(tk->offs_real, ktime_set(tai_offset, 0));
-}
-
 static int change_clocksource(void *data)
 {
 	struct timekeeper *tk = &tk_core.timekeeper;

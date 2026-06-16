@@ -172,9 +172,6 @@ up_fail:
 
 static int load_vdso32(void)
 {
-	if (vdso32_enabled != 1)   
-		return 0;
-
 	return map_vdso(&vdso_image_32, 0);
 }
 

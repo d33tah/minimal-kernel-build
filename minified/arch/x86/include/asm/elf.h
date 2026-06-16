@@ -36,9 +36,6 @@ typedef struct user_i387_struct elf_fpregset_t;
 
 #include <asm/vdso.h>
 
-extern unsigned int vdso32_enabled;
-
- 
 #define elf_check_arch_ia32(x) \
 	(((x)->e_machine == EM_386) || ((x)->e_machine == EM_486))
 

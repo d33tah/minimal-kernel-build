@@ -68,16 +68,6 @@ void __init e820__range_add(u64 start, u64 size, enum e820_type type)
 	__e820__range_add(e820_table, start, size, type);
 }
 
-static void __init e820_print_type(enum e820_type type)
-{
-	/* Stub: e820 type printing not needed for minimal kernel */
-}
-
-void __init e820__print_table(char *who)
-{
-	/* Stub: e820 memory map printing not needed for minimal kernel */
-}
-
 struct change_member {
 	 
 	struct e820_entry	*entry;
@@ -250,9 +240,7 @@ __e820__range_update(struct e820_table *table, u64 start, u64 size, enum e820_ty
 
 	end = start + size;
 	printk(KERN_DEBUG "e820: update [mem %#010Lx-%#010Lx] ", start, end - 1);
-	e820_print_type(old_type);
 	pr_cont(" ==> ");
-	e820_print_type(new_type);
 	pr_cont("\n");
 
 	for (i = 0; i < table->nr_entries; i++) {
@@ -318,8 +306,6 @@ u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type, bool
 
 	end = start + size;
 	printk(KERN_DEBUG "e820: remove [mem %#010Lx-%#010Lx] ", start, end - 1);
-	if (check_type)
-		e820_print_type(old_type);
 	pr_cont("\n");
 
 	for (i = 0; i < e820_table->nr_entries; i++) {
@@ -392,11 +378,6 @@ void __init e820__memory_setup_extended(u64 phys_addr, u32 data_len)
 	/* kexec/firmware table copy removed - unused in minimal kernel */
 
 	early_memunmap(sdata, data_len);
-}
-
-void __init e820__register_nosave_regions(unsigned long limit_pfn)
-{
-	/* Stub: hibernation nosave regions not needed for minimal kernel */
 }
 
 

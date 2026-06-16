@@ -483,7 +483,6 @@ void __init setup_arch(char **cmdline_p)
 				  E820_TYPE_RESERVED);
 		e820__update_table(e820_table);
 		printk(KERN_INFO "fixed physical RAM map:\n");
-		e820__print_table("bad_ppro");
 	}
 
 	 
@@ -549,7 +548,6 @@ void __init setup_arch(char **cmdline_p)
 	x86_init.hyper.guest_late_init();
 
 	e820__reserve_resources();
-	e820__register_nosave_regions(max_pfn);
 
 	x86_init.resources.reserve_resources();
 

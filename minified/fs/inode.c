@@ -299,8 +299,6 @@ static void evict(struct inode *inode)
 
 	inode_sb_list_del(inode);
 
-	inode_wait_for_writeback(inode);
-
 	truncate_inode_pages_final(&inode->i_data);
 	clear_inode(inode);
 	if (S_ISCHR(inode->i_mode) && inode->i_cdev)

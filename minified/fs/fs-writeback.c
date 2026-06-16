@@ -10,5 +10,3 @@ int write_inode_now(struct inode *inode, int sync) { return 0; }
 
 int dirty_writeback_centisecs = 500;
 int dirty_expire_centisecs = 3000;
-
-void inode_wait_for_writeback(struct inode *inode) { }

@@ -63,7 +63,6 @@ struct wb_domain {
 
 
 struct bdi_writeback;
-void inode_wait_for_writeback(struct inode *inode);
 void inode_io_list_del(struct inode *inode);
 
 

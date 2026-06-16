@@ -41,11 +41,6 @@ SYSSEG		= 0x1000		/* historical load address >> 4 */
 
 	.global bootsect_start
 bootsect_start:
-#ifdef CONFIG_EFI_STUB
-	# "MZ", MS-DOS header
-	.word	MZ_MAGIC
-#endif
-
 	# Normalize the start address
 	ljmp	$BOOTSEG, $start2
 
@@ -78,14 +73,6 @@ bs_die:
 	# int 0x19 should never return.  In case it does anyway,
 	# invoke the BIOS reset code...
 	ljmp	$0xf000,$0xfff0
-
-#ifdef CONFIG_EFI_STUB
-	.org	0x3c
-	#
-	# Offset to the PE header.
-	#
-	.long	pe_header
-#endif /* CONFIG_EFI_STUB */
 
 	.section ".bsdata", "a"
 bugger_off_msg:
@@ -203,11 +190,7 @@ initrd_addr_max: .long 0x7fffffff
 kernel_alignment:  .long CONFIG_PHYSICAL_ALIGN	#physical addr alignment
 						#required for protected mode
 						#kernel
-#ifdef CONFIG_RELOCATABLE
-relocatable_kernel:    .byte 1
-#else
 relocatable_kernel:    .byte 0
-#endif
 min_alignment:		.byte MIN_KERNEL_ALIGN_LG2	# minimum alignment
 
 xloadflags:
@@ -215,15 +198,7 @@ xloadflags:
 
 # define XLF1 0
 
-#ifdef CONFIG_EFI_STUB
-# ifdef CONFIG_EFI_MIXED
-#  define XLF23 (XLF_EFI_HANDOVER_32|XLF_EFI_HANDOVER_64)
-# else
-#   define XLF23 XLF_EFI_HANDOVER_32		/* 32-bit EFI handover ok */
-# endif
-#else
 # define XLF23 0
-#endif
 
 # define XLF4 0
 

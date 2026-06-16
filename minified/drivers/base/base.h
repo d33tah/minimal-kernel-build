@@ -62,10 +62,6 @@ extern int devres_release_all(struct device *dev);
 
 extern struct kset *devices_kset;
 
-static inline void module_add_driver(struct module *mod,
-				     struct device_driver *drv) { }
-static inline void module_remove_driver(struct device_driver *drv) { }
-
 static inline int devtmpfs_init(void) { return 0; }
 
  

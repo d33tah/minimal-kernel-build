@@ -48,7 +48,7 @@ endif
 
 obj-y			:= filemap.o oom_kill.o \
 			   maccess.o page-writeback.o folio-compat.o \
-			   readahead.o swap.o truncate.o vmscan.o shmem.o \
+			   readahead.o swap.o truncate.o shmem.o \
 			   util.o mmzone.o vmstat.o backing-dev.o \
 			   percpu.o slab_common.o \
 			   interval_tree.o list_lru.o workingset.o \

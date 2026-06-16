@@ -24,8 +24,6 @@ typedef void *acpi_handle;
 struct fwnode_handle;
 
 
-static inline void acpi_early_init(void) { }
-static inline void acpi_subsystem_init(void) { }
 
 static inline int early_acpi_boot_init(void)
 {
@@ -53,7 +51,6 @@ static inline bool acpi_driver_match_device(struct device *dev,
 	return false;
 }
 
-static inline void acpi_table_upgrade(void) { }
 static inline void acpi_device_notify_remove(struct device *dev) { }
 
 #endif	 

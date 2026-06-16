@@ -6,7 +6,6 @@
 #include <linux/mod_devicetable.h>
 
 
-static inline void dmi_setup(void) { }
 #define dmi_available 0
 
 

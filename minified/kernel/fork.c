@@ -9,15 +9,12 @@ static inline void task_numa_free(struct task_struct *p, bool final) {}
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
 #include <linux/seq_file.h>
-static inline void rt_mutex_debug_task_free(struct task_struct *tsk) { }
 #include <linux/init.h>
 #include <linux/unistd.h>
 #include <linux/module.h>
 #include <linux/vmalloc.h>
 #include <linux/completion.h>
 #include <linux/personality.h>
-static inline void exit_sem(struct task_struct *tsk) { }
-static inline void shm_init_task(struct task_struct *task) { }
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/iocontext.h>
@@ -38,7 +35,6 @@ static inline void shm_init_task(struct task_struct *task) { }
 #include <linux/jiffies.h>
 #include <linux/compat.h>
 #include <linux/kthread.h>
-static inline void task_io_accounting_init(struct task_io_accounting *ioac) {}
 #include <linux/rcupdate.h>
 #include <linux/ptrace.h>
 #include <linux/mount.h>
@@ -46,7 +42,6 @@ static inline void task_io_accounting_init(struct task_io_accounting *ioac) {}
 #include <linux/proc_fs.h>
 #include <linux/rmap.h>
 #include <linux/userfaultfd_k.h>
-static inline void proc_fork_connector(struct task_struct *task) {}
 #include <linux/random.h>
 #include <linux/tty.h>
 #include <linux/fs_struct.h>
@@ -60,7 +55,6 @@ static inline void clear_user_return_notifier(struct task_struct *p) {}
 #include <linux/sysctl.h>
 #include <linux/init_task.h>
 #include <linux/thread_info.h>
-static inline void scs_init(void) {}
 static inline int scs_prepare(struct task_struct *tsk, int node) { return 0; }
 /* end scs.h */
 
@@ -207,7 +201,6 @@ void free_task(struct task_struct *tsk)
 
 
 	WARN_ON_ONCE(refcount_read(&tsk->stack_refcount) != 0);
-	rt_mutex_debug_task_free(tsk);
 	arch_release_task_struct(tsk);
 	if (tsk->flags & PF_KTHREAD)
 		free_kthread_struct(tsk);
@@ -404,8 +397,6 @@ void __init fork_init(void)
 	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_MSGQUEUE,   RLIM_INFINITY);
 	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_SIGPENDING, RLIM_INFINITY);
 	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_MEMLOCK,    RLIM_INFINITY);
-
-	scs_init();
 
 	lockdep_init_task(&init_task);
 	uprobes_init();
@@ -945,8 +936,6 @@ static __latent_entropy struct task_struct *copy_process(
 
 	p->default_timer_slack_ns = current->timer_slack_ns;
 
-	task_io_accounting_init(&p->ioac);
-
 	p->io_context = NULL;
 	cgroup_fork(p);
 	if (args->kthread) {
@@ -961,7 +950,6 @@ static __latent_entropy struct task_struct *copy_process(
 	if (retval)
 		goto bad_fork_cleanup_policy;
 
-	shm_init_task(p);
 	retval = copy_files(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_semundo;
@@ -1096,8 +1084,6 @@ static __latent_entropy struct task_struct *copy_process(
 	syscall_tracepoint_update(p);
 	write_unlock_irq(&tasklist_lock);
 
-	proc_fork_connector(p);
-
 	uprobe_copy_process(p, clone_flags);
 
 	copy_oom_score_adj(clone_flags, p);
@@ -1131,7 +1117,6 @@ bad_fork_cleanup_fs:
 bad_fork_cleanup_files:
 	exit_files(p); 
 bad_fork_cleanup_semundo:
-	exit_sem(p);
 bad_fork_cleanup_policy:
 	lockdep_free_task(p);
 bad_fork_cleanup_delayacct:

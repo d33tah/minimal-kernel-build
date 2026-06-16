@@ -344,20 +344,6 @@ int zap_other_threads(struct task_struct *p)
 	return count;
 }
 
-struct sighand_struct *__lock_task_sighand(struct task_struct *tsk,
-					   unsigned long *flags)
-{
-	struct sighand_struct *sighand;
-
-	rcu_read_lock();
-	sighand = rcu_dereference(tsk->sighand);
-	if (sighand)
-		spin_lock_irqsave(&sighand->siglock, *flags);
-	rcu_read_unlock();
-
-	return sighand;
-}
-
 void force_sig(int sig)
 {
 	struct kernel_siginfo info;

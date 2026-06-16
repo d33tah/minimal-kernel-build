@@ -12,9 +12,6 @@ static inline void ima_inode_post_setattr(struct user_namespace *mnt_userns,
 
 #include <linux/xattr.h>
 
-/* Only evm_inode_post_setattr is used (from notify_change) */
-static inline void evm_inode_post_setattr(struct dentry *dentry, int ia_valid) { }
-
 static bool chown_ok(struct user_namespace *mnt_userns,
 		     const struct inode *inode,
 		     kuid_t uid)
@@ -227,7 +224,6 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 
 	if (!error) {
 		ima_inode_post_setattr(mnt_userns, dentry);
-		evm_inode_post_setattr(dentry, ia_valid);
 	}
 
 	return error;

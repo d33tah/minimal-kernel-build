@@ -13,7 +13,6 @@ struct ipc_namespace {
 	struct user_namespace *user_ns;
 	struct ns_common ns;
 };
-static inline void put_ipc_ns(struct ipc_namespace *ns) {}
 #include <linux/fs_struct.h>
 #include <linux/proc_fs.h>
 #include <linux/proc_ns.h>
@@ -61,8 +60,6 @@ void free_nsproxy(struct nsproxy *ns)
 		put_mnt_ns(ns->mnt_ns);
 	if (ns->uts_ns)
 		put_uts_ns(ns->uts_ns);
-	if (ns->ipc_ns)
-		put_ipc_ns(ns->ipc_ns);
 	if (ns->pid_ns_for_children)
 		put_pid_ns(ns->pid_ns_for_children);
 	if (ns->time_ns)

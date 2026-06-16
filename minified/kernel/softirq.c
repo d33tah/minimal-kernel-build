@@ -148,16 +148,12 @@ asmlinkage __visible void do_softirq(void)
 #define MAX_SOFTIRQ_TIME  msecs_to_jiffies(2)
 #define MAX_SOFTIRQ_RESTART 10
 
-static inline bool lockdep_softirq_start(void) { return false; }
-static inline void lockdep_softirq_end(bool in_hardirq) { }
-
 asmlinkage __visible void __softirq_entry __do_softirq(void)
 {
 	unsigned long end = jiffies + MAX_SOFTIRQ_TIME;
 	unsigned long old_flags = current->flags;
 	int max_restart = MAX_SOFTIRQ_RESTART;
 	struct softirq_action *h;
-	bool in_hardirq;
 	__u32 pending;
 	int softirq_bit;
 
@@ -167,7 +163,6 @@ asmlinkage __visible void __softirq_entry __do_softirq(void)
 	pending = local_softirq_pending();
 
 	softirq_handle_begin();
-	in_hardirq = lockdep_softirq_start();
 
 restart:
 	 
@@ -216,7 +211,6 @@ restart:
 		wakeup_softirqd();
 	}
 
-	lockdep_softirq_end(in_hardirq);
 	softirq_handle_end();
 	current_restore_flags(old_flags, PF_MEMALLOC);
 }

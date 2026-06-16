@@ -4,7 +4,6 @@
 #include <linux/printk.h>
 #include <linux/kallsyms.h>
 #include <linux/kmsg_dump.h>
-static inline void kgdb_panic(const char *msg) { }
 #include <linux/notifier.h>
 #include <linux/vt_kern.h>
 #include <linux/module.h>
@@ -105,9 +104,6 @@ void panic(const char *fmt, ...)
 		buf[len - 1] = '\0';
 
 	pr_emerg("Kernel panic - not syncing: %s\n", buf);
-
-	 
-	kgdb_panic(buf);
 
 
 	__crash_kexec(NULL);

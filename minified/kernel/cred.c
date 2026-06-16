@@ -7,9 +7,6 @@
 #include <linux/init_task.h>
 #include <linux/security.h>
 #include <linux/binfmts.h>
-#define PROC_EVENT_UID  0x00000004
-#define PROC_EVENT_GID  0x00000040
-static inline void proc_id_connector(struct task_struct *task, int which_id) {}
 #include <linux/uidgid.h>
 
 static struct kmem_cache *cred_jar;
@@ -218,19 +215,7 @@ int commit_creds(struct cred *new)
 		dec_rlimit_ucounts(old->ucounts, UCOUNT_RLIMIT_NPROC, 1);
 
 	 
-	if (!uid_eq(new->uid,   old->uid)  ||
-	    !uid_eq(new->euid,  old->euid) ||
-	    !uid_eq(new->suid,  old->suid) ||
-	    !uid_eq(new->fsuid, old->fsuid))
-		proc_id_connector(task, PROC_EVENT_UID);
 
-	if (!gid_eq(new->gid,   old->gid)  ||
-	    !gid_eq(new->egid,  old->egid) ||
-	    !gid_eq(new->sgid,  old->sgid) ||
-	    !gid_eq(new->fsgid, old->fsgid))
-		proc_id_connector(task, PROC_EVENT_GID);
-
-	 
 	put_cred(old);
 	put_cred(old);
 	return 0;

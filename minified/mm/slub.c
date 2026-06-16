@@ -220,12 +220,6 @@ static inline void inc_slabs_node(struct kmem_cache *s, int node,
 static inline void dec_slabs_node(struct kmem_cache *s, int node,
 							int objects) {}
 
-static bool freelist_corrupted(struct kmem_cache *s, struct slab *slab,
-			       void **freelist, void *nextfree)
-{
-	return false;
-}
-
 static __always_inline void kfree_hook(void *x)
 {
 }
@@ -587,10 +581,6 @@ static void deactivate_slab(struct kmem_cache *s, struct slab *slab,
 	freelist_iter = freelist;
 	while (freelist_iter) {
 		nextfree = get_freepointer(s, freelist_iter);
-
-		
-		if (freelist_corrupted(s, slab, &freelist_iter, nextfree))
-			break;
 
 		freelist_tail = freelist_iter;
 		free_delta++;

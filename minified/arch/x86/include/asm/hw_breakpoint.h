@@ -40,13 +40,6 @@ struct perf_event_attr;
 struct perf_event;
 struct pmu;
 
-extern int hw_breakpoint_arch_parse(struct perf_event *bp,
-				    const struct perf_event_attr *attr,
-				    struct arch_hw_breakpoint *hw);
-extern int hw_breakpoint_exceptions_notify(struct notifier_block *unused,
-					   unsigned long val, void *data);
-
-
 int arch_install_hw_breakpoint(struct perf_event *bp);
 void arch_uninstall_hw_breakpoint(struct perf_event *bp);
 

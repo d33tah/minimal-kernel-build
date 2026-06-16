@@ -2,8 +2,6 @@
 #ifndef _ASM_X86_SECTIONS_H
 #define _ASM_X86_SECTIONS_H
 
-#define arch_is_kernel_initmem_freed arch_is_kernel_initmem_freed
-
 /* Inlined from asm-generic/sections.h */
 #include <linux/compiler.h>
 #include <linux/types.h>
@@ -68,14 +66,4 @@ extern char __end_of_kernel_reserve[];
 
 extern unsigned long _brk_start, _brk_end;
 
-static inline bool arch_is_kernel_initmem_freed(unsigned long addr)
-{
-	 
-	if (_brk_start)
-		return 0;
-
-	 
-	return addr >= _brk_end && addr < (unsigned long)&_end;
-}
-
-#endif	 
+#endif

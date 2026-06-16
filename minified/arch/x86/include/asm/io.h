@@ -123,11 +123,6 @@ BUILDIO(l,  , u32)
 #define inb_p inb_p
 #define outb_p outb_p
 
-extern void *xlate_dev_mem_ptr(phys_addr_t phys);
-extern void unxlate_dev_mem_ptr(phys_addr_t phys, void *addr);
-
-#define xlate_dev_mem_ptr xlate_dev_mem_ptr
-#define unxlate_dev_mem_ptr unxlate_dev_mem_ptr
 /* ioremap_change_attr, ioremap_wc, ioremap_wt removed - no callers */
 
 #define IO_SPACE_LIMIT 0xffff

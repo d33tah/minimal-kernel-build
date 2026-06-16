@@ -44,10 +44,6 @@
 
 #define __CMPXCHG_DOUBLE	((slab_flags_t __force)0x40000000U)
 
-static inline int sysfs_slab_add(struct kmem_cache *s) { return 0; }
-static inline int sysfs_slab_alias(struct kmem_cache *s, const char *p)
-							{ return 0; }
-
 static nodemask_t slab_nodes;
 
 static inline void *freelist_ptr(const struct kmem_cache *s, void *ptr,
@@ -1289,11 +1285,6 @@ __kmem_cache_alias(const char *name, unsigned int size, unsigned int align,
 		
 		s->object_size = max(s->object_size, size);
 		s->inuse = max(s->inuse, ALIGN(size, sizeof(void *)));
-
-		if (sysfs_slab_alias(s, name)) {
-			s->refcount--;
-			s = NULL;
-		}
 	}
 
 	return s;
@@ -1306,16 +1297,6 @@ int __kmem_cache_create(struct kmem_cache *s, slab_flags_t flags)
 	err = kmem_cache_open(s, flags);
 	if (err)
 		return err;
-
-	
-	if (slab_state <= UP)
-		return 0;
-
-	err = sysfs_slab_add(s);
-	if (err) {
-		__kmem_cache_release(s);
-		return err;
-	}
 
 	return 0;
 }

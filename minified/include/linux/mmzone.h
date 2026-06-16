@@ -437,11 +437,6 @@ static inline int zone_to_nid(struct zone *zone)
 	return 0;
 }
 
-static inline int is_highmem_idx(enum zone_type idx)
-{
-	return 0;
-}
-
 extern struct pglist_data contig_page_data;
 static inline struct pglist_data *NODE_DATA(int nid)
 {

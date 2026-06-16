@@ -322,12 +322,6 @@ static inline bool thread_group_leader(struct task_struct *p)
 	return p->exit_signal >= 0;
 }
 
-static inline
-bool same_thread_group(struct task_struct *p1, struct task_struct *p2)
-{
-	return p1->signal == p2->signal;
-}
-
 static inline struct task_struct *next_thread(const struct task_struct *p)
 {
 	return list_entry_rcu(p->thread_group.next,
@@ -341,26 +335,6 @@ static inline int thread_group_empty(struct task_struct *p)
 
 #define delay_group_leader(p) \
 		(thread_group_leader(p) && !thread_group_empty(p))
-
-
-extern struct sighand_struct *__lock_task_sighand(struct task_struct *task,
-							unsigned long *flags);
-
-static inline struct sighand_struct *lock_task_sighand(struct task_struct *task,
-						       unsigned long *flags)
-{
-	struct sighand_struct *ret;
-
-	ret = __lock_task_sighand(task, flags);
-	(void)__cond_lock(&task->sighand->siglock, ret);
-	return ret;
-}
-
-static inline void unlock_task_sighand(struct task_struct *task,
-						unsigned long *flags)
-{
-	spin_unlock_irqrestore(&task->sighand->siglock, *flags);
-}
 
 
 static inline unsigned long task_rlimit(const struct task_struct *task,

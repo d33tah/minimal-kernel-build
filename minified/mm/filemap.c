@@ -25,8 +25,6 @@
 #include <linux/shmem_fs.h>
 #include <linux/rmap.h>
 #include <linux/ramfs.h>
-static inline bool folio_test_idle(struct folio *folio) { return false; }
-static inline void folio_clear_idle(struct folio *folio) { }
 #include <asm/pgalloc.h>
 #include <asm/tlbflush.h>
 #include "internal.h"
@@ -591,11 +589,6 @@ repeat:
 
 	if (fgp_flags & FGP_ACCESSED)
 		folio_mark_accessed(folio);
-	else if (fgp_flags & FGP_WRITE) {
-		
-		if (folio_test_idle(folio))
-			folio_clear_idle(folio);
-	}
 
 	if (fgp_flags & FGP_STABLE)
 		folio_wait_stable(folio);

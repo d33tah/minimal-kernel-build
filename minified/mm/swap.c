@@ -21,8 +21,6 @@
 #include <linux/gfp.h>
 #include <linux/uio.h>
 #include <linux/hugetlb.h>
-static inline bool folio_test_idle(struct folio *folio) { return false; }
-static inline void folio_clear_idle(struct folio *folio) { }
 #include <linux/local_lock.h>
 
 #include "internal.h"
@@ -146,8 +144,6 @@ void folio_mark_accessed(struct folio *folio)
 		folio_clear_referenced(folio);
 		workingset_activation(folio);
 	}
-	if (folio_test_idle(folio))
-		folio_clear_idle(folio);
 }
 
 void folio_add_lru(struct folio *folio)

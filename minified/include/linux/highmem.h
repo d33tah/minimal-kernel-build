@@ -43,11 +43,6 @@ static inline void *kmap_local_page(struct page *page)
 	return page_address(page);
 }
 
-static inline void *kmap_local_folio(struct folio *folio, size_t offset)
-{
-	return page_address(&folio->page) + offset;
-}
-
 static inline void __kunmap_local(void *addr)
 {
 #ifdef ARCH_HAS_FLUSH_ON_KUNMAP
@@ -163,17 +158,6 @@ static inline void copy_user_highpage(struct page *to, struct page *from,
 }
 
 #endif
-
-static inline void memcpy_to_page(struct page *page, size_t offset,
-				  const char *from, size_t len)
-{
-	char *to = kmap_local_page(page);
-
-	VM_BUG_ON(offset + len > PAGE_SIZE);
-	memcpy(to + offset, from, len);
-	flush_dcache_page(page);
-	kunmap_local(to);
-}
 
 static inline void folio_zero_range(struct folio *folio,
 		size_t start, size_t length)

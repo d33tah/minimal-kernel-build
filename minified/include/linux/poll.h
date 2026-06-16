@@ -44,13 +44,6 @@ typedef struct poll_table_struct {
 	__poll_t _key;
 } poll_table;
 
-static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_address, poll_table *p)
-{
-	if (p && p->_qproc && wait_address)
-		p->_qproc(filp, wait_address, p);
-}
-
-
 #define MAX_INT64_SECONDS (((s64)(~((u64)0)>>1)/HZ)-1)
 
 

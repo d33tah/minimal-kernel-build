@@ -16,12 +16,6 @@ static __always_inline void __node_set(int node, volatile nodemask_t *dstp)
 }
 
 
-#define nodes_clear(dst) __nodes_clear(&(dst), MAX_NUMNODES)
-static inline void __nodes_clear(nodemask_t *dstp, unsigned int nbits)
-{
-	bitmap_zero(dstp->bits, nbits);
-}
-
 #define node_isset(node, nodemask) test_bit((node), (nodemask).bits)
 
 /* node_test_and_set, nodes_and, nodes_or, nodes_andnot, nodes_equal,
@@ -80,11 +74,6 @@ static inline int node_state(int node, enum node_states state)
 }
 
 
-static inline int num_node_state(enum node_states state)
-{
-	return 1;
-}
-
 #define for_each_node_state(node, __state) \
 	for ( (node) = 0; (node) == 0; (node) = 1)
 
@@ -98,7 +87,6 @@ static inline int num_node_state(enum node_states state)
 #define node_online_map 	node_states[N_ONLINE]
 #define node_possible_map 	node_states[N_POSSIBLE]
 
-#define num_online_nodes()	num_node_state(N_ONLINE)
 #define node_online(node)	node_state((node), N_ONLINE)
 #define node_possible(node)	node_state((node), N_POSSIBLE)
 

@@ -37,8 +37,6 @@ int irq_set_chip(unsigned int irq, const struct irq_chip *chip)
 
 	desc->irq_data.chip = (struct irq_chip *)(chip ?: &no_irq_chip);
 	irq_put_desc_unlock(desc, flags);
-	 
-	irq_mark_irq(irq);
 	return 0;
 }
 

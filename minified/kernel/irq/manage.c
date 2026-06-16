@@ -244,8 +244,6 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 
 	*old_ptr = new;
 
-	irq_pm_install_action(desc, new);
-
 	desc->irq_count = 0;
 	desc->irqs_unhandled = 0;
 

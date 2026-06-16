@@ -213,8 +213,6 @@ extern void irq_disable(struct irq_desc *desc);
 extern void mask_irq(struct irq_desc *desc);
 extern void unmask_irq(struct irq_desc *desc);
 
-static inline void irq_mark_irq(unsigned int irq) { }
-
 irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc);
 irqreturn_t handle_irq_event_percpu(struct irq_desc *desc);
 irqreturn_t handle_irq_event(struct irq_desc *desc);
@@ -324,10 +322,6 @@ static inline void kstat_incr_irqs_this_cpu(struct irq_desc *desc)
 
 /* irq_desc_get_node and irq_desc_is_chained removed - unused */
 
-static inline void
-irq_pm_install_action(struct irq_desc *desc, struct irqaction *action) { }
-static inline void
-irq_pm_remove_action(struct irq_desc *desc, struct irqaction *action) { }
 
 
 /* irq_init_generic_chip, irq_can_move_pcntxt, irq_move_pending,

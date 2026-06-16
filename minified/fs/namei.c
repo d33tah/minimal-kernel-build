@@ -493,12 +493,6 @@ static int nd_jump_root(struct nameidata *nd)
 }
 
 
-int may_linkat(struct user_namespace *mnt_userns, struct path *link)
-{
-	/* Stub: allow hardlinks */
-	return 0;
-}
-
 static int __traverse_mounts(struct path *path, unsigned flags, bool *jumped,
 			     int *count, unsigned lookup_flags)
 {

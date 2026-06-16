@@ -98,9 +98,6 @@ int __init init_link(const char *oldname, const char *newname)
 	if (old_path.mnt != new_path.mnt)
 		goto out_dput;
 	mnt_userns = mnt_user_ns(new_path.mnt);
-	error = may_linkat(mnt_userns, &old_path);
-	if (unlikely(error))
-		goto out_dput;
 	error = vfs_link(old_path.dentry, mnt_userns, new_path.dentry->d_inode,
 			 new_dentry, NULL);
 out_dput:

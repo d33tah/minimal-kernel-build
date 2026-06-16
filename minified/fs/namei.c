@@ -507,20 +507,6 @@ static int may_create_in_sticky(struct user_namespace *mnt_userns,
 }
 
 
-static bool choose_mountpoint_rcu(struct mount *m, const struct path *root,
-				  struct path *path, unsigned *seqp)
-{
-	/* Stub: minimal system doesn't need mountpoint selection */
-	return false;
-}
-
-static bool choose_mountpoint(struct mount *m, const struct path *root,
-			      struct path *path)
-{
-	/* Stub: minimal system doesn't need mountpoint selection */
-	return false;
-}
-
 static int __traverse_mounts(struct path *path, unsigned flags, bool *jumped,
 			     int *count, unsigned lookup_flags)
 {
@@ -791,21 +777,8 @@ static struct dentry *follow_dotdot_rcu(struct nameidata *nd,
 
 	if (path_equal(&nd->path, &nd->root))
 		goto in_root;
-	if (unlikely(nd->path.dentry == nd->path.mnt->mnt_root)) {
-		struct path path;
-		unsigned seq;
-		if (!choose_mountpoint_rcu(real_mount(nd->path.mnt),
-					   &nd->root, &path, &seq))
-			goto in_root;
-		if (unlikely(nd->flags & LOOKUP_NO_XDEV))
-			return ERR_PTR(-ECHILD);
-		nd->path = path;
-		nd->inode = path.dentry->d_inode;
-		nd->seq = seq;
-		if (unlikely(read_seqretry(&mount_lock, nd->m_seq)))
-			return ERR_PTR(-ECHILD);
-		
-	}
+	if (unlikely(nd->path.dentry == nd->path.mnt->mnt_root))
+		goto in_root;
 	old = nd->path.dentry;
 	parent = old->d_parent;
 	*inodep = parent->d_inode;
@@ -831,19 +804,9 @@ static struct dentry *follow_dotdot(struct nameidata *nd,
 
 	if (path_equal(&nd->path, &nd->root))
 		goto in_root;
-	if (unlikely(nd->path.dentry == nd->path.mnt->mnt_root)) {
-		struct path path;
+	if (unlikely(nd->path.dentry == nd->path.mnt->mnt_root))
+		goto in_root;
 
-		if (!choose_mountpoint(real_mount(nd->path.mnt),
-				       &nd->root, &path))
-			goto in_root;
-		path_put(&nd->path);
-		nd->path = path;
-		nd->inode = path.dentry->d_inode;
-		if (unlikely(nd->flags & LOOKUP_NO_XDEV))
-			return ERR_PTR(-EXDEV);
-	}
-	
 	parent = dget_parent(nd->path.dentry);
 	if (unlikely(!path_connected(nd->path.mnt, parent))) {
 		dput(parent);

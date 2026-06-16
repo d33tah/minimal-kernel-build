@@ -16,7 +16,6 @@ static inline void rt_mutex_debug_task_free(struct task_struct *tsk) { }
 #include <linux/vmalloc.h>
 #include <linux/completion.h>
 #include <linux/personality.h>
-static inline int copy_semundo(unsigned long clone_flags, struct task_struct *tsk) { return 0; }
 static inline void exit_sem(struct task_struct *tsk) { }
 static inline void shm_init_task(struct task_struct *task) { }
 #include <linux/file.h>
@@ -63,7 +62,6 @@ static inline void clear_user_return_notifier(struct task_struct *p) {}
 #include <linux/thread_info.h>
 static inline void scs_init(void) {}
 static inline int scs_prepare(struct task_struct *tsk, int node) { return 0; }
-static inline void scs_release(struct task_struct *tsk) {}
 /* end scs.h */
 
 #include <asm/pgalloc.h>
@@ -206,7 +204,6 @@ void put_task_stack(struct task_struct *tsk)
 void free_task(struct task_struct *tsk)
 {
 	release_user_cpus_ptr(tsk);
-	scs_release(tsk);
 
 
 	WARN_ON_ONCE(refcount_read(&tsk->stack_refcount) != 0);
@@ -965,9 +962,6 @@ static __latent_entropy struct task_struct *copy_process(
 		goto bad_fork_cleanup_policy;
 
 	shm_init_task(p);
-	retval = copy_semundo(clone_flags, p);
-	if (retval)
-		goto bad_fork_cleanup_security;
 	retval = copy_files(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_semundo;
@@ -1138,7 +1132,6 @@ bad_fork_cleanup_files:
 	exit_files(p); 
 bad_fork_cleanup_semundo:
 	exit_sem(p);
-bad_fork_cleanup_security:
 bad_fork_cleanup_policy:
 	lockdep_free_task(p);
 bad_fork_cleanup_delayacct:

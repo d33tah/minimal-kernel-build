@@ -848,9 +848,6 @@ static __always_inline void do_slab_free(struct kmem_cache *s,
 	struct kmem_cache_cpu *c;
 	unsigned long tid;
 
-	
-	if (!tail)
-		memcg_slab_free_hook(s, &head, 1);
 redo:
 	
 	c = raw_cpu_ptr(s->cpu_slab);

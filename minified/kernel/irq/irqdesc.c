@@ -73,9 +73,6 @@ struct irq_desc *irq_to_desc(unsigned int irq)
 	return radix_tree_lookup(&irq_desc_tree, irq);
 }
 
-static inline void free_masks(struct irq_desc *desc) { }
-
-
 static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 				   const struct cpumask *affinity,
 				   struct module *owner)
@@ -116,7 +113,6 @@ static void irq_kobj_release(struct kobject *kobj)
 {
 	struct irq_desc *desc = container_of(kobj, struct irq_desc, kobj);
 
-	free_masks(desc);
 	free_percpu(desc->kstat_irqs);
 	kfree(desc);
 }

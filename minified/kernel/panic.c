@@ -185,13 +185,8 @@ void oops_enter(void)
 	debug_locks_off();
 }
 
-static void print_oops_end_marker(void)
-{
-}
-
 void oops_exit(void)
 {
-	print_oops_end_marker();
 	kmsg_dump(KMSG_DUMP_OOPS);
 }
 

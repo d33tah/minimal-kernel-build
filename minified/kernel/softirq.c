@@ -224,10 +224,6 @@ void irq_enter_rcu(void)
 		tick_irq_enter();
 }
 
-static inline void tick_irq_exit(void)
-{
-}
-
 static inline void __irq_exit_rcu(void)
 {
 #ifndef __ARCH_IRQ_EXIT_IRQS_DISABLED
@@ -238,8 +234,6 @@ static inline void __irq_exit_rcu(void)
 	preempt_count_sub(HARDIRQ_OFFSET);
 	if (!in_interrupt() && local_softirq_pending())
 		invoke_softirq();
-
-	tick_irq_exit();
 }
 
 void irq_exit_rcu(void)

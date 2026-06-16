@@ -94,9 +94,6 @@ static inline u64 tk_clock_read(const struct tk_read_base *tkr)
 	return clock->read(clock);
 }
 
-static inline void timekeeping_check_update(struct timekeeper *tk, u64 offset)
-{
-}
 static inline u64 timekeeping_get_delta(const struct tk_read_base *tkr)
 {
 	u64 cycle_now, delta;
@@ -560,8 +557,6 @@ static bool timekeeping_advance(enum timekeeping_adv_mode mode)
 
 	if (offset < real_tk->cycle_interval && mode == TK_ADV_TICK)
 		goto out;
-
-	timekeeping_check_update(tk, offset);
 
 	shift = ilog2(offset) - ilog2(tk->cycle_interval);
 	shift = max(0, shift);

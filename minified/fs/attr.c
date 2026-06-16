@@ -7,8 +7,6 @@
 #include <linux/capability.h>
 #include <linux/fcntl.h>
 #include <linux/security.h>
-static inline void ima_inode_post_setattr(struct user_namespace *mnt_userns,
-					  struct dentry *dentry) {}
 
 #include <linux/xattr.h>
 
@@ -221,10 +219,6 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 		error = inode->i_op->setattr(mnt_userns, dentry, attr);
 	else
 		error = simple_setattr(mnt_userns, dentry, attr);
-
-	if (!error) {
-		ima_inode_post_setattr(mnt_userns, dentry);
-	}
 
 	return error;
 }

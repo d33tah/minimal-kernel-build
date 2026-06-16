@@ -1315,9 +1315,6 @@ void __init *memmap_alloc(phys_addr_t size, phys_addr_t align,
 						 MEMBLOCK_ALLOC_ACCESSIBLE,
 						 nid);
 
-	if (ptr && size > 0)
-		page_init_poison(ptr, size);
-
 	return ptr;
 }
 
@@ -1612,7 +1609,6 @@ static void __meminit pgdat_init_internals(struct pglist_data *pgdat)
 	init_waitqueue_head(&pgdat->kswapd_wait);
 	init_waitqueue_head(&pgdat->pfmemalloc_wait);
 
-	pgdat_page_ext_init(pgdat);
 	lruvec_init(&pgdat->__lruvec);
 }
 

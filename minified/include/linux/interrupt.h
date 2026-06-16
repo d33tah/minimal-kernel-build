@@ -159,11 +159,6 @@ DECLARE_PER_CPU(struct task_struct *, ksoftirqd);
 
 
 
-static inline void init_irq_proc(void)
-{
-}
-
-
 struct seq_file;
 
 extern int early_irq_init(void);

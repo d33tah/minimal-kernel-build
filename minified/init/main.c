@@ -416,15 +416,13 @@ static void __init report_meminit(void)
 
 static void __init mm_init(void)
 {
-	 
-	page_ext_init_flatmem();
+
 	report_meminit();
 	stack_depot_early_init();
 	mem_init();
 	mem_init_print_info();
 	kmem_cache_init();
-	 
-	page_ext_init_flatmem_late();
+
 	pgtable_init();
 	vmalloc_init();
 }
@@ -678,7 +676,6 @@ static void __init do_initcalls(void)
 static void __init do_basic_setup(void)
 {
 	driver_init();
-	init_irq_proc();
 	do_ctors();
 	do_initcalls();
 }
@@ -823,8 +820,6 @@ static noinline void __init kernel_init_freeable(void)
 
 	padata_init();
 	page_alloc_init_late();
-	 
-	page_ext_init();
 
 	do_basic_setup();
 

@@ -8,20 +8,4 @@
 struct pglist_data;
 struct page_ext;
 
-static inline void pgdat_page_ext_init(struct pglist_data *pgdat)
-{
-}
-
-
-static inline void page_ext_init(void)
-{
-}
-
-static inline void page_ext_init_flatmem_late(void)
-{
-}
-
-static inline void page_ext_init_flatmem(void)
-{
-}
-#endif  
+#endif

@@ -112,10 +112,6 @@ static inline int PagePoisoned(const struct page *page)
 	return READ_ONCE(page->flags) == PAGE_POISON_PATTERN;
 }
 
-static inline void page_init_poison(struct page *page, size_t size)
-{
-}
-
 static unsigned long *folio_flags(struct folio *folio, unsigned n)
 {
 	struct page *page = &folio->page;

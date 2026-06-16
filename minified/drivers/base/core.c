@@ -172,11 +172,6 @@ void device_initialize(struct device *dev)
    is unconditionally devices_kset, never &class->p->glue_dirs), so
    live_in_glue_dir always returned false and cleanup_glue_dir early-returned. */
 
-static void device_remove_class_symlinks(struct device *dev)
-{
-	/* Stub: sysfs class symlinks not needed for minimal kernel */
-}
-
 int dev_set_name(struct device *dev, const char *fmt, ...)
 {
 	va_list vargs;
@@ -186,11 +181,6 @@ int dev_set_name(struct device *dev, const char *fmt, ...)
 	err = kobject_set_name_vargs(&dev->kobj, fmt, vargs);
 	va_end(vargs);
 	return err;
-}
-
-/* Stub: device_to_dev_kobj and device_remove_sys_dev_entry not needed */
-static void device_remove_sys_dev_entry(struct device *dev)
-{
 }
 
 static int device_private_init(struct device *dev)
@@ -307,13 +297,9 @@ void device_del(struct device *dev)
 	dpm_sysfs_remove(dev);
 	if (parent)
 		klist_del(&dev->p->knode_parent);
-	if (MAJOR(dev->devt)) {
+	if (MAJOR(dev->devt))
 		devtmpfs_delete_node(dev);
-		device_remove_sys_dev_entry(dev);
-	}
 	if (dev->class) {
-		device_remove_class_symlinks(dev);
-
 		mutex_lock(&dev->class->p->mutex);
 		/* class->p->interfaces is always empty (class_interface_register
 		   is gone), so the remove_dev loop was dead - removed. */

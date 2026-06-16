@@ -341,10 +341,6 @@ static void __meminit __init_single_page(struct page *page, unsigned long pfn,
 	INIT_LIST_HEAD(&page->lru);
 }
 
-static inline void init_reserved_page(unsigned long pfn)
-{
-}
-
 void __meminit reserve_bootmem_region(phys_addr_t start, phys_addr_t end)
 {
 	unsigned long start_pfn = PFN_DOWN(start);
@@ -354,9 +350,7 @@ void __meminit reserve_bootmem_region(phys_addr_t start, phys_addr_t end)
 		if (pfn_valid(start_pfn)) {
 			struct page *page = pfn_to_page(start_pfn);
 
-			init_reserved_page(start_pfn);
 
-			
 			INIT_LIST_HEAD(&page->lru);
 
 			
@@ -687,11 +681,6 @@ void split_page(struct page *page, unsigned int order)
 }
 
 
-static inline void zone_statistics(struct zone *preferred_zone, struct zone *z,
-				   long nr_account)
-{
-}
-
 static inline
 struct page *__rmqueue_pcplist(struct zone *zone, unsigned int order,
 			int migratetype,
@@ -774,8 +763,6 @@ struct page *rmqueue(struct zone *preferred_zone,
 	__mod_zone_freepage_state(zone, -(1 << order),
 				  get_pcppage_migratetype(page));
 	spin_unlock_irqrestore(&zone->lock, flags);
-
-	zone_statistics(preferred_zone, zone, 1);
 
 out:
 	VM_BUG_ON_PAGE(page && bad_range(zone, page), page);

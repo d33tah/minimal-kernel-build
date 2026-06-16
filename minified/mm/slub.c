@@ -521,11 +521,6 @@ static inline unsigned int init_tid(int cpu)
 	return cpu;
 }
 
-static inline void note_cmpxchg_failure(const char *n,
-		const struct kmem_cache *s, unsigned long tid)
-{
-}
-
 static void init_kmem_cache_cpus(struct kmem_cache *s)
 {
 	int cpu;
@@ -736,7 +731,6 @@ redo:
 				object, tid,
 				next_object, next_tid(tid)))) {
 
-			note_cmpxchg_failure("slab_alloc", s, tid);
 			goto redo;
 		}
 		prefetch_freepointer(s, next_object);
@@ -861,7 +855,6 @@ redo:
 				freelist, tid,
 				head, next_tid(tid)))) {
 
-			note_cmpxchg_failure("slab_free", s, tid);
 			goto redo;
 		}
 	} else

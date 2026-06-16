@@ -900,9 +900,6 @@ int __sched __cond_resched(void)
 }
 
 
-static inline void preempt_dynamic_init(void) { }
-
-
 static int io_schedule_prepare(void)
 {
 	int old_iowait = current->in_iowait;
@@ -995,8 +992,6 @@ void __init sched_init(void)
 	init_idle(current, smp_processor_id());
 
 	init_sched_fair_class();
-
-	preempt_dynamic_init();
 
 	scheduler_running = 1;
 }

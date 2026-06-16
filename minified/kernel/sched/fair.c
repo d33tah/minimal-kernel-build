@@ -328,25 +328,18 @@ account_entity_dequeue(struct cfs_rq *cfs_rq, struct sched_entity *se)
  * on this build; zero callers remained tree-wide.
  */
 
-static inline void
-enqueue_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se) { }
-static inline void
-dequeue_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se) { }
-
 static void reweight_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
 			    unsigned long weight)
 {
 	if (se->on_rq) {
-		
+
 		if (cfs_rq->curr == se)
 			update_curr(cfs_rq);
 		update_load_sub(&cfs_rq->load, se->load.weight);
 	}
-	dequeue_load_avg(cfs_rq, se);
 
 	update_load_set(&se->load, weight);
 
-	enqueue_load_avg(cfs_rq, se);
 	if (se->on_rq)
 		update_load_add(&cfs_rq->load, se->load.weight);
 

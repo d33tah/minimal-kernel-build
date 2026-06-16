@@ -86,12 +86,10 @@ int irq_startup(struct irq_desc *desc, bool resend, bool force)
 	if (irqd_is_started(d)) {
 		irq_enable(desc);
 	} else {
-		/* No managed IRQs on this build -> always the NORMAL startup path. */
-		if (d->chip->flags & IRQCHIP_AFFINITY_PRE_STARTUP)
-			irq_setup_affinity(desc);
+		/* No managed IRQs on this build -> always the NORMAL startup path.
+		   irq_setup_affinity is a no-op here, so the pre/post affinity
+		   calls were dropped. */
 		ret = __irq_startup(desc);
-		if (!(d->chip->flags & IRQCHIP_AFFINITY_PRE_STARTUP))
-			irq_setup_affinity(desc);
 	}
 	if (resend)
 		check_irq_resend(desc, false);
@@ -196,10 +194,6 @@ static bool irq_may_run(struct irq_desc *desc)
 	 
 	if (!irqd_has_set(&desc->irq_data, mask))
 		return true;
-
-	 
-	if (irq_pm_check_wakeup(desc))
-		return false;
 
 	return false;
 }

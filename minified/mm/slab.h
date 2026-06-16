@@ -403,9 +403,7 @@ static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
 		 if ((__n = get_node(__s, __node)))
 
 
-/* dump_unreclaimable_slab removed - unused */
-
-static inline void cache_random_seq_destroy(struct kmem_cache *cachep) { }
+/* dump_unreclaimable_slab / cache_random_seq_destroy removed - unused */
 
 static inline bool slab_want_init_on_alloc(gfp_t flags, struct kmem_cache *c)
 {

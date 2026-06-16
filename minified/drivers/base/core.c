@@ -295,8 +295,6 @@ void device_del(struct device *dev)
 
 	if (parent)
 		klist_del(&dev->p->knode_parent);
-	if (MAJOR(dev->devt))
-		devtmpfs_delete_node(dev);
 	if (dev->class) {
 		mutex_lock(&dev->class->p->mutex);
 		/* class->p->interfaces is always empty (class_interface_register

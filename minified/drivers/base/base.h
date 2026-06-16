@@ -59,8 +59,7 @@ extern int devres_release_all(struct device *dev);
 extern struct kset *devices_kset;
 
 
-/* devtmpfs_create_node removed - unused */
-static inline int devtmpfs_delete_node(struct device *dev) { return 0; }
+/* devtmpfs_create_node / devtmpfs_delete_node removed - unused */
 
 /* software_node_notify removed - unused */
 void software_node_notify_remove(struct device *dev);

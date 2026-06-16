@@ -91,8 +91,7 @@ static void do_idle(void)
 	 
 	smp_mb__after_atomic();
 
-	 
-	flush_smp_call_function_queue();
+
 	schedule_idle();
 
 	if (unlikely(klp_patch_pending(current)))

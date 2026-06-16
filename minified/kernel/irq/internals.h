@@ -229,9 +229,6 @@ static inline void register_irq_proc(unsigned int irq, struct irq_desc *desc) { 
 static inline void register_handler_proc(unsigned int irq,
 					 struct irqaction *action) { }
 
-static inline int irq_setup_affinity(struct irq_desc *desc) { return 0; }
-
- 
 static inline void chip_bus_lock(struct irq_desc *desc)
 {
 	if (unlikely(desc->irq_data.chip->irq_bus_lock))
@@ -330,7 +327,6 @@ static inline void kstat_incr_irqs_this_cpu(struct irq_desc *desc)
 
 /* irq_desc_get_node and irq_desc_is_chained removed - unused */
 
-static inline bool irq_pm_check_wakeup(struct irq_desc *desc) { return false; }
 static inline void
 irq_pm_install_action(struct irq_desc *desc, struct irqaction *action) { }
 static inline void

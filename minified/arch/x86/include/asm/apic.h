@@ -14,7 +14,6 @@
 #include <asm/hardirq.h>
 
 /* Only keeping APIC functions that are actually called */
-static inline void init_apic_mappings(void) { }
 # define setup_boot_APIC_clock x86_init_noop
 # define setup_secondary_APIC_clock x86_init_noop
 static inline void init_bsp_APIC(void) { }
@@ -24,7 +23,6 @@ static inline void lapic_assign_system_vectors(void) { }
 /* lapic_assign_legacy_vector removed - unused */
 static inline bool apic_needs_pit(void) { return true; }
 /* Removed: lapic_shutdown, lapic_update_tsc_freq, check_x2apic */
-static inline void x2apic_setup(void) { }
 /* x2apic_enabled removed - unused */
 
 struct irq_data;

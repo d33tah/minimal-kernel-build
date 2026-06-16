@@ -10,7 +10,4 @@
 
 static inline void set_highmem_pages_init(void) { }
 
-static inline void init_cpu_to_node(void)		{ }
-static inline void init_gi_nodes(void)			{ }
-
-#endif	 
+#endif

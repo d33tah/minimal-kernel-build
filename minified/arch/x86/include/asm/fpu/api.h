@@ -26,9 +26,6 @@ static inline void fpregs_unlock(void)
 		preempt_enable();
 }
 
-static inline void fpregs_assert_state_consistent(void) { }
-
- 
 extern void switch_fpu_return(void);
 
 

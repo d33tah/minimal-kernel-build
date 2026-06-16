@@ -467,8 +467,6 @@ void __init setup_arch(char **cmdline_p)
 	e820__finish_early_params();
 
 
-	init_hypervisor_platform();
-
 	tsc_early_init();
 	x86_init.resources.probe_roms();
 
@@ -530,9 +528,7 @@ void __init setup_arch(char **cmdline_p)
 
 	init_mem_mapping();
 
-	idt_setup_early_pf();
 
-	 
 	mmu_cr4_features = __read_cr4() & ~X86_CR4_PCIDE;
 
 	memblock_set_current_limit(get_max_mapped());

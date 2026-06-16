@@ -716,7 +716,6 @@ static void clear_all_debug_regs(void)
 
 static inline void ucode_cpu_init(int cpu)
 {
-	show_ucode_info_early();
 }
 
 static inline void tss_setup_io_bitmap(struct tss_struct *tss)

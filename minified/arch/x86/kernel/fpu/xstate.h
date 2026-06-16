@@ -91,8 +91,6 @@ static inline u64 xfeatures_mask_supervisor(void)
 		     : "D" (st), "m" (*st), "a" (lmask), "d" (hmask)	\
 		     : "memory")
 
-static inline void xfd_validate_state(struct fpstate *fpstate, u64 mask, bool rstor) { }
-
 static inline void xfd_update_state(struct fpstate *fpstate) { }
 
 
@@ -104,7 +102,6 @@ static inline void os_xsave(struct fpstate *fpstate)
 	int err;
 
 	WARN_ON_FPU(!alternatives_patched);
-	xfd_validate_state(fpstate, mask, false);
 
 	XSTATE_XSAVE(&fpstate->regs.xsave, lmask, hmask, err);
 
@@ -118,7 +115,6 @@ static inline void os_xrstor(struct fpstate *fpstate, u64 mask)
 	u32 lmask = mask;
 	u32 hmask = mask >> 32;
 
-	xfd_validate_state(fpstate, mask, true);
 	XSTATE_XRESTORE(&fpstate->regs.xsave, lmask, hmask);
 }
 

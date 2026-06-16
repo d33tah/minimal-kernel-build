@@ -4,6 +4,4 @@
 
 #include <asm/microcode.h>
 
-static inline void show_ucode_info_early(void) {}
-
-#endif  
+#endif

@@ -77,11 +77,6 @@ void nmi_panic(struct pt_regs *regs, const char *msg)
 		nmi_panic_self_stop(regs);
 }
 
-static void panic_print_sys_info(bool console_flush)
-{
-	/* Stub: panic diagnostic printing not needed for minimal kernel */
-}
-
 void panic(const char *fmt, ...)
 {
 	static char buf[1024];
@@ -123,8 +118,6 @@ void panic(const char *fmt, ...)
 
 	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
 
-	panic_print_sys_info(false);
-
 	kmsg_dump(KMSG_DUMP_PANIC);
 
 	unblank_screen();
@@ -133,8 +126,6 @@ void panic(const char *fmt, ...)
 	 
 	debug_locks_off();
 	console_flush_on_panic(CONSOLE_FLUSH_PENDING);
-
-	panic_print_sys_info(true);
 
 	if (!panic_blink)
 		panic_blink = no_blink;

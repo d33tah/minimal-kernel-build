@@ -42,28 +42,19 @@ struct alloc_context;
 #include <linux/sched/rt.h>
 #include <linux/sched/mm.h>
 
-static inline void reset_page_owner(struct page *page, unsigned short order) {}
-static inline void set_page_owner(struct page *page, unsigned int order, gfp_t gfp_mask) {}
-static inline void split_page_owner(struct page *page, unsigned short order) {}
 #include <linux/kthread.h>
 #include <linux/memcontrol.h>
 #include <linux/lockdep.h>
 #include <linux/nmi.h>
-static inline void buffer_init(void) {}
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
 #include <asm/div64.h>
 #include "internal.h"
-#define page_reported(_page)	false
-static inline void page_reporting_notify_free(unsigned int order) { }
-/* end page_reporting.h */
 #include "swap.h"
 
 typedef int __bitwise fpi_t;
 
 #define FPI_NONE		((__force fpi_t)0)
-
-#define FPI_SKIP_REPORT_NOTIFY	((__force fpi_t)BIT(0))
 
 #define FPI_TO_TAIL		((__force fpi_t)BIT(1))
 
@@ -302,10 +293,6 @@ static inline void move_to_free_list(struct page *page, struct zone *zone,
 static inline void del_page_from_free_list(struct page *page, struct zone *zone,
 					   unsigned int order)
 {
-	
-	if (page_reported(page))
-		__ClearPageReported(page);
-
 	list_del(&page->lru);
 	__ClearPageBuddy(page);
 	set_page_private(page, 0);
@@ -326,9 +313,6 @@ static inline void __free_one_page(struct page *page,
 		add_to_free_list_tail(page, zone, order, migratetype);
 	else
 		add_to_free_list(page, zone, order, migratetype);
-
-	if (!(fpi_flags & FPI_SKIP_REPORT_NOTIFY))
-		page_reporting_notify_free(order);
 }
 
 
@@ -340,7 +324,6 @@ static __always_inline bool free_pages_prepare(struct page *page,
 		page->mapping = NULL;
 
 	page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
-	reset_page_owner(page, order);
 
 	arch_free_page(page, order);
 	return true;
@@ -439,7 +422,6 @@ void __init page_alloc_init_late(void)
 {
 	struct zone *zone;
 
-	buffer_init();
 	memblock_discard();
 
 	/* Stub: skip memory shuffling for minimal system */
@@ -469,7 +451,6 @@ inline void post_alloc_hook(struct page *page, unsigned int order,
 	set_page_private(page, 0);
 	set_page_refcounted(page);
 	arch_alloc_page(page, order);
-	set_page_owner(page, order, gfp_flags);
 }
 
 static void prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags,
@@ -703,7 +684,6 @@ void split_page(struct page *page, unsigned int order)
 
 	for (i = 1; i < (1 << order); i++)
 		set_page_refcounted(page + i);
-	split_page_owner(page, 1 << order);
 }
 
 

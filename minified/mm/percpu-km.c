@@ -42,8 +42,6 @@ static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
 	pcpu_chunk_populated(chunk, 0, nr_pages);
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 
-	pcpu_stats_chunk_alloc();
-
 	return chunk;
 }
 
@@ -53,8 +51,6 @@ static void pcpu_destroy_chunk(struct pcpu_chunk *chunk)
 
 	if (!chunk)
 		return;
-
-	pcpu_stats_chunk_dealloc();
 
 	if (chunk->data)
 		__free_pages(chunk->data, order_base_2(nr_pages));

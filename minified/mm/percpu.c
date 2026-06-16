@@ -80,11 +80,6 @@ static inline int pcpu_chunk_map_bits(struct pcpu_chunk *chunk)
 	return pcpu_nr_pages_to_map_bits(chunk->nr_pages);
 }
 
-static inline void pcpu_stats_save_ai(const struct pcpu_alloc_info *ai) { }
-static inline void pcpu_stats_area_alloc(struct pcpu_chunk *chunk, size_t size) { }
-static inline void pcpu_stats_area_dealloc(struct pcpu_chunk *chunk) { }
-static inline void pcpu_stats_chunk_alloc(void) { }
-static inline void pcpu_stats_chunk_dealloc(void) { }
 /* end percpu-internal.h */
 
 #define PCPU_SLOT_BASE_SHIFT		5
@@ -842,7 +837,6 @@ static int pcpu_free_area(struct pcpu_chunk *chunk, int off)
 	int bit_off, bits, end, oslot, freed;
 
 	lockdep_assert_held(&pcpu_lock);
-	pcpu_stats_area_dealloc(chunk);
 
 	oslot = pcpu_chunk_slot(chunk);
 
@@ -1223,7 +1217,6 @@ restart:
 	goto restart;
 
 area_found:
-	pcpu_stats_area_alloc(chunk, size);
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 
 	
@@ -1611,8 +1604,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	pcpu_chunk_struct_size = struct_size(chunk, populated,
 					     BITS_TO_LONGS(pcpu_unit_pages));
 
-	pcpu_stats_save_ai(ai);
-
 	
 	pcpu_sidelined_slot = __pcpu_size_to_slot(pcpu_unit_size) + 1;
 	pcpu_free_slot = pcpu_sidelined_slot + 1;
@@ -1654,8 +1645,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 
 	
 	pcpu_nr_populated += PFN_DOWN(size_sum);
-
-	pcpu_stats_chunk_alloc();
 }
 
 void __init setup_per_cpu_areas(void)

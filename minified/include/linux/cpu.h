@@ -40,9 +40,6 @@ extern void trap_init(void);
 #define cpuhp_tasks_frozen	0
 
 
-static inline void cpus_read_lock(void) { }
-static inline void cpus_read_unlock(void) { }
-
 void __noreturn cpu_startup_entry(enum cpuhp_state state);
 
 #define __cpuidle	__section(".cpuidle.text")

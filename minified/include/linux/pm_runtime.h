@@ -32,9 +32,6 @@
 			   suspend_fn, resume_fn, idle_fn, "_gpl", #ns)
 
 
-static inline int pm_generic_runtime_suspend(struct device *dev) { return 0; }
-static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
-
 static inline int __pm_runtime_idle(struct device *dev, int rpmflags)
 {
 	return -ENOSYS;
@@ -43,13 +40,7 @@ static inline int __pm_runtime_resume(struct device *dev, int rpmflags)
 {
 	return 1;
 }
-static inline int pm_runtime_barrier(struct device *dev) { return 0; }
 static inline void pm_runtime_put_noidle(struct device *dev) {}
-/* pm_runtime_mark_last_busy, __pm_runtime_use_autosuspend,
-   pm_runtime_set_autosuspend_delay, pm_runtime_autosuspend_expiration
-   removed - unused */
-static inline void pm_runtime_get_suppliers(struct device *dev) {}
-static inline void pm_runtime_put_suppliers(struct device *dev) {}
 
 
 /* Compact pm_runtime_* wrapper functions */

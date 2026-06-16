@@ -59,8 +59,6 @@ static inline bool efi_enabled(int feature)
 	return false;
 }
 
-static inline int efi_memblock_x86_reserve_range(void) { return 0; }
-
 static inline int efi_mem_type(unsigned long phys_addr)
 {
 	return 0;

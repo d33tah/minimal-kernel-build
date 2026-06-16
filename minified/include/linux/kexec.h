@@ -9,7 +9,6 @@
 
 struct pt_regs;
 struct task_struct;
-static inline int kexec_should_crash(struct task_struct *p) { return 0; }
 
 #endif  
 

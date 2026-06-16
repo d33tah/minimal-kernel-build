@@ -5,7 +5,6 @@
 #include <linux/efi.h>
 
 #include <linux/initrd.h>
-static inline void reserve_ibft_region(void) {}
 #include <linux/memblock.h>
 extern struct atomic_notifier_head panic_notifier_list;
 #include <linux/pci.h>
@@ -25,13 +24,10 @@ extern struct atomic_notifier_head panic_notifier_list;
 #include <asm/gart.h>
 #include <asm/hypervisor.h>
 #include <asm/io_apic.h>
-static inline void kernel_randomize_memory(void) { }
 #include <asm/mce.h>
 #include <asm/memtype.h>
 #include <asm/mtrr.h>
 #include <asm/realmode.h>
-static inline void olpc_ofw_detect(void) { }
-static inline void setup_olpc_ofw_pgd(void) { }
 #include <asm/prom.h>
 #include <asm/proto.h>
 #include <asm/unwind.h>
@@ -383,7 +379,6 @@ static void __init early_reserve_memory(void)
 
 	memblock_x86_reserve_range_setup_data();
 
-	reserve_ibft_region();
 	reserve_bios_regions();
 	trim_snb_memory();
 }
@@ -415,16 +410,11 @@ void __init setup_arch(char **cmdline_p)
 	 
 	__flush_tlb_all();
 
-	 
-	olpc_ofw_detect();
-
 	idt_setup_early_traps();
 	early_cpu_init();
 	jump_label_init();
 	static_call_init();
 	early_ioremap_init();
-
-	setup_olpc_ofw_pgd();
 
 	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
 	screen_info = boot_params.screen_info;
@@ -509,10 +499,7 @@ void __init setup_arch(char **cmdline_p)
 
 	init_cache_modes();
 
-	 
-	kernel_randomize_memory();
 
-	 
 	find_low_pfn_range();
 
 	 

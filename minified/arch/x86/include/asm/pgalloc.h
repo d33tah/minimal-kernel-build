@@ -76,16 +76,10 @@ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 static inline int  __paravirt_pgd_alloc(struct mm_struct *mm) { return 0; }
 
 #define paravirt_pgd_alloc(mm)	__paravirt_pgd_alloc(mm)
-static inline void paravirt_pgd_free(struct mm_struct *mm, pgd_t *pgd) {}
 static inline void paravirt_alloc_pte(struct mm_struct *mm, unsigned long pfn)	{}
 static inline void paravirt_alloc_pmd(struct mm_struct *mm, unsigned long pfn)	{}
-/* paravirt_alloc_pmd_clone removed - unused */
-static inline void paravirt_alloc_pud(struct mm_struct *mm, unsigned long pfn)	{}
-static inline void paravirt_alloc_p4d(struct mm_struct *mm, unsigned long pfn)	{}
+/* paravirt_alloc_pmd_clone + zero-caller pgd_free/alloc_{pud,p4d}/release_{pmd,pud,p4d} removed - unused */
 static inline void paravirt_release_pte(unsigned long pfn) {}
-static inline void paravirt_release_pmd(unsigned long pfn) {}
-static inline void paravirt_release_pud(unsigned long pfn) {}
-static inline void paravirt_release_p4d(unsigned long pfn) {}
 
  
 extern gfp_t __userpte_alloc_gfp;

@@ -176,17 +176,6 @@ static inline bool folio_contains(struct folio *folio, pgoff_t index)
 struct page *grab_cache_page_write_begin(struct address_space *mapping,
 			pgoff_t index);
 
-static inline pgoff_t page_to_index(struct page *page)
-{
-	struct page *head;
-
-	if (likely(!PageTransTail(page)))
-		return page->index;
-
-	head = compound_head(page);
-	return head->index + page - head;
-}
-
 extern pgoff_t hugetlb_basepage_index(struct page *page);
 
 static inline loff_t page_offset(struct page *page)

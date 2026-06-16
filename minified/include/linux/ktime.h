@@ -37,14 +37,6 @@ static inline s64 ktime_to_ns(const ktime_t kt)
 	return kt;
 }
 
-static inline int ktime_compare(const ktime_t cmp1, const ktime_t cmp2)
-{
-	if (cmp1 < cmp2)
-		return -1;
-	if (cmp1 > cmp2)
-		return 1;
-	return 0;
-}
 
 
 /* BITS_PER_LONG == 32 */

@@ -484,10 +484,6 @@ static inline void i_size_write(struct inode *inode, loff_t i_size)
 	inode->i_size = i_size;
 }
 
-static inline unsigned iminor(const struct inode *inode)
-{
-	return MINOR(inode->i_rdev);
-}
 
 
 struct fown_struct {

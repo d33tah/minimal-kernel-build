@@ -194,15 +194,6 @@ static inline int d_unhashed(const struct dentry *dentry)
 	return hlist_bl_unhashed(&dentry->d_hash);
 }
 
-static inline int d_unlinked(const struct dentry *dentry)
-{
-	return d_unhashed(dentry) && !IS_ROOT(dentry);
-}
-
-static inline int cant_mount(const struct dentry *dentry)
-{
-	return (dentry->d_flags & DCACHE_CANT_MOUNT);
-}
 
 
 extern void __d_lookup_done(struct dentry *);
@@ -222,11 +213,6 @@ static inline void d_lookup_done(struct dentry *dentry)
 }
 
 extern void dput(struct dentry *);
-
-static inline bool d_mountpoint(const struct dentry *dentry)
-{
-	return dentry->d_flags & DCACHE_MOUNTED;
-}
 
 static inline unsigned __d_entry_type(const struct dentry *dentry)
 {
@@ -288,10 +274,6 @@ static inline int simple_positive(const struct dentry *dentry)
 
 extern int sysctl_vfs_cache_pressure;
 
-static inline unsigned long vfs_pressure_ratio(unsigned long val)
-{
-	return mult_frac(val, sysctl_vfs_cache_pressure, 100);
-}
 
 static inline struct inode *d_inode(const struct dentry *dentry)
 {

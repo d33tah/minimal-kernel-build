@@ -73,25 +73,6 @@ static inline bool iov_iter_is_kvec(const struct iov_iter *i)
 	return iov_iter_type(i) == ITER_KVEC;
 }
 
-static inline bool iov_iter_is_bvec(const struct iov_iter *i)
-{
-	return iov_iter_type(i) == ITER_BVEC;
-}
-
-static inline bool iov_iter_is_pipe(const struct iov_iter *i)
-{
-	return iov_iter_type(i) == ITER_PIPE;
-}
-
-static inline bool iov_iter_is_discard(const struct iov_iter *i)
-{
-	return iov_iter_type(i) == ITER_DISCARD;
-}
-
-static inline bool iov_iter_is_xarray(const struct iov_iter *i)
-{
-	return iov_iter_type(i) == ITER_XARRAY;
-}
 
 size_t copy_page_from_iter_atomic(struct page *page, unsigned offset,
 				  size_t bytes, struct iov_iter *i);

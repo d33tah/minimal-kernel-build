@@ -45,18 +45,12 @@ struct cpuidle_device {
 
 };
 
-static inline bool cpuidle_not_available(struct cpuidle_driver *drv,
-					 struct cpuidle_device *dev)
-{return true; }
 static inline int cpuidle_select(struct cpuidle_driver *drv,
 				 struct cpuidle_device *dev, bool *stop_tick)
 {return -ENODEV; }
 static inline int cpuidle_enter(struct cpuidle_driver *drv,
 				struct cpuidle_device *dev, int index)
 {return -ENODEV; }
-static inline struct cpuidle_driver *cpuidle_get_cpu_driver(
-	struct cpuidle_device *dev) {return NULL; }
-static inline struct cpuidle_device *cpuidle_get_device(void) {return NULL; }
 
 static inline int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
 					     struct cpuidle_device *dev,

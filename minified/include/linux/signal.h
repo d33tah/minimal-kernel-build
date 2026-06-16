@@ -53,39 +53,6 @@ static inline void sigdelset(sigset_t *set, int _sig)
 
 #endif  
 
-static inline int sigisemptyset(sigset_t *set)
-{
-	switch (_NSIG_WORDS) {
-	case 4:
-		return (set->sig[3] | set->sig[2] |
-			set->sig[1] | set->sig[0]) == 0;
-	case 2:
-		return (set->sig[1] | set->sig[0]) == 0;
-	case 1:
-		return set->sig[0] == 0;
-	default:
-		BUILD_BUG();
-		return 0;
-	}
-}
-
-static inline int sigequalsets(const sigset_t *set1, const sigset_t *set2)
-{
-	switch (_NSIG_WORDS) {
-	case 4:
-		return	(set1->sig[3] == set2->sig[3]) &&
-			(set1->sig[2] == set2->sig[2]) &&
-			(set1->sig[1] == set2->sig[1]) &&
-			(set1->sig[0] == set2->sig[0]);
-	case 2:
-		return	(set1->sig[1] == set2->sig[1]) &&
-			(set1->sig[0] == set2->sig[0]);
-	case 1:
-		return	set1->sig[0] == set2->sig[0];
-	}
-	return 0;
-}
-
 #define sigmask(sig)	(1UL << ((sig) - 1))
 
 #ifndef __HAVE_ARCH_SIG_SETOPS
@@ -166,26 +133,7 @@ static inline void sigemptyset(sigset_t *set)
 
 
 
-static inline void sigdelsetmask(sigset_t *set, unsigned long mask)
-{
-	set->sig[0] &= ~mask;
-}
-
-
-static inline void siginitsetinv(sigset_t *set, unsigned long mask)
-{
-	set->sig[0] = ~mask;
-	switch (_NSIG_WORDS) {
-	default:
-		memset(&set->sig[1], -1, sizeof(long)*(_NSIG_WORDS-1));
-		break;
-	case 2: set->sig[1] = -1;
-		break;
-	case 1: ;
-	}
-}
-
-#endif  
+#endif
 
 static inline void init_sigpending(struct sigpending *sig)
 {
@@ -195,10 +143,6 @@ static inline void init_sigpending(struct sigpending *sig)
 
 extern void flush_sigqueue(struct sigpending *queue);
 
-static inline int valid_signal(unsigned long sig)
-{
-	return sig <= _NSIG ? 1 : 0;
-}
 
 struct timespec;
 struct pt_regs;

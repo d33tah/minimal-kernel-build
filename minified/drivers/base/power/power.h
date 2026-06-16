@@ -18,10 +18,6 @@ static inline void dpm_sysfs_remove(struct device *dev) {}
 
 
 
-static inline void device_pm_sleep_init(struct device *dev) {}
-
-static inline void device_pm_add(struct device *dev) {}
-
 static inline void device_pm_remove(struct device *dev) {}
 
 /* device_pm_move_before, device_pm_move_after, device_pm_move_last removed - unused */
@@ -32,6 +28,5 @@ static inline void device_pm_remove(struct device *dev) {}
 static inline void device_pm_init(struct device *dev)
 {
 	device_pm_init_common(dev);
-	device_pm_sleep_init(dev);
 	pm_runtime_init(dev);
 }

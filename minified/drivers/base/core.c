@@ -232,7 +232,6 @@ int device_add(struct device *dev)
 	if (error)
 		goto parent_error;
 
-	device_pm_add(dev);
 	bus_probe_device(dev);
 
 	error = 0;

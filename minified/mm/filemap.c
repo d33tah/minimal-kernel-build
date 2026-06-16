@@ -721,11 +721,6 @@ bool folio_more_pages(struct folio *folio, pgoff_t index, pgoff_t max)
 }
 
 
-static void shrink_readahead_size_eio(struct file_ra_state *ra)
-{
-	/* Stub: readahead optimization not needed */
-}
-
 static void filemap_get_read_batch(struct address_space *mapping,
 		pgoff_t index, pgoff_t max, struct folio_batch *fbatch)
 {
@@ -779,7 +774,6 @@ static int filemap_read_folio(struct file *file, struct address_space *mapping,
 		return error;
 	if (folio_test_uptodate(folio))
 		return 0;
-	shrink_readahead_size_eio(&file->f_ra);
 	return -EIO;
 }
 
@@ -877,14 +871,6 @@ error:
 	return error;
 }
 
-static int filemap_readahead(struct kiocb *iocb, struct file *file,
-		struct address_space *mapping, struct folio *folio,
-		pgoff_t last_index)
-{
-	/* Stub: readahead optimization not needed */
-	return 0;
-}
-
 static int filemap_get_pages(struct kiocb *iocb, struct iov_iter *iter,
 		struct folio_batch *fbatch)
 {
@@ -920,11 +906,6 @@ retry:
 	}
 
 	folio = fbatch->folios[folio_batch_count(fbatch) - 1];
-	if (folio_test_readahead(folio)) {
-		err = filemap_readahead(iocb, filp, mapping, folio, last_index);
-		if (err)
-			goto err;
-	}
 	if (!folio_test_uptodate(folio)) {
 		if ((iocb->ki_flags & IOCB_WAITQ) &&
 		    folio_batch_count(fbatch) > 1)

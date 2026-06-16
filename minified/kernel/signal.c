@@ -425,15 +425,8 @@ long do_no_restart_syscall(struct restart_block *param)
 	return -EINTR;
 }
 
-static inline void siginfo_buildtime_checks(void)
-{
-	/* Stub: buildtime checks not needed for minimal kernel */
-}
-
 void __init signals_init(void)
 {
-	siginfo_buildtime_checks();
-
 	sigqueue_cachep = KMEM_CACHE(sigqueue, SLAB_PANIC | SLAB_ACCOUNT);
 }
 

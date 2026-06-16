@@ -220,10 +220,6 @@ static inline void inc_slabs_node(struct kmem_cache *s, int node,
 static inline void dec_slabs_node(struct kmem_cache *s, int node,
 							int objects) {}
 
-static __always_inline void kfree_hook(void *x)
-{
-}
-
 static __always_inline bool slab_free_hook(struct kmem_cache *s,
 						void *x, bool init)
 {
@@ -917,7 +913,6 @@ static inline void free_large_kmalloc(struct folio *folio, void *object)
 	if (WARN_ON_ONCE(order == 0))
 		pr_warn_once("object pointer: 0x%p\n", object);
 
-	kfree_hook(object);
 	mod_lruvec_page_state(folio_page(folio, 0), NR_SLAB_UNRECLAIMABLE_B,
 			      -(PAGE_SIZE << order));
 	__free_pages(folio_page(folio, 0), order);

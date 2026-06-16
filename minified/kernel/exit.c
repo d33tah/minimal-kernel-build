@@ -34,7 +34,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/resource.h>
 static inline unsigned long task_io_get_inblock(const struct task_struct *p) { return 0; }
 static inline unsigned long task_io_get_oublock(const struct task_struct *p) { return 0; }
-static inline void task_io_accounting_add(struct task_io_accounting *dst, struct task_io_accounting *src) {}
 #include <linux/blkdev.h>
 #include <linux/task_work.h>
 #include <linux/fs_struct.h>
@@ -43,8 +42,6 @@ static inline void task_io_accounting_add(struct task_io_accounting *dst, struct
 #include <linux/hw_breakpoint.h>
 #include <linux/oom.h>
 #include <linux/writeback.h>
-static inline void exit_shm(struct task_struct *task) {}
-static inline void exit_sem(struct task_struct *tsk) { }
 #include <linux/random.h>
 #include <linux/rcuwait.h>
 #include <linux/compat.h>
@@ -105,7 +102,6 @@ static void __exit_signal(struct task_struct *tsk)
 	sig->nivcsw += tsk->nivcsw;
 	sig->inblock += task_io_get_inblock(tsk);
 	sig->oublock += task_io_get_oublock(tsk);
-	task_io_accounting_add(&sig->ioac, &tsk->ioac);
 	sig->sum_sched_runtime += tsk->se.sum_exec_runtime;
 	sig->nr_threads--;
 	__unhash_process(tsk, group_dead);
@@ -277,8 +273,6 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 	}
 }
 
-static inline void check_stack_usage(void) {}
-
 void __noreturn do_exit(long code)
 {
 	struct task_struct *tsk = current;
@@ -307,8 +301,6 @@ void __noreturn do_exit(long code)
 
 
 
-	exit_sem(tsk);
-	exit_shm(tsk);
 	exit_files(tsk);
 	exit_fs(tsk);
 	if (group_dead)
@@ -335,7 +327,6 @@ void __noreturn do_exit(long code)
 
 	exit_task_stack_account(tsk);
 
-	check_stack_usage();
 	preempt_disable();
 	if (tsk->nr_dirtied)
 		__this_cpu_add(dirty_throttle_leaks, tsk->nr_dirtied);

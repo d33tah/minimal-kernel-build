@@ -485,7 +485,6 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	mm_pasid_init(mm);
 	RCU_INIT_POINTER(mm->exe_file, NULL);
 	init_tlb_flush_pending(mm);
-	hugetlb_count_init(mm);
 
 	if (current->mm) {
 		mm->flags = current->mm->flags & MMF_INIT_MASK;

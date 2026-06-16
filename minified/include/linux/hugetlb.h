@@ -49,11 +49,6 @@ static inline unsigned int huge_page_shift(struct hstate *h)
 	return PAGE_SHIFT;
 }
 
-static inline void hugetlb_count_init(struct mm_struct *mm)
-{
-}
-
-
 
 static inline __init void hugetlb_cma_reserve(int order)
 {

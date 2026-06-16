@@ -601,10 +601,6 @@ static inline int page_cpupid_xchg_last(struct page *page, int cpupid)
 	return page_to_nid(page);
 }
 
-static inline void page_cpupid_reset_last(struct page *page)
-{
-}
-
 static inline struct zone *page_zone(const struct page *page)
 {
 	return &NODE_DATA(page_to_nid(page))->node_zones[page_zonenum(page)];

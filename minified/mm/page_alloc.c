@@ -336,7 +336,6 @@ static void __meminit __init_single_page(struct page *page, unsigned long pfn,
 	set_page_links(page, zone, nid, pfn);
 	init_page_count(page);
 	page_mapcount_reset(page);
-	page_cpupid_reset_last(page);
 
 	INIT_LIST_HEAD(&page->lru);
 }
@@ -1610,8 +1609,6 @@ static unsigned long __init calc_memmap_size(unsigned long spanned_pages,
 
 static void __meminit pgdat_init_internals(struct pglist_data *pgdat)
 {
-	pgdat_resize_init(pgdat);
-
 	init_waitqueue_head(&pgdat->kswapd_wait);
 	init_waitqueue_head(&pgdat->pfmemalloc_wait);
 
@@ -1623,11 +1620,9 @@ static void __meminit zone_init_internals(struct zone *zone, enum zone_type idx,
 							unsigned long remaining_pages)
 {
 	atomic_long_set(&zone->managed_pages, remaining_pages);
-	zone_set_nid(zone, nid);
 	zone->name = zone_names[idx];
 	zone->zone_pgdat = NODE_DATA(nid);
 	spin_lock_init(&zone->lock);
-	zone_seqlock_init(zone);
 	zone_pcp_init(zone);
 }
 

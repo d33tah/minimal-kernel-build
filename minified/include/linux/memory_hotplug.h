@@ -17,8 +17,6 @@ struct vmem_altmap;
 	___page;				\
  })
 
-static inline void zone_seqlock_init(struct zone *zone) {}
 static inline bool movable_node_is_enabled(void) { return false; }
-static inline void pgdat_resize_init(struct pglist_data *pgdat) {}
 
 #endif

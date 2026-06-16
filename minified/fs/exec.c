@@ -107,10 +107,6 @@ static void put_arg_page(struct page *page)
 	put_page(page);
 }
 
-static void free_arg_pages(struct linux_binprm *bprm)
-{
-}
-
 static void flush_arg_page(struct linux_binprm *bprm, unsigned long pos,
 		struct page *page)
 {
@@ -624,7 +620,6 @@ static void free_bprm(struct linux_binprm *bprm)
 		acct_arg_size(bprm, 0);
 		mmput(bprm->mm);
 	}
-	free_arg_pages(bprm);
 	if (bprm->cred) {
 		mutex_unlock(&current->signal->cred_guard_mutex);
 		abort_creds(bprm->cred);

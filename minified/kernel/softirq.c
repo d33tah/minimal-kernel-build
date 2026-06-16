@@ -108,11 +108,6 @@ static inline void ksoftirqd_run_end(void)
 	local_irq_enable();
 }
 
-static inline bool should_wake_ksoftirqd(void)
-{
-	return true;
-}
-
 static inline void invoke_softirq(void)
 {
 	if (ksoftirqd_running(local_softirq_pending()))
@@ -248,7 +243,7 @@ inline void raise_softirq_irqoff(unsigned int nr)
 	__raise_softirq_irqoff(nr);
 
 	 
-	if (!in_interrupt() && should_wake_ksoftirqd())
+	if (!in_interrupt())
 		wakeup_softirqd();
 }
 

@@ -614,11 +614,6 @@ static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
 	}
 }
 
-static inline int node_match(struct slab *slab, int node)
-{
-	return 1;
-}
-
 static noinline void
 slab_out_of_memory(struct kmem_cache *s, gfp_t gfpflags, int nid)
 {
@@ -707,7 +702,7 @@ redo:
 	slab = c->slab;
 	
 	if (IS_ENABLED(CONFIG_PREEMPT_RT) ||
-	    unlikely(!object || !slab || !node_match(slab, node))) {
+	    unlikely(!object || !slab)) {
 		object = __slab_alloc(s, gfpflags, node, addr, c);
 	} else {
 		void *next_object = get_freepointer_safe(s, object);

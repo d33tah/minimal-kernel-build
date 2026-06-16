@@ -53,7 +53,6 @@ static inline void clear_user_return_notifier(struct task_struct *p) {}
 #include <linux/sysctl.h>
 #include <linux/init_task.h>
 #include <linux/thread_info.h>
-static inline int scs_prepare(struct task_struct *tsk, int node) { return 0; }
 /* end scs.h */
 
 #include <asm/pgalloc.h>
@@ -436,10 +435,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	refcount_set(&tsk->stack_refcount, 1);
 	account_kernel_stack(tsk, 1);
 
-	err = scs_prepare(tsk, node);
-	if (err)
-		goto free_stack;
-
 	setup_thread_stack(tsk, orig);
 	clear_user_return_notifier(tsk);
 	clear_tsk_need_resched(tsk);
@@ -462,9 +457,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 
 	return tsk;
 
-free_stack:
-	exit_task_stack_account(tsk);
-	free_thread_stack(tsk);
 free_tsk:
 	free_task_struct(tsk);
 	return NULL;

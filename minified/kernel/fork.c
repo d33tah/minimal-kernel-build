@@ -160,7 +160,6 @@ struct vm_area_struct *vm_area_dup(struct vm_area_struct *orig)
 
 void vm_area_free(struct vm_area_struct *vma)
 {
-	free_anon_vma_name(vma);
 	kmem_cache_free(vm_area_cachep, vma);
 }
 

@@ -20,8 +20,6 @@ enum cpuhp_state {
 	CPUHP_ONLINE,
 };
 
-static inline void cpuhp_online_idle(enum cpuhp_state state) { }
-
 struct device;
 struct device_node;
 struct attribute_group;
@@ -44,7 +42,6 @@ extern void trap_init(void);
 
 static inline void cpus_read_lock(void) { }
 static inline void cpus_read_unlock(void) { }
-static inline void lockdep_assert_cpus_held(void) { }
 
 void __noreturn cpu_startup_entry(enum cpuhp_state state);
 
@@ -57,7 +54,4 @@ void arch_cpu_idle_exit(void);
 void arch_cpu_idle_dead(void);
 
 
-static inline void cpuhp_report_idle_dead(void) { }
-
-
-#endif  
+#endif

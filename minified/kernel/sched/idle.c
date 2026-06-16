@@ -71,7 +71,6 @@ static void do_idle(void)
 
 		if (cpu_is_offline(cpu)) {
 			tick_nohz_idle_stop_tick();
-			cpuhp_report_idle_dead();
 			arch_cpu_idle_dead();
 		}
 
@@ -101,7 +100,6 @@ static void do_idle(void)
 void cpu_startup_entry(enum cpuhp_state state)
 {
 	arch_cpu_idle_prepare();
-	cpuhp_online_idle(state);
 	while (1)
 		do_idle();
 }

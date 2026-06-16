@@ -106,9 +106,6 @@ void panic(const char *fmt, ...)
 	pr_emerg("Kernel panic - not syncing: %s\n", buf);
 
 
-	__crash_kexec(NULL);
-
-
 	smp_send_stop();
 
 

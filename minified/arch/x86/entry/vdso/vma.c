@@ -19,10 +19,6 @@
 #include <asm/desc.h>
 #include <asm/cpufeature.h>
 
-/* Inlined from clocksource/hyperv_timer.h - only needed for hv_get_tsc_page stub */
-struct ms_hyperv_tsc_page;
-static inline struct ms_hyperv_tsc_page *hv_get_tsc_page(void) { return NULL; }
-
 unsigned int vclocks_used __read_mostly;
 
 
@@ -77,11 +73,6 @@ static int vdso_mremap(const struct vm_special_mapping *sm,
 	return 0;
 }
 
-static inline struct page *find_timens_vvar_page(struct vm_area_struct *vma)
-{
-	return NULL;
-}
-
 static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 		      struct vm_area_struct *vma, struct vm_fault *vmf)
 {
@@ -100,23 +91,7 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 		return VM_FAULT_SIGBUS;
 
 	if (sym_offset == image->sym_vvar_page) {
-		struct page *timens_page = find_timens_vvar_page(vma);
-
 		pfn = __pa_symbol(&__vvar_page) >> PAGE_SHIFT;
-
-		 
-		if (timens_page) {
-			unsigned long addr;
-			vm_fault_t err;
-
-			 
-			addr = vmf->address + (image->sym_timens_page - sym_offset);
-			err = vmf_insert_pfn(vma, addr, pfn);
-			if (unlikely(err & VM_FAULT_ERROR))
-				return err;
-
-			pfn = page_to_pfn(timens_page);
-		}
 
 		return vmf_insert_pfn(vma, vmf->address, pfn);
 	} else if (sym_offset == image->sym_pvclock_page) {
@@ -127,20 +102,6 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
 					__pa(pvti) >> PAGE_SHIFT,
 					pgprot_decrypted(vma->vm_page_prot));
 		}
-	} else if (sym_offset == image->sym_hvclock_page) {
-		struct ms_hyperv_tsc_page *tsc_pg = hv_get_tsc_page();
-
-		if (tsc_pg && vclock_was_used(VDSO_CLOCKMODE_HVCLOCK))
-			return vmf_insert_pfn(vma, vmf->address,
-					virt_to_phys(tsc_pg) >> PAGE_SHIFT);
-	} else if (sym_offset == image->sym_timens_page) {
-		struct page *timens_page = find_timens_vvar_page(vma);
-
-		if (!timens_page)
-			return VM_FAULT_SIGBUS;
-
-		pfn = __pa_symbol(&__vvar_page) >> PAGE_SHIFT;
-		return vmf_insert_pfn(vma, vmf->address, pfn);
 	}
 
 	return VM_FAULT_SIGBUS;

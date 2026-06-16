@@ -46,7 +46,6 @@
 #include <linux/magic.h>
 #include <linux/perf_event.h>
 #include <linux/posix-timers.h>
-static inline void clear_user_return_notifier(struct task_struct *p) {}
 #include <linux/oom.h>
 #include <linux/uprobes.h>
 #include <linux/compiler.h>
@@ -436,7 +435,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	account_kernel_stack(tsk, 1);
 
 	setup_thread_stack(tsk, orig);
-	clear_user_return_notifier(tsk);
 	clear_tsk_need_resched(tsk);
 	set_task_stack_end_magic(tsk);
 

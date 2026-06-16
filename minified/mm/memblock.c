@@ -958,16 +958,9 @@ static unsigned long __init free_low_memory_core_early(void)
 }
 
 
-/* Used internally by memblock_free_all */
-static void __init reset_all_zones_managed_pages(void)
-{
-}
-
 void __init memblock_free_all(void)
 {
 	unsigned long pages;
-
-	reset_all_zones_managed_pages();
 
 	pages = free_low_memory_core_early();
 	totalram_pages_add(pages);

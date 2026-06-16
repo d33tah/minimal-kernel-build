@@ -189,11 +189,6 @@ void unmask_irq(struct irq_desc *desc)
 	}
 }
 
-static bool irq_check_poll(struct irq_desc *desc)
-{
-	return false;
-}
-
 static bool irq_may_run(struct irq_desc *desc)
 {
 	unsigned int mask = IRQD_IRQ_INPROGRESS | IRQD_WAKEUP_ARMED;
@@ -206,8 +201,7 @@ static bool irq_may_run(struct irq_desc *desc)
 	if (irq_pm_check_wakeup(desc))
 		return false;
 
-	 
-	return irq_check_poll(desc);
+	return false;
 }
 
 

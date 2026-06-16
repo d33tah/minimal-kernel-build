@@ -590,8 +590,6 @@ struct fasync_struct {
 	struct rcu_head		fa_rcu;
 };
 
-extern int fasync_helper(int, struct file *, int, struct fasync_struct **);
-extern void __f_setown(struct file *filp, struct pid *, enum pid_type, int force);
 
 #define SB_RDONLY	 1
 #define SB_SYNCHRONOUS	16
@@ -1164,7 +1162,6 @@ extern struct kmem_cache *names_cachep;
 #define __getname()		kmem_cache_alloc(names_cachep, GFP_KERNEL)
 #define __putname(name)		kmem_cache_free(names_cachep, (void *)(name))
 
-extern int sync_filesystem(struct super_block *);
 extern const struct file_operations def_blk_fops;
 extern const struct file_operations def_chr_fops;
 

@@ -75,9 +75,6 @@ unsigned char rtc_cmos_read(unsigned char addr)
 	return val;
 }
 
-/* rtc_cmos_write stubbed - no in-kernel caller in minimal kernel */
-void rtc_cmos_write(unsigned char val, unsigned char addr) { }
-
 
 void read_persistent_clock64(struct timespec64 *ts)
 {

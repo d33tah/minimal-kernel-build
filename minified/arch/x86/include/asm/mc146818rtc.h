@@ -59,9 +59,7 @@ static inline unsigned char current_lock_cmos_reg(void)
 
  
 #define CMOS_READ(addr) rtc_cmos_read(addr)
-#define CMOS_WRITE(val, addr) rtc_cmos_write(val, addr)
 unsigned char rtc_cmos_read(unsigned char addr);
-void rtc_cmos_write(unsigned char val, unsigned char addr);
 
 extern int mach_set_rtc_mmss(const struct timespec64 *now);
 extern void mach_get_cmos_time(struct timespec64 *now);

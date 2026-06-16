@@ -13,8 +13,6 @@ int set_memory_nx(unsigned long addr, int numpages);
  
 
 /* __set_memory_prot, _set_memory_uc, _set_memory_wc, _set_memory_wt, _set_memory_wb, set_memory_uc, set_memory_wc, set_memory_wb, set_memory_np_noalias, set_memory_4k, set_memory_nonglobal, set_memory_global removed - never called */
-int set_memory_np(unsigned long addr, int numpages);
-int set_memory_encrypted(unsigned long addr, int numpages);
 int set_memory_decrypted(unsigned long addr, int numpages);
 
 /* set_pages_array_uc, set_pages_array_wc, set_pages_array_wb, set_pages_uc, set_pages_wb, set_pages_rw removed - never called */

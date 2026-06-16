@@ -47,11 +47,6 @@ static inline int ktime_compare(const ktime_t cmp1, const ktime_t cmp2)
 }
 
 
-static inline bool ktime_before(const ktime_t cmp1, const ktime_t cmp2)
-{
-	return ktime_compare(cmp1, cmp2) < 0;
-}
-
 /* BITS_PER_LONG == 32 */
 
 extern ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs);

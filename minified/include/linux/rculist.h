@@ -24,11 +24,6 @@ static inline void __list_add_rcu(struct list_head *new,
 	next->prev = new;
 }
 
-static inline void list_add_rcu(struct list_head *new, struct list_head *head)
-{
-	__list_add_rcu(new, head, head->next);
-}
-
 static inline void list_add_tail_rcu(struct list_head *new,
 					struct list_head *head)
 {
@@ -39,24 +34,6 @@ static inline void list_del_rcu(struct list_head *entry)
 {
 	__list_del_entry(entry);
 	entry->prev = LIST_POISON2;
-}
-
-static inline void hlist_del_init_rcu(struct hlist_node *n)
-{
-	if (!hlist_unhashed(n)) {
-		__hlist_del(n);
-		WRITE_ONCE(n->pprev, NULL);
-	}
-}
-
-static inline void list_replace_rcu(struct list_head *old,
-				struct list_head *new)
-{
-	new->next = old->next;
-	new->prev = old->prev;
-	rcu_assign_pointer(list_next_rcu(new->prev), new);
-	new->next->prev = new;
-	old->prev = LIST_POISON2;
 }
 
 #define list_entry_rcu(ptr, type, member) \
@@ -75,30 +52,6 @@ static inline void hlist_del_rcu(struct hlist_node *n)
 {
 	__hlist_del(n);
 	WRITE_ONCE(n->pprev, LIST_POISON2);
-}
-
-static inline void hlist_replace_rcu(struct hlist_node *old,
-					struct hlist_node *new)
-{
-	struct hlist_node *next = old->next;
-
-	new->next = next;
-	WRITE_ONCE(new->pprev, old->pprev);
-	rcu_assign_pointer(*(struct hlist_node __rcu **)new->pprev, new);
-	if (next)
-		WRITE_ONCE(new->next->pprev, &new->next);
-	WRITE_ONCE(old->pprev, LIST_POISON2);
-}
-
-static inline void hlists_swap_heads_rcu(struct hlist_head *left, struct hlist_head *right)
-{
-	struct hlist_node *node1 = left->first;
-	struct hlist_node *node2 = right->first;
-
-	rcu_assign_pointer(left->first, node2);
-	rcu_assign_pointer(right->first, node1);
-	WRITE_ONCE(node2->pprev, &left->first);
-	WRITE_ONCE(node1->pprev, &right->first);
 }
 
 #define hlist_first_rcu(head)	(*((struct hlist_node __rcu **)(&(head)->first)))

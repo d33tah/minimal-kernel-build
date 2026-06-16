@@ -11,9 +11,4 @@ struct rcuwait {
 #define __RCUWAIT_INITIALIZER(name)		\
 	{ .task = NULL, }
 
-static inline void rcuwait_init(struct rcuwait *w)
-{
-	w->task = NULL;
-}
-
 #endif

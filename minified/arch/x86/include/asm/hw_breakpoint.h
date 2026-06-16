@@ -40,18 +40,4 @@ struct perf_event_attr;
 struct perf_event;
 struct pmu;
 
-int arch_install_hw_breakpoint(struct perf_event *bp);
-void arch_uninstall_hw_breakpoint(struct perf_event *bp);
-
-extern void
-arch_fill_perf_breakpoint(struct perf_event *bp);
-
-unsigned long encode_dr7(int drnum, unsigned int len, unsigned int type);
-int decode_dr7(unsigned long dr7, int bpnum, unsigned *len, unsigned *type);
-
-extern int arch_bp_generic_fields(int x86_len, int x86_type,
-				  int *gen_len, int *gen_type);
-
-extern struct pmu perf_ops_bp;
-
-#endif	 
+#endif

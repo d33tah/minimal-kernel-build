@@ -23,7 +23,6 @@ struct pt_regs;
 
 extern int fixup_exception(struct pt_regs *regs, int trapnr,
 			   unsigned long error_code, unsigned long fault_addr);
-extern int ex_get_fixup_type(unsigned long ip);
 extern void early_fixup_exception(struct pt_regs *regs, int trapnr);
 
 static inline void __noreturn ex_handler_msr_mce(struct pt_regs *regs, bool wrmsr)

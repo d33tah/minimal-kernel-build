@@ -499,14 +499,6 @@ int may_linkat(struct user_namespace *mnt_userns, struct path *link)
 	return 0;
 }
 
-static int may_create_in_sticky(struct user_namespace *mnt_userns,
-				struct nameidata *nd, struct inode *const inode)
-{
-	
-	return 0;
-}
-
-
 static int __traverse_mounts(struct path *path, unsigned flags, bool *jumped,
 			     int *count, unsigned lookup_flags)
 {
@@ -1447,10 +1439,6 @@ static int do_open(struct nameidata *nd,
 			return -EEXIST;
 		if (d_is_dir(nd->path.dentry))
 			return -EISDIR;
-		error = may_create_in_sticky(mnt_userns, nd,
-					     d_backing_inode(nd->path.dentry));
-		if (unlikely(error))
-			return error;
 	}
 	if ((nd->flags & LOOKUP_DIRECTORY) && !d_can_lookup(nd->path.dentry))
 		return -ENOTDIR;

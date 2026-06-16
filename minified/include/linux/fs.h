@@ -276,10 +276,6 @@ struct address_space {
 #define PAGECACHE_TAG_DIRTY	XA_MARK_0
 #define PAGECACHE_TAG_WRITEBACK	XA_MARK_1
 
-static inline bool mapping_tagged(struct address_space *mapping, xa_mark_t tag)
-{
-	return xa_marked(&mapping->i_pages, tag);
-}
 
 static inline void i_mmap_lock_write(struct address_space *mapping)
 {

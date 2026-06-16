@@ -21,10 +21,6 @@ typedef struct { unsigned long pd; } hugepd_t;
 
 
 
-static inline unsigned long hugetlb_total_pages(void)
-{
-	return 0;
-}
 
 
 

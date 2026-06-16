@@ -45,20 +45,6 @@ struct cpuidle_device {
 
 };
 
-static inline int cpuidle_select(struct cpuidle_driver *drv,
-				 struct cpuidle_device *dev, bool *stop_tick)
-{return -ENODEV; }
-static inline int cpuidle_enter(struct cpuidle_driver *drv,
-				struct cpuidle_device *dev, int index)
-{return -ENODEV; }
-
-static inline int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
-					     struct cpuidle_device *dev,
-					     u64 latency_limit_ns)
-{return -ENODEV; }
-static inline int cpuidle_enter_s2idle(struct cpuidle_driver *drv,
-				       struct cpuidle_device *dev)
-{return -ENODEV; }
 extern void default_idle_call(void);
 
 #endif  

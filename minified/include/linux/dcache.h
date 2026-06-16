@@ -173,13 +173,6 @@ extern struct dentry *__d_lookup_rcu(const struct dentry *parent,
 				const struct qstr *name, unsigned *seq);
 
 
-static inline struct dentry *dget_dlock(struct dentry *dentry)
-{
-	if (dentry)
-		dentry->d_lockref.count++;
-	return dentry;
-}
-
 static inline struct dentry *dget(struct dentry *dentry)
 {
 	if (dentry)

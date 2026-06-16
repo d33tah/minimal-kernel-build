@@ -17,6 +17,4 @@ struct vmem_altmap;
 	___page;				\
  })
 
-static inline bool movable_node_is_enabled(void) { return false; }
-
 #endif

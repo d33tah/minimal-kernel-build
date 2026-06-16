@@ -549,10 +549,6 @@ static inline pid_t task_tgid_nr(struct task_struct *tsk)
 	return tsk->tgid;
 }
 
-static inline pid_t task_tgid_vnr(struct task_struct *tsk)
-{
-	return __task_pid_nr_ns(tsk, PIDTYPE_TGID, NULL);
-}
 
 
 static inline int is_global_init(struct task_struct *tsk)
@@ -684,11 +680,6 @@ static inline void clear_tsk_thread_flag(struct task_struct *tsk, int flag)
 static inline int test_and_set_tsk_thread_flag(struct task_struct *tsk, int flag)
 {
 	return test_and_set_ti_thread_flag(task_thread_info(tsk), flag);
-}
-
-static inline int test_and_clear_tsk_thread_flag(struct task_struct *tsk, int flag)
-{
-	return test_and_clear_ti_thread_flag(task_thread_info(tsk), flag);
 }
 
 static inline int test_tsk_thread_flag(struct task_struct *tsk, int flag)

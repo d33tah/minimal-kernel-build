@@ -45,10 +45,6 @@ struct device_private {
 extern int devices_init(void);
 extern int buses_init(void);
 extern int classes_init(void);
-static inline int firmware_init(void) { return 0; }
-static inline int hypervisor_init(void) { return 0; }
-static inline void container_dev_init(void) { }
-static inline void auxiliary_bus_init(void) { }
 
 /* virtual_device_parent removed - unused */
 
@@ -62,9 +58,7 @@ extern int devres_release_all(struct device *dev);
 
 extern struct kset *devices_kset;
 
-static inline int devtmpfs_init(void) { return 0; }
 
- 
 /* devtmpfs_create_node removed - unused */
 static inline int devtmpfs_delete_node(struct device *dev) { return 0; }
 

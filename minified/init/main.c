@@ -56,7 +56,6 @@ extern void sched_init_smp(void);
 #include <linux/signal.h>
 #include <linux/idr.h>
 static inline void kgdb_free_init_mem(void) { }
-static inline void kprobe_free_init_mem(void) { }
 #include <linux/async.h>
 #include <linux/shmem_fs.h>
 #include <linux/slab.h>
@@ -498,10 +497,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		local_irq_disable();
 	radix_tree_init();
 
-	 
-	housekeeping_init();
 
-	 
 	workqueue_init_early();
 
 	rcu_init();
@@ -750,15 +746,12 @@ static int __ref kernel_init(void *unused)
 	async_synchronize_full();
 
 	system_state = SYSTEM_FREEING_INITMEM;
-	kprobe_free_init_mem();
 	kgdb_free_init_mem();
 	exit_boot_config();
 	free_initmem();
 	mark_readonly();
 
 	system_state = SYSTEM_RUNNING;
-
-	rcu_end_inkernel_boot();
 
 	do_sysctl_args();
 

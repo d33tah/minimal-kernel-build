@@ -73,9 +73,7 @@ static inline void rcu_irq_exit(void) { }
 static inline void rcu_irq_exit_check_preempt(void) { }
 static inline void exit_rcu(void) { }
 void rcu_scheduler_starting(void);
-static inline void rcu_end_inkernel_boot(void) { }
 static inline bool rcu_is_watching(void) { return true; }
-static inline void kfree_rcu_scheduler_running(void) { }
 
 static inline void rcu_all_qs(void) { barrier(); }
 #endif

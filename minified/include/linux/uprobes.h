@@ -10,8 +10,6 @@ struct pt_regs;
 struct uprobes_state {
 };
 
-static inline void uprobes_init(void) {}
-
 #define uprobe_get_trap_addr(regs)	instruction_pointer(regs)
 
 static inline void uprobe_munmap(struct vm_area_struct *vma, unsigned long start, unsigned long end) {}

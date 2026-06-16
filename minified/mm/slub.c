@@ -215,11 +215,6 @@ slab_flags_t kmem_cache_flags(unsigned int object_size,
 }
 #define disable_higher_order_debug 0
 
-static inline void inc_slabs_node(struct kmem_cache *s, int node,
-							int objects) {}
-static inline void dec_slabs_node(struct kmem_cache *s, int node,
-							int objects) {}
-
 static __always_inline bool slab_free_hook(struct kmem_cache *s,
 						void *x, bool init)
 {
@@ -365,8 +360,6 @@ out:
 	if (!slab)
 		return NULL;
 
-	inc_slabs_node(s, slab_nid(slab), slab->objects);
-
 	return slab;
 }
 
@@ -413,7 +406,6 @@ static void free_slab(struct kmem_cache *s, struct slab *slab)
 
 static void discard_slab(struct kmem_cache *s, struct slab *slab)
 {
-	dec_slabs_node(s, slab_nid(slab), slab->objects);
 	free_slab(s, slab);
 }
 
@@ -1041,9 +1033,8 @@ static void early_kmem_cache_node_alloc(int node)
 	slab->frozen = 0;
 	kmem_cache_node->node[node] = n;
 	init_kmem_cache_node(n);
-	inc_slabs_node(kmem_cache_node, node, slab->objects);
 
-	
+
 	__add_partial(n, slab, DEACTIVATE_TO_HEAD);
 }
 

@@ -4,9 +4,7 @@
 #include <linux/extable.h>		 
 #include <linux/memblock.h>		 
 #include <linux/kprobes.h>
-static inline int is_kmmio_active(void) { return 0; }
-static inline int kmmio_handler(struct pt_regs *regs, unsigned long addr) { return 0; }
-#include <linux/perf_event.h>		 
+#include <linux/perf_event.h>
 #include <linux/hugetlb.h>		 
 		 
 #include <linux/uaccess.h>		 
@@ -31,15 +29,6 @@ static __always_inline bool kvm_handle_async_pf(struct pt_regs *regs, u32 token)
 	return false;
 }			 
 #include <asm/irq_stack.h>
-
-static nokprobe_inline int
-kmmio_fault(struct pt_regs *regs, unsigned long addr)
-{
-	if (unlikely(is_kmmio_active()))
-		if (kmmio_handler(regs, addr) == 1)
-			return -1;
-	return 0;
-}
 
 
 DEFINE_SPINLOCK(pgd_lock);
@@ -568,10 +557,6 @@ static __always_inline void
 handle_page_fault(struct pt_regs *regs, unsigned long error_code,
 			      unsigned long address)
 {
-	if (unlikely(kmmio_fault(regs, address)))
-		return;
-
-	 
 	if (unlikely(fault_in_kernel_space(address))) {
 		do_kern_addr_fault(regs, error_code, address);
 	} else {

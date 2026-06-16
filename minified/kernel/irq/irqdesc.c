@@ -11,13 +11,6 @@
 #include "internals.h"
 
 static struct lock_class_key irq_desc_lock_class;
-
-static void __init init_irq_default_affinity(void)
-{
-}
-
-static inline int
-alloc_masks(struct irq_desc *desc, int node) { return 0; }
 static inline void
 desc_smp_init(struct irq_desc *desc, int node, const struct cpumask *affinity) { }
 
@@ -87,9 +80,6 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 	if (!desc->kstat_irqs)
 		goto err_desc;
 
-	if (alloc_masks(desc, node))
-		goto err_kstat;
-
 	raw_spin_lock_init(&desc->lock);
 	lockdep_set_class(&desc->lock, &irq_desc_lock_class);
 	mutex_init(&desc->request_mutex);
@@ -102,8 +92,6 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 
 	return desc;
 
-err_kstat:
-	free_percpu(desc->kstat_irqs);
 err_desc:
 	kfree(desc);
 	return NULL;
@@ -122,9 +110,6 @@ int __init early_irq_init(void)
 	int i, initcnt, node = first_online_node;
 	struct irq_desc *desc;
 
-	init_irq_default_affinity();
-
-	 
 	initcnt = arch_probe_nr_irqs();
 	printk(KERN_INFO "NR_IRQS: %d, nr_irqs: %d, preallocated irqs: %d\n",
 	       NR_IRQS, nr_irqs, initcnt);

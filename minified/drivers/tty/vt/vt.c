@@ -386,7 +386,6 @@ int vc_allocate(unsigned int currcons)
 		global_cursor_default = 1;
 
 	vc_init(vc, vc->vc_rows, vc->vc_cols, 1);
-	vcs_make_sysfs(currcons);
 	atomic_notifier_call_chain(&vt_notifier_list, VT_ALLOCATE, &param);
 
 	return 0;

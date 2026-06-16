@@ -19,5 +19,4 @@ void __init driver_init(void)
 
 	of_core_init();
 	memory_dev_init();
-	node_dev_init();
 }

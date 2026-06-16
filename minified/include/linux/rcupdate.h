@@ -32,7 +32,6 @@ void rcu_sched_clock_irq(int user);
 
 static inline void rcu_init_tasks_generic(void) { }
 
-static inline void rcu_init_nohz(void) { }
 static inline void rcu_nocb_flush_deferred_wakeup(void) { }
 
 #define rcu_tasks_qs(t, preempt) do { } while (0)

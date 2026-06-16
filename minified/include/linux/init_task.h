@@ -43,7 +43,6 @@
 /* Inlined from livepatch.h - CONFIG_LIVEPATCH not set */
 static inline bool klp_patch_pending(struct task_struct *task) { return false; }
 static inline void klp_update_patch_state(struct task_struct *task) {}
-static inline void klp_copy_process(struct task_struct *child) {}
 
 #include <asm/thread_info.h>
 

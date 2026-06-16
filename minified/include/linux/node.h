@@ -13,6 +13,5 @@
    - node_is_toptier, to_node macro
 */
 
-static inline void node_dev_init(void) { }
 
 #endif

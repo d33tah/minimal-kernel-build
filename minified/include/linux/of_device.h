@@ -22,7 +22,6 @@ extern struct platform_device *of_platform_device_create(struct device_node *np,
 extern int of_platform_bus_probe(struct device_node *root,
 				 const struct of_device_id *matches,
 				 struct device *parent);
-static inline void of_platform_register_reconfig_notifier(void) { }
 
 #include <linux/of.h>
 

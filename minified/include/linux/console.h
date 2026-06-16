@@ -92,8 +92,6 @@ extern struct tty_driver *console_device(int *);
 extern int is_console_locked(void);
 extern void console_sysfs_notify(void);
 
-static inline void vcs_make_sysfs(int index) { }
-
 #define WARN_CONSOLE_UNLOCKED()						\
 	WARN_ON(!atomic_read(&ignore_console_lock_warning) &&		\
 		!is_console_locked() && !oops_in_progress)

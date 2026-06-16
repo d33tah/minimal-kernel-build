@@ -11,8 +11,6 @@
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/signal.h>
-static inline void task_numa_free(struct task_struct *p, bool final) {}
-/* end numa_balancing.h */
 #include <linux/sched/task.h>
 #include <linux/pagemap.h>
 #include <linux/perf_event.h>
@@ -27,7 +25,6 @@ static inline void task_numa_free(struct task_struct *p, bool final) {}
 #include <linux/mount.h>
 #include <linux/security.h>
 #include <linux/syscalls.h>
-static inline void proc_exec_connector(struct task_struct *task) {}
 #include <linux/kmod.h>
 #include <linux/fs_struct.h>
 #include <linux/oom.h>
@@ -775,7 +772,6 @@ static int exec_binprm(struct linux_binprm *bprm)
 		return ret;
 
 	ptrace_event(PTRACE_EVENT_EXEC, old_vpid);
-	proc_exec_connector(current);
 	return 0;
 }
 
@@ -810,7 +806,6 @@ static int bprm_execve(struct linux_binprm *bprm,
 
 	current->fs->in_exec = 0;
 	current->in_execve = 0;
-	task_numa_free(current, false);
 	return retval;
 
 out:

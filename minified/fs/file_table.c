@@ -16,7 +16,6 @@
 #include <linux/percpu_counter.h>
 #include <linux/percpu.h>
 #include <linux/task_work.h>
-static inline void ima_file_free(struct file *file) {}
 #include <linux/swap.h>
 
 #include <linux/atomic.h>
@@ -112,7 +111,6 @@ static void __fput(struct file *file)
 
 	might_sleep();
 
-	ima_file_free(file);
 	if (unlikely(file->f_flags & FASYNC)) {
 		if (file->f_op->fasync)
 			file->f_op->fasync(-1, file, 0);

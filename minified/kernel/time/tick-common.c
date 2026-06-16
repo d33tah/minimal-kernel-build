@@ -4,8 +4,6 @@
 #include <linux/interrupt.h>
 #include <linux/nmi.h>
 #include <linux/percpu.h>
-#define CPU_PROFILING 1
-static inline void profile_tick(int type) { }
 #include <linux/sched.h>
 #include <linux/module.h>
 
@@ -34,7 +32,6 @@ static void tick_periodic(int cpu)
 	}
 
 	update_process_times(user_mode(get_irq_regs()));
-	profile_tick(CPU_PROFILING);
 }
 
 void tick_handle_periodic(struct clock_event_device *dev)

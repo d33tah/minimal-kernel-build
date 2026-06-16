@@ -32,8 +32,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/mutex.h>
 #include <linux/pipe_fs_i.h>
 #include <linux/resource.h>
-static inline unsigned long task_io_get_inblock(const struct task_struct *p) { return 0; }
-static inline unsigned long task_io_get_oublock(const struct task_struct *p) { return 0; }
 #include <linux/blkdev.h>
 #include <linux/task_work.h>
 #include <linux/fs_struct.h>
@@ -100,8 +98,6 @@ static void __exit_signal(struct task_struct *tsk)
 	sig->maj_flt += tsk->maj_flt;
 	sig->nvcsw += tsk->nvcsw;
 	sig->nivcsw += tsk->nivcsw;
-	sig->inblock += task_io_get_inblock(tsk);
-	sig->oublock += task_io_get_oublock(tsk);
 	sig->sum_sched_runtime += tsk->se.sum_exec_runtime;
 	sig->nr_threads--;
 	__unhash_process(tsk, group_dead);

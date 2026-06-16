@@ -279,16 +279,4 @@ __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 
 extern int irq_set_chip(unsigned int irq, const struct irq_chip *chip);
 
-static inline struct irq_chip *irq_data_get_irq_chip(struct irq_data *d)
-{
-	return d->chip;
-}
-
-
-static inline struct cpumask *irq_data_get_affinity_mask(struct irq_data *d)
-{
-	return d->common->affinity;
-}
-
-
 #endif

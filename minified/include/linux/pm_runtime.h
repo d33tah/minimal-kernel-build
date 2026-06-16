@@ -44,14 +44,11 @@ static inline void pm_runtime_put_noidle(struct device *dev) {}
 
 
 /* Compact pm_runtime_* wrapper functions */
-static inline int pm_request_idle(struct device *dev) { return __pm_runtime_idle(dev, RPM_ASYNC); }
-static inline int pm_runtime_get_sync(struct device *dev) { return __pm_runtime_resume(dev, RPM_GET_PUT); }
 static inline int pm_runtime_resume_and_get(struct device *dev) {
 	int ret = __pm_runtime_resume(dev, RPM_GET_PUT);
 	if (ret < 0) { pm_runtime_put_noidle(dev); return ret; }
 	return 0;
 }
 static inline int pm_runtime_put(struct device *dev) { return __pm_runtime_idle(dev, RPM_GET_PUT | RPM_ASYNC); }
-static inline int pm_runtime_put_sync(struct device *dev) { return __pm_runtime_idle(dev, RPM_GET_PUT); }
 
 #endif

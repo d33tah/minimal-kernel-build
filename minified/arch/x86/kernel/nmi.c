@@ -43,21 +43,13 @@ static DEFINE_RAW_SPINLOCK(nmi_reason_lock);
  * No NMI handlers are ever registered in this minimal kernel (the only
  * registrar, arch/x86/kernel/apic/hw_nmi.c, is compiled out because
  * arch_trigger_cpumask_backtrace is undefined), so the per-type handler
- * lists are permanently empty and nmi_handle() always reports 0 handled.
+ * lists are permanently empty and would-be nmi_handle() always reports 0
+ * handled -- the dispatch call and its 0-result branches are folded out.
  */
-static int nmi_handle(unsigned int type, struct pt_regs *regs)
-{
-	return 0;
-}
-NOKPROBE_SYMBOL(nmi_handle);
 
 static void
 pci_serr_error(unsigned char reason, struct pt_regs *regs)
 {
-	 
-	if (nmi_handle(NMI_SERR, regs))
-		return;
-
 	pr_emerg("NMI: PCI system error (SERR) for reason %02x on CPU %d.\n",
 		 reason, smp_processor_id());
 
@@ -76,10 +68,6 @@ static void
 io_check_error(unsigned char reason, struct pt_regs *regs)
 {
 	unsigned long i;
-
-	 
-	if (nmi_handle(NMI_IO_CHECK, regs))
-		return;
 
 	pr_emerg(
 	"NMI: IOCK error (debug interrupt?) for reason %02x on CPU %d.\n",
@@ -111,15 +99,6 @@ NOKPROBE_SYMBOL(io_check_error);
 static void
 unknown_nmi_error(unsigned char reason, struct pt_regs *regs)
 {
-	int handled;
-
-	 
-	handled = nmi_handle(NMI_UNKNOWN, regs);
-	if (handled) {
-		__this_cpu_add(nmi_stats.unknown, handled);
-		return;
-	}
-
 	__this_cpu_add(nmi_stats.unknown, 1);
 
 	pr_emerg("Uhhuh. NMI received for unknown reason %02x on CPU %d.\n",
@@ -138,7 +117,6 @@ static DEFINE_PER_CPU(unsigned long, last_nmi_rip);
 static noinstr void default_do_nmi(struct pt_regs *regs)
 {
 	unsigned char reason = 0;
-	int handled;
 	bool b2b = false;
 
 	 
@@ -152,16 +130,6 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 	__this_cpu_write(last_nmi_rip, regs->ip);
 
 
-	handled = nmi_handle(NMI_LOCAL, regs);
-	__this_cpu_add(nmi_stats.normal, handled);
-	if (handled) {
-		 
-		if (handled > 1)
-			__this_cpu_write(swallow_nmi, true);
-		goto out;
-	}
-
-	 
 	while (!raw_spin_trylock(&nmi_reason_lock)) {
 		run_crash_ipi_callback(regs);
 		cpu_relax();

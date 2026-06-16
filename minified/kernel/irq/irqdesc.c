@@ -11,8 +11,6 @@
 #include "internals.h"
 
 static struct lock_class_key irq_desc_lock_class;
-static inline void
-desc_smp_init(struct irq_desc *desc, int node, const struct cpumask *affinity) { }
 
 static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
 			      const struct cpumask *affinity, struct module *owner)
@@ -38,7 +36,6 @@ static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
 	desc->owner = owner;
 	for_each_possible_cpu(cpu)
 		*per_cpu_ptr(desc->kstat_irqs, cpu) = 0;
-	desc_smp_init(desc, node, affinity);
 }
 
 int nr_irqs = NR_IRQS;

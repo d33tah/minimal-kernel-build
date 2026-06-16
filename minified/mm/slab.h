@@ -257,9 +257,6 @@ static inline enum node_stat_item cache_vmstat_idx(struct kmem_cache *s)
 		NR_SLAB_RECLAIMABLE_B : NR_SLAB_UNRECLAIMABLE_B;
 }
 
-static inline void print_tracking(struct kmem_cache *s, void *object)
-{
-}
 static inline bool __slub_debug_enabled(void)
 {
 	return false;
@@ -343,10 +340,9 @@ static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 		return s;
 
 	cachep = virt_to_cache(x);
-	if (WARN(cachep && cachep != s,
-		  "%s: Wrong slab cache. %s but object is from %s\n",
-		  __func__, s->name, cachep->name))
-		print_tracking(cachep, x);
+	WARN(cachep && cachep != s,
+	     "%s: Wrong slab cache. %s but object is from %s\n",
+	     __func__, s->name, cachep->name);
 	return cachep;
 }
 

@@ -18,7 +18,6 @@
 static inline void propagate_user_return_notify(struct task_struct *prev, struct task_struct *next) {}
 #include <linux/dmi.h>
 #include <linux/utsname.h>
-static inline void boot_init_stack_canary(void) {}
 /* end stackprotector.h */
 #include <linux/cpuidle.h>
 #include <linux/acpi.h>

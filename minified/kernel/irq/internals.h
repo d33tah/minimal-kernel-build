@@ -225,9 +225,6 @@ static inline int check_irq_resend(struct irq_desc *desc, bool inject)
 	return 0;
 }
 
-static inline void register_irq_proc(unsigned int irq, struct irq_desc *desc) { }
-static inline void register_handler_proc(unsigned int irq,
-					 struct irqaction *action) { }
 
 static inline void chip_bus_lock(struct irq_desc *desc)
 {

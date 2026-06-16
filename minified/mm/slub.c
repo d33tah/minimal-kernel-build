@@ -48,8 +48,6 @@ static inline int sysfs_slab_add(struct kmem_cache *s) { return 0; }
 static inline int sysfs_slab_alias(struct kmem_cache *s, const char *p)
 							{ return 0; }
 
-static inline void debugfs_slab_add(struct kmem_cache *s) { }
-
 static nodemask_t slab_nodes;
 
 static inline void *freelist_ptr(const struct kmem_cache *s, void *ptr,
@@ -315,11 +313,6 @@ static inline struct slab *alloc_slab_page(gfp_t flags, int node,
 	return slab;
 }
 
-static inline int init_cache_random_seq(struct kmem_cache *s)
-{
-	return 0;
-}
-static inline void init_freelist_randomization(void) { }
 static inline bool shuffle_freelist(struct kmem_cache *s, struct slab *slab)
 {
 	return false;
@@ -1191,11 +1184,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 	s->min_partial = max_t(unsigned long, MIN_PARTIAL, s->min_partial);
 
 
-	if (slab_state >= UP) {
-		if (init_cache_random_seq(s))
-			goto error;
-	}
-
 	if (!init_kmem_cache_nodes(s))
 		goto error;
 
@@ -1306,9 +1294,6 @@ void __init kmem_cache_init(void)
 	
 	setup_kmalloc_cache_index_table();
 	create_kmalloc_caches(0);
-
-	
-	init_freelist_randomization();
 }
 
 void __init kmem_cache_init_late(void)
@@ -1355,9 +1340,6 @@ int __kmem_cache_create(struct kmem_cache *s, slab_flags_t flags)
 		__kmem_cache_release(s);
 		return err;
 	}
-
-	if (s->flags & SLAB_STORE_USER)
-		debugfs_slab_add(s);
 
 	return 0;
 }

@@ -3,8 +3,6 @@
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/user.h>
-static inline void task_numa_free(struct task_struct *p, bool final) {}
-/* end sched/numa_balancing.h */
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
@@ -318,7 +316,6 @@ void __put_task_struct(struct task_struct *tsk)
 	WARN_ON(tsk == current);
 
 	cgroup_free(tsk);
-	task_numa_free(tsk, true);
 
 	exit_creds(tsk);
 	put_signal_struct(tsk->signal);
@@ -838,10 +835,6 @@ init_task_pid(struct task_struct *task, enum pid_type type, struct pid *pid)
 		task->signal->pids[type] = pid;
 }
 
-static inline void rcu_copy_process(struct task_struct *p)
-{
-}
-
 static __always_inline void delayed_free_task(struct task_struct *tsk)
 {
 	free_task(tsk);
@@ -925,7 +918,6 @@ static __latent_entropy struct task_struct *copy_process(
 	p->flags |= PF_FORKNOEXEC;
 	INIT_LIST_HEAD(&p->children);
 	INIT_LIST_HEAD(&p->sibling);
-	rcu_copy_process(p);
 	p->vfork_done = NULL;
 	spin_lock_init(&p->alloc_lock);
 

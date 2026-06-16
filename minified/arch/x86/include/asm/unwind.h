@@ -27,8 +27,6 @@ static inline bool unwind_done(struct unwind_state *state)
 	return state->stack_info.type == STACK_TYPE_UNKNOWN;
 }
 
-static inline void unwind_init(void) {}
-
 static inline
 unsigned long unwind_recover_rethook(struct unwind_state *state,
 				     unsigned long addr, unsigned long *addr_p)

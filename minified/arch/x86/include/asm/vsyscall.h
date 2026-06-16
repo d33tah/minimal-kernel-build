@@ -5,6 +5,4 @@
 #include <linux/seqlock.h>
 #include <uapi/asm/vsyscall.h>
 
-static inline void map_vsyscall(void) {}
-
 #endif

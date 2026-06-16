@@ -12,10 +12,6 @@ struct address_space;
 
 /* flush_cache_all removed - unused */
 
-#ifndef flush_cache_mm
-static inline void flush_cache_mm(struct mm_struct *mm) { }
-#endif
-
 #ifndef flush_cache_range
 static inline void flush_cache_range(struct vm_area_struct *vma,
 				     unsigned long start, unsigned long end) { }

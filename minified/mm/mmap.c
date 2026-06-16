@@ -1308,7 +1308,6 @@ void exit_mmap(struct mm_struct *mm)
 	}
 
 	lru_add_drain();
-	flush_cache_mm(mm);
 	tlb_gather_mmu_fullmm(&tlb, mm);
 	
 	

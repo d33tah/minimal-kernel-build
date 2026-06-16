@@ -12,14 +12,9 @@ static inline void device_pm_init_common(struct device *dev)
 
 static inline void pm_runtime_init(struct device *dev) {}
 
-/* dpm_sysfs_add removed - unused */
-static inline void dpm_sysfs_remove(struct device *dev) {}
-/* dpm_sysfs_change_owner removed - unused */
+/* dpm_sysfs_add, dpm_sysfs_remove, dpm_sysfs_change_owner removed - unused */
 
-
-
-static inline void device_pm_remove(struct device *dev) {}
-
+/* device_pm_remove removed - unused */
 /* device_pm_move_before, device_pm_move_after, device_pm_move_last removed - unused */
 
 /* pm_wakeup_source_sysfs_add removed - unused */

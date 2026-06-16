@@ -53,8 +53,8 @@ void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
 
 	/*
 	 * The clock event device always carries CLOCK_EVT_FEAT_PERIODIC and
-	 * broadcast is off (tick_broadcast_oneshot_active() == 0), so the device
-	 * is always put in PERIODIC state; the oneshot setup branch was dead.
+	 * broadcast is off, so the device is always put in PERIODIC state; the
+	 * oneshot setup branch was dead.
 	 */
 	clockevents_switch_state(dev, CLOCK_EVT_STATE_PERIODIC);
 }

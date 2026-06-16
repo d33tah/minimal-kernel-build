@@ -293,7 +293,6 @@ void device_del(struct device *dev)
 	   BUS_NOTIFY_{DEL,REMOVED}_DEVICE call chains were no-ops - removed. */
 	noio_flag = memalloc_noio_save();
 
-	dpm_sysfs_remove(dev);
 	if (parent)
 		klist_del(&dev->p->knode_parent);
 	if (MAJOR(dev->devt))
@@ -307,7 +306,6 @@ void device_del(struct device *dev)
 	}
 	device_remove_attrs(dev);
 	bus_remove_device(dev);
-	device_pm_remove(dev);
 	driver_deferred_probe_del(dev);
 	device_platform_notify_remove(dev);
 

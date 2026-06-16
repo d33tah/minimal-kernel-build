@@ -57,8 +57,6 @@ static inline void tick_set_periodic_handler(struct clock_event_device *dev, int
 
 
 
-static inline int tick_broadcast_oneshot_active(void) { return 0; }
-
 #define tick_nohz_active (0)
 
 DECLARE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases);

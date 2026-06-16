@@ -299,11 +299,6 @@ int del_timer(struct timer_list *timer)
 	return ret;
 }
 
-static inline void timer_base_init_expiry_lock(struct timer_base *base) { }
-static inline void timer_base_lock_expiry(struct timer_base *base) { }
-static inline void timer_base_unlock_expiry(struct timer_base *base) { }
-static inline void timer_sync_wait_running(struct timer_base *base) { }
-
 static void call_timer_fn(struct timer_list *timer,
 			  void (*fn)(struct timer_list *),
 			  unsigned long baseclk)
@@ -353,7 +348,6 @@ static void expire_timers(struct timer_base *base, struct hlist_head *head)
 			call_timer_fn(timer, fn, baseclk);
 			raw_spin_lock_irq(&base->lock);
 			base->running_timer = NULL;
-			timer_sync_wait_running(base);
 		}
 	}
 }
@@ -440,7 +434,6 @@ static inline void __run_timers(struct timer_base *base)
 	if (time_before(jiffies, base->next_expiry))
 		return;
 
-	timer_base_lock_expiry(base);
 	raw_spin_lock_irq(&base->lock);
 
 	while (time_after_eq(jiffies, base->clk) &&
@@ -456,7 +449,6 @@ static inline void __run_timers(struct timer_base *base)
 			expire_timers(base, heads + levels);
 	}
 	raw_spin_unlock_irq(&base->lock);
-	timer_base_unlock_expiry(base);
 }
 
 static __latent_entropy void run_timer_softirq(struct softirq_action *h)
@@ -558,7 +550,6 @@ static void __init init_timer_cpu(int cpu)
 		raw_spin_lock_init(&base->lock);
 		base->clk = jiffies;
 		base->next_expiry = base->clk + NEXT_TIMER_MAX_DELTA;
-		timer_base_init_expiry_lock(base);
 	}
 }
 

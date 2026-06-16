@@ -226,11 +226,8 @@ static inline int check_irq_resend(struct irq_desc *desc, bool inject)
 }
 
 static inline void register_irq_proc(unsigned int irq, struct irq_desc *desc) { }
-static inline void unregister_irq_proc(unsigned int irq, struct irq_desc *desc) { }
 static inline void register_handler_proc(unsigned int irq,
 					 struct irqaction *action) { }
-static inline void unregister_handler_proc(unsigned int irq,
-					   struct irqaction *action) { }
 
 static inline int irq_setup_affinity(struct irq_desc *desc) { return 0; }
 
@@ -361,10 +358,4 @@ static inline void irq_domain_deactivate_irq(struct irq_data *data)
 
 /* irqd_get_parent_data removed - unused */
 
-static inline void irq_add_debugfs_entry(unsigned int irq, struct irq_desc *d)
-{
-}
-static inline void irq_remove_debugfs_entry(struct irq_desc *d)
-{
-}
 /* irq_debugfs_copy_devname removed - unused */

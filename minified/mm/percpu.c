@@ -1087,29 +1087,12 @@ static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
 	return pcpu_get_page_chunk(pcpu_addr_to_page(addr));
 }
 
-static bool
-pcpu_memcg_pre_alloc_hook(size_t size, gfp_t gfp, struct obj_cgroup **objcgp)
-{
-	return true;
-}
-
-static void pcpu_memcg_post_alloc_hook(struct obj_cgroup *objcg,
-				       struct pcpu_chunk *chunk, int off,
-				       size_t size)
-{
-}
-
-static void pcpu_memcg_free_hook(struct pcpu_chunk *chunk, int off, size_t size)
-{
-}
-
 static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 				 gfp_t gfp)
 {
 	gfp_t pcpu_gfp;
 	bool is_atomic;
 	bool do_warn;
-	struct obj_cgroup *objcg = NULL;
 	static int warn_limit = 10;
 	struct pcpu_chunk *chunk, *next;
 	const char *err;
@@ -1139,15 +1122,11 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 		return NULL;
 	}
 
-	if (unlikely(!pcpu_memcg_pre_alloc_hook(size, gfp, &objcg)))
-		return NULL;
-
 	if (!is_atomic) {
-		
+
 		if (gfp & __GFP_NOFAIL) {
 			mutex_lock(&pcpu_alloc_mutex);
 		} else if (mutex_lock_killable(&pcpu_alloc_mutex)) {
-			pcpu_memcg_post_alloc_hook(objcg, NULL, 0, size);
 			return NULL;
 		}
 	}
@@ -1253,8 +1232,6 @@ area_found:
 
 	ptr = __addr_to_pcpu_ptr(chunk->base_addr + off);
 
-	pcpu_memcg_post_alloc_hook(objcg, chunk, off, size);
-
 	return ptr;
 
 fail_unlock:
@@ -1275,8 +1252,6 @@ fail:
 	} else {
 		mutex_unlock(&pcpu_alloc_mutex);
 	}
-
-	pcpu_memcg_post_alloc_hook(objcg, NULL, 0, size);
 
 	return NULL;
 }
@@ -1413,7 +1388,7 @@ void free_percpu(void __percpu *ptr)
 	void *addr;
 	struct pcpu_chunk *chunk;
 	unsigned long flags;
-	int size, off;
+	int off;
 	bool need_balance = false;
 
 	if (!ptr)
@@ -1426,11 +1401,9 @@ void free_percpu(void __percpu *ptr)
 	chunk = pcpu_chunk_addr_search(addr);
 	off = addr - chunk->base_addr;
 
-	size = pcpu_free_area(chunk, off);
+	pcpu_free_area(chunk, off);
 
-	pcpu_memcg_free_hook(chunk, off, size);
 
-	
 	if (!chunk->isolated && chunk->free_bytes == pcpu_unit_size) {
 		struct pcpu_chunk *pos;
 

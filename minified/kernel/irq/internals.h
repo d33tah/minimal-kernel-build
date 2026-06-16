@@ -339,11 +339,6 @@ irq_pm_install_action(struct irq_desc *desc, struct irqaction *action) { }
 static inline void
 irq_pm_remove_action(struct irq_desc *desc, struct irqaction *action) { }
 
-static inline void irq_remove_timings(struct irq_desc *desc) {}
-static inline void irq_setup_timings(struct irq_desc *desc,
-				     struct irqaction *act) {};
-static inline void record_irq_time(struct irq_desc *desc) {}
-
 
 /* irq_init_generic_chip, irq_can_move_pcntxt, irq_move_pending,
    irq_copy_pending, irq_get_pending, irq_desc_get_pending_mask,

@@ -492,23 +492,6 @@ static unsigned long default_dump_filter = MMF_DUMP_FILTER_DEFAULT;
 
 #include <linux/init_task.h>
 
-static void mm_init_aio(struct mm_struct *mm)
-{
-}
-
-static __always_inline void mm_clear_owner(struct mm_struct *mm,
-					   struct task_struct *p)
-{
-}
-
-static void mm_init_owner(struct mm_struct *mm, struct task_struct *p)
-{
-}
-
-static void mm_init_uprobes_state(struct mm_struct *mm)
-{
-}
-
 static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	struct user_namespace *user_ns)
 {
@@ -525,12 +508,9 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	spin_lock_init(&mm->page_table_lock);
 	spin_lock_init(&mm->arg_lock);
 	mm_init_cpumask(mm);
-	mm_init_aio(mm);
-	mm_init_owner(mm, p);
 	mm_pasid_init(mm);
 	RCU_INIT_POINTER(mm->exe_file, NULL);
 	init_tlb_flush_pending(mm);
-	mm_init_uprobes_state(mm);
 	hugetlb_count_init(mm);
 
 	if (current->mm) {
@@ -694,7 +674,6 @@ static struct mm_struct *dup_mm(struct task_struct *tsk,
 free_pt:
 	
 	mm->binfmt = NULL;
-	mm_init_owner(mm, NULL);
 	mmput(mm);
 
 fail_nomem:
@@ -1146,7 +1125,6 @@ bad_fork_cleanup_namespaces:
 	exit_task_namespaces(p);
 bad_fork_cleanup_mm:
 	if (p->mm) {
-		mm_clear_owner(p->mm, p);
 		mmput(p->mm);
 	}
 bad_fork_cleanup_signal:

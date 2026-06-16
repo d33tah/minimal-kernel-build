@@ -356,13 +356,6 @@ void reweight_task(struct task_struct *p, int prio)
 	load->inv_weight = sched_prio_to_wmult[prio];
 }
 
-#define UPDATE_TG	0x0
-#define DO_ATTACH	0x0
-
-static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *se, int not_used1)
-{
-}
-
 static inline int newidle_balance(struct rq *rq, struct rq_flags *rf)
 {
 	return 0;
@@ -404,7 +397,6 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	if (renorm && !curr)
 		se->vruntime += cfs_rq->min_vruntime;
 
-	update_load_avg(cfs_rq, se, UPDATE_TG | DO_ATTACH);
 	account_entity_enqueue(cfs_rq, se);
 
 	if (flags & ENQUEUE_WAKEUP)
@@ -451,8 +443,6 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 {
 	
 	update_curr(cfs_rq);
-
-	update_load_avg(cfs_rq, se, UPDATE_TG);
 
 	clear_buddies(cfs_rq, se);
 
@@ -504,7 +494,6 @@ set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 
 	if (se->on_rq) {
 		__dequeue_entity(cfs_rq, se);
-		update_load_avg(cfs_rq, se, UPDATE_TG);
 	}
 
 	update_stats_curr_start(cfs_rq, se);
@@ -546,8 +535,6 @@ static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 
 	if (prev->on_rq) {
 		__enqueue_entity(cfs_rq, prev);
-		
-		update_load_avg(cfs_rq, prev, 0);
 	}
 	cfs_rq->curr = NULL;
 }
@@ -557,8 +544,6 @@ entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
 {
 	
 	update_curr(cfs_rq);
-
-	update_load_avg(cfs_rq, curr, UPDATE_TG);
 
 	if (cfs_rq->nr_running > 1)
 		check_preempt_tick(cfs_rq, curr);

@@ -14,7 +14,6 @@
 #include <linux/capability.h>
 #include <linux/file.h>
 #include <linux/fcntl.h>
-static inline int devcgroup_inode_permission(struct inode *inode, int mask) { return 0; }
 #include <linux/fs_struct.h>
 
 #include <linux/hash.h>
@@ -197,10 +196,6 @@ int inode_permission(struct user_namespace *mnt_userns,
 	}
 
 	retval = do_inode_permission(mnt_userns, inode, mask);
-	if (retval)
-		return retval;
-
-	retval = devcgroup_inode_permission(inode, mask);
 	if (retval)
 		return retval;
 

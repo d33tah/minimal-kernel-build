@@ -11,7 +11,6 @@
 #include <linux/mount.h>
 #include <linux/tracepoint.h>
 
-static inline int inode_has_buffers(struct inode *inode) { return 0; }
 #include <linux/ratelimit.h>
 #include <linux/list_lru.h>
 #include "internal.h"
@@ -162,7 +161,6 @@ static struct inode *alloc_inode(struct super_block *sb)
 
 void __destroy_inode(struct inode *inode)
 {
-	BUG_ON(inode_has_buffers(inode));
 	inode_detach_wb(inode);
 	if (!inode->i_nlink) {
 		WARN_ON(atomic_long_read(&inode->i_sb->s_remove_count) == 0);

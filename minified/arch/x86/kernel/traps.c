@@ -257,17 +257,6 @@ static enum kernel_gp_hint get_kernel_gp_address(struct pt_regs *regs,
 
 #define GPFSTR "general protection fault"
 
-static bool fixup_iopl_exception(struct pt_regs *regs)
-{
-	/* Stub: IOPL emulation not needed for minimal kernel */
-	return false;
-}
-
-static bool try_fixup_enqcmd_gp(void)
-{
-	return false;
-}
-
 static bool gp_try_fixup_and_notify(struct pt_regs *regs, int trapnr,
 				    unsigned long error_code, const char *str)
 {
@@ -300,9 +289,6 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 	enum kernel_gp_hint hint = GP_NO_HINT;
 	unsigned long gp_addr;
 
-	if (user_mode(regs) && try_fixup_enqcmd_gp())
-		return;
-
 	cond_local_irq_enable(regs);
 
 	/*
@@ -311,9 +297,6 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 	 */
 
 	if (user_mode(regs)) {
-		if (fixup_iopl_exception(regs))
-			goto exit;
-
 		if (fixup_vdso_exception(regs, X86_TRAP_GP, error_code, 0))
 			goto exit;
 
@@ -572,21 +555,11 @@ DEFINE_IDTENTRY(exc_spurious_interrupt_bug)
 	 
 }
 
-static bool handle_xfd_event(struct pt_regs *regs)
-{
-	/* Stub: XFD (Extended Feature Disable) not needed for minimal kernel */
-	return false;
-}
-
 DEFINE_IDTENTRY(exc_device_not_available)
 {
 	unsigned long cr0 = read_cr0();
 
-	if (handle_xfd_event(regs))
-		return;
 
-
-	 
 	if (WARN(cr0 & X86_CR0_TS, "CR0.TS was set")) {
 		 
 		write_cr0(cr0 & ~X86_CR0_TS);

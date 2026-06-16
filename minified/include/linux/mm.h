@@ -628,11 +628,6 @@ static inline atomic_t *folio_pincount_ptr(struct folio *folio)
 }
 
 
-static inline bool is_pinnable_page(struct page *page)
-{
-	return true;
-}
-
 static inline void set_page_zone(struct page *page, enum zone_type zone)
 {
 	page->flags &= ~(ZONES_MASK << ZONES_PGSHIFT);

@@ -28,10 +28,6 @@ static inline void blk_flush_plug(struct blk_plug *plug, bool async)
 }
 
 
-static inline void printk_all_partitions(void)
-{
-}
-
 #define BDEVNAME_SIZE	32
 
 struct io_comp_batch;

@@ -189,13 +189,6 @@ static inline pgoff_t page_to_index(struct page *page)
 
 extern pgoff_t hugetlb_basepage_index(struct page *page);
 
-static inline pgoff_t page_to_pgoff(struct page *page)
-{
-	if (unlikely(PageHuge(page)))
-		return hugetlb_basepage_index(page);
-	return page_to_index(page);
-}
-
 static inline loff_t page_offset(struct page *page)
 {
 	return ((loff_t)page->index) << PAGE_SHIFT;

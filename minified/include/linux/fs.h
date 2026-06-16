@@ -46,11 +46,6 @@ static inline void do_delayed_call(struct delayed_call *call)
 	if (call->fn)
 		call->fn(call->arg);
 }
-static inline void clear_delayed_call(struct delayed_call *call)
-{
-	call->fn = NULL;
-}
-
 #include <linux/uuid.h>
 #include <linux/ioprio.h>
 
@@ -1032,12 +1027,6 @@ static inline void mark_inode_dirty_sync(struct inode *inode)
 
 extern void inc_nlink(struct inode *inode);
 extern void drop_nlink(struct inode *inode);
-
-static inline void inode_dec_link_count(struct inode *inode)
-{
-	drop_nlink(inode);
-	mark_inode_dirty(inode);
-}
 
 enum file_time_flags {
 	S_ATIME = 1,

@@ -671,11 +671,6 @@ static inline void set_task_comm(struct task_struct *tsk, const char *from)
 }
 
 
-static inline unsigned long wait_task_inactive(struct task_struct *p, unsigned int match_state)
-{
-	return 1;
-}
-
 static inline void set_tsk_thread_flag(struct task_struct *tsk, int flag)
 {
 	set_ti_thread_flag(task_thread_info(tsk), flag);

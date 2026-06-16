@@ -65,7 +65,6 @@ struct clone_args {
 #include <linux/rcupdate.h>
 #include <linux/refcount.h>
 #include <linux/resource.h>
-static inline void clear_tsk_latency_tracing(struct task_struct *p) {}
 #define MAX_NICE	19
 #define MIN_NICE	-20
 #define NICE_WIDTH	(MAX_NICE - MIN_NICE + 1)
@@ -753,6 +752,5 @@ static inline unsigned int task_cpu(const struct task_struct *p)
 
 
 static inline void sched_core_free(struct task_struct *tsk) { }
-static inline void sched_core_fork(struct task_struct *p) { }
 
 #endif

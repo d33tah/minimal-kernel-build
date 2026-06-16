@@ -127,7 +127,4 @@ static inline void memalloc_nofs_restore(unsigned int flags)
 }
 
 
-static inline void mm_pasid_init(struct mm_struct *mm) {}
-static inline void mm_pasid_drop(struct mm_struct *mm) {}
-
-#endif  
+#endif

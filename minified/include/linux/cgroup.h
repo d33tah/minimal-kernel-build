@@ -17,7 +17,4 @@
 #include <linux/refcount.h>
 #include <linux/kernel_stat.h>
 
-static inline void cgroup_fork(struct task_struct *p) {}
-static inline void cgroup_free(struct task_struct *p) {}
-
 #endif /* _LINUX_CGROUP_H */

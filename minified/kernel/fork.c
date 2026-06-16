@@ -291,7 +291,6 @@ void __mmdrop(struct mm_struct *mm)
 	mm_free_pgd(mm);
 	destroy_context(mm);
 	put_user_ns(mm->user_ns);
-	mm_pasid_drop(mm);
 	free_mm(mm);
 }
 
@@ -312,8 +311,6 @@ void __put_task_struct(struct task_struct *tsk)
 	WARN_ON(!tsk->exit_state);
 	WARN_ON(refcount_read(&tsk->usage));
 	WARN_ON(tsk == current);
-
-	cgroup_free(tsk);
 
 	exit_creds(tsk);
 	put_signal_struct(tsk->signal);
@@ -482,7 +479,6 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	spin_lock_init(&mm->page_table_lock);
 	spin_lock_init(&mm->arg_lock);
 	mm_init_cpumask(mm);
-	mm_pasid_init(mm);
 	RCU_INIT_POINTER(mm->exe_file, NULL);
 	init_tlb_flush_pending(mm);
 
@@ -912,7 +908,6 @@ static __latent_entropy struct task_struct *copy_process(
 	p->default_timer_slack_ns = current->timer_slack_ns;
 
 	p->io_context = NULL;
-	cgroup_fork(p);
 	if (args->kthread) {
 		if (!set_kthread_struct(p))
 			goto bad_fork_cleanup_delayacct;
@@ -967,7 +962,6 @@ static __latent_entropy struct task_struct *copy_process(
 	user_disable_single_step(p);
 	clear_task_syscall_work(p, SYSCALL_TRACE);
 	clear_task_syscall_work(p, SYSCALL_EMU);
-	clear_tsk_latency_tracing(p);
 
 	
 	p->pid = pid_nr(pid);
@@ -1000,7 +994,6 @@ static __latent_entropy struct task_struct *copy_process(
 	p->exit_signal = args->exit_signal;
 
 
-	sched_core_fork(p);
 
 	spin_lock(&current->sighand->siglock);
 
@@ -1058,7 +1051,6 @@ static __latent_entropy struct task_struct *copy_process(
 	syscall_tracepoint_update(p);
 	write_unlock_irq(&tasklist_lock);
 
-	uprobe_copy_process(p, clone_flags);
 
 	return p;
 

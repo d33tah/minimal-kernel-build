@@ -100,12 +100,6 @@ static inline void __add_wait_queue_entry_tail(struct wait_queue_head *wq_head, 
 	list_add_tail(&wq_entry->entry, &wq_head->head);
 }
 
-static inline void
-__remove_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
-{
-	list_del(&wq_entry->entry);
-}
-
 void __wake_up(struct wait_queue_head *wq_head, unsigned int mode, int nr, void *key);
 void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 		unsigned int mode, void *key, wait_queue_entry_t *bookmark);

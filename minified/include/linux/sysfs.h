@@ -115,11 +115,6 @@ struct bin_attribute {
 
 
 
-static inline void sysfs_notify(struct kobject *kobj, const char *dir,
-				const char *attr)
-{
-}
-
 static inline int __must_check sysfs_init(void)
 {
 	return 0;
@@ -127,11 +122,6 @@ static inline int __must_check sysfs_init(void)
 
 
 
-__printf(2, 3)
-static inline int sysfs_emit(char *buf, const char *fmt, ...)
-{
-	return 0;
-}
 
 
 #endif  

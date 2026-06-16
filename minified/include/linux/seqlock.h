@@ -348,15 +348,4 @@ static inline void write_sequnlock(seqlock_t *sl)
 }
 
 
-static inline void read_seqlock_excl(seqlock_t *sl)
-{
-	spin_lock(&sl->lock);
-}
-
-
-static inline void read_sequnlock_excl(seqlock_t *sl)
-{
-	spin_unlock(&sl->lock);
-}
-
-#endif  
+#endif

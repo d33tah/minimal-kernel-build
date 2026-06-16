@@ -70,18 +70,6 @@ static inline void inode_detach_wb(struct inode *inode)
 {
 }
 
-static inline void wbc_attach_fdatawrite_inode(struct writeback_control *wbc,
-					       struct inode *inode)
-{
-}
-
-static inline void wbc_detach_inode(struct writeback_control *wbc)
-{
-}
-
-static inline void cgroup_writeback_umount(void)
-{
-}
 
 
 void balance_dirty_pages_ratelimited(struct address_space *mapping);

@@ -21,10 +21,4 @@ static inline void touch_nmi_watchdog(void)
 	touch_softlockup_watchdog();
 }
 
-static inline bool trigger_all_cpu_backtrace(void)
-{
-	return false;
-}
-
-
 #endif

@@ -10,8 +10,6 @@ static inline void device_pm_init_common(struct device *dev)
 	}
 }
 
-static inline void pm_runtime_init(struct device *dev) {}
-
 /* dpm_sysfs_add, dpm_sysfs_remove, dpm_sysfs_change_owner removed - unused */
 
 /* device_pm_remove removed - unused */
@@ -23,5 +21,4 @@ static inline void pm_runtime_init(struct device *dev) {}
 static inline void device_pm_init(struct device *dev)
 {
 	device_pm_init_common(dev);
-	pm_runtime_init(dev);
 }

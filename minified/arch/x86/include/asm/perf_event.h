@@ -9,11 +9,7 @@
 
 
 
-static inline unsigned long perf_misc_flags(struct pt_regs *regs) { return 0; }
 
-#define perf_misc_flags(regs) perf_misc_flags(regs)
-
- 
 #define perf_arch_fetch_caller_regs(regs, __ip) do { \
 	(regs)->ip = (__ip); \
 	(regs)->sp = (unsigned long)__builtin_frame_address(0); \

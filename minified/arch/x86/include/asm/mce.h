@@ -10,9 +10,7 @@ struct cpuinfo_x86;
 struct cper_ia_proc_ctx;
 struct pt_regs;
 
-/* Only keeping functions that are actually called */
-static inline int mcheck_init(void) { return 0; }
-/* Removed unused: mcheck_cpu_init, enable_copy_mc_fragile, apei_smca_report_x86_error,
+/* Removed unused: mcheck_init, mcheck_cpu_init, enable_copy_mc_fragile, apei_smca_report_x86_error,
    mce_intel_feature_*, cmci_*, mce_threshold_*, amd_mce_*, mce_hygon_* */
 
 #endif /* _ASM_X86_MCE_H */

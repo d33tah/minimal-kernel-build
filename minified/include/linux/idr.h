@@ -94,10 +94,5 @@ static inline int ida_alloc(struct ida *ida, gfp_t gfp)
 	return ida_alloc_range(ida, 0, ~0, gfp);
 }
 
-static inline int ida_alloc_min(struct ida *ida, unsigned int min, gfp_t gfp)
-{
-	return ida_alloc_range(ida, min, ~0, gfp);
-}
-
 
 #endif  

@@ -69,13 +69,6 @@ static inline void list_replace(struct list_head *old,
 	new->prev->next = new;
 }
 
-static inline void list_replace_init(struct list_head *old,
-				     struct list_head *new)
-{
-	list_replace(old, new);
-	INIT_LIST_HEAD(old);
-}
-
 static inline void list_del_init(struct list_head *entry)
 {
 	__list_del_entry(entry);
@@ -122,47 +115,6 @@ static inline int list_empty_careful(const struct list_head *head)
 static inline int list_is_singular(const struct list_head *head)
 {
 	return !list_empty(head) && (head->next == head->prev);
-}
-
-static inline void __list_splice(const struct list_head *list,
-				 struct list_head *prev,
-				 struct list_head *next)
-{
-	struct list_head *first = list->next;
-	struct list_head *last = list->prev;
-
-	first->prev = prev;
-	prev->next = first;
-
-	last->next = next;
-	next->prev = last;
-}
-
-static inline void list_splice(const struct list_head *list,
-				struct list_head *head)
-{
-	if (!list_empty(list))
-		__list_splice(list, head, head->next);
-}
-
-
-
-static inline void list_splice_init(struct list_head *list,
-				    struct list_head *head)
-{
-	if (!list_empty(list)) {
-		__list_splice(list, head, head->next);
-		INIT_LIST_HEAD(list);
-	}
-}
-
-static inline void list_splice_tail_init(struct list_head *list,
-					 struct list_head *head)
-{
-	if (!list_empty(list)) {
-		__list_splice(list, head->prev, head);
-		INIT_LIST_HEAD(list);
-	}
 }
 
 #define list_entry(ptr, type, member) \
@@ -280,11 +232,6 @@ static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 		WRITE_ONCE(first->pprev, &n->next);
 	WRITE_ONCE(h->first, n);
 	WRITE_ONCE(n->pprev, &h->first);
-}
-
-static inline bool hlist_fake(struct hlist_node *h)
-{
-	return h->pprev == &h->next;
 }
 
 static inline bool

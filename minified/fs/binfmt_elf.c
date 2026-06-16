@@ -358,24 +358,7 @@ struct arch_elf_state {
 
 #define INIT_ARCH_ELF_STATE {}
 
-static inline int arch_elf_pt_proc(struct elfhdr *ehdr,
-				   struct elf_phdr *phdr,
-				   struct file *elf, bool is_interp,
-				   struct arch_elf_state *state)
-{
-	 
-	return 0;
-}
-
-static inline int arch_check_elf(struct elfhdr *ehdr, bool has_interp,
-				 struct elfhdr *interp_ehdr,
-				 struct arch_elf_state *state)
-{
-	 
-	return 0;
-}
-
-#endif  
+#endif
 
 static inline int make_prot(u32 p_flags, struct arch_elf_state *arch_state,
 			    bool has_interp, bool is_interp)
@@ -459,14 +442,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			else
 				executable_stack = EXSTACK_DISABLE_X;
 			break;
-
-		case PT_LOPROC ... PT_HIPROC:
-			retval = arch_elf_pt_proc(elf_ex, elf_ppnt,
-						  bprm->file, false,
-						  &arch_state);
-			if (retval)
-				goto out_free_dentry;
-			break;
 		}
 
 	retval = parse_elf_properties(bprm->file,
@@ -475,11 +450,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		goto out_free_dentry;
 
 
-	retval = arch_check_elf(elf_ex, false, NULL, &arch_state);
-	if (retval)
-		goto out_free_dentry;
-
-	 
 	retval = begin_new_exec(bprm);
 	if (retval)
 		goto out_free_dentry;

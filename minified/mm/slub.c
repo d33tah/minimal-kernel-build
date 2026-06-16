@@ -289,11 +289,6 @@ static inline struct slab *alloc_slab_page(gfp_t flags, int node,
 	return slab;
 }
 
-static inline bool shuffle_freelist(struct kmem_cache *s, struct slab *slab)
-{
-	return false;
-}
-
 static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 {
 	struct slab *slab;
@@ -301,7 +296,6 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 	gfp_t alloc_gfp;
 	void *start, *p, *next;
 	int idx;
-	bool shuffle;
 
 	flags &= gfp_allowed_mask;
 
@@ -330,9 +324,7 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 
 	start = slab_address(slab);
 
-	shuffle = shuffle_freelist(s, slab);
-
-	if (!shuffle) {
+	{
 		start = setup_object(s, start);
 		slab->freelist = start;
 		for (idx = 0, p = start; idx < slab->objects - 1; idx++) {
@@ -607,9 +599,6 @@ redo:
 	}
 }
 
-static inline void unfreeze_partials_cpu(struct kmem_cache *s,
-				  struct kmem_cache_cpu *c) { }
-
 static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
 {
 	struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, cpu);
@@ -623,8 +612,6 @@ static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
 	if (slab) {
 		deactivate_slab(s, slab, freelist);
 	}
-
-	unfreeze_partials_cpu(s, c);
 }
 
 static inline int node_match(struct slab *slab, int node)

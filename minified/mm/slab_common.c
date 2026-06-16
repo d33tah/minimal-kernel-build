@@ -39,12 +39,6 @@ struct kmem_cache *kmem_cache;
 static bool slab_nomerge = !IS_ENABLED(CONFIG_SLAB_MERGE_DEFAULT);
 
 
-static inline int kmem_cache_sanity_check(const char *name, unsigned int size)
-{
-	return 0;
-}
-
-
 static unsigned int calculate_alignment(slab_flags_t flags,
 		unsigned int align, unsigned int size)
 {
@@ -179,12 +173,9 @@ kmem_cache_create_usercopy(const char *name,
 
 	mutex_lock(&slab_mutex);
 
-	err = kmem_cache_sanity_check(name, size);
-	if (err) {
-		goto out_unlock;
-	}
+	err = 0;
 
-	 
+
 	if (flags & ~SLAB_FLAGS_PERMITTED) {
 		err = -EINVAL;
 		goto out_unlock;

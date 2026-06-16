@@ -704,16 +704,6 @@ static struct vmap_area *find_vmap_area(unsigned long addr)
 
 static struct vm_struct *vmlist __initdata;
 
-static inline unsigned int vm_area_page_order(struct vm_struct *vm)
-{
-	return 0;
-}
-
-static inline void set_vm_area_page_order(struct vm_struct *vm, unsigned int order)
-{
-	BUG_ON(order != 0);
-}
-
 
 static void vmap_init_free_space(void)
 {
@@ -1019,7 +1009,6 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 	unsigned long size = get_vm_area_size(area);
 	unsigned long array_size;
 	unsigned int nr_small_pages = size >> PAGE_SHIFT;
-	unsigned int page_order;
 	unsigned int flags;
 	int ret;
 
@@ -1041,11 +1030,8 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 		return NULL;
 	}
 
-	set_vm_area_page_order(area, page_shift - PAGE_SHIFT);
-	page_order = vm_area_page_order(area);
-
 	area->nr_pages = vm_area_alloc_pages(gfp_mask | __GFP_NOWARN,
-		node, page_order, nr_small_pages, area->pages);
+		node, 0, nr_small_pages, area->pages);
 
 	atomic_long_add(area->nr_pages, &nr_vmalloc_pages);
 

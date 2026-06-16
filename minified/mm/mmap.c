@@ -79,9 +79,7 @@ static void __remove_shared_vm_struct(struct vm_area_struct *vma,
 	if (vma->vm_flags & VM_SHARED)
 		mapping_unmap_writable(mapping);
 
-	flush_dcache_mmap_lock(mapping);
 	vma_interval_tree_remove(vma, &mapping->i_mmap);
-	flush_dcache_mmap_unlock(mapping);
 }
 
 void unlink_file_vma(struct vm_area_struct *vma)
@@ -271,9 +269,7 @@ static void __vma_link_file(struct vm_area_struct *vma)
 		if (vma->vm_flags & VM_SHARED)
 			mapping_allow_writable(mapping);
 
-		flush_dcache_mmap_lock(mapping);
 		vma_interval_tree_insert(vma, &mapping->i_mmap);
-		flush_dcache_mmap_unlock(mapping);
 	}
 }
 

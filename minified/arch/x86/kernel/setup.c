@@ -517,9 +517,6 @@ void __init setup_arch(char **cmdline_p)
 	sev_setup_arch();
 
 
-	e820__memblock_alloc_reserved_mpc_new();
-
-
 	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n",
 			(max_pfn_mapped<<PAGE_SHIFT) - 1);
 

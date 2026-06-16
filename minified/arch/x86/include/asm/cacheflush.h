@@ -27,28 +27,12 @@ static inline void flush_dcache_page(struct page *page) { }
 #define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
 #endif
 
-#ifndef flush_dcache_mmap_lock
-static inline void flush_dcache_mmap_lock(struct address_space *mapping) { }
-#endif
-
-#ifndef flush_dcache_mmap_unlock
-static inline void flush_dcache_mmap_unlock(struct address_space *mapping) { }
-#endif
-
 /* flush_icache_range removed - unused */
 /* flush_icache_user_range removed - unused (macro for flush_icache_range) */
 
 #ifndef flush_icache_page
 static inline void flush_icache_page(struct vm_area_struct *vma,
 				     struct page *page) { }
-#endif
-
-#ifndef flush_cache_vmap
-static inline void flush_cache_vmap(unsigned long start, unsigned long end) { }
-#endif
-
-#ifndef flush_cache_vunmap
-static inline void flush_cache_vunmap(unsigned long start, unsigned long end) { }
 #endif
 
 #include <asm/special_insns.h>

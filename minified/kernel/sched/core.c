@@ -39,7 +39,6 @@ extern void sched_init_smp(void);
 
 #include <linux/nmi.h>
 #include <linux/nospec.h>
-static inline void psi_init(void) {}
 
 #include <linux/sched/wake_q.h>
 #include <linux/slab.h>
@@ -610,20 +609,10 @@ void scheduler_tick(void)
 	rq_unlock(rq, &rf);
 }
 
-static inline void preempt_latency_start(int val) { }
-static inline void preempt_latency_stop(int val) { }
-
-
-static noinline void __schedule_bug(struct task_struct *prev)
-{
-	/* Stub: skip detailed scheduling bug reporting for minimal kernel */
-}
-
 static inline void schedule_debug(struct task_struct *prev, bool preempt)
 {
 
 	if (unlikely(in_atomic_preempt_off())) {
-		__schedule_bug(prev);
 		preempt_count_set(PREEMPT_DISABLED);
 	}
 	rcu_sleep_check();
@@ -805,9 +794,7 @@ static void __sched notrace preempt_schedule_common(void)
 	do {
 		
 		preempt_disable_notrace();
-		preempt_latency_start(1);
 		__schedule(SM_PREEMPT);
-		preempt_latency_stop(1);
 		preempt_enable_no_resched_notrace();
 
 		
@@ -1008,8 +995,6 @@ void __init sched_init(void)
 	init_idle(current, smp_processor_id());
 
 	init_sched_fair_class();
-
-	psi_init();
 
 	preempt_dynamic_init();
 

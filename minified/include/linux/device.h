@@ -223,22 +223,6 @@ static inline void dev_set_uevent_suppress(struct device *dev, int val)
 	dev->kobj.uevent_suppress = val;
 }
 
-static inline int device_is_registered(struct device *dev)
-{
-	return dev->kobj.state_in_sysfs;
-}
-
-static inline void device_set_pm_not_required(struct device *dev)
-{
-	dev->power.no_pm = true;
-}
-
-static inline void dev_pm_set_driver_flags(struct device *dev, u32 flags)
-{
-	dev->power.driver_flags = flags;
-}
-
-
 static inline void device_lock(struct device *dev)
 {
 	mutex_lock(&dev->mutex);
@@ -285,7 +269,6 @@ void device_remove_groups(struct device *dev,
 struct device *get_device(struct device *dev);
 void put_device(struct device *dev);
 
-static inline int devtmpfs_mount(void) { return 0; }
 
 /* device_link_add, device_link_del, device_link_remove,
    device_links_supplier_sync_state_pause, device_links_supplier_sync_state_resume removed - unused */

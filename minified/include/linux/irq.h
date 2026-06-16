@@ -140,11 +140,6 @@ static inline bool irqd_irq_masked(struct irq_data *d)
 	return __irqd_to_state(d) & IRQD_IRQ_MASKED;
 }
 
-static inline bool irqd_irq_inprogress(struct irq_data *d)
-{
-	return __irqd_to_state(d) & IRQD_IRQ_INPROGRESS;
-}
-
 static inline bool irqd_affinity_is_managed(struct irq_data *d)
 {
 	return __irqd_to_state(d) & IRQD_AFFINITY_MANAGED;

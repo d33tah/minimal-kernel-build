@@ -3,7 +3,6 @@
 #ifndef _KERNEL_SCHED_SCHED_H
 #define _KERNEL_SCHED_SCHED_H
 
-#define SCHED_CPUFREQ_IOWAIT	(1U << 0)
 #include <linux/sched/deadline.h>
 #include <linux/sched.h>
 #include <linux/sched/loadavg.h>
@@ -606,7 +605,6 @@ extern void init_cfs_rq(struct cfs_rq *cfs_rq);
 /* nohz_balance_exit_idle removed - unused */
 
 
-static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
 
 #ifdef arch_scale_freq_capacity
 # ifndef arch_scale_freq_invariant

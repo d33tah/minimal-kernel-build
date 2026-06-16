@@ -40,9 +40,6 @@
 #include <asm/switch_to.h>
 #include <asm/proto.h>
 
-/* Inlined from asm/resctrl.h */
-static inline void resctrl_sched_in(void) {}
-
 #include "process.h"
 
 void __show_regs(struct pt_regs *regs, enum show_regs_mode mode,
@@ -109,9 +106,6 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 	this_cpu_write(current_task, next_p);
 
 	switch_fpu_finish();
-
-	 
-	resctrl_sched_in();
 
 	return prev_p;
 }

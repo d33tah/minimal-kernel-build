@@ -216,8 +216,6 @@ void arch_setup_new_exec(void)
 		enable_cpuid();
 }
 
-static inline void switch_to_bitmap(unsigned long tifp) { }
-
 static __always_inline void amd_set_core_ssb_state(unsigned long tifn)
 {
 	u64 msr = x86_amd_ls_cfg_base | ssbd_tif_to_amd_ls_cfg(tifn);
@@ -263,8 +261,6 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 
 	tifn = read_task_thread_flags(next_p);
 	tifp = read_task_thread_flags(prev_p);
-
-	switch_to_bitmap(tifp);
 
 	propagate_user_return_notify(prev_p, next_p);
 

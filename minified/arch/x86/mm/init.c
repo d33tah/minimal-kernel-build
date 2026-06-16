@@ -21,7 +21,6 @@ static inline void kernel_randomize_memory(void) { }
 /* end kaslr.h */
 #include <asm/hypervisor.h>
 #include <asm/cpufeature.h>
-static inline void pti_check_boottime_disable(void) { }
 #include <asm/text-patching.h>
 #include <asm/memtype.h>
 
@@ -401,7 +400,6 @@ void __init init_mem_mapping(void)
 {
 	unsigned long end;
 
-	pti_check_boottime_disable();
 	probe_page_size_mask();
 
 	end = max_low_pfn << PAGE_SHIFT;

@@ -259,8 +259,6 @@ static void clocksource_watchdog(struct timer_list *unused)
 			if (cs != curr_clocksource) {
 				cs->flags |= CLOCK_SOURCE_RESELECT;
 				schedule_work(&watchdog_work);
-			} else {
-				tick_clock_notify();
 			}
 		}
 	}

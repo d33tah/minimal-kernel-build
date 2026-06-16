@@ -50,23 +50,14 @@ extern void clockevents_switch_state(struct clock_event_device *dev,
 extern void clockevents_handle_noop(struct clock_event_device *dev);
 
 
-static inline void tick_broadcast_init(void) { }
-
- 
 static inline void tick_set_periodic_handler(struct clock_event_device *dev, int broadcast)
 {
 	dev->event_handler = tick_handle_periodic;
 }
 
 
-static inline void tick_clock_notify(void) { }
 
- 
 static inline int tick_broadcast_oneshot_active(void) { return 0; }
-
-
- 
-static inline void tick_nohz_init(void) { }
 
 #define tick_nohz_active (0)
 

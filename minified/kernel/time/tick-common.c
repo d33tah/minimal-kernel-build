@@ -164,6 +164,4 @@ void tick_check_new_device(struct clock_event_device *newdev)
 
 void __init tick_init(void)
 {
-	tick_broadcast_init();
-	tick_nohz_init();
 }

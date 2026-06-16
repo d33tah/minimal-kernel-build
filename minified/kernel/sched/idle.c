@@ -59,10 +59,7 @@ static void do_idle(void)
 {
 	int cpu = smp_processor_id();
 
-	 
-	nohz_run_idle_balance(cpu);
 
-	 
 
 	__current_set_polling();
 	tick_nohz_idle_enter();
@@ -123,7 +120,6 @@ static void put_prev_task_idle(struct rq *rq, struct task_struct *prev)
 
 static void set_next_task_idle(struct rq *rq, struct task_struct *next, bool first)
 {
-	update_idle_core(rq);
 }
 
 

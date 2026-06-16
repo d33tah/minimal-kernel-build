@@ -423,7 +423,6 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 		se->vruntime += cfs_rq->min_vruntime;
 
 	update_load_avg(cfs_rq, se, UPDATE_TG | DO_ATTACH);
-	se_update_runnable(se);
 	account_entity_enqueue(cfs_rq, se);
 
 	if (flags & ENQUEUE_WAKEUP)
@@ -472,7 +471,6 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	update_curr(cfs_rq);
 
 	update_load_avg(cfs_rq, se, UPDATE_TG);
-	se_update_runnable(se);
 
 	clear_buddies(cfs_rq, se);
 

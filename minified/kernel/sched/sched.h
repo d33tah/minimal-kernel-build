@@ -179,8 +179,6 @@ struct dl_rq {
 
 #define entity_is_task(se)	1
 
-static inline void se_update_runnable(struct sched_entity *se) {}
-
 struct rq {
 	 
 	raw_spinlock_t		__lock;
@@ -283,8 +281,6 @@ static inline void raw_spin_rq_unlock_irqrestore(struct rq *rq, unsigned long fl
 do {						\
 	flags = _raw_spin_rq_lock_irqsave(rq);	\
 } while (0)
-
-static inline void update_idle_core(struct rq *rq) { }
 
 DECLARE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
@@ -568,26 +564,17 @@ extern void init_entity_runnable_average(struct sched_entity *se);
 extern void post_init_entity_util_avg(struct task_struct *p);
 
 /* sched_tick_offload_init removed - unused */
-static inline void sched_update_tick_dependency(struct rq *rq) { }
 
 static inline void add_nr_running(struct rq *rq, unsigned count)
 {
 	unsigned prev_nr = rq->nr_running;
 
 	rq->nr_running = prev_nr + count;
-	 
-
-
-	sched_update_tick_dependency(rq);
 }
 
 static inline void sub_nr_running(struct rq *rq, unsigned count)
 {
 	rq->nr_running -= count;
-	 
-
-	 
-	sched_update_tick_dependency(rq);
 }
 
 extern void activate_task(struct rq *rq, struct task_struct *p, int flags);
@@ -617,8 +604,6 @@ extern struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq);
 extern void init_cfs_rq(struct cfs_rq *cfs_rq);
 
 /* nohz_balance_exit_idle removed - unused */
-
-static inline void nohz_run_idle_balance(int cpu) { }
 
 
 static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}

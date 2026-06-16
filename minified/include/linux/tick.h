@@ -18,10 +18,7 @@ enum tick_dep_bits {
 };
 
 #define tick_nohz_enabled (0)
-static inline int tick_nohz_tick_stopped(void) { return 0; }
 static inline void tick_nohz_idle_stop_tick(void) { }
-static inline void tick_nohz_idle_retain_tick(void) { }
-static inline void tick_nohz_idle_restart_tick(void) { }
 static inline void tick_nohz_idle_enter(void) { }
 static inline void tick_nohz_idle_exit(void) { }
 

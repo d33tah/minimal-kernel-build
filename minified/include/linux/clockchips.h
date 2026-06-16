@@ -84,7 +84,6 @@ extern void clockevents_config_and_register(struct clock_event_device *dev,
 					    u32 freq, unsigned long min_delta,
 					    unsigned long max_delta);
 
-static inline int tick_check_broadcast_expired(void) { return 0; }
 
 
 #endif  

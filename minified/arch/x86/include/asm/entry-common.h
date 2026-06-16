@@ -5,9 +5,8 @@
 #ifndef _URN_INLINE
 #define _URN_INLINE
 struct user_return_notifier {};
-static inline void propagate_user_return_notify(struct task_struct *prev, struct task_struct *next) {}
 static inline void fire_user_return_notifiers(void) {}
-static inline void clear_user_return_notifier(struct task_struct *p) {}
+/* Removed unused: propagate_user_return_notify, clear_user_return_notifier */
 #endif
 #include <linux/sched/task_stack.h>
 

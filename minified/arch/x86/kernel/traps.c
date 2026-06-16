@@ -579,9 +579,6 @@ void __init trap_init(void)
 	setup_cpu_entry_areas();
 
 	 
-	sev_es_init_vc_handling();
-
-	 
 	cpu_init_exception_handling();
 	 
 	idt_setup_traps();

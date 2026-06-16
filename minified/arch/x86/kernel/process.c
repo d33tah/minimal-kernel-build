@@ -15,7 +15,6 @@
 #include <linux/pm.h>
 #include <linux/tick.h>
 #include <linux/random.h>
-static inline void propagate_user_return_notify(struct task_struct *prev, struct task_struct *next) {}
 #include <linux/dmi.h>
 #include <linux/utsname.h>
 /* end stackprotector.h */
@@ -255,8 +254,6 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 
 	tifn = read_task_thread_flags(next_p);
 	tifp = read_task_thread_flags(prev_p);
-
-	propagate_user_return_notify(prev_p, next_p);
 
 	if ((tifp ^ tifn) & _TIF_NOCPUID)
 		set_cpuid_faulting(!!(tifn & _TIF_NOCPUID));

@@ -654,8 +654,6 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	 * capability-intersection path was statically unreachable.
 	 */
 
-	mcheck_cpu_init(c);
-
 	select_idle_routine(c);
 
 }

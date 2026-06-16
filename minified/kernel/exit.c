@@ -328,7 +328,6 @@ void __noreturn do_exit(long code)
 	exit_rcu();
 	exit_tasks_rcu_finish();
 
-	lockdep_free_task(tsk);
 	do_task_dead();
 }
 

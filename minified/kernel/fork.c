@@ -390,7 +390,6 @@ void __init fork_init(void)
 	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_SIGPENDING, RLIM_INFINITY);
 	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_MEMLOCK,    RLIM_INFINITY);
 
-	lockdep_init_task(&init_task);
 }
 
 int __weak arch_dup_task_struct(struct task_struct *dst,
@@ -522,7 +521,6 @@ static inline void __mmput(struct mm_struct *mm)
 {
 	VM_BUG_ON(atomic_read(&mm->mm_users));
 
-	uprobe_clear_state(mm);
 	exit_mmap(mm);
 	mm_put_huge_zero_page(mm);
 	set_mm_exe_file(mm, NULL);
@@ -584,7 +582,6 @@ static void complete_vfork_done(struct task_struct *tsk)
 
 static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {
-	uprobe_free_utask(tsk);
 
 	
 	deactivate_mm(tsk, mm);
@@ -779,7 +776,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);
 	task_unlock(current->group_leader);
 
-	tty_audit_fork(sig);
 	/* sched_autogroup_fork - stubbed */
 	sig->oom_score_adj = current->signal->oom_score_adj;
 	sig->oom_score_adj_min = current->signal->oom_score_adj_min;
@@ -1082,7 +1078,6 @@ bad_fork_cleanup_files:
 	exit_files(p); 
 bad_fork_cleanup_semundo:
 bad_fork_cleanup_policy:
-	lockdep_free_task(p);
 bad_fork_cleanup_delayacct:
 bad_fork_cleanup_count:
 	dec_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);

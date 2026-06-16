@@ -14,7 +14,5 @@ struct uprobes_state {
 
 static inline void uprobe_munmap(struct vm_area_struct *vma, unsigned long start, unsigned long end) {}
 static inline void uprobe_notify_resume(struct pt_regs *regs) {}
-static inline void uprobe_free_utask(struct task_struct *t) {}
-static inline void uprobe_clear_state(struct mm_struct *mm) {}
 
 #endif /* _LINUX_UPROBES_H */

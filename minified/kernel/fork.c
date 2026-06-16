@@ -830,11 +830,6 @@ static __always_inline void delayed_free_task(struct task_struct *tsk)
 	free_task(tsk);
 }
 
-static void copy_oom_score_adj(u64 clone_flags, struct task_struct *tsk)
-{
-	/* Stub: OOM score adjustment not needed for minimal kernel */
-}
-
 static __latent_entropy struct task_struct *copy_process(
 					struct pid *pid,
 					int node,
@@ -1067,8 +1062,6 @@ static __latent_entropy struct task_struct *copy_process(
 	write_unlock_irq(&tasklist_lock);
 
 	uprobe_copy_process(p, clone_flags);
-
-	copy_oom_score_adj(clone_flags, p);
 
 	return p;
 

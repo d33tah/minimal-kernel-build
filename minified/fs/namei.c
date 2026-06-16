@@ -1199,12 +1199,6 @@ static inline int may_create(struct user_namespace *mnt_userns,
 }
 
 
-static bool may_open_dev(const struct path *path)
-{
-	/* Stub: device opening check not used in minimal kernel */
-	return true;
-}
-
 static int may_open(struct user_namespace *mnt_userns, const struct path *path,
 		    int acc_mode, int flag)
 {
@@ -1226,8 +1220,6 @@ static int may_open(struct user_namespace *mnt_userns, const struct path *path,
 		break;
 	case S_IFBLK:
 	case S_IFCHR:
-		if (!may_open_dev(path))
-			return -EACCES;
 		fallthrough;
 	case S_IFIFO:
 	case S_IFSOCK:

@@ -56,18 +56,10 @@ static inline void update_load_set(struct load_weight *lw, unsigned long w)
 	lw->inv_weight = 0;
 }
 
-static unsigned int get_update_sysctl_factor(void)
-{
-	/* Stub: single CPU in minimal system, factor = 1 */
-	return 1;
-}
-
 static void update_sysctl(void)
 {
-	unsigned int factor = get_update_sysctl_factor();
-
 #define SET_SYSCTL(name) \
-	(sysctl_##name = (factor) * normalized_sysctl_##name)
+	(sysctl_##name = normalized_sysctl_##name)
 	SET_SYSCTL(sched_min_granularity);
 	SET_SYSCTL(sched_latency);
 	SET_SYSCTL(sched_wakeup_granularity);

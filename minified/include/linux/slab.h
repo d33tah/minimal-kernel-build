@@ -25,7 +25,6 @@
 # define SLAB_FAILSLAB		0
 # define SLAB_ACCOUNT		0
 
-#define SLAB_KASAN		0
 
 #define SLAB_NO_USER_FLAGS	((slab_flags_t __force)0x10000000U)
 
@@ -104,8 +103,6 @@ static inline unsigned int arch_slab_minalign(void)
 #define KMALLOC_MIN_SIZE (1 << KMALLOC_SHIFT_LOW)
 #endif
 
-#define SLAB_OBJ_MIN_SIZE      (KMALLOC_MIN_SIZE < 16 ? \
-                               (KMALLOC_MIN_SIZE) : 16)
 
 enum kmalloc_cache_type {
 	KMALLOC_NORMAL = 0,
@@ -287,8 +284,6 @@ extern void *__kmalloc_track_caller(size_t size, gfp_t flags, unsigned long call
 #define kmalloc_track_caller(size, flags) \
 	__kmalloc_track_caller(size, flags, _RET_IP_)
 
-#define kmalloc_node_track_caller(size, flags, node) \
-	kmalloc_track_caller(size, flags)
 
 
 static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
@@ -323,7 +318,5 @@ static inline __alloc_size(1, 2) void *kvmalloc_array(size_t n, size_t size, gfp
 
 extern void kvfree(const void *addr);
 
-#define slab_prepare_cpu	NULL
-#define slab_dead_cpu		NULL
 
 #endif	 

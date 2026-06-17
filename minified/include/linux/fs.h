@@ -59,7 +59,6 @@ errseq_t errseq_sample(errseq_t *eseq);
 #define NR_FILE  8192
 #define SEEK_SET	0
 #define SEEK_END	2
-#define SEEK_HOLE	4
 #define RENAME_NOREPLACE	(1 << 0)
 #define RENAME_EXCHANGE		(1 << 1)
 struct files_stat_struct {

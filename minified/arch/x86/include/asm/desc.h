@@ -169,8 +169,6 @@ static inline void clear_LDT(void)
 	set_ldt(NULL, 0);
 }
 
-void alloc_intr_gate(unsigned int n, const void *addr);
-
 static inline void init_idt_data(struct idt_data *data, unsigned int n,
 				 const void *addr)
 {

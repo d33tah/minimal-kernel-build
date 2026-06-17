@@ -284,9 +284,6 @@ struct __large_struct { unsigned long buf[100]; };
 		: : ltype(x), "m" (__m(addr))				\
 		: : label)
 
-extern __must_check long
-strncpy_from_user(char *dst, const char __user *src, long count);
-
 extern __must_check long strnlen_user(const char __user *str, long n);
 
 unsigned long __must_check clear_user(void __user *mem, unsigned long len);

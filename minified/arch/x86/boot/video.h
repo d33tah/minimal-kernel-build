@@ -79,6 +79,4 @@ extern int graphic_mode;
  
 
  
-u16 vga_crtc(void);		 
-
-#endif  
+#endif

@@ -99,18 +99,9 @@ static DEFINE_MUTEX(syslog_lock);
 /* No ring buffer on this !CONFIG_PRINTK build. */
 #define prb_next_seq(rb)		0
 
-static u64 syslog_seq;
-
-
-
-
-
-
-static bool printk_console_no_auto_verbose;
-
 void console_verbose(void)
 {
-	if (console_loglevel && !printk_console_no_auto_verbose)
+	if (console_loglevel)
 		console_loglevel = CONSOLE_LOGLEVEL_MOTORMOUTH;
 }
 
@@ -286,7 +277,7 @@ void register_console(struct console *newcon)
 	if (newcon->flags & CON_PRINTBUFFER) {
 		 
 		mutex_lock(&syslog_lock);
-		newcon->seq = syslog_seq;
+		newcon->seq = 0;
 		mutex_unlock(&syslog_lock);
 	} else {
 		 

@@ -265,8 +265,6 @@ static inline int simple_positive(const struct dentry *dentry)
 	return d_really_is_positive(dentry) && !d_unhashed(dentry);
 }
 
-extern int sysctl_vfs_cache_pressure;
-
 
 static inline struct inode *d_inode(const struct dentry *dentry)
 {

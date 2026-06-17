@@ -1082,12 +1082,6 @@ extern void exit_mmap(struct mm_struct *);
 
 extern int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file);
 
-extern struct vm_area_struct *_install_special_mapping(struct mm_struct *mm,
-				   unsigned long addr, unsigned long len,
-				   unsigned long flags,
-				   const struct vm_special_mapping *spec);
-
-
 unsigned long randomize_stack_top(unsigned long stack_top);
 unsigned long randomize_page(unsigned long start, unsigned long range);
 

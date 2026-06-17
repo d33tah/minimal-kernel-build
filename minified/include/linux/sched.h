@@ -488,12 +488,6 @@ struct task_struct {
 
 
 	 
-	int				nr_dirtied;
-	int				nr_dirtied_pause;
-	 
-	unsigned long			dirty_paused_when;
-
-	 
 	u64				timer_slack_ns;
 	u64				default_timer_slack_ns;
 

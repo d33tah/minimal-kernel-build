@@ -10,9 +10,6 @@
 
 struct bio;
 
-DECLARE_PER_CPU(int, dirty_throttle_leaks);
-
-
 struct backing_dev_info;
 
 enum writeback_sync_modes {

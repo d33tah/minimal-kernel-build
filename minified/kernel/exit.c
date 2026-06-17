@@ -321,8 +321,6 @@ void __noreturn do_exit(long code)
 	exit_task_stack_account(tsk);
 
 	preempt_disable();
-	if (tsk->nr_dirtied)
-		__this_cpu_add(dirty_throttle_leaks, tsk->nr_dirtied);
 	exit_rcu();
 	exit_tasks_rcu_finish();
 

@@ -3,8 +3,6 @@
 #include <linux/backing-dev.h>
 #include <linux/percpu.h>
 
-DEFINE_PER_CPU(int, dirty_throttle_leaks);
-
 bool __folio_start_writeback(struct folio *folio, bool keep_write) { return true; }
 
 void balance_dirty_pages_ratelimited(struct address_space *mapping) {}

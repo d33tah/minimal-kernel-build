@@ -45,6 +45,4 @@ extern void tsc_verify_tsc_adjust(bool resume);
 extern void tsc_save_sched_clock_state(void);
 extern void tsc_restore_sched_clock_state(void);
 
-unsigned long cpu_khz_from_msr(void);
-
-#endif  
+#endif

@@ -59,7 +59,7 @@ obj-$(CONFIG_SYSFS)	+= ksysfs.o
 obj-y			+= e820.o
 obj-y			+= pci-dma.o
 obj-y			+= alternative.o i8253.o hw_breakpoint.o
-obj-y			+= tsc.o tsc_msr.o io_delay.o rtc.o
+obj-y			+= tsc.o io_delay.o rtc.o
 # resource.o removed - arch_remove_reservations never called
 obj-y			+= irqflags.o
 

@@ -61,39 +61,12 @@ notrace static void __set_sched_clock_stable(void)
 	tick_dep_clear(TICK_DEP_BIT_CLOCK_UNSTABLE);
 }
 
-notrace static void __sched_clock_work(struct work_struct *work)
-{
-	struct sched_clock_data *scd;
-	int cpu;
-
-	 
-	preempt_disable();
-	scd = this_scd();
-	__scd_stamp(scd);
-	scd->clock = scd->tick_gtod + __gtod_offset;
-	preempt_enable();
-
-	 
-	for_each_possible_cpu(cpu)
-		per_cpu(sched_clock_data, cpu) = *scd;
-
-	printk(KERN_WARNING "TSC found unstable after boot, most likely due to broken BIOS. Use 'tsc=unstable'.\n");
-	printk(KERN_INFO "sched_clock: Marking unstable (%lld, %lld)<-(%lld, %lld)\n",
-			scd->tick_gtod, __gtod_offset,
-			scd->tick_raw,  __sched_clock_offset);
-
-	static_branch_disable(&__sched_clock_stable);
-}
-
-static DECLARE_WORK(sched_clock_work, __sched_clock_work);
-
 notrace static void __clear_sched_clock_stable(void)
 {
 	if (!sched_clock_stable())
 		return;
 
 	tick_dep_set(TICK_DEP_BIT_CLOCK_UNSTABLE);
-	schedule_work(&sched_clock_work);
 }
 
 notrace void clear_sched_clock_stable(void)

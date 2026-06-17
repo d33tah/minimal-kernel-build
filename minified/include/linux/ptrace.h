@@ -45,17 +45,7 @@ static inline void ptrace_unlink(struct task_struct *child)
 
 
 
-static inline bool ptrace_event_enabled(struct task_struct *task, int event)
-{
-	/* task->ptrace is never set in this minimal boot (no ptrace(2)). */
-	return false;
-}
-
 static inline void ptrace_event(int event, unsigned long message)
-{
-}
-
-static inline void ptrace_event_pid(int event, struct pid *pid)
 {
 }
 

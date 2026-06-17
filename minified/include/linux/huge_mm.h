@@ -19,11 +19,6 @@ static inline int split_huge_page(struct page *page)
 	return 0;
 }
 
-static inline bool is_huge_zero_page(struct page *page)
-{
-	return false;
-}
-
 static inline void mm_put_huge_zero_page(struct mm_struct *mm)
 {
 	return;

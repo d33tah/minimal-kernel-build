@@ -68,8 +68,6 @@ static inline void rcu_softirq_qs(void)
 
 static inline void rcu_idle_enter(void) { }
 static inline void rcu_idle_exit(void) { }
-static inline void rcu_irq_enter(void) { }
-static inline void rcu_irq_exit(void) { }
 static inline void rcu_irq_exit_check_preempt(void) { }
 static inline void exit_rcu(void) { }
 void rcu_scheduler_starting(void);
@@ -102,10 +100,6 @@ static inline int rcu_read_lock_sched_held(void)
 	return !preemptible();
 }
 
-static inline int rcu_read_lock_any_held(void)
-{
-	return !preemptible();
-}
 
 
 

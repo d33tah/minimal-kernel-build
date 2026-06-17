@@ -31,16 +31,6 @@ extern unsigned long mmap_min_addr;
 #define LSM_UNSAFE_NO_NEW_PRIVS	4
 
 
-static inline int security_init(void)
-{
-	return 0;
-}
-
-static inline int early_security_init(void)
-{
-	return 0;
-}
-
 static inline int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)
 {
 	return __vm_enough_memory(mm, pages, 1);  /* Stub: always assume capability present */

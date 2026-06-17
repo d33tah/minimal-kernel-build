@@ -19,17 +19,6 @@ void on_each_cpu_cond_mask(smp_cond_func_t cond_func, smp_call_func_t func,
 void panic_smp_self_stop(void);
 void nmi_panic_self_stop(struct pt_regs *regs);
 
-static inline void on_each_cpu(smp_call_func_t func, void *info, int wait)
-{
-	on_each_cpu_cond_mask(NULL, func, info, wait, cpu_online_mask);
-}
-
-static inline void on_each_cpu_mask(const struct cpumask *mask,
-				    smp_call_func_t func, void *info, bool wait)
-{
-	on_each_cpu_cond_mask(NULL, func, info, wait, mask);
-}
-
 static inline void smp_send_stop(void) { }
 
 #define raw_smp_processor_id()			0

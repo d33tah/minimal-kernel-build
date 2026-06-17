@@ -103,12 +103,6 @@ static inline bool cpumask_equal(const struct cpumask *src1p,
 						 nr_cpumask_bits);
 }
 
-static inline bool cpumask_empty(const struct cpumask *srcp)
-{
-	return bitmap_empty(cpumask_bits(srcp), nr_cpumask_bits);
-}
-
-
 #define cpumask_of(cpu) (get_cpu_mask(cpu))
 
 
@@ -118,10 +112,6 @@ static inline unsigned int cpumask_size(void)
 }
 
 typedef struct cpumask cpumask_var_t[1];
-
-static inline void alloc_bootmem_cpumask_var(cpumask_var_t *mask)
-{
-}
 
 extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
 #define cpu_all_mask to_cpumask(cpu_all_bits)

@@ -606,9 +606,6 @@ current_restore_flags(unsigned long orig_flags, unsigned long flags)
 	current->flags |= orig_flags & flags;
 }
 
-static inline void do_set_cpus_allowed(struct task_struct *p, const struct cpumask *new_mask)
-{
-}
 static inline int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
 {
 	if (!cpumask_test_cpu(0, new_mask))

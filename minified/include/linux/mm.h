@@ -1023,34 +1023,6 @@ static inline spinlock_t *pmd_lock(struct mm_struct *mm, pmd_t *pmd)
 	return ptl;
 }
 
-static inline bool pgtable_pmd_page_ctor(struct page *page)
-{
-	if (!pmd_ptlock_init(page))
-		return false;
-	__SetPageTable(page);
-	inc_lruvec_page_state(page, NR_PAGETABLE);
-	return true;
-}
-
-static inline void pgtable_pmd_page_dtor(struct page *page)
-{
-	__ClearPageTable(page);
-	dec_lruvec_page_state(page, NR_PAGETABLE);
-}
-
-static inline spinlock_t *pud_lockptr(struct mm_struct *mm, pud_t *pud)
-{
-	return &mm->page_table_lock;
-}
-
-static inline spinlock_t *pud_lock(struct mm_struct *mm, pud_t *pud)
-{
-	spinlock_t *ptl = pud_lockptr(mm, pud);
-
-	spin_lock(ptl);
-	return ptl;
-}
-
 extern void __init pagecache_init(void);
 extern void free_initmem(void);
 

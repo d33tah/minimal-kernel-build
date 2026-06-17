@@ -36,16 +36,6 @@ struct delayed_call {
 	void (*fn)(void *);
 	void *arg;
 };
-static inline void set_delayed_call(struct delayed_call *call, void (*fn)(void *), void *arg)
-{
-	call->fn = fn;
-	call->arg = arg;
-}
-static inline void do_delayed_call(struct delayed_call *call)
-{
-	if (call->fn)
-		call->fn(call->arg);
-}
 #include <linux/uuid.h>
 #include <linux/ioprio.h>
 
@@ -899,12 +889,6 @@ struct inode_operations {
 	int (*update_time)(struct inode *, struct timespec64 *, int);
 	/* set_acl, fileattr_set, fileattr_get removed - unused */
 } ____cacheline_aligned;
-
-static inline ssize_t call_read_iter(struct file *file, struct kiocb *kio,
-				     struct iov_iter *iter)
-{
-	return file->f_op->read_iter(kio, iter);
-}
 
 static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio,
 				      struct iov_iter *iter)

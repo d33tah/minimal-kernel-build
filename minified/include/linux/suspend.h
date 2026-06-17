@@ -20,8 +20,6 @@ typedef int __bitwise suspend_state_t;
 
 #define suspend_valid_only_mem	NULL
 
-static inline bool idle_should_enter_s2idle(void) { return false; }
-
 struct pbe {
 	void *address;
 	void *orig_address;

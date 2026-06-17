@@ -142,7 +142,6 @@ void folio_mark_accessed(struct folio *folio)
 		else
 			__lru_cache_activate_folio(folio);
 		folio_clear_referenced(folio);
-		workingset_activation(folio);
 	}
 }
 

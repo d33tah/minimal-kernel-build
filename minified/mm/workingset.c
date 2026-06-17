@@ -4,16 +4,6 @@
 #include <linux/list_lru.h>
 #include <linux/xarray.h>
 
-void workingset_refault(struct folio *folio, void *shadow)
-{
-	 
-}
-
-void workingset_activation(struct folio *folio)
-{
-	 
-}
-
 void workingset_update_node(struct xa_node *node)
 {
 	 

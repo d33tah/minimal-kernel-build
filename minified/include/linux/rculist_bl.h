@@ -40,11 +40,6 @@ static inline struct hlist_bl_node *hlist_bl_first(struct hlist_bl_head *h)
 		((unsigned long)h->first & ~LIST_BL_LOCKMASK);
 }
 
-static inline bool hlist_bl_empty(const struct hlist_bl_head *h)
-{
-	return !((unsigned long)READ_ONCE(h->first) & ~LIST_BL_LOCKMASK);
-}
-
 
 
 static inline void __hlist_bl_del(struct hlist_bl_node *n)

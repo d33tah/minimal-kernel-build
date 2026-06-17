@@ -26,15 +26,5 @@ static inline void put_unaligned_le32(u32 val, void *p)
 	__put_unaligned_t(__le32, cpu_to_le32(val), p);
 }
 
-static inline u32 get_unaligned_be32(const void *p)
-{
-	return be32_to_cpu(__get_unaligned_t(__be32, p));
-}
-
-static inline void put_unaligned_be32(u32 val, void *p)
-{
-	__put_unaligned_t(__be32, cpu_to_be32(val), p);
-}
-
 
 #endif  

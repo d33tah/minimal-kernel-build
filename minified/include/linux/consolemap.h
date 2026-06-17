@@ -10,10 +10,6 @@
 
 struct vc_data;
 
-static inline unsigned short *set_translate(int m, struct vc_data *vc)
-{
-	return NULL;
-}
 static inline int conv_uni_to_pc(struct vc_data *conp, long ucs)
 {
 	return ucs < 0x100 ? ucs : -1;

@@ -94,18 +94,6 @@ static inline pgd_t *pgd_offset_pgd(pgd_t *pgd, unsigned long address)
 #define pgd_offset_k(address)		pgd_offset(&init_mm, (address))
 #endif
 
-static inline pmd_t *pmd_off_k(unsigned long va)
-{
-	return pmd_offset(pud_offset(p4d_offset(pgd_offset_k(va), va), va), va);
-}
-
-static inline pte_t *virt_to_kpte(unsigned long vaddr)
-{
-	pmd_t *pmd = pmd_off_k(vaddr);
-
-	return pmd_none(*pmd) ? NULL : pte_offset_kernel(pmd, vaddr);
-}
-
 #ifndef __HAVE_ARCH_UPDATE_MMU_TLB
 static inline void update_mmu_tlb(struct vm_area_struct *vma,
 				unsigned long address, pte_t *ptep)
@@ -371,16 +359,6 @@ static inline pte_t pte_swp_clear_exclusive(pte_t pte)
 }
 #endif
 
-
-static inline int pte_swp_soft_dirty(pte_t pte)
-{
-	return 0;
-}
-
-static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
-{
-	return pte;
-}
 
 extern void track_pfn_insert(struct vm_area_struct *vma, pgprot_t *prot,
 			     pfn_t pfn);

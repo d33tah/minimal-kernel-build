@@ -32,16 +32,6 @@ struct __STRUCT_KFIFO_PTR(type, 0, type) fifo
 #define INIT_KFIFO(fifo) \
 	(void)sizeof(&(fifo))
 
-static inline void kfifo_init(void *fifo, void *buffer, unsigned int size)
-{
-	struct __kfifo *kf = fifo;
-	kf->in = 0;
-	kf->out = 0;
-	kf->mask = size - 1;
-	kf->esize = 1;
-	kf->data = buffer;
-}
-
 #include <linux/kref.h>
 #include <linux/mutex.h>
 #include <linux/tty_buffer.h>

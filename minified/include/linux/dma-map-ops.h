@@ -22,8 +22,4 @@ static inline bool dev_is_dma_coherent(struct device *dev)
 }
 #endif
 
-static inline void arch_teardown_dma_ops(struct device *dev)
-{
-}
-
 #endif

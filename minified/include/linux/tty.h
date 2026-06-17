@@ -193,10 +193,6 @@ static inline struct tty_struct *tty_kref_get(struct tty_struct *tty)
 const char *tty_driver_name(const struct tty_struct *tty);
 speed_t tty_termios_baud_rate(struct ktermios *termios);
 
-static inline speed_t tty_get_baud_rate(struct tty_struct *tty)
-{
-	return tty_termios_baud_rate(&tty->termios);
-}
 
 
 struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx);

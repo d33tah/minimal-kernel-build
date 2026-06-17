@@ -989,15 +989,12 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 #define I_DIRTY (I_DIRTY_INODE | I_DIRTY_PAGES)
 #define I_DIRTY_ALL (I_DIRTY | I_DIRTY_TIME)
 
-extern void __mark_inode_dirty(struct inode *, int);
 static inline void mark_inode_dirty(struct inode *inode)
 {
-	__mark_inode_dirty(inode, I_DIRTY);
 }
 
 static inline void mark_inode_dirty_sync(struct inode *inode)
 {
-	__mark_inode_dirty(inode, I_DIRTY_SYNC);
 }
 
 extern void inc_nlink(struct inode *inode);

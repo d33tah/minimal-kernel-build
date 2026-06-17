@@ -41,22 +41,7 @@ bool is_vmalloc_addr(const void *x)
 	return addr >= VMALLOC_START && addr < VMALLOC_END;
 }
 
-struct vfree_deferred {
-	struct llist_head list;
-	struct work_struct wq;
-};
-static DEFINE_PER_CPU(struct vfree_deferred, vfree_deferred);
-
 static void __vunmap(const void *, int);
-
-static void free_work(struct work_struct *w)
-{
-	struct vfree_deferred *p = container_of(w, struct vfree_deferred, wq);
-	struct llist_node *t, *llnode;
-
-	llist_for_each_safe(llnode, t, llist_del_all(&p->list))
-		__vunmap((void *)llnode, 1);
-}
 
 static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 			     pgtbl_mod_mask *mask)
@@ -743,20 +728,11 @@ void __init vmalloc_init(void)
 {
 	struct vmap_area *va;
 	struct vm_struct *tmp;
-	int i;
 
-	
+
 	vmap_area_cachep = KMEM_CACHE(vmap_area, SLAB_PANIC);
 
-	for_each_possible_cpu(i) {
-		struct vfree_deferred *p;
 
-		p = &per_cpu(vfree_deferred, i);
-		init_llist_head(&p->list);
-		INIT_WORK(&p->wq, free_work);
-	}
-
-	
 	for (tmp = vmlist; tmp; tmp = tmp->next) {
 		va = kmem_cache_zalloc(vmap_area_cachep, GFP_NOWAIT);
 		if (WARN_ON_ONCE(!va))
@@ -908,21 +884,9 @@ static void __vunmap(const void *addr, int deallocate_pages)
 	kfree(area);
 }
 
-static inline void __vfree_deferred(const void *addr)
-{
-	
-	struct vfree_deferred *p = raw_cpu_ptr(&vfree_deferred);
-
-	if (llist_add((struct llist_node *)addr, &p->list))
-		schedule_work(&p->wq);
-}
-
 static void __vfree(const void *addr)
 {
-	if (unlikely(in_interrupt()))
-		__vfree_deferred(addr);
-	else
-		__vunmap(addr, 1);
+	__vunmap(addr, 1);
 }
 
 void vfree(const void *addr)

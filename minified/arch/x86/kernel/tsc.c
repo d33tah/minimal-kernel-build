@@ -149,9 +149,6 @@ u64 native_sched_clock(void)
 unsigned long long
 sched_clock(void) __attribute__((alias("native_sched_clock")));
 
-bool using_native_sched_clock(void) { return true; }
-
-
 
 static int no_sched_irq_time;
 static int no_tsc_watchdog;
@@ -459,8 +456,7 @@ static void tsc_cs_mark_unstable(struct clocksource *cs)
 		return;
 
 	tsc_unstable = 1;
-	if (using_native_sched_clock())
-		clear_sched_clock_stable();
+	clear_sched_clock_stable();
 	disable_sched_clock_irqtime();
 	pr_info("Marking TSC unstable due to clocksource watchdog\n");
 }
@@ -470,8 +466,7 @@ static void tsc_cs_tick_stable(struct clocksource *cs)
 	if (tsc_unstable)
 		return;
 
-	if (using_native_sched_clock())
-		sched_clock_tick_stable();
+	sched_clock_tick_stable();
 }
 
 static int tsc_cs_enable(struct clocksource *cs)
@@ -519,8 +514,7 @@ void mark_tsc_unstable(char *reason)
 		return;
 
 	tsc_unstable = 1;
-	if (using_native_sched_clock())
-		clear_sched_clock_stable();
+	clear_sched_clock_stable();
 	disable_sched_clock_irqtime();
 	pr_info("Marking TSC unstable due to %s\n", reason);
 

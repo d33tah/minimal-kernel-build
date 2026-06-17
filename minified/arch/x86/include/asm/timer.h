@@ -12,9 +12,7 @@ unsigned long long native_sched_clock(void);
 
 extern int no_timer_check;
 
-extern bool using_native_sched_clock(void);
 
- 
 struct cyc2ns_data {
 	u32 cyc2ns_mul;
 	u32 cyc2ns_shift;

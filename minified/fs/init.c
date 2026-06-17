@@ -49,8 +49,6 @@ int __init init_stat(const char *filename, struct kstat *stat, int flags)
 	error = kern_path(filename, lookup_flags, &path);
 	if (error)
 		return error;
-	error = vfs_getattr(&path, stat, STATX_BASIC_STATS,
-			    flags | AT_NO_AUTOMOUNT);
 	path_put(&path);
 	return error;
 }

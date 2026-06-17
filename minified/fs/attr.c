@@ -119,10 +119,6 @@ void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 	}
 }
 
-/* may_setattr used internally by notify_change */
-int may_setattr(struct user_namespace *mnt_userns, struct inode *inode,
-		unsigned int ia_valid) { return 0; }
-
 int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 		  struct iattr *attr, struct inode **delegated_inode)
 {
@@ -133,10 +129,6 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 	unsigned int ia_valid = attr->ia_valid;
 
 	WARN_ON_ONCE(!inode_is_locked(inode));
-
-	error = may_setattr(mnt_userns, inode, ia_valid);
-	if (error)
-		return error;
 
 	if ((ia_valid & ATTR_MODE)) {
 		umode_t amode = attr->ia_mode;

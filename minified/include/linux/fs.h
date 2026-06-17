@@ -1253,7 +1253,6 @@ extern int nonseekable_open(struct inode * inode, struct file * filp);
 #define special_file(m) (S_ISCHR(m)||S_ISBLK(m)||S_ISFIFO(m)||S_ISSOCK(m))
 
 void generic_fillattr(struct user_namespace *, struct inode *, struct kstat *);
-extern int vfs_getattr(const struct path *, struct kstat *, u32, unsigned int);
 
 extern struct file_system_type *get_filesystem(struct file_system_type *fs);
 extern void put_filesystem(struct file_system_type *fs);
@@ -1284,8 +1283,6 @@ extern struct dentry *simple_lookup(struct inode *, struct dentry *, unsigned in
 
 
 
-int may_setattr(struct user_namespace *mnt_userns, struct inode *inode,
-		unsigned int ia_valid);
 int setattr_prepare(struct user_namespace *, struct dentry *, struct iattr *);
 void setattr_copy(struct user_namespace *, struct inode *inode,
 		  const struct iattr *attr);

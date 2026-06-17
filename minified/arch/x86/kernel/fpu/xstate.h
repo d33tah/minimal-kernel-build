@@ -16,24 +16,6 @@ static inline void xstate_init_xcomp_bv(struct xregs_state *xsave, u64 mask)
 		xsave->header.xcomp_bv = mask | XCOMP_BV_COMPACTED_FORMAT;
 }
 
-enum xstate_copy_mode {
-	XSTATE_COPY_FP,
-	XSTATE_COPY_FX,
-	XSTATE_COPY_XSAVE,
-};
-
-struct membuf;
-extern void __copy_xstate_to_uabi_buf(struct membuf to, struct fpstate *fpstate,
-				      u32 pkru_val, enum xstate_copy_mode copy_mode);
-extern void copy_xstate_to_uabi_buf(struct membuf to, struct task_struct *tsk,
-				    enum xstate_copy_mode mode);
-extern int copy_uabi_from_kernel_to_xstate(struct fpstate *fpstate, const void *kbuf);
-
-
-extern void *get_xsave_addr(struct xregs_state *xsave, int xfeature_nr);
-
-
-
 #define REX_PREFIX
 
  

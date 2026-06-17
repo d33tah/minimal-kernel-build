@@ -121,8 +121,7 @@ spurious_8259A_irq:
 			       "spurious 8259A interrupt: IRQ%d.\n", irq);
 			spurious_irq_mask |= irqmask;
 		}
-		atomic_inc(&irq_err_count);
-		 
+
 		goto handle_real_irq;
 	}
 }

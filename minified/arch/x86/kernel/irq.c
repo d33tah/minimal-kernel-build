@@ -20,8 +20,6 @@
 
 DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
 
-atomic_t irq_err_count;
-
 void ack_bad_irq(unsigned int irq)
 {
 	if (printk_ratelimit())

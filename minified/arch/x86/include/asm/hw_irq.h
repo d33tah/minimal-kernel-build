@@ -18,9 +18,6 @@
 #include <asm/sections.h>
 
 
- 
-extern atomic_t irq_err_count;
-
 extern char irq_entries_start[];
 
 #define VECTOR_UNUSED		NULL

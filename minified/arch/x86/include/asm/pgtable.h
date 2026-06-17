@@ -181,13 +181,6 @@ static inline unsigned long pgd_pfn(pgd_t pgd)
 	return (pgd_val(pgd) & PTE_PFN_MASK) >> PAGE_SHIFT;
 }
 
-#define p4d_leaf	p4d_large
-static inline int p4d_large(p4d_t p4d)
-{
-	 
-	return 0;
-}
-
 #define pte_page(pte)	pfn_to_page(pte_pfn(pte))
 
 #define pmd_leaf	pmd_large
@@ -450,14 +443,6 @@ static inline pmd_t native_local_pmdp_get_and_clear(pmd_t *pmdp)
 	pmd_t res = *pmdp;
 
 	native_pmd_clear(pmdp);
-	return res;
-}
-
-static inline pud_t native_local_pudp_get_and_clear(pud_t *pudp)
-{
-	pud_t res = *pudp;
-
-	native_pud_clear(pudp);
 	return res;
 }
 

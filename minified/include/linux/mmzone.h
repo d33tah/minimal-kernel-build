@@ -58,7 +58,6 @@ enum migratetype {
 };
 
 #  define is_migrate_cma(migratetype) false
-#  define is_migrate_cma_page(_page) false
 
 
 
@@ -204,8 +203,6 @@ enum zone_watermarks {
 #define NR_PCP_LISTS (MIGRATE_PCPTYPES * (PAGE_ALLOC_COSTLY_ORDER + 1))
 
 
-#define min_wmark_pages(z) (z->_watermark[WMARK_MIN] + z->watermark_boost)
-#define low_wmark_pages(z) (z->_watermark[WMARK_LOW] + z->watermark_boost)
 #define high_wmark_pages(z) (z->_watermark[WMARK_HIGH] + z->watermark_boost)
 #define wmark_pages(z, i) (z->_watermark[i] + z->watermark_boost)
 
@@ -506,7 +503,6 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 	for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, NULL)
 
 
-#define pfn_to_nid(pfn)		(0)
 
 #define sparse_init()	do {} while (0)
 #define sparse_index_init(_sec, _nid)  do {} while (0)

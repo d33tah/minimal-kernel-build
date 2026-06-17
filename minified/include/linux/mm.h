@@ -205,7 +205,6 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_MAYREAD	0x00000010	
 #define VM_MAYWRITE	0x00000020
 #define VM_MAYEXEC	0x00000040
-#define VM_MAYSHARE	0x00000080
 
 #define VM_GROWSDOWN	0x00000100
 #define VM_PFNMAP	0x00000400
@@ -232,9 +231,6 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_MIXEDMAP	0x10000000
 #define VM_NOHUGEPAGE	0x40000000
 
-
-# define VM_MTE		VM_NONE
-# define VM_MTE_ALLOWED	VM_NONE
 
 #ifndef VM_GROWSUP
 # define VM_GROWSUP	VM_NONE
@@ -675,7 +671,6 @@ static __always_inline void *lowmem_page_address(const struct page *page)
 }
 
 #define page_address(page) lowmem_page_address(page)
-#define set_page_address(page, address)  do { } while(0)
 #define page_address_init()  do { } while(0)
 
 static inline void *folio_address(const struct folio *folio)
@@ -704,7 +699,6 @@ static inline void clear_page_pfmemalloc(struct page *page)
 }
 
 #define offset_in_page(p)	((unsigned long)(p) & ~PAGE_MASK)
-#define offset_in_folio(folio, p) ((unsigned long)(p) & (folio_size(folio) - 1))
 
 
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
@@ -1212,8 +1206,7 @@ vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma, unsigned long addr,
 #define FOLL_NOWAIT	0x20	
 #define FOLL_NOFAULT	0x80	
 #define FOLL_HWPOISON	0x100
-#define FOLL_MIGRATION	0x400
-#define FOLL_TRIED	0x800	
+#define FOLL_TRIED	0x800
 #define FOLL_REMOTE	0x2000	
 #define FOLL_COW	0x4000	
 #define FOLL_ANON	0x8000	

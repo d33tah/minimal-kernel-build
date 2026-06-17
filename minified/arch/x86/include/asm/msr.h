@@ -118,8 +118,6 @@ native_write_msr_safe(unsigned int msr, u32 low, u32 high)
 		     : "memory");
 	return err;
 }
-/* rdmsr_safe_regs, wrmsr_safe_regs declarations removed - no implementation */
-
 static __always_inline unsigned long long rdtsc(void)
 {
 	DECLARE_ARGS(val, low, high);

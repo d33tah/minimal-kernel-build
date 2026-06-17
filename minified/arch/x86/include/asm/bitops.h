@@ -219,8 +219,6 @@ static __always_inline int fls64(__u64 x)
 }
 
 
-/* hweight functions removed - never used in kernel code */
-
 /* Inlined from asm-generic/bitops/instrumented-atomic.h */
 #include <linux/instrumented.h>
 

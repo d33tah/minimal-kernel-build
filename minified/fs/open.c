@@ -195,8 +195,6 @@ static int do_dentry_open(struct file *f,
 	 */
 	f->f_flags &= ~(O_CREAT | O_EXCL | O_NOCTTY | O_TRUNC);
 
-	file_ra_state_init(&f->f_ra, f->f_mapping->host->i_mapping);
-
 	if (f->f_flags & O_DIRECT)
 		return -EINVAL;
 

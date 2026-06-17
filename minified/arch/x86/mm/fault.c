@@ -538,9 +538,6 @@ good_area:
 						 SIGSEGV, SEGV_MAPERR);
 			return;
 		}
-
-		 
-		pagefault_out_of_memory();
 	} else {
 		if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON|
 			     VM_FAULT_HWPOISON_LARGE))

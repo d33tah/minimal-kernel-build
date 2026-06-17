@@ -46,7 +46,7 @@ ifdef CONFIG_CROSS_MEMORY_ATTACH
 mmu-$(CONFIG_MMU)	+= process_vm_access.o
 endif
 
-obj-y			:= filemap.o oom_kill.o \
+obj-y			:= filemap.o \
 			   maccess.o page-writeback.o folio-compat.o \
 			   swap.o truncate.o shmem.o \
 			   util.o mmzone.o vmstat.o backing-dev.o \

@@ -25,15 +25,7 @@
 	".long 999b - .\n\t"					\
 	".popsection\n\t"
 
-struct alt_instr {
-	s32 instr_offset;	 
-	s32 repl_offset;	 
-	u16 cpuid;		 
-	u8  instrlen;		 
-	u8  replacementlen;	 
-} __packed;
 
- 
 extern int alternatives_patched;
 
 extern void alternative_instructions(void);

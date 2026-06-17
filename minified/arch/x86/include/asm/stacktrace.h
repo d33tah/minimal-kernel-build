@@ -25,28 +25,6 @@ struct stack_info {
 	unsigned long *begin, *end, *next_sp;
 };
 
-bool in_task_stack(unsigned long *stack, struct task_struct *task,
-		   struct stack_info *info);
-
-bool in_entry_stack(unsigned long *stack, struct stack_info *info);
-
-int get_stack_info(unsigned long *stack, struct task_struct *task,
-		   struct stack_info *info, unsigned long *visit_mask);
-bool get_stack_info_noinstr(unsigned long *stack, struct task_struct *task,
-			    struct stack_info *info);
-
-static __always_inline
-bool get_stack_guard_info(unsigned long *stack, struct stack_info *info)
-{
-	 
-	if (get_stack_info_noinstr(stack, current, info))
-		return false;
-	 
-	return get_stack_info_noinstr((void *)stack + PAGE_SIZE, current, info);
-}
-
-const char *stack_type_name(enum stack_type type);
-
 #define STACKSLOTS_PER_LINE 8
 
 

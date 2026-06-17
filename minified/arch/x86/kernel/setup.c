@@ -125,10 +125,6 @@ void * __init extend_brk(size_t size, size_t align)
 	return ret;
 }
 
-static void __init cleanup_highmap(void)
-{
-}
-
 static void __init reserve_brk(void)
 {
 	if (_brk_end > _brk_start)
@@ -500,8 +496,6 @@ void __init setup_arch(char **cmdline_p)
 
 	 
 	reserve_brk();
-
-	cleanup_highmap();
 
 	memblock_set_current_limit(ISA_END_ADDRESS);
 	e820__memblock_setup();

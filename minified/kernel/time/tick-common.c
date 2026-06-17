@@ -156,9 +156,3 @@ void tick_check_new_device(struct clock_event_device *newdev)
 
 
 
-
-
-
-void __init tick_init(void)
-{
-}

@@ -8,8 +8,6 @@
 #include <linux/sched.h>
 #include <linux/rcupdate.h>
 
-extern void __init tick_init(void);
-
 static inline void tick_irq_enter(void) { }
 
 

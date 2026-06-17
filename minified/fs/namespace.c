@@ -494,7 +494,6 @@ void __init mnt_init(void)
 			__func__, err);
 	/* Stub: fs_kobj not used in minimal kernel */
 	shmem_init();
-	init_rootfs();
 	init_mount_tree();
 }
 

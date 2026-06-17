@@ -100,8 +100,6 @@ struct hrtimer_cpu_base {
 
 DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
 
-extern void hrtimer_run_queues(void);
-
 extern void __init hrtimers_init(void);
 
 

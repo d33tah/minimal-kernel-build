@@ -68,21 +68,6 @@ DEFINE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases) =
 	}
 };
 
-/*
- * No code path on this build ever enqueues an hrtimer: enqueue_hrtimer() was
- * the only writer that set cpu_base->active_bases nonzero, and it was reached
- * only from __run_hrtimer()'s restart arm, itself only reachable from the
- * (never-iterating) __hrtimer_run_queues() loop. active_bases is therefore
- * always 0, so there is never an active base to expire and the HRTIMER_SOFTIRQ
- * is never raised (softirq_expires_next stays KTIME_MAX, so the only place that
- * could raise it -- hrtimer_run_queues() -- never does). The whole softirq /
- * next-event / run-queues island is thus dead; only hrtimer_run_queues(), still
- * called from the timer tick, survives as an effective no-op.
- */
-void hrtimer_run_queues(void)
-{
-}
-
 int hrtimers_prepare_cpu(unsigned int cpu)
 {
 	struct hrtimer_cpu_base *cpu_base = &per_cpu(hrtimer_bases, cpu);

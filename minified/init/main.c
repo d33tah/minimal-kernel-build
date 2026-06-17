@@ -502,7 +502,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	early_irq_init();
 	init_IRQ();
-	tick_init();
 	init_timers();
 	srcu_init();
 	hrtimers_init();

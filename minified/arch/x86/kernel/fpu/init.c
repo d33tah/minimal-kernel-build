@@ -35,7 +35,6 @@ static void fpu__init_cpu_generic(void)
 void fpu__init_cpu(void)
 {
 	fpu__init_cpu_generic();
-	fpu__init_cpu_xstate();
 }
 
 static bool fpu__probe_without_cpuid(void)
@@ -165,7 +164,6 @@ void __init fpu__init_system(struct cpuinfo_x86 *c)
 
 	fpu__init_system_generic();
 	fpu__init_system_xstate_size_legacy();
-	fpu__init_system_xstate(fpu_kernel_cfg.max_size);
 	fpu__init_task_struct_size();
 	fpu__init_init_fpstate();
 }

@@ -306,8 +306,6 @@ void __noreturn do_exit(long code)
 
 	/* sched_autogroup_exit_task - stubbed */
 
-	flush_ptrace_hw_breakpoint(tsk);
-
 	exit_tasks_rcu_start();
 	exit_notify(tsk, group_dead);
 

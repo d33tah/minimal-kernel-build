@@ -26,12 +26,6 @@
 #include "legacy.h"
 #include "xstate.h"
 
-// Stub: Initialize CPU xstate
-void fpu__init_cpu_xstate(void) { }
-
-// Stub: Initialize system xstate
-void __init fpu__init_system_xstate(unsigned int legacy_size) { }
-
 // Stub: xstate prctl
 long fpu_xstate_prctl(int option, unsigned long arg2)
 {

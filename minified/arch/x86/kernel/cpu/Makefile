@@ -29,7 +29,6 @@ obj-$(CONFIG_X86_FEATURE_NAMES) += capflags.o powerflags.o
 
 # feat_ctl.o removed - empty file
 ifdef CONFIG_CPU_SUP_INTEL
-obj-y			+= intel.o
 obj-$(CONFIG_PM)	+= intel_epb.o
 endif
 obj-$(CONFIG_CPU_SUP_AMD)		+= amd.o

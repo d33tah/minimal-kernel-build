@@ -3,6 +3,4 @@
 
 struct task_struct;
 
-extern void flush_ptrace_hw_breakpoint(struct task_struct *tsk);
-
-#endif  
+#endif

@@ -30,9 +30,6 @@ extern void copy_xstate_to_uabi_buf(struct membuf to, struct task_struct *tsk,
 extern int copy_uabi_from_kernel_to_xstate(struct fpstate *fpstate, const void *kbuf);
 
 
-extern void fpu__init_cpu_xstate(void);
-extern void fpu__init_system_xstate(unsigned int legacy_size);
-
 extern void *get_xsave_addr(struct xregs_state *xsave, int xfeature_nr);
 
 

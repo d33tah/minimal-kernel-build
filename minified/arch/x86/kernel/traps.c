@@ -451,10 +451,6 @@ static __always_inline void exc_debug_user(struct pt_regs *regs,
 	local_irq_enable();
 
 
-	if (dr6 & DR_BUS_LOCK)
-		handle_bus_lock(regs);
-
-
 	dr6 |= current->thread.virtual_dr6;
 	if (dr6 & (DR_STEP | DR_TRAP_BITS) || icebp)
 		send_sigtrap(regs, 0, get_si_code(dr6));

@@ -18,17 +18,7 @@ struct cpu_dev {
 extern const struct cpu_dev *const __x86_cpu_dev_start[],
 			    *const __x86_cpu_dev_end[];
 
-enum tsx_ctrl_states {
-	TSX_CTRL_ENABLE,
-	TSX_CTRL_DISABLE,
-	TSX_CTRL_RTM_ALWAYS_ABORT,
-	TSX_CTRL_NOT_SUPPORTED,
-};
-
-extern __ro_after_init enum tsx_ctrl_states tsx_ctrl_state;
-
-extern void __init tsx_init(void);
-/* tsx_ap_init, init_spectral_chicken removed - no callers */
+/* tsx_init, tsx_ap_init, init_spectral_chicken, tsx_ctrl_state, enum tsx_ctrl_states removed - no callers */
 
 extern void get_cpu_cap(struct cpuinfo_x86 *c);
 extern void get_cpu_address_sizes(struct cpuinfo_x86 *c);

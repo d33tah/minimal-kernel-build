@@ -686,8 +686,6 @@ void __init identify_boot_cpu(void)
 	enable_sep_cpu();
 	/* cpu_detect_tlb removed - TLB info never used */
 	setup_cr_pinning();
-
-	tsx_init();
 }
 
 

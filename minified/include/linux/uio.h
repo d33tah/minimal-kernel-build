@@ -13,9 +13,6 @@ struct iovec
 	__kernel_size_t iov_len;
 };
 
-#define UIO_FASTIOV	8
-#define UIO_MAXIOV	1024
-
 struct page;
 struct pipe_inode_info;
 

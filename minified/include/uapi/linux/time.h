@@ -42,9 +42,5 @@ struct timezone {
 #define CLOCK_TAI			11
 
 #define MAX_CLOCKS			16
-#define CLOCKS_MASK			(CLOCK_REALTIME | CLOCK_MONOTONIC)
-#define CLOCKS_MONO			CLOCK_MONOTONIC
-
-#define TIMER_ABSTIME			0x01
 
 #endif

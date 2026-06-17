@@ -10,30 +10,11 @@
 #include <linux/uaccess.h>
 #include <linux/eventpoll.h>
 
-/* Inlined from uapi/asm-generic/poll.h - needed by poll maptopoll */
-#define POLLIN		0x0001
-#define POLLPRI		0x0002
-#define POLLOUT		0x0004
-#define POLLERR		0x0008
-#define POLLHUP		0x0010
-#define POLLNVAL	0x0020
-#define POLLRDNORM	0x0040
-#define POLLRDBAND	0x0080
-#define POLLWRNORM	0x0100
-#define POLLWRBAND	0x0200
-#define POLLMSG		0x0400
-#define POLLRDHUP       0x2000
-
-#define POLLFREE	(__force __poll_t)0x4000
-#define POLL_BUSY_LOOP	(__force __poll_t)0x8000
-
 struct pollfd {
 	int fd;
 	short events;
 	short revents;
 };
-
-#define DEFAULT_POLLMASK (EPOLLIN | EPOLLOUT | EPOLLRDNORM | EPOLLWRNORM)
 
 struct poll_table_struct;
 
@@ -43,8 +24,5 @@ typedef struct poll_table_struct {
 	poll_queue_proc _qproc;
 	__poll_t _key;
 } poll_table;
-
-#define MAX_INT64_SECONDS (((s64)(~((u64)0)>>1)/HZ)-1)
-
 
 #endif  

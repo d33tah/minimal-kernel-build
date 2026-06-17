@@ -120,7 +120,6 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 
 
 	while (!raw_spin_trylock(&nmi_reason_lock)) {
-		run_crash_ipi_callback(regs);
 		cpu_relax();
 	}
 

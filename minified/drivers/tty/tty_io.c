@@ -814,7 +814,7 @@ out:
 static int tty_open(struct inode *inode, struct file *filp)
 {
 	struct tty_struct *tty;
-	int noctty, retval;
+	int retval;
 	dev_t device = inode->i_rdev;
 	unsigned saved_flags = filp->f_flags;
 
@@ -866,11 +866,6 @@ retry_open:
 	}
 	clear_bit(TTY_HUPPED, &tty->flags);
 
-	noctty = (filp->f_flags & O_NOCTTY) ||
-		 (IS_ENABLED(CONFIG_VT) && device == MKDEV(TTY_MAJOR, 0)) ||
-		 device == MKDEV(TTYAUX_MAJOR, 1);
-	if (!noctty)
-		tty_open_proc_set_tty(filp, tty);
 	tty_unlock(tty);
 	return 0;
 }

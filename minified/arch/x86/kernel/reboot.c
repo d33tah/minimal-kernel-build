@@ -17,8 +17,3 @@ void machine_restart(char *cmd)
 	while (1)
 		halt();
 }
-
-
-void run_crash_ipi_callback(struct pt_regs *regs)
-{
-}

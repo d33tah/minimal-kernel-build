@@ -446,7 +446,6 @@ void tsc_restore_sched_clock_state(void)
 
 static void tsc_resume(struct clocksource *cs)
 {
-	tsc_verify_tsc_adjust(true);
 }
 
 static u64 read_tsc(struct clocksource *cs)
@@ -642,8 +641,6 @@ static void __init tsc_enable_sched_clock(void)
 	loops_per_jiffy = get_loops_per_jiffy();
 	use_tsc_delay();
 
-	 
-	tsc_store_and_check_tsc_adjust(true);
 	cyc2ns_init_boot_cpu();
 	static_branch_enable(&__use_tsc);
 }

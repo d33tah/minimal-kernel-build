@@ -51,18 +51,13 @@ struct cpumask __cpu_present_mask __read_mostly;
 struct cpumask __cpu_active_mask __read_mostly;
 
 
-atomic_t __num_online_cpus __read_mostly;
-
 void set_cpu_online(unsigned int cpu, bool online)
 {
-	 
-	if (online) {
-		if (!cpumask_test_and_set_cpu(cpu, &__cpu_online_mask))
-			atomic_inc(&__num_online_cpus);
-	} else {
-		if (cpumask_test_and_clear_cpu(cpu, &__cpu_online_mask))
-			atomic_dec(&__num_online_cpus);
-	}
+
+	if (online)
+		cpumask_test_and_set_cpu(cpu, &__cpu_online_mask);
+	else
+		cpumask_test_and_clear_cpu(cpu, &__cpu_online_mask);
 }
 
 void __init boot_cpu_init(void)

@@ -63,10 +63,6 @@ u32 elf_hwcap2 __read_mostly;
 
 int smp_num_siblings = 1;
 
-DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_llc_id) = BAD_APICID;
-
-DEFINE_PER_CPU_READ_MOSTLY(u16, cpu_l2c_id) = BAD_APICID;
-
 static void default_init(struct cpuinfo_x86 *c)
 {
 	

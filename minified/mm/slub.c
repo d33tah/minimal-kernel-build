@@ -614,11 +614,6 @@ static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
 	}
 }
 
-static noinline void
-slab_out_of_memory(struct kmem_cache *s, gfp_t gfpflags, int nid)
-{
-}
-
 static inline bool pfmemalloc_match(struct slab *slab, gfp_t gfpflags)
 {
 	if (unlikely(slab_test_pfmemalloc(slab)))
@@ -648,7 +643,6 @@ static void *___slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
 	slub_get_cpu_ptr(s->cpu_slab);
 
 	if (!slab) {
-		slab_out_of_memory(s, gfpflags, node);
 		return NULL;
 	}
 

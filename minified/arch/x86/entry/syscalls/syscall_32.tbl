@@ -36,7 +36,7 @@
 42	i386	pipe			sys_pipe
 44	i386	prof
 # 45 brk removed (unreachable: init does not call brk; exec sets mm->brk internally)
-51	i386	acct			sys_acct
+# 51 acct removed (unreachable, routes to sys_ni)
 # 52 umount2 removed (unreachable)
 53	i386	lock
 54	i386	ioctl			sys_ioctl			compat_sys_ioctl
@@ -46,36 +46,36 @@
 # 60 umask removed (unreachable)
 #63	i386	dup2			sys_dup2
 # 64 getppid removed (unreachable)
-68	i386	sgetmask		sys_sgetmask
-69	i386	ssetmask		sys_ssetmask
+# 68 sgetmask removed (unreachable, routes to sys_ni)
+# 69 ssetmask removed (unreachable, routes to sys_ni)
 78	i386	gettimeofday		sys_gettimeofday		compat_sys_gettimeofday
 # 79 settimeofday removed (unreachable)
-86	i386	uselib			sys_uselib
-87	i386	swapon			sys_swapon
+# 86 uselib removed (unreachable, routes to sys_ni)
+# 87 swapon removed (unreachable, routes to sys_ni)
 88	i386	reboot
 # 89	i386	readdir			sys_old_readdir			compat_sys_old_readdir
 # 90	i386	mmap			sys_old_mmap			compat_sys_ia32_mmap	(removed: init does not mmap via syscall; exec uses vm_mmap internally)
 # 91 munmap removed (unreachable: init does write(2)+exit only; exec uses vm_munmap internally)
 98	i386	profil
-101	i386	ioperm			sys_ioperm
-103	i386	syslog			sys_syslog
+# 101 ioperm removed (unreachable, routes to sys_ni)
+# 103 syslog removed (unreachable, routes to sys_ni)
 # 104	i386	setitimer		sys_setitimer			compat_sys_setitimer  (posix timers: unreachable, -> sys_ni)
 # 105	i386	getitimer		sys_getitimer			compat_sys_getitimer  (posix timers: unreachable, -> sys_ni)
-110	i386	iopl			sys_iopl
+# 110 iopl removed (unreachable, routes to sys_ni)
 112	i386	idle
-113	i386	vm86old			sys_vm86old			sys_ni_syscall
+# 113 vm86old removed (unreachable, routes to sys_ni)
 # 114 wait4 removed (unreachable)
-115	i386	swapoff			sys_swapoff
+# 115 swapoff removed (unreachable, routes to sys_ni)
 # 117 ipc removed (unreachable)
 # 122 uname removed (unreachable)
-123	i386	modify_ldt		sys_modify_ldt
+# 123 modify_ldt removed (unreachable, routes to sys_ni)
 124	i386	adjtimex		sys_adjtimex_time32
 127	i386	create_module
-128	i386	init_module		sys_init_module
-129	i386	delete_module		sys_delete_module
+# 128 init_module removed (unreachable, routes to sys_ni)
+# 129 delete_module removed (unreachable, routes to sys_ni)
 130	i386	get_kernel_syms
 134	i386	bdflush			sys_ni_syscall
-135	i386	sysfs			sys_sysfs
+# 135 sysfs removed (unreachable, routes to sys_ni)
 137	i386	afs_syscall
 # 140	i386	_llseek			sys_llseek
 # 141	i386	getdents		sys_getdents			compat_sys_getdents
@@ -85,7 +85,7 @@
 146	i386	writev
 149	i386	_sysctl			sys_ni_syscall
 162	i386	nanosleep		sys_nanosleep_time32
-166	i386	vm86			sys_vm86			sys_ni_syscall
+# 166 vm86 removed (unreachable, routes to sys_ni)
 167	i386	query_module
 169	i386	nfsservctl
 183	i386	getcwd			sys_getcwd
@@ -109,7 +109,7 @@
 # 244 get_thread_area removed (unreachable)
 # 251 is available for reuse (was briefly sys_set_zone_reclaim)
 252	i386	exit_group		sys_exit_group
-253	i386	lookup_dcookie		sys_lookup_dcookie		compat_sys_lookup_dcookie
+# 253 lookup_dcookie removed (unreachable, routes to sys_ni)
 258	i386	set_tid_address		sys_set_tid_address
 # 259	i386	timer_create		sys_timer_create		compat_sys_timer_create  (posix timers: unreachable, -> sys_ni)
 # 260	i386	timer_settime		sys_timer_settime32  (posix timers: unreachable, -> sys_ni)
@@ -127,8 +127,8 @@
 # 284 waitid removed (unreachable)
 # 285 sys_setaltroot
 # 286-288 add_key/request_key/keyctl removed (unreachable)
-289	i386	ioprio_set		sys_ioprio_set
-290	i386	ioprio_get		sys_ioprio_get
+# 289 ioprio_set removed (unreachable, routes to sys_ni)
+# 290 ioprio_get removed (unreachable, routes to sys_ni)
 # 295	i386	openat			sys_openat			compat_sys_openat
 299	i386	futimesat		sys_futimesat_time32
 308	i386	pselect6		sys_pselect6_time32		compat_sys_pselect6_time32
@@ -141,8 +141,8 @@
 334	i386	pwritev
 # 343	i386	clock_adjtime		sys_clock_adjtime32  (posix timers: unreachable, -> sys_ni)
 346	i386	setns			sys_setns
-349	i386	kcmp			sys_kcmp
-350	i386	finit_module		sys_finit_module
+# 349 kcmp removed (unreachable, routes to sys_ni)
+# 350 finit_module removed (unreachable, routes to sys_ni)
 355	i386	getrandom		sys_getrandom
 377	i386	copy_file_range
 378	i386	preadv2

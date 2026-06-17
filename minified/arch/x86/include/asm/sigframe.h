@@ -22,6 +22,4 @@ struct rt_sigframe_ia32 {
 };
 
 
-void __init init_sigframe_size(void);
-
-#endif  
+#endif

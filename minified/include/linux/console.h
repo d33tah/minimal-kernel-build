@@ -90,7 +90,6 @@ extern void console_unblank(void);
 extern void console_flush_on_panic(enum con_flush_mode mode);
 extern struct tty_driver *console_device(int *);
 extern int is_console_locked(void);
-extern void console_sysfs_notify(void);
 
 #define WARN_CONSOLE_UNLOCKED()						\
 	WARN_ON(!atomic_read(&ignore_console_lock_warning) &&		\

@@ -50,8 +50,6 @@ void tty_ldisc_release(struct tty_struct *tty);
 int __must_check tty_ldisc_init(struct tty_struct *tty);
 void tty_ldisc_deinit(struct tty_struct *tty);
 
-void tty_sysctl_init(void);
-
 /* tty_audit_add_data, tty_audit_tiocsti removed - unused */
 
 ssize_t redirected_tty_write(struct kiocb *, struct iov_iter *);

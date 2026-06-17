@@ -360,7 +360,3 @@ void tty_ldisc_deinit(struct tty_struct *tty)
 	tty->ldisc = NULL;
 }
 
-/* Stub: tty sysctl entries not needed for minimal kernel */
-void tty_sysctl_init(void)
-{
-}

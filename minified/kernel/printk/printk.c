@@ -293,7 +293,6 @@ void register_console(struct console *newcon)
 		newcon->seq = prb_next_seq(prb);
 	}
 	console_unlock();
-	console_sysfs_notify();
 
 	con_printk(KERN_INFO, newcon, "enabled\n");
 }

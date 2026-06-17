@@ -6,7 +6,5 @@ void inode_io_list_del(struct inode *inode) { }
 
 void __mark_inode_dirty(struct inode *inode, int flags) { }
 
-int write_inode_now(struct inode *inode, int sync) { return 0; }
-
 int dirty_writeback_centisecs = 500;
 int dirty_expire_centisecs = 3000;

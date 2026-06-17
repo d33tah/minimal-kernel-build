@@ -13,8 +13,6 @@
 
 struct folio_batch;
 
-int write_inode_now(struct inode *, int sync);
-
 static inline errseq_t filemap_sample_wb_err(struct address_space *mapping)
 {
 	return errseq_sample(&mapping->wb_err);

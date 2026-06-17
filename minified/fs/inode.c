@@ -385,8 +385,6 @@ static void iput_final(struct inode *inode)
 		WRITE_ONCE(inode->i_state, state | I_WILL_FREE);
 		spin_unlock(&inode->i_lock);
 
-		write_inode_now(inode, 1);
-
 		spin_lock(&inode->i_lock);
 		state = inode->i_state;
 		WARN_ON(state & I_NEW);

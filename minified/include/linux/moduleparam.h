@@ -110,11 +110,7 @@ extern const struct kernel_param __start___param[], __stop___param[];
 #define late_param_cb(name, ops, arg, perm)		\
 	__level_param_cb(name, ops, arg, perm, 7)
 
-#if defined(CONFIG_ALPHA) || defined(CONFIG_IA64) || defined(CONFIG_PPC64)
-#define __moduleparam_const
-#else
 #define __moduleparam_const const
-#endif
 
 #define __module_param_call(prefix, name, ops, arg, perm, level, flags)	\
 	 			\

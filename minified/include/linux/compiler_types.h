@@ -134,28 +134,6 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 #endif
 
 
-struct ftrace_branch_data {
-	const char *func;
-	const char *file;
-	unsigned line;
-	union {
-		struct {
-			unsigned long correct;
-			unsigned long incorrect;
-		};
-		struct {
-			unsigned long miss;
-			unsigned long hit;
-		};
-		unsigned long miss_hit[2];
-	};
-};
-
-struct ftrace_likely_data {
-	struct ftrace_branch_data	data;
-	unsigned long			constant;
-};
-
 #if defined(CC_USING_HOTPATCH)
 #define notrace			__attribute__((hotpatch(0, 0)))
 #elif defined(CC_USING_PATCHABLE_FUNCTION_ENTRY)

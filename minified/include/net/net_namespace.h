@@ -12,11 +12,6 @@ struct net {
 	struct user_namespace	*user_ns;
 };
 
-#ifdef CONFIG_NET_NS
-extern struct net *copy_net_ns(unsigned long flags,
-			struct user_namespace *user_ns, struct net *old_net);
-#endif
-
 static inline struct net *get_net(struct net *net)
 {
 	return net;

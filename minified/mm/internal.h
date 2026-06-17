@@ -59,8 +59,6 @@ void unmap_page_range(struct mmu_gather *tlb,
 			     unsigned long addr, unsigned long end,
 			     struct zap_details *details);
 
-void page_cache_ra_order(struct readahead_control *, struct file_ra_state *,
-		unsigned int order);
 /* force_page_cache_readahead removed - unused */
 
 unsigned find_lock_entries(struct address_space *mapping, pgoff_t start,
@@ -203,9 +201,7 @@ extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
         unsigned long, unsigned long,
         unsigned long, unsigned long);
 
-unsigned int reclaim_clean_pages_from_list(struct zone *zone,
-					    struct list_head *page_list);
- 
+
 #define ALLOC_WMARK_MIN		WMARK_MIN
 #define ALLOC_WMARK_LOW		WMARK_LOW
 #define ALLOC_WMARK_HIGH	WMARK_HIGH

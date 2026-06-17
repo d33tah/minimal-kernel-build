@@ -15,11 +15,7 @@ struct pipe_inode_info;
 
 /* emergency_thaw_bdev removed - unused */
 
- 
-int __block_write_begin_int(struct folio *folio, loff_t pos, unsigned len,
-		get_block_t *get_block, const struct iomap *iomap);
 
- 
 extern void __init chrdev_init(void);
 
 
@@ -72,33 +68,4 @@ extern const struct file_operations pipefifo_fops;
 
 extern const struct dentry_operations ns_dentry_operations;
 
- 
-int do_statx(int dfd, struct filename *filename, unsigned int flags,
-	     unsigned int mask, struct statx __user *buffer);
-
 /* splice_file_to_pipe removed - unused */
-
-struct xattr_name {
-	char name[XATTR_NAME_MAX + 1];
-};
-
-struct xattr_ctx {
-	 
-	union {
-		const void __user *cvalue;
-		void __user *value;
-	};
-	void *kvalue;
-	size_t size;
-	 
-	struct xattr_name *kname;
-	unsigned int flags;
-};
-
-
-ssize_t do_getxattr(struct user_namespace *mnt_userns,
-		    struct dentry *d,
-		    struct xattr_ctx *ctx);
-
-int do_setxattr(struct user_namespace *mnt_userns, struct dentry *dentry,
-		struct xattr_ctx *ctx);

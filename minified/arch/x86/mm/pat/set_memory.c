@@ -32,11 +32,5 @@
 // Stub: cache flushing
 
 // Stub: memory protection functions - all return success
-int set_memory_x(unsigned long addr, int numpages) { return 0; }
-int set_memory_nx(unsigned long addr, int numpages) { return 0; }
-int set_memory_ro(unsigned long addr, int numpages) { return 0; }
-int set_memory_rw(unsigned long addr, int numpages) { return 0; }
 int set_memory_decrypted(unsigned long addr, int numpages) { return 0; }
-
-int set_pages_ro(struct page *page, int numpages) { return 0; }
 

@@ -153,9 +153,6 @@ void __init idt_setup_apic_and_irq_gates(void)
 	idt_map_in_cea();
 	load_idt(&idt_descr);
 
-	 
-	set_memory_ro((unsigned long)&idt_table, 1);
-
 	idt_setup_done = true;
 }
 

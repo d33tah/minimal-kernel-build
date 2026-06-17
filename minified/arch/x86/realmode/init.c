@@ -95,34 +95,12 @@ static void __init setup_real_mode(void)
 	sme_sev_setup_real_mode(trampoline_header);
 }
 
-static void __init set_real_mode_permissions(void)
-{
-	unsigned char *base = (unsigned char *) real_mode_header;
-	size_t size = PAGE_ALIGN(real_mode_blob_end - real_mode_blob);
-
-	size_t ro_size =
-		PAGE_ALIGN(real_mode_header->ro_end) -
-		__pa(base);
-
-	size_t text_size =
-		PAGE_ALIGN(real_mode_header->ro_end) -
-		real_mode_header->text_start;
-
-	unsigned long text_start =
-		(unsigned long) __va(real_mode_header->text_start);
-
-	set_memory_nx((unsigned long) base, size >> PAGE_SHIFT);
-	set_memory_ro((unsigned long) base, ro_size >> PAGE_SHIFT);
-	set_memory_x((unsigned long) text_start, text_size >> PAGE_SHIFT);
-}
-
 static int __init init_real_mode(void)
 {
 	if (!real_mode_header)
 		panic("Real mode trampoline was not allocated");
 
 	setup_real_mode();
-	set_real_mode_permissions();
 
 	return 0;
 }

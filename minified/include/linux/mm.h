@@ -224,7 +224,6 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_NORESERVE	0x00200000	
 #define VM_HUGETLB	0x00400000
 #define VM_SYNC		0x00800000
-#define VM_DONTDUMP	0x04000000
 
 # define VM_SOFTDIRTY	0
 
@@ -263,8 +262,6 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_SPECIAL (VM_IO | VM_DONTEXPAND | VM_PFNMAP | VM_MIXEDMAP)
 
 #define VM_INIT_DEF_MASK	VM_NOHUGEPAGE
-
-#define VM_LOCKED_CLEAR_MASK	(~(VM_LOCKED | VM_LOCKONFAULT))
 
 #ifndef VM_ARCH_CLEAR
 # define VM_ARCH_CLEAR	VM_NONE

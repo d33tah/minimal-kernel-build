@@ -557,29 +557,6 @@ static inline int is_global_init(struct task_struct *tsk)
 #define PF_MEMALLOC_PIN		0x10000000
 
 
-#define PFA_NO_NEW_PRIVS		0
-#define PFA_SPEC_SSB_DISABLE		3
-#define PFA_SPEC_IB_DISABLE		5
-#define PFA_SPEC_SSB_NOEXEC		7
-
-#define TASK_PFA_TEST(name, func)					\
-	static inline bool task_##func(struct task_struct *p)		\
-	{ return test_bit(PFA_##name, &p->atomic_flags); }
-
-#define TASK_PFA_CLEAR(name, func)					\
-	static inline void task_clear_##func(struct task_struct *p)	\
-	{ clear_bit(PFA_##name, &p->atomic_flags); }
-
-TASK_PFA_TEST(NO_NEW_PRIVS, no_new_privs)
-
-TASK_PFA_TEST(SPEC_SSB_DISABLE, spec_ssb_disable)
-TASK_PFA_CLEAR(SPEC_SSB_DISABLE, spec_ssb_disable)
-
-TASK_PFA_TEST(SPEC_SSB_NOEXEC, spec_ssb_noexec)
-TASK_PFA_CLEAR(SPEC_SSB_NOEXEC, spec_ssb_noexec)
-
-TASK_PFA_TEST(SPEC_IB_DISABLE, spec_ib_disable)
-
 static inline void
 current_restore_flags(unsigned long orig_flags, unsigned long flags)
 {

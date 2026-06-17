@@ -569,16 +569,11 @@ static void __init do_ctors(void)
 {
 }
 
-static bool __init_or_module initcall_blacklisted(initcall_t fn) { return false; }
-
 int __init_or_module do_one_initcall(initcall_t fn)
 {
 	int count = preempt_count();
 	char msgbuf[64];
 	int ret;
-
-	if (initcall_blacklisted(fn))
-		return -EPERM;
 
 	ret = fn();
 

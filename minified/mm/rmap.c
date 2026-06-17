@@ -251,9 +251,6 @@ void flush_tlb_batched_pending(struct mm_struct *mm)
 }
 
 
-/* Stubbed: folio_mkclean used by truncate.c */
-int folio_mkclean(struct folio *folio) { return 0; }
-
 static void __page_set_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address, int exclusive)
 {

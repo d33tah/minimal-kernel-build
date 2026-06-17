@@ -79,11 +79,4 @@ void page_add_new_anon_rmap(struct page *, struct vm_area_struct *,
 void page_add_file_rmap(struct page *, struct vm_area_struct *,
 		bool compound);
 
-int folio_mkclean(struct folio *);
-
-
-static inline int page_mkclean(struct page *page)
-{
-	return folio_mkclean(page_folio(page));
-}
-#endif	 
+#endif

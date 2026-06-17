@@ -284,8 +284,6 @@ void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to)
 	if (!page)
 		return;
 	 
-	if (page_mkclean(page))
-		set_page_dirty(page);
 	unlock_page(page);
 	put_page(page);
 }

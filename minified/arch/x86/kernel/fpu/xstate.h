@@ -9,20 +9,6 @@
 #define XCR_XFEATURE_ENABLED_MASK	0x00000000
 #define XCR_XFEATURE_IN_USE_MASK	0x00000001
 
-static inline u64 xgetbv(u32 index)
-{
-	u32 eax, edx;
-	asm volatile("xgetbv" : "=a" (eax), "=d" (edx) : "c" (index));
-	return eax + ((u64)edx << 32);
-}
-
-static inline void xsetbv(u32 index, u64 value)
-{
-	u32 eax = value;
-	u32 edx = value >> 32;
-	asm volatile("xsetbv" :: "a" (eax), "d" (edx), "c" (index));
-}
-
 static inline void xstate_init_xcomp_bv(struct xregs_state *xsave, u64 mask)
 {
 	 
@@ -48,11 +34,6 @@ extern void fpu__init_cpu_xstate(void);
 extern void fpu__init_system_xstate(unsigned int legacy_size);
 
 extern void *get_xsave_addr(struct xregs_state *xsave, int xfeature_nr);
-
-static inline u64 xfeatures_mask_supervisor(void)
-{
-	return fpu_kernel_cfg.max_features & XFEATURE_MASK_SUPERVISOR_SUPPORTED;
-}
 
 
 
@@ -112,16 +93,6 @@ static inline void os_xsave(struct fpstate *fpstate)
  
 static inline void os_xrstor(struct fpstate *fpstate, u64 mask)
 {
-	u32 lmask = mask;
-	u32 hmask = mask >> 32;
-
-	XSTATE_XRESTORE(&fpstate->regs.xsave, lmask, hmask);
-}
-
- 
-static inline void os_xrstor_supervisor(struct fpstate *fpstate)
-{
-	u64 mask = xfeatures_mask_supervisor();
 	u32 lmask = mask;
 	u32 hmask = mask >> 32;
 

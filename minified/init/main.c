@@ -806,8 +806,6 @@ static noinline void __init kernel_init_freeable(void)
 
 	workqueue_init();
 
-	init_mm_internals();
-
 	do_pre_smp_initcalls();
 
 	smp_init();

@@ -12,12 +12,3 @@ atomic_long_t vm_node_stat[NR_VM_NODE_STAT_ITEMS] __cacheline_aligned_in_smp;
 
 
 
-struct workqueue_struct *mm_percpu_wq;
-
-void __init init_mm_internals(void)
-{
-	int ret __maybe_unused;
-
-	mm_percpu_wq = alloc_workqueue("mm_percpu_wq", WQ_MEM_RECLAIM, 0);
-}
-

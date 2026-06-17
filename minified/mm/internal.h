@@ -222,8 +222,6 @@ struct tlbflush_unmap_batch;
 
 
  
-extern struct workqueue_struct *mm_percpu_wq;
-
 void flush_tlb_batched_pending(struct mm_struct *mm);
 
 extern const struct trace_print_flags pageflag_names[];

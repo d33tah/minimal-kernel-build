@@ -128,8 +128,6 @@ struct user_struct;
 struct pt_regs;
 
 
-void init_mm_internals(void);
-
 extern unsigned long max_mapnr;
 
 extern atomic_long_t _totalram_pages;

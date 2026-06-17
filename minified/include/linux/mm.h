@@ -1249,8 +1249,6 @@ static inline int in_gate_area(struct mm_struct *mm, unsigned long addr)
 #endif
 
 
-extern int randomize_va_space;
-
 
 static inline unsigned int debug_guardpage_minorder(void) { return 0; }
 

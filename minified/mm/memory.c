@@ -52,10 +52,6 @@ static vm_fault_t do_fault(struct vm_fault *vmf);
 
 void *high_memory;
 
-int randomize_va_space __read_mostly =
-					2;
-
-
 unsigned long zero_pfn __read_mostly;
 
 unsigned long highest_memmap_pfn __read_mostly;

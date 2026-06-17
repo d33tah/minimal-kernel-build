@@ -104,7 +104,6 @@ compound_page_dtor * const compound_page_dtors[NR_COMPOUND_DTORS] = {
 };
 
 int min_free_kbytes = 1024;
-int user_min_free_kbytes = -1;
 
 
 static unsigned long arch_zone_lowest_possible_pfn[MAX_NR_ZONES] __initdata;
@@ -1834,9 +1833,7 @@ static void calculate_min_free_kbytes(void)
 	lowmem_kbytes = nr_free_buffer_pages() * (PAGE_SIZE >> 10);
 	new_min_free_kbytes = int_sqrt(lowmem_kbytes * 16);
 
-	if (new_min_free_kbytes > user_min_free_kbytes)
-		min_free_kbytes = clamp(new_min_free_kbytes, 128, 262144);
-
+	min_free_kbytes = clamp(new_min_free_kbytes, 128, 262144);
 }
 
 int __meminit init_per_zone_wmark_min(void)

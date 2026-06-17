@@ -29,7 +29,6 @@ void __init check_bugs(void)
 		'0' + (boot_cpu_data.x86 > 6 ? 6 : boot_cpu_data.x86);
 	
 	alternative_instructions();
-	fpu__init_check_bugs();
 }
 
 /* x86_virt_spec_ctrl, x86_spec_ctrl_setup_ap, itlb_multihit_kvm_mitigation,

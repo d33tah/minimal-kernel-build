@@ -56,9 +56,6 @@ static inline bool inode_iversion_need_inc(struct inode *inode)
 const struct address_space_operations empty_aops = {
 };
 
-static DEFINE_PER_CPU(unsigned long, nr_inodes);
-static DEFINE_PER_CPU(unsigned long, nr_unused);
-
 static struct kmem_cache *inode_cachep __read_mostly;
 
 
@@ -126,7 +123,6 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	INIT_HLIST_HEAD(&inode->i_dentry);	
 
 	inode->i_flctx = NULL;
-	this_cpu_inc(nr_inodes);
 
 	return 0;
 }
@@ -166,8 +162,6 @@ void __destroy_inode(struct inode *inode)
 		WARN_ON(atomic_long_read(&inode->i_sb->s_remove_count) == 0);
 		atomic_long_dec(&inode->i_sb->s_remove_count);
 	}
-
-	this_cpu_dec(nr_inodes);
 }
 
 static void destroy_inode(struct inode *inode)
@@ -240,9 +234,7 @@ static void __inode_add_lru(struct inode *inode, bool rotate)
 	if (!mapping_shrinkable(&inode->i_data))
 		return;
 
-	if (list_lru_add(&inode->i_sb->s_inode_lru, &inode->i_lru))
-		this_cpu_inc(nr_unused);
-	else if (rotate)
+	if (!list_lru_add(&inode->i_sb->s_inode_lru, &inode->i_lru) && rotate)
 		inode->i_state |= I_REFERENCED;
 }
 
@@ -253,8 +245,7 @@ void inode_add_lru(struct inode *inode)
 
 static void inode_lru_list_del(struct inode *inode)
 {
-	if (list_lru_del(&inode->i_sb->s_inode_lru, &inode->i_lru))
-		this_cpu_dec(nr_unused);
+	list_lru_del(&inode->i_sb->s_inode_lru, &inode->i_lru);
 }
 
 void inode_sb_list_add(struct inode *inode)

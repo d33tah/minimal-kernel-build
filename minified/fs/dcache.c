@@ -45,9 +45,6 @@ static inline struct hlist_bl_head *in_lookup_hash(const struct dentry *parent,
 	return in_lookup_hashtable + hash_32(hash, IN_LOOKUP_SHIFT);
 }
 
-static DEFINE_PER_CPU(long, nr_dentry);
-static DEFINE_PER_CPU(long, nr_dentry_unused);
-static DEFINE_PER_CPU(long, nr_dentry_negative);
 
 #include <asm/word-at-a-time.h>
 
@@ -132,8 +129,6 @@ static inline void __d_clear_type_and_inode(struct dentry *dentry)
 	flags &= ~(DCACHE_ENTRY_TYPE | DCACHE_FALLTHRU);
 	WRITE_ONCE(dentry->d_flags, flags);
 	dentry->d_inode = NULL;
-	if (dentry->d_flags & DCACHE_LRU_LIST)
-		this_cpu_inc(nr_dentry_negative);
 }
 
 static void dentry_free(struct dentry *dentry)
@@ -176,9 +171,6 @@ static void d_lru_add(struct dentry *dentry)
 {
 	D_FLAG_VERIFY(dentry, 0);
 	dentry->d_flags |= DCACHE_LRU_LIST;
-	this_cpu_inc(nr_dentry_unused);
-	if (d_is_negative(dentry))
-		this_cpu_inc(nr_dentry_negative);
 	WARN_ON_ONCE(!list_lru_add(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
 }
 
@@ -186,9 +178,6 @@ static void d_lru_del(struct dentry *dentry)
 {
 	D_FLAG_VERIFY(dentry, DCACHE_LRU_LIST);
 	dentry->d_flags &= ~DCACHE_LRU_LIST;
-	this_cpu_dec(nr_dentry_unused);
-	if (d_is_negative(dentry))
-		this_cpu_dec(nr_dentry_negative);
 	WARN_ON_ONCE(!list_lru_del(&dentry->d_sb->s_dentry_lru, &dentry->d_lru));
 }
 
@@ -259,7 +248,6 @@ static void __dentry_kill(struct dentry *dentry)
 		dentry_unlink_inode(dentry);
 	else
 		spin_unlock(&dentry->d_lock);
-	this_cpu_dec(nr_dentry);
 	if (dentry->d_op && dentry->d_op->d_release)
 		dentry->d_op->d_release(dentry);
 
@@ -559,8 +547,6 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 		}
 	}
 
-	this_cpu_inc(nr_dentry);
-
 	return dentry;
 }
 
@@ -654,9 +640,6 @@ static void __d_instantiate(struct dentry *dentry, struct inode *inode)
 	WARN_ON(d_in_lookup(dentry));
 
 	spin_lock(&dentry->d_lock);
-	
-	if (dentry->d_flags & DCACHE_LRU_LIST)
-		this_cpu_dec(nr_dentry_negative);
 	hlist_add_head(&dentry->d_u.d_alias, &inode->i_dentry);
 	raw_write_seqcount_begin(&dentry->d_seq);
 	__d_set_inode_and_type(dentry, inode, add_flags);

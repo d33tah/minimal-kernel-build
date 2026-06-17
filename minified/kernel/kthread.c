@@ -217,14 +217,7 @@ struct task_struct *__kthread_create_on_node(int (*threadfn)(void *data),
 	spin_unlock(&kthread_create_lock);
 
 	wake_up_process(kthreadd_task);
-	 
-	if (unlikely(wait_for_completion_killable(&done))) {
-		 
-		if (xchg(&create->done, NULL))
-			return ERR_PTR(-EINTR);
-		 
-		wait_for_completion(&done);
-	}
+
 	task = create->result;
 	if (!IS_ERR(task)) {
 		char name[TASK_COMM_LEN];

@@ -31,17 +31,8 @@ struct subprocess_info {
 
 extern struct ctl_table usermodehelper_table[];
 
-enum umh_disable_depth {
-	UMH_ENABLED = 0,
-	UMH_DISABLED,
-};
-
-extern void __usermodehelper_set_disable_depth(enum umh_disable_depth depth);
-
-
 static inline void usermodehelper_enable(void)
 {
-	__usermodehelper_set_disable_depth(UMH_ENABLED);
 }
 
 

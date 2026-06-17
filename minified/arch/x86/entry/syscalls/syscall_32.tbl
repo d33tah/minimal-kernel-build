@@ -79,7 +79,7 @@
 137	i386	afs_syscall
 # 140	i386	_llseek			sys_llseek
 # 141	i386	getdents		sys_getdents			compat_sys_getdents
-143	i386	flock			sys_flock
+# 143	i386	flock			sys_flock (removed, unreachable -> sys_ni)
 144	i386	msync			sys_msync
 145	i386	readv
 146	i386	writev
@@ -163,9 +163,9 @@
 # 418-419 mq_timed*_time64 removed (unreachable)
 # 420 semtimedop_time64 removed (unreachable)
 # 425-427 io_uring_* removed (unreachable)
-434	i386	pidfd_open		sys_pidfd_open
+# 434	i386	pidfd_open		sys_pidfd_open (removed, unreachable -> sys_ni)
 # 437	i386	openat2			sys_openat2
-438	i386	pidfd_getfd		sys_pidfd_getfd
+# 438	i386	pidfd_getfd		sys_pidfd_getfd (removed, unreachable -> sys_ni)
 440	i386	process_madvise		sys_process_madvise
 # 442 mount_setattr removed (unreachable)
 448	i386	process_mrelease	sys_process_mrelease

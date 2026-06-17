@@ -326,12 +326,6 @@ struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
 	return ns_of_pid(task_pid(tsk));
 }
 
-SYSCALL_DEFINE2(pidfd_open, pid_t, pid, unsigned int, flags)
-{
-	/* Stub: pidfd_open not needed for minimal kernel */
-	return -ENOSYS;
-}
-
 void __init pid_idr_init(void)
 {
 	 
@@ -347,11 +341,4 @@ void __init pid_idr_init(void)
 
 	init_pid_ns.pid_cachep = KMEM_CACHE(pid,
 			SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT);
-}
-
-SYSCALL_DEFINE3(pidfd_getfd, int, pidfd, int, fd,
-		unsigned int, flags)
-{
-	/* Stub: pidfd_getfd not needed for minimal kernel */
-	return -ENOSYS;
 }

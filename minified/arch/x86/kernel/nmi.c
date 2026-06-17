@@ -24,15 +24,6 @@
 #include <asm/sev.h>
 
 
-struct nmi_stats {
-	unsigned int normal;
-	unsigned int unknown;
-	unsigned int external;
-	unsigned int swallow;
-};
-
-static DEFINE_PER_CPU(struct nmi_stats, nmi_stats);
-
 static int ignore_nmis __read_mostly;
 
 int unknown_nmi_panic;
@@ -99,8 +90,6 @@ NOKPROBE_SYMBOL(io_check_error);
 static void
 unknown_nmi_error(unsigned char reason, struct pt_regs *regs)
 {
-	__this_cpu_add(nmi_stats.unknown, 1);
-
 	pr_emerg("Uhhuh. NMI received for unknown reason %02x on CPU %d.\n",
 		 reason, smp_processor_id());
 
@@ -144,16 +133,13 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 			io_check_error(reason, regs);
 		 
 		reassert_nmi();
-		__this_cpu_add(nmi_stats.external, 1);
 		raw_spin_unlock(&nmi_reason_lock);
 		goto out;
 	}
 	raw_spin_unlock(&nmi_reason_lock);
 
 	 
-	if (b2b && __this_cpu_read(swallow_nmi))
-		__this_cpu_add(nmi_stats.swallow, 1);
-	else
+	if (!(b2b && __this_cpu_read(swallow_nmi)))
 		unknown_nmi_error(reason, regs);
 
 out:

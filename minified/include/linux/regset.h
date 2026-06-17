@@ -73,14 +73,4 @@ extern int regset_get(struct task_struct *target,
 		      const struct user_regset *regset,
 		      unsigned int size, void *data);
 
-extern int regset_get_alloc(struct task_struct *target,
-			    const struct user_regset *regset,
-			    unsigned int size,
-			    void **data);
-
-extern int copy_regset_to_user(struct task_struct *target,
-			       const struct user_regset_view *view,
-			       unsigned int setno, unsigned int offset,
-			       unsigned int size, void __user *data);
-
 #endif	 

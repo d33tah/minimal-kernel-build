@@ -20,11 +20,7 @@
 #define PTRACE_EVENTMSG_SYSCALL_EXIT	2
 
 
-extern int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,
-			    void *buf, int len, unsigned int gup_flags);
-
-
-#define PT_SEIZED	0x00010000	 
+#define PT_SEIZED	0x00010000
 #define PT_PTRACED	0x00000001
 
 #define PT_OPT_FLAG_SHIFT	3

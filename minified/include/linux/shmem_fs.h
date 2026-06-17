@@ -18,9 +18,6 @@ static inline bool shmem_mapping(struct address_space *mapping)
 {
 	return false;
 }
-extern struct page *shmem_read_mapping_page_gfp(struct address_space *mapping,
-					pgoff_t index, gfp_t gfp_mask);
-
 
 
 #endif

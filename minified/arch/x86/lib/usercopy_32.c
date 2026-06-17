@@ -36,14 +36,6 @@ clear_user(void __user *to, unsigned long n)
 	return n;
 }
 
-unsigned long
-__clear_user(void __user *to, unsigned long n)
-{
-	__do_clear_user(to, n);
-	return n;
-}
-
-
 unsigned long __copy_user_intel(void __user *to, const void *from,
 					unsigned long size);
 

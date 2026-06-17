@@ -6,22 +6,12 @@
 #include <linux/uaccess.h>
 
 
-int wait_for_random_bytes(void)
-{
-	return 0;
-}
-
 void get_random_bytes(void *buf, size_t len)
 {
 	memset(buf, 0, len);
 }
 
 u32 get_random_u32(void)
-{
-	return 0;
-}
-
-u64 get_random_u64(void)
 {
 	return 0;
 }

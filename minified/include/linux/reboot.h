@@ -54,10 +54,7 @@ extern int reboot_cpu;
 
 
 extern void machine_restart(char *cmd);
-extern void machine_halt(void);
-extern void machine_power_off(void);
 
-extern void machine_shutdown(void);
 struct pt_regs;
 
 extern void emergency_restart(void);

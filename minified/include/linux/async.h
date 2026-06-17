@@ -28,10 +28,5 @@ async_schedule_domain(async_func_t func, void *data,
 {
 	return async_schedule_node_domain(func, data, NUMA_NO_NODE, domain);
 }
-
-
-extern void async_synchronize_full(void);
-extern void async_synchronize_cookie_domain(async_cookie_t cookie,
-					    struct async_domain *domain);
 /* Removed: current_is_async - never defined/used */
 #endif

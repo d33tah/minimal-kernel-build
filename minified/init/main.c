@@ -728,8 +728,6 @@ static int __ref kernel_init(void *unused)
 	wait_for_completion(&kthreadd_done);
 
 	kernel_init_freeable();
-	 
-	async_synchronize_full();
 
 	system_state = SYSTEM_FREEING_INITMEM;
 	kgdb_free_init_mem();

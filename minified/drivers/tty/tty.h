@@ -30,7 +30,6 @@ enum {
 int tty_ldisc_lock(struct tty_struct *tty, unsigned long timeout);
 void tty_ldisc_unlock(struct tty_struct *tty);
 
-int tty_check_change(struct tty_struct *tty);
 /* __stop_tty, __start_tty removed - unused */
 void tty_open_proc_set_tty(struct file *filp, struct tty_struct *tty);
 void tty_buffer_free_all(struct tty_port *port);

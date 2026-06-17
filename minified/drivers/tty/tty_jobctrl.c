@@ -3,11 +3,6 @@
 #include <linux/sched.h>
 #include "tty.h"
 
-int tty_check_change(struct tty_struct *tty)
-{
-	return 0;
-}
-
 void tty_open_proc_set_tty(struct file *filp, struct tty_struct *tty)
 {
 }

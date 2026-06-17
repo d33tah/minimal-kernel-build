@@ -29,7 +29,6 @@ extern void tsc_early_init(void);
 extern void tsc_init(void);
 extern unsigned long calibrate_delay_is_known(void);
 extern void mark_tsc_unstable(char *reason);
-extern int unsynchronized_tsc(void);
 /* check_tsc_unstable, mark_tsc_async_resets removed - unused */
 extern unsigned long native_calibrate_cpu_early(void);
 extern unsigned long native_calibrate_tsc(void);

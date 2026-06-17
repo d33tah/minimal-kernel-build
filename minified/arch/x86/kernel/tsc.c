@@ -542,14 +542,6 @@ static void __init check_system_tsc_reliable(void)
 		tsc_disable_clocksource_watchdog();
 }
 
-/* Stubbed - minimal single-CPU kernel assumes synchronized TSC */
-int unsynchronized_tsc(void)
-{
-	return 0;
-}
-
-
-
 static void tsc_refine_calibration_work(struct work_struct *work);
 static DECLARE_DELAYED_WORK(tsc_irqwork, tsc_refine_calibration_work);
 static void tsc_refine_calibration_work(struct work_struct *work)
@@ -676,11 +668,6 @@ void __init tsc_init(void)
 	/* lpj_fine assignment removed - never read */
 
 	check_system_tsc_reliable();
-
-	if (unsynchronized_tsc()) {
-		mark_tsc_unstable("TSCs unsynchronized");
-		return;
-	}
 
 	if (tsc_clocksource_reliable || no_tsc_watchdog)
 		tsc_disable_clocksource_watchdog();

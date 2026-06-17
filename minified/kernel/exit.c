@@ -86,9 +86,6 @@ static void __exit_signal(struct task_struct *tsk)
 			sig->curr_target = next_thread(tsk);
 	}
 
-	add_device_randomness((const void*) &tsk->se.sum_exec_runtime,
-			      sizeof(unsigned long long));
-
 	task_cputime(tsk, &utime, &stime);
 	write_seqlock(&sig->stats_lock);
 	sig->utime += utime;

@@ -11,9 +11,6 @@
 
 struct notifier_block;
 
-void add_device_randomness(const void *buf, size_t len);
-void add_interrupt_randomness(int irq) __latent_entropy;
-
 #if defined(LATENT_ENTROPY_PLUGIN) && !defined(__CHECKER__)
 static inline void add_latent_entropy(void)
 {
@@ -37,7 +34,6 @@ static inline unsigned long get_random_long(void)
 
 # define CANARY_MASK 0xffffffffUL
 
-int __init random_init(const char *command_line);
 bool rng_is_initialized(void);
 
 #endif

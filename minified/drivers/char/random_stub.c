@@ -16,21 +16,6 @@ u32 get_random_u32(void)
 	return 0;
 }
 
-int __init random_init(const char *command_line)
-{
-	return 0;
-}
-
-void add_device_randomness(const void *buf, size_t len)
-{
-}
-
-
-void add_interrupt_randomness(int irq)
-{
-}
-
-
 bool rng_is_initialized(void)
 {
 	return true;

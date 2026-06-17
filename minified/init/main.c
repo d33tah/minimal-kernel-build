@@ -510,8 +510,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	timekeeping_init();
 	time_init();
 
-	 
-	random_init(command_line);
 	boot_init_stack_canary();
 
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");

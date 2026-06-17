@@ -312,9 +312,6 @@ void __noreturn do_exit(long code)
 	if (tsk->io_context)
 		exit_io_context(tsk);
 
-	if (tsk->splice_pipe)
-		free_pipe_info(tsk->splice_pipe);
-
 	if (tsk->task_frag.page)
 		put_page(tsk->task_frag.page);
 

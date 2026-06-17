@@ -57,6 +57,4 @@ struct pipe_buf_operations {
 #define PIPE_SIZE		PAGE_SIZE
 
 
-void free_pipe_info(struct pipe_inode_info *);
-
 #endif

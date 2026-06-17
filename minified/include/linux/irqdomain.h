@@ -26,9 +26,6 @@ struct irq_fwspec {
 	u32 param[IRQ_DOMAIN_IRQ_SPEC_PARAMS];
 };
 
-void of_phandle_args_to_fwspec(struct device_node *np, const u32 *args,
-			       unsigned int count, struct irq_fwspec *fwspec);
-
 enum irq_domain_bus_token {
 	DOMAIN_BUS_ANY		= 0,
 };

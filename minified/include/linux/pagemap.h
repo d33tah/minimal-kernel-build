@@ -122,11 +122,6 @@ static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
 	return folio_alloc(gfp, order);
 }
 
-pgoff_t page_cache_next_miss(struct address_space *mapping,
-			     pgoff_t index, unsigned long max_scan);
-pgoff_t page_cache_prev_miss(struct address_space *mapping,
-			     pgoff_t index, unsigned long max_scan);
-
 #define FGP_ACCESSED		0x00000001
 #define FGP_LOCK		0x00000002
 #define FGP_CREAT		0x00000004

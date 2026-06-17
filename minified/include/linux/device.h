@@ -100,9 +100,6 @@ struct device_attribute {
 
 /* devres alloc/add/free + devm_kstrdup/devm_kasprintf removed - never called */
 
-void __iomem *devm_ioremap_resource(struct device *dev,
-				    const struct resource *res);
-
 struct device_dma_parameters {
 	 
 	unsigned int max_segment_size;

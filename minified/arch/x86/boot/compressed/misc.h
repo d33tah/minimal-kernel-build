@@ -91,26 +91,10 @@ static inline void sev_prep_identity_maps(unsigned long top_level_pgt) { }
 typedef u64 acpi_physical_address;
 static inline acpi_physical_address get_rsdp_addr(void) { return 0; }
 
-static inline int count_immovable_mem_regions(void) { return 0; }
 
- 
-extern void kernel_add_identity_map(unsigned long start, unsigned long end);
-
- 
 extern pteval_t __default_kernel_pte_mask;
 
- 
-extern gate_desc boot_idt[BOOT_IDT_ENTRIES];
-extern struct desc_ptr boot_idt_desc;
-
 static inline void cleanup_exception_handling(void) { }
-
- 
-void boot_page_fault(void);
-void boot_stage1_vc(void);
-void boot_stage2_vc(void);
-
-unsigned long sev_verify_cbit(unsigned long cr3);
 
 enum efi_type {
 	EFI_TYPE_64,

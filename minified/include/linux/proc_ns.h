@@ -48,7 +48,6 @@ static inline int ns_alloc_inum(struct ns_common *ns)
 #define ns_free_inum(ns) proc_free_inum((ns)->inum)
 
 #define get_proc_ns(inode) ((struct ns_common *)(inode)->i_private)
-typedef struct ns_common *ns_get_path_helper_t(void *);
 
 
 #endif  

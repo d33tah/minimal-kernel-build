@@ -488,12 +488,6 @@ int folio_wait_bit_killable(struct folio *folio, int bit_nr)
 	return folio_wait_bit_common(folio, bit_nr, TASK_KILLABLE, SHARED);
 }
 
-/* folio_put_wait_locked used internally */
-int folio_put_wait_locked(struct folio *folio, int state)
-{
-	return 0;
-}
-
 
 #ifndef clear_bit_unlock_is_negative_byte
 
@@ -810,7 +804,6 @@ static int filemap_update_page(struct kiocb *iocb,
 		 * async __folio_lock path is unreachable; always wait sync.
 		 */
 		filemap_invalidate_unlock_shared(mapping);
-		folio_put_wait_locked(folio, TASK_KILLABLE);
 		return AOP_TRUNCATED_PAGE;
 	}
 

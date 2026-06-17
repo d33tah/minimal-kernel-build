@@ -249,7 +249,6 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 	return folio_wait_bit_killable(folio, PG_locked);
 }
 
-int folio_put_wait_locked(struct folio *folio, int state);
 void folio_wait_writeback(struct folio *folio);
 void folio_wait_stable(struct folio *folio);
 void folio_account_cleaned(struct folio *folio, struct bdi_writeback *wb);

@@ -42,20 +42,6 @@ bool cancel_work_sync(struct work_struct *work)
     return test_and_clear_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work));
 }
 
-__printf(1, 4) struct workqueue_struct *
-alloc_workqueue(const char *fmt, unsigned int flags, int max_active, ...)
-{
-    struct workqueue_struct *wq;
-
-    wq = kzalloc(sizeof(*wq), GFP_KERNEL);
-    if (!wq)
-        return NULL;
-
-    wq->flags = flags;
-    wq->name = fmt;
-    return wq;
-}
-
 static struct workqueue_struct system_wq_storage = { .name = "events" };
 static struct workqueue_struct system_unbound_wq_storage = { .name = "events_unbound" };
 

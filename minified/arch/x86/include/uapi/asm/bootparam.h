@@ -3,12 +3,10 @@
 #define _ASM_X86_BOOTPARAM_H
 
  
-#define SETUP_NONE			0
 #define SETUP_E820_EXT			1
 #define SETUP_DTB			2
-#define SETUP_PCI			3
 #define SETUP_EFI			4
-/* SETUP_APPLE_PROPERTIES, SETUP_JAILHOUSE - unused */
+/* SETUP_NONE, SETUP_PCI, SETUP_APPLE_PROPERTIES, SETUP_JAILHOUSE - unused */
 #define SETUP_CC_BLOB			7
 
 #define SETUP_INDIRECT			(1<<31)
@@ -22,16 +20,7 @@
  
 #define LOADED_HIGH	(1<<0)
 #define KASLR_FLAG	(1<<1)
-#define QUIET_FLAG	(1<<5)
-#define KEEP_SEGMENTS	(1<<6)
 #define CAN_USE_HEAP	(1<<7)
-
- 
-#define XLF_KERNEL_64			(1<<0)
-#define XLF_CAN_BE_LOADED_ABOVE_4G	(1<<1)
-/* XLF_EFI_HANDOVER_32, XLF_EFI_HANDOVER_64, XLF_EFI_KEXEC - unused */
-#define XLF_5LEVEL			(1<<5)
-#define XLF_5LEVEL_ENABLED		(1<<6)
 
 #ifndef __ASSEMBLY__
 

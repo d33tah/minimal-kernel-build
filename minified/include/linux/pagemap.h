@@ -32,11 +32,6 @@ static inline bool mapping_shrinkable(struct address_space *mapping)
 {
 	void *head;
 
-	 
-	if (IS_ENABLED(CONFIG_HIGHMEM))
-		return true;
-
-	 
 	head = rcu_access_pointer(mapping->i_pages.xa_head);
 	if (!head)
 		return true;

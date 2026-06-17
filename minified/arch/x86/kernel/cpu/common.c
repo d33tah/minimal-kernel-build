@@ -207,8 +207,6 @@ set_register:
 			  bits_changed);
 	}
 }
-#if IS_MODULE(CONFIG_LKDTM)
-#endif
 
 void cr4_update_irqsoff(unsigned long set, unsigned long clear)
 {

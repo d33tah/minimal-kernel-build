@@ -184,9 +184,6 @@ nmi_restart:
 		goto nmi_restart;
 }
 
-#if IS_MODULE(CONFIG_KVM_INTEL)
-#endif
-
 void local_touch_nmi(void)
 {
 	__this_cpu_write(last_nmi_rip, 0);

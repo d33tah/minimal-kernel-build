@@ -255,8 +255,6 @@ static inline bool __slub_debug_enabled(void)
  
 static inline bool kmem_cache_debug_flags(struct kmem_cache *s, slab_flags_t flags)
 {
-	if (IS_ENABLED(CONFIG_SLUB_DEBUG))
-		VM_WARN_ON_ONCE(!(flags & SLAB_DEBUG_FLAGS));
 	if (__slub_debug_enabled())
 		return s->flags & flags;
 	return false;

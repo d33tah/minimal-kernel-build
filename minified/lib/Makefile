@@ -28,7 +28,7 @@ CFLAGS_string.o += -fno-stack-protector
 endif
 
 lib-y := ctype.o string.o vsprintf.o cmdline.o \
-	 rbtree.o radix-tree.o timerqueue.o xarray.o \
+	 rbtree.o radix-tree.o xarray.o \
 	 idr.o extable.o irq_regs.o \
 	 ratelimit.o \
 	 decompress.o kobject_uevent.o \

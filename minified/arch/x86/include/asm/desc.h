@@ -147,8 +147,6 @@ static inline void native_load_tls(struct thread_struct *t, unsigned int cpu)
 		gdt[GDT_ENTRY_TLS_MIN + i] = t->tls_array[i];
 }
 
-DECLARE_PER_CPU(bool, __tss_limit_invalid);
-
 static inline void force_reload_TR(void)
 {
 	struct desc_struct *d = get_current_gdt_rw();
@@ -161,7 +159,6 @@ static inline void force_reload_TR(void)
 	write_gdt_entry(d, GDT_ENTRY_TSS, &tss, DESC_TSS);
 
 	load_TR_desc();
-	this_cpu_write(__tss_limit_invalid, false);
 }
 
 /* refresh_tss_limit, invalidate_tss_limit removed - unused */

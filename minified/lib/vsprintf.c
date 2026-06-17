@@ -492,9 +492,6 @@ static char *pointer_string(char *buf, char *end,
 	return number(buf, end, (unsigned long int)ptr, spec);
 }
 
-static int debug_boot_weak_hash __ro_after_init;
-
-
 static DEFINE_STATIC_KEY_FALSE(filled_random_ptr_key);
 
 static void enable_ptr_key_workfn(struct work_struct *work)
@@ -540,12 +537,6 @@ static char *ptr_to_id(char *buf, char *end, const void *ptr,
 	
 	if (IS_ERR_OR_NULL(ptr))
 		return pointer_string(buf, end, ptr, spec);
-
-	
-	if (unlikely(debug_boot_weak_hash)) {
-		hashval = hash_long((unsigned long)ptr, 32);
-		return pointer_string(buf, end, (const void *)hashval, spec);
-	}
 
 	ret = ptr_to_hashval(ptr, &hashval);
 	if (ret) {

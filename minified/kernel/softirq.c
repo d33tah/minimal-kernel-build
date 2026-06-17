@@ -13,7 +13,6 @@
 #include <linux/kthread.h>
 #include <linux/rcupdate.h>
 #include <linux/smp.h>
-#include <linux/smpboot.h>
 #include <linux/tick.h>
 #include <linux/irq.h>
 #include <linux/wait_bit.h>
@@ -96,16 +95,6 @@ static inline void softirq_handle_end(void)
 {
 	__local_bh_enable(SOFTIRQ_OFFSET);
 	WARN_ON_ONCE(in_interrupt());
-}
-
-static inline void ksoftirqd_run_begin(void)
-{
-	local_irq_disable();
-}
-
-static inline void ksoftirqd_run_end(void)
-{
-	local_irq_enable();
 }
 
 static inline void invoke_softirq(void)
@@ -274,40 +263,13 @@ void __init softirq_init(void)
 	/* No tasklets needed in minimal kernel */
 }
 
-static int ksoftirqd_should_run(unsigned int cpu)
-{
-	return local_softirq_pending();
-}
-
-static void run_ksoftirqd(unsigned int cpu)
-{
-	ksoftirqd_run_begin();
-	if (local_softirq_pending()) {
-		 
-		__do_softirq();
-		ksoftirqd_run_end();
-		cond_resched();
-		return;
-	}
-	ksoftirqd_run_end();
-}
-
-static struct smp_hotplug_thread softirq_threads = {
-	.store			= &ksoftirqd,
-	.thread_should_run	= ksoftirqd_should_run,
-	.thread_fn		= run_ksoftirqd,
-	.thread_comm		= "ksoftirqd/%u",
-};
-
 static __init int spawn_ksoftirqd(void)
 {
 	/*
-	 * CPU hotplug is off (SMP=n), so the SOFTIRQ_DEAD teardown callback
-	 * (takeover_tasklets) never fired and was NULL anyway -- the whole
-	 * cpuhp_setup_state registration was a no-op, so it was dropped.
+	 * SMP and CPU hotplug are off, so no per-cpu ksoftirqd thread is
+	 * spawned -- softirqs always run inline (do_softirq_own_stack) from
+	 * the irq-exit path. This initcall is a no-op.
 	 */
-	BUG_ON(smpboot_register_percpu_thread(&softirq_threads));
-
 	return 0;
 }
 early_initcall(spawn_ksoftirqd);

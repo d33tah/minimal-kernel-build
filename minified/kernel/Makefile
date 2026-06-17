@@ -59,9 +59,6 @@ obj-$(CONFIG_STACKTRACE) += stacktrace.o
 obj-y += time/
 # obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o  # deleted
 obj-$(CONFIG_SMP) += smp.o
-ifneq ($(CONFIG_SMP),y)
-obj-y += up.o
-endif
 obj-$(CONFIG_UID16) += uid16.o
 obj-$(CONFIG_MODULE_SIG_FORMAT) += module_signature.o
 obj-$(CONFIG_KALLSYMS) += kallsyms.o

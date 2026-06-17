@@ -3,12 +3,7 @@
 
 #ifndef __ASSEMBLY__
 
-#if defined(CONFIG_DEBUG_INFO_BTF) && defined(CONFIG_PAHOLE_HAS_BTF_TAG) && \
-	__has_attribute(btf_type_tag)
-# define BTF_TYPE_TAG(value) __attribute__((btf_type_tag(#value)))
-#else
-# define BTF_TYPE_TAG(value)  
-#endif
+# define BTF_TYPE_TAG(value)
 
 #ifdef __CHECKER__
 # define __kernel	__attribute__((address_space(0)))

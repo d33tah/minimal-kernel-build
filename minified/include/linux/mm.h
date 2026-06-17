@@ -233,13 +233,8 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_NOHUGEPAGE	0x40000000
 
 
-#if defined(CONFIG_ARM64_MTE)
-# define VM_MTE		VM_HIGH_ARCH_0	
-# define VM_MTE_ALLOWED	VM_HIGH_ARCH_1	
-#else
 # define VM_MTE		VM_NONE
 # define VM_MTE_ALLOWED	VM_NONE
-#endif
 
 #ifndef VM_GROWSUP
 # define VM_GROWSUP	VM_NONE

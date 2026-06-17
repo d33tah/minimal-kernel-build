@@ -204,13 +204,7 @@ void free_task(struct task_struct *tsk)
 
 static void dup_mm_exe_file(struct mm_struct *mm, struct mm_struct *oldmm)
 {
-	struct file *exe_file;
-
-	exe_file = get_mm_exe_file(oldmm);
-	RCU_INIT_POINTER(mm->exe_file, exe_file);
-
-	if (exe_file)
-		deny_write_access(exe_file);
+	RCU_INIT_POINTER(mm->exe_file, NULL);
 }
 
 static __latent_entropy int dup_mmap(struct mm_struct *mm,
@@ -561,10 +555,6 @@ int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 	}
 	return 0;
 }
-
-/* get_mm_exe_file stubbed - used by dup_mm */
-struct file *get_mm_exe_file(struct mm_struct *mm) { return NULL; }
-
 
 static void complete_vfork_done(struct task_struct *tsk)
 {

@@ -40,7 +40,6 @@
 
 #define OO_SHIFT	16
 #define OO_MASK		((1 << OO_SHIFT) - 1)
-#define MAX_OBJS_PER_PAGE	32767 
 
 #define __CMPXCHG_DOUBLE	((slab_flags_t __force)0x40000000U)
 
@@ -867,21 +866,15 @@ static inline void free_large_kmalloc(struct folio *folio, void *object)
 	__free_pages(folio_page(folio, 0), order);
 }
 
-static unsigned int slub_min_order;
-static unsigned int slub_max_order = PAGE_ALLOC_COSTLY_ORDER;
-static unsigned int slub_min_objects;
+#define slub_max_order ((unsigned int)PAGE_ALLOC_COSTLY_ORDER)
 
 static inline unsigned int calc_slab_order(unsigned int size,
 		unsigned int min_objects, unsigned int max_order,
 		unsigned int fract_leftover)
 {
-	unsigned int min_order = slub_min_order;
 	unsigned int order;
 
-	if (order_objects(min_order, size) > MAX_OBJS_PER_PAGE)
-		return get_order(size * MAX_OBJS_PER_PAGE) - 1;
-
-	for (order = max(min_order, (unsigned int)get_order(min_objects * size));
+	for (order = get_order(min_objects * size);
 			order <= max_order; order++) {
 
 		unsigned int slab_size = (unsigned int)PAGE_SIZE << order;
@@ -903,15 +896,10 @@ static inline int calculate_order(unsigned int size)
 	unsigned int max_objects;
 	unsigned int nr_cpus;
 
-	
-	min_objects = slub_min_objects;
-	if (!min_objects) {
-		
-		nr_cpus = num_present_cpus();
-		if (nr_cpus <= 1)
-			nr_cpus = nr_cpu_ids;
-		min_objects = 4 * (fls(nr_cpus) + 1);
-	}
+	nr_cpus = num_present_cpus();
+	if (nr_cpus <= 1)
+		nr_cpus = nr_cpu_ids;
+	min_objects = 4 * (fls(nr_cpus) + 1);
 	max_objects = order_objects(slub_max_order, size);
 	min_objects = min(min_objects, max_objects);
 
@@ -1128,7 +1116,8 @@ error:
 }
 
 /* setup_slub_min_order, setup_slub_max_order, setup_slub_min_objects and __setup
- * handlers removed - not needed for minimal kernel (~21 LOC) */
+ * handlers removed - not needed for minimal kernel. slub_min_order/min_objects
+ * folded to 0 and slub_max_order to PAGE_ALLOC_COSTLY_ORDER (write-never). */
 
 void *__kmalloc(size_t size, gfp_t flags)
 {
@@ -1196,9 +1185,6 @@ void __init kmem_cache_init(void)
 	static __initdata struct kmem_cache boot_kmem_cache,
 		boot_kmem_cache_node;
 	int node;
-
-	if (debug_guardpage_minorder())
-		slub_max_order = 0;
 
 	kmem_cache_node = &boot_kmem_cache_node;
 	kmem_cache = &boot_kmem_cache;

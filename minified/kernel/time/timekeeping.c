@@ -200,7 +200,6 @@ static void timekeeping_update(struct timekeeper *tk, unsigned int action)
 {
 	if (action & TK_CLEAR_NTP) {
 		tk->ntp_error = 0;
-		ntp_clear();
 	}
 
 	tk_update_ktime_data(tk);
@@ -394,7 +393,6 @@ void __init timekeeping_init(void)
 
 	raw_spin_lock_irqsave(&timekeeper_lock, flags);
 	write_seqcount_begin(&tk_core.seq);
-	ntp_init();
 
 	clock = clocksource_default_clock();
 	if (clock->enable)

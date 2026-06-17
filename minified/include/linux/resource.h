@@ -5,11 +5,6 @@
 #include <linux/types.h>
 
 /* Inlined from uapi/linux/resource.h */
-#define	RUSAGE_SELF	0
-#define	RUSAGE_CHILDREN	(-1)
-#define RUSAGE_BOTH	(-2)
-#define	RUSAGE_THREAD	1
-
 struct	rusage {
 	struct __kernel_old_timeval ru_utime;
 	struct __kernel_old_timeval ru_stime;
@@ -34,11 +29,6 @@ struct rlimit {
 	__kernel_ulong_t	rlim_max;
 };
 
-#define	PRIO_MIN	(-20)
-#define	PRIO_MAX	20
-#define	PRIO_PROCESS	0
-#define	PRIO_PGRP	1
-#define	PRIO_USER	2
 #define _STK_LIM	(8*1024*1024)
 #define MLOCK_LIMIT	(8*1024*1024)
 

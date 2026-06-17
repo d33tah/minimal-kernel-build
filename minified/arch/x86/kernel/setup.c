@@ -78,8 +78,6 @@ struct cpuinfo_x86 new_cpu_data;
 
 struct cpuinfo_x86 boot_cpu_data __read_mostly;
 
-unsigned int def_to_bigsmp;
-
 struct apm_info apm_info;
 
 struct ist_info ist_info;

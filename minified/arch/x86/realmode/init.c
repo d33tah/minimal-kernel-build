@@ -12,8 +12,6 @@
 struct real_mode_header *real_mode_header;
 u32 *trampoline_cr4_features;
 
-pgd_t trampoline_pgd_entry;
-
 void __init reserve_real_mode(void)
 {
 	phys_addr_t mem;

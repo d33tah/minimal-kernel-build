@@ -29,8 +29,6 @@ DEFINE_RAW_SPINLOCK(i8259A_lock);
 
 unsigned int cached_irq_mask = 0xffff;
 
-unsigned long io_apic_irqs;
-
 static void disable_8259A_irq(struct irq_data *data)
 {
 	unsigned int irq = data->irq;

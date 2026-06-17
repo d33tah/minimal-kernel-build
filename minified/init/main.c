@@ -458,8 +458,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	setup_command_line(command_line);
 	setup_nr_cpu_ids();
 	setup_per_cpu_areas();
-	smp_prepare_boot_cpu();	 
-	boot_cpu_hotplug_init();
+	smp_prepare_boot_cpu();
 
 	build_all_zonelists(NULL);
 	page_alloc_init();

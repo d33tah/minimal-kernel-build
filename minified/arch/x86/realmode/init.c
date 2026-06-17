@@ -14,14 +14,6 @@ u32 *trampoline_cr4_features;
 
 pgd_t trampoline_pgd_entry;
 
-void load_trampoline_pgtable(void)
-{
-	load_cr3(initial_page_table);
-
-	 
-	__flush_tlb_all();
-}
-
 void __init reserve_real_mode(void)
 {
 	phys_addr_t mem;

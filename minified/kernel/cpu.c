@@ -10,14 +10,6 @@
 
 #include "smpboot.h"
 
-struct cpuhp_cpu_state {
-	enum cpuhp_state	state;
-};
-
-static DEFINE_PER_CPU(struct cpuhp_cpu_state, cpuhp_state);
-
-
-
 /*
  * CPU hotplug is off (SMP=n) and the only cpuhp_setup_state caller (softirq's
  * NULL SOFTIRQ_DEAD teardown) was a no-op, so the cpuhp_step state table and
@@ -71,10 +63,4 @@ void __init boot_cpu_init(void)
 	set_cpu_possible(cpu, true);
 
 }
-
-void __init boot_cpu_hotplug_init(void)
-{
-	this_cpu_write(cpuhp_state.state, CPUHP_ONLINE);
-}
-
 

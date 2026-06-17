@@ -11,12 +11,6 @@ static __always_inline void rcu_irq_enter_check_tick(void)
 {
 }
 
-#define __irq_enter()					\
-	do {						\
-		preempt_count_add(HARDIRQ_OFFSET);	\
-		lockdep_hardirq_enter();		\
-	} while (0)
-
 #define __irq_enter_raw()				\
 	do {						\
 		preempt_count_add(HARDIRQ_OFFSET);	\
@@ -24,12 +18,6 @@ static __always_inline void rcu_irq_enter_check_tick(void)
 	} while (0)
 
 void irq_enter_rcu(void);
-
-#define __irq_exit()					\
-	do {						\
-		lockdep_hardirq_exit();			\
-		preempt_count_sub(HARDIRQ_OFFSET);	\
-	} while (0)
 
 #define __irq_exit_raw()				\
 	do {						\
@@ -56,13 +44,6 @@ static inline void rcu_nmi_exit(void) { }
 		__preempt_count_add(NMI_OFFSET + HARDIRQ_OFFSET);	\
 	} while (0)
 
-#define nmi_enter()						\
-	do {							\
-		__nmi_enter();					\
-		lockdep_hardirq_enter();			\
-		rcu_nmi_enter();				\
-	} while (0)
-
 #define __nmi_exit()						\
 	do {							\
 		BUG_ON(!in_nmi());				\
@@ -71,11 +52,4 @@ static inline void rcu_nmi_exit(void) { }
 		lockdep_on();					\
 	} while (0)
 
-#define nmi_exit()						\
-	do {							\
-		rcu_nmi_exit();					\
-		lockdep_hardirq_exit();				\
-		__nmi_exit();					\
-	} while (0)
-
-#endif  
+#endif

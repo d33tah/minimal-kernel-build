@@ -71,26 +71,6 @@ static inline phys_addr_t memblock_cap_size(phys_addr_t base, phys_addr_t *size)
 	return *size = min(*size, PHYS_ADDR_MAX - base);
 }
 
-static unsigned long __init_memblock memblock_addrs_overlap(phys_addr_t base1, phys_addr_t size1,
-				       phys_addr_t base2, phys_addr_t size2)
-{
-	return ((base1 < (base2 + size2)) && (base2 < (base1 + size1)));
-}
-
-bool __init_memblock memblock_overlaps_region(struct memblock_type *type,
-					phys_addr_t base, phys_addr_t size)
-{
-	unsigned long i;
-
-	memblock_cap_size(base, &size);
-
-	for (i = 0; i < type->cnt; i++)
-		if (memblock_addrs_overlap(base, size, type->regions[i].base,
-					   type->regions[i].size))
-			break;
-	return i < type->cnt;
-}
-
 /*
  * The bottom-up allocator (__memblock_find_range_bottom_up) was removed: this
  * build never sets memblock.bottom_up (initialised to false, no setter
@@ -846,11 +826,6 @@ bool __init_memblock memblock_is_region_memory(phys_addr_t base, phys_addr_t siz
 		return false;
 	return (memblock.memory.regions[idx].base +
 		 memblock.memory.regions[idx].size) >= end;
-}
-
-bool __init_memblock memblock_is_region_reserved(phys_addr_t base, phys_addr_t size)
-{
-	return memblock_overlaps_region(&memblock.reserved, base, size);
 }
 
 void __init_memblock memblock_trim_memory(phys_addr_t align)

@@ -103,18 +103,6 @@ static struct kobj_type device_ktype = {
 
 /* Stub: online sysfs attributes simplified for minimal kernel */
 
-/* Stub: device sysfs groups not needed for minimal kernel */
-int device_add_groups(struct device *dev, const struct attribute_group **groups)
-{
-	return 0;
-}
-
-void device_remove_groups(struct device *dev,
-			  const struct attribute_group **groups)
-{
-}
-
-
 /* Stub: device_remove_attrs not needed (sysfs functions are stubbed) */
 static void device_remove_attrs(struct device *dev)
 {

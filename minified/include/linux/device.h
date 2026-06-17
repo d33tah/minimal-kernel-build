@@ -260,10 +260,6 @@ device_create_with_groups(struct class *cls, struct device *parent, dev_t devt,
 			  const char *fmt, ...);
 void device_destroy(struct class *cls, dev_t devt);
 
-int __must_check device_add_groups(struct device *dev,
-				   const struct attribute_group **groups);
-void device_remove_groups(struct device *dev,
-			  const struct attribute_group **groups);
 
 
 struct device *get_device(struct device *dev);

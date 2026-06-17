@@ -59,15 +59,9 @@ struct raw_notifier_head {
 
 #ifdef __KERNEL__
 
-extern int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
-		struct notifier_block *nb);
-
-
 extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 		unsigned long val, void *v);
 extern int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
-		unsigned long val, void *v);
-extern int raw_notifier_call_chain(struct raw_notifier_head *nh,
 		unsigned long val, void *v);
 
 

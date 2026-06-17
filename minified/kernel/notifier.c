@@ -6,28 +6,6 @@
 #include <linux/vmalloc.h>
 #include <linux/reboot.h>
 
-static int notifier_chain_register(struct notifier_block **nl,
-				   struct notifier_block *n,
-				   bool unique_priority)
-{
-	while ((*nl) != NULL) {
-		if (unlikely((*nl) == n)) {
-			WARN(1, "notifier callback %ps already registered",
-			     n->notifier_call);
-			return -EEXIST;
-		}
-		if (n->priority > (*nl)->priority)
-			break;
-		if (n->priority == (*nl)->priority && unique_priority)
-			return -EBUSY;
-		nl = &((*nl)->next);
-	}
-	n->next = *nl;
-	rcu_assign_pointer(*nl, n);
-	return 0;
-}
-
-
 static int notifier_call_chain(struct notifier_block **nl,
 			       unsigned long val, void *v,
 			       int nr_to_call, int *nr_calls)
@@ -53,19 +31,6 @@ static int notifier_call_chain(struct notifier_block **nl,
 	return ret;
 }
 NOKPROBE_SYMBOL(notifier_call_chain);
-
-int atomic_notifier_chain_register(struct atomic_notifier_head *nh,
-		struct notifier_block *n)
-{
-	unsigned long flags;
-	int ret;
-
-	spin_lock_irqsave(&nh->lock, flags);
-	ret = notifier_chain_register(&nh->head, n, false);
-	spin_unlock_irqrestore(&nh->lock, flags);
-	return ret;
-}
-
 
 int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 			       unsigned long val, void *v)
@@ -94,13 +59,6 @@ int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
 	return ret;
 }
 
-
-
-int raw_notifier_call_chain(struct raw_notifier_head *nh,
-		unsigned long val, void *v)
-{
-	return notifier_call_chain(&nh->head, val, v, -1, NULL);
-}
 
 
 static ATOMIC_NOTIFIER_HEAD(die_chain);

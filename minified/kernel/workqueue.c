@@ -56,12 +56,6 @@ alloc_workqueue(const char *fmt, unsigned int flags, int max_active, ...)
     return wq;
 }
 
-void destroy_workqueue(struct workqueue_struct *wq)
-{
-    if (wq)
-        kfree(wq);
-}
-
 static struct workqueue_struct system_wq_storage = { .name = "events" };
 static struct workqueue_struct system_unbound_wq_storage = { .name = "events_unbound" };
 

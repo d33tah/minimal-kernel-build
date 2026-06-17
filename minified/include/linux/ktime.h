@@ -41,7 +41,6 @@ static inline s64 ktime_to_ns(const ktime_t kt)
 
 /* BITS_PER_LONG == 32 */
 
-extern ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs);
 
 /* Inlined from vdso/ktime.h */
 #define LOW_RES_NSEC		TICK_NSEC

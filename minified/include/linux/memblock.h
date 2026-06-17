@@ -54,8 +54,6 @@ int memblock_add(phys_addr_t base, phys_addr_t size);
 int memblock_phys_free(phys_addr_t base, phys_addr_t size);
 int memblock_reserve(phys_addr_t base, phys_addr_t size);
 void memblock_trim_memory(phys_addr_t align);
-bool memblock_overlaps_region(struct memblock_type *type,
-			      phys_addr_t base, phys_addr_t size);
 
 void memblock_free_all(void);
 void memblock_free(void *ptr, size_t size);
@@ -196,7 +194,6 @@ static inline void *memblock_alloc_node(phys_addr_t size,
 
 phys_addr_t memblock_start_of_DRAM(void);
 bool memblock_is_region_memory(phys_addr_t base, phys_addr_t size);
-bool memblock_is_region_reserved(phys_addr_t base, phys_addr_t size);
 
 void memblock_dump_all(void);
 

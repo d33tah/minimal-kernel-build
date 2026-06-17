@@ -68,17 +68,6 @@ DEFINE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases) =
 	}
 };
 
-ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs)
-{
-	ktime_t res = ktime_add_unsafe(lhs, rhs);
-
-	if (res < 0 || res < lhs || res < rhs)
-		res = ktime_set(KTIME_SEC_MAX, 0);
-
-	return res;
-}
-
-
 /*
  * No code path on this build ever enqueues an hrtimer: enqueue_hrtimer() was
  * the only writer that set cpu_base->active_bases nonzero, and it was reached

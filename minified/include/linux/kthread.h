@@ -42,10 +42,6 @@ struct kthread_work;
 typedef void (*kthread_work_func_t)(struct kthread_work *work);
 void kthread_delayed_work_timer_fn(struct timer_list *t);
 
-enum {
-	KTW_FREEZABLE		= 1 << 0,	 
-};
-
 struct kthread_worker {
 	unsigned int		flags;
 	raw_spinlock_t		lock;

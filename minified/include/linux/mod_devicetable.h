@@ -11,8 +11,6 @@ typedef unsigned long kernel_ulong_t;
 /* PCI */
 #define PCI_ANY_ID (~0)
 
-enum { PCI_ID_F_VFIO_DRIVER_OVERRIDE = 1, };
-
 struct pci_device_id {
 	__u32 vendor, device;
 	__u32 subvendor, subdevice;

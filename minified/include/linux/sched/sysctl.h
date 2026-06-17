@@ -5,8 +5,6 @@
 
 struct ctl_table;
 
-enum { sysctl_hung_task_timeout_secs = 0 };
-
 enum sched_tunable_scaling {
 	SCHED_TUNABLESCALING_NONE,
 	SCHED_TUNABLESCALING_LOG,

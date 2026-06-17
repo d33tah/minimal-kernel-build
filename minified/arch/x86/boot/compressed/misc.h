@@ -58,8 +58,6 @@ static inline void debug_puthex(unsigned long value)
 
 
  
-int cmdline_find_option(const char *option, char *buffer, int bufsize);
-int cmdline_find_option_bool(const char *option);
 
 static inline void choose_random_location(unsigned long input,
 					  unsigned long input_size,

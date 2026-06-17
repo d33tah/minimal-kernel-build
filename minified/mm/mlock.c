@@ -1,11 +1,6 @@
 /* Minimal includes for mlock stubs */
 #include <linux/mm.h>
 
-bool can_do_mlock(void)
-{
-	return false;
-}
-
 void mlock_page_drain_local(void)
 {
 	 

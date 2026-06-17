@@ -232,9 +232,6 @@ char *strchr(const char *s, int c);
  
 void puts(const char *);
 void putchar(int);
-int getchar(void);
-void kbd_flush(void);
-int getchar_timeout(void);
 
  
 void set_video(void);

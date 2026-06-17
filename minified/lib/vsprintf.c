@@ -1028,8 +1028,3 @@ int sprintf(char *buf, const char *fmt, ...)
 
 	return i;
 }
-
-int sscanf(const char *buf, const char *fmt, ...)
-{
-	return 0;  
-}

@@ -604,30 +604,3 @@ void do_timer(unsigned long ticks)
 	jiffies_64 += ticks;
 }
 
-ktime_t ktime_get_update_offsets_now(unsigned int *cwsseq, ktime_t *offs_real,
-				     ktime_t *offs_boot, ktime_t *offs_tai)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	unsigned int seq;
-	ktime_t base;
-	u64 nsecs;
-
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-
-		base = tk->tkr_mono.base;
-		nsecs = timekeeping_get_ns(&tk->tkr_mono);
-		base = ktime_add_ns(base, nsecs);
-
-		if (*cwsseq != tk->clock_was_set_seq) {
-			*cwsseq = tk->clock_was_set_seq;
-			*offs_real = tk->offs_real;
-			*offs_boot = tk->offs_boot;
-			*offs_tai = tk->offs_tai;
-		}
-
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
-	return base;
-}
-

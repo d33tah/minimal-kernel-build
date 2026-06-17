@@ -184,18 +184,5 @@ static inline int wrmsr_safe(unsigned int msr, u32 low, u32 high)
 	__err;							\
 })
 
-static inline int rdmsrl_safe(unsigned int msr, unsigned long long *p)
-{
-	int err;
-
-	*p = native_read_msr_safe(msr, &err);
-	return err;
-}
-
-static inline int wrmsrl_safe(u32 msr, u64 val)
-{
-	return wrmsr_safe(msr, (u32)val,  (u32)(val >> 32));
-}
-
 #endif
 #endif

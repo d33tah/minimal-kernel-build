@@ -335,29 +335,6 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
 
 #define canon_pgprot(p) __pgprot(massage_pgprot(p))
 
-static inline int is_new_memtype_allowed(u64 paddr, unsigned long size,
-					 enum page_cache_mode pcm,
-					 enum page_cache_mode new_pcm)
-{
-	 
-	if (x86_platform.is_untracked_pat_range(paddr, paddr + size))
-		return 1;
-
-	 
-	if ((pcm == _PAGE_CACHE_MODE_UC_MINUS &&
-	     new_pcm == _PAGE_CACHE_MODE_WB) ||
-	    (pcm == _PAGE_CACHE_MODE_WC &&
-	     new_pcm == _PAGE_CACHE_MODE_WB) ||
-	    (pcm == _PAGE_CACHE_MODE_WT &&
-	     new_pcm == _PAGE_CACHE_MODE_WB) ||
-	    (pcm == _PAGE_CACHE_MODE_WT &&
-	     new_pcm == _PAGE_CACHE_MODE_WC)) {
-		return 0;
-	}
-
-	return 1;
-}
-
 pmd_t *populate_extra_pmd(unsigned long vaddr);
 pte_t *populate_extra_pte(unsigned long vaddr);
 
@@ -432,11 +409,6 @@ static inline unsigned long pmd_page_vaddr(pmd_t pmd)
 static inline int pmd_bad(pmd_t pmd)
 {
 	return (pmd_flags(pmd) & ~_PAGE_USER) != _KERNPG_TABLE;
-}
-
-static inline unsigned long pages_to_mb(unsigned long npg)
-{
-	return npg >> (20 - PAGE_SHIFT);
 }
 
 /*

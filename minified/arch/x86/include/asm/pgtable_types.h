@@ -359,9 +359,6 @@ static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
 #define pud_pgtable(pud)			((pmd_t *)(pmd_page_vaddr((pmd_t){ pud })))
 
 #define pmd_alloc_one(mm, address)		NULL
-static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
-{
-}
 #define pmd_free_tlb(tlb, x, a)		do { } while (0)
 
 #undef  pmd_addr_end

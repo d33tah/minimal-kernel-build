@@ -79,12 +79,6 @@ static inline u64 flip_protnone_guard(u64 oldval, u64 val, u64 mask)
 {
 	return val;
 }
-static inline bool __pte_needs_invert(u64 val)
-{
-	return false;
-}
-
- 
 #define kpte_clear_flush(ptep, vaddr)		\
 do {						\
 	pte_clear(&init_mm, (vaddr), (ptep));	\

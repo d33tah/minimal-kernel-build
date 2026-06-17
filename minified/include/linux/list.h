@@ -60,15 +60,6 @@ static inline void list_del(struct list_head *entry)
 	entry->prev = LIST_POISON2;
 }
 
-static inline void list_replace(struct list_head *old,
-				struct list_head *new)
-{
-	new->next = old->next;
-	new->next->prev = new;
-	new->prev = old->prev;
-	new->prev->next = new;
-}
-
 static inline void list_del_init(struct list_head *entry)
 {
 	__list_del_entry(entry);

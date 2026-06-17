@@ -47,16 +47,6 @@ bool get_stack_guard_info(unsigned long *stack, struct stack_info *info)
 
 const char *stack_type_name(enum stack_type type);
 
-static inline bool on_stack(struct stack_info *info, void *addr, size_t len)
-{
-	void *begin = info->begin;
-	void *end   = info->end;
-
-	return (info->type != STACK_TYPE_UNKNOWN &&
-		addr >= begin && addr < end &&
-		addr + len > begin && addr + len <= end);
-}
-
 #define STACKSLOTS_PER_LINE 8
 
 

@@ -30,12 +30,6 @@ asmlinkage long sys_ni_syscall(void)
 COND_SYSCALL(capget);
 COND_SYSCALL(capset);
 
-COND_SYSCALL(msync);
-COND_SYSCALL(mincore);
-COND_SYSCALL(madvise);
-COND_SYSCALL(process_madvise);
-COND_SYSCALL(process_mrelease);
-
 COND_SYSCALL(time32);
 COND_SYSCALL(stime32);
 COND_SYSCALL(utime32);

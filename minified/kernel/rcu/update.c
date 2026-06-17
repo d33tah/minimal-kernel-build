@@ -109,6 +109,5 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 
 
 
-int rcu_cpu_stall_suppress_at_boot __read_mostly;
 
 

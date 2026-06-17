@@ -307,11 +307,6 @@ struct zone {
 	atomic_long_t		vm_numa_event[NR_VM_NUMA_EVENT_ITEMS];
 } ____cacheline_internodealigned_in_smp;
 
-enum zone_flags {
-	ZONE_BOOSTED_WATERMARK,		 
-	ZONE_RECLAIM_ACTIVE,		 
-};
-
 static inline unsigned long zone_managed_pages(struct zone *zone)
 {
 	return (unsigned long)atomic_long_read(&zone->managed_pages);

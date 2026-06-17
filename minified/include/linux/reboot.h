@@ -26,15 +26,6 @@ struct sys_off_handler;
 #define SYS_HALT	0x0002	 
 #define SYS_POWER_OFF	0x0003	 
 
-enum reboot_mode {
-	REBOOT_UNDEFINED = -1,
-	REBOOT_COLD = 0,
-	REBOOT_WARM,
-	REBOOT_HARD,
-	REBOOT_SOFT,
-	REBOOT_GPIO,
-};
-
 enum reboot_type {
 	BOOT_TRIPLE	= 't',
 	BOOT_KBD	= 'k',

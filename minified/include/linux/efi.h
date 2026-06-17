@@ -26,13 +26,6 @@ typedef struct {
 #define EFI_BOOT		0
 #define EFI_RUNTIME_SERVICES	3
 
-enum efi_secureboot_mode {
-	efi_secureboot_mode_unset,
-	efi_secureboot_mode_unknown,
-	efi_secureboot_mode_disabled,
-	efi_secureboot_mode_enabled,
-};
-
 typedef struct {
 	u32 get_time;
 	u32 set_time;

@@ -1246,8 +1246,6 @@ extern int nonseekable_open(struct inode * inode, struct file * filp);
 
 #define special_file(m) (S_ISCHR(m)||S_ISBLK(m)||S_ISFIFO(m)||S_ISSOCK(m))
 
-void generic_fillattr(struct user_namespace *, struct inode *, struct kstat *);
-
 extern struct file_system_type *get_filesystem(struct file_system_type *fs);
 extern void put_filesystem(struct file_system_type *fs);
 /* Removed: get_super, get_active_super, drop_super, drop_super_exclusive,

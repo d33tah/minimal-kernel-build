@@ -22,7 +22,6 @@ int simple_getattr(struct user_namespace *mnt_userns, const struct path *path,
 		   unsigned int query_flags)
 {
 	struct inode *inode = d_inode(path->dentry);
-	generic_fillattr(&init_user_ns, inode, stat);
 	stat->blocks = inode->i_mapping->nrpages << (PAGE_SHIFT - 9);
 	return 0;
 }

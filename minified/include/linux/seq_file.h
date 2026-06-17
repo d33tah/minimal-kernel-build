@@ -38,9 +38,6 @@ struct seq_operations {
 #define SEQ_SKIP 1
 
 
-__printf(2, 3)
-void seq_printf(struct seq_file *m, const char *fmt, ...);
-
 
 
 #define SEQ_START_TOKEN ((void *)1)

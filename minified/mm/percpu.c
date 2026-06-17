@@ -125,15 +125,15 @@ int pcpu_nr_empty_pop_pages;
 
 static unsigned long pcpu_nr_populated;
 
-static void pcpu_balance_workfn(struct work_struct *work);
-static DECLARE_WORK(pcpu_balance_work, pcpu_balance_workfn);
-static bool pcpu_async_enabled __read_mostly;
 static bool pcpu_atomic_alloc_failed;
 
 static void pcpu_schedule_balance_work(void)
 {
-	if (pcpu_async_enabled)
-		schedule_work(&pcpu_balance_work);
+	/*
+	 * The percpu chunk rebalance (free/populate) only ran from a deferred
+	 * workqueue item that never executes before init's write(2)+exit, so
+	 * arming it is a no-op in this minimal kernel.
+	 */
 }
 
 static bool pcpu_addr_in_chunk(struct pcpu_chunk *chunk, void *addr)
@@ -1047,26 +1047,9 @@ static void pcpu_chunk_populated(struct pcpu_chunk *chunk, int page_start,
 	pcpu_update_empty_pages(chunk, nr);
 }
 
-static void pcpu_chunk_depopulated(struct pcpu_chunk *chunk,
-				   int page_start, int page_end)
-{
-	int nr = page_end - page_start;
-
-	lockdep_assert_held(&pcpu_lock);
-
-	bitmap_clear(chunk->populated, page_start, nr);
-	chunk->nr_populated -= nr;
-	pcpu_nr_populated -= nr;
-
-	pcpu_update_empty_pages(chunk, -nr);
-}
-
 static int pcpu_populate_chunk(struct pcpu_chunk *chunk,
 			       int page_start, int page_end, gfp_t gfp);
-static void pcpu_depopulate_chunk(struct pcpu_chunk *chunk,
-				  int page_start, int page_end);
 static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp);
-static void pcpu_destroy_chunk(struct pcpu_chunk *chunk);
 static struct page *pcpu_addr_to_page(void *addr);
 static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai);
 
@@ -1259,128 +1242,6 @@ fail:
 void __percpu *__alloc_percpu(size_t size, size_t align)
 {
 	return pcpu_alloc(size, align, false, GFP_KERNEL);
-}
-
-static void pcpu_balance_free(bool empty_only)
-{
-	LIST_HEAD(to_free);
-	struct list_head *free_head = &pcpu_chunk_lists[pcpu_free_slot];
-	struct pcpu_chunk *chunk, *next;
-
-	lockdep_assert_held(&pcpu_lock);
-
-	
-	list_for_each_entry_safe(chunk, next, free_head, list) {
-		WARN_ON(chunk->immutable);
-
-		
-		if (chunk == list_first_entry(free_head, struct pcpu_chunk, list))
-			continue;
-
-		if (!empty_only || chunk->nr_empty_pop_pages == 0)
-			list_move(&chunk->list, &to_free);
-	}
-
-	if (list_empty(&to_free))
-		return;
-
-	spin_unlock_irq(&pcpu_lock);
-	list_for_each_entry_safe(chunk, next, &to_free, list) {
-		unsigned int rs, re;
-
-		for_each_set_bitrange(rs, re, chunk->populated, chunk->nr_pages) {
-			pcpu_depopulate_chunk(chunk, rs, re);
-			spin_lock_irq(&pcpu_lock);
-			pcpu_chunk_depopulated(chunk, rs, re);
-			spin_unlock_irq(&pcpu_lock);
-		}
-		pcpu_destroy_chunk(chunk);
-		cond_resched();
-	}
-	spin_lock_irq(&pcpu_lock);
-}
-
-static void pcpu_balance_populated(void)
-{
-	
-	const gfp_t gfp = GFP_KERNEL | __GFP_NORETRY | __GFP_NOWARN;
-	struct pcpu_chunk *chunk;
-	int slot, nr_to_pop, ret;
-
-	lockdep_assert_held(&pcpu_lock);
-
-	
-retry_pop:
-	if (pcpu_atomic_alloc_failed) {
-		nr_to_pop = PCPU_EMPTY_POP_PAGES_HIGH;
-		
-		pcpu_atomic_alloc_failed = false;
-	} else {
-		nr_to_pop = clamp(PCPU_EMPTY_POP_PAGES_HIGH -
-				  pcpu_nr_empty_pop_pages,
-				  0, PCPU_EMPTY_POP_PAGES_HIGH);
-	}
-
-	for (slot = pcpu_size_to_slot(PAGE_SIZE); slot <= pcpu_free_slot; slot++) {
-		unsigned int nr_unpop = 0, rs, re;
-
-		if (!nr_to_pop)
-			break;
-
-		list_for_each_entry(chunk, &pcpu_chunk_lists[slot], list) {
-			nr_unpop = chunk->nr_pages - chunk->nr_populated;
-			if (nr_unpop)
-				break;
-		}
-
-		if (!nr_unpop)
-			continue;
-
-		
-		for_each_clear_bitrange(rs, re, chunk->populated, chunk->nr_pages) {
-			int nr = min_t(int, re - rs, nr_to_pop);
-
-			spin_unlock_irq(&pcpu_lock);
-			ret = pcpu_populate_chunk(chunk, rs, rs + nr, gfp);
-			cond_resched();
-			spin_lock_irq(&pcpu_lock);
-			if (!ret) {
-				nr_to_pop -= nr;
-				pcpu_chunk_populated(chunk, rs, rs + nr);
-			} else {
-				nr_to_pop = 0;
-			}
-
-			if (!nr_to_pop)
-				break;
-		}
-	}
-
-	if (nr_to_pop) {
-		
-		spin_unlock_irq(&pcpu_lock);
-		chunk = pcpu_create_chunk(gfp);
-		cond_resched();
-		spin_lock_irq(&pcpu_lock);
-		if (chunk) {
-			pcpu_chunk_relocate(chunk, -1);
-			goto retry_pop;
-		}
-	}
-}
-
-static void pcpu_balance_workfn(struct work_struct *work)
-{
-
-	mutex_lock(&pcpu_alloc_mutex);
-	spin_lock_irq(&pcpu_lock);
-
-	pcpu_balance_free(false);
-	pcpu_balance_populated();
-	pcpu_balance_free(true);
-
-	spin_unlock_irq(&pcpu_lock);
-	mutex_unlock(&pcpu_alloc_mutex);
 }
 
 void free_percpu(void __percpu *ptr)
@@ -1643,10 +1504,3 @@ void __init setup_per_cpu_areas(void)
 	pcpu_setup_first_chunk(ai, fc);
 	pcpu_free_alloc_info(ai);
 }
-
-static int __init percpu_enable_async(void)
-{
-	pcpu_async_enabled = true;
-	return 0;
-}
-subsys_initcall(percpu_enable_async);

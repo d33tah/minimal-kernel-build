@@ -8,12 +8,6 @@ static int pcpu_populate_chunk(struct pcpu_chunk *chunk,
 	return 0;
 }
 
-static void pcpu_depopulate_chunk(struct pcpu_chunk *chunk,
-				  int page_start, int page_end)
-{
-	 
-}
-
 static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
 {
 	const int nr_pages = pcpu_group_sizes[0] >> PAGE_SHIFT;
@@ -43,18 +37,6 @@ static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 
 	return chunk;
-}
-
-static void pcpu_destroy_chunk(struct pcpu_chunk *chunk)
-{
-	const int nr_pages = pcpu_group_sizes[0] >> PAGE_SHIFT;
-
-	if (!chunk)
-		return;
-
-	if (chunk->data)
-		__free_pages(chunk->data, order_base_2(nr_pages));
-	pcpu_free_chunk(chunk);
 }
 
 static struct page *pcpu_addr_to_page(void *addr)

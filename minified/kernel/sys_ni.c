@@ -30,19 +30,7 @@ asmlinkage long sys_ni_syscall(void)
 COND_SYSCALL(capget);
 COND_SYSCALL(capset);
 
-COND_SYSCALL(time32);
-COND_SYSCALL(stime32);
-COND_SYSCALL(utime32);
-COND_SYSCALL(adjtimex_time32);
-COND_SYSCALL(nanosleep_time32);
 COND_SYSCALL(clock_gettime32);
 COND_SYSCALL(clock_getres_time32);
-COND_SYSCALL(utimes_time32);
-COND_SYSCALL(futimesat_time32);
-COND_SYSCALL(pselect6_time32);
-COND_SYSCALL_COMPAT(pselect6_time32);
-COND_SYSCALL(ppoll_time32);
-COND_SYSCALL_COMPAT(ppoll_time32);
-COND_SYSCALL(utimensat_time32);
 
 COND_SYSCALL(rseq);

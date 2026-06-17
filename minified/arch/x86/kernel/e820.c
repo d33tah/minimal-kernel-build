@@ -556,8 +556,6 @@ static bool __init do_mark_busy(enum e820_type type, struct resource *res)
 }
 
 
-static struct resource __initdata *e820_res;
-
 void __init e820__reserve_resources(void)
 {
 	int i;
@@ -569,7 +567,6 @@ void __init e820__reserve_resources(void)
 	if (!res)
 		panic("%s: Failed to allocate %zu bytes\n", __func__,
 		      sizeof(*res) * e820_table->nr_entries);
-	e820_res = res;
 
 	for (i = 0; i < e820_table->nr_entries; i++) {
 		struct e820_entry *entry = e820_table->entries + i;

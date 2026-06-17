@@ -374,8 +374,6 @@ read_persistent_wall_and_boot_offset(struct timespec64 *wall_time,
 	*boot_offset = ns_to_timespec64(local_clock());
 }
 
-static bool persistent_clock_exists;
-
 void __init timekeeping_init(void)
 {
 	struct timespec64 wall_time, boot_offset, wall_to_mono;
@@ -384,10 +382,9 @@ void __init timekeeping_init(void)
 	unsigned long flags;
 
 	read_persistent_wall_and_boot_offset(&wall_time, &boot_offset);
-	if (timespec64_valid_settod(&wall_time) &&
-	    timespec64_to_ns(&wall_time) > 0) {
-		persistent_clock_exists = true;
-	} else if (timespec64_to_ns(&wall_time) != 0) {
+	if (!(timespec64_valid_settod(&wall_time) &&
+	      timespec64_to_ns(&wall_time) > 0) &&
+	    timespec64_to_ns(&wall_time) != 0) {
 		pr_warn("Persistent clock returned invalid value");
 		wall_time = (struct timespec64){0};
 	}

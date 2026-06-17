@@ -166,9 +166,7 @@ void lru_cache_add_inactive_or_unevictable(struct page *page,
 {
 	VM_BUG_ON_PAGE(PageLRU(page), page);
 
-	if (unlikely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) == VM_LOCKED))
-		mlock_new_page(page);
-	else
+	if (!unlikely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) == VM_LOCKED))
 		lru_cache_add(page);
 }
 
@@ -185,7 +183,6 @@ void lru_add_drain(void)
 	local_lock(&lru_pvecs.lock);
 	lru_add_drain_cpu(smp_processor_id());
 	local_unlock(&lru_pvecs.lock);
-	mlock_page_drain_local();
 }
 
 atomic_t lru_disable_count = ATOMIC_INIT(0);

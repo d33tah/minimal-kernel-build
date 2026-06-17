@@ -156,14 +156,9 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 void unmap_mapping_folio(struct folio *folio);
 /* populate_vma_page_range / faultin_vma_page_range removed - unused */
 
-void mlock_folio(struct folio *folio);
 static inline void mlock_vma_folio(struct folio *folio,
 			struct vm_area_struct *vma, bool compound)
 {
-	 
-	if (unlikely((vma->vm_flags & (VM_LOCKED|VM_SPECIAL)) == VM_LOCKED) &&
-	    (compound || !folio_test_large(folio)))
-		mlock_folio(folio);
 }
 
 static inline void mlock_vma_page(struct page *page,
@@ -171,9 +166,6 @@ static inline void mlock_vma_page(struct page *page,
 {
 	mlock_vma_folio(page_folio(page), vma, compound);
 }
-
-void mlock_new_page(struct page *page);
-void mlock_page_drain_local(void);
 
 /* maybe_pmd_mkwrite removed - unused */
 

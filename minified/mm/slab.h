@@ -402,7 +402,4 @@ static inline bool slab_want_init_on_free(struct kmem_cache *c)
 }
 
 
-void __check_heap_object(const void *ptr, unsigned long n,
-			 const struct slab *slab, bool to_user);
-
-#endif  
+#endif

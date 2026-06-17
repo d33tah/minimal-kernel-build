@@ -20,7 +20,4 @@ enum sched_tunable_scaling {
 
 #define sysctl_numa_balancing_mode	0
 
-int sysctl_numa_balancing(struct ctl_table *table, int write, void *buffer,
-		size_t *lenp, loff_t *ppos);
-
-#endif  
+#endif

@@ -43,10 +43,7 @@ static inline u64 cc_mkdec(u64 val)
 
 extern pgd_t early_top_pgt[PTRS_PER_PGD];
 
-void ptdump_walk_pgd_level_debugfs(struct seq_file *m, struct mm_struct *mm,
-				   bool user);
 
- 
 #define pgprot_encrypted(prot)	__pgprot(cc_mkenc(pgprot_val(prot)))
 #define pgprot_decrypted(prot)	__pgprot(cc_mkdec(pgprot_val(prot)))
 

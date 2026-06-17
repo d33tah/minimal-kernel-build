@@ -52,14 +52,6 @@ int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 	struct inode *inode = d_inode(dentry);
 	unsigned int ia_valid = attr->ia_valid;
 
-	 
-	if (ia_valid & ATTR_SIZE) {
-		int error = inode_newsize_ok(inode, attr->ia_size);
-		if (error)
-			return error;
-	}
-
-	 
 	if (ia_valid & ATTR_FORCE)
 		goto kill_priv;
 
@@ -101,9 +93,6 @@ kill_priv:
 
 	return 0;
 }
-
-/* inode_newsize_ok used internally by setattr_prepare */
-int inode_newsize_ok(const struct inode *inode, loff_t offset) { return 0; }
 
 void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 		  const struct iattr *attr)

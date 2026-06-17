@@ -125,16 +125,6 @@ static inline int task_has_idle_policy(struct task_struct *p)
 	return idle_policy(p->policy);
 }
 
-static inline int task_has_rt_policy(struct task_struct *p)
-{
-	return rt_policy(p->policy);
-}
-
-static inline int task_has_dl_policy(struct task_struct *p)
-{
-	return dl_policy(p->policy);
-}
-
 #define cap_scale(v, s) ((v)*(s) >> SCHED_CAPACITY_SHIFT)
 
 #define shr_bound(val, shift)							\
@@ -447,11 +437,6 @@ static const_debug __maybe_unused unsigned int sysctl_sched_features =
 #define sched_feat(x) !!(sysctl_sched_features & (1UL << __SCHED_FEAT_##x))
 
 
-
-static inline int task_current(struct rq *rq, struct task_struct *p)
-{
-	return rq->curr == p;
-}
 
 static inline int task_on_rq_queued(struct task_struct *p)
 {

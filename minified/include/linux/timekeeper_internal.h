@@ -47,7 +47,4 @@ struct timekeeper {
 	u32			skip_second_overflow;
 };
 
-
-extern void update_vsyscall(struct timekeeper *tk);
-
-#endif  
+#endif

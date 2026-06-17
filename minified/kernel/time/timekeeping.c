@@ -205,8 +205,6 @@ static void timekeeping_update(struct timekeeper *tk, unsigned int action)
 
 	tk_update_ktime_data(tk);
 
-	update_vsyscall(tk);
-
 	tk->tkr_mono.base_real = tk->tkr_mono.base + tk->offs_real;
 
 	if (action & TK_CLOCK_WAS_SET)

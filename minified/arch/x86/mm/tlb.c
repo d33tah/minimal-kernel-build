@@ -90,10 +90,6 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 	 
 
 	 
-	if (IS_ENABLED(CONFIG_PROVE_LOCKING))
-		WARN_ON_ONCE(!irqs_disabled());
-
-	 
 	if (was_lazy)
 		this_cpu_write(cpu_tlbstate_shared.is_lazy, false);
 

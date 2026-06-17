@@ -16,8 +16,6 @@
 #include <asm/tlb.h>
 #include <asm/proto.h>
 #include <asm/microcode.h>
-unsigned long kaslr_get_random_long(const char *purpose);
-/* end kaslr.h */
 #include <asm/hypervisor.h>
 #include <asm/cpufeature.h>
 #include <asm/text-patching.h>
@@ -428,9 +426,6 @@ void __init poking_init(void)
 
 	 
 	poking_addr = TASK_UNMAPPED_BASE;
-	if (IS_ENABLED(CONFIG_RANDOMIZE_BASE))
-		poking_addr += (kaslr_get_random_long("Poking") & PAGE_MASK) %
-			(TASK_SIZE - TASK_UNMAPPED_BASE - 3 * PAGE_SIZE);
 
 	if (((poking_addr + PAGE_SIZE) & ~PMD_MASK) == 0)
 		poking_addr += PAGE_SIZE;

@@ -520,13 +520,6 @@ DEFINE_IDTENTRY(exc_coprocessor_error)
 
 DEFINE_IDTENTRY(exc_simd_coprocessor_error)
 {
-	if (IS_ENABLED(CONFIG_X86_INVD_BUG)) {
-		 
-		if (!static_cpu_has(X86_FEATURE_XMM)) {
-			__exc_general_protection(regs, 0);
-			return;
-		}
-	}
 	math_error(regs, X86_TRAP_XF);
 }
 

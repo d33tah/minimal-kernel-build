@@ -460,11 +460,8 @@ static int exec_mmap(struct mm_struct *mm)
 	tsk->active_mm = mm;
 	tsk->mm = mm;
 	
-	if (!IS_ENABLED(CONFIG_ARCH_WANT_IRQS_OFF_ACTIVATE_MM))
-		local_irq_enable();
+	local_irq_enable();
 	activate_mm(active_mm, mm);
-	if (IS_ENABLED(CONFIG_ARCH_WANT_IRQS_OFF_ACTIVATE_MM))
-		local_irq_enable();
 	task_unlock(tsk);
 	if (old_mm) {
 		mmap_read_unlock(old_mm);

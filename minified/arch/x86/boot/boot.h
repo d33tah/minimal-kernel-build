@@ -122,10 +122,7 @@ void *copy_from_fs(void *dst, addr_t src, size_t len);
  
 int enable_a20(void);
 
- 
-int query_apm_bios(void);
 
- 
 struct biosregs {
 	union {
 		struct {

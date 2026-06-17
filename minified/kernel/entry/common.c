@@ -173,12 +173,6 @@ static void syscall_exit_work(struct pt_regs *regs, unsigned long work)
 static void syscall_exit_to_user_mode_prepare(struct pt_regs *regs)
 {
 	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
-	unsigned long nr = syscall_get_nr(current, regs);
-
-	if (IS_ENABLED(CONFIG_PROVE_LOCKING)) {
-		if (WARN(irqs_disabled(), "syscall %lu left IRQs disabled", nr))
-			local_irq_enable();
-	}
 
 	if (unlikely(work & SYSCALL_WORK_EXIT))
 		syscall_exit_work(regs, work);
@@ -232,18 +226,6 @@ noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 	return ret;
 }
 
-void raw_irqentry_exit_cond_resched(void)
-{
-	if (!preempt_count()) {
-		 
-		rcu_irq_exit_check_preempt();
-		if (IS_ENABLED(CONFIG_DEBUG_ENTRY))
-			WARN_ON_ONCE(!on_thread_stack());
-		if (need_resched())
-			preempt_schedule_irq();
-	}
-}
-
 noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 {
 	lockdep_assert_irqs_disabled();
@@ -252,8 +234,6 @@ noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 	if (user_mode(regs)) {
 		irqentry_exit_to_user_mode(regs);
 	} else if (!regs_irqs_disabled(regs)) {
-		if (IS_ENABLED(CONFIG_PREEMPTION))
-			irqentry_exit_cond_resched();
 	}
 }
 

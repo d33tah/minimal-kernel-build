@@ -333,11 +333,6 @@ static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
 static __always_inline
 bool ttwu_state_match(struct task_struct *p, unsigned int state, int *success)
 {
-	if (IS_ENABLED(CONFIG_DEBUG_PREEMPT)) {
-		WARN_ON_ONCE((state & TASK_RTLOCK_WAIT) &&
-			     state != TASK_RTLOCK_WAIT);
-	}
-
 	if (READ_ONCE(p->__state) & state) {
 		*success = 1;
 		return true;

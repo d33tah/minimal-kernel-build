@@ -25,9 +25,6 @@
 
 static __always_inline int syscall_32_enter(struct pt_regs *regs)
 {
-	if (IS_ENABLED(CONFIG_IA32_EMULATION))
-		current_thread_info()->status |= TS_COMPAT;
-
 	return (int)regs->orig_ax;
 }
 

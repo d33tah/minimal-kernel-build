@@ -7,19 +7,9 @@ struct cma;
 
 struct dma_map_ops;
 
-#if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
-	defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
-	defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
-extern bool dma_default_coherent;
-static inline bool dev_is_dma_coherent(struct device *dev)
-{
-	return dev->dma_coherent;
-}
-#else
 static inline bool dev_is_dma_coherent(struct device *dev)
 {
 	return true;
 }
-#endif
 
 #endif

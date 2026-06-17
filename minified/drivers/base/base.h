@@ -53,7 +53,6 @@ extern void bus_remove_device(struct device *dev);
 
 extern void driver_deferred_probe_del(struct device *dev);
 /* Removed: driver_match_device - 0 callers (driver-side bind machinery is gone). */
-extern int devres_release_all(struct device *dev);
 
 
 extern struct kset *devices_kset;

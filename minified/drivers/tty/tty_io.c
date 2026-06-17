@@ -546,14 +546,6 @@ static void tty_save_termios(struct tty_struct *tty)
 	*tp = tty->termios;
 }
 
-static void tty_flush_works(struct tty_struct *tty)
-{
-	flush_work(&tty->hangup_work);
-	if (tty->link) {
-		flush_work(&tty->link->hangup_work);
-	}
-}
-
 static void release_one_tty(struct work_struct *work)
 {
 	struct tty_struct *tty =
@@ -653,9 +645,6 @@ static void tty_release_struct(struct tty_struct *tty, int idx)
 {
 	
 	tty_ldisc_release(tty);
-
-	
-	tty_flush_works(tty);
 
 	tty_debug_hangup(tty, "freeing structure\n");
 	

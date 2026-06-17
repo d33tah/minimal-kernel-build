@@ -30,12 +30,6 @@ bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 }
 
 
-bool flush_work(struct work_struct *work)
-{
-     
-    return false;
-}
-
 bool cancel_work_sync(struct work_struct *work)
 {
      

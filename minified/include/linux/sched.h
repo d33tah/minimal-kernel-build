@@ -9,16 +9,11 @@
 #define CLONE_FILES	0x00000400
 #define CLONE_SIGHAND	0x00000800
 #define CLONE_PIDFD	0x00001000
-#define CLONE_PTRACE	0x00002000
 #define CLONE_VFORK	0x00004000
 #define CLONE_PARENT	0x00008000
 #define CLONE_THREAD	0x00010000
 #define CLONE_NEWNS	0x00020000
-#define CLONE_SYSVSEM	0x00040000
-#define CLONE_SETTLS	0x00080000
 #define CLONE_PARENT_SETTID	0x00100000
-#define CLONE_CHILD_CLEARTID	0x00200000
-#define CLONE_DETACHED		0x00400000
 #define CLONE_UNTRACED		0x00800000
 #define CLONE_CHILD_SETTID	0x01000000
 #define CLONE_NEWCGROUP		0x02000000
@@ -52,7 +47,6 @@ struct clone_args {
 #define SCHED_DEADLINE		6
 #define SCHED_RESET_ON_FORK     0x40000000
 #define SCHED_FLAG_RESET_ON_FORK	0x01
-#define SCHED_FLAG_KEEP_PARAMS		0x10
 /* End uapi/linux/sched.h */
 
 #include <asm/current.h>
@@ -71,7 +65,6 @@ struct clone_args {
 #define MAX_RT_PRIO		100
 #define MAX_PRIO		(MAX_RT_PRIO + NICE_WIDTH)
 #define DEFAULT_PRIO		(MAX_RT_PRIO + NICE_WIDTH / 2)
-#define NICE_TO_PRIO(nice)	((nice) + DEFAULT_PRIO)
 #define PRIO_TO_NICE(prio)	((prio) - DEFAULT_PRIO)
 /* end sched/prio.h */
 #include <linux/sched/types.h>
@@ -113,10 +106,7 @@ struct task_group;
 #define TASK_PARKED			0x0040
 #define TASK_DEAD			0x0080
 #define TASK_WAKEKILL			0x0100
-#define TASK_WAKING			0x0200
-#define TASK_NOLOAD			0x0400
 #define TASK_NEW			0x0800
-#define TASK_RTLOCK_WAIT		0x1000
 
 #define TASK_KILLABLE			(TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)
 
@@ -551,17 +541,14 @@ static inline int is_global_init(struct task_struct *tsk)
 }
 
 
-#define PF_VCPU			0x00000001
 #define PF_IDLE			0x00000002
 #define PF_EXITING		0x00000004
-#define PF_IO_WORKER		0x00000010
 #define PF_WQ_WORKER		0x00000020
 #define PF_FORKNOEXEC		0x00000040
 #define PF_SUPERPRIV		0x00000100
 #define PF_MEMALLOC		0x00000800
 #define PF_NPROC_EXCEEDED	0x00001000
 #define PF_NOFREEZE		0x00008000
-#define PF_FROZEN		0x00010000
 #define PF_MEMALLOC_NOFS	0x00040000
 #define PF_MEMALLOC_NOIO	0x00080000
 #define PF_KTHREAD		0x00200000

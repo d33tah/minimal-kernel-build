@@ -44,7 +44,6 @@ typedef u32	errseq_t;
 errseq_t errseq_sample(errseq_t *eseq);
 #include <linux/build_bug.h>
 
-#define DT_DIR		4
 #include <linux/stddef.h>
 #include <linux/mount.h>
 #include <linux/cred.h>
@@ -59,11 +58,8 @@ errseq_t errseq_sample(errseq_t *eseq);
 #define INR_OPEN_MAX 4096
 #define NR_FILE  8192
 #define SEEK_SET	0
-#define SEEK_CUR	1
 #define SEEK_END	2
-#define SEEK_DATA	3
 #define SEEK_HOLE	4
-#define SEEK_MAX	SEEK_HOLE
 #define RENAME_NOREPLACE	(1 << 0)
 #define RENAME_EXCHANGE		(1 << 1)
 struct files_stat_struct {
@@ -116,9 +112,7 @@ typedef int (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
 #define MAY_WRITE		0x00000002
 #define MAY_READ		0x00000004
 #define MAY_APPEND		0x00000008
-#define MAY_ACCESS		0x00000010
 #define MAY_OPEN		0x00000020
-#define MAY_CHDIR		0x00000040
 
 #define MAY_NOT_BLOCK		0x00000080
 
@@ -153,8 +147,6 @@ typedef int (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
 #define	FMODE_CAN_ODIRECT	((__force fmode_t)0x400000)
 
 #define FMODE_NONOTIFY		((__force fmode_t)0x4000000)
-
-#define FMODE_NOWAIT		((__force fmode_t)0x8000000)
 
 #define FMODE_NOACCOUNT		((__force fmode_t)0x20000000)
 
@@ -262,8 +254,6 @@ struct address_space {
 } __attribute__((aligned(sizeof(long)))) __randomize_layout;
 	
 
-#define PAGECACHE_TAG_DIRTY	XA_MARK_0
-#define PAGECACHE_TAG_WRITEBACK	XA_MARK_1
 
 
 static inline void i_mmap_lock_write(struct address_space *mapping)
@@ -573,30 +563,16 @@ struct fasync_struct {
 #define SB_DIRSYNC	128
 #define SB_NOATIME	1024
 #define SB_NODIRATIME	2048
-#define SB_SILENT	32768
 #define SB_POSIXACL	(1<<16)
 #define SB_KERNMOUNT	(1<<22)
 #define SB_I_VERSION	(1<<23)
 #define SB_LAZYTIME	(1<<25)
-#define SB_SUBMOUNT     (1<<26)
 #define SB_NOSEC	(1<<28)
 #define SB_BORN		(1<<29)
 #define SB_ACTIVE	(1<<30)
-#define SB_NOUSER	(1<<31)
-
-#define SB_ENC_STRICT_MODE_FL	(1 << 0)
-
-#define sb_has_strict_encoding(sb) \
-	(sb->s_encoding_flags & SB_ENC_STRICT_MODE_FL)
-
-#define MNT_FORCE	0x00000001
-#define MNT_DETACH	0x00000002
-#define UMOUNT_NOFOLLOW	0x00000008	
 
 #define SB_I_NOEXEC	0x00000002
 #define SB_I_NODEV	0x00000004
-#define SB_I_USERNS_VISIBLE		0x00000010
-#define SB_I_PERSB_BDI	0x00000200
 
 enum {
 	SB_FREEZE_WRITE	= 1,
@@ -928,12 +904,10 @@ struct super_operations {
 #define S_DEAD		(1 << 4)
 #define S_NOCMTIME	(1 << 7)
 #define S_SWAPFILE	(1 << 8)
-#define S_PRIVATE	(1 << 9)
 #define S_AUTOMOUNT	(1 << 11)
 #define S_NOSEC		(1 << 12)
 #define S_DAX		0
-#define S_CASEFOLD	(1 << 15)
-/* S_VERITY, S_KERNEL_FILE removed - unused */ 
+/* S_VERITY, S_KERNEL_FILE removed - unused */
 
 #define __IS_FLG(inode, flg)	((inode)->i_sb->s_flags & (flg))
 
@@ -949,7 +923,6 @@ static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags 
 #define IS_AUTOMOUNT(inode)	((inode)->i_flags & S_AUTOMOUNT)
 #define IS_NOSEC(inode)		((inode)->i_flags & S_NOSEC)
 #define IS_DAX(inode)		((inode)->i_flags & S_DAX)
-#define IS_CASEFOLDED(inode)	((inode)->i_flags & S_CASEFOLD)
 
 static inline bool HAS_UNMAPPED_ID(struct user_namespace *mnt_userns,
 				   struct inode *inode)
@@ -982,7 +955,6 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 #define I_REFERENCED		(1 << 8)
 #define I_LINKABLE		(1 << 10)
 #define I_DIRTY_TIME		(1 << 11)
-#define I_CREATING		(1 << 15)
 #define I_DONTCACHE		(1 << 16)
 
 #define I_DIRTY_INODE (I_DIRTY_SYNC | I_DIRTY_DATASYNC)
@@ -1021,9 +993,6 @@ static inline void file_accessed(struct file *file)
 struct file_system_type {
 	const char *name;
 	int fs_flags;
-#define FS_REQUIRES_DEV		1 
-#define FS_BINARY_MOUNTDATA	2
-#define FS_HAS_SUBTYPE		4
 #define FS_USERNS_MOUNT		8
 	int (*init_fs_context)(struct fs_context *);
 	const struct fs_parameter_spec *parameters;

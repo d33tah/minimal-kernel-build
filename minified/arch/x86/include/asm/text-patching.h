@@ -12,7 +12,6 @@
  
 #define POKE_MAX_OPCODE_SIZE	5
 
-extern int poke_int3_handler(struct pt_regs *regs);
 /* text_poke_early, text_poke, text_poke_bp, text_poke_sync, text_poke_kgdb,
    text_poke_copy, text_poke_set, text_poke_queue, text_poke_finish removed - unused */
 

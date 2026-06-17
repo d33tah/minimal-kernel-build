@@ -190,13 +190,9 @@ DEFINE_IDTENTRY_ERRORCODE(exc_alignment_check)
 
 	local_irq_enable();
 
-	if (handle_user_split_lock(regs, error_code))
-		goto out;
-
 	do_trap(X86_TRAP_AC, SIGBUS, "alignment check", regs,
 		error_code, BUS_ADRALN, NULL);
 
-out:
 	local_irq_disable();
 }
 
@@ -343,11 +339,7 @@ static void do_int3_user(struct pt_regs *regs)
 
 DEFINE_IDTENTRY_RAW(exc_int3)
 {
-	 
-	if (poke_int3_handler(regs))
-		return;
 
-	 
 	if (user_mode(regs)) {
 		irqentry_enter_from_user_mode(regs);
 		do_int3_user(regs);

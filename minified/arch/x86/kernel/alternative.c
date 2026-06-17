@@ -41,12 +41,6 @@ int __read_mostly alternatives_patched;
 __ro_after_init struct mm_struct *poking_mm;
 __ro_after_init unsigned long poking_addr;
 
-void __init_or_module noinline apply_alternatives(struct alt_instr *start,
-						  struct alt_instr *end)
-{
-}
-
-
 void __init alternative_instructions(void)
 {
 	alternatives_patched = 1;
@@ -55,8 +49,3 @@ void __init alternative_instructions(void)
 /* text_poke_early, text_poke, text_poke_bp, text_poke_kgdb, text_poke_copy,
    text_poke_set, text_poke_sync, text_poke_queue, text_poke_finish,
    int3_exception_notify removed - unused */
-
-int poke_int3_handler(struct pt_regs *regs)
-{
-	return 0;
-}

@@ -272,34 +272,11 @@ int __filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp, void **shadowp);
 
 
-struct readahead_control {
-	struct file *file;
-	struct address_space *mapping;
-	struct file_ra_state *ra;
-	pgoff_t _index;
-	unsigned int _nr_pages;
-	unsigned int _batch_count;
-};
-
-#define DEFINE_READAHEAD(ractl, f, r, m, i)				\
-	struct readahead_control ractl = {				\
-		.file = f,						\
-		.mapping = m,						\
-		.ra = r,						\
-		._index = i,						\
-	}
-
-#define VM_READAHEAD_PAGES	(SZ_128K / PAGE_SIZE)
-
-void page_cache_sync_ra(struct readahead_control *, unsigned long req_count);
-
 static inline
 void page_cache_sync_readahead(struct address_space *mapping,
 		struct file_ra_state *ra, struct file *file, pgoff_t index,
 		unsigned long req_count)
 {
-	DEFINE_READAHEAD(ractl, file, ra, mapping, index);
-	page_cache_sync_ra(&ractl, req_count);
 }
 
 

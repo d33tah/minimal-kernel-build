@@ -200,7 +200,6 @@ enum positive_aop_returns { AOP_TRUNCATED_PAGE = 0x80001 };
 struct page;
 struct address_space;
 struct writeback_control;
-struct readahead_control;
 
 enum rw_hint { WRITE_LIFE_NOT_SET = 0 };
 

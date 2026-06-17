@@ -33,12 +33,6 @@ struct kmem_cache *kmem_cache;
 		SLAB_TRACE | SLAB_TYPESAFE_BY_RCU | SLAB_NOLEAKTRACE | \
 		SLAB_FAILSLAB)
 
-#define SLAB_MERGE_SAME (SLAB_RECLAIM_ACCOUNT | SLAB_CACHE_DMA | \
-			 SLAB_CACHE_DMA32 | SLAB_ACCOUNT)
-
-static bool slab_nomerge = !IS_ENABLED(CONFIG_SLAB_MERGE_DEFAULT);
-
-
 static unsigned int calculate_alignment(slab_flags_t flags,
 		unsigned int align, unsigned int size)
 {
@@ -57,65 +51,10 @@ static unsigned int calculate_alignment(slab_flags_t flags,
 	return ALIGN(align, sizeof(void *));
 }
 
-static int slab_unmergeable(struct kmem_cache *s)
-{
-	if (slab_nomerge || (s->flags & SLAB_NEVER_MERGE))
-		return 1;
-
-	if (s->ctor)
-		return 1;
-
-	if (s->usersize)
-		return 1;
-
-	 
-	if (s->refcount < 0)
-		return 1;
-
-	return 0;
-}
-
 struct kmem_cache *find_mergeable(unsigned int size, unsigned int align,
 		slab_flags_t flags, const char *name, void (*ctor)(void *))
 {
-	struct kmem_cache *s;
 
-	if (slab_nomerge)
-		return NULL;
-
-	if (ctor)
-		return NULL;
-
-	size = ALIGN(size, sizeof(void *));
-	align = calculate_alignment(flags, align, size);
-	size = ALIGN(size, align);
-	flags = kmem_cache_flags(size, flags, name);
-
-	if (flags & SLAB_NEVER_MERGE)
-		return NULL;
-
-	list_for_each_entry_reverse(s, &slab_caches, list) {
-		if (slab_unmergeable(s))
-			continue;
-
-		if (size > s->size)
-			continue;
-
-		if ((flags & SLAB_MERGE_SAME) != (s->flags & SLAB_MERGE_SAME))
-			continue;
-		 
-		if ((s->size & ~(align - 1)) != s->size)
-			continue;
-
-		if (s->size - size >= sizeof(void *))
-			continue;
-
-		if (IS_ENABLED(CONFIG_SLAB) && align &&
-			(align > s->align || s->align % align))
-			continue;
-
-		return s;
-	}
 	return NULL;
 }
 

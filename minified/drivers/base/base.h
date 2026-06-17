@@ -48,7 +48,6 @@ extern int classes_init(void);
 
 /* virtual_device_parent removed - unused */
 
-extern void bus_probe_device(struct device *dev);
 extern void bus_remove_device(struct device *dev);
 
 extern void driver_deferred_probe_del(struct device *dev);
@@ -60,5 +59,4 @@ extern struct kset *devices_kset;
 
 /* devtmpfs_create_node / devtmpfs_delete_node removed - unused */
 
-/* software_node_notify removed - unused */
-void software_node_notify_remove(struct device *dev);
+/* software_node_notify / software_node_notify_remove removed - unused */

@@ -43,7 +43,6 @@ struct kobject *sysfs_dev_block_kobj;
 static void device_platform_notify_remove(struct device *dev)
 {
 	acpi_device_notify_remove(dev);
-	software_node_notify_remove(dev);
 	/* platform_notify_remove call removed - never assigned */
 }
 
@@ -216,8 +215,6 @@ int device_add(struct device *dev)
 	error = kobject_add(&dev->kobj, dev->kobj.parent, NULL);
 	if (error)
 		goto parent_error;
-
-	bus_probe_device(dev);
 
 	error = 0;
 	put_device(dev);

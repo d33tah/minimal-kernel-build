@@ -58,14 +58,6 @@ static struct kset *bus_kset;
    driver_register), so the only caller (__device_attach, also removed) iterated
    nothing. */
 
-/* Simplified: sysfs functions are stubs, so no error paths needed.
-   device_initial_probe() was a no-op (empty driver klist + stubbed PM runtime)
-   and bus->p->interfaces is always empty (subsys_interface_register is gone),
-   so both the autoprobe and the add_dev loop are dead. */
-void bus_probe_device(struct device *dev)
-{
-}
-
 /* Simplified: sysfs functions are stubs; bus->p->interfaces is always empty
    (subsys_interface_register is gone), knode_bus is never klist_add'd, and no
    driver ever binds so device_release_driver was a no-op (now removed). */

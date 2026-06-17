@@ -3,8 +3,7 @@
 
 obj-y			:= core.o bus.o \
 			   class.o \
-			   init.o map.o \
-			   swnode.o
+			   init.o map.o
 obj-$(CONFIG_AUXILIARY_BUS) += auxiliary.o
 obj-$(CONFIG_DEVTMPFS)	+= devtmpfs.o
 obj-y			+= power/

@@ -14,10 +14,6 @@ u64 x86_spec_ctrl_base;
 u64 __ro_after_init x86_amd_ls_cfg_base;
 u64 __ro_after_init x86_amd_ls_cfg_ssbd_mask;
 
-void write_spec_ctrl_current(u64 val, bool force)
-{
-}
-
 void __init check_bugs(void)
 {
 	identify_boot_cpu();

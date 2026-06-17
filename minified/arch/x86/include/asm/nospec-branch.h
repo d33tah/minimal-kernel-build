@@ -110,7 +110,6 @@ extern char __indirect_thunk_end[];
 
 
 extern u64 x86_spec_ctrl_base;
-extern void write_spec_ctrl_current(u64 val, bool force);
 
 #endif
 

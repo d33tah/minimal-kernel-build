@@ -14,5 +14,3 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct debug_store, cpu_debug_store);
 #define PERF_REG_X86_MAX 32
 unsigned int pt_regs_offset[PERF_REG_X86_MAX];
 
-void irq_work_tick(void) { }
-

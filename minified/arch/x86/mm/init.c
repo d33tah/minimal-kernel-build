@@ -464,15 +464,9 @@ void free_init_pages(const char *what, unsigned long begin, unsigned long end)
 			   POISON_FREE_INITMEM, what);
 }
 
-/* Stub: free_kernel_image_pages not called in minimal kernel */
-void free_kernel_image_pages(const char *what, void *begin, void *end) { }
-
 void __ref free_initmem(void)
 {
 	e820__reallocate_tables();
-
-	free_kernel_image_pages("unused kernel image (initmem)",
-				&__init_begin, &__init_end);
 }
 
 void __init free_initrd_mem(unsigned long start, unsigned long end)

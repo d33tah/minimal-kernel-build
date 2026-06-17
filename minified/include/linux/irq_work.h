@@ -22,6 +22,4 @@ struct irq_work {
 #define DEFINE_IRQ_WORK(name, _f)				\
 	struct irq_work name = IRQ_WORK_INIT(_f)
 
-void irq_work_tick(void);
-
 #endif  

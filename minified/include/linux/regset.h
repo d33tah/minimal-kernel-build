@@ -60,13 +60,4 @@ struct user_regset {
 	unsigned int 			core_note_type;
 };
 
-struct user_regset_view {
-	const char *name;
-	const struct user_regset *regsets;
-	unsigned int n;
-	u32 e_flags;
-	u16 e_machine;
-	u8 ei_osabi;
-};
-
-#endif	 
+#endif

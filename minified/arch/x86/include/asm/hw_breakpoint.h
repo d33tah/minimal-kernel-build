@@ -5,13 +5,6 @@
 #define	__ARCH_HW_BREAKPOINT_H
 
  
-struct arch_hw_breakpoint {
-	unsigned long	address;
-	unsigned long	mask;
-	u8		len;
-	u8		type;
-};
-
 #include <linux/kdebug.h>
 #include <linux/percpu.h>
 #include <linux/list.h>

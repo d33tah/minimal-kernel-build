@@ -36,34 +36,4 @@ struct console_font {
 	unsigned char *data;
 };
 
-/* kbd_repeat used by keyboard.c, vt_kern.h */
-struct kbd_repeat {
-	int delay;
-	int period;
-};
-
-/* kbentry used by keyboard.c, vt_ioctl.c, vt_kern.h */
-struct kbentry {
-	unsigned char kb_table;
-	unsigned char kb_index;
-	unsigned short kb_value;
-};
-
-/* kbsentry used by keyboard.c, vt_ioctl.c, vt_kern.h */
-struct kbsentry {
-	unsigned char kb_func;
-	unsigned char kb_string[512];
-};
-
-
-/* kbdiacruc used by vt_ioctl.c, vt_kern.h */
-struct kbdiacruc {
-	unsigned int diacr, base, result;
-};
-
-/* kbkeycode used by keyboard.c, vt_ioctl.c, vt_kern.h */
-struct kbkeycode {
-	unsigned int scancode, keycode;
-};
-
 #endif

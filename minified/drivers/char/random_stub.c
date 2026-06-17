@@ -35,11 +35,3 @@ bool rng_is_initialized(void)
 {
 	return true;
 }
-
-
-SYSCALL_DEFINE3(getrandom, char __user *, buf, size_t, count, unsigned int, flags)
-{
-	if (clear_user(buf, count))
-		return -EFAULT;
-	return count;
-}

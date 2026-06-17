@@ -26,7 +26,7 @@
 # 21 mount removed (unreachable)
 # 22 umount removed (unreachable)
 25	i386	stime			sys_stime32
-26	i386	ptrace			sys_ptrace			compat_sys_ptrace
+# 26 ptrace removed (unreachable, routes to sys_ni)
 # 27	i386	alarm			sys_alarm  (posix timers: unreachable, -> sys_ni)
 30	i386	utime			sys_utime32
 31	i386	stty
@@ -143,7 +143,7 @@
 346	i386	setns			sys_setns
 # 349 kcmp removed (unreachable, routes to sys_ni)
 # 350 finit_module removed (unreachable, routes to sys_ni)
-355	i386	getrandom		sys_getrandom
+# 355 getrandom removed (unreachable, routes to sys_ni)
 377	i386	copy_file_range
 378	i386	preadv2
 379	i386	pwritev2

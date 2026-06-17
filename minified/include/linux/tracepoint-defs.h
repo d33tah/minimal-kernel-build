@@ -29,8 +29,6 @@ struct tracepoint {
 	struct tracepoint_func __rcu *funcs;
 };
 
-typedef const int tracepoint_ptr_t;
-
 #define DECLARE_TRACEPOINT(tp) \
 	extern struct tracepoint __tracepoint_##tp
 

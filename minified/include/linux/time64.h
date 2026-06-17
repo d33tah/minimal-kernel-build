@@ -14,7 +14,6 @@
 #define FSEC_PER_SEC	1000000000000000LL
 
 typedef __s64 time64_t;
-typedef __u64 timeu64_t;
 
 #include <uapi/linux/time.h>
 

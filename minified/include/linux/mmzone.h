@@ -193,8 +193,6 @@ struct lruvec {
 };
 
 
-typedef unsigned __bitwise isolate_mode_t;
-
 enum zone_watermarks {
 	WMARK_MIN,
 	WMARK_LOW,

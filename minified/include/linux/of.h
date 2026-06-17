@@ -7,7 +7,6 @@
 #include <linux/property.h>
 
 typedef u32 phandle;
-typedef u32 ihandle;
 
 struct property {
 	char	*name;

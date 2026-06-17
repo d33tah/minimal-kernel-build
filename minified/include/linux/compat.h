@@ -42,9 +42,6 @@ typedef struct {
 
 #define _COMPAT_NSIG_WORDS	(_COMPAT_NSIG / _COMPAT_NSIG_BPW)
 
-typedef __compat_uid32_t	compat_uid_t;
-typedef __compat_gid32_t	compat_gid_t;
-
 #define in_compat_syscall in_compat_syscall
 static inline bool in_compat_syscall(void) { return false; }
 

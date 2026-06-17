@@ -48,37 +48,14 @@ typedef u16		 compat_ipc_pid_t;
 					 ((u64)name##_hi << 32))
 #endif
 
-typedef u32 compat_size_t;
-typedef s32 compat_ssize_t;
-typedef s32 compat_clock_t;
-typedef s32 compat_pid_t;
-typedef u32 compat_ino_t;
-typedef s32 compat_off_t;
-typedef s64 compat_loff_t;
-typedef s16 compat_short_t;
-typedef s32 compat_int_t;
-typedef s32 compat_long_t;
-typedef u16 compat_ushort_t;
-typedef u32 compat_uint_t;
-typedef u32 compat_ulong_t;
-typedef u32 compat_uptr_t;
-
 #ifndef __compat_uid_t
 typedef u32 __compat_uid_t;
 typedef u32 __compat_gid_t;
 #endif
 
-#ifndef __compat_uid32_t
-typedef u32 __compat_uid32_t;
-typedef u32 __compat_gid32_t;
-#endif
-
 #ifndef compat_mode_t
 typedef u32 compat_mode_t;
 #endif
-
-typedef s64 compat_s64;
-typedef u64 compat_u64;
 
 #ifndef _COMPAT_NSIG
 typedef u32 compat_sigset_word;

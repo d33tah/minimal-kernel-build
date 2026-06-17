@@ -8,8 +8,6 @@
 #include <linux/screen_info.h>
 #include <asm/page.h>
 
-typedef unsigned long efi_status_t;
-
 #define EFI_BOOT_SERVICES_DATA		 4
 #define EFI_RUNTIME_SERVICES_DATA	 6
 #define EFI_CONVENTIONAL_MEMORY		 7

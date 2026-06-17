@@ -10,8 +10,6 @@
 #define SWP_OFFSET_MASK	((1UL << SWP_TYPE_SHIFT) - 1)
 
 
-typedef unsigned long pte_marker;
-
 #define  PTE_MARKER_UFFD_WP  BIT(0)
 #define  PTE_MARKER_MASK     (PTE_MARKER_UFFD_WP)
 

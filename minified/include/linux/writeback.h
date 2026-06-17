@@ -69,8 +69,6 @@ static inline void inode_detach_wb(struct inode *inode)
 
 
 
-void balance_dirty_pages_ratelimited(struct address_space *mapping);
-
 typedef int (*writepage_t)(struct page *page, struct writeback_control *wbc,
 				void *data);
 

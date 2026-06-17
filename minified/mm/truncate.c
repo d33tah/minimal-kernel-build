@@ -104,7 +104,6 @@ bool truncate_inode_partial_folio(struct folio *folio, loff_t start, loff_t end)
 	else
 		length = end + 1 - pos - offset;
 
-	folio_wait_writeback(folio);
 	if (length == folio_size(folio)) {
 		truncate_inode_folio(folio->mapping, folio);
 		return true;
@@ -211,7 +210,6 @@ void truncate_inode_pages_range(struct address_space *mapping,
 
 			folio_lock(folio);
 			VM_BUG_ON_FOLIO(!folio_contains(folio, index), folio);
-			folio_wait_writeback(folio);
 			truncate_inode_folio(mapping, folio);
 			folio_unlock(folio);
 			index = folio_index(folio) + folio_nr_pages(folio) - 1;

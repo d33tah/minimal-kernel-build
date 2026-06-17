@@ -95,9 +95,8 @@ static void filemap_unaccount_folio(struct address_space *mapping,
 	}
 
 	
-	if (WARN_ON_ONCE(folio_test_dirty(folio) &&
-			 mapping_can_writeback(mapping)))
-		folio_account_cleaned(folio, inode_to_wb(mapping->host));
+	WARN_ON_ONCE(folio_test_dirty(folio) &&
+		     mapping_can_writeback(mapping));
 }
 
 void __filemap_remove_folio(struct folio *folio, void *shadow)
@@ -581,8 +580,6 @@ repeat:
 	if (fgp_flags & FGP_ACCESSED)
 		folio_mark_accessed(folio);
 
-	if (fgp_flags & FGP_STABLE)
-		folio_wait_stable(folio);
 no_page:
 	if (!folio && (fgp_flags & FGP_CREAT)) {
 		int err;
@@ -1195,7 +1192,6 @@ vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf)
 	}
 	
 	folio_mark_dirty(folio);
-	folio_wait_stable(folio);
 out:
 	sb_end_pagefault(mapping->host->i_sb);
 	return ret;

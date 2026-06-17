@@ -526,7 +526,6 @@ static vm_fault_t fault_dirty_shared_page(struct vm_fault *vmf)
 		struct file *fpin;
 
 		fpin = maybe_unlock_mmap_for_io(vmf, NULL);
-		balance_dirty_pages_ratelimited(mapping);
 		if (fpin) {
 			fput(fpin);
 			return VM_FAULT_RETRY;

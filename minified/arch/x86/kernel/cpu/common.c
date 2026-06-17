@@ -700,10 +700,6 @@ static void clear_all_debug_regs(void)
 
 #define dbg_restore_debug_regs()
 
-static inline void ucode_cpu_init(int cpu)
-{
-}
-
 static inline void tss_setup_io_bitmap(struct tss_struct *tss)
 {
 	tss->x86_tss.io_bitmap_base = IO_BITMAP_OFFSET_INVALID;
@@ -727,8 +723,6 @@ void cpu_init(void)
 {
 	struct task_struct *cur = current;
 	int cpu = raw_smp_processor_id();
-
-	ucode_cpu_init(cpu);
 
 	if (cpu_feature_enabled(X86_FEATURE_VME) ||
 	    boot_cpu_has(X86_FEATURE_TSC) || boot_cpu_has(X86_FEATURE_DE))

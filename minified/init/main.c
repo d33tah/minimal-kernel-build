@@ -558,10 +558,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	prevent_tail_call_optimization();
 }
 
-static void __init do_ctors(void)
-{
-}
-
 int __init_or_module do_one_initcall(initcall_t fn)
 {
 	int count = preempt_count();
@@ -664,7 +660,6 @@ static void __init do_initcalls(void)
 static void __init do_basic_setup(void)
 {
 	driver_init();
-	do_ctors();
 	do_initcalls();
 }
 

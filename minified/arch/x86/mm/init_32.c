@@ -301,12 +301,6 @@ void __init initmem_init(void)
 
 	max_mapnr = max_low_pfn;
 	__vmalloc_start_set = true;
-
-	setup_bootmem_allocator();
-}
-
-void __init setup_bootmem_allocator(void)
-{
 }
 
 void __init paging_init(void)
@@ -333,8 +327,6 @@ static void __init test_wp_bit(void)
 
 void __init mem_init(void)
 {
-	pci_iommu_alloc();
-
 	BUG_ON(!mem_map);
 	 
 	set_highmem_pages_init();

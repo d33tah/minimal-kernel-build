@@ -22,6 +22,4 @@ extern int pcibios_enabled;
 #define arch_can_pci_mmap_wc()	0
 #define ARCH_GENERIC_PCI_MMAP_RESOURCE
 
-extern void pci_iommu_alloc(void);
-
 #endif

@@ -4,10 +4,6 @@
 #include <linux/stringify.h>
 #include <asm/x86_init.h>
 
-void __init pci_iommu_alloc(void)
-{
-}
-
 static int __init pci_iommu_init(void)
 {
 	x86_init.iommu.iommu_init();

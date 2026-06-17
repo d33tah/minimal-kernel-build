@@ -102,10 +102,6 @@ unsigned long saved_video_mode;
 
 static char __initdata command_line[COMMAND_LINE_SIZE];
 
-static inline void __init copy_edd(void)
-{
-}
-
 void * __init extend_brk(size_t size, size_t align)
 {
 	size_t mask = align - 1;
@@ -428,8 +424,6 @@ void __init setup_arch(char **cmdline_p)
 	iomem_resource.end = (1ULL << boot_cpu_data.x86_phys_bits) - 1;
 	e820__memory_setup();
 	parse_setup_data();
-
-	copy_edd();
 
 	if (!boot_params.hdr.root_flags)
 		root_mountflags &= ~MS_RDONLY;

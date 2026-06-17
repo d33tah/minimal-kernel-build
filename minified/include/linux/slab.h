@@ -323,8 +323,6 @@ static inline __alloc_size(1, 2) void *kvmalloc_array(size_t n, size_t size, gfp
 
 extern void kvfree(const void *addr);
 
-void __init kmem_cache_init_late(void);
-
 #define slab_prepare_cpu	NULL
 #define slab_dead_cpu		NULL
 

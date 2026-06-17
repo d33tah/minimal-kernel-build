@@ -38,8 +38,6 @@ struct folio_batch;
 	unlikely(__ret_warn_once);					\
 })
 
-void page_writeback_init(void);
-
 static inline void *folio_raw_mapping(struct folio *folio)
 {
 	unsigned long mapping = (unsigned long)folio->mapping;

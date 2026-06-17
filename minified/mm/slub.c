@@ -1234,10 +1234,6 @@ void __init kmem_cache_init(void)
 	create_kmalloc_caches(0);
 }
 
-void __init kmem_cache_init_late(void)
-{
-}
-
 struct kmem_cache *
 __kmem_cache_alias(const char *name, unsigned int size, unsigned int align,
 		   slab_flags_t flags, void (*ctor)(void *))

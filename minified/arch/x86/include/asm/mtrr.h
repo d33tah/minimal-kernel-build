@@ -4,8 +4,6 @@
 
 #include <uapi/asm/mtrr.h>
 
-void mtrr_bp_init(void);
-
 #define mtrr_save_fixed_ranges(arg) do {} while (0)
 #define mtrr_save_state() do {} while (0)
 #define mtrr_ap_init() do {} while (0)

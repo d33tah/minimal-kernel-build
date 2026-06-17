@@ -69,8 +69,6 @@ struct user_regset_view {
 	u8 ei_osabi;
 };
 
-const struct user_regset_view *task_user_regset_view(struct task_struct *tsk);
-
 extern int regset_get(struct task_struct *target,
 		      const struct user_regset *regset,
 		      unsigned int size, void *data);

@@ -18,9 +18,6 @@ struct unwind_state {
 	unsigned long *sp;
 };
 
-bool unwind_next_frame(struct unwind_state *state);
-unsigned long unwind_get_return_address(struct unwind_state *state);
-unsigned long *unwind_get_return_address_ptr(struct unwind_state *state);
 
 static inline
 unsigned long unwind_recover_rethook(struct unwind_state *state,

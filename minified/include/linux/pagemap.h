@@ -174,8 +174,6 @@ static inline bool folio_contains(struct folio *folio, pgoff_t index)
 struct page *grab_cache_page_write_begin(struct address_space *mapping,
 			pgoff_t index);
 
-extern pgoff_t hugetlb_basepage_index(struct page *page);
-
 static inline loff_t page_offset(struct page *page)
 {
 	return ((loff_t)page->index) << PAGE_SHIFT;

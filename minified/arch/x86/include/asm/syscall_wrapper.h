@@ -6,7 +6,6 @@
 
 struct pt_regs;
 
-extern long __x64_sys_ni_syscall(const struct pt_regs *regs);
 extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 
  
@@ -109,8 +108,4 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 
 
  
-long __x64_sys_getcpu(const struct pt_regs *regs);
-long __x64_sys_gettimeofday(const struct pt_regs *regs);
-long __x64_sys_time(const struct pt_regs *regs);
-
-#endif  
+#endif

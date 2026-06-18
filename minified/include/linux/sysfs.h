@@ -2,7 +2,6 @@
 #ifndef _SYSFS_H_
 #define _SYSFS_H_
 
-#include <linux/kernfs.h>
 #include <linux/compiler.h>
 #include <linux/errno.h>
 #include <linux/list.h>

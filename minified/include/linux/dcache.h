@@ -99,8 +99,7 @@ struct dentry_operations {
 	void (*d_prune)(struct dentry *);
 	void (*d_iput)(struct dentry *, struct inode *);
 	char *(*d_dname)(struct dentry *, char *, int);
-	/* d_automount removed - unused */
-	int (*d_manage)(const struct path *, bool);
+	/* d_automount / d_manage removed - never set, managed-dentry path dead */
 	struct dentry *(*d_real)(struct dentry *, const struct inode *);
 } ____cacheline_aligned;
 

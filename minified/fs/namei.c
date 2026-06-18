@@ -508,41 +508,14 @@ static inline int traverse_mounts(struct path *path, bool *jumped,
 static bool __follow_mount_rcu(struct nameidata *nd, struct path *path,
 			       struct inode **inode, unsigned *seqp)
 {
-	struct dentry *dentry = path->dentry;
-	unsigned int flags = dentry->d_flags;
-
-	if (likely(!(flags & DCACHE_MANAGED_DENTRY)))
-		return true;
-
-	if (unlikely(nd->flags & LOOKUP_NO_XDEV))
-		return false;
-
-	for (;;) {
-		
-		if (unlikely(flags & DCACHE_MANAGE_TRANSIT)) {
-			int res = dentry->d_op->d_manage(path, true);
-			if (res)
-				return res == -EISDIR;
-			flags = dentry->d_flags;
-		}
-
-		if (flags & DCACHE_MOUNTED) {
-			struct mount *mounted = __lookup_mnt(path->mnt, dentry);
-			if (mounted) {
-				path->mnt = &mounted->mnt;
-				dentry = path->dentry = mounted->mnt.mnt_root;
-				nd->state |= ND_JUMPED;
-				*seqp = read_seqcount_begin(&dentry->d_seq);
-				*inode = dentry->d_inode;
-				
-				flags = dentry->d_flags;
-				continue;
-			}
-			if (read_seqretry(&mount_lock, nd->m_seq))
-				return false;
-		}
-		return !(flags & DCACHE_NEED_AUTOMOUNT);
-	}
+	/*
+	 * DCACHE_MANAGED_DENTRY (DCACHE_MOUNTED|DCACHE_NEED_AUTOMOUNT|
+	 * DCACHE_MANAGE_TRANSIT) is never set on this build -- nothing
+	 * attaches a mount to a dentry (no d_set_mounted) and no
+	 * dentry_operations defines ->d_manage -- so the managed-dentry
+	 * traversal loop is unreachable and this always returns true.
+	 */
+	return true;
 }
 
 static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,

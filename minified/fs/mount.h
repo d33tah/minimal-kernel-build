@@ -20,17 +20,8 @@ struct mnt_namespace {
 	unsigned int		pending_mounts;
 } __randomize_layout;
 
-struct mountpoint {
-	struct hlist_node m_hash;
-	struct dentry *m_dentry;
-	struct hlist_head m_list;
-	int m_count;
-};
-
 struct mount {
-	struct hlist_node mnt_hash;
 	struct mount *mnt_parent;
-	struct dentry *mnt_mountpoint;
 	struct vfsmount mnt;
 	union {
 		struct rcu_head mnt_rcu;
@@ -48,8 +39,7 @@ struct mount {
 	struct list_head mnt_slave_list; 
 	struct list_head mnt_slave;	 
 	struct mount *mnt_master;	 
-	struct mnt_namespace *mnt_ns;	 
-	struct mountpoint *mnt_mp;	 
+	struct mnt_namespace *mnt_ns;
 	union {
 		struct hlist_node mnt_mp_list;	 
 		struct hlist_node mnt_umount;
@@ -67,8 +57,6 @@ static inline struct mount *real_mount(struct vfsmount *mnt)
 {
 	return container_of(mnt, struct mount, mnt);
 }
-
-extern struct mount *__lookup_mnt(struct vfsmount *, struct dentry *);
 
 extern int __legitimize_mnt(struct vfsmount *, unsigned);
 extern bool legitimize_mnt(struct vfsmount *, unsigned);

@@ -27,14 +27,8 @@
 #include "internal.h"
 
 
-static unsigned int m_hash_mask __read_mostly;
-static unsigned int m_hash_shift __read_mostly;
-
-static __initdata unsigned long mhash_entries;
-
 static DEFINE_IDA(mnt_id_ida);
 
-static struct hlist_head *mount_hashtable __read_mostly;
 static struct kmem_cache *mnt_cache __read_mostly;
 
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(mount_lock);
@@ -47,14 +41,6 @@ static inline void lock_mount_hash(void)
 static inline void unlock_mount_hash(void)
 {
 	write_sequnlock(&mount_lock);
-}
-
-static inline struct hlist_head *m_hash(struct vfsmount *mnt, struct dentry *dentry)
-{
-	unsigned long tmp = ((unsigned long)mnt / L1_CACHE_BYTES);
-	tmp += ((unsigned long)dentry / L1_CACHE_BYTES);
-	tmp = tmp + (tmp >> m_hash_shift);
-	return &mount_hashtable[tmp & m_hash_mask];
 }
 
 static int mnt_alloc_id(struct mount *mnt)
@@ -99,7 +85,6 @@ static struct mount *alloc_vfsmnt(const char *name)
 		mnt->mnt_count = 1;
 		mnt->mnt_writers = 0;
 
-		INIT_HLIST_NODE(&mnt->mnt_hash);
 		INIT_LIST_HEAD(&mnt->mnt_child);
 		INIT_LIST_HEAD(&mnt->mnt_mounts);
 		INIT_LIST_HEAD(&mnt->mnt_list);
@@ -258,19 +243,6 @@ bool legitimize_mnt(struct vfsmount *bastard, unsigned seq)
 	return false;
 }
 
-struct mount *__lookup_mnt(struct vfsmount *mnt, struct dentry *dentry)
-{
-	struct hlist_head *head = m_hash(mnt, dentry);
-	struct mount *p;
-
-	hlist_for_each_entry_rcu(p, head, mnt_hash)
-		if (&p->mnt_parent->mnt == mnt && p->mnt_mountpoint == dentry)
-			return p;
-	return NULL;
-}
-
-
-
 static inline int check_mnt(struct mount *mnt)
 {
 	return mnt->mnt_ns == current->nsproxy->mnt_ns;
@@ -294,7 +266,6 @@ struct vfsmount *vfs_create_mount(struct fs_context *fc)
 	atomic_inc(&fc->root->d_sb->s_active);
 	mnt->mnt.mnt_sb		= fc->root->d_sb;
 	mnt->mnt.mnt_root	= dget(fc->root);
-	mnt->mnt_mountpoint	= mnt->mnt.mnt_root;
 	mnt->mnt_parent		= mnt;
 
 	fs_userns = mnt->mnt.mnt_sb->s_user_ns;
@@ -478,15 +449,6 @@ void __init mnt_init(void)
 
 	mnt_cache = kmem_cache_create("mnt_cache", sizeof(struct mount),
 			0, SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, NULL);
-
-	mount_hashtable = alloc_large_system_hash("Mount-cache",
-				sizeof(struct hlist_head),
-				mhash_entries, 19,
-				HASH_ZERO,
-				&m_hash_shift, &m_hash_mask, 0, 0);
-
-	if (!mount_hashtable)
-		panic("Failed to allocate mount hash table\n");
 
 	err = sysfs_init();
 	if (err)

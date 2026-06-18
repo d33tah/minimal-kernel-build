@@ -230,10 +230,8 @@ slab_flags_t kmem_cache_flags(unsigned int object_size,
 			      SLAB_ACCOUNT | \
 			      SLAB_NO_USER_FLAGS)
 
-void __kmem_cache_release(struct kmem_cache *);
-
-
-/* __kmem_cache_free_bulk, __kmem_cache_alloc_bulk removed - never called */
+/* __kmem_cache_release, __kmem_cache_free_bulk, __kmem_cache_alloc_bulk
+ * removed - error-path/bulk cleanup never reached on this workload */
 
 static inline enum node_stat_item cache_vmstat_idx(struct kmem_cache *s)
 {

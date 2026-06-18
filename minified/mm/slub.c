@@ -934,22 +934,6 @@ static void early_kmem_cache_node_alloc(int node)
 	__add_partial(n, slab, DEACTIVATE_TO_HEAD);
 }
 
-static void free_kmem_cache_nodes(struct kmem_cache *s)
-{
-	int node;
-	struct kmem_cache_node *n;
-
-	for_each_kmem_cache_node(s, node, n) {
-		s->node[node] = NULL;
-		kmem_cache_free(kmem_cache_node, n);
-	}
-}
-
-void __kmem_cache_release(struct kmem_cache *s)
-{
-	free_percpu(s->cpu_slab);
-	free_kmem_cache_nodes(s);
-}
 
 static int init_kmem_cache_nodes(struct kmem_cache *s)
 {
@@ -965,10 +949,8 @@ static int init_kmem_cache_nodes(struct kmem_cache *s)
 		n = kmem_cache_alloc_node(kmem_cache_node,
 						GFP_KERNEL, node);
 
-		if (!n) {
-			free_kmem_cache_nodes(s);
+		if (!n)
 			return 0;
-		}
 
 		init_kmem_cache_node(n);
 		s->node[node] = n;
@@ -1032,14 +1014,14 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 	s->flags = kmem_cache_flags(s->size, flags, s->name);
 
 	if (!calculate_sizes(s))
-		goto error;
+		return -EINVAL;
 	if (disable_higher_order_debug) {
-		
+
 		if (get_order(s->size) > get_order(s->object_size)) {
 			s->flags &= ~DEBUG_METADATA_FLAGS;
 			s->offset = 0;
 			if (!calculate_sizes(s))
-				goto error;
+				return -EINVAL;
 		}
 	}
 
@@ -1056,13 +1038,11 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 
 
 	if (!init_kmem_cache_nodes(s))
-		goto error;
+		return -EINVAL;
 
 	if (alloc_kmem_cache_cpus(s))
 		return 0;
 
-error:
-	__kmem_cache_release(s);
 	return -EINVAL;
 }
 

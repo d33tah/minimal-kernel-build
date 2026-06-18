@@ -337,17 +337,9 @@ int cdev_add(struct cdev *p, dev_t dev, unsigned count)
 	return 0;
 }
 
-static void cdev_unmap(dev_t dev, unsigned count)
-{
-	kobj_unmap(cdev_map, dev, count);
-}
-
-void cdev_del(struct cdev *p)
-{
-	cdev_unmap(p->dev, p->count);
-	kobject_put(&p->kobj);
-}
-
+/* Removed: cdev_unmap + cdev_del - only caller was the runtime-dead tty
+ * driver-destruct teardown path (destruct_tty_driver), never reached in a
+ * single-shot boot. */
 
 static void cdev_default_release(struct kobject *kobj)
 {

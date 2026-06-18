@@ -27,8 +27,6 @@ void cdev_put(struct cdev *p);
 
 int cdev_add(struct cdev *, dev_t, unsigned);
 
-void cdev_del(struct cdev *);
-
 void cd_forget(struct inode *);
 
 #endif

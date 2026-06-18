@@ -1074,8 +1074,7 @@ static void destruct_tty_driver(struct kref *kref)
 			}
 		}
 		proc_tty_unregister_driver(driver);
-		if (driver->flags & TTY_DRIVER_DYNAMIC_ALLOC)
-			cdev_del(driver->cdevs[0]);
+		/* cdev_del removed: char-device teardown is runtime-dead */
 	}
 	kfree(driver->cdevs);
 	kfree(driver->ports);

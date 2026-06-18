@@ -11,7 +11,6 @@ struct fwnode_handle;
 
 struct class {
 	const char		*name;
-	struct module		*owner;
 
 	struct kobject			*dev_kobj;
 

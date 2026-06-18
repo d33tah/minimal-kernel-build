@@ -9,14 +9,6 @@
 #define dev_fmt(fmt) fmt
 #endif
 
-#define PRINTK_INFO_SUBSYSTEM_LEN	16
-#define PRINTK_INFO_DEVICE_LEN		48
-
-struct dev_printk_info {
-	char subsystem[PRINTK_INFO_SUBSYSTEM_LEN];
-	char device[PRINTK_INFO_DEVICE_LEN];
-};
-
 /* dev_printk stubs - only defining those actually used */
 #define dev_crit(dev, fmt, ...) do { } while (0)
 #define dev_err(dev, fmt, ...) do { } while (0)
@@ -150,11 +142,6 @@ static inline void device_lock(struct device *dev)
 static inline void device_unlock(struct device *dev)
 {
 	mutex_unlock(&dev->mutex);
-}
-
-static inline void device_lock_assert(struct device *dev)
-{
-	lockdep_assert_held(&dev->mutex);
 }
 
 int __must_check device_register(struct device *dev);

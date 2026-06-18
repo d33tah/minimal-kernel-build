@@ -57,8 +57,6 @@ struct va_format {
 static inline __printf(1, 2) __cold
 void early_printk(const char *s, ...) { }
 
-struct dev_printk_info;
-
 static inline __printf(1, 0)
 int vprintk(const char *s, va_list args)
 {

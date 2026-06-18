@@ -37,7 +37,7 @@
 
 #include "internal.h"
 
-static int bprm_creds_from_file(struct linux_binprm *bprm);
+static void bprm_creds_from_file(struct linux_binprm *bprm);
 
 int suid_dumpable = 0;
 
@@ -502,9 +502,7 @@ int begin_new_exec(struct linux_binprm * bprm)
 	struct task_struct *me = current;
 	int retval;
 
-	retval = bprm_creds_from_file(bprm);
-	if (retval)
-		return retval;
+	bprm_creds_from_file(bprm);
 
 	bprm->point_of_no_return = true;
 
@@ -709,13 +707,9 @@ static void bprm_fill_uid(struct linux_binprm *bprm, struct file *file)
 	}
 }
 
-static int bprm_creds_from_file(struct linux_binprm *bprm)
+static void bprm_creds_from_file(struct linux_binprm *bprm)
 {
-	
-	struct file *file = bprm->file;
-
-	bprm_fill_uid(bprm, file);
-	return security_bprm_creds_from_file(bprm, file);
+	bprm_fill_uid(bprm, bprm->file);
 }
 
 static int prepare_binprm(struct linux_binprm *bprm)

@@ -297,8 +297,6 @@ void __init initmem_init(void)
 {
 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE - 1) + 1;
 
-	memblock_set_node(0, PHYS_ADDR_MAX, &memblock.memory, 0);
-
 	max_mapnr = max_low_pfn;
 	__vmalloc_start_set = true;
 }

@@ -54,7 +54,6 @@ extern void kobject_init(struct kobject *kobj, const struct kobj_type *ktype);
 extern __printf(3, 4) __must_check
 int kobject_add(struct kobject *kobj, struct kobject *parent,
 		const char *fmt, ...);
-extern void kobject_del(struct kobject *kobj);
 
 extern struct kobject * __must_check kobject_create_and_add(const char *name,
 						struct kobject *parent);
@@ -100,7 +99,6 @@ struct kset {
 
 extern void kset_init(struct kset *kset);
 extern int __must_check kset_register(struct kset *kset);
-extern void kset_unregister(struct kset *kset);
 extern struct kset * __must_check kset_create_and_add(const char *name,
 						const struct kset_uevent_ops *u,
 						struct kobject *parent_kobj);

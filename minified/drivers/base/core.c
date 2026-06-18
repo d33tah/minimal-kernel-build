@@ -255,7 +255,7 @@ int __init devices_init(void)
  block_kobj_err:
 	kobject_put(dev_kobj);
  dev_kobj_err:
-	kset_unregister(devices_kset);
+	/* kset_unregister(devices_kset) removed - boot never hits this path */
 	return -ENOMEM;
 }
 

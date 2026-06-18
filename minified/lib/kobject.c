@@ -197,17 +197,7 @@ static void __kobject_del(struct kobject *kobj)
 	kobj->parent = NULL;
 }
 
-void kobject_del(struct kobject *kobj)
-{
-	struct kobject *parent;
-
-	if (!kobj)
-		return;
-
-	parent = kobj->parent;
-	__kobject_del(kobj);
-	kobject_put(parent);
-}
+/* Removed: kobject_del - only caller was kset_unregister (also removed). */
 
 struct kobject *kobject_get(struct kobject *kobj)
 {
@@ -335,13 +325,8 @@ int kset_register(struct kset *k)
 	return 0;
 }
 
-void kset_unregister(struct kset *k)
-{
-	if (!k)
-		return;
-	kobject_del(&k->kobj);
-	kobject_put(&k->kobj);
-}
+/* Removed: kset_unregister - only caller was a runtime-dead devices_init()
+   error-cleanup branch (boot never hits the alloc-failure path). */
 
 static void kset_release(struct kobject *kobj)
 {

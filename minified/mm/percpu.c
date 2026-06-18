@@ -125,17 +125,6 @@ int pcpu_nr_empty_pop_pages;
 
 static unsigned long pcpu_nr_populated;
 
-static bool pcpu_atomic_alloc_failed;
-
-static void pcpu_schedule_balance_work(void)
-{
-	/*
-	 * The percpu chunk rebalance (free/populate) only ran from a deferred
-	 * workqueue item that never executes before init's write(2)+exit, so
-	 * arming it is a no-op in this minimal kernel.
-	 */
-}
-
 static bool pcpu_addr_in_chunk(struct pcpu_chunk *chunk, void *addr)
 {
 	void *start_addr, *end_addr;
@@ -1206,10 +1195,6 @@ area_found:
 		mutex_unlock(&pcpu_alloc_mutex);
 	}
 
-	if (pcpu_nr_empty_pop_pages < PCPU_EMPTY_POP_PAGES_LOW)
-		pcpu_schedule_balance_work();
-
-	
 	for_each_possible_cpu(cpu)
 		memset((void *)pcpu_chunk_addr(chunk, cpu, 0) + off, 0, size);
 
@@ -1228,13 +1213,8 @@ fail:
 		if (!--warn_limit)
 			pr_info("limit reached, disable warning\n");
 	}
-	if (is_atomic) {
-		
-		pcpu_atomic_alloc_failed = true;
-		pcpu_schedule_balance_work();
-	} else {
+	if (!is_atomic)
 		mutex_unlock(&pcpu_alloc_mutex);
-	}
 
 	return NULL;
 }
@@ -1250,7 +1230,6 @@ void free_percpu(void __percpu *ptr)
 	struct pcpu_chunk *chunk;
 	unsigned long flags;
 	int off;
-	bool need_balance = false;
 
 	if (!ptr)
 		return;
@@ -1264,22 +1243,7 @@ void free_percpu(void __percpu *ptr)
 
 	pcpu_free_area(chunk, off);
 
-
-	if (!chunk->isolated && chunk->free_bytes == pcpu_unit_size) {
-		struct pcpu_chunk *pos;
-
-		list_for_each_entry(pos, &pcpu_chunk_lists[pcpu_free_slot], list)
-			if (pos != chunk) {
-				need_balance = true;
-				break;
-			}
-	}
-
-
 	spin_unlock_irqrestore(&pcpu_lock, flags);
-
-	if (need_balance)
-		pcpu_schedule_balance_work();
 }
 
 /* Stub: per_cpu_ptr_to_phys not used in minimal kernel */

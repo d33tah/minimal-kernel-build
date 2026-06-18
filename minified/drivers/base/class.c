@@ -14,10 +14,6 @@
 static void class_release(struct kobject *kobj)
 {
 	struct subsys_private *cp = to_subsys_private(kobj);
-	struct class *class = cp->class;
-
-	if (class->class_release)
-		class->class_release(class);
 
 	kfree(cp);
 }
@@ -97,11 +93,6 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 	return 0;
 }
 
-static void class_create_release(struct class *cls)
-{
-	kfree(cls);
-}
-
 struct class *__class_create(struct module *owner, const char *name,
 			     struct lock_class_key *key)
 {
@@ -115,7 +106,6 @@ struct class *__class_create(struct module *owner, const char *name,
 	}
 
 	cls->name = name;
-	cls->class_release = class_create_release;
 
 	retval = __class_register(cls, key);
 	if (retval)

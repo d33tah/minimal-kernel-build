@@ -16,8 +16,6 @@ struct class {
 
 	char *(*devnode)(struct device *dev, umode_t *mode);
 
-	void (*class_release)(struct class *class);
-
 	struct subsys_private *p;
 };
 

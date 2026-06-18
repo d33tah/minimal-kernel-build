@@ -26,33 +26,11 @@ static void bus_put(struct bus_type *bus)
    stubs), so the sysfs_ops dispatcher and the bus_attribute show/store callbacks
    were never reached. */
 
-static void bus_release(struct kobject *kobj)
-{
-	struct subsys_private *priv = to_subsys_private(kobj);
-	struct bus_type *bus = priv->bus;
-
-	kfree(priv);
-	bus->p = NULL;
-}
-
-static struct kobj_type bus_ktype = {
-	.release	= bus_release,
-};
-
-static int bus_uevent_filter(struct kobject *kobj)
-{
-	const struct kobj_type *ktype = get_ktype(kobj);
-
-	if (ktype == &bus_ktype)
-		return 1;
-	return 0;
-}
-
-static const struct kset_uevent_ops bus_uevent_ops = {
-	.filter = bus_uevent_filter,
-};
-
-static struct kset *bus_kset;
+/* Removed: bus_release + bus_ktype + bus_uevent_filter + bus_uevent_ops +
+   bus_kset - no bus is ever registered and nothing is added under the "bus"
+   kset, so the kset created by buses_init was never read and its uevent
+   filter / ktype release callbacks were never reached. buses_init is now a
+   no-op (see below). */
 
 /* Removed: next_driver + bus_for_each_drv - klist_drivers is always empty (no
    driver_register), so the only caller (__device_attach, also removed) iterated
@@ -88,9 +66,5 @@ void bus_remove_device(struct device *dev)
 
 int __init buses_init(void)
 {
-	bus_kset = kset_create_and_add("bus", &bus_uevent_ops, NULL);
-	if (!bus_kset)
-		return -ENOMEM;
-
 	return 0;
 }

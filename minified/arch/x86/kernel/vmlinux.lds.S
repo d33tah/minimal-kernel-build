@@ -15,11 +15,7 @@
  * put it inside the section definition.
  */
 
-#ifdef CONFIG_X86_32
 #define LOAD_OFFSET __PAGE_OFFSET
-#else
-#define LOAD_OFFSET __START_KERNEL_map
-#endif
 
 #define RUNTIME_DISCARD_EXIT
 #define EMITS_PT_NOTE
@@ -37,13 +33,8 @@
 
 OUTPUT_FORMAT(CONFIG_OUTPUT_FORMAT)
 
-#ifdef CONFIG_X86_32
 OUTPUT_ARCH(i386)
 ENTRY(phys_startup_32)
-#else
-OUTPUT_ARCH(i386:x86-64)
-ENTRY(phys_startup_64)
-#endif
 
 jiffies = jiffies_64;
 
@@ -102,10 +93,8 @@ SECTIONS
 		/* init_task */
 		INIT_TASK_DATA(THREAD_SIZE)
 
-#ifdef CONFIG_X86_32
 		/* 32 bit has nosave before _edata */
 		NOSAVE_DATA
-#endif
 
 		PAGE_ALIGNED_DATA(PAGE_SIZE)
 

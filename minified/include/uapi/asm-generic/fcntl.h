@@ -52,10 +52,7 @@
 #define O_CLOEXEC	02000000	 
 #endif
 
-#ifndef O_SYNC
 #define __O_SYNC	04000000
-#define O_SYNC		(__O_SYNC|O_DSYNC)
-#endif
 
 #ifndef O_PATH
 #define O_PATH		010000000
@@ -71,25 +68,6 @@
 #ifndef O_NDELAY
 #define O_NDELAY	O_NONBLOCK
 #endif
-
-#ifndef F_GETLK
-#define F_GETLK		5
-#define F_SETLK		6
-#define F_SETLKW	7
-#endif
-#ifndef F_SETOWN
-#define F_SETOWN	8	 
-#define F_GETOWN	9	 
-#endif
-
-
-#ifndef F_RDLCK
-#define F_RDLCK		0
-#define F_WRLCK		1
-#define F_UNLCK		2
-#endif
-
-
 
 struct flock {
 	short	l_type;

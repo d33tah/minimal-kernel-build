@@ -149,11 +149,6 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 	return ret;
 }
 
-static inline loff_t *file_ppos(struct file *file)
-{
-	return file->f_mode & FMODE_STREAM ? NULL : &file->f_pos;
-}
-
 SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf,
 		size_t, count)
 {
@@ -161,13 +156,11 @@ SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf,
 	ssize_t ret = -EBADF;
 
 	if (f.file) {
-		loff_t pos, *ppos = file_ppos(f.file);
-		if (ppos) {
-			pos = *ppos;
-			ppos = &pos;
-		}
-		ret = vfs_write(f.file, buf, count, ppos);
-		if (ret >= 0 && ppos)
+		/* No file_operations sets FMODE_STREAM, so f_pos is always used. */
+		loff_t pos = f.file->f_pos;
+
+		ret = vfs_write(f.file, buf, count, &pos);
+		if (ret >= 0)
 			f.file->f_pos = pos;
 		fdput_pos(f);
 	}

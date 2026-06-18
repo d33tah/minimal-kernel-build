@@ -185,7 +185,7 @@ static int do_dentry_open(struct file *f,
 		f->f_mode |= FMODE_CAN_WRITE;
 	/*
 	 * No address_space_operations on this build sets ->direct_IO, so
-	 * FMODE_CAN_ODIRECT is never set and O_DIRECT is always rejected.
+	 * O_DIRECT is always rejected below.
 	 */
 	f->f_flags &= ~(O_CREAT | O_EXCL | O_NOCTTY | O_TRUNC);
 

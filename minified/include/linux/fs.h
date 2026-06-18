@@ -125,7 +125,6 @@ typedef int (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
 #define FMODE_PWRITE		((__force fmode_t)0x10)
 
 #define FMODE_EXEC		((__force fmode_t)0x20)
-#define FMODE_UNSIGNED_OFFSET	((__force fmode_t)0x2000)
 
 #define FMODE_PATH		((__force fmode_t)0x4000)
 
@@ -139,10 +138,6 @@ typedef int (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
 
 #define FMODE_OPENED		((__force fmode_t)0x80000)
 #define FMODE_CREATED		((__force fmode_t)0x100000)
-
-#define FMODE_STREAM		((__force fmode_t)0x200000)
-
-#define	FMODE_CAN_ODIRECT	((__force fmode_t)0x400000)
 
 #define FMODE_NONOTIFY		((__force fmode_t)0x4000000)
 

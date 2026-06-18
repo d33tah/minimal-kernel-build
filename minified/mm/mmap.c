@@ -506,11 +506,7 @@ static inline u64 file_mmap_size_max(struct file *file, struct inode *inode)
 	if (S_ISSOCK(inode->i_mode))
 		return MAX_LFS_FILESIZE;
 
-	
-	if (file->f_mode & FMODE_UNSIGNED_OFFSET)
-		return 0;
-
-	
+	/* No file_operations sets FMODE_UNSIGNED_OFFSET on this build. */
 	return ULONG_MAX;
 }
 

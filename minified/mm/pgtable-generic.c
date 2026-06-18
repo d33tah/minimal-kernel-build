@@ -6,17 +6,11 @@
 #include <asm/tlb.h>
 
 
-void pgd_clear_bad(pgd_t *pgd)
-{
-	pgd_ERROR(*pgd);
-	pgd_clear(pgd);
-}
-
 /*
- * p4d_clear_bad / pud_clear_bad were here. Both page-table levels are folded
- * on this build, so __PAGETABLE_{P4D,PUD}_FOLDED are defined and pgtable.h
- * #defines p4d_clear_bad/pud_clear_bad to do {} while (0). The out-of-line
- * versions were guarded by #ifndef __PAGETABLE_*_FOLDED and never compiled --
+ * pgd_clear_bad / p4d_clear_bad / pud_clear_bad were here. p4d/pud are folded
+ * on this build (__PAGETABLE_{P4D,PUD}_FOLDED), and pgd_bad() is constant 0 on
+ * x86, so pgtable.h #defines all three to do {} while (0) and the out-of-line
+ * bodies (some guarded by #ifndef __PAGETABLE_*_FOLDED) are never reached --
  * removed as dead code.
  */
 

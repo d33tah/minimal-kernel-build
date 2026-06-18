@@ -232,10 +232,11 @@ static inline int pgd_same(pgd_t pgd_a, pgd_t pgd_b)
 })
 #endif
 
-void pgd_clear_bad(pgd_t *);
-
 /* 2-level paging: P4D/PUD folded, so *_clear_bad are no-ops (non-folded
- * #ifndef arms were preprocessor-dead and have been removed). */
+ * #ifndef arms were preprocessor-dead and have been removed). pgd_clear_bad is
+ * likewise a no-op: pgd_bad() is constant 0 on x86 (pgtable_types.h), so the
+ * pgd_none_or_clear_bad() corruption arm that called it is statically dead. */
+#define pgd_clear_bad(pgd)        do { } while (0)
 #define p4d_clear_bad(p4d)        do { } while (0)
 #define pud_clear_bad(p4d)        do { } while (0)
 

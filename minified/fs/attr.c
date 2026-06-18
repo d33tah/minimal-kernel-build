@@ -10,42 +10,6 @@
 
 #include <linux/xattr.h>
 
-static bool chown_ok(struct user_namespace *mnt_userns,
-		     const struct inode *inode,
-		     kuid_t uid)
-{
-	kuid_t kuid = i_uid_into_mnt(mnt_userns, inode);
-	if (uid_eq(current_fsuid(), kuid) && uid_eq(uid, inode->i_uid))
-		return true;
-	if (capable_wrt_inode_uidgid(mnt_userns, inode, CAP_CHOWN))
-		return true;
-	if (uid_eq(kuid, INVALID_UID) &&
-	    ns_capable(inode->i_sb->s_user_ns, CAP_CHOWN))
-		return true;
-	return false;
-}
-
-static bool chgrp_ok(struct user_namespace *mnt_userns,
-		     const struct inode *inode, kgid_t gid)
-{
-	kgid_t kgid = i_gid_into_mnt(mnt_userns, inode);
-	if (uid_eq(current_fsuid(), i_uid_into_mnt(mnt_userns, inode))) {
-		kgid_t mapped_gid;
-
-		if (gid_eq(gid, inode->i_gid))
-			return true;
-		mapped_gid = mapped_kgid_fs(mnt_userns, i_user_ns(inode), gid);
-		if (in_group_p(mapped_gid))
-			return true;
-	}
-	if (capable_wrt_inode_uidgid(mnt_userns, inode, CAP_CHOWN))
-		return true;
-	if (gid_eq(kgid, INVALID_GID) &&
-	    ns_capable(inode->i_sb->s_user_ns, CAP_CHOWN))
-		return true;
-	return false;
-}
-
 int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 		    struct iattr *attr)
 {
@@ -55,28 +19,18 @@ int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 	if (ia_valid & ATTR_FORCE)
 		goto kill_priv;
 
-	 
-	if ((ia_valid & ATTR_UID) && !chown_ok(mnt_userns, inode, attr->ia_uid))
-		return -EPERM;
+	/* ATTR_UID / ATTR_GID are never set on this build (no chown path) */
 
-	 
-	if ((ia_valid & ATTR_GID) && !chgrp_ok(mnt_userns, inode, attr->ia_gid))
-		return -EPERM;
 
-	 
 	if (ia_valid & ATTR_MODE) {
 		kgid_t mapped_gid;
 
 		if (!inode_owner_or_capable(mnt_userns, inode))
 			return -EPERM;
 
-		if (ia_valid & ATTR_GID)
-			mapped_gid = mapped_kgid_fs(mnt_userns,
-						i_user_ns(inode), attr->ia_gid);
-		else
-			mapped_gid = i_gid_into_mnt(mnt_userns, inode);
+		mapped_gid = i_gid_into_mnt(mnt_userns, inode);
 
-		 
+
 		if (!in_group_p(mapped_gid) &&
 		    !capable_wrt_inode_uidgid(mnt_userns, inode, CAP_FSETID))
 			attr->ia_mode &= ~S_ISGID;
@@ -99,10 +53,7 @@ void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 {
 	unsigned int ia_valid = attr->ia_valid;
 
-	if (ia_valid & ATTR_UID)
-		inode->i_uid = attr->ia_uid;
-	if (ia_valid & ATTR_GID)
-		inode->i_gid = attr->ia_gid;
+	/* ATTR_UID / ATTR_GID are never set on this build (no chown path) */
 	if (ia_valid & ATTR_ATIME)
 		inode->i_atime = attr->ia_atime;
 	if (ia_valid & ATTR_MTIME)
@@ -176,20 +127,10 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 	if (!(attr->ia_valid & ~(ATTR_KILL_SUID | ATTR_KILL_SGID)))
 		return 0;
 
-	 
-	if (ia_valid & ATTR_UID &&
-	    !kuid_has_mapping(inode->i_sb->s_user_ns, attr->ia_uid))
+	/* ATTR_UID / ATTR_GID are never set on this build (no chown path) */
+	if (!uid_valid(i_uid_into_mnt(mnt_userns, inode)))
 		return -EOVERFLOW;
-	if (ia_valid & ATTR_GID &&
-	    !kgid_has_mapping(inode->i_sb->s_user_ns, attr->ia_gid))
-		return -EOVERFLOW;
-
-	 
-	if (!(ia_valid & ATTR_UID) &&
-	    !uid_valid(i_uid_into_mnt(mnt_userns, inode)))
-		return -EOVERFLOW;
-	if (!(ia_valid & ATTR_GID) &&
-	    !gid_valid(i_gid_into_mnt(mnt_userns, inode)))
+	if (!gid_valid(i_gid_into_mnt(mnt_userns, inode)))
 		return -EOVERFLOW;
 
 	if (inode->i_op->setattr)

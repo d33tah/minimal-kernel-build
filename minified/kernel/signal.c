@@ -382,12 +382,6 @@ int force_sig_fault(int sig, int code, void __user *addr
 	return force_sig_info_to_task(&info, current, HANDLER_CURRENT);
 }
 
-bool get_signal(struct ksignal *ksig)
-{
-	/* Minimal stub: init doesn't use signals */
-	return false;
-}
-
 void exit_signals(struct task_struct *tsk)
 {
 	/* Minimal stub: just mark as exiting */

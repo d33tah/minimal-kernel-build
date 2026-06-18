@@ -1,14 +1,6 @@
 #include <vdso/datapage.h>
 #include <vdso/helpers.h>
 
-#ifndef vdso_calc_delta
-static __always_inline
-u64 vdso_calc_delta(u64 cycles, u64 last, u64 mask, u32 mult)
-{
-	return ((cycles - last) & mask) * mult;
-}
-#endif
-
 #ifndef vdso_shift_ns
 static __always_inline u64 vdso_shift_ns(u64 ns, u32 shift)
 {
@@ -18,20 +10,6 @@ static __always_inline u64 vdso_shift_ns(u64 ns, u32 shift)
 
 #ifndef __arch_vdso_hres_capable
 static inline bool __arch_vdso_hres_capable(void)
-{
-	return true;
-}
-#endif
-
-#ifndef vdso_clocksource_ok
-static inline bool vdso_clocksource_ok(const struct vdso_data *vd)
-{
-	return vd->clock_mode != VDSO_CLOCKMODE_NONE;
-}
-#endif
-
-#ifndef vdso_cycles_ok
-static inline bool vdso_cycles_ok(u64 cycles)
 {
 	return true;
 }

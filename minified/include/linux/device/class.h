@@ -63,41 +63,10 @@ static inline struct device *class_find_device_by_devt(struct class *class,
 	return class_find_device(class, NULL, &devt, device_match_devt);
 }
 
-struct class_attribute {
-	struct attribute attr;
-	ssize_t (*show)(struct class *class, struct class_attribute *attr,
-			char *buf);
-	ssize_t (*store)(struct class *class, struct class_attribute *attr,
-			const char *buf, size_t count);
-};
-
-#define CLASS_ATTR_RW(_name) \
-	struct class_attribute class_attr_##_name = __ATTR_RW(_name)
-#define CLASS_ATTR_RO(_name) \
-	struct class_attribute class_attr_##_name = __ATTR_RO(_name)
-#define CLASS_ATTR_WO(_name) \
-	struct class_attribute class_attr_##_name = __ATTR_WO(_name)
-
-
-struct class_attribute_string {
-	struct class_attribute attr;
-	char *str;
-};
-
-#define _CLASS_ATTR_STRING(_name, _mode, _str) \
-	{ __ATTR(_name, _mode, show_class_attr_string, NULL), _str }
-#define CLASS_ATTR_STRING(_name, _mode, _str) \
-	struct class_attribute_string class_attr_##_name = \
-		_CLASS_ATTR_STRING(_name, _mode, _str)
-
-
-struct class_interface {
-	struct list_head	node;
-	struct class		*class;
-
-	int (*add_dev)		(struct device *, struct class_interface *);
-	void (*remove_dev)	(struct device *, struct class_interface *);
-};
+/* Removed: struct class_attribute + CLASS_ATTR_{RW,RO,WO} + struct
+   class_attribute_string + CLASS_ATTR_STRING + struct class_interface - no
+   class attributes or class interfaces are defined anywhere, and the
+   show_class_attr_string / class_interface_register users were already removed. */
 
 extern struct class * __must_check __class_create(struct module *owner,
 						  const char *name,

@@ -40,7 +40,7 @@
 # 52 umount2 removed (unreachable)
 53	i386	lock
 54	i386	ioctl			sys_ioctl			compat_sys_ioctl
-55	i386	fcntl			sys_fcntl			compat_sys_fcntl64
+55	i386	fcntl
 56	i386	mpx
 58	i386	ulimit
 # 60 umask removed (unreachable)
@@ -101,7 +101,7 @@
 # 218	i386	mincore			sys_mincore (removed, unreachable -> sys_ni)
 # 219	i386	madvise			sys_madvise (removed, unreachable -> sys_ni)
 # 220	i386	getdents64		sys_getdents64
-221	i386	fcntl64			sys_fcntl64			compat_sys_fcntl64
+221	i386	fcntl64
 # 222 is unused
 # 223 is unused
 # 224 gettid removed (unreachable)

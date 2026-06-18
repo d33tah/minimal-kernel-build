@@ -12,18 +12,10 @@
 
 long copy_to_kernel_nofault(void *dst, const void *src, size_t size)
 {
-	unsigned long align = 0;
-
-	if (!IS_ENABLED(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS))
-		align = (unsigned long)dst | (unsigned long)src;
-
 	pagefault_disable();
-	if (!(align & 7))
-		copy_to_kernel_nofault_loop(dst, src, size, u64, Efault);
-	if (!(align & 3))
-		copy_to_kernel_nofault_loop(dst, src, size, u32, Efault);
-	if (!(align & 1))
-		copy_to_kernel_nofault_loop(dst, src, size, u16, Efault);
+	copy_to_kernel_nofault_loop(dst, src, size, u64, Efault);
+	copy_to_kernel_nofault_loop(dst, src, size, u32, Efault);
+	copy_to_kernel_nofault_loop(dst, src, size, u16, Efault);
 	copy_to_kernel_nofault_loop(dst, src, size, u8, Efault);
 	pagefault_enable();
 	return 0;

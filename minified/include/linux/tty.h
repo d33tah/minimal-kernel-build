@@ -35,7 +35,6 @@ do {								\
 } while (0)
 
 int ldsem_down_read(struct ld_semaphore *sem, long timeout);
-int ldsem_down_read_trylock(struct ld_semaphore *sem);
 int ldsem_down_write(struct ld_semaphore *sem, long timeout);
 void ldsem_up_read(struct ld_semaphore *sem);
 void ldsem_up_write(struct ld_semaphore *sem);

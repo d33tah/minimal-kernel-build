@@ -63,20 +63,6 @@ int __sched ldsem_down_read(struct ld_semaphore *sem, long timeout)
 	return __ldsem_down_read_nested(sem, 0, timeout);
 }
 
-int ldsem_down_read_trylock(struct ld_semaphore *sem)
-{
-	long count = atomic_long_read(&sem->count);
-
-	while (count >= 0) {
-		if (atomic_long_try_cmpxchg(&sem->count, &count, count + LDSEM_READ_BIAS)) {
-			rwsem_acquire_read(&sem->dep_map, 0, 1, _RET_IP_);
-			lock_acquired(&sem->dep_map, _RET_IP_);
-			return 1;
-		}
-	}
-	return 0;
-}
-
 int __sched ldsem_down_write(struct ld_semaphore *sem, long timeout)
 {
 	might_sleep();

@@ -51,8 +51,6 @@ static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs);
 static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs) {}
 #endif
 
-void enter_from_user_mode(struct pt_regs *regs);
-
 void syscall_enter_from_user_mode_prepare(struct pt_regs *regs);
 
 long syscall_enter_from_user_mode_work(struct pt_regs *regs, long syscall);

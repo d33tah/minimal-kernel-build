@@ -81,10 +81,6 @@ long vfs_truncate(const struct path *path, loff_t length)
 	if (error)
 		goto mnt_drop_write_and_out;
 
-	error = -EPERM;
-	if (IS_APPEND(inode))
-		goto mnt_drop_write_and_out;
-
 	error = get_write_access(inode);
 	if (error)
 		goto mnt_drop_write_and_out;

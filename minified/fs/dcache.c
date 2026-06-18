@@ -627,8 +627,6 @@ static unsigned d_flags_for_inode(struct inode *inode)
 		add_flags = DCACHE_SPECIAL_TYPE;
 
 type_determined:
-	if (unlikely(IS_AUTOMOUNT(inode)))
-		add_flags |= DCACHE_NEED_AUTOMOUNT;
 	return add_flags;
 }
 

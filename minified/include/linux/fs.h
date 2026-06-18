@@ -890,28 +890,19 @@ struct super_operations {
 	/* show_devname, show_path, show_stats removed - unused */
 };
 
-#define S_NOATIME	(1 << 1)
-#define S_APPEND	(1 << 2)
-#define S_IMMUTABLE	(1 << 3)
-#define S_DEAD		(1 << 4)
-#define S_NOCMTIME	(1 << 7)
-#define S_SWAPFILE	(1 << 8)
-#define S_AUTOMOUNT	(1 << 11)
 #define S_NOSEC		(1 << 12)
 #define S_DAX		0
-/* S_VERITY, S_KERNEL_FILE removed - unused */
+/* S_NOATIME, S_APPEND, S_IMMUTABLE, S_DEAD, S_NOCMTIME, S_SWAPFILE,
+ * S_AUTOMOUNT removed - never set on any inode, all IS_* tests were
+ * statically dead. S_VERITY, S_KERNEL_FILE removed earlier - unused */
 
 #define __IS_FLG(inode, flg)	((inode)->i_sb->s_flags & (flg))
 
 static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags & SB_RDONLY; }
 #define IS_NOATIME(inode)	__IS_FLG(inode, SB_RDONLY|SB_NOATIME)
-#define IS_APPEND(inode)	((inode)->i_flags & S_APPEND)
-#define IS_IMMUTABLE(inode)	((inode)->i_flags & S_IMMUTABLE)
 #define IS_POSIXACL(inode)	__IS_FLG(inode, SB_POSIXACL)
-#define IS_DEADDIR(inode)	((inode)->i_flags & S_DEAD)
-#define IS_NOCMTIME(inode)	((inode)->i_flags & S_NOCMTIME)
-#define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
-#define IS_AUTOMOUNT(inode)	((inode)->i_flags & S_AUTOMOUNT)
+/* IS_APPEND, IS_IMMUTABLE, IS_DEADDIR, IS_NOCMTIME, IS_SWAPFILE,
+ * IS_AUTOMOUNT removed - the underlying S_* flags are never set */
 #define IS_NOSEC(inode)		((inode)->i_flags & S_NOSEC)
 #define IS_DAX(inode)		((inode)->i_flags & S_DAX)
 

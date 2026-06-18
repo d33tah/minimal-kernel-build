@@ -186,11 +186,7 @@ int inode_permission(struct user_namespace *mnt_userns,
 		return retval;
 
 	if (unlikely(mask & MAY_WRITE)) {
-		
-		if (IS_IMMUTABLE(inode))
-			return -EPERM;
 
-		
 		if (HAS_UNMAPPED_ID(mnt_userns, inode))
 			return -EACCES;
 	}
@@ -612,10 +608,6 @@ static struct dentry *__lookup_hash(const struct qstr *name,
 	if (dentry)
 		return dentry;
 
-	
-	if (unlikely(IS_DEADDIR(dir)))
-		return ERR_PTR(-ENOENT);
-
 	dentry = d_alloc(base, name);
 	if (unlikely(!dentry))
 		return ERR_PTR(-ENOMEM);
@@ -675,9 +667,6 @@ static struct dentry *__lookup_slow(const struct qstr *name,
 	struct inode *inode = dir->d_inode;
 	DECLARE_WAIT_QUEUE_HEAD_ONSTACK(wq);
 
-	
-	if (unlikely(IS_DEADDIR(inode)))
-		return ERR_PTR(-ENOENT);
 	dentry = d_alloc_parallel(dir, name, &wq);
 	if (IS_ERR(dentry))
 		return dentry;
@@ -1190,8 +1179,6 @@ static inline int may_create(struct user_namespace *mnt_userns,
 {
 	if (child->d_inode)
 		return -EEXIST;
-	if (IS_DEADDIR(dir))
-		return -ENOENT;
 	if (!fsuidgid_has_mapping(dir->i_sb, mnt_userns))
 		return -EOVERFLOW;
 
@@ -1237,15 +1224,7 @@ static int may_open(struct user_namespace *mnt_userns, const struct path *path,
 	if (error)
 		return error;
 
-	
-	if (IS_APPEND(inode)) {
-		if  ((flag & O_ACCMODE) != O_RDONLY && !(flag & O_APPEND))
-			return -EPERM;
-		if (flag & O_TRUNC)
-			return -EPERM;
-	}
 
-	
 	if (flag & O_NOATIME && !inode_owner_or_capable(mnt_userns, inode))
 		return -EPERM;
 
@@ -1280,9 +1259,6 @@ static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 	int error;
 	umode_t mode = op->mode;
 	DECLARE_WAIT_QUEUE_HEAD_ONSTACK(wq);
-
-	if (unlikely(IS_DEADDIR(dir_inode)))
-		return ERR_PTR(-ENOENT);
 
 	file->f_mode &= ~FMODE_CREATED;
 	dentry = d_lookup(dir, &nd->last);

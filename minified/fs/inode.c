@@ -421,9 +421,6 @@ bool atime_needs_update(const struct path *path, struct inode *inode)
 	struct vfsmount *mnt = path->mnt;
 	struct timespec64 now;
 
-	if (inode->i_flags & S_NOATIME)
-		return false;
-
 	if (HAS_UNMAPPED_ID(mnt_user_ns(mnt), inode))
 		return false;
 
@@ -536,9 +533,6 @@ int file_update_time(struct file *file)
 	struct timespec64 now;
 	int sync_it = 0;
 	int ret;
-
-	if (IS_NOCMTIME(inode))
-		return 0;
 
 	now = current_time(inode);
 	if (!timespec64_equal(&inode->i_mtime, &now))

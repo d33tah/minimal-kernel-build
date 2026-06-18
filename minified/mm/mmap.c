@@ -606,7 +606,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 
 		if (!file->f_op->mmap)
 			return -ENODEV;
-		if (vm_flags & (VM_GROWSDOWN|VM_GROWSUP))
+		if (vm_flags & VM_GROWSDOWN)
 			return -EINVAL;
 	} else {
 		pgoff = addr >> PAGE_SHIFT;
@@ -1059,8 +1059,7 @@ detach_vmas_to_be_unmapped(struct mm_struct *mm, struct vm_area_struct *vma,
 	
 	if (vma && (vma->vm_flags & VM_GROWSDOWN))
 		return false;
-	if (prev && (prev->vm_flags & VM_GROWSUP))
-		return false;
+	/* VM_GROWSUP=VM_NONE (=0) on x86-32: the prev-growsup branch is dead */
 	return true;
 }
 

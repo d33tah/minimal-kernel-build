@@ -1124,14 +1124,8 @@ static inline unsigned long vm_start_gap(struct vm_area_struct *vma)
 
 static inline unsigned long vm_end_gap(struct vm_area_struct *vma)
 {
-	unsigned long vm_end = vma->vm_end;
-
-	if (vma->vm_flags & VM_GROWSUP) {
-		vm_end += stack_guard_gap;
-		if (vm_end < vma->vm_end)
-			vm_end = -PAGE_SIZE;
-	}
-	return vm_end;
+	/* VM_GROWSUP=VM_NONE (=0) on x86-32: the growsup gap branch is dead */
+	return vma->vm_end;
 }
 
 static inline unsigned long vma_pages(struct vm_area_struct *vma)

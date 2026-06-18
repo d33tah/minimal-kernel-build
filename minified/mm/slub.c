@@ -46,22 +46,9 @@
 
 static nodemask_t slab_nodes;
 
-static inline void *freelist_ptr(const struct kmem_cache *s, void *ptr,
-				 unsigned long ptr_addr)
-{
-	return ptr;
-}
-
-static inline void *freelist_dereference(const struct kmem_cache *s,
-					 void *ptr_addr)
-{
-	return freelist_ptr(s, (void *)*(unsigned long *)(ptr_addr),
-			    (unsigned long)ptr_addr);
-}
-
 static inline void *get_freepointer(struct kmem_cache *s, void *object)
 {
-	return freelist_dereference(s, object + s->offset);
+	return *(void **)(object + s->offset);
 }
 
 static void prefetch_freepointer(const struct kmem_cache *s, void *object)
@@ -78,7 +65,7 @@ static inline void set_freepointer(struct kmem_cache *s, void *object, void *fp)
 {
 	unsigned long freeptr_addr = (unsigned long)object + s->offset;
 
-	*(void **)freeptr_addr = freelist_ptr(s, fp, freeptr_addr);
+	*(void **)freeptr_addr = fp;
 }
 
 #define for_each_object(__p, __s, __addr, __objects) \

@@ -57,11 +57,8 @@ extern struct kobject * __must_check kobject_get_unless_zero(
 						struct kobject *kobj);
 extern void kobject_put(struct kobject *kobj);
 
-/* kobject_get_ownership now static in kobject.c */
-
 struct kobj_type {
 	void (*release)(struct kobject *kobj);
-	void (*get_ownership)(struct kobject *kobj, kuid_t *uid, kgid_t *gid);
 };
 
 /* struct kset_uevent_ops removed - uevent_ops never dispatched (all NULL) */

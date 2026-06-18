@@ -6,15 +6,6 @@
 #include <linux/slab.h>
 #include <linux/random.h>
 
-static void kobject_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
-{
-	*uid = GLOBAL_ROOT_UID;
-	*gid = GLOBAL_ROOT_GID;
-
-	if (kobj->ktype->get_ownership)
-		kobj->ktype->get_ownership(kobj, uid, gid);
-}
-
 static void kobj_kset_join(struct kobject *kobj)
 {
 	if (!kobj->kset)
@@ -334,15 +325,8 @@ static void kset_release(struct kobject *kobj)
 	kfree(kset);
 }
 
-static void kset_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
-{
-	if (kobj->parent)
-		kobject_get_ownership(kobj->parent, uid, gid);
-}
-
 static struct kobj_type kset_ktype = {
 	.release	= kset_release,
-	.get_ownership	= kset_get_ownership,
 };
 
 static struct kset *kset_create(const char *name,

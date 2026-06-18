@@ -60,9 +60,6 @@ void *memmove(void *dest, const void *src, size_t n);
 extern int memcmp(const void *, const void *, size_t);
 #define memcmp __builtin_memcmp
 
-#define __HAVE_ARCH_MEMCHR
-extern void *memchr(const void *cs, int c, size_t count);
-
 static inline void *__memset_generic(void *s, char c, size_t count)
 {
 	int d0, d1;

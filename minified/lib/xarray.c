@@ -786,22 +786,5 @@ max:
 	return NULL;
 }
 
-void *xa_load(struct xarray *xa, unsigned long index)
-{
-	XA_STATE(xas, xa, index);
-	void *entry;
-
-	rcu_read_lock();
-	do {
-		entry = xas_load(&xas);
-		if (xa_is_zero(entry))
-			entry = NULL;
-	} while (xas_retry(&xas, entry));
-	rcu_read_unlock();
-
-	return entry;
-}
-
-
-/* Removed: __xa_store, xa_store, __xa_cmpxchg, __xa_insert, __xa_alloc - no callers */
+/* Removed: xa_load, __xa_store, xa_store, __xa_cmpxchg, __xa_insert, __xa_alloc - no callers */
 

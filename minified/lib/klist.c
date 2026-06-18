@@ -69,11 +69,6 @@ static void klist_put(struct klist_node *n, bool kill)
 		put(n);
 }
 
-void klist_del(struct klist_node *n)
-{
-	klist_put(n, true);
-}
-
 void klist_iter_init_node(struct klist *k, struct klist_iter *i,
 			  struct klist_node *n)
 {

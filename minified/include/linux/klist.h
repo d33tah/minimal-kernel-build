@@ -32,9 +32,6 @@ struct klist_node {
 	struct kref		n_ref;
 };
 
-extern void klist_del(struct klist_node *n);
-
-
 struct klist_iter {
 	struct klist		*i_klist;
 	struct klist_node	*i_cur;

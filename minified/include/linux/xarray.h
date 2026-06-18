@@ -97,8 +97,6 @@ struct xarray {
 	.xa_head = NULL,					\
 }
 
-void *xa_load(struct xarray *, unsigned long index);
-
 static inline void xa_init_flags(struct xarray *xa, gfp_t flags)
 {
 	spin_lock_init(&xa->xa_lock);

@@ -3,14 +3,6 @@
 #include <asm/asm.h>
 
 
-static inline int __movsl_is_ok(unsigned long a1, unsigned long a2, unsigned long n)
-{
-	return 1;
-}
-#define movsl_is_ok(a1, a2, n) \
-	__movsl_is_ok((unsigned long)(a1), (unsigned long)(a2), (n))
-
-
 #define __do_clear_user(addr,size)					\
 do {									\
 	int __d0;							\
@@ -35,9 +27,6 @@ clear_user(void __user *to, unsigned long n)
 		__do_clear_user(to, n);
 	return n;
 }
-
-unsigned long __copy_user_intel(void __user *to, const void *from,
-					unsigned long size);
 
 #define __copy_user(to, from, size)					\
 do {									\
@@ -69,10 +58,7 @@ do {									\
 unsigned long __copy_user_ll(void *to, const void *from, unsigned long n)
 {
 	__uaccess_begin_nospec();
-	if (movsl_is_ok(to, from, n))
-		__copy_user(to, from, n);
-	else
-		n = __copy_user_intel(to, from, n);
+	__copy_user(to, from, n);
 	__uaccess_end();
 	return n;
 }

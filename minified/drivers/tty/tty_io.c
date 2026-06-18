@@ -964,7 +964,6 @@ struct device *tty_register_device_attr(struct tty_driver *driver,
 	dev->parent = device;
 	dev->release = tty_device_create_release;
 	dev_set_name(dev, "%s", name);
-	dev->groups = attr_grp;
 
 	retval = device_register(dev);
 	if (retval)

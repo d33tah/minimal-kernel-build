@@ -91,8 +91,6 @@ struct device {
 	struct list_head	devres_head;
 
 	struct class		*class;
-	const struct attribute_group **groups;
-
 	void	(*release)(struct device *dev);
 };
 

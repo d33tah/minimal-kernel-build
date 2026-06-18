@@ -261,7 +261,6 @@ device_create_groups_vargs(struct class *class, struct device *parent,
 	dev->devt = devt;
 	dev->class = class;
 	dev->parent = parent;
-	dev->groups = groups;
 	dev->release = device_create_release;
 
 	retval = kobject_set_name_vargs(&dev->kobj, fmt, args);

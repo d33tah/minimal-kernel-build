@@ -71,9 +71,6 @@ void clocksource_mark_unstable(struct clocksource *cs)
 		cs->mark_unstable(cs);
 }
 
-static inline void clocksource_watchdog_lock(unsigned long *flags) { }
-static inline void clocksource_watchdog_unlock(unsigned long *flags) { }
-
 static void clocksource_enqueue_watchdog(struct clocksource *cs)
 {
 	INIT_LIST_HEAD(&cs->wd_list);
@@ -82,10 +79,6 @@ static void clocksource_enqueue_watchdog(struct clocksource *cs)
 	    (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS))
 		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
 }
-
-static void clocksource_select_watchdog(bool fallback) { }
-
-static void clocksource_dequeue_watchdog(struct clocksource *cs) { }
 
 static int __clocksource_watchdog_kthread(void)
 {
@@ -306,8 +299,6 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq
 
 int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 {
-	unsigned long flags;
-
 	clocksource_arch_init(cs);
 
 	if (WARN_ON_ONCE((unsigned int)cs->id >= CSID_MAX))
@@ -325,13 +316,10 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 	 
 	mutex_lock(&clocksource_mutex);
 
-	clocksource_watchdog_lock(&flags);
 	clocksource_enqueue(cs);
 	clocksource_enqueue_watchdog(cs);
-	clocksource_watchdog_unlock(&flags);
 
 	clocksource_select();
-	clocksource_select_watchdog(false);
 	__clocksource_suspend_select(cs);
 	mutex_unlock(&clocksource_mutex);
 	return 0;
@@ -339,11 +327,8 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 
 static int clocksource_unbind(struct clocksource *cs)
 {
-	unsigned long flags;
-
 	if (clocksource_is_watchdog(cs)) {
-		 
-		clocksource_select_watchdog(true);
+
 		if (clocksource_is_watchdog(cs))
 			return -EBUSY;
 	}
@@ -360,10 +345,7 @@ static int clocksource_unbind(struct clocksource *cs)
 		clocksource_suspend_select(true);
 	}
 
-	clocksource_watchdog_lock(&flags);
-	clocksource_dequeue_watchdog(cs);
 	list_del_init(&cs->list);
-	clocksource_watchdog_unlock(&flags);
 
 	return 0;
 }

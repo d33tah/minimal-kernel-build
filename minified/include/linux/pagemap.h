@@ -127,17 +127,11 @@ static inline pgoff_t folio_index(struct folio *folio)
 
 static inline struct page *folio_file_page(struct folio *folio, pgoff_t index)
 {
-	 
-	if (folio_test_hugetlb(folio))
-		return &folio->page;
 	return folio_page(folio, index & (folio_nr_pages(folio) - 1));
 }
 
 static inline bool folio_contains(struct folio *folio, pgoff_t index)
 {
-	 
-	if (folio_test_hugetlb(folio))
-		return folio->index == index;
 	return index - folio_index(folio) < folio_nr_pages(folio);
 }
 

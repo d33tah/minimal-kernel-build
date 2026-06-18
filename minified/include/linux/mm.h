@@ -1208,8 +1208,6 @@ static inline int in_gate_area(struct mm_struct *mm, unsigned long addr)
 
 
 
-static inline unsigned int debug_guardpage_minorder(void) { return 0; }
-
 #if MAX_NUMNODES > 1
 void __init setup_nr_node_ids(void);
 #else

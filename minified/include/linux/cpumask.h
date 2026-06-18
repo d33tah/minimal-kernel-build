@@ -36,12 +36,6 @@ static __always_inline unsigned int cpumask_check(unsigned int cpu)
 }
 
 #if NR_CPUS == 1
-static inline unsigned int cpumask_first(const struct cpumask *srcp)
-{
-	return 0;
-}
-
-
 static inline unsigned int cpumask_next(int n, const struct cpumask *srcp)
 {
 	return n+1;

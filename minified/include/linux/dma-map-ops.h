@@ -7,9 +7,4 @@ struct cma;
 
 struct dma_map_ops;
 
-static inline bool dev_is_dma_coherent(struct device *dev)
-{
-	return true;
-}
-
 #endif

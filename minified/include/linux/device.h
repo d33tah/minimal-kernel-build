@@ -108,8 +108,7 @@ struct device {
 	const char		*init_name;  
 	const struct device_type *type;
 
-	struct bus_type	*bus;		 
-	struct device_driver *driver;	 
+	struct device_driver *driver;
 	void		*platform_data;	 
 	void		*driver_data;	 
 	struct mutex		mutex;	 

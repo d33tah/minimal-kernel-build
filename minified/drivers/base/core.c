@@ -180,9 +180,6 @@ int device_add(struct device *dev)
 		dev->init_name = NULL;
 	}
 
-	if (!dev_name(dev) && dev->bus && dev->bus->dev_name)
-		dev_set_name(dev, "%s%u", dev->bus->dev_name, dev->id);
-
 	if (!dev_name(dev)) {
 		error = -EINVAL;
 		goto name_error;

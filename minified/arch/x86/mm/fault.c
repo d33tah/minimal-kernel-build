@@ -23,11 +23,6 @@
 /* Removed: #include <asm/kvm_para.h> - stub below */
 #include <asm/vdso.h>
 
-/* Minimal stub for kvm_handle_async_pf - not running under KVM */
-static __always_inline bool kvm_handle_async_pf(struct pt_regs *regs, u32 token)
-{
-	return false;
-}			 
 #include <asm/irq_stack.h>
 
 
@@ -570,11 +565,7 @@ DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)
 
 	prefetchw(&current->mm->mmap_lock);
 
-	 
-	if (kvm_handle_async_pf(regs, (u32)address))
-		return;
 
-	 
 	state = irqentry_enter(regs);
 
 	handle_page_fault(regs, error_code, address);

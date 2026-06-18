@@ -520,12 +520,6 @@ void __weak __init free_initrd_mem(unsigned long start, unsigned long end)
 			"initrd");
 }
 
-static inline bool kexec_free_initrd(void)
-{
-	return false;
-}
-
-
 static void __init do_populate_rootfs(void *unused, async_cookie_t cookie)
 {
 	 
@@ -545,7 +539,7 @@ static void __init do_populate_rootfs(void *unused, async_cookie_t cookie)
 
 done:
 	 
-	if (!do_retain_initrd && initrd_start && !kexec_free_initrd())
+	if (!do_retain_initrd && initrd_start)
 		free_initrd_mem(initrd_start, initrd_end);
 	initrd_start = 0;
 	initrd_end = 0;

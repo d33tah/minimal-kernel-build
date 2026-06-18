@@ -45,22 +45,4 @@ typedef struct {
 
 typedef efi_runtime_services_32_t efi_runtime_services_t;
 
-static inline bool efi_enabled(int feature)
-{
-	return false;
-}
-
-static inline int efi_mem_type(unsigned long phys_addr)
-{
-	return 0;
-}
-
-static inline u64 efi_mem_attributes(unsigned long phys_addr)
-{
-	return 0;
-}
-
-
-static inline void parse_efi_setup(u64 phys_addr, u32 data_len) {}
-
-#endif  
+#endif

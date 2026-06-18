@@ -51,13 +51,6 @@ static unsigned int calculate_alignment(slab_flags_t flags,
 	return ALIGN(align, sizeof(void *));
 }
 
-struct kmem_cache *find_mergeable(unsigned int size, unsigned int align,
-		slab_flags_t flags, const char *name, void (*ctor)(void *))
-{
-
-	return NULL;
-}
-
 static struct kmem_cache *create_cache(const char *name,
 		unsigned int object_size, unsigned int align,
 		slab_flags_t flags, unsigned int useroffset,
@@ -127,11 +120,6 @@ kmem_cache_create_usercopy(const char *name,
 	if (WARN_ON(!usersize && useroffset) ||
 	    WARN_ON(size < usersize || size - usersize < useroffset))
 		usersize = useroffset = 0;
-
-	if (!usersize)
-		s = __kmem_cache_alias(name, size, align, flags, ctor);
-	if (s)
-		goto out_unlock;
 
 	cache_name = kstrdup_const(name, GFP_KERNEL);
 	if (!cache_name) {

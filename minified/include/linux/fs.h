@@ -350,8 +350,7 @@ struct inode {
 		struct hlist_head	i_dentry;
 		struct rcu_head		i_rcu;
 	};
-	atomic64_t		i_version;
-	atomic64_t		i_sequence; 
+	atomic64_t		i_sequence;
 	atomic_t		i_count;
 	atomic_t		i_dio_count;
 	atomic_t		i_writecount;
@@ -496,8 +495,6 @@ struct file {
 	const struct cred	*f_cred;
 	struct file_ra_state	f_ra;
 
-	u64			f_version;
-	
 	void			*private_data;
 
 	struct address_space	*f_mapping;
@@ -561,7 +558,6 @@ struct fasync_struct {
 #define SB_NODIRATIME	2048
 #define SB_POSIXACL	(1<<16)
 #define SB_KERNMOUNT	(1<<22)
-#define SB_I_VERSION	(1<<23)
 #define SB_LAZYTIME	(1<<25)
 #define SB_NOSEC	(1<<28)
 #define SB_BORN		(1<<29)
@@ -909,7 +905,6 @@ struct super_operations {
 
 static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags & SB_RDONLY; }
 #define IS_NOATIME(inode)	__IS_FLG(inode, SB_RDONLY|SB_NOATIME)
-#define IS_I_VERSION(inode)	__IS_FLG(inode, SB_I_VERSION)
 #define IS_APPEND(inode)	((inode)->i_flags & S_APPEND)
 #define IS_IMMUTABLE(inode)	((inode)->i_flags & S_IMMUTABLE)
 #define IS_POSIXACL(inode)	__IS_FLG(inode, SB_POSIXACL)
@@ -972,7 +967,6 @@ enum file_time_flags {
 	S_ATIME = 1,
 	S_MTIME = 2,
 	S_CTIME = 4,
-	S_VERSION = 8,
 };
 
 extern bool atime_needs_update(const struct path *, struct inode *);

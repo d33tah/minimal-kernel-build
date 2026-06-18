@@ -15,37 +15,9 @@
 #include <linux/list_lru.h>
 #include "internal.h"
 
-/* Inlined from iversion.h - only used in this file */
-#define I_VERSION_QUERIED_SHIFT	(1)
-#define I_VERSION_QUERIED	(1ULL << (I_VERSION_QUERIED_SHIFT - 1))
-#define I_VERSION_INCREMENT	(1ULL << I_VERSION_QUERIED_SHIFT)
-
-static inline u64 inode_peek_iversion_raw(const struct inode *inode)
-{
-	return atomic64_read(&inode->i_version);
-}
-
-static inline bool inode_maybe_inc_iversion(struct inode *inode, bool force)
-{
-	u64 cur, old, new;
-	smp_mb();
-	cur = inode_peek_iversion_raw(inode);
-	for (;;) {
-		if (!force && !(cur & I_VERSION_QUERIED))
-			return false;
-		new = (cur & ~I_VERSION_QUERIED) + I_VERSION_INCREMENT;
-		old = atomic64_cmpxchg(&inode->i_version, cur, new);
-		if (likely(old == cur))
-			break;
-		cur = old;
-	}
-	return true;
-}
-
-static inline bool inode_iversion_need_inc(struct inode *inode)
-{
-	return inode_peek_iversion_raw(inode) & I_VERSION_QUERIED;
-}
+/* iversion machinery removed: SB_I_VERSION is never set on any superblock in
+ * this build (ramfs/devtmpfs/proc/sysfs), so IS_I_VERSION() is always false and
+ * the S_VERSION sync_it branch never fires. i_version was never written. */
 
 /*
  * Inode hashing removed: this build has no __insert_inode_hash, so every inode's
@@ -435,9 +407,6 @@ static int generic_update_time(struct inode *inode, struct timespec64 *time, int
 			inode->i_mtime = *time;
 	}
 
-	if (flags & S_VERSION)
-		inode_maybe_inc_iversion(inode, false);
-
 	return 0;
 }
 
@@ -577,9 +546,6 @@ int file_update_time(struct file *file)
 
 	if (!timespec64_equal(&inode->i_ctime, &now))
 		sync_it |= S_CTIME;
-
-	if (IS_I_VERSION(inode) && inode_iversion_need_inc(inode))
-		sync_it |= S_VERSION;
 
 	if (!sync_it)
 		return 0;

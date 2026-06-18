@@ -348,37 +348,11 @@ SYSCALL_DEFINE1(exit, int, error_code)
 	do_exit((error_code&0xff)<<8);
 }
 
-static void __noreturn
-do_group_exit(int exit_code)
-{
-	struct signal_struct *sig = current->signal;
-
-	if (sig->flags & SIGNAL_GROUP_EXIT)
-		exit_code = sig->group_exit_code;
-	else if (!thread_group_empty(current)) {
-		struct sighand_struct *const sighand = current->sighand;
-
-		spin_lock_irq(&sighand->siglock);
-		if (sig->flags & SIGNAL_GROUP_EXIT)
-
-			exit_code = sig->group_exit_code;
-		else {
-			sig->group_exit_code = exit_code;
-			sig->flags = SIGNAL_GROUP_EXIT;
-			zap_other_threads(current);
-		}
-		spin_unlock_irq(&sighand->siglock);
-	}
-
-	do_exit(exit_code);
-	
-}
-
-SYSCALL_DEFINE1(exit_group, int, error_code)
-{
-	do_group_exit((error_code & 0xff) << 8);
-	
-	return 0;
-}
+/*
+ * Removed: do_group_exit + SYSCALL_DEFINE1(exit_group) - unreachable. The init
+ * ELF exits via exit(2) (__NR_exit), never exit_group(2); the syscall_32.tbl
+ * entry 252 is gone (routes to sys_ni). Cascade-orphaned zap_other_threads /
+ * signal_wake_up / signal_wake_up_state were removed from signal.c too.
+ */
 
 

@@ -139,7 +139,7 @@ int force_sig_fault(int sig, int code, void __user *addr
 extern int force_sig_info(struct kernel_siginfo *);
 extern void force_sig(int);
 extern void force_fatal_sig(int);
-extern int zap_other_threads(struct task_struct *p);
+/* zap_other_threads removed: only caller was do_group_exit (exit_group), gone */
 
 static inline bool __set_notify_signal(struct task_struct *task)
 {
@@ -198,17 +198,10 @@ static inline bool fault_signal_pending(vm_fault_t fault_flags,
 extern void recalc_sigpending(void);
 extern void calculate_sigpending(void);
 
-extern void signal_wake_up_state(struct task_struct *t, unsigned int state);
-
-static inline void signal_wake_up(struct task_struct *t, bool fatal)
-{
-	unsigned int state = 0;
-	if (fatal && !(t->jobctl & JOBCTL_PTRACE_FROZEN)) {
-		t->jobctl &= ~(JOBCTL_STOPPED | JOBCTL_TRACED);
-		state = TASK_WAKEKILL | __TASK_TRACED;
-	}
-	signal_wake_up_state(t, state);
-}
+/*
+ * signal_wake_up_state + the signal_wake_up() inline removed: the only caller
+ * chain (zap_other_threads <- do_group_exit <- exit_group syscall) is gone.
+ */
 
 #ifdef TIF_RESTORE_SIGMASK
 

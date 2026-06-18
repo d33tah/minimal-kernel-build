@@ -201,17 +201,12 @@ flush_signal_handlers(struct task_struct *t, int force_default)
 }
 
 
-void signal_wake_up_state(struct task_struct *t, unsigned int state)
-{
-	lockdep_assert_held(&t->sighand->siglock);
-
-	set_tsk_thread_flag(t, TIF_SIGPENDING);
-
-	
-	if (!wake_up_state(t, state | TASK_INTERRUPTIBLE))
-		kick_process(t);
-}
-
+/*
+ * Removed: signal_wake_up_state - unreachable. Its only caller was the
+ * signal_wake_up() inline (sched/signal.h), whose only caller was
+ * zap_other_threads(), reached only from the removed exit_group/do_group_exit
+ * path. No signals are delivered to the single-thread init in this build.
+ */
 
 static bool prepare_signal(int sig, struct task_struct *p, bool force)
 {
@@ -318,25 +313,11 @@ int force_sig_info(struct kernel_siginfo *info)
 	return force_sig_info_to_task(info, current, HANDLER_CURRENT);
 }
 
-int zap_other_threads(struct task_struct *p)
-{
-	struct task_struct *t = p;
-	int count = 0;
-
-	p->signal->group_stop_count = 0;
-
-	while_each_thread(p, t) {
-		count++;
-
-		
-		if (t->exit_state)
-			continue;
-		sigaddset(&t->pending.signal, SIGKILL);
-		signal_wake_up(t, 1);
-	}
-
-	return count;
-}
+/*
+ * Removed: zap_other_threads - unreachable. Its only caller was the removed
+ * do_group_exit() (exit_group syscall). The init task is single-threaded so
+ * the multi-thread teardown is never reached.
+ */
 
 void force_sig(int sig)
 {

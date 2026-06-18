@@ -108,7 +108,7 @@
 # 243 set_thread_area removed (unreachable)
 # 244 get_thread_area removed (unreachable)
 # 251 is available for reuse (was briefly sys_set_zone_reclaim)
-252	i386	exit_group		sys_exit_group
+# 252 exit_group removed (unreachable: init does write(2)+exit(2) only, never exit_group; routes to sys_ni)
 # 253 lookup_dcookie removed (unreachable, routes to sys_ni)
 # 258	i386	set_tid_address		sys_set_tid_address  (stubbed body removed, unreachable -> sys_ni)
 # 259	i386	timer_create		sys_timer_create		compat_sys_timer_create  (posix timers: unreachable, -> sys_ni)

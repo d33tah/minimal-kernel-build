@@ -241,19 +241,6 @@ static inline enum node_stat_item cache_vmstat_idx(struct kmem_cache *s)
 		NR_SLAB_RECLAIMABLE_B : NR_SLAB_UNRECLAIMABLE_B;
 }
 
-static inline bool __slub_debug_enabled(void)
-{
-	return false;
-}
-
- 
-static inline bool kmem_cache_debug_flags(struct kmem_cache *s, slab_flags_t flags)
-{
-	if (__slub_debug_enabled())
-		return s->flags & flags;
-	return false;
-}
-
 /* slab_objcgs, memcg_from_slab_obj removed - unused */
 
 static inline int memcg_alloc_slab_cgroups(struct slab *slab,
@@ -282,17 +269,6 @@ static inline void memcg_slab_post_alloc_hook(struct kmem_cache *s,
 {
 }
 
-static inline struct kmem_cache *virt_to_cache(const void *obj)
-{
-	struct slab *slab;
-
-	slab = virt_to_slab(obj);
-	if (WARN_ONCE(!slab, "%s: Object is not a Slab page!\n",
-					__func__))
-		return NULL;
-	return slab->slab_cache;
-}
-
 static __always_inline void account_slab(struct slab *slab, int order,
 					 struct kmem_cache *s, gfp_t gfp)
 {
@@ -315,17 +291,7 @@ static __always_inline void unaccount_slab(struct slab *slab, int order,
 
 static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 {
-	struct kmem_cache *cachep;
-
-	if (!IS_ENABLED(CONFIG_SLAB_FREELIST_HARDENED) &&
-	    !kmem_cache_debug_flags(s, SLAB_CONSISTENCY_CHECKS))
-		return s;
-
-	cachep = virt_to_cache(x);
-	WARN(cachep && cachep != s,
-	     "%s: Wrong slab cache. %s but object is from %s\n",
-	     __func__, s->name, cachep->name);
-	return cachep;
+	return s;
 }
 
 static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,

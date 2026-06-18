@@ -49,6 +49,4 @@ DECLARE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
 
 
 
-extern long fpu_xstate_prctl(int option, unsigned long arg2);
-
 #endif  

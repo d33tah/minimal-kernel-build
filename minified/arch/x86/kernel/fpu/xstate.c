@@ -26,8 +26,3 @@
 #include "legacy.h"
 #include "xstate.h"
 
-// Stub: xstate prctl
-long fpu_xstate_prctl(int option, unsigned long arg2)
-{
-	return 0;
-}

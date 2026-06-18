@@ -376,20 +376,12 @@ static inline int make_prot(u32 p_flags, struct arch_elf_state *arch_state,
 }
 
 
-static int parse_elf_properties(struct file *f, const struct elf_phdr *phdr,
-				struct arch_elf_state *arch)
-{
-	/* Stub: GNU properties not needed for minimal kernel */
-	return 0;
-}
-
 static int load_elf_binary(struct linux_binprm *bprm)
 {
 	unsigned long load_bias = 0, phdr_addr = 0;
 	int first_pt_load = 1;
 	unsigned long error;
 	struct elf_phdr *elf_ppnt, *elf_phdata;
-	struct elf_phdr *elf_property_phdata = NULL;
 	unsigned long elf_bss, elf_brk;
 	int bss_prot = 0;
 	int retval, i;
@@ -423,16 +415,8 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 	/*
 	 * The init ELF is a static ET_EXEC with no PT_INTERP, so no
-	 * interpreter is ever loaded here; only record PT_GNU_PROPERTY.
+	 * interpreter is ever loaded here.
 	 */
-	elf_ppnt = elf_phdata;
-	for (i = 0; i < elf_ex->e_phnum; i++, elf_ppnt++) {
-		if (elf_ppnt->p_type == PT_GNU_PROPERTY) {
-			elf_property_phdata = elf_ppnt;
-			break;
-		}
-	}
-
 	elf_ppnt = elf_phdata;
 	for (i = 0; i < elf_ex->e_phnum; i++, elf_ppnt++)
 		switch (elf_ppnt->p_type) {
@@ -443,12 +427,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 				executable_stack = EXSTACK_DISABLE_X;
 			break;
 		}
-
-	retval = parse_elf_properties(bprm->file,
-				      elf_property_phdata, &arch_state);
-	if (retval)
-		goto out_free_dentry;
-
 
 	retval = begin_new_exec(bprm);
 	if (retval)

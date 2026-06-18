@@ -44,13 +44,10 @@ extern int lockdep_is_held(const void *);
 #define lockdep_assert(c)			do { } while (0)
 
 #define lockdep_assert_held(l)			do { (void)(l); } while (0)
-#define lockdep_assert_not_held(l)		do { (void)(l); } while (0)
 #define lockdep_assert_held_write(l)		do { (void)(l); } while (0)
 #define lockdep_assert_held_read(l)		do { (void)(l); } while (0)
-#define lockdep_assert_held_once(l)		do { (void)(l); } while (0)
 
 #define lockdep_pin_lock(l)			({ struct pin_cookie cookie = { }; cookie; })
-#define lockdep_repin_lock(l, c)		do { (void)(l); (void)(c); } while (0)
 #define lockdep_unpin_lock(l, c)		do { (void)(l); (void)(c); } while (0)
 
 #define STATIC_LOCKDEP_MAP_INIT(_name, _key) \
@@ -82,7 +79,6 @@ extern int lockdep_is_held(const void *);
 #define spin_acquire_nest(l, s, t, n, i)	lock_acquire_exclusive(l, s, t, n, i)
 #define spin_release(l, i)			lock_release(l, i)
 
-#define rwlock_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
 #define rwlock_acquire_read(l, s, t, i)					\
 do {									\
 	if (read_lock_is_recursive())					\
@@ -102,7 +98,6 @@ do {									\
 #define mutex_release(l, i)			lock_release(l, i)
 
 #define rwsem_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
-#define rwsem_acquire_nest(l, s, t, n, i)	lock_acquire_exclusive(l, s, t, n, i)
 #define rwsem_acquire_read(l, s, t, i)		lock_acquire_shared(l, s, t, NULL, i)
 #define rwsem_release(l, i)			lock_release(l, i)
 
@@ -112,12 +107,10 @@ do {									\
 
 # define might_lock(lock) do { } while (0)
 # define might_lock_read(lock) do { } while (0)
-# define might_lock_nested(lock, subclass) do { } while (0)
 
 # define lockdep_assert_irqs_enabled() do { } while (0)
 # define lockdep_assert_irqs_disabled() do { } while (0)
 
-# define lockdep_assert_preemption_enabled() do { } while (0)
 # define lockdep_assert_preemption_disabled() do { } while (0)
 
 #endif  

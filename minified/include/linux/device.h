@@ -22,8 +22,6 @@ struct dev_printk_info {
 #define dev_err(dev, fmt, ...) do { } while (0)
 #define dev_warn(dev, fmt, ...) do { } while (0)
 #define dev_dbg(dev, fmt, ...) do { } while (0)
-#define dev_err_once(dev, fmt, ...) do { } while (0)
-#define dev_WARN_ONCE(dev, condition, format, arg...) (0)
 /* end dev_printk.h */
 
 #include <linux/ioport.h>
@@ -91,10 +89,6 @@ struct device_attribute {
 
 #define DEVICE_ATTR(_name, _mode, _show, _store) \
 	struct device_attribute dev_attr_##_name = __ATTR(_name, _mode, _show, _store)
-#define DEVICE_ATTR_RW(_name) \
-	struct device_attribute dev_attr_##_name = __ATTR_RW(_name)
-#define DEVICE_ATTR_RO(_name) \
-	struct device_attribute dev_attr_##_name = __ATTR_RO(_name)
 
 /* Removed: device_remove_file (0-caller no-op). */
 

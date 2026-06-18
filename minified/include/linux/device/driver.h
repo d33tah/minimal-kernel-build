@@ -45,20 +45,6 @@ struct device_driver {
 
 
 
-struct driver_attribute {
-	struct attribute attr;
-	ssize_t (*show)(struct device_driver *driver, char *buf);
-	ssize_t (*store)(struct device_driver *driver, const char *buf,
-			 size_t count);
-};
-
-#define DRIVER_ATTR_RW(_name) \
-	struct driver_attribute driver_attr_##_name = __ATTR_RW(_name)
-#define DRIVER_ATTR_RO(_name) \
-	struct driver_attribute driver_attr_##_name = __ATTR_RO(_name)
-#define DRIVER_ATTR_WO(_name) \
-	struct driver_attribute driver_attr_##_name = __ATTR_WO(_name)
-
 void driver_init(void);
 
 #endif	 

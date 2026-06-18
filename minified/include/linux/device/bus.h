@@ -45,29 +45,9 @@ struct bus_type {
 	bool need_parent_lock;
 };
 
-struct bus_attribute {
-	struct attribute	attr;
-	ssize_t (*show)(struct bus_type *bus, char *buf);
-	ssize_t (*store)(struct bus_type *bus, const char *buf, size_t count);
-};
-
-#define BUS_ATTR_RW(_name) \
-	struct bus_attribute bus_attr_##_name = __ATTR_RW(_name)
-#define BUS_ATTR_RO(_name) \
-	struct bus_attribute bus_attr_##_name = __ATTR_RO(_name)
-#define BUS_ATTR_WO(_name) \
-	struct bus_attribute bus_attr_##_name = __ATTR_WO(_name)
-
-
 /* device_match_name, device_match_of_node, device_match_fwnode,
    device_match_acpi_dev, device_match_acpi_handle, device_match_any removed - unused */
 int device_match_devt(struct device *dev, const void *pdevt);
-
-#define BUS_NOTIFY_DEL_DEVICE		0x00000002
-#define BUS_NOTIFY_REMOVED_DEVICE	0x00000003
-#define BUS_NOTIFY_UNBIND_DRIVER	0x00000006
-#define BUS_NOTIFY_UNBOUND_DRIVER	0x00000007
-#define BUS_NOTIFY_DRIVER_NOT_BOUND	0x00000008  
 
 
 #endif

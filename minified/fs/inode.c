@@ -154,7 +154,6 @@ void drop_nlink(struct inode *inode)
 void inc_nlink(struct inode *inode)
 {
 	if (unlikely(inode->i_nlink == 0)) {
-		WARN_ON(!(inode->i_state & I_LINKABLE));
 		atomic_long_dec(&inode->i_sb->s_remove_count);
 	}
 
@@ -197,7 +196,7 @@ void ihold(struct inode *inode)
 
 static void __inode_add_lru(struct inode *inode, bool rotate)
 {
-	if (inode->i_state & (I_DIRTY_ALL | I_SYNC | I_FREEING | I_WILL_FREE))
+	if (inode->i_state & (I_FREEING | I_WILL_FREE))
 		return;
 	if (atomic_read(&inode->i_count))
 		return;
@@ -333,7 +332,6 @@ static void iput_final(struct inode *inode)
 		drop = generic_drop_inode(inode);
 
 	if (!drop &&
-	    !(inode->i_state & I_DONTCACHE) &&
 	    (sb->s_flags & SB_ACTIVE)) {
 		__inode_add_lru(inode, true);
 		spin_unlock(&inode->i_lock);
@@ -364,15 +362,7 @@ void iput(struct inode *inode)
 	if (!inode)
 		return;
 	BUG_ON(inode->i_state & I_CLEAR);
-retry:
 	if (atomic_dec_and_lock(&inode->i_count, &inode->i_lock)) {
-		if (inode->i_nlink && (inode->i_state & I_DIRTY_TIME)) {
-			atomic_inc(&inode->i_count);
-			spin_unlock(&inode->i_lock);
-			trace_writeback_lazytime_iput(inode);
-			mark_inode_dirty_sync(inode);
-			goto retry;
-		}
 		iput_final(inode);
 	}
 }

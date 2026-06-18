@@ -910,30 +910,14 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 	};
 }
 
-#define I_DIRTY_SYNC		(1 << 0)
-#define I_DIRTY_DATASYNC	(1 << 1)
-#define I_DIRTY_PAGES		(1 << 2)
 #define __I_NEW			3
 #define I_NEW			(1 << __I_NEW)
 #define I_WILL_FREE		(1 << 4)
 #define I_FREEING		(1 << 5)
 #define I_CLEAR			(1 << 6)
-#define __I_SYNC		7
-#define I_SYNC			(1 << __I_SYNC)
 #define I_REFERENCED		(1 << 8)
-#define I_LINKABLE		(1 << 10)
-#define I_DIRTY_TIME		(1 << 11)
-#define I_DONTCACHE		(1 << 16)
-
-#define I_DIRTY_INODE (I_DIRTY_SYNC | I_DIRTY_DATASYNC)
-#define I_DIRTY (I_DIRTY_INODE | I_DIRTY_PAGES)
-#define I_DIRTY_ALL (I_DIRTY | I_DIRTY_TIME)
 
 static inline void mark_inode_dirty(struct inode *inode)
-{
-}
-
-static inline void mark_inode_dirty_sync(struct inode *inode)
 {
 }
 

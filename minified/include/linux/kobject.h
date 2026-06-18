@@ -25,7 +25,6 @@ struct kobject {
 	struct kobject		*parent;
 	struct kset		*kset;
 	const struct kobj_type	*ktype;
-	struct kernfs_node	*sd;  
 	struct kref		kref;
 	unsigned int state_initialized:1;
 	unsigned int state_in_sysfs:1;

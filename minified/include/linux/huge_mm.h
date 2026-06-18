@@ -14,11 +14,6 @@ static inline bool folio_test_pmd_mappable(struct folio *folio)
 
 static inline void prep_transhuge_page(struct page *page) {}
 
-static inline int split_huge_page(struct page *page)
-{
-	return 0;
-}
-
 static inline void mm_put_huge_zero_page(struct mm_struct *mm)
 {
 	return;

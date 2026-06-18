@@ -114,13 +114,8 @@ bool truncate_inode_partial_folio(struct folio *folio, loff_t start, loff_t end)
 
 	if (folio_has_private(folio))
 		folio_invalidate(folio, offset, length);
-	if (!folio_test_large(folio))
-		return true;
-	if (split_huge_page(&folio->page) == 0)
-		return true;
-	if (folio_test_dirty(folio))
-		return false;
-	truncate_inode_folio(folio->mapping, folio);
+	/* No THP on this build: a large folio splits trivially (split_huge_page
+	   was a const-0 stub), so this always returned true here. */
 	return true;
 }
 

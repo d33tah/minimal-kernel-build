@@ -97,11 +97,6 @@ static inline bool mapping_large_folio_support(struct address_space *mapping)
 		test_bit(AS_LARGE_FOLIO_SUPPORT, &mapping->flags);
 }
 
-static inline int filemap_nr_thps(struct address_space *mapping)
-{
-	return 0;
-}
-
 static inline void filemap_nr_thps_dec(struct address_space *mapping)
 {
 	WARN_ON_ONCE(mapping_large_folio_support(mapping) == 0);

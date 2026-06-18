@@ -81,8 +81,6 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 	if (!cp)
 		return -ENOMEM;
 	klist_init(&cp->klist_devices, klist_class_dev_get, klist_class_dev_put);
-	kset_init(&cp->glue_dirs);
-	__mutex_init(&cp->mutex, "subsys mutex", key);
 	error = kobject_set_name(&cp->subsys.kobj, "%s", cls->name);
 	if (error) {
 		kfree(cp);

@@ -10,13 +10,9 @@
    registers on bus_notifier. */
 struct subsys_private {
 	struct kset subsys;
-	struct kset *devices_kset;
-	struct mutex mutex;
 
 	struct klist klist_devices;
-	struct bus_type *bus;
 
-	struct kset glue_dirs;
 	struct class *class;
 };
 #define to_subsys_private(obj) container_of(obj, struct subsys_private, subsys.kobj)
@@ -28,16 +24,11 @@ struct subsys_private {
 struct device_private {
 	struct klist klist_children;
 	struct klist_node knode_parent;
-	struct klist_node knode_bus;
 	struct klist_node knode_class;
-	struct list_head deferred_probe;
 	struct device *device;
-	u8 dead:1;
 };
 #define to_device_private_parent(obj)	\
 	container_of(obj, struct device_private, knode_parent)
-#define to_device_private_bus(obj)	\
-	container_of(obj, struct device_private, knode_bus)
 #define to_device_private_class(obj)	\
 	container_of(obj, struct device_private, knode_class)
 

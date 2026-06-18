@@ -57,13 +57,8 @@ static void device_release(struct kobject *kobj)
 	kfree(p);
 }
 
-static void device_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
-{
-}
-
 static struct kobj_type device_ktype = {
 	.release	= device_release,
-	.get_ownership	= device_get_ownership,
 };
 
 /* Removed: dev_uevent_filter / dev_uevent_name / dev_uevent / device_uevent_ops

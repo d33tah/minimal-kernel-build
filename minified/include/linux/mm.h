@@ -836,17 +836,15 @@ static inline pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
 	return ptep;
 }
 
-#ifdef __PAGETABLE_P4D_FOLDED
+/* 2-level paging (PGTABLE_LEVELS==2, no PAE): P4D/PUD/PMD are folded, so only
+ * the folded __p4d_alloc/__pud_alloc/__pmd_alloc no-op stubs are live; the
+ * non-folded #else arms were preprocessor-dead and have been removed. */
 static inline int __p4d_alloc(struct mm_struct *mm, pgd_t *pgd,
 						unsigned long address)
 {
 	return 0;
 }
-#else
-int __p4d_alloc(struct mm_struct *mm, pgd_t *pgd, unsigned long address);
-#endif
 
-#if defined(__PAGETABLE_PUD_FOLDED) || !defined(CONFIG_MMU)
 static inline int __pud_alloc(struct mm_struct *mm, p4d_t *p4d,
 						unsigned long address)
 {
@@ -855,25 +853,6 @@ static inline int __pud_alloc(struct mm_struct *mm, p4d_t *p4d,
 static inline void mm_inc_nr_puds(struct mm_struct *mm) {}
 static inline void mm_dec_nr_puds(struct mm_struct *mm) {}
 
-#else
-int __pud_alloc(struct mm_struct *mm, p4d_t *p4d, unsigned long address);
-
-static inline void mm_inc_nr_puds(struct mm_struct *mm)
-{
-	if (mm_pud_folded(mm))
-		return;
-	atomic_long_add(PTRS_PER_PUD * sizeof(pud_t), &mm->pgtables_bytes);
-}
-
-static inline void mm_dec_nr_puds(struct mm_struct *mm)
-{
-	if (mm_pud_folded(mm))
-		return;
-	atomic_long_sub(PTRS_PER_PUD * sizeof(pud_t), &mm->pgtables_bytes);
-}
-#endif
-
-#if defined(__PAGETABLE_PMD_FOLDED) || !defined(CONFIG_MMU)
 static inline int __pmd_alloc(struct mm_struct *mm, pud_t *pud,
 						unsigned long address)
 {
@@ -882,24 +861,6 @@ static inline int __pmd_alloc(struct mm_struct *mm, pud_t *pud,
 
 static inline void mm_inc_nr_pmds(struct mm_struct *mm) {}
 static inline void mm_dec_nr_pmds(struct mm_struct *mm) {}
-
-#else
-int __pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address);
-
-static inline void mm_inc_nr_pmds(struct mm_struct *mm)
-{
-	if (mm_pmd_folded(mm))
-		return;
-	atomic_long_add(PTRS_PER_PMD * sizeof(pmd_t), &mm->pgtables_bytes);
-}
-
-static inline void mm_dec_nr_pmds(struct mm_struct *mm)
-{
-	if (mm_pmd_folded(mm))
-		return;
-	atomic_long_sub(PTRS_PER_PMD * sizeof(pmd_t), &mm->pgtables_bytes);
-}
-#endif
 
 static inline void mm_pgtables_bytes_init(struct mm_struct *mm)
 {

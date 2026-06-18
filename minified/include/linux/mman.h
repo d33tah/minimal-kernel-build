@@ -14,45 +14,9 @@
 #define MAP_PRIVATE	0x02
 #define MAP_SHARED_VALIDATE 0x03
 
-/* hugetlb encoding constants - only shift/mask used */
-#define HUGETLB_FLAG_ENCODE_SHIFT	26
-#define HUGETLB_FLAG_ENCODE_MASK	0x3f
-#define MAP_HUGE_SHIFT	HUGETLB_FLAG_ENCODE_SHIFT
-#define MAP_HUGE_MASK	HUGETLB_FLAG_ENCODE_MASK
-
-#ifndef MAP_32BIT
-#define MAP_32BIT 0
-#endif
-#ifndef MAP_HUGE_2MB
-#define MAP_HUGE_2MB 0
-#endif
-#ifndef MAP_HUGE_1GB
-#define MAP_HUGE_1GB 0
-#endif
-#ifndef MAP_UNINITIALIZED
-#define MAP_UNINITIALIZED 0
-#endif
 #ifndef MAP_SYNC
 #define MAP_SYNC 0
 #endif
-
-#define LEGACY_MAP_MASK (MAP_SHARED \
-		| MAP_PRIVATE \
-		| MAP_FIXED \
-		| MAP_ANONYMOUS \
-		| MAP_DENYWRITE \
-		| MAP_EXECUTABLE \
-		| MAP_UNINITIALIZED \
-		| MAP_GROWSDOWN \
-		| MAP_LOCKED \
-		| MAP_NORESERVE \
-		| MAP_POPULATE \
-		| MAP_NONBLOCK \
-		| MAP_STACK \
-		| MAP_HUGETLB \
-		| MAP_32BIT \
-		| MAP_HUGE_2MB \
-		| MAP_HUGE_1GB)
 
 extern int sysctl_overcommit_memory;
 extern struct percpu_counter vm_committed_as;

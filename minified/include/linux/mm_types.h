@@ -4,7 +4,6 @@
 #include <linux/mm_types_task.h>
 
 #include <asm/auxvec.h>
-#define AT_EXECFD 2
 #define AT_PHDR   3
 #define AT_PHENT  4
 #define AT_PHNUM  5
@@ -201,8 +200,6 @@ static inline atomic_t *compound_pincount_ptr(struct page *page)
 {
 	return &page[1].compound_pincount;
 }
-
-#define STRUCT_PAGE_MAX_SHIFT	(order_base_2(sizeof(struct page)))
 
 #define page_private(page)		((page)->private)
 

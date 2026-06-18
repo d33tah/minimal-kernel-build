@@ -227,11 +227,6 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 	folio->index = xas.xa_index;
 
 	do {
-		unsigned int order = xa_get_order(xas.xa, xas.xa_index);
-
-		if (order > folio_order(folio))
-			xas_split_alloc(&xas, xa_load(xas.xa, xas.xa_index),
-					order, gfp);
 		xas_lock_irq(&xas);
 
 		xas_store(&xas, folio);

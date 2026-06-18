@@ -351,20 +351,10 @@ bool xas_nomem(struct xa_state *, gfp_t);
 void xas_destroy(struct xa_state *);
 
 
-static inline int xa_get_order(struct xarray *xa, unsigned long index)
-{
-	return 0;
-}
-
 static inline void xas_split(struct xa_state *xas, void *entry,
 		unsigned int order)
 {
 	xas_store(xas, entry);
-}
-
-static inline void xas_split_alloc(struct xa_state *xas, void *entry,
-		unsigned int order, gfp_t gfp)
-{
 }
 
 static inline void *xas_reload(struct xa_state *xas)

@@ -33,11 +33,6 @@
 #define USER_RPL		0x3
 
 
-#define SEGMENT_TI_MASK		0x4
-
-#define SEGMENT_LDT		0x4
-
-
 #define GDT_ENTRY_TLS_MIN		6
 
 #define GDT_ENTRY_KERNEL_CS		12
@@ -67,7 +62,6 @@
 #define __KERNEL_DS			(GDT_ENTRY_KERNEL_DS*8)
 #define __USER_DS			(GDT_ENTRY_DEFAULT_USER_DS*8 + 3)
 #define __USER_CS			(GDT_ENTRY_DEFAULT_USER_CS*8 + 3)
-#define __ESPFIX_SS			(GDT_ENTRY_ESPFIX_SS*8)
 
 # define __KERNEL_PERCPU		0
 

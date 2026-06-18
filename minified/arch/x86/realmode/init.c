@@ -49,10 +49,6 @@ static void __init setup_real_mode(void)
 
 	base = (unsigned char *)real_mode_header;
 
-	 
-	if (cc_platform_has(CC_ATTR_HOST_MEM_ENCRYPT))
-		set_memory_decrypted((unsigned long)base, size >> PAGE_SHIFT);
-
 	memcpy(base, real_mode_blob, size);
 
 	phys_base = __pa(base);

@@ -225,8 +225,6 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_HUGETLB	0x00400000
 #define VM_SYNC		0x00800000
 
-# define VM_SOFTDIRTY	0
-
 #define VM_MIXEDMAP	0x10000000
 #define VM_NOHUGEPAGE	0x40000000
 

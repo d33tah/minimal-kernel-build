@@ -320,7 +320,7 @@ static inline int is_mergeable_vma(struct vm_area_struct *vma,
 				struct anon_vma_name *anon_name)
 {
 	
-	if ((vma->vm_flags ^ vm_flags) & ~VM_SOFTDIRTY)
+	if ((vma->vm_flags ^ vm_flags))
 		return 0;
 	if (vma->vm_file != file)
 		return 0;
@@ -451,7 +451,7 @@ static int anon_vma_compatible(struct vm_area_struct *a, struct vm_area_struct *
 {
 	return a->vm_end == b->vm_start &&
 		a->vm_file == b->vm_file &&
-		!((a->vm_flags ^ b->vm_flags) & ~(VM_ACCESS_FLAGS | VM_SOFTDIRTY)) &&
+		!((a->vm_flags ^ b->vm_flags) & ~VM_ACCESS_FLAGS) &&
 		b->vm_pgoff == a->vm_pgoff + ((b->vm_start - a->vm_start) >> PAGE_SHIFT);
 }
 
@@ -1251,7 +1251,6 @@ static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long fla
 	vma_link(mm, vma, prev, rb_link, rb_parent);
 out:
 	mm->total_vm += len >> PAGE_SHIFT;
-	vma->vm_flags |= VM_SOFTDIRTY;
 	return 0;
 }
 

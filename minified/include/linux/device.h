@@ -69,11 +69,8 @@ struct subsys_interface {
 
 
 struct device_type {
-	const char *name;
-	const struct attribute_group **groups;
+	/* name/groups/pm removed - never read (only ->release dispatched) */
 	void (*release)(struct device *dev);
-
-	const struct dev_pm_ops *pm;
 };
 
 struct device_attribute {

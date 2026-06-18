@@ -346,7 +346,6 @@ static struct kobj_type kset_ktype = {
 };
 
 static struct kset *kset_create(const char *name,
-				const struct kset_uevent_ops *uevent_ops,
 				struct kobject *parent_kobj)
 {
 	struct kset *kset;
@@ -360,7 +359,6 @@ static struct kset *kset_create(const char *name,
 		kfree(kset);
 		return NULL;
 	}
-	kset->uevent_ops = uevent_ops;
 	kset->kobj.parent = parent_kobj;
 
 	 
@@ -371,13 +369,12 @@ static struct kset *kset_create(const char *name,
 }
 
 struct kset *kset_create_and_add(const char *name,
-				 const struct kset_uevent_ops *uevent_ops,
 				 struct kobject *parent_kobj)
 {
 	struct kset *kset;
 	int error;
 
-	kset = kset_create(name, uevent_ops, parent_kobj);
+	kset = kset_create(name, parent_kobj);
 	if (!kset)
 		return NULL;
 	error = kset_register(kset);

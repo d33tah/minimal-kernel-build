@@ -69,25 +69,17 @@ struct kobj_type {
 	void (*get_ownership)(struct kobject *kobj, kuid_t *uid, kgid_t *gid);
 };
 
-struct kset_uevent_ops {
-	int (* const filter)(struct kobject *kobj);
-	const char *(* const name)(struct kobject *kobj);
-};
-
-
-struct sock;
+/* struct kset_uevent_ops removed - uevent_ops never dispatched (all NULL) */
 
 struct kset {
 	struct list_head list;
 	spinlock_t list_lock;
 	struct kobject kobj;
-	const struct kset_uevent_ops *uevent_ops;
 } __randomize_layout;
 
 extern void kset_init(struct kset *kset);
 extern int __must_check kset_register(struct kset *kset);
 extern struct kset * __must_check kset_create_and_add(const char *name,
-						const struct kset_uevent_ops *u,
 						struct kobject *parent_kobj);
 
 static inline struct kset *to_kset(struct kobject *kobj)

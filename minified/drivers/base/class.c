@@ -183,7 +183,7 @@ out:
 
 int __init classes_init(void)
 {
-	class_kset = kset_create_and_add("class", NULL, NULL);
+	class_kset = kset_create_and_add("class", NULL);
 	if (!class_kset)
 		return -ENOMEM;
 	return 0;

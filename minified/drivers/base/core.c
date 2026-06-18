@@ -234,7 +234,7 @@ void put_device(struct device *dev)
 
 int __init devices_init(void)
 {
-	devices_kset = kset_create_and_add("devices", NULL, NULL);
+	devices_kset = kset_create_and_add("devices", NULL);
 	if (!devices_kset)
 		return -ENOMEM;
 	dev_kobj = kobject_create_and_add("dev", NULL);

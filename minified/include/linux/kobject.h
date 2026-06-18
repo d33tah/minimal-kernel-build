@@ -96,8 +96,6 @@ static inline const struct kobj_type *get_ktype(struct kobject *kobj)
 
 
 int kobject_uevent(struct kobject *kobj, enum kobject_action action);
-int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
-			char *envp[]);
 
 
 #endif  

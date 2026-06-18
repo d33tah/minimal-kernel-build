@@ -4,44 +4,12 @@
 
 #include <linux/kobject.h>
 #include <linux/klist.h>
-#include <linux/pm.h>
-
-struct device_driver;
-struct fwnode_handle;
 
 struct bus_type {
-	const char		*name;
+	/* All other fields removed - no bus is ever registered and the struct is
+	   never instantiated; the only field ever dispatched is dev_name, via the
+	   (always-NULL on this build) dev->bus->dev_name read in core.c. */
 	const char		*dev_name;
-	struct device		*dev_root;
-	const struct attribute_group **bus_groups;
-	const struct attribute_group **dev_groups;
-	const struct attribute_group **drv_groups;
-
-	int (*match)(struct device *dev, struct device_driver *drv);
-	int (*probe)(struct device *dev);
-	void (*sync_state)(struct device *dev);
-	void (*remove)(struct device *dev);
-	void (*shutdown)(struct device *dev);
-
-	int (*online)(struct device *dev);
-	int (*offline)(struct device *dev);
-
-	int (*suspend)(struct device *dev, pm_message_t state);
-	int (*resume)(struct device *dev);
-
-	int (*num_vf)(struct device *dev);
-
-	int (*dma_configure)(struct device *dev);
-	void (*dma_cleanup)(struct device *dev);
-
-	const struct dev_pm_ops *pm;
-
-	const struct iommu_ops *iommu_ops;
-
-	struct subsys_private *p;
-	struct lock_class_key lock_key;
-
-	bool need_parent_lock;
 };
 
 /* device_match_name, device_match_of_node, device_match_fwnode,

@@ -216,10 +216,6 @@ static inline void SetPage##uname(struct page *page) {  }
 static inline void folio_clear_##lname(struct folio *folio) { }		\
 static inline void ClearPage##uname(struct page *page) {  }
 
-#define __CLEARPAGEFLAG_NOOP(uname, lname)				\
-static inline void __folio_clear_##lname(struct folio *folio) { }	\
-static inline void __ClearPage##uname(struct page *page) {  }
-
 #define PAGEFLAG_FALSE(uname, lname) TESTPAGEFLAG_FALSE(uname, lname)	\
 	SETPAGEFLAG_NOOP(uname, lname) CLEARPAGEFLAG_NOOP(uname, lname)
 
@@ -258,10 +254,6 @@ PAGEFLAG(Reclaim, reclaim, PF_NO_TAIL)
 PAGEFLAG(Readahead, readahead, PF_NO_COMPOUND)
 	/* TESTCLEARFLAG(Readahead, ...) removed - never used */
 
-PAGEFLAG_FALSE(HighMem, highmem)
-
-PAGEFLAG_FALSE(SwapCache, swapcache)
-
 PAGEFLAG(Unevictable, unevictable, PF_HEAD)
 	__CLEARPAGEFLAG(Unevictable, unevictable, PF_HEAD)
 	TESTCLEARFLAG(Unevictable, unevictable, PF_HEAD)
@@ -271,7 +263,6 @@ PAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
 	TESTSCFLAG(Mlocked, mlocked, PF_NO_TAIL)
 
 
-PAGEFLAG_FALSE(HWPoison, hwpoison)
 #define __PG_HWPOISON 0
 
 
@@ -297,8 +288,6 @@ static __always_inline bool PageAnon(struct page *page)
 	return folio_test_anon(page_folio(page));
 }
 
-
-TESTPAGEFLAG_FALSE(Ksm, ksm)
 
 
 static inline bool folio_test_uptodate(struct folio *folio)
@@ -412,7 +401,7 @@ static __always_inline int PageAnonExclusive(struct page *page)
 
 static __always_inline void SetPageAnonExclusive(struct page *page)
 {
-	VM_BUG_ON_PGFLAGS(!PageAnon(page) || PageKsm(page), page);
+	VM_BUG_ON_PGFLAGS(!PageAnon(page), page);
 	VM_BUG_ON_PGFLAGS(PageHuge(page) && !PageHead(page), page);
 	set_bit(PG_anon_exclusive, &PF_ANY(page, 1)->flags);
 }

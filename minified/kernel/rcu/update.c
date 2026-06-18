@@ -36,20 +36,9 @@
 
 
 
-void rcu_test_sync_prims(void)
-{
-	if (!IS_ENABLED(CONFIG_PROVE_RCU))
-		return;
-	synchronize_rcu();
-	synchronize_rcu_expedited();
-}
-
-
 static int __init rcu_set_runtime_mode(void)
 {
-	rcu_test_sync_prims();
 	rcu_scheduler_active = RCU_SCHEDULER_RUNNING;
-	rcu_test_sync_prims();
 	return 0;
 }
 core_initcall(rcu_set_runtime_mode);

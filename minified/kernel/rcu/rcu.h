@@ -40,9 +40,7 @@ do { \
 	} \
 } while (0)
 
-void rcu_test_sync_prims(void);
 
- 
 extern void resched_cpu(int cpu);
 
 

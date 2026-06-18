@@ -310,10 +310,5 @@ static inline bool slab_want_init_on_alloc(gfp_t flags, struct kmem_cache *c)
 	return flags & __GFP_ZERO;
 }
 
-static inline bool slab_want_init_on_free(struct kmem_cache *c)
-{
-	return false;
-}
-
 
 #endif

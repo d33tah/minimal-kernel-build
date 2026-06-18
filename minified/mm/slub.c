@@ -211,18 +211,9 @@ slab_flags_t kmem_cache_flags(unsigned int object_size,
 }
 
 static __always_inline bool slab_free_hook(struct kmem_cache *s,
-						void *x, bool init)
+						void *x)
 {
 	debug_check_no_locks_freed(x, s->object_size);
-
-	if (init) {
-		int rsize;
-
-		memset(x, 0, s->object_size);
-		rsize = (s->flags & SLAB_RED_ZONE) ? s->red_left_pad : 0;
-		memset((char *)x + s->inuse, 0,
-		       s->size - s->inuse - rsize);
-	}
 
 	return false;
 }
@@ -244,7 +235,7 @@ static inline bool slab_free_freelist_hook(struct kmem_cache *s,
 		next = get_freepointer(s, object);
 
 
-		slab_free_hook(s, object, slab_want_init_on_free(s));
+		slab_free_hook(s, object);
 		set_freepointer(s, object, *head);
 		*head = object;
 		if (!*tail)
@@ -624,14 +615,6 @@ static void *__slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
 	return p;
 }
 
-static __always_inline void maybe_wipe_obj_freeptr(struct kmem_cache *s,
-						   void *obj)
-{
-	if (unlikely(slab_want_init_on_free(s)) && obj)
-		memset((void *)((char *)obj + s->offset),
-			0, sizeof(void *));
-}
-
 static __always_inline void *slab_alloc_node(struct kmem_cache *s, struct list_lru *lru,
 		gfp_t gfpflags, int node, unsigned long addr, size_t orig_size)
 {
@@ -676,7 +659,6 @@ redo:
 		prefetch_freepointer(s, next_object);
 	}
 
-	maybe_wipe_obj_freeptr(s, object);
 	init = slab_want_init_on_alloc(gfpflags, s);
 
 	slab_post_alloc_hook(s, objcg, gfpflags, 1, &object, init);

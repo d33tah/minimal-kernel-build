@@ -92,9 +92,4 @@ static inline struct lruvec *folio_lruvec_relock_irqsave(struct folio *folio,
 	return folio_lruvec_lock_irqsave(folio, flags);
 }
 
-static inline bool memcg_kmem_enabled(void)
-{
-	return false;
-}
-
 #endif /* _LINUX_MEMCONTROL_H */

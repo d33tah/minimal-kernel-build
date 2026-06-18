@@ -15,9 +15,5 @@ struct io_context {
 struct task_struct;
 struct io_context;
 static inline void exit_io_context(struct task_struct *task) { }
-static inline int copy_io(unsigned long clone_flags, struct task_struct *tsk)
-{
-	return 0;
-}
 
 #endif  

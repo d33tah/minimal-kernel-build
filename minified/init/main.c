@@ -8,7 +8,6 @@
 #include <linux/binfmts.h>
 #include <linux/kernel.h>
 #include <linux/syscalls.h>
-static inline void boot_init_stack_canary(void) {}
 /* end stackprotector.h */
 #include <linux/string.h>
 #include <linux/ctype.h>
@@ -47,7 +46,6 @@ static inline void boot_init_stack_canary(void) {}
 #include <linux/pid_namespace.h>
 
 /* --- 2025-12-08 00:37 --- padata.h stubbed out */
-static inline void __init padata_init(void) {}
 #include <linux/device/driver.h>
 #include <linux/kthread.h>
 #include <linux/sched.h>
@@ -55,7 +53,6 @@ extern void sched_init(void);
 extern void sched_init_smp(void);
 #include <linux/signal.h>
 #include <linux/idr.h>
-static inline void kgdb_free_init_mem(void) { }
 #include <linux/async.h>
 #include <linux/shmem_fs.h>
 #include <linux/slab.h>
@@ -71,7 +68,6 @@ static inline void kgdb_free_init_mem(void) { }
 #include <linux/proc_ns.h>
 
 /* --- 2025-12-08 00:40 --- integrity.h stubbed out */
-static inline void integrity_load_keys(void) { }
 #include <linux/io.h>
 #include <linux/cache.h>
 #include <linux/jump_label.h>
@@ -156,7 +152,6 @@ static int __init loglevel(char *str) { return 0; }
 early_param("loglevel", loglevel);
 
 /* Stub: bootconfig not needed for minimal kernel */
-static void __init setup_boot_config(void) { }
 static int __init warn_bootconfig(char *str) { return 0; }
 #define exit_boot_config()	do {} while (0)
 early_param("bootconfig", warn_bootconfig);
@@ -264,9 +259,6 @@ static int __init rdinit_setup(char *str)
 }
 __setup("rdinit=", rdinit_setup);
 
-static const unsigned int setup_max_cpus = NR_CPUS;
-static inline void setup_nr_cpu_ids(void) { }
-static inline void smp_prepare_cpus(unsigned int maxcpus) { }
 
 static void __init setup_command_line(char *command_line)
 {
@@ -423,9 +415,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	page_address_init();
 	pr_notice("%s", linux_banner);
 	setup_arch(&command_line);
-	setup_boot_config();
 	setup_command_line(command_line);
-	setup_nr_cpu_ids();
 	setup_per_cpu_areas();
 	smp_prepare_boot_cpu();
 
@@ -475,7 +465,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	timekeeping_init();
 	time_init();
 
-	boot_init_stack_canary();
 
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 
@@ -688,7 +677,6 @@ static int __ref kernel_init(void *unused)
 	kernel_init_freeable();
 
 	system_state = SYSTEM_FREEING_INITMEM;
-	kgdb_free_init_mem();
 	exit_boot_config();
 	free_initmem();
 	mark_readonly();
@@ -754,7 +742,6 @@ static noinline void __init kernel_init_freeable(void)
 
 	/* cad_pid removed - only set, never read */
 
-	smp_prepare_cpus(setup_max_cpus);
 
 	workqueue_init();
 
@@ -763,7 +750,6 @@ static noinline void __init kernel_init_freeable(void)
 	smp_init();
 	sched_init_smp();
 
-	padata_init();
 	page_alloc_init_late();
 
 	do_basic_setup();
@@ -773,5 +759,4 @@ static noinline void __init kernel_init_freeable(void)
 
 
 
-	integrity_load_keys();
 }

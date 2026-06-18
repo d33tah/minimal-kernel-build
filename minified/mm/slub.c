@@ -356,40 +356,9 @@ static struct slab *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 		flags & (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK), node);
 }
 
-static void __free_slab(struct kmem_cache *s, struct slab *slab)
-{
-	struct folio *folio = slab_folio(slab);
-	int order = folio_order(folio);
-	int pages = 1 << order;
-
-	__slab_clear_pfmemalloc(slab);
-	__folio_clear_slab(folio);
-	folio->mapping = NULL;
-	if (current->reclaim_state)
-		current->reclaim_state->reclaimed_slab += pages;
-	unaccount_slab(slab, order, s);
-	__free_pages(folio_page(folio, 0), order);
-}
-
-static void rcu_free_slab(struct rcu_head *h)
-{
-	struct slab *slab = container_of(h, struct slab, rcu_head);
-
-	__free_slab(slab->slab_cache, slab);
-}
-
-static void free_slab(struct kmem_cache *s, struct slab *slab)
-{
-	if (unlikely(s->flags & SLAB_TYPESAFE_BY_RCU)) {
-		call_rcu(&slab->rcu_head, rcu_free_slab);
-	} else
-		__free_slab(s, slab);
-}
-
-static void discard_slab(struct kmem_cache *s, struct slab *slab)
-{
-	free_slab(s, slab);
-}
+/* __free_slab/rcu_free_slab/free_slab/discard_slab removed - the slab-empty
+ * free paths (deactivate_slab M_FREE, __slab_free slab_empty) are never taken
+ * in this single-shot boot workload (slabs never drop to zero in-use). */
 
 static inline void
 __add_partial(struct kmem_cache_node *n, struct slab *slab, int tail)
@@ -527,7 +496,7 @@ static void init_kmem_cache_cpus(struct kmem_cache *s)
 static void deactivate_slab(struct kmem_cache *s, struct slab *slab,
 			    void *freelist)
 {
-	enum slab_modes { M_NONE, M_PARTIAL, M_FREE, M_FULL_NOLIST };
+	enum slab_modes { M_NONE, M_PARTIAL, M_FULL_NOLIST };
 	struct kmem_cache_node *n = get_node(s, slab_nid(slab));
 	int free_delta = 0;
 	enum slab_modes mode = M_NONE;
@@ -571,9 +540,7 @@ redo:
 
 	new.frozen = 0;
 
-	if (!new.inuse && n->nr_partial >= s->min_partial) {
-		mode = M_FREE;
-	} else if (new.freelist) {
+	if (new.freelist) {
 		mode = M_PARTIAL;
 
 		spin_lock_irqsave(&n->list_lock, flags);
@@ -593,8 +560,6 @@ redo:
 	if (mode == M_PARTIAL) {
 		add_partial(n, slab, tail);
 		spin_unlock_irqrestore(&n->list_lock, flags);
-	} else if (mode == M_FREE) {
-		discard_slab(s, slab);
 	}
 }
 
@@ -784,24 +749,10 @@ static void __slab_free(struct kmem_cache *s, struct slab *slab,
 		return;
 	}
 
-	if (unlikely(!new.inuse && n->nr_partial >= s->min_partial))
-		goto slab_empty;
-
-
 	if (unlikely(!prior)) {
 		add_partial(n, slab, DEACTIVATE_TO_TAIL);
 	}
 	spin_unlock_irqrestore(&n->list_lock, flags);
-	return;
-
-slab_empty:
-	if (prior) {
-
-		remove_partial(n, slab);
-	}
-
-	spin_unlock_irqrestore(&n->list_lock, flags);
-	discard_slab(s, slab);
 }
 
 static __always_inline void do_slab_free(struct kmem_cache *s,

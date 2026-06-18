@@ -250,12 +250,7 @@ static __always_inline void account_slab(struct slab *slab, int order,
 			    PAGE_SIZE << order);
 }
 
-static __always_inline void unaccount_slab(struct slab *slab, int order,
-					   struct kmem_cache *s)
-{
-	mod_node_page_state(slab_pgdat(slab), cache_vmstat_idx(s),
-			    -(PAGE_SIZE << order));
-}
+/* unaccount_slab removed - only caller was __free_slab (dead slab-free path) */
 
 static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 {

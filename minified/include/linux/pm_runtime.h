@@ -8,47 +8,4 @@
 
 #include <linux/jiffies.h>
 
-#define RPM_ASYNC		0x01	 
-#define RPM_NOWAIT		0x02	 
-#define RPM_GET_PUT		0x04	 
-#define RPM_AUTO		0x08	 
-
-#define DEFINE_RUNTIME_DEV_PM_OPS(name, suspend_fn, resume_fn, idle_fn) \
-	_DEFINE_DEV_PM_OPS(name, pm_runtime_force_suspend, \
-			   pm_runtime_force_resume, suspend_fn, \
-			   resume_fn, idle_fn)
-
-#define EXPORT_RUNTIME_DEV_PM_OPS(name, suspend_fn, resume_fn, idle_fn) \
-	_EXPORT_DEV_PM_OPS(name, pm_runtime_force_suspend, pm_runtime_force_resume, \
-			   suspend_fn, resume_fn, idle_fn, "", "")
-#define EXPORT_GPL_RUNTIME_DEV_PM_OPS(name, suspend_fn, resume_fn, idle_fn) \
-	_EXPORT_DEV_PM_OPS(name, pm_runtime_force_suspend, pm_runtime_force_resume, \
-			   suspend_fn, resume_fn, idle_fn, "_gpl", "")
-#define EXPORT_NS_RUNTIME_DEV_PM_OPS(name, suspend_fn, resume_fn, idle_fn, ns) \
-	_EXPORT_DEV_PM_OPS(name, pm_runtime_force_suspend, pm_runtime_force_resume, \
-			   suspend_fn, resume_fn, idle_fn, "", #ns)
-#define EXPORT_NS_GPL_RUNTIME_DEV_PM_OPS(name, suspend_fn, resume_fn, idle_fn, ns) \
-	_EXPORT_DEV_PM_OPS(name, pm_runtime_force_suspend, pm_runtime_force_resume, \
-			   suspend_fn, resume_fn, idle_fn, "_gpl", #ns)
-
-
-static inline int __pm_runtime_idle(struct device *dev, int rpmflags)
-{
-	return -ENOSYS;
-}
-static inline int __pm_runtime_resume(struct device *dev, int rpmflags)
-{
-	return 1;
-}
-static inline void pm_runtime_put_noidle(struct device *dev) {}
-
-
-/* Compact pm_runtime_* wrapper functions */
-static inline int pm_runtime_resume_and_get(struct device *dev) {
-	int ret = __pm_runtime_resume(dev, RPM_GET_PUT);
-	if (ret < 0) { pm_runtime_put_noidle(dev); return ret; }
-	return 0;
-}
-static inline int pm_runtime_put(struct device *dev) { return __pm_runtime_idle(dev, RPM_GET_PUT | RPM_ASYNC); }
-
 #endif

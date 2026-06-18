@@ -189,19 +189,8 @@ static inline void tlb_flush_pmd_range(struct mmu_gather *tlb,
 	tlb->cleared_pmds = 1;
 }
 
-static inline void tlb_flush_pud_range(struct mmu_gather *tlb,
-				     unsigned long address, unsigned long size)
-{
-	__tlb_adjust_range(tlb, address, size);
-	tlb->cleared_puds = 1;
-}
-
-static inline void tlb_flush_p4d_range(struct mmu_gather *tlb,
-				     unsigned long address, unsigned long size)
-{
-	__tlb_adjust_range(tlb, address, size);
-	tlb->cleared_p4ds = 1;
-}
+/* tlb_flush_pud_range / tlb_flush_p4d_range removed - only the dead
+ * pud_free_tlb/p4d_free_tlb macros (folded away on 2-level paging) used them */
 
 #ifndef __tlb_remove_tlb_entry
 #define __tlb_remove_tlb_entry(tlb, ptep, address) do { } while (0)
@@ -224,32 +213,8 @@ static inline void tlb_flush_p4d_range(struct mmu_gather *tlb,
 	} while (0)
 #endif
 
-#ifndef pmd_free_tlb
-#define pmd_free_tlb(tlb, pmdp, address)			\
-	do {							\
-		tlb_flush_pud_range(tlb, address, PAGE_SIZE);	\
-		tlb->freed_tables = 1;				\
-		__pmd_free_tlb(tlb, pmdp, address);		\
-	} while (0)
-#endif
-
-#ifndef pud_free_tlb
-#define pud_free_tlb(tlb, pudp, address)			\
-	do {							\
-		tlb_flush_p4d_range(tlb, address, PAGE_SIZE);	\
-		tlb->freed_tables = 1;				\
-		__pud_free_tlb(tlb, pudp, address);		\
-	} while (0)
-#endif
-
-#ifndef p4d_free_tlb
-#define p4d_free_tlb(tlb, pudp, address)			\
-	do {							\
-		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
-		tlb->freed_tables = 1;				\
-		__p4d_free_tlb(tlb, pudp, address);		\
-	} while (0)
-#endif
+/* pmd_free_tlb / pud_free_tlb / p4d_free_tlb removed - never invoked on
+ * 2-level paging (mm/memory.c free_pgd_range only calls pte_free_tlb) */
 
 #ifndef pte_needs_flush
 static inline bool pte_needs_flush(pte_t oldpte, pte_t newpte)

@@ -9,7 +9,4 @@
 extern int overflowuid;
 extern int overflowgid;
 
-#define DEFAULT_OVERFLOWUID	65534
-#define DEFAULT_OVERFLOWGID	65534
-
-#endif  
+#endif

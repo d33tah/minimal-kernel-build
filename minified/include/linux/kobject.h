@@ -15,13 +15,9 @@
 #include <linux/workqueue.h>
 #include <linux/uidgid.h>
 
-#define UEVENT_NUM_ENVP			64
-#define UEVENT_BUFFER_SIZE		2048
-
 enum kobject_action {
 	KOBJ_ADD,
 	KOBJ_REMOVE,
-	KOBJ_UNBIND,
 };
 
 struct kobject {
@@ -73,18 +69,9 @@ struct kobj_type {
 	void (*get_ownership)(struct kobject *kobj, kuid_t *uid, kgid_t *gid);
 };
 
-struct kobj_uevent_env {
-	char *argv[3];
-	char *envp[UEVENT_NUM_ENVP];
-	int envp_idx;
-	char buf[UEVENT_BUFFER_SIZE];
-	int buflen;
-};
-
 struct kset_uevent_ops {
 	int (* const filter)(struct kobject *kobj);
 	const char *(* const name)(struct kobject *kobj);
-	int (* const uevent)(struct kobject *kobj, struct kobj_uevent_env *env);
 };
 
 

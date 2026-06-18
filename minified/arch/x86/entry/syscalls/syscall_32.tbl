@@ -110,7 +110,7 @@
 # 251 is available for reuse (was briefly sys_set_zone_reclaim)
 252	i386	exit_group		sys_exit_group
 # 253 lookup_dcookie removed (unreachable, routes to sys_ni)
-258	i386	set_tid_address		sys_set_tid_address
+# 258	i386	set_tid_address		sys_set_tid_address  (stubbed body removed, unreachable -> sys_ni)
 # 259	i386	timer_create		sys_timer_create		compat_sys_timer_create  (posix timers: unreachable, -> sys_ni)
 # 260	i386	timer_settime		sys_timer_settime32  (posix timers: unreachable, -> sys_ni)
 # 261	i386	timer_gettime		sys_timer_gettime32  (posix timers: unreachable, -> sys_ni)
@@ -157,9 +157,9 @@
 # 407	i386	clock_nanosleep_time64	sys_clock_nanosleep  (posix timers: unreachable, -> sys_ni)
 # 408	i386	timer_gettime64		sys_timer_gettime  (posix timers: unreachable, -> sys_ni)
 # 409	i386	timer_settime64		sys_timer_settime  (posix timers: unreachable, -> sys_ni)
-412	i386	utimensat_time64	sys_utimensat
-413	i386	pselect6_time64		sys_pselect6			compat_sys_pselect6_time64
-414	i386	ppoll_time64		sys_ppoll			compat_sys_ppoll_time64
+# 412	i386	utimensat_time64	sys_utimensat  (stub body removed, unreachable -> sys_ni)
+# 413	i386	pselect6_time64		sys_pselect6			compat_sys_pselect6_time64  (stub body removed, unreachable -> sys_ni)
+# 414	i386	ppoll_time64		sys_ppoll			compat_sys_ppoll_time64  (stub body removed, unreachable -> sys_ni)
 # 418-419 mq_timed*_time64 removed (unreachable)
 # 420 semtimedop_time64 removed (unreachable)
 # 425-427 io_uring_* removed (unreachable)

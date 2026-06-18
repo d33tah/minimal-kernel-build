@@ -775,13 +775,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	return 0;
 }
 
-SYSCALL_DEFINE1(set_tid_address, int __user *, tidptr)
-{
-	current->clear_child_tid = tidptr;
-
-	return task_pid_vnr(current);
-}
-
 static void rt_mutex_init_task(struct task_struct *p)
 {
 	raw_spin_lock_init(&p->pi_lock);

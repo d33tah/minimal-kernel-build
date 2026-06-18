@@ -40,8 +40,6 @@ struct dev_printk_info {
 #include <linux/device/bus.h>
 #include <linux/device/class.h>
 #include <linux/device/driver.h>
-struct dev_archdata { };
-struct pdev_archdata { };
 
 struct device;
 struct device_private;
@@ -50,13 +48,6 @@ struct driver_private;
 struct module;
 struct class;
 struct subsys_private;
-struct device_node;
-struct fwnode_handle;
-struct iommu_ops;
-struct iommu_group;
-struct dev_pin_info;
-struct dev_iommu;
-struct msi_device_data;
 struct bus_dma_region;
 
 /* struct subsys_interface removed - never instantiated (no
@@ -82,22 +73,6 @@ struct device_attribute {
 
 /* devres alloc/add/free + devm_kstrdup/devm_kasprintf removed - never called */
 
-struct device_dma_parameters {
-	 
-	unsigned int max_segment_size;
-	unsigned int min_align_mask;
-	unsigned long segment_boundary_mask;
-};
-
-enum device_removable {
-	DEVICE_REMOVABLE_NOT_SUPPORTED = 0,
-};
-
-struct dev_msi_info {
-};
-
-/* device_physical_location - not used in minimal kernel */
-struct device_physical_location;
 
 struct device {
 	struct kobject kobj;
@@ -109,52 +84,24 @@ struct device {
 	const struct device_type *type;
 
 	struct device_driver *driver;
-	void		*platform_data;	 
-	void		*driver_data;	 
-	struct mutex		mutex;	 
+	struct mutex		mutex;
 
 	struct dev_pm_info	power;
-	struct dev_pm_domain	*pm_domain;
 
-
-	struct dev_msi_info	msi;
-	u64		*dma_mask;	 
-	u64		coherent_dma_mask; 
-	u64		bus_dma_limit;	 
 	const struct bus_dma_region *dma_range_map;
 
-	struct device_dma_parameters *dma_parms;
+	struct list_head	dma_pools;
 
-	struct list_head	dma_pools;	 
-
-	 
-	struct dev_archdata	archdata;
-
-	struct device_node	*of_node;  
-	struct fwnode_handle	*fwnode;  
-
-	dev_t			devt;	 
-	u32			id;	 
+	dev_t			devt;
+	u32			id;
 
 	spinlock_t		devres_lock;
 	struct list_head	devres_head;
 
 	struct class		*class;
-	const struct attribute_group **groups;	 
+	const struct attribute_group **groups;
 
 	void	(*release)(struct device *dev);
-	struct iommu_group	*iommu_group;
-	struct dev_iommu	*iommu;
-
-	struct device_physical_location *physical_location;
-
-	enum device_removable	removable;
-
-	bool			offline_disabled:1;
-	bool			offline:1;
-	bool			of_node_reused:1;
-	bool			state_synced:1;
-	bool			can_match:1;
 };
 
 static inline struct device *kobj_to_dev(struct kobject *kobj)
@@ -187,7 +134,6 @@ static inline void set_dev_node(struct device *dev, int node)
 
 static inline void dev_set_drvdata(struct device *dev, void *data)
 {
-	dev->driver_data = data;
 }
 
 

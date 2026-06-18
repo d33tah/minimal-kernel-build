@@ -13,7 +13,6 @@ void timekeeping_init(void);
 /* timekeeping_suspended now static in timekeeping.c */
 
 
-extern void ktime_get_real_ts64(struct timespec64 *tv);
 extern void ktime_get_coarse_real_ts64(struct timespec64 *ts);
 
 

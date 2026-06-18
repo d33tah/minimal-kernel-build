@@ -25,13 +25,6 @@ struct fwnode_handle;
 
 
 
-static inline int acpi_mps_check(void)
-{
-	return 0;
-}
-
-
-
 static inline void acpi_device_notify_remove(struct device *dev) { }
 
 #endif	 

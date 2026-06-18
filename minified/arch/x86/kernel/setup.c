@@ -447,10 +447,6 @@ void __init setup_arch(char **cmdline_p)
 
 	x86_report_nx();
 
-	if (acpi_mps_check()) {
-		setup_clear_cpu_cap(X86_FEATURE_APIC);
-	}
-
 	e820__reserve_setup_data();
 	e820__finish_early_params();
 

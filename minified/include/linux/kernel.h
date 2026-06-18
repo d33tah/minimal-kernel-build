@@ -106,9 +106,6 @@ const char *kvasprintf_const(gfp_t gfp, const char *fmt, va_list args);
 
 extern char *next_arg(char *args, char **param, char **val);
 
-extern int __kernel_text_address(unsigned long addr);
-extern int kernel_text_address(unsigned long addr);
-
 extern void bust_spinlocks(int yes);
 
 extern int root_mountflags;

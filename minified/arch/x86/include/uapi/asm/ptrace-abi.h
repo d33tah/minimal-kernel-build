@@ -20,27 +20,7 @@
 #define EFL 14
 #define UESP 15
 #define SS   16
-#define FRAME_SIZE 17  
-
- 
-#define PTRACE_GETREGS            12
-#define PTRACE_SETREGS            13
-#define PTRACE_GETFPREGS          14
-#define PTRACE_SETFPREGS          15
-#define PTRACE_GETFPXREGS         18
-#define PTRACE_SETFPXREGS         19
-
-#define PTRACE_OLDSETOPTIONS      21
-
-
-#define PTRACE_GET_THREAD_AREA    25
-#define PTRACE_SET_THREAD_AREA    26
-/* Removed PTRACE_ARCH_PRCTL - x86_64 only */
-
-#define PTRACE_SYSEMU		  31
-#define PTRACE_SYSEMU_SINGLESTEP  32
-
-#define PTRACE_SINGLEBLOCK	33	 
+#define FRAME_SIZE 17
 
 #ifndef __ASSEMBLY__
 #include <linux/types.h>

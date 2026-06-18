@@ -192,10 +192,6 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 	    !gid_valid(i_gid_into_mnt(mnt_userns, inode)))
 		return -EOVERFLOW;
 
-	error = try_break_deleg(inode, delegated_inode);
-	if (error)
-		return error;
-
 	if (inode->i_op->setattr)
 		error = inode->i_op->setattr(mnt_userns, dentry, attr);
 	else

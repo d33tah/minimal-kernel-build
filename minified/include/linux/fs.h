@@ -1051,12 +1051,6 @@ static inline int break_lease(struct inode *inode, unsigned int mode)
 	return 0;
 }
 
-static inline int try_break_deleg(struct inode *inode, struct inode **delegated_inode)
-{
-	return 0;
-}
-
-
 struct audit_names;
 struct filename {
 	const char		*name;	

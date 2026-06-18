@@ -36,7 +36,8 @@
 #define SLAB_NO_CMPXCHG (SLAB_CONSISTENCY_CHECKS | SLAB_STORE_USER | \
 				SLAB_TRACE)
 
-#define DEBUG_METADATA_FLAGS (SLAB_RED_ZONE | SLAB_POISON | SLAB_STORE_USER)
+/* DEBUG_METADATA_FLAGS removed - only consumer was the dead
+ * disable_higher_order_debug (const 0) branch in kmem_cache_open */
 
 #define OO_SHIFT	16
 #define OO_MASK		((1 << OO_SHIFT) - 1)
@@ -208,7 +209,6 @@ slab_flags_t kmem_cache_flags(unsigned int object_size,
 {
 	return flags;
 }
-#define disable_higher_order_debug 0
 
 static __always_inline bool slab_free_hook(struct kmem_cache *s,
 						void *x, bool init)
@@ -1015,15 +1015,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 
 	if (!calculate_sizes(s))
 		return -EINVAL;
-	if (disable_higher_order_debug) {
-
-		if (get_order(s->size) > get_order(s->object_size)) {
-			s->flags &= ~DEBUG_METADATA_FLAGS;
-			s->offset = 0;
-			if (!calculate_sizes(s))
-				return -EINVAL;
-		}
-	}
 
 #if defined(CONFIG_HAVE_CMPXCHG_DOUBLE) && \
     defined(CONFIG_HAVE_ALIGNED_STRUCT_PAGE)

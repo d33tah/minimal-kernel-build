@@ -151,15 +151,9 @@ typedef int (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
 #define ATTR_ATIME	(1 << 4)
 #define ATTR_MTIME	(1 << 5)
 #define ATTR_CTIME	(1 << 6)
-#define ATTR_ATIME_SET	(1 << 7)
-#define ATTR_MTIME_SET	(1 << 8)
-#define ATTR_FORCE	(1 << 9) 
+#define ATTR_FORCE	(1 << 9)
 #define ATTR_KILL_SUID	(1 << 11)
 #define ATTR_KILL_SGID	(1 << 12)
-#define ATTR_FILE	(1 << 13)
-#define ATTR_KILL_PRIV	(1 << 14)
-#define ATTR_OPEN	(1 << 15) 
-#define ATTR_TIMES_SET	(1 << 16)
 
 #define WHITEOUT_DEV 0
 
@@ -172,9 +166,6 @@ struct iattr {
 	struct timespec64 ia_atime;
 	struct timespec64 ia_mtime;
 	struct timespec64 ia_ctime;
-
-	
-	struct file	*ia_file;
 };
 
 #include <linux/quota.h>

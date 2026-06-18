@@ -1213,7 +1213,7 @@ static int handle_truncate(struct user_namespace *mnt_userns, struct file *filp)
 		return error;
 
 	error = do_truncate(mnt_userns, path->dentry, 0,
-			    ATTR_MTIME|ATTR_CTIME|ATTR_OPEN,
+			    ATTR_MTIME|ATTR_CTIME,
 			    filp);
 	put_write_access(inode);
 	return error;

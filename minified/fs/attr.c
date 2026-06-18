@@ -36,11 +36,7 @@ int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 			attr->ia_mode &= ~S_ISGID;
 	}
 
-	 
-	if (ia_valid & (ATTR_MTIME_SET | ATTR_ATIME_SET | ATTR_TIMES_SET)) {
-		if (!inode_owner_or_capable(mnt_userns, inode))
-			return -EPERM;
-	}
+	/* ATTR_*TIME_SET / ATTR_TIMES_SET are never set on this build (utimes path removed) */
 
 kill_priv:
 	 
@@ -91,20 +87,11 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 	now = current_time(inode);
 
 	attr->ia_ctime = now;
-	if (!(ia_valid & ATTR_ATIME_SET))
-		attr->ia_atime = now;
-	else
-		attr->ia_atime = timestamp_truncate(attr->ia_atime, inode);
-	if (!(ia_valid & ATTR_MTIME_SET))
-		attr->ia_mtime = now;
-	else
-		attr->ia_mtime = timestamp_truncate(attr->ia_mtime, inode);
+	/* ATTR_ATIME_SET / ATTR_MTIME_SET / ATTR_KILL_PRIV are never set on this build */
+	attr->ia_atime = now;
+	attr->ia_mtime = now;
 
-	if (ia_valid & ATTR_KILL_PRIV) {
-		ia_valid = attr->ia_valid &= ~ATTR_KILL_PRIV;
-	}
 
-	 
 	if ((ia_valid & (ATTR_KILL_SUID|ATTR_KILL_SGID)) &&
 	    (ia_valid & ATTR_MODE))
 		BUG();

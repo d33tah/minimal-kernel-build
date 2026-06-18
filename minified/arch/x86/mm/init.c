@@ -436,35 +436,9 @@ void __init poking_init(void)
 	pte_unmap_unlock(ptep, ptl);
 }
 
-void free_init_pages(const char *what, unsigned long begin, unsigned long end)
-{
-	unsigned long begin_aligned, end_aligned;
-
-	 
-	begin_aligned = PAGE_ALIGN(begin);
-	end_aligned   = end & PAGE_MASK;
-
-	if (WARN_ON(begin_aligned != begin || end_aligned != end)) {
-		begin = begin_aligned;
-		end   = end_aligned;
-	}
-
-	if (begin >= end)
-		return;
-
-	free_reserved_area((void *)begin, (void *)end,
-			   POISON_FREE_INITMEM, what);
-}
-
 void __ref free_initmem(void)
 {
 	e820__reallocate_tables();
-}
-
-void __init free_initrd_mem(unsigned long start, unsigned long end)
-{
-	 
-	free_init_pages("initrd", start, PAGE_ALIGN(end));
 }
 
 void __init zone_sizes_init(void)

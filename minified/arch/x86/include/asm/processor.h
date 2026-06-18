@@ -459,7 +459,6 @@ extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
 DECLARE_PER_CPU(u64, msr_misc_features_shadow);
 
 extern unsigned long arch_align_stack(unsigned long sp);
-void free_init_pages(const char *what, unsigned long begin, unsigned long end);
 
 void default_idle(void);
 #define xen_set_default_idle 0

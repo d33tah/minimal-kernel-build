@@ -272,18 +272,6 @@ void select_idle_routine(const struct cpuinfo_x86 *c)
 }
 
 
-void __init arch_post_acpi_subsys_init(void)
-{
-	/*
-	 * The only work here was the AMD C1E (Erratum 400) detection, gated on
-	 * boot_cpu_has_bug(X86_BUG_AMD_E400). That bug bit is never set anywhere
-	 * in this tree (all CPU-bug detection in cpu_set_bug_bits() was removed),
-	 * so the guard always returned early -- the whole body was dead. The bit
-	 * it would have set (X86_BUG_AMD_APIC_C1E) is likewise never read.
-	 */
-}
-
-
 unsigned long arch_align_stack(unsigned long sp)
 {
 	if (!(current->personality & ADDR_NO_RANDOMIZE))

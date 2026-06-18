@@ -16,8 +16,6 @@ static __always_inline void __node_set(int node, volatile nodemask_t *dstp)
 }
 
 
-#define node_isset(node, nodemask) test_bit((node), (nodemask).bits)
-
 /* node_test_and_set, nodes_and, nodes_or, nodes_andnot, nodes_equal,
  * nodes_intersects, nodes_subset removed - unused */
 
@@ -40,14 +38,6 @@ static inline bool __nodes_empty(const nodemask_t *srcp, unsigned int nbits)
 ((nodemask_t) { {							\
 	[BITS_TO_LONGS(MAX_NUMNODES)-1] = NODE_MASK_LAST_WORD		\
 } })
-
-#define NODE_MASK_NONE							\
-((nodemask_t) { {							\
-	[0 ... BITS_TO_LONGS(MAX_NUMNODES)-1] =  0UL			\
-} })
-
-#define nodes_addr(src) ((src).bits)
-
 
 /* MAX_NUMNODES=1, use simplified version */
 #define for_each_node_mask(node, mask)                                  \
@@ -78,20 +68,16 @@ static inline int node_state(int node, enum node_states state)
 	for ( (node) = 0; (node) == 0; (node) = 1)
 
 #define first_online_node	0
-#define first_memory_node	0
 #define next_online_node(nid)	(MAX_NUMNODES)
 #define nr_node_ids		1U
 #define nr_online_nodes		1U
 
 
-#define node_online_map 	node_states[N_ONLINE]
 #define node_possible_map 	node_states[N_POSSIBLE]
 
 #define node_online(node)	node_state((node), N_ONLINE)
-#define node_possible(node)	node_state((node), N_POSSIBLE)
 
 #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)
-#define for_each_online_node(node) for_each_node_state(node, N_ONLINE)
 
 #if NODES_SHIFT > 8  
 #define NODEMASK_ALLOC(type, name, gfp_flags)	\

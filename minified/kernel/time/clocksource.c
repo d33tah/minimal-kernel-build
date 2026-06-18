@@ -80,17 +80,6 @@ static void clocksource_enqueue_watchdog(struct clocksource *cs)
 		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
 }
 
-static int __clocksource_watchdog_kthread(void)
-{
-	return 0;
-}
-
-static bool clocksource_is_watchdog(struct clocksource *cs)
-{
-	return false;
-}
-
-
 static bool clocksource_is_suspend(struct clocksource *cs)
 {
 	return cs == suspend_clocksource;
@@ -229,8 +218,6 @@ static int __init clocksource_done_booting(void)
 	mutex_lock(&clocksource_mutex);
 	curr_clocksource = clocksource_default_clock();
 	finished_booting = 1;
-	 
-	__clocksource_watchdog_kthread();
 	clocksource_select();
 	mutex_unlock(&clocksource_mutex);
 	return 0;
@@ -327,12 +314,6 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 
 static int clocksource_unbind(struct clocksource *cs)
 {
-	if (clocksource_is_watchdog(cs)) {
-
-		if (clocksource_is_watchdog(cs))
-			return -EBUSY;
-	}
-
 	if (cs == curr_clocksource) {
 		 
 		clocksource_select_fallback();

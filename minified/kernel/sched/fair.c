@@ -22,19 +22,16 @@
 #include "autogroup.h"
 
 unsigned int sysctl_sched_latency			= 6000000ULL;
-static unsigned int normalized_sysctl_sched_latency	= 6000000ULL;
 
 unsigned int sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_LOG;
 
 unsigned int sysctl_sched_min_granularity			= 750000ULL;
-static unsigned int normalized_sysctl_sched_min_granularity	= 750000ULL;
 
 static unsigned int sched_nr_latency = 8;
 
 unsigned int sysctl_sched_child_runs_first __read_mostly;
 
 unsigned int sysctl_sched_wakeup_granularity			= 1000000UL;
-static unsigned int normalized_sysctl_sched_wakeup_granularity	= 1000000UL;
 
 int sched_thermal_decay_shift;
 
@@ -56,19 +53,8 @@ static inline void update_load_set(struct load_weight *lw, unsigned long w)
 	lw->inv_weight = 0;
 }
 
-static void update_sysctl(void)
-{
-#define SET_SYSCTL(name) \
-	(sysctl_##name = normalized_sysctl_##name)
-	SET_SYSCTL(sched_min_granularity);
-	SET_SYSCTL(sched_latency);
-	SET_SYSCTL(sched_wakeup_granularity);
-#undef SET_SYSCTL
-}
-
 void __init sched_init_granularity(void)
 {
-	update_sysctl();
 }
 
 #define WMULT_CONST	(~0U)

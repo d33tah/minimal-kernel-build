@@ -232,10 +232,8 @@ static inline void device_lock_assert(struct device *dev)
 }
 
 int __must_check device_register(struct device *dev);
-void device_unregister(struct device *dev);
 void device_initialize(struct device *dev);
 int __must_check device_add(struct device *dev);
-void device_del(struct device *dev);
 
 
 /* lock_device_hotplug, unlock_device_hotplug, lock_device_hotplug_sysfs,
@@ -250,7 +248,6 @@ __printf(6, 7) struct device *
 device_create_with_groups(struct class *cls, struct device *parent, dev_t devt,
 			  void *drvdata, const struct attribute_group **groups,
 			  const char *fmt, ...);
-void device_destroy(struct class *cls, dev_t devt);
 
 
 

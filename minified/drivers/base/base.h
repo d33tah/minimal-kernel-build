@@ -48,9 +48,8 @@ extern int classes_init(void);
 
 /* virtual_device_parent removed - unused */
 
-extern void bus_remove_device(struct device *dev);
-
-extern void driver_deferred_probe_del(struct device *dev);
+/* Removed: bus_remove_device + driver_deferred_probe_del - device teardown path
+   is gone (device_del removed). */
 /* Removed: driver_match_device - 0 callers (driver-side bind machinery is gone). */
 
 

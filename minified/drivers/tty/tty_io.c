@@ -983,7 +983,7 @@ struct device *tty_register_device_attr(struct tty_driver *driver,
 
 		retval = tty_cdev_add(driver, devt, index, 1);
 		if (retval)
-			goto err_del;
+			goto err_put;
 	}
 
 	dev_set_uevent_suppress(dev, 0);
@@ -991,24 +991,16 @@ struct device *tty_register_device_attr(struct tty_driver *driver,
 
 	return dev;
 
-err_del:
-	device_del(dev);
 err_put:
 	put_device(dev);
 
 	return ERR_PTR(retval);
 }
 
-/* Only used internally, make it static */
-static void tty_unregister_device(struct tty_driver *driver, unsigned index)
-{
-	device_destroy(tty_class,
-		MKDEV(driver->major, driver->minor_start) + index);
-	if (!(driver->flags & TTY_DRIVER_DYNAMIC_ALLOC)) {
-		cdev_del(driver->cdevs[index]);
-		driver->cdevs[index] = NULL;
-	}
-}
+/* Removed: tty_unregister_device + the device teardown chain
+   (device_destroy/device_unregister/device_del/bus_remove_device) - no tty
+   device is ever unregistered and no driver kref is dropped on this build, so
+   the entire char-device teardown path was runtime-dead. */
 
 struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
 		unsigned long flags)
@@ -1080,8 +1072,6 @@ static void destruct_tty_driver(struct kref *kref)
 				driver->termios[i] = NULL;
 				kfree(tp);
 			}
-			if (!(driver->flags & TTY_DRIVER_DYNAMIC_DEV))
-				tty_unregister_device(driver, i);
 		}
 		proc_tty_unregister_driver(driver);
 		if (driver->flags & TTY_DRIVER_DYNAMIC_ALLOC)
@@ -1144,9 +1134,6 @@ int tty_register_driver(struct tty_driver *driver)
 	return 0;
 
 err_unreg_devs:
-	for (i--; i >= 0; i--)
-		tty_unregister_device(driver, i);
-
 	mutex_lock(&tty_mutex);
 	list_del(&driver->tty_drivers);
 	mutex_unlock(&tty_mutex);

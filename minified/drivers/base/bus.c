@@ -12,12 +12,6 @@
 #include "base.h"
 #include "power/power.h"
 
-static void bus_put(struct bus_type *bus)
-{
-	if (bus)
-		kset_put(&bus->p->subsys);
-}
-
 /* Removed: bus_get + the driver_ktype kobj_type (drv_attr_show/store,
    driver_sysfs_ops, driver_release) - only used by the dead bus_add_driver */
 
@@ -36,18 +30,8 @@ static void bus_put(struct bus_type *bus)
    driver_register), so the only caller (__device_attach, also removed) iterated
    nothing. */
 
-/* Simplified: sysfs functions are stubs; bus->p->interfaces is always empty
-   (subsys_interface_register is gone), knode_bus is never klist_add'd, and no
-   driver ever binds so device_release_driver was a no-op (now removed). */
-void bus_remove_device(struct device *dev)
-{
-	struct bus_type *bus = dev->bus;
-
-	if (!bus)
-		return;
-
-	bus_put(dev->bus);
-}
+/* Removed: bus_remove_device + bus_put - device_del (its only caller) is gone;
+   no device is ever removed from a bus on this build. */
 
 /* Removed: drivers_probe/drivers_autoprobe bus_attributes + add_probe_files/
    remove_probe_files - the sysfs files were never created (bus_create_file was

@@ -40,13 +40,6 @@ struct kobject *sysfs_dev_char_kobj;
 struct kobject *sysfs_dev_block_kobj;
 
 
-static void device_platform_notify_remove(struct device *dev)
-{
-	acpi_device_notify_remove(dev);
-	/* platform_notify_remove call removed - never assigned */
-}
-
-
 static void device_release(struct kobject *kobj)
 {
 	struct device *dev = kobj_to_dev(kobj);
@@ -98,13 +91,6 @@ static struct kobj_type device_ktype = {
  * was only fed to the device_remove_file no-op stub, never created/read. */
 
 /* Stub: online sysfs attributes simplified for minimal kernel */
-
-/* Stub: device_remove_attrs not needed (sysfs functions are stubbed) */
-static void device_remove_attrs(struct device *dev)
-{
-	if (dev->physical_location)
-		kfree(dev->physical_location);
-}
 
 /* Removed: dev_show / dev_attr_dev - the "dev" sysfs attr was only fed to the
  * device_remove_file no-op stub, never created or read. */
@@ -243,60 +229,9 @@ void put_device(struct device *dev)
 		kobject_put(&dev->kobj);
 }
 
-static bool kill_device(struct device *dev)
-{
-	
-	device_lock_assert(dev);
-
-	if (dev->p->dead)
-		return false;
-	dev->p->dead = true;
-	return true;
-}
-
-void device_del(struct device *dev)
-{
-	struct device *parent = dev->parent;
-	unsigned int noio_flag;
-
-	device_lock(dev);
-	kill_device(dev);
-	device_unlock(dev);
-
-	if (dev->fwnode && dev->fwnode->dev == dev)
-		dev->fwnode->dev = NULL;
-
-	/* bus_notifier is never registered on (no notifier callers), so the
-	   BUS_NOTIFY_{DEL,REMOVED}_DEVICE call chains were no-ops - removed. */
-	noio_flag = memalloc_noio_save();
-
-	if (parent)
-		klist_del(&dev->p->knode_parent);
-	if (dev->class) {
-		mutex_lock(&dev->class->p->mutex);
-		/* class->p->interfaces is always empty (class_interface_register
-		   is gone), so the remove_dev loop was dead - removed. */
-		klist_del(&dev->p->knode_class);
-		mutex_unlock(&dev->class->p->mutex);
-	}
-	device_remove_attrs(dev);
-	bus_remove_device(dev);
-	driver_deferred_probe_del(dev);
-	device_platform_notify_remove(dev);
-
-	kobject_uevent(&dev->kobj, KOBJ_REMOVE);
-	kobject_del(&dev->kobj);
-	memalloc_noio_restore(noio_flag);
-	put_device(parent);
-}
-
-void device_unregister(struct device *dev)
-{
-	device_del(dev);
-	put_device(dev);
-}
-
-
+/* Removed: kill_device / device_del / device_unregister - the device teardown
+   path is runtime-dead (no device is ever unregistered on this build); its only
+   callers were the (now removed) tty teardown chain and device_destroy. */
 
 int __init devices_init(void)
 {
@@ -401,32 +336,8 @@ struct device *device_create_with_groups(struct class *class,
 	return dev;
 }
 
-void device_destroy(struct class *class, dev_t devt)
-{
-	struct device *dev;
-
-	dev = class_find_device_by_devt(class, devt);
-	if (dev) {
-		put_device(dev);
-		device_unregister(dev);
-	}
-}
-
 int device_match_devt(struct device *dev, const void *pdevt) { return 0; }
 
-/*
- * Moved from drivers/base/dd.c (deleted): the deferred-probe list is never
- * populated on this build (no driver registers on any bus), so this is the
- * only live remnant of the driver-bind machinery. Called from device_del().
- */
-static DEFINE_MUTEX(deferred_probe_mutex);
-
-void driver_deferred_probe_del(struct device *dev)
-{
-	mutex_lock(&deferred_probe_mutex);
-	if (!list_empty(&dev->p->deferred_probe)) {
-		dev_dbg(dev, "Removed from deferred list\n");
-		list_del_init(&dev->p->deferred_probe);
-	}
-	mutex_unlock(&deferred_probe_mutex);
-}
+/* Removed: device_destroy + driver_deferred_probe_del - device_destroy was only
+   reached from the (removed) tty teardown path; driver_deferred_probe_del was
+   only called from the (removed) device_del. */

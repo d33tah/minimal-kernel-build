@@ -269,21 +269,6 @@ __mod_timer(struct timer_list *timer, unsigned long expires, unsigned int option
 	return ret;
 }
 
-void add_timer_on(struct timer_list *timer, int cpu)
-{
-	struct timer_base *base;
-	unsigned long flags;
-
-	BUG_ON(timer_pending(timer) || !timer->function);
-
-
-	base = lock_timer_base(timer, &flags);
-	forward_timer_base(base);
-
-	internal_add_timer(base, timer);
-	raw_spin_unlock_irqrestore(&base->lock, flags);
-}
-
 int del_timer(struct timer_list *timer)
 {
 	struct timer_base *base;

@@ -42,8 +42,6 @@
 
 extern int register_refined_jiffies(long clock_tick_rate);
 
-#define TICK_USEC ((USEC_PER_SEC + HZ/2) / HZ)
-
 #ifndef __jiffy_arch_data
 #define __jiffy_arch_data
 #endif
@@ -71,23 +69,6 @@ extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffi
 #define MAX_JIFFY_OFFSET ((LONG_MAX >> 1)-1)
 
 extern unsigned long preset_lpj;
-
-
-
-#define SEC_JIFFIE_SC (31 - SHIFT_HZ)
-#if !((((NSEC_PER_SEC << 2) / TICK_NSEC) << (SEC_JIFFIE_SC - 2)) & 0x80000000)
-#undef SEC_JIFFIE_SC
-#define SEC_JIFFIE_SC (32 - SHIFT_HZ)
-#endif
-#define NSEC_JIFFIE_SC (SEC_JIFFIE_SC + 29)
-#define SEC_CONVERSION ((unsigned long)((((u64)NSEC_PER_SEC << SEC_JIFFIE_SC) +\
-                                TICK_NSEC -1) / (u64)TICK_NSEC))
-
-#define NSEC_CONVERSION ((unsigned long)((((u64)1 << NSEC_JIFFIE_SC) +\
-                                        TICK_NSEC -1) / (u64)TICK_NSEC))
-/* BITS_PER_LONG == 32 */
-#define MAX_SEC_IN_JIFFIES \
-	(long)((u64)((u64)MAX_JIFFY_OFFSET * TICK_NSEC) / NSEC_PER_SEC)
 
 extern unsigned int jiffies_to_msecs(const unsigned long j);
 

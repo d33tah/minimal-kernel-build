@@ -965,9 +965,6 @@ struct device *tty_register_device_attr(struct tty_driver *driver,
 	dev->release = tty_device_create_release;
 	dev_set_name(dev, "%s", name);
 	dev->groups = attr_grp;
-	dev_set_drvdata(dev, drvdata);
-
-	dev_set_uevent_suppress(dev, 1);
 
 	retval = device_register(dev);
 	if (retval)
@@ -986,7 +983,6 @@ struct device *tty_register_device_attr(struct tty_driver *driver,
 			goto err_put;
 	}
 
-	dev_set_uevent_suppress(dev, 0);
 	kobject_uevent(&dev->kobj, KOBJ_ADD);
 
 	return dev;

@@ -263,7 +263,6 @@ device_create_groups_vargs(struct class *class, struct device *parent,
 	dev->parent = parent;
 	dev->groups = groups;
 	dev->release = device_create_release;
-	dev_set_drvdata(dev, drvdata);
 
 	retval = kobject_set_name_vargs(&dev->kobj, fmt, args);
 	if (retval)

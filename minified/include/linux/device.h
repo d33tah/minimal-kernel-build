@@ -124,15 +124,6 @@ static inline void set_dev_node(struct device *dev, int node)
 {
 }
 
-static inline void dev_set_drvdata(struct device *dev, void *data)
-{
-}
-
-
-static inline void dev_set_uevent_suppress(struct device *dev, int val)
-{
-}
-
 static inline void device_lock(struct device *dev)
 {
 	mutex_lock(&dev->mutex);

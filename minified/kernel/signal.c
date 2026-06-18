@@ -218,11 +218,6 @@ static bool prepare_signal(int sig, struct task_struct *p, bool force)
 	return !sig_ignored(p, sig, force);
 }
 
-static void complete_signal(int sig, struct task_struct *p, enum pid_type type)
-{
-	return;
-}
-
 static inline bool legacy_queue(struct sigpending *signals, int sig)
 {
 	return (sig < SIGRTMIN) && sigismember(&signals->signal, sig);
@@ -263,7 +258,6 @@ static int __send_signal_locked(int sig, struct kernel_siginfo *info,
 
 out_set:
 	sigaddset(&pending->signal, sig);
-	complete_signal(sig, t, type);
 	return 0;
 }
 

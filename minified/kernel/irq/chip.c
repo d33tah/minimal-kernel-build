@@ -257,7 +257,6 @@ __irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle,
 		irq_state_set_disabled(desc);
 		if (is_chained) {
 			desc->action = NULL;
-			WARN_ON(irq_chip_pm_put(irq_desc_get_irq_data(desc)));
 		}
 		desc->depth = 1;
 	}
@@ -277,7 +276,6 @@ __irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle,
 		irq_settings_set_norequest(desc);
 		irq_settings_set_nothread(desc);
 		desc->action = &chained_action;
-		WARN_ON(irq_chip_pm_get(irq_desc_get_irq_data(desc)));
 		irq_activate_and_startup(desc, IRQ_RESEND);
 	}
 }
@@ -307,12 +305,3 @@ irq_set_chip_and_handler_name(unsigned int irq, const struct irq_chip *chip,
 
 
 
-int irq_chip_pm_get(struct irq_data *data)
-{
-	return 0;
-}
-
-int irq_chip_pm_put(struct irq_data *data)
-{
-	return 0;
-}

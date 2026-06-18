@@ -339,19 +339,6 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
 #define arch_start_context_switch(prev)	do {} while (0)
 #endif
 
-#ifndef __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-
-static inline int pte_swp_exclusive(pte_t pte)
-{
-	return false;
-}
-
-static inline pte_t pte_swp_clear_exclusive(pte_t pte)
-{
-	return pte;
-}
-#endif
-
 
 extern void track_pfn_insert(struct vm_area_struct *vma, pgprot_t *prot,
 			     pfn_t pfn);
@@ -427,16 +414,7 @@ static inline int pmd_none_or_trans_huge_or_clear_bad(pmd_t *pmd)
 }
 
 /* p4d_set_huge, pud_set_huge, pmd_set_huge, p4d_free_pud_page, pud_free_pmd_page,
-   pmd_free_pte_page removed - unused */
-static inline void p4d_clear_huge(p4d_t *p4d) { }
-static inline int pud_clear_huge(pud_t *pud)
-{
-	return 0;
-}
-static inline int pmd_clear_huge(pmd_t *pmd)
-{
-	return 0;
-}
+   pmd_free_pte_page, p4d_clear_huge, pud_clear_huge, pmd_clear_huge removed - unused */
 
 
 

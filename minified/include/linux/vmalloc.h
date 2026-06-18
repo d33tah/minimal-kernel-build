@@ -66,13 +66,6 @@ struct vmap_area {
 };
 
 
-#ifndef arch_vmap_pmd_supported
-static inline bool arch_vmap_pmd_supported(pgprot_t prot)
-{
-	return false;
-}
-#endif
-
 
 #ifndef arch_vmap_pte_supported_shift
 static inline int arch_vmap_pte_supported_shift(unsigned long size)

@@ -156,49 +156,6 @@ static void move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
 		drop_rmap_locks(vma);
 }
 
-#ifndef arch_supports_page_table_move
-#define arch_supports_page_table_move arch_supports_page_table_move
-static inline bool arch_supports_page_table_move(void)
-{
-	return IS_ENABLED(CONFIG_HAVE_MOVE_PMD) ||
-		IS_ENABLED(CONFIG_HAVE_MOVE_PUD);
-}
-#endif
-
-static bool move_normal_pmd(struct vm_area_struct *vma, unsigned long old_addr,
-		  unsigned long new_addr, pmd_t *old_pmd, pmd_t *new_pmd)
-{
-	spinlock_t *old_ptl, *new_ptl;
-	struct mm_struct *mm = vma->vm_mm;
-	pmd_t pmd;
-
-	if (!arch_supports_page_table_move())
-		return false;
-	 
-	if (WARN_ON_ONCE(!pmd_none(*new_pmd)))
-		return false;
-
-	 
-	old_ptl = pmd_lock(vma->vm_mm, old_pmd);
-	new_ptl = pmd_lockptr(mm, new_pmd);
-	if (new_ptl != old_ptl)
-		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
-
-	 
-	pmd = *old_pmd;
-	pmd_clear(old_pmd);
-
-	VM_BUG_ON(!pmd_none(*new_pmd));
-
-	pmd_populate(mm, new_pmd, pmd_pgtable(pmd));
-	flush_tlb_range(vma, old_addr, old_addr + PMD_SIZE);
-	if (new_ptl != old_ptl)
-		spin_unlock(new_ptl);
-	spin_unlock(old_ptl);
-
-	return true;
-}
-
 /*
  * move_normal_pud removed: PUD page-table moves require
  * CONFIG_PGTABLE_LEVELS > 2, but this is a 2-level (folded) build, so the
@@ -237,33 +194,6 @@ static __always_inline unsigned long get_extent(enum pgt_entry entry,
 	return extent;
 }
 
-static bool move_pgt_entry(enum pgt_entry entry, struct vm_area_struct *vma,
-			unsigned long old_addr, unsigned long new_addr,
-			void *old_entry, void *new_entry, bool need_rmap_locks)
-{
-	bool moved = false;
-
-	 
-	if (need_rmap_locks)
-		take_rmap_locks(vma);
-
-	switch (entry) {
-	case NORMAL_PMD:
-		moved = move_normal_pmd(vma, old_addr, new_addr, old_entry,
-					new_entry);
-		break;
-
-	default:
-		WARN_ON_ONCE(1);
-		break;
-	}
-
-	if (need_rmap_locks)
-		drop_rmap_locks(vma);
-
-	return moved;
-}
-
 unsigned long move_page_tables(struct vm_area_struct *vma,
 		unsigned long old_addr, struct vm_area_struct *new_vma,
 		unsigned long new_addr, unsigned long len,
@@ -289,14 +219,12 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 		new_pmd = alloc_new_pmd(vma->vm_mm, vma, new_addr);
 		if (!new_pmd)
 			break;
-		if (IS_ENABLED(CONFIG_HAVE_MOVE_PMD) &&
-			   extent == PMD_SIZE) {
-			 
-			if (move_pgt_entry(NORMAL_PMD, vma, old_addr, new_addr,
-					   old_pmd, new_pmd, true))
-				continue;
-		}
-
+		/*
+		 * NORMAL_PMD fast-path removed: CONFIG_HAVE_MOVE_PMD is off,
+		 * so the move_pgt_entry()/move_normal_pmd() path was a
+		 * compile-time-dead branch (arch_supports_page_table_move()
+		 * folds to false). Always fall through to move_ptes().
+		 */
 		if (pte_alloc(new_vma->vm_mm, new_pmd))
 			break;
 		move_ptes(vma, old_pmd, old_addr, old_addr + extent, new_vma,

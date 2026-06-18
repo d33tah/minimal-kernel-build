@@ -281,8 +281,6 @@ void page_add_new_anon_rmap(struct page *page,
 	VM_BUG_ON_VMA(address < vma->vm_start || address >= vma->vm_end, vma);
 	__SetPageSwapBacked(page);
 	if (compound) {
-		VM_BUG_ON_PAGE(!PageTransHuge(page), page);
-		
 		atomic_set(compound_mapcount_ptr(page), 0);
 		atomic_set(compound_pincount_ptr(page), 0);
 

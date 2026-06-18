@@ -220,21 +220,8 @@ static inline void ClearPage##uname(struct page *page) {  }
 static inline void __folio_clear_##lname(struct folio *folio) { }	\
 static inline void __ClearPage##uname(struct page *page) {  }
 
-#define TESTSETFLAG_FALSE(uname, lname)					\
-static inline bool folio_test_set_##lname(struct folio *folio)		\
-{ return 0; }								\
-static inline int TestSetPage##uname(struct page *page) { return 0; }
-
-#define TESTCLEARFLAG_FALSE(uname, lname)				\
-static inline bool folio_test_clear_##lname(struct folio *folio)	\
-{ return 0; }								\
-static inline int TestClearPage##uname(struct page *page) { return 0; }
-
 #define PAGEFLAG_FALSE(uname, lname) TESTPAGEFLAG_FALSE(uname, lname)	\
 	SETPAGEFLAG_NOOP(uname, lname) CLEARPAGEFLAG_NOOP(uname, lname)
-
-#define TESTSCFLAG_FALSE(uname, lname)					\
-	TESTSETFLAG_FALSE(uname, lname) TESTCLEARFLAG_FALSE(uname, lname)
 
 __PAGEFLAG(Locked, locked, PF_NO_TAIL)
 PAGEFLAG(Waiters, waiters, PF_ONLY_HEAD)
@@ -380,12 +367,6 @@ static __always_inline void set_compound_head(struct page *page, struct page *he
 }
 
 TESTPAGEFLAG_FALSE(Huge, hugetlb)
-
-TESTPAGEFLAG_FALSE(TransHuge, transhuge)
-TESTPAGEFLAG_FALSE(TransCompound, transcompound)
-TESTPAGEFLAG_FALSE(TransTail, transtail)
-PAGEFLAG_FALSE(DoubleMap, double_map)
-	TESTSCFLAG_FALSE(DoubleMap, double_map)
 
 
 

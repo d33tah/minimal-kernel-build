@@ -1208,7 +1208,6 @@ ssize_t generic_perform_write(struct kiocb *, struct iov_iter *);
 
 extern loff_t noop_llseek(struct file *file, loff_t offset, int whence);
 extern loff_t no_llseek(struct file *file, loff_t offset, int whence);
-int rw_verify_area(int, struct file *, const loff_t *, size_t);
 extern int nonseekable_open(struct inode * inode, struct file * filp);
 /* Removed: stream_open - never called */
 

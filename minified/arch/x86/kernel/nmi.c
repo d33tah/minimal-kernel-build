@@ -183,8 +183,3 @@ nmi_restart:
 	if (this_cpu_dec_return(nmi_state))
 		goto nmi_restart;
 }
-
-void local_touch_nmi(void)
-{
-	__this_cpu_write(last_nmi_rip, 0);
-}

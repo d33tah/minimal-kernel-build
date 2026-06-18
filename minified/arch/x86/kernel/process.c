@@ -251,20 +251,8 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
 
 static void (*x86_idle)(void);
 
-static inline void play_dead(void)
-{
-	BUG();
-}
-
-void arch_cpu_idle_enter(void)
-{
-	local_touch_nmi();
-}
-
-void arch_cpu_idle_dead(void)
-{
-	play_dead();
-}
+/* arch_cpu_idle_enter/arch_cpu_idle_dead (+ play_dead) removed - unused
+ * (idle-loop body never runs; weak stubs in kernel/sched/idle.c suffice) */
 
 void arch_cpu_idle(void)
 {

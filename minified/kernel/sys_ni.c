@@ -27,9 +27,6 @@ asmlinkage long sys_ni_syscall(void)
  * Entries for syscalls no longer in the table need no weak fallback.
  */
 
-COND_SYSCALL(capget);
-COND_SYSCALL(capset);
-
 COND_SYSCALL(clock_gettime32);
 COND_SYSCALL(clock_getres_time32);
 

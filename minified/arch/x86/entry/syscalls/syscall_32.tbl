@@ -88,9 +88,9 @@
 # 166 vm86 removed (unreachable, routes to sys_ni)
 167	i386	query_module
 169	i386	nfsservctl
-183	i386	getcwd			sys_getcwd
-184	i386	capget			sys_capget
-185	i386	capset			sys_capset
+# 183 getcwd removed (unreachable, routes to sys_ni)
+# 184 capget removed (unreachable, routes to sys_ni)
+# 185 capset removed (unreachable, routes to sys_ni)
 188	i386	getpmsg
 189	i386	putpmsg
 # 192	i386	mmap2			sys_mmap_pgoff	(removed: init does not mmap via syscall; exec uses vm_mmap_pgoff internally)

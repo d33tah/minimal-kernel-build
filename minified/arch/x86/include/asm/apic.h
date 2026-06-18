@@ -19,7 +19,7 @@
 static inline void apic_intr_mode_select(void) { }
 static inline void apic_intr_mode_init(void) { }
 /* lapic_assign_legacy_vector removed - unused */
-static inline bool apic_needs_pit(void) { return true; }
+/* apic_needs_pit removed - unused (use_pit folded out, was const-true) */
 /* Removed: lapic_shutdown, lapic_update_tsc_freq, check_x2apic */
 /* x2apic_enabled removed - unused */
 

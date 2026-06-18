@@ -1188,9 +1188,9 @@ void __init proc_caches_init(void)
 	nsproxy_cache_init();
 }
 
-SYSCALL_DEFINE1(unshare, unsigned long, unshare_flags)
-{
-	/* Stubbed: namespace unsharing not needed for minimal boot */
-	return -EINVAL;
-}
+/*
+ * Removed: SYSCALL_DEFINE1(unshare) - unreachable. The init ELF issues only
+ * write(2)+exit(2) via int 0x80; unshare(2) is never invoked and nothing in the
+ * boot/exec path calls it internally. syscall_32.tbl entry 310 routes to sys_ni.
+ */
 

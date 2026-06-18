@@ -133,7 +133,7 @@
 # 299	i386	futimesat		sys_futimesat_time32  (removed, unreachable -> sys_ni)
 # 308	i386	pselect6		sys_pselect6_time32		compat_sys_pselect6_time32  (removed, unreachable -> sys_ni)
 # 309	i386	ppoll			sys_ppoll_time32		compat_sys_ppoll_time32  (removed, unreachable -> sys_ni)
-310	i386	unshare			sys_unshare
+# 310	i386	unshare			sys_unshare  (removed, unreachable -> sys_ni)
 # 320	i386	utimensat		sys_utimensat_time32  (removed, unreachable -> sys_ni)
 #330	i386	dup3			sys_dup3
 331	i386	pipe2			sys_pipe2

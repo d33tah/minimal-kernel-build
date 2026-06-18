@@ -786,11 +786,6 @@ max:
 	return NULL;
 }
 
-void *xas_find_conflict(struct xa_state *xas)
-{
-	return NULL;
-}
-
 void *xa_load(struct xarray *xa, unsigned long index)
 {
 	XA_STATE(xas, xa, index);

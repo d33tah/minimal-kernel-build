@@ -228,32 +228,11 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 
 	do {
 		unsigned int order = xa_get_order(xas.xa, xas.xa_index);
-		void *entry, *old = NULL;
 
 		if (order > folio_order(folio))
 			xas_split_alloc(&xas, xa_load(xas.xa, xas.xa_index),
 					order, gfp);
 		xas_lock_irq(&xas);
-		xas_for_each_conflict(&xas, entry) {
-			old = entry;
-			if (!xa_is_value(entry)) {
-				xas_set_err(&xas, -EEXIST);
-				goto unlock;
-			}
-		}
-
-		if (old) {
-			if (shadowp)
-				*shadowp = old;
-			
-			order = xa_get_order(xas.xa, xas.xa_index);
-			if (order > folio_order(folio)) {
-				
-				BUG_ON(shmem_mapping(mapping));
-				xas_split(&xas, old, order);
-				xas_reset(&xas);
-			}
-		}
 
 		xas_store(&xas, folio);
 		if (xas_error(&xas))

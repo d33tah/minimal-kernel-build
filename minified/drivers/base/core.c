@@ -51,36 +51,18 @@ static void device_release(struct kobject *kobj)
 		dev->release(dev);
 	else if (dev->type && dev->type->release)
 		dev->type->release(dev);
-	else if (dev->class && dev->class->dev_release)
-		dev->class->dev_release(dev);
 	else
 		WARN(1, KERN_ERR "Device '%s' does not have a release() function, it is broken and must be fixed. See Documentation/core-api/kobject.rst.\n",
 			dev_name(dev));
 	kfree(p);
 }
 
-static const void *device_namespace(struct kobject *kobj)
-{
-	struct device *dev = kobj_to_dev(kobj);
-	const void *ns = NULL;
-
-	if (dev->class && dev->class->ns_type)
-		ns = dev->class->namespace(dev);
-
-	return ns;
-}
-
 static void device_get_ownership(struct kobject *kobj, kuid_t *uid, kgid_t *gid)
 {
-	struct device *dev = kobj_to_dev(kobj);
-
-	if (dev->class && dev->class->get_ownership)
-		dev->class->get_ownership(dev, uid, gid);
 }
 
 static struct kobj_type device_ktype = {
 	.release	= device_release,
-	.namespace	= device_namespace,
 	.get_ownership	= device_get_ownership,
 };
 

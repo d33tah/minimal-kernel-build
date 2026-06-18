@@ -9,7 +9,6 @@
 #include <linux/container_of.h>
 #include <linux/spinlock.h>
 #include <linux/kref.h>
-#include <linux/kobject_ns.h>
 #include <linux/wait.h>
 #include <linux/atomic.h>
 #include <linux/workqueue.h>
@@ -63,9 +62,6 @@ extern void kobject_put(struct kobject *kobj);
 
 struct kobj_type {
 	void (*release)(struct kobject *kobj);
-	const struct attribute_group **default_groups;
-	const struct kobj_ns_type_operations *(*child_ns_type)(struct kobject *kobj);
-	const void *(*namespace)(struct kobject *kobj);
 	void (*get_ownership)(struct kobject *kobj, kuid_t *uid, kgid_t *gid);
 };
 

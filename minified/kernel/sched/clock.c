@@ -58,15 +58,12 @@ notrace static void __set_sched_clock_stable(void)
 			scd->tick_raw,  __sched_clock_offset);
 
 	static_branch_enable(&__sched_clock_stable);
-	tick_dep_clear(TICK_DEP_BIT_CLOCK_UNSTABLE);
 }
 
 notrace static void __clear_sched_clock_stable(void)
 {
 	if (!sched_clock_stable())
 		return;
-
-	tick_dep_set(TICK_DEP_BIT_CLOCK_UNSTABLE);
 }
 
 notrace void clear_sched_clock_stable(void)

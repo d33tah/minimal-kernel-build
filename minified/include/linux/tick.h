@@ -11,18 +11,9 @@
 static inline void tick_irq_enter(void) { }
 
 
-enum tick_dep_bits {
-	TICK_DEP_BIT_CLOCK_UNSTABLE	= 3,
-};
-
 #define tick_nohz_enabled (0)
 static inline void tick_nohz_idle_stop_tick(void) { }
 static inline void tick_nohz_idle_enter(void) { }
 static inline void tick_nohz_idle_exit(void) { }
-
-static inline void tick_dep_set(enum tick_dep_bits bit) { }
-static inline void tick_dep_clear(enum tick_dep_bits bit) { }
-
-static inline void tick_nohz_user_enter_prepare(void) { }
 
 #endif

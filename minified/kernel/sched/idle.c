@@ -18,7 +18,6 @@ void __cpuidle default_idle_call(void)
 		 
 		 
 		lockdep_hardirqs_on_prepare();
-		rcu_idle_enter();
 		lockdep_hardirqs_on(_THIS_IP_);
 
 		arch_cpu_idle();
@@ -26,7 +25,6 @@ void __cpuidle default_idle_call(void)
 		 
 		raw_local_irq_disable();
 		lockdep_hardirqs_off(_THIS_IP_);
-		rcu_idle_exit();
 		lockdep_hardirqs_on(_THIS_IP_);
 		raw_local_irq_enable();
 
@@ -75,8 +73,6 @@ static void do_idle(void)
 		}
 
 		arch_cpu_idle_enter();
-		rcu_nocb_flush_deferred_wakeup();
-
 
 		cpuidle_idle_call();
 		arch_cpu_idle_exit();

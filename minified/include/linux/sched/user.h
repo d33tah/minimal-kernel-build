@@ -8,14 +8,7 @@
 #include <linux/ratelimit.h>
 
 struct user_struct {
-	refcount_t __count;	 
-	unsigned long unix_inflight;	 
-	atomic_long_t pipe_bufs;
-
-	kuid_t uid;
-
-
-	struct ratelimit_state ratelimit;
+	refcount_t __count;
 };
 
 

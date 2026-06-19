@@ -30,8 +30,6 @@ extern int debug_locks_off(void);
 })
 
 
-# define locking_selftest()	do { } while (0)
-
 static inline void
 debug_check_no_locks_freed(const void *from, unsigned long len)
 {

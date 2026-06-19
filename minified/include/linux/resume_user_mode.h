@@ -6,9 +6,6 @@
 #include <linux/task_work.h>
 #include <linux/memcontrol.h>
 
-/* Inlined from blk-cgroup.h */
-static inline void blkcg_maybe_throttle_current(void) { }
-
 static inline void set_notify_resume(struct task_struct *task)
 {
 	if (!test_and_set_tsk_thread_flag(task, TIF_NOTIFY_RESUME))
@@ -23,9 +20,6 @@ static inline void resume_user_mode_work(struct pt_regs *regs)
 	smp_mb__after_atomic();
 	if (unlikely(task_work_pending(current)))
 		task_work_run();
-
-
-	blkcg_maybe_throttle_current();
 }
 
 #endif  

@@ -1000,8 +1000,6 @@ static void remove_vma_list(struct mm_struct *mm, struct vm_area_struct *vma)
 {
 	unsigned long nr_accounted = 0;
 
-	
-	update_hiwater_vm(mm);
 	do {
 		long nrpages = vma_pages(vma);
 

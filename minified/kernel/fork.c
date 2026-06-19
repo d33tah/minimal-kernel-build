@@ -618,7 +618,6 @@ static struct mm_struct *dup_mm(struct task_struct *tsk,
 		goto free_pt;
 
 	mm->hiwater_rss = get_mm_rss(mm);
-	mm->hiwater_vm = mm->total_vm;
 
 	if (mm->binfmt && !try_module_get(mm->binfmt->module))
 		goto free_pt;

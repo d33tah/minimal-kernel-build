@@ -292,8 +292,7 @@ struct mm_struct {
 		struct list_head mmlist;  
 
 
-		unsigned long hiwater_rss;  
-		unsigned long hiwater_vm;   
+		unsigned long hiwater_rss;
 
 		unsigned long total_vm;
 		unsigned long def_flags;

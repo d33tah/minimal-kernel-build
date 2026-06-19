@@ -790,12 +790,6 @@ static inline void update_hiwater_rss(struct mm_struct *mm)
 		(mm)->hiwater_rss = _rss;
 }
 
-static inline void update_hiwater_vm(struct mm_struct *mm)
-{
-	if (mm->hiwater_vm < mm->total_vm)
-		mm->hiwater_vm = mm->total_vm;
-}
-
 static inline void setmax_mm_hiwater_rss(unsigned long *maxrss,
 					 struct mm_struct *mm)
 {

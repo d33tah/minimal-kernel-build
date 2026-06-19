@@ -317,7 +317,6 @@ static __always_inline bool free_pages_prepare(struct page *page,
 
 	page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
 
-	arch_free_page(page, order);
 	return true;
 }
 
@@ -434,7 +433,6 @@ inline void post_alloc_hook(struct page *page, unsigned int order,
 	/* Stub: minimal post-allocation setup */
 	set_page_private(page, 0);
 	set_page_refcounted(page);
-	arch_alloc_page(page, order);
 }
 
 static void prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags,

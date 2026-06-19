@@ -308,7 +308,6 @@ void __noreturn do_exit(long code)
 	exit_task_stack_account(tsk);
 
 	preempt_disable();
-	exit_rcu();
 
 	do_task_dead();
 }

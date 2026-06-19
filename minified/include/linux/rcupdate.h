@@ -59,7 +59,6 @@ static inline void rcu_softirq_qs(void)
 		rcu_tasks_qs(current, (preempt)); \
 	} while (0)
 
-static inline void exit_rcu(void) { }
 void rcu_scheduler_starting(void);
 static inline bool rcu_is_watching(void) { return true; }
 

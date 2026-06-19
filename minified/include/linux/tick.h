@@ -22,7 +22,6 @@ static inline void tick_nohz_idle_exit(void) { }
 
 static inline void tick_dep_set(enum tick_dep_bits bit) { }
 static inline void tick_dep_clear(enum tick_dep_bits bit) { }
-static inline void tick_nohz_task_switch(void) { }
 
 static inline void tick_nohz_user_enter_prepare(void) { }
 

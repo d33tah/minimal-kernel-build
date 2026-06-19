@@ -502,7 +502,6 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 	
 	prev_state = READ_ONCE(prev->__state);
 
-	tick_nohz_task_switch();
 	finish_lock_switch(rq);
 	finish_arch_post_lock_switch();
 

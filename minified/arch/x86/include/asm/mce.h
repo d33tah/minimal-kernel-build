@@ -3,8 +3,6 @@
 #ifndef _ASM_X86_MCE_H
 #define _ASM_X86_MCE_H
 
-#include <uapi/asm/mce.h>
-
 /* Minimal stubs - MCE is disabled */
 struct cpuinfo_x86;
 struct cper_ia_proc_ctx;

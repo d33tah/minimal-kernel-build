@@ -90,8 +90,6 @@ struct pglist_data;
 
 #define ZONE_PADDING(name)
 
-#define NR_VM_NUMA_EVENT_ITEMS 0
-
 enum zone_stat_item {
 	 
 	NR_FREE_PAGES,
@@ -246,9 +244,7 @@ struct zone {
 	unsigned long _watermark[NR_WMARK];
 	unsigned long watermark_boost;
 
-	unsigned long nr_reserved_highatomic;
 
-	 
 	long lowmem_reserve[MAX_NR_ZONES];
 
 	struct pglist_data	*zone_pgdat;
@@ -290,18 +286,9 @@ struct zone {
 	 
 	ZONE_PADDING(_pad2_)
 
-	 
-	unsigned long percpu_drift_mark;
-
-
-
-
-	bool			contiguous;
-
 	ZONE_PADDING(_pad3_)
-	 
+
 	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
-	atomic_long_t		vm_numa_event[NR_VM_NUMA_EVENT_ITEMS];
 } ____cacheline_internodealigned_in_smp;
 
 static inline unsigned long zone_managed_pages(struct zone *zone)

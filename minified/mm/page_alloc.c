@@ -396,21 +396,11 @@ void __init memblock_free_pages(struct page *page, unsigned long pfn,
 }
 
 
-static void set_zone_contiguous(struct zone *zone)
-{
-	/* Stub: assume contiguous zones for minimal system */
-	zone->contiguous = true;
-}
-
 void __init page_alloc_init_late(void)
 {
-	struct zone *zone;
-
 	memblock_discard();
 
 	/* Stub: skip memory shuffling for minimal system */
-	for_each_populated_zone(zone)
-		set_zone_contiguous(zone);
 }
 
 static inline void expand(struct zone *zone, struct page *page,

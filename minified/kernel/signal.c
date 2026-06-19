@@ -369,12 +369,6 @@ void exit_signals(struct task_struct *tsk)
 	tsk->flags |= PF_EXITING;
 }
 
-SYSCALL_DEFINE0(restart_syscall)
-{
-	struct restart_block *restart = &current->restart_block;
-	return restart->fn(restart);
-}
-
 long do_no_restart_syscall(struct restart_block *param)
 {
 	return -EINTR;

@@ -1025,8 +1025,6 @@ bad_fork_cancel_cgroup:
 bad_fork_cleanup_thread:
 	exit_thread(p);
 bad_fork_cleanup_io:
-	if (p->io_context)
-		exit_io_context(p);
 bad_fork_cleanup_namespaces:
 	exit_task_namespaces(p);
 bad_fork_cleanup_mm:

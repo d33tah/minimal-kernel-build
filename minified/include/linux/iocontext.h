@@ -12,8 +12,4 @@ struct io_context {
 	unsigned short ioprio;
 };
 
-struct task_struct;
-struct io_context;
-static inline void exit_io_context(struct task_struct *task) { }
-
-#endif  
+#endif

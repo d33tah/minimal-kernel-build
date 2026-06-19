@@ -35,10 +35,6 @@ extern void reserve_standard_io_resources(void);
 extern void i386_reserve_resources(void);
 /* __startup_64, startup_64_setup_env removed - 64-bit only, unused in 32-bit build */
 
-static inline void x86_intel_mid_early_setup(void) { }
-
-static inline void x86_ce4100_early_setup(void) { }
-
 #ifndef _SETUP
 
 #include <linux/kernel.h>

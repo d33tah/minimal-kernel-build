@@ -41,9 +41,6 @@ static void cpuidle_idle_call(void)
 		return;
 	}
 
-
-	tick_nohz_idle_stop_tick();
-
 	default_idle_call();
 
 	__current_set_polling();
@@ -60,7 +57,6 @@ static void do_idle(void)
 
 
 	__current_set_polling();
-	tick_nohz_idle_enter();
 
 	while (!need_resched()) {
 		rmb();
@@ -68,7 +64,6 @@ static void do_idle(void)
 		local_irq_disable();
 
 		if (cpu_is_offline(cpu)) {
-			tick_nohz_idle_stop_tick();
 			arch_cpu_idle_dead();
 		}
 
@@ -80,7 +75,6 @@ static void do_idle(void)
 
 	 
 	preempt_set_need_resched();
-	tick_nohz_idle_exit();
 	__current_clr_polling();
 
 	 

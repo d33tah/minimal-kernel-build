@@ -202,9 +202,6 @@ restart:
 void irq_enter_rcu(void)
 {
 	__irq_enter_raw();
-
-	if (is_idle_task(current) && (irq_count() == HARDIRQ_OFFSET))
-		tick_irq_enter();
 }
 
 static inline void __irq_exit_rcu(void)

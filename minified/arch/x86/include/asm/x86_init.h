@@ -4,10 +4,8 @@
 
 #include <asm/bootparam.h>
 
-struct ghcb;
 struct mpc_bus;
 struct mpc_cpu;
-struct pt_regs;
 struct mpc_table;
 
  
@@ -83,13 +81,7 @@ struct x86_legacy_features {
 	struct x86_legacy_devices devices;
 };
 
- 
-struct x86_hyper_runtime {
-	void (*sev_es_hcall_prepare)(struct ghcb *ghcb, struct pt_regs *regs);
-	bool (*sev_es_hcall_finish)(struct ghcb *ghcb, struct pt_regs *regs);
-};
 
- 
 struct x86_platform_ops {
 	unsigned long (*calibrate_cpu)(void);
 	unsigned long (*calibrate_tsc)(void);
@@ -98,7 +90,6 @@ struct x86_platform_ops {
 	unsigned char (*get_nmi_reason)(void);
 	struct x86_legacy_features legacy;
 	void (*set_legacy_features)(void);
-	struct x86_hyper_runtime hyper;
 };
 
 extern struct x86_init_ops x86_init;

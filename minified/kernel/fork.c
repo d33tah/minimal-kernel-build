@@ -936,7 +936,6 @@ static __latent_entropy struct task_struct *copy_process(
 	
 
 	p->start_time = ktime_get_ns();
-	p->start_boottime = ktime_get_boottime_ns();
 
 	
 	write_lock_irq(&tasklist_lock);

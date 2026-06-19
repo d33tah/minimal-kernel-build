@@ -362,9 +362,6 @@ struct task_struct {
 	u64				start_time;
 
 	 
-	u64				start_boottime;
-
-	 
 	unsigned long			min_flt;
 	unsigned long			maj_flt;
 
@@ -400,8 +397,7 @@ struct task_struct {
 	struct sighand_struct __rcu		*sighand;
 	sigset_t			blocked;
 	sigset_t			real_blocked;
-	 
-	sigset_t			saved_sigmask;
+
 	struct sigpending		pending;
 	unsigned long			sas_ss_sp;
 	size_t				sas_ss_size;

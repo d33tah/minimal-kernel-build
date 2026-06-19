@@ -310,7 +310,6 @@ struct inode {
 	struct timespec64	i_ctime;
 	spinlock_t		i_lock;
 	u8			i_blkbits;
-	blkcnt_t		i_blocks;
 
 #ifdef __NEED_I_SIZE_ORDERED
 	seqcount_t		i_size_seqcount;
@@ -320,11 +319,8 @@ struct inode {
 	unsigned long		i_state;
 	struct rw_semaphore	i_rwsem;
 
-	unsigned long		dirtied_when;
-
 	struct hlist_node	i_hash;
-	struct list_head	i_io_list;	
-	struct list_head	i_lru;		
+	struct list_head	i_lru;
 	struct list_head	i_sb_list;
 	struct list_head	i_wb_list;	
 	union {

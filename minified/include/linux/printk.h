@@ -68,11 +68,6 @@ int _printk_deferred(const char *s, ...)
 	return 0;
 }
 
-static inline bool pr_flush(int timeout_ms, bool reset_on_progress)
-{
-	return true;
-}
-
 static inline int printk_ratelimit(void)
 {
 	return 0;

@@ -159,9 +159,6 @@ void console_unblank(void)
 		if ((c->flags & CON_ENABLED) && c->unblank)
 			c->unblank();
 	console_unlock();
-
-	if (!oops_in_progress)
-		pr_flush(1000, true);
 }
 
 void console_flush_on_panic(enum con_flush_mode mode)

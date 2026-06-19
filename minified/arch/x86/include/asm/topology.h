@@ -41,8 +41,5 @@ struct pci_bus;
 
 #define sysctl_sched_itmt_enabled	0
 
-static inline void arch_scale_freq_tick(void) { }
-#define arch_scale_freq_tick arch_scale_freq_tick
 
-
-#endif  
+#endif

@@ -20,15 +20,10 @@ static inline void tick_nohz_idle_stop_tick(void) { }
 static inline void tick_nohz_idle_enter(void) { }
 static inline void tick_nohz_idle_exit(void) { }
 
-static inline bool tick_nohz_full_cpu(int cpu) { return false; }
 static inline void tick_dep_set(enum tick_dep_bits bit) { }
 static inline void tick_dep_clear(enum tick_dep_bits bit) { }
 static inline void tick_nohz_task_switch(void) { }
 
-static inline void tick_nohz_user_enter_prepare(void)
-{
-	if (tick_nohz_full_cpu(smp_processor_id()))
-		rcu_nocb_flush_deferred_wakeup();
-}
+static inline void tick_nohz_user_enter_prepare(void) { }
 
 #endif

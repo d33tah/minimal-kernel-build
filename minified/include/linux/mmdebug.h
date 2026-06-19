@@ -15,12 +15,6 @@ struct mm_struct;
 #define VM_BUG_ON_MM(cond, mm) VM_BUG_ON(cond)
 #define VM_WARN_ON(cond) BUILD_BUG_ON_INVALID(cond)
 #define VM_WARN_ON_ONCE(cond) BUILD_BUG_ON_INVALID(cond)
-#define VM_WARN_ON_ONCE_PAGE(cond, page)  BUILD_BUG_ON_INVALID(cond)
-#define VM_WARN_ON_ONCE_FOLIO(cond, folio)  BUILD_BUG_ON_INVALID(cond)
-#define VM_WARN_ONCE(cond, format...) BUILD_BUG_ON_INVALID(cond)
-#define VM_WARN(cond, format...) BUILD_BUG_ON_INVALID(cond)
-
-#define VIRTUAL_BUG_ON(cond) do { } while (0)
 
 #define VM_BUG_ON_PGFLAGS(cond, page) BUILD_BUG_ON_INVALID(cond)
 

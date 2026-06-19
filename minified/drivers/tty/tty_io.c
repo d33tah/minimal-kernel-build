@@ -1037,7 +1037,6 @@ static void destruct_tty_driver(struct kref *kref)
 				kfree(tp);
 			}
 		}
-		proc_tty_unregister_driver(driver);
 		/* cdev_del removed: char-device teardown is runtime-dead */
 	}
 	kfree(driver->cdevs);
@@ -1092,7 +1091,6 @@ int tty_register_driver(struct tty_driver *driver)
 			}
 		}
 	}
-	proc_tty_register_driver(driver);
 	driver->flags |= TTY_DRIVER_INSTALLED;
 	return 0;
 

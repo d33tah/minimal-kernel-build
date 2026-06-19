@@ -98,9 +98,6 @@ static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
 		if (ti_work & _TIF_UPROBE)
 			uprobe_notify_resume(regs);
 
-		if (ti_work & _TIF_PATCH_PENDING)
-			klp_update_patch_state(current);
-
 		if (ti_work & (_TIF_SIGPENDING | _TIF_NOTIFY_SIGNAL))
 			arch_do_signal_or_restart(regs);
 

@@ -225,8 +225,6 @@ void folio_invalidate(struct folio *folio, size_t offset, size_t length);
 
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp);
-void filemap_remove_folio(struct folio *folio);
-void __filemap_remove_folio(struct folio *folio, void *shadow);
 
 int __filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		pgoff_t index, gfp_t gfp, void **shadowp);

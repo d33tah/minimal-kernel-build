@@ -59,7 +59,6 @@ void unmap_page_range(struct mmu_gather *tlb,
 
 /* force_page_cache_readahead removed - unused */
 
-void filemap_free_folio(struct address_space *mapping, struct folio *folio);
 int truncate_inode_folio(struct address_space *mapping, struct folio *folio);
 bool truncate_inode_partial_folio(struct folio *folio, loff_t start,
 		loff_t end);

@@ -68,7 +68,6 @@ static inline int node_state(int node, enum node_states state)
 	for ( (node) = 0; (node) == 0; (node) = 1)
 
 #define first_online_node	0
-#define next_online_node(nid)	(MAX_NUMNODES)
 #define nr_node_ids		1U
 
 

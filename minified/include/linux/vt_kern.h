@@ -57,7 +57,6 @@ struct vc_data {
 	unsigned int	vc_npar;
 	struct vt_mode	vt_mode;
 	struct pid 	*vt_pid;
-	int		vt_newvt;
 	unsigned int	vc_disp_ctrl	: 1;
 	unsigned int	vc_decawm	: 1;
 	unsigned int	vc_deccm	: 1;
@@ -66,7 +65,6 @@ struct vc_data {
 	unsigned char	vc_utf		: 1;
 	unsigned char	vc_utf_count;
 		 int	vc_utf_char;
-	unsigned int    vc_resize_user;
 	struct vc_data **vc_display_fg;
 	struct uni_pagedir *vc_uni_pagedir;
 	struct uni_pagedir **vc_uni_pagedir_loc;

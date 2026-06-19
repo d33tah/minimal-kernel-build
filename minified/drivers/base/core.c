@@ -306,8 +306,6 @@ struct device *device_create_with_groups(struct class *class,
 	return dev;
 }
 
-int device_match_devt(struct device *dev, const void *pdevt) { return 0; }
-
 /* Removed: device_destroy + driver_deferred_probe_del - device_destroy was only
    reached from the (removed) tty teardown path; driver_deferred_probe_del was
    only called from the (removed) device_del. */

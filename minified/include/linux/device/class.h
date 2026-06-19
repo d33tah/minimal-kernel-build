@@ -19,9 +19,6 @@ struct class {
 	struct subsys_private *p;
 };
 
-/* struct class_dev_iter removed - the iterator helpers were folded into
-   class_find_device (its only user). */
-
 extern struct kobject *sysfs_dev_block_kobj;
 extern struct kobject *sysfs_dev_char_kobj;
 extern int __must_check __class_register(struct class *class,
@@ -33,18 +30,8 @@ extern int __must_check __class_register(struct class *class,
 /* struct class_compat, class_compat_register, class_compat_unregister,
    class_compat_create_link, class_compat_remove_link removed - unused */
 
-extern struct device *class_find_device(struct class *class,
-					struct device *start, const void *data,
-					int (*match)(struct device *, const void *));
-
-/* class_find_device_by_name, class_find_device_by_of_node,
- * class_find_device_by_fwnode, class_find_device_by_acpi_dev removed - unused */
-
-static inline struct device *class_find_device_by_devt(struct class *class,
-						       dev_t devt)
-{
-	return class_find_device(class, NULL, &devt, device_match_devt);
-}
+/* class_find_device + class_find_device_by_devt/by_name/by_of_node/by_fwnode/
+ * by_acpi_dev removed - sole caller was the now-removed tty_get_device chain. */
 
 /* Removed: struct class_attribute + CLASS_ATTR_{RW,RO,WO} + struct
    class_attribute_string + CLASS_ATTR_STRING + struct class_interface - no

@@ -70,7 +70,6 @@ static void release_tty(struct tty_struct *tty, int idx);
 static void free_tty_struct(struct tty_struct *tty)
 {
 	tty_ldisc_deinit(tty);
-	put_device(tty->dev);
 	kvfree(tty->write_buf);
 	tty->magic = 0xDEADDEAD;
 	kfree(tty);
@@ -859,15 +858,6 @@ retry_open:
 	return 0;
 }
 
-static dev_t tty_devnum(struct tty_struct *tty);
-
-static struct device *tty_get_device(struct tty_struct *tty)
-{
-	dev_t devt = tty_devnum(tty);
-
-	return class_find_device_by_devt(tty_class, devt);
-}
-
 struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 {
 	struct tty_struct *tty;
@@ -899,7 +889,6 @@ struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 	tty->ops = driver->ops;
 	tty->index = idx;
 	tty_line_name(driver, idx, tty->name);
-	tty->dev = tty_get_device(tty);
 
 	return tty;
 }
@@ -1135,11 +1124,6 @@ err_unreg_char:
 	unregister_chrdev_region(dev, driver->num);
 err:
 	return error;
-}
-
-static dev_t tty_devnum(struct tty_struct *tty)
-{
-	return MKDEV(tty->driver->major, tty->driver->minor_start) + tty->index;
 }
 
 static char *tty_devnode(struct device *dev, umode_t *mode)

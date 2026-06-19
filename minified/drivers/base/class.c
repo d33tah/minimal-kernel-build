@@ -119,43 +119,9 @@ error:
 }
 
 
-/* Removed: class_dev_iter_init/next/exit - the device-iteration helpers were
-   only ever called from class_find_device below (no external callers), so they
-   are folded inline here. */
-
-struct device *class_find_device(struct class *class, struct device *start,
-				 const void *data,
-				 int (*match)(struct device *, const void *))
-{
-	struct klist_iter ki;
-	struct klist_node *start_knode = NULL;
-	struct klist_node *knode;
-	struct device *dev;
-
-	if (!class)
-		return NULL;
-	if (!class->p) {
-		WARN(1, "%s called for class '%s' before it was initialized",
-		     __func__, class->name);
-		return NULL;
-	}
-
-	if (start)
-		start_knode = &start->p->knode_class;
-	klist_iter_init_node(&class->p->klist_devices, &ki, start_knode);
-	while ((knode = klist_next(&ki))) {
-		dev = klist_class_to_dev(knode);
-		if (match(dev, data)) {
-			get_device(dev);
-			goto out;
-		}
-	}
-	dev = NULL;
-out:
-	klist_iter_exit(&ki);
-
-	return dev;
-}
+/* Removed: class_dev_iter_init/next/exit and class_find_device - the
+   device-iteration helpers and class_find_device (sole caller was the now-removed
+   tty_get_device chain) are all dead. */
 
 /* Removed: class_interface_register - sole caller was the devlink class
  * registration, which has been removed. class_interface_unregister,

@@ -1012,7 +1012,6 @@ static __latent_entropy struct task_struct *copy_process(
 	}
 	hlist_del_init(&delayed.node);
 	spin_unlock(&current->sighand->siglock);
-	syscall_tracepoint_update(p);
 	write_unlock_irq(&tasklist_lock);
 
 

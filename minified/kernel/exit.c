@@ -174,7 +174,6 @@ static void exit_mm(void)
 	local_irq_enable();
 	task_unlock(current);
 	mmap_read_unlock(mm);
-	mm_update_next_owner(mm);
 	mmput(mm);
 }
 

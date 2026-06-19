@@ -772,7 +772,6 @@ static int bprm_execve(struct linux_binprm *bprm,
 		return retval;
 
 	check_unsafe_exec(bprm);
-	current->in_execve = 1;
 
 	file = do_open_execat(fd, filename, flags);
 	retval = PTR_ERR(file);
@@ -791,7 +790,6 @@ static int bprm_execve(struct linux_binprm *bprm,
 		goto out;
 
 	current->fs->in_exec = 0;
-	current->in_execve = 0;
 	return retval;
 
 out:
@@ -801,7 +799,6 @@ out:
 
 out_unmark:
 	current->fs->in_exec = 0;
-	current->in_execve = 0;
 
 	return retval;
 }

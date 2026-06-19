@@ -291,18 +291,7 @@ struct task_struct {
 
 	 
 	unsigned			sched_reset_on_fork:1;
-	unsigned			sched_migrated:1;
 
-	 
-	unsigned			:0;
-
-	 
-
-	 
-	unsigned			sched_remote_wakeup:1;
-
-	 
-	unsigned			in_execve:1;
 	unsigned			in_iowait:1;
 #ifndef TIF_RESTORE_SIGMASK
 	unsigned			restore_sigmask:1;
@@ -438,8 +427,6 @@ struct task_struct {
 	struct page_frag		task_frag;
 
 
-	 
-	u64				timer_slack_ns;
 
 
 

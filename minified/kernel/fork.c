@@ -517,8 +517,6 @@ static inline void __mmput(struct mm_struct *mm)
 		list_del(&mm->mmlist);
 		spin_unlock(&mmlist_lock);
 	}
-	if (mm->binfmt)
-		module_put(mm->binfmt->module);
 	mmdrop(mm);
 }
 

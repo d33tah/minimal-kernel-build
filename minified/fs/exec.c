@@ -53,11 +53,6 @@ void __register_binfmt(struct linux_binfmt * fmt, int insert)
 }
 
 
-static inline void put_binfmt(struct linux_binfmt * fmt)
-{
-	module_put(fmt->module);
-}
-
 bool path_noexec(const struct path *path)
 {
 	return (path->mnt->mnt_flags & MNT_NOEXEC) ||
@@ -726,7 +721,6 @@ static int search_binary_handler(struct linux_binprm *bprm)
 		retval = fmt->load_binary(bprm);
 
 		read_lock(&binfmt_lock);
-		put_binfmt(fmt);
 		if (bprm->point_of_no_return || (retval != -ENOEXEC)) {
 			read_unlock(&binfmt_lock);
 			return retval;
@@ -858,12 +852,7 @@ void set_binfmt(struct linux_binfmt *new)
 {
 	struct mm_struct *mm = current->mm;
 
-	if (mm->binfmt)
-		module_put(mm->binfmt->module);
-
 	mm->binfmt = new;
-	if (new)
-		__module_get(new->module);
 }
 
 void set_dumpable(struct mm_struct *mm, int value)

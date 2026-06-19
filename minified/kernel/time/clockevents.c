@@ -136,7 +136,6 @@ void clockevents_exchange_device(struct clock_event_device *old,
 {
 	 
 	if (old) {
-		module_put(old->owner);
 		clockevents_switch_state(old, CLOCK_EVT_STATE_DETACHED);
 		list_move(&old->list, &clockevents_released);
 	}

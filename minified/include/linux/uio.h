@@ -15,6 +15,7 @@ struct iovec
 
 struct page;
 struct pipe_inode_info;
+struct bio_vec;
 
 struct kvec {
 	void *iov_base;  

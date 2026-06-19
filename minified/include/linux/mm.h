@@ -840,17 +840,12 @@ static inline int __pud_alloc(struct mm_struct *mm, p4d_t *p4d,
 {
 	return 0;
 }
-static inline void mm_inc_nr_puds(struct mm_struct *mm) {}
-static inline void mm_dec_nr_puds(struct mm_struct *mm) {}
 
 static inline int __pmd_alloc(struct mm_struct *mm, pud_t *pud,
 						unsigned long address)
 {
 	return 0;
 }
-
-static inline void mm_inc_nr_pmds(struct mm_struct *mm) {}
-static inline void mm_dec_nr_pmds(struct mm_struct *mm) {}
 
 static inline void mm_pgtables_bytes_init(struct mm_struct *mm)
 {

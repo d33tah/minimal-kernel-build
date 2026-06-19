@@ -21,9 +21,7 @@ struct module;
 
 static inline int is_kernel_text(unsigned long addr)
 {
-	if (__is_kernel_text(addr))
-		return 1;
-	return in_gate_area_no_mm(addr);
+	return __is_kernel_text(addr);
 }
 
 static inline void *dereference_symbol_descriptor(void *ptr)

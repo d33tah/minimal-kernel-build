@@ -94,8 +94,6 @@ struct x86_cpuinit_ops x86_cpuinit = {
 	.setup_percpu_clockev		= setup_secondary_APIC_clock,
 };
 
-static void default_nmi_init(void) { };
-
 static void enc_status_change_prepare_noop(unsigned long vaddr, int npages, bool enc) { }
 static bool enc_status_change_finish_noop(unsigned long vaddr, int npages, bool enc) { return false; }
 static bool enc_tlb_flush_required_noop(bool enc) { return false; }
@@ -106,11 +104,7 @@ struct x86_platform_ops x86_platform __ro_after_init = {
 	.calibrate_tsc			= native_calibrate_tsc,
 	.get_wallclock			= mach_get_cmos_time,
 	.set_wallclock			= mach_set_rtc_mmss,
-	.is_untracked_pat_range		= is_ISA_range,
-	.nmi_init			= default_nmi_init,
 	.get_nmi_reason			= default_get_nmi_reason,
-	.save_sched_clock_state		= tsc_save_sched_clock_state,
-	.restore_sched_clock_state	= tsc_restore_sched_clock_state,
 
 	.guest = {
 		.enc_status_change_prepare = enc_status_change_prepare_noop,

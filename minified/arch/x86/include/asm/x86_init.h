@@ -147,11 +147,7 @@ struct x86_platform_ops {
 	unsigned long (*calibrate_tsc)(void);
 	void (*get_wallclock)(struct timespec64 *ts);
 	int (*set_wallclock)(const struct timespec64 *ts);
-	bool (*is_untracked_pat_range)(u64 start, u64 end);
-	void (*nmi_init)(void);
 	unsigned char (*get_nmi_reason)(void);
-	void (*save_sched_clock_state)(void);
-	void (*restore_sched_clock_state)(void);
 	struct x86_legacy_features legacy;
 	void (*set_legacy_features)(void);
 	struct x86_hyper_runtime hyper;

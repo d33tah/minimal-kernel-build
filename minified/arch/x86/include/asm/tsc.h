@@ -36,7 +36,4 @@ extern unsigned long native_calibrate_tsc(void);
 extern int tsc_clocksource_reliable;
 /* check_tsc_sync_source, check_tsc_sync_target removed - unused (SMP) */
 
-extern void tsc_save_sched_clock_state(void);
-extern void tsc_restore_sched_clock_state(void);
-
 #endif

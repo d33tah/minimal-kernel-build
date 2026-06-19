@@ -465,57 +465,12 @@ DEFINE_IDTENTRY_RAW(exc_debug)
 		exc_debug_kernel(regs, dr6);
 }
 
-static void math_error(struct pt_regs *regs, int trapnr)
-{
-	struct task_struct *task = current;
-	struct fpu *fpu = &task->thread.fpu;
-	int si_code;
-	char *str = (trapnr == X86_TRAP_MF) ? "fpu exception" :
-						"simd exception";
-
-	cond_local_irq_enable(regs);
-
-	if (!user_mode(regs)) {
-		if (fixup_exception(regs, trapnr, 0, 0))
-			goto exit;
-
-		task->thread.error_code = 0;
-		task->thread.trap_nr = trapnr;
-
-		if (notify_die(DIE_TRAP, str, regs, 0, trapnr,
-			       SIGFPE) != NOTIFY_STOP)
-			die(str, regs, 0);
-		goto exit;
-	}
-
-	 
-	fpu_sync_fpstate(fpu);
-
-	task->thread.trap_nr	= trapnr;
-	task->thread.error_code = 0;
-
-	si_code = fpu__exception_code(fpu, trapnr);
-	 
-	if (!si_code)
-		goto exit;
-
-	if (fixup_vdso_exception(regs, trapnr, 0, 0))
-		goto exit;
-
-	force_sig_fault(SIGFPE, si_code,
-			(void __user *)uprobe_get_trap_addr(regs));
-exit:
-	cond_local_irq_disable(regs);
-}
-
 DEFINE_IDTENTRY(exc_coprocessor_error)
 {
-	math_error(regs, X86_TRAP_MF);
 }
 
 DEFINE_IDTENTRY(exc_simd_coprocessor_error)
 {
-	math_error(regs, X86_TRAP_XF);
 }
 
 DEFINE_IDTENTRY(exc_spurious_interrupt_bug)

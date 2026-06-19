@@ -102,9 +102,4 @@ do { \
 } while (0)
 
 
-
-static inline void migrate_disable(void) { }
-static inline void migrate_enable(void) { }
-
-
-#endif  
+#endif

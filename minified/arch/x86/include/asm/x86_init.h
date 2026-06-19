@@ -43,16 +43,6 @@ struct x86_init_timers {
 };
 
  
-struct x86_hyper_init {
-	void (*init_platform)(void);
-	void (*guest_late_init)(void);
-	bool (*x2apic_available)(void);
-	bool (*msi_ext_dest_id)(void);
-	void (*init_mem_mapping)(void);
-	void (*init_after_bootmem)(void);
-};
-
- 
 struct x86_init_acpi {
 	void (*set_root_pointer)(u64 addr);
 	u64 (*get_root_pointer)(void);
@@ -73,7 +63,6 @@ struct x86_init_ops {
 	struct x86_init_irqs		irqs;
 	struct x86_init_paging		paging;
 	struct x86_init_timers		timers;
-	struct x86_hyper_init		hyper;
 	struct x86_init_acpi		acpi;
 };
 

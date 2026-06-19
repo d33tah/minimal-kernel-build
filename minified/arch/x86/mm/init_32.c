@@ -321,9 +321,8 @@ void __init mem_init(void)
 	memblock_free_all();
 
 	after_bootmem = 1;
-	x86_init.hyper.init_after_bootmem();
 
-	 
+
 #define __FIXADDR_TOP (-PAGE_SIZE)
 #define high_memory (-128UL << 20)
 	BUILD_BUG_ON(VMALLOC_START			>= VMALLOC_END);

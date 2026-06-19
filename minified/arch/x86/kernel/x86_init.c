@@ -52,15 +52,6 @@ struct x86_init_ops x86_init __initdata = {
 		.wallclock_init		= x86_init_noop,
 	},
 
-	.hyper = {
-		.init_platform		= x86_init_noop,
-		.guest_late_init	= x86_init_noop,
-		.x2apic_available	= bool_x86_init_noop,
-		.msi_ext_dest_id	= bool_x86_init_noop,
-		.init_mem_mapping	= x86_init_noop,
-		.init_after_bootmem	= x86_init_noop,
-	},
-
 	.acpi = {
 		.set_root_pointer	= x86_default_set_root_pointer,
 		.get_root_pointer	= x86_default_get_root_pointer,

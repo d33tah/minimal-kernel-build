@@ -519,8 +519,6 @@ void __init setup_arch(char **cmdline_p)
 
 	sync_initial_page_table();
 
-	x86_init.hyper.guest_late_init();
-
 	e820__reserve_resources();
 
 	x86_init.resources.reserve_resources();

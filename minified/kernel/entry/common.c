@@ -73,11 +73,6 @@ static __always_inline void __exit_to_user_mode(void)
 	arch_exit_to_user_mode();
 }
 
-void noinstr exit_to_user_mode(void)
-{
-	__exit_to_user_mode();
-}
-
 void __weak arch_do_signal_or_restart(struct pt_regs *regs) { }
 
 static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,

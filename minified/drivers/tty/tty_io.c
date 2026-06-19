@@ -686,27 +686,11 @@ int tty_release(struct inode *inode, struct file *filp)
 
 static struct tty_struct *tty_open_current_tty(dev_t device, struct file *filp)
 {
-	struct tty_struct *tty;
-	int retval;
-
+	/* No controlling tty in this minimal kernel (get_current_tty == NULL). */
 	if (device != MKDEV(TTYAUX_MAJOR, 0))
 		return NULL;
 
-	tty = get_current_tty();
-	if (!tty)
-		return ERR_PTR(-ENXIO);
-
-	filp->f_flags |= O_NONBLOCK; 
-	
-	tty_lock(tty);
-	tty_kref_put(tty);	
-
-	retval = tty_reopen(tty);
-	if (retval < 0) {
-		tty_unlock(tty);
-		tty = ERR_PTR(retval);
-	}
-	return tty;
+	return ERR_PTR(-ENXIO);
 }
 
 static struct tty_driver *tty_lookup_driver(dev_t device, struct file *filp,

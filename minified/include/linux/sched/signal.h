@@ -72,17 +72,13 @@ struct signal_struct {
 	int			group_exit_code;
 
 
-	int			group_stop_count;
-	unsigned int		flags;  
+	unsigned int		flags;
 
 	struct core_state *core_state;
 
 	struct pid *pids[PIDTYPE_MAX];
 
 
-	struct pid *tty_old_pgrp;
-
-	 
 	int leader;
 
 	struct tty_struct *tty;  
@@ -94,7 +90,6 @@ struct signal_struct {
 	struct prev_cputime prev_cputime;
 	unsigned long nvcsw, nivcsw;
 	unsigned long min_flt, maj_flt;
-	unsigned long inblock, oublock;
 	unsigned long maxrss;
 	struct task_io_accounting ioac;
 
@@ -105,9 +100,8 @@ struct signal_struct {
 	struct rlimit rlim[RLIM_NLIMITS];
 
 
-	 
-	bool oom_flag_origin;
-	short oom_score_adj;		 
+
+	short oom_score_adj;
 	short oom_score_adj_min;	 
 	struct mm_struct *oom_mm;	 
 

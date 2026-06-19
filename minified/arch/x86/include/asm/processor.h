@@ -40,9 +40,8 @@ struct math_emu_info {
 #include <linux/mem_encrypt.h>
 
 /* NET_IP_ALIGN removed - unused */
-#define HBP_NUM 4
 
- 
+
 # define ARCH_MIN_TASKALIGN		__alignof__(union fpregs_state)
 # define ARCH_MIN_MMSTRUCT_ALIGN	0
 
@@ -263,8 +262,6 @@ DECLARE_PER_CPU(unsigned long, cpu_current_top_of_stack);
 DECLARE_PER_CPU(struct irq_stack *, hardirq_stack_ptr);
 DECLARE_PER_CPU(struct irq_stack *, softirq_stack_ptr);
 
-struct perf_event;
-
 struct thread_struct {
 	 
 	struct desc_struct	tls_array[GDT_ENTRY_TLS_ENTRIES];
@@ -276,13 +273,9 @@ struct thread_struct {
 	unsigned long fs;
 	unsigned long gs;
 
-	 
-	struct perf_event	*ptrace_bps[HBP_NUM];
-	 
+
 	unsigned long           virtual_dr6;
-	 
-	unsigned long           ptrace_dr7;
-	 
+
 	unsigned long		cr2;
 	unsigned long		trap_nr;
 	unsigned long		error_code;

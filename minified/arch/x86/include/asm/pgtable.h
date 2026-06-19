@@ -521,11 +521,7 @@ static inline void clone_pgd_range(pgd_t *dst, pgd_t *src, int count)
 
 /* page_level_shift, page_level_size, page_level_mask removed - unused */
 
- 
-static inline void update_mmu_cache(struct vm_area_struct *vma,
-		unsigned long addr, pte_t *ptep)
-{
-}
+/* update_mmu_cache removed - no-op on x86, all callers dropped */
 /* update_mmu_cache_pmd, update_mmu_cache_pud removed - unused */
 /* pte_swp_exclusive, pte_swp_clear_exclusive removed - unused (entire _PAGE_SWP_EXCLUSIVE block) */
 

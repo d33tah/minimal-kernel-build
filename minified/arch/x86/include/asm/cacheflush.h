@@ -17,10 +17,7 @@ static inline void flush_cache_range(struct vm_area_struct *vma,
 				     unsigned long start, unsigned long end) { }
 #endif
 
-#ifndef flush_cache_page
-static inline void flush_cache_page(struct vm_area_struct *vma,
-				    unsigned long vmaddr, unsigned long pfn) { }
-#endif
+/* flush_cache_page removed - no-op on x86, all callers dropped */
 
 #ifndef ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE
 static inline void flush_dcache_page(struct page *page) { }

@@ -466,11 +466,9 @@ static inline void wp_page_reuse(struct vm_fault *vmf)
 	if (page)
 		page_cpupid_xchg_last(page, (1 << LAST_CPUPID_SHIFT) - 1);
 
-	flush_cache_page(vma, vmf->address, pte_pfn(vmf->orig_pte));
 	entry = pte_mkyoung(vmf->orig_pte);
 	entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-	if (ptep_set_access_flags(vma, vmf->address, vmf->pte, entry, 1))
-		update_mmu_cache(vma, vmf->address, vmf->pte);
+	ptep_set_access_flags(vma, vmf->address, vmf->pte, entry, 1);
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
 }
 
@@ -622,7 +620,6 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 	page_add_new_anon_rmap(page, vma, vmf->address);
 	lru_cache_add_inactive_or_unevictable(page, vma);
 	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
-	update_mmu_cache(vma, vmf->address, vmf->pte);
 
 unlock:
 	pte_unmap_unlock(vmf->pte, vmf->ptl);

@@ -1098,8 +1098,6 @@ again:
 			ret = VM_FAULT_NOPAGE;
 
 		do_set_pte(vmf, page, addr);
-		
-		update_mmu_cache(vma, addr, vmf->pte);
 		if (folio_more_pages(folio, xas.xa_index, end_pgoff)) {
 			xas.xa_index++;
 			folio_ref_inc(folio);

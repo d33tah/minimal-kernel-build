@@ -81,7 +81,6 @@ static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address,
 
 		if (!pte_same(*pte, entry)) {
 			set_pte_at(vma->vm_mm, address, pte, entry);
-			update_mmu_cache(vma, address, pte);
 		}
 	}
 

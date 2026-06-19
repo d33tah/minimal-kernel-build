@@ -16,17 +16,10 @@ struct kmem_cache;
 
 struct mem_cgroup_reclaim_cookie;
 
-#define MEM_CGROUP_ID_SHIFT	0
-#define MEM_CGROUP_ID_MAX	0
-
 static inline int mem_cgroup_charge(struct folio *folio,
 		struct mm_struct *mm, gfp_t gfp)
 {
 	return 0;
-}
-
-static inline void mem_cgroup_uncharge(struct folio *folio)
-{
 }
 
 static inline struct lruvec *folio_lruvec_lock_irq(struct folio *folio)

@@ -21,7 +21,6 @@ struct perf_event_context { int dummy; };
 
 /* perf_bp_event, perf_event_text_poke, __perf_sw_event, perf_tp_event,
  * perf_event_print_debug, perf_register/unregister_guest_info_callbacks,
- * perf_event_task_sched_in/out removed - unused */
-static inline void perf_sw_event(u32 event_id, u64 nr, struct pt_regs *regs, u64 addr) { }
+ * perf_event_task_sched_in/out, perf_sw_event removed - unused */
 
 #endif  

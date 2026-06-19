@@ -30,14 +30,6 @@ static inline void syscall_rollback(struct task_struct *task,
 }
 
 
-static inline long syscall_get_return_value(struct task_struct *task,
-					    struct pt_regs *regs)
-{
-	return regs->ax;
-}
-
-
-
 static inline void syscall_get_arguments(struct task_struct *task,
 					 struct pt_regs *regs,
 					 unsigned long *args)

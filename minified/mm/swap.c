@@ -243,16 +243,6 @@ void release_pages(struct page **pages, int nr)
 	free_unref_page_list(&pages_to_free);
 }
 
-void __pagevec_release(struct pagevec *pvec)
-{
-	if (!pvec->percpu_pvec_drained) {
-		lru_add_drain();
-		pvec->percpu_pvec_drained = true;
-	}
-	release_pages(pvec->pages, pagevec_count(pvec));
-	pagevec_reinit(pvec);
-}
-
 static void __pagevec_lru_add_fn(struct folio *folio, struct lruvec *lruvec)
 {
 	folio_test_clear_unevictable(folio);

@@ -852,11 +852,6 @@ void __init_memblock memblock_set_current_limit(phys_addr_t limit)
 	memblock.current_limit = limit;
 }
 
-void __init_memblock memblock_dump_all(void)
-{
-	/* Stub: memblock debug dump not needed for minimal kernel */
-}
-
 void __init memblock_allow_resize(void)
 {
 	memblock_can_resize = 1;

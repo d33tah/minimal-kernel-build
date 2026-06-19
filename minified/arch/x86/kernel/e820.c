@@ -656,8 +656,6 @@ void __init e820__memblock_setup(void)
 		memblock_add(entry->addr, entry->size);
 	}
 
-	 
-	memblock_trim_memory(PAGE_SIZE);
 
-	memblock_dump_all();
+	memblock_trim_memory(PAGE_SIZE);
 }

@@ -77,12 +77,6 @@ static inline void arch_exit_mmap(struct mm_struct *mm)
 
 /* is_64bit_mm removed - unused */
 
-static inline void arch_unmap(struct mm_struct *mm, unsigned long start,
-			      unsigned long end)
-{
-}
-
- 
 static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
 		bool write, bool execute, bool foreign)
 {

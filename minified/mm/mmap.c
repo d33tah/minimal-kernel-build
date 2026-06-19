@@ -1131,10 +1131,7 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	if (len == 0)
 		return -EINVAL;
 
-	
-	arch_unmap(mm, start, end);
 
-	
 	vma = find_vma_intersection(mm, start, end);
 	if (!vma)
 		return 0;

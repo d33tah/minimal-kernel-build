@@ -92,9 +92,6 @@ static void do_idle(void)
 
 
 	schedule_idle();
-
-	if (unlikely(klp_patch_pending(current)))
-		klp_update_patch_state(current);
 }
 
 void cpu_startup_entry(enum cpuhp_state state)

@@ -33,13 +33,6 @@ static inline unsigned long global_zone_page_state(enum zone_stat_item item)
 	return x;
 }
 
-static inline
-unsigned long global_node_page_state_pages(enum node_stat_item item)
-{
-	long x = atomic_long_read(&vm_node_stat[item]);
-	return x;
-}
-
 
 static inline unsigned long zone_page_state(struct zone *zone,
 					enum zone_stat_item item)
@@ -47,10 +40,6 @@ static inline unsigned long zone_page_state(struct zone *zone,
 	long x = atomic_long_read(&zone->vm_stat[item]);
 	return x;
 }
-
-
-#define sum_zone_node_page_state(node, item) global_zone_page_state(item)
-#define node_page_state_pages(node, item) global_node_page_state_pages(item)
 
 
 
@@ -64,7 +53,7 @@ static inline void __mod_node_page_state(struct pglist_data *pgdat,
 			enum node_stat_item item, int delta)
 {
 	if (vmstat_item_in_bytes(item)) {
-		 
+
 		VM_WARN_ON_ONCE(delta & (PAGE_SIZE - 1));
 		delta >>= PAGE_SHIFT;
 	}
@@ -72,40 +61,10 @@ static inline void __mod_node_page_state(struct pglist_data *pgdat,
 	node_page_state_add(delta, pgdat, item);
 }
 
-static inline void __inc_zone_state(struct zone *zone, enum zone_stat_item item)
-{
-	atomic_long_inc(&zone->vm_stat[item]);
-	atomic_long_inc(&vm_zone_stat[item]);
-}
-
-static inline void __inc_node_state(struct pglist_data *pgdat, enum node_stat_item item)
-{
-	atomic_long_inc(&pgdat->vm_stat[item]);
-	atomic_long_inc(&vm_node_stat[item]);
-}
-
 static inline void __dec_zone_state(struct zone *zone, enum zone_stat_item item)
 {
 	atomic_long_dec(&zone->vm_stat[item]);
 	atomic_long_dec(&vm_zone_stat[item]);
-}
-
-static inline void __dec_node_state(struct pglist_data *pgdat, enum node_stat_item item)
-{
-	atomic_long_dec(&pgdat->vm_stat[item]);
-	atomic_long_dec(&vm_node_stat[item]);
-}
-
-static inline void __inc_zone_page_state(struct page *page,
-			enum zone_stat_item item)
-{
-	__inc_zone_state(page_zone(page), item);
-}
-
-static inline void __inc_node_page_state(struct page *page,
-			enum node_stat_item item)
-{
-	__inc_node_state(page_pgdat(page), item);
 }
 
 
@@ -115,26 +74,12 @@ static inline void __dec_zone_page_state(struct page *page,
 	__dec_zone_state(page_zone(page), item);
 }
 
-static inline void __dec_node_page_state(struct page *page,
-			enum node_stat_item item)
-{
-	__dec_node_state(page_pgdat(page), item);
-}
 
-
-#define inc_zone_page_state __inc_zone_page_state
 #define dec_zone_page_state __dec_zone_page_state
 #define mod_zone_page_state __mod_zone_page_state
 
-#define inc_node_page_state __inc_node_page_state
-#define dec_node_page_state __dec_node_page_state
 #define mod_node_page_state __mod_node_page_state
 
-#define inc_zone_state __inc_zone_state
-#define inc_node_state __inc_node_state
-#define dec_zone_state __dec_zone_state
-
-#define set_pgdat_percpu_threshold(pgdat, callback) { }
 
 static inline void node_stat_mod_folio(struct folio *folio,
 		enum node_stat_item item, long nr)
@@ -190,4 +135,4 @@ static inline void __lruvec_stat_mod_folio(struct folio *folio,
 }
 
 
-#endif  
+#endif

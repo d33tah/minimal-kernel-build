@@ -233,21 +233,6 @@ unwind:
 	return 0;
 }
 
-bool is_ucounts_overlimit(struct ucounts *ucounts, enum ucount_type type, unsigned long rlimit)
-{
-	struct ucounts *iter;
-	long max = rlimit;
-	if (rlimit > LONG_MAX)
-		max = LONG_MAX;
-	for (iter = ucounts; iter; iter = iter->ns->ucounts) {
-		long val = get_ucounts_value(iter, type);
-		if (val < 0 || val > max)
-			return true;
-		max = READ_ONCE(iter->ns->ucount_max[type]);
-	}
-	return false;
-}
-
 static __init int user_namespace_sysctl_init(void)
 {
 	hlist_add_ucounts(&init_ucounts);

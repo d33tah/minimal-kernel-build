@@ -91,16 +91,10 @@ struct ucounts *alloc_ucounts(struct user_namespace *ns, kuid_t uid);
 struct ucounts * __must_check get_ucounts(struct ucounts *ucounts);
 void put_ucounts(struct ucounts *ucounts);
 
-static inline long get_ucounts_value(struct ucounts *ucounts, enum ucount_type type)
-{
-	return atomic_long_read(&ucounts->ucount[type]);
-}
-
 long inc_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v);
 bool dec_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v);
 long inc_rlimit_get_ucounts(struct ucounts *ucounts, enum ucount_type type);
 void dec_rlimit_put_ucounts(struct ucounts *ucounts, enum ucount_type type);
-bool is_ucounts_overlimit(struct ucounts *ucounts, enum ucount_type type, unsigned long max);
 
 static inline void set_rlimit_ucount_max(struct user_namespace *ns,
 		enum ucount_type type, unsigned long max)

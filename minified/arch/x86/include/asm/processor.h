@@ -54,10 +54,7 @@ struct cpuinfo_x86 {
 	__u8			x86_stepping;
 	__u8			x86_virt_bits;
 	__u8			x86_phys_bits;
-	 
-	__u8			x86_coreid_bits;
-	__u8			cu_id;
-	 
+
 	__u32			extended_cpuid_level;
 	 
 	int			cpuid_level;
@@ -74,25 +71,9 @@ struct cpuinfo_x86 {
 
 	int			x86_power;
 	unsigned long		loops_per_jiffy;
-	 
-	u64			ppin;
-	 
-	u16			x86_max_cores;
-	u16			apicid;
-	u16			initial_apicid;
+
 	u16			x86_clflush_size;
 
-	u16			phys_proc_id;
-	 
-	u16			logical_proc_id;
-	 
-	u16			cpu_core_id;
-	u16			cpu_die_id;
-	u16			logical_die_id;
-	 
-	u16			cpu_index;
-
-	u8			x86_cache_bits;
 	unsigned		initialized : 1;
 } __randomize_layout;
 

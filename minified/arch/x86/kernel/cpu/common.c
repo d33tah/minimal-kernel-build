@@ -461,7 +461,6 @@ void get_cpu_address_sizes(struct cpuinfo_x86 *c)
 	}
 	else if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
 		c->x86_phys_bits = 36;
-	c->x86_cache_bits = c->x86_phys_bits;
 }
 
 static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
@@ -518,7 +517,6 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 		 * this_cpu is always &default_cpu here (empty cpu_devs[]),
 		 * which sets neither ->c_early_init nor ->c_bsp_init.
 		 */
-		c->cpu_index = 0;
 		filter_cpuid_features(c, false);
 	} else {
 		setup_clear_cpu_cap(X86_FEATURE_CPUID);
@@ -572,13 +570,7 @@ static void generic_identify(struct cpuinfo_x86 *c)
 
 	get_cpu_address_sizes(c);
 
-	if (c->cpuid_level >= 0x00000001) {
-		c->initial_apicid = (cpuid_ebx(1) >> 24) & 0xFF;
-		c->apicid = c->initial_apicid;
-		c->phys_proc_id = c->initial_apicid;
-	}
-
-	get_model_name(c); 
+	get_model_name(c);
 
 	set_cpu_bug(c, X86_BUG_ESPFIX);
 }
@@ -591,10 +583,7 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	c->x86_model = c->x86_stepping = 0;	
 	c->x86_vendor_id[0] = '\0'; 
 	c->x86_model_id[0] = '\0';  
-	c->x86_max_cores = 1;
-	c->x86_coreid_bits = 0;
-	c->cu_id = 0xff;
-	c->cpuid_level = -1;	
+	c->cpuid_level = -1;
 	c->x86_clflush_size = 32;
 	c->x86_phys_bits = 32;
 	c->x86_virt_bits = 32;

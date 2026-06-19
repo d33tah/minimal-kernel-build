@@ -39,19 +39,7 @@ struct pipe_inode_info {
 	struct user_struct *user;
 };
 
-struct pipe_buf_operations {
-	 
-	int (*confirm)(struct pipe_inode_info *, struct pipe_buffer *);
-
-	 
-	void (*release)(struct pipe_inode_info *, struct pipe_buffer *);
-
-	 
-	bool (*try_steal)(struct pipe_inode_info *, struct pipe_buffer *);
-
-	 
-	bool (*get)(struct pipe_inode_info *, struct pipe_buffer *);
-};
+struct pipe_buf_operations;
 
 
 #define PIPE_SIZE		PAGE_SIZE

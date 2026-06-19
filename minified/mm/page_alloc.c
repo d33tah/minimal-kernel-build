@@ -963,35 +963,6 @@ void free_pages(unsigned long addr, unsigned int order)
 
 
 
-static void *make_alloc_exact(unsigned long addr, unsigned int order,
-		size_t size)
-{
-	if (addr) {
-		unsigned long alloc_end = addr + (PAGE_SIZE << order);
-		unsigned long used = addr + PAGE_ALIGN(size);
-
-		split_page(virt_to_page((void *)addr), order);
-		while (used < alloc_end) {
-			free_page(used);
-			used += PAGE_SIZE;
-		}
-	}
-	return (void *)addr;
-}
-
-void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
-{
-	unsigned int order = get_order(size);
-	unsigned long addr;
-
-	if (WARN_ON_ONCE(gfp_mask & (__GFP_COMP | __GFP_HIGHMEM)))
-		gfp_mask &= ~(__GFP_COMP | __GFP_HIGHMEM);
-
-	addr = __get_free_pages(gfp_mask, order);
-	return make_alloc_exact(addr, order, size);
-}
-
-
 static unsigned long nr_free_zone_pages(int offset)
 {
 	struct zoneref *z;
@@ -1752,7 +1723,6 @@ void *__init alloc_large_system_hash(const char *tablename,
 {
 	unsigned long log2qty, size;
 	void *table;
-	gfp_t gfp_flags;
 
 	/* Minimal stub: simple hash table allocation */
 	if (!numentries)
@@ -1761,11 +1731,12 @@ void *__init alloc_large_system_hash(const char *tablename,
 	log2qty = ilog2(numentries);
 	size = bucketsize << log2qty;
 
-	gfp_flags = (flags & HASH_ZERO) ? GFP_ATOMIC | __GFP_ZERO : GFP_ATOMIC;
-	if (flags & HASH_EARLY)
-		table = memblock_alloc(size, SMP_CACHE_BYTES);
-	else
-		table = alloc_pages_exact(size, gfp_flags);
+	/*
+	 * The only runtime caller (dcache_init_early) always passes HASH_EARLY
+	 * because hashdist is the compile-time constant 0, so the non-early
+	 * alloc_pages_exact() arm is unreachable. Always use memblock.
+	 */
+	table = memblock_alloc(size, SMP_CACHE_BYTES);
 
 	if (!table)
 		panic("Failed to allocate %s hash table\n", tablename);

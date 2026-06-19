@@ -210,9 +210,6 @@ static inline void set_page_private(struct page *page, unsigned long private)
 
 typedef unsigned long vm_flags_t;
 
-#define NULL_VM_UFFD_CTX ((struct vm_userfaultfd_ctx) {})
-struct vm_userfaultfd_ctx {};
-
 struct anon_vma_name {
 	struct kref kref;
 	 
@@ -262,9 +259,7 @@ struct vm_area_struct {
 	 
 	unsigned long vm_pgoff;		 
 	struct file * vm_file;		 
-	void * vm_private_data;		 
-
-	struct vm_userfaultfd_ctx vm_userfaultfd_ctx;
+	void * vm_private_data;
 } __randomize_layout;
 
 struct mm_struct {

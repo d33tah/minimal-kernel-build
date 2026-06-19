@@ -27,20 +27,9 @@ extern void klist_init(struct klist *k, void (*get)(struct klist_node *),
 		       void (*put)(struct klist_node *));
 
 struct klist_node {
-	void			*n_klist;	 
+	void			*n_klist;
 	struct list_head	n_node;
 	struct kref		n_ref;
 };
-
-struct klist_iter {
-	struct klist		*i_klist;
-	struct klist_node	*i_cur;
-};
-
-
-extern void klist_iter_init_node(struct klist *k, struct klist_iter *i,
-				 struct klist_node *n);
-extern void klist_iter_exit(struct klist_iter *i);
-extern struct klist_node *klist_next(struct klist_iter *i);
 
 #endif

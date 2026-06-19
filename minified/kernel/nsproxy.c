@@ -56,7 +56,6 @@ void free_nsproxy(struct nsproxy *ns)
 		put_mnt_ns(ns->mnt_ns);
 	if (ns->pid_ns_for_children)
 		put_pid_ns(ns->pid_ns_for_children);
-	put_net(ns->net_ns);
 	kmem_cache_free(nsproxy_cachep, ns);
 }
 

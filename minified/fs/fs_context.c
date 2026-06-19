@@ -283,7 +283,6 @@ void put_fs_context(struct fs_context *fc)
 	if (fc->need_free && fc->ops && fc->ops->free)
 		fc->ops->free(fc);
 
-	put_net(fc->net_ns);
 	put_user_ns(fc->user_ns);
 	put_cred(fc->cred);
 	put_fc_log(fc);

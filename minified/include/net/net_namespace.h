@@ -17,13 +17,6 @@ static inline struct net *get_net(struct net *net)
 	return net;
 }
 
-static inline void put_net(struct net *net)
-{
-}
-
-
-
-
 static inline struct net *copy_net_ns(unsigned long flags,
 	struct user_namespace *user_ns, struct net *old_ns)
 {

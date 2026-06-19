@@ -333,7 +333,6 @@ struct inode {
 		const struct file_operations	*i_fop;	
 		void (*free_inode)(struct inode *);
 	};
-	struct file_lock_context	*i_flctx;
 	struct address_space	i_data;
 	struct list_head	i_devices;
 	union {
@@ -497,7 +496,6 @@ struct file_lock_operations;
 struct lock_manager_operations;
 struct lock_manager;
 struct net;
-struct file_lock_context;
 
 
 #define locks_inode(f) file_inode(f)

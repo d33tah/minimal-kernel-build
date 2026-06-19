@@ -84,9 +84,7 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 				   "mapping.invalidate_lock");
 	inode->i_private = NULL;
 	inode->i_mapping = mapping;
-	INIT_HLIST_HEAD(&inode->i_dentry);	
-
-	inode->i_flctx = NULL;
+	INIT_HLIST_HEAD(&inode->i_dentry);
 
 	return 0;
 }

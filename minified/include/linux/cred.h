@@ -77,11 +77,6 @@ extern void abort_creds(struct cred *);
 extern void __init cred_init(void);
 extern int set_cred_ucounts(struct cred *);
 
-static inline void validate_creds(const struct cred *cred)
-{
-}
-
-
 static inline struct cred *get_new_cred(struct cred *cred)
 {
 	atomic_inc(&cred->usage);
@@ -93,7 +88,6 @@ static inline const struct cred *get_cred(const struct cred *cred)
 	struct cred *nonconst_cred = (struct cred *) cred;
 	if (!cred)
 		return cred;
-	validate_creds(cred);
 	nonconst_cred->non_rcu = 0;
 	return get_new_cred(nonconst_cred);
 }
@@ -103,7 +97,6 @@ static inline void put_cred(const struct cred *_cred)
 	struct cred *cred = (struct cred *) _cred;
 
 	if (cred) {
-		validate_creds(cred);
 		if (atomic_dec_and_test(&(cred)->usage))
 			__put_cred(cred);
 	}

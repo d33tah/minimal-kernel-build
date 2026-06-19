@@ -180,13 +180,6 @@ struct lruvec {
 	struct list_head		lists[NR_LRU_LISTS];
 
 	spinlock_t			lru_lock;
-
-	unsigned long			anon_cost;
-	unsigned long			file_cost;
-
-	atomic_long_t			nonresident_age;
-
-	unsigned long			flags;
 };
 
 

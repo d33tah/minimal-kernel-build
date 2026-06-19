@@ -32,10 +32,6 @@ struct uts_namespace {
 } __randomize_layout;
 extern struct uts_namespace init_uts_ns;
 
-static inline void put_uts_ns(struct uts_namespace *ns)
-{
-}
-
 
 static inline struct new_utsname *utsname(void)
 {

@@ -27,10 +27,6 @@ struct time_namespace {
 
 extern struct time_namespace init_time_ns;
 
-static inline void put_time_ns(struct time_namespace *ns)
-{
-}
-
 static inline
 struct time_namespace *copy_time_ns(unsigned long flags,
 				    struct user_namespace *user_ns,

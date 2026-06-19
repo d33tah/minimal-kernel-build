@@ -691,6 +691,4 @@ static inline unsigned int task_cpu(const struct task_struct *p)
 
 
 
-static inline void sched_core_free(struct task_struct *tsk) { }
-
 #endif

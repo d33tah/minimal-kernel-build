@@ -1,37 +1,6 @@
 #ifndef _LINUX_TTY_PORT_H
 #define _LINUX_TTY_PORT_H
 
-/* Inlined from kfifo.h */
-struct __kfifo {
-	unsigned int	in;
-	unsigned int	out;
-	unsigned int	mask;
-	unsigned int	esize;
-	void		*data;
-};
-
-#define __STRUCT_KFIFO_COMMON(datatype, recsize, ptrtype) \
-	union { \
-		struct __kfifo	kfifo; \
-		datatype	*type; \
-		const datatype	*const_type; \
-		char		(*rectype)[recsize]; \
-		ptrtype		*ptr; \
-		ptrtype const	*ptr_const; \
-	}
-
-#define __STRUCT_KFIFO_PTR(type, recsize, ptrtype) \
-{ \
-	__STRUCT_KFIFO_COMMON(type, recsize, ptrtype); \
-	type		buf[0]; \
-}
-
-#define DECLARE_KFIFO_PTR(fifo, type)	\
-struct __STRUCT_KFIFO_PTR(type, 0, type) fifo
-
-#define INIT_KFIFO(fifo) \
-	(void)sizeof(&(fifo))
-
 #include <linux/kref.h>
 #include <linux/mutex.h>
 #include <linux/tty_buffer.h>
@@ -56,22 +25,13 @@ struct tty_port {
 	struct tty_struct	*itty;
 	const struct tty_port_operations *ops;
 	spinlock_t		lock;
-	int			blocked_open;
-	int			count;
 	wait_queue_head_t	open_wait;
 	wait_queue_head_t	delta_msr_wait;
-	unsigned long		flags;
 	unsigned long		iflags;
-	unsigned char		console:1;
 	struct mutex		mutex;
 	struct mutex		buf_mutex;
 	unsigned char		*xmit_buf;
-	DECLARE_KFIFO_PTR(xmit_fifo, unsigned char);
-	unsigned int		close_delay;
-	unsigned int		closing_wait;
-	int			drain_delay;
 	struct kref		kref;
-	void			*client_data;
 };
 
 #define TTY_PORT_INITIALIZED	0	 

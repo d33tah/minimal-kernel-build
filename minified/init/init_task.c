@@ -58,10 +58,6 @@ struct task_struct init_task
 	.cpus_mask	= CPU_MASK_ALL,
 	.mm		= NULL,
 	.active_mm	= &init_mm,
-	.rt		= {
-		.run_list	= LIST_HEAD_INIT(init_task.rt.run_list),
-		.time_slice	= RR_TIMESLICE,
-	},
 	.tasks		= LIST_HEAD_INIT(init_task.tasks),
 	.ptraced	= LIST_HEAD_INIT(init_task.ptraced),
 	.ptrace_entry	= LIST_HEAD_INIT(init_task.ptrace_entry),

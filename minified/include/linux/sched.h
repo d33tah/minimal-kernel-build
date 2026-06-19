@@ -184,17 +184,6 @@ struct sched_entity {
 	u64				prev_sum_exec_runtime;
 };
 
-struct sched_rt_entity {
-	struct list_head		run_list;
-	unsigned long			timeout;
-	unsigned long			watchdog_stamp;
-	unsigned int			time_slice;
-	unsigned short			on_rq;
-	unsigned short			on_list;
-
-	struct sched_rt_entity		*back;
-} __randomize_layout;
-
 struct wake_q_node {
 	struct wake_q_node *next;
 };
@@ -222,7 +211,6 @@ struct task_struct {
 	int				normal_prio;
 
 	struct sched_entity		se;
-	struct sched_rt_entity		rt;
 	const struct sched_class	*sched_class;
 
 

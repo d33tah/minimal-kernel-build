@@ -54,26 +54,21 @@ struct tty_driver {
 	struct kref kref;
 	struct cdev **cdevs;
 	struct module	*owner;
-	const char	*driver_name;
 	const char	*name;
 	int	name_base;
 	int	major;
 	int	minor_start;
 	unsigned int	num;
-	short	type;
-	short	subtype;
 	struct ktermios init_termios;
 	unsigned long	flags;
-	struct proc_dir_entry *proc_entry;
 	struct tty_driver *other;
 
 	 
 	struct tty_struct **ttys;
 	struct tty_port **ports;
 	struct ktermios **termios;
-	void *driver_state;
 
-	 
+
 
 	const struct tty_operations *ops;
 	struct list_head tty_drivers;
@@ -110,9 +105,6 @@ static inline void tty_set_operations(struct tty_driver *driver,
 #define TTY_DRIVER_DEVPTS_MEM		0x0010
 #define TTY_DRIVER_DYNAMIC_ALLOC	0x0040
 #define TTY_DRIVER_UNNUMBERED_NODE	0x0080
-
-#define TTY_DRIVER_TYPE_CONSOLE		0x0002
-#define TTY_DRIVER_TYPE_PTY		0x0004
 
 #define PTY_TYPE_MASTER			0x0001
 #define PTY_TYPE_SLAVE			0x0002

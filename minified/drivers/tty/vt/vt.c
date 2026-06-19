@@ -998,7 +998,6 @@ int __init vty_init(const struct file_operations *console_fops)
 	console_driver->name_base = 1;
 	console_driver->major = TTY_MAJOR;
 	console_driver->minor_start = 1;
-	console_driver->type = TTY_DRIVER_TYPE_CONSOLE;
 	console_driver->init_termios = tty_std_termios;
 	if (default_utf8)
 		console_driver->init_termios.c_iflag |= IUTF8;

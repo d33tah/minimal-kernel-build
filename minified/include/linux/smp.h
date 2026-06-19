@@ -17,8 +17,6 @@ typedef bool (*smp_cond_func_t)(int cpu, void *info);
 void panic_smp_self_stop(void);
 void nmi_panic_self_stop(struct pt_regs *regs);
 
-static inline void smp_send_stop(void) { }
-
 #define raw_smp_processor_id()			0
 
 #define smp_prepare_boot_cpu()			do {} while (0)

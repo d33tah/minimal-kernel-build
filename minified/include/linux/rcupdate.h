@@ -72,7 +72,6 @@ static inline bool rcu_is_watching(void) { return true; }
 
 static inline void rcu_all_qs(void) { barrier(); }
 
-static inline void init_rcu_head(struct rcu_head *head) { }
 static inline void init_rcu_head_on_stack(struct rcu_head *head) { }
 static inline void destroy_rcu_head_on_stack(struct rcu_head *head) { }
 

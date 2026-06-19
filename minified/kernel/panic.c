@@ -106,9 +106,6 @@ void panic(const char *fmt, ...)
 	pr_emerg("Kernel panic - not syncing: %s\n", buf);
 
 
-	smp_send_stop();
-
-
 	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
 
 	kmsg_dump(KMSG_DUMP_PANIC);

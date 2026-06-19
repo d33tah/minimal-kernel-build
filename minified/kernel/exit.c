@@ -300,7 +300,6 @@ void __noreturn do_exit(long code)
 
 	/* sched_autogroup_exit_task - stubbed */
 
-	exit_tasks_rcu_start();
 	exit_notify(tsk, group_dead);
 
 	if (tsk->task_frag.page)
@@ -310,7 +309,6 @@ void __noreturn do_exit(long code)
 
 	preempt_disable();
 	exit_rcu();
-	exit_tasks_rcu_finish();
 
 	do_task_dead();
 }

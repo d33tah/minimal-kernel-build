@@ -33,8 +33,6 @@ void rcu_sched_clock_irq(int user);
 static inline void rcu_nocb_flush_deferred_wakeup(void) { }
 
 #define rcu_tasks_qs(t, preempt) do { } while (0)
-static inline void exit_tasks_rcu_start(void) { }
-static inline void exit_tasks_rcu_finish(void) { }
 
 
 #include <asm/param.h>
@@ -65,7 +63,6 @@ static inline void rcu_softirq_qs(void)
 
 static inline void rcu_idle_enter(void) { }
 static inline void rcu_idle_exit(void) { }
-static inline void rcu_irq_exit_check_preempt(void) { }
 static inline void exit_rcu(void) { }
 void rcu_scheduler_starting(void);
 static inline bool rcu_is_watching(void) { return true; }

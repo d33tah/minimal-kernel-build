@@ -455,9 +455,6 @@ struct task_struct {
 	struct io_context		*io_context;
 
 	 
-	unsigned long			ptrace_message;
-	kernel_siginfo_t		*last_siginfo;
-
 	struct task_io_accounting	ioac;
 	struct perf_event_context	*perf_event_ctxp[perf_nr_task_contexts];
 	struct mutex			perf_event_mutex;
@@ -485,18 +482,13 @@ struct task_struct {
 
 
 	int				pagefault_disabled;
-	struct task_struct		*oom_reaper_list;
-	struct timer_list		oom_reaper_timer;
-	 
+
 	refcount_t			stack_refcount;
 
 
 
 
-	 
-	struct callback_head		l1d_flush_kill;
 
-	 
 	randomized_struct_fields_end
 
 	 

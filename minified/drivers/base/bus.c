@@ -10,7 +10,6 @@
 #include <linux/mutex.h>
 #include <linux/sysfs.h>
 #include "base.h"
-#include "power/power.h"
 
 /* Removed: bus_get + the driver_ktype kobj_type (drv_attr_show/store,
    driver_sysfs_ops, driver_release) - only used by the dead bus_add_driver */

@@ -76,18 +76,8 @@ struct device {
 	const struct device_type *type;
 
 	struct device_driver *driver;
-	struct mutex		mutex;
-
-	struct dev_pm_info	power;
-
-	const struct bus_dma_region *dma_range_map;
-
-	struct list_head	dma_pools;
 
 	dev_t			devt;
-
-	spinlock_t		devres_lock;
-	struct list_head	devres_head;
 
 	void	(*release)(struct device *dev);
 };

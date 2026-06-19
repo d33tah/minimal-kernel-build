@@ -22,7 +22,6 @@
 #include <linux/dma-map-ops.h> 
 
 #include "base.h"
-#include "power/power.h"
 
 
 /* Removed: fwnode_link_add, fwnode_links_purge, fw_devlink_purge_absent_suppliers - no callers */
@@ -44,8 +43,6 @@ static void device_release(struct kobject *kobj)
 {
 	struct device *dev = kobj_to_dev(kobj);
 	struct device_private *p = dev->p;
-
-	kfree(dev->dma_range_map);
 
 	if (dev->release)
 		dev->release(dev);
@@ -98,12 +95,6 @@ void device_initialize(struct device *dev)
 {
 	dev->kobj.kset = devices_kset;
 	kobject_init(&dev->kobj, &device_ktype);
-	INIT_LIST_HEAD(&dev->dma_pools);
-	mutex_init(&dev->mutex);
-	lockdep_set_novalidate_class(&dev->mutex);
-	spin_lock_init(&dev->devres_lock);
-	INIT_LIST_HEAD(&dev->devres_head);
-	device_pm_init(dev);
 }
 
 

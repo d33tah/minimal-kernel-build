@@ -25,9 +25,7 @@
 void x86_init_noop(void) { }
 void __init x86_init_uint_noop(unsigned int unused) { }
 static int __init iommu_init_noop(void) { return 0; }
-static void iommu_shutdown_noop(void) { }
 bool __init bool_x86_init_noop(void) { return false; }
-void x86_op_int_noop(int cpu) { }
 
 struct x86_init_ops x86_init __initdata = {
 
@@ -108,13 +106,11 @@ struct x86_platform_ops x86_platform __ro_after_init = {
 	.calibrate_tsc			= native_calibrate_tsc,
 	.get_wallclock			= mach_get_cmos_time,
 	.set_wallclock			= mach_set_rtc_mmss,
-	.iommu_shutdown			= iommu_shutdown_noop,
 	.is_untracked_pat_range		= is_ISA_range,
 	.nmi_init			= default_nmi_init,
 	.get_nmi_reason			= default_get_nmi_reason,
 	.save_sched_clock_state		= tsc_save_sched_clock_state,
 	.restore_sched_clock_state	= tsc_restore_sched_clock_state,
-	.hyper.pin_vcpu			= x86_op_int_noop,
 
 	.guest = {
 		.enc_status_change_prepare = enc_status_change_prepare_noop,

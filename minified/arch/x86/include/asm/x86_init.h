@@ -137,7 +137,6 @@ struct x86_legacy_features {
 
  
 struct x86_hyper_runtime {
-	void (*pin_vcpu)(int cpu);
 	void (*sev_es_hcall_prepare)(struct ghcb *ghcb, struct pt_regs *regs);
 	bool (*sev_es_hcall_finish)(struct ghcb *ghcb, struct pt_regs *regs);
 };
@@ -148,13 +147,11 @@ struct x86_platform_ops {
 	unsigned long (*calibrate_tsc)(void);
 	void (*get_wallclock)(struct timespec64 *ts);
 	int (*set_wallclock)(const struct timespec64 *ts);
-	void (*iommu_shutdown)(void);
 	bool (*is_untracked_pat_range)(u64 start, u64 end);
 	void (*nmi_init)(void);
 	unsigned char (*get_nmi_reason)(void);
 	void (*save_sched_clock_state)(void);
 	void (*restore_sched_clock_state)(void);
-	void (*apic_post_init)(void);
 	struct x86_legacy_features legacy;
 	void (*set_legacy_features)(void);
 	struct x86_hyper_runtime hyper;
@@ -176,6 +173,5 @@ extern void x86_early_init_platform_quirks(void);
 extern void x86_init_noop(void);
 extern void x86_init_uint_noop(unsigned int unused);
 extern bool bool_x86_init_noop(void);
-extern void x86_op_int_noop(int cpu);
 
 #endif

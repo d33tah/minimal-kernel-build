@@ -120,10 +120,6 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 #define __diag_ignore_all(option, comment) \
 	__diag_clang(11, ignore, option)
 /* end compiler-clang.h */
-#elif defined(__INTEL_COMPILER)
-#include <linux/compiler-intel.h>
-#elif defined(__GNUC__)
-#include <linux/compiler-gcc.h>
 #else
 #error "Unknown compiler"
 #endif

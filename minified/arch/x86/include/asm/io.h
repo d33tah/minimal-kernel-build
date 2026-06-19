@@ -85,34 +85,16 @@ static inline type in##bwl##_p(u16 port)				\
 									\
 static inline void outs##bwl(u16 port, const void *addr, unsigned long count) \
 {									\
-	if (cc_platform_has(CC_ATTR_GUEST_UNROLL_STRING_IO)) {		\
-		type *value = (type *)addr;				\
-		while (count) {						\
-			out##bwl(*value, port);				\
-			value++;					\
-			count--;					\
-		}							\
-	} else {							\
-		asm volatile("rep; outs" #bwl				\
-			     : "+S"(addr), "+c"(count)			\
-			     : "d"(port) : "memory");			\
-	}								\
+	asm volatile("rep; outs" #bwl					\
+		     : "+S"(addr), "+c"(count)				\
+		     : "d"(port) : "memory");				\
 }									\
 									\
 static inline void ins##bwl(u16 port, void *addr, unsigned long count)	\
 {									\
-	if (cc_platform_has(CC_ATTR_GUEST_UNROLL_STRING_IO)) {		\
-		type *value = (type *)addr;				\
-		while (count) {						\
-			*value = in##bwl(port);				\
-			value++;					\
-			count--;					\
-		}							\
-	} else {							\
-		asm volatile("rep; ins" #bwl				\
-			     : "+D"(addr), "+c"(count)			\
-			     : "d"(port) : "memory");			\
-	}								\
+	asm volatile("rep; ins" #bwl					\
+		     : "+D"(addr), "+c"(count)				\
+		     : "d"(port) : "memory");				\
 }
 
 BUILDIO(b, b, u8)

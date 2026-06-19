@@ -29,10 +29,6 @@
 #define slub_get_cpu_ptr(var)	get_cpu_ptr(var)
 #define slub_put_cpu_ptr(var)	put_cpu_ptr(var)
 
-#define MIN_PARTIAL 5
-
-#define MAX_PARTIAL 10
-
 #define SLAB_NO_CMPXCHG (SLAB_CONSISTENCY_CHECKS | SLAB_STORE_USER | \
 				SLAB_TRACE)
 
@@ -952,7 +948,6 @@ static int calculate_sizes(struct kmem_cache *s)
 
 	size = ALIGN(size, s->align);
 	s->size = size;
-	s->reciprocal_size = reciprocal_value(size);
 	order = calculate_order(size);
 
 	if ((int)order < 0)
@@ -991,11 +986,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 		
 		s->flags |= __CMPXCHG_DOUBLE;
 #endif
-
-	
-	s->min_partial = min_t(unsigned long, MAX_PARTIAL, ilog2(s->size) / 2);
-	s->min_partial = max_t(unsigned long, MIN_PARTIAL, s->min_partial);
-
 
 	if (!init_kmem_cache_nodes(s))
 		return -EINVAL;

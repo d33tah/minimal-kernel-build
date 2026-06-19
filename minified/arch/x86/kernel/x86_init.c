@@ -17,12 +17,10 @@
 #define default_setup_hpet_msi	NULL
 #include <asm/memtype.h>
 #include <asm/tsc.h>
-#include <asm/iommu.h>
 #include <asm/mach_traps.h>
 
 void x86_init_noop(void) { }
 void __init x86_init_uint_noop(unsigned int unused) { }
-static int __init iommu_init_noop(void) { return 0; }
 bool __init bool_x86_init_noop(void) { return false; }
 
 struct x86_init_ops x86_init __initdata = {
@@ -53,10 +51,6 @@ struct x86_init_ops x86_init __initdata = {
 		.setup_percpu_clockev	= setup_boot_APIC_clock,
 		.timer_init		= hpet_time_init,
 		.wallclock_init		= x86_init_noop,
-	},
-
-	.iommu = {
-		.iommu_init		= iommu_init_noop,
 	},
 
 	.hyper = {

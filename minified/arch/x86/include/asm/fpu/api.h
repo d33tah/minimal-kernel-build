@@ -36,9 +36,6 @@ extern void fpu_reset_from_exception_fixup(void);
 extern void fpu__init_cpu(void);
 extern void fpu__init_system(struct cpuinfo_x86 *c);
 
-static inline void fpstate_init_soft(struct swregs_state *soft) {}
-
- 
 DECLARE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
 
  

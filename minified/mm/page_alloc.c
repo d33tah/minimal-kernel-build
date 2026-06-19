@@ -1084,22 +1084,14 @@ static void __build_all_zonelists(void *data)
 {
 	int nid;
 	int __maybe_unused cpu;
-	pg_data_t *self = data;
 	static DEFINE_SPINLOCK(lock);
 
 	spin_lock(&lock);
 
-	
-	if (self && !node_online(self->node_id)) {
-		build_zonelists(self);
-	} else {
-		
-		for_each_node(nid) {
-			pg_data_t *pgdat = NODE_DATA(nid);
+	for_each_node(nid) {
+		pg_data_t *pgdat = NODE_DATA(nid);
 
-			build_zonelists(pgdat);
-		}
-
+		build_zonelists(pgdat);
 	}
 
 	spin_unlock(&lock);

@@ -326,10 +326,8 @@ static void __init test_wp_bit(void)
 void __init mem_init(void)
 {
 	BUG_ON(!mem_map);
-	 
-	set_highmem_pages_init();
 
-	 
+
 	memblock_free_all();
 
 	after_bootmem = 1;

@@ -8,6 +8,4 @@
 #include <asm/topology.h>
 #include <asm/apicdef.h>
 
-static inline void set_highmem_pages_init(void) { }
-
 #endif

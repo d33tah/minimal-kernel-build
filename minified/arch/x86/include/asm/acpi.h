@@ -18,13 +18,6 @@
 #define acpi_ioapic 0
 #define acpi_disable_cmcff 0
 
-static inline void x86_default_set_root_pointer(u64 addr) { }
-
-static inline u64 x86_default_get_root_pointer(void)
-{
-	return 0;
-}
-
 
 #define ARCH_HAS_POWER_INIT	1
 

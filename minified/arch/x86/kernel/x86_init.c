@@ -51,11 +51,6 @@ struct x86_init_ops x86_init __initdata = {
 		.timer_init		= hpet_time_init,
 		.wallclock_init		= x86_init_noop,
 	},
-
-	.acpi = {
-		.set_root_pointer	= x86_default_set_root_pointer,
-		.get_root_pointer	= x86_default_get_root_pointer,
-	},
 };
 
 struct x86_platform_ops x86_platform __ro_after_init = {

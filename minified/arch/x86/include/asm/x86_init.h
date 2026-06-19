@@ -40,12 +40,6 @@ struct x86_init_timers {
 	void (*wallclock_init)(void);
 };
 
- 
-struct x86_init_acpi {
-	void (*set_root_pointer)(u64 addr);
-	u64 (*get_root_pointer)(void);
-};
-
 
 struct x86_init_ops {
 	struct x86_init_resources	resources;
@@ -53,7 +47,6 @@ struct x86_init_ops {
 	struct x86_init_irqs		irqs;
 	struct x86_init_paging		paging;
 	struct x86_init_timers		timers;
-	struct x86_init_acpi		acpi;
 };
 
  

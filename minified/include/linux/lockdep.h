@@ -37,7 +37,6 @@ static inline void lockdep_on(void)
 
 # define lockdep_sys_exit() 			do { } while (0)
 
-extern int lock_is_held(const void *);
 extern int lockdep_is_held(const void *);
 #define lockdep_is_held_type(l, r)		(1)
 

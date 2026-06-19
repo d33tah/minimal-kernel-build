@@ -62,19 +62,16 @@ static inline bool rcu_reclaim_tiny(struct rcu_head *head)
 	rcu_callback_t f;
 	unsigned long offset = (unsigned long)head->func;
 
-	rcu_lock_acquire(&rcu_callback_map);
 	if (__is_kvfree_rcu_offset(offset)) {
-		 
+
 		kvfree((void *)head - offset);
-		rcu_lock_release(&rcu_callback_map);
 		return true;
 	}
 
-	 
+
 	f = head->func;
 	WRITE_ONCE(head->func, (rcu_callback_t)0L);
 	f(head);
-	rcu_lock_release(&rcu_callback_map);
 	return false;
 }
 
@@ -112,10 +109,6 @@ static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused
 
 void synchronize_rcu(void)
 {
-	RCU_LOCKDEP_WARN(lock_is_held(&rcu_bh_lock_map) ||
-			 lock_is_held(&rcu_lock_map) ||
-			 lock_is_held(&rcu_sched_lock_map),
-			 "Illegal synchronize_rcu() in RCU read-side critical section");
 }
 
 void call_rcu(struct rcu_head *head, rcu_callback_t func)

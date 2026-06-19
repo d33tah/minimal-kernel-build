@@ -21,7 +21,4 @@ static inline u64 local_clock(void)
 	return sched_clock_cpu(raw_smp_processor_id());
 }
 
-static inline void enable_sched_clock_irqtime(void) {}
-static inline void disable_sched_clock_irqtime(void) {}
-
-#endif  
+#endif

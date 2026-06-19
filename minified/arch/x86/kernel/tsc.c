@@ -150,7 +150,6 @@ unsigned long long
 sched_clock(void) __attribute__((alias("native_sched_clock")));
 
 
-static int no_sched_irq_time;
 static int no_tsc_watchdog;
 
 #define CAL_MS		10
@@ -457,7 +456,6 @@ static void tsc_cs_mark_unstable(struct clocksource *cs)
 
 	tsc_unstable = 1;
 	clear_sched_clock_stable();
-	disable_sched_clock_irqtime();
 	pr_info("Marking TSC unstable due to clocksource watchdog\n");
 }
 
@@ -515,7 +513,6 @@ void mark_tsc_unstable(char *reason)
 
 	tsc_unstable = 1;
 	clear_sched_clock_stable();
-	disable_sched_clock_irqtime();
 	pr_info("Marking TSC unstable due to %s\n", reason);
 
 	clocksource_mark_unstable(&clocksource_tsc_early);
@@ -660,9 +657,6 @@ void __init tsc_init(void)
 		}
 		tsc_enable_sched_clock();
 	}
-
-	if (!no_sched_irq_time)
-		enable_sched_clock_irqtime();
 
 	/* lpj_fine assignment removed - never read */
 

@@ -48,15 +48,7 @@ struct x86_init_acpi {
 	u64 (*get_root_pointer)(void);
 };
 
- 
-struct x86_guest {
-	void (*enc_status_change_prepare)(unsigned long vaddr, int npages, bool enc);
-	bool (*enc_status_change_finish)(unsigned long vaddr, int npages, bool enc);
-	bool (*enc_tlb_flush_required)(bool enc);
-	bool (*enc_cache_flush_required)(void);
-};
 
- 
 struct x86_init_ops {
 	struct x86_init_resources	resources;
 	struct x86_init_mpparse		mpparse;
@@ -107,7 +99,6 @@ struct x86_platform_ops {
 	struct x86_legacy_features legacy;
 	void (*set_legacy_features)(void);
 	struct x86_hyper_runtime hyper;
-	struct x86_guest guest;
 };
 
 extern struct x86_init_ops x86_init;

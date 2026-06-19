@@ -10,11 +10,7 @@
 #define __kprobes
 #define nokprobe_inline	inline
 
-struct kprobe;
 struct task_struct;
-
-static inline int kprobe_fault_handler(struct pt_regs *regs, int trapnr) { return 0; }
-static inline struct kprobe *kprobe_running(void) { return NULL; }
 
 static nokprobe_inline bool kprobe_page_fault(struct pt_regs *regs,
 					      unsigned int trap)

@@ -17,23 +17,6 @@
 
 #include "internal.h"
 
-int simple_getattr(struct user_namespace *mnt_userns, const struct path *path,
-		   struct kstat *stat, u32 request_mask,
-		   unsigned int query_flags)
-{
-	struct inode *inode = d_inode(path->dentry);
-	stat->blocks = inode->i_mapping->nrpages << (PAGE_SHIFT - 9);
-	return 0;
-}
-
-int simple_statfs(struct dentry *dentry, struct kstatfs *buf)
-{
-	buf->f_type = dentry->d_sb->s_magic;
-	buf->f_bsize = PAGE_SIZE;
-	buf->f_namelen = NAME_MAX;
-	return 0;
-}
-
 int always_delete_dentry(const struct dentry *dentry)
 {
 	return 1;

@@ -24,5 +24,4 @@ const struct file_operations ramfs_file_operations = {
 
 const struct inode_operations ramfs_file_inode_operations = {
 	.setattr	= simple_setattr,
-	.getattr	= simple_getattr,
 };

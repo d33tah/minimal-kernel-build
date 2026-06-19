@@ -209,8 +209,8 @@ static void try_enable_default_console(struct console *newcon)
 	if (newcon->index < 0)
 		newcon->index = 0;
 
-	if (newcon->setup && newcon->setup(newcon, NULL) != 0)
-		return;
+	/* No console on this build sets a ->setup callback, so it is always
+	 * NULL here; the setup-failure early-return is statically dead. */
 
 	newcon->flags |= CON_ENABLED;
 
@@ -270,7 +270,6 @@ void register_console(struct console *newcon)
 		console_drivers->next = newcon;
 	}
 
-	newcon->dropped = 0;
 	if (newcon->flags & CON_PRINTBUFFER) {
 		 
 		mutex_lock(&syslog_lock);

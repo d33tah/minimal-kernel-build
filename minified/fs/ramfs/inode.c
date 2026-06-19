@@ -14,7 +14,6 @@
 #include <linux/uaccess.h>
 #include <linux/fs_context.h>
 #include <linux/fs_parser.h>
-#include <linux/seq_file.h>
 #include "internal.h"
 
 struct ramfs_mount_opts {
@@ -98,14 +97,8 @@ static const struct inode_operations ramfs_dir_inode_operations = {
 	.mknod		= ramfs_mknod,
 };
 
-static int ramfs_show_options(struct seq_file *m, struct dentry *root)
-{
-	return 0;
-}
-
 static const struct super_operations ramfs_ops = {
 	.drop_inode	= generic_delete_inode,
-	.show_options	= ramfs_show_options,
 };
 
 enum ramfs_param {

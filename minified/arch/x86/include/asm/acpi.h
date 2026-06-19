@@ -17,7 +17,6 @@
 #define acpi_lapic 0
 #define acpi_ioapic 0
 #define acpi_disable_cmcff 0
-static inline void acpi_generic_reduced_hw_init(void) { }
 
 static inline void x86_default_set_root_pointer(u64 addr) { }
 

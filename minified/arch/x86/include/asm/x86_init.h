@@ -80,7 +80,6 @@ struct x86_hyper_init {
 struct x86_init_acpi {
 	void (*set_root_pointer)(u64 addr);
 	u64 (*get_root_pointer)(void);
-	void (*reduced_hw_early_init)(void);
 };
 
  

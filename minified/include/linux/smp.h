@@ -21,8 +21,6 @@ void nmi_panic_self_stop(struct pt_regs *regs);
 
 #define smp_prepare_boot_cpu()			do {} while (0)
 
-static inline void smp_init(void) { }
-
 
 #ifndef __smp_processor_id
 #define __smp_processor_id(x) raw_smp_processor_id(x)

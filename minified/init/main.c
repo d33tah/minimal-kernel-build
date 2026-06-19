@@ -745,7 +745,6 @@ static noinline void __init kernel_init_freeable(void)
 
 	do_pre_smp_initcalls();
 
-	smp_init();
 	sched_init_smp();
 
 	page_alloc_init_late();

@@ -803,21 +803,14 @@ static __latent_entropy struct task_struct *copy_process(
 	struct task_struct *p;
 	struct multiprocess_signals delayed;
 	const u64 clone_flags = args->flags;
-	struct nsproxy *nsp = current->nsproxy;
 
 	/*
 	 * The CLONE_NEWNS/NEWUSER/THREAD/SIGHAND/PARENT/NEWPID validation
 	 * checks here are dead on this build: none of those flags is ever
 	 * set (the only spawns pass CLONE_FS|CLONE_FILES|CLONE_VM|
 	 * CLONE_UNTRACED|SIGCHLD), so all the early -EINVAL returns are
-	 * unreachable. CLONE_VM IS always set, so the time_ns check below
-	 * is kept (its body is always-false but reachable).
+	 * unreachable.
 	 */
-	if (clone_flags & (CLONE_THREAD | CLONE_VM)) {
-		if (nsp->time_ns != nsp->time_ns_for_children)
-			return ERR_PTR(-EINVAL);
-	}
-
 
 	sigemptyset(&delayed.signal);
 	INIT_HLIST_NODE(&delayed.node);

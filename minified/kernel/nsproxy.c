@@ -7,7 +7,6 @@
 #include <linux/utsname.h>
 #include <linux/pid_namespace.h>
 #include <net/net_namespace.h>
-#include <linux/time_namespace.h>
 
 #include <linux/fs_struct.h>
 #include <linux/proc_fs.h>
@@ -33,8 +32,7 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk)
 	/*
 	 * This minimal kernel never clones namespaces: no task ever passes a
 	 * CLONE_NEW* flag and no time namespace is ever created (CONFIG_TIME_NS
-	 * off, so time_ns_for_children == time_ns always). The shared nsproxy
-	 * is simply pinned and inherited.
+	 * off). The shared nsproxy is simply pinned and inherited.
 	 */
 	if (!(flags & (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC |
 		       CLONE_NEWPID | CLONE_NEWNET |

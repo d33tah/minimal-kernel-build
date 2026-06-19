@@ -119,11 +119,6 @@ const struct address_space_operations ram_aops = {
 };
 
 /* simple_read_from_buffer, __generic_file_fsync, generic_file_fsync,
- * generic_check_addressable removed - unused */
-
-int noop_fsync(struct file *file, loff_t start, loff_t end, int datasync)
-{
-	return 0;
-}
+ * generic_check_addressable, noop_fsync removed - unused */
 
 

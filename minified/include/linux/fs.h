@@ -1123,7 +1123,6 @@ extern void put_filesystem(struct file_system_type *fs);
 
 extern int simple_setattr(struct user_namespace *, struct dentry *,
 			  struct iattr *);
-extern int noop_fsync(struct file *, loff_t, loff_t, int);
 extern int simple_write_begin(struct file *file, struct address_space *mapping,
 			loff_t pos, unsigned len,
 			struct page **pagep, void **fsdata);

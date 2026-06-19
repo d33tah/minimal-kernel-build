@@ -72,7 +72,6 @@ static void __exit_signal(struct task_struct *tsk)
 	bool group_dead = thread_group_leader(tsk);
 	struct sighand_struct *sighand;
 	struct tty_struct *tty;
-	u64 utime, stime;
 
 	sighand = rcu_dereference_check(tsk->sighand,
 					lockdep_tasklist_lock_is_held());
@@ -86,15 +85,7 @@ static void __exit_signal(struct task_struct *tsk)
 			sig->curr_target = next_thread(tsk);
 	}
 
-	task_cputime(tsk, &utime, &stime);
 	write_seqlock(&sig->stats_lock);
-	sig->utime += utime;
-	sig->stime += stime;
-	sig->gtime += task_gtime(tsk);
-	sig->min_flt += tsk->min_flt;
-	sig->maj_flt += tsk->maj_flt;
-	sig->nvcsw += tsk->nvcsw;
-	sig->nivcsw += tsk->nivcsw;
 	sig->nr_threads--;
 	__unhash_process(tsk, group_dead);
 	write_sequnlock(&sig->stats_lock);
@@ -280,9 +271,6 @@ void __noreturn do_exit(long code)
 		if (unlikely(is_global_init(tsk)))
 			panic("Attempted to kill init! exitcode=0x%08x\n",
 				tsk->signal->group_exit_code ?: (int)code);
-
-		if (tsk->mm)
-			setmax_mm_hiwater_rss(&tsk->signal->maxrss, tsk->mm);
 	}
 
 	tsk->exit_code = code;

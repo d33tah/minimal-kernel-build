@@ -79,19 +79,10 @@ struct signal_struct {
 	struct pid *pids[PIDTYPE_MAX];
 
 
-	int leader;
+	struct tty_struct *tty;
 
-	struct tty_struct *tty;  
 
-	 
 	seqlock_t stats_lock;
-	u64 utime, stime;
-	u64 gtime;
-	struct prev_cputime prev_cputime;
-	unsigned long nvcsw, nivcsw;
-	unsigned long min_flt, maj_flt;
-	unsigned long maxrss;
-	struct task_io_accounting ioac;
 
 
 	struct rlimit rlim[RLIM_NLIMITS];

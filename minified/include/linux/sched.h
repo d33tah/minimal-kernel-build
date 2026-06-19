@@ -166,12 +166,6 @@ struct load_weight {
 	u32				inv_weight;
 };
 
-struct util_est;
-struct sched_avg;
-
-struct sched_statistics {
-} ____cacheline_aligned;
-
 struct sched_entity {
 	 
 	struct load_weight		load;
@@ -212,13 +206,6 @@ struct task_struct {
 
 	struct sched_entity		se;
 	const struct sched_class	*sched_class;
-
-
-
-
-	struct sched_statistics         stats;
-
-
 
 	unsigned int			policy;
 	const cpumask_t			*cpus_ptr;

@@ -150,7 +150,6 @@ void panic(const char *fmt, ...)
 
 	local_irq_enable();
 	for (i = 0; ; i += PANIC_TIMER_STEP) {
-		touch_softlockup_watchdog();
 		if (i >= i_next) {
 			i += panic_blink(state ^= 1);
 			i_next = i + 3600 / PANIC_BLINK_SPD;

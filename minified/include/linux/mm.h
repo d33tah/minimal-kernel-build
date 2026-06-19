@@ -1136,10 +1136,6 @@ pgprot_t vm_get_page_prot(unsigned long vm_flags);
 
 
 struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
-vm_fault_t vmf_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
-			unsigned long pfn);
-vm_fault_t vmf_insert_pfn_prot(struct vm_area_struct *vma, unsigned long addr,
-			unsigned long pfn, pgprot_t pgprot);
 
 
 #define FOLL_WRITE	0x01

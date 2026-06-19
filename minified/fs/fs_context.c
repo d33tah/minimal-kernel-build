@@ -82,11 +82,6 @@ int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param)
 	if (ret != -ENOPARAM)
 		return ret;
 
-	ret = security_fs_context_parse_param(fc, param);
-	if (ret != -ENOPARAM)
-		 
-		return ret;
-
 	if (fc->ops->parse_param) {
 		ret = fc->ops->parse_param(fc, param);
 		if (ret != -ENOPARAM)

@@ -17,8 +17,6 @@ struct path;
 struct xattr;
 struct mm_struct;
 struct user_namespace;
-struct fs_context;
-struct fs_parameter;
 
 /* cap_capable, cap_settime, cap_ptrace_*, cap_capget, cap_capset,
    cap_inode_*, cap_mmap_addr, cap_vm_enough_memory removed - unused */
@@ -33,12 +31,6 @@ extern unsigned long mmap_min_addr;
 static inline int security_vm_enough_memory_mm(struct mm_struct *mm, long pages)
 {
 	return __vm_enough_memory(mm, pages, 1);  /* Stub: always assume capability present */
-}
-
-static inline int security_fs_context_parse_param(struct fs_context *fc,
-						  struct fs_parameter *param)
-{
-	return -ENOPARAM;
 }
 
 #endif

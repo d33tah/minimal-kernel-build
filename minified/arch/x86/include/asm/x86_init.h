@@ -54,15 +54,7 @@ struct x86_init_iommu {
 	int (*iommu_init)(void);
 };
 
- 
-struct x86_init_pci {
-	int (*arch_init)(void);
-	int (*init)(void);
-	void (*init_irq)(void);
-	void (*fixup_irqs)(void);
-};
 
- 
 struct x86_hyper_init {
 	void (*init_platform)(void);
 	void (*guest_late_init)(void);
@@ -95,7 +87,6 @@ struct x86_init_ops {
 	struct x86_init_paging		paging;
 	struct x86_init_timers		timers;
 	struct x86_init_iommu		iommu;
-	struct x86_init_pci		pci;
 	struct x86_hyper_init		hyper;
 	struct x86_init_acpi		acpi;
 };

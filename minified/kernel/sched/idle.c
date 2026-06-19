@@ -15,17 +15,10 @@ void __cpuidle default_idle_call(void)
 		 
 		stop_critical_timings();
 
-		 
-		 
-		lockdep_hardirqs_on_prepare();
-		lockdep_hardirqs_on(_THIS_IP_);
-
 		arch_cpu_idle();
 
-		 
+
 		raw_local_irq_disable();
-		lockdep_hardirqs_off(_THIS_IP_);
-		lockdep_hardirqs_on(_THIS_IP_);
 		raw_local_irq_enable();
 
 		start_critical_timings();

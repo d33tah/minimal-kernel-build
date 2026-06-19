@@ -75,13 +75,7 @@ struct completion;
 
 #define might_sleep_if(cond) do { if (cond) might_sleep(); } while (0)
 
-#if defined(CONFIG_MMU) && \
-	(defined(CONFIG_PROVE_LOCKING) || defined(CONFIG_DEBUG_ATOMIC_SLEEP))
-#define might_fault() __might_fault(__FILE__, __LINE__)
-void __might_fault(const char *file, int line);
-#else
 static inline void might_fault(void) { }
-#endif
 
 void do_exit(long error_code) __noreturn;
 

@@ -154,11 +154,6 @@ static __always_inline void __syscall_exit_to_user_mode_work(struct pt_regs *reg
 	exit_to_user_mode_prepare(regs);
 }
 
-void syscall_exit_to_user_mode_work(struct pt_regs *regs)
-{
-	__syscall_exit_to_user_mode_work(regs);
-}
-
 __visible noinstr void syscall_exit_to_user_mode(struct pt_regs *regs)
 {
 	__syscall_exit_to_user_mode_work(regs);

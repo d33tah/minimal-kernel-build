@@ -103,8 +103,6 @@ static __always_inline void arch_exit_to_user_mode(void) { }
 
 void arch_do_signal_or_restart(struct pt_regs *regs);
 
-void syscall_exit_to_user_mode_work(struct pt_regs *regs);
-
 void syscall_exit_to_user_mode(struct pt_regs *regs);
 
 void irqentry_enter_from_user_mode(struct pt_regs *regs);

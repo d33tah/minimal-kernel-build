@@ -52,26 +52,9 @@ struct x86_init_ops {
  
 struct timespec64;
 
- 
-struct x86_legacy_devices {
-	int pnpbios;
-};
 
- 
-enum x86_legacy_i8042_state {
-	X86_LEGACY_I8042_PLATFORM_ABSENT,
-	X86_LEGACY_I8042_FIRMWARE_ABSENT,
-	X86_LEGACY_I8042_EXPECTED_PRESENT,
-};
-
- 
 struct x86_legacy_features {
-	enum x86_legacy_i8042_state i8042;
-	int rtc;
-	int warm_reset;
-	int no_vga;
 	int reserve_bios_regions;
-	struct x86_legacy_devices devices;
 };
 
 
@@ -82,7 +65,6 @@ struct x86_platform_ops {
 	int (*set_wallclock)(const struct timespec64 *ts);
 	unsigned char (*get_nmi_reason)(void);
 	struct x86_legacy_features legacy;
-	void (*set_legacy_features)(void);
 };
 
 extern struct x86_init_ops x86_init;

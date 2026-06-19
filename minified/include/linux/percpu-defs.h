@@ -128,8 +128,6 @@ do {									\
 
 extern void __bad_size_call_parameter(void);
 
-static inline void __this_cpu_preempt_check(const char *op) { }
-
 #define __pcpu_size_call_return(stem, variable)				\
 ({									\
 	typeof(variable) pscr_ret__;					\
@@ -214,55 +212,46 @@ do {									\
 
 #define __this_cpu_read(pcp)						\
 ({									\
-	__this_cpu_preempt_check("read");				\
 	raw_cpu_read(pcp);						\
 })
 
 #define __this_cpu_write(pcp, val)					\
 ({									\
-	__this_cpu_preempt_check("write");				\
 	raw_cpu_write(pcp, val);					\
 })
 
 #define __this_cpu_add(pcp, val)					\
 ({									\
-	__this_cpu_preempt_check("add");				\
 	raw_cpu_add(pcp, val);						\
 })
 
 #define __this_cpu_and(pcp, val)					\
 ({									\
-	__this_cpu_preempt_check("and");				\
 	raw_cpu_and(pcp, val);						\
 })
 
 #define __this_cpu_or(pcp, val)						\
 ({									\
-	__this_cpu_preempt_check("or");					\
 	raw_cpu_or(pcp, val);						\
 })
 
 #define __this_cpu_add_return(pcp, val)					\
 ({									\
-	__this_cpu_preempt_check("add_return");				\
 	raw_cpu_add_return(pcp, val);					\
 })
 
 #define __this_cpu_xchg(pcp, nval)					\
 ({									\
-	__this_cpu_preempt_check("xchg");				\
 	raw_cpu_xchg(pcp, nval);					\
 })
 
 #define __this_cpu_cmpxchg(pcp, oval, nval)				\
 ({									\
-	__this_cpu_preempt_check("cmpxchg");				\
 	raw_cpu_cmpxchg(pcp, oval, nval);				\
 })
 
 #define __this_cpu_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2) \
-({	__this_cpu_preempt_check("cmpxchg_double");			\
-	raw_cpu_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2);	\
+({	raw_cpu_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2);	\
 })
 
 #define __this_cpu_sub(pcp, val)	__this_cpu_add(pcp, -(typeof(pcp))(val))

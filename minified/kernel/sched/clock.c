@@ -183,14 +183,3 @@ notrace void sched_clock_tick(void)
 	sched_clock_local(scd);
 }
 
-notrace void sched_clock_tick_stable(void)
-{
-	if (!sched_clock_stable())
-		return;
-
-	 
-	local_irq_disable();
-	__sched_clock_gtod_offset();
-	local_irq_enable();
-}
-

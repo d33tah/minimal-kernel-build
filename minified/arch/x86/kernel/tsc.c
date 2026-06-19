@@ -459,14 +459,6 @@ static void tsc_cs_mark_unstable(struct clocksource *cs)
 	pr_info("Marking TSC unstable due to clocksource watchdog\n");
 }
 
-static void tsc_cs_tick_stable(struct clocksource *cs)
-{
-	if (tsc_unstable)
-		return;
-
-	sched_clock_tick_stable();
-}
-
 static int tsc_cs_enable(struct clocksource *cs)
 {
 	vclocks_set_used(VDSO_CLOCKMODE_TSC);
@@ -485,7 +477,6 @@ static struct clocksource clocksource_tsc_early = {
 	.enable			= tsc_cs_enable,
 	.resume			= tsc_resume,
 	.mark_unstable		= tsc_cs_mark_unstable,
-	.tick_stable		= tsc_cs_tick_stable,
 	.list			= LIST_HEAD_INIT(clocksource_tsc_early.list),
 };
 
@@ -502,7 +493,6 @@ static struct clocksource clocksource_tsc = {
 	.enable			= tsc_cs_enable,
 	.resume			= tsc_resume,
 	.mark_unstable		= tsc_cs_mark_unstable,
-	.tick_stable		= tsc_cs_tick_stable,
 	.list			= LIST_HEAD_INIT(clocksource_tsc.list),
 };
 

@@ -14,7 +14,6 @@ extern int sched_clock_stable(void);
 extern void clear_sched_clock_stable(void);
 
 extern void sched_clock_tick(void);
-extern void sched_clock_tick_stable(void);
 
 static inline u64 local_clock(void)
 {

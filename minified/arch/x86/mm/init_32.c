@@ -131,7 +131,6 @@ kernel_physical_mapping_init(unsigned long start,
 	pgd_t *pgd;
 	pmd_t *pmd;
 	pte_t *pte;
-	unsigned pages_2m, pages_4k;
 	int mapping_iter;
 
 	start_pfn = start >> PAGE_SHIFT;
@@ -144,7 +143,6 @@ kernel_physical_mapping_init(unsigned long start,
 		use_pse = 0;
 
 repeat:
-	pages_2m = pages_4k = 0;
 	pfn = start_pfn;
 	pgd_idx = pgd_index((pfn<<PAGE_SHIFT) + PAGE_OFFSET);
 	pgd = pgd_base + pgd_idx;
@@ -175,7 +173,6 @@ repeat:
 				    is_x86_32_kernel_text(addr2))
 					prot = PAGE_KERNEL_LARGE_EXEC;
 
-				pages_2m++;
 				if (mapping_iter == 1)
 					set_pmd(pmd, pfn_pmd(pfn, init_prot));
 				else
@@ -197,7 +194,6 @@ repeat:
 				if (is_x86_32_kernel_text(addr))
 					prot = PAGE_KERNEL_EXEC;
 
-				pages_4k++;
 				if (mapping_iter == 1) {
 					set_pte(pte, pfn_pte(pfn, init_prot));
 					last_map_addr = (pfn << PAGE_SHIFT) + PAGE_SIZE;
@@ -207,11 +203,7 @@ repeat:
 		}
 	}
 	if (mapping_iter == 1) {
-		 
-		update_page_count(PG_LEVEL_2M, pages_2m);
-		update_page_count(PG_LEVEL_4K, pages_4k);
 
-		 
 		__flush_tlb_all();
 
 		 

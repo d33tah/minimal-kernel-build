@@ -70,11 +70,8 @@ struct cpuinfo_x86 {
 	char			x86_model_id[64];
 	 
 	unsigned int		x86_cache_size;
-	int			x86_cache_alignment;	 
-	 
-	int			x86_cache_max_rmid;	 
-	int			x86_cache_occ_scale;	 
-	int			x86_cache_mbm_width_offset;
+	int			x86_cache_alignment;
+
 	int			x86_power;
 	unsigned long		loops_per_jiffy;
 	 
@@ -84,9 +81,7 @@ struct cpuinfo_x86 {
 	u16			apicid;
 	u16			initial_apicid;
 	u16			x86_clflush_size;
-	 
-	u16			booted_cores;
-	 
+
 	u16			phys_proc_id;
 	 
 	u16			logical_proc_id;
@@ -96,10 +91,7 @@ struct cpuinfo_x86 {
 	u16			logical_die_id;
 	 
 	u16			cpu_index;
-	 
-	bool			smt_active;
-	u32			microcode;
-	 
+
 	u8			x86_cache_bits;
 	unsigned		initialized : 1;
 } __randomize_layout;

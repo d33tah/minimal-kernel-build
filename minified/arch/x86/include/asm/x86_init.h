@@ -128,15 +128,8 @@ struct x86_platform_ops {
 	struct x86_guest guest;
 };
 
-struct x86_apic_ops {
-	unsigned int	(*io_apic_read)   (unsigned int apic, unsigned int reg);
-	void		(*restore)(void);
-};
-
 extern struct x86_init_ops x86_init;
 extern struct x86_platform_ops x86_platform;
-extern struct x86_msi_ops x86_msi;
-extern struct x86_apic_ops x86_apic_ops;
 
 extern void x86_early_init_platform_quirks(void);
 extern void x86_init_noop(void);

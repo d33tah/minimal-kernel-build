@@ -4,8 +4,4 @@
 
 #include <asm/x86_init.h>
 
-/* IO APIC stubs - disabled */
-#define native_io_apic_read		NULL
-#define native_restore_boot_irq_mode	NULL
-
 #endif

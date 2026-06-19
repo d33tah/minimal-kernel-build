@@ -93,9 +93,3 @@ struct x86_platform_ops x86_platform __ro_after_init = {
 		.enc_cache_flush_required  = enc_cache_flush_required_noop,
 	},
 };
-
-
-struct x86_apic_ops x86_apic_ops __ro_after_init = {
-	.io_apic_read	= native_io_apic_read,
-	.restore	= native_restore_boot_irq_mode,
-};

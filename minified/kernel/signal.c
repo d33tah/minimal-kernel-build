@@ -369,11 +369,6 @@ void exit_signals(struct task_struct *tsk)
 	tsk->flags |= PF_EXITING;
 }
 
-long do_no_restart_syscall(struct restart_block *param)
-{
-	return -EINTR;
-}
-
 void __init signals_init(void)
 {
 	sigqueue_cachep = KMEM_CACHE(sigqueue, SLAB_PANIC | SLAB_ACCOUNT);

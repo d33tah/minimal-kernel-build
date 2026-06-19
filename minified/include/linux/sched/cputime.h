@@ -26,11 +26,5 @@ static inline void account_group_exec_runtime(struct task_struct *tsk,
 {
 }
 
-static inline void prev_cputime_init(struct prev_cputime *prev)
-{
-	prev->utime = prev->stime = 0;
-	raw_spin_lock_init(&prev->lock);
-}
 
-
-#endif  
+#endif

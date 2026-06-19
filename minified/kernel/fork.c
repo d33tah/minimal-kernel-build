@@ -866,7 +866,6 @@ static __latent_entropy struct task_struct *copy_process(
 	init_sigpending(&p->pending);
 
 	p->utime = p->stime = 0;
-	prev_cputime_init(&p->prev_cputime);
 
 	p->io_context = NULL;
 	if (args->kthread) {
@@ -933,11 +932,7 @@ static __latent_entropy struct task_struct *copy_process(
 
 	sched_cgroup_fork(p, args);
 
-	
 
-	p->start_time = ktime_get_ns();
-
-	
 	write_lock_irq(&tasklist_lock);
 
 	

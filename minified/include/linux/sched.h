@@ -153,12 +153,6 @@ asmlinkage void preempt_schedule_irq(void);
 
 extern void io_schedule(void);
 
-struct prev_cputime {
-	u64				utime;
-	u64				stime;
-	raw_spinlock_t			lock;
-};
-
 
 
 
@@ -299,8 +293,6 @@ struct task_struct {
 
 	unsigned long			atomic_flags;
 
-	struct restart_block		restart_block;
-
 	pid_t				pid;
 	pid_t				tgid;
 
@@ -340,16 +332,12 @@ struct task_struct {
 
 	u64				utime;
 	u64				stime;
-	struct prev_cputime		prev_cputime;
 
-	 
+
 	unsigned long			nvcsw;
 	unsigned long			nivcsw;
 
-	 
-	u64				start_time;
 
-	 
 	unsigned long			min_flt;
 	unsigned long			maj_flt;
 
@@ -397,7 +385,7 @@ struct task_struct {
 
 	spinlock_t			alloc_lock;
 
-	 
+
 	raw_spinlock_t			pi_lock;
 
 	struct wake_q_node		wake_q;
@@ -406,10 +394,6 @@ struct task_struct {
 
 
 
-
-
-	 
-	void				*journal_info;
 
 
 	struct blk_plug			*plug;

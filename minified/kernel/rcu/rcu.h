@@ -20,25 +20,10 @@ static inline void debug_rcu_head_unqueue(struct rcu_head *head)
 }
 
 /* rcu_stall_is_suppressed_at_boot and rcu_stall_is_suppressed removed - unused */
-#define rcu_ftrace_dump_stall_suppress()
-#define rcu_ftrace_dump_stall_unsuppress()
+/* rcu_ftrace_dump_stall_suppress/_unsuppress + rcu_ftrace_dump removed - unused */
 
- 
+
 #define TPS(x)  tracepoint_string(x)
-
- 
-#define rcu_ftrace_dump(oops_dump_mode) \
-do { \
-	static atomic_t ___rfd_beenhere = ATOMIC_INIT(0); \
-	\
-	if (!atomic_read(&___rfd_beenhere) && \
-	    !atomic_xchg(&___rfd_beenhere, 1)) { \
-		tracing_off(); \
-		rcu_ftrace_dump_stall_suppress(); \
-		ftrace_dump(oops_dump_mode); \
-		rcu_ftrace_dump_stall_unsuppress(); \
-	} \
-} while (0)
 
 
 extern void resched_cpu(int cpu);

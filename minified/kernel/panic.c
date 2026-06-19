@@ -177,8 +177,6 @@ void add_taint(unsigned flag, enum lockdep_ok lockdep_ok)
 
 void oops_enter(void)
 {
-	tracing_off();
-
 	debug_locks_off();
 }
 

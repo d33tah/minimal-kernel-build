@@ -114,9 +114,8 @@ extern enum system_states {
 
 extern const char hex_asc_upper[];
 /* Removed: hex_to_bin, hex2bin, bin2hex, mac_pton - never called */
+/* Removed: tracing_off - empty stub, callers removed (TRACING off) */
 
-
-static inline void tracing_off(void) { }
 
 #define VERIFY_OCTAL_PERMISSIONS(perms)						\
 	(BUILD_BUG_ON_ZERO((perms) < 0) +					\

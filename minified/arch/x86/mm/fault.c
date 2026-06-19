@@ -86,14 +86,6 @@ void arch_sync_kernel_mappings(unsigned long start, unsigned long end)
 	}
 }
 
-static noinline void
-pgtable_bad(struct pt_regs *regs, unsigned long error_code,
-	    unsigned long address)
-{
-	/* Simplified: just die without verbose output */
-	oops_end(oops_begin(), regs, SIGKILL);
-}
-
 static void sanitize_error_code(unsigned long address,
 				unsigned long *error_code)
 {
@@ -392,11 +384,7 @@ void do_user_addr_fault(struct pt_regs *regs,
 	if (WARN_ON_ONCE(kprobe_page_fault(regs, X86_TRAP_PF)))
 		return;
 
-	 
-	if (unlikely(error_code & X86_PF_RSVD))
-		pgtable_bad(regs, error_code, address);
 
-	 
 	if (unlikely(cpu_feature_enabled(X86_FEATURE_SMAP) &&
 		     !(error_code & X86_PF_USER) &&
 		     !(regs->flags & X86_EFLAGS_AC))) {
@@ -456,14 +444,14 @@ retry:
 		return;
 	}
 
-	 
+
 good_area:
 	if (unlikely(access_error(error_code, vma))) {
 		bad_area_access_error(regs, error_code, address, vma);
 		return;
 	}
 
-	 
+
 	fault = handle_mm_fault(vma, address, flags, regs);
 
 	if (fault_signal_pending(fault, regs)) {

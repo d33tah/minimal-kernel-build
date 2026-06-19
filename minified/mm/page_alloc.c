@@ -1650,17 +1650,6 @@ static void __init free_area_init_node(int nid)
 }
 
 
-#if MAX_NUMNODES > 1
-
-void __init setup_nr_node_ids(void)
-{
-	unsigned int highest;
-
-	highest = find_last_bit(node_possible_map.bits, MAX_NUMNODES);
-	nr_node_ids = highest + 1;
-}
-#endif
-
 static unsigned long __init find_min_pfn_with_active_regions(void)
 {
 	return PHYS_PFN(memblock_start_of_DRAM());
@@ -1669,7 +1658,7 @@ static unsigned long __init find_min_pfn_with_active_regions(void)
 void __init free_area_init(unsigned long *max_zone_pfn)
 {
 	unsigned long start_pfn, end_pfn;
-	int i, nid;
+	int i;
 
 	/* Minimal zone setup - just set up basic pfn ranges */
 	memset(arch_zone_lowest_possible_pfn, 0,
@@ -1689,13 +1678,8 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 		start_pfn = end_pfn;
 	}
 
-	/* Basic node initialization */
-	setup_nr_node_ids();
-	for_each_node(nid) {
-		if (node_online(nid)) {
-			free_area_init_node(nid);
-		}
-	}
+	/* Basic node initialization (single node, MAX_NUMNODES=1) */
+	free_area_init_node(0);
 
 	memmap_init();
 }

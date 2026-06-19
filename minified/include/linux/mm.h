@@ -1200,11 +1200,6 @@ static inline int in_gate_area(struct mm_struct *mm, unsigned long addr)
 
 
 
-#if MAX_NUMNODES > 1
-void __init setup_nr_node_ids(void);
-#else
-static inline void setup_nr_node_ids(void) {}
-#endif
 
 
 #define  ZAP_FLAG_DROP_MARKER        ((__force zap_flags_t) BIT(0))

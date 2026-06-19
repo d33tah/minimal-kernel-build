@@ -332,20 +332,16 @@ void __init setup_kmalloc_cache_index_table(void)
 static void __init
 new_kmalloc_cache(int idx, enum kmalloc_cache_type type, slab_flags_t flags)
 {
-	if (type == KMALLOC_RECLAIM) {
+	/* CONFIG_ZONE_DMA and CONFIG_MEMCG_KMEM are off on this build, so the
+	 * KMALLOC_DMA (SLAB_CACHE_DMA) and KMALLOC_NORMAL (refcount = -1) arms
+	 * were statically dead; only the KMALLOC_RECLAIM arm survives. */
+	if (type == KMALLOC_RECLAIM)
 		flags |= SLAB_RECLAIM_ACCOUNT;
-	} else if (IS_ENABLED(CONFIG_ZONE_DMA) && (type == KMALLOC_DMA)) {
-		flags |= SLAB_CACHE_DMA;
-	}
 
 	kmalloc_caches[type][idx] = create_kmalloc_cache(
 					kmalloc_info[idx].name[type],
 					kmalloc_info[idx].size, flags, 0,
 					kmalloc_info[idx].size);
-
-	 
-	if (IS_ENABLED(CONFIG_MEMCG_KMEM) && (type == KMALLOC_NORMAL))
-		kmalloc_caches[type][idx]->refcount = -1;
 }
 
 void __init create_kmalloc_caches(slab_flags_t flags)

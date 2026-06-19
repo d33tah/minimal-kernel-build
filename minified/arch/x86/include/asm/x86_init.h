@@ -36,7 +36,6 @@ struct x86_init_paging {
  
 struct x86_init_timers {
 	void (*timer_init)(void);
-	void (*wallclock_init)(void);
 };
 
 

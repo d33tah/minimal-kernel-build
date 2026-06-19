@@ -525,8 +525,7 @@ void __init setup_arch(char **cmdline_p)
 
 	conswitchp = &vga_con;
 	/* x86_init.oem.banner() removed - dispatched to x86_init_noop */
-
-	x86_init.timers.wallclock_init();
+	/* x86_init.timers.wallclock_init() removed - dispatched to x86_init_noop */
 
 	register_refined_jiffies(CLOCK_TICK_RATE);
 }

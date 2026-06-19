@@ -48,7 +48,6 @@ struct x86_init_ops x86_init __initdata = {
 
 	.timers = {
 		.timer_init		= hpet_time_init,
-		.wallclock_init		= x86_init_noop,
 	},
 };
 

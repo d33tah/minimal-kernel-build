@@ -215,24 +215,6 @@ void *page_rmapping(struct page *page)
 	return folio_raw_mapping(page_folio(page));
 }
 
-bool folio_mapped(struct folio *folio)
-{
-	long i, nr;
-
-	if (!folio_test_large(folio))
-		return atomic_read(&folio->_mapcount) >= 0;
-	if (atomic_read(folio_mapcount_ptr(folio)) >= 0)
-		return true;
-
-	nr = folio_nr_pages(folio);
-	for (i = 0; i < nr; i++) {
-		if (atomic_read(&folio_page(folio, i)->_mapcount) >= 0)
-			return true;
-	}
-	return false;
-}
-
-
 struct address_space *folio_mapping(struct folio *folio)
 {
 	struct address_space *mapping;

@@ -2,12 +2,6 @@
 #ifndef _ASM_X86_ENTRY_COMMON_H
 #define _ASM_X86_ENTRY_COMMON_H
 
-#ifndef _URN_INLINE
-#define _URN_INLINE
-struct user_return_notifier {};
-static inline void fire_user_return_notifiers(void) {}
-/* Removed unused: propagate_user_return_notify, clear_user_return_notifier */
-#endif
 #include <linux/sched/task_stack.h>
 
 #include <asm/nospec-branch.h>
@@ -22,9 +16,6 @@ static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs)
 static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
 						  unsigned long ti_work)
 {
-	if (ti_work & _TIF_USER_RETURN_NOTIFY)
-		fire_user_return_notifiers();
-
 	if (unlikely(ti_work & _TIF_NEED_FPU_LOAD))
 		switch_fpu_return();
 

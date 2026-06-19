@@ -1085,7 +1085,6 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 	 * ptrace-event clone notification (PTRACE_EVENT_CLONE/FORK) is dead.
 	 */
 	p = copy_process(NULL, NUMA_NO_NODE, args);
-	add_latent_entropy();
 
 	if (IS_ERR(p))
 		return PTR_ERR(p);

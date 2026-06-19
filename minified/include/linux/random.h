@@ -11,16 +11,6 @@
 
 struct notifier_block;
 
-#if defined(LATENT_ENTROPY_PLUGIN) && !defined(__CHECKER__)
-static inline void add_latent_entropy(void)
-{
-	add_device_randomness((const void *)&latent_entropy, sizeof(latent_entropy));
-}
-#else
-static inline void add_latent_entropy(void) { }
-#endif
-
-
 void get_random_bytes(void *buf, size_t len);
 u32 get_random_u32(void);
 static inline unsigned int get_random_int(void)

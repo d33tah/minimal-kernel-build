@@ -591,7 +591,7 @@ bool inode_owner_or_capable(struct user_namespace *mnt_userns,
 		return true;
 
 	ns = current_user_ns();
-	if (kuid_has_mapping(ns, i_uid) && ns_capable(ns, CAP_FOWNER))
+	if (kuid_has_mapping(ns, i_uid))
 		return true;
 	return false;
 }

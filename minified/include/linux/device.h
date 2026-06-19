@@ -122,17 +122,6 @@ static inline void set_dev_node(struct device *dev, int node)
 {
 }
 
-static inline void device_lock(struct device *dev)
-{
-	mutex_lock(&dev->mutex);
-}
-
-
-static inline void device_unlock(struct device *dev)
-{
-	mutex_unlock(&dev->mutex);
-}
-
 int __must_check device_register(struct device *dev);
 void device_initialize(struct device *dev);
 int __must_check device_add(struct device *dev);

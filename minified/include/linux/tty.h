@@ -110,8 +110,7 @@ struct tty_struct {
 	struct mutex atomic_write_lock;
 	struct mutex legacy_mutex;
 	struct rw_semaphore termios_rwsem;
-	struct mutex winsize_mutex;
-	struct ktermios termios, termios_locked;
+	struct ktermios termios;
 	char name[64];
 	unsigned long flags;
 	int count;
@@ -121,12 +120,7 @@ struct tty_struct {
 		spinlock_t lock;
 		struct pid *pgrp;
 		struct pid *session;
-		unsigned char pktstatus;
-		bool packet;
-		unsigned long unused[0];
 	} __aligned(sizeof(unsigned long)) ctrl;
-
-	unsigned int receive_room;
 
 	struct tty_struct *link;
 	wait_queue_head_t write_wait;
@@ -139,7 +133,6 @@ struct tty_struct {
 
 #define N_TTY_BUF_SIZE 4096
 
-	int closing;
 	unsigned char *write_buf;
 	int write_cnt;
 	struct tty_port *port;

@@ -226,7 +226,6 @@ static void tty_set_termios_ldisc(struct tty_struct *tty, int disc)
 	up_write(&tty->termios_rwsem);
 
 	tty->disc_data = NULL;
-	tty->receive_room = 0;
 }
 
 static int tty_ldisc_open(struct tty_struct *tty, struct tty_ldisc *ld)

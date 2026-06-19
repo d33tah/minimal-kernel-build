@@ -12,7 +12,4 @@ struct uprobes_state {
 
 #define uprobe_get_trap_addr(regs)	instruction_pointer(regs)
 
-static inline void uprobe_munmap(struct vm_area_struct *vma, unsigned long start, unsigned long end) {}
-static inline void uprobe_notify_resume(struct pt_regs *regs) {}
-
 #endif /* _LINUX_UPROBES_H */

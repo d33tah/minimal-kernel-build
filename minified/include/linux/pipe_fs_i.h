@@ -23,18 +23,10 @@ struct pipe_inode_info {
 	wait_queue_head_t rd_wait, wr_wait;
 	unsigned int head;
 	unsigned int tail;
-	unsigned int max_usage;
-	unsigned int ring_size;
-	unsigned int nr_accounted;
 	unsigned int readers;
 	unsigned int writers;
 	unsigned int files;
-	unsigned int r_counter;
-	unsigned int w_counter;
-	bool poll_usage;
 	struct page *tmp_page;
-	struct fasync_struct *fasync_readers;
-	struct fasync_struct *fasync_writers;
 	struct pipe_buffer *bufs;
 	struct user_struct *user;
 };

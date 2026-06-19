@@ -14,8 +14,6 @@ struct class {
 
 	struct kobject			*dev_kobj;
 
-	char *(*devnode)(struct device *dev, umode_t *mode);
-
 	struct subsys_private *p;
 };
 

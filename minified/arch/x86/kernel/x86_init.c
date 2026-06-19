@@ -20,7 +20,6 @@
 #include <asm/tsc.h>
 #include <asm/iommu.h>
 #include <asm/mach_traps.h>
-#define native_create_pci_msi_domain	NULL
 
 void x86_init_noop(void) { }
 void __init x86_init_uint_noop(unsigned int unused) { }
@@ -36,7 +35,6 @@ struct x86_init_ops x86_init __initdata = {
 	},
 
 	.mpparse = {
-		.setup_ioapic_ids	= x86_init_noop,
 		.find_smp_config	= default_find_smp_config,
 		.get_smp_config		= default_get_smp_config,
 	},
@@ -46,7 +44,6 @@ struct x86_init_ops x86_init __initdata = {
 		.intr_init		= native_init_IRQ,
 		.intr_mode_select	= apic_intr_mode_select,
 		.intr_mode_init		= apic_intr_mode_init,
-		.create_pci_msi_domain	= native_create_pci_msi_domain,
 	},
 
 	.oem = {
@@ -87,11 +84,6 @@ struct x86_init_ops x86_init __initdata = {
 		.set_root_pointer	= x86_default_set_root_pointer,
 		.get_root_pointer	= x86_default_get_root_pointer,
 	},
-};
-
-struct x86_cpuinit_ops x86_cpuinit = {
-	.early_percpu_clock_init	= x86_init_noop,
-	.setup_percpu_clockev		= setup_secondary_APIC_clock,
 };
 
 static void enc_status_change_prepare_noop(unsigned long vaddr, int npages, bool enc) { }

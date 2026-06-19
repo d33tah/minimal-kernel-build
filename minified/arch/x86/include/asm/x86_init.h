@@ -9,12 +9,9 @@ struct mpc_bus;
 struct mpc_cpu;
 struct pt_regs;
 struct mpc_table;
-struct cpuinfo_x86;
-struct irq_domain;
 
  
 struct x86_init_mpparse {
-	void (*setup_ioapic_ids)(void);
 	void (*find_smp_config)(void);
 	void (*get_smp_config)(unsigned int early);
 };
@@ -32,7 +29,6 @@ struct x86_init_irqs {
 	void (*intr_init)(void);
 	void (*intr_mode_select)(void);
 	void (*intr_mode_init)(void);
-	struct irq_domain *(*create_pci_msi_domain)(void);
 };
 
  
@@ -105,12 +101,6 @@ struct x86_init_ops {
 };
 
  
-struct x86_cpuinit_ops {
-	void (*setup_percpu_clockev)(void);
-	void (*early_percpu_clock_init)(void);
-	void (*fixup_cpu_id)(struct cpuinfo_x86 *c, int node);
-};
-
 struct timespec64;
 
  
@@ -160,7 +150,6 @@ struct x86_apic_ops {
 };
 
 extern struct x86_init_ops x86_init;
-extern struct x86_cpuinit_ops x86_cpuinit;
 extern struct x86_platform_ops x86_platform;
 extern struct x86_msi_ops x86_msi;
 extern struct x86_apic_ops x86_apic_ops;

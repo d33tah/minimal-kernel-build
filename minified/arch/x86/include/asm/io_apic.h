@@ -5,7 +5,6 @@
 #include <asm/x86_init.h>
 
 /* IO APIC stubs - disabled */
-#define setup_ioapic_ids_from_mpc x86_init_noop
 #define native_io_apic_read		NULL
 #define native_restore_boot_irq_mode	NULL
 

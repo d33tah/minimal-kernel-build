@@ -3,8 +3,6 @@
 
 #include <linux/sched.h>
 
-#ifdef TIF_POLLING_NRFLAG
-
 static inline void __current_set_polling(void)
 {
 	set_thread_flag(TIF_POLLING_NRFLAG);
@@ -35,19 +33,5 @@ static inline bool __must_check current_clr_polling_and_test(void)
 	return unlikely(tif_need_resched());
 }
 
-#else
-static inline void __current_set_polling(void) { }
-static inline void __current_clr_polling(void) { }
 
-static inline bool __must_check current_set_polling_and_test(void)
-{
-	return unlikely(tif_need_resched());
-}
-static inline bool __must_check current_clr_polling_and_test(void)
-{
-	return unlikely(tif_need_resched());
-}
 #endif
-
-
-#endif  

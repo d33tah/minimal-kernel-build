@@ -60,15 +60,6 @@ static inline unsigned long native_read_cr4(void)
 
 void native_write_cr4(unsigned long val);
 
-static inline u32 rdpkru(void)
-{
-	return 0;
-}
-
-static inline void wrpkru(u32 pkru)
-{
-}
-
 static inline void native_wbinvd(void)
 {
 	asm volatile("wbinvd": : :"memory");

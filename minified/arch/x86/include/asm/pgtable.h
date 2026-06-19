@@ -27,8 +27,8 @@
 #define pkru_get_init_value()	0
 static inline bool __pkru_allows_read(u32 pkru, u16 pkey) { int pkru_pkey_bits = pkey * PKRU_BITS_PER_PKEY; return !(pkru & (PKRU_AD_BIT << pkru_pkey_bits)); }
 static inline bool __pkru_allows_write(u32 pkru, u16 pkey) { int pkru_pkey_bits = pkey * PKRU_BITS_PER_PKEY; return !(pkru & ((PKRU_AD_BIT|PKRU_WD_BIT) << pkru_pkey_bits)); }
-static inline u32 read_pkru(void) { if (cpu_feature_enabled(X86_FEATURE_OSPKE)) return rdpkru(); return 0; }
-static inline void pkru_write_default(void) { if (!cpu_feature_enabled(X86_FEATURE_OSPKE)) return; wrpkru(pkru_get_init_value()); }
+static inline u32 read_pkru(void) { return 0; }
+static inline void pkru_write_default(void) { }
 /* End of pkru.h */
 /* --- 2025-12-07 20:42 --- Inlined coco.h */
 #include <asm/types.h>

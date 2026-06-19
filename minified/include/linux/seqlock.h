@@ -17,8 +17,6 @@ typedef struct seqcount {
 static inline void __seqcount_init(seqcount_t *s, const char *name,
 					  struct lock_class_key *key)
 {
-	 
-	lockdep_init_map(&s->dep_map, name, key, 0);
 	s->sequence = 0;
 }
 
@@ -229,7 +227,6 @@ static inline void do_raw_write_seqcount_end(seqcount_t *s)
 static inline void do_write_seqcount_begin_nested(seqcount_t *s, int subclass)
 {
 	do_raw_write_seqcount_begin(s);
-	seqcount_acquire(&s->dep_map, subclass, 0, _RET_IP_);
 }
 
 #define write_seqcount_begin(s)						\
@@ -257,7 +254,6 @@ do {									\
 
 static inline void do_write_seqcount_end(seqcount_t *s)
 {
-	seqcount_release(&s->dep_map, _RET_IP_);
 	do_raw_write_seqcount_end(s);
 }
 

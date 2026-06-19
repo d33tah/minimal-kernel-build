@@ -28,23 +28,6 @@ static int __init iommu_init_noop(void) { return 0; }
 static void iommu_shutdown_noop(void) { }
 bool __init bool_x86_init_noop(void) { return false; }
 void x86_op_int_noop(int cpu) { }
-static __init int set_rtc_noop(const struct timespec64 *now) { return -EINVAL; }
-static __init void get_rtc_noop(struct timespec64 *now) { }
-
-static __initconst const struct of_device_id of_cmos_match[] = {
-	{ .compatible = "motorola,mc146818" },
-	{}
-};
-
-static __init void x86_wallclock_init(void)
-{
-	struct device_node *node = of_find_matching_node(NULL, of_cmos_match);
-
-	if (node && !of_device_is_available(node)) {
-		x86_platform.get_wallclock = get_rtc_noop;
-		x86_platform.set_wallclock = set_rtc_noop;
-	}
-}
 
 struct x86_init_ops x86_init __initdata = {
 
@@ -80,7 +63,7 @@ struct x86_init_ops x86_init __initdata = {
 	.timers = {
 		.setup_percpu_clockev	= setup_boot_APIC_clock,
 		.timer_init		= hpet_time_init,
-		.wallclock_init		= x86_wallclock_init,
+		.wallclock_init		= x86_init_noop,
 	},
 
 	.iommu = {

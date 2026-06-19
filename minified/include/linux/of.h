@@ -29,6 +29,4 @@ struct device_node {
 	void	*data;
 };
 
-static inline struct device_node *of_find_matching_node(struct device_node *from, const struct of_device_id *matches) { return NULL; }
-static inline int of_device_is_available(const struct device_node *device) { return 0; }
-#endif  
+#endif

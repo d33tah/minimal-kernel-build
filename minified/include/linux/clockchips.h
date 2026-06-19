@@ -26,33 +26,21 @@ enum clock_event_state {
 
 struct clock_event_device {
 	void			(*event_handler)(struct clock_event_device *);
-	int			(*set_next_event)(unsigned long evt, struct clock_event_device *);
-	int			(*set_next_ktime)(ktime_t expires, struct clock_event_device *);
 	ktime_t			next_event;
-	u64			max_delta_ns;
-	u64			min_delta_ns;
 	u32			mult;
 	u32			shift;
 	enum clock_event_state	state_use_accessors;
 	unsigned int		features;
-	unsigned long		retries;
 
 	int			(*set_state_periodic)(struct clock_event_device *);
-	int			(*set_state_oneshot)(struct clock_event_device *);
-	int			(*set_state_oneshot_stopped)(struct clock_event_device *);
 	int			(*set_state_shutdown)(struct clock_event_device *);
-	int			(*tick_resume)(struct clock_event_device *);
 
-	void			(*broadcast)(const struct cpumask *mask);
 	void			(*suspend)(struct clock_event_device *);
 	void			(*resume)(struct clock_event_device *);
-	unsigned long		min_delta_ticks;
-	unsigned long		max_delta_ticks;
 
 	const char		*name;
 	int			rating;
 	int			irq;
-	int			bound_on;
 	const struct cpumask	*cpumask;
 	struct list_head	list;
 	struct module		*owner;

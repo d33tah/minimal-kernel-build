@@ -177,8 +177,6 @@ struct page;
 struct address_space;
 struct writeback_control;
 
-enum rw_hint { WRITE_LIFE_NOT_SET = 0 };
-
 #define IOCB_NOWAIT		(__force int) RWF_NOWAIT
 #define IOCB_DIRECT		(1 << 17)
 #define IOCB_WAITQ		(1 << 19)
@@ -310,10 +308,8 @@ struct inode {
 	struct timespec64	i_atime;
 	struct timespec64	i_mtime;
 	struct timespec64	i_ctime;
-	spinlock_t		i_lock;	
-	unsigned short          i_bytes;
+	spinlock_t		i_lock;
 	u8			i_blkbits;
-	u8			i_write_hint;
 	blkcnt_t		i_blocks;
 
 #ifdef __NEED_I_SIZE_ORDERED
@@ -324,8 +320,7 @@ struct inode {
 	unsigned long		i_state;
 	struct rw_semaphore	i_rwsem;
 
-	unsigned long		dirtied_when;	
-	unsigned long		dirtied_time_when;
+	unsigned long		dirtied_when;
 
 	struct hlist_node	i_hash;
 	struct list_head	i_io_list;	
@@ -336,9 +331,7 @@ struct inode {
 		struct hlist_head	i_dentry;
 		struct rcu_head		i_rcu;
 	};
-	atomic64_t		i_sequence;
 	atomic_t		i_count;
-	atomic_t		i_dio_count;
 	atomic_t		i_writecount;
 	union {
 		const struct file_operations	*i_fop;	
@@ -354,9 +347,7 @@ struct inode {
 		unsigned		i_dir_seq;
 	};
 
-	__u32			i_generation;
-
-	void			*i_private; 
+	void			*i_private;
 } __randomize_layout;
 
 struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode);

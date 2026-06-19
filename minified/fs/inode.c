@@ -46,7 +46,6 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	inode->i_sb = sb;
 	inode->i_blkbits = sb->s_blocksize_bits;
 	inode->i_flags = 0;
-	atomic64_set(&inode->i_sequence, 0);
 	atomic_set(&inode->i_count, 1);
 	inode->i_op = &empty_iops;
 	inode->i_fop = &no_open_fops;
@@ -59,10 +58,7 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	i_gid_write(inode, 0);
 	atomic_set(&inode->i_writecount, 0);
 	inode->i_size = 0;
-	inode->i_write_hint = WRITE_LIFE_NOT_SET;
 	inode->i_blocks = 0;
-	inode->i_bytes = 0;
-	inode->i_generation = 0;
 	inode->i_pipe = NULL;
 	inode->i_cdev = NULL;
 	inode->i_link = NULL;
@@ -75,8 +71,6 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 
 	init_rwsem(&inode->i_rwsem);
 	lockdep_set_class(&inode->i_rwsem, &sb->s_type->i_mutex_key);
-
-	atomic_set(&inode->i_dio_count, 0);
 
 	mapping->a_ops = &empty_aops;
 	mapping->host = inode;

@@ -41,7 +41,6 @@ static void destroy_unused_super(struct super_block *s)
 	list_lru_destroy(&s->s_dentry_lru);
 	list_lru_destroy(&s->s_inode_lru);
 	put_user_ns(s->s_user_ns);
-	kfree(s->s_subtype);
 	destroy_super_work(&s->destroy_work);
 }
 
@@ -104,7 +103,6 @@ static void __put_super(struct super_block *s)
 		WARN_ON(s->s_inode_lru.node);
 		WARN_ON(!list_empty(&s->s_mounts));
 		put_user_ns(s->s_user_ns);
-		kfree(s->s_subtype);
 		call_rcu(&s->rcu, destroy_super_rcu);
 	}
 }

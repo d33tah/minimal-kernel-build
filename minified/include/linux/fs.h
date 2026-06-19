@@ -586,10 +586,7 @@ struct super_block {
 	unsigned int		s_max_links;
 
 	
-	struct mutex s_vfs_rename_mutex;	
-
-	
-	const char *s_subtype;
+	struct mutex s_vfs_rename_mutex;
 
 	const struct dentry_operations *s_d_op;
 

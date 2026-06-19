@@ -31,13 +31,7 @@ struct x86_init_irqs {
 	void (*intr_mode_init)(void);
 };
 
- 
-struct x86_init_oem {
-	void (*arch_setup)(void);
-	void (*banner)(void);
-};
 
- 
 struct x86_init_paging {
 	void (*pagetable_init)(void);
 };
@@ -83,7 +77,6 @@ struct x86_init_ops {
 	struct x86_init_resources	resources;
 	struct x86_init_mpparse		mpparse;
 	struct x86_init_irqs		irqs;
-	struct x86_init_oem		oem;
 	struct x86_init_paging		paging;
 	struct x86_init_timers		timers;
 	struct x86_init_iommu		iommu;

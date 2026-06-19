@@ -413,9 +413,9 @@ void __init setup_arch(char **cmdline_p)
 	saved_video_mode = boot_params.hdr.vid_mode;
 	/* bootloader_type/version setup removed - never read */
 
-	x86_init.oem.arch_setup();
+	/* x86_init.oem.arch_setup() removed - dispatched to x86_init_noop */
 
-	 
+
 	early_reserve_memory();
 
 	iomem_resource.end = (1ULL << boot_cpu_data.x86_phys_bits) - 1;
@@ -527,7 +527,7 @@ void __init setup_arch(char **cmdline_p)
 	x86_init.resources.reserve_resources();
 
 	conswitchp = &vga_con;
-	x86_init.oem.banner();
+	/* x86_init.oem.banner() removed - dispatched to x86_init_noop */
 
 	x86_init.timers.wallclock_init();
 

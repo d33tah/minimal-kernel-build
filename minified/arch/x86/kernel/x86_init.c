@@ -45,11 +45,6 @@ struct x86_init_ops x86_init __initdata = {
 		.intr_mode_init		= apic_intr_mode_init,
 	},
 
-	.oem = {
-		.arch_setup		= x86_init_noop,
-		.banner			= default_banner,
-	},
-
 	.paging = {
 		.pagetable_init		= native_pagetable_init,
 	},

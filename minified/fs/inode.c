@@ -180,11 +180,6 @@ static void __inode_add_lru(struct inode *inode, bool rotate)
 		inode->i_state |= I_REFERENCED;
 }
 
-void inode_add_lru(struct inode *inode)
-{
-	__inode_add_lru(inode, false);
-}
-
 static void inode_lru_list_del(struct inode *inode)
 {
 	list_lru_del(&inode->i_sb->s_inode_lru, &inode->i_lru);

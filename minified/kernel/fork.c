@@ -433,12 +433,9 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	refcount_set(&tsk->rcu_users, 2);
 	
 	refcount_set(&tsk->usage, 1);
-	tsk->splice_pipe = NULL;
 	tsk->task_frag.page = NULL;
 	tsk->wake_q.next = NULL;
 	tsk->worker_private = NULL;
-
-	tsk->reported_split_lock = 0;
 
 	return tsk;
 
@@ -871,8 +868,6 @@ static __latent_entropy struct task_struct *copy_process(
 	p->utime = p->stime = p->gtime = 0;
 	prev_cputime_init(&p->prev_cputime);
 
-	p->default_timer_slack_ns = current->timer_slack_ns;
-
 	p->io_context = NULL;
 	if (args->kthread) {
 		if (!set_kthread_struct(p))
@@ -950,7 +945,6 @@ static __latent_entropy struct task_struct *copy_process(
 	
 	/* CLONE_PARENT|CLONE_THREAD never set -> parent is always current */
 	p->real_parent = current;
-	p->parent_exec_id = current->self_exec_id;
 	p->exit_signal = args->exit_signal;
 
 

@@ -52,8 +52,6 @@ static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
 	child->jobctl = 0;
 	child->ptrace = 0;
 	child->parent = child->real_parent;
-
-	child->ptracer_cred = NULL;
 }
 
 static inline void ptrace_release_task(struct task_struct *task)

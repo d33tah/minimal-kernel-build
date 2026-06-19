@@ -551,7 +551,6 @@ int begin_new_exec(struct linux_binprm * bprm)
 
 	__set_task_comm(me, kbasename(bprm->filename), true);
 
-	WRITE_ONCE(me->self_exec_id, me->self_exec_id + 1);
 	flush_signal_handlers(me, 0);
 
 	retval = set_cred_ucounts(bprm->cred);

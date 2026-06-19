@@ -290,7 +290,6 @@ struct task_struct {
 	int				exit_signal;
 	 
 	int				pdeath_signal;
-	 
 	unsigned long			jobctl;
 
 	 
@@ -314,9 +313,8 @@ struct task_struct {
 #ifndef TIF_RESTORE_SIGMASK
 	unsigned			restore_sigmask:1;
 #endif
-	unsigned			reported_split_lock:1;
 
-	unsigned long			atomic_flags;  
+	unsigned long			atomic_flags;
 
 	struct restart_block		restart_block;
 
@@ -381,10 +379,7 @@ struct task_struct {
 
 	 
 
-	 
-	const struct cred __rcu		*ptracer_cred;
 
-	 
 	const struct cred __rcu		*real_cred;
 
 	 
@@ -421,10 +416,7 @@ struct task_struct {
 	struct callback_head		*task_works;
 
 
-	u64				parent_exec_id;
-	u64				self_exec_id;
 
-	 
 	spinlock_t			alloc_lock;
 
 	 
@@ -468,15 +460,12 @@ struct task_struct {
 		struct rcu_head		rcu;
 	};
 
-	 
-	struct pipe_inode_info		*splice_pipe;
 
 	struct page_frag		task_frag;
 
 
 	 
 	u64				timer_slack_ns;
-	u64				default_timer_slack_ns;
 
 
 

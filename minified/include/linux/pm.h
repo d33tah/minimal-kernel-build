@@ -21,63 +21,6 @@ typedef struct pm_message {
 	int event;
 } pm_message_t;
 
-struct dev_pm_ops {
-	int (*prepare)(struct device *dev);
-	void (*complete)(struct device *dev);
-	int (*suspend)(struct device *dev);
-	int (*resume)(struct device *dev);
-	int (*freeze)(struct device *dev);
-	int (*thaw)(struct device *dev);
-	int (*poweroff)(struct device *dev);
-	int (*restore)(struct device *dev);
-	int (*suspend_late)(struct device *dev);
-	int (*resume_early)(struct device *dev);
-	int (*freeze_late)(struct device *dev);
-	int (*thaw_early)(struct device *dev);
-	int (*poweroff_late)(struct device *dev);
-	int (*restore_early)(struct device *dev);
-	int (*suspend_noirq)(struct device *dev);
-	int (*resume_noirq)(struct device *dev);
-	int (*freeze_noirq)(struct device *dev);
-	int (*thaw_noirq)(struct device *dev);
-	int (*poweroff_noirq)(struct device *dev);
-	int (*restore_noirq)(struct device *dev);
-	int (*runtime_suspend)(struct device *dev);
-	int (*runtime_resume)(struct device *dev);
-	int (*runtime_idle)(struct device *dev);
-};
-
-#define SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-	.suspend = pm_sleep_ptr(suspend_fn), \
-	.resume = pm_sleep_ptr(resume_fn), \
-	.freeze = pm_sleep_ptr(suspend_fn), \
-	.thaw = pm_sleep_ptr(resume_fn), \
-	.poweroff = pm_sleep_ptr(suspend_fn), \
-	.restore = pm_sleep_ptr(resume_fn),
-
-#define RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
-	.runtime_suspend = suspend_fn, \
-	.runtime_resume = resume_fn, \
-	.runtime_idle = idle_fn,
-
-#define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn)
-
-#define _DEFINE_DEV_PM_OPS(name, \
-			   suspend_fn, resume_fn, \
-			   runtime_suspend_fn, runtime_resume_fn, idle_fn) \
-const struct dev_pm_ops name = { \
-	SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-	RUNTIME_PM_OPS(runtime_suspend_fn, runtime_resume_fn, idle_fn) \
-}
-
-#define _EXPORT_DEV_PM_OPS(name, suspend_fn, resume_fn, runtime_suspend_fn, \
-			   runtime_resume_fn, idle_fn, sec, ns) \
-static __maybe_unused _DEFINE_DEV_PM_OPS(__static_##name, suspend_fn, \
-					 resume_fn, runtime_suspend_fn, \
-					 runtime_resume_fn, idle_fn)
-
-
-
 struct wakeup_source;
 struct wake_irq;
 struct pm_domain_data;
@@ -106,17 +49,6 @@ struct dev_pm_info {
 	void (*set_latency_tolerance)(struct device *, s32);
 	struct dev_pm_qos	*qos;
 };
-
-
-struct dev_pm_domain {
-	struct dev_pm_ops	ops;
-	int (*start)(struct device *dev);
-	void (*detach)(struct device *dev, bool power_off);
-	int (*activate)(struct device *dev);
-	void (*sync)(struct device *dev);
-	void (*dismiss)(struct device *dev);
-};
-
 
 
 

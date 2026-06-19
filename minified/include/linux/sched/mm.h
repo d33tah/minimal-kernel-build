@@ -86,15 +86,8 @@ static inline gfp_t current_gfp_context(gfp_t flags)
 	return flags;
 }
 
-static inline void fs_reclaim_acquire(gfp_t gfp_mask) { }
-static inline void fs_reclaim_release(gfp_t gfp_mask) { }
-
-
 static inline void might_alloc(gfp_t gfp_mask)
 {
-	fs_reclaim_acquire(gfp_mask);
-	fs_reclaim_release(gfp_mask);
-
 	might_sleep_if(gfpflags_allow_blocking(gfp_mask));
 }
 

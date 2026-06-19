@@ -21,34 +21,15 @@ struct mnt_namespace {
 } __randomize_layout;
 
 struct mount {
-	struct mount *mnt_parent;
 	struct vfsmount mnt;
-	union {
-		struct rcu_head mnt_rcu;
-		struct llist_node mnt_llist;
-	};
 	int mnt_count;
 	int mnt_writers;
-	struct list_head mnt_mounts;	 
-	struct list_head mnt_child;	 
-	struct list_head mnt_instance;	 
-	const char *mnt_devname;	 
+	struct list_head mnt_instance;
+	const char *mnt_devname;
 	struct list_head mnt_list;
-	struct list_head mnt_expire;	 
-	struct list_head mnt_share;	 
-	struct list_head mnt_slave_list; 
-	struct list_head mnt_slave;	 
-	struct mount *mnt_master;	 
 	struct mnt_namespace *mnt_ns;
-	union {
-		struct hlist_node mnt_mp_list;	 
-		struct hlist_node mnt_umount;
-	};
-	struct list_head mnt_umounting;  
-	int mnt_id;			 
-	int mnt_group_id;		 
-	int mnt_expiry_mark;		 
-	struct hlist_head mnt_stuck_children;
+	int mnt_id;
+	int mnt_expiry_mark;
 } __randomize_layout;
 
 #define MNT_NS_INTERNAL ERR_PTR(-EINVAL)  

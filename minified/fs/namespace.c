@@ -85,16 +85,7 @@ static struct mount *alloc_vfsmnt(const char *name)
 		mnt->mnt_count = 1;
 		mnt->mnt_writers = 0;
 
-		INIT_LIST_HEAD(&mnt->mnt_child);
-		INIT_LIST_HEAD(&mnt->mnt_mounts);
 		INIT_LIST_HEAD(&mnt->mnt_list);
-		INIT_LIST_HEAD(&mnt->mnt_expire);
-		INIT_LIST_HEAD(&mnt->mnt_share);
-		INIT_LIST_HEAD(&mnt->mnt_slave_list);
-		INIT_LIST_HEAD(&mnt->mnt_slave);
-		INIT_HLIST_NODE(&mnt->mnt_mp_list);
-		INIT_LIST_HEAD(&mnt->mnt_umounting);
-		INIT_HLIST_HEAD(&mnt->mnt_stuck_children);
 		mnt->mnt.mnt_userns = &init_user_ns;
 	}
 	return mnt;
@@ -255,7 +246,6 @@ struct vfsmount *vfs_create_mount(struct fs_context *fc)
 	atomic_inc(&fc->root->d_sb->s_active);
 	mnt->mnt.mnt_sb		= fc->root->d_sb;
 	mnt->mnt.mnt_root	= dget(fc->root);
-	mnt->mnt_parent		= mnt;
 
 	fs_userns = mnt->mnt.mnt_sb->s_user_ns;
 	if (!initial_idmapping(fs_userns))

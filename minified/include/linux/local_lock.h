@@ -9,23 +9,10 @@
 typedef struct {
 } local_lock_t;
 
-# define LOCAL_LOCK_DEBUG_INIT(lockname)
 static inline void local_lock_acquire(local_lock_t *l) { }
 static inline void local_lock_release(local_lock_t *l) { }
-static inline void local_lock_debug_init(local_lock_t *l) { }
 
-#define INIT_LOCAL_LOCK(lockname)	{ LOCAL_LOCK_DEBUG_INIT(lockname) }
-
-#define __local_lock_init(lock)					\
-do {								\
-	static struct lock_class_key __key;			\
-								\
-	debug_check_no_locks_freed((void *)lock, sizeof(*lock));\
-	lockdep_init_map_type(&(lock)->dep_map, #lock, &__key,  \
-			      0, LD_WAIT_CONFIG, LD_WAIT_INV,	\
-			      LD_LOCK_PERCPU);			\
-	local_lock_debug_init(lock);				\
-} while (0)
+#define INIT_LOCAL_LOCK(lockname)	{ }
 
 #define __local_lock(lock)					\
 	do {							\
@@ -63,7 +50,7 @@ do {								\
 		local_irq_restore(flags);			\
 } while (0)
 
-#define local_lock_init(lock)		__local_lock_init(lock)
+#define local_lock_init(lock)		do { } while (0)
 
 #define local_lock(lock)		__local_lock(lock)
 

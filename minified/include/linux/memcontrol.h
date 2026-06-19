@@ -19,12 +19,6 @@ struct mem_cgroup_reclaim_cookie;
 #define MEM_CGROUP_ID_SHIFT	0
 #define MEM_CGROUP_ID_MAX	0
 
-static inline struct mem_cgroup *folio_memcg(struct folio *folio)
-{
-	return NULL;
-}
-
-
 static inline int mem_cgroup_charge(struct folio *folio,
 		struct mm_struct *mm, gfp_t gfp)
 {
@@ -50,11 +44,6 @@ static inline struct lruvec *folio_lruvec_lock_irqsave(struct folio *folio,
 	return &pgdat->__lruvec;
 }
 
-static inline struct mem_cgroup *lruvec_memcg(struct lruvec *lruvec)
-{
-	return NULL;
-}
-
 static inline void mod_lruvec_kmem_state(void *p, enum node_stat_item idx,
 					 int val)
 {
@@ -76,8 +65,7 @@ static inline void unlock_page_lruvec_irqrestore(struct lruvec *lruvec,
 static inline bool folio_matches_lruvec(struct folio *folio,
 		struct lruvec *lruvec)
 {
-	return lruvec_pgdat(lruvec) == folio_pgdat(folio) &&
-	       lruvec_memcg(lruvec) == folio_memcg(folio);
+	return lruvec_pgdat(lruvec) == folio_pgdat(folio);
 }
 
 

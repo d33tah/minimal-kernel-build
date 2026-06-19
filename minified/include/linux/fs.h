@@ -879,7 +879,6 @@ static inline void mark_inode_dirty(struct inode *inode)
 }
 
 extern void inc_nlink(struct inode *inode);
-extern void drop_nlink(struct inode *inode);
 
 enum file_time_flags {
 	S_ATIME = 1,
@@ -950,7 +949,6 @@ extern int register_filesystem(struct file_system_type *);
 
 extern int current_umask(void);
 
-extern void ihold(struct inode * inode);
 extern void iput(struct inode *);
 
 #define MAX_RW_COUNT (INT_MAX & PAGE_MASK)

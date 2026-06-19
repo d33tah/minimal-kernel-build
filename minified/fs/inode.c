@@ -130,14 +130,6 @@ static void destroy_inode(struct inode *inode)
 	call_rcu(&inode->i_rcu, i_callback);
 }
 
-void drop_nlink(struct inode *inode)
-{
-	WARN_ON(inode->i_nlink == 0);
-	inode->__i_nlink--;
-	if (!inode->i_nlink)
-		atomic_long_inc(&inode->i_sb->s_remove_count);
-}
-
 void inc_nlink(struct inode *inode)
 {
 	if (unlikely(inode->i_nlink == 0)) {
@@ -171,11 +163,6 @@ static void init_once(void *foo)
 	struct inode *inode = (struct inode *) foo;
 
 	inode_init_once(inode);
-}
-
-void ihold(struct inode *inode)
-{
-	WARN_ON(atomic_inc_return(&inode->i_count) < 2);
 }
 
 static void __inode_add_lru(struct inode *inode, bool rotate)

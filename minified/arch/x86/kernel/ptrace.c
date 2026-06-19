@@ -22,8 +22,3 @@ void send_sigtrap(struct pt_regs *regs, int error_code, int si_code)
 	force_sig_fault(SIGTRAP, si_code,
 			user_mode(regs) ? (void __user *)regs->ip : NULL);
 }
-
-void user_single_step_report(struct pt_regs *regs)
-{
-	send_sigtrap(regs, 0, TRAP_BRKPT);
-}

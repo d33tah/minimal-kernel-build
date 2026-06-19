@@ -451,9 +451,8 @@ void __init setup_arch(char **cmdline_p)
 
 
 	tsc_early_init();
-	x86_init.resources.probe_roms();
 
-	 
+
 	insert_resource(&iomem_resource, &code_resource);
 	insert_resource(&iomem_resource, &rodata_resource);
 	insert_resource(&iomem_resource, &data_resource);

@@ -58,8 +58,6 @@ void *extend_brk(size_t size, size_t align);
 	__section(".bss..brk") __aligned(1) __used	\
 	static char __brk_##name[size]
 
-extern void probe_roms(void);
-
 
 /* 32-bit only kernel */
 asmlinkage void __init i386_start_kernel(void);

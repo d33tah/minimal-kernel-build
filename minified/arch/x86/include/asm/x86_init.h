@@ -18,7 +18,6 @@ struct x86_init_mpparse {
 
  
 struct x86_init_resources {
-	void (*probe_roms)(void);
 	void (*reserve_resources)(void);
 	char *(*memory_setup)(void);
 };

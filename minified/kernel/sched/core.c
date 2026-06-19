@@ -609,7 +609,6 @@ static inline void schedule_debug(struct task_struct *prev, bool preempt)
 	if (unlikely(in_atomic_preempt_off())) {
 		preempt_count_set(PREEMPT_DISABLED);
 	}
-	rcu_sleep_check();
 }
 
 static void put_prev_task_balance(struct rq *rq, struct task_struct *prev,

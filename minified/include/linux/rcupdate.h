@@ -91,7 +91,6 @@ static inline int rcu_read_lock_sched_held(void)
 
 
 #define RCU_LOCKDEP_WARN(c, s) do { } while (0 && (c))
-#define rcu_sleep_check() do { } while (0)
 
 
 

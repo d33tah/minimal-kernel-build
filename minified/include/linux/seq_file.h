@@ -2,31 +2,14 @@
 #define _LINUX_SEQ_FILE_H
 
 #include <linux/types.h>
-#include <linux/string.h>
-#include <linux/string_helpers.h>
-#include <linux/bug.h>
-#include <linux/mutex.h>
-#include <linux/cpumask.h>
-#include <linux/nodemask.h>
-#include <linux/fs.h>
-#include <linux/cred.h>
 
 struct seq_operations;
 
-struct seq_file {
-	char *buf;
-	size_t size;
-	size_t from;
-	size_t count;
-	size_t pad_until;
-	loff_t index;
-	loff_t read_pos;
-	struct mutex lock;
-	const struct seq_operations *op;
-	int poll_event;
-	const struct file *file;
-	void *private;
-};
+/*
+ * struct seq_file is used only as an opaque pointer in this tree (the sole
+ * consumer, ramfs_show_options, ignores it); its body was fully dead.
+ */
+struct seq_file;
 
 struct seq_operations {
 	void * (*start) (struct seq_file *m, loff_t *pos);

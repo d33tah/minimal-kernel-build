@@ -55,11 +55,6 @@ struct clocksource {
 	void			(*mark_unstable)(struct clocksource *cs);
 	void			(*tick_stable)(struct clocksource *cs);
 
-	 
-	 
-	struct list_head	wd_list;
-	u64			cs_last;
-	u64			wd_last;
 	struct module		*owner;
 };
 

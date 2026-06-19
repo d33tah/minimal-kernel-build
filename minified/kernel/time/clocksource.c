@@ -73,8 +73,6 @@ void clocksource_mark_unstable(struct clocksource *cs)
 
 static void clocksource_enqueue_watchdog(struct clocksource *cs)
 {
-	INIT_LIST_HEAD(&cs->wd_list);
-
 	if (!(cs->flags & CLOCK_SOURCE_MUST_VERIFY) &&
 	    (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS))
 		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;

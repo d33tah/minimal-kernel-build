@@ -42,7 +42,4 @@ typedef struct {
 
 #define _COMPAT_NSIG_WORDS	(_COMPAT_NSIG / _COMPAT_NSIG_BPW)
 
-#define in_compat_syscall in_compat_syscall
-static inline bool in_compat_syscall(void) { return false; }
-
 #endif /* _LINUX_COMPAT_H */

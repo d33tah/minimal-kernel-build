@@ -104,7 +104,6 @@ void device_initialize(struct device *dev)
 	spin_lock_init(&dev->devres_lock);
 	INIT_LIST_HEAD(&dev->devres_head);
 	device_pm_init(dev);
-	set_dev_node(dev, NUMA_NO_NODE);
 }
 
 
@@ -163,8 +162,6 @@ int device_add(struct device *dev)
 	}
 
 	parent = get_device(dev->parent);
-	if (parent && (dev_to_node(dev) == NUMA_NO_NODE))
-		set_dev_node(dev, dev_to_node(parent));
 
 	error = kobject_add(&dev->kobj, dev->kobj.parent, NULL);
 	if (error)

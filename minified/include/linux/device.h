@@ -112,14 +112,6 @@ static inline const char *dev_name(const struct device *dev)
 
 __printf(2, 3) int dev_set_name(struct device *dev, const char *name, ...);
 
-static inline int dev_to_node(struct device *dev)
-{
-	return NUMA_NO_NODE;
-}
-static inline void set_dev_node(struct device *dev, int node)
-{
-}
-
 int __must_check device_register(struct device *dev);
 void device_initialize(struct device *dev);
 int __must_check device_add(struct device *dev);

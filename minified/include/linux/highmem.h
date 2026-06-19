@@ -18,12 +18,6 @@ static inline void flush_dcache_folio(struct folio *folio) {}
 #include <linux/uaccess.h>
 #include <linux/hardirq.h>
 
-/* Inlined from highmem-internal.h */
-static inline void kmap_assert_nomap(void)
-{
-}
-
-
 static inline void *kmap(struct page *page)
 {
 	might_sleep();

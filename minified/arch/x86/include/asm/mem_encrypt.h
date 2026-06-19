@@ -14,8 +14,6 @@
 
 #define sme_me_mask	0ULL
 
-/* Only keeping functions that are actually called */
-static inline void __init sev_setup_arch(void) { }
 /* Removed unused: sev_es_init_vc_handling, mem_encrypt_free_decrypted_mem */
 /* Removed unused: sme_early_encrypt, sme_early_decrypt, sme_map_bootdata,
    sme_unmap_bootdata, sme_early_init, sme_encrypt_kernel, sme_enable,

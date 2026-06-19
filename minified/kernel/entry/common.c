@@ -123,7 +123,6 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 
 	 
 	addr_limit_user_check();
-	kmap_assert_nomap();
 	lockdep_assert_irqs_disabled();
 	lockdep_sys_exit();
 }

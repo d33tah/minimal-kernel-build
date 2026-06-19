@@ -130,8 +130,6 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 			pci_serr_error(reason, regs);
 		else if (reason & NMI_REASON_IOCHK)
 			io_check_error(reason, regs);
-		 
-		reassert_nmi();
 		raw_spin_unlock(&nmi_reason_lock);
 		goto out;
 	}

@@ -63,9 +63,7 @@ struct dentry {
 	 
 	struct lockref d_lockref;	 
 	const struct dentry_operations *d_op;
-	struct super_block *d_sb;	 
-	unsigned long d_time;		 
-	void *d_fsdata;			 
+	struct super_block *d_sb;
 
 	union {
 		struct list_head d_lru;		 

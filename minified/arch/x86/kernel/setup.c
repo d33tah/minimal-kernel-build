@@ -403,7 +403,6 @@ void __init setup_arch(char **cmdline_p)
 	idt_setup_early_traps();
 	early_cpu_init();
 	jump_label_init();
-	static_call_init();
 	early_ioremap_init();
 
 	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);

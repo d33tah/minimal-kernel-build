@@ -379,7 +379,6 @@ static void __init mm_init(void)
 {
 
 	report_meminit();
-	stack_depot_early_init();
 	mem_init();
 	mem_init_print_info();
 	kmem_cache_init();

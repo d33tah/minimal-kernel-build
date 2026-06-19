@@ -4,7 +4,5 @@
 
 #include <linux/gfp.h>
 
-static inline int stack_depot_early_init(void)	{ return 0; }
-
 
 #endif

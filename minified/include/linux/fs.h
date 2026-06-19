@@ -596,20 +596,10 @@ struct super_block {
 
 	atomic_long_t s_remove_count;
 
-	
-	atomic_long_t s_fsnotify_connectors;
 
-	
 	int s_readonly_remount;
 
-	
-	errseq_t s_wb_err;
 
-	
-	struct workqueue_struct *s_dio_done_wq;
-	struct hlist_head s_pins;
-
-	
 	struct user_namespace *s_user_ns;
 
 	
@@ -618,12 +608,9 @@ struct super_block {
 	struct rcu_head		rcu;
 	struct work_struct	destroy_work;
 
-	struct mutex		s_sync_lock;	
+	struct mutex		s_sync_lock;
 
-	
-	int s_stack_depth;
 
-	
 	spinlock_t		s_inode_list_lock ____cacheline_aligned_in_smp;
 	struct list_head	s_inodes;	
 

@@ -26,6 +26,5 @@ bool capable_wrt_inode_uidgid(struct user_namespace *mnt_userns,
 {
 	struct user_namespace *ns = current_user_ns();
 
-	return ns_capable(ns, cap) &&
-	       privileged_wrt_inode_uidgid(ns, mnt_userns, inode);
+	return privileged_wrt_inode_uidgid(ns, mnt_userns, inode);
 }

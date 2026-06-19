@@ -33,7 +33,6 @@ struct nsproxy init_nsproxy = {
 int copy_namespaces(unsigned long flags, struct task_struct *tsk)
 {
 	struct nsproxy *old_ns = tsk->nsproxy;
-	struct user_namespace *user_ns = task_cred_xxx(tsk, user_ns);
 
 	/*
 	 * This minimal kernel never clones namespaces: no task ever passes a
@@ -47,9 +46,6 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk)
 		get_nsproxy(old_ns);
 		return 0;
 	}
-
-	if (!ns_capable(user_ns, CAP_SYS_ADMIN))
-		return -EPERM;
 
 	return -EINVAL;
 }

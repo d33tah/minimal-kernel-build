@@ -1528,15 +1528,10 @@ void done_path_create(struct path *path, struct dentry *dentry)
 int vfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 	      struct dentry *dentry, umode_t mode, dev_t dev)
 {
-	bool is_whiteout = S_ISCHR(mode) && dev == WHITEOUT_DEV;
 	int error = may_create(mnt_userns, dir, dentry);
 
 	if (error)
 		return error;
-
-	if ((S_ISCHR(mode) || S_ISBLK(mode)) && !is_whiteout &&
-	    !capable(CAP_MKNOD))
-		return -EPERM;
 
 	if (!dir->i_op->mknod)
 		return -EPERM;

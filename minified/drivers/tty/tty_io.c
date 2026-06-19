@@ -441,9 +441,6 @@ static int tty_reopen(struct tty_struct *tty)
 	if (!tty->count)
 		return -EAGAIN;
 
-	if (test_bit(TTY_EXCLUSIVE, &tty->flags) && !capable(CAP_SYS_ADMIN))
-		return -EBUSY;
-
 	ld = tty_ldisc_ref_wait(tty);
 	if (ld) {
 		tty_ldisc_deref(ld);

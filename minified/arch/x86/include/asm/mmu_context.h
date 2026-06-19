@@ -68,12 +68,7 @@ do {						\
 	loadsegment(gs, 0);			\
 } while (0)
 
-/* arch_dup_pkeys, arch_dup_mmap removed - unused */
-
-static inline void arch_exit_mmap(struct mm_struct *mm)
-{
-	paravirt_arch_exit_mmap(mm);
-}
+/* arch_dup_pkeys, arch_dup_mmap, arch_exit_mmap removed - unused (no-op) */
 
 /* is_64bit_mm removed - unused */
 

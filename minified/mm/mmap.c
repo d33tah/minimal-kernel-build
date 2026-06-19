@@ -1279,7 +1279,6 @@ void exit_mmap(struct mm_struct *mm)
 	unsigned long nr_accounted = 0;
 
 	mmap_write_lock(mm);
-	arch_exit_mmap(mm);
 
 	vma = mm->mmap;
 	if (!vma) {

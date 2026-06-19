@@ -4,12 +4,6 @@
 
 
 #ifndef __ASSEMBLY__
-/* paravirt_arch_dup_mmap removed - unused */
-
-static inline void paravirt_arch_exit_mmap(struct mm_struct *mm)
-{
-}
-
-/* paravirt_set_cap removed - unused */
+/* paravirt_arch_dup_mmap, paravirt_arch_exit_mmap, paravirt_set_cap removed - unused */
 #endif
 #endif  

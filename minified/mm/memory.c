@@ -527,29 +527,6 @@ static inline void unmap_mapping_range_tree(struct rb_root_cached *root,
 	}
 }
 
-void unmap_mapping_folio(struct folio *folio)
-{
-	struct address_space *mapping = folio->mapping;
-	struct zap_details details = { };
-	pgoff_t	first_index;
-	pgoff_t	last_index;
-
-	VM_BUG_ON(!folio_test_locked(folio));
-
-	first_index = folio->index;
-	last_index = folio->index + folio_nr_pages(folio) - 1;
-
-	details.even_cows = false;
-	details.single_folio = folio;
-	details.zap_flags = ZAP_FLAG_DROP_MARKER;
-
-	i_mmap_lock_read(mapping);
-	if (unlikely(!RB_EMPTY_ROOT(&mapping->i_mmap.rb_root)))
-		unmap_mapping_range_tree(&mapping->i_mmap, first_index,
-					 last_index, &details);
-	i_mmap_unlock_read(mapping);
-}
-
 void unmap_mapping_pages(struct address_space *mapping, pgoff_t start,
 		pgoff_t nr, bool even_cows)
 {

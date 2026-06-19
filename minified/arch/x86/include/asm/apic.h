@@ -39,12 +39,11 @@ extern struct apic *__apicdrivers[], *__apicdrivers_end[];
 
 
 /* apic_read removed - unused */
-static inline void apic_eoi(void) { }
+/* apic_eoi() was an empty no-op stub; folded out of ack_APIC_irq */
 
 static inline void ack_APIC_irq(void)
 {
 
-	apic_eoi();
 }
 
 #endif

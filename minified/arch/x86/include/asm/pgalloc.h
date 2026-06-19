@@ -73,12 +73,9 @@ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 }
 #endif
 
-static inline void paravirt_alloc_pte(struct mm_struct *mm, unsigned long pfn)	{}
-static inline void paravirt_alloc_pmd(struct mm_struct *mm, unsigned long pfn)	{}
-/* paravirt_alloc_pmd_clone + zero-caller pgd_free/alloc_{pud,p4d}/release_{pmd,pud,p4d} removed - unused */
-static inline void paravirt_release_pte(unsigned long pfn) {}
+/* paravirt_alloc_pte/paravirt_alloc_pmd/paravirt_release_pte no-op stubs + their discarded calls removed - PARAVIRT off */
 
- 
+
 extern gfp_t __userpte_alloc_gfp;
 
 #define PGD_ALLOCATION_ORDER 0
@@ -100,7 +97,6 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, struct page *pte,
 static inline void pmd_populate_kernel(struct mm_struct *mm,
 				       pmd_t *pmd, pte_t *pte)
 {
-	paravirt_alloc_pte(mm, __pa(pte) >> PAGE_SHIFT);
 	set_pmd(pmd, __pmd(__pa(pte) | _PAGE_TABLE));
 }
 
@@ -110,7 +106,6 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
 {
 	unsigned long pfn = page_to_pfn(pte);
 
-	paravirt_alloc_pte(mm, pfn);
 	set_pmd(pmd, __pmd(((pteval_t)pfn << PAGE_SHIFT) | _PAGE_TABLE));
 }
 

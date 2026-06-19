@@ -26,7 +26,6 @@ pgtable_t pte_alloc_one(struct mm_struct *mm)
 void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
 {
 	pgtable_pte_page_dtor(pte);
-	paravirt_release_pte(page_to_pfn(pte));
 	paravirt_tlb_remove_table(tlb, pte);
 }
 

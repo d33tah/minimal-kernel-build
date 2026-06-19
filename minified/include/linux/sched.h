@@ -70,7 +70,6 @@ struct clone_args {
 #include <linux/sched/types.h>
 #include <linux/signal_types.h>
 #include <linux/mm_types_task.h>
-struct task_io_accounting { };
 #include <linux/posix-timers.h>
 #include <linux/seqlock.h>
 #include <asm/kmap_size.h>
@@ -429,9 +428,6 @@ struct task_struct {
 	struct backing_dev_info		*backing_dev_info;
 
 	struct io_context		*io_context;
-
-	 
-	struct task_io_accounting	ioac;
 
 	union {
 		refcount_t		rcu_users;

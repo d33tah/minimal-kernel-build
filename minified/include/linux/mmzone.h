@@ -331,14 +331,8 @@ typedef struct pglist_data {
 	unsigned long node_present_pages;  
 	unsigned long node_spanned_pages;  
 	int node_id;
-	wait_queue_head_t kswapd_wait;
-	wait_queue_head_t pfmemalloc_wait;
 
-	struct task_struct *kswapd;
-	int kswapd_order;
 	enum zone_type kswapd_highest_zoneidx;
-
-	int kswapd_failures;
 
 
 

@@ -1519,9 +1519,6 @@ static unsigned long __init calc_memmap_size(unsigned long spanned_pages,
 
 static void __meminit pgdat_init_internals(struct pglist_data *pgdat)
 {
-	init_waitqueue_head(&pgdat->kswapd_wait);
-	init_waitqueue_head(&pgdat->pfmemalloc_wait);
-
 	lruvec_init(&pgdat->__lruvec);
 }
 

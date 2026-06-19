@@ -14,7 +14,6 @@
 #include <asm/hardirq.h>
 
 /* Only keeping APIC functions that are actually called */
-# define setup_boot_APIC_clock x86_init_noop
 static inline void apic_intr_mode_select(void) { }
 static inline void apic_intr_mode_init(void) { }
 /* lapic_assign_legacy_vector removed - unused */

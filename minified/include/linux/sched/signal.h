@@ -130,8 +130,7 @@ static inline bool __set_notify_signal(struct task_struct *task)
 
 static inline void set_notify_signal(struct task_struct *task)
 {
-	if (__set_notify_signal(task))
-		kick_process(task);
+	__set_notify_signal(task);
 }
 
 static inline int task_sigpending(struct task_struct *p)

@@ -93,17 +93,13 @@ struct signal_struct {
 	unsigned long maxrss;
 	struct task_io_accounting ioac;
 
-	 
-	unsigned long long sum_sched_runtime;
 
-	 
 	struct rlimit rlim[RLIM_NLIMITS];
 
 
 
 	short oom_score_adj;
-	short oom_score_adj_min;	 
-	struct mm_struct *oom_mm;	 
+	struct mm_struct *oom_mm;
 
 	struct mutex cred_guard_mutex;	 
 	struct rw_semaphore exec_update_lock;	 

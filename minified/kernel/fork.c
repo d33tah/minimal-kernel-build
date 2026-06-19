@@ -766,7 +766,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 
 	/* sched_autogroup_fork - stubbed */
 	sig->oom_score_adj = current->signal->oom_score_adj;
-	sig->oom_score_adj_min = current->signal->oom_score_adj_min;
 
 	mutex_init(&sig->cred_guard_mutex);
 	init_rwsem(&sig->exec_update_lock);

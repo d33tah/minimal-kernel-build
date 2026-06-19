@@ -95,7 +95,6 @@ static void __exit_signal(struct task_struct *tsk)
 	sig->maj_flt += tsk->maj_flt;
 	sig->nvcsw += tsk->nvcsw;
 	sig->nivcsw += tsk->nivcsw;
-	sig->sum_sched_runtime += tsk->se.sum_exec_runtime;
 	sig->nr_threads--;
 	__unhash_process(tsk, group_dead);
 	write_sequnlock(&sig->stats_lock);

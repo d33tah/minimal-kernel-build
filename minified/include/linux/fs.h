@@ -74,7 +74,6 @@ struct backing_dev_info;
 struct bdi_writeback;
 struct bio;
 struct io_comp_batch;
-struct export_operations;
 struct fiemap_extent_info;
 struct iovec;
 struct kiocb;
@@ -555,9 +554,6 @@ struct super_block {
 	loff_t			s_maxbytes;	
 	struct file_system_type	*s_type;
 	const struct super_operations	*s_op;
-	const struct dquot_operations	*dq_op;
-	const struct quotactl_ops	*s_qcop;
-	const struct export_operations *s_export_op;
 	unsigned long		s_flags;
 	unsigned long		s_iflags;	
 	unsigned long		s_magic;
@@ -570,10 +566,8 @@ struct super_block {
 	struct list_head	s_mounts;	
 	struct block_device	*s_bdev;
 	struct backing_dev_info *s_bdi;
-	struct mtd_info		*s_mtd;
 	struct hlist_node	s_instances;
-	unsigned int		s_quota_types;	
-	struct quota_info	s_dquot;	
+	struct quota_info	s_dquot;
 
 	struct sb_writers	s_writers;
 
@@ -590,7 +584,6 @@ struct super_block {
 	uuid_t			s_uuid;		
 
 	unsigned int		s_max_links;
-	fmode_t			s_mode;
 
 	
 	struct mutex s_vfs_rename_mutex;	

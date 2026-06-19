@@ -112,9 +112,6 @@ struct rwsem_waiter {
 	struct task_struct *task;
 	enum rwsem_waiter_type type;
 	unsigned long timeout;
-
-	 
-	bool handoff_set;
 };
 #define rwsem_first_waiter(sem) \
 	list_first_entry(&sem->wait_list, struct rwsem_waiter, list)
@@ -261,56 +258,6 @@ rwsem_del_wake_waiter(struct rw_semaphore *sem, struct rwsem_waiter *waiter,
 		wake_up_q(wake_q);
 }
 
-static inline bool rwsem_try_write_lock(struct rw_semaphore *sem,
-					struct rwsem_waiter *waiter)
-{
-	bool first = rwsem_first_waiter(sem) == waiter;
-	long count, new;
-
-	lockdep_assert_held(&sem->wait_lock);
-
-	count = atomic_long_read(&sem->count);
-	do {
-		bool has_handoff = !!(count & RWSEM_FLAG_HANDOFF);
-
-		if (has_handoff) {
-			if (!first)
-				return false;
-
-			 
-			waiter->handoff_set = true;
-		}
-
-		new = count;
-
-		if (count & RWSEM_LOCK_MASK) {
-			if (has_handoff || (!rt_task(waiter->task) &&
-					    !time_after(jiffies, waiter->timeout)))
-				return false;
-
-			new |= RWSEM_FLAG_HANDOFF;
-		} else {
-			new |= RWSEM_WRITER_LOCKED;
-			new &= ~RWSEM_FLAG_HANDOFF;
-
-			if (list_is_singular(&sem->wait_list))
-				new &= ~RWSEM_FLAG_WAITERS;
-		}
-	} while (!atomic_long_try_cmpxchg_acquire(&sem->count, &count, new));
-
-	 
-	if (new & RWSEM_FLAG_HANDOFF) {
-		waiter->handoff_set = true;
-		lockevent_inc(rwsem_wlock_handoff);
-		return false;
-	}
-
-	 
-	list_del(&waiter->list);
-	rwsem_set_owner(sem);
-	return true;
-}
-
 static inline void rwsem_cond_wake_waiter(struct rw_semaphore *sem, long count,
 					  struct wake_q_head *wake_q)
 {
@@ -419,69 +366,6 @@ out_nolock:
 	return ERR_PTR(-EINTR);
 }
 
-static struct rw_semaphore __sched *
-rwsem_down_write_slowpath(struct rw_semaphore *sem, int state)
-{
-	struct rwsem_waiter waiter;
-	DEFINE_WAKE_Q(wake_q);
-
-	waiter.task = current;
-	waiter.type = RWSEM_WAITING_FOR_WRITE;
-	waiter.timeout = jiffies + RWSEM_WAIT_TIMEOUT;
-	waiter.handoff_set = false;
-
-	raw_spin_lock_irq(&sem->wait_lock);
-	rwsem_add_waiter(sem, &waiter);
-
-	 
-	if (rwsem_first_waiter(sem) != &waiter) {
-		rwsem_cond_wake_waiter(sem, atomic_long_read(&sem->count),
-				       &wake_q);
-		if (!wake_q_empty(&wake_q)) {
-			 
-			raw_spin_unlock_irq(&sem->wait_lock);
-			wake_up_q(&wake_q);
-			raw_spin_lock_irq(&sem->wait_lock);
-		}
-	} else {
-		atomic_long_or(RWSEM_FLAG_WAITERS, &sem->count);
-	}
-
-	 
-	set_current_state(state);
-	 
-
-	for (;;) {
-		if (rwsem_try_write_lock(sem, &waiter)) {
-			 
-			break;
-		}
-
-		raw_spin_unlock_irq(&sem->wait_lock);
-
-		if (signal_pending_state(state, current))
-			goto out_nolock;
-
-		schedule();
-		lockevent_inc(rwsem_sleep_writer);
-		set_current_state(state);
-		raw_spin_lock_irq(&sem->wait_lock);
-	}
-	__set_current_state(TASK_RUNNING);
-	raw_spin_unlock_irq(&sem->wait_lock);
-	lockevent_inc(rwsem_wlock);
-	 
-	return sem;
-
-out_nolock:
-	__set_current_state(TASK_RUNNING);
-	raw_spin_lock_irq(&sem->wait_lock);
-	rwsem_del_wake_waiter(sem, &waiter, &wake_q);
-	lockevent_inc(rwsem_wlock_fail);
-	 
-	return ERR_PTR(-EINTR);
-}
-
 static struct rw_semaphore *rwsem_wake(struct rw_semaphore *sem)
 {
 	unsigned long flags;
@@ -539,11 +423,7 @@ static inline int __down_read_trylock(struct rw_semaphore *sem)
 
 static inline int __down_write_common(struct rw_semaphore *sem, int state)
 {
-	if (unlikely(!rwsem_write_trylock(sem))) {
-		if (IS_ERR(rwsem_down_write_slowpath(sem, state)))
-			return -EINTR;
-	}
-
+	rwsem_write_trylock(sem);
 	return 0;
 }
 

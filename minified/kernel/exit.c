@@ -273,8 +273,6 @@ void __noreturn do_exit(long code)
 				tsk->signal->group_exit_code ?: (int)code);
 	}
 
-	tsk->exit_code = code;
-
 	exit_mm();
 
 

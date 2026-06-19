@@ -195,36 +195,6 @@ struct sched_rt_entity {
 	struct sched_rt_entity		*back;
 } __randomize_layout;
 
-struct sched_dl_entity {
-	struct rb_node			rb_node;
-
-	 
-	u64				dl_runtime;	 
-	u64				dl_deadline;	 
-	u64				dl_period;	 
-	u64				dl_bw;		 
-	u64				dl_density;	 
-
-	 
-	s64				runtime;	 
-	u64				deadline;	 
-	unsigned int			flags;		 
-
-	 
-	unsigned int			dl_throttled      : 1;
-	unsigned int			dl_yielded        : 1;
-	unsigned int			dl_non_contending : 1;
-	unsigned int			dl_overrun	  : 1;
-
-	 
-	struct hrtimer			dl_timer;
-
-	 
-	struct hrtimer inactive_timer;
-
-};
-
-
 struct wake_q_node {
 	struct wake_q_node *next;
 };
@@ -250,11 +220,9 @@ struct task_struct {
 	int				prio;
 	int				static_prio;
 	int				normal_prio;
-	unsigned int			rt_priority;
 
 	struct sched_entity		se;
 	struct sched_rt_entity		rt;
-	struct sched_dl_entity		dl;
 	const struct sched_class	*sched_class;
 
 
@@ -265,7 +233,6 @@ struct task_struct {
 
 
 	unsigned int			policy;
-	int				nr_cpus_allowed;
 	const cpumask_t			*cpus_ptr;
 	cpumask_t			*user_cpus_ptr;
 	cpumask_t			cpus_mask;
@@ -276,7 +243,6 @@ struct task_struct {
 	struct mm_struct		*active_mm;
 
 	int				exit_state;
-	int				exit_code;
 	int				exit_signal;
 	unsigned long			jobctl;
 
@@ -291,7 +257,6 @@ struct task_struct {
 	unsigned			restore_sigmask:1;
 #endif
 
-	unsigned long			atomic_flags;
 
 	pid_t				pid;
 	pid_t				tgid;

@@ -668,7 +668,6 @@ static inline int _cond_resched(void)
 
 
 #define cond_resched() ({			\
-	__might_resched(__FILE__, __LINE__, 0);	\
 	_cond_resched();			\
 })
 

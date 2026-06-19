@@ -259,7 +259,6 @@ device_create_groups_vargs(struct class *class, struct device *parent,
 
 	device_initialize(dev);
 	dev->devt = devt;
-	dev->class = class;
 	dev->parent = parent;
 	dev->release = device_create_release;
 

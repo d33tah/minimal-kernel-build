@@ -85,12 +85,10 @@ struct device {
 	struct list_head	dma_pools;
 
 	dev_t			devt;
-	u32			id;
 
 	spinlock_t		devres_lock;
 	struct list_head	devres_head;
 
-	struct class		*class;
 	void	(*release)(struct device *dev);
 };
 

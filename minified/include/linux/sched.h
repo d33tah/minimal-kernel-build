@@ -433,8 +433,6 @@ struct task_struct {
 	 
 	struct task_io_accounting	ioac;
 
-	struct tlbflush_unmap_batch	tlb_ubc;
-
 	union {
 		refcount_t		rcu_users;
 		struct rcu_head		rcu;

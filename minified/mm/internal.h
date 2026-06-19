@@ -206,10 +206,8 @@ extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
 #define ALLOC_HIGH		 0x20
 #define ALLOC_KSWAPD		0x800
 
-struct tlbflush_unmap_batch;
 
 
- 
 void flush_tlb_batched_pending(struct mm_struct *mm);
 
 extern const struct trace_print_flags pageflag_names[];

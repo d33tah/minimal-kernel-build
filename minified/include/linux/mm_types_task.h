@@ -9,11 +9,6 @@
 
 #include <asm/page.h>
 
-/* Inlined from asm/tlbbatch.h */
-struct arch_tlbflush_unmap_batch {
-	struct cpumask cpumask;
-};
-
 #define USE_SPLIT_PTE_PTLOCKS	(NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS)
 #define USE_SPLIT_PMD_PTLOCKS	(USE_SPLIT_PTE_PTLOCKS && \
 		IS_ENABLED(CONFIG_ARCH_ENABLE_SPLIT_PMD_PTLOCK))
@@ -40,17 +35,6 @@ struct page_frag {
 	__u16 offset;
 	__u16 size;
 #endif
-};
-
-struct tlbflush_unmap_batch {
-	 
-	struct arch_tlbflush_unmap_batch arch;
-
-	 
-	bool flush_required;
-
-	 
-	bool writable;
 };
 
 #endif  

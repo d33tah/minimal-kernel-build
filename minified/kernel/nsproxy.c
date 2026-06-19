@@ -9,10 +9,6 @@
 #include <net/net_namespace.h>
 #include <linux/time_namespace.h>
 
-struct ipc_namespace {
-	struct user_namespace *user_ns;
-	struct ns_common ns;
-};
 #include <linux/fs_struct.h>
 #include <linux/proc_fs.h>
 #include <linux/proc_ns.h>

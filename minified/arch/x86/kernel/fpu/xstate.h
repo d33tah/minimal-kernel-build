@@ -51,8 +51,6 @@ static inline void xstate_init_xcomp_bv(struct xregs_state *xsave, u64 mask)
 		     : "D" (st), "m" (*st), "a" (lmask), "d" (hmask)	\
 		     : "memory")
 
-static inline void xfd_update_state(struct fpstate *fpstate) { }
-
 
 static inline void os_xsave(struct fpstate *fpstate)
 {

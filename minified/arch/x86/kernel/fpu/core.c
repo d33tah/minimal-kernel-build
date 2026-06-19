@@ -61,10 +61,7 @@ void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask)
 	 * is never set anywhere in this tree, so the block was dead.
 	 */
 	if (use_xsave()) {
-		 
-		xfd_update_state(fpstate);
 
-		 
 		mask = fpu_kernel_cfg.max_features & mask;
 
 		os_xrstor(fpstate, mask);

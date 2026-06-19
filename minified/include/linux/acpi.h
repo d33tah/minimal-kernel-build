@@ -15,16 +15,6 @@
 #define _LINUX
 #endif
 
-typedef void *acpi_handle;
-
-#define acpi_disabled 1
-
-
-
 struct fwnode_handle;
-
-
-
-static inline void acpi_device_notify_remove(struct device *dev) { }
 
 #endif	 

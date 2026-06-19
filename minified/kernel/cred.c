@@ -201,8 +201,7 @@ int commit_creds(struct cred *new)
 	    !cred_cap_issubset(old, new)) {
 		if (task->mm)
 			set_dumpable(task->mm, suid_dumpable);
-		task->pdeath_signal = 0;
-		 
+
 		smp_wmb();
 	}
 

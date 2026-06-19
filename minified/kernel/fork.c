@@ -865,7 +865,7 @@ static __latent_entropy struct task_struct *copy_process(
 
 	init_sigpending(&p->pending);
 
-	p->utime = p->stime = p->gtime = 0;
+	p->utime = p->stime = 0;
 	prev_cputime_init(&p->prev_cputime);
 
 	p->io_context = NULL;
@@ -928,7 +928,6 @@ static __latent_entropy struct task_struct *copy_process(
 	p->tgid = p->pid;
 
 
-	p->pdeath_signal = 0;
 	INIT_LIST_HEAD(&p->thread_group);
 	p->task_works = NULL;
 

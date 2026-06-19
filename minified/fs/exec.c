@@ -533,8 +533,6 @@ int begin_new_exec(struct linux_binprm * bprm)
 	do_close_on_exec(me->files);
 
 	if (bprm->secureexec) {
-		
-		me->pdeath_signal = 0;
 
 		if (bprm->rlim_stack.rlim_cur > _STK_LIM)
 			bprm->rlim_stack.rlim_cur = _STK_LIM;

@@ -84,7 +84,6 @@ struct io_context;
 struct mempolicy;
 struct nameidata;
 struct nsproxy;
-struct perf_event_context;
 struct pid_namespace;
 struct pipe_inode_info;
 struct reclaim_state;
@@ -233,8 +232,6 @@ struct sched_dl_entity {
 };
 
 
-enum perf_event_task_context { perf_nr_task_contexts };
-
 struct wake_q_node {
 	struct wake_q_node *next;
 };
@@ -288,8 +285,6 @@ struct task_struct {
 	int				exit_state;
 	int				exit_code;
 	int				exit_signal;
-	 
-	int				pdeath_signal;
 	unsigned long			jobctl;
 
 	 
@@ -357,7 +352,6 @@ struct task_struct {
 
 	u64				utime;
 	u64				stime;
-	u64				gtime;
 	struct prev_cputime		prev_cputime;
 
 	 
@@ -433,14 +427,8 @@ struct task_struct {
 	 
 	void				*journal_info;
 
-	 
-	struct bio_list			*bio_list;
 
-	 
 	struct blk_plug			*plug;
-
-	 
-	struct reclaim_state		*reclaim_state;
 
 	struct backing_dev_info		*backing_dev_info;
 
@@ -448,10 +436,6 @@ struct task_struct {
 
 	 
 	struct task_io_accounting	ioac;
-	struct perf_event_context	*perf_event_ctxp[perf_nr_task_contexts];
-	struct mutex			perf_event_mutex;
-	struct list_head		perf_event_list;
-
 
 	struct tlbflush_unmap_batch	tlb_ubc;
 

@@ -1008,19 +1008,8 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 		get_fs_pwd(current->fs, &nd->path);
 		nd->inode = nd->path.dentry->d_inode;
 	} else {
-		struct fd f = fdget_raw(nd->dfd);
-		if (!f.file)
-			return ERR_PTR(-EBADF);
-
-		if (*s && unlikely(!d_can_lookup(f.file->f_path.dentry))) {
-			fdput(f);
-			return ERR_PTR(-ENOTDIR);
-		}
-
-		nd->path = f.file->f_path;
-		path_get(&nd->path);
-		nd->inode = nd->path.dentry->d_inode;
-		fdput(f);
+		/* __fdget_raw is a stub returning 0 -> fd lookup always fails */
+		return ERR_PTR(-EBADF);
 	}
 
 	if (flags & LOOKUP_IS_SCOPED) {

@@ -595,12 +595,6 @@ unsigned long __fdget(unsigned int fd)
 	return __fget_light(fd, FMODE_PATH);
 }
 
-/* Stub: __fdget_raw not called in minimal kernel */
-unsigned long __fdget_raw(unsigned int fd)
-{
-	return 0;
-}
-
 unsigned long __fdget_pos(unsigned int fd)
 {
 	unsigned long v = __fdget(fd);

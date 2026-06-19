@@ -792,19 +792,6 @@ static void __sched notrace preempt_schedule_common(void)
 	} while (need_resched());
 }
 
-asmlinkage __visible void __sched preempt_schedule_irq(void)
-{
-	BUG_ON(preempt_count() || !irqs_disabled());
-
-	do {
-		preempt_disable();
-		local_irq_enable();
-		__schedule(SM_PREEMPT);
-		local_irq_disable();
-		sched_preempt_enable_no_resched();
-	} while (need_resched());
-}
-
 int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flags,
 			  void *key)
 {

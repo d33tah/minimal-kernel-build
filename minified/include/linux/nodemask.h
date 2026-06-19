@@ -70,7 +70,6 @@ static inline int node_state(int node, enum node_states state)
 #define first_online_node	0
 #define next_online_node(nid)	(MAX_NUMNODES)
 #define nr_node_ids		1U
-#define nr_online_nodes		1U
 
 
 #define node_possible_map 	node_states[N_POSSIBLE]

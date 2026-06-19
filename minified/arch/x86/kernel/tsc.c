@@ -537,8 +537,7 @@ static void __init check_system_tsc_reliable(void)
 	 
 	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC) &&
 	    boot_cpu_has(X86_FEATURE_NONSTOP_TSC) &&
-	    boot_cpu_has(X86_FEATURE_TSC_ADJUST) &&
-	    nr_online_nodes <= 2)
+	    boot_cpu_has(X86_FEATURE_TSC_ADJUST))
 		tsc_disable_clocksource_watchdog();
 }
 

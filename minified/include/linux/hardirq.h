@@ -32,10 +32,6 @@ void irq_exit_rcu(void);
 #define arch_nmi_exit()		do { } while (0)
 #endif
 
-static inline void rcu_nmi_enter(void) { }
-static inline void rcu_nmi_exit(void) { }
-
-
 #define __nmi_enter()						\
 	do {							\
 		lockdep_off();					\

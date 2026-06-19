@@ -78,10 +78,6 @@ static inline int printk_ratelimit(void)
 	return 0;
 }
 
-static inline void wake_up_klogd(void)
-{
-}
-
 static inline void setup_log_buf(int early)
 {
 }

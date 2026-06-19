@@ -7,10 +7,6 @@
 #include <asm/hardirq.h>
 
 
-static __always_inline void rcu_irq_enter_check_tick(void)
-{
-}
-
 #define __irq_enter_raw()				\
 	do {						\
 		preempt_count_add(HARDIRQ_OFFSET);	\

@@ -194,9 +194,6 @@ noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 	}
 
 
-	rcu_irq_enter_check_tick();
-
-
 	return ret;
 }
 

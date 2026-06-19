@@ -29,8 +29,6 @@ struct subprocess_info {
 	void *data;
 } __randomize_layout;
 
-extern struct ctl_table usermodehelper_table[];
-
 static inline void usermodehelper_enable(void)
 {
 }

@@ -49,14 +49,9 @@ struct cred {
 	kuid_t		euid;		 
 	kgid_t		egid;		 
 	kuid_t		fsuid;		 
-	kgid_t		fsgid;		 
-	unsigned	securebits;	 
-	kernel_cap_t	cap_inheritable;  
-	kernel_cap_t	cap_permitted;	 
-	kernel_cap_t	cap_effective;	 
-	kernel_cap_t	cap_bset;	 
-	kernel_cap_t	cap_ambient;	 
-	struct user_struct *user;	 
+	kgid_t		fsgid;
+	kernel_cap_t	cap_permitted;
+	struct user_struct *user;
 	struct user_namespace *user_ns;  
 	struct ucounts *ucounts;
 	struct group_info *group_info;	 

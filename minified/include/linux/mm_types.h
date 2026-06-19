@@ -269,9 +269,8 @@ struct mm_struct {
 		unsigned long (*get_unmapped_area) (struct file *filp,
 				unsigned long addr, unsigned long len,
 				unsigned long pgoff, unsigned long flags);
-		unsigned long mmap_base;	 
-		unsigned long mmap_legacy_base;	 
-		unsigned long task_size;	 
+		unsigned long mmap_base;
+		unsigned long task_size;
 		unsigned long highest_vm_end;	 
 		pgd_t * pgd;
 

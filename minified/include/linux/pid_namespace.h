@@ -14,7 +14,6 @@
 
 struct pid_namespace {
 	struct idr idr;
-	struct rcu_head rcu;
 	unsigned int pid_allocated;
 	struct task_struct *child_reaper;
 	struct kmem_cache *pid_cachep;
@@ -22,7 +21,6 @@ struct pid_namespace {
 	struct pid_namespace *parent;
 	struct user_namespace *user_ns;
 	struct ucounts *ucounts;
-	int reboot;	 
 	struct ns_common ns;
 } __randomize_layout;
 

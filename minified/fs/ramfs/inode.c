@@ -94,12 +94,8 @@ static int ramfs_create(struct user_namespace *mnt_userns, struct inode *dir,
 static const struct inode_operations ramfs_dir_inode_operations = {
 	.create		= ramfs_create,
 	.lookup		= simple_lookup,
-	.link		= simple_link,
-	.unlink		= simple_unlink,
 	.mkdir		= ramfs_mkdir,
-	.rmdir		= simple_rmdir,
 	.mknod		= ramfs_mknod,
-	.rename		= simple_rename,
 };
 
 static int ramfs_show_options(struct seq_file *m, struct dentry *root)

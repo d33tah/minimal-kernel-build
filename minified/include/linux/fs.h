@@ -1126,14 +1126,7 @@ extern int simple_setattr(struct user_namespace *, struct dentry *,
 extern int simple_getattr(struct user_namespace *, const struct path *,
 			  struct kstat *, u32, unsigned int);
 extern int simple_statfs(struct dentry *, struct kstatfs *);
-extern int simple_link(struct dentry *, struct inode *, struct dentry *);
-extern int simple_unlink(struct inode *, struct dentry *);
-extern int simple_rmdir(struct inode *, struct dentry *);
-extern int simple_rename(struct user_namespace *, struct inode *,
-			 struct dentry *, struct inode *, struct dentry *,
-			 unsigned int);
 extern int noop_fsync(struct file *, loff_t, loff_t, int);
-extern int simple_empty(struct dentry *);
 extern int simple_write_begin(struct file *file, struct address_space *mapping,
 			loff_t pos, unsigned len,
 			struct page **pagep, void **fsdata);

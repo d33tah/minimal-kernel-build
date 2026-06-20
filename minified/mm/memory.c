@@ -14,7 +14,6 @@
 #include <linux/rmap.h>
 #include <linux/export.h>
 #include <linux/init.h>
-#include <linux/pfn_t.h>
 #include <linux/writeback.h>
 #include <linux/memcontrol.h>
 #include <linux/swapops.h>

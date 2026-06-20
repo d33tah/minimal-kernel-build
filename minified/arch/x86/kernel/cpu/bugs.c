@@ -9,11 +9,6 @@
 #include <asm/alternative.h>
 #include <asm/nospec-branch.h>
 
-u64 x86_spec_ctrl_base;
-
-u64 __ro_after_init x86_amd_ls_cfg_base;
-u64 __ro_after_init x86_amd_ls_cfg_ssbd_mask;
-
 void __init check_bugs(void)
 {
 	identify_boot_cpu();

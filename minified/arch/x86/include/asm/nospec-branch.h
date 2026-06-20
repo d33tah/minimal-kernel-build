@@ -102,9 +102,6 @@ extern void entry_ibpb(void);
 extern char __indirect_thunk_start[];
 extern char __indirect_thunk_end[];
 
-
-extern u64 x86_spec_ctrl_base;
-
 #endif
 
 #endif  

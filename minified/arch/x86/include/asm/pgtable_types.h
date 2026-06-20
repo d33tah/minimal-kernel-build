@@ -283,7 +283,6 @@ typedef struct { p4d_t p4d; } pud_t;
 #define PUD_MASK  	(~(PUD_SIZE-1))
 
 static inline int p4d_none(p4d_t p4d)		{ return 0; }
-static inline int p4d_bad(p4d_t p4d)		{ return 0; }
 static inline int p4d_present(p4d_t p4d)	{ return 1; }
 #define pud_ERROR(pud)				(p4d_ERROR((pud).p4d))
 
@@ -333,7 +332,6 @@ typedef struct { pud_t pud; } pmd_t;
 #define PMD_MASK  	(~(PMD_SIZE-1))
 
 static inline int pud_none(pud_t pud)		{ return 0; }
-static inline int pud_bad(pud_t pud)		{ return 0; }
 static inline int pud_present(pud_t pud)	{ return 1; }
 /* pud_user removed - unused */
 static inline int pud_leaf(pud_t pud)		{ return 0; }

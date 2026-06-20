@@ -232,47 +232,26 @@ static inline int pgd_same(pgd_t pgd_a, pgd_t pgd_b)
 })
 #endif
 
-/* 2-level paging: P4D/PUD folded, so *_clear_bad are no-ops (non-folded
- * #ifndef arms were preprocessor-dead and have been removed). pgd_clear_bad is
- * likewise a no-op: pgd_bad() is constant 0 on x86 (pgtable_types.h), so the
- * pgd_none_or_clear_bad() corruption arm that called it is statically dead. */
-#define pgd_clear_bad(pgd)        do { } while (0)
-#define p4d_clear_bad(p4d)        do { } while (0)
-#define pud_clear_bad(p4d)        do { } while (0)
+/* 2-level paging: pgd_bad()/p4d_bad()/pud_bad() are all constant 0 on x86
+ * (pgtable_types.h), so the corruption arms of *_none_or_clear_bad() that
+ * called pgd_clear_bad/p4d_clear_bad/pud_clear_bad (themselves no-ops) were
+ * statically dead and have been folded out along with those no-op macros. */
 
 void pmd_clear_bad(pmd_t *);
 
 static inline int pgd_none_or_clear_bad(pgd_t *pgd)
 {
-	if (pgd_none(*pgd))
-		return 1;
-	if (unlikely(pgd_bad(*pgd))) {
-		pgd_clear_bad(pgd);
-		return 1;
-	}
-	return 0;
+	return pgd_none(*pgd) ? 1 : 0;
 }
 
 static inline int p4d_none_or_clear_bad(p4d_t *p4d)
 {
-	if (p4d_none(*p4d))
-		return 1;
-	if (unlikely(p4d_bad(*p4d))) {
-		p4d_clear_bad(p4d);
-		return 1;
-	}
-	return 0;
+	return p4d_none(*p4d) ? 1 : 0;
 }
 
 static inline int pud_none_or_clear_bad(pud_t *pud)
 {
-	if (pud_none(*pud))
-		return 1;
-	if (unlikely(pud_bad(*pud))) {
-		pud_clear_bad(pud);
-		return 1;
-	}
-	return 0;
+	return pud_none(*pud) ? 1 : 0;
 }
 
 static inline int pmd_none_or_clear_bad(pmd_t *pmd)

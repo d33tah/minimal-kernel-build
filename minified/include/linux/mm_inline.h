@@ -69,29 +69,6 @@ void lruvec_add_folio(struct lruvec *lruvec, struct folio *folio)
 		list_add(&folio->lru, &lruvec->lists[lru]);
 }
 
-static __always_inline void add_page_to_lru_list(struct page *page,
-				struct lruvec *lruvec)
-{
-	lruvec_add_folio(lruvec, page_folio(page));
-}
-
-static __always_inline
-void lruvec_add_folio_tail(struct lruvec *lruvec, struct folio *folio)
-{
-	enum lru_list lru = folio_lru_list(folio);
-
-	update_lru_size(lruvec, lru, folio_zonenum(folio),
-			folio_nr_pages(folio));
-	 
-	list_add_tail(&folio->lru, &lruvec->lists[lru]);
-}
-
-static __always_inline void add_page_to_lru_list_tail(struct page *page,
-				struct lruvec *lruvec)
-{
-	lruvec_add_folio_tail(lruvec, page_folio(page));
-}
-
 static __always_inline
 void lruvec_del_folio(struct lruvec *lruvec, struct folio *folio)
 {

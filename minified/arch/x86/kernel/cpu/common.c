@@ -17,7 +17,6 @@
 #include <linux/kprobes.h>
 #include <linux/smp.h>
 #include <linux/io.h>
-#include <linux/syscore_ops.h>
 #include <linux/pgtable.h>
 
 #include <asm/perf_event.h>

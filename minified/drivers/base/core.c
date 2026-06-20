@@ -13,13 +13,10 @@
 #include <linux/of_device.h>
 #include <linux/blkdev.h>
 #include <linux/mutex.h>
-#include <linux/pm_runtime.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
-#include <linux/swiotlb.h>
 #include <linux/sysfs.h>
 #include <linux/delay.h>
-#include <linux/dma-map-ops.h> 
 
 #include "base.h"
 

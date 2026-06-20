@@ -3,7 +3,6 @@
 
 #include <asm/page.h>
 #include <linux/types.h>
-#include <linux/tty_flags.h>
 
 /* From uapi/linux/serial.h - reduced to only used values */
 #define ASYNC_CLOSING_WAIT_NONE	65535

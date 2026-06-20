@@ -2,7 +2,6 @@
  
 #include <linux/irqdesc.h>
 #include <linux/kernel_stat.h>
-#include <linux/pm_runtime.h>
 #include <linux/sched/clock.h>
 
 # define IRQ_BITMAP_BITS	(NR_IRQS + 8196)

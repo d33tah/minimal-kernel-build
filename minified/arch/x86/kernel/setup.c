@@ -1,6 +1,5 @@
 #include <linux/acpi.h>
 #include <linux/console.h>
-#include <linux/dma-map-ops.h>
 #include <linux/efi.h>
 
 #include <linux/initrd.h>
@@ -10,7 +9,6 @@ extern struct atomic_notifier_head panic_notifier_list;
 #include <linux/root_dev.h>
 #include <linux/hugetlb.h>
 #include <linux/static_call.h>
-#include <linux/swiotlb.h>
 
 #include <uapi/linux/mount.h>
 

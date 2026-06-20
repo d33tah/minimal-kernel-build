@@ -35,52 +35,13 @@ struct resource iomem_resource = {
 	.flags	= IORESOURCE_MEM,
 };
 
-static DEFINE_RWLOCK(resource_lock);
-
-
-static struct resource * __request_resource(struct resource *root, struct resource *new)
-{
-	resource_size_t start = new->start;
-	resource_size_t end = new->end;
-	struct resource *tmp, **p;
-
-	if (end < start)
-		return root;
-	if (start < root->start)
-		return root;
-	if (end > root->end)
-		return root;
-	p = &root->child;
-	for (;;) {
-		tmp = *p;
-		if (!tmp || tmp->start > end) {
-			new->sibling = tmp;
-			*p = new;
-			new->parent = root;
-			return NULL;
-		}
-		p = &tmp->sibling;
-		if (tmp->end < start)
-			continue;
-		return tmp;
-	}
-}
-
-
-int request_resource(struct resource *root, struct resource *new)
-{
-	struct resource *conflict;
-
-	write_lock(&resource_lock);
-	conflict = __request_resource(root, new);
-	write_unlock(&resource_lock);
-	return conflict ? -EBUSY : 0;
-}
-
-
-
 /*
  * insert_resource()/__insert_resource() removed: their sole caller
  * (e820__reserve_resources) is gone, and the iomem_resource tree they wrote
  * into is never walked on this build.
+ *
+ * request_resource()/__request_resource() + resource_lock removed: their only
+ * callers were the 6 vgacon.c request_resource(&ioport_resource, ...) console
+ * I/O-port reservations, which were write-only into the never-walked ioport
+ * tree (return value ignored).
  */

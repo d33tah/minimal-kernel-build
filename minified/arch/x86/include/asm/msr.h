@@ -61,20 +61,6 @@ static __always_inline void __wrmsr(unsigned int msr, u32 low, u32 high)
 		     : : "c" (msr), "a"(low), "d" (high) : "memory");
 }
 
-#define native_rdmsr(msr, val1, val2)			\
-do {							\
-	u64 __val = __rdmsr((msr));			\
-	(void)((val1) = (u32)__val);			\
-	(void)((val2) = (u32)(__val >> 32));		\
-} while (0)
-
-#define native_wrmsr(msr, low, high)			\
-	__wrmsr(msr, low, high)
-
-#define native_wrmsrl(msr, val)				\
-	__wrmsr((msr), (u32)((u64)(val)),		\
-		       (u32)((u64)(val) >> 32))
-
 static inline unsigned long long native_read_msr(unsigned int msr)
 {
 	unsigned long long val;
@@ -84,40 +70,13 @@ static inline unsigned long long native_read_msr(unsigned int msr)
 	return val;
 }
 
-static inline unsigned long long native_read_msr_safe(unsigned int msr,
-						      int *err)
-{
-	DECLARE_ARGS(val, low, high);
 
-	asm volatile("1: rdmsr ; xor %[err],%[err]\n"
-		     "2:\n\t"
-		     _ASM_EXTABLE_TYPE_REG(1b, 2b, EX_TYPE_RDMSR_SAFE, %[err])
-		     : [err] "=r" (*err), EAX_EDX_RET(val, low, high)
-		     : "c" (msr));
-	return EAX_EDX_VAL(val, low, high);
-}
-
- 
 static inline void notrace
 native_write_msr(unsigned int msr, u32 low, u32 high)
 {
 	__wrmsr(msr, low, high);
 }
 
- 
-static inline int notrace
-native_write_msr_safe(unsigned int msr, u32 low, u32 high)
-{
-	int err;
-
-	asm volatile("1: wrmsr ; xor %[err],%[err]\n"
-		     "2:\n\t"
-		     _ASM_EXTABLE_TYPE_REG(1b, 2b, EX_TYPE_WRMSR_SAFE, %[err])
-		     : [err] "=a" (err)
-		     : "c" (msr), "0" (low), "d" (high)
-		     : "memory");
-	return err;
-}
 static __always_inline unsigned long long rdtsc(void)
 {
 	DECLARE_ARGS(val, low, high);
@@ -165,22 +124,6 @@ static inline void wrmsrl(unsigned int msr, u64 val)
 {
 	native_write_msr(msr, (u32)(val & 0xffffffffULL), (u32)(val >> 32));
 }
-
- 
-static inline int wrmsr_safe(unsigned int msr, u32 low, u32 high)
-{
-	return native_write_msr_safe(msr, low, high);
-}
-
- 
-#define rdmsr_safe(msr, low, high)				\
-({								\
-	int __err;						\
-	u64 __val = native_read_msr_safe((msr), &__err);	\
-	(*low) = (u32)__val;					\
-	(*high) = (u32)(__val >> 32);				\
-	__err;							\
-})
 
 #endif
 #endif

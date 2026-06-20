@@ -349,12 +349,6 @@ bool xas_nomem(struct xa_state *, gfp_t);
 void xas_destroy(struct xa_state *);
 
 
-static inline void xas_split(struct xa_state *xas, void *entry,
-		unsigned int order)
-{
-	xas_store(xas, entry);
-}
-
 static inline void *xas_reload(struct xa_state *xas)
 {
 	struct xa_node *node = xas->xa_node;

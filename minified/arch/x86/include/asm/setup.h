@@ -29,8 +29,6 @@ extern u64 relocated_ramdisk;
 
 struct pt_regs;
 
-extern unsigned long saved_video_mode;
-
 extern void reserve_standard_io_resources(void);
 extern void i386_reserve_resources(void);
 /* __startup_64, startup_64_setup_env removed - 64-bit only, unused in 32-bit build */

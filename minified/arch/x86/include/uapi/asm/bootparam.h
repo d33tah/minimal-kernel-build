@@ -40,26 +40,12 @@ struct apm_bios_info {
 	__u16	dseg_len;
 };
 
-struct apm_info {
-	struct apm_bios_info	bios;
-	unsigned short		connection_version;
-	int			get_power_status_broken;
-	int			get_power_status_swabinminutes;
-	int			allow_ints;
-	int			forbid_idle;
-	int			realmode_power_off;
-	int			disabled;
-};
-
-extern struct apm_info	apm_info;
-
 struct ist_info {
 	__u32 signature;
 	__u32 command;
 	__u32 event;
 	__u32 perf_level;
 };
-extern struct ist_info ist_info;
 
 /* Inlined from video/edid.h */
 struct edid_info {

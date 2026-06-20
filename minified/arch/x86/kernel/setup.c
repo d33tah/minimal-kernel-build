@@ -77,12 +77,6 @@ struct cpuinfo_x86 new_cpu_data;
 
 struct cpuinfo_x86 boot_cpu_data __read_mostly;
 
-struct apm_info apm_info;
-
-struct ist_info ist_info;
-
-
-
 __visible unsigned long mmu_cr4_features __ro_after_init;
 
 
@@ -90,8 +84,6 @@ struct screen_info screen_info;
 struct edid_info edid_info;
 
 extern int root_mountflags;
-
-unsigned long saved_video_mode;
 
 #define RAMDISK_IMAGE_START_MASK	0x07FF
 #define RAMDISK_PROMPT_FLAG		0x8000
@@ -407,10 +399,7 @@ void __init setup_arch(char **cmdline_p)
 	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
 	screen_info = boot_params.screen_info;
 	edid_info = boot_params.edid_info;
-	apm_info.bios = boot_params.apm_bios_info;
-	ist_info = boot_params.ist_info;
-	saved_video_mode = boot_params.hdr.vid_mode;
-	/* bootloader_type/version setup removed - never read */
+	/* apm_info/ist_info/saved_video_mode copies removed - never read */
 
 	/* x86_init.oem.arch_setup() removed - dispatched to x86_init_noop */
 

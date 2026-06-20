@@ -130,10 +130,7 @@ do {									\
 	lockdep_assert_held(&ACCESS_PRIVATE(p, lock))
 
 /* rcu_gp_is_normal, rcu_gp_is_expedited, rcu_expedite_gp, rcu_unexpedite_gp, rcu_request_urgent_qs_task removed - unused */
-
-#define RCU_SCHEDULER_INACTIVE	0
-#define RCU_SCHEDULER_INIT	1
-#define RCU_SCHEDULER_RUNNING	2
+/* rcu_scheduler_active + RCU_SCHEDULER_{INACTIVE,INIT,RUNNING} removed - write-only state, never read */
 
 enum rcutorture_type {
 	RCU_FLAVOR,

@@ -285,8 +285,6 @@ noinline void __ref rest_init(void)
 	struct task_struct *tsk;
 	int pid;
 
-	rcu_scheduler_starting();
-	 
 	pid = user_mode_thread(kernel_init, NULL, CLONE_FS);
 	 
 	rcu_read_lock();

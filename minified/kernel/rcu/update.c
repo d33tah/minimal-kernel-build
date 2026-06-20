@@ -36,15 +36,6 @@
 
 
 
-static int __init rcu_set_runtime_mode(void)
-{
-	rcu_scheduler_active = RCU_SCHEDULER_RUNNING;
-	return 0;
-}
-core_initcall(rcu_set_runtime_mode);
-
-
-
 void wakeme_after_rcu(struct rcu_head *head)
 {
 	struct rcu_synchronize *rcu;

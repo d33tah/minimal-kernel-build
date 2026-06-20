@@ -22,7 +22,6 @@ static inline void __rcu_read_unlock(void)
 
 
 void rcu_init(void);
-extern int rcu_scheduler_active;
 void rcu_sched_clock_irq(int user);
 
 #define rcu_tasks_qs(t, preempt) do { } while (0)
@@ -49,7 +48,6 @@ static inline void rcu_softirq_qs(void)
 		rcu_tasks_qs(current, (preempt)); \
 	} while (0)
 
-void rcu_scheduler_starting(void);
 static inline bool rcu_is_watching(void) { return true; }
 
 static inline void rcu_all_qs(void) { barrier(); }

@@ -137,29 +137,6 @@ static inline bool pagefault_disabled(void)
 #define faulthandler_disabled() (pagefault_disabled() || in_atomic())
 
 
-static inline __must_check int check_zeroed_user(const void __user *from, size_t size) { return 1; }
-
-static __always_inline __must_check int
-copy_struct_from_user(void *dst, size_t ksize, const void __user *src,
-		      size_t usize)
-{
-	size_t size = min(ksize, usize);
-	size_t rest = max(ksize, usize) - size;
-
-	 
-	if (usize < ksize) {
-		memset(dst + size, 0, rest);
-	} else if (usize > ksize) {
-		int ret = check_zeroed_user(src + size, rest);
-		if (ret <= 0)
-			return ret ?: -E2BIG;
-	}
-	 
-	if (copy_from_user(dst, src, size))
-		return -EFAULT;
-	return 0;
-}
-
 long notrace copy_to_kernel_nofault(void *dst, const void *src, size_t size);
 
 #ifndef __get_kernel_nofault

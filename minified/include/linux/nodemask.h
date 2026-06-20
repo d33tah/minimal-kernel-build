@@ -77,14 +77,5 @@ static inline int node_state(int node, enum node_states state)
 
 #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)
 
-#if NODES_SHIFT > 8  
-#define NODEMASK_ALLOC(type, name, gfp_flags)	\
-			type *name = kmalloc(sizeof(*name), gfp_flags)
-#define NODEMASK_FREE(m)			kfree(m)
-#else
-#define NODEMASK_ALLOC(type, name, gfp_flags)	type _##name, *name = &_##name
-#define NODEMASK_FREE(m)			do {} while (0)
-#endif
-
 
 #endif

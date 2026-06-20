@@ -59,11 +59,6 @@ static inline void mapping_set_exiting(struct address_space *mapping)
 	set_bit(AS_EXITING, &mapping->flags);
 }
 
-static inline int mapping_exiting(struct address_space *mapping)
-{
-	return test_bit(AS_EXITING, &mapping->flags);
-}
-
 static inline gfp_t mapping_gfp_mask(struct address_space * mapping)
 {
 	return mapping->gfp_mask;
@@ -80,12 +75,6 @@ static inline void mapping_set_gfp_mask(struct address_space *m, gfp_t mask)
 	m->gfp_mask = mask;
 }
 
-
-static inline bool mapping_large_folio_support(struct address_space *mapping)
-{
-	return IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE) &&
-		test_bit(AS_LARGE_FOLIO_SUPPORT, &mapping->flags);
-}
 
 void release_pages(struct page **pages, int nr);
 
@@ -218,9 +207,6 @@ static inline int folio_wait_locked_killable(struct folio *folio)
 	return folio_wait_bit_killable(folio, PG_locked);
 }
 
-static inline void folio_cancel_dirty(struct folio *folio)
-{
-}
 void folio_invalidate(struct folio *folio, size_t offset, size_t length);
 
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,

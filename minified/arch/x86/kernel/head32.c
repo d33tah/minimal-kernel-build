@@ -18,8 +18,9 @@ extern asmlinkage void __init start_kernel(void);
 
 static void __init i386_default_early_setup(void)
 {
-	 
-	x86_init.resources.reserve_resources = i386_reserve_resources;
+	/* reserve_resources override removed: the iomem/ioport resource tree is
+	 * never walked on this build, so the requested resources were write-only.
+	 */
 }
 
 asmlinkage __visible void __init i386_start_kernel(void)

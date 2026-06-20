@@ -26,7 +26,7 @@ bool __init bool_x86_init_noop(void) { return false; }
 struct x86_init_ops x86_init __initdata = {
 
 	.resources = {
-		.reserve_resources	= reserve_standard_io_resources,
+		.reserve_resources	= x86_init_noop,
 		.memory_setup		= e820__memory_setup_default,
 	},
 

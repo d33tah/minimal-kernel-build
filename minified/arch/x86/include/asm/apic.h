@@ -14,8 +14,6 @@
 #include <asm/hardirq.h>
 
 /* Only keeping APIC functions that are actually called */
-static inline void apic_intr_mode_select(void) { }
-static inline void apic_intr_mode_init(void) { }
 /* lapic_assign_legacy_vector removed - unused */
 /* apic_needs_pit removed - unused (use_pit folded out, was const-true) */
 /* Removed: lapic_shutdown, lapic_update_tsc_freq, check_x2apic */

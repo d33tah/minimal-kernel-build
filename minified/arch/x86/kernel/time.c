@@ -41,14 +41,8 @@ void __init hpet_time_init(void)
 
 static __init void x86_late_time_init(void)
 {
-	 
-	x86_init.irqs.intr_mode_select();
-
-	 
 	x86_init.timers.timer_init();
 
-	 
-	x86_init.irqs.intr_mode_init();
 	tsc_init();
 
 	if (static_cpu_has(X86_FEATURE_WAITPKG))

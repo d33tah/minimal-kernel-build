@@ -24,8 +24,6 @@ struct x86_init_resources {
 struct x86_init_irqs {
 	void (*pre_vector_init)(void);
 	void (*intr_init)(void);
-	void (*intr_mode_select)(void);
-	void (*intr_mode_init)(void);
 };
 
 

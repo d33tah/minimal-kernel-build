@@ -9,9 +9,4 @@
 #define execute_only_pkey(mm) (0)
 #define ARCH_VM_PKEY_FLAGS 0
 
-static inline int vma_pkey(struct vm_area_struct *vma)
-{
-	return 0;
-}
-
-#endif  
+#endif

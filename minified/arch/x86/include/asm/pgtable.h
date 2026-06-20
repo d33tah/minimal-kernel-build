@@ -25,8 +25,6 @@
 #define PKRU_BITS_PER_PKEY 2
 #define init_pkru_value	0
 #define pkru_get_init_value()	0
-static inline bool __pkru_allows_read(u32 pkru, u16 pkey) { int pkru_pkey_bits = pkey * PKRU_BITS_PER_PKEY; return !(pkru & (PKRU_AD_BIT << pkru_pkey_bits)); }
-static inline bool __pkru_allows_write(u32 pkru, u16 pkey) { int pkru_pkey_bits = pkey * PKRU_BITS_PER_PKEY; return !(pkru & ((PKRU_AD_BIT|PKRU_WD_BIT) << pkru_pkey_bits)); }
 static inline u32 read_pkru(void) { return 0; }
 /* End of pkru.h */
 /* --- 2025-12-07 20:42 --- Inlined coco.h */
@@ -534,13 +532,7 @@ static inline u16 pte_flags_pkey(unsigned long pte_flags)
 
 static inline bool __pkru_allows_pkey(u16 pkey, bool write)
 {
-	u32 pkru = read_pkru();
-
-	if (!__pkru_allows_read(pkru, pkey))
-		return false;
-	if (write && !__pkru_allows_write(pkru, pkey))
-		return false;
-
+	/* read_pkru() is constant 0 on this build: all keys allow r/w. */
 	return true;
 }
 

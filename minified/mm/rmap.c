@@ -15,7 +15,6 @@
 #include <linux/huge_mm.h>
 #include <linux/backing-dev.h>
 #include <linux/memremap.h>
-#include <linux/userfaultfd_k.h>
 #include <linux/mm_inline.h>
 
 #include <asm/tlbflush.h>

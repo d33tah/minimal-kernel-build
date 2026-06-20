@@ -39,7 +39,6 @@
 #include <linux/memcontrol.h>
 #include <linux/proc_fs.h>
 #include <linux/rmap.h>
-#include <linux/userfaultfd_k.h>
 #include <linux/random.h>
 #include <linux/tty.h>
 #include <linux/fs_struct.h>

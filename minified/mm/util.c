@@ -14,7 +14,6 @@
 #include <linux/mman.h>
 #include <linux/hugetlb.h>
 #include <linux/vmalloc.h>
-#include <linux/userfaultfd_k.h>
 #include <linux/elf.h>
 #include <linux/personality.h>
 #include <linux/random.h>
@@ -142,14 +141,11 @@ unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 	unsigned long ret;
 	struct mm_struct *mm = current->mm;
 	unsigned long populate;
-	LIST_HEAD(uf);
 
 	if (mmap_write_lock_killable(mm))
 		return -EINTR;
-	ret = do_mmap(file, addr, len, prot, flag, pgoff, &populate,
-		      &uf);
+	ret = do_mmap(file, addr, len, prot, flag, pgoff, &populate);
 	mmap_write_unlock(mm);
-	userfaultfd_unmap_complete(mm, &uf);
 	/* populate is always 0 here (VM_LOCKED/MAP_POPULATE never set). */
 	return ret;
 }

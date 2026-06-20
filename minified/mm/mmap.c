@@ -29,7 +29,6 @@
 #include <linux/notifier.h>
 #include <linux/memory.h>
 #include <linux/printk.h>
-#include <linux/userfaultfd_k.h>
 #include <linux/moduleparam.h>
 #include <linux/pkeys.h>
 #include <linux/oom.h>
@@ -232,11 +231,11 @@ static inline struct vm_area_struct *vma_next(struct mm_struct *mm,
 static inline int
 munmap_vma_range(struct mm_struct *mm, unsigned long start, unsigned long len,
 		 struct vm_area_struct **pprev, struct rb_node ***link,
-		 struct rb_node **parent, struct list_head *uf)
+		 struct rb_node **parent)
 {
 
 	while (find_vma_links(mm, start, start + len, pprev, link, parent))
-		if (do_munmap(mm, start, len, uf))
+		if (do_munmap(mm, start, len))
 			return -ENOMEM;
 
 	return 0;
@@ -522,7 +521,7 @@ static inline bool file_mmap_ok(struct file *file, struct inode *inode,
 unsigned long do_mmap(struct file *file, unsigned long addr,
 			unsigned long len, unsigned long prot,
 			unsigned long flags, unsigned long pgoff,
-			unsigned long *populate, struct list_head *uf)
+			unsigned long *populate)
 {
 	struct mm_struct *mm = current->mm;
 	vm_flags_t vm_flags;
@@ -615,7 +614,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 			vm_flags |= VM_NORESERVE;
 	}
 
-	addr = mmap_region(file, addr, len, vm_flags, pgoff, uf);
+	addr = mmap_region(file, addr, len, vm_flags, pgoff);
 	/*
 	 * VM_LOCKED is never set (no mmap syscall, ELF loader passes only
 	 * MAP_PRIVATE/MAP_FIXED) and MAP_POPULATE is never passed, so *populate
@@ -628,8 +627,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 /* Removed: vma_wants_writenotify - was used only by vma_set_page_prot (~4 LOC) */
 
 unsigned long mmap_region(struct file *file, unsigned long addr,
-		unsigned long len, vm_flags_t vm_flags, unsigned long pgoff,
-		struct list_head *uf)
+		unsigned long len, vm_flags_t vm_flags, unsigned long pgoff)
 {
 	/* Minimal stub: simplified mmap without complex VMA merging/splitting */
 	struct mm_struct *mm = current->mm;
@@ -637,7 +635,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 	struct rb_node **rb_link, *rb_parent;
 	struct vm_area_struct *prev = NULL;
 
-	if (munmap_vma_range(mm, addr, len, &prev, &rb_link, &rb_parent, uf))
+	if (munmap_vma_range(mm, addr, len, &prev, &rb_link, &rb_parent))
 		return -ENOMEM;
 
 	vma = vm_area_alloc(mm);
@@ -1111,8 +1109,7 @@ int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 }
 
 
-int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
-		struct list_head *uf)
+int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 {
 	unsigned long end;
 	struct vm_area_struct *vma, *prev, *last;
@@ -1154,14 +1151,6 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	}
 	vma = vma_next(mm, prev);
 
-	if (unlikely(uf)) {
-		
-		int error = userfaultfd_unmap_prep(vma, start, end, uf);
-		if (error)
-			return error;
-	}
-
-
 	detach_vmas_to_be_unmapped(mm, vma, prev, end);
 
 	unmap_region(mm, vma, prev, start, end);
@@ -1172,29 +1161,26 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	return 0;
 }
 
-int do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
-	      struct list_head *uf)
+int do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 {
-	return __do_munmap(mm, start, len, uf);
+	return __do_munmap(mm, start, len);
 }
 
 int vm_munmap(unsigned long start, size_t len)
 {
 	int ret;
 	struct mm_struct *mm = current->mm;
-	LIST_HEAD(uf);
 
 	if (mmap_write_lock_killable(mm))
 		return -EINTR;
 
-	ret = __do_munmap(mm, start, len, &uf);
+	ret = __do_munmap(mm, start, len);
 	mmap_write_unlock(mm);
 
-	userfaultfd_unmap_complete(mm, &uf);
 	return ret;
 }
 
-static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long flags, struct list_head *uf)
+static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long flags)
 {
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma, *prev;
@@ -1211,7 +1197,7 @@ static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long fla
 	if (IS_ERR_VALUE(mapped_addr))
 		return mapped_addr;
 
-	if (munmap_vma_range(mm, addr, len, &prev, &rb_link, &rb_parent, uf))
+	if (munmap_vma_range(mm, addr, len, &prev, &rb_link, &rb_parent))
 		return -ENOMEM;
 
 	if (mm->map_count > sysctl_max_map_count)
@@ -1250,7 +1236,6 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 	struct mm_struct *mm = current->mm;
 	unsigned long len;
 	int ret;
-	LIST_HEAD(uf);
 
 	len = PAGE_ALIGN(request);
 	if (len < request)
@@ -1261,9 +1246,8 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 	if (mmap_write_lock_killable(mm))
 		return -EINTR;
 
-	ret = do_brk_flags(addr, len, flags, &uf);
+	ret = do_brk_flags(addr, len, flags);
 	mmap_write_unlock(mm);
-	userfaultfd_unmap_complete(mm, &uf);
 	/*
 	 * def_flags never carries VM_LOCKED (mlockall removed), so the populate
 	 * path is dead.

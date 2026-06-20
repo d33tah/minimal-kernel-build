@@ -10,7 +10,6 @@
 #include <linux/security.h>
 #include <linux/syscalls.h>
 #include <linux/uaccess.h>
-#include <linux/userfaultfd_k.h>
 
 #include <asm/cacheflush.h>
 #include <asm/tlb.h>

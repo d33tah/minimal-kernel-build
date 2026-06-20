@@ -484,114 +484,12 @@ void __init e820__finish_early_params(void)
 	 */
 }
 
-static const char *__init e820_type_to_string(struct e820_entry *entry)
-{
-	switch (entry->type) {
-	case E820_TYPE_RESERVED_KERN:	 
-	case E820_TYPE_RAM:		return "System RAM";
-	case E820_TYPE_ACPI:		return "ACPI Tables";
-	case E820_TYPE_NVS:		return "ACPI Non-volatile Storage";
-	case E820_TYPE_UNUSABLE:	return "Unusable memory";
-	case E820_TYPE_PRAM:		return "Persistent Memory (legacy)";
-	case E820_TYPE_PMEM:		return "Persistent Memory";
-	case E820_TYPE_RESERVED:	return "Reserved";
-	case E820_TYPE_SOFT_RESERVED:	return "Soft Reserved";
-	default:			return "Unknown E820 type";
-	}
-}
-
-static unsigned long __init e820_type_to_iomem_type(struct e820_entry *entry)
-{
-	switch (entry->type) {
-	case E820_TYPE_RESERVED_KERN:	 
-	case E820_TYPE_RAM:		return IORESOURCE_SYSTEM_RAM;
-	case E820_TYPE_ACPI:		 
-	case E820_TYPE_NVS:		 
-	case E820_TYPE_UNUSABLE:	 
-	case E820_TYPE_PRAM:		 
-	case E820_TYPE_PMEM:		 
-	case E820_TYPE_RESERVED:	 
-	case E820_TYPE_SOFT_RESERVED:	 
-	default:			return IORESOURCE_MEM;
-	}
-}
-
-static unsigned long __init e820_type_to_iores_desc(struct e820_entry *entry)
-{
-	switch (entry->type) {
-	case E820_TYPE_ACPI:		return IORES_DESC_ACPI_TABLES;
-	case E820_TYPE_NVS:		return IORES_DESC_ACPI_NV_STORAGE;
-	case E820_TYPE_PMEM:		return IORES_DESC_PERSISTENT_MEMORY;
-	case E820_TYPE_PRAM:		return IORES_DESC_PERSISTENT_MEMORY_LEGACY;
-	case E820_TYPE_RESERVED:	return IORES_DESC_RESERVED;
-	case E820_TYPE_SOFT_RESERVED:	return IORES_DESC_SOFT_RESERVED;
-	case E820_TYPE_RESERVED_KERN:	 
-	case E820_TYPE_RAM:		 
-	case E820_TYPE_UNUSABLE:	 
-	default:			return IORES_DESC_NONE;
-	}
-}
-
-static bool __init do_mark_busy(enum e820_type type, struct resource *res)
-{
-	 
-	if (res->start < (1ULL<<20))
-		return true;
-
-	 
-	switch (type) {
-	case E820_TYPE_RESERVED:
-	case E820_TYPE_SOFT_RESERVED:
-	case E820_TYPE_PRAM:
-	case E820_TYPE_PMEM:
-		return false;
-	case E820_TYPE_RESERVED_KERN:
-	case E820_TYPE_RAM:
-	case E820_TYPE_ACPI:
-	case E820_TYPE_NVS:
-	case E820_TYPE_UNUSABLE:
-	default:
-		return true;
-	}
-}
-
-
-void __init e820__reserve_resources(void)
-{
-	int i;
-	struct resource *res;
-	u64 end;
-
-	res = memblock_alloc(sizeof(*res) * e820_table->nr_entries,
-			     SMP_CACHE_BYTES);
-	if (!res)
-		panic("%s: Failed to allocate %zu bytes\n", __func__,
-		      sizeof(*res) * e820_table->nr_entries);
-
-	for (i = 0; i < e820_table->nr_entries; i++) {
-		struct e820_entry *entry = e820_table->entries + i;
-
-		end = entry->addr + entry->size - 1;
-		if (end != (resource_size_t)end) {
-			res++;
-			continue;
-		}
-		res->start = entry->addr;
-		res->end   = end;
-		res->name  = e820_type_to_string(entry);
-		res->flags = e820_type_to_iomem_type(entry);
-		res->desc  = e820_type_to_iores_desc(entry);
-
-		 
-		if (do_mark_busy(entry->type, res)) {
-			res->flags |= IORESOURCE_BUSY;
-			insert_resource(&iomem_resource, res);
-		}
-		res++;
-	}
-
-	/* firmware_map_add_early loop removed - unused in minimal kernel */
-}
+/*
+ * e820__reserve_resources() + its e820_type_to_string/iomem_type/iores_desc/
+ * do_mark_busy helpers removed: they only built write-only state in the
+ * iomem_resource tree, which is NEVER WALKED on this build (no walk_iomem_res/
+ * allocate_resource/lookup_resource/region_intersects readers, no /proc/iomem).
+ */
 
 #define MAX_RESOURCE_SIZE ((resource_size_t)-1)
 

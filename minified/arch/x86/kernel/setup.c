@@ -414,7 +414,7 @@ void __init setup_arch(char **cmdline_p)
 
 	sync_initial_page_table();
 
-	e820__reserve_resources();
+	/* e820__reserve_resources() removed: built write-only iomem-tree state */
 
 	x86_init.resources.reserve_resources();
 

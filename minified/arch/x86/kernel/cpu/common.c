@@ -46,7 +46,6 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/asm.h>
 #include <asm/bugs.h>
 #include <asm/cpu.h>
-#include <asm/mce.h>
 #include <asm/msr.h>
 #include <asm/memtype.h>
 #include <asm/microcode.h>
@@ -432,7 +431,6 @@ void get_cpu_cap(struct cpuinfo_x86 *c)
 		cpuid(0x80000007, &eax, &ebx, &ecx, &edx);
 
 		c->x86_capability[CPUID_8000_0007_EBX] = ebx;
-		c->x86_power = edx;
 	}
 
 	if (c->extended_cpuid_level >= 0x80000008) {
@@ -578,7 +576,6 @@ static void generic_identify(struct cpuinfo_x86 *c)
 static void identify_cpu(struct cpuinfo_x86 *c)
 {
 	c->loops_per_jiffy = loops_per_jiffy;
-	c->x86_cache_size = 0;
 	c->x86_vendor = X86_VENDOR_UNKNOWN;
 	c->x86_model = c->x86_stepping = 0;	
 	c->x86_vendor_id[0] = '\0'; 

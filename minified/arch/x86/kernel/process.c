@@ -30,7 +30,6 @@
 #include <asm/debugreg.h>
 #include <asm/nmi.h>
 #include <asm/tlbflush.h>
-#include <asm/mce.h>
 #include <asm/switch_to.h>
 #include <asm/desc.h>
 #include <asm/prctl.h>

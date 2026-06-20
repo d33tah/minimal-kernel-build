@@ -23,7 +23,6 @@ extern struct atomic_notifier_head panic_notifier_list;
 #include <asm/gart.h>
 #include <asm/hypervisor.h>
 #include <asm/io_apic.h>
-#include <asm/mce.h>
 #include <asm/memtype.h>
 #include <asm/mtrr.h>
 #include <asm/realmode.h>

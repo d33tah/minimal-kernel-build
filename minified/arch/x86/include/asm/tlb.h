@@ -215,20 +215,7 @@ static inline void tlb_flush_pmd_range(struct mmu_gather *tlb,
 
 /* pmd_free_tlb / pud_free_tlb / p4d_free_tlb removed - never invoked on
  * 2-level paging (mm/memory.c free_pgd_range only calls pte_free_tlb) */
-
-#ifndef pte_needs_flush
-static inline bool pte_needs_flush(pte_t oldpte, pte_t newpte)
-{
-	return true;
-}
-#endif
-
-#ifndef huge_pmd_needs_flush
-static inline bool huge_pmd_needs_flush(pmd_t oldpmd, pmd_t newpmd)
-{
-	return true;
-}
-#endif
+/* pte_needs_flush / huge_pmd_needs_flush fallback stubs removed - zero callers tree-wide */
 
 
 #endif /* _ASM_X86_TLB_H */

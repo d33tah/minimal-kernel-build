@@ -33,7 +33,6 @@ extern struct atomic_notifier_head panic_notifier_list;
 #include <asm/vsyscall.h>
 #include <linux/vmalloc.h>
 
-unsigned long max_low_pfn_mapped;
 unsigned long max_pfn_mapped;
 
 

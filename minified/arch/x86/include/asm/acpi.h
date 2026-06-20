@@ -21,7 +21,4 @@
 
 #define ARCH_HAS_POWER_INIT	1
 
-
-#define ACPI_TABLE_UPGRADE_MAX_PHYS (max_low_pfn_mapped << PAGE_SHIFT)
-
-#endif  
+#endif

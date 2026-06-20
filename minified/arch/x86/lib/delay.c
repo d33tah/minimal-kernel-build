@@ -14,7 +14,6 @@
 static void delay_loop(u64 __loops);
 
 static void (*delay_fn)(u64) __ro_after_init = delay_loop;
-static void (*delay_halt_fn)(u64 start, u64 cycles) __ro_after_init;
 
 static void delay_loop(u64 __loops)
 {
@@ -66,50 +65,21 @@ static void delay_tsc(u64 cycles)
 	preempt_enable();
 }
 
-static void delay_halt_tpause(u64 start, u64 cycles)
-{
-	u64 until = start + cycles;
-	u32 eax, edx;
-
-	eax = lower_32_bits(until);
-	edx = upper_32_bits(until);
-
-	 
-	__tpause(TPAUSE_C02_STATE, edx, eax);
-}
-
-static void delay_halt(u64 __cycles)
-{
-	u64 start, end, cycles = __cycles;
-
-	 
-	if (!cycles)
-		return;
-
-	start = rdtsc_ordered();
-
-	for (;;) {
-		delay_halt_fn(start, cycles);
-		end = rdtsc_ordered();
-
-		if (cycles <= end - start)
-			break;
-
-		cycles -= end - start;
-		start = end;
-	}
-}
-
 void __init use_tsc_delay(void)
 {
 	if (delay_fn == delay_loop)
 		delay_fn = delay_tsc;
 }
 
+/*
+ * TPAUSE-based delay (delay_halt/delay_halt_tpause) removed: it is only ever
+ * selected here, and this is gated on X86_FEATURE_WAITPKG, which the boot CPU
+ * does not have (runtime trace: use_tpause_delay never executes).  The helper
+ * is kept as a no-op so the X86_FEATURE_WAITPKG callsite in arch/x86/kernel/
+ * time.c still links.
+ */
 void __init use_tpause_delay(void)
 {
-	delay_halt_fn = delay_halt_tpause;
-	delay_fn = delay_halt;
 }
 
 void __delay(unsigned long loops)

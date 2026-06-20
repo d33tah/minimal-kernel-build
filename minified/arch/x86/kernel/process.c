@@ -170,34 +170,14 @@ void arch_setup_new_exec(void)
 		enable_cpuid();
 }
 
-static __always_inline void amd_set_core_ssb_state(unsigned long tifn)
-{
-	u64 msr = x86_amd_ls_cfg_base | ssbd_tif_to_amd_ls_cfg(tifn);
-
-	wrmsrl(MSR_AMD64_LS_CFG, msr);
-}
-
-static __always_inline void amd_set_ssb_virt_state(unsigned long tifn)
-{
-	 
-	wrmsrl(MSR_AMD64_VIRT_SPEC_CTRL, ssbd_tif_to_spec_ctrl(tifn));
-}
+/* amd_set_core_ssb_state / amd_set_ssb_virt_state removed - SSBD spec-ctrl
+ * machinery is gated on AMD-only X86_FEATURE_VIRT_SSBD / LS_CFG_SSBD, both
+ * absent on the QEMU boot CPU; __speculation_ctrl_update is runtime-dead. */
 
 static __always_inline void __speculation_ctrl_update(unsigned long tifp,
 						      unsigned long tifn)
 {
-	unsigned long tif_diff = tifp ^ tifn;
-
 	lockdep_assert_irqs_disabled();
-
-
-	if (static_cpu_has(X86_FEATURE_VIRT_SSBD)) {
-		if (tif_diff & _TIF_SSBD)
-			amd_set_ssb_virt_state(tifn);
-	} else if (static_cpu_has(X86_FEATURE_LS_CFG_SSBD)) {
-		if (tif_diff & _TIF_SSBD)
-			amd_set_core_ssb_state(tifn);
-	}
 }
 
 void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)

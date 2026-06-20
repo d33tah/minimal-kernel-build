@@ -138,19 +138,7 @@ static inline unsigned long pmd_pfn(pmd_t pmd)
 	return (pfn & pmd_pfn_mask(pmd)) >> PAGE_SHIFT;
 }
 
-static inline unsigned long pud_pfn(pud_t pud)
-{
-	phys_addr_t pfn = pud_val(pud);
-	pfn ^= protnone_mask(pfn);
-	return (pfn & pud_pfn_mask(pud)) >> PAGE_SHIFT;
-}
-
-/* p4d_pfn removed - unused */
-
-static inline unsigned long pgd_pfn(pgd_t pgd)
-{
-	return (pgd_val(pgd) & PTE_PFN_MASK) >> PAGE_SHIFT;
-}
+/* pud_pfn, p4d_pfn, pgd_pfn removed - unused */
 
 #define pte_page(pte)	pfn_to_page(pte_pfn(pte))
 
@@ -177,17 +165,7 @@ static inline pte_t pte_clear_flags(pte_t pte, pteval_t clear)
 
 
 
-static inline pte_t pte_mkold(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_ACCESSED);
-}
-
-static inline pte_t pte_wrprotect(pte_t pte)
-{
-	return pte_clear_flags(pte, _PAGE_RW);
-}
-
-/* pte_mkexec removed - unused */
+/* pte_mkold, pte_wrprotect, pte_mkexec removed - unused */
 
 static inline pte_t pte_mkdirty(pte_t pte)
 {
@@ -206,10 +184,7 @@ static inline pte_t pte_mkwrite(pte_t pte)
 
 /* pte_mkhuge, pte_clrhuge, pte_mkglobal, pte_clrglobal removed - unused */
 
-static inline pte_t pte_mkspecial(pte_t pte)
-{
-	return pte_set_flags(pte, _PAGE_SPECIAL);
-}
+/* pte_mkspecial removed - unused */
 
 static inline pte_t pte_mkdevmap(pte_t pte)
 {
@@ -449,27 +424,7 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
 	return pte;
 }
 
-#define __HAVE_ARCH_PTEP_GET_AND_CLEAR_FULL
-static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm,
-					    unsigned long addr, pte_t *ptep,
-					    int full)
-{
-	pte_t pte;
-	if (full) {
-		 
-		pte = native_local_ptep_get_and_clear(ptep);
-	} else {
-		pte = ptep_get_and_clear(mm, addr, ptep);
-	}
-	return pte;
-}
-
-#define __HAVE_ARCH_PTEP_SET_WRPROTECT
-static inline void ptep_set_wrprotect(struct mm_struct *mm,
-				      unsigned long addr, pte_t *ptep)
-{
-	clear_bit(_PAGE_BIT_RW, (unsigned long *)&ptep->pte);
-}
+/* ptep_get_and_clear_full, ptep_set_wrprotect removed - unused */
 
 #define flush_tlb_fix_spurious_fault(vma, address) do { } while (0)
 

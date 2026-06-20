@@ -25,7 +25,6 @@
 #include <linux/mount.h>
 #include <linux/security.h>
 #include <linux/syscalls.h>
-#include <linux/kmod.h>
 #include <linux/fs_struct.h>
 #include <linux/oom.h>
 #include <linux/compat.h>

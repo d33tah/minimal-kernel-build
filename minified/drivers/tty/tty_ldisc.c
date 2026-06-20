@@ -1,6 +1,5 @@
 #include <linux/types.h>
 #include <linux/errno.h>
-#include <linux/kmod.h>
 #include <linux/sched.h>
 #include <linux/interrupt.h>
 #include <linux/tty.h>

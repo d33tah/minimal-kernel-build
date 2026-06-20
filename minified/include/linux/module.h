@@ -6,7 +6,6 @@
 #include <linux/stat.h>
 #include <linux/compiler.h>
 #include <linux/cache.h>
-#include <linux/kmod.h>
 #include <linux/init.h>
 #include <linux/elf.h>
 #include <linux/stringify.h>

@@ -33,12 +33,6 @@ unsigned long __roundup_pow_of_two(unsigned long n)
 	return 1UL << fls_long(n - 1);
 }
 
-static inline __attribute__((const))
-unsigned long __rounddown_pow_of_two(unsigned long n)
-{
-	return 1UL << (fls_long(n) - 1);
-}
-
 #define ilog2(n) \
 ( \
 	__builtin_constant_p(n) ?	\
@@ -56,13 +50,6 @@ unsigned long __rounddown_pow_of_two(unsigned long n)
 		(1UL << (ilog2((n) - 1) + 1))	\
 				   ) :		\
 	__roundup_pow_of_two(n)			\
- )
-
-#define rounddown_pow_of_two(n)			\
-(						\
-	__builtin_constant_p(n) ? (		\
-		(1UL << ilog2(n))) :		\
-	__rounddown_pow_of_two(n)		\
  )
 
 static inline __attribute_const__

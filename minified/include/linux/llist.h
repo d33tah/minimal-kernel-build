@@ -28,17 +28,6 @@ static inline void init_llist_head(struct llist_head *list)
 #define member_address_is_nonnull(ptr, member)	\
 	((uintptr_t)(ptr) + offsetof(typeof(*(ptr)), member) != 0)
 
-#define llist_for_each(pos, node)			\
-	for ((pos) = (node); pos; (pos) = (pos)->next)
-
-#define llist_for_each_safe(pos, n, node)			\
-	for ((pos) = (node); (pos) && ((n) = (pos)->next, true); (pos) = (n))
-
-#define llist_for_each_entry(pos, node, member)				\
-	for ((pos) = llist_entry((node), typeof(*(pos)), member);	\
-	     member_address_is_nonnull(pos, member);			\
-	     (pos) = llist_entry((pos)->member.next, typeof(*(pos)), member))
-
 #define llist_for_each_entry_safe(pos, n, node, member)			       \
 	for (pos = llist_entry((node), typeof(*pos), member);		       \
 	     member_address_is_nonnull(pos, member) &&			       \

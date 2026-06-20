@@ -81,7 +81,6 @@ __visible unsigned long mmu_cr4_features __ro_after_init;
 
 
 struct screen_info screen_info;
-struct edid_info edid_info;
 
 extern int root_mountflags;
 
@@ -398,8 +397,7 @@ void __init setup_arch(char **cmdline_p)
 
 	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
 	screen_info = boot_params.screen_info;
-	edid_info = boot_params.edid_info;
-	/* apm_info/ist_info/saved_video_mode copies removed - never read */
+	/* edid_info/apm_info/ist_info/saved_video_mode copies removed - never read */
 
 	/* x86_init.oem.arch_setup() removed - dispatched to x86_init_noop */
 

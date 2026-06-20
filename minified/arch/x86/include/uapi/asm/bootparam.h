@@ -51,7 +51,6 @@ struct ist_info {
 struct edid_info {
 	unsigned char dummy[128];
 };
-extern struct edid_info edid_info;
 
 struct setup_data {
 	__u64 next;

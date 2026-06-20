@@ -73,9 +73,4 @@ extern u64 xstate_fx_sw_bytes[USER_XSTATE_FX_SW_WORDS];
 
 
 
-static __always_inline __pure bool fpu_state_size_dynamic(void)
-{
-	return false;
-}
-
 #endif

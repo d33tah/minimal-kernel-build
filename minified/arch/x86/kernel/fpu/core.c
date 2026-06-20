@@ -136,17 +136,8 @@ void fpstate_reset(struct fpu *fpu)
 	fpu->perm.__user_state_size	= fpu_user_cfg.default_size;
 }
 
-static inline void fpu_inherit_perms(struct fpu *dst_fpu)
-{
-	if (fpu_state_size_dynamic()) {
-		struct fpu *src_fpu = &current->group_leader->thread.fpu;
-
-		spin_lock_irq(&current->sighand->siglock);
-		 
-		dst_fpu->perm = src_fpu->perm;
-		spin_unlock_irq(&current->sighand->siglock);
-	}
-}
+/* fpu_inherit_perms removed - gated on fpu_state_size_dynamic() which is
+ * constant false (no XFD dynamic xstate on the QEMU boot CPU); body was dead. */
 
 int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
 {
@@ -180,8 +171,6 @@ int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
 	if (test_thread_flag(TIF_NEED_FPU_LOAD))
 		fpregs_restore_userregs();
 	save_fpregs_to_fpstate(dst_fpu);
-	if (!(clone_flags & CLONE_THREAD))
-		fpu_inherit_perms(dst_fpu);
 	fpregs_unlock();
 
 	 

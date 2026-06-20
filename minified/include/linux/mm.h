@@ -873,8 +873,6 @@ static inline spinlock_t *pte_lockptr(struct mm_struct *mm, pmd_t *pmd)
 {
 	return &mm->page_table_lock;
 }
-static inline bool ptlock_init(struct page *page) { return true; }
-
 static inline void pgtable_init(void)
 {
 	pgtable_cache_init();
@@ -882,8 +880,6 @@ static inline void pgtable_init(void)
 
 static inline bool pgtable_pte_page_ctor(struct page *page)
 {
-	if (!ptlock_init(page))
-		return false;
 	__SetPageTable(page);
 	inc_lruvec_page_state(page, NR_PAGETABLE);
 	return true;

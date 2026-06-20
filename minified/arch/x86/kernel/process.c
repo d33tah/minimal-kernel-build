@@ -17,9 +17,7 @@
 #include <linux/random.h>
 #include <linux/utsname.h>
 /* end stackprotector.h */
-#include <linux/cpuidle.h>
 #include <linux/acpi.h>
-#include <linux/hw_breakpoint.h>
 #include <asm/cpu.h>
 #include <asm/apic.h>
 #include <linux/uaccess.h>

@@ -5,7 +5,6 @@
 
 #include <linux/sched/rt.h>
 
-#include <linux/cpuidle.h>
 #include <linux/jiffies.h>
 #include <linux/init_task.h>
 #include <linux/slab.h>

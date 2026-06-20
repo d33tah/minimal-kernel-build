@@ -37,7 +37,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/fs_struct.h>
 #include <linux/init_task.h>
 #include <linux/perf_event.h>
-#include <linux/hw_breakpoint.h>
 #include <linux/oom.h>
 #include <linux/writeback.h>
 #include <linux/random.h>

@@ -5,7 +5,6 @@
 #include <linux/ioport.h>
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
-#include <linux/cc_platform.h>
 #include <linux/efi.h>
 #include <linux/pgtable.h>
 

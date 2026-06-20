@@ -11,8 +11,6 @@
 struct subsys_private {
 	struct kset subsys;
 
-	struct klist klist_devices;
-
 	struct class *class;
 };
 #define to_subsys_private(obj) container_of(obj, struct subsys_private, subsys.kobj)
@@ -20,17 +18,13 @@ struct subsys_private {
 /* Removed: struct driver_private - the driver-side klist/kobj is never built
    (no driver_register/bus_add_driver), and driver->p is never dereferenced. */
 
-
+/* Removed: klist_devices/klist_children/knode_parent/knode_class + their
+   to_device_private_* macros - the klist get/put callbacks they fed were
+   write-only (klist_add/del/get/put don't exist in this build, so the stored
+   ->get/->put fn-ptrs were never invoked and the nodes never linked). */
 struct device_private {
-	struct klist klist_children;
-	struct klist_node knode_parent;
-	struct klist_node knode_class;
 	struct device *device;
 };
-#define to_device_private_parent(obj)	\
-	container_of(obj, struct device_private, knode_parent)
-#define to_device_private_class(obj)	\
-	container_of(obj, struct device_private, knode_class)
 
  
 extern int devices_init(void);

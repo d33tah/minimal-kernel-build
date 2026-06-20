@@ -18,7 +18,6 @@
 
 #include <linux/ioport.h>
 #include <linux/kobject.h>
-#include <linux/klist.h>
 #include <linux/list.h>
 #include <linux/lockdep.h>
 #include <linux/compiler.h>

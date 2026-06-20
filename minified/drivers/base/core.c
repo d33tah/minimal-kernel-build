@@ -72,22 +72,6 @@ struct kset *devices_kset;
 /* Removed: device_remove_file (0-caller no-op stub after dev_attr_dev/uevent
  * removal), device_remove_file_self, device_create_bin_file, device_remove_bin_file. */
 
-static void klist_children_get(struct klist_node *n)
-{
-	struct device_private *p = to_device_private_parent(n);
-	struct device *dev = p->device;
-
-	get_device(dev);
-}
-
-static void klist_children_put(struct klist_node *n)
-{
-	struct device_private *p = to_device_private_parent(n);
-	struct device *dev = p->device;
-
-	put_device(dev);
-}
-
 void device_initialize(struct device *dev)
 {
 	dev->kobj.kset = devices_kset;
@@ -118,8 +102,6 @@ static int device_private_init(struct device *dev)
 	if (!dev->p)
 		return -ENOMEM;
 	dev->p->device = dev;
-	klist_init(&dev->p->klist_children, klist_children_get,
-		   klist_children_put);
 	return 0;
 }
 

@@ -39,26 +39,6 @@ static void class_put(struct class *cls)
 		kset_put(&cls->p->subsys);
 }
 
-static struct device *klist_class_to_dev(struct klist_node *n)
-{
-	struct device_private *p = to_device_private_class(n);
-	return p->device;
-}
-
-static void klist_class_dev_get(struct klist_node *n)
-{
-	struct device *dev = klist_class_to_dev(n);
-
-	get_device(dev);
-}
-
-static void klist_class_dev_put(struct klist_node *n)
-{
-	struct device *dev = klist_class_to_dev(n);
-
-	put_device(dev);
-}
-
 int __class_register(struct class *cls, struct lock_class_key *key)
 {
 	struct subsys_private *cp;
@@ -67,7 +47,6 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 	cp = kzalloc(sizeof(*cp), GFP_KERNEL);
 	if (!cp)
 		return -ENOMEM;
-	klist_init(&cp->klist_devices, klist_class_dev_get, klist_class_dev_put);
 	error = kobject_set_name(&cp->subsys.kobj, "%s", cls->name);
 	if (error) {
 		kfree(cp);

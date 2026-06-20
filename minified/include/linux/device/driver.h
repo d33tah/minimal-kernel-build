@@ -3,7 +3,6 @@
 #define _DEVICE_DRIVER_H_
 
 #include <linux/kobject.h>
-#include <linux/klist.h>
 #include <linux/pm.h>
 #include <linux/device/bus.h>
 #include <linux/module.h>

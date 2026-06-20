@@ -38,8 +38,8 @@ static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
 	pgd += index;
 	pgd_k = init_mm.pgd + index;
 
-	if (!pgd_present(*pgd_k))
-		return NULL;
+	/* pgd_present() is constant 1 on 2-level x86_32, so the !present
+	 * early-out was statically dead. */
 
 	/*
 	 * 2-level x86_32 (P4D/PUD/PMD folded): p4d_offset/pud_offset are

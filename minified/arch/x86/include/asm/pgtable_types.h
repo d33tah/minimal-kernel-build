@@ -237,7 +237,7 @@ typedef struct { pgd_t pgd; } p4d_t;
 
 static inline int pgd_none(pgd_t pgd)		{ return 0; }
 static inline int pgd_bad(pgd_t pgd)		{ return 0; }
-static inline int pgd_present(pgd_t pgd)	{ return 1; }
+/* pgd_present() removed - constant 1, all callers folded */
 #define p4d_ERROR(p4d)				(pgd_ERROR((p4d).pgd))
 
 #define pgd_populate(mm, pgd, p4d)		do { } while (0)
@@ -283,7 +283,7 @@ typedef struct { p4d_t p4d; } pud_t;
 #define PUD_MASK  	(~(PUD_SIZE-1))
 
 static inline int p4d_none(p4d_t p4d)		{ return 0; }
-static inline int p4d_present(p4d_t p4d)	{ return 1; }
+/* p4d_present() removed - constant 1, all callers folded */
 #define pud_ERROR(pud)				(p4d_ERROR((pud).p4d))
 
 #define p4d_populate(mm, p4d, pud)		do { } while (0)

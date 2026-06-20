@@ -235,8 +235,7 @@ void __init native_pagetable_init(void)
 	for (pfn = max_low_pfn; pfn < 1<<(32-PAGE_SHIFT); pfn++) {
 		va = PAGE_OFFSET + (pfn<<PAGE_SHIFT);
 		pgd = base + pgd_index(va);
-		if (!pgd_present(*pgd))
-			break;
+		/* pgd_present() is constant 1 on 2-level x86_32 (dead break) */
 
 		pmd = pmd_offset(pud_offset(p4d_offset(pgd, va), va), va);
 		if (!pmd_present(*pmd))

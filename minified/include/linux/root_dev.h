@@ -5,6 +5,4 @@
 #include <linux/types.h>
 #include <linux/kdev_t.h>
 
-extern dev_t ROOT_DEV;
-
 #endif

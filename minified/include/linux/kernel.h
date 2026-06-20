@@ -98,8 +98,6 @@ extern char *next_arg(char *args, char **param, char **val);
 
 extern void bust_spinlocks(int yes);
 
-extern int root_mountflags;
-
 
 extern enum system_states {
 	SYSTEM_BOOTING,

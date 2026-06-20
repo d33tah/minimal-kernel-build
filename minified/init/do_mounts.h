@@ -10,5 +10,3 @@
 #include <linux/root_dev.h>
 #include <linux/init_syscalls.h>
 
-extern int root_mountflags;
-

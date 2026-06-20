@@ -76,8 +76,6 @@ __visible unsigned long mmu_cr4_features __ro_after_init;
 
 struct screen_info screen_info;
 
-extern int root_mountflags;
-
 #define RAMDISK_IMAGE_START_MASK	0x07FF
 #define RAMDISK_PROMPT_FLAG		0x8000
 #define RAMDISK_LOAD_FLAG		0x4000
@@ -389,7 +387,6 @@ void __init setup_arch(char **cmdline_p)
 	jump_label_init();
 	early_ioremap_init();
 
-	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
 	screen_info = boot_params.screen_info;
 	/* edid_info/apm_info/ist_info/saved_video_mode copies removed - never read */
 
@@ -402,8 +399,6 @@ void __init setup_arch(char **cmdline_p)
 	e820__memory_setup();
 	parse_setup_data();
 
-	if (!boot_params.hdr.root_flags)
-		root_mountflags &= ~MS_RDONLY;
 	setup_initial_init_mm(_text, _etext, _edata, (void *)_brk_end);
 
 	code_resource.start = __pa_symbol(_text);

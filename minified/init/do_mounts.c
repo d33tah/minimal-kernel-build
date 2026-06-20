@@ -20,12 +20,6 @@
 
 #include "do_mounts.h"
 
-int root_mountflags = MS_RDONLY | MS_SILENT;
-
-dev_t ROOT_DEV;
-
-
-
 /* Stub: root= cmdline not needed for minimal kernel */
 static int __init root_dev_setup(char *line) { return 1; }
 __setup("root=", root_dev_setup);

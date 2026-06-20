@@ -24,11 +24,8 @@ extern unsigned int nr_cpu_ids;
 
 extern struct cpumask __cpu_possible_mask;
 extern struct cpumask __cpu_online_mask;
-extern struct cpumask __cpu_present_mask;
-extern struct cpumask __cpu_active_mask;
 #define cpu_possible_mask ((const struct cpumask *)&__cpu_possible_mask)
 #define cpu_online_mask   ((const struct cpumask *)&__cpu_online_mask)
-#define cpu_present_mask  ((const struct cpumask *)&__cpu_present_mask)
 
 static __always_inline unsigned int cpumask_check(unsigned int cpu)
 {
@@ -108,7 +105,6 @@ extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
 
 #define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
 #define for_each_online_cpu(cpu)   for_each_cpu((cpu), cpu_online_mask)
-#define for_each_present_cpu(cpu)  for_each_cpu((cpu), cpu_present_mask)
 
 static inline void
 set_cpu_possible(unsigned int cpu, bool possible)
@@ -119,27 +115,7 @@ set_cpu_possible(unsigned int cpu, bool possible)
 		cpumask_clear_cpu(cpu, &__cpu_possible_mask);
 }
 
-static inline void
-set_cpu_present(unsigned int cpu, bool present)
-{
-	if (present)
-		cpumask_set_cpu(cpu, &__cpu_present_mask);
-	else
-		cpumask_clear_cpu(cpu, &__cpu_present_mask);
-}
-
 void set_cpu_online(unsigned int cpu, bool online);
-
-static inline void
-set_cpu_active(unsigned int cpu, bool active)
-{
-	if (active)
-		cpumask_set_cpu(cpu, &__cpu_active_mask);
-	else
-		cpumask_clear_cpu(cpu, &__cpu_active_mask);
-}
-
-
 
 #define to_cpumask(bitmap)						\
 	((struct cpumask *)(1 ? (bitmap)				\

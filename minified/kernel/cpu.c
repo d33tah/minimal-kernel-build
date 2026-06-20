@@ -38,10 +38,6 @@ struct cpumask __cpu_possible_mask __read_mostly;
 
 struct cpumask __cpu_online_mask __read_mostly;
 
-struct cpumask __cpu_present_mask __read_mostly;
-
-struct cpumask __cpu_active_mask __read_mostly;
-
 
 void set_cpu_online(unsigned int cpu, bool online)
 {
@@ -58,8 +54,6 @@ void __init boot_cpu_init(void)
 
 	 
 	set_cpu_online(cpu, true);
-	set_cpu_active(cpu, true);
-	set_cpu_present(cpu, true);
 	set_cpu_possible(cpu, true);
 
 }

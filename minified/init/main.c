@@ -53,7 +53,6 @@ extern void sched_init(void);
 extern void sched_init_smp(void);
 #include <linux/signal.h>
 #include <linux/idr.h>
-#include <linux/async.h>
 #include <linux/shmem_fs.h>
 #include <linux/slab.h>
 #include <linux/perf_event.h>

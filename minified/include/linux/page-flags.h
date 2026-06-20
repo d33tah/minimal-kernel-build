@@ -220,8 +220,6 @@ PAGEFLAG(LRU, lru, PF_HEAD) __CLEARPAGEFLAG(LRU, lru, PF_HEAD)
 	TESTCLEARFLAG(LRU, lru, PF_HEAD)
 PAGEFLAG(Active, active, PF_HEAD) __CLEARPAGEFLAG(Active, active, PF_HEAD)
 	TESTCLEARFLAG(Active, active, PF_HEAD)
-PAGEFLAG(Workingset, workingset, PF_HEAD)
-	TESTCLEARFLAG(Workingset, workingset, PF_HEAD)
 __PAGEFLAG(Slab, slab, PF_NO_TAIL)
 
 PAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
@@ -232,11 +230,9 @@ PAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 	__SETPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 
 PAGEFLAG(Private, private, PF_ANY)
-PAGEFLAG(Private2, private_2, PF_ANY) TESTSCFLAG(Private2, private_2, PF_ANY)
 
 TESTPAGEFLAG(Writeback, writeback, PF_NO_TAIL)
 	TESTSCFLAG(Writeback, writeback, PF_NO_TAIL)
-PAGEFLAG(MappedToDisk, mappedtodisk, PF_NO_TAIL)
 
 PAGEFLAG(Reclaim, reclaim, PF_NO_TAIL)
 	/* TESTCLEARFLAG(Reclaim, ...) removed - never used */
@@ -254,8 +250,6 @@ PAGEFLAG(Mlocked, mlocked, PF_NO_TAIL)
 
 #define __PG_HWPOISON 0
 
-
-__PAGEFLAG(Reported, reported, PF_NO_COMPOUND)
 
 #define PAGE_MAPPING_ANON	0x1
 #define PAGE_MAPPING_MOVABLE	0x2
@@ -378,8 +372,6 @@ PAGE_TYPE_OPS(Buddy, buddy)
 PAGE_TYPE_OPS(Table, table)
 
 
-
-PAGEFLAG(Isolated, isolated, PF_ANY);
 
 static __always_inline int PageAnonExclusive(struct page *page)
 {

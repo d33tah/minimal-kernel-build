@@ -15,7 +15,6 @@
 #include <linux/pm.h>
 #include <linux/tick.h>
 #include <linux/random.h>
-#include <linux/dmi.h>
 #include <linux/utsname.h>
 /* end stackprotector.h */
 #include <linux/cpuidle.h>

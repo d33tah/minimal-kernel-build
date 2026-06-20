@@ -16,12 +16,6 @@ struct kmem_cache;
 
 struct mem_cgroup_reclaim_cookie;
 
-static inline int mem_cgroup_charge(struct folio *folio,
-		struct mm_struct *mm, gfp_t gfp)
-{
-	return 0;
-}
-
 static inline struct lruvec *folio_lruvec_lock_irq(struct folio *folio)
 {
 	struct pglist_data *pgdat = folio_pgdat(folio);

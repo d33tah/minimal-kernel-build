@@ -15,22 +15,14 @@ static inline ktime_t ktime_set(const s64 secs, const unsigned long nsecs)
 	return secs * NSEC_PER_SEC + (s64)nsecs;
 }
 
-#define ktime_sub(lhs, rhs)	((lhs) - (rhs))
-
 #define ktime_add(lhs, rhs)	((lhs) + (rhs))
 
-#define ktime_add_unsafe(lhs, rhs)	((u64) (lhs) + (rhs))
-
 #define ktime_add_ns(kt, nsval)		((kt) + (nsval))
-
-#define ktime_sub_ns(kt, nsval)		((kt) - (nsval))
 
 static inline ktime_t timespec64_to_ktime(struct timespec64 ts)
 {
 	return ktime_set(ts.tv_sec, ts.tv_nsec);
 }
-
-#define ktime_to_timespec64(kt)		ns_to_timespec64((kt))
 
 static inline s64 ktime_to_ns(const ktime_t kt)
 {
@@ -44,7 +36,6 @@ static inline s64 ktime_to_ns(const ktime_t kt)
 
 /* Inlined from vdso/ktime.h */
 #define LOW_RES_NSEC		TICK_NSEC
-#define KTIME_LOW_RES		(LOW_RES_NSEC)
 
 static inline ktime_t ns_to_ktime(u64 ns)
 {

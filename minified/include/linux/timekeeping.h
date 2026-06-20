@@ -52,12 +52,6 @@ static inline u64 ktime_get_ns(void)
 }
 
 
-static inline u64 ktime_get_boottime_ns(void)
-{
-	return ktime_to_ns(ktime_get_boottime());
-}
-
-
 
 extern void read_persistent_clock64(struct timespec64 *ts);
 void read_persistent_wall_and_boot_offset(struct timespec64 *wall_clock,

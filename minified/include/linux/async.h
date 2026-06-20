@@ -8,14 +8,12 @@
 
 typedef u64 async_cookie_t;
 typedef void (*async_func_t) (void *data, async_cookie_t cookie);
+/* Stub scheduler ignores the domain; kept as an opaque by-pointer tag. */
 struct async_domain {
-	struct list_head pending;
-	unsigned registered:1;
 };
 
 #define ASYNC_DOMAIN_EXCLUSIVE(_name) \
-	struct async_domain _name = { .pending = LIST_HEAD_INIT(_name.pending), \
-				      .registered = 0 }
+	struct async_domain _name = { }
 
 async_cookie_t async_schedule_node_domain(async_func_t func, void *data,
 					  int node,

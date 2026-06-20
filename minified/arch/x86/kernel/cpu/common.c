@@ -656,8 +656,7 @@ void enable_sep_cpu(void)
 void __init identify_boot_cpu(void)
 {
 	identify_cpu(&boot_cpu_data);
-	if (HAS_KERNEL_IBT && cpu_feature_enabled(X86_FEATURE_IBT))
-		pr_info("CET detected: Indirect Branch Tracking enabled\n");
+	/* HAS_KERNEL_IBT==0 -> CET/IBT pr_info branch was const-dead; removed */
 	sysenter_setup();
 	enable_sep_cpu();
 	/* cpu_detect_tlb removed - TLB info never used */

@@ -5,28 +5,6 @@
 
 #include <linux/percpu-defs.h>
 #include <asm/processor.h>
-/* --- 2025-12-07 20:38 --- Inlined intel_ds.h */
-#define BTS_BUFFER_SIZE		(PAGE_SIZE << 4)
-#define PEBS_BUFFER_SIZE	(PAGE_SIZE << 4)
-#define MAX_PEBS_EVENTS_FMT4	8
-#define MAX_PEBS_EVENTS		32
-#define MAX_FIXED_PEBS_EVENTS	16
-struct debug_store {
-	u64	bts_buffer_base;
-	u64	bts_index;
-	u64	bts_absolute_maximum;
-	u64	bts_interrupt_threshold;
-	u64	pebs_buffer_base;
-	u64	pebs_index;
-	u64	pebs_absolute_maximum;
-	u64	pebs_interrupt_threshold;
-	u64	pebs_event_reset[MAX_PEBS_EVENTS + MAX_FIXED_PEBS_EVENTS];
-} __aligned(PAGE_SIZE);
-DECLARE_PER_CPU_PAGE_ALIGNED(struct debug_store, cpu_debug_store);
-struct debug_store_buffers {
-	char	bts_buffer[BTS_BUFFER_SIZE];
-	char	pebs_buffer[PEBS_BUFFER_SIZE];
-};
 #include <asm/pgtable_areas.h>
 
 
@@ -46,13 +24,8 @@ struct cpu_entry_area {
 	char guard_doublefault_stack[PAGE_SIZE];
 	struct doublefault_stack doublefault_stack;
 
-	 
-	struct tss_struct tss;
 
-	 
-	struct debug_store cpu_debug_store;
-	 
-	struct debug_store_buffers cpu_debug_buffers;
+	struct tss_struct tss;
 };
 
 #define CPU_ENTRY_AREA_SIZE		(sizeof(struct cpu_entry_area))

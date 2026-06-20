@@ -7,7 +7,6 @@
 #include <linux/mm.h>
 #include <linux/nmi.h>
 #include <linux/sched.h>
-#include <linux/sched/loadavg.h>
 #include <linux/sched/clock.h>
 #include <linux/clocksource.h>
 #include <linux/jiffies.h>

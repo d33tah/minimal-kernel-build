@@ -15,7 +15,6 @@
 #include <asm/tlbflush.h>
 #include <asm/tlb.h>
 #include <asm/proto.h>
-#include <asm/hypervisor.h>
 #include <asm/cpufeature.h>
 #include <asm/text-patching.h>
 #include <asm/memtype.h>

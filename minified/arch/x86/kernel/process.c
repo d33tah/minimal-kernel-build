@@ -39,7 +39,6 @@
 #define FRAME_END
 #define FRAME_OFFSET 0
 #include <asm/unwind.h>
-#include <asm/tdx.h>
 
 #include "process.h"
 

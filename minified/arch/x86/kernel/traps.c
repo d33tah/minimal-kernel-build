@@ -44,7 +44,6 @@
 #include <asm/alternative.h>
 #include <asm/fpu/xstate.h>
 #include <asm/vdso.h>
-#include <asm/tdx.h>
 
 #include <asm/processor-flags.h>
 #include <asm/setup.h>

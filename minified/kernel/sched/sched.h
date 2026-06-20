@@ -4,7 +4,6 @@
 #define _KERNEL_SCHED_SCHED_H
 
 #include <linux/sched.h>
-#include <linux/sched/loadavg.h>
 #include <linux/sched/mm.h>
 
 #include <linux/sched/signal.h>

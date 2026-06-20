@@ -5,7 +5,6 @@
 #include <asm/io.h>
 #include <linux/rtc.h>			 
 #include <asm/mc146818rtc.h>		 
-#include <linux/bcd.h>
 #include <linux/delay.h>
 
 #ifdef __KERNEL__

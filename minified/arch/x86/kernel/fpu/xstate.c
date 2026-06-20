@@ -14,7 +14,6 @@
 #include <linux/vmalloc.h>
 
 #include <asm/fpu/api.h>
-#include <asm/fpu/regset.h>
 #include <asm/fpu/signal.h>
 
 #include <asm/tlbflush.h>

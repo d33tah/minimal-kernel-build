@@ -4,7 +4,6 @@
 #include <asm/pgalloc.h>
 #include <asm/tlb.h>
 #include <asm/fixmap.h>
-#include <asm/mtrr.h>
 
 
 #define PGTABLE_HIGHMEM 0

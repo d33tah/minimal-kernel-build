@@ -39,7 +39,6 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/apic.h>
 #include <asm/desc.h>
 #include <asm/fpu/api.h>
-#include <asm/mtrr.h>
 #include <asm/hwcap2.h>
 #include <linux/numa.h>
 #include <asm/numa.h>

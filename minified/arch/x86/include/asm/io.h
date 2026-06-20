@@ -12,30 +12,15 @@
 #include <asm/pgtable_types.h>
 #include <asm/shared/io.h>
 
-#define build_mmio_read(name, size, type, reg, barrier) \
-static inline type name(const volatile void __iomem *addr) \
-{ type ret; asm volatile("mov" size " %1,%0":reg (ret) \
-:"m" (*(volatile type __force *)addr) barrier); return ret; }
-
 #define build_mmio_write(name, size, type, reg, barrier) \
 static inline void name(type val, volatile void __iomem *addr) \
 { asm volatile("mov" size " %0,%1": :reg (val), \
 "m" (*(volatile type __force *)addr) barrier); }
 
-build_mmio_read(readb, "b", unsigned char, "=q", :"memory")
-build_mmio_read(readw, "w", unsigned short, "=r", :"memory")
-build_mmio_read(readl, "l", unsigned int, "=r", :"memory")
-
 build_mmio_write(writeb, "b", unsigned char, "q", :"memory")
-build_mmio_write(writew, "w", unsigned short, "r", :"memory")
-build_mmio_write(writel, "l", unsigned int, "r", :"memory")
 
-#define readb readb
-#define readw readw
-#define readl readl
 #define writeb writeb
-#define writew writew
-#define writel writel
+/* readb/readw/readl/writew/writel removed - 0 callers (writeb kept) */
 /* __read, __write, _relaxed and __raw_ accessors removed - unused */
 /* ARCH_HAS_VALID_PHYS_ADDR_RANGE, valid_*_range removed - unused */
 
@@ -98,8 +83,7 @@ static inline void ins##bwl(u16 port, void *addr, unsigned long count)	\
 }
 
 BUILDIO(b, b, u8)
-BUILDIO(w, w, u16)
-BUILDIO(l,  , u32)
+/* BUILDIO(w)/BUILDIO(l) removed - only generate 0-caller _p/outs/ins wrappers */
 #undef BUILDIO
 
 #define inb_p inb_p

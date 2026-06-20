@@ -96,10 +96,6 @@ struct hrtimer_cpu_base {
 
 DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
 
-extern void __init hrtimers_init(void);
-
-
-int hrtimers_prepare_cpu(unsigned int cpu);
-#define hrtimers_dead_cpu	NULL
+/* hrtimers_init / hrtimers_prepare_cpu / hrtimers_dead_cpu removed with hrtimer.c */
 
 #endif

@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0
-obj-y += time.o timer.o hrtimer.o
+obj-y += time.o timer.o
+# hrtimer.o removed: hrtimer_bases per-cpu data was initialized by hrtimers_init
+# (sole caller init/main.c) but never read anywhere (no struct hrtimer users,
+# no per_cpu(hrtimer_bases) reads outside hrtimer.c) -> whole subsystem inert.
 obj-y += timekeeping.o ntp.o clocksource.o jiffies.o
 # timeconv.o removed
 

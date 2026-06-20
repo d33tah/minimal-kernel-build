@@ -32,7 +32,6 @@
 #include <asm/byteorder.h>	
 #include <asm/unaligned.h>
 
-#include <linux/string_helpers.h>
 #include "kstrtox.h"
 
 bool no_hash_pointers __ro_after_init;

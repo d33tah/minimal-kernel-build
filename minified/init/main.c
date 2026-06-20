@@ -39,7 +39,6 @@
 #include <linux/unistd.h>
 #include <linux/utsname.h>
 #include <linux/rmap.h>
-#include <linux/page_ext.h>
 #include <linux/debug_locks.h>
 #include <linux/lockdep.h>
 #include <linux/vmalloc.h>

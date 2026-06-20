@@ -18,7 +18,6 @@
 #include <linux/percpu-refcount.h>
 #include <linux/bit_spinlock.h>
 #include <linux/resource.h>
-#include <linux/page_ext.h>
 #include <linux/err.h>
 #include <linux/page-flags.h>
 #include <linux/tracepoint-defs.h>

@@ -792,11 +792,6 @@ static inline void sync_mm_rss(struct mm_struct *mm)
 {
 }
 
-static inline int pte_devmap(pte_t pte)
-{
-	return 0;
-}
-
 /* Removed: vma_wants_writenotify - never called */
 
 extern pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,

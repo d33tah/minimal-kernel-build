@@ -48,18 +48,4 @@ struct dev_pagemap {
 	};
 };
 
-
-static inline struct dev_pagemap *get_dev_pagemap(unsigned long pfn,
-		struct dev_pagemap *pgmap)
-{
-	return NULL;
-}
-
-
-static inline void put_dev_pagemap(struct dev_pagemap *pgmap)
-{
-	if (pgmap)
-		percpu_ref_put(&pgmap->ref);
-}
-
-#endif  
+#endif

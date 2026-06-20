@@ -220,8 +220,6 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 		return NULL;
 	if (is_zero_pfn(pfn))
 		return NULL;
-	if (pte_devmap(pte))
-		return NULL;
 
 	return NULL;
 

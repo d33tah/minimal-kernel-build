@@ -37,8 +37,6 @@ struct dentry;
 struct task_struct;
 struct user_namespace;
 
-extern const kernel_cap_t __cap_empty_set;
-
 #define CAP_FOR_EACH_U32(__capi)  \
 	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)
 
@@ -49,7 +47,6 @@ extern const kernel_cap_t __cap_empty_set;
 
 #define CAP_LAST_U32_VALID_MASK		(CAP_TO_MASK(CAP_LAST_CAP + 1) -1)
 
-# define CAP_EMPTY_SET    ((kernel_cap_t){{ 0, 0 }})
 # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, CAP_LAST_U32_VALID_MASK }})
 
 #endif

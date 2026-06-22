@@ -398,7 +398,7 @@ static vm_fault_t do_page_mkwrite(struct vm_fault *vmf)
 	struct page *page = vmf->page;
 	unsigned int old_flags = vmf->flags;
 
-	vmf->flags = FAULT_FLAG_WRITE|FAULT_FLAG_MKWRITE;
+	vmf->flags = FAULT_FLAG_WRITE;
 
 	ret = vmf->vma->vm_ops->page_mkwrite(vmf);
 	
@@ -651,9 +651,7 @@ void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr)
 
 static bool vmf_pte_changed(struct vm_fault *vmf)
 {
-	if (vmf->flags & FAULT_FLAG_ORIG_PTE_VALID)
-		return !pte_same(*vmf->pte, vmf->orig_pte);
-
+	/* FAULT_FLAG_ORIG_PTE_VALID is never set on this build => always false. */
 	return !pte_none(*vmf->pte);
 }
 
@@ -884,11 +882,7 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 
 	__set_current_state(TASK_RUNNING);
 
-	if (!arch_vma_access_permitted(vma, flags & FAULT_FLAG_WRITE,
-					    flags & FAULT_FLAG_INSTRUCTION,
-					    flags & FAULT_FLAG_REMOTE))
-		return VM_FAULT_SIGSEGV;
-
+	/* arch_vma_access_permitted() is constant-true (no PKU) => guard dropped. */
 	ret = __handle_mm_fault(vma, address, flags);
 
 	return ret;

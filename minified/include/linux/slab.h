@@ -15,7 +15,6 @@
 #define SLAB_STORE_USER		((slab_flags_t __force)0x00010000U)
 #define SLAB_PANIC		((slab_flags_t __force)0x00040000U)
 #define SLAB_TYPESAFE_BY_RCU	((slab_flags_t __force)0x00080000U)
-#define SLAB_MEM_SPREAD		((slab_flags_t __force)0x00100000U)
 #define SLAB_TRACE		((slab_flags_t __force)0x00200000U)
 
 # define SLAB_DEBUG_OBJECTS	0

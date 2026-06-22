@@ -674,9 +674,6 @@ static struct vmap_area *find_vmap_area(unsigned long addr)
 	return va;
 }
 
-static struct vm_struct *vmlist __initdata;
-
-
 static void vmap_init_free_space(void)
 {
 	unsigned long vmap_start = 1;
@@ -715,25 +712,11 @@ static void vmap_init_free_space(void)
 
 void __init vmalloc_init(void)
 {
-	struct vmap_area *va;
-	struct vm_struct *tmp;
-
-
 	vmap_area_cachep = KMEM_CACHE(vmap_area, SLAB_PANIC);
 
+	/* The early-boot vmlist (vm_area_add_early) is never populated in this
+	   build, so the vmlist import loop was dead and has been removed. */
 
-	for (tmp = vmlist; tmp; tmp = tmp->next) {
-		va = kmem_cache_zalloc(vmap_area_cachep, GFP_NOWAIT);
-		if (WARN_ON_ONCE(!va))
-			continue;
-
-		va->va_start = (unsigned long)tmp->addr;
-		va->va_end = va->va_start + tmp->size;
-		va->vm = tmp;
-		insert_vmap_area(va, &vmap_area_root, &vmap_area_list);
-	}
-
-	
 	vmap_init_free_space();
 	vmap_initialized = true;
 }

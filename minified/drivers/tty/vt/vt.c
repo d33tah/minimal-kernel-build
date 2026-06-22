@@ -403,18 +403,6 @@ int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int rows)
 	return vc_do_resize(vc->port.tty, vc, cols, rows);
 }
 
-static int vt_resize(struct tty_struct *tty, struct winsize *ws)
-{
-	struct vc_data *vc = tty->driver_data;
-	int ret;
-
-	console_lock();
-	ret = vc_do_resize(tty, vc, ws->ws_col, ws->ws_row);
-	console_unlock();
-	return ret;
-}
-
-
 const unsigned char color_table[] = { 0, 4, 2, 6, 1, 5, 3, 7,
 				       8,12,10,14, 9,13,11,15 };
 
@@ -953,7 +941,6 @@ static const struct tty_operations con_ops = {
 	.write = con_write,
 	.write_room = con_write_room,
 	.flush_chars = con_flush_chars,
-	.resize = vt_resize,
 	.shutdown = con_shutdown,
 	.cleanup = con_cleanup,
 };

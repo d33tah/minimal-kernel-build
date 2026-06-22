@@ -93,11 +93,6 @@ static int console_locked;
 
 
 
-static DEFINE_MUTEX(syslog_lock);
-
-
-/* No ring buffer on this !CONFIG_PRINTK build. */
-#define prb_next_seq(rb)		0
 
 void console_verbose(void)
 {
@@ -270,15 +265,6 @@ void register_console(struct console *newcon)
 		console_drivers->next = newcon;
 	}
 
-	if (newcon->flags & CON_PRINTBUFFER) {
-		 
-		mutex_lock(&syslog_lock);
-		newcon->seq = 0;
-		mutex_unlock(&syslog_lock);
-	} else {
-		 
-		newcon->seq = prb_next_seq(prb);
-	}
 	console_unlock();
 
 	con_printk(KERN_INFO, newcon, "enabled\n");

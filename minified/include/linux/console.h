@@ -58,7 +58,6 @@ struct console {
 	void	(*unblank)(void);
 	short	flags;
 	short	index;
-	u64	seq;
 	struct	 console *next;
 };
 

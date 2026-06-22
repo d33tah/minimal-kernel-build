@@ -34,7 +34,6 @@
 
 struct device;
 struct device_private;
-struct device_driver;
 struct driver_private;
 struct module;
 struct class;
@@ -64,10 +63,6 @@ struct device {
 
 	const char		*init_name;  
 	const struct device_type *type;
-
-	struct device_driver *driver;
-
-	dev_t			devt;
 
 	void	(*release)(struct device *dev);
 };

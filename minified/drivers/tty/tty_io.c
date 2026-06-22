@@ -921,7 +921,6 @@ struct device *tty_register_device(struct tty_driver *driver,
 	if (!dev)
 		return ERR_PTR(-ENOMEM);
 
-	dev->devt = devt;
 	dev->parent = device;
 	dev->release = tty_device_create_release;
 	dev_set_name(dev, "%s", name);

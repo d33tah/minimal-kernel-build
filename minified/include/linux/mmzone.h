@@ -207,9 +207,6 @@ struct per_cpu_pages {
 	struct list_head lists[NR_PCP_LISTS];
 };
 
-struct per_cpu_zonestat {
-};
-
 struct per_cpu_nodestat {
 	s8 stat_threshold;
 	s8 vm_node_stat_diff[NR_VM_NODE_STAT_ITEMS];
@@ -238,12 +235,9 @@ struct zone {
 	unsigned long watermark_boost;
 
 
-	long lowmem_reserve[MAX_NR_ZONES];
-
 	struct pglist_data	*zone_pgdat;
 	struct per_cpu_pages	__percpu *per_cpu_pageset;
-	struct per_cpu_zonestat	__percpu *per_cpu_zonestats;
-	 
+
 	int pageset_high;
 	int pageset_batch;
 
@@ -321,8 +315,7 @@ typedef struct pglist_data {
 	int nr_zones;  
 	struct page *node_mem_map;
 	unsigned long node_start_pfn;
-	unsigned long node_present_pages;  
-	unsigned long node_spanned_pages;  
+	unsigned long node_spanned_pages;
 	int node_id;
 
 	enum zone_type kswapd_highest_zoneidx;
@@ -345,7 +338,6 @@ typedef struct pglist_data {
 	atomic_long_t		vm_stat[NR_VM_NODE_STAT_ITEMS];
 } pg_data_t;
 
-#define node_present_pages(nid)	(NODE_DATA(nid)->node_present_pages)
 #define node_spanned_pages(nid)	(NODE_DATA(nid)->node_spanned_pages)
 
 #define node_start_pfn(nid)	(NODE_DATA(nid)->node_start_pfn)

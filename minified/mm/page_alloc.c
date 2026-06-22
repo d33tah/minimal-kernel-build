@@ -761,8 +761,8 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 	if (alloc_flags & (ALLOC_HARDER|ALLOC_OOM))
 		min -= min / 2;
 
-	/* Basic free pages check */
-	return free_pages > min + z->lowmem_reserve[highest_zoneidx];
+	/* Basic free pages check (lowmem_reserve is always 0 in this minimal kernel) */
+	return free_pages > min;
 }
 
 
@@ -1018,12 +1018,11 @@ static void build_zonelists(pg_data_t *pgdat)
 	zonerefs->zone_idx = 0;
 }
 
-static void per_cpu_pages_init(struct per_cpu_pages *pcp, struct per_cpu_zonestat *pzstats);
+static void per_cpu_pages_init(struct per_cpu_pages *pcp);
 
 #define BOOT_PAGESET_HIGH	0
 #define BOOT_PAGESET_BATCH	1
 static DEFINE_PER_CPU(struct per_cpu_pages, boot_pageset);
-static DEFINE_PER_CPU(struct per_cpu_zonestat, boot_zonestats);
 DEFINE_PER_CPU(struct per_cpu_nodestat, boot_nodestats);
 
 static void __build_all_zonelists(void *data)
@@ -1052,7 +1051,7 @@ build_all_zonelists_init(void)
 
 	
 	for_each_possible_cpu(cpu)
-		per_cpu_pages_init(&per_cpu(boot_pageset, cpu), &per_cpu(boot_zonestats, cpu));
+		per_cpu_pages_init(&per_cpu(boot_pageset, cpu));
 }
 
 void __ref build_all_zonelists(pg_data_t *pgdat)
@@ -1213,12 +1212,11 @@ static void pageset_update(struct per_cpu_pages *pcp, unsigned long high,
 	WRITE_ONCE(pcp->high, high);
 }
 
-static void per_cpu_pages_init(struct per_cpu_pages *pcp, struct per_cpu_zonestat *pzstats)
+static void per_cpu_pages_init(struct per_cpu_pages *pcp)
 {
 	int pindex;
 
 	memset(pcp, 0, sizeof(*pcp));
-	memset(pzstats, 0, sizeof(*pzstats));
 
 	for (pindex = 0; pindex < NR_PCP_LISTS; pindex++)
 		INIT_LIST_HEAD(&pcp->lists[pindex]);
@@ -1262,18 +1260,12 @@ void __meminit setup_zone_pageset(struct zone *zone)
 {
 	int cpu;
 
-	
-	if (sizeof(struct per_cpu_zonestat) > 0)
-		zone->per_cpu_zonestats = alloc_percpu(struct per_cpu_zonestat);
-
 	zone->per_cpu_pageset = alloc_percpu(struct per_cpu_pages);
 	for_each_possible_cpu(cpu) {
 		struct per_cpu_pages *pcp;
-		struct per_cpu_zonestat *pzstats;
 
 		pcp = per_cpu_ptr(zone->per_cpu_pageset, cpu);
-		pzstats = per_cpu_ptr(zone->per_cpu_zonestats, cpu);
-		per_cpu_pages_init(pcp, pzstats);
+		per_cpu_pages_init(pcp);
 	}
 
 	zone_set_pageset_high_and_batch(zone, 0);
@@ -1297,7 +1289,6 @@ static __meminit void zone_pcp_init(struct zone *zone)
 {
 	
 	zone->per_cpu_pageset = &boot_pageset;
-	zone->per_cpu_zonestats = &boot_zonestats;
 	zone->pageset_high = BOOT_PAGESET_HIGH;
 	zone->pageset_batch = BOOT_PAGESET_BATCH;
 
@@ -1409,7 +1400,7 @@ static void __init calculate_node_totalpages(struct pglist_data *pgdat,
 						unsigned long node_start_pfn,
 						unsigned long node_end_pfn)
 {
-	unsigned long realtotalpages = 0, totalpages = 0;
+	unsigned long totalpages = 0;
 	enum zone_type i;
 
 	for (i = 0; i < MAX_NR_ZONES; i++) {
@@ -1438,11 +1429,9 @@ static void __init calculate_node_totalpages(struct pglist_data *pgdat,
 		zone->present_pages = real_size;
 
 		totalpages += size;
-		realtotalpages += real_size;
 	}
 
 	pgdat->node_spanned_pages = totalpages;
-	pgdat->node_present_pages = realtotalpages;
 }
 
 static unsigned long __init usemap_size(unsigned long zone_start_pfn, unsigned long zonesize)

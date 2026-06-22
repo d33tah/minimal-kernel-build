@@ -206,8 +206,6 @@ struct fpu_state_config {
 
 	 
 	u64 default_features;
-	 
-	u64 legacy_features;
 };
 
  

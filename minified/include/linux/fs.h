@@ -206,14 +206,10 @@ struct address_space_operations {
 				loff_t pos, unsigned len, unsigned copied,
 				struct page *page, void *fsdata);
 
-	bool (*release_folio)(struct folio *, gfp_t);
-	void (*free_folio)(struct folio *folio);
-	ssize_t (*direct_IO)(struct kiocb *, struct iov_iter *iter);
 	/* writepage, writepages, dirty_folio, readahead, bmap, launder_folio,
 	 * migratepage, isolate_page, putback_page, is_dirty_writeback,
-	 * error_remove_page, swap_* removed - unused */
-	bool (*is_partially_uptodate) (struct folio *, size_t from,
-			size_t count);
+	 * error_remove_page, swap_*, release_folio, free_folio, direct_IO,
+	 * is_partially_uptodate removed - unused */
 };
 
 struct address_space {

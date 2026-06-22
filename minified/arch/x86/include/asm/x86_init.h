@@ -45,10 +45,6 @@ struct x86_init_ops {
 	struct x86_init_timers		timers;
 };
 
- 
-struct timespec64;
-
-
 struct x86_legacy_features {
 	int reserve_bios_regions;
 };
@@ -57,8 +53,6 @@ struct x86_legacy_features {
 struct x86_platform_ops {
 	unsigned long (*calibrate_cpu)(void);
 	unsigned long (*calibrate_tsc)(void);
-	void (*get_wallclock)(struct timespec64 *ts);
-	int (*set_wallclock)(const struct timespec64 *ts);
 	unsigned char (*get_nmi_reason)(void);
 	struct x86_legacy_features legacy;
 };

@@ -49,16 +49,7 @@ struct device_type {
 	void (*release)(struct device *dev);
 };
 
-struct device_attribute {
-	struct attribute	attr;
-	ssize_t (*show)(struct device *dev, struct device_attribute *attr,
-			char *buf);
-	ssize_t (*store)(struct device *dev, struct device_attribute *attr,
-			 const char *buf, size_t count);
-};
-
-#define DEVICE_ATTR(_name, _mode, _show, _store) \
-	struct device_attribute dev_attr_##_name = __ATTR(_name, _mode, _show, _store)
+/* struct device_attribute + DEVICE_ATTR macro removed - 0 users tree-wide. */
 
 /* Removed: device_remove_file (0-caller no-op). */
 

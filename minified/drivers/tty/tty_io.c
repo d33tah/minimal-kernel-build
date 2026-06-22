@@ -360,11 +360,8 @@ ssize_t redirected_tty_write(struct kiocb *iocb, struct iov_iter *iter)
 
 static ssize_t tty_line_name(struct tty_driver *driver, int index, char *p)
 {
-	if (driver->flags & TTY_DRIVER_UNNUMBERED_NODE)
-		return sprintf(p, "%s", driver->name);
-	else
-		return sprintf(p, "%s%d", driver->name,
-			       index + driver->name_base);
+	return sprintf(p, "%s%d", driver->name,
+		       index + driver->name_base);
 }
 
 static struct tty_struct *tty_driver_lookup_tty(struct tty_driver *driver,
@@ -606,10 +603,6 @@ static int tty_release_checks(struct tty_struct *tty, int idx)
 		tty_debug(tty, "bad idx %d\n", idx);
 		return -1;
 	}
-
-	
-	if (tty->driver->flags & TTY_DRIVER_DEVPTS_MEM)
-		return 0;
 
 	if (tty != tty->driver->ttys[idx]) {
 		tty_debug(tty, "bad driver table[%d] = %p\n",
@@ -920,18 +913,15 @@ struct device *tty_register_device(struct tty_driver *driver,
 	if (retval)
 		goto err_put;
 
-	if (!(driver->flags & TTY_DRIVER_DYNAMIC_ALLOC)) {
-		
-		tp = driver->termios[index];
-		if (tp) {
-			driver->termios[index] = NULL;
-			kfree(tp);
-		}
-
-		retval = tty_cdev_add(driver, devt, index, 1);
-		if (retval)
-			goto err_put;
+	tp = driver->termios[index];
+	if (tp) {
+		driver->termios[index] = NULL;
+		kfree(tp);
 	}
+
+	retval = tty_cdev_add(driver, devt, index, 1);
+	if (retval)
+		goto err_put;
 
 	return dev;
 
@@ -950,10 +940,9 @@ struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
 		unsigned long flags)
 {
 	struct tty_driver *driver;
-	unsigned int cdevs = 1;
 	int err;
 
-	if (!lines || (flags & TTY_DRIVER_UNNUMBERED_NODE && lines > 1))
+	if (!lines)
 		return ERR_PTR(-EINVAL);
 
 	driver = kzalloc(sizeof(*driver), GFP_KERNEL);
@@ -966,28 +955,19 @@ struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
 	driver->owner = owner;
 	driver->flags = flags;
 
-	if (!(flags & TTY_DRIVER_DEVPTS_MEM)) {
-		driver->ttys = kcalloc(lines, sizeof(*driver->ttys),
-				GFP_KERNEL);
-		driver->termios = kcalloc(lines, sizeof(*driver->termios),
-				GFP_KERNEL);
-		if (!driver->ttys || !driver->termios) {
-			err = -ENOMEM;
-			goto err_free_all;
-		}
+	driver->ttys = kcalloc(lines, sizeof(*driver->ttys), GFP_KERNEL);
+	driver->termios = kcalloc(lines, sizeof(*driver->termios), GFP_KERNEL);
+	if (!driver->ttys || !driver->termios) {
+		err = -ENOMEM;
+		goto err_free_all;
 	}
 
-	if (!(flags & TTY_DRIVER_DYNAMIC_ALLOC)) {
-		driver->ports = kcalloc(lines, sizeof(*driver->ports),
-				GFP_KERNEL);
-		if (!driver->ports) {
-			err = -ENOMEM;
-			goto err_free_all;
-		}
-		cdevs = lines;
+	driver->ports = kcalloc(lines, sizeof(*driver->ports), GFP_KERNEL);
+	if (!driver->ports) {
+		err = -ENOMEM;
+		goto err_free_all;
 	}
-
-	driver->cdevs = kcalloc(cdevs, sizeof(*driver->cdevs), GFP_KERNEL);
+	driver->cdevs = kcalloc(lines, sizeof(*driver->cdevs), GFP_KERNEL);
 	if (!driver->cdevs) {
 		err = -ENOMEM;
 		goto err_free_all;
@@ -1052,23 +1032,15 @@ int tty_register_driver(struct tty_driver *driver)
 	if (error < 0)
 		goto err;
 
-	if (driver->flags & TTY_DRIVER_DYNAMIC_ALLOC) {
-		error = tty_cdev_add(driver, dev, 0, driver->num);
-		if (error)
-			goto err_unreg_char;
-	}
-
 	mutex_lock(&tty_mutex);
 	list_add(&driver->tty_drivers, &tty_drivers);
 	mutex_unlock(&tty_mutex);
 
-	if (!(driver->flags & TTY_DRIVER_DYNAMIC_DEV)) {
-		for (i = 0; i < driver->num; i++) {
-			d = tty_register_device(driver, i, NULL);
-			if (IS_ERR(d)) {
-				error = PTR_ERR(d);
-				goto err_unreg_devs;
-			}
+	for (i = 0; i < driver->num; i++) {
+		d = tty_register_device(driver, i, NULL);
+		if (IS_ERR(d)) {
+			error = PTR_ERR(d);
+			goto err_unreg_devs;
 		}
 	}
 	driver->flags |= TTY_DRIVER_INSTALLED;
@@ -1079,7 +1051,6 @@ err_unreg_devs:
 	list_del(&driver->tty_drivers);
 	mutex_unlock(&tty_mutex);
 
-err_unreg_char:
 	unregister_chrdev_region(dev, driver->num);
 err:
 	return error;

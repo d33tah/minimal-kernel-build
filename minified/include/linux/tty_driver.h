@@ -85,11 +85,10 @@ static inline void tty_set_operations(struct tty_driver *driver,
 
 #define TTY_DRIVER_INSTALLED		0x0001
 #define TTY_DRIVER_RESET_TERMIOS	0x0002
-#define TTY_DRIVER_REAL_RAW		0x0004
-#define TTY_DRIVER_DYNAMIC_DEV		0x0008
-#define TTY_DRIVER_DEVPTS_MEM		0x0010
-#define TTY_DRIVER_DYNAMIC_ALLOC	0x0040
-#define TTY_DRIVER_UNNUMBERED_NODE	0x0080
+/* REAL_RAW/DYNAMIC_DEV/DEVPTS_MEM/DYNAMIC_ALLOC/UNNUMBERED_NODE removed:
+ * the sole driver (console) is allocated with only REAL_RAW|RESET_TERMIOS
+ * (REAL_RAW itself was never tested), so every other flag was either
+ * write-only or gated an always-false branch. */
 
 int tty_register_driver(struct tty_driver *driver);
 struct device *tty_register_device(struct tty_driver *driver, unsigned index,

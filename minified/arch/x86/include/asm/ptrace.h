@@ -39,7 +39,6 @@ struct pt_regs {
 struct cpuinfo_x86;
 struct task_struct;
 
-extern unsigned long profile_pc(struct pt_regs *regs);
 extern void send_sigtrap(struct pt_regs *regs, int error_code, int si_code);
 
 static inline unsigned long regs_return_value(struct pt_regs *regs)

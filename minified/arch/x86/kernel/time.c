@@ -13,9 +13,6 @@
 #include <asm/timer.h>
 #include <asm/time.h>
 
-/* profile_pc stubbed - never called */
-unsigned long profile_pc(struct pt_regs *regs) { return instruction_pointer(regs); }
-
 static irqreturn_t timer_interrupt(int irq, void *dev_id)
 {
 	global_clock_event->event_handler(global_clock_event);

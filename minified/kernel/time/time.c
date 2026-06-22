@@ -43,27 +43,6 @@ unsigned int jiffies_to_msecs(const unsigned long j)
 #endif
 }
 
-time64_t mktime64(const unsigned int year0, const unsigned int mon0,
-		const unsigned int day, const unsigned int hour,
-		const unsigned int min, const unsigned int sec)
-{
-	unsigned int mon = mon0, year = year0;
-
-	 
-	if (0 >= (int) (mon -= 2)) {
-		mon += 12;	 
-		year -= 1;
-	}
-
-	return ((((time64_t)
-		  (year/4 - year/100 + year/400 + 367*mon/12 + day) +
-		  year*365 - 719499
-	    )*24 + hour  
-	  )*60 + min  
-	)*60 + sec;  
-}
-
-
 void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
 {
 	while (nsec >= NSEC_PER_SEC) {

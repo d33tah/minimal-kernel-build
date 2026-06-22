@@ -5,11 +5,6 @@
 # include <linux/math64.h>
 # include <linux/time64.h>
 
-extern time64_t mktime64(const unsigned int year, const unsigned int mon,
-			const unsigned int day, const unsigned int hour,
-			const unsigned int min, const unsigned int sec);
-
-
 # include <linux/time32.h>
 
 

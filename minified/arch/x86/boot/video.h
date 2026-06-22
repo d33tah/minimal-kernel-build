@@ -72,9 +72,8 @@ int mode_defined(u16 mode);
 #define ADAPTER_VGA	2
 
 extern int adapter;
-extern int force_x, force_y;	 
-extern int do_restore;		 
-extern int graphic_mode;	 
+extern int force_x, force_y;
+extern int graphic_mode;
 
  
 

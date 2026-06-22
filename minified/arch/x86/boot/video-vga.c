@@ -24,7 +24,6 @@ static u8 vga_set_basic_mode(void)
 
 	ireg.ax = mode;
 	intcall(0x10, &ireg, NULL);
-	do_restore = 1;
 	return mode;
 }
 

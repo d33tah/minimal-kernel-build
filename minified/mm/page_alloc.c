@@ -1023,7 +1023,6 @@ static void per_cpu_pages_init(struct per_cpu_pages *pcp);
 #define BOOT_PAGESET_HIGH	0
 #define BOOT_PAGESET_BATCH	1
 static DEFINE_PER_CPU(struct per_cpu_pages, boot_pageset);
-DEFINE_PER_CPU(struct per_cpu_nodestat, boot_nodestats);
 
 static void __build_all_zonelists(void *data)
 {
@@ -1224,7 +1223,6 @@ static void per_cpu_pages_init(struct per_cpu_pages *pcp)
 	
 	pcp->high = BOOT_PAGESET_HIGH;
 	pcp->batch = BOOT_PAGESET_BATCH;
-	pcp->free_factor = 0;
 }
 
 static void __zone_set_pageset_high_and_batch(struct zone *zone, unsigned long high,
@@ -1273,16 +1271,11 @@ void __meminit setup_zone_pageset(struct zone *zone)
 
 void __init setup_per_cpu_pageset(void)
 {
-	struct pglist_data *pgdat;
 	struct zone *zone;
 	int __maybe_unused cpu;
 
 	for_each_populated_zone(zone)
 		setup_zone_pageset(zone);
-
-	for_each_online_pgdat(pgdat)
-		pgdat->per_cpu_nodestats =
-			alloc_percpu(struct per_cpu_nodestat);
 }
 
 static __meminit void zone_pcp_init(struct zone *zone)
@@ -1489,7 +1482,6 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 	int nid = pgdat->node_id;
 
 	pgdat_init_internals(pgdat);
-	pgdat->per_cpu_nodestats = &boot_nodestats;
 
 	for (j = 0; j < MAX_NR_ZONES; j++) {
 		struct zone *zone = pgdat->node_zones + j;
@@ -1563,7 +1555,6 @@ static void __init free_area_init_node(int nid)
 
 	pgdat->node_id = nid;
 	pgdat->node_start_pfn = start_pfn;
-	pgdat->per_cpu_nodestats = NULL;
 
 	calculate_node_totalpages(pgdat, start_pfn, end_pfn);
 

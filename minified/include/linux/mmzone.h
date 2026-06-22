@@ -198,21 +198,15 @@ enum zone_watermarks {
 #define wmark_pages(z, i) (z->_watermark[i] + z->watermark_boost)
 
 struct per_cpu_pages {
-	int count;		 
-	int high;		 
-	int batch;		 
-	short free_factor;	 
+	int count;
+	int high;
+	int batch;
 
-	 
+
 	struct list_head lists[NR_PCP_LISTS];
 };
 
-struct per_cpu_nodestat {
-	s8 stat_threshold;
-	s8 vm_node_stat_diff[NR_VM_NODE_STAT_ITEMS];
-};
-
-#endif  
+#endif
 
 enum zone_type {
 	 
@@ -333,8 +327,6 @@ typedef struct pglist_data {
 
 	ZONE_PADDING(_pad2_)
 
-	 
-	struct per_cpu_nodestat __percpu *per_cpu_nodestats;
 	atomic_long_t		vm_stat[NR_VM_NODE_STAT_ITEMS];
 } pg_data_t;
 

@@ -43,7 +43,6 @@ struct pid_namespace init_pid_ns = {
 	.pid_allocated = PIDNS_ADDING,
 	.level = 0,
 	.child_reaper = &init_task,
-	.user_ns = &init_user_ns,
 	.ns.inum = PROC_PID_INIT_INO,
 };
 

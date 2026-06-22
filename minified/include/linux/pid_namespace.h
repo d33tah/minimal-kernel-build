@@ -19,8 +19,6 @@ struct pid_namespace {
 	struct kmem_cache *pid_cachep;
 	unsigned int level;
 	struct pid_namespace *parent;
-	struct user_namespace *user_ns;
-	struct ucounts *ucounts;
 	struct ns_common ns;
 } __randomize_layout;
 

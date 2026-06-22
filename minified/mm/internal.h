@@ -224,6 +224,4 @@ int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
 
 void vunmap_range_noflush(unsigned long start, unsigned long end);
 
-DECLARE_PER_CPU(struct per_cpu_nodestat, boot_nodestats);
-
-#endif	 
+#endif

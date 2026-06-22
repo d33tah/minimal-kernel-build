@@ -207,10 +207,9 @@ static void device_create_release(struct device *dev)
 	kfree(dev);
 }
 
-static __printf(6, 0) struct device *
+static __printf(5, 0) struct device *
 device_create_groups_vargs(struct class *class, struct device *parent,
 			   dev_t devt, void *drvdata,
-			   const struct attribute_group **groups,
 			   const char *fmt, va_list args)
 {
 	struct device *dev = NULL;
@@ -252,27 +251,16 @@ struct device *device_create(struct class *class, struct device *parent,
 	struct device *dev;
 
 	va_start(vargs, fmt);
-	dev = device_create_groups_vargs(class, parent, devt, drvdata, NULL,
+	dev = device_create_groups_vargs(class, parent, devt, drvdata,
 					  fmt, vargs);
 	va_end(vargs);
 	return dev;
 }
 
-struct device *device_create_with_groups(struct class *class,
-					 struct device *parent, dev_t devt,
-					 void *drvdata,
-					 const struct attribute_group **groups,
-					 const char *fmt, ...)
-{
-	va_list vargs;
-	struct device *dev;
-
-	va_start(vargs, fmt);
-	dev = device_create_groups_vargs(class, parent, devt, drvdata, groups,
-					 fmt, vargs);
-	va_end(vargs);
-	return dev;
-}
+/* Removed: device_create_with_groups - its only caller (vt.c vty_init) passed
+   vt_dev_groups, but device_create_groups_vargs ignored the groups arg (no
+   sysfs group consumer; struct device .groups removed earlier). Switched the
+   caller to plain device_create(). */
 
 /* Removed: device_destroy + driver_deferred_probe_del - device_destroy was only
    reached from the (removed) tty teardown path; driver_deferred_probe_del was

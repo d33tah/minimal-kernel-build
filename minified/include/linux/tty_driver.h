@@ -109,8 +109,5 @@ static inline void tty_set_operations(struct tty_driver *driver,
 int tty_register_driver(struct tty_driver *driver);
 struct device *tty_register_device(struct tty_driver *driver, unsigned index,
 		struct device *dev);
-struct device *tty_register_device_attr(struct tty_driver *driver,
-		unsigned index, struct device *device, void *drvdata,
-		const struct attribute_group **attr_grp);
 
 #endif  

@@ -304,9 +304,6 @@ struct task_struct {
 	sigset_t			real_blocked;
 
 	struct sigpending		pending;
-	unsigned long			sas_ss_sp;
-	size_t				sas_ss_size;
-	unsigned int			sas_ss_flags;
 
 	struct callback_head		*task_works;
 

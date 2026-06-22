@@ -893,10 +893,7 @@ static __latent_entropy struct task_struct *copy_process(
 	}
 
 
-	if ((clone_flags & (CLONE_VM|CLONE_VFORK)) == CLONE_VM)
-		sas_ss_reset(p);
 
-	
 	user_disable_single_step(p);
 	clear_task_syscall_work(p, SYSCALL_TRACE);
 	clear_task_syscall_work(p, SYSCALL_EMU);

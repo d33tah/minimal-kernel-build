@@ -206,36 +206,6 @@ static inline bool test_and_clear_restore_sigmask(void)
 #define SEND_SIG_NOINFO ((struct kernel_siginfo *) 0)
 #define SEND_SIG_PRIV	((struct kernel_siginfo *) 1)
 
-static inline int __on_sig_stack(unsigned long sp)
-{
-	return sp > current->sas_ss_sp &&
-		sp - current->sas_ss_sp <= current->sas_ss_size;
-}
-
-static inline int on_sig_stack(unsigned long sp)
-{
-	 
-	if (current->sas_ss_flags & SS_AUTODISARM)
-		return 0;
-
-	return __on_sig_stack(sp);
-}
-
-static inline int sas_ss_flags(unsigned long sp)
-{
-	if (!current->sas_ss_size)
-		return SS_DISABLE;
-
-	return on_sig_stack(sp) ? SS_ONSTACK : 0;
-}
-
-static inline void sas_ss_reset(struct task_struct *p)
-{
-	p->sas_ss_sp = 0;
-	p->sas_ss_size = 0;
-	p->sas_ss_flags = SS_DISABLE;
-}
-
 extern void __cleanup_sighand(struct sighand_struct *);
 
 #define tasklist_empty() \

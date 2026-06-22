@@ -271,7 +271,6 @@ struct inode {
 	unsigned short		i_opflags;
 	kuid_t			i_uid;
 	kgid_t			i_gid;
-	unsigned int		i_flags;
 
 	const struct inode_operations	*i_op;
 	struct super_block	*i_sb;
@@ -500,7 +499,6 @@ struct fasync_struct {
 #define SB_POSIXACL	(1<<16)
 #define SB_KERNMOUNT	(1<<22)
 #define SB_LAZYTIME	(1<<25)
-#define SB_NOSEC	(1<<28)
 #define SB_BORN		(1<<29)
 #define SB_ACTIVE	(1<<30)
 
@@ -759,11 +757,10 @@ struct super_operations {
 	int (*drop_inode) (struct inode *);
 };
 
-#define S_NOSEC		(1 << 12)
-#define S_DAX		0
-/* S_NOATIME, S_APPEND, S_IMMUTABLE, S_DEAD, S_NOCMTIME, S_SWAPFILE,
- * S_AUTOMOUNT removed - never set on any inode, all IS_* tests were
- * statically dead. S_VERITY, S_KERNEL_FILE removed earlier - unused */
+/* S_NOSEC, S_DAX, S_NOATIME, S_APPEND, S_IMMUTABLE, S_DEAD, S_NOCMTIME,
+ * S_SWAPFILE, S_AUTOMOUNT, S_VERITY, S_KERNEL_FILE removed - never set on
+ * any inode (S_NOSEC depended on SB_NOSEC which is never set), so the whole
+ * i_flags field + all IS_NOSEC/IS_DAX/etc tests were statically dead. */
 
 #define __IS_FLG(inode, flg)	((inode)->i_sb->s_flags & (flg))
 
@@ -771,9 +768,7 @@ static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags 
 #define IS_NOATIME(inode)	__IS_FLG(inode, SB_RDONLY|SB_NOATIME)
 #define IS_POSIXACL(inode)	__IS_FLG(inode, SB_POSIXACL)
 /* IS_APPEND, IS_IMMUTABLE, IS_DEADDIR, IS_NOCMTIME, IS_SWAPFILE,
- * IS_AUTOMOUNT removed - the underlying S_* flags are never set */
-#define IS_NOSEC(inode)		((inode)->i_flags & S_NOSEC)
-#define IS_DAX(inode)		((inode)->i_flags & S_DAX)
+ * IS_AUTOMOUNT, IS_NOSEC, IS_DAX removed - underlying S_* flags never set */
 
 static inline bool HAS_UNMAPPED_ID(struct user_namespace *mnt_userns,
 				   struct inode *inode)
@@ -1079,17 +1074,6 @@ struct ctl_table;
 #define ACC_MODE(x) ("\004\002\006\006"[(x)&O_ACCMODE])
 #define OPEN_FMODE(flag) ((__force fmode_t)(((flag + 1) & O_ACCMODE) | \
 					    (flag & __FMODE_NONOTIFY)))
-
-static inline bool is_sxid(umode_t mode)
-{
-	return (mode & S_ISUID) || ((mode & S_ISGID) && (mode & S_IXGRP));
-}
-
-static inline void inode_has_no_xattr(struct inode *inode)
-{
-	if (!is_sxid(inode->i_mode) && (inode->i_sb->s_flags & SB_NOSEC))
-		inode->i_flags |= S_NOSEC;
-}
 
 extern bool path_noexec(const struct path *path);
 

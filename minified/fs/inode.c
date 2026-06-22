@@ -45,7 +45,6 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 
 	inode->i_sb = sb;
 	inode->i_blkbits = sb->s_blocksize_bits;
-	inode->i_flags = 0;
 	atomic_set(&inode->i_count, 1);
 	inode->i_op = &empty_iops;
 	inode->i_fop = &no_open_fops;
@@ -419,11 +418,7 @@ static int should_remove_suid(struct dentry *dentry)
 
 int dentry_needs_remove_privs(struct dentry *dentry)
 {
-	struct inode *inode = d_inode(dentry);
 	int mask = 0;
-
-	if (IS_NOSEC(inode))
-		return 0;
 
 	mask = should_remove_suid(dentry);
 	return mask;
@@ -446,7 +441,7 @@ int file_remove_privs(struct file *file)
 	int kill;
 	int error = 0;
 
-	if (IS_NOSEC(inode) || !S_ISREG(inode->i_mode))
+	if (!S_ISREG(inode->i_mode))
 		return 0;
 
 	kill = dentry_needs_remove_privs(dentry);
@@ -454,8 +449,6 @@ int file_remove_privs(struct file *file)
 		return kill;
 	if (kill)
 		error = __remove_privs(file_mnt_user_ns(file), dentry, kill);
-	if (!error)
-		inode_has_no_xattr(inode);
 
 	return error;
 }

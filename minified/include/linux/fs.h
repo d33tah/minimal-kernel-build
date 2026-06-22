@@ -739,31 +739,19 @@ struct file_operations {
 	ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *);
 	ssize_t (*read_iter) (struct kiocb *, struct iov_iter *);
 	ssize_t (*write_iter) (struct kiocb *, struct iov_iter *);
-	/* iopoll removed - unused */
-	int (*iterate) (struct file *, struct dir_context *);
-	int (*iterate_shared) (struct file *, struct dir_context *);
-	__poll_t (*poll) (struct file *, struct poll_table_struct *);
-	long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
-	long (*compat_ioctl) (struct file *, unsigned int, unsigned long);
 	int (*mmap) (struct file *, struct vm_area_struct *);
-	unsigned long mmap_supported_flags;
 	int (*open) (struct inode *, struct file *);
-	int (*flush) (struct file *, fl_owner_t id);
 	int (*release) (struct inode *, struct file *);
-	int (*fsync) (struct file *, loff_t, loff_t, int datasync);
 	int (*fasync) (int, struct file *, int);
 	int (*lock) (struct file *, int, struct file_lock *);
-	ssize_t (*sendpage) (struct file *, struct page *, int, size_t, loff_t *, int);
 	unsigned long (*get_unmapped_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
-	/* check_flags removed - unused */
-	int (*flock) (struct file *, int, struct file_lock *);
-	/* splice_write, splice_read removed - never dispatched (no splice syscall) */
-	/* setlease, remap_file_range, fadvise, uring_cmd removed - unused */
-	long (*fallocate)(struct file *file, int mode, loff_t offset,
-			  loff_t len);
-	void (*show_fdinfo)(struct seq_file *m, struct file *f);
-	ssize_t (*copy_file_range)(struct file *, loff_t, struct file *,
-			loff_t, size_t, unsigned int);
+	/* iopoll/iterate/iterate_shared/poll/unlocked_ioctl/compat_ioctl/
+	 * mmap_supported_flags/flush/fsync/sendpage/check_flags/flock/
+	 * splice_write/splice_read/setlease/remap_file_range/fadvise/uring_cmd/
+	 * fallocate/show_fdinfo/copy_file_range removed - zero ->field dispatch,
+	 * bare-deref and assignment tree-wide (only owner/llseek/read/write/
+	 * read_iter/write_iter/mmap/open/release/fasync/lock/get_unmapped_area
+	 * are live; their syscall consumers were all excised earlier) */
 } __randomize_layout;
 
 struct inode_operations {

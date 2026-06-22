@@ -162,8 +162,6 @@ static int check_tty_count(struct tty_struct *tty, const char *routine)
 		count++;
 	}
 	spin_unlock(&tty->files_lock);
-	if (tty_port_kopened(tty->port))
-		kopen_count++;
 	if (tty->count != (count + kopen_count)) {
 		tty_warn(tty, "%s: tty->count(%d) != (#fd's(%d) + #kopen's(%d))\n",
 			 routine, tty->count, count, kopen_count);
@@ -750,12 +748,6 @@ static struct tty_struct *tty_open_by_driver(dev_t device,
 	}
 
 	if (tty) {
-		if (tty_port_kopened(tty->port)) {
-			tty_kref_put(tty);
-			mutex_unlock(&tty_mutex);
-			tty = ERR_PTR(-EBUSY);
-			goto out;
-		}
 		mutex_unlock(&tty_mutex);
 		retval = tty_lock_interruptible(tty);
 		tty_kref_put(tty);  

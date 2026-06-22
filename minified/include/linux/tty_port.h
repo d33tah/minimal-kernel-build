@@ -25,18 +25,8 @@ struct tty_port {
 	struct tty_struct	*itty;
 	const struct tty_port_operations *ops;
 	spinlock_t		lock;
-	unsigned long		iflags;
-	unsigned char		*xmit_buf;
 	struct kref		kref;
 };
-
-#define TTY_PORT_INITIALIZED	0	 
-#define TTY_PORT_SUSPENDED	1	 
-#define TTY_PORT_ACTIVE		2	 
-
-#define TTY_PORT_CTS_FLOW	3	 
-#define TTY_PORT_CHECK_CD	4	 
-#define TTY_PORT_KOPENED	5	 
 
 void tty_port_init(struct tty_port *port);
 void tty_port_destroy(struct tty_port *port);
@@ -49,12 +39,6 @@ static inline struct tty_port *tty_port_get(struct tty_port *port)
 	return NULL;
 }
 
-
-
-static inline bool tty_port_kopened(const struct tty_port *port)
-{
-	return test_bit(TTY_PORT_KOPENED, &port->iflags);
-}
 
 
 int tty_port_install(struct tty_port *port, struct tty_driver *driver,

@@ -3,10 +3,8 @@
 
 #include <linux/types.h>
 
-#define EM_NONE		0
 #define EM_386		3
 #define EM_486		6
-#define EM_X86_64	62
 
 typedef __u32	Elf32_Addr;
 typedef __u16	Elf32_Half;
@@ -23,19 +21,13 @@ typedef __u32	Elf64_Word;
 typedef __u64	Elf64_Xword;
 typedef __s64	Elf64_Sxword;
 
-#define PT_NULL    0
 #define PT_LOAD    1
 #define PT_DYNAMIC 2
 #define PT_INTERP  3
 #define PT_NOTE    4
-#define PT_PHDR    6
 #define PT_LOOS    0x60000000
-#define PT_LOPROC  0x70000000
-#define PT_HIPROC  0x7fffffff
 #define PT_GNU_STACK	(PT_LOOS + 0x474e551)
-#define PT_GNU_PROPERTY	(PT_LOOS + 0x474e553)
 
-#define ET_NONE   0
 #define ET_REL    1
 #define ET_EXEC   2
 #define ET_DYN    3
@@ -255,13 +247,6 @@ typedef struct elf64_shdr {
 #define ELFDATA2MSB	2
 
 #define EV_CURRENT	1
-
-#define ELFOSABI_NONE	0
-#define ELFOSABI_LINUX	3
-
-#ifndef ELF_OSABI
-#define ELF_OSABI ELFOSABI_NONE
-#endif
 
 typedef struct elf32_note {
   Elf32_Word	n_namesz;	 

@@ -12,42 +12,15 @@ struct fs_context;
 struct file;
 struct path;
 
-#define MNT_NOSUID	0x01
-#define MNT_NODEV	0x02
-#define MNT_NOEXEC	0x04
-#define MNT_NOATIME	0x08
-#define MNT_NODIRATIME	0x10
-#define MNT_RELATIME	0x20
-#define MNT_READONLY	0x40	 
-#define MNT_NOSYMFOLLOW	0x80
-
-#define MNT_SHRINKABLE	0x100
-
-#define MNT_SHARED	0x1000
-#define MNT_UNBINDABLE	0x2000	 
-#define MNT_SHARED_MASK	(MNT_UNBINDABLE)
-#define MNT_USER_SETTABLE_MASK  (MNT_NOSUID | MNT_NODEV | MNT_NOEXEC \
-				 | MNT_NOATIME | MNT_NODIRATIME | MNT_RELATIME \
-				 | MNT_READONLY | MNT_NOSYMFOLLOW)
-#define MNT_ATIME_MASK (MNT_NOATIME | MNT_NODIRATIME | MNT_RELATIME )
-
-#define MNT_INTERNAL	0x4000
-
-#define MNT_LOCK_ATIME		0x040000
-#define MNT_LOCK_NOEXEC		0x080000
-#define MNT_LOCK_NOSUID		0x100000
-#define MNT_LOCK_NODEV		0x200000
-#define MNT_LOCK_READONLY	0x400000
-#define MNT_LOCKED		0x800000
-#define MNT_DOOMED		0x1000000
-#define MNT_SYNC_UMOUNT		0x2000000
-#define MNT_MARKED		0x4000000
-#define MNT_UMOUNT		0x8000000
+/*
+ * MNT_* flag bits removed: mnt_flags was only ever written with MNT_INTERNAL
+ * / MNT_LOCKED (both never tested) so every read of any other bit was an
+ * always-false branch.  Branches folded, field dropped.
+ */
 
 struct vfsmount {
-	struct dentry *mnt_root;	 
-	struct super_block *mnt_sb;	 
-	int mnt_flags;
+	struct dentry *mnt_root;
+	struct super_block *mnt_sb;
 	struct user_namespace *mnt_userns;
 } __randomize_layout;
 

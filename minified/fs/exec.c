@@ -54,8 +54,7 @@ void __register_binfmt(struct linux_binfmt * fmt, int insert)
 
 bool path_noexec(const struct path *path)
 {
-	return (path->mnt->mnt_flags & MNT_NOEXEC) ||
-	       (path->mnt->mnt_sb->s_iflags & SB_I_NOEXEC);
+	return (path->mnt->mnt_sb->s_iflags & SB_I_NOEXEC);
 }
 
 static void acct_arg_size(struct linux_binprm *bprm, unsigned long pages)

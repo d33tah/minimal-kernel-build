@@ -98,7 +98,7 @@ out_free_cache:
 
 static bool __mnt_is_readonly(struct vfsmount *mnt)
 {
-	return (mnt->mnt_flags & MNT_READONLY) || sb_rdonly(mnt->mnt_sb);
+	return sb_rdonly(mnt->mnt_sb);
 }
 
 static inline void mnt_inc_writers(struct mount *mnt)
@@ -191,18 +191,10 @@ int __legitimize_mnt(struct vfsmount *bastard, unsigned seq)
 	smp_mb();			 
 	if (likely(!read_seqretry(&mount_lock, seq)))
 		return 0;
-	if (bastard->mnt_flags & MNT_SYNC_UMOUNT) {
-		mnt_add_count(mnt, -1);
-		return 1;
-	}
+	/* MNT_SYNC_UMOUNT / MNT_DOOMED never set -> both branches always false. */
 	lock_mount_hash();
-	if (unlikely(bastard->mnt_flags & MNT_DOOMED)) {
-		mnt_add_count(mnt, -1);
-		unlock_mount_hash();
-		return 1;
-	}
 	unlock_mount_hash();
-	
+
 	return -1;
 }
 
@@ -236,8 +228,7 @@ struct vfsmount *vfs_create_mount(struct fs_context *fc)
 	if (!mnt)
 		return ERR_PTR(-ENOMEM);
 
-	if (fc->sb_flags & SB_KERNMOUNT)
-		mnt->mnt.mnt_flags = MNT_INTERNAL;
+	/* MNT_INTERNAL flag dropped: mnt_flags was write-only. */
 
 	atomic_inc(&fc->root->d_sb->s_active);
 	mnt->mnt.mnt_sb		= fc->root->d_sb;
@@ -404,7 +395,7 @@ static void __init init_mount_tree(void)
 
 	root.mnt = mnt;
 	root.dentry = mnt->mnt_root;
-	mnt->mnt_flags |= MNT_LOCKED;
+	/* MNT_LOCKED flag dropped: mnt_flags was write-only. */
 
 	set_fs_pwd(current->fs, &root);
 	set_fs_root(current->fs, &root);
@@ -450,7 +441,7 @@ struct vfsmount *kern_mount(struct file_system_type *type)
 bool mnt_may_suid(struct vfsmount *mnt)
 {
 	
-	return !(mnt->mnt_flags & MNT_NOSUID) && check_mnt(real_mount(mnt)) &&
+	return check_mnt(real_mount(mnt)) &&
 	       current_in_userns(mnt->mnt_sb->s_user_ns);
 }
 

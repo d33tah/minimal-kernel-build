@@ -321,25 +321,6 @@ void iput(struct inode *inode)
 	}
 }
 
-static int relatime_need_update(struct vfsmount *mnt, struct inode *inode,
-			     struct timespec64 now)
-{
-
-	if (!(mnt->mnt_flags & MNT_RELATIME))
-		return 1;
-	
-	if (timespec64_compare(&inode->i_mtime, &inode->i_atime) >= 0)
-		return 1;
-	
-	if (timespec64_compare(&inode->i_ctime, &inode->i_atime) >= 0)
-		return 1;
-
-	if ((long)(now.tv_sec - inode->i_atime.tv_sec) >= 24*60*60)
-		return 1;
-	
-	return 0;
-}
-
 static int generic_update_time(struct inode *inode, struct timespec64 *time, int flags)
 {
 	if (flags & (S_ATIME | S_CTIME | S_MTIME)) {
@@ -373,15 +354,7 @@ bool atime_needs_update(const struct path *path, struct inode *inode)
 	if ((inode->i_sb->s_flags & SB_NODIRATIME) && S_ISDIR(inode->i_mode))
 		return false;
 
-	if (mnt->mnt_flags & MNT_NOATIME)
-		return false;
-	if ((mnt->mnt_flags & MNT_NODIRATIME) && S_ISDIR(inode->i_mode))
-		return false;
-
 	now = current_time(inode);
-
-	if (!relatime_need_update(mnt, inode, now))
-		return false;
 
 	if (timespec64_equal(&inode->i_atime, &now))
 		return false;

@@ -9,9 +9,6 @@
 #include <asm/early_ioremap.h>
 #include "internal.h"
 
-static int early_ioremap_debug __initdata;
-
-
 static int after_paging_init __initdata;
 
 pgprot_t __init __weak early_memremap_pgprot_adjust(resource_size_t phys_addr,
@@ -108,9 +105,6 @@ __early_ioremap(resource_size_t phys_addr, unsigned long size, pgprot_t prot)
 		--idx;
 		--nrpages;
 	}
-	WARN(early_ioremap_debug, "%s(%pa, %08lx) [%d] => %08lx + %08lx\n",
-	     __func__, &phys_addr, size, slot, offset, slot_virt[slot]);
-
 	prev_map[slot] = (void __iomem *)(offset + slot_virt[slot]);
 	return prev_map[slot];
 }
@@ -139,9 +133,6 @@ void __init early_iounmap(void __iomem *addr, unsigned long size)
 		 "%s(%p, %08lx) [%d] size not consistent %08lx\n",
 		  __func__, addr, size, slot, prev_size[slot]))
 		return;
-
-	WARN(early_ioremap_debug, "%s(%p, %08lx) [%d]\n",
-	      __func__, addr, size, slot);
 
 	virt_addr = (unsigned long)addr;
 	if (WARN_ON(virt_addr < fix_to_virt(FIX_BTMAP_BEGIN)))

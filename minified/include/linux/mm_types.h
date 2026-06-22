@@ -314,8 +314,6 @@ struct mm_struct {
 		struct file __rcu *exe_file;
 		 
 		atomic_t tlb_flush_pending;
-		 
-		atomic_t tlb_flush_batched;
 
 	} __randomize_layout;
 

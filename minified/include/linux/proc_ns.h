@@ -32,7 +32,5 @@ static inline int ns_alloc_inum(struct ns_common *ns)
 	return proc_alloc_inum(&ns->inum);
 }
 
-#define get_proc_ns(inode) ((struct ns_common *)(inode)->i_private)
 
-
-#endif  
+#endif

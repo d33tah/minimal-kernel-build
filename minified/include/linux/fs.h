@@ -326,7 +326,6 @@ struct inode {
 		unsigned		i_dir_seq;
 	};
 
-	void			*i_private;
 } __randomize_layout;
 
 struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode);

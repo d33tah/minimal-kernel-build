@@ -629,9 +629,6 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct mm_struct *mm, *oldmm;
 
-	tsk->min_flt = tsk->maj_flt = 0;
-	tsk->nvcsw = tsk->nivcsw = 0;
-
 	tsk->mm = NULL;
 	tsk->active_mm = NULL;
 
@@ -850,8 +847,6 @@ static __latent_entropy struct task_struct *copy_process(
 	spin_lock_init(&p->alloc_lock);
 
 	init_sigpending(&p->pending);
-
-	p->utime = p->stime = 0;
 
 	p->io_context = NULL;
 	if (args->kthread) {

@@ -11,8 +11,6 @@ void account_user_time(struct task_struct *p, u64 cputime)
 {
 	int index;
 
-	 
-	p->utime += cputime;
 	account_group_user_time(p, cputime);
 
 	index = (task_nice(p) > 0) ? CPUTIME_NICE : CPUTIME_USER;
@@ -24,8 +22,6 @@ void account_user_time(struct task_struct *p, u64 cputime)
 void account_system_index_time(struct task_struct *p,
 			       u64 cputime, enum cpu_usage_stat index)
 {
-	 
-	p->stime += cputime;
 	account_group_system_time(p, cputime);
 
 	 

@@ -269,16 +269,6 @@ struct task_struct {
 	 
 	void				*worker_private;
 
-	u64				utime;
-	u64				stime;
-
-
-	unsigned long			nvcsw;
-	unsigned long			nivcsw;
-
-
-	unsigned long			min_flt;
-	unsigned long			maj_flt;
 
 	 
 

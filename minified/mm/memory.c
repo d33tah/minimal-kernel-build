@@ -877,25 +877,6 @@ static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
 	return handle_pte_fault(&vmf);
 }
 
-static inline void mm_account_fault(struct pt_regs *regs,
-				    unsigned long address, unsigned int flags,
-				    vm_fault_t ret)
-{
-	bool major;
-
-	
-	if (ret & (VM_FAULT_ERROR | VM_FAULT_RETRY))
-		return;
-
-	
-	major = (ret & VM_FAULT_MAJOR) || (flags & FAULT_FLAG_TRIED);
-
-	if (major)
-		current->maj_flt++;
-	else
-		current->min_flt++;
-}
-
 vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 			   unsigned int flags, struct pt_regs *regs)
 {
@@ -909,8 +890,6 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 		return VM_FAULT_SIGSEGV;
 
 	ret = __handle_mm_fault(vma, address, flags);
-
-	mm_account_fault(regs, address, flags, ret);
 
 	return ret;
 }

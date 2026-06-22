@@ -126,15 +126,7 @@ kernelmode_fixup_or_oops(struct pt_regs *regs, unsigned long error_code,
 		if (in_interrupt())
 			return;
 
-
-		if (current->thread.sig_on_uaccess_err && signal) {
-			sanitize_error_code(address, &error_code);
-
-			set_signal_archinfo(address, error_code);
-
-			force_sig_fault(signal, si_code, (void __user *)address);
-		}
-
+		/* sig_on_uaccess_err branch removed - field was never set (always 0) */
 
 		return;
 	}

@@ -246,9 +246,6 @@ struct thread_struct {
 
 	unsigned long		trap_nr;
 
-	unsigned int		sig_on_uaccess_err:1;
-
-
 	struct fpu		fpu;
 	 
 };

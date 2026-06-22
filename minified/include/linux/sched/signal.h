@@ -62,10 +62,7 @@ struct signal_struct {
 	struct rlimit rlim[RLIM_NLIMITS];
 
 
-
-	struct mm_struct *oom_mm;
-
-	struct mutex cred_guard_mutex;	 
+	struct mutex cred_guard_mutex;
 	struct rw_semaphore exec_update_lock;	 
 } __randomize_layout;
 

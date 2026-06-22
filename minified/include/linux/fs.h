@@ -574,9 +574,6 @@ struct super_block {
 	atomic_long_t s_remove_count;
 
 
-	int s_readonly_remount;
-
-
 	struct user_namespace *s_user_ns;
 
 	

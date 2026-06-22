@@ -13,11 +13,6 @@ struct notifier_block;
 struct mem_cgroup;
 struct task_struct;
 
-static inline bool tsk_is_oom_victim(struct task_struct * tsk)
-{
-	return tsk->signal->oom_mm;
-}
-
 static inline vm_fault_t check_stable_address_space(struct mm_struct *mm)
 {
 	if (unlikely(test_bit(MMF_UNSTABLE, &mm->flags)))

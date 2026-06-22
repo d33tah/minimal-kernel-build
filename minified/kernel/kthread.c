@@ -221,8 +221,6 @@ int kthreadd(void *unused)
 	ignore_signals(tsk);
 	set_cpus_allowed_ptr(tsk, housekeeping_cpumask(HK_TYPE_KTHREAD));
 
-	current->flags |= PF_NOFREEZE;
-
 	for (;;) {
 		set_current_state(TASK_INTERRUPTIBLE);
 		if (list_empty(&kthread_create_list))

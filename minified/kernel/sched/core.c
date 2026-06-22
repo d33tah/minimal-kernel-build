@@ -722,9 +722,6 @@ void __noreturn do_task_dead(void)
 	
 	set_special_state(TASK_DEAD);
 
-	
-	current->flags |= PF_NOFREEZE;
-
 	__schedule(SM_NONE);
 	BUG();
 

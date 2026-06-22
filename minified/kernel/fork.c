@@ -828,14 +828,11 @@ static __latent_entropy struct task_struct *copy_process(
 	if (retval < 0)
 		goto bad_fork_free;
 
-	current->flags &= ~PF_NPROC_EXCEEDED;
-
 	retval = -EAGAIN;
 	if (data_race(nr_threads >= max_threads))
 		goto bad_fork_cleanup_count;
 
-	p->flags &= ~(PF_SUPERPRIV | PF_WQ_WORKER | PF_IDLE | PF_NO_SETAFFINITY);
-	p->flags |= PF_FORKNOEXEC;
+	p->flags &= ~(PF_IDLE | PF_NO_SETAFFINITY);
 	INIT_LIST_HEAD(&p->children);
 	INIT_LIST_HEAD(&p->sibling);
 	p->vfork_done = NULL;

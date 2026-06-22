@@ -512,8 +512,7 @@ int begin_new_exec(struct linux_binprm * bprm)
 	 * sighand->count is always 1 and the unshare branch was dead.
 	 */
 
-	me->flags &= ~(PF_RANDOMIZE | PF_FORKNOEXEC |
-					PF_NOFREEZE | PF_NO_SETAFFINITY);
+	me->flags &= ~(PF_RANDOMIZE | PF_NO_SETAFFINITY);
 	flush_thread();
 	me->personality &= ~bprm->per_clear;
 

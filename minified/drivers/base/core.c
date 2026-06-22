@@ -56,10 +56,11 @@ static struct kobj_type device_ktype = {
 };
 
 /* Removed: dev_uevent_filter / dev_uevent_name / dev_uevent / device_uevent_ops
- * - the kset_uevent_ops table was stored in devices_kset but never dispatched:
- * kobject_uevent (lib/kobject_uevent.c) is a stub that never derefs uevent_ops.
+ * - the kset_uevent_ops table was stored in devices_kset but never dispatched.
  * Removed: uevent_show / uevent_store / dev_attr_uevent - the uevent sysfs attr
- * was only fed to the device_remove_file no-op stub, never created/read. */
+ * was only fed to the device_remove_file no-op stub, never created/read.
+ * Removed: the kobject_uevent() stub itself - its only effect was setting two
+ * kobject bitfields whose sole reader was the guard that re-called the stub. */
 
 /* Stub: online sysfs attributes simplified for minimal kernel */
 

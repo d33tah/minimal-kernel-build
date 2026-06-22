@@ -949,8 +949,6 @@ struct device *tty_register_device_attr(struct tty_driver *driver,
 			goto err_put;
 	}
 
-	kobject_uevent(&dev->kobj, KOBJ_ADD);
-
 	return dev;
 
 err_put:

@@ -35,8 +35,6 @@ static void kobject_init_internal(struct kobject *kobj)
 	kref_init(&kobj->kref);
 	INIT_LIST_HEAD(&kobj->entry);
 	kobj->state_in_sysfs = 0;
-	kobj->state_add_uevent_sent = 0;
-	kobj->state_remove_uevent_sent = 0;
 	kobj->state_initialized = 1;
 }
 
@@ -179,10 +177,6 @@ int kobject_add(struct kobject *kobj, struct kobject *parent,
 /* Simplified: sysfs functions are already stubs */
 static void __kobject_del(struct kobject *kobj)
 {
-	/* Send uevent for removal if needed */
-	if (kobj->state_add_uevent_sent && !kobj->state_remove_uevent_sent)
-		kobject_uevent(kobj, KOBJ_REMOVE);
-
 	kobj->state_in_sysfs = 0;
 	kobj_kset_leave(kobj);
 	kobj->parent = NULL;
@@ -312,7 +306,6 @@ int kset_register(struct kset *k)
 	err = kobject_add_internal(&k->kobj);
 	if (err)
 		return err;
-	kobject_uevent(&k->kobj, KOBJ_ADD);
 	return 0;
 }
 

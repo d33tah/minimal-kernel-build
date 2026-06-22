@@ -793,8 +793,6 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 	};
 }
 
-#define __I_NEW			3
-#define I_NEW			(1 << __I_NEW)
 #define I_WILL_FREE		(1 << 4)
 #define I_FREEING		(1 << 5)
 #define I_CLEAR			(1 << 6)

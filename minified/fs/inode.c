@@ -225,7 +225,6 @@ static void evict(struct inode *inode)
 	remove_inode_hash(inode);
 
 	spin_lock(&inode->i_lock);
-	wake_up_bit(&inode->i_state, __I_NEW);
 	BUG_ON(inode->i_state != (I_FREEING | I_CLEAR));
 	spin_unlock(&inode->i_lock);
 
@@ -283,8 +282,6 @@ static void iput_final(struct inode *inode)
 	unsigned long state;
 	int drop;
 
-	WARN_ON(inode->i_state & I_NEW);
-
 	if (op->drop_inode)
 		drop = op->drop_inode(inode);
 	else
@@ -304,7 +301,6 @@ static void iput_final(struct inode *inode)
 
 		spin_lock(&inode->i_lock);
 		state = inode->i_state;
-		WARN_ON(state & I_NEW);
 		state &= ~I_WILL_FREE;
 	}
 

@@ -3,19 +3,9 @@
 
 #include <linux/wait.h>
 
-struct wait_bit_key {
-	void			*flags;
-	int			bit_nr;
-	unsigned long		timeout;
-};
-
-#define __WAIT_BIT_KEY_INITIALIZER(word, bit)					\
-	{ .flags = word, .bit_nr = bit, }
-
-void __wake_up_bit(struct wait_queue_head *wq_head, void *word, int bit);
-void wake_up_bit(void *word, int bit);
-struct wait_queue_head *bit_waitqueue(void *word, int bit);
-extern void __init wait_bit_init(void);
+/* wake_up_bit / __wake_up_bit / bit_waitqueue / wait_bit_init and the
+   wait_bit_key/__WAIT_BIT_KEY_INITIALIZER plumbing removed - the sole user
+   was a dead __I_NEW wake in fs/inode.c with no waiters. */
 
 /* wait_on_bit_io, wait_on_bit_timeout, wait_on_bit_lock,
    wait_on_bit_lock_io, wait_on_bit_lock_action removed - unused */
@@ -25,4 +15,4 @@ extern void __init wait_bit_init(void);
    wait_var_event_timeout, wait_var_event_interruptible removed) */
 
 
-#endif  
+#endif

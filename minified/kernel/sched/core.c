@@ -936,8 +936,6 @@ void __init sched_init(void)
 
 	BUG_ON(&idle_sched_class != &fair_sched_class + 1);
 
-	wait_bit_init();
-
 	for_each_possible_cpu(i) {
 		struct rq *rq;
 

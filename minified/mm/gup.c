@@ -43,10 +43,7 @@ bool __must_check try_grab_page(struct page *page, unsigned int flags)
 static struct page *no_page_table(struct vm_area_struct *vma,
 		unsigned int flags)
 {
-	
-	if ((flags & FOLL_DUMP) &&
-			(vma_is_anonymous(vma) || !vma->vm_ops->fault))
-		return ERR_PTR(-EFAULT);
+	/* FOLL_DUMP never set -> always returns NULL */
 	return NULL;
 }
 
@@ -99,12 +96,7 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 
 	page = vm_normal_page(vma, address, pte);
 	if (unlikely(!page)) {
-		if (flags & FOLL_DUMP) {
-			
-			page = ERR_PTR(-EFAULT);
-			goto out;
-		}
-
+		/* FOLL_DUMP never set */
 		if (is_zero_pfn(pte_pfn(pte))) {
 			page = pte_page(pte);
 		} else {
@@ -180,14 +172,11 @@ static int faultin_page(struct vm_area_struct *vma,
 	unsigned int fault_flags = 0;
 	vm_fault_t ret;
 
-	if (*flags & FOLL_NOFAULT)
-		return -EFAULT;
+	/* FOLL_NOFAULT / FOLL_NOWAIT never set */
 	if (*flags & FOLL_WRITE)
 		fault_flags |= FAULT_FLAG_WRITE;
 	if (locked)
 		fault_flags |= FAULT_FLAG_ALLOW_RETRY;
-	if (*flags & FOLL_NOWAIT)
-		fault_flags |= FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_RETRY_NOWAIT;
 	if (*flags & FOLL_TRIED) {
 		
 		fault_flags |= FAULT_FLAG_TRIED;
@@ -228,8 +217,7 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 	if (vm_flags & (VM_IO | VM_PFNMAP))
 		return -EFAULT;
 
-	if (gup_flags & FOLL_ANON && !vma_is_anonymous(vma))
-		return -EFAULT;
+	/* FOLL_ANON never set */
 
 	if (write) {
 		if (!(vm_flags & VM_WRITE)) {
@@ -446,15 +434,6 @@ retry:
 	return pages_done;
 }
 
-static bool is_valid_gup_flags(unsigned int gup_flags)
-{
-
-	if (WARN_ON_ONCE(gup_flags & FOLL_LONGTERM))
-		return false;
-
-	return true;
-}
-
 static long __get_user_pages_remote(struct mm_struct *mm,
 				    unsigned long start, unsigned long nr_pages,
 				    unsigned int gup_flags, struct page **pages,
@@ -470,9 +449,7 @@ long get_user_pages_remote(struct mm_struct *mm,
 		unsigned int gup_flags, struct page **pages,
 		struct vm_area_struct **vmas, int *locked)
 {
-	if (!is_valid_gup_flags(gup_flags))
-		return -EINVAL;
-
+	/* FOLL_LONGTERM never set -> formerly is_valid_gup_flags, always valid */
 	return __get_user_pages_remote(mm, start, nr_pages, gup_flags,
 				       pages, vmas, locked);
 }

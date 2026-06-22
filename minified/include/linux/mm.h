@@ -1048,25 +1048,20 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 
 
 #define FOLL_WRITE	0x01
-#define FOLL_TOUCH	0x02	
-#define FOLL_GET	0x04	
-#define FOLL_DUMP	0x08	
-#define FOLL_FORCE	0x10	
-#define FOLL_NOWAIT	0x20	
-#define FOLL_NOFAULT	0x80	
-#define FOLL_HWPOISON	0x100
+#define FOLL_TOUCH	0x02
+#define FOLL_GET	0x04
+#define FOLL_FORCE	0x10
 #define FOLL_TRIED	0x800
-#define FOLL_REMOTE	0x2000	
-#define FOLL_COW	0x4000	
-#define FOLL_ANON	0x8000	
-#define FOLL_LONGTERM	0x10000
+#define FOLL_REMOTE	0x2000
+#define FOLL_COW	0x4000
+/* Removed never-set FOLL bits: DUMP/NOWAIT/NOFAULT/HWPOISON/ANON/LONGTERM */
 
 static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags)
 {
 	if (vm_fault & VM_FAULT_OOM)
 		return -ENOMEM;
 	if (vm_fault & (VM_FAULT_HWPOISON | VM_FAULT_HWPOISON_LARGE))
-		return (foll_flags & FOLL_HWPOISON) ? -EHWPOISON : -EFAULT;
+		return -EFAULT; /* FOLL_HWPOISON never set */
 	if (vm_fault & (VM_FAULT_SIGBUS | VM_FAULT_SIGSEGV))
 		return -EFAULT;
 	return 0;

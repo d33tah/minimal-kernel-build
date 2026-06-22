@@ -38,29 +38,10 @@ enum pageflags {
 
 	PG_readahead = PG_reclaim,
 
-	 
+
 	PG_anon_exclusive = PG_mappedtodisk,
 
-	 
-	PG_checked = PG_owner_priv_1,
-
-	 
-	PG_swapcache = PG_owner_priv_1,	 
-
-	 
-	PG_fscache = PG_private_2,	 
-
-	/* PG_pinned, PG_savepinned, PG_foreign, PG_xen_remapped, PG_slob_free removed - unused */
-
-	 
-	PG_double_map = PG_workingset,
-
-
-	 
-	PG_isolated = PG_reclaim,
-
-	 
-	PG_reported = PG_uptodate,
+	/* PG_checked, PG_swapcache, PG_fscache, PG_double_map, PG_isolated, PG_reported, PG_pinned, PG_savepinned, PG_foreign, PG_xen_remapped, PG_slob_free removed - unused */
 };
 
 #define PAGEFLAGS_MASK		((1UL << NR_PAGEFLAGS) - 1)

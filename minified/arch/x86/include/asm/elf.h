@@ -118,9 +118,8 @@ do {									\
  
 static inline int mmap_is_ia32(void)
 {
-	return IS_ENABLED(CONFIG_X86_32) ||
-	       (IS_ENABLED(CONFIG_COMPAT) &&
-		test_thread_flag(TIF_ADDR32));
+	/* TIF_ADDR32 never set in this build -> COMPAT term always false */
+	return IS_ENABLED(CONFIG_X86_32);
 }
 
 extern unsigned long task_size_32bit(void);

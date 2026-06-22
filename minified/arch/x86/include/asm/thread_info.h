@@ -40,8 +40,6 @@ struct thread_info {
 #define TIF_NEED_RESCHED	3
 #define TIF_NEED_FPU_LOAD	14
 #define TIF_NOTIFY_SIGNAL	17
-#define TIF_POLLING_NRFLAG	21
-#define TIF_ADDR32		29
 
 #define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
 #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
@@ -55,6 +53,9 @@ struct thread_info {
  * set in this build, so the context-switch extra-work path was always a no-op.
  * TIF_NOCPUID/TIF_BLOCKSTEP also removed - never set, their test/clear sites in
  * process.c/traps.c were always-false / no-ops and have been folded away.
+ * TIF_POLLING_NRFLAG removed - set/cleared in sched/idle.h but never tested, so
+ * the writes were no-ops. TIF_ADDR32 removed - tested in elf.h mmap_is_ia32 but
+ * never set, so the COMPAT term was always false.
  */
 #define STACK_WARN		(THREAD_SIZE/8)
 

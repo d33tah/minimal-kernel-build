@@ -5,7 +5,7 @@
 
 static inline void __current_set_polling(void)
 {
-	set_thread_flag(TIF_POLLING_NRFLAG);
+	/* TIF_POLLING_NRFLAG never tested in this build -> no-op */
 }
 
 static inline bool __must_check current_set_polling_and_test(void)
@@ -20,7 +20,7 @@ static inline bool __must_check current_set_polling_and_test(void)
 
 static inline void __current_clr_polling(void)
 {
-	clear_thread_flag(TIF_POLLING_NRFLAG);
+	/* TIF_POLLING_NRFLAG never tested in this build -> no-op */
 }
 
 static inline bool __must_check current_clr_polling_and_test(void)

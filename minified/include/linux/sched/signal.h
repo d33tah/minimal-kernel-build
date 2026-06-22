@@ -40,17 +40,6 @@ struct multiprocess_signals {
 	struct hlist_node node;
 };
 
-struct core_thread {
-	struct task_struct *task;
-	struct core_thread *next;
-};
-
-struct core_state {
-	atomic_t nr_threads;
-	struct core_thread dumper;
-	struct completion startup;
-};
-
 struct signal_struct {
 	refcount_t		sigcnt;
 	atomic_t		live;
@@ -73,8 +62,6 @@ struct signal_struct {
 
 
 	unsigned int		flags;
-
-	struct core_state *core_state;
 
 	struct pid *pids[PIDTYPE_MAX];
 

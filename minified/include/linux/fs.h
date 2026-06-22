@@ -429,10 +429,6 @@ struct fown_struct {
 };
 
 struct file_ra_state {
-	pgoff_t start;
-	unsigned int size;
-	unsigned int async_size;
-	unsigned int ra_pages;
 	unsigned int mmap_miss;
 	loff_t prev_pos;
 };
@@ -554,8 +550,7 @@ struct super_block {
 	atomic_t		s_active;
 	const struct xattr_handler **s_xattr;
 	struct hlist_bl_head	s_roots;	
-	struct list_head	s_mounts;	
-	struct block_device	*s_bdev;
+	struct list_head	s_mounts;
 	struct backing_dev_info *s_bdi;
 	struct hlist_node	s_instances;
 	struct quota_info	s_dquot;

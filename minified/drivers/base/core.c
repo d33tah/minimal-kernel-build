@@ -32,8 +32,8 @@
  */
 
 static struct kobject *dev_kobj;
-struct kobject *sysfs_dev_char_kobj;
-struct kobject *sysfs_dev_block_kobj;
+static struct kobject *sysfs_dev_char_kobj;
+static struct kobject *sysfs_dev_block_kobj;
 
 
 static void device_release(struct kobject *kobj)

@@ -11,13 +11,15 @@ struct fwnode_handle;
 struct class {
 	const char		*name;
 
-	struct kobject			*dev_kobj;
+	/* dev_kobj field removed - write-only (assigned in __class_register
+	   from sysfs_dev_char_kobj, never read by any consumer). */
 
 	struct subsys_private *p;
 };
 
-extern struct kobject *sysfs_dev_block_kobj;
-extern struct kobject *sysfs_dev_char_kobj;
+/* sysfs_dev_block_kobj / sysfs_dev_char_kobj externs removed - both globals
+   are only referenced inside drivers/base/core.c (sysfs anchor creation);
+   no external consumer reads them. */
 extern int __must_check __class_register(struct class *class,
 					 struct lock_class_key *key);
 

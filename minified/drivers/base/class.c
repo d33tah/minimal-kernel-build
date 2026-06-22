@@ -53,10 +53,6 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 		return error;
 	}
 
-	 
-	if (!cls->dev_kobj)
-		cls->dev_kobj = sysfs_dev_char_kobj;
-
 	cp->subsys.kobj.kset = class_kset;
 	cp->subsys.kobj.ktype = &class_ktype;
 	cp->class = cls;

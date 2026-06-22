@@ -742,7 +742,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 
 	sig->curr_target = tsk;
 	init_sigpending(&sig->shared_pending);
-	INIT_HLIST_HEAD(&sig->multiprocess);
 	seqlock_init(&sig->stats_lock);
 
 	task_lock(current->group_leader);
@@ -803,11 +802,8 @@ static __latent_entropy struct task_struct *copy_process(
 	 */
 
 	sigemptyset(&delayed.signal);
-	INIT_HLIST_NODE(&delayed.node);
 
 	spin_lock_irq(&current->sighand->siglock);
-	/* CLONE_THREAD never set -> always register the delayed-signal node */
-	hlist_add_head(&delayed.node, &current->signal->multiprocess);
 	recalc_sigpending();
 	spin_unlock_irq(&current->sighand->siglock);
 	retval = -ERESTARTNOINTR;
@@ -971,7 +967,6 @@ static __latent_entropy struct task_struct *copy_process(
 		attach_pid(p, PIDTYPE_PID);
 		nr_threads++;
 	}
-	hlist_del_init(&delayed.node);
 	spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);
 
@@ -1013,9 +1008,6 @@ bad_fork_free:
 	put_task_stack(p);
 	delayed_free_task(p);
 fork_out:
-	spin_lock_irq(&current->sighand->siglock);
-	hlist_del_init(&delayed.node);
-	spin_unlock_irq(&current->sighand->siglock);
 	return ERR_PTR(retval);
 }
 

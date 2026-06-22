@@ -37,7 +37,6 @@ struct sighand_struct {
 
 struct multiprocess_signals {
 	sigset_t signal;
-	struct hlist_node node;
 };
 
 struct signal_struct {
@@ -50,9 +49,6 @@ struct signal_struct {
 
 	 
 	struct sigpending	shared_pending;
-
-	 
-	struct hlist_head	multiprocess;
 
 
 	int			group_exit_code;

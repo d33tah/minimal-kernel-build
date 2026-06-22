@@ -25,20 +25,10 @@ struct fpstate init_fpstate __ro_after_init;
 
 DEFINE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
 
-static void update_avx_timestamp(struct fpu *fpu)
-{
-
-#define AVX512_TRACKING_MASK	(XFEATURE_MASK_ZMM_Hi256 | XFEATURE_MASK_Hi16_ZMM)
-
-	if (fpu->fpstate->regs.xsave.header.xfeatures & AVX512_TRACKING_MASK)
-		fpu->avx512_timestamp = jiffies;
-}
-
 void save_fpregs_to_fpstate(struct fpu *fpu)
 {
 	if (likely(use_xsave())) {
 		os_xsave(fpu->fpstate);
-		update_avx_timestamp(fpu);
 		return;
 	}
 
@@ -128,11 +118,6 @@ void fpstate_reset(struct fpu *fpu)
 	 
 	fpu->fpstate = &fpu->__fpstate;
 	__fpstate_reset(fpu->fpstate, init_fpstate.xfd);
-
-	 
-	fpu->perm.__state_perm		= fpu_kernel_cfg.default_features;
-	fpu->perm.__state_size		= fpu_kernel_cfg.default_size;
-	fpu->perm.__user_state_size	= fpu_user_cfg.default_size;
 }
 
 /* fpu_inherit_perms removed - gated on fpu_state_size_dynamic() which is

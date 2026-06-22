@@ -171,54 +171,22 @@ struct fpstate {
 	 
 	u64			user_xfeatures;
 
-	 
+
 	u64			xfd;
 
-	 
-	unsigned int		is_valloc	: 1;
 
-	 
-	unsigned int		is_guest	: 1;
-
-	 
-	unsigned int		is_confidential	: 1;
-
-	 
-	unsigned int		in_use		: 1;
-
-	 
 	union fpregs_state	regs;
 
-	 
+
 } __aligned(64);
 
-struct fpu_state_perm {
-	 
-	u64				__state_perm;
 
-	 
-	unsigned int			__state_size;
-
-	 
-	unsigned int			__user_state_size;
-};
-
- 
 struct fpu {
-	 
+
 	unsigned int			last_cpu;
 
-	 
-	unsigned long			avx512_timestamp;
 
-	 
 	struct fpstate			*fpstate;
-
-	 
-	struct fpstate			*__task_fpstate;
-
-
-	struct fpu_state_perm		perm;
 
 
 	struct fpstate			__fpstate;

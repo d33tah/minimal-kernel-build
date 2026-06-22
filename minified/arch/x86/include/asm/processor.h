@@ -178,9 +178,6 @@ struct x86_hw_tss {
 
 } __attribute__((packed));
 
- 
-#define IO_BITMAP_BYTES			(65536 / BITS_PER_BYTE)
-#define IO_BITMAP_LONGS			(IO_BITMAP_BYTES / sizeof(long))
 
 # define __KERNEL_TSS_LIMIT	\
 	(offsetof(struct tss_struct, x86_tss) + sizeof(struct x86_hw_tss) - 1)
@@ -196,26 +193,9 @@ struct entry_stack_page {
 	struct entry_stack stack;
 } __aligned(PAGE_SIZE);
 
- 
-struct x86_io_bitmap {
-	 
-	u64			prev_sequence;
-
-	 
-	unsigned int		prev_max;
-
-	 
-	unsigned long		bitmap[IO_BITMAP_LONGS + 1];
-
-	 
-	unsigned long		mapall[IO_BITMAP_LONGS + 1];
-};
-
 struct tss_struct {
-	 
-	struct x86_hw_tss	x86_tss;
 
-	struct x86_io_bitmap	io_bitmap;
+	struct x86_hw_tss	x86_tss;
 } __aligned(PAGE_SIZE);
 
 DECLARE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw);

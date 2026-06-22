@@ -562,7 +562,6 @@ void setup_new_exec(struct linux_binprm * bprm)
 
 	arch_setup_new_exec();
 
-	me->mm->task_size = TASK_SIZE;
 	up_write(&me->signal->exec_update_lock);
 	mutex_unlock(&me->signal->cred_guard_mutex);
 }

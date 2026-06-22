@@ -463,7 +463,6 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	mm->map_count = 0;
 	memset(&mm->rss_stat, 0, sizeof(mm->rss_stat));
 	spin_lock_init(&mm->page_table_lock);
-	spin_lock_init(&mm->arg_lock);
 	mm_init_cpumask(mm);
 	RCU_INIT_POINTER(mm->exe_file, NULL);
 	init_tlb_flush_pending(mm);
@@ -737,7 +736,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	if (!sig)
 		return -ENOMEM;
 
-	sig->nr_threads = 1;
 	atomic_set(&sig->live, 1);
 	refcount_set(&sig->sigcnt, 1);
 
@@ -745,7 +743,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	sig->thread_head = (struct list_head)LIST_HEAD_INIT(tsk->thread_node);
 	tsk->thread_node = (struct list_head)LIST_HEAD_INIT(sig->thread_head);
 
-	init_waitqueue_head(&sig->wait_chldexit);
 	sig->curr_target = tsk;
 	init_sigpending(&sig->shared_pending);
 	INIT_HLIST_HEAD(&sig->multiprocess);
@@ -756,7 +753,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	task_unlock(current->group_leader);
 
 	/* sched_autogroup_fork - stubbed */
-	sig->oom_score_adj = current->signal->oom_score_adj;
 
 	mutex_init(&sig->cred_guard_mutex);
 	init_rwsem(&sig->exec_update_lock);

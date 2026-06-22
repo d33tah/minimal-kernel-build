@@ -43,12 +43,9 @@ struct multiprocess_signals {
 struct signal_struct {
 	refcount_t		sigcnt;
 	atomic_t		live;
-	int			nr_threads;
 	struct list_head	thread_head;
 
-	wait_queue_head_t	wait_chldexit;	 
 
-	 
 	struct task_struct	*curr_target;
 
 	 
@@ -76,7 +73,6 @@ struct signal_struct {
 
 
 
-	short oom_score_adj;
 	struct mm_struct *oom_mm;
 
 	struct mutex cred_guard_mutex;	 

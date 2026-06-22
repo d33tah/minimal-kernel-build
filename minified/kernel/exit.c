@@ -85,7 +85,6 @@ static void __exit_signal(struct task_struct *tsk)
 	}
 
 	write_seqlock(&sig->stats_lock);
-	sig->nr_threads--;
 	__unhash_process(tsk, group_dead);
 	write_sequnlock(&sig->stats_lock);
 

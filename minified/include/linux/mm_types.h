@@ -245,8 +245,6 @@ struct vm_area_struct {
 			struct rb_node rb;
 			unsigned long rb_subtree_last;
 		} shared;
-		 
-		struct anon_vma_name *anon_name;
 	};
 
 	 
@@ -269,8 +267,7 @@ struct mm_struct {
 				unsigned long addr, unsigned long len,
 				unsigned long pgoff, unsigned long flags);
 		unsigned long mmap_base;
-		unsigned long task_size;
-		unsigned long highest_vm_end;	 
+		unsigned long highest_vm_end;
 		pgd_t * pgd;
 
 
@@ -294,8 +291,6 @@ struct mm_struct {
 
 		unsigned long total_vm;
 		unsigned long def_flags;
-
-		spinlock_t arg_lock;
 
 		unsigned long start_code, end_code, start_data, end_data;
 		unsigned long brk, start_stack;

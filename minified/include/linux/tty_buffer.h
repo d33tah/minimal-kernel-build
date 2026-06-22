@@ -27,12 +27,10 @@ struct tty_bufhead {
 	struct tty_buffer *head;	 
 	struct work_struct work;
 	struct mutex	   lock;
-	atomic_t	   priority;
 	struct tty_buffer sentinel;
-	struct llist_head free;		 
-	atomic_t	   mem_used;     
-	int		   mem_limit;
-	struct tty_buffer *tail;	 
+	struct llist_head free;
+	atomic_t	   mem_used;
+	struct tty_buffer *tail;
 };
 
 #define TTY_NORMAL	0

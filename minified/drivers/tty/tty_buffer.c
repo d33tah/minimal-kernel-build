@@ -18,9 +18,6 @@
 #define MIN_TTYB_SIZE	256
 #define TTYB_ALIGN_MASK	255
 
-#define TTYB_DEFAULT_MEM_LIMIT	(640 * 1024UL)
-
-
 #define TTY_BUFFER_PAGE	(((PAGE_SIZE - sizeof(struct tty_buffer)) / 2) & ~0xFF)
 
 
@@ -71,9 +68,7 @@ void tty_buffer_init(struct tty_port *port)
 	buf->tail = &buf->sentinel;
 	init_llist_head(&buf->free);
 	atomic_set(&buf->mem_used, 0);
-	atomic_set(&buf->priority, 0);
 	INIT_WORK(&buf->work, NULL);
-	buf->mem_limit = TTYB_DEFAULT_MEM_LIMIT;
 }
 
 

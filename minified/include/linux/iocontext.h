@@ -7,8 +7,6 @@
 
 
 struct io_context {
-	atomic_long_t refcount;
-	atomic_t active_ref;
 	unsigned short ioprio;
 };
 

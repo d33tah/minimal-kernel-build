@@ -25,11 +25,7 @@ struct tty_port {
 	struct tty_struct	*itty;
 	const struct tty_port_operations *ops;
 	spinlock_t		lock;
-	wait_queue_head_t	open_wait;
-	wait_queue_head_t	delta_msr_wait;
 	unsigned long		iflags;
-	struct mutex		mutex;
-	struct mutex		buf_mutex;
 	unsigned char		*xmit_buf;
 	struct kref		kref;
 };

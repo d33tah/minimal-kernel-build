@@ -38,46 +38,26 @@ struct thread_info {
 #define TIF_NOTIFY_RESUME	1
 #define TIF_SIGPENDING		2
 #define TIF_NEED_RESCHED	3
-#define TIF_SSBD		5
-#define TIF_USER_RETURN_NOTIFY	11
-#define TIF_UPROBE		12
-#define TIF_PATCH_PENDING	13
 #define TIF_NEED_FPU_LOAD	14
 #define TIF_NOCPUID		15
-#define TIF_NOTSC		16
 #define TIF_NOTIFY_SIGNAL	17
-#define TIF_MEMDIE		20
 #define TIF_POLLING_NRFLAG	21
-#define TIF_SPEC_FORCE_UPDATE	23
 #define TIF_BLOCKSTEP		25
 #define TIF_ADDR32		29
 
 #define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
 #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
 #define _TIF_NEED_RESCHED	(1 << TIF_NEED_RESCHED)
-#define _TIF_SSBD		(1 << TIF_SSBD)
-#define _TIF_USER_RETURN_NOTIFY	(1 << TIF_USER_RETURN_NOTIFY)
-#define _TIF_UPROBE		(1 << TIF_UPROBE)
-#define _TIF_PATCH_PENDING	(1 << TIF_PATCH_PENDING)
 #define _TIF_NEED_FPU_LOAD	(1 << TIF_NEED_FPU_LOAD)
-#define _TIF_NOCPUID		(1 << TIF_NOCPUID)
-#define _TIF_NOTSC		(1 << TIF_NOTSC)
 #define _TIF_NOTIFY_SIGNAL	(1 << TIF_NOTIFY_SIGNAL)
-#define _TIF_SPEC_FORCE_UPDATE	(1 << TIF_SPEC_FORCE_UPDATE)
-#define _TIF_BLOCKSTEP		(1 << TIF_BLOCKSTEP)
 
- 
-#define _TIF_WORK_CTXSW_BASE					\
-	(_TIF_NOCPUID | _TIF_NOTSC | _TIF_BLOCKSTEP |		\
-	 _TIF_SSBD | _TIF_SPEC_FORCE_UPDATE)
-
- 
-# define _TIF_WORK_CTXSW	(_TIF_WORK_CTXSW_BASE)
-
-# define _TIF_WORK_CTXSW_PREV	(_TIF_WORK_CTXSW| _TIF_USER_RETURN_NOTIFY)
-
-#define _TIF_WORK_CTXSW_NEXT	(_TIF_WORK_CTXSW)
-
+/*
+ * _TIF_WORK_CTXSW_{BASE,PREV,NEXT} + the SSBD/NOTSC/USER_RETURN_NOTIFY/UPROBE/
+ * PATCH_PENDING/MEMDIE/SPEC_FORCE_UPDATE bit defs removed - those bits are never
+ * set in this build, so the context-switch extra-work path was always a no-op.
+ * The _TIF_NOCPUID/_TIF_BLOCKSTEP masks were only used by it (the bare TIF_
+ * forms stay live in process.c/traps.c).
+ */
 #define STACK_WARN		(THREAD_SIZE/8)
 
  

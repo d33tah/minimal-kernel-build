@@ -162,28 +162,9 @@ void arch_setup_new_exec(void)
 		enable_cpuid();
 }
 
-/* amd_set_core_ssb_state / amd_set_ssb_virt_state removed - SSBD spec-ctrl
- * machinery is gated on AMD-only X86_FEATURE_VIRT_SSBD / LS_CFG_SSBD, both
- * absent on the QEMU boot CPU; __speculation_ctrl_update is runtime-dead. */
-
-static __always_inline void __speculation_ctrl_update(unsigned long tifp,
-						      unsigned long tifn)
-{
-	lockdep_assert_irqs_disabled();
-}
-
-void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p)
-{
-	unsigned long tifp, tifn;
-
-	tifn = read_task_thread_flags(next_p);
-	tifp = read_task_thread_flags(prev_p);
-
-	if ((tifp ^ tifn) & _TIF_NOCPUID)
-		set_cpuid_faulting(!!(tifn & _TIF_NOCPUID));
-
-	__speculation_ctrl_update(tifp, tifn);
-}
+/* __switch_to_xtra + __speculation_ctrl_update (+ amd_set_*_ssb_state) removed -
+ * switch_to_extra()'s extra-work test was always false (its TIF mask bits are
+ * never set in this build), so __switch_to_xtra was never called. */
 
 static void (*x86_idle)(void);
 

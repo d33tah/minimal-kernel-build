@@ -4,17 +4,14 @@
 
 #include <asm/spec-ctrl.h>
 
-void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p);
 
- 
+/*
+ * _TIF_WORK_CTXSW_{NEXT,PREV} only covered TIF bits that are never set in this
+ * build (NOCPUID/NOTSC/BLOCKSTEP tested-but-never-set; SSBD/SPEC_FORCE_UPDATE/
+ * USER_RETURN_NOTIFY unreferenced) => the context-switch extra-work test was
+ * always false and __switch_to_xtra was never called. Folded to a no-op.
+ */
 static inline void switch_to_extra(struct task_struct *prev,
 				   struct task_struct *next)
 {
-	unsigned long next_tif = read_task_thread_flags(next);
-	unsigned long prev_tif = read_task_thread_flags(prev);
-
-
-	if (unlikely(next_tif & _TIF_WORK_CTXSW_NEXT ||
-		     prev_tif & _TIF_WORK_CTXSW_PREV))
-		__switch_to_xtra(prev, next);
 }

@@ -769,31 +769,18 @@ struct file_operations {
 struct inode_operations {
 	struct dentry * (*lookup) (struct inode *,struct dentry *, unsigned int);
 	const char * (*get_link) (struct dentry *, struct inode *, struct delayed_call *);
-	int (*permission) (struct user_namespace *, struct inode *, int);
-	/* get_acl removed - unused */
-	int (*readlink) (struct dentry *, char __user *,int);
-
 	int (*create) (struct user_namespace *, struct inode *,struct dentry *,
 		       umode_t, bool);
-	int (*link) (struct dentry *,struct inode *,struct dentry *);
-	int (*unlink) (struct inode *,struct dentry *);
-	int (*symlink) (struct user_namespace *, struct inode *,struct dentry *,
-			const char *);
 	int (*mkdir) (struct user_namespace *, struct inode *,struct dentry *,
 		      umode_t);
-	int (*rmdir) (struct inode *,struct dentry *);
 	int (*mknod) (struct user_namespace *, struct inode *,struct dentry *,
 		      umode_t,dev_t);
-	int (*rename) (struct user_namespace *, struct inode *, struct dentry *,
-			struct inode *, struct dentry *, unsigned int);
 	int (*setattr) (struct user_namespace *, struct dentry *,
 			struct iattr *);
-	int (*getattr) (struct user_namespace *, const struct path *,
-			struct kstat *, u32, unsigned int);
-	ssize_t (*listxattr) (struct dentry *, char *, size_t);
-	/* fiemap removed - unused */
-	int (*update_time)(struct inode *, struct timespec64 *, int);
-	/* set_acl, fileattr_set, fileattr_get removed - unused */
+	/* permission/readlink/link/unlink/symlink/rmdir/rename/getattr/
+	 * listxattr/update_time removed - zero ->field deref tree-wide (only
+	 * lookup/get_link/create/mkdir/mknod/setattr are live). Earlier:
+	 * get_acl/fiemap/set_acl/fileattr_set/fileattr_get removed - unused */
 } ____cacheline_aligned;
 
 static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio,
@@ -810,23 +797,12 @@ static inline int call_mmap(struct file *file, struct vm_area_struct *vma)
 extern ssize_t vfs_write(struct file *, const char __user *, size_t, loff_t *);
 
 struct super_operations {
-   	struct inode *(*alloc_inode)(struct super_block *sb);
-	void (*destroy_inode)(struct inode *);
-	void (*free_inode)(struct inode *);
-
-   	void (*dirty_inode) (struct inode *, int flags);
-	int (*write_inode) (struct inode *, struct writeback_control *wbc);
+	/* only drop_inode is ever assigned/dispatched in this build; the rest
+	 * (alloc_inode, destroy_inode, free_inode, dirty_inode, write_inode,
+	 * evict_inode, put_super, sync_fs, statfs, remount_fs, umount_begin,
+	 * show_options, and earlier freeze/show_devname/show_path/show_stats)
+	 * had zero field dispatch and zero field assignment - removed */
 	int (*drop_inode) (struct inode *);
-	void (*evict_inode) (struct inode *);
-	void (*put_super) (struct super_block *);
-	int (*sync_fs)(struct super_block *sb, int wait);
-	/* freeze_super, freeze_fs, thaw_super, unfreeze_fs removed - unused */
-	int (*statfs) (struct dentry *, struct kstatfs *);
-	int (*remount_fs) (struct super_block *, int *, char *);
-	void (*umount_begin) (struct super_block *);
-
-	int (*show_options)(struct seq_file *, struct dentry *);
-	/* show_devname, show_path, show_stats removed - unused */
 };
 
 #define S_NOSEC		(1 << 12)

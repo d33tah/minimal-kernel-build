@@ -10,8 +10,6 @@ struct rusage;
 union thread_union;
 struct css_set;
 
-#define CLONE_LEGACY_FLAGS 0xffffffffULL
-
 struct kernel_clone_args {
 	u64 flags;
 	int __user *pidfd;

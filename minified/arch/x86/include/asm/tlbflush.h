@@ -77,9 +77,7 @@ struct tlb_state {
 
 	u16 loaded_mm_asid;
 
-	unsigned short user_pcid_flush_mask;
 
-	 
 	unsigned long cr4;
 
 	 

@@ -112,7 +112,6 @@ struct kmem_cache_cpu {
 	void **freelist;
 	unsigned long tid;
 	struct slab *slab;
-	local_lock_t lock;
 };
 
 #define slub_percpu_partial(c)			NULL

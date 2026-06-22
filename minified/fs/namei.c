@@ -482,26 +482,21 @@ static int nd_jump_root(struct nameidata *nd)
 }
 
 
-static int __traverse_mounts(struct path *path, unsigned flags, bool *jumped,
-			     int *count, unsigned lookup_flags)
-{
-	*jumped = false;
-	return 0; /* Stub */
-}
-
 static inline int traverse_mounts(struct path *path, bool *jumped,
 				  int *count, unsigned lookup_flags)
 {
 	unsigned flags = smp_load_acquire(&path->dentry->d_flags);
 
-	
-	if (likely(!(flags & DCACHE_MANAGED_DENTRY))) {
-		*jumped = false;
-		if (unlikely(d_flags_negative(flags)))
-			return -ENOENT;
-		return 0;
-	}
-	return __traverse_mounts(path, flags, jumped, count, lookup_flags);
+	/*
+	 * DCACHE_MANAGED_DENTRY (DCACHE_MOUNTED|DCACHE_NEED_AUTOMOUNT|
+	 * DCACHE_MANAGE_TRANSIT) is never set on this build -- no mount is
+	 * ever attached to a dentry -- so the managed-dentry traversal is
+	 * unreachable and this always takes the fast path.
+	 */
+	*jumped = false;
+	if (unlikely(d_flags_negative(flags)))
+		return -ENOENT;
+	return 0;
 }
 
 

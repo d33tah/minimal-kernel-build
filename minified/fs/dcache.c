@@ -159,7 +159,7 @@ static void dentry_unlink_inode(struct dentry * dentry)
 	iput(inode);
 }
 
-#define D_FLAG_VERIFY(dentry,x) WARN_ON_ONCE(((dentry)->d_flags & (DCACHE_LRU_LIST | DCACHE_SHRINK_LIST)) != (x))
+#define D_FLAG_VERIFY(dentry,x) WARN_ON_ONCE(((dentry)->d_flags & DCACHE_LRU_LIST) != (x))
 static void d_lru_add(struct dentry *dentry)
 {
 	D_FLAG_VERIFY(dentry, 0);
@@ -207,7 +207,6 @@ static inline void dentry_unlist(struct dentry *dentry, struct dentry *parent)
 static void __dentry_kill(struct dentry *dentry)
 {
 	struct dentry *parent = NULL;
-	bool can_free = true;
 	if (!IS_ROOT(dentry))
 		parent = dentry->d_parent;
 
@@ -217,11 +216,10 @@ static void __dentry_kill(struct dentry *dentry)
 	
 	/* DCACHE_OP_PRUNE is never set (no ops object sets ->d_prune) */
 
-	if (dentry->d_flags & DCACHE_LRU_LIST) {
-		if (!(dentry->d_flags & DCACHE_SHRINK_LIST))
-			d_lru_del(dentry);
-	}
-	
+	/* DCACHE_SHRINK_LIST is never set on this build */
+	if (dentry->d_flags & DCACHE_LRU_LIST)
+		d_lru_del(dentry);
+
 	__d_drop(dentry);
 	dentry_unlist(dentry, parent);
 	if (parent)
@@ -232,12 +230,7 @@ static void __dentry_kill(struct dentry *dentry)
 		spin_unlock(&dentry->d_lock);
 	/* no ops object sets ->d_release */
 
-	spin_lock(&dentry->d_lock);
-	if (dentry->d_flags & DCACHE_SHRINK_LIST)
-		can_free = false;
-	spin_unlock(&dentry->d_lock);
-	if (likely(can_free))
-		dentry_free(dentry);
+	dentry_free(dentry);
 	cond_resched();
 }
 

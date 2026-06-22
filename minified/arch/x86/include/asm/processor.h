@@ -389,8 +389,6 @@ extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
 
 #define KSTK_EIP(task)		(task_pt_regs(task)->ip)
 
-DECLARE_PER_CPU(u64, msr_misc_features_shadow);
-
 extern unsigned long arch_align_stack(unsigned long sp);
 
 void default_idle(void);

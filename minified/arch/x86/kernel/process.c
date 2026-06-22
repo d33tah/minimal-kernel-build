@@ -132,34 +132,11 @@ void flush_thread(void)
 }
 
 
-DEFINE_PER_CPU(u64, msr_misc_features_shadow);
-
-static void set_cpuid_faulting(bool on)
-{
-	u64 msrval;
-
-	msrval = this_cpu_read(msr_misc_features_shadow);
-	msrval &= ~MSR_MISC_FEATURES_ENABLES_CPUID_FAULT;
-	msrval |= (on << MSR_MISC_FEATURES_ENABLES_CPUID_FAULT_BIT);
-	this_cpu_write(msr_misc_features_shadow, msrval);
-	wrmsrl(MSR_MISC_FEATURES_ENABLES, msrval);
-}
-
-static void enable_cpuid(void)
-{
-	preempt_disable();
-	if (test_and_clear_thread_flag(TIF_NOCPUID)) {
-		 
-		set_cpuid_faulting(false);
-	}
-	preempt_enable();
-}
-
 void arch_setup_new_exec(void)
 {
-
-	if (test_thread_flag(TIF_NOCPUID))
-		enable_cpuid();
+	/* TIF_NOCPUID is never set in this build, so the cpuid-faulting
+	 * enable path (set_cpuid_faulting/msr_misc_features_shadow) was
+	 * dead -> folded away. */
 }
 
 /* __switch_to_xtra + __speculation_ctrl_update (+ amd_set_*_ssb_state) removed -

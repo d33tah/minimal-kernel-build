@@ -382,16 +382,9 @@ static __always_inline void exc_debug_kernel(struct pt_regs *regs,
 	 
 	WARN_ON_ONCE(user_mode(regs));
 
-	if (test_thread_flag(TIF_BLOCKSTEP)) {
-		 
-		unsigned long debugctl;
+	/* TIF_BLOCKSTEP is never set in this build -> branch was always false. */
 
-		rdmsrl(MSR_IA32_DEBUGCTLMSR, debugctl);
-		debugctl |= DEBUGCTLMSR_BTF;
-		wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctl);
-	}
 
-	 
 	if ((dr6 & DR_STEP) && is_sysenter_singlestep(regs))
 		dr6 &= ~DR_STEP;
 
@@ -426,10 +419,8 @@ static __always_inline void exc_debug_user(struct pt_regs *regs,
 	 
 	current->thread.virtual_dr6 = (dr6 & DR_STEP);
 
-	 
-	clear_thread_flag(TIF_BLOCKSTEP);
+	/* TIF_BLOCKSTEP never set in this build -> clear was a no-op. */
 
-	 
 	icebp = !dr6;
 
 	if (notify_debug(regs, &dr6))

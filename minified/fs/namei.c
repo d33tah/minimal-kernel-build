@@ -1544,7 +1544,6 @@ int vfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
 	      struct dentry *dentry, umode_t mode)
 {
 	int error = may_create(mnt_userns, dir, dentry);
-	unsigned max_links = dir->i_sb->s_max_links;
 
 	if (error)
 		return error;
@@ -1553,9 +1552,6 @@ int vfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
 		return -EPERM;
 
 	mode &= (S_IRWXUGO|S_ISVTX);
-
-	if (max_links && dir->i_nlink >= max_links)
-		return -EMLINK;
 
 	error = dir->i_op->mkdir(mnt_userns, dir, dentry, mode);
 	return error;

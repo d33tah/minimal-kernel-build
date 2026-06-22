@@ -512,7 +512,6 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	INIT_LIST_HEAD(&dentry->d_subdirs);
 	INIT_HLIST_NODE(&dentry->d_u.d_alias);
 	INIT_LIST_HEAD(&dentry->d_child);
-	d_set_d_op(dentry, dentry->d_sb->s_d_op);
 
 	/* no ops object sets ->d_init */
 

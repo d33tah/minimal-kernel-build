@@ -271,7 +271,6 @@ struct posix_acl;
 
 #define IOP_LOOKUP	0x0002
 #define IOP_NOFOLLOW	0x0004
-#define IOP_XATTR	0x0008
 
 struct fsnotify_mark_connector;
 
@@ -541,8 +540,7 @@ struct super_block {
 	struct rw_semaphore	s_umount;
 	int			s_count;
 	atomic_t		s_active;
-	const struct xattr_handler **s_xattr;
-	struct hlist_bl_head	s_roots;	
+	struct hlist_bl_head	s_roots;
 	struct list_head	s_mounts;
 	struct backing_dev_info *s_bdi;
 	struct hlist_node	s_instances;
@@ -559,16 +557,10 @@ struct super_block {
 	time64_t		   s_time_min;
 	time64_t		   s_time_max;
 
-	char			s_id[32];	
-	uuid_t			s_uuid;		
+	char			s_id[32];
 
-	unsigned int		s_max_links;
 
-	
 	struct mutex s_vfs_rename_mutex;
-
-	const struct dentry_operations *s_d_op;
-
 
 	atomic_long_t s_remove_count;
 
@@ -585,10 +577,7 @@ struct super_block {
 
 
 	spinlock_t		s_inode_list_lock ____cacheline_aligned_in_smp;
-	struct list_head	s_inodes;	
-
-	spinlock_t		s_inode_wblist_lock;
-	struct list_head	s_inodes_wb;	
+	struct list_head	s_inodes;
 } __randomize_layout;
 
 static inline struct user_namespace *i_user_ns(const struct inode *inode)

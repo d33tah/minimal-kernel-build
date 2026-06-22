@@ -939,13 +939,10 @@ ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
 ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 {
 	struct file *file = iocb->ki_filp;
-	struct address_space *mapping = file->f_mapping;
-	struct inode 	*inode = mapping->host;
 	ssize_t		written = 0;
 	ssize_t		err;
 
 
-	current->backing_dev_info = inode_to_bdi(inode);
 	err = file_remove_privs(file);
 	if (err)
 		goto out;
@@ -958,7 +955,6 @@ ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 	if (likely(written > 0))
 		iocb->ki_pos += written;
 out:
-	current->backing_dev_info = NULL;
 	return written ? written : err;
 }
 

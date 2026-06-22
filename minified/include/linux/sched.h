@@ -337,8 +337,6 @@ struct task_struct {
 
 	struct blk_plug			*plug;
 
-	struct backing_dev_info		*backing_dev_info;
-
 	struct io_context		*io_context;
 
 	union {

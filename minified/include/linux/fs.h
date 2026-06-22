@@ -301,11 +301,7 @@ struct inode {
 	spinlock_t		i_lock;
 	u8			i_blkbits;
 
-#ifdef __NEED_I_SIZE_ORDERED
-	seqcount_t		i_size_seqcount;
-#endif
 
-	
 	unsigned long		i_state;
 	struct rw_semaphore	i_rwsem;
 
@@ -326,9 +322,7 @@ struct inode {
 	struct address_space	i_data;
 	struct list_head	i_devices;
 	union {
-		struct pipe_inode_info	*i_pipe;
 		struct cdev		*i_cdev;
-		char			*i_link;
 		unsigned		i_dir_seq;
 	};
 

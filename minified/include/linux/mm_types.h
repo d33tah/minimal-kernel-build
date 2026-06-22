@@ -298,8 +298,8 @@ struct mm_struct {
 		spinlock_t arg_lock;
 
 		unsigned long start_code, end_code, start_data, end_data;
-		unsigned long start_brk, brk, start_stack;
-		unsigned long arg_start, arg_end, env_start, env_end;
+		unsigned long brk, start_stack;
+		unsigned long arg_start;
 
 		unsigned long saved_auxv[AT_VECTOR_SIZE];  
 
@@ -321,7 +321,6 @@ struct mm_struct {
 		atomic_t tlb_flush_pending;
 		 
 		atomic_t tlb_flush_batched;
-		struct uprobes_state uprobes_state;
 
 	} __randomize_layout;
 

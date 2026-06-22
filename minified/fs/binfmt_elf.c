@@ -83,7 +83,7 @@ static int set_brk(unsigned long start, unsigned long end, int prot)
 		if (error)
 			return error;
 	}
-	current->mm->start_brk = current->mm->brk = end;
+	current->mm->brk = end;
 	return 0;
 }
 
@@ -236,7 +236,7 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 		return -EFAULT;
 
 	 
-	p = mm->arg_end = mm->arg_start;
+	p = mm->arg_start;
 	while (argc-- > 0) {
 		size_t len;
 		if (put_user((elf_addr_t)p, sp++))
@@ -248,10 +248,7 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 	}
 	if (put_user(0, sp++))
 		return -EFAULT;
-	mm->arg_end = p;
 
-	 
-	mm->env_end = mm->env_start = p;
 	while (envc-- > 0) {
 		size_t len;
 		if (put_user((elf_addr_t)p, sp++))
@@ -263,7 +260,6 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 	}
 	if (put_user(0, sp++))
 		return -EFAULT;
-	mm->env_end = p;
 
 	 
 	if (copy_to_user(sp, mm->saved_auxv, ei_index * sizeof(elf_addr_t)))
@@ -596,7 +592,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	mm->start_stack = bprm->p;
 
 	if (current->flags & PF_RANDOMIZE) {
-		mm->brk = mm->start_brk = arch_randomize_brk(mm);
+		mm->brk = arch_randomize_brk(mm);
 #ifdef compat_brk_randomized
 		current->brk_randomized = 1;
 #endif

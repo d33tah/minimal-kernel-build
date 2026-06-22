@@ -45,22 +45,6 @@ int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 }
 NOKPROBE_SYMBOL(atomic_notifier_call_chain);
 
-int blocking_notifier_call_chain(struct blocking_notifier_head *nh,
-		unsigned long val, void *v)
-{
-	int ret = NOTIFY_DONE;
-
-	 
-	if (rcu_access_pointer(nh->head)) {
-		down_read(&nh->rwsem);
-		ret = notifier_call_chain(&nh->head, val, v, -1, NULL);
-		up_read(&nh->rwsem);
-	}
-	return ret;
-}
-
-
-
 static ATOMIC_NOTIFIER_HEAD(die_chain);
 
 int notrace notify_die(enum die_val val, const char *str,

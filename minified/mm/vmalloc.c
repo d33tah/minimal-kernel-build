@@ -237,8 +237,6 @@ get_subtree_max_size(struct rb_node *node)
 RB_DECLARE_CALLBACKS_MAX(static, free_vmap_area_rb_augment_cb,
 	struct vmap_area, rb_node, unsigned long, subtree_max_size, va_size)
 
-static BLOCKING_NOTIFIER_HEAD(vmap_notify_list);
-
 static atomic_long_t nr_vmalloc_pages;
 
 static struct vmap_area *__find_vmap_area(unsigned long addr)
@@ -591,7 +589,6 @@ static struct vmap_area *alloc_vmap_area(unsigned long size,
 				int node, gfp_t gfp_mask)
 {
 	struct vmap_area *va;
-	unsigned long freed;
 	unsigned long addr;
 	int purged = 0;
 
@@ -635,14 +632,6 @@ retry:
 overflow:
 	if (!purged) {
 		purged = 1;
-		goto retry;
-	}
-
-	freed = 0;
-	blocking_notifier_call_chain(&vmap_notify_list, 0, &freed);
-
-	if (freed > 0) {
-		purged = 0;
 		goto retry;
 	}
 

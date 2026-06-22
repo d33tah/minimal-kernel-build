@@ -63,10 +63,8 @@ struct thread_info {
 #define _TIF_NOCPUID		(1 << TIF_NOCPUID)
 #define _TIF_NOTSC		(1 << TIF_NOTSC)
 #define _TIF_NOTIFY_SIGNAL	(1 << TIF_NOTIFY_SIGNAL)
-#define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
 #define _TIF_SPEC_FORCE_UPDATE	(1 << TIF_SPEC_FORCE_UPDATE)
 #define _TIF_BLOCKSTEP		(1 << TIF_BLOCKSTEP)
-#define _TIF_ADDR32		(1 << TIF_ADDR32)
 
  
 #define _TIF_WORK_CTXSW_BASE					\

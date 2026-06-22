@@ -71,7 +71,6 @@ do_trap_no_signal(struct task_struct *tsk, int trapnr, const char *str,
 		if (fixup_exception(regs, trapnr, error_code, 0))
 			return 0;
 
-		tsk->thread.error_code = error_code;
 		tsk->thread.trap_nr = trapnr;
 		die(str, regs, error_code);
 	} else {
@@ -79,8 +78,7 @@ do_trap_no_signal(struct task_struct *tsk, int trapnr, const char *str,
 			return 0;
 	}
 
-	 
-	tsk->thread.error_code = error_code;
+
 	tsk->thread.trap_nr = trapnr;
 
 	return -1;
@@ -205,7 +203,6 @@ DEFINE_IDTENTRY_DF(exc_double_fault)
 	irqentry_nmi_enter(regs);
 	notify_die(DIE_TRAP, str, regs, error_code, X86_TRAP_DF, SIGSEGV);
 
-	tsk->thread.error_code = error_code;
 	tsk->thread.trap_nr = X86_TRAP_DF;
 
 
@@ -250,7 +247,6 @@ static bool gp_try_fixup_and_notify(struct pt_regs *regs, int trapnr,
 	if (fixup_exception(regs, trapnr, error_code, 0))
 		return true;
 
-	current->thread.error_code = error_code;
 	current->thread.trap_nr = trapnr;
 
 	return notify_die(DIE_GPF, str, regs, error_code, trapnr, SIGSEGV) == NOTIFY_STOP;
@@ -259,7 +255,6 @@ static bool gp_try_fixup_and_notify(struct pt_regs *regs, int trapnr,
 static void gp_user_force_sig_segv(struct pt_regs *regs, int trapnr,
 				   unsigned long error_code, const char *str)
 {
-	current->thread.error_code = error_code;
 	current->thread.trap_nr = trapnr;
 	force_sig(SIGSEGV);
 }

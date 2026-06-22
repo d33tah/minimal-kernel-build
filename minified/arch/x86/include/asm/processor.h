@@ -244,16 +244,11 @@ struct thread_struct {
 
 	unsigned long           virtual_dr6;
 
-	unsigned long		cr2;
 	unsigned long		trap_nr;
-	unsigned long		error_code;
 
 	unsigned int		sig_on_uaccess_err:1;
 
-	 
-	u32			pkru;
 
-	 
 	struct fpu		fpu;
 	 
 };

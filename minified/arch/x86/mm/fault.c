@@ -100,8 +100,6 @@ static void set_signal_archinfo(unsigned long address,
 	struct task_struct *tsk = current;
 
 	tsk->thread.trap_nr = X86_TRAP_PF;
-	tsk->thread.error_code = error_code | X86_PF_USER;
-	tsk->thread.cr2 = address;
 }
 
 static noinline void

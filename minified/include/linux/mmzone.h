@@ -270,10 +270,7 @@ struct zone {
 	 
 	struct free_area	free_area[MAX_ORDER];
 
-	 
-	unsigned long		flags;
 
-	 
 	spinlock_t		lock;
 
 	 
@@ -344,8 +341,6 @@ typedef struct pglist_data {
 
 	 
 	struct lruvec		__lruvec;
-
-	unsigned long		flags;
 
 	ZONE_PADDING(_pad2_)
 

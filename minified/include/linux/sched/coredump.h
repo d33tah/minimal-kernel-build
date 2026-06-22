@@ -34,7 +34,6 @@ extern void set_dumpable(struct mm_struct *mm, int value);
 #define MMF_DISABLE_THP		24
 #define MMF_OOM_VICTIM		25
 #define MMF_OOM_REAP_QUEUED	26
-#define MMF_HAS_PINNED		28
 #define MMF_DISABLE_THP_MASK	(1 << MMF_DISABLE_THP)
 
 #define MMF_INIT_MASK		(MMF_DUMPABLE_MASK | MMF_DUMP_FILTER_MASK |\

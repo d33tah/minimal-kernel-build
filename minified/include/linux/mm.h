@@ -517,10 +517,6 @@ static inline void put_page(struct page *page)
 	folio_put(folio);
 }
 
-#define GUP_PIN_COUNTING_BIAS (1U << 10)
-
-void unpin_user_page(struct page *page);
-
 static inline bool is_cow_mapping(vm_flags_t flags)
 {
 	return (flags & (VM_SHARED | VM_MAYWRITE)) == VM_MAYWRITE;
@@ -568,12 +564,6 @@ static inline unsigned long folio_pfn(struct folio *folio)
 	return page_to_pfn(&folio->page);
 }
 
-static inline atomic_t *folio_pincount_ptr(struct folio *folio)
-{
-	return &folio_page(folio, 1)->compound_pincount;
-}
-
-
 static inline void set_page_zone(struct page *page, enum zone_type zone)
 {
 	page->flags &= ~(ZONES_MASK << ZONES_PGSHIFT);
@@ -611,14 +601,6 @@ static inline size_t folio_size(struct folio *folio)
 {
 	return PAGE_SIZE << folio_order(folio);
 }
-
-#ifndef HAVE_ARCH_MAKE_PAGE_ACCESSIBLE
-static inline int arch_make_page_accessible(struct page *page)
-{
-	return 0;
-}
-#endif
-
 
 #include <linux/vmstat.h>
 
@@ -1078,7 +1060,6 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 #define FOLL_COW	0x4000	
 #define FOLL_ANON	0x8000	
 #define FOLL_LONGTERM	0x10000
-#define FOLL_PIN	0x40000
 
 static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags)
 {
@@ -1093,14 +1074,8 @@ static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags)
 
 static inline bool gup_must_unshare(unsigned int flags, struct page *page)
 {
-	
-	if ((flags & (FOLL_WRITE | FOLL_PIN)) != FOLL_PIN)
-		return false;
-	
-	if (!PageAnon(page))
-		return false;
-	
-	return !PageAnonExclusive(page);
+	/* FOLL_PIN never set: (flags & FOLL_WRITE) can never equal FOLL_PIN */
+	return false;
 }
 
 typedef int (*pte_fn_t)(pte_t *pte, unsigned long addr, void *data);

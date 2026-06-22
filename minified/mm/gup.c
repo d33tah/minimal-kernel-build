@@ -30,32 +30,14 @@ bool __must_check try_grab_page(struct page *page, unsigned int flags)
 {
 	struct folio *folio = page_folio(page);
 
-	WARN_ON_ONCE((flags & (FOLL_GET | FOLL_PIN)) == (FOLL_GET | FOLL_PIN));
 	if (WARN_ON_ONCE(folio_ref_count(folio) <= 0))
 		return false;
 
+	/* FOLL_PIN never set on this build (no pin_user_pages callers) */
 	if (flags & FOLL_GET)
 		folio_ref_inc(folio);
-	else if (flags & FOLL_PIN) {
-		
-		if (folio_test_large(folio)) {
-			folio_ref_add(folio, 1);
-			atomic_add(1, folio_pincount_ptr(folio));
-		} else {
-			folio_ref_add(folio, GUP_PIN_COUNTING_BIAS);
-		}
-
-		node_stat_mod_folio(folio, NR_FOLL_PIN_ACQUIRED, 1);
-	}
 
 	return true;
-}
-
-
-static inline void mm_set_has_pinned_flag(unsigned long *mm_flags)
-{
-	if (!test_bit(MMF_HAS_PINNED, mm_flags))
-		set_bit(MMF_HAS_PINNED, mm_flags);
 }
 
 static struct page *no_page_table(struct vm_area_struct *vma,
@@ -103,9 +85,6 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 	int ret;
 
 
-	if (WARN_ON_ONCE((flags & (FOLL_PIN | FOLL_GET)) ==
-			 (FOLL_PIN | FOLL_GET)))
-		return ERR_PTR(-EINVAL);
 	if (unlikely(pmd_bad(*pmd)))
 		return no_page_table(vma, flags);
 
@@ -140,22 +119,9 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 		goto out;
 	}
 
-	VM_BUG_ON_PAGE((flags & FOLL_PIN) && PageAnon(page) &&
-		       !PageAnonExclusive(page), page);
-
-	
 	if (unlikely(!try_grab_page(page, flags))) {
 		page = ERR_PTR(-ENOMEM);
 		goto out;
-	}
-	
-	if (flags & FOLL_PIN) {
-		ret = arch_make_page_accessible(page);
-		if (ret) {
-			unpin_user_page(page);
-			page = ERR_PTR(ret);
-			goto out;
-		}
 	}
 	if (flags & FOLL_TOUCH) {
 		if ((flags & FOLL_WRITE) &&
@@ -300,7 +266,7 @@ static long __get_user_pages(struct mm_struct *mm,
 
 	start = untagged_addr(start);
 
-	VM_BUG_ON(!!pages != !!(gup_flags & (FOLL_GET | FOLL_PIN)));
+	VM_BUG_ON(!!pages != !!(gup_flags & FOLL_GET));
 
 	do {
 		struct page *page;
@@ -396,11 +362,8 @@ static __always_inline long __get_user_pages_locked(struct mm_struct *mm,
 		BUG_ON(*locked != 1);
 	}
 
-	if (flags & FOLL_PIN)
-		mm_set_has_pinned_flag(&mm->flags);
-
-	
-	if (pages && !(flags & FOLL_PIN))
+	/* FOLL_PIN never set: pages always implies FOLL_GET */
+	if (pages)
 		flags |= FOLL_GET;
 
 	pages_done = 0;
@@ -485,10 +448,7 @@ retry:
 
 static bool is_valid_gup_flags(unsigned int gup_flags)
 {
-	
-	if (WARN_ON_ONCE(gup_flags & FOLL_PIN))
-		return false;
-	
+
 	if (WARN_ON_ONCE(gup_flags & FOLL_LONGTERM))
 		return false;
 

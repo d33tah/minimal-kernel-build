@@ -31,23 +31,6 @@ struct n_tty_data {
 	char read_buf[N_TTY_BUF_SIZE];
 };
 
-static void n_tty_flush_buffer(struct tty_struct *tty)
-{
-	struct n_tty_data *ldata = tty->disc_data;
-
-	if (ldata) {
-		ldata->read_head = ldata->read_tail = 0;
-	}
-	wake_up_interruptible(&tty->read_wait);
-	if (tty->link)
-		n_tty_flush_buffer(tty->link);
-}
-
-static void n_tty_set_termios(struct tty_struct *tty, struct ktermios *old)
-{
-	 
-}
-
 static void n_tty_close(struct tty_struct *tty)
 {
 	struct n_tty_data *ldata = tty->disc_data;
@@ -117,9 +100,7 @@ static struct tty_ldisc_ops n_tty_ops = {
 	.name            = "n_tty",
 	.open            = n_tty_open,
 	.close           = n_tty_close,
-	.flush_buffer    = n_tty_flush_buffer,
 	.write           = n_tty_write,
-	.set_termios     = n_tty_set_termios,
 };
 
 void __init n_tty_init(void)

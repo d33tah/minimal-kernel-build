@@ -47,15 +47,10 @@ struct tty_ldisc_ops {
 	int	num;
 	int	(*open)(struct tty_struct *tty);
 	void	(*close)(struct tty_struct *tty);
-	void	(*flush_buffer)(struct tty_struct *tty);
-	ssize_t	(*read)(struct tty_struct *tty, struct file *file,
-			unsigned char *buf, size_t nr,
-			void **cookie, unsigned long offset);
+	/* flush_buffer, read, set_termios, hangup, dcd_change removed -
+	 * these ldisc callbacks were never dispatched (no ld->ops->* call) */
 	ssize_t	(*write)(struct tty_struct *tty, struct file *file,
 			 const unsigned char *buf, size_t nr);
-	void	(*set_termios)(struct tty_struct *tty, struct ktermios *old);
-	void	(*hangup)(struct tty_struct *tty);
-	void	(*dcd_change)(struct tty_struct *tty, unsigned int status);
 	struct  module *owner;
 };
 

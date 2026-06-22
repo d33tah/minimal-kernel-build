@@ -275,7 +275,6 @@ out_bus_unlock:
 	chip_bus_sync_unlock(desc);
 	mutex_unlock(&desc->request_mutex);
 
-out_mput:
 	module_put(desc->owner);
 	return ret;
 }

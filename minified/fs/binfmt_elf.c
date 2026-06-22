@@ -617,7 +617,6 @@ out:
 	return retval;
 
 out_free_dentry:
-out_free_ph:
 	kfree(elf_phdata);
 	goto out;
 }

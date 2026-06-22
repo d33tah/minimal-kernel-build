@@ -29,8 +29,8 @@
 #define slub_get_cpu_ptr(var)	get_cpu_ptr(var)
 #define slub_put_cpu_ptr(var)	put_cpu_ptr(var)
 
-#define SLAB_NO_CMPXCHG (SLAB_CONSISTENCY_CHECKS | SLAB_STORE_USER | \
-				SLAB_TRACE)
+/* SLAB_NO_CMPXCHG removed - its bits (CONSISTENCY_CHECKS/STORE_USER/TRACE) are
+ * never set on any cache, so the kmem_cache_open mask test folded to always-true */
 
 /* DEBUG_METADATA_FLAGS removed - only consumer was the dead
  * disable_higher_order_debug (const 0) branch in kmem_cache_open */
@@ -934,10 +934,10 @@ static int calculate_sizes(struct kmem_cache *s)
 	
 	s->inuse = size;
 
-	if ((flags & (SLAB_TYPESAFE_BY_RCU | SLAB_POISON)) ||
-	    ((flags & SLAB_RED_ZONE) && s->object_size < sizeof(void *)) ||
-	    s->ctor) {
-		
+	/* SLAB_POISON/SLAB_RED_ZONE never reach any cache on this build (not in
+	 * CACHE_CREATE_MASK, never passed) -> only the RCU/ctor arms survive. */
+	if ((flags & SLAB_TYPESAFE_BY_RCU) || s->ctor) {
+
 		s->offset = size;
 		size += sizeof(void *);
 	} else {
@@ -956,11 +956,8 @@ static int calculate_sizes(struct kmem_cache *s)
 	if (order)
 		s->allocflags |= __GFP_COMP;
 
-	if (s->flags & SLAB_CACHE_DMA)
-		s->allocflags |= GFP_DMA;
-
-	if (s->flags & SLAB_CACHE_DMA32)
-		s->allocflags |= GFP_DMA32;
+	/* SLAB_CACHE_DMA/DMA32 never set (KMALLOC_DMA == KMALLOC_NORMAL, no DMA
+	 * cache, no callsite passes them) -> both arms dead. */
 
 	if (s->flags & SLAB_RECLAIM_ACCOUNT)
 		s->allocflags |= __GFP_RECLAIMABLE;
@@ -981,8 +978,9 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 
 #if defined(CONFIG_HAVE_CMPXCHG_DOUBLE) && \
     defined(CONFIG_HAVE_ALIGNED_STRUCT_PAGE)
-	if (system_has_cmpxchg_double() && (s->flags & SLAB_NO_CMPXCHG) == 0)
-		
+	/* SLAB_NO_CMPXCHG bits (CONSISTENCY_CHECKS/STORE_USER/TRACE) never set on
+	 * this build -> the mask test is always 0. */
+	if (system_has_cmpxchg_double())
 		s->flags |= __CMPXCHG_DOUBLE;
 #endif
 

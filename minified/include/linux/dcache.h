@@ -86,27 +86,17 @@ enum dentry_d_lock_class
 };
 
 struct dentry_operations {
-	int (*d_revalidate)(struct dentry *, unsigned int);
-	int (*d_weak_revalidate)(struct dentry *, unsigned int);
-	int (*d_hash)(const struct dentry *, struct qstr *);
-	int (*d_compare)(const struct dentry *,
-			unsigned int, const char *, const struct qstr *);
+	/* only ->d_delete is ever set on this build (simple_dentry_operations);
+	 * d_revalidate/d_weak_revalidate/d_hash/d_compare/d_init/d_release/
+	 * d_prune/d_iput/d_dname/d_real/d_automount/d_manage all removed - never
+	 * assigned by any ops object, so their dispatch branches were always dead */
 	int (*d_delete)(const struct dentry *);
-	int (*d_init)(struct dentry *);
-	void (*d_release)(struct dentry *);
-	void (*d_prune)(struct dentry *);
-	void (*d_iput)(struct dentry *, struct inode *);
-	char *(*d_dname)(struct dentry *, char *, int);
-	/* d_automount / d_manage removed - never set, managed-dentry path dead */
-	struct dentry *(*d_real)(struct dentry *, const struct inode *);
 } ____cacheline_aligned;
 
 
-#define DCACHE_OP_HASH			0x00000001
-#define DCACHE_OP_COMPARE		0x00000002
-#define DCACHE_OP_REVALIDATE		0x00000004
+/* DCACHE_OP_HASH/COMPARE/REVALIDATE/PRUNE/WEAK_REVALIDATE/REAL removed -
+ * never set (only ->d_delete is ever assigned by an ops object) */
 #define DCACHE_OP_DELETE		0x00000008
-#define DCACHE_OP_PRUNE			0x00000010
 
 #define	DCACHE_DISCONNECTED		0x00000020
       
@@ -116,8 +106,6 @@ struct dentry_operations {
 #define DCACHE_DONTCACHE		0x00000080  
 
 #define DCACHE_SHRINK_LIST		0x00000400
-
-#define DCACHE_OP_WEAK_REVALIDATE	0x00000800
 
 
 
@@ -138,7 +126,6 @@ struct dentry_operations {
 #define DCACHE_SYMLINK_TYPE		0x00600000  
 
 #define DCACHE_FALLTHRU			0x01000000
-#define DCACHE_OP_REAL			0x04000000
 
 #define DCACHE_PAR_LOOKUP		0x10000000
 
@@ -272,10 +259,8 @@ static inline struct inode *d_backing_inode(const struct dentry *upper)
 static inline struct dentry *d_real(struct dentry *dentry,
 				    const struct inode *inode)
 {
-	if (unlikely(dentry->d_flags & DCACHE_OP_REAL))
-		return dentry->d_op->d_real(dentry, inode);
-	else
-		return dentry;
+	/* no ops object sets ->d_real, so DCACHE_OP_REAL is never set */
+	return dentry;
 }
 
 #endif

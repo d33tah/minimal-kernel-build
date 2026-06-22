@@ -155,10 +155,8 @@ static void dentry_unlink_inode(struct dentry * dentry)
 	raw_write_seqcount_end(&dentry->d_seq);
 	spin_unlock(&dentry->d_lock);
 	spin_unlock(&inode->i_lock);
-	if (dentry->d_op && dentry->d_op->d_iput)
-		dentry->d_op->d_iput(dentry, inode);
-	else
-		iput(inode);
+	/* no ops object sets ->d_iput */
+	iput(inode);
 }
 
 #define D_FLAG_VERIFY(dentry,x) WARN_ON_ONCE(((dentry)->d_flags & (DCACHE_LRU_LIST | DCACHE_SHRINK_LIST)) != (x))
@@ -217,8 +215,7 @@ static void __dentry_kill(struct dentry *dentry)
 	lockref_mark_dead(&dentry->d_lockref);
 
 	
-	if (dentry->d_flags & DCACHE_OP_PRUNE)
-		dentry->d_op->d_prune(dentry);
+	/* DCACHE_OP_PRUNE is never set (no ops object sets ->d_prune) */
 
 	if (dentry->d_flags & DCACHE_LRU_LIST) {
 		if (!(dentry->d_flags & DCACHE_SHRINK_LIST))
@@ -233,8 +230,7 @@ static void __dentry_kill(struct dentry *dentry)
 		dentry_unlink_inode(dentry);
 	else
 		spin_unlock(&dentry->d_lock);
-	if (dentry->d_op && dentry->d_op->d_release)
-		dentry->d_op->d_release(dentry);
+	/* no ops object sets ->d_release */
 
 	spin_lock(&dentry->d_lock);
 	if (dentry->d_flags & DCACHE_SHRINK_LIST)
@@ -469,7 +465,6 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 {
 	struct dentry *dentry;
 	char *dname;
-	int err;
 
 	dentry = kmem_cache_alloc_lru(dentry_cache, &sb->s_dentry_lru,
 				      GFP_KERNEL);
@@ -519,15 +514,7 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	INIT_LIST_HEAD(&dentry->d_child);
 	d_set_d_op(dentry, dentry->d_sb->s_d_op);
 
-	if (dentry->d_op && dentry->d_op->d_init) {
-		err = dentry->d_op->d_init(dentry);
-		if (err) {
-			if (dname_external(dentry))
-				kfree(external_name(dentry));
-			kmem_cache_free(dentry_cache, dentry);
-			return NULL;
-		}
-	}
+	/* no ops object sets ->d_init */
 
 	return dentry;
 }
@@ -555,30 +542,13 @@ struct dentry *d_alloc_anon(struct super_block *sb)
 void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op)
 {
 	WARN_ON_ONCE(dentry->d_op);
-	WARN_ON_ONCE(dentry->d_flags & (DCACHE_OP_HASH	|
-				DCACHE_OP_COMPARE	|
-				DCACHE_OP_REVALIDATE	|
-				DCACHE_OP_WEAK_REVALIDATE	|
-				DCACHE_OP_DELETE	|
-				DCACHE_OP_REAL));
+	WARN_ON_ONCE(dentry->d_flags & DCACHE_OP_DELETE);
 	dentry->d_op = op;
 	if (!op)
 		return;
-	if (op->d_hash)
-		dentry->d_flags |= DCACHE_OP_HASH;
-	if (op->d_compare)
-		dentry->d_flags |= DCACHE_OP_COMPARE;
-	if (op->d_revalidate)
-		dentry->d_flags |= DCACHE_OP_REVALIDATE;
-	if (op->d_weak_revalidate)
-		dentry->d_flags |= DCACHE_OP_WEAK_REVALIDATE;
+	/* ->d_delete is the only callback any ops object sets */
 	if (op->d_delete)
 		dentry->d_flags |= DCACHE_OP_DELETE;
-	if (op->d_prune)
-		dentry->d_flags |= DCACHE_OP_PRUNE;
-	if (op->d_real)
-		dentry->d_flags |= DCACHE_OP_REAL;
-
 }
 
 static unsigned d_flags_for_inode(struct inode *inode)

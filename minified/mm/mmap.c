@@ -607,13 +607,6 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 		pgoff = addr >> PAGE_SHIFT;
 	}
 
-	
-	if (flags & MAP_NORESERVE) {
-
-		if (sysctl_overcommit_memory != OVERCOMMIT_NEVER)
-			vm_flags |= VM_NORESERVE;
-	}
-
 	addr = mmap_region(file, addr, len, vm_flags, pgoff);
 	/*
 	 * VM_LOCKED is never set (no mmap syscall, ELF loader passes only

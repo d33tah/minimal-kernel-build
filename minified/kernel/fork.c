@@ -238,7 +238,7 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 		}
 
 		tmp->vm_mm = mm;
-		tmp->vm_flags &= ~(VM_LOCKED | VM_LOCKONFAULT);
+		tmp->vm_flags &= ~VM_LOCKED;
 
 		if (tmp->vm_file)
 			get_file(tmp->vm_file);

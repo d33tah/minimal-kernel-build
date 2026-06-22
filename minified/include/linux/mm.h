@@ -216,13 +216,9 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_SEQ_READ	0x00008000	
 #define VM_RAND_READ	0x00010000	
 
-#define VM_DONTCOPY	0x00020000      
-#define VM_DONTEXPAND	0x00040000	
-#define VM_LOCKONFAULT	0x00080000	
-#define VM_ACCOUNT	0x00100000	
-#define VM_NORESERVE	0x00200000	
+#define VM_DONTCOPY	0x00020000
+#define VM_ACCOUNT	0x00100000
 #define VM_HUGETLB	0x00400000
-#define VM_SYNC		0x00800000
 
 #define VM_MIXEDMAP	0x10000000
 #define VM_NOHUGEPAGE	0x40000000
@@ -256,7 +252,7 @@ void vm_area_free(struct vm_area_struct *);
 
 #define VM_ACCESS_FLAGS (VM_READ | VM_WRITE | VM_EXEC)
 
-#define VM_SPECIAL (VM_IO | VM_DONTEXPAND | VM_PFNMAP | VM_MIXEDMAP)
+#define VM_SPECIAL (VM_IO | VM_PFNMAP | VM_MIXEDMAP)
 
 #define VM_INIT_DEF_MASK	VM_NOHUGEPAGE
 

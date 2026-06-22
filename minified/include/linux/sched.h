@@ -189,7 +189,6 @@ struct task_struct {
 	refcount_t			usage;
 	 
 	unsigned int			flags;
-	unsigned int			ptrace;
 
 	int				on_rq;
 
@@ -214,11 +213,8 @@ struct task_struct {
 	int				exit_signal;
 	unsigned long			jobctl;
 
-	 
-	unsigned int			personality;
 
-	 
-	unsigned			sched_reset_on_fork:1;
+	unsigned int			personality;
 
 	unsigned			in_iowait:1;
 #ifndef TIF_RESTORE_SIGMASK

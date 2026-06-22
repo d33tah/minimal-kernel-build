@@ -43,7 +43,6 @@ static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
 	INIT_LIST_HEAD(&child->ptrace_entry);
 	INIT_LIST_HEAD(&child->ptraced);
 	child->jobctl = 0;
-	child->ptrace = 0;
 	child->parent = child->real_parent;
 }
 

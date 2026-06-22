@@ -180,7 +180,6 @@ void initialize_tlbstate_and_flush(void)
 
 
 	this_cpu_write(cpu_tlbstate.loaded_mm_asid, 0);
-	this_cpu_write(cpu_tlbstate.next_asid, 1);
 	this_cpu_write(cpu_tlbstate.ctxs[0].ctx_id, mm->context.ctx_id);
 	this_cpu_write(cpu_tlbstate.ctxs[0].tlb_gen, tlb_gen);
 

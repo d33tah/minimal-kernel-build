@@ -77,7 +77,6 @@ static struct kmem_cache *create_cache(const char *name,
 	if (err)
 		goto out_free_cache;
 
-	s->refcount = 1;
 	list_add(&s->list, &slab_caches);
 out:
 	if (err)
@@ -186,7 +185,6 @@ void __init create_boot_cache(struct kmem_cache *s, const char *name,
 		panic("Creation of kmalloc slab %s size=%u failed. Reason %d\n",
 					name, size, err);
 
-	s->refcount = -1;	 
 }
 
 struct kmem_cache *__init create_kmalloc_cache(const char *name,
@@ -200,7 +198,6 @@ struct kmem_cache *__init create_kmalloc_cache(const char *name,
 
 	create_boot_cache(s, name, size, flags, useroffset, usersize);
 	list_add(&s->list, &slab_caches);
-	s->refcount = 1;
 	return s;
 }
 

@@ -76,8 +76,6 @@ struct tlb_state {
 #define LOADED_MM_SWITCHING ((struct mm_struct *)1UL)
 
 	u16 loaded_mm_asid;
-	u16 next_asid;
-
 
 	unsigned short user_pcid_flush_mask;
 

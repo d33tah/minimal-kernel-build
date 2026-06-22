@@ -19,9 +19,8 @@ struct task_struct;
 #include <linux/atomic.h>
 
 struct thread_info {
-	unsigned long		flags;		 
-	unsigned long		syscall_work;	 
-	u32			status;		 
+	unsigned long		flags;
+	unsigned long		syscall_work;
 };
 
 #define INIT_THREAD_INFO(tsk)			\
@@ -91,8 +90,6 @@ struct thread_info {
 #endif   
 
  
-#define TS_COMPAT		0x0002	 
-
 #ifndef __ASSEMBLY__
 
 #define in_ia32_syscall() true

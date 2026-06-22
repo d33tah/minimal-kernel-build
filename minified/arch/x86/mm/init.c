@@ -446,8 +446,7 @@ void __init zone_sizes_init(void)
 
 __visible DEFINE_PER_CPU_ALIGNED(struct tlb_state, cpu_tlbstate) = {
 	.loaded_mm = &init_mm,
-	.next_asid = 1,
-	.cr4 = ~0UL,	 
+	.cr4 = ~0UL,
 };
 
 

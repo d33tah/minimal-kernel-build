@@ -499,7 +499,6 @@ struct fasync_struct {
 #define SB_POSIXACL	(1<<16)
 #define SB_KERNMOUNT	(1<<22)
 #define SB_LAZYTIME	(1<<25)
-#define SB_BORN		(1<<29)
 #define SB_ACTIVE	(1<<30)
 
 #define SB_I_NOEXEC	0x00000002

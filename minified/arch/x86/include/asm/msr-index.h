@@ -9,7 +9,6 @@
 #define MSR_EFER		0xc0000080
 #define MSR_FS_BASE		0xc0000100
 #define MSR_GS_BASE		0xc0000101
-#define MSR_KERNEL_GS_BASE	0xc0000102
 
 /* EFER bits */
 #define _EFER_LME		8
@@ -17,11 +16,9 @@
 /* _EFER_SCE, _EFER_LMA, _EFER_SVME, _EFER_LMSLE, _EFER_FFXSR - unused */
 
 #define EFER_LME		(1<<_EFER_LME)
-#define EFER_NX			(1<<_EFER_NX)
-/* EFER_SCE, EFER_LMA, EFER_SVME, EFER_LMSLE, EFER_FFXSR - unused */
+/* EFER_NX, EFER_SCE, EFER_LMA, EFER_SVME, EFER_LMSLE, EFER_FFXSR - unused */
 
 /* Speculation control MSRs */
-#define SPEC_CTRL_SSBD_SHIFT		2
 
 #define MSR_IA32_PRED_CMD		0x00000049
 #define PRED_CMD_IBPB			BIT(0)
@@ -33,7 +30,6 @@
 
 /* Debug control */
 #define MSR_IA32_DEBUGCTLMSR		0x000001d9
-#define DEBUGCTLMSR_BTF_SHIFT		1
 #define DEBUGCTLMSR_BTF			(1UL <<  1)
 
 /* MISC_ENABLE */
@@ -47,8 +43,6 @@
 #define MSR_MISC_FEATURES_ENABLES_CPUID_FAULT		BIT_ULL(MSR_MISC_FEATURES_ENABLES_CPUID_FAULT_BIT)
 
 /* AMD specific */
-#define MSR_AMD64_LS_CFG		0xc0011020
-#define MSR_AMD64_VIRT_SPEC_CTRL	0xc001011f
 #define MSR_K7_HWCR			0xc0010015
 
 /* VIA specific */

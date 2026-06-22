@@ -9,14 +9,9 @@
 #define _LINUX_CAPABILITY_VERSION_3  0x20080522
 #define _LINUX_CAPABILITY_U32S_3     2
 
-#define CAP_CHOWN            0
 #define CAP_DAC_OVERRIDE     1
 #define CAP_DAC_READ_SEARCH  2
-#define CAP_FOWNER           3
 #define CAP_FSETID           4
-#define CAP_SYS_ADMIN        21
-#define CAP_SYS_RESOURCE     24
-#define CAP_MKNOD            27
 #define CAP_CHECKPOINT_RESTORE	40
 #define CAP_LAST_CAP         CAP_CHECKPOINT_RESTORE
 #define CAP_TO_MASK(x)      (1 << ((x) & 31))

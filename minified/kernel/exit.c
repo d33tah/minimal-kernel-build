@@ -84,9 +84,7 @@ static void __exit_signal(struct task_struct *tsk)
 			sig->curr_target = next_thread(tsk);
 	}
 
-	write_seqlock(&sig->stats_lock);
 	__unhash_process(tsk, group_dead);
-	write_sequnlock(&sig->stats_lock);
 
 	flush_sigqueue(&tsk->pending);
 	tsk->sighand = NULL;
@@ -268,7 +266,7 @@ void __noreturn do_exit(long code)
 		
 		if (unlikely(is_global_init(tsk)))
 			panic("Attempted to kill init! exitcode=0x%08x\n",
-				tsk->signal->group_exit_code ?: (int)code);
+				(int)code);
 	}
 
 	exit_mm();

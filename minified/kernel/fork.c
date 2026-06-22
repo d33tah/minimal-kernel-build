@@ -742,7 +742,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 
 	sig->curr_target = tsk;
 	init_sigpending(&sig->shared_pending);
-	seqlock_init(&sig->stats_lock);
 
 	task_lock(current->group_leader);
 	memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);

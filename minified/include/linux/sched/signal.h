@@ -51,18 +51,12 @@ struct signal_struct {
 	struct sigpending	shared_pending;
 
 
-	int			group_exit_code;
-
-
 	unsigned int		flags;
 
 	struct pid *pids[PIDTYPE_MAX];
 
 
 	struct tty_struct *tty;
-
-
-	seqlock_t stats_lock;
 
 
 	struct rlimit rlim[RLIM_NLIMITS];

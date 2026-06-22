@@ -824,7 +824,6 @@ retry_open:
 
 		goto retry_open;
 	}
-	clear_bit(TTY_HUPPED, &tty->flags);
 
 	tty_unlock(tty);
 	return 0;

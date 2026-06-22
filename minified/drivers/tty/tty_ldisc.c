@@ -149,23 +149,18 @@ int tty_ldisc_lock(struct tty_struct *tty, unsigned long timeout)
 {
 	int ret;
 
-	 
-	set_bit(TTY_LDISC_CHANGING, &tty->flags);
+
 	wake_up_interruptible_all(&tty->read_wait);
 	wake_up_interruptible_all(&tty->write_wait);
 
 	ret = __tty_ldisc_lock(tty, timeout);
 	if (!ret)
 		return -EBUSY;
-	set_bit(TTY_LDISC_HALTED, &tty->flags);
 	return 0;
 }
 
 void tty_ldisc_unlock(struct tty_struct *tty)
 {
-	clear_bit(TTY_LDISC_HALTED, &tty->flags);
-	 
-	clear_bit(TTY_LDISC_CHANGING, &tty->flags);
 	__tty_ldisc_unlock(tty);
 }
 
@@ -199,9 +194,6 @@ tty_ldisc_lock_pair_timeout(struct tty_struct *tty, struct tty_struct *tty2,
 	if (!ret)
 		return -EBUSY;
 
-	set_bit(TTY_LDISC_HALTED, &tty->flags);
-	if (tty2)
-		set_bit(TTY_LDISC_HALTED, &tty2->flags);
 	return 0;
 }
 

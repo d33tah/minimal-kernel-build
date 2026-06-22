@@ -140,14 +140,9 @@ struct tty_file_private {
 
 #define TTY_MAGIC		0x5401
 
-#define TTY_THROTTLED		0
 #define TTY_IO_ERROR		1
-#define TTY_EXCLUSIVE		3
 #define TTY_LDISC_OPEN		11
 #define TTY_NO_WRITE_SPLIT	17
-#define TTY_HUPPED		18
-#define TTY_LDISC_CHANGING	20
-#define TTY_LDISC_HALTED	22
 
 static inline bool tty_io_error(struct tty_struct *tty)
 {

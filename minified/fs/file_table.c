@@ -40,8 +40,7 @@ static void file_free_rcu(struct rcu_head *head)
 
 static inline void file_free(struct file *f)
 {
-	if (!(f->f_mode & FMODE_NOACCOUNT))
-		percpu_counter_dec(&nr_files);
+	percpu_counter_dec(&nr_files);
 	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
 }
 

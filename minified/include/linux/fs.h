@@ -140,8 +140,6 @@ typedef int (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
 
 #define FMODE_NONOTIFY		((__force fmode_t)0x4000000)
 
-#define FMODE_NOACCOUNT		((__force fmode_t)0x20000000)
-
 
 #define ATTR_MODE	(1 << 0)
 #define ATTR_UID	(1 << 1)

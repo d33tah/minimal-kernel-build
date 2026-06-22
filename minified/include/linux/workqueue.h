@@ -135,27 +135,6 @@ struct workqueue_attrs;
 #define delayed_work_pending(w) \
 	work_pending(&(w)->work)
 
-enum {
-	WQ_UNBOUND		= 1 << 1,  
-	WQ_FREEZABLE		= 1 << 2,  
-	WQ_MEM_RECLAIM		= 1 << 3,  
-	WQ_HIGHPRI		= 1 << 4,  
-	WQ_CPU_INTENSIVE	= 1 << 5,  
-	WQ_SYSFS		= 1 << 6,  
-
-	 
-	WQ_POWER_EFFICIENT	= 1 << 7,
-
-	__WQ_DRAINING		= 1 << 16,  
-	__WQ_ORDERED		= 1 << 17,  
-	__WQ_LEGACY		= 1 << 18,  
-	__WQ_ORDERED_EXPLICIT	= 1 << 19,  
-
-	WQ_MAX_ACTIVE		= 512,	   
-	WQ_MAX_UNBOUND_PER_CPU	= 4,	   
-	WQ_DFL_ACTIVE		= WQ_MAX_ACTIVE / 2,
-};
-
 extern struct workqueue_struct *system_wq;
 extern struct workqueue_struct *system_unbound_wq;
 

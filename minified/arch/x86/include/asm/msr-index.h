@@ -7,16 +7,10 @@
 
 /* AMD64 MSRs */
 #define MSR_EFER		0xc0000080
-#define MSR_FS_BASE		0xc0000100
-#define MSR_GS_BASE		0xc0000101
 
 /* EFER bits */
-#define _EFER_LME		8
 #define _EFER_NX		11
-/* _EFER_SCE, _EFER_LMA, _EFER_SVME, _EFER_LMSLE, _EFER_FFXSR - unused */
-
-#define EFER_LME		(1<<_EFER_LME)
-/* EFER_NX, EFER_SCE, EFER_LMA, EFER_SVME, EFER_LMSLE, EFER_FFXSR - unused */
+/* _EFER_LME, _EFER_SCE, _EFER_LMA, _EFER_SVME, _EFER_LMSLE, _EFER_FFXSR - unused */
 
 /* Speculation control MSRs */
 

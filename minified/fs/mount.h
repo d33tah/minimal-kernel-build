@@ -10,14 +10,9 @@ struct mnt_namespace {
 	struct ns_common	ns;
 	struct mount *	root;
 	 
-	struct list_head	list;
 	struct user_namespace	*user_ns;
 	struct ucounts		*ucounts;
-	u64			seq;	 
-	wait_queue_head_t poll;
-	u64 event;
-	unsigned int		mounts;  
-	unsigned int		pending_mounts;
+	u64			seq;
 } __randomize_layout;
 
 struct mount {
@@ -26,10 +21,8 @@ struct mount {
 	int mnt_writers;
 	struct list_head mnt_instance;
 	const char *mnt_devname;
-	struct list_head mnt_list;
 	struct mnt_namespace *mnt_ns;
 	int mnt_id;
-	int mnt_expiry_mark;
 } __randomize_layout;
 
 #define MNT_NS_INTERNAL ERR_PTR(-EINVAL)  

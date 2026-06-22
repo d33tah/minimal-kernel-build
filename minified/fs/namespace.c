@@ -85,7 +85,6 @@ static struct mount *alloc_vfsmnt(const char *name)
 		mnt->mnt_count = 1;
 		mnt->mnt_writers = 0;
 
-		INIT_LIST_HEAD(&mnt->mnt_list);
 		mnt->mnt.mnt_userns = &init_user_ns;
 	}
 	return mnt;
@@ -315,9 +314,7 @@ void mntput(struct vfsmount *mnt)
 {
 	if (mnt) {
 		struct mount *m = real_mount(mnt);
-		
-		if (unlikely(m->mnt_expiry_mark))
-			m->mnt_expiry_mark = 0;
+
 		mntput_no_expire(m);
 	}
 }
@@ -379,8 +376,6 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns, bool a
 	if (!anon)
 		new_ns->seq = atomic64_add_return(1, &mnt_ns_seq);
 	refcount_set(&new_ns->ns.count, 1);
-	INIT_LIST_HEAD(&new_ns->list);
-	init_waitqueue_head(&new_ns->poll);
 	new_ns->user_ns = get_user_ns(user_ns);
 	new_ns->ucounts = ucounts;
 	return new_ns;
@@ -404,8 +399,6 @@ static void __init init_mount_tree(void)
 	m = real_mount(mnt);
 	m->mnt_ns = ns;
 	ns->root = m;
-	ns->mounts = 1;
-	list_add(&m->mnt_list, &ns->list);
 	init_task.nsproxy->mnt_ns = ns;
 	get_mnt_ns(ns);
 

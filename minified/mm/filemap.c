@@ -373,8 +373,6 @@ repeat:
 no_page:
 	if (!folio && (fgp_flags & FGP_CREAT)) {
 		int err;
-		if ((fgp_flags & FGP_WRITE) && mapping_can_writeback(mapping))
-			gfp |= __GFP_WRITE;
 		if (fgp_flags & FGP_NOFS)
 			gfp &= ~__GFP_FS;
 

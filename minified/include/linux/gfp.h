@@ -23,7 +23,6 @@ struct vm_area_struct;
 #define ___GFP_ATOMIC		0x200u
 #define ___GFP_DIRECT_RECLAIM	0x400u
 #define ___GFP_KSWAPD_RECLAIM	0x800u
-#define ___GFP_WRITE		0x1000u
 #define ___GFP_NOWARN		0x2000u
 #define ___GFP_RETRY_MAYFAIL	0x4000u
 #define ___GFP_NOFAIL		0x8000u
@@ -44,7 +43,6 @@ struct vm_area_struct;
 #define GFP_ZONEMASK	(__GFP_DMA|__GFP_HIGHMEM|__GFP_DMA32|__GFP_MOVABLE)
 
 #define __GFP_RECLAIMABLE ((__force gfp_t)___GFP_RECLAIMABLE)
-#define __GFP_WRITE	((__force gfp_t)___GFP_WRITE)
 #define __GFP_HARDWALL   ((__force gfp_t)___GFP_HARDWALL)
 #define __GFP_THISNODE	((__force gfp_t)___GFP_THISNODE)
 #define __GFP_ACCOUNT	((__force gfp_t)___GFP_ACCOUNT)

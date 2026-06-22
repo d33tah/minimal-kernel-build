@@ -19,8 +19,6 @@ struct bdi_writeback {
 };
 
 struct backing_dev_info {
-	unsigned int capabilities;
-
 	struct bdi_writeback wb;
 };
 

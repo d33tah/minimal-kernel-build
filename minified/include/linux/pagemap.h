@@ -34,14 +34,7 @@ static inline bool mapping_shrinkable(struct address_space *mapping)
 }
 
 enum mapping_flags {
-	AS_EIO		= 0,	 
-	AS_ENOSPC	= 1,	 
-	AS_MM_ALL_LOCKS	= 2,	 
-	AS_UNEVICTABLE	= 3,	 
-	AS_EXITING	= 4, 	 
-	 
-	AS_NO_WRITEBACK_TAGS = 5,
-	AS_LARGE_FOLIO_SUPPORT = 6,
+	AS_UNEVICTABLE	= 3,
 };
 
 static inline void mapping_set_unevictable(struct address_space *mapping)
@@ -52,11 +45,6 @@ static inline void mapping_set_unevictable(struct address_space *mapping)
 static inline bool mapping_unevictable(struct address_space *mapping)
 {
 	return mapping && test_bit(AS_UNEVICTABLE, &mapping->flags);
-}
-
-static inline void mapping_set_exiting(struct address_space *mapping)
-{
-	set_bit(AS_EXITING, &mapping->flags);
 }
 
 static inline gfp_t mapping_gfp_mask(struct address_space * mapping)

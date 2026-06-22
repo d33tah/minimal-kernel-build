@@ -160,7 +160,7 @@ static void init_once(void *foo)
 	inode_init_once(inode);
 }
 
-static void __inode_add_lru(struct inode *inode, bool rotate)
+static void __inode_add_lru(struct inode *inode)
 {
 	if (inode->i_state & (I_FREEING | I_WILL_FREE))
 		return;
@@ -171,8 +171,7 @@ static void __inode_add_lru(struct inode *inode, bool rotate)
 	if (!mapping_shrinkable(&inode->i_data))
 		return;
 
-	if (!list_lru_add(&inode->i_sb->s_inode_lru, &inode->i_lru) && rotate)
-		inode->i_state |= I_REFERENCED;
+	list_lru_add(&inode->i_sb->s_inode_lru, &inode->i_lru);
 }
 
 static void inode_lru_list_del(struct inode *inode)
@@ -293,7 +292,7 @@ static void iput_final(struct inode *inode)
 
 	if (!drop &&
 	    (sb->s_flags & SB_ACTIVE)) {
-		__inode_add_lru(inode, true);
+		__inode_add_lru(inode);
 		spin_unlock(&inode->i_lock);
 		return;
 	}

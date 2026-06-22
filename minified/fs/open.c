@@ -162,8 +162,6 @@ static int do_dentry_open(struct file *f,
 	if (error)
 		goto cleanup_all;
 
-	 
-	f->f_mode |= FMODE_LSEEK | FMODE_PREAD | FMODE_PWRITE;
 	if (!open)
 		open = f->f_op->open;
 	if (open) {
@@ -372,7 +370,6 @@ int filp_close(struct file *filp, fl_owner_t id)
 
 int nonseekable_open(struct inode *inode, struct file *filp)
 {
-	filp->f_mode &= ~(FMODE_LSEEK | FMODE_PREAD | FMODE_PWRITE);
 	return 0;
 }
 

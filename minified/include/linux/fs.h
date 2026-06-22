@@ -117,12 +117,6 @@ typedef int (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
 
 #define FMODE_WRITE		((__force fmode_t)0x2)
 
-#define FMODE_LSEEK		((__force fmode_t)0x4)
-
-#define FMODE_PREAD		((__force fmode_t)0x8)
-
-#define FMODE_PWRITE		((__force fmode_t)0x10)
-
 #define FMODE_EXEC		((__force fmode_t)0x20)
 
 #define FMODE_PATH		((__force fmode_t)0x4000)
@@ -804,7 +798,6 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 #define I_WILL_FREE		(1 << 4)
 #define I_FREEING		(1 << 5)
 #define I_CLEAR			(1 << 6)
-#define I_REFERENCED		(1 << 8)
 
 static inline void mark_inode_dirty(struct inode *inode)
 {

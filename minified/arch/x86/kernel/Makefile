@@ -56,7 +56,7 @@ obj-$(CONFIG_X86_64)	+= sys_x86_64.o
 obj-$(CONFIG_X86_ESPFIX64)	+= espfix_64.o
 obj-$(CONFIG_SYSFS)	+= ksysfs.o
 obj-y			+= e820.o
-obj-y			+= alternative.o i8253.o hw_breakpoint.o
+obj-y			+= alternative.o i8253.o
 obj-y			+= tsc.o io_delay.o
 # resource.o removed - arch_remove_reservations never called
 obj-y			+= irqflags.o

@@ -22,8 +22,6 @@
 
 unsigned int sysctl_sched_latency			= 6000000ULL;
 
-unsigned int sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_LOG;
-
 unsigned int sysctl_sched_min_granularity			= 750000ULL;
 
 static unsigned int sched_nr_latency = 8;

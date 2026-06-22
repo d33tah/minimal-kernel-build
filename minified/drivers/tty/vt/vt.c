@@ -72,7 +72,6 @@ static int cur_default = CUR_UNDERLINE;
 
 int fg_console;
 int last_console;
-int want_console = -1;
 
 static struct vc_data *master_display_fg;
 

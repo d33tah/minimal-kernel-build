@@ -409,8 +409,6 @@ void __put_page(struct page *page);
 
 void split_page(struct page *page, unsigned int order);
 
-unsigned long nr_free_buffer_pages(void);
-
 typedef void compound_page_dtor(struct page *);
 
 enum compound_dtor_id {
@@ -933,8 +931,6 @@ extern void mem_init(void);
 extern void __init mmap_init(void);
 
 extern void setup_per_cpu_pageset(void);
-
-extern int min_free_kbytes;
 
 void vma_interval_tree_insert(struct vm_area_struct *node,
 			      struct rb_root_cached *root);

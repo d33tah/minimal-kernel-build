@@ -55,8 +55,6 @@ extern void doublefault_init_cpu_tss(void);
 
 u32 elf_hwcap2 __read_mostly;
 
-int smp_num_siblings = 1;
-
 static void default_init(struct cpuinfo_x86 *c)
 {
 	

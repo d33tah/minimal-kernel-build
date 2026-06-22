@@ -103,7 +103,6 @@ compound_page_dtor * const compound_page_dtors[NR_COMPOUND_DTORS] = {
 	[COMPOUND_PAGE_DTOR] = free_compound_page,
 };
 
-int min_free_kbytes = 1024;
 
 
 static unsigned long arch_zone_lowest_possible_pfn[MAX_NR_ZONES] __initdata;
@@ -111,7 +110,6 @@ static unsigned long arch_zone_highest_possible_pfn[MAX_NR_ZONES] __initdata;
 
 #if MAX_NUMNODES > 1
 unsigned int nr_node_ids __read_mostly = MAX_NUMNODES;
-unsigned int nr_online_nodes __read_mostly = 1;
 #endif
 
 int page_group_by_mobility_disabled __read_mostly;
@@ -983,12 +981,6 @@ static unsigned long nr_free_zone_pages(int offset)
 	return sum;
 }
 
-unsigned long nr_free_buffer_pages(void)
-{
-	return nr_free_zone_pages(gfp_zone(GFP_USER));
-}
-
-
 static void zoneref_set_zone(struct zone *zone, struct zoneref *zoneref)
 {
 	zoneref->zone = zone;
@@ -1691,20 +1683,8 @@ static void setup_per_zone_wmarks(void)
 	/* zone_pcp_update removed - not needed for single CPU minimal kernel */
 }
 
-static void calculate_min_free_kbytes(void)
-{
-	unsigned long lowmem_kbytes;
-	int new_min_free_kbytes;
-
-	lowmem_kbytes = nr_free_buffer_pages() * (PAGE_SIZE >> 10);
-	new_min_free_kbytes = int_sqrt(lowmem_kbytes * 16);
-
-	min_free_kbytes = clamp(new_min_free_kbytes, 128, 262144);
-}
-
 int __meminit init_per_zone_wmark_min(void)
 {
-	calculate_min_free_kbytes();
 	setup_per_zone_wmarks();
 
 	return 0;

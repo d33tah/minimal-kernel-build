@@ -60,14 +60,6 @@ typedef int __bitwise fpi_t;
 
 #define FPI_SKIP_KASAN_POISON	((__force fpi_t)BIT(2))
 
-struct pagesets {
-	local_lock_t lock;
-};
-static DEFINE_PER_CPU(struct pagesets, pagesets) = {
-	.lock = INIT_LOCAL_LOCK(lock),
-};
-
-
 nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
 	[N_POSSIBLE] = NODE_MASK_ALL,
 	[N_ONLINE] = { { [0] = 1UL } },
@@ -605,9 +597,9 @@ void free_unref_page(struct page *page, unsigned int order)
 	if (unlikely(migratetype >= MIGRATE_PCPTYPES))
 		migratetype = MIGRATE_MOVABLE;
 
-	local_lock_irqsave(&pagesets.lock, flags);
+	local_irq_save(flags);
 	free_unref_page_commit(page, migratetype, order);
-	local_unlock_irqrestore(&pagesets.lock, flags);
+	local_irq_restore(flags);
 }
 
 void free_unref_page_list(struct list_head *list)
@@ -626,7 +618,7 @@ void free_unref_page_list(struct list_head *list)
 		}
 	}
 
-	local_lock_irqsave(&pagesets.lock, flags);
+	local_irq_save(flags);
 	list_for_each_entry_safe(page, next, list, lru) {
 		
 		migratetype = get_pcppage_migratetype(page);
@@ -637,12 +629,12 @@ void free_unref_page_list(struct list_head *list)
 
 		
 		if (++batch_count == SWAP_CLUSTER_MAX) {
-			local_unlock_irqrestore(&pagesets.lock, flags);
+			local_irq_restore(flags);
 			batch_count = 0;
-			local_lock_irqsave(&pagesets.lock, flags);
+			local_irq_save(flags);
 		}
 	}
-	local_unlock_irqrestore(&pagesets.lock, flags);
+	local_irq_restore(flags);
 }
 
 void split_page(struct page *page, unsigned int order)
@@ -700,11 +692,11 @@ static struct page *rmqueue_pcplist(struct zone *preferred_zone,
 	unsigned long flags;
 
 	/* Stub: simplified PCP allocation for minimal kernel */
-	local_lock_irqsave(&pagesets.lock, flags);
+	local_irq_save(flags);
 	pcp = this_cpu_ptr(zone->per_cpu_pageset);
 	list = &pcp->lists[order_to_pindex(migratetype, order)];
 	page = __rmqueue_pcplist(zone, order, migratetype, alloc_flags, pcp, list);
-	local_unlock_irqrestore(&pagesets.lock, flags);
+	local_irq_restore(flags);
 	return page;
 }
 

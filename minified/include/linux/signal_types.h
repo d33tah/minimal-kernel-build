@@ -61,16 +61,6 @@ struct ksignal {
 
 #define SA_IMMUTABLE		0x00800000
 
-#ifndef __ARCH_UAPI_SA_FLAGS
-#ifdef SA_RESTORER
-#define __ARCH_UAPI_SA_FLAGS	SA_RESTORER
-#else
-#define __ARCH_UAPI_SA_FLAGS	0
-#endif
-#endif
+/* __ARCH_UAPI_SA_FLAGS + UAPI_SA_FLAGS removed - unused */
 
-#define UAPI_SA_FLAGS                                                          \
-	(SA_NOCLDSTOP | SA_NOCLDWAIT | SA_SIGINFO | SA_ONSTACK | SA_RESTART |  \
-	 SA_NODEFER | SA_RESETHAND | SA_EXPOSE_TAGBITS | __ARCH_UAPI_SA_FLAGS)
-
-#endif  
+#endif

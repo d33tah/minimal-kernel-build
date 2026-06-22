@@ -46,34 +46,11 @@ typedef unsigned long sigset_t;
 /* SIGUNUSED, SIGRTMAX, SIGSTKSZ removed - unused */
 #define SIGRTMIN	32
 
-#define SA_RESTORER	0x04000000
-
-#define MINSIGSTKSZ	2048
+/* SA_RESTORER + MINSIGSTKSZ removed - unused */
 
 /* Inlined from asm-generic/signal-defs.h */
-#ifndef SA_NOCLDSTOP
-#define SA_NOCLDSTOP	0x00000001
-#endif
-#ifndef SA_NOCLDWAIT
-#define SA_NOCLDWAIT	0x00000002
-#endif
-#ifndef SA_SIGINFO
-#define SA_SIGINFO	0x00000004
-#endif
-/* SA_UNSUPPORTED removed - unused */
-#define SA_EXPOSE_TAGBITS	0x00000800
-#ifndef SA_ONSTACK
-#define SA_ONSTACK	0x08000000
-#endif
-#ifndef SA_RESTART
-#define SA_RESTART	0x10000000
-#endif
-#ifndef SA_NODEFER
-#define SA_NODEFER	0x40000000
-#endif
-#ifndef SA_RESETHAND
-#define SA_RESETHAND	0x80000000
-#endif
+/* SA_NOCLDSTOP/NOCLDWAIT/SIGINFO/UNSUPPORTED/EXPOSE_TAGBITS/ONSTACK/RESTART/
+ * NODEFER/RESETHAND removed - unused (only consumer UAPI_SA_FLAGS was dead) */
 
 #ifndef SIG_BLOCK
 #define SIG_BLOCK          0

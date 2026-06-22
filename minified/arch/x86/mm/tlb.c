@@ -215,8 +215,8 @@ static void flush_tlb_func(void *info)
 	}
 
 	if (unlikely(local_tlb_gen == mm_tlb_gen)) {
-		 
-		goto done;
+
+		return;
 	}
 
 	WARN_ON_ONCE(local_tlb_gen > mm_tlb_gen);
@@ -237,11 +237,8 @@ static void flush_tlb_func(void *info)
 		flush_tlb_local();
 	}
 
-	 
-	this_cpu_write(cpu_tlbstate.ctxs[loaded_mm_asid].tlb_gen, mm_tlb_gen);
 
-	 
-done:
+	this_cpu_write(cpu_tlbstate.ctxs[loaded_mm_asid].tlb_gen, mm_tlb_gen);
 }
 
 DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);

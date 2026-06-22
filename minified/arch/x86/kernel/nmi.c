@@ -131,15 +131,13 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 		else if (reason & NMI_REASON_IOCHK)
 			io_check_error(reason, regs);
 		raw_spin_unlock(&nmi_reason_lock);
-		goto out;
+		return;
 	}
 	raw_spin_unlock(&nmi_reason_lock);
 
-	 
+
 	if (!(b2b && __this_cpu_read(swallow_nmi)))
 		unknown_nmi_error(reason, regs);
-
-out:
 }
 
 enum nmi_states {

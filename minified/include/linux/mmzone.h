@@ -261,10 +261,6 @@ struct zone {
 	const char		*name;
 
 
-
-	int initialized;
-
-	 
 	ZONE_PADDING(_pad1_)
 
 	 

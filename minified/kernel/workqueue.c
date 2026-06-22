@@ -4,7 +4,6 @@
 #include <linux/timer.h>
 
 struct workqueue_struct {
-    unsigned int flags;
     const char *name;
 };
 

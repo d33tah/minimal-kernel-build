@@ -1316,7 +1316,6 @@ void __meminit init_currently_empty_zone(struct zone *zone,
 	zone->zone_start_pfn = zone_start_pfn;
 
 	zone_init_free_lists(zone);
-	zone->initialized = 1;
 }
 
 static void __init get_pfn_range_for_nid(unsigned int nid,

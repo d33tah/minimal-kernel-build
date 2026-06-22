@@ -7,7 +7,6 @@
 
 struct proc_dir_entry;
 struct seq_file;
-struct seq_operations;
 
 enum {
 	 

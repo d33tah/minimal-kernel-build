@@ -58,13 +58,6 @@ static void mnt_free_id(struct mount *mnt)
 	ida_free(&mnt_id_ida, mnt->mnt_id);
 }
 
-static inline void mnt_add_count(struct mount *mnt, int n)
-{
-	preempt_disable();
-	mnt->mnt_count += n;
-	preempt_enable();
-}
-
 static struct mount *alloc_vfsmnt(const char *name)
 {
 	struct mount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
@@ -82,9 +75,6 @@ static struct mount *alloc_vfsmnt(const char *name)
 				goto out_free_id;
 		}
 
-		mnt->mnt_count = 1;
-		mnt->mnt_writers = 0;
-
 		mnt->mnt.mnt_userns = &init_user_ns;
 	}
 	return mnt;
@@ -101,16 +91,6 @@ static bool __mnt_is_readonly(struct vfsmount *mnt)
 	return sb_rdonly(mnt->mnt_sb);
 }
 
-static inline void mnt_inc_writers(struct mount *mnt)
-{
-	mnt->mnt_writers++;
-}
-
-static inline void mnt_dec_writers(struct mount *mnt)
-{
-	mnt->mnt_writers--;
-}
-
 static int mnt_is_readonly(struct vfsmount *mnt)
 {
 	smp_rmb();
@@ -119,20 +99,16 @@ static int mnt_is_readonly(struct vfsmount *mnt)
 
 int __mnt_want_write(struct vfsmount *m)
 {
-	struct mount *mnt = real_mount(m);
 	int ret = 0;
 
 	preempt_disable();
-	mnt_inc_writers(mnt);
 
 	smp_mb();
 	might_lock(&mount_lock.lock);
 
 	smp_rmb();
-	if (mnt_is_readonly(m)) {
-		mnt_dec_writers(mnt);
+	if (mnt_is_readonly(m))
 		ret = -EROFS;
-	}
 	preempt_enable();
 
 	return ret;
@@ -163,7 +139,6 @@ int __mnt_want_write_file(struct file *file)
 void __mnt_drop_write(struct vfsmount *mnt)
 {
 	preempt_disable();
-	mnt_dec_writers(real_mount(mnt));
 	preempt_enable();
 }
 
@@ -181,14 +156,11 @@ void __mnt_drop_write_file(struct file *file)
 
 int __legitimize_mnt(struct vfsmount *bastard, unsigned seq)
 {
-	struct mount *mnt;
 	if (read_seqretry(&mount_lock, seq))
 		return 1;
 	if (bastard == NULL)
 		return 0;
-	mnt = real_mount(bastard);
-	mnt_add_count(mnt, 1);
-	smp_mb();			 
+	smp_mb();
 	if (likely(!read_seqretry(&mount_lock, seq)))
 		return 0;
 	/* MNT_SYNC_UMOUNT / MNT_DOOMED never set -> both branches always false. */
@@ -297,7 +269,6 @@ static void mntput_no_expire(struct mount *mnt)
 	 * fast path runs.
 	 */
 	rcu_read_lock();
-	mnt_add_count(mnt, -1);
 	rcu_read_unlock();
 }
 
@@ -312,8 +283,6 @@ void mntput(struct vfsmount *mnt)
 
 struct vfsmount *mntget(struct vfsmount *mnt)
 {
-	if (mnt)
-		mnt_add_count(real_mount(mnt), 1);
 	return mnt;
 }
 

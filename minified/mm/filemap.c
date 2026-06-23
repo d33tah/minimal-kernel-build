@@ -59,8 +59,6 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 		if (xas_error(&xas))
 			goto unlock;
 
-		mapping->nrpages += nr;
-
 		__lruvec_stat_mod_folio(folio, NR_FILE_PAGES, nr);
 unlock:
 		xas_unlock_irq(&xas);

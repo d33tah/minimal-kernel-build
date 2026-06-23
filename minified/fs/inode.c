@@ -190,8 +190,7 @@ void clear_inode(struct inode *inode)
 {
 	
 	xa_lock_irq(&inode->i_data.i_pages);
-	BUG_ON(inode->i_data.nrpages);
-	
+
 	xa_unlock_irq(&inode->i_data.i_pages);
 	BUG_ON(!(inode->i_state & I_FREEING));
 	BUG_ON(inode->i_state & I_CLEAR);

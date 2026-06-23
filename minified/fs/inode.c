@@ -351,8 +351,6 @@ bool atime_needs_update(const struct path *path, struct inode *inode)
 
 	if (IS_NOATIME(inode))
 		return false;
-	if ((inode->i_sb->s_flags & SB_NODIRATIME) && S_ISDIR(inode->i_mode))
-		return false;
 
 	now = current_time(inode);
 

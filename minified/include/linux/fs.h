@@ -495,8 +495,6 @@ struct fasync_struct {
 #define SB_MANDLOCK	64
 #define SB_DIRSYNC	128
 #define SB_NOATIME	1024
-#define SB_NODIRATIME	2048
-#define SB_POSIXACL	(1<<16)
 #define SB_KERNMOUNT	(1<<22)
 #define SB_LAZYTIME	(1<<25)
 #define SB_ACTIVE	(1<<30)
@@ -765,7 +763,6 @@ struct super_operations {
 
 static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags & SB_RDONLY; }
 #define IS_NOATIME(inode)	__IS_FLG(inode, SB_RDONLY|SB_NOATIME)
-#define IS_POSIXACL(inode)	__IS_FLG(inode, SB_POSIXACL)
 /* IS_APPEND, IS_IMMUTABLE, IS_DEADDIR, IS_NOCMTIME, IS_SWAPFILE,
  * IS_AUTOMOUNT, IS_NOSEC, IS_DAX removed - underlying S_* flags never set */
 

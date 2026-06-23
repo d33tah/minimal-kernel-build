@@ -78,13 +78,6 @@ void putname(struct filename *name)
 		__putname(name);
 }
 
-static int check_acl(struct user_namespace *mnt_userns,
-		     struct inode *inode, int mask)
-{
-
-	return -EAGAIN;
-}
-
 static int acl_permission_check(struct user_namespace *mnt_userns,
 				struct inode *inode, int mask)
 {
@@ -99,14 +92,6 @@ static int acl_permission_check(struct user_namespace *mnt_userns,
 		return (mask & ~mode) ? -EACCES : 0;
 	}
 
-	
-	if (IS_POSIXACL(inode) && (mode & S_IRWXG)) {
-		int error = check_acl(mnt_userns, inode, mask);
-		if (error != -EAGAIN)
-			return error;
-	}
-
-	
 	mask &= 7;
 
 	
@@ -1231,8 +1216,7 @@ static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 	/* Simplified creation logic */
 	mnt_userns = mnt_user_ns(nd->path.mnt);
 	if (open_flag & O_CREAT) {
-		if (!IS_POSIXACL(dir->d_inode))
-			mode &= ~current_umask();
+		mode &= ~current_umask();
 
 		if (d_in_lookup(dentry)) {
 			struct dentry *res = dir_inode->i_op->lookup(dir_inode, dentry, nd->flags);

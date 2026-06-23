@@ -68,8 +68,7 @@ int __init init_mknod(const char *filename, umode_t mode, unsigned int dev)
 	if (IS_ERR(dentry))
 		return PTR_ERR(dentry);
 
-	if (!IS_POSIXACL(path.dentry->d_inode))
-		mode &= ~current_umask();
+	mode &= ~current_umask();
 	error = vfs_mknod(mnt_user_ns(path.mnt), path.dentry->d_inode,
 			  dentry, mode, new_decode_dev(dev));
 	done_path_create(&path, dentry);
@@ -134,8 +133,7 @@ int __init init_mkdir(const char *pathname, umode_t mode)
 	dentry = kern_path_create(AT_FDCWD, pathname, &path, LOOKUP_DIRECTORY);
 	if (IS_ERR(dentry))
 		return PTR_ERR(dentry);
-	if (!IS_POSIXACL(path.dentry->d_inode))
-		mode &= ~current_umask();
+	mode &= ~current_umask();
 	error = vfs_mkdir(mnt_user_ns(path.mnt), path.dentry->d_inode,
 			  dentry, mode);
 	done_path_create(&path, dentry);

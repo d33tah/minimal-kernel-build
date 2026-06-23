@@ -216,9 +216,6 @@ struct task_struct {
 	unsigned int			personality;
 
 	unsigned			in_iowait:1;
-#ifndef TIF_RESTORE_SIGMASK
-	unsigned			restore_sigmask:1;
-#endif
 
 
 	pid_t				pid;

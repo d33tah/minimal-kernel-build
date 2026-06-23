@@ -151,41 +151,6 @@ extern void calculate_sigpending(void);
  * chain (zap_other_threads <- do_group_exit <- exit_group syscall) is gone.
  */
 
-#ifdef TIF_RESTORE_SIGMASK
-
-static inline void set_restore_sigmask(void)
-{
-	set_thread_flag(TIF_RESTORE_SIGMASK);
-}
-
-static inline void clear_restore_sigmask(void)
-{
-	clear_thread_flag(TIF_RESTORE_SIGMASK);
-}
-static inline bool test_and_clear_restore_sigmask(void)
-{
-	return test_and_clear_thread_flag(TIF_RESTORE_SIGMASK);
-}
-
-#else	 
-
-static inline void set_restore_sigmask(void)
-{
-	current->restore_sigmask = true;
-}
-static inline void clear_restore_sigmask(void)
-{
-	current->restore_sigmask = false;
-}
-static inline bool test_and_clear_restore_sigmask(void)
-{
-	if (!current->restore_sigmask)
-		return false;
-	current->restore_sigmask = false;
-	return true;
-}
-#endif
-
 
 
 #define SEND_SIG_NOINFO ((struct kernel_siginfo *) 0)

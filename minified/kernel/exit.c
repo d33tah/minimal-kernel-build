@@ -77,9 +77,6 @@ static void __exit_signal(struct task_struct *tsk)
 	if (group_dead) {
 		tty = sig->tty;
 		sig->tty = NULL;
-	} else {
-		if (tsk == sig->curr_target)
-			sig->curr_target = next_thread(tsk);
 	}
 
 	__unhash_process(tsk, group_dead);

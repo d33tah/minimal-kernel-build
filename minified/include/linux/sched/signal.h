@@ -44,9 +44,6 @@ struct signal_struct {
 	struct list_head	thread_head;
 
 
-	struct task_struct	*curr_target;
-
-	 
 	struct sigpending	shared_pending;
 
 

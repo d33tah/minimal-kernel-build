@@ -250,11 +250,4 @@ static inline struct inode *d_backing_inode(const struct dentry *upper)
 	return inode;
 }
 
-static inline struct dentry *d_real(struct dentry *dentry,
-				    const struct inode *inode)
-{
-	/* no ops object sets ->d_real, so DCACHE_OP_REAL is never set */
-	return dentry;
-}
-
 #endif

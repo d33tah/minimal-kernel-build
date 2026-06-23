@@ -459,11 +459,6 @@ static inline struct inode *file_inode(const struct file *f)
 	return f->f_inode;
 }
 
-static inline struct dentry *file_dentry(const struct file *file)
-{
-	return d_real(file->f_path.dentry, file_inode(file));
-}
-
 #define SB_RDONLY	 1
 #define SB_SYNCHRONOUS	16
 #define SB_MANDLOCK	64

@@ -508,8 +508,6 @@ struct super_block {
 	char			s_id[32];
 
 
-	struct mutex s_vfs_rename_mutex;
-
 	atomic_long_t s_remove_count;
 
 
@@ -520,9 +518,6 @@ struct super_block {
 	struct list_lru		s_inode_lru;
 	struct rcu_head		rcu;
 	struct work_struct	destroy_work;
-
-	struct mutex		s_sync_lock;
-
 
 	spinlock_t		s_inode_list_lock ____cacheline_aligned_in_smp;
 	struct list_head	s_inodes;
@@ -786,7 +781,6 @@ struct file_system_type {
 
 	struct lock_class_key s_lock_key;
 	struct lock_class_key s_umount_key;
-	struct lock_class_key s_vfs_rename_key;
 
 	struct lock_class_key i_lock_key;
 	struct lock_class_key i_mutex_key;

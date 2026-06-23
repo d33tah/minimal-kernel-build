@@ -24,21 +24,6 @@ static struct kobj_type class_ktype = {
 
 static struct kset *class_kset;
 
-
-
-static struct class *class_get(struct class *cls)
-{
-	if (cls)
-		kset_get(&cls->p->subsys);
-	return cls;
-}
-
-static void class_put(struct class *cls)
-{
-	if (cls)
-		kset_put(&cls->p->subsys);
-}
-
 int __class_register(struct class *cls, struct lock_class_key *key)
 {
 	struct subsys_private *cp;
@@ -55,7 +40,6 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 
 	cp->subsys.kobj.kset = class_kset;
 	cp->subsys.kobj.ktype = &class_ktype;
-	cp->class = cls;
 	cls->p = cp;
 
 	error = kset_register(&cp->subsys);
@@ -63,8 +47,6 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 		kfree(cp);
 		return error;
 	}
-	class_get(cls);
-	class_put(cls);
 	return 0;
 }
 

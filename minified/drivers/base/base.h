@@ -8,10 +8,10 @@
    (subsys_interface_register / class_interface_register are gone, so the
    interfaces list and the drivers klist/kset stay empty) and nothing ever
    registers on bus_notifier. */
+/* class back-pointer removed - was write-only (set in __class_register,
+   never read by any consumer). */
 struct subsys_private {
 	struct kset subsys;
-
-	struct class *class;
 };
 #define to_subsys_private(obj) container_of(obj, struct subsys_private, subsys.kobj)
 

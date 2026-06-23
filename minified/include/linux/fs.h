@@ -155,8 +155,6 @@ struct iattr {
 	struct timespec64 ia_ctime;
 };
 
-#include <linux/quota.h>
-
 /* Reduced positive_aop_returns - only AOP_TRUNCATED_PAGE used */
 enum positive_aop_returns { AOP_TRUNCATED_PAGE = 0x80001 };
 
@@ -495,7 +493,6 @@ struct super_block {
 	struct list_head	s_mounts;
 	struct backing_dev_info *s_bdi;
 	struct hlist_node	s_instances;
-	struct quota_info	s_dquot;
 
 	struct sb_writers	s_writers;
 

@@ -832,8 +832,6 @@ static __latent_entropy struct task_struct *copy_process(
 		goto bad_fork_cleanup_count;
 
 	p->flags &= ~(PF_IDLE | PF_NO_SETAFFINITY);
-	INIT_LIST_HEAD(&p->children);
-	INIT_LIST_HEAD(&p->sibling);
 	p->vfork_done = NULL;
 	spin_lock_init(&p->alloc_lock);
 
@@ -952,7 +950,6 @@ static __latent_entropy struct task_struct *copy_process(
 		p->signal->shared_pending.signal = delayed.signal;
 		p->signal->tty = tty_kref_get(current->signal->tty);
 
-		list_add_tail(&p->sibling, &p->real_parent->children);
 		list_add_tail_rcu(&p->tasks, &init_task.tasks);
 		attach_pid(p, PIDTYPE_TGID);
 		attach_pid(p, PIDTYPE_PGID);

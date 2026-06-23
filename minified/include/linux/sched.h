@@ -229,9 +229,7 @@ struct task_struct {
 	 
 	struct task_struct __rcu	*parent;
 
-	 
-	struct list_head		children;
-	struct list_head		sibling;
+
 	struct task_struct		*group_leader;
 
 

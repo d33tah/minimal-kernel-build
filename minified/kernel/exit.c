@@ -57,7 +57,6 @@ static void __unhash_process(struct task_struct *p, bool group_dead)
 		detach_pid(p, PIDTYPE_SID);
 
 		list_del_rcu(&p->tasks);
-		list_del_init(&p->sibling);
 		__this_cpu_dec(process_counts);
 	}
 	list_del_rcu(&p->thread_group);
@@ -212,10 +211,11 @@ static void forget_original_parent(struct task_struct *father,
 	 * exiting tasks are PID-1 init (which forks nothing -- it just execs the
 	 * static init ELF that does write(2)+exit) and individual kthreads, none
 	 * of which ever have children. kthreadd (the sole parent of kthreads)
-	 * runs an infinite loop and never exits. So father->children is always
-	 * empty here and find_child_reaper()'s early return is the only live path;
-	 * the reparent loop, find_new_reaper() and reparent_leader() were
-	 * statically reachable but never executed.
+	 * runs an infinite loop and never exits. No task ever has children here,
+	 * so find_child_reaper()'s early return is the only live path; the
+	 * reparent loop, find_new_reaper() and reparent_leader() were statically
+	 * reachable but never executed. (The dead task_struct.children/.sibling
+	 * list was removed since nothing ever iterated it.)
 	 */
 	find_child_reaper(father, dead);
 }

@@ -59,8 +59,6 @@ struct task_struct init_task
 	.ptrace_entry	= LIST_HEAD_INIT(init_task.ptrace_entry),
 	.real_parent	= &init_task,
 	.parent		= &init_task,
-	.children	= LIST_HEAD_INIT(init_task.children),
-	.sibling	= LIST_HEAD_INIT(init_task.sibling),
 	.group_leader	= &init_task,
 	RCU_POINTER_INITIALIZER(real_cred, &init_cred),
 	RCU_POINTER_INITIALIZER(cred, &init_cred),

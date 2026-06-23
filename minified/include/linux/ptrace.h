@@ -41,14 +41,12 @@ static inline void ptrace_event(int event, unsigned long message)
 static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
 {
 	INIT_LIST_HEAD(&child->ptrace_entry);
-	INIT_LIST_HEAD(&child->ptraced);
 	child->jobctl = 0;
 	child->parent = child->real_parent;
 }
 
 static inline void ptrace_release_task(struct task_struct *task)
 {
-	BUG_ON(!list_empty(&task->ptraced));
 	ptrace_unlink(task);
 	BUG_ON(!list_empty(&task->ptrace_entry));
 }

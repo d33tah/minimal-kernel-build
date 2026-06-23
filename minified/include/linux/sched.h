@@ -234,8 +234,7 @@ struct task_struct {
 	struct list_head		sibling;
 	struct task_struct		*group_leader;
 
-	 
-	struct list_head		ptraced;
+
 	struct list_head		ptrace_entry;
 
 	 

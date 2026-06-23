@@ -56,7 +56,6 @@ struct task_struct init_task
 	.mm		= NULL,
 	.active_mm	= &init_mm,
 	.tasks		= LIST_HEAD_INIT(init_task.tasks),
-	.ptraced	= LIST_HEAD_INIT(init_task.ptraced),
 	.ptrace_entry	= LIST_HEAD_INIT(init_task.ptrace_entry),
 	.real_parent	= &init_task,
 	.parent		= &init_task,

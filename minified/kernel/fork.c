@@ -219,7 +219,6 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 	mmap_write_lock_nested(mm, SINGLE_DEPTH_NESTING);
 
 	dup_mm_exe_file(mm, oldmm);
-	mm->total_vm = oldmm->total_vm;
 
 	rb_link = &mm->mm_rb.rb_node;
 	rb_parent = NULL;

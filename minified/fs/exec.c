@@ -122,7 +122,6 @@ static int __bprm_mm_init(struct linux_binprm *bprm)
 	if (err)
 		goto err;
 
-	mm->total_vm = 1;
 	mmap_write_unlock(mm);
 	bprm->p = vma->vm_end - sizeof(void *);
 	return 0;

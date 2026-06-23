@@ -289,7 +289,6 @@ struct mm_struct {
 
 		unsigned long hiwater_rss;
 
-		unsigned long total_vm;
 		unsigned long def_flags;
 
 		unsigned long start_code, end_code, start_data, end_data;

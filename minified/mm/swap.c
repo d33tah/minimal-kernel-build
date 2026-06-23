@@ -254,8 +254,6 @@ static void __pagevec_lru_add_fn(struct folio *folio, struct lruvec *lruvec)
 	if (!folio_evictable(folio)) {
 		folio_clear_active(folio);
 		folio_set_unevictable(folio);
-
-		folio->mlock_count = 0;
 	}
 
 	lruvec_add_folio(lruvec, folio);

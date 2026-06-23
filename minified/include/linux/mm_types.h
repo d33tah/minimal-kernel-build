@@ -58,19 +58,10 @@ struct page {
 	union {
 		struct {	 
 			 
-			union {
-				struct list_head lru;
-				 
-				struct {
-					 
-					void *__filler;
-					 
-					unsigned int mlock_count;
-				};
-			};
-			 
+			struct list_head lru;
+
 			struct address_space *mapping;
-			pgoff_t index;		 
+			pgoff_t index;
 			 
 			unsigned long private;
 		};
@@ -150,17 +141,7 @@ struct folio {
 		struct {
 	 
 			unsigned long flags;
-			union {
-				struct list_head lru;
-	 
-				struct {
-					void *__filler;
-	 
-					unsigned int mlock_count;
-	 
-				};
-	 
-			};
+			struct list_head lru;
 			struct address_space *mapping;
 			pgoff_t index;
 			void *private;

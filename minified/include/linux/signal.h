@@ -22,13 +22,6 @@ static inline void clear_siginfo(kernel_siginfo_t *info)
 
 
 
-enum siginfo_layout {
-	SIL_KILL,
-};
-
-enum siginfo_layout siginfo_layout(unsigned sig, int si_code);
-
-
 #ifndef __HAVE_ARCH_SIG_BITOPS
 #include <linux/bitops.h>
 
@@ -56,66 +49,6 @@ static inline void sigdelset(sigset_t *set, int _sig)
 #define sigmask(sig)	(1UL << ((sig) - 1))
 
 #ifndef __HAVE_ARCH_SIG_SETOPS
-
-#define _SIG_SET_BINOP(name, op)					\
-static inline void name(sigset_t *r, const sigset_t *a, const sigset_t *b) \
-{									\
-	unsigned long a0, a1, a2, a3, b0, b1, b2, b3;			\
-									\
-	switch (_NSIG_WORDS) {						\
-	case 4:								\
-		a3 = a->sig[3]; a2 = a->sig[2];				\
-		b3 = b->sig[3]; b2 = b->sig[2];				\
-		r->sig[3] = op(a3, b3);					\
-		r->sig[2] = op(a2, b2);					\
-		fallthrough;						\
-	case 2:								\
-		a1 = a->sig[1]; b1 = b->sig[1];				\
-		r->sig[1] = op(a1, b1);					\
-		fallthrough;						\
-	case 1:								\
-		a0 = a->sig[0]; b0 = b->sig[0];				\
-		r->sig[0] = op(a0, b0);					\
-		break;							\
-	default:							\
-		BUILD_BUG();						\
-	}								\
-}
-
-#define _sig_or(x,y)	((x) | (y))
-_SIG_SET_BINOP(sigorsets, _sig_or)
-
-#define _sig_and(x,y)	((x) & (y))
-_SIG_SET_BINOP(sigandsets, _sig_and)
-
-#define _sig_andn(x,y)	((x) & ~(y))
-_SIG_SET_BINOP(sigandnsets, _sig_andn)
-
-#undef _SIG_SET_BINOP
-#undef _sig_or
-#undef _sig_and
-#undef _sig_andn
-
-#define _SIG_SET_OP(name, op)						\
-static inline void name(sigset_t *set)					\
-{									\
-	switch (_NSIG_WORDS) {						\
-	case 4:	set->sig[3] = op(set->sig[3]);				\
-		set->sig[2] = op(set->sig[2]);				\
-		fallthrough;						\
-	case 2:	set->sig[1] = op(set->sig[1]);				\
-		fallthrough;						\
-	case 1:	set->sig[0] = op(set->sig[0]);				\
-		    break;						\
-	default:							\
-		BUILD_BUG();						\
-	}								\
-}
-
-#define _sig_not(x)	(~(x))
-
-#undef _SIG_SET_OP
-#undef _sig_not
 
 static inline void sigemptyset(sigset_t *set)
 {
@@ -168,10 +101,6 @@ extern struct kmem_cache *sighand_cachep;
 
 #define SIG_KERNEL_ONLY_MASK (\
 	rt_sigmask(SIGKILL)   |  rt_sigmask(SIGSTOP))
-
-#define SIG_KERNEL_STOP_MASK (\
-	rt_sigmask(SIGSTOP)   |  rt_sigmask(SIGTSTP)   | \
-	rt_sigmask(SIGTTIN)   |  rt_sigmask(SIGTTOU)   )
 
 #define SIG_KERNEL_IGNORE_MASK (\
         rt_sigmask(SIGCONT)   |  rt_sigmask(SIGCHLD)   | \

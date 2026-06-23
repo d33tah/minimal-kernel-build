@@ -41,12 +41,7 @@ int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry,
 	newattrs.ia_valid = ATTR_SIZE | time_attrs;
 	/* ATTR_FILE / ia_file are never read on this build */
 
-	 
-	ret = dentry_needs_remove_privs(dentry);
-	if (ret < 0)
-		return ret;
-	if (ret)
-		newattrs.ia_valid |= ret | ATTR_FORCE;
+	/* dentry_needs_remove_privs() was a constant 0 on this build. */
 
 	inode_lock(dentry->d_inode);
 	 

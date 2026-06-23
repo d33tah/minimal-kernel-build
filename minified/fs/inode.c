@@ -382,46 +382,13 @@ skip_update:
 	sb_end_write(inode->i_sb);
 }
 
-static int should_remove_suid(struct dentry *dentry)
-{
-	return 0;
-}
-
-int dentry_needs_remove_privs(struct dentry *dentry)
-{
-	int mask = 0;
-
-	mask = should_remove_suid(dentry);
-	return mask;
-}
-
-static int __remove_privs(struct user_namespace *mnt_userns,
-			  struct dentry *dentry, int kill)
-{
-	struct iattr newattrs;
-
-	newattrs.ia_valid = ATTR_FORCE | kill;
-	
-	return notify_change(mnt_userns, dentry, &newattrs, NULL);
-}
-
 int file_remove_privs(struct file *file)
 {
-	struct dentry *dentry = file_dentry(file);
-	struct inode *inode = file_inode(file);
-	int kill;
-	int error = 0;
-
-	if (!S_ISREG(inode->i_mode))
-		return 0;
-
-	kill = dentry_needs_remove_privs(dentry);
-	if (kill < 0)
-		return kill;
-	if (kill)
-		error = __remove_privs(file_mnt_user_ns(file), dentry, kill);
-
-	return error;
+	/*
+	 * No live path sets suid/sgid removal flags (should_remove_suid was a
+	 * constant-0 stub), so there is never anything to strip here.
+	 */
+	return 0;
 }
 
 int file_update_time(struct file *file)

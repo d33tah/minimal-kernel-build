@@ -57,10 +57,7 @@ int chmod_common(const struct path *path, umode_t mode);
 int chown_common(const struct path *path, uid_t user, gid_t group);
 extern int vfs_open(const struct path *, struct file *);
 
- 
-extern int dentry_needs_remove_privs(struct dentry *dentry);
 
- 
 
  
 extern const struct file_operations pipefifo_fops;

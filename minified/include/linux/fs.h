@@ -469,11 +469,6 @@ enum {
 	SB_FREEZE_PAGEFAULT = 2,
 };
 
-struct sb_writers {
-	int				frozen;
-	wait_queue_head_t		wait_unfrozen;
-};
-
 struct super_block {
 	struct list_head	s_list;		
 	dev_t			s_dev;		
@@ -494,10 +489,7 @@ struct super_block {
 	struct backing_dev_info *s_bdi;
 	struct hlist_node	s_instances;
 
-	struct sb_writers	s_writers;
-
-	
-	void			*s_fs_info;	
+	void			*s_fs_info;
 
 	
 	u32			s_time_gran;

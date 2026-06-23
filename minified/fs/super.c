@@ -60,7 +60,6 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	
 	down_write_nested(&s->s_umount, SINGLE_DEPTH_NESTING);
 
-	init_waitqueue_head(&s->s_writers.wait_unfrozen);
 	s->s_bdi = &noop_backing_dev_info;
 	s->s_flags = flags;
 	if (s->s_user_ns != &init_user_ns)

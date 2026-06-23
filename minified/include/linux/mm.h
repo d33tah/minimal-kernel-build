@@ -736,18 +736,15 @@ static inline int __pmd_alloc(struct mm_struct *mm, pud_t *pud,
 
 static inline void mm_pgtables_bytes_init(struct mm_struct *mm)
 {
-	atomic_long_set(&mm->pgtables_bytes, 0);
 }
 
 
 static inline void mm_inc_nr_ptes(struct mm_struct *mm)
 {
-	atomic_long_add(PTRS_PER_PTE * sizeof(pte_t), &mm->pgtables_bytes);
 }
 
 static inline void mm_dec_nr_ptes(struct mm_struct *mm)
 {
-	atomic_long_sub(PTRS_PER_PTE * sizeof(pte_t), &mm->pgtables_bytes);
 }
 
 int __pte_alloc(struct mm_struct *mm, pmd_t *pmd);

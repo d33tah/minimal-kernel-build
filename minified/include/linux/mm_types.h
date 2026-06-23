@@ -277,8 +277,7 @@ struct mm_struct {
 		 
 		atomic_t mm_count;
 
-		atomic_long_t pgtables_bytes;	 
-		int map_count;			 
+		int map_count;
 
 		spinlock_t page_table_lock;  
 		 

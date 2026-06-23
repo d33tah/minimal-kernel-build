@@ -14,8 +14,6 @@ struct backing_dev_info;
 
 struct writeback_control;
 
-struct bdi_writeback;
-
 
 static inline void inode_detach_wb(struct inode *inode)
 {

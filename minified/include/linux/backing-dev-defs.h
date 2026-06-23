@@ -14,12 +14,7 @@ struct page;
 struct device;
 struct dentry;
 
-struct bdi_writeback {
-	struct backing_dev_info *bdi;
-};
-
 struct backing_dev_info {
-	struct bdi_writeback wb;
 };
 
 

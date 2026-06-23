@@ -71,7 +71,6 @@ typedef int rwf_t;
 /* end uapi/linux/fs.h */
 
 struct backing_dev_info;
-struct bdi_writeback;
 struct bio;
 struct io_comp_batch;
 struct fiemap_extent_info;

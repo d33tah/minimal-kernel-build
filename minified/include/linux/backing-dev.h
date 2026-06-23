@@ -18,19 +18,9 @@ extern struct backing_dev_info noop_backing_dev_info;
 
 int bdi_init(struct backing_dev_info *bdi);
 
-
-struct backing_dev_info *inode_to_bdi(struct inode *inode);
-
-/* bdi_sched_wait, inode_cgwb_enabled, wb_find_current, wb_get_create_current,
-   inode_to_wb_is_valid removed - never called */
-
-static inline struct bdi_writeback *inode_to_wb(struct inode *inode)
-{
-	return &inode_to_bdi(inode)->wb;
-}
-
-/* inode_to_wb_wbc, unlocked_inode_to_wb_begin, unlocked_inode_to_wb_end
-   removed - never called */
+/* inode_to_bdi, inode_to_wb (and bdi_sched_wait, inode_cgwb_enabled,
+   wb_find_current, wb_get_create_current, inode_to_wb_is_valid,
+   inode_to_wb_wbc, unlocked_inode_to_wb_begin/end) removed - never called */
 
 
 

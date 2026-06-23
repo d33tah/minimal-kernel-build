@@ -74,14 +74,8 @@ struct page {
 			atomic_t compound_mapcount;
 			atomic_t compound_pincount;
 		};
-		struct {	 
-			unsigned long _compound_pad_1;	 
-			unsigned long _compound_pad_2;
-			 
-			struct list_head deferred_list;
-		};
-		struct {	 
-			unsigned long _pt_pad_1;	 
+		struct {
+			unsigned long _pt_pad_1;
 			pgtable_t pmd_huge_pte;  
 			unsigned long _pt_pad_2;	 
 			union {
@@ -94,14 +88,8 @@ struct page {
 			spinlock_t ptl;
 #endif
 		};
-		struct {	 
-			 
-			struct dev_pagemap *pgmap;
-			void *zone_device_data;
-			 
-		};
 
-		 
+
 		struct rcu_head rcu_head;
 	};
 

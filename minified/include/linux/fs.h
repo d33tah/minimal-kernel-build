@@ -401,11 +401,8 @@ static inline void i_size_write(struct inode *inode, loff_t i_size)
 
 
 struct fown_struct {
-	rwlock_t lock;          
-	struct pid *pid;	
-	enum pid_type pid_type;	
-	kuid_t uid, euid;	
-	int signum;		
+	rwlock_t lock;
+	struct pid *pid;
 };
 
 struct file_ra_state {

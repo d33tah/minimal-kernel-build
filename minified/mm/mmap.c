@@ -106,48 +106,22 @@ static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
 	return next;
 }
 
-static inline unsigned long vma_compute_gap(struct vm_area_struct *vma)
-{
-	unsigned long gap, prev_end;
-
-	
-	gap = vm_start_gap(vma);
-	if (vma->vm_prev) {
-		prev_end = vm_end_gap(vma->vm_prev);
-		if (gap > prev_end)
-			gap -= prev_end;
-		else
-			gap = 0;
-	}
-	return gap;
-}
-
 #define validate_mm_rb(root, ignore) do { } while (0)
 #define validate_mm(mm) do { } while (0)
-
-RB_DECLARE_CALLBACKS_MAX(static, vma_gap_callbacks,
-			 struct vm_area_struct, vm_rb,
-			 unsigned long, rb_subtree_gap, vma_compute_gap)
-
-static void vma_gap_update(struct vm_area_struct *vma)
-{
-	
-	vma_gap_callbacks_propagate(&vma->vm_rb, NULL);
-}
 
 static inline void vma_rb_insert(struct vm_area_struct *vma,
 				 struct rb_root *root)
 {
-	
+
 	validate_mm_rb(root, NULL);
 
-	rb_insert_augmented(&vma->vm_rb, root, &vma_gap_callbacks);
+	rb_insert_color(&vma->vm_rb, root);
 }
 
 static void __vma_rb_erase(struct vm_area_struct *vma, struct rb_root *root)
 {
-	
-	rb_erase_augmented(&vma->vm_rb, root, &vma_gap_callbacks);
+
+	rb_erase(&vma->vm_rb, root);
 }
 
 static __always_inline void vma_rb_erase_ignore(struct vm_area_struct *vma,
@@ -244,16 +218,12 @@ munmap_vma_range(struct mm_struct *mm, unsigned long start, unsigned long len,
 void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
 		struct rb_node **rb_link, struct rb_node *rb_parent)
 {
-	
-	if (vma->vm_next)
-		vma_gap_update(vma->vm_next);
-	else
+
+	if (!vma->vm_next)
 		mm->highest_vm_end = vm_end_gap(vma);
 
-	
+
 	rb_link_node(&vma->vm_rb, rb_parent, rb_link);
-	vma->rb_subtree_gap = 0;
-	vma_gap_update(vma);
 	vma_rb_insert(vma, &mm->mm_rb);
 }
 
@@ -951,7 +921,6 @@ int expand_downwards(struct vm_area_struct *vma,
 				vma->vm_start = address;
 				vma->vm_pgoff -= grow;
 				anon_vma_interval_tree_post_update_vma(vma);
-				vma_gap_update(vma);
 				spin_unlock(&mm->page_table_lock);
 			}
 		}
@@ -1034,10 +1003,9 @@ detach_vmas_to_be_unmapped(struct mm_struct *mm, struct vm_area_struct *vma,
 		vma = vma->vm_next;
 	} while (vma && vma->vm_start < end);
 	*insertion_point = vma;
-	if (vma) {
+	if (vma)
 		vma->vm_prev = prev;
-		vma_gap_update(vma);
-	} else
+	else
 		mm->highest_vm_end = prev ? vm_end_gap(prev) : 0;
 	tail_vma->vm_next = NULL;
 

@@ -227,12 +227,7 @@ struct vm_area_struct {
 
 	struct rb_node vm_rb;
 
-	 
-	unsigned long rb_subtree_gap;
-
-	 
-
-	struct mm_struct *vm_mm;	 
+	struct mm_struct *vm_mm;
 
 	 
 	pgprot_t vm_page_prot;

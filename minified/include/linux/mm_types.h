@@ -65,21 +65,8 @@ struct page {
 			 
 			unsigned long private;
 		};
-		struct {	 
-			 
-			unsigned long pp_magic;
-			struct page_pool *pp;
-			unsigned long _pp_mapping_pad;
-			unsigned long dma_addr;
-			union {
-				 
-				unsigned long dma_addr_upper;
-				 
-				atomic_long_t pp_frag_count;
-			};
-		};
-		struct {	 
-			unsigned long compound_head;	 
+		struct {
+			unsigned long compound_head;
 
 			 
 			unsigned char compound_dtor;

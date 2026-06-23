@@ -310,10 +310,6 @@ typedef struct pglist_data {
 	unsigned long node_spanned_pages;
 	int node_id;
 
-	enum zone_type kswapd_highest_zoneidx;
-
-
-
 	ZONE_PADDING(_pad1_)
 
 

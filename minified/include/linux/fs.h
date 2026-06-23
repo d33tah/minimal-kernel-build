@@ -72,8 +72,6 @@ typedef int rwf_t;
 
 struct backing_dev_info;
 struct bio;
-struct io_comp_batch;
-struct fiemap_extent_info;
 struct iovec;
 struct kiocb;
 struct kobject;
@@ -478,16 +476,6 @@ static inline struct dentry *file_dentry(const struct file *file)
 {
 	return d_real(file->f_path.dentry, file_inode(file));
 }
-
-struct fasync_struct {
-	rwlock_t		fa_lock;
-	int			magic;
-	int			fa_fd;
-	struct fasync_struct	*fa_next; 
-	struct file		*fa_file;
-	struct rcu_head		fa_rcu;
-};
-
 
 #define SB_RDONLY	 1
 #define SB_SYNCHRONOUS	16

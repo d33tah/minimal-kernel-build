@@ -113,10 +113,9 @@ static int __bprm_mm_init(struct linux_binprm *bprm)
 		goto err_free;
 	}
 
-	BUILD_BUG_ON(VM_STACK_FLAGS & VM_STACK_INCOMPLETE_SETUP);
 	vma->vm_end = STACK_TOP_MAX;
 	vma->vm_start = vma->vm_end - PAGE_SIZE;
-	vma->vm_flags = VM_STACK_FLAGS | VM_STACK_INCOMPLETE_SETUP;
+	vma->vm_flags = VM_STACK_FLAGS;
 	vma->vm_page_prot = vm_get_page_prot(vma->vm_flags);
 
 	err = insert_vm_struct(mm, vma);
@@ -338,7 +337,6 @@ int setup_arg_pages(struct linux_binprm *bprm,
 	else if (executable_stack == EXSTACK_DISABLE_X)
 		vm_flags &= ~VM_EXEC;
 	vm_flags |= mm->def_flags;
-	vm_flags |= VM_STACK_INCOMPLETE_SETUP;
 
 	tlb_gather_mmu(&tlb, mm);
 	ret = mprotect_fixup(&tlb, vma, &prev, vma->vm_start, vma->vm_end,
@@ -355,9 +353,7 @@ int setup_arg_pages(struct linux_binprm *bprm,
 			goto out_unlock;
 	}
 
-	vma->vm_flags &= ~VM_STACK_INCOMPLETE_SETUP;
-
-	stack_expand = 131072UL; 
+	stack_expand = 131072UL;
 	stack_size = vma->vm_end - vma->vm_start;
 	
 	rlim_stack = bprm->rlim_stack.rlim_cur & PAGE_MASK;

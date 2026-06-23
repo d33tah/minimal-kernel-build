@@ -210,11 +210,7 @@ void vm_area_free(struct vm_area_struct *);
 /* VM_UFFD_WP (0x1000) removed - unused */	
 
 #define VM_LOCKED	0x00002000
-#define VM_IO           0x00004000	
-
-					
-#define VM_SEQ_READ	0x00008000	
-#define VM_RAND_READ	0x00010000	
+#define VM_IO           0x00004000
 
 #define VM_DONTCOPY	0x00020000
 #define VM_ACCOUNT	0x00100000
@@ -228,8 +224,6 @@ void vm_area_free(struct vm_area_struct *);
 # define VM_GROWSUP	VM_NONE
 #endif
 
-
-#define VM_STACK_INCOMPLETE_SETUP	(VM_RAND_READ | VM_SEQ_READ)
 
 #define TASK_EXEC ((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0)
 

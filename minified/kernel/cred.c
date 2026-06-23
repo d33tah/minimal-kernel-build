@@ -17,8 +17,6 @@ struct cred init_cred = {
 	.usage			= ATOMIC_INIT(4),
 	.uid			= GLOBAL_ROOT_UID,
 	.gid			= GLOBAL_ROOT_GID,
-	.suid			= GLOBAL_ROOT_UID,
-	.sgid			= GLOBAL_ROOT_GID,
 	.euid			= GLOBAL_ROOT_UID,
 	.egid			= GLOBAL_ROOT_GID,
 	.fsuid			= GLOBAL_ROOT_UID,
@@ -116,8 +114,8 @@ struct cred *prepare_exec_creds(void)
 		return new;
 
 
-	new->suid = new->fsuid = new->euid;
-	new->sgid = new->fsgid = new->egid;
+	new->fsuid = new->euid;
+	new->fsgid = new->egid;
 
 	return new;
 }

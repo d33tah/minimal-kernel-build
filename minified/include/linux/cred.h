@@ -44,9 +44,7 @@ struct cred {
 	atomic_t	usage;
 	kuid_t		uid;		 
 	kgid_t		gid;		 
-	kuid_t		suid;		 
-	kgid_t		sgid;		 
-	kuid_t		euid;		 
+	kuid_t		euid;
 	kgid_t		egid;		 
 	kuid_t		fsuid;		 
 	kgid_t		fsgid;

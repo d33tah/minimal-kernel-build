@@ -383,21 +383,12 @@ static inline int is_global_init(struct task_struct *tsk)
 
 #define PF_IDLE			0x00000002
 #define PF_EXITING		0x00000004
-#define PF_MEMALLOC		0x00000800
 #define PF_MEMALLOC_NOFS	0x00040000
 #define PF_MEMALLOC_NOIO	0x00080000
 #define PF_KTHREAD		0x00200000
 #define PF_RANDOMIZE		0x00400000
 #define PF_NO_SETAFFINITY	0x04000000
 #define PF_MEMALLOC_PIN		0x10000000
-
-
-static inline void
-current_restore_flags(unsigned long orig_flags, unsigned long flags)
-{
-	current->flags &= ~flags;
-	current->flags |= orig_flags & flags;
-}
 
 static inline int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
 {

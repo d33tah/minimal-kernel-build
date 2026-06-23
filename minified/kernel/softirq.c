@@ -129,14 +129,10 @@ asmlinkage __visible void do_softirq(void)
 asmlinkage __visible void __softirq_entry __do_softirq(void)
 {
 	unsigned long end = jiffies + MAX_SOFTIRQ_TIME;
-	unsigned long old_flags = current->flags;
 	int max_restart = MAX_SOFTIRQ_RESTART;
 	struct softirq_action *h;
 	__u32 pending;
 	int softirq_bit;
-
-	 
-	current->flags &= ~PF_MEMALLOC;
 
 	pending = local_softirq_pending();
 
@@ -190,7 +186,6 @@ restart:
 	}
 
 	softirq_handle_end();
-	current_restore_flags(old_flags, PF_MEMALLOC);
 }
 
 void irq_enter_rcu(void)

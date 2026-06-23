@@ -59,16 +59,6 @@ static inline void folio_ref_add(struct folio *folio, int nr)
 	page_ref_add(&folio->page, nr);
 }
 
-static inline void page_ref_sub(struct page *page, int nr)
-{
-	atomic_sub(nr, &page->_refcount);
-}
-
-static inline void folio_ref_sub(struct folio *folio, int nr)
-{
-	page_ref_sub(&folio->page, nr);
-}
-
 static inline void page_ref_inc(struct page *page)
 {
 	atomic_inc(&page->_refcount);

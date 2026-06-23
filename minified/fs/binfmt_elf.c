@@ -567,7 +567,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		goto out;
 
 	mm = current->mm;
-	mm->start_stack = bprm->p;
 
 	if (current->flags & PF_RANDOMIZE) {
 		mm->brk = arch_randomize_brk(mm);

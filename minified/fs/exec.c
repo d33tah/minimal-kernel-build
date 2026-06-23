@@ -360,7 +360,6 @@ int setup_arg_pages(struct linux_binprm *bprm,
 		stack_base = vma->vm_end - rlim_stack;
 	else
 		stack_base = vma->vm_start - stack_expand;
-	current->mm->start_stack = bprm->p;
 	ret = expand_stack(vma, stack_base);
 	if (ret)
 		ret = -EFAULT;

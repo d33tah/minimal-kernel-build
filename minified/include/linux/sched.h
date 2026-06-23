@@ -74,7 +74,6 @@ struct bio_list;
 struct blk_plug;
 struct cfs_rq;
 struct fs_struct;
-struct io_context;
 struct mempolicy;
 struct nameidata;
 struct nsproxy;
@@ -313,8 +312,6 @@ struct task_struct {
 
 
 	struct blk_plug			*plug;
-
-	struct io_context		*io_context;
 
 	union {
 		refcount_t		rcu_users;

@@ -29,7 +29,6 @@ extern void sched_init_smp(void);
 #include <linux/blkdev.h>
 #include <linux/init_task.h>
 #include <linux/interrupt.h>
-#include <linux/ioprio.h>
 #include <linux/kallsyms.h>
 #include <linux/kprobes.h>
 

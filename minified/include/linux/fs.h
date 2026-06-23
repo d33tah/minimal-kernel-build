@@ -37,7 +37,6 @@ struct delayed_call {
 	void *arg;
 };
 #include <linux/uuid.h>
-#include <linux/ioprio.h>
 
 /* Inlined from errseq.h */
 typedef u32	errseq_t;
@@ -177,11 +176,7 @@ struct kiocb {
 	randomized_struct_fields_start
 
 	loff_t			ki_pos;
-	void (*ki_complete)(struct kiocb *iocb, long ret);
-	void			*private;
 	int			ki_flags;
-	u16			ki_ioprio; 
-	struct wait_page_queue	*ki_waitq; 
 	randomized_struct_fields_end
 };
 
@@ -749,7 +744,6 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 	*kiocb = (struct kiocb) {
 		.ki_filp = filp,
 		.ki_flags = iocb_flags(filp),
-		.ki_ioprio = get_current_ioprio(),
 	};
 }
 

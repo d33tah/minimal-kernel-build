@@ -15,7 +15,6 @@
 #include <linux/personality.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
-#include <linux/iocontext.h>
 #include <linux/binfmts.h>
 #include <linux/mman.h>
 #include <linux/fs.h>
@@ -840,7 +839,6 @@ static __latent_entropy struct task_struct *copy_process(
 
 	init_sigpending(&p->pending);
 
-	p->io_context = NULL;
 	if (args->kthread) {
 		if (!set_kthread_struct(p))
 			goto bad_fork_cleanup_delayacct;

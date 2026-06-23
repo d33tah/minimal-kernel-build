@@ -383,7 +383,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	int retval, i;
 	unsigned long elf_entry;
 	unsigned long e_entry;
-	unsigned long start_code, end_code, start_data, end_data;
 	unsigned long reloc_func_desc __maybe_unused = 0;
 	int executable_stack = EXSTACK_DEFAULT;
 	struct elfhdr *elf_ex = (struct elfhdr *)bprm->buf;
@@ -447,12 +446,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	elf_bss = 0;
 	elf_brk = 0;
 
-	start_code = ~0UL;
-	end_code = 0;
-	start_data = 0;
-	end_data = 0;
 
-	 
 	for(i = 0, elf_ppnt = elf_phdata;
 	    i < elf_ex->e_phnum; i++, elf_ppnt++) {
 		int elf_prot, elf_flags;
@@ -516,12 +510,8 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		}
 
 		k = elf_ppnt->p_vaddr;
-		if ((elf_ppnt->p_flags & PF_X) && k < start_code)
-			start_code = k;
-		if (start_data < k)
-			start_data = k;
 
-		 
+
 		if (BAD_ADDR(k) || elf_ppnt->p_filesz > elf_ppnt->p_memsz ||
 		    elf_ppnt->p_memsz > TASK_SIZE ||
 		    TASK_SIZE - elf_ppnt->p_memsz < k) {
@@ -534,10 +524,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 		if (k > elf_bss)
 			elf_bss = k;
-		if ((elf_ppnt->p_flags & PF_X) && end_code < k)
-			end_code = k;
-		if (end_data < k)
-			end_data = k;
 		k = elf_ppnt->p_vaddr + elf_ppnt->p_memsz;
 		if (k > elf_brk) {
 			bss_prot = elf_prot;
@@ -549,10 +535,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	phdr_addr += load_bias;
 	elf_bss += load_bias;
 	elf_brk += load_bias;
-	start_code += load_bias;
-	end_code += load_bias;
-	start_data += load_bias;
-	end_data += load_bias;
 
 	 
 	retval = set_brk(elf_bss, elf_brk, bss_prot);
@@ -585,10 +567,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		goto out;
 
 	mm = current->mm;
-	mm->end_code = end_code;
-	mm->start_code = start_code;
-	mm->start_data = start_data;
-	mm->end_data = end_data;
 	mm->start_stack = bprm->p;
 
 	if (current->flags & PF_RANDOMIZE) {

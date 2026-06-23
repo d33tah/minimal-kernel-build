@@ -291,7 +291,6 @@ struct mm_struct {
 
 		unsigned long def_flags;
 
-		unsigned long start_code, end_code, start_data, end_data;
 		unsigned long brk, start_stack;
 		unsigned long arg_start;
 

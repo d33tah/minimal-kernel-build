@@ -401,8 +401,7 @@ struct file {
 	struct inode		*f_inode;	
 	const struct file_operations	*f_op;
 
-	
-	spinlock_t		f_lock;
+
 	atomic_long_t		f_count;
 	unsigned int 		f_flags;
 	fmode_t			f_mode;

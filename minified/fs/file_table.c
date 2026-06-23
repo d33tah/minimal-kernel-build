@@ -56,7 +56,6 @@ static struct file *__alloc_file(int flags, const struct cred *cred)
 
 	atomic_long_set(&f->f_count, 1);
 	rwlock_init(&f->f_owner.lock);
-	spin_lock_init(&f->f_lock);
 	mutex_init(&f->f_pos_lock);
 	f->f_flags = flags;
 	f->f_mode = OPEN_FMODE(flags);

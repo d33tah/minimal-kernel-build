@@ -470,8 +470,7 @@ enum {
 };
 
 struct super_block {
-	struct list_head	s_list;		
-	dev_t			s_dev;		
+	dev_t			s_dev;
 	unsigned char		s_blocksize_bits;
 	unsigned long		s_blocksize;
 	loff_t			s_maxbytes;	
@@ -487,7 +486,6 @@ struct super_block {
 	struct hlist_bl_head	s_roots;
 	struct list_head	s_mounts;
 	struct backing_dev_info *s_bdi;
-	struct hlist_node	s_instances;
 
 	void			*s_fs_info;
 
@@ -766,7 +764,6 @@ struct file_system_type {
 	void (*kill_sb) (struct super_block *);
 	struct module *owner;
 	struct file_system_type * next;
-	struct hlist_head fs_supers;
 
 	struct lock_class_key s_lock_key;
 	struct lock_class_key s_umount_key;

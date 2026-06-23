@@ -360,15 +360,6 @@ static inline void page_mapcount_reset(struct page *page)
 	atomic_set(&(page)->_mapcount, -1);
 }
 
-int __page_mapcount(struct page *page);
-
-static inline int page_mapcount(struct page *page)
-{
-	if (unlikely(PageCompound(page)))
-		return __page_mapcount(page);
-	return atomic_read(&page->_mapcount) + 1;
-}
-
 static inline struct page *virt_to_head_page(const void *x)
 {
 	struct page *page = virt_to_page(x);

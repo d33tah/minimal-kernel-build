@@ -226,19 +226,6 @@ struct address_space *folio_mapping(struct folio *folio)
 	return (void *)((unsigned long)mapping & ~PAGE_MAPPING_FLAGS);
 }
 
-int __page_mapcount(struct page *page)
-{
-	int ret;
-
-	ret = atomic_read(&page->_mapcount) + 1;
-
-	if (!PageAnon(page))
-		return ret;
-	page = compound_head(page);
-	ret += atomic_read(compound_mapcount_ptr(page)) + 1;
-	return ret;
-}
-
 int sysctl_overcommit_memory __read_mostly = OVERCOMMIT_GUESS;
 int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
 

@@ -32,7 +32,6 @@ struct kernel_clone_args {
 };
 
 extern rwlock_t tasklist_lock;
-extern spinlock_t mmlist_lock;
 
 extern union thread_union init_thread_union;
 extern struct task_struct init_task;

@@ -441,8 +441,6 @@ free_tsk:
 	return NULL;
 }
 
-__cacheline_aligned_in_smp DEFINE_SPINLOCK(mmlist_lock);
-
 static unsigned long default_dump_filter = MMF_DUMP_FILTER_DEFAULT;
 
 
@@ -456,7 +454,6 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	atomic_set(&mm->mm_users, 1);
 	atomic_set(&mm->mm_count, 1);
 	mmap_init_lock(mm);
-	INIT_LIST_HEAD(&mm->mmlist);
 	mm_pgtables_bytes_init(mm);
 	mm->map_count = 0;
 	memset(&mm->rss_stat, 0, sizeof(mm->rss_stat));
@@ -508,11 +505,6 @@ static inline void __mmput(struct mm_struct *mm)
 	exit_mmap(mm);
 	mm_put_huge_zero_page(mm);
 	set_mm_exe_file(mm, NULL);
-	if (!list_empty(&mm->mmlist)) {
-		spin_lock(&mmlist_lock);
-		list_del(&mm->mmlist);
-		spin_unlock(&mmlist_lock);
-	}
 	mmdrop(mm);
 }
 

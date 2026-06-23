@@ -284,8 +284,6 @@ struct mm_struct {
 		 
 		struct rw_semaphore mmap_lock;
 
-		struct list_head mmlist;  
-
 
 		unsigned long hiwater_rss;
 

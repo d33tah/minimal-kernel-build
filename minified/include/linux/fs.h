@@ -288,7 +288,6 @@ struct inode {
 	struct hlist_node	i_hash;
 	struct list_head	i_lru;
 	struct list_head	i_sb_list;
-	struct list_head	i_wb_list;	
 	union {
 		struct hlist_head	i_dentry;
 		struct rcu_head		i_rcu;

@@ -111,10 +111,6 @@ static struct inode *alloc_inode(struct super_block *sb)
 void __destroy_inode(struct inode *inode)
 {
 	inode_detach_wb(inode);
-	if (!inode->i_nlink) {
-		WARN_ON(atomic_long_read(&inode->i_sb->s_remove_count) == 0);
-		atomic_long_dec(&inode->i_sb->s_remove_count);
-	}
 }
 
 static void destroy_inode(struct inode *inode)
@@ -126,10 +122,6 @@ static void destroy_inode(struct inode *inode)
 
 void inc_nlink(struct inode *inode)
 {
-	if (unlikely(inode->i_nlink == 0)) {
-		atomic_long_dec(&inode->i_sb->s_remove_count);
-	}
-
 	inode->__i_nlink++;
 }
 

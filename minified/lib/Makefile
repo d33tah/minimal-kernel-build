@@ -46,7 +46,7 @@ obj-y += sort.o debug_locks.o \
 	 bust_spinlocks.o kasprintf.o bitmap.o \
 	 iov_iter.o \
 	 bsearch.o find_bit.o llist.o \
-	 refcount.o usercopy.o
+	 usercopy.o
 	 # parser.o removed - not used
 obj-$(CONFIG_STRING_SELFTEST) += test_string.o
 obj-y += string_helpers.o

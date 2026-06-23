@@ -15,18 +15,6 @@ typedef struct refcount_struct {
 } refcount_t;
 
 #define REFCOUNT_INIT(n)	{ .refs = ATOMIC_INIT(n), }
-#define REFCOUNT_MAX		INT_MAX
-#define REFCOUNT_SATURATED	(INT_MIN / 2)
-
-enum refcount_saturation_type {
-	REFCOUNT_ADD_NOT_ZERO_OVF,
-	REFCOUNT_ADD_OVF,
-	REFCOUNT_ADD_UAF,
-	REFCOUNT_SUB_UAF,
-	REFCOUNT_DEC_LEAK,
-};
-
-void refcount_warn_saturate(refcount_t *r, enum refcount_saturation_type t);
 
 static inline void refcount_set(refcount_t *r, int n)
 {
@@ -50,9 +38,6 @@ static inline __must_check bool __refcount_add_not_zero(int i, refcount_t *r, in
 	if (oldp)
 		*oldp = old;
 
-	if (unlikely(old < 0 || old + i < 0))
-		refcount_warn_saturate(r, REFCOUNT_ADD_NOT_ZERO_OVF);
-
 	return old;
 }
 
@@ -62,11 +47,6 @@ static inline void __refcount_add(int i, refcount_t *r, int *oldp)
 
 	if (oldp)
 		*oldp = old;
-
-	if (unlikely(!old))
-		refcount_warn_saturate(r, REFCOUNT_ADD_UAF);
-	else if (unlikely(old < 0 || old + i < 0))
-		refcount_warn_saturate(r, REFCOUNT_ADD_OVF);
 }
 
 static inline __must_check bool __refcount_inc_not_zero(refcount_t *r, int *oldp)
@@ -101,9 +81,6 @@ static inline __must_check bool __refcount_sub_and_test(int i, refcount_t *r, in
 		smp_acquire__after_ctrl_dep();
 		return true;
 	}
-
-	if (unlikely(old < 0 || old - i < 0))
-		refcount_warn_saturate(r, REFCOUNT_SUB_UAF);
 
 	return false;
 }

@@ -86,29 +86,17 @@ struct irq_data {
 
 enum {
 	IRQD_TRIGGER_MASK		= 0xf,
-	IRQD_SETAFFINITY_PENDING	= (1 <<  8),
 	IRQD_ACTIVATED			= (1 <<  9),
 	IRQD_NO_BALANCING		= (1 << 10),
 	IRQD_PER_CPU			= (1 << 11),
-	IRQD_AFFINITY_SET		= (1 << 12),
 	IRQD_LEVEL			= (1 << 13),
-	IRQD_WAKEUP_STATE		= (1 << 14),
-	IRQD_MOVE_PCNTXT		= (1 << 15),
 	IRQD_IRQ_DISABLED		= (1 << 16),
 	IRQD_IRQ_MASKED			= (1 << 17),
 	IRQD_IRQ_INPROGRESS		= (1 << 18),
 	IRQD_WAKEUP_ARMED		= (1 << 19),
-	IRQD_FORWARDED_TO_VCPU		= (1 << 20),
 	IRQD_AFFINITY_MANAGED		= (1 << 21),
 	IRQD_IRQ_STARTED		= (1 << 22),
-	IRQD_MANAGED_SHUTDOWN		= (1 << 23),
-	IRQD_SINGLE_TARGET		= (1 << 24),
 	IRQD_DEFAULT_TRIGGER_SET	= (1 << 25),
-	IRQD_CAN_RESERVE		= (1 << 26),
-	IRQD_MSI_NOMASK_QUIRK		= (1 << 27),
-	IRQD_HANDLE_ENFORCE_IRQCTX	= (1 << 28),
-	IRQD_AFFINITY_ON_ACTIVATE	= (1 << 29),
-	IRQD_IRQ_ENABLED_ON_SUSPEND	= (1 << 30),
 };
 
 #define __irqd_to_state(d) ACCESS_PRIVATE((d)->common, state_use_accessors)
@@ -153,11 +141,6 @@ static inline bool irqd_is_activated(struct irq_data *d)
 static inline void irqd_set_activated(struct irq_data *d)
 {
 	__irqd_to_state(d) |= IRQD_ACTIVATED;
-}
-
-static inline void irqd_clr_activated(struct irq_data *d)
-{
-	__irqd_to_state(d) &= ~IRQD_ACTIVATED;
 }
 
 static inline bool irqd_is_started(struct irq_data *d)
@@ -217,17 +200,8 @@ struct irq_chip {
 
 enum {
 	IRQCHIP_SET_TYPE_MASKED			= (1 <<  0),
-	IRQCHIP_EOI_IF_HANDLED			= (1 <<  1),
-	IRQCHIP_MASK_ON_SUSPEND			= (1 <<  2),
-	IRQCHIP_ONOFFLINE_ENABLED		= (1 <<  3),
 	IRQCHIP_SKIP_SET_WAKE			= (1 <<  4),
 	IRQCHIP_ONESHOT_SAFE			= (1 <<  5),
-	IRQCHIP_EOI_THREADED			= (1 <<  6),
-	IRQCHIP_SUPPORTS_LEVEL_MSI		= (1 <<  7),
-	IRQCHIP_SUPPORTS_NMI			= (1 <<  8),
-	IRQCHIP_ENABLE_WAKEUP_ON_SUSPEND	= (1 <<  9),
-	IRQCHIP_AFFINITY_PRE_STARTUP		= (1 << 10),
-	IRQCHIP_IMMUTABLE			= (1 << 11),
 };
 
 #include <linux/irqdesc.h>

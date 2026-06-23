@@ -132,7 +132,6 @@ struct kmem_cache {
 	struct kmem_cache_order_objects min;
 	gfp_t allocflags;
 	void (*ctor)(void *);
-	unsigned int inuse;
 	unsigned int align;
 	const char *name;
 	struct list_head list;

@@ -931,9 +931,6 @@ static int calculate_sizes(struct kmem_cache *s)
 	
 	size = ALIGN(size, sizeof(void *));
 
-	
-	s->inuse = size;
-
 	/* SLAB_POISON/SLAB_RED_ZONE never reach any cache on this build (not in
 	 * CACHE_CREATE_MASK, never passed) -> only the RCU/ctor arms survive. */
 	if ((flags & SLAB_TYPESAFE_BY_RCU) || s->ctor) {

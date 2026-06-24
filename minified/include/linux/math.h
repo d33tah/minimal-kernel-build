@@ -22,15 +22,6 @@
 )
 
 
-#define mult_frac(x, numer, denom)(			\
-{							\
-	typeof(x) quot = (x) / (denom);			\
-	typeof(x) rem  = (x) % (denom);			\
-	(quot * (numer)) + ((rem * (numer)) / (denom));	\
-}							\
-)
-
-
 #define abs(x)	__abs_choose_expr(x, long long,				\
 		__abs_choose_expr(x, long,				\
 		__abs_choose_expr(x, int,				\

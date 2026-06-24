@@ -21,9 +21,6 @@ struct swait_queue_head {
 	.task_list	= LIST_HEAD_INIT((name).task_list),		\
 }
 
-#define DECLARE_SWAIT_QUEUE_HEAD(name)					\
-	struct swait_queue_head name = __SWAIT_QUEUE_HEAD_INITIALIZER(name)
-
 extern void __init_swait_queue_head(struct swait_queue_head *q, const char *name,
 				    struct lock_class_key *key);
 
@@ -32,8 +29,5 @@ extern void __init_swait_queue_head(struct swait_queue_head *q, const char *name
 		static struct lock_class_key __key;		\
 		__init_swait_queue_head((q), #q, &__key);	\
 	} while (0)
-
-# define DECLARE_SWAIT_QUEUE_HEAD_ONSTACK(name)			\
-	DECLARE_SWAIT_QUEUE_HEAD(name)
 
 #endif

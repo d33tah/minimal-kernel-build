@@ -361,20 +361,6 @@ char *number(char *buf, char *end, unsigned long long num,
 	return buf;
 }
 
-static noinline_for_stack
-char *special_hex_number(char *buf, char *end, unsigned long long num, int size)
-{
-	struct printf_spec spec;
-
-	spec.type = FORMAT_TYPE_PTR;
-	spec.field_width = 2 + 2 * size;	
-	spec.flags = SPECIAL | SMALL | ZEROPAD;
-	spec.base = 16;
-	spec.precision = -1;
-
-	return number(buf, end, num, spec);
-}
-
 static void move_right(char *buf, char *end, unsigned len, unsigned spaces)
 {
 	size_t size;
@@ -558,27 +544,6 @@ static char *default_pointer(char *buf, char *end, const void *ptr,
 }
 
 
-static noinline_for_stack
-char *file_dentry_name(char *buf, char *end, const struct file *f,
-			struct printf_spec spec, const char *fmt)
-{
-	 
-	return error_string(buf, end, "(file)", spec);
-}
-
-static noinline_for_stack
-char *symbol_string(char *buf, char *end, void *ptr,
-		    struct printf_spec spec, const char *fmt)
-{
-	unsigned long value;
-
-	if (fmt[1] == 'R')
-		ptr = __builtin_extract_return_addr(ptr);
-	value = (unsigned long)ptr;
-
-	return special_hex_number(buf, end, value, sizeof(void *));
-}
-
 static char *va_format(char *buf, char *end, struct va_format *va_fmt,
 		       struct printf_spec spec, const char *fmt)
 {
@@ -595,44 +560,12 @@ static char *va_format(char *buf, char *end, struct va_format *va_fmt,
 }
 
 static noinline_for_stack
-char *address_val(char *buf, char *end, const void *addr,
-		  struct printf_spec spec, const char *fmt)
-{
-	/* Stub: address formatting not needed for minimal kernel */
-	return error_string(buf, end, "(addr)", spec);
-}
-
-static noinline_for_stack
-char *flags_string(char *buf, char *end, void *flags_ptr,
-		   struct printf_spec spec, const char *fmt)
-{
-	 
-	return error_string(buf, end, "(flags)", spec);
-}
-
-
-static noinline_for_stack
 char *pointer(const char *fmt, char *buf, char *end, void *ptr,
 	      struct printf_spec spec)
 {
 	switch (*fmt) {
-	case 'S':
-	case 's':
-		ptr = dereference_symbol_descriptor(ptr);
-		fallthrough;
-	case 'B':
-		return symbol_string(buf, end, ptr, spec, fmt);
 	case 'V':
 		return va_format(buf, end, ptr, spec, fmt);
-	case 'a':
-		return address_val(buf, end, ptr, spec, fmt);
-	case 'D':
-		return file_dentry_name(buf, end, ptr, spec, fmt);
-
-	case 'G':
-		return flags_string(buf, end, ptr, spec, fmt);
-	case 'x':
-		return pointer_string(buf, end, ptr, spec);
 	default:
 		return default_pointer(buf, end, ptr, spec);
 	}

@@ -43,10 +43,6 @@ struct bus_dma_region;
 /* struct subsys_interface removed - never instantiated (no
    subsys_interface_register on this build). */
 
-struct device_type {
-	/* name/groups/pm removed - never read (only ->release dispatched) */
-	void (*release)(struct device *dev);
-};
 
 /* struct device_attribute + DEVICE_ATTR macro removed - 0 users tree-wide. */
 
@@ -61,8 +57,7 @@ struct device {
 
 	struct device_private	*p;
 
-	const char		*init_name;  
-	const struct device_type *type;
+	const char		*init_name;
 
 	void	(*release)(struct device *dev);
 };

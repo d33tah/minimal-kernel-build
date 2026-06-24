@@ -43,8 +43,6 @@ static void device_release(struct kobject *kobj)
 
 	if (dev->release)
 		dev->release(dev);
-	else if (dev->type && dev->type->release)
-		dev->type->release(dev);
 	else
 		WARN(1, KERN_ERR "Device '%s' does not have a release() function, it is broken and must be fixed. See Documentation/core-api/kobject.rst.\n",
 			dev_name(dev));

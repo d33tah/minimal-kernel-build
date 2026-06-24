@@ -37,7 +37,6 @@ static struct char_device_struct {
 	unsigned int baseminor;
 	int minorct;
 	char name[64];
-	struct cdev *cdev;		 
 } *chrdevs[CHRDEV_MAJOR_HASH_SIZE];
 
 static inline int major_to_index(unsigned major)
@@ -319,9 +318,6 @@ static int exact_lock(dev_t dev, void *data)
 int cdev_add(struct cdev *p, dev_t dev, unsigned count)
 {
 	int error;
-
-	p->dev = dev;
-	p->count = count;
 
 	if (WARN_ON(dev == WHITEOUT_DEV))
 		return -EBUSY;

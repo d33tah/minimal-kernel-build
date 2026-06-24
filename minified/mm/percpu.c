@@ -5,7 +5,13 @@
 #include <linux/cpumask.h>
 #include <linux/memblock.h>
 #include <linux/err.h>
-unsigned long lcm(unsigned long a, unsigned long b) __attribute_const__;
+unsigned long gcd(unsigned long a, unsigned long b) __attribute_const__;
+static inline unsigned long lcm(unsigned long a, unsigned long b)
+{
+	if (a && b)
+		return (a / gcd(a, b)) * b;
+	return 0;
+}
 #include <linux/list.h>
 #include <linux/log2.h>
 #include <linux/mm.h>

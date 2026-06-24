@@ -394,6 +394,16 @@ void __init inode_init(void)
 					 init_once);
 }
 
+static int no_blkdev_open(struct inode *inode, struct file *filp)
+{
+	return -ENODEV;
+}
+
+const struct file_operations def_blk_fops = {
+	.open		= no_blkdev_open,
+	.llseek		= noop_llseek,
+};
+
 void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 {
 	inode->i_mode = mode;

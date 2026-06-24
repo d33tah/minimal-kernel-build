@@ -5,20 +5,11 @@
 #include <asm/irqflags.h>
 #include <asm/percpu.h>
 
-#ifndef ftrace_return_address0
-# define ftrace_return_address0 __builtin_return_address(0)
-#endif
-#define CALLER_ADDR0 ((unsigned long)ftrace_return_address0)
-
 struct task_struct;
 static inline unsigned long ftrace_graph_ret_addr(struct task_struct *task, int *idx,
 						  unsigned long ret, unsigned long *retp)
 {
 	return ret;
-}
-static inline bool is_ftrace_trampoline(unsigned long addr)
-{
-	return false;
 }
 
   /* lockdep_softirqs_on/off + lockdep_hardirqs_on/off/_prepare removed - unused (empty no-op stubs) */
@@ -64,10 +55,7 @@ static inline bool is_ftrace_trampoline(unsigned long addr)
 #define local_irq_disable()	do { raw_local_irq_disable(); } while (0)
 #define local_irq_save(flags)	do { raw_local_irq_save(flags); } while (0)
 #define local_irq_restore(flags) do { raw_local_irq_restore(flags); } while (0)
-#define safe_halt()		do { raw_safe_halt(); } while (0)
 
-
-#define local_save_flags(flags)	raw_local_save_flags(flags)
 
 #define irqs_disabled()					\
 	({						\
@@ -75,7 +63,5 @@ static inline bool is_ftrace_trampoline(unsigned long addr)
 		raw_local_save_flags(_flags);		\
 		raw_irqs_disabled_flags(_flags);	\
 	})
-
-#define irqs_disabled_flags(flags) raw_irqs_disabled_flags(flags)
 
 #endif

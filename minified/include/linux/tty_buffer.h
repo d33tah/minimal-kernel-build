@@ -11,16 +11,10 @@ struct tty_buffer {
 		struct tty_buffer *next;
 		struct llist_node free;
 	};
-	int used;
 	int size;
-	int commit;
-	int read;
-	int flags;
-	 
+
 	unsigned long data[];
 };
-
-#define TTYB_NORMAL	1	 
 
 
 struct tty_bufhead {

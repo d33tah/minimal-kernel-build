@@ -80,29 +80,9 @@ static inline void flush_anon_page(struct vm_area_struct *vma, struct page *page
 #endif
 
 
-#ifndef clear_user_highpage
-static inline void clear_user_highpage(struct page *page, unsigned long vaddr)
-{
-	void *addr = kmap_local_page(page);
-	clear_user_page(addr, vaddr, page);
-	kunmap_local(addr);
-}
-#endif
-
-#ifndef __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE_MOVABLE
-static inline struct page *
-alloc_zeroed_user_highpage_movable(struct vm_area_struct *vma,
-				   unsigned long vaddr)
-{
-	struct page *page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, vaddr);
-
-	if (page)
-		clear_user_highpage(page, vaddr);
-
-	return page;
-}
-#endif
-
+/* clear_user_highpage + generic alloc_zeroed_user_highpage_movable removed: x86 defines
+ * __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE_MOVABLE (asm/page.h), so the generic inline never
+ * compiled and clear_user_highpage (its sole consumer) was dead. */
 
 static inline void zero_user_segments(struct page *page,
 		unsigned start1, unsigned end1,

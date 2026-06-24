@@ -23,7 +23,7 @@ static inline void init_completion(struct completion *x)
 	init_swait_queue_head(&x->wait);
 }
 
-extern void wait_for_completion(struct completion *);
-extern void complete(struct completion *);
+static inline void wait_for_completion(struct completion *x) { }
+static inline void complete(struct completion *x) { }
 
 #endif

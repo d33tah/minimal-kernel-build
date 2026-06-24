@@ -35,7 +35,6 @@
 
 
 
-#include "completion.c"
 #include "swait.c"
 #include "wait.c"
 

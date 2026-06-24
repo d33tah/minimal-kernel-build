@@ -74,6 +74,6 @@ search_extable(const struct exception_table_entry *base,
 	       const size_t num,
 	       unsigned long value)
 {
-	return bsearch(&value, base, num,
+	return __inline_bsearch(&value, base, num,
 		       sizeof(struct exception_table_entry), cmp_ex_search);
 }

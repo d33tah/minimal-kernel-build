@@ -9,7 +9,6 @@
 #define ALIGN(x, a)		__ALIGN_KERNEL((x), (a))
 #define ALIGN_DOWN(x, a)	__ALIGN_KERNEL((x) - ((a) - 1), (a))
 #define __ALIGN_MASK(x, mask)	__ALIGN_KERNEL_MASK((x), (mask))
-#define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
 #define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
 #include <linux/linkage.h>
 #include <linux/stddef.h>
@@ -67,11 +66,6 @@ struct completion;
 
 # define might_resched() do { } while (0)
 # define might_sleep() do { might_resched(); } while (0)
-# define cant_sleep() do { } while (0)
-# define cant_migrate()		do { } while (0)
-# define sched_annotate_sleep() do { } while (0)
-# define non_block_start() do { } while (0)
-# define non_block_end() do { } while (0)
 
 #define might_sleep_if(cond) do { if (cond) might_sleep(); } while (0)
 

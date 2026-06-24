@@ -7,16 +7,6 @@
 
 struct task_struct;
 
-#ifndef array_index_mask_nospec
-static inline unsigned long array_index_mask_nospec(unsigned long index,
-						    unsigned long size)
-{
-	 
-	OPTIMIZER_HIDE_VAR(index);
-	return ~(long)(index | (size - 1UL - index)) >> (BITS_PER_LONG - 1);
-}
-#endif
-
 #define array_index_nospec(index, size)					\
 ({									\
 	typeof(index) _i = (index);					\

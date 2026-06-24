@@ -4,19 +4,6 @@
 #include <linux/rbtree.h>
 #include <linux/ktime.h>
 
-
-struct timerqueue_node {
-	struct rb_node node;
-	ktime_t expires;
-};
-
-struct timerqueue_head {
-	struct rb_root_cached rb_root;
-};
-
-
-static inline void timerqueue_init_head(struct timerqueue_head *head)
-{
-	head->rb_root = RB_ROOT_CACHED;
-}
-#endif  
+/* timerqueue types/inline dropped: 0-ref tree-wide (timer subsystems gone).
+ * Includes kept for transitive consumers. */
+#endif

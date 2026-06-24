@@ -45,9 +45,10 @@ obj-y	+= lockref.o
 obj-y += sort.o debug_locks.o \
 	 bust_spinlocks.o kasprintf.o bitmap.o \
 	 iov_iter.o \
-	 find_bit.o \
-	 usercopy.o
+	 find_bit.o
 	 # parser.o removed - not used
+	 # usercopy.o removed - _copy_from_user/_copy_to_user now header inlines
+	 # (INLINE_COPY_FROM_USER/TO_USER defined in asm/uaccess.h)
 obj-$(CONFIG_STRING_SELFTEST) += test_string.o
 obj-y += string_helpers.o
 obj-$(CONFIG_TEST_STRING_HELPERS) += test-string_helpers.o

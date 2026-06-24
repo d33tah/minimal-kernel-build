@@ -45,17 +45,6 @@ static inline int get_count_order_long(unsigned long l)
 
 /* __ffs64 - unused */
 
-static __always_inline void assign_bit(long nr, volatile unsigned long *addr,
-				       bool value)
-{
-	if (value)
-		set_bit(nr, addr);
-	else
-		clear_bit(nr, addr);
-}
-
-
-
 #ifdef __KERNEL__
 
 #ifndef set_mask_bits

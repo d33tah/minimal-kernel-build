@@ -8,16 +8,6 @@ static inline void __current_set_polling(void)
 	/* TIF_POLLING_NRFLAG never tested in this build -> no-op */
 }
 
-static inline bool __must_check current_set_polling_and_test(void)
-{
-	__current_set_polling();
-
-	 
-	smp_mb__after_atomic();
-
-	return unlikely(tif_need_resched());
-}
-
 static inline void __current_clr_polling(void)
 {
 	/* TIF_POLLING_NRFLAG never tested in this build -> no-op */

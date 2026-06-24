@@ -44,10 +44,6 @@ struct __kernel_timex {
 
 #include <asm/timex.h>
 
-#ifndef random_get_entropy
-#define random_get_entropy()	((unsigned long)get_cycles())
-#endif
-
 /* NTP tuning macros removed - unused:
    SHIFT_PLL, SHIFT_FLL, MAXTC, SHIFT_USEC, PPM_SCALE, PPM_SCALE_INV_SHIFT,
    PPM_SCALE_INV, MAXPHASE, MAXFREQ, MAXFREQ_SCALED, MINSEC, MAXSEC, NTP_PHASE_LIMIT */

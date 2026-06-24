@@ -110,7 +110,6 @@ static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
 	u64 tmp, ntpinterval;
 	struct clocksource *old_clock;
 
-	++tk->cs_was_changed_seq;
 	old_clock = tk->tkr_mono.clock;
 	tk->tkr_mono.clock = clock;
 	tk->tkr_mono.mask = clock->mask;
@@ -203,11 +202,6 @@ static void timekeeping_update(struct timekeeper *tk, unsigned int action)
 
 	tk_update_ktime_data(tk);
 
-	tk->tkr_mono.base_real = tk->tkr_mono.base + tk->offs_real;
-
-	if (action & TK_CLOCK_WAS_SET)
-		tk->clock_was_set_seq++;
-	
 	if (action & TK_MIRROR)
 		memcpy(&shadow_timekeeper, &tk_core.timekeeper,
 		       sizeof(tk_core.timekeeper));

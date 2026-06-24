@@ -13,15 +13,6 @@ struct vt_mode {
 	short frsig;
 };
 #define		VT_AUTO		0x00
-
-struct vt_stat {
-	unsigned short v_active;
-	unsigned short v_signal;
-	unsigned short v_state;
-};
-#define VT_GETSTATE	0x5603
-
-#define VT_GETHIFONTMASK 0x560D
 /* End uapi/linux/vt.h */
 
 /* Internal VT definitions */

@@ -58,7 +58,6 @@ struct clocksource {
 #define CLOCK_SOURCE_VALID_FOR_HRES		0x20
 #define CLOCK_SOURCE_UNSTABLE			0x40
 #define CLOCK_SOURCE_SUSPEND_NONSTOP		0x80
-#define CLOCK_SOURCE_RESELECT			0x100
 #define CLOCK_SOURCE_VERIFY_PERCPU		0x200
 #define CLOCKSOURCE_MASK(bits) GENMASK_ULL((bits) - 1, 0)
 
@@ -89,14 +88,6 @@ static inline int clocksource_register_khz(struct clocksource *cs, u32 khz)
 extern void clocksource_arch_init(struct clocksource *cs);
 
 extern int timekeeping_notify(struct clocksource *clock);
-
-
-#define TIMER_OF_DECLARE(name, compat, fn) \
-	OF_DECLARE_1_RET(timer, name, compat, fn)
-
-
-#define TIMER_ACPI_DECLARE(name, table_id, fn)		\
-	ACPI_DECLARE_PROBE_ENTRY(timer, name, table_id, 0, NULL, 0, fn)
 
 
 #endif

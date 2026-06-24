@@ -90,7 +90,7 @@ static void __clocksource_suspend_select(struct clocksource *cs)
 		return;
 
 	 
-	if (cs->suspend || cs->resume) {
+	if (cs->resume) {
 		pr_warn("Nonstop clocksource %s should not supply suspend/resume interfaces\n",
 			cs->name);
 	}
@@ -125,35 +125,6 @@ static u32 clocksource_max_adjustment(struct clocksource *cs)
 	ret = (u64)cs->mult * 11;
 	do_div(ret,100);
 	return (u32)ret;
-}
-
-u64 clocks_calc_max_nsecs(u32 mult, u32 shift, u32 maxadj, u64 mask, u64 *max_cyc)
-{
-	u64 max_nsecs, max_cycles;
-
-	 
-	max_cycles = ULLONG_MAX;
-	do_div(max_cycles, mult+maxadj);
-
-	 
-	max_cycles = min(max_cycles, mask);
-	max_nsecs = clocksource_cyc2ns(max_cycles, mult - maxadj, shift);
-
-	 
-	if (max_cyc)
-		*max_cyc = max_cycles;
-
-	 
-	max_nsecs >>= 1;
-
-	return max_nsecs;
-}
-
-static inline void clocksource_update_max_deferment(struct clocksource *cs)
-{
-	cs->max_idle_ns = clocks_calc_max_nsecs(cs->mult, cs->shift,
-						cs->maxadj, cs->mask,
-						&cs->max_cycles);
 }
 
 static struct clocksource *clocksource_find_best(bool skipcur)
@@ -278,8 +249,6 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq
 	WARN_ONCE(cs->mult + cs->maxadj < cs->mult,
 		"timekeeping: Clocksource %s might overflow on 11%% adjustment\n",
 		cs->name);
-
-	clocksource_update_max_deferment(cs);
 }
 
 int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)

@@ -20,7 +20,6 @@ static struct clocksource clocksource_jiffies = {
 	.mask			= CLOCKSOURCE_MASK(32),
 	.mult			= TICK_NSEC << JIFFIES_SHIFT,  
 	.shift			= JIFFIES_SHIFT,
-	.max_cycles		= 10,
 };
 
 __cacheline_aligned_in_smp DEFINE_RAW_SPINLOCK(jiffies_lock);

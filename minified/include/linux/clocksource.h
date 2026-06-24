@@ -14,7 +14,6 @@
 #include <asm/io.h>
 
 struct clocksource;
-struct module;
 
 #if defined(CONFIG_ARCH_CLOCKSOURCE_DATA) || \
     defined(CONFIG_GENERIC_GETTIMEOFDAY)
@@ -37,10 +36,8 @@ struct clocksource {
 	u64			mask;
 	u32			mult;
 	u32			shift;
-	u64			max_idle_ns;
 	u32			maxadj;
 	u32			uncertainty_margin;
-	u64			max_cycles;
 	const char		*name;
 	struct list_head	list;
 	int			rating;
@@ -50,11 +47,8 @@ struct clocksource {
 
 	int			(*enable)(struct clocksource *cs);
 	void			(*disable)(struct clocksource *cs);
-	void			(*suspend)(struct clocksource *cs);
 	void			(*resume)(struct clocksource *cs);
 	void			(*mark_unstable)(struct clocksource *cs);
-
-	struct module		*owner;
 };
 
 #define CLOCK_SOURCE_IS_CONTINUOUS		0x01
@@ -69,18 +63,10 @@ struct clocksource {
 #define CLOCKSOURCE_MASK(bits) GENMASK_ULL((bits) - 1, 0)
 
 
-static inline s64 clocksource_cyc2ns(u64 cycles, u32 mult, u32 shift)
-{
-	return ((u64) cycles * mult) >> shift;
-}
-
-
 extern int clocksource_unregister(struct clocksource*);
 extern struct clocksource * __init clocksource_default_clock(void);
 extern void clocksource_mark_unstable(struct clocksource *cs);
 
-extern u64
-clocks_calc_max_nsecs(u32 mult, u32 shift, u32 maxadj, u64 mask, u64 *max_cycles);
 extern void
 clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 minsec);
 

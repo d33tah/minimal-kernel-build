@@ -12,7 +12,6 @@ enum irqreturn {
 	IRQ_WAKE_THREAD		= (1 << 1),
 };
 typedef enum irqreturn irqreturn_t;
-#define IRQ_RETVAL(x)	((x) ? IRQ_HANDLED : IRQ_NONE)
 
 #include <linux/irqnr.h>
 #include <linux/hardirq.h>
@@ -43,11 +42,6 @@ typedef enum irqreturn irqreturn_t;
 #define IRQF_NO_DEBUG		0x00100000
 
 #define IRQF_TIMER		(__IRQF_TIMER | IRQF_NO_SUSPEND | IRQF_NO_THREAD)
-
-enum {
-	IRQC_IS_HARDIRQ	= 0,
-	IRQC_IS_NESTED,
-};
 
 typedef irqreturn_t (*irq_handler_t)(int, void *);
 

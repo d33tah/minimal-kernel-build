@@ -67,20 +67,17 @@ struct fs_context {
 	const struct fs_context_operations *ops;
 	struct mutex		uapi_mutex;	 
 	struct file_system_type	*fs_type;
-	void			*fs_private;	 
-	void			*sget_key;
-	struct dentry		*root;		 
+	void			*fs_private;
+	struct dentry		*root;
 	struct user_namespace	*user_ns;	 
 	struct net		*net_ns;	 
 	const struct cred	*cred;		 
 	struct p_log		log;		 
-	const char		*source;	 
-	void			*security;	 
-	void			*s_fs_info;	 
+	const char		*source;
+	void			*s_fs_info;
 	unsigned int		sb_flags;	 
 	unsigned int		sb_flags_mask;	 
-	unsigned int		s_iflags;	 
-	unsigned int		lsm_flags;	 
+	unsigned int		s_iflags;
 	enum fs_context_purpose	purpose:8;
 	enum fs_context_phase	phase:8;	 
 	bool			need_free:1;	 
@@ -90,11 +87,9 @@ struct fs_context {
 
 struct fs_context_operations {
 	void (*free)(struct fs_context *fc);
-	int (*dup)(struct fs_context *fc, struct fs_context *src_fc);
 	int (*parse_param)(struct fs_context *fc, struct fs_parameter *param);
 	int (*parse_monolithic)(struct fs_context *fc, void *data);
 	int (*get_tree)(struct fs_context *fc);
-	int (*reconfigure)(struct fs_context *fc);
 };
 
 extern struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
@@ -115,10 +110,7 @@ extern int get_tree_nodev(struct fs_context *fc,
 
 struct fc_log {
 	refcount_t	usage;
-	u8		head;		 
-	u8		tail;		 
-	u8		need_free;	 
-	struct module	*owner;		 
+	u8		need_free;
 	char		*buffer[8];
 };
 

@@ -20,18 +20,6 @@ struct bio;
 struct pagevec;
 
 #define MAX_SWAPFILES_SHIFT	5
-#define SWP_SWAPIN_ERROR_NUM 1
-#define SWP_PTE_MARKER_NUM 0
-#define SWP_DEVICE_NUM 0
-#define SWP_MIGRATION_NUM 0
-#define SWP_HWPOISON_NUM 0
-#define MAX_SWAPFILES \
-	((1 << MAX_SWAPFILES_SHIFT) - SWP_DEVICE_NUM - \
-	SWP_MIGRATION_NUM - SWP_HWPOISON_NUM - \
-	SWP_PTE_MARKER_NUM - SWP_SWAPIN_ERROR_NUM)
-struct reclaim_state {
-	unsigned long reclaimed_slab;
-};
 
 #ifdef __KERNEL__
 
@@ -71,13 +59,8 @@ extern void lru_add_drain_cpu(int cpu);
 extern void lru_cache_add_inactive_or_unevictable(struct page *page,
 						struct vm_area_struct *vma);
 
-#define node_reclaim_mode 0
-
-
 #define total_swap_pages			0L
 
-#define free_page_and_swap_cache(page) \
-	put_page(page)
 #define free_pages_and_swap_cache(pages, nr) \
 	release_pages((pages), (nr));
 

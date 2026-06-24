@@ -10,92 +10,9 @@
 #include <linux/timer.h>
 #include <linux/timerqueue.h>
 
-struct hrtimer_clock_base;
-struct hrtimer_cpu_base;
-
-enum hrtimer_mode {
-	HRTIMER_MODE_ABS	= 0x00,
-	HRTIMER_MODE_REL	= 0x01,
-	HRTIMER_MODE_PINNED	= 0x02,
-	HRTIMER_MODE_SOFT	= 0x04,
-	HRTIMER_MODE_HARD	= 0x08,
-
-	HRTIMER_MODE_ABS_PINNED = HRTIMER_MODE_ABS | HRTIMER_MODE_PINNED,
-	HRTIMER_MODE_REL_PINNED = HRTIMER_MODE_REL | HRTIMER_MODE_PINNED,
-
-	HRTIMER_MODE_ABS_SOFT	= HRTIMER_MODE_ABS | HRTIMER_MODE_SOFT,
-	HRTIMER_MODE_REL_SOFT	= HRTIMER_MODE_REL | HRTIMER_MODE_SOFT,
-
-	HRTIMER_MODE_ABS_PINNED_SOFT = HRTIMER_MODE_ABS_PINNED | HRTIMER_MODE_SOFT,
-	HRTIMER_MODE_REL_PINNED_SOFT = HRTIMER_MODE_REL_PINNED | HRTIMER_MODE_SOFT,
-
-	HRTIMER_MODE_ABS_HARD	= HRTIMER_MODE_ABS | HRTIMER_MODE_HARD,
-	HRTIMER_MODE_REL_HARD	= HRTIMER_MODE_REL | HRTIMER_MODE_HARD,
-
-	HRTIMER_MODE_ABS_PINNED_HARD = HRTIMER_MODE_ABS_PINNED | HRTIMER_MODE_HARD,
-	HRTIMER_MODE_REL_PINNED_HARD = HRTIMER_MODE_REL_PINNED | HRTIMER_MODE_HARD,
-};
-
-enum hrtimer_restart {
-	HRTIMER_NORESTART,	 
-	HRTIMER_RESTART,	 
-};
-
-#define HRTIMER_STATE_INACTIVE	0x00
-#define HRTIMER_STATE_ENQUEUED	0x01
-
-struct hrtimer {
-	struct timerqueue_node		node;
-	enum hrtimer_restart		(*function)(struct hrtimer *);
-	struct hrtimer_clock_base	*base;
-	u8				state;
-};
-
-# define __hrtimer_clock_base_align
-
-struct hrtimer_clock_base {
-	struct hrtimer_cpu_base	*cpu_base;
-	unsigned int		index;
-	clockid_t		clockid;
-	seqcount_raw_spinlock_t	seq;
-	struct hrtimer		*running;
-	struct timerqueue_head	active;
-	ktime_t			(*get_time)(void);
-	ktime_t			offset;
-} __hrtimer_clock_base_align;
-
-enum  hrtimer_base_type {
-	HRTIMER_BASE_MONOTONIC,
-	HRTIMER_BASE_REALTIME,
-	HRTIMER_BASE_BOOTTIME,
-	HRTIMER_BASE_TAI,
-	HRTIMER_BASE_MONOTONIC_SOFT,
-	HRTIMER_BASE_REALTIME_SOFT,
-	HRTIMER_BASE_BOOTTIME_SOFT,
-	HRTIMER_BASE_TAI_SOFT,
-	HRTIMER_MAX_CLOCK_BASES,
-};
-
-struct hrtimer_cpu_base {
-	raw_spinlock_t			lock;
-	unsigned int			cpu;
-	unsigned int			active_bases;
-	unsigned int			clock_was_set_seq;
-	unsigned int			softirq_activated	: 1;
-	ktime_t				expires_next;
-	struct hrtimer			*next_timer;
-	ktime_t				softirq_expires_next;
-	struct hrtimer			*softirq_next_timer;
-	struct hrtimer_clock_base	clock_base[HRTIMER_MAX_CLOCK_BASES];
-} ____cacheline_aligned;
-
-
-#define hrtimer_resolution	(unsigned int)LOW_RES_NSEC
-
-
-
-DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
-
-/* hrtimers_init / hrtimers_prepare_cpu / hrtimers_dead_cpu removed with hrtimer.c */
+/* hrtimer structs/enums/macros + tick_cpu_device DECLARE_PER_CPU dropped:
+ * hrtimer.c is gone, all hrtimer types are unreferenced tree-wide, and
+ * tick_cpu_device is declared in tick-internal.h. Includes kept for the
+ * transitive headers includers rely on. */
 
 #endif

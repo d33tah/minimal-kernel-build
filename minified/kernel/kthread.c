@@ -25,13 +25,11 @@ struct task_struct *kthreadd_task;
 
 struct kthread_create_info
 {
-	 
+
 	int (*threadfn)(void *data);
 	void *data;
-	int node;
 
-	 
-	struct task_struct *result;
+
 	struct completion *done;
 
 	struct list_head list;
@@ -39,8 +37,6 @@ struct kthread_create_info
 
 struct kthread {
 	unsigned long flags;
-	unsigned int cpu;
-	int result;
 	int (*threadfn)(void *);
 	void *data;
 	struct completion parked;
@@ -121,8 +117,6 @@ static void __kthread_parkme(struct kthread *self)
 
 void __noreturn kthread_exit(long result)
 {
-	struct kthread *kthread = to_kthread(current);
-	kthread->result = result;
 	do_exit(0);
 }
 
@@ -155,8 +149,7 @@ static int kthread(void *_create)
 
 	 
 	__set_current_state(TASK_UNINTERRUPTIBLE);
-	create->result = current;
-	 
+
 	preempt_disable();
 	complete(done);
 	schedule_preempt_disabled();
@@ -189,7 +182,6 @@ static void create_kthread(struct kthread_create_info *create)
 			kfree(create);
 			return;
 		}
-		create->result = ERR_PTR(pid);
 		complete(done);
 	}
 }
@@ -207,7 +199,6 @@ void kthread_set_per_cpu(struct task_struct *k, int cpu)
 		return;
 	}
 
-	kthread->cpu = cpu;
 	set_bit(KTHREAD_IS_PER_CPU, &kthread->flags);
 }
 

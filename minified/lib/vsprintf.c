@@ -208,9 +208,7 @@ static_assert(ZEROPAD == ('0' - ' '));
 static_assert(SMALL == ('a' ^ 'A'));
 
 enum format_type {
-	FORMAT_TYPE_NONE, 
-	FORMAT_TYPE_WIDTH,
-	FORMAT_TYPE_PRECISION,
+	FORMAT_TYPE_NONE,
 	FORMAT_TYPE_CHAR,
 	FORMAT_TYPE_STR,
 	FORMAT_TYPE_PTR,
@@ -237,9 +235,6 @@ struct printf_spec {
 	signed int	precision:16;	
 } __packed;
 static_assert(sizeof(struct printf_spec) == 8);
-
-#define FIELD_WIDTH_MAX ((1 << 23) - 1)
-#define PRECISION_MAX ((1 << 15) - 1)
 
 static noinline_for_stack
 char *number(char *buf, char *end, unsigned long long num,
@@ -563,26 +558,7 @@ int format_decode(const char *fmt, struct printf_spec *spec)
 	const char *start = fmt;
 	char qualifier;
 
-	
-	if (spec->type == FORMAT_TYPE_WIDTH) {
-		if (spec->field_width < 0) {
-			spec->field_width = -spec->field_width;
-			spec->flags |= LEFT;
-		}
-		spec->type = FORMAT_TYPE_NONE;
-		goto precision;
-	}
 
-	
-	if (spec->type == FORMAT_TYPE_PRECISION) {
-		if (spec->precision < 0)
-			spec->precision = 0;
-
-		spec->type = FORMAT_TYPE_NONE;
-		goto qualifier;
-	}
-
-	
 	spec->type = FORMAT_TYPE_NONE;
 
 	for (; *fmt ; ++fmt) {
@@ -620,14 +596,8 @@ int format_decode(const char *fmt, struct printf_spec *spec)
 
 	if (isdigit(*fmt))
 		spec->field_width = skip_atoi(&fmt);
-	else if (*fmt == '*') {
-		
-		spec->type = FORMAT_TYPE_WIDTH;
-		return ++fmt - start;
-	}
 
-precision:
-	
+
 	spec->precision = -1;
 	if (*fmt == '.') {
 		++fmt;
@@ -635,15 +605,10 @@ precision:
 			spec->precision = skip_atoi(&fmt);
 			if (spec->precision < 0)
 				spec->precision = 0;
-		} else if (*fmt == '*') {
-			
-			spec->type = FORMAT_TYPE_PRECISION;
-			return ++fmt - start;
 		}
 	}
 
-qualifier:
-	
+
 	qualifier = 0;
 	if (*fmt == 'h' || _tolower(*fmt) == 'l' ||
 	    *fmt == 'z' || *fmt == 't') {
@@ -731,24 +696,6 @@ qualifier:
 	return ++fmt - start;
 }
 
-static void
-set_field_width(struct printf_spec *spec, int width)
-{
-	spec->field_width = width;
-	if (WARN_ONCE(spec->field_width != width, "field width %d too large", width)) {
-		spec->field_width = clamp(width, -FIELD_WIDTH_MAX, FIELD_WIDTH_MAX);
-	}
-}
-
-static void
-set_precision(struct printf_spec *spec, int prec)
-{
-	spec->precision = prec;
-	if (WARN_ONCE(spec->precision != prec, "precision %d too large", prec)) {
-		spec->precision = clamp(prec, 0, PRECISION_MAX);
-	}
-}
-
 int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 {
 	unsigned long long num;
@@ -785,14 +732,6 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 			str += read;
 			break;
 		}
-
-		case FORMAT_TYPE_WIDTH:
-			set_field_width(&spec, va_arg(args, int));
-			break;
-
-		case FORMAT_TYPE_PRECISION:
-			set_precision(&spec, va_arg(args, int));
-			break;
 
 		case FORMAT_TYPE_CHAR: {
 			char c;

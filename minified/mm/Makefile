@@ -47,7 +47,7 @@ mmu-$(CONFIG_MMU)	+= process_vm_access.o
 endif
 
 obj-y			:= filemap.o \
-			   maccess.o page-writeback.o folio-compat.o \
+			   maccess.o folio-compat.o \
 			   swap.o truncate.o shmem.o \
 			   util.o mmzone.o vmstat.o backing-dev.o \
 			   percpu.o slab_common.o \

@@ -639,7 +639,7 @@ long get_user_pages_remote(struct mm_struct *mm,
 
 
 
-bool folio_mark_dirty(struct folio *folio);
+static inline bool folio_mark_dirty(struct folio *folio) { return true; }
 bool set_page_dirty(struct page *page);
 
 extern unsigned long move_page_tables(struct vm_area_struct *vma,

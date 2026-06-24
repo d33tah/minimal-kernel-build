@@ -140,19 +140,10 @@ static bool __init obsolete_checksetup(char *line)
 
 unsigned long loops_per_jiffy = (1<<12);
 
-/* Stub: debug/quiet/loglevel cmdline not needed for minimal kernel */
-static int __init debug_kernel(char *str) { return 0; }
-static int __init quiet_kernel(char *str) { return 0; }
-early_param("debug", debug_kernel);
-early_param("quiet", quiet_kernel);
-
-static int __init loglevel(char *str) { return 0; }
-early_param("loglevel", loglevel);
-
-/* Stub: bootconfig not needed for minimal kernel */
-static int __init warn_bootconfig(char *str) { return 0; }
+/* The debug/quiet/loglevel/bootconfig early_param handlers were empty stubs
+ * that only ran when their option appeared on the boot cmdline; the test boot
+ * passes an empty cmdline so they never fired (do_mounts/gbpages precedent). */
 #define exit_boot_config()	do {} while (0)
-early_param("bootconfig", warn_bootconfig);
 
 static void __init repair_env_string(char *param, char *val)
 {

@@ -30,8 +30,6 @@
 # define raw_spin_lock_init(lock)				\
 	do { *(lock) = __RAW_SPIN_LOCK_UNLOCKED(lock); } while (0)
 
-#define raw_spin_is_locked(lock)	arch_spin_is_locked(&(lock)->raw_lock)
-
 
 #ifndef smp_mb__after_spinlock
 #define smp_mb__after_spinlock()	do { } while (0)
@@ -80,18 +78,8 @@
 /* do_raw_read_lock, do_raw_read_trylock, do_raw_read_unlock,
    do_raw_write_lock, do_raw_write_trylock, do_raw_write_unlock removed - unused */
 
-#define read_trylock(lock)	__cond_lock(lock, _raw_read_trylock(lock))
-#define write_trylock(lock)	__cond_lock(lock, _raw_write_trylock(lock))
-
 #define write_lock(lock)	_raw_write_lock(lock)
 #define read_lock(lock)		_raw_read_lock(lock)
-
-#define write_lock_irqsave(lock, flags)			\
-	do {						\
-		typecheck(unsigned long, flags);	\
-		_raw_write_lock_irqsave(lock, flags);	\
-	} while (0)
-
 
 #define write_lock_irq(lock)		_raw_write_lock_irq(lock)
 #define read_unlock(lock)		_raw_read_unlock(lock)
@@ -100,7 +88,6 @@
 
 
 /* Inlined from spinlock_api_up.h */
-#define in_lock_functions(ADDR)		0
 #define assert_raw_spin_locked(lock)	do { (void)(lock); } while (0)
 #define ___LOCK(lock) do { __acquire(lock); (void)(lock); } while (0)
 #define __LOCK(lock) do { preempt_disable(); ___LOCK(lock); } while (0)
@@ -164,11 +151,6 @@ static __always_inline void spin_lock(spinlock_t *lock)
 	raw_spin_lock(&lock->rlock);
 }
 
-static __always_inline void spin_lock_bh(spinlock_t *lock)
-{
-	raw_spin_lock_bh(&lock->rlock);
-}
-
 static __always_inline int spin_trylock(spinlock_t *lock)
 {
 	return raw_spin_trylock(&lock->rlock);
@@ -192,11 +174,6 @@ do {								\
 static __always_inline void spin_unlock(spinlock_t *lock)
 {
 	raw_spin_unlock(&lock->rlock);
-}
-
-static __always_inline void spin_unlock_bh(spinlock_t *lock)
-{
-	raw_spin_unlock_bh(&lock->rlock);
 }
 
 static __always_inline void spin_unlock_irq(spinlock_t *lock)
@@ -228,20 +205,5 @@ extern int _atomic_dec_and_lock_irqsave(atomic_t *atomic, spinlock_t *lock,
 #define atomic_dec_and_lock_irqsave(atomic, lock, flags) \
 		__cond_lock(lock, _atomic_dec_and_lock_irqsave(atomic, lock, &(flags)))
 
-int __alloc_bucket_spinlocks(spinlock_t **locks, unsigned int *lock_mask,
-			     size_t max_size, unsigned int cpu_mult,
-			     gfp_t gfp, const char *name,
-			     struct lock_class_key *key);
 
-#define alloc_bucket_spinlocks(locks, lock_mask, max_size, cpu_mult, gfp)    \
-	({								     \
-		static struct lock_class_key key;			     \
-		int ret;						     \
-									     \
-		ret = __alloc_bucket_spinlocks(locks, lock_mask, max_size,   \
-					       cpu_mult, gfp, #locks, &key); \
-		ret;							     \
-	})
-
-
-#endif  
+#endif

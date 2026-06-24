@@ -38,7 +38,6 @@ static inline void __seqcount_init(seqcount_t *s, const char *name,
 		__SEQ_LOCK(____s->lock = (_lock));			\
 	} while (0)
 
-#define seqcount_raw_spinlock_init(s, lock)	seqcount_LOCKNAME_init(s, lock, raw_spinlock)
 #define seqcount_spinlock_init(s, lock)		seqcount_LOCKNAME_init(s, lock, spinlock)
 
 #define SEQCOUNT_LOCKNAME(lockname, locktype, preemptible, lockmember, lockbase, lock_acquire) \
@@ -270,10 +269,6 @@ typedef struct {
 	seqcount_t seqcount;
 } seqcount_latch_t;
 
-#define SEQCNT_LATCH_ZERO(seq_name) {					\
-	.seqcount		= SEQCNT_ZERO(seq_name.seqcount),	\
-}
-
 #define seqcount_latch_init(s) seqcount_init(&(s)->seqcount)
 
 
@@ -295,12 +290,6 @@ typedef struct {
 		.seqcount = SEQCNT_SPINLOCK_ZERO(lockname, &(lockname).lock), \
 		.lock =	__SPIN_LOCK_UNLOCKED(lockname)			\
 	}
-
-#define seqlock_init(sl)						\
-	do {								\
-		spin_lock_init(&(sl)->lock);				\
-		seqcount_spinlock_init(&(sl)->seqcount, &(sl)->lock);	\
-	} while (0)
 
 #define DEFINE_SEQLOCK(sl) \
 		seqlock_t sl = __SEQLOCK_UNLOCKED(sl)

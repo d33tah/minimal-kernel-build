@@ -43,10 +43,7 @@ enum {
 	 
 	WORK_OFFQ_FLAG_BASE	= WORK_STRUCT_COLOR_SHIFT,
 
-	__WORK_OFFQ_CANCELING	= WORK_OFFQ_FLAG_BASE,
-	WORK_OFFQ_CANCELING	= (1 << __WORK_OFFQ_CANCELING),
 
-	 
 	WORK_OFFQ_FLAG_BITS	= 1,
 	WORK_OFFQ_POOL_SHIFT	= WORK_OFFQ_FLAG_BASE + WORK_OFFQ_FLAG_BITS,
 	WORK_OFFQ_LEFT		= BITS_PER_LONG - WORK_OFFQ_POOL_SHIFT,
@@ -57,10 +54,6 @@ enum {
 	WORK_STRUCT_FLAG_MASK	= (1UL << WORK_STRUCT_FLAG_BITS) - 1,
 	WORK_STRUCT_WQ_DATA_MASK = ~WORK_STRUCT_FLAG_MASK,
 	WORK_STRUCT_NO_POOL	= (unsigned long)WORK_OFFQ_POOL_NONE << WORK_OFFQ_POOL_SHIFT,
-
-	 
-	WORK_BUSY_PENDING	= 1 << 0,
-	WORK_BUSY_RUNNING	= 1 << 1,
 };
 
 struct work_struct {
@@ -114,23 +107,6 @@ struct workqueue_attrs;
 
 #define INIT_WORK(_work, _func)						\
 	__INIT_WORK((_work), (_func), 0)
-
-#define __INIT_DELAYED_WORK(_work, _func, _tflags)			\
-	do {								\
-		INIT_WORK(&(_work)->work, (_func));			\
-		__init_timer(&(_work)->timer,				\
-			     delayed_work_timer_fn,			\
-			     (_tflags) | TIMER_IRQSAFE);		\
-	} while (0)
-
-#define INIT_DELAYED_WORK(_work, _func)					\
-	__INIT_DELAYED_WORK(_work, _func, 0)
-
-#define work_pending(work) \
-	test_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))
-
-#define delayed_work_pending(w) \
-	work_pending(&(w)->work)
 
 extern struct workqueue_struct *system_wq;
 extern struct workqueue_struct *system_unbound_wq;

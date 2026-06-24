@@ -24,10 +24,7 @@ void __init_ldsem(struct ld_semaphore *sem, const char *name,
 		  struct lock_class_key *key)
 {
 	atomic_long_set(&sem->count, LDSEM_UNLOCKED);
-	sem->wait_readers = 0;
 	raw_spin_lock_init(&sem->wait_lock);
-	INIT_LIST_HEAD(&sem->read_wait);
-	INIT_LIST_HEAD(&sem->write_wait);
 }
 
 /*

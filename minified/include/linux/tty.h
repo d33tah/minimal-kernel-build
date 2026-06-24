@@ -19,9 +19,6 @@
 struct ld_semaphore {
 	atomic_long_t		count;
 	raw_spinlock_t		wait_lock;
-	unsigned int		wait_readers;
-	struct list_head	read_wait;
-	struct list_head	write_wait;
 };
 
 void __init_ldsem(struct ld_semaphore *sem, const char *name,
@@ -43,7 +40,6 @@ void ldsem_up_write(struct ld_semaphore *sem);
 		ldsem_down_write(sem, timeout)
 
 struct tty_ldisc_ops {
-	char	*name;
 	int	num;
 	int	(*open)(struct tty_struct *tty);
 	void	(*close)(struct tty_struct *tty);

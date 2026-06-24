@@ -92,7 +92,6 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 static struct tty_ldisc_ops n_tty_ops = {
 	.owner		 = THIS_MODULE,
 	.num		 = N_TTY,
-	.name            = "n_tty",
 	.open            = n_tty_open,
 	.close           = n_tty_close,
 	.write           = n_tty_write,

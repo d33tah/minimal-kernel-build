@@ -8,13 +8,8 @@
 #include <linux/vmstat.h>
 #include <linux/writeback.h>
 
-struct mem_cgroup;
 struct obj_cgroup;
 struct page;
-struct mm_struct;
-struct kmem_cache;
-
-struct mem_cgroup_reclaim_cookie;
 
 static inline struct lruvec *folio_lruvec_lock_irq(struct folio *folio)
 {

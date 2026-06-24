@@ -22,14 +22,6 @@ __iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
 	return ret;
 }
 
-#ifndef div_u64_rem
-static inline u64 div_u64_rem(u64 dividend, u32 divisor, u32 *remainder)
-{
-	*remainder = do_div(dividend, divisor);
-	return dividend;
-}
-#endif
-
 #ifndef div64_u64
 extern u64 div64_u64(u64 dividend, u64 divisor);
 #endif
@@ -39,13 +31,6 @@ static inline u64 div_u64(u64 dividend, u32 divisor)
 {
 	u32 remainder;
 	return div_u64_rem(dividend, divisor, &remainder);
-}
-#endif
-
-#ifndef mul_u32_u32
-static inline u64 mul_u32_u32(u32 a, u32 b)
-{
-	return (u64)a * b;
 }
 #endif
 

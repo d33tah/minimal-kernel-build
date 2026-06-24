@@ -24,11 +24,7 @@
 #define WAKEUP_CHARS 256
 
 struct n_tty_data {
-	size_t read_head;
-	size_t read_tail;
-	struct mutex atomic_read_lock;
 	struct mutex output_lock;
-	char read_buf[N_TTY_BUF_SIZE];
 };
 
 static void n_tty_close(struct tty_struct *tty)
@@ -49,7 +45,6 @@ static int n_tty_open(struct tty_struct *tty)
 	if (!ldata)
 		return -ENOMEM;
 
-	mutex_init(&ldata->atomic_read_lock);
 	mutex_init(&ldata->output_lock);
 	tty->disc_data = ldata;
 

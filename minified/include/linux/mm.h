@@ -647,9 +647,19 @@ extern unsigned long move_page_tables(struct vm_area_struct *vma,
 		unsigned long new_addr, unsigned long len,
 		bool need_rmap_locks);
 
-extern int mprotect_fixup(struct mmu_gather *tlb, struct vm_area_struct *vma,
+/*
+ * mprotect_fixup is a no-op stub on this minimal build (the only caller,
+ * setup_arg_pages() in the exec path, just needs *pprev set and success).
+ * Inlined here; mm/mprotect.c was dropped.
+ */
+static inline int mprotect_fixup(struct mmu_gather *tlb,
+			  struct vm_area_struct *vma,
 			  struct vm_area_struct **pprev, unsigned long start,
-			  unsigned long end, unsigned long newflags);
+			  unsigned long end, unsigned long newflags)
+{
+	*pprev = vma;
+	return 0;
+}
 
 
 static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)

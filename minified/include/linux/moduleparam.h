@@ -19,12 +19,6 @@
 		__used __section(".modinfo") __aligned(1)		  \
 		= __MODULE_INFO_PREFIX __stringify(tag) "=" info
 
-#define __MODULE_PARM_TYPE(name, _type)					  \
-	__MODULE_INFO(parmtype, name##type, #name ":" _type)
-
-#define MODULE_PARM_DESC(_parm, desc) \
-	__MODULE_INFO(parm, _parm, #_parm ":" desc)
-
 struct kernel_param;
 
 enum {
@@ -44,7 +38,6 @@ struct kernel_param_ops {
 
 enum {
 	KERNEL_PARAM_FL_UNSAFE	= (1 << 0),
-	KERNEL_PARAM_FL_HWPARAM	= (1 << 1),
 };
 
 struct kernel_param {
@@ -64,95 +57,12 @@ struct kernel_param {
 extern const struct kernel_param __start___param[], __stop___param[];
 
 
-#define module_param(name, type, perm)				\
-	module_param_named(name, name, type, perm)
-
-#define module_param_unsafe(name, type, perm)			\
-	module_param_named_unsafe(name, name, type, perm)
-
-#define module_param_named(name, value, type, perm)			   \
-	param_check_##type(name, &(value));				   \
-	module_param_cb(name, &param_ops_##type, &value, perm);		   \
-	__MODULE_PARM_TYPE(name, #type)
-
-#define module_param_named_unsafe(name, value, type, perm)		\
-	param_check_##type(name, &(value));				\
-	module_param_cb_unsafe(name, &param_ops_##type, &value, perm);	\
-	__MODULE_PARM_TYPE(name, #type)
-
-#define module_param_cb(name, ops, arg, perm)				      \
-	__module_param_call(MODULE_PARAM_PREFIX, name, ops, arg, perm, -1, 0)
-
-#define module_param_cb_unsafe(name, ops, arg, perm)			      \
-	__module_param_call(MODULE_PARAM_PREFIX, name, ops, arg, perm, -1,    \
-			    KERNEL_PARAM_FL_UNSAFE)
-
-#define __level_param_cb(name, ops, arg, perm, level)			\
-	__module_param_call(MODULE_PARAM_PREFIX, name, ops, arg, perm, level, 0)
-#define core_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 1)
-
-#define postcore_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 2)
-
-#define arch_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 3)
-
-#define subsys_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 4)
-
-#define fs_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 5)
-
-#define device_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 6)
-
-#define late_param_cb(name, ops, arg, perm)		\
-	__level_param_cb(name, ops, arg, perm, 7)
-
-#define __moduleparam_const const
-
-#define __module_param_call(prefix, name, ops, arg, perm, level, flags)	\
-	 			\
-	static const char __param_str_##name[] = prefix #name;		\
-	static struct kernel_param __moduleparam_const __param_##name	\
-	__used __section("__param")					\
-	__aligned(__alignof__(struct kernel_param))			\
-	= { __param_str_##name, THIS_MODULE, ops,			\
-	    VERIFY_OCTAL_PERMISSIONS(perm), level, flags, { arg } }
-
-#define module_param_call(name, _set, _get, arg, perm)			\
-	static const struct kernel_param_ops __param_ops_##name =	\
-		{ .flags = 0, .set = _set, .get = _get };		\
-	__module_param_call(MODULE_PARAM_PREFIX,			\
-			    name, &__param_ops_##name, arg, perm, -1, 0)
-
 static inline void kernel_param_lock(struct module *mod)
 {
 }
 static inline void kernel_param_unlock(struct module *mod)
 {
 }
-
-#ifndef MODULE
-#define core_param(name, var, type, perm)				\
-	param_check_##type(name, &(var));				\
-	__module_param_call("", name, &param_ops_##type, &var, perm, -1, 0)
-
-#define core_param_unsafe(name, var, type, perm)		\
-	param_check_##type(name, &(var));				\
-	__module_param_call("", name, &param_ops_##type, &var, perm,	\
-			    -1, KERNEL_PARAM_FL_UNSAFE)
-
-#endif  
-
-#define module_param_string(name, string, len, perm)			\
-	static const struct kparam_string __param_string_##name		\
-		= { len, string };					\
-	__module_param_call(MODULE_PARAM_PREFIX, name,			\
-			    &param_ops_string,				\
-			    .str = &__param_string_##name, perm, -1, 0);\
-	__MODULE_PARM_TYPE(name, "string")
 
 extern bool parameq(const char *name1, const char *name2);
 

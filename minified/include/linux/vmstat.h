@@ -81,13 +81,6 @@ static inline void __dec_zone_page_state(struct page *page,
 #define mod_node_page_state __mod_node_page_state
 
 
-static inline void node_stat_mod_folio(struct folio *folio,
-		enum node_stat_item item, long nr)
-{
-	mod_node_page_state(folio_pgdat(folio), item, nr);
-}
-
-
 static inline void __mod_zone_freepage_state(struct zone *zone, int nr_pages,
 					     int migratetype)
 {

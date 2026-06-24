@@ -10,22 +10,9 @@
 #include <linux/types.h>
 #include <asm/ptrace.h>
 
-#define PTRACE_EVENT_FORK	1
-#define PTRACE_EVENT_VFORK	2
-#define PTRACE_EVENT_CLONE	3
 #define PTRACE_EVENT_EXEC	4
-#define PTRACE_EVENT_VFORK_DONE	5
-#define PTRACE_EVENT_EXIT	6
 #define PTRACE_EVENTMSG_SYSCALL_ENTRY	1
 #define PTRACE_EVENTMSG_SYSCALL_EXIT	2
-
-
-#define PTRACE_MODE_READ	0x01
-#define PTRACE_MODE_ATTACH	0x02
-#define PTRACE_MODE_NOAUDIT	0x04
-#define PTRACE_MODE_FSCREDS	0x08
-#define PTRACE_MODE_REALCREDS	0x10
-
 
 
 static inline void ptrace_unlink(struct task_struct *child)
@@ -71,21 +58,16 @@ static inline void user_enable_single_step(struct task_struct *task)
 static inline void user_disable_single_step(struct task_struct *task)
 {
 }
-#else
-extern void user_enable_single_step(struct task_struct *);
-extern void user_disable_single_step(struct task_struct *);
-#endif	 
+#endif
 
 #ifndef arch_has_block_step
 #define arch_has_block_step()		(0)
 
 static inline void user_enable_block_step(struct task_struct *task)
 {
-	BUG();			 
+	BUG();
 }
-#else
-extern void user_enable_block_step(struct task_struct *);
-#endif	 
+#endif
 
 #ifndef arch_ptrace_stop_needed
 #define arch_ptrace_stop_needed()	(0)

@@ -1,5 +1,4 @@
 #include <linux/init.h>
-#include <linux/async.h>
 #include <linux/fs.h>
 #include <linux/slab.h>
 #include <linux/types.h>
@@ -504,9 +503,6 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 
 static int __initdata do_retain_initrd;
 
-
-static bool __initdata initramfs_async = true;
-
 extern char __initramfs_start[];
 extern unsigned long __initramfs_size;
 #include <linux/initrd.h>
@@ -519,7 +515,7 @@ void __weak __init free_initrd_mem(unsigned long start, unsigned long end)
 			"initrd");
 }
 
-static void __init do_populate_rootfs(void *unused, async_cookie_t cookie)
+static void __init do_populate_rootfs(void)
 {
 	 
 	char *err = unpack_to_rootfs(__initramfs_start, __initramfs_size);
@@ -547,13 +543,12 @@ done:
 	task_work_run();
 }
 
-static ASYNC_DOMAIN_EXCLUSIVE(initramfs_domain);
-static async_cookie_t initramfs_cookie;
+static bool __initdata initramfs_done;
 
 void wait_for_initramfs(void)
 {
-	if (!initramfs_cookie) {
-		 
+	if (!initramfs_done) {
+
 		pr_warn_once("wait_for_initramfs() called before rootfs_initcalls\n");
 		return;
 	}
@@ -561,10 +556,9 @@ void wait_for_initramfs(void)
 
 static int __init populate_rootfs(void)
 {
-	initramfs_cookie = async_schedule_domain(do_populate_rootfs, NULL,
-						 &initramfs_domain);
-	if (!initramfs_async)
-		wait_for_initramfs();
+	/* The async scheduler stub ran synchronously; do so directly. */
+	do_populate_rootfs();
+	initramfs_done = true;
 	return 0;
 }
 rootfs_initcall(populate_rootfs);

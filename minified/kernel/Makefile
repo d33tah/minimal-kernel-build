@@ -10,7 +10,7 @@ obj-y     = fork.o panic.o \
 	    extable.o params.o \
 	    kthread.o sys_ni.o nsproxy.o \
 	    notifier.o cred.o reboot.o \
-	    async.o range.o ucount.o
+	    range.o ucount.o
 
 obj-$(CONFIG_USERMODE_DRIVER) += usermode_driver.o
 obj-$(CONFIG_MODULES) += kmod.o

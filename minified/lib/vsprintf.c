@@ -195,13 +195,14 @@ char *put_dec(char *buf, unsigned long long n)
 	return buf;
 }
 
+/*
+ * LEFT (2) / PLUS (4) / SPACE (8) / SPECIAL (64) flags removed: no reachable
+ * format string on this build uses the '-'/'+'/' '/'#' conversion flags, so
+ * those bits are never set and all their handling was folded out.
+ */
 #define SIGN	1
-#define LEFT	2
-#define PLUS	4		
-#define SPACE	8		
-#define ZEROPAD	16		
-#define SMALL	32		
-#define SPECIAL	64		
+#define ZEROPAD	16
+#define SMALL	32
 
 static_assert(SIGN == 1);
 static_assert(ZEROPAD == ('0' - ' '));
@@ -244,38 +245,26 @@ char *number(char *buf, char *end, unsigned long long num,
 	char tmp[3 * sizeof(num)] __aligned(2);
 	char sign;
 	char locase;
-	int need_pfx = ((spec.flags & SPECIAL) && spec.base != 10);
 	int i;
-	bool is_zero = num == 0LL;
 	int field_width = spec.field_width;
 	int precision = spec.precision;
 
-	
+	/*
+	 * LEFT/PLUS/SPACE/SPECIAL are never set on this build (see format_decode),
+	 * so the left-justify, '+'/' ' sign and '#'-prefix handling is dead and
+	 * has been folded out.
+	 */
 	locase = (spec.flags & SMALL);
-	if (spec.flags & LEFT)
-		spec.flags &= ~ZEROPAD;
 	sign = 0;
 	if (spec.flags & SIGN) {
 		if ((signed long long)num < 0) {
 			sign = '-';
 			num = -(signed long long)num;
 			field_width--;
-		} else if (spec.flags & PLUS) {
-			sign = '+';
-			field_width--;
-		} else if (spec.flags & SPACE) {
-			sign = ' ';
-			field_width--;
 		}
 	}
-	if (need_pfx) {
-		if (spec.base == 16)
-			field_width -= 2;
-		else if (!is_zero)
-			field_width--;
-	}
 
-	
+
 	i = 0;
 	if (num < spec.base)
 		tmp[i++] = hex_asc_upper[num] | locase;
@@ -298,34 +287,21 @@ char *number(char *buf, char *end, unsigned long long num,
 		precision = i;
 	
 	field_width -= precision;
-	if (!(spec.flags & (ZEROPAD | LEFT))) {
+	if (!(spec.flags & ZEROPAD)) {
 		while (--field_width >= 0) {
 			if (buf < end)
 				*buf = ' ';
 			++buf;
 		}
 	}
-	
+
 	if (sign) {
 		if (buf < end)
 			*buf = sign;
 		++buf;
 	}
-	
-	if (need_pfx) {
-		if (spec.base == 16 || !is_zero) {
-			if (buf < end)
-				*buf = '0';
-			++buf;
-		}
-		if (spec.base == 16) {
-			if (buf < end)
-				*buf = ('X' | locase);
-			++buf;
-		}
-	}
-	
-	if (!(spec.flags & LEFT)) {
+
+	{
 		char c = ' ' + (spec.flags & ZEROPAD);
 
 		while (--field_width >= 0) {
@@ -334,7 +310,7 @@ char *number(char *buf, char *end, unsigned long long num,
 			++buf;
 		}
 	}
-	
+
 	while (i <= --precision) {
 		if (buf < end)
 			*buf = '0';
@@ -383,16 +359,9 @@ char *widen_string(char *buf, int n, char *end, struct printf_spec spec)
 		return buf;
 	
 	spaces = spec.field_width - n;
-	if (!(spec.flags & LEFT)) {
-		move_right(buf - n, end, n, spaces);
-		return buf + spaces;
-	}
-	while (spaces--) {
-		if (buf < end)
-			*buf = ' ';
-		++buf;
-	}
-	return buf;
+	/* LEFT (left-justify) flag is never set on this build -> always pad left. */
+	move_right(buf - n, end, n, spaces);
+	return buf + spaces;
 }
 
 static char *string_nocheck(char *buf, char *end, const char *s,
@@ -573,21 +542,20 @@ int format_decode(const char *fmt, struct printf_spec *spec)
 	
 	spec->flags = 0;
 
-	while (1) { 
-		bool found = true;
-
+	/*
+	 * No reachable format string on this build uses the '-' (left-justify),
+	 * '+', ' ' (space) or '#' (special/alternate) flags -- every live
+	 * vsnprintf-core caller (kasprintf/snprintf/sprintf/panic vscnprintf and
+	 * the dynamic dev_set_name/kobject_set_name/panic("%s") paths) was audited
+	 * tree-wide and uses only the '0' flag with numeric width. So LEFT/PLUS/
+	 * SPACE/SPECIAL are never set; only '0' (ZEROPAD) is parsed here.
+	 */
+	while (1) {
 		++fmt;
 
-		switch (*fmt) {
-		case '-': spec->flags |= LEFT;    break;
-		case '+': spec->flags |= PLUS;    break;
-		case ' ': spec->flags |= SPACE;   break;
-		case '#': spec->flags |= SPECIAL; break;
-		case '0': spec->flags |= ZEROPAD; break;
-		default:  found = false;
-		}
-
-		if (!found)
+		if (*fmt == '0')
+			spec->flags |= ZEROPAD;
+		else
 			break;
 	}
 
@@ -736,13 +704,11 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 		case FORMAT_TYPE_CHAR: {
 			char c;
 
-			if (!(spec.flags & LEFT)) {
-				while (--spec.field_width > 0) {
-					if (str < end)
-						*str = ' ';
-					++str;
-
-				}
+			/* LEFT flag never set -> always right-justify. */
+			while (--spec.field_width > 0) {
+				if (str < end)
+					*str = ' ';
+				++str;
 			}
 			c = (unsigned char) va_arg(args, int);
 			if (str < end)

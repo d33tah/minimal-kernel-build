@@ -4,22 +4,13 @@
 #include <linux/smp_types.h>
 #include <linux/rcuwait.h>
 
+/*
+ * struct irq_work + IRQ_WORK_INIT/__IRQ_WORK_INIT/DEFINE_IRQ_WORK removed:
+ * 0 references tree-wide. The 5 includers (rcu/update.c, sched/sched.h,
+ * time/timer.c, printk/printk.c, asm/nmi.h) only #include this header and
+ * never name struct irq_work or any of its initializers; the irq_work
+ * subsystem (kernel/irq_work.c) is absent from this build. Includes kept
+ * for transitive consumers.
+ */
 
-struct irq_work {
-	struct __call_single_node node;
-	void (*func)(struct irq_work *);
-	struct rcuwait irqwait;
-};
-
-#define __IRQ_WORK_INIT(_func, _flags) (struct irq_work){	\
-	.node = { .u_flags = (_flags), },			\
-	.func = (_func),					\
-	.irqwait = __RCUWAIT_INITIALIZER(irqwait),		\
-}
-
-#define IRQ_WORK_INIT(_func) __IRQ_WORK_INIT(_func, 0)
-
-#define DEFINE_IRQ_WORK(name, _f)				\
-	struct irq_work name = IRQ_WORK_INIT(_f)
-
-#endif  
+#endif

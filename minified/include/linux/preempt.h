@@ -46,10 +46,7 @@
 #define in_nmi()		(nmi_count())
 #define in_hardirq()		(hardirq_count())
 #define in_serving_softirq()	(softirq_count() & SOFTIRQ_OFFSET)
-#define in_task()		(!(in_nmi() | in_hardirq() | in_serving_softirq()))
 
-#define in_irq()		(hardirq_count())
-#define in_softirq()		(softirq_count())
 #define in_interrupt()		(irq_count())
 
 # define PREEMPT_DISABLE_OFFSET	0
@@ -64,10 +61,6 @@
 
 #define preempt_count_add(val)	__preempt_count_add(val)
 #define preempt_count_sub(val)	__preempt_count_sub(val)
-#define preempt_count_dec_and_test() __preempt_count_dec_and_test()
-
-#define __preempt_count_inc() __preempt_count_add(1)
-#define __preempt_count_dec() __preempt_count_sub(1)
 
 #define preempt_count_dec() preempt_count_sub(1)
 
@@ -94,11 +87,6 @@
 #define preempt_set_need_resched() \
 do { \
 	set_preempt_need_resched(); \
-} while (0)
-#define preempt_fold_need_resched() \
-do { \
-	if (tif_need_resched()) \
-		set_preempt_need_resched(); \
 } while (0)
 
 

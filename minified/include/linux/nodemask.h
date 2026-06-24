@@ -71,8 +71,6 @@ static inline int node_state(int node, enum node_states state)
 #define nr_node_ids		1U
 
 
-#define node_possible_map 	node_states[N_POSSIBLE]
-
 #define node_online(node)	node_state((node), N_ONLINE)
 
 #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)

@@ -55,8 +55,6 @@ static inline void hlist_del_rcu(struct hlist_node *n)
 }
 
 #define hlist_first_rcu(head)	(*((struct hlist_node __rcu **)(&(head)->first)))
-#define hlist_next_rcu(node)	(*((struct hlist_node __rcu **)(&(node)->next)))
-#define hlist_pprev_rcu(node)	(*((struct hlist_node __rcu **)((node)->pprev)))
 
 static inline void hlist_add_head_rcu(struct hlist_node *n,
 					struct hlist_head *h)
@@ -69,14 +67,6 @@ static inline void hlist_add_head_rcu(struct hlist_node *n,
 	if (first)
 		WRITE_ONCE(first->pprev, &n->next);
 }
-
-#define hlist_for_each_entry_rcu(pos, head, member, cond...)		\
-	for (__list_check_rcu(dummy, ## cond, 0),			\
-	     pos = hlist_entry_safe(rcu_dereference_raw(hlist_first_rcu(head)),\
-			typeof(*(pos)), member);			\
-		pos;							\
-		pos = hlist_entry_safe(rcu_dereference_raw(hlist_next_rcu(\
-			&(pos)->member)), typeof(*(pos)), member))
 
 
 #endif	 

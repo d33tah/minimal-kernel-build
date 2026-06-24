@@ -35,16 +35,8 @@
 
 #define MAX_NR_CON_DRIVER 16
 
-#define CON_DRIVER_FLAG_INIT   2
-
 struct con_driver {
 	const struct consw *con;
-	const char *desc;
-	struct device *dev;
-	int node;
-	int first;
-	int last;
-	int flag;
 };
 
 static struct con_driver registered_con_driver[MAX_NR_CON_DRIVER];
@@ -897,10 +889,6 @@ static int __init con_init(void)
 
 		if (con_driver->con == NULL) {
 			con_driver->con = conswitchp;
-			con_driver->desc = display_desc;
-			con_driver->flag = CON_DRIVER_FLAG_INIT;
-			con_driver->first = 0;
-			con_driver->last = MAX_NR_CONSOLES - 1;
 			break;
 		}
 	}

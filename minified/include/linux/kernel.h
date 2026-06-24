@@ -80,7 +80,6 @@ static inline void might_fault(void) { }
 void do_exit(long error_code) __noreturn;
 
 extern __printf(2, 3) int sprintf(char *buf, const char * fmt, ...);
-extern __printf(2, 0) int vsprintf(char *buf, const char *, va_list);
 extern __printf(3, 4)
 int snprintf(char *buf, size_t size, const char *fmt, ...);
 extern __printf(3, 0)

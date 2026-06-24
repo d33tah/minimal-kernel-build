@@ -544,31 +544,17 @@ static char *default_pointer(char *buf, char *end, const void *ptr,
 }
 
 
-static char *va_format(char *buf, char *end, struct va_format *va_fmt,
-		       struct printf_spec spec, const char *fmt)
-{
-	va_list va;
-
-	if (check_pointer(&buf, end, va_fmt, spec))
-		return buf;
-
-	va_copy(va, *va_fmt->va);
-	buf += vsnprintf(buf, end > buf ? end - buf : 0, va_fmt->fmt, va);
-	va_end(va);
-
-	return buf;
-}
-
 static noinline_for_stack
 char *pointer(const char *fmt, char *buf, char *end, void *ptr,
 	      struct printf_spec spec)
 {
-	switch (*fmt) {
-	case 'V':
-		return va_format(buf, end, ptr, spec, fmt);
-	default:
-		return default_pointer(buf, end, ptr, spec);
-	}
+	/*
+	 * %pV (va_format) was the only pointer extension still wired up; its
+	 * sole consumer (fs/fs_context.c logfc) only reached it through printk
+	 * (a no-op with CONFIG_PRINTK off), so the arm is dead.  All other
+	 * pointers fall through to the hashed-pointer path.
+	 */
+	return default_pointer(buf, end, ptr, spec);
 }
 
 static noinline_for_stack

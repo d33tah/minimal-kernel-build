@@ -199,11 +199,6 @@ static inline bool d_is_dir(const struct dentry *dentry)
 	return d_can_lookup(dentry);
 }
 
-static inline bool d_is_symlink(const struct dentry *dentry)
-{
-	return __d_entry_type(dentry) == DCACHE_SYMLINK_TYPE;
-}
-
 static inline bool d_is_reg(const struct dentry *dentry)
 {
 	return __d_entry_type(dentry) == DCACHE_REGULAR_TYPE;
@@ -229,12 +224,6 @@ static inline bool d_really_is_positive(const struct dentry *dentry)
 {
 	return dentry->d_inode != NULL;
 }
-
-static inline int simple_positive(const struct dentry *dentry)
-{
-	return d_really_is_positive(dentry) && !d_unhashed(dentry);
-}
-
 
 static inline struct inode *d_inode(const struct dentry *dentry)
 {

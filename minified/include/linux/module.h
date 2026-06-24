@@ -14,13 +14,6 @@
 #include <linux/jump_label.h>
 #include <linux/export.h>
 
-enum {
-	EI_ETYPE_NONE,
-	EI_ETYPE_NULL,
-	EI_ETYPE_ERRNO,
-	EI_ETYPE_ERRNO_NULL,
-	EI_ETYPE_TRUE,
-};
 #define ALLOW_ERROR_INJECTION(fname, _etype)
 /* end error-injection.h */
 #include <linux/tracepoint-defs.h>
@@ -43,11 +36,6 @@ enum {
 
 #define MODULE_NAME_LEN MAX_PARAM_PREFIX_LEN
 
-struct modversion_info {
-	unsigned long crc;
-	char name[MODULE_NAME_LEN];
-};
-
 struct module;
 struct exception_table_entry;
 
@@ -69,8 +57,6 @@ struct module_attribute {
 	int (*test)(struct module *);
 	void (*free)(struct module *);
 };
-
-struct module_version_attribute;
 
 extern int init_module(void);
 extern void cleanup_module(void);
@@ -125,10 +111,6 @@ extern void cleanup_module(void);
 
 #define MODULE_INFO(tag, info) __MODULE_INFO(tag, tag, info)
 
-#define MODULE_ALIAS(_alias) MODULE_INFO(alias, _alias)
-
-#define MODULE_SOFTDEP(_softdep) MODULE_INFO(softdep, _softdep)
-
 #ifdef MODULE
 #define MODULE_FILE
 #else
@@ -137,38 +119,8 @@ extern void cleanup_module(void);
 
 #define MODULE_LICENSE(_license) MODULE_FILE MODULE_INFO(license, _license)
 
-#define MODULE_AUTHOR(_author) MODULE_INFO(author, _author)
-
-#define MODULE_DESCRIPTION(_description) MODULE_INFO(description, _description)
-
-#ifdef MODULE
-#define MODULE_DEVICE_TABLE(type, name)					\
-extern typeof(name) __mod_##type##__##name##_device_table		\
-  __attribute__ ((unused, alias(__stringify(name))))
-#else   
-#define MODULE_DEVICE_TABLE(type, name)
-#endif
-
-
-#define MODULE_VERSION(_version) MODULE_INFO(version, _version)
-
-#define MODULE_FIRMWARE(_firmware) MODULE_INFO(firmware, _firmware)
-
-#define MODULE_IMPORT_NS(ns)	MODULE_INFO(import_ns, __stringify(ns))
-
 struct notifier_block;
 
-
-/* __module_address, __module_text_address, is_module_address,
-   is_module_percpu_address removed - unused (only is_module_text_address kept) */
-
-static inline bool is_module_text_address(unsigned long addr)
-{
-	return false;
-}
-
-#define symbol_get(x) ({ extern typeof(x) x __attribute__((weak,visibility("hidden"))); &(x); })
-#define symbol_put(x) do { } while (0)
 
 static inline void __module_get(struct module *module)
 {
@@ -183,11 +135,4 @@ static inline void module_put(struct module *module)
 {
 }
 
-#define module_name(mod) "kernel"
-
-#define module_put_and_kthread_exit(code) kthread_exit(code)
-
-
-#define __MODULE_STRING(x) __stringify(x)
-
-#endif  
+#endif

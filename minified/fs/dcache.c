@@ -197,13 +197,6 @@ void __d_drop(struct dentry *dentry)
 	}
 }
 
-static inline void dentry_unlist(struct dentry *dentry, struct dentry *parent)
-{
-	if (unlikely(list_empty(&dentry->d_child)))
-		return;
-	__list_del_entry(&dentry->d_child);
-}
-
 static void __dentry_kill(struct dentry *dentry)
 {
 	struct dentry *parent = NULL;
@@ -221,7 +214,7 @@ static void __dentry_kill(struct dentry *dentry)
 		d_lru_del(dentry);
 
 	__d_drop(dentry);
-	dentry_unlist(dentry, parent);
+	/* d_child sibling list is never iterated; no unlink needed */
 	if (parent)
 		spin_unlock(&parent->d_lock);
 	if (dentry->d_inode)
@@ -502,9 +495,7 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	dentry->d_op = NULL;
 	INIT_HLIST_BL_NODE(&dentry->d_hash);
 	INIT_LIST_HEAD(&dentry->d_lru);
-	INIT_LIST_HEAD(&dentry->d_subdirs);
 	INIT_HLIST_NODE(&dentry->d_u.d_alias);
-	INIT_LIST_HEAD(&dentry->d_child);
 
 	/* no ops object sets ->d_init */
 
@@ -520,7 +511,6 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
 	
 	__dget_dlock(parent);
 	dentry->d_parent = parent;
-	list_add(&dentry->d_child, &parent->d_subdirs);
 	spin_unlock(&parent->d_lock);
 
 	return dentry;

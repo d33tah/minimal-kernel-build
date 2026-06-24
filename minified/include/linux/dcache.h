@@ -69,9 +69,7 @@ struct dentry {
 		struct list_head d_lru;		 
 		wait_queue_head_t *d_wait;	 
 	};
-	struct list_head d_child;	 
-	struct list_head d_subdirs;	 
-	 
+
 	union {
 		struct hlist_node d_alias;	 
 		struct hlist_bl_node d_in_lookup_hash;	 

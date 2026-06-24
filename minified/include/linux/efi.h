@@ -8,24 +8,6 @@
 #include <linux/screen_info.h>
 #include <asm/page.h>
 
-#define EFI_BOOT_SERVICES_DATA		 4
-#define EFI_RUNTIME_SERVICES_DATA	 6
-#define EFI_CONVENTIONAL_MEMORY		 7
-
-#define EFI_MEMORY_RUNTIME		(1UL << 63)
-
-typedef struct {
-	u32 type;
-	u32 pad;
-	u64 phys_addr;
-	u64 virt_addr;
-	u64 num_pages;
-	u64 attribute;
-} efi_memory_desc_t;
-
-#define EFI_BOOT		0
-#define EFI_RUNTIME_SERVICES	3
-
 typedef struct {
 	u32 get_time;
 	u32 set_time;

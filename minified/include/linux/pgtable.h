@@ -65,22 +65,6 @@ static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)
 #define pte_offset_map(dir, address)	pte_offset_kernel((dir), (address))
 #define pte_unmap(pte) ((void)(pte))	 
 
-#ifndef pmd_offset
-static inline pmd_t *pmd_offset(pud_t *pud, unsigned long address)
-{
-	return pud_pgtable(*pud) + pmd_index(address);
-}
-#define pmd_offset pmd_offset
-#endif
-
-#ifndef pud_offset
-static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
-{
-	return p4d_pgtable(*p4d) + pud_index(address);
-}
-#define pud_offset pud_offset
-#endif
-
 static inline pgd_t *pgd_offset_pgd(pgd_t *pgd, unsigned long address)
 {
 	return (pgd + pgd_index(address));

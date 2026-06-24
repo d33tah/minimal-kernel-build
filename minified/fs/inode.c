@@ -60,10 +60,7 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	inode->i_rdev = 0;
 
 	spin_lock_init(&inode->i_lock);
-	lockdep_set_class(&inode->i_lock, &sb->s_type->i_lock_key);
-
 	init_rwsem(&inode->i_rwsem);
-	lockdep_set_class(&inode->i_rwsem, &sb->s_type->i_mutex_key);
 
 	mapping->a_ops = &empty_aops;
 	mapping->host = inode;
@@ -71,9 +68,6 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	atomic_set(&mapping->i_mmap_writable, 0);
 	mapping_set_gfp_mask(mapping, GFP_HIGHUSER_MOVABLE);
 	init_rwsem(&mapping->invalidate_lock);
-	lockdep_set_class_and_name(&mapping->invalidate_lock,
-				   &sb->s_type->invalidate_lock_key,
-				   "mapping.invalidate_lock");
 	inode->i_mapping = mapping;
 	INIT_HLIST_HEAD(&inode->i_dentry);
 

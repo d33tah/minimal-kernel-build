@@ -55,8 +55,6 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	INIT_LIST_HEAD(&s->s_mounts);
 	s->s_user_ns = get_user_ns(user_ns);
 	init_rwsem(&s->s_umount);
-	lockdep_set_class(&s->s_umount, &type->s_umount_key);
-	
 	down_write_nested(&s->s_umount, SINGLE_DEPTH_NESTING);
 
 	s->s_bdi = &noop_backing_dev_info;

@@ -205,8 +205,13 @@ void resched_cpu(int cpu)
 	unsigned long flags;
 
 	raw_spin_rq_lock_irqsave(rq, flags);
-	if (cpu_online(cpu) || cpu == smp_processor_id())
-		resched_curr(rq);
+	/*
+	 * UP build: smp_processor_id() is the constant 0 and the sole caller
+	 * (rcu/tiny.c) passes cpu==0, so the old guard
+	 *   if (cpu_online(cpu) || cpu == smp_processor_id())
+	 * is always true -- fold it away.
+	 */
+	resched_curr(rq);
 	raw_spin_rq_unlock_irqrestore(rq, flags);
 }
 

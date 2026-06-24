@@ -111,7 +111,13 @@ void  __init early_alloc_pgt_buf(void)
 
 int after_bootmem;
 
-early_param_on_off("gbpages", "nogbpages", direct_gbpages, CONFIG_X86_DIRECT_GBPAGES);
+/*
+ * The "gbpages"/"nogbpages" early_param handlers were removed: the boot
+ * cmdline is empty so they never fired, and direct_gbpages defaults from
+ * CONFIG_X86_DIRECT_GBPAGES (unset on x86_32 -> 0).  Keep just the variable,
+ * which probe_page_size_mask() reads.
+ */
+int direct_gbpages = IS_ENABLED(CONFIG_X86_DIRECT_GBPAGES);
 
 struct map_range {
 	unsigned long start;

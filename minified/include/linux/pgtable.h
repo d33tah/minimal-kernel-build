@@ -139,10 +139,6 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 /* set_{pmd,pud,p4d,pgd}_safe() + the pXd_same() predicates removed - unused */
 
 
-#ifndef __HAVE_ARCH_PGD_OFFSET_GATE
-#define pgd_offset_gate(mm, addr)	pgd_offset(mm, addr)
-#endif
-
 #ifndef __HAVE_ARCH_MOVE_PTE
 #define move_pte(pte, prot, old_addr, new_addr)	(pte)
 #endif
@@ -229,10 +225,6 @@ static inline int pmd_none_or_clear_bad(pmd_t *pmd)
 #define pgprot_writecombine pgprot_noncached
 #endif
 
-#ifndef pgprot_writethrough
-#define pgprot_writethrough pgprot_noncached
-#endif
-
 #ifndef pgprot_device
 #define pgprot_device pgprot_noncached
 #endif
@@ -262,7 +254,6 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
 #ifndef __HAVE_ARCH_ENTER_LAZY_MMU_MODE
 #define arch_enter_lazy_mmu_mode()	do {} while (0)
 #define arch_leave_lazy_mmu_mode()	do {} while (0)
-#define arch_flush_lazy_mmu_mode()	do {} while (0)
 #endif
 
 #ifndef __HAVE_ARCH_START_CONTEXT_SWITCH
@@ -376,20 +367,6 @@ typedef unsigned int pgtbl_mod_mask;
 #define MAX_POSSIBLE_PHYSMEM_BITS 32
 #endif
 
-#ifndef mm_pud_folded
-#define mm_pud_folded(mm)	__is_defined(__PAGETABLE_PUD_FOLDED)
-#endif
-
-#ifndef mm_pmd_folded
-#define mm_pmd_folded(mm)	__is_defined(__PAGETABLE_PMD_FOLDED)
-#endif
-
-#ifndef pgd_leaf
-#define pgd_leaf(x)	0
-#endif
-#ifndef p4d_leaf
-#define p4d_leaf(x)	0
-#endif
 #ifndef pud_leaf
 #define pud_leaf(x)	0
 #endif

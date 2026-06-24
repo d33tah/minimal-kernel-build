@@ -286,7 +286,6 @@ struct inode {
 
 	struct hlist_node	i_hash;
 	struct list_head	i_lru;
-	struct list_head	i_sb_list;
 	union {
 		struct hlist_head	i_dentry;
 		struct rcu_head		i_rcu;
@@ -502,9 +501,6 @@ struct super_block {
 	struct list_lru		s_inode_lru;
 	struct rcu_head		rcu;
 	struct work_struct	destroy_work;
-
-	spinlock_t		s_inode_list_lock ____cacheline_aligned_in_smp;
-	struct list_head	s_inodes;
 } __randomize_layout;
 
 static inline struct user_namespace *i_user_ns(const struct inode *inode)
@@ -946,7 +942,6 @@ static inline void remove_inode_hash(struct inode *inode)
 	 * so inode_unhashed() is always true -> nothing to remove. */
 }
 
-extern void inode_sb_list_add(struct inode *inode);
 
 extern int generic_file_mmap(struct file *, struct vm_area_struct *);
 extern ssize_t generic_write_checks(struct kiocb *, struct iov_iter *);

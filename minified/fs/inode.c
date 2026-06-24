@@ -169,23 +169,6 @@ static void inode_lru_list_del(struct inode *inode)
 	list_lru_del(&inode->i_sb->s_inode_lru, &inode->i_lru);
 }
 
-void inode_sb_list_add(struct inode *inode)
-{
-	spin_lock(&inode->i_sb->s_inode_list_lock);
-	list_add(&inode->i_sb_list, &inode->i_sb->s_inodes);
-	spin_unlock(&inode->i_sb->s_inode_list_lock);
-}
-
-static inline void inode_sb_list_del(struct inode *inode)
-{
-	if (!list_empty(&inode->i_sb_list)) {
-		spin_lock(&inode->i_sb->s_inode_list_lock);
-		list_del_init(&inode->i_sb_list);
-		spin_unlock(&inode->i_sb->s_inode_list_lock);
-	}
-}
-
-
 void clear_inode(struct inode *inode)
 {
 	
@@ -202,8 +185,6 @@ static void evict(struct inode *inode)
 {
 	BUG_ON(!(inode->i_state & I_FREEING));
 	BUG_ON(!list_empty(&inode->i_lru));
-
-	inode_sb_list_del(inode);
 
 	truncate_inode_pages_final(&inode->i_data);
 	clear_inode(inode);
@@ -243,7 +224,6 @@ struct inode *new_inode_pseudo(struct super_block *sb)
 		spin_lock(&inode->i_lock);
 		inode->i_state = 0;
 		spin_unlock(&inode->i_lock);
-		INIT_LIST_HEAD(&inode->i_sb_list);
 	}
 	return inode;
 }
@@ -252,11 +232,7 @@ struct inode *new_inode(struct super_block *sb)
 {
 	struct inode *inode;
 
-	spin_lock_prefetch(&sb->s_inode_list_lock);
-
 	inode = new_inode_pseudo(sb);
-	if (inode)
-		inode_sb_list_add(inode);
 	return inode;
 }
 

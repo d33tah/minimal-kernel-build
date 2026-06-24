@@ -35,9 +35,18 @@ static inline void init_llist_head(struct llist_head *list)
 	     pos = n)
 
 
-extern bool llist_add_batch(struct llist_node *new_first,
-			    struct llist_node *new_last,
-			    struct llist_head *head);
+static inline bool llist_add_batch(struct llist_node *new_first,
+				   struct llist_node *new_last,
+				   struct llist_head *head)
+{
+	struct llist_node *first;
+
+	do {
+		new_last->next = first = READ_ONCE(head->first);
+	} while (cmpxchg(&head->first, first, new_first) != first);
+
+	return !first;
+}
 
 static inline bool llist_add(struct llist_node *new, struct llist_head *head)
 {

@@ -1031,9 +1031,6 @@ typedef int (*pte_fn_t)(pte_t *pte, unsigned long addr, void *data);
 
 
 
-
-#define  ZAP_FLAG_DROP_MARKER        ((__force zap_flags_t) BIT(0))
-
 /* Inlined from elf-randomize.h */
 extern unsigned long arch_randomize_brk(struct mm_struct *mm);
 

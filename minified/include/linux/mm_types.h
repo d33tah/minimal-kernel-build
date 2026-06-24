@@ -340,6 +340,4 @@ enum fault_flag {
 	FAULT_FLAG_UNSHARE =		1 << 10,
 };
 
-typedef unsigned int __bitwise zap_flags_t;
-
-#endif  
+#endif

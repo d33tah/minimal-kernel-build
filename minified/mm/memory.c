@@ -233,17 +233,9 @@ check_pfn:
  */
 
 
-struct zap_details {
-	struct folio *single_folio;	
-	bool even_cows;			
-	zap_flags_t zap_flags;		
-};
-
-
 static unsigned long zap_pte_range(struct mmu_gather *tlb,
 				struct vm_area_struct *vma, pmd_t *pmd,
-				unsigned long addr, unsigned long end,
-				struct zap_details *details)
+				unsigned long addr, unsigned long end)
 {
 	/* Minimal stub: basic PTE clearing */
 	struct mm_struct *mm = tlb->mm;
@@ -270,13 +262,12 @@ static unsigned long zap_pte_range(struct mmu_gather *tlb,
  */
 static inline unsigned long zap_folded_range(struct mmu_gather *tlb,
 				struct vm_area_struct *vma, pgd_t *pgd,
-				unsigned long addr, unsigned long end,
-				struct zap_details *details)
+				unsigned long addr, unsigned long end)
 {
 	pmd_t *pmd = pmd_offset(pud_offset(p4d_offset(pgd, addr), addr), addr);
 
 	if (!pmd_none_or_trans_huge_or_clear_bad(pmd))
-		zap_pte_range(tlb, vma, pmd, addr, end, details);
+		zap_pte_range(tlb, vma, pmd, addr, end);
 	cond_resched();
 
 	return end;
@@ -284,8 +275,7 @@ static inline unsigned long zap_folded_range(struct mmu_gather *tlb,
 
 void unmap_page_range(struct mmu_gather *tlb,
 			     struct vm_area_struct *vma,
-			     unsigned long addr, unsigned long end,
-			     struct zap_details *details)
+			     unsigned long addr, unsigned long end)
 {
 	pgd_t *pgd;
 	unsigned long next;
@@ -297,15 +287,14 @@ void unmap_page_range(struct mmu_gather *tlb,
 		next = pgd_addr_end(addr, end);
 		if (pgd_none_or_clear_bad(pgd))
 			continue;
-		next = zap_folded_range(tlb, vma, pgd, addr, next, details);
+		next = zap_folded_range(tlb, vma, pgd, addr, next);
 	} while (pgd++, addr = next, addr != end);
 	tlb_end_vma(tlb, vma);
 }
 
 static void unmap_single_vma(struct mmu_gather *tlb,
 		struct vm_area_struct *vma, unsigned long start_addr,
-		unsigned long end_addr,
-		struct zap_details *details)
+		unsigned long end_addr)
 {
 	unsigned long start = max(vma->vm_start, start_addr);
 	unsigned long end;
@@ -320,32 +309,26 @@ static void unmap_single_vma(struct mmu_gather *tlb,
 		untrack_pfn(vma, 0, 0);
 
 	if (start != end)
-		unmap_page_range(tlb, vma, start, end, details);
+		unmap_page_range(tlb, vma, start, end);
 }
 
 void unmap_vmas(struct mmu_gather *tlb,
 		struct vm_area_struct *vma, unsigned long start_addr,
 		unsigned long end_addr)
 {
-	struct zap_details details = {
-		.zap_flags = ZAP_FLAG_DROP_MARKER,
-
-		.even_cows = true,
-	};
-
 	for ( ; vma && vma->vm_start < end_addr; vma = vma->vm_next)
-		unmap_single_vma(tlb, vma, start_addr, end_addr, &details);
+		unmap_single_vma(tlb, vma, start_addr, end_addr);
 }
 
 static void zap_page_range_single(struct vm_area_struct *vma, unsigned long address,
-		unsigned long size, struct zap_details *details)
+		unsigned long size)
 {
 	struct mmu_gather tlb;
 
 	lru_add_drain();
 	tlb_gather_mmu(&tlb, vma->vm_mm);
 	update_hiwater_rss(vma->vm_mm);
-	unmap_single_vma(&tlb, vma, address, address + size, details);
+	unmap_single_vma(&tlb, vma, address, address + size);
 	tlb_finish_mmu(&tlb);
 }
 
@@ -496,16 +479,14 @@ static vm_fault_t do_wp_page(struct vm_fault *vmf)
 }
 
 static void unmap_mapping_range_vma(struct vm_area_struct *vma,
-		unsigned long start_addr, unsigned long end_addr,
-		struct zap_details *details)
+		unsigned long start_addr, unsigned long end_addr)
 {
-	zap_page_range_single(vma, start_addr, end_addr - start_addr, details);
+	zap_page_range_single(vma, start_addr, end_addr - start_addr);
 }
 
 static inline void unmap_mapping_range_tree(struct rb_root_cached *root,
 					    pgoff_t first_index,
-					    pgoff_t last_index,
-					    struct zap_details *details)
+					    pgoff_t last_index)
 {
 	struct vm_area_struct *vma;
 	pgoff_t vba, vea, zba, zea;
@@ -518,26 +499,23 @@ static inline void unmap_mapping_range_tree(struct rb_root_cached *root,
 
 		unmap_mapping_range_vma(vma,
 			((zba - vba) << PAGE_SHIFT) + vma->vm_start,
-			((zea - vba + 1) << PAGE_SHIFT) + vma->vm_start,
-				details);
+			((zea - vba + 1) << PAGE_SHIFT) + vma->vm_start);
 	}
 }
 
 void unmap_mapping_pages(struct address_space *mapping, pgoff_t start,
 		pgoff_t nr, bool even_cows)
 {
-	struct zap_details details = { };
 	pgoff_t	first_index = start;
 	pgoff_t	last_index = start + nr - 1;
 
-	details.even_cows = even_cows;
 	if (last_index < first_index)
 		last_index = ULONG_MAX;
 
 	i_mmap_lock_read(mapping);
 	if (unlikely(!RB_EMPTY_ROOT(&mapping->i_mmap.rb_root)))
 		unmap_mapping_range_tree(&mapping->i_mmap, first_index,
-					 last_index, &details);
+					 last_index);
 	i_mmap_unlock_read(mapping);
 }
 

@@ -6,15 +6,16 @@
 #include <linux/slab.h>
 #include <linux/random.h>
 
+/*
+ * The kset membership list (kset->list / kobj->entry) was never iterated
+ * anywhere tree-wide, so join/leave reduce to the kset refcount get/put.
+ */
 static void kobj_kset_join(struct kobject *kobj)
 {
 	if (!kobj->kset)
 		return;
 
 	kset_get(kobj->kset);
-	spin_lock(&kobj->kset->list_lock);
-	list_add_tail(&kobj->entry, &kobj->kset->list);
-	spin_unlock(&kobj->kset->list_lock);
 }
 
 static void kobj_kset_leave(struct kobject *kobj)
@@ -22,9 +23,6 @@ static void kobj_kset_leave(struct kobject *kobj)
 	if (!kobj->kset)
 		return;
 
-	spin_lock(&kobj->kset->list_lock);
-	list_del_init(&kobj->entry);
-	spin_unlock(&kobj->kset->list_lock);
 	kset_put(kobj->kset);
 }
 
@@ -33,7 +31,6 @@ static void kobject_init_internal(struct kobject *kobj)
 	if (!kobj)
 		return;
 	kref_init(&kobj->kref);
-	INIT_LIST_HEAD(&kobj->entry);
 	kobj->state_in_sysfs = 0;
 	kobj->state_initialized = 1;
 }
@@ -291,8 +288,6 @@ struct kobject *kobject_create_and_add(const char *name, struct kobject *parent)
 void kset_init(struct kset *k)
 {
 	kobject_init_internal(&k->kobj);
-	INIT_LIST_HEAD(&k->list);
-	spin_lock_init(&k->list_lock);
 }
 
 int kset_register(struct kset *k)

@@ -16,7 +16,6 @@
 
 struct kobject {
 	const char		*name;
-	struct list_head	entry;
 	struct kobject		*parent;
 	struct kset		*kset;
 	const struct kobj_type	*ktype;
@@ -56,8 +55,6 @@ struct kobj_type {
 /* struct kset_uevent_ops removed - uevent_ops never dispatched (all NULL) */
 
 struct kset {
-	struct list_head list;
-	spinlock_t list_lock;
 	struct kobject kobj;
 } __randomize_layout;
 

@@ -46,8 +46,6 @@ int console_printk[4] = {
 	CONSOLE_LOGLEVEL_DEFAULT,	 
 };
 
-atomic_t ignore_console_lock_warning __read_mostly = ATOMIC_INIT(0);
-
 int oops_in_progress;
 
 static DEFINE_SEMAPHORE(console_sem);
@@ -89,8 +87,6 @@ static void __up_console_sem(unsigned long ip)
 }
 #define up_console_sem() __up_console_sem(_RET_IP_)
 
-static int console_locked;
-
 
 
 
@@ -105,25 +101,17 @@ void console_lock(void)
 	might_sleep();
 
 	down_console_sem();
-	console_locked = 1;
 }
 
 int console_trylock(void)
 {
 	if (down_trylock_console_sem())
 		return 0;
-	console_locked = 1;
 	return 1;
-}
-
-int is_console_locked(void)
-{
-	return console_locked;
 }
 
 static void __console_unlock(void)
 {
-	console_locked = 0;
 	up_console_sem();
 }
 
@@ -149,7 +137,6 @@ void console_unblank(void)
 	} else
 		console_lock();
 
-	console_locked = 1;
 	for_each_console(c)
 		if ((c->flags & CON_ENABLED) && c->unblank)
 			c->unblank();

@@ -78,12 +78,14 @@ extern void console_unlock(void);
 extern void console_unblank(void);
 extern void console_flush_on_panic(enum con_flush_mode mode);
 extern struct tty_driver *console_device(int *);
-extern int is_console_locked(void);
 
-#define WARN_CONSOLE_UNLOCKED()						\
-	WARN_ON(!atomic_read(&ignore_console_lock_warning) &&		\
-		!is_console_locked() && !oops_in_progress)
-extern atomic_t ignore_console_lock_warning;
+/*
+ * CONFIG_PRINTK is unset, so WARN_ON is a no-op (its argument is evaluated only
+ * for an unused value) and the console-lock debug check has no effect.  Folded
+ * to nothing, which orphans is_console_locked()/ignore_console_lock_warning and
+ * the console_locked tracking they read.
+ */
+#define WARN_CONSOLE_UNLOCKED()	do { } while (0)
 
 
 extern void console_init(void);

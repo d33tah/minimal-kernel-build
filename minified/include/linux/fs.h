@@ -473,8 +473,7 @@ struct super_block {
 	struct file_system_type	*s_type;
 	const struct super_operations	*s_op;
 	unsigned long		s_flags;
-	unsigned long		s_iflags;	
-	unsigned long		s_magic;
+	unsigned long		s_iflags;
 	struct dentry		*s_root;
 	struct rw_semaphore	s_umount;
 	int			s_count;

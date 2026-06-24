@@ -197,10 +197,6 @@ static inline int pmd_none_or_clear_bad(pmd_t *pmd)
 
 
 
-#ifndef pgprot_nx
-#define pgprot_nx(prot)	(prot)
-#endif
-
 #ifndef pgprot_noncached
 #define pgprot_noncached(prot)	(prot)
 #endif
@@ -277,22 +273,6 @@ static inline int pmd_trans_huge(pmd_t pmd)
 {
 	return 0;
 }
-#ifndef pmd_write
-static inline int pmd_write(pmd_t pmd)
-{
-	BUG();
-	return 0;
-}
-#endif  
-
-#ifndef pud_write
-static inline int pud_write(pud_t pud)
-{
-	BUG();
-	return 0;
-}
-#endif  
-
 #ifndef pmd_read_atomic
 static inline pmd_t pmd_read_atomic(pmd_t *pmdp)
 {

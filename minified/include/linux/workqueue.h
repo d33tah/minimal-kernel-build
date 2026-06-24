@@ -61,9 +61,6 @@ enum {
 	 
 	WORK_BUSY_PENDING	= 1 << 0,
 	WORK_BUSY_RUNNING	= 1 << 1,
-
-	 
-	WORKER_DESC_LEN		= 24,
 };
 
 struct work_struct {

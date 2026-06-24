@@ -734,10 +734,6 @@ static inline void sched_submit_work(struct task_struct *tsk)
 	if (task_is_running(tsk))
 		return;
 
-	if (tsk_is_pi_blocked(tsk))
-		return;
-
-
 	blk_flush_plug(tsk->plug, true);
 }
 

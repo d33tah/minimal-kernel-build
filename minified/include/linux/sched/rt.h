@@ -5,26 +5,11 @@
 
 struct task_struct;
 
-static inline int rt_prio(int prio)
-{
-	if (unlikely(prio < MAX_RT_PRIO))
-		return 1;
-	return 0;
-}
+/*
+ * rt_prio/rt_task/tsk_is_pi_blocked/rt_mutex_adjust_pi/RR_TIMESLICE were all
+ * removed: no RT scheduling class or PI-mutex subsystem on this build, so every
+ * symbol this header defined had zero live users (tsk_is_pi_blocked()'s only
+ * caller was a constant-false branch in sched_submit_work(), now folded out).
+ */
 
-static inline int rt_task(struct task_struct *p)
-{
-	return rt_prio(p->prio);
-}
-
-
-# define rt_mutex_adjust_pi(p)		do { } while (0)
-static inline bool tsk_is_pi_blocked(struct task_struct *tsk)
-{
-	return false;
-}
-
-
-#define RR_TIMESLICE		(100 * HZ / 1000)
-
-#endif  
+#endif

@@ -64,7 +64,6 @@ obj-y			+= irqflags.o
 obj-y				+= process.o
 obj-y				+= fpu/
 obj-y				+= ptrace.o
-obj-y				+= step.o
 obj-$(CONFIG_INTEL_TXT)		+= tboot.o
 # i8237.o removed - empty stub
 # obj-y				+= stacktrace.o

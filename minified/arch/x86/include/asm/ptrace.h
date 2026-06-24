@@ -68,8 +68,5 @@ static __always_inline bool regs_irqs_disabled(struct pt_regs *regs)
 
 #define MAX_REG_OFFSET (offsetof(struct pt_regs, ss))
 
-#define arch_has_single_step()	(1)
-#define arch_has_block_step()	(1)
-
 #endif /* !__ASSEMBLY__ */
 #endif /* _ASM_X86_PTRACE_H */

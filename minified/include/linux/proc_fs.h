@@ -8,15 +8,6 @@
 struct proc_dir_entry;
 struct seq_file;
 
-enum {
-	 
-#ifdef MODULE
-	PROC_ENTRY_PERMANENT = 0U,
-#else
-	PROC_ENTRY_PERMANENT = 1U << 0,
-#endif
-};
-
 static inline void proc_root_init(void)
 {
 }

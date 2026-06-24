@@ -5,14 +5,7 @@
 /* --- 2025-12-07 23:58 --- Inlined from linux/dev_printk.h */
 #include <linux/compiler.h>
 
-#ifndef dev_fmt
-#define dev_fmt(fmt) fmt
-#endif
-
-/* dev_printk stubs - only defining those actually used */
-#define dev_crit(dev, fmt, ...) do { } while (0)
-#define dev_err(dev, fmt, ...) do { } while (0)
-#define dev_warn(dev, fmt, ...) do { } while (0)
+/* dev_printk stub - only dev_dbg has a caller (tty_io.c) */
 #define dev_dbg(dev, fmt, ...) do { } while (0)
 /* end dev_printk.h */
 

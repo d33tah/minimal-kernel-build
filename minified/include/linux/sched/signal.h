@@ -10,15 +10,9 @@
 #define JOBCTL_STOP_PENDING_BIT	17
 #define JOBCTL_TRAP_STOP_BIT	19
 #define JOBCTL_TRAP_FREEZE_BIT	23
-#define JOBCTL_PTRACE_FROZEN_BIT	24
-#define JOBCTL_STOPPED_BIT	26
-#define JOBCTL_TRACED_BIT	27
 #define JOBCTL_STOP_PENDING	(1UL << JOBCTL_STOP_PENDING_BIT)
 #define JOBCTL_TRAP_STOP	(1UL << JOBCTL_TRAP_STOP_BIT)
 #define JOBCTL_TRAP_FREEZE	(1UL << JOBCTL_TRAP_FREEZE_BIT)
-#define JOBCTL_PTRACE_FROZEN	(1UL << JOBCTL_PTRACE_FROZEN_BIT)
-#define JOBCTL_STOPPED		(1UL << JOBCTL_STOPPED_BIT)
-#define JOBCTL_TRACED		(1UL << JOBCTL_TRACED_BIT)
 #define JOBCTL_TRAP_MASK	(JOBCTL_TRAP_STOP)
 #define JOBCTL_PENDING_MASK	(JOBCTL_STOP_PENDING | JOBCTL_TRAP_MASK)
 #include <linux/cred.h>
@@ -154,19 +148,6 @@ extern void calculate_sigpending(void);
 
 extern void __cleanup_sighand(struct sighand_struct *);
 
-#define tasklist_empty() \
-	list_empty(&init_task.tasks)
-
-#define next_task(p) \
-	list_entry_rcu((p)->tasks.next, struct task_struct, tasks)
-
-#define for_each_process(p) \
-	for (p = &init_task ; (p = next_task(p)) != &init_task ; )
-
-
-#define do_each_thread(g, t) \
-	for (g = t = &init_task ; (g = t = next_task(g)) != &init_task ; ) do
-
 #define while_each_thread(g, t) \
 	while ((t = next_thread(t)) != g)
 
@@ -199,15 +180,6 @@ static inline struct task_struct *next_thread(const struct task_struct *p)
 	return list_entry_rcu(p->thread_group.next,
 			      struct task_struct, thread_group);
 }
-
-static inline int thread_group_empty(struct task_struct *p)
-{
-	return list_empty(&p->thread_group);
-}
-
-#define delay_group_leader(p) \
-		(thread_group_leader(p) && !thread_group_empty(p))
-
 
 static inline unsigned long task_rlimit(const struct task_struct *task,
 		unsigned int limit)

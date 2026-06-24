@@ -171,16 +171,17 @@ struct tty_driver *console_device(int *index)
 }
 
 
-static int try_enable_preferred_console(struct console *newcon,
-					bool user_specified)
+static int try_enable_preferred_console(struct console *newcon)
 {
 	/*
 	 * console_cmdline[] is never populated on this build (no console=
 	 * boot-param parser / __add_preferred_console), so the cmdline-match
-	 * loop never iterates. With c->user_specified always false, the
-	 * post-loop check folds to (CON_ENABLED && !user_specified).
+	 * loop never iterates. The only live register_console pass is the
+	 * unspecified one (user_specified == false), where the post-loop check
+	 * folds to plain CON_ENABLED; the user_specified == true pass always
+	 * returned -ENOENT and was statically dead, so it was folded out.
 	 */
-	if (newcon->flags & CON_ENABLED && !user_specified)
+	if (newcon->flags & CON_ENABLED)
 		return 0;
 
 	return -ENOENT;
@@ -227,14 +228,10 @@ void register_console(struct console *newcon)
 	if (!console_drivers || !console_drivers->device)
 		try_enable_default_console(newcon);
 
-	 
-	err = try_enable_preferred_console(newcon, true);
 
-	 
-	if (err == -ENOENT)
-		err = try_enable_preferred_console(newcon, false);
+	err = try_enable_preferred_console(newcon);
 
-	 
+
 	if (err || newcon->flags & CON_BRL)
 		return;
 

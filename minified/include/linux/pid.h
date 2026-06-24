@@ -29,8 +29,7 @@ struct pid
 	spinlock_t lock;
 	 
 	struct hlist_head tasks[PIDTYPE_MAX];
-	struct hlist_head inodes;
-	 
+
 	wait_queue_head_t wait_pidfd;
 	struct rcu_head rcu;
 	struct upid numbers[1];

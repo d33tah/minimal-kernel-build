@@ -24,20 +24,15 @@ void tty_port_init(struct tty_port *port)
 	kref_init(&port->kref);
 }
 
-void tty_port_destroy(struct tty_port *port)
-{
-	tty_buffer_cancel_work(port);
-	tty_buffer_free_all(port);
-}
-
 static void tty_port_destructor(struct kref *kref)
 {
 	struct tty_port *port = container_of(kref, struct tty_port, kref);
 
-	 
+
 	if (WARN_ON(port->itty))
 		return;
-	tty_port_destroy(port);
+	tty_buffer_cancel_work(port);
+	tty_buffer_free_all(port);
 	if (port->ops && port->ops->destruct)
 		port->ops->destruct(port);
 	else

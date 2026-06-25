@@ -39,13 +39,6 @@ void set_fs_pwd(struct fs_struct *fs, const struct path *path)
 }
 
 
-void free_fs_struct(struct fs_struct *fs)
-{
-	path_put(&fs->root);
-	path_put(&fs->pwd);
-	kmem_cache_free(fs_cachep, fs);
-}
-
 void exit_fs(struct task_struct *tsk)
 {
 	struct fs_struct *fs = tsk->fs;
@@ -58,8 +51,11 @@ void exit_fs(struct task_struct *tsk)
 		kill = !--fs->users;
 		spin_unlock(&fs->lock);
 		task_unlock(tsk);
-		if (kill)
-			free_fs_struct(fs);
+		if (kill) {
+			path_put(&fs->root);
+			path_put(&fs->pwd);
+			kmem_cache_free(fs_cachep, fs);
+		}
 	}
 }
 

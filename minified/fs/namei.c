@@ -1365,17 +1365,6 @@ static int do_open(struct nameidata *nd,
 	return error;
 }
 
-static int do_o_path(struct nameidata *nd, unsigned flags, struct file *file)
-{
-	struct path path;
-	int error = path_lookupat(nd, flags, &path);
-	if (!error) {
-		error = vfs_open(&path, file);
-		path_put(&path);
-	}
-	return error;
-}
-
 static struct file *path_openat(struct nameidata *nd,
 			const struct open_flags *op, unsigned flags)
 {
@@ -1387,7 +1376,12 @@ static struct file *path_openat(struct nameidata *nd,
 		return file;
 
 	if (unlikely(file->f_flags & O_PATH)) {
-		error = do_o_path(nd, flags, file);
+		struct path path;
+		error = path_lookupat(nd, flags, &path);
+		if (!error) {
+			error = vfs_open(&path, file);
+			path_put(&path);
+		}
 	} else {
 		const char *s = path_init(nd, flags);
 		while (!(error = link_path_walk(s, nd)) &&

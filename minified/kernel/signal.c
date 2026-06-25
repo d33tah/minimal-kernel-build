@@ -304,11 +304,6 @@ force_sig_info_to_task(struct kernel_siginfo *info, struct task_struct *t,
 	return ret;
 }
 
-int force_sig_info(struct kernel_siginfo *info)
-{
-	return force_sig_info_to_task(info, current, HANDLER_CURRENT);
-}
-
 /*
  * Removed: zap_other_threads - unreachable. Its only caller was the removed
  * do_group_exit() (exit_group syscall). The init task is single-threaded so
@@ -325,7 +320,7 @@ void force_sig(int sig)
 	info.si_code = SI_KERNEL;
 	info.si_pid = 0;
 	info.si_uid = 0;
-	force_sig_info(&info);
+	force_sig_info_to_task(&info, current, HANDLER_CURRENT);
 }
 
 void force_fatal_sig(int sig)

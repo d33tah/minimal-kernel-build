@@ -41,81 +41,6 @@ static DEFINE_RAW_SPINLOCK(nmi_reason_lock);
 static DEFINE_PER_CPU(bool, swallow_nmi);
 static DEFINE_PER_CPU(unsigned long, last_nmi_rip);
 
-static noinstr void default_do_nmi(struct pt_regs *regs)
-{
-	unsigned char reason = 0;
-	bool b2b = false;
-
-	 
-
-	 
-	if (regs->ip == __this_cpu_read(last_nmi_rip))
-		b2b = true;
-	else
-		__this_cpu_write(swallow_nmi, false);
-
-	__this_cpu_write(last_nmi_rip, regs->ip);
-
-
-	while (!raw_spin_trylock(&nmi_reason_lock)) {
-		cpu_relax();
-	}
-
-	reason = x86_platform.get_nmi_reason();
-
-	if (reason & NMI_REASON_MASK) {
-		if (reason & NMI_REASON_SERR) {
-			pr_emerg("NMI: PCI system error (SERR) for reason %02x on CPU %d.\n",
-				 reason, smp_processor_id());
-
-			if (panic_on_unrecovered_nmi)
-				nmi_panic(regs, "NMI: Not continuing");
-
-			pr_emerg("Dazed and confused, but trying to continue\n");
-
-			reason = (reason & NMI_REASON_CLEAR_MASK) | NMI_REASON_CLEAR_SERR;
-			outb(reason, NMI_REASON_PORT);
-		} else if (reason & NMI_REASON_IOCHK) {
-			unsigned long i;
-
-			pr_emerg(
-			"NMI: IOCK error (debug interrupt?) for reason %02x on CPU %d.\n",
-				 reason, smp_processor_id());
-			show_regs(regs);
-
-			if (panic_on_io_nmi) {
-				nmi_panic(regs, "NMI IOCK error: Not continuing");
-			} else {
-				reason = (reason & NMI_REASON_CLEAR_MASK) | NMI_REASON_CLEAR_IOCHK;
-				outb(reason, NMI_REASON_PORT);
-
-				i = 20000;
-				while (--i) {
-					touch_nmi_watchdog();
-					udelay(100);
-				}
-
-				reason &= ~NMI_REASON_CLEAR_IOCHK;
-				outb(reason, NMI_REASON_PORT);
-			}
-		}
-		raw_spin_unlock(&nmi_reason_lock);
-		return;
-	}
-	raw_spin_unlock(&nmi_reason_lock);
-
-
-	if (!(b2b && __this_cpu_read(swallow_nmi))) {
-		pr_emerg("Uhhuh. NMI received for unknown reason %02x on CPU %d.\n",
-			 reason, smp_processor_id());
-
-		if (unknown_nmi_panic || panic_on_unrecovered_nmi)
-			nmi_panic(regs, "NMI: Not continuing");
-
-		pr_emerg("Dazed and confused, but trying to continue\n");
-	}
-}
-
 enum nmi_states {
 	NMI_NOT_RUNNING = 0,
 	NMI_EXECUTING,
@@ -143,8 +68,76 @@ nmi_restart:
 
 	inc_irq_stat(__nmi_count);
 
-	if (!ignore_nmis)
-		default_do_nmi(regs);
+	if (!ignore_nmis) {
+		unsigned char reason = 0;
+		bool b2b = false;
+
+		if (regs->ip == __this_cpu_read(last_nmi_rip))
+			b2b = true;
+		else
+			__this_cpu_write(swallow_nmi, false);
+
+		__this_cpu_write(last_nmi_rip, regs->ip);
+
+
+		while (!raw_spin_trylock(&nmi_reason_lock)) {
+			cpu_relax();
+		}
+
+		reason = x86_platform.get_nmi_reason();
+
+		if (reason & NMI_REASON_MASK) {
+			if (reason & NMI_REASON_SERR) {
+				pr_emerg("NMI: PCI system error (SERR) for reason %02x on CPU %d.\n",
+					 reason, smp_processor_id());
+
+				if (panic_on_unrecovered_nmi)
+					nmi_panic(regs, "NMI: Not continuing");
+
+				pr_emerg("Dazed and confused, but trying to continue\n");
+
+				reason = (reason & NMI_REASON_CLEAR_MASK) | NMI_REASON_CLEAR_SERR;
+				outb(reason, NMI_REASON_PORT);
+			} else if (reason & NMI_REASON_IOCHK) {
+				unsigned long i;
+
+				pr_emerg(
+				"NMI: IOCK error (debug interrupt?) for reason %02x on CPU %d.\n",
+					 reason, smp_processor_id());
+				show_regs(regs);
+
+				if (panic_on_io_nmi) {
+					nmi_panic(regs, "NMI IOCK error: Not continuing");
+				} else {
+					reason = (reason & NMI_REASON_CLEAR_MASK) | NMI_REASON_CLEAR_IOCHK;
+					outb(reason, NMI_REASON_PORT);
+
+					i = 20000;
+					while (--i) {
+						touch_nmi_watchdog();
+						udelay(100);
+					}
+
+					reason &= ~NMI_REASON_CLEAR_IOCHK;
+					outb(reason, NMI_REASON_PORT);
+				}
+			}
+			raw_spin_unlock(&nmi_reason_lock);
+		} else {
+			raw_spin_unlock(&nmi_reason_lock);
+
+
+			if (!(b2b && __this_cpu_read(swallow_nmi))) {
+				pr_emerg("Uhhuh. NMI received for unknown reason %02x on CPU %d.\n",
+					 reason, smp_processor_id());
+
+				if (unknown_nmi_panic || panic_on_unrecovered_nmi)
+					nmi_panic(regs, "NMI: Not continuing");
+
+				pr_emerg("Dazed and confused, but trying to continue\n");
+			}
+		}
+	}
 
 	irqentry_nmi_exit(regs, irq_state);
 

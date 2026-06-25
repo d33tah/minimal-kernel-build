@@ -27,21 +27,12 @@ SYSCALL_DEFINE2(gettimeofday, struct __kernel_old_timeval __user *, tv,
 
 /* settimeofday syscall removed - init does write(2)+exit only */
 
-unsigned int jiffies_to_msecs(const unsigned long j)
-{
-#if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
-	return (MSEC_PER_SEC / HZ) * j;
-#elif HZ > MSEC_PER_SEC && !(HZ % MSEC_PER_SEC)
-	return (j + (HZ / MSEC_PER_SEC) - 1)/(HZ / MSEC_PER_SEC);
-#else
-# if BITS_PER_LONG == 32
-	return (HZ_TO_MSEC_MUL32 * j + (1ULL << HZ_TO_MSEC_SHR32) - 1) >>
-	       HZ_TO_MSEC_SHR32;
-# else
-	return DIV_ROUND_UP(j * HZ_TO_MSEC_NUM, HZ_TO_MSEC_DEN);
-# endif
-#endif
-}
+/*
+ * Removed: jiffies_to_msecs, __msecs_to_jiffies - never called. The sole
+ * msecs_to_jiffies() callsite (softirq.c) passes a compile-time constant, so
+ * it constant-folds to the inline _msecs_to_jiffies(); the out-of-line slow
+ * path and the reverse conversion are unreferenced under CONFIG_HZ=250.
+ */
 
 void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
 {
@@ -75,14 +66,6 @@ struct timespec64 ns_to_timespec64(const s64 nsec)
 	}
 
 	return ts;
-}
-
-unsigned long __msecs_to_jiffies(const unsigned int m)
-{
-	 
-	if ((int)m < 0)
-		return MAX_JIFFY_OFFSET;
-	return _msecs_to_jiffies(m);
 }
 
 

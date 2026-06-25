@@ -45,10 +45,6 @@ extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffi
 
 extern unsigned long preset_lpj;
 
-extern unsigned int jiffies_to_msecs(const unsigned long j);
-
-
-extern unsigned long __msecs_to_jiffies(const unsigned int m);
 #if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
 static inline unsigned long _msecs_to_jiffies(const unsigned int m)
 {
@@ -72,13 +68,9 @@ static inline unsigned long _msecs_to_jiffies(const unsigned int m)
 #endif
 static __always_inline unsigned long msecs_to_jiffies(const unsigned int m)
 {
-	if (__builtin_constant_p(m)) {
-		if ((int)m < 0)
-			return MAX_JIFFY_OFFSET;
-		return _msecs_to_jiffies(m);
-	} else {
-		return __msecs_to_jiffies(m);
-	}
+	if ((int)m < 0)
+		return MAX_JIFFY_OFFSET;
+	return _msecs_to_jiffies(m);
 }
 
 #endif

@@ -70,10 +70,6 @@ DEFINE_PER_CPU(unsigned long, process_counts) = 0;
 
 __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);  
 
-void __weak arch_release_task_struct(struct task_struct *tsk)
-{
-}
-
 #ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
 static struct kmem_cache *task_struct_cachep;
 
@@ -194,7 +190,6 @@ void free_task(struct task_struct *tsk)
 
 
 	WARN_ON_ONCE(refcount_read(&tsk->stack_refcount) != 0);
-	arch_release_task_struct(tsk);
 	if (tsk->flags & PF_KTHREAD)
 		free_kthread_struct(tsk);
 	free_task_struct(tsk);

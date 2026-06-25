@@ -542,9 +542,6 @@ extern void reweight_task(struct task_struct *p, int prio);
 extern void resched_curr(struct rq *rq);
 extern void resched_cpu(int cpu);
 
-extern void init_entity_runnable_average(struct sched_entity *se);
-extern void post_init_entity_util_avg(struct task_struct *p);
-
 /* sched_tick_offload_init removed - unused */
 
 static inline void add_nr_running(struct rq *rq, unsigned count)

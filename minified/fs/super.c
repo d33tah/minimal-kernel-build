@@ -167,21 +167,16 @@ struct super_block *sget_fc(struct fs_context *fc,
 
 static DEFINE_IDA(unnamed_dev_ida);
 
-void kill_anon_super(struct super_block *sb)
+void kill_litter_super(struct super_block *sb)
 {
 	dev_t dev = sb->s_dev;
 
-	/* generic_shutdown_super folded from its sole caller */
+	/* generic_shutdown_super + kill_anon_super folded from sole callers */
 	spin_lock(&sb_lock);
 	spin_unlock(&sb_lock);
 	up_write(&sb->s_umount);
 
 	ida_free(&unnamed_dev_ida, MINOR(dev));
-}
-
-void kill_litter_super(struct super_block *sb)
-{
-	kill_anon_super(sb);
 }
 
 int set_anon_super_fc(struct super_block *sb, struct fs_context *fc)

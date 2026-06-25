@@ -6,9 +6,6 @@
 #include <linux/mm.h>
 #include <linux/pagemap.h>
 
-#define __HAVE_ARCH_PTE_ALLOC_ONE
-#define __HAVE_ARCH_PGD_FREE
-
 /* Inlined from asm-generic/pgalloc.h */
 #define GFP_PGTABLE_KERNEL	(GFP_KERNEL | __GFP_ZERO)
 #define GFP_PGTABLE_USER	(GFP_PGTABLE_KERNEL | __GFP_ACCOUNT)
@@ -45,14 +42,6 @@ static inline pgtable_t __pte_alloc_one(struct mm_struct *mm, gfp_t gfp)
 	return pte;
 }
 
-#ifndef __HAVE_ARCH_PTE_ALLOC_ONE
-static inline pgtable_t pte_alloc_one(struct mm_struct *mm)
-{
-	return __pte_alloc_one(mm, GFP_PGTABLE_USER);
-}
-#endif
-
-
 static inline void pte_free(struct mm_struct *mm, struct page *pte_page)
 {
 	pgtable_pte_page_dtor(pte_page);
@@ -65,13 +54,6 @@ static inline void pte_free(struct mm_struct *mm, struct page *pte_page)
  * freeing helpers guarded by CONFIG_PGTABLE_LEVELS > 2/3/4 are all folded
  * away and were removed wholesale.
  */
-
-#ifndef __HAVE_ARCH_PGD_FREE
-static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
-{
-	free_page((unsigned long)pgd);
-}
-#endif
 
 /* paravirt_alloc_pte/paravirt_alloc_pmd/paravirt_release_pte no-op stubs + their discarded calls removed - PARAVIRT off */
 

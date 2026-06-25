@@ -18,28 +18,6 @@
 #include "internals.h"
 
 
-void __enable_irq(struct irq_desc *desc)
-{
-	switch (desc->depth) {
-	case 0:
- err_out:
-		WARN(1, KERN_WARNING "Unbalanced enable for IRQ %d\n",
-		     irq_desc_get_irq(desc));
-		break;
-	case 1: {
-		if (desc->istate & IRQS_SUSPENDED)
-			goto err_out;
-
-		irq_settings_set_noprobe(desc);
-
-		irq_startup(desc, IRQ_RESEND, IRQ_START_FORCE);
-		break;
-	}
-	default:
-		desc->depth--;
-	}
-}
-
 int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
 {
 	struct irq_chip *chip = desc->irq_data.chip;
@@ -249,7 +227,24 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 
 	if (shared && (desc->istate & IRQS_SPURIOUS_DISABLED)) {
 		desc->istate &= ~IRQS_SPURIOUS_DISABLED;
-		__enable_irq(desc);
+		switch (desc->depth) {
+		case 0:
+ err_out:
+			WARN(1, KERN_WARNING "Unbalanced enable for IRQ %d\n",
+			     irq_desc_get_irq(desc));
+			break;
+		case 1: {
+			if (desc->istate & IRQS_SUSPENDED)
+				goto err_out;
+
+			irq_settings_set_noprobe(desc);
+
+			irq_startup(desc, IRQ_RESEND, IRQ_START_FORCE);
+			break;
+		}
+		default:
+			desc->depth--;
+		}
 	}
 
 	raw_spin_unlock_irqrestore(&desc->lock, flags);

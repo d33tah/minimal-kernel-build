@@ -241,13 +241,6 @@ static enum kernel_gp_hint get_kernel_gp_address(struct pt_regs *regs,
 
 #define GPFSTR "general protection fault"
 
-static void gp_user_force_sig_segv(struct pt_regs *regs, int trapnr,
-				   unsigned long error_code, const char *str)
-{
-	current->thread.trap_nr = trapnr;
-	force_sig(SIGSEGV);
-}
-
 DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 {
 	char desc[sizeof(GPFSTR) + 50 + 2*sizeof(unsigned long) + 1] = GPFSTR;
@@ -265,7 +258,8 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 		if (fixup_vdso_exception(regs, X86_TRAP_GP, error_code, 0))
 			goto exit;
 
-		gp_user_force_sig_segv(regs, X86_TRAP_GP, error_code, desc);
+		current->thread.trap_nr = X86_TRAP_GP;
+		force_sig(SIGSEGV);
 		goto exit;
 	}
 

@@ -326,8 +326,6 @@ extern int sysenter_setup(void);
 extern struct desc_ptr		early_gdt_descr;
 
 extern void switch_to_new_gdt(int);
-extern void load_direct_gdt(int);
-extern void load_fixmap_gdt(int);
 extern void load_percpu_segment(int);
 extern void cpu_init(void);
 /* cpu_init_secondary declaration removed - no implementation */

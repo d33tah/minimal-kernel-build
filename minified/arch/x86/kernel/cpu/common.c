@@ -270,29 +270,14 @@ void load_percpu_segment(int cpu)
 
 DEFINE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);
 
-void load_direct_gdt(int cpu)
+void switch_to_new_gdt(int cpu)
 {
 	struct desc_ptr gdt_descr;
 
 	gdt_descr.address = (long)get_cpu_gdt_rw(cpu);
 	gdt_descr.size = GDT_SIZE - 1;
 	load_gdt(&gdt_descr);
-}
 
-void load_fixmap_gdt(int cpu)
-{
-	struct desc_ptr gdt_descr;
-
-	gdt_descr.address = (long)get_cpu_gdt_ro(cpu);
-	gdt_descr.size = GDT_SIZE - 1;
-	load_gdt(&gdt_descr);
-}
-
-void switch_to_new_gdt(int cpu)
-{
-	
-	load_direct_gdt(cpu);
-	
 	load_percpu_segment(cpu);
 }
 
@@ -718,6 +703,12 @@ void cpu_init(void)
 
 	fpu__init_cpu();
 
-	load_fixmap_gdt(cpu);
+	{
+		struct desc_ptr gdt_descr;
+
+		gdt_descr.address = (long)get_cpu_gdt_ro(cpu);
+		gdt_descr.size = GDT_SIZE - 1;
+		load_gdt(&gdt_descr);
+	}
 }
 

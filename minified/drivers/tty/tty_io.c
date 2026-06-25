@@ -79,19 +79,6 @@ static inline struct tty_struct *file_tty(struct file *file)
 	return ((struct tty_file_private *)file->private_data)->tty;
 }
 
-int tty_alloc_file(struct file *file)
-{
-	struct tty_file_private *priv;
-
-	priv = kmalloc(sizeof(*priv), GFP_KERNEL);
-	if (!priv)
-		return -ENOMEM;
-
-	file->private_data = priv;
-
-	return 0;
-}
-
 void tty_add_file(struct tty_struct *tty, struct file *file)
 {
 	struct tty_file_private *priv = file->private_data;
@@ -767,6 +754,7 @@ out:
 static int tty_open(struct inode *inode, struct file *filp)
 {
 	struct tty_struct *tty;
+	struct tty_file_private *priv;
 	int retval;
 	dev_t device = inode->i_rdev;
 	unsigned saved_flags = filp->f_flags;
@@ -774,9 +762,10 @@ static int tty_open(struct inode *inode, struct file *filp)
 	nonseekable_open(inode, filp);
 
 retry_open:
-	retval = tty_alloc_file(filp);
-	if (retval)
+	priv = kmalloc(sizeof(*priv), GFP_KERNEL);
+	if (!priv)
 		return -ENOMEM;
+	filp->private_data = priv;
 
 	tty = tty_open_current_tty(device, filp);
 	if (!tty)

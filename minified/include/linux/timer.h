@@ -33,10 +33,6 @@ struct timer_list {
 			__FILE__ ":" __stringify(__LINE__))	\
 	}
 
-#define DEFINE_TIMER(_name, _function)				\
-	struct timer_list _name =				\
-		__TIMER_INITIALIZER(_function, 0)
-
 void init_timer_key(struct timer_list *timer,
 		    void (*func)(struct timer_list *), unsigned int flags,
 		    const char *name, struct lock_class_key *key);
@@ -50,13 +46,8 @@ static inline void init_timer_on_stack_key(struct timer_list *timer,
 	init_timer_key(timer, func, flags, name, key);
 }
 
-#define __init_timer(_timer, _fn, _flags)				\
-	init_timer_key((_timer), (_fn), (_flags), NULL, NULL)
 #define __init_timer_on_stack(_timer, _fn, _flags)			\
 	init_timer_on_stack_key((_timer), (_fn), (_flags), NULL, NULL)
-
-#define timer_setup(timer, callback, flags)			\
-	__init_timer((timer), (callback), (flags))
 
 #define timer_setup_on_stack(timer, callback, flags)		\
 	__init_timer_on_stack((timer), (callback), (flags))
@@ -81,8 +72,5 @@ extern int del_timer(struct timer_list * timer);
 
 extern void init_timers(void);
 struct hrtimer;
-
-#define timers_prepare_cpu	NULL
-#define timers_dead_cpu		NULL
 
 #endif

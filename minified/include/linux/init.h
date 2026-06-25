@@ -39,10 +39,6 @@
 #define __INITRODATA	.section	".init.rodata","a",%progbits
 #define __FINITDATA	.previous
 
-#define __MEMINIT        .section	".meminit.text", "ax"
-#define __MEMINITDATA    .section	".meminit.data", "aw"
-
-#define __REF            .section       ".ref.text", "ax"
 #define __REFDATA        .section       ".ref.data", "aw"
 
 #ifndef __ASSEMBLY__
@@ -123,14 +119,11 @@ extern void (*late_time_init)(void);
 
 #define early_initcall(fn)		__define_initcall(fn, early)
 
-#define pure_initcall(fn)		__define_initcall(fn, 0)
-
 #define core_initcall(fn)		__define_initcall(fn, 1)
 #define core_initcall_sync(fn)		__define_initcall(fn, 1s)
 #define postcore_initcall(fn)		__define_initcall(fn, 2)
 #define postcore_initcall_sync(fn)	__define_initcall(fn, 2s)
 #define arch_initcall(fn)		__define_initcall(fn, 3)
-#define arch_initcall_sync(fn)		__define_initcall(fn, 3s)
 #define subsys_initcall(fn)		__define_initcall(fn, 4)
 #define subsys_initcall_sync(fn)	__define_initcall(fn, 4s)
 #define fs_initcall(fn)			__define_initcall(fn, 5)
@@ -178,12 +171,4 @@ void __init parse_early_options(char *cmdline);
 #define __setup(str, func) 			 
 #endif
 
-#define __nosavedata __section(".data..nosave")
-
-#ifdef MODULE
-#define __exit_p(x) x
-#else
-#define __exit_p(x) NULL
 #endif
-
-#endif  

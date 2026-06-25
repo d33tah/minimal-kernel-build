@@ -19,15 +19,7 @@ extern void ktime_get_coarse_real_ts64(struct timespec64 *ts);
 extern time64_t ktime_get_real_seconds(void);
 
 
-enum tk_offsets {
-	TK_OFFS_REAL,
-	TK_OFFS_BOOT,
-	TK_OFFS_TAI,
-	TK_OFFS_MAX,
-};
-
 extern ktime_t ktime_get(void);
-extern ktime_t ktime_get_with_offset(enum tk_offsets offs);
 
 static inline u64 ktime_get_ns(void)
 {

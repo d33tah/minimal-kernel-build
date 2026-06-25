@@ -178,21 +178,6 @@ struct super_block *sget_fc(struct fs_context *fc,
 
 static DEFINE_IDA(unnamed_dev_ida);
 
-int set_anon_super(struct super_block *s, void *data)
-{
-	int dev;
-
-	dev = ida_alloc_range(&unnamed_dev_ida, 1, (1 << MINORBITS) - 1,
-			GFP_ATOMIC);
-	if (dev == -ENOSPC)
-		dev = -EMFILE;
-	if (dev < 0)
-		return dev;
-
-	s->s_dev = MKDEV(0, dev);
-	return 0;
-}
-
 void kill_anon_super(struct super_block *sb)
 {
 	dev_t dev = sb->s_dev;
@@ -207,7 +192,17 @@ void kill_litter_super(struct super_block *sb)
 
 int set_anon_super_fc(struct super_block *sb, struct fs_context *fc)
 {
-	return set_anon_super(sb, NULL);
+	int dev;
+
+	dev = ida_alloc_range(&unnamed_dev_ida, 1, (1 << MINORBITS) - 1,
+			GFP_ATOMIC);
+	if (dev == -ENOSPC)
+		dev = -EMFILE;
+	if (dev < 0)
+		return dev;
+
+	sb->s_dev = MKDEV(0, dev);
+	return 0;
 }
 
 int get_tree_nodev(struct fs_context *fc,

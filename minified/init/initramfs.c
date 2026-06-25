@@ -506,13 +506,6 @@ extern unsigned long __initramfs_size;
 #include <linux/initrd.h>
 #include <linux/kexec.h>
 
-void __weak __init free_initrd_mem(unsigned long start, unsigned long end)
-{
-
-	free_reserved_area((void *)start, (void *)end, POISON_FREE_INITMEM,
-			"initrd");
-}
-
 static void __init do_populate_rootfs(void)
 {
 	 
@@ -533,7 +526,8 @@ static void __init do_populate_rootfs(void)
 done:
 	 
 	if (!do_retain_initrd && initrd_start)
-		free_initrd_mem(initrd_start, initrd_end);
+		free_reserved_area((void *)initrd_start, (void *)initrd_end,
+				POISON_FREE_INITMEM, "initrd");
 	initrd_start = 0;
 	initrd_end = 0;
 

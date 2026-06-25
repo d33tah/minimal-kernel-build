@@ -187,12 +187,6 @@ static inline bool cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab,
 	return false;
 }
 
-slab_flags_t kmem_cache_flags(unsigned int object_size,
-	slab_flags_t flags, const char *name)
-{
-	return flags;
-}
-
 static __always_inline bool slab_free_hook(struct kmem_cache *s,
 						void *x)
 {
@@ -968,7 +962,7 @@ static int calculate_sizes(struct kmem_cache *s)
 
 static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 {
-	s->flags = kmem_cache_flags(s->size, flags, s->name);
+	s->flags = flags;
 
 	if (!calculate_sizes(s))
 		return -EINVAL;

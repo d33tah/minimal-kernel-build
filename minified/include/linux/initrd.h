@@ -8,7 +8,6 @@
 extern int initrd_below_start_ok;
 
 extern unsigned long initrd_start, initrd_end;
-extern void free_initrd_mem(unsigned long, unsigned long);
 
 extern void wait_for_initramfs(void);
 

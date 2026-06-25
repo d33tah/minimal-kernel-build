@@ -740,11 +740,13 @@ failed:
 	return NULL;
 }
 
-bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
-			 int highest_zoneidx, unsigned int alloc_flags,
-			 long free_pages)
+static inline bool zone_watermark_fast(struct zone *z, unsigned int order,
+				unsigned long mark, int highest_zoneidx,
+				unsigned int alloc_flags, gfp_t gfp_mask)
 {
-	/* Simplified watermark check for minimal kernel */
+	/* Simplified fast watermark check for minimal kernel
+	 * (folded from the sole-caller-only __zone_watermark_ok). */
+	long free_pages = zone_page_state(z, NR_FREE_PAGES);
 	long min = mark;
 
 	/* Apply alloc_flags adjustments */
@@ -755,16 +757,6 @@ bool __zone_watermark_ok(struct zone *z, unsigned int order, unsigned long mark,
 
 	/* Basic free pages check (lowmem_reserve is always 0 in this minimal kernel) */
 	return free_pages > min;
-}
-
-
-static inline bool zone_watermark_fast(struct zone *z, unsigned int order,
-				unsigned long mark, int highest_zoneidx,
-				unsigned int alloc_flags, gfp_t gfp_mask)
-{
-	/* Simplified fast watermark check for minimal kernel */
-	long free_pages = zone_page_state(z, NR_FREE_PAGES);
-	return __zone_watermark_ok(z, order, mark, highest_zoneidx, alloc_flags, free_pages);
 }
 
 

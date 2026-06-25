@@ -31,9 +31,6 @@
 #include <linux/pfn.h>
 #include <linux/backing-dev.h>
 
-/* --- 2025-12-08 00:14 --- Inlined from page-isolation.h */
-void set_pageblock_migratetype(struct page *page, int migratetype);
-/* end page-isolation.h */
 
 struct alloc_context;
 
@@ -172,15 +169,7 @@ void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 	}
 }
 
-void set_pageblock_migratetype(struct page *page, int migratetype)
-{
-	if (unlikely(page_group_by_mobility_disabled &&
-		     migratetype < MIGRATE_PCPTYPES))
-		migratetype = MIGRATE_UNMOVABLE;
-
-	set_pfnblock_flags_mask(page, (unsigned long)migratetype,
-				page_to_pfn(page), MIGRATETYPE_MASK);
-}
+/* set_pageblock_migratetype() folded into its sole caller memmap_init_range(). */
 
 static inline unsigned int order_to_pindex(int migratetype, int order)
 {
@@ -227,17 +216,7 @@ static void prep_compound_tail(struct page *head, int tail_idx)
 	set_compound_head(p, head);
 }
 
-void prep_compound_page(struct page *page, unsigned int order)
-{
-	int i;
-	int nr_pages = 1 << order;
-
-	__SetPageHead(page);
-	for (i = 1; i < nr_pages; i++)
-		prep_compound_tail(page, i);
-
-	prep_compound_head(page, order);
-}
+/* prep_compound_page() folded into its sole caller prep_new_page() below. */
 
 static inline void set_buddy_order(struct page *page, unsigned int order)
 {
@@ -420,10 +399,16 @@ static void prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags
 {
 	post_alloc_hook(page, order, gfp_flags);
 
-	if (order && (gfp_flags & __GFP_COMP))
-		prep_compound_page(page, order);
+	if (order && (gfp_flags & __GFP_COMP)) {
+		int i, nr_pages = 1 << order;
 
-	
+		__SetPageHead(page);
+		for (i = 1; i < nr_pages; i++)
+			prep_compound_tail(page, i);
+		prep_compound_head(page, order);
+	}
+
+
 	if (alloc_flags & ALLOC_NO_WATERMARKS)
 		set_page_pfmemalloc(page);
 	else
@@ -1055,7 +1040,14 @@ static void __meminit memmap_init_range(unsigned long size, int nid, unsigned lo
 
 		
 		if (IS_ALIGNED(pfn, pageblock_nr_pages)) {
-			set_pageblock_migratetype(page, migratetype);
+			int mt = migratetype;
+
+			if (unlikely(page_group_by_mobility_disabled &&
+				     mt < MIGRATE_PCPTYPES))
+				mt = MIGRATE_UNMOVABLE;
+			set_pfnblock_flags_mask(page, (unsigned long)mt,
+						page_to_pfn(page),
+						MIGRATETYPE_MASK);
 			cond_resched();
 		}
 		pfn++;

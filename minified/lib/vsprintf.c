@@ -509,19 +509,6 @@ static char *default_pointer(char *buf, char *end, const void *ptr,
 
 
 static noinline_for_stack
-char *pointer(const char *fmt, char *buf, char *end, void *ptr,
-	      struct printf_spec spec)
-{
-	/*
-	 * %pV (va_format) was the only pointer extension still wired up; its
-	 * sole consumer (fs/fs_context.c logfc) only reached it through printk
-	 * (a no-op with CONFIG_PRINTK off), so the arm is dead.  All other
-	 * pointers fall through to the hashed-pointer path.
-	 */
-	return default_pointer(buf, end, ptr, spec);
-}
-
-static noinline_for_stack
 int format_decode(const char *fmt, struct printf_spec *spec)
 {
 	const char *start = fmt;
@@ -727,8 +714,15 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 			break;
 
 		case FORMAT_TYPE_PTR:
-			str = pointer(fmt, str, end, va_arg(args, void *),
-				      spec);
+			/*
+			 * %pV (va_format) was the only pointer extension still
+			 * wired up; its sole consumer (fs/fs_context.c logfc)
+			 * only reached it through printk (a no-op with
+			 * CONFIG_PRINTK off), so the arm is dead.  All pointers
+			 * fall through to the hashed-pointer path.
+			 */
+			str = default_pointer(str, end, va_arg(args, void *),
+					      spec);
 			while (isalnum(*fmt))
 				fmt++;
 			break;

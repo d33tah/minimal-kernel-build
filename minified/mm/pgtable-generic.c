@@ -21,8 +21,8 @@ void pmd_clear_bad(pmd_t *pmd)
 }
 
 /*
- * ptep_set_access_flags / ptep_clear_flush_young were here, both guarded by
- * #ifndef __HAVE_ARCH_PTEP_{SET_ACCESS_FLAGS,CLEAR_YOUNG_FLUSH}. x86 defines
- * both arch overrides (asm/pgtable.h), so the generic out-of-line bodies are
- * never compiled -- removed as dead code.
+ * ptep_set_access_flags was here, guarded by
+ * #ifndef __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS. x86 defines the arch override
+ * (asm/pgtable.h), so the generic out-of-line body is never compiled --
+ * removed as dead code.
  */

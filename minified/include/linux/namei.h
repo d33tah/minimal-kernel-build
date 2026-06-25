@@ -7,10 +7,6 @@
 #include <linux/fcntl.h>
 #include <linux/errno.h>
 
-enum { MAX_NESTED_LINKS = 8 };
-
-#define MAXSYMLINKS 40
-
 enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT};
 
 #define LOOKUP_FOLLOW		0x0001	 

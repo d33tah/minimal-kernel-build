@@ -48,40 +48,29 @@ struct cyc2ns {
 static DEFINE_PER_CPU_ALIGNED(struct cyc2ns, cyc2ns);
 
 
-__always_inline void cyc2ns_read_begin(struct cyc2ns_data *data)
+static __always_inline unsigned long long cycles_2_ns(unsigned long long cyc)
 {
+	struct cyc2ns_data data;
+	unsigned long long ns;
 	int seq, idx;
 
+	/* folded sole callers cyc2ns_read_begin()/cyc2ns_read_end() inline */
 	preempt_disable_notrace();
 
 	do {
 		seq = this_cpu_read(cyc2ns.seq.seqcount.sequence);
 		idx = seq & 1;
 
-		data->cyc2ns_offset = this_cpu_read(cyc2ns.data[idx].cyc2ns_offset);
-		data->cyc2ns_mul    = this_cpu_read(cyc2ns.data[idx].cyc2ns_mul);
-		data->cyc2ns_shift  = this_cpu_read(cyc2ns.data[idx].cyc2ns_shift);
+		data.cyc2ns_offset = this_cpu_read(cyc2ns.data[idx].cyc2ns_offset);
+		data.cyc2ns_mul    = this_cpu_read(cyc2ns.data[idx].cyc2ns_mul);
+		data.cyc2ns_shift  = this_cpu_read(cyc2ns.data[idx].cyc2ns_shift);
 
 	} while (unlikely(seq != this_cpu_read(cyc2ns.seq.seqcount.sequence)));
-}
-
-__always_inline void cyc2ns_read_end(void)
-{
-	preempt_enable_notrace();
-}
-
-
-static __always_inline unsigned long long cycles_2_ns(unsigned long long cyc)
-{
-	struct cyc2ns_data data;
-	unsigned long long ns;
-
-	cyc2ns_read_begin(&data);
 
 	ns = data.cyc2ns_offset;
 	ns += mul_u64_u32_shr(cyc, data.cyc2ns_mul, data.cyc2ns_shift);
 
-	cyc2ns_read_end();
+	preempt_enable_notrace();
 
 	return ns;
 }

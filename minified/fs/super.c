@@ -193,11 +193,6 @@ int get_anon_bdev(dev_t *p)
 	return 0;
 }
 
-void free_anon_bdev(dev_t dev)
-{
-	ida_free(&unnamed_dev_ida, MINOR(dev));
-}
-
 int set_anon_super(struct super_block *s, void *data)
 {
 	return get_anon_bdev(&s->s_dev);
@@ -207,7 +202,7 @@ void kill_anon_super(struct super_block *sb)
 {
 	dev_t dev = sb->s_dev;
 	generic_shutdown_super(sb);
-	free_anon_bdev(dev);
+	ida_free(&unnamed_dev_ida, MINOR(dev));
 }
 
 void kill_litter_super(struct super_block *sb)

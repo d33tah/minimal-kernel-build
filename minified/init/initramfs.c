@@ -80,34 +80,6 @@ static inline int hash(int major, int minor, int ino)
 	return tmp & 31;
 }
 
-static char __init *find_link(int major, int minor, int ino,
-			      umode_t mode, char *name)
-{
-	struct hash **p, *q;
-	for (p = head + hash(major, minor, ino); *p; p = &(*p)->next) {
-		if ((*p)->ino != ino)
-			continue;
-		if ((*p)->minor != minor)
-			continue;
-		if ((*p)->major != major)
-			continue;
-		if (((*p)->mode ^ mode) & S_IFMT)
-			continue;
-		return (*p)->name;
-	}
-	q = kmalloc(sizeof(struct hash), GFP_KERNEL);
-	if (!q)
-		panic_show_mem("can't allocate link hash entry");
-	q->major = major;
-	q->minor = minor;
-	q->ino = ino;
-	q->mode = mode;
-	strcpy(q->name, name);
-	q->next = NULL;
-	*p = q;
-	return NULL;
-}
-
 static void __init free_hash(void)
 {
 	struct hash **p, *q;
@@ -294,7 +266,33 @@ static void __init clean_path(char *path, umode_t fmode)
 static int __init maybe_link(void)
 {
 	if (nlink >= 2) {
-		char *old = find_link(major, minor, ino, mode, collected);
+		struct hash **p, *q;
+		char *old = NULL;
+
+		for (p = head + hash(major, minor, ino); *p; p = &(*p)->next) {
+			if ((*p)->ino != ino)
+				continue;
+			if ((*p)->minor != minor)
+				continue;
+			if ((*p)->major != major)
+				continue;
+			if (((*p)->mode ^ mode) & S_IFMT)
+				continue;
+			old = (*p)->name;
+			break;
+		}
+		if (!*p) {
+			q = kmalloc(sizeof(struct hash), GFP_KERNEL);
+			if (!q)
+				panic_show_mem("can't allocate link hash entry");
+			q->major = major;
+			q->minor = minor;
+			q->ino = ino;
+			q->mode = mode;
+			strcpy(q->name, collected);
+			q->next = NULL;
+			*p = q;
+		}
 		if (old) {
 			clean_path(collected, 0);
 			return (init_link(old, collected) < 0) ? -1 : 1;

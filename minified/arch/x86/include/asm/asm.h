@@ -5,13 +5,11 @@
 #ifdef __ASSEMBLY__
 # define __ASM_FORM(x, ...)		x,## __VA_ARGS__
 # define __ASM_FORM_RAW(x, ...)		x,## __VA_ARGS__
-# define __ASM_FORM_COMMA(x, ...)	x,## __VA_ARGS__,
 # define __ASM_REGPFX			%
 #else
 #include <linux/stringify.h>
 # define __ASM_FORM(x, ...)		" " __stringify(x,##__VA_ARGS__) " "
 # define __ASM_FORM_RAW(x, ...)		    __stringify(x,##__VA_ARGS__)
-# define __ASM_FORM_COMMA(x, ...)	" " __stringify(x,##__VA_ARGS__) ","
 # define __ASM_REGPFX			%%
 #endif
 
@@ -26,46 +24,17 @@
 #define __ASM_REG(reg)         __ASM_SEL_RAW(e##reg, r##reg)
 
 #define _ASM_PTR	__ASM_SEL(.long, .quad)
-#define _ASM_ALIGN	__ASM_SEL(.balign 4, .balign 8)
-
-#define _ASM_MOV	__ASM_SIZE(mov)
-#define _ASM_INC	__ASM_SIZE(inc)
-#define _ASM_DEC	__ASM_SIZE(dec)
-#define _ASM_ADD	__ASM_SIZE(add)
-#define _ASM_SUB	__ASM_SIZE(sub)
-#define _ASM_XADD	__ASM_SIZE(xadd)
-#define _ASM_MUL	__ASM_SIZE(mul)
 
 #define _ASM_AX		__ASM_REG(ax)
 #define _ASM_BX		__ASM_REG(bx)
 #define _ASM_CX		__ASM_REG(cx)
 #define _ASM_DX		__ASM_REG(dx)
 #define _ASM_SP		__ASM_REG(sp)
-#define _ASM_BP		__ASM_REG(bp)
-#define _ASM_SI		__ASM_REG(si)
-#define _ASM_DI		__ASM_REG(di)
 
- 
+
 #define _ASM_RIP(x)	__ASM_SEL_RAW(x, x (__ASM_REGPFX rip))
 
-/* 32-bit only kernel - i386 calling convention */
-#define _ASM_ARG1	_ASM_AX
-#define _ASM_ARG2	_ASM_DX
-#define _ASM_ARG3	_ASM_CX
 
-#define _ASM_ARG1L	eax
-#define _ASM_ARG2L	edx
-#define _ASM_ARG3L	ecx
-
-#define _ASM_ARG1W	ax
-#define _ASM_ARG2W	dx
-#define _ASM_ARG3W	cx
-
-#define _ASM_ARG1B	al
-#define _ASM_ARG2B	dl
-#define _ASM_ARG3B	cl
-
- 
 #ifdef __GCC_ASM_FLAG_OUTPUTS__
 # define CC_SET(c) "\n\t/* output condition code " #c "*/\n"
 # define CC_OUT(c) "=@cc" #c
@@ -89,9 +58,7 @@
 	.long type ;						\
 	.popsection
 
-#  define _ASM_NOKPROBE(entry)
-
-#else  
+#else
 
 # define DEFINE_EXTABLE_TYPE_REG \
 	".macro extable_type_reg type:req reg:req\n"						\
@@ -151,11 +118,5 @@ register unsigned long current_stack_pointer asm(_ASM_SP);
 #define _ASM_EXTABLE_UA(from, to)				\
 	_ASM_EXTABLE_TYPE(from, to, EX_TYPE_UACCESS)
 
-#define _ASM_EXTABLE_CPY(from, to)				\
-	_ASM_EXTABLE_TYPE(from, to, EX_TYPE_COPY)
-
-#define _ASM_EXTABLE_FAULT(from, to)				\
-	_ASM_EXTABLE_TYPE(from, to, EX_TYPE_FAULT)
-
-#endif  
+#endif
 #endif  

@@ -7,26 +7,6 @@ static inline void task_group_account_field(struct task_struct *p, int index,
 	__this_cpu_add(kernel_cpustat.cpustat[index], tmp);
 }
 
-void account_system_index_time(struct task_struct *p,
-			       u64 cputime, enum cpu_usage_stat index)
-{
-	account_group_system_time(p, cputime);
-
-	 
-	task_group_account_field(p, index, cputime);
-}
-
-void account_idle_time(u64 cputime)
-{
-	u64 *cpustat = kcpustat_this_cpu->cpustat;
-	struct rq *rq = this_rq();
-
-	if (atomic_read(&rq->nr_iowait) > 0)
-		cpustat[CPUTIME_IOWAIT] += cputime;
-	else
-		cpustat[CPUTIME_IDLE] += cputime;
-}
-
 void account_process_tick(struct task_struct *p, int user_tick)
 {
 	u64 cputime = TICK_NSEC;
@@ -49,9 +29,17 @@ void account_process_tick(struct task_struct *p, int user_tick)
 		else
 			index = CPUTIME_SYSTEM;
 
-		account_system_index_time(p, cputime, index);
+		account_group_system_time(p, cputime);
+
+		task_group_account_field(p, index, cputime);
 	} else {
-		account_idle_time(cputime);
+		u64 *cpustat = kcpustat_this_cpu->cpustat;
+		struct rq *rq = this_rq();
+
+		if (atomic_read(&rq->nr_iowait) > 0)
+			cpustat[CPUTIME_IOWAIT] += cputime;
+		else
+			cpustat[CPUTIME_IDLE] += cputime;
 	}
 }
 

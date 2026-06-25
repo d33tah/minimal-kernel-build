@@ -212,11 +212,6 @@ out_free:
 	return ERR_PTR(retval);
 }
 
-struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
-{
-	return idr_find(&ns->idr, nr);
-}
-
 static struct pid **task_pid_ptr(struct task_struct *task, enum pid_type type)
 {
 	return (type == PIDTYPE_PID) ?
@@ -271,7 +266,7 @@ struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
 {
 	RCU_LOCKDEP_WARN(!rcu_read_lock_held(),
 			 "find_task_by_pid_ns() needs rcu_read_lock() protection");
-	return pid_task(find_pid_ns(nr, ns), PIDTYPE_PID);
+	return pid_task(idr_find(&ns->idr, nr), PIDTYPE_PID);
 }
 
 

@@ -130,12 +130,6 @@ DEFINE_IDTENTRY(exc_overflow)
 }
 
 
-static inline void handle_invalid_op(struct pt_regs *regs)
-{
-	do_error_trap(regs, 0, "invalid opcode", X86_TRAP_UD, SIGILL,
-		      ILL_ILLOPN, error_get_trap_addr(regs));
-}
-
 DEFINE_IDTENTRY_RAW(exc_invalid_op)
 {
 	irqentry_state_t state;
@@ -146,7 +140,8 @@ DEFINE_IDTENTRY_RAW(exc_invalid_op)
 	 * fixup never recovered (always returned false). Drop it.
 	 */
 	state = irqentry_enter(regs);
-	handle_invalid_op(regs);
+	do_error_trap(regs, 0, "invalid opcode", X86_TRAP_UD, SIGILL,
+		      ILL_ILLOPN, error_get_trap_addr(regs));
 	irqentry_exit(regs, state);
 }
 

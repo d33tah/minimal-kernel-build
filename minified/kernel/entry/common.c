@@ -15,31 +15,24 @@ static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 	arch_enter_from_user_mode(regs);
 }
 
-static long syscall_trace_enter(struct pt_regs *regs, long syscall,
-				unsigned long work)
-{
-	long ret = 0;
-
-
-	if (work & (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)) {
-		ret = ptrace_report_syscall_entry(regs);
-		if (ret || (work & SYSCALL_WORK_SYSCALL_EMU))
-			return -1L;
-	}
-
-
-	syscall = syscall_get_nr(current, regs);
-
-	return ret ? : syscall;
-}
-
 static __always_inline long
 __syscall_enter_from_user_work(struct pt_regs *regs, long syscall)
 {
 	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
 
-	if (work & SYSCALL_WORK_ENTER)
-		syscall = syscall_trace_enter(regs, syscall, work);
+	if (work & SYSCALL_WORK_ENTER) {
+		long ret = 0;
+
+		if (work & (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)) {
+			ret = ptrace_report_syscall_entry(regs);
+			if (ret || (work & SYSCALL_WORK_SYSCALL_EMU))
+				return -1L;
+		}
+
+		syscall = syscall_get_nr(current, regs);
+
+		syscall = ret ? : syscall;
+	}
 
 	return syscall;
 }

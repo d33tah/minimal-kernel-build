@@ -59,12 +59,6 @@ void clockevents_switch_state(struct clock_event_device *dev,
 	}
 }
 
-void clockevents_shutdown(struct clock_event_device *dev)
-{
-	clockevents_switch_state(dev, CLOCK_EVT_STATE_SHUTDOWN);
-	dev->next_event = KTIME_MAX;
-}
-
 /*
  * TICK_ONESHOT/HIGH_RES_TIMERS/NO_HZ are all unset and broadcast is off, so the
  * tick device is only ever switched to PERIODIC state (tick_setup_periodic) and
@@ -142,7 +136,8 @@ void clockevents_exchange_device(struct clock_event_device *old,
 
 	if (new) {
 		BUG_ON(!clockevent_state_detached(new));
-		clockevents_shutdown(new);
+		clockevents_switch_state(new, CLOCK_EVT_STATE_SHUTDOWN);
+		new->next_event = KTIME_MAX;
 	}
 }
 

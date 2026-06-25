@@ -188,15 +188,6 @@ static void ___d_drop(struct dentry *dentry)
 	hlist_bl_unlock(b);
 }
 
-void __d_drop(struct dentry *dentry)
-{
-	if (!d_unhashed(dentry)) {
-		___d_drop(dentry);
-		dentry->d_hash.pprev = NULL;
-		write_seqcount_invalidate(&dentry->d_seq);
-	}
-}
-
 static void __dentry_kill(struct dentry *dentry)
 {
 	struct dentry *parent = NULL;
@@ -213,7 +204,11 @@ static void __dentry_kill(struct dentry *dentry)
 	if (dentry->d_flags & DCACHE_LRU_LIST)
 		d_lru_del(dentry);
 
-	__d_drop(dentry);
+	if (!d_unhashed(dentry)) {
+		___d_drop(dentry);
+		dentry->d_hash.pprev = NULL;
+		write_seqcount_invalidate(&dentry->d_seq);
+	}
 	/* d_child sibling list is never iterated; no unlink needed */
 	if (parent)
 		spin_unlock(&parent->d_lock);

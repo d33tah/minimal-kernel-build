@@ -19,18 +19,13 @@
  * truncate_inode_folio, truncate_inode_partial_folio, folio_invalidate,
  * __clear_shadow_entry -- were ever called).  The function always returns at
  * the mapping_empty() guard, so the dead iteration and its helper cluster were
- * folded away; the public entry point is kept for the static callers.
+ * folded away.  truncate_inode_pages_range had a single caller
+ * (truncate_inode_pages); its surviving guard body was folded in directly.
  */
-void truncate_inode_pages_range(struct address_space *mapping,
-				loff_t lstart, loff_t lend)
+void truncate_inode_pages(struct address_space *mapping, loff_t lstart)
 {
 	if (mapping_empty(mapping))
 		return;
-}
-
-void truncate_inode_pages(struct address_space *mapping, loff_t lstart)
-{
-	truncate_inode_pages_range(mapping, lstart, (loff_t)-1);
 }
 
 void truncate_inode_pages_final(struct address_space *mapping)

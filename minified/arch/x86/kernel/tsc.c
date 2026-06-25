@@ -553,19 +553,13 @@ static bool __init determine_cpu_tsc_frequencies(bool early)
 	return true;
 }
 
-static unsigned long __init get_loops_per_jiffy(void)
-{
-	u64 lpj = (u64)tsc_khz * KHZ;
-
-	do_div(lpj, HZ);
-	return lpj;
-}
-
 static void __init tsc_enable_sched_clock(void)
 {
 	struct cyc2ns *c2n = this_cpu_ptr(&cyc2ns);
+	u64 lpj = (u64)tsc_khz * KHZ;
 
-	loops_per_jiffy = get_loops_per_jiffy();
+	do_div(lpj, HZ);
+	loops_per_jiffy = lpj;
 	use_tsc_delay();
 
 	seqcount_latch_init(&c2n->seq);

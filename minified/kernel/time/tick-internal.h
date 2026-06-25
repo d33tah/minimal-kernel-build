@@ -24,12 +24,9 @@ DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
 extern ktime_t tick_next_period;
 extern int tick_do_timer_cpu __read_mostly;
 
-extern void tick_setup_periodic(struct clock_event_device *dev, int broadcast);
 extern void tick_handle_periodic(struct clock_event_device *dev);
 extern void tick_check_new_device(struct clock_event_device *dev);
 /* tick_suspend, tick_resume removed - unused */
-extern bool tick_check_replacement(struct clock_event_device *curdev,
-				   struct clock_event_device *newdev);
 
 static inline enum clock_event_state clockevent_get_state(struct clock_event_device *dev)
 {

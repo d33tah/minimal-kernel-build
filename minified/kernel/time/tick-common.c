@@ -47,19 +47,6 @@ void tick_handle_periodic(struct clock_event_device *dev)
 	 */
 }
 
-void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
-{
-	tick_set_periodic_handler(dev, broadcast);
-
-	/*
-	 * The clock event device always carries CLOCK_EVT_FEAT_PERIODIC and
-	 * broadcast is off, so the device is always put in PERIODIC state; the
-	 * oneshot setup branch was dead.
-	 */
-	clockevents_switch_state(dev, CLOCK_EVT_STATE_PERIODIC);
-}
-
-
 static void tick_setup_device(struct tick_device *td,
 			      struct clock_event_device *newdev, int cpu,
 			      const struct cpumask *cpumask)
@@ -89,9 +76,11 @@ static void tick_setup_device(struct tick_device *td,
 	 * No broadcast device on this build (tick_device_uses_broadcast always
 	 * false), and TICK_ONESHOT/NO_HZ are unset so td->mode is only ever set
 	 * to TICKDEV_MODE_PERIODIC -- the broadcast and oneshot setup branches
-	 * were dead.
+	 * were dead. broadcast is always off, so the device always goes to
+	 * PERIODIC state; the oneshot setup branch was dead.
 	 */
-	tick_setup_periodic(newdev, 0);
+	tick_set_periodic_handler(newdev, 0);
+	clockevents_switch_state(newdev, CLOCK_EVT_STATE_PERIODIC);
 }
 
 static bool tick_check_percpu(struct clock_event_device *curdev,
@@ -123,15 +112,6 @@ static bool tick_check_preferred(struct clock_event_device *curdev,
 	       !cpumask_equal(curdev->cpumask, newdev->cpumask);
 }
 
-bool tick_check_replacement(struct clock_event_device *curdev,
-			    struct clock_event_device *newdev)
-{
-	if (!tick_check_percpu(curdev, newdev, smp_processor_id()))
-		return false;
-
-	return tick_check_preferred(curdev, newdev);
-}
-
 void tick_check_new_device(struct clock_event_device *newdev)
 {
 	struct clock_event_device *curdev;
@@ -147,7 +127,9 @@ void tick_check_new_device(struct clock_event_device *newdev)
 	 * returns (tick_install_broadcast_device was a no-op) and curdev is
 	 * never a broadcast device (tick_is_broadcast_device always false).
 	 */
-	if (!tick_check_replacement(curdev, newdev))
+	if (!tick_check_percpu(curdev, newdev, smp_processor_id()))
+		return;
+	if (!tick_check_preferred(curdev, newdev))
 		return;
 
 	clockevents_exchange_device(curdev, newdev);

@@ -177,22 +177,17 @@ static void xa_node_free(struct xa_node *node)
 	call_rcu(&node->rcu_head, radix_tree_node_rcu_free);
 }
 
-void xas_destroy(struct xa_state *xas)
-{
-	struct xa_node *next, *node = xas->xa_alloc;
-
-	while (node) {
-		XA_NODE_BUG_ON(node, !list_empty(&node->private_list));
-		next = rcu_dereference_raw(node->parent);
-		radix_tree_node_rcu_free(&node->rcu_head);
-		xas->xa_alloc = node = next;
-	}
-}
-
 bool xas_nomem(struct xa_state *xas, gfp_t gfp)
 {
 	if (xas->xa_node != XA_ERROR(-ENOMEM)) {
-		xas_destroy(xas);
+		struct xa_node *next, *node = xas->xa_alloc;
+
+		while (node) {
+			XA_NODE_BUG_ON(node, !list_empty(&node->private_list));
+			next = rcu_dereference_raw(node->parent);
+			radix_tree_node_rcu_free(&node->rcu_head);
+			xas->xa_alloc = node = next;
+		}
 		return false;
 	}
 	if (xas->xa->xa_flags & XA_FLAGS_ACCOUNT)

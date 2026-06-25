@@ -11,21 +11,11 @@
 
 #include "physaddr.h"
 
-unsigned long task_size_32bit(void)
-{
-	return IA32_PAGE_OFFSET;
-}
-
-unsigned long task_size_64bit(int full_addr_space)
-{
-	return full_addr_space ? TASK_SIZE_MAX : DEFAULT_MAP_WINDOW;
-}
-
 static unsigned long stack_maxrandom_size(unsigned long task_size)
 {
 	unsigned long max = 0;
 	if (current->flags & PF_RANDOMIZE) {
-		max = (-1UL) & __STACK_RND_MASK(task_size == task_size_32bit());
+		max = (-1UL) & __STACK_RND_MASK(task_size == IA32_PAGE_OFFSET);
 		max <<= PAGE_SHIFT;
 	}
 
@@ -99,7 +89,7 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 		mm->get_unmapped_area = arch_get_unmapped_area_topdown;
 
 	arch_pick_mmap_base(&mm->mmap_base,
-			arch_rnd(mmap64_rnd_bits), task_size_64bit(0),
+			arch_rnd(mmap64_rnd_bits), DEFAULT_MAP_WINDOW,
 			rlim_stack);
 
 }

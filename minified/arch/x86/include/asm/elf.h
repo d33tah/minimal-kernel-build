@@ -122,8 +122,6 @@ static inline int mmap_is_ia32(void)
 	return IS_ENABLED(CONFIG_X86_32);
 }
 
-extern unsigned long task_size_32bit(void);
-extern unsigned long task_size_64bit(int full_addr_space);
 extern unsigned long get_sigframe_size(void);
 
 

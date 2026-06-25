@@ -12,28 +12,12 @@
 
 
 static __always_inline __must_check unsigned long
-__copy_from_user_inatomic(void *to, const void __user *from, unsigned long n)
-{
-	instrument_copy_from_user(to, from, n);
-	check_object_size(to, n, false);
-	return raw_copy_from_user(to, from, n);
-}
-
-static __always_inline __must_check unsigned long
 __copy_from_user(void *to, const void __user *from, unsigned long n)
 {
 	might_fault();
 	instrument_copy_from_user(to, from, n);
 	check_object_size(to, n, false);
 	return raw_copy_from_user(to, from, n);
-}
-
-static __always_inline __must_check unsigned long
-__copy_to_user_inatomic(void __user *to, const void *from, unsigned long n)
-{
-	instrument_copy_to_user(to, from, n);
-	check_object_size(from, n, true);
-	return raw_copy_to_user(to, from, n);
 }
 
 static __always_inline __must_check unsigned long
@@ -44,25 +28,6 @@ __copy_to_user(void __user *to, const void *from, unsigned long n)
 	check_object_size(from, n, true);
 	return raw_copy_to_user(to, from, n);
 }
-
-#ifdef INLINE_COPY_FROM_USER
-static inline __must_check unsigned long
-_copy_from_user(void *to, const void __user *from, unsigned long n)
-{
-	unsigned long res = n;
-	might_fault();
-	if (likely(access_ok(from, n))) {
-		instrument_copy_from_user(to, from, n);
-		res = raw_copy_from_user(to, from, n);
-	}
-	if (unlikely(res))
-		memset(to + (n - res), 0, res);
-	return res;
-}
-#else
-extern __must_check unsigned long
-_copy_from_user(void *, const void __user *, unsigned long);
-#endif
 
 #ifdef INLINE_COPY_TO_USER
 static inline __must_check unsigned long
@@ -81,29 +46,12 @@ _copy_to_user(void __user *, const void *, unsigned long);
 #endif
 
 static __always_inline unsigned long __must_check
-copy_from_user(void *to, const void __user *from, unsigned long n)
-{
-	if (likely(check_copy_size(to, n, false)))
-		n = _copy_from_user(to, from, n);
-	return n;
-}
-
-static __always_inline unsigned long __must_check
 copy_to_user(void __user *to, const void *from, unsigned long n)
 {
 	if (likely(check_copy_size(from, n, true)))
 		n = _copy_to_user(to, from, n);
 	return n;
 }
-
-#ifndef copy_mc_to_kernel
-static inline unsigned long __must_check
-copy_mc_to_kernel(void *dst, const void *src, size_t cnt)
-{
-	memcpy(dst, src, cnt);
-	return 0;
-}
-#endif
 
 static __always_inline void pagefault_disabled_inc(void)
 {

@@ -10,8 +10,6 @@
 #include <linux/ns_common.h>
 #include <linux/idr.h>
 
-#define MAX_PID_NS_LEVEL 32
-
 struct pid_namespace {
 	struct idr idr;
 	unsigned int pid_allocated;

@@ -94,29 +94,6 @@ struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 	}
 }
 
-struct rq *task_rq_lock(struct task_struct *p, struct rq_flags *rf)
-	__acquires(p->pi_lock)
-	__acquires(rq->lock)
-{
-	struct rq *rq;
-
-	for (;;) {
-		raw_spin_lock_irqsave(&p->pi_lock, rf->flags);
-		rq = task_rq(p);
-		raw_spin_rq_lock(rq);
-		
-		if (likely(rq == task_rq(p) && !task_on_rq_migrating(p))) {
-			rq_pin_lock(rq, rf);
-			return rq;
-		}
-		raw_spin_rq_unlock(rq);
-		raw_spin_unlock_irqrestore(&p->pi_lock, rf->flags);
-
-		while (unlikely(task_on_rq_migrating(p)))
-			cpu_relax();
-	}
-}
-
 static void update_rq_clock_task(struct rq *rq, s64 delta)
 {
 
@@ -811,7 +788,21 @@ static int __sched_setscheduler(struct task_struct *p,
 
 	/* Skip all permission checks for minimal kernel */
 
-	rq = task_rq_lock(p, &rf);
+	for (;;) {
+		raw_spin_lock_irqsave(&p->pi_lock, rf.flags);
+		rq = task_rq(p);
+		raw_spin_rq_lock(rq);
+
+		if (likely(rq == task_rq(p) && !task_on_rq_migrating(p))) {
+			rq_pin_lock(rq, &rf);
+			break;
+		}
+		raw_spin_rq_unlock(rq);
+		raw_spin_unlock_irqrestore(&p->pi_lock, rf.flags);
+
+		while (unlikely(task_on_rq_migrating(p)))
+			cpu_relax();
+	}
 	update_rq_clock(rq);
 
 	if (p == rq->stop)

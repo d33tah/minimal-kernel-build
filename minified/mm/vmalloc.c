@@ -951,7 +951,9 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 	}
 
 	if (!area->pages) {
-		free_vm_area(area);
+		struct vm_struct *ret = remove_vm_area(area->addr);
+		BUG_ON(ret != area);
+		kfree(area);
 		return NULL;
 	}
 
@@ -1052,14 +1054,5 @@ void *vmalloc(unsigned long size)
 {
 	return __vmalloc_node(size, 1, GFP_KERNEL, NUMA_NO_NODE,
 				__builtin_return_address(0));
-}
-
-
-void free_vm_area(struct vm_struct *area)
-{
-	struct vm_struct *ret;
-	ret = remove_vm_area(area->addr);
-	BUG_ON(ret != area);
-	kfree(area);
 }
 

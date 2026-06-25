@@ -112,7 +112,6 @@ static inline size_t get_vm_area_size(const struct vm_struct *area)
 
 }
 
-void free_vm_area(struct vm_struct *area);
 extern struct vm_struct *remove_vm_area(const void *addr);
 
 

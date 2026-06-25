@@ -372,20 +372,6 @@ void __init page_alloc_init_late(void)
 	/* Stub: skip memory shuffling for minimal system */
 }
 
-static inline void expand(struct zone *zone, struct page *page,
-	int low, int high, int migratetype)
-{
-	unsigned long size = 1 << high;
-
-	while (high > low) {
-		high--;
-		size >>= 1;
-
-		add_to_free_list(&page[size], zone, high, migratetype);
-		set_buddy_order(&page[size], high);
-	}
-}
-
 static void prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags,
 							unsigned int alloc_flags)
 {
@@ -417,14 +403,24 @@ struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
 	struct free_area *area;
 	struct page *page;
 
-	
+
 	for (current_order = order; current_order < MAX_ORDER; ++current_order) {
+		int high = current_order;
+		unsigned long size;
+
 		area = &(zone->free_area[current_order]);
 		page = get_page_from_free_area(area, migratetype);
 		if (!page)
 			continue;
 		del_page_from_free_list(page, zone, current_order);
-		expand(zone, page, order, current_order, migratetype);
+		/* folded sole caller of expand(): split the buddy block down to @order */
+		size = 1 << high;
+		while (high > (int)order) {
+			high--;
+			size >>= 1;
+			add_to_free_list(&page[size], zone, high, migratetype);
+			set_buddy_order(&page[size], high);
+		}
 		set_pcppage_migratetype(page, migratetype);
 		return page;
 	}

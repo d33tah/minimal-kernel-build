@@ -249,24 +249,21 @@ void detach_pid(struct task_struct *task, enum pid_type type)
 	__change_pid(task, type, NULL);
 }
 
-struct task_struct *pid_task(struct pid *pid, enum pid_type type)
-{
-	struct task_struct *result = NULL;
-	if (pid) {
-		struct hlist_node *first;
-		first = rcu_dereference_check(hlist_first_rcu(&pid->tasks[type]),
-					      lockdep_tasklist_lock_is_held());
-		if (first)
-			result = hlist_entry(first, struct task_struct, pid_links[(type)]);
-	}
-	return result;
-}
-
 struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
 {
+	struct pid *pid = idr_find(&ns->idr, nr);
+	struct task_struct *result = NULL;
+
 	RCU_LOCKDEP_WARN(!rcu_read_lock_held(),
 			 "find_task_by_pid_ns() needs rcu_read_lock() protection");
-	return pid_task(idr_find(&ns->idr, nr), PIDTYPE_PID);
+	if (pid) {
+		struct hlist_node *first;
+		first = rcu_dereference_check(hlist_first_rcu(&pid->tasks[PIDTYPE_PID]),
+					      lockdep_tasklist_lock_is_held());
+		if (first)
+			result = hlist_entry(first, struct task_struct, pid_links[(PIDTYPE_PID)]);
+	}
+	return result;
 }
 
 

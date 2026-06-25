@@ -88,20 +88,14 @@ static int _kstrtoull(const char *s, unsigned int base, unsigned long long *res)
 }
 
 noinline
-int kstrtoull(const char *s, unsigned int base, unsigned long long *res)
-{
-	if (s[0] == '+')
-		s++;
-	return _kstrtoull(s, base, res);
-}
-
-noinline
 int kstrtouint(const char *s, unsigned int base, unsigned int *res)
 {
 	unsigned long long tmp;
 	int rv;
 
-	rv = kstrtoull(s, base, &tmp);
+	if (s[0] == '+')
+		s++;
+	rv = _kstrtoull(s, base, &tmp);
 	if (rv < 0)
 		return rv;
 	if (tmp != (unsigned int)tmp)

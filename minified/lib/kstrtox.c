@@ -61,19 +61,13 @@ unsigned int _parse_integer_limit(const char *s, unsigned int base, unsigned lon
 	return rv;
 }
 
-noinline
-unsigned int _parse_integer(const char *s, unsigned int base, unsigned long long *p)
-{
-	return _parse_integer_limit(s, base, p, INT_MAX);
-}
-
 static int _kstrtoull(const char *s, unsigned int base, unsigned long long *res)
 {
 	unsigned long long _res;
 	unsigned int rv;
 
 	s = _parse_integer_fixup_radix(s, &base);
-	rv = _parse_integer(s, base, &_res);
+	rv = _parse_integer_limit(s, base, &_res, INT_MAX);
 	if (rv & KSTRTOX_OVERFLOW)
 		return -ERANGE;
 	if (rv == 0)

@@ -131,11 +131,6 @@ extern void post_alloc_hook(struct page *page, unsigned int order,
 extern void free_unref_page(struct page *page, unsigned int order);
 extern void free_unref_page_list(struct list_head *list);
 
-
-extern void *memmap_alloc(phys_addr_t size, phys_addr_t align,
-			  phys_addr_t min_addr,
-			  int nid, bool exact_nid);
-
 /* split_free_page, find_suitable_fallback declaration removed - unused */
 /* is_exec_mapping, is_stack_mapping, is_data_mapping removed - unused */
 

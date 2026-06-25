@@ -25,18 +25,12 @@ void __init sort_main_extable(void)
 	}
 }
 
-const
-struct exception_table_entry *search_kernel_exception_table(unsigned long addr)
-{
-	return search_extable(__start___ex_table,
-			      __stop___ex_table - __start___ex_table, addr);
-}
-
 const struct exception_table_entry *search_exception_tables(unsigned long addr)
 {
 	const struct exception_table_entry *e;
 
-	e = search_kernel_exception_table(addr);
+	e = search_extable(__start___ex_table,
+			   __stop___ex_table - __start___ex_table, addr);
 	if (!e)
 		e = search_module_extables(addr);
 	if (!e)

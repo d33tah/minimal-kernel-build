@@ -53,47 +53,39 @@ __visible noinstr void do_int80_syscall_32(struct pt_regs *regs)
 	syscall_exit_to_user_mode(regs);
 }
 
-static noinstr bool __do_fast_syscall_32(struct pt_regs *regs)
+__visible noinstr long do_fast_syscall_32(struct pt_regs *regs)
 {
-	int nr = syscall_32_enter(regs);
+	unsigned long landing_pad = (unsigned long)current->mm->context.vdso +
+					vdso_image_32.sym_int80_landing_pad;
+	int nr;
 	int res;
 
-	 
+
+	regs->ip = landing_pad;
+
+	nr = syscall_32_enter(regs);
+
+
 	syscall_enter_from_user_mode_prepare(regs);
 
 	res = get_user(*(u32 *)&regs->bp,
 		       (u32 __user __force *)(unsigned long)(u32)regs->sp);
 
 	if (res) {
-		 
+
 		regs->ax = -EFAULT;
 
 		local_irq_disable();
 		irqentry_exit_to_user_mode(regs);
-		return false;
+		return 0;
 	}
 
 	nr = syscall_enter_from_user_mode_work(regs, nr);
 
-	 
+
 	do_syscall_32_irqs_on(regs, nr);
 
 	syscall_exit_to_user_mode(regs);
-	return true;
-}
-
-__visible noinstr long do_fast_syscall_32(struct pt_regs *regs)
-{
-	 
-	unsigned long landing_pad = (unsigned long)current->mm->context.vdso +
-					vdso_image_32.sym_int80_landing_pad;
-
-	 
-	regs->ip = landing_pad;
-
-	 
-	if (!__do_fast_syscall_32(regs))
-		return 0;
 
 	 
 	return static_cpu_has(X86_FEATURE_SEP) &&

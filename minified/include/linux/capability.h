@@ -79,15 +79,6 @@ static inline bool cap_issubset(const kernel_cap_t a, const kernel_cap_t set)
 	return cap_isclear(dest);
 }
 
-static inline bool capable(int cap)
-{
-	return true;
-}
-static inline bool ns_capable(struct user_namespace *ns, int cap)
-{
-	return true;
-}
-
 /* privileged_wrt_inode_uidgid moved to static in capability.c */
 bool capable_wrt_inode_uidgid(struct user_namespace *mnt_userns,
 			      const struct inode *inode, int cap);

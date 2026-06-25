@@ -57,8 +57,6 @@ typedef u32	errseq_t;
 #define NR_FILE  8192
 #define SEEK_SET	0
 #define SEEK_END	2
-#define RENAME_NOREPLACE	(1 << 0)
-#define RENAME_EXCHANGE		(1 << 1)
 struct files_stat_struct {
 	unsigned long nr_files;
 	unsigned long nr_free_files;

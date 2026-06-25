@@ -241,17 +241,6 @@ static enum kernel_gp_hint get_kernel_gp_address(struct pt_regs *regs,
 
 #define GPFSTR "general protection fault"
 
-static bool gp_try_fixup_and_notify(struct pt_regs *regs, int trapnr,
-				    unsigned long error_code, const char *str)
-{
-	if (fixup_exception(regs, trapnr, error_code, 0))
-		return true;
-
-	current->thread.trap_nr = trapnr;
-
-	return notify_die(DIE_GPF, str, regs, error_code, trapnr, SIGSEGV) == NOTIFY_STOP;
-}
-
 static void gp_user_force_sig_segv(struct pt_regs *regs, int trapnr,
 				   unsigned long error_code, const char *str)
 {
@@ -280,7 +269,12 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 		goto exit;
 	}
 
-	if (gp_try_fixup_and_notify(regs, X86_TRAP_GP, error_code, desc))
+	if (fixup_exception(regs, X86_TRAP_GP, error_code, 0))
+		goto exit;
+
+	current->thread.trap_nr = X86_TRAP_GP;
+
+	if (notify_die(DIE_GPF, desc, regs, error_code, X86_TRAP_GP, SIGSEGV) == NOTIFY_STOP)
 		goto exit;
 
 	if (error_code)

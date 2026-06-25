@@ -34,9 +34,6 @@ extern int oops_in_progress;
 extern int console_printk[];
 
 #define console_loglevel (console_printk[0])
-#define default_message_loglevel (console_printk[1])
-#define minimum_console_loglevel (console_printk[2])
-#define default_console_loglevel (console_printk[3])
 
 extern void console_verbose(void);
 
@@ -81,26 +78,6 @@ static inline void dump_stack(void)
 {
 }
 
-#define __printk_cpu_sync_try_get() true
-#define __printk_cpu_sync_wait()
-#define __printk_cpu_sync_put()
-
-#define printk_cpu_sync_get_irqsave(flags)		\
-	for (;;) {					\
-		local_irq_save(flags);			\
-		if (__printk_cpu_sync_try_get())	\
-			break;				\
-		local_irq_restore(flags);		\
-		__printk_cpu_sync_wait();		\
-	}
-
-#define printk_cpu_sync_put_irqrestore(flags)	\
-	do {					\
-		__printk_cpu_sync_put();	\
-		local_irq_restore(flags);	\
-	} while (0)
-
-
 #ifndef pr_fmt
 #define pr_fmt(fmt) fmt
 #endif
@@ -141,15 +118,6 @@ struct module;
 #define pr_cont(fmt, ...) \
 	printk(KERN_CONT fmt, ##__VA_ARGS__)
 
-#ifdef DEBUG
-#define pr_devel(fmt, ...) \
-	printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-#else
-#define pr_devel(fmt, ...) \
-	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
-#endif
-
-
 #if defined(DEBUG)
 #define pr_debug(fmt, ...) \
 	printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
@@ -161,15 +129,9 @@ struct module;
 
 #define printk_once(fmt, ...)					\
 	no_printk(fmt, ##__VA_ARGS__)
-#define printk_deferred_once(fmt, ...)				\
-	no_printk(fmt, ##__VA_ARGS__)
 
-#define pr_err_once(fmt, ...)					\
-	printk_once(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_warn_once(fmt, ...)					\
 	printk_once(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_info_once(fmt, ...)					\
-	printk_once(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
 
 
 #define printk_ratelimited(fmt, ...)					\
@@ -177,8 +139,6 @@ struct module;
 
 #define pr_emerg_ratelimited(fmt, ...)					\
 	printk_ratelimited(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_err_ratelimited(fmt, ...)					\
-	printk_ratelimited(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_warn_ratelimited(fmt, ...)					\
 	printk_ratelimited(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
 #define pr_info_ratelimited(fmt, ...)					\

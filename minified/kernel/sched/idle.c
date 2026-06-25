@@ -6,13 +6,20 @@ void __weak arch_cpu_idle_enter(void) { }
 void __weak arch_cpu_idle_exit(void) { }
 void __weak arch_cpu_idle_dead(void) { }
 
-void __cpuidle default_idle_call(void)
+static void cpuidle_idle_call(void)
 {
+
+	if (need_resched()) {
+		local_irq_enable();
+		return;
+	}
+
+	/* folded sole caller of default_idle_call() */
 	if (current_clr_polling_and_test()) {
 		local_irq_enable();
 	} else {
 
-		 
+
 		stop_critical_timings();
 
 		arch_cpu_idle();
@@ -22,19 +29,8 @@ void __cpuidle default_idle_call(void)
 		raw_local_irq_enable();
 
 		start_critical_timings();
-		 
+
 	}
-}
-
-static void cpuidle_idle_call(void)
-{
-
-	if (need_resched()) {
-		local_irq_enable();
-		return;
-	}
-
-	default_idle_call();
 
 	__current_set_polling();
 

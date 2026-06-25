@@ -168,18 +168,15 @@ void lru_cache_add_inactive_or_unevictable(struct page *page,
 		lru_cache_add(page);
 }
 
-void lru_add_drain_cpu(int cpu)
-{
-	struct pagevec *pvec = &per_cpu(lru_pvecs.lru_add, cpu);
-
-	if (pagevec_count(pvec))
-		__pagevec_lru_add(pvec);
-}
-
 void lru_add_drain(void)
 {
+	struct pagevec *pvec;
+
 	local_lock(&lru_pvecs.lock);
-	lru_add_drain_cpu(smp_processor_id());
+	/* folded sole caller of lru_add_drain_cpu() */
+	pvec = &per_cpu(lru_pvecs.lru_add, smp_processor_id());
+	if (pagevec_count(pvec))
+		__pagevec_lru_add(pvec);
 	local_unlock(&lru_pvecs.lock);
 }
 

@@ -93,13 +93,6 @@ static void __put_super(struct super_block *s)
 	}
 }
 
-void put_super(struct super_block *sb)
-{
-	spin_lock(&sb_lock);
-	__put_super(sb);
-	spin_unlock(&sb_lock);
-}
-
 void deactivate_locked_super(struct super_block *s)
 {
 	struct file_system_type *fs = s->s_type;
@@ -110,7 +103,10 @@ void deactivate_locked_super(struct super_block *s)
 		list_lru_destroy(&s->s_inode_lru);
 
 		put_filesystem(fs);
-		put_super(s);
+		/* folded sole caller of put_super() */
+		spin_lock(&sb_lock);
+		__put_super(s);
+		spin_unlock(&sb_lock);
 	} else {
 		up_write(&s->s_umount);
 	}

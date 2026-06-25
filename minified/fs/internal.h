@@ -37,7 +37,6 @@ extern void __mnt_drop_write_file(struct file *);
 extern struct file *alloc_empty_file(int, const struct cred *);
 
 /* reconfigure_super, user_get_super removed - unused */
-void put_super(struct super_block *sb);
 
  
 struct open_flags {

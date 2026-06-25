@@ -1,11 +1,6 @@
 
 extern char __cpuidle_text_start[], __cpuidle_text_end[];
 
-void __weak arch_cpu_idle_prepare(void) { }
-void __weak arch_cpu_idle_enter(void) { }
-void __weak arch_cpu_idle_exit(void) { }
-void __weak arch_cpu_idle_dead(void) { }
-
 static void cpuidle_idle_call(void)
 {
 
@@ -41,10 +36,6 @@ static void cpuidle_idle_call(void)
 
 static void do_idle(void)
 {
-	int cpu = smp_processor_id();
-
-
-
 	__current_set_polling();
 
 	while (!need_resched()) {
@@ -52,14 +43,7 @@ static void do_idle(void)
 
 		local_irq_disable();
 
-		if (cpu_is_offline(cpu)) {
-			arch_cpu_idle_dead();
-		}
-
-		arch_cpu_idle_enter();
-
 		cpuidle_idle_call();
-		arch_cpu_idle_exit();
 	}
 
 	 
@@ -75,7 +59,6 @@ static void do_idle(void)
 
 void cpu_startup_entry(enum cpuhp_state state)
 {
-	arch_cpu_idle_prepare();
 	while (1)
 		do_idle();
 }

@@ -21,10 +21,6 @@ void __noreturn cpu_startup_entry(enum cpuhp_state state);
 #define __cpuidle	__section(".cpuidle.text")
 
 void arch_cpu_idle(void);
-void arch_cpu_idle_prepare(void);
-void arch_cpu_idle_enter(void);
-void arch_cpu_idle_exit(void);
-void arch_cpu_idle_dead(void);
 
 
 #endif

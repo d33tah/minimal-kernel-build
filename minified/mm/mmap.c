@@ -686,10 +686,11 @@ unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
 	return addr;
 }
 
+#ifndef HAVE_ARCH_UNMAPPED_AREA
 unsigned long
-generic_get_unmapped_area(struct file *filp, unsigned long addr,
-			  unsigned long len, unsigned long pgoff,
-			  unsigned long flags)
+arch_get_unmapped_area(struct file *filp, unsigned long addr,
+		       unsigned long len, unsigned long pgoff,
+		       unsigned long flags)
 {
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma, *prev;
@@ -718,15 +719,6 @@ generic_get_unmapped_area(struct file *filp, unsigned long addr,
 	info.align_mask = 0;
 	info.align_offset = 0;
 	return vm_unmapped_area(&info);
-}
-
-#ifndef HAVE_ARCH_UNMAPPED_AREA
-unsigned long
-arch_get_unmapped_area(struct file *filp, unsigned long addr,
-		       unsigned long len, unsigned long pgoff,
-		       unsigned long flags)
-{
-	return generic_get_unmapped_area(filp, addr, len, pgoff, flags);
 }
 #endif
 
@@ -852,7 +844,7 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 }
 
 
-/* Used by generic_get_unmapped_area and generic_get_unmapped_area_topdown */
+/* Used by arch_get_unmapped_area and generic_get_unmapped_area_topdown */
 struct vm_area_struct *
 find_vma_prev(struct mm_struct *mm, unsigned long addr,
 			struct vm_area_struct **pprev)

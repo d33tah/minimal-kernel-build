@@ -209,7 +209,7 @@ munmap_vma_range(struct mm_struct *mm, unsigned long start, unsigned long len,
 {
 
 	while (find_vma_links(mm, start, start + len, pprev, link, parent))
-		if (do_munmap(mm, start, len))
+		if (__do_munmap(mm, start, len))
 			return -ENOMEM;
 
 	return 0;
@@ -1112,11 +1112,6 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 	remove_vma_list(mm, vma);
 
 	return 0;
-}
-
-int do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
-{
-	return __do_munmap(mm, start, len);
 }
 
 int vm_munmap(unsigned long start, size_t len)

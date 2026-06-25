@@ -471,8 +471,6 @@ static inline void get_page(struct page *page)
 	folio_get(page_folio(page));
 }
 
-bool __must_check try_grab_page(struct page *page, unsigned int flags);
-
 static inline void folio_put(struct folio *folio)
 {
 	if (folio_put_testzero(folio))

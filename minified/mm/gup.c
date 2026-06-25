@@ -26,20 +26,6 @@ struct follow_page_context {
 };
 
 
-bool __must_check try_grab_page(struct page *page, unsigned int flags)
-{
-	struct folio *folio = page_folio(page);
-
-	if (WARN_ON_ONCE(folio_ref_count(folio) <= 0))
-		return false;
-
-	/* FOLL_PIN never set on this build (no pin_user_pages callers) */
-	if (flags & FOLL_GET)
-		folio_ref_inc(folio);
-
-	return true;
-}
-
 static struct page *no_page_table(struct vm_area_struct *vma,
 		unsigned int flags)
 {
@@ -111,9 +97,16 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 		goto out;
 	}
 
-	if (unlikely(!try_grab_page(page, flags))) {
-		page = ERR_PTR(-ENOMEM);
-		goto out;
+	{
+		struct folio *folio = page_folio(page);
+
+		if (unlikely(WARN_ON_ONCE(folio_ref_count(folio) <= 0))) {
+			page = ERR_PTR(-ENOMEM);
+			goto out;
+		}
+		/* FOLL_PIN never set on this build (no pin_user_pages callers) */
+		if (flags & FOLL_GET)
+			folio_ref_inc(folio);
 	}
 	if (flags & FOLL_TOUCH) {
 		if ((flags & FOLL_WRITE) &&

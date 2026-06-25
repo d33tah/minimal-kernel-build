@@ -55,7 +55,6 @@ extern int fixmaps_set;
 
 extern pte_t *pkmap_page_table;
 
-void __native_set_fixmap(enum fixed_addresses idx, pte_t pte);
 void native_set_fixmap(unsigned   idx,
 		       phys_addr_t phys, pgprot_t flags);
 

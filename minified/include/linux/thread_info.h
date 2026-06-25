@@ -68,11 +68,6 @@ static inline int test_and_set_ti_thread_flag(struct thread_info *ti, int flag)
 	return test_and_set_bit(flag, (unsigned long *)&ti->flags);
 }
 
-static inline int test_and_clear_ti_thread_flag(struct thread_info *ti, int flag)
-{
-	return test_and_clear_bit(flag, (unsigned long *)&ti->flags);
-}
-
 static inline int test_ti_thread_flag(struct thread_info *ti, int flag)
 {
 	return test_bit(flag, (unsigned long *)&ti->flags);
@@ -87,29 +82,11 @@ static __always_inline unsigned long read_ti_thread_flags(struct thread_info *ti
 	set_ti_thread_flag(current_thread_info(), flag)
 #define clear_thread_flag(flag) \
 	clear_ti_thread_flag(current_thread_info(), flag)
-#define test_and_set_thread_flag(flag) \
-	test_and_set_ti_thread_flag(current_thread_info(), flag)
-#define test_and_clear_thread_flag(flag) \
-	test_and_clear_ti_thread_flag(current_thread_info(), flag)
 #define test_thread_flag(flag) \
 	test_ti_thread_flag(current_thread_info(), flag)
 #define read_thread_flags() \
 	read_ti_thread_flags(current_thread_info())
 
-#define read_task_thread_flags(t) \
-	read_ti_thread_flags(task_thread_info(t))
-
-#define set_syscall_work(fl) \
-	set_bit(SYSCALL_WORK_BIT_##fl, &current_thread_info()->syscall_work)
-#define test_syscall_work(fl) \
-	test_bit(SYSCALL_WORK_BIT_##fl, &current_thread_info()->syscall_work)
-#define clear_syscall_work(fl) \
-	clear_bit(SYSCALL_WORK_BIT_##fl, &current_thread_info()->syscall_work)
-
-#define set_task_syscall_work(t, fl) \
-	set_bit(SYSCALL_WORK_BIT_##fl, &task_thread_info(t)->syscall_work)
-#define test_task_syscall_work(t, fl) \
-	test_bit(SYSCALL_WORK_BIT_##fl, &task_thread_info(t)->syscall_work)
 #define clear_task_syscall_work(t, fl) \
 	clear_bit(SYSCALL_WORK_BIT_##fl, &task_thread_info(t)->syscall_work)
 

@@ -303,22 +303,16 @@ static bool do_int3(struct pt_regs *regs)
 }
 NOKPROBE_SYMBOL(do_int3);
 
-static void do_int3_user(struct pt_regs *regs)
-{
-	if (do_int3(regs))
-		return;
-
-	cond_local_irq_enable(regs);
-	do_trap(X86_TRAP_BP, SIGTRAP, "int3", regs, 0, 0, NULL);
-	cond_local_irq_disable(regs);
-}
-
 DEFINE_IDTENTRY_RAW(exc_int3)
 {
 
 	if (user_mode(regs)) {
 		irqentry_enter_from_user_mode(regs);
-		do_int3_user(regs);
+		if (!do_int3(regs)) {
+			cond_local_irq_enable(regs);
+			do_trap(X86_TRAP_BP, SIGTRAP, "int3", regs, 0, 0, NULL);
+			cond_local_irq_disable(regs);
+		}
 		irqentry_exit_to_user_mode(regs);
 	} else {
 		irqentry_state_t irq_state = irqentry_nmi_enter(regs);

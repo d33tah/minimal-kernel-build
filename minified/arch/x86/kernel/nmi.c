@@ -38,19 +38,6 @@ static DEFINE_RAW_SPINLOCK(nmi_reason_lock);
  * handled -- the dispatch call and its 0-result branches are folded out.
  */
 
-static void
-unknown_nmi_error(unsigned char reason, struct pt_regs *regs)
-{
-	pr_emerg("Uhhuh. NMI received for unknown reason %02x on CPU %d.\n",
-		 reason, smp_processor_id());
-
-	if (unknown_nmi_panic || panic_on_unrecovered_nmi)
-		nmi_panic(regs, "NMI: Not continuing");
-
-	pr_emerg("Dazed and confused, but trying to continue\n");
-}
-NOKPROBE_SYMBOL(unknown_nmi_error);
-
 static DEFINE_PER_CPU(bool, swallow_nmi);
 static DEFINE_PER_CPU(unsigned long, last_nmi_rip);
 
@@ -118,8 +105,15 @@ static noinstr void default_do_nmi(struct pt_regs *regs)
 	raw_spin_unlock(&nmi_reason_lock);
 
 
-	if (!(b2b && __this_cpu_read(swallow_nmi)))
-		unknown_nmi_error(reason, regs);
+	if (!(b2b && __this_cpu_read(swallow_nmi))) {
+		pr_emerg("Uhhuh. NMI received for unknown reason %02x on CPU %d.\n",
+			 reason, smp_processor_id());
+
+		if (unknown_nmi_panic || panic_on_unrecovered_nmi)
+			nmi_panic(regs, "NMI: Not continuing");
+
+		pr_emerg("Dazed and confused, but trying to continue\n");
+	}
 }
 
 enum nmi_states {

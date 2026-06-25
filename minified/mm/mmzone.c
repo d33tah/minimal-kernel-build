@@ -9,10 +9,7 @@ struct pglist_data *first_online_pgdat(void)
 	return NODE_DATA(first_online_node);
 }
 
-struct pglist_data *next_online_pgdat(struct pglist_data *pgdat)
-{
-	return NULL;
-}
+/* next_online_pgdat removed - only used by the unused for_each_online_pgdat macro */
 
 struct zone *next_zone(struct zone *zone)
 {

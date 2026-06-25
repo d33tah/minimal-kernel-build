@@ -377,13 +377,9 @@ static inline struct pglist_data *NODE_DATA(int nid)
 
 
 extern struct pglist_data *first_online_pgdat(void);
-extern struct pglist_data *next_online_pgdat(struct pglist_data *pgdat);
 extern struct zone *next_zone(struct zone *zone);
 
-#define for_each_online_pgdat(pgdat)			\
-	for (pgdat = first_online_pgdat();		\
-	     pgdat;					\
-	     pgdat = next_online_pgdat(pgdat))
+/* for_each_online_pgdat + next_online_pgdat removed - unused */
 #define for_each_zone(zone)			        \
 	for (zone = (first_online_pgdat())->node_zones; \
 	     zone;					\

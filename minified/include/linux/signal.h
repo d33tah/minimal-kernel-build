@@ -81,8 +81,6 @@ struct timespec;
 struct pt_regs;
 enum pid_type;
 
-extern int send_signal_locked(int sig, struct kernel_siginfo *info,
-			      struct task_struct *p, enum pid_type type);
 extern int show_unhandled_signals;
 
 extern void exit_signals(struct task_struct *tsk);

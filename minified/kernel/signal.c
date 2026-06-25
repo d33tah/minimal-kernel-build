@@ -256,20 +256,6 @@ out_set:
 	return 0;
 }
 
-int send_signal_locked(int sig, struct kernel_siginfo *info,
-		       struct task_struct *t, enum pid_type type)
-{
-	/* Minimal stub: simplified signal permission handling */
-	bool force = false;
-
-	if (info == SEND_SIG_PRIV)
-		force = true;
-	else if (info != SEND_SIG_NOINFO && info->si_code == SI_KERNEL)
-		force = true;
-
-	return __send_signal_locked(sig, info, t, type, force);
-}
-
 /* Removed: setup_print_fatal_signals and __setup - never used */
 
 enum sig_handler {
@@ -302,7 +288,17 @@ force_sig_info_to_task(struct kernel_siginfo *info, struct task_struct *t,
 	/* t->ptrace is never set, so (!t->ptrace || ...) is always true. */
 	if (action->sa.sa_handler == SIG_DFL)
 		t->signal->flags &= ~SIGNAL_UNKILLABLE;
-	ret = send_signal_locked(sig, info, t, PIDTYPE_PID);
+	{
+		/* Folded from former sole caller send_signal_locked() */
+		bool force = false;
+
+		if (info == SEND_SIG_PRIV)
+			force = true;
+		else if (info != SEND_SIG_NOINFO && info->si_code == SI_KERNEL)
+			force = true;
+
+		ret = __send_signal_locked(sig, info, t, PIDTYPE_PID, force);
+	}
 	spin_unlock_irqrestore(&t->sighand->siglock, flags);
 
 	return ret;

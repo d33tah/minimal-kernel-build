@@ -11,8 +11,6 @@
 # define nmi_uaccess_okay() true
 #endif
 
-#define tlb_remove_table(tlb, page) tlb_remove_page((tlb), (page))
-
 #ifdef tlb_needs_table_invalidate
 #error tlb_needs_table_invalidate() requires MMU_GATHER_RCU_TABLE_FREE
 #endif
@@ -175,13 +173,6 @@ static inline void tlb_end_vma(struct mmu_gather *tlb, struct vm_area_struct *vm
 	}
 }
 
-static inline void tlb_flush_pte_range(struct mmu_gather *tlb,
-				     unsigned long address, unsigned long size)
-{
-	__tlb_adjust_range(tlb, address, size);
-	tlb->cleared_ptes = 1;
-}
-
 static inline void tlb_flush_pmd_range(struct mmu_gather *tlb,
 				     unsigned long address, unsigned long size)
 {
@@ -191,18 +182,6 @@ static inline void tlb_flush_pmd_range(struct mmu_gather *tlb,
 
 /* tlb_flush_pud_range / tlb_flush_p4d_range removed - only the dead
  * pud_free_tlb/p4d_free_tlb macros (folded away on 2-level paging) used them */
-
-#ifndef __tlb_remove_tlb_entry
-#define __tlb_remove_tlb_entry(tlb, ptep, address) do { } while (0)
-#endif
-
-#define tlb_remove_tlb_entry(tlb, ptep, address)		\
-	do {							\
-		tlb_flush_pte_range(tlb, address, PAGE_SIZE);	\
-		__tlb_remove_tlb_entry(tlb, ptep, address);	\
-	} while (0)
-
-/* tlb_remove_huge_tlb_entry, tlb_remove_pmd_tlb_entry, tlb_remove_pud_tlb_entry removed - never used */
 
 #ifndef pte_free_tlb
 #define pte_free_tlb(tlb, ptep, address)			\

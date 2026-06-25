@@ -273,25 +273,6 @@ static inline unsigned long zap_folded_range(struct mmu_gather *tlb,
 	return end;
 }
 
-void unmap_page_range(struct mmu_gather *tlb,
-			     struct vm_area_struct *vma,
-			     unsigned long addr, unsigned long end)
-{
-	pgd_t *pgd;
-	unsigned long next;
-
-	BUG_ON(addr >= end);
-	tlb_start_vma(tlb, vma);
-	pgd = pgd_offset(vma->vm_mm, addr);
-	do {
-		next = pgd_addr_end(addr, end);
-		if (pgd_none_or_clear_bad(pgd))
-			continue;
-		next = zap_folded_range(tlb, vma, pgd, addr, next);
-	} while (pgd++, addr = next, addr != end);
-	tlb_end_vma(tlb, vma);
-}
-
 static void unmap_single_vma(struct mmu_gather *tlb,
 		struct vm_area_struct *vma, unsigned long start_addr,
 		unsigned long end_addr)
@@ -308,8 +289,22 @@ static void unmap_single_vma(struct mmu_gather *tlb,
 	if (unlikely(vma->vm_flags & VM_PFNMAP))
 		untrack_pfn(vma, 0, 0);
 
-	if (start != end)
-		unmap_page_range(tlb, vma, start, end);
+	if (start != end) {
+		pgd_t *pgd;
+		unsigned long next;
+		unsigned long addr = start;
+
+		BUG_ON(addr >= end);
+		tlb_start_vma(tlb, vma);
+		pgd = pgd_offset(vma->vm_mm, addr);
+		do {
+			next = pgd_addr_end(addr, end);
+			if (pgd_none_or_clear_bad(pgd))
+				continue;
+			next = zap_folded_range(tlb, vma, pgd, addr, next);
+		} while (pgd++, addr = next, addr != end);
+		tlb_end_vma(tlb, vma);
+	}
 }
 
 void unmap_vmas(struct mmu_gather *tlb,

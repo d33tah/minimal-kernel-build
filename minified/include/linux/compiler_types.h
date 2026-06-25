@@ -85,13 +85,6 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 #define __no_sanitize_thread
 #endif
 
-#if defined(CONFIG_ARCH_USE_BUILTIN_BSWAP)
-#define __HAVE_BUILTIN_BSWAP32__
-#define __HAVE_BUILTIN_BSWAP64__
-#define __HAVE_BUILTIN_BSWAP16__
-#endif
-
-
 #if __has_feature(coverage_sanitizer)
 #define __no_sanitize_coverage __attribute__((no_sanitize("coverage")))
 #else

@@ -34,10 +34,8 @@
 		  __stringify(name))
 #endif
 
-#define __page_aligned_data	__section(".data..page_aligned") __aligned(PAGE_SIZE)
 #define __page_aligned_bss	__section(".bss..page_aligned") __aligned(PAGE_SIZE)
 
-#define __PAGE_ALIGNED_DATA	.section ".data..page_aligned", "aw"
 #define __PAGE_ALIGNED_BSS	.section ".bss..page_aligned", "aw"
 
 #ifndef __ASSEMBLY__
@@ -100,14 +98,6 @@
 	.size name, .L__sym_size_##name
 #endif
 
-#ifndef SYM_ALIAS
-#define SYM_ALIAS(alias, name, linkage)			\
-	linkage(alias) ASM_NL				\
-	.set alias, name ASM_NL
-#endif
-
-
-
 #ifndef SYM_INNER_LABEL
 #define SYM_INNER_LABEL(name, linkage)		\
 	.type name SYM_T_NONE ASM_NL			\
@@ -137,11 +127,6 @@
 #ifndef SYM_FUNC_END
 #define SYM_FUNC_END(name)				\
 	SYM_END(name, SYM_T_FUNC)
-#endif
-
-#ifndef SYM_FUNC_ALIAS
-#define SYM_FUNC_ALIAS(alias, name)					\
-	SYM_ALIAS(alias, name, SYM_L_GLOBAL)
 #endif
 
 #ifndef SYM_CODE_START

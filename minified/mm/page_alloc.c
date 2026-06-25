@@ -1548,12 +1548,6 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 }
 
 
-void adjust_managed_page_count(struct page *page, long count)
-{
-	atomic_long_add(count, &page_zone(page)->managed_pages);
-	totalram_pages_add(count);
-}
-
 unsigned long free_reserved_area(void *start, void *end, int poison, const char *s)
 {
 	void *pos;

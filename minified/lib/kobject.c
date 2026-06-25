@@ -285,11 +285,6 @@ struct kobject *kobject_create_and_add(const char *name, struct kobject *parent)
 	return kobj;
 }
 
-void kset_init(struct kset *k)
-{
-	kobject_init_internal(&k->kobj);
-}
-
 int kset_register(struct kset *k)
 {
 	int err;
@@ -297,7 +292,7 @@ int kset_register(struct kset *k)
 	if (!k)
 		return -EINVAL;
 
-	kset_init(k);
+	kobject_init_internal(&k->kobj);
 	err = kobject_add_internal(&k->kobj);
 	if (err)
 		return err;

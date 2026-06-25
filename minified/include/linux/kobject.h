@@ -58,7 +58,6 @@ struct kset {
 	struct kobject kobj;
 } __randomize_layout;
 
-extern void kset_init(struct kset *kset);
 extern int __must_check kset_register(struct kset *kset);
 extern struct kset * __must_check kset_create_and_add(const char *name,
 						struct kobject *parent_kobj);

@@ -209,22 +209,6 @@ int vfs_open(const struct path *path, struct file *file)
 #define WILL_CREATE(flags)	(flags & (O_CREAT | __O_TMPFILE))
 #define O_PATH_FLAGS		(O_DIRECTORY | O_NOFOLLOW | O_PATH | O_CLOEXEC)
 
-inline struct open_how build_open_how(int flags, umode_t mode)
-{
-	struct open_how how = {
-		.flags = flags & VALID_OPEN_FLAGS,
-		.mode = mode & S_IALLUGO,
-	};
-
-	 
-	if (how.flags & O_PATH)
-		how.flags &= O_PATH_FLAGS;
-	 
-	if (!WILL_CREATE(how.flags))
-		how.mode = 0;
-	return how;
-}
-
 inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 {
 	u64 flags = how->flags;
@@ -328,8 +312,18 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 struct file *file_open_name(struct filename *name, int flags, umode_t mode)
 {
 	struct open_flags op;
-	struct open_how how = build_open_how(flags, mode);
-	int err = build_open_flags(&how, &op);
+	struct open_how how = {
+		.flags = flags & VALID_OPEN_FLAGS,
+		.mode = mode & S_IALLUGO,
+	};
+	int err;
+
+	if (how.flags & O_PATH)
+		how.flags &= O_PATH_FLAGS;
+	if (!WILL_CREATE(how.flags))
+		how.mode = 0;
+
+	err = build_open_flags(&how, &op);
 	if (err)
 		return ERR_PTR(err);
 	return do_filp_open(AT_FDCWD, name, &op);

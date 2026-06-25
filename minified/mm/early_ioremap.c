@@ -48,60 +48,6 @@ void __init early_ioremap_setup(void)
 }
 
 
-static void __init __iomem *
-__early_ioremap(resource_size_t phys_addr, unsigned long size, pgprot_t prot)
-{
-	unsigned long offset;
-	resource_size_t last_addr;
-	unsigned int nrpages;
-	enum fixed_addresses idx;
-	int i, slot;
-
-	WARN_ON(system_state >= SYSTEM_RUNNING);
-
-	slot = -1;
-	for (i = 0; i < FIX_BTMAPS_SLOTS; i++) {
-		if (!prev_map[i]) {
-			slot = i;
-			break;
-		}
-	}
-
-	if (WARN(slot < 0, "%s(%pa, %08lx) not found slot\n",
-		 __func__, &phys_addr, size))
-		return NULL;
-
-	 
-	last_addr = phys_addr + size - 1;
-	if (WARN_ON(!size || last_addr < phys_addr))
-		return NULL;
-
-	prev_size[slot] = size;
-	 
-	offset = offset_in_page(phys_addr);
-	phys_addr &= PAGE_MASK;
-	size = PAGE_ALIGN(last_addr + 1) - phys_addr;
-
-	 
-	nrpages = size >> PAGE_SHIFT;
-	if (WARN_ON(nrpages > NR_FIX_BTMAPS))
-		return NULL;
-
-	 
-	idx = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*slot;
-	while (nrpages > 0) {
-		if (after_paging_init)
-			__late_set_fixmap(idx, phys_addr, prot);
-		else
-			__early_set_fixmap(idx, phys_addr, prot);
-		phys_addr += PAGE_SIZE;
-		--idx;
-		--nrpages;
-	}
-	prev_map[slot] = (void __iomem *)(offset + slot_virt[slot]);
-	return prev_map[slot];
-}
-
 void __init early_memunmap(void *vaddr, unsigned long size)
 {
 	void __iomem *addr = (__force void __iomem *)vaddr;
@@ -150,8 +96,51 @@ void __init early_memunmap(void *vaddr, unsigned long size)
 void __init *
 early_memremap(resource_size_t phys_addr, unsigned long size)
 {
-	return (__force void *)__early_ioremap(phys_addr, size,
-					       FIXMAP_PAGE_NORMAL);
+	unsigned long offset;
+	resource_size_t last_addr;
+	unsigned int nrpages;
+	enum fixed_addresses idx;
+	int i, slot;
+
+	WARN_ON(system_state >= SYSTEM_RUNNING);
+
+	slot = -1;
+	for (i = 0; i < FIX_BTMAPS_SLOTS; i++) {
+		if (!prev_map[i]) {
+			slot = i;
+			break;
+		}
+	}
+
+	if (WARN(slot < 0, "%s(%pa, %08lx) not found slot\n",
+		 __func__, &phys_addr, size))
+		return NULL;
+
+	last_addr = phys_addr + size - 1;
+	if (WARN_ON(!size || last_addr < phys_addr))
+		return NULL;
+
+	prev_size[slot] = size;
+	offset = offset_in_page(phys_addr);
+	phys_addr &= PAGE_MASK;
+	size = PAGE_ALIGN(last_addr + 1) - phys_addr;
+
+	nrpages = size >> PAGE_SHIFT;
+	if (WARN_ON(nrpages > NR_FIX_BTMAPS))
+		return NULL;
+
+	idx = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*slot;
+	while (nrpages > 0) {
+		if (after_paging_init)
+			__late_set_fixmap(idx, phys_addr, FIXMAP_PAGE_NORMAL);
+		else
+			__early_set_fixmap(idx, phys_addr, FIXMAP_PAGE_NORMAL);
+		phys_addr += PAGE_SIZE;
+		--idx;
+		--nrpages;
+	}
+	prev_map[slot] = (void __iomem *)(offset + slot_virt[slot]);
+	return (__force void *)prev_map[slot];
 }
 
 

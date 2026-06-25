@@ -330,14 +330,6 @@ DEFINE_IDTENTRY_RAW(exc_int3)
 }
 
 
-static bool is_sysenter_singlestep(struct pt_regs *regs)
-{
-	 
-	return (regs->ip - (unsigned long)__begin_SYSENTER_singlestep_region) <
-		(unsigned long)__end_SYSENTER_singlestep_region -
-		(unsigned long)__begin_SYSENTER_singlestep_region;
-}
-
 static __always_inline unsigned long debug_read_clear_dr6(void)
 {
 	unsigned long dr6;
@@ -373,7 +365,10 @@ static __always_inline void exc_debug_kernel(struct pt_regs *regs,
 	/* TIF_BLOCKSTEP is never set in this build -> branch was always false. */
 
 
-	if ((dr6 & DR_STEP) && is_sysenter_singlestep(regs))
+	if ((dr6 & DR_STEP) &&
+	    (regs->ip - (unsigned long)__begin_SYSENTER_singlestep_region) <
+	    (unsigned long)__end_SYSENTER_singlestep_region -
+	    (unsigned long)__begin_SYSENTER_singlestep_region)
 		dr6 &= ~DR_STEP;
 
 	 

@@ -39,21 +39,12 @@ struct cpumask __cpu_possible_mask __read_mostly;
 struct cpumask __cpu_online_mask __read_mostly;
 
 
-void set_cpu_online(unsigned int cpu, bool online)
-{
-
-	if (online)
-		cpumask_test_and_set_cpu(cpu, &__cpu_online_mask);
-	else
-		cpumask_test_and_clear_cpu(cpu, &__cpu_online_mask);
-}
-
 void __init boot_cpu_init(void)
 {
 	int cpu = smp_processor_id();
 
-	 
-	set_cpu_online(cpu, true);
+
+	cpumask_test_and_set_cpu(cpu, &__cpu_online_mask);
 	set_cpu_possible(cpu, true);
 
 }

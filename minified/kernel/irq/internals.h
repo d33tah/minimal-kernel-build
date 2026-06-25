@@ -164,7 +164,6 @@ extern int __irq_set_trigger(struct irq_desc *desc, unsigned long flags);
 #define IRQ_START_COND	false
 
 extern int irq_activate(struct irq_desc *desc);
-extern int irq_activate_and_startup(struct irq_desc *desc, bool resend);
 extern int irq_startup(struct irq_desc *desc, bool resend, bool force);
 
 extern void irq_enable(struct irq_desc *desc);

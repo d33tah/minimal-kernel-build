@@ -104,13 +104,6 @@ int irq_activate(struct irq_desc *desc)
 	return 0;
 }
 
-int irq_activate_and_startup(struct irq_desc *desc, bool resend)
-{
-	if (WARN_ON(irq_activate(desc)))
-		return 0;
-	return irq_startup(desc, resend, IRQ_START_FORCE);
-}
-
 static void __irq_disable(struct irq_desc *desc, bool mask);
 
 
@@ -276,7 +269,8 @@ __irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle,
 		irq_settings_set_norequest(desc);
 		irq_settings_set_nothread(desc);
 		desc->action = &chained_action;
-		irq_activate_and_startup(desc, IRQ_RESEND);
+		if (!WARN_ON(irq_activate(desc)))
+			irq_startup(desc, IRQ_RESEND, IRQ_START_FORCE);
 	}
 }
 

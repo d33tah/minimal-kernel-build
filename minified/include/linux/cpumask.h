@@ -115,8 +115,6 @@ set_cpu_possible(unsigned int cpu, bool possible)
 		cpumask_clear_cpu(cpu, &__cpu_possible_mask);
 }
 
-void set_cpu_online(unsigned int cpu, bool online);
-
 #define to_cpumask(bitmap)						\
 	((struct cpumask *)(1 ? (bitmap)				\
 			    : (void *)sizeof(__check_is_bitmap(bitmap))))

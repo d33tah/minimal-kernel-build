@@ -474,20 +474,6 @@ static struct clocksource clocksource_tsc = {
 	.list			= LIST_HEAD_INIT(clocksource_tsc.list),
 };
 
-void mark_tsc_unstable(char *reason)
-{
-	if (tsc_unstable)
-		return;
-
-	tsc_unstable = 1;
-	clear_sched_clock_stable();
-	pr_info("Marking TSC unstable due to %s\n", reason);
-
-	clocksource_mark_unstable(&clocksource_tsc_early);
-	clocksource_mark_unstable(&clocksource_tsc);
-}
-
-
 static void __init tsc_disable_clocksource_watchdog(void)
 {
 	clocksource_tsc_early.flags &= ~CLOCK_SOURCE_MUST_VERIFY;
@@ -622,7 +608,14 @@ void __init tsc_init(void)
 	if (!tsc_khz) {
 		 
 		if (!determine_cpu_tsc_frequencies(false)) {
-			mark_tsc_unstable("could not calculate TSC khz");
+			if (!tsc_unstable) {
+				tsc_unstable = 1;
+				clear_sched_clock_stable();
+				pr_info("Marking TSC unstable due to %s\n",
+					"could not calculate TSC khz");
+				clocksource_mark_unstable(&clocksource_tsc_early);
+				clocksource_mark_unstable(&clocksource_tsc);
+			}
 			setup_clear_cpu_cap(X86_FEATURE_TSC_DEADLINE_TIMER);
 			return;
 		}

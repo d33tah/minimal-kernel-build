@@ -27,8 +27,7 @@ static inline cycles_t get_cycles(void)
 
 extern void tsc_early_init(void);
 extern void tsc_init(void);
-extern void mark_tsc_unstable(char *reason);
-/* check_tsc_unstable, mark_tsc_async_resets removed - unused */
+/* mark_tsc_unstable folded into tsc_init; check_tsc_unstable, mark_tsc_async_resets removed - unused */
 extern unsigned long native_calibrate_cpu_early(void);
 extern unsigned long native_calibrate_tsc(void);
 

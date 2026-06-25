@@ -1114,20 +1114,6 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 	return 0;
 }
 
-int vm_munmap(unsigned long start, size_t len)
-{
-	int ret;
-	struct mm_struct *mm = current->mm;
-
-	if (mmap_write_lock_killable(mm))
-		return -EINTR;
-
-	ret = __do_munmap(mm, start, len);
-	mmap_write_unlock(mm);
-
-	return ret;
-}
-
 static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long flags)
 {
 	struct mm_struct *mm = current->mm;

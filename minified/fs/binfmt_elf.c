@@ -285,8 +285,14 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
 	if (total_size) {
 		total_size = ELF_PAGEALIGN(total_size);
 		map_addr = vm_mmap(filep, addr, total_size, prot, type, off);
-		if (!BAD_ADDR(map_addr))
-			vm_munmap(map_addr+size, total_size-size);
+		if (!BAD_ADDR(map_addr)) {
+			struct mm_struct *mm = current->mm;
+
+			if (!mmap_write_lock_killable(mm)) {
+				__do_munmap(mm, map_addr+size, total_size-size);
+				mmap_write_unlock(mm);
+			}
+		}
 	} else
 		map_addr = vm_mmap(filep, addr, size, prot, type, off);
 

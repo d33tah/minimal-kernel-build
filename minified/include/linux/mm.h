@@ -924,7 +924,6 @@ extern unsigned long do_mmap(struct file *file, unsigned long addr,
 extern int __do_munmap(struct mm_struct *, unsigned long, size_t);
 
 extern int __must_check vm_brk_flags(unsigned long, unsigned long, unsigned long);
-extern int vm_munmap(unsigned long, size_t);
 extern unsigned long __must_check vm_mmap(struct file *, unsigned long,
         unsigned long, unsigned long,
         unsigned long, unsigned long);

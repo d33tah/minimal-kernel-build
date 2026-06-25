@@ -475,19 +475,21 @@ static void process_timeout(struct timer_list *t)
 	wake_up_process(timeout->task);
 }
 
-signed long __sched schedule_timeout(signed long timeout)
+signed long __sched schedule_timeout_uninterruptible(signed long timeout)
 {
 	struct process_timer timer;
 	unsigned long expire;
 
+	__set_current_state(TASK_UNINTERRUPTIBLE);
+
 	switch (timeout)
 	{
 	case MAX_SCHEDULE_TIMEOUT:
-		 
+
 		schedule();
 		goto out;
 	default:
-		 
+
 		if (timeout < 0) {
 			printk(KERN_ERR "schedule_timeout: wrong timeout "
 				"value %lx\n", timeout);
@@ -509,12 +511,6 @@ signed long __sched schedule_timeout(signed long timeout)
 
  out:
 	return timeout < 0 ? 0 : timeout;
-}
-
-signed long __sched schedule_timeout_uninterruptible(signed long timeout)
-{
-	__set_current_state(TASK_UNINTERRUPTIBLE);
-	return schedule_timeout(timeout);
 }
 
 static void __init init_timer_cpu(int cpu)

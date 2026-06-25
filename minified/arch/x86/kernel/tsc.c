@@ -469,18 +469,6 @@ static void __init tsc_disable_clocksource_watchdog(void)
 	clocksource_tsc.flags &= ~CLOCK_SOURCE_MUST_VERIFY;
 }
 
-static void __init check_system_tsc_reliable(void)
-{
-	if (boot_cpu_has(X86_FEATURE_TSC_RELIABLE))
-		tsc_clocksource_reliable = 1;
-
-	 
-	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC) &&
-	    boot_cpu_has(X86_FEATURE_NONSTOP_TSC) &&
-	    boot_cpu_has(X86_FEATURE_TSC_ADJUST))
-		tsc_disable_clocksource_watchdog();
-}
-
 static void tsc_refine_calibration_work(struct work_struct *work);
 static DECLARE_DELAYED_WORK(tsc_irqwork, tsc_refine_calibration_work);
 static void tsc_refine_calibration_work(struct work_struct *work)
@@ -607,7 +595,13 @@ void __init tsc_init(void)
 
 	/* lpj_fine assignment removed - never read */
 
-	check_system_tsc_reliable();
+	if (boot_cpu_has(X86_FEATURE_TSC_RELIABLE))
+		tsc_clocksource_reliable = 1;
+
+	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC) &&
+	    boot_cpu_has(X86_FEATURE_NONSTOP_TSC) &&
+	    boot_cpu_has(X86_FEATURE_TSC_ADJUST))
+		tsc_disable_clocksource_watchdog();
 
 	if (tsc_clocksource_reliable || no_tsc_watchdog)
 		tsc_disable_clocksource_watchdog();

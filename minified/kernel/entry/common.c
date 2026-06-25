@@ -73,8 +73,6 @@ static __always_inline void __exit_to_user_mode(void)
 	arch_exit_to_user_mode();
 }
 
-void __weak arch_do_signal_or_restart(struct pt_regs *regs) { }
-
 static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
 					    unsigned long ti_work)
 {
@@ -85,9 +83,6 @@ static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
 
 		if (ti_work & _TIF_NEED_RESCHED)
 			schedule();
-
-		if (ti_work & (_TIF_SIGPENDING | _TIF_NOTIFY_SIGNAL))
-			arch_do_signal_or_restart(regs);
 
 		if (ti_work & _TIF_NOTIFY_RESUME)
 			resume_user_mode_work(regs);

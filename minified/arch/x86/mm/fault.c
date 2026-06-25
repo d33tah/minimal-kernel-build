@@ -201,17 +201,6 @@ bad_area(struct pt_regs *regs, unsigned long error_code, unsigned long address)
 	__bad_area(regs, error_code, address, SEGV_MAPERR);
 }
 
-static noinline void
-bad_area_access_error(struct pt_regs *regs, unsigned long error_code,
-		      unsigned long address, struct vm_area_struct *vma)
-{
-	/*
-	 * Protection keys are compile-time disabled (OSPKE in DISABLED_MASK),
-	 * so a fault can never be a pkey access error -- always SEGV_ACCERR.
-	 */
-	__bad_area(regs, error_code, address, SEGV_ACCERR);
-}
-
 static int spurious_kernel_fault_check(unsigned long error_code, pte_t *pte)
 {
 	if ((error_code & X86_PF_WRITE) && !pte_write(*pte))
@@ -413,7 +402,12 @@ retry:
 
 good_area:
 	if (unlikely(access_error(error_code, vma))) {
-		bad_area_access_error(regs, error_code, address, vma);
+		/*
+		 * Protection keys are compile-time disabled (OSPKE in
+		 * DISABLED_MASK), so a fault can never be a pkey access error --
+		 * always SEGV_ACCERR.
+		 */
+		__bad_area(regs, error_code, address, SEGV_ACCERR);
 		return;
 	}
 

@@ -85,10 +85,6 @@ extern unsigned long highest_memmap_pfn;
  
 #define MAX_RECLAIM_RETRIES 16
 
- 
-pgprot_t __init early_memremap_pgprot_adjust(resource_size_t phys_addr,
-					unsigned long size, pgprot_t prot);
-
 
 /* isolate_lru_page, putback_lru_page removed - never called */
 

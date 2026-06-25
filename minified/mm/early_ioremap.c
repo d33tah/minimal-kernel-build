@@ -11,13 +11,6 @@
 
 static int after_paging_init __initdata;
 
-pgprot_t __init __weak early_memremap_pgprot_adjust(resource_size_t phys_addr,
-						    unsigned long size,
-						    pgprot_t prot)
-{
-	return prot;
-}
-
 void __init early_ioremap_reset(void)
 {
 	after_paging_init = 1;
@@ -109,8 +102,9 @@ __early_ioremap(resource_size_t phys_addr, unsigned long size, pgprot_t prot)
 	return prev_map[slot];
 }
 
-void __init early_iounmap(void __iomem *addr, unsigned long size)
+void __init early_memunmap(void *vaddr, unsigned long size)
 {
+	void __iomem *addr = (__force void __iomem *)vaddr;
 	unsigned long virt_addr;
 	unsigned long offset;
 	unsigned int nrpages;
@@ -156,10 +150,8 @@ void __init early_iounmap(void __iomem *addr, unsigned long size)
 void __init *
 early_memremap(resource_size_t phys_addr, unsigned long size)
 {
-	pgprot_t prot = early_memremap_pgprot_adjust(phys_addr, size,
-						     FIXMAP_PAGE_NORMAL);
-
-	return (__force void *)__early_ioremap(phys_addr, size, prot);
+	return (__force void *)__early_ioremap(phys_addr, size,
+					       FIXMAP_PAGE_NORMAL);
 }
 
 
@@ -182,11 +174,4 @@ void __init copy_from_early_mem(void *dest, phys_addr_t src, unsigned long size)
 		src += clen;
 		size -= clen;
 	}
-}
-
-
-
-void __init early_memunmap(void *addr, unsigned long size)
-{
-	early_iounmap((__force void __iomem *)addr, size);
 }

@@ -7,18 +7,6 @@ static inline void task_group_account_field(struct task_struct *p, int index,
 	__this_cpu_add(kernel_cpustat.cpustat[index], tmp);
 }
 
-void account_user_time(struct task_struct *p, u64 cputime)
-{
-	int index;
-
-	account_group_user_time(p, cputime);
-
-	index = (task_nice(p) > 0) ? CPUTIME_NICE : CPUTIME_USER;
-
-	 
-	task_group_account_field(p, index, cputime);
-}
-
 void account_system_index_time(struct task_struct *p,
 			       u64 cputime, enum cpu_usage_stat index)
 {
@@ -44,7 +32,13 @@ void account_process_tick(struct task_struct *p, int user_tick)
 	u64 cputime = TICK_NSEC;
 
 	if (user_tick) {
-		account_user_time(p, cputime);
+		int index;
+
+		account_group_user_time(p, cputime);
+
+		index = (task_nice(p) > 0) ? CPUTIME_NICE : CPUTIME_USER;
+
+		task_group_account_field(p, index, cputime);
 	} else if ((p != this_rq()->idle) || (irq_count() != HARDIRQ_OFFSET)) {
 		int index;
 

@@ -63,6 +63,5 @@ extern struct x86_platform_ops x86_platform;
 extern void x86_early_init_platform_quirks(void);
 extern void x86_init_noop(void);
 extern void x86_init_uint_noop(unsigned int unused);
-extern bool bool_x86_init_noop(void);
 
 #endif

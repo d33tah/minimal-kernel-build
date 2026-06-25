@@ -21,7 +21,6 @@
 
 void x86_init_noop(void) { }
 void __init x86_init_uint_noop(unsigned int unused) { }
-bool __init bool_x86_init_noop(void) { return false; }
 
 struct x86_init_ops x86_init __initdata = {
 

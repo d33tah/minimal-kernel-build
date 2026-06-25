@@ -88,16 +88,6 @@ void memblock_free_late(phys_addr_t base, phys_addr_t size);
 	     __next_mem_range_rev(&i, nid, flags, type_a, type_b,	\
 				  p_start, p_end, p_nid))
 
-#define for_each_mem_range(i, p_start, p_end) \
-	__for_each_mem_range(i, &memblock.memory, NULL, NUMA_NO_NODE,	\
-			     MEMBLOCK_HOTPLUG | MEMBLOCK_DRIVER_MANAGED, \
-			     p_start, p_end, NULL)
-
-#define for_each_mem_range_rev(i, p_start, p_end)			\
-	__for_each_mem_range_rev(i, &memblock.memory, NULL, NUMA_NO_NODE, \
-				 MEMBLOCK_HOTPLUG | MEMBLOCK_DRIVER_MANAGED,\
-				 p_start, p_end, NULL)
-
 #define for_each_reserved_mem_range(i, p_start, p_end)			\
 	__for_each_mem_range(i, &memblock.reserved, NULL, NUMA_NO_NODE,	\
 			     MEMBLOCK_NONE, p_start, p_end, NULL)
@@ -202,11 +192,6 @@ void memblock_set_current_limit(phys_addr_t limit);
 #define for_each_mem_region(region)					\
 	for (region = memblock.memory.regions;				\
 	     region < (memblock.memory.regions + memblock.memory.cnt);	\
-	     region++)
-
-#define for_each_reserved_mem_region(region)				\
-	for (region = memblock.reserved.regions;			\
-	     region < (memblock.reserved.regions + memblock.reserved.cnt); \
 	     region++)
 
 extern void *alloc_large_system_hash(const char *tablename,

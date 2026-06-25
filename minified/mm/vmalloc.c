@@ -82,28 +82,6 @@ static void vunmap_folded_range(pgd_t *pgd, unsigned long addr,
 	cond_resched();
 }
 
-void vunmap_range_noflush(unsigned long start, unsigned long end)
-{
-	unsigned long next;
-	pgd_t *pgd;
-	unsigned long addr = start;
-	pgtbl_mod_mask mask = 0;
-
-	BUG_ON(addr >= end);
-	pgd = pgd_offset_k(addr);
-	do {
-		next = pgd_addr_end(addr, end);
-		if (pgd_bad(*pgd))
-			mask |= PGTBL_PGD_MODIFIED;
-		if (pgd_none_or_clear_bad(pgd))
-			continue;
-		vunmap_folded_range(pgd, addr, next, &mask);
-	} while (pgd++, addr = next, addr != end);
-
-	if (mask & ARCH_PAGE_TABLE_SYNC_MASK)
-		arch_sync_kernel_mappings(start, end);
-}
-
 static int vmap_pages_pte_range(pmd_t *pmd, unsigned long addr,
 		unsigned long end, pgprot_t prot, struct page **pages, int *nr,
 		pgtbl_mod_mask *mask)
@@ -649,7 +627,26 @@ static void free_vmap_area_noflush(struct vmap_area *va)
 
 static void free_unmap_vmap_area(struct vmap_area *va)
 {
-	vunmap_range_noflush(va->va_start, va->va_end);
+	unsigned long start = va->va_start;
+	unsigned long end = va->va_end;
+	unsigned long next;
+	pgd_t *pgd;
+	unsigned long addr = start;
+	pgtbl_mod_mask mask = 0;
+
+	BUG_ON(addr >= end);
+	pgd = pgd_offset_k(addr);
+	do {
+		next = pgd_addr_end(addr, end);
+		if (pgd_bad(*pgd))
+			mask |= PGTBL_PGD_MODIFIED;
+		if (pgd_none_or_clear_bad(pgd))
+			continue;
+		vunmap_folded_range(pgd, addr, next, &mask);
+	} while (pgd++, addr = next, addr != end);
+
+	if (mask & ARCH_PAGE_TABLE_SYNC_MASK)
+		arch_sync_kernel_mappings(start, end);
 
 	free_vmap_area_noflush(va);
 }

@@ -213,6 +213,4 @@ struct migration_target_control {
 	gfp_t gfp_mask;
 };
 
-void vunmap_range_noflush(unsigned long start, unsigned long end);
-
 #endif

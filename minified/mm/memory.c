@@ -479,25 +479,6 @@ static void unmap_mapping_range_vma(struct vm_area_struct *vma,
 	zap_page_range_single(vma, start_addr, end_addr - start_addr);
 }
 
-static inline void unmap_mapping_range_tree(struct rb_root_cached *root,
-					    pgoff_t first_index,
-					    pgoff_t last_index)
-{
-	struct vm_area_struct *vma;
-	pgoff_t vba, vea, zba, zea;
-
-	vma_interval_tree_foreach(vma, root, first_index, last_index) {
-		vba = vma->vm_pgoff;
-		vea = vba + vma_pages(vma) - 1;
-		zba = max(first_index, vba);
-		zea = min(last_index, vea);
-
-		unmap_mapping_range_vma(vma,
-			((zba - vba) << PAGE_SHIFT) + vma->vm_start,
-			((zea - vba + 1) << PAGE_SHIFT) + vma->vm_start);
-	}
-}
-
 void unmap_mapping_pages(struct address_space *mapping, pgoff_t start,
 		pgoff_t nr, bool even_cows)
 {
@@ -508,9 +489,22 @@ void unmap_mapping_pages(struct address_space *mapping, pgoff_t start,
 		last_index = ULONG_MAX;
 
 	i_mmap_lock_read(mapping);
-	if (unlikely(!RB_EMPTY_ROOT(&mapping->i_mmap.rb_root)))
-		unmap_mapping_range_tree(&mapping->i_mmap, first_index,
-					 last_index);
+	if (unlikely(!RB_EMPTY_ROOT(&mapping->i_mmap.rb_root))) {
+		struct vm_area_struct *vma;
+		pgoff_t vba, vea, zba, zea;
+
+		vma_interval_tree_foreach(vma, &mapping->i_mmap,
+					  first_index, last_index) {
+			vba = vma->vm_pgoff;
+			vea = vba + vma_pages(vma) - 1;
+			zba = max(first_index, vba);
+			zea = min(last_index, vea);
+
+			unmap_mapping_range_vma(vma,
+				((zba - vba) << PAGE_SHIFT) + vma->vm_start,
+				((zea - vba + 1) << PAGE_SHIFT) + vma->vm_start);
+		}
+	}
 	i_mmap_unlock_read(mapping);
 }
 

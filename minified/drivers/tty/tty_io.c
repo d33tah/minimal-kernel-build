@@ -79,18 +79,6 @@ static inline struct tty_struct *file_tty(struct file *file)
 	return ((struct tty_file_private *)file->private_data)->tty;
 }
 
-void tty_add_file(struct tty_struct *tty, struct file *file)
-{
-	struct tty_file_private *priv = file->private_data;
-
-	priv->tty = tty;
-	priv->file = file;
-
-	spin_lock(&tty->files_lock);
-	list_add(&priv->list, &tty->tty_files);
-	spin_unlock(&tty->files_lock);
-}
-
 void tty_free_file(struct file *file)
 {
 	struct tty_file_private *priv = file->private_data;
@@ -780,7 +768,16 @@ retry_open:
 		goto retry_open;
 	}
 
-	tty_add_file(tty, filp);
+	{
+		struct tty_file_private *priv = filp->private_data;
+
+		priv->tty = tty;
+		priv->file = filp;
+
+		spin_lock(&tty->files_lock);
+		list_add(&priv->list, &tty->tty_files);
+		spin_unlock(&tty->files_lock);
+	}
 
 	check_tty_count(tty, __func__);
 	tty_debug_hangup(tty, "opening (count=%d)\n", tty->count);

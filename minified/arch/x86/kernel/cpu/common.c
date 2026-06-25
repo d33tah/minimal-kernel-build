@@ -263,11 +263,6 @@ static void filter_cpuid_features(struct cpuinfo_x86 *c, bool warn)
 __u32 cpu_caps_cleared[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 __u32 cpu_caps_set[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 
-void load_percpu_segment(int cpu)
-{
-	loadsegment(fs, __KERNEL_PERCPU);
-}
-
 DEFINE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);
 
 void switch_to_new_gdt(int cpu)
@@ -278,7 +273,7 @@ void switch_to_new_gdt(int cpu)
 	gdt_descr.size = GDT_SIZE - 1;
 	load_gdt(&gdt_descr);
 
-	load_percpu_segment(cpu);
+	loadsegment(fs, __KERNEL_PERCPU);
 }
 
 static const struct cpu_dev *cpu_devs[X86_VENDOR_NUM] = {};

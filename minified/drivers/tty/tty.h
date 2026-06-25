@@ -38,7 +38,6 @@ bool tty_buffer_cancel_work(struct tty_port *port);
 speed_t tty_termios_input_baud_rate(struct ktermios *termios);
 int tty_ldisc_reinit(struct tty_struct *tty, int disc);
 struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx);
-void tty_add_file(struct tty_struct *tty, struct file *file);
 void tty_free_file(struct file *file);
 int tty_release(struct inode *inode, struct file *filp);
 

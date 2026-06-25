@@ -103,13 +103,6 @@ void console_lock(void)
 	down_console_sem();
 }
 
-int console_trylock(void)
-{
-	if (down_trylock_console_sem())
-		return 0;
-	return 1;
-}
-
 static void __console_unlock(void)
 {
 	up_console_sem();
@@ -149,7 +142,7 @@ void console_flush_on_panic(enum con_flush_mode mode)
 	 * The only caller passes CONSOLE_FLUSH_PENDING, and with no ring
 	 * buffer there is nothing to flush — just take and drop the lock.
 	 */
-	console_trylock();
+	down_trylock_console_sem();
 	console_unlock();
 }
 

@@ -158,25 +158,18 @@ static void inode_lru_list_del(struct inode *inode)
 	list_lru_del(&inode->i_sb->s_inode_lru, &inode->i_lru);
 }
 
-void clear_inode(struct inode *inode)
-{
-	
-	xa_lock_irq(&inode->i_data.i_pages);
-
-	xa_unlock_irq(&inode->i_data.i_pages);
-	BUG_ON(!(inode->i_state & I_FREEING));
-	BUG_ON(inode->i_state & I_CLEAR);
-
-	inode->i_state = I_FREEING | I_CLEAR;
-}
-
 static void evict(struct inode *inode)
 {
 	BUG_ON(!(inode->i_state & I_FREEING));
 	BUG_ON(!list_empty(&inode->i_lru));
 
 	truncate_inode_pages_final(&inode->i_data);
-	clear_inode(inode);
+
+	xa_lock_irq(&inode->i_data.i_pages);
+	xa_unlock_irq(&inode->i_data.i_pages);
+	BUG_ON(inode->i_state & I_CLEAR);
+	inode->i_state = I_FREEING | I_CLEAR;
+
 	if (S_ISCHR(inode->i_mode) && inode->i_cdev)
 		cd_forget(inode);
 

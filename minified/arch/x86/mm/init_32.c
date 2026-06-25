@@ -248,7 +248,11 @@ void __init native_pagetable_init(void)
 
 		pte_clear(NULL, va, pte);
 	}
-	paging_init();
+
+	__flush_tlb_all();
+
+	sparse_init();
+	zone_sizes_init();
 }
 
 void __init early_ioremap_page_table_range_init(void)
@@ -282,14 +286,6 @@ void __init initmem_init(void)
 
 	max_mapnr = max_low_pfn;
 	__vmalloc_start_set = true;
-}
-
-void __init paging_init(void)
-{
-	__flush_tlb_all();
-
-	sparse_init();
-	zone_sizes_init();
 }
 
 static void __init test_wp_bit(void)

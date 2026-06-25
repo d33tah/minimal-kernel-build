@@ -19,13 +19,20 @@ asmlinkage noinstr void __noreturn doublefault_shim(void)
 {
 	unsigned long cr2;
 	struct pt_regs regs;
+	struct desc_struct *d;
+	tss_desc tss;
 
 	BUILD_BUG_ON(sizeof(struct doublefault_stack) != PAGE_SIZE);
 
 	cr2 = native_read_cr2();
 
-	 
-	force_reload_TR();
+	/* force_reload_TR (folded from its sole caller) */
+	d = get_current_gdt_rw();
+	memcpy(&tss, &d[GDT_ENTRY_TSS], sizeof(tss_desc));
+	tss.type = DESC_TSS;
+	write_gdt_entry(d, GDT_ENTRY_TSS, &tss, DESC_TSS);
+	load_TR_desc();
+
 	set_df_gdt_entry(smp_processor_id());
 
 	trace_hardirqs_off();

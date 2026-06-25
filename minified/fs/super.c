@@ -131,13 +131,6 @@ void deactivate_super(struct super_block *s)
  * the sb-list unlink tail is kept so the symbol still links for the kill_sb
  * function-pointer table entries.
  */
-void generic_shutdown_super(struct super_block *sb)
-{
-	spin_lock(&sb_lock);
-	spin_unlock(&sb_lock);
-	up_write(&sb->s_umount);
-}
-
 struct super_block *sget_fc(struct fs_context *fc,
 			    int (*set)(struct super_block *, struct fs_context *))
 {
@@ -177,7 +170,12 @@ static DEFINE_IDA(unnamed_dev_ida);
 void kill_anon_super(struct super_block *sb)
 {
 	dev_t dev = sb->s_dev;
-	generic_shutdown_super(sb);
+
+	/* generic_shutdown_super folded from its sole caller */
+	spin_lock(&sb_lock);
+	spin_unlock(&sb_lock);
+	up_write(&sb->s_umount);
+
 	ida_free(&unnamed_dev_ida, MINOR(dev));
 }
 

@@ -759,7 +759,6 @@ struct file_system_type {
 };
 
 /* Removed: mount_nodev, kill_block_super - never called */
-void generic_shutdown_super(struct super_block *sb);
 void kill_anon_super(struct super_block *sb);
 void kill_litter_super(struct super_block *sb);
 void deactivate_super(struct super_block *sb);

@@ -147,19 +147,7 @@ static inline void native_load_tls(struct thread_struct *t, unsigned int cpu)
 		gdt[GDT_ENTRY_TLS_MIN + i] = t->tls_array[i];
 }
 
-static inline void force_reload_TR(void)
-{
-	struct desc_struct *d = get_current_gdt_rw();
-	tss_desc tss;
-
-	memcpy(&tss, &d[GDT_ENTRY_TSS], sizeof(tss_desc));
-
-	 
-	tss.type = DESC_TSS;
-	write_gdt_entry(d, GDT_ENTRY_TSS, &tss, DESC_TSS);
-
-	load_TR_desc();
-}
+/* force_reload_TR folded into its sole caller (doublefault_32.c) */
 
 /* refresh_tss_limit, invalidate_tss_limit removed - unused */
 /* get_desc_base, set_desc_base, get_desc_limit, set_desc_limit removed - unused */

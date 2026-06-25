@@ -178,7 +178,7 @@ struct super_block *sget_fc(struct fs_context *fc,
 
 static DEFINE_IDA(unnamed_dev_ida);
 
-int get_anon_bdev(dev_t *p)
+int set_anon_super(struct super_block *s, void *data)
 {
 	int dev;
 
@@ -189,13 +189,8 @@ int get_anon_bdev(dev_t *p)
 	if (dev < 0)
 		return dev;
 
-	*p = MKDEV(0, dev);
+	s->s_dev = MKDEV(0, dev);
 	return 0;
-}
-
-int set_anon_super(struct super_block *s, void *data)
-{
-	return get_anon_bdev(&s->s_dev);
 }
 
 void kill_anon_super(struct super_block *sb)

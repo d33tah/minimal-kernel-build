@@ -766,7 +766,6 @@ void deactivate_super(struct super_block *sb);
 void deactivate_locked_super(struct super_block *sb);
 int set_anon_super(struct super_block *s, void *data);
 int set_anon_super_fc(struct super_block *s, struct fs_context *fc);
-int get_anon_bdev(dev_t *);
 struct super_block *sget_fc(struct fs_context *fc,
 			    int (*set)(struct super_block *, struct fs_context *));
 

@@ -473,12 +473,6 @@ static vm_fault_t do_wp_page(struct vm_fault *vmf)
 	return wp_page_copy(vmf);
 }
 
-static void unmap_mapping_range_vma(struct vm_area_struct *vma,
-		unsigned long start_addr, unsigned long end_addr)
-{
-	zap_page_range_single(vma, start_addr, end_addr - start_addr);
-}
-
 void unmap_mapping_pages(struct address_space *mapping, pgoff_t start,
 		pgoff_t nr, bool even_cows)
 {
@@ -495,14 +489,17 @@ void unmap_mapping_pages(struct address_space *mapping, pgoff_t start,
 
 		vma_interval_tree_foreach(vma, &mapping->i_mmap,
 					  first_index, last_index) {
+			unsigned long start_addr, end_addr;
+
 			vba = vma->vm_pgoff;
 			vea = vba + vma_pages(vma) - 1;
 			zba = max(first_index, vba);
 			zea = min(last_index, vea);
 
-			unmap_mapping_range_vma(vma,
-				((zba - vba) << PAGE_SHIFT) + vma->vm_start,
-				((zea - vba + 1) << PAGE_SHIFT) + vma->vm_start);
+			start_addr = ((zba - vba) << PAGE_SHIFT) + vma->vm_start;
+			end_addr = ((zea - vba + 1) << PAGE_SHIFT) + vma->vm_start;
+			zap_page_range_single(vma, start_addr,
+					      end_addr - start_addr);
 		}
 	}
 	i_mmap_unlock_read(mapping);

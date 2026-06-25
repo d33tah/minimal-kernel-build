@@ -537,8 +537,19 @@ void *xas_store(struct xa_state *xas, void *entry)
 		if (xas->xa_sibs)
 			xas_squash_marks(xas);
 	}
-	if (!entry)
-		xas_init_marks(xas);
+	if (!entry) {
+		xa_mark_t mark = 0;
+
+		for (;;) {
+			if (xa_track_free(xas->xa) && mark == XA_FREE_MARK)
+				xas_set_mark(xas, mark);
+			else
+				xas_clear_mark(xas, mark);
+			if (mark == XA_MARK_MAX)
+				break;
+			mark_inc(mark);
+		}
+	}
 
 	for (;;) {
 		
@@ -612,22 +623,6 @@ void xas_clear_mark(const struct xa_state *xas, xa_mark_t mark)
 	if (xa_marked(xas->xa, mark))
 		xa_mark_clear(xas->xa, mark);
 }
-
-void xas_init_marks(const struct xa_state *xas)
-{
-	xa_mark_t mark = 0;
-
-	for (;;) {
-		if (xa_track_free(xas->xa) && mark == XA_FREE_MARK)
-			xas_set_mark(xas, mark);
-		else
-			xas_clear_mark(xas, mark);
-		if (mark == XA_MARK_MAX)
-			break;
-		mark_inc(mark);
-	}
-}
-
 
 
 void *__xas_next(struct xa_state *xas)

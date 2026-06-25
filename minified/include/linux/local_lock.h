@@ -16,31 +16,13 @@ typedef struct {
 		preempt_disable();				\
 	} while (0)
 
-#define __local_lock_irqsave(lock, flags)			\
-	do {							\
-		local_irq_save(flags);				\
-	} while (0)
-
 #define __local_unlock(lock)					\
 	do {							\
 		preempt_enable();				\
 	} while (0)
 
-#define __local_unlock_irqrestore(lock, flags)			\
-	do {							\
-		local_irq_restore(flags);			\
-} while (0)
-
-#define local_lock_init(lock)		do { } while (0)
-
 #define local_lock(lock)		__local_lock(lock)
 
-#define local_lock_irqsave(lock, flags)				\
-	__local_lock_irqsave(lock, flags)
-
 #define local_unlock(lock)		__local_unlock(lock)
-
-#define local_unlock_irqrestore(lock, flags)			\
-	__local_unlock_irqrestore(lock, flags)
 
 #endif

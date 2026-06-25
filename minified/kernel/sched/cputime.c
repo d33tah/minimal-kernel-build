@@ -28,20 +28,6 @@ void account_system_index_time(struct task_struct *p,
 	task_group_account_field(p, index, cputime);
 }
 
-void account_system_time(struct task_struct *p, int hardirq_offset, u64 cputime)
-{
-	int index;
-
-	if (hardirq_count() - hardirq_offset)
-		index = CPUTIME_IRQ;
-	else if (in_serving_softirq())
-		index = CPUTIME_SOFTIRQ;
-	else
-		index = CPUTIME_SYSTEM;
-
-	account_system_index_time(p, cputime, index);
-}
-
 void account_idle_time(u64 cputime)
 {
 	u64 *cpustat = kcpustat_this_cpu->cpustat;
@@ -57,11 +43,21 @@ void account_process_tick(struct task_struct *p, int user_tick)
 {
 	u64 cputime = TICK_NSEC;
 
-	if (user_tick)
+	if (user_tick) {
 		account_user_time(p, cputime);
-	else if ((p != this_rq()->idle) || (irq_count() != HARDIRQ_OFFSET))
-		account_system_time(p, HARDIRQ_OFFSET, cputime);
-	else
+	} else if ((p != this_rq()->idle) || (irq_count() != HARDIRQ_OFFSET)) {
+		int index;
+
+		if (hardirq_count() - HARDIRQ_OFFSET)
+			index = CPUTIME_IRQ;
+		else if (in_serving_softirq())
+			index = CPUTIME_SOFTIRQ;
+		else
+			index = CPUTIME_SYSTEM;
+
+		account_system_index_time(p, cputime, index);
+	} else {
 		account_idle_time(cputime);
+	}
 }
 

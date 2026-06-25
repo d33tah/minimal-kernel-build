@@ -11,19 +11,14 @@
  * for pointer obfuscation in vsprintf
  */
 
-u64 __siphash_unaligned(const void *data, size_t len, const siphash_key_t *key)
+u64 siphash_1u32(const u32 first, const siphash_key_t *key)
 {
-	const u8 *p = data;
+	const u8 *p = (const u8 *)&first;
 	u64 hash = key->key[0] ^ key->key[1];
 	size_t i;
 
-	for (i = 0; i < len; i++)
+	for (i = 0; i < sizeof(first); i++)
 		hash = hash * 31 + p[i];
 
 	return hash;
-}
-
-u64 siphash_1u32(const u32 first, const siphash_key_t *key)
-{
-	return __siphash_unaligned(&first, sizeof(first), key);
 }

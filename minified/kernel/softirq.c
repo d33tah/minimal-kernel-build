@@ -72,8 +72,17 @@ void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 	__preempt_count_sub(cnt - 1);
 
 	if (unlikely(!in_interrupt() && local_softirq_pending())) {
-		 
-		do_softirq();
+		__u32 pending;
+		unsigned long flags;
+
+		local_irq_save(flags);
+
+		pending = local_softirq_pending();
+
+		if (pending && !ksoftirqd_running(pending))
+			do_softirq_own_stack();
+
+		local_irq_restore(flags);
 	}
 
 	preempt_count_dec();
@@ -103,25 +112,6 @@ static inline void invoke_softirq(void)
 	 */
 	do_softirq_own_stack();
 }
-
-asmlinkage __visible void do_softirq(void)
-{
-	__u32 pending;
-	unsigned long flags;
-
-	if (in_interrupt())
-		return;
-
-	local_irq_save(flags);
-
-	pending = local_softirq_pending();
-
-	if (pending && !ksoftirqd_running(pending))
-		do_softirq_own_stack();
-
-	local_irq_restore(flags);
-}
-
 
 #define MAX_SOFTIRQ_TIME  msecs_to_jiffies(2)
 #define MAX_SOFTIRQ_RESTART 10
@@ -214,9 +204,11 @@ void irq_exit_rcu(void)
 
 inline void raise_softirq_irqoff(unsigned int nr)
 {
-	__raise_softirq_irqoff(nr);
+	lockdep_assert_irqs_disabled();
 
-	 
+	or_softirq_pending(1UL << nr);
+
+
 	if (!in_interrupt())
 		wakeup_softirqd();
 }
@@ -228,13 +220,6 @@ void raise_softirq(unsigned int nr)
 	local_irq_save(flags);
 	raise_softirq_irqoff(nr);
 	local_irq_restore(flags);
-}
-
-void __raise_softirq_irqoff(unsigned int nr)
-{
-	lockdep_assert_irqs_disabled();
-	 
-	or_softirq_pending(1UL << nr);
 }
 
 void open_softirq(int nr, void (*action)(struct softirq_action *))

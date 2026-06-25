@@ -415,7 +415,10 @@ static __always_inline void exc_debug_user(struct pt_regs *regs,
 
 	dr6 |= current->thread.virtual_dr6;
 	if (dr6 & (DR_STEP | DR_TRAP_BITS) || icebp)
-		send_sigtrap(regs, 0, get_si_code(dr6));
+		send_sigtrap(regs, 0,
+			     (dr6 & DR_STEP) ? TRAP_TRACE :
+			     (dr6 & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)) ?
+			     TRAP_HWBKPT : TRAP_BRKPT);
 
 	local_irq_disable();
 out:

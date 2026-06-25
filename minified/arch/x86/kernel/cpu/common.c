@@ -265,17 +265,6 @@ __u32 cpu_caps_set[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 
 DEFINE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);
 
-void switch_to_new_gdt(int cpu)
-{
-	struct desc_ptr gdt_descr;
-
-	gdt_descr.address = (long)get_cpu_gdt_rw(cpu);
-	gdt_descr.size = GDT_SIZE - 1;
-	load_gdt(&gdt_descr);
-
-	loadsegment(fs, __KERNEL_PERCPU);
-}
-
 static const struct cpu_dev *cpu_devs[X86_VENDOR_NUM] = {};
 
 static void get_model_name(struct cpuinfo_x86 *c)
@@ -674,12 +663,16 @@ void cpu_init(void)
 {
 	struct task_struct *cur = current;
 	int cpu = raw_smp_processor_id();
+	struct desc_ptr gdt_descr;
 
 	if (cpu_feature_enabled(X86_FEATURE_VME) ||
 	    boot_cpu_has(X86_FEATURE_TSC) || boot_cpu_has(X86_FEATURE_DE))
 		cr4_clear_bits(X86_CR4_VME|X86_CR4_PVI|X86_CR4_TSD|X86_CR4_DE);
 
-	switch_to_new_gdt(cpu);
+	gdt_descr.address = (long)get_cpu_gdt_rw(cpu);
+	gdt_descr.size = GDT_SIZE - 1;
+	load_gdt(&gdt_descr);
+	loadsegment(fs, __KERNEL_PERCPU);
 
 	mmgrab(&init_mm);
 	cur->active_mm = &init_mm;

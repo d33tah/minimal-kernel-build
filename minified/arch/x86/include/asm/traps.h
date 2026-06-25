@@ -19,16 +19,6 @@ enum x86_pf_error_code {
 	X86_PF_SGX	=		1 << 15,
 };
 
-static inline int get_si_code(unsigned long condition)
-{
-	if (condition & DR_STEP)
-		return TRAP_TRACE;
-	else if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
-		return TRAP_HWBKPT;
-	else
-		return TRAP_BRKPT;
-}
-
 extern int panic_on_unrecovered_nmi;
 
 

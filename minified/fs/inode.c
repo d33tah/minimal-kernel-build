@@ -122,21 +122,16 @@ static void __address_space_init_once(struct address_space *mapping)
 }
 
 
-void inode_init_once(struct inode *inode)
+static void init_once(void *foo)
 {
+	struct inode *inode = (struct inode *) foo;
+
 	memset(inode, 0, sizeof(*inode));
 	INIT_HLIST_NODE(&inode->i_hash);
 	INIT_LIST_HEAD(&inode->i_devices);
 	INIT_LIST_HEAD(&inode->i_lru);
 	__address_space_init_once(&inode->i_data);
 	i_size_ordered_init(inode);
-}
-
-static void init_once(void *foo)
-{
-	struct inode *inode = (struct inode *) foo;
-
-	inode_init_once(inode);
 }
 
 static void __inode_add_lru(struct inode *inode)

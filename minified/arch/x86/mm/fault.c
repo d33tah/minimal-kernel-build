@@ -212,27 +212,6 @@ bad_area_access_error(struct pt_regs *regs, unsigned long error_code,
 	__bad_area(regs, error_code, address, SEGV_ACCERR);
 }
 
-static void
-do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address,
-	  vm_fault_t fault)
-{
-	 
-	if (!user_mode(regs)) {
-		kernelmode_fixup_or_oops(regs, error_code, address,
-					 SIGBUS, BUS_ADRERR);
-		return;
-	}
-
-	sanitize_error_code(address, &error_code);
-
-	if (fixup_vdso_exception(regs, X86_TRAP_PF, error_code, address))
-		return;
-
-	set_signal_archinfo(address, error_code);
-
-	force_sig_fault(SIGBUS, BUS_ADRERR, (void __user *)address);
-}
-
 static int spurious_kernel_fault_check(unsigned long error_code, pte_t *pte)
 {
 	if ((error_code & X86_PF_WRITE) && !pte_write(*pte))
@@ -474,9 +453,22 @@ good_area:
 		}
 	} else {
 		if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON|
-			     VM_FAULT_HWPOISON_LARGE))
-			do_sigbus(regs, error_code, address, fault);
-		else if (fault & VM_FAULT_SIGSEGV)
+			     VM_FAULT_HWPOISON_LARGE)) {
+			if (!user_mode(regs)) {
+				kernelmode_fixup_or_oops(regs, error_code, address,
+							 SIGBUS, BUS_ADRERR);
+				return;
+			}
+
+			sanitize_error_code(address, &error_code);
+
+			if (fixup_vdso_exception(regs, X86_TRAP_PF, error_code, address))
+				return;
+
+			set_signal_archinfo(address, error_code);
+
+			force_sig_fault(SIGBUS, BUS_ADRERR, (void __user *)address);
+		} else if (fault & VM_FAULT_SIGSEGV)
 			bad_area_nosemaphore(regs, error_code, address);
 		else
 			BUG();

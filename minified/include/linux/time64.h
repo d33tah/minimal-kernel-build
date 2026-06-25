@@ -8,7 +8,6 @@
 #define USEC_PER_MSEC	1000L
 #define NSEC_PER_USEC	1000L
 #define NSEC_PER_MSEC	1000000L
-#define USEC_PER_SEC	1000000L
 #define NSEC_PER_SEC	1000000000L
 
 typedef __s64 time64_t;
@@ -18,11 +17,6 @@ typedef __s64 time64_t;
 struct timespec64 {
 	time64_t	tv_sec;			 
 	long		tv_nsec;		 
-};
-
-struct itimerspec64 {
-	struct timespec64 it_interval;
-	struct timespec64 it_value;
 };
 
 #define TIME64_MAX			((s64)~((u64)1 << 63))
@@ -99,11 +93,5 @@ static inline s64 timespec64_to_ns(const struct timespec64 *ts)
 
 extern struct timespec64 ns_to_timespec64(const s64 nsec);
 
-static __always_inline void timespec64_add_ns(struct timespec64 *a, u64 ns)
-{
-	a->tv_sec += __iter_div_u64_rem(a->tv_nsec + ns, NSEC_PER_SEC, &ns);
-	a->tv_nsec = ns;
-}
 
-
-#endif  
+#endif

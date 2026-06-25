@@ -24,9 +24,6 @@ static inline void lockdep_on(void)
 # define lockdep_set_class_and_name(lock, key, name) \
 		do { (void)(key); (void)(name); } while (0)
 
-#define lockdep_set_novalidate_class(lock) do { } while (0)
-
-
 # define lockdep_sys_exit() 			do { } while (0)
 
 extern int lockdep_is_held(const void *);
@@ -37,7 +34,6 @@ extern int lockdep_is_held(const void *);
 #define lockdep_pin_lock(l)			({ struct pin_cookie cookie = { }; cookie; })
 #define lockdep_unpin_lock(l, c)		do { (void)(l); (void)(c); } while (0)
 
-#define lock_contended(lockdep_map, ip) do {} while (0)
 #define lock_acquired(lockdep_map, ip) do {} while (0)
 
 #define LOCK_CONTENDED(_lock, try, lock) \
@@ -58,7 +54,6 @@ extern int lockdep_is_held(const void *);
 #define spin_release(l, i)			lock_release(l, i)
 
 #define mutex_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)
-#define mutex_acquire_nest(l, s, t, n, i)	lock_acquire_exclusive(l, s, t, n, i)
 #define mutex_release(l, i)			lock_release(l, i)
 
 #define rwsem_acquire(l, s, t, i)		lock_acquire_exclusive(l, s, t, NULL, i)

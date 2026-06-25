@@ -102,15 +102,10 @@ static struct inode *alloc_inode(struct super_block *sb)
 	return inode;
 }
 
-void __destroy_inode(struct inode *inode)
-{
-	inode_detach_wb(inode);
-}
-
 static void destroy_inode(struct inode *inode)
 {
 	BUG_ON(!list_empty(&inode->i_lru));
-	__destroy_inode(inode);
+	inode_detach_wb(inode);
 	call_rcu(&inode->i_rcu, i_callback);
 }
 

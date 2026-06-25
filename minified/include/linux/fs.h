@@ -916,7 +916,6 @@ static inline int generic_drop_inode(struct inode *inode)
 }
 extern unsigned int get_next_ino(void);
 extern void clear_inode(struct inode *);
-extern void __destroy_inode(struct inode *);
 extern struct inode *new_inode_pseudo(struct super_block *sb);
 extern struct inode *new_inode(struct super_block *sb);
 extern int file_remove_privs(struct file *);

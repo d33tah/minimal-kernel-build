@@ -182,7 +182,7 @@ static int vmap_small_pages_range_noflush(unsigned long addr, unsigned long end,
 	return 0;
 }
 
-int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
+static int vmap_pages_range(unsigned long addr, unsigned long end,
 		pgprot_t prot, struct page **pages, unsigned int page_shift)
 {
 	WARN_ON(page_shift < PAGE_SHIFT);
@@ -192,15 +192,6 @@ int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
 	 * the huge-page path is unreachable: always map at base page size.
 	 */
 	return vmap_small_pages_range_noflush(addr, end, prot, pages);
-}
-
-static int vmap_pages_range(unsigned long addr, unsigned long end,
-		pgprot_t prot, struct page **pages, unsigned int page_shift)
-{
-	int err;
-
-	err = vmap_pages_range_noflush(addr, end, prot, pages, page_shift);
-	return err;
 }
 
 static DEFINE_SPINLOCK(vmap_area_lock);

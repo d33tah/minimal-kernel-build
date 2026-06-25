@@ -1281,11 +1281,6 @@ struct pcpu_alloc_info * __init pcpu_alloc_alloc_info(int nr_groups,
 	return ai;
 }
 
-void __init pcpu_free_alloc_info(struct pcpu_alloc_info *ai)
-{
-	memblock_free(ai, ai->__ai_size);
-}
-
 void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 				   void *base_addr)
 {
@@ -1458,5 +1453,5 @@ void __init setup_per_cpu_areas(void)
 	ai->groups[0].cpu_map[0] = 0;
 
 	pcpu_setup_first_chunk(ai, fc);
-	pcpu_free_alloc_info(ai);
+	memblock_free(ai, ai->__ai_size);
 }

@@ -310,12 +310,6 @@ static int __init do_early_param(char *param, char *val,
 	return 0;
 }
 
-void __init parse_early_options(char *cmdline)
-{
-	parse_args("early options", cmdline, NULL, 0, 0, 0, NULL,
-		   do_early_param);
-}
-
 void __init parse_early_param(void)
 {
 	static int done __initdata;
@@ -326,7 +320,8 @@ void __init parse_early_param(void)
 
 	 
 	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
-	parse_early_options(tmp_cmdline);
+	parse_args("early options", tmp_cmdline, NULL, 0, 0, 0, NULL,
+		   do_early_param);
 	done = 1;
 }
 

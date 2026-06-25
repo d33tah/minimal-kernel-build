@@ -286,14 +286,6 @@ static void __init early_reserve_memory(void)
 	trim_snb_memory();
 }
 
-void x86_configure_nx(void)
-{
-	if (boot_cpu_has(X86_FEATURE_NX))
-		__supported_pte_mask |= _PAGE_NX;
-	else
-		__supported_pte_mask &= ~_PAGE_NX;
-}
-
 static void __init x86_report_nx(void)
 {
 	/* Stub: NX reporting not needed for minimal kernel */
@@ -336,8 +328,11 @@ void __init setup_arch(char **cmdline_p)
 	strscpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
 	*cmdline_p = command_line;
 
-	 
-	x86_configure_nx();
+
+	if (boot_cpu_has(X86_FEATURE_NX))
+		__supported_pte_mask |= _PAGE_NX;
+	else
+		__supported_pte_mask &= ~_PAGE_NX;
 
 	parse_early_param();
 

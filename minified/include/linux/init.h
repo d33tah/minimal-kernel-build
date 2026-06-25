@@ -162,7 +162,6 @@ struct obs_kernel_param {
 	__setup_param(str, fn, fn, 1)
 
 void __init parse_early_param(void);
-void __init parse_early_options(char *cmdline);
 #endif  
 
 #else  

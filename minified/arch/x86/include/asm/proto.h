@@ -12,6 +12,4 @@ void __begin_SYSENTER_singlestep_region(void);
 void __end_SYSENTER_singlestep_region(void);
 
 
-void x86_configure_nx(void);
-
 #endif  

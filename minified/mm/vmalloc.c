@@ -782,17 +782,6 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 }
 
 
-struct vm_struct *find_vm_area(const void *addr)
-{
-	struct vmap_area *va;
-
-	va = find_vmap_area((unsigned long)addr);
-	if (!va)
-		return NULL;
-
-	return va->vm;
-}
-
 struct vm_struct *remove_vm_area(const void *addr)
 {
 	struct vmap_area *va;
@@ -819,6 +808,7 @@ struct vm_struct *remove_vm_area(const void *addr)
 static void __vunmap(const void *addr, int deallocate_pages)
 {
 	struct vm_struct *area;
+	struct vmap_area *va;
 
 	if (!addr)
 		return;
@@ -827,7 +817,8 @@ static void __vunmap(const void *addr, int deallocate_pages)
 			addr))
 		return;
 
-	area = find_vm_area(addr);
+	va = find_vmap_area((unsigned long)addr);
+	area = va ? va->vm : NULL;
 	if (unlikely(!area)) {
 		WARN(1, KERN_ERR "Trying to vfree() nonexistent vm area (%p)\n",
 				addr);

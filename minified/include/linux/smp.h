@@ -9,9 +9,6 @@
 #include <linux/init.h>
 #include <linux/smp_types.h>
 
-typedef void (*smp_call_func_t)(void *info);
-typedef bool (*smp_cond_func_t)(int cpu, void *info);
-
 
 
 void panic_smp_self_stop(void);

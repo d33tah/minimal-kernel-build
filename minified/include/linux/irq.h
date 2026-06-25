@@ -155,39 +155,14 @@ struct irq_chip {
 	void		(*irq_mask)(struct irq_data *data);
 	void		(*irq_mask_ack)(struct irq_data *data);
 	void		(*irq_unmask)(struct irq_data *data);
-	void		(*irq_eoi)(struct irq_data *data);
 
-	int		(*irq_set_affinity)(struct irq_data *data, const struct cpumask *dest, bool force);
-	int		(*irq_retrigger)(struct irq_data *data);
 	int		(*irq_set_type)(struct irq_data *data, unsigned int flow_type);
-	int		(*irq_set_wake)(struct irq_data *data, unsigned int on);
 
 	void		(*irq_bus_lock)(struct irq_data *data);
 	void		(*irq_bus_sync_unlock)(struct irq_data *data);
 
-	void		(*irq_suspend)(struct irq_data *data);
-	void		(*irq_resume)(struct irq_data *data);
-	void		(*irq_pm_shutdown)(struct irq_data *data);
-
-	void		(*irq_calc_mask)(struct irq_data *data);
-
-	void		(*irq_print_chip)(struct irq_data *data, struct seq_file *p);
 	int		(*irq_request_resources)(struct irq_data *data);
 	void		(*irq_release_resources)(struct irq_data *data);
-
-	void		(*irq_compose_msi_msg)(struct irq_data *data, struct msi_msg *msg);
-	void		(*irq_write_msi_msg)(struct irq_data *data, struct msi_msg *msg);
-
-	int		(*irq_get_irqchip_state)(struct irq_data *data, enum irqchip_irq_state which, bool *state);
-	int		(*irq_set_irqchip_state)(struct irq_data *data, enum irqchip_irq_state which, bool state);
-
-	int		(*irq_set_vcpu_affinity)(struct irq_data *data, void *vcpu_info);
-
-	void		(*ipi_send_single)(struct irq_data *data, unsigned int cpu);
-	void		(*ipi_send_mask)(struct irq_data *data, const struct cpumask *dest);
-
-	int		(*irq_nmi_setup)(struct irq_data *data);
-	void		(*irq_nmi_teardown)(struct irq_data *data);
 
 	unsigned long	flags;
 };

@@ -44,9 +44,6 @@ static inline int rwsem_is_locked(struct rw_semaphore *sem)
 	  __RWSEM_DEBUG_INIT(name)				\
 	  __RWSEM_DEP_MAP_INIT(name) }
 
-#define DECLARE_RWSEM(name) \
-	struct rw_semaphore name = __RWSEM_INITIALIZER(name)
-
 extern void __init_rwsem(struct rw_semaphore *sem, const char *name,
 			 struct lock_class_key *key);
 

@@ -25,8 +25,6 @@ struct idr {
 
 #define IDR_INIT(name)	IDR_INIT_BASE(name, 0)
 
-#define DEFINE_IDR(name)	struct idr name = IDR_INIT(name)
-
 static inline unsigned int idr_get_cursor(const struct idr *idr)
 {
 	return READ_ONCE(idr->idr_next);

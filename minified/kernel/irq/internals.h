@@ -173,7 +173,6 @@ extern void mask_irq(struct irq_desc *desc);
 extern void unmask_irq(struct irq_desc *desc);
 
 irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc);
-irqreturn_t handle_irq_event_percpu(struct irq_desc *desc);
 irqreturn_t handle_irq_event(struct irq_desc *desc);
 
 static inline int check_irq_resend(struct irq_desc *desc, bool inject)

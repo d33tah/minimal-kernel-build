@@ -386,18 +386,12 @@ static inline void expand(struct zone *zone, struct page *page,
 	}
 }
 
-inline void post_alloc_hook(struct page *page, unsigned int order,
-				gfp_t gfp_flags)
-{
-	/* Stub: minimal post-allocation setup */
-	set_page_private(page, 0);
-	set_page_refcounted(page);
-}
-
 static void prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags,
 							unsigned int alloc_flags)
 {
-	post_alloc_hook(page, order, gfp_flags);
+	/* folded sole caller of post_alloc_hook(): minimal post-alloc setup */
+	set_page_private(page, 0);
+	set_page_refcounted(page);
 
 	if (order && (gfp_flags & __GFP_COMP)) {
 		int i, nr_pages = 1 << order;

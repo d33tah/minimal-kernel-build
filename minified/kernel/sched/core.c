@@ -259,13 +259,6 @@ void activate_task(struct rq *rq, struct task_struct *p, int flags)
 	p->on_rq = TASK_ON_RQ_QUEUED;
 }
 
-void deactivate_task(struct rq *rq, struct task_struct *p, int flags)
-{
-	p->on_rq = (flags & DEQUEUE_SLEEP) ? 0 : TASK_ON_RQ_MIGRATING;
-
-	dequeue_task(rq, p, flags);
-}
-
 void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 {
 	if (p->sched_class == rq->curr->sched_class)
@@ -697,7 +690,9 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 			WRITE_ONCE(prev->__state, TASK_RUNNING);
 		} else {
 
-			deactivate_task(rq, prev, DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);
+			/* folded sole caller of deactivate_task() */
+			prev->on_rq = 0; /* DEQUEUE_SLEEP set -> not MIGRATING */
+			dequeue_task(rq, prev, DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);
 
 			if (prev->in_iowait) {
 				atomic_inc(&rq->nr_iowait);

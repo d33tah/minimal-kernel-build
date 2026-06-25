@@ -120,8 +120,6 @@ static inline unsigned int buddy_order(struct page *page)
 extern void memblock_free_pages(struct page *page, unsigned long pfn,
 					unsigned int order);
 extern void __free_pages_core(struct page *page, unsigned int order);
-extern void post_alloc_hook(struct page *page, unsigned int order,
-					gfp_t gfp_flags);
 
 extern void free_unref_page(struct page *page, unsigned int order);
 extern void free_unref_page_list(struct list_head *list);

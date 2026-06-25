@@ -48,15 +48,6 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc)
 	return retval;
 }
 
-irqreturn_t handle_irq_event_percpu(struct irq_desc *desc)
-{
-	irqreturn_t retval;
-
-	retval = __handle_irq_event_percpu(desc);
-
-	return retval;
-}
-
 irqreturn_t handle_irq_event(struct irq_desc *desc)
 {
 	irqreturn_t ret;
@@ -65,7 +56,8 @@ irqreturn_t handle_irq_event(struct irq_desc *desc)
 	irqd_set(&desc->irq_data, IRQD_IRQ_INPROGRESS);
 	raw_spin_unlock(&desc->lock);
 
-	ret = handle_irq_event_percpu(desc);
+	/* folded sole caller of handle_irq_event_percpu() */
+	ret = __handle_irq_event_percpu(desc);
 
 	raw_spin_lock(&desc->lock);
 	irqd_clear(&desc->irq_data, IRQD_IRQ_INPROGRESS);

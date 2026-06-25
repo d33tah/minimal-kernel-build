@@ -560,7 +560,6 @@ static inline void sub_nr_running(struct rq *rq, unsigned count)
 }
 
 extern void activate_task(struct rq *rq, struct task_struct *p, int flags);
-extern void deactivate_task(struct rq *rq, struct task_struct *p, int flags);
 
 extern void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags);
 

@@ -115,19 +115,11 @@ static void __set_cyc2ns_scale(unsigned long khz, int cpu, unsigned long long ts
 	c2n->data[1] = data;
 }
 
-static void __init cyc2ns_init_boot_cpu(void)
-{
-	struct cyc2ns *c2n = this_cpu_ptr(&cyc2ns);
-
-	seqcount_latch_init(&c2n->seq);
-	__set_cyc2ns_scale(tsc_khz, smp_processor_id(), rdtsc());
-}
-
 /*
  * cyc2ns_init_secondary_cpus() removed: NR_CPUS=1 / SMP off, so there are
  * no secondary CPUs. Its for_each_possible_cpu() loop only ever visited the
- * boot CPU (cpu == this_cpu), whose per-CPU cyc2ns was already set up by
- * cyc2ns_init_boot_cpu(); the cpu != this_cpu body never ran.
+ * boot CPU (cpu == this_cpu), whose per-CPU cyc2ns was already set up in
+ * tsc_enable_sched_clock(); the cpu != this_cpu body never ran.
  */
 
 u64 native_sched_clock(void)
@@ -596,10 +588,13 @@ static unsigned long __init get_loops_per_jiffy(void)
 
 static void __init tsc_enable_sched_clock(void)
 {
+	struct cyc2ns *c2n = this_cpu_ptr(&cyc2ns);
+
 	loops_per_jiffy = get_loops_per_jiffy();
 	use_tsc_delay();
 
-	cyc2ns_init_boot_cpu();
+	seqcount_latch_init(&c2n->seq);
+	__set_cyc2ns_scale(tsc_khz, smp_processor_id(), rdtsc());
 	static_branch_enable(&__use_tsc);
 }
 

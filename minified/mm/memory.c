@@ -315,18 +315,6 @@ void unmap_vmas(struct mmu_gather *tlb,
 		unmap_single_vma(tlb, vma, start_addr, end_addr);
 }
 
-static void zap_page_range_single(struct vm_area_struct *vma, unsigned long address,
-		unsigned long size)
-{
-	struct mmu_gather tlb;
-
-	lru_add_drain();
-	tlb_gather_mmu(&tlb, vma->vm_mm);
-	update_hiwater_rss(vma->vm_mm);
-	unmap_single_vma(&tlb, vma, address, address + size);
-	tlb_finish_mmu(&tlb);
-}
-
 static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr)
 {
 	pgd_t *pgd;
@@ -498,8 +486,15 @@ void unmap_mapping_pages(struct address_space *mapping, pgoff_t start,
 
 			start_addr = ((zba - vba) << PAGE_SHIFT) + vma->vm_start;
 			end_addr = ((zea - vba + 1) << PAGE_SHIFT) + vma->vm_start;
-			zap_page_range_single(vma, start_addr,
-					      end_addr - start_addr);
+			{
+				struct mmu_gather tlb;
+
+				lru_add_drain();
+				tlb_gather_mmu(&tlb, vma->vm_mm);
+				update_hiwater_rss(vma->vm_mm);
+				unmap_single_vma(&tlb, vma, start_addr, end_addr);
+				tlb_finish_mmu(&tlb);
+			}
 		}
 	}
 	i_mmap_unlock_read(mapping);

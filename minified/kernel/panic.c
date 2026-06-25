@@ -54,11 +54,6 @@ void __weak panic_smp_self_stop(void)
 		cpu_relax();
 }
 
-void __weak nmi_panic_self_stop(struct pt_regs *regs)
-{
-	panic_smp_self_stop();
-}
-
 atomic_t panic_cpu = ATOMIC_INIT(PANIC_CPU_INVALID);
 
 void nmi_panic(struct pt_regs *regs, const char *msg)
@@ -71,7 +66,7 @@ void nmi_panic(struct pt_regs *regs, const char *msg)
 	if (old_cpu == PANIC_CPU_INVALID)
 		panic("%s", msg);
 	else if (old_cpu != cpu)
-		nmi_panic_self_stop(regs);
+		panic_smp_self_stop();
 }
 
 void panic(const char *fmt, ...)

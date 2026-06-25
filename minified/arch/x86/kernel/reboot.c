@@ -9,11 +9,6 @@ void (*pm_power_off)(void);
 
 void machine_emergency_restart(void)
 {
-	machine_restart(NULL);
-}
-
-void machine_restart(char *cmd)
-{
 	while (1)
 		halt();
 }

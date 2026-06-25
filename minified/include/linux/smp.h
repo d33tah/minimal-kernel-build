@@ -12,7 +12,6 @@
 
 
 void panic_smp_self_stop(void);
-void nmi_panic_self_stop(struct pt_regs *regs);
 
 #define raw_smp_processor_id()			0
 

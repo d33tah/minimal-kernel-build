@@ -4,8 +4,6 @@
 
 #include <linux/notifier.h>
 
-extern void machine_restart(char *cmd);
-
 extern void emergency_restart(void);
 
 /* Inlined from asm/emergency-restart.h */

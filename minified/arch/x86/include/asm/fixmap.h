@@ -5,11 +5,6 @@
 
 #include <asm/kmap_size.h>
 
- 
-# define FIXMAP_PMD_NUM	2
- 
-#define FIXMAP_PMD_TOP	507
-
 #ifndef __ASSEMBLY__
 #include <linux/kernel.h>
 #include <asm/apicdef.h>
@@ -70,9 +65,6 @@ static inline void __set_fixmap(enum fixed_addresses idx,
 	native_set_fixmap(idx, phys, flags);
 }
 
- 
-#define FIXMAP_PAGE_NOCACHE PAGE_KERNEL_IO_NOCACHE
-
 /* Inlined from asm-generic/fixmap.h */
 #include <linux/bug.h>
 #include <linux/mm_types.h>
@@ -90,51 +82,14 @@ static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 #ifndef FIXMAP_PAGE_NORMAL
 #define FIXMAP_PAGE_NORMAL PAGE_KERNEL
 #endif
-#if !defined(FIXMAP_PAGE_RO) && defined(PAGE_KERNEL_RO)
-#define FIXMAP_PAGE_RO PAGE_KERNEL_RO
-#endif
-#ifndef FIXMAP_PAGE_NOCACHE
-#define FIXMAP_PAGE_NOCACHE PAGE_KERNEL_NOCACHE
-#endif
-#ifndef FIXMAP_PAGE_IO
-#define FIXMAP_PAGE_IO PAGE_KERNEL_IO
-#endif
 #ifndef FIXMAP_PAGE_CLEAR
 #define FIXMAP_PAGE_CLEAR __pgprot(0)
-#endif
-
-#ifndef set_fixmap
-#define set_fixmap(idx, phys)				\
-	__set_fixmap(idx, phys, FIXMAP_PAGE_NORMAL)
 #endif
 
 #ifndef clear_fixmap
 #define clear_fixmap(idx)			\
 	__set_fixmap(idx, 0, FIXMAP_PAGE_CLEAR)
 #endif
-
-#define __set_fixmap_offset(idx, phys, flags)				\
-({									\
-	unsigned long ________addr;					\
-	__set_fixmap(idx, phys, flags);					\
-	________addr = fix_to_virt(idx) + ((phys) & (PAGE_SIZE - 1));	\
-	________addr;							\
-})
-
-#define set_fixmap_offset(idx, phys) \
-	__set_fixmap_offset(idx, phys, FIXMAP_PAGE_NORMAL)
-
-#define set_fixmap_nocache(idx, phys) \
-	__set_fixmap(idx, phys, FIXMAP_PAGE_NOCACHE)
-
-#define set_fixmap_offset_nocache(idx, phys) \
-	__set_fixmap_offset(idx, phys, FIXMAP_PAGE_NOCACHE)
-
-#define set_fixmap_io(idx, phys) \
-	__set_fixmap(idx, phys, FIXMAP_PAGE_IO)
-
-#define set_fixmap_offset_io(idx, phys) \
-	__set_fixmap_offset(idx, phys, FIXMAP_PAGE_IO)
 
 #define __late_set_fixmap(idx, phys, flags) __set_fixmap(idx, phys, flags)
 #define __late_clear_fixmap(idx) __set_fixmap(idx, 0, __pgprot(0))

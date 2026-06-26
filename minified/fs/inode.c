@@ -311,9 +311,6 @@ void touch_atime(const struct path *path)
 	if (!atime_needs_update(path, inode))
 		return;
 
-	if (!sb_start_write_trylock(inode->i_sb))
-		return;
-
 	if (__mnt_want_write(mnt) != 0)
 		goto skip_update;
 	

@@ -69,9 +69,6 @@ static void tick_setup_device(struct tick_device *td,
 	td->evtdev = newdev;
 
 
-	if (!cpumask_equal(newdev->cpumask, cpumask))
-		irq_set_affinity(newdev->irq, cpumask);
-
 	/*
 	 * No broadcast device on this build (tick_device_uses_broadcast always
 	 * false), and TICK_ONESHOT/NO_HZ are unset so td->mode is only ever set

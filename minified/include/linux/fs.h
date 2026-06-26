@@ -537,11 +537,6 @@ static inline void __sb_start_write(struct super_block *sb, int level)
 {
 }
 
-static inline bool __sb_start_write_trylock(struct super_block *sb, int level)
-{
-	return true;
-}
-
 static inline void sb_end_write(struct super_block *sb)
 {
 	__sb_end_write(sb, SB_FREEZE_WRITE);
@@ -555,11 +550,6 @@ static inline void sb_end_pagefault(struct super_block *sb)
 static inline void sb_start_write(struct super_block *sb)
 {
 	__sb_start_write(sb, SB_FREEZE_WRITE);
-}
-
-static inline bool sb_start_write_trylock(struct super_block *sb)
-{
-	return __sb_start_write_trylock(sb, SB_FREEZE_WRITE);
 }
 
 static inline void sb_start_pagefault(struct super_block *sb)

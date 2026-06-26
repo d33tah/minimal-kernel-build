@@ -74,12 +74,6 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 
 struct device;
 
-static inline int irq_set_affinity(unsigned int irq, const struct cpumask *m)
-{
-	return -EINVAL;
-}
-
-
 #ifndef local_softirq_pending
 
 #ifndef local_softirq_pending_ref

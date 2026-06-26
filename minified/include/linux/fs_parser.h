@@ -55,10 +55,6 @@ static inline int fs_parse(struct fs_context *fc,
 
 extern int lookup_constant(const struct constant_table tbl[], const char *name, int not_found);
 
-static inline bool fs_validate_description(const char *name,
-					   const struct fs_parameter_spec *desc)
-{ return true; }
-
 #define __fsparam(TYPE, NAME, OPT, FLAGS, DATA) \
 	{ \
 		.name = NAME, \

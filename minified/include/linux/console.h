@@ -16,7 +16,6 @@ enum con_scroll {
 };
 
 struct consw {
-	struct module *owner;
 	const char *(*con_startup)(void);
 	void	(*con_init)(struct vc_data *vc, int init);
 	void	(*con_deinit)(struct vc_data *vc);

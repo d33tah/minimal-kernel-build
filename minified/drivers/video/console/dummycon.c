@@ -48,7 +48,6 @@ static int dummycon_switch(struct vc_data *vc)
 
 
 const struct consw dummy_con = {
-	.owner =		THIS_MODULE,
 	.con_startup =	dummycon_startup,
 	.con_init =		dummycon_init,
 	.con_deinit =	dummycon_deinit,

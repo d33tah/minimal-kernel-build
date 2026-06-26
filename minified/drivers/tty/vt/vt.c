@@ -282,15 +282,12 @@ int vc_cons_allocated(unsigned int i)
 
 static void visual_init(struct vc_data *vc, int num, int init)
 {
-	
-	if (vc->vc_sw)
-		module_put(vc->vc_sw->owner);
+
 	vc->vc_sw = conswitchp;
 #ifndef VT_SINGLE_DRIVER
 	if (con_driver_map[num])
 		vc->vc_sw = con_driver_map[num];
 #endif
-	__module_get(vc->vc_sw->owner);
 	vc->vc_num = num;
 	vc->vc_display_fg = &master_display_fg;
 	if (vc->vc_uni_pagedir_loc)
@@ -311,7 +308,6 @@ static void visual_init(struct vc_data *vc, int num, int init)
 static void visual_deinit(struct vc_data *vc)
 {
 	vc->vc_sw->con_deinit(vc);
-	module_put(vc->vc_sw->owner);
 }
 
 static void vc_port_destruct(struct tty_port *port)

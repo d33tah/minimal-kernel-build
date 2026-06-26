@@ -375,10 +375,8 @@ static inline void i_size_write(struct inode *inode, loff_t i_size)
 
 
 
-struct fown_struct {
-	rwlock_t lock;
-	struct pid *pid;
-};
+/* struct fown_struct removed - f_owner field was write-only (lock never
+   acquired, pid never assigned -> put_pid(NULL) no-op) */
 
 struct file_ra_state {
 	unsigned int mmap_miss;
@@ -400,7 +398,6 @@ struct file {
 	fmode_t			f_mode;
 	struct mutex		f_pos_lock;
 	loff_t			f_pos;
-	struct fown_struct	f_owner;
 	const struct cred	*f_cred;
 	struct file_ra_state	f_ra;
 

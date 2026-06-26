@@ -55,7 +55,6 @@ static struct file *__alloc_file(int flags, const struct cred *cred)
 	f->f_cred = get_cred(cred);
 
 	atomic_long_set(&f->f_count, 1);
-	rwlock_init(&f->f_owner.lock);
 	mutex_init(&f->f_pos_lock);
 	f->f_flags = flags;
 	f->f_mode = OPEN_FMODE(flags);
@@ -101,7 +100,6 @@ static void __fput(struct file *file)
 		cdev_put(inode->i_cdev);
 	}
 	fops_put(file->f_op);
-	put_pid(file->f_owner.pid);
 	if ((mode & (FMODE_READ | FMODE_WRITE)) == FMODE_READ)
 		i_readcount_dec(inode);
 	if (mode & FMODE_WRITER) {

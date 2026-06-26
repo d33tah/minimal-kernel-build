@@ -2,6 +2,5 @@
 #ifndef _UAPI_ASM_X86_VSYSCALL_H
 #define _UAPI_ASM_X86_VSYSCALL_H
 
-#define VSYSCALL_ADDR (-10UL << 20)
 
 #endif  

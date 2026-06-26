@@ -20,9 +20,6 @@
 
 /* Inlined from asm/pkru.h */
 #include <asm/cpufeature.h>
-#define PKRU_AD_BIT 0x1u
-#define PKRU_WD_BIT 0x2u
-#define PKRU_BITS_PER_PKEY 2
 #define init_pkru_value	0
 static inline u32 read_pkru(void) { return 0; }
 /* End of pkru.h */

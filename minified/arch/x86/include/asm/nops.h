@@ -18,16 +18,7 @@
 #define BYTES_NOP8	0x3e,BYTES_NOP7
 
 
-#define ASM_NOP1 _ASM_BYTES(BYTES_NOP1)
-#define ASM_NOP2 _ASM_BYTES(BYTES_NOP2)
-#define ASM_NOP3 _ASM_BYTES(BYTES_NOP3)
-#define ASM_NOP4 _ASM_BYTES(BYTES_NOP4)
-#define ASM_NOP5 _ASM_BYTES(BYTES_NOP5)
-#define ASM_NOP6 _ASM_BYTES(BYTES_NOP6)
-#define ASM_NOP7 _ASM_BYTES(BYTES_NOP7)
-#define ASM_NOP8 _ASM_BYTES(BYTES_NOP8)
 
-#define ASM_NOP_MAX 8
 
 #ifndef __ASSEMBLY__
 extern const unsigned char * const x86_nops[];

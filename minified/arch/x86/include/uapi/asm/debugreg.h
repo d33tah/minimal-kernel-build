@@ -18,7 +18,6 @@
 
 
 
-#define DR_GLOBAL_ENABLE_MASK (0xAA)
 
 
 

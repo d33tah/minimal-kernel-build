@@ -6,7 +6,6 @@
 #include <linux/stddef.h>
 
 /* Inlined from uapi/linux/capability.h - only v3 kept, older versions unused */
-#define _LINUX_CAPABILITY_VERSION_3  0x20080522
 #define _LINUX_CAPABILITY_U32S_3     2
 
 #define CAP_DAC_OVERRIDE     1

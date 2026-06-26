@@ -15,7 +15,6 @@
 
  
 
-#define LOCK_PREFIX_HERE ""
 #define LOCK_PREFIX ""
 
  

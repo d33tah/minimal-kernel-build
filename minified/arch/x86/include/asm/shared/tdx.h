@@ -5,7 +5,6 @@
 #include <linux/bits.h>
 #include <linux/types.h>
 
-#define TDX_HYPERCALL_STANDARD  0
 
 #define TDX_HCALL_HAS_OUTPUT	BIT(0)
 #define TDX_HCALL_ISSUE_STI	BIT(1)

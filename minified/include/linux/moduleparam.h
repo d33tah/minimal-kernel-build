@@ -12,7 +12,6 @@
 #define __MODULE_INFO_PREFIX KBUILD_MODNAME "."
 #endif
 
-#define MAX_PARAM_PREFIX_LEN (64 - sizeof(unsigned long))
 
 #define __MODULE_INFO(tag, name, info)					  \
 	static const char __UNIQUE_ID(name)[]				  \

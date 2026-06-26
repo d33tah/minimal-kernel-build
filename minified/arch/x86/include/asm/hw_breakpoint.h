@@ -26,7 +26,6 @@
 #define X86_BREAKPOINT_RW	0x83
 
  
-#define HBP_NUM 4
 
 
 struct perf_event;

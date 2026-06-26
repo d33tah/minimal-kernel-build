@@ -60,7 +60,6 @@ struct fxregs_state {
 #define MXCSR_DEFAULT		0x1f80
 
  
-#define MXCSR_AND_FLAGS_SIZE sizeof(u64)
 
  
 struct swregs_state {

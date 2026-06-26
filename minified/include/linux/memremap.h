@@ -4,7 +4,6 @@
 #include <linux/mm.h>
 #include <linux/range.h>
 #include <linux/ioport.h>
-#include <linux/percpu-refcount.h>
 
 struct resource;
 struct device;

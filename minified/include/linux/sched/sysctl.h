@@ -3,6 +3,5 @@
 
 #include <linux/types.h>
 
-struct ctl_table;
 
 #endif

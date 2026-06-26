@@ -37,7 +37,6 @@
 
 
 struct list_lru;
-struct mem_cgroup;
 void __init kmem_cache_init(void);
 bool slab_is_available(void);
 

@@ -4,7 +4,6 @@
 #include <linux/types.h>
 #include <linux/device.h>
 
-struct bio;
 struct page;
 
 #endif

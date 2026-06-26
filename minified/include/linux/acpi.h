@@ -15,6 +15,5 @@
 #define _LINUX
 #endif
 
-struct fwnode_handle;
 
 #endif	 

@@ -54,10 +54,8 @@
 #include <linux/seqlock.h>
 #include <asm/kmap_size.h>
 
-struct backing_dev_info;
 struct cfs_rq;
 struct fs_struct;
-struct mempolicy;
 struct nameidata;
 struct nsproxy;
 struct pid_namespace;

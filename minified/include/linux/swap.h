@@ -16,7 +16,6 @@
 #include <asm/page.h>
 
 struct notifier_block;
-struct bio;
 struct pagevec;
 
 #define MAX_SWAPFILES_SHIFT	5
@@ -24,7 +23,6 @@ struct pagevec;
 #ifdef __KERNEL__
 
 struct address_space;
-struct writeback_control;
 struct zone;
 
 #define SWAP_CLUSTER_MAX 32UL

@@ -6,7 +6,6 @@
 #include <asm/perf_event.h>
 #include <asm/hw_breakpoint.h>
 
-struct perf_event;
 
 /* perf_bp_event, perf_event_text_poke, __perf_sw_event, perf_tp_event,
  * perf_event_print_debug, perf_register/unregister_guest_info_callbacks,

@@ -36,7 +36,6 @@ extern int console_printk[];
 
 extern void console_verbose(void);
 
-struct ctl_table;
 
 struct va_format {
 	const char *fmt;

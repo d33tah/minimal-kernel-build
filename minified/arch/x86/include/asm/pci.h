@@ -5,7 +5,6 @@
 
 #include <linux/types.h>
 
-struct pci_bus;
 
  
 extern int pci_routeirq;

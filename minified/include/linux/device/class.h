@@ -6,7 +6,6 @@
 #include <linux/device/bus.h>
 
 struct device;
-struct fwnode_handle;
 
 struct class {
 	const char		*name;

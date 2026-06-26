@@ -64,8 +64,6 @@ typedef int rwf_t;
 #define RWF_NOWAIT	0x00000008
 /* end uapi/linux/fs.h */
 
-struct backing_dev_info;
-struct bio;
 struct iovec;
 struct kiocb;
 struct kobject;
@@ -147,7 +145,6 @@ enum positive_aop_returns { AOP_TRUNCATED_PAGE = 0x80001 };
 
 struct page;
 struct address_space;
-struct writeback_control;
 
 #define IOCB_NOWAIT		(__force int) RWF_NOWAIT
 #define IOCB_DIRECT		(1 << 17)
@@ -914,7 +911,6 @@ static inline int iocb_flags(struct file *file)
 
 
 
-struct ctl_table;
 
 #define __FMODE_EXEC		((__force int) FMODE_EXEC)
 #define __FMODE_NONOTIFY	((__force int) FMODE_NONOTIFY)

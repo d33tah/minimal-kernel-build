@@ -10,7 +10,6 @@
 
 struct zonelist;
 struct notifier_block;
-struct mem_cgroup;
 struct task_struct;
 
 static inline vm_fault_t check_stable_address_space(struct mm_struct *mm)

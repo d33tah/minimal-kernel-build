@@ -11,7 +11,5 @@
 
 /* X86_BREAKPOINT_LEN/EXECUTE/WRITE/RW constants were 0-ref tree-wide - removed. */
 
-struct perf_event;
-struct pmu;
 
 #endif

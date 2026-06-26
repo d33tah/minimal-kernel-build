@@ -109,7 +109,6 @@ static inline bool folio_try_get_rcu(struct folio *folio)
 #include <linux/sched.h>
 #include <linux/pgtable.h>
 
-struct mempolicy;
 struct anon_vma;
 struct anon_vma_chain;
 struct user_struct;

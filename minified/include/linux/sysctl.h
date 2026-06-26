@@ -9,7 +9,6 @@
 
 
 struct completion;
-struct ctl_table;
 struct nsproxy;
 
 

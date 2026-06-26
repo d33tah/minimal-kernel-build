@@ -28,7 +28,6 @@ static inline int numa_node_id(void)
 
 /* topology_{logical_package,physical_package,logical_die,die,core}_id, topology_ppin removed - unused (read only via these macros) */
 
-struct pci_bus;
 
 /* x86_topology_update declaration removed - no implementation */
 

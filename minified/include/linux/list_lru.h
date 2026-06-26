@@ -5,7 +5,6 @@
 #include <linux/nodemask.h>
 #include <linux/xarray.h>
 
-struct mem_cgroup;
 
 struct list_lru_one {
 	struct list_head	list;

@@ -16,10 +16,7 @@ struct serial_icounter_struct;
 struct serial_struct;
 
 struct tty_operations {
-	struct tty_struct * (*lookup)(struct tty_driver *driver,
-			struct file *filp, int idx);
 	int  (*install)(struct tty_driver *driver, struct tty_struct *tty);
-	void (*remove)(struct tty_driver *driver, struct tty_struct *tty);
 	int  (*open)(struct tty_struct * tty, struct file * filp);
 	void (*close)(struct tty_struct * tty, struct file * filp);
 	void (*shutdown)(struct tty_struct *tty);
@@ -31,7 +28,9 @@ struct tty_operations {
 	/* put_char, chars_in_buffer, ioctl, compat_ioctl, set_termios, throttle,
 	 * unthrottle, stop, start, hangup, break_ctl, flush_buffer, set_ldisc,
 	 * wait_until_sent, send_xchar, resize, tiocmget, tiocmset, get_icount,
-	 * get_serial, set_serial, show_fdinfo, proc_show removed - never dispatched */
+	 * get_serial, set_serial, show_fdinfo, proc_show, lookup, remove removed -
+	 * never dispatched (lookup/remove were read-but-never-written: con_ops is
+	 * the sole instance and sets neither -> their guards were always false) */
 } __randomize_layout;
 
 struct tty_driver {

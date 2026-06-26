@@ -344,13 +344,8 @@ static struct tty_struct *tty_driver_lookup_tty(struct tty_driver *driver,
 {
 	struct tty_struct *tty;
 
-	if (driver->ops->lookup)
-		if (!file)
-			tty = ERR_PTR(-EIO);
-		else
-			tty = driver->ops->lookup(driver, file, idx);
-	else
-		tty = driver->ttys[idx];
+	/* ops->lookup is never set (sole tty_operations con_ops omits it) */
+	tty = driver->ttys[idx];
 
 	if (!IS_ERR(tty))
 		tty_kref_get(tty);
@@ -396,10 +391,8 @@ static int tty_driver_install_tty(struct tty_driver *driver,
 
 static void tty_driver_remove_tty(struct tty_driver *driver, struct tty_struct *tty)
 {
-	if (driver->ops->remove)
-		driver->ops->remove(driver, tty);
-	else
-		driver->ttys[tty->index] = NULL;
+	/* ops->remove is never set (sole tty_operations con_ops omits it) */
+	driver->ttys[tty->index] = NULL;
 }
 
 static int tty_reopen(struct tty_struct *tty)

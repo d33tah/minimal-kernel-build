@@ -251,8 +251,6 @@ void __noreturn do_exit(long code)
 	struct task_struct *tsk = current;
 	int group_dead;
 
-	WARN_ON(tsk->plug);
-
 	exit_signals(tsk);
 
 	if (tsk->mm)

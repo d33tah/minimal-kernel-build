@@ -704,8 +704,6 @@ static inline void sched_submit_work(struct task_struct *tsk)
 {
 	if (task_is_running(tsk))
 		return;
-
-	blk_flush_plug(tsk->plug, true);
 }
 
 asmlinkage __visible void __sched schedule(void)
@@ -853,7 +851,6 @@ static int io_schedule_prepare(void)
 	int old_iowait = current->in_iowait;
 
 	current->in_iowait = 1;
-	blk_flush_plug(current->plug, true);
 	return old_iowait;
 }
 

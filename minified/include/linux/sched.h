@@ -55,7 +55,6 @@
 #include <asm/kmap_size.h>
 
 struct backing_dev_info;
-struct blk_plug;
 struct cfs_rq;
 struct fs_struct;
 struct mempolicy;
@@ -284,8 +283,6 @@ struct task_struct {
 
 
 
-
-	struct blk_plug			*plug;
 
 	union {
 		refcount_t		rcu_users;

@@ -13,12 +13,4 @@
 #include <linux/rcupdate.h>
 #include <linux/sched.h>
 
-struct blk_plug {
-};
-
-
-static inline void blk_flush_plug(struct blk_plug *plug, bool async)
-{
-}
-
 #endif

@@ -71,6 +71,5 @@ extern int del_timer(struct timer_list * timer);
 #define del_singleshot_timer_sync(t) del_timer_sync(t)
 
 extern void init_timers(void);
-struct hrtimer;
 
 #endif

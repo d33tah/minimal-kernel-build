@@ -6,7 +6,6 @@
 #include <linux/tty_buffer.h>
 #include <linux/wait.h>
 
-struct attribute_group;
 struct tty_driver;
 struct tty_port;
 struct tty_struct;

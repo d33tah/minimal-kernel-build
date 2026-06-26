@@ -55,8 +55,6 @@ enum {
 	IRQ_SET_MASK_OK_DONE,
 };
 
-struct irq_domain;
-
 struct irq_common_data {
 	unsigned int		__private state_use_accessors;
 };

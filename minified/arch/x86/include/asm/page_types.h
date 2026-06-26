@@ -33,8 +33,6 @@
 #define __PHYSICAL_START	ALIGN(CONFIG_PHYSICAL_START, \
 				      CONFIG_PHYSICAL_ALIGN)
 
-#define __START_KERNEL		(__START_KERNEL_map + __PHYSICAL_START)
-
 #include <asm/page_32_types.h>
 #define IOREMAP_MAX_ORDER       (PMD_SHIFT)
 

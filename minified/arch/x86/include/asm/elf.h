@@ -28,11 +28,8 @@ typedef struct user_i387_struct elf_fpregset_t;
 #define R_386_RELATIVE	8
 #define R_386_GOTOFF	9
 #define R_386_GOTPC	10
-#define R_386_NUM	11
 
 #define ELF_CLASS	ELFCLASS32
-#define ELF_DATA	ELFDATA2LSB
-#define ELF_ARCH	EM_386
 
 #include <asm/vdso.h>
 
@@ -84,9 +81,6 @@ do {						\
 #define ELF_EXEC_PAGESIZE	4096
 
  
-#define ELF_ET_DYN_BASE		(mmap_is_ia32() ? 0x000400000UL : \
-						  (DEFAULT_MAP_WINDOW / 3 * 2))
-
  
 
 #define ELF_HWCAP		(boot_cpu_data.x86_capability[CPUID_1_EDX])

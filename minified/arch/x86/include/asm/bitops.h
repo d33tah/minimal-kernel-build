@@ -16,8 +16,6 @@
 /* BITS_PER_LONG == 32 (i386) */
 #define _BITOPS_LONG_SHIFT 5
 
-#define BIT_64(n)			(U64_C(1) << (n))
-
  
 
 #define RLONG_ADDR(x)			 "m" (*(volatile long *) (x))

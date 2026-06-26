@@ -73,8 +73,7 @@ struct cpuinfo_x86 {
 } __randomize_layout;
 
 #define X86_VENDOR_INTEL	0
-/* X86_VENDOR_CYRIX, UMC, CENTAUR, TRANSMETA, NSC, HYGON, ZHAOXIN, VORTEX removed - unused */
-#define X86_VENDOR_AMD		2
+/* X86_VENDOR_CYRIX, UMC, CENTAUR, TRANSMETA, NSC, HYGON, ZHAOXIN, VORTEX, AMD removed - unused */
 #define X86_VENDOR_NUM		12
 
 #define X86_VENDOR_UNKNOWN	0xff
@@ -87,7 +86,6 @@ extern __u32			cpu_caps_cleared[NCAPINTS + NBUGINTS];
 extern __u32			cpu_caps_set[NCAPINTS + NBUGINTS];
 
 #define cpu_info		boot_cpu_data
-#define cpu_data(cpu)		boot_cpu_data
 /* cpuinfo_op declaration removed - no implementation */
 
 #define cache_line_size()	(boot_cpu_data.x86_cache_alignment)
@@ -334,8 +332,6 @@ static __always_inline void prefetchw(const void *x)
 #define TOP_OF_INIT_STACK ((unsigned long)&init_stack + sizeof(init_stack) - \
 			   TOP_OF_KERNEL_STACK_PADDING)
 
-#define task_top_of_stack(task) ((unsigned long)(task_pt_regs(task) + 1))
-
 #define task_pt_regs(task) \
 ({									\
 	unsigned long __ptr = (unsigned long)task_stack_page(task);	\
@@ -348,9 +344,6 @@ static __always_inline void prefetchw(const void *x)
 	.sysenter_cs		= __KERNEL_CS,				  \
 }
 
-#define KSTK_ESP(task)		(task_pt_regs(task)->sp)
-
-
 extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
 					       unsigned long new_sp);
 
@@ -358,12 +351,9 @@ extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
 #define __TASK_UNMAPPED_BASE(task_size)	(PAGE_ALIGN(task_size / 3))
 #define TASK_UNMAPPED_BASE		__TASK_UNMAPPED_BASE(TASK_SIZE_LOW)
 
-#define KSTK_EIP(task)		(task_pt_regs(task)->ip)
-
 extern unsigned long arch_align_stack(unsigned long sp);
 
 void default_idle(void);
-#define xen_set_default_idle 0
 
 
 #endif  

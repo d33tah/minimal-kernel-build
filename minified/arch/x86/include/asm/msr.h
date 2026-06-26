@@ -117,8 +117,5 @@ static inline void wrmsr(unsigned int msr, u32 low, u32 high)
 	native_write_msr(msr, low, high);
 }
 
-#define rdmsrl(msr, val)			\
-	((val) = native_read_msr((msr)))
-
 #endif
 #endif

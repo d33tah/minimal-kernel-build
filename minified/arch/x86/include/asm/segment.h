@@ -74,7 +74,6 @@
 
 #define GDT_SIZE			(GDT_ENTRIES*8)
 #define GDT_ENTRY_TLS_ENTRIES		3
-#define TLS_SIZE			(GDT_ENTRY_TLS_ENTRIES* 8)
 
 
 #ifdef __KERNEL__

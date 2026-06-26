@@ -57,7 +57,6 @@ struct thread_info {
  * the writes were no-ops. TIF_ADDR32 removed - tested in elf.h mmap_is_ia32 but
  * never set, so the COMPAT term was always false.
  */
-#define STACK_WARN		(THREAD_SIZE/8)
 
  
 #ifndef __ASSEMBLY__

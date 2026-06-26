@@ -15,8 +15,6 @@
 
 #define IRQ_STACK_SIZE		THREAD_SIZE
 
-#define N_EXCEPTION_STACKS	1
-
 #define __PHYSICAL_MASK_SHIFT	32
 
  

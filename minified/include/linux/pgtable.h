@@ -104,11 +104,6 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 
 
 
-#ifndef pte_access_permitted
-#define pte_access_permitted(pte, write) \
-	(pte_present(pte) && (!(write) || pte_write(pte)))
-#endif
-
 #ifndef pmd_access_permitted
 #define pmd_access_permitted(pmd, write) \
 	(pmd_present(pmd) && (!(write) || pmd_write(pmd)))
@@ -127,40 +122,10 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 #define move_pte(pte, prot, old_addr, new_addr)	(pte)
 #endif
 
-#ifndef pte_accessible
-# define pte_accessible(mm, pte)	((void)(pte), 1)
-#endif
-
-#ifndef flush_tlb_fix_spurious_fault
-#define flush_tlb_fix_spurious_fault(vma, address) flush_tlb_page(vma, address)
-#endif
-
-
 #define pgd_addr_end(addr, end)						\
 ({	unsigned long __boundary = ((addr) + PGDIR_SIZE) & PGDIR_MASK;	\
 	(__boundary - 1 < (end) - 1)? __boundary: (end);		\
 })
-
-#ifndef p4d_addr_end
-#define p4d_addr_end(addr, end)						\
-({	unsigned long __boundary = ((addr) + P4D_SIZE) & P4D_MASK;	\
-	(__boundary - 1 < (end) - 1)? __boundary: (end);		\
-})
-#endif
-
-#ifndef pud_addr_end
-#define pud_addr_end(addr, end)						\
-({	unsigned long __boundary = ((addr) + PUD_SIZE) & PUD_MASK;	\
-	(__boundary - 1 < (end) - 1)? __boundary: (end);		\
-})
-#endif
-
-#ifndef pmd_addr_end
-#define pmd_addr_end(addr, end)						\
-({	unsigned long __boundary = ((addr) + PMD_SIZE) & PMD_MASK;	\
-	(__boundary - 1 < (end) - 1)? __boundary: (end);		\
-})
-#endif
 
 /* 2-level paging: pgd_bad()/p4d_bad()/pud_bad() are all constant 0 on x86
  * (pgtable_types.h), so the corruption arms of *_none_or_clear_bad() that
@@ -197,38 +162,12 @@ static inline int pmd_none_or_clear_bad(pmd_t *pmd)
 
 
 
-#ifndef pgprot_noncached
-#define pgprot_noncached(prot)	(prot)
-#endif
-
 #ifndef pgprot_writecombine
 #define pgprot_writecombine pgprot_noncached
 #endif
 
 #ifndef pgprot_device
 #define pgprot_device pgprot_noncached
-#endif
-
-#ifndef pgprot_modify
-#define pgprot_modify pgprot_modify
-static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
-{
-	if (pgprot_val(oldprot) == pgprot_val(pgprot_noncached(oldprot)))
-		newprot = pgprot_noncached(newprot);
-	if (pgprot_val(oldprot) == pgprot_val(pgprot_writecombine(oldprot)))
-		newprot = pgprot_writecombine(newprot);
-	if (pgprot_val(oldprot) == pgprot_val(pgprot_device(oldprot)))
-		newprot = pgprot_device(newprot);
-	return newprot;
-}
-#endif
-
-#ifndef pgprot_encrypted
-#define pgprot_encrypted(prot)	(prot)
-#endif
-
-#ifndef pgprot_decrypted
-#define pgprot_decrypted(prot)	(prot)
 #endif
 
 #ifndef __HAVE_ARCH_ENTER_LAZY_MMU_MODE

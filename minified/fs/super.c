@@ -57,7 +57,6 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	init_rwsem(&s->s_umount);
 	down_write_nested(&s->s_umount, SINGLE_DEPTH_NESTING);
 
-	s->s_bdi = &noop_backing_dev_info;
 	s->s_flags = flags;
 	if (s->s_user_ns != &init_user_ns)
 		s->s_iflags |= SB_I_NODEV;
@@ -239,7 +238,6 @@ int vfs_get_tree(struct fs_context *fc)
 	}
 
 	sb = fc->root->d_sb;
-	WARN_ON(!sb->s_bdi);
 
 	WARN((sb->s_maxbytes < 0), "%s set sb->s_maxbytes to "
 		"negative value (%lld)\n", fc->fs_type->name, sb->s_maxbytes);

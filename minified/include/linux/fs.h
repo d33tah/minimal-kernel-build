@@ -478,7 +478,6 @@ struct super_block {
 	atomic_t		s_active;
 	struct hlist_bl_head	s_roots;
 	struct list_head	s_mounts;
-	struct backing_dev_info *s_bdi;
 
 	void			*s_fs_info;
 

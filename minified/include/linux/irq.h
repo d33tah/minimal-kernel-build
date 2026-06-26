@@ -63,11 +63,9 @@ struct irq_common_data {
 };
 
 struct irq_data {
-	u32			mask;
 	unsigned int		irq;
 	struct irq_common_data	*common;
 	struct irq_chip		*chip;
-	void			*chip_data;
 };
 
 enum {

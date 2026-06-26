@@ -251,7 +251,6 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 	chip_bus_sync_unlock(desc);
 	mutex_unlock(&desc->request_mutex);
 
-	new->dir = NULL;
 	return 0;
 
 mismatch:
@@ -315,7 +314,6 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	retval = __setup_irq(irq, desc, action);
 
 	if (retval) {
-		kfree(action->secondary);
 		kfree(action);
 	}
 

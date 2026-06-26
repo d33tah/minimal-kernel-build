@@ -14,30 +14,19 @@ struct siginfo;
 #endif  
 
 
-#define SIGHUP		 1
-#define SIGINT		 2
-#define SIGQUIT		 3
 #define SIGILL		 4
 #define SIGTRAP		 5
-#define SIGABRT		 6
 #define SIGBUS		 7
 #define SIGFPE		 8
 #define SIGKILL		 9
 #define SIGSEGV		11
-#define SIGPIPE		13
-#define SIGALRM		14
-#define SIGTERM		15
 #define SIGCHLD		17
 #define SIGCONT		18
 #define SIGSTOP		19
-#define SIGTSTP		20
-#define SIGTTIN		21
-#define SIGTTOU		22
 #define SIGURG		23
 #define SIGWINCH	28
-#define SIGIO		29
-#define SIGSYS		31
-/* SIGUNUSED, SIGRTMAX, SIGSTKSZ removed - unused */
+/* SIGUNUSED, SIGRTMAX, SIGSTKSZ removed - unused.
+   SIGHUP/INT/QUIT/ABRT/PIPE/ALRM/TERM/TSTP/TTIN/TTOU/IO/SYS removed - 0-ref in this build */
 #define SIGRTMIN	32
 
 /* SA_RESTORER + MINSIGSTKSZ removed - unused */

@@ -10,23 +10,8 @@
 #include <asm/cpu_entry_area.h>
 #include <asm/switch_to.h>
 
-enum stack_type {
-	STACK_TYPE_UNKNOWN,
-	STACK_TYPE_TASK,
-	STACK_TYPE_IRQ,
-	STACK_TYPE_SOFTIRQ,
-	STACK_TYPE_ENTRY,
-	STACK_TYPE_EXCEPTION,
-	STACK_TYPE_EXCEPTION_LAST = STACK_TYPE_EXCEPTION + N_EXCEPTION_STACKS-1,
-};
-
-struct stack_info {
-	enum stack_type type;
-	unsigned long *begin, *end, *next_sp;
-};
-
-#define STACKSLOTS_PER_LINE 8
-
+/* enum stack_type + struct stack_info removed - 0-ref (get_stack_info/stack-dump machinery stripped) */
+/* STACKSLOTS_PER_LINE removed - 0-ref */
 /* struct stack_frame removed - 0-ref */
 /* show_opcodes, show_ip removed - unused */
 #endif  

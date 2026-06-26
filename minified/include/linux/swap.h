@@ -26,7 +26,6 @@ struct pagevec;
 struct address_space;
 struct writeback_control;
 struct zone;
-struct swap_info_struct;
 
 #define SWAP_CLUSTER_MAX 32UL
 

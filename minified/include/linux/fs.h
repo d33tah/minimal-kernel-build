@@ -73,13 +73,11 @@ struct pipe_inode_info;
 struct vm_area_struct;
 struct vfsmount;
 struct cred;
-struct swap_info_struct;
 struct seq_file;
 struct workqueue_struct;
 struct iov_iter;
 struct fs_context;
 struct fs_parameter_spec;
-struct fileattr;
 
 extern void __init inode_init(void);
 extern void __init files_init(void);
@@ -235,9 +233,6 @@ static inline void mapping_allow_writable(struct address_space *mapping)
 }
 
 #define i_size_ordered_init(inode) do { } while (0)
-
-struct posix_acl;
-
 
 #define IOP_LOOKUP	0x0002
 #define IOP_NOFOLLOW	0x0004

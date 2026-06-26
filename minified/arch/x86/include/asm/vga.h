@@ -15,7 +15,4 @@
 	start;							\
 })
 
-#define vga_readb(x) (*(x))
-#define vga_writeb(x, y) (*(y) = (x))
-
 #endif  

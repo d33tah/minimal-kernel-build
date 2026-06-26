@@ -24,8 +24,6 @@ extern pmd_t initial_pg_pmd[];
 void sync_initial_page_table(void);
 
 /* --- 2025-12-07 20:18 --- Inlined pgtable-2level.h */
-#define pte_ERROR(e) \
-	pr_err("%s:%d: bad pte %08lx\n", __FILE__, __LINE__, (e).pte_low)
 #define pgd_ERROR(e) \
 	pr_err("%s:%d: bad pgd %08lx\n", __FILE__, __LINE__, pgd_val(e))
 

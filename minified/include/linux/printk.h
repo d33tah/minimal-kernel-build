@@ -86,9 +86,6 @@ struct module;
 
 #define __printk_index_emit(...) do {} while (0)
 
-#define printk_index_subsys_emit(subsys_fmt_prefix, level, fmt, ...) \
-	__printk_index_emit(fmt, level, subsys_fmt_prefix)
-
 #define printk_index_wrap(_p_func, _fmt, ...)				\
 	({								\
 		__printk_index_emit(_fmt, NULL, NULL);			\

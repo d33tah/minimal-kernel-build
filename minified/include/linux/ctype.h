@@ -18,8 +18,6 @@ extern const unsigned char _ctype[];
 #define __ismask(x) (_ctype[(int)(unsigned char)(x)])
 
 #define isalnum(c)	((__ismask(c)&(_U|_L|_D)) != 0)
-#define isgraph(c)	((__ismask(c)&(_P|_U|_L|_D)) != 0)
-#define islower(c)	((__ismask(c)&(_L)) != 0)
 #define isspace(c)	((__ismask(c)&(_S)) != 0)
 #define isxdigit(c)	((__ismask(c)&(_D|_X)) != 0)
 
@@ -31,15 +29,6 @@ static inline int isdigit(int c)
 	return '0' <= c && c <= '9';
 }
 #endif
-
-static inline unsigned char __toupper(unsigned char c)
-{
-	if (islower(c))
-		c -= 'a'-'A';
-	return c;
-}
-
-#define toupper(c) __toupper(c)
 
 static inline char _tolower(const char c)
 {

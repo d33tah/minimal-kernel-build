@@ -19,12 +19,6 @@
 
 extern unsigned long tick_nsec;		 
 
-#define shift_right(x, s) ({	\
-	__typeof__(x) __x = (x);	\
-	__typeof__(s) __s = (s);	\
-	__x < 0 ? -(-__x >> __s) : __x >> __s;	\
-})
-
 #define NTP_SCALE_SHIFT		32
 
 #define NTP_INTERVAL_FREQ  (HZ)

@@ -70,7 +70,6 @@ struct iovec;
 struct kiocb;
 struct kobject;
 struct pipe_inode_info;
-struct kstatfs;
 struct vm_area_struct;
 struct vfsmount;
 struct cred;
@@ -243,8 +242,6 @@ struct posix_acl;
 #define IOP_LOOKUP	0x0002
 #define IOP_NOFOLLOW	0x0004
 
-struct fsnotify_mark_connector;
-
 struct inode {
 	umode_t			i_mode;
 	unsigned short		i_opflags;
@@ -399,8 +396,6 @@ struct file {
 } __randomize_layout
   __attribute__((aligned(4)));	
 
-struct file_handle;
-
 static inline struct file *get_file(struct file *f)
 {
 	atomic_long_inc(&f->f_count);
@@ -418,9 +413,6 @@ static inline struct file *get_file(struct file *f)
 typedef void *fl_owner_t;
 
 struct file_lock;
-struct file_lock_operations;
-struct lock_manager_operations;
-struct lock_manager;
 struct net;
 
 

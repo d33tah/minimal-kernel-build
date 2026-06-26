@@ -1006,8 +1006,6 @@ static inline bool gup_must_unshare(unsigned int flags, struct page *page)
 	return false;
 }
 
-typedef int (*pte_fn_t)(pte_t *pte, unsigned long addr, void *data);
-
 
 
 

@@ -6,11 +6,8 @@
 #include <linux/mutex.h>
 
 
-struct proc_dir_entry;
 struct module;
 struct irq_desc;
-struct irq_domain;
-struct pt_regs;
 
 struct irq_desc {
 	struct irq_common_data	irq_common_data;

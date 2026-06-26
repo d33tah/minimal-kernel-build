@@ -69,7 +69,6 @@ struct delayed_work {
 	int cpu;
 };
 
-struct workqueue_attrs;
 
 #define __WORK_INIT_LOCKDEP_MAP(n, k)
 

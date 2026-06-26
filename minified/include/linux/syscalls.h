@@ -12,7 +12,6 @@ struct rlimit;
 struct stat;
 struct statfs;
 struct __kernel_old_timeval;
-struct getcpu_cache;
 
 #include <linux/types.h>
 #include <linux/capability.h>

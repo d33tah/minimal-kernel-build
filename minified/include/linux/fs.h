@@ -408,7 +408,6 @@ static inline struct file *get_file(struct file *f)
 typedef void *fl_owner_t;
 
 struct file_lock;
-struct net;
 
 
 struct files_struct;

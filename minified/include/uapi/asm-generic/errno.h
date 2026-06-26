@@ -23,7 +23,6 @@
 #define	ENOTDIR		20
 #define	EISDIR		21
 #define	EINVAL		22
-#define	ENFILE		23
 #define	EMFILE		24
 #define	ENOTTY		25
 #define	ETXTBSY		26
@@ -38,7 +37,6 @@
 #define	ENOSYS		38
 #define	ENOTEMPTY	39
 #define	ELOOP		40
-#define	ETIME		62
 #define	EOVERFLOW	75
 #define	EOPNOTSUPP	95
 #define	ENOTCONN	107

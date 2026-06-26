@@ -312,22 +312,7 @@ enum vm_fault_reason {
 			VM_FAULT_SIGSEGV | VM_FAULT_HWPOISON |	\
 			VM_FAULT_HWPOISON_LARGE | VM_FAULT_FALLBACK)
 
-struct vm_special_mapping {
-	const char *name;	 
 
-	 
-	struct page **pages;
-
-	 
-	vm_fault_t (*fault)(const struct vm_special_mapping *sm,
-				struct vm_area_struct *vma,
-				struct vm_fault *vmf);
-
-	int (*mremap)(const struct vm_special_mapping *sm,
-		     struct vm_area_struct *new_vma);
-};
-
-  
 typedef struct {
 	unsigned long val;
 } swp_entry_t;

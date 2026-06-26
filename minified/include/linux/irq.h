@@ -71,10 +71,8 @@ struct irq_common_data {
 struct irq_data {
 	u32			mask;
 	unsigned int		irq;
-	unsigned long		hwirq;
 	struct irq_common_data	*common;
 	struct irq_chip		*chip;
-	struct irq_domain	*domain;
 	void			*chip_data;
 };
 

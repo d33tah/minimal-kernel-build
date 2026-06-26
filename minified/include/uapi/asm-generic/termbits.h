@@ -50,7 +50,6 @@ struct ktermios {
 #define   CS8		0x00000030
 #define CREAD		0x00000080
 #define HUPCL		0x00000400
-#define CLOCAL		0x00000800
 #define CBAUDEX		0x00001000
 #define BOTHER		0x00001000
 
@@ -59,7 +58,6 @@ struct ktermios {
 #define ECHO	0x00008
 #define ECHOE	0x00010
 #define ECHOK	0x00020
-#define TOSTOP	0x00100
 #define ECHOCTL	0x00200
 #define ECHOKE	0x00800
 #define IEXTEN	0x08000

@@ -3,10 +3,7 @@
 
 #include <linux/types.h>
 
-#define MS_RDONLY	 1
-#define MS_SILENT	32768
-
-/* Removed unused MS_* mount flags, MS_MGC_*, MOUNT_ATTR_* defines and
-   struct mount_attr (none referenced by this build) */
+/* Removed unused MS_* mount flags (incl. MS_RDONLY, MS_SILENT), MS_MGC_*,
+   MOUNT_ATTR_* defines and struct mount_attr (none referenced by this build) */
 
 #endif

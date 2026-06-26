@@ -26,15 +26,7 @@ enum fs_context_purpose {
 	FS_CONTEXT_FOR_RECONFIGURE,	 
 };
 
-enum fs_context_phase {
-	FS_CONTEXT_CREATE_PARAMS,	 
-	FS_CONTEXT_CREATING,		 
-	FS_CONTEXT_AWAITING_MOUNT,	 
-	FS_CONTEXT_AWAITING_RECONF,	 
-	FS_CONTEXT_RECONF_PARAMS,	 
-	FS_CONTEXT_RECONFIGURING,	 
-	FS_CONTEXT_FAILED,		 
-};
+/* enum fs_context_phase + struct fs_context.phase field removed - 0-ref (never set/read) */
 
 enum fs_value_type {
 	fs_value_is_undefined,
@@ -79,8 +71,7 @@ struct fs_context {
 	unsigned int		sb_flags_mask;	 
 	unsigned int		s_iflags;
 	enum fs_context_purpose	purpose:8;
-	enum fs_context_phase	phase:8;	 
-	bool			need_free:1;	 
+	bool			need_free:1;
 	bool			global:1;	 
 	bool			oldapi:1;	 
 };

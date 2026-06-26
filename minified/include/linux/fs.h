@@ -607,15 +607,6 @@ int vfs_fchmod(struct file *file, umode_t mode);
 void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 		      const struct inode *dir, umode_t mode);
 
-struct dir_context;
-typedef int (*filldir_t)(struct dir_context *, const char *, int, loff_t, u64,
-			 unsigned);
-
-struct dir_context {
-	filldir_t actor;
-	loff_t pos;
-};
-
 
 struct iov_iter;
 

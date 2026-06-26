@@ -4,10 +4,6 @@
 #include <asm/mmu_context.h>
 #include <asm/mmu.h>
 
-#ifndef switch_mm_irqs_off
-# define switch_mm_irqs_off switch_mm
-#endif
-
 #ifndef task_cpu_possible_mask
 # define task_cpu_possible_mask(p)	cpu_possible_mask
 # define task_cpu_possible(cpu, p)	true

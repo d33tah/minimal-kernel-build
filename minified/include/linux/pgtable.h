@@ -96,10 +96,6 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 #endif
 
 
-#ifndef __HAVE_ARCH_PMDP_SET_WRPROTECT
-#endif
-#ifndef __HAVE_ARCH_PUDP_SET_WRPROTECT
-#endif
 
 
 
@@ -242,13 +238,6 @@ static inline int pmd_none_or_trans_huge_or_clear_bad(pmd_t *pmd)
 
 extern void __init pgtable_cache_init(void);
 
-#ifndef PAGE_KERNEL_RO
-# define PAGE_KERNEL_RO PAGE_KERNEL
-#endif
-
-#ifndef PAGE_KERNEL_EXEC
-# define PAGE_KERNEL_EXEC PAGE_KERNEL
-#endif
 
 #define		__PGTBL_PGD_MODIFIED	0
 #define		__PGTBL_P4D_MODIFIED	1

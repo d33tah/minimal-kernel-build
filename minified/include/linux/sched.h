@@ -179,7 +179,6 @@ struct task_struct {
 
 	unsigned int			policy;
 	const cpumask_t			*cpus_ptr;
-	cpumask_t			*user_cpus_ptr;
 	cpumask_t			cpus_mask;
 
 	struct list_head		tasks;
@@ -361,13 +360,10 @@ static inline int set_cpus_allowed_ptr(struct task_struct *p, const struct cpuma
 }
 static inline int dup_user_cpus_ptr(struct task_struct *dst, struct task_struct *src, int node)
 {
-	if (src->user_cpus_ptr)
-		return -EINVAL;
 	return 0;
 }
 static inline void release_user_cpus_ptr(struct task_struct *p)
 {
-	WARN_ON(p->user_cpus_ptr);
 }
 
 

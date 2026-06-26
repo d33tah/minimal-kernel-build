@@ -294,10 +294,6 @@ struct task_struct {
 	};
 
 
-	struct page_frag		task_frag;
-
-
-
 
 
 

@@ -279,9 +279,6 @@ void __noreturn do_exit(long code)
 
 	exit_notify(tsk, group_dead);
 
-	if (tsk->task_frag.page)
-		put_page(tsk->task_frag.page);
-
 	exit_task_stack_account(tsk);
 
 	preempt_disable();

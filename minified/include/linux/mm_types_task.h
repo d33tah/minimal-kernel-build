@@ -22,8 +22,4 @@ enum {
 	NR_MM_COUNTERS
 };
 
-struct page_frag {
-	struct page *page;
-};
-
-#endif  
+#endif

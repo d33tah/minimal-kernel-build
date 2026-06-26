@@ -11,85 +11,13 @@
 #define FP_XSTATE_MAGIC2		0x46505845U
 #define FP_XSTATE_MAGIC2_SIZE		sizeof(FP_XSTATE_MAGIC2)
 
- 
-struct _fpx_sw_bytes {
-	 
-	__u32				magic1;
-
-	 
-	__u32				extended_size;
-
-	 
-	__u64				xfeatures;
-
-	 
-	__u32				xstate_size;
-
-	 
-	__u32				padding[7];
-};
-
- 
-
- 
-struct _fpreg {
-	__u16				significand[4];
-	__u16				exponent;
-};
-
- 
-struct _fpxreg {
-	__u16				significand[4];
-	__u16				exponent;
-	__u16				padding[3];
-};
-
- 
-struct _xmmreg {
-	__u32				element[4];
-};
-
-#define X86_FXSR_MAGIC			0x0000
-
- 
-struct _fpstate_32 {
-	 
-	__u32				cw;
-	__u32				sw;
-	__u32				tag;
-	__u32				ipoff;
-	__u32				cssel;
-	__u32				dataoff;
-	__u32				datasel;
-	struct _fpreg			_st[8];
-	__u16				status;
-	__u16				magic;		 
-							 
-
-	 
-	__u32				_fxsr_env[6];	 
-	__u32				mxcsr;
-	__u32				reserved;
-	struct _fpxreg			_fxsr_st[8];	 
-	struct _xmmreg			_xmm[8];	 
-	union {
-		__u32			padding1[44];	 
-		__u32			padding[44];	 
-	};
-
-	union {
-		__u32			padding2[12];
-		struct _fpx_sw_bytes	sw_reserved;	 
-	};
-};
-
-/* 32-bit only kernel - _fpstate_64 removed */
-#define _fpstate _fpstate_32
-
-/* struct _header removed - 0-ref tree-wide */
+/* struct _fpx_sw_bytes / _fpreg / _fpxreg / _xmmreg / _fpstate_32 removed -
+ * the whole _fpstate_32 cluster + its _fpstate/_fpstate_ia32 aliases +
+ * X86_FXSR_MAGIC were 0-ref in the kernel (only consumed by the userspace
+ * #ifndef __KERNEL__ sigcontext block, which is never compiled here). */
 
 
- 
+
 struct sigcontext_32 {
 	__u16				gs, __gsh;
 	__u16				fs, __fsh;
@@ -122,38 +50,7 @@ struct sigcontext_32 {
 #define sigcontext sigcontext_32
 #endif
 
- 
-#ifndef __KERNEL__
+/* userspace-only #ifndef __KERNEL__ sigcontext + _fpstate/_fpstate_ia32
+ * aliases removed - never compiled in this kernel-only build, 0-ref. */
 
-#define _fpstate_ia32			_fpstate_32
-#define sigcontext_ia32			sigcontext_32
-
-
-/* 32-bit only - removed 64-bit sigcontext */
-struct sigcontext {
-	__u16				gs, __gsh;
-	__u16				fs, __fsh;
-	__u16				es, __esh;
-	__u16				ds, __dsh;
-	__u32				edi;
-	__u32				esi;
-	__u32				ebp;
-	__u32				esp;
-	__u32				ebx;
-	__u32				edx;
-	__u32				ecx;
-	__u32				eax;
-	__u32				trapno;
-	__u32				err;
-	__u32				eip;
-	__u16				cs, __csh;
-	__u32				eflags;
-	__u32				esp_at_signal;
-	__u16				ss, __ssh;
-	struct _fpstate __user		*fpstate;
-	__u32				oldmask;
-	__u32				cr2;
-};
-#endif  
-
-#endif  
+#endif

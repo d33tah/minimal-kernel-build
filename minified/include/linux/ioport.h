@@ -12,8 +12,6 @@ struct resource {
 	resource_size_t end;
 	const char *name;
 	unsigned long flags;
-	unsigned long desc;
-	struct resource *parent, *sibling, *child;
 };
 
 #define IORESOURCE_IO		0x00000100

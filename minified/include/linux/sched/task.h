@@ -6,7 +6,6 @@
 #include <linux/uaccess.h>
 
 struct task_struct;
-struct rusage;
 union thread_union;
 struct css_set;
 

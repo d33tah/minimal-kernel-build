@@ -6,7 +6,6 @@
 #include <linux/types.h>
 
 struct pci_bus;
-struct pci_dev;
 
  
 extern int pci_routeirq;

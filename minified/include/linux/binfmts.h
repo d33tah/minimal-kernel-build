@@ -12,7 +12,6 @@ struct pt_regs;
 #define AT_FLAGS_PRESERVE_ARGV0 (1 << 0)
 
 struct filename;
-struct coredump_params;
 
 struct linux_binprm {
 	struct vm_area_struct *vma;

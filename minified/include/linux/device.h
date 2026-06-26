@@ -31,7 +31,6 @@ struct driver_private;
 struct module;
 struct class;
 struct subsys_private;
-struct bus_dma_region;
 
 /* struct subsys_interface removed - never instantiated (no
    subsys_interface_register on this build). */

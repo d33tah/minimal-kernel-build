@@ -14,7 +14,6 @@ struct inode;
 struct dentry;
 struct file;
 struct path;
-struct xattr;
 struct mm_struct;
 struct user_namespace;
 

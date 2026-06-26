@@ -8,7 +8,5 @@
 struct kernel_siginfo;
 struct task_struct;
 
-struct k_itimer;
-
 
 #endif

@@ -4,9 +4,6 @@
 
 #include <asm/bootparam.h>
 
-struct mpc_bus;
-struct mpc_cpu;
-struct mpc_table;
 
  
 struct x86_init_mpparse {

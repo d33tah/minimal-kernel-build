@@ -19,7 +19,6 @@ typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 
 struct seq_file;
 struct module;
-struct msi_msg;
 
 enum {
 	IRQ_TYPE_NONE		= 0x00000000,

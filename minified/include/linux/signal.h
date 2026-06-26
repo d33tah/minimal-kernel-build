@@ -77,7 +77,6 @@ static inline void init_sigpending(struct sigpending *sig)
 extern void flush_sigqueue(struct sigpending *queue);
 
 
-struct timespec;
 struct pt_regs;
 enum pid_type;
 

@@ -55,7 +55,6 @@
 #include <asm/kmap_size.h>
 
 struct backing_dev_info;
-struct bio_list;
 struct blk_plug;
 struct cfs_rq;
 struct fs_struct;
@@ -64,14 +63,12 @@ struct nameidata;
 struct nsproxy;
 struct pid_namespace;
 struct pipe_inode_info;
-struct reclaim_state;
 struct rq;
 struct sched_attr;
 struct sched_param;
 struct seq_file;
 struct sighand_struct;
 struct signal_struct;
-struct task_group;
 
 
 #define TASK_RUNNING			0x0000

@@ -9,24 +9,7 @@
 #include <linux/percpu.h>
 #include <linux/list.h>
 
- 
-#define X86_BREAKPOINT_LEN_X		0x40
-#define X86_BREAKPOINT_LEN_1		0x40
-#define X86_BREAKPOINT_LEN_2		0x44
-#define X86_BREAKPOINT_LEN_4		0x4c
-
-
- 
-
- 
-#define X86_BREAKPOINT_EXECUTE	0x80
- 
-#define X86_BREAKPOINT_WRITE	0x81
- 
-#define X86_BREAKPOINT_RW	0x83
-
- 
-
+/* X86_BREAKPOINT_LEN/EXECUTE/WRITE/RW constants were 0-ref tree-wide - removed. */
 
 struct perf_event;
 struct pmu;

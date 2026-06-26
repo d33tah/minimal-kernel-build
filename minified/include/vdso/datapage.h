@@ -16,8 +16,6 @@
 #include <linux/time32.h>
 #include <linux/time.h>
 
-struct arch_vdso_data {};
-
 #define VDSO_BASES	(CLOCK_TAI + 1)
 #define VDSO_HRES	(BIT(CLOCK_REALTIME)		| \
 			 BIT(CLOCK_MONOTONIC)		| \
@@ -54,8 +52,6 @@ struct vdso_data {
 	s32			tz_dsttime;
 	u32			hrtimer_res;
 	u32			__unused;
-
-	struct arch_vdso_data	arch_data;
 };
 
 extern struct vdso_data _vdso_data[CS_BASES] __attribute__((visibility("hidden")));

@@ -31,12 +31,6 @@ extern __visible const void __nosave_begin, __nosave_end;
 
 #define dereference_kernel_function_descriptor(p) ((void *)(p))
 
-typedef struct {
-	unsigned long addr;
-} func_desc_t;
-
-
-
 static inline bool is_kernel_rodata(unsigned long addr)
 {
 	return addr >= (unsigned long)__start_rodata &&

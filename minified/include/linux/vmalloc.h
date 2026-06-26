@@ -61,20 +61,6 @@ struct vmap_area {
 
 
 
-#ifndef arch_vmap_pte_supported_shift
-static inline int arch_vmap_pte_supported_shift(unsigned long size)
-{
-	return PAGE_SHIFT;
-}
-#endif
-
-#ifndef arch_vmap_pgprot_tagged
-static inline pgprot_t arch_vmap_pgprot_tagged(pgprot_t prot)
-{
-	return prot;
-}
-#endif
-
 extern void __init vmalloc_init(void);
 
 extern void *vmalloc(unsigned long size) __alloc_size(1);

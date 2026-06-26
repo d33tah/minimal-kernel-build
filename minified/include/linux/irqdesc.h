@@ -6,7 +6,6 @@
 #include <linux/mutex.h>
 
 
-struct irq_affinity_notify;
 struct proc_dir_entry;
 struct module;
 struct irq_desc;

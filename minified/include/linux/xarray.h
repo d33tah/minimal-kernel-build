@@ -59,11 +59,6 @@ static inline int xa_err(void *entry)
 	return 0;
 }
 
-struct xa_limit {
-	u32 max;
-	u32 min;
-};
-
 typedef unsigned __bitwise xa_mark_t;
 #define XA_MARK_0		((__force xa_mark_t)0U)
 #define XA_MARK_MAX		((__force xa_mark_t)2U)
@@ -121,9 +116,6 @@ static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 				spin_lock_irqsave(&(xa)->xa_lock, flags)
 #define xa_unlock_irqrestore(xa, flags) \
 				spin_unlock_irqrestore(&(xa)->xa_lock, flags)
-
-int __must_check __xa_alloc(struct xarray *, u32 *id, void *entry,
-		struct xa_limit, gfp_t);
 
 
 #ifndef XA_CHUNK_SHIFT

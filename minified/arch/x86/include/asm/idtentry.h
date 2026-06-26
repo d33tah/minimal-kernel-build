@@ -96,46 +96,6 @@ __visible noinstr void func(struct pt_regs *regs,			\
 									\
 static noinline void __##func(struct pt_regs *regs, u32 vector)
 
- 
-#define DECLARE_IDTENTRY_SYSVEC(vector, func)				\
-	DECLARE_IDTENTRY(vector, func)
-
- 
-#define DEFINE_IDTENTRY_SYSVEC(func)					\
-static void __##func(struct pt_regs *regs);				\
-									\
-__visible noinstr void func(struct pt_regs *regs)			\
-{									\
-	irqentry_state_t state = irqentry_enter(regs);			\
-									\
-	run_sysvec_on_irqstack_cond(__##func, regs);			\
-	irqentry_exit(regs, state);					\
-}									\
-									\
-static noinline void __##func(struct pt_regs *regs)
-
- 
-#define DEFINE_IDTENTRY_SYSVEC_SIMPLE(func)				\
-static __always_inline void __##func(struct pt_regs *regs);		\
-									\
-__visible noinstr void func(struct pt_regs *regs)			\
-{									\
-	irqentry_state_t state = irqentry_enter(regs);			\
-									\
-	__irq_enter_raw();						\
-	__##func (regs);						\
-	__irq_exit_raw();						\
-	irqentry_exit(regs, state);					\
-}									\
-									\
-static __always_inline void __##func(struct pt_regs *regs)
-
- 
-#define DECLARE_IDTENTRY_XENCB(vector, func)				\
-	DECLARE_IDTENTRY(vector, func)
-
-
- 
 #define DECLARE_IDTENTRY_DF(vector, func)				\
 	asmlinkage void asm_##func(void);				\
 	__visible void func(struct pt_regs *regs,			\
@@ -151,7 +111,6 @@ __visible noinstr void func(struct pt_regs *regs,			\
 
  
 #define DECLARE_IDTENTRY_NMI		DECLARE_IDTENTRY_RAW
-#define DEFINE_IDTENTRY_NMI		DEFINE_IDTENTRY_RAW
 
 
 #else  
@@ -176,21 +135,10 @@ __visible noinstr void func(struct pt_regs *regs,			\
 #define DECLARE_IDTENTRY_IRQ(vector, func)				\
 	idtentry_irq vector func
 
- 
-#define DECLARE_IDTENTRY_SYSVEC(vector, func)				\
-	idtentry_sysvec vector func
 
-# define DECLARE_IDTENTRY_MCE(vector, func)				\
-	DECLARE_IDTENTRY(vector, func)
-
- 
 # define DECLARE_IDTENTRY_DF(vector, func)
 
- 
-# define DECLARE_IDTENTRY_XENCB(vector, func)
 
-
- 
 #define DECLARE_IDTENTRY_NMI(vector, func)
 
  
@@ -266,18 +214,6 @@ DECLARE_IDTENTRY_IRQ(X86_TRAP_OTHER,	common_interrupt);
 
  
 
-
-
-
-#if IS_ENABLED(CONFIG_HYPERV)
-DECLARE_IDTENTRY_SYSVEC(HYPERVISOR_CALLBACK_VECTOR,	sysvec_hyperv_callback);
-DECLARE_IDTENTRY_SYSVEC(HYPERV_REENLIGHTENMENT_VECTOR,	sysvec_hyperv_reenlightenment);
-DECLARE_IDTENTRY_SYSVEC(HYPERV_STIMER0_VECTOR,	sysvec_hyperv_stimer0);
-#endif
-
-#if IS_ENABLED(CONFIG_ACRN_GUEST)
-DECLARE_IDTENTRY_SYSVEC(HYPERVISOR_CALLBACK_VECTOR,	sysvec_acrn_hv_callback);
-#endif
 
 
 

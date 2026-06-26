@@ -234,10 +234,7 @@ struct mm_struct {
 		unsigned long brk;
 		unsigned long arg_start;
 
-		unsigned long saved_auxv[AT_VECTOR_SIZE];  
-
-		 
-		struct mm_rss_stat rss_stat;
+		unsigned long saved_auxv[AT_VECTOR_SIZE];
 
 		struct linux_binfmt *binfmt;
 

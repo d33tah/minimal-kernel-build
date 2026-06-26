@@ -451,7 +451,6 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	mmap_init_lock(mm);
 	mm_pgtables_bytes_init(mm);
 	mm->map_count = 0;
-	memset(&mm->rss_stat, 0, sizeof(mm->rss_stat));
 	spin_lock_init(&mm->page_table_lock);
 	mm_init_cpumask(mm);
 	RCU_INIT_POINTER(mm->exe_file, NULL);

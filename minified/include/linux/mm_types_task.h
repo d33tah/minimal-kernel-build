@@ -22,10 +22,6 @@ enum {
 	NR_MM_COUNTERS
 };
 
-struct mm_rss_stat {
-	atomic_long_t count[NR_MM_COUNTERS];
-};
-
 struct page_frag {
 	struct page *page;
 };

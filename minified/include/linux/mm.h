@@ -654,19 +654,21 @@ static inline int mprotect_fixup(struct mmu_gather *tlb,
 }
 
 
+/*
+ * RSS accounting (mm_struct.rss_stat) was dropped: nothing in this build ever
+ * READS the per-mm counters (no get_mm_rss/get_mm_counter, hiwater/sync stubs).
+ * The remaining call sites only ever wrote them, so the writers are no-ops.
+ */
 static inline void add_mm_counter(struct mm_struct *mm, int member, long value)
 {
-	atomic_long_add(value, &mm->rss_stat.count[member]);
 }
 
 static inline void inc_mm_counter(struct mm_struct *mm, int member)
 {
-	atomic_long_inc(&mm->rss_stat.count[member]);
 }
 
 static inline void dec_mm_counter(struct mm_struct *mm, int member)
 {
-	atomic_long_dec(&mm->rss_stat.count[member]);
 }
 
 static inline int mm_counter_file(struct page *page)

@@ -58,14 +58,10 @@ enum {
 	IRQ_SET_MASK_OK_DONE,
 };
 
-struct msi_desc;
 struct irq_domain;
 
 struct irq_common_data {
 	unsigned int		__private state_use_accessors;
-	void			*handler_data;
-	struct msi_desc		*msi_desc;
-	cpumask_var_t		affinity;
 };
 
 struct irq_data {

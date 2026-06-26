@@ -324,14 +324,8 @@ static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr)
 
 	pgd = pgd_offset(mm, addr);
 	p4d = p4d_alloc(mm, pgd, addr);
-	if (!p4d)
-		return NULL;
 	pud = pud_alloc(mm, p4d, addr);
-	if (!pud)
-		return NULL;
 	pmd = pmd_alloc(mm, pud, addr);
-	if (!pmd)
-		return NULL;
 
 	VM_BUG_ON(pmd_trans_huge(*pmd));
 	return pmd;
@@ -820,16 +814,8 @@ static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
 
 	pgd = pgd_offset(mm, address);
 	p4d = p4d_alloc(mm, pgd, address);
-	if (!p4d)
-		return VM_FAULT_OOM;
-
 	vmf.pud = pud_alloc(mm, p4d, address);
-	if (!vmf.pud)
-		return VM_FAULT_OOM;
-
 	vmf.pmd = pmd_alloc(mm, vmf.pud, address);
-	if (!vmf.pmd)
-		return VM_FAULT_OOM;
 
 	return handle_pte_fault(&vmf);
 }

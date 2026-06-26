@@ -72,12 +72,7 @@ static pmd_t *alloc_new_pmd(struct mm_struct *mm, struct vm_area_struct *vma,
 	pmd_t *pmd;
 
 	pud = alloc_new_pud(mm, vma, addr);
-	if (!pud)
-		return NULL;
-
 	pmd = pmd_alloc(mm, pud, addr);
-	if (!pmd)
-		return NULL;
 
 	VM_BUG_ON(pmd_trans_huge(*pmd));
 

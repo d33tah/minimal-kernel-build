@@ -699,27 +699,6 @@ static inline pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
 	return ptep;
 }
 
-/* 2-level paging (PGTABLE_LEVELS==2, no PAE): P4D/PUD/PMD are folded, so only
- * the folded __p4d_alloc/__pud_alloc/__pmd_alloc no-op stubs are live; the
- * non-folded #else arms were preprocessor-dead and have been removed. */
-static inline int __p4d_alloc(struct mm_struct *mm, pgd_t *pgd,
-						unsigned long address)
-{
-	return 0;
-}
-
-static inline int __pud_alloc(struct mm_struct *mm, p4d_t *p4d,
-						unsigned long address)
-{
-	return 0;
-}
-
-static inline int __pmd_alloc(struct mm_struct *mm, pud_t *pud,
-						unsigned long address)
-{
-	return 0;
-}
-
 static inline void mm_pgtables_bytes_init(struct mm_struct *mm)
 {
 }
@@ -739,21 +718,18 @@ int __pte_alloc_kernel(pmd_t *pmd);
 static inline p4d_t *p4d_alloc(struct mm_struct *mm, pgd_t *pgd,
 		unsigned long address)
 {
-	return (unlikely(pgd_none(*pgd)) && __p4d_alloc(mm, pgd, address)) ?
-		NULL : p4d_offset(pgd, address);
+	return p4d_offset(pgd, address);
 }
 
 static inline pud_t *pud_alloc(struct mm_struct *mm, p4d_t *p4d,
 		unsigned long address)
 {
-	return (unlikely(p4d_none(*p4d)) && __pud_alloc(mm, p4d, address)) ?
-		NULL : pud_offset(p4d, address);
+	return pud_offset(p4d, address);
 }
 
 static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
 {
-	return (unlikely(pud_none(*pud)) && __pmd_alloc(mm, pud, address))?
-		NULL: pmd_offset(pud, address);
+	return pmd_offset(pud, address);
 }
 
 static inline spinlock_t *pte_lockptr(struct mm_struct *mm, pmd_t *pmd)

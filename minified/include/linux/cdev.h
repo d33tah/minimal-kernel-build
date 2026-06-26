@@ -12,7 +12,6 @@ struct module;
 
 struct cdev {
 	struct kobject kobj;
-	struct module *owner;
 	const struct file_operations *ops;
 	struct list_head list;
 } __randomize_layout;

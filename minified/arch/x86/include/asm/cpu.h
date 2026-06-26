@@ -10,10 +10,6 @@
 #include <asm/ibt.h>
 
 
-#define cpu_physical_id(cpu)			boot_cpu_physical_apicid
-#define cpu_acpi_id(cpu)			0
-
-
 /* ap_init_aperfmperf removed - never defined or called */
 
 

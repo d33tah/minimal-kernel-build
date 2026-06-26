@@ -20,9 +20,6 @@ typedef struct {
 } sigset_t;
 
  
-#define SA_IA32_ABI	0x02000000u
-#define SA_X32_ABI	0x01000000u
-
 #define compat_sigset_t compat_sigset_t
 typedef sigset_t compat_sigset_t;
 

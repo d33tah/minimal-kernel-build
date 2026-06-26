@@ -11,10 +11,7 @@
 /* 32-bit only kernel */
 #include <linux/pfn.h>
 
-#define MAXMEM_PFN	PFN_DOWN(MAXMEM)
-#define MAX_NONPAE_PFN	(1 << 20)  
-
-#define PARAM_SIZE 4096		 
+#define PARAM_SIZE 4096
 
 #define OLD_CL_MAGIC		0xA33F
 #define OLD_CL_ADDRESS		0x020	 

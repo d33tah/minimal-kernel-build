@@ -7,11 +7,9 @@
 #define PROT_WRITE	0x2
 #define PROT_EXEC	0x4
 
-#define MAP_TYPE	0x0f
 #define MAP_FIXED	0x10
 
-#define MAP_POPULATE		0x008000
-#define MAP_SYNC		0x080000
+/* MAP_TYPE/MAP_POPULATE (comment-only) + MAP_SYNC (unused, linux/mman.h fallback) removed - 0-ref */
 #define MAP_FIXED_NOREPLACE	0x100000
 
 /* From asm-generic/mman.h */

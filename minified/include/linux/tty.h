@@ -18,7 +18,6 @@
 
 struct ld_semaphore {
 	atomic_long_t		count;
-	raw_spinlock_t		wait_lock;
 };
 
 void __init_ldsem(struct ld_semaphore *sem, const char *name,

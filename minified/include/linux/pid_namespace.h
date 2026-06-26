@@ -16,7 +16,6 @@ struct pid_namespace {
 	struct task_struct *child_reaper;
 	struct kmem_cache *pid_cachep;
 	unsigned int level;
-	struct pid_namespace *parent;
 	struct ns_common ns;
 } __randomize_layout;
 

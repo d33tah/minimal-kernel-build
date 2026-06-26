@@ -164,7 +164,6 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 
 		pid->numbers[i].nr = nr;
 		pid->numbers[i].ns = tmp;
-		tmp = tmp->parent;
 	}
 
 	 

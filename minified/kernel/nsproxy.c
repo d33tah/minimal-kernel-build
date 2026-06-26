@@ -6,7 +6,6 @@
 #include <linux/mnt_namespace.h>
 #include <linux/utsname.h>
 #include <linux/pid_namespace.h>
-#include <net/net_namespace.h>
 
 #include <linux/fs_struct.h>
 #include <linux/proc_fs.h>

@@ -14,7 +14,6 @@ struct nsproxy {
 	struct uts_namespace *uts_ns;
 	struct mnt_namespace *mnt_ns;
 	struct pid_namespace *pid_ns_for_children;
-	struct net 	     *net_ns;
 };
 extern struct nsproxy init_nsproxy;
 

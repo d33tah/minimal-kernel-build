@@ -11,7 +11,6 @@
 
 #include <linux/rbtree.h>
 #include <linux/refcount.h>
-#include <net/net_namespace.h>
 #include <linux/sched/rt.h>
 #include <linux/mm_types.h>
 

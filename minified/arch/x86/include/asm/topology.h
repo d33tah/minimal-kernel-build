@@ -31,7 +31,6 @@ static inline int numa_node_id(void)
 
 /* x86_topology_update declaration removed - no implementation */
 
-#define sysctl_sched_itmt_enabled	0
 
 
 #endif

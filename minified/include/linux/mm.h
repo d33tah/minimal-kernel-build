@@ -194,7 +194,6 @@ void vm_area_free(struct vm_area_struct *);
 
 #define VM_DONTCOPY	0x00020000
 #define VM_ACCOUNT	0x00100000
-#define VM_HUGETLB	0x00400000
 
 #define VM_MIXEDMAP	0x10000000
 #define VM_NOHUGEPAGE	0x40000000

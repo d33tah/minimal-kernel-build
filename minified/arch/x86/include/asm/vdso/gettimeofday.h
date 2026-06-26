@@ -13,7 +13,6 @@
 #include <asm/pvclock.h>
 
 #define __vdso_data (VVAR(_vdso_data))
-#define __timens_vdso_data (TIMENS(_vdso_data))
 
 #define VDSO_HAS_TIME 1
 

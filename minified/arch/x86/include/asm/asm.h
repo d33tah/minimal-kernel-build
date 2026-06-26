@@ -13,7 +13,6 @@
 # define __ASM_REGPFX			%%
 #endif
 
-#define _ASM_BYTES(x, ...)	__ASM_FORM(.byte x,##__VA_ARGS__ ;)
 
 /* 32-bit only kernel */
 #define __ASM_SEL(a,b)		__ASM_FORM(a)

@@ -30,8 +30,6 @@
 
 #define VM_DATA_DEFAULT_FLAGS	VM_DATA_FLAGS_TSK_EXEC
 
-#define __PHYSICAL_START	ALIGN(CONFIG_PHYSICAL_START, \
-				      CONFIG_PHYSICAL_ALIGN)
 
 #include <asm/page_32_types.h>
 #define IOREMAP_MAX_ORDER       (PMD_SHIFT)

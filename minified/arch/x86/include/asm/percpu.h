@@ -2,13 +2,11 @@
 #ifndef _ASM_X86_PERCPU_H
 #define _ASM_X86_PERCPU_H
 
-#define __percpu_seg		fs
 
 #ifdef __ASSEMBLY__
 
 #define PER_CPU_VAR(var)	var
 
-#define INIT_PER_CPU_VAR(var)  var
 
 #else  
 
@@ -20,8 +18,6 @@
 #define __percpu_arg(x)		__percpu_prefix "%" #x
 
  
-#define DECLARE_INIT_PER_CPU(var) \
-       extern typeof(var) init_per_cpu_var(var)
 
 #define init_per_cpu_var(var)  var
 
@@ -265,10 +261,6 @@ static inline bool x86_this_cpu_variable_test_bit(int nr,
 	return oldbit;
 }
 
-#define x86_this_cpu_test_bit(nr, addr)			\
-	(__builtin_constant_p((nr))			\
-	 ? x86_this_cpu_constant_test_bit((nr), (addr))	\
-	 : x86_this_cpu_variable_test_bit((nr), (addr)))
 
 
 #include <asm-generic/percpu.h>
@@ -281,11 +273,7 @@ DECLARE_PER_CPU_READ_MOSTLY(unsigned long, this_cpu_off);
 #define	DEFINE_EARLY_PER_CPU(_type, _name, _initvalue)		\
 	DEFINE_PER_CPU(_type, _name) = _initvalue
 
-#define DEFINE_EARLY_PER_CPU_READ_MOSTLY(_type, _name, _initvalue)	\
-	DEFINE_PER_CPU_READ_MOSTLY(_type, _name) = _initvalue
 
-#define EXPORT_EARLY_PER_CPU_SYMBOL(_name)			\
-	EXPORT_PER_CPU_SYMBOL(_name)
 
 #define DECLARE_EARLY_PER_CPU(_type, _name)			\
 	DECLARE_PER_CPU(_type, _name)

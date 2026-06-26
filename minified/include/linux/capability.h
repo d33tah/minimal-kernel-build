@@ -10,7 +10,6 @@
 
 #define CAP_DAC_OVERRIDE     1
 #define CAP_DAC_READ_SEARCH  2
-#define CAP_FSETID           4
 #define CAP_CHECKPOINT_RESTORE	40
 #define CAP_LAST_CAP         CAP_CHECKPOINT_RESTORE
 #define CAP_TO_MASK(x)      (1 << ((x) & 31))

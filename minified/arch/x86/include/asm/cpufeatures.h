@@ -122,7 +122,6 @@
 #define X86_FEATURE_UNRET		(11*32+15)
 
 /* Word 13 - AMD extended 2 */
-#define X86_FEATURE_VIRT_SSBD		(13*32+25)
 
 /* Word 16 - Intel extended 2 */
 #define X86_FEATURE_UMIP		(16*32+ 2)

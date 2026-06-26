@@ -94,9 +94,6 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 #define __diag_clang(version, severity, s) \
 	__diag_clang_ ## version(__diag_clang_ ## severity s)
 
-#define __diag_clang_ignore	ignored
-#define __diag_clang_warn	warning
-#define __diag_clang_error	error
 
 #define __diag_str1(s)		#s
 #define __diag_str(s)		__diag_str1(s)
@@ -242,15 +239,9 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 #define __diag_GCC(version, severity, string)
 #endif
 
-#define __diag_push()	__diag(push)
-#define __diag_pop()	__diag(pop)
 
 #define __diag_ignore(compiler, version, option, comment) \
 	__diag_ ## compiler(version, ignore, option)
-#define __diag_warn(compiler, version, option, comment) \
-	__diag_ ## compiler(version, warn, option)
-#define __diag_error(compiler, version, option, comment) \
-	__diag_ ## compiler(version, error, option)
 
 #ifndef __diag_ignore_all
 #define __diag_ignore_all(option, comment)

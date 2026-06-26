@@ -6,11 +6,7 @@
 #include <linux/types.h>
 
 
-#define TDX_HCALL_HAS_OUTPUT	BIT(0)
-#define TDX_HCALL_ISSUE_STI	BIT(1)
 
-#define TDX_CPUID_LEAF_ID	0x21
-#define TDX_IDENT		"IntelTDX    "
 
 #ifndef __ASSEMBLY__
 

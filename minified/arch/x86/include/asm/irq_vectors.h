@@ -22,7 +22,6 @@
 #endif
 
 
-#define HYPERVISOR_CALLBACK_VECTOR	0xf3
 
 #define NR_VECTORS			 256
 

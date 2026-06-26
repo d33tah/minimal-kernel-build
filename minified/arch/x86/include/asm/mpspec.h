@@ -19,7 +19,6 @@ extern unsigned int boot_cpu_physical_apicid;
 extern u8 boot_cpu_apic_version;
 extern unsigned long mp_lapic_addr;
 
-#define smp_found_config 0
 
 static inline void get_smp_config(void)
 {

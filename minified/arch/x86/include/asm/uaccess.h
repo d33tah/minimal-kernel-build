@@ -258,7 +258,6 @@ raw_copy_from_user(void *to, const void __user *from, unsigned long n)
 	return __copy_user_ll(to, (__force const void *)from, n);
 }
 
-#define INLINE_COPY_FROM_USER
 #define INLINE_COPY_TO_USER
 
 static __must_check __always_inline bool user_access_begin(const void __user *ptr, size_t len)
@@ -289,20 +288,7 @@ do {										\
 		len -= sizeof(type);						\
 	}
 
-#define unsafe_copy_to_user(_dst,_src,_len,label)			\
-do {									\
-	char __user *__ucu_dst = (_dst);				\
-	const char *__ucu_src = (_src);					\
-	size_t __ucu_len = (_len);					\
-	unsafe_copy_loop(__ucu_dst, __ucu_src, __ucu_len, u64, label);	\
-	unsafe_copy_loop(__ucu_dst, __ucu_src, __ucu_len, u32, label);	\
-	unsafe_copy_loop(__ucu_dst, __ucu_src, __ucu_len, u16, label);	\
-	unsafe_copy_loop(__ucu_dst, __ucu_src, __ucu_len, u8, label);	\
-} while (0)
 
-#define __get_kernel_nofault(dst, src, type, err_label)			\
-	__get_user_size(*((type *)(dst)), (__force type __user *)(src),	\
-			sizeof(type), err_label)
 
 #define __put_kernel_nofault(dst, src, type, err_label)			\
 	__put_user_size(*((type *)(src)), (__force type __user *)(dst),	\

@@ -19,7 +19,6 @@
    early_set_memory_decrypted, early_set_memory_encrypted,
    early_set_mem_enc_dec_hypercall */
 
-#define __bss_decrypted
 
 
  
@@ -27,7 +26,6 @@ void __init mem_encrypt_init(void);
 
  
 #define __sme_pa(x)		(__pa(x) | sme_me_mask)
-#define __sme_pa_nodebug(x)	(__pa_nodebug(x) | sme_me_mask)
 
 extern char __start_bss_decrypted[], __end_bss_decrypted[], __start_bss_decrypted_unused[];
 

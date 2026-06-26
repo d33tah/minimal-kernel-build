@@ -14,6 +14,5 @@ static inline unsigned long random_get_entropy(void)
  
 #define CLOCK_TICK_RATE		PIT_TICK_RATE
 
-#define ARCH_HAS_READ_CURRENT_TIMER
 
 #endif  

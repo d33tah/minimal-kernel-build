@@ -54,7 +54,6 @@ typedef __restorefn_t __user *__sigrestore_t;
 
 #define SIG_DFL	((__force __sighandler_t)0)
 #define SIG_IGN	((__force __sighandler_t)1)
-#define SIG_ERR	((__force __sighandler_t)-1)
 #endif
 /* end signal-defs.h inlining */
 

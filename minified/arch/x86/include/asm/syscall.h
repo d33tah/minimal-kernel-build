@@ -6,7 +6,6 @@
 #include <linux/sched.h>
 
 #define __AUDIT_ARCH_LE	   0x40000000
-#define AUDIT_ARCH_I386		(EM_386|__AUDIT_ARCH_LE)
 #include <linux/err.h>
 #include <asm/thread_info.h>	 
 #include <asm/unistd.h>

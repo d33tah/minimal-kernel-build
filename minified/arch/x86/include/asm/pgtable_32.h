@@ -48,18 +48,11 @@ static inline void native_pte_clear(struct mm_struct *mm,
 	*xp = native_make_pte(0);
 }
 #define native_ptep_get_and_clear(xp) native_local_ptep_get_and_clear(xp)
-#define native_pmdp_get_and_clear(xp) native_local_pmdp_get_and_clear(xp)
 #define SWP_TYPE_BITS 5
 #define SWP_OFFSET_SHIFT (_PAGE_BIT_PROTNONE + 1)
-#define MAX_SWAPFILES_CHECK() BUILD_BUG_ON(MAX_SWAPFILES_SHIFT > SWP_TYPE_BITS)
-#define __swp_type(x)			(((x).val >> (_PAGE_BIT_PRESENT + 1)) \
-					 & ((1U << SWP_TYPE_BITS) - 1))
-#define __swp_offset(x)			((x).val >> SWP_OFFSET_SHIFT)
 #define __swp_entry(type, offset)	((swp_entry_t) { \
 					 ((type) << (_PAGE_BIT_PRESENT + 1)) \
 					 | ((offset) << SWP_OFFSET_SHIFT) })
-#define __pte_to_swp_entry(pte)		((swp_entry_t) { (pte).pte_low })
-#define __swp_entry_to_pte(x)		((pte_t) { .pte = (x).val })
 static inline u64 protnone_mask(u64 val)
 {
 	return 0;
@@ -68,11 +61,6 @@ static inline u64 flip_protnone_guard(u64 oldval, u64 val, u64 mask)
 {
 	return val;
 }
-#define kpte_clear_flush(ptep, vaddr)		\
-do {						\
-	pte_clear(&init_mm, (vaddr), (ptep));	\
-	flush_tlb_one_kernel((vaddr));		\
-} while (0)
 
 #endif  
 

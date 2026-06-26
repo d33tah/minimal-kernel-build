@@ -98,7 +98,6 @@ extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
 #define cpu_all_mask to_cpumask(cpu_all_bits)
 
 #define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
-#define for_each_online_cpu(cpu)   for_each_cpu((cpu), cpu_online_mask)
 
 static inline void
 set_cpu_possible(unsigned int cpu, bool possible)
@@ -130,7 +129,6 @@ static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
 }
 
 /* NR_CPUS == 1 - simplified */
-#define num_online_cpus()	1U
 #define num_possible_cpus()	1U
 #define num_present_cpus()	1U
 

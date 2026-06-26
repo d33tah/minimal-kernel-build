@@ -14,8 +14,6 @@
 
 
 
-#define acpi_lapic 0
 #define acpi_ioapic 0
-#define acpi_disable_cmcff 0
 
 #endif

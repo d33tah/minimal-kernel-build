@@ -75,7 +75,6 @@
 .Lskip_rsb_\@:
 .endm
 
-#define CALL_ZEN_UNTRAIN_RET	""
 
  
 .macro UNTRAIN_RET

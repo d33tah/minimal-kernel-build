@@ -23,6 +23,5 @@ extern struct cred init_cred;
 
 #define INIT_TASK_COMM "swapper"
 
-#define __init_task_data
 
 #endif

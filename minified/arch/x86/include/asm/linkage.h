@@ -16,7 +16,6 @@
 
 #else  
 
-#define ASM_RET	"ret\n\t"
 
 #endif  
 
@@ -46,9 +45,6 @@
 	ENDBR
 
  
-#define SYM_FUNC_START_WEAK_NOALIGN(name)		\
-	SYM_START(name, SYM_L_WEAK, SYM_A_NONE)		\
-	ENDBR
 
 #endif  
 

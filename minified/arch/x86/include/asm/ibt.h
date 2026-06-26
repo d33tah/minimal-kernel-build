@@ -10,9 +10,7 @@
 
 #ifndef __ASSEMBLY__
 
-#define ASM_ENDBR
 
-#define __noendbr
 
 #else
 

@@ -26,11 +26,9 @@ struct task_struct;
 
 /* set_cpu_sibling_map removed - never defined (SMP only) */
 
-#define wbinvd_on_cpu(cpu)     wbinvd()
 
 /* disabled_cpus removed - never defined (SMP only) */
 
-#define nmi_selftest() do { } while (0)
 
 #endif  
 #endif  

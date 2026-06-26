@@ -43,7 +43,6 @@ extern void cleanup_module(void);
 /* CONFIG_MODULES off: built-in-only, MODULE never defined. */
 #define module_init(x)	__initcall(x);
 
-#define module_exit(x)	__exitcall(x);
 
 #define __init_or_module __init
 

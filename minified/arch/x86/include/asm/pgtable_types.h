@@ -19,7 +19,6 @@
 #define _PAGE_BIT_GLOBAL	8	 
 #define _PAGE_BIT_SOFTW1	9
 #define _PAGE_BIT_PAT_LARGE	12
-#define _PAGE_BIT_NX		63
 #define _PAGE_BIT_SPECIAL	_PAGE_BIT_SOFTW1
 #define _PAGE_BIT_PROTNONE	_PAGE_BIT_GLOBAL
 
@@ -69,8 +68,6 @@ enum page_cache_mode {
 
 #define _PAGE_ENC		(_AT(pteval_t, sme_me_mask))
 
-#define _PAGE_CACHE_MASK	(_PAGE_PWT | _PAGE_PCD | _PAGE_PAT)
-#define _PAGE_LARGE_CACHE_MASK	(_PAGE_PWT | _PAGE_PCD | _PAGE_PAT_LARGE)
 
 #define _PAGE_NOCACHE		(cachemode2protval(_PAGE_CACHE_MODE_UC))
 #define _PAGE_CACHE_WP		(cachemode2protval(_PAGE_CACHE_MODE_WP))
@@ -102,15 +99,12 @@ enum page_cache_mode {
 
 #define __PAGE_KERNEL		 (__PP|__RW|   0|___A|__NX|___D|   0|___G)
 #define __PAGE_KERNEL_EXEC	 (__PP|__RW|   0|___A|   0|___D|   0|___G)
-#define _KERNPG_TABLE_NOENC	 (__PP|__RW|   0|___A|   0|___D|   0|   0)
 #define _KERNPG_TABLE		 (__PP|__RW|   0|___A|   0|___D|   0|   0| _ENC)
-#define _PAGE_TABLE_NOENC	 (__PP|__RW|_USR|___A|   0|___D|   0|   0)
 #define _PAGE_TABLE		 (__PP|__RW|_USR|___A|   0|___D|   0|   0| _ENC)
 #define __PAGE_KERNEL_RO	 (__PP|   0|   0|___A|__NX|___D|   0|___G)
 #define __PAGE_KERNEL_NOCACHE	 (__PP|__RW|   0|___A|__NX|___D|   0|___G| __NC)
 #define __PAGE_KERNEL_LARGE	 (__PP|__RW|   0|___A|__NX|___D|_PSE|___G)
 #define __PAGE_KERNEL_LARGE_EXEC (__PP|__RW|   0|___A|   0|___D|_PSE|___G)
-#define __PAGE_KERNEL_WP	 (__PP|__RW|   0|___A|__NX|___D|   0|___G| __WP)
 
 
 #define __PAGE_KERNEL_IO		__PAGE_KERNEL
@@ -155,7 +149,6 @@ enum page_cache_mode {
  
 #define PTE_IDENT_ATTR	 0x003		 
 #define PDE_IDENT_ATTR	 0x063		 
-#define PGD_IDENT_ATTR	 0x001		 
 
 # include <asm/pgtable_32_types.h>
 
@@ -198,9 +191,7 @@ static inline pgdval_t native_pgd_val(pgd_t pgd)
 typedef struct { pgd_t pgd; } p4d_t;
 
 #define P4D_SHIFT		PGDIR_SHIFT
-#define PTRS_PER_P4D		1
 #define P4D_SIZE		(1UL << P4D_SHIFT)
-#define P4D_MASK		(~(P4D_SIZE-1))
 
 static inline int pgd_none(pgd_t pgd)		{ return 0; }
 static inline int pgd_bad(pgd_t pgd)		{ return 0; }
@@ -208,7 +199,6 @@ static inline int pgd_bad(pgd_t pgd)		{ return 0; }
 #define p4d_ERROR(p4d)				(pgd_ERROR((p4d).pgd))
 
 #define pgd_populate(mm, pgd, p4d)		do { } while (0)
-#define pgd_populate_safe(mm, pgd, p4d)		do { } while (0)
 #define set_pgd(pgdptr, pgdval)	set_p4d((p4d_t *)(pgdptr), (p4d_t) { pgdval })
 
 static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
@@ -220,9 +210,7 @@ static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 #define __p4d(x)				((p4d_t) { __pgd(x) })
 
 #define pgd_page(pgd)				(p4d_page((p4d_t){ pgd }))
-#define pgd_page_vaddr(pgd)			((unsigned long)(p4d_pgtable((p4d_t){ pgd })))
 
-#define p4d_alloc_one(mm, address)		NULL
 #define p4d_free(mm, x)				do { } while (0)
 #define p4d_free_tlb(tlb, x, a)			do { } while (0)
 
@@ -237,14 +225,12 @@ typedef struct { p4d_t p4d; } pud_t;
 #define PUD_SHIFT	P4D_SHIFT
 #define PTRS_PER_PUD	1
 #define PUD_SIZE  	(1UL << PUD_SHIFT)
-#define PUD_MASK  	(~(PUD_SIZE-1))
 
 static inline int p4d_none(p4d_t p4d)		{ return 0; }
 /* p4d_present() removed - constant 1, all callers folded */
 #define pud_ERROR(pud)				(p4d_ERROR((pud).p4d))
 
 #define p4d_populate(mm, p4d, pud)		do { } while (0)
-#define p4d_populate_safe(mm, p4d, pud)		do { } while (0)
 #define set_p4d(p4dptr, p4dval)	set_pud((pud_t *)(p4dptr), (pud_t) { p4dval })
 
 static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
@@ -259,7 +245,6 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 #define p4d_page(p4d)				(pud_page((pud_t){ p4d }))
 #define p4d_pgtable(p4d)			((pud_t *)(pud_pgtable((pud_t){ p4d })))
 
-#define pud_alloc_one(mm, address)		NULL
 #define pud_free(mm, x)				do { } while (0)
 #define pud_free_tlb(tlb, x, a)		        do { } while (0)
 
@@ -289,7 +274,6 @@ static inline int pud_present(pud_t pud)	{ return 1; }
 static inline int pud_leaf(pud_t pud)		{ return 0; }
 #define pmd_ERROR(pmd)				(pud_ERROR((pmd).pud))
 
-#define pud_populate(mm, pmd, pte)		do { } while (0)
 
 #define set_pud(pudptr, pudval)			set_pmd((pmd_t *)(pudptr), (pmd_t) { pudval })
 
@@ -305,7 +289,6 @@ static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
 #define pud_page(pud)				(pmd_page((pmd_t){ pud }))
 #define pud_pgtable(pud)			((pmd_t *)(pmd_page_vaddr((pmd_t){ pud })))
 
-#define pmd_alloc_one(mm, address)		NULL
 #define pmd_free_tlb(tlb, x, a)		do { } while (0)
 
 #undef  pmd_addr_end
@@ -369,14 +352,6 @@ static inline pteval_t pte_flags(pte_t pte)
 	return native_pte_val(pte) & PTE_FLAGS_MASK;
 }
 
-#define __pte2cm_idx(cb)				\
-	((((cb) >> (_PAGE_BIT_PAT - 2)) & 4) |		\
-	 (((cb) >> (_PAGE_BIT_PCD - 1)) & 2) |		\
-	 (((cb) >> _PAGE_BIT_PWT) & 1))
-#define __cm_idx2pte(i)					\
-	((((i) & 4) << (_PAGE_BIT_PAT - 2)) |		\
-	 (((i) & 2) << (_PAGE_BIT_PCD - 1)) |		\
-	 (((i) & 1) << _PAGE_BIT_PWT))
 
 unsigned long cachemode2protval(enum page_cache_mode pcm);
 
@@ -387,7 +362,6 @@ extern pteval_t __supported_pte_mask;
 extern pteval_t __default_kernel_pte_mask;
 /* set_nx, nx_enabled removed - unused */
 
-#define __HAVE_PFNMAP_TRACKING
 
 void set_pte_vaddr(unsigned long vaddr, pte_t pte);
 

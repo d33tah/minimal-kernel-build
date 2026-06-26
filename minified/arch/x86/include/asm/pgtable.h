@@ -36,8 +36,6 @@ static inline u64 cc_mkdec(u64 val)
 extern pgd_t early_top_pgt[PTRS_PER_PGD];
 
 
-#define pgprot_encrypted(prot)	__pgprot(cc_mkenc(pgprot_val(prot)))
-#define pgprot_decrypted(prot)	__pgprot(cc_mkdec(pgprot_val(prot)))
 
 #define debug_checkwx()		do { } while (0)
 
@@ -128,7 +126,6 @@ static inline unsigned long pmd_pfn(pmd_t pmd)
 
 #define pte_page(pte)	pfn_to_page(pte_pfn(pte))
 
-#define pmd_leaf	pmd_large
 static inline int pmd_large(pmd_t pte)
 {
 	return pmd_flags(pte) & _PAGE_PSE;
@@ -250,7 +247,6 @@ static inline int pte_none(pte_t pte)
 	return !(pte.pte & ~(_PAGE_KNL_ERRATUM_MASK));
 }
 
-#define __HAVE_ARCH_PTE_SAME
 static inline int pte_same(pte_t a, pte_t b)
 {
 	return a.pte == b.pte;
@@ -365,7 +361,6 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma,
 
 /* ptep_test_and_clear_young / ptep_clear_flush_young removed - no callers */
 
-#define __HAVE_ARCH_PTEP_GET_AND_CLEAR
 static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
 				       pte_t *ptep)
 {
@@ -375,7 +370,6 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
 
 /* ptep_get_and_clear_full, ptep_set_wrprotect removed - unused */
 
-#define flush_tlb_fix_spurious_fault(vma, address) do { } while (0)
 
 
 /* pmdp_set_access_flags, pudp_set_access_flags, pmdp_test_and_clear_young,
@@ -388,11 +382,8 @@ static inline int pmd_write(pmd_t pmd)
 	return pmd_flags(pmd) & _PAGE_RW;
 }
 
-#define __HAVE_ARCH_PMDP_HUGE_GET_AND_CLEAR
 
-#define __HAVE_ARCH_PUDP_HUGE_GET_AND_CLEAR
 
-#define __HAVE_ARCH_PMDP_SET_WRPROTECT
 
 #define pud_write pud_write
 static inline int pud_write(pud_t pud)

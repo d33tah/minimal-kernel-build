@@ -11,11 +11,6 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
  
 
  
-#define SC_X86_64_REGS_TO_ARGS(x, ...)					\
-	__MAP(x,__SC_ARGS						\
-		,,regs->di,,regs->si,,regs->dx				\
-		,,regs->r10,,regs->r8,,regs->r9)			\
-
  
 #define SC_IA32_REGS_TO_ARGS(x, ...)					\
 	__MAP(x,__SC_ARGS						\
@@ -63,16 +58,8 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 #define __IA32_SYS_NI(name)						\
 	__SYS_NI(ia32, sys_##name)
 
-#define __IA32_COMPAT_SYS_STUB0(name)
-#define __IA32_COMPAT_SYS_STUBx(x, name, ...)
-#define __IA32_COMPAT_COND_SYSCALL(name)
-#define __IA32_COMPAT_SYS_NI(name)
 
 
-#define __X32_COMPAT_SYS_STUB0(name)
-#define __X32_COMPAT_SYS_STUBx(x, name, ...)
-#define __X32_COMPAT_COND_SYSCALL(name)
-#define __X32_COMPAT_SYS_NI(name)
 
 
 

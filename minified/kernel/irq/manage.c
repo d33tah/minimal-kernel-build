@@ -303,7 +303,6 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 		return -ENOMEM;
 
 	action->handler = handler;
-	action->thread_fn = thread_fn;
 	action->flags = irqflags;
 	action->name = devname;
 	action->dev_id = dev_id;

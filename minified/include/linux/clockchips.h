@@ -25,7 +25,6 @@ enum clock_event_state {
 
 struct clock_event_device {
 	void			(*event_handler)(struct clock_event_device *);
-	ktime_t			next_event;
 	enum clock_event_state	state_use_accessors;
 	unsigned int		features;
 

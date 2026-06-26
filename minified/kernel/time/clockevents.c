@@ -137,7 +137,6 @@ void clockevents_exchange_device(struct clock_event_device *old,
 	if (new) {
 		BUG_ON(!clockevent_state_detached(new));
 		clockevents_switch_state(new, CLOCK_EVT_STATE_SHUTDOWN);
-		new->next_event = KTIME_MAX;
 	}
 }
 

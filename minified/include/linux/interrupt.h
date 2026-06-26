@@ -49,7 +49,6 @@ struct irqaction {
 	irq_handler_t		handler;
 	void			*dev_id;
 	struct irqaction	*next;
-	irq_handler_t		thread_fn;
 	unsigned int		irq;
 	unsigned int		flags;
 	unsigned long		thread_mask;

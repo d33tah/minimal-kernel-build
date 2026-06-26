@@ -606,8 +606,7 @@ struct file_operations {
 	 * fallocate/show_fdinfo/copy_file_range removed - zero ->field dispatch,
 	 * bare-deref and assignment tree-wide (only llseek/read/write/
 	 * read_iter/write_iter/mmap/open/release/fasync/lock/get_unmapped_area
-	 * are live; their syscall consumers were all excised earlier).
-	 * owner removed - no instance set it & fops_get/put no-op (MODULES off) */
+	 * are live; their syscall consumers were all excised earlier) */
 } __randomize_layout;
 
 struct inode_operations {
@@ -724,8 +723,6 @@ int set_anon_super_fc(struct super_block *s, struct fs_context *fc);
 struct super_block *sget_fc(struct fs_context *fc,
 			    int (*set)(struct super_block *, struct fs_context *));
 
-/* CONFIG_MODULES off: try_module_get/module_put are no-ops and file_operations
- * has no owner field (no instance ever set it), so refcounting collapses away. */
 #define fops_get(fops) \
 	((fops) ? (fops) : NULL)
 #define fops_put(fops) \

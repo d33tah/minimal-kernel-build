@@ -91,7 +91,7 @@ static bool tick_check_percpu(struct clock_event_device *curdev,
 	if (cpumask_equal(newdev->cpumask, cpumask_of(cpu)))
 		return true;
 	 
-	if (newdev->irq >= 0 && !irq_can_set_affinity(newdev->irq))
+	if (newdev->irq >= 0)
 		return false;
 	 
 	if (curdev && cpumask_equal(curdev->cpumask, cpumask_of(cpu)))

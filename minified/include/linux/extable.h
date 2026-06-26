@@ -4,7 +4,6 @@
 #include <linux/stddef.h>	 
 #include <linux/types.h>
 
-struct module;
 struct exception_table_entry;
 
 const struct exception_table_entry *
@@ -17,16 +16,4 @@ void sort_main_extable(void);
 
 const struct exception_table_entry *search_exception_tables(unsigned long add);
 
-static inline const struct exception_table_entry *
-search_module_extables(unsigned long addr)
-{
-	return NULL;
-}
-
-static inline const struct exception_table_entry *
-search_bpf_extables(unsigned long addr)
-{
-	return NULL;
-}
-
-#endif  
+#endif

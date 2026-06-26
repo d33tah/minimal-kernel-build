@@ -15,8 +15,6 @@ struct resource;
 
 
 
-#define IOMEM_ERR_PTR(err) (__force void __iomem *)ERR_PTR(err)
-
 
 
 

@@ -30,9 +30,6 @@ struct ratelimit_state {
 #define RATELIMIT_STATE_INIT(name, interval_init, burst_init) \
 	RATELIMIT_STATE_INIT_FLAGS(name, interval_init, burst_init, 0)
 
-#define RATELIMIT_STATE_INIT_DISABLED					\
-	RATELIMIT_STATE_INIT(ratelimit_state, 0, DEFAULT_RATELIMIT_BURST)
-
 #define DEFINE_RATELIMIT_STATE(name, interval_init, burst_init)		\
 									\
 	struct ratelimit_state name =					\

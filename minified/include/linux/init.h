@@ -33,11 +33,9 @@
 
 #define __HEAD		.section	".head.text","ax"
 #define __INIT		.section	".init.text","ax"
-#define __FINIT		.previous
 
 #define __INITDATA	.section	".init.data","aw",%progbits
 #define __INITRODATA	.section	".init.rodata","a",%progbits
-#define __FINITDATA	.previous
 
 #define __REFDATA        .section       ".ref.data", "aw"
 

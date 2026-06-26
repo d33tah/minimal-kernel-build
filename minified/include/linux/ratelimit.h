@@ -5,9 +5,6 @@
 #include <linux/sched.h>
 #include <linux/spinlock.h>
 
-#define WARN_ON_RATELIMIT(condition, state)			\
-	WARN_ON(condition)
-
 #define WARN_RATELIMIT(condition, format, ...)			\
 ({								\
 	int rtn = WARN(condition, format, ##__VA_ARGS__);	\

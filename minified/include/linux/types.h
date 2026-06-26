@@ -55,10 +55,6 @@ typedef u64			uint64_t;
 typedef s64			int64_t;
 #endif
 
-#define aligned_u64		__aligned_u64
-#define aligned_be64		__aligned_be64
-#define aligned_le64		__aligned_le64
-
 #define pgoff_t unsigned long
 
 typedef unsigned int __bitwise gfp_t;

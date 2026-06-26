@@ -26,7 +26,6 @@
 #include <linux/fcntl.h>
 #include <linux/rculist_bl.h>
 #include <linux/atomic.h>
-enum migrate_mode { MIGRATE_MODE_LAST };
 #include <linux/uidgid.h>
 #include <linux/lockdep.h>
 #include <linux/workqueue.h>
@@ -38,8 +37,6 @@ struct delayed_call {
 };
 #include <linux/uuid.h>
 
-/* Inlined from errseq.h */
-typedef u32	errseq_t;
 #include <linux/build_bug.h>
 
 #include <linux/stddef.h>
@@ -92,11 +89,7 @@ extern unsigned int sysctl_nr_open;
 
 /* rwf_t defined earlier */
 
-struct buffer_head;
-typedef int (get_block_t)(struct inode *inode, sector_t iblock,
-			struct buffer_head *bh_result, int create);
-typedef int (dio_iodone_t)(struct kiocb *iocb, loff_t offset,
-			ssize_t bytes, void *private);
+/* dead DIO/get_block callback typedefs + struct buffer_head fwd-decl removed (0-ref) */
 
 #define MAY_EXEC		0x00000001
 #define MAY_WRITE		0x00000002

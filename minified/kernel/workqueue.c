@@ -4,7 +4,6 @@
 #include <linux/timer.h>
 
 struct workqueue_struct {
-    const char *name;
 };
 
 bool queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *work)
@@ -35,8 +34,8 @@ bool cancel_work_sync(struct work_struct *work)
     return test_and_clear_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work));
 }
 
-static struct workqueue_struct system_wq_storage = { .name = "events" };
-static struct workqueue_struct system_unbound_wq_storage = { .name = "events_unbound" };
+static struct workqueue_struct system_wq_storage = {};
+static struct workqueue_struct system_unbound_wq_storage = {};
 
 struct workqueue_struct *system_wq = &system_wq_storage;
 struct workqueue_struct *system_unbound_wq = &system_unbound_wq_storage;

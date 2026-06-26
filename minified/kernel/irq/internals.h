@@ -269,7 +269,6 @@ static inline void __kstat_incr_irqs_this_cpu(struct irq_desc *desc)
 static inline void kstat_incr_irqs_this_cpu(struct irq_desc *desc)
 {
 	__kstat_incr_irqs_this_cpu(desc);
-	desc->tot_count++;
 }
 
 /* irq_desc_get_node and irq_desc_is_chained removed - unused */

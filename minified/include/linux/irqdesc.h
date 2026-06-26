@@ -22,12 +22,10 @@ struct irq_desc {
 	unsigned int		status_use_accessors;
 	unsigned int		core_internal_state__do_not_mess_with_it;
 	unsigned int		depth;
-	unsigned int		tot_count;
 	unsigned int		irq_count;
 	unsigned int		irqs_unhandled;
 	raw_spinlock_t		lock;
 	unsigned long		threads_oneshot;
-	wait_queue_head_t       wait_for_threads;
 	struct rcu_head		rcu;
 	struct kobject		kobj;
 	struct mutex		request_mutex;

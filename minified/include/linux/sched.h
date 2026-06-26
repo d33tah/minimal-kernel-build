@@ -172,7 +172,6 @@ struct task_struct {
 
 	int				on_rq;
 
-	int				prio;
 	int				static_prio;
 	int				normal_prio;
 

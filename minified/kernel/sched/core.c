@@ -380,9 +380,6 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	
 	p->__state = TASK_NEW;
 
-	
-	p->prio = current->normal_prio;
-
 	/*
 	 * sched_reset_on_fork is never set on this build (it has no setter
 	 * tree-wide -- only ever read here and cleared), so the reset block

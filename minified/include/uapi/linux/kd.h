@@ -20,20 +20,4 @@ struct unipair {
 	unsigned short fontpos;
 };
 
-/* console_font_op used by vt.c, vgacon.c, vt_kern.h, console.h */
-struct console_font_op {
-	unsigned int op;
-	unsigned int flags;
-	unsigned int width, height;
-	unsigned int charcount;
-	unsigned char __user *data;
-};
-
-/* console_font used by vt.c, vgacon.c */
-struct console_font {
-	unsigned int width, height;
-	unsigned int charcount;
-	unsigned char *data;
-};
-
 #endif

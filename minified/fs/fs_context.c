@@ -274,13 +274,9 @@ void put_fs_context(struct fs_context *fc)
 
 int parse_monolithic_mount_data(struct fs_context *fc, void *data)
 {
-	int (*monolithic_mount_data)(struct fs_context *, void *);
-
-	monolithic_mount_data = fc->ops->parse_monolithic;
-	if (!monolithic_mount_data)
-		monolithic_mount_data = generic_parse_monolithic;
-
-	return monolithic_mount_data(fc, data);
+	/* no instance sets ->parse_monolithic, so it always falls through to
+	 * generic_parse_monolithic */
+	return generic_parse_monolithic(fc, data);
 }
 
 

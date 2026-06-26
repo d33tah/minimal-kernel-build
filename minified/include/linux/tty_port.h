@@ -12,10 +12,9 @@ struct tty_port;
 struct tty_struct;
 
 struct tty_port_operations {
-	int (*carrier_raised)(struct tty_port *port);
-	void (*dtr_rts)(struct tty_port *port, int raise);
-	void (*shutdown)(struct tty_port *port);
-	int (*activate)(struct tty_port *port, struct tty_struct *tty);
+	/* carrier_raised/dtr_rts/shutdown/activate removed - never set by any
+	 * tty_port_operations instance (only vc_port_ops, which sets .destruct
+	 * only), so their dispatch was always-NULL dead */
 	void (*destruct)(struct tty_port *port);
 };
 

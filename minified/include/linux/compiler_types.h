@@ -67,8 +67,6 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 #ifdef __clang__
 /* --- 2025-12-08 00:18 --- Inlined from compiler-clang.h */
 #define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)
-#define KASAN_ABI_VERSION 5
-
 #if __has_feature(address_sanitizer) || __has_feature(hwaddress_sanitizer)
 #define __SANITIZE_ADDRESS__
 #define __no_sanitize_address \

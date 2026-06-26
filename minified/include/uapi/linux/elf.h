@@ -28,7 +28,6 @@ typedef __s64	Elf64_Sxword;
 #define PT_LOOS    0x60000000
 #define PT_GNU_STACK	(PT_LOOS + 0x474e551)
 
-#define ET_REL    1
 #define ET_EXEC   2
 #define ET_DYN    3
 /* ET_CORE, ET_LOPROC, ET_HIPROC - unused */
@@ -41,13 +40,9 @@ typedef __s64	Elf64_Sxword;
 #define DT_RELENT	19
 #define DT_TEXTREL	22
 
-#define STB_GLOBAL 1
-#define STB_WEAK   2
-
 #define STT_NOTYPE  0
 #define STT_OBJECT  1
 #define STT_FUNC    2
-#define STT_SECTION 3
 
 #define ELF_ST_BIND(x)		((x) >> 4)
 #define ELF_ST_TYPE(x)		((x) & 0xf)

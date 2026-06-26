@@ -7,6 +7,5 @@
 
 #define arch_max_pkey() (1)
 #define execute_only_pkey(mm) (0)
-#define ARCH_VM_PKEY_FLAGS 0
 
 #endif

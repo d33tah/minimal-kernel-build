@@ -17,7 +17,6 @@
 #define CAP_TO_MASK(x)      (1 << ((x) & 31))
 /* End uapi/linux/capability.h */
 
-#define _KERNEL_CAPABILITY_VERSION _LINUX_CAPABILITY_VERSION_3
 #define _KERNEL_CAPABILITY_U32S    _LINUX_CAPABILITY_U32S_3
 
 

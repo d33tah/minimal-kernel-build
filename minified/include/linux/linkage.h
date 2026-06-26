@@ -72,7 +72,6 @@
 
 #ifndef LINKER_SCRIPT
 #define ALIGN __ALIGN
-#define ALIGN_STR __ALIGN_STR
 
 
 #endif  

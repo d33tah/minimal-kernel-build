@@ -14,9 +14,7 @@ typedef __u32	Elf32_Word;
 
 typedef __u64	Elf64_Addr;
 typedef __u16	Elf64_Half;
-typedef __s16	Elf64_SHalf;
 typedef __u64	Elf64_Off;
-typedef __s32	Elf64_Sword;
 typedef __u32	Elf64_Word;
 typedef __u64	Elf64_Xword;
 typedef __s64	Elf64_Sxword;
@@ -48,8 +46,6 @@ typedef __s64	Elf64_Sxword;
 #define ELF_ST_TYPE(x)		((x) & 0xf)
 #define ELF32_ST_BIND(x)	ELF_ST_BIND(x)
 #define ELF32_ST_TYPE(x)	ELF_ST_TYPE(x)
-#define ELF64_ST_BIND(x)	ELF_ST_BIND(x)
-#define ELF64_ST_TYPE(x)	ELF_ST_TYPE(x)
 
 typedef struct dynamic{
   Elf32_Sword d_tag;
@@ -70,30 +66,16 @@ typedef struct {
 #define ELF32_R_SYM(x) ((x) >> 8)
 #define ELF32_R_TYPE(x) ((x) & 0xff)
 
-#define ELF64_R_SYM(i)			((i) >> 32)
-#define ELF64_R_TYPE(i)			((i) & 0xffffffff)
-
 typedef struct elf32_rel {
   Elf32_Addr	r_offset;
   Elf32_Word	r_info;
 } Elf32_Rel;
-
-typedef struct elf64_rel {
-  Elf64_Addr r_offset;	 
-  Elf64_Xword r_info;	 
-} Elf64_Rel;
 
 typedef struct elf32_rela{
   Elf32_Addr	r_offset;
   Elf32_Word	r_info;
   Elf32_Sword	r_addend;
 } Elf32_Rela;
-
-typedef struct elf64_rela {
-  Elf64_Addr r_offset;	 
-  Elf64_Xword r_info;	 
-  Elf64_Sxword r_addend;	 
-} Elf64_Rela;
 
 typedef struct elf32_sym{
   Elf32_Word	st_name;
@@ -244,15 +226,9 @@ typedef struct elf64_shdr {
 #define EV_CURRENT	1
 
 typedef struct elf32_note {
-  Elf32_Word	n_namesz;	 
-  Elf32_Word	n_descsz;	 
-  Elf32_Word	n_type;		 
+  Elf32_Word	n_namesz;
+  Elf32_Word	n_descsz;
+  Elf32_Word	n_type;
 } Elf32_Nhdr;
 
-typedef struct elf64_note {
-  Elf64_Word n_namesz;	 
-  Elf64_Word n_descsz;	 
-  Elf64_Word n_type;	 
-} Elf64_Nhdr;
-
-#endif  
+#endif

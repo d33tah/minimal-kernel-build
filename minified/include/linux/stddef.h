@@ -8,17 +8,7 @@
 #define __always_inline inline
 #endif
 
-#define __struct_group(TAG, NAME, ATTRS, MEMBERS...) \
-	union { \
-		struct { MEMBERS } ATTRS; \
-		struct TAG { MEMBERS } ATTRS NAME; \
-	}
-
-#define __DECLARE_FLEX_ARRAY(TYPE, NAME)	\
-	struct { \
-		struct { } __empty_ ## NAME; \
-		TYPE NAME[]; \
-	}
+/* Removed: __struct_group / __DECLARE_FLEX_ARRAY - 0 invocation sites tree-wide */
 
 #undef NULL
 #define NULL ((void *)0)
@@ -36,16 +26,6 @@ enum {
 #define offsetofend(TYPE, MEMBER) \
 	(offsetof(TYPE, MEMBER)	+ sizeof_field(TYPE, MEMBER))
 
-#define struct_group(NAME, MEMBERS...)	\
-	__struct_group( , NAME,  , MEMBERS)
-
-#define struct_group_attr(NAME, ATTRS, MEMBERS...) \
-	__struct_group( , NAME, ATTRS, MEMBERS)
-
-#define struct_group_tagged(TAG, NAME, MEMBERS...) \
-	__struct_group(TAG, NAME,  , MEMBERS)
-
-#define DECLARE_FLEX_ARRAY(TYPE, NAME) \
-	__DECLARE_FLEX_ARRAY(TYPE, NAME)
+/* Removed: struct_group* / DECLARE_FLEX_ARRAY - 0 invocation sites tree-wide */
 
 #endif

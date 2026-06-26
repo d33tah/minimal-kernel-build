@@ -45,9 +45,8 @@ struct tty_driver {
 	unsigned int	num;
 	struct ktermios init_termios;
 	unsigned long	flags;
-	struct tty_driver *other;
 
-	 
+
 	struct tty_struct **ttys;
 	struct tty_port **ports;
 	struct ktermios **termios;

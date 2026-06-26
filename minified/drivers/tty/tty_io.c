@@ -577,19 +577,8 @@ static int tty_release_checks(struct tty_struct *tty, int idx)
 			  idx, tty->driver->ttys[idx]);
 		return -1;
 	}
-	if (tty->driver->other) {
-		struct tty_struct *o_tty = tty->link;
-
-		if (o_tty != tty->driver->other->ttys[idx]) {
-			tty_debug(tty, "bad other table[%d] = %p\n",
-				  idx, tty->driver->other->ttys[idx]);
-			return -1;
-		}
-		if (o_tty->link != tty) {
-			tty_debug(tty, "bad link = %p\n", o_tty->link);
-			return -1;
-		}
-	}
+	/* tty_driver.other is never set (always NULL) so the paired-tty
+	 * cross-check it guarded was always skipped; removed with the field. */
 #endif
 	return 0;
 }

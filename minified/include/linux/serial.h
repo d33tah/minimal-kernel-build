@@ -4,11 +4,8 @@
 #include <asm/page.h>
 #include <linux/types.h>
 
-/* From uapi/linux/serial.h - reduced to only used values */
-#define ASYNC_CLOSING_WAIT_NONE	65535
-
 /* serial_icounter_struct, UART_LCR_WLEN, async_icount,
-   ASYNC_CLOSING_WAIT_INF, SERIAL_XMIT_SIZE removed - unused */
+   ASYNC_CLOSING_WAIT_NONE/INF, SERIAL_XMIT_SIZE removed - unused */
 
 #include <linux/compiler.h>
 

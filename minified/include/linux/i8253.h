@@ -7,7 +7,6 @@
 
 #define PIT_MODE	0x43
 #define PIT_CH0		0x40
-#define PIT_CH2		0x42
 
 #define PIT_LATCH	((PIT_TICK_RATE + HZ/2) / HZ)
 

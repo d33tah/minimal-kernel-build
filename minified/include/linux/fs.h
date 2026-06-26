@@ -611,7 +611,6 @@ struct file_operations {
 
 struct inode_operations {
 	struct dentry * (*lookup) (struct inode *,struct dentry *, unsigned int);
-	const char * (*get_link) (struct dentry *, struct inode *, struct delayed_call *);
 	int (*create) (struct user_namespace *, struct inode *,struct dentry *,
 		       umode_t, bool);
 	int (*mkdir) (struct user_namespace *, struct inode *,struct dentry *,
@@ -621,9 +620,9 @@ struct inode_operations {
 	int (*setattr) (struct user_namespace *, struct dentry *,
 			struct iattr *);
 	/* permission/readlink/link/unlink/symlink/rmdir/rename/getattr/
-	 * listxattr/update_time removed - zero ->field deref tree-wide (only
-	 * lookup/get_link/create/mkdir/mknod/setattr are live). Earlier:
-	 * get_acl/fiemap/set_acl/fileattr_set/fileattr_get removed - unused */
+	 * listxattr/update_time/get_link removed - zero ->field deref or
+	 * dispatched-but-never-assigned (only lookup/create/mkdir/mknod/setattr
+	 * are live). get_acl/fiemap/set_acl/fileattr_set/fileattr_get - unused */
 } ____cacheline_aligned;
 
 static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio,

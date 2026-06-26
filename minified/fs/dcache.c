@@ -541,13 +541,8 @@ static unsigned d_flags_for_inode(struct inode *inode)
 		goto type_determined;
 	}
 
-	if (unlikely(!(inode->i_opflags & IOP_NOFOLLOW))) {
-		if (unlikely(inode->i_op->get_link)) {
-			add_flags = DCACHE_SYMLINK_TYPE;
-			goto type_determined;
-		}
+	if (unlikely(!(inode->i_opflags & IOP_NOFOLLOW)))
 		inode->i_opflags |= IOP_NOFOLLOW;
-	}
 
 	if (unlikely(!S_ISREG(inode->i_mode)))
 		add_flags = DCACHE_SPECIAL_TYPE;

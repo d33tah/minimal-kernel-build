@@ -18,8 +18,4 @@ struct resource;
 
 
 
-#ifndef arch_has_dev_port
-#define arch_has_dev_port()     (1)
-#endif
-
 #endif

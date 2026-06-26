@@ -156,10 +156,6 @@ extern int mmap_rnd_bits __read_mostly;
 #endif
 
 
-#ifndef mm_forbids_zeropage
-#define mm_forbids_zeropage(X)	(0)
-#endif
-
 /* BITS_PER_LONG == 32 */
 #define mm_zero_struct_page(pp)  ((void)memset((pp), 0, sizeof(struct page)))
 
@@ -908,9 +904,6 @@ extern int expand_stack(struct vm_area_struct *vma, unsigned long address);
 
 extern int expand_downwards(struct vm_area_struct *vma,
 		unsigned long address);
-/* expand_upwards is always a stub since VM_GROWSUP=VM_NONE */
-#define expand_upwards(vma, address) (0)
-
 extern struct vm_area_struct * find_vma(struct mm_struct * mm, unsigned long addr);
 extern struct vm_area_struct * find_vma_prev(struct mm_struct * mm, unsigned long addr,
 					     struct vm_area_struct **pprev);

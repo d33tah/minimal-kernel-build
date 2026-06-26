@@ -14,7 +14,9 @@ struct class {
 	/* dev_kobj field removed - write-only (assigned in __class_register
 	   from sysfs_dev_char_kobj, never read by any consumer). */
 
-	struct subsys_private *p;
+	/* p (struct subsys_private *) removed - write-only (assigned in
+	   __class_register, never read; the subsys_private is recovered via
+	   to_subsys_private(kobj) container_of in class_release instead). */
 };
 
 /* sysfs_dev_block_kobj / sysfs_dev_char_kobj externs removed - both globals

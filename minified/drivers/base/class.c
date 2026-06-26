@@ -40,7 +40,6 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 
 	cp->subsys.kobj.kset = class_kset;
 	cp->subsys.kobj.ktype = &class_ktype;
-	cls->p = cp;
 
 	error = kset_register(&cp->subsys);
 	if (error) {

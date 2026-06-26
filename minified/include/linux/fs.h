@@ -290,10 +290,7 @@ struct inode {
 	};
 	atomic_t		i_count;
 	atomic_t		i_writecount;
-	union {
-		const struct file_operations	*i_fop;	
-		void (*free_inode)(struct inode *);
-	};
+	const struct file_operations	*i_fop;
 	struct address_space	i_data;
 	struct list_head	i_devices;
 	union {

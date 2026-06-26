@@ -439,8 +439,7 @@ enum {
 struct super_block {
 	dev_t			s_dev;
 	unsigned char		s_blocksize_bits;
-	unsigned long		s_blocksize;
-	loff_t			s_maxbytes;	
+	loff_t			s_maxbytes;
 	struct file_system_type	*s_type;
 	const struct super_operations	*s_op;
 	unsigned long		s_flags;

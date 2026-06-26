@@ -24,7 +24,6 @@
 #include "slab.h"
 
 enum slab_state slab_state;
-LIST_HEAD(slab_caches);
 DEFINE_MUTEX(slab_mutex);
 struct kmem_cache *kmem_cache;
 
@@ -68,7 +67,6 @@ static struct kmem_cache *create_cache(const char *name,
 	if (!s)
 		goto out;
 
-	s->name = name;
 	s->size = s->object_size = object_size;
 	s->align = align;
 	s->ctor = ctor;
@@ -77,7 +75,6 @@ static struct kmem_cache *create_cache(const char *name,
 	if (err)
 		goto out_free_cache;
 
-	list_add(&s->list, &slab_caches);
 out:
 	if (err)
 		return ERR_PTR(err);
@@ -171,7 +168,6 @@ void __init create_boot_cache(struct kmem_cache *s, const char *name,
 	int err;
 	unsigned int align = ARCH_KMALLOC_MINALIGN;
 
-	s->name = name;
 	s->size = s->object_size = size;
 
 	 
@@ -197,7 +193,6 @@ struct kmem_cache *__init create_kmalloc_cache(const char *name,
 		panic("Out of memory when creating slab %s\n", name);
 
 	create_boot_cache(s, name, size, flags, useroffset, usersize);
-	list_add(&s->list, &slab_caches);
 	return s;
 }
 

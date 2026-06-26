@@ -1045,7 +1045,6 @@ static struct kmem_cache * __init bootstrap(struct kmem_cache *static_cache)
 			p->slab_cache = s;
 
 	}
-	list_add(&s->list, &slab_caches);
 	return s;
 }
 

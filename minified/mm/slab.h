@@ -133,8 +133,6 @@ struct kmem_cache {
 	gfp_t allocflags;
 	void (*ctor)(void *);
 	unsigned int align;
-	const char *name;
-	struct list_head list;
 	struct kmem_cache_node *node[MAX_NUMNODES];
 };
 
@@ -159,10 +157,7 @@ extern enum slab_state slab_state;
  
 extern struct mutex slab_mutex;
 
- 
-extern struct list_head slab_caches;
 
- 
 extern struct kmem_cache *kmem_cache;
 
  

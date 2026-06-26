@@ -8,53 +8,12 @@
 
 #ifndef RTC_PORT
 #define RTC_PORT(x)	(0x70 + (x))
-#define RTC_ALWAYS_BCD	1	 
 #endif
 
- 
-#include <linux/smp.h>
-extern volatile unsigned long cmos_lock;
-
- 
-
-static inline void lock_cmos(unsigned char reg)
-{
-	unsigned long new;
-	new = ((smp_processor_id() + 1) << 8) | reg;
-	for (;;) {
-		if (cmos_lock) {
-			cpu_relax();
-			continue;
-		}
-		if (__cmpxchg(&cmos_lock, 0, new, sizeof(cmos_lock)) == 0)
-			return;
-	}
-}
-
-static inline void unlock_cmos(void)
-{
-	cmos_lock = 0;
-}
-
-/* do_i_have_lock_cmos, current_lock_cmos_reg removed - unused */
-
-#define lock_cmos_prefix(reg)			\
-	do {					\
-		unsigned long cmos_flags;	\
-		local_irq_save(cmos_flags);	\
-		lock_cmos(reg)
-
-#define lock_cmos_suffix(reg)			\
-	unlock_cmos();				\
-	local_irq_restore(cmos_flags);		\
-	} while (0)
-
- 
-#define CMOS_READ(addr) rtc_cmos_read(addr)
-unsigned char rtc_cmos_read(unsigned char addr);
-
-extern int mach_set_rtc_mmss(const struct timespec64 *now);
-extern void mach_get_cmos_time(struct timespec64 *now);
+/* RTC_ALWAYS_BCD, cmos_lock + lock_cmos/unlock_cmos + lock_cmos_prefix/suffix,
+ * CMOS_READ/rtc_cmos_read, mach_set_rtc_mmss/mach_get_cmos_time removed -
+ * transitively 0-ref (lock_cmos/unlock_cmos only fed the dead prefix/suffix
+ * macros; cmos_lock only fed those inlines; all protos uncalled). */
 
 
 #endif  

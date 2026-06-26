@@ -12,13 +12,9 @@ extern int pci_routeirq;
 extern int noioapicquirk;
 extern int noioapicreroute;
 
-#define PCIBIOS_MIN_IO		0x1000
-#define PCIBIOS_MIN_CARDBUS_IO	0x4000
+/* PCIBIOS_MIN_IO/MIN_CARDBUS_IO, HAVE_PCI_MMAP, arch_can_pci_mmap_wc,
+ * ARCH_GENERIC_PCI_MMAP_RESOURCE removed - 0-ref (no PCI mmap consumer) */
 
 extern int pcibios_enabled;
-
-#define HAVE_PCI_MMAP
-#define arch_can_pci_mmap_wc()	0
-#define ARCH_GENERIC_PCI_MMAP_RESOURCE
 
 #endif

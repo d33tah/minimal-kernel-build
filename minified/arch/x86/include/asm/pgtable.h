@@ -20,7 +20,6 @@
 
 /* Inlined from asm/pkru.h */
 #include <asm/cpufeature.h>
-#define init_pkru_value	0
 static inline u32 read_pkru(void) { return 0; }
 /* End of pkru.h */
 /* --- 2025-12-07 20:42 --- Inlined coco.h */
@@ -55,9 +54,6 @@ extern struct mm_struct *pgd_page_get_mm(struct page *page);
 extern pmdval_t early_pmd_flags;
 
 #define set_pte(ptep, pte)		native_set_pte(ptep, pte)
-
-#define set_pte_atomic(ptep, pte)					\
-	native_set_pte_atomic(ptep, pte)
 
 #define set_pmd(pmdp, pmd)		native_set_pmd(pmdp, pmd)
 
@@ -233,12 +229,6 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
 	return __pgprot(preservebits | addbits);
 }
 
-#define pte_pgprot(x) __pgprot(pte_flags(x))
-#define pmd_pgprot(x) __pgprot(pmd_flags(x))
-#define pud_pgprot(x) __pgprot(pud_flags(x))
-#define p4d_pgprot(x) __pgprot(p4d_flags(x))
-
-#define canon_pgprot(p) __pgprot(massage_pgprot(p))
 
 pte_t *populate_extra_pte(unsigned long vaddr);
 
@@ -387,7 +377,6 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
 
 #define flush_tlb_fix_spurious_fault(vma, address) do { } while (0)
 
-#define mk_pmd(page, pgprot)   pfn_pmd(page_to_pfn(page), (pgprot))
 
 /* pmdp_set_access_flags, pudp_set_access_flags, pmdp_test_and_clear_young,
    pudp_test_and_clear_young, pmdp_clear_flush_young removed - unused */

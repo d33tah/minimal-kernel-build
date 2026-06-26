@@ -280,11 +280,6 @@ struct vm_fault {
 };
 
 struct vm_operations_struct {
-	void (*open)(struct vm_area_struct * area);
-
-	void (*close)(struct vm_area_struct * area);
-
-	int (*may_split)(struct vm_area_struct *area, unsigned long addr);
 	vm_fault_t (*fault)(struct vm_fault *vmf);
 	vm_fault_t (*map_pages)(struct vm_fault *vmf,
 			pgoff_t start_pgoff, pgoff_t end_pgoff);

@@ -98,8 +98,6 @@ static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
 	struct vm_area_struct *next = vma->vm_next;
 
 	might_sleep();
-	if (vma->vm_ops && vma->vm_ops->close)
-		vma->vm_ops->close(vma);
 	if (vma->vm_file)
 		fput(vma->vm_file);
 	vm_area_free(vma);
@@ -291,8 +289,6 @@ static inline int is_mergeable_vma(struct vm_area_struct *vma,
 	if ((vma->vm_flags ^ vm_flags))
 		return 0;
 	if (vma->vm_file != file)
-		return 0;
-	if (vma->vm_ops && vma->vm_ops->close)
 		return 0;
 	if (!anon_vma_name_eq(anon_vma_name(vma), anon_name))
 		return 0;
@@ -1014,12 +1010,6 @@ int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 	struct vm_area_struct *new;
 	int err;
 
-	if (vma->vm_ops && vma->vm_ops->may_split) {
-		err = vma->vm_ops->may_split(vma, addr);
-		if (err)
-			return err;
-	}
-
 	new = vm_area_dup(vma);
 	if (!new)
 		return -ENOMEM;
@@ -1038,8 +1028,6 @@ int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 	if (new->vm_file)
 		get_file(new->vm_file);
 
-	/* vm_ops->open is never set by any vm_operations_struct on this build. */
-
 	if (new_below)
 		err = vma_adjust(vma, addr, vma->vm_end, vma->vm_pgoff +
 			((addr - new->vm_start) >> PAGE_SHIFT), new);
@@ -1050,9 +1038,7 @@ int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 	if (!err)
 		return 0;
 
-	
-	if (new->vm_ops && new->vm_ops->close)
-		new->vm_ops->close(new);
+
 	if (new->vm_file)
 		fput(new->vm_file);
 	unlink_anon_vmas(new);

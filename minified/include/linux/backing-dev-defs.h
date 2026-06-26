@@ -14,8 +14,7 @@ struct page;
 struct device;
 struct dentry;
 
-struct backing_dev_info {
-};
+struct backing_dev_info;
 
 
 #endif

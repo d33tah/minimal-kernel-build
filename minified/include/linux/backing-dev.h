@@ -14,10 +14,6 @@
 /* wb_has_dirty_io, bdi_has_dirty_io, wb_stat_mod, inc_wb_stat, dec_wb_stat,
    wb_stat, wb_stat_sum, wb_stat_error removed - never called */
 
-extern struct backing_dev_info noop_backing_dev_info;
-
-int bdi_init(struct backing_dev_info *bdi);
-
 /* inode_to_bdi, inode_to_wb (and bdi_sched_wait, inode_cgwb_enabled,
    wb_find_current, wb_get_create_current, inode_to_wb_is_valid,
    inode_to_wb_wbc, unlocked_inode_to_wb_begin/end) removed - never called */

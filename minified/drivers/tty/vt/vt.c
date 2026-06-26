@@ -810,10 +810,6 @@ static int con_install(struct tty_driver *driver, struct tty_struct *tty)
 	vc->port.tty = tty;
 	tty_port_get(&vc->port);
 
-	if (!tty->winsize.ws_row && !tty->winsize.ws_col) {
-		tty->winsize.ws_row = vc_cons[currcons].d->vc_rows;
-		tty->winsize.ws_col = vc_cons[currcons].d->vc_cols;
-	}
 	if (vc->vc_utf)
 		tty->termios.c_iflag |= IUTF8;
 	else

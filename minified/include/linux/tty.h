@@ -88,13 +88,6 @@ struct tty_struct {
 	char name[64];
 	unsigned long flags;
 	int count;
-	struct winsize winsize;
-
-	struct {
-		spinlock_t lock;
-		struct pid *pgrp;
-		struct pid *session;
-	} __aligned(sizeof(unsigned long)) ctrl;
 
 	struct tty_struct *link;
 	wait_queue_head_t write_wait;

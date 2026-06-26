@@ -4,11 +4,6 @@
 #include <linux/rcupdate.h>
 #include <linux/sched/signal.h>
 
-struct rcuwait {
-	struct task_struct __rcu *task;
-};
-
-#define __RCUWAIT_INITIALIZER(name)		\
-	{ .task = NULL, }
+/* struct rcuwait + __RCUWAIT_INITIALIZER removed - 0-ref (no rcuwait users). */
 
 #endif

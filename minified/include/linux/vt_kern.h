@@ -100,8 +100,6 @@ int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int lines);
 void reset_palette(struct vc_data *vc);
 void unblank_screen(void);
 
-struct unipair;
-
 int con_set_default_unimap(struct vc_data *vc);
 void con_free_unimap(struct vc_data *vc);
 

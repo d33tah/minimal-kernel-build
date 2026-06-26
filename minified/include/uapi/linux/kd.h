@@ -14,10 +14,6 @@
 #define KDGETMODE	0x4B3B
 #define KDGKBTYPE	0x4B33
 
-/* struct unipair used by consolemap.h */
-struct unipair {
-	unsigned short unicode;
-	unsigned short fontpos;
-};
+/* struct unipair removed - 0-ref (consolemap consumer stripped). */
 
 #endif

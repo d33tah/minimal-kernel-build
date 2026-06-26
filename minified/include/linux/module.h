@@ -55,18 +55,4 @@ extern void cleanup_module(void);
 
 struct notifier_block;
 
-
-static inline void __module_get(struct module *module)
-{
-}
-
-static inline bool try_module_get(struct module *module)
-{
-	return true;
-}
-
-static inline void module_put(struct module *module)
-{
-}
-
 #endif

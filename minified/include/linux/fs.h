@@ -411,8 +411,6 @@ struct file_lock;
 struct net;
 
 
-#define locks_inode(f) file_inode(f)
-
 struct files_struct;
 static inline struct inode *file_inode(const struct file *f)
 {
@@ -730,11 +728,6 @@ extern int current_umask(void);
 extern void iput(struct inode *);
 
 #define MAX_RW_COUNT (INT_MAX & PAGE_MASK)
-
-static inline int break_lease(struct inode *inode, unsigned int mode)
-{
-	return 0;
-}
 
 struct audit_names;
 struct filename {

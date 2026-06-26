@@ -6,7 +6,6 @@
 struct iattr;
 struct inode;
 struct iovec;
-struct linux_dirent;
 struct list_head;
 struct new_utsname;
 struct rlimit;
@@ -14,12 +13,7 @@ struct stat;
 struct statfs;
 struct statfs64;
 struct __kernel_old_timeval;
-struct timeval;
-struct mq_attr;
-struct utimbuf;
 struct getcpu_cache;
-struct linux_dirent64;
-struct old_linux_dirent;
 
 #include <linux/types.h>
 #include <linux/capability.h>

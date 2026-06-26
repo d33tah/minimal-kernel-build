@@ -26,13 +26,7 @@ struct cred;
 #define __SC_DELOUSE(t,v) ((__force t)(unsigned long)(v))
 #endif
 
-/* Forward declarations */
-struct compat_iovec;
-struct compat_sigaltstack;
-struct compat_tms;
-struct compat_sigaction;
-struct compat_siginfo;
-struct compat_rlimit;
+/* Forward declarations (compat_* 0-ref fwd-decls removed) */
 
 #ifndef compat_sigset_t
 typedef struct {

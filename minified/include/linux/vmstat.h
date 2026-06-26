@@ -10,7 +10,6 @@
 
 
 extern atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS];
-extern atomic_long_t vm_node_stat[NR_VM_NODE_STAT_ITEMS];
 
 
 static inline void zone_page_state_add(long x, struct zone *zone,
@@ -23,8 +22,8 @@ static inline void zone_page_state_add(long x, struct zone *zone,
 static inline void node_page_state_add(long x, struct pglist_data *pgdat,
 				 enum node_stat_item item)
 {
-	atomic_long_add(x, &pgdat->vm_stat[item]);
-	atomic_long_add(x, &vm_node_stat[item]);
+	/* per-node vm_stat[] + vm_node_stat[] are write-only on this build
+	 * (no node_page_state reader survives) -> no-op. */
 }
 
 static inline unsigned long global_zone_page_state(enum zone_stat_item item)

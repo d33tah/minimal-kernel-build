@@ -319,8 +319,6 @@ typedef struct pglist_data {
 	struct lruvec		__lruvec;
 
 	ZONE_PADDING(_pad2_)
-
-	atomic_long_t		vm_stat[NR_VM_NODE_STAT_ITEMS];
 } pg_data_t;
 
 #define node_spanned_pages(nid)	(NODE_DATA(nid)->node_spanned_pages)

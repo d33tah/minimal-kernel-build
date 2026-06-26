@@ -48,12 +48,6 @@ struct k_sigaction {
 #endif
 };
 
-struct ksignal {
-	struct k_sigaction ka;
-	kernel_siginfo_t info;
-	int sig;
-};
-
 #define SA_IMMUTABLE		0x00800000
 
 /* __ARCH_UAPI_SA_FLAGS + UAPI_SA_FLAGS removed - unused */

@@ -3,12 +3,6 @@
 
 #include <linux/types.h>
 
-struct task_cputime {
-	u64				stime;
-	u64				utime;
-	unsigned long long		sum_exec_runtime;
-};
-
 struct sched_param {
 	int sched_priority;
 };

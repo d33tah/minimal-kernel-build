@@ -110,13 +110,6 @@ struct hlist_node {
 	struct hlist_node *next, **pprev;
 };
 
-struct ustat {
-	__kernel_daddr_t	f_tfree;
-	unsigned long		f_tinode;
-	char			f_fname[6];
-	char			f_fpack[6];
-};
-
 struct callback_head {
 	struct callback_head *next;
 	void (*func)(struct callback_head *head);

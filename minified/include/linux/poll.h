@@ -10,12 +10,6 @@
 #include <linux/uaccess.h>
 #include <linux/eventpoll.h>
 
-struct pollfd {
-	int fd;
-	short events;
-	short revents;
-};
-
 struct poll_table_struct;
 
 typedef void (*poll_queue_proc)(struct file *, wait_queue_head_t *, struct poll_table_struct *);

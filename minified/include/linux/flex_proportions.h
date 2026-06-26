@@ -10,13 +10,4 @@
 #define FPROP_FRAC_SHIFT 10
 #define FPROP_FRAC_BASE (1UL << FPROP_FRAC_SHIFT)
 
-struct fprop_global {
-	 
-	struct percpu_counter events;
-	 
-	unsigned int period;
-	 
-	seqcount_t sequence;
-};
-
 #endif

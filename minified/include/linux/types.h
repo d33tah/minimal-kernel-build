@@ -11,12 +11,9 @@
 
 typedef u32 __kernel_dev_t;
 
-typedef __kernel_fd_set		fd_set;
 typedef __kernel_dev_t		dev_t;
-typedef __kernel_ulong_t	ino_t;
 typedef __kernel_mode_t		mode_t;
 typedef unsigned short		umode_t;
-typedef u32			nlink_t;
 typedef __kernel_off_t		off_t;
 typedef __kernel_pid_t		pid_t;
 typedef __kernel_clockid_t	clockid_t;
@@ -47,19 +44,7 @@ typedef __kernel_ssize_t	ssize_t;
 typedef __kernel_ptrdiff_t	ptrdiff_t;
 #endif
 
-#ifndef _CLOCK_T
-#define _CLOCK_T
-typedef __kernel_clock_t	clock_t;
-#endif
-
 typedef unsigned short		ushort;
-typedef unsigned int		uint;
-typedef unsigned long		ulong;
-
-#ifndef __BIT_TYPES_DEFINED__
-#define __BIT_TYPES_DEFINED__
-typedef s32			int32_t;
-#endif
 
 typedef u8			uint8_t;
 typedef u16			uint16_t;
@@ -74,12 +59,7 @@ typedef s64			int64_t;
 #define aligned_be64		__aligned_be64
 #define aligned_le64		__aligned_le64
 
-typedef u64 sector_t;
-typedef u64 blkcnt_t;
-
 #define pgoff_t unsigned long
-
-typedef u32 dma_addr_t;
 
 typedef unsigned int __bitwise gfp_t;
 typedef unsigned int __bitwise slab_flags_t;
@@ -88,8 +68,6 @@ typedef unsigned int __bitwise fmode_t;
 typedef u32 phys_addr_t;
 
 typedef phys_addr_t resource_size_t;
-
-typedef unsigned long irq_hw_number_t;
 
 typedef struct {
 	int counter;

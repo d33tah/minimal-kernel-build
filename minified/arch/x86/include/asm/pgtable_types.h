@@ -439,9 +439,7 @@ enum pg_level {
 	PG_LEVEL_NONE,
 	PG_LEVEL_4K,
 	PG_LEVEL_2M,
-	PG_LEVEL_1G,
-	PG_LEVEL_512G,
-	PG_LEVEL_NUM
+	PG_LEVEL_1G
 };
 
 /* lookup_address, lookup_address_in_pgd, lookup_pmd_address,

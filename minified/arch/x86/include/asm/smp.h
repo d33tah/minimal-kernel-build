@@ -30,8 +30,6 @@ struct task_struct;
 
 /* disabled_cpus removed - never defined (SMP only) */
 
-#define hard_smp_processor_id()	0
-
 #define nmi_selftest() do { } while (0)
 
 #endif  

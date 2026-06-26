@@ -195,8 +195,6 @@ do {									\
 })
 #endif
 
-#define virt_rmb() do {  __smp_rmb(); } while (0)
-
 #ifndef smp_acquire__after_ctrl_dep
 #define smp_acquire__after_ctrl_dep()		smp_rmb()
 #endif

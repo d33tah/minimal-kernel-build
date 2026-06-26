@@ -29,7 +29,6 @@ extern char __noinstr_text_start[], __noinstr_text_end[];
 
 extern __visible const void __nosave_begin, __nosave_end;
 
-#define dereference_function_descriptor(p) ((void *)(p))
 #define dereference_kernel_function_descriptor(p) ((void *)(p))
 
 typedef struct {

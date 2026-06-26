@@ -24,7 +24,6 @@
 #define PKRU_WD_BIT 0x2u
 #define PKRU_BITS_PER_PKEY 2
 #define init_pkru_value	0
-#define pkru_get_init_value()	0
 static inline u32 read_pkru(void) { return 0; }
 /* End of pkru.h */
 /* --- 2025-12-07 20:42 --- Inlined coco.h */
@@ -45,7 +44,6 @@ extern pgd_t early_top_pgt[PTRS_PER_PGD];
 #define pgprot_decrypted(prot)	__pgprot(cc_mkdec(pgprot_val(prot)))
 
 #define debug_checkwx()		do { } while (0)
-#define debug_checkwx_user()	do { } while (0)
 
  
 extern unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)]

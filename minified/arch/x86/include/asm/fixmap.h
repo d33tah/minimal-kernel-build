@@ -69,7 +69,6 @@ static inline void __set_fixmap(enum fixed_addresses idx,
 #include <linux/mm_types.h>
 
 #define __fix_to_virt(x)	(FIXADDR_TOP - ((x) << PAGE_SHIFT))
-#define __virt_to_fix(x)	((FIXADDR_TOP - ((x)&PAGE_MASK)) >> PAGE_SHIFT)
 
 static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 {

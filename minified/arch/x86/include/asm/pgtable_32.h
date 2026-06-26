@@ -80,10 +80,7 @@ do {						\
 
 #endif  
 
- 
-#define kern_addr_valid(addr)	(1)
 
- 
 #if PTRS_PER_PMD > 1
 #define PAGE_TABLE_SIZE(pages) (((pages) / PTRS_PER_PMD) + PTRS_PER_PGD)
 #else

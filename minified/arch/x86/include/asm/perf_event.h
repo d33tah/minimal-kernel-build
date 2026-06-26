@@ -10,11 +10,4 @@
 
 
 
-#define perf_arch_fetch_caller_regs(regs, __ip) do { \
-	(regs)->ip = (__ip); \
-	(regs)->sp = (unsigned long)__builtin_frame_address(0); \
-	(regs)->cs = __KERNEL_CS; \
-	(regs)->flags = 0; \
-} while (0)
-
 #endif

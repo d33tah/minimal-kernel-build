@@ -22,8 +22,10 @@ struct subsys_private {
    to_device_private_* macros - the klist get/put callbacks they fed were
    write-only (klist_add/del/get/put don't exist in this build, so the stored
    ->get/->put fn-ptrs were never invoked and the nodes never linked). */
+/* Removed: ->device back-pointer - write-only (set in device_private_init,
+   never read; its readers were the removed klist/glue-dir machinery). dev->p
+   itself is kept solely as a kzalloc presence-marker, so the struct is empty. */
 struct device_private {
-	struct device *device;
 };
 
  

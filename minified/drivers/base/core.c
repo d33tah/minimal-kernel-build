@@ -100,7 +100,6 @@ static int device_private_init(struct device *dev)
 	dev->p = kzalloc(sizeof(*dev->p), GFP_KERNEL);
 	if (!dev->p)
 		return -ENOMEM;
-	dev->p->device = dev;
 	return 0;
 }
 

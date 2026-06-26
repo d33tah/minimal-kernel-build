@@ -4,7 +4,6 @@
 #include <linux/ns_common.h>
 
 struct pid_namespace;
-struct nsset;
 struct path;
 struct task_struct;
 struct inode;

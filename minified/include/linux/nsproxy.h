@@ -18,13 +18,6 @@ struct nsproxy {
 };
 extern struct nsproxy init_nsproxy;
 
-struct nsset {
-	unsigned flags;
-	struct nsproxy *nsproxy;
-	struct fs_struct *fs;
-	const struct cred *cred;
-};
-
 int copy_namespaces(unsigned long flags, struct task_struct *tsk);
 void exit_task_namespaces(struct task_struct *tsk);
 /* switch_task_namespaces now static in nsproxy.c */

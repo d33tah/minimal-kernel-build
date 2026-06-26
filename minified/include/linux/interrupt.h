@@ -88,12 +88,6 @@ static inline int irq_can_set_affinity(unsigned int irq)
 }
 
 
-enum irqchip_irq_state {
-	IRQCHIP_STATE_PENDING,
-	IRQCHIP_STATE_ACTIVE,
-};
-
-
 #ifndef local_softirq_pending
 
 #ifndef local_softirq_pending_ref

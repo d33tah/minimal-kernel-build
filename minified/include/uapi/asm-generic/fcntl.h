@@ -69,19 +69,7 @@
 #define O_NDELAY	O_NONBLOCK
 #endif
 
-struct flock {
-	short	l_type;
-	short	l_whence;
-	__kernel_off_t	l_start;
-	__kernel_off_t	l_len;
-	__kernel_pid_t	l_pid;
-#ifdef	__ARCH_FLOCK_EXTRA_SYSID
-	__ARCH_FLOCK_EXTRA_SYSID
-#endif
-#ifdef	__ARCH_FLOCK_PAD
-	__ARCH_FLOCK_PAD
-#endif
-};
+/* Dead UABI struct flock removed (0-ref; the only other mention is a comment in fs.h). */
 
 
-#endif  
+#endif

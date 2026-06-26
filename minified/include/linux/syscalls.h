@@ -14,7 +14,6 @@ struct stat;
 struct statfs;
 struct statfs64;
 struct __kernel_old_timeval;
-struct __kernel_timex;
 struct timeval;
 struct mq_attr;
 struct utimbuf;

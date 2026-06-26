@@ -364,7 +364,6 @@ struct vfsmount *kern_mount(struct file_system_type *type)
 bool mnt_may_suid(struct vfsmount *mnt)
 {
 	
-	return check_mnt(real_mount(mnt)) &&
-	       current_in_userns(mnt->mnt_sb->s_user_ns);
+	return check_mnt(real_mount(mnt));
 }
 

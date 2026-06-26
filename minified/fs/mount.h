@@ -17,10 +17,7 @@ struct mnt_namespace {
 
 struct mount {
 	struct vfsmount mnt;
-	struct list_head mnt_instance;
-	const char *mnt_devname;
 	struct mnt_namespace *mnt_ns;
-	int mnt_id;
 } __randomize_layout;
 
 #define MNT_NS_INTERNAL ERR_PTR(-EINVAL)  

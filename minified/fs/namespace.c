@@ -27,8 +27,6 @@
 #include "internal.h"
 
 
-static DEFINE_IDA(mnt_id_ida);
-
 static struct kmem_cache *mnt_cache __read_mostly;
 
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(mount_lock);
@@ -43,47 +41,12 @@ static inline void unlock_mount_hash(void)
 	write_sequnlock(&mount_lock);
 }
 
-static int mnt_alloc_id(struct mount *mnt)
-{
-	int res = ida_alloc(&mnt_id_ida, GFP_KERNEL);
-
-	if (res < 0)
-		return res;
-	mnt->mnt_id = res;
-	return 0;
-}
-
-static void mnt_free_id(struct mount *mnt)
-{
-	ida_free(&mnt_id_ida, mnt->mnt_id);
-}
-
 static struct mount *alloc_vfsmnt(const char *name)
 {
 	struct mount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
-	if (mnt) {
-		int err;
-
-		err = mnt_alloc_id(mnt);
-		if (err)
-			goto out_free_cache;
-
-		if (name) {
-			mnt->mnt_devname = kstrdup_const(name,
-							 GFP_KERNEL_ACCOUNT);
-			if (!mnt->mnt_devname)
-				goto out_free_id;
-		}
-
+	if (mnt)
 		mnt->mnt.mnt_userns = &init_user_ns;
-	}
 	return mnt;
-
-out_free_id:
-	mnt_free_id(mnt);
-out_free_cache:
-	kmem_cache_free(mnt_cache, mnt);
-	return NULL;
 }
 
 static bool __mnt_is_readonly(struct vfsmount *mnt)
@@ -210,9 +173,6 @@ struct vfsmount *vfs_create_mount(struct fs_context *fc)
 	if (!initial_idmapping(fs_userns))
 		mnt->mnt.mnt_userns = get_user_ns(fs_userns);
 
-	lock_mount_hash();
-	list_add_tail(&mnt->mnt_instance, &mnt->mnt.mnt_sb->s_mounts);
-	unlock_mount_hash();
 	return &mnt->mnt;
 }
 

@@ -332,15 +332,9 @@ static void __init init_mount_tree(void)
 
 void __init mnt_init(void)
 {
-	int err;
-
 	mnt_cache = kmem_cache_create("mnt_cache", sizeof(struct mount),
 			0, SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, NULL);
 
-	err = sysfs_init();
-	if (err)
-		printk(KERN_WARNING "%s: sysfs_init error: %d\n",
-			__func__, err);
 	/* Stub: fs_kobj not used in minimal kernel */
 	shmem_init();
 	init_mount_tree();

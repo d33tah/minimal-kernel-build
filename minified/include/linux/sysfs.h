@@ -18,12 +18,6 @@ struct module;
 
 
 
-static inline int __must_check sysfs_init(void)
-{
-	return 0;
-}
-
-
 
 
 

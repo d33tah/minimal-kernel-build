@@ -77,14 +77,8 @@ long vfs_truncate(const struct path *path, loff_t length)
 	if (error)
 		goto mnt_drop_write_and_out;
 
-	 
-	error = break_lease(inode, O_WRONLY);
-	if (error)
-		goto put_write_and_out;
-
 	error = do_truncate(mnt_userns, path->dentry, length, 0, NULL);
 
-put_write_and_out:
 	put_write_access(inode);
 mnt_drop_write_and_out:
 	mnt_drop_write(path->mnt);

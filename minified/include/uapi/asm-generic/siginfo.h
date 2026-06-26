@@ -4,99 +4,24 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 
-typedef union sigval {
-	int sival_int;
-	void __user *sival_ptr;
-} sigval_t;
-
 #define SI_MAX_SIZE	128
-
-#ifndef __ARCH_SI_BAND_T
-#define __ARCH_SI_BAND_T long
-#endif
-
-#ifndef __ARCH_SI_CLOCK_T
-#define __ARCH_SI_CLOCK_T __kernel_clock_t
-#endif
 
 #ifndef __ARCH_SI_ATTRIBUTES
 #define __ARCH_SI_ATTRIBUTES
 #endif
 
+/* Trimmed to the union members actually read in this build: _kill (_pid/_uid)
+ * and _sigfault._addr. siginfo_t is padded to SI_MAX_SIZE and both consumers
+ * (copy_siginfo/clear_siginfo) use sizeof(self), so the layout is self-consistent. */
 union __sifields {
-	 
 	struct {
-		__kernel_pid_t _pid;	 
-		__kernel_uid32_t _uid;	 
+		__kernel_pid_t _pid;
+		__kernel_uid32_t _uid;
 	} _kill;
 
-	 
 	struct {
-		__kernel_timer_t _tid;	 
-		int _overrun;		 
-		sigval_t _sigval;	 
-		int _sys_private;        
-	} _timer;
-
-	 
-	struct {
-		__kernel_pid_t _pid;	 
-		__kernel_uid32_t _uid;	 
-		sigval_t _sigval;
-	} _rt;
-
-	 
-	struct {
-		__kernel_pid_t _pid;	 
-		__kernel_uid32_t _uid;	 
-		int _status;		 
-		__ARCH_SI_CLOCK_T _utime;
-		__ARCH_SI_CLOCK_T _stime;
-	} _sigchld;
-
-	 
-	struct {
-		void __user *_addr;  
-#ifdef __ia64__
-		int _imm;		 
-		unsigned int _flags;	 
-		unsigned long _isr;	 
-#endif
-
-#define __ADDR_BND_PKEY_PAD  (__alignof__(void *) < sizeof(short) ? \
-			      sizeof(short) : __alignof__(void *))
-		union {
-			 
-			int _trapno;	 
-			 
-			short _addr_lsb;  
-			 
-			struct {
-				char _dummy_bnd[__ADDR_BND_PKEY_PAD];
-				void __user *_lower;
-				void __user *_upper;
-			} _addr_bnd;
-			 
-			struct {
-				char _dummy_pkey[__ADDR_BND_PKEY_PAD];
-				__u32 _pkey;
-			} _addr_pkey;
-			/* _perf struct removed - unused */
-		};
+		void __user *_addr;
 	} _sigfault;
-
-	 
-	struct {
-		__ARCH_SI_BAND_T _band;	 
-		int _fd;
-	} _sigpoll;
-
-	 
-	struct {
-		void __user *_call_addr;  
-		int _syscall;	 
-		unsigned int _arch;	 
-	} _sigsys;
 };
 
 #ifndef __ARCH_HAS_SWAPPED_SIGINFO
@@ -126,26 +51,7 @@ typedef struct siginfo {
 
 #define si_pid		_sifields._kill._pid
 #define si_uid		_sifields._kill._uid
-#define si_tid		_sifields._timer._tid
-#define si_overrun	_sifields._timer._overrun
-#define si_sys_private  _sifields._timer._sys_private
-#define si_status	_sifields._sigchld._status
-#define si_utime	_sifields._sigchld._utime
-#define si_stime	_sifields._sigchld._stime
-#define si_value	_sifields._rt._sigval
-#define si_int		_sifields._rt._sigval.sival_int
-#define si_ptr		_sifields._rt._sigval.sival_ptr
 #define si_addr		_sifields._sigfault._addr
-#define si_trapno	_sifields._sigfault._trapno
-#define si_addr_lsb	_sifields._sigfault._addr_lsb
-#define si_lower	_sifields._sigfault._addr_bnd._lower
-#define si_upper	_sifields._sigfault._addr_bnd._upper
-#define si_pkey		_sifields._sigfault._addr_pkey._pkey
-#define si_band		_sifields._sigpoll._band
-#define si_fd		_sifields._sigpoll._fd
-#define si_call_addr	_sifields._sigsys._call_addr
-#define si_syscall	_sifields._sigsys._syscall
-#define si_arch		_sifields._sigsys._arch
 
 #define SI_USER		0
 #define SI_KERNEL	0x80

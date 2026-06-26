@@ -86,11 +86,7 @@ struct _fpstate_32 {
 /* 32-bit only kernel - _fpstate_64 removed */
 #define _fpstate _fpstate_32
 
-struct _header {
-	__u64				xfeatures;
-	__u64				reserved1[2];
-	__u64				reserved2[5];
-};
+/* struct _header removed - 0-ref tree-wide */
 
 
  

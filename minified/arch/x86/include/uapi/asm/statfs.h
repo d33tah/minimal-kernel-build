@@ -23,24 +23,7 @@ struct statfs {
 	__statfs_word f_spare[4];
 };
 
-#ifndef ARCH_PACK_STATFS64
-#define ARCH_PACK_STATFS64
-#endif
-
-struct statfs64 {
-	__statfs_word f_type;
-	__statfs_word f_bsize;
-	__u64 f_blocks;
-	__u64 f_bfree;
-	__u64 f_bavail;
-	__u64 f_files;
-	__u64 f_ffree;
-	__kernel_fsid_t f_fsid;
-	__statfs_word f_namelen;
-	__statfs_word f_frsize;
-	__statfs_word f_flags;
-	__statfs_word f_spare[4];
-} ARCH_PACK_STATFS64;
+/* struct statfs64 removed - 0-ref tree-wide (no statfs64 syscall consumer) */
 
 typedef __kernel_fsid_t	fsid_t;
 #endif  

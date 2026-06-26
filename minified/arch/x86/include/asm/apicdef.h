@@ -5,10 +5,6 @@
 
 /* Only keeping definitions that are actually used */
 
-
-
-enum apic_delivery_modes {
-	APIC_DELIVERY_MODE_FIXED	= 0,
-};
+/* enum apic_delivery_modes removed - 0-ref tree-wide (type + sole member dead) */
 
 #endif /* _ASM_X86_APICDEF_H */

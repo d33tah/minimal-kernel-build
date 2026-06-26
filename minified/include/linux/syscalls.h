@@ -11,7 +11,6 @@ struct new_utsname;
 struct rlimit;
 struct stat;
 struct statfs;
-struct statfs64;
 struct __kernel_old_timeval;
 struct getcpu_cache;
 

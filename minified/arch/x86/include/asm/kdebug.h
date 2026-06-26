@@ -11,21 +11,11 @@ enum die_val {
 	DIE_OOPS = 1,
 	DIE_INT3,
 	DIE_DEBUG,
-	DIE_PANIC,
-	DIE_NMI,
-	DIE_DIE,
-	DIE_KERNELDEBUG,
 	DIE_TRAP,
 	DIE_GPF,
-	DIE_CALL,
-	DIE_PAGE_FAULT,
-	DIE_NMIUNKNOWN,
 };
 
 enum show_regs_mode {
-	SHOW_REGS_SHORT,
-	 
-	SHOW_REGS_USER,
 	SHOW_REGS_ALL
 };
 

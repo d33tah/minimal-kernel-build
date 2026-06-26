@@ -15,10 +15,6 @@ typedef struct raw_spinlock {
 	arch_spinlock_t raw_lock;
 } raw_spinlock_t;
 
-#define SPINLOCK_MAGIC		0xdead4ead
-
-#define SPINLOCK_OWNER_INIT	((void *)-1L)
-
 # define RAW_SPIN_DEP_MAP_INIT(lockname)
 # define SPIN_DEP_MAP_INIT(lockname)
 # define LOCAL_SPIN_DEP_MAP_INIT(lockname)

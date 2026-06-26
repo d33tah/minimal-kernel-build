@@ -33,8 +33,6 @@ void reset_vc(struct vc_data *vc)
 {
 	vc->vc_mode = KD_TEXT;
 	vt_reset_unicode(vc->vc_num);
-	put_pid(vc->vt_pid);
-	vc->vt_pid = NULL;
 	reset_palette(vc);
 }
 

@@ -8,13 +8,6 @@
 struct resource;
 struct device;
 
-struct vmem_altmap {
-	unsigned long base_pfn;
-	const unsigned long end_pfn;
-	const unsigned long reserve;
-	unsigned long free;
-	unsigned long align;
-	unsigned long alloc;
-};
+struct vmem_altmap;
 
 #endif

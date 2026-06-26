@@ -24,10 +24,6 @@ struct kernel_param_ops {
 	unsigned int flags;
 	 
 	int (*set)(const char *val, const struct kernel_param *kp);
-	 
-	int (*get)(char *buffer, const struct kernel_param *kp);
-	 
-	void (*free)(void *arg);
 };
 
 enum {
@@ -41,11 +37,7 @@ struct kernel_param {
 	const u16 perm;
 	s8 level;
 	u8 flags;
-	union {
-		void *arg;
-		const struct kparam_string *str;
-		const struct kparam_array *arr;
-	};
+	void *arg;
 };
 
 extern const struct kernel_param __start___param[], __stop___param[];

@@ -120,10 +120,7 @@ int device_add(struct device *dev)
 			goto done;
 	}
 
-	if (dev->init_name) {
-		dev_set_name(dev, "%s", dev->init_name);
-		dev->init_name = NULL;
-	}
+	/* init_name removed - never set non-NULL, so this naming path was dead */
 
 	if (!dev_name(dev)) {
 		error = -EINVAL;

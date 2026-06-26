@@ -50,8 +50,6 @@ struct device {
 
 	struct device_private	*p;
 
-	const char		*init_name;
-
 	void	(*release)(struct device *dev);
 };
 
@@ -65,10 +63,8 @@ static inline struct device *kobj_to_dev(struct kobject *kobj)
 
 static inline const char *dev_name(const struct device *dev)
 {
-	 
-	if (dev->init_name)
-		return dev->init_name;
-
+	/* init_name removed - never set non-NULL by any device, so this
+	 * always fell through to the kobject name */
 	return kobject_name(&dev->kobj);
 }
 

@@ -58,9 +58,7 @@ static struct tty_ldisc_ops *get_ldops(int disc)
 	ret = ERR_PTR(-EINVAL);
 	ldops = tty_ldiscs[disc];
 	if (ldops) {
-		ret = ERR_PTR(-EAGAIN);
-		if (try_module_get(ldops->owner))
-			ret = ldops;
+		ret = ldops;
 	}
 	raw_spin_unlock_irqrestore(&tty_ldiscs_lock, flags);
 	return ret;
@@ -71,7 +69,6 @@ static void put_ldops(struct tty_ldisc_ops *ldops)
 	unsigned long flags;
 
 	raw_spin_lock_irqsave(&tty_ldiscs_lock, flags);
-	module_put(ldops->owner);
 	raw_spin_unlock_irqrestore(&tty_ldiscs_lock, flags);
 }
 

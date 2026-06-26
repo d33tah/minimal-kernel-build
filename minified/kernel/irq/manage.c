@@ -94,8 +94,6 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 
 	if (desc->irq_data.chip == &no_irq_chip)
 		return -ENOSYS;
-	if (!try_module_get(desc->owner))
-		return -ENODEV;
 
 	new->irq = irq;
 
@@ -269,7 +267,6 @@ out_bus_unlock:
 	chip_bus_sync_unlock(desc);
 	mutex_unlock(&desc->request_mutex);
 
-	module_put(desc->owner);
 	return ret;
 }
 

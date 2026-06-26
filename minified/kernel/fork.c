@@ -592,9 +592,6 @@ static struct mm_struct *dup_mm(struct task_struct *tsk,
 	if (err)
 		goto free_pt;
 
-	if (mm->binfmt && !try_module_get(mm->binfmt->module))
-		goto free_pt;
-
 	return mm;
 
 free_pt:

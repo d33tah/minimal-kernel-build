@@ -66,28 +66,22 @@ retry:
 	mutex_lock(domain->lock);
 	for (p = domain->probes[MAJOR(dev) % 255]; p; p = p->next) {
 		struct kobject *(*probe)(dev_t, int *, void *);
-		struct module *owner;
 		void *data;
 
 		if (p->dev > dev || p->dev + p->range - 1 < dev)
 			continue;
 		if (p->range - 1 >= best)
 			break;
-		if (!try_module_get(p->owner))
-			continue;
-		owner = p->owner;
 		data = p->data;
 		probe = p->get;
 		best = p->range - 1;
 		*index = dev - p->dev;
 		if (p->lock && p->lock(dev, data) < 0) {
-			module_put(owner);
 			continue;
 		}
 		mutex_unlock(domain->lock);
 		kobj = probe(dev, index, data);
-		 
-		module_put(owner);
+
 		if (kobj)
 			return kobj;
 		goto retry;

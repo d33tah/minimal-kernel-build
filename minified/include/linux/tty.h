@@ -46,7 +46,6 @@ struct tty_ldisc_ops {
 	 * these ldisc callbacks were never dispatched (no ld->ops->* call) */
 	ssize_t	(*write)(struct tty_struct *tty, struct file *file,
 			 const unsigned char *buf, size_t nr);
-	struct  module *owner;
 };
 
 struct tty_ldisc {

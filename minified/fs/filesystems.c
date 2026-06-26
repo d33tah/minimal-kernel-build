@@ -15,13 +15,11 @@ static DEFINE_RWLOCK(file_systems_lock);
 
 struct file_system_type *get_filesystem(struct file_system_type *fs)
 {
-	__module_get(fs->owner);
 	return fs;
 }
 
 void put_filesystem(struct file_system_type *fs)
 {
-	module_put(fs->owner);
 }
 
 static struct file_system_type **find_filesystem(const char *name, unsigned len)

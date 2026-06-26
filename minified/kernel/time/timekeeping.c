@@ -264,7 +264,7 @@ time64_t ktime_get_real_seconds(void)
 static int change_clocksource(void *data)
 {
 	struct timekeeper *tk = &tk_core.timekeeper;
-	struct clocksource *new, *old = NULL;
+	struct clocksource *new;
 	unsigned long flags;
 	bool change = false;
 
@@ -278,20 +278,13 @@ static int change_clocksource(void *data)
 
 	timekeeping_forward_now(tk);
 
-	if (change) {
-		old = tk->tkr_mono.clock;
+	if (change)
 		tk_setup_internals(tk, new);
-	}
 
 	timekeeping_update(tk, TK_CLEAR_NTP | TK_MIRROR | TK_CLOCK_WAS_SET);
 
 	write_seqcount_end(&tk_core.seq);
 	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
-
-	if (old) {
-		if (old->disable)
-			old->disable(old);
-	}
 
 	return 0;
 }

@@ -46,7 +46,6 @@ struct clocksource {
 	unsigned long		flags;
 
 	int			(*enable)(struct clocksource *cs);
-	void			(*disable)(struct clocksource *cs);
 	void			(*resume)(struct clocksource *cs);
 	void			(*mark_unstable)(struct clocksource *cs);
 };

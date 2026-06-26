@@ -20,10 +20,8 @@ struct timekeeper {
 	struct tk_read_base	tkr_mono;
 	struct tk_read_base	tkr_raw;
 	u64			xtime_sec;
-	unsigned long		ktime_sec;
 	struct timespec64	wall_to_monotonic;
 	ktime_t			offs_real;
-	ktime_t			offs_boot;
 	ktime_t			offs_tai;
 	s32			tai_offset;
 	u64			raw_sec;

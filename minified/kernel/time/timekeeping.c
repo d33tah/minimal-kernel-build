@@ -186,11 +186,6 @@ static inline void tk_update_ktime_data(struct timekeeper *tk)
 	nsec = (u32) tk->wall_to_monotonic.tv_nsec;
 	tk->tkr_mono.base = ns_to_ktime(seconds * NSEC_PER_SEC + nsec);
 
-	nsec += (u32)(tk->tkr_mono.xtime_nsec >> tk->tkr_mono.shift);
-	if (nsec >= NSEC_PER_SEC)
-		seconds++;
-	tk->ktime_sec = seconds;
-
 	tk->tkr_raw.base = ns_to_ktime(tk->raw_sec * NSEC_PER_SEC);
 }
 

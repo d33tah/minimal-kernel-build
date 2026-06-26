@@ -73,7 +73,6 @@ struct iovec;
 struct kiocb;
 struct kobject;
 struct pipe_inode_info;
-struct poll_table_struct;
 struct kstatfs;
 struct vm_area_struct;
 struct vfsmount;

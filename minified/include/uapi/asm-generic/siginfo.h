@@ -154,13 +154,8 @@ typedef struct siginfo {
 #define ILL_ILLOPN	2
 #define ILL_BADSTK	8
 
-/* FPE codes used by x86 FPU */
+/* FPE code used by x86 (only FPE_INTDIV is referenced) */
 #define FPE_INTDIV	1
-#define FPE_FLTDIV	3
-#define FPE_FLTOVF	4
-#define FPE_FLTUND	5
-#define FPE_FLTRES	6
-#define FPE_FLTINV	7
 
 /* SEGV codes used by x86 fault handler */
 #define SEGV_MAPERR	1

@@ -30,10 +30,7 @@ enum fs_context_purpose {
 enum fs_value_type {
 	fs_value_is_undefined,
 	fs_value_is_flag,		 
-	fs_value_is_string,		 
-	fs_value_is_blob,		 
-	fs_value_is_filename,		 
-	fs_value_is_file,		 
+	fs_value_is_string,
 };
 
 struct fs_parameter {

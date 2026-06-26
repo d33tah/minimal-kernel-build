@@ -26,10 +26,6 @@ enum iter_type {
 	 
 	ITER_IOVEC,
 	ITER_KVEC,
-	ITER_BVEC,
-	ITER_PIPE,
-	ITER_XARRAY,
-	ITER_DISCARD,
 };
 
 struct iov_iter {

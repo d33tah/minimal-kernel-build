@@ -17,8 +17,6 @@ struct uni_pagedir;
 enum vc_intensity {
 	VCI_HALF_BRIGHT,
 	VCI_NORMAL,
-	VCI_BOLD,
-	VCI_MASK = 0x3,
 };
 
 struct vc_state {

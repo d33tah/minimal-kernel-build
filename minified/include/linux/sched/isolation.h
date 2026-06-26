@@ -15,7 +15,6 @@ enum hk_type {
 	HK_TYPE_WQ,
 	HK_TYPE_MANAGED_IRQ,
 	HK_TYPE_KTHREAD,
-	HK_TYPE_MAX
 };
 
 

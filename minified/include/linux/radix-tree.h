@@ -85,12 +85,6 @@ void __rcu **idr_get_free(struct radix_tree_root *root,
 			      struct radix_tree_iter *iter, gfp_t gfp,
 			      unsigned long max);
 
-enum {
-	RADIX_TREE_ITER_TAG_MASK = 0x0f,	 
-	RADIX_TREE_ITER_TAGGED   = 0x10,	 
-	RADIX_TREE_ITER_CONTIG   = 0x20,	 
-};
-
 static __always_inline void __rcu **
 radix_tree_iter_init(struct radix_tree_iter *iter, unsigned long start)
 {

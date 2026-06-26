@@ -46,11 +46,9 @@ static inline bool __nodes_empty(const nodemask_t *srcp, unsigned int nbits)
 enum node_states {
 	N_POSSIBLE,		 
 	N_ONLINE,		 
-	N_NORMAL_MEMORY,	 
-	N_HIGH_MEMORY = N_NORMAL_MEMORY,
-	N_MEMORY,		 
-	N_CPU,		 
-	N_GENERIC_INITIATOR,	 
+	N_NORMAL_MEMORY,
+	N_MEMORY,
+	N_CPU,
 	NR_NODE_STATES
 };
 

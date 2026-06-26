@@ -3,9 +3,6 @@
 
 #include <linux/mm.h>
 
-#define ARCH_DEFAULT_PKEY	0
-
-#define arch_max_pkey() (1)
 #define execute_only_pkey(mm) (0)
 
 #endif

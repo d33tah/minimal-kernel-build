@@ -82,8 +82,6 @@ extern void cleanup_module(void);
 #endif
 
 #define __init_or_module __init
-#define __initdata_or_module __initdata
-#define __initconst_or_module __initconst
 
 #define MODULE_INFO(tag, info) __MODULE_INFO(tag, tag, info)
 

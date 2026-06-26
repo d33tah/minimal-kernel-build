@@ -8,7 +8,5 @@
 
 #define	NUMA_NO_NODE	(-1)
 
-#define __initdata_or_meminfo __initdata
-
 
 #endif

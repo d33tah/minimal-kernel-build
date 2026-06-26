@@ -24,8 +24,6 @@ extern struct cred init_cred;
 
 #define INIT_TASK_COMM "swapper"
 
-#define __init_task_data  
-
-#define __init_thread_info __section(".data..init_thread_info")
+#define __init_task_data
 
 #endif

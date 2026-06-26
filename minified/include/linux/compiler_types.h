@@ -124,11 +124,7 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 #define notrace			__attribute__((__no_instrument_function__))
 #endif
 
-#define __naked			__attribute__((__naked__)) notrace
-
 #define inline inline __gnu_inline __inline_maybe_unused notrace
-
-#define __inline__ inline
 
 #ifdef KBUILD_EXTRA_WARN1
 #define __inline_maybe_unused

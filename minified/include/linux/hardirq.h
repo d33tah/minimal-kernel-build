@@ -15,12 +15,6 @@
 
 void irq_enter_rcu(void);
 
-#define __irq_exit_raw()				\
-	do {						\
-		lockdep_hardirq_exit();			\
-		preempt_count_sub(HARDIRQ_OFFSET);	\
-	} while (0)
-
 void irq_exit_rcu(void);
 
 #ifndef arch_nmi_enter

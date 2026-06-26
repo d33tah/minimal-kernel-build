@@ -81,12 +81,6 @@ static inline bool hlist_bl_is_locked(struct hlist_bl_head *b)
 		({ tpos = hlist_bl_entry(pos, typeof(*tpos), member); 1;}); \
 	     pos = pos->next)
 
-#define hlist_bl_for_each_entry_safe(tpos, pos, n, head, member)	 \
-	for (pos = hlist_bl_first(head);				 \
-	     pos && ({ n = pos->next; 1; }) && 				 \
-		({ tpos = hlist_bl_entry(pos, typeof(*tpos), member); 1;}); \
-	     pos = n)
-
 
 /* RCU-specific functions */
 static inline void hlist_bl_set_first_rcu(struct hlist_bl_head *h,

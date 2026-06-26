@@ -25,7 +25,6 @@
 #endif
 
 #define annotate_unreachable()
-#define __annotate_jump_table  
 
 #ifndef unreachable
 # define unreachable() do {		\

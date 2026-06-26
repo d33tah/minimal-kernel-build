@@ -5,7 +5,6 @@
 #define __alias(symbol)                 __attribute__((__alias__(#symbol)))
 
 #define __aligned(x)                    __attribute__((__aligned__(x)))
-#define __aligned_largest               __attribute__((__aligned__))
 
 #define __alloc_size__(x, ...)		__attribute__((__alloc_size__(x, ## __VA_ARGS__)))
 
@@ -33,8 +32,6 @@
 # define __diagnose_as(builtin...)
 #endif
 
-#define __deprecated
-
 #if __has_attribute(__designated_init__)
 # define __designated_init              __attribute__((__designated_init__))
 #else
@@ -59,8 +56,6 @@
 #define __gnu_inline                    __attribute__((__gnu_inline__))
 
 #define __malloc                        __attribute__((__malloc__))
-
-#define __mode(x)                       __attribute__((__mode__(x)))
 
 #if __has_attribute(__no_caller_saved_registers__)
 # define __no_caller_saved_registers	__attribute__((__no_caller_saved_registers__))
@@ -116,7 +111,6 @@
 
 #define __section(section)              __attribute__((__section__(section)))
 
-#define __always_unused                 __attribute__((__unused__))
 #define __maybe_unused                  __attribute__((__unused__))
 
 #define __used                          __attribute__((__used__))

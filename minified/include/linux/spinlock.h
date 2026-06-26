@@ -15,13 +15,10 @@
 
 
 
-#define __lockfunc __section(".spinlock.text")
-
 #include <linux/spinlock_types.h>
 
 #include <asm/processor.h>
 #include <asm/barrier.h>
-#define arch_spin_is_locked(lock)	((void)(lock), 0)
 #define arch_spin_lock(lock)		do { barrier(); (void)(lock); } while (0)
 #define arch_spin_unlock(lock)		do { barrier(); (void)(lock); } while (0)
 #define arch_spin_trylock(lock)		({ barrier(); (void)(lock); 1; })
@@ -52,7 +49,6 @@
 
 
 #define raw_spin_lock_irq(lock)		_raw_spin_lock_irq(lock)
-#define raw_spin_lock_bh(lock)		_raw_spin_lock_bh(lock)
 #define raw_spin_unlock(lock)		_raw_spin_unlock(lock)
 #define raw_spin_unlock_irq(lock)	_raw_spin_unlock_irq(lock)
 
@@ -61,7 +57,6 @@
 		typecheck(unsigned long, flags);		\
 		_raw_spin_unlock_irqrestore(lock, flags);	\
 	} while (0)
-#define raw_spin_unlock_bh(lock)	_raw_spin_unlock_bh(lock)
 
 
 #define raw_spin_trylock_irqsave(lock, flags) \

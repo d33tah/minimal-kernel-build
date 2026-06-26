@@ -107,7 +107,6 @@ static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 	return xa->xa_flags & XA_FLAGS_MARK(mark);
 }
 
-#define xa_trylock(xa)		spin_trylock(&(xa)->xa_lock)
 #define xa_lock(xa)		spin_lock(&(xa)->xa_lock)
 #define xa_unlock(xa)		spin_unlock(&(xa)->xa_lock)
 #define xa_lock_irq(xa)		spin_lock_irq(&(xa)->xa_lock)
@@ -262,8 +261,6 @@ struct xa_state {
 #define XA_STATE(name, array, index)				\
 	struct xa_state name = __XA_STATE(array, index, 0, 0)
 
-#define xas_lock(xas)		xa_lock((xas)->xa)
-#define xas_unlock(xas)		xa_unlock((xas)->xa)
 #define xas_lock_irq(xas)	xa_lock_irq((xas)->xa)
 #define xas_unlock_irq(xas)	xa_unlock_irq((xas)->xa)
 #define xas_lock_irqsave(xas, flags) \
@@ -426,10 +423,6 @@ static inline unsigned int xas_find_chunk(struct xa_state *xas, bool advance,
 enum {
 	XA_CHECK_SCHED = 4096,
 };
-
-#define xas_for_each(xas, entry, max) \
-	for (entry = xas_find(xas, max); entry; \
-	     entry = xas_next_entry(xas, max))
 
 void *__xas_next(struct xa_state *);
 

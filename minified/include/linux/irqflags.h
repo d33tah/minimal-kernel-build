@@ -42,7 +42,6 @@ struct task_struct;
 		typecheck(unsigned long, flags);	\
 		arch_irqs_disabled_flags(flags);	\
 	})
-#define raw_irqs_disabled()		(arch_irqs_disabled())
 #define raw_safe_halt()			arch_safe_halt()
 
 

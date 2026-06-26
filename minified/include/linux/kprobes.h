@@ -7,7 +7,6 @@
 
 /* Stubs for kprobes-disabled kernel */
 #define NOKPROBE_SYMBOL(fname)
-#define __kprobes
 #define nokprobe_inline	inline
 
 struct task_struct;

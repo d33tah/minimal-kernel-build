@@ -9,7 +9,6 @@
 
 
 #define __sme_set(x)		(x)
-#define __sme_clr(x)		(x)
 
 #endif	 
 

@@ -18,7 +18,4 @@
 #define acpi_ioapic 0
 #define acpi_disable_cmcff 0
 
-
-#define ARCH_HAS_POWER_INIT	1
-
 #endif

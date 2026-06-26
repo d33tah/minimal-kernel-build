@@ -5,7 +5,6 @@
  
 #define EX_DATA_TYPE_MASK		((int)0x000000FF)
 #define EX_DATA_REG_MASK		((int)0x00000F00)
-#define EX_DATA_FLAG_MASK		((int)0x0000F000)
 #define EX_DATA_IMM_MASK		((int)0xFFFF0000)
 
 #define EX_DATA_REG_SHIFT		8
@@ -20,12 +19,10 @@
 #define EX_REG_DS			EX_DATA_REG(8)
 #define EX_REG_ES			EX_DATA_REG(9)
 #define EX_REG_FS			EX_DATA_REG(10)
-#define EX_REG_GS			EX_DATA_REG(11)
 
  
 #define EX_FLAG_CLEAR_AX		EX_DATA_FLAG(1)
 #define EX_FLAG_CLEAR_DX		EX_DATA_FLAG(2)
-#define EX_FLAG_CLEAR_AX_DX		EX_DATA_FLAG(3)
 
  
 #define	EX_TYPE_NONE			 0

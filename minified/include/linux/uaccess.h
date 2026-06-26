@@ -87,33 +87,6 @@ static inline bool pagefault_disabled(void)
 
 long notrace copy_to_kernel_nofault(void *dst, const void *src, size_t size);
 
-#ifndef __get_kernel_nofault
-#define __get_kernel_nofault(dst, src, type, label)	\
-do {							\
-	type __user *p = (type __force __user *)(src);	\
-	type data;					\
-	if (__get_user(data, p))			\
-		goto label;				\
-	*(type *)dst = data;				\
-} while (0)
-
-#define __put_kernel_nofault(dst, src, type, label)	\
-do {							\
-	type __user *p = (type __force __user *)(dst);	\
-	type data = *(type *)src;			\
-	if (__put_user(data, p))			\
-		goto label;				\
-} while (0)
-#endif
-
-#ifndef user_access_begin
-#define user_access_begin(ptr,len) access_ok(ptr, len)
-#define user_access_end() do { } while (0)
-#define unsafe_op_wrap(op, err) do { if (unlikely(op)) goto err; } while (0)
-#define unsafe_get_user(x,p,e) unsafe_op_wrap(__get_user(x,p),e)
-#define unsafe_put_user(x,p,e) unsafe_op_wrap(__put_user(x,p),e)
-#define unsafe_copy_to_user(d,s,l,e) unsafe_op_wrap(__copy_to_user(d,s,l),e)
-#endif
 #ifndef user_write_access_begin
 #define user_write_access_begin user_access_begin
 #endif

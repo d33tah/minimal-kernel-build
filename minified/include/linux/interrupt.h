@@ -130,10 +130,6 @@ extern int early_irq_init(void);
 extern int arch_probe_nr_irqs(void);
 extern int arch_early_irq_init(void);
 
-#ifndef __irq_entry
-# define __irq_entry	 __section(".irqentry.text")
-#endif
-
 #define __softirq_entry  __section(".softirqentry.text")
 
 #endif

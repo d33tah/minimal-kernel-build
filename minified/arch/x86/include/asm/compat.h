@@ -9,73 +9,16 @@
 #include <asm/processor.h>
 #include <asm/unistd.h>
 
-/* Inlined from asm/user32.h */
-struct user_regs_struct32 { __u32 ebx, ecx, edx, esi, edi, ebp, eax; unsigned short ds, __ds, es, __es; unsigned short fs, __fs, gs, __gs; __u32 orig_eax, eip; unsigned short cs, __cs; __u32 eflags, esp; unsigned short ss, __ss; };
-/* End of user32.h */
-
-#define compat_mode_t	compat_mode_t
-typedef u16		compat_mode_t;
-
-#define __compat_uid_t	__compat_uid_t
-typedef u16		__compat_uid_t;
-typedef u16		__compat_gid_t;
-
-#define compat_dev_t	compat_dev_t
-typedef u16		compat_dev_t;
-
-#define compat_ipc_pid_t compat_ipc_pid_t
-typedef u16		 compat_ipc_pid_t;
-
-#define compat_statfs	compat_statfs
-
-/* --- 2025-12-07 10:28 --- Inlined asm-generic/compat.h content */
-#ifndef COMPAT_USER_HZ
-#define COMPAT_USER_HZ		100
-#endif
-
-#ifndef COMPAT_RLIM_INFINITY
-#define COMPAT_RLIM_INFINITY	0xffffffff
-#endif
-
-#ifndef COMPAT_OFF_T_MAX
-#define COMPAT_OFF_T_MAX	0x7fffffff
-#endif
-
-#if !defined(compat_arg_u64) && !defined(CONFIG_CPU_BIG_ENDIAN)
-#define compat_arg_u64(name)		u32  name##_lo, u32  name##_hi
-#define compat_arg_u64_dual(name)	u32, name##_lo, u32, name##_hi
-#define compat_arg_u64_glue(name)	(((u64)name##_lo & 0xffffffffUL) | \
-					 ((u64)name##_hi << 32))
-#endif
-
-#ifndef __compat_uid_t
-typedef u32 __compat_uid_t;
-typedef u32 __compat_gid_t;
-#endif
-
-#ifndef compat_mode_t
-typedef u32 compat_mode_t;
-#endif
-
+/* Dead compat plumbing removed - 0-ref tree-wide (CONFIG_COMPAT off on this
+ * 32-bit build): struct user_regs_struct32, the compat_mode_t/__compat_uid_t/
+ * __compat_gid_t/compat_dev_t/compat_ipc_pid_t/compat_statfs/compat_fsid_t
+ * typedefs, and the COMPAT_USER_HZ/COMPAT_RLIM_INFINITY/COMPAT_OFF_T_MAX +
+ * compat_arg_u64* macros. Only the compat_sigset_word/_COMPAT_NSIG block below
+ * is still consumed (linux/compat.h:39,43). */
 #ifndef _COMPAT_NSIG
 typedef u32 compat_sigset_word;
 #define _COMPAT_NSIG _NSIG
 #define _COMPAT_NSIG_BPW 32
 #endif
-
-#ifndef compat_dev_t
-typedef u32 compat_dev_t;
-#endif
-
-#ifndef compat_ipc_pid_t
-typedef s32 compat_ipc_pid_t;
-#endif
-
-#ifndef compat_fsid_t
-typedef __kernel_fsid_t	compat_fsid_t;
-#endif
-
-/* end asm-generic/compat.h */
-
 
 #endif

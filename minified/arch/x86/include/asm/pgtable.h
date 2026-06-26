@@ -96,12 +96,7 @@ static inline int pte_dirty(pte_t pte)
 	return pte_flags(pte) & _PAGE_DIRTY;
 }
 
-static inline int pte_young(pte_t pte)
-{
-	return pte_flags(pte) & _PAGE_ACCESSED;
-}
-
-/* pmd_dirty, pmd_young, pud_dirty, pud_young removed - unused */
+/* pte_young, pmd_dirty, pmd_young, pud_dirty, pud_young removed - unused */
 
 static inline int pte_write(pte_t pte)
 {
@@ -156,16 +151,7 @@ static inline pte_t pte_set_flags(pte_t pte, pteval_t set)
 	return native_make_pte(v | set);
 }
 
-static inline pte_t pte_clear_flags(pte_t pte, pteval_t clear)
-{
-	pteval_t v = native_pte_val(pte);
-
-	return native_make_pte(v & ~clear);
-}
-
-
-
-/* pte_mkold, pte_wrprotect, pte_mkexec removed - unused */
+/* pte_clear_flags, pte_mkold, pte_wrprotect, pte_mkexec removed - unused */
 
 static inline pte_t pte_mkdirty(pte_t pte)
 {
@@ -184,12 +170,7 @@ static inline pte_t pte_mkwrite(pte_t pte)
 
 /* pte_mkhuge, pte_clrhuge, pte_mkglobal, pte_clrglobal removed - unused */
 
-/* pte_mkspecial removed - unused */
-
-static inline pte_t pte_mkdevmap(pte_t pte)
-{
-	return pte_set_flags(pte, _PAGE_SPECIAL|_PAGE_DEVMAP);
-}
+/* pte_mkspecial, pte_mkdevmap removed - unused */
 
 static inline pmd_t pmd_set_flags(pmd_t pmd, pmdval_t set)
 {
@@ -204,12 +185,7 @@ static inline pmd_t pmd_set_flags(pmd_t pmd, pmdval_t set)
 
 /* pmd_mkdirty removed - unused */
 
-static inline pmd_t pmd_mkdevmap(pmd_t pmd)
-{
-	return pmd_set_flags(pmd, _PAGE_DEVMAP);
-}
-
-/* pmd_mkhuge, pmd_mkyoung removed - unused */
+/* pmd_mkdevmap, pmd_mkhuge, pmd_mkyoung removed - unused */
 
 
 /* pud_set_flags, pud_clear_flags removed - unused */

@@ -250,12 +250,6 @@ static __always_inline unsigned long current_top_of_stack(void)
 	return this_cpu_read_stable(cpu_current_top_of_stack);
 }
 
-static __always_inline bool on_thread_stack(void)
-{
-	return (unsigned long)(current_top_of_stack() -
-			       current_stack_pointer) < THREAD_SIZE;
-}
-
 #define __cpuid			native_cpuid
 
 static inline void load_sp0(unsigned long sp0)
@@ -295,15 +289,6 @@ static inline unsigned int cpuid_eax(unsigned int op)
 	cpuid(op, &eax, &ebx, &ecx, &edx);
 
 	return eax;
-}
-
-static inline unsigned int cpuid_ebx(unsigned int op)
-{
-	unsigned int eax, ebx, ecx, edx;
-
-	cpuid(op, &eax, &ebx, &ecx, &edx);
-
-	return ebx;
 }
 
 static inline unsigned int cpuid_edx(unsigned int op)
@@ -349,11 +334,6 @@ static __always_inline void prefetchw(const void *x)
 	alternative_input(BASE_PREFETCH, "prefetchw %P1",
 			  X86_FEATURE_3DNOWPREFETCH,
 			  "m" (*(const char *)x));
-}
-
-static inline void spin_lock_prefetch(const void *x)
-{
-	prefetchw(x);
 }
 
 #define TOP_OF_INIT_STACK ((unsigned long)&init_stack + sizeof(init_stack) - \

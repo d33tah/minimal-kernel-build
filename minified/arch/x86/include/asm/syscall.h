@@ -23,24 +23,4 @@ static inline int syscall_get_nr(struct task_struct *task, struct pt_regs *regs)
 	return regs->orig_ax;
 }
 
-static inline void syscall_rollback(struct task_struct *task,
-				    struct pt_regs *regs)
-{
-	regs->ax = regs->orig_ax;
-}
-
-
-static inline void syscall_get_arguments(struct task_struct *task,
-					 struct pt_regs *regs,
-					 unsigned long *args)
-{
-	memcpy(args, &regs->bx, 6 * sizeof(args[0]));
-}
-
-static inline int syscall_get_arch(struct task_struct *task)
-{
-	return AUDIT_ARCH_I386;
-}
-
-
 #endif	 

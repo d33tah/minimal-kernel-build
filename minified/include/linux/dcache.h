@@ -218,11 +218,6 @@ static inline bool d_is_positive(const struct dentry *dentry)
 	return !d_is_negative(dentry);
 }
 
-static inline bool d_really_is_positive(const struct dentry *dentry)
-{
-	return dentry->d_inode != NULL;
-}
-
 static inline struct inode *d_inode(const struct dentry *dentry)
 {
 	return dentry->d_inode;

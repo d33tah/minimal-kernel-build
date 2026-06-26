@@ -6,11 +6,6 @@
 #include <asm/percpu.h>
 
 struct task_struct;
-static inline unsigned long ftrace_graph_ret_addr(struct task_struct *task, int *idx,
-						  unsigned long ret, unsigned long *retp)
-{
-	return ret;
-}
 
   /* lockdep_softirqs_on/off + lockdep_hardirqs_on/off/_prepare removed - unused (empty no-op stubs) */
 

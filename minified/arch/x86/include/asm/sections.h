@@ -44,18 +44,6 @@ static inline bool is_kernel_rodata(unsigned long addr)
 	       addr < (unsigned long)__end_rodata;
 }
 
-static inline bool is_kernel_inittext(unsigned long addr)
-{
-	return addr >= (unsigned long)_sinittext &&
-	       addr < (unsigned long)_einittext;
-}
-
-static inline bool __is_kernel_text(unsigned long addr)
-{
-	return addr >= (unsigned long)_stext &&
-	       addr < (unsigned long)_etext;
-}
-
 #include <asm/extable.h>
 
 extern char __brk_base[], __brk_limit[];

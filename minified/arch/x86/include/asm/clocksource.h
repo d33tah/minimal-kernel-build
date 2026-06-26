@@ -8,11 +8,6 @@
 
 extern unsigned int vclocks_used;
 
-static inline bool vclock_was_used(int vclock)
-{
-	return READ_ONCE(vclocks_used) & (1U << vclock);
-}
-
 static inline void vclocks_set_used(unsigned int which)
 {
 	WRITE_ONCE(vclocks_used, READ_ONCE(vclocks_used) | (1 << which));

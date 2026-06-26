@@ -48,9 +48,6 @@ static inline void native_pmd_clear(pmd_t *pmdp)
 {
 	native_set_pmd(pmdp, __pmd(0));
 }
-static inline void native_pud_clear(pud_t *pudp)
-{
-}
 static inline void native_pte_clear(struct mm_struct *mm,
 				    unsigned long addr, pte_t *xp)
 {

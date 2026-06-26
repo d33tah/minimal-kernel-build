@@ -317,10 +317,7 @@ static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
 #undef  pmd_addr_end
 #define pmd_addr_end(addr, end)			(end)
 
-static inline pmd_t native_make_pmd(pmdval_t val)
-{
-	return (pmd_t) { .pud.p4d.pgd = native_make_pgd(val) };
-}
+/* native_make_pmd removed - unused */
 
 static inline pmdval_t native_pmd_val(pmd_t pmd)
 {

@@ -597,7 +597,6 @@ struct file_operations {
 	int (*mmap) (struct file *, struct vm_area_struct *);
 	int (*open) (struct inode *, struct file *);
 	int (*release) (struct inode *, struct file *);
-	int (*fasync) (int, struct file *, int);
 	int (*lock) (struct file *, int, struct file_lock *);
 	unsigned long (*get_unmapped_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
 	/* iopoll/iterate/iterate_shared/poll/unlocked_ioctl/compat_ioctl/

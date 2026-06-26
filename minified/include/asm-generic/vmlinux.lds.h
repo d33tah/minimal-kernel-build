@@ -22,7 +22,6 @@
 #define TEXT_MAIN .text .text.[0-9a-zA-Z_]*
 #define DATA_MAIN .data .data.[0-9a-zA-Z_]* .data..L* .data..compoundliteral* .data.$__unnamed_* .data.$L*
 #define BSS_MAIN .bss .bss.[0-9a-zA-Z_]* .bss..compoundliteral*
-#define SBSS_MAIN .sbss .sbss.[0-9a-zA-Z_]*
 
 #define STRUCT_ALIGNMENT 32
 #define STRUCT_ALIGN() . = ALIGN(STRUCT_ALIGNMENT)
@@ -34,9 +33,6 @@
 	*(__fair_sched_class)			\
 	*(__idle_sched_class)			\
 	__sched_class_lowest = .;
-
-#define CPU_KEEP(sec)
-#define CPU_DISCARD(sec) *(.cpu##sec)
 
 #define MEM_KEEP(sec)
 #define MEM_DISCARD(sec) *(.mem##sec)
@@ -331,12 +327,6 @@
 		*(.entry.text)						\
 		__entry_text_end = .;
 
-#define IRQENTRY_TEXT							\
-		ALIGN_FUNCTION();					\
-		__irqentry_text_start = .;				\
-		*(.irqentry.text)					\
-		__irqentry_text_end = .;
-
 #define SOFTIRQENTRY_TEXT						\
 		ALIGN_FUNCTION();					\
 		__softirqentry_text_start = .;				\
@@ -351,11 +341,6 @@
 
 #define HEAD_TEXT  KEEP(*(.head.text))
 
-#define HEAD_TEXT_SECTION							\
-	.head.text : AT(ADDR(.head.text) - LOAD_OFFSET) {		\
-		HEAD_TEXT						\
-	}
-
 #define EXCEPTION_TABLE(align)						\
 	. = ALIGN(align);						\
 	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {		\
@@ -365,12 +350,6 @@
 	}
 
 #define BTF
-
-#define INIT_TASK_DATA_SECTION(align)					\
-	. = ALIGN(align);						\
-	.data..init_task :  AT(ADDR(.data..init_task) - LOAD_OFFSET) {	\
-		INIT_TASK_DATA(align)					\
-	}
 
 #define KERNEL_CTORS()
 
@@ -420,14 +399,6 @@
 
 #define EXIT_CALL							\
 	*(.exitcall.exit)
-
-#define SBSS(sbss_align)						\
-	. = ALIGN(sbss_align);						\
-	.sbss : AT(ADDR(.sbss) - LOAD_OFFSET) {				\
-		*(.dynsbss)						\
-		*(SBSS_MAIN)						\
-		*(.scommon)						\
-	}
 
 #ifndef BSS_FIRST_SECTIONS
 #define BSS_FIRST_SECTIONS
@@ -609,13 +580,6 @@
 	PERCPU_DECRYPTED_SECTION					\
 	__per_cpu_end = .;
 
-#define PERCPU_VADDR(cacheline, vaddr, phdr)				\
-	__per_cpu_load = .;						\
-	.data..percpu vaddr : AT(__per_cpu_load - LOAD_OFFSET) {	\
-		PERCPU_INPUT(cacheline)					\
-	} phdr								\
-	. = __per_cpu_load + SIZEOF(.data..percpu);
-
 #define PERCPU_SECTION(cacheline)					\
 	. = ALIGN(PAGE_SIZE);						\
 	.data..percpu	: AT(ADDR(.data..percpu) - LOAD_OFFSET) {	\
@@ -625,19 +589,6 @@
 
 
 
-
-#define RW_DATA(cacheline, pagealigned, inittask)			\
-	. = ALIGN(PAGE_SIZE);						\
-	.data : AT(ADDR(.data) - LOAD_OFFSET) {				\
-		INIT_TASK_DATA(inittask)				\
-		NOSAVE_DATA						\
-		PAGE_ALIGNED_DATA(pagealigned)				\
-		CACHELINE_ALIGNED_DATA(cacheline)			\
-		READ_MOSTLY_DATA(cacheline)				\
-		DATA_DATA						\
-		CONSTRUCTORS						\
-	}								\
-	BUG_TABLE							\
 
 #define INIT_TEXT_SECTION(inittext_align)				\
 	. = ALIGN(inittext_align);					\
@@ -655,11 +606,3 @@
 		CON_INITCALL						\
 		INIT_RAM_FS						\
 	}
-
-#define BSS_SECTION(sbss_align, bss_align, stop_align)			\
-	. = ALIGN(sbss_align);						\
-	__bss_start = .;						\
-	SBSS(sbss_align)						\
-	BSS(bss_align)							\
-	. = ALIGN(stop_align);						\
-	__bss_stop = .;

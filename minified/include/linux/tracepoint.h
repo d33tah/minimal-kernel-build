@@ -12,7 +12,6 @@
 #include <linux/static_call.h>
 
 struct module;
-struct tracepoint;
 struct notifier_block;
 
 #endif

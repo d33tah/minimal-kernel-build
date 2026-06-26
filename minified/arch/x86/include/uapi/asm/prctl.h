@@ -2,20 +2,8 @@
 #ifndef _ASM_X86_PRCTL_H
 #define _ASM_X86_PRCTL_H
 
-#define ARCH_SET_GS			0x1001
-#define ARCH_SET_FS			0x1002
-#define ARCH_GET_FS			0x1003
-#define ARCH_GET_GS			0x1004
-
-#define ARCH_GET_CPUID			0x1011
-#define ARCH_SET_CPUID			0x1012
-
-#define ARCH_GET_XCOMP_SUPP		0x1021
-#define ARCH_GET_XCOMP_PERM		0x1022
-#define ARCH_REQ_XCOMP_PERM		0x1023
-#define ARCH_GET_XCOMP_GUEST_PERM	0x1024
-#define ARCH_REQ_XCOMP_GUEST_PERM	0x1025
-
-/* ARCH_MAP_VDSO_X32/32/64 removed - unused */
+/* ARCH_SET_GS/FS, ARCH_GET_FS/GS, ARCH_GET/SET_CPUID, ARCH_*_XCOMP_* and
+ * ARCH_MAP_VDSO_* arch_prctl option constants removed - all 0-ref (no
+ * arch_prctl handler reads them in this kernel-only build). */
 
 #endif  

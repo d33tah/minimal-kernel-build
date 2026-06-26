@@ -17,6 +17,6 @@
 /* From asm-generic/mman.h */
 #define MAP_GROWSDOWN	0x0100
 #define MAP_LOCKED	0x2000
-#define MAP_NORESERVE	0x4000
+/* MAP_NORESERVE removed - 0-ref */
 
 #endif

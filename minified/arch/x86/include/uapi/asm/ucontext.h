@@ -2,8 +2,7 @@
 #ifndef _ASM_X86_UCONTEXT_H
 #define _ASM_X86_UCONTEXT_H
 
-/* 32-bit only kernel - removed x86_64 defines */
-#define UC_FP_XSTATE	0x1
+/* 32-bit only kernel - removed x86_64 defines; UC_FP_XSTATE removed (0-ref) */
 
 /* Inlined from asm-generic/ucontext.h */
 struct ucontext {

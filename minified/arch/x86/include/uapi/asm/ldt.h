@@ -3,16 +3,9 @@
 #ifndef _ASM_X86_LDT_H
 #define _ASM_X86_LDT_H
 
- 
-#define LDT_ENTRIES	8192
- 
+
 #define LDT_ENTRY_SIZE	8
 
-#ifndef __ASSEMBLY__
+/* LDT_ENTRIES + MODIFY_LDT_CONTENTS_{DATA,STACK,CODE} removed - all 0-ref */
 
-#define MODIFY_LDT_CONTENTS_DATA	0
-#define MODIFY_LDT_CONTENTS_STACK	1
-#define MODIFY_LDT_CONTENTS_CODE	2
-
-#endif  
-#endif  
+#endif

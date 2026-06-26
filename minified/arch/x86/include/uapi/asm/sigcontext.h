@@ -7,9 +7,8 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 
-#define FP_XSTATE_MAGIC1		0x46505853U
-#define FP_XSTATE_MAGIC2		0x46505845U
-#define FP_XSTATE_MAGIC2_SIZE		sizeof(FP_XSTATE_MAGIC2)
+/* FP_XSTATE_MAGIC1/2/2_SIZE removed - 0-ref (MAGIC2 only fed MAGIC2_SIZE,
+ * which had no consumer; userspace fpstate signal frame not built kernel-side). */
 
 /* struct _fpx_sw_bytes / _fpreg / _fpxreg / _xmmreg / _fpstate_32 removed -
  * the whole _fpstate_32 cluster + its _fpstate/_fpstate_ia32 aliases +

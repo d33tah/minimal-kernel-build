@@ -9,13 +9,6 @@
 #include <asm/user.h>
 #include <asm/auxvec.h>
 
-typedef unsigned long elf_greg_t;
-
-#define ELF_NGREG (sizeof(struct user_regs_struct) / sizeof(elf_greg_t))
-typedef elf_greg_t elf_gregset_t[ELF_NGREG];
-
-typedef struct user_i387_struct elf_fpregset_t;
-
 /* 32-bit only kernel - removed x86_64 relocation types */
 #define R_386_NONE	0
 #define R_386_32	1
@@ -52,26 +45,6 @@ typedef struct user_i387_struct elf_fpregset_t;
 
  
 
-#define ELF_CORE_COPY_REGS(pr_reg, regs)	\
-do {						\
-	pr_reg[0] = regs->bx;			\
-	pr_reg[1] = regs->cx;			\
-	pr_reg[2] = regs->dx;			\
-	pr_reg[3] = regs->si;			\
-	pr_reg[4] = regs->di;			\
-	pr_reg[5] = regs->bp;			\
-	pr_reg[6] = regs->ax;			\
-	pr_reg[7] = regs->ds;			\
-	pr_reg[8] = regs->es;			\
-	pr_reg[9] = regs->fs;			\
-	savesegment(gs, pr_reg[10]);		\
-	pr_reg[11] = regs->orig_ax;		\
-	pr_reg[12] = regs->ip;			\
-	pr_reg[13] = regs->cs;			\
-	pr_reg[14] = regs->flags;		\
-	pr_reg[15] = regs->sp;			\
-	pr_reg[16] = regs->ss;			\
-} while (0);
 
 #define ELF_PLATFORM	(utsname()->machine)
 #define set_personality_64bit()	do { } while (0)

@@ -6,21 +6,7 @@
 #include <linux/ioctl.h>
 #include <asm/byteorder.h>
 
-/* Only keep used enum values */
-#define PERF_TYPE_BREAKPOINT 5
-
-/* SW event IDs used in mm code */
-#define PERF_COUNT_SW_PAGE_FAULTS 2
-#define PERF_COUNT_SW_PAGE_FAULTS_MIN 5
-#define PERF_COUNT_SW_PAGE_FAULTS_MAJ 6
-
-/* PERF_COUNT_SW_MAX used for array size */
-#define PERF_COUNT_SW_MAX 12
-
-/* Minimal struct - only forward declaration used, never instantiated */
-struct perf_event_attr {
-	__u32 type;
-};
-
+/* perf events disabled: struct perf_event_attr (def + fwd decl) and the
+ * PERF_TYPE and PERF_COUNT_SW macros were all 0-ref tree-wide; removed. */
 
 #endif  

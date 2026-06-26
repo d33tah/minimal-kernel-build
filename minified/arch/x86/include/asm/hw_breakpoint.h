@@ -29,7 +29,6 @@
 #define HBP_NUM 4
 
 
-struct perf_event_attr;
 struct perf_event;
 struct pmu;
 

@@ -7,7 +7,4 @@
 #include <linux/seqlock.h>
 #include <linux/gfp.h>
 
-#define FPROP_FRAC_SHIFT 10
-#define FPROP_FRAC_BASE (1UL << FPROP_FRAC_SHIFT)
-
 #endif

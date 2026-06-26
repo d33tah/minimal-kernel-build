@@ -112,7 +112,4 @@ extern struct vm_struct *remove_vm_area(const void *addr);
 
 
 
-#define VMALLOC_TOTAL (VMALLOC_END - VMALLOC_START)
-
-
 #endif  

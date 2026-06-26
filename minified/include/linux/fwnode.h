@@ -3,12 +3,7 @@
 
 #include <linux/types.h>
 
-struct device;
-
-/* Minimal fwnode_handle - embedded in device_node */
-struct fwnode_handle {
-	struct fwnode_handle *secondary;
-	struct device *dev;
-};
+/* struct fwnode_handle removed - 0-ref tree-wide (never instantiated;
+ * acpi.h/device/class.h carry their own forward-decls). */
 
 #endif

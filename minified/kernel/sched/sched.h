@@ -158,12 +158,6 @@ struct cfs_rq {
 };
 
 
-struct rt_rq {
-};
-
-struct dl_rq {
-};
-
 #define entity_is_task(se)	1
 
 struct rq {
@@ -175,8 +169,6 @@ struct rq {
 
 
 	struct cfs_rq		cfs;
-	struct rt_rq		rt;
-	struct dl_rq		dl;
 
 
 	struct task_struct __rcu	*curr;

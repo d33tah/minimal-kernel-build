@@ -108,7 +108,6 @@ static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 }
 
 #define xa_lock(xa)		spin_lock(&(xa)->xa_lock)
-#define xa_unlock(xa)		spin_unlock(&(xa)->xa_lock)
 #define xa_lock_irq(xa)		spin_lock_irq(&(xa)->xa_lock)
 #define xa_unlock_irq(xa)	spin_unlock_irq(&(xa)->xa_lock)
 #define xa_lock_irqsave(xa, flags) \

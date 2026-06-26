@@ -8,8 +8,6 @@
 
 typedef atomic_t atomic_long_t;
 #define ATOMIC_LONG_INIT(i)		ATOMIC_INIT(i)
-#define atomic_long_cond_read_acquire	atomic_cond_read_acquire
-#define atomic_long_cond_read_relaxed	atomic_cond_read_relaxed
 
 
 static __always_inline long

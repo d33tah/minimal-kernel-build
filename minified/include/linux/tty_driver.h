@@ -34,7 +34,6 @@ struct tty_operations {
 } __randomize_layout;
 
 struct tty_driver {
-	int	magic;
 	struct kref kref;
 	struct cdev **cdevs;
 	struct module	*owner;
@@ -78,8 +77,6 @@ static inline void tty_set_operations(struct tty_driver *driver,
 {
 	driver->ops = op;
 }
-
-#define TTY_DRIVER_MAGIC		0x5402
 
 #define TTY_DRIVER_INSTALLED		0x0001
 #define TTY_DRIVER_RESET_TERMIOS	0x0002

@@ -47,10 +47,6 @@
 
 static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs);
 
-#ifndef arch_enter_from_user_mode
-static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs) {}
-#endif
-
 void syscall_enter_from_user_mode_prepare(struct pt_regs *regs);
 
 long syscall_enter_from_user_mode_work(struct pt_regs *regs, long syscall);
@@ -88,18 +84,7 @@ static inline void arch_exit_to_user_mode_work(struct pt_regs *regs,
 static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
 						  unsigned long ti_work);
 
-#ifndef arch_exit_to_user_mode_prepare
-static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
-						  unsigned long ti_work)
-{
-}
-#endif
-
 static __always_inline void arch_exit_to_user_mode(void);
-
-#ifndef arch_exit_to_user_mode
-static __always_inline void arch_exit_to_user_mode(void) { }
-#endif
 
 void syscall_exit_to_user_mode(struct pt_regs *regs);
 

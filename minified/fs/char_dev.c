@@ -36,7 +36,6 @@ static struct char_device_struct {
 	unsigned int major;
 	unsigned int baseminor;
 	int minorct;
-	char name[64];
 } *chrdevs[CHRDEV_MAJOR_HASH_SIZE];
 
 static inline int major_to_index(unsigned major)
@@ -125,7 +124,6 @@ __register_chrdev_region(unsigned int major, unsigned int baseminor,
 	cd->major = major;
 	cd->baseminor = baseminor;
 	cd->minorct = minorct;
-	strlcpy(cd->name, name, sizeof(cd->name));
 
 	if (!prev) {
 		cd->next = curr;

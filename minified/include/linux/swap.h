@@ -24,7 +24,6 @@ struct pagevec;
 #ifdef __KERNEL__
 
 struct address_space;
-struct sysinfo;
 struct writeback_control;
 struct zone;
 struct swap_info_struct;

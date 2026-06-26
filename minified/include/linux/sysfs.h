@@ -12,13 +12,7 @@
 struct kobject;
 struct module;
 
-/* struct attribute kept - embedded by struct module_attribute (module.h). */
-struct attribute {
-	const char		*name;
-	umode_t			mode;
-};
-
-/* Removed (0 users tree-wide): struct attribute_group, struct bin_attribute,
+/* Removed (0 users tree-wide): struct attribute, struct attribute_group, struct bin_attribute,
    the __ATTR* macros, ATTRIBUTE_GROUPS/__ATTRIBUTE_GROUPS,
    sysfs_attr_init/sysfs_bin_attr_init, SYSFS_PREALLOC. */
 

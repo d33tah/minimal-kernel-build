@@ -39,24 +39,6 @@
 struct module;
 struct exception_table_entry;
 
-struct module_kobject {
-	struct kobject kobj;
-	struct module *mod;
-	struct kobject *drivers_dir;
-	struct module_param_attrs *mp;
-	struct completion *kobj_completion;
-} __randomize_layout;
-
-struct module_attribute {
-	struct attribute attr;
-	ssize_t (*show)(struct module_attribute *, struct module_kobject *,
-			char *);
-	ssize_t (*store)(struct module_attribute *, struct module_kobject *,
-			 const char *, size_t count);
-	void (*setup)(struct module *, const char *);
-	int (*test)(struct module *);
-	void (*free)(struct module *);
-};
 
 extern int init_module(void);
 extern void cleanup_module(void);

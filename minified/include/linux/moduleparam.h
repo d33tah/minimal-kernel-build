@@ -4,13 +4,8 @@
 #include <linux/stringify.h>
 #include <linux/kernel.h>
 
-#ifdef MODULE
-#define MODULE_PARAM_PREFIX  
-#define __MODULE_INFO_PREFIX  
-#else
 #define MODULE_PARAM_PREFIX KBUILD_MODNAME "."
 #define __MODULE_INFO_PREFIX KBUILD_MODNAME "."
-#endif
 
 
 #define __MODULE_INFO(tag, name, info)					  \

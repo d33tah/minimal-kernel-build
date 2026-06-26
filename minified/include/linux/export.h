@@ -6,12 +6,7 @@
 
 
 #ifndef __ASSEMBLY__
-#ifdef MODULE
-extern struct module __this_module;
-#define THIS_MODULE (&__this_module)
-#else
 #define THIS_MODULE ((struct module *)0)
-#endif
 
 #include <linux/compiler.h>
 #define __KSYMTAB_ENTRY(sym, sec)					\

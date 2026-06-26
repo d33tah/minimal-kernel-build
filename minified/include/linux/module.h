@@ -40,56 +40,16 @@ struct exception_table_entry;
 extern int init_module(void);
 extern void cleanup_module(void);
 
-#ifndef MODULE
+/* CONFIG_MODULES off: built-in-only, MODULE never defined. */
 #define module_init(x)	__initcall(x);
 
 #define module_exit(x)	__exitcall(x);
-
-#else  
-
-#define early_initcall(fn)		module_init(fn)
-#define core_initcall(fn)		module_init(fn)
-#define core_initcall_sync(fn)		module_init(fn)
-#define postcore_initcall(fn)		module_init(fn)
-#define postcore_initcall_sync(fn)	module_init(fn)
-#define arch_initcall(fn)		module_init(fn)
-#define subsys_initcall(fn)		module_init(fn)
-#define subsys_initcall_sync(fn)	module_init(fn)
-#define fs_initcall(fn)			module_init(fn)
-#define fs_initcall_sync(fn)		module_init(fn)
-#define rootfs_initcall(fn)		module_init(fn)
-#define device_initcall(fn)		module_init(fn)
-#define device_initcall_sync(fn)	module_init(fn)
-#define late_initcall(fn)		module_init(fn)
-#define late_initcall_sync(fn)		module_init(fn)
-
-#define console_initcall(fn)		module_init(fn)
-
-#define module_init(initfn)					\
-	static inline initcall_t __maybe_unused __inittest(void)		\
-	{ return initfn; }					\
-	int init_module(void) __copy(initfn)			\
-		__attribute__((alias(#initfn)));		\
-	__CFI_ADDRESSABLE(init_module, __initdata);
-
-#define module_exit(exitfn)					\
-	static inline exitcall_t __maybe_unused __exittest(void)		\
-	{ return exitfn; }					\
-	void cleanup_module(void) __copy(exitfn)		\
-		__attribute__((alias(#exitfn)));		\
-	__CFI_ADDRESSABLE(cleanup_module, __exitdata);
-
-#endif
 
 #define __init_or_module __init
 
 #define MODULE_INFO(tag, info) __MODULE_INFO(tag, tag, info)
 
-#ifdef MODULE
-#define MODULE_FILE
-#else
 #define MODULE_FILE	MODULE_INFO(file, KBUILD_MODFILE);
-#endif
 
 #define MODULE_LICENSE(_license) MODULE_FILE MODULE_INFO(license, _license)
 

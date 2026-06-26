@@ -19,11 +19,7 @@
 
 #define __ref            __section(".ref.text") noinline
 #define __refdata        __section(".ref.data")
-#ifdef MODULE
-#define __exitused
-#else
 #define __exitused  __used
-#endif
 
 #define __exit          __section(".exit.text") __exitused __cold notrace
 

@@ -147,10 +147,6 @@ extern int mmap_rnd_bits __read_mostly;
 #define untagged_addr(addr) (addr)
 #endif
 
-#ifndef __pa_symbol
-#define __pa_symbol(x)  __pa(RELOC_HIDE((unsigned long)(x), 0))
-#endif
-
 #ifndef page_to_virt
 #define page_to_virt(x)	__va(PFN_PHYS(page_to_pfn(x)))
 #endif

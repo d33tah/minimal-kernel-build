@@ -55,7 +55,6 @@ getname_kernel(const char * filename)
 	}
 	memcpy((char *)result->name, filename, len);
 	result->uptr = NULL;
-	result->aname = NULL;
 	result->refcnt = 1;
 
 	return result;

@@ -725,12 +725,10 @@ extern void iput(struct inode *);
 
 #define MAX_RW_COUNT (INT_MAX & PAGE_MASK)
 
-struct audit_names;
 struct filename {
-	const char		*name;	
-	const __user char	*uptr;	
+	const char		*name;
+	const __user char	*uptr;
 	int			refcnt;
-	struct audit_names	*aname;
 	const char		iname[];
 };
 static_assert(offsetof(struct filename, iname) % sizeof(long) == 0);

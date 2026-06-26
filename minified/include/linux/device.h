@@ -27,7 +27,6 @@
 
 struct device;
 struct device_private;
-struct driver_private;
 struct module;
 struct class;
 struct subsys_private;

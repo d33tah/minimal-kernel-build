@@ -36,7 +36,6 @@ struct tty_operations {
 struct tty_driver {
 	struct kref kref;
 	struct cdev **cdevs;
-	struct module	*owner;
 	const char	*name;
 	int	name_base;
 	int	major;

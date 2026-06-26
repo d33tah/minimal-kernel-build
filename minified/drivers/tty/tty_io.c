@@ -427,11 +427,6 @@ struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx)
 	struct tty_struct *tty;
 	int retval;
 
-	
-
-	if (!try_module_get(driver->owner))
-		return ERR_PTR(-ENODEV);
-
 	tty = alloc_tty_struct(driver, idx);
 	if (!tty) {
 		retval = -ENOMEM;
@@ -470,7 +465,6 @@ err_free_tty:
 	tty_unlock(tty);
 	free_tty_struct(tty);
 err_module_put:
-	module_put(driver->owner);
 	return ERR_PTR(retval);
 
 	
@@ -509,14 +503,12 @@ static void release_one_tty(struct work_struct *work)
 	struct tty_struct *tty =
 		container_of(work, struct tty_struct, hangup_work);
 	struct tty_driver *driver = tty->driver;
-	struct module *owner = driver->owner;
 
 	if (tty->ops->cleanup)
 		tty->ops->cleanup(tty);
 
 	tty->magic = 0;
 	tty_driver_kref_put(driver);
-	module_put(owner);
 
 	spin_lock(&tty->files_lock);
 	list_del_init(&tty->tty_files);
@@ -913,7 +905,6 @@ struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
 
 	kref_init(&driver->kref);
 	driver->num = lines;
-	driver->owner = owner;
 	driver->flags = flags;
 
 	driver->ttys = kcalloc(lines, sizeof(*driver->ttys), GFP_KERNEL);

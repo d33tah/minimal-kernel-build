@@ -7,9 +7,4 @@
 struct bio;
 struct page;
 
-/* Minimal block_device struct - only pointers used, never instantiated */
-struct block_device {
-	int dummy;
-};
-
 #endif

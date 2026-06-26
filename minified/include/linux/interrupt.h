@@ -77,11 +77,6 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 
 struct device;
 
-struct irq_affinity_desc {
-	struct cpumask	mask;
-	unsigned int	is_managed : 1;
-};
-
 static inline int irq_set_affinity(unsigned int irq, const struct cpumask *m)
 {
 	return -EINVAL;

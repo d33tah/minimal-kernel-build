@@ -9,11 +9,6 @@ struct __kernel_timespec {
 	long long               tv_nsec;
 };
 
-struct __kernel_itimerspec {
-	struct __kernel_timespec it_interval;
-	struct __kernel_timespec it_value;
-};
-
 #ifndef __kernel_old_timeval
 struct __kernel_old_timeval {
 	__kernel_long_t tv_sec;

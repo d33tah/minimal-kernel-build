@@ -655,13 +655,6 @@ static inline int mprotect_fixup(struct mmu_gather *tlb,
 }
 
 
-static inline unsigned long get_mm_counter(struct mm_struct *mm, int member)
-{
-	long val = atomic_long_read(&mm->rss_stat.count[member]);
-
-	return (unsigned long)val;
-}
-
 static inline void add_mm_counter(struct mm_struct *mm, int member, long value)
 {
 	atomic_long_add(value, &mm->rss_stat.count[member]);
@@ -685,19 +678,8 @@ static inline int mm_counter_file(struct page *page)
 }
 
 
-static inline unsigned long get_mm_rss(struct mm_struct *mm)
-{
-	return get_mm_counter(mm, MM_FILEPAGES) +
-		get_mm_counter(mm, MM_ANONPAGES) +
-		get_mm_counter(mm, MM_SHMEMPAGES);
-}
-
 static inline void update_hiwater_rss(struct mm_struct *mm)
 {
-	unsigned long _rss = get_mm_rss(mm);
-
-	if ((mm)->hiwater_rss < _rss)
-		(mm)->hiwater_rss = _rss;
 }
 
 static inline void sync_mm_rss(struct mm_struct *mm)

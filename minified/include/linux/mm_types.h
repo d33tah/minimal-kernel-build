@@ -235,8 +235,6 @@ struct mm_struct {
 		struct rw_semaphore mmap_lock;
 
 
-		unsigned long hiwater_rss;
-
 		unsigned long def_flags;
 
 		unsigned long brk;

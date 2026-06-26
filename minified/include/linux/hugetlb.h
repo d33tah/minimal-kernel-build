@@ -15,17 +15,4 @@ struct page;
 
 
 
-struct hstate {};
-
-static inline struct hstate *hstate_vma(struct vm_area_struct *vma)
-{
-	return NULL;
-}
-
-
-static inline unsigned int huge_page_shift(struct hstate *h)
-{
-	return PAGE_SHIFT;
-}
-
 #endif

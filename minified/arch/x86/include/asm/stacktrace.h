@@ -27,11 +27,6 @@ struct stack_info {
 
 #define STACKSLOTS_PER_LINE 8
 
-
-struct stack_frame {
-	struct stack_frame *next_frame;
-	unsigned long return_address;
-};
-
+/* struct stack_frame removed - 0-ref */
 /* show_opcodes, show_ip removed - unused */
 #endif  

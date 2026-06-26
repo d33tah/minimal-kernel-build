@@ -34,19 +34,6 @@ static inline void find_smp_config(void)
 #define default_find_smp_config x86_init_noop
 #define default_get_smp_config x86_init_uint_noop
 
-
-/* physid_mask_t needed by struct apic */
-#define PHYSID_ARRAY_SIZE	BITS_TO_LONGS(MAX_LOCAL_APIC)
-
-struct physid_mask {
-	unsigned long mask[PHYSID_ARRAY_SIZE];
-};
-
-typedef struct physid_mask physid_mask_t;
-
-#define PHYSID_MASK_ALL		{ {[0 ... PHYSID_ARRAY_SIZE-1] = ~0UL} }
-#define PHYSID_MASK_NONE	{ {[0 ... PHYSID_ARRAY_SIZE-1] = 0UL} }
-
-extern physid_mask_t phys_cpu_present_map;
+/* struct physid_mask / physid_mask_t / phys_cpu_present_map removed - 0-ref */
 
 #endif

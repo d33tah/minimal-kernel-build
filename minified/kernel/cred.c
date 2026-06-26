@@ -140,12 +140,8 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
 		return -ENOMEM;
 
 	if (clone_flags & CLONE_NEWUSER) {
-		ret = create_user_ns(new);
-		if (ret < 0)
-			goto error_put;
-		ret = set_cred_ucounts(new);
-		if (ret < 0)
-			goto error_put;
+		ret = -EINVAL;
+		goto error_put;
 	}
 
 

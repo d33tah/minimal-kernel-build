@@ -44,22 +44,9 @@ typedef unsigned int	__kernel_uid_t;
 typedef unsigned int	__kernel_gid_t;
 #endif
 
-#ifndef __kernel_suseconds_t
-typedef __kernel_long_t		__kernel_suseconds_t;
-#endif
-
-#ifndef __kernel_daddr_t
-typedef int		__kernel_daddr_t;
-#endif
-
 #ifndef __kernel_uid32_t
 typedef unsigned int	__kernel_uid32_t;
 typedef unsigned int	__kernel_gid32_t;
-#endif
-
-#ifndef __kernel_old_uid_t
-typedef __kernel_uid_t	__kernel_old_uid_t;
-typedef __kernel_gid_t	__kernel_old_gid_t;
 #endif
 
 #ifndef __kernel_old_dev_t
@@ -86,21 +73,5 @@ typedef long long __kernel_time64_t;
 typedef __kernel_long_t	__kernel_clock_t;
 typedef int		__kernel_timer_t;
 typedef int		__kernel_clockid_t;
-typedef char *		__kernel_caddr_t;
-typedef unsigned short	__kernel_uid16_t;
-typedef unsigned short	__kernel_gid16_t;
-
-#ifndef __kernel_fd_set
-#define __FD_SETSIZE	1024
-
-typedef struct {
-	unsigned long fds_bits[__FD_SETSIZE / (8 * sizeof(long))];
-} __kernel_fd_set;
-#endif
-
-#ifndef __kernel_key_t
-typedef int		__kernel_key_t;
-typedef int		__kernel_mqd_t;
-#endif
 
 #endif

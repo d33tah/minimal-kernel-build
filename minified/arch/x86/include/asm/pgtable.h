@@ -172,12 +172,7 @@ static inline pte_t pte_mkwrite(pte_t pte)
 
 /* pte_mkspecial, pte_mkdevmap removed - unused */
 
-static inline pmd_t pmd_set_flags(pmd_t pmd, pmdval_t set)
-{
-	pmdval_t v = native_pmd_val(pmd);
-
-	return native_make_pmd(v | set);
-}
+/* pmd_set_flags removed - unused */
 
 
 /* pmd_mkold, pmd_mkclean removed - unused */

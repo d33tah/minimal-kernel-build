@@ -64,9 +64,6 @@ extern char *e820__memory_setup_default(void);
 
 extern void e820__reallocate_tables(void);
 
-static inline bool is_ISA_range(u64 start, u64 end)
-{
-	return start >= ISA_START_ADDRESS && end <= ISA_END_ADDRESS;
-}
+/* is_ISA_range removed - unused */
 
-#endif  
+#endif

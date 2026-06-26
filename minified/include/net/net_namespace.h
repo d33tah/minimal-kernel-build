@@ -17,14 +17,7 @@ static inline struct net *get_net(struct net *net)
 	return net;
 }
 
-static inline struct net *copy_net_ns(unsigned long flags,
-	struct user_namespace *user_ns, struct net *old_ns)
-{
-	if (flags & CLONE_NEWNET)
-		return ERR_PTR(-EINVAL);
-
-	return old_ns;
-}
+/* copy_net_ns removed - unused */
 
 extern struct net init_net;
 

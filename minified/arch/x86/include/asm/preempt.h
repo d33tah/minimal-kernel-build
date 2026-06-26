@@ -65,12 +65,9 @@ static __always_inline void __preempt_count_sub(int val)
 }
 
  
-static __always_inline bool __preempt_count_dec_and_test(void)
-{
-	return GEN_UNARY_RMWcc("decl", __preempt_count, e, __percpu_arg([var]));
-}
+/* __preempt_count_dec_and_test removed - unused */
 
- 
+
 static __always_inline bool should_resched(int preempt_offset)
 {
 	return unlikely(raw_cpu_read_4(__preempt_count) == preempt_offset);

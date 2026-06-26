@@ -16,22 +16,8 @@ static __always_inline u32 vdso_read_retry(const struct vdso_data *vd,
 	return seq != start;
 }
 
-static __always_inline void vdso_write_begin(struct vdso_data *vd)
-{
-	 
-	WRITE_ONCE(vd[CS_HRES_COARSE].seq, vd[CS_HRES_COARSE].seq + 1);
-	WRITE_ONCE(vd[CS_RAW].seq, vd[CS_RAW].seq + 1);
-	smp_wmb();
-}
+/* vdso_write_begin, vdso_write_end removed - unused */
 
-static __always_inline void vdso_write_end(struct vdso_data *vd)
-{
-	smp_wmb();
-	 
-	WRITE_ONCE(vd[CS_HRES_COARSE].seq, vd[CS_HRES_COARSE].seq + 1);
-	WRITE_ONCE(vd[CS_RAW].seq, vd[CS_RAW].seq + 1);
-}
-
-#endif  
+#endif
 
 #endif  

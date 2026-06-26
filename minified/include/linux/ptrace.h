@@ -50,10 +50,7 @@ static inline void ptrace_release_task(struct task_struct *task)
 #ifndef arch_has_single_step
 #define arch_has_single_step()		(0)
 
-static inline void user_enable_single_step(struct task_struct *task)
-{
-	BUG();			 
-}
+/* user_enable_single_step removed - unused */
 
 static inline void user_disable_single_step(struct task_struct *task)
 {
@@ -63,10 +60,7 @@ static inline void user_disable_single_step(struct task_struct *task)
 #ifndef arch_has_block_step
 #define arch_has_block_step()		(0)
 
-static inline void user_enable_block_step(struct task_struct *task)
-{
-	BUG();
-}
+/* user_enable_block_step removed - unused */
 #endif
 
 #ifndef arch_ptrace_stop_needed

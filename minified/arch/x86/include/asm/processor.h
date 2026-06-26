@@ -244,11 +244,7 @@ native_load_sp0(unsigned long sp0)
 	this_cpu_write(cpu_tss_rw.x86_tss.sp0, sp0);
 }
 
-static __always_inline unsigned long current_top_of_stack(void)
-{
-	 
-	return this_cpu_read_stable(cpu_current_top_of_stack);
-}
+/* current_top_of_stack removed - unused */
 
 #define __cpuid			native_cpuid
 

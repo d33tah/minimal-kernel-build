@@ -3,22 +3,14 @@
 
 #include <linux/llist.h>
 
-enum {
-	CSD_FLAG_LOCK		= 0x01,
-
-	IRQ_WORK_PENDING	= 0x01,
-	IRQ_WORK_BUSY		= 0x02,
-	IRQ_WORK_LAZY		= 0x04,  
-	IRQ_WORK_HARD_IRQ	= 0x08,  
-
-	IRQ_WORK_CLAIMED	= (IRQ_WORK_PENDING | IRQ_WORK_BUSY),
-
-	CSD_TYPE_ASYNC		= 0x00,
-	CSD_TYPE_SYNC		= 0x10,
-	CSD_TYPE_IRQ_WORK	= 0x20,
-	CSD_TYPE_TTWU		= 0x30,
-
-	CSD_FLAG_TYPE_MASK	= 0xF0,
-};
+/*
+ * CSD and IRQ_WORK flag enum removed: every member (CSD_FLAG_LOCK,
+ * IRQ_WORK_PENDING, IRQ_WORK_BUSY, IRQ_WORK_LAZY, IRQ_WORK_HARD_IRQ,
+ * IRQ_WORK_CLAIMED, CSD_TYPE_ASYNC, CSD_TYPE_SYNC, CSD_TYPE_IRQ_WORK,
+ * CSD_TYPE_TTWU, CSD_FLAG_TYPE_MASK) is 0-ref tree-wide. The smp/irq_work
+ * cross-CPU call machinery (kernel/smp.c, kernel/irq_work.c) is absent on
+ * this !SMP build. The two includers (smp.h, irq_work.h) name none of these.
+ * Kept the llist.h include for transitive consumers.
+ */
 
 #endif

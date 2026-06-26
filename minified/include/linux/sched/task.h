@@ -7,7 +7,6 @@
 
 struct task_struct;
 union thread_union;
-struct css_set;
 
 struct kernel_clone_args {
 	u64 flags;
@@ -26,8 +25,6 @@ struct kernel_clone_args {
 	int idle;
 	int (*fn)(void *);
 	void *fn_arg;
-	struct cgroup *cgrp;
-	struct css_set *cset;
 };
 
 extern rwlock_t tasklist_lock;

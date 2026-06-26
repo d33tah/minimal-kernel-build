@@ -46,7 +46,6 @@ static unsigned char	vga_video_type		__read_mostly;
 static bool 		vga_is_gfx;
 static bool 		vga_512_chars;
 static int 		vga_video_font_height;
-static int 		vga_scan_lines		__read_mostly;
 
 static bool vga_hardscroll_enabled;
 static bool vga_hardscroll_user_enable = true;
@@ -188,9 +187,6 @@ static const char *vgacon_startup(void)
 	    || vga_video_type == VIDEO_TYPE_EGAM) {
 		vga_hardscroll_enabled = vga_hardscroll_user_enable;
 		vga_video_font_height = screen_info.orig_video_points;
-		 
-		vga_scan_lines =
-		    vga_video_font_height * vga_video_num_lines;
 	}
 
 	return display_desc;
@@ -202,8 +198,7 @@ static void vgacon_init(struct vc_data *c, int init)
 
 	 
 	c->vc_can_do_color = vga_can_do_color;
-	c->vc_scan_lines = vga_scan_lines;
-	c->vc_font.height = c->vc_cell_height = vga_video_font_height;
+	c->vc_cell_height = vga_video_font_height;
 
 	 
 	if (init) {

@@ -35,7 +35,6 @@ struct vc_data {
 	unsigned int	vc_cols;
 	unsigned int	vc_rows;
 	unsigned int	vc_size_row;
-	unsigned int	vc_scan_lines;
 	unsigned int	vc_cell_height;
 	unsigned long	vc_origin;
 	unsigned long	vc_scr_end;
@@ -52,7 +51,6 @@ struct vc_data {
 	unsigned short	vc_s_complement_mask;
 	unsigned long	vc_pos;
 	unsigned short	vc_hi_font_mask;
-	struct console_font vc_font;
 	unsigned short	vc_video_erase_char;
 	unsigned int	vc_npar;
 	struct vt_mode	vt_mode;

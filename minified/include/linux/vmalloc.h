@@ -41,7 +41,6 @@ struct vm_struct {
 	unsigned long		flags;
 	struct page		**pages;
 	unsigned int		nr_pages;
-	phys_addr_t		phys_addr;
 	const void		*caller;
 };
 

@@ -14,7 +14,6 @@ typedef	int (*notifier_fn_t)(struct notifier_block *nb,
 struct notifier_block {
 	notifier_fn_t notifier_call;
 	struct notifier_block __rcu *next;
-	int priority;
 };
 
 struct atomic_notifier_head {

@@ -22,15 +22,6 @@
 
 struct vgastate {
 	void __iomem *vgabase;
-	unsigned long membase;
-	__u32 memsize;
-	__u32 flags;
-	__u32 depth;
-	__u32 num_attr;
-	__u32 num_crtc;
-	__u32 num_gfx;
-	__u32 num_seq;
-	void *vidstate;
 };
 
 /* Only vga_w is used in vgacon.c */

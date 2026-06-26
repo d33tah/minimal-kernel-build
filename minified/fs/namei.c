@@ -95,11 +95,8 @@ static int acl_permission_check(struct user_namespace *mnt_userns,
 	mask &= 7;
 
 	
-	if (mask & (mode ^ (mode >> 3))) {
-		kgid_t kgid = i_gid_into_mnt(mnt_userns, inode);
-		if (in_group_p(kgid))
-			mode >>= 3;
-	}
+	if (mask & (mode ^ (mode >> 3)))
+		mode >>= 3;
 
 	
 	return (mask & ~mode) ? -EACCES : 0;

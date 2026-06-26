@@ -21,10 +21,6 @@ DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
 
 void ack_bad_irq(unsigned int irq)
 {
-	if (printk_ratelimit())
-		pr_err("unexpected IRQ trap at vector %02x\n", irq);
-
-
 	ack_APIC_irq();
 }
 

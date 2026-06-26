@@ -64,11 +64,6 @@ int _printk_deferred(const char *s, ...)
 	return 0;
 }
 
-static inline int printk_ratelimit(void)
-{
-	return 0;
-}
-
 static inline void setup_log_buf(int early)
 {
 }

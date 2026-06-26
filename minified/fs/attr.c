@@ -23,17 +23,8 @@ int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 
 
 	if (ia_valid & ATTR_MODE) {
-		kgid_t mapped_gid;
-
 		if (!inode_owner_or_capable(mnt_userns, inode))
 			return -EPERM;
-
-		mapped_gid = i_gid_into_mnt(mnt_userns, inode);
-
-
-		if (!in_group_p(mapped_gid) &&
-		    !capable_wrt_inode_uidgid(mnt_userns, inode, CAP_FSETID))
-			attr->ia_mode &= ~S_ISGID;
 	}
 
 	/* ATTR_*TIME_SET / ATTR_TIMES_SET are never set on this build (utimes path removed) */
@@ -57,12 +48,7 @@ void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 	if (ia_valid & ATTR_CTIME)
 		inode->i_ctime = attr->ia_ctime;
 	if (ia_valid & ATTR_MODE) {
-		umode_t mode = attr->ia_mode;
-		kgid_t kgid = i_gid_into_mnt(mnt_userns, inode);
-		if (!in_group_p(kgid) &&
-		    !capable_wrt_inode_uidgid(mnt_userns, inode, CAP_FSETID))
-			mode &= ~S_ISGID;
-		inode->i_mode = mode;
+		inode->i_mode = attr->ia_mode;
 	}
 }
 

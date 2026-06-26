@@ -53,7 +53,6 @@ struct vc_data {
 	unsigned short	vc_hi_font_mask;
 	unsigned short	vc_video_erase_char;
 	unsigned int	vc_npar;
-	struct vt_mode	vt_mode;
 	struct pid 	*vt_pid;
 	unsigned int	vc_disp_ctrl	: 1;
 	unsigned int	vc_decawm	: 1;

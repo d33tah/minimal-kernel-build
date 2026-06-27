@@ -543,14 +543,7 @@
 	EXIT_DATA
 #endif
 
-#if defined(CONFIG_GCOV_KERNEL) || defined(CONFIG_KASAN_GENERIC) || defined(CONFIG_KCSAN) || \
-	defined(CONFIG_CFI_CLANG)
-#  define SANITIZER_DISCARDS						\
-	*(.init_array) *(.init_array.*)					\
-	*(.eh_frame)
-#else
 # define SANITIZER_DISCARDS
-#endif
 
 #define COMMON_DISCARDS							\
 	SANITIZER_DISCARDS						\

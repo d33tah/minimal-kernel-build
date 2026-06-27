@@ -119,36 +119,6 @@ do {									\
 
 /* rcu_gp_is_normal, rcu_gp_is_expedited, rcu_expedite_gp, rcu_unexpedite_gp, rcu_request_urgent_qs_task removed - unused */
 /* rcu_scheduler_active + RCU_SCHEDULER_{INACTIVE,INIT,RUNNING} removed - write-only state, never read */
-
-enum rcutorture_type {
-	RCU_FLAVOR,
-	RCU_TASKS_FLAVOR,
-	RCU_TASKS_RUDE_FLAVOR,
-	RCU_TASKS_TRACING_FLAVOR,
-	RCU_TRIVIAL_FLAVOR,
-	SRCU_FLAVOR,
-	INVALID_RCU_FLAVOR
-};
-
-#if defined(CONFIG_TREE_RCU)
-void rcutorture_get_gp_data(enum rcutorture_type test_type, int *flags,
-			    unsigned long *gp_seq);
-void do_trace_rcu_torture_read(const char *rcutorturename,
-			       struct rcu_head *rhp,
-			       unsigned long secs,
-			       unsigned long c_old,
-			       unsigned long c);
-#else
-static inline void rcutorture_get_gp_data(enum rcutorture_type test_type,
-					  int *flags, unsigned long *gp_seq)
-{
-	*flags = 0;
-	*gp_seq = 0;
-}
-#define do_trace_rcu_torture_read(rcutorturename, rhp, secs, c_old, c) \
-	do { } while (0)
-#endif
-
-
+/* enum rcutorture_type + rcutorture_get_gp_data/do_trace_rcu_torture_read removed - 0-ref tree-wide (CONFIG_TREE_RCU unset) */
 
 #endif

@@ -8,11 +8,8 @@ struct vfsmount;
 
 struct mnt_namespace {
 	struct ns_common	ns;
-	struct mount *	root;
-	 
 	struct user_namespace	*user_ns;
 	struct ucounts		*ucounts;
-	u64			seq;
 } __randomize_layout;
 
 struct mount {
@@ -36,8 +33,3 @@ static inline void get_mnt_ns(struct mnt_namespace *ns)
 }
 
 extern seqlock_t mount_lock;
-
-static inline bool is_anon_ns(struct mnt_namespace *ns)
-{
-	return ns->seq == 0;
-}

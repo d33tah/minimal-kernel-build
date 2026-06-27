@@ -5,19 +5,17 @@
 #include <linux/swait.h>
 
 struct completion {
-	unsigned int done;
 	struct swait_queue_head wait;
 };
 
 #define COMPLETION_INITIALIZER(work) \
-	{ 0, __SWAIT_QUEUE_HEAD_INITIALIZER((work).wait) }
+	{ __SWAIT_QUEUE_HEAD_INITIALIZER((work).wait) }
 
 #define DECLARE_COMPLETION(work) \
 	struct completion work = COMPLETION_INITIALIZER(work)
 
 static inline void init_completion(struct completion *x)
 {
-	x->done = 0;
 	init_swait_queue_head(&x->wait);
 }
 

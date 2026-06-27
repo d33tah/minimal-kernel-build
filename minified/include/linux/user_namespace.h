@@ -10,29 +10,6 @@
 #include <linux/sysctl.h>
 #include <linux/err.h>
 
-#define UID_GID_MAP_MAX_BASE_EXTENTS 5
-
-struct uid_gid_extent {
-	u32 first;
-	u32 lower_first;
-	u32 count;
-};
-
-struct uid_gid_map {  
-	u32 nr_extents;
-	union {
-		struct uid_gid_extent extent[UID_GID_MAP_MAX_BASE_EXTENTS];
-		struct {
-			struct uid_gid_extent *forward;
-			struct uid_gid_extent *reverse;
-		};
-	};
-};
-
-#define USERNS_SETGROUPS_ALLOWED 1UL
-
-#define USERNS_INIT_FLAGS USERNS_SETGROUPS_ALLOWED
-
 struct ucounts;
 
 enum ucount_type {
@@ -54,21 +31,8 @@ enum ucount_type {
 #define MAX_PER_NAMESPACE_UCOUNTS UCOUNT_RLIMIT_NPROC
 
 struct user_namespace {
-	struct uid_gid_map	uid_map;
-	struct uid_gid_map	gid_map;
-	struct uid_gid_map	projid_map;
 	struct user_namespace	*parent;
-	int			level;
 	kuid_t			owner;
-	kgid_t			group;
-	struct ns_common	ns;
-	unsigned long		flags;
-	 
-	bool			parent_could_setfcap;
-
-
-	 
-	struct work_struct	work;
 	struct ucounts		*ucounts;
 	long ucount_max[UCOUNT_COUNTS];
 } __randomize_layout;

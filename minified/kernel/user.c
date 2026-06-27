@@ -7,41 +7,7 @@
 #include <linux/proc_ns.h>
 
 struct user_namespace init_user_ns = {
-	.uid_map = {
-		.nr_extents = 1,
-		{
-			.extent[0] = {
-				.first = 0,
-				.lower_first = 0,
-				.count = 4294967295U,
-			},
-		},
-	},
-	.gid_map = {
-		.nr_extents = 1,
-		{
-			.extent[0] = {
-				.first = 0,
-				.lower_first = 0,
-				.count = 4294967295U,
-			},
-		},
-	},
-	.projid_map = {
-		.nr_extents = 1,
-		{
-			.extent[0] = {
-				.first = 0,
-				.lower_first = 0,
-				.count = 4294967295U,
-			},
-		},
-	},
-	.ns.count = REFCOUNT_INIT(3),
 	.owner = GLOBAL_ROOT_UID,
-	.group = GLOBAL_ROOT_GID,
-	.ns.inum = PROC_USER_INIT_INO,
-	.flags = USERNS_INIT_FLAGS,
 };
 
 

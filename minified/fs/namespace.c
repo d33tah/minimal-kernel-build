@@ -268,8 +268,6 @@ static void free_mnt_ns(struct mnt_namespace *ns)
 	kfree(ns);
 }
 
-static atomic64_t mnt_ns_seq = ATOMIC64_INIT(1);
-
 static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns, bool anon)
 {
 	struct mnt_namespace *new_ns;
@@ -293,8 +291,6 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns, bool a
 			return ERR_PTR(ret);
 		}
 	}
-	if (!anon)
-		new_ns->seq = atomic64_add_return(1, &mnt_ns_seq);
 	refcount_set(&new_ns->ns.count, 1);
 	new_ns->user_ns = get_user_ns(user_ns);
 	new_ns->ucounts = ucounts;
@@ -318,7 +314,6 @@ static void __init init_mount_tree(void)
 		panic("Can't allocate initial namespace");
 	m = real_mount(mnt);
 	m->mnt_ns = ns;
-	ns->root = m;
 	init_task.nsproxy->mnt_ns = ns;
 	get_mnt_ns(ns);
 

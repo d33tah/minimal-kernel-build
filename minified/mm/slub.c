@@ -21,7 +21,6 @@
 #include <linux/random.h>
 #include <linux/sort.h>
 
-#include <linux/debugfs.h>
 
 #include "internal.h"
 

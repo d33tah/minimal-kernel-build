@@ -5,7 +5,6 @@
 
 #include <asm/acpi.h>
 #include <asm/bios_ebda.h>
-#include <asm/paravirt.h>
 #include <asm/mpspec.h>
 #include <asm/setup.h>
 #include <asm/apic.h>

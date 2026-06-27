@@ -24,7 +24,6 @@
 #include <asm/tlbflush.h>
 #include <asm/io.h>
 #include <asm/fixmap.h>
-#include <asm/paravirt.h>
 /* --- 2025-12-07 20:55 --- Inlined asm-prototypes.h */
 #include <linux/uaccess.h>
 #include <linux/pgtable.h>

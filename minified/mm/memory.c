@@ -20,7 +20,6 @@
 #include <linux/elf.h>
 #include <linux/gfp.h>
 #include <linux/string.h>
-#include <linux/debugfs.h>
 #include <linux/oom.h>
 #include <linux/file.h>
 #include <linux/numa.h>

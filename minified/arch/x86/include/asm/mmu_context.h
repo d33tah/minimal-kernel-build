@@ -10,7 +10,6 @@
 
 
 #include <asm/tlbflush.h>
-#include <asm/paravirt.h>
 #include <asm/debugreg.h>
 
 extern atomic64_t last_mm_ctx_id;

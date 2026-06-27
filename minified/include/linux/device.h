@@ -21,7 +21,6 @@
 #include <linux/uidgid.h>
 #include <linux/gfp.h>
 #include <linux/overflow.h>
-#include <linux/device/bus.h>
 #include <linux/device/class.h>
 #include <linux/device/driver.h>
 

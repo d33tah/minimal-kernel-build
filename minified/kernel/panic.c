@@ -19,7 +19,6 @@ extern struct atomic_notifier_head panic_notifier_list;
 #include <linux/console.h>
 #include <linux/bug.h>
 #include <linux/ratelimit.h>
-#include <linux/debugfs.h>
 #include <asm/sections.h>
 
 #define PANIC_TIMER_STEP 100

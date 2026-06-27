@@ -4,7 +4,6 @@
 
 #include <linux/kobject.h>
 #include <linux/pm.h>
-#include <linux/device/bus.h>
 #include <linux/module.h>
 
 /* struct device_driver + enum probe_type removed - no driver ever registers on

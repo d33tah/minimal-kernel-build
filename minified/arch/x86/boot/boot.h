@@ -235,7 +235,6 @@ void set_video(void);
 
  
 int set_mode(u16 mode);
-int mode_defined(u16 mode);
 void probe_cards(int unsafe);
 
  

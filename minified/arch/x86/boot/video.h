@@ -64,8 +64,6 @@ struct card_info {
 #define __videocard struct card_info __section(".videocards") __attribute__((used))
 extern struct card_info video_cards[], video_cards_end[];
 
-int mode_defined(u16 mode);	 
-
  
 #define ADAPTER_CGA	0	 
 #define ADAPTER_EGA	1

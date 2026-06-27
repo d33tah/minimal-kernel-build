@@ -700,40 +700,6 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int co
 
 struct tty_driver *console_driver;
 
-static void vt_console_print(struct console *co, const char *b, unsigned count)
-{
-	struct vc_data *vc = vc_cons[fg_console].d;
-	static DEFINE_SPINLOCK(printing_lock);
-	const ushort *start;
-	ushort start_x;
-
-	if (!printable || !spin_trylock(&printing_lock))
-		return;
-
-	if (!vc_cons_allocated(fg_console))
-		goto quit;
-
-	start = (ushort *)vc->vc_pos;
-	start_x = vc->state.x;
-
-	while (count--) {
-		unsigned char c = *b++;
-		if (c == '\n') {
-			lf(vc);
-			cr(vc);
-		} else {
-			scr_writew((vc->vc_attr << 8) + c, (unsigned short *)vc->vc_pos);
-			vc->vc_pos += 2;
-			vc->state.x++;
-		}
-	}
-	if (con_is_visible(vc))
-		vc->vc_sw->con_putcs(vc, start, count, vc->state.y, start_x);
-
-quit:
-	spin_unlock(&printing_lock);
-}
-
 static struct tty_driver *vt_console_device(struct console *c, int *index)
 {
 	*index = c->index ? c->index-1 : fg_console;
@@ -742,7 +708,6 @@ static struct tty_driver *vt_console_device(struct console *c, int *index)
 
 static struct console vt_console_driver = {
 	.name		= "tty",
-	.write		= vt_console_print,
 	.device		= vt_console_device,
 	.unblank	= unblank_screen,
 	.flags		= CON_PRINTBUFFER,

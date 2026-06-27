@@ -50,7 +50,6 @@ extern const struct consw vga_con;
 
 struct console {
 	char	name[16];
-	void	(*write)(struct console *, const char *, unsigned);
 	struct tty_driver *(*device)(struct console *, int *);
 	void	(*unblank)(void);
 	short	flags;

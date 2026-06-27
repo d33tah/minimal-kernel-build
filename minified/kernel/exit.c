@@ -39,7 +39,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/oom.h>
 #include <linux/writeback.h>
 #include <linux/random.h>
-#include <linux/rcuwait.h>
 #include <linux/compat.h>
 #include <linux/kprobes.h>
 

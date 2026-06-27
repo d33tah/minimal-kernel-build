@@ -16,9 +16,6 @@
 #define CPP_ASMLINKAGE
 #endif
 
-#ifndef asmlinkage
-#define asmlinkage CPP_ASMLINKAGE
-#endif
 
 #ifndef cond_syscall
 #define cond_syscall(x)	asm(				\

@@ -30,9 +30,6 @@ struct notifier_block;
 #endif
 
 
-#ifndef IOREMAP_MAX_ORDER
-#define IOREMAP_MAX_ORDER	(7 + PAGE_SHIFT)	 
-#endif
 
 struct vm_struct {
 	struct vm_struct	*next;
@@ -74,9 +71,6 @@ void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 extern void vfree(const void *addr);
 
 
-#ifndef ARCH_PAGE_TABLE_SYNC_MASK
-#define ARCH_PAGE_TABLE_SYNC_MASK 0
-#endif
 
 void arch_sync_kernel_mappings(unsigned long start, unsigned long end);
 

@@ -7,7 +7,6 @@
 #include <linux/nodemask.h>
 #include <linux/rculist.h>
 #include <linux/fs.h>
-#include <linux/seq_file.h>
 #include <linux/jump_label.h>
 #include <linux/types.h>
 #include <linux/ns_common.h>

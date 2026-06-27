@@ -38,7 +38,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/poll.h>
 #include <linux/proc_fs.h>
 #include <linux/rcupdate.h>
-#include <linux/seq_file.h>
 #include <linux/seqlock.h>
 
 

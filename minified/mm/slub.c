@@ -9,7 +9,6 @@
 #include <linux/slab.h>
 #include "slab.h"
 #include <linux/proc_fs.h>
-#include <linux/seq_file.h>
 #include <linux/cpu.h>
 #include <linux/ctype.h>
 #include <linux/kallsyms.h>

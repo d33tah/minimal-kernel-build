@@ -24,7 +24,6 @@ extern void sched_init_smp(void);
 #include <linux/sched/isolation.h>
 #include <linux/sched/mm.h>
 
-#include <linux/sched/rt.h>
 
 #include <linux/blkdev.h>
 #include <linux/init_task.h>

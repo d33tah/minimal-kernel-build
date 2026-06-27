@@ -1,6 +1,5 @@
 
 #include <linux/mount.h>
-#include <linux/seq_file.h>
 #include <linux/poll.h>
 #include <linux/ns_common.h>
 

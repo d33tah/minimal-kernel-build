@@ -8,7 +8,6 @@
 #include <linux/cdev.h>
 #include <linux/types.h>
 #include <asm/termios.h>
-#include <linux/seq_file.h>
 
 struct tty_struct;
 struct tty_driver;

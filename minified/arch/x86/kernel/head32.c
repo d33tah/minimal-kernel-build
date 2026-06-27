@@ -11,7 +11,6 @@ extern asmlinkage void __init start_kernel(void);
 #include <asm/e820/api.h>
 #include <asm/page.h>
 #include <asm/apic.h>
-#include <asm/io_apic.h>
 #include <asm/bios_ebda.h>
 #include <asm/tlbflush.h>
 #include <asm/bootparam_utils.h>

@@ -1,7 +1,6 @@
 #include <linux/cpu.h>
 #include <linux/interrupt.h>
 #include <linux/kernel_stat.h>
-#include <linux/seq_file.h>
 #include <linux/smp.h>
 #include <linux/delay.h>
 #include <linux/export.h>
@@ -9,7 +8,6 @@
 
 #include <asm/irq_stack.h>
 #include <asm/apic.h>
-#include <asm/io_apic.h>
 #include <asm/irq.h>
 #include <asm/hw_irq.h>
 #include <asm/desc.h>

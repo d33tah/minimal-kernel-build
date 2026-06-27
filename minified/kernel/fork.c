@@ -6,7 +6,6 @@
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
-#include <linux/seq_file.h>
 #include <linux/init.h>
 #include <linux/unistd.h>
 #include <linux/module.h>

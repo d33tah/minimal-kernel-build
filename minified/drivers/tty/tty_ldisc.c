@@ -14,7 +14,6 @@
 #include <linux/device.h>
 #include <linux/wait.h>
 #include <linux/bitops.h>
-#include <linux/seq_file.h>
 #include <linux/uaccess.h>
 #include <linux/ratelimit.h>
 #include "tty.h"

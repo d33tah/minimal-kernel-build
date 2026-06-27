@@ -11,7 +11,6 @@
 #include <asm/e820/api.h>
 #include <asm/time.h>
 #include <asm/irq.h>
-#include <asm/io_apic.h>
 #define hpet_readl(a) 0
 #define default_setup_hpet_msi	NULL
 #include <asm/memtype.h>

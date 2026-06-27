@@ -10,7 +10,6 @@
 #include <asm/vvar.h>
 #include <asm/unistd.h>
 #include <asm/msr.h>
-#include <asm/pvclock.h>
 
 #define __vdso_data (VVAR(_vdso_data))
 

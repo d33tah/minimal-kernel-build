@@ -46,7 +46,6 @@ static unsigned char	vga_video_type		__read_mostly;
 static int 		vga_video_font_height;
 
 static bool vga_hardscroll_enabled;
-static bool vga_hardscroll_user_enable = true;
 
 
 static inline void write_vga(unsigned char reg, unsigned int val)
@@ -183,7 +182,7 @@ static const char *vgacon_startup(void)
 	if (vga_video_type == VIDEO_TYPE_EGAC
 	    || vga_video_type == VIDEO_TYPE_VGAC
 	    || vga_video_type == VIDEO_TYPE_EGAM) {
-		vga_hardscroll_enabled = vga_hardscroll_user_enable;
+		vga_hardscroll_enabled = true;
 		vga_video_font_height = screen_info.orig_video_points;
 	}
 

@@ -9,8 +9,6 @@
 
 DEFINE_RAW_SPINLOCK(i8253_lock);
 
-bool i8253_clear_counter_on_shutdown __ro_after_init = true;
-
 static int pit_shutdown(struct clock_event_device *evt)
 {
 	if (!clockevent_state_oneshot(evt) && !clockevent_state_periodic(evt))
@@ -20,10 +18,8 @@ static int pit_shutdown(struct clock_event_device *evt)
 
 	outb_p(0x30, PIT_MODE);
 
-	if (i8253_clear_counter_on_shutdown) {
-		outb_p(0, PIT_CH0);
-		outb_p(0, PIT_CH0);
-	}
+	outb_p(0, PIT_CH0);
+	outb_p(0, PIT_CH0);
 
 	raw_spin_unlock(&i8253_lock);
 	return 0;

@@ -7,7 +7,6 @@
 struct task_struct;
 
 extern int debug_locks __read_mostly;
-extern int debug_locks_silent __read_mostly;
 
 
 static __always_inline int __debug_locks_off(void)
@@ -22,7 +21,7 @@ extern int debug_locks_off(void);
 	int __ret = 0;							\
 									\
 	if (!oops_in_progress && unlikely(c)) {				\
-		if (debug_locks_off() && !debug_locks_silent)		\
+		if (debug_locks_off())					\
 			WARN(1, "DEBUG_LOCKS_WARN_ON(%s)", #c);		\
 		__ret = 1;						\
 	}								\

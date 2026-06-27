@@ -620,16 +620,10 @@ static int try_to_run_init_process(const char *init_filename)
 
 static noinline void __init kernel_init_freeable(void);
 
-bool rodata_enabled __ro_after_init = true;
-
 static void mark_readonly(void)
 {
-	if (rodata_enabled) {
-		 
-		rcu_barrier();
-		mark_rodata_ro();
-	} else
-		pr_info("Kernel memory protection disabled.\n");
+	rcu_barrier();
+	mark_rodata_ro();
 }
 
 void __weak free_initmem(void)

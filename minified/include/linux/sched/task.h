@@ -11,7 +11,6 @@ union thread_union;
 struct kernel_clone_args {
 	u64 flags;
 	int __user *pidfd;
-	int __user *child_tid;
 	int __user *parent_tid;
 	int exit_signal;
 	unsigned long stack;

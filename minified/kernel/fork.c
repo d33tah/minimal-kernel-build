@@ -549,16 +549,7 @@ static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 	
 	deactivate_mm(tsk, mm);
 
-	
-	if (tsk->clear_child_tid) {
-		if (atomic_read(&mm->mm_users) > 1) {
-			
-			put_user(0, tsk->clear_child_tid);
-		}
-		tsk->clear_child_tid = NULL;
-	}
 
-	
 	if (tsk->vfork_done)
 		complete_vfork_done(tsk);
 }
@@ -792,10 +783,6 @@ static __latent_entropy struct task_struct *copy_process(
 	p->flags &= ~PF_KTHREAD;
 	if (args->kthread)
 		p->flags |= PF_KTHREAD;
-
-	/* CLONE_CHILD_SETTID/CLEARTID never set on this build -> always NULL */
-	p->set_child_tid = NULL;
-	p->clear_child_tid = NULL;
 
 	rt_mutex_init_task(p);
 

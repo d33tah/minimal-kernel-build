@@ -218,13 +218,7 @@ struct task_struct {
 
 	struct completion		*vfork_done;
 
-	 
-	int __user			*set_child_tid;
 
-	 
-	int __user			*clear_child_tid;
-
-	 
 	void				*worker_private;
 
 

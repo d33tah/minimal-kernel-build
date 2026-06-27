@@ -1,7 +1,6 @@
 
 
 #include <linux/cpu.h>
-#include <linux/errno.h>
 #include <linux/sched.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
@@ -10,7 +9,6 @@
 #include <linux/mm.h>
 #include <linux/smp.h>
 #include <linux/stddef.h>
-#include <linux/slab.h>
 #include <linux/vmalloc.h>
 #include <asm/user.h> /* linux/user.h redirect */
 #include <linux/interrupt.h>
@@ -19,7 +17,6 @@
 #include <linux/ptrace.h>
 #include <linux/personality.h>
 #include <linux/percpu.h>
-#include <linux/uaccess.h>
 #include <linux/io.h>
 #include <linux/kdebug.h>
 #include <linux/syscalls.h>

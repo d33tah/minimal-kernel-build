@@ -4,7 +4,6 @@
 #include <linux/moduleparam.h>
 #include <linux/device.h>
 #include <linux/err.h>
-#include <linux/slab.h>
 #include <linux/ctype.h>
 #include <linux/security.h>
 

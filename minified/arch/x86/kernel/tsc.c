@@ -130,7 +130,6 @@ unsigned long long
 sched_clock(void) __attribute__((alias("native_sched_clock")));
 
 
-static int no_tsc_watchdog;
 
 #define CAL_MS		10
 #define CAL_LATCH	(PIT_TICK_RATE / (1000 / CAL_MS))
@@ -603,7 +602,7 @@ void __init tsc_init(void)
 	    boot_cpu_has(X86_FEATURE_TSC_ADJUST))
 		tsc_disable_clocksource_watchdog();
 
-	if (tsc_clocksource_reliable || no_tsc_watchdog)
+	if (tsc_clocksource_reliable)
 		tsc_disable_clocksource_watchdog();
 
 	clocksource_register_khz(&clocksource_tsc_early, tsc_khz);

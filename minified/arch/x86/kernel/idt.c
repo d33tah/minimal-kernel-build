@@ -37,7 +37,6 @@
 
 #define IDT_TABLE_SIZE		(IDT_ENTRIES * sizeof(gate_desc))
 
-static bool idt_setup_done __initdata;
 
 static const __initconst struct idt_data early_idts[] = {
 	INTG(X86_TRAP_DB,		asm_exc_debug),
@@ -152,8 +151,6 @@ void __init idt_setup_apic_and_irq_gates(void)
 	 
 	idt_map_in_cea();
 	load_idt(&idt_descr);
-
-	idt_setup_done = true;
 }
 
 void __init idt_setup_early_handler(void)

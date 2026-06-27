@@ -499,7 +499,6 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 	return message;
 }
 
-static int __initdata do_retain_initrd;
 
 extern char __initramfs_start[];
 extern unsigned long __initramfs_size;
@@ -525,7 +524,7 @@ static void __init do_populate_rootfs(void)
 
 done:
 	 
-	if (!do_retain_initrd && initrd_start)
+	if (initrd_start)
 		free_reserved_area((void *)initrd_start, (void *)initrd_end,
 				POISON_FREE_INITMEM, "initrd");
 	initrd_start = 0;

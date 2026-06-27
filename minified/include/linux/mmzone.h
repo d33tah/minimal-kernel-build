@@ -196,7 +196,6 @@ enum zone_watermarks {
 
 struct per_cpu_pages {
 	int count;
-	int high;
 	int batch;
 
 

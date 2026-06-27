@@ -32,8 +32,6 @@ extern struct list_lru shadow_nodes;
 	xas_set_lru(xas, &shadow_nodes);				\
 } while (0)
 
-#define nr_free_pages() global_zone_page_state(NR_FREE_PAGES)
-
 extern void folio_add_lru(struct folio *);
 extern void lru_cache_add(struct page *);
 void mark_page_accessed(struct page *);

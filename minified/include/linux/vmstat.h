@@ -9,14 +9,10 @@
 #include <linux/mmdebug.h>
 
 
-extern atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS];
-
-
 static inline void zone_page_state_add(long x, struct zone *zone,
 				 enum zone_stat_item item)
 {
 	atomic_long_add(x, &zone->vm_stat[item]);
-	atomic_long_add(x, &vm_zone_stat[item]);
 }
 
 static inline void node_page_state_add(long x, struct pglist_data *pgdat,
@@ -25,13 +21,6 @@ static inline void node_page_state_add(long x, struct pglist_data *pgdat,
 	/* per-node vm_stat[] + vm_node_stat[] are write-only on this build
 	 * (no node_page_state reader survives) -> no-op. */
 }
-
-static inline unsigned long global_zone_page_state(enum zone_stat_item item)
-{
-	long x = atomic_long_read(&vm_zone_stat[item]);
-	return x;
-}
-
 
 static inline unsigned long zone_page_state(struct zone *zone,
 					enum zone_stat_item item)
@@ -63,16 +52,13 @@ static inline void __mod_node_page_state(struct pglist_data *pgdat,
 static inline void __dec_zone_state(struct zone *zone, enum zone_stat_item item)
 {
 	atomic_long_dec(&zone->vm_stat[item]);
-	atomic_long_dec(&vm_zone_stat[item]);
 }
-
 
 static inline void __dec_zone_page_state(struct page *page,
 			enum zone_stat_item item)
 {
 	__dec_zone_state(page_zone(page), item);
 }
-
 
 #define dec_zone_page_state __dec_zone_page_state
 #define mod_zone_page_state __mod_zone_page_state

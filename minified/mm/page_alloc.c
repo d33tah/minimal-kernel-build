@@ -1137,7 +1137,6 @@ static void pageset_update(struct per_cpu_pages *pcp, unsigned long high,
 		unsigned long batch)
 {
 	WRITE_ONCE(pcp->batch, batch);
-	WRITE_ONCE(pcp->high, high);
 }
 
 static void per_cpu_pages_init(struct per_cpu_pages *pcp)
@@ -1149,8 +1148,7 @@ static void per_cpu_pages_init(struct per_cpu_pages *pcp)
 	for (pindex = 0; pindex < NR_PCP_LISTS; pindex++)
 		INIT_LIST_HEAD(&pcp->lists[pindex]);
 
-	
-	pcp->high = BOOT_PAGESET_HIGH;
+
 	pcp->batch = BOOT_PAGESET_BATCH;
 }
 

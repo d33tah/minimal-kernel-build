@@ -1,13 +1,1 @@
-/* VM statistics - minimal */
-#include <linux/mm.h>
-#include <linux/vmstat.h>
-#include <linux/workqueue.h>
-
-
-
-atomic_long_t vm_zone_stat[NR_VM_ZONE_STAT_ITEMS] __cacheline_aligned_in_smp;
-
-
-
-
-
+/* VM statistics - minimal (vm_zone_stat[] global was write-only, removed) */

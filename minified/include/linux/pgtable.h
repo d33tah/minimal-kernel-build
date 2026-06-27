@@ -240,14 +240,12 @@ extern void __init pgtable_cache_init(void);
 
 
 #define		__PGTBL_PGD_MODIFIED	0
-#define		__PGTBL_P4D_MODIFIED	1
-#define		__PGTBL_PUD_MODIFIED	2
+/* __PGTBL_P4D_MODIFIED (1), __PGTBL_PUD_MODIFIED (2) removed - P4D/PUD folded, never referenced */
 #define		__PGTBL_PMD_MODIFIED	3
 #define		__PGTBL_PTE_MODIFIED	4
 
 #define		PGTBL_PGD_MODIFIED	BIT(__PGTBL_PGD_MODIFIED)
-#define		PGTBL_P4D_MODIFIED	BIT(__PGTBL_P4D_MODIFIED)
-#define		PGTBL_PUD_MODIFIED	BIT(__PGTBL_PUD_MODIFIED)
+/* PGTBL_P4D_MODIFIED, PGTBL_PUD_MODIFIED removed - never referenced */
 #define		PGTBL_PMD_MODIFIED	BIT(__PGTBL_PMD_MODIFIED)
 #define		PGTBL_PTE_MODIFIED	BIT(__PGTBL_PTE_MODIFIED)
 

@@ -82,8 +82,7 @@ static inline void set_page_refcounted(struct page *page)
 
 extern unsigned long highest_memmap_pfn;
 
- 
-#define MAX_RECLAIM_RETRIES 16
+/* MAX_RECLAIM_RETRIES removed - never referenced */
 
 
 /* isolate_lru_page, putback_lru_page removed - never called */
@@ -168,9 +167,8 @@ extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
         unsigned long, unsigned long);
 
 
-#define ALLOC_WMARK_MIN		WMARK_MIN
+/* ALLOC_WMARK_MIN, ALLOC_WMARK_HIGH removed - never referenced */
 #define ALLOC_WMARK_LOW		WMARK_LOW
-#define ALLOC_WMARK_HIGH	WMARK_HIGH
 #define ALLOC_NO_WATERMARKS	0x04  
 
  
@@ -179,9 +177,9 @@ extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
  
 #define ALLOC_OOM		0x08
 
-#define ALLOC_HARDER		 0x10  
+#define ALLOC_HARDER		 0x10
 #define ALLOC_HIGH		 0x20
-#define ALLOC_KSWAPD		0x800
+/* ALLOC_KSWAPD removed - never referenced */
 
 
 

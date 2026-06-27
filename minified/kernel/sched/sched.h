@@ -451,9 +451,9 @@ extern const u32		sched_prio_to_wmult[40];
 #define DEQUEUE_NOCLOCK		0x08  
 
 #define ENQUEUE_WAKEUP		0x01
-#define ENQUEUE_RESTORE		0x02
+/* ENQUEUE_RESTORE removed - never referenced */
 #define ENQUEUE_NOCLOCK		0x08
-#define ENQUEUE_HEAD		0x10
+/* ENQUEUE_HEAD removed - never referenced */
 #define ENQUEUE_MIGRATED	0x00
 
 #define RETRY_TASK		((void *)-1UL)

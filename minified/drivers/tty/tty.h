@@ -22,8 +22,7 @@ enum {
 };
 
  
-#define TTY_THROTTLE_SAFE	1
-#define TTY_UNTHROTTLE_SAFE	2
+/* TTY_THROTTLE_SAFE, TTY_UNTHROTTLE_SAFE removed - never referenced */
 
 /* __tty_set_flow_change, tty_set_flow_change removed - unused */
 

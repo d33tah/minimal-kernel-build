@@ -4,8 +4,7 @@
 #ifndef __LINUX_RCU_H
 #define __LINUX_RCU_H
 
-#define RCU_SEQ_CTR_SHIFT	2
-#define RCU_SEQ_STATE_MASK	((1 << RCU_SEQ_CTR_SHIFT) - 1)
+/* RCU_SEQ_CTR_SHIFT, RCU_SEQ_STATE_MASK removed - never referenced (TinyRCU) */
 
 /* rcu_seq_ctr/set_state/start/end/endval/snap/current/started/done,
  * rcu_seq_completed_gp, rcu_seq_new_gp, rcu_seq_diff removed - unused */
@@ -29,12 +28,8 @@ static inline void debug_rcu_head_unqueue(struct rcu_head *head)
 extern void resched_cpu(int cpu);
 
 
-#define RCU_FANOUT 32
-#define RCU_FANOUT_LEAF 16
-#define RCU_NUM_LVLS	      1
-#define NUM_RCU_LVL_0	      1
-#define NUM_RCU_NODES	      NUM_RCU_LVL_0
-#define NUM_RCU_LVL_INIT    { NUM_RCU_LVL_0 }
+/* RCU_FANOUT/RCU_FANOUT_LEAF/RCU_NUM_LVLS/NUM_RCU_LVL_0/NUM_RCU_NODES/
+ * NUM_RCU_LVL_INIT removed - rcu_node tree unused in TinyRCU, never referenced */
 /* end rcu_node_tree.h */
 
 extern int rcu_num_lvls;

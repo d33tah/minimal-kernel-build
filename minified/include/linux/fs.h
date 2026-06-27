@@ -55,8 +55,6 @@ struct delayed_call {
 #define SEEK_SET	0
 #define SEEK_END	2
 struct files_stat_struct {
-	unsigned long nr_files;
-	unsigned long nr_free_files;
 	unsigned long max_files;
 };
 /* RWF_* values needed for IOCB_* macros, rwf_t typedef */

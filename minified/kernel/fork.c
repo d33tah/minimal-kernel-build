@@ -1,59 +1,34 @@
 
 #include <linux/slab.h>
 #include <linux/sched/mm.h>
-#include <linux/sched/coredump.h>
 #include <linux/sched/user.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
 #include <linux/init.h>
-#include <linux/unistd.h>
-#include <linux/vmalloc.h>
 #include <linux/completion.h>
-#include <linux/personality.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
-#include <linux/binfmts.h>
-#include <linux/mman.h>
 #include <linux/fs.h>
-#include <linux/poll.h>
 #include <linux/mm.h>
-#include <linux/mm_inline.h>
 #include <linux/nsproxy.h>
-#include <linux/capability.h>
 #include <linux/cpu.h>
 #include <linux/cgroup.h>
-#include <linux/security.h>
-#include <linux/swap.h>
-#include <linux/syscalls.h>
-#include <linux/jiffies.h>
-#include <linux/compat.h>
 #include <linux/kthread.h>
 #include <linux/rcupdate.h>
-#include <linux/ptrace.h>
-#include <linux/mount.h>
-#include <linux/memcontrol.h>
-#include <linux/proc_fs.h>
 #include <linux/rmap.h>
-#include <linux/random.h>
+#include <linux/mm_inline.h>
+#include <linux/ptrace.h>
 #include <linux/tty.h>
 #include <linux/fs_struct.h>
 #include <linux/magic.h>
-#include <linux/perf_event.h>
-#include <linux/posix-timers.h>
-#include <linux/oom.h>
-#include <linux/uprobes.h>
 #include <linux/compiler.h>
-#include <linux/sysctl.h>
 #include <linux/init_task.h>
-#include <linux/thread_info.h>
 /* end scs.h */
 
 #include <asm/pgalloc.h>
 #include <linux/uaccess.h>
 #include <asm/mmu_context.h>
-#include <asm/cacheflush.h>
-#include <asm/tlbflush.h>
 
 #define MIN_THREADS 20
 

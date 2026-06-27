@@ -1,19 +1,11 @@
 
-#include <linux/mmap_lock.h>
-#include <linux/jiffies.h>
 
-#include <linux/highmem.h>
 
-#include <linux/topology.h>
 #include <linux/sched/clock.h>
 
 #include <linux/sched/cputime.h>
-#include <linux/sched/isolation.h>
 
-#include <linux/interrupt.h>
-#include <linux/task_work.h>
 
-#include <asm/switch_to.h>
 
 #include "sched.h"
 

@@ -16,7 +16,6 @@
 #include <linux/fs.h>
 #include <linux/personality.h>
 #include <linux/security.h>
-#include <linux/hugetlb.h>
 #include <linux/shmem_fs.h>
 #include <linux/export.h>
 #include <linux/mount.h>

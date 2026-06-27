@@ -4,7 +4,6 @@
 #include <linux/types.h>
 #include <linux/compiler.h>
 #include <asm/bitsperlong.h>
-#include <asm/swab.h>
 
 #define ___constant_swab16(x) ((__u16)(				\
 	(((__u16)(x) & (__u16)0x00ffU) << 8) |			\

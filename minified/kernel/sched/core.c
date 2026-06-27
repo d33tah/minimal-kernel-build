@@ -8,7 +8,6 @@
 #include <linux/capability.h>
 #include <linux/security.h>
 
-#include <linux/wait_bit.h>
 #include <linux/jiffies.h>
 
 #include <linux/hardirq.h>

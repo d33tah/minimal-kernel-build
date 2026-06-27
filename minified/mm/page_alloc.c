@@ -33,7 +33,6 @@
 struct alloc_context;
 
 #include <linux/mm_inline.h>
-#include <linux/hugetlb.h>
 #include <linux/sched/mm.h>
 
 #include <linux/kthread.h>

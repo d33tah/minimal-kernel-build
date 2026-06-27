@@ -15,7 +15,6 @@
 #include <linux/smp.h>
 #include <linux/tick.h>
 #include <linux/irq.h>
-#include <linux/wait_bit.h>
 
 void do_softirq_own_stack(void);
 

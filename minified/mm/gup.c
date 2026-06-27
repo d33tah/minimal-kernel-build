@@ -12,7 +12,6 @@
 
 #include <linux/sched/signal.h>
 #include <linux/rwsem.h>
-#include <linux/hugetlb.h>
 #include <linux/mm_inline.h>
 #include <linux/sched/mm.h>
 

@@ -6,7 +6,6 @@
 #include <linux/memblock.h>
 extern struct atomic_notifier_head panic_notifier_list;
 #include <linux/pci.h>
-#include <linux/hugetlb.h>
 
 #include <asm/apic.h>
 #include <asm/numa.h>

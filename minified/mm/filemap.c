@@ -20,7 +20,6 @@
 #include <linux/writeback.h>
 #include <linux/backing-dev.h>
 #include <linux/pagevec.h>
-#include <linux/hugetlb.h>
 #include <linux/memcontrol.h>
 #include <linux/shmem_fs.h>
 #include <linux/rmap.h>

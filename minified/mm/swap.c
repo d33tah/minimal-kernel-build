@@ -18,7 +18,6 @@
 #include <linux/memcontrol.h>
 #include <linux/gfp.h>
 #include <linux/uio.h>
-#include <linux/hugetlb.h>
 #include <linux/local_lock.h>
 
 #include "internal.h"

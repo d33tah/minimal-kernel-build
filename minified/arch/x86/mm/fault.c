@@ -5,7 +5,6 @@
 #include <linux/memblock.h>		 
 #include <linux/kprobes.h>
 #include <linux/perf_event.h>
-#include <linux/hugetlb.h>		 
 		 
 #include <linux/uaccess.h>		 
 #include <linux/efi.h>			 

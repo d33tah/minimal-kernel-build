@@ -11,7 +11,6 @@
 #include <linux/rcupdate.h>
 #include <linux/export.h>
 #include <linux/memcontrol.h>
-#include <linux/hugetlb.h>
 #include <linux/huge_mm.h>
 #include <linux/backing-dev.h>
 #include <linux/memremap.h>

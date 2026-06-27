@@ -3,7 +3,6 @@
 
 #include <linux/types.h>
 #include <linux/errno.h>
-#include <linux/mod_devicetable.h>
 #include <linux/property.h>
 
 #endif

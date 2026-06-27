@@ -26,7 +26,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 
 
 #include <linux/interrupt.h>
-#include <linux/irq_work.h>
 #include <linux/jiffies.h>
 
 #include <linux/kthread.h>

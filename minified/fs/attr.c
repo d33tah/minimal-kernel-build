@@ -8,8 +8,6 @@
 #include <linux/fcntl.h>
 #include <linux/security.h>
 
-#include <linux/xattr.h>
-
 int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 		    struct iattr *attr)
 {

@@ -13,7 +13,6 @@
 #include <linux/capability.h>
 #include <linux/cdev.h>
 #include <linux/sysctl.h>
-#include <linux/percpu_counter.h>
 #include <linux/percpu.h>
 #include <linux/task_work.h>
 #include <linux/swap.h>
@@ -23,8 +22,6 @@
 #include "internal.h"
 
 static struct kmem_cache *filp_cachep __read_mostly;
-
-static struct percpu_counter nr_files __cacheline_aligned_in_smp;
 
 static void file_free_rcu(struct rcu_head *head)
 {
@@ -36,7 +33,6 @@ static void file_free_rcu(struct rcu_head *head)
 
 static inline void file_free(struct file *f)
 {
-	percpu_counter_dec(&nr_files);
 	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
 }
 
@@ -64,8 +60,6 @@ struct file *alloc_empty_file(int flags, const struct cred *cred)
 	struct file *f;
 
 	f = __alloc_file(flags, cred);
-	if (!IS_ERR(f))
-		percpu_counter_inc(&nr_files);
 
 	return f;
 }
@@ -149,6 +143,5 @@ void __init files_init(void)
 {
 	filp_cachep = kmem_cache_create("filp", sizeof(struct file), 0,
 			SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
-	percpu_counter_init(&nr_files, 0, GFP_KERNEL);
 }
 

@@ -2,7 +2,6 @@
 #define _LINUX_MMAN_H
 
 #include <linux/mm.h>
-#include <linux/percpu_counter.h>
 
 #include <linux/atomic.h>
 #include <asm/mman.h>
@@ -19,20 +18,6 @@
 #endif
 
 extern int sysctl_overcommit_memory;
-extern struct percpu_counter vm_committed_as;
-
-#define vm_committed_as_batch 0
-
-static inline void vm_acct_memory(long pages)
-{
-	percpu_counter_add_batch(&vm_committed_as, pages, vm_committed_as_batch);
-}
-
-static inline void vm_unacct_memory(long pages)
-{
-	vm_acct_memory(-pages);
-}
-
 
 #ifndef arch_calc_vm_prot_bits
 #define arch_calc_vm_prot_bits(prot, pkey) 0

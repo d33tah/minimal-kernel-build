@@ -229,8 +229,6 @@ struct address_space *folio_mapping(struct folio *folio)
 int sysctl_overcommit_memory __read_mostly = OVERCOMMIT_GUESS;
 int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
 
-struct percpu_counter vm_committed_as ____cacheline_aligned_in_smp;
-
 /*
  * sysctl_overcommit_memory stays at its OVERCOMMIT_GUESS default on this build
  * (no sysctl writer), so __vm_enough_memory only ever runs the GUESS path. The
@@ -239,12 +237,8 @@ struct percpu_counter vm_committed_as ____cacheline_aligned_in_smp;
  */
 int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
 {
-	vm_acct_memory(pages);
-
-	if (pages > totalram_pages() + total_swap_pages) {
-		vm_unacct_memory(pages);
+	if (pages > totalram_pages() + total_swap_pages)
 		return -ENOMEM;
-	}
 
 	return 0;
 }

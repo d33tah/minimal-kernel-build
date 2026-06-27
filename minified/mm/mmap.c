@@ -944,16 +944,9 @@ find_extend_vma(struct mm_struct *mm, unsigned long addr)
 
 static void remove_vma_list(struct mm_struct *mm, struct vm_area_struct *vma)
 {
-	unsigned long nr_accounted = 0;
-
 	do {
-		long nrpages = vma_pages(vma);
-
-		if (vma->vm_flags & VM_ACCOUNT)
-			nr_accounted += nrpages;
 		vma = remove_vma(vma);
 	} while (vma);
-	vm_unacct_memory(nr_accounted);
 	validate_mm(mm);
 }
 
@@ -1132,10 +1125,8 @@ static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long fla
 
 	
 	vma = vm_area_alloc(mm);
-	if (!vma) {
-		vm_unacct_memory(len >> PAGE_SHIFT);
+	if (!vma)
 		return -ENOMEM;
-	}
 
 	vma_set_anonymous(vma);
 	vma->vm_start = addr;
@@ -1177,7 +1168,6 @@ void exit_mmap(struct mm_struct *mm)
 {
 	struct mmu_gather tlb;
 	struct vm_area_struct *vma;
-	unsigned long nr_accounted = 0;
 
 	mmap_write_lock(mm);
 
@@ -1198,14 +1188,11 @@ void exit_mmap(struct mm_struct *mm)
 
 	
 	while (vma) {
-		if (vma->vm_flags & VM_ACCOUNT)
-			nr_accounted += vma_pages(vma);
 		vma = remove_vma(vma);
 		cond_resched();
 	}
 	mm->mmap = NULL;
 	mmap_write_unlock(mm);
-	vm_unacct_memory(nr_accounted);
 }
 
 int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
@@ -1232,9 +1219,5 @@ int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 
 void __init mmap_init(void)
 {
-	int ret;
-
-	ret = percpu_counter_init(&vm_committed_as, 0, GFP_KERNEL);
-	VM_BUG_ON(ret);
 }
 

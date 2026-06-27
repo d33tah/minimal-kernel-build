@@ -14,7 +14,6 @@
 #include <linux/static_call.h>
 
 #include <asm/timer.h>
-#include <asm/vgtod.h>
 #include <asm/time.h>
 #include <asm/delay.h>
 #include <asm/x86_init.h>

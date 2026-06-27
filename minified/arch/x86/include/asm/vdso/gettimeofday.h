@@ -6,7 +6,6 @@
 #ifndef __ASSEMBLY__
 
 #include <uapi/linux/time.h>
-#include <asm/vgtod.h>
 #include <asm/vvar.h>
 #include <asm/unistd.h>
 #include <asm/msr.h>

@@ -14,7 +14,6 @@
 #include <asm/cpufeature.h>		 
 #include <asm/traps.h>			 
 #include <asm/fixmap.h>			 
-#include <asm/vsyscall.h>		 
 #include <asm/mmu_context.h>		 
 #include <asm/efi.h>			 
 #include <asm/desc.h>			 

@@ -8,7 +8,6 @@
 #include <linux/percpu.h>
 #include <linux/seqlock.h>
 #include <linux/timer.h>
-#include <linux/timerqueue.h>
 
 /* hrtimer structs/enums/macros + tick_cpu_device DECLARE_PER_CPU dropped:
  * hrtimer.c is gone, all hrtimer types are unreferenced tree-wide, and

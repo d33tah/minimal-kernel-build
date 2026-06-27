@@ -59,9 +59,6 @@ static void tick_setup_device(struct tick_device *td,
 
 			tick_next_period = ktime_get();
 		}
-
-
-		td->mode = TICKDEV_MODE_PERIODIC;
 	} else {
 		td->evtdev->event_handler = clockevents_handle_noop;
 	}
@@ -71,10 +68,8 @@ static void tick_setup_device(struct tick_device *td,
 
 	/*
 	 * No broadcast device on this build (tick_device_uses_broadcast always
-	 * false), and TICK_ONESHOT/NO_HZ are unset so td->mode is only ever set
-	 * to TICKDEV_MODE_PERIODIC -- the broadcast and oneshot setup branches
-	 * were dead. broadcast is always off, so the device always goes to
-	 * PERIODIC state; the oneshot setup branch was dead.
+	 * false), and TICK_ONESHOT/NO_HZ are unset, so the device always goes to
+	 * PERIODIC state; the broadcast and oneshot setup branches were dead.
 	 */
 	tick_set_periodic_handler(newdev, 0);
 	clockevents_switch_state(newdev, CLOCK_EVT_STATE_PERIODIC);

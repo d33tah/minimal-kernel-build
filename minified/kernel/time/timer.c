@@ -71,7 +71,6 @@ struct timer_base {
 	struct timer_list	*running_timer;
 	unsigned long		clk;
 	unsigned long		next_expiry;
-	unsigned int		cpu;
 	bool			next_expiry_recalc;
 	bool			timers_pending;
 	DECLARE_BITMAP(pending_map, WHEEL_SIZE);
@@ -520,7 +519,6 @@ static void __init init_timer_cpu(int cpu)
 
 	for (i = 0; i < NR_BASES; i++) {
 		base = per_cpu_ptr(&timer_bases[i], cpu);
-		base->cpu = cpu;
 		raw_spin_lock_init(&base->lock);
 		base->clk = jiffies;
 		base->next_expiry = base->clk + NEXT_TIMER_MAX_DELTA;

@@ -5,15 +5,8 @@
 
 #include "timekeeping.h"
 
-/* --- 2025-12-08 02:15 --- Inlined from tick-sched.h */
-enum tick_device_mode {
-	TICKDEV_MODE_PERIODIC,
-	TICKDEV_MODE_ONESHOT,
-};
-
 struct tick_device {
 	struct clock_event_device *evtdev;
-	enum tick_device_mode mode;
 };
 
 

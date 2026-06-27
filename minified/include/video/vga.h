@@ -24,23 +24,6 @@ struct vgastate {
 	void __iomem *vgabase;
 };
 
-/* Only vga_w is used in vgacon.c */
-static inline void vga_io_w(unsigned short port, unsigned char val)
-{
-	outb_p(val, port);
-}
+/* vga_io_w, vga_mm_w, vga_w removed - unused */
 
-static inline void vga_mm_w(void __iomem *regbase, unsigned short port, unsigned char val)
-{
-	writeb(val, regbase + port);
-}
-
-static inline void vga_w(void __iomem *regbase, unsigned short port, unsigned char val)
-{
-	if (regbase)
-		vga_mm_w(regbase, port, val);
-	else
-		vga_io_w(port, val);
-}
-
-#endif  
+#endif

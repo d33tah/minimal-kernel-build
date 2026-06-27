@@ -204,18 +204,7 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 
 /* pfn_pud, pmd_mkinvalid removed - unused */
 
-static inline u64 flip_protnone_guard(u64 oldval, u64 val, u64 mask);
-
-/* pte_modify, pmd_modify removed - unused */
-
- 
-#define pgprot_modify pgprot_modify
-static inline pgprot_t pgprot_modify(pgprot_t oldprot, pgprot_t newprot)
-{
-	pgprotval_t preservebits = pgprot_val(oldprot) & _PAGE_CHG_MASK;
-	pgprotval_t addbits = pgprot_val(newprot) & ~_PAGE_CHG_MASK;
-	return __pgprot(preservebits | addbits);
-}
+/* pte_modify, pmd_modify, pgprot_modify, flip_protnone_guard removed - unused */
 
 
 pte_t *populate_extra_pte(unsigned long vaddr);
@@ -402,36 +391,7 @@ static inline void clone_pgd_range(pgd_t *dst, pgd_t *src, int count)
 
 
 
-static inline u16 pte_flags_pkey(unsigned long pte_flags)
-{
-	return 0;
-}
-
-static inline bool __pkru_allows_pkey(u16 pkey, bool write)
-{
-	/* read_pkru() is constant 0 on this build: all keys allow r/w. */
-	return true;
-}
-
- 
-static inline bool __pte_access_permitted(unsigned long pteval, bool write)
-{
-	unsigned long need_pte_bits = _PAGE_PRESENT|_PAGE_USER;
-
-	if (write)
-		need_pte_bits |= _PAGE_RW;
-
-	if ((pteval & need_pte_bits) != need_pte_bits)
-		return 0;
-
-	return __pkru_allows_pkey(pte_flags_pkey(pteval), write);
-}
-
-#define pte_access_permitted pte_access_permitted
-static inline bool pte_access_permitted(pte_t pte, bool write)
-{
-	return __pte_access_permitted(pte_val(pte), write);
-}
+/* pte_flags_pkey, __pkru_allows_pkey, __pte_access_permitted, pte_access_permitted removed - unused */
 
 /* pmd_access_permitted, pud_access_permitted removed - unused */
 

@@ -48,13 +48,6 @@ extern int rcu_num_nodes;
 #define rcu_is_last_leaf_node(rnp) ((rnp) == &rcu_state.node[rcu_num_nodes - 1])
 
  
-#define srcu_for_each_node_breadth_first(sp, rnp) \
-	for ((rnp) = &(sp)->node[0]; \
-	     (rnp) < &(sp)->node[rcu_num_nodes]; (rnp)++)
-#define rcu_for_each_node_breadth_first(rnp) \
-	srcu_for_each_node_breadth_first(&rcu_state, rnp)
-
- 
 #define rcu_for_each_leaf_node(rnp) \
 	for ((rnp) = rcu_first_leaf_node(); \
 	     (rnp) < &rcu_state.node[rcu_num_nodes]; (rnp)++)

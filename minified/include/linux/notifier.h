@@ -3,7 +3,6 @@
 #include <linux/errno.h>
 #include <linux/mutex.h>
 #include <linux/rwsem.h>
-#include <linux/srcu.h>
 
 
 struct notifier_block;

@@ -3,7 +3,6 @@
 
 
 #include <linux/smp.h>
-#include <linux/srcu.h>
 #include <linux/errno.h>
 #include <linux/types.h>
 #include <linux/cpumask.h>

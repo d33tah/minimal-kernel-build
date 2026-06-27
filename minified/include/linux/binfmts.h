@@ -24,9 +24,6 @@ struct linux_binprm {
 		secureexec:1,
 
 		point_of_no_return:1;
-#ifdef __alpha__
-	unsigned int taso:1;
-#endif
 	struct file *file;
 	struct cred *cred;
 	unsigned int per_clear;

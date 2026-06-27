@@ -9,8 +9,6 @@
 #include <asm/elf.h>
 #include <asm/io.h>
 
-#include "physaddr.h"
-
 static unsigned long stack_maxrandom_size(unsigned long task_size)
 {
 	unsigned long max = 0;

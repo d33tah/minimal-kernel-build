@@ -17,8 +17,6 @@
 #include <asm/memtype.h>
 #include <asm/setup.h>
 
-#include "physaddr.h"
-
 static pte_t bm_pte[PAGE_SIZE/sizeof(pte_t)] __page_aligned_bss;
 
 static inline pmd_t * __init early_ioremap_pmd(unsigned long addr)

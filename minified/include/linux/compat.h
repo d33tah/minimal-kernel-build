@@ -28,11 +28,6 @@ struct cred;
 
 /* Forward declarations (compat_* 0-ref fwd-decls removed) */
 
-#ifndef compat_sigset_t
-typedef struct {
-	compat_sigset_word	sig[_COMPAT_NSIG_WORDS];
-} compat_sigset_t;
-#endif
 
 #define _COMPAT_NSIG_WORDS	(_COMPAT_NSIG / _COMPAT_NSIG_BPW)
 

@@ -20,18 +20,9 @@
 
 /* Inlined from asm/pkru.h */
 #include <asm/cpufeature.h>
-static inline u32 read_pkru(void) { return 0; }
 /* End of pkru.h */
 /* --- 2025-12-07 20:42 --- Inlined coco.h */
 #include <asm/types.h>
-static inline u64 cc_mkenc(u64 val)
-{
-	return val;
-}
-static inline u64 cc_mkdec(u64 val)
-{
-	return val;
-}
 
 extern pgd_t early_top_pgt[PTRS_PER_PGD];
 

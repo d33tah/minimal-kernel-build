@@ -59,7 +59,7 @@ static bool sig_task_ignored(struct task_struct *t, int sig, bool force)
 static bool sig_ignored(struct task_struct *t, int sig, bool force)
 {
 	
-	if (sigismember(&t->blocked, sig) || sigismember(&t->real_blocked, sig))
+	if (sigismember(&t->blocked, sig))
 		return false;
 
 	/* t->ptrace is never set (no ptrace(2)), so the ptrace gate is gone. */

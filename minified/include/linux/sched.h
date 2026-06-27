@@ -259,7 +259,6 @@ struct task_struct {
 	struct signal_struct		*signal;
 	struct sighand_struct __rcu		*sighand;
 	sigset_t			blocked;
-	sigset_t			real_blocked;
 
 	struct sigpending		pending;
 

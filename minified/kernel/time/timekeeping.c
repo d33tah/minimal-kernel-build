@@ -43,8 +43,6 @@ static struct {
 
 static struct timekeeper shadow_timekeeper;
 
-static int __read_mostly timekeeping_suspended;
-
 static inline void tk_normalize_xtime(struct timekeeper *tk)
 {
 	while (tk->tkr_mono.xtime_nsec >= ((u64)NSEC_PER_SEC << tk->tkr_mono.shift)) {
@@ -225,8 +223,6 @@ ktime_t ktime_get(void)
 	unsigned int seq;
 	ktime_t base;
 	u64 nsecs;
-
-	WARN_ON(timekeeping_suspended);
 
 	do {
 		seq = read_seqcount_begin(&tk_core.seq);
@@ -472,9 +468,6 @@ static bool timekeeping_advance(enum timekeeping_adv_mode mode)
 	unsigned long flags;
 
 	raw_spin_lock_irqsave(&timekeeper_lock, flags);
-
-	if (unlikely(timekeeping_suspended))
-		goto out;
 
 	offset = clocksource_delta(tk_clock_read(&tk->tkr_mono),
 				   tk->tkr_mono.cycle_last, tk->tkr_mono.mask);

@@ -1,7 +1,6 @@
 #ifndef __LINUX_ENTRYCOMMON_H
 #define __LINUX_ENTRYCOMMON_H
 
-#include <linux/static_call_types.h>
 #include <linux/ptrace.h>
 #include <linux/syscalls.h>
 #include <linux/sched.h>

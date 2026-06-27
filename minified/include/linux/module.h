@@ -17,7 +17,6 @@
 #define ALLOW_ERROR_INJECTION(fname, _etype)
 /* end error-injection.h */
 #include <linux/tracepoint-defs.h>
-#include <linux/static_call_types.h>
 
 
 #include <linux/percpu.h>

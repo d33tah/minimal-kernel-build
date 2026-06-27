@@ -16,7 +16,6 @@
 #include <asm/fpu/signal.h>
 
 #include <asm/tlbflush.h>
-#include <asm/prctl.h>
 #include <asm/elf.h>
 
 #include "context.h"

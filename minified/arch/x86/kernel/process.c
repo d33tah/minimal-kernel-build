@@ -28,7 +28,6 @@
 #include <asm/tlbflush.h>
 #include <asm/switch_to.h>
 #include <asm/desc.h>
-#include <asm/prctl.h>
 #include <asm/proto.h>
 /* --- 2025-12-07 20:47 --- Inlined frame.h */
 #include <asm/asm.h>

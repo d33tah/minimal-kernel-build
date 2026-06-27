@@ -16,7 +16,6 @@
 #include <linux/bitops.h>
 #include <linux/file.h>
 #include <linux/uaccess.h>
-#include <linux/ratelimit.h>
 #include <linux/vmalloc.h>
 #include "tty.h"
 

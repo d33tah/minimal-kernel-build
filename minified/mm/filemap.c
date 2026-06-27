@@ -3,7 +3,6 @@
 #include <linux/fs.h>
 #include <linux/sched/signal.h>
 #include <linux/uaccess.h>
-#include <linux/capability.h>
 #include <linux/kernel_stat.h>
 #include <linux/gfp.h>
 #include <linux/mm.h>

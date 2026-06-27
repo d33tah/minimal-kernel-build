@@ -8,7 +8,6 @@
 #include <linux/mman.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
-#include <linux/smp.h>
 #include <linux/init.h>
 #include <linux/highmem.h>
 #include <linux/pagemap.h>
@@ -16,7 +15,6 @@
 #include <linux/pfn.h>
 #include <linux/poison.h>
 #include <linux/memblock.h>
-#include <linux/proc_fs.h>
 #include <linux/initrd.h>
 #include <linux/cpumask.h>
 #include <linux/gfp.h>

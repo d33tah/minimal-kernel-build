@@ -5,11 +5,9 @@
 
 #include <linux/bitops.h>
 #include <linux/compat.h>
-#include <linux/cpu.h>
 #include <linux/mman.h>
 #include <linux/nospec.h>
 #include <linux/pkeys.h>
-#include <linux/proc_fs.h>
 #include <linux/vmalloc.h>
 
 #include <asm/fpu/api.h>

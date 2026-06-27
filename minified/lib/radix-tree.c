@@ -2,7 +2,6 @@
 #include <linux/bitmap.h>
 #include <linux/bitops.h>
 #include <linux/bug.h>
-#include <linux/cpu.h>
 #include <linux/errno.h>
 #include <linux/idr.h>
 #include <linux/init.h>

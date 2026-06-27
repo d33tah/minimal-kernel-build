@@ -7,14 +7,11 @@
 #include <linux/bitops.h>
 #include <linux/slab.h>
 #include "slab.h"
-#include <linux/proc_fs.h>
-#include <linux/cpu.h>
 #include <linux/ctype.h>
 #include <linux/memory.h>
 #include <linux/math64.h>
 
 #include <linux/memcontrol.h>
-#include <linux/random.h>
 #include <linux/sort.h>
 
 

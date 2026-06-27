@@ -3,7 +3,6 @@
 #include <linux/string.h>
 #include <linux/stat.h>
 #include <linux/slab.h>
-#include <linux/random.h>
 
 /*
  * The kset membership list (kset->list / kobj->entry) was never iterated

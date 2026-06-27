@@ -5,7 +5,6 @@
 
 #include <linux/debug_locks.h>
 
-#include <linux/security.h>
 
 #include <linux/jiffies.h>
 

@@ -13,17 +13,14 @@
 #include <linux/suspend.h>
 #include <linux/pagevec.h>
 #include <linux/slab.h>
-#include <linux/ratelimit.h>
 #include <linux/oom.h>
 #include <linux/topology.h>
 #include <linux/sysctl.h>
-#include <linux/cpu.h>
 #include <linux/nodemask.h>
 #include <linux/vmalloc.h>
 #include <linux/vmstat.h>
 #include <linux/memremap.h>
 #include <linux/stop_machine.h>
-#include <linux/random.h>
 #include <linux/sort.h>
 #include <linux/pfn.h>
 #include <linux/backing-dev.h>

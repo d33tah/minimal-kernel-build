@@ -11,14 +11,11 @@
 #include <linux/nmi.h>
 #include <linux/moduleparam.h>
 #include <linux/delay.h>
-#include <linux/smp.h>
 #include <linux/memblock.h>
 #include <linux/kmsg_dump.h>
 
-#include <linux/cpu.h>
 #include <linux/rculist.h>
 #include <linux/poll.h>
-#include <linux/ctype.h>
 #include <linux/uio.h>
 #include <linux/sched/clock.h>
 #include <linux/sched/debug.h>

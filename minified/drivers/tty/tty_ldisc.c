@@ -9,12 +9,10 @@
 #include <linux/string.h>
 #include <linux/slab.h>
 #include <linux/poll.h>
-#include <linux/proc_fs.h>
 #include <linux/device.h>
 #include <linux/wait.h>
 #include <linux/bitops.h>
 #include <linux/uaccess.h>
-#include <linux/ratelimit.h>
 #include "tty.h"
 
 #define tty_ldisc_debug(tty, f, args...)

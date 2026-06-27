@@ -11,7 +11,6 @@
 #include <linux/mm_inline.h>
 #include <linux/memremap.h>
 #include <linux/percpu.h>
-#include <linux/cpu.h>
 #include <linux/notifier.h>
 #include <linux/backing-dev.h>
 #include <linux/memcontrol.h>

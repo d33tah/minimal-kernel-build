@@ -1,11 +1,9 @@
 
 #include <linux/kernel.h>
 #include <linux/timex.h>
-#include <linux/capability.h>
 #include <linux/timekeeper_internal.h>
 #include <linux/errno.h>
 #include <linux/syscalls.h>
-#include <linux/security.h>
 #include <linux/fs.h>
 #include <linux/math64.h>
 #include <linux/ptrace.h>

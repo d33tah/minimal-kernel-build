@@ -66,7 +66,6 @@ struct delayed_work {
 
 	 
 	struct workqueue_struct *wq;
-	int cpu;
 };
 
 

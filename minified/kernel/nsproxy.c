@@ -33,14 +33,8 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk)
 	 * CLONE_NEW* flag and no time namespace is ever created (CONFIG_TIME_NS
 	 * off). The shared nsproxy is simply pinned and inherited.
 	 */
-	if (!(flags & (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC |
-		       CLONE_NEWPID | CLONE_NEWNET |
-		       CLONE_NEWCGROUP | CLONE_NEWTIME))) {
-		get_nsproxy(old_ns);
-		return 0;
-	}
-
-	return -EINVAL;
+	get_nsproxy(old_ns);
+	return 0;
 }
 
 void free_nsproxy(struct nsproxy *ns)

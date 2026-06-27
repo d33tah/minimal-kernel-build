@@ -123,35 +123,19 @@ struct cred *prepare_exec_creds(void)
 int copy_creds(struct task_struct *p, unsigned long clone_flags)
 {
 	struct cred *new;
-	int ret;
 
-
-	if (
-		clone_flags & CLONE_THREAD
-	    ) {
-		p->real_cred = get_cred(p->cred);
-		get_cred(p->cred);
-		inc_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
-		return 0;
-	}
-
+	/*
+	 * Neither CLONE_THREAD nor CLONE_NEWUSER is ever set on this build (the
+	 * only spawns pass CLONE_FS|CLONE_FILES|CLONE_VM|CLONE_UNTRACED|SIGCHLD),
+	 * so the thread-share and new-user-namespace paths are both unreachable.
+	 */
 	new = prepare_creds();
 	if (!new)
 		return -ENOMEM;
 
-	if (clone_flags & CLONE_NEWUSER) {
-		ret = -EINVAL;
-		goto error_put;
-	}
-
-
 	p->cred = p->real_cred = get_cred(new);
 	inc_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
 	return 0;
-
-error_put:
-	put_cred(new);
-	return ret;
 }
 
 static bool cred_cap_issubset(const struct cred *set, const struct cred *subset)

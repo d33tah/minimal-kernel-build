@@ -29,11 +29,6 @@
 #include <linux/lockdep.h>
 #include <linux/workqueue.h>
 
-/* Inlined from delayed_call.h */
-struct delayed_call {
-	void (*fn)(void *);
-	void *arg;
-};
 #include <linux/uuid.h>
 
 #include <linux/build_bug.h>

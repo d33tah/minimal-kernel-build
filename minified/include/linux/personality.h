@@ -20,6 +20,4 @@ enum {
 
 #define personality(pers)	(pers & PER_MASK)
 
-#define set_personality(pers)	(current->personality = (pers))
-
 #endif

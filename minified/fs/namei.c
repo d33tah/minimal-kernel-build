@@ -204,7 +204,6 @@ struct nameidata {
 	int		total_link_count;
 	struct saved {
 		struct path link;
-		struct delayed_call done;
 		const char *name;
 		unsigned seq;
 	} *stack, internal[EMBEDDED_LEVELS];

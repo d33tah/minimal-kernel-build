@@ -22,7 +22,6 @@
 	"\n\t"
 #define STACK_FRAME_NON_STANDARD(func)
 #define ANNOTATE_NOENDBR
-#define ASM_REACHABLE
 #else
 #define ANNOTATE_INTRA_FUNCTION_CALL
 .macro UNWIND_HINT type:req sp_reg=0 sp_offset=0 end=0

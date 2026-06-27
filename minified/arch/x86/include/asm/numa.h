@@ -6,6 +6,5 @@
 #include <linux/errno.h>
 
 #include <asm/topology.h>
-#include <asm/apicdef.h>
 
 #endif

@@ -3,7 +3,6 @@
 #define _ASM_X86_MPSPEC_H
 
 #include <asm/x86_init.h>
-#include <asm/apicdef.h>
 
 extern int pic_mode;
 

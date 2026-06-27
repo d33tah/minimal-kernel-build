@@ -56,7 +56,6 @@ extern void sched_init_smp(void);
 #include <linux/perf_event.h>
 
 #include <linux/ptrace.h>
-#include <linux/blkdev.h>
 #include <linux/sched/clock.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>

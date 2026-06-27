@@ -4,7 +4,6 @@
 
  
 
-#include <linux/static_call.h>
 #include <asm/stacktrace.h>
 
 

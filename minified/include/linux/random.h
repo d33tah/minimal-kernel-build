@@ -6,7 +6,6 @@
 #include <linux/kernel.h>
 #include <linux/list.h>
 #include <linux/types.h>
-#include <linux/ioctl.h>
 #include <linux/irqnr.h>
 
 struct notifier_block;

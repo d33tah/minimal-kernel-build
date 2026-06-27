@@ -11,7 +11,6 @@
 #include <linux/percpu.h>
 #include <linux/timex.h>
 #include <linux/jump_label.h>
-#include <linux/static_call.h>
 
 #include <asm/timer.h>
 #include <asm/time.h>

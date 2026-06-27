@@ -8,7 +8,6 @@
 #include <linux/cpumask.h>
 #include <linux/rcupdate.h>
 #include <linux/tracepoint-defs.h>
-#include <linux/static_call.h>
 
 struct module;
 struct notifier_block;

@@ -3,7 +3,6 @@
 #define _UAPI_LINUX_PERF_EVENT_H
 
 #include <linux/types.h>
-#include <linux/ioctl.h>
 #include <asm/byteorder.h>
 
 /* perf events disabled: struct perf_event_attr (def + fwd decl) and the

@@ -13,7 +13,6 @@
 #include <linux/bug.h>
 #include <linux/nmi.h>
 #include <linux/mm.h>
-#include <linux/smp.h>
 #include <linux/io.h>
 #include <linux/hardirq.h>
 #include <linux/atomic.h>

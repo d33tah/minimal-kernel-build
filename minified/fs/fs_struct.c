@@ -1,4 +1,3 @@
-#include <linux/sched/signal.h>
 #include <linux/sched/task.h>
 #include <linux/fs.h>
 #include <linux/path.h>

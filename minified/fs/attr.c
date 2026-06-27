@@ -1,8 +1,6 @@
 
 #include <linux/time.h>
 #include <linux/mm.h>
-#include <linux/sched/signal.h>
-#include <linux/capability.h>
 #include <linux/fcntl.h>
 
 int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,

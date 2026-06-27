@@ -4,7 +4,6 @@
 #include <linux/init_task.h>
 #include <linux/fs.h>
 
-#include <linux/uaccess.h>
 #include <asm/processor.h>
 #include <asm/desc.h>
 #include <asm/traps.h>

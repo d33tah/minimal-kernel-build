@@ -1,7 +1,6 @@
 
 #include <linux/syscalls.h>
 #include <linux/fs.h>
-#include <linux/proc_fs.h>
 #include <linux/fs_parser.h>
 
 

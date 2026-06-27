@@ -1,5 +1,4 @@
 #include <linux/extable.h>
-#include <linux/uaccess.h>
 #include <linux/sched/debug.h>
 
 /* Inlined from bitfield.h */

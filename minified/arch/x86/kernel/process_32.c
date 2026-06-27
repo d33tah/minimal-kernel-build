@@ -1,6 +1,5 @@
 
 
-#include <linux/cpu.h>
 #include <linux/sched.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>

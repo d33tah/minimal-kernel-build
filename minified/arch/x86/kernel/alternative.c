@@ -21,7 +21,6 @@
 #include <asm/io.h>
 #include <asm/fixmap.h>
 /* --- 2025-12-07 20:55 --- Inlined asm-prototypes.h */
-#include <linux/uaccess.h>
 #include <linux/pgtable.h>
 #include <asm/string_32.h>
 #include <asm/page.h>

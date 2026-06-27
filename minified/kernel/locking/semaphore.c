@@ -4,7 +4,6 @@
 #include <linux/kernel.h>
 #include <linux/sched.h>
 #include <linux/sched/debug.h>
-#include <linux/sched/signal.h>
 #include <linux/semaphore.h>
 #include <linux/spinlock.h>
 

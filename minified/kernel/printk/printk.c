@@ -21,7 +21,6 @@
 #include <linux/sched/debug.h>
 #include <linux/sched/task_stack.h>
 
-#include <linux/uaccess.h>
 #include <asm/sections.h>
 
 

@@ -1,9 +1,7 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/errno.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>
-#include <linux/smp.h>
 #include <linux/sched.h>
 #include <linux/sched/idle.h>
 #include <linux/sched/task.h>
@@ -13,7 +11,6 @@
 /* end stackprotector.h */
 #include <asm/cpu.h>
 #include <asm/apic.h>
-#include <linux/uaccess.h>
 #include <asm/fpu/api.h>
 #include <asm/fpu/sched.h>
 #include <asm/fpu/xstate.h>

@@ -7,7 +7,6 @@
 #include <linux/ctype.h>
 #include <linux/kernel.h>
 #include <linux/math64.h>
-#include <linux/uaccess.h>
 #include <linux/ioport.h>
 #include <linux/dcache.h>
 #include <linux/cred.h>

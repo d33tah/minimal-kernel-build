@@ -1571,7 +1571,6 @@ static void __setup_per_zone_wmarks(void)
 		zone->_watermark[WMARK_MIN] = 128;
 		zone->_watermark[WMARK_LOW] = 256;
 		zone->_watermark[WMARK_HIGH] = 512;
-		zone->_watermark[WMARK_PROMO] = 768;
 		spin_unlock_irqrestore(&zone->lock, flags);
 	}
 }

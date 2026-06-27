@@ -254,7 +254,6 @@ __irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle,
 		desc->depth = 1;
 	}
 	desc->handle_irq = handle;
-	desc->name = name;
 
 	if (handle != handle_bad_irq && is_chained) {
 		unsigned int type = irqd_get_trigger_type(&desc->irq_data);

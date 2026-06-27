@@ -25,8 +25,6 @@ struct irq_desc {
 	struct rcu_head		rcu;
 	struct kobject		kobj;
 	struct mutex		request_mutex;
-	struct module		*owner;
-	const char		*name;
 } ____cacheline_internodealigned_in_smp;
 
 

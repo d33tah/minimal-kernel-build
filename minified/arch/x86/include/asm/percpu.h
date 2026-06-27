@@ -234,7 +234,6 @@ do {									\
 	__ret;								\
 })
 
-#define raw_cpu_cmpxchg_double_4	percpu_cmpxchg8b_double
 #define this_cpu_cmpxchg_double_4	percpu_cmpxchg8b_double
 
  

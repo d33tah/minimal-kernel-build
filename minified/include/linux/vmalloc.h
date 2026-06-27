@@ -22,12 +22,6 @@ struct notifier_block;
 #define VM_NO_GUARD		0x00000040
 #define VM_ALLOW_HUGE_VMAP	0x00000400
 
-#if (defined(CONFIG_KASAN_GENERIC) || defined(CONFIG_KASAN_SW_TAGS)) && \
-	!defined(CONFIG_KASAN_VMALLOC)
-#define VM_DEFER_KMEMLEAK	0x00000800	 
-#else
-#define VM_DEFER_KMEMLEAK	0
-#endif
 
 
 

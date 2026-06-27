@@ -18,8 +18,6 @@
 struct notifier_block;
 struct pagevec;
 
-#define MAX_SWAPFILES_SHIFT	5
-
 #ifdef __KERNEL__
 
 struct address_space;

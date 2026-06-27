@@ -434,7 +434,6 @@ struct super_block {
 	int			s_count;
 	atomic_t		s_active;
 	struct hlist_bl_head	s_roots;
-	struct list_head	s_mounts;
 
 	void			*s_fs_info;
 

@@ -47,8 +47,6 @@ extern void sched_init_smp(void);
 #include "sched.h"
 #include "pelt.h"
 
-#include "../workqueue_internal.h"
-
 DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
 __read_mostly int scheduler_running;

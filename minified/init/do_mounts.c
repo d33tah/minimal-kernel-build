@@ -15,8 +15,6 @@
 #include <linux/slab.h>
 #include <linux/ramfs.h>
 
-#include "do_mounts.h"
-
 /*
  * The root=/rootwait/rootflags=/rootfstype=/rootdelay= command-line options
  * are irrelevant for this initramfs-only kernel (it never mounts a real root

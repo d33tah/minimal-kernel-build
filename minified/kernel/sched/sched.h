@@ -54,8 +54,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 
 
 
-#include "../workqueue_internal.h"
-
 
 
 

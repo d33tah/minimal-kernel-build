@@ -3,8 +3,6 @@
 #include <linux/fs.h>
 #include <linux/initrd.h>
 
-#include "do_mounts.h"
-
 unsigned long initrd_start, initrd_end;
 int initrd_below_start_ok;
 

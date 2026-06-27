@@ -127,9 +127,8 @@ static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 struct xa_node {
 	unsigned char	shift;		 
 	unsigned char	offset;		 
-	unsigned char	count;		 
-	unsigned char	nr_values;	 
-	struct xa_node __rcu *parent;	 
+	unsigned char	count;
+	struct xa_node __rcu *parent;
 	struct xarray	*array;		 
 	union {
 		struct list_head private_list;	 

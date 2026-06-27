@@ -176,7 +176,7 @@ static struct radix_tree_node *
 radix_tree_node_alloc(gfp_t gfp_mask, struct radix_tree_node *parent,
 			struct radix_tree_root *root,
 			unsigned int shift, unsigned int offset,
-			unsigned int count, unsigned int nr_values)
+			unsigned int count)
 {
 	struct radix_tree_node *ret = NULL;
 
@@ -203,7 +203,6 @@ out:
 		ret->shift = shift;
 		ret->offset = offset;
 		ret->count = count;
-		ret->nr_values = nr_values;
 		ret->parent = parent;
 		ret->array = root;
 	}
@@ -293,7 +292,7 @@ static int radix_tree_extend(struct radix_tree_root *root, gfp_t gfp,
 
 	do {
 		struct radix_tree_node *node = radix_tree_node_alloc(gfp, NULL,
-							root, shift, 0, 1, 0);
+							root, shift, 0, 1);
 		if (!node)
 			return -ENOMEM;
 
@@ -314,11 +313,8 @@ static int radix_tree_extend(struct radix_tree_root *root, gfp_t gfp,
 		BUG_ON(shift > BITS_PER_LONG);
 		if (radix_tree_is_internal_node(entry)) {
 			entry_to_node(entry)->parent = node;
-		} else if (xa_is_value(entry)) {
-			
-			node->nr_values = 1;
 		}
-		
+
 		node->slots[0] = (void __rcu *)entry;
 		entry = node_to_entry(node);
 		rcu_assign_pointer(root->xa_head, entry);
@@ -431,7 +427,7 @@ static int __radix_tree_create(struct radix_tree_root *root,
 		if (child == NULL) {
 			
 			child = radix_tree_node_alloc(gfp, node, root, shift,
-							offset, 0, 0);
+							offset, 0);
 			if (!child)
 				return -ENOMEM;
 			rcu_assign_pointer(*slot, node_to_entry(child));
@@ -460,8 +456,6 @@ static inline int insert_entries(struct radix_tree_node *node,
 	rcu_assign_pointer(*slot, item);
 	if (node) {
 		node->count++;
-		if (xa_is_value(item))
-			node->nr_values++;
 	}
 	return 1;
 }
@@ -539,7 +533,6 @@ static void replace_slot(void __rcu **slot, void *item,
 {
 	if (node && (count || values)) {
 		node->count += count;
-		node->nr_values += values;
 	}
 
 	rcu_assign_pointer(*slot, item);
@@ -774,7 +767,7 @@ void __rcu **idr_get_free(struct radix_tree_root *root,
 		if (child == NULL) {
 			
 			child = radix_tree_node_alloc(gfp, node, root, shift,
-							offset, 0, 0);
+							offset, 0);
 			if (!child)
 				return ERR_PTR(-ENOMEM);
 			all_tag_set(child, IDR_FREE);

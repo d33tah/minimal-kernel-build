@@ -32,8 +32,6 @@
 
 #include "kstrtox.h"
 
-bool no_hash_pointers __ro_after_init;
-
 static noinline unsigned long long simple_strntoull(const char *startp, size_t max_chars, char **endp, unsigned int base)
 {
 	const char *cp;
@@ -499,9 +497,6 @@ static char *default_pointer(char *buf, char *end, const void *ptr,
 			     struct printf_spec spec)
 {
 	
-	if (unlikely(no_hash_pointers))
-		return pointer_string(buf, end, ptr, spec);
-
 	return ptr_to_id(buf, end, ptr, spec);
 }
 

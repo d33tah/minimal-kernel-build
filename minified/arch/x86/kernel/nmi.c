@@ -17,7 +17,6 @@
 #include <asm/mach_traps.h>
 #include <asm/nmi.h>
 #include <asm/x86_init.h>
-#include <asm/reboot.h>
 #include <asm/cache.h>
 #include <asm/nospec-branch.h>
 

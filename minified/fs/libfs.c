@@ -5,7 +5,6 @@
 #include <linux/slab.h>
 #include <linux/cred.h>
 #include <linux/mount.h>
-#include <linux/statfs.h> /* vfs.h redirect */
 
 #include <linux/mutex.h>
 #include <linux/namei.h>

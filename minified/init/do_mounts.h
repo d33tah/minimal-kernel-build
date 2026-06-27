@@ -7,6 +7,5 @@
 #include <linux/slab.h>
 #include <linux/mount.h>
 #include <linux/major.h>
-#include <linux/root_dev.h>
 #include <linux/init_syscalls.h>
 

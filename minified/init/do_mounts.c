@@ -4,7 +4,6 @@
 
 #include <linux/tty.h>
 #include <linux/suspend.h>
-#include <linux/root_dev.h>
 #include <linux/security.h>
 #include <linux/delay.h>
 #include <linux/mount.h>

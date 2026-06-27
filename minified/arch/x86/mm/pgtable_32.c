@@ -1,6 +1,5 @@
 #include <linux/sched.h>
 #include <linux/kernel.h>
-#include <linux/errno.h>
 #include <linux/mm.h>
 #include <linux/nmi.h>
 #include <linux/swap.h>

@@ -8,7 +8,6 @@
 #include <linux/hardirq.h>
 #include <linux/ratelimit.h>
 #include <linux/slab.h>
-#include <linux/export.h>
 #include <linux/atomic.h>
 #include <linux/sched/clock.h>
 

@@ -1,6 +1,5 @@
 #include <linux/kernel.h>
 unsigned long gcd(unsigned long a, unsigned long b) __attribute_const__;
-#include <linux/export.h>
 
 
 unsigned long gcd(unsigned long a, unsigned long b)

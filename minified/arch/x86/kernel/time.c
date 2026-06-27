@@ -5,7 +5,6 @@
 #include <linux/irq.h>
 #include <linux/i8253.h>
 #include <linux/time.h>
-#include <linux/export.h>
 
 #include <asm/x86_init.h>
 #include <asm/i8259.h>

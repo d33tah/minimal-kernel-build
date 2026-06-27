@@ -10,8 +10,6 @@
 #include <linux/sched/debug.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
-#include <linux/init.h>
-#include <linux/export.h>
 #include <linux/tick.h>
 #include <linux/random.h>
 #include <linux/utsname.h>

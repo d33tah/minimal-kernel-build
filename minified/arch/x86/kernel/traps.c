@@ -8,7 +8,6 @@
 #include <linux/uaccess.h>
 #include <linux/kdebug.h>
 #include <linux/kernel.h>
-#include <linux/export.h>
 #include <linux/ptrace.h>
 #include <linux/uprobes.h>
 #include <linux/string.h>

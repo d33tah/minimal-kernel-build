@@ -3,7 +3,6 @@
 
 #include <linux/sched.h>
 #include <linux/kernel.h>
-#include <linux/init.h>
 
 /*
  * Userspace signal-frame delivery is unreachable in this minimal build: the

@@ -7,7 +7,6 @@
 #include <linux/irq.h>
 #include <linux/timex.h>
 #include <linux/random.h>
-#include <linux/init.h>
 #include <linux/kernel_stat.h>
 #include <linux/bitops.h>
 #include <linux/acpi.h>

@@ -1,6 +1,5 @@
 
 #include <linux/bitops.h>
-#include <linux/export.h>
 #include <linux/math.h>
 #include <linux/math64.h>
 #include <linux/log2.h>

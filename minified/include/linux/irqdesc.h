@@ -22,7 +22,6 @@ struct irq_desc {
 	unsigned int		irqs_unhandled;
 	raw_spinlock_t		lock;
 	unsigned long		threads_oneshot;
-	struct rcu_head		rcu;
 	struct kobject		kobj;
 	struct mutex		request_mutex;
 } ____cacheline_internodealigned_in_smp;

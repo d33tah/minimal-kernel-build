@@ -158,7 +158,6 @@ static inline void irq_settings_set_no_debug(struct irq_desc *desc)
 extern int __irq_set_trigger(struct irq_desc *desc, unsigned long flags);
 
 #define IRQ_RESEND	true
-#define IRQ_NORESEND	false
 
 #define IRQ_START_FORCE	true
 #define IRQ_START_COND	false
@@ -195,9 +194,6 @@ static inline void chip_bus_sync_unlock(struct irq_desc *desc)
 
 #define _IRQ_DESC_CHECK		(1 << 0)
 #define _IRQ_DESC_PERCPU	(1 << 1)
-
-#define IRQ_GET_DESC_CHECK_GLOBAL	(_IRQ_DESC_CHECK)
-#define IRQ_GET_DESC_CHECK_PERCPU	(_IRQ_DESC_CHECK | _IRQ_DESC_PERCPU)
 
 #define for_each_action_of_desc(desc, act)			\
 	for (act = desc->action; act; act = act->next)

@@ -142,7 +142,6 @@ static inline bool cpu_possible(unsigned int cpu)
 	return cpu == 0;
 }
 
-#define cpu_is_offline(cpu)	unlikely(!cpu_online(cpu))
 
 /* NR_CPUS <= BITS_PER_LONG always true */
 #define CPU_BITS_ALL						\

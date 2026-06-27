@@ -1,11 +1,9 @@
-#include <linux/acpi.h>
-#include <linux/console.h>
 #include <linux/efi.h>
+#include <linux/console.h>
 
 #include <linux/initrd.h>
 #include <linux/memblock.h>
 extern struct atomic_notifier_head panic_notifier_list;
-#include <linux/pci.h>
 
 #include <asm/apic.h>
 #include <asm/numa.h>

@@ -4,17 +4,13 @@
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include <linux/smp.h>
-#include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/sched/idle.h>
-#include <linux/sched/debug.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
-#include <linux/tick.h>
-#include <linux/random.h>
 #include <linux/utsname.h>
+#include <linux/random.h>
 /* end stackprotector.h */
-#include <linux/acpi.h>
 #include <asm/cpu.h>
 #include <asm/apic.h>
 #include <linux/uaccess.h>

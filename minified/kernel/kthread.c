@@ -4,15 +4,11 @@
 #include <linux/sched.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/task.h>
+#include <linux/sched/signal.h>
 #include <linux/kthread.h>
 #include <linux/completion.h>
 #include <linux/err.h>
-#include <linux/cgroup.h>
-#include <linux/unistd.h>
-#include <linux/file.h>
-#include <linux/mutex.h>
 #include <linux/slab.h>
-#include <linux/ptrace.h>
 #include <linux/uaccess.h>
 #include <linux/numa.h>
 #include <linux/sched/isolation.h>

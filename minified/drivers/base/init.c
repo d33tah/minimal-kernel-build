@@ -2,7 +2,6 @@
 #include <linux/device.h>
 #include <linux/init.h>
 #include <linux/memory.h>
-#include <linux/of.h>
 
 #include "base.h"
 

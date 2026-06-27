@@ -20,7 +20,6 @@
 #include <asm/reboot.h>
 #include <asm/cache.h>
 #include <asm/nospec-branch.h>
-#include <asm/sev.h>
 
 
 static int ignore_nmis __read_mostly;

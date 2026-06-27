@@ -10,7 +10,6 @@
 extern int nr_threads;
 DECLARE_PER_CPU(unsigned long, process_counts);
 /* end sched/stat.h */
-#include <linux/sched/sysctl.h>
 
 #include <linux/sched/task.h>
 #include <linux/sched/topology.h>

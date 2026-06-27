@@ -3,7 +3,6 @@
 #define _LINUX_IRQDOMAIN_H
 
 #include <linux/types.h>
-#include <linux/of.h>
 #include <linux/mutex.h>
 #include <linux/radix-tree.h>
 

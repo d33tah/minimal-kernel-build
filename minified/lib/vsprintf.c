@@ -16,7 +16,6 @@
 #include <linux/rtc.h>
 #include <linux/time.h>
 #include <linux/uuid.h>
-#include <linux/of.h>
 
 #include <linux/random.h>
 #include <linux/siphash.h>
@@ -24,7 +23,6 @@
 #define IPV6_FLOWINFO_MASK		cpu_to_be32(0x0FFFFFFF)
 
 #include <linux/compiler.h>
-#include <linux/property.h>
 
 #include "../mm/internal.h"	
 

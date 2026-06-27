@@ -46,7 +46,6 @@
 	})
 
 #include <asm/fpu/api.h>
-#include <asm/sev.h>
 #include <asm/traps.h>
 #include <asm/kdebug.h>
 #include <asm/insn-eval.h>

@@ -29,7 +29,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/signal.h>
 #include <linux/posix-timers.h>
 #include <linux/mutex.h>
-#include <linux/pipe_fs_i.h>
 #include <linux/resource.h>
 #include <linux/blkdev.h>
 #include <linux/task_work.h>

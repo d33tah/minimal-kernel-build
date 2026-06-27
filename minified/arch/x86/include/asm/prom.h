@@ -5,7 +5,6 @@
 #define _ASM_X86_PROM_H
 #ifndef __ASSEMBLY__
 
-#include <linux/of.h>
 #include <linux/types.h>
 #include <linux/pci.h>
 

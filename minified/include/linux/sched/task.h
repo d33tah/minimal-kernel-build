@@ -15,7 +15,6 @@ struct kernel_clone_args {
 	pid_t *set_tid;
 	size_t set_tid_size;
 	int kthread;
-	int idle;
 	int (*fn)(void *);
 	void *fn_arg;
 };

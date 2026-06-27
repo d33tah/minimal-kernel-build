@@ -123,7 +123,7 @@ void fpstate_reset(struct fpu *fpu)
 /* fpu_inherit_perms removed - gated on fpu_state_size_dynamic() which is
  * constant false (no XFD dynamic xstate on the QEMU boot CPU); body was dead. */
 
-int fpu_clone(struct task_struct *dst, unsigned long clone_flags, bool minimal)
+int fpu_clone(struct task_struct *dst, bool minimal)
 {
 	struct fpu *dst_fpu = &dst->thread.fpu;
 

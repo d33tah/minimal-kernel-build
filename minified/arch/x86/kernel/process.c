@@ -75,7 +75,6 @@ void exit_thread(struct task_struct *tsk)
 
 int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 {
-	unsigned long clone_flags = args->flags;
 	unsigned long sp = args->stack;
 	struct inactive_task_frame *frame;
 	struct fork_frame *fork_frame;
@@ -95,7 +94,7 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 	 
 	frame->flags = X86_EFLAGS_FIXED;
 
-	fpu_clone(p, clone_flags, args->fn);
+	fpu_clone(p, args->fn);
 
 	 
 	if (unlikely(p->flags & PF_KTHREAD)) {

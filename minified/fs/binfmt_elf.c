@@ -559,8 +559,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 	kfree(elf_phdata);
 
-	set_binfmt(&elf_format);
-
 #ifdef ARCH_HAS_SETUP_ADDITIONAL_PAGES
 	retval = ARCH_SETUP_ADDITIONAL_PAGES(bprm, elf_ex, 0);
 	if (retval < 0)

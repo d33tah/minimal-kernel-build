@@ -73,7 +73,6 @@ extern int setup_arg_pages(struct linux_binprm * bprm,
 			   unsigned long stack_top,
 			   int executable_stack);
 int copy_string_kernel(const char *arg, struct linux_binprm *bprm);
-extern void set_binfmt(struct linux_binfmt *new);
 
 int kernel_execve(const char *filename,
 		  const char *const *argv, const char *const *envp);

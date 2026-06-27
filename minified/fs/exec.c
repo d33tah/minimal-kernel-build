@@ -836,10 +836,6 @@ out_ret:
 	return retval;
 }
 
-void set_binfmt(struct linux_binfmt *new)
-{
-}
-
 void set_dumpable(struct mm_struct *mm, int value)
 {
 	if (WARN_ON((unsigned)value > SUID_DUMP_ROOT))

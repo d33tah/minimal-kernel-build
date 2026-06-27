@@ -12,13 +12,8 @@
 /* Dead compat plumbing removed - 0-ref tree-wide (CONFIG_COMPAT off on this
  * 32-bit build): struct user_regs_struct32, the compat_mode_t/__compat_uid_t/
  * __compat_gid_t/compat_dev_t/compat_ipc_pid_t/compat_statfs/compat_fsid_t
- * typedefs, and the COMPAT_USER_HZ/COMPAT_RLIM_INFINITY/COMPAT_OFF_T_MAX +
- * compat_arg_u64* macros. Only the compat_sigset_word/_COMPAT_NSIG block below
- * is still consumed (linux/compat.h:39,43). */
-#ifndef _COMPAT_NSIG
-typedef u32 compat_sigset_word;
-#define _COMPAT_NSIG _NSIG
-#define _COMPAT_NSIG_BPW 32
-#endif
+ * typedefs, the COMPAT_USER_HZ/COMPAT_RLIM_INFINITY/COMPAT_OFF_T_MAX +
+ * compat_arg_u64* macros, and the compat_sigset_word/_COMPAT_NSIG/_COMPAT_NSIG_BPW
+ * block (sole consumer _COMPAT_NSIG_WORDS itself was 0-ref). */
 
 #endif

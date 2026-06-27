@@ -27,8 +27,6 @@ struct cred;
 #endif
 
 /* Forward declarations (compat_* 0-ref fwd-decls removed) */
-
-
-#define _COMPAT_NSIG_WORDS	(_COMPAT_NSIG / _COMPAT_NSIG_BPW)
+/* _COMPAT_NSIG_WORDS removed - 0-ref tree-wide */
 
 #endif /* _LINUX_COMPAT_H */

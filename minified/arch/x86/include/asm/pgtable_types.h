@@ -18,7 +18,6 @@
 #define _PAGE_BIT_PAT		7	 
 #define _PAGE_BIT_GLOBAL	8	 
 #define _PAGE_BIT_SOFTW1	9
-#define _PAGE_BIT_PAT_LARGE	12
 #define _PAGE_BIT_SPECIAL	_PAGE_BIT_SOFTW1
 #define _PAGE_BIT_PROTNONE	_PAGE_BIT_GLOBAL
 
@@ -32,7 +31,6 @@
 #define _PAGE_PSE	(_AT(pteval_t, 1) << _PAGE_BIT_PSE)
 #define _PAGE_GLOBAL	(_AT(pteval_t, 1) << _PAGE_BIT_GLOBAL)
 #define _PAGE_PAT	(_AT(pteval_t, 1) << _PAGE_BIT_PAT)
-#define _PAGE_PAT_LARGE (_AT(pteval_t, 1) << _PAGE_BIT_PAT_LARGE)
 #define _PAGE_SPECIAL	(_AT(pteval_t, 1) << _PAGE_BIT_SPECIAL)
 
 #define _PAGE_KNL_ERRATUM_MASK 0
@@ -102,13 +100,11 @@ enum page_cache_mode {
 #define _KERNPG_TABLE		 (__PP|__RW|   0|___A|   0|___D|   0|   0| _ENC)
 #define _PAGE_TABLE		 (__PP|__RW|_USR|___A|   0|___D|   0|   0| _ENC)
 #define __PAGE_KERNEL_RO	 (__PP|   0|   0|___A|__NX|___D|   0|___G)
-#define __PAGE_KERNEL_NOCACHE	 (__PP|__RW|   0|___A|__NX|___D|   0|___G| __NC)
 #define __PAGE_KERNEL_LARGE	 (__PP|__RW|   0|___A|__NX|___D|_PSE|___G)
 #define __PAGE_KERNEL_LARGE_EXEC (__PP|__RW|   0|___A|   0|___D|_PSE|___G)
 
 
 #define __PAGE_KERNEL_IO		__PAGE_KERNEL
-#define __PAGE_KERNEL_IO_NOCACHE	__PAGE_KERNEL_NOCACHE
 
 
 #ifndef __ASSEMBLY__
@@ -118,12 +114,11 @@ enum page_cache_mode {
 #define PAGE_KERNEL		__pgprot_mask(__PAGE_KERNEL            | _ENC)
 #define PAGE_KERNEL_RO		__pgprot_mask(__PAGE_KERNEL_RO         | _ENC)
 #define PAGE_KERNEL_EXEC	__pgprot_mask(__PAGE_KERNEL_EXEC       | _ENC)
-#define PAGE_KERNEL_NOCACHE	__pgprot_mask(__PAGE_KERNEL_NOCACHE    | _ENC)
 #define PAGE_KERNEL_LARGE	__pgprot_mask(__PAGE_KERNEL_LARGE      | _ENC)
 #define PAGE_KERNEL_LARGE_EXEC	__pgprot_mask(__PAGE_KERNEL_LARGE_EXEC | _ENC)
 
 #define PAGE_KERNEL_IO		__pgprot_mask(__PAGE_KERNEL_IO)
-#define PAGE_KERNEL_IO_NOCACHE	__pgprot_mask(__PAGE_KERNEL_IO_NOCACHE)
+/* PAGE_KERNEL_IO_NOCACHE removed - 0-ref tree-wide */
 
 #endif	 
 
@@ -191,7 +186,6 @@ static inline pgdval_t native_pgd_val(pgd_t pgd)
 typedef struct { pgd_t pgd; } p4d_t;
 
 #define P4D_SHIFT		PGDIR_SHIFT
-#define P4D_SIZE		(1UL << P4D_SHIFT)
 
 static inline int pgd_none(pgd_t pgd)		{ return 0; }
 static inline int pgd_bad(pgd_t pgd)		{ return 0; }

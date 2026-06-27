@@ -4,7 +4,6 @@
 #include <linux/refcount.h>
 
 struct ns_common {
-	atomic_long_t stashed;
 	unsigned int inum;
 	refcount_t count;
 };

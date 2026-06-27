@@ -31,7 +31,6 @@ struct uts_namespace init_uts_ns = {
 		.machine	= UTS_MACHINE,
 		.domainname	= UTS_DOMAINNAME,
 	},
-	.user_ns = &init_user_ns,
 	.ns.inum = PROC_UTS_INIT_INO,
 };
 

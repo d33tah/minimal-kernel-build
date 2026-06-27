@@ -37,9 +37,6 @@ struct fs_parameter {
 	enum fs_value_type	type:8;		 
 	union {
 		char		*string;
-		void		*blob;
-		struct filename	*name;
-		struct file	*file;
 	};
 };
 
@@ -59,10 +56,8 @@ struct fs_context {
 	const char		*source;
 	void			*s_fs_info;
 	unsigned int		sb_flags;
-	unsigned int		s_iflags;
 	enum fs_context_purpose	purpose:8;
 	bool			need_free:1;
-	bool			global:1;
 };
 
 struct fs_context_operations {

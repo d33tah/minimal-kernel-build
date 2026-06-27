@@ -132,7 +132,7 @@ struct super_block *sget_fc(struct fs_context *fc,
 			    int (*set)(struct super_block *, struct fs_context *))
 {
 	struct super_block *s;
-	struct user_namespace *user_ns = fc->global ? &init_user_ns : fc->user_ns;
+	struct user_namespace *user_ns = fc->user_ns;
 	int err;
 
 	s = alloc_super(fc->fs_type, fc->sb_flags, user_ns);
@@ -150,7 +150,6 @@ struct super_block *sget_fc(struct fs_context *fc,
 	}
 	fc->s_fs_info = NULL;
 	s->s_type = fc->fs_type;
-	s->s_iflags |= fc->s_iflags;
 	strlcpy(s->s_id, s->s_type->name, sizeof(s->s_id));
 	spin_unlock(&sb_lock);
 	get_filesystem(s->s_type);

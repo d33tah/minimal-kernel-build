@@ -26,8 +26,6 @@ struct pid
 {
 	refcount_t count;
 	unsigned int level;
-	spinlock_t lock;
-	 
 	struct hlist_head tasks[PIDTYPE_MAX];
 
 	struct rcu_head rcu;

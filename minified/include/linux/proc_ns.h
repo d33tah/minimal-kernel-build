@@ -23,7 +23,6 @@ static inline int proc_alloc_inum(unsigned int *inum)
 
 static inline int ns_alloc_inum(struct ns_common *ns)
 {
-	atomic_long_set(&ns->stashed, 0);
 	return proc_alloc_inum(&ns->inum);
 }
 

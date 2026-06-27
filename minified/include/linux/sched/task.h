@@ -10,16 +10,10 @@ union thread_union;
 
 struct kernel_clone_args {
 	u64 flags;
-	int __user *pidfd;
-	int __user *parent_tid;
 	int exit_signal;
 	unsigned long stack;
-	unsigned long stack_size;
-	unsigned long tls;
 	pid_t *set_tid;
-	 
 	size_t set_tid_size;
-	int cgroup;
 	int kthread;
 	int idle;
 	int (*fn)(void *);

@@ -972,16 +972,9 @@ struct mm_struct *copy_init_mm(void)
 
 pid_t kernel_clone(struct kernel_clone_args *args)
 {
-	u64 clone_flags = args->flags;
 	struct pid *pid;
 	struct task_struct *p;
 	pid_t nr;
-
-
-	if ((args->flags & CLONE_PIDFD) &&
-	    (args->flags & CLONE_PARENT_SETTID) &&
-	    (args->pidfd == args->parent_tid))
-		return -EINVAL;
 
 	/*
 	 * The only spawners (kernel_thread / user_mode_thread) always set
@@ -998,9 +991,6 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 
 	pid = get_task_pid(p, PIDTYPE_PID);
 	nr = pid_vnr(pid);
-
-	if (clone_flags & CLONE_PARENT_SETTID)
-		put_user(nr, args->parent_tid);
 
 	wake_up_new_task(p);
 

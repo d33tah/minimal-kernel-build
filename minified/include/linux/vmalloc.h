@@ -53,7 +53,6 @@ struct vmap_area {
 
 extern void __init vmalloc_init(void);
 
-extern void *vmalloc(unsigned long size) __alloc_size(1);
 extern void *__vmalloc(unsigned long size, gfp_t gfp_mask) __alloc_size(1);
 extern void *__vmalloc_node_range(unsigned long size, unsigned long align,
 			unsigned long start, unsigned long end, gfp_t gfp_mask,

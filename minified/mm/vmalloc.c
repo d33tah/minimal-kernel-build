@@ -1034,9 +1034,3 @@ void *__vmalloc(unsigned long size, gfp_t gfp_mask)
 				__builtin_return_address(0));
 }
 
-void *vmalloc(unsigned long size)
-{
-	return __vmalloc_node(size, 1, GFP_KERNEL, NUMA_NO_NODE,
-				__builtin_return_address(0));
-}
-

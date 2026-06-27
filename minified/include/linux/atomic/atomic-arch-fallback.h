@@ -30,17 +30,6 @@
 #define arch_try_cmpxchg_relaxed arch_try_cmpxchg
 #endif  
 
-#ifndef arch_try_cmpxchg
-#define arch_try_cmpxchg(_ptr, _oldp, _new) \
-({ \
-	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; \
-	___r = arch_cmpxchg((_ptr), ___o, (_new)); \
-	if (unlikely(___r != ___o)) \
-		*___op = ___r; \
-	likely(___r == ___o); \
-})
-#endif  
-
 #ifndef arch_try_cmpxchg_acquire
 #define arch_try_cmpxchg_acquire(_ptr, _oldp, _new) \
 ({ \
@@ -81,17 +70,6 @@
 #define arch_try_cmpxchg64_acquire arch_try_cmpxchg64
 #define arch_try_cmpxchg64_release arch_try_cmpxchg64
 #define arch_try_cmpxchg64_relaxed arch_try_cmpxchg64
-#endif  
-
-#ifndef arch_try_cmpxchg64
-#define arch_try_cmpxchg64(_ptr, _oldp, _new) \
-({ \
-	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; \
-	___r = arch_cmpxchg64((_ptr), ___o, (_new)); \
-	if (unlikely(___r != ___o)) \
-		*___op = ___r; \
-	likely(___r == ___o); \
-})
 #endif  
 
 #ifndef arch_try_cmpxchg64_acquire
@@ -458,19 +436,6 @@ arch_atomic_fetch_andnot_relaxed(int i, atomic_t *v)
 #define arch_atomic_try_cmpxchg_relaxed arch_atomic_try_cmpxchg
 #endif  
 
-#ifndef arch_atomic_try_cmpxchg
-static __always_inline bool
-arch_atomic_try_cmpxchg(atomic_t *v, int *old, int new)
-{
-	int r, o = *old;
-	r = arch_atomic_cmpxchg(v, o, new);
-	if (unlikely(r != o))
-		*old = r;
-	return likely(r == o);
-}
-#define arch_atomic_try_cmpxchg arch_atomic_try_cmpxchg
-#endif
-
 #ifndef arch_atomic_try_cmpxchg_acquire
 static __always_inline bool
 arch_atomic_try_cmpxchg_acquire(atomic_t *v, int *old, int new)
@@ -664,15 +629,6 @@ arch_atomic64_set_release(atomic64_t *v, s64 i)
 #define arch_atomic64_inc_return_relaxed arch_atomic64_inc_return
 #endif  
 
-#ifndef arch_atomic64_inc_return
-static __always_inline s64
-arch_atomic64_inc_return(atomic64_t *v)
-{
-	return arch_atomic64_add_return(1, v);
-}
-#define arch_atomic64_inc_return arch_atomic64_inc_return
-#endif
-
 #ifndef arch_atomic64_inc_return_acquire
 static __always_inline s64
 arch_atomic64_inc_return_acquire(atomic64_t *v)
@@ -754,15 +710,6 @@ arch_atomic64_fetch_inc_relaxed(atomic64_t *v)
 #define arch_atomic64_dec_return_release arch_atomic64_dec_return
 #define arch_atomic64_dec_return_relaxed arch_atomic64_dec_return
 #endif  
-
-#ifndef arch_atomic64_dec_return
-static __always_inline s64
-arch_atomic64_dec_return(atomic64_t *v)
-{
-	return arch_atomic64_sub_return(1, v);
-}
-#define arch_atomic64_dec_return arch_atomic64_dec_return
-#endif
 
 #ifndef arch_atomic64_dec_return_acquire
 static __always_inline s64

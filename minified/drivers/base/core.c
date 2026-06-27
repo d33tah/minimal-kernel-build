@@ -9,7 +9,6 @@
 #include <linux/kdev_t.h>
 #include <linux/notifier.h>
 #include <linux/of.h>
-#include <linux/of_device.h>
 #include <linux/blkdev.h>
 #include <linux/mutex.h>
 #include <linux/sched/signal.h>

@@ -232,7 +232,6 @@ struct xa_state {
 	unsigned char xa_shift;
 	unsigned char xa_sibs;
 	unsigned char xa_offset;
-	unsigned char xa_pad;		 
 	struct xa_node *xa_node;
 	struct xa_node *xa_alloc;
 	xa_update_node_t xa_update;
@@ -249,7 +248,6 @@ struct xa_state {
 	.xa_shift = shift,				\
 	.xa_sibs = sibs,				\
 	.xa_offset = 0,					\
-	.xa_pad = 0,					\
 	.xa_node = XAS_RESTART,				\
 	.xa_alloc = NULL,				\
 	.xa_update = NULL,				\

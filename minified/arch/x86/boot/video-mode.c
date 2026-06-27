@@ -1,7 +1,6 @@
 /* Minimal video mode setup - simplified for text-only boot */
 #include "boot.h"
 #include "video.h"
-#include "vesa.h"
 #include <uapi/asm/boot.h>
 
 int adapter;

@@ -388,7 +388,6 @@ rq_unlock(struct rq *rq, struct rq_flags *rf)
 
 /* init_numa_balancing removed - NUMA_BALANCING off, empty stub */
 
-#include "stats.h"
 
 
 /* sched_core_account_forceidle removed - unused */

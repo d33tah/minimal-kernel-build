@@ -1,7 +1,0 @@
- 
-#ifndef _KERNEL_SCHED_AUTOGROUP_H
-#define _KERNEL_SCHED_AUTOGROUP_H
-
-
-
-#endif

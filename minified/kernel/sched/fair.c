@@ -17,8 +17,6 @@
 #include <asm/switch_to.h>
 
 #include "sched.h"
-#include "stats.h"
-#include "autogroup.h"
 
 unsigned int sysctl_sched_latency			= 6000000ULL;
 

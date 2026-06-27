@@ -1,7 +1,6 @@
 /* Minimal VESA stub - no VESA modes needed for text-only boot */
 #include "boot.h"
 #include "video.h"
-#include "vesa.h"
 
 static __videocard video_vesa;
 

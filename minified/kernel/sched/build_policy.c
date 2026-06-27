@@ -14,8 +14,6 @@
 
 #include "sched.h"
 
-#include "autogroup.h"
-#include "stats.h"
 #include "pelt.h"
 
 

@@ -7,7 +7,6 @@
 #include <linux/tick.h>
 #include <linux/tracepoint.h>
 
-#include "common.h"
 
 
 static __always_inline void __enter_from_user_mode(struct pt_regs *regs)

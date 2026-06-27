@@ -25,8 +25,6 @@
 #include <asm/switch_to.h>
 
 #include "sched.h"
-#include "stats.h"
-#include "autogroup.h"
 
 #include "clock.c"
 

@@ -48,8 +48,6 @@ extern void sched_init_smp(void);
 #include <asm/tlb.h>
 
 #include "sched.h"
-#include "stats.h"
-#include "autogroup.h"
 #include "pelt.h"
 
 #include "../workqueue_internal.h"

@@ -15,8 +15,6 @@
 #include <linux/slab.h>
 #include <linux/ramfs.h>
 
-#include <uapi/linux/mount.h>
-
 #include "do_mounts.h"
 
 /*

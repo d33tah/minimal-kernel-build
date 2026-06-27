@@ -8,8 +8,6 @@ extern struct atomic_notifier_head panic_notifier_list;
 #include <linux/pci.h>
 #include <linux/hugetlb.h>
 
-#include <uapi/linux/mount.h>
-
 #include <asm/apic.h>
 #include <asm/numa.h>
 #include <asm/bios_ebda.h>

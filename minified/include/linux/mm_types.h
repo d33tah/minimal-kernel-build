@@ -235,9 +235,7 @@ struct mm_struct {
 
 		unsigned long saved_auxv[AT_VECTOR_SIZE];
 
-		struct linux_binfmt *binfmt;
 
-		 
 		mm_context_t context;
 
 		unsigned long flags;  

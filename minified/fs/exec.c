@@ -838,9 +838,6 @@ out_ret:
 
 void set_binfmt(struct linux_binfmt *new)
 {
-	struct mm_struct *mm = current->mm;
-
-	mm->binfmt = new;
 }
 
 void set_dumpable(struct mm_struct *mm, int value)

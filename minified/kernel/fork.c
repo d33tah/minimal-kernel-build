@@ -595,8 +595,7 @@ static struct mm_struct *dup_mm(struct task_struct *tsk,
 	return mm;
 
 free_pt:
-	
-	mm->binfmt = NULL;
+
 	mmput(mm);
 
 fail_nomem:

@@ -87,9 +87,6 @@ struct desc_ptr {
 	unsigned long address;
 } __attribute__((packed)) ;
 
-#endif  
-
-
-#define	BOOT_IDT_ENTRIES	32
+#endif
 
 #endif

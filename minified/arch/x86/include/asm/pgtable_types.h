@@ -14,9 +14,8 @@
 #define _PAGE_BIT_PCD		4	 
 #define _PAGE_BIT_ACCESSED	5	 
 #define _PAGE_BIT_DIRTY		6	 
-#define _PAGE_BIT_PSE		7	 
-#define _PAGE_BIT_PAT		7	 
-#define _PAGE_BIT_GLOBAL	8	 
+#define _PAGE_BIT_PSE		7
+#define _PAGE_BIT_GLOBAL	8
 #define _PAGE_BIT_SOFTW1	9
 #define _PAGE_BIT_SPECIAL	_PAGE_BIT_SOFTW1
 #define _PAGE_BIT_PROTNONE	_PAGE_BIT_GLOBAL
@@ -30,7 +29,6 @@
 #define _PAGE_DIRTY	(_AT(pteval_t, 1) << _PAGE_BIT_DIRTY)
 #define _PAGE_PSE	(_AT(pteval_t, 1) << _PAGE_BIT_PSE)
 #define _PAGE_GLOBAL	(_AT(pteval_t, 1) << _PAGE_BIT_GLOBAL)
-#define _PAGE_PAT	(_AT(pteval_t, 1) << _PAGE_BIT_PAT)
 #define _PAGE_SPECIAL	(_AT(pteval_t, 1) << _PAGE_BIT_SPECIAL)
 
 #define _PAGE_KNL_ERRATUM_MASK 0
@@ -67,9 +65,6 @@ enum page_cache_mode {
 #define _PAGE_ENC		(_AT(pteval_t, sme_me_mask))
 
 
-#define _PAGE_NOCACHE		(cachemode2protval(_PAGE_CACHE_MODE_UC))
-#define _PAGE_CACHE_WP		(cachemode2protval(_PAGE_CACHE_MODE_WP))
-
 #define __PP _PAGE_PRESENT
 #define __RW _PAGE_RW
 #define _USR _PAGE_USER
@@ -79,8 +74,6 @@ enum page_cache_mode {
 #define __NX _PAGE_NX
 
 #define _ENC _PAGE_ENC
-#define __WP _PAGE_CACHE_WP
-#define __NC _PAGE_NOCACHE
 #define _PSE _PAGE_PSE
 
 #define pgprot_val(x)		((x).pgprot)
@@ -104,9 +97,6 @@ enum page_cache_mode {
 #define __PAGE_KERNEL_LARGE_EXEC (__PP|__RW|   0|___A|   0|___D|_PSE|___G)
 
 
-#define __PAGE_KERNEL_IO		__PAGE_KERNEL
-
-
 #ifndef __ASSEMBLY__
 
 #define __pgprot_mask(x)	__pgprot((x) & __default_kernel_pte_mask)
@@ -116,9 +106,6 @@ enum page_cache_mode {
 #define PAGE_KERNEL_EXEC	__pgprot_mask(__PAGE_KERNEL_EXEC       | _ENC)
 #define PAGE_KERNEL_LARGE	__pgprot_mask(__PAGE_KERNEL_LARGE      | _ENC)
 #define PAGE_KERNEL_LARGE_EXEC	__pgprot_mask(__PAGE_KERNEL_LARGE_EXEC | _ENC)
-
-#define PAGE_KERNEL_IO		__pgprot_mask(__PAGE_KERNEL_IO)
-/* PAGE_KERNEL_IO_NOCACHE removed - 0-ref tree-wide */
 
 #endif	 
 

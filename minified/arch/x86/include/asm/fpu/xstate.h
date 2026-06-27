@@ -13,9 +13,6 @@
 
 
 
-#define FXSAVE_SIZE	512
-
-
 
  
 #define XFEATURE_MASK_USER_SUPPORTED (XFEATURE_MASK_FP | \

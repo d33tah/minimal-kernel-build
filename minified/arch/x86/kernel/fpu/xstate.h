@@ -5,10 +5,6 @@
 #include <asm/cpufeature.h>
 #include <asm/fpu/xstate.h>
 
-/* Inlined from asm/fpu/xcr.h */
-#define XCR_XFEATURE_ENABLED_MASK	0x00000000
-#define XCR_XFEATURE_IN_USE_MASK	0x00000001
-
 static inline void xstate_init_xcomp_bv(struct xregs_state *xsave, u64 mask)
 {
 	 

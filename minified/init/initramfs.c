@@ -503,7 +503,6 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 extern char __initramfs_start[];
 extern unsigned long __initramfs_size;
 #include <linux/initrd.h>
-#include <linux/kexec.h>
 
 static void __init do_populate_rootfs(void)
 {

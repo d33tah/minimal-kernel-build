@@ -250,121 +250,25 @@ arch_atomic_set_release(atomic_t *v, int i)
 #define arch_atomic_add_return_acquire arch_atomic_add_return
 #define arch_atomic_add_return_release arch_atomic_add_return
 #define arch_atomic_add_return_relaxed arch_atomic_add_return
-#else  
-
-#ifndef arch_atomic_add_return_acquire
-static __always_inline int
-arch_atomic_add_return_acquire(int i, atomic_t *v)
-{
-	int ret = arch_atomic_add_return_relaxed(i, v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic_add_return_acquire arch_atomic_add_return_acquire
 #endif
-
-#ifndef arch_atomic_add_return_release
-static __always_inline int
-arch_atomic_add_return_release(int i, atomic_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic_add_return_relaxed(i, v);
-}
-#define arch_atomic_add_return_release arch_atomic_add_return_release
-#endif
-
-
-#endif  
 
 #ifndef arch_atomic_fetch_add_relaxed
 #define arch_atomic_fetch_add_acquire arch_atomic_fetch_add
 #define arch_atomic_fetch_add_release arch_atomic_fetch_add
 #define arch_atomic_fetch_add_relaxed arch_atomic_fetch_add
-#else  
-
-#ifndef arch_atomic_fetch_add_acquire
-static __always_inline int
-arch_atomic_fetch_add_acquire(int i, atomic_t *v)
-{
-	int ret = arch_atomic_fetch_add_relaxed(i, v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic_fetch_add_acquire arch_atomic_fetch_add_acquire
 #endif
-
-#ifndef arch_atomic_fetch_add_release
-static __always_inline int
-arch_atomic_fetch_add_release(int i, atomic_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic_fetch_add_relaxed(i, v);
-}
-#define arch_atomic_fetch_add_release arch_atomic_fetch_add_release
-#endif
-
-
-#endif  
 
 #ifndef arch_atomic_sub_return_relaxed
 #define arch_atomic_sub_return_acquire arch_atomic_sub_return
 #define arch_atomic_sub_return_release arch_atomic_sub_return
 #define arch_atomic_sub_return_relaxed arch_atomic_sub_return
-#else  
-
-#ifndef arch_atomic_sub_return_acquire
-static __always_inline int
-arch_atomic_sub_return_acquire(int i, atomic_t *v)
-{
-	int ret = arch_atomic_sub_return_relaxed(i, v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic_sub_return_acquire arch_atomic_sub_return_acquire
 #endif
-
-#ifndef arch_atomic_sub_return_release
-static __always_inline int
-arch_atomic_sub_return_release(int i, atomic_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic_sub_return_relaxed(i, v);
-}
-#define arch_atomic_sub_return_release arch_atomic_sub_return_release
-#endif
-
-
-#endif  
 
 #ifndef arch_atomic_fetch_sub_relaxed
 #define arch_atomic_fetch_sub_acquire arch_atomic_fetch_sub
 #define arch_atomic_fetch_sub_release arch_atomic_fetch_sub
 #define arch_atomic_fetch_sub_relaxed arch_atomic_fetch_sub
-#else  
-
-#ifndef arch_atomic_fetch_sub_acquire
-static __always_inline int
-arch_atomic_fetch_sub_acquire(int i, atomic_t *v)
-{
-	int ret = arch_atomic_fetch_sub_relaxed(i, v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic_fetch_sub_acquire arch_atomic_fetch_sub_acquire
 #endif
-
-#ifndef arch_atomic_fetch_sub_release
-static __always_inline int
-arch_atomic_fetch_sub_release(int i, atomic_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic_fetch_sub_relaxed(i, v);
-}
-#define arch_atomic_fetch_sub_release arch_atomic_fetch_sub_release
-#endif
-
-
-#endif  
 
 
 #ifndef arch_atomic_inc_return_relaxed
@@ -410,43 +314,7 @@ arch_atomic_inc_return_relaxed(atomic_t *v)
 #define arch_atomic_inc_return_relaxed arch_atomic_inc_return_relaxed
 #endif
 
-#else  
-
-#ifndef arch_atomic_inc_return_acquire
-static __always_inline int
-arch_atomic_inc_return_acquire(atomic_t *v)
-{
-	int ret = arch_atomic_inc_return_relaxed(v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic_inc_return_acquire arch_atomic_inc_return_acquire
 #endif
-
-#ifndef arch_atomic_inc_return_release
-static __always_inline int
-arch_atomic_inc_return_release(atomic_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic_inc_return_relaxed(v);
-}
-#define arch_atomic_inc_return_release arch_atomic_inc_return_release
-#endif
-
-#ifndef arch_atomic_inc_return
-static __always_inline int
-arch_atomic_inc_return(atomic_t *v)
-{
-	int ret;
-	__atomic_pre_full_fence();
-	ret = arch_atomic_inc_return_relaxed(v);
-	__atomic_post_full_fence();
-	return ret;
-}
-#define arch_atomic_inc_return arch_atomic_inc_return
-#endif
-
-#endif  
 
 #ifndef arch_atomic_fetch_inc_relaxed
 #ifdef arch_atomic_fetch_inc
@@ -491,43 +359,7 @@ arch_atomic_fetch_inc_relaxed(atomic_t *v)
 #define arch_atomic_fetch_inc_relaxed arch_atomic_fetch_inc_relaxed
 #endif
 
-#else  
-
-#ifndef arch_atomic_fetch_inc_acquire
-static __always_inline int
-arch_atomic_fetch_inc_acquire(atomic_t *v)
-{
-	int ret = arch_atomic_fetch_inc_relaxed(v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic_fetch_inc_acquire arch_atomic_fetch_inc_acquire
 #endif
-
-#ifndef arch_atomic_fetch_inc_release
-static __always_inline int
-arch_atomic_fetch_inc_release(atomic_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic_fetch_inc_relaxed(v);
-}
-#define arch_atomic_fetch_inc_release arch_atomic_fetch_inc_release
-#endif
-
-#ifndef arch_atomic_fetch_inc
-static __always_inline int
-arch_atomic_fetch_inc(atomic_t *v)
-{
-	int ret;
-	__atomic_pre_full_fence();
-	ret = arch_atomic_fetch_inc_relaxed(v);
-	__atomic_post_full_fence();
-	return ret;
-}
-#define arch_atomic_fetch_inc arch_atomic_fetch_inc
-#endif
-
-#endif  
 
 
 #ifndef arch_atomic_dec_return_relaxed
@@ -573,43 +405,7 @@ arch_atomic_dec_return_relaxed(atomic_t *v)
 #define arch_atomic_dec_return_relaxed arch_atomic_dec_return_relaxed
 #endif
 
-#else  
-
-#ifndef arch_atomic_dec_return_acquire
-static __always_inline int
-arch_atomic_dec_return_acquire(atomic_t *v)
-{
-	int ret = arch_atomic_dec_return_relaxed(v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic_dec_return_acquire arch_atomic_dec_return_acquire
 #endif
-
-#ifndef arch_atomic_dec_return_release
-static __always_inline int
-arch_atomic_dec_return_release(atomic_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic_dec_return_relaxed(v);
-}
-#define arch_atomic_dec_return_release arch_atomic_dec_return_release
-#endif
-
-#ifndef arch_atomic_dec_return
-static __always_inline int
-arch_atomic_dec_return(atomic_t *v)
-{
-	int ret;
-	__atomic_pre_full_fence();
-	ret = arch_atomic_dec_return_relaxed(v);
-	__atomic_post_full_fence();
-	return ret;
-}
-#define arch_atomic_dec_return arch_atomic_dec_return
-#endif
-
-#endif  
 
 #ifndef arch_atomic_fetch_dec_relaxed
 #ifdef arch_atomic_fetch_dec
@@ -654,73 +450,13 @@ arch_atomic_fetch_dec_relaxed(atomic_t *v)
 #define arch_atomic_fetch_dec_relaxed arch_atomic_fetch_dec_relaxed
 #endif
 
-#else  
-
-#ifndef arch_atomic_fetch_dec_acquire
-static __always_inline int
-arch_atomic_fetch_dec_acquire(atomic_t *v)
-{
-	int ret = arch_atomic_fetch_dec_relaxed(v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic_fetch_dec_acquire arch_atomic_fetch_dec_acquire
 #endif
-
-#ifndef arch_atomic_fetch_dec_release
-static __always_inline int
-arch_atomic_fetch_dec_release(atomic_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic_fetch_dec_relaxed(v);
-}
-#define arch_atomic_fetch_dec_release arch_atomic_fetch_dec_release
-#endif
-
-#ifndef arch_atomic_fetch_dec
-static __always_inline int
-arch_atomic_fetch_dec(atomic_t *v)
-{
-	int ret;
-	__atomic_pre_full_fence();
-	ret = arch_atomic_fetch_dec_relaxed(v);
-	__atomic_post_full_fence();
-	return ret;
-}
-#define arch_atomic_fetch_dec arch_atomic_fetch_dec
-#endif
-
-#endif  
 
 #ifndef arch_atomic_fetch_and_relaxed
 #define arch_atomic_fetch_and_acquire arch_atomic_fetch_and
 #define arch_atomic_fetch_and_release arch_atomic_fetch_and
 #define arch_atomic_fetch_and_relaxed arch_atomic_fetch_and
-#else  
-
-#ifndef arch_atomic_fetch_and_acquire
-static __always_inline int
-arch_atomic_fetch_and_acquire(int i, atomic_t *v)
-{
-	int ret = arch_atomic_fetch_and_relaxed(i, v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic_fetch_and_acquire arch_atomic_fetch_and_acquire
 #endif
-
-#ifndef arch_atomic_fetch_and_release
-static __always_inline int
-arch_atomic_fetch_and_release(int i, atomic_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic_fetch_and_relaxed(i, v);
-}
-#define arch_atomic_fetch_and_release arch_atomic_fetch_and_release
-#endif
-
-
-#endif  
 
 #ifndef arch_atomic_andnot
 static __always_inline void
@@ -774,163 +510,31 @@ arch_atomic_fetch_andnot_relaxed(int i, atomic_t *v)
 #define arch_atomic_fetch_andnot_relaxed arch_atomic_fetch_andnot_relaxed
 #endif
 
-#else  
-
-#ifndef arch_atomic_fetch_andnot_acquire
-static __always_inline int
-arch_atomic_fetch_andnot_acquire(int i, atomic_t *v)
-{
-	int ret = arch_atomic_fetch_andnot_relaxed(i, v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic_fetch_andnot_acquire arch_atomic_fetch_andnot_acquire
 #endif
-
-#ifndef arch_atomic_fetch_andnot_release
-static __always_inline int
-arch_atomic_fetch_andnot_release(int i, atomic_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic_fetch_andnot_relaxed(i, v);
-}
-#define arch_atomic_fetch_andnot_release arch_atomic_fetch_andnot_release
-#endif
-
-#ifndef arch_atomic_fetch_andnot
-static __always_inline int
-arch_atomic_fetch_andnot(int i, atomic_t *v)
-{
-	int ret;
-	__atomic_pre_full_fence();
-	ret = arch_atomic_fetch_andnot_relaxed(i, v);
-	__atomic_post_full_fence();
-	return ret;
-}
-#define arch_atomic_fetch_andnot arch_atomic_fetch_andnot
-#endif
-
-#endif  
 
 #ifndef arch_atomic_fetch_or_relaxed
 #define arch_atomic_fetch_or_acquire arch_atomic_fetch_or
 #define arch_atomic_fetch_or_release arch_atomic_fetch_or
 #define arch_atomic_fetch_or_relaxed arch_atomic_fetch_or
-#else  
-
-#ifndef arch_atomic_fetch_or_acquire
-static __always_inline int
-arch_atomic_fetch_or_acquire(int i, atomic_t *v)
-{
-	int ret = arch_atomic_fetch_or_relaxed(i, v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic_fetch_or_acquire arch_atomic_fetch_or_acquire
 #endif
-
-#ifndef arch_atomic_fetch_or_release
-static __always_inline int
-arch_atomic_fetch_or_release(int i, atomic_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic_fetch_or_relaxed(i, v);
-}
-#define arch_atomic_fetch_or_release arch_atomic_fetch_or_release
-#endif
-
-
-#endif  
 
 #ifndef arch_atomic_fetch_xor_relaxed
 #define arch_atomic_fetch_xor_acquire arch_atomic_fetch_xor
 #define arch_atomic_fetch_xor_release arch_atomic_fetch_xor
 #define arch_atomic_fetch_xor_relaxed arch_atomic_fetch_xor
-#else  
-
-#ifndef arch_atomic_fetch_xor_acquire
-static __always_inline int
-arch_atomic_fetch_xor_acquire(int i, atomic_t *v)
-{
-	int ret = arch_atomic_fetch_xor_relaxed(i, v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic_fetch_xor_acquire arch_atomic_fetch_xor_acquire
 #endif
-
-#ifndef arch_atomic_fetch_xor_release
-static __always_inline int
-arch_atomic_fetch_xor_release(int i, atomic_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic_fetch_xor_relaxed(i, v);
-}
-#define arch_atomic_fetch_xor_release arch_atomic_fetch_xor_release
-#endif
-
-
-#endif  
 
 #ifndef arch_atomic_xchg_relaxed
 #define arch_atomic_xchg_acquire arch_atomic_xchg
 #define arch_atomic_xchg_release arch_atomic_xchg
 #define arch_atomic_xchg_relaxed arch_atomic_xchg
-#else  
-
-#ifndef arch_atomic_xchg_acquire
-static __always_inline int
-arch_atomic_xchg_acquire(atomic_t *v, int i)
-{
-	int ret = arch_atomic_xchg_relaxed(v, i);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic_xchg_acquire arch_atomic_xchg_acquire
 #endif
-
-#ifndef arch_atomic_xchg_release
-static __always_inline int
-arch_atomic_xchg_release(atomic_t *v, int i)
-{
-	__atomic_release_fence();
-	return arch_atomic_xchg_relaxed(v, i);
-}
-#define arch_atomic_xchg_release arch_atomic_xchg_release
-#endif
-
-
-#endif  
 
 #ifndef arch_atomic_cmpxchg_relaxed
 #define arch_atomic_cmpxchg_acquire arch_atomic_cmpxchg
 #define arch_atomic_cmpxchg_release arch_atomic_cmpxchg
 #define arch_atomic_cmpxchg_relaxed arch_atomic_cmpxchg
-#else  
-
-#ifndef arch_atomic_cmpxchg_acquire
-static __always_inline int
-arch_atomic_cmpxchg_acquire(atomic_t *v, int old, int new)
-{
-	int ret = arch_atomic_cmpxchg_relaxed(v, old, new);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic_cmpxchg_acquire arch_atomic_cmpxchg_acquire
 #endif
-
-#ifndef arch_atomic_cmpxchg_release
-static __always_inline int
-arch_atomic_cmpxchg_release(atomic_t *v, int old, int new)
-{
-	__atomic_release_fence();
-	return arch_atomic_cmpxchg_relaxed(v, old, new);
-}
-#define arch_atomic_cmpxchg_release arch_atomic_cmpxchg_release
-#endif
-
-
-#endif  
 
 #ifndef arch_atomic_try_cmpxchg_relaxed
 #ifdef arch_atomic_try_cmpxchg
@@ -991,43 +595,7 @@ arch_atomic_try_cmpxchg_relaxed(atomic_t *v, int *old, int new)
 #define arch_atomic_try_cmpxchg_relaxed arch_atomic_try_cmpxchg_relaxed
 #endif
 
-#else  
-
-#ifndef arch_atomic_try_cmpxchg_acquire
-static __always_inline bool
-arch_atomic_try_cmpxchg_acquire(atomic_t *v, int *old, int new)
-{
-	bool ret = arch_atomic_try_cmpxchg_relaxed(v, old, new);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic_try_cmpxchg_acquire arch_atomic_try_cmpxchg_acquire
 #endif
-
-#ifndef arch_atomic_try_cmpxchg_release
-static __always_inline bool
-arch_atomic_try_cmpxchg_release(atomic_t *v, int *old, int new)
-{
-	__atomic_release_fence();
-	return arch_atomic_try_cmpxchg_relaxed(v, old, new);
-}
-#define arch_atomic_try_cmpxchg_release arch_atomic_try_cmpxchg_release
-#endif
-
-#ifndef arch_atomic_try_cmpxchg
-static __always_inline bool
-arch_atomic_try_cmpxchg(atomic_t *v, int *old, int new)
-{
-	bool ret;
-	__atomic_pre_full_fence();
-	ret = arch_atomic_try_cmpxchg_relaxed(v, old, new);
-	__atomic_post_full_fence();
-	return ret;
-}
-#define arch_atomic_try_cmpxchg arch_atomic_try_cmpxchg
-#endif
-
-#endif  
 
 
 

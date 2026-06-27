@@ -1,6 +1,5 @@
 #include <linux/bitmap.h>
 #include <linux/bug.h>
-#include <linux/export.h>
 #include <linux/idr.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>

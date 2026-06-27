@@ -1,6 +1,5 @@
 #include <linux/init.h>
 #include <linux/cpu.h>
-#include <linux/module.h>
 #include <linux/utsname.h>
 #include <asm/bugs.h>
 #include <asm/processor.h>

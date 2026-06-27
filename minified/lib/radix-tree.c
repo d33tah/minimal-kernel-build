@@ -4,7 +4,6 @@
 #include <linux/bug.h>
 #include <linux/cpu.h>
 #include <linux/errno.h>
-#include <linux/export.h>
 #include <linux/idr.h>
 #include <linux/init.h>
 #include <linux/kernel.h>

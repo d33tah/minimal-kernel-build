@@ -1,5 +1,4 @@
 
-#include <linux/export.h>
 #include <linux/sched.h>
 #include <linux/timex.h>
 #include <linux/preempt.h>

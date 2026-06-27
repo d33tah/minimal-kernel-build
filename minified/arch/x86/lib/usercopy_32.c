@@ -1,4 +1,3 @@
-#include <linux/export.h>
 #include <linux/uaccess.h>
 #include <asm/asm.h>
 

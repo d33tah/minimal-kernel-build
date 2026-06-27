@@ -5,7 +5,6 @@
 #include <linux/linkage.h>
 #include <linux/bitops.h>
 #include <linux/kernel.h>
-#include <linux/export.h>
 #include <linux/percpu.h>
 #include <linux/string.h>
 #include <linux/ctype.h>

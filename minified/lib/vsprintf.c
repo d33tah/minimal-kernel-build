@@ -2,7 +2,6 @@
 #include <linux/stdarg.h>
 #include <linux/build_bug.h>
 
-#include <linux/module.h>
 #include <linux/types.h>
 #include <linux/string.h>
 #include <linux/ctype.h>

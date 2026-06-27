@@ -1,6 +1,5 @@
 #include <linux/ctype.h>
 #include <linux/errno.h>
-#include <linux/export.h>
 #include <linux/kstrtox.h>
 #include <linux/math64.h>
 #include <linux/types.h>

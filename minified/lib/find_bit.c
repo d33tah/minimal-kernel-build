@@ -1,7 +1,6 @@
 
 #include <linux/bitops.h>
 #include <linux/bitmap.h>
-#include <linux/export.h>
 #include <linux/math.h>
 #include <linux/minmax.h>
 #include <linux/swab.h>

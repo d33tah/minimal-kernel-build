@@ -42,7 +42,6 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/cpu.h>
 #include <asm/msr.h>
 #include <asm/memtype.h>
-#include <asm/intel-family.h>
 #include <asm/sigframe.h>
 #include <asm/traps.h>
 

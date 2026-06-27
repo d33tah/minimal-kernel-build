@@ -1,6 +1,5 @@
 #include <asm/early_ioremap.h>
 #include <linux/memblock.h>
-#include <linux/suspend.h>
 #include <linux/acpi.h>
 #include <linux/sort.h>
 

@@ -11,8 +11,6 @@
 #include <linux/memory.h>
 #include <linux/stop_machine.h>
 #include <linux/slab.h>
-#include <linux/kdebug.h>
-#include <linux/kprobes.h>
 #include <linux/mmu_context.h>
 #include <asm/sync_core.h>
 #include <asm/text-patching.h>

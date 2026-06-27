@@ -4,11 +4,9 @@
 #include <linux/ioport.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>
-#include <linux/fs.h>
 #include <linux/fs_context.h>
 #include <linux/proc_fs.h>
 #include <linux/sched.h>
-#include <linux/device.h>
 #include <linux/pfn.h>
 #include <linux/mm.h>
 #include <linux/mount.h>

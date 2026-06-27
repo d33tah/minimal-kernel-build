@@ -5,11 +5,9 @@
 #include <linux/interrupt.h>
 #include <linux/irq.h>
 #include <linux/timex.h>
-#include <linux/random.h>
 #include <linux/kprobes.h>
 #include <linux/init.h>
 #include <linux/kernel_stat.h>
-#include <linux/device.h>
 #include <linux/bitops.h>
 #include <linux/acpi.h>
 #include <linux/io.h>

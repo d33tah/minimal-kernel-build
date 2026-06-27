@@ -1,6 +1,5 @@
 #include <linux/kprobes.h>
 #include <linux/uaccess.h>
-#include <linux/utsname.h>
 #include <linux/hardirq.h>
 #include <linux/kdebug.h>
 #include <linux/ptrace.h>

@@ -2,7 +2,6 @@
 #include <linux/interrupt.h>
 #include <linux/kernel_stat.h>
 #include <linux/smp.h>
-#include <linux/delay.h>
 #include <linux/irq.h>
 
 #include <asm/irq_stack.h>

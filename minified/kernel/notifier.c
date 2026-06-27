@@ -3,7 +3,6 @@
 #include <linux/notifier.h>
 #include <linux/rcupdate.h>
 #include <linux/vmalloc.h>
-#include <linux/reboot.h>
 
 static int notifier_call_chain(struct notifier_block **nl,
 			       unsigned long val, void *v,

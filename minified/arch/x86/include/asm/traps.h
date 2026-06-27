@@ -18,8 +18,6 @@ enum x86_pf_error_code {
 	X86_PF_SGX	=		1 << 15,
 };
 
-extern int panic_on_unrecovered_nmi;
-
 
 bool fault_in_kernel_space(unsigned long address);
 

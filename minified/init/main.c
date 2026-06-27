@@ -448,7 +448,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	mem_encrypt_init();
 
-	if (initrd_start && !initrd_below_start_ok &&
+	if (initrd_start &&
 	    page_to_pfn(virt_to_page((void *)initrd_start)) < min_low_pfn) {
 		pr_crit("initrd overwritten (0x%08lx < 0x%08lx) - disabling it.\n",
 		    page_to_pfn(virt_to_page((void *)initrd_start)),

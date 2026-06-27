@@ -21,7 +21,6 @@
 
 
 
-int unknown_nmi_panic;
 static DEFINE_RAW_SPINLOCK(nmi_reason_lock);
 
 
@@ -85,9 +84,6 @@ nmi_restart:
 			pr_emerg("NMI: PCI system error (SERR) for reason %02x on CPU %d.\n",
 				 reason, smp_processor_id());
 
-			if (panic_on_unrecovered_nmi)
-				nmi_panic(regs, "NMI: Not continuing");
-
 			pr_emerg("Dazed and confused, but trying to continue\n");
 
 			reason = (reason & NMI_REASON_CLEAR_MASK) | NMI_REASON_CLEAR_SERR;
@@ -100,21 +96,17 @@ nmi_restart:
 				 reason, smp_processor_id());
 			show_regs(regs);
 
-			if (panic_on_io_nmi) {
-				nmi_panic(regs, "NMI IOCK error: Not continuing");
-			} else {
-				reason = (reason & NMI_REASON_CLEAR_MASK) | NMI_REASON_CLEAR_IOCHK;
-				outb(reason, NMI_REASON_PORT);
+			reason = (reason & NMI_REASON_CLEAR_MASK) | NMI_REASON_CLEAR_IOCHK;
+			outb(reason, NMI_REASON_PORT);
 
-				i = 20000;
-				while (--i) {
-					touch_nmi_watchdog();
-					udelay(100);
-				}
-
-				reason &= ~NMI_REASON_CLEAR_IOCHK;
-				outb(reason, NMI_REASON_PORT);
+			i = 20000;
+			while (--i) {
+				touch_nmi_watchdog();
+				udelay(100);
 			}
+
+			reason &= ~NMI_REASON_CLEAR_IOCHK;
+			outb(reason, NMI_REASON_PORT);
 		}
 		raw_spin_unlock(&nmi_reason_lock);
 	} else {
@@ -124,9 +116,6 @@ nmi_restart:
 		if (!(b2b && __this_cpu_read(swallow_nmi))) {
 			pr_emerg("Uhhuh. NMI received for unknown reason %02x on CPU %d.\n",
 				 reason, smp_processor_id());
-
-			if (unknown_nmi_panic || panic_on_unrecovered_nmi)
-				nmi_panic(regs, "NMI: Not continuing");
 
 			pr_emerg("Dazed and confused, but trying to continue\n");
 		}

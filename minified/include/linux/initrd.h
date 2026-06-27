@@ -2,8 +2,6 @@
 #ifndef __LINUX_INITRD_H
 #define __LINUX_INITRD_H
 
-extern int initrd_below_start_ok;
-
 extern unsigned long initrd_start, initrd_end;
 
 extern void wait_for_initramfs(void);

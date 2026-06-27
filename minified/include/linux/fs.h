@@ -51,12 +51,8 @@ struct delayed_call {
 #undef NR_OPEN
 #define INR_OPEN_CUR 1024
 #define INR_OPEN_MAX 4096
-#define NR_FILE  8192
 #define SEEK_SET	0
 #define SEEK_END	2
-struct files_stat_struct {
-	unsigned long max_files;
-};
 /* RWF_* values needed for IOCB_* macros, rwf_t typedef */
 typedef int rwf_t;
 #define RWF_NOWAIT	0x00000008
@@ -77,7 +73,6 @@ struct fs_parameter_spec;
 
 extern void __init inode_init(void);
 extern void __init files_init(void);
-extern void __init files_maxfiles_init(void);
 extern unsigned int sysctl_nr_open;
 
 /* rwf_t defined earlier */

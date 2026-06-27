@@ -22,10 +22,6 @@
 
 #include "internal.h"
 
-static struct files_stat_struct files_stat = {
-	.max_files = NR_FILE
-};
-
 static struct kmem_cache *filp_cachep __read_mostly;
 
 static struct percpu_counter nr_files __cacheline_aligned_in_smp;
@@ -156,14 +152,3 @@ void __init files_init(void)
 	percpu_counter_init(&nr_files, 0, GFP_KERNEL);
 }
 
-void __init files_maxfiles_init(void)
-{
-	unsigned long n;
-	unsigned long nr_pages = totalram_pages();
-	unsigned long memreserve = (nr_pages - nr_free_pages()) * 3/2;
-
-	memreserve = min(memreserve, nr_pages - 1);
-	n = ((nr_pages - memreserve) * (PAGE_SIZE / 1024)) / 10;
-
-	files_stat.max_files = max_t(unsigned long, n, NR_FILE);
-}

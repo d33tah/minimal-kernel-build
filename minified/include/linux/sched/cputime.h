@@ -11,16 +11,6 @@
  * run_posix_cpu_timers). The group accounting therefore has no destination
  * and these hooks are no-ops.
  */
-static inline void account_group_user_time(struct task_struct *tsk,
-					   u64 cputime)
-{
-}
-
-static inline void account_group_system_time(struct task_struct *tsk,
-					     u64 cputime)
-{
-}
-
 static inline void account_group_exec_runtime(struct task_struct *tsk,
 					      unsigned long long ns)
 {

@@ -9,27 +9,4 @@
 #include <linux/sched.h>
 #include <asm/irq.h>
 
-
-enum cpu_usage_stat {
-	CPUTIME_USER,
-	CPUTIME_NICE,
-	CPUTIME_SYSTEM,
-	CPUTIME_SOFTIRQ,
-	CPUTIME_IRQ,
-	CPUTIME_IDLE,
-	CPUTIME_IOWAIT,
-	NR_STATS,
-};
-
-struct kernel_cpustat {
-	u64 cpustat[NR_STATS];
-};
-
-DECLARE_PER_CPU(struct kernel_cpustat, kernel_cpustat);
-
-#define kcpustat_this_cpu this_cpu_ptr(&kernel_cpustat)
-
-
-extern void account_process_tick(struct task_struct *, int user);
-
-#endif  
+#endif

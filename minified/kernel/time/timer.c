@@ -68,7 +68,6 @@ __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 
 struct timer_base {
 	raw_spinlock_t		lock;
-	struct timer_list	*running_timer;
 	unsigned long		clk;
 	unsigned long		next_expiry;
 	bool			next_expiry_recalc;
@@ -317,7 +316,6 @@ static void expire_timers(struct timer_base *base, struct hlist_head *head)
 
 		timer = hlist_entry(head->first, struct timer_list, entry);
 
-		base->running_timer = timer;
 		detach_timer(timer, true);
 
 		fn = timer->function;
@@ -326,12 +324,10 @@ static void expire_timers(struct timer_base *base, struct hlist_head *head)
 			raw_spin_unlock(&base->lock);
 			call_timer_fn(timer, fn, baseclk);
 			raw_spin_lock(&base->lock);
-			base->running_timer = NULL;
 		} else {
 			raw_spin_unlock_irq(&base->lock);
 			call_timer_fn(timer, fn, baseclk);
 			raw_spin_lock_irq(&base->lock);
-			base->running_timer = NULL;
 		}
 	}
 }

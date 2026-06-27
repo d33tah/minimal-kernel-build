@@ -2,23 +2,16 @@
 #include <linux/types.h>
 #include <linux/sched/signal.h>
 #include <linux/tty.h>
-#include <linux/timer.h>
 #include <linux/kernel.h>
 #include <linux/compat.h>
 #include <linux/kd.h>
 #include <linux/vt.h>
-#include <linux/string.h>
-#include <linux/slab.h>
-#include <linux/major.h>
 #include <linux/fs.h>
 #include <linux/console.h>
 #include <linux/consolemap.h>
-#include <linux/signal.h>
-#include <linux/suspend.h>
 #include <linux/timex.h>
 
 #include <asm/io.h>
-#include <linux/uaccess.h>
 
 #include <linux/nospec.h>
 

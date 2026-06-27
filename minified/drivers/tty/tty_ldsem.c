@@ -1,11 +1,8 @@
 
-#include <linux/list.h>
-#include <linux/spinlock.h>
 #include <linux/atomic.h>
 #include <linux/tty.h>
 #include <linux/sched.h>
 #include <linux/sched/debug.h>
-#include <linux/sched/task.h>
 
 
 #if BITS_PER_LONG == 64

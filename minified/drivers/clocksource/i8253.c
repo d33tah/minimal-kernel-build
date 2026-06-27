@@ -2,7 +2,6 @@
 #include <linux/init.h>
 #include <linux/io.h>
 #include <linux/spinlock.h>
-#include <linux/timex.h>
 #include <linux/i8253.h>
 #include <linux/smp.h>
 

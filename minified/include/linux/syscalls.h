@@ -10,7 +10,6 @@ struct list_head;
 struct new_utsname;
 struct rlimit;
 struct stat;
-struct statfs;
 struct __kernel_old_timeval;
 
 #include <linux/types.h>

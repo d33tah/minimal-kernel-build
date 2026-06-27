@@ -33,10 +33,9 @@ struct fs_parameter_spec {
 struct fs_parse_result {
 	bool			negated;	 
 	union {
-		bool		boolean;	 
-		int		int_32;		 
-		unsigned int	uint_32;	 
-		u64		uint_64;	 
+		bool		boolean;
+		unsigned int	uint_32;
+		u64		uint_64;
 	};
 };
 

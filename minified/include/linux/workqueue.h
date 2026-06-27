@@ -17,11 +17,8 @@ void delayed_work_timer_fn(struct timer_list *t);
 #define work_data_bits(work) ((unsigned long *)(&(work)->data))
 
 enum {
-	WORK_STRUCT_PENDING_BIT	= 0,	 
-	WORK_STRUCT_INACTIVE_BIT= 1,	 
-	WORK_STRUCT_PWQ_BIT	= 2,	 
-	WORK_STRUCT_LINKED_BIT	= 3,	 
-	WORK_STRUCT_COLOR_SHIFT	= 4,	 
+	WORK_STRUCT_PENDING_BIT	= 0,
+	WORK_STRUCT_COLOR_SHIFT	= 4,
 
 	WORK_STRUCT_COLOR_BITS	= 4,
 

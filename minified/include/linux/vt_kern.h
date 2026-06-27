@@ -108,8 +108,7 @@ extern int global_cursor_default;
 
 
 struct vt_notifier_param {
-	struct vc_data *vc;	 
-	unsigned int c;
+	struct vc_data *vc;
 };
 
 /* hide_boot_cursor, vt_do_diacrit, vt_do_kdskbmode, vt_do_kdskbmeta,

@@ -134,7 +134,6 @@ static inline bool irqd_is_started(struct irq_data *d)
 struct irq_chip {
 	const char	*name;
 	unsigned int	(*irq_startup)(struct irq_data *data);
-	void		(*irq_shutdown)(struct irq_data *data);
 	void		(*irq_enable)(struct irq_data *data);
 	void		(*irq_disable)(struct irq_data *data);
 

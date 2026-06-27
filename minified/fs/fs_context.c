@@ -40,14 +40,12 @@ static int vfs_parse_sb_flag(struct fs_context *fc, const char *key)
 	token = lookup_constant(common_set_sb_flag, key, 0);
 	if (token) {
 		fc->sb_flags |= token;
-		fc->sb_flags_mask |= token;
 		return 0;
 	}
 
 	token = lookup_constant(common_clear_sb_flag, key, 0);
 	if (token) {
 		fc->sb_flags &= ~token;
-		fc->sb_flags_mask |= token;
 		return 0;
 	}
 
@@ -104,7 +102,6 @@ int vfs_parse_fs_string(struct fs_context *fc, const char *key,
 	struct fs_parameter param = {
 		.key	= key,
 		.type	= fs_value_is_flag,
-		.size	= v_size,
 	};
 
 	if (value) {
@@ -150,7 +147,6 @@ int generic_parse_monolithic(struct fs_context *fc, void *data)
 static struct fs_context *alloc_fs_context(struct file_system_type *fs_type,
 				      struct dentry *reference,
 				      unsigned int sb_flags,
-				      unsigned int sb_flags_mask,
 				      enum fs_context_purpose purpose)
 {
 	int (*init_fs_context)(struct fs_context *);
@@ -163,7 +159,6 @@ static struct fs_context *alloc_fs_context(struct file_system_type *fs_type,
 
 	fc->purpose	= purpose;
 	fc->sb_flags	= sb_flags;
-	fc->sb_flags_mask = sb_flags_mask;
 	fc->fs_type	= get_filesystem(fs_type);
 	fc->cred	= get_current_cred();
 	fc->log.prefix	= fs_type->name;
@@ -199,7 +194,7 @@ err_fc:
 struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
 					unsigned int sb_flags)
 {
-	return alloc_fs_context(fs_type, NULL, sb_flags, 0,
+	return alloc_fs_context(fs_type, NULL, sb_flags,
 					FS_CONTEXT_FOR_MOUNT);
 }
 

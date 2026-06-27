@@ -156,7 +156,6 @@ enum zone_watermarks {
 #define wmark_pages(z, i) (z->_watermark[i])
 
 struct per_cpu_pages {
-	int count;
 	int batch;
 
 

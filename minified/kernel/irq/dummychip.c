@@ -22,7 +22,6 @@ static unsigned int noop_ret(struct irq_data *data)
 struct irq_chip no_irq_chip = {
 	.name		= "none",
 	.irq_startup	= noop_ret,
-	.irq_shutdown	= noop,
 	.irq_enable	= noop,
 	.irq_disable	= noop,
 	.irq_ack	= ack_bad,
@@ -32,7 +31,6 @@ struct irq_chip no_irq_chip = {
 struct irq_chip dummy_irq_chip = {
 	.name		= "dummy",
 	.irq_startup	= noop_ret,
-	.irq_shutdown	= noop,
 	.irq_enable	= noop,
 	.irq_disable	= noop,
 	.irq_ack	= noop,

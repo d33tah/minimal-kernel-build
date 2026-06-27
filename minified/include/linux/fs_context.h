@@ -41,8 +41,6 @@ struct fs_parameter {
 		struct filename	*name;
 		struct file	*file;
 	};
-	size_t	size;
-	int	dirfd;
 };
 
 struct p_log {
@@ -60,13 +58,11 @@ struct fs_context {
 	struct p_log		log;		 
 	const char		*source;
 	void			*s_fs_info;
-	unsigned int		sb_flags;	 
-	unsigned int		sb_flags_mask;	 
+	unsigned int		sb_flags;
 	unsigned int		s_iflags;
 	enum fs_context_purpose	purpose:8;
 	bool			need_free:1;
-	bool			global:1;	 
-	bool			oldapi:1;	 
+	bool			global:1;
 };
 
 struct fs_context_operations {

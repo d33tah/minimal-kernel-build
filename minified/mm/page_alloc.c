@@ -555,7 +555,6 @@ static void free_unref_page_commit(struct page *page, int migratetype,
 	pcp = this_cpu_ptr(zone->per_cpu_pageset);
 	pindex = order_to_pindex(migratetype, order);
 	list_add(&page->lru, &pcp->lists[pindex]);
-	pcp->count += 1 << order;
 }
 
 void free_unref_page(struct page *page, unsigned int order)
@@ -635,23 +634,19 @@ struct page *__rmqueue_pcplist(struct zone *zone, unsigned int order,
 
 	if (list_empty(list)) {
 		int batch = READ_ONCE(pcp->batch);
-		int alloced;
-
 
 		if (batch > 1)
 			batch = max(batch >> order, 2);
-		alloced = rmqueue_bulk(zone, order,
+		rmqueue_bulk(zone, order,
 				batch, list,
 				migratetype, alloc_flags);
 
-		pcp->count += alloced << order;
 		if (unlikely(list_empty(list)))
 			return NULL;
 	}
 
 	page = list_first_entry(list, struct page, lru);
 	list_del(&page->lru);
-	pcp->count -= 1 << order;
 
 	return page;
 }

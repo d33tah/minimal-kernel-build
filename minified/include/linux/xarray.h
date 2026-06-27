@@ -419,10 +419,6 @@ static inline unsigned int xas_find_chunk(struct xa_state *xas, bool advance,
 	return find_next_bit(addr, XA_CHUNK_SIZE, offset);
 }
 
-enum {
-	XA_CHECK_SCHED = 4096,
-};
-
 void *__xas_next(struct xa_state *);
 
 static inline void *xas_next(struct xa_state *xas)

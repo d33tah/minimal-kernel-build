@@ -9,7 +9,6 @@
 #include <asm/asm.h>
 #include <asm/errno.h>
 #include <asm/cpumask.h>
-#include <uapi/asm/msr.h>
 #include <asm/shared/msr.h>
 
 struct msr_info {

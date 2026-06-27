@@ -12,8 +12,4 @@
 
 
 
-#ifndef __ASSEMBLY__
-extern const unsigned char * const x86_nops[];
 #endif
-
-#endif  

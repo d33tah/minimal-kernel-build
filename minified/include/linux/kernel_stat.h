@@ -25,22 +25,9 @@ struct kernel_cpustat {
 	u64 cpustat[NR_STATS];
 };
 
-struct kernel_stat {
-	unsigned long irqs_sum;
-	unsigned int softirqs[NR_SOFTIRQS];
-};
-
-DECLARE_PER_CPU(struct kernel_stat, kstat);
 DECLARE_PER_CPU(struct kernel_cpustat, kernel_cpustat);
 
 #define kcpustat_this_cpu this_cpu_ptr(&kernel_cpustat)
-
-
-
-static inline void kstat_incr_softirqs_this_cpu(unsigned int irq)
-{
-	__this_cpu_inc(kstat.softirqs[irq]);
-}
 
 
 extern void account_process_tick(struct task_struct *, int user);

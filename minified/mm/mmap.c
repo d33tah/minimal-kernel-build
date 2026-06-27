@@ -19,19 +19,14 @@
 #include <linux/mount.h>
 #include <linux/rmap.h>
 #include <linux/mmdebug.h>
-#include <linux/perf_event.h>
 #include <linux/sched/coredump.h>
-#include <linux/uprobes.h>
 #include <linux/rbtree_augmented.h>
-#include <linux/notifier.h>
 #include <linux/memory.h>
 #include <linux/printk.h>
-#include <linux/moduleparam.h>
 #include <linux/pkeys.h>
 #include <linux/oom.h>
 #include <linux/sched/mm.h>
 
-#include <linux/uaccess.h>
 #include <asm/cacheflush.h>
 #include <asm/tlb.h>
 #include <asm/mmu_context.h>

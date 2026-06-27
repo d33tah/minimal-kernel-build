@@ -6,21 +6,17 @@
 #include <linux/swapops.h>
 #include <linux/interrupt.h>
 #include <linux/pagemap.h>
-#include <linux/jiffies.h>
 #include <linux/memblock.h>
 #include <linux/compiler.h>
 #include <linux/kernel.h>
-#include <linux/suspend.h>
 #include <linux/pagevec.h>
 #include <linux/slab.h>
 #include <linux/oom.h>
 #include <linux/topology.h>
-#include <linux/sysctl.h>
 #include <linux/nodemask.h>
 #include <linux/vmalloc.h>
 #include <linux/vmstat.h>
 #include <linux/memremap.h>
-#include <linux/stop_machine.h>
 #include <linux/sort.h>
 #include <linux/pfn.h>
 #include <linux/backing-dev.h>
@@ -31,10 +27,8 @@ struct alloc_context;
 #include <linux/mm_inline.h>
 #include <linux/sched/mm.h>
 
-#include <linux/kthread.h>
 #include <linux/memcontrol.h>
 #include <linux/lockdep.h>
-#include <linux/nmi.h>
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
 #include <asm/div64.h>

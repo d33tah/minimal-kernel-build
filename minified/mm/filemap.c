@@ -3,7 +3,6 @@
 #include <linux/fs.h>
 #include <linux/sched/signal.h>
 #include <linux/uaccess.h>
-#include <linux/kernel_stat.h>
 #include <linux/gfp.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
@@ -21,9 +20,6 @@
 #include <linux/memcontrol.h>
 #include <linux/shmem_fs.h>
 #include <linux/rmap.h>
-#include <linux/ramfs.h>
-#include <asm/pgalloc.h>
-#include <asm/tlbflush.h>
 #include "internal.h"
 
 #include <asm/mman.h>

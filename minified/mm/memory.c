@@ -15,15 +15,9 @@
 #include <linux/writeback.h>
 #include <linux/memcontrol.h>
 #include <linux/swapops.h>
-#include <linux/elf.h>
 #include <linux/gfp.h>
-#include <linux/string.h>
 #include <linux/oom.h>
 #include <linux/file.h>
-#include <linux/numa.h>
-#include <linux/perf_event.h>
-#include <linux/ptrace.h>
-#include <linux/vmalloc.h>
 
 #include <asm/io.h>
 #include <asm/mmu_context.h>

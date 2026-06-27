@@ -1,9 +1,7 @@
 #include <linux/slab.h>
 
 #include <linux/mm.h>
-#include <linux/poison.h>
 #include <linux/interrupt.h>
-#include <linux/memory.h>
 #include <linux/cache.h>
 #include <linux/compiler.h>
 #include <linux/uaccess.h>

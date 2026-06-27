@@ -8,11 +8,7 @@
 #include <linux/slab.h>
 #include <linux/init.h>
 #include <linux/rmap.h>
-#include <linux/rcupdate.h>
 #include <linux/memcontrol.h>
-#include <linux/huge_mm.h>
-#include <linux/backing-dev.h>
-#include <linux/memremap.h>
 #include <linux/mm_inline.h>
 
 #include <asm/tlbflush.h>

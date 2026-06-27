@@ -3,22 +3,17 @@
 #include <linux/string.h>
 #include <linux/compiler.h>
 #include <linux/err.h>
-#include <linux/sched.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/task_stack.h>
 #include <linux/swap.h>
 #include <linux/swapops.h>
 #include <linux/mman.h>
-#include <linux/vmalloc.h>
 #include <linux/elf.h>
-#include <linux/personality.h>
 #include <linux/random.h>
+#include <linux/vmalloc.h>
 
-#include <linux/sizes.h>
-#include <linux/compat.h>
 
-#include <linux/uaccess.h>
 
 #include "internal.h"
 

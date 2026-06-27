@@ -2,7 +2,6 @@
 
 #include <linux/mm.h>
 #include <linux/sched.h>
-#include <linux/kernel_stat.h>
 #include <linux/swap.h>
 #include <linux/mman.h>
 #include <linux/pagemap.h>
@@ -11,11 +10,9 @@
 #include <linux/mm_inline.h>
 #include <linux/memremap.h>
 #include <linux/percpu.h>
-#include <linux/notifier.h>
 #include <linux/backing-dev.h>
 #include <linux/memcontrol.h>
 #include <linux/gfp.h>
-#include <linux/uio.h>
 #include <linux/local_lock.h>
 
 #include "internal.h"

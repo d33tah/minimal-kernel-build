@@ -3,13 +3,9 @@
 #include <linux/swap.h> 
 #include <linux/bit_spinlock.h>
 #include <linux/interrupt.h>
-#include <linux/swab.h>
-#include <linux/bitops.h>
 #include <linux/slab.h>
 #include "slab.h"
-#include <linux/ctype.h>
 #include <linux/memory.h>
-#include <linux/math64.h>
 
 #include <linux/memcontrol.h>
 #include <linux/sort.h>

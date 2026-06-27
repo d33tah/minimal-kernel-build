@@ -47,7 +47,6 @@ void tty_buffer_free_all(struct tty_port *port)
 
 	tty_buffer_reset(&buf->sentinel, 0);
 	buf->head = &buf->sentinel;
-	buf->tail = &buf->sentinel;
 
 	still_used = atomic_xchg(&buf->mem_used, 0);
 	WARN(still_used != freed, "we still have not freed %d bytes!",
@@ -61,7 +60,6 @@ void tty_buffer_init(struct tty_port *port)
 	mutex_init(&buf->lock);
 	tty_buffer_reset(&buf->sentinel, 0);
 	buf->head = &buf->sentinel;
-	buf->tail = &buf->sentinel;
 	init_llist_head(&buf->free);
 	atomic_set(&buf->mem_used, 0);
 	INIT_WORK(&buf->work, NULL);

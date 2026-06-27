@@ -170,7 +170,6 @@ struct task_struct {
 	int				on_rq;
 
 	int				static_prio;
-	int				normal_prio;
 
 	struct sched_entity		se;
 	const struct sched_class	*sched_class;

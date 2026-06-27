@@ -24,7 +24,6 @@ struct tty_bufhead {
 	struct tty_buffer sentinel;
 	struct llist_head free;
 	atomic_t	   mem_used;
-	struct tty_buffer *tail;
 };
 
 #endif

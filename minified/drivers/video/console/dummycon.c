@@ -1,7 +1,6 @@
 /* Minimal includes for dummycon */
 #include <linux/console.h>
 #include <linux/vt_kern.h>
-#include <linux/module.h>
 
 
 #define DUMMY_COLUMNS	CONFIG_DUMMY_CONSOLE_COLUMNS

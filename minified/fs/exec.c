@@ -7,7 +7,6 @@
 #include <linux/fcntl.h>
 #include <linux/swap.h>
 #include <linux/string.h>
-#include <linux/init.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/signal.h>
@@ -20,7 +19,6 @@
 #include <linux/binfmts.h>
 #include <linux/utsname.h>
 #include <linux/pid_namespace.h>
-#include <linux/module.h>
 #include <linux/namei.h>
 #include <linux/mount.h>
 #include <linux/security.h>

@@ -4,7 +4,6 @@
 #include <linux/fcntl.h>
 #include <linux/file.h>
 #include <linux/uio.h>
-#include <linux/export.h>
 #include <linux/syscalls.h>
 #include <linux/pagemap.h>
 #include <linux/compat.h>

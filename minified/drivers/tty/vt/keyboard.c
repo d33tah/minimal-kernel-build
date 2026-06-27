@@ -1,6 +1,4 @@
-
-#include <linux/module.h>
-#include <linux/export.h>
+#include <linux/init.h>
 
 /* register_keyboard_notifier, unregister_keyboard_notifier, kd_mksound,
    vt_get_leds removed - unused */

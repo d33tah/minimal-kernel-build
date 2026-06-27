@@ -1,6 +1,5 @@
 
 #include <linux/types.h>
-#include <linux/errno.h>
 #include <linux/tty.h>
 #include <linux/tty_driver.h>
 #include <linux/timer.h>
@@ -10,7 +9,6 @@
 #include <linux/wait.h>
 #include <linux/bitops.h>
 #include <linux/delay.h>
-#include <linux/module.h>
 #include <linux/ratelimit.h>
 #include "tty.h"
 

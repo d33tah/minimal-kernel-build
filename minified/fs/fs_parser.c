@@ -1,5 +1,4 @@
 
-#include <linux/export.h>
 #include <linux/fs_context.h>
 #include <linux/fs_parser.h>
 #include <linux/slab.h>

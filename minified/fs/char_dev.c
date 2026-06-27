@@ -7,7 +7,6 @@
 
 #include <linux/major.h>
 #include <linux/errno.h>
-#include <linux/module.h>
 
 #include <linux/kobject.h>
 typedef struct kobject *kobj_probe_t(dev_t, int *, void *);

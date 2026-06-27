@@ -1,9 +1,7 @@
 #include <linux/init_task.h>
-#include <linux/export.h>
 #include <linux/sched.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
-#include <linux/init.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/numa.h>

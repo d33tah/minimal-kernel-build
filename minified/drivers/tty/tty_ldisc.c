@@ -10,7 +10,6 @@
 #include <linux/slab.h>
 #include <linux/poll.h>
 #include <linux/proc_fs.h>
-#include <linux/module.h>
 #include <linux/device.h>
 #include <linux/wait.h>
 #include <linux/bitops.h>

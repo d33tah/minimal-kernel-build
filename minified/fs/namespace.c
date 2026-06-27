@@ -1,6 +1,5 @@
 
 #include <linux/syscalls.h>
-#include <linux/export.h>
 #include <linux/capability.h>
 #include <linux/mnt_namespace.h>
 #include <linux/user_namespace.h>

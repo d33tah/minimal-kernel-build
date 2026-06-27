@@ -1,6 +1,5 @@
 /* Delay loop calibration */
 #include <linux/delay.h>
-#include <linux/init.h>
 #include <linux/percpu.h>
 
 unsigned long preset_lpj;

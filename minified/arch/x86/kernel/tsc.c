@@ -30,7 +30,6 @@ unsigned int __read_mostly tsc_khz;
 #define KHZ	1000
 
 static int __read_mostly tsc_unstable;
-static unsigned int __initdata tsc_early_khz;
 
 static DEFINE_STATIC_KEY_FALSE(__use_tsc);
 
@@ -509,10 +508,7 @@ static bool __init determine_cpu_tsc_frequencies(bool early)
 
 	if (early) {
 		cpu_khz = x86_platform.calibrate_cpu();
-		if (tsc_early_khz)
-			tsc_khz = tsc_early_khz;
-		else
-			tsc_khz = x86_platform.calibrate_tsc();
+		tsc_khz = x86_platform.calibrate_tsc();
 	} else {
 		 
 		WARN_ON(x86_platform.calibrate_cpu != native_calibrate_cpu);

@@ -435,8 +435,6 @@ free_tsk:
 	return NULL;
 }
 
-static unsigned long default_dump_filter = MMF_DUMP_FILTER_DEFAULT;
-
 
 #include <linux/init_task.h>
 
@@ -459,7 +457,7 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 		mm->flags = current->mm->flags & MMF_INIT_MASK;
 		mm->def_flags = current->mm->def_flags & VM_INIT_DEF_MASK;
 	} else {
-		mm->flags = default_dump_filter;
+		mm->flags = MMF_DUMP_FILTER_DEFAULT;
 		mm->def_flags = 0;
 	}
 

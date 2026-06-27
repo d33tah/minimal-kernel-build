@@ -885,8 +885,6 @@ bool is_subdir(struct dentry *new_dentry, struct dentry *old_dentry)
 	return new_dentry == old_dentry;
 }
 
-static __initdata unsigned long dhash_entries;
-
 static void __init dcache_init_early(void)
 {
 	
@@ -896,7 +894,7 @@ static void __init dcache_init_early(void)
 	dentry_hashtable =
 		alloc_large_system_hash("Dentry cache",
 					sizeof(struct hlist_bl_head),
-					dhash_entries,
+					0,
 					13,
 					HASH_EARLY | HASH_ZERO,
 					&d_hash_shift,
@@ -920,7 +918,7 @@ static void __init dcache_init(void)
 	dentry_hashtable =
 		alloc_large_system_hash("Dentry cache",
 					sizeof(struct hlist_bl_head),
-					dhash_entries,
+					0,
 					13,
 					HASH_ZERO,
 					&d_hash_shift,

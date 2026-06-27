@@ -1,7 +1,6 @@
 
 #include <linux/mm.h>
 #include <linux/swap.h> 
-#include <linux/module.h>
 #include <linux/bit_spinlock.h>
 #include <linux/interrupt.h>
 #include <linux/swab.h>

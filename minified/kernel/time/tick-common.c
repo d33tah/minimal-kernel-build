@@ -5,7 +5,6 @@
 #include <linux/nmi.h>
 #include <linux/percpu.h>
 #include <linux/sched.h>
-#include <linux/module.h>
 
 #include <asm/irq_regs.h>
 

@@ -4,7 +4,6 @@
 #include <linux/device.h>
 #include <linux/clocksource.h>
 #include <linux/init.h>
-#include <linux/module.h>
 #include <linux/sched.h>  
 #include <linux/tick.h>
 #include <linux/kthread.h>

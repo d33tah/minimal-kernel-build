@@ -1,4 +1,3 @@
-#include <linux/export.h>
 #include <linux/cred.h>
 #include <linux/slab.h>
 #include <linux/sched.h>

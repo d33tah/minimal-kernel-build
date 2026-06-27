@@ -1,6 +1,5 @@
 
 #include <linux/irq.h>
-#include <linux/module.h>
 
 /* --- 2025-12-07 23:50 --- Inlined from linux/msi.h */
 #include <linux/cpumask.h>

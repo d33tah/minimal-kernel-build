@@ -1,6 +1,5 @@
 
 #include <linux/kernel_stat.h>
-#include <linux/export.h>
 #include <linux/interrupt.h>
 #include <linux/percpu.h>
 #include <linux/init.h>

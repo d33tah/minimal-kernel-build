@@ -2,7 +2,6 @@
 #include <linux/signal.h>
 #include <linux/sched.h>
 #include <linux/kernel.h>
-#include <linux/errno.h>
 #include <linux/string.h>
 #include <linux/types.h>
 #include <linux/ptrace.h>

@@ -1,5 +1,4 @@
 
-#include <linux/export.h>
 #include <linux/compiler.h>
 #include <linux/fs.h>
 #include <linux/sched/signal.h>

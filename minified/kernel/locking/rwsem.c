@@ -7,7 +7,6 @@
 #include <linux/sched/wake_q.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/clock.h>
-#include <linux/export.h>
 #include <linux/rwsem.h>
 #include <linux/atomic.h>
 

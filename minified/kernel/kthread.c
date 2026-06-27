@@ -10,7 +10,6 @@
 #include <linux/cgroup.h>
 #include <linux/unistd.h>
 #include <linux/file.h>
-#include <linux/export.h>
 #include <linux/mutex.h>
 #include <linux/slab.h>
 #include <linux/ptrace.h>

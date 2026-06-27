@@ -9,7 +9,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/sched/task_stack.h>
 #include <linux/sched/cputime.h>
 #include <linux/interrupt.h>
-#include <linux/module.h>
 #include <linux/capability.h>
 #include <linux/completion.h>
 #include <linux/personality.h>

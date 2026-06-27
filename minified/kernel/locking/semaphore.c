@@ -2,7 +2,6 @@
 
 #include <linux/compiler.h>
 #include <linux/kernel.h>
-#include <linux/export.h>
 #include <linux/sched.h>
 #include <linux/sched/debug.h>
 #include <linux/sched/signal.h>

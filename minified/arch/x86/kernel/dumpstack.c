@@ -3,7 +3,6 @@
 #include <linux/utsname.h>
 #include <linux/hardirq.h>
 #include <linux/kdebug.h>
-#include <linux/module.h>
 #include <linux/ptrace.h>
 #include <linux/sched/debug.h>
 #include <linux/sched/task_stack.h>

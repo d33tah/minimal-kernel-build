@@ -1,6 +1,5 @@
 #include <linux/types.h>
 #include <linux/kernel.h>
-#include <linux/init.h>
 #include <linux/spinlock.h>
 #include <linux/smp.h>
 #include <linux/interrupt.h>
@@ -12,7 +11,6 @@
 #include <linux/notifier.h>
 #include <linux/cpu.h>
 #include <linux/mutex.h>
-#include <linux/export.h>
 #include <linux/hardirq.h>
 #include <linux/delay.h>
 #include <linux/moduleparam.h>

@@ -3,7 +3,6 @@
 #include <linux/notifier.h>
 #include <linux/rcupdate_wait.h>
 #include <linux/kernel.h>
-#include <linux/export.h>
 #include <linux/mutex.h>
 #include <linux/sched.h>
 #include <linux/types.h>

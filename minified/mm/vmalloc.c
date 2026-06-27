@@ -1,7 +1,6 @@
 
 #include <linux/vmalloc.h>
 #include <linux/mm.h>
-#include <linux/module.h>
 #include <linux/highmem.h>
 #include <linux/sched/signal.h>
 #include <linux/slab.h>

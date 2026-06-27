@@ -5,14 +5,12 @@
 #include <linux/kmsg_dump.h>
 #include <linux/notifier.h>
 #include <linux/vt_kern.h>
-#include <linux/module.h>
 #include <linux/random.h>
 #include <linux/reboot.h>
 #include <linux/delay.h>
 extern struct atomic_notifier_head panic_notifier_list;
 #include <linux/sched.h>
 
-#include <linux/init.h>
 #include <linux/nmi.h>
 #include <linux/console.h>
 #include <linux/bug.h>

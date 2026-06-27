@@ -10,7 +10,6 @@
 #include <linux/memblock.h>
 #include <linux/compiler.h>
 #include <linux/kernel.h>
-#include <linux/module.h>
 #include <linux/suspend.h>
 #include <linux/pagevec.h>
 #include <linux/slab.h>

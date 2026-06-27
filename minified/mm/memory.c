@@ -11,7 +11,6 @@
 #include <linux/pagemap.h>
 #include <linux/memremap.h>
 #include <linux/rmap.h>
-#include <linux/export.h>
 #include <linux/init.h>
 #include <linux/writeback.h>
 #include <linux/memcontrol.h>

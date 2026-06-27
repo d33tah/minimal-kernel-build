@@ -1,5 +1,4 @@
 #include <linux/kernel.h>
-#include <linux/module.h>
 #include <linux/mm.h>
 #include <linux/list_lru.h>
 #include <linux/slab.h>

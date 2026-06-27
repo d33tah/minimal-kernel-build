@@ -1,15 +1,12 @@
 
-#include <linux/string.h>
 #include <linux/slab.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/init.h>
 #include <linux/fs.h>
-#include <linux/security.h>
 #include <linux/cred.h>
 #include <linux/rcupdate.h>
 #include <linux/mount.h>
-#include <linux/capability.h>
 #include <linux/cdev.h>
 #include <linux/sysctl.h>
 #include <linux/percpu.h>

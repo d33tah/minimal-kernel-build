@@ -3,13 +3,11 @@
 #include <linux/cred.h>
 #include <linux/mount.h>
 
-#include <linux/mutex.h>
 #include <linux/namei.h>
 #include <linux/writeback.h>
 
 #include <linux/fs_context.h>
 
-#include <linux/uaccess.h>
 
 #include "internal.h"
 

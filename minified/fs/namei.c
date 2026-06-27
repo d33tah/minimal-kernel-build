@@ -6,7 +6,6 @@
 #include <linux/pagemap.h>
 #include <linux/sched/mm.h>
 #include <linux/personality.h>
-#include <linux/security.h>
 #include <linux/syscalls.h>
 #include <linux/mount.h>
 #include <linux/capability.h>
@@ -17,7 +16,6 @@
 #include <linux/hash.h>
 #include <linux/bitops.h>
 #include <linux/init_task.h>
-#include <linux/uaccess.h>
 
 #include "internal.h"
 #include "mount.h"

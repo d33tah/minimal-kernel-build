@@ -10,7 +10,6 @@
 #include <linux/bitops.h>
 #include <linux/spinlock.h>
 #include <linux/rcupdate.h>
-#include <linux/security.h>
 
 #include "internal.h"
 

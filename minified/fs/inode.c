@@ -4,7 +4,6 @@
 #include <linux/backing-dev.h>
 #include <linux/hash.h>
 #include <linux/swap.h>
-#include <linux/security.h>
 #include <linux/cdev.h>
 #include <linux/memblock.h>
 #include <linux/mount.h>

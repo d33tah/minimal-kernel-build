@@ -1,23 +1,17 @@
 
-#include <linux/string.h>
 #include <linux/mm.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/tty.h>
 #include <linux/namei.h>
 #include <linux/backing-dev.h>
-#include <linux/capability.h>
 #include <linux/init_task.h> /* for securebits defines */
-#include <linux/security.h>
 #include <linux/mount.h>
 #include <linux/fcntl.h>
-#include <linux/slab.h>
-#include <linux/uaccess.h>
 #include <linux/fs.h>
 #include <linux/personality.h>
 #include <linux/pagemap.h>
 #include <linux/syscalls.h>
-#include <linux/rcupdate.h>
 
 #include <linux/fs_struct.h>
 

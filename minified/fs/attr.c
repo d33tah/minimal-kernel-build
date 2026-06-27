@@ -1,11 +1,9 @@
 
 #include <linux/time.h>
 #include <linux/mm.h>
-#include <linux/string.h>
 #include <linux/sched/signal.h>
 #include <linux/capability.h>
 #include <linux/fcntl.h>
-#include <linux/security.h>
 
 int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
 		    struct iattr *attr)

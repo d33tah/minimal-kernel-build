@@ -340,11 +340,6 @@ static inline void release_user_cpus_ptr(struct task_struct *p)
 }
 
 
-static inline int task_nice(const struct task_struct *p)
-{
-	return PRIO_TO_NICE((p)->static_prio);
-}
-
 extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);
 
 static __always_inline bool is_idle_task(const struct task_struct *p)

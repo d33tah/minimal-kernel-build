@@ -66,10 +66,6 @@
 	1 : ({ local_irq_restore(flags); 0; }); \
 })
 
-/* Inlined from rwlock.h */
-# define rwlock_init(lock)					\
-	do { *(lock) = __RW_LOCK_UNLOCKED(lock); } while (0)
-
 /* do_raw_read_lock, do_raw_read_trylock, do_raw_read_unlock,
    do_raw_write_lock, do_raw_write_trylock, do_raw_write_unlock removed - unused */
 

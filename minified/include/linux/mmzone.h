@@ -119,13 +119,6 @@ enum node_stat_item {
 };
 
 
-static __always_inline bool vmstat_item_in_bytes(int idx)
-{
-	 
-	return (idx == NR_SLAB_RECLAIMABLE_B ||
-		idx == NR_SLAB_UNRECLAIMABLE_B);
-}
-
 #define LRU_BASE 0
 #define LRU_ACTIVE 1
 #define LRU_FILE 2

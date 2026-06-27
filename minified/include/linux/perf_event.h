@@ -4,7 +4,6 @@
 /* Minimal perf_event.h - perf events disabled */
 #include <uapi/linux/perf_event.h>
 #include <asm/perf_event.h>
-#include <asm/hw_breakpoint.h>
 
 
 /* perf_bp_event, perf_event_text_poke, __perf_sw_event, perf_tp_event,

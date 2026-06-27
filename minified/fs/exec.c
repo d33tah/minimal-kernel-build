@@ -5,30 +5,22 @@
 #include <linux/mm.h>
 #include <linux/stat.h>
 #include <linux/fcntl.h>
-#include <linux/swap.h>
 #include <linux/string.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
-#include <linux/pagemap.h>
-#include <linux/perf_event.h>
 #include <linux/highmem.h>
 #include <linux/spinlock.h>
 #include <linux/personality.h>
 #include <linux/binfmts.h>
-#include <linux/utsname.h>
+#include <linux/ptrace.h>
 #include <linux/pid_namespace.h>
 #include <linux/namei.h>
 #include <linux/mount.h>
-#include <linux/security.h>
-#include <linux/syscalls.h>
 #include <linux/fs_struct.h>
-#include <linux/oom.h>
-#include <linux/compat.h>
-#include <linux/vmalloc.h>
+#include <linux/security.h>
 
-#include <linux/uaccess.h>
 #include <asm/mmu_context.h>
 #include <asm/tlb.h>
 

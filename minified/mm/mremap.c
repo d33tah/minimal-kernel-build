@@ -1,12 +1,6 @@
 
 #include <linux/mm.h>
-#include <linux/mman.h>
-#include <linux/swap.h>
 #include <linux/fs.h>
-#include <linux/swapops.h>
-#include <linux/highmem.h>
-#include <linux/syscalls.h>
-#include <linux/uaccess.h>
 
 #include <asm/cacheflush.h>
 #include <asm/tlb.h>

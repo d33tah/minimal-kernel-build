@@ -4,15 +4,9 @@
 #include <linux/spinlock.h>
 
 #include <linux/mm.h>
-#include <linux/memremap.h>
-#include <linux/pagemap.h>
-#include <linux/rmap.h>
 #include <linux/swap.h>
-#include <linux/swapops.h>
 
 #include <linux/sched/signal.h>
-#include <linux/rwsem.h>
-#include <linux/mm_inline.h>
 #include <linux/sched/mm.h>
 
 #include <asm/mmu_context.h>

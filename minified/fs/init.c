@@ -2,10 +2,8 @@
 #include <linux/mount.h>
 #include <linux/namei.h>
 #include <linux/fs.h>
-#include <linux/fs_struct.h>
 #include <linux/file.h>
 #include <linux/init_syscalls.h>
-#include <linux/security.h>
 #include "internal.h"
 
 

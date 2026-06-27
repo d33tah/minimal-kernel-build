@@ -9,7 +9,6 @@
 #include <linux/interrupt.h>
 #include <linux/tty.h>
 #include <linux/tty_driver.h>
-#include <linux/tty_flip.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/console.h>

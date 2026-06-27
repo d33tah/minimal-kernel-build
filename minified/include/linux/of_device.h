@@ -2,7 +2,6 @@
 #define _LINUX_OF_DEVICE_H
 
 #include <linux/cpu.h>
-#include <linux/platform_device.h>
 
 /* Inlined from of_platform.h */
 #include <linux/device.h>

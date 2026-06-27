@@ -16,7 +16,6 @@
 #include <asm/tlbflush.h>
 #include <asm/page.h>
 #include <linux/memcontrol.h>
-#include <linux/stackdepot.h>
 
 
 #include "internal.h"

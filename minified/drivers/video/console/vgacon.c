@@ -43,8 +43,6 @@ static unsigned int	vga_video_num_columns;
 static unsigned int	vga_video_num_lines;			 
 static bool		vga_can_do_color;
 static unsigned char	vga_video_type		__read_mostly;
-static bool 		vga_is_gfx;
-static bool 		vga_512_chars;
 static int 		vga_video_font_height;
 
 static bool vga_hardscroll_enabled;
@@ -208,8 +206,6 @@ static void vgacon_init(struct vc_data *c, int init)
 		vc_resize(c, vga_video_num_columns, vga_video_num_lines);
 
 	c->vc_complement_mask = 0x7700;
-	if (vga_512_chars)
-		c->vc_hi_font_mask = 0x0800;
 	p = *c->vc_uni_pagedir_loc;
 	if (c->vc_uni_pagedir_loc != &vgacon_uni_pagedir) {
 		con_free_unimap(c);
@@ -346,18 +342,15 @@ static int vgacon_switch(struct vc_data *c)
 
 
 
-	if (!vga_is_gfx)
-		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
-			    c->vc_screenbuf_size > vga_vram_size ?
-				vga_vram_size : c->vc_screenbuf_size);
+	scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
+		    c->vc_screenbuf_size > vga_vram_size ?
+			vga_vram_size : c->vc_screenbuf_size);
 
 	return 0;
 }
 
 static int vgacon_set_origin(struct vc_data *c)
 {
-	if (vga_is_gfx)
-		return 0;
 	c->vc_origin = c->vc_visible_origin = vga_vram_base;
 	vga_set_mem_top(c);
 	return 1;
@@ -376,9 +369,8 @@ static void vgacon_save_screen(struct vc_data *c)
 
 	 
 
-	if (!vga_is_gfx)
-		scr_memcpyw((u16 *) c->vc_screenbuf, (u16 *) c->vc_origin,
-			    c->vc_screenbuf_size > vga_vram_size ? vga_vram_size : c->vc_screenbuf_size);
+	scr_memcpyw((u16 *) c->vc_screenbuf, (u16 *) c->vc_origin,
+		    c->vc_screenbuf_size > vga_vram_size ? vga_vram_size : c->vc_screenbuf_size);
 }
 
 static bool vgacon_scroll(struct vc_data *c, unsigned int t, unsigned int b,
@@ -387,7 +379,7 @@ static bool vgacon_scroll(struct vc_data *c, unsigned int t, unsigned int b,
 	unsigned long oldo;
 	unsigned int delta;
 
-	if (t || b != c->vc_rows || vga_is_gfx || c->vc_mode != KD_TEXT)
+	if (t || b != c->vc_rows || c->vc_mode != KD_TEXT)
 		return false;
 
 	if (!vga_hardscroll_enabled || lines >= c->vc_rows / 2)

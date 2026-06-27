@@ -12,7 +12,6 @@ struct notifier_block;
 
 enum con_scroll {
 	SM_UP,
-	SM_DOWN,
 };
 
 struct consw {
@@ -63,7 +62,6 @@ struct console {
 
 enum con_flush_mode {
 	CONSOLE_FLUSH_PENDING,
-	CONSOLE_REPLAY_ALL,
 };
 
 extern void register_console(struct console *);

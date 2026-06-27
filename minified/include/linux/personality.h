@@ -15,7 +15,6 @@ enum {
 			    MMAP_PAGE_ZERO)
 
 enum {
-	PER_LINUX =		0x0000,
 	PER_MASK =		0x00ff,
 };
 

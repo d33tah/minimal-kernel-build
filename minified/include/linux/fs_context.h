@@ -28,8 +28,7 @@ enum fs_context_purpose {
 /* enum fs_context_phase + struct fs_context.phase field removed - 0-ref (never set/read) */
 
 enum fs_value_type {
-	fs_value_is_undefined,
-	fs_value_is_flag,		 
+	fs_value_is_flag,
 	fs_value_is_string,
 };
 

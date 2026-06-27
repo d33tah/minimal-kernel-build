@@ -1,4 +1,3 @@
-#include <linux/kallsyms.h>
 #include <linux/kprobes.h>
 #include <linux/uaccess.h>
 #include <linux/utsname.h>

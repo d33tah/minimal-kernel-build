@@ -61,7 +61,6 @@ int global_cursor_default = -1;
 static int cur_default = CUR_UNDERLINE;
 
 int fg_console;
-int last_console;
 
 static struct vc_data *master_display_fg;
 

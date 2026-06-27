@@ -26,7 +26,6 @@ extern void sched_init_smp(void);
 
 #include <linux/init_task.h>
 #include <linux/interrupt.h>
-#include <linux/kallsyms.h>
 #include <linux/kprobes.h>
 
 #include <linux/mmu_context.h>

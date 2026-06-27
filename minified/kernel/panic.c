@@ -2,7 +2,6 @@
 #include <linux/debug_locks.h>
 #include <linux/sched/debug.h>
 #include <linux/printk.h>
-#include <linux/kallsyms.h>
 #include <linux/kmsg_dump.h>
 #include <linux/notifier.h>
 #include <linux/vt_kern.h>

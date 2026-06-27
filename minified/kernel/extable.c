@@ -5,7 +5,6 @@
 #include <linux/mutex.h>
 #include <linux/init.h>
 #include <linux/hardirq.h>
-#include <linux/kallsyms.h>
 
 #include <asm/sections.h>
 #include <linux/uaccess.h>

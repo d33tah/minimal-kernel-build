@@ -27,7 +27,6 @@
 #include <linux/smp.h>
 #include <linux/rcupdate.h>
 #include <linux/moduleparam.h>
-#include <linux/kallsyms.h>
 #include <linux/writeback.h>
 #include <linux/cpu.h>
 #include <linux/cgroup.h>

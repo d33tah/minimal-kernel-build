@@ -87,7 +87,7 @@ extern struct vc vc_cons [MAX_NR_CONSOLES];
 bool con_is_visible(const struct vc_data *vc);
 
 
-extern int fg_console, last_console;
+extern int fg_console;
 
 
 int vc_allocate(unsigned int console);

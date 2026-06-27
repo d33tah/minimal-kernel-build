@@ -1,7 +1,6 @@
 
 #include <linux/spinlock.h>
 #include <linux/percpu.h>
-#include <linux/kallsyms.h>
 
 #include <linux/pgtable.h>
 

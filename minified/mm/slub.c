@@ -11,7 +11,6 @@
 #include <linux/proc_fs.h>
 #include <linux/cpu.h>
 #include <linux/ctype.h>
-#include <linux/kallsyms.h>
 #include <linux/memory.h>
 #include <linux/math64.h>
 

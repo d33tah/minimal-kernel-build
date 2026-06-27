@@ -797,10 +797,9 @@ static int __sched_setscheduler(struct task_struct *p,
 	}
 	update_rq_clock(rq);
 
-	if (p == rq->stop)
-		retval = -EINVAL;
-	else
-		retval = 0;
+	/* rq->stop (cpu-stopper task) absent in this build -> always NULL,
+	 * so the "p is the stop task" rejection can never fire. */
+	retval = 0;
 
 	task_rq_unlock(rq, p, &rf);
 	return retval;

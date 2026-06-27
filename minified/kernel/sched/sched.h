@@ -173,7 +173,6 @@ struct rq {
 
 	struct task_struct __rcu	*curr;
 	struct task_struct	*idle;
-	struct task_struct	*stop;
 	struct mm_struct	*prev_mm;
 
 	unsigned int		clock_update_flags;

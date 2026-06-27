@@ -125,8 +125,6 @@ extern unsigned int sysctl_nr_open;
 struct iattr {
 	unsigned int	ia_valid;
 	umode_t		ia_mode;
-	kuid_t		ia_uid;
-	kgid_t		ia_gid;
 	loff_t		ia_size;
 	struct timespec64 ia_atime;
 	struct timespec64 ia_mtime;

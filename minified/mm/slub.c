@@ -15,7 +15,6 @@
 #include <linux/kallsyms.h>
 #include <linux/memory.h>
 #include <linux/math64.h>
-#include <linux/stacktrace.h>
 
 #include <linux/memcontrol.h>
 #include <linux/random.h>

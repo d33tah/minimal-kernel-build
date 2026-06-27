@@ -12,12 +12,6 @@ extern char *strcpy(char *dest, const char *src);
 #define __HAVE_ARCH_STRNCPY
 extern char *strncpy(char *dest, const char *src, size_t count);
 
-#define __HAVE_ARCH_STRCAT
-extern char *strcat(char *dest, const char *src);
-
-#define __HAVE_ARCH_STRNCAT
-extern char *strncat(char *dest, const char *src, size_t count);
-
 #define __HAVE_ARCH_STRCMP
 extern int strcmp(const char *cs, const char *ct);
 

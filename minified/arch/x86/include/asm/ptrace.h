@@ -41,11 +41,6 @@ struct task_struct;
 
 extern void send_sigtrap(struct pt_regs *regs, int error_code, int si_code);
 
-static inline unsigned long regs_return_value(struct pt_regs *regs)
-{
-	return regs->ax;
-}
-
 static __always_inline int user_mode(struct pt_regs *regs)
 {
 	return ((regs->cs & SEGMENT_RPL_MASK) | (regs->flags & X86_VM_MASK)) >= USER_RPL;

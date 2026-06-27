@@ -69,11 +69,6 @@ static inline void slab_set_pfmemalloc(struct slab *slab)
 
 /* slab_clear_pfmemalloc removed - unused */
 
-static inline void __slab_clear_pfmemalloc(struct slab *slab)
-{
-	__folio_clear_active(slab_folio(slab));
-}
-
 static inline void *slab_address(const struct slab *slab)
 {
 	return folio_address(slab_folio(slab));

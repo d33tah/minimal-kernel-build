@@ -4,9 +4,6 @@
 
 #include <linux/notifier.h>
 
-extern void emergency_restart(void);
+/* Removed: emergency_restart, machine_emergency_restart - 0-caller after panic_timeout fold */
 
-/* Inlined from asm/emergency-restart.h */
-extern void machine_emergency_restart(void);
-
-#endif  
+#endif

@@ -80,8 +80,6 @@ void oops_end(unsigned long flags, struct pt_regs *regs, int signr)
 		return;
 	if (in_interrupt())
 		panic("Fatal exception in interrupt");
-	if (panic_on_oops)
-		panic("Fatal exception");
 
 	rewind_stack_and_make_dead(signr);
 }

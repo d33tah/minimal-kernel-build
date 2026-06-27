@@ -69,7 +69,6 @@ obj-$(CONFIG_INTEL_TXT)		+= tboot.o
 # obj-y				+= stacktrace.o
 obj-y				+= cpu/
 obj-y				+= acpi/
-obj-y				+= reboot.o
 obj-$(CONFIG_X86_MSR)		+= msr.o
 obj-$(CONFIG_X86_CPUID)		+= cpuid.o
 obj-$(CONFIG_PCI)		+= early-quirks.o

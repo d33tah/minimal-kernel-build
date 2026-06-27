@@ -9,7 +9,7 @@ obj-y     = fork.o panic.o \
 	    signal.o workqueue.o pid.o task_work.o \
 	    extable.o params.o \
 	    kthread.o sys_ni.o nsproxy.o \
-	    notifier.o cred.o reboot.o \
+	    notifier.o cred.o \
 	    range.o ucount.o
 
 obj-$(CONFIG_USERMODE_DRIVER) += usermode_driver.o

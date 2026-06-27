@@ -11,7 +11,6 @@
 #include <linux/hrtimer.h>
 #include <linux/completion.h>
 
-extern void (*pm_power_off)(void);
 
 struct device;
 

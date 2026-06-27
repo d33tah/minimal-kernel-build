@@ -17,7 +17,6 @@ struct resource {
 #define IORESOURCE_IO		0x00000100
 #define IORESOURCE_MEM		0x00000200
 
-extern struct resource ioport_resource;
 extern struct resource iomem_resource;
 
 

@@ -5,8 +5,6 @@
 #include <asm/reboot.h>
 #include <asm/io.h>
 
-void (*pm_power_off)(void);
-
 void machine_emergency_restart(void)
 {
 	while (1)

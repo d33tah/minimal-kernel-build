@@ -13,8 +13,7 @@
 #include <linux/uaccess.h>
 
 /* Removed: C_A_D, cad_pid - only set but never read */
-
-void __weak (*pm_power_off)(void);
+/* Removed: pm_power_off - never assigned and never invoked on this build */
 
 void emergency_restart(void)
 {

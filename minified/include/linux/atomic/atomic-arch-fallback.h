@@ -1153,133 +1153,25 @@ arch_atomic64_set_release(atomic64_t *v, s64 i)
 #define arch_atomic64_add_return_acquire arch_atomic64_add_return
 #define arch_atomic64_add_return_release arch_atomic64_add_return
 #define arch_atomic64_add_return_relaxed arch_atomic64_add_return
-#else  
-
-#ifndef arch_atomic64_add_return_acquire
-static __always_inline s64
-arch_atomic64_add_return_acquire(s64 i, atomic64_t *v)
-{
-	s64 ret = arch_atomic64_add_return_relaxed(i, v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic64_add_return_acquire arch_atomic64_add_return_acquire
 #endif
-
-#ifndef arch_atomic64_add_return_release
-static __always_inline s64
-arch_atomic64_add_return_release(s64 i, atomic64_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic64_add_return_relaxed(i, v);
-}
-#define arch_atomic64_add_return_release arch_atomic64_add_return_release
-#endif
-
-
-#endif  
 
 #ifndef arch_atomic64_fetch_add_relaxed
 #define arch_atomic64_fetch_add_acquire arch_atomic64_fetch_add
 #define arch_atomic64_fetch_add_release arch_atomic64_fetch_add
 #define arch_atomic64_fetch_add_relaxed arch_atomic64_fetch_add
-#else  
-
-#ifndef arch_atomic64_fetch_add_acquire
-static __always_inline s64
-arch_atomic64_fetch_add_acquire(s64 i, atomic64_t *v)
-{
-	s64 ret = arch_atomic64_fetch_add_relaxed(i, v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic64_fetch_add_acquire arch_atomic64_fetch_add_acquire
 #endif
-
-#ifndef arch_atomic64_fetch_add_release
-static __always_inline s64
-arch_atomic64_fetch_add_release(s64 i, atomic64_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic64_fetch_add_relaxed(i, v);
-}
-#define arch_atomic64_fetch_add_release arch_atomic64_fetch_add_release
-#endif
-
-
-#endif  
 
 #ifndef arch_atomic64_sub_return_relaxed
 #define arch_atomic64_sub_return_acquire arch_atomic64_sub_return
 #define arch_atomic64_sub_return_release arch_atomic64_sub_return
 #define arch_atomic64_sub_return_relaxed arch_atomic64_sub_return
-#else  
-
-#ifndef arch_atomic64_sub_return_acquire
-static __always_inline s64
-arch_atomic64_sub_return_acquire(s64 i, atomic64_t *v)
-{
-	s64 ret = arch_atomic64_sub_return_relaxed(i, v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic64_sub_return_acquire arch_atomic64_sub_return_acquire
 #endif
-
-#ifndef arch_atomic64_sub_return_release
-static __always_inline s64
-arch_atomic64_sub_return_release(s64 i, atomic64_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic64_sub_return_relaxed(i, v);
-}
-#define arch_atomic64_sub_return_release arch_atomic64_sub_return_release
-#endif
-
-
-#endif  
 
 #ifndef arch_atomic64_fetch_sub_relaxed
 #define arch_atomic64_fetch_sub_acquire arch_atomic64_fetch_sub
 #define arch_atomic64_fetch_sub_release arch_atomic64_fetch_sub
 #define arch_atomic64_fetch_sub_relaxed arch_atomic64_fetch_sub
-#else  
-
-#ifndef arch_atomic64_fetch_sub_acquire
-static __always_inline s64
-arch_atomic64_fetch_sub_acquire(s64 i, atomic64_t *v)
-{
-	s64 ret = arch_atomic64_fetch_sub_relaxed(i, v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic64_fetch_sub_acquire arch_atomic64_fetch_sub_acquire
 #endif
-
-#ifndef arch_atomic64_fetch_sub_release
-static __always_inline s64
-arch_atomic64_fetch_sub_release(s64 i, atomic64_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic64_fetch_sub_relaxed(i, v);
-}
-#define arch_atomic64_fetch_sub_release arch_atomic64_fetch_sub_release
-#endif
-
-#ifndef arch_atomic64_fetch_sub
-static __always_inline s64
-arch_atomic64_fetch_sub(s64 i, atomic64_t *v)
-{
-	s64 ret;
-	__atomic_pre_full_fence();
-	ret = arch_atomic64_fetch_sub_relaxed(i, v);
-	__atomic_post_full_fence();
-	return ret;
-}
-#define arch_atomic64_fetch_sub arch_atomic64_fetch_sub
-#endif
-
-#endif  
 
 
 #ifndef arch_atomic64_inc_return_relaxed
@@ -1325,43 +1217,7 @@ arch_atomic64_inc_return_relaxed(atomic64_t *v)
 #define arch_atomic64_inc_return_relaxed arch_atomic64_inc_return_relaxed
 #endif
 
-#else  
-
-#ifndef arch_atomic64_inc_return_acquire
-static __always_inline s64
-arch_atomic64_inc_return_acquire(atomic64_t *v)
-{
-	s64 ret = arch_atomic64_inc_return_relaxed(v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic64_inc_return_acquire arch_atomic64_inc_return_acquire
 #endif
-
-#ifndef arch_atomic64_inc_return_release
-static __always_inline s64
-arch_atomic64_inc_return_release(atomic64_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic64_inc_return_relaxed(v);
-}
-#define arch_atomic64_inc_return_release arch_atomic64_inc_return_release
-#endif
-
-#ifndef arch_atomic64_inc_return
-static __always_inline s64
-arch_atomic64_inc_return(atomic64_t *v)
-{
-	s64 ret;
-	__atomic_pre_full_fence();
-	ret = arch_atomic64_inc_return_relaxed(v);
-	__atomic_post_full_fence();
-	return ret;
-}
-#define arch_atomic64_inc_return arch_atomic64_inc_return
-#endif
-
-#endif  
 
 #ifndef arch_atomic64_fetch_inc_relaxed
 #ifdef arch_atomic64_fetch_inc
@@ -1406,43 +1262,7 @@ arch_atomic64_fetch_inc_relaxed(atomic64_t *v)
 #define arch_atomic64_fetch_inc_relaxed arch_atomic64_fetch_inc_relaxed
 #endif
 
-#else  
-
-#ifndef arch_atomic64_fetch_inc_acquire
-static __always_inline s64
-arch_atomic64_fetch_inc_acquire(atomic64_t *v)
-{
-	s64 ret = arch_atomic64_fetch_inc_relaxed(v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic64_fetch_inc_acquire arch_atomic64_fetch_inc_acquire
 #endif
-
-#ifndef arch_atomic64_fetch_inc_release
-static __always_inline s64
-arch_atomic64_fetch_inc_release(atomic64_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic64_fetch_inc_relaxed(v);
-}
-#define arch_atomic64_fetch_inc_release arch_atomic64_fetch_inc_release
-#endif
-
-#ifndef arch_atomic64_fetch_inc
-static __always_inline s64
-arch_atomic64_fetch_inc(atomic64_t *v)
-{
-	s64 ret;
-	__atomic_pre_full_fence();
-	ret = arch_atomic64_fetch_inc_relaxed(v);
-	__atomic_post_full_fence();
-	return ret;
-}
-#define arch_atomic64_fetch_inc arch_atomic64_fetch_inc
-#endif
-
-#endif  
 
 
 #ifndef arch_atomic64_dec_return_relaxed
@@ -1488,43 +1308,7 @@ arch_atomic64_dec_return_relaxed(atomic64_t *v)
 #define arch_atomic64_dec_return_relaxed arch_atomic64_dec_return_relaxed
 #endif
 
-#else  
-
-#ifndef arch_atomic64_dec_return_acquire
-static __always_inline s64
-arch_atomic64_dec_return_acquire(atomic64_t *v)
-{
-	s64 ret = arch_atomic64_dec_return_relaxed(v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic64_dec_return_acquire arch_atomic64_dec_return_acquire
 #endif
-
-#ifndef arch_atomic64_dec_return_release
-static __always_inline s64
-arch_atomic64_dec_return_release(atomic64_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic64_dec_return_relaxed(v);
-}
-#define arch_atomic64_dec_return_release arch_atomic64_dec_return_release
-#endif
-
-#ifndef arch_atomic64_dec_return
-static __always_inline s64
-arch_atomic64_dec_return(atomic64_t *v)
-{
-	s64 ret;
-	__atomic_pre_full_fence();
-	ret = arch_atomic64_dec_return_relaxed(v);
-	__atomic_post_full_fence();
-	return ret;
-}
-#define arch_atomic64_dec_return arch_atomic64_dec_return
-#endif
-
-#endif  
 
 #ifndef arch_atomic64_fetch_dec_relaxed
 #ifdef arch_atomic64_fetch_dec
@@ -1569,73 +1353,13 @@ arch_atomic64_fetch_dec_relaxed(atomic64_t *v)
 #define arch_atomic64_fetch_dec_relaxed arch_atomic64_fetch_dec_relaxed
 #endif
 
-#else  
-
-#ifndef arch_atomic64_fetch_dec_acquire
-static __always_inline s64
-arch_atomic64_fetch_dec_acquire(atomic64_t *v)
-{
-	s64 ret = arch_atomic64_fetch_dec_relaxed(v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic64_fetch_dec_acquire arch_atomic64_fetch_dec_acquire
 #endif
-
-#ifndef arch_atomic64_fetch_dec_release
-static __always_inline s64
-arch_atomic64_fetch_dec_release(atomic64_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic64_fetch_dec_relaxed(v);
-}
-#define arch_atomic64_fetch_dec_release arch_atomic64_fetch_dec_release
-#endif
-
-#ifndef arch_atomic64_fetch_dec
-static __always_inline s64
-arch_atomic64_fetch_dec(atomic64_t *v)
-{
-	s64 ret;
-	__atomic_pre_full_fence();
-	ret = arch_atomic64_fetch_dec_relaxed(v);
-	__atomic_post_full_fence();
-	return ret;
-}
-#define arch_atomic64_fetch_dec arch_atomic64_fetch_dec
-#endif
-
-#endif  
 
 #ifndef arch_atomic64_fetch_and_relaxed
 #define arch_atomic64_fetch_and_acquire arch_atomic64_fetch_and
 #define arch_atomic64_fetch_and_release arch_atomic64_fetch_and
 #define arch_atomic64_fetch_and_relaxed arch_atomic64_fetch_and
-#else  
-
-#ifndef arch_atomic64_fetch_and_acquire
-static __always_inline s64
-arch_atomic64_fetch_and_acquire(s64 i, atomic64_t *v)
-{
-	s64 ret = arch_atomic64_fetch_and_relaxed(i, v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic64_fetch_and_acquire arch_atomic64_fetch_and_acquire
 #endif
-
-#ifndef arch_atomic64_fetch_and_release
-static __always_inline s64
-arch_atomic64_fetch_and_release(s64 i, atomic64_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic64_fetch_and_relaxed(i, v);
-}
-#define arch_atomic64_fetch_and_release arch_atomic64_fetch_and_release
-#endif
-
-
-#endif  
 
 #ifndef arch_atomic64_andnot
 static __always_inline void
@@ -1689,163 +1413,31 @@ arch_atomic64_fetch_andnot_relaxed(s64 i, atomic64_t *v)
 #define arch_atomic64_fetch_andnot_relaxed arch_atomic64_fetch_andnot_relaxed
 #endif
 
-#else  
-
-#ifndef arch_atomic64_fetch_andnot_acquire
-static __always_inline s64
-arch_atomic64_fetch_andnot_acquire(s64 i, atomic64_t *v)
-{
-	s64 ret = arch_atomic64_fetch_andnot_relaxed(i, v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic64_fetch_andnot_acquire arch_atomic64_fetch_andnot_acquire
 #endif
-
-#ifndef arch_atomic64_fetch_andnot_release
-static __always_inline s64
-arch_atomic64_fetch_andnot_release(s64 i, atomic64_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic64_fetch_andnot_relaxed(i, v);
-}
-#define arch_atomic64_fetch_andnot_release arch_atomic64_fetch_andnot_release
-#endif
-
-#ifndef arch_atomic64_fetch_andnot
-static __always_inline s64
-arch_atomic64_fetch_andnot(s64 i, atomic64_t *v)
-{
-	s64 ret;
-	__atomic_pre_full_fence();
-	ret = arch_atomic64_fetch_andnot_relaxed(i, v);
-	__atomic_post_full_fence();
-	return ret;
-}
-#define arch_atomic64_fetch_andnot arch_atomic64_fetch_andnot
-#endif
-
-#endif  
 
 #ifndef arch_atomic64_fetch_or_relaxed
 #define arch_atomic64_fetch_or_acquire arch_atomic64_fetch_or
 #define arch_atomic64_fetch_or_release arch_atomic64_fetch_or
 #define arch_atomic64_fetch_or_relaxed arch_atomic64_fetch_or
-#else  
-
-#ifndef arch_atomic64_fetch_or_acquire
-static __always_inline s64
-arch_atomic64_fetch_or_acquire(s64 i, atomic64_t *v)
-{
-	s64 ret = arch_atomic64_fetch_or_relaxed(i, v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic64_fetch_or_acquire arch_atomic64_fetch_or_acquire
 #endif
-
-#ifndef arch_atomic64_fetch_or_release
-static __always_inline s64
-arch_atomic64_fetch_or_release(s64 i, atomic64_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic64_fetch_or_relaxed(i, v);
-}
-#define arch_atomic64_fetch_or_release arch_atomic64_fetch_or_release
-#endif
-
-
-#endif  
 
 #ifndef arch_atomic64_fetch_xor_relaxed
 #define arch_atomic64_fetch_xor_acquire arch_atomic64_fetch_xor
 #define arch_atomic64_fetch_xor_release arch_atomic64_fetch_xor
 #define arch_atomic64_fetch_xor_relaxed arch_atomic64_fetch_xor
-#else  
-
-#ifndef arch_atomic64_fetch_xor_acquire
-static __always_inline s64
-arch_atomic64_fetch_xor_acquire(s64 i, atomic64_t *v)
-{
-	s64 ret = arch_atomic64_fetch_xor_relaxed(i, v);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic64_fetch_xor_acquire arch_atomic64_fetch_xor_acquire
 #endif
-
-#ifndef arch_atomic64_fetch_xor_release
-static __always_inline s64
-arch_atomic64_fetch_xor_release(s64 i, atomic64_t *v)
-{
-	__atomic_release_fence();
-	return arch_atomic64_fetch_xor_relaxed(i, v);
-}
-#define arch_atomic64_fetch_xor_release arch_atomic64_fetch_xor_release
-#endif
-
-
-#endif  
 
 #ifndef arch_atomic64_xchg_relaxed
 #define arch_atomic64_xchg_acquire arch_atomic64_xchg
 #define arch_atomic64_xchg_release arch_atomic64_xchg
 #define arch_atomic64_xchg_relaxed arch_atomic64_xchg
-#else  
-
-#ifndef arch_atomic64_xchg_acquire
-static __always_inline s64
-arch_atomic64_xchg_acquire(atomic64_t *v, s64 i)
-{
-	s64 ret = arch_atomic64_xchg_relaxed(v, i);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic64_xchg_acquire arch_atomic64_xchg_acquire
 #endif
-
-#ifndef arch_atomic64_xchg_release
-static __always_inline s64
-arch_atomic64_xchg_release(atomic64_t *v, s64 i)
-{
-	__atomic_release_fence();
-	return arch_atomic64_xchg_relaxed(v, i);
-}
-#define arch_atomic64_xchg_release arch_atomic64_xchg_release
-#endif
-
-
-#endif  
 
 #ifndef arch_atomic64_cmpxchg_relaxed
 #define arch_atomic64_cmpxchg_acquire arch_atomic64_cmpxchg
 #define arch_atomic64_cmpxchg_release arch_atomic64_cmpxchg
 #define arch_atomic64_cmpxchg_relaxed arch_atomic64_cmpxchg
-#else  
-
-#ifndef arch_atomic64_cmpxchg_acquire
-static __always_inline s64
-arch_atomic64_cmpxchg_acquire(atomic64_t *v, s64 old, s64 new)
-{
-	s64 ret = arch_atomic64_cmpxchg_relaxed(v, old, new);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic64_cmpxchg_acquire arch_atomic64_cmpxchg_acquire
 #endif
-
-#ifndef arch_atomic64_cmpxchg_release
-static __always_inline s64
-arch_atomic64_cmpxchg_release(atomic64_t *v, s64 old, s64 new)
-{
-	__atomic_release_fence();
-	return arch_atomic64_cmpxchg_relaxed(v, old, new);
-}
-#define arch_atomic64_cmpxchg_release arch_atomic64_cmpxchg_release
-#endif
-
-
-#endif  
 
 #ifndef arch_atomic64_try_cmpxchg_relaxed
 #ifdef arch_atomic64_try_cmpxchg
@@ -1906,43 +1498,7 @@ arch_atomic64_try_cmpxchg_relaxed(atomic64_t *v, s64 *old, s64 new)
 #define arch_atomic64_try_cmpxchg_relaxed arch_atomic64_try_cmpxchg_relaxed
 #endif
 
-#else  
-
-#ifndef arch_atomic64_try_cmpxchg_acquire
-static __always_inline bool
-arch_atomic64_try_cmpxchg_acquire(atomic64_t *v, s64 *old, s64 new)
-{
-	bool ret = arch_atomic64_try_cmpxchg_relaxed(v, old, new);
-	__atomic_acquire_fence();
-	return ret;
-}
-#define arch_atomic64_try_cmpxchg_acquire arch_atomic64_try_cmpxchg_acquire
 #endif
-
-#ifndef arch_atomic64_try_cmpxchg_release
-static __always_inline bool
-arch_atomic64_try_cmpxchg_release(atomic64_t *v, s64 *old, s64 new)
-{
-	__atomic_release_fence();
-	return arch_atomic64_try_cmpxchg_relaxed(v, old, new);
-}
-#define arch_atomic64_try_cmpxchg_release arch_atomic64_try_cmpxchg_release
-#endif
-
-#ifndef arch_atomic64_try_cmpxchg
-static __always_inline bool
-arch_atomic64_try_cmpxchg(atomic64_t *v, s64 *old, s64 new)
-{
-	bool ret;
-	__atomic_pre_full_fence();
-	ret = arch_atomic64_try_cmpxchg_relaxed(v, old, new);
-	__atomic_post_full_fence();
-	return ret;
-}
-#define arch_atomic64_try_cmpxchg arch_atomic64_try_cmpxchg
-#endif
-
-#endif  
 
 #ifndef arch_atomic64_sub_and_test
 static __always_inline bool

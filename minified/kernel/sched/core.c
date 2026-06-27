@@ -51,7 +51,6 @@ extern void sched_init_smp(void);
 #include "pelt.h"
 
 #include "../workqueue_internal.h"
-#include "../smpboot.h"
 
 DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 

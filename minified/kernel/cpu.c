@@ -8,7 +8,6 @@
 #include <linux/bug.h>
 #include <linux/list.h>
 
-#include "smpboot.h"
 
 /*
  * CPU hotplug is off (SMP=n) and the only cpuhp_setup_state caller (softirq's

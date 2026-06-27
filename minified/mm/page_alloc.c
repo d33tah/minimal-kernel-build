@@ -47,7 +47,6 @@ struct alloc_context;
 #include <asm/tlbflush.h>
 #include <asm/div64.h>
 #include "internal.h"
-#include "swap.h"
 
 typedef int __bitwise fpi_t;
 

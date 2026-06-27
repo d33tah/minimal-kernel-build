@@ -24,7 +24,6 @@
 #include <linux/uaccess.h>
 
 #include "internal.h"
-#include "swap.h"
 
 void kfree_const(const void *x)
 {

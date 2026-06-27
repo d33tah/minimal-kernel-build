@@ -2,7 +2,6 @@
  
  
 
-#include <asm/spec-ctrl.h>
 
 
 /*

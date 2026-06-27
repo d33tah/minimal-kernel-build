@@ -1,7 +1,6 @@
 #ifndef _LINUX_IRQ_WORK_H
 #define _LINUX_IRQ_WORK_H
 
-#include <linux/smp_types.h>
 
 /*
  * struct irq_work + IRQ_WORK_INIT/__IRQ_WORK_INIT/DEFINE_IRQ_WORK removed:

@@ -7,7 +7,6 @@
 #include <linux/sched.h>
 #include <linux/device.h>
 #include <linux/writeback.h>
-#include <linux/backing-dev-defs.h>
 #include <linux/slab.h>
 
 

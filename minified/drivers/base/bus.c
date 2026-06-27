@@ -6,7 +6,6 @@
 #include <linux/init.h>
 #include <linux/string.h>
 #include <linux/mutex.h>
-#include <linux/sysfs.h>
 #include "base.h"
 
 /* Removed: bus_get + the driver_ktype kobj_type (drv_attr_show/store,

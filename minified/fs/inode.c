@@ -9,7 +9,6 @@
 #include <linux/cdev.h>
 #include <linux/memblock.h>
 #include <linux/mount.h>
-#include <linux/tracepoint.h>
 
 #include <linux/ratelimit.h>
 #include <linux/list_lru.h>

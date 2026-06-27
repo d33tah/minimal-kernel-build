@@ -5,7 +5,6 @@
 #include <linux/swap.h>
 #include <linux/notifier.h>
 #include <linux/init.h>
-#include <linux/pm.h>
 #include <linux/mm.h>
 #include <asm/errno.h>
 

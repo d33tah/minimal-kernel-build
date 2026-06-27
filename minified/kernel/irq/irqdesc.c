@@ -6,7 +6,6 @@
 #include <linux/radix-tree.h>
 #include <linux/bitmap.h>
 #include <linux/irqdomain.h>
-#include <linux/sysfs.h>
 
 #include "internals.h"
 

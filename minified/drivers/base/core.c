@@ -11,7 +11,6 @@
 #include <linux/mutex.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
-#include <linux/sysfs.h>
 #include <linux/delay.h>
 
 #include "base.h"

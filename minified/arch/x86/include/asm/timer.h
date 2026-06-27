@@ -1,7 +1,6 @@
  
 #ifndef _ASM_X86_TIMER_H
 #define _ASM_X86_TIMER_H
-#include <linux/pm.h>
 #include <linux/percpu.h>
 #include <linux/interrupt.h>
 #include <linux/math64.h>

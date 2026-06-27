@@ -9,7 +9,6 @@
 #include <linux/pagevec.h>
 #include <linux/init.h>
 #include <linux/export.h>
-#include <linux/tracepoint.h>
 #include <linux/mm_inline.h>
 #include <linux/memremap.h>
 #include <linux/percpu.h>

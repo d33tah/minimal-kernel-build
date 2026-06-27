@@ -11,7 +11,6 @@
 #include <linux/slab.h>
 #include <linux/string.h>
 #include <linux/thread_info.h>
-#include <linux/uaccess.h>
 
 #include <asm/page.h>
 

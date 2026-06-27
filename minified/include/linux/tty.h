@@ -104,7 +104,6 @@ struct tty_struct {
 
 struct tty_file_private {
 	struct tty_struct *tty;
-	struct file *file;
 	struct list_head list;
 };
 

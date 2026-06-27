@@ -744,7 +744,6 @@ retry_open:
 		struct tty_file_private *priv = filp->private_data;
 
 		priv->tty = tty;
-		priv->file = filp;
 
 		spin_lock(&tty->files_lock);
 		list_add(&priv->list, &tty->tty_files);

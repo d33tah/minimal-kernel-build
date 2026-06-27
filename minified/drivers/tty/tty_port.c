@@ -4,7 +4,6 @@
 #include <linux/tty.h>
 #include <linux/tty_driver.h>
 #include <linux/tty_flip.h>
-#include <linux/serial.h>
 #include <linux/timer.h>
 #include <linux/string.h>
 #include <linux/slab.h>

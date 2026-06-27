@@ -28,7 +28,6 @@
 #include <linux/bitops.h>
 #include <linux/delay.h>
 #include <linux/seq_file.h>
-#include <linux/serial.h>
 #include <linux/ratelimit.h>
 #include <linux/compat.h>
 

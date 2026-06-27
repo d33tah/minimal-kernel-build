@@ -26,7 +26,6 @@
 #include <asm/fpu/sched.h>
 #include <asm/fpu/xstate.h>
 #include <asm/debugreg.h>
-#include <asm/nmi.h>
 #include <asm/tlbflush.h>
 #include <asm/switch_to.h>
 #include <asm/desc.h>

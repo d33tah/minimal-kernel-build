@@ -4,13 +4,8 @@
 #include <linux/err.h>
 #include <linux/init.h>
 #include <linux/slab.h>
-#include <linux/string.h>
-#include <linux/kdev_t.h>
-#include <linux/notifier.h>
-#include <linux/mutex.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
-#include <linux/delay.h>
 
 #include "base.h"
 

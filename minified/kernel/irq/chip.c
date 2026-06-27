@@ -2,10 +2,7 @@
 #include <linux/irq.h>
 
 /* --- 2025-12-07 23:50 --- Inlined from linux/msi.h */
-#include <linux/cpumask.h>
 #include <linux/xarray.h>
-#include <linux/mutex.h>
-#include <linux/list.h>
 #include <asm/hw_irq.h>
 #include <linux/irqdomain.h>
 

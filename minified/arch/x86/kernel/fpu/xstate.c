@@ -3,12 +3,6 @@
 // Stubbed: ~60 LOC
 // Date: 2025-11-21 12:55
 
-#include <linux/bitops.h>
-#include <linux/compat.h>
-#include <linux/mman.h>
-#include <linux/nospec.h>
-#include <linux/pkeys.h>
-#include <linux/vmalloc.h>
 
 #include <asm/fpu/api.h>
 #include <asm/fpu/signal.h>

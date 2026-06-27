@@ -2,7 +2,6 @@
 #define pr_fmt(fmt) "genirq: " fmt
 
 #include <linux/irq.h>
-#include <linux/kthread.h>
 #include <linux/interrupt.h>
 #include <linux/irqdomain.h>
 #include <linux/slab.h>
@@ -10,7 +9,6 @@
 #include <linux/sched/task.h>
 #include <linux/sched/isolation.h>
 #include <linux/sched/types.h>
-#include <linux/task_work.h>
 
 #include "internals.h"
 

@@ -2,8 +2,6 @@
 #include <linux/device.h>
 #include <linux/slab.h>
 #include <linux/init.h>
-#include <linux/string.h>
-#include <linux/mutex.h>
 #include "base.h"
 
 /* Removed: bus_get + the driver_ktype kobj_type (drv_attr_show/store,

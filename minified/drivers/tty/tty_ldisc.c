@@ -1,14 +1,11 @@
 #include <linux/types.h>
 #include <linux/errno.h>
 #include <linux/sched.h>
-#include <linux/interrupt.h>
 #include <linux/tty.h>
 #include <linux/tty_driver.h>
 #include <linux/file.h>
 #include <linux/mm.h>
-#include <linux/string.h>
 #include <linux/slab.h>
-#include <linux/poll.h>
 #include <linux/device.h>
 #include <linux/wait.h>
 #include <linux/bitops.h>

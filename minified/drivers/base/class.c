@@ -2,11 +2,8 @@
 #include <linux/device/class.h>
 #include <linux/device.h>
 #include <linux/init.h>
-#include <linux/string.h>
-#include <linux/kdev_t.h>
 #include <linux/err.h>
 #include <linux/slab.h>
-#include <linux/mutex.h>
 #include "base.h"
 
 static void class_release(struct kobject *kobj)

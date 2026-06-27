@@ -159,8 +159,6 @@ extern int mmap_rnd_bits __read_mostly;
 
 extern int sysctl_max_map_count;
 
-extern int sysctl_overcommit_memory;
-
 #define nth_page(page,n) ((page) + (n))
 
 #define PAGE_ALIGN(addr) ALIGN(addr, PAGE_SIZE)

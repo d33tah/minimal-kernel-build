@@ -6,9 +6,6 @@
 #include <linux/atomic.h>
 #include <asm/mman.h>
 
-#define OVERCOMMIT_GUESS		0
-#define OVERCOMMIT_ALWAYS		1
-#define OVERCOMMIT_NEVER		2
 #define MAP_SHARED	0x01
 #define MAP_PRIVATE	0x02
 #define MAP_SHARED_VALIDATE 0x03
@@ -16,8 +13,6 @@
 #ifndef MAP_SYNC
 #define MAP_SYNC 0
 #endif
-
-extern int sysctl_overcommit_memory;
 
 #ifndef arch_calc_vm_prot_bits
 #define arch_calc_vm_prot_bits(prot, pkey) 0

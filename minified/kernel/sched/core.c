@@ -5,7 +5,6 @@
 
 #include <linux/debug_locks.h>
 
-#include <linux/capability.h>
 #include <linux/security.h>
 
 #include <linux/jiffies.h>
@@ -26,7 +25,6 @@ extern void sched_init_smp(void);
 
 #include <linux/init_task.h>
 #include <linux/interrupt.h>
-#include <linux/kprobes.h>
 
 #include <linux/mmu_context.h>
 #include <linux/mmzone.h>
@@ -36,7 +34,6 @@ extern void sched_init_smp(void);
 
 #include <linux/sched/wake_q.h>
 #include <linux/slab.h>
-#include <linux/syscalls.h>
 
 #include <linux/sched/types.h>
 

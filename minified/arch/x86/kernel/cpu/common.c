@@ -13,7 +13,6 @@
 #include <linux/sched/clock.h>
 #include <linux/sched/task.h>
 #include <linux/init.h>
-#include <linux/kprobes.h>
 #include <linux/smp.h>
 #include <linux/io.h>
 #include <linux/pgtable.h>

@@ -1,10 +1,6 @@
 #include <linux/sched.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>
-#include <linux/nmi.h>
-#include <linux/swap.h>
-#include <linux/highmem.h>
-#include <linux/pagemap.h>
 #include <linux/spinlock.h>
 
 #include <asm/cpu_entry_area.h>

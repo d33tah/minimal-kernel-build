@@ -9,14 +9,9 @@
 #include <linux/init.h>
 #include <linux/jiffies.h>
 #include <linux/nmi.h>
-#include <linux/moduleparam.h>
 #include <linux/delay.h>
 #include <linux/memblock.h>
-#include <linux/kmsg_dump.h>
 
-#include <linux/rculist.h>
-#include <linux/poll.h>
-#include <linux/uio.h>
 #include <linux/sched/clock.h>
 #include <linux/sched/debug.h>
 #include <linux/sched/task_stack.h>

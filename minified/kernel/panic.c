@@ -5,14 +5,10 @@
 #include <linux/kmsg_dump.h>
 #include <linux/notifier.h>
 #include <linux/vt_kern.h>
-#include <linux/reboot.h>
 #include <linux/delay.h>
 extern struct atomic_notifier_head panic_notifier_list;
-#include <linux/sched.h>
 
 #include <linux/console.h>
-#include <linux/bug.h>
-#include <linux/ratelimit.h>
 
 #define PANIC_TIMER_STEP 100
 #define PANIC_BLINK_SPD 18

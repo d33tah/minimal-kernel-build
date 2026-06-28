@@ -1,7 +1,6 @@
 
 #define USE_EARLY_PGTABLE_L5
 
-#include <linux/memblock.h>
 #include <linux/linkage.h>
 #include <linux/bitops.h>
 #include <linux/kernel.h>
@@ -14,10 +13,8 @@
 #include <linux/sched/task.h>
 #include <linux/init.h>
 #include <linux/smp.h>
-#include <linux/io.h>
 #include <linux/pgtable.h>
 
-#include <asm/perf_event.h>
 #include <asm/mmu_context.h>
 
 /* Inlined from asm/doublefault.h */
@@ -26,7 +23,6 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/tlbflush.h>
 #include <asm/debugreg.h>
 #include <asm/sections.h>
-#include <linux/topology.h>
 #include <linux/cpumask.h>
 #include <linux/atomic.h>
 #include <asm/proto.h>
@@ -35,7 +31,6 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/desc.h>
 #include <asm/fpu/api.h>
 #include <asm/hwcap2.h>
-#include <linux/numa.h>
 #include <asm/numa.h>
 #include <asm/asm.h>
 #include <asm/bugs.h>

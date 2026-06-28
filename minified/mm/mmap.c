@@ -21,7 +21,6 @@
 #include <linux/mmdebug.h>
 #include <linux/sched/coredump.h>
 #include <linux/rbtree_augmented.h>
-#include <linux/memory.h>
 #include <linux/printk.h>
 #include <linux/pkeys.h>
 #include <linux/oom.h>

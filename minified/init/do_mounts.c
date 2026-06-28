@@ -1,10 +1,6 @@
 #include <linux/sched.h>
-#include <linux/ctype.h>
 
-#include <linux/tty.h>
-#include <linux/suspend.h>
 #include <linux/security.h>
-#include <linux/delay.h>
 #include <linux/mount.h>
 #include <linux/device.h>
 #include <linux/init.h>

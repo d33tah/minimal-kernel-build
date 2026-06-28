@@ -9,7 +9,6 @@
 #include <linux/swap.h>
 #include <linux/swapops.h>
 #include <linux/mman.h>
-#include <linux/elf.h>
 #include <linux/random.h>
 #include <linux/vmalloc.h>
 

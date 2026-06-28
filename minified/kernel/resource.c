@@ -2,15 +2,10 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/ioport.h>
-#include <linux/slab.h>
 #include <linux/spinlock.h>
-#include <linux/fs_context.h>
-#include <linux/proc_fs.h>
 #include <linux/sched.h>
 #include <linux/pfn.h>
 #include <linux/mm.h>
-#include <linux/mount.h>
-#include <linux/acpi.h>
 #include <uapi/linux/magic.h>
 #include <asm/io.h>
 

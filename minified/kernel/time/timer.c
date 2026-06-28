@@ -3,10 +3,6 @@
 #include <linux/interrupt.h>
 #include <linux/percpu.h>
 #include <linux/init.h>
-#include <linux/mm.h>
-#include <linux/swap.h>
-#include <linux/pid_namespace.h>
-#include <linux/notifier.h>
 #include <linux/thread_info.h>
 #include <linux/time.h>
 #include <linux/jiffies.h>
@@ -16,12 +12,9 @@
 #include <linux/sched/signal.h>
 #include <linux/sched/debug.h>
 #include <linux/slab.h>
-#include <linux/compat.h>
-#include <linux/sysctl.h>
 
 #include <linux/uaccess.h>
 #include <asm/unistd.h>
-#include <asm/div64.h>
 #include <asm/timex.h>
 #include <asm/io.h>
 

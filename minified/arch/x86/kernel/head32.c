@@ -2,7 +2,6 @@
 #include <linux/init.h>
 #include <linux/linkage.h>
 extern asmlinkage void __init start_kernel(void);
-#include <linux/mm.h>
 #include <linux/memblock.h>
 
 #include <asm/desc.h>
@@ -10,7 +9,6 @@ extern asmlinkage void __init start_kernel(void);
 #include <asm/sections.h>
 #include <asm/e820/api.h>
 #include <asm/page.h>
-#include <asm/apic.h>
 #include <asm/bios_ebda.h>
 #include <asm/tlbflush.h>
 #include <asm/bootparam_utils.h>

@@ -7,9 +7,7 @@
 #include <linux/spinlock.h>
 #include <linux/interrupt.h>
 #include <linux/list.h>
-#include <linux/notifier.h>
 #include <linux/rbtree.h>
-#include <linux/xarray.h>
 #include <linux/io.h>
 #include <linux/rcupdate.h>
 #include <linux/pfn.h>
@@ -19,7 +17,6 @@
 #include <linux/llist.h>
 #include <linux/bitops.h>
 #include <linux/rbtree_augmented.h>
-#include <linux/overflow.h>
 #include <linux/pgtable.h>
 #include <linux/uaccess.h>
 #include <linux/sched/mm.h>

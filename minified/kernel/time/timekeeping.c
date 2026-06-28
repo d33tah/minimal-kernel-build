@@ -3,8 +3,6 @@
 #include <linux/interrupt.h>
 #include <linux/percpu.h>
 #include <linux/init.h>
-#include <linux/mm.h>
-#include <linux/nmi.h>
 #include <linux/sched.h>
 #include <linux/sched/clock.h>
 #include <linux/clocksource.h>

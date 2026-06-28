@@ -1,4 +1,3 @@
-#include <linux/efi.h>
 #include <linux/console.h>
 
 #include <linux/initrd.h>
@@ -6,18 +5,17 @@
 extern struct atomic_notifier_head panic_notifier_list;
 
 #include <asm/apic.h>
+#include <asm/e820/api.h>
 #include <asm/numa.h>
 #include <asm/bios_ebda.h>
 #include <asm/bugs.h>
 #include <asm/cpu.h>
 #include <asm/efi.h>
-#include <asm/gart.h>
 #include <asm/memtype.h>
 #include <asm/realmode.h>
 #include <asm/prom.h>
 #include <asm/proto.h>
 #include <asm/unwind.h>
-#include <linux/vmalloc.h>
 
 unsigned long max_pfn_mapped;
 

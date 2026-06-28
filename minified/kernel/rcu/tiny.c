@@ -1,16 +1,12 @@
-#include <linux/completion.h>
 #include <linux/interrupt.h>
-#include <linux/notifier.h>
 #include <linux/rcupdate_wait.h>
 #include <linux/kernel.h>
-#include <linux/mutex.h>
 #include <linux/sched.h>
 #include <linux/types.h>
 #include <linux/init.h>
 #include <linux/time.h>
 #include <linux/cpu.h>
 
-#include <linux/slab.h>
 #include <linux/mm.h>
 
 #include "rcu.h"

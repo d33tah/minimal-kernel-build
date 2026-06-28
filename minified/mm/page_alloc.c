@@ -17,7 +17,6 @@
 #include <linux/vmalloc.h>
 #include <linux/vmstat.h>
 #include <linux/memremap.h>
-#include <linux/sort.h>
 #include <linux/pfn.h>
 #include <linux/backing-dev.h>
 

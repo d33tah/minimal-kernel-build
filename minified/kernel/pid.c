@@ -1,19 +1,14 @@
 
-#include <linux/mm.h>
 #include <linux/slab.h>
 #include <linux/init.h>
 #include <linux/rculist.h>
 #include <linux/memblock.h>
 #include <linux/pid_namespace.h>
 #include <linux/init_task.h>
-#include <linux/syscalls.h>
-#include <linux/proc_ns.h>
 #include <linux/refcount.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
-#include <linux/ptrace.h>
 #include <linux/idr.h>
-#include <linux/file.h>
 
 struct pid init_struct_pid = {
 	.count		= REFCOUNT_INIT(1),

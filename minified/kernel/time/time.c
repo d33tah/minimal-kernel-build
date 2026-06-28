@@ -4,13 +4,10 @@
 #include <linux/timekeeper_internal.h>
 #include <linux/errno.h>
 #include <linux/syscalls.h>
-#include <linux/fs.h>
 #include <linux/math64.h>
-#include <linux/ptrace.h>
 
 #include <linux/uaccess.h>
 #include <linux/compat.h>
-#include <asm/unistd.h>
 
 #include <generated/timeconst.h>
 #include "timekeeping.h"

@@ -9,7 +9,6 @@
 #include <linux/syscalls.h>
 /* end stackprotector.h */
 #include <linux/string.h>
-#include <linux/ctype.h>
 #include <linux/delay.h>
 #include <linux/ioport.h>
 #include <linux/init.h>
@@ -57,7 +56,6 @@ extern void sched_init_smp(void);
 #include <linux/sched/clock.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
-#include <linux/random.h>
 #include <linux/list.h>
 #include <linux/proc_ns.h>
 

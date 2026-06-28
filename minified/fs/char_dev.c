@@ -136,26 +136,6 @@ out:
 	return ERR_PTR(ret);
 }
 
-static struct char_device_struct *
-__unregister_chrdev_region(unsigned major, unsigned baseminor, int minorct)
-{
-	struct char_device_struct *cd = NULL, **cp;
-	int i = major_to_index(major);
-
-	mutex_lock(&chrdevs_lock);
-	for (cp = &chrdevs[i]; *cp; cp = &(*cp)->next)
-		if ((*cp)->major == major &&
-		    (*cp)->baseminor == baseminor &&
-		    (*cp)->minorct == minorct)
-			break;
-	if (*cp) {
-		cd = *cp;
-		*cp = cd->next;
-	}
-	mutex_unlock(&chrdevs_lock);
-	return cd;
-}
-
 int register_chrdev_region(dev_t from, unsigned count, const char *name)
 {
 	struct char_device_struct *cd;
@@ -169,16 +149,9 @@ int register_chrdev_region(dev_t from, unsigned count, const char *name)
 		cd = __register_chrdev_region(MAJOR(n), MINOR(n),
 			       next - n, name);
 		if (IS_ERR(cd))
-			goto fail;
+			return PTR_ERR(cd);
 	}
 	return 0;
-fail:
-	to = n;
-	for (n = from; n < to; n = next) {
-		next = MKDEV(MAJOR(n)+1, 0);
-		kfree(__unregister_chrdev_region(MAJOR(n), MINOR(n), next - n));
-	}
-	return PTR_ERR(cd);
 }
 
 int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count,
@@ -194,15 +167,6 @@ int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count,
 
 void unregister_chrdev_region(dev_t from, unsigned count)
 {
-	dev_t to = from + count;
-	dev_t n, next;
-
-	for (n = from; n < to; n = next) {
-		next = MKDEV(MAJOR(n)+1, 0);
-		if (next > to)
-			next = to;
-		kfree(__unregister_chrdev_region(MAJOR(n), MINOR(n), next - n));
-	}
 }
 
 static DEFINE_SPINLOCK(cdev_lock);

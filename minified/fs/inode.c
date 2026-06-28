@@ -1,7 +1,6 @@
 
 #include <linux/fs.h>
 #include <linux/mm.h>
-#include <linux/hash.h>
 #include <linux/swap.h>
 #include <linux/cdev.h>
 #include <linux/mount.h>

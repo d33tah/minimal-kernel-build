@@ -1,4 +1,3 @@
-#include <linux/hrtimer.h>
 #include <linux/interrupt.h>
 #include <linux/nmi.h>
 #include <linux/percpu.h>

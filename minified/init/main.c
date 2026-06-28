@@ -14,7 +14,6 @@
 #include <linux/init.h>
 #include <linux/initrd.h>
 #include <linux/memblock.h>
-#include <linux/acpi.h>
 
 #define BOOTCONFIG_MAGIC	"#BOOTCONFIG\n"
 #define BOOTCONFIG_MAGIC_LEN	12
@@ -25,10 +24,8 @@
 #include <linux/smp.h>
 #include <linux/rcupdate.h>
 #include <linux/moduleparam.h>
-#include <linux/writeback.h>
 #include <linux/cpu.h>
 #include <linux/cgroup.h>
-#include <linux/efi.h>
 #include <linux/tick.h>
 #include <linux/sched/isolation.h>
 #include <linux/interrupt.h>
@@ -46,12 +43,9 @@
 extern void sched_init(void);
 extern void sched_init_smp(void);
 #include <linux/signal.h>
-#include <linux/idr.h>
 #include <linux/shmem_fs.h>
 #include <linux/slab.h>
-#include <linux/perf_event.h>
 
-#include <linux/ptrace.h>
 #include <linux/sched/clock.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
@@ -61,7 +55,6 @@ extern void sched_init_smp(void);
 /* --- 2025-12-08 00:40 --- integrity.h stubbed out */
 #include <linux/cache.h>
 #include <linux/jump_label.h>
-#include <linux/mem_encrypt.h>
 #include <linux/init_syscalls.h>
 
 #include <asm/bugs.h>

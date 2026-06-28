@@ -773,14 +773,13 @@ static void con_close(struct tty_struct *tty, struct file *filp)
 	
 }
 
-static void con_shutdown(struct tty_struct *tty)
-{
-	struct vc_data *vc = tty->driver_data;
-	BUG_ON(vc == NULL);
-	console_lock();
-	vc->port.tty = NULL;
-	console_unlock();
-}
+/*
+ * .shutdown tty teardown callback (vt console). Fires only when the console
+ * tty is shut down; a boot-once-and-print artifact never tears down its
+ * console, so this is structurally dead. Stub kept for the con_ops.shutdown
+ * fn-ptr.
+ */
+static void con_shutdown(struct tty_struct *tty) { }
 
 static void con_cleanup(struct tty_struct *tty)
 {

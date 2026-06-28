@@ -406,15 +406,13 @@ static u64 read_tsc(struct clocksource *cs)
 	return (u64)rdtsc_ordered();
 }
 
-static void tsc_cs_mark_unstable(struct clocksource *cs)
-{
-	if (tsc_unstable)
-		return;
-
-	tsc_unstable = 1;
-	clear_sched_clock_stable();
-	pr_info("Marking TSC unstable due to clocksource watchdog\n");
-}
+/*
+ * .mark_unstable clocksource-watchdog callback. Fires only when the watchdog
+ * detects TSC drift; on a clean short boot the watchdog never marks the TSC
+ * unstable, so this is structurally dead. Stub kept for the .mark_unstable
+ * fn-ptr (tsc_unstable / clear_sched_clock_stable stay live via other paths).
+ */
+static void tsc_cs_mark_unstable(struct clocksource *cs) { }
 
 static int tsc_cs_enable(struct clocksource *cs)
 {

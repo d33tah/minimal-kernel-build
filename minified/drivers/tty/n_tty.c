@@ -12,15 +12,12 @@ struct n_tty_data {
 	struct mutex output_lock;
 };
 
-static void n_tty_close(struct tty_struct *tty)
-{
-	struct n_tty_data *ldata = tty->disc_data;
-
-	if (ldata) {
-		kfree(ldata);
-		tty->disc_data = NULL;
-	}
-}
+/*
+ * .close line-discipline teardown callback. Fires only when the N_TTY ldisc
+ * is closed/detached; a boot-once-and-print artifact never closes its tty, so
+ * this is structurally dead. Stub kept for the n_tty_ops.close fn-ptr.
+ */
+static void n_tty_close(struct tty_struct *tty) { }
 
 static int n_tty_open(struct tty_struct *tty)
 {

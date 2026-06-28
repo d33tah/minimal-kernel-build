@@ -95,101 +95,21 @@ unsigned long loops_per_jiffy = (1<<12);
  * passes an empty cmdline so they never fired (do_mounts/gbpages precedent). */
 #define exit_boot_config()	do {} while (0)
 
-static void __init repair_env_string(char *param, char *val)
-{
-	if (val) {
-		 
-		if (val == param+strlen(param)+1)
-			val[-1] = '=';
-		else if (val == param+strlen(param)+2) {
-			val[-2] = '=';
-			memmove(val-1, val, strlen(val)+1);
-		} else
-			BUG();
-	}
-}
-
+/*
+ * Runtime-dead cmdline callbacks (anchor-stub): these are passed by address to
+ * parse_args(), but parse_args()'s loop body never runs on a single-shot boot
+ * (empty cmdline -> `if (*args)` false), so the `unknown` callback never fires.
+ * Bodies stubbed; symbols kept link-live for the address-of references.
+ */
 static int __init set_init_arg(char *param, char *val,
 			       const char *unused, void *arg)
 {
-	unsigned int i;
-
-	if (panic_later)
-		return 0;
-
-	repair_env_string(param, val);
-
-	for (i = 0; argv_init[i]; i++) {
-		if (i == MAX_INIT_ARGS) {
-			panic_later = "init";
-			panic_param = param;
-			return 0;
-		}
-	}
-	argv_init[i] = param;
 	return 0;
 }
 
 static int __init unknown_bootoption(char *param, char *val,
 				     const char *unused, void *arg)
 {
-	size_t len = strlen(param);
-	const struct obs_kernel_param *p;
-	bool had_early_param = false;
-
-	repair_env_string(param, val);
-
-	/* obsolete_checksetup folded in: sole caller. */
-	p = __setup_start;
-	do {
-		int n = strlen(p->str);
-		if (parameqn(param, p->str, n)) {
-			if (p->early) {
-				if (param[n] == '\0' || param[n] == '=')
-					had_early_param = true;
-			} else if (!p->setup_func) {
-				pr_warn("Parameter %s is obsolete, ignored\n",
-					p->str);
-				return 0;
-			} else if (p->setup_func(param + n))
-				return 0;
-		}
-		p++;
-	} while (p < __setup_end);
-
-	if (had_early_param)
-		return 0;
-
-	 
-	if (strnchr(param, len, '.'))
-		return 0;
-
-	if (panic_later)
-		return 0;
-
-	if (val) {
-		 
-		unsigned int i;
-		for (i = 0; envp_init[i]; i++) {
-			if (i == MAX_INIT_ENVS) {
-				panic_later = "env";
-				panic_param = param;
-			}
-			if (!strncmp(param, envp_init[i], len+1))
-				break;
-		}
-		envp_init[i] = param;
-	} else {
-		 
-		unsigned int i;
-		for (i = 0; argv_init[i]; i++) {
-			if (i == MAX_INIT_ARGS) {
-				panic_later = "init";
-				panic_param = param;
-			}
-		}
-		argv_init[i] = param;
-	}
 	return 0;
 }
 
@@ -271,18 +191,6 @@ noinline void __ref rest_init(void)
 static int __init do_early_param(char *param, char *val,
 				 const char *unused, void *arg)
 {
-	const struct obs_kernel_param *p;
-
-	for (p = __setup_start; p < __setup_end; p++) {
-		if ((p->early && parameq(param, p->str)) ||
-		    (strcmp(param, "console") == 0 &&
-		     strcmp(p->str, "earlycon") == 0)
-		) {
-			if (p->setup_func(val) != 0)
-				pr_warn("Malformed early option '%s'\n", param);
-		}
-	}
-	 
 	return 0;
 }
 

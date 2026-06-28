@@ -31,19 +31,6 @@ static inline struct anon_vma *anon_vma_alloc(void)
 	return anon_vma;
 }
 
-static inline void anon_vma_free(struct anon_vma *anon_vma)
-{
-	VM_BUG_ON(atomic_read(&anon_vma->refcount));
-
-	might_sleep();
-	if (rwsem_is_locked(&anon_vma->root->rwsem)) {
-		anon_vma_lock_write(anon_vma);
-		anon_vma_unlock_write(anon_vma);
-	}
-
-	kmem_cache_free(anon_vma_cachep, anon_vma);
-}
-
 static inline struct anon_vma_chain *anon_vma_chain_alloc(gfp_t gfp)
 {
 	return kmem_cache_alloc(anon_vma_chain_cachep, gfp);
@@ -209,12 +196,13 @@ void page_add_file_rmap(struct page *page,
 	mlock_vma_page(page, vma, compound);
 }
 
+/*
+ * Runtime-dead anchor-stub: __put_anon_vma (anon_vma teardown) never fires on a
+ * 1-shot boot -- nothing drops the last anon_vma reference. The private
+ * static-inline anon_vma_free (its sole caller) was deleted with it. Symbol kept
+ * link-live for the rmap.h put_anon_vma inline wrapper.
+ */
 void __put_anon_vma(struct anon_vma *anon_vma)
 {
-	struct anon_vma *root = anon_vma->root;
-
-	anon_vma_free(anon_vma);
-	if (root != anon_vma && atomic_dec_and_test(&root->refcount))
-		anon_vma_free(root);
 }
 

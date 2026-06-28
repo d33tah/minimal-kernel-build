@@ -59,7 +59,6 @@ extern void sched_init_smp(void);
 #include <linux/proc_ns.h>
 
 /* --- 2025-12-08 00:40 --- integrity.h stubbed out */
-#include <linux/io.h>
 #include <linux/cache.h>
 #include <linux/jump_label.h>
 #include <linux/mem_encrypt.h>

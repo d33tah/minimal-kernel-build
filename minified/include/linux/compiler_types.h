@@ -49,7 +49,6 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 # define __safe
 # define __private
 # define ACCESS_PRIVATE(p, member) ((p)->member)
-# define __builtin_warning(x, y...) (1)
 #endif  
 
 #define ___PASTE(a,b) a##b
@@ -163,7 +162,6 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 
 #if defined(RANDSTRUCT) && !defined(__CHECKER__)
 # define __randomize_layout __designated_init __attribute__((randomize_layout))
-# define __no_randomize_layout __attribute__((no_randomize_layout))
 # define randomized_struct_fields_start	struct {
 # define randomized_struct_fields_end	} __randomize_layout;
 #else
@@ -239,9 +237,6 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 #define __diag_GCC(version, severity, string)
 #endif
 
-
-#define __diag_ignore(compiler, version, option, comment) \
-	__diag_ ## compiler(version, ignore, option)
 
 #ifndef __diag_ignore_all
 #define __diag_ignore_all(option, comment)

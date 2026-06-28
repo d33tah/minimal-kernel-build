@@ -31,7 +31,6 @@ typedef sigset_t compat_sigset_t;
 #include <uapi/asm/sigcontext.h>
 
 /* __i386__ - 32-bit x86 */
-#define __HAVE_ARCH_SIG_BITOPS
 
 #define sigaddset(set,sig)		    \
 	(__builtin_constant_p(sig)	    \

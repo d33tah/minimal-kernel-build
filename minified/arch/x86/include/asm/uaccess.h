@@ -280,13 +280,6 @@ do {										\
 	(x) = (__force __typeof__(*(ptr)))__gu_val;				\
 } while (0)
 
-#define unsafe_copy_loop(dst, src, len, type, label)				\
-	while (len >= sizeof(type)) {						\
-		unsafe_put_user(*(type *)(src),(type __user *)(dst),label);	\
-		dst += sizeof(type);						\
-		src += sizeof(type);						\
-		len -= sizeof(type);						\
-	}
 
 
 

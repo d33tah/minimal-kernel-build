@@ -48,9 +48,6 @@ static inline void native_pte_clear(struct mm_struct *mm,
 }
 #define native_ptep_get_and_clear(xp) native_local_ptep_get_and_clear(xp)
 #define SWP_OFFSET_SHIFT (_PAGE_BIT_PROTNONE + 1)
-#define __swp_entry(type, offset)	((swp_entry_t) { \
-					 ((type) << (_PAGE_BIT_PRESENT + 1)) \
-					 | ((offset) << SWP_OFFSET_SHIFT) })
 static inline u64 protnone_mask(u64 val)
 {
 	return 0;

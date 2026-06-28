@@ -17,7 +17,6 @@
 
 #define __IRQ_MASK(x)	((1UL << (x))-1)
 
-#define PREEMPT_MASK	(__IRQ_MASK(PREEMPT_BITS) << PREEMPT_SHIFT)
 #define SOFTIRQ_MASK	(__IRQ_MASK(SOFTIRQ_BITS) << SOFTIRQ_SHIFT)
 #define HARDIRQ_MASK	(__IRQ_MASK(HARDIRQ_BITS) << HARDIRQ_SHIFT)
 #define NMI_MASK	(__IRQ_MASK(NMI_BITS)     << NMI_SHIFT)
@@ -45,13 +44,11 @@
 
 #define in_nmi()		(nmi_count())
 #define in_hardirq()		(hardirq_count())
-#define in_serving_softirq()	(softirq_count() & SOFTIRQ_OFFSET)
 
 #define in_interrupt()		(irq_count())
 
 # define PREEMPT_DISABLE_OFFSET	0
 
-#define PREEMPT_LOCK_OFFSET		PREEMPT_DISABLE_OFFSET
 
 #define in_atomic()	(preempt_count() != 0)
 

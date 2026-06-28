@@ -94,7 +94,6 @@ extern retpoline_thunk_t __x86_indirect_thunk_array[];
 extern void entry_ibpb(void);
 
 # define CALL_NOSPEC "call *%[thunk_target]\n"
-# define THUNK_TARGET(addr) [thunk_target] "rm" (addr)
 
  
 extern char __indirect_thunk_start[];

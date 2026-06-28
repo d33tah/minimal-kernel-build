@@ -6,7 +6,6 @@
 #include <linux/stringify.h>
 #include <asm/asm.h>
 
-#define ALTINSTR_FLAG_INV	(1 << 15)
 
 #ifndef __ASSEMBLY__
 

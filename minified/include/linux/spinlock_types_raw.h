@@ -17,7 +17,6 @@ typedef struct raw_spinlock {
 
 # define RAW_SPIN_DEP_MAP_INIT(lockname)
 # define SPIN_DEP_MAP_INIT(lockname)
-# define LOCAL_SPIN_DEP_MAP_INIT(lockname)
 
 # define SPIN_DEBUG_INIT(lockname)
 

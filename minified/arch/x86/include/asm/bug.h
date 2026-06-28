@@ -55,11 +55,6 @@ struct pt_regs;
 
 #define WARN_ON_ONCE(condition) WARN_ON(condition)
 #define WARN_ONCE(condition, format...) WARN(condition, format)
-#define WARN_TAINT(condition, taint, format...) WARN(condition, format)
-
-# define WARN_ON_SMP(x)			({0;})
-
-# define WARN_ON_FUNCTION_MISMATCH(x, fn) WARN_ON_ONCE((x) != (fn))
 
 #endif /* __ASSEMBLY__ */
 

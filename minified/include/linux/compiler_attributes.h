@@ -75,8 +75,6 @@
 # define fallthrough                    do {} while (0)   
 #endif
 
-# define __flatten			__attribute__((flatten))
-
 #define   noinline                      __attribute__((__noinline__))
 
 #if __has_attribute(__nonstring__)

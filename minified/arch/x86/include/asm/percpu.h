@@ -19,7 +19,6 @@
 
  
 
-#define init_per_cpu_var(var)  var
 
  
 
@@ -245,19 +244,10 @@ DECLARE_PER_CPU_READ_MOSTLY(unsigned long, this_cpu_off);
 
 #endif  
 
-#define	DEFINE_EARLY_PER_CPU(_type, _name, _initvalue)		\
-	DEFINE_PER_CPU(_type, _name) = _initvalue
-
-
-
-#define DECLARE_EARLY_PER_CPU(_type, _name)			\
-	DECLARE_PER_CPU(_type, _name)
 
 #define DECLARE_EARLY_PER_CPU_READ_MOSTLY(_type, _name)		\
 	DECLARE_PER_CPU_READ_MOSTLY(_type, _name)
 
-#define	early_per_cpu(_name, _cpu) per_cpu(_name, _cpu)
-#define	early_per_cpu_ptr(_name) NULL
  
 
 

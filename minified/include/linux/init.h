@@ -14,7 +14,6 @@
 #define __init		__section(".init.text") __cold  __latent_entropy __noinitretpoline __nocfi
 #define __initdata	__section(".init.data")
 #define __initconst	__section(".init.rodata")
-#define __exit_call	__used __section(".exitcall.exit")
 
 #define __ref            __section(".ref.text") noinline
 #define __refdata        __section(".ref.data")

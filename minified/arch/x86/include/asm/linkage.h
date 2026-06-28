@@ -40,11 +40,6 @@
 	ENDBR
 
  
-#define SYM_FUNC_START_WEAK(name)			\
-	SYM_START(name, SYM_L_WEAK, SYM_A_ALIGN)	\
-	ENDBR
-
- 
 
 #endif  
 

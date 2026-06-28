@@ -15,7 +15,6 @@
 #  define IA32_NR_syscalls (__NR_syscalls)
 
 
-# define NR_syscalls (__NR_syscalls)
 
 # define __ARCH_WANT_NEW_STAT
 # define __ARCH_WANT_OLD_READDIR

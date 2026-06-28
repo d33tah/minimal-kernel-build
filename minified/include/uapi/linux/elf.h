@@ -207,8 +207,6 @@ typedef struct elf64_shdr {
 #define	EI_CLASS	4
 #define	EI_DATA		5
 #define	EI_VERSION	6
-#define	EI_OSABI	7
-#define	EI_PAD		8
 
 #define	ELFMAG0		0x7f		 
 #define	ELFMAG1		'E'

@@ -435,64 +435,16 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 	return addr;
 }
 
-static unsigned long unmapped_area(struct vm_unmapped_area_info *info)
-{
-	/* Simplified: use simple linear search from low_limit */
-	struct mm_struct *mm = current->mm;
-	unsigned long gap_start;
-
-	/* Basic bounds checking */
-	if (info->high_limit < info->length)
-		return -ENOMEM;
-	if (info->low_limit > info->high_limit - info->length)
-		return -ENOMEM;
-
-	/* Simple allocation from highest_vm_end or low_limit */
-	gap_start = max(mm->highest_vm_end, info->low_limit);
-	gap_start += (info->align_offset - gap_start) & info->align_mask;
-
-	if (gap_start + info->length > info->high_limit)
-		return -ENOMEM;
-
-	return gap_start;
-}
-
-static unsigned long unmapped_area_topdown(struct vm_unmapped_area_info *info)
-{
-	/* Simplified: allocate from top of address space */
-	struct mm_struct *mm = current->mm;
-	unsigned long gap_end;
-
-	/* Basic bounds checking */
-	if (info->high_limit < info->length)
-		return -ENOMEM;
-	if (info->low_limit > info->high_limit - info->length)
-		return -ENOMEM;
-
-	/* Simple top-down allocation */
-	gap_end = info->high_limit;
-	if (mm->highest_vm_end <= info->high_limit)
-		gap_end = mm->highest_vm_end;
-
-	gap_end -= info->length;
-	gap_end -= (gap_end - info->align_offset) & info->align_mask;
-
-	if (gap_end < info->low_limit)
-		return -ENOMEM;
-
-	return gap_end;
-}
-
+/*
+ * Runtime-dead on a 1-shot boot: arch_pick_mmap_layout selects the topdown
+ * get_unmapped_area, whose addr fast-path always returns before reaching
+ * vm_unmapped_area; the legacy bottom-up arch_get_unmapped_area is never
+ * assigned. Body stubbed (symbol kept link-live for the mm.h extern); the
+ * private unmapped_area / unmapped_area_topdown helpers are deleted.
+ */
 unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
 {
-	unsigned long addr;
-
-	if (info->flags & VM_UNMAPPED_AREA_TOPDOWN)
-		addr = unmapped_area_topdown(info);
-	else
-		addr = unmapped_area(info);
-
-	return addr;
+	return -ENOMEM;
 }
 
 #ifndef HAVE_ARCH_UNMAPPED_AREA
@@ -501,33 +453,12 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
 		       unsigned long len, unsigned long pgoff,
 		       unsigned long flags)
 {
-	struct mm_struct *mm = current->mm;
-	struct vm_area_struct *vma, *prev;
-	struct vm_unmapped_area_info info;
-	const unsigned long mmap_end = arch_get_mmap_end(addr, len, flags);
-
-	if (len > mmap_end - mmap_min_addr)
-		return -ENOMEM;
-
-	if (flags & MAP_FIXED)
-		return addr;
-
-	if (addr) {
-		addr = PAGE_ALIGN(addr);
-		vma = find_vma_prev(mm, addr, &prev);
-		if (mmap_end - len >= addr && addr >= mmap_min_addr &&
-		    (!vma || addr + len <= vm_start_gap(vma)) &&
-		    (!prev || addr >= vm_end_gap(prev)))
-			return addr;
-	}
-
-	info.flags = 0;
-	info.length = len;
-	info.low_limit = mm->mmap_base;
-	info.high_limit = mmap_end;
-	info.align_mask = 0;
-	info.align_offset = 0;
-	return vm_unmapped_area(&info);
+	/*
+	 * Legacy bottom-up layout is never selected on this boot
+	 * (arch_pick_mmap_layout uses the topdown variant); never assigned,
+	 * never called. Body stubbed, symbol kept link-live.
+	 */
+	return -ENOMEM;
 }
 #endif
 

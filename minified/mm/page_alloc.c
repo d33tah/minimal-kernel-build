@@ -744,28 +744,6 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 	return true;
 }
 
-unsigned long __alloc_pages_bulk(gfp_t gfp, int preferred_nid,
-			nodemask_t *nodemask, int nr_pages,
-			struct list_head *page_list,
-			struct page **page_array)
-{
-	struct page *page;
-	int nr_populated = 0;
-
-	/* Minimal stub: just allocate pages one at a time */
-	while (nr_populated < nr_pages) {
-		page = __alloc_pages(gfp, 0, preferred_nid, nodemask);
-		if (!page)
-			break;
-		if (page_list)
-			list_add(&page->lru, page_list);
-		else
-			page_array[nr_populated] = page;
-		nr_populated++;
-	}
-	return nr_populated;
-}
-
 struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 							nodemask_t *nodemask)
 {

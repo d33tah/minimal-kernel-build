@@ -234,18 +234,6 @@ static int chrdev_open(struct inode *inode, struct file *filp)
 	return ret;
 }
 
-static void cdev_purge(struct cdev *cdev)
-{
-	spin_lock(&cdev_lock);
-	while (!list_empty(&cdev->list)) {
-		struct inode *inode;
-		inode = container_of(cdev->list.next, struct inode, i_devices);
-		list_del_init(&inode->i_devices);
-		inode->i_cdev = NULL;
-	}
-	spin_unlock(&cdev_lock);
-}
-
 const struct file_operations def_chr_fops = {
 	.open = chrdev_open,
 	.llseek = noop_llseek,
@@ -284,23 +272,17 @@ int cdev_add(struct cdev *p, dev_t dev, unsigned count)
  * driver-destruct teardown path (destruct_tty_driver), never reached in a
  * single-shot boot. */
 
+/* cdev release callbacks: only fire when a cdev kobject's refcount drops to
+ * 0 (final cdev_del / device teardown), which never happens on a 1-shot boot
+ * that never releases a char device. Stubbed empty; symbols kept link-live for
+ * the ktype_cdev_{default,dynamic}.release fn-ptr tables. cdev_purge (their sole
+ * private helper) cascade-deleted. */
 static void cdev_default_release(struct kobject *kobj)
 {
-	struct cdev *p = container_of(kobj, struct cdev, kobj);
-	struct kobject *parent = kobj->parent;
-
-	cdev_purge(p);
-	kobject_put(parent);
 }
 
 static void cdev_dynamic_release(struct kobject *kobj)
 {
-	struct cdev *p = container_of(kobj, struct cdev, kobj);
-	struct kobject *parent = kobj->parent;
-
-	cdev_purge(p);
-	kfree(p);
-	kobject_put(parent);
 }
 
 static struct kobj_type ktype_cdev_default = {

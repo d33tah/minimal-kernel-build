@@ -6,7 +6,6 @@
 #include <linux/string.h>
 #include <linux/kd.h>
 #include <linux/vt_kern.h>
-#include <linux/sched.h>
 #include <linux/selection.h>
 #include <linux/spinlock.h>
 #include <linux/ioport.h>

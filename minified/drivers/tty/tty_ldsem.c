@@ -1,7 +1,6 @@
 
 #include <linux/atomic.h>
 #include <linux/tty.h>
-#include <linux/sched.h>
 #include <linux/sched/debug.h>
 
 

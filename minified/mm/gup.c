@@ -1,7 +1,6 @@
 #include <linux/kernel.h>
 #include <linux/errno.h>
 #include <linux/err.h>
-#include <linux/spinlock.h>
 
 #include <linux/mm.h>
 #include <linux/swap.h>

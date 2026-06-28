@@ -3,7 +3,6 @@
 #include <linux/tty.h>
 #include <linux/tty_driver.h>
 #include <linux/slab.h>
-#include <linux/sched.h>
 #include "tty.h"
 
 #define MIN_TTYB_SIZE	256

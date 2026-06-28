@@ -1,6 +1,5 @@
 #include <linux/unistd.h>
 #include <linux/kernel.h>
-#include <linux/fs.h>
 #include <linux/initrd.h>
 
 unsigned long initrd_start, initrd_end;

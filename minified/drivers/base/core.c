@@ -4,7 +4,6 @@
 #include <linux/err.h>
 #include <linux/init.h>
 #include <linux/slab.h>
-#include <linux/sched/signal.h>
 #include <linux/sched/mm.h>
 
 #include "base.h"

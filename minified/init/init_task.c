@@ -3,7 +3,6 @@
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
 #include <linux/fs.h>
-#include <linux/numa.h>
 
 #include <linux/uaccess.h>
 

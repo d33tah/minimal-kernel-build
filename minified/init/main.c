@@ -26,7 +26,6 @@
 #include <linux/moduleparam.h>
 #include <linux/cpu.h>
 #include <linux/cgroup.h>
-#include <linux/tick.h>
 #include <linux/sched/isolation.h>
 #include <linux/interrupt.h>
 #include <linux/unistd.h>

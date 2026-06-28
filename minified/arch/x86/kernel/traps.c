@@ -11,7 +11,6 @@
 #include <linux/init.h>
 #include <linux/bug.h>
 #include <linux/mm.h>
-#include <linux/atomic.h>
 
 
 #include <asm/stacktrace.h>

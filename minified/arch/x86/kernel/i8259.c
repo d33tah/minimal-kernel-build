@@ -2,7 +2,6 @@
 #include <linux/io.h>
 #include <linux/delay.h>
 
-#include <linux/atomic.h>
 #include <asm/timer.h>
 #include <asm/hw_irq.h>
 #include <asm/desc.h>

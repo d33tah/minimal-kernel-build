@@ -2,7 +2,6 @@
 #include <linux/kernel.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/debug.h>
-#include <linux/atomic.h>
 #include <linux/moduleparam.h>
 #include <linux/kthread.h>
 #include <linux/tick.h>

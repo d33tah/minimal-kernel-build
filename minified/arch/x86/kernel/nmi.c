@@ -3,7 +3,6 @@
 #include <linux/sched/debug.h>
 #include <linux/nmi.h>
 #include <linux/delay.h>
-#include <linux/atomic.h>
 #include <linux/sched/clock.h>
 
 #include <asm/cpu_entry_area.h>

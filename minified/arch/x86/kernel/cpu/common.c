@@ -22,7 +22,6 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/tlbflush.h>
 #include <asm/debugreg.h>
 #include <asm/sections.h>
-#include <linux/atomic.h>
 #include <asm/proto.h>
 #include <asm/apic.h>
 #include <asm/desc.h>

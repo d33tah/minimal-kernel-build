@@ -4,7 +4,6 @@
 #include <linux/module.h>
 #include <linux/mutex.h>
 #include <linux/init.h>
-#include <linux/hardirq.h>
 
 #include <asm/sections.h>
 #include <linux/uaccess.h>

@@ -7,7 +7,6 @@
 #include <linux/kd.h>
 #include <linux/vt_kern.h>
 #include <linux/selection.h>
-#include <linux/spinlock.h>
 #include <linux/ioport.h>
 #include <linux/screen_info.h>
 #include <video/vga.h>

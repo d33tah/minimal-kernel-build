@@ -1,4 +1,3 @@
-#include <linux/spinlock.h>
 #include <linux/sched/signal.h>
 #include <linux/task_work.h>
 #include <linux/resume_user_mode.h>

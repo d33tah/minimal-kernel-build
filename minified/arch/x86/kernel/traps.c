@@ -12,7 +12,6 @@
 #include <linux/bug.h>
 #include <linux/nmi.h>
 #include <linux/mm.h>
-#include <linux/hardirq.h>
 #include <linux/atomic.h>
 
 

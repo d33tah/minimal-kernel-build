@@ -4,7 +4,6 @@
 #include <linux/sched/debug.h>
 #include <linux/nmi.h>
 #include <linux/delay.h>
-#include <linux/hardirq.h>
 #include <linux/atomic.h>
 #include <linux/sched/clock.h>
 

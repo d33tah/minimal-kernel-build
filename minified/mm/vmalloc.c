@@ -12,7 +12,6 @@
 #include <linux/compiler.h>
 #include <linux/memcontrol.h>
 #include <linux/llist.h>
-#include <linux/bitops.h>
 #include <linux/rbtree_augmented.h>
 #include <linux/pgtable.h>
 #include <linux/sched/mm.h>

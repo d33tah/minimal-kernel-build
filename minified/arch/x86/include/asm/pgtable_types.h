@@ -210,10 +210,7 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 
 /* pud_addr_end removed - page-walk loops folded to pgd_addr_end only (0 callers) */
 
-static inline pudval_t native_pud_val(pud_t pud)
-{
-	return native_pgd_val(pud.p4d.pgd);
-}
+/* native_pud_val removed - unused (sole callers pud_pfn_mask/pud_flags removed below) */
 
 /* --- 2025-12-07 10:14 --- Inlined asm-generic/pgtable-nopmd.h content */
 struct mm_struct;
@@ -228,9 +225,7 @@ typedef struct { pud_t pud; } pmd_t;
 #define PMD_MASK  	(~(PMD_SIZE-1))
 
 static inline int pud_none(pud_t pud)		{ return 0; }
-static inline int pud_present(pud_t pud)	{ return 1; }
-/* pud_user removed - unused */
-static inline int pud_leaf(pud_t pud)		{ return 0; }
+/* pud_present (const 1), pud_user, pud_leaf (generic fallback in linux/pgtable.h) removed - unused */
 #define pmd_ERROR(pmd)				(pud_ERROR((pmd).pud))
 
 
@@ -258,23 +253,7 @@ static inline pmdval_t native_pmd_val(pmd_t pmd)
 	return native_pgd_val(pmd.pud.p4d.pgd);
 }
 
-static inline pudval_t pud_pfn_mask(pud_t pud)
-{
-	if (native_pud_val(pud) & _PAGE_PSE)
-		return PHYSICAL_PUD_PAGE_MASK;
-	else
-		return PTE_PFN_MASK;
-}
-
-static inline pudval_t pud_flags_mask(pud_t pud)
-{
-	return ~pud_pfn_mask(pud);
-}
-
-static inline pudval_t pud_flags(pud_t pud)
-{
-	return native_pud_val(pud) & pud_flags_mask(pud);
-}
+/* pud_pfn_mask, pud_flags_mask, pud_flags removed - unused (sole caller pud_write/pud_present removed) */
 
 static inline pmdval_t pmd_pfn_mask(pmd_t pmd)
 {

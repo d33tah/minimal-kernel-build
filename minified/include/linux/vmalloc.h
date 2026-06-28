@@ -64,10 +64,6 @@ void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
 extern void vfree(const void *addr);
 
 
-
-void arch_sync_kernel_mappings(unsigned long start, unsigned long end);
-
-
 static inline size_t get_vm_area_size(const struct vm_struct *area)
 {
 	if (!(area->flags & VM_NO_GUARD))

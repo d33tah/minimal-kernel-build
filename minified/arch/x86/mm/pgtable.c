@@ -46,11 +46,6 @@ static void pgd_set_mm(pgd_t *pgd, struct mm_struct *mm)
 	virt_to_page(pgd)->pt_mm = mm;
 }
 
-struct mm_struct *pgd_page_get_mm(struct page *page)
-{
-	return page->pt_mm;
-}
-
 static void pgd_ctor(struct mm_struct *mm, pgd_t *pgd)
 {
 	clone_pgd_range(pgd + KERNEL_PGD_BOUNDARY,

@@ -21,62 +21,13 @@
 DEFINE_SPINLOCK(pgd_lock);
 LIST_HEAD(pgd_list);
 
-static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
-{
-	unsigned index = pgd_index(address);
-	pgd_t *pgd_k;
-	pmd_t *pmd, *pmd_k;
-
-	pgd += index;
-	pgd_k = init_mm.pgd + index;
-
-	/* pgd_present() is constant 1 on 2-level x86_32, so the !present
-	 * early-out was statically dead. */
-
-	/*
-	 * 2-level x86_32 (P4D/PUD/PMD folded): p4d_offset/pud_offset are
-	 * pass-through casts and p4d_present/pud_present are constant 1, so
-	 * the intermediate descents and presence checks were no-ops.  Descend
-	 * straight to the (real) PMD entry, which folds back to the pgd slot.
-	 */
-	pmd = pmd_offset(pud_offset(p4d_offset(pgd, address), address), address);
-	pmd_k = pmd_offset(pud_offset(p4d_offset(pgd_k, address), address),
-			   address);
-
-	if (pmd_present(*pmd) != pmd_present(*pmd_k))
-		set_pmd(pmd, *pmd_k);
-
-	if (!pmd_present(*pmd_k))
-		return NULL;
-	else
-		BUG_ON(pmd_pfn(*pmd) != pmd_pfn(*pmd_k));
-
-	return pmd_k;
-}
-
-void arch_sync_kernel_mappings(unsigned long start, unsigned long end)
-{
-	unsigned long addr;
-
-	for (addr = start & PMD_MASK;
-	     addr >= TASK_SIZE_MAX && addr < VMALLOC_END;
-	     addr += PMD_SIZE) {
-		struct page *page;
-
-		spin_lock(&pgd_lock);
-		list_for_each_entry(page, &pgd_list, lru) {
-			spinlock_t *pgt_lock;
-
-			 
-			pgt_lock = &pgd_page_get_mm(page)->page_table_lock;
-
-			spin_lock(pgt_lock);
-			vmalloc_sync_one(page_address(page), addr);
-			spin_unlock(pgt_lock);
-		}
-		spin_unlock(&pgd_lock);
-	}
-}
+/*
+ * arch_sync_kernel_mappings + its private helper vmalloc_sync_one were
+ * runtime-dead (anchor-stub): the vmalloc page-table sync machinery in
+ * mm/vmalloc.c that called this was already stripped, leaving zero callers
+ * tree-wide.  Removed whole (along with pgd_page_get_mm in pgtable.c, whose
+ * sole caller was vmalloc_sync_one's loop).
+ */
 
 static void sanitize_error_code(unsigned long address,
 				unsigned long *error_code)

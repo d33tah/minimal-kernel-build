@@ -526,8 +526,6 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	add_nr_running(rq, 1);
 }
 
-static void set_next_buddy(struct sched_entity *se);
-
 static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
 	struct cfs_rq *cfs_rq;
@@ -575,62 +573,18 @@ wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
 	return 0;
 }
 
-static void set_last_buddy(struct sched_entity *se)
-{
-	for_each_sched_entity(se) {
-		if (SCHED_WARN_ON(!se->on_rq))
-			return;
-		cfs_rq_of(se)->last = se;
-	}
-}
-
-static void set_next_buddy(struct sched_entity *se)
-{
-	for_each_sched_entity(se) {
-		if (SCHED_WARN_ON(!se->on_rq))
-			return;
-		cfs_rq_of(se)->next = se;
-	}
-}
-
+/*
+ * check_preempt_wakeup() is the fair-class .check_preempt_curr callback,
+ * invoked when a task wakes up to decide whether it should preempt the
+ * running task (set the resched flag + arm next/last buddies). On a
+ * boot-once-and-print artifact no competing task ever wakes onto the
+ * fair runqueue, so this callback never fires (HIT=False). Stubbed to a
+ * no-op: a missed wakeup-preemption is behavior-preserving (the running
+ * task simply keeps running until the next tick), and the buddy helpers
+ * set_next_buddy/set_last_buddy (only callers were here) cascade out.
+ */
 static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_flags)
 {
-	struct task_struct *curr = rq->curr;
-	struct sched_entity *se = &curr->se, *pse = &p->se;
-	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
-	int scale = cfs_rq->nr_running >= 8;
-
-	if (unlikely(se == pse))
-		return;
-
-	if (test_tsk_need_resched(curr))
-		return;
-
-	if (unlikely(task_has_idle_policy(curr)) &&
-	    likely(!task_has_idle_policy(p)))
-		goto preempt;
-
-	if (unlikely(p->policy != SCHED_NORMAL) || !sched_feat(WAKEUP_PREEMPTION))
-		return;
-
-	BUG_ON(!pse);
-
-	update_curr(cfs_rq_of(se));
-	if (wakeup_preempt_entity(se, pse) == 1) {
-		set_next_buddy(pse);
-		goto preempt;
-	}
-
-	return;
-
-preempt:
-	resched_curr(rq);
-	
-	if (unlikely(!se->on_rq || curr == rq->idle))
-		return;
-
-	if (sched_feat(LAST_BUDDY) && scale && entity_is_task(se))
-		set_last_buddy(se);
 }
 
 struct task_struct *

@@ -4,7 +4,6 @@
 #include <linux/tty_driver.h>
 #include <linux/string.h>
 #include <linux/slab.h>
-#include <linux/sched/signal.h>
 
 #include "tty.h"
 

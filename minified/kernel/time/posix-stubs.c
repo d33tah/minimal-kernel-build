@@ -2,7 +2,6 @@
 #include <linux/linkage.h>
 #include <linux/kernel.h>
 #include <linux/errno.h>
-#include <linux/syscalls.h>
 
 #include <asm/syscall_wrapper.h>
 

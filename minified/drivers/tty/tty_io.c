@@ -11,7 +11,6 @@
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/console.h>
-#include <linux/kd.h>
 #include <linux/mm.h>
 #include <linux/slab.h>
 #include <linux/poll.h>
@@ -29,7 +28,6 @@
 #include <linux/vt_kern.h>
 #include <linux/selection.h>
 
-#include <linux/nsproxy.h>
 #include "tty.h"
 
 #define tty_debug_hangup(tty, f, args...)	do { } while (0)

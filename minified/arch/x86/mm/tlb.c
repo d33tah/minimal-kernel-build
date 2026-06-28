@@ -176,116 +176,18 @@ void initialize_tlbstate_and_flush(void)
 		this_cpu_write(cpu_tlbstate.ctxs[i].ctx_id, 0);
 }
 
-static void flush_tlb_func(void *info)
-{
-	 
-	const struct flush_tlb_info *f = info;
-	struct mm_struct *loaded_mm = this_cpu_read(cpu_tlbstate.loaded_mm);
-	u32 loaded_mm_asid = this_cpu_read(cpu_tlbstate.loaded_mm_asid);
-	u64 mm_tlb_gen = atomic64_read(&loaded_mm->context.tlb_gen);
-	u64 local_tlb_gen = this_cpu_read(cpu_tlbstate.ctxs[loaded_mm_asid].tlb_gen);
-
-	/* SMP=n: flush_tlb_mm_range only ever invokes this on the initiating CPU,
-	 * so the remote-IPI (!local) arm that inc'd irq_tlb_count and bailed on a
-	 * non-matching mm was unreachable. */
-
-	VM_WARN_ON(!irqs_disabled());
-
-	if (unlikely(loaded_mm == &init_mm))
-		return;
-
-	VM_WARN_ON(this_cpu_read(cpu_tlbstate.ctxs[loaded_mm_asid].ctx_id) !=
-		   loaded_mm->context.ctx_id);
-
-	if (this_cpu_read(cpu_tlbstate_shared.is_lazy)) {
-		 
-		switch_mm_irqs_off(NULL, &init_mm, NULL);
-		return;
-	}
-
-	if (unlikely(local_tlb_gen == mm_tlb_gen)) {
-
-		return;
-	}
-
-	WARN_ON_ONCE(local_tlb_gen > mm_tlb_gen);
-	WARN_ON_ONCE(f->new_tlb_gen > mm_tlb_gen);
-
-	 
-	if (f->end != TLB_FLUSH_ALL &&
-	    f->new_tlb_gen == local_tlb_gen + 1 &&
-	    f->new_tlb_gen == mm_tlb_gen) {
-		 
-		unsigned long addr = f->start;
-
-		while (addr < f->end) {
-			flush_tlb_one_user(addr);
-			addr += 1UL << f->stride_shift;
-		}
-	} else {
-		flush_tlb_local();
-	}
-
-
-	this_cpu_write(cpu_tlbstate.ctxs[loaded_mm_asid].tlb_gen, mm_tlb_gen);
-}
-
 DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
 
 unsigned long tlb_single_page_flush_ceiling __read_mostly = 33;
-
-static DEFINE_PER_CPU_SHARED_ALIGNED(struct flush_tlb_info, flush_tlb_info);
-
-
-static struct flush_tlb_info *get_flush_tlb_info(struct mm_struct *mm,
-			unsigned long start, unsigned long end,
-			unsigned int stride_shift, bool freed_tables,
-			u64 new_tlb_gen)
-{
-	struct flush_tlb_info *info = this_cpu_ptr(&flush_tlb_info);
-
-
-	info->start		= start;
-	info->end		= end;
-	info->mm		= mm;
-	info->stride_shift	= stride_shift;
-	info->freed_tables	= freed_tables;
-	info->new_tlb_gen	= new_tlb_gen;
-
-	return info;
-}
 
 void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 				unsigned long end, unsigned int stride_shift,
 				bool freed_tables)
 {
-	struct flush_tlb_info *info;
-	u64 new_tlb_gen;
-
-	get_cpu();
-
-	 
-	if ((end == TLB_FLUSH_ALL) ||
-	    ((end - start) >> stride_shift) > tlb_single_page_flush_ceiling) {
-		start = 0;
-		end = TLB_FLUSH_ALL;
-	}
-
-	 
-	new_tlb_gen = inc_mm_tlb_gen(mm);
-
-	info = get_flush_tlb_info(mm, start, end, stride_shift, freed_tables,
-				  new_tlb_gen);
-
-
-	if (mm == this_cpu_read(cpu_tlbstate.loaded_mm)) {
-		lockdep_assert_irqs_enabled();
-		local_irq_disable();
-		flush_tlb_func(info);
-		local_irq_enable();
-	}
-
-	put_cpu();
+	/* mmu_gather/unmap teardown never runs on this single-shot boot, so this
+	 * range-flush root is runtime-dead; bump the generation counter so any
+	 * live reader of mm->context.tlb_gen stays consistent and return. */
+	inc_mm_tlb_gen(mm);
 }
 
 

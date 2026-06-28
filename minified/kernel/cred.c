@@ -57,16 +57,11 @@ void __put_cred(struct cred *cred)
 
 void exit_creds(struct task_struct *tsk)
 {
-	struct cred *cred;
-
-	cred = (struct cred *) tsk->real_cred;
-	tsk->real_cred = NULL;
-	put_cred(cred);
-
-	cred = (struct cred *) tsk->cred;
-	tsk->cred = NULL;
-	put_cred(cred);
-
+	/*
+	 * RUNTIME-DEAD ANCHOR-STUB: drops a dying task's cred refs. Both call sites
+	 * are runtime-dead on this 1-shot boot: __put_task_struct (HIT=False -- no
+	 * task is ever fully released) and copy_process's bad_fork rollback (dead).
+	 */
 }
 
 

@@ -69,20 +69,6 @@ bool set_kthread_struct(struct task_struct *p)
 	return true;
 }
 
-void free_kthread_struct(struct task_struct *k)
-{
-	struct kthread *kthread;
-
-	 
-	kthread = to_kthread(k);
-	if (!kthread)
-		return;
-
-	k->worker_private = NULL;
-	kfree(kthread->full_name);
-	kfree(kthread);
-}
-
 bool __kthread_should_park(struct task_struct *k)
 {
 	return test_bit(KTHREAD_SHOULD_PARK, &to_kthread(k)->flags);

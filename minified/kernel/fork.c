@@ -55,18 +55,6 @@ static inline void free_task_struct(struct task_struct *tsk)
 }
 #endif
 
-static void thread_stack_free_rcu(struct rcu_head *rh)
-{
-	__free_pages(virt_to_page(rh), THREAD_SIZE_ORDER);
-}
-
-static void thread_stack_delayed_free(struct task_struct *tsk)
-{
-	struct rcu_head *rh = tsk->stack;
-
-	call_rcu(rh, thread_stack_free_rcu);
-}
-
 static int alloc_thread_stack_node(struct task_struct *tsk, int node)
 {
 	struct page *page = alloc_pages_node(node, THREADINFO_GFP,
@@ -77,12 +65,6 @@ static int alloc_thread_stack_node(struct task_struct *tsk, int node)
 		return 0;
 	}
 	return -ENOMEM;
-}
-
-static void free_thread_stack(struct task_struct *tsk)
-{
-	thread_stack_delayed_free(tsk);
-	tsk->stack = NULL;
 }
 
 static struct kmem_cache *signal_cachep;
@@ -147,29 +129,23 @@ void exit_task_stack_account(struct task_struct *tsk)
 	 */
 }
 
-static void release_task_stack(struct task_struct *tsk)
-{
-	if (WARN_ON(READ_ONCE(tsk->__state) != TASK_DEAD))
-		return;  
-
-	free_thread_stack(tsk);
-}
-
 void put_task_stack(struct task_struct *tsk)
 {
-	if (refcount_dec_and_test(&tsk->stack_refcount))
-		release_task_stack(tsk);
+	/*
+	 * RUNTIME-DEAD ANCHOR-STUB: drops the last kernel-stack ref to free it.
+	 * Both call sites are runtime-dead on this 1-shot boot: finish_task_switch's
+	 * prev_state==TASK_DEAD branch (init panics, never dies, HIT=False) and
+	 * copy_process's bad_fork rollback (copy_process always succeeds, HIT=False).
+	 */
 }
 
 void free_task(struct task_struct *tsk)
 {
-	release_user_cpus_ptr(tsk);
-
-
-	WARN_ON_ONCE(refcount_read(&tsk->stack_refcount) != 0);
-	if (tsk->flags & PF_KTHREAD)
-		free_kthread_struct(tsk);
-	free_task_struct(tsk);
+	/*
+	 * RUNTIME-DEAD ANCHOR-STUB: frees a fully-released task_struct. Both call
+	 * sites are runtime-dead: __put_task_struct (HIT=False -- no task is ever
+	 * fully released on a 1-shot boot) and delayed_free_task (bad_fork rollback).
+	 */
 }
 
 static void dup_mm_exe_file(struct mm_struct *mm, struct mm_struct *oldmm)
@@ -256,27 +232,13 @@ void __mmdrop(struct mm_struct *mm)
 	free_mm(mm);
 }
 
-static inline void free_signal_struct(struct signal_struct *sig)
-{
-	/* sched_autogroup_exit - stubbed */
-	kmem_cache_free(signal_cachep, sig);
-}
-
-static inline void put_signal_struct(struct signal_struct *sig)
-{
-	if (refcount_dec_and_test(&sig->sigcnt))
-		free_signal_struct(sig);
-}
-
 void __put_task_struct(struct task_struct *tsk)
 {
-	WARN_ON(!tsk->exit_state);
-	WARN_ON(refcount_read(&tsk->usage));
-	WARN_ON(tsk == current);
-
-	exit_creds(tsk);
-	put_signal_struct(tsk->signal);
-	free_task(tsk);
+	/*
+	 * RUNTIME-DEAD ANCHOR-STUB: releases a task whose last ref dropped. Never
+	 * runs on a 1-shot boot (init panics, kthreads are never reaped, HIT=False).
+	 * Its callees (exit_creds / free_signal_struct / free_task) are all dead too.
+	 */
 }
 
 void __init __weak arch_task_cache_init(void) { }
@@ -656,9 +618,10 @@ static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
 
 void __cleanup_sighand(struct sighand_struct *sighand)
 {
-	if (refcount_dec_and_test(&sighand->count)) {
-		kmem_cache_free(sighand_cachep, sighand);
-	}
+	/*
+	 * RUNTIME-DEAD ANCHOR-STUB: sole caller is copy_process's bad_fork rollback
+	 * (fork.c), which never runs because copy_process always succeeds at boot.
+	 */
 }
 
 static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
@@ -913,7 +876,7 @@ bad_fork_cleanup_mm:
 	}
 bad_fork_cleanup_signal:
 	/* CLONE_THREAD never set -> signal_struct is always private here */
-	free_signal_struct(p->signal);
+	kmem_cache_free(signal_cachep, p->signal);
 bad_fork_cleanup_sighand:
 	__cleanup_sighand(p->sighand);
 bad_fork_cleanup_fs:

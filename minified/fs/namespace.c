@@ -1,7 +1,6 @@
 
 #include <linux/mnt_namespace.h>
 #include <linux/user_namespace.h>
-#include <linux/namei.h>
 #include <linux/cred.h>
 #include <linux/proc_ns.h>
 #include <linux/init.h>		

@@ -1,10 +1,9 @@
 #include <linux/gfp.h>
-#include <linux/highmem.h>
 #include <linux/kernel.h>
 #include <linux/mmdebug.h>
 #include <linux/mm_types.h>
-#include <linux/mm_inline.h>
 #include <linux/swap.h>
+#include <linux/mm_inline.h>
 
 #include <asm/pgalloc.h>
 #include <asm/tlb.h>

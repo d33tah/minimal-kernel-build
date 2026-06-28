@@ -1,6 +1,5 @@
 
 #include <linux/mm.h>
-#include <linux/spinlock.h>
 #include <linux/smp.h>
 
 #include <asm/tlbflush.h>

@@ -4,13 +4,12 @@
 #include <linux/kernel.h>
 #include <linux/kd.h>
 #include <linux/vt.h>
-#include <linux/console.h>
 #include <linux/consolemap.h>
+#include <linux/vt_kern.h>
 
 
 
 #include <linux/kbd_kern.h>
-#include <linux/vt_kern.h>
 #include <linux/selection.h>
 
 

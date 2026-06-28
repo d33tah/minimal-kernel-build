@@ -1,9 +1,7 @@
 
 #include <linux/kernel.h>
-#include <linux/backing-dev.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
-#include <linux/pagemap.h>
 #include <linux/shmem_fs.h>
 #include "internal.h"
 

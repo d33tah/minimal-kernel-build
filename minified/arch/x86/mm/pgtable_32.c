@@ -1,6 +1,5 @@
 #include <linux/kernel.h>
 #include <linux/mm.h>
-#include <linux/spinlock.h>
 
 #include <asm/cpu_entry_area.h>
 #include <asm/fixmap.h>

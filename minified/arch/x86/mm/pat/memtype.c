@@ -7,7 +7,6 @@
 #include <linux/rbtree.h>
 
 #include <asm/cacheflush.h>
-#include <asm/processor.h>
 #include <asm/tlbflush.h>
 #include <asm/x86_init.h>
 #include <asm/fcntl.h>

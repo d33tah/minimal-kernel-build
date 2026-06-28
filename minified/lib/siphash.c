@@ -4,7 +4,6 @@
  */
 
 #include <linux/siphash.h>
-#include <asm/unaligned.h>
 
 /* Simplified hash - not cryptographically secure but sufficient
  * for pointer obfuscation in vsprintf

@@ -6,17 +6,11 @@
 #include <linux/mm.h>
 #include <linux/swap.h>
 #include <linux/init.h>
-#include <linux/highmem.h>
-#include <linux/pci.h>
 #include <linux/pfn.h>
 #include <linux/memblock.h>
-#include <linux/initrd.h>
-#include <linux/cpumask.h>
-#include <linux/gfp.h>
 
 #include <asm/asm.h>
 #include <asm/bios_ebda.h>
-#include <asm/processor.h>
 #include <asm/fixmap.h>
 #include <asm/e820/api.h>
 #include <asm/apic.h>

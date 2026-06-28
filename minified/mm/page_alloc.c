@@ -15,12 +15,10 @@
 #include <linux/vmstat.h>
 #include <linux/memremap.h>
 #include <linux/pfn.h>
-#include <linux/backing-dev.h>
 
 
 struct alloc_context;
 
-#include <linux/mm_inline.h>
 #include <linux/sched/mm.h>
 
 #include <linux/memcontrol.h>

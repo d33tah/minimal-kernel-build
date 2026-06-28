@@ -6,7 +6,6 @@
 #include <linux/syscalls.h>
 #include <linux/math64.h>
 
-#include <linux/compat.h>
 
 #include <generated/timeconst.h>
 #include "timekeeping.h"

@@ -2,9 +2,7 @@
 #include <linux/personality.h>
 #include <linux/mm.h>
 #include <linux/random.h>
-#include <linux/limits.h>
 #include <linux/sched/mm.h>
-#include <linux/compat.h>
 #include <asm/elf.h>
 
 static unsigned long stack_maxrandom_size(unsigned long task_size)

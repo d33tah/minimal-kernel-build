@@ -1,14 +1,12 @@
 
 #include <linux/vmalloc.h>
 #include <linux/mm.h>
-#include <linux/highmem.h>
 #include <linux/sched/signal.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>
 #include <linux/interrupt.h>
 #include <linux/list.h>
 #include <linux/rbtree.h>
-#include <linux/io.h>
 #include <linux/pfn.h>
 #include <linux/atomic.h>
 #include <linux/compiler.h>

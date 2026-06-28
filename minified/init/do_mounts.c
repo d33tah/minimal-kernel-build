@@ -1,7 +1,6 @@
 
 #include <linux/security.h>
 #include <linux/mount.h>
-#include <linux/device.h>
 #include <linux/init.h>
 #include <linux/fs.h>
 #include <linux/initrd.h>

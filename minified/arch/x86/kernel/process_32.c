@@ -20,11 +20,9 @@
 #include <asm/fpu/sched.h>
 #include <asm/desc.h>
 
-#include <linux/err.h>
 
 #include <asm/tlbflush.h>
 #include <asm/cpu.h>
-#include <asm/debugreg.h>
 #include <asm/switch_to.h>
 #include <asm/proto.h>
 

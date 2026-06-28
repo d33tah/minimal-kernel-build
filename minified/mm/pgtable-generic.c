@@ -1,7 +1,6 @@
 
 #include <linux/mm_inline.h>
 
-
 /*
  * pgd_clear_bad / p4d_clear_bad / pud_clear_bad were here. p4d/pud are folded
  * on this build (__PAGETABLE_{P4D,PUD}_FOLDED), and pgd_bad() is constant 0 on

@@ -24,7 +24,6 @@
 
 #include <asm/page.h>		
 #include <asm/byteorder.h>	
-#include <asm/unaligned.h>
 
 #include "kstrtox.h"
 

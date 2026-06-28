@@ -1,5 +1,4 @@
 
-#include <linux/spinlock.h>
 #include <linux/percpu.h>
 
 #include <linux/pgtable.h>

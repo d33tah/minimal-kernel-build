@@ -5,9 +5,7 @@
 #include <linux/fcntl.h>
 #include <linux/string.h>
 #include <linux/file.h>
-#include <linux/memblock.h>
 #include <linux/mm.h>
-#include <linux/namei.h>
 #include <linux/init_syscalls.h>
 #include <linux/task_work.h>
 

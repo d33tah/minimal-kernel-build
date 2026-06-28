@@ -6,7 +6,6 @@
 #include <linux/file.h>
 #include <linux/mm.h>
 #include <linux/slab.h>
-#include <linux/device.h>
 #include <linux/wait.h>
 #include <linux/bitops.h>
 #include "tty.h"

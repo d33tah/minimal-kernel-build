@@ -45,69 +45,17 @@ early_initcall(init_zero_pfn);
 
 #define inc_mm_counter_fast(mm, member) inc_mm_counter(mm, member)
 
-static void free_pte_range(struct mmu_gather *tlb, pmd_t *pmd,
-			   unsigned long addr)
-{
-	pgtable_t token = pmd_pgtable(*pmd);
-	pmd_clear(pmd);
-	pte_free_tlb(tlb, token, addr);
-	mm_dec_nr_ptes(tlb->mm);
-}
-
 /*
- * P4D/PUD/PMD are all folded onto the PGD on this 2-level x86_32 build
- * (__PAGETABLE_{P4D,PUD,PMD}_FOLDED=1, see asm/pgtable_types.h). With the
- * levels folded: p4d_offset/pud_offset/pmd_offset return the same pointer,
- * {p4d,pud,pmd}_addr_end(addr,end) == end (each level loop runs once),
- * {p4d,pud}_none_or_clear_bad() == 0 (p4d/pud none/bad are constant 0), and
- * the per-level table free ({p4d,pud}_clear / {p4d,pud,pmd}_free_tlb /
- * mm_dec_nr_{puds,pmds}) are all no-ops. So the three nested range walkers
- * collapse to a single pass over the (real) PMD/PTE level, and only the PTE
- * page is actually freed. This is free_pmd_range with its dead folded tail
- * stripped, reached straight from free_pgd_range.
+ * RUNTIME-DEAD on a single-shot boot: only reached from shift_arg_pages
+ * (fs/exec.c) when the initial stack is relocated, which never happens here
+ * (move_page_tables / this whole free path stay HIT=False). Stubbed; the
+ * private free_folded_range / free_pte_range page-table free walkers it solely
+ * drove were deleted with it.
  */
-static inline void free_folded_range(struct mmu_gather *tlb, pgd_t *pgd,
-				unsigned long addr, unsigned long end)
-{
-	pmd_t *pmd = pmd_offset(pud_offset(p4d_offset(pgd, addr), addr), addr);
-
-	if (!pmd_none_or_clear_bad(pmd))
-		free_pte_range(tlb, pmd, addr);
-}
-
 void free_pgd_range(struct mmu_gather *tlb,
 			unsigned long addr, unsigned long end,
 			unsigned long floor, unsigned long ceiling)
 {
-	pgd_t *pgd;
-	unsigned long next;
-
-	
-
-	addr &= PMD_MASK;
-	if (addr < floor) {
-		addr += PMD_SIZE;
-		if (!addr)
-			return;
-	}
-	if (ceiling) {
-		ceiling &= PMD_MASK;
-		if (!ceiling)
-			return;
-	}
-	if (end - 1 > ceiling - 1)
-		end -= PMD_SIZE;
-	if (addr > end - 1)
-		return;
-	
-	tlb_change_page_size(tlb, PAGE_SIZE);
-	pgd = pgd_offset(tlb->mm, addr);
-	do {
-		next = pgd_addr_end(addr, end);
-		if (pgd_none_or_clear_bad(pgd))
-			continue;
-		free_folded_range(tlb, pgd, addr, next);
-	} while (pgd++, addr = next, addr != end);
 }
 
 void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte)
@@ -191,78 +139,16 @@ check_pfn:
  */
 
 
-static unsigned long zap_pte_range(struct mmu_gather *tlb,
-				struct vm_area_struct *vma, pmd_t *pmd,
-				unsigned long addr, unsigned long end)
-{
-	/* Minimal stub: basic PTE clearing */
-	struct mm_struct *mm = tlb->mm;
-	spinlock_t *ptl;
-	pte_t *pte;
-
-	pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
-	arch_enter_lazy_mmu_mode();
-	/* Just clear the range without complex tracking */
-	pte_unmap_unlock(pte, ptl);
-	arch_leave_lazy_mmu_mode();
-	return addr;
-}
-
 /*
- * 2-level x86_32 paging (no PAE) folds P4D/PUD/PMD onto the PGD:
- * __PAGETABLE_{P4D,PUD,PMD}_FOLDED=1, so p4d_offset/pud_offset/pmd_offset all
- * return the same cast pointer, {p4d,pud,pmd}_addr_end(addr,end)==end (each
- * nested do-while ran exactly once) and p4d_none_or_clear_bad/
- * pud_none_or_clear_bad are constant 0 (p4d/pud none/bad are 0). The former
- * zap_p4d_range/zap_pud_range walkers were therefore single-pass no-op
- * pass-throughs. Collapsed to a direct walk to the only real level, the PMD,
- * which still reads the live PTE via pmd_none_or_trans_huge_or_clear_bad.
+ * RUNTIME-DEAD on a single-shot boot: the only caller (unmap_mapping_range_tree)
+ * walks a non-empty i_mmap interval tree, but no file mapping is ever unmapped
+ * here, so this never executes. Stubbed; the private zap_folded_range /
+ * zap_pte_range page-table walkers it solely drove were deleted with it.
  */
-static inline unsigned long zap_folded_range(struct mmu_gather *tlb,
-				struct vm_area_struct *vma, pgd_t *pgd,
-				unsigned long addr, unsigned long end)
-{
-	pmd_t *pmd = pmd_offset(pud_offset(p4d_offset(pgd, addr), addr), addr);
-
-	if (!pmd_none_or_trans_huge_or_clear_bad(pmd))
-		zap_pte_range(tlb, vma, pmd, addr, end);
-	cond_resched();
-
-	return end;
-}
-
 static void unmap_single_vma(struct mmu_gather *tlb,
 		struct vm_area_struct *vma, unsigned long start_addr,
 		unsigned long end_addr)
 {
-	unsigned long start = max(vma->vm_start, start_addr);
-	unsigned long end;
-
-	if (start >= vma->vm_end)
-		return;
-	end = min(vma->vm_end, end_addr);
-	if (end <= vma->vm_start)
-		return;
-
-	if (unlikely(vma->vm_flags & VM_PFNMAP))
-		untrack_pfn(vma, 0, 0);
-
-	if (start != end) {
-		pgd_t *pgd;
-		unsigned long next;
-		unsigned long addr = start;
-
-		BUG_ON(addr >= end);
-		tlb_start_vma(tlb, vma);
-		pgd = pgd_offset(vma->vm_mm, addr);
-		do {
-			next = pgd_addr_end(addr, end);
-			if (pgd_none_or_clear_bad(pgd))
-				continue;
-			next = zap_folded_range(tlb, vma, pgd, addr, next);
-		} while (pgd++, addr = next, addr != end);
-		tlb_end_vma(tlb, vma);
-	}
 }
 
 static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr)

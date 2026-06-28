@@ -6,7 +6,6 @@
 #include <linux/init.h>
 #include <linux/percpu.h>
 #include <linux/kthread.h>
-#include <linux/smp.h>
 #include <linux/irq.h>
 
 void do_softirq_own_stack(void);

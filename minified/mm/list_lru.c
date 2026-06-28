@@ -3,7 +3,6 @@
 #include <linux/list_lru.h>
 #include <linux/slab.h>
 #include <linux/mutex.h>
-#include <linux/memcontrol.h>
 #include "slab.h"
 #include "internal.h"
 

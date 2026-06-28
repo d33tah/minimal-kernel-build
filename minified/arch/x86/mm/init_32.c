@@ -4,7 +4,6 @@
 #include <linux/types.h>
 #include <linux/ptrace.h>
 #include <linux/mm.h>
-#include <linux/swap.h>
 #include <linux/init.h>
 #include <linux/pfn.h>
 #include <linux/memblock.h>

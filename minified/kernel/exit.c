@@ -14,7 +14,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/proc_fs.h>
 #include <linux/syscalls.h>
 #include <linux/signal.h>
-#include <linux/mutex.h>
 #include <linux/fs_struct.h>
 #include <linux/writeback.h>
 

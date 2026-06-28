@@ -6,11 +6,9 @@
 #include <linux/mman.h>
 #include <linux/pagemap.h>
 #include <linux/pagevec.h>
-#include <linux/init.h>
 #include <linux/mm_inline.h>
 #include <linux/memremap.h>
 #include <linux/percpu.h>
-#include <linux/backing-dev.h>
 #include <linux/memcontrol.h>
 #include <linux/gfp.h>
 #include <linux/local_lock.h>

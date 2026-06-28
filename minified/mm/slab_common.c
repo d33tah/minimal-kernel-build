@@ -1,10 +1,8 @@
 #include <linux/slab.h>
 
 #include <linux/mm.h>
-#include <linux/interrupt.h>
 #include <linux/cache.h>
 #include <linux/compiler.h>
-#include <linux/uaccess.h>
 #include <asm/cacheflush.h>
 #include <asm/tlbflush.h>
 #include <asm/page.h>

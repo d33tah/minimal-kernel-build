@@ -9,13 +9,11 @@
 #include <linux/swapops.h>
 #include <linux/mman.h>
 #include <linux/pagemap.h>
-#include <linux/file.h>
 #include <linux/uio.h>
 /* error-injection.h - only need ALLOW_ERROR_INJECTION macro */
 #define ALLOW_ERROR_INJECTION(fname, _etype)
 #include <linux/hash.h>
 #include <linux/writeback.h>
-#include <linux/backing-dev.h>
 #include <linux/pagevec.h>
 #include <linux/memcontrol.h>
 #include <linux/shmem_fs.h>

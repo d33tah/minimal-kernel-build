@@ -1,5 +1,4 @@
 
-#include <linux/stat.h>
 #include <linux/sysctl.h>
 #include <linux/slab.h>
 #include <linux/cred.h>

@@ -4,11 +4,8 @@
 #include <linux/mount.h>
 #include <linux/ramfs.h>
 #include <linux/pagemap.h>
-#include <linux/file.h>
 #include <linux/mm.h>
-#include <linux/sched/signal.h>
 #include <linux/swap.h>
-#include <linux/uio.h>
 #include <linux/fs_parser.h>
 
 static struct vfsmount *shm_mnt;

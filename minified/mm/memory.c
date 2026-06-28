@@ -1,5 +1,4 @@
 
-#include <linux/kernel_stat.h>
 #include <linux/mm.h>
 #include <linux/mm_inline.h>
 #include <linux/sched/mm.h>
@@ -7,22 +6,20 @@
 #include <linux/sched/task.h>
 #include <linux/mman.h>
 #include <linux/swap.h>
-#include <linux/highmem.h>
 #include <linux/pagemap.h>
 #include <linux/memremap.h>
 #include <linux/rmap.h>
 #include <linux/init.h>
+#include <linux/oom.h>
+#include <linux/file.h>
 #include <linux/writeback.h>
 #include <linux/memcontrol.h>
 #include <linux/swapops.h>
 #include <linux/gfp.h>
-#include <linux/oom.h>
-#include <linux/file.h>
 
 #include <asm/io.h>
 #include <asm/mmu_context.h>
 #include <asm/pgalloc.h>
-#include <linux/uaccess.h>
 #include <asm/tlb.h>
 #include <asm/tlbflush.h>
 

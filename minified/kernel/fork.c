@@ -12,7 +12,6 @@
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/nsproxy.h>
-#include <linux/cpu.h>
 #include <linux/cgroup.h>
 #include <linux/kthread.h>
 #include <linux/rcupdate.h>

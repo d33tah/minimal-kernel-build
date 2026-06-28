@@ -3,8 +3,6 @@
 #define _ARCH_X86_REALMODE_H
 
  
-#define TH_FLAGS_SME_ACTIVE_BIT		0
-#define TH_FLAGS_SME_ACTIVE		BIT(TH_FLAGS_SME_ACTIVE_BIT)
 
 #ifndef __ASSEMBLY__
 

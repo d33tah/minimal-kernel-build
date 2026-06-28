@@ -5,7 +5,6 @@
 #include <linux/elf.h>
 #include <linux/sched.h>
 
-#define __AUDIT_ARCH_LE	   0x40000000
 #include <linux/err.h>
 #include <asm/thread_info.h>	 
 #include <asm/unistd.h>

@@ -90,8 +90,6 @@ BUILDIO(b, b, u8)
 
 /* ioremap_change_attr, ioremap_wc, ioremap_wt removed - no callers */
 
-#define IO_SPACE_LIMIT 0xffff
-
 /* ioport_map/unmap removed - declared but never defined/used */
 
 #ifndef ioremap_np

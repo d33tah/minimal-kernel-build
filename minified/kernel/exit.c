@@ -15,7 +15,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/syscalls.h>
 #include <linux/signal.h>
 #include <linux/fs_struct.h>
-#include <linux/writeback.h>
 
 #include <asm/unistd.h>
 #include <asm/mmu_context.h>

@@ -5,10 +5,8 @@
 #include <linux/hash.h>
 #include <linux/swap.h>
 #include <linux/cdev.h>
-#include <linux/memblock.h>
 #include <linux/mount.h>
 
-#include <linux/ratelimit.h>
 #include <linux/list_lru.h>
 #include "internal.h"
 

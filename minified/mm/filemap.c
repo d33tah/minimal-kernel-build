@@ -2,7 +2,6 @@
 #include <linux/compiler.h>
 #include <linux/fs.h>
 #include <linux/sched/signal.h>
-#include <linux/uaccess.h>
 #include <linux/gfp.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
@@ -13,7 +12,6 @@
 /* error-injection.h - only need ALLOW_ERROR_INJECTION macro */
 #define ALLOW_ERROR_INJECTION(fname, _etype)
 #include <linux/hash.h>
-#include <linux/writeback.h>
 #include <linux/pagevec.h>
 #include <linux/memcontrol.h>
 #include <linux/shmem_fs.h>

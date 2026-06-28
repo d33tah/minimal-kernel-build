@@ -1,5 +1,4 @@
 
-#include <linux/ratelimit.h>
 #include <linux/string.h>
 #include <linux/mm.h>
 #include <linux/fs.h>
@@ -8,10 +7,10 @@
 #include <linux/hash.h>
 #include <linux/cache.h>
 #include <linux/seqlock.h>
-#include <linux/memblock.h>
 #include <linux/bit_spinlock.h>
 #include <linux/rculist_bl.h>
 #include <linux/list_lru.h>
+#include <linux/memblock.h>
 #include "internal.h"
 #include "mount.h"
 

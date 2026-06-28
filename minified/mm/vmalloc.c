@@ -18,7 +18,6 @@
 #include <linux/bitops.h>
 #include <linux/rbtree_augmented.h>
 #include <linux/pgtable.h>
-#include <linux/uaccess.h>
 #include <linux/sched/mm.h>
 #include <asm/tlbflush.h>
 

@@ -2,7 +2,6 @@
 #include <linux/kprobes.h>
 #include <linux/notifier.h>
 #include <linux/rcupdate.h>
-#include <linux/vmalloc.h>
 
 static int notifier_call_chain(struct notifier_block **nl,
 			       unsigned long val, void *v,

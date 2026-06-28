@@ -12,7 +12,6 @@
 #include <linux/init.h>
 #include <linux/oom.h>
 #include <linux/file.h>
-#include <linux/writeback.h>
 #include <linux/memcontrol.h>
 #include <linux/swapops.h>
 #include <linux/gfp.h>

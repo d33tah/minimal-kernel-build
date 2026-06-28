@@ -30,7 +30,6 @@ KCOV_INSTRUMENT_debug-pagealloc.o := n
 KCOV_INSTRUMENT_kmemleak.o := n
 KCOV_INSTRUMENT_memcontrol.o := n
 KCOV_INSTRUMENT_mmzone.o := n
-KCOV_INSTRUMENT_vmstat.o := n
 KCOV_INSTRUMENT_failslab.o := n
 
 CFLAGS_init-mm.o += $(call cc-disable-warning, override-init)
@@ -49,7 +48,7 @@ endif
 obj-y			:= filemap.o \
 			   maccess.o folio-compat.o \
 			   swap.o truncate.o shmem.o \
-			   util.o mmzone.o vmstat.o backing-dev.o \
+			   util.o mmzone.o \
 			   percpu.o slab_common.o \
 			   interval_tree.o list_lru.o workingset.o \
 			   gup.o $(mmu-y)

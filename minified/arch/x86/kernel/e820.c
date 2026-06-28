@@ -1,6 +1,5 @@
 #include <asm/early_ioremap.h>
 #include <linux/memblock.h>
-#include <linux/acpi.h>
 #include <linux/sort.h>
 
 #include <asm/e820/api.h>

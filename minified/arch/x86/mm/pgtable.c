@@ -29,13 +29,6 @@ static inline void pgd_list_add(pgd_t *pgd)
 	list_add(&page->lru, &pgd_list);
 }
 
-static inline void pgd_list_del(pgd_t *pgd)
-{
-	struct page *page = virt_to_page(pgd);
-
-	list_del(&page->lru);
-}
-
 static void pgd_set_mm(pgd_t *pgd, struct mm_struct *mm)
 {
 	virt_to_page(pgd)->pt_mm = mm;
@@ -51,24 +44,10 @@ static void pgd_ctor(struct mm_struct *mm, pgd_t *pgd)
 	pgd_list_add(pgd);
 }
 
-static void pgd_dtor(pgd_t *pgd)
-{
-	spin_lock(&pgd_lock);
-	pgd_list_del(pgd);
-	spin_unlock(&pgd_lock);
-}
-
-
-
 static inline pgd_t *_pgd_alloc(void)
 {
 	return (pgd_t *)__get_free_pages(GFP_PGTABLE_USER,
 					 PGD_ALLOCATION_ORDER);
-}
-
-static inline void _pgd_free(pgd_t *pgd)
-{
-	free_pages((unsigned long)pgd, PGD_ALLOCATION_ORDER);
 }
 
 pgd_t *pgd_alloc(struct mm_struct *mm)
@@ -93,8 +72,11 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 
 void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 {
-	pgd_dtor(pgd);
-	_pgd_free(pgd);
+	/* runtime-dead: reached only via mm_free_pgd<-__mmdrop (mm teardown at
+	 * refcount 0 / munmap-exit), which never fires on a 1-shot boot whose
+	 * init mm is never dropped. Stubbed; symbol kept for the asm/pgalloc.h
+	 * extern + fork.c mm_free_pgd caller. Cascaded away: pgd_dtor,
+	 * pgd_list_del, _pgd_free (all private to this teardown root). */
 }
 
 int ptep_set_access_flags(struct vm_area_struct *vma,

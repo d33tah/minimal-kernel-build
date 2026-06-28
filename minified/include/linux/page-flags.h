@@ -210,13 +210,7 @@ PAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 	__CLEARPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 	__SETPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 
-PAGEFLAG(Private, private, PF_ANY)
-
-TESTPAGEFLAG(Writeback, writeback, PF_NO_TAIL)
-	TESTSCFLAG(Writeback, writeback, PF_NO_TAIL)
-
-PAGEFLAG(Reclaim, reclaim, PF_NO_TAIL)
-	/* TESTCLEARFLAG(Reclaim, ...) removed - never used */
+/* PAGEFLAG(Private)/TESTPAGEFLAG+TESTSCFLAG(Writeback)/PAGEFLAG(Reclaim) removed - 0 callers */
 PAGEFLAG(Readahead, readahead, PF_NO_COMPOUND)
 	/* TESTCLEARFLAG(Readahead, ...) removed - never used */
 

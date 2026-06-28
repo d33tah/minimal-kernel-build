@@ -726,139 +726,18 @@ vm_fault_t filemap_fault(struct vm_fault *vmf)
 	return VM_FAULT_LOCKED;
 }
 
-static bool filemap_map_pmd(struct vm_fault *vmf, struct page *page)
-{
-	struct mm_struct *mm = vmf->vma->vm_mm;
-
-	if (pmd_none(*vmf->pmd))
-		pmd_install(mm, vmf->pmd, &vmf->prealloc_pte);
-
-	return false;
-}
-
-static struct folio *next_uptodate_page(struct folio *folio,
-				       struct address_space *mapping,
-				       struct xa_state *xas, pgoff_t end_pgoff)
-{
-	unsigned long max_idx;
-
-	do {
-		if (!folio)
-			return NULL;
-		if (xas_retry(xas, folio))
-			continue;
-		if (xa_is_value(folio))
-			continue;
-		if (folio_test_locked(folio))
-			continue;
-		if (!folio_try_get_rcu(folio))
-			continue;
-		
-		if (unlikely(folio != xas_reload(xas)))
-			goto skip;
-		if (!folio_test_uptodate(folio) || folio_test_readahead(folio))
-			goto skip;
-		if (!folio_trylock(folio))
-			goto skip;
-		if (folio->mapping != mapping)
-			goto unlock;
-		if (!folio_test_uptodate(folio))
-			goto unlock;
-		max_idx = DIV_ROUND_UP(i_size_read(mapping->host), PAGE_SIZE);
-		if (xas->xa_index >= max_idx)
-			goto unlock;
-		return folio;
-unlock:
-		folio_unlock(folio);
-skip:
-		folio_put(folio);
-	} while ((folio = xas_next_entry(xas, end_pgoff)) != NULL);
-
-	return NULL;
-}
-
-static inline struct folio *first_map_page(struct address_space *mapping,
-					  struct xa_state *xas,
-					  pgoff_t end_pgoff)
-{
-	return next_uptodate_page(xas_find(xas, end_pgoff),
-				  mapping, xas, end_pgoff);
-}
-
-static inline struct folio *next_map_page(struct address_space *mapping,
-					 struct xa_state *xas,
-					 pgoff_t end_pgoff)
-{
-	return next_uptodate_page(xas_next_entry(xas, end_pgoff),
-				  mapping, xas, end_pgoff);
-}
-
 vm_fault_t filemap_map_pages(struct vm_fault *vmf,
 			     pgoff_t start_pgoff, pgoff_t end_pgoff)
 {
-	struct vm_area_struct *vma = vmf->vma;
-	struct file *file = vma->vm_file;
-	struct address_space *mapping = file->f_mapping;
-	pgoff_t last_pgoff = start_pgoff;
-	unsigned long addr;
-	XA_STATE(xas, &mapping->i_pages, start_pgoff);
-	struct folio *folio;
-	struct page *page;
-	unsigned int mmap_miss = READ_ONCE(file->f_ra.mmap_miss);
-	vm_fault_t ret = 0;
-
-	rcu_read_lock();
-	folio = first_map_page(mapping, &xas, end_pgoff);
-	if (!folio)
-		goto out;
-
-	if (filemap_map_pmd(vmf, &folio->page)) {
-		ret = VM_FAULT_NOPAGE;
-		goto out;
-	}
-
-	addr = vma->vm_start + ((start_pgoff - vma->vm_pgoff) << PAGE_SHIFT);
-	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, addr, &vmf->ptl);
-	do {
-again:
-		page = folio_file_page(folio, xas.xa_index);
-
-		if (mmap_miss > 0)
-			mmap_miss--;
-
-		addr += (xas.xa_index - last_pgoff) << PAGE_SHIFT;
-		vmf->pte += xas.xa_index - last_pgoff;
-		last_pgoff = xas.xa_index;
-
-		
-		if (!pte_none(*vmf->pte))
-			goto unlock;
-
-		
-		if (vmf->address == addr)
-			ret = VM_FAULT_NOPAGE;
-
-		do_set_pte(vmf, page, addr);
-		if (folio_more_pages(folio, xas.xa_index, end_pgoff)) {
-			xas.xa_index++;
-			folio_ref_inc(folio);
-			goto again;
-		}
-		folio_unlock(folio);
-		continue;
-unlock:
-		if (folio_more_pages(folio, xas.xa_index, end_pgoff)) {
-			xas.xa_index++;
-			goto again;
-		}
-		folio_unlock(folio);
-		folio_put(folio);
-	} while ((folio = next_map_page(mapping, &xas, end_pgoff)) != NULL);
-	pte_unmap_unlock(vmf->pte, vmf->ptl);
-out:
-	rcu_read_unlock();
-	WRITE_ONCE(file->f_ra.mmap_miss, mmap_miss);
-	return ret;
+	/*
+	 * RUNTIME-DEAD ANCHOR-STUB: this kernel never faults in file-backed
+	 * pages on its only job (boot + print + stay-alive); the coverage
+	 * trace shows filemap_map_pages and its whole private helper subgraph
+	 * are never executed. Kept link-live for generic_file_vm_ops.map_pages.
+	 * Returning 0 (no fault handled) is the safe fallback the caller
+	 * already tolerates.
+	 */
+	return 0;
 }
 
 vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf)

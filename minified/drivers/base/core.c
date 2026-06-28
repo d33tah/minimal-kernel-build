@@ -24,15 +24,9 @@ static struct kobject *sysfs_dev_block_kobj;
 
 static void device_release(struct kobject *kobj)
 {
-	struct device *dev = kobj_to_dev(kobj);
-	struct device_private *p = dev->p;
-
-	if (dev->release)
-		dev->release(dev);
-	else
-		WARN(1, KERN_ERR "Device '%s' does not have a release() function, it is broken and must be fixed. See Documentation/core-api/kobject.rst.\n",
-			dev_name(dev));
-	kfree(p);
+	/* kobj .release teardown: a device is never destroyed on a
+	 * boot-once-and-print artifact, so this callback never fires.
+	 * Anchor-stub: keep the symbol for the device_ktype fn-ptr. */
 }
 
 static struct kobj_type device_ktype = {

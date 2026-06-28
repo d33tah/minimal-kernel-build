@@ -181,8 +181,8 @@ int ramfs_init_fs_context(struct fs_context *fc)
 
 static void ramfs_kill_sb(struct super_block *sb)
 {
-	kfree(sb->s_fs_info);
-	kill_litter_super(sb);
+	/* .kill_sb superblock teardown: never fires on a no-unmount boot.
+	 * Anchor-stub: keep the symbol for the ramfs_fs_type fn-ptr. */
 }
 
 static struct file_system_type ramfs_fs_type = {

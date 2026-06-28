@@ -83,10 +83,9 @@ err_desc:
 
 static void irq_kobj_release(struct kobject *kobj)
 {
-	struct irq_desc *desc = container_of(kobj, struct irq_desc, kobj);
-
-	free_percpu(desc->kstat_irqs);
-	kfree(desc);
+	/* kobj .release teardown: irq_desc objects are never freed on a
+	 * boot-once-and-print artifact, so this callback never fires.
+	 * Anchor-stub: keep the symbol for the irq_kobj_type fn-ptr. */
 }
 
 int __init early_irq_init(void)

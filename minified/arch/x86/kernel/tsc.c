@@ -416,7 +416,8 @@ static void tsc_cs_mark_unstable(struct clocksource *cs) { }
 
 static int tsc_cs_enable(struct clocksource *cs)
 {
-	vclocks_set_used(VDSO_CLOCKMODE_TSC);
+	/* clocksource .enable callback: HIT=False this boot (the VDSO
+	 * clockmode marking never fires). Safe-fallback return 0 = enabled. */
 	return 0;
 }
 

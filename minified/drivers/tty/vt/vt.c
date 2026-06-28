@@ -294,9 +294,8 @@ static void visual_deinit(struct vc_data *vc)
 
 static void vc_port_destruct(struct tty_port *port)
 {
-	struct vc_data *vc = container_of(port, struct vc_data, port);
-
-	kfree(vc);
+	/* tty_port .destruct teardown: a vc is never destroyed on a
+	 * boot-once-and-print artifact. Anchor-stub keeps the symbol. */
 }
 
 static const struct tty_port_operations vc_port_ops = {

@@ -8,9 +8,8 @@
 
 static void class_release(struct kobject *kobj)
 {
-	struct subsys_private *cp = to_subsys_private(kobj);
-
-	kfree(cp);
+	/* kobj .release teardown: a class is never destroyed on a
+	 * boot-once-and-print artifact. Anchor-stub keeps the symbol. */
 }
 
 static struct kobj_type class_ktype = {

@@ -245,7 +245,7 @@ void kobject_put(struct kobject *kobj)
 
 static void dynamic_kobj_release(struct kobject *kobj)
 {
-	kfree(kobj);
+	/* kobj .release teardown: never fires on a boot-once artifact. */
 }
 
 static struct kobj_type dynamic_kobj_ktype = {
@@ -301,8 +301,8 @@ int kset_register(struct kset *k)
 
 static void kset_release(struct kobject *kobj)
 {
-	struct kset *kset = container_of(kobj, struct kset, kobj);
-	kfree(kset);
+	/* kobj .release teardown: a kset is never destroyed on a
+	 * boot-once-and-print artifact. Anchor-stub keeps the symbol. */
 }
 
 static struct kobj_type kset_ktype = {

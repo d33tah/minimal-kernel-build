@@ -47,7 +47,6 @@ static int __init init_zero_pfn(void)
 early_initcall(init_zero_pfn);
 
 #define inc_mm_counter_fast(mm, member) inc_mm_counter(mm, member)
-#define dec_mm_counter_fast(mm, member) dec_mm_counter(mm, member)
 
 static void free_pte_range(struct mmu_gather *tlb, pmd_t *pmd,
 			   unsigned long addr)

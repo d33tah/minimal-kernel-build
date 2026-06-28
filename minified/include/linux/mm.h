@@ -650,9 +650,7 @@ static inline void inc_mm_counter(struct mm_struct *mm, int member)
 {
 }
 
-static inline void dec_mm_counter(struct mm_struct *mm, int member)
-{
-}
+/* dec_mm_counter removed - 0 callers (dec_mm_counter_fast macro never invoked) */
 
 static inline int mm_counter_file(struct page *page)
 {

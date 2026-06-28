@@ -24,50 +24,7 @@ bool is_vmalloc_addr(const void *x)
 	return addr >= VMALLOC_START && addr < VMALLOC_END;
 }
 
-static void __vunmap(const void *, int);
-
-static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
-			     pgtbl_mod_mask *mask)
-{
-	pte_t *pte;
-
-	pte = pte_offset_kernel(pmd, addr);
-	do {
-		pte_t ptent = ptep_get_and_clear(&init_mm, addr, pte);
-		WARN_ON(!pte_none(ptent) && !pte_present(ptent));
-	} while (pte++, addr += PAGE_SIZE, addr != end);
-	*mask |= PGTBL_PTE_MODIFIED;
-}
-
-/*
- * 2-level x86_32 fold (CONFIG_PGTABLE_LEVELS=2, no PAE): the P4D/PUD/PMD
- * levels are folded onto the PGD. p4d_offset/pud_offset/pmd_offset all
- * return the same pointer cast; {p4d,pud,pmd}_addr_end(addr,end)==end so
- * each former nested loop ran exactly once; p4d_none/p4d_bad/pud_none/
- * pud_bad are constant 0 (so {p4d,pud}_none_or_clear_bad()==0 and the
- * per-iteration continues never fired); p4d_clear_huge is a no-op and
- * pud_clear_huge/pmd_clear_huge return 0 (huge vmap disabled). So the
- * vunmap_p4d_range -> vunmap_pud_range -> vunmap_pmd_range descent
- * collapses to a single PMD-level pass reaching the only real work.
- */
-static void vunmap_folded_range(pgd_t *pgd, unsigned long addr,
-				unsigned long end, pgtbl_mod_mask *mask)
-{
-	pmd_t *pmd = pmd_offset(pud_offset(p4d_offset(pgd, addr), addr), addr);
-
-	if (pmd_bad(*pmd))
-		*mask |= PGTBL_PMD_MODIFIED;
-
-	if (pmd_none_or_clear_bad(pmd))
-		return;
-	vunmap_pte_range(pmd, addr, end, mask);
-
-	cond_resched();
-}
-
-static DEFINE_SPINLOCK(vmap_area_lock);
 LIST_HEAD(vmap_area_list);
-static struct rb_root vmap_area_root = RB_ROOT;
 static bool vmap_initialized __read_mostly;
 
 
@@ -96,27 +53,6 @@ get_subtree_max_size(struct rb_node *node)
 
 RB_DECLARE_CALLBACKS_MAX(static, free_vmap_area_rb_augment_cb,
 	struct vmap_area, rb_node, unsigned long, subtree_max_size, va_size)
-
-static atomic_long_t nr_vmalloc_pages;
-
-static struct vmap_area *__find_vmap_area(unsigned long addr)
-{
-	struct rb_node *n = vmap_area_root.rb_node;
-
-	while (n) {
-		struct vmap_area *va;
-
-		va = rb_entry(n, struct vmap_area, rb_node);
-		if (addr < va->va_start)
-			n = n->rb_left;
-		else if (addr >= va->va_end)
-			n = n->rb_right;
-		else
-			return va;
-	}
-
-	return NULL;
-}
 
 static __always_inline struct rb_node **
 find_va_links(struct vmap_area *va,
@@ -431,56 +367,6 @@ preload_this_cpu_lock(spinlock_t *lock, gfp_t gfp_mask, int node)
 		kmem_cache_free(vmap_area_cachep, va);
 }
 
-static void free_vmap_area_noflush(struct vmap_area *va)
-{
-	spin_lock(&vmap_area_lock);
-	unlink_va(va, &vmap_area_root);
-	spin_unlock(&vmap_area_lock);
-
-	/*
-	 * The lazy-purge list this va used to be merged into was never drained
-	 * (__purge_vmap_area_lazy is gone), so just release the descriptor.
-	 */
-	kmem_cache_free(vmap_area_cachep, va);
-}
-
-static void free_unmap_vmap_area(struct vmap_area *va)
-{
-	unsigned long start = va->va_start;
-	unsigned long end = va->va_end;
-	unsigned long next;
-	pgd_t *pgd;
-	unsigned long addr = start;
-	pgtbl_mod_mask mask = 0;
-
-	BUG_ON(addr >= end);
-	pgd = pgd_offset_k(addr);
-	do {
-		next = pgd_addr_end(addr, end);
-		if (pgd_bad(*pgd))
-			mask |= PGTBL_PGD_MODIFIED;
-		if (pgd_none_or_clear_bad(pgd))
-			continue;
-		vunmap_folded_range(pgd, addr, next, &mask);
-	} while (pgd++, addr = next, addr != end);
-
-	if (mask & ARCH_PAGE_TABLE_SYNC_MASK)
-		arch_sync_kernel_mappings(start, end);
-
-	free_vmap_area_noflush(va);
-}
-
-static struct vmap_area *find_vmap_area(unsigned long addr)
-{
-	struct vmap_area *va;
-
-	spin_lock(&vmap_area_lock);
-	va = __find_vmap_area(addr);
-	spin_unlock(&vmap_area_lock);
-
-	return va;
-}
-
 static void vmap_init_free_space(void)
 {
 	unsigned long vmap_start = 1;
@@ -538,86 +424,16 @@ static inline void setup_vmalloc_vm_locked(struct vm_struct *vm,
 	va->vm = vm;
 }
 
-struct vm_struct *remove_vm_area(const void *addr)
-{
-	struct vmap_area *va;
-
-	might_sleep();
-
-	spin_lock(&vmap_area_lock);
-	va = __find_vmap_area((unsigned long)addr);
-	if (va && va->vm) {
-		struct vm_struct *vm = va->vm;
-
-		va->vm = NULL;
-		spin_unlock(&vmap_area_lock);
-
-		free_unmap_vmap_area(va);
-
-		return vm;
-	}
-
-	spin_unlock(&vmap_area_lock);
-	return NULL;
-}
-
-static void __vunmap(const void *addr, int deallocate_pages)
-{
-	struct vm_struct *area;
-	struct vmap_area *va;
-
-	if (!addr)
-		return;
-
-	if (WARN(!PAGE_ALIGNED(addr), "Trying to vfree() bad address (%p)\n",
-			addr))
-		return;
-
-	va = find_vmap_area((unsigned long)addr);
-	area = va ? va->vm : NULL;
-	if (unlikely(!area)) {
-		WARN(1, KERN_ERR "Trying to vfree() nonexistent vm area (%p)\n",
-				addr);
-		return;
-	}
-
-	debug_check_no_locks_freed(area->addr, get_vm_area_size(area));
-
-	remove_vm_area(area->addr);
-
-	if (deallocate_pages) {
-		int i;
-
-		for (i = 0; i < area->nr_pages; i++) {
-			struct page *page = area->pages[i];
-
-			BUG_ON(!page);
-			__free_pages(page, 0);
-			cond_resched();
-		}
-		atomic_long_sub(area->nr_pages, &nr_vmalloc_pages);
-
-		kvfree(area->pages);
-	}
-
-	kfree(area);
-}
-
-static void __vfree(const void *addr)
-{
-	__vunmap(addr, 1);
-}
-
 void vfree(const void *addr)
 {
-	BUG_ON(in_nmi());
-
-	might_sleep_if(!in_interrupt());
-
-	if (!addr)
-		return;
-
-	__vfree(addr);
+	/*
+	 * Anchor stub: runtime coverage (qemu -d exec) shows the kernel never
+	 * vfree()s on its only job (boot + print + stay alive) -- vmalloc()
+	 * itself is already an anchor-stub returning NULL. Kept link-live
+	 * (util.c kvfree, vmalloc.h extern) but body reduced; the whole
+	 * __vunmap / remove_vm_area / free_unmap_vmap_area teardown subtree
+	 * is orphaned and deleted.
+	 */
 }
 
 

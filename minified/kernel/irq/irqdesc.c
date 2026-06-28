@@ -3,7 +3,6 @@
 #include <linux/kernel_stat.h>
 #include <linux/radix-tree.h>
 #include <linux/bitmap.h>
-#include <linux/irqdomain.h>
 
 #include "internals.h"
 

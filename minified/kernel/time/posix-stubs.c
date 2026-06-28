@@ -4,10 +4,6 @@
 #include <linux/sched.h>
 #include <linux/errno.h>
 #include <linux/syscalls.h>
-#include <linux/ktime.h>
-#include <linux/timekeeping.h>
-#include <linux/posix-timers.h>
-#include <linux/compat.h>
 
 #include <asm/syscall_wrapper.h>
 

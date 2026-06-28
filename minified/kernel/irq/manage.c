@@ -3,10 +3,8 @@
 
 #include <linux/irq.h>
 #include <linux/interrupt.h>
-#include <linux/irqdomain.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
-#include <linux/sched/task.h>
 
 #include "internals.h"
 

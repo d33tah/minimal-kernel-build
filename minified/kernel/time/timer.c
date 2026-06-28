@@ -6,7 +6,6 @@
 #include <linux/thread_info.h>
 #include <linux/time.h>
 #include <linux/jiffies.h>
-#include <linux/posix-timers.h>
 #include <linux/delay.h>
 #include <linux/tick.h>
 #include <linux/sched/signal.h>

@@ -7,14 +7,6 @@
 #include <linux/tty_driver.h>
 #include <linux/console.h>
 #include <linux/init.h>
-#include <linux/jiffies.h>
-#include <linux/nmi.h>
-#include <linux/delay.h>
-#include <linux/memblock.h>
-
-#include <linux/sched/clock.h>
-#include <linux/sched/debug.h>
-#include <linux/sched/task_stack.h>
 
 #include <asm/sections.h>
 

@@ -3,8 +3,6 @@
 #include <linux/interrupt.h>
 #include <linux/kernel_stat.h>
 
-#include <asm/irq_regs.h>
-
 
 #include "internals.h"
 

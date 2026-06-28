@@ -1,8 +1,6 @@
 
 #include <linux/clockchips.h>
-#include <linux/hrtimer.h>
 #include <linux/smp.h>
-#include <linux/device.h>
 
 #include "tick-internal.h"
 

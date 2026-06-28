@@ -1,6 +1,5 @@
 
 #include <linux/device.h>
-#include <linux/slab.h>
 #include <linux/init.h>
 #include "base.h"
 

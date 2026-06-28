@@ -1,12 +1,8 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/device.h>
 #include <linux/clocksource.h>
 #include <linux/init.h>
-#include <linux/sched.h>  
-#include <linux/tick.h>
-#include <linux/kthread.h>
 
 #include "tick-internal.h"
 #include "timekeeping_internal.h"

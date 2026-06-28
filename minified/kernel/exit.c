@@ -72,92 +72,19 @@ static void exit_mm(void)
 	mmput(mm);
 }
 
-static struct task_struct *find_alive_thread(struct task_struct *p)
-{
-	struct task_struct *t;
-
-	for_each_thread(p, t) {
-		if (!(t->flags & PF_EXITING))
-			return t;
-	}
-	return NULL;
-}
-
-static struct task_struct *find_child_reaper(struct task_struct *father,
-						struct list_head *dead)
-	__releases(&tasklist_lock)
-	__acquires(&tasklist_lock)
-{
-	struct pid_namespace *pid_ns = task_active_pid_ns(father);
-	struct task_struct *reaper = pid_ns->child_reaper;
-	struct task_struct *p, *n;
-
-	if (likely(reaper != father))
-		return reaper;
-
-	reaper = find_alive_thread(father);
-	if (reaper) {
-		pid_ns->child_reaper = reaper;
-		return reaper;
-	}
-
-	write_unlock_irq(&tasklist_lock);
-
-	list_for_each_entry_safe(p, n, dead, ptrace_entry) {
-		list_del_init(&p->ptrace_entry);
-		release_task(p);
-	}
-
-	zap_pid_ns_processes(pid_ns);
-	write_lock_irq(&tasklist_lock);
-
-	return father;
-}
-
-static void forget_original_parent(struct task_struct *father,
-					struct list_head *dead)
-{
-	/*
-	 * The child-reparenting walk is runtime-dead on this build: the only
-	 * exiting tasks are PID-1 init (which forks nothing -- it just execs the
-	 * static init ELF that does write(2)+exit) and individual kthreads, none
-	 * of which ever have children. kthreadd (the sole parent of kthreads)
-	 * runs an infinite loop and never exits. No task ever has children here,
-	 * so find_child_reaper()'s early return is the only live path; the
-	 * reparent loop, find_new_reaper() and reparent_leader() were statically
-	 * reachable but never executed. (The dead task_struct.children/.sibling
-	 * list was removed since nothing ever iterated it.)
-	 */
-	find_child_reaper(father, dead);
-}
-
 static void exit_notify(struct task_struct *tsk, int group_dead)
 {
-	bool autoreap;
-	struct task_struct *p, *n;
-	LIST_HEAD(dead);
-
-	write_lock_irq(&tasklist_lock);
-	forget_original_parent(tsk, &dead);
-
-	tsk->exit_state = EXIT_ZOMBIE;
 	/*
-	 * do_notify_parent() is a permanent `return false;` stub, so a
-	 * thread-group leader never auto-reaps; only a non-leader does.
+	 * RUNTIME-DEAD anchor-stub: exit_notify is the process-reap/reparent
+	 * notification root. On this single-shot boot nothing is ever reaped --
+	 * release_task is already a no-op (#8), init/kthreadd never exit, and no
+	 * task ever has children to reparent. do_exit reaches its entry but
+	 * never gets here (trace HIT=False). Its whole private reap subtree --
+	 * forget_original_parent -> find_child_reaper -> find_alive_thread (and
+	 * the zap_pid_ns_processes/release_task tail) -- was deleted; an empty
+	 * no-op is correct because the task is torn down via do_task_dead anyway
+	 * and a never-reaped zombie can't matter on a system that never reaps.
 	 */
-	autoreap = !thread_group_leader(tsk);
-
-	if (autoreap) {
-		tsk->exit_state = EXIT_DEAD;
-		list_add(&tsk->ptrace_entry, &dead);
-	}
-
-	write_unlock_irq(&tasklist_lock);
-
-	list_for_each_entry_safe(p, n, &dead, ptrace_entry) {
-		list_del_init(&p->ptrace_entry);
-		release_task(p);
-	}
 }
 
 void __noreturn do_exit(long code)

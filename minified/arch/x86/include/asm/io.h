@@ -11,15 +11,7 @@
 #include <asm/pgtable_types.h>
 #include <asm/shared/io.h>
 
-#define build_mmio_write(name, size, type, reg, barrier) \
-static inline void name(type val, volatile void __iomem *addr) \
-{ asm volatile("mov" size " %0,%1": :reg (val), \
-"m" (*(volatile type __force *)addr) barrier); }
-
-build_mmio_write(writeb, "b", unsigned char, "q", :"memory")
-
-#define writeb writeb
-/* readb/readw/readl/writew/writel removed - 0 callers (writeb kept) */
+/* build_mmio_write/writeb + readb/readw/readl/writew/writel removed - 0 callers */
 /* __read, __write, _relaxed and __raw_ accessors removed - unused */
 /* ARCH_HAS_VALID_PHYS_ADDR_RANGE, valid_*_range removed - unused */
 
@@ -92,13 +84,7 @@ BUILDIO(b, b, u8)
 
 /* ioport_map/unmap removed - declared but never defined/used */
 
-#ifndef ioremap_np
-#define ioremap_np ioremap_np
-static inline void __iomem *ioremap_np(phys_addr_t offset, size_t size)
-{
-	return NULL;
-}
-#endif
+/* ioremap_np removed - no callers */
 
 /* phys_mem_access_encrypted removed - unused */
 

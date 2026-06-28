@@ -221,22 +221,15 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
 	return 0;
 }
 
-static int anon_vma_compatible(struct vm_area_struct *a, struct vm_area_struct *b)
-{
-	return a->vm_end == b->vm_start &&
-		a->vm_file == b->vm_file &&
-		!((a->vm_flags ^ b->vm_flags) & ~VM_ACCESS_FLAGS) &&
-		b->vm_pgoff == a->vm_pgoff + ((b->vm_start - a->vm_start) >> PAGE_SHIFT);
-}
-
 static struct anon_vma *reusable_anon_vma(struct vm_area_struct *old, struct vm_area_struct *a, struct vm_area_struct *b)
 {
-	if (anon_vma_compatible(a, b)) {
-		struct anon_vma *anon_vma = READ_ONCE(old->anon_vma);
-
-		if (anon_vma && list_is_singular(&old->anon_vma_chain))
-			return anon_vma;
-	}
+	/*
+	 * SAFE-FALLBACK stub: returns NULL so find_mergeable_anon_vma() never
+	 * reuses an adjacent VMA's anon_vma. The sole consumer
+	 * (__anon_vma_prepare) allocates a fresh anon_vma when NULL is returned,
+	 * so behavior is preserved (only the merge optimization is skipped).
+	 * Runtime-dead on this boot-once-and-print artifact.
+	 */
 	return NULL;
 }
 

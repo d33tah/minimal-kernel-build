@@ -35,10 +35,7 @@
 
 #define _PAGE_SOFT_DIRTY	(_AT(pteval_t, 0))
 
-#define _PAGE_UFFD_WP		(_AT(pteval_t, 0))
-
 #define _PAGE_NX	(_AT(pteval_t, 0))
-#define _PAGE_DEVMAP	(_AT(pteval_t, 0))
 
 #define _PAGE_PROTNONE	(_AT(pteval_t, 1) << _PAGE_BIT_PROTNONE)
 
@@ -175,7 +172,6 @@ static inline int pgd_bad(pgd_t pgd)		{ return 0; }
 /* pgd_present() removed - constant 1, all callers folded */
 #define p4d_ERROR(p4d)				(pgd_ERROR((p4d).pgd))
 
-#define pgd_populate(mm, pgd, p4d)		do { } while (0)
 #define set_pgd(pgdptr, pgdval)	set_p4d((p4d_t *)(pgdptr), (p4d_t) { pgdval })
 
 static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
@@ -186,9 +182,6 @@ static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 #define p4d_val(x)				(pgd_val((x).pgd))
 #define __p4d(x)				((p4d_t) { __pgd(x) })
 
-#define pgd_page(pgd)				(p4d_page((p4d_t){ pgd }))
-
-#define p4d_free(mm, x)				do { } while (0)
 #define p4d_free_tlb(tlb, x, a)			do { } while (0)
 
 #undef  p4d_addr_end
@@ -207,7 +200,6 @@ static inline int p4d_none(p4d_t p4d)		{ return 0; }
 /* p4d_present() removed - constant 1, all callers folded */
 #define pud_ERROR(pud)				(p4d_ERROR((pud).p4d))
 
-#define p4d_populate(mm, p4d, pud)		do { } while (0)
 #define set_p4d(p4dptr, p4dval)	set_pud((pud_t *)(p4dptr), (pud_t) { p4dval })
 
 static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
@@ -220,9 +212,7 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 #define __pud(x)				((pud_t) { __p4d(x) })
 
 #define p4d_page(p4d)				(pud_page((pud_t){ p4d }))
-#define p4d_pgtable(p4d)			((pud_t *)(pud_pgtable((pud_t){ p4d })))
 
-#define pud_free(mm, x)				do { } while (0)
 #define pud_free_tlb(tlb, x, a)		        do { } while (0)
 
 #undef  pud_addr_end

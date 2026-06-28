@@ -63,8 +63,7 @@
 #define SYM_A_NONE				 
 
 #define SYM_L_GLOBAL(name)			.globl name
-#define SYM_L_WEAK(name)			.weak name
-#define SYM_L_LOCAL(name)			 
+#define SYM_L_LOCAL(name)
 
 #ifndef LINKER_SCRIPT
 #define ALIGN __ALIGN

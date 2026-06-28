@@ -78,7 +78,6 @@ extern char *strstr(const char *cs, const char *ct);
 	 ? __constant_count_memset((s), (c), (count))	\
 	 : __memset_generic((s), (c), (count)))
 
-#define __HAVE_ARCH_MEMSET
 extern void *memset(void *, int, size_t);
 #define memset(s, c, count) __builtin_memset(s, c, count)
 

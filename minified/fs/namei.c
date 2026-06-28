@@ -4,7 +4,6 @@
 #include <linux/fs.h>
 #include <linux/namei.h>
 #include <linux/sched/mm.h>
-#include <linux/personality.h>
 #include <linux/mount.h>
 #include <linux/capability.h>
 #include <linux/file.h>

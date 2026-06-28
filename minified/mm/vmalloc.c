@@ -7,11 +7,8 @@
 #include <linux/interrupt.h>
 #include <linux/list.h>
 #include <linux/rbtree.h>
-#include <linux/pfn.h>
 #include <linux/atomic.h>
 #include <linux/compiler.h>
-#include <linux/memcontrol.h>
-#include <linux/llist.h>
 #include <linux/rbtree_augmented.h>
 #include <linux/pgtable.h>
 #include <linux/sched/mm.h>

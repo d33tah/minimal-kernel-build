@@ -5,7 +5,6 @@
 
 #include <linux/init_task.h>
 #include <linux/security.h>
-#include <linux/binfmts.h>
 #include <linux/uidgid.h>
 
 static struct kmem_cache *cred_jar;

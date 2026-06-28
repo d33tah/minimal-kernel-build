@@ -7,7 +7,6 @@
 #include <linux/memory.h>
 
 #include <linux/memcontrol.h>
-#include <linux/sort.h>
 
 
 #include "internal.h"

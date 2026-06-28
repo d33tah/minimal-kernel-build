@@ -10,7 +10,6 @@
 /* end stackprotector.h */
 #include <linux/string.h>
 #include <linux/delay.h>
-#include <linux/ioport.h>
 #include <linux/init.h>
 #include <linux/initrd.h>
 #include <linux/memblock.h>
@@ -23,15 +22,11 @@
 #include <linux/security.h>
 #include <linux/smp.h>
 #include <linux/rcupdate.h>
-#include <linux/moduleparam.h>
 #include <linux/cpu.h>
 #include <linux/cgroup.h>
 #include <linux/sched/isolation.h>
 #include <linux/interrupt.h>
-#include <linux/unistd.h>
-#include <linux/utsname.h>
 #include <linux/rmap.h>
-#include <linux/debug_locks.h>
 #include <linux/vmalloc.h>
 #include <linux/pid_namespace.h>
 

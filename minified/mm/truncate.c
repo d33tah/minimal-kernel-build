@@ -2,7 +2,6 @@
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
-#include <linux/shmem_fs.h>
 #include "internal.h"
 
 /*

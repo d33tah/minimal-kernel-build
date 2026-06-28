@@ -4,7 +4,6 @@
 #include <linux/compiler.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/signal.h>
-#include <linux/sched/task_stack.h>
 #include <linux/swap.h>
 #include <linux/random.h>
 #include <linux/vmalloc.h>

@@ -2,7 +2,6 @@
 #include <linux/mm.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
-#include <linux/tty.h>
 #include <linux/namei.h>
 #include <linux/backing-dev.h>
 #include <linux/init_task.h> /* for securebits defines */

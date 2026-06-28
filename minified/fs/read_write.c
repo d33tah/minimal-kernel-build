@@ -1,5 +1,4 @@
 
-#include <linux/stat.h>
 #include <linux/fcntl.h>
 #include <linux/file.h>
 #include <linux/uio.h>

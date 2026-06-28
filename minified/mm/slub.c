@@ -2,7 +2,6 @@
 #include <linux/mm.h>
 #include <linux/swap.h> 
 #include <linux/bit_spinlock.h>
-#include <linux/interrupt.h>
 #include <linux/slab.h>
 #include "slab.h"
 #include <linux/memory.h>

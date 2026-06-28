@@ -8,7 +8,6 @@
 #include <linux/string.h>
 #include <linux/backing-dev.h>
 #include <linux/ramfs.h>
-#include <linux/sched.h>
 #include <linux/magic.h>
 #include <linux/slab.h>
 #include <linux/fs_context.h>

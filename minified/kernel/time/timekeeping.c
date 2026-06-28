@@ -1,6 +1,5 @@
 
 #include <linux/timekeeper_internal.h>
-#include <linux/interrupt.h>
 #include <linux/percpu.h>
 #include <linux/init.h>
 #include <linux/sched.h>

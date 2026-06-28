@@ -1,4 +1,3 @@
-#include <linux/sched.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include <linux/spinlock.h>

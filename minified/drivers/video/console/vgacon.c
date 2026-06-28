@@ -215,16 +215,12 @@ static void vgacon_init(struct vc_data *c, int init)
 
 static void vgacon_deinit(struct vc_data *c)
 {
-	 
-	if (con_is_visible(c)) {
-		c->vc_visible_origin = vga_vram_base;
-		vga_set_mem_top(c);
-	}
-
-	if (!--vgacon_refcount)
-		con_free_unimap(c);
-	c->vc_uni_pagedir_loc = &c->vc_uni_pagedir;
-	con_set_default_unimap(c);
+	/*
+	 * .con_deinit teardown callback (console unbind). On a boot-once
+	 * artifact the VGA console is never unbound, so this never fires
+	 * (HIT=False). Stubbed empty: the symbol is kept for the
+	 * vga_con.con_deinit fn-ptr; the unmap/refcount teardown is dead.
+	 */
 }
 
 static u8 vgacon_build_attr(struct vc_data *c, u8 color)

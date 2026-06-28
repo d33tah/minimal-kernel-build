@@ -47,7 +47,6 @@ static void con_flush_chars(struct tty_struct *tty);
 static void set_cursor(struct vc_data *vc);
 static void hide_cursor(struct vc_data *vc);
 
-int default_utf8 = true;
 int global_cursor_default = -1;
 static int cur_default = CUR_UNDERLINE;
 
@@ -468,7 +467,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	vc->vc_top		= 0;
 	vc->vc_bottom		= vc->vc_rows;
 	vc->vc_need_wrap	= 0;
-	vc->vc_utf              = default_utf8;
+	vc->vc_utf              = true;
 	vc->vc_utf_count	= 0;
 
 	vc->vc_disp_ctrl	= 0;
@@ -906,8 +905,7 @@ int __init vty_init(const struct file_operations *console_fops)
 	console_driver->major = TTY_MAJOR;
 	console_driver->minor_start = 1;
 	console_driver->init_termios = tty_std_termios;
-	if (default_utf8)
-		console_driver->init_termios.c_iflag |= IUTF8;
+	console_driver->init_termios.c_iflag |= IUTF8;
 	tty_set_operations(console_driver, &con_ops);
 	if (tty_register_driver(console_driver))
 		panic("Couldn't register console driver\n");

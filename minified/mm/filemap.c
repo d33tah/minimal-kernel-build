@@ -188,13 +188,11 @@ static inline bool folio_trylock_flag(struct folio *folio, int bit_nr,
 	return true;
 }
 
-int sysctl_page_lock_unfairness = 5;
-
 static inline int folio_wait_bit_common(struct folio *folio, int bit_nr,
 		int state, enum behavior behavior)
 {
 	wait_queue_head_t *q = folio_waitqueue(folio);
-	int unfairness = sysctl_page_lock_unfairness;
+	int unfairness = 5;
 	struct wait_page_queue wait_page;
 	wait_queue_entry_t *wait = &wait_page.wait;
 

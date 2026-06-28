@@ -71,7 +71,6 @@ extern struct card_info video_cards[], video_cards_end[];
 
 extern int adapter;
 extern int force_x, force_y;
-extern int graphic_mode;
 
  
 

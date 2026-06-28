@@ -103,7 +103,6 @@ void con_free_unimap(struct vc_data *vc);
 void reset_vc(struct vc_data *vc);
 int vty_init(const struct file_operations *console_fops);
 
-extern int default_utf8;
 extern int global_cursor_default;
 
 

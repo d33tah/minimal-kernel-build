@@ -39,9 +39,6 @@ static void store_mode_params(void)
 	u16 font_size;
 	int x, y;
 
-	if (graphic_mode)
-		return;
-
 	store_cursor_position();
 	store_video_mode();
 

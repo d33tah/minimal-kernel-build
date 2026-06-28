@@ -867,7 +867,6 @@ struct vm_unmapped_area_info {
 extern unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info);
 
 extern void truncate_inode_pages(struct address_space *, loff_t);
-extern void truncate_inode_pages_final(struct address_space *);
 
 extern vm_fault_t filemap_fault(struct vm_fault *vmf);
 extern vm_fault_t filemap_map_pages(struct vm_fault *vmf,

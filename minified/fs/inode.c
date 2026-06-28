@@ -95,13 +95,6 @@ static struct inode *alloc_inode(struct super_block *sb)
 	return inode;
 }
 
-static void destroy_inode(struct inode *inode)
-{
-	BUG_ON(!list_empty(&inode->i_lru));
-	inode_detach_wb(inode);
-	call_rcu(&inode->i_rcu, i_callback);
-}
-
 void inc_nlink(struct inode *inode)
 {
 	inode->__i_nlink++;
@@ -125,49 +118,6 @@ static void init_once(void *foo)
 	INIT_LIST_HEAD(&inode->i_lru);
 	__address_space_init_once(&inode->i_data);
 	i_size_ordered_init(inode);
-}
-
-static void __inode_add_lru(struct inode *inode)
-{
-	if (inode->i_state & (I_FREEING | I_WILL_FREE))
-		return;
-	if (atomic_read(&inode->i_count))
-		return;
-	if (!(inode->i_sb->s_flags & SB_ACTIVE))
-		return;
-	if (!mapping_shrinkable(&inode->i_data))
-		return;
-
-	list_lru_add(&inode->i_sb->s_inode_lru, &inode->i_lru);
-}
-
-static void inode_lru_list_del(struct inode *inode)
-{
-	list_lru_del(&inode->i_sb->s_inode_lru, &inode->i_lru);
-}
-
-static void evict(struct inode *inode)
-{
-	BUG_ON(!(inode->i_state & I_FREEING));
-	BUG_ON(!list_empty(&inode->i_lru));
-
-	truncate_inode_pages_final(&inode->i_data);
-
-	xa_lock_irq(&inode->i_data.i_pages);
-	xa_unlock_irq(&inode->i_data.i_pages);
-	BUG_ON(inode->i_state & I_CLEAR);
-	inode->i_state = I_FREEING | I_CLEAR;
-
-	if (S_ISCHR(inode->i_mode) && inode->i_cdev)
-		cd_forget(inode);
-
-	remove_inode_hash(inode);
-
-	spin_lock(&inode->i_lock);
-	BUG_ON(inode->i_state != (I_FREEING | I_CLEAR));
-	spin_unlock(&inode->i_lock);
-
-	destroy_inode(inode);
 }
 
 static DEFINE_PER_CPU(unsigned int, last_ino);
@@ -209,51 +159,16 @@ struct inode *new_inode(struct super_block *sb)
 /* Used by ramfs */
 int generic_delete_inode(struct inode *inode) { return 1; }
 
-static void iput_final(struct inode *inode)
-{
-	struct super_block *sb = inode->i_sb;
-	const struct super_operations *op = inode->i_sb->s_op;
-	unsigned long state;
-	int drop;
-
-	if (op->drop_inode)
-		drop = op->drop_inode(inode);
-	else
-		drop = generic_drop_inode(inode);
-
-	if (!drop &&
-	    (sb->s_flags & SB_ACTIVE)) {
-		__inode_add_lru(inode);
-		spin_unlock(&inode->i_lock);
-		return;
-	}
-
-	state = inode->i_state;
-	if (!drop) {
-		WRITE_ONCE(inode->i_state, state | I_WILL_FREE);
-		spin_unlock(&inode->i_lock);
-
-		spin_lock(&inode->i_lock);
-		state = inode->i_state;
-		state &= ~I_WILL_FREE;
-	}
-
-	WRITE_ONCE(inode->i_state, state | I_FREEING);
-	if (!list_empty(&inode->i_lru))
-		inode_lru_list_del(inode);
-	spin_unlock(&inode->i_lock);
-
-	evict(inode);
-}
-
+/*
+ * Runtime-dead on this single-shot boot: nothing is ever the last reference to
+ * an inode (init/idle never closes its files), so the whole inode-teardown
+ * subtree (iput_final, evict, destroy_inode, __inode_add_lru, inode_lru_list_del,
+ * truncate_inode_pages_final, cd_forget) never executes.  Stubbed to a no-op:
+ * an inode whose count never drops to zero simply stays referenced -- harmless
+ * on a system that never destroys inodes.
+ */
 void iput(struct inode *inode)
 {
-	if (!inode)
-		return;
-	BUG_ON(inode->i_state & I_CLEAR);
-	if (atomic_dec_and_lock(&inode->i_count, &inode->i_lock)) {
-		iput_final(inode);
-	}
 }
 
 static int generic_update_time(struct inode *inode, struct timespec64 *time, int flags)

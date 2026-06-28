@@ -20,17 +20,6 @@ void truncate_inode_pages(struct address_space *mapping, loff_t lstart)
 		return;
 }
 
-void truncate_inode_pages_final(struct address_space *mapping)
-{
-	if (!mapping_empty(mapping)) {
-		 
-		xa_lock_irq(&mapping->i_pages);
-		xa_unlock_irq(&mapping->i_pages);
-	}
-
-	truncate_inode_pages(mapping, 0);
-}
-
 void truncate_pagecache(struct inode *inode, loff_t newsize)
 {
 	struct address_space *mapping = inode->i_mapping;

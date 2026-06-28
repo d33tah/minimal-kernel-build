@@ -119,7 +119,6 @@ extern void memblock_free_pages(struct page *page, unsigned long pfn,
 extern void __free_pages_core(struct page *page, unsigned int order);
 
 extern void free_unref_page(struct page *page, unsigned int order);
-extern void free_unref_page_list(struct list_head *list);
 
 /* split_free_page, find_suitable_fallback declaration removed - unused */
 /* is_exec_mapping, is_stack_mapping, is_data_mapping removed - unused */

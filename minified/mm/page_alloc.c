@@ -549,41 +549,6 @@ void free_unref_page(struct page *page, unsigned int order)
 	local_irq_restore(flags);
 }
 
-void free_unref_page_list(struct list_head *list)
-{
-	struct page *page, *next;
-	unsigned long flags;
-	int batch_count = 0;
-	int migratetype;
-
-	
-	list_for_each_entry_safe(page, next, list, lru) {
-		unsigned long pfn = page_to_pfn(page);
-		if (!free_unref_page_prepare(page, pfn, 0)) {
-			list_del(&page->lru);
-			continue;
-		}
-	}
-
-	local_irq_save(flags);
-	list_for_each_entry_safe(page, next, list, lru) {
-		
-		migratetype = get_pcppage_migratetype(page);
-		if (unlikely(migratetype >= MIGRATE_PCPTYPES))
-			migratetype = MIGRATE_MOVABLE;
-
-		free_unref_page_commit(page, migratetype, 0);
-
-		
-		if (++batch_count == SWAP_CLUSTER_MAX) {
-			local_irq_restore(flags);
-			batch_count = 0;
-			local_irq_save(flags);
-		}
-	}
-	local_irq_restore(flags);
-}
-
 void split_page(struct page *page, unsigned int order)
 {
 	int i;

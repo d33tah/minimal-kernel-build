@@ -20,45 +20,9 @@ static DEFINE_PER_CPU(struct lru_pvecs, lru_pvecs) = {
 	.lock = INIT_LOCAL_LOCK(lock),
 };
 
-static void __page_cache_release(struct page *page)
-{
-	if (PageLRU(page)) {
-		struct folio *folio = page_folio(page);
-		struct lruvec *lruvec;
-		unsigned long flags;
-
-		lruvec = folio_lruvec_lock_irqsave(folio, &flags);
-		del_page_from_lru_list(page, lruvec);
-		__clear_page_lru_flags(page);
-		unlock_page_lruvec_irqrestore(lruvec, flags);
-	}
-	 
-	if (unlikely(PageMlocked(page))) {
-		int nr_pages = thp_nr_pages(page);
-
-		__ClearPageMlocked(page);
-		mod_zone_page_state(page_zone(page), NR_MLOCK, -nr_pages);
-	}
-}
-
-static void __put_single_page(struct page *page)
-{
-	__page_cache_release(page);
-	free_unref_page(page, 0);
-}
-
-static void __put_compound_page(struct page *page)
-{
-	__page_cache_release(page);
-	destroy_compound_page(page);
-}
-
 void __put_page(struct page *page)
 {
-	if (unlikely(PageCompound(page)))
-		__put_compound_page(page);
-	else
-		__put_single_page(page);
+	/* runtime-dead: nothing is ever freed on this single-shot boot */
 }
 
 static bool pagevec_add_and_need_flush(struct pagevec *pvec, struct page *page)
@@ -170,94 +134,12 @@ atomic_t lru_disable_count = ATOMIC_INIT(0);
 
 void release_pages(struct page **pages, int nr)
 {
-	int i;
-	LIST_HEAD(pages_to_free);
-	struct lruvec *lruvec = NULL;
-	unsigned long flags = 0;
-	unsigned int lock_batch;
-
-	for (i = 0; i < nr; i++) {
-		struct page *page = pages[i];
-		struct folio *folio = page_folio(page);
-
-		 
-		if (lruvec && ++lock_batch == SWAP_CLUSTER_MAX) {
-			unlock_page_lruvec_irqrestore(lruvec, flags);
-			lruvec = NULL;
-		}
-
-		page = &folio->page;
-
-		if (!put_page_testzero(page))
-			continue;
-
-		if (PageCompound(page)) {
-			if (lruvec) {
-				unlock_page_lruvec_irqrestore(lruvec, flags);
-				lruvec = NULL;
-			}
-			__put_compound_page(page);
-			continue;
-		}
-
-		if (PageLRU(page)) {
-			struct lruvec *prev_lruvec = lruvec;
-
-			lruvec = folio_lruvec_relock_irqsave(folio, lruvec,
-									&flags);
-			if (prev_lruvec != lruvec)
-				lock_batch = 0;
-
-			del_page_from_lru_list(page, lruvec);
-			__clear_page_lru_flags(page);
-		}
-
-		 
-		if (unlikely(PageMlocked(page))) {
-			__ClearPageMlocked(page);
-			dec_zone_page_state(page, NR_MLOCK);
-		}
-
-		list_add(&page->lru, &pages_to_free);
-	}
-	if (lruvec)
-		unlock_page_lruvec_irqrestore(lruvec, flags);
-
-	free_unref_page_list(&pages_to_free);
-}
-
-static void __pagevec_lru_add_fn(struct folio *folio, struct lruvec *lruvec)
-{
-	folio_test_clear_unevictable(folio);
-
-	VM_BUG_ON_FOLIO(folio_test_lru(folio), folio);
-
-	folio_set_lru(folio);
-
-	if (!folio_evictable(folio)) {
-		folio_clear_active(folio);
-		folio_set_unevictable(folio);
-	}
-
-	lruvec_add_folio(lruvec, folio);
+	/* runtime-dead: page-free batch (munmap/mmu_gather) never fires here */
 }
 
 void __pagevec_lru_add(struct pagevec *pvec)
 {
-	int i;
-	struct lruvec *lruvec = NULL;
-	unsigned long flags = 0;
-
-	for (i = 0; i < pagevec_count(pvec); i++) {
-		struct folio *folio = page_folio(pvec->pages[i]);
-
-		lruvec = folio_lruvec_relock_irqsave(folio, lruvec, &flags);
-		__pagevec_lru_add_fn(folio, lruvec);
-	}
-	if (lruvec)
-		unlock_page_lruvec_irqrestore(lruvec, flags);
-	release_pages(pvec->pages, pvec->nr);
-	pagevec_reinit(pvec);
+	/* runtime-dead: lru_add pagevec never fills on this single-shot boot */
 }
 
 

@@ -1041,21 +1041,6 @@ static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai);
 
 #include "percpu-km.c"
 
-static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
-{
-	
-	if (pcpu_addr_in_chunk(pcpu_first_chunk, addr))
-		return pcpu_first_chunk;
-
-	
-	if (pcpu_addr_in_chunk(pcpu_reserved_chunk, addr))
-		return pcpu_reserved_chunk;
-
-	
-	addr += pcpu_unit_offsets[raw_smp_processor_id()];
-	return pcpu_get_page_chunk(pcpu_addr_to_page(addr));
-}
-
 static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 				 gfp_t gfp)
 {
@@ -1221,26 +1206,15 @@ void __percpu *__alloc_percpu(size_t size, size_t align)
 	return pcpu_alloc(size, align, false, GFP_KERNEL);
 }
 
+/*
+ * Anchor-stub: free_percpu is link-live (called from kernel/irq/irqdesc.c
+ * teardown) but runtime-dead on this kernel's boot+print+stay-alive job --
+ * no per-cpu area is ever freed. Body stubbed to a no-op; the symbol is kept
+ * for the linker. This severs the sole reference to pcpu_chunk_addr_search,
+ * which is then deleted (cascade).
+ */
 void free_percpu(void __percpu *ptr)
 {
-	void *addr;
-	struct pcpu_chunk *chunk;
-	unsigned long flags;
-	int off;
-
-	if (!ptr)
-		return;
-
-	addr = __pcpu_ptr_to_addr(ptr);
-
-	spin_lock_irqsave(&pcpu_lock, flags);
-
-	chunk = pcpu_chunk_addr_search(addr);
-	off = addr - chunk->base_addr;
-
-	pcpu_free_area(chunk, off);
-
-	spin_unlock_irqrestore(&pcpu_lock, flags);
 }
 
 /* Stub: per_cpu_ptr_to_phys not used in minimal kernel */

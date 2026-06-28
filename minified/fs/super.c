@@ -17,13 +17,6 @@ static void destroy_super_work(struct work_struct *work)
 	kfree(s);
 }
 
-static void destroy_super_rcu(struct rcu_head *head)
-{
-	struct super_block *s = container_of(head, struct super_block, rcu);
-	INIT_WORK(&s->destroy_work, destroy_super_work);
-	schedule_work(&s->destroy_work);
-}
-
 static void destroy_unused_super(struct super_block *s)
 {
 	if (!s)
@@ -72,33 +65,16 @@ fail:
 	return NULL;
 }
 
-static void __put_super(struct super_block *s)
-{
-	if (!--s->s_count) {
-		WARN_ON(s->s_dentry_lru.node);
-		WARN_ON(s->s_inode_lru.node);
-		put_user_ns(s->s_user_ns);
-		call_rcu(&s->rcu, destroy_super_rcu);
-	}
-}
-
+/*
+ * Runtime-dead on a 1-shot boot: the boot filesystems are never unmounted, so
+ * s_active never drops to 0 and the umount-only teardown body never runs
+ * (deactivate_locked_super HIT=False; deactivate_super takes the
+ * atomic_add_unless fast path; __cleanup_mnt is umount-only). Stubbed to keep
+ * the symbol for the fs.h extern + kill_sb function-pointer tables. The private
+ * subtree (__put_super -> destroy_super_rcu) cascaded away.
+ */
 void deactivate_locked_super(struct super_block *s)
 {
-	struct file_system_type *fs = s->s_type;
-	if (atomic_dec_and_test(&s->s_active)) {
-		fs->kill_sb(s);
-
-		list_lru_destroy(&s->s_dentry_lru);
-		list_lru_destroy(&s->s_inode_lru);
-
-		put_filesystem(fs);
-		/* folded sole caller of put_super() */
-		spin_lock(&sb_lock);
-		__put_super(s);
-		spin_unlock(&sb_lock);
-	} else {
-		up_write(&s->s_umount);
-	}
 }
 
 

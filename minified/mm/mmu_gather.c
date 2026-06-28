@@ -4,7 +4,6 @@
 #include <linux/mmdebug.h>
 #include <linux/mm_types.h>
 #include <linux/mm_inline.h>
-#include <linux/pagemap.h>
 #include <linux/swap.h>
 
 #include <asm/pgalloc.h>

@@ -5,7 +5,6 @@
 #include <linux/ptrace.h>
 #include <linux/signal.h>
 
-#include <linux/uaccess.h>
 #include <asm/processor.h>
 #include <asm/traps.h>
 

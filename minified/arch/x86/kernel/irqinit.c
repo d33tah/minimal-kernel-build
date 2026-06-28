@@ -9,7 +9,6 @@
 #include <linux/kernel_stat.h>
 #include <linux/bitops.h>
 #include <linux/acpi.h>
-#include <linux/io.h>
 #include <linux/pgtable.h>
 
 #include <linux/atomic.h>

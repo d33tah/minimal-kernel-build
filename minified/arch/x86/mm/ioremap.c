@@ -1,5 +1,4 @@
 
-#include <linux/memblock.h>
 #include <linux/init.h>
 #include <linux/io.h>
 #include <linux/ioport.h>

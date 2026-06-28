@@ -1,5 +1,4 @@
 #include <linux/lockref.h>
-#include <linux/bug.h>
 
 void lockref_get(struct lockref *lockref)
 {

@@ -13,7 +13,6 @@
 #include <linux/ptrace.h>
 #include <linux/personality.h>
 #include <linux/percpu.h>
-#include <linux/io.h>
 #include <linux/kdebug.h>
 
 #include <asm/ldt.h>

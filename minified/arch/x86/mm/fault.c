@@ -1,10 +1,8 @@
 #include <linux/sched.h>		 
 #include <linux/sched/task_stack.h>	 
 #include <linux/extable.h>		 
-#include <linux/memblock.h>		 
 #include <linux/kprobes.h>
 #include <asm/kdebug.h>
-#include <linux/uaccess.h>		 
 #include <linux/mm_types.h>
 
 #include <asm/cpufeature.h>		 

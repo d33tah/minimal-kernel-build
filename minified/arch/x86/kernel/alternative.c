@@ -16,7 +16,6 @@
 #include <asm/sections.h>
 #include <asm/cacheflush.h>
 #include <asm/tlbflush.h>
-#include <asm/io.h>
 #include <asm/fixmap.h>
 /* --- 2025-12-07 20:55 --- Inlined asm-prototypes.h */
 #include <linux/pgtable.h>

@@ -8,7 +8,6 @@
 #include <linux/swap.h>
 #include <linux/init.h>
 #include <linux/highmem.h>
-#include <linux/pagemap.h>
 #include <linux/pci.h>
 #include <linux/pfn.h>
 #include <linux/memblock.h>

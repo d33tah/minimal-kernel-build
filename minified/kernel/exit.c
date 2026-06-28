@@ -19,52 +19,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <asm/unistd.h>
 #include <asm/mmu_context.h>
 
-static void __unhash_process(struct task_struct *p, bool group_dead)
-{
-	nr_threads--;
-	detach_pid(p, PIDTYPE_PID);
-	if (group_dead) {
-		detach_pid(p, PIDTYPE_TGID);
-		detach_pid(p, PIDTYPE_PGID);
-		detach_pid(p, PIDTYPE_SID);
-
-		list_del_rcu(&p->tasks);
-		__this_cpu_dec(process_counts);
-	}
-	list_del_rcu(&p->thread_group);
-	list_del_rcu(&p->thread_node);
-}
-
-static void __exit_signal(struct task_struct *tsk)
-{
-	struct signal_struct *sig = tsk->signal;
-	bool group_dead = thread_group_leader(tsk);
-	struct sighand_struct *sighand;
-	struct tty_struct *tty;
-
-	sighand = rcu_dereference_check(tsk->sighand,
-					lockdep_tasklist_lock_is_held());
-	spin_lock(&sighand->siglock);
-
-	if (group_dead) {
-		tty = sig->tty;
-		sig->tty = NULL;
-	}
-
-	__unhash_process(tsk, group_dead);
-
-	flush_sigqueue(&tsk->pending);
-	tsk->sighand = NULL;
-	spin_unlock(&sighand->siglock);
-
-	__cleanup_sighand(sighand);
-	clear_tsk_thread_flag(tsk, TIF_SIGPENDING);
-	if (group_dead) {
-		flush_sigqueue(&sig->shared_pending);
-		tty_kref_put(tty);
-	}
-}
-
 static void delayed_put_task_struct(struct rcu_head *rhp)
 {
 	struct task_struct *tsk = container_of(rhp, struct task_struct, rcu);
@@ -81,27 +35,15 @@ void put_task_struct_rcu_user(struct task_struct *task)
 
 void release_task(struct task_struct *p)
 {
-	struct pid *thread_pid;
-
-	rcu_read_lock();
-	dec_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
-	rcu_read_unlock();
-
-	write_lock_irq(&tasklist_lock);
-	ptrace_release_task(p);
-	thread_pid = get_pid(p->thread_pid);
-	__exit_signal(p);
-
 	/*
-	 * do_notify_parent() is a permanent `return false;` stub on this build,
-	 * so the leader-zombie reap arm and the zap_leader/goto-repeat loop are
-	 * dead; release_task always processes exactly one task.
+	 * RUNTIME-DEAD ANCHOR-STUB: release_task reaps a dead task_struct, but
+	 * nothing is ever reaped on this build -- the only exiting tasks are
+	 * PID-1 init (never reaped: it panics if it exits) and kthreads (which
+	 * never exit). The reparent/zombie loops in exit_notify/find_child_reaper
+	 * that call this are themselves runtime-dead. No-op is safe; the private
+	 * teardown subtree (__exit_signal/__unhash_process/flush_sigqueue/
+	 * __sigqueue_free/detach_pid/__change_pid) was deleted.
 	 */
-	write_unlock_irq(&tasklist_lock);
-	proc_flush_pid(thread_pid);
-	put_pid(thread_pid);
-	release_thread(p);
-	put_task_struct_rcu_user(p);
 }
 
 

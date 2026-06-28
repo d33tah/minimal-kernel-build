@@ -141,29 +141,6 @@ __sigqueue_alloc(int sig, struct task_struct *t, gfp_t gfp_flags,
 	return q;
 }
 
-static void __sigqueue_free(struct sigqueue *q)
-{
-	if (q->flags & SIGQUEUE_PREALLOC)
-		return;
-	if (q->ucounts) {
-		dec_rlimit_put_ucounts(q->ucounts, UCOUNT_RLIMIT_SIGPENDING);
-		q->ucounts = NULL;
-	}
-	kmem_cache_free(sigqueue_cachep, q);
-}
-
-void flush_sigqueue(struct sigpending *queue)
-{
-	struct sigqueue *q;
-
-	sigemptyset(&queue->signal);
-	while (!list_empty(&queue->list)) {
-		q = list_entry(queue->list.next, struct sigqueue , list);
-		list_del_init(&q->list);
-		__sigqueue_free(q);
-	}
-}
-
 void ignore_signals(struct task_struct *t)
 {
 	int i;

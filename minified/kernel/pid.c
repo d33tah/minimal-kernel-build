@@ -212,30 +212,6 @@ void attach_pid(struct task_struct *task, enum pid_type type)
 	hlist_add_head_rcu(&task->pid_links[type], &pid->tasks[type]);
 }
 
-static void __change_pid(struct task_struct *task, enum pid_type type,
-			struct pid *new)
-{
-	struct pid **pid_ptr = task_pid_ptr(task, type);
-	struct pid *pid;
-	int tmp;
-
-	pid = *pid_ptr;
-
-	hlist_del_rcu(&task->pid_links[type]);
-	*pid_ptr = new;
-
-	for (tmp = PIDTYPE_MAX; --tmp >= 0; )
-		if (pid_has_task(pid, tmp))
-			return;
-
-	free_pid(pid);
-}
-
-void detach_pid(struct task_struct *task, enum pid_type type)
-{
-	__change_pid(task, type, NULL);
-}
-
 struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
 {
 	struct pid *pid = idr_find(&ns->idr, nr);

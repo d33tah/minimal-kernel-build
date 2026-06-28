@@ -48,8 +48,6 @@ static inline void init_sigpending(struct sigpending *sig)
 	INIT_LIST_HEAD(&sig->list);
 }
 
-extern void flush_sigqueue(struct sigpending *queue);
-
 
 struct pt_regs;
 enum pid_type;

@@ -60,7 +60,6 @@ extern int begin_new_exec(struct linux_binprm * bprm);
 extern void setup_new_exec(struct linux_binprm * bprm);
 extern void finalize_exec(struct linux_binprm *bprm);
 
-extern int suid_dumpable;
 
 #define EXSTACK_DEFAULT   0	 
 #define EXSTACK_DISABLE_X 1	 

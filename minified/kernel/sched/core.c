@@ -240,10 +240,6 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
 
 	lockdep_assert_rq_held(rq);
 
-	if (p->in_iowait) {
-		atomic_dec(&task_rq(p)->nr_iowait);
-	}
-
 	activate_task(rq, p, en_flags);
 	ttwu_do_wakeup(rq, p, wake_flags, rf);
 }
@@ -632,10 +628,6 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 			/* folded sole caller of deactivate_task() */
 			prev->on_rq = 0; /* DEQUEUE_SLEEP set -> not MIGRATING */
 			dequeue_task(rq, prev, DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);
-
-			if (prev->in_iowait) {
-				atomic_inc(&rq->nr_iowait);
-			}
 		}
 	}
 
@@ -884,9 +876,6 @@ void __init sched_init(void)
 		raw_spin_lock_init(&rq->__lock);
 		rq->nr_running = 0;
 		init_cfs_rq(&rq->cfs);
-
-		atomic_set(&rq->nr_iowait, 0);
-
 	}
 
 	set_load_weight(&init_task, false);

@@ -172,7 +172,6 @@ struct rq {
 
 	u64			clock_task ____cacheline_aligned;
 
-	atomic_t		nr_iowait;
 
 
 

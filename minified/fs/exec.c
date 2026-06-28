@@ -28,7 +28,6 @@
 
 static void bprm_creds_from_file(struct linux_binprm *bprm);
 
-int suid_dumpable = 0;
 
 static LIST_HEAD(formats);
 static DEFINE_RWLOCK(binfmt_lock);
@@ -510,7 +509,7 @@ int begin_new_exec(struct linux_binprm * bprm)
 	if (bprm->interp_flags & BINPRM_FLAGS_ENFORCE_NONDUMP ||
 	    !(uid_eq(current_euid(), current_uid()) &&
 	      gid_eq(current_egid(), current_gid())))
-		set_dumpable(current->mm, suid_dumpable);
+		set_dumpable(current->mm, 0);
 	else
 		set_dumpable(current->mm, SUID_DUMP_USER);
 

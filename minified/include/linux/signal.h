@@ -54,8 +54,6 @@ extern void flush_sigqueue(struct sigpending *queue);
 struct pt_regs;
 enum pid_type;
 
-extern int show_unhandled_signals;
-
 extern void exit_signals(struct task_struct *tsk);
 
 #define SIG_KTHREAD_KERNEL ((__force __sighandler_t)3)

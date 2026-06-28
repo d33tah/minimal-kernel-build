@@ -215,8 +215,7 @@ struct thread_struct {
 	unsigned long		sp;
 	unsigned long		sysenter_cs;
 
-	 
-	unsigned long fs;
+
 	unsigned long gs;
 
 

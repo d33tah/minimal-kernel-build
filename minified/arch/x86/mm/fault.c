@@ -162,8 +162,7 @@ __bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code,
 	if (fixup_vdso_exception(regs, X86_TRAP_PF, error_code, address))
 		return;
 
-	if (likely(show_unhandled_signals))
-		show_signal_msg(regs, error_code, address, tsk);
+	show_signal_msg(regs, error_code, address, tsk);
 
 	set_signal_archinfo(address, error_code);
 
@@ -250,8 +249,6 @@ spurious_kernel_fault(unsigned long error_code, unsigned long address)
 	return ret;
 }
 NOKPROBE_SYMBOL(spurious_kernel_fault);
-
-int show_unhandled_signals = 1;
 
 static inline int
 access_error(unsigned long error_code, struct vm_area_struct *vma)

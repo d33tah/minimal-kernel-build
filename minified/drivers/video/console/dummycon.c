@@ -10,20 +10,18 @@ static void dummycon_putc(struct vc_data *vc, int c, int ypos, int xpos) { }
 static void dummycon_putcs(struct vc_data *vc, const unsigned short *s,
 			   int count, int ypos, int xpos) { }
 
+/*
+ * The whole dummy_con consw table is runtime-dead (HIT=False): the dummy
+ * console is only bound as a fallback when no real console is available; the
+ * VGA console (vga_con) is live on this boot, so dummy_con's ops never fire.
+ * Stub the two non-trivial bodies; symbols kept for the dummy_con fn-ptr table.
+ */
 static const char *dummycon_startup(void)
 {
     return "dummy device";
 }
 
-static void dummycon_init(struct vc_data *vc, int init)
-{
-    vc->vc_can_do_color = 1;
-    if (init) {
-	vc->vc_cols = DUMMY_COLUMNS;
-	vc->vc_rows = DUMMY_ROWS;
-    } else
-	vc_resize(vc, DUMMY_COLUMNS, DUMMY_ROWS);
-}
+static void dummycon_init(struct vc_data *vc, int init) { }
 
 static void dummycon_deinit(struct vc_data *vc) { }
 static void dummycon_cursor(struct vc_data *vc, int mode) { }

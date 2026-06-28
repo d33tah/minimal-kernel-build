@@ -263,160 +263,17 @@ int del_timer(struct timer_list *timer)
 	return ret;
 }
 
-static void call_timer_fn(struct timer_list *timer,
-			  void (*fn)(struct timer_list *),
-			  unsigned long baseclk)
-{
-	int count = preempt_count();
-
-	 
-	lock_map_acquire(&lockdep_map);
-
-	 
-	fn(timer);
-	 
-
-	lock_map_release(&lockdep_map);
-
-	if (count != preempt_count()) {
-		WARN_ONCE(1, "timer: %pS preempt leak: %08x -> %08x\n",
-			  fn, count, preempt_count());
-		 
-		preempt_count_set(count);
-	}
-}
-
-static void expire_timers(struct timer_base *base, struct hlist_head *head)
-{
-	 
-	unsigned long baseclk = base->clk - 1;
-
-	while (!hlist_empty(head)) {
-		struct timer_list *timer;
-		void (*fn)(struct timer_list *);
-
-		timer = hlist_entry(head->first, struct timer_list, entry);
-
-		detach_timer(timer, true);
-
-		fn = timer->function;
-
-		if (timer->flags & TIMER_IRQSAFE) {
-			raw_spin_unlock(&base->lock);
-			call_timer_fn(timer, fn, baseclk);
-			raw_spin_lock(&base->lock);
-		} else {
-			raw_spin_unlock_irq(&base->lock);
-			call_timer_fn(timer, fn, baseclk);
-			raw_spin_lock_irq(&base->lock);
-		}
-	}
-}
-
-static int collect_expired_timers(struct timer_base *base,
-				  struct hlist_head *heads)
-{
-	unsigned long clk = base->clk = base->next_expiry;
-	struct hlist_head *vec;
-	int i, levels = 0;
-	unsigned int idx;
-
-	for (i = 0; i < LVL_DEPTH; i++) {
-		idx = (clk & LVL_MASK) + i * LVL_SIZE;
-
-		if (__test_and_clear_bit(idx, base->pending_map)) {
-			vec = base->vectors + idx;
-			hlist_move_list(vec, heads++);
-			levels++;
-		}
-		 
-		if (clk & LVL_CLK_MASK)
-			break;
-		 
-		clk >>= LVL_CLK_SHIFT;
-	}
-	return levels;
-}
-
-static int next_pending_bucket(struct timer_base *base, unsigned offset,
-			       unsigned clk)
-{
-	unsigned pos, start = offset + clk;
-	unsigned end = offset + LVL_SIZE;
-
-	pos = find_next_bit(base->pending_map, end, start);
-	if (pos < end)
-		return pos - start;
-
-	pos = find_next_bit(base->pending_map, start, offset);
-	return pos < start ? pos + LVL_SIZE - start : -1;
-}
-
-static unsigned long __next_timer_interrupt(struct timer_base *base)
-{
-	unsigned long clk, next, adj;
-	unsigned lvl, offset = 0;
-
-	next = base->clk + NEXT_TIMER_MAX_DELTA;
-	clk = base->clk;
-	for (lvl = 0; lvl < LVL_DEPTH; lvl++, offset += LVL_SIZE) {
-		int pos = next_pending_bucket(base, offset, clk & LVL_MASK);
-		unsigned long lvl_clk = clk & LVL_CLK_MASK;
-
-		if (pos >= 0) {
-			unsigned long tmp = clk + (unsigned long) pos;
-
-			tmp <<= LVL_SHIFT(lvl);
-			if (time_before(tmp, next))
-				next = tmp;
-
-			 
-			if (pos <= ((LVL_CLK_DIV - lvl_clk) & LVL_CLK_MASK))
-				break;
-		}
-		 
-		adj = lvl_clk ? 1 : 0;
-		clk >>= LVL_CLK_SHIFT;
-		clk += adj;
-	}
-
-	base->next_expiry_recalc = false;
-	base->timers_pending = !(next == base->clk + NEXT_TIMER_MAX_DELTA);
-
-	return next;
-}
-
-
-static inline void __run_timers(struct timer_base *base)
-{
-	struct hlist_head heads[LVL_DEPTH];
-	int levels;
-
-	if (time_before(jiffies, base->next_expiry))
-		return;
-
-	raw_spin_lock_irq(&base->lock);
-
-	while (time_after_eq(jiffies, base->clk) &&
-	       time_after_eq(jiffies, base->next_expiry)) {
-		levels = collect_expired_timers(base, heads);
-		 
-		WARN_ON_ONCE(!levels && !base->next_expiry_recalc
-			     && base->timers_pending);
-		base->clk++;
-		base->next_expiry = __next_timer_interrupt(base);
-
-		while (levels--)
-			expire_timers(base, heads + levels);
-	}
-	raw_spin_unlock_irq(&base->lock);
-}
-
+/*
+ * RUNTIME-DEAD ANCHOR-STUB: run_timer_softirq (and its entire private subtree
+ * __run_timers -> {collect_expired_timers, __next_timer_interrupt ->
+ * next_pending_bucket, expire_timers -> call_timer_fn}) never executes on this
+ * boot+print+stay-alive artifact (no timer ever expires before idle). The
+ * TIMER_SOFTIRQ handler is link-live via open_softirq() in init_timers(), but
+ * the softirq is never raised (run_local_timers's next_expiry guard never
+ * fires). Stubbed to a no-op; the whole expiry machinery was carved out.
+ */
 static __latent_entropy void run_timer_softirq(struct softirq_action *h)
 {
-	struct timer_base *base = this_cpu_ptr(&timer_bases[BASE_STD]);
-
-	__run_timers(base);
 }
 
 static void run_local_timers(void)

@@ -1,7 +1,6 @@
 #include <linux/irq.h>
 #include <linux/io.h>
 #include <linux/delay.h>
-#include <linux/pgtable.h>
 
 #include <linux/atomic.h>
 #include <asm/timer.h>

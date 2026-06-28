@@ -6,7 +6,6 @@
 #include <linux/string.h>
 #include <linux/ctype.h>
 #include <linux/kernel.h>
-#include <linux/ioport.h>
 
 #include <linux/random.h>
 #include <linux/siphash.h>

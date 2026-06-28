@@ -6,7 +6,6 @@
 #include <linux/init.h>
 #include <linux/string.h>
 #include <linux/ramfs.h>
-#include <linux/magic.h>
 #include <linux/slab.h>
 #include <linux/fs_context.h>
 #include <linux/fs_parser.h>

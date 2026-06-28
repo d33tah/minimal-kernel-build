@@ -1,6 +1,5 @@
 #include <linux/interrupt.h>
 #include <linux/irq.h>
-#include <linux/kprobes.h>
 #include <linux/init.h>
 #include <linux/acpi.h>
 #include <linux/pgtable.h>

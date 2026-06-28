@@ -3,7 +3,6 @@
 #include <linux/bitops.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>
-#include <linux/thread_info.h>
 
 #include <asm/page.h>
 

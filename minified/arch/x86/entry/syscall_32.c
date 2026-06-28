@@ -1,7 +1,6 @@
 
 #include <linux/linkage.h>
 
-#include <linux/cache.h>
 #include <linux/syscalls.h>
 #include <asm/syscall.h>
 

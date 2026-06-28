@@ -4,7 +4,6 @@
 
 #include <linux/sched.h>
 #include <linux/stddef.h>
-#include <linux/hardirq.h>
 #include <linux/suspend.h>
 #include <linux/kbuild.h>
 #include <asm/processor.h>

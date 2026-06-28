@@ -3,7 +3,6 @@
 #include <linux/page-flags.h>
 #include <linux/mmzone.h>
 #include <linux/kbuild.h>
-#include <linux/log2.h>
 #include <linux/spinlock_types.h>
 
 int main(void)

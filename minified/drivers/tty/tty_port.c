@@ -14,25 +14,14 @@ void tty_port_init(struct tty_port *port)
 	kref_init(&port->kref);
 }
 
-static void tty_port_destructor(struct kref *kref)
-{
-	struct tty_port *port = container_of(kref, struct tty_port, kref);
-
-
-	if (WARN_ON(port->itty))
-		return;
-	tty_buffer_cancel_work(port);
-	tty_buffer_free_all(port);
-	if (port->ops && port->ops->destruct)
-		port->ops->destruct(port);
-	else
-		kfree(port);
-}
-
 void tty_port_put(struct tty_port *port)
 {
-	if (port)
-		kref_put(&port->kref, tty_port_destructor);
+	/* Runtime-dead teardown root: a tty_port is released only when its last
+	 * kref drops (final close / vc teardown), which never happens on a
+	 * single-shot boot. Symbol kept link-live for the tty_port.h extern and
+	 * the (dead) vt.c hangup caller. The private tty_port_destructor release
+	 * callback and its tty_buffer_cancel_work / tty_buffer_free_all callees
+	 * were deleted with it. */
 }
 
 int tty_port_install(struct tty_port *port, struct tty_driver *driver,

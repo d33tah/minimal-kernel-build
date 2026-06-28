@@ -54,10 +54,10 @@ static void release_tty(struct tty_struct *tty, int idx);
 
 static void free_tty_struct(struct tty_struct *tty)
 {
-	tty_ldisc_deinit(tty);
-	kvfree(tty->write_buf);
-	tty->magic = 0xDEADDEAD;
-	kfree(tty);
+	/* Runtime-dead: both callers (tty_init_dev alloc-error path and the
+	 * release_one_tty hangup callback) only fire on tty teardown / alloc
+	 * failure, neither of which happens on a single-shot boot. Kept static +
+	 * referenced so it stays link-live; its tty_ldisc_deinit callee folds. */
 }
 
 static inline struct tty_struct *file_tty(struct file *file)
@@ -449,21 +449,10 @@ err_release_lock:
 
 static void release_one_tty(struct work_struct *work)
 {
-	struct tty_struct *tty =
-		container_of(work, struct tty_struct, hangup_work);
-	struct tty_driver *driver = tty->driver;
-
-	if (tty->ops->cleanup)
-		tty->ops->cleanup(tty);
-
-	tty->magic = 0;
-	tty_driver_kref_put(driver);
-
-	spin_lock(&tty->files_lock);
-	list_del_init(&tty->tty_files);
-	spin_unlock(&tty->files_lock);
-
-	free_tty_struct(tty);
+	/* Runtime-dead: the workqueue release callback runs only when a tty's
+	 * last kref drops (final close), which never happens on a single-shot
+	 * boot. Symbol kept link-live for the INIT_WORK() reference in the
+	 * (dead) queue_release_one_tty path. */
 }
 
 static void queue_release_one_tty(struct kref *kref)

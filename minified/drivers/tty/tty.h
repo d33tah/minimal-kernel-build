@@ -30,9 +30,7 @@ int tty_ldisc_lock(struct tty_struct *tty, unsigned long timeout);
 void tty_ldisc_unlock(struct tty_struct *tty);
 
 /* __stop_tty, __start_tty removed - unused */
-void tty_buffer_free_all(struct tty_port *port);
 void tty_buffer_init(struct tty_port *port);
-bool tty_buffer_cancel_work(struct tty_port *port);
 /* tty_buffer_flush_work removed - unused */
 speed_t tty_termios_input_baud_rate(struct ktermios *termios);
 int tty_ldisc_reinit(struct tty_struct *tty, int disc);
@@ -45,7 +43,6 @@ int tty_release(struct inode *inode, struct file *filp);
 int tty_ldisc_setup(struct tty_struct *tty, struct tty_struct *o_tty);
 void tty_ldisc_release(struct tty_struct *tty);
 int __must_check tty_ldisc_init(struct tty_struct *tty);
-void tty_ldisc_deinit(struct tty_struct *tty);
 
 /* tty_audit_add_data, tty_audit_tiocsti removed - unused */
 

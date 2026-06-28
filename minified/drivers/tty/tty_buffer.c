@@ -16,32 +16,6 @@ static void tty_buffer_reset(struct tty_buffer *p, size_t size)
 	p->next = NULL;
 }
 
-void tty_buffer_free_all(struct tty_port *port)
-{
-	struct tty_bufhead *buf = &port->buf;
-	struct tty_buffer *p, *next;
-	struct llist_node *llist;
-	unsigned int freed = 0;
-	int still_used;
-
-	while ((p = buf->head) != NULL) {
-		buf->head = p->next;
-		freed += p->size;
-		if (p->size > 0)
-			kfree(p);
-	}
-	llist = llist_del_all(&buf->free);
-	llist_for_each_entry_safe(p, next, llist, free)
-		kfree(p);
-
-	tty_buffer_reset(&buf->sentinel, 0);
-	buf->head = &buf->sentinel;
-
-	still_used = atomic_xchg(&buf->mem_used, 0);
-	WARN(still_used != freed, "we still have not freed %d bytes!",
-			still_used - freed);
-}
-
 void tty_buffer_init(struct tty_port *port)
 {
 	struct tty_bufhead *buf = &port->buf;
@@ -52,11 +26,5 @@ void tty_buffer_init(struct tty_port *port)
 	init_llist_head(&buf->free);
 	atomic_set(&buf->mem_used, 0);
 	INIT_WORK(&buf->work, NULL);
-}
-
-
-bool tty_buffer_cancel_work(struct tty_port *port)
-{
-	return cancel_work_sync(&port->buf.work);
 }
 

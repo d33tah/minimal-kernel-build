@@ -193,10 +193,3 @@ int tty_ldisc_init(struct tty_struct *tty)
 	return 0;
 }
 
-void tty_ldisc_deinit(struct tty_struct *tty)
-{
-	/* Runtime-dead: only caller is free_tty_struct (tty teardown/free),
-	 * which never runs on a single-shot boot. Link-live via tty.h extern. */
-	tty->ldisc = NULL;
-}
-

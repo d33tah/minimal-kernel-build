@@ -1,6 +1,5 @@
 #include <linux/uio.h>
 #include <linux/highmem.h>
-#include <linux/vmalloc.h>
 
 /* Inlined from net/checksum.h */
 typedef __u16 __sum16;

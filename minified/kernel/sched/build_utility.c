@@ -10,7 +10,6 @@
 
 #include <linux/irq.h>
 
-#include <linux/nmi.h>
 #include <linux/nospec.h>
 
 

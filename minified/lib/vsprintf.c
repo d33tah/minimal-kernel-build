@@ -7,10 +7,6 @@
 #include <linux/ctype.h>
 #include <linux/kernel.h>
 #include <linux/ioport.h>
-#include <linux/dcache.h>
-#include <linux/cred.h>
-#include <linux/time.h>
-#include <linux/uuid.h>
 
 #include <linux/random.h>
 #include <linux/siphash.h>

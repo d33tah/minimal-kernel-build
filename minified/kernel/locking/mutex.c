@@ -1,5 +1,4 @@
 #include <linux/mutex.h>
-#include <linux/sched/wake_q.h>
 #include <linux/sched/debug.h>
 #include <linux/spinlock.h>
 

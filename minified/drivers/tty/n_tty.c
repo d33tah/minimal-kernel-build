@@ -4,7 +4,6 @@
 #include <linux/tty.h>
 #include <linux/mm.h>
 #include <linux/slab.h>
-#include <linux/file.h>
 #include "tty.h"
 
 #define WAKEUP_CHARS 256

@@ -7,12 +7,6 @@
 
 #define PGTABLE_HIGHMEM 0
 
-static inline
-void paravirt_tlb_remove_table(struct mmu_gather *tlb, void *table)
-{
-	tlb_remove_page(tlb, table);
-}
-
 gfp_t __userpte_alloc_gfp = GFP_PGTABLE_USER | PGTABLE_HIGHMEM;
 
 pgtable_t pte_alloc_one(struct mm_struct *mm)
@@ -23,8 +17,9 @@ pgtable_t pte_alloc_one(struct mm_struct *mm)
 
 void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
 {
-	pgtable_pte_page_dtor(pte);
-	paravirt_tlb_remove_table(tlb, pte);
+	/* runtime-dead: reached only via pte_free_tlb<-free_pgd_range (page-table
+	 * teardown on munmap/exit), which never fires on a 1-shot boot. Stubbed;
+	 * symbol kept for the asm/pgalloc.h __pte_free_tlb inline caller. */
 }
 
 static inline void pgd_list_add(pgd_t *pgd)

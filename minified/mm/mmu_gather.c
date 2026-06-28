@@ -10,34 +10,6 @@
 
 #ifndef CONFIG_MMU_GATHER_NO_GATHER
 
-static bool tlb_next_batch(struct mmu_gather *tlb)
-{
-	struct mmu_gather_batch *batch;
-
-	batch = tlb->active;
-	if (batch->next) {
-		tlb->active = batch->next;
-		return true;
-	}
-
-	if (tlb->batch_count == MAX_GATHER_BATCH_COUNT)
-		return false;
-
-	batch = (void *)__get_free_pages(GFP_NOWAIT | __GFP_NOWARN, 0);
-	if (!batch)
-		return false;
-
-	tlb->batch_count++;
-	batch->next = NULL;
-	batch->nr   = 0;
-	batch->max  = MAX_GATHER_BATCH;
-
-	tlb->active->next = batch;
-	tlb->active = batch;
-
-	return true;
-}
-
 static void tlb_batch_pages_flush(struct mmu_gather *tlb)
 {
 	struct mmu_gather_batch *batch;
@@ -72,21 +44,9 @@ static void tlb_batch_list_free(struct mmu_gather *tlb)
 
 bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page, int page_size)
 {
-	struct mmu_gather_batch *batch;
-
-	VM_BUG_ON(!tlb->end);
-
-
-	batch = tlb->active;
-	 
-	batch->pages[batch->nr++] = page;
-	if (batch->nr == batch->max) {
-		if (!tlb_next_batch(tlb))
-			return true;
-		batch = tlb->active;
-	}
-	VM_BUG_ON_PAGE(batch->nr > batch->max, page);
-
+	/* runtime-dead: page-table teardown (pte_free_tlb<-free_pgd_range) never
+	 * fires on a 1-shot boot that never unmaps; the page-batching gather path
+	 * is never entered. Stubbed; symbol kept for the asm/tlb.h inline caller. */
 	return false;
 }
 

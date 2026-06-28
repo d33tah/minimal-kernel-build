@@ -7,7 +7,6 @@
 #include <linux/time.h>
 #include <linux/cpu.h>
 
-#include <linux/mm.h>
 
 #include "rcu.h"
 

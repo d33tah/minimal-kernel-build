@@ -110,8 +110,6 @@ extern long schedule_timeout_uninterruptible(long timeout);
 asmlinkage void schedule(void);
 extern void schedule_preempt_disabled(void);
 
-extern void io_schedule(void);
-
 
 
 

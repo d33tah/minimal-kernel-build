@@ -738,28 +738,6 @@ int __sched __cond_resched(void)
 }
 
 
-static int io_schedule_prepare(void)
-{
-	int old_iowait = current->in_iowait;
-
-	current->in_iowait = 1;
-	return old_iowait;
-}
-
-static void io_schedule_finish(int token)
-{
-	current->in_iowait = token;
-}
-
-void __sched io_schedule(void)
-{
-	int token;
-
-	token = io_schedule_prepare();
-	schedule();
-	io_schedule_finish(token);
-}
-
 void __init init_idle(struct task_struct *idle, int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);

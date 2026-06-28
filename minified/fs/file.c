@@ -22,11 +22,6 @@ static void __free_fdtable(struct fdtable *fdt)
 	kfree(fdt);
 }
 
-static void free_fdtable_rcu(struct rcu_head *rcu)
-{
-	__free_fdtable(container_of(rcu, struct fdtable, rcu));
-}
-
 #define BITBIT_NR(nr)	BITS_TO_LONGS(BITS_TO_LONGS(nr))
 #define BITBIT_SIZE(nr)	(BITBIT_NR(nr) * sizeof(long))
 
@@ -48,94 +43,26 @@ static void copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt,
 	memset((char *)nfdt->full_fds_bits + cpy, 0, set);
 }
 
-static void copy_fdtable(struct fdtable *nfdt, struct fdtable *ofdt)
-{
-	size_t cpy, set;
-
-	BUG_ON(nfdt->max_fds < ofdt->max_fds);
-
-	cpy = ofdt->max_fds * sizeof(struct file *);
-	set = (nfdt->max_fds - ofdt->max_fds) * sizeof(struct file *);
-	memcpy(nfdt->fd, ofdt->fd, cpy);
-	memset((char *)nfdt->fd + cpy, 0, set);
-
-	copy_fd_bitmaps(nfdt, ofdt, ofdt->max_fds);
-}
-
+/*
+ * Runtime-dead on a single-shot boot: fd tables never expand past
+ * NR_OPEN_DEFAULT (link-live via the dead expand_fdtable path and the
+ * never-taken dup_fd while-loop). Stubbed; never executes.
+ */
 static struct fdtable * alloc_fdtable(unsigned int nr)
 {
-	struct fdtable *fdt;
-	void *data;
-
-	 
-	nr /= (1024 / sizeof(struct file *));
-	nr = roundup_pow_of_two(nr + 1);
-	nr *= (1024 / sizeof(struct file *));
-	nr = ALIGN(nr, BITS_PER_LONG);
-	 
-	if (unlikely(nr > sysctl_nr_open))
-		nr = ((sysctl_nr_open - 1) | (BITS_PER_LONG - 1)) + 1;
-
-	fdt = kmalloc(sizeof(struct fdtable), GFP_KERNEL_ACCOUNT);
-	if (!fdt)
-		goto out;
-	fdt->max_fds = nr;
-	data = kvmalloc_array(nr, sizeof(struct file *), GFP_KERNEL_ACCOUNT);
-	if (!data)
-		goto out_fdt;
-	fdt->fd = data;
-
-	data = kvmalloc(max_t(size_t,
-				 2 * nr / BITS_PER_BYTE + BITBIT_SIZE(nr), L1_CACHE_BYTES),
-				 GFP_KERNEL_ACCOUNT);
-	if (!data)
-		goto out_arr;
-	fdt->open_fds = data;
-	data += nr / BITS_PER_BYTE;
-	fdt->close_on_exec = data;
-	data += nr / BITS_PER_BYTE;
-	fdt->full_fds_bits = data;
-
-	return fdt;
-
-out_arr:
-	kvfree(fdt->fd);
-out_fdt:
-	kfree(fdt);
-out:
 	return NULL;
 }
 
+/*
+ * Runtime-dead: expand_files only reaches here when an fd index exceeds
+ * the table size, which never happens on a single-shot boot (well under
+ * NR_OPEN_DEFAULT fds). Link-live via expand_files; never executes.
+ */
 static int expand_fdtable(struct files_struct *files, unsigned int nr)
 	__releases(files->file_lock)
 	__acquires(files->file_lock)
 {
-	struct fdtable *new_fdt, *cur_fdt;
-
-	spin_unlock(&files->file_lock);
-	new_fdt = alloc_fdtable(nr);
-
-	 
-	if (atomic_read(&files->count) > 1)
-		synchronize_rcu();
-
-	spin_lock(&files->file_lock);
-	if (!new_fdt)
-		return -ENOMEM;
-	 
-	if (unlikely(new_fdt->max_fds <= nr)) {
-		__free_fdtable(new_fdt);
-		return -EMFILE;
-	}
-	cur_fdt = files_fdtable(files);
-	BUG_ON(nr < cur_fdt->max_fds);
-	copy_fdtable(new_fdt, cur_fdt);
-	rcu_assign_pointer(files->fdt, new_fdt);
-	if (cur_fdt != &files->fdtab)
-		call_rcu(&cur_fdt->rcu, free_fdtable_rcu);
-	 
-	smp_wmb();
-	return 1;
+	return -EMFILE;
 }
 
 static int expand_files(struct files_struct *files, unsigned int nr)
@@ -307,50 +234,12 @@ out:
 	return NULL;
 }
 
-static struct fdtable *close_files(struct files_struct * files)
-{
-	 
-	struct fdtable *fdt = rcu_dereference_raw(files->fdt);
-	unsigned int i, j = 0;
-
-	for (;;) {
-		unsigned long set;
-		i = j * BITS_PER_LONG;
-		if (i >= fdt->max_fds)
-			break;
-		set = fdt->open_fds[j++];
-		while (set) {
-			if (set & 1) {
-				struct file * file = xchg(&fdt->fd[i], NULL);
-				if (file) {
-					filp_close(file, files);
-					cond_resched();
-				}
-			}
-			i++;
-			set >>= 1;
-		}
-	}
-
-	return fdt;
-}
-
+/*
+ * Runtime-dead: nothing exits / closes its fd table on a single-shot boot.
+ * Link-live via kernel/exit.c do_exit tail; never executes.
+ */
 void exit_files(struct task_struct *tsk)
 {
-	struct files_struct * files = tsk->files;
-
-	if (files) {
-		task_lock(tsk);
-		tsk->files = NULL;
-		task_unlock(tsk);
-		if (atomic_dec_and_test(&files->count)) {
-			struct fdtable *fdt = close_files(files);
-
-			if (fdt != &files->fdtab)
-				__free_fdtable(fdt);
-			kmem_cache_free(files_cachep, files);
-		}
-	}
 }
 
 struct files_struct init_files = {

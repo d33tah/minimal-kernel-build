@@ -50,26 +50,16 @@ void release_task(struct task_struct *p)
 
 static void exit_mm(void)
 {
-	struct mm_struct *mm = current->mm;
-
-	exit_mm_release(current, mm);
-	if (!mm)
-		return;
-	sync_mm_rss(mm);
-	mmap_read_lock(mm);
-	mmgrab(mm);
-	BUG_ON(mm != current->active_mm);
-	
-	task_lock(current);
-	
-	smp_mb__after_spinlock();
-	local_irq_disable();
-	current->mm = NULL;
-	enter_lazy_tlb(mm, current);
-	local_irq_enable();
-	task_unlock(current);
-	mmap_read_unlock(mm);
-	mmput(mm);
+	/*
+	 * RUNTIME-DEAD ANCHOR-STUB: exit_mm drops the dying task's mm. On this
+	 * single-shot boot the only task that exits is PID-1 init, and do_exit
+	 * panics ("Attempted to kill init!") on the is_global_init() branch
+	 * BEFORE it reaches exit_mm (trace: do_exit entered then je->panic; the
+	 * whole exit tail exit_mm/exit_files/exit_fs/... is HIT=False). No-op is
+	 * safe -- the system never tears down an mm on a 1-shot boot. The private
+	 * wrapper exit_mm_release (fork.c, sole caller here) was deleted; its
+	 * mm_release body lives on via the still-present exec_mm_release.
+	 */
 }
 
 static void exit_notify(struct task_struct *tsk, int group_dead)

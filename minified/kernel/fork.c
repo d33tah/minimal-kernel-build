@@ -523,11 +523,6 @@ static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 		complete_vfork_done(tsk);
 }
 
-void exit_mm_release(struct task_struct *tsk, struct mm_struct *mm)
-{
-	mm_release(tsk, mm);
-}
-
 void exec_mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {
 	mm_release(tsk, mm);

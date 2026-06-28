@@ -11,50 +11,6 @@ static struct kmem_cache *sigqueue_cachep;
 
 /* Removed: print_fatal_signals - never used */
 
-static void __user *sig_handler(struct task_struct *t, int sig)
-{
-	return t->sighand->action[sig - 1].sa.sa_handler;
-}
-
-static inline bool sig_handler_ignored(void __user *handler, int sig)
-{
-	
-	return handler == SIG_IGN ||
-	       (handler == SIG_DFL && sig_kernel_ignore(sig));
-}
-
-static bool sig_task_ignored(struct task_struct *t, int sig, bool force)
-{
-	void __user *handler;
-
-	handler = sig_handler(t, sig);
-
-	
-	if (unlikely(is_global_init(t) && sig_kernel_only(sig)))
-		return true;
-
-	if (unlikely(t->signal->flags & SIGNAL_UNKILLABLE) &&
-	    handler == SIG_DFL && !(force && sig_kernel_only(sig)))
-		return true;
-
-	
-	if (unlikely((t->flags & PF_KTHREAD) &&
-		     (handler == SIG_KTHREAD_KERNEL) && !force))
-		return true;
-
-	return sig_handler_ignored(handler, sig);
-}
-
-static bool sig_ignored(struct task_struct *t, int sig, bool force)
-{
-	
-	if (sigismember(&t->blocked, sig))
-		return false;
-
-	/* t->ptrace is never set (no ptrace(2)), so the ptrace gate is gone. */
-	return sig_task_ignored(t, sig, force);
-}
-
 static inline bool has_pending_signals(sigset_t *signal, sigset_t *blocked)
 {
 	unsigned long ready;
@@ -112,35 +68,6 @@ void calculate_sigpending(void)
 	spin_unlock_irq(&current->sighand->siglock);
 }
 
-static struct sigqueue *
-__sigqueue_alloc(int sig, struct task_struct *t, gfp_t gfp_flags,
-		 int override_rlimit, const unsigned int sigqueue_flags)
-{
-	struct sigqueue *q = NULL;
-	struct ucounts *ucounts = NULL;
-	long sigpending;
-
-	
-	rcu_read_lock();
-	ucounts = task_ucounts(t);
-	sigpending = inc_rlimit_get_ucounts(ucounts, UCOUNT_RLIMIT_SIGPENDING);
-	rcu_read_unlock();
-	if (!sigpending)
-		return NULL;
-
-	if (override_rlimit || likely(sigpending <= task_rlimit(t, RLIMIT_SIGPENDING)))
-		q = kmem_cache_alloc(sigqueue_cachep, gfp_flags);
-
-	if (unlikely(q == NULL)) {
-		dec_rlimit_put_ucounts(ucounts, UCOUNT_RLIMIT_SIGPENDING);
-	} else {
-		INIT_LIST_HEAD(&q->list);
-		q->flags = sigqueue_flags;
-		q->ucounts = ucounts;
-	}
-	return q;
-}
-
 void ignore_signals(struct task_struct *t)
 {
 	int i;
@@ -174,54 +101,6 @@ flush_signal_handlers(struct task_struct *t, int force_default)
  * path. No signals are delivered to the single-thread init in this build.
  */
 
-static bool prepare_signal(int sig, struct task_struct *p, bool force)
-{
-	return !sig_ignored(p, sig, force);
-}
-
-static inline bool legacy_queue(struct sigpending *signals, int sig)
-{
-	return (sig < SIGRTMIN) && sigismember(&signals->signal, sig);
-}
-
-static int __send_signal_locked(int sig, struct kernel_siginfo *info,
-				struct task_struct *t, enum pid_type type, bool force)
-{
-	/* Minimal stub: simplified signal delivery */
-	struct sigpending *pending;
-	struct sigqueue *q;
-
-	lockdep_assert_held(&t->sighand->siglock);
-
-	if (!prepare_signal(sig, t, force))
-		return 0;
-
-	pending = (type != PIDTYPE_PID) ? &t->signal->shared_pending : &t->pending;
-
-	if (legacy_queue(pending, sig))
-		return 0;
-
-	/* For SIGKILL or kernel threads, just set the signal */
-	if ((sig == SIGKILL) || (t->flags & PF_KTHREAD))
-		goto out_set;
-
-	q = __sigqueue_alloc(sig, t, GFP_ATOMIC, 0, 0);
-	if (q) {
-		list_add_tail(&q->list, &pending->list);
-		if (info == SEND_SIG_NOINFO) {
-			clear_siginfo(&q->info);
-			q->info.si_signo = sig;
-			q->info.si_code = SI_USER;
-		} else if (info != SEND_SIG_PRIV) {
-			copy_siginfo(&q->info, info);
-		}
-	}
-
-out_set:
-	sigaddset(&pending->signal, sig);
-	return 0;
-}
-
 /* Removed: setup_print_fatal_signals and __setup - never used */
 
 enum sig_handler {
@@ -234,40 +113,13 @@ static int
 force_sig_info_to_task(struct kernel_siginfo *info, struct task_struct *t,
 	enum sig_handler handler)
 {
-	unsigned long int flags;
-	int ret, blocked, ignored;
-	struct k_sigaction *action;
-	int sig = info->si_signo;
-
-	spin_lock_irqsave(&t->sighand->siglock, flags);
-	action = &t->sighand->action[sig-1];
-	ignored = action->sa.sa_handler == SIG_IGN;
-	blocked = sigismember(&t->blocked, sig);
-	if (blocked || ignored || (handler != HANDLER_CURRENT)) {
-		action->sa.sa_handler = SIG_DFL;
-		if (handler == HANDLER_EXIT)
-			action->sa.sa_flags |= SA_IMMUTABLE;
-		if (blocked)
-			sigdelset(&t->blocked, sig);
-	}
-	
-	/* t->ptrace is never set, so (!t->ptrace || ...) is always true. */
-	if (action->sa.sa_handler == SIG_DFL)
-		t->signal->flags &= ~SIGNAL_UNKILLABLE;
-	{
-		/* Folded from former sole caller send_signal_locked() */
-		bool force = false;
-
-		if (info == SEND_SIG_PRIV)
-			force = true;
-		else if (info != SEND_SIG_NOINFO && info->si_code == SI_KERNEL)
-			force = true;
-
-		ret = __send_signal_locked(sig, info, t, PIDTYPE_PID, force);
-	}
-	spin_unlock_irqrestore(&t->sighand->siglock, flags);
-
-	return ret;
+	/*
+	 * Anchor-stub: runtime-dead. No fault/trap ever fires on this
+	 * single-shot boot, so no forced signal is ever delivered. The whole
+	 * private delivery subtree (__send_signal_locked/prepare_signal/
+	 * sig_ignored/__sigqueue_alloc) has been deleted; nothing is queued.
+	 */
+	return 0;
 }
 
 /*

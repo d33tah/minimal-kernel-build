@@ -1,7 +1,6 @@
 
 #include <linux/init.h>
 #include <linux/io.h>
-#include <linux/ioport.h>
 #include <linux/pgtable.h>
 
 #include <asm/set_memory.h>

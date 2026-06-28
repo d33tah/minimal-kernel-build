@@ -2,7 +2,6 @@
 #include <linux/string.h>
 #include <linux/errno.h>
 #include <linux/moduleparam.h>
-#include <linux/device.h>
 #include <linux/err.h>
 #include <linux/ctype.h>
 #include <linux/security.h>

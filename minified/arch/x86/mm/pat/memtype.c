@@ -1,7 +1,6 @@
 // Stubbed version of PAT (Page Attribute Table) memory type management
 // Original: 591 LOC
 
-#include <linux/ioport.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include <linux/rbtree.h>

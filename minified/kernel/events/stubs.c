@@ -1,4 +1,3 @@
-#include <linux/perf_event.h>
 
 
 /* perf_event_refresh, perf_event_release_kernel, perf_event_read_value,

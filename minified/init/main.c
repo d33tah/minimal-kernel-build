@@ -66,7 +66,6 @@ extern void sched_init_smp(void);
 #include <linux/mem_encrypt.h>
 #include <linux/init_syscalls.h>
 
-#include <asm/io.h>
 #include <asm/bugs.h>
 #include <asm/setup.h>
 #include <asm/sections.h>

@@ -9,7 +9,6 @@
 #include <linux/list.h>
 #include <linux/rbtree.h>
 #include <linux/io.h>
-#include <linux/rcupdate.h>
 #include <linux/pfn.h>
 #include <linux/atomic.h>
 #include <linux/compiler.h>

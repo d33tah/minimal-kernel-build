@@ -16,7 +16,6 @@
 #include <linux/swapops.h>
 #include <linux/gfp.h>
 
-#include <asm/io.h>
 #include <asm/mmu_context.h>
 #include <asm/pgalloc.h>
 #include <asm/tlb.h>

@@ -27,7 +27,6 @@ static inline unsigned long lcm(unsigned long a, unsigned long b)
 #include <asm/cacheflush.h>
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
-#include <asm/io.h>
 
 struct pcpu_block_md {
 	int			scan_hint;

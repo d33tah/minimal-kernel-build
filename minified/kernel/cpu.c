@@ -4,7 +4,6 @@
 #include <linux/cpu.h>
 #include <linux/cpumask.h>
 #include <linux/percpu.h>
-#include <linux/bug.h>
 #include <linux/list.h>
 
 

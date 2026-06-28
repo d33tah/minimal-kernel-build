@@ -7,7 +7,6 @@
 #include <linux/syscalls.h>
 #include <linux/pid_namespace.h>
 #include <linux/user_namespace.h>
-#include <linux/uaccess.h>
 
 
 static bool privileged_wrt_inode_uidgid(struct user_namespace *ns,

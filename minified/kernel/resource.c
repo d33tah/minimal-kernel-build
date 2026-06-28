@@ -7,7 +7,6 @@
 #include <linux/pfn.h>
 #include <linux/mm.h>
 #include <uapi/linux/magic.h>
-#include <asm/io.h>
 
 
 struct resource iomem_resource = {

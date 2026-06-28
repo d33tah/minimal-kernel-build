@@ -73,17 +73,6 @@ void tty_free_file(struct file *file)
 	kfree(priv);
 }
 
-static void tty_del_file(struct file *file)
-{
-	struct tty_file_private *priv = file->private_data;
-	struct tty_struct *tty = priv->tty;
-
-	spin_lock(&tty->files_lock);
-	list_del(&priv->list);
-	spin_unlock(&tty->files_lock);
-	tty_free_file(file);
-}
-
 const char *tty_name(const struct tty_struct *tty)
 {
 	if (!tty) 
@@ -375,12 +364,6 @@ static int tty_driver_install_tty(struct tty_driver *driver,
 		tty_standard_install(driver, tty);
 }
 
-static void tty_driver_remove_tty(struct tty_driver *driver, struct tty_struct *tty)
-{
-	/* ops->remove is never set (sole tty_operations con_ops omits it) */
-	driver->ttys[tty->index] = NULL;
-}
-
 static int tty_reopen(struct tty_struct *tty)
 {
 	struct tty_ldisc *ld;
@@ -464,26 +447,6 @@ err_release_lock:
 	return ERR_PTR(retval);
 }
 
-static void tty_save_termios(struct tty_struct *tty)
-{
-	struct ktermios *tp;
-	int idx = tty->index;
-
-	
-	if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS)
-		return;
-
-	
-	tp = tty->driver->termios[idx];
-	if (tp == NULL) {
-		tp = kmalloc(sizeof(*tp), GFP_KERNEL);
-		if (tp == NULL)
-			return;
-		tty->driver->termios[idx] = tp;
-	}
-	*tp = tty->termios;
-}
-
 static void release_one_tty(struct work_struct *work)
 {
 	struct tty_struct *tty =
@@ -520,87 +483,14 @@ void tty_kref_put(struct tty_struct *tty)
 
 static void release_tty(struct tty_struct *tty, int idx)
 {
-	
-	WARN_ON(tty->index != idx);
-	WARN_ON(!mutex_is_locked(&tty_mutex));
-	if (tty->ops->shutdown)
-		tty->ops->shutdown(tty);
-	tty_save_termios(tty);
-	tty_driver_remove_tty(tty->driver, tty);
-	if (tty->port)
-		tty->port->itty = NULL;
-	if (tty->link)
-		tty->link->port->itty = NULL;
-	if (tty->port)
-		tty_buffer_cancel_work(tty->port);
-	if (tty->link)
-		tty_buffer_cancel_work(tty->link->port);
-
-	tty_kref_put(tty->link);
-	tty_kref_put(tty);
-}
-
-static int tty_release_checks(struct tty_struct *tty, int idx)
-{
-#ifdef TTY_PARANOIA_CHECK
-	if (idx < 0 || idx >= tty->driver->num) {
-		tty_debug(tty, "bad idx %d\n", idx);
-		return -1;
-	}
-
-	if (tty != tty->driver->ttys[idx]) {
-		tty_debug(tty, "bad driver table[%d] = %p\n",
-			  idx, tty->driver->ttys[idx]);
-		return -1;
-	}
-	/* tty_driver.other is never set (always NULL) so the paired-tty
-	 * cross-check it guarded was always skipped; removed with the field. */
-#endif
-	return 0;
-}
-
-
-static void tty_release_struct(struct tty_struct *tty, int idx)
-{
-	
-	tty_ldisc_release(tty);
-
-	tty_debug_hangup(tty, "freeing structure\n");
-	
-	mutex_lock(&tty_mutex);
-	release_tty(tty, idx);
-	mutex_unlock(&tty_mutex);
+	/* Runtime-dead teardown root: nothing closes a tty on a single-shot
+	 * boot. Link-live via the tty_init_dev error path (also dead). */
 }
 
 int tty_release(struct inode *inode, struct file *filp)
 {
-	/* Minimal stub: simplified TTY release */
-	struct tty_struct *tty = file_tty(filp);
-	int idx;
-
-	if (tty_paranoia_check(tty, inode, __func__))
-		return 0;
-
-	tty_lock(tty);
-	idx = tty->index;
-
-	if (tty_release_checks(tty, idx)) {
-		tty_unlock(tty);
-		return 0;
-	}
-
-	if (tty->ops->close)
-		tty->ops->close(tty, filp);
-
-	if (--tty->count < 0)
-		tty->count = 0;
-
-	tty_del_file(filp);
-	tty_unlock(tty);
-
-	if (!tty->count)
-		tty_release_struct(tty, idx);
-
+	/* Runtime-dead: no fd/tty is ever closed on a single-shot boot.
+	 * Link-live via tty_fops.release; never executes. */
 	return 0;
 }
 

@@ -119,13 +119,6 @@ __tty_ldisc_lock(struct tty_struct *tty, unsigned long timeout)
 	return ldsem_down_write(&tty->ldisc_sem, timeout);
 }
 
-static inline int
-__tty_ldisc_lock_nested(struct tty_struct *tty, unsigned long timeout)
-{
-	return ldsem_down_write_nested(&tty->ldisc_sem,
-				       LDISC_SEM_OTHER, timeout);
-}
-
 static inline void __tty_ldisc_unlock(struct tty_struct *tty)
 {
 	ldsem_up_write(&tty->ldisc_sem);
@@ -148,52 +141,6 @@ int tty_ldisc_lock(struct tty_struct *tty, unsigned long timeout)
 void tty_ldisc_unlock(struct tty_struct *tty)
 {
 	__tty_ldisc_unlock(tty);
-}
-
-static int
-tty_ldisc_lock_pair_timeout(struct tty_struct *tty, struct tty_struct *tty2,
-			    unsigned long timeout)
-{
-	int ret;
-
-	if (tty < tty2) {
-		ret = __tty_ldisc_lock(tty, timeout);
-		if (ret) {
-			ret = __tty_ldisc_lock_nested(tty2, timeout);
-			if (!ret)
-				__tty_ldisc_unlock(tty);
-		}
-	} else {
-		 
-		WARN_ON_ONCE(tty == tty2);
-		if (tty2 && tty != tty2) {
-			ret = __tty_ldisc_lock(tty2, timeout);
-			if (ret) {
-				ret = __tty_ldisc_lock_nested(tty, timeout);
-				if (!ret)
-					__tty_ldisc_unlock(tty2);
-			}
-		} else
-			ret = __tty_ldisc_lock(tty, timeout);
-	}
-
-	if (!ret)
-		return -EBUSY;
-
-	return 0;
-}
-
-static void tty_ldisc_lock_pair(struct tty_struct *tty, struct tty_struct *tty2)
-{
-	tty_ldisc_lock_pair_timeout(tty, tty2, MAX_SCHEDULE_TIMEOUT);
-}
-
-static void tty_ldisc_unlock_pair(struct tty_struct *tty,
-				  struct tty_struct *tty2)
-{
-	__tty_ldisc_unlock(tty);
-	if (tty2)
-		__tty_ldisc_unlock(tty2);
 }
 
 static void tty_set_termios_ldisc(struct tty_struct *tty, int disc)
@@ -229,18 +176,6 @@ static void tty_ldisc_close(struct tty_struct *tty, struct tty_ldisc *ld)
 	if (ld->ops->close)
 		ld->ops->close(tty);
 	tty_ldisc_debug(tty, "%p: closed\n", ld);
-}
-
-static void tty_ldisc_kill(struct tty_struct *tty)
-{
-	lockdep_assert_held_write(&tty->ldisc_sem);
-	if (!tty->ldisc)
-		return;
-	 
-	tty_ldisc_close(tty, tty->ldisc);
-	tty_ldisc_put(tty->ldisc);
-	 
-	tty->ldisc = NULL;
 }
 
 int tty_ldisc_reinit(struct tty_struct *tty, int disc)
@@ -291,19 +226,8 @@ int tty_ldisc_setup(struct tty_struct *tty, struct tty_struct *o_tty)
 
 void tty_ldisc_release(struct tty_struct *tty)
 {
-	struct tty_struct *o_tty = tty->link;
-
-	 
-
-	tty_ldisc_lock_pair(tty, o_tty);
-	tty_ldisc_kill(tty);
-	if (o_tty)
-		tty_ldisc_kill(o_tty);
-	tty_ldisc_unlock_pair(tty, o_tty);
-
-	 
-
-	tty_ldisc_debug(tty, "released\n");
+	/* Runtime-dead: only caller was tty_release_struct (tty teardown),
+	 * which never runs on a single-shot boot. Link-live via tty.h extern. */
 }
 
 int tty_ldisc_init(struct tty_struct *tty)

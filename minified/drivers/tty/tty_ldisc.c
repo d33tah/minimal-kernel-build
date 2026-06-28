@@ -53,14 +53,6 @@ static struct tty_ldisc_ops *get_ldops(int disc)
 	return ret;
 }
 
-static void put_ldops(struct tty_ldisc_ops *ldops)
-{
-	unsigned long flags;
-
-	raw_spin_lock_irqsave(&tty_ldiscs_lock, flags);
-	raw_spin_unlock_irqrestore(&tty_ldiscs_lock, flags);
-}
-
 static struct tty_ldisc *tty_ldisc_get(struct tty_struct *tty, int disc)
 {
 	struct tty_ldisc *ld;
@@ -85,16 +77,6 @@ static struct tty_ldisc *tty_ldisc_get(struct tty_struct *tty, int disc)
 
 	return ld;
 }
-
-static void tty_ldisc_put(struct tty_ldisc *ld)
-{
-	if (WARN_ON_ONCE(!ld))
-		return;
-
-	put_ldops(ld->ops);
-	kfree(ld);
-}
-
 
 struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *tty)
 {
@@ -143,15 +125,6 @@ void tty_ldisc_unlock(struct tty_struct *tty)
 	__tty_ldisc_unlock(tty);
 }
 
-static void tty_set_termios_ldisc(struct tty_struct *tty, int disc)
-{
-	down_write(&tty->termios_rwsem);
-	tty->termios.c_line = disc;
-	up_write(&tty->termios_rwsem);
-
-	tty->disc_data = NULL;
-}
-
 static int tty_ldisc_open(struct tty_struct *tty, struct tty_ldisc *ld)
 {
 	WARN_ON(test_and_set_bit(TTY_LDISC_OPEN, &tty->flags));
@@ -180,30 +153,10 @@ static void tty_ldisc_close(struct tty_struct *tty, struct tty_ldisc *ld)
 
 int tty_ldisc_reinit(struct tty_struct *tty, int disc)
 {
-	struct tty_ldisc *ld;
-	int retval;
-
-	lockdep_assert_held_write(&tty->ldisc_sem);
-	ld = tty_ldisc_get(tty, disc);
-	if (IS_ERR(ld)) {
-		BUG_ON(disc == N_TTY);
-		return PTR_ERR(ld);
-	}
-
-	if (tty->ldisc) {
-		tty_ldisc_close(tty, tty->ldisc);
-		tty_ldisc_put(tty->ldisc);
-	}
-
-	 
-	tty->ldisc = ld;
-	tty_set_termios_ldisc(tty, disc);
-	retval = tty_ldisc_open(tty, tty->ldisc);
-	if (retval) {
-		tty_ldisc_put(tty->ldisc);
-		tty->ldisc = NULL;
-	}
-	return retval;
+	/* Runtime-dead: only caller is tty_reopen (re-opening an already-open
+	 * tty), which never runs on a single-shot boot. Link-live via tty.h
+	 * extern. */
+	return -EINVAL;
 }
 
 int tty_ldisc_setup(struct tty_struct *tty, struct tty_struct *o_tty)
@@ -242,9 +195,8 @@ int tty_ldisc_init(struct tty_struct *tty)
 
 void tty_ldisc_deinit(struct tty_struct *tty)
 {
-	 
-	if (tty->ldisc)
-		tty_ldisc_put(tty->ldisc);
+	/* Runtime-dead: only caller is free_tty_struct (tty teardown/free),
+	 * which never runs on a single-shot boot. Link-live via tty.h extern. */
 	tty->ldisc = NULL;
 }
 

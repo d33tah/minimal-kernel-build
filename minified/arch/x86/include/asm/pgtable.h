@@ -238,18 +238,7 @@ static inline int pte_present(pte_t a)
 }
 
 
-#define pte_accessible pte_accessible
-static inline bool pte_accessible(struct mm_struct *mm, pte_t a)
-{
-	if (pte_flags(a) & _PAGE_PRESENT)
-		return true;
-
-	if ((pte_flags(a) & _PAGE_PROTNONE) &&
-			atomic_read(&mm->tlb_flush_pending))
-		return true;
-
-	return false;
-}
+/* pte_accessible removed - unused */
 
 static inline int pmd_present(pmd_t pmd)
 {
@@ -363,19 +352,7 @@ static inline int pud_write(pud_t pud)
 	return pud_flags(pud) & _PAGE_RW;
 }
 
-#ifndef pmdp_establish
-#define pmdp_establish pmdp_establish
-static inline pmd_t pmdp_establish(struct vm_area_struct *vma,
-		unsigned long address, pmd_t *pmdp, pmd_t pmd)
-{
-	pmd_t old = *pmdp;
-
-	WRITE_ONCE(*pmdp, pmd);
-	return old;
-}
-#endif
-
-/* pmdp_invalidate_ad, pgdp_maps_userspace, pgd_large removed - unused */
+/* pmdp_establish, pmdp_invalidate_ad, pgdp_maps_userspace, pgd_large removed - unused */
 
 
 static inline void clone_pgd_range(pgd_t *dst, pgd_t *src, int count)

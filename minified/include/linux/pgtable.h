@@ -42,13 +42,7 @@ static inline unsigned long pmd_index(unsigned long address)
 #define pmd_index pmd_index
 #endif
 
-#ifndef pud_index
-static inline unsigned long pud_index(unsigned long address)
-{
-	return (address >> PUD_SHIFT) & (PTRS_PER_PUD - 1);
-}
-#define pud_index pud_index
-#endif
+/* pud_index removed - unused */
 
 #ifndef pgd_index
 #define pgd_index(a)  (((a) >> PGDIR_SHIFT) & (PTRS_PER_PGD - 1))
@@ -187,7 +181,7 @@ static inline int is_zero_pfn(unsigned long pfn)
 	return offset_from_zero_pfn <= (zero_page_mask >> PAGE_SHIFT);
 }
 
-#define my_zero_pfn(addr)	page_to_pfn(ZERO_PAGE(addr))
+/* my_zero_pfn removed - unused */
 
 #else
 static inline int is_zero_pfn(unsigned long pfn)
@@ -196,11 +190,7 @@ static inline int is_zero_pfn(unsigned long pfn)
 	return pfn == zero_pfn;
 }
 
-static inline unsigned long my_zero_pfn(unsigned long addr)
-{
-	extern unsigned long zero_pfn;
-	return zero_pfn;
-}
+/* my_zero_pfn removed - unused */
 #endif
 
 

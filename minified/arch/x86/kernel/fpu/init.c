@@ -148,7 +148,6 @@ static void __init fpu__init_system_xstate_size_legacy(void)
 static void __init fpu__init_init_fpstate(void)
 {
 	 
-	init_fpstate.size		= fpu_kernel_cfg.max_size;
 	init_fpstate.xfeatures		= fpu_kernel_cfg.max_features;
 }
 

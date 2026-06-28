@@ -12,7 +12,6 @@ void tty_port_init(struct tty_port *port)
 {
 	memset(port, 0, sizeof(*port));
 	tty_buffer_init(port);
-	spin_lock_init(&port->lock);
 	kref_init(&port->kref);
 }
 

@@ -22,7 +22,6 @@ struct tty_port {
 	struct tty_struct	*tty;
 	struct tty_struct	*itty;
 	const struct tty_port_operations *ops;
-	spinlock_t		lock;
 	struct kref		kref;
 };
 

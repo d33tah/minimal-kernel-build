@@ -150,17 +150,8 @@ union fpregs_state {
 };
 
 struct fpstate {
-	 
-	unsigned int		size;
 
-	 
-	unsigned int		user_size;
-
-	 
 	u64			xfeatures;
-
-	 
-	u64			user_xfeatures;
 
 
 	u64			xfd;

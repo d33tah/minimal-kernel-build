@@ -13,7 +13,6 @@ unsigned int sysctl_sched_latency			= 6000000ULL;
 
 unsigned int sysctl_sched_min_granularity			= 750000ULL;
 
-static unsigned int sched_nr_latency = 8;
 
 unsigned int sysctl_sched_wakeup_granularity			= 1000000UL;
 
@@ -179,7 +178,7 @@ static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se)
 
 static u64 __sched_period(unsigned long nr_running)
 {
-	if (unlikely(nr_running > sched_nr_latency))
+	if (unlikely(nr_running > 8))
 		return nr_running * sysctl_sched_min_granularity;
 	else
 		return sysctl_sched_latency;
@@ -599,7 +598,7 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
 	struct task_struct *curr = rq->curr;
 	struct sched_entity *se = &curr->se, *pse = &p->se;
 	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
-	int scale = cfs_rq->nr_running >= sched_nr_latency;
+	int scale = cfs_rq->nr_running >= 8;
 
 	if (unlikely(se == pse))
 		return;

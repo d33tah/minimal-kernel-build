@@ -48,7 +48,6 @@ static void set_cursor(struct vc_data *vc);
 static void hide_cursor(struct vc_data *vc);
 
 int global_cursor_default = -1;
-static int cur_default = CUR_UNDERLINE;
 
 int fg_console;
 
@@ -477,7 +476,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 
 	vt_reset_keyboard(vc->vc_num);
 
-	vc->vc_cursor_type = cur_default;
+	vc->vc_cursor_type = CUR_UNDERLINE;
 	vc->vc_complement_mask = vc->vc_s_complement_mask;
 
 	default_attr(vc);
@@ -794,8 +793,6 @@ static void con_cleanup(struct tty_struct *tty)
 	tty_port_put(&vc->port);
 }
 
-static int default_color = 7;
-
 static void vc_init(struct vc_data *vc, unsigned int rows,
 		    unsigned int cols, int do_clear)
 {
@@ -807,7 +804,7 @@ static void vc_init(struct vc_data *vc, unsigned int rows,
 	set_origin(vc);
 	vc->vc_pos = vc->vc_origin;
 	reset_vc(vc);
-	vc->vc_def_color       = default_color;
+	vc->vc_def_color       = 7;
 	reset_terminal(vc, do_clear);
 }
 

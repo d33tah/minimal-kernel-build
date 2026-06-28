@@ -103,10 +103,7 @@ void fpstate_init_user(struct fpstate *fpstate)
 static void __fpstate_reset(struct fpstate *fpstate, u64 xfd)
 {
 	 
-	fpstate->size		= fpu_kernel_cfg.default_size;
-	fpstate->user_size	= fpu_user_cfg.default_size;
 	fpstate->xfeatures	= fpu_kernel_cfg.default_features;
-	fpstate->user_xfeatures	= fpu_user_cfg.default_features;
 	fpstate->xfd		= xfd;
 }
 

@@ -19,16 +19,9 @@ extern struct nsproxy init_nsproxy;
 
 int copy_namespaces(unsigned long flags, struct task_struct *tsk);
 void exit_task_namespaces(struct task_struct *tsk);
-/* switch_task_namespaces now static in nsproxy.c */
-void free_nsproxy(struct nsproxy *ns);
+/* switch_task_namespaces / put_nsproxy / free_nsproxy: cascade-deleted with
+ * exit_task_namespaces (nsproxy teardown is runtime-dead on a 1-shot boot). */
 int __init nsproxy_cache_init(void);
-
-static inline void put_nsproxy(struct nsproxy *ns)
-{
-	if (atomic_dec_and_test(&ns->count)) {
-		free_nsproxy(ns);
-	}
-}
 
 static inline void get_nsproxy(struct nsproxy *ns)
 {

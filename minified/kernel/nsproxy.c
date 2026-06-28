@@ -8,8 +8,6 @@
 
 #include <linux/fs_struct.h>
 
-static struct kmem_cache *nsproxy_cachep;
-
 struct nsproxy init_nsproxy = {
 	.count			= ATOMIC_INIT(1),
 	.uts_ns			= &init_uts_ns,
@@ -30,38 +28,26 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk)
 	return 0;
 }
 
-void free_nsproxy(struct nsproxy *ns)
-{
-	if (ns->mnt_ns)
-		put_mnt_ns(ns->mnt_ns);
-	if (ns->pid_ns_for_children)
-		put_pid_ns(ns->pid_ns_for_children);
-	kmem_cache_free(nsproxy_cachep, ns);
-}
-
-
-static void switch_task_namespaces(struct task_struct *p, struct nsproxy *new)
-{
-	struct nsproxy *ns;
-
-	might_sleep();
-
-	task_lock(p);
-	ns = p->nsproxy;
-	p->nsproxy = new;
-	task_unlock(p);
-
-	if (ns)
-		put_nsproxy(ns);
-}
-
 void exit_task_namespaces(struct task_struct *p)
 {
-	switch_task_namespaces(p, NULL);
+	/*
+	 * RUNTIME-DEAD ANCHOR-STUB: detaches the dying task's nsproxy. Both call
+	 * sites are runtime-dead on this 1-shot boot: do_exit's tail (init panics
+	 * before reaching it, HIT=False) and copy_process's bad_fork_cleanup_io
+	 * rollback (copy_process always succeeds at boot, HIT=False). The whole
+	 * private teardown subtree (switch_task_namespaces -> put_nsproxy ->
+	 * free_nsproxy) was cascade-deleted; nothing ever drops the shared,
+	 * never-cloned nsproxy on this boot (copy_namespaces only get_nsproxy's it).
+	 */
 }
 
 int __init nsproxy_cache_init(void)
 {
-	nsproxy_cachep = KMEM_CACHE(nsproxy, SLAB_PANIC|SLAB_ACCOUNT);
+	/*
+	 * The nsproxy kmem_cache used to back cloned namespaces, but this kernel
+	 * never clones (copy_namespaces only pins the shared init_nsproxy) and
+	 * never frees one (free_nsproxy was cascade-deleted with exit_task_namespaces).
+	 * No allocation ever comes from this cache, so it is no longer created.
+	 */
 	return 0;
 }

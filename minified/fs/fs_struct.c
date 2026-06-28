@@ -39,22 +39,14 @@ void set_fs_pwd(struct fs_struct *fs, const struct path *path)
 
 void exit_fs(struct task_struct *tsk)
 {
-	struct fs_struct *fs = tsk->fs;
-
-	if (fs) {
-		int kill;
-		task_lock(tsk);
-		spin_lock(&fs->lock);
-		tsk->fs = NULL;
-		kill = !--fs->users;
-		spin_unlock(&fs->lock);
-		task_unlock(tsk);
-		if (kill) {
-			path_put(&fs->root);
-			path_put(&fs->pwd);
-			kmem_cache_free(fs_cachep, fs);
-		}
-	}
+	/*
+	 * RUNTIME-DEAD ANCHOR-STUB: exit_fs drops the dying task's fs_struct.
+	 * Both call sites are runtime-dead on this 1-shot boot: do_exit's tail
+	 * (init panics on is_global_init() before reaching it, HIT=False) and
+	 * copy_process's bad_fork_cleanup_fs rollback (copy_process succeeds for
+	 * every spawn -- init + the few kthreads -- so the error path never runs,
+	 * HIT=False). No task ever tears down its fs_struct here.
+	 */
 }
 
 int current_umask(void)

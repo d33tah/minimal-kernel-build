@@ -249,13 +249,6 @@ static void dec_mnt_namespaces(struct ucounts *ucounts)
 	dec_ucount(ucounts, UCOUNT_MNT_NAMESPACES);
 }
 
-static void free_mnt_ns(struct mnt_namespace *ns)
-{
-	dec_mnt_namespaces(ns->ucounts);
-	put_user_ns(ns->user_ns);
-	kfree(ns);
-}
-
 static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns, bool anon)
 {
 	struct mnt_namespace *new_ns;
@@ -323,13 +316,11 @@ void __init mnt_init(void)
 	init_mount_tree();
 }
 
-void put_mnt_ns(struct mnt_namespace *ns)
-{
-	if (!refcount_dec_and_test(&ns->ns.count))
-		return;
-	/* drop_collected_mounts call removed - was empty function */
-	free_mnt_ns(ns);
-}
+/*
+ * put_mnt_ns / free_mnt_ns: cascade-deleted. Their sole live caller chain was
+ * free_nsproxy (deleted with exit_task_namespaces); nothing drops a mnt_ns on
+ * a 1-shot boot that never clones a namespace.
+ */
 
 struct vfsmount *kern_mount(struct file_system_type *type)
 {

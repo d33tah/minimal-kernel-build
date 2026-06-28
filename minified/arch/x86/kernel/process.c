@@ -52,10 +52,13 @@ int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
 
 void exit_thread(struct task_struct *tsk)
 {
-	struct thread_struct *t = &tsk->thread;
-	struct fpu *fpu = &t->fpu;
-
-	fpu__drop(fpu);
+	/*
+	 * RUNTIME-DEAD ANCHOR-STUB: exit_thread drops the dying task's FPU state.
+	 * Both call sites are runtime-dead on this 1-shot boot: do_exit's tail
+	 * (init panics before reaching it, HIT=False) and copy_process's
+	 * bad_fork_cleanup_thread rollback (copy_process always succeeds at boot,
+	 * HIT=False). fpu__drop stays live via its 2nd caller in fpu/core.c.
+	 */
 }
 
 int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)

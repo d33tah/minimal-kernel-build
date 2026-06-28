@@ -138,7 +138,13 @@ static void account_kernel_stack(struct task_struct *tsk, int account)
 
 void exit_task_stack_account(struct task_struct *tsk)
 {
-	account_kernel_stack(tsk, -1);
+	/*
+	 * RUNTIME-DEAD ANCHOR-STUB: un-accounts the dying task's kernel stack.
+	 * Both call sites are runtime-dead on this 1-shot boot: do_exit's tail
+	 * (init panics before reaching it, HIT=False) and copy_process's
+	 * bad_fork_free rollback (copy_process always succeeds at boot, HIT=False).
+	 * account_kernel_stack stays live via the alloc path (dup_task_struct).
+	 */
 }
 
 static void release_task_stack(struct task_struct *tsk)

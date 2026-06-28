@@ -7,7 +7,5 @@ struct fs_struct;
 struct user_namespace;
 struct ns_common;
 
-extern void put_mnt_ns(struct mnt_namespace *ns);
-
 #endif
 #endif

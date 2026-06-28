@@ -31,10 +31,6 @@
 
 int mmap_rnd_bits __read_mostly = CONFIG_ARCH_MMAP_RND_BITS;
 
-static void unmap_region(struct mm_struct *mm,
-		struct vm_area_struct *vma, struct vm_area_struct *prev,
-		unsigned long start, unsigned long end);
-
 pgprot_t protection_map[16] __ro_after_init = {
 	[VM_NONE]					= __P000,
 	[VM_READ]					= __P001,
@@ -926,152 +922,18 @@ find_extend_vma(struct mm_struct *mm, unsigned long addr)
 }
 
 
-static void remove_vma_list(struct mm_struct *mm, struct vm_area_struct *vma)
-{
-	do {
-		vma = remove_vma(vma);
-	} while (vma);
-	validate_mm(mm);
-}
-
-static void unmap_region(struct mm_struct *mm,
-		struct vm_area_struct *vma, struct vm_area_struct *prev,
-		unsigned long start, unsigned long end)
-{
-	struct vm_area_struct *next = vma_next(mm, prev);
-	struct mmu_gather tlb;
-
-	lru_add_drain();
-	tlb_gather_mmu(&tlb, mm);
-	update_hiwater_rss(mm);
-	unmap_vmas(&tlb, vma, start, end);
-	free_pgtables(&tlb, vma, prev ? prev->vm_end : FIRST_USER_ADDRESS,
-				 next ? next->vm_start : USER_PGTABLES_CEILING);
-	tlb_finish_mmu(&tlb);
-}
-
-static bool
-detach_vmas_to_be_unmapped(struct mm_struct *mm, struct vm_area_struct *vma,
-	struct vm_area_struct *prev, unsigned long end)
-{
-	struct vm_area_struct **insertion_point;
-	struct vm_area_struct *tail_vma = NULL;
-
-	insertion_point = (prev ? &prev->vm_next : &mm->mmap);
-	vma->vm_prev = NULL;
-	do {
-		vma_rb_erase(vma, &mm->mm_rb);
-		mm->map_count--;
-		tail_vma = vma;
-		vma = vma->vm_next;
-	} while (vma && vma->vm_start < end);
-	*insertion_point = vma;
-	if (vma)
-		vma->vm_prev = prev;
-	else
-		mm->highest_vm_end = prev ? vm_end_gap(prev) : 0;
-	tail_vma->vm_next = NULL;
-
-	
-	if (vma && (vma->vm_flags & VM_GROWSDOWN))
-		return false;
-	/* VM_GROWSUP=VM_NONE (=0) on x86-32: the prev-growsup branch is dead */
-	return true;
-}
-
-int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
-		unsigned long addr, int new_below)
-{
-	struct vm_area_struct *new;
-	int err;
-
-	new = vm_area_dup(vma);
-	if (!new)
-		return -ENOMEM;
-
-	if (new_below)
-		new->vm_end = addr;
-	else {
-		new->vm_start = addr;
-		new->vm_pgoff += ((addr - vma->vm_start) >> PAGE_SHIFT);
-	}
-
-	err = anon_vma_clone(new, vma);
-	if (err)
-		goto out_free_vma;
-
-	if (new->vm_file)
-		get_file(new->vm_file);
-
-	if (new_below)
-		err = vma_adjust(vma, addr, vma->vm_end, vma->vm_pgoff +
-			((addr - new->vm_start) >> PAGE_SHIFT), new);
-	else
-		err = vma_adjust(vma, vma->vm_start, addr, vma->vm_pgoff, new);
-
-	
-	if (!err)
-		return 0;
-
-
-	if (new->vm_file)
-		fput(new->vm_file);
-	unlink_anon_vmas(new);
- out_free_vma:
-	vm_area_free(new);
-	return err;
-}
-
-
 int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 {
-	unsigned long end;
-	struct vm_area_struct *vma, *prev, *last;
-
-	if ((offset_in_page(start)) || start > TASK_SIZE || len > TASK_SIZE-start)
-		return -EINVAL;
-
-	len = PAGE_ALIGN(len);
-	end = start + len;
-	if (len == 0)
-		return -EINVAL;
-
-
-	vma = find_vma_intersection(mm, start, end);
-	if (!vma)
-		return 0;
-	prev = vma->vm_prev;
-
-	
-	if (start > vma->vm_start) {
-		int error;
-
-		
-		if (end < vma->vm_end && mm->map_count >= sysctl_max_map_count)
-			return -ENOMEM;
-
-		error = __split_vma(mm, vma, start, 0);
-		if (error)
-			return error;
-		prev = vma;
-	}
-
-	
-	last = find_vma(mm, end);
-	if (last && end > last->vm_start) {
-		int error = __split_vma(mm, last, end, 1);
-		if (error)
-			return error;
-	}
-	vma = vma_next(mm, prev);
-
-	detach_vmas_to_be_unmapped(mm, vma, prev, end);
-
-	unmap_region(mm, vma, prev, start, end);
-
-
-	remove_vma_list(mm, vma);
-
+	/*
+	 * RUNTIME-DEAD ANCHOR-STUB: this kernel's only job is boot+print+
+	 * stay-alive; it never unmaps a region.  __do_munmap is link-live via
+	 * fs/binfmt_elf.c (ELF loader, never runs on this boot) and via the
+	 * mmap_region->munmap_vma_range overlap path (find_vma_links never finds
+	 * an overlap on this boot, so this is never reached).  Returning 0 is the
+	 * success contract the sole live caller expects.  Stubbing the body made
+	 * its private subtree (__split_vma, detach_vmas_to_be_unmapped,
+	 * unmap_region, remove_vma_list) dead -> all deleted.
+	 */
 	return 0;
 }
 

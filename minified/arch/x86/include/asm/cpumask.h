@@ -7,28 +7,8 @@
 /* cpu_callin_mask, cpu_callout_mask, cpu_sibling_setup_mask, cpu_initialized_mask removed - unused (SMP only) */
 
 
-#if NR_CPUS > 1
-static __always_inline bool arch_cpu_online(int cpu)
-{
-	return arch_test_bit(cpu, cpumask_bits(cpu_online_mask));
-}
+/* arch_cpu_online + arch_cpumask_clear_cpu removed - unused */
 
-static __always_inline void arch_cpumask_clear_cpu(int cpu, struct cpumask *dstp)
-{
-	arch_clear_bit(cpumask_check(cpu), cpumask_bits(dstp));
-}
-#else
-static __always_inline bool arch_cpu_online(int cpu)
-{
-	return cpu == 0;
-}
 
-static __always_inline void arch_cpumask_clear_cpu(int cpu, struct cpumask *dstp)
-{
-	return;
-}
 #endif
-
-
-#endif  
 #endif  

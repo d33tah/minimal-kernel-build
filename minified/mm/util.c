@@ -8,7 +8,6 @@
 #include <linux/sched/task_stack.h>
 #include <linux/swap.h>
 #include <linux/swapops.h>
-#include <linux/mman.h>
 #include <linux/random.h>
 #include <linux/vmalloc.h>
 

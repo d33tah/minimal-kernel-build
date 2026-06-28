@@ -14,7 +14,6 @@
 #include <linux/nospec.h>
 
 #include <linux/timex.h>
-#include <linux/utsname.h>
 
 
 

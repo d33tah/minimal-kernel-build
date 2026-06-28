@@ -21,7 +21,6 @@ static inline unsigned long lcm(unsigned long a, unsigned long b)
 #include <linux/slab.h>
 #include <linux/spinlock.h>
 #include <linux/vmalloc.h>
-#include <linux/sched.h>
 #include <linux/sched/mm.h>
 #include <linux/memcontrol.h>
 

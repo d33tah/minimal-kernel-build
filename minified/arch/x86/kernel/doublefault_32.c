@@ -2,7 +2,6 @@
 #include <linux/sched.h>
 #include <linux/sched/debug.h>
 #include <linux/init_task.h>
-#include <linux/fs.h>
 
 #include <asm/processor.h>
 #include <asm/desc.h>

@@ -2,7 +2,6 @@
 #include <linux/sched/wake_q.h>
 #include <linux/sched/debug.h>
 #include <linux/spinlock.h>
-#include <linux/interrupt.h>
 #include <linux/debug_locks.h>
 
 #include "mutex.h"

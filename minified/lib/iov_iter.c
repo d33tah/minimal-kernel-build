@@ -1,5 +1,4 @@
 #include <linux/uio.h>
-#include <linux/pagemap.h>
 #include <linux/highmem.h>
 #include <linux/vmalloc.h>
 #include <linux/compat.h>

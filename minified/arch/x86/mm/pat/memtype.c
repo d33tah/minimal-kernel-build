@@ -5,7 +5,6 @@
 #include <linux/ioport.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>
-#include <linux/fs.h>
 #include <linux/rbtree.h>
 
 #include <asm/cacheflush.h>
@@ -17,7 +16,6 @@
 #include <asm/page.h>
 #include <asm/msr.h>
 #include <asm/memtype.h>
-#include <asm/io.h>
 
 #include "../mm_internal.h"
 

@@ -1,4 +1,3 @@
-#include <linux/interrupt.h>
 #include <linux/kernel_stat.h>
 #include <linux/smp.h>
 #include <linux/irq.h>

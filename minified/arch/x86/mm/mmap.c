@@ -6,7 +6,6 @@
 #include <linux/sched/mm.h>
 #include <linux/compat.h>
 #include <asm/elf.h>
-#include <asm/io.h>
 
 static unsigned long stack_maxrandom_size(unsigned long task_size)
 {

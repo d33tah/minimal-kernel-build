@@ -1,5 +1,4 @@
 
-#include <linux/sysctl.h>
 #include <linux/slab.h>
 #include <linux/cred.h>
 #include <linux/hash.h>

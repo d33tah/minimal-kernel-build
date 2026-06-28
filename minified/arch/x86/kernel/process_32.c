@@ -9,9 +9,7 @@
 #include <linux/stddef.h>
 #include <linux/vmalloc.h>
 #include <asm/user.h> /* linux/user.h redirect */
-#include <linux/reboot.h>
 #include <linux/ptrace.h>
-#include <linux/personality.h>
 #include <linux/percpu.h>
 #include <linux/kdebug.h>
 

@@ -8,7 +8,6 @@
 #include <linux/rcupdate.h>
 #include <linux/mount.h>
 #include <linux/cdev.h>
-#include <linux/sysctl.h>
 #include <linux/task_work.h>
 #include <linux/swap.h>
 

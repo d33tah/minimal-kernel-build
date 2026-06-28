@@ -26,7 +26,6 @@
 
 #include <linux/kbd_kern.h>
 #include <linux/vt_kern.h>
-#include <linux/selection.h>
 
 #include "tty.h"
 

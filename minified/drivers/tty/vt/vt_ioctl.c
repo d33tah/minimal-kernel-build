@@ -9,7 +9,6 @@
 
 
 #include <linux/kbd_kern.h>
-#include <linux/selection.h>
 
 
 void reset_vc(struct vc_data *vc)

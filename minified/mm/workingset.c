@@ -1,5 +1,4 @@
 /* Minimal includes for workingset stubs */
-#include <linux/mm.h>
 #include <linux/module.h>
 #include <linux/list_lru.h>
 #include <linux/xarray.h>

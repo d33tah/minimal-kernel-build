@@ -10,7 +10,6 @@
 #include <linux/sched/mm.h>
 
 #include <asm/mmu_context.h>
-#include <asm/tlbflush.h>
 
 #include "internal.h"
 

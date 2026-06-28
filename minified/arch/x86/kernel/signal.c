@@ -1,8 +1,6 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/sched.h>
-#include <linux/kernel.h>
 
 /*
  * Userspace signal-frame delivery is unreachable in this minimal build: the

@@ -2,7 +2,6 @@
 #include <linux/linkage.h>
 #include <linux/errno.h>
 
-#include <asm/unistd.h>
 
 #include <asm/syscall_wrapper.h>
 

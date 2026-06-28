@@ -20,27 +20,16 @@ __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 
 
 
-#define LVL_CLK_SHIFT	3
-#define LVL_CLK_DIV	(1UL << LVL_CLK_SHIFT)
-#define LVL_CLK_MASK	(LVL_CLK_DIV - 1)
-#define LVL_SHIFT(n)	((n) * LVL_CLK_SHIFT)
-#define LVL_GRAN(n)	(1UL << LVL_SHIFT(n))
-
-#define LVL_START(n)	((LVL_SIZE - 1) << (((n) - 1) * LVL_CLK_SHIFT))
-
+/* timer-wheel sizing: only LVL_SIZE * LVL_DEPTH (WHEEL_SIZE) survives now that
+ * the timer enqueue/expiry machinery is stubbed out. */
 #define LVL_BITS	6
 #define LVL_SIZE	(1UL << LVL_BITS)
-#define LVL_MASK	(LVL_SIZE - 1)
-#define LVL_OFFS(n)	((n) * LVL_SIZE)
 
 #if HZ > 100
 # define LVL_DEPTH	9
 # else
 # define LVL_DEPTH	8
 #endif
-
-#define WHEEL_TIMEOUT_CUTOFF	(LVL_START(LVL_DEPTH))
-#define WHEEL_TIMEOUT_MAX	(WHEEL_TIMEOUT_CUTOFF - LVL_GRAN(LVL_DEPTH - 1))
 
 #define WHEEL_SIZE	(LVL_SIZE * LVL_DEPTH)
 
@@ -58,90 +47,6 @@ struct timer_base {
 } ____cacheline_aligned;
 
 static DEFINE_PER_CPU(struct timer_base, timer_bases[NR_BASES]);
-
-static inline unsigned int timer_get_idx(struct timer_list *timer)
-{
-	return (timer->flags & TIMER_ARRAYMASK) >> TIMER_ARRAYSHIFT;
-}
-
-static inline void timer_set_idx(struct timer_list *timer, unsigned int idx)
-{
-	timer->flags = (timer->flags & ~TIMER_ARRAYMASK) |
-			idx << TIMER_ARRAYSHIFT;
-}
-
-static inline unsigned calc_index(unsigned long expires, unsigned lvl,
-				  unsigned long *bucket_expiry)
-{
-
-	 
-	expires = (expires >> LVL_SHIFT(lvl)) + 1;
-	*bucket_expiry = expires << LVL_SHIFT(lvl);
-	return LVL_OFFS(lvl) + (expires & LVL_MASK);
-}
-
-static int calc_wheel_index(unsigned long expires, unsigned long clk,
-			    unsigned long *bucket_expiry)
-{
-	unsigned long delta = expires - clk;
-	unsigned int idx;
-
-	if (delta < LVL_START(1)) {
-		idx = calc_index(expires, 0, bucket_expiry);
-	} else if (delta < LVL_START(2)) {
-		idx = calc_index(expires, 1, bucket_expiry);
-	} else if (delta < LVL_START(3)) {
-		idx = calc_index(expires, 2, bucket_expiry);
-	} else if (delta < LVL_START(4)) {
-		idx = calc_index(expires, 3, bucket_expiry);
-	} else if (delta < LVL_START(5)) {
-		idx = calc_index(expires, 4, bucket_expiry);
-	} else if (delta < LVL_START(6)) {
-		idx = calc_index(expires, 5, bucket_expiry);
-	} else if (delta < LVL_START(7)) {
-		idx = calc_index(expires, 6, bucket_expiry);
-	} else if (LVL_DEPTH > 8 && delta < LVL_START(8)) {
-		idx = calc_index(expires, 7, bucket_expiry);
-	} else if ((long) delta < 0) {
-		idx = clk & LVL_MASK;
-		*bucket_expiry = clk;
-	} else {
-		 
-		if (delta >= WHEEL_TIMEOUT_CUTOFF)
-			expires = clk + WHEEL_TIMEOUT_MAX;
-
-		idx = calc_index(expires, LVL_DEPTH - 1, bucket_expiry);
-	}
-	return idx;
-}
-
-static void enqueue_timer(struct timer_base *base, struct timer_list *timer,
-			  unsigned int idx, unsigned long bucket_expiry)
-{
-
-	hlist_add_head(&timer->entry, base->vectors + idx);
-	__set_bit(idx, base->pending_map);
-	timer_set_idx(timer, idx);
-
-	 
-
-	 
-	if (time_before(bucket_expiry, base->next_expiry)) {
-		 
-		base->next_expiry = bucket_expiry;
-		base->timers_pending = true;
-		base->next_expiry_recalc = false;
-	}
-}
-
-static void internal_add_timer(struct timer_base *base, struct timer_list *timer)
-{
-	unsigned long bucket_expiry;
-	unsigned int idx;
-
-	idx = calc_wheel_index(timer->expires, base->clk, &bucket_expiry);
-	enqueue_timer(base, timer, idx, bucket_expiry);
-}
 
 static void do_init_timer(struct timer_list *timer,
 			  void (*func)(struct timer_list *),
@@ -163,104 +68,15 @@ void init_timer_key(struct timer_list *timer,
 	do_init_timer(timer, func, flags, name, key);
 }
 
-static inline void detach_timer(struct timer_list *timer, bool clear_pending)
-{
-	struct hlist_node *entry = &timer->entry;
-
-	__hlist_del(entry);
-	if (clear_pending)
-		entry->pprev = NULL;
-	entry->next = LIST_POISON2;
-}
-
-static int detach_if_pending(struct timer_list *timer, struct timer_base *base,
-			     bool clear_pending)
-{
-	unsigned idx = timer_get_idx(timer);
-
-	if (!timer_pending(timer))
-		return 0;
-
-	if (hlist_is_singular_node(&timer->entry, base->vectors + idx)) {
-		__clear_bit(idx, base->pending_map);
-		base->next_expiry_recalc = true;
-	}
-
-	detach_timer(timer, clear_pending);
-	return 1;
-}
-
-static inline struct timer_base *get_timer_base(u32 tflags)
-{
-	return per_cpu_ptr(&timer_bases[BASE_STD], tflags & TIMER_CPUMASK);
-}
-
-static inline void forward_timer_base(struct timer_base *base)
-{
-	unsigned long jnow = READ_ONCE(jiffies);
-
-	 
-	if ((long)(jnow - base->clk) < 1)
-		return;
-
-	 
-	if (time_after(base->next_expiry, jnow)) {
-		base->clk = jnow;
-	} else {
-		if (WARN_ON_ONCE(time_before(base->next_expiry, base->clk)))
-			return;
-		base->clk = base->next_expiry;
-	}
-}
-
-
-static struct timer_base *lock_timer_base(struct timer_list *timer,
-					  unsigned long *flags)
-	__acquires(timer->base->lock)
-{
-	struct timer_base *base = get_timer_base(READ_ONCE(timer->flags));
-
-	raw_spin_lock_irqsave(&base->lock, *flags);
-	return base;
-}
-
-#define MOD_TIMER_NOTPENDING		0x04
-
-static inline int
-__mod_timer(struct timer_list *timer, unsigned long expires, unsigned int options)
-{
-	unsigned long flags;
-	struct timer_base *base;
-	int ret;
-
-	BUG_ON(!timer->function);
-
-	base = lock_timer_base(timer, &flags);
-	forward_timer_base(base);
-
-	ret = detach_if_pending(timer, base, false);
-
-	timer->expires = expires;
-	internal_add_timer(base, timer);
-
-	raw_spin_unlock_irqrestore(&base->lock, flags);
-
-	return ret;
-}
-
+/*
+ * RUNTIME-DEAD ANCHOR-STUB: del_timer (and del_timer_sync/del_singleshot_timer_sync
+ * which macro-alias to it) has 0 callers tree-wide -- no timer is ever queued on
+ * this artifact (schedule_timeout_uninterruptible, the only modify caller, is also
+ * stubbed). Returns 0 ("timer was not pending"); never executes.
+ */
 int del_timer(struct timer_list *timer)
 {
-	struct timer_base *base;
-	unsigned long flags;
-	int ret = 0;
-
-	if (timer_pending(timer)) {
-		base = lock_timer_base(timer, &flags);
-		ret = detach_if_pending(timer, base, true);
-		raw_spin_unlock_irqrestore(&base->lock, flags);
-	}
-
-	return ret;
+	return 0;
 }
 
 /*
@@ -292,53 +108,17 @@ void update_process_times(int user_tick)
 	scheduler_tick();
 }
 
-struct process_timer {
-	struct timer_list timer;
-	struct task_struct *task;
-};
-
-static void process_timeout(struct timer_list *t)
-{
-	struct process_timer *timeout = from_timer(timeout, t, timer);
-
-	wake_up_process(timeout->task);
-}
-
+/*
+ * RUNTIME-DEAD ANCHOR-STUB: schedule_timeout_uninterruptible has 0 callers
+ * tree-wide on this boot+print+stay-alive artifact (init/idle never sleeps on
+ * a timer). Its whole private subtree (process_timeout, __mod_timer + the timer
+ * wheel modify helpers lock_timer_base/forward_timer_base/detach_if_pending/
+ * internal_add_timer/calc_wheel_index/calc_index/enqueue_timer/get_timer_base,
+ * shared only with the equally-dead del_timer) was carved out. Stubbed to a
+ * no-op that returns the requested timeout unchanged; it never executes.
+ */
 signed long __sched schedule_timeout_uninterruptible(signed long timeout)
 {
-	struct process_timer timer;
-	unsigned long expire;
-
-	__set_current_state(TASK_UNINTERRUPTIBLE);
-
-	switch (timeout)
-	{
-	case MAX_SCHEDULE_TIMEOUT:
-
-		schedule();
-		goto out;
-	default:
-
-		if (timeout < 0) {
-			printk(KERN_ERR "schedule_timeout: wrong timeout "
-				"value %lx\n", timeout);
-			dump_stack();
-			__set_current_state(TASK_RUNNING);
-			goto out;
-		}
-	}
-
-	expire = timeout + jiffies;
-
-	timer.task = current;
-	timer_setup_on_stack(&timer.timer, process_timeout, 0);
-	__mod_timer(&timer.timer, expire, MOD_TIMER_NOTPENDING);
-	schedule();
-	del_singleshot_timer_sync(&timer.timer);
-
-	timeout = expire - jiffies;
-
- out:
 	return timeout < 0 ? 0 : timeout;
 }
 

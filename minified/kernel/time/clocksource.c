@@ -72,11 +72,6 @@ static void clocksource_enqueue_watchdog(struct clocksource *cs)
 		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
 }
 
-static bool clocksource_is_suspend(struct clocksource *cs)
-{
-	return cs == suspend_clocksource;
-}
-
 static void __clocksource_suspend_select(struct clocksource *cs)
 {
 	 
@@ -93,24 +88,6 @@ static void __clocksource_suspend_select(struct clocksource *cs)
 	if (!suspend_clocksource || cs->rating > suspend_clocksource->rating)
 		suspend_clocksource = cs;
 }
-
-static void clocksource_suspend_select(bool fallback)
-{
-	struct clocksource *cs, *old_suspend;
-
-	old_suspend = suspend_clocksource;
-	if (fallback)
-		suspend_clocksource = NULL;
-
-	list_for_each_entry(cs, &clocksource_list, list) {
-		 
-		if (fallback && cs == old_suspend)
-			continue;
-
-		__clocksource_suspend_select(cs);
-	}
-}
-
 
 static u32 clocksource_max_adjustment(struct clocksource *cs)
 {
@@ -169,11 +146,6 @@ found:
 static void clocksource_select(void)
 {
 	__clocksource_select(false);
-}
-
-static void clocksource_select_fallback(void)
-{
-	__clocksource_select(true);
 }
 
 static int __init clocksource_done_booting(void)
@@ -273,34 +245,9 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 	return 0;
 }
 
-static int clocksource_unbind(struct clocksource *cs)
-{
-	if (cs == curr_clocksource) {
-		 
-		clocksource_select_fallback();
-		if (curr_clocksource == cs)
-			return -EBUSY;
-	}
-
-	if (clocksource_is_suspend(cs)) {
-		 
-		clocksource_suspend_select(true);
-	}
-
-	list_del_init(&cs->list);
-
-	return 0;
-}
-
 int clocksource_unregister(struct clocksource *cs)
 {
-	int ret = 0;
-
-	mutex_lock(&clocksource_mutex);
-	if (!list_empty(&cs->list))
-		ret = clocksource_unbind(cs);
-	mutex_unlock(&clocksource_mutex);
-	return ret;
+	return 0;
 }
 
 

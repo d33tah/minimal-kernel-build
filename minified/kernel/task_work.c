@@ -7,33 +7,16 @@ static struct callback_head work_exited;
 int task_work_add(struct task_struct *task, struct callback_head *work,
 		  enum task_work_notify_mode notify)
 {
-	struct callback_head *head;
-
-	do {
-		head = READ_ONCE(task->task_works);
-		if (unlikely(head == &work_exited))
-			return -ESRCH;
-		work->next = head;
-	} while (cmpxchg(&task->task_works, head, work) != head);
-
-	switch (notify) {
-	case TWA_NONE:
-		break;
-	case TWA_RESUME:
-		set_notify_resume(task);
-		break;
-	case TWA_SIGNAL:
-		set_notify_signal(task);
-		break;
-	case TWA_SIGNAL_NO_IPI:
-		__set_notify_signal(task);
-		break;
-	default:
-		WARN_ON_ONCE(1);
-		break;
-	}
-
-	return 0;
+	/*
+	 * SAFE-FALLBACK STUB (runtime-dead). The sole caller fput()
+	 * only reaches this on the non-interrupt, non-kthread file-close
+	 * path; on a boot-once-and-print artifact that branch never fires
+	 * (task_work_add HIT=False). Returning -ESRCH ("cannot queue work")
+	 * is the conservative fallback: fput() then defers the __fput via
+	 * its llist/delayed_fput_work path, which stays correct. The
+	 * cmpxchg/notify body is the dead payoff.
+	 */
+	return -ESRCH;
 }
 
 void task_work_run(void)

@@ -713,84 +713,17 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flag
 	return try_to_wake_up(curr->private, mode, wake_flags);
 }
 
-#define SETPARAM_POLICY	-1
-
-static int __sched_setscheduler(struct task_struct *p,
-				const struct sched_attr *attr,
-				bool user, bool pi)
-{
-	/*
-	 * Minimal stub. The only live caller is the kthread() body, which always
-	 * passes SCHED_NORMAL with sched_nice == task_nice(p) (priority 0) on a
-	 * freshly-created kthread that is already SCHED_NORMAL. The full
-	 * dequeue/enqueue/setparam path is therefore never reached: the request
-	 * always matches the current policy/nice → the change is a no-op. So all
-	 * we need is the validation + the "already set" return.
-	 */
-	int policy = attr->sched_policy;
-	int retval;
-	struct rq_flags rf;
-	struct rq *rq;
-
-	/* Basic validation only */
-	if (policy < 0)
-		policy = p->policy;
-	else if (!valid_policy(policy))
-		return -EINVAL;
-
-	if (attr->sched_priority > MAX_RT_PRIO-1)
-		return -EINVAL;
-
-	/* Skip all permission checks for minimal kernel */
-
-	for (;;) {
-		raw_spin_lock_irqsave(&p->pi_lock, rf.flags);
-		rq = task_rq(p);
-		raw_spin_rq_lock(rq);
-
-		if (likely(rq == task_rq(p) && !task_on_rq_migrating(p))) {
-			rq_pin_lock(rq, &rf);
-			break;
-		}
-		raw_spin_rq_unlock(rq);
-		raw_spin_unlock_irqrestore(&p->pi_lock, rf.flags);
-
-		while (unlikely(task_on_rq_migrating(p)))
-			cpu_relax();
-	}
-	update_rq_clock(rq);
-
-	/* rq->stop (cpu-stopper task) absent in this build -> always NULL,
-	 * so the "p is the stop task" rejection can never fire. */
-	retval = 0;
-
-	task_rq_unlock(rq, p, &rf);
-	return retval;
-}
-
-static int _sched_setscheduler(struct task_struct *p, int policy,
-			       const struct sched_param *param, bool check)
-{
-	struct sched_attr attr = {
-		.sched_policy   = policy,
-		.sched_priority = param->sched_priority,
-		.sched_nice	= PRIO_TO_NICE(p->static_prio),
-	};
-
-	
-	if ((policy != SETPARAM_POLICY) && (policy & SCHED_RESET_ON_FORK)) {
-		attr.sched_flags |= SCHED_FLAG_RESET_ON_FORK;
-		policy &= ~SCHED_RESET_ON_FORK;
-		attr.sched_policy = policy;
-	}
-
-	return __sched_setscheduler(p, &attr, check, true);
-}
-
+/*
+ * Runtime-dead anchor-stub: the only caller, kthread(), never runs on a
+ * single-shot boot (no kthreads reach this line), so the full
+ * dequeue/enqueue/setparam path (formerly _sched_setscheduler /
+ * __sched_setscheduler, both private to this chain) is never executed.
+ * Symbol kept link-live for the sched.h extern + kthread.c:139 reference.
+ */
 int sched_setscheduler_nocheck(struct task_struct *p, int policy,
 			       const struct sched_param *param)
 {
-	return _sched_setscheduler(p, policy, param, false);
+	return 0;
 }
 
 int __sched __cond_resched(void)

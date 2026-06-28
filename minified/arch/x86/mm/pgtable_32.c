@@ -5,7 +5,6 @@
 #include <asm/fixmap.h>
 #include <asm/tlb.h>
 #include <asm/tlbflush.h>
-#include <linux/vmalloc.h>
 
 unsigned int __VMALLOC_RESERVE = 128 << 20;
 

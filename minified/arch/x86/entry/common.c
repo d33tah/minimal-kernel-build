@@ -4,7 +4,6 @@
 #include <linux/sched/task_stack.h>
 #include <linux/entry-common.h>
 #include <linux/mm.h>
-#include <linux/smp.h>
 #include <linux/errno.h>
 #include <linux/ptrace.h>
 #include <linux/export.h>

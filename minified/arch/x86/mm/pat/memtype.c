@@ -3,7 +3,6 @@
 
 #include <linux/kernel.h>
 #include <linux/mm.h>
-#include <linux/rbtree.h>
 
 #include <asm/cacheflush.h>
 #include <asm/tlbflush.h>

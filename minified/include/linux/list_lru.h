@@ -19,7 +19,6 @@ struct list_lru {
 	struct list_lru_node	*node;
 };
 
-void list_lru_destroy(struct list_lru *lru);
 int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 		    struct lock_class_key *key);
 

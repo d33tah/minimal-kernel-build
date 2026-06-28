@@ -9,23 +9,17 @@
 
 static DEFINE_SPINLOCK(sb_lock);
 
-static void destroy_super_work(struct work_struct *work)
-{
-	struct super_block *s = container_of(work, struct super_block,
-							destroy_work);
-
-	kfree(s);
-}
-
+/*
+ * Runtime-dead on a 1-shot boot: the only callers are the alloc-failure error
+ * paths of alloc_super() / sget_fc(), which never fire on a boot whose early
+ * allocations succeed (and would panic, not recover, if they didn't). The
+ * superblock-release body (up_write/list_lru_destroy/put_user_ns/kfree-via-
+ * destroy_super_work) is therefore never executed. Stubbed to keep the symbol
+ * for the two error-path call sites; the private subtree (destroy_super_work,
+ * list_lru_destroy) cascaded away.
+ */
 static void destroy_unused_super(struct super_block *s)
 {
-	if (!s)
-		return;
-	up_write(&s->s_umount);
-	list_lru_destroy(&s->s_dentry_lru);
-	list_lru_destroy(&s->s_inode_lru);
-	put_user_ns(s->s_user_ns);
-	destroy_super_work(&s->destroy_work);
 }
 
 static struct super_block *alloc_super(struct file_system_type *type, int flags,

@@ -61,13 +61,3 @@ int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 	return 0;
 }
 
-void list_lru_destroy(struct list_lru *lru)
-{
-
-	if (!lru->node)
-		return;
-
-	kfree(lru->node);
-	lru->node = NULL;
-
-}

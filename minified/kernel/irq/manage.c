@@ -4,7 +4,6 @@
 #include <linux/irq.h>
 #include <linux/interrupt.h>
 #include <linux/slab.h>
-#include <linux/sched.h>
 
 #include "internals.h"
 

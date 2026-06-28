@@ -3,7 +3,6 @@
 #include <linux/file.h>
 #include <linux/uio.h>
 #include <linux/syscalls.h>
-#include <linux/compat.h>
 #include <linux/mount.h>
 #include <linux/fs.h>
 #include "internal.h"

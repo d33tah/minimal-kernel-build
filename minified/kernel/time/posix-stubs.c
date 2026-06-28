@@ -1,7 +1,6 @@
 
 #include <linux/linkage.h>
 #include <linux/kernel.h>
-#include <linux/sched.h>
 #include <linux/errno.h>
 #include <linux/syscalls.h>
 

@@ -1,5 +1,4 @@
 #include <linux/linkage.h>
-#include <linux/sched.h>
 #include <linux/ioport.h>
 #include <linux/irq.h>
 #include <linux/kernel_stat.h>

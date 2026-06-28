@@ -12,7 +12,6 @@
 
 #include <linux/fs_struct.h>
 
-#include <linux/compat.h>
 #include <linux/mnt_idmapping.h>
 
 #include "internal.h"

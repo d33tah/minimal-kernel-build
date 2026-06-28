@@ -1,5 +1,4 @@
 
-#include <linux/sched.h>
 #include <linux/sched/user.h>
 #include <linux/user_namespace.h>
 #include <linux/proc_ns.h>

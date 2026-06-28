@@ -9,7 +9,6 @@
 #include <linux/completion.h>
 #include <linux/err.h>
 #include <linux/slab.h>
-#include <linux/uaccess.h>
 #include <linux/numa.h>
 #include <linux/sched/isolation.h>
 

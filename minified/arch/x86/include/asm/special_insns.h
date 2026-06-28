@@ -108,7 +108,7 @@ static inline void __write_cr4(unsigned long x)
 
 /* load_gs_index removed - unused */
 
-#define nop() asm volatile ("nop")
+/* nop() removed - never invoked (all "rep; nop" uses are inline-asm string literals) */
 
 /* serialize removed - unused (only sync_core.h called it, now removed) */
 

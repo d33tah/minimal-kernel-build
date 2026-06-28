@@ -65,9 +65,7 @@ do {									\
 #include <linux/compiler.h>
 #include <asm/rwonce.h>
 
-#ifndef nop
-#define nop()	asm volatile ("nop")
-#endif
+/* nop() fallback removed - nop() never invoked anywhere (statically dead) */
 
 /* #ifdef __mb/__rmb/__wmb fallback blocks removed - __mb/__rmb/__wmb never #defined (statically dead) */
 

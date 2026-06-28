@@ -178,7 +178,7 @@ static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 #define p4d_val(x)				(pgd_val((x).pgd))
 #define __p4d(x)				((p4d_t) { __pgd(x) })
 
-#define p4d_free_tlb(tlb, x, a)			do { } while (0)
+/* p4d_free_tlb removed - folded away on 2-level paging, 0 callers (only pte_free_tlb used) */
 
 /* p4d_addr_end removed - page-walk loops folded to pgd_addr_end only (0 callers) */
 
@@ -206,7 +206,7 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 #define pud_val(x)				(p4d_val((x).p4d))
 #define __pud(x)				((pud_t) { __p4d(x) })
 
-#define pud_free_tlb(tlb, x, a)		        do { } while (0)
+/* pud_free_tlb removed - folded away on 2-level paging, 0 callers (only pte_free_tlb used) */
 
 /* pud_addr_end removed - page-walk loops folded to pgd_addr_end only (0 callers) */
 
@@ -240,9 +240,7 @@ static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
 #define pmd_val(x)				(pud_val((x).pud))
 #define __pmd(x)				((pmd_t) { __pud(x) } )
 
-#define pud_page(pud)				(pmd_page((pmd_t){ pud }))
-
-#define pmd_free_tlb(tlb, x, a)		do { } while (0)
+/* pud_page + pmd_free_tlb removed - folded away on 2-level paging, 0 callers tree-wide */
 
 /* pmd_addr_end removed - page-walk loops folded to pgd_addr_end only (0 callers) */
 

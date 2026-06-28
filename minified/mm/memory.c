@@ -110,29 +110,6 @@ void free_pgd_range(struct mmu_gather *tlb,
 	} while (pgd++, addr = next, addr != end);
 }
 
-void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *vma,
-		unsigned long floor, unsigned long ceiling)
-{
-	while (vma) {
-		struct vm_area_struct *next = vma->vm_next;
-		unsigned long addr = vma->vm_start;
-
-		
-		unlink_anon_vmas(vma);
-		unlink_file_vma(vma);
-
-		while (next && next->vm_start <= vma->vm_end + PMD_SIZE) {
-			vma = next;
-			next = vma->vm_next;
-			unlink_anon_vmas(vma);
-			unlink_file_vma(vma);
-		}
-		free_pgd_range(tlb, addr, vma->vm_end,
-			floor, next ? next->vm_start : ceiling);
-		vma = next;
-	}
-}
-
 void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte)
 {
 	spinlock_t *ptl = pmd_lock(mm, pmd);
@@ -286,14 +263,6 @@ static void unmap_single_vma(struct mmu_gather *tlb,
 		} while (pgd++, addr = next, addr != end);
 		tlb_end_vma(tlb, vma);
 	}
-}
-
-void unmap_vmas(struct mmu_gather *tlb,
-		struct vm_area_struct *vma, unsigned long start_addr,
-		unsigned long end_addr)
-{
-	for ( ; vma && vma->vm_start < end_addr; vma = vma->vm_next)
-		unmap_single_vma(tlb, vma, start_addr, end_addr);
 }
 
 static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr)

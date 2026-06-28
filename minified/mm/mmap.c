@@ -52,37 +52,6 @@ pgprot_t protection_map[16] __ro_after_init = {
 
 /* Removed: vm_pgprot_modify, vma_set_page_prot - never called */
 
-static void __remove_shared_vm_struct(struct vm_area_struct *vma,
-		struct file *file, struct address_space *mapping)
-{
-	if (vma->vm_flags & VM_SHARED)
-		mapping_unmap_writable(mapping);
-
-	vma_interval_tree_remove(vma, &mapping->i_mmap);
-}
-
-void unlink_file_vma(struct vm_area_struct *vma)
-{
-	struct file *file = vma->vm_file;
-
-	if (file) {
-		struct address_space *mapping = file->f_mapping;
-		i_mmap_lock_write(mapping);
-		__remove_shared_vm_struct(vma, file, mapping);
-		i_mmap_unlock_write(mapping);
-	}
-}
-
-static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
-{
-	struct vm_area_struct *next = vma->vm_next;
-
-	might_sleep();
-	if (vma->vm_file)
-		fput(vma->vm_file);
-	vm_area_free(vma);
-	return next;
-}
 
 #define validate_mm_rb(root, ignore) do { } while (0)
 #define validate_mm(mm) do { } while (0)
@@ -821,33 +790,13 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 
 void exit_mmap(struct mm_struct *mm)
 {
-	struct mmu_gather tlb;
-	struct vm_area_struct *vma;
-
-	mmap_write_lock(mm);
-
-	vma = mm->mmap;
-	if (!vma) {
-		
-		mmap_write_unlock(mm);
-		return;
-	}
-
-	lru_add_drain();
-	tlb_gather_mmu_fullmm(&tlb, mm);
-	
-	
-	unmap_vmas(&tlb, vma, 0, -1);
-	free_pgtables(&tlb, vma, FIRST_USER_ADDRESS, USER_PGTABLES_CEILING);
-	tlb_finish_mmu(&tlb);
-
-	
-	while (vma) {
-		vma = remove_vma(vma);
-		cond_resched();
-	}
-	mm->mmap = NULL;
-	mmap_write_unlock(mm);
+	/*
+	 * Anchor-stub: the single live caller (__mmput in kernel/fork.c) never
+	 * runs on this artifact (init is never torn down), so the whole mm
+	 * teardown machinery (unmap_vmas/free_pgtables/remove_vma) is
+	 * runtime-dead. No-op leaves the mm leaked, which can't matter on a
+	 * system that never reaps the only process.
+	 */
 }
 
 int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)

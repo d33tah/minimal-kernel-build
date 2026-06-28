@@ -6,7 +6,6 @@
 #include <linux/sched/idle.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
-#include <linux/utsname.h>
 #include <linux/random.h>
 /* end stackprotector.h */
 #include <asm/cpu.h>

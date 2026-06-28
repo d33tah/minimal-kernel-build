@@ -1,7 +1,7 @@
 
 #include <linux/atomic.h>
-#include <linux/tty.h>
 #include <linux/sched/debug.h>
+#include <linux/tty.h>
 
 
 #if BITS_PER_LONG == 64

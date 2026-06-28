@@ -6,7 +6,6 @@
 #include <asm/tlbflush.h>
 #include <asm/mmu_context.h>
 #include <asm/apic.h>
-#include <asm/perf_event.h>
 
 #include "mm_internal.h"
 

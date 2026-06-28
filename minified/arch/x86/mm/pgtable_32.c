@@ -4,10 +4,8 @@
 
 #include <asm/cpu_entry_area.h>
 #include <asm/fixmap.h>
-#include <asm/e820/api.h>
 #include <asm/tlb.h>
 #include <asm/tlbflush.h>
-#include <asm/io.h>
 #include <linux/vmalloc.h>
 
 unsigned int __VMALLOC_RESERVE = 128 << 20;

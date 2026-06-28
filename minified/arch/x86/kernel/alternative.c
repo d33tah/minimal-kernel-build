@@ -1,7 +1,6 @@
 #define pr_fmt(fmt) "SMP alternatives: " fmt
 
 #include <linux/sched.h>
-#include <linux/perf_event.h>
 #include <linux/mutex.h>
 #include <linux/list.h>
 #include <linux/stringify.h>

@@ -1,7 +1,6 @@
 
 #include <linux/kobject.h>
 #include <linux/string.h>
-#include <linux/stat.h>
 #include <linux/slab.h>
 
 /*

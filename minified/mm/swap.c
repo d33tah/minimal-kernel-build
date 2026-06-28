@@ -2,7 +2,6 @@
 
 #include <linux/mm.h>
 #include <linux/swap.h>
-#include <linux/mman.h>
 #include <linux/pagemap.h>
 #include <linux/pagevec.h>
 #include <linux/mm_inline.h>

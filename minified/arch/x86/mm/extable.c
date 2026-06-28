@@ -46,8 +46,8 @@
 
 #include <asm/fpu/api.h>
 #include <asm/traps.h>
-#include <asm/kdebug.h>
 #include <asm/insn-eval.h>
+#include <asm/kdebug.h>
 
 /* Inlined from asm/sgx.h */
 #define SGX_ENCLS_FAULT_FLAG 0x40000000

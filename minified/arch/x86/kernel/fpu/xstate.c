@@ -7,8 +7,6 @@
 #include <asm/fpu/api.h>
 #include <asm/fpu/signal.h>
 
-#include <asm/tlbflush.h>
-#include <asm/elf.h>
 
 #include "context.h"
 #include "internal.h"

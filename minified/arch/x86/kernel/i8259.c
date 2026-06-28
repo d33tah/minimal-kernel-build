@@ -3,7 +3,6 @@
 #include <linux/ioport.h>
 #include <linux/interrupt.h>
 #include <linux/irq.h>
-#include <linux/timex.h>
 #include <linux/kernel_stat.h>
 #include <linux/bitops.h>
 #include <linux/acpi.h>

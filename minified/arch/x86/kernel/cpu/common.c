@@ -26,7 +26,6 @@ extern void doublefault_init_cpu_tss(void);
 #include <linux/cpumask.h>
 #include <linux/atomic.h>
 #include <asm/proto.h>
-#include <asm/setup.h>
 #include <asm/apic.h>
 #include <asm/desc.h>
 #include <asm/fpu/api.h>
@@ -36,7 +35,6 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/bugs.h>
 #include <asm/cpu.h>
 #include <asm/msr.h>
-#include <asm/memtype.h>
 #include <asm/sigframe.h>
 #include <asm/traps.h>
 

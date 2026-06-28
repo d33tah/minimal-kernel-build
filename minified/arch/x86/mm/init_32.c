@@ -4,7 +4,6 @@
 #include <linux/string.h>
 #include <linux/types.h>
 #include <linux/ptrace.h>
-#include <linux/mman.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
 #include <linux/init.h>
@@ -12,7 +11,6 @@
 #include <linux/pagemap.h>
 #include <linux/pci.h>
 #include <linux/pfn.h>
-#include <linux/poison.h>
 #include <linux/memblock.h>
 #include <linux/initrd.h>
 #include <linux/cpumask.h>

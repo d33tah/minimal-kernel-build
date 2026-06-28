@@ -1,6 +1,5 @@
 /* STUB: string helper functions - minimal implementations */
 
-#include <linux/bug.h>
 #include <linux/kernel.h>
 #include <linux/ctype.h>
 #include <linux/string.h>

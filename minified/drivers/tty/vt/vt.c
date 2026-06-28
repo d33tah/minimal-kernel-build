@@ -20,7 +20,6 @@
 #include <linux/notifier.h>
 #include <linux/device.h>
 #include <linux/io.h>
-#include <linux/uaccess.h>
 
 
 #define MAX_NR_CON_DRIVER 16

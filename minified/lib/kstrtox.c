@@ -3,8 +3,8 @@
 #include <linux/kstrtox.h>
 #include <linux/math64.h>
 #include <linux/types.h>
-#include <linux/uaccess.h>
 
+#include <linux/uaccess.h>
 #include "kstrtox.h"
 
 noinline

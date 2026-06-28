@@ -1,7 +1,6 @@
 
 #include <linux/bitmap.h>
 #include <linux/bitops.h>
-#include <linux/bug.h>
 #include <linux/device.h>
 #include <linux/kernel.h>
 #include <linux/mm.h>

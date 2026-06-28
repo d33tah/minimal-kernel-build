@@ -9,7 +9,6 @@
 #include <linux/compiler.h>
 #include <linux/kernel.h>
 #include <linux/pagevec.h>
-#include <linux/slab.h>
 #include <linux/oom.h>
 #include <linux/topology.h>
 #include <linux/nodemask.h>

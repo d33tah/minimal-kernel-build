@@ -5,13 +5,11 @@
 #include <linux/sched/debug.h>
 #include <linux/atomic.h>
 #include <linux/notifier.h>
-#include <linux/delay.h>
 #include <linux/moduleparam.h>
 #include <linux/kthread.h>
 #include <linux/tick.h>
 #include <linux/rcupdate_wait.h>
 #include <linux/sched/isolation.h>
-#include <linux/slab.h>
 
 
 

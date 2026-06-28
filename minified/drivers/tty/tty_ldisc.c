@@ -9,7 +9,6 @@
 #include <linux/device.h>
 #include <linux/wait.h>
 #include <linux/bitops.h>
-#include <linux/uaccess.h>
 #include "tty.h"
 
 #define tty_ldisc_debug(tty, f, args...)

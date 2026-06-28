@@ -399,47 +399,9 @@ static long __init write_buffer(char *buf, unsigned long len)
 	return len - byte_count;
 }
 
-static long __init flush_buffer(void *bufv, unsigned long len)
-{
-	char *buf = (char *) bufv;
-	long written;
-	long origLen = len;
-	if (message)
-		return -1;
-	while ((written = write_buffer(buf, len)) < len && !message) {
-		char c = buf[written];
-		if (c == '0') {
-			buf += written;
-			len -= written;
-			state = Start;
-		} else if (c == 0) {
-			buf += written;
-			len -= written;
-			state = Reset;
-		} else
-			error("junk within compressed archive");
-	}
-	return origLen;
-}
-
-static unsigned long my_inptr;
-
-typedef int (*decompress_fn) (unsigned char *inbuf, long len,
-			      long (*fill)(void*, unsigned long),
-			      long (*flush)(void*, unsigned long),
-			      unsigned char *outbuf,
-			      long *posp,
-			      void(*error)(char *x));
-decompress_fn decompress_method(const unsigned char *inbuf, long len,
-				const char **name);
-/* end decompress/generic.h */
-
 static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 {
 	long written;
-	decompress_fn decompress;
-	const char *compress_name;
-	static __initdata char msg_buf[64];
 
 	header_buf = kmalloc(110, GFP_KERNEL);
 	symlink_buf = kmalloc(PATH_MAX + N_ALIGN(PATH_MAX) + 1, GFP_KERNEL);
@@ -467,26 +429,17 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 			continue;
 		}
 		this_header = 0;
-		decompress = decompress_method(buf, len, &compress_name);
-		if (decompress) {
-			int res = decompress(buf, len, NULL, flush_buffer, NULL,
-				   &my_inptr, error);
-			if (res)
-				error("decompressor failed");
-		} else if (compress_name) {
-			if (!message) {
-				snprintf(msg_buf, sizeof msg_buf,
-					 "compression method %s not configured",
-					 compress_name);
-				message = msg_buf;
-			}
-		} else
-			error("invalid magic at start of compressed archive");
-		if (state != Reset)
-			error("junk at the end of compressed archive");
-		this_header = saved_offset + my_inptr;
-		buf += my_inptr;
-		len -= my_inptr;
+		/*
+		 * Anchor-stub: the compressed-archive path is runtime-dead --
+		 * the embedded initramfs is uncompressed cpio (every record
+		 * begins with the '070701' magic, so *buf == '0' above), so
+		 * decompress_method() always returned NULL and flush_buffer()
+		 * never fired. Any byte here that is neither cpio-magic nor a
+		 * padding NUL is corruption.
+		 */
+		(void)saved_offset;
+		error("invalid magic at start of archive");
+		break;
 	}
 	dir_utime();
 	kfree(name_buf);

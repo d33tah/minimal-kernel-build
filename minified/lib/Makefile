@@ -31,7 +31,6 @@ lib-y := ctype.o string.o vsprintf.o cmdline.o \
 	 rbtree.o radix-tree.o xarray.o \
 	 idr.o extable.o irq_regs.o \
 	 ratelimit.o \
-	 decompress.o \
 	 siphash.o dec_and_lock.o
 	 # argv_split.o - Removed: not used
 	 # buildid.o - Removed: Not needed (stub functions)

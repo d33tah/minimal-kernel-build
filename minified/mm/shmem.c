@@ -6,7 +6,6 @@
 #include <linux/pagemap.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
-#include <linux/fs_parser.h>
 
 static struct vfsmount *shm_mnt;
 

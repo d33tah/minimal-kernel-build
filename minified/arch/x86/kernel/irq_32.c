@@ -3,7 +3,6 @@
 #include <linux/irq.h>
 #include <linux/kernel_stat.h>
 #include <linux/notifier.h>
-#include <linux/delay.h>
 #include <linux/percpu.h>
 #include <linux/mm.h>
 

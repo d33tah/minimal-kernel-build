@@ -11,7 +11,6 @@
 #include <linux/fs.h>
 #include <linux/personality.h>
 #include <linux/pagemap.h>
-#include <linux/syscalls.h>
 
 #include <linux/fs_struct.h>
 

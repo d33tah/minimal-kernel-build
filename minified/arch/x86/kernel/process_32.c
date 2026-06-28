@@ -11,7 +11,6 @@
 #include <linux/vmalloc.h>
 #include <asm/user.h> /* linux/user.h redirect */
 #include <linux/interrupt.h>
-#include <linux/delay.h>
 #include <linux/reboot.h>
 #include <linux/ptrace.h>
 #include <linux/personality.h>

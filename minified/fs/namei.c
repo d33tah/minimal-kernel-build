@@ -6,7 +6,6 @@
 #include <linux/pagemap.h>
 #include <linux/sched/mm.h>
 #include <linux/personality.h>
-#include <linux/syscalls.h>
 #include <linux/mount.h>
 #include <linux/capability.h>
 #include <linux/file.h>

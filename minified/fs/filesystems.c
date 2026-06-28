@@ -1,7 +1,5 @@
 
-#include <linux/syscalls.h>
 #include <linux/fs.h>
-#include <linux/fs_parser.h>
 
 
 static struct file_system_type *file_systems;

@@ -4,7 +4,6 @@
 #include <linux/types.h>
 #include <linux/fcntl.h>
 #include <linux/string.h>
-#include <linux/syscalls.h>
 #include <linux/file.h>
 #include <linux/memblock.h>
 #include <linux/mm.h>

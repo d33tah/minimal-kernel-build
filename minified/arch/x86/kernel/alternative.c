@@ -10,7 +10,6 @@
 #include <linux/vmalloc.h>
 #include <linux/memory.h>
 #include <linux/stop_machine.h>
-#include <linux/slab.h>
 #include <linux/mmu_context.h>
 #include <asm/sync_core.h>
 #include <asm/text-patching.h>

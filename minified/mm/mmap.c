@@ -171,15 +171,6 @@ static int find_vma_links(struct mm_struct *mm, unsigned long addr,
 	return 0;
 }
 
-static inline struct vm_area_struct *vma_next(struct mm_struct *mm,
-					 struct vm_area_struct *vma)
-{
-	if (!vma)
-		return mm->mmap;
-
-	return vma->vm_next;
-}
-
 static inline int
 munmap_vma_range(struct mm_struct *mm, unsigned long start, unsigned long len,
 		 struct vm_area_struct **pprev, struct rb_node ***link,
@@ -259,131 +250,6 @@ int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
 	vma->vm_end = end;
 	vma->vm_pgoff = pgoff;
 	return 0;
-}
-
-static inline int is_mergeable_vma(struct vm_area_struct *vma,
-				struct file *file, unsigned long vm_flags,
-				struct anon_vma_name *anon_name)
-{
-	
-	if ((vma->vm_flags ^ vm_flags))
-		return 0;
-	if (vma->vm_file != file)
-		return 0;
-	return 1;
-}
-
-static inline int is_mergeable_anon_vma(struct anon_vma *anon_vma1,
-					struct anon_vma *anon_vma2,
-					struct vm_area_struct *vma)
-{
-	
-	if ((!anon_vma1 || !anon_vma2) && (!vma ||
-		list_is_singular(&vma->anon_vma_chain)))
-		return 1;
-	return anon_vma1 == anon_vma2;
-}
-
-static int
-can_vma_merge_before(struct vm_area_struct *vma, unsigned long vm_flags,
-		     struct anon_vma *anon_vma, struct file *file,
-		     pgoff_t vm_pgoff,
-		     struct anon_vma_name *anon_name)
-{
-	if (is_mergeable_vma(vma, file, vm_flags, anon_name) &&
-	    is_mergeable_anon_vma(anon_vma, vma->anon_vma, vma)) {
-		if (vma->vm_pgoff == vm_pgoff)
-			return 1;
-	}
-	return 0;
-}
-
-static int
-can_vma_merge_after(struct vm_area_struct *vma, unsigned long vm_flags,
-		    struct anon_vma *anon_vma, struct file *file,
-		    pgoff_t vm_pgoff,
-		    struct anon_vma_name *anon_name)
-{
-	if (is_mergeable_vma(vma, file, vm_flags, anon_name) &&
-	    is_mergeable_anon_vma(anon_vma, vma->anon_vma, vma)) {
-		pgoff_t vm_pglen;
-		vm_pglen = vma_pages(vma);
-		if (vma->vm_pgoff + vm_pglen == vm_pgoff)
-			return 1;
-	}
-	return 0;
-}
-
-struct vm_area_struct *vma_merge(struct mm_struct *mm,
-			struct vm_area_struct *prev, unsigned long addr,
-			unsigned long end, unsigned long vm_flags,
-			struct anon_vma *anon_vma, struct file *file,
-			pgoff_t pgoff,
-			struct anon_vma_name *anon_name)
-{
-	pgoff_t pglen = (end - addr) >> PAGE_SHIFT;
-	struct vm_area_struct *area, *next;
-	int err;
-
-	
-	if (vm_flags & VM_SPECIAL)
-		return NULL;
-
-	next = vma_next(mm, prev);
-	area = next;
-	if (area && area->vm_end == end)		
-		next = next->vm_next;
-
-	
-	VM_WARN_ON(prev && addr <= prev->vm_start);
-	VM_WARN_ON(area && end > area->vm_end);
-	VM_WARN_ON(addr >= end);
-
-	
-	if (prev && prev->vm_end == addr &&
-			can_vma_merge_after(prev, vm_flags,
-					    anon_vma, file, pgoff,
-					    anon_name)) {
-
-		if (next && end == next->vm_start &&
-				can_vma_merge_before(next, vm_flags,
-						     anon_vma, file,
-						     pgoff+pglen,
-						     anon_name) &&
-				is_mergeable_anon_vma(prev->anon_vma,
-						      next->anon_vma, NULL)) {
-							
-			err = __vma_adjust(prev, prev->vm_start,
-					 next->vm_end, prev->vm_pgoff, NULL,
-					 prev);
-		} else					
-			err = __vma_adjust(prev, prev->vm_start,
-					 end, prev->vm_pgoff, NULL, prev);
-		if (err)
-			return NULL;
-		return prev;
-	}
-
-	
-	if (next && end == next->vm_start &&
-			can_vma_merge_before(next, vm_flags,
-					     anon_vma, file, pgoff+pglen,
-					     anon_name)) {
-		if (prev && addr < prev->vm_end)	
-			err = __vma_adjust(prev, prev->vm_start,
-					 addr, prev->vm_pgoff, NULL, next);
-		else {					
-			err = __vma_adjust(area, addr, next->vm_end,
-					 next->vm_pgoff - pglen, NULL, next);
-			
-			area = next;
-		}
-		if (err)
-			return NULL;
-		return area;
-	}
-
-	return NULL;
 }
 
 static int anon_vma_compatible(struct vm_area_struct *a, struct vm_area_struct *b)
@@ -937,76 +803,19 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 	return 0;
 }
 
-static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long flags)
-{
-	struct mm_struct *mm = current->mm;
-	struct vm_area_struct *vma, *prev;
-	struct rb_node **rb_link, *rb_parent;
-	pgoff_t pgoff = addr >> PAGE_SHIFT;
-	unsigned long mapped_addr;
-
-	
-	if ((flags & (~VM_EXEC)) != 0)
-		return -EINVAL;
-	flags |= VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
-
-	mapped_addr = get_unmapped_area(NULL, addr, len, 0, MAP_FIXED);
-	if (IS_ERR_VALUE(mapped_addr))
-		return mapped_addr;
-
-	if (munmap_vma_range(mm, addr, len, &prev, &rb_link, &rb_parent))
-		return -ENOMEM;
-
-	if (mm->map_count > sysctl_max_map_count)
-		return -ENOMEM;
-
-	if (security_vm_enough_memory_mm(mm, len >> PAGE_SHIFT))
-		return -ENOMEM;
-
-	
-	vma = vma_merge(mm, prev, addr, addr + len, flags,
-			NULL, NULL, pgoff, NULL);
-	if (vma)
-		goto out;
-
-	
-	vma = vm_area_alloc(mm);
-	if (!vma)
-		return -ENOMEM;
-
-	vma_set_anonymous(vma);
-	vma->vm_start = addr;
-	vma->vm_end = addr + len;
-	vma->vm_pgoff = pgoff;
-	vma->vm_flags = flags;
-	vma->vm_page_prot = vm_get_page_prot(flags);
-	vma_link(mm, vma, prev, rb_link, rb_parent);
-out:
-	return 0;
-}
-
 int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 {
-	struct mm_struct *mm = current->mm;
-	unsigned long len;
-	int ret;
-
-	len = PAGE_ALIGN(request);
-	if (len < request)
-		return -ENOMEM;
-	if (!len)
-		return 0;
-
-	if (mmap_write_lock_killable(mm))
-		return -EINTR;
-
-	ret = do_brk_flags(addr, len, flags);
-	mmap_write_unlock(mm);
 	/*
-	 * def_flags never carries VM_LOCKED (mlockall removed), so the populate
-	 * path is dead.
+	 * RUNTIME-DEAD ANCHOR-STUB: this kernel's only job is boot+print+
+	 * stay-alive; it never brk()s an anonymous region.  vm_brk_flags is
+	 * link-live via fs/binfmt_elf.c (the ELF loader's BSS setup, which
+	 * never runs on this boot) + the mm.h:859 extern.  Trace HIT=False.
+	 * Returning 0 is the success contract the sole live caller expects.
+	 * Stubbing the body made its private subtree (do_brk_flags, vma_merge,
+	 * can_vma_merge_before/after, vma_next, is_mergeable_vma/anon_vma) dead
+	 * -> all deleted.  __vma_adjust kept (link-live via fs/exec.c).
 	 */
-	return ret;
+	return 0;
 }
 
 

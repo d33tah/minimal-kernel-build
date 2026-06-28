@@ -184,8 +184,7 @@ static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 
 #define p4d_free_tlb(tlb, x, a)			do { } while (0)
 
-#undef  p4d_addr_end
-#define p4d_addr_end(addr, end)			(end)
+/* p4d_addr_end removed - page-walk loops folded to pgd_addr_end only (0 callers) */
 
 /* --- 2025-12-07 10:14 --- Inlined asm-generic/pgtable-nopud.h content */
 #define __PAGETABLE_PUD_FOLDED 1
@@ -213,8 +212,7 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 
 #define pud_free_tlb(tlb, x, a)		        do { } while (0)
 
-#undef  pud_addr_end
-#define pud_addr_end(addr, end)			(end)
+/* pud_addr_end removed - page-walk loops folded to pgd_addr_end only (0 callers) */
 
 static inline pudval_t native_pud_val(pud_t pud)
 {
@@ -255,8 +253,7 @@ static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address)
 
 #define pmd_free_tlb(tlb, x, a)		do { } while (0)
 
-#undef  pmd_addr_end
-#define pmd_addr_end(addr, end)			(end)
+/* pmd_addr_end removed - page-walk loops folded to pgd_addr_end only (0 callers) */
 
 /* native_make_pmd removed - unused */
 

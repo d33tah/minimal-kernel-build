@@ -6,12 +6,9 @@
 #include <asm/page.h>
 #include <asm/pgtable_types.h>
 
- 
-#define pgprot_noncached(prot)						\
-	((boot_cpu_data.x86 > 3)					\
-	 ? (__pgprot(pgprot_val(prot) |					\
-		     cachemode2protval(_PAGE_CACHE_MODE_UC_MINUS)))	\
-	 : (prot))
+
+/* pgprot_noncached removed - its only refs were the dead pgprot_writecombine /
+ * pgprot_device fallback macros in linux/pgtable.h (0 callers) */
 
 #ifndef __ASSEMBLY__
 #include <linux/spinlock.h>
@@ -51,13 +48,10 @@ extern pmdval_t early_pmd_flags;
  * also supplies the folded set_pgd/pgd_clear/p4d_clear/pud_clear/p4d_val/
  * pud_val/pmd_val + __p4d/__pud/__pmd). Collapsed to the live (folded) arms. */
 
-#ifndef set_p4d
-# define set_p4d(p4dp, p4d)		native_set_p4d(p4dp, p4d)
-#endif
-
-#ifndef set_pud
-# define set_pud(pudp, pud)		native_set_pud(pudp, pud)
-#endif
+/* set_p4d / set_pud generic #ifndef fallbacks removed - both names are already
+ * #defined in pgtable_types.h (folded set_p4d->set_pud->set_pmd) before this
+ * point, so the #ifndef blocks were statically dead (and native_set_p4d /
+ * native_set_pud were referenced only from inside them) */
 
 #define pte_clear(mm, addr, ptep)	native_pte_clear(mm, addr, ptep)
 #define pmd_clear(pmd)			native_pmd_clear(pmd)

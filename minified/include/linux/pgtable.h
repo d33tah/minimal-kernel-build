@@ -94,15 +94,7 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 
 
 
-#ifndef pmd_access_permitted
-#define pmd_access_permitted(pmd, write) \
-	(pmd_present(pmd) && (!(write) || pmd_write(pmd)))
-#endif
-
-#ifndef pud_access_permitted
-#define pud_access_permitted(pud, write) \
-	(pud_present(pud) && (!(write) || pud_write(pud)))
-#endif
+/* pmd_access_permitted, pud_access_permitted removed - 0 callers tree-wide */
 
 
 /* set_{pmd,pud,p4d,pgd}_safe() + the pXd_same() predicates removed - unused */
@@ -152,13 +144,7 @@ static inline int pmd_none_or_clear_bad(pmd_t *pmd)
 
 
 
-#ifndef pgprot_writecombine
-#define pgprot_writecombine pgprot_noncached
-#endif
-
-#ifndef pgprot_device
-#define pgprot_device pgprot_noncached
-#endif
+/* pgprot_writecombine, pgprot_device removed - 0 callers tree-wide */
 
 #ifndef __HAVE_ARCH_ENTER_LAZY_MMU_MODE
 #define arch_enter_lazy_mmu_mode()	do {} while (0)

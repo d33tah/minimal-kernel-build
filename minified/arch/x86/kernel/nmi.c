@@ -1,5 +1,4 @@
 
-#include <linux/spinlock.h>
 #include <linux/kdebug.h>
 #include <linux/sched/debug.h>
 #include <linux/nmi.h>

@@ -2,7 +2,6 @@
 #include <linux/errno.h>
 #include <linux/sched.h>
 #include <linux/tty.h>
-#include <linux/tty_driver.h>
 #include <linux/file.h>
 #include <linux/mm.h>
 #include <linux/slab.h>

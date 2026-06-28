@@ -9,7 +9,6 @@
 #include <linux/tty.h>
 #include <linux/tty_driver.h>
 #include <linux/file.h>
-#include <linux/fdtable.h>
 #include <linux/console.h>
 #include <linux/mm.h>
 #include <linux/slab.h>
@@ -24,7 +23,6 @@
 
 #include <linux/uaccess.h>
 
-#include <linux/kbd_kern.h>
 #include <linux/vt_kern.h>
 
 #include "tty.h"

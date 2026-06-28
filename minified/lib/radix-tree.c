@@ -585,23 +585,6 @@ void radix_tree_iter_replace(struct radix_tree_root *root,
 	__radix_tree_replace(root, iter->node, slot, item);
 }
 
-static void node_tag_set(struct radix_tree_root *root,
-				struct radix_tree_node *node,
-				unsigned int tag, unsigned int offset)
-{
-	while (node) {
-		if (tag_get(node, tag, offset))
-			return;
-		tag_set(node, tag, offset);
-		offset = node->offset;
-		node = node->parent;
-	}
-
-	if (!root_tag_get(root, tag))
-		root_tag_set(root, tag);
-}
-
-
 static void node_tag_clear(struct radix_tree_root *root,
 				struct radix_tree_node *node,
 				unsigned int tag, unsigned int offset)
@@ -681,45 +664,16 @@ static void set_iter_tags(struct radix_tree_iter *iter,
 }
 
 
-static bool __radix_tree_delete(struct radix_tree_root *root,
-				struct radix_tree_node *node, void __rcu **slot)
-{
-	void *old = rcu_dereference_raw(*slot);
-	int values = xa_is_value(old) ? -1 : 0;
-	unsigned offset = get_slot_offset(node, slot);
-	int tag;
-
-	if (is_idr(root))
-		node_tag_set(root, node, IDR_FREE, offset);
-	else
-		for (tag = 0; tag < RADIX_TREE_MAX_TAGS; tag++)
-			node_tag_clear(root, node, tag, offset);
-
-	replace_slot(slot, NULL, node, -1, values);
-	return node && delete_node(root, node);
-}
-
-
+/*
+ * radix_tree_delete_item: runtime-dead anchor-stub. Sole caller is idr_remove
+ * (pid-table teardown), which never runs on a 1-shot boot. Body + its private
+ * helpers __radix_tree_delete and node_tag_set deleted; symbol kept for the
+ * radix-tree.h extern and the idr.c call site.
+ */
 void *radix_tree_delete_item(struct radix_tree_root *root,
 			     unsigned long index, void *item)
 {
-	struct radix_tree_node *node = NULL;
-	void __rcu **slot = NULL;
-	void *entry;
-
-	entry = __radix_tree_lookup(root, index, &node, &slot);
-	if (!slot)
-		return NULL;
-	if (!entry && (!is_idr(root) || node_tag_get(root, node, IDR_FREE,
-						get_slot_offset(node, slot))))
-		return NULL;
-
-	if (item && entry != item)
-		return NULL;
-
-	__radix_tree_delete(root, node, slot);
-
-	return entry;
+	return NULL;
 }
 
 /* radix_tree_tagged used internally by idr_get_free */

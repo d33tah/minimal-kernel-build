@@ -8,213 +8,22 @@
 
 #include "internal.h"
 
-static pud_t *get_old_pud(struct mm_struct *mm, unsigned long addr)
-{
-	pgd_t *pgd;
-
-	/*
-	 * PGTABLE_LEVELS=2 (x86_32, no PAE): P4D/PUD are folded onto the PGD,
-	 * so p4d_offset()/pud_offset() are identity casts and
-	 * p4d_none_or_clear_bad()/pud_none_or_clear_bad() are constant 0. Only
-	 * the PGD check does real work; descend straight to the PUD slot.
-	 */
-	pgd = pgd_offset(mm, addr);
-	if (pgd_none_or_clear_bad(pgd))
-		return NULL;
-
-	return pud_offset(p4d_offset(pgd, addr), addr);
-}
-
-static pmd_t *get_old_pmd(struct mm_struct *mm, unsigned long addr)
-{
-	pud_t *pud;
-	pmd_t *pmd;
-
-	pud = get_old_pud(mm, addr);
-	if (!pud)
-		return NULL;
-
-	pmd = pmd_offset(pud, addr);
-	if (pmd_none(*pmd))
-		return NULL;
-
-	return pmd;
-}
-
-static pud_t *alloc_new_pud(struct mm_struct *mm, struct vm_area_struct *vma,
-			    unsigned long addr)
-{
-	pgd_t *pgd;
-
-	/*
-	 * P4D/PUD folded onto the PGD (see get_old_pud): p4d_alloc()/pud_alloc()
-	 * never allocate and just cast the PGD slot, so this reduces to the
-	 * folded PUD offset.
-	 */
-	pgd = pgd_offset(mm, addr);
-
-	return pud_offset(p4d_offset(pgd, addr), addr);
-}
-
-static pmd_t *alloc_new_pmd(struct mm_struct *mm, struct vm_area_struct *vma,
-			    unsigned long addr)
-{
-	pud_t *pud;
-	pmd_t *pmd;
-
-	pud = alloc_new_pud(mm, vma, addr);
-	pmd = pmd_alloc(mm, pud, addr);
-
-	VM_BUG_ON(pmd_trans_huge(*pmd));
-
-	return pmd;
-}
-
-static void take_rmap_locks(struct vm_area_struct *vma)
-{
-	if (vma->vm_file)
-		i_mmap_lock_write(vma->vm_file->f_mapping);
-	if (vma->anon_vma)
-		anon_vma_lock_write(vma->anon_vma);
-}
-
-static void drop_rmap_locks(struct vm_area_struct *vma)
-{
-	if (vma->anon_vma)
-		anon_vma_unlock_write(vma->anon_vma);
-	if (vma->vm_file)
-		i_mmap_unlock_write(vma->vm_file->f_mapping);
-}
-
-static pte_t move_soft_dirty_pte(pte_t pte)
-{
-	 
-	return pte;
-}
-
-static void move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
-		unsigned long old_addr, unsigned long old_end,
-		struct vm_area_struct *new_vma, pmd_t *new_pmd,
-		unsigned long new_addr, bool need_rmap_locks)
-{
-	struct mm_struct *mm = vma->vm_mm;
-	pte_t *old_pte, *new_pte, pte;
-	spinlock_t *old_ptl, *new_ptl;
-	bool force_flush = false;
-	unsigned long len = old_end - old_addr;
-
-	 
-	if (need_rmap_locks)
-		take_rmap_locks(vma);
-
-	 
-	old_pte = pte_offset_map_lock(mm, old_pmd, old_addr, &old_ptl);
-	new_pte = pte_offset_map(new_pmd, new_addr);
-	new_ptl = pte_lockptr(mm, new_pmd);
-	if (new_ptl != old_ptl)
-		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
-	flush_tlb_batched_pending(vma->vm_mm);
-	arch_enter_lazy_mmu_mode();
-
-	for (; old_addr < old_end; old_pte++, old_addr += PAGE_SIZE,
-				   new_pte++, new_addr += PAGE_SIZE) {
-		if (pte_none(*old_pte))
-			continue;
-
-		pte = ptep_get_and_clear(mm, old_addr, old_pte);
-		 
-		if (pte_present(pte))
-			force_flush = true;
-		pte = move_pte(pte, new_vma->vm_page_prot, old_addr, new_addr);
-		pte = move_soft_dirty_pte(pte);
-		set_pte_at(mm, new_addr, new_pte, pte);
-	}
-
-	arch_leave_lazy_mmu_mode();
-	if (force_flush)
-		flush_tlb_range(vma, old_end - len, old_end);
-	if (new_ptl != old_ptl)
-		spin_unlock(new_ptl);
-	pte_unmap(new_pte - 1);
-	pte_unmap_unlock(old_pte - 1, old_ptl);
-	if (need_rmap_locks)
-		drop_rmap_locks(vma);
-}
-
 /*
- * move_normal_pud removed: PUD page-table moves require
- * CONFIG_PGTABLE_LEVELS > 2, but this is a 2-level (folded) build, so the
- * PUD-move fast path was a compile-time `return false` stub and the
- * NORMAL_PUD walk in move_page_tables could never move anything.
+ * RUNTIME-DEAD ANCHOR-STUB: move_page_tables (and its entire private helper
+ * subtree get_old_pud/get_old_pmd/alloc_new_pud/alloc_new_pmd/take_rmap_locks/
+ * drop_rmap_locks/move_soft_dirty_pte/move_ptes/get_extent) is never executed
+ * on this kernel's only job (boot + print "Hello, World!" + stay alive).
+ *
+ * It is link-live via fs/exec.c:shift_arg_pages (exec stack relocation), which
+ * itself never runs on this boot, so the whole subtree was removed and the root
+ * reduced to its success return value. The sole caller checks
+ * `length != move_page_tables(...)`; a full successful move returns
+ * `len + old_addr - old_end` with old_addr reaching old_end, i.e. exactly len.
  */
-
-enum pgt_entry {
-	NORMAL_PMD,
-};
-
-static __always_inline unsigned long get_extent(enum pgt_entry entry,
-			unsigned long old_addr, unsigned long old_end,
-			unsigned long new_addr)
-{
-	unsigned long next, extent, mask, size;
-
-	switch (entry) {
-	case NORMAL_PMD:
-		mask = PMD_MASK;
-		size = PMD_SIZE;
-		break;
-	default:
-		BUILD_BUG();
-		break;
-	}
-
-	next = (old_addr + size) & mask;
-	 
-	extent = next - old_addr;
-	if (extent > old_end - old_addr)
-		extent = old_end - old_addr;
-	next = (new_addr + size) & mask;
-	if (extent > next - new_addr)
-		extent = next - new_addr;
-	return extent;
-}
-
 unsigned long move_page_tables(struct vm_area_struct *vma,
 		unsigned long old_addr, struct vm_area_struct *new_vma,
 		unsigned long new_addr, unsigned long len,
 		bool need_rmap_locks)
 {
-	unsigned long extent, old_end;
-	pmd_t *old_pmd, *new_pmd;
-
-	if (!len)
-		return 0;
-
-	old_end = old_addr + len;
-
-	flush_cache_range(vma, old_addr, old_end);
-
-	for (; old_addr < old_end; old_addr += extent, new_addr += extent) {
-		cond_resched();
-
-		extent = get_extent(NORMAL_PMD, old_addr, old_end, new_addr);
-		old_pmd = get_old_pmd(vma->vm_mm, old_addr);
-		if (!old_pmd)
-			continue;
-		new_pmd = alloc_new_pmd(vma->vm_mm, vma, new_addr);
-		if (!new_pmd)
-			break;
-		/*
-		 * NORMAL_PMD fast-path removed: CONFIG_HAVE_MOVE_PMD is off,
-		 * so the move_pgt_entry()/move_normal_pmd() path was a
-		 * compile-time-dead branch (arch_supports_page_table_move()
-		 * folds to false). Always fall through to move_ptes().
-		 */
-		if (pte_alloc(new_vma->vm_mm, new_pmd))
-			break;
-		move_ptes(vma, old_pmd, old_addr, old_addr + extent, new_vma,
-			  new_pmd, new_addr, need_rmap_locks);
-	}
-
-	return len + old_addr - old_end;
+	return len;
 }

@@ -4,7 +4,6 @@
 #include <linux/swap.h>
 #include <linux/pagevec.h>
 #include <linux/mm_inline.h>
-#include <linux/memremap.h>
 #include <linux/percpu.h>
 #include <linux/memcontrol.h>
 #include <linux/gfp.h>

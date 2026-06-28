@@ -1,7 +1,6 @@
 
 #include <linux/stddef.h>
 #include <linux/mm.h>
-#include <linux/highmem.h>
 #include <linux/swap.h>
 #include <linux/memblock.h>
 #include <linux/compiler.h>

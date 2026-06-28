@@ -7,7 +7,6 @@
 #include <linux/pid_namespace.h>
 
 #include <linux/fs_struct.h>
-#include <linux/proc_ns.h>
 
 static struct kmem_cache *nsproxy_cachep;
 

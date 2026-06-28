@@ -6,7 +6,6 @@
 #include <linux/sched/task.h>
 #include <linux/swap.h>
 #include <linux/pagemap.h>
-#include <linux/memremap.h>
 #include <linux/rmap.h>
 #include <linux/init.h>
 #include <linux/oom.h>

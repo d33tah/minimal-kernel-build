@@ -99,36 +99,6 @@ void __init pagecache_init(void)
 		init_waitqueue_head(&folio_wait_table[i]);
 }
 
-static int wake_page_function(wait_queue_entry_t *wait, unsigned mode, int sync, void *arg)
-{
-	unsigned int flags;
-	struct wait_page_key *key = arg;
-	struct wait_page_queue *wait_page
-		= container_of(wait, struct wait_page_queue, wait);
-
-	if (!wake_page_match(wait_page, key))
-		return 0;
-
-	
-	flags = wait->flags;
-	if (flags & WQ_FLAG_EXCLUSIVE) {
-		if (test_bit(key->bit_nr, &key->folio->flags))
-			return -1;
-		if (flags & WQ_FLAG_CUSTOM) {
-			if (test_and_set_bit(key->bit_nr, &key->folio->flags))
-				return -1;
-			flags |= WQ_FLAG_DONE;
-		}
-	}
-
-	
-	smp_store_release(&wait->flags, flags | WQ_FLAG_WOKEN);
-	wake_up_state(wait->private, mode);
-
-	
-	list_del_init_careful(&wait->entry);
-	return (flags & WQ_FLAG_EXCLUSIVE) != 0;
-}
 
 static void folio_wake_bit(struct folio *folio, int bit_nr)
 {
@@ -170,91 +140,15 @@ enum behavior {
 	DROP,		
 };
 
-static inline bool folio_trylock_flag(struct folio *folio, int bit_nr,
-					struct wait_queue_entry *wait)
-{
-	if (wait->flags & WQ_FLAG_EXCLUSIVE) {
-		if (test_and_set_bit(bit_nr, &folio->flags))
-			return false;
-	} else if (test_bit(bit_nr, &folio->flags))
-		return false;
-
-	wait->flags |= WQ_FLAG_WOKEN | WQ_FLAG_DONE;
-	return true;
-}
-
-static inline int folio_wait_bit_common(struct folio *folio, int bit_nr,
-		int state, enum behavior behavior)
-{
-	wait_queue_head_t *q = folio_waitqueue(folio);
-	int unfairness = 5;
-	struct wait_page_queue wait_page;
-	wait_queue_entry_t *wait = &wait_page.wait;
-
-	/* Stub: skip thrashing/delayacct tracking for minimal kernel */
-
-	init_wait(wait);
-	wait->func = wake_page_function;
-	wait_page.folio = folio;
-	wait_page.bit_nr = bit_nr;
-
-repeat:
-	wait->flags = 0;
-	if (behavior == EXCLUSIVE) {
-		wait->flags = WQ_FLAG_EXCLUSIVE;
-		if (--unfairness < 0)
-			wait->flags |= WQ_FLAG_CUSTOM;
-	}
-
-	spin_lock_irq(&q->lock);
-	folio_set_waiters(folio);
-	if (!folio_trylock_flag(folio, bit_nr, wait))
-		__add_wait_queue_entry_tail(q, wait);
-	spin_unlock_irq(&q->lock);
-
-	if (behavior == DROP)
-		folio_put(folio);
-
-	for (;;) {
-		unsigned int flags;
-
-		set_current_state(state);
-
-		flags = smp_load_acquire(&wait->flags);
-		if (!(flags & WQ_FLAG_WOKEN)) {
-			if (signal_pending_state(state, current))
-				break;
-
-			io_schedule();
-			continue;
-		}
-
-		if (behavior != EXCLUSIVE)
-			break;
-
-		if (flags & WQ_FLAG_DONE)
-			break;
-
-		if (unlikely(test_and_set_bit(bit_nr, folio_flags(folio, 0))))
-			goto repeat;
-
-		wait->flags |= WQ_FLAG_DONE;
-		break;
-	}
-
-	finish_wait(q, wait);
-
-	/* Stub: skip thrashing/delayacct cleanup for minimal kernel */
-
-	if (behavior == EXCLUSIVE)
-		return wait->flags & WQ_FLAG_DONE ? 0 : -EINTR;
-
-	return wait->flags & WQ_FLAG_WOKEN ? 0 : -EINTR;
-}
-
+/*
+ * Stub: nothing waits on a folio bit on a single-shot boot (no contention,
+ * no async I/O completion wait). folio_wait_bit_common and its private
+ * helpers (folio_trylock_flag, wake_page_function) were runtime-dead; the
+ * two link-live callers below are reduced to no-op waits.
+ */
 int folio_wait_bit_killable(struct folio *folio, int bit_nr)
 {
-	return folio_wait_bit_common(folio, bit_nr, TASK_KILLABLE, SHARED);
+	return 0;
 }
 
 
@@ -283,8 +177,6 @@ void folio_unlock(struct folio *folio)
 
 void __folio_lock(struct folio *folio)
 {
-	folio_wait_bit_common(folio, PG_locked, TASK_UNINTERRUPTIBLE,
-				EXCLUSIVE);
 }
 
 static void *mapping_get_entry(struct address_space *mapping, pgoff_t index)

@@ -60,10 +60,7 @@ static inline unsigned long native_read_cr4(void)
 
 void native_write_cr4(unsigned long val);
 
-static inline void native_wbinvd(void)
-{
-	asm volatile("wbinvd": : :"memory");
-}
+/* native_wbinvd / wbinvd removed - unused */
 
 /* native_load_gs_index, asm_load_gs_index removed - unused */
 
@@ -109,20 +106,11 @@ static inline void __write_cr4(unsigned long x)
 	native_write_cr4(x);
 }
 
-static inline void wbinvd(void)
-{
-	native_wbinvd();
-}
-
 /* load_gs_index removed - unused */
 
 #define nop() asm volatile ("nop")
 
-/* Used by sync_core.h */
-static inline void serialize(void)
-{
-	asm volatile(".byte 0xf, 0x1, 0xe8" ::: "memory");
-}
+/* serialize removed - unused (only sync_core.h called it, now removed) */
 
 /* movdir64b removed - unused */
 

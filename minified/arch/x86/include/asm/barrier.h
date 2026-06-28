@@ -69,17 +69,7 @@ do {									\
 #define nop()	asm volatile ("nop")
 #endif
 
-#ifdef __mb
-#define mb()	do {  __mb(); } while (0)
-#endif
-
-#ifdef __rmb
-#define rmb()	do {  __rmb(); } while (0)
-#endif
-
-#ifdef __wmb
-#define wmb()	do {  __wmb(); } while (0)
-#endif
+/* #ifdef __mb/__rmb/__wmb fallback blocks removed - __mb/__rmb/__wmb never #defined (statically dead) */
 
 #ifdef __dma_rmb
 #define dma_rmb()	do {  __dma_rmb(); } while (0)

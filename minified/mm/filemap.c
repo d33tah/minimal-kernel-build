@@ -13,7 +13,6 @@
 #include <linux/hash.h>
 #include <linux/pagevec.h>
 #include <linux/memcontrol.h>
-#include <linux/rmap.h>
 #include "internal.h"
 
 #include <asm/mman.h>

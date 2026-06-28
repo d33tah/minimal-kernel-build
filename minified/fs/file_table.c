@@ -9,7 +9,6 @@
 #include <linux/mount.h>
 #include <linux/cdev.h>
 #include <linux/task_work.h>
-#include <linux/swap.h>
 
 #include <linux/atomic.h>
 

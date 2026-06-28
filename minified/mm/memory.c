@@ -4,7 +4,6 @@
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/task.h>
-#include <linux/mman.h>
 #include <linux/swap.h>
 #include <linux/pagemap.h>
 #include <linux/memremap.h>
@@ -13,7 +12,6 @@
 #include <linux/oom.h>
 #include <linux/file.h>
 #include <linux/memcontrol.h>
-#include <linux/swapops.h>
 #include <linux/gfp.h>
 
 #include <asm/mmu_context.h>

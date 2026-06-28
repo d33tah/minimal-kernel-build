@@ -11,7 +11,6 @@
 #include <linux/personality.h>
 #include <linux/security.h>
 #include <linux/shmem_fs.h>
-#include <linux/mount.h>
 #include <linux/rmap.h>
 #include <linux/mmdebug.h>
 #include <linux/sched/coredump.h>

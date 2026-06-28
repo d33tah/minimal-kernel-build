@@ -4,7 +4,6 @@
 #include <linux/sched/task.h>
 #include <linux/pagemap.h>
 #include <linux/swap.h>
-#include <linux/swapops.h>
 #include <linux/slab.h>
 #include <linux/init.h>
 #include <linux/rmap.h>

@@ -20,6 +20,5 @@ static inline struct user_struct *get_uid(struct user_struct *u)
 	refcount_inc(&u->__count);
 	return u;
 }
-extern void free_uid(struct user_struct *);
 
 #endif  

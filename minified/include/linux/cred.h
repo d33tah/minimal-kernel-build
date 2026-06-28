@@ -24,16 +24,6 @@ static inline struct group_info *get_group_info(struct group_info *gi)
 	return gi;
 }
 
-#define put_group_info(group_info)			\
-do {							\
-	if (atomic_dec_and_test(&(group_info)->usage))	\
-		groups_free(group_info);		\
-} while (0)
-
-static inline void groups_free(struct group_info *group_info)
-{
-}
-
 
 struct cred {
 	atomic_t	usage;

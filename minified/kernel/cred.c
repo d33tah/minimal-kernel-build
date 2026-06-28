@@ -26,33 +26,16 @@ struct cred init_cred = {
 	.ucounts		= &init_ucounts,
 };
 
-static void put_cred_rcu(struct rcu_head *rcu)
-{
-	struct cred *cred = container_of(rcu, struct cred, rcu);
-
-	if (atomic_read(&cred->usage) != 0)
-		panic("CRED: put_cred_rcu() sees %p with usage %d\n",
-		      cred, atomic_read(&cred->usage));
-
-	if (cred->group_info)
-		put_group_info(cred->group_info);
-	free_uid(cred->user);
-	if (cred->ucounts)
-		put_ucounts(cred->ucounts);
-	put_user_ns(cred->user_ns);
-	kmem_cache_free(cred_jar, cred);
-}
-
 void __put_cred(struct cred *cred)
 {
-	BUG_ON(atomic_read(&cred->usage) != 0);
-	BUG_ON(cred == current->cred);
-	BUG_ON(cred == current->real_cred);
-
-	if (cred->non_rcu)
-		put_cred_rcu(&cred->rcu);
-	else
-		call_rcu(&cred->rcu, put_cred_rcu);
+	/*
+	 * RUNTIME-DEAD ANCHOR-STUB: the cred kref-release root. Reached only via
+	 * put_cred() when ->usage drops to 0, which never happens on this 1-shot
+	 * boot (init_cred holds permanent refs; no cred is ever fully released).
+	 * HIT=False. Private rcu callback put_cred_rcu (group_info/uid/ucounts/
+	 * user_ns release + kmem_cache_free) cascaded away. Symbol kept for the
+	 * put_cred() inline in cred.h.
+	 */
 }
 
 void exit_creds(struct task_struct *tsk)

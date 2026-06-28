@@ -1,7 +1,6 @@
 
 #include <linux/entry-common.h>
 #include <linux/resume_user_mode.h>
-#include <linux/highmem.h>
 #include <linux/jump_label.h>
 #include <linux/init_task.h>
 #include <linux/tick.h>

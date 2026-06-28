@@ -13,7 +13,6 @@
 #include <linux/nmi.h>
 #include <linux/nospec.h>
 
-#include <linux/timex.h>
 
 
 

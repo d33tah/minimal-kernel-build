@@ -4,7 +4,6 @@
 #include <linux/bitmap.h>
 #include <linux/cpumask.h>
 #include <linux/memblock.h>
-#include <linux/err.h>
 unsigned long gcd(unsigned long a, unsigned long b) __attribute_const__;
 static inline unsigned long lcm(unsigned long a, unsigned long b)
 {

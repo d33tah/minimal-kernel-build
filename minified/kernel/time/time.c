@@ -1,6 +1,5 @@
 
 #include <linux/kernel.h>
-#include <linux/timex.h>
 #include <linux/timekeeper_internal.h>
 #include <linux/errno.h>
 #include <linux/syscalls.h>

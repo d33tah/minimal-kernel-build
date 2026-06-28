@@ -3,7 +3,6 @@
 #include <linux/interrupt.h>
 #include <linux/nmi.h>
 #include <linux/percpu.h>
-#include <linux/sched.h>
 
 #include <asm/irq_regs.h>
 

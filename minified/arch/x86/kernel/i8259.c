@@ -2,7 +2,6 @@
 #include <linux/ioport.h>
 #include <linux/irq.h>
 #include <linux/kernel_stat.h>
-#include <linux/bitops.h>
 #include <linux/io.h>
 #include <linux/delay.h>
 #include <linux/pgtable.h>

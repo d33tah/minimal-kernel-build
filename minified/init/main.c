@@ -36,7 +36,6 @@
 #include <linux/utsname.h>
 #include <linux/rmap.h>
 #include <linux/debug_locks.h>
-#include <linux/lockdep.h>
 #include <linux/vmalloc.h>
 #include <linux/pid_namespace.h>
 

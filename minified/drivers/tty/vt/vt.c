@@ -17,7 +17,6 @@
 #include <linux/interrupt.h>
 
 
-#include <linux/notifier.h>
 #include <linux/device.h>
 
 

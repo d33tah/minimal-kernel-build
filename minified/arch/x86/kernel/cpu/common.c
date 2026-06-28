@@ -2,7 +2,6 @@
 #define USE_EARLY_PGTABLE_L5
 
 #include <linux/linkage.h>
-#include <linux/bitops.h>
 #include <linux/kernel.h>
 #include <linux/percpu.h>
 #include <linux/string.h>

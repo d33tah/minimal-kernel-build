@@ -1,10 +1,8 @@
 #include <linux/types.h>
 #include <linux/kernel.h>
-#include <linux/spinlock.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/debug.h>
 #include <linux/atomic.h>
-#include <linux/notifier.h>
 #include <linux/moduleparam.h>
 #include <linux/kthread.h>
 #include <linux/tick.h>

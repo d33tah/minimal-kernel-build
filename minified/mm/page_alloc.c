@@ -7,13 +7,10 @@
 #include <linux/memblock.h>
 #include <linux/compiler.h>
 #include <linux/kernel.h>
-#include <linux/pagevec.h>
-#include <linux/oom.h>
 #include <linux/topology.h>
 #include <linux/nodemask.h>
 #include <linux/vmalloc.h>
 #include <linux/vmstat.h>
-#include <linux/memremap.h>
 #include <linux/pfn.h>
 
 
@@ -22,7 +19,6 @@ struct alloc_context;
 #include <linux/sched/mm.h>
 
 #include <linux/memcontrol.h>
-#include <linux/lockdep.h>
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
 #include <asm/div64.h>

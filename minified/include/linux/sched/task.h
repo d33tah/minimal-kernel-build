@@ -60,12 +60,6 @@ extern void free_task(struct task_struct *tsk);
 
 #define sched_exec()   {}
 
-static inline struct task_struct *get_task_struct(struct task_struct *t)
-{
-	refcount_inc(&t->usage);
-	return t;
-}
-
 extern void __put_task_struct(struct task_struct *t);
 
 static inline void put_task_struct(struct task_struct *t)

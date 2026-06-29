@@ -9,8 +9,4 @@
 
 
 
-static inline void inode_detach_wb(struct inode *inode)
-{
-}
-
 #endif

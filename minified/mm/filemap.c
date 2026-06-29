@@ -634,23 +634,16 @@ vm_fault_t filemap_map_pages(struct vm_fault *vmf,
 
 vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf)
 {
-	struct address_space *mapping = vmf->vma->vm_file->f_mapping;
-	struct folio *folio = page_folio(vmf->page);
-	vm_fault_t ret = VM_FAULT_LOCKED;
-
-	sb_start_pagefault(mapping->host->i_sb);
-	file_update_time(vmf->vma->vm_file);
-	folio_lock(folio);
-	if (folio->mapping != mapping) {
-		folio_unlock(folio);
-		ret = VM_FAULT_NOPAGE;
-		goto out;
-	}
-	
-	folio_mark_dirty(folio);
-out:
-	sb_end_pagefault(mapping->host->i_sb);
-	return ret;
+	/*
+	 * RUNTIME-DEAD SAFE-FALLBACK STUB: the .page_mkwrite fn-ptr of
+	 * generic_file_vm_ops. This kernel never takes a shared file-backed
+	 * write fault on its only job (boot + print + stay-alive); the
+	 * coverage trace shows this never executes. Kept link-live for the
+	 * vm_operations_struct. The sole caller do_page_mkwrite() (mm/memory.c)
+	 * tolerates a non-LOCKED return (it locks the page itself), so
+	 * returning 0 is the safe fallback.
+	 */
+	return 0;
 }
 
 const struct vm_operations_struct generic_file_vm_ops = {

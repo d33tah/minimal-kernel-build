@@ -2,12 +2,9 @@
 #include <linux/mm.h>
 #include <linux/mm_inline.h>
 #include <linux/swap.h>
-#include <linux/pagemap.h>
 #include <linux/rmap.h>
-#include <linux/init.h>
 #include <linux/oom.h>
 #include <linux/file.h>
-#include <linux/gfp.h>
 
 #include <asm/pgalloc.h>
 #include <asm/tlb.h>

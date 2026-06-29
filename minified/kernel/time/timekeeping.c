@@ -4,7 +4,6 @@
 #include <linux/sched/clock.h>
 #include <linux/clocksource.h>
 #include <linux/jiffies.h>
-#include <linux/time.h>
 #include <linux/timex.h>
 #include <linux/stop_machine.h>
 

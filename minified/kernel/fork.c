@@ -10,7 +10,6 @@
 #include <linux/mm.h>
 #include <linux/nsproxy.h>
 #include <linux/kthread.h>
-#include <linux/rcupdate.h>
 #include <linux/mm_inline.h>
 #include <linux/ptrace.h>
 #include <linux/tty.h>

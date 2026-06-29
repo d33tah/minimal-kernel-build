@@ -72,17 +72,6 @@ extern void force_sig(int);
 extern void force_fatal_sig(int);
 /* zap_other_threads removed: only caller was do_group_exit (exit_group), gone */
 
-static inline bool __set_notify_signal(struct task_struct *task)
-{
-	return !test_and_set_tsk_thread_flag(task, TIF_NOTIFY_SIGNAL) &&
-	       !wake_up_state(task, TASK_INTERRUPTIBLE);
-}
-
-static inline void set_notify_signal(struct task_struct *task)
-{
-	__set_notify_signal(task);
-}
-
 static inline int task_sigpending(struct task_struct *p)
 {
 	return unlikely(test_tsk_thread_flag(p,TIF_SIGPENDING));

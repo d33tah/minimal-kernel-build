@@ -242,29 +242,12 @@ size_t copy_page_from_iter_atomic(struct page *page, unsigned offset, size_t byt
 
 void iov_iter_revert(struct iov_iter *i, size_t unroll)
 {
-	if (!unroll)
-		return;
-	if (WARN_ON(unroll > MAX_RW_COUNT))
-		return;
-	i->count += unroll;
-	if (unroll <= i->iov_offset) {
-		i->iov_offset -= unroll;
-		return;
-	}
-	unroll -= i->iov_offset;
-	{
-		const struct iovec *iov = i->iov;
-		while (1) {
-			size_t n = (--iov)->iov_len;
-			i->nr_segs++;
-			if (unroll <= n) {
-				i->iov = iov;
-				i->iov_offset = n - unroll;
-				return;
-			}
-			unroll -= n;
-		}
-	}
+	/*
+	 * VOID-CALLBACK-NEVER-FIRES (runtime trace: HIT=False).  The sole caller
+	 * (tty_io.c redirected_tty_write) only reverts on a partial write
+	 * (ret != size); this boot's tty writes always complete fully, so the
+	 * unroll body never executes.
+	 */
 }
 
 

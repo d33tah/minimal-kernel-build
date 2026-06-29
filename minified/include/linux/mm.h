@@ -355,14 +355,11 @@ void __put_page(struct page *page);
 
 void split_page(struct page *page, unsigned int order);
 
-typedef void compound_page_dtor(struct page *);
-
 enum compound_dtor_id {
 	NULL_COMPOUND_DTOR,
 	COMPOUND_PAGE_DTOR,
 	NR_COMPOUND_DTORS,
 };
-extern compound_page_dtor * const compound_page_dtors[NR_COMPOUND_DTORS];
 
 static inline void set_compound_page_dtor(struct page *page,
 		enum compound_dtor_id compound_dtor)
@@ -393,8 +390,6 @@ static inline int thp_nr_pages(struct page *page)
 	VM_BUG_ON_PGFLAGS(PageTail(page), page);
 	return compound_nr(page);
 }
-
-void free_compound_page(struct page *page);
 
 static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
 {

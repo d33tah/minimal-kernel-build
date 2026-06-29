@@ -60,13 +60,6 @@ static char * const zone_names[MAX_NR_ZONES] = {
 	 "Movable",
 };
 
-compound_page_dtor * const compound_page_dtors[NR_COMPOUND_DTORS] = {
-	[NULL_COMPOUND_DTOR] = NULL,
-	[COMPOUND_PAGE_DTOR] = free_compound_page,
-};
-
-
-
 static unsigned long arch_zone_lowest_possible_pfn[MAX_NR_ZONES] __initdata;
 static unsigned long arch_zone_highest_possible_pfn[MAX_NR_ZONES] __initdata;
 
@@ -166,11 +159,6 @@ static inline void free_the_page(struct page *page, unsigned int order)
 		free_unref_page(page, order);
 	else
 		__free_pages_ok(page, order, FPI_NONE);
-}
-
-void free_compound_page(struct page *page)
-{
-	free_the_page(page, compound_order(page));
 }
 
 static void prep_compound_head(struct page *page, unsigned int order)

@@ -276,30 +276,17 @@ void __init inode_init(void)
 					 init_once);
 }
 
-static int no_blkdev_open(struct inode *inode, struct file *filp)
-{
-	return -ENODEV;
-}
-
-const struct file_operations def_blk_fops = {
-	.open		= no_blkdev_open,
-	.llseek		= noop_llseek,
-};
-
 void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 {
+	/* This minimal kernel's initramfs creates exactly one special node,
+	 * /dev/console (char 5:1), so only the S_ISCHR branch ever fires at
+	 * runtime; the block/fifo/sock branches are runtime-dead -> dropped
+	 * (def_blk_fops/no_blkdev_open/pipefifo_fops cascade-deleted). */
 	inode->i_mode = mode;
 	if (S_ISCHR(mode)) {
 		inode->i_fop = &def_chr_fops;
 		inode->i_rdev = rdev;
-	} else if (S_ISBLK(mode)) {
-		inode->i_fop = &def_blk_fops;
-		inode->i_rdev = rdev;
-	} else if (S_ISFIFO(mode))
-		inode->i_fop = &pipefifo_fops;
-	else if (S_ISSOCK(mode))
-		;	
-	else
+	} else
 		printk(KERN_DEBUG "init_special_inode: bogus i_mode (%o) for"
 				  " inode %s:%lu\n", mode, inode->i_sb->s_id,
 				  inode->i_ino);

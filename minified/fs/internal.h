@@ -57,8 +57,6 @@ extern int vfs_open(const struct path *, struct file *);
 
 
 
- 
-extern const struct file_operations pipefifo_fops;
 
 
 extern const struct dentry_operations ns_dentry_operations;

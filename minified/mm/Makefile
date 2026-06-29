@@ -38,7 +38,7 @@ CFLAGS_init-mm.o += $(call cc-disable-warning, initializer-overrides)
 mmu-y			:= nommu.o
 mmu-$(CONFIG_MMU)	:= memory.o \
 			   mmap.o mmu_gather.o mremap.o \
-			   pgtable-generic.o rmap.o vmalloc.o
+			   rmap.o vmalloc.o
 
 
 ifdef CONFIG_CROSS_MEMORY_ATTACH

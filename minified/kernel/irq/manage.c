@@ -38,12 +38,22 @@ static void irq_release_resources(struct irq_desc *desc)
 		c->irq_release_resources(d);
 }
 
+/*
+ * The only two IRQs requested on this build are the legacy timer (irq 0,
+ * IRQF_NOBALANCING|IRQF_IRQPOLL|IRQF_TIMER) and the 8259 cascade (irq 2,
+ * IRQF_NO_THREAD), each registered EXACTLY ONCE. So desc->action is always
+ * NULL on entry (shared == 0 unconditionally), and none of IRQF_SHARED /
+ * IRQF_ONESHOT / IRQF_PERCPU / IRQF_TRIGGER_MASK is ever set. The shared-IRQ
+ * handler-list walk, the oneshot thread_mask setup, the trigger-type config,
+ * the per-cpu routing and the spurious-disable recovery are all statically
+ * dead and have been folded out. Only the single-handler fresh-register path
+ * survives.
+ */
 static int
 __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 {
-	struct irqaction *old, **old_ptr;
-	unsigned long flags, thread_mask = 0;
-	int ret, shared = 0;
+	unsigned long flags;
+	int ret;
 
 	if (!desc)
 		return -EINVAL;
@@ -53,166 +63,51 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 
 	new->irq = irq;
 
-	if (!(new->flags & IRQF_TRIGGER_MASK))
-		new->flags |= irqd_get_trigger_type(&desc->irq_data);
-
-	if (desc->irq_data.chip->flags & IRQCHIP_ONESHOT_SAFE)
-		new->flags &= ~IRQF_ONESHOT;
+	new->flags |= irqd_get_trigger_type(&desc->irq_data);
 
 	mutex_lock(&desc->request_mutex);
 
 	chip_bus_lock(desc);
 
-	if (!desc->action) {
-		ret = irq_request_resources(desc);
-		if (ret) {
-			pr_err("Failed to request resources for %s (irq %d) on irqchip %s\n",
-			       new->name, irq, desc->irq_data.chip->name);
-			goto out_bus_unlock;
-		}
+	ret = irq_request_resources(desc);
+	if (ret) {
+		pr_err("Failed to request resources for %s (irq %d) on irqchip %s\n",
+		       new->name, irq, desc->irq_data.chip->name);
+		goto out_bus_unlock;
 	}
 
 	raw_spin_lock_irqsave(&desc->lock, flags);
-	old_ptr = &desc->action;
-	old = *old_ptr;
-	if (old) {
-		
-		unsigned int oldtype;
 
-		if (desc->istate & IRQS_NMI) {
-			pr_err("Invalid attempt to share NMI for %s (irq %d) on irqchip %s.\n",
-				new->name, irq, desc->irq_data.chip->name);
-			ret = -EINVAL;
-			goto out_unlock;
-		}
+	ret = irq_activate(desc);
+	if (ret)
+		goto out_unlock;
 
-		if (irqd_trigger_type_was_set(&desc->irq_data)) {
-			oldtype = irqd_get_trigger_type(&desc->irq_data);
-		} else {
-			oldtype = new->flags & IRQF_TRIGGER_MASK;
-			irqd_set_trigger_type(&desc->irq_data, oldtype);
-		}
+	desc->istate &= ~(IRQS_AUTODETECT | IRQS_SPURIOUS_DISABLED | \
+			  IRQS_ONESHOT | IRQS_WAITING);
+	irqd_clear(&desc->irq_data, IRQD_IRQ_INPROGRESS);
 
-		if (!((old->flags & new->flags) & IRQF_SHARED) ||
-		    (oldtype != (new->flags & IRQF_TRIGGER_MASK)) ||
-		    ((old->flags ^ new->flags) & IRQF_ONESHOT))
-			goto mismatch;
-
-		if ((old->flags & IRQF_PERCPU) !=
-		    (new->flags & IRQF_PERCPU))
-			goto mismatch;
-
-		do {
-			
-			thread_mask |= old->thread_mask;
-			old_ptr = &old->next;
-			old = *old_ptr;
-		} while (old);
-		shared = 1;
+	if (new->flags & IRQF_NOBALANCING) {
+		irq_settings_set_no_balancing(desc);
+		irqd_set(&desc->irq_data, IRQD_NO_BALANCING);
 	}
 
-	if (new->flags & IRQF_ONESHOT) {
-		
-		if (thread_mask == ~0UL) {
-			ret = -EBUSY;
-			goto out_unlock;
-		}
-		
-		new->thread_mask = 1UL << ffz(thread_mask);
+	if (!(new->flags & IRQF_NO_AUTOEN) &&
+	    irq_settings_can_autoenable(desc)) {
+		irq_startup(desc, IRQ_RESEND, IRQ_START_COND);
+	} else {
+		desc->depth = 1;
 	}
 
-	if (!shared) {
-		
-		if (new->flags & IRQF_TRIGGER_MASK) {
-			ret = __irq_set_trigger(desc,
-						new->flags & IRQF_TRIGGER_MASK);
-
-			if (ret)
-				goto out_unlock;
-		}
-
-		ret = irq_activate(desc);
-		if (ret)
-			goto out_unlock;
-
-		desc->istate &= ~(IRQS_AUTODETECT | IRQS_SPURIOUS_DISABLED | \
-				  IRQS_ONESHOT | IRQS_WAITING);
-		irqd_clear(&desc->irq_data, IRQD_IRQ_INPROGRESS);
-
-		if (new->flags & IRQF_PERCPU) {
-			irqd_set(&desc->irq_data, IRQD_PER_CPU);
-			irq_settings_set_per_cpu(desc);
-			if (new->flags & IRQF_NO_DEBUG)
-				irq_settings_set_no_debug(desc);
-		}
-
-		if (new->flags & IRQF_ONESHOT)
-			desc->istate |= IRQS_ONESHOT;
-
-		if (new->flags & IRQF_NOBALANCING) {
-			irq_settings_set_no_balancing(desc);
-			irqd_set(&desc->irq_data, IRQD_NO_BALANCING);
-		}
-
-		if (!(new->flags & IRQF_NO_AUTOEN) &&
-		    irq_settings_can_autoenable(desc)) {
-			irq_startup(desc, IRQ_RESEND, IRQ_START_COND);
-		} else {
-			
-			WARN_ON_ONCE(new->flags & IRQF_SHARED);
-			
-			desc->depth = 1;
-		}
-
-	} else if (new->flags & IRQF_TRIGGER_MASK) {
-		unsigned int nmsk = new->flags & IRQF_TRIGGER_MASK;
-		unsigned int omsk = irqd_get_trigger_type(&desc->irq_data);
-
-		if (nmsk != omsk)
-			
-			pr_warn("irq %d uses trigger mode %u; requested %u\n",
-				irq, omsk, nmsk);
-	}
-
-	*old_ptr = new;
+	desc->action = new;
 
 	desc->irq_count = 0;
 	desc->irqs_unhandled = 0;
-
-	if (shared && (desc->istate & IRQS_SPURIOUS_DISABLED)) {
-		desc->istate &= ~IRQS_SPURIOUS_DISABLED;
-		switch (desc->depth) {
-		case 0:
- err_out:
-			WARN(1, KERN_WARNING "Unbalanced enable for IRQ %d\n",
-			     irq_desc_get_irq(desc));
-			break;
-		case 1: {
-			if (desc->istate & IRQS_SUSPENDED)
-				goto err_out;
-
-			irq_settings_set_noprobe(desc);
-
-			irq_startup(desc, IRQ_RESEND, IRQ_START_FORCE);
-			break;
-		}
-		default:
-			desc->depth--;
-		}
-	}
 
 	raw_spin_unlock_irqrestore(&desc->lock, flags);
 	chip_bus_sync_unlock(desc);
 	mutex_unlock(&desc->request_mutex);
 
 	return 0;
-
-mismatch:
-	if (!(new->flags & IRQF_PROBE_SHARED)) {
-		pr_err("Flags mismatch irq %d. %08x (%s) vs. %08x (%s)\n",
-		       irq, new->flags, new->name, old->flags, old->name);
-	}
-	ret = -EBUSY;
 
 out_unlock:
 	raw_spin_unlock_irqrestore(&desc->lock, flags);

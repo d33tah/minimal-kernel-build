@@ -50,7 +50,6 @@ struct irqaction {
 	struct irqaction	*next;
 	unsigned int		irq;
 	unsigned int		flags;
-	unsigned long		thread_mask;
 	const char		*name;
 } ____cacheline_internodealigned_in_smp;
 

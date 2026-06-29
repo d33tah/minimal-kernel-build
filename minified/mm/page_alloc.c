@@ -4,8 +4,6 @@
 #include <linux/memblock.h>
 #include <linux/kernel.h>
 #include <linux/nodemask.h>
-#include <linux/vmstat.h>
-#include <linux/pfn.h>
 
 
 struct alloc_context;

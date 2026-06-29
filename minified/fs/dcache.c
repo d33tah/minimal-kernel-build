@@ -3,11 +3,6 @@
 #include <linux/fs.h>
 #include <linux/slab.h>
 #include <linux/init.h>
-#include <linux/hash.h>
-#include <linux/cache.h>
-#include <linux/seqlock.h>
-#include <linux/rculist_bl.h>
-#include <linux/list_lru.h>
 #include <linux/memblock.h>
 #include "internal.h"
 

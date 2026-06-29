@@ -2,7 +2,6 @@
 
 #include <linux/sched.h>
 #include <linux/sched/task_stack.h>
-#include <linux/smp.h>
 #include <linux/ptrace.h>
 #include <linux/percpu.h>
 #include <linux/kdebug.h>

@@ -33,13 +33,13 @@
 32	i386	gtty
 35	i386	ftime
 #41	i386	dup			sys_dup
-42	i386	pipe			sys_pipe
+# 42 pipe removed (unreachable -> sys_ni; init issues only write/exit)
 44	i386	prof
 # 45 brk removed (unreachable: init does not call brk; exec sets mm->brk internally)
 # 51 acct removed (unreachable, routes to sys_ni)
 # 52 umount2 removed (unreachable)
 53	i386	lock
-54	i386	ioctl			sys_ioctl			compat_sys_ioctl
+# 54 ioctl removed (unreachable -> sys_ni; init issues only write/exit)
 55	i386	fcntl
 56	i386	mpx
 58	i386	ulimit
@@ -136,7 +136,7 @@
 # 310	i386	unshare			sys_unshare  (removed, unreachable -> sys_ni)
 # 320	i386	utimensat		sys_utimensat_time32  (removed, unreachable -> sys_ni)
 #330	i386	dup3			sys_dup3
-331	i386	pipe2			sys_pipe2
+# 331 pipe2 removed (unreachable -> sys_ni; init issues only write/exit)
 333	i386	preadv
 334	i386	pwritev
 # 343	i386	clock_adjtime		sys_clock_adjtime32  (posix timers: unreachable, -> sys_ni)

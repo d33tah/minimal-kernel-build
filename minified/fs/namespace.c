@@ -1,5 +1,4 @@
 
-#include <linux/mnt_namespace.h>
 #include <linux/user_namespace.h>
 #include <linux/cred.h>
 #include <linux/proc_ns.h>

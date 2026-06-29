@@ -5,7 +5,6 @@
 #include <linux/gfp.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
-#include <linux/mman.h>
 #include <linux/pagemap.h>
 #include <linux/uio.h>
 /* error-injection.h - only need ALLOW_ERROR_INJECTION macro */
@@ -14,8 +13,6 @@
 #include <linux/pagevec.h>
 #include <linux/memcontrol.h>
 #include "internal.h"
-
-#include <asm/mman.h>
 
 noinline int __filemap_add_folio(struct address_space *mapping,
 		struct folio *folio, pgoff_t index, gfp_t gfp, void **shadowp)

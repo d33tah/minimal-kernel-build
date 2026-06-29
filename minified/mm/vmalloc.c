@@ -10,7 +10,6 @@
 #include <linux/pgtable.h>
 
 #include "internal.h"
-#include "pgalloc-track.h"
 
 bool is_vmalloc_addr(const void *x)
 {

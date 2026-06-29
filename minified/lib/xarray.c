@@ -63,23 +63,6 @@ static inline void node_mark_all(struct xa_node *node, xa_mark_t mark)
 	mark = (__force xa_mark_t)((__force unsigned)(mark) + 1); \
 } while (0)
 
-static void xas_squash_marks(const struct xa_state *xas)
-{
-	unsigned int mark = 0;
-	unsigned int limit = xas->xa_offset + xas->xa_sibs + 1;
-
-	if (!xas->xa_sibs)
-		return;
-
-	do {
-		unsigned long *marks = xas->xa_node->marks[mark];
-		if (find_next_bit(marks, limit, xas->xa_offset + 1) == limit)
-			continue;
-		__set_bit(xas->xa_offset, marks);
-		bitmap_clear(marks, xas->xa_offset + 1, xas->xa_sibs);
-	} while (mark++ != (__force unsigned)XA_MARK_MAX);
-}
-
 static unsigned int get_offset(unsigned long index, struct xa_node *node)
 {
 	return (index >> node->shift) & XA_CHUNK_MASK;
@@ -511,19 +494,20 @@ void *xas_store(struct xa_state *xas, void *entry)
 	if (xas_invalid(xas))
 		return first;
 	node = xas->xa_node;
-	if (node && (xas->xa_shift < node->shift))
-		xas->xa_sibs = 0;
-	if ((first == entry) && !xas->xa_sibs)
+	/*
+	 * Order-0 only: every xa_state in this build is created via XA_STATE
+	 * (xa_shift=0, xa_sibs=0) and xas_set_order BUG_ON(order>0), so xa_sibs
+	 * is provably constant-0. The multi-slot/sibling arms (xa_sibs squash,
+	 * sibling-entry creation) are statically dead and folded out.
+	 */
+	if (first == entry)
 		return first;
 
 	next = first;
 	offset = xas->xa_offset;
-	max = xas->xa_offset + xas->xa_sibs;
-	if (node) {
+	max = xas->xa_offset;
+	if (node)
 		slot = &node->slots[offset];
-		if (xas->xa_sibs)
-			xas_squash_marks(xas);
-	}
 	if (!entry) {
 		xa_mark_t mark = 0;
 
@@ -550,8 +534,6 @@ void *xas_store(struct xa_state *xas, void *entry)
 		if (entry) {
 			if (offset == max)
 				break;
-			if (!xa_is_sibling(entry))
-				entry = xa_mk_sibling(xas->xa_offset);
 		} else {
 			if (offset == XA_CHUNK_MASK)
 				break;

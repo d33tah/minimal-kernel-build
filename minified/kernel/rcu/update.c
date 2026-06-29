@@ -1,5 +1,3 @@
-#include <linux/types.h>
-#include <linux/kernel.h>
 #include <linux/moduleparam.h>
 #include <linux/rcupdate_wait.h>
 

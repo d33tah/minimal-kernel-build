@@ -1,7 +1,5 @@
 
-#include <linux/types.h>
 #include <linux/tty.h>
-#include <linux/slab.h>
 #include "tty.h"
 
 #define MIN_TTYB_SIZE	256

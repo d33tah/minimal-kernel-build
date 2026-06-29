@@ -1,5 +1,4 @@
 
-#include <linux/types.h>
 #include <linux/tty.h>
 #include <linux/kd.h>
 #include <linux/vt.h>

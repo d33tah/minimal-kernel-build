@@ -1,10 +1,5 @@
-#include <linux/types.h>
-#include <linux/errno.h>
 #include <linux/sched.h>
 #include <linux/tty.h>
-#include <linux/slab.h>
-#include <linux/wait.h>
-#include <linux/bitops.h>
 #include "tty.h"
 
 #define tty_ldisc_debug(tty, f, args...)

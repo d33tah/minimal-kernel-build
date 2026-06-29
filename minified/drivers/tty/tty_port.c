@@ -1,9 +1,6 @@
 
-#include <linux/types.h>
 #include <linux/tty.h>
-#include <linux/tty_driver.h>
 #include <linux/string.h>
-#include <linux/slab.h>
 
 #include "tty.h"
 

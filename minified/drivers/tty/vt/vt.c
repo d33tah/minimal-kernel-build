@@ -1,13 +1,7 @@
 
-#include <linux/types.h>
 #include <linux/tty.h>
-#include <linux/kernel.h>
-#include <linux/errno.h>
 #include <linux/kd.h>
-#include <linux/slab.h>
-#include <linux/major.h>
 #include <linux/console.h>
-#include <linux/init.h>
 #include <linux/vt_kern.h>
 #include <linux/selection.h> /* includes tiocl defines */
 #include <linux/kbd_kern.h>

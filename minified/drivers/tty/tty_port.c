@@ -1,6 +1,5 @@
 
 #include <linux/tty.h>
-#include <linux/string.h>
 
 #include "tty.h"
 

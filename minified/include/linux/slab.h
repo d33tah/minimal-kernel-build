@@ -104,8 +104,6 @@ static inline unsigned int arch_slab_minalign(void)
 
 enum kmalloc_cache_type {
 	KMALLOC_NORMAL = 0,
-	KMALLOC_DMA = KMALLOC_NORMAL,
-	KMALLOC_CGROUP = KMALLOC_NORMAL,
 	KMALLOC_RECLAIM,
 	NR_KMALLOC_TYPES
 };
@@ -113,24 +111,15 @@ enum kmalloc_cache_type {
 extern struct kmem_cache *
 kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1];
 
-#define KMALLOC_NOT_NORMAL_BITS					\
-	(__GFP_RECLAIMABLE |					\
-	(IS_ENABLED(CONFIG_ZONE_DMA)   ? __GFP_DMA : 0) |	\
-	(IS_ENABLED(CONFIG_MEMCG_KMEM) ? __GFP_ACCOUNT : 0))
-
+/* CONFIG_ZONE_DMA and CONFIG_MEMCG_KMEM are off on this build, so the only
+ * "not normal" bit that ever distinguishes a cache type is __GFP_RECLAIMABLE.
+ * The DMA / CGROUP arms folded to compile-time-false and were removed. */
 static __always_inline enum kmalloc_cache_type kmalloc_type(gfp_t flags)
 {
-	 
-	if (likely((flags & KMALLOC_NOT_NORMAL_BITS) == 0))
+	if (likely((flags & __GFP_RECLAIMABLE) == 0))
 		return KMALLOC_NORMAL;
 
-	 
-	if (IS_ENABLED(CONFIG_ZONE_DMA) && (flags & __GFP_DMA))
-		return KMALLOC_DMA;
-	if (!IS_ENABLED(CONFIG_MEMCG_KMEM) || (flags & __GFP_RECLAIMABLE))
-		return KMALLOC_RECLAIM;
-	else
-		return KMALLOC_CGROUP;
+	return KMALLOC_RECLAIM;
 }
 
 static __always_inline unsigned int __kmalloc_index(size_t size,

@@ -236,8 +236,6 @@ static inline void load_sp0(unsigned long sp0)
 }
 
 
- 
-extern void release_thread(struct task_struct *);
 
 
 static inline void cpuid(unsigned int op,

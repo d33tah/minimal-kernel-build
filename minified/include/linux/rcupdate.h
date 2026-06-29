@@ -8,7 +8,6 @@
 #include <linux/bottom_half.h>
 
 void call_rcu(struct rcu_head *head, rcu_callback_t func);
-void synchronize_rcu(void);
 
 static inline void __rcu_read_lock(void)
 {

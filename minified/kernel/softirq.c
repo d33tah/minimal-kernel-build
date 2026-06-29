@@ -171,15 +171,6 @@ inline void raise_softirq_irqoff(unsigned int nr)
 	or_softirq_pending(1UL << nr);
 }
 
-void raise_softirq(unsigned int nr)
-{
-	unsigned long flags;
-
-	local_irq_save(flags);
-	raise_softirq_irqoff(nr);
-	local_irq_restore(flags);
-}
-
 void open_softirq(int nr, void (*action)(struct softirq_action *))
 {
 	softirq_vec[nr].action = action;

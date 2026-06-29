@@ -100,10 +100,6 @@ static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused
 	}
 }
 
-void synchronize_rcu(void)
-{
-}
-
 void call_rcu(struct rcu_head *head, rcu_callback_t func)
 {
 	unsigned long flags;

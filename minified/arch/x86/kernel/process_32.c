@@ -21,11 +21,6 @@ void __show_regs(struct pt_regs *regs, enum show_regs_mode mode,
 	/* Stub: register dump not needed for minimal kernel */
 }
 
-void release_thread(struct task_struct *dead_task)
-{
-	BUG_ON(dead_task->mm);
-}
-
 void
 start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
 {

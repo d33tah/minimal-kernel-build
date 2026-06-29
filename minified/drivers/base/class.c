@@ -6,14 +6,7 @@
 #include <linux/slab.h>
 #include "base.h"
 
-static void class_release(struct kobject *kobj)
-{
-	/* kobj .release teardown: a class is never destroyed on a
-	 * boot-once-and-print artifact. Anchor-stub keeps the symbol. */
-}
-
 static struct kobj_type class_ktype = {
-	.release	= class_release,
 };
 
 static struct kset *class_kset;

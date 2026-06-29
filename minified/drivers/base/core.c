@@ -22,15 +22,7 @@ static struct kobject *sysfs_dev_char_kobj;
 static struct kobject *sysfs_dev_block_kobj;
 
 
-static void device_release(struct kobject *kobj)
-{
-	/* kobj .release teardown: a device is never destroyed on a
-	 * boot-once-and-print artifact, so this callback never fires.
-	 * Anchor-stub: keep the symbol for the device_ktype fn-ptr. */
-}
-
 static struct kobj_type device_ktype = {
-	.release	= device_release,
 };
 
 /* Removed: dev_uevent_filter / dev_uevent_name / dev_uevent / device_uevent_ops

@@ -243,13 +243,7 @@ void kobject_put(struct kobject *kobj)
 	}
 }
 
-static void dynamic_kobj_release(struct kobject *kobj)
-{
-	/* kobj .release teardown: never fires on a boot-once artifact. */
-}
-
 static struct kobj_type dynamic_kobj_ktype = {
-	.release	= dynamic_kobj_release,
 };
 
 static struct kobject *kobject_create(void)
@@ -299,14 +293,7 @@ int kset_register(struct kset *k)
 /* Removed: kset_unregister - only caller was a runtime-dead devices_init()
    error-cleanup branch (boot never hits the alloc-failure path). */
 
-static void kset_release(struct kobject *kobj)
-{
-	/* kobj .release teardown: a kset is never destroyed on a
-	 * boot-once-and-print artifact. Anchor-stub keeps the symbol. */
-}
-
 static struct kobj_type kset_ktype = {
-	.release	= kset_release,
 };
 
 static struct kset *kset_create(const char *name,

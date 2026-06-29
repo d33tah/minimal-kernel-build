@@ -270,25 +270,13 @@ int cdev_add(struct cdev *p, dev_t dev, unsigned count)
  * driver-destruct teardown path (destruct_tty_driver), never reached in a
  * single-shot boot. */
 
-/* cdev release callbacks: only fire when a cdev kobject's refcount drops to
- * 0 (final cdev_del / device teardown), which never happens on a 1-shot boot
- * that never releases a char device. Stubbed empty; symbols kept link-live for
- * the ktype_cdev_{default,dynamic}.release fn-ptr tables. cdev_purge (their sole
- * private helper) cascade-deleted. */
-static void cdev_default_release(struct kobject *kobj)
-{
-}
-
-static void cdev_dynamic_release(struct kobject *kobj)
-{
-}
-
+/* Removed: cdev_default_release / cdev_dynamic_release - empty no-op .release
+ * stubs; no cdev kobject is ever released on a boot-once artifact. The
+ * ktype_cdev_{default,dynamic} tables keep a NULL .release (dispatch is guarded). */
 static struct kobj_type ktype_cdev_default = {
-	.release	= cdev_default_release,
 };
 
 static struct kobj_type ktype_cdev_dynamic = {
-	.release	= cdev_dynamic_release,
 };
 
 struct cdev *cdev_alloc(void)

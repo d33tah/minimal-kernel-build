@@ -33,11 +33,7 @@ static DEFINE_MUTEX(sparse_irq_lock);
 static DECLARE_BITMAP(allocated_irqs, IRQ_BITMAP_BITS);
 
 
-static void irq_kobj_release(struct kobject *kobj);
-
-
 static struct kobj_type irq_kobj_type = {
-	.release	= irq_kobj_release,
 };
 
 static RADIX_TREE(irq_desc_tree, GFP_KERNEL);
@@ -79,13 +75,6 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 err_desc:
 	kfree(desc);
 	return NULL;
-}
-
-static void irq_kobj_release(struct kobject *kobj)
-{
-	/* kobj .release teardown: irq_desc objects are never freed on a
-	 * boot-once-and-print artifact, so this callback never fires.
-	 * Anchor-stub: keep the symbol for the irq_kobj_type fn-ptr. */
 }
 
 int __init early_irq_init(void)

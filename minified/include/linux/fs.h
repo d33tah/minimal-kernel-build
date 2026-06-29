@@ -378,8 +378,8 @@ static inline struct file *get_file(struct file *f)
 
 typedef void *fl_owner_t;
 
-struct file_lock;
-
+/* struct file_lock removed - file_operations.lock (its sole user) was never
+ * assigned or dispatched in this build (no locking syscalls reach it) */
 
 struct files_struct;
 static inline struct inode *file_inode(const struct file *f)
@@ -543,14 +543,13 @@ struct file_operations {
 	int (*mmap) (struct file *, struct vm_area_struct *);
 	int (*open) (struct inode *, struct file *);
 	int (*release) (struct inode *, struct file *);
-	int (*lock) (struct file *, int, struct file_lock *);
 	unsigned long (*get_unmapped_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
 	/* iopoll/iterate/iterate_shared/poll/unlocked_ioctl/compat_ioctl/
 	 * mmap_supported_flags/flush/fsync/sendpage/check_flags/flock/
 	 * splice_write/splice_read/setlease/remap_file_range/fadvise/uring_cmd/
-	 * fallocate/show_fdinfo/copy_file_range/llseek removed - zero ->field
+	 * fallocate/show_fdinfo/copy_file_range/llseek/lock removed - zero ->field
 	 * dispatch, bare-deref and assignment tree-wide (only read/write/
-	 * read_iter/write_iter/mmap/open/release/fasync/lock/get_unmapped_area
+	 * read_iter/write_iter/mmap/open/release/fasync/get_unmapped_area
 	 * are live; their syscall consumers were all excised earlier) */
 } __randomize_layout;
 

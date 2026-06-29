@@ -10,13 +10,6 @@ struct n_tty_data {
 	struct mutex output_lock;
 };
 
-/*
- * .close line-discipline teardown callback. Fires only when the N_TTY ldisc
- * is closed/detached; a boot-once-and-print artifact never closes its tty, so
- * this is structurally dead. Stub kept for the n_tty_ops.close fn-ptr.
- */
-static void n_tty_close(struct tty_struct *tty) { }
-
 static int n_tty_open(struct tty_struct *tty)
 {
 	struct n_tty_data *ldata;
@@ -72,7 +65,6 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 static struct tty_ldisc_ops n_tty_ops = {
 	.num		 = N_TTY,
 	.open            = n_tty_open,
-	.close           = n_tty_close,
 	.write           = n_tty_write,
 };
 

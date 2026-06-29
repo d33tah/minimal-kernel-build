@@ -40,8 +40,7 @@ void ldsem_up_write(struct ld_semaphore *sem);
 struct tty_ldisc_ops {
 	int	num;
 	int	(*open)(struct tty_struct *tty);
-	void	(*close)(struct tty_struct *tty);
-	/* flush_buffer, read, set_termios, hangup, dcd_change removed -
+	/* close, flush_buffer, read, set_termios, hangup, dcd_change removed -
 	 * these ldisc callbacks were never dispatched (no ld->ops->* call) */
 	ssize_t	(*write)(struct tty_struct *tty, struct file *file,
 			 const unsigned char *buf, size_t nr);

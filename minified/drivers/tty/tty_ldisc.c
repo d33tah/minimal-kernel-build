@@ -135,16 +135,6 @@ static int tty_ldisc_open(struct tty_struct *tty, struct tty_ldisc *ld)
 	return 0;
 }
 
-static void tty_ldisc_close(struct tty_struct *tty, struct tty_ldisc *ld)
-{
-	lockdep_assert_held_write(&tty->ldisc_sem);
-	WARN_ON(!test_bit(TTY_LDISC_OPEN, &tty->flags));
-	clear_bit(TTY_LDISC_OPEN, &tty->flags);
-	if (ld->ops->close)
-		ld->ops->close(tty);
-	tty_ldisc_debug(tty, "%p: closed\n", ld);
-}
-
 int tty_ldisc_reinit(struct tty_struct *tty, int disc)
 {
 	/* Runtime-dead: only caller is tty_reopen (re-opening an already-open
@@ -155,20 +145,11 @@ int tty_ldisc_reinit(struct tty_struct *tty, int disc)
 
 int tty_ldisc_setup(struct tty_struct *tty, struct tty_struct *o_tty)
 {
-	int retval = tty_ldisc_open(tty, tty->ldisc);
-
-	if (retval)
-		return retval;
-
-	if (o_tty) {
-		 
-		retval = tty_ldisc_open(o_tty, o_tty->ldisc);
-		if (retval) {
-			tty_ldisc_close(tty, tty->ldisc);
-			return retval;
-		}
-	}
-	return 0;
+	/* o_tty (tty->link) is only non-NULL for a PTY pair; this build has no
+	 * PTY driver, so the link is always NULL and the o_tty open/close path
+	 * (the sole tty_ldisc_close caller, hence the sole ld->ops->close
+	 * dereference) is statically dead. Only the primary ldisc is opened. */
+	return tty_ldisc_open(tty, tty->ldisc);
 }
 
 void tty_ldisc_release(struct tty_struct *tty)

@@ -15,19 +15,11 @@
 
 struct kernel_param;
 
-enum {
-	KERNEL_PARAM_OPS_FL_NOARG = (1 << 0)
-};
-
 struct kernel_param_ops {
 	 
 	unsigned int flags;
 	 
 	int (*set)(const char *val, const struct kernel_param *kp);
-};
-
-enum {
-	KERNEL_PARAM_FL_UNSAFE	= (1 << 0),
 };
 
 struct kernel_param {

@@ -49,12 +49,6 @@ enum {
 	 IRQ_PER_CPU | IRQ_NESTED_THREAD | IRQ_NOTHREAD | IRQ_PER_CPU_DEVID | \
 	 IRQ_IS_POLLED | IRQ_DISABLE_UNLAZY | IRQ_HIDDEN)
 
-enum {
-	IRQ_SET_MASK_OK = 0,
-	IRQ_SET_MASK_OK_NOCOPY,
-	IRQ_SET_MASK_OK_DONE,
-};
-
 struct irq_common_data {
 	unsigned int		__private state_use_accessors;
 };

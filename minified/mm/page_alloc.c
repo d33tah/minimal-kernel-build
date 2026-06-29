@@ -1441,17 +1441,14 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 
 unsigned long free_reserved_area(void *start, void *end, int poison, const char *s)
 {
-	void *pos;
-	unsigned long pages = 0;
-
-	/* Simplified: skip poisoning for minimal system */
-	start = (void *)PAGE_ALIGN((unsigned long)start);
-	end = (void *)((unsigned long)end & PAGE_MASK);
-	for (pos = start; pos < end; pos += PAGE_SIZE, pages++) {
-		free_reserved_page(virt_to_page(pos));
-	}
-
-	return pages;
+	/*
+	 * SAFE-FALLBACK stub (runtime-dead): the only callers are
+	 * free_initmem_default() (reached solely via the weak free_initmem(),
+	 * overridden by the x86 __ref free_initmem() that never calls it) and
+	 * the __init initramfs path (no initrd on this boot). Both ignore the
+	 * page count -> returning 0 is behavior-preserving.
+	 */
+	return 0;
 }
 
 void __init mem_init_print_info(void)

@@ -771,14 +771,6 @@ extern void mem_init_print_info(void);
 
 extern void reserve_bootmem_region(phys_addr_t start, phys_addr_t end);
 
-static inline void free_reserved_page(struct page *page)
-{
-	ClearPageReserved(page);
-	init_page_count(page);
-	__free_page(page);
-	atomic_long_add(1, &page_zone(page)->managed_pages);
-	totalram_pages_add(1);
-}
 
 static inline unsigned long free_initmem_default(int poison)
 {

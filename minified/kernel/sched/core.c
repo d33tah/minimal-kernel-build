@@ -20,7 +20,6 @@ extern void sched_init_smp(void);
 #include <linux/mmu_context.h>
 
 
-#include <linux/sched/wake_q.h>
 
 #include <linux/sched/types.h>
 

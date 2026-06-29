@@ -4,7 +4,6 @@
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include <linux/mman.h>
-#include <linux/swap.h>
 #include <linux/init.h>
 #include <linux/file.h>
 #include <linux/fs.h>
@@ -13,15 +12,11 @@
 #include <linux/shmem_fs.h>
 #include <linux/rmap.h>
 #include <linux/mmdebug.h>
-#include <linux/sched/coredump.h>
 #include <linux/rbtree_augmented.h>
 #include <linux/pkeys.h>
-#include <linux/oom.h>
 #include <linux/sched/mm.h>
+#include <linux/oom.h>
 
-#include <asm/cacheflush.h>
-#include <asm/tlb.h>
-#include <asm/mmu_context.h>
 
 #include "internal.h"
 

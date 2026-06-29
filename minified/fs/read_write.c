@@ -2,9 +2,7 @@
 #include <linux/file.h>
 #include <linux/uio.h>
 #include <linux/syscalls.h>
-#include <linux/mount.h>
 #include <linux/fs.h>
-#include "internal.h"
 
 #include <linux/uaccess.h>
 #include <asm/unistd.h>

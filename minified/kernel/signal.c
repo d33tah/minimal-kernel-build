@@ -3,9 +3,7 @@
 #include <linux/sched/cputime.h>
 #include <linux/user_namespace.h>
 
-#include <linux/uaccess.h>
 #include <asm/siginfo.h>
-#include <asm/syscall.h>	
 
 static struct kmem_cache *sigqueue_cachep;
 

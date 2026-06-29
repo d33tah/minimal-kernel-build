@@ -3,23 +3,14 @@
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include <linux/sched.h>
-#include <linux/sched/idle.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/random.h>
 /* end stackprotector.h */
 #include <asm/cpu.h>
-#include <asm/apic.h>
-#include <asm/fpu/api.h>
 #include <asm/fpu/sched.h>
-#include <asm/fpu/xstate.h>
-#include <asm/debugreg.h>
-#include <asm/tlbflush.h>
 #include <asm/switch_to.h>
-#include <asm/desc.h>
-#include <asm/proto.h>
 /* --- 2025-12-07 20:47 --- Inlined frame.h */
-#include <asm/asm.h>
 #define FRAME_BEGIN
 #define FRAME_END
 #define FRAME_OFFSET 0

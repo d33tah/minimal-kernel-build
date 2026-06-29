@@ -7,7 +7,6 @@
 #include <linux/console.h>
 #include <linux/init.h>
 
-#include <asm/sections.h>
 
 
 

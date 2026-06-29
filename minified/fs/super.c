@@ -1,6 +1,5 @@
 
 #include <linux/slab.h>
-#include <linux/mount.h>
 #include <linux/idr.h>
 #include <linux/rculist_bl.h>
 #include <linux/user_namespace.h>

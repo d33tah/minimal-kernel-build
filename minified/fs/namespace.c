@@ -5,7 +5,6 @@
 #include <linux/proc_ns.h>
 #include <linux/init.h>		
 #include <linux/fs_struct.h>	
-#include <linux/uaccess.h>
 #include <linux/sched/task.h>
 #include <linux/fs_context.h>
 #include <linux/shmem_fs.h>

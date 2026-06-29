@@ -50,19 +50,9 @@ static void clocksource_select(void);
  * The clocksource skew watchdog (timer + kthread) is gone: this minimal
  * kernel boots, execs one static init, services write(2)+exit and halts,
  * long before the WATCHDOG_INTERVAL timer would ever fire. Only the few
- * register/unregister hooks and the externally-called mark_unstable remain,
- * reduced to the bookkeeping that the live clocksource-select path needs.
+ * register/unregister hooks remain, reduced to the bookkeeping that the
+ * live clocksource-select path needs.
  */
-
-void clocksource_mark_unstable(struct clocksource *cs)
-{
-	cs->flags &= ~(CLOCK_SOURCE_VALID_FOR_HRES | CLOCK_SOURCE_WATCHDOG);
-	cs->flags |= CLOCK_SOURCE_UNSTABLE;
-	if (list_empty(&cs->list))
-		cs->rating = 0;
-	else if (cs->mark_unstable)
-		cs->mark_unstable(cs);
-}
 
 static void clocksource_enqueue_watchdog(struct clocksource *cs)
 {

@@ -292,14 +292,6 @@ static u64 read_tsc(struct clocksource *cs)
 	return (u64)rdtsc_ordered();
 }
 
-/*
- * .mark_unstable clocksource-watchdog callback. Fires only when the watchdog
- * detects TSC drift; on a clean short boot the watchdog never marks the TSC
- * unstable, so this is structurally dead. Stub kept for the .mark_unstable
- * fn-ptr (tsc_unstable / clear_sched_clock_stable stay live via other paths).
- */
-static void tsc_cs_mark_unstable(struct clocksource *cs) { }
-
 static int tsc_cs_enable(struct clocksource *cs)
 {
 	/* clocksource .enable callback: HIT=False this boot (the VDSO
@@ -318,7 +310,6 @@ static struct clocksource clocksource_tsc_early = {
 	.vdso_clock_mode	= VDSO_CLOCKMODE_TSC,
 	.enable			= tsc_cs_enable,
 	.resume			= tsc_resume,
-	.mark_unstable		= tsc_cs_mark_unstable,
 	.list			= LIST_HEAD_INIT(clocksource_tsc_early.list),
 };
 
@@ -334,7 +325,6 @@ static struct clocksource clocksource_tsc = {
 	.vdso_clock_mode	= VDSO_CLOCKMODE_TSC,
 	.enable			= tsc_cs_enable,
 	.resume			= tsc_resume,
-	.mark_unstable		= tsc_cs_mark_unstable,
 	.list			= LIST_HEAD_INIT(clocksource_tsc.list),
 };
 

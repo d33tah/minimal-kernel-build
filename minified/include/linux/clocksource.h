@@ -45,15 +45,12 @@ struct clocksource {
 
 	int			(*enable)(struct clocksource *cs);
 	void			(*resume)(struct clocksource *cs);
-	void			(*mark_unstable)(struct clocksource *cs);
 };
 
 #define CLOCK_SOURCE_IS_CONTINUOUS		0x01
 #define CLOCK_SOURCE_MUST_VERIFY		0x02
 
-#define CLOCK_SOURCE_WATCHDOG			0x10
 #define CLOCK_SOURCE_VALID_FOR_HRES		0x20
-#define CLOCK_SOURCE_UNSTABLE			0x40
 #define CLOCK_SOURCE_SUSPEND_NONSTOP		0x80
 #define CLOCK_SOURCE_VERIFY_PERCPU		0x200
 #define CLOCKSOURCE_MASK(bits) GENMASK_ULL((bits) - 1, 0)
@@ -61,7 +58,6 @@ struct clocksource {
 
 extern int clocksource_unregister(struct clocksource*);
 extern struct clocksource * __init clocksource_default_clock(void);
-extern void clocksource_mark_unstable(struct clocksource *cs);
 
 extern void
 clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 minsec);

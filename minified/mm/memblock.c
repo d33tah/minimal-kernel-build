@@ -235,8 +235,6 @@ static void __init_memblock memblock_merge_regions(struct memblock_type *type)
 		struct memblock_region *next = &type->regions[i + 1];
 
 		if (this->base + this->size != next->base ||
-		    memblock_get_region_node(this) !=
-		    memblock_get_region_node(next) ||
 		    this->flags != next->flags) {
 			BUG_ON(this->base + this->size > next->base);
 			i++;

@@ -43,12 +43,6 @@ static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai)
 {
 	size_t nr_pages, alloc_pages;
 
-	 
-	if (ai->nr_groups != 1) {
-		pr_crit("can't handle more than one group\n");
-		return -EINVAL;
-	}
-
 	nr_pages = (ai->groups[0].nr_units * ai->unit_size) >> PAGE_SHIFT;
 	alloc_pages = roundup_pow_of_two(nr_pages);
 

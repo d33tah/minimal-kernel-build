@@ -1240,8 +1240,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 
 		for (i = 0; i < gi->nr_units; i++) {
 			cpu = gi->cpu_map[i];
-			if (cpu == NR_CPUS)
-				continue;
 
 			PCPU_SETUP_BUG_ON(cpu >= nr_cpu_ids);
 			PCPU_SETUP_BUG_ON(!cpu_possible(cpu));

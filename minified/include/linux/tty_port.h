@@ -26,7 +26,6 @@ struct tty_port {
 };
 
 void tty_port_init(struct tty_port *port);
-void tty_port_put(struct tty_port *port);
 
 static inline struct tty_port *tty_port_get(struct tty_port *port)
 {

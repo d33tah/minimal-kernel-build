@@ -760,26 +760,6 @@ static int con_open(struct tty_struct *tty, struct file *filp)
 	return 0;
 }
 
-static void con_close(struct tty_struct *tty, struct file *filp)
-{
-	
-}
-
-/*
- * .shutdown tty teardown callback (vt console). Fires only when the console
- * tty is shut down; a boot-once-and-print artifact never tears down its
- * console, so this is structurally dead. Stub kept for the con_ops.shutdown
- * fn-ptr.
- */
-static void con_shutdown(struct tty_struct *tty) { }
-
-static void con_cleanup(struct tty_struct *tty)
-{
-	struct vc_data *vc = tty->driver_data;
-
-	tty_port_put(&vc->port);
-}
-
 static void vc_init(struct vc_data *vc, unsigned int rows,
 		    unsigned int cols, int do_clear)
 {
@@ -851,12 +831,9 @@ console_initcall(con_init);
 static const struct tty_operations con_ops = {
 	.install = con_install,
 	.open = con_open,
-	.close = con_close,
 	.write = con_write,
 	.write_room = con_write_room,
 	.flush_chars = con_flush_chars,
-	.shutdown = con_shutdown,
-	.cleanup = con_cleanup,
 };
 
 static struct cdev vc0_cdev;

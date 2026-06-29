@@ -15,9 +15,6 @@ struct tty_driver;
 struct tty_operations {
 	int  (*install)(struct tty_driver *driver, struct tty_struct *tty);
 	int  (*open)(struct tty_struct * tty, struct file * filp);
-	void (*close)(struct tty_struct * tty, struct file * filp);
-	void (*shutdown)(struct tty_struct *tty);
-	void (*cleanup)(struct tty_struct *tty);
 	int  (*write)(struct tty_struct * tty,
 		      const unsigned char *buf, int count);
 	void (*flush_chars)(struct tty_struct *tty);

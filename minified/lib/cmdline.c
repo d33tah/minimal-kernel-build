@@ -1,7 +1,5 @@
 
 #include <linux/kernel.h>
-#include <linux/string.h>
-#include <linux/ctype.h>
 
 /*
  * Runtime-dead: the only caller is the parse_args() loop body, which never runs

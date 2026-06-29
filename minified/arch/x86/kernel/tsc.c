@@ -2,11 +2,8 @@
 
 #include <linux/kernel.h>
 #include <linux/sched/clock.h>
-#include <linux/init.h>
 #include <linux/delay.h>
 #include <linux/clocksource.h>
-#include <linux/percpu.h>
-#include <linux/timex.h>
 #include <linux/jump_label.h>
 
 #include <asm/timer.h>

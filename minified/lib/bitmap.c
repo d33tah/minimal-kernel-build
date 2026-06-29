@@ -1,11 +1,6 @@
 
 #include <linux/bitmap.h>
-#include <linux/bitops.h>
 #include <linux/kernel.h>
-
-#include <asm/page.h>
-
-#include "kstrtox.h"
 
 
 void __bitmap_set(unsigned long *map, unsigned int start, int len)

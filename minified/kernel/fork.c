@@ -576,7 +576,7 @@ static int copy_files(unsigned long clone_flags, struct task_struct *tsk)
 		goto out;
 	}
 
-	newf = dup_fd(oldf, NR_OPEN_MAX, &error);
+	newf = dup_fd(oldf, &error);
 	if (!newf)
 		goto out;
 

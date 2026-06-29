@@ -10,13 +10,6 @@
 
 unsigned int sysctl_nr_open __read_mostly = 1024*1024;
 
-static void __free_fdtable(struct fdtable *fdt)
-{
-	kvfree(fdt->fd);
-	kvfree(fdt->open_fds);
-	kfree(fdt);
-}
-
 #define BITBIT_NR(nr)	BITS_TO_LONGS(BITS_TO_LONGS(nr))
 #define BITBIT_SIZE(nr)	(BITBIT_NR(nr) * sizeof(long))
 
@@ -36,16 +29,6 @@ static void copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt,
 	set = BITBIT_SIZE(nfdt->max_fds) - cpy;
 	memcpy(nfdt->full_fds_bits, ofdt->full_fds_bits, cpy);
 	memset((char *)nfdt->full_fds_bits + cpy, 0, set);
-}
-
-/*
- * Runtime-dead on a single-shot boot: fd tables never expand past
- * NR_OPEN_DEFAULT (link-live via the dead expand_fdtable path and the
- * never-taken dup_fd while-loop). Stubbed; never executes.
- */
-static struct fdtable * alloc_fdtable(unsigned int nr)
-{
-	return NULL;
 }
 
 /*
@@ -134,17 +117,17 @@ static unsigned int count_open_files(struct fdtable *fdt)
 	return i;
 }
 
-static unsigned int sane_fdtable_size(struct fdtable *fdt, unsigned int max_fds)
+static unsigned int sane_fdtable_size(struct fdtable *fdt)
 {
-	unsigned int count;
-
-	count = count_open_files(fdt);
-	if (max_fds < NR_OPEN_DEFAULT)
-		max_fds = NR_OPEN_DEFAULT;
-	return ALIGN(min(count, max_fds), BITS_PER_LONG);
+	/*
+	 * The sole caller (dup_fd) always passed max_fds == NR_OPEN_MAX
+	 * (~0U), so the upstream min(count, max_fds) clamp and the
+	 * "max_fds < NR_OPEN_DEFAULT" fixup were both no-ops.
+	 */
+	return ALIGN(count_open_files(fdt), BITS_PER_LONG);
 }
 
-struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds, int *errorp)
+struct files_struct *dup_fd(struct files_struct *oldf, int *errorp)
 {
 	struct files_struct *newf;
 	struct file **old_fds, **new_fds;
@@ -171,33 +154,15 @@ struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds, int
 
 	spin_lock(&oldf->file_lock);
 	old_fdt = files_fdtable(oldf);
-	open_files = sane_fdtable_size(old_fdt, max_fds);
+	open_files = sane_fdtable_size(old_fdt);
 
-	 
-	while (unlikely(open_files > new_fdt->max_fds)) {
-		spin_unlock(&oldf->file_lock);
-
-		if (new_fdt != &newf->fdtab)
-			__free_fdtable(new_fdt);
-
-		new_fdt = alloc_fdtable(open_files - 1);
-		if (!new_fdt) {
-			*errorp = -ENOMEM;
-			goto out_release;
-		}
-
-		 
-		if (unlikely(new_fdt->max_fds < open_files)) {
-			__free_fdtable(new_fdt);
-			*errorp = -EMFILE;
-			goto out_release;
-		}
-
-		 
-		spin_lock(&oldf->file_lock);
-		old_fdt = files_fdtable(oldf);
-		open_files = sane_fdtable_size(old_fdt, max_fds);
-	}
+	/*
+	 * On this single-shot boot no fd table ever exceeds NR_OPEN_DEFAULT:
+	 * init_files starts at that size and the only growth path
+	 * (expand_fdtable) is a stub. So open_files (= ALIGN(count, 32),
+	 * count <= old_fdt->max_fds == NR_OPEN_DEFAULT) is always
+	 * <= new_fdt->max_fds and the resize loop is statically dead.
+	 */
 
 	copy_fd_bitmaps(new_fdt, old_fdt, open_files);
 
@@ -223,8 +188,6 @@ struct files_struct *dup_fd(struct files_struct *oldf, unsigned int max_fds, int
 
 	return newf;
 
-out_release:
-	kmem_cache_free(files_cachep, newf);
 out:
 	return NULL;
 }

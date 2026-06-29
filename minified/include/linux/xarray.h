@@ -200,22 +200,6 @@ static inline bool xa_is_node(const void *entry)
 	return xa_is_internal(entry) && (unsigned long)entry > 4096;
 }
 
-static inline void *xa_mk_sibling(unsigned int offset)
-{
-	return xa_mk_internal(offset);
-}
-
-static inline unsigned long xa_to_sibling(const void *entry)
-{
-	return xa_to_internal(entry);
-}
-
-static inline bool xa_is_sibling(const void *entry)
-{
-	return IS_ENABLED(CONFIG_XARRAY_MULTI) && xa_is_internal(entry) &&
-		(entry < xa_mk_sibling(XA_CHUNK_SIZE - 1));
-}
-
 #define XA_RETRY_ENTRY		xa_mk_internal(256)
 
 static inline bool xa_is_retry(const void *entry)

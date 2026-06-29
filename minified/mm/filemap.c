@@ -295,8 +295,7 @@ static void filemap_get_read_batch(struct address_space *mapping,
 			continue;
 		if (xas.xa_index > max || xa_is_value(folio))
 			break;
-		if (xa_is_sibling(folio))
-			break;
+		/* CONFIG_XARRAY_MULTI off: xa_is_sibling(folio) compile-time false */
 		if (!folio_try_get_rcu(folio))
 			goto retry;
 

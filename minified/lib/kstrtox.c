@@ -60,41 +60,4 @@ unsigned int _parse_integer_limit(const char *s, unsigned int base, unsigned lon
 	return rv;
 }
 
-static int _kstrtoull(const char *s, unsigned int base, unsigned long long *res)
-{
-	unsigned long long _res;
-	unsigned int rv;
-
-	s = _parse_integer_fixup_radix(s, &base);
-	rv = _parse_integer_limit(s, base, &_res, INT_MAX);
-	if (rv & KSTRTOX_OVERFLOW)
-		return -ERANGE;
-	if (rv == 0)
-		return -EINVAL;
-	s += rv;
-	if (*s == '\n')
-		s++;
-	if (*s)
-		return -EINVAL;
-	*res = _res;
-	return 0;
-}
-
-noinline
-int kstrtouint(const char *s, unsigned int base, unsigned int *res)
-{
-	unsigned long long tmp;
-	int rv;
-
-	if (s[0] == '+')
-		s++;
-	rv = _kstrtoull(s, base, &tmp);
-	if (rv < 0)
-		return rv;
-	if (tmp != (unsigned int)tmp)
-		return -ERANGE;
-	*res = tmp;
-	return 0;
-}
-
 

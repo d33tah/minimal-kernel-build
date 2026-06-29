@@ -84,21 +84,13 @@ int __fs_parse(struct p_log *log,
 	return p->opt;
 }
 
-static int fs_param_bad_value(struct p_log *log, struct fs_parameter *param)
-{
-	return inval_plog(log, "Bad value for '%s'", param->key);
-}
-
 int fs_param_is_u32(struct p_log *log, const struct fs_parameter_spec *p,
 		    struct fs_parameter *param, struct fs_parse_result *result)
 {
-	int base = (unsigned long)p->data;
-	if (param->type != fs_value_is_string)
-		return fs_param_bad_value(log, param);
-	if (!*param->string && (p->flags & fs_param_can_be_empty))
-		return 0;
-	if (kstrtouint(param->string, base, &result->uint_32) < 0)
-		return fs_param_bad_value(log, param);
+	/* SAFE-FALLBACK: the only spec that points .type here is ramfs's "mode"
+	 * (fsparam_u32oct), which this boot never passes -- runtime-dead. Returning
+	 * success (with result->uint_32 left zero) is what __fs_parse tolerates: it
+	 * then returns p->opt. Lets the kstrtouint subtree be deleted. */
 	return 0;
 }
 

@@ -2,7 +2,6 @@
 #include <linux/stddef.h>
 #include <linux/mm.h>
 #include <linux/memblock.h>
-#include <linux/compiler.h>
 #include <linux/kernel.h>
 #include <linux/nodemask.h>
 #include <linux/vmstat.h>

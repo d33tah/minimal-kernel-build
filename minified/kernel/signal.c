@@ -1,9 +1,6 @@
 
 #include <linux/slab.h>
 #include <linux/sched/cputime.h>
-#include <linux/user_namespace.h>
-
-#include <asm/siginfo.h>
 
 static struct kmem_cache *sigqueue_cachep;
 

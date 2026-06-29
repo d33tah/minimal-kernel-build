@@ -1,8 +1,6 @@
 
 #include <linux/file.h>
 #include <linux/namei.h>
-#include <linux/mount.h>
-#include <linux/fcntl.h>
 #include <linux/fs.h>
 
 

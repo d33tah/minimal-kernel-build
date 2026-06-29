@@ -6,9 +6,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/task_work.h>
-#include <linux/user_namespace.h>
-#include <linux/interrupt.h>
-#include <linux/pid_namespace.h>
 #include <linux/ptrace.h>
 #include <linux/syscalls.h>
 #include <linux/signal.h>

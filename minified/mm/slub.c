@@ -1,11 +1,8 @@
 
 #include <linux/mm.h>
-#include <linux/bit_spinlock.h>
 #include <linux/slab.h>
 #include "slab.h"
-#include <linux/memory.h>
 
-#include <linux/memcontrol.h>
 
 
 #include "internal.h"

@@ -7,7 +7,6 @@
 #include <linux/completion.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
-#include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/nsproxy.h>
 #include <linux/kthread.h>

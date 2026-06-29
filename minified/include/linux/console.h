@@ -33,7 +33,8 @@ struct consw {
 
 extern const struct consw *conswitchp;
 
-extern const struct consw dummy_con;
+/* dummy_con removed: the dummy console driver was structurally dead on this
+ * build (conswitchp is always &vga_con; no fallback path reaches it). */
 extern const struct consw vga_con;
 
 #define CM_DRAW     (1)

@@ -783,8 +783,9 @@ static int __init con_init(void)
 
 	console_lock();
 
-	if (!conswitchp)
-		conswitchp = &dummy_con;
+	/* conswitchp is always set to &vga_con in setup_arch() before con_init
+	 * runs, so the dummy_con fallback here was structurally dead -- removed
+	 * along with the dummy console driver. */
 	display_desc = conswitchp->con_startup();
 	if (!display_desc) {
 		fg_console = 0;

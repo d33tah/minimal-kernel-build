@@ -69,8 +69,11 @@ static const char *vgacon_startup(void)
 	if (screen_info.orig_video_isVGA == VIDEO_TYPE_VLFB ||
 	    screen_info.orig_video_isVGA == VIDEO_TYPE_EFI) {
 	      no_vga:
-		conswitchp = &dummy_con;
-		return conswitchp->con_startup();
+		/* No usable VGA: return NULL so vt's con_init bails out
+		 * (fg_console = 0). The dummy_con fallback was removed -- it
+		 * was structurally dead on this build (conswitchp is set to
+		 * &vga_con in setup_arch before con_init runs). */
+		return NULL;
 	}
 
 	 

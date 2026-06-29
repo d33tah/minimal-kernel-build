@@ -12,10 +12,6 @@
 
 #include "internal.h"
 
-struct follow_page_context {
-	unsigned int page_mask;
-};
-
 
 static struct page *no_page_table(struct vm_area_struct *vma,
 		unsigned int flags)
@@ -117,14 +113,11 @@ no_page:
 }
 
 static struct page *follow_page_mask(struct vm_area_struct *vma,
-			      unsigned long address, unsigned int flags,
-			      struct follow_page_context *ctx)
+			      unsigned long address, unsigned int flags)
 {
 	pgd_t *pgd;
 	pmd_t *pmd, pmdval;
 	struct mm_struct *mm = vma->vm_mm;
-
-	ctx->page_mask = 0;
 
 	pgd = pgd_offset(mm, address);
 
@@ -229,7 +222,6 @@ static long __get_user_pages(struct mm_struct *mm,
 {
 	long ret = 0, i = 0;
 	struct vm_area_struct *vma = NULL;
-	struct follow_page_context ctx = { 0 };
 
 	if (!nr_pages)
 		return 0;
@@ -241,9 +233,8 @@ static long __get_user_pages(struct mm_struct *mm,
 	do {
 		struct page *page;
 		unsigned int foll_flags = gup_flags;
-		unsigned int page_increm;
 
-		
+
 		if (!vma || start >= vma->vm_end) {
 			vma = find_extend_vma(mm, start);
 			if (!vma) {
@@ -263,7 +254,7 @@ retry:
 		}
 		cond_resched();
 
-		page = follow_page_mask(vma, start, foll_flags, &ctx);
+		page = follow_page_mask(vma, start, foll_flags);
 		if (!page || PTR_ERR(page) == -EMLINK) {
 			ret = faultin_page(vma, start, &foll_flags,
 					   PTR_ERR(page) == -EMLINK, locked);
@@ -295,19 +286,13 @@ retry:
 			pages[i] = page;
 			flush_anon_page(vma, page, start);
 			flush_dcache_page(page);
-			ctx.page_mask = 0;
 		}
 next_page:
-		if (vmas) {
+		if (vmas)
 			vmas[i] = vma;
-			ctx.page_mask = 0;
-		}
-		page_increm = 1 + (~(start >> PAGE_SHIFT) & ctx.page_mask);
-		if (page_increm > nr_pages)
-			page_increm = nr_pages;
-		i += page_increm;
-		start += page_increm * PAGE_SIZE;
-		nr_pages -= page_increm;
+		i += 1;
+		start += PAGE_SIZE;
+		nr_pages -= 1;
 	} while (nr_pages);
 out:
 	return i ? i : ret;

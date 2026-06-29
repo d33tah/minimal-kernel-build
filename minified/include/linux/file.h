@@ -56,7 +56,6 @@ static inline void fdput_pos(struct fd f)
 	fdput(f);
 }
 
-extern bool get_close_on_exec(unsigned int fd);
 extern int get_unused_fd_flags(unsigned flags);
 
 extern void fd_install(unsigned int fd, struct file *file);

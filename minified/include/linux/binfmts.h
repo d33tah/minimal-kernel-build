@@ -29,8 +29,7 @@ struct linux_binprm {
 	unsigned int per_clear;
 	int argc, envc;
 	const char *filename;	 
-	const char *interp;	 
-	const char *fdpath;	 
+	const char *interp;
 	unsigned interp_flags;
 	unsigned long loader, exec;
 
@@ -40,7 +39,6 @@ struct linux_binprm {
 } __randomize_layout;
 
 #define BINPRM_FLAGS_ENFORCE_NONDUMP (1 << 0)
-#define BINPRM_FLAGS_PATH_INACCESSIBLE (1 << 2)
 #define BINPRM_FLAGS_PRESERVE_ARGV0 (1 << 3)
 
 struct linux_binfmt {

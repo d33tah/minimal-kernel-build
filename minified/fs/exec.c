@@ -582,7 +582,6 @@ static void free_bprm(struct linux_binprm *bprm)
 
 	if (bprm->interp != bprm->filename)
 		kfree(bprm->interp);
-	kfree(bprm->fdpath);
 	kfree(bprm);
 }
 
@@ -593,19 +592,9 @@ static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)
 	if (!bprm)
 		goto out;
 
-	if (fd == AT_FDCWD || filename->name[0] == '/') {
-		bprm->filename = filename->name;
-	} else {
-		if (filename->name[0] == '\0')
-			bprm->fdpath = kasprintf(GFP_KERNEL, "/dev/fd/%d", fd);
-		else
-			bprm->fdpath = kasprintf(GFP_KERNEL, "/dev/fd/%d/%s",
-						  fd, filename->name);
-		if (!bprm->fdpath)
-			goto out_free;
-
-		bprm->filename = bprm->fdpath;
-	}
+	/* Sole caller kernel_execve passes fd==AT_FDCWD, so filename is
+	 * always used directly; the /dev/fd/N fdpath branch is dead. */
+	bprm->filename = filename->name;
 	bprm->interp = bprm->filename;
 
 	retval = bprm_mm_init(bprm);
@@ -744,9 +733,6 @@ static int bprm_execve(struct linux_binprm *bprm,
 	sched_exec();
 
 	bprm->file = file;
-	
-	if (bprm->fdpath && get_close_on_exec(fd))
-		bprm->interp_flags |= BINPRM_FLAGS_PATH_INACCESSIBLE;
 
 	retval = exec_binprm(bprm);
 	if (retval < 0)

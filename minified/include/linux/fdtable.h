@@ -25,11 +25,6 @@ struct fdtable {
 	struct rcu_head rcu;
 };
 
-static inline bool close_on_exec(unsigned int fd, const struct fdtable *fdt)
-{
-	return test_bit(fd, fdt->close_on_exec);
-}
-
 struct files_struct {
    
 	atomic_t count;

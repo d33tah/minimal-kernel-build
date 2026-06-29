@@ -544,12 +544,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 #endif
 	}
 
-	if (current->personality & MMAP_PAGE_ZERO) {
-		 
-		error = vm_mmap(NULL, 0, PAGE_SIZE, PROT_READ | PROT_EXEC,
-				MAP_FIXED | MAP_PRIVATE, 0);
-	}
-
 	regs = current_pt_regs();
 #ifdef ELF_PLAT_INIT
 	 

@@ -42,21 +42,16 @@ int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 }
 NOKPROBE_SYMBOL(atomic_notifier_call_chain);
 
-static ATOMIC_NOTIFIER_HEAD(die_chain);
-
 int notrace notify_die(enum die_val val, const char *str,
 	       struct pt_regs *regs, long err, int trap, int sig)
 {
-	struct die_args args = {
-		.regs	= regs,
-		.str	= str,
-		.err	= err,
-		.trapnr	= trap,
-		.signr	= sig,
-
-	};
-	RCU_LOCKDEP_WARN(!rcu_is_watching(),
-			   "notify_die called but RCU thinks we're quiescent");
-	return atomic_notifier_call_chain(&die_chain, val, &args);
+	/*
+	 * No die-notifier is ever registered in this build (there is no
+	 * register_die_notifier() caller anywhere), so the die_chain is
+	 * permanently empty and atomic_notifier_call_chain() would always
+	 * return NOTIFY_DONE (0). Return that directly. Every caller only
+	 * tests for == NOTIFY_STOP, which can never happen here.
+	 */
+	return NOTIFY_DONE;
 }
 NOKPROBE_SYMBOL(notify_die);

@@ -44,7 +44,6 @@ static inline void native_pte_clear(struct mm_struct *mm,
 {
 	*xp = native_make_pte(0);
 }
-#define native_ptep_get_and_clear(xp) native_local_ptep_get_and_clear(xp)
 static inline u64 protnone_mask(u64 val)
 {
 	return 0;

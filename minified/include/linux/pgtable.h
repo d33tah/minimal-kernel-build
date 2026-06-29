@@ -23,10 +23,6 @@
 #define FIRST_USER_ADDRESS	0UL
 #endif
 
-#ifndef pmd_pgtable
-#define pmd_pgtable(pmd) pmd_page(pmd)
-#endif
-
 
 static inline unsigned long pte_index(unsigned long address)
 {

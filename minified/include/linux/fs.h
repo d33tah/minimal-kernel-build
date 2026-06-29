@@ -267,11 +267,6 @@ static inline unsigned int i_blocksize(const struct inode *node)
 	return (1 << node->i_blkbits);
 }
 
-static inline int inode_unhashed(struct inode *inode)
-{
-	return hlist_unhashed(&inode->i_hash);
-}
-
 /* Reduced inode_i_mutex_lock_class - only I_MUTEX_PARENT used (lockdep off: value unused) */
 enum inode_i_mutex_lock_class { I_MUTEX_PARENT };
 

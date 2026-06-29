@@ -98,14 +98,7 @@ static inline unsigned long pte_pfn(pte_t pte)
 	return (pfn & PTE_PFN_MASK) >> PAGE_SHIFT;
 }
 
-static inline unsigned long pmd_pfn(pmd_t pmd)
-{
-	phys_addr_t pfn = pmd_val(pmd);
-	pfn ^= protnone_mask(pfn);
-	return (pfn & pmd_pfn_mask(pmd)) >> PAGE_SHIFT;
-}
-
-/* pud_pfn, p4d_pfn, pgd_pfn removed - unused */
+/* pmd_pfn, pud_pfn, p4d_pfn, pgd_pfn removed - unused */
 
 #define pte_page(pte)	pfn_to_page(pte_pfn(pte))
 
@@ -251,10 +244,7 @@ static inline unsigned long pmd_page_vaddr(pmd_t pmd)
 	return (unsigned long)__va(pmd_val(pmd) & pmd_pfn_mask(pmd));
 }
 
- 
-#define pmd_page(pmd)	pfn_to_page(pmd_pfn(pmd))
 
- 
 #define mk_pte(page, pgprot)   pfn_pte(page_to_pfn(page), (pgprot))
 
 static inline int pmd_bad(pmd_t pmd)
@@ -287,15 +277,6 @@ unsigned long init_memory_mapping(unsigned long start,
 
 
  
-static inline pte_t native_local_ptep_get_and_clear(pte_t *ptep)
-{
-	pte_t res = *ptep;
-
-	 
-	native_pte_clear(NULL, 0, ptep);
-	return res;
-}
-
 static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 			      pte_t *ptep, pte_t pte)
 {

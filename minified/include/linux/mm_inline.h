@@ -23,19 +23,6 @@ static __always_inline void update_lru_size(struct lruvec *lruvec,
 				NR_ZONE_LRU_BASE + lru, nr_pages);
 }
 
-static __always_inline void __folio_clear_lru_flags(struct folio *folio)
-{
-	VM_BUG_ON_FOLIO(!folio_test_lru(folio), folio);
-
-	__folio_clear_lru(folio);
-
-	 
-	if (folio_test_active(folio) && folio_test_unevictable(folio))
-		return;
-
-	__folio_clear_active(folio);
-	__folio_clear_unevictable(folio);
-}
 
 static __always_inline enum lru_list folio_lru_list(struct folio *folio)
 {

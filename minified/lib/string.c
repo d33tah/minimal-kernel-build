@@ -110,19 +110,6 @@ char *strrchr(const char *s, int c)
 }
 #endif
 
-#ifndef __HAVE_ARCH_STRNCHR
-char *strnchr(const char *s, size_t count, int c)
-{
-	while (count--) {
-		if (*s == (char)c)
-			return (char *)s;
-		if (*s++ == '\0')
-			break;
-	}
-	return NULL;
-}
-#endif
-
 #ifndef __HAVE_ARCH_STRPBRK
 char *strpbrk(const char *cs, const char *ct)
 {

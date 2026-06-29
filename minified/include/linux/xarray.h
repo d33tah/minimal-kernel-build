@@ -372,30 +372,6 @@ static inline void xas_set_lru(struct xa_state *xas, struct list_lru *lru)
 	xas->xa_lru = lru;
 }
 
-static inline void *xas_next_entry(struct xa_state *xas, unsigned long max)
-{
-	struct xa_node *node = xas->xa_node;
-	void *entry;
-
-	if (unlikely(xas_not_node(node) || node->shift ||
-			xas->xa_offset != (xas->xa_index & XA_CHUNK_MASK)))
-		return xas_find(xas, max);
-
-	do {
-		if (unlikely(xas->xa_index >= max))
-			return xas_find(xas, max);
-		if (unlikely(xas->xa_offset == XA_CHUNK_MASK))
-			return xas_find(xas, max);
-		entry = xa_entry(xas->xa, node, xas->xa_offset + 1);
-		if (unlikely(xa_is_internal(entry)))
-			return xas_find(xas, max);
-		xas->xa_offset++;
-		xas->xa_index++;
-	} while (!entry);
-
-	return entry;
-}
-
 static inline unsigned int xas_find_chunk(struct xa_state *xas, bool advance,
 		xa_mark_t mark)
 {

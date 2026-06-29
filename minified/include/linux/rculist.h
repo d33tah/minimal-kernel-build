@@ -30,12 +30,6 @@ static inline void list_add_tail_rcu(struct list_head *new,
 	__list_add_rcu(new, head->prev, head);
 }
 
-static inline void list_del_rcu(struct list_head *entry)
-{
-	__list_del_entry(entry);
-	entry->prev = LIST_POISON2;
-}
-
 #define list_entry_rcu(ptr, type, member) \
 	container_of(READ_ONCE(ptr), type, member)
 
@@ -47,12 +41,6 @@ static inline void list_del_rcu(struct list_head *entry)
 		pos = list_entry_rcu(pos->member.next, typeof(*pos), member))
 
 
-
-static inline void hlist_del_rcu(struct hlist_node *n)
-{
-	__hlist_del(n);
-	WRITE_ONCE(n->pprev, LIST_POISON2);
-}
 
 #define hlist_first_rcu(head)	(*((struct hlist_node __rcu **)(&(head)->first)))
 

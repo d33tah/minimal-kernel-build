@@ -37,11 +37,6 @@ static __always_inline void __folio_clear_lru_flags(struct folio *folio)
 	__folio_clear_unevictable(folio);
 }
 
-static __always_inline void __clear_page_lru_flags(struct page *page)
-{
-	__folio_clear_lru_flags(page_folio(page));
-}
-
 static __always_inline enum lru_list folio_lru_list(struct folio *folio)
 {
 	enum lru_list lru;
@@ -78,12 +73,6 @@ void lruvec_del_folio(struct lruvec *lruvec, struct folio *folio)
 		list_del(&folio->lru);
 	update_lru_size(lruvec, lru, folio_zonenum(folio),
 			-folio_nr_pages(folio));
-}
-
-static __always_inline void del_page_from_lru_list(struct page *page,
-				struct lruvec *lruvec)
-{
-	lruvec_del_folio(lruvec, page_folio(page));
 }
 
 static inline void dup_anon_vma_name(struct vm_area_struct *orig_vma,

@@ -330,9 +330,6 @@ static inline int dup_user_cpus_ptr(struct task_struct *dst, struct task_struct 
 {
 	return 0;
 }
-static inline void release_user_cpus_ptr(struct task_struct *p)
-{
-}
 
 
 extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);

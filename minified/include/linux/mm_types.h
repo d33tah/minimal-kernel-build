@@ -286,10 +286,6 @@ enum vm_fault_reason {
 			VM_FAULT_HWPOISON_LARGE | VM_FAULT_FALLBACK)
 
 
-typedef struct {
-	unsigned long val;
-} swp_entry_t;
-
 enum fault_flag {
 	FAULT_FLAG_WRITE =		1 << 0,
 	FAULT_FLAG_ALLOW_RETRY =	1 << 2,

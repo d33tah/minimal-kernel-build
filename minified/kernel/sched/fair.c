@@ -1,7 +1,6 @@
 
 
 
-#include <linux/sched/clock.h>
 
 #include <linux/sched/cputime.h>
 
@@ -226,7 +225,6 @@ static u64 sched_vslice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	return calc_delta_fair(sched_slice(cfs_rq, se), se);
 }
 
-#include "pelt.h"
 static void update_curr(struct cfs_rq *cfs_rq)
 {
 	struct sched_entity *curr = cfs_rq->curr;

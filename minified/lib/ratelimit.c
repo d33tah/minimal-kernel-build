@@ -1,6 +1,5 @@
 
 #include <linux/ratelimit.h>
-#include <linux/jiffies.h>
 
 int ___ratelimit(struct ratelimit_state *rs, const char *func)
 {

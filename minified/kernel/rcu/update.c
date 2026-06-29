@@ -5,8 +5,6 @@
 
 
 
-#include "rcu.h"
-
 #ifdef MODULE_PARAM_PREFIX
 #undef MODULE_PARAM_PREFIX
 #endif

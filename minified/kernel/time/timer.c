@@ -1,9 +1,7 @@
 
-#include <linux/kernel_stat.h>
 #include <linux/interrupt.h>
 #include <linux/percpu.h>
 #include <linux/init.h>
-#include <linux/thread_info.h>
 #include <linux/jiffies.h>
 #include <linux/sched/debug.h>
 

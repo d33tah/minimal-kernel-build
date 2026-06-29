@@ -2,7 +2,6 @@
 #include <linux/compiler.h>
 #include <linux/fs.h>
 #include <linux/sched/signal.h>
-#include <linux/gfp.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
 #include <linux/pagemap.h>
@@ -11,7 +10,6 @@
 #define ALLOW_ERROR_INJECTION(fname, _etype)
 #include <linux/hash.h>
 #include <linux/pagevec.h>
-#include <linux/memcontrol.h>
 #include "internal.h"
 
 noinline int __filemap_add_folio(struct address_space *mapping,

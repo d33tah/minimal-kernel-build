@@ -2,7 +2,6 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/clocksource.h>
-#include <linux/init.h>
 
 #include "tick-internal.h"
 #include "timekeeping_internal.h"

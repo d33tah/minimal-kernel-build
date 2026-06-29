@@ -1,7 +1,6 @@
 
 #include <linux/file.h>
 #include <linux/namei.h>
-#include <linux/fs.h>
 
 
 #include "internal.h"

@@ -13,7 +13,6 @@
 #include <asm/processor.h>
 #include <asm/debugreg.h>
 #include <asm/traps.h>
-#include <asm/cpu.h>
 #include <asm/cpu_entry_area.h>
 #include <asm/vdso.h>
 

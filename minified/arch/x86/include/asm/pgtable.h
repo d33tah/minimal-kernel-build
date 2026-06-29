@@ -268,7 +268,6 @@ static inline int pmd_bad(pmd_t pmd)
 
 #ifndef __ASSEMBLY__
 
-extern int direct_gbpages;
 void init_mem_mapping(void);
 void early_alloc_pgt_buf(void);
 void __init poking_init(void);

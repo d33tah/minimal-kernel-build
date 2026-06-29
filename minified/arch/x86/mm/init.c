@@ -104,13 +104,12 @@ void  __init early_alloc_pgt_buf(void)
 int after_bootmem;
 
 /*
- * The "gbpages"/"nogbpages" early_param handlers were removed: the boot
- * cmdline is empty so they never fired, and direct_gbpages defaults from
- * CONFIG_X86_DIRECT_GBPAGES (unset on x86_32 -> 0).  Keep just the variable,
- * which probe_page_size_mask() reads.
+ * GB-page direct mapping is gone: CONFIG_X86_DIRECT_GBPAGES is unset on
+ * x86_32, so direct_gbpages was a compile-time constant 0.  The variable,
+ * its PG_LEVEL_1G page_size_mask arm in probe_page_size_mask(), and the
+ * matching 1G fold in adjust_range_page_size_mask() were all statically
+ * dead and have been removed.
  */
-int direct_gbpages = IS_ENABLED(CONFIG_X86_DIRECT_GBPAGES);
-
 struct map_range {
 	unsigned long start;
 	unsigned long end;
@@ -129,13 +128,11 @@ static inline void cr4_set_bits_and_update_boot(unsigned long mask)
 
 static void __init probe_page_size_mask(void)
 {
-	 
+
 	if (boot_cpu_has(X86_FEATURE_PSE))
 		page_size_mask |= 1 << PG_LEVEL_2M;
-	else
-		direct_gbpages = 0;
 
-	 
+
 	if (boot_cpu_has(X86_FEATURE_PSE))
 		cr4_set_bits_and_update_boot(X86_CR4_PSE);
 
@@ -148,14 +145,6 @@ static void __init probe_page_size_mask(void)
 
 
 	__default_kernel_pte_mask = __supported_pte_mask;
-
-
-	if (direct_gbpages && boot_cpu_has(X86_FEATURE_GBPAGES)) {
-		printk(KERN_INFO "Using GB pages for direct mapping\n");
-		page_size_mask |= 1 << PG_LEVEL_1G;
-	} else {
-		direct_gbpages = 0;
-	}
 }
 
 #define NR_RANGE_MR 3
@@ -192,14 +181,6 @@ static void __ref adjust_range_page_size_mask(struct map_range *mr,
 
 			if (memblock_is_region_memory(start, end - start))
 				mr[i].page_size_mask |= 1<<PG_LEVEL_2M;
-		}
-		if ((page_size_mask & (1<<PG_LEVEL_1G)) &&
-		    !(mr[i].page_size_mask & (1<<PG_LEVEL_1G))) {
-			unsigned long start = round_down(mr[i].start, PUD_SIZE);
-			unsigned long end = round_up(mr[i].end, PUD_SIZE);
-
-			if (memblock_is_region_memory(start, end - start))
-				mr[i].page_size_mask |= 1<<PG_LEVEL_1G;
 		}
 	}
 }

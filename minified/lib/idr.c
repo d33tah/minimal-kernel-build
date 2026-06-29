@@ -100,12 +100,10 @@ int ida_alloc_range(struct ida *ida, unsigned int min, unsigned int max,
 	unsigned long flags;
 	struct ida_bitmap *bitmap, *alloc = NULL;
 
-	if ((int)min < 0)
-		return -ENOSPC;
-
-	if ((int)max < 0)
-		max = INT_MAX;
-
+	/*
+	 * The sole caller (fs/super.c) passes positive literal min/max, so the
+	 * (int)min<0 / (int)max<0 validations were statically dead and removed.
+	 */
 retry:
 	xas_lock_irqsave(&xas, flags);
 next:

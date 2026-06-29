@@ -1,12 +1,7 @@
 
 #include <linux/mm.h>
-#include <linux/fs.h>
 
-#include <asm/cacheflush.h>
-#include <asm/tlb.h>
-#include <asm/pgalloc.h>
 
-#include "internal.h"
 
 /*
  * RUNTIME-DEAD ANCHOR-STUB: move_page_tables (and its entire private helper

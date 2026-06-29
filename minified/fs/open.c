@@ -5,7 +5,6 @@
 #include <linux/fcntl.h>
 #include <linux/fs.h>
 
-#include <linux/mnt_idmapping.h>
 
 #include "internal.h"
 

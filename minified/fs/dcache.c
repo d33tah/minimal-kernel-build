@@ -1,6 +1,5 @@
 
 #include <linux/string.h>
-#include <linux/mm.h>
 #include <linux/fs.h>
 #include <linux/slab.h>
 #include <linux/init.h>

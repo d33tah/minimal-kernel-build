@@ -3,7 +3,6 @@
 #include <linux/slab.h>
 #include <linux/fs.h>
 #include <linux/namei.h>
-#include <linux/sched/mm.h>
 #include <linux/mount.h>
 #include <linux/capability.h>
 #include <linux/file.h>

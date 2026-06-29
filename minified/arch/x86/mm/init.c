@@ -2,15 +2,11 @@
 #include <linux/memblock.h>
 #include <linux/sched/task.h>
 
-#include <asm/set_memory.h>
 #include <asm/e820/api.h>
 #include <asm/page.h>
 #include <asm/page_types.h>
-#include <asm/sections.h>
 #include <asm/setup.h>
 #include <asm/tlbflush.h>
-#include <asm/tlb.h>
-#include <asm/proto.h>
 #include <asm/cpufeature.h>
 #include <asm/text-patching.h>
 #include <asm/memtype.h>

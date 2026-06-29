@@ -12,8 +12,6 @@ struct kernel_clone_args {
 	u64 flags;
 	int exit_signal;
 	unsigned long stack;
-	pid_t *set_tid;
-	size_t set_tid_size;
 	int kthread;
 	int (*fn)(void *);
 	void *fn_arg;

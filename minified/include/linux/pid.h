@@ -52,8 +52,7 @@ extern void attach_pid(struct task_struct *task, enum pid_type);
 struct pid_namespace;
 extern struct pid_namespace init_pid_ns;
 
-extern struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
-			     size_t set_tid_size);
+extern struct pid *alloc_pid(struct pid_namespace *ns);
 extern void free_pid(struct pid *pid);
 
 static inline struct pid_namespace *ns_of_pid(struct pid *pid)

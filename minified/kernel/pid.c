@@ -64,8 +64,7 @@ void free_pid(struct pid *pid)
 	 */
 }
 
-struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
-		      size_t set_tid_size)
+struct pid *alloc_pid(struct pid_namespace *ns)
 {
 	struct pid *pid;
 	enum pid_type type;
@@ -73,10 +72,6 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 	struct pid_namespace *tmp;
 	struct upid *upid;
 	int retval = -ENOMEM;
-
-	 
-	if (set_tid_size > ns->level + 1)
-		return ERR_PTR(-EINVAL);
 
 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
 	if (!pid)
@@ -86,39 +81,18 @@ struct pid *alloc_pid(struct pid_namespace *ns, pid_t *set_tid,
 	pid->level = ns->level;
 
 	for (i = ns->level; i >= 0; i--) {
-		int tid = 0;
-
-		if (set_tid_size) {
-			tid = set_tid[ns->level - i];
-
-			retval = -EINVAL;
-			if (tid < 1 || tid >= pid_max)
-				goto out_free;
-			 
-			if (tid != 1 && !tmp->child_reaper)
-				goto out_free;
-			set_tid_size--;
-		}
+		int pid_min = 1;
 
 		idr_preload(GFP_KERNEL);
 		spin_lock_irq(&pidmap_lock);
 
-		if (tid) {
-			nr = idr_alloc(&tmp->idr, NULL, tid,
-				       tid + 1, GFP_ATOMIC);
-			 
-			if (nr == -ENOSPC)
-				nr = -EEXIST;
-		} else {
-			int pid_min = 1;
-			 
-			if (idr_get_cursor(&tmp->idr) > RESERVED_PIDS)
-				pid_min = RESERVED_PIDS;
 
-			 
-			nr = idr_alloc_cyclic(&tmp->idr, NULL, pid_min,
-					      pid_max, GFP_ATOMIC);
-		}
+		if (idr_get_cursor(&tmp->idr) > RESERVED_PIDS)
+			pid_min = RESERVED_PIDS;
+
+
+		nr = idr_alloc_cyclic(&tmp->idr, NULL, pid_min,
+				      pid_max, GFP_ATOMIC);
 		spin_unlock_irq(&pidmap_lock);
 		idr_preload_end();
 

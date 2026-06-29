@@ -6,7 +6,6 @@
 #include <linux/pfn.h>
 #include <linux/memblock.h>
 
-#include <asm/sections.h>
 #include <linux/io.h>
 
 #include "internal.h"

@@ -13,7 +13,6 @@ static inline unsigned long lcm(unsigned long a, unsigned long b)
 }
 #include <linux/list.h>
 #include <linux/log2.h>
-#include <linux/mm.h>
 #include <linux/mutex.h>
 #include <linux/percpu.h>
 #include <linux/pfn.h>

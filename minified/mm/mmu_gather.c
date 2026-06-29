@@ -1,11 +1,8 @@
-#include <linux/gfp.h>
 #include <linux/kernel.h>
-#include <linux/mmdebug.h>
 #include <linux/mm_types.h>
 #include <linux/swap.h>
 #include <linux/mm_inline.h>
 
-#include <asm/pgalloc.h>
 #include <asm/tlb.h>
 
 #ifndef CONFIG_MMU_GATHER_NO_GATHER

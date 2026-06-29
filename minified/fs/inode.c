@@ -1,7 +1,6 @@
 
 #include <linux/fs.h>
 #include <linux/swap.h>
-#include <linux/mount.h>
 
 #include "internal.h"
 

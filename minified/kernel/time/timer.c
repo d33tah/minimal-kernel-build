@@ -1,6 +1,5 @@
 
 #include <linux/interrupt.h>
-#include <linux/percpu.h>
 #include <linux/init.h>
 #include <linux/jiffies.h>
 #include <linux/sched/debug.h>

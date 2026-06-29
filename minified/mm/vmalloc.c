@@ -7,7 +7,6 @@
 #include <linux/rbtree.h>
 #include <linux/compiler.h>
 #include <linux/rbtree_augmented.h>
-#include <linux/pgtable.h>
 
 #include "internal.h"
 

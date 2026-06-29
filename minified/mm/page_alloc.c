@@ -4,7 +4,6 @@
 #include <linux/memblock.h>
 #include <linux/compiler.h>
 #include <linux/kernel.h>
-#include <linux/topology.h>
 #include <linux/nodemask.h>
 #include <linux/vmstat.h>
 #include <linux/pfn.h>

@@ -22,7 +22,6 @@
 #include <linux/smp.h>
 #include <linux/rcupdate.h>
 #include <linux/cpu.h>
-#include <linux/cgroup.h>
 #include <linux/sched/isolation.h>
 #include <linux/interrupt.h>
 #include <linux/rmap.h>
@@ -36,14 +35,13 @@
 extern void sched_init(void);
 extern void sched_init_smp(void);
 #include <linux/signal.h>
-#include <linux/shmem_fs.h>
+#include <linux/file.h>
 #include <linux/slab.h>
 
 #include <linux/sched/clock.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/list.h>
-#include <linux/proc_ns.h>
 
 /* --- 2025-12-08 00:40 --- integrity.h stubbed out */
 #include <linux/cache.h>

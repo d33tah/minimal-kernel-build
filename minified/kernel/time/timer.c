@@ -4,16 +4,8 @@
 #include <linux/percpu.h>
 #include <linux/init.h>
 #include <linux/thread_info.h>
-#include <linux/time.h>
 #include <linux/jiffies.h>
-#include <linux/tick.h>
-#include <linux/sched/signal.h>
 #include <linux/sched/debug.h>
-
-#include <asm/unistd.h>
-#include <asm/timex.h>
-
-#include "tick-internal.h"
 
 
 __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;

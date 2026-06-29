@@ -17,7 +17,6 @@
 #include <linux/ptrace.h>
 #include <linux/pid_namespace.h>
 #include <linux/namei.h>
-#include <linux/mount.h>
 #include <linux/fs_struct.h>
 #include <linux/security.h>
 

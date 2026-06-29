@@ -6,7 +6,6 @@
 #include <linux/kd.h>
 #include <linux/slab.h>
 #include <linux/major.h>
-#include <linux/mm.h>
 #include <linux/console.h>
 #include <linux/init.h>
 #include <linux/vt_kern.h>

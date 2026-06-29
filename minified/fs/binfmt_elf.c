@@ -16,7 +16,6 @@
 #include <linux/elf.h>
 #include <linux/utsname.h>
 #include <linux/sched.h>
-#include <linux/sched/coredump.h>
 #include <linux/sched/task_stack.h>
 #include <linux/types.h>
 #include <linux/cred.h>

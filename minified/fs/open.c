@@ -1,14 +1,9 @@
 
-#include <linux/mm.h>
 #include <linux/file.h>
-#include <linux/fdtable.h>
 #include <linux/namei.h>
-#include <linux/init_task.h> /* for securebits defines */
 #include <linux/mount.h>
 #include <linux/fcntl.h>
 #include <linux/fs.h>
-
-#include <linux/fs_struct.h>
 
 #include <linux/mnt_idmapping.h>
 

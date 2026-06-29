@@ -3,7 +3,6 @@
 #include <linux/namei.h>
 #include <linux/fs.h>
 #include <linux/file.h>
-#include <linux/init_syscalls.h>
 #include "internal.h"
 
 

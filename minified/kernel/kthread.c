@@ -1,4 +1,3 @@
-#include <linux/sched/types.h>
 #include <linux/mm.h>
 #include <linux/sched.h>
 #include <linux/sched/mm.h>
@@ -7,7 +6,6 @@
 #include <linux/kthread.h>
 #include <linux/completion.h>
 #include <linux/slab.h>
-#include <linux/numa.h>
 #include <linux/sched/isolation.h>
 
 

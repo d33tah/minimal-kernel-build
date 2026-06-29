@@ -1,6 +1,5 @@
 
 #include <linux/clockchips.h>
-#include <linux/smp.h>
 
 #include "tick-internal.h"
 

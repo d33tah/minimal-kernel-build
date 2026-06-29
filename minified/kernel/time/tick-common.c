@@ -1,5 +1,4 @@
 #include <linux/interrupt.h>
-#include <linux/percpu.h>
 
 #include <asm/irq_regs.h>
 

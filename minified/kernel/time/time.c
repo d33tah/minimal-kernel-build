@@ -6,9 +6,6 @@
 #include <linux/math64.h>
 
 
-#include <generated/timeconst.h>
-#include "timekeeping.h"
-
 /* gettimeofday body stubbed - init does write(2)+exit only, never reads time */
 SYSCALL_DEFINE2(gettimeofday, struct __kernel_old_timeval __user *, tv,
 		struct timezone __user *, tz)

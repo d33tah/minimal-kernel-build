@@ -1,6 +1,5 @@
 
 #include <linux/timekeeper_internal.h>
-#include <linux/init.h>
 #include <linux/sched/clock.h>
 #include <linux/clocksource.h>
 #include <linux/jiffies.h>

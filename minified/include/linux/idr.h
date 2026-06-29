@@ -85,7 +85,6 @@ struct ida {
 #define DEFINE_IDA(name)	struct ida name = IDA_INIT(name)
 
 int ida_alloc_range(struct ida *, unsigned int min, unsigned int max, gfp_t);
-void ida_free(struct ida *, unsigned int id);
 
 
 #endif  

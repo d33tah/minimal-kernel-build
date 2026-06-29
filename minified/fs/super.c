@@ -127,14 +127,10 @@ static DEFINE_IDA(unnamed_dev_ida);
 
 void kill_litter_super(struct super_block *sb)
 {
-	dev_t dev = sb->s_dev;
-
-	/* generic_shutdown_super + kill_anon_super folded from sole callers */
-	spin_lock(&sb_lock);
-	spin_unlock(&sb_lock);
-	up_write(&sb->s_umount);
-
-	ida_free(&unnamed_dev_ida, MINOR(dev));
+	/* TEARDOWN-CALLBACK-NEVER-FIRES anchor-stub: the .kill_sb superblock
+	 * teardown fn-ptr (shmem + rootfs fs_types). A boot-once artifact never
+	 * unmounts, so this never runs (HIT=False). void no-op is behavior-
+	 * preserving; the unnamed-dev IDA id release is moot (never reused). */
 }
 
 int set_anon_super_fc(struct super_block *sb, struct fs_context *fc)

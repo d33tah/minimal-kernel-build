@@ -686,7 +686,6 @@ static inline void mm_dec_nr_ptes(struct mm_struct *mm)
 }
 
 int __pte_alloc(struct mm_struct *mm, pmd_t *pmd);
-int __pte_alloc_kernel(pmd_t *pmd);
 
 static inline p4d_t *p4d_alloc(struct mm_struct *mm, pgd_t *pgd,
 		unsigned long address)

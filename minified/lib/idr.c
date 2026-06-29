@@ -191,13 +191,3 @@ nospc:
 	return -ENOSPC;
 }
 
-void ida_free(struct ida *ida, unsigned int id)
-{
-	/* RUNTIME-DEAD anchor-stub: ida_free's sole caller is kill_litter_super
-	 * (the .kill_sb superblock-teardown path, HIT=False). A single-shot
-	 * boot that never unmounts never releases an unnamed-dev IDA id, so the
-	 * full bitmap/xarray release body never runs. Symbol kept for the
-	 * kill_litter_super call site + idr.h extern. Releasing nothing is safe:
-	 * the id is never reused on a boot-once artifact. */
-}
-

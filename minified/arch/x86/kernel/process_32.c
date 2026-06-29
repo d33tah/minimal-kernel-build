@@ -1,27 +1,18 @@
 
 
 #include <linux/sched.h>
-#include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
-#include <linux/kernel.h>
-#include <linux/mm.h>
 #include <linux/smp.h>
-#include <linux/stddef.h>
-#include <asm/user.h> /* linux/user.h redirect */
 #include <linux/ptrace.h>
 #include <linux/percpu.h>
 #include <linux/kdebug.h>
 
-#include <asm/ldt.h>
 #include <asm/processor.h>
 #include <asm/fpu/sched.h>
 #include <asm/desc.h>
 
 
-#include <asm/tlbflush.h>
-#include <asm/cpu.h>
 #include <asm/switch_to.h>
-#include <asm/proto.h>
 
 #include "process.h"
 

@@ -1,5 +1,4 @@
 #include <linux/sched.h>		 
-#include <linux/sched/task_stack.h>	 
 #include <linux/extable.h>		 
 #include <linux/kprobes.h>
 #include <asm/kdebug.h>
@@ -7,11 +6,7 @@
 
 #include <asm/cpufeature.h>		 
 #include <asm/traps.h>			 
-#include <asm/fixmap.h>			 
 #include <asm/mmu_context.h>		 
-#include <asm/desc.h>			 
-#include <asm/cpu_entry_area.h>		 
-#include <asm/pgtable_areas.h>
 /* Removed: #include <asm/kvm_para.h> - stub below */
 #include <asm/vdso.h>
 

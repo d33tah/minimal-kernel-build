@@ -8,16 +8,12 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/task_work.h>
 #include <linux/user_namespace.h>
 #include <linux/interrupt.h>
-#include <linux/tty.h>
 #include <linux/pid_namespace.h>
 #include <linux/ptrace.h>
-#include <linux/proc_fs.h>
 #include <linux/syscalls.h>
 #include <linux/signal.h>
 #include <linux/fs_struct.h>
 
-#include <asm/unistd.h>
-#include <asm/mmu_context.h>
 
 static void delayed_put_task_struct(struct rcu_head *rhp)
 {

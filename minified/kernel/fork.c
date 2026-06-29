@@ -1,10 +1,8 @@
 
 #include <linux/slab.h>
 #include <linux/sched/mm.h>
-#include <linux/sched/user.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
-#include <linux/sched/cputime.h>
 #include <linux/init.h>
 #include <linux/completion.h>
 #include <linux/file.h>
@@ -12,21 +10,17 @@
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/nsproxy.h>
-#include <linux/cgroup.h>
 #include <linux/kthread.h>
 #include <linux/rcupdate.h>
-#include <linux/rmap.h>
 #include <linux/mm_inline.h>
 #include <linux/ptrace.h>
 #include <linux/tty.h>
 #include <linux/fs_struct.h>
 #include <linux/magic.h>
 #include <linux/compiler.h>
-#include <linux/init_task.h>
 /* end scs.h */
 
 #include <asm/pgalloc.h>
-#include <linux/uaccess.h>
 #include <asm/mmu_context.h>
 
 #define MIN_THREADS 20
@@ -375,7 +369,6 @@ free_tsk:
 }
 
 
-#include <linux/init_task.h>
 
 static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	struct user_namespace *user_ns)

@@ -1,25 +1,18 @@
 
 #include <linux/kernel.h>
 #include <linux/sched.h>
-#include <linux/sched/task_stack.h>
 #include <linux/entry-common.h>
 #include <linux/mm.h>
 #include <linux/errno.h>
 #include <linux/ptrace.h>
-#include <linux/export.h>
 #include <linux/nospec.h>
 #include <linux/syscalls.h>
 #include <linux/uaccess.h>
 
 
-#include <asm/desc.h>
-#include <asm/traps.h>
 #include <asm/vdso.h>
 #include <asm/cpufeature.h>
-#include <asm/fpu/api.h>
-#include <asm/nospec-branch.h>
 #include <asm/syscall.h>
-#include <asm/irq_stack.h>
 
 
 static __always_inline int syscall_32_enter(struct pt_regs *regs)

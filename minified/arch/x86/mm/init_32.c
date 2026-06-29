@@ -1,29 +1,20 @@
 
 #include <linux/kernel.h>
-#include <linux/string.h>
 #include <linux/types.h>
-#include <linux/ptrace.h>
 #include <linux/mm.h>
 #include <linux/init.h>
 #include <linux/pfn.h>
 #include <linux/memblock.h>
 
-#include <asm/asm.h>
 #include <asm/bios_ebda.h>
 #include <asm/fixmap.h>
-#include <asm/e820/api.h>
 #include <asm/apic.h>
-#include <asm/bugs.h>
 #include <asm/tlb.h>
 #include <asm/tlbflush.h>
-#include <asm/pgalloc.h>
 #include <asm/sections.h>
-#include <asm/setup.h>
 #include <asm/set_memory.h>
 #include <asm/page_types.h>
-#include <asm/cpu_entry_area.h>
 #include <asm/pgtable_areas.h>
-#include <asm/numa.h>
 
 #include "mm_internal.h"
 

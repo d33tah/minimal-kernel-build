@@ -152,9 +152,6 @@ struct inode *new_inode(struct super_block *sb)
 	return inode;
 }
 
-/* Used by ramfs */
-int generic_delete_inode(struct inode *inode) { return 1; }
-
 /*
  * Runtime-dead on this single-shot boot: nothing is ever the last reference to
  * an inode (init/idle never closes its files), so the whole inode-teardown

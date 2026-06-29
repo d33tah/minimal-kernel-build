@@ -92,8 +92,10 @@ static const struct inode_operations ramfs_dir_inode_operations = {
 	.mknod		= ramfs_mknod,
 };
 
+/* drop_inode (generic_delete_inode) removed: the super_operations.drop_inode
+ * field is never dispatched in this build (no ->drop_inode() call site), so the
+ * assignment was write-only. ramfs_ops is now empty but kept for sb->s_op. */
 static const struct super_operations ramfs_ops = {
-	.drop_inode	= generic_delete_inode,
 };
 
 enum ramfs_param {

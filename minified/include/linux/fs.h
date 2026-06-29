@@ -583,12 +583,13 @@ static inline int call_mmap(struct file *file, struct vm_area_struct *vma)
 extern ssize_t vfs_write(struct file *, const char __user *, size_t, loff_t *);
 
 struct super_operations {
-	/* only drop_inode is ever assigned/dispatched in this build; the rest
-	 * (alloc_inode, destroy_inode, free_inode, dirty_inode, write_inode,
-	 * evict_inode, put_super, sync_fs, statfs, remount_fs, umount_begin,
-	 * show_options, and earlier freeze/show_devname/show_path/show_stats)
-	 * had zero field dispatch and zero field assignment - removed */
-	int (*drop_inode) (struct inode *);
+	/* All fields removed: none are dispatched in this build. drop_inode was
+	 * the last one (assigned by ramfs_ops to generic_delete_inode) but there
+	 * is no ->drop_inode() call site, so it was write-only - removed. The
+	 * earlier set (alloc_inode, destroy_inode, free_inode, dirty_inode,
+	 * write_inode, evict_inode, put_super, sync_fs, statfs, remount_fs,
+	 * umount_begin, show_options, freeze/show_devname/show_path/show_stats)
+	 * had zero dispatch and zero assignment - removed previously. */
 };
 
 /* S_NOSEC, S_DAX, S_NOATIME, S_APPEND, S_IMMUTABLE, S_DEAD, S_NOCMTIME,
@@ -791,7 +792,6 @@ extern bool is_subdir(struct dentry *, struct dentry *);
 
 
 extern int inode_init_always(struct super_block *, struct inode *);
-extern int generic_delete_inode(struct inode *inode);
 extern unsigned int get_next_ino(void);
 extern struct inode *new_inode_pseudo(struct super_block *sb);
 extern struct inode *new_inode(struct super_block *sb);

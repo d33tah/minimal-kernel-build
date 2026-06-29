@@ -5,7 +5,6 @@
 #include <asm/apic.h>
 #include <asm/irq.h>
 #include <asm/hw_irq.h>
-#include <asm/desc.h>
 #include <asm/traps.h>
 
 

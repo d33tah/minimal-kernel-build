@@ -2,10 +2,6 @@
 #include <linux/io.h>
 #include <linux/delay.h>
 
-#include <asm/timer.h>
-#include <asm/hw_irq.h>
-#include <asm/desc.h>
-#include <asm/apic.h>
 #include <asm/i8259.h>
 
 static void init_8259A(int auto_eoi);

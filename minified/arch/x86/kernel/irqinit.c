@@ -2,16 +2,11 @@
 #include <linux/irq.h>
 #include <linux/init.h>
 #include <linux/acpi.h>
-#include <linux/pgtable.h>
 
-#include <asm/timer.h>
 #include <asm/hw_irq.h>
 #include <asm/desc.h>
 #include <asm/acpi.h>
-#include <asm/apic.h>
-#include <asm/setup.h>
 #include <asm/i8259.h>
-#include <asm/traps.h>
 #include <asm/prom.h>
 
 

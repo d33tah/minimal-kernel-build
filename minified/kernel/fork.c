@@ -528,14 +528,13 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 	if (!oldmm)
 		return 0;
 
-	if (clone_flags & CLONE_VM) {
-		mmget(oldmm);
-		mm = oldmm;
-	} else {
-		mm = dup_mm(tsk, current->mm);
-		if (!mm)
-			return -ENOMEM;
-	}
+	/*
+	 * The only spawners (kernel_thread / user_mode_thread) always set
+	 * CLONE_VM, so the address space is always shared -- the dup_mm()
+	 * (else) arm is statically dead.
+	 */
+	mmget(oldmm);
+	mm = oldmm;
 
 	tsk->mm = mm;
 	tsk->active_mm = mm;

@@ -2,35 +2,22 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/interrupt.h>
 #include <linux/kdebug.h>
 #include <linux/kernel.h>
 #include <linux/ptrace.h>
 #include <linux/sched.h>
-#include <linux/sched/task_stack.h>
 #include <linux/init.h>
 #include <linux/bug.h>
-#include <linux/mm.h>
 
 
-#include <asm/stacktrace.h>
 #include <asm/processor.h>
 #include <asm/debugreg.h>
-#include <asm/realmode.h>
-#include <asm/text-patching.h>
 #include <asm/traps.h>
-#include <asm/desc.h>
-#include <asm/fpu/api.h>
 #include <asm/cpu.h>
 #include <asm/cpu_entry_area.h>
-#include <asm/fixmap.h>
-#include <asm/mach_traps.h>
-#include <asm/alternative.h>
-#include <asm/fpu/xstate.h>
 #include <asm/vdso.h>
 
 #include <asm/processor-flags.h>
-#include <asm/setup.h>
 #include <asm/proto.h>
 
 DECLARE_BITMAP(system_vectors, NR_VECTORS);

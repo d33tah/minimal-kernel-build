@@ -6,7 +6,6 @@
 #include <linux/mm_inline.h>
 #include <linux/percpu.h>
 #include <linux/memcontrol.h>
-#include <linux/gfp.h>
 #include <linux/local_lock.h>
 
 #include "internal.h"

@@ -8,7 +8,6 @@
 #include <linux/rmap.h>
 #include <linux/memcontrol.h>
 
-#include <asm/tlbflush.h>
 
 #include "internal.h"
 

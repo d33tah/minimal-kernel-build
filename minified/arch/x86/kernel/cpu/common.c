@@ -1,7 +1,6 @@
 
 #define USE_EARLY_PGTABLE_L5
 
-#include <linux/linkage.h>
 #include <linux/kernel.h>
 #include <linux/percpu.h>
 #include <linux/string.h>
@@ -11,7 +10,6 @@
 #include <linux/sched/task.h>
 #include <linux/init.h>
 #include <linux/smp.h>
-#include <linux/pgtable.h>
 
 #include <asm/mmu_context.h>
 
@@ -22,17 +20,11 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/debugreg.h>
 #include <asm/sections.h>
 #include <asm/proto.h>
-#include <asm/apic.h>
 #include <asm/desc.h>
 #include <asm/fpu/api.h>
 #include <asm/hwcap2.h>
-#include <asm/numa.h>
-#include <asm/asm.h>
-#include <asm/bugs.h>
 #include <asm/cpu.h>
 #include <asm/msr.h>
-#include <asm/sigframe.h>
-#include <asm/traps.h>
 
 #include "cpu.h"
 

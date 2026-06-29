@@ -2,7 +2,6 @@
 #include <linux/errno.h>
 #include <linux/sched.h>
 #include <linux/tty.h>
-#include <linux/mm.h>
 #include <linux/slab.h>
 #include <linux/wait.h>
 #include <linux/bitops.h>

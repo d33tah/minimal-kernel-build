@@ -11,7 +11,6 @@
 #include <linux/list_lru.h>
 #include <linux/memblock.h>
 #include "internal.h"
-#include "mount.h"
 
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);
 

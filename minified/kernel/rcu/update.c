@@ -1,12 +1,7 @@
 #include <linux/types.h>
 #include <linux/kernel.h>
-#include <linux/sched/signal.h>
-#include <linux/sched/debug.h>
 #include <linux/moduleparam.h>
-#include <linux/kthread.h>
-#include <linux/tick.h>
 #include <linux/rcupdate_wait.h>
-#include <linux/sched/isolation.h>
 
 
 

@@ -39,11 +39,6 @@ static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
 	return chunk;
 }
 
-static struct page *pcpu_addr_to_page(void *addr)
-{
-	return virt_to_page(addr);
-}
-
 static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai)
 {
 	size_t nr_pages, alloc_pages;

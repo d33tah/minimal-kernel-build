@@ -118,8 +118,6 @@ extern void softirq_init(void);
 extern void raise_softirq_irqoff(unsigned int nr);
 extern void raise_softirq(unsigned int nr);
 
-DECLARE_PER_CPU(struct task_struct *, ksoftirqd);
-
 
 
 struct seq_file;

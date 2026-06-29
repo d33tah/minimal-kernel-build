@@ -67,12 +67,6 @@ bool set_kthread_struct(struct task_struct *p)
 	return true;
 }
 
-bool __kthread_should_park(struct task_struct *k)
-{
-	return test_bit(KTHREAD_SHOULD_PARK, &to_kthread(k)->flags);
-}
-
-
 static void __kthread_parkme(struct kthread *self)
 {
 	for (;;) {

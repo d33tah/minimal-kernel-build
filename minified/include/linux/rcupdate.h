@@ -37,11 +37,6 @@ extern void kvfree(const void *addr);
 
 void rcu_qs(void);
 
-static inline void rcu_softirq_qs(void)
-{
-	rcu_qs();
-}
-
 #define rcu_note_context_switch(preempt) \
 	do { \
 		rcu_qs(); \

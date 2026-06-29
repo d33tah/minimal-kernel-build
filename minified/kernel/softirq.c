@@ -16,34 +16,18 @@ DEFINE_PER_CPU_ALIGNED(irq_cpustat_t, irq_stat);
 
 static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp;
 
-DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
+/*
+ * No per-cpu ksoftirqd thread is ever spawned in this build (SMP and CPU
+ * hotplug are off; spawn_ksoftirqd is a no-op). The ksoftirqd per-cpu pointer
+ * was therefore always NULL, which made ksoftirqd_running() a constant-false
+ * predicate and wakeup_softirqd() a no-op -- both removed. Softirqs always run
+ * inline (do_softirq_own_stack) from the irq-exit path.
+ */
 
 const char * const softirq_to_name[NR_SOFTIRQS] = {
 	"HI", "TIMER", "NET_TX", "NET_RX", "BLOCK", "IRQ_POLL",
 	"TASKLET", "SCHED", "HRTIMER", "RCU"
 };
-
-static void wakeup_softirqd(void)
-{
-	 
-	struct task_struct *tsk = __this_cpu_read(ksoftirqd);
-
-	if (tsk)
-		wake_up_process(tsk);
-}
-
-#define SOFTIRQ_NOW_MASK ((1 << HI_SOFTIRQ) | (1 << TASKLET_SOFTIRQ))
-static bool ksoftirqd_running(unsigned long pending)
-{
-	struct task_struct *tsk = __this_cpu_read(ksoftirqd);
-
-	if (pending & SOFTIRQ_NOW_MASK)
-		return false;
-	return tsk && task_is_running(tsk) && !__kthread_should_park(tsk);
-}
-
-
-
 
 static void __local_bh_enable(unsigned int cnt)
 {
@@ -68,7 +52,7 @@ void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 
 		pending = local_softirq_pending();
 
-		if (pending && !ksoftirqd_running(pending))
+		if (pending)
 			do_softirq_own_stack();
 
 		local_irq_restore(flags);
@@ -91,9 +75,6 @@ static inline void softirq_handle_end(void)
 
 static inline void invoke_softirq(void)
 {
-	if (ksoftirqd_running(local_softirq_pending()))
-		return;
-
 	/*
 	 * force_irqthreads() is constant false (force_irqthreads_key is a
 	 * never-enabled DEFINE_STATIC_KEY_FALSE; the "threadirqs" boot path is
@@ -147,10 +128,6 @@ restart:
 		pending >>= softirq_bit;
 	}
 
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT) &&
-	    __this_cpu_read(ksoftirqd) == current)
-		rcu_softirq_qs();
-
 	local_irq_disable();
 
 	pending = local_softirq_pending();
@@ -158,8 +135,6 @@ restart:
 		if (time_before(jiffies, end) && !need_resched() &&
 		    --max_restart)
 			goto restart;
-
-		wakeup_softirqd();
 	}
 
 	softirq_handle_end();
@@ -194,10 +169,6 @@ inline void raise_softirq_irqoff(unsigned int nr)
 	lockdep_assert_irqs_disabled();
 
 	or_softirq_pending(1UL << nr);
-
-
-	if (!in_interrupt())
-		wakeup_softirqd();
 }
 
 void raise_softirq(unsigned int nr)

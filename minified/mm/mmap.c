@@ -4,7 +4,6 @@
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include <linux/mman.h>
-#include <linux/init.h>
 #include <linux/file.h>
 #include <linux/fs.h>
 #include <linux/personality.h>

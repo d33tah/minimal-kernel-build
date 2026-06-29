@@ -58,57 +58,18 @@ void init_timer_key(struct timer_list *timer,
 }
 
 /*
- * RUNTIME-DEAD ANCHOR-STUB: del_timer (and del_timer_sync/del_singleshot_timer_sync
- * which macro-alias to it) has 0 callers tree-wide -- no timer is ever queued on
- * this artifact (schedule_timeout_uninterruptible, the only modify caller, is also
- * stubbed). Returns 0 ("timer was not pending"); never executes.
+ * The TIMER_SOFTIRQ machinery is removed: del_timer/schedule_timeout_uninterruptible
+ * had 0 callers tree-wide (no timer is ever queued on this boot+print+stay-alive
+ * artifact, the enqueue/expiry helpers were carved out in earlier passes), so the
+ * timer-wheel had no expiry handler to run. run_timer_softirq was already an empty
+ * no-op, run_local_timers only raised that no-op softirq, and update_process_times
+ * called it -- the entire raise/handle chain was a verified behavioral no-op and
+ * is dropped. update_process_times keeps the live RCU + scheduler tick work.
  */
-int del_timer(struct timer_list *timer)
-{
-	return 0;
-}
-
-/*
- * RUNTIME-DEAD ANCHOR-STUB: run_timer_softirq (and its entire private subtree
- * __run_timers -> {collect_expired_timers, __next_timer_interrupt ->
- * next_pending_bucket, expire_timers -> call_timer_fn}) never executes on this
- * boot+print+stay-alive artifact (no timer ever expires before idle). The
- * TIMER_SOFTIRQ handler is link-live via open_softirq() in init_timers(), but
- * the softirq is never raised (run_local_timers's next_expiry guard never
- * fires). Stubbed to a no-op; the whole expiry machinery was carved out.
- */
-static __latent_entropy void run_timer_softirq(struct softirq_action *h)
-{
-}
-
-static void run_local_timers(void)
-{
-	struct timer_base *base = this_cpu_ptr(&timer_bases[BASE_STD]);
-
-	if (time_before(jiffies, base->next_expiry))
-		return;
-	raise_softirq(TIMER_SOFTIRQ);
-}
-
 void update_process_times(int user_tick)
 {
-	run_local_timers();
 	rcu_sched_clock_irq(user_tick);
 	scheduler_tick();
-}
-
-/*
- * RUNTIME-DEAD ANCHOR-STUB: schedule_timeout_uninterruptible has 0 callers
- * tree-wide on this boot+print+stay-alive artifact (init/idle never sleeps on
- * a timer). Its whole private subtree (process_timeout, __mod_timer + the timer
- * wheel modify helpers lock_timer_base/forward_timer_base/detach_if_pending/
- * internal_add_timer/calc_wheel_index/calc_index/enqueue_timer/get_timer_base,
- * shared only with the equally-dead del_timer) was carved out. Stubbed to a
- * no-op that returns the requested timeout unchanged; it never executes.
- */
-signed long __sched schedule_timeout_uninterruptible(signed long timeout)
-{
-	return timeout < 0 ? 0 : timeout;
 }
 
 static void __init init_timer_cpu(int cpu)
@@ -135,7 +96,6 @@ static void __init init_timer_cpus(void)
 void __init init_timers(void)
 {
 	init_timer_cpus();
-	open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
 }
 
 

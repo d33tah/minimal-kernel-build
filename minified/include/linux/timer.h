@@ -60,15 +60,7 @@ static inline int timer_pending(const struct timer_list * timer)
 	return !hlist_unhashed_lockless(&timer->entry);
 }
 
-extern int del_timer(struct timer_list * timer);
-
-
 #define NEXT_TIMER_MAX_DELTA	((1UL << 30) - 1)
-
-
-# define del_timer_sync(t)		del_timer(t)
-
-#define del_singleshot_timer_sync(t) del_timer_sync(t)
 
 extern void init_timers(void);
 

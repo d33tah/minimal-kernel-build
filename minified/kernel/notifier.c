@@ -1,44 +1,19 @@
 #include <linux/kdebug.h>
 #include <linux/kprobes.h>
 #include <linux/notifier.h>
-#include <linux/rcupdate.h>
-
-static int notifier_call_chain(struct notifier_block **nl,
-			       unsigned long val, void *v,
-			       int nr_to_call, int *nr_calls)
-{
-	int ret = NOTIFY_DONE;
-	struct notifier_block *nb, *next_nb;
-
-	nb = rcu_dereference_raw(*nl);
-
-	while (nb && nr_to_call) {
-		next_nb = rcu_dereference_raw(nb->next);
-
-		ret = nb->notifier_call(nb, val, v);
-
-		if (nr_calls)
-			(*nr_calls)++;
-
-		if (ret & NOTIFY_STOP_MASK)
-			break;
-		nb = next_nb;
-		nr_to_call--;
-	}
-	return ret;
-}
-NOKPROBE_SYMBOL(notifier_call_chain);
 
 int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 			       unsigned long val, void *v)
 {
-	int ret;
-
-	rcu_read_lock();
-	ret = notifier_call_chain(&nh->head, val, v, -1, NULL);
-	rcu_read_unlock();
-
-	return ret;
+	/*
+	 * No notifier is ever registered on any atomic chain in this build
+	 * (there is no notifier_chain_register / atomic_notifier_chain_register
+	 * caller anywhere). The only call sites pass panic_notifier_list and
+	 * vt_notifier_list, both ATOMIC_NOTIFIER_HEAD()-initialised and never
+	 * populated, so the chain is permanently empty and walking it always
+	 * yields NOTIFY_DONE. Return that directly.
+	 */
+	return NOTIFY_DONE;
 }
 NOKPROBE_SYMBOL(atomic_notifier_call_chain);
 

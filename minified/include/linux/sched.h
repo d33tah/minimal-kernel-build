@@ -14,8 +14,6 @@
 #define SCHED_BATCH		3
 #define SCHED_IDLE		5
 #define SCHED_DEADLINE		6
-#define SCHED_RESET_ON_FORK     0x40000000
-#define SCHED_FLAG_RESET_ON_FORK	0x01
 /* End uapi/linux/sched.h */
 
 #include <asm/current.h>
@@ -61,7 +59,6 @@ struct signal_struct;
 #define TASK_INTERRUPTIBLE		0x0001
 #define TASK_UNINTERRUPTIBLE		0x0002
 #define EXIT_DEAD			0x0010
-#define EXIT_ZOMBIE			0x0020
 #define TASK_PARKED			0x0040
 #define TASK_DEAD			0x0080
 #define TASK_WAKEKILL			0x0100

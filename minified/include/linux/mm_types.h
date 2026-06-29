@@ -156,12 +156,6 @@ static inline void set_page_private(struct page *page, unsigned long private)
 
 typedef unsigned long vm_flags_t;
 
-struct anon_vma_name {
-	struct kref kref;
-	 
-	char name[];
-};
-
 struct vm_area_struct {
 	 
 

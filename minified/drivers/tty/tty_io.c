@@ -1,13 +1,6 @@
 
-#include <linux/types.h>
-#include <linux/major.h>
-#include <linux/errno.h>
-#include <linux/signal.h>
-#include <linux/fcntl.h>
 #include <linux/sched/signal.h>
-#include <linux/sched/task.h>
 #include <linux/tty.h>
-#include <linux/tty_driver.h>
 #include <linux/file.h>
 #include <linux/console.h>
 #include <linux/mm.h>
@@ -16,7 +9,6 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/device.h>
-#include <linux/wait.h>
 #include <linux/bitops.h>
 #include <linux/ratelimit.h>
 #include <linux/compat.h>

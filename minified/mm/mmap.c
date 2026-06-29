@@ -11,8 +11,6 @@
 #include <linux/security.h>
 #include <linux/shmem_fs.h>
 #include <linux/rmap.h>
-#include <linux/mmdebug.h>
-#include <linux/rbtree_augmented.h>
 #include <linux/pkeys.h>
 #include <linux/sched/mm.h>
 #include <linux/oom.h>

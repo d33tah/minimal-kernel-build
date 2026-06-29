@@ -2,7 +2,6 @@
 #include <linux/kernel.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
-#include "internal.h"
 
 /*
  * On this single-shot boot every address_space reaching truncate is empty

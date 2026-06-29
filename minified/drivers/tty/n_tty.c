@@ -1,6 +1,4 @@
 
-#include <linux/types.h>
-#include <linux/errno.h>
 #include <linux/tty.h>
 #include <linux/mm.h>
 #include <linux/slab.h>

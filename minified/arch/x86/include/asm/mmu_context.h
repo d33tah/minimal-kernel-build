@@ -69,11 +69,6 @@ do {						\
 
 /* is_64bit_mm removed - unused */
 
-static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
-		bool write, bool execute, bool foreign)
-{
-	/* No PKU on this build: __pkru_allows_pkey() is constant true. */
-	return true;
-}
+/* arch_vma_access_permitted removed - constant-true (no PKU), 0 callers */
 
 #endif

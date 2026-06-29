@@ -519,14 +519,15 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 	if (len > TASK_SIZE)
 		return -ENOMEM;
 
+	/*
+	 * MAP_SHARED is never set on this build (do_mmap is the sole caller and
+	 * the only mmap path is binfmt_elf via vm_mmap with MAP_PRIVATE[|MAP_FIXED]),
+	 * so the shmem_get_unmapped_area arm is dead and folded out.
+	 */
 	get_area = current->mm->get_unmapped_area;
 	if (file) {
 		if (file->f_op->get_unmapped_area)
 			get_area = file->f_op->get_unmapped_area;
-	} else if (flags & MAP_SHARED) {
-		
-		pgoff = 0;
-		get_area = shmem_get_unmapped_area;
 	}
 
 	addr = get_area(file, addr, len, pgoff, flags);

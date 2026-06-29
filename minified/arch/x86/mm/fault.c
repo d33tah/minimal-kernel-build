@@ -196,21 +196,15 @@ NOKPROBE_SYMBOL(spurious_kernel_fault);
 static inline int
 access_error(unsigned long error_code, struct vm_area_struct *vma)
 {
-	 
-	bool foreign = false;
 
-	 
 	if (error_code & X86_PF_PK)
 		return 1;
 
-	 
+
 	if (unlikely(error_code & X86_PF_SGX))
 		return 1;
 
-	 
-	if (!arch_vma_access_permitted(vma, (error_code & X86_PF_WRITE),
-				       (error_code & X86_PF_INSTR), foreign))
-		return 1;
+	/* arch_vma_access_permitted() is constant-true (no PKU) => guard dropped. */
 
 	if (error_code & X86_PF_WRITE) {
 		 

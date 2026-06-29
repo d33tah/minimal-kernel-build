@@ -196,7 +196,6 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 {
 	vm_flags_t vm_flags = vma->vm_flags;
 	int write = (gup_flags & FOLL_WRITE);
-	int foreign = (gup_flags & FOLL_REMOTE);
 
 	if (vm_flags & (VM_IO | VM_PFNMAP))
 		return -EFAULT;
@@ -218,9 +217,8 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 		if (!(vm_flags & VM_MAYREAD))
 			return -EFAULT;
 	}
-	
-	if (!arch_vma_access_permitted(vma, write, false, foreign))
-		return -EFAULT;
+
+	/* arch_vma_access_permitted() is constant-true (no PKU) => guard dropped. */
 	return 0;
 }
 

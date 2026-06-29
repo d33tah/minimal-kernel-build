@@ -10,8 +10,6 @@
 
 extern const struct fs_parameter_spec shmem_fs_parameters[];
 extern void shmem_init(void);
-extern unsigned long shmem_get_unmapped_area(struct file *, unsigned long addr,
-		unsigned long len, unsigned long pgoff, unsigned long flags);
 
 
 #endif

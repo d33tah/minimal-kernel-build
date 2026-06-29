@@ -160,10 +160,8 @@ static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
 	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags);
 }
 
-struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
-		nodemask_t *nodemask);
-struct folio *__folio_alloc(gfp_t gfp, unsigned int order, int preferred_nid,
-		nodemask_t *nodemask);
+struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid);
+struct folio *__folio_alloc(gfp_t gfp, unsigned int order, int preferred_nid);
 
 static inline struct page *
 __alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order)
@@ -171,7 +169,7 @@ __alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order)
 	VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES);
 	VM_WARN_ON((gfp_mask & __GFP_THISNODE) && !node_online(nid));
 
-	return __alloc_pages(gfp_mask, order, nid, NULL);
+	return __alloc_pages(gfp_mask, order, nid);
 }
 
 static inline
@@ -180,7 +178,7 @@ struct folio *__folio_alloc_node(gfp_t gfp, unsigned int order, int nid)
 	VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES);
 	VM_WARN_ON((gfp & __GFP_THISNODE) && !node_online(nid));
 
-	return __folio_alloc(gfp, order, nid, NULL);
+	return __folio_alloc(gfp, order, nid);
 }
 
 static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,

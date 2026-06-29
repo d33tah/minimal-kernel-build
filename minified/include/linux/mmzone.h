@@ -355,41 +355,34 @@ static inline int zonelist_zone_idx(struct zoneref *zoneref)
 }
 
 struct zoneref *__next_zones_zonelist(struct zoneref *z,
-					enum zone_type highest_zoneidx,
-					nodemask_t *nodes);
+					enum zone_type highest_zoneidx);
 
 static __always_inline struct zoneref *next_zones_zonelist(struct zoneref *z,
-					enum zone_type highest_zoneidx,
-					nodemask_t *nodes)
+					enum zone_type highest_zoneidx)
 {
-	if (likely(!nodes && zonelist_zone_idx(z) <= highest_zoneidx))
+	if (likely(zonelist_zone_idx(z) <= highest_zoneidx))
 		return z;
-	return __next_zones_zonelist(z, highest_zoneidx, nodes);
+	return __next_zones_zonelist(z, highest_zoneidx);
 }
 
 static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
-					enum zone_type highest_zoneidx,
-					nodemask_t *nodes)
+					enum zone_type highest_zoneidx)
 {
 	return next_zones_zonelist(zonelist->_zonerefs,
-							highest_zoneidx, nodes);
+							highest_zoneidx);
 }
 
-#define for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, nodemask) \
-	for (z = first_zones_zonelist(zlist, highidx, nodemask), zone = zonelist_zone(z);	\
+#define for_each_zone_zonelist(zone, z, zlist, highidx) \
+	for (z = first_zones_zonelist(zlist, highidx), zone = zonelist_zone(z);	\
 		zone;							\
-		z = next_zones_zonelist(++z, highidx, nodemask),	\
+		z = next_zones_zonelist(++z, highidx),	\
 			zone = zonelist_zone(z))
 
-#define for_next_zone_zonelist_nodemask(zone, z, highidx, nodemask) \
+#define for_next_zone_zonelist(zone, z, highidx) \
 	for (zone = z->zone;	\
 		zone;							\
-		z = next_zones_zonelist(++z, highidx, nodemask),	\
+		z = next_zones_zonelist(++z, highidx),	\
 			zone = zonelist_zone(z))
-
-
-#define for_each_zone_zonelist(zone, z, zlist, highidx) \
-	for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, NULL)
 
 
 

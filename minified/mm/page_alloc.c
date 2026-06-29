@@ -667,7 +667,7 @@ get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags,
 	struct page *page;
 
 	z = ac->preferred_zoneref;
-	for_next_zone_zonelist_nodemask(zone, z, ac->highest_zoneidx, ac->nodemask) {
+	for_next_zone_zonelist(zone, z, ac->highest_zoneidx) {
 		unsigned long mark = wmark_pages(zone, alloc_flags & ALLOC_WMARK_MASK);
 
 		/* Skip watermark check if NO_WATERMARKS flag set */
@@ -704,26 +704,24 @@ bool gfp_pfmemalloc_allowed(gfp_t gfp_mask)
 
 
 static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
-		int preferred_nid, nodemask_t *nodemask,
+		int preferred_nid,
 		struct alloc_context *ac, gfp_t *alloc_gfp,
 		unsigned int *alloc_flags)
 {
 	ac->highest_zoneidx = gfp_zone(gfp_mask);
 	ac->zonelist = node_zonelist(preferred_nid, gfp_mask);
-	ac->nodemask = nodemask;
 	ac->migratetype = gfp_migratetype(gfp_mask);
 
 	might_sleep_if(gfp_mask & __GFP_DIRECT_RECLAIM);
 
 
 	ac->preferred_zoneref = first_zones_zonelist(ac->zonelist,
-					ac->highest_zoneidx, ac->nodemask);
+					ac->highest_zoneidx);
 
 	return true;
 }
 
-struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
-							nodemask_t *nodemask)
+struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid)
 {
 	struct page *page;
 	unsigned int alloc_flags = ALLOC_WMARK_LOW;
@@ -738,7 +736,7 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 	
 	gfp = current_gfp_context(gfp);
 	alloc_gfp = gfp;
-	if (!prepare_alloc_pages(gfp, order, preferred_nid, nodemask, &ac,
+	if (!prepare_alloc_pages(gfp, order, preferred_nid, &ac,
 			&alloc_gfp, &alloc_flags))
 		return NULL;
 
@@ -751,11 +749,10 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid,
 	return page;
 }
 
-struct folio *__folio_alloc(gfp_t gfp, unsigned int order, int preferred_nid,
-		nodemask_t *nodemask)
+struct folio *__folio_alloc(gfp_t gfp, unsigned int order, int preferred_nid)
 {
 	struct page *page = __alloc_pages(gfp | __GFP_COMP, order,
-			preferred_nid, nodemask);
+			preferred_nid);
 
 	return (struct folio *)page;
 }

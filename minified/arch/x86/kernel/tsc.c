@@ -119,65 +119,6 @@ sched_clock(void) __attribute__((alias("native_sched_clock")));
 
 
 
-#define CAL_MS		10
-#define CAL_LATCH	(PIT_TICK_RATE / (1000 / CAL_MS))
-#define CAL_PIT_LOOPS	1000
-
-#define CAL2_MS		50
-#define CAL2_LATCH	(PIT_TICK_RATE / (1000 / CAL2_MS))
-#define CAL2_PIT_LOOPS	5000
-
-
-static unsigned long pit_calibrate_tsc(u32 latch, unsigned long ms, int loopmin)
-{
-	u64 tsc, t1, t2, delta;
-	unsigned long tscmin, tscmax;
-	int pitcnt;
-
-	if (!has_legacy_pic()) {
-		 
-		udelay(10 * USEC_PER_MSEC);
-		udelay(10 * USEC_PER_MSEC);
-		udelay(10 * USEC_PER_MSEC);
-		udelay(10 * USEC_PER_MSEC);
-		udelay(10 * USEC_PER_MSEC);
-		return ULONG_MAX;
-	}
-
-	 
-	outb((inb(0x61) & ~0x02) | 0x01, 0x61);
-
-	 
-	outb(0xb0, 0x43);
-	outb(latch & 0xff, 0x42);
-	outb(latch >> 8, 0x42);
-
-	tsc = t1 = t2 = get_cycles();
-
-	pitcnt = 0;
-	tscmax = 0;
-	tscmin = ULONG_MAX;
-	while ((inb(0x61) & 0x20) == 0) {
-		t2 = get_cycles();
-		delta = t2 - tsc;
-		tsc = t2;
-		if ((unsigned long) delta < tscmin)
-			tscmin = (unsigned int) delta;
-		if ((unsigned long) delta > tscmax)
-			tscmax = (unsigned int) delta;
-		pitcnt++;
-	}
-
-	 
-	if (pitcnt < loopmin || tscmax > 10 * tscmin)
-		return ULONG_MAX;
-
-	 
-	delta = t2 - t1;
-	do_div(delta, ms);
-	return delta;
-}
-
 static inline int pit_verify_msb(unsigned char val)
 {
 	 
@@ -328,46 +269,6 @@ static unsigned long cpu_khz_from_cpuid(void)
 	return eax_base_mhz * 1000;
 }
 
-static unsigned long pit_hpet_ptimer_calibrate_cpu(void)
-{
-	unsigned long tsc_pit_min = ULONG_MAX;
-	unsigned long flags, latch, ms;
-	int i, loopmin;
-
-	/*
-	 * No HPET/PMTIMER reference is available on this build, so the
-	 * reference-based calibration is dead and only the PIT path runs.
-	 */
-	latch = CAL_LATCH;
-	ms = CAL_MS;
-	loopmin = CAL_PIT_LOOPS;
-
-	for (i = 0; i < 3; i++) {
-		unsigned long tsc_pit_khz;
-
-		local_irq_save(flags);
-		tsc_pit_khz = pit_calibrate_tsc(latch, ms, loopmin);
-		local_irq_restore(flags);
-
-		tsc_pit_min = min(tsc_pit_min, tsc_pit_khz);
-
-		if (i == 1 && tsc_pit_min == ULONG_MAX) {
-			latch = CAL2_LATCH;
-			ms = CAL2_MS;
-			loopmin = CAL2_PIT_LOOPS;
-		}
-	}
-
-	if (tsc_pit_min == ULONG_MAX) {
-		pr_warn("Unable to calibrate against PIT\n");
-		pr_notice("No reference (HPET/PMTIMER) available\n");
-		return 0;
-	}
-
-	pr_info("Using PIT calibration value\n");
-	return tsc_pit_min;
-}
-
 unsigned long native_calibrate_cpu_early(void)
 {
 	unsigned long flags, fast_calibrate = cpu_khz_from_cpuid();
@@ -379,18 +280,6 @@ unsigned long native_calibrate_cpu_early(void)
 	}
 	return fast_calibrate;
 }
-
-
-static unsigned long native_calibrate_cpu(void)
-{
-	unsigned long tsc_freq = native_calibrate_cpu_early();
-
-	if (!tsc_freq)
-		tsc_freq = pit_hpet_ptimer_calibrate_cpu();
-
-	return tsc_freq;
-}
-
 
 
 
@@ -491,17 +380,12 @@ device_initcall(init_tsc_clocksource);
 
 static bool __init determine_cpu_tsc_frequencies(bool early)
 {
-	 
+
 	WARN_ON(cpu_khz || tsc_khz);
 
-	if (early) {
-		cpu_khz = x86_platform.calibrate_cpu();
-		tsc_khz = x86_platform.calibrate_tsc();
-	} else {
-		 
-		WARN_ON(x86_platform.calibrate_cpu != native_calibrate_cpu);
-		cpu_khz = pit_hpet_ptimer_calibrate_cpu();
-	}
+	/* Only the early CPUID-based calibration path survives on this build. */
+	cpu_khz = x86_platform.calibrate_cpu();
+	tsc_khz = x86_platform.calibrate_tsc();
 
 	 
 	if (tsc_khz == 0)
@@ -550,30 +434,16 @@ void __init tsc_early_init(void)
 
 void __init tsc_init(void)
 {
-	 
-	if (x86_platform.calibrate_cpu == native_calibrate_cpu_early)
-		x86_platform.calibrate_cpu = native_calibrate_cpu;
-
+	/*
+	 * tsc_early_init() already calibrated cpu_khz/tsc_khz from CPUID on this
+	 * build, so the PIT/HPET fallback (the !tsc_khz path that re-ran
+	 * determine_cpu_tsc_frequencies(false) via native_calibrate_cpu /
+	 * pit_hpet_ptimer_calibrate_cpu) was unreachable here and has been
+	 * removed.
+	 */
 	if (!boot_cpu_has(X86_FEATURE_TSC)) {
 		setup_clear_cpu_cap(X86_FEATURE_TSC_DEADLINE_TIMER);
 		return;
-	}
-
-	if (!tsc_khz) {
-		 
-		if (!determine_cpu_tsc_frequencies(false)) {
-			if (!tsc_unstable) {
-				tsc_unstable = 1;
-				clear_sched_clock_stable();
-				pr_info("Marking TSC unstable due to %s\n",
-					"could not calculate TSC khz");
-				clocksource_mark_unstable(&clocksource_tsc_early);
-				clocksource_mark_unstable(&clocksource_tsc);
-			}
-			setup_clear_cpu_cap(X86_FEATURE_TSC_DEADLINE_TIMER);
-			return;
-		}
-		tsc_enable_sched_clock();
 	}
 
 	/* lpj_fine assignment removed - never read */

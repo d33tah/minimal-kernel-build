@@ -314,14 +314,7 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma,
 
 /* ptep_test_and_clear_young / ptep_clear_flush_young removed - no callers */
 
-static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
-				       pte_t *ptep)
-{
-	pte_t pte = native_ptep_get_and_clear(ptep);
-	return pte;
-}
-
-/* ptep_get_and_clear_full, ptep_set_wrprotect removed - unused */
+/* ptep_get_and_clear, ptep_get_and_clear_full, ptep_set_wrprotect removed - unused */
 
 
 

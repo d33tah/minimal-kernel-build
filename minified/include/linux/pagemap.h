@@ -18,21 +18,6 @@ static inline bool mapping_empty(struct address_space *mapping)
 	return xa_empty(&mapping->i_pages);
 }
 
-static inline bool mapping_shrinkable(struct address_space *mapping)
-{
-	void *head;
-
-	head = rcu_access_pointer(mapping->i_pages.xa_head);
-	if (!head)
-		return true;
-
-	 
-	if (!xa_is_node(head) && xa_is_value(head))
-		return true;
-
-	return false;
-}
-
 enum mapping_flags {
 	AS_UNEVICTABLE	= 3,
 };
@@ -146,19 +131,6 @@ struct wait_page_queue {
 	int bit_nr;
 	wait_queue_entry_t wait;
 };
-
-static inline bool wake_page_match(struct wait_page_queue *wait_page,
-				  struct wait_page_key *key)
-{
-	if (wait_page->folio != key->folio)
-	       return false;
-	key->page_match = 1;
-
-	if (wait_page->bit_nr != key->bit_nr)
-		return false;
-
-	return true;
-}
 
 void __folio_lock(struct folio *folio);
 void unlock_page(struct page *page);

@@ -114,34 +114,7 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
  * called pgd_clear_bad/p4d_clear_bad/pud_clear_bad (themselves no-ops) were
  * statically dead and have been folded out along with those no-op macros. */
 
-void pmd_clear_bad(pmd_t *);
-
-static inline int pgd_none_or_clear_bad(pgd_t *pgd)
-{
-	return pgd_none(*pgd) ? 1 : 0;
-}
-
-static inline int p4d_none_or_clear_bad(p4d_t *p4d)
-{
-	return p4d_none(*p4d) ? 1 : 0;
-}
-
-static inline int pud_none_or_clear_bad(pud_t *pud)
-{
-	return pud_none(*pud) ? 1 : 0;
-}
-
-static inline int pmd_none_or_clear_bad(pmd_t *pmd)
-{
-	if (pmd_none(*pmd))
-		return 1;
-	if (unlikely(pmd_bad(*pmd))) {
-		pmd_clear_bad(pmd);
-		return 1;
-	}
-	return 0;
-}
-
+/* *_none_or_clear_bad() (pgd/p4d/pud/pmd) removed - 0 callers tree-wide. */
 
 
 /* pgprot_writecombine, pgprot_device removed - 0 callers tree-wide */
@@ -184,28 +157,7 @@ static inline int pmd_trans_huge(pmd_t pmd)
 {
 	return 0;
 }
-#ifndef pmd_read_atomic
-static inline pmd_t pmd_read_atomic(pmd_t *pmdp)
-{
-	 
-	return *pmdp;
-}
-#endif
-
-static inline int pmd_none_or_trans_huge_or_clear_bad(pmd_t *pmd)
-{
-	pmd_t pmdval = pmd_read_atomic(pmd);
-	 
-	 
-	if (pmd_none(pmdval) || pmd_trans_huge(pmdval) ||
-		(IS_ENABLED(CONFIG_ARCH_ENABLE_THP_MIGRATION) && !pmd_present(pmdval)))
-		return 1;
-	if (unlikely(pmd_bad(pmdval))) {
-		pmd_clear_bad(pmd);
-		return 1;
-	}
-	return 0;
-}
+/* pmd_read_atomic / pmd_none_or_trans_huge_or_clear_bad removed - 0 callers. */
 
 /* p4d_set_huge, pud_set_huge, pmd_set_huge, p4d_free_pud_page, pud_free_pmd_page,
    pmd_free_pte_page, p4d_clear_huge, pud_clear_huge, pmd_clear_huge removed - unused */

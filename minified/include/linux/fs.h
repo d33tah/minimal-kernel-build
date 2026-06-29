@@ -203,11 +203,6 @@ static inline int mapping_writably_mapped(struct address_space *mapping)
 	return atomic_read(&mapping->i_mmap_writable) > 0;
 }
 
-static inline void mapping_unmap_writable(struct address_space *mapping)
-{
-	atomic_dec(&mapping->i_mmap_writable);
-}
-
 static inline void mapping_allow_writable(struct address_space *mapping)
 {
 	atomic_inc(&mapping->i_mmap_writable);
@@ -519,19 +514,9 @@ static inline void sb_end_write(struct super_block *sb)
 	__sb_end_write(sb, SB_FREEZE_WRITE);
 }
 
-static inline void sb_end_pagefault(struct super_block *sb)
-{
-	__sb_end_write(sb, SB_FREEZE_PAGEFAULT);
-}
-
 static inline void sb_start_write(struct super_block *sb)
 {
 	__sb_start_write(sb, SB_FREEZE_WRITE);
-}
-
-static inline void sb_start_pagefault(struct super_block *sb)
-{
-	__sb_start_write(sb, SB_FREEZE_PAGEFAULT);
 }
 
 bool inode_owner_or_capable(struct user_namespace *mnt_userns,
@@ -814,10 +799,6 @@ extern bool is_subdir(struct dentry *, struct dentry *);
 
 extern int inode_init_always(struct super_block *, struct inode *);
 extern int generic_delete_inode(struct inode *inode);
-static inline int generic_drop_inode(struct inode *inode)
-{
-	return !inode->i_nlink || inode_unhashed(inode);
-}
 extern unsigned int get_next_ino(void);
 extern struct inode *new_inode_pseudo(struct super_block *sb);
 extern struct inode *new_inode(struct super_block *sb);
@@ -828,13 +809,6 @@ alloc_inode_sb(struct super_block *sb, struct kmem_cache *cache, gfp_t gfp)
 {
 	return kmem_cache_alloc_lru(cache, &sb->s_inode_lru, gfp);
 }
-
-static inline void remove_inode_hash(struct inode *inode)
-{
-	/* Inodes are never hashed on this build (no __insert_inode_hash),
-	 * so inode_unhashed() is always true -> nothing to remove. */
-}
-
 
 extern int generic_file_mmap(struct file *, struct vm_area_struct *);
 extern ssize_t generic_write_checks(struct kiocb *, struct iov_iter *);

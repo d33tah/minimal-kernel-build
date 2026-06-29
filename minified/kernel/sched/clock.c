@@ -8,7 +8,6 @@ notrace unsigned long long __weak sched_clock(void)
 static DEFINE_STATIC_KEY_FALSE(sched_clock_running);
 
 static DEFINE_STATIC_KEY_FALSE(__sched_clock_stable);
-static int __sched_clock_stable_early = 1;
 
 __read_mostly u64 __sched_clock_offset;
 static __read_mostly u64 __gtod_offset;
@@ -60,22 +59,6 @@ notrace static void __set_sched_clock_stable(void)
 	static_branch_enable(&__sched_clock_stable);
 }
 
-notrace static void __clear_sched_clock_stable(void)
-{
-	if (!sched_clock_stable())
-		return;
-}
-
-notrace void clear_sched_clock_stable(void)
-{
-	__sched_clock_stable_early = 0;
-
-	smp_mb();  
-
-	if (static_key_count(&sched_clock_running.key) == 2)
-		__clear_sched_clock_stable();
-}
-
 notrace static void __sched_clock_gtod_offset(void)
 {
 	struct sched_clock_data *scd = this_scd();
@@ -96,11 +79,12 @@ void __init sched_clock_init(void)
 static int __init sched_clock_init_late(void)
 {
 	static_branch_inc(&sched_clock_running);
-	 
-	smp_mb();  
 
-	if (__sched_clock_stable_early)
-		__set_sched_clock_stable();
+	smp_mb();
+
+	/* __sched_clock_stable_early was init=1 and its only clearer
+	 * (clear_sched_clock_stable) had 0 callers -> constant true. */
+	__set_sched_clock_stable();
 
 	return 0;
 }

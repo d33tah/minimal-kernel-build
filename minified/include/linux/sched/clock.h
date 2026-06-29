@@ -11,7 +11,6 @@ extern u64 sched_clock_cpu(int cpu);
 extern void sched_clock_init(void);
 
 extern int sched_clock_stable(void);
-extern void clear_sched_clock_stable(void);
 
 extern void sched_clock_tick(void);
 

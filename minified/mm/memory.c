@@ -10,13 +10,10 @@
 #include <linux/init.h>
 #include <linux/oom.h>
 #include <linux/file.h>
-#include <linux/memcontrol.h>
 #include <linux/gfp.h>
 
-#include <asm/mmu_context.h>
 #include <asm/pgalloc.h>
 #include <asm/tlb.h>
-#include <asm/tlbflush.h>
 
 #include "internal.h"
 

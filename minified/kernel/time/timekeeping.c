@@ -1,13 +1,11 @@
 
 #include <linux/timekeeper_internal.h>
 #include <linux/init.h>
-#include <linux/sched.h>
 #include <linux/sched/clock.h>
 #include <linux/clocksource.h>
 #include <linux/jiffies.h>
 #include <linux/time.h>
 #include <linux/timex.h>
-#include <linux/tick.h>
 #include <linux/stop_machine.h>
 
 #include <linux/compiler.h>

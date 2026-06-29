@@ -12,7 +12,6 @@
 
 #include <linux/hash.h>
 #include <linux/bitops.h>
-#include <linux/init_task.h>
 
 #include "internal.h"
 #include "mount.h"

@@ -21,8 +21,6 @@
 #include <linux/ratelimit.h>
 #include <linux/compat.h>
 
-#include <linux/uaccess.h>
-
 #include <linux/vt_kern.h>
 
 #include "tty.h"

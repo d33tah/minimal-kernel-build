@@ -90,10 +90,6 @@ static int padzero(unsigned long elf_bss)
 	(((unsigned long) (sp - items)) &~ 15UL)
 #define STACK_ALLOC(sp, len) (sp -= len)
 
-#ifndef ELF_BASE_PLATFORM
-#define ELF_BASE_PLATFORM NULL
-#endif
-
 static int
 create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 		unsigned long interp_load_addr,
@@ -105,10 +101,8 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 	int envc = bprm->envc;
 	elf_addr_t __user *sp;
 	elf_addr_t __user *u_platform;
-	elf_addr_t __user *u_base_platform;
 	elf_addr_t __user *u_rand_bytes;
 	const char *k_platform = ELF_PLATFORM;
-	const char *k_base_platform = ELF_BASE_PLATFORM;
 	unsigned char k_rand_bytes[16];
 	int items;
 	elf_addr_t *elf_info;
@@ -131,17 +125,7 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 			return -EFAULT;
 	}
 
-	 
-	u_base_platform = NULL;
-	if (k_base_platform) {
-		size_t len = strlen(k_base_platform) + 1;
 
-		u_base_platform = (elf_addr_t __user *)STACK_ALLOC(p, len);
-		if (copy_to_user(u_base_platform, k_base_platform, len))
-			return -EFAULT;
-	}
-
-	 
 	get_random_bytes(k_rand_bytes, sizeof(k_rand_bytes));
 	u_rand_bytes = (elf_addr_t __user *)
 		       STACK_ALLOC(p, sizeof(k_rand_bytes));
@@ -185,10 +169,6 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 	if (k_platform) {
 		NEW_AUX_ENT(AT_PLATFORM,
 			    (elf_addr_t)(unsigned long)u_platform);
-	}
-	if (k_base_platform) {
-		NEW_AUX_ENT(AT_BASE_PLATFORM,
-			    (elf_addr_t)(unsigned long)u_base_platform);
 	}
 #undef NEW_AUX_ENT
 	 

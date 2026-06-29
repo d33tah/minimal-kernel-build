@@ -491,11 +491,6 @@ static void con_flush(struct vc_data *vc, struct vc_draw_region *draw)
 	draw->x = -1;
 }
 
-static inline int vc_translate_ascii(const struct vc_data *vc, int c)
-{
-	return c;
-}
-
 static inline int vc_sanitize_unicode(const int c)
 {
 	if ((c >= 0xd800 && c <= 0xdfff) || c == 0xfffe || c == 0xffff)
@@ -572,11 +567,8 @@ need_more_bytes:
 
 static int vc_translate(struct vc_data *vc, int *c, bool *rescan)
 {
-	if (vc->vc_utf && !vc->vc_disp_ctrl)
-		return *c = vc_translate_unicode(vc, *c, rescan);
 
-	
-	return vc_translate_ascii(vc, *c);
+	return *c = vc_translate_unicode(vc, *c, rescan);
 }
 
 static bool vc_is_control(struct vc_data *vc, int tc, int c)
@@ -610,8 +602,6 @@ static int vc_con_write_normal(struct vc_data *vc, int tc, int c,
 		struct vc_draw_region *draw)
 {
 	/* Minimal stub: simplified character output without UTF-8/double-width support */
-	u16 himask = vc->vc_hi_font_mask;
-
 	if (vc->vc_need_wrap) {
 		cr(vc);
 		lf(vc);
@@ -621,9 +611,7 @@ static int vc_con_write_normal(struct vc_data *vc, int tc, int c,
 	if (tc < 0)
 		tc = c;
 
-	if (himask)
-		tc = ((tc & 0x100) ? himask : 0) | (tc & 0xff);
-	tc |= (vc->vc_attr << 8) & ~himask;
+	tc |= (vc->vc_attr << 8);
 
 	scr_writew(tc, (u16 *)vc->vc_pos);
 

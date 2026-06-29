@@ -2,8 +2,6 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/ioport.h>
-#include <linux/mm.h>
-#include <uapi/linux/magic.h>
 
 
 struct resource iomem_resource = {

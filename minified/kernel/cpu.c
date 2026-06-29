@@ -3,8 +3,7 @@
 #include <linux/init.h>
 #include <linux/cpu.h>
 #include <linux/cpumask.h>
-#include <linux/percpu.h>
-#include <linux/list.h>
+#include <linux/cache.h>
 
 
 /*

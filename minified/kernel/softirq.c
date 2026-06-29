@@ -1,12 +1,10 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/kernel_stat.h>
 #include <linux/interrupt.h>
 #include <linux/init.h>
 #include <linux/percpu.h>
 #include <linux/kthread.h>
-#include <linux/irq.h>
 
 void do_softirq_own_stack(void);
 

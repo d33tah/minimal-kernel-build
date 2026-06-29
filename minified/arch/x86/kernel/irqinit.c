@@ -1,7 +1,6 @@
 #include <linux/interrupt.h>
 #include <linux/irq.h>
 #include <linux/init.h>
-#include <linux/acpi.h>
 
 #include <asm/hw_irq.h>
 #include <asm/desc.h>

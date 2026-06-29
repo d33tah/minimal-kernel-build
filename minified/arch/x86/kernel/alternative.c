@@ -1,23 +1,6 @@
 #define pr_fmt(fmt) "SMP alternatives: " fmt
 
-#include <linux/list.h>
 #include <linux/mm.h>
-#include <linux/vmalloc.h>
-#include <linux/memory.h>
-#include <asm/sync_core.h>
-#include <asm/text-patching.h>
-#include <asm/alternative.h>
-#include <asm/sections.h>
-#include <asm/cacheflush.h>
-#include <asm/tlbflush.h>
-#include <asm/fixmap.h>
-/* --- 2025-12-07 20:55 --- Inlined asm-prototypes.h */
-#include <linux/pgtable.h>
-#include <asm/string_32.h>
-#include <asm/page.h>
-#include <asm/special_insns.h>
-#include <asm/preempt.h>
-#include <asm/asm.h>
 
 int __read_mostly alternatives_patched;
 

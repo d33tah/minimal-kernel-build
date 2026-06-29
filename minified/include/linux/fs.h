@@ -536,7 +536,6 @@ void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 struct iov_iter;
 
 struct file_operations {
-	loff_t (*llseek) (struct file *, loff_t, int);
 	ssize_t (*read) (struct file *, char __user *, size_t, loff_t *);
 	ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *);
 	ssize_t (*read_iter) (struct kiocb *, struct iov_iter *);
@@ -549,8 +548,8 @@ struct file_operations {
 	/* iopoll/iterate/iterate_shared/poll/unlocked_ioctl/compat_ioctl/
 	 * mmap_supported_flags/flush/fsync/sendpage/check_flags/flock/
 	 * splice_write/splice_read/setlease/remap_file_range/fadvise/uring_cmd/
-	 * fallocate/show_fdinfo/copy_file_range removed - zero ->field dispatch,
-	 * bare-deref and assignment tree-wide (only llseek/read/write/
+	 * fallocate/show_fdinfo/copy_file_range/llseek removed - zero ->field
+	 * dispatch, bare-deref and assignment tree-wide (only read/write/
 	 * read_iter/write_iter/mmap/open/release/fasync/lock/get_unmapped_area
 	 * are live; their syscall consumers were all excised earlier) */
 } __randomize_layout;
@@ -814,8 +813,6 @@ extern ssize_t __generic_file_write_iter(struct kiocb *, struct iov_iter *);
 extern ssize_t generic_file_write_iter(struct kiocb *, struct iov_iter *);
 ssize_t generic_perform_write(struct kiocb *, struct iov_iter *);
 
-extern loff_t noop_llseek(struct file *file, loff_t offset, int whence);
-extern loff_t no_llseek(struct file *file, loff_t offset, int whence);
 extern int nonseekable_open(struct inode * inode, struct file * filp);
 /* Removed: stream_open - never called */
 

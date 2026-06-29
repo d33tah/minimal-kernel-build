@@ -128,14 +128,12 @@ static struct tty_driver *get_tty_driver(dev_t device, int *index)
 
 
 static const struct file_operations tty_fops = {
-	.llseek		= no_llseek,
 	.write_iter	= tty_write,
 	.open		= tty_open,
 	.release	= tty_release,
 };
 
 static const struct file_operations console_fops = {
-	.llseek		= no_llseek,
 	.write_iter	= redirected_tty_write,
 	.open		= tty_open,
 	.release	= tty_release,

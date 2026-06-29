@@ -7,16 +7,6 @@
 #include <linux/uaccess.h>
 #include <asm/unistd.h>
 
-loff_t noop_llseek(struct file *file, loff_t offset, int whence)
-{
-	return file->f_pos;
-}
-
-loff_t no_llseek(struct file *file, loff_t offset, int whence)
-{
-	return -ESPIPE;
-}
-
 static int warn_unsupported(struct file *file, const char *op)
 {
 	pr_warn_ratelimited(

@@ -27,11 +27,7 @@ bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 }
 
 
-bool cancel_work_sync(struct work_struct *work)
-{
-     
-    return test_and_clear_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work));
-}
+/* cancel_work_sync removed: zero callers on this boot. */
 
 static struct workqueue_struct system_wq_storage = {};
 static struct workqueue_struct system_unbound_wq_storage = {};

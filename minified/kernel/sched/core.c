@@ -92,50 +92,12 @@ void update_rq_clock(struct rq *rq)
 	update_rq_clock_task(rq, delta);
 }
 
-static bool __wake_q_add(struct wake_q_head *head, struct task_struct *task)
-{
-	struct wake_q_node *node = &task->wake_q;
-
-	
-	smp_mb__before_atomic();
-	if (unlikely(cmpxchg_relaxed(&node->next, NULL, WAKE_Q_TAIL)))
-		return false;
-
-	
-	*head->lastp = node;
-	head->lastp = &node->next;
-	return true;
-}
-
-void wake_q_add(struct wake_q_head *head, struct task_struct *task)
-{
-	if (__wake_q_add(head, task))
-		get_task_struct(task);
-}
-
-void wake_q_add_safe(struct wake_q_head *head, struct task_struct *task)
-{
-	if (!__wake_q_add(head, task))
-		put_task_struct(task);
-}
-
-void wake_up_q(struct wake_q_head *head)
-{
-	struct wake_q_node *node = head->first;
-
-	while (node != WAKE_Q_TAIL) {
-		struct task_struct *task;
-
-		task = container_of(node, struct task_struct, wake_q);
-		
-		node = node->next;
-		task->wake_q.next = NULL;
-
-		
-		wake_up_process(task);
-		put_task_struct(task);
-	}
-}
+/*
+ * wake_q batched-wakeup machinery (wake_q_add / wake_q_add_safe / wake_up_q
+ * and the __wake_q_add helper) removed: zero callers on this boot. The wake_q
+ * mechanism is only used by futex/rwsem/mutex contended wakeup batching, none
+ * of which fires here (no DEFINE_WAKE_Q / wake_q_init / wake_q_add anywhere).
+ */
 
 void resched_curr(struct rq *rq)
 {

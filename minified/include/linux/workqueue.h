@@ -106,8 +106,6 @@ extern bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 			struct delayed_work *work, unsigned long delay);
 
 
-extern bool cancel_work_sync(struct work_struct *work);
-
 static inline bool queue_work(struct workqueue_struct *wq,
 			      struct work_struct *work)
 {

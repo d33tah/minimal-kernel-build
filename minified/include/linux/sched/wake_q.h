@@ -4,32 +4,11 @@
 
 #include <linux/sched.h>
 
-struct wake_q_head {
-	struct wake_q_node *first;
-	struct wake_q_node **lastp;
-};
+/*
+ * The wake_q batched-wakeup API (struct wake_q_head, DEFINE_WAKE_Q,
+ * wake_q_init/wake_q_empty, wake_q_add/wake_q_add_safe/wake_up_q) was removed:
+ * zero users on this boot (only futex/rwsem/mutex contended-wakeup batching
+ * uses it, none of which fires here).
+ */
 
-#define WAKE_Q_TAIL ((struct wake_q_node *) 0x01)
-
-#define WAKE_Q_HEAD_INITIALIZER(name)				\
-	{ WAKE_Q_TAIL, &name.first }
-
-#define DEFINE_WAKE_Q(name)					\
-	struct wake_q_head name = WAKE_Q_HEAD_INITIALIZER(name)
-
-static inline void wake_q_init(struct wake_q_head *head)
-{
-	head->first = WAKE_Q_TAIL;
-	head->lastp = &head->first;
-}
-
-static inline bool wake_q_empty(struct wake_q_head *head)
-{
-	return head->first == WAKE_Q_TAIL;
-}
-
-extern void wake_q_add(struct wake_q_head *head, struct task_struct *task);
-extern void wake_q_add_safe(struct wake_q_head *head, struct task_struct *task);
-extern void wake_up_q(struct wake_q_head *head);
-
-#endif  
+#endif

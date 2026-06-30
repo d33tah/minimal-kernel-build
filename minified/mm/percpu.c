@@ -826,7 +826,7 @@ static struct pcpu_chunk * __init pcpu_alloc_first_chunk(unsigned long tmp_addr,
 {
 	struct pcpu_chunk *chunk;
 	unsigned long aligned_addr, lcm_align;
-	int start_offset, offset_bits, region_size, region_bits;
+	int start_offset, region_size, region_bits;
 	size_t alloc_size;
 
 	
@@ -884,31 +884,14 @@ static struct pcpu_chunk * __init pcpu_alloc_first_chunk(unsigned long tmp_addr,
 
 	chunk->free_bytes = map_size;
 
-	if (chunk->start_offset) {
-		
-		offset_bits = chunk->start_offset / PCPU_MIN_ALLOC_SIZE;
-		bitmap_set(chunk->alloc_map, 0, offset_bits);
-		set_bit(0, chunk->bound_map);
-		set_bit(offset_bits, chunk->bound_map);
-
-		chunk->chunk_md.first_free = offset_bits;
-
-		pcpu_block_update_hint_alloc(chunk, 0, offset_bits);
-	}
-
-	if (chunk->end_offset) {
-		
-		offset_bits = chunk->end_offset / PCPU_MIN_ALLOC_SIZE;
-		bitmap_set(chunk->alloc_map,
-			   pcpu_chunk_map_bits(chunk) - offset_bits,
-			   offset_bits);
-		set_bit((start_offset + map_size) / PCPU_MIN_ALLOC_SIZE,
-			chunk->bound_map);
-		set_bit(region_bits, chunk->bound_map);
-
-		pcpu_block_update_hint_alloc(chunk, pcpu_chunk_map_bits(chunk)
-					     - offset_bits, offset_bits);
-	}
+	/*
+	 * start_offset / end_offset are both always 0 on this build: the sole
+	 * caller setup_per_cpu_areas() leaves ai->static_size == 0 and passes a
+	 * PAGE_SIZE-aligned base_addr, so tmp_addr is page-aligned (start_offset
+	 * == 0); map_size == unit_size is a power-of-two >= PAGE_SIZE, and
+	 * lcm_align == PAGE_SIZE, so region_size == map_size (end_offset == 0).
+	 * The reserved-bitmap-marking blocks for nonzero offsets were dead.
+	 */
 
 	return chunk;
 }

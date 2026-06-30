@@ -146,10 +146,6 @@ extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
 
 void flush_tlb_batched_pending(struct mm_struct *mm);
 
-extern const struct trace_print_flags pageflag_names[];
-extern const struct trace_print_flags vmaflag_names[];
-extern const struct trace_print_flags gfpflag_names[];
-
 /* is_migrate_highatomic, is_migrate_highatomic_page removed - unused */
 
 void setup_zone_pageset(struct zone *zone);

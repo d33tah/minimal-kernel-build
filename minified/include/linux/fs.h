@@ -187,15 +187,7 @@ static inline void i_mmap_unlock_write(struct address_space *mapping)
 }
 
 
-static inline void i_mmap_lock_read(struct address_space *mapping)
-{
-	down_read(&mapping->i_mmap_rwsem);
-}
-
-static inline void i_mmap_unlock_read(struct address_space *mapping)
-{
-	up_read(&mapping->i_mmap_rwsem);
-}
+/* i_mmap_lock_read / i_mmap_unlock_read removed: 0-caller static-inline orphans */
 
 static inline int mapping_writably_mapped(struct address_space *mapping)
 {

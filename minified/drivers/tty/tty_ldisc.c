@@ -152,12 +152,6 @@ int tty_ldisc_setup(struct tty_struct *tty, struct tty_struct *o_tty)
 	return tty_ldisc_open(tty, tty->ldisc);
 }
 
-void tty_ldisc_release(struct tty_struct *tty)
-{
-	/* Runtime-dead: only caller was tty_release_struct (tty teardown),
-	 * which never runs on a single-shot boot. Link-live via tty.h extern. */
-}
-
 int tty_ldisc_init(struct tty_struct *tty)
 {
 	struct tty_ldisc *ld = tty_ldisc_get(tty, N_TTY);

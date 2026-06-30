@@ -41,7 +41,6 @@ int tty_release(struct inode *inode, struct file *filp);
 #define tty_is_writelocked(tty)  (mutex_is_locked(&tty->atomic_write_lock))
 
 int tty_ldisc_setup(struct tty_struct *tty, struct tty_struct *o_tty);
-void tty_ldisc_release(struct tty_struct *tty);
 int __must_check tty_ldisc_init(struct tty_struct *tty);
 
 /* tty_audit_add_data, tty_audit_tiocsti removed - unused */

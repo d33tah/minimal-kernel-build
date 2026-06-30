@@ -91,12 +91,7 @@ static inline int list_empty(const struct list_head *head)
 
 /* list_del_init_careful removed: 0-caller orphan */
 
-static inline int list_empty_careful(const struct list_head *head)
-{
-	struct list_head *next = smp_load_acquire(&head->next);
-	return list_is_head(next, head) && (next == READ_ONCE(head->prev));
-}
-
+/* list_empty_careful removed: 0-caller orphan */
 
 /* list_is_singular removed: 0-caller orphan */
 
@@ -169,10 +164,7 @@ static inline int hlist_unhashed_lockless(const struct hlist_node *h)
 	return !READ_ONCE(h->pprev);
 }
 
-static inline int hlist_empty(const struct hlist_head *h)
-{
-	return !READ_ONCE(h->first);
-}
+/* hlist_empty removed: 0-caller orphan */
 
 static inline void __hlist_del(struct hlist_node *n)
 {
@@ -202,11 +194,7 @@ static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 	WRITE_ONCE(n->pprev, &h->first);
 }
 
-static inline bool
-hlist_is_singular_node(struct hlist_node *n, struct hlist_head *h)
-{
-	return !n->next && n->pprev == &h->first;
-}
+/* hlist_is_singular_node removed: 0-caller orphan */
 
 /* hlist_move_list removed - 0 callers tree-wide */
 

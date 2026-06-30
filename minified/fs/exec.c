@@ -357,7 +357,7 @@ out_unlock:
 	return ret;
 }
 
-static struct file *do_open_execat(int fd, struct filename *name, int flags)
+static struct file *do_open_execat(struct filename *name, int flags)
 {
 	struct file *file;
 	int err;
@@ -375,7 +375,7 @@ static struct file *do_open_execat(int fd, struct filename *name, int flags)
 	if (flags & AT_EMPTY_PATH)
 		open_exec_flags.lookup_flags |= LOOKUP_EMPTY;
 
-	file = do_filp_open(fd, name, &open_exec_flags);
+	file = do_filp_open(name, &open_exec_flags);
 	if (IS_ERR(file))
 		goto out;
 
@@ -578,15 +578,14 @@ static void free_bprm(struct linux_binprm *bprm)
 	kfree(bprm);
 }
 
-static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)
+static struct linux_binprm *alloc_bprm(struct filename *filename)
 {
 	struct linux_binprm *bprm = kzalloc(sizeof(*bprm), GFP_KERNEL);
 	int retval = -ENOMEM;
 	if (!bprm)
 		goto out;
 
-	/* Sole caller kernel_execve passes fd==AT_FDCWD, so filename is
-	 * always used directly; the /dev/fd/N fdpath branch is dead. */
+	/* AT_FDCWD-only exec: filename used directly, /dev/fd/N branch dead. */
 	bprm->filename = filename->name;
 	bprm->interp = bprm->filename;
 
@@ -707,7 +706,7 @@ static int exec_binprm(struct linux_binprm *bprm)
 }
 
 static int bprm_execve(struct linux_binprm *bprm,
-		       int fd, struct filename *filename, int flags)
+		       struct filename *filename, int flags)
 {
 	struct file *file;
 	int retval;
@@ -718,7 +717,7 @@ static int bprm_execve(struct linux_binprm *bprm,
 
 	check_unsafe_exec(bprm);
 
-	file = do_open_execat(fd, filename, flags);
+	file = do_open_execat(filename, flags);
 	retval = PTR_ERR(file);
 	if (IS_ERR(file))
 		goto out_unmark;
@@ -750,7 +749,6 @@ int kernel_execve(const char *kernel_filename,
 {
 	struct filename *filename;
 	struct linux_binprm *bprm;
-	int fd = AT_FDCWD;
 	int retval;
 
 	if (WARN_ON_ONCE(current->flags & PF_KTHREAD))
@@ -760,7 +758,7 @@ int kernel_execve(const char *kernel_filename,
 	if (IS_ERR(filename))
 		return PTR_ERR(filename);
 
-	bprm = alloc_bprm(fd, filename);
+	bprm = alloc_bprm(filename);
 	if (IS_ERR(bprm)) {
 		retval = PTR_ERR(bprm);
 		goto out_ret;
@@ -795,7 +793,7 @@ int kernel_execve(const char *kernel_filename,
 	if (retval < 0)
 		goto out_free;
 
-	retval = bprm_execve(bprm, fd, filename, 0);
+	retval = bprm_execve(bprm, filename, 0);
 out_free:
 	free_bprm(bprm);
 out_ret:

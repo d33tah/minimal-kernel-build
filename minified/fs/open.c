@@ -294,7 +294,7 @@ struct file *file_open_name(struct filename *name, int flags, umode_t mode)
 	err = build_open_flags(&how, &op);
 	if (err)
 		return ERR_PTR(err);
-	return do_filp_open(AT_FDCWD, name, &op);
+	return do_filp_open(name, &op);
 }
 
 struct file *filp_open(const char *filename, int flags, umode_t mode)

@@ -1024,7 +1024,7 @@ static int path_lookupat(struct nameidata *nd, unsigned flags, struct path *path
 	return err;
 }
 
-int filename_lookup(int dfd, struct filename *name, unsigned flags,
+int filename_lookup(struct filename *name, unsigned flags,
 		    struct path *path, struct path *root)
 {
 	int retval;
@@ -1058,7 +1058,7 @@ static int path_parentat(struct nameidata *nd, unsigned flags,
 	return err;
 }
 
-static int filename_parentat(int dfd, struct filename *name,
+static int filename_parentat(struct filename *name,
 			     unsigned int flags, struct path *parent,
 			     struct qstr *last, int *type)
 {
@@ -1084,7 +1084,7 @@ static int filename_parentat(int dfd, struct filename *name,
 int kern_path(const char *name, unsigned int flags, struct path *path)
 {
 	struct filename *filename = getname_kernel(name);
-	int ret = filename_lookup(AT_FDCWD, filename, flags, path, NULL);
+	int ret = filename_lookup(filename, flags, path, NULL);
 
 	putname(filename);
 	return ret;
@@ -1382,7 +1382,7 @@ static struct file *path_openat(struct nameidata *nd,
 	return ERR_PTR(error);
 }
 
-struct file *do_filp_open(int dfd, struct filename *pathname,
+struct file *do_filp_open(struct filename *pathname,
 		const struct open_flags *op)
 {
 	struct nameidata nd;
@@ -1399,7 +1399,7 @@ struct file *do_filp_open(int dfd, struct filename *pathname,
 	return filp;
 }
 
-static struct dentry *filename_create(int dfd, struct filename *name,
+static struct dentry *filename_create(struct filename *name,
 				      struct path *path, unsigned int lookup_flags)
 {
 	struct dentry *dentry = ERR_PTR(-EEXIST);
@@ -1411,7 +1411,7 @@ static struct dentry *filename_create(int dfd, struct filename *name,
 	int err2;
 	int error;
 
-	error = filename_parentat(dfd, name, reval_flag, path, &last, &type);
+	error = filename_parentat(name, reval_flag, path, &last, &type);
 	if (error)
 		return ERR_PTR(error);
 
@@ -1455,11 +1455,11 @@ out:
 	return dentry;
 }
 
-struct dentry *kern_path_create(int dfd, const char *pathname,
+struct dentry *kern_path_create(const char *pathname,
 				struct path *path, unsigned int lookup_flags)
 {
 	struct filename *filename = getname_kernel(pathname);
-	struct dentry *res = filename_create(dfd, filename, path, lookup_flags);
+	struct dentry *res = filename_create(filename, path, lookup_flags);
 
 	putname(filename);
 	return res;
@@ -1505,13 +1505,13 @@ int vfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
 	return error;
 }
 
-int do_rmdir(int dfd, struct filename *name)
+int do_rmdir(struct filename *name)
 {
 	putname(name);
 	return -ENOSYS;
 }
 
-int do_unlinkat(int dfd, struct filename *name)
+int do_unlinkat(struct filename *name)
 {
 	putname(name);
 	return -ENOSYS;

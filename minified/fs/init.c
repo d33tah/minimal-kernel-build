@@ -61,7 +61,7 @@ int __init init_mknod(const char *filename, umode_t mode, unsigned int dev)
 	else if (!(S_ISBLK(mode) || S_ISCHR(mode)))
 		return -EINVAL;
 
-	dentry = kern_path_create(AT_FDCWD, filename, &path, 0);
+	dentry = kern_path_create(filename, &path, 0);
 	if (IS_ERR(dentry))
 		return PTR_ERR(dentry);
 
@@ -83,7 +83,7 @@ int __init init_link(const char *oldname, const char *newname)
 	if (error)
 		return error;
 
-	new_dentry = kern_path_create(AT_FDCWD, newname, &new_path, 0);
+	new_dentry = kern_path_create(newname, &new_path, 0);
 	error = PTR_ERR(new_dentry);
 	if (IS_ERR(new_dentry))
 		goto out;
@@ -107,7 +107,7 @@ int __init init_symlink(const char *oldname, const char *newname)
 	struct path path;
 	int error;
 
-	dentry = kern_path_create(AT_FDCWD, newname, &path, 0);
+	dentry = kern_path_create(newname, &path, 0);
 	if (IS_ERR(dentry))
 		return PTR_ERR(dentry);
 	error = vfs_symlink(mnt_user_ns(path.mnt), path.dentry->d_inode,
@@ -118,7 +118,7 @@ int __init init_symlink(const char *oldname, const char *newname)
 
 int __init init_unlink(const char *pathname)
 {
-	return do_unlinkat(AT_FDCWD, getname_kernel(pathname));
+	return do_unlinkat(getname_kernel(pathname));
 }
 
 int __init init_mkdir(const char *pathname, umode_t mode)
@@ -127,7 +127,7 @@ int __init init_mkdir(const char *pathname, umode_t mode)
 	struct path path;
 	int error;
 
-	dentry = kern_path_create(AT_FDCWD, pathname, &path, LOOKUP_DIRECTORY);
+	dentry = kern_path_create(pathname, &path, LOOKUP_DIRECTORY);
 	if (IS_ERR(dentry))
 		return PTR_ERR(dentry);
 	mode &= ~current_umask();
@@ -139,7 +139,7 @@ int __init init_mkdir(const char *pathname, umode_t mode)
 
 int __init init_rmdir(const char *pathname)
 {
-	return do_rmdir(AT_FDCWD, getname_kernel(pathname));
+	return do_rmdir(getname_kernel(pathname));
 }
 
 int __init init_dup(struct file *file)

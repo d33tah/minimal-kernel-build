@@ -87,21 +87,7 @@ static inline int idle_policy(int policy)
 {
 	return policy == SCHED_IDLE;
 }
-static inline int fair_policy(int policy)
-{
-	return policy == SCHED_NORMAL || policy == SCHED_BATCH;
-}
-
-static inline int rt_policy(int policy)
-{
-	return policy == SCHED_FIFO || policy == SCHED_RR;
-}
-
-static inline int dl_policy(int policy)
-{
-	return policy == SCHED_DEADLINE;
-}
-/* valid_policy removed - 0-caller orphan */
+/* fair_policy, rt_policy, dl_policy, valid_policy removed - 0-caller orphans */
 
 static inline int task_has_idle_policy(struct task_struct *p)
 {

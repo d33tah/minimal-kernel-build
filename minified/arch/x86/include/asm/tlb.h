@@ -80,13 +80,9 @@ static inline void __tlb_reset_range(struct mmu_gather *tlb)
 	tlb->cleared_p4ds = 0;
 }
 
-static inline void
-tlb_update_vma_flags(struct mmu_gather *tlb, struct vm_area_struct *vma)
-{
-	tlb->vma_huge = 0;
-	tlb->vma_exec = !!(vma->vm_flags & VM_EXEC);
-	tlb->vma_pfn  = !!(vma->vm_flags & (VM_PFNMAP|VM_MIXEDMAP));
-}
+/* tlb_update_vma_flags removed - 0-caller once tlb_start_vma (its sole
+ * caller) was dropped; wrote only the never-read vma_huge/vma_exec/vma_pfn
+ * mmu_gather bitfields (left in struct, removing fields is layout-risky) */
 
 static inline unsigned long tlb_get_unmap_shift(struct mmu_gather *tlb)
 {
@@ -132,16 +128,9 @@ static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
 /* tlb_remove_page_size + tlb_remove_page + tlb_change_page_size removed -
  * 0-caller tlb-gather user wrappers (externs __tlb_remove_page_size/tlb_flush_mmu stay live) */
 
-static inline void tlb_start_vma(struct mmu_gather *tlb, struct vm_area_struct *vma)
-{
-	if (tlb->fullmm)
-		return;
-
-	tlb_update_vma_flags(tlb, vma);
-#ifndef CONFIG_MMU_GATHER_NO_FLUSH_CACHE
-	flush_cache_range(vma, vma->vm_start, vma->vm_end);
-#endif
-}
+/* tlb_start_vma removed - 0-caller tlb-gather VMA-iteration wrapper; its
+ * exclusive callee tlb_update_vma_flags dropped too; flush_cache_range stays
+ * as a 0-caller #ifndef-guarded empty stub (asm/cacheflush.h) */
 
 /* tlb_end_vma removed - 0-caller (callee tlb_flush_mmu_tlbonly stays live via mmu_gather.c) */
 

@@ -30,10 +30,6 @@ struct timer_list {
 			__FILE__ ":" __stringify(__LINE__))	\
 	}
 
-void init_timer_key(struct timer_list *timer,
-		    void (*func)(struct timer_list *), unsigned int flags,
-		    const char *name, struct lock_class_key *key);
-
 #define from_timer(var, callback_timer, timer_fieldname) \
 	container_of(callback_timer, typeof(*var), timer_fieldname)
 

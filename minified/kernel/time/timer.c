@@ -37,26 +37,6 @@ struct timer_base {
 
 static DEFINE_PER_CPU(struct timer_base, timer_bases[NR_BASES]);
 
-static void do_init_timer(struct timer_list *timer,
-			  void (*func)(struct timer_list *),
-			  unsigned int flags,
-			  const char *name, struct lock_class_key *key)
-{
-	timer->entry.pprev = NULL;
-	timer->function = func;
-	if (WARN_ON_ONCE(flags & ~TIMER_INIT_FLAGS))
-		flags &= TIMER_INIT_FLAGS;
-	timer->flags = flags | raw_smp_processor_id();
-	lockdep_init_map(&timer->lockdep_map, name, key, 0);
-}
-
-void init_timer_key(struct timer_list *timer,
-		    void (*func)(struct timer_list *), unsigned int flags,
-		    const char *name, struct lock_class_key *key)
-{
-	do_init_timer(timer, func, flags, name, key);
-}
-
 /*
  * The TIMER_SOFTIRQ machinery is removed: del_timer/schedule_timeout_uninterruptible
  * had 0 callers tree-wide (no timer is ever queued on this boot+print+stay-alive

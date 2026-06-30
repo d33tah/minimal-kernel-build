@@ -89,12 +89,7 @@ static inline int list_empty(const struct list_head *head)
 	return READ_ONCE(head->next) == head;
 }
 
-static inline void list_del_init_careful(struct list_head *entry)
-{
-	__list_del_entry(entry);
-	WRITE_ONCE(entry->prev, entry);
-	smp_store_release(&entry->next, entry);
-}
+/* list_del_init_careful removed: 0-caller orphan */
 
 static inline int list_empty_careful(const struct list_head *head)
 {
@@ -103,10 +98,7 @@ static inline int list_empty_careful(const struct list_head *head)
 }
 
 
-static inline int list_is_singular(const struct list_head *head)
-{
-	return !list_empty(head) && (head->next == head->prev);
-}
+/* list_is_singular removed: 0-caller orphan */
 
 #define list_entry(ptr, type, member) \
 	container_of(ptr, type, member)

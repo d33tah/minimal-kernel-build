@@ -116,17 +116,7 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 #endif
 
 
-#ifdef __HAVE_COLOR_ZERO_PAGE
-static inline int is_zero_pfn(unsigned long pfn)
-{
-	extern unsigned long zero_pfn;
-	unsigned long offset_from_zero_pfn = pfn - zero_pfn;
-	return offset_from_zero_pfn <= (zero_page_mask >> PAGE_SHIFT);
-}
-
-/* my_zero_pfn removed - unused */
-
-#else
+/* __HAVE_COLOR_ZERO_PAGE never defined tree-wide; dead #ifdef arm removed */
 static inline int is_zero_pfn(unsigned long pfn)
 {
 	extern unsigned long zero_pfn;
@@ -134,7 +124,6 @@ static inline int is_zero_pfn(unsigned long pfn)
 }
 
 /* my_zero_pfn removed - unused */
-#endif
 
 
 static inline int pmd_trans_huge(pmd_t pmd)

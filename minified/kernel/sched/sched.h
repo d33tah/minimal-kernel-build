@@ -75,10 +75,7 @@ extern __read_mostly int scheduler_running;
 /* call_trace_sched_update_nr_running removed - unused */
 
 
- 
-#define NS_TO_JIFFIES(TIME)	((unsigned long)(TIME) / (NSEC_PER_SEC / HZ))
 
- 
 # define NICE_0_LOAD_SHIFT	(SCHED_FIXEDPOINT_SHIFT)
 # define scale_load(w)		(w)
 # define scale_load_down(w)	(w)
@@ -114,11 +111,6 @@ static inline int task_has_idle_policy(struct task_struct *p)
 {
 	return idle_policy(p->policy);
 }
-
-#define cap_scale(v, s) ((v)*(s) >> SCHED_CAPACITY_SHIFT)
-
-#define shr_bound(val, shift)							\
-	(val >> min_t(typeof(shift), shift, BITS_PER_TYPE(typeof(val)) - 1))
 
 struct dl_bw {
 	raw_spinlock_t		lock;
@@ -256,8 +248,6 @@ DECLARE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 #define cpu_rq(cpu)		(&per_cpu(runqueues, (cpu)))
 #define this_rq()		this_cpu_ptr(&runqueues)
 #define task_rq(p)		cpu_rq(task_cpu(p))
-#define cpu_curr(cpu)		(cpu_rq(cpu)->curr)
-#define raw_rq()		raw_cpu_ptr(&runqueues)
 
 
 static inline struct task_struct *task_of(struct sched_entity *se)
@@ -556,8 +546,6 @@ extern void init_cfs_rq(struct cfs_rq *cfs_rq);
 
 
 /* uclamp_rq_util_with removed - unused */
-
-#define perf_domain_span(pd) NULL
 
 
 

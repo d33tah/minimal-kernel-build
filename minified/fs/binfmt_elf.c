@@ -536,9 +536,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 	if (current->flags & PF_RANDOMIZE) {
 		mm->brk = arch_randomize_brk(mm);
-#ifdef compat_brk_randomized
-		current->brk_randomized = 1;
-#endif
 	}
 
 	regs = current_pt_regs();

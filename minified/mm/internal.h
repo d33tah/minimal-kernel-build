@@ -56,18 +56,6 @@ int truncate_inode_folio(struct address_space *mapping, struct folio *folio);
 bool truncate_inode_partial_folio(struct folio *folio, loff_t start,
 		loff_t end);
 
- 
-static inline bool folio_evictable(struct folio *folio)
-{
-	bool ret;
-
-	 
-	rcu_read_lock();
-	ret = !mapping_unevictable(folio_mapping(folio));
-	rcu_read_unlock();
-	return ret;
-}
-
 /* page_evictable removed - unused */
 
 static inline void set_page_refcounted(struct page *page)

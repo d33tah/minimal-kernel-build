@@ -27,11 +27,6 @@ static inline void mapping_set_unevictable(struct address_space *mapping)
 	set_bit(AS_UNEVICTABLE, &mapping->flags);
 }
 
-static inline bool mapping_unevictable(struct address_space *mapping)
-{
-	return mapping && test_bit(AS_UNEVICTABLE, &mapping->flags);
-}
-
 static inline gfp_t mapping_gfp_mask(struct address_space * mapping)
 {
 	return mapping->gfp_mask;

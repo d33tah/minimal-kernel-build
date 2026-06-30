@@ -34,14 +34,7 @@ static inline unsigned fls_long(unsigned long l)
 	return fls64(l);
 }
 
-/* get_count_order - unused */
-
-static inline int get_count_order_long(unsigned long l)
-{
-	if (l == 0UL)
-		return -1;
-	return (int)fls_long(--l);
-}
+/* get_count_order, get_count_order_long - unused */
 
 /* __ffs64 - unused */
 

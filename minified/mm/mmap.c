@@ -57,28 +57,6 @@ static inline void vma_rb_insert(struct vm_area_struct *vma,
 	rb_insert_color(&vma->vm_rb, root);
 }
 
-static void __vma_rb_erase(struct vm_area_struct *vma, struct rb_root *root)
-{
-
-	rb_erase(&vma->vm_rb, root);
-}
-
-static __always_inline void vma_rb_erase_ignore(struct vm_area_struct *vma,
-						struct rb_root *root,
-						struct vm_area_struct *ignore)
-{
-	
-	validate_mm_rb(root, ignore);
-
-	__vma_rb_erase(vma, root);
-}
-
-static __always_inline void vma_rb_erase(struct vm_area_struct *vma,
-					 struct rb_root *root)
-{
-	vma_rb_erase_ignore(vma, root, vma);
-}
-
 static inline void
 anon_vma_interval_tree_pre_update_vma(struct vm_area_struct *vma)
 {

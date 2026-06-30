@@ -28,11 +28,6 @@ static __always_inline enum lru_list folio_lru_list(struct folio *folio)
 {
 	enum lru_list lru;
 
-	VM_BUG_ON_FOLIO(folio_test_active(folio) && folio_test_unevictable(folio), folio);
-
-	if (folio_test_unevictable(folio))
-		return LRU_UNEVICTABLE;
-
 	lru = folio_is_file_lru(folio) ? LRU_INACTIVE_FILE : LRU_INACTIVE_ANON;
 	if (folio_test_active(folio))
 		lru += LRU_ACTIVE;

@@ -37,7 +37,7 @@ static bool pagevec_add_and_need_flush(struct pagevec *pvec, struct page *page)
 
 static void __folio_activate(struct folio *folio, struct lruvec *lruvec)
 {
-	if (!folio_test_active(folio) && !folio_test_unevictable(folio)) {
+	if (!folio_test_active(folio)) {
 		lruvec_del_folio(lruvec, folio);
 		folio_set_active(folio);
 		lruvec_add_folio(lruvec, folio);
@@ -81,8 +81,6 @@ void folio_mark_accessed(struct folio *folio)
 {
 	if (!folio_test_referenced(folio)) {
 		folio_set_referenced(folio);
-	} else if (folio_test_unevictable(folio)) {
-		 
 	} else if (!folio_test_active(folio)) {
 		 
 		if (folio_test_lru(folio))
@@ -97,7 +95,6 @@ void folio_add_lru(struct folio *folio)
 {
 	struct pagevec *pvec;
 
-	VM_BUG_ON_FOLIO(folio_test_active(folio) && folio_test_unevictable(folio), folio);
 	VM_BUG_ON_FOLIO(folio_test_lru(folio), folio);
 
 	folio_get(folio);

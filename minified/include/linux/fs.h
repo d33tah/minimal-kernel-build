@@ -131,7 +131,6 @@ struct page;
 struct address_space;
 
 #define IOCB_NOWAIT		(__force int) RWF_NOWAIT
-#define IOCB_DIRECT		(1 << 17)
 #define IOCB_WAITQ		(1 << 19)
 #define IOCB_NOIO		(1 << 20)
 
@@ -844,8 +843,6 @@ extern int file_update_time(struct file *file);
 static inline int iocb_flags(struct file *file)
 {
 	int res = 0;
-	if (file->f_flags & O_DIRECT)
-		res |= IOCB_DIRECT;
 	return res;
 }
 

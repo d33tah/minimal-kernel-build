@@ -323,9 +323,6 @@ static int filemap_read_folio(struct file *file, struct address_space *mapping,
 {
 	int error;
 
-	
-	folio_clear_error(folio);
-	
 	error = mapping->a_ops->read_folio(file, folio);
 	if (error)
 		return error;

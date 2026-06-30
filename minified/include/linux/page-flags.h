@@ -19,8 +19,7 @@ enum pageflags {
 	PG_lru,
 	PG_active,
 	PG_workingset,
-	PG_waiters,		 
-	PG_error,
+	PG_waiters,
 	PG_slab,
 	PG_owner_priv_1,	 
 	PG_arch_1,
@@ -191,7 +190,6 @@ static inline int Page##uname(const struct page *page) { return 0; }
 
 __PAGEFLAG(Locked, locked, PF_NO_TAIL)
 PAGEFLAG(Waiters, waiters, PF_ONLY_HEAD)
-PAGEFLAG(Error, error, PF_NO_TAIL) TESTCLEARFLAG(Error, error, PF_NO_TAIL)
 PAGEFLAG(Referenced, referenced, PF_HEAD)
 	TESTCLEARFLAG(Referenced, referenced, PF_HEAD)
 	__SETPAGEFLAG(Referenced, referenced, PF_HEAD)

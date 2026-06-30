@@ -22,9 +22,6 @@ static inline void debug_rcu_head_unqueue(struct rcu_head *head)
 /* rcu_ftrace_dump_stall_suppress/_unsuppress + rcu_ftrace_dump removed - unused */
 
 
-#define TPS(x)  tracepoint_string(x)
-
-
 extern void resched_cpu(int cpu);
 
 
@@ -37,85 +34,6 @@ extern int num_rcu_lvl[];
 extern int rcu_num_nodes;
 
 /* rcu_init_levelspread removed - unused */
-
- 
-#define rcu_first_leaf_node() (rcu_state.level[rcu_num_lvls - 1])
-
- 
-#define rcu_is_leaf_node(rnp) ((rnp)->level == rcu_num_lvls - 1)
-
- 
-#define rcu_is_last_leaf_node(rnp) ((rnp) == &rcu_state.node[rcu_num_nodes - 1])
-
- 
-#define rcu_for_each_leaf_node(rnp) \
-	for ((rnp) = rcu_first_leaf_node(); \
-	     (rnp) < &rcu_state.node[rcu_num_nodes]; (rnp)++)
-
- 
-#define for_each_leaf_node_possible_cpu(rnp, cpu) \
-	for (WARN_ON_ONCE(!rcu_is_leaf_node(rnp)), \
-	     (cpu) = cpumask_next((rnp)->grplo - 1, cpu_possible_mask); \
-	     (cpu) <= rnp->grphi; \
-	     (cpu) = cpumask_next((cpu), cpu_possible_mask))
-
- 
-#define rcu_find_next_bit(rnp, cpu, mask) \
-	((rnp)->grplo + find_next_bit(&(mask), BITS_PER_LONG, (cpu)))
-#define for_each_leaf_node_cpu_mask(rnp, cpu, mask) \
-	for (WARN_ON_ONCE(!rcu_is_leaf_node(rnp)), \
-	     (cpu) = rcu_find_next_bit((rnp), 0, (mask)); \
-	     (cpu) <= rnp->grphi; \
-	     (cpu) = rcu_find_next_bit((rnp), (cpu) + 1 - (rnp->grplo), (mask)))
-
- 
-#define raw_spin_lock_rcu_node(p)					\
-do {									\
-	raw_spin_lock(&ACCESS_PRIVATE(p, lock));			\
-	smp_mb__after_unlock_lock();					\
-} while (0)
-
-#define raw_spin_unlock_rcu_node(p)					\
-do {									\
-	lockdep_assert_irqs_disabled();					\
-	raw_spin_unlock(&ACCESS_PRIVATE(p, lock));			\
-} while (0)
-
-#define raw_spin_lock_irq_rcu_node(p)					\
-do {									\
-	raw_spin_lock_irq(&ACCESS_PRIVATE(p, lock));			\
-	smp_mb__after_unlock_lock();					\
-} while (0)
-
-#define raw_spin_unlock_irq_rcu_node(p)					\
-do {									\
-	lockdep_assert_irqs_disabled();					\
-	raw_spin_unlock_irq(&ACCESS_PRIVATE(p, lock));			\
-} while (0)
-
-#define raw_spin_lock_irqsave_rcu_node(p, flags)			\
-do {									\
-	raw_spin_lock_irqsave(&ACCESS_PRIVATE(p, lock), flags);	\
-	smp_mb__after_unlock_lock();					\
-} while (0)
-
-#define raw_spin_unlock_irqrestore_rcu_node(p, flags)			\
-do {									\
-	lockdep_assert_irqs_disabled();					\
-	raw_spin_unlock_irqrestore(&ACCESS_PRIVATE(p, lock), flags);	\
-} while (0)
-
-#define raw_spin_trylock_rcu_node(p)					\
-({									\
-	bool ___locked = raw_spin_trylock(&ACCESS_PRIVATE(p, lock));	\
-									\
-	if (___locked)							\
-		smp_mb__after_unlock_lock();				\
-	___locked;							\
-})
-
-#define raw_lockdep_assert_held_rcu_node(p)				\
-	lockdep_assert_held(&ACCESS_PRIVATE(p, lock))
 
 /* rcu_gp_is_normal, rcu_gp_is_expedited, rcu_expedite_gp, rcu_unexpedite_gp, rcu_request_urgent_qs_task removed - unused */
 /* rcu_scheduler_active + RCU_SCHEDULER_{INACTIVE,INIT,RUNNING} removed - write-only state, never read */

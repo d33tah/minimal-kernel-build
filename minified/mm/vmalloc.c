@@ -171,55 +171,7 @@ is_within_this_va(struct vmap_area *va, unsigned long size,
 	return (nva_start_addr + size <= va->va_end);
 }
 
-static __always_inline struct vmap_area *
-find_vmap_lowest_match(unsigned long size, unsigned long align,
-	unsigned long vstart, bool adjust_search_size)
-{
-	struct vmap_area *va;
-	struct rb_node *node;
-	unsigned long length;
-
-	
-	node = free_vmap_area_root.rb_node;
-
-	
-	length = adjust_search_size ? size + align - 1 : size;
-
-	while (node) {
-		va = rb_entry(node, struct vmap_area, rb_node);
-
-		if (get_subtree_max_size(node->rb_left) >= length &&
-				vstart < va->va_start) {
-			node = node->rb_left;
-		} else {
-			if (is_within_this_va(va, size, align, vstart))
-				return va;
-
-			
-			if (get_subtree_max_size(node->rb_right) >= length) {
-				node = node->rb_right;
-				continue;
-			}
-
-			
-			while ((node = rb_parent(node))) {
-				va = rb_entry(node, struct vmap_area, rb_node);
-				if (is_within_this_va(va, size, align, vstart))
-					return va;
-
-				if (get_subtree_max_size(node->rb_right) >= length &&
-						vstart <= va->va_start) {
-					
-					vstart = va->va_start + 1;
-					node = node->rb_right;
-					break;
-				}
-			}
-		}
-	}
-
-	return NULL;
-}
+/* find_vmap_lowest_match removed - 0-caller orphan (__alloc_vmap_area gone) */
 
 enum fit_type {
 	NOTHING_FIT = 0,

@@ -353,7 +353,6 @@ static inline struct folio *virt_to_folio(const void *x)
 
 void __put_page(struct page *page);
 
-void split_page(struct page *page, unsigned int order);
 
 enum compound_dtor_id {
 	NULL_COMPOUND_DTOR,

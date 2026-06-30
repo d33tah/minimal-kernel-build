@@ -143,7 +143,6 @@ extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
 
 
 
-void flush_tlb_batched_pending(struct mm_struct *mm);
 
 /* is_migrate_highatomic, is_migrate_highatomic_page removed - unused */
 

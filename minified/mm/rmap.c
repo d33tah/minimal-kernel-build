@@ -114,12 +114,6 @@ void __init anon_vma_init(void)
 }
 
 
-void flush_tlb_batched_pending(struct mm_struct *mm)
-{
-
-}
-
-
 static void __page_set_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address, int exclusive)
 {

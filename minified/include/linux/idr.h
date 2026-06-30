@@ -38,7 +38,6 @@ static inline void idr_set_cursor(struct idr *idr, unsigned int val)
 
 void idr_preload(gfp_t gfp_mask);
 
-int idr_alloc(struct idr *, void *ptr, int start, int end, gfp_t);
 int __must_check idr_alloc_u32(struct idr *, void *ptr, u32 *id,
 				unsigned long max, gfp_t);
 int idr_alloc_cyclic(struct idr *, void *ptr, int start, int end, gfp_t);

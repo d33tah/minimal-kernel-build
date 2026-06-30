@@ -95,15 +95,6 @@ int __anon_vma_prepare(struct vm_area_struct *vma)
 	return -ENOMEM;
 }
 
-int anon_vma_clone(struct vm_area_struct *dst, struct vm_area_struct *src)
-{
-	/*
-	 * Runtime-dead on a single-shot boot: anon_vma_clone only runs on
-	 * fork (dup_mmap), which never happens here. Stubbed (anchor-stub).
-	 */
-	return 0;
-}
-
 void unlink_anon_vmas(struct vm_area_struct *vma)
 {
 	/*

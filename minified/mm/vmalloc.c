@@ -189,54 +189,7 @@ classify_va_fit_type(struct vmap_area *va,
 	return type;
 }
 
-static __always_inline int
-adjust_va_to_fit_type(struct vmap_area *va,
-	unsigned long nva_start_addr, unsigned long size,
-	enum fit_type type)
-{
-	struct vmap_area *lva = NULL;
-
-	if (type == FL_FIT_TYPE) {
-		
-		unlink_va(va, &free_vmap_area_root);
-		kmem_cache_free(vmap_area_cachep, va);
-	} else if (type == LE_FIT_TYPE) {
-		
-		va->va_start += size;
-	} else if (type == RE_FIT_TYPE) {
-		
-		va->va_end = nva_start_addr;
-	} else if (type == NE_FIT_TYPE) {
-		
-		lva = __this_cpu_xchg(ne_fit_preload_node, NULL);
-		if (unlikely(!lva)) {
-			
-			lva = kmem_cache_alloc(vmap_area_cachep, GFP_NOWAIT);
-			if (!lva)
-				return -1;
-		}
-
-		
-		lva->va_start = va->va_start;
-		lva->va_end = nva_start_addr;
-
-		
-		va->va_start = nva_start_addr + size;
-	} else {
-		return -1;
-	}
-
-	if (type != FL_FIT_TYPE) {
-		augment_tree_propagate_from(va);
-
-		if (lva)	
-			insert_vmap_area_augment(lva, &va->rb_node,
-				&free_vmap_area_root, &free_vmap_area_list);
-	}
-
-	return 0;
-}
-
+/* adjust_va_to_fit_type removed - 0-caller orphan (__alloc_vmap_area gone) */
 /* __alloc_vmap_area removed - 0-caller orphan (alloc_vmap_area absent in this minimal tree) */
 
 static inline void

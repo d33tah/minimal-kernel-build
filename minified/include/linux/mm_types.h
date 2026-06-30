@@ -202,7 +202,6 @@ struct mm_struct {
 				unsigned long addr, unsigned long len,
 				unsigned long pgoff, unsigned long flags);
 		unsigned long mmap_base;
-		unsigned long highest_vm_end;
 		pgd_t * pgd;
 
 

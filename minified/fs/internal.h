@@ -59,6 +59,4 @@ extern int vfs_open(const struct path *, struct file *);
 
 
 
-extern const struct dentry_operations ns_dentry_operations;
-
 /* splice_file_to_pipe removed - unused */

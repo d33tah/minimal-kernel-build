@@ -132,11 +132,13 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	if (irq == IRQ_NOTCONNECTED)
 		return -ENOTCONN;
 
-	if (((irqflags & IRQF_SHARED) && !dev_id) ||
-	    ((irqflags & IRQF_SHARED) && (irqflags & IRQF_NO_AUTOEN)) ||
-	    (!(irqflags & IRQF_SHARED) && (irqflags & IRQF_COND_SUSPEND)) ||
-	    ((irqflags & IRQF_NO_SUSPEND) && (irqflags & IRQF_COND_SUSPEND)))
-		return -EINVAL;
+	/*
+	 * The flag-consistency validation (IRQF_SHARED w/o dev_id,
+	 * IRQF_SHARED|IRQF_NO_AUTOEN, IRQF_COND_SUSPEND mismatches) is
+	 * statically dead: the only two callers (timer irq0, cascade irq2)
+	 * pass compile-constant irqflags that set none of IRQF_SHARED /
+	 * IRQF_COND_SUSPEND / IRQF_NO_AUTOEN, with dev_id == NULL.
+	 */
 
 	desc = irq_to_desc(irq);
 	if (!desc)

@@ -35,7 +35,6 @@ static struct clocksource *curr_clocksource;
 static struct clocksource *suspend_clocksource;
 static LIST_HEAD(clocksource_list);
 static DEFINE_MUTEX(clocksource_mutex);
-static char override_name[CS_NAME_LEN];
 static int finished_booting;
 
 #define WATCHDOG_THRESHOLD (NSEC_PER_SEC >> 5)
@@ -105,28 +104,15 @@ static struct clocksource *clocksource_find_best(bool skipcur)
 
 static void __clocksource_select(bool skipcur)
 {
-	struct clocksource *best, *cs;
+	struct clocksource *best;
 
-
+	/* override_name is never set on this build, so the override-match
+	 * selection loop is dead; the highest-rated clocksource always wins.
+	 */
 	best = clocksource_find_best(skipcur);
 	if (!best)
 		return;
 
-	if (!strlen(override_name))
-		goto found;
-
-
-	list_for_each_entry(cs, &clocksource_list, list) {
-		if (skipcur && cs == curr_clocksource)
-			continue;
-		if (strcmp(cs->name, override_name) != 0)
-			continue;
-
-		best = cs;
-		break;
-	}
-
-found:
 	if (curr_clocksource != best && !timekeeping_notify(best)) {
 		curr_clocksource = best;
 	}

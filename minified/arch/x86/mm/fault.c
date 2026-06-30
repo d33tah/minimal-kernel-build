@@ -316,14 +316,8 @@ retry:
 	}
 	if (likely(vma->vm_start <= address))
 		goto good_area;
-	if (unlikely(!(vma->vm_flags & VM_GROWSDOWN))) {
-		bad_area(regs, error_code, address);
-		return;
-	}
-	if (unlikely(expand_stack(vma, address))) {
-		bad_area(regs, error_code, address);
-		return;
-	}
+	bad_area(regs, error_code, address);
+	return;
 
 
 good_area:

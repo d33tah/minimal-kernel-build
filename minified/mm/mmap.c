@@ -365,8 +365,6 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 
 		if (!file->f_op->mmap)
 			return -ENODEV;
-		if (vm_flags & VM_GROWSDOWN)
-			return -EINVAL;
 	} else {
 		pgoff = addr >> PAGE_SHIFT;
 	}
@@ -609,8 +607,7 @@ int expand_downwards(struct vm_area_struct *vma,
 	
 	prev = vma->vm_prev;
 	
-	if (prev && !(prev->vm_flags & VM_GROWSDOWN) &&
-			vma_is_accessible(prev)) {
+	if (prev && vma_is_accessible(prev)) {
 		if (address - prev->vm_end < stack_guard_gap)
 			return -ENOMEM;
 	}
@@ -666,11 +663,7 @@ find_extend_vma(struct mm_struct *mm, unsigned long addr)
 		return NULL;
 	if (vma->vm_start <= addr)
 		return vma;
-	if (!(vma->vm_flags & VM_GROWSDOWN))
-		return NULL;
-	if (expand_stack(vma, addr))
-		return NULL;
-	return vma;
+	return NULL;
 }
 
 

@@ -305,7 +305,6 @@ static inline bool xas_retry(struct xa_state *xas, const void *entry)
 
 void *xas_load(struct xa_state *);
 void *xas_store(struct xa_state *, void *entry);
-void *xas_find(struct xa_state *, unsigned long max);
 
 void xas_set_mark(const struct xa_state *, xa_mark_t);
 void xas_clear_mark(const struct xa_state *, xa_mark_t);

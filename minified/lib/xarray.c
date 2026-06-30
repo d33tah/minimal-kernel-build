@@ -618,53 +618,6 @@ void *__xas_next(struct xa_state *xas)
 	}
 }
 
-void *xas_find(struct xa_state *xas, unsigned long max)
-{
-	void *entry;
-
-	if (xas_error(xas) || xas->xa_node == XAS_BOUNDS)
-		return NULL;
-	if (xas->xa_index > max)
-		return set_bounds(xas);
-
-	if (!xas->xa_node) {
-		xas->xa_index = 1;
-		return set_bounds(xas);
-	} else if (xas->xa_node == XAS_RESTART) {
-		entry = xas_load(xas);
-		if (entry || xas_not_node(xas->xa_node))
-			return entry;
-	} else if (!xas->xa_node->shift &&
-		    xas->xa_offset != (xas->xa_index & XA_CHUNK_MASK)) {
-		xas->xa_offset = ((xas->xa_index - 1) & XA_CHUNK_MASK) + 1;
-	}
-
-	xas_next_offset(xas);
-
-	while (xas->xa_node && (xas->xa_index <= max)) {
-		if (unlikely(xas->xa_offset == XA_CHUNK_SIZE)) {
-			xas->xa_offset = xas->xa_node->offset + 1;
-			xas->xa_node = xa_parent(xas->xa, xas->xa_node);
-			continue;
-		}
-
-		entry = xa_entry(xas->xa, xas->xa_node, xas->xa_offset);
-		if (xa_is_node(entry)) {
-			xas->xa_node = xa_to_node(entry);
-			xas->xa_offset = 0;
-			continue;
-		}
-		if (entry)
-			return entry;
-
-		xas_next_offset(xas);
-	}
-
-	if (!xas->xa_node)
-		xas->xa_node = XAS_BOUNDS;
-	return NULL;
-}
-
 void *xas_find_marked(struct xa_state *xas, unsigned long max, xa_mark_t mark)
 {
 	bool advance = true;

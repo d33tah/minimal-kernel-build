@@ -17,8 +17,6 @@ extern unsigned long max_pfn;
 
 enum memblock_flags {
 	MEMBLOCK_NONE		= 0x0,
-	MEMBLOCK_NOMAP		= 0x4,
-	MEMBLOCK_DRIVER_MANAGED = 0x8,	 
 };
 
 struct memblock_region {
@@ -89,16 +87,6 @@ void memblock_free_late(phys_addr_t base, phys_addr_t size);
 #define for_each_reserved_mem_range(i, p_start, p_end)			\
 	__for_each_mem_range(i, &memblock.reserved, NULL, NUMA_NO_NODE,	\
 			     MEMBLOCK_NONE, p_start, p_end, NULL)
-
-static inline bool memblock_is_nomap(struct memblock_region *m)
-{
-	return m->flags & MEMBLOCK_NOMAP;
-}
-
-static inline bool memblock_is_driver_managed(struct memblock_region *m)
-{
-	return m->flags & MEMBLOCK_DRIVER_MANAGED;
-}
 
 void __next_mem_pfn_range(int *idx, int nid, unsigned long *out_start_pfn,
 			  unsigned long *out_end_pfn, int *out_nid);

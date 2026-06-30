@@ -437,12 +437,6 @@ static bool should_skip_region(struct memblock_type *type,
 	if (nid != NUMA_NO_NODE && nid != m_nid)
 		return true;
 
-	if (!(flags & MEMBLOCK_NOMAP) && memblock_is_nomap(m))
-		return true;
-
-	if (!(flags & MEMBLOCK_DRIVER_MANAGED) && memblock_is_driver_managed(m))
-		return true;
-
 	return false;
 }
 
@@ -831,20 +825,11 @@ static unsigned long __init __free_memory_core(phys_addr_t start,
 
 static void __init memmap_init_reserved_pages(void)
 {
-	struct memblock_region *region;
 	phys_addr_t start, end;
 	u64 i;
 
 	for_each_reserved_mem_range(i, &start, &end)
 		reserve_bootmem_region(start, end);
-
-	for_each_mem_region(region) {
-		if (memblock_is_nomap(region)) {
-			start = region->base;
-			end = start + region->size;
-			reserve_bootmem_region(start, end);
-		}
-	}
 }
 
 static unsigned long __init free_low_memory_core_early(void)

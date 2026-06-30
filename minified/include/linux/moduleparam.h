@@ -35,12 +35,7 @@ struct kernel_param {
 extern const struct kernel_param __start___param[], __stop___param[];
 
 
-static inline void kernel_param_lock(struct module *mod)
-{
-}
-static inline void kernel_param_unlock(struct module *mod)
-{
-}
+/* kernel_param_lock/kernel_param_unlock: 0-caller empty-body stubs removed */
 
 extern char *parse_args(const char *name,
 		      char *args,

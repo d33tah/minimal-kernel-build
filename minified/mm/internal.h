@@ -63,8 +63,7 @@ static inline bool folio_evictable(struct folio *folio)
 
 	 
 	rcu_read_lock();
-	ret = !mapping_unevictable(folio_mapping(folio)) &&
-			!folio_test_mlocked(folio);
+	ret = !mapping_unevictable(folio_mapping(folio));
 	rcu_read_unlock();
 	return ret;
 }

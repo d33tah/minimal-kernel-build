@@ -17,12 +17,9 @@ struct timer_list {
 
 #define __TIMER_LOCKDEP_MAP_INITIALIZER(_kn)
 
-#define TIMER_CPUMASK		0x0003FFFF
 #define TIMER_DEFERRABLE	0x00080000
 #define TIMER_IRQSAFE		0x00200000
 #define TIMER_INIT_FLAGS	(TIMER_DEFERRABLE | TIMER_IRQSAFE)
-#define TIMER_ARRAYSHIFT	22
-#define TIMER_ARRAYMASK		0xFFC00000
 
 
 #define __TIMER_INITIALIZER(_function, _flags) {		\
@@ -36,21 +33,6 @@ struct timer_list {
 void init_timer_key(struct timer_list *timer,
 		    void (*func)(struct timer_list *), unsigned int flags,
 		    const char *name, struct lock_class_key *key);
-
-static inline void init_timer_on_stack_key(struct timer_list *timer,
-					   void (*func)(struct timer_list *),
-					   unsigned int flags,
-					   const char *name,
-					   struct lock_class_key *key)
-{
-	init_timer_key(timer, func, flags, name, key);
-}
-
-#define __init_timer_on_stack(_timer, _fn, _flags)			\
-	init_timer_on_stack_key((_timer), (_fn), (_flags), NULL, NULL)
-
-#define timer_setup_on_stack(timer, callback, flags)		\
-	__init_timer_on_stack((timer), (callback), (flags))
 
 #define from_timer(var, callback_timer, timer_fieldname) \
 	container_of(callback_timer, typeof(*var), timer_fieldname)

@@ -96,10 +96,6 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 /* set_{pmd,pud,p4d,pgd}_safe() + the pXd_same() predicates removed - unused */
 
 
-#ifndef __HAVE_ARCH_MOVE_PTE
-#define move_pte(pte, prot, old_addr, new_addr)	(pte)
-#endif
-
 #define pgd_addr_end(addr, end)						\
 ({	unsigned long __boundary = ((addr) + PGDIR_SIZE) & PGDIR_MASK;	\
 	(__boundary - 1 < (end) - 1)? __boundary: (end);		\
@@ -114,11 +110,6 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 
 
 /* pgprot_writecombine, pgprot_device removed - 0 callers tree-wide */
-
-#ifndef __HAVE_ARCH_ENTER_LAZY_MMU_MODE
-#define arch_enter_lazy_mmu_mode()	do {} while (0)
-#define arch_leave_lazy_mmu_mode()	do {} while (0)
-#endif
 
 #ifndef __HAVE_ARCH_START_CONTEXT_SWITCH
 #define arch_start_context_switch(prev)	do {} while (0)

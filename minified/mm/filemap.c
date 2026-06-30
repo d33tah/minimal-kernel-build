@@ -272,17 +272,6 @@ no_page:
 	return folio;
 }
 
-static inline
-bool folio_more_pages(struct folio *folio, pgoff_t index, pgoff_t max)
-{
-	if (!folio_test_large(folio))
-		return false;
-	if (index >= max)
-		return false;
-	return index < folio->index + folio_nr_pages(folio) - 1;
-}
-
-
 static void filemap_get_read_batch(struct address_space *mapping,
 		pgoff_t index, pgoff_t max, struct folio_batch *fbatch)
 {

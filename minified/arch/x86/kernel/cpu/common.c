@@ -241,8 +241,6 @@ __u32 cpu_caps_set[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 
 DEFINE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);
 
-static const struct cpu_dev *cpu_devs[X86_VENDOR_NUM] = {};
-
 static void get_model_name(struct cpuinfo_x86 *c)
 {
 	unsigned int *v;
@@ -470,18 +468,12 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 
 void __init early_cpu_init(void)
 {
-	const struct cpu_dev *const *cdev;
-	int count = 0;
-
-	for (cdev = __x86_cpu_dev_start; cdev < __x86_cpu_dev_end; cdev++) {
-		const struct cpu_dev *cpudev = *cdev;
-
-		if (count >= X86_VENDOR_NUM)
-			break;
-		cpu_devs[count] = cpudev;
-		count++;
-
-	}
+	/*
+	 * The .x86_cpu_dev.init section is empty on this build (no
+	 * cpu_dev_register), so __x86_cpu_dev_start == __x86_cpu_dev_end:
+	 * the per-vendor population loop never iterated and cpu_devs[]
+	 * stays all-NULL (its initializer).  Folded away.
+	 */
 	early_identify_cpu(&boot_cpu_data);
 }
 

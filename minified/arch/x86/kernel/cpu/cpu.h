@@ -10,13 +10,9 @@ struct cpu_dev {
 	int		c_x86_vendor;
 };
 
-#define cpu_dev_register(cpu_devX) \
-	static const struct cpu_dev *const __cpu_dev_##cpu_devX __used \
-	__section(".x86_cpu_dev.init") = \
-	&cpu_devX;
-
-extern const struct cpu_dev *const __x86_cpu_dev_start[],
-			    *const __x86_cpu_dev_end[];
+/* cpu_dev_register macro + __x86_cpu_dev_start/end externs removed - the
+ * .x86_cpu_dev.init section is empty (no vendor cpu_dev registered) and
+ * early_cpu_init no longer walks it. */
 
 /* tsx_init, tsx_ap_init, init_spectral_chicken, tsx_ctrl_state, enum tsx_ctrl_states removed - no callers */
 

@@ -72,10 +72,7 @@ static inline bool irq_settings_is_per_cpu_devid(struct irq_desc *desc)
 	return desc->status_use_accessors & _IRQ_PER_CPU_DEVID;
 }
 
-static inline void irq_settings_set_per_cpu(struct irq_desc *desc)
-{
-	desc->status_use_accessors |= _IRQ_PER_CPU;
-}
+/* irq_settings_set_per_cpu removed - 0-caller */
 
 static inline void irq_settings_set_no_balancing(struct irq_desc *desc)
 {
@@ -89,15 +86,7 @@ irq_settings_set_trigger_mask(struct irq_desc *desc, u32 mask)
 	desc->status_use_accessors |= mask & IRQ_TYPE_SENSE_MASK;
 }
 
-static inline void irq_settings_clr_level(struct irq_desc *desc)
-{
-	desc->status_use_accessors &= ~_IRQ_LEVEL;
-}
-
-static inline void irq_settings_set_level(struct irq_desc *desc)
-{
-	desc->status_use_accessors |= _IRQ_LEVEL;
-}
+/* irq_settings_clr_level + irq_settings_set_level removed - 0-caller */
 
 static inline bool irq_settings_can_request(struct irq_desc *desc)
 {
@@ -139,10 +128,7 @@ static inline bool irq_settings_disable_unlazy(struct irq_desc *desc)
 
 /* irq_settings_is_hidden removed - unused */
 
-static inline void irq_settings_set_no_debug(struct irq_desc *desc)
-{
-	desc->status_use_accessors |= _IRQ_NO_DEBUG;
-}
+/* irq_settings_set_no_debug removed - 0-caller */
 
 extern int __irq_set_trigger(struct irq_desc *desc, unsigned long flags);
 

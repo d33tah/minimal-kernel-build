@@ -117,11 +117,13 @@ void fpstate_reset(struct fpu *fpu)
 /* fpu_inherit_perms removed - gated on fpu_state_size_dynamic() which is
  * constant false (no XFD dynamic xstate on the QEMU boot CPU); body was dead. */
 
-int fpu_clone(struct task_struct *dst, bool minimal)
+/* minimal arg dropped: the only fork spawners (kernel_thread/user_mode_thread)
+ * always set args->fn, so fpu_clone's caller passes minimal=true unconditionally;
+ * the non-minimal save_fpregs_to_fpstate tail was statically dead. */
+int fpu_clone(struct task_struct *dst)
 {
 	struct fpu *dst_fpu = &dst->thread.fpu;
 
-	 
 	dst_fpu->last_cpu = -1;
 
 	fpstate_reset(dst_fpu);
@@ -129,31 +131,10 @@ int fpu_clone(struct task_struct *dst, bool minimal)
 	if (!cpu_feature_enabled(X86_FEATURE_FPU))
 		return 0;
 
-	 
 	set_tsk_thread_flag(dst, TIF_NEED_FPU_LOAD);
 
-	 
-	if (minimal) {
-		 
-		memcpy(&dst_fpu->fpstate->regs, &init_fpstate.regs,
-		       init_fpstate_copy_size());
-		return 0;
-	}
-
-	 
-	BUILD_BUG_ON(XFEATURE_MASK_USER_DYNAMIC != XFEATURE_MASK_XTILE_DATA);
-
-	 
-	fpregs_lock();
-	if (test_thread_flag(TIF_NEED_FPU_LOAD))
-		fpregs_restore_userregs();
-	save_fpregs_to_fpstate(dst_fpu);
-	fpregs_unlock();
-
-	 
-	if (use_xsave())
-		dst_fpu->fpstate->regs.xsave.header.xfeatures &= ~XFEATURE_MASK_PASID;
-
+	memcpy(&dst_fpu->fpstate->regs, &init_fpstate.regs,
+	       init_fpstate_copy_size());
 	return 0;
 }
 

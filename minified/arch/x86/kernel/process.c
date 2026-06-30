@@ -73,7 +73,7 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 	 
 	frame->flags = X86_EFLAGS_FIXED;
 
-	fpu_clone(p, args->fn);
+	fpu_clone(p);
 
 	 
 	if (unlikely(p->flags & PF_KTHREAD)) {

@@ -35,10 +35,7 @@ static inline void *xa_mk_internal(unsigned long v)
 	return (void *)((v << 2) | 2);
 }
 
-static inline unsigned long xa_to_internal(const void *entry)
-{
-	return (unsigned long)entry >> 2;
-}
+/* xa_to_internal removed: 0-caller static-inline orphan */
 
 static inline bool xa_is_internal(const void *entry)
 {

@@ -18,10 +18,7 @@ struct pagevec {
 
 void __pagevec_lru_add(struct pagevec *pvec);
 
-static inline void pagevec_reinit(struct pagevec *pvec)
-{
-	pvec->nr = 0;
-}
+/* pagevec_reinit removed: 0-caller static-inline orphan */
 
 static inline unsigned pagevec_count(struct pagevec *pvec)
 {

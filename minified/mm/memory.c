@@ -111,18 +111,6 @@ check_pfn:
  */
 
 
-/*
- * RUNTIME-DEAD on a single-shot boot: the only caller (unmap_mapping_range_tree)
- * walks a non-empty i_mmap interval tree, but no file mapping is ever unmapped
- * here, so this never executes. Stubbed; the private zap_folded_range /
- * zap_pte_range page-table walkers it solely drove were deleted with it.
- */
-static void unmap_single_vma(struct mmu_gather *tlb,
-		struct vm_area_struct *vma, unsigned long start_addr,
-		unsigned long end_addr)
-{
-}
-
 static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr)
 {
 	pgd_t *pgd;
@@ -261,62 +249,6 @@ static vm_fault_t do_wp_page(struct vm_fault *vmf)
 	get_page(vmf->page);
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
 	return wp_page_copy(vmf);
-}
-
-void unmap_mapping_pages(struct address_space *mapping, pgoff_t start,
-		pgoff_t nr, bool even_cows)
-{
-	pgoff_t	first_index = start;
-	pgoff_t	last_index = start + nr - 1;
-
-	if (last_index < first_index)
-		last_index = ULONG_MAX;
-
-	i_mmap_lock_read(mapping);
-	if (unlikely(!RB_EMPTY_ROOT(&mapping->i_mmap.rb_root))) {
-		struct vm_area_struct *vma;
-		pgoff_t vba, vea, zba, zea;
-
-		vma_interval_tree_foreach(vma, &mapping->i_mmap,
-					  first_index, last_index) {
-			unsigned long start_addr, end_addr;
-
-			vba = vma->vm_pgoff;
-			vea = vba + vma_pages(vma) - 1;
-			zba = max(first_index, vba);
-			zea = min(last_index, vea);
-
-			start_addr = ((zba - vba) << PAGE_SHIFT) + vma->vm_start;
-			end_addr = ((zea - vba + 1) << PAGE_SHIFT) + vma->vm_start;
-			{
-				struct mmu_gather tlb;
-
-				lru_add_drain();
-				tlb_gather_mmu(&tlb, vma->vm_mm);
-				update_hiwater_rss(vma->vm_mm);
-				unmap_single_vma(&tlb, vma, start_addr, end_addr);
-				tlb_finish_mmu(&tlb);
-			}
-		}
-	}
-	i_mmap_unlock_read(mapping);
-}
-
-void unmap_mapping_range(struct address_space *mapping,
-		loff_t const holebegin, loff_t const holelen, int even_cows)
-{
-	pgoff_t hba = holebegin >> PAGE_SHIFT;
-	pgoff_t hlen = (holelen + PAGE_SIZE - 1) >> PAGE_SHIFT;
-
-	
-	if (sizeof(holelen) > sizeof(hlen)) {
-		long long holeend =
-			(holebegin + holelen + PAGE_SIZE - 1) >> PAGE_SHIFT;
-		if (holeend & ~(long long)ULONG_MAX)
-			hlen = ULONG_MAX - hba + 1;
-	}
-
-	unmap_mapping_pages(mapping, hba, hlen, even_cows);
 }
 
 static vm_fault_t do_anonymous_page(struct vm_fault *vmf)

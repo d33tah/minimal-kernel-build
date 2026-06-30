@@ -22,12 +22,8 @@ void truncate_inode_pages(struct address_space *mapping, loff_t lstart)
 void truncate_pagecache(struct inode *inode, loff_t newsize)
 {
 	struct address_space *mapping = inode->i_mapping;
-	loff_t holebegin = round_up(newsize, PAGE_SIZE);
 
-	 
-	unmap_mapping_range(mapping, holebegin, 0, 1);
 	truncate_inode_pages(mapping, newsize);
-	unmap_mapping_range(mapping, holebegin, 0, 1);
 }
 
 void truncate_setsize(struct inode *inode, loff_t newsize)

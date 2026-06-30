@@ -25,11 +25,6 @@ struct mmu_gather_batch {
 	struct page		*pages[];
 };
 
-#define MAX_GATHER_BATCH	\
-	((PAGE_SIZE - sizeof(struct mmu_gather_batch)) / sizeof(void *))
-
-#define MAX_GATHER_BATCH_COUNT	(10000UL/MAX_GATHER_BATCH)
-
 extern bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page,
 				   int page_size);
 #endif

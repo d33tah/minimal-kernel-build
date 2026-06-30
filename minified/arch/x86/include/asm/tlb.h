@@ -129,23 +129,8 @@ static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
 	__tlb_reset_range(tlb);
 }
 
-static inline void tlb_remove_page_size(struct mmu_gather *tlb,
-					struct page *page, int page_size)
-{
-	if (__tlb_remove_page_size(tlb, page, page_size))
-		tlb_flush_mmu(tlb);
-}
-
-
-static inline void tlb_remove_page(struct mmu_gather *tlb, struct page *page)
-{
-	return tlb_remove_page_size(tlb, page, PAGE_SIZE);
-}
-
-static inline void tlb_change_page_size(struct mmu_gather *tlb,
-						     unsigned int page_size)
-{
-}
+/* tlb_remove_page_size + tlb_remove_page + tlb_change_page_size removed -
+ * 0-caller tlb-gather user wrappers (externs __tlb_remove_page_size/tlb_flush_mmu stay live) */
 
 static inline void tlb_start_vma(struct mmu_gather *tlb, struct vm_area_struct *vma)
 {
@@ -158,15 +143,7 @@ static inline void tlb_start_vma(struct mmu_gather *tlb, struct vm_area_struct *
 #endif
 }
 
-static inline void tlb_end_vma(struct mmu_gather *tlb, struct vm_area_struct *vma)
-{
-	if (tlb->fullmm)
-		return;
-
-	if (tlb->vma_pfn || !IS_ENABLED(CONFIG_MMU_GATHER_MERGE_VMAS)) {
-		tlb_flush_mmu_tlbonly(tlb);
-	}
-}
+/* tlb_end_vma removed - 0-caller (callee tlb_flush_mmu_tlbonly stays live via mmu_gather.c) */
 
 static inline void tlb_flush_pmd_range(struct mmu_gather *tlb,
 				     unsigned long address, unsigned long size)

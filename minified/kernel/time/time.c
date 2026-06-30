@@ -6,14 +6,9 @@
 #include <linux/math64.h>
 
 
-/* gettimeofday body stubbed - init does write(2)+exit only, never reads time */
-SYSCALL_DEFINE2(gettimeofday, struct __kernel_old_timeval __user *, tv,
-		struct timezone __user *, tz)
-{
-	return -ENOSYS;
-}
-
-/* settimeofday syscall removed - init does write(2)+exit only */
+/* gettimeofday + settimeofday removed - init does write(2)+exit only, never
+ * reads time. NR 78 now routes to sys_ni_syscall (also -ENOSYS); the vDSO
+ * gettimeofday_fallback still resolves __NR_gettimeofday from syscall_32.tbl. */
 
 /*
  * Removed: jiffies_to_msecs, __msecs_to_jiffies - never called. The sole

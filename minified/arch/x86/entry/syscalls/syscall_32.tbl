@@ -48,7 +48,9 @@
 # 64 getppid removed (unreachable)
 # 68 sgetmask removed (unreachable, routes to sys_ni)
 # 69 ssetmask removed (unreachable, routes to sys_ni)
-78	i386	gettimeofday		sys_gettimeofday		compat_sys_gettimeofday
+# 78 gettimeofday: handler removed (unreachable -> sys_ni). NR kept (no native/compat
+# entry) so __NR_gettimeofday still emits for the x86 vDSO gettimeofday_fallback.
+78	i386	gettimeofday
 # 79 settimeofday removed (unreachable)
 # 86 uselib removed (unreachable, routes to sys_ni)
 # 87 swapon removed (unreachable, routes to sys_ni)

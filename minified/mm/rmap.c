@@ -188,8 +188,6 @@ void page_add_file_rmap(struct page *page,
 		nr++;
 	if (nr)
 		__mod_lruvec_page_state(page, NR_FILE_MAPPED, nr);
-
-	mlock_vma_page(page, vma, compound);
 }
 
 /*

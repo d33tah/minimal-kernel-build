@@ -126,17 +126,6 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 
 /* populate_vma_page_range / faultin_vma_page_range removed - unused */
 
-static inline void mlock_vma_folio(struct folio *folio,
-			struct vm_area_struct *vma, bool compound)
-{
-}
-
-static inline void mlock_vma_page(struct page *page,
-			struct vm_area_struct *vma, bool compound)
-{
-	mlock_vma_folio(page_folio(page), vma, compound);
-}
-
 /* maybe_pmd_mkwrite removed - unused */
 
 

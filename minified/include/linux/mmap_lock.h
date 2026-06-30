@@ -31,12 +31,7 @@ static inline void mmap_init_lock(struct mm_struct *mm)
 	init_rwsem(&mm->mmap_lock);
 }
 
-static inline void mmap_write_lock(struct mm_struct *mm)
-{
-	__mmap_lock_trace_start_locking(mm, true);
-	down_write(&mm->mmap_lock);
-	__mmap_lock_trace_acquire_returned(mm, true, true);
-}
+/* mmap_write_lock removed - 0-caller static inline orphan */
 
 static inline void mmap_write_lock_nested(struct mm_struct *mm, int subclass)
 {

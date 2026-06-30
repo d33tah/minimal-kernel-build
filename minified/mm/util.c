@@ -196,21 +196,6 @@ void *page_rmapping(struct page *page)
 	return folio_raw_mapping(page_folio(page));
 }
 
-struct address_space *folio_mapping(struct folio *folio)
-{
-	struct address_space *mapping;
-
-
-	if (unlikely(folio_test_slab(folio)))
-		return NULL;
-
-	mapping = folio->mapping;
-	if ((unsigned long)mapping & PAGE_MAPPING_ANON)
-		return NULL;
-
-	return (void *)((unsigned long)mapping & ~PAGE_MAPPING_FLAGS);
-}
-
 int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
 
 /*

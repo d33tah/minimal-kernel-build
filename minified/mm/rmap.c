@@ -95,14 +95,6 @@ int __anon_vma_prepare(struct vm_area_struct *vma)
 	return -ENOMEM;
 }
 
-void unlink_anon_vmas(struct vm_area_struct *vma)
-{
-	/*
-	 * Runtime-dead on a single-shot boot: unlink_anon_vmas only runs on
-	 * exit/munmap, which never happens here. Stubbed (anchor-stub).
-	 */
-}
-
 static void anon_vma_ctor(void *data)
 {
 	struct anon_vma *anon_vma = data;

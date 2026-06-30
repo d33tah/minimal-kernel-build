@@ -19,7 +19,6 @@ struct timer_list {
 
 #define TIMER_DEFERRABLE	0x00080000
 #define TIMER_IRQSAFE		0x00200000
-#define TIMER_INIT_FLAGS	(TIMER_DEFERRABLE | TIMER_IRQSAFE)
 
 
 #define __TIMER_INITIALIZER(_function, _flags) {		\

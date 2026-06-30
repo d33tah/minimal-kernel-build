@@ -67,7 +67,6 @@
 
 /* Word 1 - AMD/extended flags */
 #define X86_FEATURE_NX			( 1*32+20)
-#define X86_FEATURE_GBPAGES		( 1*32+26)
 #define X86_FEATURE_RDTSCP		( 1*32+27)
 #define X86_FEATURE_LM			( 1*32+29)
 
@@ -130,9 +129,6 @@
 #define X86_FEATURE_WAITPKG		(16*32+ 5)
 #define X86_FEATURE_LA57		(16*32+16)
 #define X86_FEATURE_ENQCMD		(16*32+29)
-
-/* Word 18 - Intel extended 3 */
-#define X86_FEATURE_SERIALIZE		(18*32+14)
 
 /* CPU bugs - only keep the used ones */
 #define X86_BUG(x)			(NCAPINTS*32 + (x))

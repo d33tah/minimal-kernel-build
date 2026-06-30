@@ -5,8 +5,6 @@
 #include <linux/param.h>
 #include <linux/spinlock_types_raw.h>
 
-#define RATELIMIT_MSG_ON_RELEASE	BIT(0)
-
 struct ratelimit_state {
 	raw_spinlock_t	lock;		 
 

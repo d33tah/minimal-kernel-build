@@ -20,8 +20,6 @@ struct sigqueue {
 	struct ucounts *ucounts;
 };
 
-#define SIGQUEUE_PREALLOC	1
-
 struct sigpending {
 	struct list_head list;
 	sigset_t signal;
@@ -47,8 +45,6 @@ struct k_sigaction {
 	__sigrestore_t ka_restorer;
 #endif
 };
-
-#define SA_IMMUTABLE		0x00800000
 
 /* __ARCH_UAPI_SA_FLAGS + UAPI_SA_FLAGS removed - unused */
 

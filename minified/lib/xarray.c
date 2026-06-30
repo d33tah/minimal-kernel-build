@@ -80,12 +80,6 @@ static void xas_move_index(struct xa_state *xas, unsigned long offset)
 	xas->xa_index += offset << shift;
 }
 
-static void xas_next_offset(struct xa_state *xas)
-{
-	xas->xa_offset++;
-	xas_move_index(xas, xas->xa_offset);
-}
-
 static void *set_bounds(struct xa_state *xas)
 {
 	xas->xa_node = XAS_BOUNDS;

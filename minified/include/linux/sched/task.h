@@ -37,8 +37,6 @@ extern void proc_caches_init(void);
 
 extern void fork_init(void);
 
-extern void release_task(struct task_struct * p);
-
 extern int copy_thread(struct task_struct *, const struct kernel_clone_args *);
 
 extern void flush_thread(void);

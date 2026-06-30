@@ -14,16 +14,6 @@
  * symbols kept link-live for the parse_args loop + moduleparam.h externs +
  * init/main.c callback address-of references.
  */
-bool parameqn(const char *a, const char *b, size_t n)
-{
-	return false;
-}
-
-bool parameq(const char *a, const char *b)
-{
-	return false;
-}
-
 static int parse_one(char *param,
 		     char *val,
 		     const char *doing,

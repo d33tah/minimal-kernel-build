@@ -42,10 +42,6 @@ static inline void kernel_param_unlock(struct module *mod)
 {
 }
 
-extern bool parameq(const char *name1, const char *name2);
-
-extern bool parameqn(const char *name1, const char *name2, size_t n);
-
 extern char *parse_args(const char *name,
 		      char *args,
 		      const struct kernel_param *params,

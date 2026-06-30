@@ -26,21 +26,6 @@ void put_task_struct_rcu_user(struct task_struct *task)
 		call_rcu(&task->rcu, delayed_put_task_struct);
 }
 
-void release_task(struct task_struct *p)
-{
-	/*
-	 * RUNTIME-DEAD ANCHOR-STUB: release_task reaps a dead task_struct, but
-	 * nothing is ever reaped on this build -- the only exiting tasks are
-	 * PID-1 init (never reaped: it panics if it exits) and kthreads (which
-	 * never exit). The reparent/zombie loops in exit_notify/find_child_reaper
-	 * that call this are themselves runtime-dead. No-op is safe; the private
-	 * teardown subtree (__exit_signal/__unhash_process/flush_sigqueue/
-	 * __sigqueue_free/detach_pid/__change_pid) was deleted.
-	 */
-}
-
-
-
 static void exit_mm(void)
 {
 	/*

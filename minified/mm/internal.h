@@ -169,13 +169,7 @@ extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
 
  
 #define ALLOC_WMARK_MASK	(ALLOC_NO_WATERMARKS-1)
-
- 
-#define ALLOC_OOM		0x08
-
-#define ALLOC_HARDER		 0x10
-#define ALLOC_HIGH		 0x20
-/* ALLOC_KSWAPD removed - never referenced */
+/* ALLOC_OOM/HARDER/HIGH/KSWAPD removed - never set on this build */
 
 
 

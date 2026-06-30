@@ -16,13 +16,6 @@
 #define TK_MIRROR		(1 << 1)
 #define TK_CLOCK_WAS_SET	(1 << 2)
 
-enum timekeeping_adv_mode {
-	
-	TK_ADV_TICK,
-
-	TK_ADV_FREQ
-};
-
 DEFINE_RAW_SPINLOCK(timekeeper_lock);
 
 static struct {
@@ -449,7 +442,7 @@ static u64 logarithmic_accumulation(struct timekeeper *tk, u64 offset,
 	return offset;
 }
 
-static bool timekeeping_advance(enum timekeeping_adv_mode mode)
+static bool timekeeping_advance(void)
 {
 	struct timekeeper *real_tk = &tk_core.timekeeper;
 	struct timekeeper *tk = &shadow_timekeeper;
@@ -463,7 +456,7 @@ static bool timekeeping_advance(enum timekeeping_adv_mode mode)
 	offset = clocksource_delta(tk_clock_read(&tk->tkr_mono),
 				   tk->tkr_mono.cycle_last, tk->tkr_mono.mask);
 
-	if (offset < real_tk->cycle_interval && mode == TK_ADV_TICK)
+	if (offset < real_tk->cycle_interval)
 		goto out;
 
 	shift = ilog2(offset) - ilog2(tk->cycle_interval);
@@ -496,7 +489,7 @@ out:
 
 void update_wall_time(void)
 {
-	timekeeping_advance(TK_ADV_TICK);
+	timekeeping_advance();
 }
 
 

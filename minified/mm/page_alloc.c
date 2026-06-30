@@ -607,8 +607,6 @@ struct page *rmqueue(struct zone *preferred_zone,
 	page = NULL;
 	spin_lock_irqsave(&zone->lock, flags);
 
-	if (order > 0 && alloc_flags & ALLOC_HARDER)
-		page = __rmqueue_smallest(zone, order, MIGRATE_HIGHATOMIC);
 	if (!page) {
 		page = __rmqueue(zone, order, migratetype, alloc_flags);
 		if (!page)
@@ -633,16 +631,9 @@ static inline bool zone_watermark_fast(struct zone *z, unsigned int order,
 	/* Simplified fast watermark check for minimal kernel
 	 * (folded from the sole-caller-only __zone_watermark_ok). */
 	long free_pages = zone_page_state(z, NR_FREE_PAGES);
-	long min = mark;
 
-	/* Apply alloc_flags adjustments */
-	if (alloc_flags & ALLOC_HIGH)
-		min -= min / 2;
-	if (alloc_flags & (ALLOC_HARDER|ALLOC_OOM))
-		min -= min / 2;
-
-	/* Basic free pages check (lowmem_reserve is always 0 in this minimal kernel) */
-	return free_pages > min;
+	/* lowmem_reserve is always 0 in this minimal kernel */
+	return free_pages > mark;
 }
 
 

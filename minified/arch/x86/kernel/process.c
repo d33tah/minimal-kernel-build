@@ -54,7 +54,6 @@ void exit_thread(struct task_struct *tsk)
 
 int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 {
-	unsigned long sp = args->stack;
 	struct inactive_task_frame *frame;
 	struct fork_frame *fork_frame;
 	struct pt_regs *childregs;
@@ -86,8 +85,6 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 	frame->bx = 0;
 	*childregs = *current_pt_regs();
 	childregs->ax = 0;
-	if (sp)
-		childregs->sp = sp;
 
 	if (unlikely(args->fn)) {
 		 

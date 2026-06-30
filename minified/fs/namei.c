@@ -201,19 +201,17 @@ struct nameidata {
 	struct filename	*name;
 	struct nameidata *saved;
 	unsigned	root_seq;
-	int		dfd;
 } __randomize_layout;
 
 #define ND_ROOT_PRESET 1
 #define ND_ROOT_GRABBED 2
 #define ND_JUMPED 4
 
-static void __set_nameidata(struct nameidata *p, int dfd, struct filename *name)
+static void __set_nameidata(struct nameidata *p, struct filename *name)
 {
 	struct nameidata *old = current->nameidata;
 	p->stack = p->internal;
 	p->depth = 0;
-	p->dfd = dfd;
 	p->name = name;
 	p->path.mnt = NULL;
 	p->path.dentry = NULL;
@@ -222,10 +220,10 @@ static void __set_nameidata(struct nameidata *p, int dfd, struct filename *name)
 	current->nameidata = p;
 }
 
-static inline void set_nameidata(struct nameidata *p, int dfd, struct filename *name,
+static inline void set_nameidata(struct nameidata *p, struct filename *name,
 			  const struct path *root)
 {
-	__set_nameidata(p, dfd, name);
+	__set_nameidata(p, name);
 	p->state = 0;
 	if (unlikely(root)) {
 		p->state = ND_ROOT_PRESET;
@@ -965,13 +963,9 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 		return s;
 	}
 
-	if (nd->dfd == AT_FDCWD) {
-		get_fs_pwd(current->fs, &nd->path);
-		nd->inode = nd->path.dentry->d_inode;
-	} else {
-		/* __fdget_raw is a stub returning 0 -> fd lookup always fails */
-		return ERR_PTR(-EBADF);
-	}
+	/* Every path_init caller passes dfd==AT_FDCWD (no *at() syscalls) */
+	get_fs_pwd(current->fs, &nd->path);
+	nd->inode = nd->path.dentry->d_inode;
 
 	if (flags & LOOKUP_IS_SCOPED) {
 		nd->root = nd->path;
@@ -1037,7 +1031,7 @@ int filename_lookup(int dfd, struct filename *name, unsigned flags,
 	struct nameidata nd;
 	if (IS_ERR(name))
 		return PTR_ERR(name);
-	set_nameidata(&nd, dfd, name, root);
+	set_nameidata(&nd, name, root);
 	retval = path_lookupat(&nd, flags | LOOKUP_RCU, path);
 	if (unlikely(retval == -ECHILD))
 		retval = path_lookupat(&nd, flags, path);
@@ -1073,7 +1067,7 @@ static int filename_parentat(int dfd, struct filename *name,
 
 	if (IS_ERR(name))
 		return PTR_ERR(name);
-	set_nameidata(&nd, dfd, name, NULL);
+	set_nameidata(&nd, name, NULL);
 	retval = path_parentat(&nd, flags | LOOKUP_RCU, parent);
 	if (unlikely(retval == -ECHILD))
 		retval = path_parentat(&nd, flags, parent);
@@ -1395,7 +1389,7 @@ struct file *do_filp_open(int dfd, struct filename *pathname,
 	int flags = op->lookup_flags;
 	struct file *filp;
 
-	set_nameidata(&nd, dfd, pathname, NULL);
+	set_nameidata(&nd, pathname, NULL);
 	filp = path_openat(&nd, op, flags | LOOKUP_RCU);
 	if (unlikely(filp == ERR_PTR(-ECHILD)))
 		filp = path_openat(&nd, op, flags);

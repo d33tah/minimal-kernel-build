@@ -216,14 +216,7 @@ hlist_is_singular_node(struct hlist_node *n, struct hlist_head *h)
 	return !n->next && n->pprev == &h->first;
 }
 
-static inline void hlist_move_list(struct hlist_head *old,
-				   struct hlist_head *new)
-{
-	new->first = old->first;
-	if (new->first)
-		new->first->pprev = &new->first;
-	old->first = NULL;
-}
+/* hlist_move_list removed - 0 callers tree-wide */
 
 #define hlist_entry(ptr, type, member) container_of(ptr,type,member)
 

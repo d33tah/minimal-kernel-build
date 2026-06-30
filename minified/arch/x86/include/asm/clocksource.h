@@ -8,9 +8,6 @@
 
 extern unsigned int vclocks_used;
 
-static inline void vclocks_set_used(unsigned int which)
-{
-	WRITE_ONCE(vclocks_used, READ_ONCE(vclocks_used) | (1 << which));
-}
+/* vclocks_set_used: 0-caller static-inline orphan removed (LOC reduction) */
 
 #endif  

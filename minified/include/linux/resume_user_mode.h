@@ -6,10 +6,7 @@
 #include <linux/task_work.h>
 #include <linux/memcontrol.h>
 
-static inline void set_notify_resume(struct task_struct *task)
-{
-	test_and_set_tsk_thread_flag(task, TIF_NOTIFY_RESUME);
-}
+/* set_notify_resume: 0-caller static-inline orphan removed (LOC reduction) */
 
 
 static inline void resume_user_mode_work(struct pt_regs *regs)

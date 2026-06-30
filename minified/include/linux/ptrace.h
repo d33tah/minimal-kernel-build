@@ -15,9 +15,7 @@
 #define PTRACE_EVENTMSG_SYSCALL_EXIT	2
 
 
-static inline void ptrace_unlink(struct task_struct *child)
-{
-}
+/* ptrace_unlink: empty stub orphaned with ptrace_release_task, removed (LOC reduction) */
 
 
 
@@ -32,11 +30,7 @@ static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
 	child->parent = child->real_parent;
 }
 
-static inline void ptrace_release_task(struct task_struct *task)
-{
-	ptrace_unlink(task);
-	BUG_ON(!list_empty(&task->ptrace_entry));
-}
+/* ptrace_release_task: 0-caller static-inline orphan removed (LOC reduction) */
 
 #ifndef force_successful_syscall_return
 #define force_successful_syscall_return() do { } while (0)

@@ -370,10 +370,7 @@ static inline void clear_tsk_thread_flag(struct task_struct *tsk, int flag)
 	clear_ti_thread_flag(task_thread_info(tsk), flag);
 }
 
-static inline int test_and_set_tsk_thread_flag(struct task_struct *tsk, int flag)
-{
-	return test_and_set_ti_thread_flag(task_thread_info(tsk), flag);
-}
+/* test_and_set_tsk_thread_flag: orphaned with set_notify_resume, removed (LOC reduction) */
 
 static inline int test_tsk_thread_flag(struct task_struct *tsk, int flag)
 {

@@ -56,10 +56,7 @@ static inline void clear_ti_thread_flag(struct thread_info *ti, int flag)
 	clear_bit(flag, (unsigned long *)&ti->flags);
 }
 
-static inline int test_and_set_ti_thread_flag(struct thread_info *ti, int flag)
-{
-	return test_and_set_bit(flag, (unsigned long *)&ti->flags);
-}
+/* test_and_set_ti_thread_flag: orphaned with set_notify_resume cascade, removed (LOC reduction) */
 
 static inline int test_ti_thread_flag(struct thread_info *ti, int flag)
 {

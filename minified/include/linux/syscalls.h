@@ -56,14 +56,6 @@ struct __kernel_old_timeval;
 
 static inline void addr_limit_user_check(void)
 {
-#ifdef TIF_FSCHECK
-	if (!test_thread_flag(TIF_FSCHECK))
-		return;
-#endif
-
-#ifdef TIF_FSCHECK
-	clear_thread_flag(TIF_FSCHECK);
-#endif
 }
 
 

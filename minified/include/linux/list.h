@@ -159,10 +159,7 @@ static inline int hlist_unhashed(const struct hlist_node *h)
 	return !h->pprev;
 }
 
-static inline int hlist_unhashed_lockless(const struct hlist_node *h)
-{
-	return !READ_ONCE(h->pprev);
-}
+/* hlist_unhashed_lockless removed: 0-caller orphan (was only used by timer_pending) */
 
 /* hlist_empty removed: 0-caller orphan */
 

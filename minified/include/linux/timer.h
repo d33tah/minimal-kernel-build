@@ -32,10 +32,7 @@ struct timer_list {
 #define from_timer(var, callback_timer, timer_fieldname) \
 	container_of(callback_timer, typeof(*var), timer_fieldname)
 
-static inline int timer_pending(const struct timer_list * timer)
-{
-	return !hlist_unhashed_lockless(&timer->entry);
-}
+/* timer_pending removed: 0-caller orphan (cascaded hlist_unhashed_lockless) */
 
 #define NEXT_TIMER_MAX_DELTA	((1UL << 30) - 1)
 

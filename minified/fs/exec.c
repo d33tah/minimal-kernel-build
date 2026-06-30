@@ -499,14 +499,7 @@ int begin_new_exec(struct linux_binprm * bprm)
 
 	do_close_on_exec(me->files);
 
-	if (bprm->secureexec) {
-
-		if (bprm->rlim_stack.rlim_cur > _STK_LIM)
-			bprm->rlim_stack.rlim_cur = _STK_LIM;
-	}
-
-	if (bprm->interp_flags & BINPRM_FLAGS_ENFORCE_NONDUMP ||
-	    !(uid_eq(current_euid(), current_uid()) &&
+	if (!(uid_eq(current_euid(), current_uid()) &&
 	      gid_eq(current_egid(), current_gid())))
 		set_dumpable(current->mm, 0);
 	else

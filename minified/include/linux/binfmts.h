@@ -9,7 +9,6 @@ struct pt_regs;
 #define MAX_ARG_STRLEN (PAGE_SIZE * 32)
 #define MAX_ARG_STRINGS 0x7FFFFFFF
 #define BINPRM_BUF_SIZE 256
-#define AT_FLAGS_PRESERVE_ARGV0 (1 << 0)
 
 struct filename;
 
@@ -30,16 +29,12 @@ struct linux_binprm {
 	int argc, envc;
 	const char *filename;	 
 	const char *interp;
-	unsigned interp_flags;
 	unsigned long loader, exec;
 
 	struct rlimit rlim_stack;  
 
 	char buf[BINPRM_BUF_SIZE];
 } __randomize_layout;
-
-#define BINPRM_FLAGS_ENFORCE_NONDUMP (1 << 0)
-#define BINPRM_FLAGS_PRESERVE_ARGV0 (1 << 3)
 
 struct linux_binfmt {
 	struct list_head lh;

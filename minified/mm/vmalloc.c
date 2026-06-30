@@ -155,40 +155,7 @@ insert_vmap_area_augment(struct vmap_area *va,
 /* is_within_this_va removed - 0-caller orphan (find_vmap_lowest_match gone) */
 /* find_vmap_lowest_match removed - 0-caller orphan (__alloc_vmap_area gone) */
 
-enum fit_type {
-	NOTHING_FIT = 0,
-	FL_FIT_TYPE = 1,	
-	LE_FIT_TYPE = 2,	
-	RE_FIT_TYPE = 3,	
-	NE_FIT_TYPE = 4		
-};
-
-static __always_inline enum fit_type
-classify_va_fit_type(struct vmap_area *va,
-	unsigned long nva_start_addr, unsigned long size)
-{
-	enum fit_type type;
-
-	
-	if (nva_start_addr < va->va_start ||
-			nva_start_addr + size > va->va_end)
-		return NOTHING_FIT;
-
-	
-	if (va->va_start == nva_start_addr) {
-		if (va->va_end == nva_start_addr + size)
-			type = FL_FIT_TYPE;
-		else
-			type = LE_FIT_TYPE;
-	} else if (va->va_end == nva_start_addr + size) {
-		type = RE_FIT_TYPE;
-	} else {
-		type = NE_FIT_TYPE;
-	}
-
-	return type;
-}
-
+/* classify_va_fit_type + enum fit_type removed - 0-caller orphan (__alloc_vmap_area gone); vmalloc dead-allocator cluster drained */
 /* adjust_va_to_fit_type removed - 0-caller orphan (__alloc_vmap_area gone) */
 /* __alloc_vmap_area removed - 0-caller orphan (alloc_vmap_area absent in this minimal tree) */
 

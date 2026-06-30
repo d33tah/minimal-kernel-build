@@ -303,44 +303,7 @@ adjust_va_to_fit_type(struct vmap_area *va,
 	return 0;
 }
 
-static __always_inline unsigned long
-__alloc_vmap_area(unsigned long size, unsigned long align,
-	unsigned long vstart, unsigned long vend)
-{
-	bool adjust_search_size = true;
-	unsigned long nva_start_addr;
-	struct vmap_area *va;
-	enum fit_type type;
-	int ret;
-
-	
-	if (align <= PAGE_SIZE || (align > PAGE_SIZE && (vend - vstart) == size))
-		adjust_search_size = false;
-
-	va = find_vmap_lowest_match(size, align, vstart, adjust_search_size);
-	if (unlikely(!va))
-		return vend;
-
-	if (va->va_start > vstart)
-		nva_start_addr = ALIGN(va->va_start, align);
-	else
-		nva_start_addr = ALIGN(vstart, align);
-
-	
-	if (nva_start_addr + size > vend)
-		return vend;
-
-	
-	type = classify_va_fit_type(va, nva_start_addr, size);
-	if (WARN_ON_ONCE(type == NOTHING_FIT))
-		return vend;
-
-	ret = adjust_va_to_fit_type(va, nva_start_addr, size, type);
-	if (ret)
-		return vend;
-
-	return nva_start_addr;
-}
+/* __alloc_vmap_area removed - 0-caller orphan (alloc_vmap_area absent in this minimal tree) */
 
 static inline void
 preload_this_cpu_lock(spinlock_t *lock, gfp_t gfp_mask, int node)

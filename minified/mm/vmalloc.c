@@ -221,15 +221,7 @@ void __init vmalloc_init(void)
 	vmap_initialized = true;
 }
 
-static inline void setup_vmalloc_vm_locked(struct vm_struct *vm,
-	struct vmap_area *va, unsigned long flags, const void *caller)
-{
-	vm->flags = flags;
-	vm->addr = (void *)va->va_start;
-	vm->size = va->va_end - va->va_start;
-	vm->caller = caller;
-	va->vm = vm;
-}
+/* setup_vmalloc_vm_locked removed - 0-caller orphan (setup_vmalloc_vm absent). */
 
 void vfree(const void *addr)
 {

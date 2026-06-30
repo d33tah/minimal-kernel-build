@@ -52,10 +52,6 @@ void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte);
 
 /* force_page_cache_readahead removed - unused */
 
-int truncate_inode_folio(struct address_space *mapping, struct folio *folio);
-bool truncate_inode_partial_folio(struct folio *folio, loff_t start,
-		loff_t end);
-
 /* page_evictable removed - unused */
 
 static inline void set_page_refcounted(struct page *page)

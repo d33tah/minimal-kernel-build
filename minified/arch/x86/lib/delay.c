@@ -35,38 +35,14 @@ static void delay_loop(u64 __loops)
 	);
 }
 
-static void delay_tsc(u64 cycles)
-{
-	u64 bclock, now;
-	int cpu;
-
-	preempt_disable();
-	cpu = smp_processor_id();
-	bclock = rdtsc_ordered();
-	for (;;) {
-		now = rdtsc_ordered();
-		if ((now - bclock) >= cycles)
-			break;
-
-		 
-		preempt_enable();
-		rep_nop();
-		preempt_disable();
-
-		 
-		if (unlikely(cpu != smp_processor_id())) {
-			cycles -= (now - bclock);
-			cpu = smp_processor_id();
-			bclock = rdtsc_ordered();
-		}
-	}
-	preempt_enable();
-}
-
+/*
+ * TSC-based delay (delay_tsc) removed: it is only ever selected here via
+ * use_tsc_delay(), a runtime optimization that is not required for correctness
+ * (delay_fn permanently stays delay_loop, which is correct).  The helper is
+ * kept as a no-op so the tsc_enable_sched_clock() callsite still links.
+ */
 void __init use_tsc_delay(void)
 {
-	if (delay_fn == delay_loop)
-		delay_fn = delay_tsc;
 }
 
 /*

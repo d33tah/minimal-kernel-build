@@ -7,14 +7,7 @@
 struct open_how {
 	__u64 flags;
 	__u64 mode;
-	__u64 resolve;
 };
-#define RESOLVE_NO_XDEV		0x01
-#define RESOLVE_NO_MAGICLINKS	0x02
-#define RESOLVE_NO_SYMLINKS	0x04
-#define RESOLVE_BENEATH		0x08
-#define RESOLVE_IN_ROOT		0x10
-#define RESOLVE_CACHED		0x20
 
 /* Inlined from uapi/linux/fcntl.h */
 #define AT_FDCWD		-100
@@ -26,10 +19,6 @@ struct open_how {
 	 O_APPEND | O_NDELAY | O_NONBLOCK | __O_SYNC | O_DSYNC | \
 	 FASYNC	| O_DIRECT | O_LARGEFILE | O_DIRECTORY | O_NOFOLLOW | \
 	 O_NOATIME | O_CLOEXEC | O_PATH | __O_TMPFILE)
-
-#define VALID_RESOLVE_FLAGS \
-	(RESOLVE_NO_XDEV | RESOLVE_NO_MAGICLINKS | RESOLVE_NO_SYMLINKS | \
-	 RESOLVE_BENEATH | RESOLVE_IN_ROOT | RESOLVE_CACHED)
 
 
 #endif

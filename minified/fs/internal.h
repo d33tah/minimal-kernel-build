@@ -23,7 +23,7 @@ extern int parse_monolithic_mount_data(struct fs_context *, void *);
 
  
 extern int filename_lookup(struct filename *name, unsigned flags,
-			   struct path *path, struct path *root);
+			   struct path *path);
 int do_rmdir(struct filename *name);
 int do_unlinkat(struct filename *name);
 

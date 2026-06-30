@@ -193,14 +193,8 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 	 
 	if (flags & ~VALID_OPEN_FLAGS)
 		return -EINVAL;
-	if (how->resolve & ~VALID_RESOLVE_FLAGS)
-		return -EINVAL;
 
-	 
-	if ((how->resolve & RESOLVE_BENEATH) && (how->resolve & RESOLVE_IN_ROOT))
-		return -EINVAL;
 
-	 
 	if (WILL_CREATE(flags)) {
 		if (how->mode & ~S_IALLUGO)
 			return -EINVAL;
@@ -255,23 +249,6 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 		lookup_flags |= LOOKUP_DIRECTORY;
 	if (!(flags & O_NOFOLLOW))
 		lookup_flags |= LOOKUP_FOLLOW;
-
-	if (how->resolve & RESOLVE_NO_XDEV)
-		lookup_flags |= LOOKUP_NO_XDEV;
-	if (how->resolve & RESOLVE_NO_MAGICLINKS)
-		lookup_flags |= LOOKUP_NO_MAGICLINKS;
-	if (how->resolve & RESOLVE_NO_SYMLINKS)
-		lookup_flags |= LOOKUP_NO_SYMLINKS;
-	if (how->resolve & RESOLVE_BENEATH)
-		lookup_flags |= LOOKUP_BENEATH;
-	if (how->resolve & RESOLVE_IN_ROOT)
-		lookup_flags |= LOOKUP_IN_ROOT;
-	if (how->resolve & RESOLVE_CACHED) {
-		 
-		if (flags & (O_TRUNC | O_CREAT | O_TMPFILE))
-			return -EAGAIN;
-		lookup_flags |= LOOKUP_CACHED;
-	}
 
 	op->lookup_flags = lookup_flags;
 	return 0;

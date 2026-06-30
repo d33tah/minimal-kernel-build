@@ -21,6 +21,3 @@
 void pat_disable(const char *msg_reason) { }
 
 void init_cache_modes(void) { }
-
-void untrack_pfn(struct vm_area_struct *vma, unsigned long pfn,
-		 unsigned long size) { }

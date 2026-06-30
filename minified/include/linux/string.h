@@ -43,10 +43,6 @@ extern int memcmp(const void *,const void *,__kernel_size_t);
 #endif
 #ifndef __HAVE_ARCH_BCMP
 #endif
-#ifndef __HAVE_ARCH_MEMCHR
-extern void * memchr(const void *,int,__kernel_size_t);
-#endif
-
 char *strreplace(char *s, char old, char new);
 
 extern void kfree_const(const void *x);

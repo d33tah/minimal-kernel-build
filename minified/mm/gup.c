@@ -174,7 +174,7 @@ static int faultin_page(struct vm_area_struct *vma,
 	}
 
 	if (ret & VM_FAULT_RETRY) {
-		if (locked && !(fault_flags & FAULT_FLAG_RETRY_NOWAIT))
+		if (locked)
 			*locked = 0;
 		return -EBUSY;
 	}

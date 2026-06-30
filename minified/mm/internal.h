@@ -150,8 +150,7 @@ static inline struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf,
 		return fpin;
 
 	 
-	if (fault_flag_allow_retry_first(flags) &&
-	    !(flags & FAULT_FLAG_RETRY_NOWAIT)) {
+	if (fault_flag_allow_retry_first(flags)) {
 		fpin = get_file(vmf->vma->vm_file);
 		mmap_read_unlock(vmf->vma->vm_mm);
 	}

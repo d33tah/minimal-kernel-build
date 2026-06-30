@@ -289,7 +289,6 @@ enum vm_fault_reason {
 enum fault_flag {
 	FAULT_FLAG_WRITE =		1 << 0,
 	FAULT_FLAG_ALLOW_RETRY =	1 << 2,
-	FAULT_FLAG_RETRY_NOWAIT = 	1 << 3,
 	FAULT_FLAG_TRIED = 		1 << 5,
 	FAULT_FLAG_UNSHARE =		1 << 10,
 };

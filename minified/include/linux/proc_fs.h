@@ -11,9 +11,6 @@ static inline void proc_root_init(void)
 {
 }
 
-static inline void proc_flush_pid(struct pid *pid)
-{
-}
-
+/* proc_flush_pid removed - 0-caller orphan */
 
 #endif

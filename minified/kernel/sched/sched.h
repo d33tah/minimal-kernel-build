@@ -101,11 +101,7 @@ static inline int dl_policy(int policy)
 {
 	return policy == SCHED_DEADLINE;
 }
-static inline bool valid_policy(int policy)
-{
-	return idle_policy(policy) || fair_policy(policy) ||
-		rt_policy(policy) || dl_policy(policy);
-}
+/* valid_policy removed - 0-caller orphan */
 
 static inline int task_has_idle_policy(struct task_struct *p)
 {
@@ -212,11 +208,7 @@ static inline void raw_spin_rq_lock(struct rq *rq)
 	raw_spin_rq_lock_nested(rq, 0);
 }
 
-static inline void raw_spin_rq_lock_irq(struct rq *rq)
-{
-	local_irq_disable();
-	raw_spin_rq_lock(rq);
-}
+/* raw_spin_rq_lock_irq removed - 0-caller orphan */
 
 static inline void raw_spin_rq_unlock_irq(struct rq *rq)
 {

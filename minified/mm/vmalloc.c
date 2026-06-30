@@ -152,25 +152,7 @@ insert_vmap_area_augment(struct vmap_area *va,
 	}
 }
 
-static __always_inline bool
-is_within_this_va(struct vmap_area *va, unsigned long size,
-	unsigned long align, unsigned long vstart)
-{
-	unsigned long nva_start_addr;
-
-	if (va->va_start > vstart)
-		nva_start_addr = ALIGN(va->va_start, align);
-	else
-		nva_start_addr = ALIGN(vstart, align);
-
-	
-	if (nva_start_addr + size < nva_start_addr ||
-			nva_start_addr < vstart)
-		return false;
-
-	return (nva_start_addr + size <= va->va_end);
-}
-
+/* is_within_this_va removed - 0-caller orphan (find_vmap_lowest_match gone) */
 /* find_vmap_lowest_match removed - 0-caller orphan (__alloc_vmap_area gone) */
 
 enum fit_type {

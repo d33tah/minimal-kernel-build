@@ -82,7 +82,6 @@ bool static_key_initialized __read_mostly;
 
 static const char *argv_init[MAX_INIT_ARGS+2] = { "init", NULL, };
 const char *envp_init[MAX_INIT_ENVS+2] = { "HOME=/", "TERM=linux", NULL, };
-static const char *panic_later, *panic_param;
 
 extern const struct obs_kernel_param __setup_start[], __setup_end[];
 
@@ -327,10 +326,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	local_irq_enable();
 
 	console_init();
-	if (panic_later)
-		panic("Too many boot %s vars at `%s'", panic_later,
-		      panic_param);
-
 
 	mem_encrypt_init();
 
@@ -548,15 +543,6 @@ static int __ref kernel_init(void *unused)
 			return 0;
 		panic("Requested init %s failed (error %d).",
 		      execute_command, ret);
-	}
-
-	if (CONFIG_DEFAULT_INIT[0] != '\0') {
-		ret = run_init_process(CONFIG_DEFAULT_INIT);
-		if (ret)
-			pr_err("Default init %s failed (error %d)\n",
-			       CONFIG_DEFAULT_INIT, ret);
-		else
-			return 0;
 	}
 
 	if (!try_to_run_init_process("/sbin/init") ||

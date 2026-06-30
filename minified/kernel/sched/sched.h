@@ -519,14 +519,7 @@ extern void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags);
 
 
 
-#ifndef arch_scale_freq_capacity
- 
-static __always_inline
-unsigned long arch_scale_freq_capacity(int cpu)
-{
-	return SCHED_CAPACITY_SCALE;
-}
-#endif
+/* arch_scale_freq_capacity removed - unused (0 callers) */
 
 extern struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq);
 
@@ -536,13 +529,7 @@ extern void init_cfs_rq(struct cfs_rq *cfs_rq);
 
 
 
-#ifdef arch_scale_freq_capacity
-# ifndef arch_scale_freq_invariant
-#  define arch_scale_freq_invariant()	true
-# endif
-#else
-# define arch_scale_freq_invariant()	false
-#endif
+/* arch_scale_freq_invariant removed - unused (0 callers) */
 
 
 /* uclamp_rq_util_with removed - unused */

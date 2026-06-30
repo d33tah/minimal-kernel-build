@@ -32,10 +32,7 @@ static inline int folio_ref_count(const struct folio *folio)
 	return page_ref_count(&folio->page);
 }
 
-static inline int page_count(const struct page *page)
-{
-	return folio_ref_count(page_folio(page));
-}
+/* Removed: page_count, update_hiwater_rss - 0-caller orphans */
 
 static inline void set_page_count(struct page *page, int v)
 {
@@ -638,11 +635,6 @@ static inline int mm_counter_file(struct page *page)
 	if (PageSwapBacked(page))
 		return MM_SHMEMPAGES;
 	return MM_FILEPAGES;
-}
-
-
-static inline void update_hiwater_rss(struct mm_struct *mm)
-{
 }
 
 static inline void sync_mm_rss(struct mm_struct *mm)

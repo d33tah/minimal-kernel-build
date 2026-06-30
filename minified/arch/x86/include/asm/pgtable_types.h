@@ -287,9 +287,6 @@ static inline pteval_t pte_flags(pte_t pte)
 }
 
 
-unsigned long cachemode2protval(enum page_cache_mode pcm);
-
-
 typedef struct page *pgtable_t;
 
 extern pteval_t __supported_pte_mask;

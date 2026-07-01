@@ -24,9 +24,9 @@ struct fs_parameter_spec {
 	fs_param_type		*type;	 
 	u8			opt;	 
 	unsigned short		flags;
-#define fs_param_neg_with_no	0x0002	 
-#define fs_param_can_be_empty	0x0004	 
-#define fs_param_deprecated	0x0008	 
+#define fs_param_neg_with_no	0x0002
+/* fs_param_can_be_empty(0x0004) removed: 0-caller flag bit, not in any composite mask */
+#define fs_param_deprecated	0x0008
 	const void		*data;
 };
 

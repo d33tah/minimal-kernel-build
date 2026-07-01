@@ -46,7 +46,7 @@ static inline void tick_set_periodic_handler(struct clock_event_device *dev, int
 
 
 
-#define tick_nohz_active (0)
+/* tick_nohz_active removed: 0-caller no-HZ-off stub const */
 
 /* hrtimer_bases DECLARE_PER_CPU removed with hrtimer.c (never read) */
 

@@ -9,10 +9,9 @@
 
 #define _PAGE_BIT_PRESENT	0	 
 #define _PAGE_BIT_RW		1	 
-#define _PAGE_BIT_USER		2	 
-#define _PAGE_BIT_PWT		3	 
-#define _PAGE_BIT_PCD		4	 
-#define _PAGE_BIT_ACCESSED	5	 
+#define _PAGE_BIT_USER		2
+/* _PAGE_BIT_PWT(3)/_PAGE_BIT_PCD(4) removed: 0-caller (their _PAGE_PWT/_PAGE_PCD masks cut #225) */
+#define _PAGE_BIT_ACCESSED	5
 #define _PAGE_BIT_DIRTY		6	 
 #define _PAGE_BIT_PSE		7
 #define _PAGE_BIT_GLOBAL	8

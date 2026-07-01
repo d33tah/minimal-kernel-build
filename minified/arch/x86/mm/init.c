@@ -9,7 +9,6 @@
 #include <asm/tlbflush.h>
 #include <asm/cpufeature.h>
 #include <asm/text-patching.h>
-#include <asm/memtype.h>
 
 
 

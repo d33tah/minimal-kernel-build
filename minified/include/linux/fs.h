@@ -44,7 +44,6 @@
 #undef NR_OPEN
 #define INR_OPEN_CUR 1024
 #define INR_OPEN_MAX 4096
-#define SEEK_SET	0
 #define SEEK_END	2
 /* RWF_* values needed for IOCB_* macros, rwf_t typedef */
 typedef int rwf_t;

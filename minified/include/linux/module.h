@@ -20,15 +20,6 @@
 
 
 #include <linux/percpu.h>
-/* --- 2025-12-07 20:50 --- Inlined asm/module.h */
-#define Elf_Shdr	Elf32_Shdr
-#define Elf_Phdr	Elf32_Phdr
-#define Elf_Sym		Elf32_Sym
-#define Elf_Ehdr	Elf32_Ehdr
-#define Elf_Addr	Elf32_Addr
-#define Elf_Rel		Elf32_Rel
-#define ELF_R_TYPE(X)	ELF32_R_TYPE(X)
-#define ELF_R_SYM(X)	ELF32_R_SYM(X)
 #include <asm/orc_types.h>
 
 struct module;

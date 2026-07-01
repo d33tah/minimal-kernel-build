@@ -2,10 +2,7 @@
 #include <linux/utsname.h>
 #include <asm/bugs.h>
 #include <asm/processor.h>
-#include <asm/fpu/api.h>
-#include <asm/msr.h>
 #include <asm/alternative.h>
-#include <asm/nospec-branch.h>
 
 void __init check_bugs(void)
 {

@@ -9,8 +9,6 @@
 #include <linux/cdev.h>
 #include <linux/task_work.h>
 
-#include <linux/atomic.h>
-
 #include "internal.h"
 
 static struct kmem_cache *filp_cachep __read_mostly;

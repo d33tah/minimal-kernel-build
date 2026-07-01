@@ -2,7 +2,6 @@
 
 #include <linux/fs.h>
 #include <linux/pagemap.h>
-#include <linux/time.h>
 #include <linux/init.h>
 #include <linux/string.h>
 #include <linux/ramfs.h>

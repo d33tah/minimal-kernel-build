@@ -4,7 +4,6 @@
 #include <linux/sched.h>
 #include <linux/types.h>
 #include <linux/init.h>
-#include <linux/time.h>
 
 
 #include "rcu.h"

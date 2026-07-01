@@ -8,7 +8,6 @@
 #include <linux/fs.h>
 #include <linux/personality.h>
 #include <linux/security.h>
-#include <linux/shmem_fs.h>
 #include <linux/rmap.h>
 #include <linux/pkeys.h>
 #include <linux/sched/mm.h>

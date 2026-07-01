@@ -41,9 +41,6 @@ struct sigaction {
 
 struct k_sigaction {
 	struct sigaction sa;
-#ifdef __ARCH_HAS_KA_RESTORER
-	__sigrestore_t ka_restorer;
-#endif
 };
 
 /* __ARCH_UAPI_SA_FLAGS + UAPI_SA_FLAGS removed - unused */

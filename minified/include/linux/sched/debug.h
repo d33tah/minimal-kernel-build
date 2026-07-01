@@ -11,7 +11,5 @@ extern void show_regs(struct pt_regs *);
 
 #define __sched		__section(".sched.text")
 
-extern char __sched_text_start[], __sched_text_end[];
-
 
 #endif  

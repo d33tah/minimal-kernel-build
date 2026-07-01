@@ -318,12 +318,6 @@ static inline int set_cpus_allowed_ptr(struct task_struct *p, const struct cpuma
 		return -EINVAL;
 	return 0;
 }
-static inline int dup_user_cpus_ptr(struct task_struct *dst, struct task_struct *src, int node)
-{
-	return 0;
-}
-
-
 extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);
 
 static __always_inline bool is_idle_task(const struct task_struct *p)

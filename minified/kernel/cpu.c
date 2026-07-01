@@ -1,7 +1,6 @@
 /* Minimal includes for CPU hotplug */
 #include <linux/smp.h>
 #include <linux/init.h>
-#include <linux/cpu.h>
 #include <linux/cpumask.h>
 #include <linux/cache.h>
 

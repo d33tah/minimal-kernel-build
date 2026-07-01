@@ -1,8 +1,6 @@
-#include <linux/kernel.h>
 #include <linux/mm.h>
 
 #include <asm/fixmap.h>
-#include <asm/tlb.h>
 #include <asm/tlbflush.h>
 
 void set_pte_vaddr(unsigned long vaddr, pte_t pteval)

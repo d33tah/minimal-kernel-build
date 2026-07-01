@@ -1,6 +1,5 @@
 
 
-#include <linux/compiler.h>
 #include <linux/kernel.h>
 #include <linux/semaphore.h>
 #include <linux/spinlock.h>

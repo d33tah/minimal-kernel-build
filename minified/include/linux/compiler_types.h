@@ -27,11 +27,7 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 # define ACCESS_PRIVATE(p, member) (*((typeof((p)->member) __force *) &(p)->member))
 #else  
 # define __kernel
-# ifdef STRUCTLEAK_PLUGIN
-#  define __user	__attribute__((user))
-# else
-#  define __user	BTF_TYPE_TAG(user)
-# endif
+# define __user	BTF_TYPE_TAG(user)
 # define __iomem
 # define __percpu	BTF_TYPE_TAG(percpu)
 # define __rcu

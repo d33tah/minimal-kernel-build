@@ -1,5 +1,4 @@
 #include <linux/mm.h>
-#include <asm/current.h>
 #include <asm/traps.h>
 #include <asm/vdso.h>
 

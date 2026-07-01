@@ -4,7 +4,6 @@
 #include <linux/interrupt.h>
 #include <linux/init.h>
 #include <linux/percpu.h>
-#include <linux/kthread.h>
 
 void do_softirq_own_stack(void);
 

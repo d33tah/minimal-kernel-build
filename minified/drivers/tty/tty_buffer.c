@@ -2,12 +2,6 @@
 #include <linux/tty.h>
 #include "tty.h"
 
-#define MIN_TTYB_SIZE	256
-#define TTYB_ALIGN_MASK	255
-
-#define TTY_BUFFER_PAGE	(((PAGE_SIZE - sizeof(struct tty_buffer)) / 2) & ~0xFF)
-
-
 static void tty_buffer_reset(struct tty_buffer *p, size_t size)
 {
 	p->size = size;

@@ -39,7 +39,6 @@ static inline bool lzma_state_is_literal(enum lzma_state state) { return state <
 #define LEN_HIGH_BITS 8
 #define LEN_HIGH_SYMBOLS (1 << LEN_HIGH_BITS)
 #define LEN_SYMBOLS (LEN_LOW_SYMBOLS + LEN_MID_SYMBOLS + LEN_HIGH_SYMBOLS)
-#define MATCH_LEN_MAX (MATCH_LEN_MIN + LEN_SYMBOLS - 1)
 #define DIST_STATES 4
 static inline uint32_t lzma_get_dist_state(uint32_t len) {
 	return len < DIST_STATES + MATCH_LEN_MIN ? len - MATCH_LEN_MIN : DIST_STATES - 1;
@@ -52,9 +51,7 @@ static inline uint32_t lzma_get_dist_state(uint32_t len) {
 #define FULL_DISTANCES (1 << FULL_DISTANCES_BITS)
 #define ALIGN_BITS 4
 #define ALIGN_SIZE (1 << ALIGN_BITS)
-#define ALIGN_MASK (ALIGN_SIZE - 1)
 #define PROBS_TOTAL (1846 + LITERAL_CODERS_MAX * LITERAL_CODER_SIZE)
-#define REPS 4
 /* end xz_lzma2.h */
 
 #define RC_INIT_BYTES 5

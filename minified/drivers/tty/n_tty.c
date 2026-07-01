@@ -4,8 +4,6 @@
 #include <linux/slab.h>
 #include "tty.h"
 
-#define WAKEUP_CHARS 256
-
 struct n_tty_data {
 	struct mutex output_lock;
 };

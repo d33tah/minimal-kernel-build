@@ -11,7 +11,6 @@
 #define FOOTER_MAGIC "YZ"
 #define FOOTER_MAGIC_SIZE 2
 typedef uint64_t vli_type;
-#define VLI_MAX ((vli_type)-1 / 2)
 #define VLI_UNKNOWN ((vli_type)-1)
 #define VLI_BYTES_MAX (sizeof(vli_type) * 8 / 7)
 enum xz_check { XZ_CHECK_NONE = 0, XZ_CHECK_CRC32 = 1, XZ_CHECK_CRC64 = 4, XZ_CHECK_SHA256 = 10 };

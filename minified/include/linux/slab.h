@@ -21,7 +21,6 @@
 
 #define SLAB_NOLEAKTRACE	((slab_flags_t __force)0x00800000U)
 
-# define SLAB_FAILSLAB		0
 # define SLAB_ACCOUNT		0
 
 

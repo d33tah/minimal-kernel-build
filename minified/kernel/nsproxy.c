@@ -1,11 +1,9 @@
 
-#include <linux/slab.h>
 #include <linux/sched/task.h>
 #include <linux/nsproxy.h>
 #include <linux/utsname.h>
 #include <linux/pid_namespace.h>
 
-#include <linux/fs_struct.h>
 
 struct nsproxy init_nsproxy = {
 	.count			= ATOMIC_INIT(1),

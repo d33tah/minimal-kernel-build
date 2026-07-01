@@ -173,15 +173,15 @@ long inc_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v)
 
 bool dec_rlimit_ucounts(struct ucounts *ucounts, enum ucount_type type, long v)
 {
-	struct ucounts *iter;
-	long new = -1;  
-	for (iter = ucounts; iter; iter = iter->ns->ucounts) {
-		long dec = atomic_long_sub_return(v, &iter->ucount[type]);
-		WARN_ON_ONCE(dec < 0);
-		if (iter == ucounts)
-			new = dec;
-	}
-	return (new == 0);
+	/*
+	 * RUNTIME-DEAD ANCHOR-STUB: both call sites are runtime-dead and both
+	 * ignore the return value. commit_creds() only calls this behind its
+	 * user/user_ns-change conditional, never taken on a 1-shot boot; and
+	 * copy_process()'s bad_fork_cleanup_count rollback never runs because
+	 * copy_process always succeeds at boot (HIT=False). The counter
+	 * decrement is unobservable when its matching increment never ran.
+	 */
+	return false;
 }
 
 static __init int user_namespace_sysctl_init(void)

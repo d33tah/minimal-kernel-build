@@ -1,4 +1,3 @@
-#include <linux/unistd.h>
 #include <linux/kernel.h>
 #include <linux/initrd.h>
 

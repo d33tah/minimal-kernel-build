@@ -3,7 +3,6 @@
 #include <linux/nmi.h>
 #include <linux/delay.h>
 
-#include <asm/cpu_entry_area.h>
 #include <asm/traps.h>
 #include <asm/mach_traps.h>
 #include <asm/x86_init.h>

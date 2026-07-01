@@ -1,4 +1,3 @@
-#include <linux/bug.h>
 #include <linux/idr.h>
 #include <linux/slab.h>
 #include <linux/xarray.h>

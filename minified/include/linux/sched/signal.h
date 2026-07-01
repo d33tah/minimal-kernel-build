@@ -124,8 +124,7 @@ extern void calculate_sigpending(void);
 
 
 
-#define SEND_SIG_NOINFO ((struct kernel_siginfo *) 0)
-#define SEND_SIG_PRIV	((struct kernel_siginfo *) 1)
+/* SEND_SIG_NOINFO/SEND_SIG_PRIV removed - 0-caller signal-send magic pointers */
 
 extern void __cleanup_sighand(struct sighand_struct *);
 

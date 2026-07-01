@@ -17,7 +17,7 @@ struct timer_list {
 
 #define __TIMER_LOCKDEP_MAP_INITIALIZER(_kn)
 
-#define TIMER_DEFERRABLE	0x00080000
+/* TIMER_DEFERRABLE removed - 0-caller timer flag (not in any composite mask) */
 #define TIMER_IRQSAFE		0x00200000
 
 

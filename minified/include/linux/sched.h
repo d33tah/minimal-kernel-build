@@ -9,11 +9,8 @@
 #define CLONE_FILES	0x00000400
 #define CLONE_UNTRACED		0x00800000
 #define SCHED_NORMAL		0
-#define SCHED_FIFO		1
-#define SCHED_RR		2
-#define SCHED_BATCH		3
+/* SCHED_FIFO(1), SCHED_RR(2), SCHED_BATCH(3), SCHED_DEADLINE(6) removed - 0-caller policy constants */
 #define SCHED_IDLE		5
-#define SCHED_DEADLINE		6
 /* End uapi/linux/sched.h */
 
 #include <asm/current.h>
@@ -108,9 +105,7 @@ extern void schedule_preempt_disabled(void);
 
 
 # define SCHED_FIXEDPOINT_SHIFT		10
-
-# define SCHED_CAPACITY_SHIFT		SCHED_FIXEDPOINT_SHIFT
-# define SCHED_CAPACITY_SCALE		(1L << SCHED_CAPACITY_SHIFT)
+/* SCHED_CAPACITY_SHIFT/SCHED_CAPACITY_SCALE removed - 0-caller (FIXEDPOINT_SHIFT stays live via NICE_0_LOAD_SHIFT) */
 
 struct load_weight {
 	unsigned long			weight;

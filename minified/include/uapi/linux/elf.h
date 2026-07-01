@@ -158,22 +158,19 @@ typedef struct elf64_phdr {
   Elf64_Xword p_align;		 
 } Elf64_Phdr;
 
-#define SHT_PROGBITS	1
+/* SHT_PROGBITS(1), SHT_NOBITS(8) removed - 0-caller section types */
 #define SHT_SYMTAB	2
 #define SHT_STRTAB	3
 #define SHT_RELA	4
-#define SHT_NOBITS	8
 #define SHT_REL		9
 
 #define SHF_ALLOC		0x2
-#define SHF_EXECINSTR		0x4
+/* SHF_EXECINSTR(0x4) removed - 0-caller section flag */
 
 #define SHN_UNDEF	0
-#define SHN_LORESERVE	0xff00
-/* SHN_LOPROC, SHN_HIPROC - unused */
+/* SHN_LORESERVE, SHN_HIRESERVE, SHN_LOPROC, SHN_HIPROC - unused, removed */
 #define SHN_ABS		0xfff1
 #define SHN_COMMON	0xfff2
-#define SHN_HIRESERVE	0xffff
 typedef struct elf32_shdr {
   Elf32_Word	sh_name;
   Elf32_Word	sh_type;
@@ -219,7 +216,7 @@ typedef struct elf64_shdr {
 #define	ELFCLASS64	2
 
 #define ELFDATA2LSB	1
-#define ELFDATA2MSB	2
+/* ELFDATA2MSB(2) removed - 0-caller (this tree is little-endian, uses ELFDATA2LSB) */
 
 #define EV_CURRENT	1
 

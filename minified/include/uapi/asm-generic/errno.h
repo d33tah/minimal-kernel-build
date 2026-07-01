@@ -24,13 +24,11 @@
 #define	EISDIR		21
 #define	EINVAL		22
 #define	EMFILE		24
-#define	ENOTTY		25
 #define	ETXTBSY		26
 #define	ENOSPC		28
-#define	ESPIPE		29
 #define	EROFS		30
 #define	EMLINK		31
-#define	ERANGE		34
+/* ENOTTY(25), ESPIPE(29), ERANGE(34) removed - 0-caller errno constants */
 /* end errno-base.h */
 
 #define	ENAMETOOLONG	36
@@ -40,7 +38,7 @@
 #define	EOPNOTSUPP	95
 #define	ENOTCONN	107
 #define	ESTALE		116
-#define	ENOTRECOVERABLE	131
-#define EHWPOISON	133	 
+/* ENOTRECOVERABLE(131) removed - 0-caller errno constant */
+#define EHWPOISON	133
 
 #endif

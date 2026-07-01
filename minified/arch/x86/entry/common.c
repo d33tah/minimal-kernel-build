@@ -6,7 +6,6 @@
 #include <linux/errno.h>
 #include <linux/ptrace.h>
 #include <linux/nospec.h>
-#include <linux/syscalls.h>
 #include <linux/uaccess.h>
 
 

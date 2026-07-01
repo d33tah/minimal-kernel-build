@@ -1,7 +1,6 @@
 #include <linux/types.h>
 #include "bitops.h"
 
-#include <asm/processor-flags.h>
 #include <asm/required-features.h>
 #include "cpuflags.h"
 

@@ -394,41 +394,6 @@ static inline void __dget_dlock(struct dentry *dentry)
 	dentry->d_lockref.count++;
 }
 
-struct dentry *dget_parent(struct dentry *dentry)
-{
-	int gotref;
-	struct dentry *ret;
-	unsigned seq;
-
-	
-	rcu_read_lock();
-	seq = raw_seqcount_begin(&dentry->d_seq);
-	ret = READ_ONCE(dentry->d_parent);
-	gotref = lockref_get_not_zero(&ret->d_lockref);
-	rcu_read_unlock();
-	if (likely(gotref)) {
-		if (!read_seqcount_retry(&dentry->d_seq, seq))
-			return ret;
-		dput(ret);
-	}
-
-repeat:
-	
-	rcu_read_lock();
-	ret = dentry->d_parent;
-	spin_lock(&ret->d_lock);
-	if (unlikely(ret != dentry->d_parent)) {
-		spin_unlock(&ret->d_lock);
-		rcu_read_unlock();
-		goto repeat;
-	}
-	rcu_read_unlock();
-	BUG_ON(!ret->d_lockref.count);
-	ret->d_lockref.count++;
-	spin_unlock(&ret->d_lock);
-	return ret;
-}
-
 
 static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 {

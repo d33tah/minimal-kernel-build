@@ -147,7 +147,6 @@ static inline struct dentry *dget(struct dentry *dentry)
 	return dentry;
 }
 
-extern struct dentry *dget_parent(struct dentry *dentry);
 
 static inline int d_unhashed(const struct dentry *dentry)
 {

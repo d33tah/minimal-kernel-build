@@ -6,7 +6,6 @@
 #include <asm/mmu_context.h>
 #include <asm/apic.h>
 
-#include "mm_internal.h"
 
 # define STATIC_NOPV			static
 # define __flush_tlb_local		native_flush_tlb_local

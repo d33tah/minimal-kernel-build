@@ -1,6 +1,5 @@
 
 #include <linux/fs_parser.h>
-#include "internal.h"
 
 static const struct constant_table *
 __lookup_constant(const struct constant_table *tbl, const char *name)

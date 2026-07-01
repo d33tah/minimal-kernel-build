@@ -1,7 +1,6 @@
 
 #include <linux/tty.h>
 #include <linux/kd.h>
-#include <linux/vt.h>
 #include <linux/consolemap.h>
 #include <linux/vt_kern.h>
 

@@ -1,11 +1,8 @@
 #include <linux/mm_types.h>
 #include <linux/rbtree.h>
-#include <linux/rwsem.h>
 #include <linux/spinlock.h>
-#include <linux/list.h>
 #include <linux/mman.h>
 
-#include <linux/atomic.h>
 #include <linux/user_namespace.h>
 
 #include <asm/mmu.h>

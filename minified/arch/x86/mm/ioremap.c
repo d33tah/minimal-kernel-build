@@ -3,12 +3,10 @@
 #include <linux/io.h>
 #include <linux/pgtable.h>
 
-#include <asm/set_memory.h>
 #include <asm/efi.h>
 #include <asm/fixmap.h>
 #include <asm/tlbflush.h>
 #include <asm/pgalloc.h>
-#include <asm/memtype.h>
 #include <asm/setup.h>
 
 static pte_t bm_pte[PAGE_SIZE/sizeof(pte_t)] __page_aligned_bss;

@@ -53,7 +53,7 @@ typedef struct siginfo {
 #define si_uid		_sifields._kill._uid
 #define si_addr		_sifields._sigfault._addr
 
-#define SI_USER		0
+/* SI_USER removed - 0-ref in this build */
 #define SI_KERNEL	0x80
 
 /* Only keep signal sub-codes actually used */

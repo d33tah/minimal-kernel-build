@@ -21,13 +21,9 @@ struct siginfo;
 #define SIGKILL		 9
 #define SIGSEGV		11
 #define SIGCHLD		17
-#define SIGCONT		18
-#define SIGSTOP		19
-#define SIGURG		23
-#define SIGWINCH	28
+/* SIGCONT(18)/SIGSTOP(19)/SIGURG(23)/SIGWINCH(28)/SIGRTMIN(32) removed - 0-ref in this build */
 /* SIGUNUSED, SIGRTMAX, SIGSTKSZ removed - unused.
    SIGHUP/INT/QUIT/ABRT/PIPE/ALRM/TERM/TSTP/TTIN/TTOU/IO/SYS removed - 0-ref in this build */
-#define SIGRTMIN	32
 
 /* SA_RESTORER + MINSIGSTKSZ removed - unused */
 

@@ -8,7 +8,6 @@
 #include <asm/thread_info.h>
 #include <asm/cpumask.h>
 
-extern unsigned int num_processors;
 
 DECLARE_PER_CPU_READ_MOSTLY(int, cpu_number);
 

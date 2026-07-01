@@ -29,9 +29,6 @@ extern void resched_cpu(int cpu);
  * NUM_RCU_LVL_INIT removed - rcu_node tree unused in TinyRCU, never referenced */
 /* end rcu_node_tree.h */
 
-extern int rcu_num_lvls;
-extern int num_rcu_lvl[];
-extern int rcu_num_nodes;
 
 /* rcu_init_levelspread removed - unused */
 

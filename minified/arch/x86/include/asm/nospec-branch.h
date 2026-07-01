@@ -89,15 +89,12 @@
 	".popsection\n\t"
 
 typedef u8 retpoline_thunk_t[RETPOLINE_THUNK_SIZE];
-extern retpoline_thunk_t __x86_indirect_thunk_array[];
 
 extern void entry_ibpb(void);
 
 # define CALL_NOSPEC "call *%[thunk_target]\n"
 
  
-extern char __indirect_thunk_start[];
-extern char __indirect_thunk_end[];
 
 #endif
 

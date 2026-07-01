@@ -8,7 +8,6 @@
 
 unsigned long long native_sched_clock(void);
 
-extern int no_timer_check;
 
 
 struct cyc2ns_data {

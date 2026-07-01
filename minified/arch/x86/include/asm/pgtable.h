@@ -21,7 +21,6 @@
 /* --- 2025-12-07 20:42 --- Inlined coco.h */
 #include <asm/types.h>
 
-extern pgd_t early_top_pgt[PTRS_PER_PGD];
 
 
 
@@ -35,7 +34,6 @@ extern unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)]
 extern spinlock_t pgd_lock;
 extern struct list_head pgd_list;
 
-extern pmdval_t early_pmd_flags;
 
 #define set_pte(ptep, pte)		native_set_pte(ptep, pte)
 

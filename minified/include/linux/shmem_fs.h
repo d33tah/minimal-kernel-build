@@ -8,7 +8,6 @@
 
 
 
-extern const struct fs_parameter_spec shmem_fs_parameters[];
 extern void shmem_init(void);
 
 

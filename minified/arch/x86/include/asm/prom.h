@@ -14,7 +14,6 @@
 
 #define of_ioapic 0
 
-extern char cmd_line[COMMAND_LINE_SIZE];
 
 #endif  
 #endif

@@ -4,7 +4,6 @@
 
 #include <asm/x86_init.h>
 
-extern int pic_mode;
 
 #if CONFIG_BASE_SMALL == 0
 # define MAX_MP_BUSSES		260
@@ -14,9 +13,6 @@ extern int pic_mode;
 
 extern DECLARE_BITMAP(mp_bus_not_pci, MAX_MP_BUSSES);
 
-extern unsigned int boot_cpu_physical_apicid;
-extern u8 boot_cpu_apic_version;
-extern unsigned long mp_lapic_addr;
 
 
 static inline void get_smp_config(void)

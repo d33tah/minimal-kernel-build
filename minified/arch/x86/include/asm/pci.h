@@ -7,13 +7,9 @@
 
 
  
-extern int pci_routeirq;
-extern int noioapicquirk;
-extern int noioapicreroute;
 
 /* PCIBIOS_MIN_IO/MIN_CARDBUS_IO, HAVE_PCI_MMAP, arch_can_pci_mmap_wc,
  * ARCH_GENERIC_PCI_MMAP_RESOURCE removed - 0-ref (no PCI mmap consumer) */
 
-extern int pcibios_enabled;
 
 #endif

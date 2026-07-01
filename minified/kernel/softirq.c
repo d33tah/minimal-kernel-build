@@ -8,10 +8,6 @@ void do_softirq_own_stack(void);
 
 
 
-#ifndef __ARCH_IRQ_STAT
-DEFINE_PER_CPU_ALIGNED(irq_cpustat_t, irq_stat);
-#endif
-
 static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp;
 
 /*

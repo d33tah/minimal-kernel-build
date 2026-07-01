@@ -1,5 +1,4 @@
 #include <linux/spinlock.h>
-#include <linux/atomic.h>
 
 int _atomic_dec_and_lock_irqsave(atomic_t *atomic, spinlock_t *lock,
 				 unsigned long *flags)

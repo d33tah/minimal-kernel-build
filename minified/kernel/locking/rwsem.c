@@ -4,7 +4,6 @@
 #include <linux/sched.h>
 #include <linux/sched/debug.h>
 #include <linux/rwsem.h>
-#include <linux/atomic.h>
 
 #define LOCK_EVENT(name)	LOCKEVENT_ ## name,
 enum lock_events {

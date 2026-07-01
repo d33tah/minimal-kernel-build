@@ -4,7 +4,4 @@
 #include <linux/compiler.h>
 #include <linux/mutex.h>
 
-
-extern struct mutex text_mutex;
-
 #endif

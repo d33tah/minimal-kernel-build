@@ -178,8 +178,6 @@ void initialize_tlbstate_and_flush(void)
 
 DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
 
-unsigned long tlb_single_page_flush_ceiling __read_mostly = 33;
-
 void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 				unsigned long end, unsigned int stride_shift,
 				bool freed_tables)

@@ -21,6 +21,4 @@ extern int after_bootmem;
 
 /* update_cache_mode_entry removed - unused */
 
-extern unsigned long tlb_single_page_flush_ceiling;
-
 #endif	 

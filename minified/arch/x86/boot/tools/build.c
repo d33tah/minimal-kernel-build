@@ -129,11 +129,6 @@ static inline void update_pecoff_text(unsigned int text_start,
 static inline void efi_stub_defaults(void) {}
 static inline void efi_stub_entry_update(void) {}
 
-static inline int reserve_pecoff_reloc_section(int c)
-{
-	return 0;
-}
-
 static int reserve_pecoff_compat_section(int c)
 {
 	 
@@ -214,7 +209,6 @@ int main(int argc, char ** argv)
 	fclose(file);
 
 	c += reserve_pecoff_compat_section(c);
-	c += reserve_pecoff_reloc_section(c);
 
 	 
 	setup_sectors = (c + 511) / 512;

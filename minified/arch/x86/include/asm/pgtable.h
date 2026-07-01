@@ -285,7 +285,6 @@ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
  
 struct vm_area_struct;
 
-#define  __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
 extern int ptep_set_access_flags(struct vm_area_struct *vma,
 				 unsigned long address, pte_t *ptep,
 				 pte_t entry, int dirty);

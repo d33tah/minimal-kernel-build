@@ -18,7 +18,6 @@
 #include <linux/spinlock_types.h>
 
 #include <asm/processor.h>
-#include <asm/barrier.h>
 #define arch_spin_lock(lock)		do { barrier(); (void)(lock); } while (0)
 #define arch_spin_unlock(lock)		do { barrier(); (void)(lock); } while (0)
 #define arch_spin_trylock(lock)		({ barrier(); (void)(lock); 1; })

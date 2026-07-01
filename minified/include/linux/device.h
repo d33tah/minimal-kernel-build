@@ -13,7 +13,6 @@
 #include <linux/kobject.h>
 #include <linux/list.h>
 #include <linux/lockdep.h>
-#include <linux/compiler.h>
 #include <linux/types.h>
 #include <linux/mutex.h>
 #include <linux/atomic.h>

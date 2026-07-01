@@ -28,8 +28,6 @@
 #define _THIS_IP_  ({ __label__ __here; __here: (unsigned long)&&__here; })
 #include <asm/byteorder.h>
 
-#include <linux/const.h>
-
 #define REPEAT_BYTE(x)	((~0ul / 0xff) * (x))
 
 #define READ			0

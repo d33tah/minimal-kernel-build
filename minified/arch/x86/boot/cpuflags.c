@@ -1,7 +1,6 @@
 #include <linux/types.h>
 #include "bitops.h"
 
-#include <asm/required-features.h>
 #include "cpuflags.h"
 
 struct cpu_features cpu;

@@ -60,8 +60,6 @@ extern __printf(3, 0)
 int vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
 extern __printf(3, 0)
 int vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
-extern __printf(2, 3) __malloc
-char *kasprintf(gfp_t gfp, const char *fmt, ...);
 extern __printf(2, 0) __malloc
 char *kvasprintf(gfp_t gfp, const char *fmt, va_list args);
 extern __printf(2, 0)

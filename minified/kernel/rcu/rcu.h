@@ -9,11 +9,6 @@
 /* rcu_seq_ctr/set_state/start/end/endval/snap/current/started/done,
  * rcu_seq_completed_gp, rcu_seq_new_gp, rcu_seq_diff removed - unused */
 
-static inline int debug_rcu_head_queue(struct rcu_head *head)
-{
-	return 0;
-}
-
 static inline void debug_rcu_head_unqueue(struct rcu_head *head)
 {
 }

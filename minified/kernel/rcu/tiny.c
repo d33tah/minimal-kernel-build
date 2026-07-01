@@ -103,7 +103,6 @@ void call_rcu(struct rcu_head *head, rcu_callback_t func)
 {
 	unsigned long flags;
 
-	debug_rcu_head_queue(head);
 	head->func = func;
 	head->next = NULL;
 

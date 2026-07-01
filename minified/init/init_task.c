@@ -4,7 +4,6 @@
 #include <linux/sched/task.h>
 #include <linux/fs.h>
 
-#include <linux/uaccess.h>
 
 static struct signal_struct init_signals = {
 	.thread_head	= LIST_HEAD_INIT(init_task.thread_node),

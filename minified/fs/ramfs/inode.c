@@ -3,7 +3,6 @@
 #include <linux/fs.h>
 #include <linux/pagemap.h>
 #include <linux/init.h>
-#include <linux/string.h>
 #include <linux/ramfs.h>
 #include <linux/slab.h>
 #include <linux/fs_context.h>

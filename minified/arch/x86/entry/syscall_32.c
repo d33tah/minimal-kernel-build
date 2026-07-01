@@ -1,5 +1,4 @@
 
-#include <linux/syscalls.h>
 #include <asm/syscall.h>
 
 #define __SYSCALL_WITH_COMPAT(nr, native, compat)	__SYSCALL(nr, native)

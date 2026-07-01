@@ -1,7 +1,5 @@
 
 #include <linux/fs.h>
-#include <linux/init.h>
-#include <linux/mount.h>
 #include <linux/ramfs.h>
 
 static struct vfsmount *shm_mnt;

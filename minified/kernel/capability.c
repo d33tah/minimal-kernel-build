@@ -2,7 +2,6 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/capability.h>
-#include <linux/mm.h>
 #include <linux/security.h>
 #include <linux/user_namespace.h>
 

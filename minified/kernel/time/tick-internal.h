@@ -10,7 +10,7 @@ struct tick_device {
 };
 
 
-# define TICK_DO_TIMER_NONE	-1
+/* TICK_DO_TIMER_NONE removed - 0-caller object-like const */
 # define TICK_DO_TIMER_BOOT	-2
 
 DECLARE_PER_CPU(struct tick_device, tick_cpu_device);

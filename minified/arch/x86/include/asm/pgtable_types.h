@@ -23,8 +23,7 @@
 #define _PAGE_PRESENT	(_AT(pteval_t, 1) << _PAGE_BIT_PRESENT)
 #define _PAGE_RW	(_AT(pteval_t, 1) << _PAGE_BIT_RW)
 #define _PAGE_USER	(_AT(pteval_t, 1) << _PAGE_BIT_USER)
-#define _PAGE_PWT	(_AT(pteval_t, 1) << _PAGE_BIT_PWT)
-#define _PAGE_PCD	(_AT(pteval_t, 1) << _PAGE_BIT_PCD)
+/* _PAGE_PWT/_PAGE_PCD removed - 0-caller cache-bit consts */
 #define _PAGE_ACCESSED	(_AT(pteval_t, 1) << _PAGE_BIT_ACCESSED)
 #define _PAGE_DIRTY	(_AT(pteval_t, 1) << _PAGE_BIT_DIRTY)
 #define _PAGE_PSE	(_AT(pteval_t, 1) << _PAGE_BIT_PSE)
@@ -188,8 +187,7 @@ static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
 typedef struct { p4d_t p4d; } pud_t;
 
 #define PUD_SHIFT	P4D_SHIFT
-#define PTRS_PER_PUD	1
-#define PUD_SIZE  	(1UL << PUD_SHIFT)
+/* PTRS_PER_PUD/PUD_SIZE removed - 0-caller (folded PUD on 32-bit) */
 
 static inline int p4d_none(p4d_t p4d)		{ return 0; }
 /* p4d_present() removed - constant 1, all callers folded */

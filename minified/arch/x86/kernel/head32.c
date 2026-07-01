@@ -8,7 +8,6 @@ extern asmlinkage void __init start_kernel(void);
 #include <asm/sections.h>
 #include <asm/e820/api.h>
 #include <asm/page.h>
-#include <asm/bios_ebda.h>
 #include <asm/tlbflush.h>
 #include <asm/bootparam_utils.h>
 

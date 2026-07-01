@@ -10,7 +10,6 @@
 /* Removed: #include <asm/kvm_para.h> - stub below */
 #include <asm/vdso.h>
 
-#include <asm/irq_stack.h>
 
 
 DEFINE_SPINLOCK(pgd_lock);

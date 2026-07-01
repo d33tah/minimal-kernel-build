@@ -50,7 +50,6 @@ extern void sched_init_smp(void);
 
 #include <asm/bugs.h>
 #include <asm/setup.h>
-#include <asm/sections.h>
 #include <asm/cacheflush.h>
 
 

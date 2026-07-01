@@ -862,17 +862,6 @@ void d_add(struct dentry *entry, struct inode *inode)
 	__d_add(entry, inode);
 }
 
-
-bool is_subdir(struct dentry *new_dentry, struct dentry *old_dentry)
-{
-	/*
-	 * d_ancestor() was a stub that always returned NULL on this minimal
-	 * kernel (no rename tree to walk), so the only way two dentries can be
-	 * "subdir" related is identity.
-	 */
-	return new_dentry == old_dentry;
-}
-
 static void __init dcache_init_early(void)
 {
 	

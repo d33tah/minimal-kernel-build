@@ -4,7 +4,6 @@
 #include <linux/percpu.h>
 #include <linux/mm.h>
 
-#include <asm/apic.h>
 #include <asm/nospec-branch.h>
 void do_softirq_own_stack(void);
 

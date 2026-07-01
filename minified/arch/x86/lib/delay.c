@@ -1,10 +1,8 @@
 
-#include <linux/sched.h>
 #include <linux/delay.h>
 
 #include <asm/processor.h>
 #include <asm/delay.h>
-#include <asm/timer.h>
 
 
 static void delay_loop(u64 __loops);

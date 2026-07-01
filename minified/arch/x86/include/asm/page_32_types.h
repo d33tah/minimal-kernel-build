@@ -30,9 +30,6 @@
 
 #ifndef __ASSEMBLY__
 
- 
-extern unsigned int __VMALLOC_RESERVE;
-
 extern void find_low_pfn_range(void);
 
 #endif	 

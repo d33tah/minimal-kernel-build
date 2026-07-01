@@ -511,21 +511,14 @@ void *xas_store(struct xa_state *xas, void *entry)
 
 void xas_set_mark(const struct xa_state *xas, xa_mark_t mark)
 {
-	struct xa_node *node = xas->xa_node;
-	unsigned int offset = xas->xa_offset;
-
-	if (xas_invalid(xas))
-		return;
-
-	while (node) {
-		if (node_set_mark(node, offset, mark))
-			return;
-		offset = node->offset;
-		node = xa_parent_locked(xas->xa, node);
-	}
-
-	if (!xa_marked(xas->xa, mark))
-		xa_mark_set(xas->xa, mark);
+	/*
+	 * Runtime-dead on this minimal target: the sole caller (xas_store's
+	 * erase-path mark loop) reaches it only when storing NULL with a
+	 * free-tracking xarray. A bounded qemu -d exec trace confirmed
+	 * xas_set_mark never executes at boot (the erase branch is never
+	 * taken). Body shed; the symbol stays link-live for that conditional
+	 * caller. Mirrors the already-cut xas_clear_mark.
+	 */
 }
 
 void xas_clear_mark(const struct xa_state *xas, xa_mark_t mark)

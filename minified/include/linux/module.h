@@ -35,8 +35,6 @@ struct module;
 struct exception_table_entry;
 
 
-extern int init_module(void);
-extern void cleanup_module(void);
 
 /* CONFIG_MODULES off: built-in-only, MODULE never defined. */
 #define module_init(x)	__initcall(x);

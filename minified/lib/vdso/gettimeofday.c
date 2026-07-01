@@ -21,9 +21,6 @@ static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk,
 			cpu_relax();
 		smp_rmb();
 
-		if (unlikely(!vdso_clocksource_ok(vd)))
-			return -1;
-
 		cycles = __arch_get_hw_counter(vd->clock_mode, vd);
 		if (unlikely(!vdso_cycles_ok(cycles)))
 			return -1;

@@ -165,13 +165,7 @@ static __always_inline const struct vdso_data *__arch_get_vdso_data(void)
 	return __vdso_data;
 }
 
-static inline bool arch_vdso_clocksource_ok(const struct vdso_data *vd)
-{
-	return true;
-}
-#define vdso_clocksource_ok arch_vdso_clocksource_ok
 
- 
 static inline bool arch_vdso_cycles_ok(u64 cycles)
 {
 	return (s64)cycles >= 0;

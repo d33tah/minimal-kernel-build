@@ -9,10 +9,6 @@ asmlinkage long sys_ni_posix_timers(void)
 	return -ENOSYS;
 }
 
-#ifndef SYS_NI
-#define SYS_NI(name)  SYSCALL_ALIAS(sys_##name, sys_ni_posix_timers)
-#endif
-
 /*
  * Only clock_gettime / clock_getres remain wired up: the x86 vDSO fallback
  * (asm/vdso/gettimeofday.h) references __NR_clock_gettime[64] and

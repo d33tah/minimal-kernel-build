@@ -273,9 +273,6 @@ void __init fork_init(void)
 {
 	int i;
 #ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
-#ifndef ARCH_MIN_TASKALIGN
-#define ARCH_MIN_TASKALIGN	0
-#endif
 	int align = max_t(int, L1_CACHE_BYTES, ARCH_MIN_TASKALIGN);
 	unsigned long useroffset, usersize;
 
@@ -946,10 +943,6 @@ pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 
 	return kernel_clone(&args);
 }
-
-#ifndef ARCH_MIN_MMSTRUCT_ALIGN
-#define ARCH_MIN_MMSTRUCT_ALIGN 0
-#endif
 
 static void sighand_ctor(void *data)
 {

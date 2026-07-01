@@ -7,10 +7,6 @@
 
 #include <asm/mmu.h>
 
-#ifndef INIT_MM_CONTEXT
-#define INIT_MM_CONTEXT(name)
-#endif
-
 struct mm_struct init_mm = {
 	.mm_rb		= RB_ROOT,
 	.pgd		= swapper_pg_dir,

@@ -164,24 +164,10 @@ void iput(struct inode *inode)
 {
 }
 
-static int generic_update_time(struct inode *inode, struct timespec64 *time, int flags)
-{
-	if (flags & (S_ATIME | S_CTIME | S_MTIME)) {
-		if (flags & S_ATIME)
-			inode->i_atime = *time;
-		if (flags & S_CTIME)
-			inode->i_ctime = *time;
-		if (flags & S_MTIME)
-			inode->i_mtime = *time;
-	}
-
-	return 0;
-}
-
 int inode_update_time(struct inode *inode, struct timespec64 *time, int flags)
 {
-	/* No live inode_operations sets ->update_time; always generic. */
-	return generic_update_time(inode, time, flags);
+	/* Runtime-dead: no live path reaches a timestamp update. */
+	return 0;
 }
 
 bool atime_needs_update(const struct path *path, struct inode *inode)

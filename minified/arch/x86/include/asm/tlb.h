@@ -42,9 +42,6 @@ struct mmu_gather {
 	unsigned int		cleared_pmds : 1;
 	unsigned int		cleared_puds : 1;
 	unsigned int		cleared_p4ds : 1;
-	unsigned int		vma_exec : 1;
-	unsigned int		vma_huge : 1;
-	unsigned int		vma_pfn  : 1;
 
 	unsigned int		batch_count;
 
@@ -82,7 +79,7 @@ static inline void __tlb_reset_range(struct mmu_gather *tlb)
 
 /* tlb_update_vma_flags removed - 0-caller once tlb_start_vma (its sole
  * caller) was dropped; wrote only the never-read vma_huge/vma_exec/vma_pfn
- * mmu_gather bitfields (left in struct, removing fields is layout-risky) */
+ * mmu_gather bitfields, which are now removed too (0 reads/writes tree-wide) */
 
 static inline unsigned long tlb_get_unmap_shift(struct mmu_gather *tlb)
 {

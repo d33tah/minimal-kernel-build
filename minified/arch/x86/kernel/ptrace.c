@@ -1,7 +1,5 @@
 
-#include <linux/kernel.h>
 #include <linux/sched.h>
-#include <linux/mm.h>
 #include <linux/signal.h>
 
 #include <asm/processor.h>

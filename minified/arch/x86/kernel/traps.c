@@ -16,7 +16,6 @@
 #include <asm/cpu_entry_area.h>
 #include <asm/vdso.h>
 
-#include <asm/processor-flags.h>
 #include <asm/proto.h>
 
 DECLARE_BITMAP(system_vectors, NR_VECTORS);

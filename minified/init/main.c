@@ -22,7 +22,6 @@
 #include <linux/smp.h>
 #include <linux/rcupdate.h>
 #include <linux/cpu.h>
-#include <linux/sched/isolation.h>
 #include <linux/interrupt.h>
 #include <linux/rmap.h>
 #include <linux/vmalloc.h>
@@ -50,7 +49,6 @@ extern void sched_init_smp(void);
 
 #include <asm/bugs.h>
 #include <asm/setup.h>
-#include <asm/cacheflush.h>
 
 
 

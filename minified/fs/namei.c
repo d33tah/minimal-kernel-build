@@ -236,17 +236,6 @@ static void restore_nameidata(void)
 		kfree(now->stack);
 }
 
-static bool path_connected(struct vfsmount *mnt, struct dentry *dentry)
-{
-	struct super_block *sb = mnt->mnt_sb;
-
-	
-	if (mnt->mnt_root == sb->s_root)
-		return true;
-
-	return is_subdir(dentry, mnt->mnt_root);
-}
-
 static void terminate_walk(struct nameidata *nd)
 {
 	/*
@@ -631,84 +620,15 @@ static const char *step_into(struct nameidata *nd, int flags,
 	return NULL;
 }
 
-static struct dentry *follow_dotdot_rcu(struct nameidata *nd,
-					struct inode **inodep,
-					unsigned *seqp)
-{
-	struct dentry *parent, *old;
-
-	if (path_equal(&nd->path, &nd->root))
-		goto in_root;
-	if (unlikely(nd->path.dentry == nd->path.mnt->mnt_root))
-		goto in_root;
-	old = nd->path.dentry;
-	parent = old->d_parent;
-	*inodep = parent->d_inode;
-	*seqp = read_seqcount_begin(&parent->d_seq);
-	if (unlikely(read_seqcount_retry(&old->d_seq, nd->seq)))
-		return ERR_PTR(-ECHILD);
-	if (unlikely(!path_connected(nd->path.mnt, parent)))
-		return ERR_PTR(-ECHILD);
-	return parent;
-in_root:
-	if (unlikely(read_seqretry(&mount_lock, nd->m_seq)))
-		return ERR_PTR(-ECHILD);
-	return NULL;
-}
-
-static struct dentry *follow_dotdot(struct nameidata *nd,
-				 struct inode **inodep,
-				 unsigned *seqp)
-{
-	struct dentry *parent;
-
-	if (path_equal(&nd->path, &nd->root))
-		goto in_root;
-	if (unlikely(nd->path.dentry == nd->path.mnt->mnt_root))
-		goto in_root;
-
-	parent = dget_parent(nd->path.dentry);
-	if (unlikely(!path_connected(nd->path.mnt, parent))) {
-		dput(parent);
-		return ERR_PTR(-ENOENT);
-	}
-	*seqp = 0;
-	*inodep = parent->d_inode;
-	return parent;
-
-in_root:
-	dget(nd->path.dentry);
-	return NULL;
-}
-
 static const char *handle_dots(struct nameidata *nd, int type)
 {
-	if (type == LAST_DOTDOT) {
-		const char *error = NULL;
-		struct dentry *parent;
-		struct inode *inode;
-		unsigned seq;
-
-		if (!nd->root.mnt) {
-			error = ERR_PTR(set_root(nd));
-			if (error)
-				return error;
-		}
-		if (nd->flags & LOOKUP_RCU)
-			parent = follow_dotdot_rcu(nd, &inode, &seq);
-		else
-			parent = follow_dotdot(nd, &inode, &seq);
-		if (IS_ERR(parent))
-			return ERR_CAST(parent);
-		if (unlikely(!parent))
-			error = step_into(nd, WALK_NOFOLLOW,
-					 nd->path.dentry, nd->inode, nd->seq);
-		else
-			error = step_into(nd, WALK_NOFOLLOW,
-					 parent, inode, seq);
-		if (unlikely(error))
-			return error;
-	}
+	/*
+	 * RUNTIME-DEAD ANCHOR-STUB: handle_dots only fires for non-LAST_NORM
+	 * path components ("."/".."). This boot-once artifact only walks
+	 * LAST_NORM paths, so it never runs. Returning NULL is the LAST_DOT
+	 * (stay-put) no-op, behavior-preserving for the zero-dotdot boot.
+	 * follow_dotdot/follow_dotdot_rcu/path_connected cascaded out.
+	 */
 	return NULL;
 }
 

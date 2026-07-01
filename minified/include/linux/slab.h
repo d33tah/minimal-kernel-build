@@ -60,13 +60,7 @@ struct kmem_cache *kmem_cache_create_usercopy(const char *name,
 
 void kfree(const void *objp);
 
-#if defined(ARCH_DMA_MINALIGN) && ARCH_DMA_MINALIGN > 8
-#define ARCH_KMALLOC_MINALIGN ARCH_DMA_MINALIGN
-#define KMALLOC_MIN_SIZE ARCH_DMA_MINALIGN
-#define KMALLOC_SHIFT_LOW ilog2(ARCH_DMA_MINALIGN)
-#else
 #define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long long)
-#endif
 
 #ifndef ARCH_SLAB_MINALIGN
 #define ARCH_SLAB_MINALIGN __alignof__(unsigned long long)

@@ -1,7 +1,6 @@
 #include <linux/smp.h>
 #include <linux/irq.h>
 
-#include <asm/irq_stack.h>
 #include <asm/apic.h>
 #include <asm/irq.h>
 #include <asm/hw_irq.h>

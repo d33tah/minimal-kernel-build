@@ -3,7 +3,6 @@
 #include <linux/io.h>
 #include <linux/pgtable.h>
 
-#include <asm/efi.h>
 #include <asm/fixmap.h>
 #include <asm/tlbflush.h>
 #include <asm/pgalloc.h>

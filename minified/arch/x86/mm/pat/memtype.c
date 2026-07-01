@@ -13,7 +13,6 @@
 #include <asm/msr.h>
 #include <asm/memtype.h>
 
-#include "../mm_internal.h"
 
 #undef pr_fmt
 #define pr_fmt(fmt) "" fmt

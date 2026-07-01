@@ -4,7 +4,6 @@
 
 #include <linux/efi.h>
 
-#include <asm/ucontext.h>
 
 void foo(void);
 

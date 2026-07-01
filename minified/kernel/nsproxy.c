@@ -2,7 +2,6 @@
 #include <linux/slab.h>
 #include <linux/sched/task.h>
 #include <linux/nsproxy.h>
-#include <linux/mnt_namespace.h>
 #include <linux/utsname.h>
 #include <linux/pid_namespace.h>
 

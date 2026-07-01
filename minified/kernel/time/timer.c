@@ -2,7 +2,6 @@
 #include <linux/interrupt.h>
 #include <linux/init.h>
 #include <linux/jiffies.h>
-#include <linux/sched/debug.h>
 
 
 __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;

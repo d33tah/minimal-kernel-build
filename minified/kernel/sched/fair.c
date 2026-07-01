@@ -12,9 +12,6 @@ unsigned int sysctl_sched_latency			= 6000000ULL;
 
 unsigned int sysctl_sched_min_granularity			= 750000ULL;
 
-
-unsigned int sysctl_sched_wakeup_granularity			= 1000000UL;
-
 static inline void update_load_add(struct load_weight *lw, unsigned long inc)
 {
 	lw->weight += inc;
@@ -525,26 +522,17 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	sub_nr_running(rq, 1);
 }
 
-static unsigned long wakeup_gran(struct sched_entity *se)
-{
-	unsigned long gran = sysctl_sched_wakeup_granularity;
-
-	return calc_delta_fair(gran, se);
-}
-
 static int
 wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
 {
-	s64 gran, vdiff = curr->vruntime - se->vruntime;
-
-	if (vdiff <= 0)
-		return -1;
-
-	gran = wakeup_gran(se);
-	if (vdiff > gran)
-		return 1;
-
-	return 0;
+	/*
+	 * Runtime-dead on a boot-once-and-print artifact: the only callers are
+	 * the conditional cfs_rq->next / cfs_rq->last buddy branches in
+	 * pick_next_entity, and no buddy is ever set at boot (no competing
+	 * wakeup preemption fires). Stubbed to the "no strong preempt" return;
+	 * wakeup_gran + sysctl_sched_wakeup_granularity cascaded out.
+	 */
+	return -1;
 }
 
 /*

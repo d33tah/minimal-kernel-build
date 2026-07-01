@@ -30,9 +30,7 @@ struct apic;
 
 extern struct apic *apic;
 
-extern struct apic *__apicdrivers[], *__apicdrivers_end[];
 
- 
 
 
 /* apic_read removed - unused */

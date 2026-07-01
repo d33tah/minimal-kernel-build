@@ -38,7 +38,7 @@ static inline bool lzma_state_is_literal(enum lzma_state state) { return state <
 #define LEN_MID_SYMBOLS (1 << LEN_MID_BITS)
 #define LEN_HIGH_BITS 8
 #define LEN_HIGH_SYMBOLS (1 << LEN_HIGH_BITS)
-#define LEN_SYMBOLS (LEN_LOW_SYMBOLS + LEN_MID_SYMBOLS + LEN_HIGH_SYMBOLS)
+/* LEN_SYMBOLS removed: 0-caller (orphaned when MATCH_LEN_MAX was cut, tick #229) */
 #define DIST_STATES 4
 static inline uint32_t lzma_get_dist_state(uint32_t len) {
 	return len < DIST_STATES + MATCH_LEN_MIN ? len - MATCH_LEN_MIN : DIST_STATES - 1;

@@ -10,7 +10,7 @@
 #include <linux/random.h>
 #include <linux/siphash.h>
 
-#define IPV6_FLOWINFO_MASK		cpu_to_be32(0x0FFFFFFF)
+/* IPV6_FLOWINFO_MASK removed: 0-caller object-like macro (no ip6 flowinfo formatting) */
 
 #include <linux/compiler.h>
 

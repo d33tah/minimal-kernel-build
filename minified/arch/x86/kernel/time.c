@@ -6,7 +6,6 @@
 
 #include <asm/x86_init.h>
 #include <asm/i8259.h>
-#include <asm/timer.h>
 #include <asm/time.h>
 
 static irqreturn_t timer_interrupt(int irq, void *dev_id)

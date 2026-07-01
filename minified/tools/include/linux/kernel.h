@@ -52,11 +52,7 @@
 #define clamp(val, lo, hi)	min((typeof(val))max(val, lo), hi)
 
 #ifndef BUG_ON
-#ifdef NDEBUG
-#define BUG_ON(cond) do { if (cond) {} } while (0)
-#else
 #define BUG_ON(cond) assert(!(cond))
-#endif
 #endif
 #define BUG()	BUG_ON(1)
 

@@ -43,12 +43,6 @@
 # define __same_type(a, b) __builtin_types_compatible_p(typeof(a), typeof(b))
 #endif
 
-#ifdef __ANDROID__
- 
-#undef __always_inline
-#define __always_inline	inline
-#endif
-
 #define __user
 #define __rcu
 #define __read_mostly

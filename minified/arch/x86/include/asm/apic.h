@@ -28,11 +28,6 @@ struct irq_data;
  */
 struct apic;
 
-extern struct apic *apic;
-
-
-
-
 /* apic_read removed - unused */
 /* apic_eoi() was an empty no-op stub; folded out of ack_APIC_irq */
 

@@ -1,10 +1,6 @@
 
-#include <linux/percpu.h>
-
 #include <linux/pgtable.h>
 
-#include <asm/cpu_entry_area.h>
-#include <asm/fixmap.h>
 #include <asm/desc.h>
 
 static DEFINE_PER_CPU_PAGE_ALIGNED(struct entry_stack_page, entry_stack_storage);

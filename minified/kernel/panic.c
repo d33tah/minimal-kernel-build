@@ -97,11 +97,7 @@ void add_taint(unsigned flag, enum lockdep_ok lockdep_ok)
 }
 
 /* Removed: oops_may_print - never called */
-
-void oops_enter(void)
-{
-	debug_locks_off();
-}
+/* Removed: oops_enter - 0-caller (sole caller oops_begin stubbed tick #320) */
 
 void oops_exit(void)
 {

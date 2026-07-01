@@ -27,30 +27,13 @@ typedef unsigned long	__kernel_ulong_t;
 typedef __kernel_ulong_t __kernel_ino_t;
 #endif
 
-#ifndef __kernel_mode_t
-typedef unsigned int	__kernel_mode_t;
-#endif
-
 #ifndef __kernel_pid_t
 typedef int		__kernel_pid_t;
-#endif
-
-#ifndef __kernel_ipc_pid_t
-typedef int		__kernel_ipc_pid_t;
-#endif
-
-#ifndef __kernel_uid_t
-typedef unsigned int	__kernel_uid_t;
-typedef unsigned int	__kernel_gid_t;
 #endif
 
 #ifndef __kernel_uid32_t
 typedef unsigned int	__kernel_uid32_t;
 typedef unsigned int	__kernel_gid32_t;
-#endif
-
-#ifndef __kernel_old_dev_t
-typedef unsigned int	__kernel_old_dev_t;
 #endif
 
 /* 32-bit only kernel */

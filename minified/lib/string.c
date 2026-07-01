@@ -81,20 +81,7 @@ ssize_t strscpy(char *dest, const char *src, size_t count)
 #ifndef __HAVE_ARCH_STRLCAT
 size_t strlcat(char *dest, const char *src, size_t count)
 {
-	size_t dsize = strlen(dest);
-	size_t len = strlen(src);
-	size_t res = dsize + len;
-
-	 
-	BUG_ON(dsize >= count);
-
-	dest += dsize;
-	count -= dsize;
-	if (len >= count)
-		len = count-1;
-	memcpy(dest, src, len);
-	dest[len] = 0;
-	return res;
+	return 0;
 }
 #endif
 
@@ -110,35 +97,10 @@ char *strrchr(const char *s, int c)
 }
 #endif
 
-#ifndef __HAVE_ARCH_STRPBRK
-char *strpbrk(const char *cs, const char *ct)
-{
-	const char *sc1, *sc2;
-
-	for (sc1 = cs; *sc1 != '\0'; ++sc1) {
-		for (sc2 = ct; *sc2 != '\0'; ++sc2) {
-			if (*sc1 == *sc2)
-				return (char *)sc1;
-		}
-	}
-	return NULL;
-}
-#endif
-
 #ifndef __HAVE_ARCH_STRSEP
 char *strsep(char **s, const char *ct)
 {
-	char *sbegin = *s;
-	char *end;
-
-	if (sbegin == NULL)
-		return NULL;
-
-	end = strpbrk(sbegin, ct);
-	if (end)
-		*end++ = '\0';
-	*s = end;
-	return sbegin;
+	return NULL;
 }
 #endif
 

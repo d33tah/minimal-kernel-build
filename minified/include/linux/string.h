@@ -28,9 +28,6 @@ extern char * strrchr(const char *,int);
 extern char * __must_check skip_spaces(const char *);
 
 
-#ifndef __HAVE_ARCH_STRPBRK
-extern char * strpbrk(const char *,const char *);
-#endif
 #ifndef __HAVE_ARCH_STRSEP
 extern char * strsep(char **,const char *);
 #endif

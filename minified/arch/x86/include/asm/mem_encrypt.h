@@ -27,8 +27,6 @@ void __init mem_encrypt_init(void);
  
 #define __sme_pa(x)		(__pa(x) | sme_me_mask)
 
-extern char __start_bss_decrypted[], __end_bss_decrypted[], __start_bss_decrypted_unused[];
-
 #endif
 
 #endif	 

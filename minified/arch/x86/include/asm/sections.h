@@ -21,10 +21,6 @@ extern char __irqentry_text_start[], __irqentry_text_end[];
 extern char __softirqentry_text_start[], __softirqentry_text_end[];
 extern char __start_once[], __end_once[];
 
-extern char __ctors_start[], __ctors_end[];
-
-extern char __start_opd[], __end_opd[];
-
 extern char __noinstr_text_start[], __noinstr_text_end[];
 
 extern __visible const void __nosave_begin, __nosave_end;

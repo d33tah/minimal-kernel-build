@@ -9,7 +9,6 @@
 #include <asm/time.h>
 #include <asm/irq.h>
 #define hpet_readl(a) 0
-#define default_setup_hpet_msi	NULL
 #include <asm/memtype.h>
 #include <asm/tsc.h>
 #include <asm/mach_traps.h>

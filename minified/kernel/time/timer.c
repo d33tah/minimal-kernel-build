@@ -23,7 +23,6 @@ __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 #define WHEEL_SIZE	(LVL_SIZE * LVL_DEPTH)
 
 # define NR_BASES	1
-# define BASE_STD	0
 
 struct timer_base {
 	raw_spinlock_t		lock;

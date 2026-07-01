@@ -16,7 +16,6 @@ __mutex_init(struct mutex *lock, const char *name, struct lock_class_key *key)
 	debug_mutex_init(lock, name, key);
 }
 
-#define MUTEX_FLAG_WAITERS	0x01
 #define MUTEX_FLAG_HANDOFF	0x02
 #define MUTEX_FLAG_PICKUP	0x04
 

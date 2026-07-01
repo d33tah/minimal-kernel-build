@@ -578,7 +578,6 @@ generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 }
 
 
-#define MMAP_LOTSAMISS  (100)
 
 vm_fault_t filemap_fault(struct vm_fault *vmf)
 {

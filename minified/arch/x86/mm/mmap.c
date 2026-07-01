@@ -16,7 +16,6 @@ static unsigned long stack_maxrandom_size(unsigned long task_size)
 	return max;
 }
 
-# define mmap32_rnd_bits  mmap_rnd_bits
 # define mmap64_rnd_bits  mmap_rnd_bits
 
 #define SIZE_128M    (128 * 1024 * 1024UL)

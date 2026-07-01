@@ -487,7 +487,6 @@ void __init e820__finish_early_params(void)
  * allocate_resource/lookup_resource/region_intersects readers, no /proc/iomem).
  */
 
-#define MAX_RESOURCE_SIZE ((resource_size_t)-1)
 
 char *__init e820__memory_setup_default(void)
 {

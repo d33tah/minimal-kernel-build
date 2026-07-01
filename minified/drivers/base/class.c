@@ -1,6 +1,5 @@
 
 #include <linux/device/class.h>
-#include <linux/device.h>
 #include <linux/init.h>
 #include <linux/err.h>
 #include <linux/slab.h>

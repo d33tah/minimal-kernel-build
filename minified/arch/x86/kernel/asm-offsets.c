@@ -12,7 +12,6 @@
 #include <asm/bootparam.h>
 /* --- 2025-12-07 20:29 --- Inlined suspend_32.h */
 #include <asm/desc.h>
-#include <asm/fpu/api.h>
 struct saved_context {
 	u16 gs;
 	unsigned long cr0, cr2, cr3, cr4;
@@ -29,7 +28,6 @@ struct saved_context {
 } __attribute__((packed));
 extern char core_restore_code[];
 extern char restore_registers[];
-#include <asm/tlbflush.h>
 /* TDX not used in minimal kernel */
 
 

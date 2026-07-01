@@ -43,12 +43,8 @@ static noinline void
 page_fault_oops(struct pt_regs *regs, unsigned long error_code,
 		unsigned long address)
 {
-	/* Simplified: just die with minimal output */
-	unsigned long flags = oops_begin();
-	int sig = SIGKILL;
-	if (__die("Oops", regs, error_code))
-		sig = 0;
-	oops_end(flags, regs, sig);
+	/* Anchor-stub: unhandled-kernel-fault oops path, runtime-dead in a
+	 * healthy boot. Kept link-live for its callers in this file. */
 }
 
 static noinline void

@@ -5,7 +5,6 @@
 #include <linux/fs.h>
 
 #include <linux/uaccess.h>
-#include <asm/unistd.h>
 
 static int warn_unsupported(struct file *file, const char *op)
 {

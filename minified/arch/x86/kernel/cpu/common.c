@@ -3,7 +3,6 @@
 
 #include <linux/kernel.h>
 #include <linux/percpu.h>
-#include <linux/string.h>
 #include <linux/ctype.h>
 #include <linux/delay.h>
 #include <linux/sched/mm.h>

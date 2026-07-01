@@ -1,5 +1,4 @@
 
-#include <linux/time.h>
 #include <linux/mm.h>
 
 int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,

@@ -4,7 +4,6 @@
 #include <linux/cache.h>
 #include <linux/compiler.h>
 #include <asm/cacheflush.h>
-#include <asm/tlbflush.h>
 #include <asm/page.h>
 
 

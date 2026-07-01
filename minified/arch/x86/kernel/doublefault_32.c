@@ -1,6 +1,5 @@
 #include <linux/mm.h>
 #include <linux/sched/debug.h>
-#include <linux/init_task.h>
 
 #include <asm/processor.h>
 #include <asm/desc.h>

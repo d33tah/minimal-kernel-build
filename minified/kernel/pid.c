@@ -3,7 +3,6 @@
 #include <linux/init.h>
 #include <linux/rculist.h>
 #include <linux/pid_namespace.h>
-#include <linux/init_task.h>
 #include <linux/refcount.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>

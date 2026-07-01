@@ -1,7 +1,6 @@
 
 #include <linux/entry-common.h>
 #include <linux/resume_user_mode.h>
-#include <linux/init_task.h>
 
 
 

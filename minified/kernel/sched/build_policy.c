@@ -5,11 +5,7 @@
 
 #include <linux/init_task.h>
 
-#include <linux/sched/types.h>
-
 #include "sched.h"
-
-#include "pelt.h"
 
 
 #include "idle.c"

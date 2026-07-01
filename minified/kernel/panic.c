@@ -90,19 +90,9 @@ void panic(const char *fmt, ...)
 
 
 
-void add_taint(unsigned flag, enum lockdep_ok lockdep_ok)
-{
-	if (lockdep_ok == LOCKDEP_NOW_UNRELIABLE)
-		__debug_locks_off();
-}
-
 /* Removed: oops_may_print - never called */
 /* Removed: oops_enter - 0-caller (sole caller oops_begin stubbed tick #320) */
-
-void oops_exit(void)
-{
-	kmsg_dump(KMSG_DUMP_OOPS);
-}
+/* Removed: add_taint + oops_exit - 0-caller after oops_end anchor-stubbed (tick #322) */
 
 
 

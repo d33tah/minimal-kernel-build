@@ -9,8 +9,8 @@ struct pt_regs;
 extern long (*panic_blink)(int state);
 __printf(1, 2)
 void panic(const char *fmt, ...) __noreturn __cold;
-extern void oops_exit(void);
 /* Removed: oops_may_print - never called */
+/* Removed: oops_exit + add_taint - 0-caller after oops_end stubbed (tick #322) */
 
 /* Removed: panic_timeout, panic_on_oops - always 0 (CONFIG), gated only dead branches */
 /* Removed: panic_on_taint_nousertaint, sysctl_panic_on_rcu_stall,
@@ -28,7 +28,5 @@ enum lockdep_ok {
 	LOCKDEP_STILL_OK,
 	LOCKDEP_NOW_UNRELIABLE,
 };
-
-extern void add_taint(unsigned flag, enum lockdep_ok);
 
 #endif

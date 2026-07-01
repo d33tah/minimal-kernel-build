@@ -20,39 +20,17 @@ void show_stack_regs(struct pt_regs *regs)
 	show_trace_log_lvl(current, regs, NULL, KERN_DEFAULT);
 }
 
-static arch_spinlock_t die_lock = __ARCH_SPIN_LOCK_UNLOCKED;
-static int die_owner = -1;
-static unsigned int die_nest_count;
-
 unsigned long oops_begin(void)
 {
 	return 0;
 }
 NOKPROBE_SYMBOL(oops_begin);
 
-void __noreturn rewind_stack_and_make_dead(int signr);
-
+/* Anchor-stub: the die/oops crash path is runtime-dead in a healthy
+ * boot+print+stay-alive kernel (oops_begin already stubbed, tick #320).
+ * Kept link-live for its crash-path callers (die/die_addr/page_fault_oops). */
 void oops_end(unsigned long flags, struct pt_regs *regs, int signr)
 {
-	bust_spinlocks(0);
-	die_owner = -1;
-	add_taint(TAINT_DIE, LOCKDEP_NOW_UNRELIABLE);
-	die_nest_count--;
-	if (!die_nest_count)
-		 
-		arch_spin_unlock(&die_lock);
-	raw_local_irq_restore(flags);
-	oops_exit();
-
-	 
-	__show_regs(&exec_summary_regs, SHOW_REGS_ALL, KERN_DEFAULT);
-
-	if (!signr)
-		return;
-	if (in_interrupt())
-		panic("Fatal exception in interrupt");
-
-	rewind_stack_and_make_dead(signr);
 }
 NOKPROBE_SYMBOL(oops_end);
 

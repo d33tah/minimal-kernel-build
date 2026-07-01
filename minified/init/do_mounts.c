@@ -2,7 +2,6 @@
 #include <linux/mount.h>
 #include <linux/init.h>
 #include <linux/fs.h>
-#include <linux/fs_struct.h>
 #include <linux/ramfs.h>
 
 /*

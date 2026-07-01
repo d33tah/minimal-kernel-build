@@ -1,7 +1,6 @@
 #include <linux/kernel.h>
 #include <linux/mm.h>
 
-#include <asm/cpu_entry_area.h>
 #include <asm/fixmap.h>
 #include <asm/tlb.h>
 #include <asm/tlbflush.h>

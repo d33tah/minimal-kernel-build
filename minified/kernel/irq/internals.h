@@ -79,12 +79,7 @@ static inline void irq_settings_set_no_balancing(struct irq_desc *desc)
 	desc->status_use_accessors |= _IRQ_NO_BALANCING;
 }
 
-static inline void
-irq_settings_set_trigger_mask(struct irq_desc *desc, u32 mask)
-{
-	desc->status_use_accessors &= ~IRQ_TYPE_SENSE_MASK;
-	desc->status_use_accessors |= mask & IRQ_TYPE_SENSE_MASK;
-}
+/* irq_settings_set_trigger_mask removed - 0-caller */
 
 /* irq_settings_clr_level + irq_settings_set_level removed - 0-caller */
 

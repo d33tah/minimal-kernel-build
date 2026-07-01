@@ -18,7 +18,6 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/processor.h>
 #include <asm/tlbflush.h>
 #include <asm/debugreg.h>
-#include <asm/sections.h>
 #include <asm/proto.h>
 #include <asm/desc.h>
 #include <asm/fpu/api.h>

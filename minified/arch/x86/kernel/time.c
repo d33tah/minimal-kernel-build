@@ -3,7 +3,6 @@
 #include <linux/clockchips.h>
 #include <linux/interrupt.h>
 #include <linux/irq.h>
-#include <linux/i8253.h>
 
 #include <asm/x86_init.h>
 #include <asm/i8259.h>

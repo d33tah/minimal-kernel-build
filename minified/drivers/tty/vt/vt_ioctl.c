@@ -5,10 +5,6 @@
 #include <linux/vt_kern.h>
 
 
-
-#include <linux/kbd_kern.h>
-
-
 void reset_vc(struct vc_data *vc)
 {
 	vc->vc_mode = KD_TEXT;

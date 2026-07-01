@@ -4,7 +4,6 @@
 
 #include <asm/tlbflush.h>
 #include <asm/mmu_context.h>
-#include <asm/apic.h>
 
 
 # define STATIC_NOPV			static

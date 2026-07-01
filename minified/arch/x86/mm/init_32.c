@@ -8,7 +8,6 @@
 
 #include <asm/bios_ebda.h>
 #include <asm/fixmap.h>
-#include <asm/apic.h>
 #include <asm/tlb.h>
 #include <asm/tlbflush.h>
 #include <asm/sections.h>

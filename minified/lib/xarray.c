@@ -49,10 +49,6 @@ static inline bool node_clear_mark(struct xa_node *node, unsigned int offset,
 	return __test_and_clear_bit(offset, node_marks(node, mark));
 }
 
-static inline bool node_any_mark(struct xa_node *node, xa_mark_t mark)
-{
-	return !bitmap_empty(node_marks(node, mark), XA_CHUNK_SIZE);
-}
 
 static inline void node_mark_all(struct xa_node *node, xa_mark_t mark)
 {
@@ -534,24 +530,13 @@ void xas_set_mark(const struct xa_state *xas, xa_mark_t mark)
 
 void xas_clear_mark(const struct xa_state *xas, xa_mark_t mark)
 {
-	struct xa_node *node = xas->xa_node;
-	unsigned int offset = xas->xa_offset;
-
-	if (xas_invalid(xas))
-		return;
-
-	while (node) {
-		if (!node_clear_mark(node, offset, mark))
-			return;
-		if (node_any_mark(node, mark))
-			return;
-
-		offset = node->offset;
-		node = xa_parent_locked(xas->xa, node);
-	}
-
-	if (xa_marked(xas->xa, mark))
-		xa_mark_clear(xas->xa, mark);
+	/*
+	 * Runtime-dead on this minimal target: both callers reach it only
+	 * conditionally (xas_store's erase-path mark-clear loop; ida_alloc
+	 * only when a bitmap fills up). A bounded qemu -d exec trace confirmed
+	 * xas_clear_mark never executes at boot. Body shed; the symbol stays
+	 * link-live for the two conditional callers.
+	 */
 }
 
 

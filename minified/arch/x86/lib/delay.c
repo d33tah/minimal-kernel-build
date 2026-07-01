@@ -1,6 +1,5 @@
 
 #include <linux/sched.h>
-#include <linux/timex.h>
 #include <linux/delay.h>
 
 #include <asm/processor.h>

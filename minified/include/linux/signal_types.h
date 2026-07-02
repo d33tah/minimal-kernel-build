@@ -26,13 +26,8 @@ struct sigpending {
 };
 
 struct sigaction {
-#ifndef __ARCH_HAS_IRIX_SIGACTION
 	__sighandler_t	sa_handler;
 	unsigned long	sa_flags;
-#else
-	unsigned int	sa_flags;
-	__sighandler_t	sa_handler;
-#endif
 #ifdef __ARCH_HAS_SA_RESTORER
 	__sigrestore_t sa_restorer;
 #endif

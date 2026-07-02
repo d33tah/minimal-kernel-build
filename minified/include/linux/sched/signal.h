@@ -131,8 +131,6 @@ extern void __cleanup_sighand(struct sighand_struct *);
 #define while_each_thread(g, t) \
 	while ((t = next_thread(t)) != g)
 
-#define __for_each_thread(signal, t)	\
-	list_for_each_entry_rcu(t, &(signal)->thread_head, thread_node)
 
 
 

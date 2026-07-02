@@ -101,9 +101,6 @@ static inline int list_empty(const struct list_head *head)
 #define list_first_entry(ptr, type, member) \
 	list_entry((ptr)->next, type, member)
 
-#define list_last_entry(ptr, type, member) \
-	list_entry((ptr)->prev, type, member)
-
 #define list_first_entry_or_null(ptr, type, member) ({ \
 	struct list_head *head__ = (ptr); \
 	struct list_head *pos__ = READ_ONCE(head__->next); \
@@ -113,9 +110,6 @@ static inline int list_empty(const struct list_head *head)
 #define list_next_entry(pos, member) \
 	list_entry((pos)->member.next, typeof(*(pos)), member)
 
-
-#define list_prev_entry(pos, member) \
-	list_entry((pos)->member.prev, typeof(*(pos)), member)
 
 #define list_for_each(pos, head) \
 	for (pos = (head)->next; !list_is_head(pos, (head)); pos = pos->next)

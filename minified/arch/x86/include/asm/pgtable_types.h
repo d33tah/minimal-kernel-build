@@ -178,8 +178,6 @@ typedef struct { p4d_t p4d; } pud_t;
 
 static inline int p4d_none(p4d_t p4d)		{ return 0; }
 /* p4d_present() removed - constant 1, all callers folded */
-#define pud_ERROR(pud)				(p4d_ERROR((pud).p4d))
-
 #define set_p4d(p4dptr, p4dval)	set_pud((pud_t *)(p4dptr), (pud_t) { p4dval })
 
 static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)

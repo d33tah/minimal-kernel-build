@@ -204,15 +204,9 @@ void __init __weak pgtable_cache_init(void) { }
 
 void __init __weak trap_init(void) { }
 
-static void __init report_meminit(void)
-{
-	/* Stub: mem auto-init reporting not needed for minimal kernel */
-}
-
 static void __init mm_init(void)
 {
 
-	report_meminit();
 	mem_init();
 	mem_init_print_info();
 	kmem_cache_init();

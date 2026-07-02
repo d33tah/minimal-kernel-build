@@ -227,11 +227,6 @@ void __init __weak arch_call_rest_init(void)
 	rest_init();
 }
 
-static void __init print_unknown_bootoptions(void)
-{
-	/* Stub: boot option reporting not needed for minimal kernel */
-}
-
 asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 {
 	char *command_line;
@@ -262,8 +257,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		   static_command_line, __start___param,
 		   __stop___param - __start___param,
 		   -1, -1, NULL, NULL);
-	print_unknown_bootoptions();
-
 
 	setup_log_buf(0);
 	vfs_caches_init_early();

@@ -44,7 +44,6 @@ setup-$(CONFIG_X86_APM_BOOT) += apm.o
 # probed, and video-bios.o should typically be last.
 setup-y		+= video-vga.o
 setup-y		+= video-vesa.o
-setup-y		+= video-bios.o
 
 targets		+= $(setup-y)
 hostprogs	:= tools/build

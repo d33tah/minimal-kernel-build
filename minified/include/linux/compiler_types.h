@@ -108,13 +108,16 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 #endif
 
 
-#if defined(CC_USING_HOTPATCH)
-#define notrace			__attribute__((hotpatch(0, 0)))
-#elif defined(CC_USING_PATCHABLE_FUNCTION_ENTRY)
-#define notrace			__attribute__((patchable_function_entry(0, 0)))
-#else
+/*
+ * notrace selector: the CC_USING_HOTPATCH and CC_USING_PATCHABLE_FUNCTION_ENTRY
+ * arms are statically dead in this build. Neither token is ever -D'd here:
+ * CC_USING_HOTPATCH is only defined by arch/s390's Makefile (absent), and
+ * CC_USING_PATCHABLE_FUNCTION_ENTRY by a CONFIG-gated top-Makefile rule that is
+ * likewise absent. The ftrace block in the top Makefile only ever -D's
+ * CC_USING_NOP_MCOUNT / CC_USING_FENTRY. So only the __no_instrument_function__
+ * arm was ever live; keep it unconditionally.
+ */
 #define notrace			__attribute__((__no_instrument_function__))
-#endif
 
 #define inline inline __gnu_inline __inline_maybe_unused notrace
 

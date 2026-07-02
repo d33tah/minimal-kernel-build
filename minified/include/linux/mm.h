@@ -457,16 +457,18 @@ static inline bool is_cow_mapping(vm_flags_t flags)
 	return (flags & (VM_SHARED | VM_MAYWRITE)) == VM_MAYWRITE;
 }
 
-#ifdef NODE_NOT_IN_PAGE_FLAGS
-extern int page_to_nid(const struct page *page);
-#else
+/*
+ * NODES_SHIFT is unconditionally 0 in this tree (linux/numa.h), so
+ * NODE_NOT_IN_PAGE_FLAGS is never defined (page-flags-layout.h) and the
+ * out-of-line extern arm was statically dead; the node id always lives in
+ * page->flags, so page_to_nid() is always this inline.
+ */
 static inline int page_to_nid(const struct page *page)
 {
 	struct page *p = (struct page *)page;
 
 	return (PF_POISONED_CHECK(p)->flags >> NODES_PGSHIFT) & NODES_MASK;
 }
-#endif
 
 static inline int folio_nid(const struct folio *folio)
 {

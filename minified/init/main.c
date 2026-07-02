@@ -69,7 +69,6 @@ char __initdata boot_command_line[COMMAND_LINE_SIZE];
 char *saved_command_line;
 static char *static_command_line;
 
-static char *execute_command;
 static char *ramdisk_execute_command = "/init";
 
 bool static_key_initialized __read_mostly;
@@ -96,8 +95,10 @@ unsigned long loops_per_jiffy = (1<<12);
  * The init=/rdinit= __setup handlers were removed with the cmdline-parse
  * cluster: the .init.setup section (__setup_start..__setup_end) is no longer
  * iterated by any code (obsolete_checksetup/unknown_bootoption are gone), so
- * these handlers were provably never invoked on ANY boot. execute_command
- * stays NULL and ramdisk_execute_command keeps its "/init" default.
+ * these handlers were provably never invoked on ANY boot. With the init=
+ * handler gone there is no writer of execute_command, so its NULL fallback
+ * branch in kernel_init was dead and has been removed; ramdisk_execute_command
+ * keeps its "/init" default and drives the honest boot.
  */
 static void __init setup_command_line(char *command_line)
 {
@@ -425,15 +426,6 @@ static int __ref kernel_init(void *unused)
 			return 0;
 		pr_err("Failed to execute %s (error %d)\n",
 		       ramdisk_execute_command, ret);
-	}
-
-	 
-	if (execute_command) {
-		ret = run_init_process(execute_command);
-		if (!ret)
-			return 0;
-		panic("Requested init %s failed (error %d).",
-		      execute_command, ret);
 	}
 
 	if (!try_to_run_init_process("/sbin/init") ||

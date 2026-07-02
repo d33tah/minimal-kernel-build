@@ -32,10 +32,6 @@ struct rb_root_cached {
 
 #define RB_EMPTY_NODE(node)  \
 	((node)->__rb_parent_color == (unsigned long)(node))
-#define RB_CLEAR_NODE(node)  \
-	((node)->__rb_parent_color = (unsigned long)(node))
-
-
 extern void rb_insert_color(struct rb_node *, struct rb_root *);
 extern void rb_erase(struct rb_node *, struct rb_root *);
 
@@ -52,10 +48,6 @@ static inline void rb_link_node(struct rb_node *node, struct rb_node *parent,
 }
 
 
-#define rb_entry_safe(ptr, type, member) \
-	({ typeof(ptr) ____ptr = (ptr); \
-	   ____ptr ? rb_entry(____ptr, type, member) : NULL; \
-	})
 
 
 #define rb_first_cached(root) (root)->rb_leftmost

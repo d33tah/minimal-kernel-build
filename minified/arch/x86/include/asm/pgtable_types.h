@@ -152,7 +152,6 @@ typedef struct { pgd_t pgd; } p4d_t;
 static inline int pgd_none(pgd_t pgd)		{ return 0; }
 static inline int pgd_bad(pgd_t pgd)		{ return 0; }
 /* pgd_present() removed - constant 1, all callers folded */
-#define p4d_ERROR(p4d)				(pgd_ERROR((p4d).pgd))
 
 #define set_pgd(pgdptr, pgdval)	set_p4d((p4d_t *)(pgdptr), (p4d_t) { pgdval })
 

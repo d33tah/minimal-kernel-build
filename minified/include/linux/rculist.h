@@ -34,13 +34,6 @@ static inline void list_add_tail_rcu(struct list_head *new,
 	container_of(READ_ONCE(ptr), type, member)
 
 
-#define list_for_each_entry_rcu(pos, head, member, cond...)		\
-	for (__list_check_rcu(dummy, ## cond, 0),			\
-	     pos = list_entry_rcu((head)->next, typeof(*pos), member);	\
-		&pos->member != (head);					\
-		pos = list_entry_rcu(pos->member.next, typeof(*pos), member))
-
-
 
 #define hlist_first_rcu(head)	(*((struct hlist_node __rcu **)(&(head)->first)))
 

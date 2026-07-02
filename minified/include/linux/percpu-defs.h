@@ -200,12 +200,6 @@ do {									\
 })
 
 
-#define __this_cpu_cmpxchg(pcp, oval, nval)				\
-({									\
-	raw_cpu_cmpxchg(pcp, oval, nval);				\
-})
-
-
 #define __this_cpu_inc(pcp)		__this_cpu_add(pcp, 1)
 
 #define this_cpu_read(pcp)		__pcpu_size_call_return(this_cpu_read_, pcp)

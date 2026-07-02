@@ -25,9 +25,7 @@
  
 #define VIDEO_RECALC 0x8000
 
-void store_screen(void);
 
- 
 
 struct mode_info {
 	u16 mode;		 

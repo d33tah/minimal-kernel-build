@@ -62,27 +62,9 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 #ifdef __clang__
 /* --- 2025-12-08 00:18 --- Inlined from compiler-clang.h */
 #define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)
-#if __has_feature(address_sanitizer) || __has_feature(hwaddress_sanitizer)
-#define __SANITIZE_ADDRESS__
-#define __no_sanitize_address \
-		__attribute__((no_sanitize("address", "hwaddress")))
-#else
 #define __no_sanitize_address
-#endif
-
-#if __has_feature(thread_sanitizer)
-#define __SANITIZE_THREAD__
-#define __no_sanitize_thread \
-		__attribute__((no_sanitize("thread")))
-#else
 #define __no_sanitize_thread
-#endif
-
-#if __has_feature(coverage_sanitizer)
-#define __no_sanitize_coverage __attribute__((no_sanitize("coverage")))
-#else
 #define __no_sanitize_coverage
-#endif
 
 #define __nocfi		__attribute__((__no_sanitize__("cfi")))
 

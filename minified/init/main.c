@@ -14,8 +14,6 @@
 #include <linux/initrd.h>
 #include <linux/memblock.h>
 
-#define BOOTCONFIG_MAGIC	"#BOOTCONFIG\n"
-#define BOOTCONFIG_MAGIC_LEN	12
 #include <linux/console.h>
 #include <linux/percpu.h>
 #include <linux/security.h>

@@ -31,9 +31,6 @@ __visible unsigned long mmu_cr4_features __ro_after_init;
 
 struct screen_info screen_info;
 
-#define RAMDISK_IMAGE_START_MASK	0x07FF
-#define RAMDISK_PROMPT_FLAG		0x8000
-#define RAMDISK_LOAD_FLAG		0x4000
 
 static char __initdata command_line[COMMAND_LINE_SIZE];
 

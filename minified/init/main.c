@@ -171,15 +171,6 @@ noinline void __ref rest_init(void)
 
 void __init parse_early_param(void)
 {
-	static int done __initdata;
-	static char tmp_cmdline[COMMAND_LINE_SIZE] __initdata;
-
-	if (done)
-		return;
-
-	 
-	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
-	done = 1;
 }
 
 void __init __weak arch_post_acpi_subsys_init(void) { }

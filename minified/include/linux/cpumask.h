@@ -13,11 +13,14 @@ typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS); } cpumask_t;
 
 #define cpumask_pr_args(maskp)		nr_cpu_ids, cpumask_bits(maskp)
 
-#if NR_CPUS == 1
+/*
+ * NR_CPUS is fixed to 1 in this build (CONFIG_NR_CPUS=1, unconditional in
+ * autoconf.h + threads.h), so `#if NR_CPUS == 1` is always true; the
+ * multi-CPU `#else extern unsigned int nr_cpu_ids;` arm was statically dead
+ * (no out-of-line definition of nr_cpu_ids exists anyway). Emit the fixed
+ * one-CPU value unconditionally.
+ */
 #define nr_cpu_ids		1U
-#else
-extern unsigned int nr_cpu_ids;
-#endif
 
 #define nr_cpumask_bits	((unsigned int)NR_CPUS)
 

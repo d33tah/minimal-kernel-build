@@ -46,43 +46,12 @@ __visible noinstr void do_int80_syscall_32(struct pt_regs *regs)
 
 __visible noinstr long do_fast_syscall_32(struct pt_regs *regs)
 {
-	unsigned long landing_pad = (unsigned long)current->mm->context.vdso +
-					vdso_image_32.sym_int80_landing_pad;
-	int nr;
-	int res;
-
-
-	regs->ip = landing_pad;
-
-	nr = syscall_32_enter(regs);
-
-
-	syscall_enter_from_user_mode_prepare(regs);
-
-	res = get_user(*(u32 *)&regs->bp,
-		       (u32 __user __force *)(unsigned long)(u32)regs->sp);
-
-	if (res) {
-
-		regs->ax = -EFAULT;
-
-		local_irq_disable();
-		irqentry_exit_to_user_mode(regs);
-		return 0;
-	}
-
-	nr = syscall_enter_from_user_mode_work(regs, nr);
-
-
-	do_syscall_32_irqs_on(regs, nr);
-
-	syscall_exit_to_user_mode(regs);
-
-	 
-	return static_cpu_has(X86_FEATURE_SEP) &&
-		regs->cs == __USER_CS && regs->ss == __USER_DS &&
-		regs->ip == landing_pad &&
-		(regs->flags & (X86_EFLAGS_RF | X86_EFLAGS_TF | X86_EFLAGS_VM)) == 0;
+	/*
+	 * Runtime-dead in this minimal build: userspace enters via int 0x80
+	 * (do_int80_syscall_32), never via SYSENTER/SYSCALL. Body stubbed;
+	 * symbol retained for the (never-executed) asm SYSENTER entry stubs.
+	 */
+	return 0;
 }
 
 __visible noinstr long do_SYSENTER_32(struct pt_regs *regs)

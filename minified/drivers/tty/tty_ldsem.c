@@ -3,11 +3,13 @@
 #include <linux/tty.h>
 
 
-#if BITS_PER_LONG == 64
-# define LDSEM_ACTIVE_MASK	0xffffffffL
-#else
-# define LDSEM_ACTIVE_MASK	0x0000ffffL
-#endif
+/*
+ * BITS_PER_LONG is unconditionally 32 in this x86-32 build
+ * (arch/x86/include/uapi/asm/bitsperlong.h), so the `#if BITS_PER_LONG == 64`
+ * arm (LDSEM_ACTIVE_MASK 0xffffffffL) was statically dead. Emit the 32-bit
+ * mask unconditionally.
+ */
+#define LDSEM_ACTIVE_MASK	0x0000ffffL
 
 #define LDSEM_UNLOCKED		0L
 #define LDSEM_ACTIVE_BIAS	1L

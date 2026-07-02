@@ -44,16 +44,6 @@ __visible noinstr void do_int80_syscall_32(struct pt_regs *regs)
 	syscall_exit_to_user_mode(regs);
 }
 
-__visible noinstr long do_fast_syscall_32(struct pt_regs *regs)
-{
-	/*
-	 * Runtime-dead in this minimal build: userspace enters via int 0x80
-	 * (do_int80_syscall_32), never via SYSENTER/SYSCALL. Body stubbed;
-	 * symbol retained for the (never-executed) asm SYSENTER entry stubs.
-	 */
-	return 0;
-}
-
 __visible noinstr long do_SYSENTER_32(struct pt_regs *regs)
 {
 	/*

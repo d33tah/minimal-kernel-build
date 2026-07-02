@@ -109,18 +109,13 @@ void resched_curr(struct rq *rq)
 
 void resched_cpu(int cpu)
 {
-	struct rq *rq = cpu_rq(cpu);
-	unsigned long flags;
-
-	raw_spin_rq_lock_irqsave(rq, flags);
 	/*
-	 * UP build: smp_processor_id() is the constant 0 and the sole caller
-	 * (rcu/tiny.c) passes cpu==0, so the old guard
-	 *   if (cpu_online(cpu) || cpu == smp_processor_id())
-	 * is always true -- fold it away.
+	 * RUNTIME-DEAD ANCHOR-STUB: the sole call site is call_rcu()'s
+	 * `if (unlikely(is_idle_task(current))) resched_cpu(0)` (rcu/tiny.c).
+	 * On this 1-shot boot call_rcu is never invoked from the idle task, so
+	 * this branch is never taken (HIT=False, verified by exec-trace). The
+	 * live reschedule path (resched_curr) stays reachable via fair.c/core.c.
 	 */
-	resched_curr(rq);
-	raw_spin_rq_unlock_irqrestore(rq, flags);
 }
 
 static void set_load_weight(struct task_struct *p, bool update_load)

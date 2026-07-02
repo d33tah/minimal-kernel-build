@@ -14,8 +14,14 @@
 
 struct clocksource;
 
-#if defined(CONFIG_ARCH_CLOCKSOURCE_DATA) || \
-    defined(CONFIG_GENERIC_GETTIMEOFDAY)
+/*
+ * Dropped the always-false `defined(CONFIG_ARCH_CLOCKSOURCE_DATA)` OR-operand:
+ * CONFIG_ARCH_CLOCKSOURCE_DATA is never defined in this x86-32 build (no Kconfig
+ * selects it; this was its sole tree-wide occurrence). The <asm/clocksource.h>
+ * include is gated solely by CONFIG_GENERIC_GETTIMEOFDAY (=y here), which alone
+ * kept the original OR-arm live -- so this is byte-identical preprocessor output.
+ */
+#ifdef CONFIG_GENERIC_GETTIMEOFDAY
 #include <asm/clocksource.h>
 #endif
 

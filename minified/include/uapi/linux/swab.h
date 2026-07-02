@@ -19,40 +19,6 @@ static __always_inline unsigned long __swab(const unsigned long y)
 	return __swab32(y);
 }
 
-/* __swahw32, __swahb32 macros - unused */
+/* __swab{16,32,64}{p,s} helpers removed - 0-ref (byteorder p/s aliases gone) */
 
-static __always_inline __u16 __swab16p(const __u16 *p)
-{
-	return __swab16(*p);
-}
-
-static __always_inline __u32 __swab32p(const __u32 *p)
-{
-	return __swab32(*p);
-}
-
-static __always_inline __u64 __swab64p(const __u64 *p)
-{
-	return __swab64(*p);
-}
-
-/* __swahw32p, __swahb32p - unused */
-
-static inline void __swab16s(__u16 *p)
-{
-	*p = __swab16p(p);
-}
-static __always_inline void __swab32s(__u32 *p)
-{
-	*p = __swab32p(p);
-}
-
-static __always_inline void __swab64s(__u64 *p)
-{
-	*p = __swab64p(p);
-}
-
-/* __swahw32s, __swahb32s - unused */
-
-
-#endif  
+#endif

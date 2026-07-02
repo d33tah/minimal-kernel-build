@@ -6,8 +6,8 @@
  * The root=/rootwait/rootflags=/rootfstype=/rootdelay= command-line options
  * are irrelevant for this initramfs-only kernel (it never mounts a real root
  * device) and the boot command line is empty. The __setup handlers were empty
- * `return 1;` stubs that merely swallowed those args. The boot cmdline is empty
- * so parse_args() (a no-op stub) never processes any such arg.
+ * `return 1;` stubs that merely swallowed those args, and the boot cmdline is
+ * empty so no such arg is ever present.
  */
 
 static int rootfs_init_fs_context(struct fs_context *fc)

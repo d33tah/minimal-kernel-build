@@ -88,11 +88,11 @@ unsigned long loops_per_jiffy = (1<<12);
 #define exit_boot_config()	do {} while (0)
 
 /*
- * The runtime-dead cmdline `unknown` callbacks (unknown_bootoption /
- * do_early_param / ignore_unknown_bootoption) were removed: parse_args() is a
- * `return NULL;` stub (empty single-shot cmdline) that never dereferences its
- * `unknown` argument, so all three callbacks were provably dead. Their parse_args
- * call sites now pass NULL.
+ * The runtime-dead cmdline-parse cluster was fully removed. parse_args() had
+ * been reduced to a `return NULL;` no-op (empty single-shot cmdline), and every
+ * caller discarded its result, so the function and all its call sites (here plus
+ * parse_early_param / do_initcall_level) were provably behaviour-neutral and are
+ * gone; the `unknown` bootoption callbacks it once dispatched went with it.
  */
 static int __init init_setup(char *str)
 {
@@ -179,8 +179,6 @@ void __init parse_early_param(void)
 
 	 
 	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
-	parse_args("early options", tmp_cmdline, NULL, 0, 0, 0, NULL,
-		   NULL);
 	done = 1;
 }
 
@@ -247,10 +245,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	 
 	jump_label_init();
 	parse_early_param();
-	parse_args("Booting kernel",
-		   static_command_line, __start___param,
-		   __stop___param - __start___param,
-		   -1, -1, NULL, NULL);
 
 	setup_log_buf(0);
 	vfs_caches_init_early();
@@ -371,27 +365,9 @@ static initcall_entry_t *initcall_levels[] __initdata = {
 	__initcall_end,
 };
 
-static const char *initcall_level_names[] __initdata = {
-	"pure",
-	"core",
-	"postcore",
-	"arch",
-	"subsys",
-	"fs",
-	"device",
-	"late",
-};
-
-static void __init do_initcall_level(int level, char *command_line)
+static void __init do_initcall_level(int level)
 {
 	initcall_entry_t *fn;
-
-	parse_args(initcall_level_names[level],
-		   command_line, __start___param,
-		   __stop___param - __start___param,
-		   level, level,
-		   NULL, NULL);
-
 
 	for (fn = initcall_levels[level]; fn < initcall_levels[level+1]; fn++)
 		do_one_initcall(initcall_from_entry(fn));
@@ -400,20 +376,9 @@ static void __init do_initcall_level(int level, char *command_line)
 static void __init do_initcalls(void)
 {
 	int level;
-	size_t len = strlen(saved_command_line) + 1;
-	char *command_line;
 
-	command_line = kzalloc(len, GFP_KERNEL);
-	if (!command_line)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, len);
-
-	for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1; level++) {
-		 
-		strcpy(command_line, saved_command_line);
-		do_initcall_level(level, command_line);
-	}
-
-	kfree(command_line);
+	for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1; level++)
+		do_initcall_level(level);
 }
 
 static void __init do_basic_setup(void)

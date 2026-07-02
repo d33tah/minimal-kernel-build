@@ -7,7 +7,7 @@ obj-y     = fork.o panic.o \
 	    cpu.o exit.o softirq.o resource.o \
 	    capability.o user.o \
 	    signal.o workqueue.o pid.o task_work.o \
-	    extable.o params.o \
+	    extable.o \
 	    kthread.o sys_ni.o nsproxy.o \
 	    notifier.o cred.o \
 	    range.o ucount.o

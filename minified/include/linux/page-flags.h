@@ -277,10 +277,6 @@ static __always_inline void SetPageUptodate(struct page *page)
 
 CLEARPAGEFLAG(Uptodate, uptodate, PF_NO_TAIL)
 
-static __always_inline bool folio_test_head(struct folio *folio)
-{
-	return test_bit(PG_head, folio_flags(folio, FOLIO_PF_ANY));
-}
 
 static __always_inline int PageHead(struct page *page)
 {

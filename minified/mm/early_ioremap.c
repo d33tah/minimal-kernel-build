@@ -12,20 +12,11 @@ void __init early_ioremap_reset(void)
 	after_paging_init = 1;
 }
 
-#ifndef __late_set_fixmap
-static inline void __init __late_set_fixmap(enum fixed_addresses idx,
-					    phys_addr_t phys, pgprot_t prot)
-{
-	BUG();
-}
-#endif
-
-#ifndef __late_clear_fixmap
-static inline void __init __late_clear_fixmap(enum fixed_addresses idx)
-{
-	BUG();
-}
-#endif
+/*
+ * x86 unconditionally #defines __late_set_fixmap / __late_clear_fixmap in
+ * <asm/fixmap.h> (included above), so the generic #ifndef BUG() fallbacks
+ * are statically dead on this arch and have been dropped.
+ */
 
 static void __iomem *prev_map[FIX_BTMAPS_SLOTS] __initdata;
 static unsigned long prev_size[FIX_BTMAPS_SLOTS] __initdata;

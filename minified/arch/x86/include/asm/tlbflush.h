@@ -102,17 +102,6 @@ extern u32 *trampoline_cr4_features;
 
 extern void initialize_tlbstate_and_flush(void);
 
- 
-struct flush_tlb_info {
-	 
-	struct mm_struct	*mm;
-	unsigned long		start;
-	unsigned long		end;
-	u64			new_tlb_gen;
-	u8			stride_shift;
-	u8			freed_tables;
-};
-
 void flush_tlb_local(void);
 void flush_tlb_one_user(unsigned long addr);
 void flush_tlb_one_kernel(unsigned long addr);

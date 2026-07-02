@@ -40,18 +40,6 @@
  
 
  
-#ifndef __ASSEMBLY__
-enum page_cache_mode {
-	_PAGE_CACHE_MODE_WB       = 0,
-	_PAGE_CACHE_MODE_WC       = 1,
-	_PAGE_CACHE_MODE_UC_MINUS = 2,
-	_PAGE_CACHE_MODE_UC       = 3,
-	_PAGE_CACHE_MODE_WT       = 4,
-	_PAGE_CACHE_MODE_WP       = 5,
-
-	_PAGE_CACHE_MODE_NUM      = 8
-};
-#endif
 
 #define _PAGE_ENC		(_AT(pteval_t, sme_me_mask))
 

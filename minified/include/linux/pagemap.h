@@ -119,12 +119,6 @@ struct wait_page_key {
 	int page_match;
 };
 
-struct wait_page_queue {
-	struct folio *folio;
-	int bit_nr;
-	wait_queue_entry_t wait;
-};
-
 void __folio_lock(struct folio *folio);
 void unlock_page(struct page *page);
 void folio_unlock(struct folio *folio);

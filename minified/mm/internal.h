@@ -148,10 +148,4 @@ extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
 
 void setup_zone_pageset(struct zone *zone);
 
-struct migration_target_control {
-	int nid;		 
-	nodemask_t *nmask;
-	gfp_t gfp_mask;
-};
-
 #endif

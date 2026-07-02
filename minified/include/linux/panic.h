@@ -24,9 +24,4 @@ extern atomic_t panic_cpu;
 #define TAINT_USER			6
 #define TAINT_DIE			7
 
-enum lockdep_ok {
-	LOCKDEP_STILL_OK,
-	LOCKDEP_NOW_UNRELIABLE,
-};
-
 #endif

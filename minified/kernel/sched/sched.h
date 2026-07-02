@@ -94,12 +94,6 @@ static inline int task_has_idle_policy(struct task_struct *p)
 	return idle_policy(p->policy);
 }
 
-struct dl_bw {
-	raw_spinlock_t		lock;
-	u64			bw;
-	u64			total_bw;
-};
-
 /* init_dl_bw, sched_dl_global_validate, sched_dl_do_global, sched_dl_overflow,
    __getparam_dl, __checkparam_dl, dl_param_changed, dl_cpuset_cpumask_can_shrink,
    dl_cpu_busy removed - never defined/called */

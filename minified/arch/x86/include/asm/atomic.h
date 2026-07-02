@@ -33,14 +33,7 @@ static __always_inline void arch_atomic_add(int i, atomic_t *v)
 }
 
  
-static __always_inline void arch_atomic_sub(int i, atomic_t *v)
-{
-	asm volatile(LOCK_PREFIX "subl %1,%0"
-		     : "+m" (v->counter)
-		     : "ir" (i) : "memory");
-}
 
- 
 static __always_inline bool arch_atomic_sub_and_test(int i, atomic_t *v)
 {
 	return GEN_BINARY_RMWcc(LOCK_PREFIX "subl", v->counter, e, "er", i);
@@ -146,13 +139,6 @@ static __always_inline int arch_atomic_fetch_and(int i, atomic_t *v)
 }
 #define arch_atomic_fetch_and arch_atomic_fetch_and
 
-static __always_inline void arch_atomic_or(int i, atomic_t *v)
-{
-	asm volatile(LOCK_PREFIX "orl %1,%0"
-			: "+m" (v->counter)
-			: "ir" (i)
-			: "memory");
-}
 
 static __always_inline int arch_atomic_fetch_or(int i, atomic_t *v)
 {
@@ -164,13 +150,6 @@ static __always_inline int arch_atomic_fetch_or(int i, atomic_t *v)
 }
 #define arch_atomic_fetch_or arch_atomic_fetch_or
 
-static __always_inline void arch_atomic_xor(int i, atomic_t *v)
-{
-	asm volatile(LOCK_PREFIX "xorl %1,%0"
-			: "+m" (v->counter)
-			: "ir" (i)
-			: "memory");
-}
 
 static __always_inline int arch_atomic_fetch_xor(int i, atomic_t *v)
 {

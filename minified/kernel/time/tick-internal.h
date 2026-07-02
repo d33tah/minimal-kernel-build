@@ -53,10 +53,14 @@ static inline void tick_set_periodic_handler(struct clock_event_device *dev, int
 /* hrtimers_resume_local removed - unused */
 
  
-#if HZ < 34
-#define JIFFIES_SHIFT	6
-#elif HZ < 67
-#define JIFFIES_SHIFT	7
-#else
+/*
+ * JIFFIES_SHIFT selects the fixed-point shift for the jiffies clocksource.
+ * The upstream form was:
+ *   #if   HZ < 34  -> 6
+ *   #elif HZ < 67  -> 7
+ *   #else          -> 8
+ * This build has CONFIG_HZ fixed to 250 (HZ == CONFIG_HZ == 250), so both the
+ * HZ<34 and HZ<67 arms are statically FALSE and only the #else (8) is ever
+ * emitted. Both dead arms dropped; the live value is inlined unconditionally.
+ */
 #define JIFFIES_SHIFT	8
-#endif

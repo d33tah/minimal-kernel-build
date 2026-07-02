@@ -120,33 +120,14 @@ extern void (*late_time_init)(void);
 
 #define console_initcall(fn)	___define_initcall(fn, con, .con_initcall)
 
-struct obs_kernel_param {
-	const char *str;
-	int (*setup_func)(char *);
-	int early;
-};
-
-#define __setup_param(str, unique_id, fn, early)			\
-	static const char __setup_str_##unique_id[] __initconst		\
-		__aligned(1) = str; 					\
-	static struct obs_kernel_param __setup_##unique_id		\
-		__used __section(".init.setup")				\
-		__aligned(__alignof__(struct obs_kernel_param))		\
-		= { __setup_str_##unique_id, fn, early }
-
-#define __setup(str, fn)						\
-	__setup_param(str, fn, fn, 0)
-
-#define early_param(str, fn)						\
-	__setup_param(str, fn, fn, 1)
-
+/* The __setup()/early_param() registration macros + struct obs_kernel_param
+ * were dropped once the last .init.setup registration went away (cmdline-parse
+ * cascade, ticks #361-#371): zero __setup/early_param call-sites remain
+ * tree-wide, so the .init.setup section is empty and these macros are dead.
+ * The (empty) lds section markers + parse_early_param() [2 live callers] stay. */
 void __init parse_early_param(void);
-#endif  
+#endif
 
-#else  
-
-#define __setup_param(str, unique_id, fn)	 
-#define __setup(str, func) 			 
 #endif
 
 #endif

@@ -145,11 +145,10 @@ static inline void bitmap_fill(unsigned long *dst, unsigned int nbits)
 
 
 
-#ifdef __LITTLE_ENDIAN
+/* x86 is little-endian (__LITTLE_ENDIAN unconditionally #defined in
+ * kconfig.h, force-included every TU; __BIG_ENDIAN never defined)
+ * -> big-endian BITMAP_MEM_ALIGNMENT #else arm is statically dead */
 #define BITMAP_MEM_ALIGNMENT 8
-#else
-#define BITMAP_MEM_ALIGNMENT (8 * sizeof(unsigned long))
-#endif
 #define BITMAP_MEM_MASK (BITMAP_MEM_ALIGNMENT - 1)
 
 static inline bool bitmap_equal(const unsigned long *src1,

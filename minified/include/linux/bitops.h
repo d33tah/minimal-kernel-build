@@ -7,11 +7,10 @@
 
 #include <linux/const.h>
 
-#ifdef __LITTLE_ENDIAN
+/* x86 is little-endian (__LITTLE_ENDIAN unconditionally #defined in
+ * kconfig.h, force-included every TU; __BIG_ENDIAN never defined)
+ * -> big-endian aligned_byte_mask #else arm is statically dead */
 #  define aligned_byte_mask(n) ((1UL << 8*(n))-1)
-#else
-#  define aligned_byte_mask(n) (~0xffUL << (BITS_PER_LONG - 8 - 8*(n)))
-#endif
 
 #define BITS_PER_TYPE(type)	(sizeof(type) * BITS_PER_BYTE)
 #define BITS_TO_LONGS(nr)	__KERNEL_DIV_ROUND_UP(nr, BITS_PER_TYPE(long))

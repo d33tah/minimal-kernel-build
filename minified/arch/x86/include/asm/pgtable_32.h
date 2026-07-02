@@ -44,11 +44,13 @@ static inline u64 protnone_mask(u64 val)
 #endif  
 
 
-#if PTRS_PER_PMD > 1
-#define PAGE_TABLE_SIZE(pages) (((pages) / PTRS_PER_PMD) + PTRS_PER_PGD)
-#else
+/*
+ * PTRS_PER_PMD is unconditionally 1 in this 2-level (PMD-folded) build
+ * (arch/x86/include/asm/pgtable_types.h), so `#if PTRS_PER_PMD > 1` was
+ * always false and its PMD-divisor PAGE_TABLE_SIZE arm was statically dead.
+ * Emit the surviving PGD-only arm unconditionally.
+ */
 #define PAGE_TABLE_SIZE(pages) ((pages) / PTRS_PER_PGD)
-#endif
 
  
 #define LOWMEM_PAGES ((((_ULL(2)<<31) - __PAGE_OFFSET) >> PAGE_SHIFT))

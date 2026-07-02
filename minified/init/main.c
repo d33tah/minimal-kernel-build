@@ -88,17 +88,12 @@ unsigned long loops_per_jiffy = (1<<12);
 #define exit_boot_config()	do {} while (0)
 
 /*
- * Runtime-dead cmdline callbacks (anchor-stub): these are passed by address to
- * parse_args(), but parse_args()'s loop body never runs on a single-shot boot
- * (empty cmdline -> `if (*args)` false), so the `unknown` callback never fires.
- * Bodies stubbed; symbols kept link-live for the address-of references.
+ * The runtime-dead cmdline `unknown` callbacks (unknown_bootoption /
+ * do_early_param / ignore_unknown_bootoption) were removed: parse_args() is a
+ * `return NULL;` stub (empty single-shot cmdline) that never dereferences its
+ * `unknown` argument, so all three callbacks were provably dead. Their parse_args
+ * call sites now pass NULL.
  */
-static int __init unknown_bootoption(char *param, char *val,
-				     const char *unused, void *arg)
-{
-	return 0;
-}
-
 static int __init init_setup(char *str)
 {
 	unsigned int i;
@@ -174,12 +169,6 @@ noinline void __ref rest_init(void)
 	cpu_startup_entry(CPUHP_ONLINE);
 }
 
-static int __init do_early_param(char *param, char *val,
-				 const char *unused, void *arg)
-{
-	return 0;
-}
-
 void __init parse_early_param(void)
 {
 	static int done __initdata;
@@ -191,7 +180,7 @@ void __init parse_early_param(void)
 	 
 	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
 	parse_args("early options", tmp_cmdline, NULL, 0, 0, 0, NULL,
-		   do_early_param);
+		   NULL);
 	done = 1;
 }
 
@@ -272,7 +261,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	parse_args("Booting kernel",
 		   static_command_line, __start___param,
 		   __stop___param - __start___param,
-		   -1, -1, NULL, &unknown_bootoption);
+		   -1, -1, NULL, NULL);
 	print_unknown_bootoptions();
 
 
@@ -406,12 +395,6 @@ static const char *initcall_level_names[] __initdata = {
 	"late",
 };
 
-static int __init ignore_unknown_bootoption(char *param, char *val,
-			       const char *unused, void *arg)
-{
-	return 0;
-}
-
 static void __init do_initcall_level(int level, char *command_line)
 {
 	initcall_entry_t *fn;
@@ -420,7 +403,7 @@ static void __init do_initcall_level(int level, char *command_line)
 		   command_line, __start___param,
 		   __stop___param - __start___param,
 		   level, level,
-		   NULL, ignore_unknown_bootoption);
+		   NULL, NULL);
 
 
 	for (fn = initcall_levels[level]; fn < initcall_levels[level+1]; fn++)

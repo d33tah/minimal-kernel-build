@@ -24,7 +24,11 @@ union __sifields {
 	} _sigfault;
 };
 
-#ifndef __ARCH_HAS_SWAPPED_SIGINFO
+/*
+ * __ARCH_HAS_SWAPPED_SIGINFO is never defined tree-wide (x86 uses the canonical
+ * si_signo/si_errno/si_code order), so the swapped #else arm was statically dead.
+ * Kept only the definition the preprocessor actually emitted.
+ */
 #define __SIGINFO 			\
 struct {				\
 	int si_signo;			\
@@ -32,15 +36,6 @@ struct {				\
 	int si_code;			\
 	union __sifields _sifields;	\
 }
-#else
-#define __SIGINFO 			\
-struct {				\
-	int si_signo;			\
-	int si_code;			\
-	int si_errno;			\
-	union __sifields _sifields;	\
-}
-#endif  
 
 typedef struct siginfo {
 	union {

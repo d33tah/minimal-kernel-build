@@ -93,12 +93,6 @@ unsigned long loops_per_jiffy = (1<<12);
  * (empty cmdline -> `if (*args)` false), so the `unknown` callback never fires.
  * Bodies stubbed; symbols kept link-live for the address-of references.
  */
-static int __init set_init_arg(char *param, char *val,
-			       const char *unused, void *arg)
-{
-	return 0;
-}
-
 static int __init unknown_bootoption(char *param, char *val,
 				     const char *unused, void *arg)
 {
@@ -252,7 +246,6 @@ static void __init print_unknown_bootoptions(void)
 asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 {
 	char *command_line;
-	char *after_dashes;
 
 	set_task_stack_end_magic(&init_task);
 	smp_setup_processor_id();
@@ -276,14 +269,11 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	 
 	jump_label_init();
 	parse_early_param();
-	after_dashes = parse_args("Booting kernel",
-				  static_command_line, __start___param,
-				  __stop___param - __start___param,
-				  -1, -1, NULL, &unknown_bootoption);
+	parse_args("Booting kernel",
+		   static_command_line, __start___param,
+		   __stop___param - __start___param,
+		   -1, -1, NULL, &unknown_bootoption);
 	print_unknown_bootoptions();
-	if (!IS_ERR_OR_NULL(after_dashes))
-		parse_args("Setting init args", after_dashes, NULL, 0, -1, -1,
-			   NULL, set_init_arg);
 
 
 	setup_log_buf(0);

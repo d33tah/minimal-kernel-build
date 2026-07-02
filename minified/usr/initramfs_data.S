@@ -29,8 +29,10 @@ __irf_end:
 .section .init.ramfs.info,"a"
 .globl __initramfs_size
 __initramfs_size:
-#ifdef CONFIG_64BIT
-	.quad __irf_end - __irf_start
-#else
+/*
+ * CONFIG_64BIT is unset (CONFIG_X86_32=y) in this build, so the
+ * `#ifdef CONFIG_64BIT` .quad arm is statically dead. Emit the live
+ * 32-bit `.long` __initramfs_size arm unconditionally (byte-identical
+ * to what the preprocessor already produced).
+ */
 	.long __irf_end - __irf_start
-#endif

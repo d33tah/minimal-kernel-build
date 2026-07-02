@@ -11,7 +11,11 @@
 #include <asm/uaccess.h>
 
 
-#ifdef INLINE_COPY_TO_USER
+/*
+ * x86 (asm/uaccess.h, included above) unconditionally #defines
+ * INLINE_COPY_TO_USER, so the generic out-of-line extern #else arm was
+ * statically dead in every TU; the inline is emitted unconditionally.
+ */
 static inline __must_check unsigned long
 _copy_to_user(void __user *to, const void *from, unsigned long n)
 {
@@ -22,10 +26,6 @@ _copy_to_user(void __user *to, const void *from, unsigned long n)
 	}
 	return n;
 }
-#else
-extern __must_check unsigned long
-_copy_to_user(void __user *, const void *, unsigned long);
-#endif
 
 static __always_inline unsigned long __must_check
 copy_to_user(void __user *to, const void *from, unsigned long n)

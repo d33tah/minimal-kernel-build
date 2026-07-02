@@ -147,16 +147,12 @@ int folio_wait_bit_killable(struct folio *folio, int bit_nr)
 }
 
 
-#ifndef clear_bit_unlock_is_negative_byte
-
-static inline bool clear_bit_unlock_is_negative_byte(long nr, volatile void *mem)
-{
-	clear_bit_unlock(nr, mem);
-	
-	return test_bit(PG_waiters, mem);
-}
-
-#endif
+/*
+ * The generic clear_bit_unlock_is_negative_byte() fallback is statically dead:
+ * arch/x86/include/asm/bitops.h unconditionally #defines it (via the always-set
+ * arch_clear_bit_unlock_is_negative_byte macro), so the #ifndef here is never
+ * taken. folio_unlock() below resolves the call to the x86 arch version.
+ */
 
 void folio_unlock(struct folio *folio)
 {

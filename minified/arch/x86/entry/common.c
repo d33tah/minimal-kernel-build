@@ -56,13 +56,12 @@ __visible noinstr long do_fast_syscall_32(struct pt_regs *regs)
 
 __visible noinstr long do_SYSENTER_32(struct pt_regs *regs)
 {
-	 
-	regs->sp = regs->bp;
-
-	 
-	regs->flags |= X86_EFLAGS_IF;
-
-	return do_fast_syscall_32(regs);
+	/*
+	 * Runtime-dead in this minimal build: userspace enters via int 0x80
+	 * (do_int80_syscall_32), never via SYSENTER. Body stubbed; symbol
+	 * retained for the (never-executed) asm SYSENTER entry stub.
+	 */
+	return 0;
 }
 
 SYSCALL_DEFINE0(ni_syscall)

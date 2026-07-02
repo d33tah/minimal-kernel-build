@@ -10,11 +10,6 @@
 #define list_next_rcu(list)	(*((struct list_head __rcu **)(&(list)->next)))
 
 
-#define check_arg_count_one(dummy)
-
-#define __list_check_rcu(dummy, cond, extra...)				\
-	({ check_arg_count_one(extra); })
-
 static inline void __list_add_rcu(struct list_head *new,
 		struct list_head *prev, struct list_head *next)
 {

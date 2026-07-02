@@ -211,14 +211,11 @@ static inline struct page *alloc_page_vma(gfp_t gfp,
 
 extern unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order);
 
-#define __get_free_page(gfp_mask) \
-		__get_free_pages((gfp_mask), 0)
 
 extern void __free_pages(struct page *page, unsigned int order);
 extern void free_pages(unsigned long addr, unsigned int order);
 
 #define __free_page(page) __free_pages((page), 0)
-#define free_page(addr) free_pages((addr), 0)
 
 void page_alloc_init(void);
 void page_alloc_init_late(void);

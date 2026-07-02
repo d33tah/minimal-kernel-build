@@ -26,7 +26,6 @@
 #define VIDEO_RECALC 0x8000
 
 void store_screen(void);
-#define DO_STORE() store_screen()
 
  
 

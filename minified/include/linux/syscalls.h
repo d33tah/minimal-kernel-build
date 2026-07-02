@@ -45,7 +45,6 @@ struct __kernel_old_timeval;
 #define SYSCALL_METADATA(sname, nb, ...)
 
 #define SYSCALL_DEFINE1(name, ...) SYSCALL_DEFINEx(1, _##name, __VA_ARGS__)
-#define SYSCALL_DEFINE2(name, ...) SYSCALL_DEFINEx(2, _##name, __VA_ARGS__)
 #define SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)
 
 #define SYSCALL_DEFINEx(x, sname, ...)				\

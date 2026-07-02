@@ -32,10 +32,6 @@ typedef sigset_t compat_sigset_t;
 
 /* __i386__ - 32-bit x86 */
 
-#define sigaddset(set,sig)		    \
-	(__builtin_constant_p(sig)	    \
-	 ? __const_sigaddset((set), (sig))  \
-	 : __gen_sigaddset((set), (sig)))
 
 static inline void __gen_sigaddset(sigset_t *set, int _sig)
 {
@@ -48,10 +44,6 @@ static inline void __const_sigaddset(sigset_t *set, int _sig)
 	set->sig[sig / _NSIG_BPW] |= 1 << (sig % _NSIG_BPW);
 }
 
-#define sigdelset(set, sig)		    \
-	(__builtin_constant_p(sig)	    \
-	 ? __const_sigdelset((set), (sig))  \
-	 : __gen_sigdelset((set), (sig)))
 
 
 static inline void __gen_sigdelset(sigset_t *set, int _sig)

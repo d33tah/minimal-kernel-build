@@ -8,10 +8,6 @@
 
 typedef guid_t efi_guid_t __aligned(__alignof__(u32));
 
-#define EFI_GUID(a, b, c, d...) (efi_guid_t){ {					\
-	(a) & 0xff, ((a) >> 8) & 0xff, ((a) >> 16) & 0xff, ((a) >> 24) & 0xff,	\
-	(b) & 0xff, ((b) >> 8) & 0xff,						\
-	(c) & 0xff, ((c) >> 8) & 0xff, d } }
 
 
 #define EFI32_LOADER_SIGNATURE	"EL32"
@@ -38,8 +34,6 @@ typedef struct {
 	u64 attribute;
 } efi_memory_desc_t;
 
-#define efi_early_memdesc_ptr(map, desc_size, n)			\
-	(efi_memory_desc_t *)((void *)(map) + ((n) * (desc_size)))
 
 typedef struct {
 	efi_guid_t guid;

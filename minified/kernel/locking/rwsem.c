@@ -15,9 +15,6 @@ enum lock_events {
 	lockevent_num, LOCKEVENT_reset_cnts = lockevent_num,
 };
 #undef LOCK_EVENT
-#define lockevent_inc(ev)
-#define lockevent_add(ev, c)
-#define lockevent_cond_inc(ev, c)
 /* end lock_events headers */
 
 #define RWSEM_READER_OWNED	(1UL << 0)

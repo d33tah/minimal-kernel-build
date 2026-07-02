@@ -7,7 +7,6 @@
 #include <linux/time.h>
 
  
-#define tk_debug_account_sleep_time(x)
 
 static inline u64 clocksource_delta(u64 now, u64 last, u64 mask)
 {

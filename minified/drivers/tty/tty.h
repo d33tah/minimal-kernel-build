@@ -7,8 +7,6 @@
 #define tty_msg(fn, tty, f, ...) \
 	fn("%s %s: " f, tty_driver_name(tty), tty_name(tty), ##__VA_ARGS__)
 
-#define tty_debug(tty, f, ...)	tty_msg(pr_debug, tty, f, ##__VA_ARGS__)
-#define tty_notice(tty, f, ...)	tty_msg(pr_notice, tty, f, ##__VA_ARGS__)
 #define tty_warn(tty, f, ...)	tty_msg(pr_warn, tty, f, ##__VA_ARGS__)
 #define tty_err(tty, f, ...)	tty_msg(pr_err, tty, f, ##__VA_ARGS__)
 
@@ -38,7 +36,6 @@ struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx);
 void tty_free_file(struct file *file);
 int tty_release(struct inode *inode, struct file *filp);
 
-#define tty_is_writelocked(tty)  (mutex_is_locked(&tty->atomic_write_lock))
 
 int tty_ldisc_setup(struct tty_struct *tty, struct tty_struct *o_tty);
 int __must_check tty_ldisc_init(struct tty_struct *tty);

@@ -110,9 +110,6 @@ extern char _end[];
 extern char *HEAP;
 extern char *heap_end;
 #define RESET_HEAP() ((void *)( HEAP = _end ))
-#define GET_HEAP(type, n) \
-	((type *)(HEAP = (char *)(((size_t)HEAP+(__alignof__(type)-1)) & ~(__alignof__(type)-1)), \
-	          HEAP += sizeof(type)*(n), HEAP - sizeof(type)*(n)))
 
  
 

@@ -31,13 +31,8 @@ extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffi
 	 ((long)((b) - (a)) < 0))
 #define time_before(a,b)	time_after(b,a)
 
-#define time_after_eq(a,b)	\
-	(typecheck(unsigned long, a) && \
-	 typecheck(unsigned long, b) && \
-	 ((long)((a) - (b)) >= 0))
 
 
-#define time_is_before_jiffies(a) time_after(jiffies, a)
 
 #define INITIAL_JIFFIES ((unsigned long)(unsigned int) (-300*HZ))
 

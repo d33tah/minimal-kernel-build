@@ -211,7 +211,6 @@ typedef struct { pud_t pud; } pmd_t;
 
 static inline int pud_none(pud_t pud)		{ return 0; }
 /* pud_present (const 1), pud_user, pud_leaf (generic fallback in linux/pgtable.h) removed - unused */
-#define pmd_ERROR(pmd)				(pud_ERROR((pmd).pud))
 
 
 #define set_pud(pudptr, pudval)			set_pmd((pmd_t *)(pudptr), (pmd_t) { pudval })

@@ -5,7 +5,6 @@
 #include <asm/e820/api.h>
 #include <asm/time.h>
 #include <asm/irq.h>
-#define hpet_readl(a) 0
 #include <asm/tsc.h>
 #include <asm/mach_traps.h>
 

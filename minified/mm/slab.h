@@ -49,9 +49,6 @@ static_assert(sizeof(struct slab) <= sizeof(struct page));
 	struct slab *:		(struct folio *)s))
 
  
-#define page_slab(p)		(_Generic((p),				\
-	const struct page *:	(const struct slab *)(p),		\
-	struct page *:		(struct slab *)(p)))
 
  
 #define slab_page(s) folio_page(slab_folio(s), 0)
@@ -109,9 +106,6 @@ struct kmem_cache_cpu {
 	struct slab *slab;
 };
 
-#define slub_percpu_partial(c)			NULL
-#define slub_set_percpu_partial(c, p)
-#define slub_percpu_partial_read_once(c)	NULL
 
 struct kmem_cache_order_objects {
 	unsigned int x;

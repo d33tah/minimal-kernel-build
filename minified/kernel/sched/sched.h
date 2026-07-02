@@ -210,10 +210,6 @@ static inline void raw_spin_rq_unlock_irqrestore(struct rq *rq, unsigned long fl
 	local_irq_restore(flags);
 }
 
-#define raw_spin_rq_lock_irqsave(rq, flags)	\
-do {						\
-	flags = _raw_spin_rq_lock_irqsave(rq);	\
-} while (0)
 
 DECLARE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 

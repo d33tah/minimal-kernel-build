@@ -18,8 +18,6 @@ static inline void lockdep_on(void)
 
 # define lock_acquire(l, s, t, r, c, n, i)	do { } while (0)
 # define lock_release(l, i)			do { } while (0)
-# define lockdep_init_map(lock, name, key, sub) \
-		do { (void)(name); (void)(key); } while (0)
 # define lockdep_set_class(lock, key)		do { (void)(key); } while (0)
 # define lockdep_set_class_and_name(lock, key, name) \
 		do { (void)(key); (void)(name); } while (0)
@@ -29,7 +27,6 @@ static inline void lockdep_on(void)
 extern int lockdep_is_held(const void *);
 
 #define lockdep_assert_held(l)			do { (void)(l); } while (0)
-#define lockdep_assert_held_write(l)		do { (void)(l); } while (0)
 
 #define lockdep_pin_lock(l)			({ struct pin_cookie cookie = { }; cookie; })
 #define lockdep_unpin_lock(l, c)		do { (void)(l); (void)(c); } while (0)
@@ -60,8 +57,6 @@ extern int lockdep_is_held(const void *);
 #define rwsem_acquire_read(l, s, t, i)		lock_acquire_shared(l, s, t, NULL, i)
 #define rwsem_release(l, i)			lock_release(l, i)
 
-#define lock_map_acquire(l)			lock_acquire_exclusive(l, 0, 0, NULL, _THIS_IP_)
-#define lock_map_release(l)			lock_release(l, _THIS_IP_)
 
 # define might_lock(lock) do { } while (0)
 

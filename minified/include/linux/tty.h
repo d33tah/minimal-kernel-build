@@ -34,8 +34,6 @@ int ldsem_down_write(struct ld_semaphore *sem, long timeout);
 void ldsem_up_read(struct ld_semaphore *sem);
 void ldsem_up_write(struct ld_semaphore *sem);
 
-# define ldsem_down_write_nested(sem, subclass, timeout)	\
-		ldsem_down_write(sem, timeout)
 
 struct tty_ldisc_ops {
 	int	num;

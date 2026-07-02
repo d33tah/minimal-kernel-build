@@ -2,7 +2,6 @@
  
 #include <linux/percpu.h>
 
-#define printk_sysctl_init() do { } while (0)
 
 
  

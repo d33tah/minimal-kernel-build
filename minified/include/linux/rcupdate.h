@@ -180,6 +180,5 @@ static inline void rcu_read_unlock_sched(void)
 #define __is_kvfree_rcu_offset(offset) ((offset) < 4096)
 
 
-#define smp_mb__after_unlock_lock()	do { } while (0)
 
 #endif

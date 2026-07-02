@@ -43,7 +43,6 @@ struct nsproxy;
 struct pid_namespace;
 struct pipe_inode_info;
 struct rq;
-struct sched_attr;
 struct sched_param;
 struct seq_file;
 struct sighand_struct;

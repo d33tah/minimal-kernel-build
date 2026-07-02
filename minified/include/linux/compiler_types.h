@@ -156,15 +156,12 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 # define __latent_entropy
 #endif
 
-#if defined(RANDSTRUCT) && !defined(__CHECKER__)
-# define __randomize_layout __designated_init __attribute__((randomize_layout))
-# define randomized_struct_fields_start	struct {
-# define randomized_struct_fields_end	} __randomize_layout;
-#else
+/* RANDSTRUCT gcc-plugin is unconfigured in this build (CONFIG_RANDSTRUCT unset;
+ * scripts/Makefile.randstruct absent, so RANDSTRUCT is never -D'd) => the
+ * defined(RANDSTRUCT) arm is statically dead; only the plain arm is live. */
 # define __randomize_layout __designated_init
 # define randomized_struct_fields_start
 # define randomized_struct_fields_end
-#endif
 
 #ifndef __nocfi
 # define __nocfi

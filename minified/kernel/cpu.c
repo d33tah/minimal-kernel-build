@@ -19,10 +19,12 @@ const unsigned long cpu_bit_bitmap[BITS_PER_LONG+1][BITS_TO_LONGS(NR_CPUS)] = {
 
 	MASK_DECLARE_8(0),	MASK_DECLARE_8(8),
 	MASK_DECLARE_8(16),	MASK_DECLARE_8(24),
-#if BITS_PER_LONG > 32
-	MASK_DECLARE_8(32),	MASK_DECLARE_8(40),
-	MASK_DECLARE_8(48),	MASK_DECLARE_8(56),
-#endif
+	/*
+	 * The `#if BITS_PER_LONG > 32` rows [32..56] are statically dead here:
+	 * BITS_PER_LONG is unconditionally 32 (arch/x86 uapi/asm/bitsperlong.h,
+	 * "32-bit only kernel"), so the array is [33] rows and the 64-bit-only
+	 * MASK_DECLARE_8(32..56) initializers were never compiled. Dropped.
+	 */
 };
 
 const DECLARE_BITMAP(cpu_all_bits, NR_CPUS) = CPU_BITS_ALL;

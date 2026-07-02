@@ -65,8 +65,6 @@ char *kvasprintf(gfp_t gfp, const char *fmt, va_list args);
 extern __printf(2, 0)
 const char *kvasprintf_const(gfp_t gfp, const char *fmt, va_list args);
 
-extern char *next_arg(char *args, char **param, char **val);
-
 extern void bust_spinlocks(int yes);
 
 

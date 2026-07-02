@@ -27,7 +27,7 @@ KASAN_SANITIZE_string.o := n
 CFLAGS_string.o += -fno-stack-protector
 endif
 
-lib-y := ctype.o string.o vsprintf.o cmdline.o \
+lib-y := ctype.o string.o vsprintf.o \
 	 rbtree.o radix-tree.o xarray.o \
 	 idr.o extable.o irq_regs.o \
 	 ratelimit.o \

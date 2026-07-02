@@ -24,8 +24,6 @@ static LIST_HEAD(free_vmap_area_list);
 
 static struct rb_root free_vmap_area_root = RB_ROOT;
 
-static DEFINE_PER_CPU(struct vmap_area *, ne_fit_preload_node);
-
 static __always_inline unsigned long
 va_size(struct vmap_area *va)
 {

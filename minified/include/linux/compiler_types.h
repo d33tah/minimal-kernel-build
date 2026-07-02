@@ -129,19 +129,24 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 
 #define noinline_for_stack noinline
 
-#ifdef __SANITIZE_ADDRESS__
-# define __no_kasan_or_inline __no_sanitize_address notrace __maybe_unused
-# define __no_sanitize_or_inline __no_kasan_or_inline
-#else
+/*
+ * __SANITIZE_ADDRESS__ is #defined at exactly one site (the
+ * __has_feature(address_sanitizer) bridge above). This is a clang-only build
+ * (CONFIG_CC_IS_CLANG=y; clang does NOT predefine __SANITIZE_ADDRESS__) with no
+ * KASAN: CONFIG_KASAN is unset, scripts/Makefile.kasan is absent, and nothing
+ * ever passes -fsanitize=address/hwaddress. So that bridge never fires, the
+ * token is never defined, and the KASAN then-arm is statically dead. Keep only
+ * the live plain-inline arm.
+ */
 # define __no_kasan_or_inline __always_inline
-#endif
 
-#ifdef __SANITIZE_THREAD__
-# define __no_kcsan __no_sanitize_thread __disable_sanitizer_instrumentation
-# define __no_sanitize_or_inline __no_kcsan notrace __maybe_unused
-#else
+/*
+ * Likewise __SANITIZE_THREAD__: defined only at the __has_feature(thread_sanitizer)
+ * bridge above; this build never passes -fsanitize=thread (CONFIG_KCSAN unset,
+ * scripts/Makefile.kcsan absent), so the token is never defined and the KCSAN
+ * then-arm is statically dead. Keep only the live empty arm.
+ */
 # define __no_kcsan
-#endif
 
 #ifndef __no_sanitize_or_inline
 #define __no_sanitize_or_inline __always_inline

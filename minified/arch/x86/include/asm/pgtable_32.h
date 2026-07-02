@@ -34,10 +34,6 @@ static inline void native_set_pmd(pmd_t *pmdp, pmd_t pmd)
 	*pmdp = pmd;
 }
 /* native_set_pud removed - referenced only from the dead #ifndef set_pud block */
-static inline void native_pmd_clear(pmd_t *pmdp)
-{
-	native_set_pmd(pmdp, __pmd(0));
-}
 static inline void native_pte_clear(struct mm_struct *mm,
 				    unsigned long addr, pte_t *xp)
 {

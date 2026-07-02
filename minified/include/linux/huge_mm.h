@@ -6,9 +6,4 @@
 
 #include <linux/fs.h>  
 
-static inline void mm_put_huge_zero_page(struct mm_struct *mm)
-{
-	return;
-}
-
 #endif

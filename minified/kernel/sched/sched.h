@@ -196,21 +196,6 @@ static inline void raw_spin_rq_unlock_irq(struct rq *rq)
 	local_irq_enable();
 }
 
-static inline unsigned long _raw_spin_rq_lock_irqsave(struct rq *rq)
-{
-	unsigned long flags;
-	local_irq_save(flags);
-	raw_spin_rq_lock(rq);
-	return flags;
-}
-
-static inline void raw_spin_rq_unlock_irqrestore(struct rq *rq, unsigned long flags)
-{
-	raw_spin_rq_unlock(rq);
-	local_irq_restore(flags);
-}
-
-
 DECLARE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
 #define cpu_rq(cpu)		(&per_cpu(runqueues, (cpu)))

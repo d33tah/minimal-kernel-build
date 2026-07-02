@@ -108,12 +108,6 @@ extern void __add_wrong_size(void)
 #define __cmpxchg(ptr, old, new, size)					\
 	__raw_cmpxchg((ptr), (old), (new), (size), LOCK_PREFIX)
 
-#define __sync_cmpxchg(ptr, old, new, size)				\
-	__raw_cmpxchg((ptr), (old), (new), (size), "lock; ")
-
-#define __cmpxchg_local(ptr, old, new, size)				\
-	__raw_cmpxchg((ptr), (old), (new), (size), "")
-
 /* --- 2025-12-07 20:12 --- Inlined cmpxchg_32.h */
 /* set_64bit removed - unused */
 
@@ -128,19 +122,6 @@ static inline u64 __cmpxchg64(volatile u64 *ptr, u64 old, u64 new)
 {
 	u64 prev;
 	asm volatile(LOCK_PREFIX "cmpxchg8b %1"
-		     : "=A" (prev),
-		       "+m" (*ptr)
-		     : "b" ((u32)new),
-		       "c" ((u32)(new >> 32)),
-		       "0" (old)
-		     : "memory");
-	return prev;
-}
-
-static inline u64 __cmpxchg64_local(volatile u64 *ptr, u64 old, u64 new)
-{
-	u64 prev;
-	asm volatile("cmpxchg8b %1"
 		     : "=A" (prev),
 		       "+m" (*ptr)
 		     : "b" ((u32)new),

@@ -33,30 +33,6 @@ typedef sigset_t compat_sigset_t;
 /* __i386__ - 32-bit x86 */
 
 
-static inline void __gen_sigaddset(sigset_t *set, int _sig)
-{
-	asm("btsl %1,%0" : "+m"(*set) : "Ir"(_sig - 1) : "cc");
-}
-
-static inline void __const_sigaddset(sigset_t *set, int _sig)
-{
-	unsigned long sig = _sig - 1;
-	set->sig[sig / _NSIG_BPW] |= 1 << (sig % _NSIG_BPW);
-}
-
-
-
-static inline void __gen_sigdelset(sigset_t *set, int _sig)
-{
-	asm("btrl %1,%0" : "+m"(*set) : "Ir"(_sig - 1) : "cc");
-}
-
-static inline void __const_sigdelset(sigset_t *set, int _sig)
-{
-	unsigned long sig = _sig - 1;
-	set->sig[sig / _NSIG_BPW] &= ~(1 << (sig % _NSIG_BPW));
-}
-
 static inline int __const_sigismember(sigset_t *set, int _sig)
 {
 	unsigned long sig = _sig - 1;

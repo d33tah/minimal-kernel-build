@@ -32,15 +32,6 @@ va_size(struct vmap_area *va)
 	return (va->va_end - va->va_start);
 }
 
-static __always_inline unsigned long
-get_subtree_max_size(struct rb_node *node)
-{
-	struct vmap_area *va;
-
-	va = rb_entry_safe(node, struct vmap_area, rb_node);
-	return va ? va->subtree_max_size : 0;
-}
-
 RB_DECLARE_CALLBACKS_MAX(static, free_vmap_area_rb_augment_cb,
 	struct vmap_area, rb_node, unsigned long, subtree_max_size, va_size)
 
@@ -112,22 +103,6 @@ link_va(struct vmap_area *va, struct rb_root *root,
 }
 
 static __always_inline void
-unlink_va(struct vmap_area *va, struct rb_root *root)
-{
-	if (WARN_ON(RB_EMPTY_NODE(&va->rb_node)))
-		return;
-
-	if (root == &free_vmap_area_root)
-		rb_erase_augmented(&va->rb_node,
-			root, &free_vmap_area_rb_augment_cb);
-	else
-		rb_erase(&va->rb_node, root);
-
-	list_del(&va->list);
-	RB_CLEAR_NODE(&va->rb_node);
-}
-
-static __always_inline void
 augment_tree_propagate_from(struct vmap_area *va)
 {
 	free_vmap_area_rb_augment_cb_propagate(&va->rb_node, NULL);
@@ -158,21 +133,6 @@ insert_vmap_area_augment(struct vmap_area *va,
 /* classify_va_fit_type + enum fit_type removed - 0-caller orphan (__alloc_vmap_area gone); vmalloc dead-allocator cluster drained */
 /* adjust_va_to_fit_type removed - 0-caller orphan (__alloc_vmap_area gone) */
 /* __alloc_vmap_area removed - 0-caller orphan (alloc_vmap_area absent in this minimal tree) */
-
-static inline void
-preload_this_cpu_lock(spinlock_t *lock, gfp_t gfp_mask, int node)
-{
-	struct vmap_area *va = NULL;
-
-	
-	if (!this_cpu_read(ne_fit_preload_node))
-		va = kmem_cache_alloc_node(vmap_area_cachep, gfp_mask, node);
-
-	spin_lock(lock);
-
-	if (va && __this_cpu_cmpxchg(ne_fit_preload_node, NULL, va))
-		kmem_cache_free(vmap_area_cachep, va);
-}
 
 static void vmap_init_free_space(void)
 {

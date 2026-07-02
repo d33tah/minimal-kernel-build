@@ -36,11 +36,16 @@
 
 static int load_elf_binary(struct linux_binprm *bprm);
 
-#if ELF_EXEC_PAGESIZE > PAGE_SIZE
-#define ELF_MIN_ALIGN	ELF_EXEC_PAGESIZE
-#else
+/*
+ * ELF_MIN_ALIGN: the `#if ELF_EXEC_PAGESIZE > PAGE_SIZE` selector folded to
+ * its #else (live) arm. Both operands are unconditional compile-time literals
+ * in this build: ELF_EXEC_PAGESIZE == 4096 (arch/x86/include/asm/elf.h) and
+ * PAGE_SIZE == (1UL << PAGE_SHIFT) == (1UL << 12) == 4096
+ * (arch/x86/include/asm/page_types.h). So `4096 > 4096` is always FALSE and the
+ * then-arm `#define ELF_MIN_ALIGN ELF_EXEC_PAGESIZE` was statically dead; the
+ * surviving PAGE_SIZE definition is byte-identical to what was emitted before.
+ */
 #define ELF_MIN_ALIGN	PAGE_SIZE
-#endif
 
 #ifndef ELF_CORE_EFLAGS
 #define ELF_CORE_EFLAGS	0

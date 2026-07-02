@@ -5,8 +5,6 @@
 #include <linux/interrupt.h>
 #include <linux/wait.h>
 
-extern int kbd_init(void);
-
 struct console;
 
 #endif

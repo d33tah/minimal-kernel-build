@@ -462,8 +462,6 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
 	vc->vc_decawm		= 1;
 	vc->vc_deccm		= global_cursor_default;
 
-	vt_reset_keyboard(vc->vc_num);
-
 	vc->vc_cursor_type = CUR_UNDERLINE;
 	vc->vc_complement_mask = vc->vc_s_complement_mask;
 
@@ -758,7 +756,8 @@ static void vc_init(struct vc_data *vc, unsigned int rows,
 
 	set_origin(vc);
 	vc->vc_pos = vc->vc_origin;
-	reset_vc(vc);
+	vc->vc_mode = KD_TEXT;
+	reset_palette(vc);
 	vc->vc_def_color       = 7;
 	reset_terminal(vc, do_clear);
 }
@@ -859,7 +858,6 @@ int __init vty_init(const struct file_operations *console_fops)
 	tty_set_operations(console_driver, &con_ops);
 	if (tty_register_driver(console_driver))
 		panic("Couldn't register console driver\n");
-	kbd_init();
 	return 0;
 }
 

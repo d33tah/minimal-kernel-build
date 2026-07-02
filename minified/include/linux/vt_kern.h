@@ -100,7 +100,6 @@ int con_set_default_unimap(struct vc_data *vc);
 void con_free_unimap(struct vc_data *vc);
 
 
-void reset_vc(struct vc_data *vc);
 int vty_init(const struct file_operations *console_fops);
 
 extern int global_cursor_default;
@@ -114,8 +113,5 @@ struct vt_notifier_param {
    vt_do_kbkeycode_ioctl, vt_do_kdsk_ioctl, vt_do_kdgkb_ioctl, vt_do_kdskled,
    vt_do_kdgkbmode, vt_do_kdgkbmeta, vt_get_shift_state, vt_get_leds,
    vt_set_led_state removed - never called */
-
-int vt_reset_unicode(unsigned int console);
-void vt_reset_keyboard(unsigned int console);
 
 #endif

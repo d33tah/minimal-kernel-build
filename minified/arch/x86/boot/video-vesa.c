@@ -2,30 +2,17 @@
 #include "boot.h"
 #include "video.h"
 
-static __videocard video_vesa;
-
-/* VESA probe - return 0 modes (no VESA graphics for minimal kernel) */
-static int vesa_probe(void)
-{
-	return 0;
-}
-
-static int vesa_set_mode(struct mode_info *mode)
-{
-	return -1;  /* VESA modes not supported */
-}
+/*
+ * The VESA __videocard entry and its vesa_probe()/vesa_set_mode() handlers
+ * were dead in this minimal 80x25-text boot: vesa_probe() reported 0 modes,
+ * so raw_set_mode() never selected the VESA card (video-vga wins).  Removing
+ * the .videocards struct + both handlers makes probe_cards() iterate one
+ * fewer no-op card; the text mode setup is unchanged.  vesa_store_edid()
+ * stays: it is still called unconditionally from set_video() (video.c).
+ */
 
 #ifndef _WAKEUP
 void vesa_store_edid(void)
 {
 }
 #endif
-
-static __videocard video_vesa =
-{
-	.card_name	= "VESA",
-	.probe		= vesa_probe,
-	.set_mode	= vesa_set_mode,
-	.xmode_first	= VIDEO_FIRST_VESA,
-	.xmode_n	= 0x200,
-};

@@ -5,11 +5,13 @@
 #include <asm/x86_init.h>
 
 
-#if CONFIG_BASE_SMALL == 0
-# define MAX_MP_BUSSES		260
-#else
+/*
+ * CONFIG_BASE_SMALL is fixed to 1 in this build (autoconf.h:262 / .config:439),
+ * so `#if CONFIG_BASE_SMALL == 0` is always false and the 260 then-arm was
+ * statically dead in every TU; only the #else value 32 was ever emitted.
+ * Emit the live value unconditionally.
+ */
 # define MAX_MP_BUSSES		32
-#endif
 
 extern DECLARE_BITMAP(mp_bus_not_pci, MAX_MP_BUSSES);
 

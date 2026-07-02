@@ -30,7 +30,6 @@ struct device_private {
 
  
 extern int devices_init(void);
-extern int buses_init(void);
 extern int classes_init(void);
 
 /* virtual_device_parent removed - unused */

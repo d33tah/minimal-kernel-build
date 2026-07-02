@@ -53,9 +53,12 @@ static char * const zone_names[MAX_NR_ZONES] = {
 static unsigned long arch_zone_lowest_possible_pfn[MAX_NR_ZONES] __initdata;
 static unsigned long arch_zone_highest_possible_pfn[MAX_NR_ZONES] __initdata;
 
-#if MAX_NUMNODES > 1
-unsigned int nr_node_ids __read_mostly = MAX_NUMNODES;
-#endif
+/*
+ * NODES_SHIFT is a hardcoded 0 in this tree (include/linux/numa.h), so
+ * MAX_NUMNODES == (1 << 0) == 1 and the `#if MAX_NUMNODES > 1` out-of-line
+ * `nr_node_ids` definition was statically dead in every TU. nr_node_ids is
+ * served unconditionally by `#define nr_node_ids 1U` (include/linux/nodemask.h).
+ */
 
 int page_group_by_mobility_disabled __read_mostly;
 

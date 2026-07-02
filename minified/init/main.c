@@ -78,8 +78,6 @@ bool static_key_initialized __read_mostly;
 static const char *argv_init[MAX_INIT_ARGS+2] = { "init", NULL, };
 const char *envp_init[MAX_INIT_ENVS+2] = { "HOME=/", "TERM=linux", NULL, };
 
-extern const struct obs_kernel_param __setup_start[], __setup_end[];
-
 unsigned long loops_per_jiffy = (1<<12);
 
 /* The debug/quiet/loglevel/bootconfig early_param handlers were empty stubs
@@ -94,31 +92,13 @@ unsigned long loops_per_jiffy = (1<<12);
  * parse_early_param / do_initcall_level) were provably behaviour-neutral and are
  * gone; the `unknown` bootoption callbacks it once dispatched went with it.
  */
-static int __init init_setup(char *str)
-{
-	unsigned int i;
-
-	execute_command = str;
-	 
-	for (i = 1; i < MAX_INIT_ARGS; i++)
-		argv_init[i] = NULL;
-	return 1;
-}
-__setup("init=", init_setup);
-
-static int __init rdinit_setup(char *str)
-{
-	unsigned int i;
-
-	ramdisk_execute_command = str;
-	 
-	for (i = 1; i < MAX_INIT_ARGS; i++)
-		argv_init[i] = NULL;
-	return 1;
-}
-__setup("rdinit=", rdinit_setup);
-
-
+/*
+ * The init=/rdinit= __setup handlers were removed with the cmdline-parse
+ * cluster: the .init.setup section (__setup_start..__setup_end) is no longer
+ * iterated by any code (obsolete_checksetup/unknown_bootoption are gone), so
+ * these handlers were provably never invoked on ANY boot. execute_command
+ * stays NULL and ramdisk_execute_command keeps its "/init" default.
+ */
 static void __init setup_command_line(char *command_line)
 {
 	size_t len;

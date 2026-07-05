@@ -404,10 +404,6 @@ static inline unsigned int task_cpu(const struct task_struct *p)
 }
 
 
-#ifndef TASK_SIZE_OF
-#define TASK_SIZE_OF(tsk)	TASK_SIZE
-#endif
-
 
 
 

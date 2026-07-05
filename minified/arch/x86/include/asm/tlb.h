@@ -7,9 +7,6 @@
 #include <asm/tlbflush.h>
 #include <asm/cacheflush.h>
 
-#ifndef nmi_uaccess_okay
-# define nmi_uaccess_okay() true
-#endif
 
 #ifdef tlb_needs_table_invalidate
 #error tlb_needs_table_invalidate() requires MMU_GATHER_RCU_TABLE_FREE

@@ -52,13 +52,6 @@ static inline void user_disable_single_step(struct task_struct *task)
 #define current_pt_regs() task_pt_regs(current)
 #endif
 
-#ifndef signal_pt_regs
-#define signal_pt_regs() task_pt_regs(current)
-#endif
-
-#ifndef current_user_stack_pointer
-#define current_user_stack_pointer() user_stack_pointer(current_pt_regs())
-#endif
 
 
 static inline int ptrace_report_syscall(unsigned long message)

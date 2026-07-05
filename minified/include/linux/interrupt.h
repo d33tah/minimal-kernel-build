@@ -81,9 +81,6 @@ struct device;
 
 #endif  
 
-#ifndef hard_irq_disable
-#define hard_irq_disable()	do { } while(0)
-#endif
 
 
 enum

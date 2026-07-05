@@ -4,10 +4,6 @@
 #include <linux/const.h>
 #include <asm/cache.h>
 
-#ifndef L1_CACHE_ALIGN
-#define L1_CACHE_ALIGN(x) __ALIGN_KERNEL(x, L1_CACHE_BYTES)
-#endif
-
 #ifndef SMP_CACHE_BYTES
 #define SMP_CACHE_BYTES L1_CACHE_BYTES
 #endif

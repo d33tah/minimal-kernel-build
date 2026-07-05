@@ -317,10 +317,6 @@ static inline int folio_put_testzero(struct folio *folio)
 
 
 
-#ifndef is_ioremap_addr
-#define is_ioremap_addr(x) is_vmalloc_addr(x)
-#endif
-
 extern bool is_vmalloc_addr(const void *x);
 
 

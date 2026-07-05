@@ -15,14 +15,6 @@
 # define barrier() __asm__ __volatile__("": : :"memory")
 #endif
 
-#ifndef barrier_data
-# define barrier_data(ptr) __asm__ __volatile__("": :"r"(ptr) :"memory")
-#endif
-
-#ifndef barrier_before_unreachable
-# define barrier_before_unreachable() do { } while (0)
-#endif
-
 #define annotate_unreachable()
 
 #ifndef unreachable
@@ -30,15 +22,6 @@
 	annotate_unreachable();		\
 	__builtin_unreachable();	\
 } while (0)
-#endif
-
-#ifndef KENTRY
-# define KENTRY(sym)						\
-	extern typeof(sym) sym;					\
-	static const unsigned long __kentry_##sym		\
-	__used							\
-	__attribute__((__section__("___kentry+" #sym)))		\
-	= (unsigned long)&sym;
 #endif
 
 #ifndef RELOC_HIDE
@@ -49,11 +32,6 @@
 #endif
 
 #define absolute_pointer(val)	RELOC_HIDE((void *)(val), 0)
-
-#ifndef OPTIMIZER_HIDE_VAR
-#define OPTIMIZER_HIDE_VAR(var)						\
-	__asm__ ("" : "=r" (var) : "0" (var))
-#endif
 
 #ifndef __UNIQUE_ID
 # define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __LINE__)

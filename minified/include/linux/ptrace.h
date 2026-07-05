@@ -32,11 +32,6 @@ static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
 
 /* ptrace_release_task: 0-caller static-inline orphan removed (LOC reduction) */
 
-#ifndef force_successful_syscall_return
-#define force_successful_syscall_return() do { } while (0)
-#endif
-
-
 #ifndef arch_has_single_step
 
 static inline void user_disable_single_step(struct task_struct *task)

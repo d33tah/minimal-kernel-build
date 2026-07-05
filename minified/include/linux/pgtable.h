@@ -64,10 +64,6 @@ static inline pgd_t *pgd_offset_pgd(pgd_t *pgd, unsigned long address)
 #define pgd_offset(mm, address)		pgd_offset_pgd((mm)->pgd, (address))
 #endif
 
-#ifndef pgd_offset_k
-#define pgd_offset_k(address)		pgd_offset(&init_mm, (address))
-#endif
-
 #ifndef __HAVE_ARCH_UPDATE_MMU_TLB
 static inline void update_mmu_tlb(struct vm_area_struct *vma,
 				unsigned long address, pte_t *ptep)

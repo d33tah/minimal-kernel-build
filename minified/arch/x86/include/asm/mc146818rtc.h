@@ -6,10 +6,6 @@
 #include <asm/io.h>
 #include <asm/processor.h>
 
-#ifndef RTC_PORT
-#define RTC_PORT(x)	(0x70 + (x))
-#endif
-
 /* RTC_ALWAYS_BCD, cmos_lock + lock_cmos/unlock_cmos + lock_cmos_prefix/suffix,
  * CMOS_READ/rtc_cmos_read, mach_set_rtc_mmss/mach_get_cmos_time removed -
  * transitively 0-ref (lock_cmos/unlock_cmos only fed the dead prefix/suffix

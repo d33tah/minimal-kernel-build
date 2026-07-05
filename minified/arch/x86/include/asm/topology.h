@@ -20,9 +20,6 @@ static inline int numa_node_id(void)
 #ifndef cpu_to_mem
 #define cpu_to_mem(cpu)		((void)(cpu),0)
 #endif
-#ifndef cpumask_of_node
-    #define cpumask_of_node(node)	((void)(node), cpu_online_mask)
-#endif
 
 /* cpu_coregroup_mask, cpu_clustergroup_mask declarations removed - no implementation */
 

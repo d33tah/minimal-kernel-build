@@ -25,10 +25,7 @@ BUILDIO(l,  , u32)
 #undef BUILDIO
 
 #define inb __inb
-#define inw __inw
-#define inl __inl
 #define outb __outb
 #define outw __outw
-#define outl __outl
 
 #endif

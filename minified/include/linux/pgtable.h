@@ -146,9 +146,7 @@ extern void __init pgtable_cache_init(void);
 /* PGTBL_PGD/P4D/PUD/PTE_MODIFIED removed - 0-caller (only PMD is live) */
 #define		PGTBL_PMD_MODIFIED	BIT(__PGTBL_PMD_MODIFIED)
 
-typedef unsigned int pgtbl_mod_mask;
-
-#endif  
+#endif
 
 #if !defined(MAX_POSSIBLE_PHYSMEM_BITS) && !defined(CONFIG_64BIT)
 #define MAX_POSSIBLE_PHYSMEM_BITS 32

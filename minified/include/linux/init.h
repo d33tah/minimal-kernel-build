@@ -34,7 +34,6 @@
 
 #ifndef __ASSEMBLY__
 typedef int (*initcall_t)(void);
-typedef void (*exitcall_t)(void);
 
 typedef int initcall_entry_t;
 

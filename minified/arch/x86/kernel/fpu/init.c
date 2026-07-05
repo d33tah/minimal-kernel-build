@@ -22,9 +22,7 @@ static void fpu__init_cpu_generic(void)
 		cr4_set_bits(cr4_mask);
 
 	cr0 = read_cr0();
-	cr0 &= ~(X86_CR0_TS|X86_CR0_EM);  
-	if (!boot_cpu_has(X86_FEATURE_FPU))
-		cr0 |= X86_CR0_EM;
+	cr0 &= ~(X86_CR0_TS|X86_CR0_EM);
 	write_cr0(cr0);
 
 	 
@@ -129,9 +127,7 @@ static void __init fpu__init_system_xstate_size_legacy(void)
 	unsigned int size;
 
 	 
-	if (!cpu_feature_enabled(X86_FEATURE_FPU)) {
-		size = sizeof(struct swregs_state);
-	} else if (cpu_feature_enabled(X86_FEATURE_FXSR)) {
+	if (cpu_feature_enabled(X86_FEATURE_FXSR)) {
 		size = sizeof(struct fxregs_state);
 	} else {
 		size = sizeof(struct fregs_state);

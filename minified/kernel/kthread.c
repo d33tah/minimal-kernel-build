@@ -201,8 +201,6 @@ int kthreadd(void *unused)
 		}
 		spin_unlock(&kthread_create_lock);
 	}
-
-	return 0;
 }
 
 /* Kthread worker infrastructure - stubbed (not used) */

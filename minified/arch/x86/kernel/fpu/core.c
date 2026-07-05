@@ -88,9 +88,6 @@ static inline void fpstate_init_fstate(struct fpstate *fpstate)
 
 void fpstate_init_user(struct fpstate *fpstate)
 {
-	if (!cpu_feature_enabled(X86_FEATURE_FPU))
-		return;
-
 	xstate_init_xcomp_bv(&fpstate->regs.xsave, fpstate->xfeatures);
 
 	if (cpu_feature_enabled(X86_FEATURE_FXSR))
@@ -126,9 +123,6 @@ int fpu_clone(struct task_struct *dst)
 	dst_fpu->last_cpu = -1;
 
 	fpstate_reset(dst_fpu);
-
-	if (!cpu_feature_enabled(X86_FEATURE_FPU))
-		return 0;
 
 	set_tsk_thread_flag(dst, TIF_NEED_FPU_LOAD);
 
@@ -178,9 +172,6 @@ void fpu_flush_thread(void)
 }
 void switch_fpu_return(void)
 {
-	if (!static_cpu_has(X86_FEATURE_FPU))
-		return;
-
 	fpregs_restore_userregs();
 }
 

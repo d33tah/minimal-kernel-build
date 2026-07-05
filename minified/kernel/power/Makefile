@@ -1,13 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
 
-ifeq ($(CONFIG_DYNAMIC_DEBUG), y)
-CFLAGS_swap.o                   := -DDEBUG
-CFLAGS_snapshot.o               := -DDEBUG
-CFLAGS_energy_model.o           := -DDEBUG
-endif
-
-KASAN_SANITIZE_snapshot.o	:= n
-
 # obj-y			+= qos.o  # Inlined into pm_qos.h as static inlines
 obj-$(CONFIG_PM)		+= main.o
 obj-$(CONFIG_VT_CONSOLE_SLEEP)	+= console.o

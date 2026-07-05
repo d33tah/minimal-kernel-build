@@ -6,12 +6,10 @@
 # Don't trace early stages of a secondary CPU boot
 ifdef CONFIG_FUNCTION_TRACER
 CFLAGS_REMOVE_common.o = -pg
-CFLAGS_REMOVE_perf_event.o = -pg
 endif
 
 # If these files are instrumented, boot hangs during the first second.
 KCOV_INSTRUMENT_common.o := n
-KCOV_INSTRUMENT_perf_event.o := n
 
 # As above, instrumenting secondary CPU boot code causes boot hangs.
 KCSAN_SANITIZE_common.o := n

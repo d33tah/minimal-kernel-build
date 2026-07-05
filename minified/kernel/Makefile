@@ -16,11 +16,6 @@ obj-$(CONFIG_USERMODE_DRIVER) += usermode_driver.o
 obj-$(CONFIG_MODULES) += kmod.o
 obj-$(CONFIG_MULTIUSER) += groups.o
 
-ifdef CONFIG_FUNCTION_TRACER
-# Do not trace internal ftrace files
-CFLAGS_REMOVE_irq_work.o = $(CC_FLAGS_FTRACE)
-endif
-
 # Prevents flicker of uninteresting __do_softirq()/__local_bh_disable_ip()
 # in coverage traces.
 KCOV_INSTRUMENT_softirq.o := n
@@ -30,18 +25,6 @@ KCSAN_SANITIZE_softirq.o = n
 # These are called from save_stack_trace() on slub debug path,
 # and produce insane amounts of uninteresting coverage.
 KCOV_INSTRUMENT_extable.o := n
-KCOV_INSTRUMENT_stacktrace.o := n
-# Don't self-instrument.
-KCOV_INSTRUMENT_kcov.o := n
-# If sanitizers detect any issues in kcov, it may lead to recursion
-# via printk, etc.
-KASAN_SANITIZE_kcov.o := n
-KCSAN_SANITIZE_kcov.o := n
-UBSAN_SANITIZE_kcov.o := n
-CFLAGS_kcov.o := $(call cc-option, -fno-conserve-stack) -fno-stack-protector
-
-# Don't instrument error handlers
-CFLAGS_REMOVE_cfi.o := $(CC_FLAGS_CFI)
 
 obj-y += sched/
 obj-y += locking/
@@ -114,11 +97,7 @@ obj-$(CONFIG_WATCH_QUEUE) += watch_queue.o
 obj-$(CONFIG_RESOURCE_KUNIT_TEST) += resource_kunit.o
 obj-$(CONFIG_SYSCTL_KUNIT_TEST) += sysctl-test.o
 
-CFLAGS_stackleak.o += $(DISABLE_STACKLEAK_PLUGIN)
 obj-$(CONFIG_GCC_PLUGIN_STACKLEAK) += stackleak.o
-KASAN_SANITIZE_stackleak.o := n
-KCSAN_SANITIZE_stackleak.o := n
-KCOV_INSTRUMENT_stackleak.o := n
 
 obj-$(CONFIG_SCF_TORTURE_TEST) += scftorture.o
 

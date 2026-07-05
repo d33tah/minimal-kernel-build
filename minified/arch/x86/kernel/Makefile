@@ -14,27 +14,14 @@ CPPFLAGS_vmlinux.lds += -U$(UTS_MACHINE)
 ifdef CONFIG_FUNCTION_TRACER
 # Do not profile debug and lowlevel utilities
 CFLAGS_REMOVE_tsc.o = -pg
-CFLAGS_REMOVE_paravirt-spinlocks.o = -pg
-CFLAGS_REMOVE_pvclock.o = -pg
-CFLAGS_REMOVE_kvmclock.o = -pg
-CFLAGS_REMOVE_ftrace.o = -pg
-CFLAGS_REMOVE_early_printk.o = -pg
-CFLAGS_REMOVE_head64.o = -pg
-CFLAGS_REMOVE_sev.o = -pg
 endif
 
 KASAN_SANITIZE_head$(BITS).o				:= n
 KASAN_SANITIZE_dumpstack.o				:= n
-KASAN_SANITIZE_dumpstack_$(BITS).o			:= n
-KASAN_SANITIZE_stacktrace.o				:= n
-KASAN_SANITIZE_paravirt.o				:= n
-KASAN_SANITIZE_sev.o					:= n
 
 # With some compiler versions the generated code results in boot hangs, caused
 # by several compilation units. To be safe, disable all instrumentation.
 KCSAN_SANITIZE := n
-
-OBJECT_FILES_NON_STANDARD_test_nx.o			:= y
 
 # If instrumentation of this dir is enabled, boot hangs during first second.
 # Probably could be more selective here, but note that files related to irqs,

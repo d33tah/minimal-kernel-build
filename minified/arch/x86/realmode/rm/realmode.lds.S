@@ -44,11 +44,6 @@ SECTIONS
 		*(.text32)
 		*(.text32.*)
 	}
-
-	.text64 : {
-		*(.text64)
-		*(.text64.*)
-	}
 	pa_ro_end = .;
 
 	. = ALIGN(PAGE_SIZE);

@@ -212,13 +212,6 @@ struct menu {
 
 #define MENU_ROOT		0x0002
 
-struct jump_key {
-	struct list_head entries;
-	size_t offset;
-	struct menu *target;
-	int index;
-};
-
 extern struct file *file_list;
 extern struct file *current_file;
 struct file *lookup_file(const char *name);

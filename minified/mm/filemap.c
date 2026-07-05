@@ -129,11 +129,6 @@ static void folio_wake_bit(struct folio *folio, int bit_nr)
 	spin_unlock_irqrestore(&q->lock, flags);
 }
 
-enum behavior {
-	EXCLUSIVE,	
-	SHARED,
-};
-
 /*
  * Stub: nothing waits on a folio bit on a single-shot boot (no contention,
  * no async I/O completion wait). folio_wait_bit_common and its private

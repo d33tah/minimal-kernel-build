@@ -61,13 +61,6 @@ arch_clear_bit(long nr, volatile unsigned long *addr)
 }
 
 static __always_inline void
-arch_clear_bit_unlock(long nr, volatile unsigned long *addr)
-{
-	barrier();
-	arch_clear_bit(nr, addr);
-}
-
-static __always_inline void
 arch___clear_bit(long nr, volatile unsigned long *addr)
 {
 	asm volatile(__ASM_SIZE(btr) " %1,%0" : : ADDR, "Ir" (nr) : "memory");

@@ -137,8 +137,7 @@ enum slab_state {
 	DOWN,			 
 	PARTIAL,		 
 	PARTIAL_NODE,		 
-	UP,			 
-	FULL			 
+	UP,
 };
 
 extern enum slab_state slab_state;

@@ -6,7 +6,6 @@
 
 enum {
 	LDISC_SEM_NORMAL,
-	LDISC_SEM_OTHER,
 };
 
 

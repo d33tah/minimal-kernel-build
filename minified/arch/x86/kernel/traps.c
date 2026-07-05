@@ -193,7 +193,6 @@ DEFINE_IDTENTRY(exc_bounds)
 enum kernel_gp_hint {
 	GP_NO_HINT,
 	GP_NON_CANONICAL,
-	GP_CANONICAL
 };
 
 static enum kernel_gp_hint get_kernel_gp_address(struct pt_regs *regs,

@@ -113,7 +113,6 @@ enum node_stat_item {
 	NR_ANON_THPS,
 	NR_KERNEL_STACK_KB,
 	NR_PAGETABLE,
-	NR_VM_NODE_STAT_ITEMS
 };
 
 

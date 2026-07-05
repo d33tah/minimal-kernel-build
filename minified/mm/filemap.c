@@ -131,8 +131,7 @@ static void folio_wake_bit(struct folio *folio, int bit_nr)
 
 enum behavior {
 	EXCLUSIVE,	
-	SHARED,		
-	DROP,		
+	SHARED,
 };
 
 /*

@@ -183,7 +183,6 @@ enum x86_hardware_subarch {
 	X86_SUBARCH_XEN,
 	X86_SUBARCH_INTEL_MID,
 	X86_SUBARCH_CE4100,
-	X86_NR_SUBARCHS,
 };
 
 #endif  

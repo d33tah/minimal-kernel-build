@@ -16,7 +16,6 @@
  
 enum {
 	TTY_LOCK_NORMAL = 0,
-	TTY_LOCK_SLAVE,
 };
 
  

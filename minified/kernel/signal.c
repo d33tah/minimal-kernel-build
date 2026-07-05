@@ -100,8 +100,7 @@ flush_signal_handlers(struct task_struct *t, int force_default)
 
 enum sig_handler {
 	HANDLER_CURRENT, 
-	HANDLER_SIG_DFL, 
-	HANDLER_EXIT,	 
+	HANDLER_SIG_DFL,
 };
 
 static int

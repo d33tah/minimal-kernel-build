@@ -13,9 +13,6 @@
 
 struct msr_info {
 	u32 msr_no;
-	struct msr reg;
-	struct msr *msrs;
-	int err;
 };
 
 struct saved_msr {

@@ -136,14 +136,6 @@ static inline void tlb_flush_pmd_range(struct mmu_gather *tlb,
 /* tlb_flush_pud_range / tlb_flush_p4d_range removed - only the dead
  * pud_free_tlb/p4d_free_tlb macros (folded away on 2-level paging) used them */
 
-#ifndef pte_free_tlb
-#define pte_free_tlb(tlb, ptep, address)			\
-	do {							\
-		tlb_flush_pmd_range(tlb, address, PAGE_SIZE);	\
-		tlb->freed_tables = 1;				\
-		__pte_free_tlb(tlb, ptep, address);		\
-	} while (0)
-#endif
 
 /* pmd_free_tlb / pud_free_tlb / p4d_free_tlb removed - never invoked on
  * 2-level paging (mm/memory.c free_pgd_range only calls pte_free_tlb) */

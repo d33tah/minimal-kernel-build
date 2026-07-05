@@ -88,10 +88,6 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 /* set_{pmd,pud,p4d,pgd}_safe() + the pXd_same() predicates removed - unused */
 
 
-#define pgd_addr_end(addr, end)						\
-({	unsigned long __boundary = ((addr) + PGDIR_SIZE) & PGDIR_MASK;	\
-	(__boundary - 1 < (end) - 1)? __boundary: (end);		\
-})
 
 /* 2-level paging: pgd_bad()/p4d_bad()/pud_bad() are all constant 0 on x86
  * (pgtable_types.h), so the corruption arms of *_none_or_clear_bad() that

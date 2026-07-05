@@ -63,7 +63,7 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 /* --- 2025-12-08 00:18 --- Inlined from compiler-clang.h */
 #define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)
 #define __no_sanitize_address
-#define __no_sanitize_thread
+/* __no_sanitize_thread dropped: KCSAN unset, zero expanders tree-wide (tick #404) */
 #define __no_sanitize_coverage
 
 #define __nocfi		__attribute__((__no_sanitize__("cfi")))

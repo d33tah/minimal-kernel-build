@@ -1,4 +1,3 @@
-#include <linux/types.h>
 #include <asm/cpu.h>
 
 unsigned int x86_family(unsigned int sig)

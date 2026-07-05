@@ -8,29 +8,12 @@ __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 
 
 
-/* timer-wheel sizing: only LVL_SIZE * LVL_DEPTH (WHEEL_SIZE) survives now that
- * the timer enqueue/expiry machinery is stubbed out. */
-#define LVL_BITS	6
-#define LVL_SIZE	(1UL << LVL_BITS)
-
-#if HZ > 100
-# define LVL_DEPTH	9
-# else
-# define LVL_DEPTH	8
-#endif
-
-#define WHEEL_SIZE	(LVL_SIZE * LVL_DEPTH)
-
 # define NR_BASES	1
 
 struct timer_base {
 	raw_spinlock_t		lock;
 	unsigned long		clk;
 	unsigned long		next_expiry;
-	bool			next_expiry_recalc;
-	bool			timers_pending;
-	DECLARE_BITMAP(pending_map, WHEEL_SIZE);
-	struct hlist_head	vectors[WHEEL_SIZE];
 } ____cacheline_aligned;
 
 static DEFINE_PER_CPU(struct timer_base, timer_bases[NR_BASES]);

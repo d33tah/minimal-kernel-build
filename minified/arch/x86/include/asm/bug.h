@@ -12,7 +12,6 @@
 #define _BUG_FLAGS(ins, flags, extra)  asm volatile(ins)
 
 
-#define HAVE_ARCH_BUG
 #define BUG()							\
 do {								\
 	_BUG_FLAGS(ASM_UD2, 0, "");				\

@@ -11,8 +11,6 @@ struct exception_table_entry {
 };
 struct pt_regs;
 
-#define ARCH_HAS_RELATIVE_EXTABLE
-
 #define swap_ex_entry_fixup(a, b, tmp, delta)			\
 	do {							\
 		(a)->fixup = (b)->fixup + (delta);		\

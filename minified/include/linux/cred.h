@@ -40,7 +40,6 @@ struct cred {
 	struct group_info *group_info;	 
 	 
 	union {
-		int non_rcu;			 
 		struct rcu_head	rcu;		 
 	};
 } __randomize_layout;
@@ -66,7 +65,6 @@ static inline const struct cred *get_cred(const struct cred *cred)
 	struct cred *nonconst_cred = (struct cred *) cred;
 	if (!cred)
 		return cred;
-	nonconst_cred->non_rcu = 0;
 	return get_new_cred(nonconst_cred);
 }
 

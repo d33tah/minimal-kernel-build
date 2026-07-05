@@ -62,7 +62,6 @@ struct cred *prepare_creds(void)
 	old = task->cred;
 	memcpy(new, old, sizeof(struct cred));
 
-	new->non_rcu = 0;
 	atomic_set(&new->usage, 1);
 	get_group_info(new->group_info);
 	get_uid(new->user);

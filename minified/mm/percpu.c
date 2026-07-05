@@ -44,7 +44,6 @@ struct pcpu_chunk {
 	void			*data;
 	bool			immutable;
 	bool			isolated;
-	int			start_offset;
 	int			nr_pages;
 	int			nr_populated;
 	int                     nr_empty_pop_pages;
@@ -844,7 +843,6 @@ static struct pcpu_chunk * __init pcpu_alloc_first_chunk(unsigned long tmp_addr,
 	INIT_LIST_HEAD(&chunk->list);
 
 	chunk->base_addr = (void *)aligned_addr;
-	chunk->start_offset = start_offset;
 
 	chunk->nr_pages = region_size >> PAGE_SHIFT;
 	region_bits = pcpu_chunk_map_bits(chunk);
@@ -1295,7 +1293,6 @@ void __init setup_per_cpu_areas(void)
 	ai->dyn_size = unit_size;
 	ai->unit_size = unit_size;
 	ai->atom_size = unit_size;
-	ai->alloc_size = unit_size;
 	ai->groups[0].nr_units = 1;
 	ai->groups[0].cpu_map[0] = 0;
 

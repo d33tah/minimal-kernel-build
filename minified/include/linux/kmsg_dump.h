@@ -6,12 +6,11 @@
  * argument and there is no log buffer to dump. struct kmsg_dumper was
  * never instantiated or registered (no by-address use anywhere), so it
  * and its supporting list.h/errno.h includes have been dropped. The enum
- * is kept only to type the three live KMSG_DUMP_* arguments at the no-op
- * kmsg_dump() callsites (panic.c, reboot.c); the values are never read.
+ * is kept only to type the KMSG_DUMP_PANIC argument at the no-op
+ * kmsg_dump() callsite (panic.c); the value is never read.
  */
 enum kmsg_dump_reason {
 	KMSG_DUMP_PANIC,
-	KMSG_DUMP_OOPS,
 };
 
 static inline void kmsg_dump(enum kmsg_dump_reason reason)

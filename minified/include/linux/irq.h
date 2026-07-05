@@ -64,7 +64,6 @@ enum {
 	IRQD_ACTIVATED			= (1 <<  9),
 	IRQD_NO_BALANCING		= (1 << 10),
 	IRQD_PER_CPU			= (1 << 11),
-	IRQD_LEVEL			= (1 << 13),
 	IRQD_IRQ_DISABLED		= (1 << 16),
 	IRQD_IRQ_MASKED			= (1 << 17),
 	IRQD_IRQ_INPROGRESS		= (1 << 18),

@@ -284,13 +284,10 @@ static __always_inline bool test_bit(long nr, const volatile unsigned long *addr
 	return arch_test_bit(nr, addr);
 }
 
-/* Inlined from asm-generic/bitops/instrumented-lock.h */
-static inline void clear_bit_unlock(long nr, volatile unsigned long *addr)
-{
-	instrument_atomic_write(addr + BIT_WORD(nr), sizeof(long));
-	arch_clear_bit_unlock(nr, addr);
-}
-
+/*
+ * Inlined from asm-generic/bitops/instrumented-lock.h.
+ * clear_bit_unlock() dropped: unreferenced tree-wide in this minified tree.
+ */
 static inline bool test_and_set_bit_lock(long nr, volatile unsigned long *addr)
 {
 	instrument_atomic_read_write(addr + BIT_WORD(nr), sizeof(long));

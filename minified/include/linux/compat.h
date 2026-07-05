@@ -22,9 +22,6 @@ struct cred;
 #include <asm/signal.h>
 #include <asm/syscall_wrapper.h>
 
-#ifndef __SC_DELOUSE
-#define __SC_DELOUSE(t,v) ((__force t)(unsigned long)(v))
-#endif
 
 /* Forward declarations (compat_* 0-ref fwd-decls removed) */
 /* _COMPAT_NSIG_WORDS removed - 0-ref tree-wide */

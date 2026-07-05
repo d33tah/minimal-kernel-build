@@ -113,20 +113,6 @@ do {									\
 #define smp_acquire__after_ctrl_dep()		smp_rmb()
 #endif
 
-#ifndef smp_cond_load_relaxed
-#define smp_cond_load_relaxed(ptr, cond_expr) ({		\
-	typeof(ptr) __PTR = (ptr);				\
-	__unqual_scalar_typeof(*ptr) VAL;			\
-	for (;;) {						\
-		VAL = READ_ONCE(*__PTR);			\
-		if (cond_expr)					\
-			break;					\
-		cpu_relax();					\
-	}							\
-	(typeof(*ptr))VAL;					\
-})
-#endif
-
 /* end asm-generic/barrier.h */
 
 #endif  

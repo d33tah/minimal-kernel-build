@@ -60,7 +60,4 @@ obj-y				+= ptrace.o
 # i8237.o removed - empty stub
 # obj-y				+= stacktrace.o
 obj-y				+= cpu/
-obj-y				+= acpi/
-obj-y				+= apic/
-obj-y				+= kprobes/
 obj-$(CONFIG_X86_32)		+= doublefault_32.o

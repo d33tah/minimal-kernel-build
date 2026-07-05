@@ -9,10 +9,5 @@ obj-y += realmode/
 obj-y += kernel/
 obj-y += mm/
 
-obj-y += crypto/
-
-obj-y += platform/
-obj-y += net/
-
 # for cleaning
 subdir- += boot tools

@@ -6,7 +6,6 @@ obj-y			:= core.o \
 			   init.o map.o
 obj-$(CONFIG_AUXILIARY_BUS) += auxiliary.o
 obj-$(CONFIG_DEVTMPFS)	+= devtmpfs.o
-obj-y			+= power/
 obj-$(CONFIG_ISA_BUS_API)	+= isa.o
 obj-$(CONFIG_NUMA)	+= node.o
 obj-$(CONFIG_MEMORY_HOTPLUG) += memory.o

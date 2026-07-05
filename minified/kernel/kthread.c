@@ -31,8 +31,6 @@ struct kthread {
 	void *data;
 	struct completion parked;
 	struct completion exited;
-	 
-	char *full_name;
 };
 
 enum KTHREAD_BITS {

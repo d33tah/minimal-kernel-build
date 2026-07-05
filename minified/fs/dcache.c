@@ -829,10 +829,6 @@ void d_add(struct dentry *entry, struct inode *inode)
 
 static void __init dcache_init_early(void)
 {
-	
-	if (hashdist)
-		return;
-
 	dentry_hashtable =
 		alloc_large_system_hash("Dentry cache",
 					sizeof(struct hlist_bl_head),
@@ -852,22 +848,6 @@ static void __init dcache_init(void)
 	dentry_cache = KMEM_CACHE_USERCOPY(dentry,
 		SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_ACCOUNT,
 		d_iname);
-
-	
-	if (!hashdist)
-		return;
-
-	dentry_hashtable =
-		alloc_large_system_hash("Dentry cache",
-					sizeof(struct hlist_bl_head),
-					0,
-					13,
-					HASH_ZERO,
-					&d_hash_shift,
-					NULL,
-					0,
-					0);
-	d_hash_shift = 32 - d_hash_shift;
 }
 
 struct kmem_cache *names_cachep __read_mostly;

@@ -284,19 +284,6 @@ void __init setup_kmalloc_cache_index_table(void)
 			break;
 		size_index[elem] = KMALLOC_SHIFT_LOW;
 	}
-
-	if (KMALLOC_MIN_SIZE >= 64) {
-		 
-		for (i = 64 + 8; i <= 96; i += 8)
-			size_index[size_index_elem(i)] = 7;
-
-	}
-
-	if (KMALLOC_MIN_SIZE >= 128) {
-		 
-		for (i = 128 + 8; i <= 192; i += 8)
-			size_index[size_index_elem(i)] = 8;
-	}
 }
 
 static void __init

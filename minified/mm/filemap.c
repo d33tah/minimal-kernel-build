@@ -587,20 +587,6 @@ vm_fault_t filemap_fault(struct vm_fault *vmf)
 	return VM_FAULT_LOCKED;
 }
 
-vm_fault_t filemap_map_pages(struct vm_fault *vmf,
-			     pgoff_t start_pgoff, pgoff_t end_pgoff)
-{
-	/*
-	 * RUNTIME-DEAD ANCHOR-STUB: this kernel never faults in file-backed
-	 * pages on its only job (boot + print + stay-alive); the coverage
-	 * trace shows filemap_map_pages and its whole private helper subgraph
-	 * are never executed. Kept link-live for generic_file_vm_ops.map_pages.
-	 * Returning 0 (no fault handled) is the safe fallback the caller
-	 * already tolerates.
-	 */
-	return 0;
-}
-
 vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf)
 {
 	/*
@@ -617,7 +603,6 @@ vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf)
 
 const struct vm_operations_struct generic_file_vm_ops = {
 	.fault		= filemap_fault,
-	.map_pages	= filemap_map_pages,
 	.page_mkwrite	= filemap_page_mkwrite,
 };
 

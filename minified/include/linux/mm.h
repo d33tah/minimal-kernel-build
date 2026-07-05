@@ -260,10 +260,6 @@ struct vm_fault {
 
 struct vm_operations_struct {
 	vm_fault_t (*fault)(struct vm_fault *vmf);
-	vm_fault_t (*map_pages)(struct vm_fault *vmf,
-			pgoff_t start_pgoff, pgoff_t end_pgoff);
-
-
 	vm_fault_t (*page_mkwrite)(struct vm_fault *vmf);
 };
 
@@ -823,8 +819,6 @@ extern unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info);
 extern void truncate_inode_pages(struct address_space *, loff_t);
 
 extern vm_fault_t filemap_fault(struct vm_fault *vmf);
-extern vm_fault_t filemap_map_pages(struct vm_fault *vmf,
-		pgoff_t start_pgoff, pgoff_t end_pgoff);
 extern vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf);
 
 extern unsigned long stack_guard_gap;

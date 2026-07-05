@@ -433,9 +433,6 @@ static void read_relocs(FILE *fp)
 			Elf_Rel *rel = &sec->reltab[j];
 			rel->r_offset = elf_addr_to_cpu(rel->r_offset);
 			rel->r_info   = elf_xword_to_cpu(rel->r_info);
-#if (SHT_REL_TYPE == SHT_RELA)
-			rel->r_addend = elf_xword_to_cpu(rel->r_addend);
-#endif
 		}
 	}
 }

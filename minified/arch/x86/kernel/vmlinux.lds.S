@@ -157,12 +157,6 @@ SECTIONS
 
 	INIT_DATA_SECTION(16)
 
-	.x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
-		__x86_cpu_dev_start = .;
-		*(.x86_cpu_dev.init)
-		__x86_cpu_dev_end = .;
-	}
-
 	/*
 	 * start address and size of operations which during runtime
 	 * can be patched with virtualization friendly instructions or

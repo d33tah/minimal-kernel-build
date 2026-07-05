@@ -39,7 +39,6 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 		s->s_iflags |= SB_I_NODEV;
 	INIT_HLIST_BL_HEAD(&s->s_roots);
 
-	s->s_count = 1;
 	atomic_set(&s->s_active, 1);
 	s->s_maxbytes = MAX_NON_LFS;
 	s->s_op = &default_op;
@@ -143,7 +142,6 @@ int set_anon_super_fc(struct super_block *sb, struct fs_context *fc)
 	if (dev < 0)
 		return dev;
 
-	sb->s_dev = MKDEV(0, dev);
 	return 0;
 }
 

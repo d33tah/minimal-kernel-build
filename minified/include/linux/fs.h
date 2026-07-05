@@ -229,7 +229,6 @@ struct inode {
 	u8			i_blkbits;
 
 
-	unsigned long		i_state;
 	struct rw_semaphore	i_rwsem;
 
 	struct hlist_node	i_hash;
@@ -395,7 +394,6 @@ enum {
 };
 
 struct super_block {
-	dev_t			s_dev;
 	unsigned char		s_blocksize_bits;
 	loff_t			s_maxbytes;
 	struct file_system_type	*s_type;
@@ -404,7 +402,6 @@ struct super_block {
 	unsigned long		s_iflags;
 	struct dentry		*s_root;
 	struct rw_semaphore	s_umount;
-	int			s_count;
 	atomic_t		s_active;
 	struct hlist_bl_head	s_roots;
 

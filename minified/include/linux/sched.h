@@ -158,7 +158,6 @@ struct task_struct {
 	struct mm_struct		*mm;
 	struct mm_struct		*active_mm;
 
-	int				exit_state;
 	int				exit_signal;
 	unsigned long			jobctl;
 

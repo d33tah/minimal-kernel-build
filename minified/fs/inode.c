@@ -138,7 +138,6 @@ struct inode *new_inode_pseudo(struct super_block *sb)
 
 	if (inode) {
 		spin_lock(&inode->i_lock);
-		inode->i_state = 0;
 		spin_unlock(&inode->i_lock);
 	}
 	return inode;

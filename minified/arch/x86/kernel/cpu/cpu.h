@@ -7,7 +7,6 @@ struct cpu_dev {
 	const char	*c_vendor;
 
 	void		(*c_init)(struct cpuinfo_x86 *);
-	int		c_x86_vendor;
 };
 
 /* cpu_dev_register macro + __x86_cpu_dev_start/end externs removed - the

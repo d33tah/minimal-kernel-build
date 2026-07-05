@@ -33,7 +33,6 @@ struct pid_namespace init_pid_ns = {
 	.idr = IDR_INIT(init_pid_ns.idr),
 	.pid_allocated = PIDNS_ADDING,
 	.level = 0,
-	.child_reaper = &init_task,
 };
 
 

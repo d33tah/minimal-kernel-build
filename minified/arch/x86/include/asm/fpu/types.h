@@ -174,8 +174,6 @@ struct fpu {
 
 
 struct fpu_state_config {
-	 
-	unsigned int		max_size;
 
 	 
 	unsigned int		default_size;

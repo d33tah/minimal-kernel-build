@@ -13,7 +13,6 @@
 struct pid_namespace {
 	struct idr idr;
 	unsigned int pid_allocated;
-	struct task_struct *child_reaper;
 	struct kmem_cache *pid_cachep;
 	unsigned int level;
 } __randomize_layout;

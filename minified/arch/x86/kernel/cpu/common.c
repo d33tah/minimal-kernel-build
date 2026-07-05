@@ -44,7 +44,6 @@ static void default_init(struct cpuinfo_x86 *c)
 static const struct cpu_dev default_cpu = {
 	.c_init		= default_init,
 	.c_vendor	= "Unknown",
-	.c_x86_vendor	= X86_VENDOR_UNKNOWN,
 };
 
 static const struct cpu_dev *this_cpu = &default_cpu;

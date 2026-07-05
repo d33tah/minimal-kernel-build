@@ -10,7 +10,6 @@
 #include <asm/fixmap.h>
 #include <asm/tlb.h>
 #include <asm/tlbflush.h>
-#include <asm/sections.h>
 #include <asm/set_memory.h>
 #include <asm/page_types.h>
 #include <asm/pgtable_areas.h>

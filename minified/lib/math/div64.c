@@ -1,5 +1,4 @@
 
-#include <linux/bitops.h>
 #include <linux/math64.h>
 
 #if BITS_PER_LONG == 32

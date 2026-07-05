@@ -3,7 +3,6 @@
 #include <linux/fs.h>
 #include <linux/slab.h>
 
-#include <linux/errno.h>
 
 #include <linux/kobject.h>
 typedef struct kobject *kobj_probe_t(dev_t, int *, void *);

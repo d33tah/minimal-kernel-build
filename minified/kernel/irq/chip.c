@@ -4,7 +4,6 @@
 /* --- 2025-12-07 23:50 --- Inlined from linux/msi.h */
 #include <asm/hw_irq.h>
 
-#include <linux/kernel_stat.h>
 
 
 #include "internals.h"

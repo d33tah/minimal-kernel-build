@@ -16,10 +16,6 @@ obj-y :=	open.o read_write.o file_table.o super.o \
 		fs_struct.o \
 		fs_context.o fs_parser.o init.o
 
-ifeq ($(CONFIG_BLOCK),y)
-obj-y +=	buffer.o direct-io.o mpage.o
-endif
-
 obj-$(CONFIG_PROC_FS) += proc_namespace.o
 
 obj-$(CONFIG_EPOLL)		+= eventpoll.o

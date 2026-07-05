@@ -15,10 +15,6 @@ obj-y += timekeeping.o clocksource.o jiffies.o
 obj-y += posix-stubs.o
 
 obj-$(CONFIG_GENERIC_CLOCKEVENTS)		+= clockevents.o tick-common.o
-ifeq ($(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST),y)
- obj-y						+= tick-broadcast.o
- obj-$(CONFIG_TICK_ONESHOT)			+= tick-broadcast-hrtimer.o
-endif
 obj-$(CONFIG_GENERIC_SCHED_CLOCK)		+= sched_clock.o
 obj-$(CONFIG_TICK_ONESHOT)			+= tick-oneshot.o tick-sched.o
 obj-$(CONFIG_LEGACY_TIMER_TICK)			+= tick-legacy.o

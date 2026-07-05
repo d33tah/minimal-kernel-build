@@ -1,6 +1,5 @@
 #include <linux/mm_types.h>
 #include <linux/rbtree.h>
-#include <linux/spinlock.h>
 #include <linux/mman.h>
 
 #include <linux/user_namespace.h>

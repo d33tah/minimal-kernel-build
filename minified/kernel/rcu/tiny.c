@@ -1,6 +1,5 @@
 #include <linux/interrupt.h>
 #include <linux/rcupdate_wait.h>
-#include <linux/kernel.h>
 #include <linux/sched.h>
 #include <linux/types.h>
 #include <linux/init.h>

@@ -1,4 +1,3 @@
-#include <linux/kernel.h>
 #include <asm/cpufeature.h>
 
 struct cpuid_dep {

@@ -214,7 +214,6 @@ struct menu {
 
 extern struct file *file_list;
 extern struct file *current_file;
-struct file *lookup_file(const char *name);
 
 extern struct symbol symbol_yes, symbol_no, symbol_mod;
 extern struct symbol *modules_sym;

@@ -397,7 +397,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
  * assigned. Body stubbed (symbol kept link-live for the mm.h extern); the
  * private unmapped_area / unmapped_area_topdown helpers are deleted.
  */
-unsigned long vm_unmapped_area(struct vm_unmapped_area_info *info)
+unsigned long vm_unmapped_area(void)
 {
 	return -ENOMEM;
 }
@@ -424,7 +424,6 @@ generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
 {
 	struct vm_area_struct *vma, *prev;
 	struct mm_struct *mm = current->mm;
-	struct vm_unmapped_area_info info;
 	const unsigned long mmap_end = arch_get_mmap_end(addr, len, flags);
 
 	
@@ -444,21 +443,12 @@ generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
 			return addr;
 	}
 
-	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
-	info.length = len;
-	info.low_limit = max(PAGE_SIZE, mmap_min_addr);
-	info.high_limit = arch_get_mmap_base(addr, mm->mmap_base);
-	info.align_mask = 0;
-	info.align_offset = 0;
-	addr = vm_unmapped_area(&info);
+	addr = vm_unmapped_area();
 
-	
+
 	if (offset_in_page(addr)) {
 		VM_BUG_ON(addr != -ENOMEM);
-		info.flags = 0;
-		info.low_limit = TASK_UNMAPPED_BASE;
-		info.high_limit = mmap_end;
-		addr = vm_unmapped_area(&info);
+		addr = vm_unmapped_area();
 	}
 
 	return addr;

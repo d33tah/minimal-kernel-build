@@ -9,7 +9,6 @@ struct ratelimit_state {
 	raw_spinlock_t	lock;		 
 
 	int		interval;
-	int		burst;
 	int		printed;
 	int		missed;
 	unsigned long	begin;
@@ -19,7 +18,6 @@ struct ratelimit_state {
 #define RATELIMIT_STATE_INIT_FLAGS(name, interval_init, burst_init, flags_init) { \
 		.lock		= __RAW_SPIN_LOCK_UNLOCKED(name.lock),		  \
 		.interval	= interval_init,				  \
-		.burst		= burst_init,					  \
 		.flags		= flags_init,					  \
 	}
 

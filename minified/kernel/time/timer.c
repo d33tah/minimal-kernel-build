@@ -13,7 +13,6 @@ __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 struct timer_base {
 	raw_spinlock_t		lock;
 	unsigned long		clk;
-	unsigned long		next_expiry;
 } ____cacheline_aligned;
 
 static DEFINE_PER_CPU(struct timer_base, timer_bases[NR_BASES]);
@@ -42,7 +41,6 @@ static void __init init_timer_cpu(int cpu)
 		base = per_cpu_ptr(&timer_bases[i], cpu);
 		raw_spin_lock_init(&base->lock);
 		base->clk = jiffies;
-		base->next_expiry = base->clk + NEXT_TIMER_MAX_DELTA;
 	}
 }
 

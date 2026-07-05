@@ -239,8 +239,7 @@ struct vm_fault {
 		struct vm_area_struct *vma;	
 		gfp_t gfp_mask;			
 		pgoff_t pgoff;			
-		unsigned long address;		
-		unsigned long real_address;	
+		unsigned long address;
 	};
 	enum fault_flag flags;		
 	pmd_t *pmd;			

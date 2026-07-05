@@ -74,7 +74,6 @@ static void __tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm,
 	tlb->local.nr   = 0;
 	tlb->local.max  = ARRAY_SIZE(tlb->__pages);
 	tlb->active     = &tlb->local;
-	tlb->batch_count = 0;
 #endif
 
 	__tlb_reset_range(tlb);

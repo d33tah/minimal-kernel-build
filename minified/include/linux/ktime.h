@@ -15,8 +15,6 @@ static inline ktime_t ktime_set(const s64 secs, const unsigned long nsecs)
 	return secs * NSEC_PER_SEC + (s64)nsecs;
 }
 
-#define ktime_add(lhs, rhs)	((lhs) + (rhs))
-
 #define ktime_add_ns(kt, nsval)		((kt) + (nsval))
 
 static inline ktime_t timespec64_to_ktime(struct timespec64 ts)

@@ -765,12 +765,9 @@ extern void setup_per_cpu_pageset(void);
 
 void vma_interval_tree_insert(struct vm_area_struct *node,
 			      struct rb_root_cached *root);
-void vma_interval_tree_remove(struct vm_area_struct *node,
-			      struct rb_root_cached *root);
-struct vm_area_struct *vma_interval_tree_iter_first(struct rb_root_cached *root,
-				unsigned long start, unsigned long last);
-struct vm_area_struct *vma_interval_tree_iter_next(struct vm_area_struct *node,
-				unsigned long start, unsigned long last);
+/* vma_interval_tree_{remove,iter_first,iter_next} prototypes dropped:
+ * defined via INTERVAL_TREE_DEFINE() in mm/interval_tree.c but never called
+ * and no vma_interval_tree_foreach() macro consumes them in this tree. */
 
 void anon_vma_interval_tree_insert(struct anon_vma_chain *node,
 				   struct rb_root_cached *root);

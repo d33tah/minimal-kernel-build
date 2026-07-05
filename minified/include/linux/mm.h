@@ -219,10 +219,6 @@ void vm_area_free(struct vm_area_struct *);
 
 #define VM_INIT_DEF_MASK	VM_NOHUGEPAGE
 
-#ifndef VM_ARCH_CLEAR
-# define VM_ARCH_CLEAR	VM_NONE
-#endif
-
 extern pgprot_t protection_map[16];
 
 #define FAULT_FLAG_DEFAULT  (FAULT_FLAG_ALLOW_RETRY)

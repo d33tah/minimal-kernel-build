@@ -13,14 +13,6 @@
 #define __atomic_release_fence		smp_mb__before_atomic
 #endif
 
-#ifndef __atomic_pre_full_fence
-#define __atomic_pre_full_fence		smp_mb__before_atomic
-#endif
-
-#ifndef __atomic_post_full_fence
-#define __atomic_post_full_fence	smp_mb__after_atomic
-#endif
-
 #include <linux/atomic/atomic-arch-fallback.h>
 #include <linux/atomic/atomic-long.h>
 #include <linux/atomic/atomic-instrumented.h>

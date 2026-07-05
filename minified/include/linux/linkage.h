@@ -108,10 +108,6 @@
 	SYM_START(name, SYM_L_GLOBAL, SYM_A_ALIGN)
 #endif
 
-#ifndef SYM_CODE_START_NOALIGN
-#define SYM_CODE_START_NOALIGN(name)			\
-	SYM_START(name, SYM_L_GLOBAL, SYM_A_NONE)
-#endif
 
 #ifndef SYM_CODE_START_LOCAL
 #define SYM_CODE_START_LOCAL(name)			\

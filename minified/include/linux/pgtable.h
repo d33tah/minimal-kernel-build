@@ -19,10 +19,6 @@
 #define USER_PGTABLES_CEILING	0UL
 #endif
 
-#ifndef FIRST_USER_ADDRESS
-#define FIRST_USER_ADDRESS	0UL
-#endif
-
 
 static inline unsigned long pte_index(unsigned long address)
 {

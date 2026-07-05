@@ -34,14 +34,7 @@ enum syscall_work_bit {
 
 #ifdef __KERNEL__
 
-#ifndef arch_set_restart_data
-#define arch_set_restart_data(restart) do { } while (0)
-#endif
 
-
-#ifndef THREAD_ALIGN
-#define THREAD_ALIGN	THREAD_SIZE
-#endif
 
 #define THREADINFO_GFP		(GFP_KERNEL_ACCOUNT | __GFP_ZERO)
 

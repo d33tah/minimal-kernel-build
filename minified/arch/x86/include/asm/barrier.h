@@ -127,14 +127,6 @@ do {									\
 })
 #endif
 
-#ifndef smp_cond_load_acquire
-#define smp_cond_load_acquire(ptr, cond_expr) ({		\
-	__unqual_scalar_typeof(*ptr) _val;			\
-	_val = smp_cond_load_relaxed(ptr, cond_expr);		\
-	smp_acquire__after_ctrl_dep();				\
-	(typeof(*ptr))_val;					\
-})
-#endif
 /* end asm-generic/barrier.h */
 
 #endif  

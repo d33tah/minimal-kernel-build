@@ -39,9 +39,6 @@ static inline void user_disable_single_step(struct task_struct *task)
 }
 #endif
 
-#ifndef arch_ptrace_stop
-#define arch_ptrace_stop()		do { } while (0)
-#endif
 
 #ifndef current_pt_regs
 #define current_pt_regs() task_pt_regs(current)

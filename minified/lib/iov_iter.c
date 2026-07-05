@@ -130,7 +130,6 @@ void iov_iter_init(struct iov_iter *i, unsigned int direction,
 	WARN_ON(direction & ~(READ | WRITE));
 	*i = (struct iov_iter) {
 		.iter_type = ITER_IOVEC,
-		.data_source = direction,
 		.iov = iov,
 		.nr_segs = nr_segs,
 		.iov_offset = 0,
@@ -255,7 +254,6 @@ void iov_iter_kvec(struct iov_iter *i, unsigned int direction,
 	WARN_ON(direction & ~(READ | WRITE));
 	*i = (struct iov_iter){
 		.iter_type = ITER_KVEC,
-		.data_source = direction,
 		.kvec = kvec,
 		.nr_segs = nr_segs,
 		.iov_offset = 0,

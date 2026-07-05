@@ -65,13 +65,7 @@ static void __clocksource_suspend_select(struct clocksource *cs)
 	if (!(cs->flags & CLOCK_SOURCE_SUSPEND_NONSTOP))
 		return;
 
-	 
-	if (cs->resume) {
-		pr_warn("Nonstop clocksource %s should not supply suspend/resume interfaces\n",
-			cs->name);
-	}
 
-	 
 	if (!suspend_clocksource || cs->rating > suspend_clocksource->rating)
 		suspend_clocksource = cs;
 }

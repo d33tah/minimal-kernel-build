@@ -281,10 +281,6 @@ unsigned long native_calibrate_cpu_early(void)
 
 
 
-static void tsc_resume(struct clocksource *cs)
-{
-}
-
 static u64 read_tsc(struct clocksource *cs)
 {
 	return (u64)rdtsc_ordered();
@@ -307,7 +303,6 @@ static struct clocksource clocksource_tsc_early = {
 				  CLOCK_SOURCE_MUST_VERIFY,
 	.vdso_clock_mode	= VDSO_CLOCKMODE_TSC,
 	.enable			= tsc_cs_enable,
-	.resume			= tsc_resume,
 	.list			= LIST_HEAD_INIT(clocksource_tsc_early.list),
 };
 
@@ -322,7 +317,6 @@ static struct clocksource clocksource_tsc = {
 				  CLOCK_SOURCE_VERIFY_PERCPU,
 	.vdso_clock_mode	= VDSO_CLOCKMODE_TSC,
 	.enable			= tsc_cs_enable,
-	.resume			= tsc_resume,
 	.list			= LIST_HEAD_INIT(clocksource_tsc.list),
 };
 

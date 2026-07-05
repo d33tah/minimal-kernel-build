@@ -50,7 +50,6 @@ struct clocksource {
 	unsigned long		flags;
 
 	int			(*enable)(struct clocksource *cs);
-	void			(*resume)(struct clocksource *cs);
 };
 
 #define CLOCK_SOURCE_IS_CONTINUOUS		0x01

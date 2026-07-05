@@ -62,7 +62,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 # define SCHED_WARN_ON(x)      ({ (void)(x), 0; })
 
 struct rq;
-struct cpuidle_state;
 
  
 #define TASK_ON_RQ_QUEUED	1
@@ -161,8 +160,6 @@ static inline int cpu_of(struct rq *rq)
 {
 	return 0;
 }
-
-struct sched_group;
 
 static inline raw_spinlock_t *rq_lockp(struct rq *rq)
 {

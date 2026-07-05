@@ -44,7 +44,6 @@ struct pid_namespace;
 struct pipe_inode_info;
 struct rq;
 struct sched_param;
-struct seq_file;
 struct sighand_struct;
 struct signal_struct;
 

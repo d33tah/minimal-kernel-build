@@ -5,8 +5,6 @@
 #include <linux/types.h>
 #include <linux/fs.h>
 
-struct seq_file;
-
 static inline void proc_root_init(void)
 {
 }

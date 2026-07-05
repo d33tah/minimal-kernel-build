@@ -17,7 +17,6 @@ typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 #include <asm/ptrace.h>
 #include <asm/irq_regs.h>
 
-struct seq_file;
 struct module;
 
 enum {

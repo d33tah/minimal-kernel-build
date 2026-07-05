@@ -57,7 +57,6 @@ struct pipe_inode_info;
 struct vm_area_struct;
 struct vfsmount;
 struct cred;
-struct seq_file;
 struct workqueue_struct;
 struct iov_iter;
 struct fs_context;

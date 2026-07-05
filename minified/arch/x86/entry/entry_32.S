@@ -555,10 +555,6 @@ SYM_CODE_START_LOCAL(asm_\cfunc)
 SYM_CODE_END(asm_\cfunc)
 .endm
 
-.macro idtentry_sysvec vector cfunc
-	idtentry \vector asm_\cfunc \cfunc has_error_code=0
-.endm
-
 /*
  * Include the defines which emit the idt entries which are shared
  * shared between 32 and 64 bit and emit the __irqentry_text_* markers
@@ -898,9 +894,6 @@ restore_all_switch_stack:
 
 	_ASM_EXTABLE(.Lirq_return, .Lasm_iret_error)
 SYM_FUNC_END(entry_INT80_32)
-
-.macro FIXUP_ESPFIX_STACK
-.endm
 
 .macro UNWIND_ESPFIX_STACK
 .endm

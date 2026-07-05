@@ -30,8 +30,6 @@
 .endm
 .macro ANNOTATE_NOENDBR
 .endm
-.macro REACHABLE
-.endm
 #endif
 
 

@@ -19,7 +19,3 @@
 .endm
 
 
-.macro GET_PERCPU_BASE reg:req
-	movq	pcpu_unit_offsets(%rip), \reg
-.endm
-

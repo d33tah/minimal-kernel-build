@@ -56,14 +56,6 @@
  
 
  
-.macro ANNOTATE_UNRET_END
-.endm
-
- 
-.macro JMP_NOSPEC reg:req
-	jmp	*%\reg
-.endm
-
 .macro CALL_NOSPEC reg:req
 	call	*%\reg
 .endm
@@ -77,10 +69,7 @@
 
 
  
-.macro UNTRAIN_RET
-.endm
-
-#else  
+#else
 
 #define ANNOTATE_RETPOLINE_SAFE					\
 	"999:\n\t"						\

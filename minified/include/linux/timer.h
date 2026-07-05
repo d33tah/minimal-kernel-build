@@ -34,8 +34,6 @@ struct timer_list {
 
 /* timer_pending removed: 0-caller orphan (cascaded hlist_unhashed_lockless) */
 
-#define NEXT_TIMER_MAX_DELTA	((1UL << 30) - 1)
-
 extern void init_timers(void);
 
 #endif

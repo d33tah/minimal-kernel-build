@@ -22,7 +22,6 @@ struct timekeeper {
 	u64			xtime_sec;
 	struct timespec64	wall_to_monotonic;
 	ktime_t			offs_real;
-	s32			tai_offset;
 	u64			raw_sec;
 
 	 

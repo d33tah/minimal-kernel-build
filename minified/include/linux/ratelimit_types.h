@@ -9,9 +9,6 @@ struct ratelimit_state {
 	raw_spinlock_t	lock;		 
 
 	int		interval;
-	int		printed;
-	int		missed;
-	unsigned long	begin;
 	unsigned long	flags;
 };
 

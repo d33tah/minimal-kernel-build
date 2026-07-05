@@ -56,7 +56,6 @@ struct fs_context {
 	const char		*source;
 	void			*s_fs_info;
 	unsigned int		sb_flags;
-	enum fs_context_purpose	purpose:8;
 	bool			need_free:1;
 };
 

@@ -635,7 +635,6 @@ struct file_system_type {
 	int fs_flags;
 #define FS_USERNS_MOUNT		8
 	int (*init_fs_context)(struct fs_context *);
-	const struct fs_parameter_spec *parameters;
 	void (*kill_sb) (struct super_block *);
 	struct module *owner;
 	struct file_system_type * next;

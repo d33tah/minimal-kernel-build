@@ -138,7 +138,6 @@ static struct fs_context *alloc_fs_context(struct file_system_type *fs_type,
 	if (!fc)
 		return ERR_PTR(-ENOMEM);
 
-	fc->purpose	= purpose;
 	fc->sb_flags	= sb_flags;
 	fc->fs_type	= get_filesystem(fs_type);
 	fc->cred	= get_current_cred();

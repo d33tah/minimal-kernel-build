@@ -211,7 +211,6 @@ struct xa_state {
 	struct xarray *xa;
 	unsigned long xa_index;
 	unsigned char xa_shift;
-	unsigned char xa_sibs;
 	unsigned char xa_offset;
 	struct xa_node *xa_node;
 	struct xa_node *xa_alloc;
@@ -227,7 +226,6 @@ struct xa_state {
 	.xa = array,					\
 	.xa_index = index,				\
 	.xa_shift = shift,				\
-	.xa_sibs = sibs,				\
 	.xa_offset = 0,					\
 	.xa_node = XAS_RESTART,				\
 	.xa_alloc = NULL,				\

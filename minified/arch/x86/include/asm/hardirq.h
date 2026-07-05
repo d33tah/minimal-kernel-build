@@ -9,7 +9,6 @@ typedef struct {
 	unsigned int __nmi_count;
 	unsigned int x86_platform_ipis;
 	unsigned int apic_perf_irqs;
-	unsigned int apic_irq_work_irqs;
 } ____cacheline_aligned irq_cpustat_t;
 
 DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);

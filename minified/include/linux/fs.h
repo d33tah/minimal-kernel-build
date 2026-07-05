@@ -425,7 +425,6 @@ struct super_block {
 	struct list_lru		s_dentry_lru;
 	struct list_lru		s_inode_lru;
 	struct rcu_head		rcu;
-	struct work_struct	destroy_work;
 } __randomize_layout;
 
 static inline struct user_namespace *i_user_ns(const struct inode *inode)

@@ -13,7 +13,6 @@ typedef unsigned long	pgprotval_t;
 
 typedef union {
 	pteval_t pte;
-	pteval_t pte_low;
 } pte_t;
 #endif
 

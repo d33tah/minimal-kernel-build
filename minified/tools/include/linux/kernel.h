@@ -7,7 +7,6 @@
 #include <assert.h>
 #include <linux/build_bug.h>
 #include <linux/compiler.h>
-#include <linux/math.h>
 #include <endian.h>
 #include <byteswap.h>
 

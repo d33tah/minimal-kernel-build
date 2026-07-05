@@ -26,15 +26,9 @@ KCOV_INSTRUMENT_mmzone.o := n
 CFLAGS_init-mm.o += $(call cc-disable-warning, override-init)
 CFLAGS_init-mm.o += $(call cc-disable-warning, initializer-overrides)
 
-mmu-y			:= nommu.o
 mmu-$(CONFIG_MMU)	:= memory.o \
 			   mmap.o mmu_gather.o mremap.o \
 			   rmap.o vmalloc.o
-
-
-ifdef CONFIG_CROSS_MEMORY_ATTACH
-mmu-$(CONFIG_MMU)	+= process_vm_access.o
-endif
 
 obj-y			:= filemap.o \
 			   maccess.o folio-compat.o \
@@ -46,15 +40,10 @@ obj-y			:= filemap.o \
 
 # Give 'page_alloc' its own module-parameter namespace
 page-alloc-y := page_alloc.o
-page-alloc-$(CONFIG_SHUFFLE_PAGE_ALLOCATOR) += shuffle.o
-
-# Give 'memory_hotplug' its own module-parameter namespace
-memory-hotplug-$(CONFIG_MEMORY_HOTPLUG) += memory_hotplug.o
 
 obj-y += page-alloc.o
 obj-y += init-mm.o
 obj-y += memblock.o
-obj-y += $(memory-hotplug-y)
 
 ifdef CONFIG_MMU
 	obj-$(CONFIG_ADVISE_SYSCALLS)	+= madvise.o

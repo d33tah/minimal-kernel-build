@@ -6,16 +6,11 @@
 #include <linux/spinlock_types_raw.h>
 
 struct ratelimit_state {
-	raw_spinlock_t	lock;		 
-
-	int		interval;
-	unsigned long	flags;
+	raw_spinlock_t	lock;
 };
 
 #define RATELIMIT_STATE_INIT_FLAGS(name, interval_init, burst_init, flags_init) { \
 		.lock		= __RAW_SPIN_LOCK_UNLOCKED(name.lock),		  \
-		.interval	= interval_init,				  \
-		.flags		= flags_init,					  \
 	}
 
 #define RATELIMIT_STATE_INIT(name, interval_init, burst_init) \

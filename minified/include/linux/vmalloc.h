@@ -22,28 +22,14 @@ struct notifier_block;
 
 
 
-struct vm_struct {
-	struct vm_struct	*next;
-	void			*addr;
-	unsigned long		size;
-	unsigned long		flags;
-	struct page		**pages;
-	unsigned int		nr_pages;
-	const void		*caller;
-};
-
 struct vmap_area {
 	unsigned long va_start;
 	unsigned long va_end;
 
-	struct rb_node rb_node;          
-	struct list_head list;           
+	struct rb_node rb_node;
+	struct list_head list;
 
-	 
-	union {
-		unsigned long subtree_max_size;  
-		struct vm_struct *vm;            
-	};
+	unsigned long subtree_max_size;
 };
 
 

@@ -689,10 +689,9 @@ static int search_binary_handler(struct linux_binprm *bprm)
 
 static int exec_binprm(struct linux_binprm *bprm)
 {
-	pid_t old_pid, old_vpid;
+	pid_t old_vpid;
 	int ret;
 
-	old_pid = current->pid;
 	rcu_read_lock();
 	old_vpid = task_pid_nr_ns(current, task_active_pid_ns(current->parent));
 	rcu_read_unlock();

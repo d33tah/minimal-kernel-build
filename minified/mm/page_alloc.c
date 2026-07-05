@@ -926,7 +926,6 @@ static void __init init_unavailable_range(unsigned long spfn,
 					  int zone, int node)
 {
 	unsigned long pfn;
-	u64 pgcnt = 0;
 
 	for (pfn = spfn; pfn < epfn; pfn++) {
 		if (!pfn_valid(ALIGN_DOWN(pfn, pageblock_nr_pages))) {
@@ -936,7 +935,6 @@ static void __init init_unavailable_range(unsigned long spfn,
 		}
 		__init_single_page(pfn_to_page(pfn), pfn, zone, node);
 		__SetPageReserved(pfn_to_page(pfn));
-		pgcnt++;
 	}
 
 }

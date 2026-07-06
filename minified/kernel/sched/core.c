@@ -604,8 +604,6 @@ void __noreturn do_task_dead(void)
 
 static inline void sched_submit_work(struct task_struct *tsk)
 {
-	if (task_is_running(tsk))
-		return;
 }
 
 asmlinkage __visible void __sched schedule(void)

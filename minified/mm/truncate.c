@@ -15,8 +15,6 @@
  */
 void truncate_inode_pages(struct address_space *mapping, loff_t lstart)
 {
-	if (mapping_empty(mapping))
-		return;
 }
 
 void truncate_pagecache(struct inode *inode, loff_t newsize)

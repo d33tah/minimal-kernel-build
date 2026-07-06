@@ -1,5 +1,4 @@
 
-#define __NO_FORTIFY
 #include <linux/string.h>
 
 #ifdef __HAVE_ARCH_STRCPY

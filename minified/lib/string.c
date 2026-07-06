@@ -1,6 +1,5 @@
 
 
-#define __NO_FORTIFY
 #include <linux/types.h>
 #include <linux/string.h>
 #include <linux/bug.h>

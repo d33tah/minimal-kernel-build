@@ -14,10 +14,4 @@ enum {
 			    ADDR_COMPAT_LAYOUT | \
 			    MMAP_PAGE_ZERO)
 
-enum {
-	PER_MASK =		0x00ff,
-};
-
-#define personality(pers)	(pers & PER_MASK)
-
 #endif

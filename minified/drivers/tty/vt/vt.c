@@ -27,14 +27,9 @@ struct vc vc_cons [MAX_NR_CONSOLES];
 static const struct consw *con_driver_map[MAX_NR_CONSOLES];
 #endif
 
-static int con_open(struct tty_struct *, struct file *);
 static void vc_init(struct vc_data *vc, unsigned int rows,
 		    unsigned int cols, int do_clear);
-static void gotoxy(struct vc_data *vc, int new_x, int new_y);
-static void reset_terminal(struct vc_data *vc, int do_clear);
 static void con_flush_chars(struct tty_struct *tty);
-static void set_cursor(struct vc_data *vc);
-static void hide_cursor(struct vc_data *vc);
 
 int global_cursor_default = -1;
 

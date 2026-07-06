@@ -17,13 +17,6 @@ static struct vgastate vgastate;
 
 #define BLANK 0x0020
 
-static const char *vgacon_startup(void);
-static void vgacon_init(struct vc_data *c, int init);
-static void vgacon_deinit(struct vc_data *c);
-static void vgacon_cursor(struct vc_data *c, int mode);
-static int vgacon_switch(struct vc_data *c);
-static int vgacon_set_origin(struct vc_data *c);
-static void vgacon_save_screen(struct vc_data *c);
 static struct uni_pagedir *vgacon_uni_pagedir;
 static int vgacon_refcount;
 

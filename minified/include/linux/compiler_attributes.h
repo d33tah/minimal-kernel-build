@@ -16,9 +16,6 @@
 
 #define __attribute_const__             __attribute__((__const__))
 
-# define __copy(symbol)
-
-# define __diagnose_as(builtin...)	__attribute__((__diagnose_as_builtin__(builtin)))
 
 # define __designated_init
 
@@ -42,8 +39,6 @@
 
 #define __packed                        __attribute__((__packed__))
 
-# define __pass_object_size(type)	__attribute__((__pass_object_size__(type)))
-
 #define __pure                          __attribute__((__pure__))
 
 #define __section(section)              __attribute__((__section__(section)))
@@ -54,7 +49,6 @@
 
 #define __must_check                    __attribute__((__warn_unused_result__))
 
-# define __compiletime_warning(msg)     __attribute__((__warning__(msg)))
 
 #define __weak                          __attribute__((__weak__))
 

@@ -3,10 +3,6 @@
 
 
 
-#ifndef CONFIG_NR_CPUS
-#define CONFIG_NR_CPUS	1
-#endif
-
 #define NR_CPUS		CONFIG_NR_CPUS
 
 #define PID_MAX_DEFAULT (CONFIG_BASE_SMALL ? 0x1000 : 0x8000)

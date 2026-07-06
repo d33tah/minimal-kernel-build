@@ -734,15 +734,6 @@ extern void mem_init_print_info(void);
 extern void reserve_bootmem_region(phys_addr_t start, phys_addr_t end);
 
 
-static inline unsigned long free_initmem_default(int poison)
-{
-	extern char __init_begin[], __init_end[];
-
-	return free_reserved_area(&__init_begin, &__init_end,
-				  poison, "unused kernel image (initmem)");
-}
-
-
 void free_area_init(unsigned long *max_zone_pfn);
 extern int __meminit init_per_zone_wmark_min(void);
 extern void mem_init(void);

@@ -1,6 +1,5 @@
 #include <linux/slab.h>
 #include <linux/memblock.h>
-#include <linux/pgtable.h>
 
 #include <asm/realmode.h>
 #include <asm/tlbflush.h>

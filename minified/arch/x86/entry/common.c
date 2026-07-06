@@ -7,7 +7,6 @@
 #include <linux/uaccess.h>
 
 
-#include <asm/vdso.h>
 #include <asm/cpufeature.h>
 #include <asm/syscall.h>
 

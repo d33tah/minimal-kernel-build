@@ -1,5 +1,4 @@
 /* Minimal includes for kasprintf */
-#include <linux/slab.h>
 #include <linux/string.h>
 
 char *kvasprintf(gfp_t gfp, const char *fmt, va_list ap)

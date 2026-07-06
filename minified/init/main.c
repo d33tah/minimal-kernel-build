@@ -157,11 +157,7 @@ void __init __weak thread_stack_cache_init(void)
 
 void __init __weak mem_encrypt_init(void) { }
 
-void __init __weak poking_init(void) { }
-
 void __init __weak pgtable_cache_init(void) { }
-
-void __init __weak trap_init(void) { }
 
 static void __init mm_init(void)
 {
@@ -384,11 +380,6 @@ static void mark_readonly(void)
 {
 	rcu_barrier();
 	mark_rodata_ro();
-}
-
-void __weak free_initmem(void)
-{
-	free_initmem_default(POISON_FREE_INITMEM);
 }
 
 static int __ref kernel_init(void *unused)

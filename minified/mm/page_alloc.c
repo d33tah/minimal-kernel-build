@@ -1397,11 +1397,9 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 unsigned long free_reserved_area(void *start, void *end, int poison, const char *s)
 {
 	/*
-	 * SAFE-FALLBACK stub (runtime-dead): the only callers are
-	 * free_initmem_default() (reached solely via the weak free_initmem(),
-	 * overridden by the x86 __ref free_initmem() that never calls it) and
-	 * the __init initramfs path (no initrd on this boot). Both ignore the
-	 * page count -> returning 0 is behavior-preserving.
+	 * SAFE-FALLBACK stub (runtime-dead): the only caller is the __init
+	 * initramfs path (no initrd on this boot), which ignores the page
+	 * count -> returning 0 is behavior-preserving.
 	 */
 	return 0;
 }

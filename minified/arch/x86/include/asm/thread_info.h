@@ -59,11 +59,6 @@ struct thread_info {
  */
 
  
-#ifndef __ASSEMBLY__
-
-/* arch_within_stack_frames removed - unused */
-
-#endif   
 
  
 #ifndef __ASSEMBLY__

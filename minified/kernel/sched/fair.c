@@ -561,8 +561,6 @@ pick_next_task_fair(struct rq *rq, struct task_struct *prev, struct rq_flags *rf
 
 	p = task_of(se);
 
-done: __maybe_unused;
-
 	return p;
 
 idle:

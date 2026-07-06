@@ -65,9 +65,6 @@ struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 
 static void update_rq_clock_task(struct rq *rq, s64 delta)
 {
-
-	s64 __maybe_unused steal = 0, irq_delta = 0;
-
 	rq->clock_task += delta;
 }
 

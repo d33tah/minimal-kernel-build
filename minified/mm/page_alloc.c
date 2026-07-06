@@ -834,7 +834,6 @@ static DEFINE_PER_CPU(struct per_cpu_pages, boot_pageset);
 static void __build_all_zonelists(void *data)
 {
 	int nid;
-	int __maybe_unused cpu;
 	static DEFINE_SPINLOCK(lock);
 
 	spin_lock(&lock);
@@ -1065,7 +1064,6 @@ void __meminit setup_zone_pageset(struct zone *zone)
 void __init setup_per_cpu_pageset(void)
 {
 	struct zone *zone;
-	int __maybe_unused cpu;
 
 	for_each_populated_zone(zone)
 		setup_zone_pageset(zone);

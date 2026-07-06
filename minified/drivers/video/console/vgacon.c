@@ -15,8 +15,6 @@ static int cursor_size_lastfrom;
 static int cursor_size_lastto;
 static struct vgastate vgastate;
 
-#define BLANK 0x0020
-
 static struct uni_pagedir *vgacon_uni_pagedir;
 static int vgacon_refcount;
 

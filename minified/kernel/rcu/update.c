@@ -57,8 +57,6 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 
 
 
-#define do_trace_rcu_torture_read(rcutorturename, rhp, secs, c_old, c) \
-	do { } while (0)
 
 
 

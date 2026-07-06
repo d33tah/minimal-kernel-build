@@ -8,10 +8,6 @@
 #include <asm/cpu.h>
 #include <asm/fpu/sched.h>
 #include <asm/switch_to.h>
-/* --- 2025-12-07 20:47 --- Inlined frame.h */
-#define FRAME_BEGIN
-#define FRAME_END
-#define FRAME_OFFSET 0
 #include <asm/unwind.h>
 
 #include "process.h"

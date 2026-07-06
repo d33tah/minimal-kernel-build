@@ -1,6 +1,4 @@
 
-extern char __cpuidle_text_start[], __cpuidle_text_end[];
-
 static void cpuidle_idle_call(void)
 {
 

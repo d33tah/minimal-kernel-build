@@ -2,7 +2,6 @@
 
 #include <linux/initrd.h>
 #include <linux/memblock.h>
-extern struct atomic_notifier_head panic_notifier_list;
 
 #include <asm/apic.h>
 #include <asm/e820/api.h>

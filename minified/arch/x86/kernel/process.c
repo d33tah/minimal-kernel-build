@@ -1,7 +1,6 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/mm.h>
-#include <linux/sched.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/random.h>

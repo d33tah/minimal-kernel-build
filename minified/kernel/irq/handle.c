@@ -1,6 +1,5 @@
 
 #include <linux/irq.h>
-#include <linux/interrupt.h>
 
 
 #include "internals.h"

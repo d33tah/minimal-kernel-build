@@ -2,8 +2,6 @@
 #define pr_fmt(fmt) "genirq: " fmt
 
 #include <linux/irq.h>
-#include <linux/interrupt.h>
-#include <linux/slab.h>
 
 #include "internals.h"
 

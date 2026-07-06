@@ -1,7 +1,6 @@
 #include <linux/mm.h>
 #include <linux/slab.h>
 #include <linux/string.h>
-#include <linux/compiler.h>
 #include <linux/sched/signal.h>
 #include <linux/swap.h>
 #include <linux/random.h>

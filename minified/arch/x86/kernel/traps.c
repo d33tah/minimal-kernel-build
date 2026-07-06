@@ -5,9 +5,7 @@
 #include <linux/kdebug.h>
 #include <linux/kernel.h>
 #include <linux/ptrace.h>
-#include <linux/sched.h>
 #include <linux/init.h>
-#include <linux/bug.h>
 
 
 #include <asm/processor.h>

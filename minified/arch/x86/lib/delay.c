@@ -2,7 +2,6 @@
 #include <linux/delay.h>
 
 #include <asm/processor.h>
-#include <asm/delay.h>
 
 
 static void delay_loop(u64 __loops);

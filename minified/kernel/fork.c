@@ -14,8 +14,6 @@
 #include <linux/ptrace.h>
 #include <linux/tty.h>
 #include <linux/fs_struct.h>
-#include <linux/magic.h>
-#include <linux/compiler.h>
 /* end scs.h */
 
 #include <asm/pgalloc.h>

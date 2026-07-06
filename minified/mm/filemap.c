@@ -4,7 +4,6 @@
 #include <linux/sched/signal.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
-#include <linux/pagemap.h>
 #include <linux/uio.h>
 /* error-injection.h - only need ALLOW_ERROR_INJECTION macro */
 #define ALLOW_ERROR_INJECTION(fname, _etype)

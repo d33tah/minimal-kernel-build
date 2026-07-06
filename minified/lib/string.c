@@ -7,7 +7,6 @@
 #include <linux/bug.h>
 
 #include <asm/unaligned.h>
-#include <asm/byteorder.h>
 #include <asm/word-at-a-time.h>
 #include <asm/page.h>
 

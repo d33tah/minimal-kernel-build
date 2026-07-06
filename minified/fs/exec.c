@@ -9,13 +9,10 @@
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/signal.h>
-#include <linux/sched/task.h>
 #include <linux/highmem.h>
-#include <linux/spinlock.h>
 #include <linux/personality.h>
 #include <linux/binfmts.h>
 #include <linux/ptrace.h>
-#include <linux/pid_namespace.h>
 #include <linux/namei.h>
 #include <linux/fs_struct.h>
 #include <linux/security.h>

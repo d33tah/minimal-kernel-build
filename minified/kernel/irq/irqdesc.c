@@ -1,5 +1,4 @@
 #include <linux/irq.h>
-#include <linux/slab.h>
 #include <linux/radix-tree.h>
 #include <linux/bitmap.h>
 

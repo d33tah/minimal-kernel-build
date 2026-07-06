@@ -1,15 +1,12 @@
 
 #include <linux/kernel.h>
-#include <linux/types.h>
 #include <linux/mm.h>
 #include <linux/init.h>
-#include <linux/pfn.h>
 #include <linux/memblock.h>
 
 #include <asm/bios_ebda.h>
 #include <asm/fixmap.h>
 #include <asm/tlb.h>
-#include <asm/tlbflush.h>
 #include <asm/set_memory.h>
 #include <asm/page_types.h>
 #include <asm/pgtable_areas.h>

@@ -17,7 +17,6 @@
 #include <linux/console.h>
 #include <linux/percpu.h>
 #include <linux/security.h>
-#include <linux/smp.h>
 #include <linux/rcupdate.h>
 #include <linux/cpu.h>
 #include <linux/interrupt.h>
@@ -28,21 +27,16 @@
 /* --- 2025-12-08 00:37 --- padata.h stubbed out */
 #include <linux/device/driver.h>
 #include <linux/kthread.h>
-#include <linux/sched.h>
 extern void sched_init(void);
 extern void sched_init_smp(void);
-#include <linux/signal.h>
 #include <linux/file.h>
-#include <linux/slab.h>
 
 #include <linux/sched/clock.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
-#include <linux/list.h>
 
 /* --- 2025-12-08 00:40 --- integrity.h stubbed out */
 #include <linux/cache.h>
-#include <linux/jump_label.h>
 #include <linux/init_syscalls.h>
 
 #include <asm/bugs.h>

@@ -1,6 +1,5 @@
 /* Stub workqueue - runs work immediately (no threading) */
 #include <linux/workqueue.h>
-#include <linux/timer.h>
 
 struct workqueue_struct {
 };

@@ -7,7 +7,6 @@
 #include <linux/jump_label.h>
 
 #include <asm/timer.h>
-#include <asm/delay.h>
 #include <asm/x86_init.h>
 #include <asm/intel-family.h>
 #include <asm/i8259.h>

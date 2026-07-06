@@ -2,8 +2,6 @@
 #include <linux/irq.h>
 
 #include <asm/apic.h>
-#include <asm/irq.h>
-#include <asm/hw_irq.h>
 #include <asm/traps.h>
 
 

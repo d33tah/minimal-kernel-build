@@ -1,6 +1,5 @@
 #include <linux/kprobes.h>
 #include <linux/kdebug.h>
-#include <linux/ptrace.h>
 #include <linux/sched/debug.h>
 
 static void show_trace_log_lvl(struct task_struct *task, struct pt_regs *regs,

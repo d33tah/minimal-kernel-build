@@ -15,7 +15,6 @@
 #include <tools/le_byteshift.h>
 
 #include <linux/elf.h>
-#include <linux/types.h>
 #include <linux/kernel.h>
 
 const char *outfilename;

@@ -5,22 +5,16 @@
 #include <linux/delay.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/task.h>
-#include <linux/init.h>
-#include <linux/smp.h>
 
 #include <asm/mmu_context.h>
 
 /* Inlined from asm/doublefault.h */
 extern void doublefault_init_cpu_tss(void);
 #include <asm/processor.h>
-#include <asm/tlbflush.h>
-#include <asm/debugreg.h>
 #include <asm/proto.h>
-#include <asm/desc.h>
 #include <asm/fpu/api.h>
 #include <asm/hwcap2.h>
 #include <asm/cpu.h>
-#include <asm/msr.h>
 
 #include "cpu.h"
 

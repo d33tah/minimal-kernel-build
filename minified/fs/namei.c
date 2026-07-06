@@ -3,14 +3,10 @@
 #include <linux/slab.h>
 #include <linux/fs.h>
 #include <linux/namei.h>
-#include <linux/mount.h>
-#include <linux/capability.h>
 #include <linux/file.h>
-#include <linux/fcntl.h>
 #include <linux/fs_struct.h>
 
 #include <linux/hash.h>
-#include <linux/bitops.h>
 
 #include "internal.h"
 #include "mount.h"

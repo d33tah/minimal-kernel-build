@@ -8,7 +8,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/task_work.h>
 #include <linux/ptrace.h>
 #include <linux/syscalls.h>
-#include <linux/signal.h>
 #include <linux/fs_struct.h>
 
 

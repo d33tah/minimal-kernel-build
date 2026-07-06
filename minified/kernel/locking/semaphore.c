@@ -2,7 +2,6 @@
 
 #include <linux/kernel.h>
 #include <linux/semaphore.h>
-#include <linux/spinlock.h>
 
 void down(struct semaphore *sem)
 {

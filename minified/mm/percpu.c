@@ -15,7 +15,6 @@ static inline unsigned long lcm(unsigned long a, unsigned long b)
 #include <linux/log2.h>
 #include <linux/mutex.h>
 #include <linux/percpu.h>
-#include <linux/pfn.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>
 #include <linux/vmalloc.h>

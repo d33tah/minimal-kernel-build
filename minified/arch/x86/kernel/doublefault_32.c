@@ -1,7 +1,6 @@
 #include <linux/mm.h>
 #include <linux/sched/debug.h>
 
-#include <asm/processor.h>
 #include <asm/desc.h>
 #include <asm/traps.h>
 

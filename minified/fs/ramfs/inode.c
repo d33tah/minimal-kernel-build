@@ -2,11 +2,8 @@
 
 #include <linux/fs.h>
 #include <linux/pagemap.h>
-#include <linux/init.h>
 #include <linux/ramfs.h>
-#include <linux/slab.h>
 #include <linux/fs_context.h>
-#include <linux/fs_parser.h>
 #include "internal.h"
 
 struct ramfs_mount_opts {

@@ -1,7 +1,6 @@
 #include <linux/init.h>
 
 #include <asm/acpi.h>
-#include <asm/mpspec.h>
 #include <asm/e820/api.h>
 #include <asm/time.h>
 #include <asm/irq.h>

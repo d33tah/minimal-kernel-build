@@ -1,7 +1,6 @@
 #include <linux/init.h>
 #include <linux/mount.h>
 #include <linux/namei.h>
-#include <linux/fs.h>
 #include <linux/file.h>
 #include "internal.h"
 

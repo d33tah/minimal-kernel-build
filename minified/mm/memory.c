@@ -1,7 +1,6 @@
 
 #include <linux/mm.h>
 #include <linux/mm_inline.h>
-#include <linux/swap.h>
 #include <linux/rmap.h>
 #include <linux/oom.h>
 #include <linux/file.h>

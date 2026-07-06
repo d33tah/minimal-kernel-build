@@ -1,7 +1,6 @@
 /* Minimal includes for workingset stubs */
 #include <linux/module.h>
 #include <linux/list_lru.h>
-#include <linux/xarray.h>
 
 void workingset_update_node(struct xa_node *node)
 {

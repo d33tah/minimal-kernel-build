@@ -1,7 +1,6 @@
 #include <asm/fpu/api.h>
 #include <asm/fpu/sched.h>
 #include <asm/fpu/signal.h>
-#include <asm/fpu/types.h>
 #include <asm/irq_regs.h>
 
 /* Removed: #include <uapi/asm/kvm.h> - not needed for minimal kernel */

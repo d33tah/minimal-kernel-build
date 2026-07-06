@@ -7,7 +7,6 @@
 #include <asm/page_types.h>
 #include <asm/setup.h>
 #include <asm/tlbflush.h>
-#include <asm/cpufeature.h>
 #include <asm/text-patching.h>
 
 

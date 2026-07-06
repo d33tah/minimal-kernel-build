@@ -12,12 +12,10 @@
 
 /* IPV6_FLOWINFO_MASK removed: 0-caller object-like macro (no ip6 flowinfo formatting) */
 
-#include <linux/compiler.h>
 
 #include "../mm/internal.h"	
 
 #include <asm/page.h>		
-#include <asm/byteorder.h>	
 
 #include "kstrtox.h"
 

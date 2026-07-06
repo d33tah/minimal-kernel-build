@@ -4,12 +4,7 @@
 #include <linux/idr.h>
 #include <linux/init.h>
 #include <linux/kernel.h>
-#include <linux/percpu.h>
-#include <linux/preempt.h>		
-#include <linux/radix-tree.h>
-#include <linux/rcupdate.h>
 #include <linux/slab.h>
-#include <linux/xarray.h>
 
 struct kmem_cache *radix_tree_node_cachep;
 

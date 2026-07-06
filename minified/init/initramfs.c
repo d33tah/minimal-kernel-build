@@ -1,8 +1,5 @@
 #include <linux/init.h>
 #include <linux/fs.h>
-#include <linux/slab.h>
-#include <linux/types.h>
-#include <linux/fcntl.h>
 #include <linux/string.h>
 #include <linux/file.h>
 #include <linux/mm.h>

@@ -52,9 +52,6 @@ extern void sched_init_smp(void);
 
 static int kernel_init(void *);
 
-extern void init_IRQ(void);
-extern void radix_tree_init(void);
-
 bool early_boot_irqs_disabled __read_mostly;
 
 enum system_states system_state __read_mostly;

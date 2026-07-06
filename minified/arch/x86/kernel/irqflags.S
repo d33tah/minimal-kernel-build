@@ -14,4 +14,3 @@ SYM_FUNC_START(native_save_fl)
 	RET
 SYM_FUNC_END(native_save_fl)
 .popsection
-EXPORT_SYMBOL(native_save_fl)

@@ -416,7 +416,6 @@ swapper_pg_dir:
 .globl empty_zero_page
 empty_zero_page:
 	.fill 4096,1,0
-EXPORT_SYMBOL(empty_zero_page)
 
 /*
  * This starts the data section.

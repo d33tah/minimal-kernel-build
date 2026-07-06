@@ -17,6 +17,5 @@ SYM_FUNC_START(entry_ibpb)
 	RET
 SYM_FUNC_END(entry_ibpb)
 /* For KVM */
-EXPORT_SYMBOL_GPL(entry_ibpb);
 
 .popsection

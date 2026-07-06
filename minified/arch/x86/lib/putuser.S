@@ -49,8 +49,6 @@ SYM_INNER_LABEL(__put_user_nocheck_1, SYM_L_GLOBAL)
 	ASM_CLAC
 	RET
 SYM_FUNC_END(__put_user_1)
-EXPORT_SYMBOL(__put_user_1)
-EXPORT_SYMBOL(__put_user_nocheck_1)
 
 SYM_FUNC_START(__put_user_2)
 	LOAD_TASK_SIZE_MINUS_N(1)
@@ -64,8 +62,6 @@ SYM_INNER_LABEL(__put_user_nocheck_2, SYM_L_GLOBAL)
 	ASM_CLAC
 	RET
 SYM_FUNC_END(__put_user_2)
-EXPORT_SYMBOL(__put_user_2)
-EXPORT_SYMBOL(__put_user_nocheck_2)
 
 SYM_FUNC_START(__put_user_4)
 	LOAD_TASK_SIZE_MINUS_N(3)
@@ -79,8 +75,6 @@ SYM_INNER_LABEL(__put_user_nocheck_4, SYM_L_GLOBAL)
 	ASM_CLAC
 	RET
 SYM_FUNC_END(__put_user_4)
-EXPORT_SYMBOL(__put_user_4)
-EXPORT_SYMBOL(__put_user_nocheck_4)
 
 SYM_FUNC_START(__put_user_8)
 	LOAD_TASK_SIZE_MINUS_N(7)
@@ -97,8 +91,6 @@ SYM_INNER_LABEL(__put_user_nocheck_8, SYM_L_GLOBAL)
 	ASM_CLAC
 	RET
 SYM_FUNC_END(__put_user_8)
-EXPORT_SYMBOL(__put_user_8)
-EXPORT_SYMBOL(__put_user_nocheck_8)
 
 SYM_CODE_START_LOCAL(.Lbad_put_user_clac)
 	ASM_CLAC

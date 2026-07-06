@@ -49,14 +49,6 @@ struct mmu_gather {
 
 void tlb_flush_mmu(struct mmu_gather *tlb);
 
-static inline void __tlb_adjust_range(struct mmu_gather *tlb,
-				      unsigned long address,
-				      unsigned int range_size)
-{
-	tlb->start = min(tlb->start, address);
-	tlb->end = max(tlb->end, address + range_size);
-}
-
 static inline void __tlb_reset_range(struct mmu_gather *tlb)
 {
 	if (tlb->fullmm) {

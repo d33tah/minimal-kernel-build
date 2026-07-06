@@ -95,10 +95,6 @@ struct page {
 	 
 	atomic_t _refcount;
 
-
-#ifdef LAST_CPUPID_NOT_IN_PAGE_FLAGS
-	int _last_cpupid;
-#endif
 } _struct_page_alignment;
 
 struct folio {

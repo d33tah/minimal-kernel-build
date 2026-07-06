@@ -35,8 +35,6 @@ extern char * strsep(char **,const char *);
 #ifndef __HAVE_ARCH_MEMCMP
 extern int memcmp(const void *,const void *,__kernel_size_t);
 #endif
-#ifndef __HAVE_ARCH_BCMP
-#endif
 char *strreplace(char *s, char old, char new);
 
 extern void kfree_const(const void *x);

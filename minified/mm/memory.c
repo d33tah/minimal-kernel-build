@@ -19,7 +19,6 @@ unsigned long max_mapnr;
 
 struct page *mem_map;
 
-static vm_fault_t do_fault(struct vm_fault *vmf);
 
 void *high_memory;
 

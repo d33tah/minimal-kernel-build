@@ -42,7 +42,6 @@ static int finished_booting;
 
 #define WATCHDOG_MAX_SKEW (MAX_SKEW_USEC * NSEC_PER_USEC)
 
-static void clocksource_select(void);
 
 /*
  * The clocksource skew watchdog (timer + kthread) is gone: this minimal

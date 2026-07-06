@@ -95,7 +95,6 @@ int irq_activate(struct irq_desc *desc)
 	return 0;
 }
 
-static void __irq_disable(struct irq_desc *desc, bool mask);
 
 
 void irq_enable(struct irq_desc *desc)

@@ -3,7 +3,6 @@
 
 #include <asm/i8259.h>
 
-static void init_8259A(int auto_eoi);
 
 DEFINE_RAW_SPINLOCK(i8259A_lock);
 

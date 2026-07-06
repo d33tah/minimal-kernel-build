@@ -243,9 +243,6 @@ static inline void slab_post_alloc_hook(struct kmem_cache *s,
 {
 	size_t i;
 
-	flags &= gfp_allowed_mask;
-
-	 
 	for (i = 0; i < size; i++) {
 		if (p[i] && init)
 			memset(p[i], 0, s->object_size);

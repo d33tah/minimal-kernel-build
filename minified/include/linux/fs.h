@@ -758,11 +758,9 @@ static inline void allow_write_access(struct file *file)
 }
 static inline void i_readcount_dec(struct inode *inode)
 {
-	return;
 }
 static inline void i_readcount_inc(struct inode *inode)
 {
-	return;
 }
 extern ssize_t kernel_read(struct file *, void *, size_t, loff_t *);
 ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos);

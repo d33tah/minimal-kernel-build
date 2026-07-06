@@ -17,13 +17,6 @@ ssize_t strscpy_pad(char *dest, const char *src, size_t count)
 }
 
 
-char *skip_spaces(const char *str)
-{
-	while (isspace(*str))
-		++str;
-	return (char *)str;
-}
-
 char *strreplace(char *s, char old, char new)
 {
 	for (; *s; ++s)

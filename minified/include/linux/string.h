@@ -25,7 +25,6 @@ extern size_t strlcat(char *, const char *, __kernel_size_t);
 #ifndef __HAVE_ARCH_STRRCHR
 extern char * strrchr(const char *,int);
 #endif
-extern char * __must_check skip_spaces(const char *);
 
 
 #ifndef __HAVE_ARCH_STRSEP

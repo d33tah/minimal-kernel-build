@@ -36,7 +36,6 @@ asmlinkage __visible void __init i386_start_kernel(void)
 		break;
 	default:
 		i386_default_early_setup();
-		break;
 	}
 
 	start_kernel();

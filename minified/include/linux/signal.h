@@ -25,7 +25,6 @@ static inline void sigemptyset(sigset_t *set)
 	case 2: set->sig[1] = 0;
 		fallthrough;
 	case 1:	set->sig[0] = 0;
-		break;
 	}
 }
 

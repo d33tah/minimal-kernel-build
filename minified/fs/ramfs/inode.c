@@ -46,7 +46,6 @@ struct inode *ramfs_get_inode(struct super_block *sb,
 			inode->i_op = &ramfs_dir_inode_operations;
 
 			inc_nlink(inode);
-			break;
 		}
 	}
 	return inode;
@@ -125,7 +124,6 @@ static int ramfs_parse_param(struct fs_context *fc, struct fs_parameter *param)
 	switch (opt) {
 	case Opt_mode:
 		fsi->mount_opts.mode = result.uint_32 & S_IALLUGO;
-		break;
 	}
 
 	return 0;

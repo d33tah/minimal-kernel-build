@@ -58,7 +58,6 @@ int __cmdline_find_option_bool(unsigned long cmdline_ptr, const char *option)
 				return 0;
 			else if (myisspace(c))
 				state = st_wordstart;
-			break;
 		}
 	}
 

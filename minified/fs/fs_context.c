@@ -156,7 +156,6 @@ static struct fs_context *alloc_fs_context(struct file_system_type *fs_type,
 		atomic_inc(&reference->d_sb->s_active);
 		fc->user_ns = get_user_ns(reference->d_sb->s_user_ns);
 		fc->root = dget(reference);
-		break;
 	}
 
 	init_fs_context = fc->fs_type->init_fs_context;
@@ -202,7 +201,6 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, 
 	default:
 		printk(KERN_NOTICE "%s%s%pV\n", prefix ? prefix : "",
 					prefix ? ": " : "", &vaf);
-		break;
 	}
 	va_end(va);
 }

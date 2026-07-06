@@ -972,7 +972,6 @@ static int may_open(struct user_namespace *mnt_userns, const struct path *path,
 	case S_IFREG:
 		if ((acc_mode & MAY_EXEC) && path_noexec(path))
 			return -EACCES;
-		break;
 	}
 
 	error = inode_permission(mnt_userns, inode, MAY_OPEN | acc_mode);

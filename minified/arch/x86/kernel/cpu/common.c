@@ -1,6 +1,4 @@
 
-#define USE_EARLY_PGTABLE_L5
-
 #include <linux/kernel.h>
 #include <linux/percpu.h>
 #include <linux/ctype.h>

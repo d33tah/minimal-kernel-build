@@ -45,7 +45,6 @@ ATOMIC64_DECL(add_unless);
 #undef ATOMIC64_DECL
 #undef ATOMIC64_DECL_ONE
 #undef __ATOMIC64_DECL
-#undef ATOMIC64_EXPORT
 
  
 

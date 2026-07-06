@@ -41,7 +41,6 @@
 
 #include <asm/byteorder.h>
 #include <linux/limits.h>
-#undef NR_OPEN
 #define INR_OPEN_CUR 1024
 #define INR_OPEN_MAX 4096
 #define SEEK_END	2

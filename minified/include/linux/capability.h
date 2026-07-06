@@ -33,15 +33,9 @@ struct user_namespace;
 	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)
 
 
-#if _KERNEL_CAPABILITY_U32S != 2
-# error Fix up hand-coded capability macro initializers
-#else
-
 #define CAP_LAST_U32_VALID_MASK		(CAP_TO_MASK(CAP_LAST_CAP + 1) -1)
 
 # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, CAP_LAST_U32_VALID_MASK }})
-
-#endif
 
 #define CAP_BOP_ALL(c, a, b, OP)                                    \
 do {                                                                \

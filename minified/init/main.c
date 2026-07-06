@@ -160,11 +160,9 @@ void __init __weak smp_setup_processor_id(void)
 {
 }
 
-# if THREAD_SIZE >= PAGE_SIZE
 void __init __weak thread_stack_cache_init(void)
 {
 }
-#endif
 
 void __init __weak mem_encrypt_init(void) { }
 

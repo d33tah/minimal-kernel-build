@@ -16,10 +16,6 @@
  
 
 #define SPURIOUS_APIC_VECTOR		0xff
- 
-#if ((SPURIOUS_APIC_VECTOR & 0x0F) != 0x0F)
-# error SPURIOUS_APIC_VECTOR definition error
-#endif
 
 
 

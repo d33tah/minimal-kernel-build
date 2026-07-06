@@ -32,21 +32,13 @@
 
 #define __malloc                        __attribute__((__malloc__))
 
-# define __no_caller_saved_registers	__attribute__((__no_caller_saved_registers__))
-
-# define __noclone
-
 # define fallthrough                    __attribute__((__fallthrough__))
 
 #define   noinline                      __attribute__((__noinline__))
 
-# define __nonstring
-
 # define __no_profile                  __attribute__((__no_profile_instrument_function__))
 
 #define __noreturn                      __attribute__((__noreturn__))
-
-# define __overloadable			__attribute__((__overloadable__))
 
 #define __packed                        __attribute__((__packed__))
 
@@ -63,9 +55,6 @@
 #define __must_check                    __attribute__((__warn_unused_result__))
 
 # define __compiletime_warning(msg)     __attribute__((__warning__(msg)))
-
-# define __disable_sanitizer_instrumentation \
-	 __attribute__((disable_sanitizer_instrumentation))
 
 #define __weak                          __attribute__((__weak__))
 

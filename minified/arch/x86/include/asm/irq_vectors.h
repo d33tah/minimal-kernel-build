@@ -15,9 +15,6 @@
 
  
 
-#define SPURIOUS_APIC_VECTOR		0xff
-
-
 
 #define NR_VECTORS			 256
 

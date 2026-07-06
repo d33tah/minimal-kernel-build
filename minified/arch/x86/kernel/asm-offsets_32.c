@@ -2,9 +2,6 @@
 # error "Please do not build this file directly, build asm-offsets.c instead"
 #endif
 
-#include <linux/efi.h>
-
-
 void foo(void);
 
 void foo(void)

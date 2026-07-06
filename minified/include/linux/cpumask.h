@@ -28,7 +28,6 @@ typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS); } cpumask_t;
 extern struct cpumask __cpu_possible_mask;
 extern struct cpumask __cpu_online_mask;
 #define cpu_possible_mask ((const struct cpumask *)&__cpu_possible_mask)
-#define cpu_online_mask   ((const struct cpumask *)&__cpu_online_mask)
 
 static __always_inline unsigned int cpumask_check(unsigned int cpu)
 {

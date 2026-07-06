@@ -45,8 +45,6 @@ static __always_inline __u32 __le32_to_cpup(const __le32 *p)
 #define be64_to_cpu __be64_to_cpu
 #define cpu_to_be32 __cpu_to_be32
 #define be32_to_cpu __be32_to_cpu
-#define cpu_to_be16 __cpu_to_be16
-#define be16_to_cpu __be16_to_cpu
 /* 23 p/s byteorder aliases removed - 0-ref; le32_to_cpup kept (xz get_le32) */
 #define le32_to_cpup __le32_to_cpup
 

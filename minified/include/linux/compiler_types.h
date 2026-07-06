@@ -19,8 +19,6 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 # define __release(x)	__context__(x,-1)
 # define __cond_lock(x,c)	((c) ? ({ __acquire(x); 1; }) : 0)
 # define __force	__attribute__((force))
-# define __nocast	__attribute__((nocast))
-# define __safe		__attribute__((safe))
 # define __private	__attribute__((noderef))
 # define ACCESS_PRIVATE(p, member) (*((typeof((p)->member) __force *) &(p)->member))
 #else  
@@ -37,8 +35,6 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 # define __release(x)	(void)0
 # define __cond_lock(x,c) (c)
 # define __force
-# define __nocast
-# define __safe
 # define __private
 # define ACCESS_PRIVATE(p, member) ((p)->member)
 #endif  

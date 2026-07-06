@@ -414,7 +414,6 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 	this_header = 0;
 	message = NULL;
 	while (!message && len) {
-		loff_t saved_offset = this_header;
 		if (*buf == '0' && !(this_header & 3)) {
 			state = Start;
 			written = write_buffer(buf, len);
@@ -437,7 +436,6 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 		 * never fired. Any byte here that is neither cpio-magic nor a
 		 * padding NUL is corruption.
 		 */
-		(void)saved_offset;
 		error("invalid magic at start of archive");
 		break;
 	}

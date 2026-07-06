@@ -10,7 +10,6 @@ static bool is_aligned(const void *base, size_t size, unsigned char align)
 {
 	unsigned char lsbits = (unsigned char)size;
 
-	(void)base;
 	return (lsbits & (align - 1)) == 0;
 }
 

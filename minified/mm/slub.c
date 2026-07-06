@@ -537,8 +537,6 @@ static void *___slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
 	struct slab *slab;
 
 	/* Minimal stub: simplified slow path allocator */
-	(void)addr;
-	(void)c;
 
 	/* Try to get from partial lists */
 	freelist = get_partial(s, gfpflags, node, &slab);

@@ -24,9 +24,7 @@ typedef __kernel_gid32_t	gid_t;
 
 typedef unsigned long		uintptr_t;
 
-#if defined(__GNUC__)
 typedef __kernel_loff_t		loff_t;
-#endif
 
 #ifndef _SIZE_T
 #define _SIZE_T
@@ -47,10 +45,8 @@ typedef u8			uint8_t;
 typedef u16			uint16_t;
 typedef u32			uint32_t;
 
-#if defined(__GNUC__)
 typedef u64			uint64_t;
 typedef s64			int64_t;
-#endif
 
 #define pgoff_t unsigned long
 

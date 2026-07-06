@@ -35,11 +35,9 @@ static __always_inline unsigned int cpumask_check(unsigned int cpu)
 	return cpu;
 }
 
-#if NR_CPUS == 1
 /* cpumask_next removed: 0-caller static-inline orphan (NR_CPUS==1). */
 #define for_each_cpu(cpu, mask)			\
 	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
-#endif
 
 #define CPU_BITS_NONE						\
 {								\

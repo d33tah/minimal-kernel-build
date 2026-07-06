@@ -76,11 +76,7 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 #define __diag_str(s)		__diag_str1(s)
 #define __diag(s)		_Pragma(__diag_str(clang diagnostic s))
 
-#if CONFIG_CLANG_VERSION >= 110000
 #define __diag_clang_11(s)	__diag(s)
-#else
-#define __diag_clang_11(s)
-#endif
 
 #define __diag_ignore_all(option, comment) \
 	__diag_clang(11, ignore, option)

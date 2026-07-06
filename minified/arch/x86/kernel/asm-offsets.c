@@ -35,37 +35,12 @@ static void __used common(void)
 	BLANK();
 	OFFSET(TASK_threadsp, task_struct, thread.sp);
 
-	BLANK();
-	OFFSET(pbe_address, pbe, address);
-	OFFSET(pbe_orig_address, pbe, orig_address);
-	OFFSET(pbe_next, pbe, next);
-
-	BLANK();
-	OFFSET(IA32_SIGCONTEXT_ax, sigcontext_32, ax);
-	OFFSET(IA32_SIGCONTEXT_bx, sigcontext_32, bx);
-	OFFSET(IA32_SIGCONTEXT_cx, sigcontext_32, cx);
-	OFFSET(IA32_SIGCONTEXT_dx, sigcontext_32, dx);
-	OFFSET(IA32_SIGCONTEXT_si, sigcontext_32, si);
-	OFFSET(IA32_SIGCONTEXT_di, sigcontext_32, di);
-	OFFSET(IA32_SIGCONTEXT_bp, sigcontext_32, bp);
-	OFFSET(IA32_SIGCONTEXT_sp, sigcontext_32, sp);
-	OFFSET(IA32_SIGCONTEXT_ip, sigcontext_32, ip);
-
-	BLANK();
-	OFFSET(IA32_RT_SIGFRAME_sigcontext, rt_sigframe_ia32, uc.uc_mcontext);
-
 
 	/* TDX offsets removed - not used in minimal kernel */
 
 	BLANK();
 	OFFSET(BP_scratch, boot_params, scratch);
-	OFFSET(BP_secure_boot, boot_params, secure_boot);
-	OFFSET(BP_loadflags, boot_params, hdr.loadflags);
-	OFFSET(BP_hardware_subarch, boot_params, hdr.hardware_subarch);
-	OFFSET(BP_version, boot_params, hdr.version);
-	OFFSET(BP_kernel_alignment, boot_params, hdr.kernel_alignment);
 	OFFSET(BP_init_size, boot_params, hdr.init_size);
-	OFFSET(BP_pref_address, boot_params, hdr.pref_address);
 
 	BLANK();
 	DEFINE(PTREGS_SIZE, sizeof(struct pt_regs));
@@ -78,6 +53,5 @@ static void __used common(void)
 	 
 	OFFSET(TSS_sp0, tss_struct, x86_tss.sp0);
 	OFFSET(TSS_sp1, tss_struct, x86_tss.sp1);
-	OFFSET(TSS_sp2, tss_struct, x86_tss.sp2);
 
 }

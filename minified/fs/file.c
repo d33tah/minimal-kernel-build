@@ -267,13 +267,10 @@ repeat:
 	else
 		__clear_close_on_exec(fd, fdt);
 	error = fd;
-#if 1
-	 
 	if (rcu_access_pointer(fdt->fd[fd]) != NULL) {
 		printk(KERN_WARNING "alloc_fd: slot %d not NULL!\n", fd);
 		rcu_assign_pointer(fdt->fd[fd], NULL);
 	}
-#endif
 
 out:
 	spin_unlock(&files->file_lock);

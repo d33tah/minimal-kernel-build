@@ -88,7 +88,6 @@ static __always_inline unsigned long arch_local_irq_save(void)
 	arch_local_irq_disable();
 	return flags;
 }
-#else
 
 
 #endif  

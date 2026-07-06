@@ -77,11 +77,7 @@ struct page {
 				struct mm_struct *pt_mm;  
 				atomic_t pt_frag_refcount;  
 			};
-#if ALLOC_SPLIT_PTLOCKS
-			spinlock_t *ptl;
-#else
 			spinlock_t ptl;
-#endif
 		};
 
 

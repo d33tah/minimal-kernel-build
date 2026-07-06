@@ -9,12 +9,6 @@ struct task_struct;
 
 /* Removed: print_fatal_signals - never used */
 
-static inline void copy_siginfo(kernel_siginfo_t *to,
-				const kernel_siginfo_t *from)
-{
-	memcpy(to, from, sizeof(*to));
-}
-
 static inline void clear_siginfo(kernel_siginfo_t *info)
 {
 	memset(info, 0, sizeof(*info));

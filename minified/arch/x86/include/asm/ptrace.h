@@ -51,11 +51,6 @@ static inline unsigned long instruction_pointer(struct pt_regs *regs)
 	return regs->ip;
 }
 
-static inline unsigned long user_stack_pointer(struct pt_regs *regs)
-{
-	return regs->sp;
-}
-
 static __always_inline bool regs_irqs_disabled(struct pt_regs *regs)
 {
 	return !(regs->flags & X86_EFLAGS_IF);

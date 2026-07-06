@@ -126,12 +126,6 @@ static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
 
 /* tlb_end_vma removed - 0-caller (callee tlb_flush_mmu_tlbonly stays live via mmu_gather.c) */
 
-static inline void tlb_flush_pmd_range(struct mmu_gather *tlb,
-				     unsigned long address, unsigned long size)
-{
-	__tlb_adjust_range(tlb, address, size);
-	tlb->cleared_pmds = 1;
-}
 
 /* tlb_flush_pud_range / tlb_flush_p4d_range removed - only the dead
  * pud_free_tlb/p4d_free_tlb macros (folded away on 2-level paging) used them */

@@ -9,9 +9,7 @@
 /* swahw32, swahb32 variants - unused */
 /* __fswab16/32/64 + non-builtin __swab fallbacks dropped - builtins always present */
 
-#define __swab16(x) (__u16)__builtin_bswap16((__u16)(x))
 #define __swab32(x) (__u32)__builtin_bswap32((__u32)(x))
-#define __swab64(x) (__u64)__builtin_bswap64((__u64)(x))
 
 /* 32-bit only kernel */
 static __always_inline unsigned long __swab(const unsigned long y)

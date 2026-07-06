@@ -19,10 +19,7 @@ static inline void flush_cache_range(struct vm_area_struct *vma,
 
 /* flush_cache_page removed - no-op on x86, all callers dropped */
 
-#ifndef ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE
 static inline void flush_dcache_page(struct page *page) { }
-#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
-#endif
 
 /* flush_icache_range removed - unused */
 /* flush_icache_user_range removed - unused (macro for flush_icache_range) */

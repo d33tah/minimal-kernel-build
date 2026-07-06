@@ -7,7 +7,6 @@
 #include <asm/cacheflush.h>
 struct folio;
 static inline void flush_dcache_folio(struct folio *folio) {}
-#define ARCH_IMPLEMENTS_FLUSH_DCACHE_FOLIO 0
 #include <linux/mm.h>
 #include <linux/uaccess.h>
 #include <linux/hardirq.h>

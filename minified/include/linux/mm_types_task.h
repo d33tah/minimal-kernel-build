@@ -9,8 +9,6 @@
 
 #include <asm/page.h>
 
-#define ALLOC_SPLIT_PTLOCKS	(SPINLOCK_SIZE > BITS_PER_LONG/8)
-
 enum {
 	MM_FILEPAGES,
 	MM_ANONPAGES,

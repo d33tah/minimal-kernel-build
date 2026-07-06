@@ -7,7 +7,6 @@
 
 
 struct module;
-struct irq_desc;
 
 struct irq_desc {
 	struct irq_common_data	irq_common_data;

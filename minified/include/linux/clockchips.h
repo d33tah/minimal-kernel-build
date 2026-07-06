@@ -7,7 +7,6 @@
 # include <linux/ktime.h>
 # include <linux/notifier.h>
 
-struct clock_event_device;
 
 enum clock_event_state {
 	CLOCK_EVT_STATE_DETACHED,

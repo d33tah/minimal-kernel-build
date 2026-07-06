@@ -61,7 +61,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 
 # define SCHED_WARN_ON(x)      ({ (void)(x), 0; })
 
-struct rq;
 
  
 #define TASK_ON_RQ_QUEUED	1

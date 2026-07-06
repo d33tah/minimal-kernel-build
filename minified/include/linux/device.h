@@ -22,7 +22,6 @@
 #include <linux/device/class.h>
 #include <linux/device/driver.h>
 
-struct device;
 struct device_private;
 struct module;
 struct class;

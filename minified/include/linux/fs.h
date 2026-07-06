@@ -50,7 +50,6 @@ typedef int rwf_t;
 /* end uapi/linux/fs.h */
 
 struct iovec;
-struct kiocb;
 struct kobject;
 struct pipe_inode_info;
 struct vm_area_struct;

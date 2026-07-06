@@ -12,7 +12,6 @@
 #include <asm/div64.h>
 #include <asm/io.h>
 
-struct clocksource;
 
 /*
  * Dropped the always-false `defined(CONFIG_ARCH_CLOCKSOURCE_DATA)` OR-operand:

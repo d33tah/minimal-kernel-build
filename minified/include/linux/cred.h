@@ -9,7 +9,6 @@
 #include <linux/sched.h>
 #include <linux/sched/user.h>
 
-struct cred;
 struct inode;
 
 struct group_info {

@@ -5,8 +5,6 @@
 #include <linux/notifier.h>
 #include <linux/vt_kern.h>
 #include <linux/delay.h>
-extern struct atomic_notifier_head panic_notifier_list;
-
 #include <linux/console.h>
 
 #define PANIC_TIMER_STEP 100

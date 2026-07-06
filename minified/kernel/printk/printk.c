@@ -226,7 +226,6 @@ void register_console(struct console *newcon)
 
 void __init console_init(void)
 {
-	int ret;
 	initcall_t call;
 	initcall_entry_t *ce;
 
@@ -238,8 +237,8 @@ void __init console_init(void)
 	 
 	while (ce < __con_initcall_end) {
 		call = initcall_from_entry(ce);
-		 
-		ret = call();
+
+		call();
 		 
 		ce++;
 	}

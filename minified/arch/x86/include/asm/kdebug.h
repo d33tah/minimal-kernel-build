@@ -21,7 +21,6 @@ enum show_regs_mode {
 
 extern void die(const char *, struct pt_regs *,long);
 void die_addr(const char *str, struct pt_regs *regs, long err, long gp_addr);
-extern void show_stack_regs(struct pt_regs *regs);
 extern void __show_regs(struct pt_regs *regs, enum show_regs_mode,
 			const char *log_lvl);
 /* show_iret_regs removed - unused */

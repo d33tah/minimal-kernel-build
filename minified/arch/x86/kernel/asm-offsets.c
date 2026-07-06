@@ -23,8 +23,6 @@ struct saved_context {
 	unsigned long return_address;
 	bool misc_enable_saved;
 } __attribute__((packed));
-extern char core_restore_code[];
-extern char restore_registers[];
 /* TDX not used in minimal kernel */
 
 

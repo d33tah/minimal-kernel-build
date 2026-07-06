@@ -13,11 +13,7 @@
 
 #define NODES_WIDTH		NODES_SHIFT
 
-#define KASAN_TAG_WIDTH 0
-
 #define LAST_CPUPID_SHIFT 0
-
-#define LAST_CPUPID_WIDTH LAST_CPUPID_SHIFT
 
 #endif
 #endif  

@@ -20,12 +20,6 @@
 #define __le32_to_cpu(x) ((__force __u32)(__le32)(x))
 #define __cpu_to_le16(x) ((__force __le16)(__u16)(x))
 #define __le16_to_cpu(x) ((__force __u16)(__le16)(x))
-#define __cpu_to_be64(x) ((__force __be64)__swab64((x)))
-#define __be64_to_cpu(x) __swab64((__force __u64)(__be64)(x))
-#define __cpu_to_be32(x) ((__force __be32)__swab32((x)))
-#define __be32_to_cpu(x) __swab32((__force __u32)(__be32)(x))
-#define __cpu_to_be16(x) ((__force __be16)__swab16((x)))
-#define __be16_to_cpu(x) __swab16((__force __u16)(__be16)(x))
 
 /* 11 p static inlines + 12 s macros removed - 0-ref; le32_to_cpup kept (xz get_le32) */
 static __always_inline __u32 __le32_to_cpup(const __le32 *p)
@@ -41,26 +35,7 @@ static __always_inline __u32 __le32_to_cpup(const __le32 *p)
 #define le32_to_cpu __le32_to_cpu
 #define cpu_to_le16 __cpu_to_le16
 #define le16_to_cpu __le16_to_cpu
-#define cpu_to_be64 __cpu_to_be64
-#define be64_to_cpu __be64_to_cpu
-#define cpu_to_be32 __cpu_to_be32
-#define be32_to_cpu __be32_to_cpu
 /* 23 p/s byteorder aliases removed - 0-ref; le32_to_cpup kept (xz get_le32) */
 #define le32_to_cpup __le32_to_cpup
 
-#undef ntohl
-#undef ntohs
-#undef htonl
-#undef htons
-
-#define ___htonl(x) __cpu_to_be32(x)
-#define ___htons(x) __cpu_to_be16(x)
-#define ___ntohl(x) __be32_to_cpu(x)
-#define ___ntohs(x) __be16_to_cpu(x)
-
-#define htonl(x) ___htonl(x)
-#define ntohl(x) ___ntohl(x)
-#define htons(x) ___htons(x)
-#define ntohs(x) ___ntohs(x)
-
-#endif  
+#endif

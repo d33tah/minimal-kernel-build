@@ -21,7 +21,4 @@ typedef union {
 #define PTRS_PER_PGD	1024
 #define PTRS_PER_PTE	1024
 
-#define PGDIR_SIZE	(1UL << PGDIR_SHIFT)
-#define PGDIR_MASK	(~(PGDIR_SIZE - 1))
-
-#endif  
+#endif

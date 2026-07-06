@@ -121,8 +121,6 @@ int main(int ac, char **av)
 				sync_kconfig = 1;
 			}
 			break;
-		default:
-			break;
 		}
 	}
 	if (ac == optind) {

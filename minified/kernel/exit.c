@@ -91,29 +91,6 @@ void __noreturn do_exit(long code)
 	do_task_dead();
 }
 
-void __noreturn make_task_dead(int signr)
-{
-	
-	struct task_struct *tsk = current;
-
-	if (unlikely(in_interrupt()))
-		panic("Aiee, killing interrupt handler!");
-	if (unlikely(!tsk->pid))
-		panic("Attempted to kill the idle task!");
-
-	if (unlikely(in_atomic())) {
-		preempt_count_set(PREEMPT_ENABLED);
-	}
-
-	if (unlikely(tsk->flags & PF_EXITING)) {
-		pr_alert("Fixing recursive fault but reboot is needed!\n");
-		refcount_inc(&tsk->rcu_users);
-		do_task_dead();
-	}
-
-	do_exit(signr);
-}
-
 SYSCALL_DEFINE1(exit, int, error_code)
 {
 	do_exit((error_code&0xff)<<8);

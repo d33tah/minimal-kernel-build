@@ -13,14 +13,6 @@ pgtable_t pte_alloc_one(struct mm_struct *mm)
 	return __pte_alloc_one(mm, __userpte_alloc_gfp);
 }
 
-
-void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
-{
-	/* runtime-dead: reached only via pte_free_tlb<-free_pgd_range (page-table
-	 * teardown on munmap/exit), which never fires on a 1-shot boot. Stubbed;
-	 * symbol kept for the asm/pgalloc.h __pte_free_tlb inline caller. */
-}
-
 static inline void pgd_list_add(pgd_t *pgd)
 {
 	struct page *page = virt_to_page(pgd);

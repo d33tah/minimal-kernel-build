@@ -409,8 +409,6 @@ void sym_calc_value(struct symbol *sym)
 			}
 		}
 		break;
-	default:
-		;
 	}
 
 	sym->curr = newval;
@@ -579,8 +577,6 @@ const char *sym_get_string_value(struct symbol *sym)
 			return "y";
 		}
 		break;
-	default:
-		;
 	}
 	return (const char *)sym->curr.val;
 }

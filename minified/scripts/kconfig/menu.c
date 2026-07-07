@@ -258,8 +258,6 @@ static void sym_check_prop(struct symbol *sym)
 			    !menu_validate_number(sym, prop->expr->right.sym))
 				prop_warn(prop, "range is invalid");
 			break;
-		default:
-			;
 		}
 	}
 }

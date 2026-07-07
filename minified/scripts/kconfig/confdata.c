@@ -260,8 +260,6 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
 			return 1;
 		}
 		break;
-	default:
-		;
 	}
 	return 0;
 }
@@ -434,8 +432,6 @@ load:
 				sym->def[def].tri = no;
 				sym->flags |= def_flags;
 				break;
-			default:
-				;
 			}
 		} else if (memcmp(line, CONFIG_, strlen(CONFIG_)) == 0) {
 			p = strchr(line + strlen(CONFIG_), '=');

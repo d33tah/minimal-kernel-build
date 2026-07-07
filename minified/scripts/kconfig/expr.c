@@ -168,8 +168,6 @@ static void __expr_eliminate_eq(enum expr_type type, struct expr **ep1, struct e
 		e1 = expr_alloc_symbol(&symbol_yes);
 		e2 = expr_alloc_symbol(&symbol_yes);
 		break;
-	default:
-		;
 	}
 }
 
@@ -181,15 +179,11 @@ void expr_eliminate_eq(struct expr **ep1, struct expr **ep2)
 	case E_OR:
 	case E_AND:
 		__expr_eliminate_eq(e1->type, ep1, ep2);
-	default:
-		;
 	}
 	if (e1->type != e2->type) switch (e2->type) {
 	case E_OR:
 	case E_AND:
 		__expr_eliminate_eq(e2->type, ep1, ep2);
-	default:
-		;
 	}
 	e1 = expr_eliminate_yn(e1);
 	e2 = expr_eliminate_yn(e2);
@@ -318,8 +312,6 @@ static struct expr *expr_eliminate_yn(struct expr *e)
 			}
 		}
 		break;
-	default:
-		;
 	}
 	return e;
 }
@@ -344,8 +336,6 @@ struct expr *expr_trans_bool(struct expr *e)
 			}
 		}
 		break;
-	default:
-		;
 	}
 	return e;
 }
@@ -521,8 +511,6 @@ static void expr_eliminate_dups1(enum expr_type type, struct expr **ep1, struct 
 	switch (e1->type) {
 	case E_OR: case E_AND:
 		expr_eliminate_dups1(e1->type, &e1, &e1);
-	default:
-		;
 	}
 
 	switch (type) {
@@ -544,8 +532,6 @@ static void expr_eliminate_dups1(enum expr_type type, struct expr **ep1, struct 
 			trans_count++;
 		}
 		break;
-	default:
-		;
 	}
 #undef e1
 #undef e2
@@ -563,8 +549,6 @@ struct expr *expr_eliminate_dups(struct expr *e)
 		switch (e->type) {
 		case E_OR: case E_AND:
 			expr_eliminate_dups1(e->type, &e, &e);
-		default:
-			;
 		}
 		if (!trans_count)
 			 
@@ -722,12 +706,8 @@ struct expr *expr_transform(struct expr *e)
 				break;
 			}
 			break;
-		default:
-			;
 		}
 		break;
-	default:
-		;
 	}
 	return e;
 }
@@ -754,8 +734,6 @@ int expr_contains_symbol(struct expr *dep, struct symbol *sym)
 		       dep->right.sym == sym;
 	case E_NOT:
 		return expr_contains_symbol(dep->left.expr, sym);
-	default:
-		;
 	}
 	return 0;
 }
@@ -783,8 +761,6 @@ bool expr_depends_symbol(struct expr *dep, struct symbol *sym)
 				return true;
 		}
 		break;
-	default:
-		;
 	}
  	return false;
 }

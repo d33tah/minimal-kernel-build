@@ -11,21 +11,7 @@
 #include <asm/cpumask.h>
 #include <asm/shared/msr.h>
 
-struct msr_info {
-	u32 msr_no;
-};
 
-struct saved_msr {
-	bool valid;
-	struct msr_info info;
-};
-
-struct saved_msrs {
-	unsigned int num;
-	struct saved_msr *array;
-};
-
- 
 #define DECLARE_ARGS(val, low, high)	unsigned long long val
 #define EAX_EDX_VAL(val, low, high)	(val)
 #define EAX_EDX_RET(val, low, high)	"=A" (val)

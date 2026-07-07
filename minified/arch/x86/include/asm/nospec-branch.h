@@ -79,8 +79,6 @@
 
 typedef u8 retpoline_thunk_t[RETPOLINE_THUNK_SIZE];
 
-extern void entry_ibpb(void);
-
 # define CALL_NOSPEC "call *%[thunk_target]\n"
 
  

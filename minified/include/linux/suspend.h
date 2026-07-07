@@ -8,10 +8,4 @@
 #include <linux/mm.h>
 #include <asm/errno.h>
 
-struct pbe {
-	void *address;
-	void *orig_address;
-	struct pbe *next;
-};
-
 #endif /* _LINUX_SUSPEND_H */

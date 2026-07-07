@@ -5,18 +5,6 @@
 #include <asm/x86_init.h>
 
 
-/*
- * CONFIG_BASE_SMALL is fixed to 1 in this build (autoconf.h:262 / .config:439),
- * so `#if CONFIG_BASE_SMALL == 0` is always false and the 260 then-arm was
- * statically dead in every TU; only the #else value 32 was ever emitted.
- * Emit the live value unconditionally.
- */
-# define MAX_MP_BUSSES		32
-
-extern DECLARE_BITMAP(mp_bus_not_pci, MAX_MP_BUSSES);
-
-
-
 static inline void get_smp_config(void)
 {
 	x86_init.mpparse.get_smp_config(0);

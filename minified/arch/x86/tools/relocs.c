@@ -173,12 +173,10 @@ static const char *sym_name(const char *sym_strtab, Elf_Sym *sym)
 #if BYTE_ORDER == LITTLE_ENDIAN
 #define le16_to_cpu(val) (val)
 #define le32_to_cpu(val) (val)
-#define le64_to_cpu(val) (val)
 #endif
 #if BYTE_ORDER == BIG_ENDIAN
 #define le16_to_cpu(val) bswap_16(val)
 #define le32_to_cpu(val) bswap_32(val)
-#define le64_to_cpu(val) bswap_64(val)
 #endif
 
 static uint16_t elf16_to_cpu(uint16_t val)

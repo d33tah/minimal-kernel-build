@@ -6,7 +6,6 @@
 static LIST_HEAD(clockevent_devices);
 static LIST_HEAD(clockevents_released);
 static DEFINE_RAW_SPINLOCK(clockevents_lock);
-static DEFINE_MUTEX(clockevents_mutex);
 
 static int __clockevents_switch_state(struct clock_event_device *dev,
 				      enum clock_event_state state)

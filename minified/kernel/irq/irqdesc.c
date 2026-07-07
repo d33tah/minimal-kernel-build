@@ -27,7 +27,6 @@ static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
 
 int nr_irqs = NR_IRQS;
 
-static DEFINE_MUTEX(sparse_irq_lock);
 static DECLARE_BITMAP(allocated_irqs, IRQ_BITMAP_BITS);
 
 

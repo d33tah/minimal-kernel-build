@@ -8,15 +8,11 @@
 
 #define HAS_KERNEL_IBT	0
 
-#ifndef __ASSEMBLY__
-
-
-
-#else
+#ifdef __ASSEMBLY__
 
 #define ENDBR
 
-#endif  
+#endif
 
 
 #define ENDBR_INSN_SIZE		(4*HAS_KERNEL_IBT)

@@ -258,8 +258,6 @@ raw_copy_from_user(void *to, const void __user *from, unsigned long n)
 	return __copy_user_ll(to, (__force const void *)from, n);
 }
 
-#define INLINE_COPY_TO_USER
-
 static __must_check __always_inline bool user_access_begin(const void __user *ptr, size_t len)
 {
 	if (unlikely(!access_ok(ptr,len)))

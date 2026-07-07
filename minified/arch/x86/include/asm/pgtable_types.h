@@ -175,7 +175,6 @@ typedef struct { p4d_t p4d; } pud_t;
 
 /* p4d_none() removed - constant 0, all callers folded (2-level paging) */
 /* p4d_present() removed - constant 1, all callers folded */
-#define set_p4d(p4dptr, p4dval)	set_pud((pud_t *)(p4dptr), (pud_t) { p4dval })
 
 static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 {

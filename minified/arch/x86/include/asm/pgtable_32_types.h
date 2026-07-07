@@ -16,7 +16,6 @@ typedef union {
 } pte_t;
 #endif
 
-#define ARCH_PAGE_TABLE_SYNC_MASK	PGTBL_PMD_MODIFIED
 #define PGDIR_SHIFT	22
 #define PTRS_PER_PGD	1024
 #define PTRS_PER_PTE	1024

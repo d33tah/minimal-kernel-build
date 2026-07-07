@@ -22,15 +22,10 @@ obj-y			+= bugs.o
 # aperfmperf.o removed - inlined in topology.h
 obj-y			+= cpuid-deps.o
 
-obj-$(CONFIG_PROC_FS)	+= proc.o
-obj-$(CONFIG_X86_FEATURE_NAMES) += capflags.o powerflags.o
 
 # feat_ctl.o removed - empty file
 ifdef CONFIG_CPU_SUP_INTEL
-obj-$(CONFIG_PM)	+= intel_epb.o
 endif
-obj-$(CONFIG_CPU_SUP_AMD)		+= amd.o
-obj-$(CONFIG_CPU_SUP_HYGON)		+= hygon.o
 # obj-$(CONFIG_CPU_SUP_CYRIX_32)		+= cyrix.o  # deleted
 # obj-$(CONFIG_CPU_SUP_CENTAUR)		+= centaur.o  # deleted
 # obj-$(CONFIG_CPU_SUP_TRANSMETA_32)	+= transmeta.o  # deleted
@@ -38,10 +33,7 @@ obj-$(CONFIG_CPU_SUP_HYGON)		+= hygon.o
 # obj-$(CONFIG_CPU_SUP_ZHAOXIN)		+= zhaoxin.o  # deleted
 # obj-$(CONFIG_CPU_SUP_VORTEX_32)		+= vortex.o  # deleted
 
-obj-$(CONFIG_X86_LOCAL_APIC)		+= perfctr-watchdog.o
 
-obj-$(CONFIG_HYPERVISOR_GUEST)		+= vmware.o hypervisor.o mshyperv.o
-obj-$(CONFIG_ACRN_GUEST)		+= acrn.o
 
 ifdef CONFIG_X86_FEATURE_NAMES
 quiet_cmd_mkcapflags = MKCAP   $@

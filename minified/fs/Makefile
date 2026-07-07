@@ -6,7 +6,6 @@
 # Rewritten to use lists instead of if-statements.
 # 
 
-obj-$(CONFIG_SYSCTL)		+= sysctls.o
 
 obj-y :=	open.o read_write.o file_table.o super.o \
 		char_dev.o exec.o namei.o \
@@ -16,31 +15,9 @@ obj-y :=	open.o read_write.o file_table.o super.o \
 		fs_struct.o \
 		fs_context.o fs_parser.o init.o
 
-obj-$(CONFIG_PROC_FS) += proc_namespace.o
 
-obj-$(CONFIG_EPOLL)		+= eventpoll.o
-obj-$(CONFIG_SIGNALFD)		+= signalfd.o
-obj-$(CONFIG_TIMERFD)		+= timerfd.o
-obj-$(CONFIG_EVENTFD)		+= eventfd.o
-obj-$(CONFIG_USERFAULTFD)	+= userfaultfd.o
-obj-$(CONFIG_AIO)               += aio.o
-obj-$(CONFIG_IO_URING)		+= io_uring.o
-obj-$(CONFIG_IO_WQ)		+= io-wq.o
-obj-$(CONFIG_FS_DAX)		+= dax.o
-obj-$(CONFIG_FILE_LOCKING)      += locks.o
-obj-$(CONFIG_BINFMT_AOUT)	+= binfmt_aout.o
-obj-$(CONFIG_BINFMT_MISC)	+= binfmt_misc.o
-obj-$(CONFIG_BINFMT_SCRIPT)	+= binfmt_script.o
 obj-$(CONFIG_BINFMT_ELF)	+= binfmt_elf.o
-obj-$(CONFIG_COMPAT_BINFMT_ELF)	+= compat_binfmt_elf.o
-obj-$(CONFIG_BINFMT_ELF_FDPIC)	+= binfmt_elf_fdpic.o
-obj-$(CONFIG_BINFMT_FLAT)	+= binfmt_flat.o
 
-obj-$(CONFIG_FS_MBCACHE)	+= mbcache.o
-obj-$(CONFIG_FS_POSIX_ACL)	+= posix_acl.o
-obj-$(CONFIG_COREDUMP)		+= coredump.o
-obj-$(CONFIG_SYSCTL)		+= drop_caches.o
 
-obj-$(CONFIG_FHANDLE)		+= fhandle.o
 
 obj-y                          += ramfs/

@@ -4,7 +4,6 @@
 #
 FONTMAPFILE = cp437.uni
 
-obj-$(CONFIG_CONSOLE_TRANSLATIONS)	+= consolemap.o consolemap_deftbl.o
 obj-$(CONFIG_HW_CONSOLE)		+= vt.o
 
 # Files generated that shall be removed upon make clean

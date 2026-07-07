@@ -13,12 +13,6 @@
 #define tty_info_ratelimited(tty, f, ...) \
 		tty_msg(pr_info_ratelimited, tty, f, ##__VA_ARGS__)
 
- 
-enum {
-	TTY_LOCK_NORMAL = 0,
-};
-
- 
 /* TTY_THROTTLE_SAFE, TTY_UNTHROTTLE_SAFE removed - never referenced */
 
 /* __tty_set_flow_change, tty_set_flow_change removed - unused */

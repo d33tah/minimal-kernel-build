@@ -4,10 +4,6 @@
 
 #define tty_ldisc_debug(tty, f, args...)
 
-enum {
-	LDISC_SEM_NORMAL,
-};
-
 
 
 static DEFINE_RAW_SPINLOCK(tty_ldiscs_lock);

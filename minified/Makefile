@@ -3,7 +3,6 @@ VERSION = 5
 PATCHLEVEL = 19
 SUBLEVEL = 0
 EXTRAVERSION = -rc8
-NAME = Superb Owl
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"

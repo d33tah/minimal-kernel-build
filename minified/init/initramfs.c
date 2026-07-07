@@ -53,7 +53,6 @@ static void panic_show_mem(const char *fmt, ...)
 
 	va_start(args, fmt);
 	panic(fmt, args);
-	va_end(args);
 }
 
 

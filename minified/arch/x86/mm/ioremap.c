@@ -66,7 +66,6 @@ void __init __early_set_fixmap(enum fixed_addresses idx,
 
 	if (idx >= __end_of_fixed_addresses) {
 		BUG();
-		return;
 	}
 	pte = early_ioremap_pte(addr);
 

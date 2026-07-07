@@ -12,7 +12,6 @@ void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
 	pgd = swapper_pg_dir + pgd_index(vaddr);
 	if (pgd_none(*pgd)) {
 		BUG();
-		return;
 	}
 	/*
 	 * P4D/PUD are folded onto the PGD on this 2-level (X86_32, no PAE)
@@ -22,7 +21,6 @@ void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
 	pmd = pmd_offset(pud_offset(p4d_offset(pgd, vaddr), vaddr), vaddr);
 	if (pmd_none(*pmd)) {
 		BUG();
-		return;
 	}
 	pte = pte_offset_kernel(pmd, vaddr);
 	if (!pte_none(pteval))

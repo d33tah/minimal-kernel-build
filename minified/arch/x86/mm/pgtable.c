@@ -101,7 +101,6 @@ void native_set_fixmap(unsigned   idx,
 
 	if (idx >= __end_of_fixed_addresses) {
 		BUG();
-		return;
 	}
 	set_pte_vaddr(address, pfn_pte(phys >> PAGE_SHIFT, flags));
 	fixmaps_set++;

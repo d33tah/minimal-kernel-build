@@ -55,7 +55,6 @@ static inline void static_key_enable(struct static_key *key)
 	atomic_set(&key->enabled, 1);
 }
 
-#define STATIC_KEY_INIT_TRUE	{ .enabled = ATOMIC_INIT(1) }
 #define STATIC_KEY_INIT_FALSE	{ .enabled = ATOMIC_INIT(0) }
 
 
@@ -67,7 +66,6 @@ struct static_key_false {
 	struct static_key key;
 };
 
-#define STATIC_KEY_TRUE_INIT  (struct static_key_true) { .key = STATIC_KEY_INIT_TRUE,  }
 #define STATIC_KEY_FALSE_INIT (struct static_key_false){ .key = STATIC_KEY_INIT_FALSE, }
 
 #define DEFINE_STATIC_KEY_FALSE(name)	\

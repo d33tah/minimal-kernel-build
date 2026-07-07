@@ -13,11 +13,6 @@
 
 struct folio_batch;
 
-static inline bool mapping_empty(struct address_space *mapping)
-{
-	return xa_empty(&mapping->i_pages);
-}
-
 enum mapping_flags {
 	AS_UNEVICTABLE	= 3,
 };

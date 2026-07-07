@@ -173,7 +173,7 @@ typedef struct { p4d_t p4d; } pud_t;
 #define PUD_SHIFT	P4D_SHIFT
 /* PTRS_PER_PUD/PUD_SIZE removed - 0-caller (folded PUD on 32-bit) */
 
-static inline int p4d_none(p4d_t p4d)		{ return 0; }
+/* p4d_none() removed - constant 0, all callers folded (2-level paging) */
 /* p4d_present() removed - constant 1, all callers folded */
 #define set_p4d(p4dptr, p4dval)	set_pud((pud_t *)(p4dptr), (pud_t) { p4dval })
 
@@ -204,7 +204,7 @@ typedef struct { pud_t pud; } pmd_t;
 #define PMD_SIZE  	(1UL << PMD_SHIFT)
 #define PMD_MASK  	(~(PMD_SIZE-1))
 
-static inline int pud_none(pud_t pud)		{ return 0; }
+/* pud_none() removed - constant 0, all callers folded (2-level paging) */
 /* pud_present (const 1), pud_user, pud_leaf (generic fallback in linux/pgtable.h) removed - unused */
 
 

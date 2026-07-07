@@ -8,10 +8,6 @@
 #include <asm/cacheflush.h>
 
 
-#ifdef tlb_needs_table_invalidate
-#error tlb_needs_table_invalidate() requires MMU_GATHER_RCU_TABLE_FREE
-#endif
-
 #ifndef CONFIG_MMU_GATHER_NO_GATHER
 #define MMU_GATHER_BUNDLE	8
 

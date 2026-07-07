@@ -380,7 +380,6 @@ static inline struct inode *file_inode(const struct file *f)
 
 enum {
 	SB_FREEZE_WRITE	= 1,
-	SB_FREEZE_PAGEFAULT = 2,
 };
 
 struct super_block {

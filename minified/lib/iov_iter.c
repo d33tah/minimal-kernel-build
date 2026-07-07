@@ -1,9 +1,6 @@
 #include <linux/uio.h>
 #include <linux/highmem.h>
 
-/* Inlined from net/checksum.h */
-typedef __u16 __sum16;
-typedef __u32 __wsum;
 #include <linux/instrumented.h>
 
 #define iterate_iovec(i, n, base, len, off, __p, STEP) {	\

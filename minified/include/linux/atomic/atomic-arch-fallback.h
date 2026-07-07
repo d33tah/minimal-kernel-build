@@ -405,24 +405,6 @@ arch_atomic_fetch_andnot_relaxed(int i, atomic_t *v)
 
 #endif
 
-#ifndef arch_atomic_fetch_or_relaxed
-#define arch_atomic_fetch_or_acquire arch_atomic_fetch_or
-#define arch_atomic_fetch_or_release arch_atomic_fetch_or
-#define arch_atomic_fetch_or_relaxed arch_atomic_fetch_or
-#endif
-
-#ifndef arch_atomic_fetch_xor_relaxed
-#define arch_atomic_fetch_xor_acquire arch_atomic_fetch_xor
-#define arch_atomic_fetch_xor_release arch_atomic_fetch_xor
-#define arch_atomic_fetch_xor_relaxed arch_atomic_fetch_xor
-#endif
-
-#ifndef arch_atomic_xchg_relaxed
-#define arch_atomic_xchg_acquire arch_atomic_xchg
-#define arch_atomic_xchg_release arch_atomic_xchg
-#define arch_atomic_xchg_relaxed arch_atomic_xchg
-#endif
-
 #ifndef arch_atomic_cmpxchg_relaxed
 #define arch_atomic_cmpxchg_acquire arch_atomic_cmpxchg
 #define arch_atomic_cmpxchg_release arch_atomic_cmpxchg
@@ -843,24 +825,6 @@ arch_atomic64_fetch_andnot_relaxed(s64 i, atomic64_t *v)
 #define arch_atomic64_fetch_andnot_relaxed arch_atomic64_fetch_andnot_relaxed
 #endif
 
-#endif
-
-#ifndef arch_atomic64_fetch_or_relaxed
-#define arch_atomic64_fetch_or_acquire arch_atomic64_fetch_or
-#define arch_atomic64_fetch_or_release arch_atomic64_fetch_or
-#define arch_atomic64_fetch_or_relaxed arch_atomic64_fetch_or
-#endif
-
-#ifndef arch_atomic64_fetch_xor_relaxed
-#define arch_atomic64_fetch_xor_acquire arch_atomic64_fetch_xor
-#define arch_atomic64_fetch_xor_release arch_atomic64_fetch_xor
-#define arch_atomic64_fetch_xor_relaxed arch_atomic64_fetch_xor
-#endif
-
-#ifndef arch_atomic64_xchg_relaxed
-#define arch_atomic64_xchg_acquire arch_atomic64_xchg
-#define arch_atomic64_xchg_release arch_atomic64_xchg
-#define arch_atomic64_xchg_relaxed arch_atomic64_xchg
 #endif
 
 #ifndef arch_atomic64_cmpxchg_relaxed

@@ -313,7 +313,6 @@ static inline void i_size_write(struct inode *inode, loff_t i_size)
    acquired, pid never assigned -> put_pid(NULL) no-op) */
 
 struct file_ra_state {
-	unsigned int mmap_miss;
 	loff_t prev_pos;
 };
 

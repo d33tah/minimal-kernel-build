@@ -13,8 +13,6 @@ extern void __cmpxchg_wrong_size(void)
 	__compiletime_error("Bad argument size for cmpxchg");
 extern void __xadd_wrong_size(void)
 	__compiletime_error("Bad argument size for xadd");
-extern void __add_wrong_size(void)
-	__compiletime_error("Bad argument size for add");
 
  
 #define __X86_CASE_B	1

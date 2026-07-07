@@ -660,17 +660,6 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 }
 
 
-void exit_mmap(struct mm_struct *mm)
-{
-	/*
-	 * Anchor-stub: the single live caller (__mmput in kernel/fork.c) never
-	 * runs on this artifact (init is never torn down), so the whole mm
-	 * teardown machinery (unmap_vmas/free_pgtables/remove_vma) is
-	 * runtime-dead. No-op leaves the mm leaked, which can't matter on a
-	 * system that never reaps the only process.
-	 */
-}
-
 int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 {
 	struct vm_area_struct *prev;

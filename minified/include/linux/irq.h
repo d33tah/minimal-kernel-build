@@ -133,9 +133,7 @@ struct irq_chip {
 };
 
 enum {
-	IRQCHIP_SET_TYPE_MASKED			= (1 <<  0),
 	IRQCHIP_SKIP_SET_WAKE			= (1 <<  4),
-	IRQCHIP_ONESHOT_SAFE			= (1 <<  5),
 };
 
 #include <linux/irqdesc.h>

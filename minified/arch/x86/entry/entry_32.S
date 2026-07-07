@@ -1014,16 +1014,3 @@ SYM_CODE_START(asm_exc_nmi)
 	jmp	.Lirq_return
 
 SYM_CODE_END(asm_exc_nmi)
-
-.pushsection .text, "ax"
-SYM_CODE_START(rewind_stack_and_make_dead)
-	/* Prevent any naive code from trying to unwind to our caller. */
-	xorl	%ebp, %ebp
-
-	movl	PER_CPU_VAR(cpu_current_top_of_stack), %esi
-	leal	-TOP_OF_KERNEL_STACK_PADDING-PTREGS_SIZE(%esi), %esp
-
-	call	make_task_dead
-1:	jmp 1b
-SYM_CODE_END(rewind_stack_and_make_dead)
-.popsection

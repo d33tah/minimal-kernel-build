@@ -51,14 +51,6 @@
 #define DECLARE_PER_CPU_READ_MOSTLY(type, name)			\
 	DECLARE_PER_CPU_SECTION(type, name, "..read_mostly")
 
-#ifndef __CHECKER__
-#define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(var)
-#define EXPORT_PER_CPU_SYMBOL_GPL(var) EXPORT_SYMBOL_GPL(var)
-#else
-#define EXPORT_PER_CPU_SYMBOL(var)
-#define EXPORT_PER_CPU_SYMBOL_GPL(var)
-#endif
-
 #ifndef __ASSEMBLY__
 
 #define __verify_pcpu_ptr(ptr)						\

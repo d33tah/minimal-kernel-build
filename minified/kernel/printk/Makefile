@@ -2,5 +2,4 @@
 obj-y	= printk.o
 
 obj-$(CONFIG_PRINTK)                 += printk_support.o
-printk_support-y	             := printk_ringbuffer.o
 printk_support-$(CONFIG_SYSCTL)	     += sysctl.o

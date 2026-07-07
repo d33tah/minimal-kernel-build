@@ -19,7 +19,6 @@ obj-$(CONFIG_X86_32)		+= pgtable_32.o
 
 obj-$(CONFIG_KASAN)		+= kasan_init_$(BITS).o
 
-obj-$(CONFIG_NUMA)		+= numa.o numa_$(BITS).o
 
 
 

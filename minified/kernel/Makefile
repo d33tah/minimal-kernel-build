@@ -34,7 +34,6 @@ obj-y += entry/
 
 obj-y += time/
 # obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o  # deleted
-obj-$(CONFIG_IKCONFIG) += configs.o
 
 
 # Always build events/ for stubs
@@ -45,22 +44,3 @@ obj-y += events/
 
 
 
-$(obj)/configs.o: $(obj)/config_data.gz
-
-targets += config_data config_data.gz
-$(obj)/config_data.gz: $(obj)/config_data FORCE
-	$(call if_changed,gzip)
-
-filechk_cat = cat $<
-
-$(obj)/config_data: $(KCONFIG_CONFIG) FORCE
-	$(call filechk,cat)
-
-$(obj)/kheaders.o: $(obj)/kheaders_data.tar.xz
-
-quiet_cmd_genikh = CHK     $(obj)/kheaders_data.tar.xz
-      cmd_genikh = $(CONFIG_SHELL) $(srctree)/kernel/gen_kheaders.sh $@
-$(obj)/kheaders_data.tar.xz: FORCE
-	$(call cmd,genikh)
-
-clean-files := kheaders_data.tar.xz kheaders.md5

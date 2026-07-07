@@ -109,26 +109,6 @@ $(obj)/default.bconf: $(CONFIG_BOOT_CONFIG_EMBED_FILE) FORCE
 
 
 
-hostprogs	:= gen_crc32table
-hostprogs	+= gen_crc64table
-clean-files	:= crc32table.h
-clean-files	+= crc64table.h
-
-$(obj)/crc32.o: $(obj)/crc32table.h
-
-quiet_cmd_crc32 = GEN     $@
-      cmd_crc32 = $< > $@
-
-$(obj)/crc32table.h: $(obj)/gen_crc32table
-	$(call cmd,crc32)
-
-$(obj)/crc64.o: $(obj)/crc64table.h
-
-quiet_cmd_crc64 = GEN     $@
-      cmd_crc64 = $< > $@
-
-$(obj)/crc64table.h: $(obj)/gen_crc64table
-	$(call cmd,crc64)
 
 #
 # Build a fast OID lookip registry from include/linux/oid_registry.h

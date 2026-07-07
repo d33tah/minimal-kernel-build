@@ -58,7 +58,6 @@ struct gstr {
 	int max_width;
 };
 struct gstr str_new(void);
-void str_free(struct gstr *gs);
 void str_append(struct gstr *gs, const char *s);
 void str_printf(struct gstr *gs, const char *fmt, ...);
 const char *str_get(struct gstr *gs);
@@ -79,12 +78,9 @@ void menu_set_type(int type);
 
 extern struct menu rootmenu;
 
-bool menu_is_empty(struct menu *menu);
 bool menu_is_visible(struct menu *menu);
 bool menu_has_prompt(struct menu *menu);
 const char *menu_get_prompt(struct menu *menu);
-struct menu *menu_get_root_menu(struct menu *menu);
-struct menu *menu_get_parent_menu(struct menu *menu);
 
  
 void sym_clear_all_valid(void);

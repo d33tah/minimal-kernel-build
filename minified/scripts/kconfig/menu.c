@@ -469,17 +469,6 @@ bool menu_has_prompt(struct menu *menu)
 	return true;
 }
 
-bool menu_is_empty(struct menu *menu)
-{
-	struct menu *child;
-
-	for (child = menu->list; child; child = child->next) {
-		if (menu_is_visible(child))
-			return(false);
-	}
-	return(true);
-}
-
 bool menu_is_visible(struct menu *menu)
 {
 	struct menu *child;
@@ -525,22 +514,5 @@ const char *menu_get_prompt(struct menu *menu)
 	else if (menu->sym)
 		return menu->sym->name;
 	return NULL;
-}
-
-struct menu *menu_get_root_menu(struct menu *menu)
-{
-	return &rootmenu;
-}
-
-struct menu *menu_get_parent_menu(struct menu *menu)
-{
-	enum prop_type type;
-
-	for (; menu != &rootmenu; menu = menu->parent) {
-		type = menu->prompt ? menu->prompt->type : 0;
-		if (type == P_MENU)
-			break;
-	}
-	return menu;
 }
 

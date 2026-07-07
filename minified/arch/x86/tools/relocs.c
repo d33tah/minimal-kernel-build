@@ -574,7 +574,6 @@ static int do_reloc32(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
 	default:
 		die("Unsupported relocation type: %s (%d)\n",
 		    rel_type(r_type), r_type);
-		break;
 	}
 
 	return 0;
@@ -637,7 +636,6 @@ static int do_reloc_real(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
 	default:
 		die("Unsupported relocation type: %s (%d)\n",
 		    rel_type(r_type), r_type);
-		break;
 	}
 
 	return 0;

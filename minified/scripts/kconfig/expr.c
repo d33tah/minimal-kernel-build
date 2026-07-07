@@ -92,7 +92,6 @@ struct expr *expr_copy(const struct expr *org)
 		fprintf(stderr, "can't copy type %d\n", e->type);
 		free(e);
 		e = NULL;
-		break;
 	}
 
 	return e;
@@ -123,7 +122,6 @@ void expr_free(struct expr *e)
 		break;
 	default:
 		fprintf(stderr, "how to free type %d?\n", e->type);
-		break;
 	}
 	free(e);
 }
@@ -893,7 +891,6 @@ static enum string_value_kind expr_parse_string(const char *str,
 	default:
 		val->s = strtoll(str, &tail, 0);
 		kind = k_signed;
-		break;
 	}
 	return !errno && !*tail && tail > str && isxdigit(tail[-1])
 	       ? kind : k_string;

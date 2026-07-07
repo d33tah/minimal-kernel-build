@@ -120,7 +120,6 @@ int main(int ac, char **av)
 				conf_set_message_callback(NULL);
 				sync_kconfig = 1;
 			}
-			break;
 		}
 	}
 	if (ac == optind) {

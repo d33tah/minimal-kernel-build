@@ -476,7 +476,6 @@ static void handle_symbol(struct module *mod, struct elf_info *info,
 			else if (strstarts(secname, "___ksymtab+"))
 				sym_add_exported(name, mod, false);
 		}
-		break;
 	}
 }
 
@@ -1053,7 +1052,6 @@ static void report_sec_mismatch(const char *modname,
 	case EXTABLE_TO_NON_TEXT:
 		fatal("There's a special handler for this mismatch type, "
 		      "we should never get here.");
-		break;
 	}
 	fprintf(stderr, "\n");
 }
@@ -1227,7 +1225,6 @@ static int addend_386_rel(struct elf_info *elf, Elf_Shdr *sechdr, Elf_Rela *r)
 		 
 		if (elf->hdr->e_type == ET_EXEC)
 			r->r_addend += r->r_offset;
-		break;
 	}
 	return 0;
 }

@@ -14,7 +14,6 @@
 #include <linux/atomic.h>
 
 #define NR_OPEN_DEFAULT BITS_PER_LONG
-#define NR_OPEN_MAX ~0U
 
 struct fdtable {
 	unsigned int max_fds;

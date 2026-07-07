@@ -19,9 +19,4 @@ void panic(const char *fmt, ...) __noreturn __cold;
 extern atomic_t panic_cpu;
 #define PANIC_CPU_INVALID	-1
 
-/* Only TAINT_USER + TAINT_DIE are passed to add_taint(); the other taint
- * flags + the (write-only) tainted_mask machinery were removed as dead. */
-#define TAINT_USER			6
-#define TAINT_DIE			7
-
 #endif

@@ -21,7 +21,6 @@ typedef __s64	Elf64_Sxword;
 
 #define PT_LOAD    1
 #define PT_DYNAMIC 2
-#define PT_INTERP  3
 #define PT_NOTE    4
 #define PT_LOOS    0x60000000
 #define PT_GNU_STACK	(PT_LOOS + 0x474e551)

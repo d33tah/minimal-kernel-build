@@ -97,8 +97,6 @@ extern unsigned int sysctl_nr_open;
 
 
 #define ATTR_MODE	(1 << 0)
-#define ATTR_UID	(1 << 1)
-#define ATTR_GID	(1 << 2)
 #define ATTR_SIZE	(1 << 3)
 #define ATTR_ATIME	(1 << 4)
 #define ATTR_MTIME	(1 << 5)

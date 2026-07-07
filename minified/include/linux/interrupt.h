@@ -25,17 +25,11 @@ typedef enum irqreturn irqreturn_t;
 #include <asm/irq.h>
 #include <asm/sections.h>
 
-#define IRQF_TRIGGER_MASK	0x0000000f
-
-#define IRQF_SHARED		0x00000080
 #define __IRQF_TIMER		0x00000200
-#define IRQF_PERCPU		0x00000400
 #define IRQF_NOBALANCING	0x00000800
 #define IRQF_IRQPOLL		0x00001000
-#define IRQF_ONESHOT		0x00002000
 #define IRQF_NO_SUSPEND		0x00004000
 #define IRQF_NO_THREAD		0x00010000
-#define IRQF_COND_SUSPEND	0x00040000
 #define IRQF_NO_AUTOEN		0x00080000
 
 #define IRQF_TIMER		(__IRQF_TIMER | IRQF_NO_SUSPEND | IRQF_NO_THREAD)

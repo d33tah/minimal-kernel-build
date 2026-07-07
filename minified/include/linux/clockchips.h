@@ -16,8 +16,6 @@ enum clock_event_state {
 };
 
 # define CLOCK_EVT_FEAT_PERIODIC	0x000001
-# define CLOCK_EVT_FEAT_ONESHOT		0x000002
-# define CLOCK_EVT_FEAT_DUMMY		0x000010
 
 struct clock_event_device {
 	void			(*event_handler)(struct clock_event_device *);

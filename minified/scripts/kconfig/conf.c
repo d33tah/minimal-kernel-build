@@ -173,8 +173,6 @@ int main(int ac, char **av)
 	case allnoconfig:
 		conf_set_all_new_symbols(def_no);
 		break;
-	case syncconfig:
-	case olddefconfig:
 	}
 
 	if (!no_conf_write && conf_write(NULL)) {

@@ -226,10 +226,6 @@ int expr_eq(struct expr *e1, struct expr *e2)
 		expr_free(e2);
 		trans_count = old_count;
 		return res;
-	case E_LIST:
-	case E_RANGE:
-	case E_NONE:
-		 ;
 	}
 
 	return 0;
@@ -822,10 +818,6 @@ struct expr *expr_trans_compare(struct expr *e, enum expr_type type, struct symb
 		break;
 	case E_SYMBOL:
 		return expr_alloc_comp(type, e->left.sym, sym);
-	case E_LIST:
-	case E_RANGE:
-	case E_NONE:
-		 ;
 	}
 	return NULL;
 }

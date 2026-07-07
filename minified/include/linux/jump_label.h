@@ -70,9 +70,6 @@ struct static_key_false {
 #define STATIC_KEY_TRUE_INIT  (struct static_key_true) { .key = STATIC_KEY_INIT_TRUE,  }
 #define STATIC_KEY_FALSE_INIT (struct static_key_false){ .key = STATIC_KEY_INIT_FALSE, }
 
-#define DEFINE_STATIC_KEY_TRUE(name)	\
-	struct static_key_true name = STATIC_KEY_TRUE_INIT
-
 #define DEFINE_STATIC_KEY_FALSE(name)	\
 	struct static_key_false name = STATIC_KEY_FALSE_INIT
 

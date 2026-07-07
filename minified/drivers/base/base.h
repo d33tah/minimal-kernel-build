@@ -13,7 +13,6 @@
 struct subsys_private {
 	struct kset subsys;
 };
-#define to_subsys_private(obj) container_of(obj, struct subsys_private, subsys.kobj)
 
 /* Removed: struct driver_private - the driver-side klist/kobj is never built
    (no driver_register/bus_add_driver), and driver->p is never dereferenced. */

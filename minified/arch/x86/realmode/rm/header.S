@@ -23,8 +23,3 @@ SYM_DATA_START(real_mode_header)
 	/* APM/BIOS reboot */
 	.long	pa_machine_real_restart_asm
 SYM_DATA_END(real_mode_header)
-
-	/* End signature, used to verify integrity */
-	.section ".signature","a"
-	.balign 4
-SYM_DATA(end_signature, .long REALMODE_END_SIGNATURE)

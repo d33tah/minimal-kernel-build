@@ -53,12 +53,6 @@ SECTIONS
 		*(.bss*)
 	}
 
-	/* End signature for integrity checking */
-	. = ALIGN(4);
-	.signature : {
-		*(.signature)
-	}
-
 	/DISCARD/ : {
 		*(.note*)
 		*(.debug*)

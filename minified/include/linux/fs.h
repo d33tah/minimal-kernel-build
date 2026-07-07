@@ -44,8 +44,7 @@
 #define INR_OPEN_CUR 1024
 #define INR_OPEN_MAX 4096
 #define SEEK_END	2
-/* RWF_* values needed for IOCB_* macros, rwf_t typedef */
-typedef int rwf_t;
+/* RWF_* values needed for IOCB_* macros */
 #define RWF_NOWAIT	0x00000008
 /* end uapi/linux/fs.h */
 
@@ -61,8 +60,6 @@ struct fs_parameter_spec;
 extern void __init inode_init(void);
 extern void __init files_init(void);
 extern unsigned int sysctl_nr_open;
-
-/* rwf_t defined earlier */
 
 /* dead DIO/get_block callback typedefs + struct buffer_head fwd-decl removed (0-ref) */
 

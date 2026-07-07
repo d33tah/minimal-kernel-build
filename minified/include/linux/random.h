@@ -8,7 +8,6 @@
 #include <linux/types.h>
 #include <linux/irqnr.h>
 
-struct notifier_block;
 
 void get_random_bytes(void *buf, size_t len);
 u32 get_random_u32(void);

@@ -41,7 +41,6 @@ struct fs_struct;
 struct nameidata;
 struct nsproxy;
 struct pid_namespace;
-struct pipe_inode_info;
 struct rq;
 struct sched_param;
 struct sighand_struct;

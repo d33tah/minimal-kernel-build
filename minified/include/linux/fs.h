@@ -51,11 +51,9 @@ typedef int rwf_t;
 
 struct iovec;
 struct kobject;
-struct pipe_inode_info;
 struct vm_area_struct;
 struct vfsmount;
 struct cred;
-struct workqueue_struct;
 struct iov_iter;
 struct fs_context;
 struct fs_parameter_spec;

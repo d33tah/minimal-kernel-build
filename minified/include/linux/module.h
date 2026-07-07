@@ -39,6 +39,5 @@ struct exception_table_entry;
 
 #define MODULE_LICENSE(_license) MODULE_FILE MODULE_INFO(license, _license)
 
-struct notifier_block;
 
 #endif

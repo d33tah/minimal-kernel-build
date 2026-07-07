@@ -8,7 +8,6 @@ struct path;
 struct mount;
 struct fs_context;
 struct user_namespace;
-struct pipe_inode_info;
 
 
 /* emergency_thaw_bdev removed - unused */

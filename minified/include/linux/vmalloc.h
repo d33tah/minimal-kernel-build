@@ -14,7 +14,6 @@
 #include <asm/pgtable_areas.h>
 
 struct vm_area_struct;		 
-struct notifier_block;		 
 
 /* VM_NO_GUARD removed - 0-caller vmalloc flag (not in any composite mask) */
 #define VM_ALLOW_HUGE_VMAP	0x00000400

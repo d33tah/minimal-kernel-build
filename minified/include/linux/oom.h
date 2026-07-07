@@ -9,7 +9,6 @@
 #include <linux/mm.h>
 
 struct zonelist;
-struct notifier_block;
 struct task_struct;
 
 static inline vm_fault_t check_stable_address_space(struct mm_struct *mm)

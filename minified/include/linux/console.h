@@ -8,7 +8,6 @@
 struct vc_data;
 struct module;
 struct tty_struct;
-struct notifier_block;
 
 enum con_scroll {
 	SM_UP,

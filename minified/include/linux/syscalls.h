@@ -7,7 +7,6 @@ struct iattr;
 struct inode;
 struct iovec;
 struct list_head;
-struct new_utsname;
 struct rlimit;
 struct stat;
 struct __kernel_old_timeval;

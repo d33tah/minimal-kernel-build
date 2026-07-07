@@ -4,7 +4,6 @@
 #include <linux/mm.h>
 
 #include <asm/nospec-branch.h>
-void do_softirq_own_stack(void);
 
 DEFINE_PER_CPU(struct irq_stack *, hardirq_stack_ptr);
 DEFINE_PER_CPU(struct irq_stack *, softirq_stack_ptr);

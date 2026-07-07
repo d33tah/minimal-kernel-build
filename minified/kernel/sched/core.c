@@ -10,10 +10,6 @@
 #include <linux/sched/debug.h>
 
 
-extern void sched_init(void);
-extern void sched_init_smp(void);
-
-
 #include <linux/mmu_context.h>
 
 

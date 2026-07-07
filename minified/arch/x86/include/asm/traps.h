@@ -15,7 +15,6 @@ enum x86_pf_error_code {
 	X86_PF_USER	=		1 << 2,
 	X86_PF_INSTR	=		1 << 4,
 	X86_PF_PK	=		1 << 5,
-	X86_PF_SGX	=		1 << 15,
 };
 
 

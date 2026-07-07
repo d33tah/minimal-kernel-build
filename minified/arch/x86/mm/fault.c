@@ -192,10 +192,9 @@ static inline int
 access_error(unsigned long error_code, struct vm_area_struct *vma)
 {
 	/*
-	 * X86_PF_PK (protection-key violation) and X86_PF_SGX (enclave
-	 * violation) error-code bits are never set on this build: PKU/OSPKE
-	 * are compile-disabled (CR4.PKE never set, no setup_pku) and SGX is
-	 * in DISABLED_MASK9 (no enclaves). Both guards were statically dead.
+	 * X86_PF_PK (protection-key violation) error-code bit is never set on
+	 * this build: PKU/OSPKE are compile-disabled (CR4.PKE never set, no
+	 * setup_pku). That guard was statically dead.
 	 */
 
 	if (error_code & X86_PF_WRITE) {

@@ -400,22 +400,6 @@
 #define EXIT_CALL							\
 	*(.exitcall.exit)
 
-#ifndef BSS_FIRST_SECTIONS
-#define BSS_FIRST_SECTIONS
-#endif
-
-#define BSS(bss_align)							\
-	. = ALIGN(bss_align);						\
-	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {				\
-		BSS_FIRST_SECTIONS					\
-		. = ALIGN(PAGE_SIZE);					\
-		*(.bss..page_aligned)					\
-		. = ALIGN(PAGE_SIZE);					\
-		*(.dynbss)						\
-		*(BSS_MAIN)						\
-		*(COMMON)						\
-	}
-
 #define DWARF_DEBUG							\
 		 						\
 		.debug          0 : { *(.debug) }			\

@@ -35,8 +35,6 @@ modpost_log(enum loglevel loglevel, const char *fmt, ...)
 	case LOG_FATAL:
 		fprintf(stderr, "FATAL: ");
 		break;
-	default:  
-		break;
 	}
 
 	fprintf(stderr, "modpost: ");

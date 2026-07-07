@@ -108,8 +108,6 @@ static long long sym_get_range_val(struct symbol *sym, int base)
 	case S_HEX:
 		base = 16;
 		break;
-	default:
-		break;
 	}
 	return strtoll(sym->curr.val, NULL, base);
 }
@@ -804,8 +802,6 @@ static struct symbol *sym_check_expr_deps(struct expr *e)
 		return sym_check_deps(e->right.sym);
 	case E_SYMBOL:
 		return sym_check_deps(e->left.sym);
-	default:
-		break;
 	}
 	fprintf(stderr, "Oops! How to check %d?\n", e->type);
 	return NULL;

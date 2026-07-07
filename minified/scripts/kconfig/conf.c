@@ -53,8 +53,6 @@ static bool conf_set_all_new_symbols(enum conf_def_mode mode)
 			if (!(sym_is_choice(sym) && mode == def_random))
 				sym->flags |= SYMBOL_DEF_USER;
 			break;
-		default:
-			break;
 		}
 
 	}
@@ -157,8 +155,6 @@ int main(int ac, char **av)
 			exit(1);
 		}
 		break;
-	default:
-		break;
 	}
 
 	if (sync_kconfig) {
@@ -179,8 +175,6 @@ int main(int ac, char **av)
 		break;
 	case syncconfig:
 	case olddefconfig:
-	default:
-		break;
 	}
 
 	if (!no_conf_write && conf_write(NULL)) {

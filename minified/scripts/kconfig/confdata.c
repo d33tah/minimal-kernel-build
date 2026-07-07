@@ -549,8 +549,6 @@ int conf_read(const char *name)
 				sym->flags &= ~(SYMBOL_VALID|SYMBOL_DEF_USER);
 				conf_unsaved++;
 				break;
-			default:
-				break;
 			}
 		}
 	}
@@ -705,8 +703,6 @@ static void print_symbol_for_c(FILE *fp, struct symbol *sym)
 	case S_STRING:
 		escaped = escape_string_value(val);
 		val = escaped;
-	default:
-		break;
 	}
 
 	fprintf(fp, "#define %s%s%s %s%s\n", CONFIG_, sym->name, sym_suffix,
@@ -918,8 +914,6 @@ static int conf_touch_deps(void)
 						    sym->def[S_DEF_AUTO].val))
 						continue;
 					break;
-				default:
-					break;
 				}
 			} else {
 				 
@@ -928,8 +922,6 @@ static int conf_touch_deps(void)
 				case S_TRISTATE:
 					if (sym_get_tristate_value(sym) == no)
 						continue;
-					break;
-				default:
 					break;
 				}
 			}

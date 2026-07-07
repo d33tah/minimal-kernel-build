@@ -133,7 +133,6 @@
 /* CPU bugs - only keep the used ones */
 #define X86_BUG(x)			(NCAPINTS*32 + (x))
 
-#define X86_BUG_FXSAVE_LEAK		X86_BUG(6)
 #define X86_BUG_ESPFIX			X86_BUG(9)
 #define X86_BUG_NULL_SEG		X86_BUG(10)
 

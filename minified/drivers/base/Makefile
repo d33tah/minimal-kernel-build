@@ -7,5 +7,3 @@ obj-y			:= core.o \
 ifeq ($(CONFIG_SYSFS),y)
 endif
 
-ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
-

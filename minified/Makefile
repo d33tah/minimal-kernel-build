@@ -778,13 +778,9 @@ KBUILD_CFLAGS += -Wframe-larger-than=$(CONFIG_FRAME_WARN)
 endif
 
 stackp-flags-y                                    := -fno-stack-protector
-stackp-flags-$(CONFIG_STACKPROTECTOR)             := -fstack-protector
-stackp-flags-$(CONFIG_STACKPROTECTOR_STRONG)      := -fstack-protector-strong
 
 KBUILD_CFLAGS += $(stackp-flags-y)
 
-KBUILD_CFLAGS-$(CONFIG_WERROR) += -Werror
-KBUILD_CFLAGS-$(CONFIG_CC_NO_ARRAY_BOUNDS) += -Wno-array-bounds
 KBUILD_CFLAGS += $(KBUILD_CFLAGS-y) $(CONFIG_CC_IMPLICIT_FALLTHROUGH)
 
 ifdef CONFIG_CC_IS_CLANG
@@ -1007,13 +1003,6 @@ KBUILD_CPPFLAGS += $(call cc-option,-fmacro-prefix-map=$(srctree)/=)
 
 # include additional Makefiles when needed
 include-y			:= scripts/Makefile.extrawarn
-include-$(CONFIG_DEBUG_INFO)	+= scripts/Makefile.debug
-include-$(CONFIG_KASAN)		+= scripts/Makefile.kasan
-include-$(CONFIG_KCSAN)		+= scripts/Makefile.kcsan
-include-$(CONFIG_UBSAN)		+= scripts/Makefile.ubsan
-include-$(CONFIG_KCOV)		+= scripts/Makefile.kcov
-include-$(CONFIG_RANDSTRUCT)	+= scripts/Makefile.randstruct
-include-$(CONFIG_GCC_PLUGINS)	+= scripts/Makefile.gcc-plugins
 
 include $(addprefix $(srctree)/, $(include-y))
 

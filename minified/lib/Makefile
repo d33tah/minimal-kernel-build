@@ -3,8 +3,6 @@
 # Makefile for some libs needed in the kernel.
 #
 
-ccflags-remove-$(CONFIG_FUNCTION_TRACER) += $(CC_FLAGS_FTRACE)
-
 # These files are disabled because they produce lots of non-interesting and/or
 # flaky coverage that is not a function of syscall inputs. For example,
 # rbtree can be global and individual rotations don't correlate with inputs.
@@ -96,7 +94,6 @@ libfdt_files = fdt.o fdt_ro.o fdt_wip.o fdt_rw.o fdt_sw.o fdt_strerror.o \
 	       fdt_empty_tree.o fdt_addresses.o
 $(foreach file, $(libfdt_files), \
 	$(eval CFLAGS_$(file) = -I $(srctree)/scripts/dtc/libfdt))
-lib-$(CONFIG_LIBFDT) += $(libfdt_files)
 
 
 $(obj)/bootconfig-data.o: $(obj)/default.bconf

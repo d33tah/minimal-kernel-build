@@ -23,9 +23,6 @@ static int tty_stdio;
 static int sync_kconfig;
 
 enum conf_def_mode {
-	def_default,
-	def_yes,
-	def_mod,
 	def_no,
 	def_random
 };

@@ -12,19 +12,9 @@ else
         KBUILD_DEFCONFIG := $(ARCH)_defconfig
 endif
 
-ifdef CONFIG_CC_IS_GCC
-RETPOLINE_CFLAGS	:= $(call cc-option,-mindirect-branch=thunk-extern -mindirect-branch-register)
-RETPOLINE_CFLAGS	+= $(call cc-option,-mindirect-branch-cs-prefix)
-RETPOLINE_VDSO_CFLAGS	:= $(call cc-option,-mindirect-branch=thunk-inline -mindirect-branch-register)
-endif
 ifdef CONFIG_CC_IS_CLANG
 RETPOLINE_CFLAGS	:= -mretpoline-external-thunk
 RETPOLINE_VDSO_CFLAGS	:= -mretpoline
-endif
-
-ifdef CONFIG_RETHUNK
-RETHUNK_CFLAGS		:= -mfunction-return=thunk-extern
-RETPOLINE_CFLAGS	+= $(RETHUNK_CFLAGS)
 endif
 
 export RETHUNK_CFLAGS
@@ -153,17 +143,6 @@ else
         KBUILD_CFLAGS += -mcmodel=kernel
 endif
 
-#
-# If the function graph tracer is used with mcount instead of fentry,
-# '-maccumulate-outgoing-args' is needed to prevent a GCC bug
-# (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=42109)
-#
-ifdef CONFIG_FUNCTION_GRAPH_TRACER
-  ifndef CONFIG_HAVE_FENTRY
-	ACCUMULATE_OUTGOING_ARGS := 1
-  endif
-endif
-
 ifeq ($(ACCUMULATE_OUTGOING_ARGS), 1)
 	# This compiler flag is not supported by Clang:
 	KBUILD_CFLAGS += $(call cc-option,-maccumulate-outgoing-args,)
@@ -173,24 +152,6 @@ endif
 KBUILD_CFLAGS += -Wno-sign-compare
 #
 KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
-
-# Avoid indirect branches in kernel to deal with Spectre
-ifdef CONFIG_RETPOLINE
-  KBUILD_CFLAGS += $(RETPOLINE_CFLAGS)
-  # Additionally, avoid generating expensive indirect jumps which
-  # are subject to retpolines for small number of switch cases.
-  # clang turns off jump table generation by default when under
-  # retpoline builds, however, gcc does not for x86. This has
-  # only been fixed starting from gcc stable version 8.4.0 and
-  # onwards, but not for older ones. See gcc bug #86952.
-  ifndef CONFIG_CC_IS_CLANG
-    KBUILD_CFLAGS += -fno-jump-tables
-  endif
-endif
-
-ifdef CONFIG_SLS
-  KBUILD_CFLAGS += -mharden-sls=all
-endif
 
 KBUILD_LDFLAGS += -m elf_$(UTS_MACHINE)
 
@@ -205,16 +166,6 @@ LDFLAGS_vmlinux := --emit-relocs --discard-none
 else
 LDFLAGS_vmlinux :=
 endif
-
-#
-# The 64-bit kernel must be aligned to 2MB.  Pass -z max-page-size=0x200000 to
-# the linker to force 2MB page size regardless of the default page size used
-# by the linker.
-#
-ifdef CONFIG_X86_64
-LDFLAGS_vmlinux += -z max-page-size=0x200000
-endif
-
 
 archscripts: scripts_basic
 	$(Q)$(MAKE) $(build)=arch/x86/tools relocs

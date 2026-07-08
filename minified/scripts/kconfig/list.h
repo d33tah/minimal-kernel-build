@@ -40,11 +40,6 @@ struct list_head {
 	     &pos->member != (head);					\
 	     pos = n, n = list_entry(n->member.next, typeof(*n), member))
 
- 
-static inline int list_empty(const struct list_head *head)
-{
-	return head->next == head;
-}
 
  
 static inline void __list_add(struct list_head *_new,

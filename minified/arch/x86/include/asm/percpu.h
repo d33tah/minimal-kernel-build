@@ -242,10 +242,4 @@ do {									\
 #endif
 
 
-#define DECLARE_EARLY_PER_CPU_READ_MOSTLY(_type, _name)		\
-	DECLARE_PER_CPU_READ_MOSTLY(_type, _name)
-
- 
-
-
-#endif  
+#endif

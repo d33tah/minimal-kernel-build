@@ -58,14 +58,6 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 #define dma_wmb()	do {  __dma_wmb(); } while (0)
 #endif
 
-#ifndef dma_rmb
-#define dma_rmb()	rmb()
-#endif
-
-#ifndef dma_wmb
-#define dma_wmb()	wmb()
-#endif
-
 #ifndef smp_mb
 #define smp_mb()	barrier()
 #endif

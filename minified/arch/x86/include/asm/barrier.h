@@ -11,8 +11,6 @@
 				      X86_FEATURE_XMM2) ::: "memory", "cc")
 #define rmb() asm volatile(ALTERNATIVE("lock; addl $0,-4(%%esp)", "lfence", \
 				       X86_FEATURE_XMM2) ::: "memory", "cc")
-#define wmb() asm volatile(ALTERNATIVE("lock; addl $0,-4(%%esp)", "sfence", \
-				       X86_FEATURE_XMM2) ::: "memory", "cc")
 
  
 static inline unsigned long array_index_mask_nospec(unsigned long index,
@@ -33,8 +31,6 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
  
 #define barrier_nospec() alternative("", "lfence", X86_FEATURE_LFENCE_RDTSC)
 
-#define __dma_rmb()	barrier()
-#define __dma_wmb()	barrier()
 
 
 
@@ -49,14 +45,6 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 /* nop() fallback removed - nop() never invoked anywhere (statically dead) */
 
 /* #ifdef __mb/__rmb/__wmb fallback blocks removed - __mb/__rmb/__wmb never #defined (statically dead) */
-
-#ifdef __dma_rmb
-#define dma_rmb()	do {  __dma_rmb(); } while (0)
-#endif
-
-#ifdef __dma_wmb
-#define dma_wmb()	do {  __dma_wmb(); } while (0)
-#endif
 
 #ifndef smp_mb
 #define smp_mb()	barrier()

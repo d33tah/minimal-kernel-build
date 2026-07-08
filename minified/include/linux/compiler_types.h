@@ -11,7 +11,6 @@
 # define __percpu	BTF_TYPE_TAG(percpu)
 # define __rcu
 # define __chk_user_ptr(x)	(void)0
-# define __chk_io_ptr(x)	(void)0
 # define __acquires(x)
 # define __releases(x)
 # define __acquire(x)	(void)0

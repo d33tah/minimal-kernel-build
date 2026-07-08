@@ -13,9 +13,6 @@
 #include <linux/moduleparam.h>
 #include <linux/jump_label.h>
 #include <linux/export.h>
-
-#define ALLOW_ERROR_INJECTION(fname, _etype)
-/* end error-injection.h */
 #include <linux/tracepoint-defs.h>
 
 

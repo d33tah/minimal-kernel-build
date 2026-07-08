@@ -15,7 +15,6 @@ int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 	 */
 	return NOTIFY_DONE;
 }
-NOKPROBE_SYMBOL(atomic_notifier_call_chain);
 
 int notrace notify_die(enum die_val val, const char *str,
 	       struct pt_regs *regs, long err, int trap, int sig)
@@ -29,4 +28,3 @@ int notrace notify_die(enum die_val val, const char *str,
 	 */
 	return NOTIFY_DONE;
 }
-NOKPROBE_SYMBOL(notify_die);

@@ -5,8 +5,6 @@
 #include <linux/mm.h>
 #include <linux/swap.h>
 #include <linux/uio.h>
-/* error-injection.h - only need ALLOW_ERROR_INJECTION macro */
-#define ALLOW_ERROR_INJECTION(fname, _etype)
 #include <linux/hash.h>
 #include <linux/pagevec.h>
 #include "internal.h"
@@ -55,7 +53,6 @@ error:
 	folio_put_refs(folio, nr);
 	return xas_error(&xas);
 }
-ALLOW_ERROR_INJECTION(__filemap_add_folio, ERRNO);
 
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 				pgoff_t index, gfp_t gfp)

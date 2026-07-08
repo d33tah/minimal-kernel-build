@@ -65,7 +65,6 @@ do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
 	else
 		force_sig_fault(signr, sicode, addr);
 }
-NOKPROBE_SYMBOL(do_trap);
 
 static void do_error_trap(struct pt_regs *regs, long error_code, char *str,
 	unsigned long trapnr, int signr, int sicode, void __user *addr)
@@ -262,7 +261,6 @@ static bool do_int3(struct pt_regs *regs)
 
 	return res == NOTIFY_STOP;
 }
-NOKPROBE_SYMBOL(do_int3);
 
 DEFINE_IDTENTRY_RAW(exc_int3)
 {

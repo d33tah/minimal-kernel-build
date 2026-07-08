@@ -186,7 +186,6 @@ spurious_kernel_fault(unsigned long error_code, unsigned long address)
 
 	return ret;
 }
-NOKPROBE_SYMBOL(spurious_kernel_fault);
 
 static inline int
 access_error(unsigned long error_code, struct vm_area_struct *vma)
@@ -237,7 +236,6 @@ do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code,
 	 
 	bad_area_nosemaphore(regs, hw_error_code, address);
 }
-NOKPROBE_SYMBOL(do_kern_addr_fault);
 
 static inline
 void do_user_addr_fault(struct pt_regs *regs,
@@ -382,7 +380,6 @@ good_area:
 			BUG();
 	}
 }
-NOKPROBE_SYMBOL(do_user_addr_fault);
 
 static __always_inline void
 handle_page_fault(struct pt_regs *regs, unsigned long error_code,

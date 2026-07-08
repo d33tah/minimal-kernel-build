@@ -185,9 +185,7 @@ extern void *alloc_large_system_hash(const char *tablename,
 				     unsigned long high_limit);
 
 #define HASH_EARLY	0x00000001
-#define HASH_ZERO	0x00000004	 
-
-#define hashdist (0)
+#define HASH_ZERO	0x00000004
 
 static inline void early_memtest(phys_addr_t start, phys_addr_t end)
 {

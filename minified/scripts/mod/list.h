@@ -48,13 +48,7 @@ static inline void __list_add(struct list_head *new,
 	prev->next = new;
 }
 
- 
-static inline void list_add(struct list_head *new, struct list_head *head)
-{
-	__list_add(new, head, head->next);
-}
 
- 
 static inline void list_add_tail(struct list_head *new, struct list_head *head)
 {
 	__list_add(new, head->prev, head);
@@ -80,13 +74,7 @@ static inline void list_del(struct list_head *entry)
 	entry->prev = LIST_POISON2;
 }
 
- 
-static inline int list_is_head(const struct list_head *list, const struct list_head *head)
-{
-	return list == head;
-}
 
- 
 static inline int list_empty(const struct list_head *head)
 {
 	return head->next == head;

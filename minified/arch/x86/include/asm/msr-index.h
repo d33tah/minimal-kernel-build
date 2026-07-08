@@ -12,10 +12,6 @@
 #define _EFER_NX		11
 /* _EFER_LME, _EFER_SCE, _EFER_LMA, _EFER_SVME, _EFER_LMSLE, _EFER_FFXSR - unused */
 
-/* Speculation control MSRs */
-
-#define MSR_IA32_PRED_CMD		0x00000049
-#define PRED_CMD_IBPB			BIT(0)
 
 /* SYSENTER MSRs */
 #define MSR_IA32_SYSENTER_CS		0x00000174

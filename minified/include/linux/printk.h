@@ -7,7 +7,6 @@
 
 #define KERN_SOH	"\001"
 #define KERN_EMERG	KERN_SOH "0"
-#define KERN_ALERT	KERN_SOH "1"
 #define KERN_CRIT	KERN_SOH "2"
 #define KERN_ERR	KERN_SOH "3"
 #define KERN_WARNING	KERN_SOH "4"

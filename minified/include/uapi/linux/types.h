@@ -11,11 +11,7 @@
 
 
 
-#ifdef __CHECKER__
-#define __bitwise	__attribute__((bitwise))
-#else
 #define __bitwise
-#endif
 
 typedef __u16 __bitwise __le16;
 typedef __u32 __bitwise __le32;

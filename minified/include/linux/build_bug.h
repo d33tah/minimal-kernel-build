@@ -3,11 +3,7 @@
 
 #include <linux/compiler.h>
 
-#ifdef __CHECKER__
-#define BUILD_BUG_ON_ZERO(e) (0)
-#else  
 #define BUILD_BUG_ON_ZERO(e) ((int)(sizeof(struct { int:(-!!(e)); })))
-#endif  
 
 #define __BUILD_BUG_ON_NOT_POWER_OF_2(n)	\
 	BUILD_BUG_ON(((n) & ((n) - 1)) != 0)

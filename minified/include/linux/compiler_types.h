@@ -5,23 +5,6 @@
 
 # define BTF_TYPE_TAG(value)
 
-#ifdef __CHECKER__
-# define __kernel	__attribute__((address_space(0)))
-# define __user		__attribute__((noderef, address_space(__user)))
-# define __iomem	__attribute__((noderef, address_space(__iomem)))
-# define __percpu	__attribute__((noderef, address_space(__percpu)))
-# define __rcu		__attribute__((noderef, address_space(__rcu)))
-static inline void __chk_user_ptr(const volatile void __user *ptr) { }
-static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
-# define __acquires(x)	__attribute__((context(x,0,1)))
-# define __releases(x)	__attribute__((context(x,1,0)))
-# define __acquire(x)	__context__(x,1)
-# define __release(x)	__context__(x,-1)
-# define __cond_lock(x,c)	((c) ? ({ __acquire(x); 1; }) : 0)
-# define __force	__attribute__((force))
-# define __private	__attribute__((noderef))
-# define ACCESS_PRIVATE(p, member) (*((typeof((p)->member) __force *) &(p)->member))
-#else  
 # define __kernel
 # define __user	BTF_TYPE_TAG(user)
 # define __iomem
@@ -37,7 +20,6 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 # define __force
 # define __private
 # define ACCESS_PRIVATE(p, member) ((p)->member)
-#endif  
 
 #define ___PASTE(a,b) a##b
 #define __PASTE(a,b) ___PASTE(a,b)

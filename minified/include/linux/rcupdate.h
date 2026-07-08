@@ -64,12 +64,7 @@ static inline int rcu_read_lock_sched_held(void)
 
 
 
-#ifdef __CHECKER__
-#define rcu_check_sparse(p, space) \
-	((void)(((typeof(*p) space *)p) == p))
-#else  
 #define rcu_check_sparse(p, space)
-#endif  
 
 #define __rcu_access_pointer(p, local, space) \
 ({ \

@@ -259,7 +259,6 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
 					     p, sym->name);
 			return 1;
 		}
-		break;
 	}
 	return 0;
 }
@@ -431,7 +430,6 @@ load:
 			case S_TRISTATE:
 				sym->def[def].tri = no;
 				sym->flags |= def_flags;
-				break;
 			}
 		} else if (memcmp(line, CONFIG_, strlen(CONFIG_)) == 0) {
 			p = strchr(line + strlen(CONFIG_), '=');
@@ -544,7 +542,6 @@ int conf_read(const char *name)
 					break;
 				sym->flags &= ~(SYMBOL_VALID|SYMBOL_DEF_USER);
 				conf_unsaved++;
-				break;
 			}
 		}
 	}
@@ -909,7 +906,6 @@ static int conf_touch_deps(void)
 					if (!strcmp(sym_get_string_value(sym),
 						    sym->def[S_DEF_AUTO].val))
 						continue;
-					break;
 				}
 			} else {
 				 
@@ -918,7 +914,6 @@ static int conf_touch_deps(void)
 				case S_TRISTATE:
 					if (sym_get_tristate_value(sym) == no)
 						continue;
-					break;
 				}
 			}
 		} else if (!(sym->flags & SYMBOL_DEF_AUTO))

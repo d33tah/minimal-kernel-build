@@ -167,7 +167,6 @@ static void __expr_eliminate_eq(enum expr_type type, struct expr **ep1, struct e
 	case E_AND:
 		e1 = expr_alloc_symbol(&symbol_yes);
 		e2 = expr_alloc_symbol(&symbol_yes);
-		break;
 	}
 }
 
@@ -331,7 +330,6 @@ struct expr *expr_trans_bool(struct expr *e)
 				e->right.sym = NULL;
 			}
 		}
-		break;
 	}
 	return e;
 }
@@ -527,7 +525,6 @@ static void expr_eliminate_dups1(enum expr_type type, struct expr **ep1, struct 
 			e2 = tmp;
 			trans_count++;
 		}
-		break;
 	}
 #undef e1
 #undef e2
@@ -701,9 +698,7 @@ struct expr *expr_transform(struct expr *e)
 				e->left.sym = &symbol_yes;
 				break;
 			}
-			break;
 		}
-		break;
 	}
 	return e;
 }
@@ -756,7 +751,6 @@ bool expr_depends_symbol(struct expr *dep, struct symbol *sym)
 			if (dep->right.sym == &symbol_no)
 				return true;
 		}
-		break;
 	}
  	return false;
 }

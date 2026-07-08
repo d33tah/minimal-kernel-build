@@ -107,7 +107,6 @@ static long long sym_get_range_val(struct symbol *sym, int base)
 		break;
 	case S_HEX:
 		base = 16;
-		break;
 	}
 	return strtoll(sym->curr.val, NULL, base);
 }
@@ -408,7 +407,6 @@ void sym_calc_value(struct symbol *sym)
 				newval.val = ds->curr.val;
 			}
 		}
-		break;
 	}
 
 	sym->curr = newval;
@@ -576,7 +574,6 @@ const char *sym_get_string_value(struct symbol *sym)
 		case yes:
 			return "y";
 		}
-		break;
 	}
 	return (const char *)sym->curr.val;
 }

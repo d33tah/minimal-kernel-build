@@ -52,7 +52,6 @@ static bool conf_set_all_new_symbols(enum conf_def_mode mode)
 			}
 			if (!(sym_is_choice(sym) && mode == def_random))
 				sym->flags |= SYMBOL_DEF_USER;
-			break;
 		}
 
 	}
@@ -154,7 +153,6 @@ int main(int ac, char **av)
 				name);
 			exit(1);
 		}
-		break;
 	}
 
 	if (sync_kconfig) {
@@ -172,7 +170,6 @@ int main(int ac, char **av)
 	switch (input_mode) {
 	case allnoconfig:
 		conf_set_all_new_symbols(def_no);
-		break;
 	}
 
 	if (!no_conf_write && conf_write(NULL)) {

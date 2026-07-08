@@ -88,7 +88,6 @@ static struct expr *rewrite_m(struct expr *e)
 		 
 		if (e->left.sym == &symbol_mod)
 			return expr_alloc_and(e, expr_alloc_symbol(modules_sym));
-		break;
 	}
 	return e;
 }
@@ -257,7 +256,6 @@ static void sym_check_prop(struct symbol *sym)
 			if (!menu_validate_number(sym, prop->expr->left.sym) ||
 			    !menu_validate_number(sym, prop->expr->right.sym))
 				prop_warn(prop, "range is invalid");
-			break;
 		}
 	}
 }

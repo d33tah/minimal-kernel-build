@@ -9,10 +9,6 @@
 #include <asm/cpumask.h>
 
 
-DECLARE_PER_CPU_READ_MOSTLY(int, cpu_number);
-
-DECLARE_EARLY_PER_CPU_READ_MOSTLY(u16, x86_cpu_to_apicid);
-
 struct task_struct;
 
 /* set_cpu_sibling_map removed - never defined (SMP only) */

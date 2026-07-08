@@ -239,10 +239,7 @@ do {									\
 
 #include <asm-generic/percpu.h>
 
- 
-DECLARE_PER_CPU_READ_MOSTLY(unsigned long, this_cpu_off);
-
-#endif  
+#endif
 
 
 #define DECLARE_EARLY_PER_CPU_READ_MOSTLY(_type, _name)		\

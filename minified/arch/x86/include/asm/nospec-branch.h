@@ -46,12 +46,6 @@
 #ifdef __ASSEMBLY__
 
  
-.macro ANNOTATE_RETPOLINE_SAFE
-	.Lannotate_\@:
-	.pushsection .discard.retpoline_safe
-	_ASM_PTR .Lannotate_\@
-	.popsection
-.endm
 
  
 

@@ -26,10 +26,6 @@
 #define ANNOTATE_INTRA_FUNCTION_CALL
 .macro UNWIND_HINT type:req sp_reg=0 sp_offset=0 end=0
 .endm
-.macro STACK_FRAME_NON_STANDARD func:req
-.endm
-.macro ANNOTATE_NOENDBR
-.endm
 #endif
 
 

@@ -139,12 +139,6 @@ struct module;
 	.endm
 
  
-.macro ANNOTATE_IGNORE_ALTERNATIVE
-	.Lannotate_\@:
-	.pushsection .discard.ignore_alts
-	.long .Lannotate_\@ - .
-	.popsection
-.endm
 
  
 .macro altinstruction_entry orig alt feature orig_len alt_len

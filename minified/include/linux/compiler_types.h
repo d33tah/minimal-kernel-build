@@ -69,11 +69,10 @@
 
 #define inline inline __gnu_inline __inline_maybe_unused notrace
 
-#ifdef KBUILD_EXTRA_WARN1
-#define __inline_maybe_unused
-#else
+/* KBUILD_EXTRA_WARN1 is defined only under `make W=1` (scripts/Makefile.extrawarn,
+ * -D-gated by KBUILD_EXTRA_WARN); the plain gate build passes no W=, so the then-arm
+ * is statically dead. Keep only the live __maybe_unused arm. */
 #define __inline_maybe_unused __maybe_unused
-#endif
 
 #define noinline_for_stack noinline
 

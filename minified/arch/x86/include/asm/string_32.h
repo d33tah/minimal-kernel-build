@@ -2,7 +2,6 @@
 #ifndef _ASM_X86_STRING_32_H
 #define _ASM_X86_STRING_32_H
 
-#ifdef __KERNEL__
 
  
 
@@ -93,6 +92,5 @@ static inline void *memset16(uint16_t *s, uint16_t v, size_t n)
 
 
 
-#endif  
 
 #endif  

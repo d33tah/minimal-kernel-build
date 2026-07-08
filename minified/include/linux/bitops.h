@@ -37,7 +37,6 @@ static inline unsigned fls_long(unsigned long l)
 
 /* __ffs64 - unused */
 
-#ifdef __KERNEL__
 
 #ifndef set_mask_bits
 #define set_mask_bits(ptr, mask, bits)	\
@@ -55,5 +54,4 @@ static inline unsigned fls_long(unsigned long l)
 #endif
 
 
-#endif  
 #endif

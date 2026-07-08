@@ -45,9 +45,7 @@ struct sigcontext_32 {
 };
 
 /* 32-bit only kernel - sigcontext_64 removed */
-#ifdef __KERNEL__
 #define sigcontext sigcontext_32
-#endif
 
 /* userspace-only #ifndef __KERNEL__ sigcontext + _fpstate/_fpstate_ia32
  * aliases removed - never compiled in this kernel-only build, 0-ref. */

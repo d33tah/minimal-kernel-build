@@ -32,7 +32,6 @@ enum syscall_work_bit {
 
 #include <asm/thread_info.h>
 
-#ifdef __KERNEL__
 
 
 
@@ -110,6 +109,5 @@ check_copy_size(const void *addr, size_t bytes, bool is_source)
 }
 
 
-#endif	 
 
 #endif  

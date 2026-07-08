@@ -24,7 +24,6 @@
 #define ___PASTE(a,b) a##b
 #define __PASTE(a,b) ___PASTE(a,b)
 
-#ifdef __KERNEL__
 
 #include <linux/compiler_attributes.h>
 
@@ -103,7 +102,6 @@
 	noinline notrace __attribute((__section__(".noinstr.text")))	\
 	__no_kcsan __no_sanitize_address __no_profile __no_sanitize_coverage
 
-#endif  
 
 #endif  
 

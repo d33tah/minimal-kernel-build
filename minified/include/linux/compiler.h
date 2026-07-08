@@ -5,7 +5,6 @@
 
 #ifndef __ASSEMBLY__
 
-#ifdef __KERNEL__
 
 # define likely(x)	__builtin_expect(!!(x), 1)
 # define unlikely(x)	__builtin_expect(!!(x), 0)
@@ -50,7 +49,6 @@
 #define ASSERT_EXCLUSIVE_BITS(var, mask) do { } while (0)
 #define ASSERT_EXCLUSIVE_WRITER(var) do { } while (0)
 
-#endif  
 
 #define __ADDRESSABLE(sym) \
 	static void * __section(".discard.addressable") __used \

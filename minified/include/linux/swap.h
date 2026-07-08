@@ -16,7 +16,6 @@
 
 struct pagevec;
 
-#ifdef __KERNEL__
 
 struct address_space;
 struct zone;
@@ -49,5 +48,4 @@ extern void lru_cache_add_inactive_or_unevictable(struct page *page,
 #define free_pages_and_swap_cache(pages, nr) \
 	release_pages((pages), (nr));
 
-#endif /* __KERNEL__ */
 #endif /* _LINUX_SWAP_H */

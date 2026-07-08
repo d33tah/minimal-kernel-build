@@ -1,7 +1,6 @@
 #ifndef _LINUX_RCULIST_H
 #define _LINUX_RCULIST_H
 
-#ifdef __KERNEL__
 
 #include <linux/list.h>
 #include <linux/rcupdate.h>
@@ -45,5 +44,4 @@ static inline void hlist_add_head_rcu(struct hlist_node *n,
 }
 
 
-#endif	 
 #endif

@@ -76,7 +76,6 @@
 #define GDT_ENTRY_TLS_ENTRIES		3
 
 
-#ifdef __KERNEL__
 
  
 #define EARLY_IDT_HANDLER_SIZE (9 + ENDBR_INSN_SIZE)
@@ -109,7 +108,6 @@ do {									\
 #define savesegment(seg, value)				\
 	asm("mov %%" #seg ",%0":"=r" (value) : : "memory")
 
-#endif  
 #endif  
 
 #endif  

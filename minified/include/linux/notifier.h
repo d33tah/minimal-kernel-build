@@ -29,7 +29,6 @@ struct atomic_notifier_head {
 		ATOMIC_NOTIFIER_INIT(name)
 
 
-#ifdef __KERNEL__
 
 extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 		unsigned long val, void *v);
@@ -43,5 +42,4 @@ extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 
 
 
-#endif
 #endif  

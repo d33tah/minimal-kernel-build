@@ -177,7 +177,6 @@ static __always_inline unsigned long __fls(unsigned long word)
 
 #undef ADDR
 
-#ifdef __KERNEL__
  
 static __always_inline int ffs(int x)
 {
@@ -298,5 +297,4 @@ clear_bit_unlock_is_negative_byte(long nr, volatile unsigned long *addr)
 #endif
 
 
-#endif  
 #endif  

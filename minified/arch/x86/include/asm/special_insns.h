@@ -3,7 +3,6 @@
 #define _ASM_X86_SPECIAL_INSNS_H
 
 
-#ifdef __KERNEL__
 
 #include <asm/nops.h>
 #include <asm/processor-flags.h>
@@ -114,6 +113,5 @@ static inline void __write_cr4(unsigned long x)
 
 /* movdir64b removed - unused */
 
-#endif
 
 #endif

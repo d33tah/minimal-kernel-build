@@ -42,7 +42,6 @@
 # define CC_OUT(c) [_cc_ ## c] "=qm"
 #endif
 
-#ifdef __KERNEL__
 
 # include <asm/extable_fixup_types.h>
 
@@ -117,5 +116,4 @@ register unsigned long current_stack_pointer asm(_ASM_SP);
 #define _ASM_EXTABLE_UA(from, to)				\
 	_ASM_EXTABLE_TYPE(from, to, EX_TYPE_UACCESS)
 
-#endif
 #endif  

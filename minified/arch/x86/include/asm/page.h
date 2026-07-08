@@ -4,7 +4,6 @@
 
 #include <linux/types.h>
 
-#ifdef __KERNEL__
 
 #include <asm/page_types.h>
 
@@ -84,5 +83,4 @@ extern bool __virt_addr_valid(unsigned long kaddr);
 #include <asm-generic/getorder.h>
 
 
-#endif	 
 #endif  

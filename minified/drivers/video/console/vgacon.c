@@ -387,5 +387,3 @@ const struct consw vga_con = {
 	.con_save_screen = vgacon_save_screen,
 	.con_build_attr = vgacon_build_attr,
 };
-
-MODULE_LICENSE("GPL");

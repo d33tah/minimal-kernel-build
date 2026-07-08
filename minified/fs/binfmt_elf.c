@@ -570,5 +570,4 @@ static int __init init_elf_binfmt(void)
 
 
 core_initcall(init_elf_binfmt);
-MODULE_LICENSE("GPL");
 

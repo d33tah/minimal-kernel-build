@@ -6,5 +6,3 @@
 
 #include "idle.c"
 
-#include "cputime.c"
-

@@ -9,10 +9,7 @@ struct task_struct;
 struct mm_struct;
 
 /* Inlined from asm/math_emu.h */
-struct math_emu_info {
-	long ___orig_eip;
-	struct pt_regs *regs;
-};
+struct math_emu_info;
 
 #include <asm/segment.h>
 #include <asm/types.h>

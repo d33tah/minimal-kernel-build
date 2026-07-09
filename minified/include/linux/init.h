@@ -44,8 +44,6 @@ static inline initcall_t initcall_from_entry(initcall_entry_t *entry)
 
 extern initcall_entry_t __con_initcall_start[], __con_initcall_end[];
 
-struct file_system_type;
-
 extern int do_one_initcall(initcall_t fn);
 extern char __initdata boot_command_line[];
 

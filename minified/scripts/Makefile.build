@@ -161,26 +161,6 @@ quiet_cmd_cc_o_c = CC $(quiet_modtag)  $@
 		$(cmd_ld_single_m) \
 		$(cmd_objtool)
 
-ifdef CONFIG_MODVERSIONS
-# When module versioning is enabled the following steps are executed:
-# o compile a <file>.o from <file>.c
-# o if <file>.o doesn't contain a __ksymtab version, i.e. does
-#   not export symbols, it's done.
-# o otherwise, we calculate symbol versions using the good old
-#   genksyms on the preprocessed source and dump them into the .cmd file.
-# o modpost will extract versions from that file and create *.c files that will
-#   be compiled and linked to the kernel and/or modules.
-
-gen_symversions =								\
-	if $(NM) $@ 2>/dev/null | grep -q __ksymtab; then			\
-		$(call cmd_gensymtypes_$(1),$(KBUILD_SYMTYPES),$(@:.o=.symtypes)) \
-			>> $(dot-target).cmd;					\
-	fi
-
-cmd_gen_symversions_c =	$(call gen_symversions,c)
-
-endif
-
 # 'OBJECT_FILES_NON_STANDARD := y': skip objtool checking for a directory
 # 'OBJECT_FILES_NON_STANDARD_foo.o := 'y': skip objtool checking for a file
 # 'OBJECT_FILES_NON_STANDARD_foo.o := 'n': override directory skip for a file
@@ -188,11 +168,6 @@ endif
 is-standard-object = $(if $(filter-out y%, $(OBJECT_FILES_NON_STANDARD_$(basetarget).o)$(OBJECT_FILES_NON_STANDARD)n),y)
 
 $(obj)/%.o: objtool-enabled = $(if $(is-standard-object),$(if $(delay-objtool),$(is-single-obj-m),y))
-
-ifdef CONFIG_TRIM_UNUSED_KSYMS
-cmd_gen_ksymdeps = \
-	$(CONFIG_SHELL) $(srctree)/scripts/gen_ksymdeps.sh $@ >> $(dot-target).cmd
-endif
 
 cmd_check_local_export = $(srctree)/scripts/check-local-export $@
 
@@ -279,15 +254,6 @@ $(obj)/%.s: $(src)/%.S FORCE
 
 quiet_cmd_as_o_S = AS $(quiet_modtag)  $@
       cmd_as_o_S = $(CC) $(a_flags) -c -o $@ $< $(cmd_objtool)
-
-ifdef CONFIG_ASM_MODVERSIONS
-
-# versioning matches the C process described above, with difference that
-# we parse asm-prototypes.h C header to get function definitions.
-
-cmd_gen_symversions_S = $(call gen_symversions,S)
-
-endif
 
 $(obj)/%.o: $(src)/%.S FORCE
 	$(call if_changed_rule,as_o_S)

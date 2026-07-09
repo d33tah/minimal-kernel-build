@@ -19,8 +19,6 @@
 #include <linux/percpu.h>
 #include <asm/orc_types.h>
 
-struct module;
-
 
 
 /* CONFIG_MODULES off: built-in-only, MODULE never defined. */

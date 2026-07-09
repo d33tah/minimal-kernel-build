@@ -5,8 +5,6 @@
 #include <linux/range.h>
 #include <linux/ioport.h>
 
-struct device;
-
 struct vmem_altmap;
 
 #endif

@@ -3,8 +3,6 @@
 #include <linux/err.h>
 #include <linux/sched.h>
 
-struct mm_struct;
-
 bool set_kthread_struct(struct task_struct *p);
 
 void kthread_set_per_cpu(struct task_struct *k, int cpu);

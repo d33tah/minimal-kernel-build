@@ -59,20 +59,7 @@ export BITS
 #
 KBUILD_CFLAGS += -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx
 
-ifeq ($(CONFIG_X86_KERNEL_IBT),y)
-#
-# Kernel IBT has S_CET.NOTRACK_EN=0, as such the compilers must not generate
-# NOTRACK prefixes. Current generation compilers unconditionally employ NOTRACK
-# for jump-tables, as such, disable jump-tables for now.
-#
-# (jump-tables are implicitly disabled by RETPOLINE)
-#
-#   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=104816
-#
-KBUILD_CFLAGS += $(call cc-option,-fcf-protection=branch -fno-jump-tables)
-else
 KBUILD_CFLAGS += $(call cc-option,-fcf-protection=none)
-endif
 
 ifeq ($(CONFIG_X86_32),y)
         BITS := 32
@@ -161,11 +148,7 @@ KBUILD_LDFLAGS	+= -plugin-opt=-stack-alignment=$(if $(CONFIG_X86_32),4,8)
 endif
 endif
 
-ifdef CONFIG_X86_NEED_RELOCS
-LDFLAGS_vmlinux := --emit-relocs --discard-none
-else
 LDFLAGS_vmlinux :=
-endif
 
 archscripts: scripts_basic
 	$(Q)$(MAKE) $(build)=arch/x86/tools relocs
@@ -215,17 +198,6 @@ vdso_install:
 
 archprepare: checkbin
 checkbin:
-ifndef CONFIG_CC_HAS_ASM_GOTO
-	@echo Compiler lacks asm-goto support.
-	@exit 1
-endif
-ifdef CONFIG_RETPOLINE
-ifeq ($(RETPOLINE_CFLAGS),)
-	@echo "You are building kernel with non-retpoline compiler." >&2
-	@echo "Please update your compiler." >&2
-	@false
-endif
-endif
 
 archclean:
 	$(Q)rm -rf $(objtree)/arch/i386

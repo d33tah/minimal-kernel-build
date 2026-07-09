@@ -5,7 +5,6 @@
 #include <linux/bug.h>
 #include <linux/kernel.h>
 #include <linux/list.h>
-#include <linux/types.h>
 #include <linux/irqnr.h>
 
 

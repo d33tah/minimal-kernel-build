@@ -4,7 +4,6 @@
 #include <linux/compiler.h>		 
 #include <linux/sched.h>		 
 #include <linux/sched/signal.h>
-#include <linux/bug.h>
 #include <linux/pid_namespace.h>	 
 #include <linux/types.h>
 #include <asm/ptrace.h>

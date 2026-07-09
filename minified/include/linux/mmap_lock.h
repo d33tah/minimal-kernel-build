@@ -4,7 +4,6 @@
 #include <linux/lockdep.h>
 #include <linux/mm_types.h>
 #include <linux/mmdebug.h>
-#include <linux/rwsem.h>
 #include <linux/types.h>
 
 #define MMAP_LOCK_INITIALIZER(name) \

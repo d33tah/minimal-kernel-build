@@ -3,7 +3,6 @@
 
 #include <linux/mm.h>
 
-#include <linux/atomic.h>
 #include <asm/mman.h>
 
 #define MAP_SHARED	0x01

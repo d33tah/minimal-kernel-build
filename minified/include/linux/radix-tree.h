@@ -4,7 +4,6 @@
 #include <linux/bitops.h>
 #include <linux/gfp.h>
 #include <linux/lockdep.h>
-#include <linux/math.h>
 #include <linux/percpu.h>
 #include <linux/preempt.h>
 #include <linux/rcupdate.h>

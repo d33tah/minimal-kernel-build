@@ -3,7 +3,6 @@
 
 #include <linux/ratelimit_types.h>
 #include <linux/sched.h>
-#include <linux/spinlock.h>
 
 #define WARN_RATELIMIT(condition, format, ...)			\
 ({								\

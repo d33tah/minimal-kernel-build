@@ -4,7 +4,6 @@
 
 #include <linux/capability.h>
 #include <linux/fs.h>
-#include <linux/err.h>
 #include <linux/mm.h>
 
 struct linux_binprm;

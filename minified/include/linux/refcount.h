@@ -4,7 +4,6 @@
 
 #include <linux/atomic.h>
 #include <linux/bug.h>
-#include <linux/compiler.h>
 #include <linux/limits.h>
 #include <linux/spinlock_types.h>
 

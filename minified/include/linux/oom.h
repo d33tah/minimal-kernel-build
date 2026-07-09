@@ -3,7 +3,6 @@
 #define __INCLUDE_LINUX_OOM_H
 
 #include <linux/sched/signal.h>
-#include <linux/nodemask.h>
 #include <linux/sched/coredump.h>
 #include <linux/mm.h>
 

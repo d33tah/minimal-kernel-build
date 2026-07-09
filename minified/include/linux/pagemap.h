@@ -3,7 +3,6 @@
 
 #include <linux/mm.h>
 #include <linux/highmem.h>
-#include <linux/compiler.h>
 #include <linux/uaccess.h>
 #include <linux/gfp.h>
 #include <linux/bitops.h>

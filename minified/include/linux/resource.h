@@ -2,7 +2,6 @@
 #define _LINUX_RESOURCE_H
 
 #include <linux/time.h>
-#include <linux/types.h>
 
 /* Inlined from uapi/linux/resource.h */
 struct rlimit {

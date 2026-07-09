@@ -16,7 +16,6 @@
 #define JOBCTL_TRAP_MASK	(JOBCTL_TRAP_STOP)
 #define JOBCTL_PENDING_MASK	(JOBCTL_STOP_PENDING | JOBCTL_TRAP_MASK)
 #include <linux/cred.h>
-#include <linux/refcount.h>
 #include <linux/posix-timers.h>
 #include <linux/mm_types.h>
 #include <asm/ptrace.h>

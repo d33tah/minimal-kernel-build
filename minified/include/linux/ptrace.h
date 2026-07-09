@@ -5,7 +5,6 @@
 #include <linux/sched.h>		 
 #include <linux/sched/signal.h>
 #include <linux/pid_namespace.h>	 
-#include <linux/types.h>
 #include <asm/ptrace.h>
 
 #define PTRACE_EVENT_EXEC	4

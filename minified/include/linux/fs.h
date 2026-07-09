@@ -12,7 +12,6 @@
 #include <linux/radix-tree.h>
 #include <linux/rbtree.h>
 #include <linux/pid.h>
-#include <linux/bug.h>
 #include <linux/mutex.h>
 #include <linux/rwsem.h>
 #include <linux/mm_types.h>

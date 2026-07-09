@@ -7,7 +7,6 @@
 #include <linux/pid_namespace.h>
 #include <linux/user_namespace.h>
 
-#include <linux/mm_types.h>
 
 #include <asm/thread_info.h>
 

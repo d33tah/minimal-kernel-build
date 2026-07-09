@@ -12,7 +12,6 @@
 #define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
 #include <linux/linkage.h>
 #include <linux/stddef.h>
-#include <linux/types.h>
 #include <linux/compiler.h>
 #include <linux/container_of.h>
 #include <linux/bitops.h>

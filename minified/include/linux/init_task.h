@@ -6,7 +6,6 @@
 #include <linux/utsname.h>
 #include <linux/pid_namespace.h>
 #include <linux/user_namespace.h>
-#include <linux/seqlock.h>
 
 #include <linux/rbtree.h>
 #include <linux/refcount.h>

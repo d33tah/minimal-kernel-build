@@ -3,7 +3,6 @@
 #define __IDR_H__
 
 #include <linux/radix-tree.h>
-#include <linux/percpu.h>
 
 struct idr {
 	struct radix_tree_root	idr_rt;

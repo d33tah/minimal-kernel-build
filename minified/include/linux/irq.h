@@ -8,7 +8,6 @@
 struct irq_desc;
 typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 #include <linux/interrupt.h>
-#include <linux/irqnr.h>
 #include <linux/topology.h>
 #include <linux/io.h>
 #include <linux/slab.h>

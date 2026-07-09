@@ -3,7 +3,6 @@
 
 #include <linux/atomic.h>
 #include <linux/container_of.h>
-#include <linux/stddef.h>
 #include <linux/types.h>
 
 struct llist_head {

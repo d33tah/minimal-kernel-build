@@ -3,6 +3,3 @@
 # and is generally not a function of system call inputs.
 
 obj-y += mutex.o semaphore.o rwsem.o
-
-ifeq ($(CONFIG_PROC_FS),y)
-endif

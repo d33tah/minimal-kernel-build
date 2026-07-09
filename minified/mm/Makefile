@@ -4,12 +4,6 @@
 #
 
 
-# These produce frequent data race reports: most of them are due to races on
-# the same word but accesses to different bits of that word. Re-enable KCSAN
-# for these when we have more consensus on what to do about them.
-# But enable explicit instrumentation for memory barriers.
-KCSAN_INSTRUMENT_BARRIERS := y
-
 # These files are disabled because they produce non-interesting and/or
 # flaky coverage that is not a function of syscall inputs. E.g. slab is out of
 # free pages, or a task is migrated between nodes.
@@ -35,9 +29,6 @@ page-alloc-y := page_alloc.o
 obj-y += page-alloc.o
 obj-y += init-mm.o
 obj-y += memblock.o
-
-ifdef CONFIG_MMU
-endif
 
 # obj-$(CONFIG_HAS_DMA)	+= dmapool.o  # deleted
 obj-$(CONFIG_SLUB) += slub.o

@@ -3,7 +3,6 @@
 #define _LINUX_UPROBES_H
 
 struct task_struct;
-struct pt_regs;
 
 #define uprobe_get_trap_addr(regs)	instruction_pointer(regs)
 

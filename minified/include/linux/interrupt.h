@@ -15,7 +15,6 @@ typedef enum irqreturn irqreturn_t;
 #include <linux/hardirq.h>
 #include <linux/kref.h>
 #include <linux/workqueue.h>
-#include <linux/jump_label.h>
 
 #include <linux/atomic.h>
 #include <asm/ptrace.h>

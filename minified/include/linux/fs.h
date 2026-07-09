@@ -11,7 +11,6 @@
 #include <linux/llist.h>
 #include <linux/radix-tree.h>
 #include <linux/rbtree.h>
-#include <linux/init.h>
 #include <linux/pid.h>
 #include <linux/bug.h>
 #include <linux/mutex.h>

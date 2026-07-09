@@ -5,7 +5,6 @@
 
 #include <linux/cgroup.h>
 #include <linux/mm.h>
-#include <linux/vmstat.h>
 #include <linux/writeback.h>
 
 struct obj_cgroup;

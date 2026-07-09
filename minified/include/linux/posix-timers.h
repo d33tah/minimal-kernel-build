@@ -4,7 +4,4 @@
 #include <linux/spinlock.h>
 #include <linux/list.h>
 
-struct kernel_siginfo;
-
-
 #endif

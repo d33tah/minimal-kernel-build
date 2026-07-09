@@ -17,7 +17,6 @@
 #include <linux/capability.h>
 #include <linux/semaphore.h>
 #include <linux/fcntl.h>
-#include <linux/lockdep.h>
 #include <linux/workqueue.h>
 
 #include <linux/uuid.h>

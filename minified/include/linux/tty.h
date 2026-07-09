@@ -8,7 +8,6 @@
 #include <linux/tty_driver.h>
 #include <linux/tty_port.h>
 
-#include <linux/lockdep.h>
 
 struct ld_semaphore {
 	atomic_long_t		count;

@@ -8,7 +8,6 @@ struct inode;
 struct iovec;
 struct list_head;
 struct rlimit;
-struct stat;
 struct __kernel_old_timeval;
 
 #include <linux/types.h>

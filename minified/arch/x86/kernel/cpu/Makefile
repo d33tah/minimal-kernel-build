@@ -3,10 +3,6 @@
 # Makefile for x86-compatible CPU details, features and quirks
 #
 
-# Don't trace early stages of a secondary CPU boot
-ifdef CONFIG_FUNCTION_TRACER
-CFLAGS_REMOVE_common.o = -pg
-endif
 
 # If these files are instrumented, boot hangs during the first second.
 KCOV_INSTRUMENT_common.o := n
@@ -24,8 +20,6 @@ obj-y			+= cpuid-deps.o
 
 
 # feat_ctl.o removed - empty file
-ifdef CONFIG_CPU_SUP_INTEL
-endif
 # obj-$(CONFIG_CPU_SUP_CYRIX_32)		+= cyrix.o  # deleted
 # obj-$(CONFIG_CPU_SUP_CENTAUR)		+= centaur.o  # deleted
 # obj-$(CONFIG_CPU_SUP_TRANSMETA_32)	+= transmeta.o  # deleted

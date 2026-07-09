@@ -11,10 +11,6 @@ extra-y	+= vmlinux.lds
 
 CPPFLAGS_vmlinux.lds += -U$(UTS_MACHINE)
 
-ifdef CONFIG_FUNCTION_TRACER
-# Do not profile debug and lowlevel utilities
-CFLAGS_REMOVE_tsc.o = -pg
-endif
 
 KASAN_SANITIZE_head$(BITS).o				:= n
 KASAN_SANITIZE_dumpstack.o				:= n

@@ -158,8 +158,7 @@ endif
 
 quiet_cmd_cc_o_c = CC $(quiet_modtag)  $@
       cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ $< \
-		$(cmd_ld_single_m) \
-		$(cmd_objtool)
+		$(cmd_ld_single_m)
 
 # 'OBJECT_FILES_NON_STANDARD := y': skip objtool checking for a directory
 # 'OBJECT_FILES_NON_STANDARD_foo.o := 'y': skip objtool checking for a file
@@ -173,21 +172,15 @@ cmd_check_local_export = $(srctree)/scripts/check-local-export $@
 
 define rule_cc_o_c
 	$(call cmd_and_fixdep,cc_o_c)
-	$(call cmd,gen_ksymdeps)
 	$(call cmd,check_local_export)
 	$(call cmd,checksrc)
 	$(call cmd,checkdoc)
-	$(call cmd,gen_objtooldep)
-	$(call cmd,gen_symversions_c)
 	$(call cmd,record_mcount)
 endef
 
 define rule_as_o_S
 	$(call cmd_and_fixdep,as_o_S)
-	$(call cmd,gen_ksymdeps)
 	$(call cmd,check_local_export)
-	$(call cmd,gen_objtooldep)
-	$(call cmd,gen_symversions_S)
 endef
 
 # Built-in and composite module parts

@@ -5,6 +5,4 @@
 #include <linux/compiler.h>
 #include <linux/build_bug.h>
 
-struct pt_regs;
-
 #endif

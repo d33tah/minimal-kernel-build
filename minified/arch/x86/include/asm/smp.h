@@ -9,8 +9,6 @@
 #include <asm/cpumask.h>
 
 
-struct task_struct;
-
 /* set_cpu_sibling_map removed - never defined (SMP only) */
 
 

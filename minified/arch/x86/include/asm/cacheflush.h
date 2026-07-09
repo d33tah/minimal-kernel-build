@@ -7,7 +7,6 @@
 /* Inlined from asm-generic/cacheflush.h */
 struct vm_area_struct;
 struct page;
-struct address_space;
 
 /* flush_cache_all removed - unused */
 

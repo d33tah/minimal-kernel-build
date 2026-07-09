@@ -8,7 +8,6 @@
 #include <linux/uidgid.h>
 
 
-struct completion;
 struct nsproxy;
 
 

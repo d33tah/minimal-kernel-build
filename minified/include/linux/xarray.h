@@ -6,7 +6,6 @@
 #include <linux/gfp.h>
 #include <linux/rcupdate.h>
 #include <linux/spinlock.h>
-#include <linux/types.h>
 
 
 #define BITS_PER_XA_VALUE	(BITS_PER_LONG - 1)

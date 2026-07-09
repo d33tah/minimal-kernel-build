@@ -3,7 +3,6 @@
 
 #include <linux/mm.h>
 #include <linux/highmem.h>
-#include <linux/bitops.h>
 #include <linux/hardirq.h>
 
 struct folio_batch;

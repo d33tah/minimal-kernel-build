@@ -11,7 +11,6 @@
 #include <linux/tracepoint-defs.h>
 
 
-#include <linux/percpu.h>
 #include <asm/orc_types.h>
 
 

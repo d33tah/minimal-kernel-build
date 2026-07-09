@@ -5,7 +5,6 @@
 #include <linux/vt.h>
 #include <linux/kd.h>
 #include <linux/tty.h>
-#include <linux/workqueue.h>
 #include <linux/mm.h>
 #include <linux/consolemap.h>
 #include <linux/notifier.h>

@@ -4,6 +4,5 @@
 #include <linux/clockchips.h>
 #include <linux/percpu.h>
 #include <linux/sched.h>
-#include <linux/rcupdate.h>
 
 #endif

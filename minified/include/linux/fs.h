@@ -20,7 +20,6 @@
 
 #include <linux/uuid.h>
 
-#include <linux/build_bug.h>
 
 #include <linux/stddef.h>
 #include <linux/mount.h>

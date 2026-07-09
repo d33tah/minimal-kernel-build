@@ -48,7 +48,6 @@ void tty_ldisc_deref(struct tty_ldisc *);
 struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *);
 
 int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
-#include <linux/rwsem.h>
 
 /* From uapi/linux/tty.h - reduced to only used values */
 #define N_TTY		0

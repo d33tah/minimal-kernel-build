@@ -8,11 +8,8 @@
 #include <linux/mm.h>
 
 struct linux_binprm;
-struct cred;
-struct dentry;
 struct path;
 struct mm_struct;
-struct user_namespace;
 
 /* cap_capable, cap_settime, cap_ptrace_*, cap_capget, cap_capset,
    cap_inode_*, cap_mmap_addr, cap_vm_enough_memory removed - unused */

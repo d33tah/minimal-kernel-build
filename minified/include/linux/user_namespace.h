@@ -10,8 +10,6 @@
 #include <linux/sysctl.h>
 #include <linux/err.h>
 
-struct ucounts;
-
 enum ucount_type {
 	UCOUNT_USER_NAMESPACES,
 	UCOUNT_PID_NAMESPACES,

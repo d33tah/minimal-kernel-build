@@ -8,8 +8,6 @@
 #include <linux/sched/coredump.h>
 #include <linux/mm.h>
 
-struct zonelist;
-
 static inline vm_fault_t check_stable_address_space(struct mm_struct *mm)
 {
 	if (unlikely(test_bit(MMF_UNSTABLE, &mm->flags)))

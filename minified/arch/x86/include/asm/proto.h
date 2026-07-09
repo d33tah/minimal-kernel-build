@@ -4,8 +4,6 @@
 
 #include <asm/ldt.h>
 
-struct task_struct;
-
 void entry_INT80_32(void);
 void entry_SYSENTER_32(void);
 void __begin_SYSENTER_singlestep_region(void);

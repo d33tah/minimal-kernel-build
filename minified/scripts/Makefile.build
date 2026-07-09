@@ -167,7 +167,6 @@ define rule_cc_o_c
 	$(call cmd,check_local_export)
 	$(call cmd,checksrc)
 	$(call cmd,checkdoc)
-	$(call cmd,record_mcount)
 endef
 
 define rule_as_o_S

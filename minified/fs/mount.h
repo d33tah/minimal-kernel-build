@@ -3,8 +3,6 @@
 #include <linux/poll.h>
 #include <linux/ns_common.h>
 
-struct vfsmount;
-
 struct mnt_namespace {
 	struct ns_common	ns;
 	struct user_namespace	*user_ns;

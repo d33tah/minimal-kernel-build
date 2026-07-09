@@ -21,7 +21,6 @@
 #include <linux/uuid.h>
 
 
-#include <linux/stddef.h>
 #include <linux/mount.h>
 #include <linux/cred.h>
 #include <linux/mnt_idmapping.h>

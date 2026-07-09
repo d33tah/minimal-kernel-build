@@ -166,9 +166,7 @@ libs-y  += arch/x86/lib/
 
 boot := arch/x86/boot
 
-BOOT_TARGETS = bzdisk fdimage fdimage144 fdimage288 hdimage isoimage
-
-PHONY += bzImage $(BOOT_TARGETS)
+PHONY += bzImage
 
 # Default kernel to build
 all: bzImage
@@ -180,9 +178,6 @@ bzImage: vmlinux
 	$(Q)$(MAKE) $(build)=$(boot) $(KBUILD_IMAGE)
 	$(Q)mkdir -p $(objtree)/arch/$(UTS_MACHINE)/boot
 	$(Q)ln -fsn ../../x86/boot/bzImage $(objtree)/arch/$(UTS_MACHINE)/boot/$@
-
-$(BOOT_TARGETS): vmlinux
-	$(Q)$(MAKE) $(build)=$(boot) $@
 
 PHONY += vdso_install
 vdso_install:

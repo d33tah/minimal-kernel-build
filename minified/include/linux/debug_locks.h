@@ -4,8 +4,6 @@
 #include <linux/atomic.h>
 #include <linux/cache.h>
 
-struct task_struct;
-
 extern int debug_locks __read_mostly;
 
 

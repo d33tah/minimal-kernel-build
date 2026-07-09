@@ -10,7 +10,6 @@
 
 struct cred;
 struct dentry;
-struct file_operations;
 struct file_system_type;
 struct pid_namespace;
 struct super_block;

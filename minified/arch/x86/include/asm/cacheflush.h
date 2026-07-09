@@ -5,7 +5,6 @@
 #include <linux/mm.h>
 
 /* Inlined from asm-generic/cacheflush.h */
-struct mm_struct;
 struct vm_area_struct;
 struct page;
 struct address_space;

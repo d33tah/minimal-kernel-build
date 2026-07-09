@@ -31,7 +31,6 @@
 #include <linux/rwsem.h>
 #include <linux/completion.h>
 #include <linux/uprobes.h>
-#include <linux/rcupdate.h>
 #include <linux/page-flags-layout.h>
 #include <linux/workqueue.h>
 #include <linux/seqlock.h>

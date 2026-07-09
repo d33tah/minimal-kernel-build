@@ -7,7 +7,6 @@
 #include <linux/workqueue.h>
 #include <linux/rwsem.h>
 #include <linux/sysctl.h>
-#include <linux/err.h>
 
 enum ucount_type {
 	UCOUNT_USER_NAMESPACES,

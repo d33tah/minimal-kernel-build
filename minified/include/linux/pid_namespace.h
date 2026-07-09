@@ -18,7 +18,6 @@ extern struct pid_namespace init_pid_ns;
 
 #define PIDNS_ADDING (1U << 31)
 
-#include <linux/err.h>
 
 static inline struct pid_namespace *get_pid_ns(struct pid_namespace *ns)
 {

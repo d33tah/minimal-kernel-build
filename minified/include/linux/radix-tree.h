@@ -6,7 +6,6 @@
 #include <linux/lockdep.h>
 #include <linux/rcupdate.h>
 #include <linux/spinlock.h>
-#include <linux/types.h>
 #include <linux/xarray.h>
 #include <linux/local_lock.h>
 

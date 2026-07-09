@@ -30,7 +30,6 @@
 #include <linux/signal_types.h>
 #include <linux/mm_types_task.h>
 #include <linux/posix-timers.h>
-#include <linux/seqlock.h>
 #include <asm/kmap_size.h>
 
 struct fs_struct;

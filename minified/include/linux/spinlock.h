@@ -5,7 +5,6 @@
 #include <linux/typecheck.h>
 #include <linux/preempt.h>
 #include <linux/irqflags.h>
-#include <linux/thread_info.h>
 #include <linux/stringify.h>
 #include <linux/bottom_half.h>
 #include <linux/lockdep.h>

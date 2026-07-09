@@ -4,7 +4,6 @@
 #include <linux/bitmap.h>
 #include <linux/bug.h>
 #include <linux/gfp.h>
-#include <linux/kernel.h>
 #include <linux/rcupdate.h>
 #include <linux/spinlock.h>
 #include <linux/types.h>

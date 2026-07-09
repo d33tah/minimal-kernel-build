@@ -3,7 +3,6 @@
 
 #include <linux/cpu.h>
 #include <linux/smp.h>
-#include <linux/list.h>
 
 typedef int (*cpu_stop_fn_t)(void *arg);
 

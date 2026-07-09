@@ -5,7 +5,6 @@
 #include <linux/percpu.h>
 #include <linux/mmzone.h>
 
-#include <linux/mmdebug.h>
 
 
 static inline void zone_page_state_add(long x, struct zone *zone,

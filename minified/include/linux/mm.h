@@ -12,7 +12,6 @@
 #include <linux/range.h>
 #include <linux/bit_spinlock.h>
 #include <linux/resource.h>
-#include <linux/err.h>
 #include <linux/page-flags.h>
 #include <linux/tracepoint-defs.h>
 #include <linux/overflow.h>

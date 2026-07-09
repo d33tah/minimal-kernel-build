@@ -4,7 +4,6 @@
 
 #include <linux/swap.h>
 #include <linux/notifier.h>
-#include <linux/mm.h>
 #include <asm/errno.h>
 
 #endif /* _LINUX_SUSPEND_H */

@@ -4,7 +4,6 @@
 #include <linux/kernel.h>
 #include <linux/thread_info.h>
 #include <linux/mm_types.h>
-#include <linux/types.h>
 
 struct iovec
 {

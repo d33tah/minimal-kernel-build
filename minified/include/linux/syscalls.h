@@ -13,7 +13,6 @@ struct __kernel_old_timeval;
 #include <linux/types.h>
 #include <linux/capability.h>
 #include <linux/signal.h>
-#include <linux/bug.h>
 #include <asm/siginfo.h>
 #include <linux/unistd.h>
 #include <linux/personality.h>

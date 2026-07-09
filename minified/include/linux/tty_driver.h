@@ -3,7 +3,6 @@
 
 #include <linux/export.h>
 #include <linux/fs.h>
-#include <linux/list.h>
 #include <linux/cdev.h>
 #include <linux/types.h>
 #include <asm/termios.h>

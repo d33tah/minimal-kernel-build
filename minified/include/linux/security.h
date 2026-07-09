@@ -8,7 +8,6 @@
 #include <linux/mm.h>
 
 struct linux_binprm;
-struct path;
 struct mm_struct;
 
 /* cap_capable, cap_settime, cap_ptrace_*, cap_capget, cap_capset,

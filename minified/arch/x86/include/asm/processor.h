@@ -8,9 +8,6 @@
 struct task_struct;
 struct mm_struct;
 
-/* Inlined from asm/math_emu.h */
-struct math_emu_info;
-
 #include <asm/segment.h>
 #include <asm/types.h>
 #include <uapi/asm/sigcontext.h>

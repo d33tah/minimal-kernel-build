@@ -41,7 +41,6 @@ static inline void init_sigpending(struct sigpending *sig)
 
 
 struct pt_regs;
-enum pid_type;
 
 extern void exit_signals(struct task_struct *tsk);
 

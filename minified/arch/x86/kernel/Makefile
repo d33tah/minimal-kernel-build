@@ -12,18 +12,14 @@ extra-y	+= vmlinux.lds
 CPPFLAGS_vmlinux.lds += -U$(UTS_MACHINE)
 
 
-KASAN_SANITIZE_head$(BITS).o				:= n
-KASAN_SANITIZE_dumpstack.o				:= n
 
 # With some compiler versions the generated code results in boot hangs, caused
 # by several compilation units. To be safe, disable all instrumentation.
-KCSAN_SANITIZE := n
 
 # If instrumentation of this dir is enabled, boot hangs during first second.
 # Probably could be more selective here, but note that files related to irqs,
 # boot, dumpstack/stacktrace, etc are either non-interesting or can lead to
 # non-deterministic coverage.
-KCOV_INSTRUMENT		:= n
 
 CFLAGS_irq.o := -I $(srctree)/$(src)/../include/asm/trace
 

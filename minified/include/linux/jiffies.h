@@ -5,7 +5,6 @@
 #include <linux/limits.h>
 #include <linux/math64.h>
 #include <linux/minmax.h>
-#include <linux/types.h>
 #include <linux/time.h>
 #include <linux/timex.h>
 #include <linux/time64.h>

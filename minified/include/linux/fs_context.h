@@ -6,7 +6,6 @@
 #include <linux/refcount.h>
 #include <linux/errno.h>
 #include <linux/security.h>
-#include <linux/mutex.h>
 
 struct cred;
 struct dentry;

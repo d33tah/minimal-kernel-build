@@ -11,7 +11,6 @@
 
 #include <linux/ioport.h>
 #include <linux/kobject.h>
-#include <linux/lockdep.h>
 #include <linux/mutex.h>
 #include <linux/atomic.h>
 #include <linux/uidgid.h>

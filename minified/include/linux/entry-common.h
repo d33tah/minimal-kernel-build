@@ -3,7 +3,6 @@
 
 #include <linux/ptrace.h>
 #include <linux/syscalls.h>
-#include <linux/sched.h>
 
 #include <asm/entry-common.h>
 

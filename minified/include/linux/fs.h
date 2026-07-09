@@ -7,7 +7,6 @@
 #include <linux/dcache.h>
 #include <linux/path.h>
 #include <linux/stat.h>
-#include <linux/cache.h>
 #include <linux/list_lru.h>
 #include <linux/llist.h>
 #include <linux/radix-tree.h>

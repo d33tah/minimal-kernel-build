@@ -3,7 +3,6 @@
 
 #include <linux/tty.h>
 #include <linux/interrupt.h>
-#include <linux/wait.h>
 
 struct console;
 

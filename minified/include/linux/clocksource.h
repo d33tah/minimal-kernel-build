@@ -3,7 +3,6 @@
 
 #include <linux/types.h>
 #include <linux/timex.h>
-#include <linux/time.h>
 #include <linux/list.h>
 #include <linux/timer.h>
 #include <linux/init.h>

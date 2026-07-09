@@ -2,7 +2,6 @@
 #ifndef _LINUX_UPROBES_H
 #define _LINUX_UPROBES_H
 
-struct mm_struct;
 struct task_struct;
 struct pt_regs;
 

@@ -36,7 +36,6 @@
 #include <linux/seqlock.h>
 #include <asm/kmap_size.h>
 
-struct cfs_rq;
 struct fs_struct;
 struct nameidata;
 struct nsproxy;

@@ -35,14 +35,3 @@ endif
 
 
 
-ifdef CONFIG_X86_FEATURE_NAMES
-quiet_cmd_mkcapflags = MKCAP   $@
-      cmd_mkcapflags = $(CONFIG_SHELL) $(srctree)/$(src)/mkcapflags.sh $@ $^
-
-cpufeature = $(src)/../../include/asm/cpufeatures.h
-vmxfeature = $(src)/../../include/asm/vmxfeatures.h
-
-$(obj)/capflags.c: $(cpufeature) $(vmxfeature) $(src)/mkcapflags.sh FORCE
-	$(call if_changed,mkcapflags)
-endif
-targets += capflags.c

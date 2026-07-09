@@ -103,21 +103,6 @@ $(obj)/default.bconf: $(CONFIG_BOOT_CONFIG_EMBED_FILE) FORCE
 
 
 
-#
-# Build a fast OID lookip registry from include/linux/oid_registry.h
-#
-
-$(obj)/oid_registry.o: $(obj)/oid_registry_data.c
-
-$(obj)/oid_registry_data.c: $(srctree)/include/linux/oid_registry.h \
-			    $(src)/build_OID_registry
-	$(call cmd,build_OID_registry)
-
-quiet_cmd_build_OID_registry = GEN     $@
-      cmd_build_OID_registry = perl $(srctree)/$(src)/build_OID_registry $< $@
-
-clean-files	+= oid_registry_data.c
-
 ifneq ($(CONFIG_UBSAN_TRAP),y)
 endif
 

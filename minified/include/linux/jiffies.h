@@ -6,7 +6,6 @@
 #include <linux/math64.h>
 #include <linux/minmax.h>
 #include <linux/time.h>
-#include <linux/timex.h>
 #include <linux/time64.h>
 #include <asm/param.h>
 

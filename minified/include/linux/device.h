@@ -12,7 +12,6 @@
 #include <linux/ioport.h>
 #include <linux/kobject.h>
 #include <linux/mutex.h>
-#include <linux/atomic.h>
 #include <linux/uidgid.h>
 #include <linux/gfp.h>
 #include <linux/overflow.h>

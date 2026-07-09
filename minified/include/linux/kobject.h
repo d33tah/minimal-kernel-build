@@ -4,7 +4,6 @@
 
 #include <linux/types.h>
 #include <linux/list.h>
-#include <linux/container_of.h>
 #include <linux/spinlock.h>
 #include <linux/kref.h>
 #include <linux/wait.h>

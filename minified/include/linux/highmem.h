@@ -5,7 +5,6 @@
 #include <asm/cacheflush.h>
 struct folio;
 static inline void flush_dcache_folio(struct folio *folio) {}
-#include <linux/mm.h>
 #include <linux/uaccess.h>
 #include <linux/hardirq.h>
 

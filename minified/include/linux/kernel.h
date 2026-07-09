@@ -19,7 +19,6 @@
 #include <linux/log2.h>
 #include <linux/math.h>
 #include <linux/minmax.h>
-#include <linux/typecheck.h>
 #include <linux/panic.h>
 #include <linux/printk.h>
 #include <linux/build_bug.h>

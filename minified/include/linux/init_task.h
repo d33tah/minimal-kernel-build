@@ -7,7 +7,6 @@
 #include <linux/pid_namespace.h>
 #include <linux/user_namespace.h>
 
-#include <linux/rbtree.h>
 #include <linux/refcount.h>
 #include <linux/mm_types.h>
 

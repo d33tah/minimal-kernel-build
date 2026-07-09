@@ -10,7 +10,6 @@
 #include <asm/page.h>
 
 struct device;
-struct resource;
 
 
 

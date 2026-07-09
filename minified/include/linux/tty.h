@@ -3,7 +3,6 @@
 
 #include <linux/fs.h>
 #include <linux/major.h>
-#include <linux/types.h>
 #include <asm/termios.h>
 #include <linux/workqueue.h>
 #include <linux/tty_buffer.h>

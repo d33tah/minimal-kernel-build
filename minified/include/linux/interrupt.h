@@ -2,7 +2,6 @@
 #define _LINUX_INTERRUPT_H
 
 #include <linux/kernel.h>
-#include <linux/bitops.h>
 #include <linux/cpumask.h>
 
 /* Inlined from irqreturn.h */

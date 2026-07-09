@@ -18,7 +18,6 @@
 #include <linux/pid.h>
 #include <linux/mutex.h>
 #include <linux/hrtimer.h>
-#include <linux/irqflags.h>
 #include <linux/nodemask.h>
 #include <linux/rcupdate.h>
 #include <linux/refcount.h>

@@ -4,7 +4,6 @@
 
 #include <linux/list.h>
 #include <linux/stat.h>
-#include <linux/compiler.h>
 #include <linux/cache.h>
 #include <linux/init.h>
 #include <linux/elf.h>

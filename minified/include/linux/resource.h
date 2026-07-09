@@ -70,7 +70,4 @@ struct rlimit {
 	[RLIMIT_RTTIME]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
 }
 
-struct task_struct;
-
-
 #endif

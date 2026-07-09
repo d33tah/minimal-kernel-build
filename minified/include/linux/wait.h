@@ -27,8 +27,6 @@ struct wait_queue_head {
 };
 typedef struct wait_queue_head wait_queue_head_t;
 
-struct task_struct;
-
 
 #define __WAITQUEUE_INITIALIZER(name, tsk) {					\
 	.private	= tsk,							\

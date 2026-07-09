@@ -18,7 +18,6 @@ struct pagevec;
 
 
 struct address_space;
-struct zone;
 
 void workingset_update_node(struct xa_node *node);
 extern struct list_lru shadow_nodes;

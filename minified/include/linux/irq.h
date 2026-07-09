@@ -17,8 +17,6 @@ typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 #include <asm/ptrace.h>
 #include <asm/irq_regs.h>
 
-struct module;
-
 enum {
 	IRQ_TYPE_NONE		= 0x00000000,
 	IRQ_TYPE_SENSE_MASK	= 0x0000000f,

@@ -5,7 +5,6 @@
 #include <linux/list.h>
 
 struct kernel_siginfo;
-struct task_struct;
 
 
 #endif

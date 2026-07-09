@@ -50,8 +50,6 @@ obj-y += math/ crypto/
 
 
 
-lib-$(CONFIG_DECOMPRESS_XZ) += decompress_unxz.o
-
 
 # obj-$(CONFIG_HAVE_ARCH_TRACEHOOK) += syscall.o  # deleted
 

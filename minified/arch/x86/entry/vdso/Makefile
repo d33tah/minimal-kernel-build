@@ -12,7 +12,6 @@ include $(srctree)/lib/vdso/Makefile
 # Prevents link failures: __sanitizer_cov_trace_pc() is not linked in.
 
 VDSO32-$(CONFIG_X86_32)		:= y
-VDSO32-$(CONFIG_IA32_EMULATION)	:= y
 
 # files to link into the vdso
 vobjs32-y := vdso32/note.o vdso32/system_call.o

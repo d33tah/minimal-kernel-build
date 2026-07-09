@@ -5,8 +5,6 @@
 #include <linux/compiler.h>
 #include <asm/barrier.h>
 
-struct task_struct;
-
 #define array_index_nospec(index, size)					\
 ({									\
 	typeof(index) _i = (index);					\

@@ -19,7 +19,6 @@
 #include <linux/mutex.h>
 #include <linux/hrtimer.h>
 #include <linux/nodemask.h>
-#include <linux/refcount.h>
 #include <linux/resource.h>
 #define MAX_NICE	19
 #define MIN_NICE	-20

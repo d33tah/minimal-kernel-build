@@ -7,7 +7,6 @@
 /* Dead UABI structs __kernel_timex_timeval + __kernel_timex removed (0-ref, was a
    self-referential cluster: timeval only embedded by timex, timex only def + a bare
    forward decl in syscalls.h which is also removed). */
-#include <linux/compiler.h>
 #include <linux/types.h>
 #include <linux/param.h>
 

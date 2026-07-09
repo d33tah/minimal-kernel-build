@@ -4,7 +4,6 @@
 
 #include <linux/spinlock.h>
 #include <linux/mmzone.h>
-#include <linux/list.h>
 #include <linux/memcontrol.h>
 #include <linux/sched.h>
 #include <linux/fs.h>

@@ -10,7 +10,6 @@
 #include <linux/mm_types.h>
 #include <linux/mmap_lock.h>
 #include <linux/range.h>
-#include <linux/pfn.h>
 #include <linux/bit_spinlock.h>
 #include <linux/resource.h>
 #include <linux/err.h>

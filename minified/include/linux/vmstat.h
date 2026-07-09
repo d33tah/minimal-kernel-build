@@ -4,7 +4,6 @@
 #include <linux/types.h>
 #include <linux/percpu.h>
 #include <linux/mmzone.h>
-#include <linux/atomic.h>
 
 #include <linux/mmdebug.h>
 

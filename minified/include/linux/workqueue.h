@@ -3,7 +3,6 @@
 #define _LINUX_WORKQUEUE_H
 
 #include <linux/timer.h>
-#include <linux/bitops.h>
 #include <linux/threads.h>
 #include <linux/atomic.h>
 #include <linux/cpumask.h>

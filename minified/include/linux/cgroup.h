@@ -7,7 +7,6 @@
 #include <linux/ns_common.h>
 #include <linux/nsproxy.h>
 #include <linux/user_namespace.h>
-#include <linux/refcount.h>
 #include <linux/kernel_stat.h>
 
 #endif /* _LINUX_CGROUP_H */

@@ -8,7 +8,6 @@
 #include <linux/elf.h>
 #include <linux/kobject.h>
 #include <linux/moduleparam.h>
-#include <linux/jump_label.h>
 #include <linux/export.h>
 #include <linux/tracepoint-defs.h>
 

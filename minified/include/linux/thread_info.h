@@ -12,7 +12,6 @@
 #include <asm/current.h>
 #define current_thread_info() ((struct thread_info *)current)
 
-#include <linux/bitops.h>
 
 enum syscall_work_bit {
 	SYSCALL_WORK_BIT_SECCOMP,

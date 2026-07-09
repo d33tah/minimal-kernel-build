@@ -1,7 +1,6 @@
 #ifndef _LINUX_WAIT_H
 #define _LINUX_WAIT_H
 #include <linux/list.h>
-#include <linux/stddef.h>
 #include <linux/spinlock.h>
 
 #include <asm/current.h>

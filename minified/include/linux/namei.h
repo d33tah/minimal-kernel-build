@@ -2,7 +2,6 @@
 #define _LINUX_NAMEI_H
 
 #include <linux/fs.h>
-#include <linux/errno.h>
 
 enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT};
 

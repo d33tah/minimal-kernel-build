@@ -5,7 +5,6 @@
 #include <linux/vt.h>
 #include <linux/kd.h>
 #include <linux/tty.h>
-#include <linux/mutex.h>
 #include <linux/wait.h>
 #include <linux/workqueue.h>
 #include <linux/mm.h>

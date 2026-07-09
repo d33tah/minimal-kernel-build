@@ -4,7 +4,6 @@
 #include <linux/kref.h>
 #include <linux/nsproxy.h>
 #include <linux/ns_common.h>
-#include <linux/sched.h>
 #include <linux/workqueue.h>
 #include <linux/rwsem.h>
 #include <linux/sysctl.h>

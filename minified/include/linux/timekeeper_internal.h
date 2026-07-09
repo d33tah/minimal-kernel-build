@@ -3,7 +3,6 @@
 #define _LINUX_TIMEKEEPER_INTERNAL_H
 
 #include <linux/clocksource.h>
-#include <linux/jiffies.h>
 #include <linux/time.h>
 
 struct tk_read_base {

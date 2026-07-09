@@ -4,7 +4,6 @@
 #include <linux/mmdebug.h>
 #include <linux/preempt.h>
 #include <linux/smp.h>
-#include <linux/init.h>
 
 #include <asm/percpu.h>
 

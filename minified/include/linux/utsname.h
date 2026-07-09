@@ -5,7 +5,6 @@
 #include <linux/sched.h>
 #include <linux/nsproxy.h>
 #include <linux/ns_common.h>
-#include <linux/err.h>
 
 #define __NEW_UTS_LEN 64
 

@@ -6,7 +6,6 @@
 
 #include <linux/list.h>
 #include <linux/spinlock.h>
-#include <linux/atomic.h>
 #include <linux/err.h>
 
 # define __RWSEM_DEP_MAP_INIT(lockname)

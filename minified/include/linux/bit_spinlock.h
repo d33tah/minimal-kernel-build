@@ -4,7 +4,6 @@
 #include <linux/kernel.h>
 #include <linux/preempt.h>
 #include <linux/atomic.h>
-#include <linux/bug.h>
 
 static inline void bit_spin_lock(int bitnum, unsigned long *addr)
 {

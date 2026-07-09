@@ -8,7 +8,6 @@
 #include <linux/rculist.h>
 #include <linux/fs.h>
 #include <linux/jump_label.h>
-#include <linux/types.h>
 #include <linux/ns_common.h>
 #include <linux/nsproxy.h>
 #include <linux/user_namespace.h>

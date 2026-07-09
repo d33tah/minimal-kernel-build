@@ -10,7 +10,6 @@
 #include <linux/init.h>
 #include <linux/fs.h>
 
-#include <linux/atomic.h>
 
 #define NR_OPEN_DEFAULT BITS_PER_LONG
 

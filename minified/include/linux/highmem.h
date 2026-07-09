@@ -3,7 +3,6 @@
 
 #include <linux/fs.h>
 #include <linux/kernel.h>
-#include <linux/bug.h>
 #include <asm/cacheflush.h>
 struct folio;
 static inline void flush_dcache_folio(struct folio *folio) {}

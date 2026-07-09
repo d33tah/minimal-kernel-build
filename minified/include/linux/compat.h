@@ -7,7 +7,6 @@
 #include <linux/stat.h>
 #include <linux/param.h>
 #include <linux/uio.h>
-#include <linux/compiler.h>
 
 
 struct file;

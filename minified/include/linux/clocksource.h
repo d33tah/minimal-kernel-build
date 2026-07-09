@@ -5,7 +5,6 @@
 #include <linux/timex.h>
 #include <linux/time.h>
 #include <linux/list.h>
-#include <linux/cache.h>
 #include <linux/timer.h>
 #include <linux/init.h>
 #include <linux/timekeeping.h>

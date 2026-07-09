@@ -4,7 +4,6 @@
 
 # include <linux/clocksource.h>
 # include <linux/cpumask.h>
-# include <linux/ktime.h>
 # include <linux/notifier.h>
 
 

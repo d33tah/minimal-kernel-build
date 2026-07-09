@@ -6,7 +6,6 @@
 #include <linux/mmzone.h>
 #include <linux/memcontrol.h>
 #include <linux/pagemap.h>
-#include <linux/atomic.h>
 #include <linux/page-flags.h>
 #include <asm/page.h>
 

@@ -1464,18 +1464,6 @@ $(help-board-dirs): help-%:
 		echo '')
 
 
-# Misc
-# ---------------------------------------------------------------------------
-
-PHONY += scripts_gdb
-scripts_gdb: prepare0
-	$(Q)$(MAKE) $(build)=scripts/gdb
-	$(Q)ln -fsn $(abspath $(srctree)/scripts/gdb/vmlinux-gdb.py)
-
-ifdef CONFIG_GDB_SCRIPTS
-all: scripts_gdb
-endif
-
 else # KBUILD_EXTMOD
 
 ###

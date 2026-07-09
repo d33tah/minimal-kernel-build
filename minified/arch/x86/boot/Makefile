@@ -9,8 +9,6 @@
 # Changed by many, many contributors over the years.
 #
 
-# Sanitizer runtimes are unavailable and cannot be linked for early boot code.
-OBJECT_FILES_NON_STANDARD	:= y
 
 # Kernel does not boot with kcov instrumentation here.
 # One of the problems observed was insertion of __sanitizer_cov_trace_pc()

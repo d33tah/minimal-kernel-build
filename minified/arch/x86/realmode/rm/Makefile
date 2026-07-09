@@ -7,9 +7,6 @@
 #
 #
 
-# Sanitizer runtimes are unavailable and cannot be linked here.
-OBJECT_FILES_NON_STANDARD	:= y
-
 # Prevents link failures: __sanitizer_cov_trace_pc() is not linked in.
 
 always-y := realmode.bin realmode.relocs

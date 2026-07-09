@@ -9,9 +9,6 @@ ARCH_REL_TYPE_ABS := R_X86_64_JUMP_SLOT|R_X86_64_GLOB_DAT|R_X86_64_RELATIVE|
 ARCH_REL_TYPE_ABS += R_386_GLOB_DAT|R_386_JMP_SLOT|R_386_RELATIVE
 include $(srctree)/lib/vdso/Makefile
 
-# Sanitizer runtimes are unavailable and cannot be linked here.
-OBJECT_FILES_NON_STANDARD	:= y
-
 # Prevents link failures: __sanitizer_cov_trace_pc() is not linked in.
 
 VDSO32-$(CONFIG_X86_32)		:= y
@@ -23,7 +20,6 @@ vobjs32-y += vdso32/vclock_gettime.o
 
 # files to link into kernel
 obj-y				+= vma.o extable.o
-OBJECT_FILES_NON_STANDARD_vma.o	:= n
 
 # vDSO images to build
 vdso_img-$(VDSO32-y)		+= 32

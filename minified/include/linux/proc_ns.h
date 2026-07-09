@@ -5,7 +5,6 @@
 
 struct pid_namespace;
 struct path;
-struct task_struct;
 struct inode;
 
 enum {

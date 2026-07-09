@@ -108,7 +108,6 @@ static inline bool folio_try_get_rcu(struct folio *folio)
 
 struct anon_vma;
 struct anon_vma_chain;
-struct user_struct;
 struct pt_regs;
 
 

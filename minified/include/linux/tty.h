@@ -62,8 +62,6 @@ int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc);
 #define NR_LDISCS	31
 #include <linux/llist.h>
 
-struct device;
-struct signal_struct;
 struct tty_operations;
 
 struct tty_struct {

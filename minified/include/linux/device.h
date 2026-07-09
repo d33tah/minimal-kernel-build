@@ -23,7 +23,6 @@
 #include <linux/device/driver.h>
 
 struct device_private;
-struct module;
 struct class;
 
 /* struct subsys_interface removed - never instantiated (no

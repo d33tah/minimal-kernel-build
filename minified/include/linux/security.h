@@ -9,10 +9,7 @@
 
 struct linux_binprm;
 struct cred;
-struct super_block;
-struct inode;
 struct dentry;
-struct file;
 struct path;
 struct mm_struct;
 struct user_namespace;

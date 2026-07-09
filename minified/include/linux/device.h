@@ -25,7 +25,6 @@
 struct device_private;
 struct module;
 struct class;
-struct subsys_private;
 
 /* struct subsys_interface removed - never instantiated (no
    subsys_interface_register on this build). */

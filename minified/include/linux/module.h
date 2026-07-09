@@ -20,7 +20,6 @@
 #include <asm/orc_types.h>
 
 struct module;
-struct exception_table_entry;
 
 
 

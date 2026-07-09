@@ -14,13 +14,6 @@ KCOV_INSTRUMENT_rbtree.o := n
 # them into calls to themselves.
 CFLAGS_string.o := -ffreestanding
 
-# Early boot use of cmdline, don't instrument it
-ifdef CONFIG_AMD_MEM_ENCRYPT
-KASAN_SANITIZE_string.o := n
-
-CFLAGS_string.o += -fno-stack-protector
-endif
-
 lib-y := ctype.o string.o vsprintf.o \
 	 rbtree.o radix-tree.o xarray.o \
 	 idr.o extable.o irq_regs.o \
@@ -45,9 +38,6 @@ obj-y += hexdump.o
 obj-y += kstrtox.o
 
 
-ifeq ($(CONFIG_DEBUG_KOBJECT),y)
-CFLAGS_kobject.o += -DDEBUG
-endif
 
 
 obj-y += math/ crypto/
@@ -103,8 +93,6 @@ $(obj)/default.bconf: $(CONFIG_BOOT_CONFIG_EMBED_FILE) FORCE
 
 
 
-ifneq ($(CONFIG_UBSAN_TRAP),y)
-endif
 
 
 

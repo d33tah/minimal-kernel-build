@@ -4,6 +4,4 @@
 obj-y			:= core.o \
 			   class.o \
 			   init.o map.o
-ifeq ($(CONFIG_SYSFS),y)
-endif
 

@@ -16,9 +16,6 @@
 
 struct pagevec;
 
-
-struct address_space;
-
 void workingset_update_node(struct xa_node *node);
 extern struct list_lru shadow_nodes;
 #define mapping_set_update(xas, mapping) do {				\

@@ -16,7 +16,6 @@ struct pid_namespace;
 struct super_block;
 struct user_namespace;
 struct vfsmount;
-struct path;
 
 enum fs_context_purpose {
 	FS_CONTEXT_FOR_MOUNT,		 

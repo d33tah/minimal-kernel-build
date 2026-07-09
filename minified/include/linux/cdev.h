@@ -8,7 +8,6 @@
 
 struct file_operations;
 struct inode;
-struct module;
 
 struct cdev {
 	struct kobject kobj;

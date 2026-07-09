@@ -9,8 +9,6 @@
 #include <linux/sched.h>
 #include <linux/sched/user.h>
 
-struct inode;
-
 struct group_info {
 	atomic_t	usage;
 	int		ngroups;

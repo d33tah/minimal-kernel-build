@@ -3,7 +3,6 @@
 #define _LINUX_CONSOLE_H_ 1
 
 #include <linux/atomic.h>
-#include <linux/types.h>
 
 struct vc_data;
 struct module;

@@ -6,7 +6,6 @@
 #include <linux/ioport.h>
 #include <linux/irqdomain.h>
 #include <linux/device.h>
-#include <linux/list.h>
 
 #include <linux/uuid.h>
 

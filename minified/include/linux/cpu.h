@@ -3,7 +3,6 @@
 
 #include <linux/compiler.h>
 #include <linux/cpumask.h>
-#include <linux/types.h>
 
 /* cpu_startup_entry() ignores its argument; only CPUHP_ONLINE is passed. */
 enum cpuhp_state {

@@ -7,7 +7,6 @@
 #include <linux/spinlock.h>
 #include <linux/rcupdate.h>
 #include <linux/nospec.h>
-#include <linux/types.h>
 #include <linux/init.h>
 #include <linux/fs.h>
 

@@ -749,14 +749,6 @@ else ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS += -Os
 endif
 
-ifdef CONFIG_READABLE_ASM
-# Disable optimizations that make assembler listings hard to read.
-# reorder blocks reorders the control in the function
-# ipa clone creates specialized cloned functions
-# partial inlining inlines only parts of functions
-KBUILD_CFLAGS += -fno-reorder-blocks -fno-ipa-cp-clone -fno-partial-inlining
-endif
-
 ifneq ($(CONFIG_FRAME_WARN),0)
 KBUILD_CFLAGS += -Wframe-larger-than=$(CONFIG_FRAME_WARN)
 endif
@@ -798,44 +790,9 @@ KBUILD_CFLAGS	+= -fomit-frame-pointer
 endif
 endif
 
-# Initialize all stack variables with a 0xAA pattern.
-ifdef CONFIG_INIT_STACK_ALL_PATTERN
-KBUILD_CFLAGS	+= -ftrivial-auto-var-init=pattern
-endif
-
-# Initialize all stack variables with a zero value.
-ifdef CONFIG_INIT_STACK_ALL_ZERO
-KBUILD_CFLAGS	+= -ftrivial-auto-var-init=zero
-ifdef CONFIG_CC_IS_CLANG
-# https://bugs.llvm.org/show_bug.cgi?id=45497
-KBUILD_CFLAGS	+= -enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang
-endif
-endif
-
 # While VLAs have been removed, GCC produces unreachable stack probes
 # for the randomize_kstack_offset feature. Disable it for all compilers.
 KBUILD_CFLAGS	+= $(call cc-option, -fno-stack-clash-protection)
-
-# Clear used registers at func exit (to reduce data lifetime and ROP gadgets).
-ifdef CONFIG_ZERO_CALL_USED_REGS
-KBUILD_CFLAGS	+= -fzero-call-used-regs=used-gpr
-endif
-
-# We trigger additional mismatches with less inlining
-ifdef CONFIG_DEBUG_SECTION_MISMATCH
-KBUILD_CFLAGS += -fno-inline-functions-called-once
-endif
-
-ifdef CONFIG_LD_DEAD_CODE_DATA_ELIMINATION
-KBUILD_CFLAGS_KERNEL += -ffunction-sections -fdata-sections
-LDFLAGS_vmlinux += --gc-sections
-endif
-
-ifdef CONFIG_SHADOW_CALL_STACK
-CC_FLAGS_SCS	:= -fsanitize=shadow-call-stack
-KBUILD_CFLAGS	+= $(CC_FLAGS_SCS)
-export CC_FLAGS_SCS
-endif
 
 ifdef CONFIG_LTO_CLANG
 ifdef CONFIG_LTO_CLANG_THIN
@@ -862,27 +819,6 @@ ifdef CONFIG_LTO
 KBUILD_CFLAGS	+= -fno-lto $(CC_FLAGS_LTO)
 KBUILD_AFLAGS	+= -fno-lto
 export CC_FLAGS_LTO
-endif
-
-ifdef CONFIG_CFI_CLANG
-CC_FLAGS_CFI	:= -fsanitize=cfi \
-		   -fsanitize-cfi-cross-dso \
-		   -fno-sanitize-cfi-canonical-jump-tables \
-		   -fno-sanitize-trap=cfi \
-		   -fno-sanitize-blacklist
-
-ifdef CONFIG_CFI_PERMISSIVE
-CC_FLAGS_CFI	+= -fsanitize-recover=cfi
-endif
-
-# If LTO flags are filtered out, we must also filter out CFI.
-CC_FLAGS_LTO	+= $(CC_FLAGS_CFI)
-KBUILD_CFLAGS	+= $(CC_FLAGS_CFI)
-export CC_FLAGS_CFI
-endif
-
-ifdef CONFIG_DEBUG_FORCE_FUNCTION_ALIGN_64B
-KBUILD_CFLAGS += -falign-functions=64
 endif
 
 # arch Makefile may override CC so keep this after arch Makefile is included

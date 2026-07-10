@@ -23,10 +23,7 @@ typedef struct kernel_cap_struct {
 } kernel_cap_t;
 
 
-struct file;
 struct inode;
-struct dentry;
-struct task_struct;
 struct user_namespace;
 
 #define CAP_FOR_EACH_U32(__capi)  \

@@ -9,7 +9,6 @@ struct dentry;
 struct user_namespace;
 struct file_system_type;
 struct fs_context;
-struct file;
 struct path;
 
 /*

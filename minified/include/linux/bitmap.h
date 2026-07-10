@@ -116,9 +116,6 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 #include <linux/string.h>
 #include <linux/types.h>
 
-struct device;
-
-
 
 
 void __bitmap_set(unsigned long *map, unsigned int start, int len);

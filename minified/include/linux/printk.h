@@ -74,8 +74,6 @@ static inline void dump_stack(void)
 #define pr_fmt(fmt) fmt
 #endif
 
-struct module;
-
 #define __printk_index_emit(...) do {} while (0)
 
 #define printk_index_wrap(_p_func, _fmt, ...)				\

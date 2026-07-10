@@ -11,14 +11,6 @@ struct file;
 
 extern void fput(struct file *);
 
-struct file_operations;
-struct task_struct;
-struct vfsmount;
-struct dentry;
-struct inode;
-struct path;
-
-
 struct fd {
 	struct file *file;
 	unsigned int flags;

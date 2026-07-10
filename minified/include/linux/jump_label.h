@@ -22,9 +22,6 @@ struct static_key {
 
 #ifndef __ASSEMBLY__
 
-struct module;
-
-
 #include <linux/atomic.h>
 #include <linux/bug.h>
 

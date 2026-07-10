@@ -34,8 +34,6 @@ struct pid
 
 extern struct pid init_struct_pid;
 
-struct file;
-
 static inline struct pid *get_pid(struct pid *pid)
 {
 	if (pid)

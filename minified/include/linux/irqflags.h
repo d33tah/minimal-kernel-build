@@ -5,8 +5,6 @@
 #include <asm/irqflags.h>
 #include <asm/percpu.h>
 
-struct task_struct;
-
   /* lockdep_softirqs_on/off + lockdep_hardirqs_on/off/_prepare removed - unused (empty no-op stubs) */
 
 # define trace_hardirqs_off()			do { } while (0)

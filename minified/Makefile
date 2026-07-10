@@ -1091,16 +1091,6 @@ PHONY += archheaders archscripts
 # ---------------------------------------------------------------------------
 # Tools
 
-ifdef CONFIG_OBJTOOL
-prepare: tools/objtool
-endif
-
-ifdef CONFIG_BPF
-ifdef CONFIG_DEBUG_INFO_BTF
-prepare: tools/bpf/resolve_btfids
-endif
-endif
-
 PHONY += resolve_btfids_clean
 
 resolve_btfids_O = $(abspath $(objtree))/tools/bpf/resolve_btfids

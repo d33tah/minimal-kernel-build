@@ -29,9 +29,6 @@
 #include <linux/linkage.h>
 #include <asm/page_types.h>
 #include <asm/errno.h>
-#include <asm/asm-offsets.h>
-#include <asm/thread_info.h>
-#include <asm/asm.h>
 #include <asm/smap.h>
 #include <asm/export.h>
 

@@ -18,7 +18,6 @@
 
 #include <asm/segment.h>
 #include <asm/boot.h>
-#include <asm/page_types.h>
 #include <asm/setup.h>
 #include <asm/bootparam.h>
 #include "boot.h"

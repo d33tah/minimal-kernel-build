@@ -29,23 +29,11 @@
  *	40(%esp) - %oldss
  */
 
-#include <linux/linkage.h>
 #include <linux/err.h>
-#include <asm/thread_info.h>
-#include <asm/irqflags.h>
-#include <asm/errno.h>
 #include <asm/segment.h>
-#include <asm/smp.h>
-#include <asm/percpu.h>
-#include <asm/processor-flags.h>
 #include <asm/irq_vectors.h>
-#include <asm/cpufeatures.h>
-#include <asm/alternative.h>
-#include <asm/asm.h>
 #include <asm/smap.h>
 #include <asm/frame.h>
-#include <asm/trapnr.h>
-#include <asm/nospec-branch.h>
 
 #include "calling.h"
 

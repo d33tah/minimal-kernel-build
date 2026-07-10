@@ -6,10 +6,8 @@
  */
 
 #include <linux/linkage.h>
-#include <asm/page_types.h>
 #include <asm/segment.h>
 
-#include "realmode.h"
 	
 	.section ".header", "a"
 

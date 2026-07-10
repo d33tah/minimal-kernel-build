@@ -25,10 +25,6 @@ struct irq_desc {
 
 
 
-static inline struct irq_desc *irq_data_to_desc(struct irq_data *data)
-{
-	return container_of(data->common, struct irq_desc, irq_common_data);
-}
 
 static inline unsigned int irq_desc_get_irq(struct irq_desc *desc)
 {

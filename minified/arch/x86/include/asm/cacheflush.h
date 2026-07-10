@@ -10,10 +10,6 @@ struct page;
 
 /* flush_cache_all removed - unused */
 
-#ifndef flush_cache_range
-static inline void flush_cache_range(struct vm_area_struct *vma,
-				     unsigned long start, unsigned long end) { }
-#endif
 
 /* flush_cache_page removed - no-op on x86, all callers dropped */
 

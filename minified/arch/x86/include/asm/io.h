@@ -17,11 +17,6 @@
 
  
 
-static inline phys_addr_t virt_to_phys(volatile void *address)
-{
-	return __pa(address);
-}
-#define virt_to_phys virt_to_phys
 
  
 

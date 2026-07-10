@@ -108,10 +108,5 @@ static inline void copy_user_highpage(struct page *to, struct page *from,
 
 #endif
 
-static inline void folio_zero_range(struct folio *folio,
-		size_t start, size_t length)
-{
-	zero_user_segments(&folio->page, start, start + length, 0, 0);
-}
 
 #endif  

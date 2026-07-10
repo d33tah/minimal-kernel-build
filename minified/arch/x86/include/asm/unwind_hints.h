@@ -51,8 +51,6 @@
 
 #else
 
-#define UNWIND_HINT_FUNC \
-	UNWIND_HINT(ORC_REG_SP, 8, UNWIND_HINT_TYPE_FUNC, 0)
 
 #endif  
 

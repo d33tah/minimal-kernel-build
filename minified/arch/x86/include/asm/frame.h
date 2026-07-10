@@ -16,6 +16,5 @@
 
 #define FRAME_BEGIN
 #define FRAME_END
-#define FRAME_OFFSET 0
 
 #endif

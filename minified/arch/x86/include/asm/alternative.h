@@ -16,11 +16,6 @@
 #define LOCK_PREFIX ""
 
  
-#define ANNOTATE_IGNORE_ALTERNATIVE				\
-	"999:\n\t"						\
-	".pushsection .discard.ignore_alts\n\t"			\
-	".long 999b - .\n\t"					\
-	".popsection\n\t"
 
 
 extern int alternatives_patched;

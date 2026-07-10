@@ -10,17 +10,10 @@ unsigned int cached_irq_mask = 0xffff;
 
 static void disable_8259A_irq(struct irq_data *data)
 {
-	unsigned int irq = data->irq;
-	unsigned int mask = 1 << irq;
-	unsigned long flags;
-
-	raw_spin_lock_irqsave(&i8259A_lock, flags);
-	cached_irq_mask |= mask;
-	if (irq & 8)
-		outb(cached_slave_mask, PIC_SLAVE_IMR);
-	else
-		outb(cached_master_mask, PIC_MASTER_IMR);
-	raw_spin_unlock_irqrestore(&i8259A_lock, flags);
+	/* Anchor-stub: i8259A_chip .irq_mask/.irq_disable/.irq_mask_ack
+	 * callback. On this boot-once artifact no legacy 8259 IRQ is ever
+	 * masked through the generic layer (HIT=False in the icount trace),
+	 * so the PIC IMR write is dead. Symbol kept for the three fn-ptrs. */
 }
 
 static void enable_8259A_irq(struct irq_data *data)

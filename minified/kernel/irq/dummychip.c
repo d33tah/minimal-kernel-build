@@ -4,10 +4,10 @@
 
 static void ack_bad(struct irq_data *data)
 {
-	struct irq_desc *desc = irq_data_to_desc(data);
-
-	print_irq_desc(data->irq, desc);
-	ack_bad_irq(data->irq);
+	/* Anchor-stub: no_irq_chip .irq_ack. A "bad" (unconnected) IRQ is
+	 * never acked on this boot-once artifact (HIT=False), so the
+	 * diagnostic print + ack_bad_irq are dead. Symbol kept for the
+	 * no_irq_chip.irq_ack fn-ptr. */
 }
 
 static void noop(struct irq_data *data) { }

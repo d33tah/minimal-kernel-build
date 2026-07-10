@@ -9,7 +9,8 @@
 
 static irqreturn_t bad_chained_irq(int irq, void *dev_id)
 {
-	WARN_ONCE(1, "Chained irq %d should not call an action\n", irq);
+	/* Anchor-stub: chained_action.handler; a chained irq never calls an
+	 * action, and on this boot-once artifact it never fires (HIT=False). */
 	return IRQ_NONE;
 }
 

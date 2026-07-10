@@ -684,9 +684,6 @@ endif # KBUILD_EXTMOD
 all: vmlinux
 
 CFLAGS_GCOV	:= -fprofile-arcs -ftest-coverage
-ifdef CONFIG_CC_IS_GCC
-CFLAGS_GCOV	+= -fno-tree-loop-im
-endif
 export CFLAGS_GCOV
 
 # The arch Makefiles can override CC_FLAGS_FTRACE. We may also append it later.
@@ -755,14 +752,6 @@ else ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE_O3
 KBUILD_CFLAGS += -O3
 else ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS += -Os
-endif
-
-# Tell gcc to never replace conditional load with a non-conditional one
-ifdef CONFIG_CC_IS_GCC
-# gcc-10 renamed --param=allow-store-data-races=0 to
-# -fno-allow-store-data-races.
-KBUILD_CFLAGS	+= $(call cc-option,--param=allow-store-data-races=0)
-KBUILD_CFLAGS	+= $(call cc-option,-fno-allow-store-data-races)
 endif
 
 ifdef CONFIG_READABLE_ASM
@@ -958,36 +947,11 @@ KBUILD_CFLAGS += $(call cc-disable-warning, stringop-overflow)
 # Another good warning that we'll want to enable eventually
 KBUILD_CFLAGS += $(call cc-disable-warning, restrict)
 
-# Enabled with W=2, disabled by default as noisy
-ifdef CONFIG_CC_IS_GCC
-KBUILD_CFLAGS += -Wno-maybe-uninitialized
-endif
-
-ifdef CONFIG_CC_IS_GCC
-# The allocators already balk at large sizes, so silence the compiler
-# warnings for bounds checks involving those possible values. While
-# -Wno-alloc-size-larger-than would normally be used here, earlier versions
-# of gcc (<9.1) weirdly don't handle the option correctly when _other_
-# warnings are produced (?!). Using -Walloc-size-larger-than=SIZE_MAX
-# doesn't work (as it is documented to), silently resolving to "0" prior to
-# version 9.1 (and producing an error more recently). Numeric values larger
-# than PTRDIFF_MAX also don't work prior to version 9.1, which are silently
-# ignored, continuing to default to PTRDIFF_MAX. So, left with no other
-# choice, we must perform a versioned check to disable this warning.
-# https://lore.kernel.org/lkml/20210824115859.187f272f@canb.auug.org.au
-KBUILD_CFLAGS += $(call cc-ifversion, -ge, 0901, -Wno-alloc-size-larger-than)
-endif
-
 # disable invalid "can't wrap" optimizations for signed / pointers
 KBUILD_CFLAGS	+= -fno-strict-overflow
 
 # Make sure -fstack-check isn't enabled (like gentoo apparently did)
 KBUILD_CFLAGS  += -fno-stack-check
-
-# conserve stack if available
-ifdef CONFIG_CC_IS_GCC
-KBUILD_CFLAGS   += -fconserve-stack
-endif
 
 # Prohibit date/time macros, which would make the build non-deterministic
 KBUILD_CFLAGS   += -Werror=date-time

@@ -1,5 +1,4 @@
 #include <linux/kernel.h>
-#include <linux/init.h>
 #include <linux/mm.h>
 #include <asm/fixmap.h>
 #include <asm/early_ioremap.h>

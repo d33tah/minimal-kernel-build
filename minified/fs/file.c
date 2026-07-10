@@ -1,6 +1,5 @@
 
 #include <linux/fs.h>
-#include <linux/kernel.h>
 #include <linux/sched/signal.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>

@@ -11,12 +11,6 @@ static inline unsigned long lcm(unsigned long a, unsigned long b)
 		return (a / gcd(a, b)) * b;
 	return 0;
 }
-#include <linux/list.h>
-#include <linux/log2.h>
-#include <linux/mutex.h>
-#include <linux/percpu.h>
-#include <linux/slab.h>
-#include <linux/spinlock.h>
 #include <linux/vmalloc.h>
 #include <linux/sched/mm.h>
 

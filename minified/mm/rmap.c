@@ -1,8 +1,6 @@
 
 #include <linux/mm.h>
 #include <linux/pagemap.h>
-#include <linux/slab.h>
-#include <linux/init.h>
 #include <linux/rmap.h>
 
 

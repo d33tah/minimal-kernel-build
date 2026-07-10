@@ -1,7 +1,5 @@
 #include <linux/clockchips.h>
-#include <linux/init.h>
 #include <linux/io.h>
-#include <linux/spinlock.h>
 #include <linux/i8253.h>
 #include <linux/smp.h>
 

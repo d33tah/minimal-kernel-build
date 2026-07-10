@@ -3,11 +3,7 @@
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/mm.h>
-#include <linux/stat.h>
-#include <linux/fcntl.h>
-#include <linux/string.h>
 #include <linux/sched/mm.h>
-#include <linux/sched/coredump.h>
 #include <linux/sched/signal.h>
 #include <linux/highmem.h>
 #include <linux/personality.h>

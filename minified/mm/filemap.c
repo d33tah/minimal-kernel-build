@@ -5,7 +5,6 @@
 #include <linux/mm.h>
 #include <linux/swap.h>
 #include <linux/uio.h>
-#include <linux/hash.h>
 #include <linux/pagevec.h>
 #include "internal.h"
 

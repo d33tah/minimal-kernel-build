@@ -1,7 +1,4 @@
 #include <linux/mm.h>
-#include <linux/list_lru.h>
-#include <linux/slab.h>
-#include <linux/mutex.h>
 #include "slab.h"
 #include "internal.h"
 

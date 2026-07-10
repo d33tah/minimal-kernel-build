@@ -3,8 +3,6 @@
 #include <linux/sched/mm.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
-#include <linux/init.h>
-#include <linux/completion.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/mm.h>

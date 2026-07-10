@@ -1,6 +1,5 @@
 #include <linux/idr.h>
 #include <linux/slab.h>
-#include <linux/xarray.h>
 
 int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid,
 			unsigned long max, gfp_t gfp)

@@ -4,7 +4,6 @@
 #include <linux/swap.h>
 #include <linux/pagevec.h>
 #include <linux/mm_inline.h>
-#include <linux/local_lock.h>
 
 #include "internal.h"
 

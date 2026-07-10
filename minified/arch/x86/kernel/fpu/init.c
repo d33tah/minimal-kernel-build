@@ -2,7 +2,6 @@
 #include <asm/tlbflush.h>
 
 #include <linux/sched/task.h>
-#include <linux/init.h>
 
 #include "internal.h"
 #include "legacy.h"

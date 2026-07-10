@@ -1,8 +1,6 @@
 
 #include <linux/vmalloc.h>
 #include <linux/mm.h>
-#include <linux/slab.h>
-#include <linux/compiler.h>
 #include <linux/rbtree_augmented.h>
 
 #include "internal.h"

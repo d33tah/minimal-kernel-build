@@ -1,6 +1,5 @@
 
 #include <linux/mm.h>
-#include <linux/smp.h>
 
 #include <asm/tlbflush.h>
 #include <asm/mmu_context.h>

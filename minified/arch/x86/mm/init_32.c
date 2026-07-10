@@ -1,7 +1,6 @@
 
 #include <linux/kernel.h>
 #include <linux/mm.h>
-#include <linux/init.h>
 #include <linux/memblock.h>
 
 #include <asm/bios_ebda.h>

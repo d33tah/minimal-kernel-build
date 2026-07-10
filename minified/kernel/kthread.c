@@ -3,8 +3,6 @@
 #include <linux/sched/task.h>
 #include <linux/sched/signal.h>
 #include <linux/kthread.h>
-#include <linux/completion.h>
-#include <linux/slab.h>
 #include <linux/sched/isolation.h>
 
 

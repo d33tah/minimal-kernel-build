@@ -1,5 +1,4 @@
 #include <linux/mm.h>
-#include <linux/init.h>
 #include <asm/vdso.h>
 
 void __init init_vdso_image(const struct vdso_image *image)

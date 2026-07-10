@@ -1,7 +1,6 @@
 #include <linux/uio.h>
 #include <linux/highmem.h>
 
-#include <linux/instrumented.h>
 
 #define iterate_iovec(i, n, base, len, off, __p, STEP) {	\
 	size_t off = 0;						\

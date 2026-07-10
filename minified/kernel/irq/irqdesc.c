@@ -1,6 +1,5 @@
 #include <linux/irq.h>
 #include <linux/radix-tree.h>
-#include <linux/bitmap.h>
 
 #include "internals.h"
 

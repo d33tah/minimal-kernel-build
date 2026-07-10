@@ -5,7 +5,6 @@
 #include <linux/mm.h>
 #include <linux/mman.h>
 #include <linux/file.h>
-#include <linux/fs.h>
 #include <linux/personality.h>
 #include <linux/security.h>
 #include <linux/rmap.h>

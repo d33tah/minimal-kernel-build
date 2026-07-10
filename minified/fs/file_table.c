@@ -1,9 +1,7 @@
 
 #include <linux/slab.h>
 #include <linux/file.h>
-#include <linux/init.h>
 #include <linux/fs.h>
-#include <linux/rcupdate.h>
 #include <linux/cdev.h>
 #include <linux/task_work.h>
 

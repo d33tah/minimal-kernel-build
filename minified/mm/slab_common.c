@@ -1,8 +1,6 @@
 #include <linux/slab.h>
 
 #include <linux/mm.h>
-#include <linux/cache.h>
-#include <linux/compiler.h>
 #include <asm/cacheflush.h>
 
 

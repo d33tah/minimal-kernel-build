@@ -6,7 +6,6 @@
 #include <linux/file.h>
 #include <linux/fs_struct.h>
 
-#include <linux/hash.h>
 
 #include "internal.h"
 #include "mount.h"

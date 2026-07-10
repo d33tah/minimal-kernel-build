@@ -1,7 +1,6 @@
 
 #include <linux/tty.h>
 #include <linux/mm.h>
-#include <linux/slab.h>
 #include "tty.h"
 
 struct n_tty_data {

@@ -2,9 +2,7 @@
 #include <linux/kernel.h>
 #include <linux/sched.h>
 #include <linux/entry-common.h>
-#include <linux/mm.h>
 #include <linux/nospec.h>
-#include <linux/uaccess.h>
 
 
 #include <asm/cpufeature.h>

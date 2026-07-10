@@ -3,9 +3,7 @@
 
 #include <linux/kernel.h>
 #include <linux/tty.h>
-#include <linux/tty_driver.h>
 #include <linux/console.h>
-#include <linux/init.h>
 
 
 

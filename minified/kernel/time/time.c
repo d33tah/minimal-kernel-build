@@ -1,7 +1,6 @@
 
 #include <linux/kernel.h>
 #include <linux/timekeeper_internal.h>
-#include <linux/math64.h>
 
 
 /* gettimeofday + settimeofday removed - init does write(2)+exit only, never

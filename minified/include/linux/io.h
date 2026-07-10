@@ -9,8 +9,6 @@
 #include <asm/io.h>
 #include <asm/page.h>
 
-struct device;
-
 
 
 

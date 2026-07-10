@@ -56,8 +56,6 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
 }
 
-struct device;
-
 #ifndef local_softirq_pending
 
 #ifndef local_softirq_pending_ref

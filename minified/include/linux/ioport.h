@@ -19,9 +19,5 @@ struct resource {
 extern struct resource iomem_resource;
 
 
-
-struct device;
-
-
 #endif
 #endif	 

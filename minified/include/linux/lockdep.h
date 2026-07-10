@@ -4,8 +4,6 @@
 
 #include <linux/lockdep_types.h>
 
-struct task_struct;
-
 
 static inline void lockdep_off(void)
 {

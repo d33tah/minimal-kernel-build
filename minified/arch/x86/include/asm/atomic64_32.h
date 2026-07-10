@@ -174,13 +174,6 @@ static inline s64 arch_atomic64_dec_if_positive(atomic64_t *v)
 #undef alternative_atomic64
 #undef __alternative_atomic64
 
-static inline void arch_atomic64_and(s64 i, atomic64_t *v)
-{
-	s64 old, c = 0;
-
-	while ((old = arch_atomic64_cmpxchg(v, c, c & i)) != c)
-		c = old;
-}
 
 static inline s64 arch_atomic64_fetch_and(s64 i, atomic64_t *v)
 {

@@ -30,10 +30,6 @@
 #define user_siginfo_t siginfo_t
 #endif
 
-#ifndef elf_check_fdpic
-#define elf_check_fdpic(ex) false
-#endif
-
 static int load_elf_binary(struct linux_binprm *bprm);
 
 /*
@@ -371,8 +367,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	if (elf_ex->e_type != ET_EXEC && elf_ex->e_type != ET_DYN)
 		goto out;
 	if (!elf_check_arch(elf_ex))
-		goto out;
-	if (elf_check_fdpic(elf_ex))
 		goto out;
 	if (!bprm->file->f_op->mmap)
 		goto out;

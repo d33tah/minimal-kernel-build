@@ -1,6 +1,5 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-#include <linux/fs_context.h>
 #include <linux/fs_parser.h>
 #include <linux/user_namespace.h>
 #include "mount.h"

@@ -1,5 +1,4 @@
 #include <linux/clockchips.h>
-#include <linux/io.h>
 #include <linux/i8253.h>
 #include <linux/smp.h>
 

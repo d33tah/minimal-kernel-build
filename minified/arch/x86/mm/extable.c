@@ -2,7 +2,6 @@
 #include <linux/sched/debug.h>
 
 /* Inlined from bitfield.h */
-#include <linux/build_bug.h>
 
 #define __bf_shf(x) (__builtin_ffsll(x) - 1)
 

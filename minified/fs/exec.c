@@ -6,7 +6,6 @@
 #include <linux/sched/mm.h>
 #include <linux/sched/signal.h>
 #include <linux/highmem.h>
-#include <linux/personality.h>
 #include <linux/binfmts.h>
 #include <linux/ptrace.h>
 #include <linux/namei.h>

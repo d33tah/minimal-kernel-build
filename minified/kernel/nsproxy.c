@@ -1,6 +1,5 @@
 
 #include <linux/sched/task.h>
-#include <linux/nsproxy.h>
 #include <linux/utsname.h>
 #include <linux/pid_namespace.h>
 

@@ -1,7 +1,6 @@
 #include <linux/slab.h>
 
 #include <linux/mm.h>
-#include <asm/cacheflush.h>
 
 
 #include "internal.h"

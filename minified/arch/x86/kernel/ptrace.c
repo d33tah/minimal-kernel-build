@@ -1,8 +1,6 @@
 
 #include <linux/sched.h>
-#include <linux/signal.h>
 
-#include <asm/processor.h>
 #include <asm/traps.h>
 
 void send_sigtrap(struct pt_regs *regs, int error_code, int si_code)

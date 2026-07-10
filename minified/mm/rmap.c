@@ -1,7 +1,5 @@
 
 #include <linux/mm.h>
-#include <linux/pagemap.h>
-#include <linux/rmap.h>
 
 
 #include "internal.h"

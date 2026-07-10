@@ -3,17 +3,12 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/kdebug.h>
-#include <linux/kernel.h>
 #include <linux/ptrace.h>
 
 
-#include <asm/processor.h>
 #include <asm/debugreg.h>
 #include <asm/traps.h>
-#include <asm/cpu_entry_area.h>
-#include <asm/vdso.h>
 
-#include <asm/proto.h>
 
 DECLARE_BITMAP(system_vectors, NR_VECTORS);
 

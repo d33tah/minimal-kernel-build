@@ -1,7 +1,6 @@
 
 
 #include <linux/fs.h>
-#include <linux/mm.h>
 #include <linux/ramfs.h>
 
 #include "internal.h"

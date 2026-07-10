@@ -10,9 +10,7 @@
 
 /* Inlined from asm/doublefault.h */
 extern void doublefault_init_cpu_tss(void);
-#include <asm/processor.h>
 #include <asm/proto.h>
-#include <asm/fpu/api.h>
 #include <asm/hwcap2.h>
 #include <asm/cpu.h>
 

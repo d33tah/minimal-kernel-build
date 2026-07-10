@@ -5,7 +5,6 @@
 
 #include <asm/traps.h>
 #include <asm/mach_traps.h>
-#include <asm/x86_init.h>
 
 
 

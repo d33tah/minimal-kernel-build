@@ -3,8 +3,6 @@
 #include <linux/sched/task.h>
 
 #include <asm/e820/api.h>
-#include <asm/page.h>
-#include <asm/page_types.h>
 #include <asm/setup.h>
 #include <asm/tlbflush.h>
 #include <asm/text-patching.h>

@@ -1,5 +1,4 @@
 #include <linux/irq.h>
-#include <linux/delay.h>
 
 #include <asm/i8259.h>
 

@@ -1,7 +1,6 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/bitmap.h>
 #include <linux/cpumask.h>
 #include <linux/memblock.h>
 unsigned long gcd(unsigned long a, unsigned long b) __attribute_const__;

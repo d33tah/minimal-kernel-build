@@ -1,8 +1,6 @@
 
 #include <linux/stdarg.h>
-#include <linux/build_bug.h>
 
-#include <linux/types.h>
 #include <linux/string.h>
 #include <linux/ctype.h>
 #include <linux/kernel.h>
@@ -15,7 +13,6 @@
 
 #include "../mm/internal.h"	
 
-#include <asm/page.h>		
 
 #include "kstrtox.h"
 

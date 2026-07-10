@@ -1,6 +1,5 @@
 #include <linux/kernel.h>
 #include <linux/mm.h>
-#include <asm/fixmap.h>
 #include <asm/early_ioremap.h>
 
 static int after_paging_init __initdata;

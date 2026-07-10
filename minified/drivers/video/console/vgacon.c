@@ -1,12 +1,9 @@
 
 #include <linux/module.h>
 #include <linux/console.h>
-#include <linux/kd.h>
 #include <linux/vt_kern.h>
 #include <linux/selection.h>
-#include <linux/screen_info.h>
 #include <video/vga.h>
-#include <asm/io.h>
 
 static DEFINE_RAW_SPINLOCK(vga_lock);
 static int cursor_size_lastfrom;

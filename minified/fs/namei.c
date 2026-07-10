@@ -1,7 +1,6 @@
 
 #include <linux/kernel.h>
 #include <linux/slab.h>
-#include <linux/fs.h>
 #include <linux/namei.h>
 #include <linux/file.h>
 #include <linux/fs_struct.h>

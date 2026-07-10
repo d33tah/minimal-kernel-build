@@ -1,6 +1,5 @@
 #include <linux/kdebug.h>
 #include <linux/kprobes.h>
-#include <linux/notifier.h>
 
 int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 			       unsigned long val, void *v)

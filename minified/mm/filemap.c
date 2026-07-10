@@ -1,5 +1,4 @@
 
-#include <linux/compiler.h>
 #include <linux/fs.h>
 #include <linux/sched/signal.h>
 #include <linux/mm.h>

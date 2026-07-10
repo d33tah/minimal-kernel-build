@@ -1,5 +1,4 @@
 #include <linux/sched/task.h>
-#include <linux/path.h>
 #include <linux/fs_struct.h>
 
 void set_fs_root(struct fs_struct *fs, const struct path *path)

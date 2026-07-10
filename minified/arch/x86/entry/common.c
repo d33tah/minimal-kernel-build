@@ -1,12 +1,9 @@
 
 #include <linux/kernel.h>
-#include <linux/sched.h>
 #include <linux/entry-common.h>
 #include <linux/nospec.h>
 
 
-#include <asm/cpufeature.h>
-#include <asm/syscall.h>
 
 
 static __always_inline int syscall_32_enter(struct pt_regs *regs)

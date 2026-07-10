@@ -6,7 +6,6 @@ extern asmlinkage void __init start_kernel(void);
 #include <asm/desc.h>
 #include <asm/setup.h>
 #include <asm/sections.h>
-#include <asm/page.h>
 #include <asm/tlbflush.h>
 #include <asm/bootparam_utils.h>
 

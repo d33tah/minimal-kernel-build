@@ -1,6 +1,5 @@
 
 #include <linux/mm.h>
-#include <asm/pgtable.h>
 
 pgprot_t vm_get_page_prot(unsigned long vm_flags)
 {

@@ -4,7 +4,6 @@
 #include <asm/e820/api.h>
 #include <asm/time.h>
 #include <asm/irq.h>
-#include <asm/tsc.h>
 #include <asm/mach_traps.h>
 
 void x86_init_noop(void) { }

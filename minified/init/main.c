@@ -5,19 +5,14 @@
 #include <linux/extable.h>
 #include <linux/proc_fs.h>
 #include <linux/binfmts.h>
-#include <linux/kernel.h>
 #include <linux/syscalls.h>
 /* end stackprotector.h */
-#include <linux/string.h>
 #include <linux/delay.h>
-#include <linux/init.h>
 #include <linux/initrd.h>
 #include <linux/memblock.h>
 
 #include <linux/console.h>
-#include <linux/percpu.h>
 #include <linux/security.h>
-#include <linux/rcupdate.h>
 #include <linux/cpu.h>
 #include <linux/interrupt.h>
 #include <linux/rmap.h>
@@ -36,7 +31,6 @@ extern void sched_init_smp(void);
 #include <linux/sched/task_stack.h>
 
 /* --- 2025-12-08 00:40 --- integrity.h stubbed out */
-#include <linux/cache.h>
 #include <linux/init_syscalls.h>
 
 #include <asm/bugs.h>

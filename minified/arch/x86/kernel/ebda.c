@@ -1,4 +1,3 @@
-#include <linux/init.h>
 #include <linux/memblock.h>
 
 #include <asm/bios_ebda.h>

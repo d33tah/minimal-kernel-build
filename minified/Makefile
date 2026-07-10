@@ -686,11 +686,6 @@ all: vmlinux
 CFLAGS_GCOV	:= -fprofile-arcs -ftest-coverage
 export CFLAGS_GCOV
 
-# The arch Makefiles can override CC_FLAGS_FTRACE. We may also append it later.
-ifdef CONFIG_FUNCTION_TRACER
-  CC_FLAGS_FTRACE := -pg
-endif
-
 include $(srctree)/arch/$(SRCARCH)/Makefile
 
 ifdef need-config
@@ -824,37 +819,6 @@ KBUILD_CFLAGS	+= $(call cc-option, -fno-stack-clash-protection)
 # Clear used registers at func exit (to reduce data lifetime and ROP gadgets).
 ifdef CONFIG_ZERO_CALL_USED_REGS
 KBUILD_CFLAGS	+= -fzero-call-used-regs=used-gpr
-endif
-
-ifdef CONFIG_FUNCTION_TRACER
-ifdef CONFIG_FTRACE_MCOUNT_USE_CC
-  CC_FLAGS_FTRACE	+= -mrecord-mcount
-  ifdef CONFIG_HAVE_NOP_MCOUNT
-    ifeq ($(call cc-option-yn, -mnop-mcount),y)
-      CC_FLAGS_FTRACE	+= -mnop-mcount
-      CC_FLAGS_USING	+= -DCC_USING_NOP_MCOUNT
-    endif
-  endif
-endif
-ifdef CONFIG_FTRACE_MCOUNT_USE_OBJTOOL
-  CC_FLAGS_USING	+= -DCC_USING_NOP_MCOUNT
-endif
-ifdef CONFIG_FTRACE_MCOUNT_USE_RECORDMCOUNT
-  ifdef CONFIG_HAVE_C_RECORDMCOUNT
-    BUILD_C_RECORDMCOUNT := y
-    export BUILD_C_RECORDMCOUNT
-  endif
-endif
-ifdef CONFIG_HAVE_FENTRY
-  # s390-linux-gnu-gcc did not support -mfentry until gcc-9.
-  ifeq ($(call cc-option-yn, -mfentry),y)
-    CC_FLAGS_FTRACE	+= -mfentry
-    CC_FLAGS_USING	+= -DCC_USING_FENTRY
-  endif
-endif
-export CC_FLAGS_FTRACE
-KBUILD_CFLAGS	+= $(CC_FLAGS_FTRACE) $(CC_FLAGS_USING)
-KBUILD_AFLAGS	+= $(CC_FLAGS_USING)
 endif
 
 # We trigger additional mismatches with less inlining

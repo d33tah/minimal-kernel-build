@@ -475,7 +475,6 @@ LEX		= flex
 YACC		= bison
 AWK		= awk
 INSTALLKERNEL  := installkernel
-DEPMOD		= depmod
 PERL		= perl
 PYTHON3		= python3
 CHECK		= sparse
@@ -926,8 +925,6 @@ export INSTALL_DTBS_PATH ?= $(INSTALL_PATH)/dtbs/$(KERNELRELEASE)
 # makefile but the argument can be passed to make if needed.
 #
 
-MODLIB	= $(INSTALL_MOD_PATH)/lib/modules/$(KERNELRELEASE)
-export MODLIB
 
 PHONY += prepare0
 
@@ -1351,24 +1348,6 @@ endif # KBUILD_EXTMOD
 
 PHONY += modules modules_install
 
-ifdef CONFIG_MODULES
-
-modules: modules_check
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
-
-PHONY += modules_check
-modules_check: $(MODORDER)
-	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/modules-check.sh $<
-
-quiet_cmd_depmod = DEPMOD  $(MODLIB)
-      cmd_depmod = $(CONFIG_SHELL) $(srctree)/scripts/depmod.sh $(DEPMOD) \
-                   $(KERNELRELEASE)
-
-modules_install:
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modinst
-	$(call cmd,depmod)
-
-else # CONFIG_MODULES
 
 # Modules not configured
 # ---------------------------------------------------------------------------
@@ -1381,7 +1360,6 @@ modules modules_install:
 	@echo >&2 '***'
 	@exit 1
 
-endif # CONFIG_MODULES
 
 # Single targets
 # ---------------------------------------------------------------------------

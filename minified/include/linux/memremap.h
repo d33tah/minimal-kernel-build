@@ -4,6 +4,5 @@
 #include <linux/mm.h>
 #include <linux/ioport.h>
 
-struct vmem_altmap;
 
 #endif

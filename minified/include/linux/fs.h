@@ -35,13 +35,10 @@
 #define RWF_NOWAIT	0x00000008
 /* end uapi/linux/fs.h */
 
-struct iovec;
-struct kobject;
 struct vm_area_struct;
 struct cred;
 struct iov_iter;
 struct fs_context;
-struct fs_parameter_spec;
 
 extern void __init inode_init(void);
 extern void __init files_init(void);
@@ -345,7 +342,6 @@ typedef void *fl_owner_t;
 /* struct file_lock removed - file_operations.lock (its sole user) was never
  * assigned or dispatched in this build (no locking syscalls reach it) */
 
-struct files_struct;
 static inline struct inode *file_inode(const struct file *f)
 {
 	return f->f_inode;

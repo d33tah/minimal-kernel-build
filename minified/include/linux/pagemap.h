@@ -4,7 +4,6 @@
 #include <linux/mm.h>
 #include <linux/highmem.h>
 
-struct folio_batch;
 
 enum mapping_flags {
 	AS_UNEVICTABLE	= 3,

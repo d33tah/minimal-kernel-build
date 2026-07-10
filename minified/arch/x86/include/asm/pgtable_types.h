@@ -192,7 +192,6 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
 /* native_pud_val removed - unused (sole callers pud_pfn_mask/pud_flags removed below) */
 
 /* --- 2025-12-07 10:14 --- Inlined asm-generic/pgtable-nopmd.h content */
-struct mm_struct;
 
 #define __PAGETABLE_PMD_FOLDED 1
 

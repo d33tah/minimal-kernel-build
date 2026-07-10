@@ -8,7 +8,6 @@
 #include <linux/pagemap.h>
 #include <asm/page.h>
 
-struct pagevec;
 
 void workingset_update_node(struct xa_node *node);
 extern struct list_lru shadow_nodes;

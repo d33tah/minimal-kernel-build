@@ -5,8 +5,6 @@
 #include <asm/processor-flags.h>
 
  
-struct task_struct;
-struct mm_struct;
 
 #include <asm/segment.h>
 #include <asm/types.h>

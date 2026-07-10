@@ -36,7 +36,6 @@ struct fs_struct;
 struct nameidata;
 struct nsproxy;
 struct pid_namespace;
-struct rq;
 struct sched_param;
 struct sighand_struct;
 struct signal_struct;

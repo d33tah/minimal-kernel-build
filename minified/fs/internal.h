@@ -1,13 +1,8 @@
  
  
 
-struct super_block;
-struct file_system_type;
-struct linux_binprm;
 struct path;
-struct mount;
 struct fs_context;
-struct user_namespace;
 
 
 /* emergency_thaw_bdev removed - unused */

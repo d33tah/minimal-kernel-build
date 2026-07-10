@@ -36,8 +36,6 @@ struct pt_regs {
 
 #include <asm/proto.h>
 
-struct cpuinfo_x86;
-struct task_struct;
 
 extern void send_sigtrap(struct pt_regs *regs, int error_code, int si_code);
 

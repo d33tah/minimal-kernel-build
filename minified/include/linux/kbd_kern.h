@@ -4,6 +4,5 @@
 #include <linux/tty.h>
 #include <linux/interrupt.h>
 
-struct console;
 
 #endif

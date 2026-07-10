@@ -6,7 +6,6 @@
 #include <linux/device.h>
 
 struct file_operations;
-struct inode;
 
 struct cdev {
 	struct kobject kobj;

@@ -9,7 +9,6 @@
 #include <linux/rmap.h>
 #include <linux/tracepoint-defs.h>
 
-struct folio_batch;
 
  
 #define GFP_RECLAIM_MASK (__GFP_RECLAIM|__GFP_HIGH|__GFP_IO|__GFP_FS|\

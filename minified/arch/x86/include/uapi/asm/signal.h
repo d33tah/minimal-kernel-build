@@ -8,7 +8,6 @@
 #include <linux/compiler.h>
 
  
-struct siginfo;
 
 /* userspace-only NSIG + sigset_t (#ifndef __KERNEL__) removed - kernel uses _NSIG + own sigset_t */
 #endif  

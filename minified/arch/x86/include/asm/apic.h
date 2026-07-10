@@ -18,7 +18,6 @@
 /* Removed: lapic_shutdown, lapic_update_tsc_freq, check_x2apic */
 /* x2apic_enabled removed - unused */
 
-struct irq_data;
 
 /*
  * struct apic body removed: never instantiated, no field is ever

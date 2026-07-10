@@ -8,7 +8,6 @@
 
 struct page;
 struct folio;
-struct address_space;
 
 struct pagevec {
 	unsigned char nr;

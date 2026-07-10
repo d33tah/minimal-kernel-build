@@ -3,9 +3,6 @@
 
 #include <linux/ns_common.h>
 
-struct pid_namespace;
-struct path;
-struct inode;
 
 enum {
 	PROC_UTS_INIT_INO	= 0xEFFFFFFEU,

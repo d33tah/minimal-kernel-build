@@ -8,7 +8,6 @@
 #include <linux/uidgid.h>
 
 
-struct nsproxy;
 
 
 static inline void do_sysctl_args(void)

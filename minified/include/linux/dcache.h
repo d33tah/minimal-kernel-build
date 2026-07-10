@@ -17,8 +17,6 @@
 
 #include <linux/wait.h>
 
-struct path;
-struct vfsmount;
 
 
 #define IS_ROOT(x) ((x) == (x)->d_parent)

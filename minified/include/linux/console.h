@@ -6,7 +6,6 @@
 
 struct vc_data;
 struct module;
-struct tty_struct;
 
 enum con_scroll {
 	SM_UP,

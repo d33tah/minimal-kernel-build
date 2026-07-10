@@ -38,7 +38,6 @@
 #define lower_32_bits(n) ((u32)((n) & 0xffffffff))
 
 
-struct completion;
 
 
 # define might_resched() do { } while (0)

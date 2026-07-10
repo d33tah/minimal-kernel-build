@@ -4,8 +4,6 @@
 #include <linux/bug.h>
 
 struct page;
-struct vm_area_struct;
-struct mm_struct;
 
 #define VM_BUG_ON(cond) BUILD_BUG_ON_INVALID(cond)
 #define VM_BUG_ON_PAGE(cond, page) VM_BUG_ON(cond)

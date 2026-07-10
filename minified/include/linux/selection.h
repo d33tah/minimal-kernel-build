@@ -33,8 +33,6 @@ static inline void scr_memmovew(u16 *d, const u16 *s, unsigned int count)
 }
 #endif
 
-struct tty_struct;
-struct vc_data;
 
 /* set_selection_user, set_selection_kernel, paste_selection, sel_loadlut,
  * mouse_reporting, mouse_report, clear_selection, vc_is_sel removed - never called */

@@ -8,9 +8,6 @@
 #include <linux/uio.h>
 
 
-struct file;
-struct pid;
-struct cred;
 
 #include <linux/fs.h>
 #include <linux/uaccess.h>

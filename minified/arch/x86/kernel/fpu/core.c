@@ -36,15 +36,15 @@ void save_fpregs_to_fpstate(struct fpu *fpu)
 	frstor(&fpu->fpstate->regs.fsave);
 }
 
-void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask)
+void restore_fpregs_from_fpstate(struct fpstate *fpstate)
 {
 	/*
 	 * The FXSAVE_LEAK workaround (fnclex/emms/fildl) was gated on
 	 * static_cpu_has_bug(X86_BUG_FXSAVE_LEAK). That bug bit (an old K7 erratum)
 	 * is never set anywhere in this tree, so the block was dead.
+	 * use_xsave() is always false here (no XSAVE), so the os_xrstor() arm and
+	 * its restore mask are dead; only the legacy fxrstor/frstor path runs.
 	 */
-	/* use_xsave() is always false here (no XSAVE), so the os_xrstor() arm
-	 * is dead and @mask is unused; only the legacy fxrstor/frstor path runs. */
 	if (use_fxsr())
 		fxrstor(&fpstate->regs.fxsave);
 	else
@@ -53,7 +53,7 @@ void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask)
 
 void fpu_reset_from_exception_fixup(void)
 {
-	restore_fpregs_from_fpstate(&init_fpstate, XFEATURE_MASK_FPSTATE);
+	restore_fpregs_from_fpstate(&init_fpstate);
 }
 
 static inline unsigned int init_fpstate_copy_size(void)

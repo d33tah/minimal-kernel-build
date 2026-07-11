@@ -33,7 +33,7 @@ static inline void fpregs_restore_userregs(void)
 
 	if (!fpregs_state_valid(fpu, cpu)) {
 		 
-		restore_fpregs_from_fpstate(fpu->fpstate, XFEATURE_MASK_FPSTATE);
+		restore_fpregs_from_fpstate(fpu->fpstate);
 
 		fpregs_activate(fpu);
 		fpu->last_cpu = cpu;

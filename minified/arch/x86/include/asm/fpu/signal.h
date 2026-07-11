@@ -8,5 +8,5 @@
 
 #include <asm/fpu/types.h>
 
-extern void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask);
+extern void restore_fpregs_from_fpstate(struct fpstate *fpstate);
 #endif  

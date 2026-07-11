@@ -82,36 +82,12 @@ struct swregs_state {
 	u32			entry_eip;
 };
 
- 
-enum xfeature {
-	XFEATURE_FP,
-	XFEATURE_SSE,
-	 
-	XFEATURE_YMM,
-	XFEATURE_BNDREGS,
-	XFEATURE_BNDCSR,
-	XFEATURE_OPMASK,
-	XFEATURE_ZMM_Hi256,
-	XFEATURE_Hi16_ZMM,
-	XFEATURE_PT_UNIMPLEMENTED_SO_FAR,
-	XFEATURE_PKRU,
-	XFEATURE_PASID,
-};
-
-#define XFEATURE_MASK_FP		(1 << XFEATURE_FP)
-#define XFEATURE_MASK_SSE		(1 << XFEATURE_SSE)
-#define XFEATURE_MASK_YMM		(1 << XFEATURE_YMM)
-#define XFEATURE_MASK_BNDREGS		(1 << XFEATURE_BNDREGS)
-#define XFEATURE_MASK_BNDCSR		(1 << XFEATURE_BNDCSR)
-#define XFEATURE_MASK_OPMASK		(1 << XFEATURE_OPMASK)
-#define XFEATURE_MASK_ZMM_Hi256		(1 << XFEATURE_ZMM_Hi256)
-#define XFEATURE_MASK_Hi16_ZMM		(1 << XFEATURE_Hi16_ZMM)
-#define XFEATURE_MASK_PKRU		(1 << XFEATURE_PKRU)
-#define XFEATURE_MASK_PASID		(1 << XFEATURE_PASID)
-/* XFEATURE_MASK_PT/_LBR/_FPSSE removed - 0-ref tree-wide */
-
-# define XFEATURE_MASK_XTILE		(0)
-
+/*
+ * enum xfeature and the XFEATURE_MASK_* per-component masks removed: their
+ * only consumers were the composite masks in asm/fpu/xstate.h, themselves
+ * removed once restore_fpregs_from_fpstate() stopped taking a restore mask
+ * (no XSAVE on this build). The hardware xstate structs below are kept.
+ */
 
 struct xstate_header {
 	u64				xfeatures;

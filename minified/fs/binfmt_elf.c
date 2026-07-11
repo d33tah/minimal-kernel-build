@@ -387,7 +387,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 				executable_stack = EXSTACK_ENABLE_X;
 			else
 				executable_stack = EXSTACK_DISABLE_X;
-			break;
 		}
 
 	retval = begin_new_exec(bprm);

@@ -512,7 +512,6 @@ static struct tty_driver *tty_lookup_driver(dev_t device, struct file *filp,
 		driver = get_tty_driver(device, index);
 		if (!driver)
 			return ERR_PTR(-ENODEV);
-		break;
 	}
 	return driver;
 }

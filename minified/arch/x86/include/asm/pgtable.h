@@ -24,7 +24,6 @@
 
 
 
-#define debug_checkwx()		do { } while (0)
 
  
 extern unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)]

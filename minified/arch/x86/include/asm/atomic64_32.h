@@ -221,6 +221,4 @@ static inline s64 arch_atomic64_fetch_add(s64 i, atomic64_t *v)
 }
 #define arch_atomic64_fetch_add arch_atomic64_fetch_add
 
-#define arch_atomic64_fetch_sub(i, v)	arch_atomic64_fetch_add(-(i), (v))
-
 #endif  

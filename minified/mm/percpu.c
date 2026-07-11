@@ -84,8 +84,6 @@ static DEFINE_MUTEX(pcpu_alloc_mutex);
 
 struct list_head *pcpu_chunk_lists __ro_after_init;
 
-static unsigned long pcpu_nr_populated;
-
 static int __pcpu_size_to_slot(int size)
 {
 	int highbit = fls(size);	
@@ -926,7 +924,6 @@ static void pcpu_chunk_populated(struct pcpu_chunk *chunk, int page_start,
 
 	bitmap_set(chunk->populated, page_start, nr);
 	chunk->nr_populated += nr;
-	pcpu_nr_populated += nr;
 
 	pcpu_update_empty_pages(chunk, nr);
 }
@@ -1240,9 +1237,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 
 	pcpu_first_chunk = chunk;
 	pcpu_chunk_relocate(pcpu_first_chunk, -1);
-
-	
-	pcpu_nr_populated += PFN_DOWN(size_sum);
 }
 
 void __init setup_per_cpu_areas(void)

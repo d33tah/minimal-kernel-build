@@ -35,8 +35,6 @@ extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffi
 
 #define MAX_JIFFY_OFFSET ((LONG_MAX >> 1)-1)
 
-extern unsigned long preset_lpj;
-
 /*
  * HZ is fixed to CONFIG_HZ==250 in this build (Kconfig "default HZ_250";
  * include/generated/autoconf.h "#define CONFIG_HZ 250"; HZ==CONFIG_HZ via

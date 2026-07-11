@@ -82,9 +82,6 @@ static u64 __init get_ramdisk_size(void)
 
 	ramdisk_size |= (u64)boot_params.ext_ramdisk_size << 32;
 
-	if (ramdisk_size == 0)
-		ramdisk_size = phys_initrd_size;
-
 	return ramdisk_size;
 }
 

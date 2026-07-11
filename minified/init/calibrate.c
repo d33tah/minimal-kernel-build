@@ -1,8 +1,6 @@
 /* Delay loop calibration */
 #include <linux/delay.h>
 
-unsigned long preset_lpj;
-
 
 static DEFINE_PER_CPU(unsigned long, cpu_loops_per_jiffy) = { 0 };
 
@@ -20,8 +18,6 @@ void calibrate_delay(void)
 
 	if (per_cpu(cpu_loops_per_jiffy, this_cpu)) {
 		lpj = per_cpu(cpu_loops_per_jiffy, this_cpu);
-	} else if (preset_lpj) {
-		lpj = preset_lpj;
 	}
 
 	per_cpu(cpu_loops_per_jiffy, this_cpu) = lpj;

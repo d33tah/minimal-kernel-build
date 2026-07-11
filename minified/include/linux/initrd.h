@@ -7,7 +7,6 @@ extern unsigned long initrd_start, initrd_end;
 extern void wait_for_initramfs(void);
 
 extern phys_addr_t phys_initrd_start;
-extern unsigned long phys_initrd_size;
 
 extern char __initramfs_start[];
 extern unsigned long __initramfs_size;

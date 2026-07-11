@@ -12,6 +12,4 @@
 /* set_direct_map_*_noflush removed - never called */
 /* kernel_page_present removed - never called */
 
-extern int kernel_set_to_readonly;
-
 #endif  

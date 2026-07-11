@@ -88,8 +88,6 @@ int ptep_set_access_flags(struct vm_area_struct *vma,
 
 
 
-int fixmaps_set;
-
 void native_set_fixmap(unsigned   idx,
 		       phys_addr_t phys, pgprot_t flags)
 {
@@ -101,6 +99,5 @@ void native_set_fixmap(unsigned   idx,
 		BUG();
 	}
 	set_pte_vaddr(address, pfn_pte(phys >> PAGE_SHIFT, flags));
-	fixmaps_set++;
 }
 

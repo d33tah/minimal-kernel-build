@@ -9,8 +9,6 @@
 
 #include "mm_internal.h"
 
-bool __read_mostly __vmalloc_start_set = false;
-
 static pmd_t * __init one_md_table_init(pgd_t *pgd)
 {
 	return pmd_offset(pud_offset(p4d_offset(pgd, 0), 0), 0);
@@ -248,7 +246,6 @@ void __init initmem_init(void)
 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE - 1) + 1;
 
 	max_mapnr = max_low_pfn;
-	__vmalloc_start_set = true;
 }
 
 static void __init test_wp_bit(void)
@@ -287,8 +284,6 @@ void __init mem_init(void)
 	test_wp_bit();
 }
 
-int kernel_set_to_readonly __read_mostly;
-
 static void mark_nxdata_nx(void)
 {
 }
@@ -300,8 +295,6 @@ void mark_rodata_ro(void)
 
 	pr_info("Write protecting kernel text and read-only data: %luk\n",
 		size >> 10);
-
-	kernel_set_to_readonly = 1;
 
 	mark_nxdata_nx();
 }

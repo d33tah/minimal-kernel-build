@@ -4,8 +4,6 @@
 
 #include <asm/fpu/types.h>
 
-extern unsigned int mxcsr_feature_mask;
-
 #define kernel_insn(insn, output, input...)				\
 	asm volatile("1:" #insn "\n\t"					\
 		     "2:\n"						\

@@ -47,33 +47,12 @@ static void fpu__init_system_early_generic(struct cpuinfo_x86 *c)
 	}
 }
 
-unsigned int mxcsr_feature_mask __ro_after_init = 0xffffffffu;
-
-static void __init fpu__init_system_mxcsr(void)
-{
-	unsigned int mask = 0;
-
-	if (boot_cpu_has(X86_FEATURE_FXSR)) {
-		 
-		static struct fxregs_state fxregs __initdata;
-
-		asm volatile("fxsave %0" : "+m" (fxregs));
-
-		mask = fxregs.mxcsr_mask;
-
-		 
-		if (mask == 0)
-			mask = 0x0000ffbf;
-	}
-	mxcsr_feature_mask &= mask;
-}
-
 static void __init fpu__init_system_generic(void)
 {
-	 
+	/* fpu__init_system_mxcsr() removed: it only computed mxcsr_feature_mask,
+	 * a global that is never read anywhere in this tree (the MXCSR-validation
+	 * signal-restore paths were removed in minification). Pure dead write. */
 	fpstate_init_user(&init_fpstate);
-
-	fpu__init_system_mxcsr();
 }
 
 #define TYPE_ALIGN(TYPE) offsetof(struct { char x; TYPE test; }, test)

@@ -309,11 +309,6 @@ void __init setup_arch(char **cmdline_p)
 	*cmdline_p = command_line;
 
 
-	if (boot_cpu_has(X86_FEATURE_NX))
-		__supported_pte_mask |= _PAGE_NX;
-	else
-		__supported_pte_mask &= ~_PAGE_NX;
-
 	parse_early_param();
 
 	x86_report_nx();

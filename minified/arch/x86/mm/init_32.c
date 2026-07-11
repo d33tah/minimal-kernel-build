@@ -291,13 +291,6 @@ int kernel_set_to_readonly __read_mostly;
 
 static void mark_nxdata_nx(void)
 {
-	 
-	unsigned long start = PFN_ALIGN(_etext);
-	 
-	unsigned long size = (((unsigned long)__init_end + HPAGE_SIZE) & HPAGE_MASK) - start;
-
-	if (__supported_pte_mask & _PAGE_NX)
-		printk(KERN_INFO "NX-protecting the kernel data: %luk\n", size >> 10);
 }
 
 void mark_rodata_ro(void)
@@ -311,6 +304,4 @@ void mark_rodata_ro(void)
 	kernel_set_to_readonly = 1;
 
 	mark_nxdata_nx();
-	if (__supported_pte_mask & _PAGE_NX)
-		debug_checkwx();
 }

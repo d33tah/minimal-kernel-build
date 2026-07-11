@@ -615,9 +615,7 @@ failed:
 	return NULL;
 }
 
-static inline bool zone_watermark_fast(struct zone *z, unsigned int order,
-				unsigned long mark, int highest_zoneidx,
-				unsigned int alloc_flags, gfp_t gfp_mask)
+static inline bool zone_watermark_fast(struct zone *z, unsigned long mark)
 {
 	/* Simplified fast watermark check for minimal kernel
 	 * (folded from the sole-caller-only __zone_watermark_ok). */
@@ -654,7 +652,7 @@ get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags,
 
 		/* Skip watermark check if NO_WATERMARKS flag set */
 		if (!(alloc_flags & ALLOC_NO_WATERMARKS) &&
-		    !zone_watermark_fast(zone, order, mark, ac->highest_zoneidx, alloc_flags, gfp_mask))
+		    !zone_watermark_fast(zone, mark))
 			continue;
 
 		page = rmqueue(ac->preferred_zoneref->zone, zone, order,

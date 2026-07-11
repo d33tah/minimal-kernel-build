@@ -5,7 +5,6 @@
 #include <asm/tlbflush.h>
 
 struct real_mode_header *real_mode_header;
-u32 *trampoline_cr4_features;
 
 void __init reserve_real_mode(void)
 {

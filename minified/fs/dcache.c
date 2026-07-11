@@ -541,7 +541,6 @@ struct dentry *d_make_root(struct inode *root_inode)
 }
 
 static inline bool d_same_name(const struct dentry *dentry,
-				const struct dentry *parent,
 				const struct qstr *name)
 {
 	/*
@@ -629,7 +628,7 @@ struct dentry *__d_lookup(const struct dentry *parent, const struct qstr *name)
 		if (d_unhashed(dentry))
 			goto next;
 
-		if (!d_same_name(dentry, parent, name))
+		if (!d_same_name(dentry, name))
 			goto next;
 
 		dentry->d_lockref.count++;
@@ -738,7 +737,7 @@ retry:
 			continue;
 		if (dentry->d_parent != parent)
 			continue;
-		if (!d_same_name(dentry, parent, name))
+		if (!d_same_name(dentry, name))
 			continue;
 		hlist_bl_unlock(b);
 		
@@ -758,7 +757,7 @@ retry:
 			goto mismatch;
 		if (unlikely(d_unhashed(dentry)))
 			goto mismatch;
-		if (unlikely(!d_same_name(dentry, parent, name)))
+		if (unlikely(!d_same_name(dentry, name)))
 			goto mismatch;
 		
 		spin_unlock(&dentry->d_lock);

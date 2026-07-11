@@ -394,8 +394,7 @@ static int nd_jump_root(struct nameidata *nd)
 }
 
 
-static inline int traverse_mounts(struct path *path, bool *jumped,
-				  int *count, unsigned lookup_flags)
+static inline int traverse_mounts(struct path *path, bool *jumped)
 {
 	unsigned flags = smp_load_acquire(&path->dentry->d_flags);
 
@@ -445,7 +444,7 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 		path->mnt = nd->path.mnt;
 		path->dentry = dentry;
 	}
-	ret = traverse_mounts(path, &jumped, &nd->total_link_count, nd->flags);
+	ret = traverse_mounts(path, &jumped);
 	if (jumped) {
 		nd->state |= ND_JUMPED;
 	}
@@ -461,8 +460,7 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 }
 
 static struct dentry *lookup_dcache(const struct qstr *name,
-				    struct dentry *dir,
-				    unsigned int flags)
+				    struct dentry *dir)
 {
 	/*
 	 * No dentry_operations on this build defines ->d_revalidate
@@ -477,7 +475,7 @@ static struct dentry *lookup_dcache(const struct qstr *name,
 static struct dentry *__lookup_hash(const struct qstr *name,
 		struct dentry *base, unsigned int flags)
 {
-	struct dentry *dentry = lookup_dcache(name, base, flags);
+	struct dentry *dentry = lookup_dcache(name, base);
 	struct dentry *old;
 	struct inode *dir = base->d_inode;
 
@@ -994,8 +992,7 @@ static int handle_truncate(struct user_namespace *mnt_userns, struct file *filp)
 }
 
 static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
-				  const struct open_flags *op,
-				  bool got_write)
+				  const struct open_flags *op)
 {
 	/* Simplified: basic lookup with minimal revalidation */
 	struct user_namespace *mnt_userns;
@@ -1095,7 +1092,7 @@ static const char *open_last_lookups(struct nameidata *nd,
 		inode_lock(dir->d_inode);
 	else
 		inode_lock_shared(dir->d_inode);
-	dentry = lookup_open(nd, file, op, got_write);
+	dentry = lookup_open(nd, file, op);
 	if (open_flag & O_CREAT)
 		inode_unlock(dir->d_inode);
 	else

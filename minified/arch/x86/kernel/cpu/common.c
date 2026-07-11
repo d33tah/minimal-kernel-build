@@ -18,22 +18,6 @@ extern void doublefault_init_cpu_tss(void);
 
 u32 elf_hwcap2 __read_mostly;
 
-static void default_init(struct cpuinfo_x86 *c)
-{
-	/* Runtime-dead body: the sole default_cpu.c_init fn-ptr (no vendor
-	 * cpu_dev is registered on this build). Its only code set x86_model_id
-	 * for CPUID-less 386/486 parts, guarded by cpuid_level == -1 — always
-	 * false on the QEMU target (CPUID present), so it never executed.
-	 * Emptied to a no-op; symbol kept link-live for the cpu_dev slot. */
-}
-
-static const struct cpu_dev default_cpu = {
-	.c_init		= default_init,
-	.c_vendor	= "Unknown",
-};
-
-static const struct cpu_dev *this_cpu = &default_cpu;
-
 DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
 	[GDT_ENTRY_KERNEL_CS]		= GDT_ENTRY_INIT(0xc09a, 0, 0xfffff),
 	[GDT_ENTRY_KERNEL_DS]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
@@ -259,11 +243,9 @@ static void get_cpu_vendor(struct cpuinfo_x86 *c)
 	/*
 	 * No vendor cpu_dev is registered on this build (cpu_dev_register
 	 * has zero invocations -> the .x86_cpu_dev.init section is empty ->
-	 * cpu_devs[] stays all-NULL and this_cpu is always &default_cpu), so
-	 * the vendor-string match loop never finds an entry. Always generic.
+	 * the vendor-string match loop never finds an entry). Always generic.
 	 */
 	c->x86_vendor = X86_VENDOR_UNKNOWN;
-	this_cpu = &default_cpu;
 }
 
 void cpu_detect(struct cpuinfo_x86 *c)
@@ -478,9 +460,6 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	/* this_cpu is always &default_cpu, which sets no ->c_identify. */
 
 	apply_forced_caps(c);
-
-	if (this_cpu->c_init)
-		this_cpu->c_init(c);
 
 	setup_smep(c);
 	setup_smap(c);

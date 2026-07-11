@@ -3,14 +3,9 @@
 #define ARCH_X86_CPU_H
 
  
-struct cpu_dev {
-	const char	*c_vendor;
-
-	void		(*c_init)(struct cpuinfo_x86 *);
-};
-
-/* cpu_dev_register macro + __x86_cpu_dev_start/end externs removed - the
- * .x86_cpu_dev.init section is empty (no vendor cpu_dev registered) and
+/* struct cpu_dev + cpu_dev_register macro + __x86_cpu_dev_start/end externs
+ * removed - the .x86_cpu_dev.init section is empty (no vendor cpu_dev
+ * registered), this_cpu/default_cpu were always the generic no-op path, and
  * early_cpu_init no longer walks it. */
 
 /* tsx_init, tsx_ap_init, init_spectral_chicken, tsx_ctrl_state, enum tsx_ctrl_states removed - no callers */

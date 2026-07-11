@@ -20,15 +20,11 @@ u32 elf_hwcap2 __read_mostly;
 
 static void default_init(struct cpuinfo_x86 *c)
 {
-	
-	
-	if (c->cpuid_level == -1) {
-		
-		if (c->x86 == 4)
-			strcpy(c->x86_model_id, "486");
-		else if (c->x86 == 3)
-			strcpy(c->x86_model_id, "386");
-	}
+	/* Runtime-dead body: the sole default_cpu.c_init fn-ptr (no vendor
+	 * cpu_dev is registered on this build). Its only code set x86_model_id
+	 * for CPUID-less 386/486 parts, guarded by cpuid_level == -1 — always
+	 * false on the QEMU target (CPUID present), so it never executed.
+	 * Emptied to a no-op; symbol kept link-live for the cpu_dev slot. */
 }
 
 static const struct cpu_dev default_cpu = {

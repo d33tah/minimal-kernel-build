@@ -86,7 +86,6 @@ extern void early_cpu_init(void);
 extern void identify_boot_cpu(void);
 /* identify_secondary_cpu, print_cpu_info, print_cpu_msr removed - never called */
 
-extern int have_cpuid_p(void);
 static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
 				unsigned int *ecx, unsigned int *edx)
 {

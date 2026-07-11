@@ -48,32 +48,6 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
 
 
 
-static inline int flag_is_changeable_p(u32 flag)
-{
-	u32 f1, f2;
-
-	asm volatile ("pushfl		\n\t"
-		      "pushfl		\n\t"
-		      "popl %0		\n\t"
-		      "movl %0, %1	\n\t"
-		      "xorl %2, %0	\n\t"
-		      "pushl %0		\n\t"
-		      "popfl		\n\t"
-		      "pushfl		\n\t"
-		      "popl %0		\n\t"
-		      "popfl		\n\t"
-
-		      : "=&r" (f1), "=&r" (f2)
-		      : "ir" (flag));
-
-	return ((f1^f2) & flag) != 0;
-}
-
-int have_cpuid_p(void)
-{
-	return flag_is_changeable_p(X86_EFLAGS_ID);
-}
-
 static __always_inline void setup_smep(struct cpuinfo_x86 *c)
 {
 	if (cpu_has(c, X86_FEATURE_SMEP))
@@ -384,22 +358,24 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 	memset(&c->x86_capability, 0, sizeof(c->x86_capability));
 	c->extended_cpuid_level = 0;
 
-	if (have_cpuid_p()) {
-		cpu_detect(c);
-		get_cpu_vendor(c);
-		get_cpu_cap(c);
-		get_cpu_address_sizes(c);
-		setup_force_cpu_cap(X86_FEATURE_CPUID);
-		cpu_parse_early_param();
+	/*
+	 * CPUID is always present on this build's CPU: have_cpuid_p() flips
+	 * the EFLAGS ID bit and always succeeds under QEMU, so the no-CPUID
+	 * else arm (setup_clear_cpu_cap(X86_FEATURE_CPUID)) was runtime-dead
+	 * and is folded away.
+	 */
+	cpu_detect(c);
+	get_cpu_vendor(c);
+	get_cpu_cap(c);
+	get_cpu_address_sizes(c);
+	setup_force_cpu_cap(X86_FEATURE_CPUID);
+	cpu_parse_early_param();
 
-		/*
-		 * this_cpu is always &default_cpu here (empty cpu_devs[]),
-		 * which sets neither ->c_early_init nor ->c_bsp_init.
-		 */
-		filter_cpuid_features(c, false);
-	} else {
-		setup_clear_cpu_cap(X86_FEATURE_CPUID);
-	}
+	/*
+	 * this_cpu is always &default_cpu here (empty cpu_devs[]),
+	 * which sets neither ->c_early_init nor ->c_bsp_init.
+	 */
+	filter_cpuid_features(c, false);
 
 	setup_force_cpu_cap(X86_FEATURE_ALWAYS);
 

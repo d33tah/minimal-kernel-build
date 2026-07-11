@@ -556,8 +556,7 @@ struct page *__rmqueue_pcplist(struct zone *zone, unsigned int order,
 
 static struct page *rmqueue_pcplist(struct zone *preferred_zone,
 			struct zone *zone, unsigned int order,
-			gfp_t gfp_flags, int migratetype,
-			unsigned int alloc_flags)
+			int migratetype, unsigned int alloc_flags)
 {
 	struct per_cpu_pages *pcp;
 	struct list_head *list;
@@ -583,8 +582,7 @@ struct page *rmqueue(struct zone *preferred_zone,
 	struct page *page;
 
 	if (likely(pcp_allowed_order(order))) {
-		page = rmqueue_pcplist(preferred_zone, zone, order, gfp_flags,
-				       migratetype, alloc_flags);
+		page = rmqueue_pcplist(preferred_zone, zone, order, migratetype, alloc_flags);
 		goto out;
 	}
 

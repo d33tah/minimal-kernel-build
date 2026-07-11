@@ -119,10 +119,7 @@ struct xstate_header {
 	u64				reserved[6];
 } __attribute__((packed));
 
- 
-#define XCOMP_BV_COMPACTED_FORMAT ((u64)1 << 63)
 
- 
 struct xregs_state {
 	struct fxregs_state		i387;
 	struct xstate_header		header;

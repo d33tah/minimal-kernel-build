@@ -93,7 +93,6 @@
 #define X86_FEATURE_3DNOWPREFETCH	( 6*32+ 8)
 
 /* Word 7 - Kernel-synthesized flags */
-#define X86_FEATURE_XCOMPACTED		( 7*32+10)
 #define X86_FEATURE_PTI			( 7*32+11)
 #define X86_FEATURE_RSB_CTXSW		( 7*32+19)
 

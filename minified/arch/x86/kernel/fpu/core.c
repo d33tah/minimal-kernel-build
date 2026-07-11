@@ -78,8 +78,8 @@ static inline void fpstate_init_fstate(struct fpstate *fpstate)
 
 void fpstate_init_user(struct fpstate *fpstate)
 {
-	xstate_init_xcomp_bv(&fpstate->regs.xsave, fpstate->xfeatures);
-
+	/* xstate_init_xcomp_bv() removed: X86_FEATURE_XCOMPACTED is never set
+	 * (no XSAVES on this build's boot CPU), so its body was permanently dead. */
 	if (cpu_feature_enabled(X86_FEATURE_FXSR))
 		fpstate_init_fxstate(fpstate);
 	else

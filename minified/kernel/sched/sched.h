@@ -66,8 +66,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #define TASK_ON_RQ_QUEUED	1
 #define TASK_ON_RQ_MIGRATING	2
 
-extern __read_mostly int scheduler_running;
-
 /* calc_global_load_tick / calc_load_fold_active removed - never called */
 
 /* call_trace_sched_update_nr_running removed - unused */

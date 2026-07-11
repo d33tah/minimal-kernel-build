@@ -89,8 +89,6 @@ static DEFINE_MUTEX(pcpu_alloc_mutex);
 
 struct list_head *pcpu_chunk_lists __ro_after_init;
 
-int pcpu_nr_empty_pop_pages;
-
 static unsigned long pcpu_nr_populated;
 
 static int __pcpu_size_to_slot(int size)
@@ -319,7 +317,6 @@ static void pcpu_reintegrate_chunk(struct pcpu_chunk *chunk)
 
 	if (chunk->isolated) {
 		chunk->isolated = false;
-		pcpu_nr_empty_pop_pages += chunk->nr_empty_pop_pages;
 		pcpu_chunk_relocate(chunk, -1);
 	}
 }
@@ -327,8 +324,6 @@ static void pcpu_reintegrate_chunk(struct pcpu_chunk *chunk)
 static inline void pcpu_update_empty_pages(struct pcpu_chunk *chunk, int nr)
 {
 	chunk->nr_empty_pop_pages += nr;
-	if (!chunk->isolated)
-		pcpu_nr_empty_pop_pages += nr;
 }
 
 static inline bool pcpu_region_overlap(int a, int b, int x, int y)
@@ -1254,7 +1249,6 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 
 
 	pcpu_first_chunk = chunk;
-	pcpu_nr_empty_pop_pages = pcpu_first_chunk->nr_empty_pop_pages;
 	pcpu_chunk_relocate(pcpu_first_chunk, -1);
 
 	

@@ -2,14 +2,11 @@
 
 #include <linux/mm.h>
 
-int __read_mostly alternatives_patched;
-
 __ro_after_init struct mm_struct *poking_mm;
 __ro_after_init unsigned long poking_addr;
 
 void __init alternative_instructions(void)
 {
-	alternatives_patched = 1;
 }
 
 /* text_poke_early, text_poke, text_poke_bp, text_poke_kgdb, text_poke_copy,

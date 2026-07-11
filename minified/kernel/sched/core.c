@@ -22,8 +22,6 @@
 
 DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
-__read_mostly int scheduler_running;
-
 void raw_spin_rq_lock_nested(struct rq *rq, int subclass)
 {
 	/* SCHED_CORE off: rq lock is always rq->__lock, no core-cookie retry */
@@ -735,8 +733,6 @@ void __init sched_init(void)
 	init_idle(current, smp_processor_id());
 
 	init_sched_fair_class();
-
-	scheduler_running = 1;
 }
 
 const int sched_prio_to_weight[40] = {

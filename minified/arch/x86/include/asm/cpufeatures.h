@@ -71,15 +71,10 @@
 #define X86_FEATURE_LM			( 1*32+29)
 
 /* Word 3 - Auxiliary flags */
-#define X86_FEATURE_CONSTANT_TSC	( 3*32+ 8)
 #define X86_FEATURE_LFENCE_RDTSC	( 3*32+18)
 #define X86_FEATURE_NOPL		( 3*32+20)
 #define X86_FEATURE_ALWAYS		( 3*32+21)
-#define X86_FEATURE_TSC_RELIABLE	( 3*32+23)
-#define X86_FEATURE_NONSTOP_TSC		( 3*32+24)
 #define X86_FEATURE_CPUID		( 3*32+25)
-#define X86_FEATURE_NONSTOP_TSC_S3	( 3*32+30)
-#define X86_FEATURE_TSC_KNOWN_FREQ	( 3*32+31)
 
 /* Word 4 - Intel extended */
 #define X86_FEATURE_MWAIT		( 4*32+ 3)
@@ -102,16 +97,10 @@
 
 /* Word 9 - Extended leaf 7 */
 #define X86_FEATURE_FSGSBASE		( 9*32+ 0)
-#define X86_FEATURE_TSC_ADJUST		( 9*32+ 1)
 #define X86_FEATURE_SGX			( 9*32+ 2)
 #define X86_FEATURE_SMEP		( 9*32+ 7)
 #define X86_FEATURE_INVPCID		( 9*32+10)
 #define X86_FEATURE_SMAP		( 9*32+20)
-
-/* Word 10 - XSAVE leaf */
-#define X86_FEATURE_XSAVEOPT		(10*32+ 0)
-#define X86_FEATURE_XSAVEC		(10*32+ 1)
-#define X86_FEATURE_XSAVES		(10*32+ 3)
 
 /* Word 11 - Kernel-synthesized */
 #define X86_FEATURE_RETPOLINE		(11*32+12)

@@ -13,7 +13,6 @@ bool is_vmalloc_addr(const void *x)
 }
 
 LIST_HEAD(vmap_area_list);
-static bool vmap_initialized __read_mostly;
 
 
 static struct kmem_cache *vmap_area_cachep;
@@ -174,7 +173,6 @@ void __init vmalloc_init(void)
 	   build, so the vmlist import loop was dead and has been removed. */
 
 	vmap_init_free_space();
-	vmap_initialized = true;
 }
 
 /* setup_vmalloc_vm_locked removed - 0-caller orphan (setup_vmalloc_vm absent). */

@@ -14,7 +14,6 @@ static struct uni_pagedir *vgacon_uni_pagedir;
 static int vgacon_refcount;
 
 static unsigned long	vga_vram_base		__read_mostly;	 
-static unsigned long	vga_vram_end		__read_mostly;	 
 static unsigned int	vga_vram_size		__read_mostly;	 
 static u16		vga_video_port_reg	__read_mostly;	 
 static u16		vga_video_port_val	__read_mostly;	 
@@ -138,7 +137,6 @@ static const char *vgacon_startup(void)
 	}
 
 	vga_vram_base = VGA_MAP_MEM(vga_vram_base, vga_vram_size);
-	vga_vram_end = vga_vram_base + vga_vram_size;
 
 	 
 	p = (volatile u16 *) vga_vram_base;

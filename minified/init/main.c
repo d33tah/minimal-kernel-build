@@ -40,8 +40,6 @@ extern void sched_init_smp(void);
 
 static int kernel_init(void *);
 
-bool early_boot_irqs_disabled __read_mostly;
-
 enum system_states system_state __read_mostly;
 
 #define MAX_INIT_ARGS CONFIG_INIT_ENV_ARG_LIMIT
@@ -178,7 +176,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	smp_setup_processor_id();
 
 	local_irq_disable();
-	early_boot_irqs_disabled = true;
 
 	 
 	boot_cpu_init();
@@ -228,7 +225,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 
-	early_boot_irqs_disabled = false;
 	local_irq_enable();
 
 	console_init();

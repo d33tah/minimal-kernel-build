@@ -340,16 +340,6 @@ static int __init init_tsc_clocksource(void)
 	if (!boot_cpu_has(X86_FEATURE_TSC) || !tsc_khz)
 		return 0;
 
-	if (boot_cpu_has(X86_FEATURE_NONSTOP_TSC_S3))
-		clocksource_tsc.flags |= CLOCK_SOURCE_SUSPEND_NONSTOP;
-
-
-	if (boot_cpu_has(X86_FEATURE_TSC_KNOWN_FREQ)) {
-		clocksource_register_khz(&clocksource_tsc, tsc_khz);
-		clocksource_unregister(&clocksource_tsc_early);
-		return 0;
-	}
-
 	schedule_delayed_work(&tsc_irqwork, 0);
 	return 0;
 }
@@ -424,14 +414,6 @@ void __init tsc_init(void)
 	}
 
 	/* lpj_fine assignment removed - never read */
-
-	if (boot_cpu_has(X86_FEATURE_TSC_RELIABLE))
-		tsc_clocksource_reliable = 1;
-
-	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC) &&
-	    boot_cpu_has(X86_FEATURE_NONSTOP_TSC) &&
-	    boot_cpu_has(X86_FEATURE_TSC_ADJUST))
-		tsc_disable_clocksource_watchdog();
 
 	if (tsc_clocksource_reliable)
 		tsc_disable_clocksource_watchdog();

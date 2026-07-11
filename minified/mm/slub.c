@@ -99,8 +99,7 @@ static __always_inline void slab_unlock(struct slab *slab)
 
 static inline bool __cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab,
 		void *freelist_old, unsigned long counters_old,
-		void *freelist_new, unsigned long counters_new,
-		const char *n)
+		void *freelist_new, unsigned long counters_new)
 {
 	lockdep_assert_irqs_disabled();
 #if defined(CONFIG_HAVE_CMPXCHG_DOUBLE) && \
@@ -130,8 +129,7 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab
 
 static inline bool cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab,
 		void *freelist_old, unsigned long counters_old,
-		void *freelist_new, unsigned long counters_new,
-		const char *n)
+		void *freelist_new, unsigned long counters_new)
 {
 #if defined(CONFIG_HAVE_CMPXCHG_DOUBLE) && \
     defined(CONFIG_HAVE_ALIGNED_STRUCT_PAGE)
@@ -355,8 +353,7 @@ static inline void *acquire_slab(struct kmem_cache *s,
 
 	if (!__cmpxchg_double_slab(s, slab,
 			freelist, counters,
-			new.freelist, new.counters,
-			"acquire_slab"))
+			new.freelist, new.counters))
 		return NULL;
 
 	remove_partial(n, slab);
@@ -493,8 +490,7 @@ redo:
 
 	if (!cmpxchg_double_slab(s, slab,
 				old.freelist, old.counters,
-				new.freelist, new.counters,
-				"unfreezing slab")) {
+				new.freelist, new.counters)) {
 		if (mode == M_PARTIAL)
 			spin_unlock_irqrestore(&n->list_lock, flags);
 		goto redo;
@@ -674,8 +670,7 @@ static void __slab_free(struct kmem_cache *s, struct slab *slab,
 
 	} while (!cmpxchg_double_slab(s, slab,
 		prior, counters,
-		head, new.counters,
-		"__slab_free"));
+		head, new.counters));
 
 	if (likely(!n)) {
 		return;

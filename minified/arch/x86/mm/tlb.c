@@ -22,8 +22,7 @@ static inline unsigned long build_cr3(pgd_t *pgd, u16 asid)
 atomic64_t last_mm_ctx_id = ATOMIC64_INIT(1);
 
 
-static void choose_new_asid(struct mm_struct *next, u64 next_tlb_gen,
-			    u16 *new_asid)
+static void choose_new_asid(u16 *new_asid)
 {
 	/* No PCID (cleared at boot): always use ASID 0 and force a flush. */
 	*new_asid = 0;
@@ -114,7 +113,7 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 			cpumask_set_cpu(cpu, mm_cpumask(next));
 		next_tlb_gen = atomic64_read(&next->context.tlb_gen);
 
-		choose_new_asid(next, next_tlb_gen, &new_asid);
+		choose_new_asid(&new_asid);
 
 		 
 		this_cpu_write(cpu_tlbstate.loaded_mm, LOADED_MM_SWITCHING);

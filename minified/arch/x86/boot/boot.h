@@ -180,7 +180,6 @@ int check_knl_erratum(void);
 int validate_cpu(void);
 
  
-extern int early_serial_base;
 void console_init(void);
 
 

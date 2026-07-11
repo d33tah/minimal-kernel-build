@@ -378,20 +378,6 @@ void get_cpu_address_sizes(struct cpuinfo_x86 *c)
 		c->x86_phys_bits = 36;
 }
 
-static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
-{
-	if (flag_is_changeable_p(X86_EFLAGS_AC))
-		c->x86 = 4;
-	else
-		c->x86 = 3;
-
-	/*
-	 * The per-vendor c_identify probe loop is dead: cpu_devs[] is empty
-	 * on this build (no cpu_dev_register), so no entry has ->c_identify.
-	 */
-}
-
-
 static void __init cpu_set_bug_bits(struct cpuinfo_x86 *c)
 {
 	/* Stub: CPU bug detection not needed for minimal kernel */
@@ -415,9 +401,6 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 
 	memset(&c->x86_capability, 0, sizeof(c->x86_capability));
 	c->extended_cpuid_level = 0;
-
-	if (!have_cpuid_p())
-		identify_cpu_without_cpuid(c);
 
 	if (have_cpuid_p()) {
 		cpu_detect(c);
@@ -463,12 +446,6 @@ void __init early_cpu_init(void)
 static void generic_identify(struct cpuinfo_x86 *c)
 {
 	c->extended_cpuid_level = 0;
-
-	if (!have_cpuid_p())
-		identify_cpu_without_cpuid(c);
-
-	if (!have_cpuid_p())
-		return;
 
 	cpu_detect(c);
 

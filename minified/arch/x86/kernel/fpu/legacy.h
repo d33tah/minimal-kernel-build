@@ -14,10 +14,7 @@ extern unsigned int mxcsr_feature_mask;
 
 static inline void fxrstor(struct fxregs_state *fx)
 {
-	if (IS_ENABLED(CONFIG_X86_32))
-		kernel_insn(fxrstor %[fx], "=m" (*fx), [fx] "m" (*fx));
-	else
-		kernel_insn(fxrstorq %[fx], "=m" (*fx), [fx] "m" (*fx));
+	kernel_insn(fxrstor %[fx], "=m" (*fx), [fx] "m" (*fx));
 }
 
 static inline void frstor(struct fregs_state *fx)
@@ -27,10 +24,7 @@ static inline void frstor(struct fregs_state *fx)
 
 static inline void fxsave(struct fxregs_state *fx)
 {
-	if (IS_ENABLED(CONFIG_X86_32))
-		asm volatile( "fxsave %[fx]" : [fx] "=m" (*fx));
-	else
-		asm volatile("fxsaveq %[fx]" : [fx] "=m" (*fx));
+	asm volatile("fxsave %[fx]" : [fx] "=m" (*fx));
 }
 
 #endif

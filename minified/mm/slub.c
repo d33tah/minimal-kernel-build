@@ -943,10 +943,9 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 
 #if defined(CONFIG_HAVE_CMPXCHG_DOUBLE) && \
     defined(CONFIG_HAVE_ALIGNED_STRUCT_PAGE)
-	/* SLAB_NO_CMPXCHG bits (CONSISTENCY_CHECKS/STORE_USER/TRACE) never set on
-	 * this build -> the mask test is always 0. */
-	if (system_has_cmpxchg_double())
-		s->flags |= __CMPXCHG_DOUBLE;
+	/* CX8 is a REQUIRED_MASK feature -> system_has_cmpxchg_double() is a
+	 * compile-time 1; the guard was always taken, folded to the taken arm. */
+	s->flags |= __CMPXCHG_DOUBLE;
 #endif
 
 	if (!init_kmem_cache_nodes(s))

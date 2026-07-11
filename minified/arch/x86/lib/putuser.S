@@ -15,7 +15,6 @@
 #include <asm/thread_info.h>
 #include <asm/errno.h>
 #include <asm/smap.h>
-#include <asm/export.h>
 
 
 /*

@@ -30,7 +30,6 @@
 #include <asm/page_types.h>
 #include <asm/errno.h>
 #include <asm/smap.h>
-#include <asm/export.h>
 
 #define ASM_BARRIER_NOSPEC ALTERNATIVE "", "lfence", X86_FEATURE_LFENCE_RDTSC
 

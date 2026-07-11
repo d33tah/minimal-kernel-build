@@ -16,7 +16,6 @@
 #include <asm/setup.h>
 #include <asm/processor-flags.h>
 #include <asm/nospec-branch.h>
-#include <asm/export.h>
 #include <asm/pgtable_32.h>
 
 /* Physical address */

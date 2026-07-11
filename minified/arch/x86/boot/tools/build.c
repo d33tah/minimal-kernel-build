@@ -28,14 +28,7 @@ u8 buf[SETUP_SECT_MAX*512];
 
 #define PECOFF_COMPAT_RESERVE 0x0
 
-static unsigned long efi32_stub_entry;
-static unsigned long efi64_stub_entry;
-static unsigned long efi_pe_entry;
-static unsigned long efi32_pe_entry;
 static unsigned long kernel_info;
-static unsigned long startup_64;
-static unsigned long _ehead;
-static unsigned long _end;
 
 
 static const u32 crctab32[] = {
@@ -158,14 +151,7 @@ static void parse_zoffset(char *fname)
 	p = (char *)buf;
 
 	while (p && *p) {
-		PARSE_ZOFS(p, efi32_stub_entry);
-		PARSE_ZOFS(p, efi64_stub_entry);
-		PARSE_ZOFS(p, efi_pe_entry);
-		PARSE_ZOFS(p, efi32_pe_entry);
 		PARSE_ZOFS(p, kernel_info);
-		PARSE_ZOFS(p, startup_64);
-		PARSE_ZOFS(p, _ehead);
-		PARSE_ZOFS(p, _end);
 
 		p = strchr(p, '\n');
 		while (p && (*p == '\r' || *p == '\n'))

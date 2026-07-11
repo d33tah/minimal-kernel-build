@@ -22,11 +22,10 @@ DEFINE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
 
 void save_fpregs_to_fpstate(struct fpu *fpu)
 {
-	if (likely(use_xsave())) {
-		os_xsave(fpu->fpstate);
-		return;
-	}
-
+	/*
+	 * XSAVE is absent on this build's boot CPU (CR4.OSXSAVE is never set;
+	 * use_xsave() is always false), so the os_xsave() fast path is dead.
+	 */
 	if (likely(use_fxsr())) {
 		fxsave(&fpu->fpstate->regs.fxsave);
 		return;
@@ -44,17 +43,12 @@ void restore_fpregs_from_fpstate(struct fpstate *fpstate, u64 mask)
 	 * static_cpu_has_bug(X86_BUG_FXSAVE_LEAK). That bug bit (an old K7 erratum)
 	 * is never set anywhere in this tree, so the block was dead.
 	 */
-	if (use_xsave()) {
-
-		mask = fpu_kernel_cfg.max_features & mask;
-
-		os_xrstor(fpstate, mask);
-	} else {
-		if (use_fxsr())
-			fxrstor(&fpstate->regs.fxsave);
-		else
-			frstor(&fpstate->regs.fsave);
-	}
+	/* use_xsave() is always false here (no XSAVE), so the os_xrstor() arm
+	 * is dead and @mask is unused; only the legacy fxrstor/frstor path runs. */
+	if (use_fxsr())
+		fxrstor(&fpstate->regs.fxsave);
+	else
+		frstor(&fpstate->regs.fsave);
 }
 
 void fpu_reset_from_exception_fixup(void)
@@ -64,11 +58,8 @@ void fpu_reset_from_exception_fixup(void)
 
 static inline unsigned int init_fpstate_copy_size(void)
 {
-	if (!use_xsave())
-		return fpu_kernel_cfg.default_size;
-
-	 
-	return sizeof(init_fpstate.regs.xsave);
+	/* No XSAVE on this build: the copy size is always the legacy default. */
+	return fpu_kernel_cfg.default_size;
 }
 
 static inline void fpstate_init_fxstate(struct fpstate *fpstate)

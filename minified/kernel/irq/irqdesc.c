@@ -5,8 +5,7 @@
 
 static struct lock_class_key irq_desc_lock_class;
 
-static void desc_set_defaults(unsigned int irq, struct irq_desc *desc, int node,
-			      const struct cpumask *affinity, struct module *owner)
+static void desc_set_defaults(unsigned int irq, struct irq_desc *desc)
 {
 	int cpu;
 
@@ -62,7 +61,7 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
 	lockdep_set_class(&desc->lock, &irq_desc_lock_class);
 	mutex_init(&desc->request_mutex);
 
-	desc_set_defaults(irq, desc, node, affinity, owner);
+	desc_set_defaults(irq, desc);
 	irqd_set(&desc->irq_data, flags);
 	kobject_init(&desc->kobj, &irq_kobj_type);
 

@@ -12,8 +12,7 @@
 #include "internal.h"
 
 
-static struct page *no_page_table(struct vm_area_struct *vma,
-		unsigned int flags)
+static struct page *no_page_table(void)
 {
 	/* FOLL_DUMP never set -> always returns NULL */
 	return NULL;
@@ -55,7 +54,7 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 
 
 	if (unlikely(pmd_bad(*pmd)))
-		return no_page_table(vma, flags);
+		return no_page_table();
 
 	ptep = pte_offset_map_lock(mm, pmd, address, &ptl);
 	pte = *ptep;
@@ -108,7 +107,7 @@ no_page:
 	pte_unmap_unlock(ptep, ptl);
 	if (!pte_none(pte))
 		return NULL;
-	return no_page_table(vma, flags);
+	return no_page_table();
 }
 
 static struct page *follow_page_mask(struct vm_area_struct *vma,
@@ -121,7 +120,7 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 	pgd = pgd_offset(mm, address);
 
 	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
-		return no_page_table(vma, flags);
+		return no_page_table();
 
 	/*
 	 * CONFIG_PGTABLE_LEVELS=2 (X86_32, no PAE) folds P4D/PUD/PMD onto
@@ -134,9 +133,9 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 
 	pmdval = READ_ONCE(*pmd);
 	if (pmd_none(pmdval))
-		return no_page_table(vma, flags);
+		return no_page_table();
 	if (!pmd_present(pmdval))
-		return no_page_table(vma, flags);
+		return no_page_table();
 	return follow_page_pte(vma, address, pmd, flags);
 }
 

@@ -186,8 +186,7 @@ enum kernel_gp_hint {
 	GP_NON_CANONICAL,
 };
 
-static enum kernel_gp_hint get_kernel_gp_address(struct pt_regs *regs,
-						 unsigned long *addr)
+static enum kernel_gp_hint get_kernel_gp_address(void)
 {
 	/* Stub: GP address hint not needed for minimal kernel */
 	return GP_NO_HINT;
@@ -228,7 +227,7 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 	if (error_code)
 		snprintf(desc, sizeof(desc), "segment-related " GPFSTR);
 	else
-		hint = get_kernel_gp_address(regs, &gp_addr);
+		hint = get_kernel_gp_address();
 
 	if (hint != GP_NO_HINT)
 		snprintf(desc, sizeof(desc), GPFSTR ", %s 0x%lx",

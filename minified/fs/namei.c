@@ -412,8 +412,7 @@ static inline int traverse_mounts(struct path *path, bool *jumped,
 }
 
 
-static bool __follow_mount_rcu(struct nameidata *nd, struct path *path,
-			       struct inode **inode, unsigned *seqp)
+static bool __follow_mount_rcu(void)
 {
 	/*
 	 * DCACHE_MANAGED_DENTRY (DCACHE_MOUNTED|DCACHE_NEED_AUTOMOUNT|
@@ -438,7 +437,7 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 		unsigned int seq = *seqp;
 		if (unlikely(!*inode))
 			return -ENOENT;
-		if (likely(__follow_mount_rcu(nd, path, inode, seqp)))
+		if (likely(__follow_mount_rcu()))
 			return 0;
 		if (!try_to_unlazy_next(nd, dentry, seq))
 			return -ECHILD;

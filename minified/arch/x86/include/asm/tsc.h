@@ -28,7 +28,6 @@ extern void tsc_init(void);
 extern unsigned long native_calibrate_cpu_early(void);
 extern unsigned long native_calibrate_tsc(void);
 
-extern int tsc_clocksource_reliable;
 /* check_tsc_sync_source, check_tsc_sync_target removed - unused (SMP) */
 
 #endif

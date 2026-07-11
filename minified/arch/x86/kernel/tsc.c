@@ -19,8 +19,6 @@ unsigned int __read_mostly tsc_khz;
 
 static DEFINE_STATIC_KEY_FALSE(__use_tsc);
 
-int tsc_clocksource_reliable;
-
 /* art_to_tsc_numerator, art_to_tsc_denominator, art_to_tsc_offset,
    art_related_clocksource removed - unused after convert_art_to_tsc removal */
 
@@ -274,12 +272,6 @@ static struct clocksource clocksource_tsc = {
 	.list			= LIST_HEAD_INIT(clocksource_tsc.list),
 };
 
-static void __init tsc_disable_clocksource_watchdog(void)
-{
-	clocksource_tsc_early.flags &= ~CLOCK_SOURCE_MUST_VERIFY;
-	clocksource_tsc.flags &= ~CLOCK_SOURCE_MUST_VERIFY;
-}
-
 static void tsc_refine_calibration_work(struct work_struct *work);
 static DECLARE_DELAYED_WORK(tsc_irqwork, tsc_refine_calibration_work);
 static void tsc_refine_calibration_work(struct work_struct *work)
@@ -369,9 +361,6 @@ void __init tsc_init(void)
 	}
 
 	/* lpj_fine assignment removed - never read */
-
-	if (tsc_clocksource_reliable)
-		tsc_disable_clocksource_watchdog();
 
 	clocksource_register_khz(&clocksource_tsc_early, tsc_khz);
 }

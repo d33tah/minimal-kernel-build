@@ -62,8 +62,7 @@ static unsigned long arch_zone_highest_possible_pfn[MAX_NR_ZONES] __initdata;
 
 int page_group_by_mobility_disabled __read_mostly;
 
-static inline unsigned long *get_pageblock_bitmap(const struct page *page,
-							unsigned long pfn)
+static inline unsigned long *get_pageblock_bitmap(const struct page *page)
 {
 	return page_zone(page)->pageblock_flags;
 }
@@ -83,7 +82,7 @@ unsigned long __get_pfnblock_flags_mask(const struct page *page,
 	unsigned long bitidx, word_bitidx;
 	unsigned long word;
 
-	bitmap = get_pageblock_bitmap(page, pfn);
+	bitmap = get_pageblock_bitmap(page);
 	bitidx = pfn_to_bitidx(page, pfn);
 	word_bitidx = bitidx / BITS_PER_LONG;
 	bitidx &= (BITS_PER_LONG-1);
@@ -109,7 +108,7 @@ void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 	BUILD_BUG_ON(NR_PAGEBLOCK_BITS != 4);
 	BUILD_BUG_ON(MIGRATE_TYPES > (1 << PB_migratetype_bits));
 
-	bitmap = get_pageblock_bitmap(page, pfn);
+	bitmap = get_pageblock_bitmap(page);
 	bitidx = pfn_to_bitidx(page, pfn);
 	word_bitidx = bitidx / BITS_PER_LONG;
 	bitidx &= (BITS_PER_LONG-1);
@@ -215,7 +214,6 @@ static inline void del_page_from_free_list(struct page *page, struct zone *zone,
 }
 
 static inline void __free_one_page(struct page *page,
-		unsigned long pfn,
 		struct zone *zone, unsigned int order,
 		int migratetype, fpi_t fpi_flags)
 {
@@ -286,7 +284,7 @@ static void __free_pages_ok(struct page *page, unsigned int order,
 	migratetype = get_pfnblock_migratetype(page, pfn);
 
 	spin_lock_irqsave(&zone->lock, flags);
-	__free_one_page(page, pfn, zone, order, migratetype, fpi_flags);
+	__free_one_page(page, zone, order, migratetype, fpi_flags);
 	spin_unlock_irqrestore(&zone->lock, flags);
 }
 

@@ -1246,8 +1246,7 @@ static void __ref setup_usemap(struct zone *zone)
 	}
 }
 
-static unsigned long __init calc_memmap_size(unsigned long spanned_pages,
-						unsigned long present_pages)
+static unsigned long __init calc_memmap_size(unsigned long spanned_pages)
 {
 	return PAGE_ALIGN(spanned_pages * sizeof(struct page)) >> PAGE_SHIFT;
 }
@@ -1282,7 +1281,7 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 		freesize = zone->present_pages;
 
 		
-		memmap_pages = calc_memmap_size(size, freesize);
+		memmap_pages = calc_memmap_size(size);
 		if (freesize >= memmap_pages)
 			freesize -= memmap_pages;
 

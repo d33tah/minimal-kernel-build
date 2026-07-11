@@ -43,9 +43,7 @@ struct irq_desc *irq_to_desc(unsigned int irq)
 	return radix_tree_lookup(&irq_desc_tree, irq);
 }
 
-static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags,
-				   const struct cpumask *affinity,
-				   struct module *owner)
+static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags)
 {
 	struct irq_desc *desc;
 
@@ -91,7 +89,7 @@ int __init early_irq_init(void)
 		nr_irqs = initcnt;
 
 	for (i = 0; i < initcnt; i++) {
-		desc = alloc_desc(i, node, 0, NULL, NULL);
+		desc = alloc_desc(i, node, 0);
 		set_bit(i, allocated_irqs);
 		irq_insert_desc(i, desc);
 	}

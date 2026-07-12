@@ -115,8 +115,7 @@ struct kmem_cache {
 	struct kmem_cache_cpu __percpu *cpu_slab;
 	slab_flags_t flags;
 	unsigned int size, object_size, offset;
-	struct kmem_cache_order_objects oo;
-	struct kmem_cache_order_objects min;
+	struct kmem_cache_order_objects oo, min;
 	gfp_t allocflags;
 	void (*ctor)(void *);
 	unsigned int align;

@@ -141,8 +141,7 @@ struct task_struct {
 
 	struct list_head		tasks;
 
-	struct mm_struct		*mm;
-	struct mm_struct		*active_mm;
+	struct mm_struct *mm, *active_mm;
 
 	int				exit_signal;
 	unsigned long			jobctl;
@@ -173,8 +172,7 @@ struct task_struct {
 	 
 	struct pid			*thread_pid;
 	struct hlist_node		pid_links[PIDTYPE_MAX];
-	struct list_head		thread_group;
-	struct list_head		thread_node;
+	struct list_head thread_group, thread_node;
 
 	struct completion		*vfork_done;
 

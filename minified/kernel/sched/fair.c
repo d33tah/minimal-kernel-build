@@ -186,8 +186,7 @@ static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	slice = __sched_period(nr_running + !se->on_rq);
 
 	for_each_sched_entity(se) {
-		struct load_weight *load;
-		struct load_weight lw;
+		struct load_weight *load, lw;
 		struct cfs_rq *qcfs_rq;
 
 		qcfs_rq = cfs_rq_of(se);

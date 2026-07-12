@@ -33,8 +33,7 @@ struct memblock_type {
 
 struct memblock {
 	phys_addr_t current_limit;
-	struct memblock_type memory;
-	struct memblock_type reserved;
+	struct memblock_type memory, reserved;
 };
 
 extern struct memblock memblock;

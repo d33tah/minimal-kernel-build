@@ -35,8 +35,7 @@ struct mmu_gather {
 	unsigned int		cleared_p4ds : 1;
 
 #ifndef CONFIG_MMU_GATHER_NO_GATHER
-	struct mmu_gather_batch *active;
-	struct mmu_gather_batch	local;
+	struct mmu_gather_batch *active, local;
 	struct page		*__pages[MMU_GATHER_BUNDLE];
 #endif
 };

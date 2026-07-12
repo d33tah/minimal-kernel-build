@@ -198,8 +198,7 @@ struct xa_state {
 	struct xarray *xa;
 	unsigned long xa_index;
 	unsigned char xa_shift, xa_offset;
-	struct xa_node *xa_node;
-	struct xa_node *xa_alloc;
+	struct xa_node *xa_node, *xa_alloc;
 	xa_update_node_t xa_update;
 	struct list_lru *xa_lru;
 };

@@ -238,8 +238,7 @@ struct vm_fault {
 		pmd_t orig_pmd;		
 	};
 
-	struct page *cow_page;		
-	struct page *page;		
+	struct page *cow_page, *page;
 	
 	pte_t *pte;			
 	spinlock_t *ptl;		

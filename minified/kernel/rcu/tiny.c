@@ -5,9 +5,7 @@
 #include "rcu.h"
 
 struct rcu_ctrlblk {
-	struct rcu_head *rcucblist;	 
-	struct rcu_head **donetail;	 
-	struct rcu_head **curtail;	 
+	struct rcu_head *rcucblist, **donetail, **curtail;
 	unsigned long gp_seq;		 
 };
 

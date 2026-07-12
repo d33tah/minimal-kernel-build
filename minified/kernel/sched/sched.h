@@ -104,9 +104,7 @@ struct cfs_rq {
 	struct rb_root_cached	tasks_timeline;
 
 	 
-	struct sched_entity	*curr;
-	struct sched_entity	*next;
-	struct sched_entity	*last;
+	struct sched_entity *curr, *next, *last;
 
 
 

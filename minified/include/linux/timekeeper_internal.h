@@ -13,8 +13,7 @@ struct tk_read_base {
 };
 
 struct timekeeper {
-	struct tk_read_base	tkr_mono;
-	struct tk_read_base	tkr_raw;
+	struct tk_read_base tkr_mono, tkr_raw;
 	u64			xtime_sec;
 	struct timespec64	wall_to_monotonic;
 	ktime_t			offs_real;

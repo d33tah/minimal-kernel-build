@@ -443,8 +443,7 @@ static void deactivate_slab(struct kmem_cache *s, struct slab *slab,
 	void *nextfree, *freelist_iter, *freelist_tail;
 	int tail = DEACTIVATE_TO_HEAD;
 	unsigned long flags = 0;
-	struct slab new;
-	struct slab old;
+	struct slab new, old;
 
 	if (slab->freelist) {
 		tail = DEACTIVATE_TO_TAIL;

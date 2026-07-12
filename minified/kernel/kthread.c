@@ -26,8 +26,7 @@ struct kthread {
 	unsigned long flags;
 	int (*threadfn)(void *);
 	void *data;
-	struct completion parked;
-	struct completion exited;
+	struct completion parked, exited;
 };
 
 enum KTHREAD_BITS {

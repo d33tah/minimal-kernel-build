@@ -91,9 +91,7 @@ struct iattr {
 	unsigned int	ia_valid;
 	umode_t		ia_mode;
 	loff_t		ia_size;
-	struct timespec64 ia_atime;
-	struct timespec64 ia_mtime;
-	struct timespec64 ia_ctime;
+	struct timespec64 ia_atime, ia_mtime, ia_ctime;
 };
 
 /* Reduced positive_aop_returns - only AOP_TRUNCATED_PAGE used */
@@ -195,9 +193,7 @@ struct inode {
 	};
 	dev_t			i_rdev;
 	loff_t			i_size;
-	struct timespec64	i_atime;
-	struct timespec64	i_mtime;
-	struct timespec64	i_ctime;
+	struct timespec64 i_atime, i_mtime, i_ctime;
 	spinlock_t		i_lock;
 	u8			i_blkbits;
 
@@ -388,8 +384,7 @@ struct super_block {
 	struct user_namespace *s_user_ns;
 
 	
-	struct list_lru		s_dentry_lru;
-	struct list_lru		s_inode_lru;
+	struct list_lru s_dentry_lru, s_inode_lru;
 	struct rcu_head		rcu;
 } __randomize_layout;
 

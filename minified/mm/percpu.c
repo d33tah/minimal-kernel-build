@@ -237,19 +237,9 @@ static void pcpu_next_fit_region(struct pcpu_chunk *chunk, int alloc_bits,
 	*bit_off = pcpu_chunk_map_bits(chunk);
 }
 
-#define pcpu_for_each_md_free_region(chunk, bit_off, bits)		\
-	for (pcpu_next_md_free_region((chunk), &(bit_off), &(bits));	\
-	     (bit_off) < pcpu_chunk_map_bits((chunk));			\
-	     (bit_off) += (bits) + 1,					\
-	     pcpu_next_md_free_region((chunk), &(bit_off), &(bits)))
+#define pcpu_for_each_md_free_region(chunk, bit_off, bits)			for (pcpu_next_md_free_region((chunk), &(bit_off), &(bits));		     (bit_off) < pcpu_chunk_map_bits((chunk));				     (bit_off) += (bits) + 1,						     pcpu_next_md_free_region((chunk), &(bit_off), &(bits)))
 
-#define pcpu_for_each_fit_region(chunk, alloc_bits, align, bit_off, bits)     \
-	for (pcpu_next_fit_region((chunk), (alloc_bits), (align), &(bit_off), \
-				  &(bits));				      \
-	     (bit_off) < pcpu_chunk_map_bits((chunk));			      \
-	     (bit_off) += (bits),					      \
-	     pcpu_next_fit_region((chunk), (alloc_bits), (align), &(bit_off), \
-				  &(bits)))
+#define pcpu_for_each_fit_region(chunk, alloc_bits, align, bit_off, bits)     	for (pcpu_next_fit_region((chunk), (alloc_bits), (align), &(bit_off), 				  &(bits));				      	     (bit_off) < pcpu_chunk_map_bits((chunk));			      	     (bit_off) += (bits),					      	     pcpu_next_fit_region((chunk), (alloc_bits), (align), &(bit_off), 				  &(bits)))
 
 static void *pcpu_mem_zalloc(size_t size, gfp_t gfp)
 {
@@ -1115,14 +1105,7 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	unsigned long tmp_addr;
 	size_t alloc_size;
 
-#define PCPU_SETUP_BUG_ON(cond)	do {					\
-	if (unlikely(cond)) {						\
-		pr_emerg("failed to initialize, %s\n", #cond);		\
-		pr_emerg("cpu_possible_mask=%*pb\n",			\
-			 cpumask_pr_args(cpu_possible_mask));		\
-		BUG();							\
-	}								\
-} while (0)
+#define PCPU_SETUP_BUG_ON(cond)	do {						if (unlikely(cond)) {								pr_emerg("failed to initialize, %s\n", #cond);				pr_emerg("cpu_possible_mask=%*pb\n",						 cpumask_pr_args(cpu_possible_mask));				BUG();								}								} while (0)
 
 	
 	PCPU_SETUP_BUG_ON(ai->nr_groups <= 0);

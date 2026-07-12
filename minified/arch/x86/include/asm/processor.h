@@ -286,20 +286,11 @@ static __always_inline void prefetchw(const void *x)
 			  "m" (*(const char *)x));
 }
 
-#define TOP_OF_INIT_STACK ((unsigned long)&init_stack + sizeof(init_stack) - \
-			   TOP_OF_KERNEL_STACK_PADDING)
+#define TOP_OF_INIT_STACK ((unsigned long)&init_stack + sizeof(init_stack) - 			   TOP_OF_KERNEL_STACK_PADDING)
 
-#define task_pt_regs(task) \
-({									\
-	unsigned long __ptr = (unsigned long)task_stack_page(task);	\
-	__ptr += THREAD_SIZE - TOP_OF_KERNEL_STACK_PADDING;		\
-	((struct pt_regs *)__ptr) - 1;					\
-})
+#define task_pt_regs(task) ({										unsigned long __ptr = (unsigned long)task_stack_page(task);		__ptr += THREAD_SIZE - TOP_OF_KERNEL_STACK_PADDING;			((struct pt_regs *)__ptr) - 1;					})
 
-#define INIT_THREAD  {							  \
-	.sp0			= TOP_OF_INIT_STACK,			  \
-	.sysenter_cs		= __KERNEL_CS,				  \
-}
+#define INIT_THREAD  {							  	.sp0			= TOP_OF_INIT_STACK,			  	.sysenter_cs		= __KERNEL_CS,				  }
 
 extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
 					       unsigned long new_sp);

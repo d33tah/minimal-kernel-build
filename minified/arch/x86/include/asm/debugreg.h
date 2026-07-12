@@ -7,10 +7,8 @@
 #include <uapi/asm/debugreg.h>
 
 
-#define get_debugreg(var, register)				\
-	(var) = native_get_debugreg(register)
-#define set_debugreg(value, register)				\
-	native_set_debugreg(register, value)
+#define get_debugreg(var, register)					(var) = native_get_debugreg(register)
+#define set_debugreg(value, register)					native_set_debugreg(register, value)
 
 static __always_inline unsigned long native_get_debugreg(int regno)
 {

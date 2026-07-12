@@ -33,8 +33,7 @@
 
 #define ASM_BARRIER_NOSPEC ALTERNATIVE "", "lfence", X86_FEATURE_LFENCE_RDTSC
 
-#define LOAD_TASK_SIZE_MINUS_N(n) \
-	mov $(TASK_SIZE_MAX - (n)),%_ASM_DX
+#define LOAD_TASK_SIZE_MINUS_N(n) 	mov $(TASK_SIZE_MAX - (n)),%_ASM_DX
 
 	.text
 SYM_FUNC_START(__get_user_1)

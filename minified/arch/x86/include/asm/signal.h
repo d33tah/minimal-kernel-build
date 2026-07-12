@@ -47,10 +47,7 @@ static inline int __gen_sigismember(sigset_t *set, int _sig)
 	return ret;
 }
 
-#define sigismember(set, sig)			\
-	(__builtin_constant_p(sig)		\
-	 ? __const_sigismember((set), (sig))	\
-	 : __gen_sigismember((set), (sig)))
+#define sigismember(set, sig)				(__builtin_constant_p(sig)			 ? __const_sigismember((set), (sig))		 : __gen_sigismember((set), (sig)))
 
 struct pt_regs;
 

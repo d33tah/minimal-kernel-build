@@ -72,10 +72,7 @@
 #define preemptible()				0
 
 
-#define preempt_set_need_resched() \
-do { \
-	set_preempt_need_resched(); \
-} while (0)
+#define preempt_set_need_resched() do { 	set_preempt_need_resched(); } while (0)
 
 
 #endif

@@ -6,8 +6,7 @@
 struct kmem_cache *radix_tree_node_cachep;
 
 #define IDR_INDEX_BITS		(8  * sizeof(int) - 1)
-#define IDR_MAX_PATH		(DIV_ROUND_UP(IDR_INDEX_BITS, \
-						RADIX_TREE_MAP_SHIFT))
+#define IDR_MAX_PATH		(DIV_ROUND_UP(IDR_INDEX_BITS, 						RADIX_TREE_MAP_SHIFT))
 #define IDR_PRELOAD_SIZE	(IDR_MAX_PATH * 2 - 1)
 
 DEFINE_PER_CPU(struct radix_tree_preload, radix_tree_preloads) = {

@@ -11,14 +11,9 @@ struct idr {
 
 #define IDR_FREE	0
 
-#define IDR_RT_MARKER	(ROOT_IS_IDR | (__force gfp_t)			\
-					(1 << (ROOT_TAG_SHIFT + IDR_FREE)))
+#define IDR_RT_MARKER	(ROOT_IS_IDR | (__force gfp_t)								(1 << (ROOT_TAG_SHIFT + IDR_FREE)))
 
-#define IDR_INIT_BASE(name, base) {					\
-	.idr_rt = RADIX_TREE_INIT(name, IDR_RT_MARKER),			\
-	.idr_base = (base),						\
-	.idr_next = 0,							\
-}
+#define IDR_INIT_BASE(name, base) {						.idr_rt = RADIX_TREE_INIT(name, IDR_RT_MARKER),				.idr_base = (base),							.idr_next = 0,							}
 
 #define IDR_INIT(name)	IDR_INIT_BASE(name, 0)
 
@@ -75,9 +70,7 @@ struct ida {
 
 #define IDA_INIT_FLAGS	(XA_FLAGS_LOCK_IRQ | XA_FLAGS_ALLOC)
 
-#define IDA_INIT(name)	{						\
-	.xa = XARRAY_INIT(name, IDA_INIT_FLAGS)				\
-}
+#define IDA_INIT(name)	{							.xa = XARRAY_INIT(name, IDA_INIT_FLAGS)				}
 #define DEFINE_IDA(name)	struct ida name = IDA_INIT(name)
 
 int ida_alloc_range(struct ida *, unsigned int min, unsigned int max, gfp_t);

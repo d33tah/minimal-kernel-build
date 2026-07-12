@@ -194,8 +194,7 @@ void vm_area_free(struct vm_area_struct *);
 
 #define TASK_EXEC ((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0)
 
-#define VM_DATA_FLAGS_TSK_EXEC	(VM_READ | VM_WRITE | TASK_EXEC | \
-				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
+#define VM_DATA_FLAGS_TSK_EXEC	(VM_READ | VM_WRITE | TASK_EXEC | 				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
 
 
 #ifndef VM_STACK_DEFAULT_FLAGS		
@@ -398,8 +397,7 @@ static inline enum zone_type folio_zonenum(const struct folio *folio)
 	return page_zonenum(&folio->page);
 }
 
-#define folio_ref_zero_or_close_to_overflow(folio) \
-	((unsigned int) folio_ref_count(folio) + 127u <= 127u)
+#define folio_ref_zero_or_close_to_overflow(folio) 	((unsigned int) folio_ref_count(folio) + 127u <= 127u)
 
 static inline void folio_get(struct folio *folio)
 {
@@ -681,25 +679,13 @@ static inline void pgtable_pte_page_dtor(struct page *page)
 	dec_lruvec_page_state(page, NR_PAGETABLE);
 }
 
-#define pte_offset_map_lock(mm, pmd, address, ptlp)	\
-({							\
-	spinlock_t *__ptl = pte_lockptr(mm, pmd);	\
-	pte_t *__pte = pte_offset_map(pmd, address);	\
-	*(ptlp) = __ptl;				\
-	spin_lock(__ptl);				\
-	__pte;						\
-})
+#define pte_offset_map_lock(mm, pmd, address, ptlp)	({								spinlock_t *__ptl = pte_lockptr(mm, pmd);		pte_t *__pte = pte_offset_map(pmd, address);		*(ptlp) = __ptl;					spin_lock(__ptl);					__pte;						})
 
-#define pte_unmap_unlock(pte, ptl)	do {		\
-	spin_unlock(ptl);				\
-	pte_unmap(pte);					\
-} while (0)
+#define pte_unmap_unlock(pte, ptl)	do {			spin_unlock(ptl);					pte_unmap(pte);					} while (0)
 
 #define pte_alloc(mm, pmd) (unlikely(pmd_none(*(pmd))) && __pte_alloc(mm, pmd))
 
-#define pte_alloc_map_lock(mm, pmd, address, ptlp)	\
-	(pte_alloc(mm, pmd) ?			\
-		 NULL : pte_offset_map_lock(mm, pmd, address, ptlp))
+#define pte_alloc_map_lock(mm, pmd, address, ptlp)		(pte_alloc(mm, pmd) ?					 NULL : pte_offset_map_lock(mm, pmd, address, ptlp))
 
 static inline spinlock_t *pmd_lockptr(struct mm_struct *mm, pmd_t *pmd)
 {

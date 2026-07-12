@@ -8,11 +8,6 @@
 
  
 
-#define VGA_MAP_MEM(x, s)					\
-({								\
-	unsigned long start = (unsigned long)phys_to_virt(x);	\
-								\
-	start;							\
-})
+#define VGA_MAP_MEM(x, s)					({									unsigned long start = (unsigned long)phys_to_virt(x);										start;							})
 
 #endif  

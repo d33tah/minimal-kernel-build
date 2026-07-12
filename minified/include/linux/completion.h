@@ -5,11 +5,9 @@
 struct completion {
 };
 
-#define COMPLETION_INITIALIZER(work) \
-	{ }
+#define COMPLETION_INITIALIZER(work) 	{ }
 
-#define DECLARE_COMPLETION(work) \
-	struct completion work = COMPLETION_INITIALIZER(work)
+#define DECLARE_COMPLETION(work) 	struct completion work = COMPLETION_INITIALIZER(work)
 
 static inline void init_completion(struct completion *x) { }
 

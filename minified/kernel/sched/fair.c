@@ -77,8 +77,7 @@ static u64 __calc_delta(u64 delta_exec, unsigned long weight, struct load_weight
 
 const struct sched_class fair_sched_class;
 
-#define for_each_sched_entity(se) \
-		for (; se; se = NULL)
+#define for_each_sched_entity(se) 		for (; se; se = NULL)
 
 static inline u64 max_vruntime(u64 max_vruntime, u64 vruntime)
 {
@@ -104,8 +103,7 @@ static inline bool entity_before(struct sched_entity *a,
 	return (s64)(a->vruntime - b->vruntime) < 0;
 }
 
-#define __node_2_se(node) \
-	rb_entry((node), struct sched_entity, run_node)
+#define __node_2_se(node) 	rb_entry((node), struct sched_entity, run_node)
 
 static void update_min_vruntime(struct cfs_rq *cfs_rq)
 {

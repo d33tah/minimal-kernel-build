@@ -43,9 +43,7 @@ extern unsigned long _brk_end;
 void *extend_brk(size_t size, size_t align);
 
  
-#define RESERVE_BRK(name, size)					\
-	__section(".bss..brk") __aligned(1) __used	\
-	static char __brk_##name[size]
+#define RESERVE_BRK(name, size)						__section(".bss..brk") __aligned(1) __used		static char __brk_##name[size]
 
 
 /* 32-bit only kernel */

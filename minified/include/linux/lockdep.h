@@ -31,11 +31,9 @@ extern int lockdep_is_held(const void *);
 
 #define lock_acquired(lockdep_map, ip) do {} while (0)
 
-#define LOCK_CONTENDED(_lock, try, lock) \
-	lock(_lock)
+#define LOCK_CONTENDED(_lock, try, lock) 	lock(_lock)
 
-#define LOCK_CONTENDED_RETURN(_lock, try, lock) \
-	lock(_lock)
+#define LOCK_CONTENDED_RETURN(_lock, try, lock) 	lock(_lock)
 
 
 

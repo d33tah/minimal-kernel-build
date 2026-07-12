@@ -12,11 +12,7 @@
 #define _BUG_FLAGS(ins, flags, extra)  asm volatile(ins)
 
 
-#define BUG()							\
-do {								\
-	_BUG_FLAGS(ASM_UD2, 0, "");				\
-	__builtin_unreachable();				\
-} while (0)
+#define BUG()							do {									_BUG_FLAGS(ASM_UD2, 0, "");					__builtin_unreachable();				} while (0)
 
 
 /* --- 2025-12-07 10:25 --- Inlined asm-generic/bug.h content */
@@ -32,18 +28,11 @@ do {								\
 #endif
 
 #ifndef HAVE_ARCH_WARN_ON
-#define WARN_ON(condition) ({						\
-	int __ret_warn_on = !!(condition);				\
-	unlikely(__ret_warn_on);					\
-})
+#define WARN_ON(condition) ({							int __ret_warn_on = !!(condition);					unlikely(__ret_warn_on);					})
 #endif
 
 #ifndef WARN
-#define WARN(condition, format...) ({					\
-	int __ret_warn_on = !!(condition);				\
-	no_printk(format);						\
-	unlikely(__ret_warn_on);					\
-})
+#define WARN(condition, format...) ({						int __ret_warn_on = !!(condition);					no_printk(format);							unlikely(__ret_warn_on);					})
 #endif
 
 #define WARN_ON_ONCE(condition) WARN_ON(condition)

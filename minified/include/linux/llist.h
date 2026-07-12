@@ -20,17 +20,11 @@ static inline void init_llist_head(struct llist_head *list)
 	list->first = NULL;
 }
 
-#define llist_entry(ptr, type, member)		\
-	container_of(ptr, type, member)
+#define llist_entry(ptr, type, member)			container_of(ptr, type, member)
 
-#define member_address_is_nonnull(ptr, member)	\
-	((uintptr_t)(ptr) + offsetof(typeof(*(ptr)), member) != 0)
+#define member_address_is_nonnull(ptr, member)		((uintptr_t)(ptr) + offsetof(typeof(*(ptr)), member) != 0)
 
-#define llist_for_each_entry_safe(pos, n, node, member)			       \
-	for (pos = llist_entry((node), typeof(*pos), member);		       \
-	     member_address_is_nonnull(pos, member) &&			       \
-	        (n = llist_entry(pos->member.next, typeof(*n), member), true); \
-	     pos = n)
+#define llist_for_each_entry_safe(pos, n, node, member)			       	for (pos = llist_entry((node), typeof(*pos), member);		       	     member_address_is_nonnull(pos, member) &&			       	        (n = llist_entry(pos->member.next, typeof(*n), member), true); 	     pos = n)
 
 
 static inline bool llist_add_batch(struct llist_node *new_first,

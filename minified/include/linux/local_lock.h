@@ -11,15 +11,9 @@ typedef struct {
 
 #define INIT_LOCAL_LOCK(lockname)	{ }
 
-#define __local_lock(lock)					\
-	do {							\
-		preempt_disable();				\
-	} while (0)
+#define __local_lock(lock)						do {									preempt_disable();					} while (0)
 
-#define __local_unlock(lock)					\
-	do {							\
-		preempt_enable();				\
-	} while (0)
+#define __local_unlock(lock)						do {									preempt_enable();					} while (0)
 
 #define local_lock(lock)		__local_lock(lock)
 

@@ -644,11 +644,7 @@ static const char *walk_component(struct nameidata *nd, int flags)
 
 #include <asm/word-at-a-time.h>
 
-#define HASH_MIX(x, y, a)	\
-	(	x ^= (a),	\
-	y ^= x,	x = rol32(x, 7),\
-	x += y,	y = rol32(y,20),\
-	y *= 9			)
+#define HASH_MIX(x, y, a)		(	x ^= (a),		y ^= x,	x = rol32(x, 7),	x += y,	y = rol32(y,20),	y *= 9			)
 
 static inline unsigned int fold_hash(unsigned long x, unsigned long y)
 {

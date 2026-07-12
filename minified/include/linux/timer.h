@@ -19,16 +19,9 @@ struct timer_list {
 #define TIMER_IRQSAFE		0x00200000
 
 
-#define __TIMER_INITIALIZER(_function, _flags) {		\
-		.entry = { .next = TIMER_ENTRY_STATIC },	\
-		.function = (_function),			\
-		.flags = (_flags),				\
-		__TIMER_LOCKDEP_MAP_INITIALIZER(		\
-			__FILE__ ":" __stringify(__LINE__))	\
-	}
+#define __TIMER_INITIALIZER(_function, _flags) {				.entry = { .next = TIMER_ENTRY_STATIC },			.function = (_function),					.flags = (_flags),						__TIMER_LOCKDEP_MAP_INITIALIZER(					__FILE__ ":" __stringify(__LINE__))		}
 
-#define from_timer(var, callback_timer, timer_fieldname) \
-	container_of(callback_timer, typeof(*var), timer_fieldname)
+#define from_timer(var, callback_timer, timer_fieldname) 	container_of(callback_timer, typeof(*var), timer_fieldname)
 
 /* timer_pending removed: 0-caller orphan (cascaded hlist_unhashed_lockless) */
 

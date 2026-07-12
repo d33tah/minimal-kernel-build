@@ -101,17 +101,9 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
 /* _le bitmap functions (find_next_zero_bit_le, find_next_bit_le, find_first_zero_bit_le)
    removed - never called */
 
-#define for_each_clear_bit_from(bit, addr, size) \
-	for ((bit) = find_next_zero_bit((addr), (size), (bit));	\
-	     (bit) < (size);					\
-	     (bit) = find_next_zero_bit((addr), (size), (bit) + 1))
+#define for_each_clear_bit_from(bit, addr, size) 	for ((bit) = find_next_zero_bit((addr), (size), (bit));		     (bit) < (size);						     (bit) = find_next_zero_bit((addr), (size), (bit) + 1))
 
-#define for_each_clear_bitrange_from(b, e, addr, size)		\
-	for ((b) = find_next_zero_bit((addr), (size), (b)),	\
-	     (e) = find_next_bit((addr), (size), (b) + 1);	\
-	     (b) < (size);					\
-	     (b) = find_next_zero_bit((addr), (size), (e) + 1),	\
-	     (e) = find_next_bit((addr), (size), (b) + 1))
+#define for_each_clear_bitrange_from(b, e, addr, size)			for ((b) = find_next_zero_bit((addr), (size), (b)),		     (e) = find_next_bit((addr), (size), (b) + 1);		     (b) < (size);						     (b) = find_next_zero_bit((addr), (size), (e) + 1),		     (e) = find_next_bit((addr), (size), (b) + 1))
 
 #include <linux/string.h>
 #include <linux/types.h>

@@ -10,27 +10,15 @@
 
 #define DEFAULT_STACK	0
 
-#define G(_vector, _addr, _ist, _type, _dpl, _segment)	\
-	{						\
-		.vector		= _vector,		\
-		.bits.ist	= _ist,			\
-		.bits.type	= _type,		\
-		.bits.dpl	= _dpl,			\
-		.bits.p		= 1,			\
-		.addr		= _addr,		\
-		.segment	= _segment,		\
-	}
+#define G(_vector, _addr, _ist, _type, _dpl, _segment)		{								.vector		= _vector,				.bits.ist	= _ist,					.bits.type	= _type,				.bits.dpl	= _dpl,					.bits.p		= 1,					.addr		= _addr,				.segment	= _segment,			}
 
-#define INTG(_vector, _addr)				\
-	G(_vector, _addr, DEFAULT_STACK, GATE_INTERRUPT, DPL0, __KERNEL_CS)
+#define INTG(_vector, _addr)					G(_vector, _addr, DEFAULT_STACK, GATE_INTERRUPT, DPL0, __KERNEL_CS)
 
-#define SYSG(_vector, _addr)				\
-	G(_vector, _addr, DEFAULT_STACK, GATE_INTERRUPT, DPL3, __KERNEL_CS)
+#define SYSG(_vector, _addr)					G(_vector, _addr, DEFAULT_STACK, GATE_INTERRUPT, DPL3, __KERNEL_CS)
 
 #define ISTG(_vector, _addr, _ist)	INTG(_vector, _addr)
 
-#define TSKG(_vector, _gdt)				\
-	G(_vector, NULL, DEFAULT_STACK, GATE_TASK, DPL0, _gdt << 3)
+#define TSKG(_vector, _gdt)					G(_vector, NULL, DEFAULT_STACK, GATE_TASK, DPL0, _gdt << 3)
 
 #define IDT_TABLE_SIZE		(IDT_ENTRIES * sizeof(gate_desc))
 

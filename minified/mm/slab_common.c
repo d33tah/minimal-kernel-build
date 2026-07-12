@@ -228,12 +228,7 @@ struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
 	return kmalloc_caches[kmalloc_type(flags)][index];
 }
 
-#define INIT_KMALLOC_INFO(__size, __short_size)			\
-{								\
-	.name[KMALLOC_NORMAL]  = "kmalloc-" #__short_size,	\
-	.name[KMALLOC_RECLAIM] = "kmalloc-rcl-" #__short_size,	\
-	.size = __size,						\
-}
+#define INIT_KMALLOC_INFO(__size, __short_size)			{									.name[KMALLOC_NORMAL]  = "kmalloc-" #__short_size,		.name[KMALLOC_RECLAIM] = "kmalloc-rcl-" #__short_size,		.size = __size,						}
 
 const struct kmalloc_info_struct kmalloc_info[] __initconst = {
 	INIT_KMALLOC_INFO(0, 0),

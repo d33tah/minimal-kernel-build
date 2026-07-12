@@ -41,11 +41,7 @@ extern struct class * __must_check __class_create(struct module *owner,
 						  const char *name,
 						  struct lock_class_key *key);
 
-#define class_create(owner, name)		\
-({						\
-	static struct lock_class_key __key;	\
-	__class_create(owner, name, &__key);	\
-})
+#define class_create(owner, name)		({							static struct lock_class_key __key;		__class_create(owner, name, &__key);	})
 
 
 #endif	 

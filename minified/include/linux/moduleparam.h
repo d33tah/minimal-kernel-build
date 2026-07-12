@@ -8,10 +8,7 @@
 #define __MODULE_INFO_PREFIX KBUILD_MODNAME "."
 
 
-#define __MODULE_INFO(tag, name, info)					  \
-	static const char __UNIQUE_ID(name)[]				  \
-		__used __section(".modinfo") __aligned(1)		  \
-		= __MODULE_INFO_PREFIX __stringify(tag) "=" info
+#define __MODULE_INFO(tag, name, info)					  	static const char __UNIQUE_ID(name)[]				  		__used __section(".modinfo") __aligned(1)		  		= __MODULE_INFO_PREFIX __stringify(tag) "=" info
 
 struct kernel_param;
 

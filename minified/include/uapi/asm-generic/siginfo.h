@@ -29,13 +29,7 @@ union __sifields {
  * si_signo/si_errno/si_code order), so the swapped #else arm was statically dead.
  * Kept only the definition the preprocessor actually emitted.
  */
-#define __SIGINFO 			\
-struct {				\
-	int si_signo;			\
-	int si_errno;			\
-	int si_code;			\
-	union __sifields _sifields;	\
-}
+#define __SIGINFO 			struct {					int si_signo;				int si_errno;				int si_code;				union __sifields _sifields;	}
 
 typedef struct siginfo {
 	union {

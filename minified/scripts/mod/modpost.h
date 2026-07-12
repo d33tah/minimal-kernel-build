@@ -61,12 +61,7 @@ static inline void __endian(const void *src, void *dest, unsigned int size)
 		((unsigned char*)dest)[i] = ((unsigned char*)src)[size - i-1];
 }
 
-#define TO_NATIVE(x)						\
-({								\
-	typeof(x) __x;						\
-	__endian(&(x), &(__x), sizeof(__x));			\
-	__x;							\
-})
+#define TO_NATIVE(x)						({									typeof(x) __x;							__endian(&(x), &(__x), sizeof(__x));				__x;							})
 
 #else  
 

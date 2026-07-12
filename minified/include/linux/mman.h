@@ -20,10 +20,7 @@
 #define arch_calc_vm_flag_bits(flags) 0
 #endif
 
-#define _calc_vm_trans(x, bit1, bit2) \
-  ((!(bit1) || !(bit2)) ? 0 : \
-  ((bit1) <= (bit2) ? ((x) & (bit1)) * ((bit2) / (bit1)) \
-   : ((x) & (bit1)) / ((bit1) / (bit2))))
+#define _calc_vm_trans(x, bit1, bit2)   ((!(bit1) || !(bit2)) ? 0 :   ((bit1) <= (bit2) ? ((x) & (bit1)) * ((bit2) / (bit1))    : ((x) & (bit1)) / ((bit1) / (bit2))))
 
 static inline unsigned long
 calc_vm_prot_bits(unsigned long prot, unsigned long pkey)

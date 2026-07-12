@@ -37,10 +37,7 @@ struct memblock memblock __initdata_memblock = {
 
 static __refdata struct memblock_type *memblock_memory = &memblock.memory;
 
-#define for_each_memblock_type(i, memblock_type, rgn)			\
-	for (i = 0, rgn = &memblock_type->regions[0];			\
-	     i < memblock_type->cnt;					\
-	     i++, rgn = &memblock_type->regions[i])
+#define for_each_memblock_type(i, memblock_type, rgn)				for (i = 0, rgn = &memblock_type->regions[0];				     i < memblock_type->cnt;						     i++, rgn = &memblock_type->regions[i])
 
 static int memblock_can_resize __initdata_memblock;
 static int memblock_memory_in_slab __initdata_memblock = 0;

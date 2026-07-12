@@ -459,22 +459,12 @@ atomic_long_dec_if_positive(atomic_long_t *v)
 	return arch_atomic_long_dec_if_positive(v);
 }
 
-#define xchg(ptr, ...) \
-({ \
-	typeof(ptr) __ai_ptr = (ptr); \
-	instrument_atomic_write(__ai_ptr, sizeof(*__ai_ptr)); \
-	arch_xchg(__ai_ptr, __VA_ARGS__); \
-})
+#define xchg(ptr, ...) ({ 	typeof(ptr) __ai_ptr = (ptr); 	instrument_atomic_write(__ai_ptr, sizeof(*__ai_ptr)); 	arch_xchg(__ai_ptr, __VA_ARGS__); })
 
 
 
 
-#define cmpxchg(ptr, ...) \
-({ \
-	typeof(ptr) __ai_ptr = (ptr); \
-	instrument_atomic_write(__ai_ptr, sizeof(*__ai_ptr)); \
-	arch_cmpxchg(__ai_ptr, __VA_ARGS__); \
-})
+#define cmpxchg(ptr, ...) ({ 	typeof(ptr) __ai_ptr = (ptr); 	instrument_atomic_write(__ai_ptr, sizeof(*__ai_ptr)); 	arch_cmpxchg(__ai_ptr, __VA_ARGS__); })
 
 
 
@@ -487,14 +477,7 @@ atomic_long_dec_if_positive(atomic_long_t *v)
 
 
 
-#define try_cmpxchg64(ptr, oldp, ...) \
-({ \
-	typeof(ptr) __ai_ptr = (ptr); \
-	typeof(oldp) __ai_oldp = (oldp); \
-	instrument_atomic_write(__ai_ptr, sizeof(*__ai_ptr)); \
-	instrument_atomic_write(__ai_oldp, sizeof(*__ai_oldp)); \
-	arch_try_cmpxchg64(__ai_ptr, __ai_oldp, __VA_ARGS__); \
-})
+#define try_cmpxchg64(ptr, oldp, ...) ({ 	typeof(ptr) __ai_ptr = (ptr); 	typeof(oldp) __ai_oldp = (oldp); 	instrument_atomic_write(__ai_ptr, sizeof(*__ai_ptr)); 	instrument_atomic_write(__ai_oldp, sizeof(*__ai_oldp)); 	arch_try_cmpxchg64(__ai_ptr, __ai_oldp, __VA_ARGS__); })
 
 
 
@@ -502,12 +485,7 @@ atomic_long_dec_if_positive(atomic_long_t *v)
 
 
 
-#define cmpxchg_double(ptr, ...) \
-({ \
-	typeof(ptr) __ai_ptr = (ptr); \
-	instrument_atomic_write(__ai_ptr, 2 * sizeof(*__ai_ptr)); \
-	arch_cmpxchg_double(__ai_ptr, __VA_ARGS__); \
-})
+#define cmpxchg_double(ptr, ...) ({ 	typeof(ptr) __ai_ptr = (ptr); 	instrument_atomic_write(__ai_ptr, 2 * sizeof(*__ai_ptr)); 	arch_cmpxchg_double(__ai_ptr, __VA_ARGS__); })
 
 
 

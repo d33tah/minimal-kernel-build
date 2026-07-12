@@ -45,8 +45,7 @@ struct expr {
 #define EXPR_AND(dep1, dep2)	(((dep1)<(dep2))?(dep1):(dep2))
 #define EXPR_NOT(dep)		(2-(dep))
 
-#define expr_list_for_each_sym(l, e, s) \
-	for (e = (l); e && (s = e->right.sym); e = e->left.expr)
+#define expr_list_for_each_sym(l, e, s) 	for (e = (l); e && (s = e->right.sym); e = e->left.expr)
 
 struct expr_value {
 	struct expr *expr;
@@ -157,14 +156,10 @@ struct property {
 	int lineno;                 
 };
 
-#define for_all_properties(sym, st, tok) \
-	for (st = sym->prop; st; st = st->next) \
-		if (st->type == (tok))
+#define for_all_properties(sym, st, tok) 	for (st = sym->prop; st; st = st->next) 		if (st->type == (tok))
 #define for_all_defaults(sym, st) for_all_properties(sym, st, P_DEFAULT)
 #define for_all_choices(sym, st) for_all_properties(sym, st, P_CHOICE)
-#define for_all_prompts(sym, st) \
-	for (st = sym->prop; st; st = st->next) \
-		if (st->text)
+#define for_all_prompts(sym, st) 	for (st = sym->prop; st; st = st->next) 		if (st->text)
 
  
 struct menu {

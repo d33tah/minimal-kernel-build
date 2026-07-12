@@ -59,9 +59,7 @@ enum migratetype {
 
 
 
-#define for_each_migratetype_order(order, type) \
-	for (order = 0; order < MAX_ORDER; order++) \
-		for (type = 0; type < MIGRATE_TYPES; type++)
+#define for_each_migratetype_order(order, type) 	for (order = 0; order < MAX_ORDER; order++) 		for (type = 0; type < MIGRATE_TYPES; type++)
 
 extern int page_group_by_mobility_disabled;
 
@@ -320,18 +318,9 @@ extern struct pglist_data *first_online_pgdat(void);
 extern struct zone *next_zone(struct zone *zone);
 
 /* for_each_online_pgdat + next_online_pgdat removed - unused */
-#define for_each_zone(zone)			        \
-	for (zone = (first_online_pgdat())->node_zones; \
-	     zone;					\
-	     zone = next_zone(zone))
+#define for_each_zone(zone)			        	for (zone = (first_online_pgdat())->node_zones; 	     zone;						     zone = next_zone(zone))
 
-#define for_each_populated_zone(zone)		        \
-	for (zone = (first_online_pgdat())->node_zones; \
-	     zone;					\
-	     zone = next_zone(zone))			\
-		if (!populated_zone(zone))		\
-			;  		\
-		else
+#define for_each_populated_zone(zone)		        	for (zone = (first_online_pgdat())->node_zones; 	     zone;						     zone = next_zone(zone))					if (!populated_zone(zone))					;  				else
 
 static inline struct zone *zonelist_zone(struct zoneref *zoneref)
 {
@@ -361,17 +350,9 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 							highest_zoneidx);
 }
 
-#define for_each_zone_zonelist(zone, z, zlist, highidx) \
-	for (z = first_zones_zonelist(zlist, highidx), zone = zonelist_zone(z);	\
-		zone;							\
-		z = next_zones_zonelist(++z, highidx),	\
-			zone = zonelist_zone(z))
+#define for_each_zone_zonelist(zone, z, zlist, highidx) 	for (z = first_zones_zonelist(zlist, highidx), zone = zonelist_zone(z);			zone;									z = next_zones_zonelist(++z, highidx),				zone = zonelist_zone(z))
 
-#define for_next_zone_zonelist(zone, z, highidx) \
-	for (zone = z->zone;	\
-		zone;							\
-		z = next_zones_zonelist(++z, highidx),	\
-			zone = zonelist_zone(z))
+#define for_next_zone_zonelist(zone, z, highidx) 	for (zone = z->zone;			zone;									z = next_zones_zonelist(++z, highidx),				zone = zonelist_zone(z))
 
 
 

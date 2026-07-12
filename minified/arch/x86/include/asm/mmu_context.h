@@ -54,16 +54,9 @@ extern void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 			       struct task_struct *tsk);
 #define switch_mm_irqs_off switch_mm_irqs_off
 
-#define activate_mm(prev, next)			\
-do {						\
-	paravirt_activate_mm((prev), (next));	\
-	switch_mm((prev), (next), NULL);	\
-} while (0);
+#define activate_mm(prev, next)			do {							paravirt_activate_mm((prev), (next));		switch_mm((prev), (next), NULL);	} while (0);
 
-#define deactivate_mm(tsk, mm)			\
-do {						\
-	loadsegment(gs, 0);			\
-} while (0)
+#define deactivate_mm(tsk, mm)			do {							loadsegment(gs, 0);			} while (0)
 
 /* arch_dup_pkeys, arch_dup_mmap, arch_exit_mmap removed - unused (no-op) */
 

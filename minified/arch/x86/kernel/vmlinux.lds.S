@@ -38,9 +38,7 @@ ENTRY(phys_startup_32)
 jiffies = jiffies_64;
 
 #define X86_ALIGN_RODATA_BEGIN
-#define X86_ALIGN_RODATA_END					\
-		. = ALIGN(PAGE_SIZE);				\
-		__end_rodata_aligned = .;
+#define X86_ALIGN_RODATA_END							. = ALIGN(PAGE_SIZE);						__end_rodata_aligned = .;
 
 #define ALIGN_ENTRY_TEXT_BEGIN
 #define ALIGN_ENTRY_TEXT_END
@@ -121,9 +119,7 @@ SECTIONS
 		__vvar_beginning_hack = .;
 
 		/* Place all vvars at the offsets in asm/vvar.h. */
-#define EMIT_VVAR(name, offset)				\
-		. = __vvar_beginning_hack + offset;	\
-		*(.vvar_ ## name)
+#define EMIT_VVAR(name, offset)						. = __vvar_beginning_hack + offset;			*(.vvar_ ## name)
 #include <asm/vvar.h>
 #undef EMIT_VVAR
 

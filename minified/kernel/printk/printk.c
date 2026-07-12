@@ -28,10 +28,7 @@ struct console *console_drivers;
 
 
 
-#define down_console_sem() do { \
-	down(&console_sem);\
-	mutex_acquire(&console_lock_dep_map, 0, 0, _RET_IP_);\
-} while (0)
+#define down_console_sem() do { 	down(&console_sem);	mutex_acquire(&console_lock_dep_map, 0, 0, _RET_IP_);} while (0)
 
 static int __down_trylock_console_sem(unsigned long ip)
 {
@@ -169,10 +166,7 @@ static void try_enable_default_console(struct console *newcon)
 		newcon->flags |= CON_CONSDEV;
 }
 
-#define con_printk(lvl, con, fmt, ...)			\
-	printk(lvl pr_fmt("%sconsole [%s%d] " fmt),	\
-	       (con->flags & CON_BOOT) ? "boot" : "",	\
-	       con->name, con->index, ##__VA_ARGS__)
+#define con_printk(lvl, con, fmt, ...)				printk(lvl pr_fmt("%sconsole [%s%d] " fmt),		       (con->flags & CON_BOOT) ? "boot" : "",		       con->name, con->index, ##__VA_ARGS__)
 
 void register_console(struct console *newcon)
 {

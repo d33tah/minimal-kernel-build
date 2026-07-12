@@ -7,12 +7,7 @@
 #include <asm/ibt.h>
 
  
-#define GDT_ENTRY(flags, base, limit)			\
-	((((base)  & _AC(0xff000000,ULL)) << (56-24)) |	\
-	 (((flags) & _AC(0x0000f0ff,ULL)) << 40) |	\
-	 (((limit) & _AC(0x000f0000,ULL)) << (48-16)) |	\
-	 (((base)  & _AC(0x00ffffff,ULL)) << 16) |	\
-	 (((limit) & _AC(0x0000ffff,ULL))))
+#define GDT_ENTRY(flags, base, limit)				((((base)  & _AC(0xff000000,ULL)) << (56-24)) |		 (((flags) & _AC(0x0000f0ff,ULL)) << 40) |		 (((limit) & _AC(0x000f0000,ULL)) << (48-16)) |		 (((base)  & _AC(0x00ffffff,ULL)) << 16) |		 (((limit) & _AC(0x0000ffff,ULL))))
 
  
 
@@ -87,15 +82,7 @@ extern void early_ignore_irq(void);
 
 
  
-#define __loadsegment_simple(seg, value)				\
-do {									\
-	unsigned short __val = (value);					\
-									\
-	asm volatile("						\n"	\
-		     "1:	movl %k0,%%" #seg "		\n"	\
-		     _ASM_EXTABLE_TYPE_REG(1b, 1b, EX_TYPE_ZERO_REG, %k0)\
-		     : "+r" (__val) : : "memory");			\
-} while (0)
+#define __loadsegment_simple(seg, value)				do {										unsigned short __val = (value);															asm volatile("						\n"			     "1:	movl %k0,%%" #seg "		\n"			     _ASM_EXTABLE_TYPE_REG(1b, 1b, EX_TYPE_ZERO_REG, %k0)		     : "+r" (__val) : : "memory");			} while (0)
 
 
 #define __loadsegment_fs(value) __loadsegment_simple(fs, (value))
@@ -105,8 +92,7 @@ do {									\
 #define loadsegment(seg, value) __loadsegment_ ## seg (value)
 
  
-#define savesegment(seg, value)				\
-	asm("mov %%" #seg ",%0":"=r" (value) : : "memory")
+#define savesegment(seg, value)					asm("mov %%" #seg ",%0":"=r" (value) : : "memory")
 
 #endif  
 

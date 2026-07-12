@@ -5,8 +5,7 @@
 
 #ifndef __ASSEMBLY__
 
-#define DECLARE_BITMAP(name,bits) \
-	unsigned long name[BITS_TO_LONGS(bits)]
+#define DECLARE_BITMAP(name,bits) 	unsigned long name[BITS_TO_LONGS(bits)]
 
 typedef u32 __kernel_dev_t;
 

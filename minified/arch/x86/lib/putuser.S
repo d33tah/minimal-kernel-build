@@ -31,8 +31,7 @@
  * as they get called from within inline assembly.
  */
 
-#define LOAD_TASK_SIZE_MINUS_N(n) \
-	mov $(TASK_SIZE_MAX - (n)),%_ASM_BX
+#define LOAD_TASK_SIZE_MINUS_N(n) 	mov $(TASK_SIZE_MAX - (n)),%_ASM_BX
 
 .text
 SYM_FUNC_START(__put_user_1)

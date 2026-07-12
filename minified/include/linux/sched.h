@@ -56,27 +56,11 @@ struct signal_struct;
 # define debug_normal_state_change(cond)	do { } while (0)
 # define debug_special_state_change(cond)	do { } while (0)
 
-#define __set_current_state(state_value)				\
-	do {								\
-		debug_normal_state_change((state_value));		\
-		WRITE_ONCE(current->__state, (state_value));		\
-	} while (0)
+#define __set_current_state(state_value)					do {										debug_normal_state_change((state_value));				WRITE_ONCE(current->__state, (state_value));			} while (0)
 
-#define set_current_state(state_value)					\
-	do {								\
-		debug_normal_state_change((state_value));		\
-		smp_store_mb(current->__state, (state_value));		\
-	} while (0)
+#define set_current_state(state_value)						do {										debug_normal_state_change((state_value));				smp_store_mb(current->__state, (state_value));			} while (0)
 
-#define set_special_state(state_value)					\
-	do {								\
-		unsigned long flags;  			\
-									\
-		raw_spin_lock_irqsave(&current->pi_lock, flags);	\
-		debug_special_state_change((state_value));		\
-		WRITE_ONCE(current->__state, (state_value));		\
-		raw_spin_unlock_irqrestore(&current->pi_lock, flags);	\
-	} while (0)
+#define set_special_state(state_value)						do {										unsigned long flags;  														raw_spin_lock_irqsave(&current->pi_lock, flags);			debug_special_state_change((state_value));				WRITE_ONCE(current->__state, (state_value));				raw_spin_unlock_irqrestore(&current->pi_lock, flags);		} while (0)
 
 enum {
 	TASK_COMM_LEN = 16,
@@ -373,9 +357,7 @@ static inline int _cond_resched(void)
 
 
 
-#define cond_resched() ({			\
-	_cond_resched();			\
-})
+#define cond_resched() ({				_cond_resched();			})
 
 
 static __always_inline bool need_resched(void)

@@ -12,13 +12,7 @@ extern void __delay(unsigned long loops);
  * (for non-constant n) is never instantiated -- it has been removed along with
  * the __udelay() function.
  */
-#define udelay(n)							\
-	({								\
-		if ((n) / 20000 >= 1)					\
-			__bad_udelay();					\
-		else							\
-			__const_udelay((n) * 0x10c7ul);			\
-	})
+#define udelay(n)								({										if ((n) / 20000 >= 1)								__bad_udelay();							else										__const_udelay((n) * 0x10c7ul);				})
 
 #include <linux/init.h>
 

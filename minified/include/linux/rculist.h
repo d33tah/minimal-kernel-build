@@ -24,8 +24,7 @@ static inline void list_add_tail_rcu(struct list_head *new,
 	__list_add_rcu(new, head->prev, head);
 }
 
-#define list_entry_rcu(ptr, type, member) \
-	container_of(READ_ONCE(ptr), type, member)
+#define list_entry_rcu(ptr, type, member) 	container_of(READ_ONCE(ptr), type, member)
 
 
 

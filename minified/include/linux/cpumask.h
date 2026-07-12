@@ -35,13 +35,9 @@ static __always_inline unsigned int cpumask_check(unsigned int cpu)
 }
 
 /* cpumask_next removed: 0-caller static-inline orphan (NR_CPUS==1). */
-#define for_each_cpu(cpu, mask)			\
-	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
+#define for_each_cpu(cpu, mask)				for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
 
-#define CPU_BITS_NONE						\
-{								\
-	[0 ... BITS_TO_LONGS(NR_CPUS)-1] = 0UL			\
-}
+#define CPU_BITS_NONE						{									[0 ... BITS_TO_LONGS(NR_CPUS)-1] = 0UL			}
 
 
 static __always_inline void cpumask_set_cpu(unsigned int cpu, struct cpumask *dstp)
@@ -104,9 +100,7 @@ set_cpu_possible(unsigned int cpu, bool possible)
 		cpumask_clear_cpu(cpu, &__cpu_possible_mask);
 }
 
-#define to_cpumask(bitmap)						\
-	((struct cpumask *)(1 ? (bitmap)				\
-			    : (void *)sizeof(__check_is_bitmap(bitmap))))
+#define to_cpumask(bitmap)							((struct cpumask *)(1 ? (bitmap)							    : (void *)sizeof(__check_is_bitmap(bitmap))))
 
 static inline int __check_is_bitmap(const unsigned long *bitmap)
 {
@@ -135,16 +129,10 @@ static inline bool cpu_possible(unsigned int cpu)
 
 
 /* NR_CPUS <= BITS_PER_LONG always true */
-#define CPU_BITS_ALL						\
-{								\
-	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\
-}
+#define CPU_BITS_ALL						{									[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	}
 
 /* NR_CPUS <= BITS_PER_LONG always true */
-#define CPU_MASK_ALL							\
-(cpumask_t) { {								\
-	[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	\
-} }
+#define CPU_MASK_ALL							(cpumask_t) { {									[BITS_TO_LONGS(NR_CPUS)-1] = BITMAP_LAST_WORD_MASK(NR_CPUS)	} }
 
 
 #endif  

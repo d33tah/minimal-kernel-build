@@ -9,9 +9,7 @@
 
 extern bool static_key_initialized;
 
-#define STATIC_KEY_CHECK_USE(key) WARN(!static_key_initialized,		      \
-				    "%s(): static key '%pS' used before call to jump_label_init()", \
-				    __func__, (key))
+#define STATIC_KEY_CHECK_USE(key) WARN(!static_key_initialized,		      				    "%s(): static key '%pS' used before call to jump_label_init()", 				    __func__, (key))
 
 struct static_key {
 	atomic_t enabled;
@@ -65,22 +63,13 @@ struct static_key_false {
 
 #define STATIC_KEY_FALSE_INIT (struct static_key_false){ .key = STATIC_KEY_INIT_FALSE, }
 
-#define DEFINE_STATIC_KEY_FALSE(name)	\
-	struct static_key_false name = STATIC_KEY_FALSE_INIT
+#define DEFINE_STATIC_KEY_FALSE(name)		struct static_key_false name = STATIC_KEY_FALSE_INIT
 
-#define DEFINE_STATIC_KEY_FALSE_RO(name)	\
-	struct static_key_false name __ro_after_init = STATIC_KEY_FALSE_INIT
+#define DEFINE_STATIC_KEY_FALSE_RO(name)		struct static_key_false name __ro_after_init = STATIC_KEY_FALSE_INIT
 
 extern bool ____wrong_branch_error(void);
 
-#define static_key_enabled(x)							\
-({										\
-	if (!__builtin_types_compatible_p(typeof(*x), struct static_key) &&	\
-	    !__builtin_types_compatible_p(typeof(*x), struct static_key_true) &&\
-	    !__builtin_types_compatible_p(typeof(*x), struct static_key_false))	\
-		____wrong_branch_error();					\
-	static_key_count((struct static_key *)x) > 0;				\
-})
+#define static_key_enabled(x)							({											if (!__builtin_types_compatible_p(typeof(*x), struct static_key) &&		    !__builtin_types_compatible_p(typeof(*x), struct static_key_true) &&	    !__builtin_types_compatible_p(typeof(*x), struct static_key_false))			____wrong_branch_error();						static_key_count((struct static_key *)x) > 0;				})
 
 
 #define static_branch_likely(x)		likely_notrace(static_key_enabled(&(x)->key))

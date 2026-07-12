@@ -30,8 +30,7 @@
 
 #define ZERO_SIZE_PTR ((void *)16)
 
-#define ZERO_OR_NULL_PTR(x) ((unsigned long)(x) <= \
-				(unsigned long)ZERO_SIZE_PTR)
+#define ZERO_OR_NULL_PTR(x) ((unsigned long)(x) <= 				(unsigned long)ZERO_SIZE_PTR)
 
 
 struct list_lru;
@@ -46,16 +45,9 @@ struct kmem_cache *kmem_cache_create_usercopy(const char *name,
 			slab_flags_t flags,
 			unsigned int useroffset, unsigned int usersize,
 			void (*ctor)(void *));
-#define KMEM_CACHE(__struct, __flags)					\
-		kmem_cache_create(#__struct, sizeof(struct __struct),	\
-			__alignof__(struct __struct), (__flags), NULL)
+#define KMEM_CACHE(__struct, __flags)							kmem_cache_create(#__struct, sizeof(struct __struct),				__alignof__(struct __struct), (__flags), NULL)
 
-#define KMEM_CACHE_USERCOPY(__struct, __flags, __field)			\
-		kmem_cache_create_usercopy(#__struct,			\
-			sizeof(struct __struct),			\
-			__alignof__(struct __struct), (__flags),	\
-			offsetof(struct __struct, __field),		\
-			sizeof_field(struct __struct, __field), NULL)
+#define KMEM_CACHE_USERCOPY(__struct, __flags, __field)					kmem_cache_create_usercopy(#__struct,						sizeof(struct __struct),						__alignof__(struct __struct), (__flags),				offsetof(struct __struct, __field),					sizeof_field(struct __struct, __field), NULL)
 
 void kfree(const void *objp);
 
@@ -259,8 +251,7 @@ static inline __alloc_size(1, 2) void *kcalloc(size_t n, size_t size, gfp_t flag
 }
 
 extern void *__kmalloc_track_caller(size_t size, gfp_t flags, unsigned long caller);
-#define kmalloc_track_caller(size, flags) \
-	__kmalloc_track_caller(size, flags, _RET_IP_)
+#define kmalloc_track_caller(size, flags) 	__kmalloc_track_caller(size, flags, _RET_IP_)
 
 
 

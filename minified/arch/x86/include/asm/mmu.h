@@ -18,9 +18,6 @@ typedef struct {
 	void __user *vdso;
 } mm_context_t;
 
-#define INIT_MM_CONTEXT(mm)						\
-	.context = {							\
-		.ctx_id = 1,						\
-	}
+#define INIT_MM_CONTEXT(mm)							.context = {									.ctx_id = 1,							}
 
 #endif

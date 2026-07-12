@@ -26,21 +26,14 @@ typedef struct kernel_cap_struct {
 struct inode;
 struct user_namespace;
 
-#define CAP_FOR_EACH_U32(__capi)  \
-	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)
+#define CAP_FOR_EACH_U32(__capi)  	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)
 
 
 #define CAP_LAST_U32_VALID_MASK		(CAP_TO_MASK(CAP_LAST_CAP + 1) -1)
 
 # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, CAP_LAST_U32_VALID_MASK }})
 
-#define CAP_BOP_ALL(c, a, b, OP)                                    \
-do {                                                                \
-	unsigned __capi;                                            \
-	CAP_FOR_EACH_U32(__capi) {                                  \
-		c.cap[__capi] = a.cap[__capi] OP b.cap[__capi];     \
-	}                                                           \
-} while (0)
+#define CAP_BOP_ALL(c, a, b, OP)                                    do {                                                                	unsigned __capi;                                            	CAP_FOR_EACH_U32(__capi) {                                  		c.cap[__capi] = a.cap[__capi] OP b.cap[__capi];     	}                                                           } while (0)
 
 static inline kernel_cap_t cap_drop(const kernel_cap_t a,
 				    const kernel_cap_t drop)

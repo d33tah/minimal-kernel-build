@@ -59,17 +59,12 @@ static __always_inline unsigned long read_ti_thread_flags(struct thread_info *ti
 	return READ_ONCE(ti->flags);
 }
 
-#define set_thread_flag(flag) \
-	set_ti_thread_flag(current_thread_info(), flag)
-#define clear_thread_flag(flag) \
-	clear_ti_thread_flag(current_thread_info(), flag)
-#define test_thread_flag(flag) \
-	test_ti_thread_flag(current_thread_info(), flag)
-#define read_thread_flags() \
-	read_ti_thread_flags(current_thread_info())
+#define set_thread_flag(flag) 	set_ti_thread_flag(current_thread_info(), flag)
+#define clear_thread_flag(flag) 	clear_ti_thread_flag(current_thread_info(), flag)
+#define test_thread_flag(flag) 	test_ti_thread_flag(current_thread_info(), flag)
+#define read_thread_flags() 	read_ti_thread_flags(current_thread_info())
 
-#define clear_task_syscall_work(t, fl) \
-	clear_bit(SYSCALL_WORK_BIT_##fl, &task_thread_info(t)->syscall_work)
+#define clear_task_syscall_work(t, fl) 	clear_bit(SYSCALL_WORK_BIT_##fl, &task_thread_info(t)->syscall_work)
 
 
 #define tif_need_resched() test_thread_flag(TIF_NEED_RESCHED)

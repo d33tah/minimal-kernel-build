@@ -71,10 +71,7 @@ extern size_t strnlen(const char *s, size_t count);
  
 
 
-#define __memset(s, c, count)				\
-	(__builtin_constant_p(count)			\
-	 ? __constant_count_memset((s), (c), (count))	\
-	 : __memset_generic((s), (c), (count)))
+#define __memset(s, c, count)					(__builtin_constant_p(count)				 ? __constant_count_memset((s), (c), (count))		 : __memset_generic((s), (c), (count)))
 
 extern void *memset(void *, int, size_t);
 #define memset(s, c, count) __builtin_memset(s, c, count)

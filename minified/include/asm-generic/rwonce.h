@@ -6,30 +6,17 @@
 #include <linux/compiler_types.h>
 #include <linux/kasan-checks.h>
 
-#define compiletime_assert_rwonce_type(t)					\
-	compiletime_assert(__native_word(t) || sizeof(t) == sizeof(long long),	\
-		"Unsupported access size for {READ,WRITE}_ONCE().")
+#define compiletime_assert_rwonce_type(t)						compiletime_assert(__native_word(t) || sizeof(t) == sizeof(long long),			"Unsupported access size for {READ,WRITE}_ONCE().")
 
 #ifndef __READ_ONCE
 #define __READ_ONCE(x)	(*(const volatile __unqual_scalar_typeof(x) *)&(x))
 #endif
 
-#define READ_ONCE(x)							\
-({									\
-	compiletime_assert_rwonce_type(x);				\
-	__READ_ONCE(x);							\
-})
+#define READ_ONCE(x)							({										compiletime_assert_rwonce_type(x);					__READ_ONCE(x);							})
 
-#define __WRITE_ONCE(x, val)						\
-do {									\
-	*(volatile typeof(x) *)&(x) = (val);				\
-} while (0)
+#define __WRITE_ONCE(x, val)						do {										*(volatile typeof(x) *)&(x) = (val);				} while (0)
 
-#define WRITE_ONCE(x, val)						\
-do {									\
-	compiletime_assert_rwonce_type(x);				\
-	__WRITE_ONCE(x, val);						\
-} while (0)
+#define WRITE_ONCE(x, val)						do {										compiletime_assert_rwonce_type(x);					__WRITE_ONCE(x, val);						} while (0)
 
 static __no_kasan_or_inline
 unsigned long read_word_at_a_time(const void *addr)

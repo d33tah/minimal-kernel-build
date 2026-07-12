@@ -11,10 +11,7 @@
 
 
  
-#define GFP_RECLAIM_MASK (__GFP_RECLAIM|__GFP_HIGH|__GFP_IO|__GFP_FS|\
-			__GFP_NOWARN|__GFP_RETRY_MAYFAIL|__GFP_NOFAIL|\
-			__GFP_NORETRY|__GFP_MEMALLOC|__GFP_NOMEMALLOC|\
-			__GFP_ATOMIC|__GFP_NOLOCKDEP)
+#define GFP_RECLAIM_MASK (__GFP_RECLAIM|__GFP_HIGH|__GFP_IO|__GFP_FS|			__GFP_NOWARN|__GFP_RETRY_MAYFAIL|__GFP_NOFAIL|			__GFP_NORETRY|__GFP_MEMALLOC|__GFP_NOMEMALLOC|			__GFP_ATOMIC|__GFP_NOLOCKDEP)
 
  
 #define GFP_BOOT_MASK (__GFP_BITS_MASK & ~(__GFP_RECLAIM|__GFP_IO|__GFP_FS))
@@ -26,16 +23,7 @@
 #define GFP_SLAB_BUG_MASK (__GFP_DMA32|__GFP_HIGHMEM|~__GFP_BITS_MASK)
 
  
-#define WARN_ON_ONCE_GFP(cond, gfp)	({				\
-	static bool __section(".data.once") __warned;			\
-	int __ret_warn_once = !!(cond);					\
-									\
-	if (unlikely(!(gfp & __GFP_NOWARN) && __ret_warn_once && !__warned)) { \
-		__warned = true;					\
-		WARN_ON(1);						\
-	}								\
-	unlikely(__ret_warn_once);					\
-})
+#define WARN_ON_ONCE_GFP(cond, gfp)	({					static bool __section(".data.once") __warned;				int __ret_warn_once = !!(cond);															if (unlikely(!(gfp & __GFP_NOWARN) && __ret_warn_once && !__warned)) { 		__warned = true;							WARN_ON(1);							}									unlikely(__ret_warn_once);					})
 
 static inline void *folio_raw_mapping(struct folio *folio)
 {

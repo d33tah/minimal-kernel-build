@@ -27,10 +27,7 @@ struct fork_frame {
 	struct pt_regs regs;
 };
 
-#define switch_to(prev, next, last)					\
-do {									\
-	((last) = __switch_to_asm((prev), (next)));			\
-} while (0)
+#define switch_to(prev, next, last)					do {										((last) = __switch_to_asm((prev), (next)));			} while (0)
 
 static inline void refresh_sysenter_cs(struct thread_struct *thread)
 {

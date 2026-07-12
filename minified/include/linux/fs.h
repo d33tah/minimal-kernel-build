@@ -609,17 +609,10 @@ int set_anon_super_fc(struct super_block *s, struct fs_context *fc);
 struct super_block *sget_fc(struct fs_context *fc,
 			    int (*set)(struct super_block *, struct fs_context *));
 
-#define fops_get(fops) \
-	((fops) ? (fops) : NULL)
-#define fops_put(fops) \
-	do { (void)(fops); } while(0)
+#define fops_get(fops) 	((fops) ? (fops) : NULL)
+#define fops_put(fops) 	do { (void)(fops); } while(0)
 
-#define replace_fops(f, fops) \
-	do {	\
-		struct file *__file = (f); \
-		fops_put(__file->f_op); \
-		BUG_ON(!(__file->f_op = (fops))); \
-	} while(0)
+#define replace_fops(f, fops) 	do {			struct file *__file = (f); 		fops_put(__file->f_op); 		BUG_ON(!(__file->f_op = (fops))); 	} while(0)
 
 extern int register_filesystem(struct file_system_type *);
 
@@ -798,8 +791,7 @@ static inline int iocb_flags(struct file *file)
 #define __FMODE_NONOTIFY	((__force int) FMODE_NONOTIFY)
 
 #define ACC_MODE(x) ("\004\002\006\006"[(x)&O_ACCMODE])
-#define OPEN_FMODE(flag) ((__force fmode_t)(((flag + 1) & O_ACCMODE) | \
-					    (flag & __FMODE_NONOTIFY)))
+#define OPEN_FMODE(flag) ((__force fmode_t)(((flag + 1) & O_ACCMODE) | 					    (flag & __FMODE_NONOTIFY)))
 
 extern bool path_noexec(const struct path *path);
 

@@ -12,17 +12,11 @@ typedef struct spinlock {
 	};
 } spinlock_t;
 
-#define ___SPIN_LOCK_INITIALIZER(lockname)	\
-	{					\
-	.raw_lock = __ARCH_SPIN_LOCK_UNLOCKED,	\
-	SPIN_DEBUG_INIT(lockname)		\
-	SPIN_DEP_MAP_INIT(lockname) }
+#define ___SPIN_LOCK_INITIALIZER(lockname)		{						.raw_lock = __ARCH_SPIN_LOCK_UNLOCKED,		SPIN_DEBUG_INIT(lockname)			SPIN_DEP_MAP_INIT(lockname) }
 
-#define __SPIN_LOCK_INITIALIZER(lockname) \
-	{ { .rlock = ___SPIN_LOCK_INITIALIZER(lockname) } }
+#define __SPIN_LOCK_INITIALIZER(lockname) 	{ { .rlock = ___SPIN_LOCK_INITIALIZER(lockname) } }
 
-#define __SPIN_LOCK_UNLOCKED(lockname) \
-	(spinlock_t) __SPIN_LOCK_INITIALIZER(lockname)
+#define __SPIN_LOCK_UNLOCKED(lockname) 	(spinlock_t) __SPIN_LOCK_INITIALIZER(lockname)
 
 #define DEFINE_SPINLOCK(x)	spinlock_t x = __SPIN_LOCK_UNLOCKED(x)
 
@@ -32,9 +26,7 @@ typedef struct spinlock {
 typedef struct {
 	arch_rwlock_t raw_lock;
 } rwlock_t;
-#define __RW_LOCK_UNLOCKED(lockname) \
-	(rwlock_t)	{	.raw_lock = __ARCH_RW_LOCK_UNLOCKED,	\
-				RW_DEP_MAP_INIT(lockname) }
+#define __RW_LOCK_UNLOCKED(lockname) 	(rwlock_t)	{	.raw_lock = __ARCH_RW_LOCK_UNLOCKED,					RW_DEP_MAP_INIT(lockname) }
 #define DEFINE_RWLOCK(x)	rwlock_t x = __RW_LOCK_UNLOCKED(x)
 
 #endif  

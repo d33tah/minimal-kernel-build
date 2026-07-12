@@ -15,8 +15,7 @@
 
 #ifndef __ASSEMBLY__
 
-#define UNWIND_HINT(sp_reg, sp_offset, type, end)	\
-	"\n\t"
+#define UNWIND_HINT(sp_reg, sp_offset, type, end)		"\n\t"
 #else
 #define ANNOTATE_INTRA_FUNCTION_CALL
 .macro UNWIND_HINT type:req sp_reg=0 sp_offset=0 end=0

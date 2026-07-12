@@ -12,13 +12,9 @@ struct atomic_notifier_head {
 	struct notifier_block __rcu *head;
 };
 
-#define ATOMIC_NOTIFIER_INIT(name) {				\
-		.lock = __SPIN_LOCK_UNLOCKED(name.lock),	\
-		.head = NULL }
+#define ATOMIC_NOTIFIER_INIT(name) {						.lock = __SPIN_LOCK_UNLOCKED(name.lock),			.head = NULL }
 
-#define ATOMIC_NOTIFIER_HEAD(name)				\
-	struct atomic_notifier_head name =			\
-		ATOMIC_NOTIFIER_INIT(name)
+#define ATOMIC_NOTIFIER_HEAD(name)					struct atomic_notifier_head name =					ATOMIC_NOTIFIER_INIT(name)
 
 
 

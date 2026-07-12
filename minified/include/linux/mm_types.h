@@ -111,8 +111,7 @@ struct folio {
 };
 
 static_assert(sizeof(struct page) == sizeof(struct folio));
-#define FOLIO_MATCH(pg, fl)						\
-	static_assert(offsetof(struct page, pg) == offsetof(struct folio, fl))
+#define FOLIO_MATCH(pg, fl)							static_assert(offsetof(struct page, pg) == offsetof(struct folio, fl))
 FOLIO_MATCH(flags, flags);
 FOLIO_MATCH(lru, lru);
 FOLIO_MATCH(mapping, mapping);
@@ -263,9 +262,7 @@ enum vm_fault_reason {
 	VM_FAULT_DONE_COW       = (__force vm_fault_t)0x001000,
 };
 
-#define VM_FAULT_ERROR (VM_FAULT_OOM | VM_FAULT_SIGBUS |	\
-			VM_FAULT_SIGSEGV | VM_FAULT_HWPOISON |	\
-			VM_FAULT_HWPOISON_LARGE | VM_FAULT_FALLBACK)
+#define VM_FAULT_ERROR (VM_FAULT_OOM | VM_FAULT_SIGBUS |				VM_FAULT_SIGSEGV | VM_FAULT_HWPOISON |				VM_FAULT_HWPOISON_LARGE | VM_FAULT_FALLBACK)
 
 
 enum fault_flag {

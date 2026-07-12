@@ -38,18 +38,7 @@ static inline unsigned fls_long(unsigned long l)
 
 
 #ifndef set_mask_bits
-#define set_mask_bits(ptr, mask, bits)	\
-({								\
-	const typeof(*(ptr)) mask__ = (mask), bits__ = (bits);	\
-	typeof(*(ptr)) old__, new__;				\
-								\
-	do {							\
-		old__ = READ_ONCE(*(ptr));			\
-		new__ = (old__ & ~mask__) | bits__;		\
-	} while (cmpxchg(ptr, old__, new__) != old__);		\
-								\
-	old__;							\
-})
+#define set_mask_bits(ptr, mask, bits)	({									const typeof(*(ptr)) mask__ = (mask), bits__ = (bits);		typeof(*(ptr)) old__, new__;													do {									old__ = READ_ONCE(*(ptr));					new__ = (old__ & ~mask__) | bits__;			} while (cmpxchg(ptr, old__, new__) != old__);											old__;							})
 #endif
 
 

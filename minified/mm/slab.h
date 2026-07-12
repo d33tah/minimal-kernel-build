@@ -29,8 +29,7 @@ struct slab {
 	atomic_t __page_refcount;
 };
 
-#define SLAB_MATCH(pg, sl)						\
-	static_assert(offsetof(struct page, pg) == offsetof(struct slab, sl))
+#define SLAB_MATCH(pg, sl)							static_assert(offsetof(struct page, pg) == offsetof(struct slab, sl))
 SLAB_MATCH(flags, __page_flags);
 SLAB_MATCH(compound_head, slab_list);	 
 SLAB_MATCH(rcu_head, rcu_head);
@@ -39,14 +38,10 @@ SLAB_MATCH(_refcount, __page_refcount);
 static_assert(sizeof(struct slab) <= sizeof(struct page));
 
  
-#define folio_slab(folio)	(_Generic((folio),			\
-	const struct folio *:	(const struct slab *)(folio),		\
-	struct folio *:		(struct slab *)(folio)))
+#define folio_slab(folio)	(_Generic((folio),				const struct folio *:	(const struct slab *)(folio),			struct folio *:		(struct slab *)(folio)))
 
  
-#define slab_folio(s)		(_Generic((s),				\
-	const struct slab *:	(const struct folio *)s,		\
-	struct slab *:		(struct folio *)s))
+#define slab_folio(s)		(_Generic((s),					const struct slab *:	(const struct folio *)s,			struct slab *:		(struct folio *)s))
 
  
 
@@ -172,30 +167,17 @@ extern void create_boot_cache(struct kmem_cache *, const char *name,
 
 
  
-#define SLAB_CORE_FLAGS (SLAB_HWCACHE_ALIGN | SLAB_CACHE_DMA | \
-			 SLAB_CACHE_DMA32 | SLAB_PANIC | \
-			 SLAB_TYPESAFE_BY_RCU | SLAB_DEBUG_OBJECTS )
+#define SLAB_CORE_FLAGS (SLAB_HWCACHE_ALIGN | SLAB_CACHE_DMA | 			 SLAB_CACHE_DMA32 | SLAB_PANIC | 			 SLAB_TYPESAFE_BY_RCU | SLAB_DEBUG_OBJECTS )
 
 #define SLAB_DEBUG_FLAGS (0)
 
-#define SLAB_CACHE_FLAGS (SLAB_NOLEAKTRACE | SLAB_RECLAIM_ACCOUNT | \
-			  SLAB_TEMPORARY | SLAB_ACCOUNT | SLAB_NO_USER_FLAGS)
+#define SLAB_CACHE_FLAGS (SLAB_NOLEAKTRACE | SLAB_RECLAIM_ACCOUNT | 			  SLAB_TEMPORARY | SLAB_ACCOUNT | SLAB_NO_USER_FLAGS)
 
  
 #define CACHE_CREATE_MASK (SLAB_CORE_FLAGS | SLAB_DEBUG_FLAGS | SLAB_CACHE_FLAGS)
 
  
-#define SLAB_FLAGS_PERMITTED (SLAB_CORE_FLAGS | \
-			      SLAB_RED_ZONE | \
-			      SLAB_POISON | \
-			      SLAB_STORE_USER | \
-			      SLAB_TRACE | \
-			      SLAB_CONSISTENCY_CHECKS | \
-			      SLAB_NOLEAKTRACE | \
-			      SLAB_RECLAIM_ACCOUNT | \
-			      SLAB_TEMPORARY | \
-			      SLAB_ACCOUNT | \
-			      SLAB_NO_USER_FLAGS)
+#define SLAB_FLAGS_PERMITTED (SLAB_CORE_FLAGS | 			      SLAB_RED_ZONE | 			      SLAB_POISON | 			      SLAB_STORE_USER | 			      SLAB_TRACE | 			      SLAB_CONSISTENCY_CHECKS | 			      SLAB_NOLEAKTRACE | 			      SLAB_RECLAIM_ACCOUNT | 			      SLAB_TEMPORARY | 			      SLAB_ACCOUNT | 			      SLAB_NO_USER_FLAGS)
 
 /* __kmem_cache_release, __kmem_cache_free_bulk, __kmem_cache_alloc_bulk
  * removed - error-path/bulk cleanup never reached on this workload */
@@ -262,9 +244,7 @@ static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
 }
 
  
-#define for_each_kmem_cache_node(__s, __node, __n) \
-	for (__node = 0; __node < nr_node_ids; __node++) \
-		 if ((__n = get_node(__s, __node)))
+#define for_each_kmem_cache_node(__s, __node, __n) 	for (__node = 0; __node < nr_node_ids; __node++) 		 if ((__n = get_node(__s, __node)))
 
 
 /* dump_unreclaimable_slab / cache_random_seq_destroy removed - unused */

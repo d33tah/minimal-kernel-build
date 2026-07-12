@@ -28,8 +28,7 @@ struct rb_root_cached {
 #define	rb_entry(ptr, type, member) container_of(ptr, type, member)
 
 
-#define RB_EMPTY_NODE(node)  \
-	((node)->__rb_parent_color == (unsigned long)(node))
+#define RB_EMPTY_NODE(node)  	((node)->__rb_parent_color == (unsigned long)(node))
 extern void rb_insert_color(struct rb_node *, struct rb_root *);
 extern void rb_erase(struct rb_node *, struct rb_root *);
 

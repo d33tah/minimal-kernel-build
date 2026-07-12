@@ -536,19 +536,12 @@ static void check_section(const char *modname, struct elf_info *elf,
 
 
 
-#define ALL_INIT_DATA_SECTIONS \
-	".init.setup", ".init.rodata", ".meminit.rodata", \
-	".init.data", ".meminit.data"
+#define ALL_INIT_DATA_SECTIONS 	".init.setup", ".init.rodata", ".meminit.rodata", 	".init.data", ".meminit.data"
 
-#define ALL_INIT_TEXT_SECTIONS \
-	".init.text", ".meminit.text"
-#define ALL_EXIT_TEXT_SECTIONS \
-	".exit.text", ".memexit.text"
+#define ALL_INIT_TEXT_SECTIONS 	".init.text", ".meminit.text"
+#define ALL_EXIT_TEXT_SECTIONS 	".exit.text", ".memexit.text"
 
-#define ALL_PCI_INIT_SECTIONS	\
-	".pci_fixup_early", ".pci_fixup_header", ".pci_fixup_final", \
-	".pci_fixup_enable", ".pci_fixup_resume", \
-	".pci_fixup_resume_early", ".pci_fixup_suspend"
+#define ALL_PCI_INIT_SECTIONS		".pci_fixup_early", ".pci_fixup_header", ".pci_fixup_final", 	".pci_fixup_enable", ".pci_fixup_resume", 	".pci_fixup_resume_early", ".pci_fixup_suspend"
 
 #define ALL_XXXINIT_SECTIONS MEM_INIT_SECTIONS
 #define ALL_XXXEXIT_SECTIONS MEM_EXIT_SECTIONS
@@ -557,11 +550,8 @@ static void check_section(const char *modname, struct elf_info *elf,
 #define ALL_EXIT_SECTIONS EXIT_SECTIONS, ALL_XXXEXIT_SECTIONS
 
 #define DATA_SECTIONS ".data", ".data.rel"
-#define TEXT_SECTIONS ".text", ".text.unlikely", ".sched.text", \
-		".kprobes.text", ".cpuidle.text", ".noinstr.text"
-#define OTHER_TEXT_SECTIONS ".ref.text", ".head.text", ".spinlock.text", \
-		".fixup", ".entry.text", ".exception.text", ".text.*", \
-		".coldtext", ".softirqentry.text"
+#define TEXT_SECTIONS ".text", ".text.unlikely", ".sched.text", 		".kprobes.text", ".cpuidle.text", ".noinstr.text"
+#define OTHER_TEXT_SECTIONS ".ref.text", ".head.text", ".spinlock.text", 		".fixup", ".entry.text", ".exception.text", ".text.*", 		".coldtext", ".softirqentry.text"
 
 #define INIT_SECTIONS      ".init.*"
 #define MEM_INIT_SECTIONS  ".meminit.*"
@@ -569,8 +559,7 @@ static void check_section(const char *modname, struct elf_info *elf,
 #define EXIT_SECTIONS      ".exit.*"
 #define MEM_EXIT_SECTIONS  ".memexit.*"
 
-#define ALL_TEXT_SECTIONS  ALL_INIT_TEXT_SECTIONS, ALL_EXIT_TEXT_SECTIONS, \
-		TEXT_SECTIONS, OTHER_TEXT_SECTIONS
+#define ALL_TEXT_SECTIONS  ALL_INIT_TEXT_SECTIONS, ALL_EXIT_TEXT_SECTIONS, 		TEXT_SECTIONS, OTHER_TEXT_SECTIONS
 
 static const char *const init_data_sections[] =
 	{ ALL_INIT_DATA_SECTIONS, NULL };
@@ -585,15 +574,7 @@ static const char *const text_sections[] = { ALL_TEXT_SECTIONS, NULL };
 static const char *const data_sections[] = { DATA_SECTIONS, NULL };
 
 
-#define DEFAULT_SYMBOL_WHITE_LIST					\
-	"*driver",							\
-	"*_template",  			\
-	"*_timer",     	\
-	"*_sht",       		\
-	"*_ops",							\
-	"*_probe",							\
-	"*_probe_one",							\
-	"*_console"
+#define DEFAULT_SYMBOL_WHITE_LIST						"*driver",								"*_template",  				"*_timer",     		"*_sht",       			"*_ops",								"*_probe",								"*_probe_one",								"*_console"
 
 static const char *const head_sections[] = { ".head.text*", NULL };
 static const char *const linker_symbols[] =
@@ -1102,8 +1083,7 @@ static inline bool is_extable_fault_address(Elf_Rela *r)
 		(r->r_offset % extable_entry_size == 0));
 }
 
-#define is_second_extable_reloc(Start, Cur, Sec)			\
-	(((Cur) == (Start) + 1) && (strcmp("__ex_table", (Sec)) == 0))
+#define is_second_extable_reloc(Start, Cur, Sec)				(((Cur) == (Start) + 1) && (strcmp("__ex_table", (Sec)) == 0))
 
 static void report_extable_warnings(const char* modname, struct elf_info* elf,
 				    const struct sectioncheck* const mismatch,

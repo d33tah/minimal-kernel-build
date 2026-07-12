@@ -13,8 +13,7 @@
 #define PCPU_MIN_ALLOC_SIZE		(1 << PCPU_MIN_ALLOC_SHIFT)
 
 #define PCPU_BITMAP_BLOCK_SIZE		PAGE_SIZE
-#define PCPU_BITMAP_BLOCK_BITS		(PCPU_BITMAP_BLOCK_SIZE >>	\
-					 PCPU_MIN_ALLOC_SHIFT)
+#define PCPU_BITMAP_BLOCK_BITS		(PCPU_BITMAP_BLOCK_SIZE >>						 PCPU_MIN_ALLOC_SHIFT)
 
 #define PERCPU_DYNAMIC_EARLY_SIZE	(12 << 10)
 
@@ -48,8 +47,6 @@ extern void __percpu *__alloc_percpu(size_t size, size_t align) __alloc_size(1);
 extern void free_percpu(void __percpu *__pdata);
 extern phys_addr_t per_cpu_ptr_to_phys(void *addr);
 
-#define alloc_percpu(type)						\
-	(typeof(type) __percpu *)__alloc_percpu(sizeof(type),		\
-						__alignof__(type))
+#define alloc_percpu(type)							(typeof(type) __percpu *)__alloc_percpu(sizeof(type),								__alignof__(type))
 
 #endif  

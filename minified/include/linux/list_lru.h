@@ -22,10 +22,8 @@ struct list_lru {
 int __list_lru_init(struct list_lru *lru, bool memcg_aware,
 		    struct lock_class_key *key);
 
-#define list_lru_init(lru)				\
-	__list_lru_init((lru), false, NULL)
-#define list_lru_init_memcg(lru, shrinker)		\
-	__list_lru_init((lru), true, NULL)
+#define list_lru_init(lru)					__list_lru_init((lru), false, NULL)
+#define list_lru_init_memcg(lru, shrinker)			__list_lru_init((lru), true, NULL)
 
 bool list_lru_add(struct list_lru *lru, struct list_head *item);
 

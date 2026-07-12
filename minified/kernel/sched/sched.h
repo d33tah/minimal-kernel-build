@@ -314,8 +314,7 @@ rq_unlock(struct rq *rq, struct rq_flags *rf)
 
 # define const_debug const
 
-#define SCHED_FEAT(name, enabled)	\
-	__SCHED_FEAT_##name ,
+#define SCHED_FEAT(name, enabled)		__SCHED_FEAT_##name ,
 
 enum {
 #include "features.h"
@@ -326,8 +325,7 @@ enum {
 
 
  
-#define SCHED_FEAT(name, enabled)	\
-	(1UL << __SCHED_FEAT_##name) * enabled |
+#define SCHED_FEAT(name, enabled)		(1UL << __SCHED_FEAT_##name) * enabled |
 static const_debug __maybe_unused unsigned int sysctl_sched_features =
 #include "features.h"
 	0;
@@ -404,20 +402,15 @@ static inline void set_next_task(struct rq *rq, struct task_struct *next)
 
 
  
-#define DEFINE_SCHED_CLASS(name) \
-const struct sched_class name##_sched_class \
-	__aligned(__alignof__(struct sched_class)) \
-	__section("__" #name "_sched_class")
+#define DEFINE_SCHED_CLASS(name) const struct sched_class name##_sched_class 	__aligned(__alignof__(struct sched_class)) 	__section("__" #name "_sched_class")
 
  
 extern struct sched_class __sched_class_highest[];
 extern struct sched_class __sched_class_lowest[];
 
-#define for_class_range(class, _from, _to) \
-	for (class = (_from); class < (_to); class++)
+#define for_class_range(class, _from, _to) 	for (class = (_from); class < (_to); class++)
 
-#define for_each_class(class) \
-	for_class_range(class, __sched_class_highest, __sched_class_lowest)
+#define for_each_class(class) 	for_class_range(class, __sched_class_highest, __sched_class_lowest)
 
 #define sched_class_above(_a, _b)	((_a) < (_b))
 

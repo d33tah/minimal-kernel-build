@@ -126,8 +126,7 @@ extern void calculate_sigpending(void);
 
 extern void __cleanup_sighand(struct sighand_struct *);
 
-#define while_each_thread(g, t) \
-	while ((t = next_thread(t)) != g)
+#define while_each_thread(g, t) 	while ((t = next_thread(t)) != g)
 
 
 

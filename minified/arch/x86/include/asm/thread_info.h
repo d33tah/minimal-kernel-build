@@ -22,10 +22,7 @@ struct thread_info {
 	unsigned long flags, syscall_work;
 };
 
-#define INIT_THREAD_INFO(tsk)			\
-{						\
-	.flags		= 0,			\
-}
+#define INIT_THREAD_INFO(tsk)			{							.flags		= 0,			}
 
 #else  
 

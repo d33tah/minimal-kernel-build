@@ -8,12 +8,7 @@
 #include <asm/processor.h>
 
 
-#define run_irq_on_irqstack_cond(func, regs, vector)			\
-{									\
-	irq_enter_rcu();						\
-	func(regs, vector);						\
-	irq_exit_rcu();							\
-}
+#define run_irq_on_irqstack_cond(func, regs, vector)			{										irq_enter_rcu();							func(regs, vector);							irq_exit_rcu();							}
 
 
 #endif

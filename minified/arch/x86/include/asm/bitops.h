@@ -76,8 +76,7 @@ arch_clear_bit_unlock_is_negative_byte(long nr, volatile unsigned long *addr)
 		: "ir" ((char) ~(1 << nr)) : "memory");
 	return negative;
 }
-#define arch_clear_bit_unlock_is_negative_byte                                 \
-	arch_clear_bit_unlock_is_negative_byte
+#define arch_clear_bit_unlock_is_negative_byte                                 	arch_clear_bit_unlock_is_negative_byte
 
 
 static __always_inline bool
@@ -143,10 +142,7 @@ static __always_inline bool variable_test_bit(long nr, volatile const unsigned l
 	return oldbit;
 }
 
-#define arch_test_bit(nr, addr)			\
-	(__builtin_constant_p((nr))		\
-	 ? constant_test_bit((nr), (addr))	\
-	 : variable_test_bit((nr), (addr)))
+#define arch_test_bit(nr, addr)				(__builtin_constant_p((nr))			 ? constant_test_bit((nr), (addr))		 : variable_test_bit((nr), (addr)))
 
  
 static __always_inline unsigned long __ffs(unsigned long word)

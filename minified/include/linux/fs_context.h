@@ -87,10 +87,8 @@ struct fc_log {
 extern __attribute__((format(printf, 4, 5)))
 void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, ...);
 
-#define __logfc(fc, l, fmt, ...) logfc((fc)->log.log, NULL, \
-					l, fmt, ## __VA_ARGS__)
-#define __plog(p, l, fmt, ...) logfc((p)->log, (p)->prefix, \
-					l, fmt, ## __VA_ARGS__)
+#define __logfc(fc, l, fmt, ...) logfc((fc)->log.log, NULL, 					l, fmt, ## __VA_ARGS__)
+#define __plog(p, l, fmt, ...) logfc((p)->log, (p)->prefix, 					l, fmt, ## __VA_ARGS__)
 #define warn_plog(p, fmt, ...) __plog(p, 'w', fmt, ## __VA_ARGS__)
 
 #define errorf(fc, fmt, ...) __logfc(fc, 'e', fmt, ## __VA_ARGS__)

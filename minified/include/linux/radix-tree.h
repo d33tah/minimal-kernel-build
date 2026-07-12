@@ -43,8 +43,7 @@ static inline bool radix_tree_is_internal_node(void *ptr)
 
 #define RADIX_TREE_INIT(name, mask)	XARRAY_INIT(name, mask)
 
-#define RADIX_TREE(name, mask) \
-	struct radix_tree_root name = RADIX_TREE_INIT(name, mask)
+#define RADIX_TREE(name, mask) 	struct radix_tree_root name = RADIX_TREE_INIT(name, mask)
 
 #define INIT_RADIX_TREE(root, mask) xa_init_flags(root, mask)
 

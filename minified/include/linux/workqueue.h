@@ -46,8 +46,7 @@ struct work_struct {
 };
 
 #define WORK_DATA_INIT()	ATOMIC_LONG_INIT((unsigned long)WORK_STRUCT_NO_POOL)
-#define WORK_DATA_STATIC_INIT()	\
-	ATOMIC_LONG_INIT((unsigned long)(WORK_STRUCT_NO_POOL | WORK_STRUCT_STATIC))
+#define WORK_DATA_STATIC_INIT()		ATOMIC_LONG_INIT((unsigned long)(WORK_STRUCT_NO_POOL | WORK_STRUCT_STATIC))
 
 struct delayed_work {
 	struct work_struct work;
@@ -60,34 +59,17 @@ struct delayed_work {
 
 #define __WORK_INIT_LOCKDEP_MAP(n, k)
 
-#define __WORK_INITIALIZER(n, f) {					\
-	.data = WORK_DATA_STATIC_INIT(),				\
-	.entry	= { &(n).entry, &(n).entry },				\
-	.func = (f),							\
-	__WORK_INIT_LOCKDEP_MAP(#n, &(n))				\
-	}
+#define __WORK_INITIALIZER(n, f) {						.data = WORK_DATA_STATIC_INIT(),					.entry	= { &(n).entry, &(n).entry },					.func = (f),								__WORK_INIT_LOCKDEP_MAP(#n, &(n))					}
 
-#define __DELAYED_WORK_INITIALIZER(n, f, tflags) {			\
-	.work = __WORK_INITIALIZER((n).work, (f)),			\
-	.timer = __TIMER_INITIALIZER(delayed_work_timer_fn,\
-				     (tflags) | TIMER_IRQSAFE),		\
-	}
+#define __DELAYED_WORK_INITIALIZER(n, f, tflags) {				.work = __WORK_INITIALIZER((n).work, (f)),				.timer = __TIMER_INITIALIZER(delayed_work_timer_fn,				     (tflags) | TIMER_IRQSAFE),			}
 
-#define DECLARE_WORK(n, f)						\
-	struct work_struct n = __WORK_INITIALIZER(n, f)
+#define DECLARE_WORK(n, f)							struct work_struct n = __WORK_INITIALIZER(n, f)
 
-#define DECLARE_DELAYED_WORK(n, f)					\
-	struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f, 0)
+#define DECLARE_DELAYED_WORK(n, f)						struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f, 0)
 
-#define __INIT_WORK(_work, _func, _onstack)				\
-	do {								\
-		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
-		INIT_LIST_HEAD(&(_work)->entry);			\
-		(_work)->func = (_func);				\
-	} while (0)
+#define __INIT_WORK(_work, _func, _onstack)					do {										(_work)->data = (atomic_long_t) WORK_DATA_INIT();			INIT_LIST_HEAD(&(_work)->entry);					(_work)->func = (_func);					} while (0)
 
-#define INIT_WORK(_work, _func)						\
-	__INIT_WORK((_work), (_func), 0)
+#define INIT_WORK(_work, _func)							__INIT_WORK((_work), (_func), 0)
 
 extern struct workqueue_struct *system_wq;
 extern struct workqueue_struct *system_unbound_wq;

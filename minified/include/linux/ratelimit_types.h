@@ -9,18 +9,11 @@ struct ratelimit_state {
 	raw_spinlock_t	lock;
 };
 
-#define RATELIMIT_STATE_INIT_FLAGS(name, interval_init, burst_init, flags_init) { \
-		.lock		= __RAW_SPIN_LOCK_UNLOCKED(name.lock),		  \
-	}
+#define RATELIMIT_STATE_INIT_FLAGS(name, interval_init, burst_init, flags_init) { 		.lock		= __RAW_SPIN_LOCK_UNLOCKED(name.lock),		  	}
 
-#define RATELIMIT_STATE_INIT(name, interval_init, burst_init) \
-	RATELIMIT_STATE_INIT_FLAGS(name, interval_init, burst_init, 0)
+#define RATELIMIT_STATE_INIT(name, interval_init, burst_init) 	RATELIMIT_STATE_INIT_FLAGS(name, interval_init, burst_init, 0)
 
-#define DEFINE_RATELIMIT_STATE(name, interval_init, burst_init)		\
-									\
-	struct ratelimit_state name =					\
-		RATELIMIT_STATE_INIT(name, interval_init, burst_init)	\
-
+#define DEFINE_RATELIMIT_STATE(name, interval_init, burst_init)												struct ratelimit_state name =							RATELIMIT_STATE_INIT(name, interval_init, burst_init)	
 extern int ___ratelimit(struct ratelimit_state *rs, const char *func);
 #define __ratelimit(state) ___ratelimit(state, __func__)
 

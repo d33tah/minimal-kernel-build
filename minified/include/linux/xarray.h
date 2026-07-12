@@ -66,8 +66,7 @@ enum xa_lock_type {
 #define XA_FLAGS_TRACK_FREE	((__force gfp_t)4U)
 #define XA_FLAGS_ZERO_BUSY	((__force gfp_t)8U)
 #define XA_FLAGS_ACCOUNT	((__force gfp_t)32U)
-#define XA_FLAGS_MARK(mark)	((__force gfp_t)((1U << __GFP_BITS_SHIFT) << \
-						(__force unsigned)(mark)))
+#define XA_FLAGS_MARK(mark)	((__force gfp_t)((1U << __GFP_BITS_SHIFT) << 						(__force unsigned)(mark)))
 
 #define XA_FLAGS_ALLOC	(XA_FLAGS_TRACK_FREE | XA_FLAGS_MARK(XA_FREE_MARK))
 
@@ -77,11 +76,7 @@ struct xarray {
 	void __rcu *	xa_head;
 };
 
-#define XARRAY_INIT(name, flags) {				\
-	.xa_lock = __SPIN_LOCK_UNLOCKED(name.xa_lock),		\
-	.xa_flags = flags,					\
-	.xa_head = NULL,					\
-}
+#define XARRAY_INIT(name, flags) {					.xa_lock = __SPIN_LOCK_UNLOCKED(name.xa_lock),			.xa_flags = flags,						.xa_head = NULL,					}
 
 static inline void xa_init_flags(struct xarray *xa, gfp_t flags)
 {
@@ -97,10 +92,8 @@ static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 
 #define xa_lock_irq(xa)		spin_lock_irq(&(xa)->xa_lock)
 #define xa_unlock_irq(xa)	spin_unlock_irq(&(xa)->xa_lock)
-#define xa_lock_irqsave(xa, flags) \
-				spin_lock_irqsave(&(xa)->xa_lock, flags)
-#define xa_unlock_irqrestore(xa, flags) \
-				spin_unlock_irqrestore(&(xa)->xa_lock, flags)
+#define xa_lock_irqsave(xa, flags) 				spin_lock_irqsave(&(xa)->xa_lock, flags)
+#define xa_unlock_irqrestore(xa, flags) 				spin_unlock_irqrestore(&(xa)->xa_lock, flags)
 
 
 #ifndef XA_CHUNK_SHIFT
@@ -207,26 +200,14 @@ struct xa_state {
 #define XAS_BOUNDS	((struct xa_node *)1UL)
 #define XAS_RESTART	((struct xa_node *)3UL)
 
-#define __XA_STATE(array, index, shift, sibs)  {	\
-	.xa = array,					\
-	.xa_index = index,				\
-	.xa_shift = shift,				\
-	.xa_offset = 0,					\
-	.xa_node = XAS_RESTART,				\
-	.xa_alloc = NULL,				\
-	.xa_update = NULL,				\
-	.xa_lru = NULL,					\
-}
+#define __XA_STATE(array, index, shift, sibs)  {		.xa = array,						.xa_index = index,					.xa_shift = shift,					.xa_offset = 0,						.xa_node = XAS_RESTART,					.xa_alloc = NULL,					.xa_update = NULL,					.xa_lru = NULL,					}
 
-#define XA_STATE(name, array, index)				\
-	struct xa_state name = __XA_STATE(array, index, 0, 0)
+#define XA_STATE(name, array, index)					struct xa_state name = __XA_STATE(array, index, 0, 0)
 
 #define xas_lock_irq(xas)	xa_lock_irq((xas)->xa)
 #define xas_unlock_irq(xas)	xa_unlock_irq((xas)->xa)
-#define xas_lock_irqsave(xas, flags) \
-				xa_lock_irqsave((xas)->xa, flags)
-#define xas_unlock_irqrestore(xas, flags) \
-				xa_unlock_irqrestore((xas)->xa, flags)
+#define xas_lock_irqsave(xas, flags) 				xa_lock_irqsave((xas)->xa, flags)
+#define xas_unlock_irqrestore(xas, flags) 				xa_unlock_irqrestore((xas)->xa, flags)
 
 static inline int xas_error(const struct xa_state *xas)
 {

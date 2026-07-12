@@ -22,22 +22,11 @@ struct mutex {
 
 # define __DEBUG_MUTEX_INITIALIZER(lockname)
 
-#define mutex_init(mutex)						\
-do {									\
-	static struct lock_class_key __key;				\
-									\
-	__mutex_init((mutex), #mutex, &__key);				\
-} while (0)
+#define mutex_init(mutex)						do {										static struct lock_class_key __key;														__mutex_init((mutex), #mutex, &__key);				} while (0)
 
-#define __MUTEX_INITIALIZER(lockname) \
-		{ .owner = ATOMIC_LONG_INIT(0) \
-		, .wait_lock = __RAW_SPIN_LOCK_UNLOCKED(lockname.wait_lock) \
-		, .wait_list = LIST_HEAD_INIT(lockname.wait_list) \
-		__DEBUG_MUTEX_INITIALIZER(lockname) \
-		__DEP_MAP_MUTEX_INITIALIZER(lockname) }
+#define __MUTEX_INITIALIZER(lockname) 		{ .owner = ATOMIC_LONG_INIT(0) 		, .wait_lock = __RAW_SPIN_LOCK_UNLOCKED(lockname.wait_lock) 		, .wait_list = LIST_HEAD_INIT(lockname.wait_list) 		__DEBUG_MUTEX_INITIALIZER(lockname) 		__DEP_MAP_MUTEX_INITIALIZER(lockname) }
 
-#define DEFINE_MUTEX(mutexname) \
-	struct mutex mutexname = __MUTEX_INITIALIZER(mutexname)
+#define DEFINE_MUTEX(mutexname) 	struct mutex mutexname = __MUTEX_INITIALIZER(mutexname)
 
 extern void __mutex_init(struct mutex *lock, const char *name,
 			 struct lock_class_key *key);

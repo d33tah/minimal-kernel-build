@@ -18,18 +18,14 @@ typedef struct {
 #ifndef ATOMIC64_EXPORT
 #define ATOMIC64_DECL_ONE __ATOMIC64_DECL
 #else
-#define ATOMIC64_DECL_ONE(sym) __ATOMIC64_DECL(sym); \
-	ATOMIC64_EXPORT(atomic64_##sym)
+#define ATOMIC64_DECL_ONE(sym) __ATOMIC64_DECL(sym); 	ATOMIC64_EXPORT(atomic64_##sym)
 #endif
 
-#define __alternative_atomic64(f, g, out, in...) \
-	asm volatile("call %P[func]" \
-		     : out : [func] "i" (atomic64_##g##_cx8), ## in)
+#define __alternative_atomic64(f, g, out, in...) 	asm volatile("call %P[func]" 		     : out : [func] "i" (atomic64_##g##_cx8), ## in)
 
 #define ATOMIC64_DECL(sym) ATOMIC64_DECL_ONE(sym##_cx8)
 
-#define alternative_atomic64(f, out, in...) \
-	__alternative_atomic64(f, f, ASM_OUTPUT2(out), ## in)
+#define alternative_atomic64(f, out, in...) 	__alternative_atomic64(f, f, ASM_OUTPUT2(out), ## in)
 
 ATOMIC64_DECL(read);
 ATOMIC64_DECL(set);

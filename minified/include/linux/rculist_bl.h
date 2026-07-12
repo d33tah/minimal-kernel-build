@@ -18,8 +18,7 @@ struct hlist_bl_head {
 struct hlist_bl_node {
 	struct hlist_bl_node *next, **pprev;
 };
-#define INIT_HLIST_BL_HEAD(ptr) \
-	((ptr)->first = NULL)
+#define INIT_HLIST_BL_HEAD(ptr) 	((ptr)->first = NULL)
 
 static inline void INIT_HLIST_BL_NODE(struct hlist_bl_node *h)
 {
@@ -75,11 +74,7 @@ static inline bool hlist_bl_is_locked(struct hlist_bl_head *b)
 	return bit_spin_is_locked(0, (unsigned long *)b);
 }
 
-#define hlist_bl_for_each_entry(tpos, pos, head, member)		\
-	for (pos = hlist_bl_first(head);				\
-	     pos &&							\
-		({ tpos = hlist_bl_entry(pos, typeof(*tpos), member); 1;}); \
-	     pos = pos->next)
+#define hlist_bl_for_each_entry(tpos, pos, head, member)			for (pos = hlist_bl_first(head);					     pos &&									({ tpos = hlist_bl_entry(pos, typeof(*tpos), member); 1;}); 	     pos = pos->next)
 
 
 /* RCU-specific functions */
@@ -116,10 +111,6 @@ static inline void hlist_bl_add_head_rcu(struct hlist_bl_node *n,
 
 	hlist_bl_set_first_rcu(h, n);
 }
-#define hlist_bl_for_each_entry_rcu(tpos, pos, head, member)		\
-	for (pos = hlist_bl_first_rcu(head);				\
-		pos &&							\
-		({ tpos = hlist_bl_entry(pos, typeof(*tpos), member); 1; }); \
-		pos = rcu_dereference_raw(pos->next))
+#define hlist_bl_for_each_entry_rcu(tpos, pos, head, member)			for (pos = hlist_bl_first_rcu(head);						pos &&									({ tpos = hlist_bl_entry(pos, typeof(*tpos), member); 1; }); 		pos = rcu_dereference_raw(pos->next))
 
 #endif

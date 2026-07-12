@@ -55,9 +55,7 @@ static inline void node_mark_all(struct xa_node *node, xa_mark_t mark)
 	bitmap_fill(node_marks(node, mark), XA_CHUNK_SIZE);
 }
 
-#define mark_inc(mark) do { \
-	mark = (__force xa_mark_t)((__force unsigned)(mark) + 1); \
-} while (0)
+#define mark_inc(mark) do { 	mark = (__force xa_mark_t)((__force unsigned)(mark) + 1); } while (0)
 
 static unsigned int get_offset(unsigned long index, struct xa_node *node)
 {

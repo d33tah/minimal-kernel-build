@@ -52,16 +52,8 @@ static inline int fs_parse(struct fs_context *fc,
 
 extern int lookup_constant(const struct constant_table tbl[], const char *name, int not_found);
 
-#define __fsparam(TYPE, NAME, OPT, FLAGS, DATA) \
-	{ \
-		.name = NAME, \
-		.opt = OPT, \
-		.type = TYPE, \
-		.flags = FLAGS, \
-		.data = DATA \
-	}
+#define __fsparam(TYPE, NAME, OPT, FLAGS, DATA) 	{ 		.name = NAME, 		.opt = OPT, 		.type = TYPE, 		.flags = FLAGS, 		.data = DATA 	}
 
-#define fsparam_u32oct(NAME, OPT) \
-			__fsparam(fs_param_is_u32, NAME, OPT, 0, (void *)8)
+#define fsparam_u32oct(NAME, OPT) 			__fsparam(fs_param_is_u32, NAME, OPT, 0, (void *)8)
 
 #endif  

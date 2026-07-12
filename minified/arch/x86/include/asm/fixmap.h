@@ -79,8 +79,7 @@ static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 #endif
 
 #ifndef clear_fixmap
-#define clear_fixmap(idx)			\
-	__set_fixmap(idx, 0, FIXMAP_PAGE_CLEAR)
+#define clear_fixmap(idx)				__set_fixmap(idx, 0, FIXMAP_PAGE_CLEAR)
 #endif
 
 #define __late_set_fixmap(idx, phys, flags) __set_fixmap(idx, phys, flags)

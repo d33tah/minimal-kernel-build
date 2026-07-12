@@ -34,14 +34,10 @@ static inline bool __nodes_empty(const nodemask_t *srcp, unsigned int nbits)
 #define NODE_MASK_LAST_WORD BITMAP_LAST_WORD_MASK(MAX_NUMNODES)
 
 /* MAX_NUMNODES == 1 <= BITS_PER_LONG always */
-#define NODE_MASK_ALL							\
-((nodemask_t) { {							\
-	[BITS_TO_LONGS(MAX_NUMNODES)-1] = NODE_MASK_LAST_WORD		\
-} })
+#define NODE_MASK_ALL							((nodemask_t) { {								[BITS_TO_LONGS(MAX_NUMNODES)-1] = NODE_MASK_LAST_WORD		} })
 
 /* MAX_NUMNODES=1, use simplified version */
-#define for_each_node_mask(node, mask)                                  \
-	for ((node) = 0; (node) < 1 && !nodes_empty(mask); (node)++)  
+#define for_each_node_mask(node, mask)                                  	for ((node) = 0; (node) < 1 && !nodes_empty(mask); (node)++)  
 
 enum node_states {
 	N_POSSIBLE,		 
@@ -62,8 +58,7 @@ static inline int node_state(int node, enum node_states state)
 }
 
 
-#define for_each_node_state(node, __state) \
-	for ( (node) = 0; (node) == 0; (node) = 1)
+#define for_each_node_state(node, __state) 	for ( (node) = 0; (node) == 0; (node) = 1)
 
 #define first_online_node	0
 #define nr_node_ids		1U

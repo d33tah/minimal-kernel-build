@@ -57,9 +57,7 @@ static void __init fpu__init_system_generic(void)
 
 #define TYPE_ALIGN(TYPE) offsetof(struct { char x; TYPE test; }, test)
 
-#define CHECK_MEMBER_AT_END_OF(TYPE, MEMBER) \
-	BUILD_BUG_ON(sizeof(TYPE) != ALIGN(offsetofend(TYPE, MEMBER), \
-					   TYPE_ALIGN(TYPE)))
+#define CHECK_MEMBER_AT_END_OF(TYPE, MEMBER) 	BUILD_BUG_ON(sizeof(TYPE) != ALIGN(offsetofend(TYPE, MEMBER), 					   TYPE_ALIGN(TYPE)))
 
 static void __init fpu__init_task_struct_size(void)
 {

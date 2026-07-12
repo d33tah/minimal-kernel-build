@@ -36,11 +36,9 @@ struct files_struct {
 };
 
 
-#define rcu_dereference_check_fdtable(files, fdtfd) \
-	rcu_dereference_check((fdtfd), lockdep_is_held(&(files)->file_lock))
+#define rcu_dereference_check_fdtable(files, fdtfd) 	rcu_dereference_check((fdtfd), lockdep_is_held(&(files)->file_lock))
 
-#define files_fdtable(files) \
-	rcu_dereference_check_fdtable((files), (files)->fdt)
+#define files_fdtable(files) 	rcu_dereference_check_fdtable((files), (files)->fdt)
 
 static inline struct file *files_lookup_fd_raw(struct files_struct *files, unsigned int fd)
 {

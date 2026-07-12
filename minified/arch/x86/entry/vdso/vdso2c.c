@@ -63,17 +63,12 @@ static void fail(const char *format, ...)
 	va_end(ap);
 }
 
-#define GLE(x, bits, ifnot)						\
-	__builtin_choose_expr(						\
-		(sizeof(*(x)) == bits/8),				\
-		(__typeof__(*(x)))get_unaligned_le##bits(x), ifnot)
+#define GLE(x, bits, ifnot)							__builtin_choose_expr(								(sizeof(*(x)) == bits/8),						(__typeof__(*(x)))get_unaligned_le##bits(x), ifnot)
 
 extern void bad_get_le(void);
-#define LAST_GLE(x)							\
-	__builtin_choose_expr(sizeof(*(x)) == 1, *(x), bad_get_le())
+#define LAST_GLE(x)								__builtin_choose_expr(sizeof(*(x)) == 1, *(x), bad_get_le())
 
-#define GET_LE(x)							\
-	GLE(x, 64, GLE(x, 32, GLE(x, 16, LAST_GLE(x))))
+#define GET_LE(x)								GLE(x, 64, GLE(x, 32, GLE(x, 16, LAST_GLE(x))))
 
 #define NSYMS ARRAY_SIZE(required_syms)
 

@@ -41,17 +41,9 @@ static inline void __kunmap_atomic(void *addr)
 	preempt_enable();
 }
 
-#define kunmap_atomic(__addr)					\
-do {								\
-	BUILD_BUG_ON(__same_type((__addr), struct page *));	\
-	__kunmap_atomic(__addr);				\
-} while (0)
+#define kunmap_atomic(__addr)					do {									BUILD_BUG_ON(__same_type((__addr), struct page *));		__kunmap_atomic(__addr);				} while (0)
 
-#define kunmap_local(__addr)					\
-do {								\
-	BUILD_BUG_ON(__same_type((__addr), struct page *));	\
-	__kunmap_local(__addr);					\
-} while (0)
+#define kunmap_local(__addr)					do {									BUILD_BUG_ON(__same_type((__addr), struct page *));		__kunmap_local(__addr);					} while (0)
 
 
 #ifndef ARCH_HAS_FLUSH_ANON_PAGE

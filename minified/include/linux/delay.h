@@ -15,9 +15,7 @@ extern unsigned long loops_per_jiffy;
 #endif
 
 #ifndef mdelay
-#define mdelay(n) (\
-	(__builtin_constant_p(n) && (n)<=MAX_UDELAY_MS) ? udelay((n)*1000) : \
-	({unsigned long __ms=(n); while (__ms--) udelay(1000);}))
+#define mdelay(n) (	(__builtin_constant_p(n) && (n)<=MAX_UDELAY_MS) ? udelay((n)*1000) : 	({unsigned long __ms=(n); while (__ms--) udelay(1000);}))
 #endif
 
 void calibrate_delay(void);

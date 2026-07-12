@@ -9,14 +9,9 @@ struct semaphore {
 	unsigned int		count;
 };
 
-#define __SEMAPHORE_INITIALIZER(name, n)				\
-{									\
-	.lock		= __RAW_SPIN_LOCK_UNLOCKED((name).lock),	\
-	.count		= n,						\
-}
+#define __SEMAPHORE_INITIALIZER(name, n)				{										.lock		= __RAW_SPIN_LOCK_UNLOCKED((name).lock),		.count		= n,						}
 
-#define DEFINE_SEMAPHORE(name)	\
-	struct semaphore name = __SEMAPHORE_INITIALIZER(name, 1)
+#define DEFINE_SEMAPHORE(name)		struct semaphore name = __SEMAPHORE_INITIALIZER(name, 1)
 
 
 extern void down(struct semaphore *sem);

@@ -18,8 +18,7 @@
 #define __ASM_SEL(a,b)		__ASM_FORM(a)
 #define __ASM_SEL_RAW(a,b)	__ASM_FORM_RAW(a)
 
-#define __ASM_SIZE(inst, ...)	__ASM_SEL(inst##l##__VA_ARGS__, \
-					  inst##q##__VA_ARGS__)
+#define __ASM_SIZE(inst, ...)	__ASM_SEL(inst##l##__VA_ARGS__, 					  inst##q##__VA_ARGS__)
 #define __ASM_REG(reg)         __ASM_SEL_RAW(e##reg, r##reg)
 
 #define _ASM_PTR	__ASM_SEL(.long, .quad)
@@ -110,10 +109,8 @@ register unsigned long current_stack_pointer asm(_ASM_SP);
 #define ASM_CALL_CONSTRAINT "+r" (current_stack_pointer)
 #endif  
 
-#define _ASM_EXTABLE(from, to)					\
-	_ASM_EXTABLE_TYPE(from, to, EX_TYPE_DEFAULT)
+#define _ASM_EXTABLE(from, to)						_ASM_EXTABLE_TYPE(from, to, EX_TYPE_DEFAULT)
 
-#define _ASM_EXTABLE_UA(from, to)				\
-	_ASM_EXTABLE_TYPE(from, to, EX_TYPE_UACCESS)
+#define _ASM_EXTABLE_UA(from, to)					_ASM_EXTABLE_TYPE(from, to, EX_TYPE_UACCESS)
 
 #endif  

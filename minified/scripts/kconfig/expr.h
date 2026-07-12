@@ -26,9 +26,7 @@ typedef enum tristate {
 } tristate;
 
 enum expr_type {
-	E_NONE, E_OR, E_AND, E_NOT,
-	E_EQUAL, E_UNEQUAL, E_LTH, E_LEQ, E_GTH, E_GEQ,
-	E_LIST, E_SYMBOL, E_RANGE
+	E_NONE, E_OR, E_AND, E_NOT, E_EQUAL, E_UNEQUAL, E_LTH, E_LEQ, E_GTH, E_GEQ, E_LIST, E_SYMBOL, E_RANGE
 };
 
 union expr_data {
@@ -63,11 +61,7 @@ enum symbol_type {
 
  
 enum {
-	S_DEF_USER,		 
-	S_DEF_AUTO,		 
-	S_DEF_DEF3,		 
-	S_DEF_DEF4,		 
-	S_DEF_COUNT
+	S_DEF_USER, S_DEF_AUTO, S_DEF_DEF3, S_DEF_DEF4, S_DEF_COUNT
 };
 
  
@@ -133,17 +127,7 @@ struct symbol {
 
  
 enum prop_type {
-	P_UNKNOWN,
-	P_PROMPT,    
-	P_COMMENT,   
-	P_MENU,      
-	P_DEFAULT,   
-	P_CHOICE,    
-	P_SELECT,    
-	P_IMPLY,     
-	P_RANGE,     
-	P_SYMBOL,    
-};
+	P_UNKNOWN, P_PROMPT, P_COMMENT, P_MENU, P_DEFAULT, P_CHOICE, P_SELECT, P_IMPLY, P_RANGE, P_SYMBOL, };
 
 struct property {
 	struct property *next;      

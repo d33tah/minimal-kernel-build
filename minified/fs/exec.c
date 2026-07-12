@@ -338,11 +338,7 @@ static struct file *do_open_execat(struct filename *name, int flags)
 	struct file *file;
 	int err;
 	struct open_flags open_exec_flags = {
-		.open_flag = O_LARGEFILE | O_RDONLY | __FMODE_EXEC,
-		.acc_mode = MAY_EXEC,
-		.intent = LOOKUP_OPEN,
-		.lookup_flags = LOOKUP_FOLLOW,
-	};
+		.open_flag = O_LARGEFILE | O_RDONLY | __FMODE_EXEC, .acc_mode = MAY_EXEC, .intent = LOOKUP_OPEN, .lookup_flags = LOOKUP_FOLLOW, };
 
 	if ((flags & ~(AT_SYMLINK_NOFOLLOW | AT_EMPTY_PATH)) != 0)
 		return ERR_PTR(-EINVAL);

@@ -523,12 +523,7 @@ static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma, unsigned long ad
 {
 	/* Minimal stub: simplified page fault handling without huge pages */
 	struct vm_fault vmf = {
-		.vma = vma,
-		.address = address & PAGE_MASK,
-		.flags = flags,
-		.pgoff = linear_page_index(vma, address),
-		.gfp_mask = __get_fault_gfp_mask(vma),
-	};
+		.vma = vma, .address = address & PAGE_MASK, .flags = flags, .pgoff = linear_page_index(vma, address), .gfp_mask = __get_fault_gfp_mask(vma), };
 	struct mm_struct *mm = vma->vm_mm;
 	pgd_t *pgd;
 	p4d_t *p4d;

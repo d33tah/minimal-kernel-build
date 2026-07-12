@@ -24,27 +24,7 @@ static void sanitize_boot_params(struct boot_params *boot_params)
 		int i;
 
 		const struct boot_params_to_save to_save[] = {
-			BOOT_PARAM_PRESERVE(screen_info),
-			BOOT_PARAM_PRESERVE(apm_bios_info),
-			BOOT_PARAM_PRESERVE(tboot_addr),
-			BOOT_PARAM_PRESERVE(ist_info),
-			BOOT_PARAM_PRESERVE(hd0_info),
-			BOOT_PARAM_PRESERVE(hd1_info),
-			BOOT_PARAM_PRESERVE(sys_desc_table),
-			BOOT_PARAM_PRESERVE(olpc_ofw_header),
-			BOOT_PARAM_PRESERVE(efi_info),
-			BOOT_PARAM_PRESERVE(alt_mem_k),
-			BOOT_PARAM_PRESERVE(scratch),
-			BOOT_PARAM_PRESERVE(e820_entries),
-			BOOT_PARAM_PRESERVE(eddbuf_entries),
-			BOOT_PARAM_PRESERVE(edd_mbr_sig_buf_entries),
-			BOOT_PARAM_PRESERVE(edd_mbr_sig_buffer),
-			BOOT_PARAM_PRESERVE(secure_boot),
-			BOOT_PARAM_PRESERVE(hdr),
-			BOOT_PARAM_PRESERVE(e820_table),
-			BOOT_PARAM_PRESERVE(eddbuf),
-			BOOT_PARAM_PRESERVE(cc_blob_address),
-		};
+			BOOT_PARAM_PRESERVE(screen_info), BOOT_PARAM_PRESERVE(apm_bios_info), BOOT_PARAM_PRESERVE(tboot_addr), BOOT_PARAM_PRESERVE(ist_info), BOOT_PARAM_PRESERVE(hd0_info), BOOT_PARAM_PRESERVE(hd1_info), BOOT_PARAM_PRESERVE(sys_desc_table), BOOT_PARAM_PRESERVE(olpc_ofw_header), BOOT_PARAM_PRESERVE(efi_info), BOOT_PARAM_PRESERVE(alt_mem_k), BOOT_PARAM_PRESERVE(scratch), BOOT_PARAM_PRESERVE(e820_entries), BOOT_PARAM_PRESERVE(eddbuf_entries), BOOT_PARAM_PRESERVE(edd_mbr_sig_buf_entries), BOOT_PARAM_PRESERVE(edd_mbr_sig_buffer), BOOT_PARAM_PRESERVE(secure_boot), BOOT_PARAM_PRESERVE(hdr), BOOT_PARAM_PRESERVE(e820_table), BOOT_PARAM_PRESERVE(eddbuf), BOOT_PARAM_PRESERVE(cc_blob_address), };
 
 		memset(&scratch, 0, sizeof(scratch));
 

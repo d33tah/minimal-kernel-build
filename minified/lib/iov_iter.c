@@ -79,11 +79,7 @@ void iov_iter_init(struct iov_iter *i, unsigned int direction, const struct iove
 {
 	WARN_ON(direction & ~(READ | WRITE));
 	*i = (struct iov_iter) {
-		.iter_type = ITER_IOVEC,
-		.iov = iov,
-		.nr_segs = nr_segs,
-		.iov_offset = 0,
-		.count = count
+		.iter_type = ITER_IOVEC, .iov = iov, .nr_segs = nr_segs, .iov_offset = 0, .count = count
 	};
 }
 
@@ -188,11 +184,7 @@ void iov_iter_kvec(struct iov_iter *i, unsigned int direction, const struct kvec
 {
 	WARN_ON(direction & ~(READ | WRITE));
 	*i = (struct iov_iter){
-		.iter_type = ITER_KVEC,
-		.kvec = kvec,
-		.nr_segs = nr_segs,
-		.iov_offset = 0,
-		.count = count
+		.iter_type = ITER_KVEC, .kvec = kvec, .nr_segs = nr_segs, .iov_offset = 0, .count = count
 	};
 }
 

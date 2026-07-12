@@ -18,11 +18,7 @@ extern unsigned long __FIXADDR_TOP;
 
  
 enum fixed_addresses {
-	FIX_HOLE,
-	FIX_DBGP_BASE,
-	FIX_EARLYCON_MEM_BASE,
-	FIX_KMAP_BEGIN,	 
-	FIX_KMAP_END = FIX_KMAP_BEGIN + (KM_MAX_IDX * NR_CPUS) - 1,
+	FIX_HOLE, FIX_DBGP_BASE, FIX_EARLYCON_MEM_BASE, FIX_KMAP_BEGIN, FIX_KMAP_END = FIX_KMAP_BEGIN + (KM_MAX_IDX * NR_CPUS) - 1,
 
 
 	__end_of_permanent_fixed_addresses,
@@ -33,10 +29,7 @@ enum fixed_addresses {
 #define TOTAL_FIX_BTMAPS	(NR_FIX_BTMAPS * FIX_BTMAPS_SLOTS)
 	FIX_BTMAP_END = (__end_of_permanent_fixed_addresses ^ (__end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS - 1)) & -PTRS_PER_PTE
 	 ? __end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS - (__end_of_permanent_fixed_addresses & (TOTAL_FIX_BTMAPS - 1))
-	 : __end_of_permanent_fixed_addresses,
-	FIX_BTMAP_BEGIN = FIX_BTMAP_END + TOTAL_FIX_BTMAPS - 1,
-	FIX_WP_TEST,
-	__end_of_fixed_addresses
+	 : __end_of_permanent_fixed_addresses, FIX_BTMAP_BEGIN = FIX_BTMAP_END + TOTAL_FIX_BTMAPS - 1, FIX_WP_TEST, __end_of_fixed_addresses
 };
 
 

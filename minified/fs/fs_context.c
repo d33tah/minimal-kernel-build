@@ -64,9 +64,7 @@ int vfs_parse_fs_string(struct fs_context *fc, const char *key, const char *valu
 	int ret;
 
 	struct fs_parameter param = {
-		.key	= key,
-		.type	= fs_value_is_flag,
-	};
+		.key	= key, .type	= fs_value_is_flag, };
 
 	if (value) {
 		param.string = kmemdup_nul(value, v_size, GFP_KERNEL);

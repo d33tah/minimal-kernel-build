@@ -886,12 +886,7 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
 {
 	struct kernel_clone_args args = {
-		.flags		= ((lower_32_bits(flags) | CLONE_VM | CLONE_UNTRACED) & ~CSIGNAL),
-		.exit_signal	= (lower_32_bits(flags) & CSIGNAL),
-		.fn		= fn,
-		.fn_arg		= arg,
-		.kthread	= 1,
-	};
+		.flags		= ((lower_32_bits(flags) | CLONE_VM | CLONE_UNTRACED) & ~CSIGNAL), .exit_signal	= (lower_32_bits(flags) & CSIGNAL), .fn		= fn, .fn_arg		= arg, .kthread	= 1, };
 
 	return kernel_clone(&args);
 }
@@ -899,11 +894,7 @@ pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
 pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 {
 	struct kernel_clone_args args = {
-		.flags		= ((lower_32_bits(flags) | CLONE_VM | CLONE_UNTRACED) & ~CSIGNAL),
-		.exit_signal	= (lower_32_bits(flags) & CSIGNAL),
-		.fn		= fn,
-		.fn_arg		= arg,
-	};
+		.flags		= ((lower_32_bits(flags) | CLONE_VM | CLONE_UNTRACED) & ~CSIGNAL), .exit_signal	= (lower_32_bits(flags) & CSIGNAL), .fn		= fn, .fn_arg		= arg, };
 
 	return kernel_clone(&args);
 }

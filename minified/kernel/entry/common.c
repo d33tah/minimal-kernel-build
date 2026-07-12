@@ -144,8 +144,7 @@ noinstr void irqentry_exit_to_user_mode(struct pt_regs *regs)
 noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 {
 	irqentry_state_t ret = {
-		.exit_rcu = false,
-	};
+		.exit_rcu = false, };
 
 	if (user_mode(regs)) {
 		irqentry_enter_from_user_mode(regs);

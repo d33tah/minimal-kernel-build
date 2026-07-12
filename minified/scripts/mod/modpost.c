@@ -453,26 +453,7 @@ static bool match(const char *string, const char *const patterns[])
 }
 
 static const char *const section_white_list[] = {
-	".comment*",
-	".debug*",
-	".cranges",		 
-	".zdebug*",		 
-	".GCC.command.line",	 
-	".mdebug*",         
-	".pdr",             
-	".stab*",
-	".note*",
-	".got*",
-	".toc*",
-	".xt.prop",				  
-	".xt.lit",          
-	".arcextmap*",			 
-	".gnu.linkonce.arcext*",	 
-	".cmem*",			 
-	".fmt_slot*",			 
-	".gnu.lto*",
-	".discard.*",
-	NULL
+	".comment*", ".debug*", ".cranges", ".zdebug*", ".GCC.command.line", ".mdebug*", ".pdr", ".stab*", ".note*", ".got*", ".toc*", ".xt.prop", ".xt.lit", ".arcextmap*", ".gnu.linkonce.arcext*", ".cmem*", ".fmt_slot*", ".gnu.lto*", ".discard.*", NULL
 };
 
 static void check_section(const char *modname, struct elf_info *elf, Elf_Shdr *sechdr)

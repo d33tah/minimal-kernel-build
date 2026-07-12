@@ -958,8 +958,7 @@ static struct kmem_cache * __init bootstrap(struct kmem_cache *static_cache)
 
 void __init kmem_cache_init(void)
 {
-	static __initdata struct kmem_cache boot_kmem_cache,
-		boot_kmem_cache_node;
+	static __initdata struct kmem_cache boot_kmem_cache, boot_kmem_cache_node;
 	int node;
 
 	kmem_cache_node = &boot_kmem_cache_node;

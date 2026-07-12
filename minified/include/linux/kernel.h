@@ -65,11 +65,7 @@ extern void bust_spinlocks(int yes);
 
 
 extern enum system_states {
-	SYSTEM_BOOTING,
-	SYSTEM_SCHEDULING,
-	SYSTEM_FREEING_INITMEM,
-	SYSTEM_RUNNING,
-} system_state;
+	SYSTEM_BOOTING, SYSTEM_SCHEDULING, SYSTEM_FREEING_INITMEM, SYSTEM_RUNNING, } system_state;
 
 extern const char hex_asc_upper[];
 /* Removed: hex_to_bin, hex2bin, bin2hex, mac_pton - never called */

@@ -12,28 +12,7 @@
 
 
 enum pageflags {
-	PG_locked,		 
-	PG_referenced,
-	PG_uptodate,
-	PG_dirty,
-	PG_lru,
-	PG_active,
-	PG_workingset,
-	PG_waiters,
-	PG_slab,
-	PG_owner_priv_1,	 
-	PG_arch_1,
-	PG_reserved,
-	PG_private,		 
-	PG_private_2,		 
-	PG_writeback,		 
-	PG_head,		 
-	PG_mappedtodisk,	 
-	PG_reclaim,		 
-	PG_swapbacked,		 
-	PG_unevictable,		 
-	PG_mlocked,		 
-	__NR_PAGEFLAGS,
+	PG_locked, PG_referenced, PG_uptodate, PG_dirty, PG_lru, PG_active, PG_workingset, PG_waiters, PG_slab, PG_owner_priv_1, PG_arch_1, PG_reserved, PG_private, PG_private_2, PG_writeback, PG_head, PG_mappedtodisk, PG_reclaim, PG_swapbacked, PG_unevictable, PG_mlocked, __NR_PAGEFLAGS,
 
 	PG_readahead = PG_reclaim,
 

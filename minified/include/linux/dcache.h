@@ -39,8 +39,7 @@ struct dentry { unsigned int d_flags; seqcount_spinlock_t d_seq; struct hlist_bl
 
 enum dentry_d_lock_class
 {
-	DENTRY_D_LOCK_NORMAL,  
-	DENTRY_D_LOCK_NESTED
+	DENTRY_D_LOCK_NORMAL, DENTRY_D_LOCK_NESTED
 };
 
 struct dentry_operations {

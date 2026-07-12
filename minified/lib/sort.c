@@ -137,9 +137,7 @@ void sort_r(void *base, size_t num, size_t size, cmp_r_func_t cmp_func, swap_r_f
 void sort(void *base, size_t num, size_t size, cmp_func_t cmp_func, swap_func_t swap_func)
 {
 	struct wrapper w = {
-		.cmp  = cmp_func,
-		.swap = swap_func,
-	};
+		.cmp  = cmp_func, .swap = swap_func, };
 
 	return sort_r(base, num, size, _CMP_WRAPPER, SWAP_WRAPPER, &w);
 }

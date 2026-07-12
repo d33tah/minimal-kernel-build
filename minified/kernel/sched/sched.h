@@ -273,8 +273,7 @@ rq_unlock(struct rq *rq, struct rq_flags *rf)
 
 enum {
 #include "features.h"
-	__SCHED_FEAT_NR,
-};
+	__SCHED_FEAT_NR, };
 
 #undef SCHED_FEAT
 

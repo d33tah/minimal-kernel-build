@@ -15,9 +15,7 @@ static int warn_unsupported(struct file *file, const char *op)
 ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 {
 	struct kvec iov = {
-		.iov_base	= buf,
-		.iov_len	= min_t(size_t, count, MAX_RW_COUNT),
-	};
+		.iov_base	= buf, .iov_len	= min_t(size_t, count, MAX_RW_COUNT), };
 	struct kiocb kiocb;
 	struct iov_iter iter;
 	ssize_t ret;
@@ -67,9 +65,7 @@ static ssize_t new_sync_write(struct file *filp, const char __user *buf, size_t 
 ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t *pos)
 {
 	struct kvec iov = {
-		.iov_base	= (void *)buf,
-		.iov_len	= min_t(size_t, count, MAX_RW_COUNT),
-	};
+		.iov_base	= (void *)buf, .iov_len	= min_t(size_t, count, MAX_RW_COUNT), };
 	struct kiocb kiocb;
 	struct iov_iter iter;
 	ssize_t ret;

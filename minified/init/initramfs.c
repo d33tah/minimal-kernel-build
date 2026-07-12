@@ -126,14 +126,7 @@ static void __init parse_header(char *s)
 
 
 static __initdata enum state {
-	Start,
-	Collect,
-	GotHeader,
-	SkipIt,
-	GotName,
-	CopyFile,
-	GotSymlink,
-	Reset
+	Start, Collect, GotHeader, SkipIt, GotName, CopyFile, GotSymlink, Reset
 } state, next_state;
 
 static __initdata char *victim;

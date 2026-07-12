@@ -420,9 +420,7 @@ static inline int iocb_flags(struct file *file);
 static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 {
 	*kiocb = (struct kiocb) {
-		.ki_filp = filp,
-		.ki_flags = iocb_flags(filp),
-	};
+		.ki_filp = filp, .ki_flags = iocb_flags(filp), };
 }
 
 static inline void mark_inode_dirty(struct inode *inode)

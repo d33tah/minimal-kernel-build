@@ -252,9 +252,7 @@ struct file *file_open_name(struct filename *name, int flags, umode_t mode)
 {
 	struct open_flags op;
 	struct open_how how = {
-		.flags = flags & VALID_OPEN_FLAGS,
-		.mode = mode & S_IALLUGO,
-	};
+		.flags = flags & VALID_OPEN_FLAGS, .mode = mode & S_IALLUGO, };
 	int err;
 
 	if (how.flags & O_PATH)

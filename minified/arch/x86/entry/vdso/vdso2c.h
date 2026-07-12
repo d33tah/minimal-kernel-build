@@ -37,8 +37,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len, void *stripped_addr, si
 	unsigned long mapping_size;
 	ELF(Ehdr) *hdr = (ELF(Ehdr) *)raw_addr;
 	unsigned long i, syms_nr;
-	ELF(Shdr) *symtab_hdr = NULL, *strtab_hdr, *secstrings_hdr,
-		*alt_sec = NULL, *extable_sec = NULL;
+	ELF(Shdr) *symtab_hdr = NULL, *strtab_hdr, *secstrings_hdr, *alt_sec = NULL, *extable_sec = NULL;
 	ELF(Dyn) *dyn = 0, *dyn_end = 0;
 	const char *secstrings;
 	INT_BITS syms[NSYMS] = {};

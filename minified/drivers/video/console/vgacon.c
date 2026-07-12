@@ -304,9 +304,7 @@ static void vgacon_cursor(struct vc_data *c, int mode)
 		default:
 			vgacon_set_cursor_size(c->state.x, 1,
 					       c->vc_cell_height);
-			break;
 		}
-		break;
 	}
 }
 

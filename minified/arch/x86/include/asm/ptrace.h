@@ -49,11 +49,6 @@ static inline unsigned long instruction_pointer(struct pt_regs *regs)
 	return regs->ip;
 }
 
-static __always_inline bool regs_irqs_disabled(struct pt_regs *regs)
-{
-	return !(regs->flags & X86_EFLAGS_IF);
-}
-
 
 #endif /* !__ASSEMBLY__ */
 #endif /* _ASM_X86_PTRACE_H */

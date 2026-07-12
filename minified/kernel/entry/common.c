@@ -164,7 +164,6 @@ noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 	 
 	if (user_mode(regs)) {
 		irqentry_exit_to_user_mode(regs);
-	} else if (!regs_irqs_disabled(regs)) {
 	}
 }
 

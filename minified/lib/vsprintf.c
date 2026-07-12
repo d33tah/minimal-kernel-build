@@ -223,8 +223,7 @@ char *number(char *buf, char *end, unsigned long long num,
 {
 	
 	char tmp[3 * sizeof(num)] __aligned(2);
-	char sign;
-	char locase;
+	char sign, locase;
 	int i;
 	int field_width = spec.field_width;
 	int precision = spec.precision;

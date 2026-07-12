@@ -62,8 +62,7 @@ __register_chrdev_region(unsigned int major, unsigned int baseminor,
 			   int minorct, const char *name)
 {
 	struct char_device_struct *cd, *curr, *prev = NULL;
-	int ret;
-	int i;
+	int ret, i;
 
 	if (major >= CHRDEV_MAJOR_MAX) {
 		pr_err("CHRDEV \"%s\" major requested (%u) is greater than the maximum (%u)\n",

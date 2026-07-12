@@ -1123,8 +1123,7 @@ static int do_open(struct nameidata *nd,
 	struct user_namespace *mnt_userns;
 	int open_flag = op->open_flag;
 	bool do_truncate;
-	int acc_mode;
-	int error;
+	int acc_mode, error;
 
 	if (!(file->f_mode & (FMODE_OPENED | FMODE_CREATED))) {
 		error = complete_walk(nd);
@@ -1234,9 +1233,7 @@ static struct dentry *filename_create(struct filename *name,
 	bool want_dir = lookup_flags & LOOKUP_DIRECTORY;
 	unsigned int reval_flag = lookup_flags & LOOKUP_REVAL;
 	unsigned int create_flags = LOOKUP_CREATE | LOOKUP_EXCL;
-	int type;
-	int err2;
-	int error;
+	int type, err2, error;
 
 	error = filename_parentat(name, reval_flag, path, &last, &type);
 	if (error)

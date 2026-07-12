@@ -35,8 +35,7 @@ void __init early_ioremap_setup(void)
 void __init early_memunmap(void *vaddr, unsigned long size)
 {
 	void __iomem *addr = (__force void __iomem *)vaddr;
-	unsigned long virt_addr;
-	unsigned long offset;
+	unsigned long virt_addr, offset;
 	unsigned int nrpages;
 	enum fixed_addresses idx;
 	int i, slot;

@@ -769,10 +769,7 @@ static inline unsigned int calc_slab_order(unsigned int size,
 
 static inline int calculate_order(unsigned int size)
 {
-	unsigned int order;
-	unsigned int min_objects;
-	unsigned int max_objects;
-	unsigned int nr_cpus;
+	unsigned int order, min_objects, max_objects, nr_cpus;
 
 	nr_cpus = num_present_cpus();
 	if (nr_cpus <= 1)

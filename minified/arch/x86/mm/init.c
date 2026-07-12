@@ -302,8 +302,7 @@ static void __init memory_map_top_down(unsigned long map_start,
 				       unsigned long map_end)
 {
 	unsigned long real_end, last_start;
-	unsigned long step_size;
-	unsigned long addr;
+	unsigned long step_size, addr;
 	unsigned long mapped_ram_size = 0;
 
 	 

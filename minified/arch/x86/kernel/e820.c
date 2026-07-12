@@ -387,8 +387,7 @@ static unsigned long __init e820_end_pfn(unsigned long limit_pfn, enum e820_type
 
 	for (i = 0; i < e820_table->nr_entries; i++) {
 		struct e820_entry *entry = &e820_table->entries[i];
-		unsigned long start_pfn;
-		unsigned long end_pfn;
+		unsigned long start_pfn, end_pfn;
 
 		if (entry->type != type)
 			continue;

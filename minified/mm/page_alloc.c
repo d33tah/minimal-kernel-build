@@ -396,8 +396,7 @@ static void steal_suitable_fallback(struct zone *zone, struct page *page,
 
 static int find_suitable_fallback(struct free_area *area, int migratetype)
 {
-	int i;
-	int fallback_mt;
+	int i, fallback_mt;
 
 	if (area->nr_free == 0)
 		return -1;
@@ -424,8 +423,7 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype,
 {
 	/* Simplified fallback: try all orders, take first match */
 	struct free_area *area;
-	int current_order;
-	int fallback_mt;
+	int current_order, fallback_mt;
 	struct page *page;
 
 	for (current_order = MAX_ORDER - 1; current_order >= order; --current_order) {

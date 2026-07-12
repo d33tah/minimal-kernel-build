@@ -119,8 +119,7 @@ size_t strlen(const char *s)
 #ifdef __HAVE_ARCH_STRNLEN
 size_t strnlen(const char *s, size_t count)
 {
-	int d0;
-	int res;
+	int d0, res;
 	asm volatile("movl %2,%0\n\t"
 		"jmp 2f\n"
 		"1:\tcmpb $0,(%0)\n\t"

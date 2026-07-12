@@ -278,16 +278,11 @@ int setup_arg_pages(struct linux_binprm *bprm,
 		    unsigned long stack_top,
 		    int executable_stack)
 {
-	unsigned long ret;
-	unsigned long stack_shift;
+	unsigned long ret, stack_shift;
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma = bprm->vma;
 	struct vm_area_struct *prev = NULL;
-	unsigned long vm_flags;
-	unsigned long stack_base;
-	unsigned long stack_size;
-	unsigned long stack_expand;
-	unsigned long rlim_stack;
+	unsigned long vm_flags, stack_base, stack_size, stack_expand, rlim_stack;
 	struct mmu_gather tlb;
 
 	stack_top = arch_align_stack(stack_top);

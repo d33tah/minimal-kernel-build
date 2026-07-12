@@ -6,8 +6,6 @@
 #include <linux/nodemask.h>
 
 
-struct alloc_context;
-
 #include <linux/sched/mm.h>
 
 #include "internal.h"

@@ -36,8 +36,7 @@
 
 #define __nocfi		__attribute__((__no_sanitize__("cfi")))
 
-#define __diag_clang(version, severity, s) \
-	__diag_clang_ ## version(__diag_clang_ ## severity s)
+#define __diag_clang(version, severity, s) 	__diag_clang_ ## version(__diag_clang_ ## severity s)
 
 
 #define __diag_str1(s)		#s
@@ -46,8 +45,7 @@
 
 #define __diag_clang_11(s)	__diag(s)
 
-#define __diag_ignore_all(option, comment) \
-	__diag_clang(11, ignore, option)
+#define __diag_ignore_all(option, comment) 	__diag_clang(11, ignore, option)
 /* end compiler-clang.h */
 #else
 #error "Unknown compiler"
@@ -97,9 +95,7 @@
 #define __no_sanitize_or_inline __always_inline
 #endif
 
-#define noinstr								\
-	noinline notrace __attribute((__section__(".noinstr.text")))	\
-	__no_kcsan __no_sanitize_address __no_profile __no_sanitize_coverage
+#define noinstr									noinline notrace __attribute((__section__(".noinstr.text")))		__no_kcsan __no_sanitize_address __no_profile __no_sanitize_coverage
 
 
 #endif  
@@ -133,23 +129,11 @@
 
 #define __same_type(a, b) __builtin_types_compatible_p(typeof(a), typeof(b))
 
-#define __scalar_type_to_expr_cases(type)				\
-		unsigned type:	(unsigned type)0,			\
-		signed type:	(signed type)0
+#define __scalar_type_to_expr_cases(type)						unsigned type:	(unsigned type)0,					signed type:	(signed type)0
 
-#define __unqual_scalar_typeof(x) typeof(				\
-		_Generic((x),						\
-			 char:	(char)0,				\
-			 __scalar_type_to_expr_cases(char),		\
-			 __scalar_type_to_expr_cases(short),		\
-			 __scalar_type_to_expr_cases(int),		\
-			 __scalar_type_to_expr_cases(long),		\
-			 __scalar_type_to_expr_cases(long long),	\
-			 default: (x)))
+#define __unqual_scalar_typeof(x) typeof(						_Generic((x),									 char:	(char)0,							 __scalar_type_to_expr_cases(char),					 __scalar_type_to_expr_cases(short),					 __scalar_type_to_expr_cases(int),					 __scalar_type_to_expr_cases(long),					 __scalar_type_to_expr_cases(long long),				 default: (x)))
 
-#define __native_word(t) \
-	(sizeof(t) == sizeof(char) || sizeof(t) == sizeof(short) || \
-	 sizeof(t) == sizeof(int) || sizeof(t) == sizeof(long))
+#define __native_word(t) 	(sizeof(t) == sizeof(char) || sizeof(t) == sizeof(short) || 	 sizeof(t) == sizeof(int) || sizeof(t) == sizeof(long))
 
 #ifdef __OPTIMIZE__
 # define __compiletime_assert(condition, msg, prefix, suffix)		\
@@ -164,15 +148,11 @@
 # define __compiletime_assert(condition, msg, prefix, suffix) do { } while (0)
 #endif
 
-#define _compiletime_assert(condition, msg, prefix, suffix) \
-	__compiletime_assert(condition, msg, prefix, suffix)
+#define _compiletime_assert(condition, msg, prefix, suffix) 	__compiletime_assert(condition, msg, prefix, suffix)
 
-#define compiletime_assert(condition, msg) \
-	_compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
+#define compiletime_assert(condition, msg) 	_compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
 
-#define compiletime_assert_atomic_type(t)				\
-	compiletime_assert(__native_word(t),				\
-		"Need native word sized stores/loads for atomicity.")
+#define compiletime_assert_atomic_type(t)					compiletime_assert(__native_word(t),						"Need native word sized stores/loads for atomicity.")
 
 #ifndef __diag
 #define __diag(string)

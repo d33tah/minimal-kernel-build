@@ -7,61 +7,35 @@
 #define PER_CPU_ALIGNED_SECTION "..shared_aligned"
 
 
-#define __PCPU_ATTRS(sec)						\
-	__percpu __attribute__((section(PER_CPU_BASE_SECTION sec)))	\
-	PER_CPU_ATTRIBUTES
+#define __PCPU_ATTRS(sec)							__percpu __attribute__((section(PER_CPU_BASE_SECTION sec)))		PER_CPU_ATTRIBUTES
 
-#define DECLARE_PER_CPU_SECTION(type, name, sec)			\
-	extern __PCPU_ATTRS(sec) __typeof__(type) name
+#define DECLARE_PER_CPU_SECTION(type, name, sec)				extern __PCPU_ATTRS(sec) __typeof__(type) name
 
-#define DEFINE_PER_CPU_SECTION(type, name, sec)				\
-	__PCPU_ATTRS(sec) __typeof__(type) name
+#define DEFINE_PER_CPU_SECTION(type, name, sec)					__PCPU_ATTRS(sec) __typeof__(type) name
 
-#define DECLARE_PER_CPU(type, name)					\
-	DECLARE_PER_CPU_SECTION(type, name, "")
+#define DECLARE_PER_CPU(type, name)						DECLARE_PER_CPU_SECTION(type, name, "")
 
-#define DEFINE_PER_CPU(type, name)					\
-	DEFINE_PER_CPU_SECTION(type, name, "")
+#define DEFINE_PER_CPU(type, name)						DEFINE_PER_CPU_SECTION(type, name, "")
 
 
-#define DECLARE_PER_CPU_SHARED_ALIGNED(type, name)			\
-	DECLARE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION) \
-	____cacheline_aligned_in_smp
+#define DECLARE_PER_CPU_SHARED_ALIGNED(type, name)				DECLARE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION) 	____cacheline_aligned_in_smp
 
-#define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)			\
-	DEFINE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION) \
-	____cacheline_aligned_in_smp
+#define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)				DEFINE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION) 	____cacheline_aligned_in_smp
 
-#define DECLARE_PER_CPU_ALIGNED(type, name)				\
-	DECLARE_PER_CPU_SECTION(type, name, PER_CPU_ALIGNED_SECTION)	\
-	____cacheline_aligned
+#define DECLARE_PER_CPU_ALIGNED(type, name)					DECLARE_PER_CPU_SECTION(type, name, PER_CPU_ALIGNED_SECTION)		____cacheline_aligned
 
-#define DEFINE_PER_CPU_ALIGNED(type, name)				\
-	DEFINE_PER_CPU_SECTION(type, name, PER_CPU_ALIGNED_SECTION)	\
-	____cacheline_aligned
+#define DEFINE_PER_CPU_ALIGNED(type, name)					DEFINE_PER_CPU_SECTION(type, name, PER_CPU_ALIGNED_SECTION)		____cacheline_aligned
 
-#define DECLARE_PER_CPU_PAGE_ALIGNED(type, name)			\
-	DECLARE_PER_CPU_SECTION(type, name, "..page_aligned")		\
-	__aligned(PAGE_SIZE)
+#define DECLARE_PER_CPU_PAGE_ALIGNED(type, name)				DECLARE_PER_CPU_SECTION(type, name, "..page_aligned")			__aligned(PAGE_SIZE)
 
-#define DEFINE_PER_CPU_PAGE_ALIGNED(type, name)				\
-	DEFINE_PER_CPU_SECTION(type, name, "..page_aligned")		\
-	__aligned(PAGE_SIZE)
+#define DEFINE_PER_CPU_PAGE_ALIGNED(type, name)					DEFINE_PER_CPU_SECTION(type, name, "..page_aligned")			__aligned(PAGE_SIZE)
 
 #ifndef __ASSEMBLY__
 
-#define __verify_pcpu_ptr(ptr)						\
-do {									\
-	const void __percpu *__vpp_verify = (typeof((ptr) + 0))NULL;	\
-	(void)__vpp_verify;						\
-} while (0)
+#define __verify_pcpu_ptr(ptr)						do {										const void __percpu *__vpp_verify = (typeof((ptr) + 0))NULL;		(void)__vpp_verify;						} while (0)
 
 
-#define VERIFY_PERCPU_PTR(__p)						\
-({									\
-	__verify_pcpu_ptr(__p);						\
-	(typeof(*(__p)) __kernel __force *)(__p);			\
-})
+#define VERIFY_PERCPU_PTR(__p)						({										__verify_pcpu_ptr(__p);							(typeof(*(__p)) __kernel __force *)(__p);			})
 
 #define per_cpu_ptr(ptr, cpu)	({ (void)(cpu); VERIFY_PERCPU_PTR(ptr); })
 #define raw_cpu_ptr(ptr)	per_cpu_ptr(ptr, 0)
@@ -70,94 +44,24 @@ do {									\
 
 #define per_cpu(var, cpu)	(*per_cpu_ptr(&(var), cpu))
 
-#define get_cpu_var(var)						\
-(*({									\
-	preempt_disable();						\
-	this_cpu_ptr(&var);						\
-}))
+#define get_cpu_var(var)						(*({										preempt_disable();							this_cpu_ptr(&var);						}))
 
-#define put_cpu_var(var)						\
-do {									\
-	(void)&(var);							\
-	preempt_enable();						\
-} while (0)
+#define put_cpu_var(var)						do {										(void)&(var);								preempt_enable();						} while (0)
 
-#define get_cpu_ptr(var)						\
-({									\
-	preempt_disable();						\
-	this_cpu_ptr(var);						\
-})
+#define get_cpu_ptr(var)						({										preempt_disable();							this_cpu_ptr(var);						})
 
-#define put_cpu_ptr(var)						\
-do {									\
-	(void)(var);							\
-	preempt_enable();						\
-} while (0)
+#define put_cpu_ptr(var)						do {										(void)(var);								preempt_enable();						} while (0)
 
 
 extern void __bad_size_call_parameter(void);
 
-#define __pcpu_size_call_return(stem, variable)				\
-({									\
-	typeof(variable) pscr_ret__;					\
-	__verify_pcpu_ptr(&(variable));					\
-	switch(sizeof(variable)) {					\
-	case 1: pscr_ret__ = stem##1(variable); break;			\
-	case 2: pscr_ret__ = stem##2(variable); break;			\
-	case 4: pscr_ret__ = stem##4(variable); break;			\
-	case 8: pscr_ret__ = stem##8(variable); break;			\
-	default:							\
-		__bad_size_call_parameter(); break;			\
-	}								\
-	pscr_ret__;							\
-})
+#define __pcpu_size_call_return(stem, variable)				({										typeof(variable) pscr_ret__;						__verify_pcpu_ptr(&(variable));						switch(sizeof(variable)) {						case 1: pscr_ret__ = stem##1(variable); break;				case 2: pscr_ret__ = stem##2(variable); break;				case 4: pscr_ret__ = stem##4(variable); break;				case 8: pscr_ret__ = stem##8(variable); break;				default:									__bad_size_call_parameter(); break;				}									pscr_ret__;							})
 
-#define __pcpu_size_call_return2(stem, variable, ...)			\
-({									\
-	typeof(variable) pscr2_ret__;					\
-	__verify_pcpu_ptr(&(variable));					\
-	switch(sizeof(variable)) {					\
-	case 1: pscr2_ret__ = stem##1(variable, __VA_ARGS__); break;	\
-	case 2: pscr2_ret__ = stem##2(variable, __VA_ARGS__); break;	\
-	case 4: pscr2_ret__ = stem##4(variable, __VA_ARGS__); break;	\
-	case 8: pscr2_ret__ = stem##8(variable, __VA_ARGS__); break;	\
-	default:							\
-		__bad_size_call_parameter(); break;			\
-	}								\
-	pscr2_ret__;							\
-})
+#define __pcpu_size_call_return2(stem, variable, ...)			({										typeof(variable) pscr2_ret__;						__verify_pcpu_ptr(&(variable));						switch(sizeof(variable)) {						case 1: pscr2_ret__ = stem##1(variable, __VA_ARGS__); break;		case 2: pscr2_ret__ = stem##2(variable, __VA_ARGS__); break;		case 4: pscr2_ret__ = stem##4(variable, __VA_ARGS__); break;		case 8: pscr2_ret__ = stem##8(variable, __VA_ARGS__); break;		default:									__bad_size_call_parameter(); break;				}									pscr2_ret__;							})
 
-#define __pcpu_double_call_return_bool(stem, pcp1, pcp2, ...)		\
-({									\
-	bool pdcrb_ret__;						\
-	__verify_pcpu_ptr(&(pcp1));					\
-	BUILD_BUG_ON(sizeof(pcp1) != sizeof(pcp2));			\
-	VM_BUG_ON((unsigned long)(&(pcp1)) % (2 * sizeof(pcp1)));	\
-	VM_BUG_ON((unsigned long)(&(pcp2)) !=				\
-		  (unsigned long)(&(pcp1)) + sizeof(pcp1));		\
-	switch(sizeof(pcp1)) {						\
-	case 1: pdcrb_ret__ = stem##1(pcp1, pcp2, __VA_ARGS__); break;	\
-	case 2: pdcrb_ret__ = stem##2(pcp1, pcp2, __VA_ARGS__); break;	\
-	case 4: pdcrb_ret__ = stem##4(pcp1, pcp2, __VA_ARGS__); break;	\
-	case 8: pdcrb_ret__ = stem##8(pcp1, pcp2, __VA_ARGS__); break;	\
-	default:							\
-		__bad_size_call_parameter(); break;			\
-	}								\
-	pdcrb_ret__;							\
-})
+#define __pcpu_double_call_return_bool(stem, pcp1, pcp2, ...)		({										bool pdcrb_ret__;							__verify_pcpu_ptr(&(pcp1));						BUILD_BUG_ON(sizeof(pcp1) != sizeof(pcp2));				VM_BUG_ON((unsigned long)(&(pcp1)) % (2 * sizeof(pcp1)));		VM_BUG_ON((unsigned long)(&(pcp2)) !=						  (unsigned long)(&(pcp1)) + sizeof(pcp1));			switch(sizeof(pcp1)) {							case 1: pdcrb_ret__ = stem##1(pcp1, pcp2, __VA_ARGS__); break;		case 2: pdcrb_ret__ = stem##2(pcp1, pcp2, __VA_ARGS__); break;		case 4: pdcrb_ret__ = stem##4(pcp1, pcp2, __VA_ARGS__); break;		case 8: pdcrb_ret__ = stem##8(pcp1, pcp2, __VA_ARGS__); break;		default:									__bad_size_call_parameter(); break;				}									pdcrb_ret__;							})
 
-#define __pcpu_size_call(stem, variable, ...)				\
-do {									\
-	__verify_pcpu_ptr(&(variable));					\
-	switch(sizeof(variable)) {					\
-		case 1: stem##1(variable, __VA_ARGS__);break;		\
-		case 2: stem##2(variable, __VA_ARGS__);break;		\
-		case 4: stem##4(variable, __VA_ARGS__);break;		\
-		case 8: stem##8(variable, __VA_ARGS__);break;		\
-		default: 						\
-			__bad_size_call_parameter();break;		\
-	}								\
-} while (0)
+#define __pcpu_size_call(stem, variable, ...)				do {										__verify_pcpu_ptr(&(variable));						switch(sizeof(variable)) {							case 1: stem##1(variable, __VA_ARGS__);break;				case 2: stem##2(variable, __VA_ARGS__);break;				case 4: stem##4(variable, __VA_ARGS__);break;				case 8: stem##8(variable, __VA_ARGS__);break;				default: 									__bad_size_call_parameter();break;			}								} while (0)
 
 
 #define raw_cpu_read(pcp)		__pcpu_size_call_return(raw_cpu_read_, pcp)
@@ -165,26 +69,14 @@ do {									\
 #define raw_cpu_add(pcp, val)		__pcpu_size_call(raw_cpu_add_, pcp, val)
 #define raw_cpu_or(pcp, val)		__pcpu_size_call(raw_cpu_or_, pcp, val)
 
-#define __this_cpu_read(pcp)						\
-({									\
-	raw_cpu_read(pcp);						\
-})
+#define __this_cpu_read(pcp)						({										raw_cpu_read(pcp);						})
 
-#define __this_cpu_write(pcp, val)					\
-({									\
-	raw_cpu_write(pcp, val);					\
-})
+#define __this_cpu_write(pcp, val)					({										raw_cpu_write(pcp, val);					})
 
-#define __this_cpu_add(pcp, val)					\
-({									\
-	raw_cpu_add(pcp, val);						\
-})
+#define __this_cpu_add(pcp, val)					({										raw_cpu_add(pcp, val);						})
 
 
-#define __this_cpu_or(pcp, val)						\
-({									\
-	raw_cpu_or(pcp, val);						\
-})
+#define __this_cpu_or(pcp, val)						({										raw_cpu_or(pcp, val);						})
 
 
 #define __this_cpu_inc(pcp)		__this_cpu_add(pcp, 1)
@@ -193,8 +85,7 @@ do {									\
 #define this_cpu_write(pcp, val)	__pcpu_size_call(this_cpu_write_, pcp, val)
 #define this_cpu_add(pcp, val)		__pcpu_size_call(this_cpu_add_, pcp, val)
 #define this_cpu_add_return(pcp, val)	__pcpu_size_call_return2(this_cpu_add_return_, pcp, val)
-#define this_cpu_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2) \
-	__pcpu_double_call_return_bool(this_cpu_cmpxchg_double_, pcp1, pcp2, oval1, oval2, nval1, nval2)
+#define this_cpu_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2) 	__pcpu_double_call_return_bool(this_cpu_cmpxchg_double_, pcp1, pcp2, oval1, oval2, nval1, nval2)
 
 #define this_cpu_inc(pcp)		this_cpu_add(pcp, 1)
 #define this_cpu_dec_return(pcp)	this_cpu_add_return(pcp, -1)

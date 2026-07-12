@@ -30,70 +30,30 @@ struct module;
 #define alt_total_slen		alt_end_marker"b-661b"
 #define alt_rlen(num)		e_replacement(num)"f-"b_replacement(num)"f"
 
-#define OLDINSTR(oldinstr, num)						\
-	"# ALT: oldnstr\n"						\
-	"661:\n\t" oldinstr "\n662:\n"					\
-	"# ALT: padding\n"						\
-	".skip -(((" alt_rlen(num) ")-(" alt_slen ")) > 0) * "		\
-		"((" alt_rlen(num) ")-(" alt_slen ")),0x90\n"		\
-	alt_end_marker ":\n"
+#define OLDINSTR(oldinstr, num)							"# ALT: oldnstr\n"							"661:\n\t" oldinstr "\n662:\n"						"# ALT: padding\n"							".skip -(((" alt_rlen(num) ")-(" alt_slen ")) > 0) * "				"((" alt_rlen(num) ")-(" alt_slen ")),0x90\n"			alt_end_marker ":\n"
 
  
 #define alt_max_short(a, b)	"((" a ") ^ (((" a ") ^ (" b ")) & -(-((" a ") < (" b ")))))"
 
  
-#define OLDINSTR_2(oldinstr, num1, num2) \
-	"# ALT: oldinstr2\n"									\
-	"661:\n\t" oldinstr "\n662:\n"								\
-	"# ALT: padding2\n"									\
-	".skip -((" alt_max_short(alt_rlen(num1), alt_rlen(num2)) " - (" alt_slen ")) > 0) * "	\
-		"(" alt_max_short(alt_rlen(num1), alt_rlen(num2)) " - (" alt_slen ")), 0x90\n"	\
-	alt_end_marker ":\n"
+#define OLDINSTR_2(oldinstr, num1, num2) 	"# ALT: oldinstr2\n"										"661:\n\t" oldinstr "\n662:\n"									"# ALT: padding2\n"										".skip -((" alt_max_short(alt_rlen(num1), alt_rlen(num2)) " - (" alt_slen ")) > 0) * "			"(" alt_max_short(alt_rlen(num1), alt_rlen(num2)) " - (" alt_slen ")), 0x90\n"		alt_end_marker ":\n"
 
-#define ALTINSTR_ENTRY(feature, num)					      \
-	" .long 661b - .\n"				  \
-	" .long " b_replacement(num)"f - .\n"		  \
-	" .word " __stringify(feature) "\n"		  \
-	" .byte " alt_total_slen "\n"			  \
-	" .byte " alt_rlen(num) "\n"			 
+#define ALTINSTR_ENTRY(feature, num)					      	" .long 661b - .\n"				  	" .long " b_replacement(num)"f - .\n"		  	" .word " __stringify(feature) "\n"		  	" .byte " alt_total_slen "\n"			  	" .byte " alt_rlen(num) "\n"			 
 
-#define ALTINSTR_REPLACEMENT(newinstr, num)		 	\
-	"# ALT: replacement " #num "\n"						\
-	b_replacement(num)":\n\t" newinstr "\n" e_replacement(num) ":\n"
+#define ALTINSTR_REPLACEMENT(newinstr, num)		 		"# ALT: replacement " #num "\n"							b_replacement(num)":\n\t" newinstr "\n" e_replacement(num) ":\n"
 
  
-#define ALTERNATIVE(oldinstr, newinstr, feature)			\
-	OLDINSTR(oldinstr, 1)						\
-	".pushsection .altinstructions,\"a\"\n"				\
-	ALTINSTR_ENTRY(feature, 1)					\
-	".popsection\n"							\
-	".pushsection .altinstr_replacement, \"ax\"\n"			\
-	ALTINSTR_REPLACEMENT(newinstr, 1)				\
-	".popsection\n"
+#define ALTERNATIVE(oldinstr, newinstr, feature)				OLDINSTR(oldinstr, 1)							".pushsection .altinstructions,\"a\"\n"					ALTINSTR_ENTRY(feature, 1)						".popsection\n"								".pushsection .altinstr_replacement, \"ax\"\n"				ALTINSTR_REPLACEMENT(newinstr, 1)					".popsection\n"
 
-#define ALTERNATIVE_2(oldinstr, newinstr1, feature1, newinstr2, feature2)\
-	OLDINSTR_2(oldinstr, 1, 2)					\
-	".pushsection .altinstructions,\"a\"\n"				\
-	ALTINSTR_ENTRY(feature1, 1)					\
-	ALTINSTR_ENTRY(feature2, 2)					\
-	".popsection\n"							\
-	".pushsection .altinstr_replacement, \"ax\"\n"			\
-	ALTINSTR_REPLACEMENT(newinstr1, 1)				\
-	ALTINSTR_REPLACEMENT(newinstr2, 2)				\
-	".popsection\n"
+#define ALTERNATIVE_2(oldinstr, newinstr1, feature1, newinstr2, feature2)	OLDINSTR_2(oldinstr, 1, 2)						".pushsection .altinstructions,\"a\"\n"					ALTINSTR_ENTRY(feature1, 1)						ALTINSTR_ENTRY(feature2, 2)						".popsection\n"								".pushsection .altinstr_replacement, \"ax\"\n"				ALTINSTR_REPLACEMENT(newinstr1, 1)					ALTINSTR_REPLACEMENT(newinstr2, 2)					".popsection\n"
 
  
-#define ALTERNATIVE_TERNARY(oldinstr, feature, newinstr_yes, newinstr_no) \
-	ALTERNATIVE_2(oldinstr, newinstr_no, X86_FEATURE_ALWAYS,	\
-		      newinstr_yes, feature)
+#define ALTERNATIVE_TERNARY(oldinstr, feature, newinstr_yes, newinstr_no) 	ALTERNATIVE_2(oldinstr, newinstr_no, X86_FEATURE_ALWAYS,			      newinstr_yes, feature)
 
-#define alternative(oldinstr, newinstr, feature)			\
-	asm_inline volatile (ALTERNATIVE(oldinstr, newinstr, feature) : : : "memory")
+#define alternative(oldinstr, newinstr, feature)				asm_inline volatile (ALTERNATIVE(oldinstr, newinstr, feature) : : : "memory")
 
 
-#define alternative_input(oldinstr, newinstr, feature, input...)	\
-	asm_inline volatile (ALTERNATIVE(oldinstr, newinstr, feature)	\
-		: : "i" (0), ## input)
+#define alternative_input(oldinstr, newinstr, feature, input...)		asm_inline volatile (ALTERNATIVE(oldinstr, newinstr, feature)			: : "i" (0), ## input)
 
 
 #define ASM_OUTPUT2(a...) a
@@ -168,9 +128,7 @@ struct module;
 .endm
 
  
-#define ALTERNATIVE_TERNARY(oldinstr, feature, newinstr_yes, newinstr_no) \
-	ALTERNATIVE_2 oldinstr, newinstr_no, X86_FEATURE_ALWAYS,	\
-	newinstr_yes, feature
+#define ALTERNATIVE_TERNARY(oldinstr, feature, newinstr_yes, newinstr_no) 	ALTERNATIVE_2 oldinstr, newinstr_no, X86_FEATURE_ALWAYS,		newinstr_yes, feature
 
 #endif  
 

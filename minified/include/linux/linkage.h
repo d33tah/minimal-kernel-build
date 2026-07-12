@@ -18,17 +18,11 @@
 
 
 #ifndef cond_syscall
-#define cond_syscall(x)	asm(				\
-	".weak " __stringify(x) "\n\t"			\
-	".set  " __stringify(x) ","			\
-		 __stringify(sys_ni_syscall))
+#define cond_syscall(x)	asm(					".weak " __stringify(x) "\n\t"				".set  " __stringify(x) ","					 __stringify(sys_ni_syscall))
 #endif
 
 #ifndef SYSCALL_ALIAS
-#define SYSCALL_ALIAS(alias, name) asm(			\
-	".globl " __stringify(alias) "\n\t"		\
-	".set   " __stringify(alias) ","		\
-		  __stringify(name))
+#define SYSCALL_ALIAS(alias, name) asm(				".globl " __stringify(alias) "\n\t"			".set   " __stringify(alias) ","				  __stringify(name))
 #endif
 
 #define __page_aligned_bss	__section(".bss..page_aligned") __aligned(PAGE_SIZE)
@@ -74,92 +68,65 @@
 
 
 #ifndef SYM_ENTRY
-#define SYM_ENTRY(name, linkage, align...)		\
-	linkage(name) ASM_NL				\
-	align ASM_NL					\
-	name:
+#define SYM_ENTRY(name, linkage, align...)			linkage(name) ASM_NL					align ASM_NL						name:
 #endif
 
 #ifndef SYM_START
-#define SYM_START(name, linkage, align...)		\
-	SYM_ENTRY(name, linkage, align)
+#define SYM_START(name, linkage, align...)			SYM_ENTRY(name, linkage, align)
 #endif
 
 #ifndef SYM_END
-#define SYM_END(name, sym_type)				\
-	.type name sym_type ASM_NL			\
-	.set .L__sym_size_##name, .-name ASM_NL		\
-	.size name, .L__sym_size_##name
+#define SYM_END(name, sym_type)					.type name sym_type ASM_NL				.set .L__sym_size_##name, .-name ASM_NL			.size name, .L__sym_size_##name
 #endif
 
 #ifndef SYM_INNER_LABEL
-#define SYM_INNER_LABEL(name, linkage)		\
-	.type name SYM_T_NONE ASM_NL			\
-	SYM_ENTRY(name, linkage, SYM_A_NONE)
+#define SYM_INNER_LABEL(name, linkage)			.type name SYM_T_NONE ASM_NL				SYM_ENTRY(name, linkage, SYM_A_NONE)
 #endif
 
 #ifndef SYM_FUNC_END
-#define SYM_FUNC_END(name)				\
-	SYM_END(name, SYM_T_FUNC)
+#define SYM_FUNC_END(name)					SYM_END(name, SYM_T_FUNC)
 #endif
 
 #ifndef SYM_CODE_START
-#define SYM_CODE_START(name)				\
-	SYM_START(name, SYM_L_GLOBAL, SYM_A_ALIGN)
+#define SYM_CODE_START(name)					SYM_START(name, SYM_L_GLOBAL, SYM_A_ALIGN)
 #endif
 
 
 #ifndef SYM_CODE_START_LOCAL
-#define SYM_CODE_START_LOCAL(name)			\
-	SYM_START(name, SYM_L_LOCAL, SYM_A_ALIGN)
+#define SYM_CODE_START_LOCAL(name)				SYM_START(name, SYM_L_LOCAL, SYM_A_ALIGN)
 #endif
 
 #ifndef SYM_CODE_START_LOCAL_NOALIGN
-#define SYM_CODE_START_LOCAL_NOALIGN(name)		\
-	SYM_START(name, SYM_L_LOCAL, SYM_A_NONE)
+#define SYM_CODE_START_LOCAL_NOALIGN(name)			SYM_START(name, SYM_L_LOCAL, SYM_A_NONE)
 #endif
 
 #ifndef SYM_CODE_END
-#define SYM_CODE_END(name)				\
-	SYM_END(name, SYM_T_NONE)
+#define SYM_CODE_END(name)					SYM_END(name, SYM_T_NONE)
 #endif
 
 
 #ifndef SYM_DATA_START
-#define SYM_DATA_START(name)				\
-	SYM_START(name, SYM_L_GLOBAL, SYM_A_NONE)
+#define SYM_DATA_START(name)					SYM_START(name, SYM_L_GLOBAL, SYM_A_NONE)
 #endif
 
 #ifndef SYM_DATA_START_LOCAL
-#define SYM_DATA_START_LOCAL(name)			\
-	SYM_START(name, SYM_L_LOCAL, SYM_A_NONE)
+#define SYM_DATA_START_LOCAL(name)				SYM_START(name, SYM_L_LOCAL, SYM_A_NONE)
 #endif
 
 #ifndef SYM_DATA_END
-#define SYM_DATA_END(name)				\
-	SYM_END(name, SYM_T_OBJECT)
+#define SYM_DATA_END(name)					SYM_END(name, SYM_T_OBJECT)
 #endif
 
 #ifndef SYM_DATA_END_LABEL
-#define SYM_DATA_END_LABEL(name, linkage, label)	\
-	linkage(label) ASM_NL				\
-	.type label SYM_T_OBJECT ASM_NL			\
-	label:						\
-	SYM_END(name, SYM_T_OBJECT)
+#define SYM_DATA_END_LABEL(name, linkage, label)		linkage(label) ASM_NL					.type label SYM_T_OBJECT ASM_NL				label:							SYM_END(name, SYM_T_OBJECT)
 #endif
 
 #ifndef SYM_DATA
-#define SYM_DATA(name, data...)				\
-	SYM_DATA_START(name) ASM_NL				\
-	data ASM_NL						\
-	SYM_DATA_END(name)
+#define SYM_DATA(name, data...)					SYM_DATA_START(name) ASM_NL					data ASM_NL							SYM_DATA_END(name)
 #endif
 
 #ifndef SYM_DATA_LOCAL
-#define SYM_DATA_LOCAL(name, data...)			\
-	SYM_DATA_START_LOCAL(name) ASM_NL			\
-	data ASM_NL						\
-	SYM_DATA_END(name)
+#define SYM_DATA_LOCAL(name, data...)				SYM_DATA_START_LOCAL(name) ASM_NL				data ASM_NL							SYM_DATA_END(name)
 #endif
 
 #endif  

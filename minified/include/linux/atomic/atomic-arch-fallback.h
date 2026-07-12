@@ -29,36 +29,15 @@
 #endif  
 
 #ifndef arch_try_cmpxchg_acquire
-#define arch_try_cmpxchg_acquire(_ptr, _oldp, _new) \
-({ \
-	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; \
-	___r = arch_cmpxchg_acquire((_ptr), ___o, (_new)); \
-	if (unlikely(___r != ___o)) \
-		*___op = ___r; \
-	likely(___r == ___o); \
-})
+#define arch_try_cmpxchg_acquire(_ptr, _oldp, _new) ({ 	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; 	___r = arch_cmpxchg_acquire((_ptr), ___o, (_new)); 	if (unlikely(___r != ___o)) 		*___op = ___r; 	likely(___r == ___o); })
 #endif  
 
 #ifndef arch_try_cmpxchg_release
-#define arch_try_cmpxchg_release(_ptr, _oldp, _new) \
-({ \
-	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; \
-	___r = arch_cmpxchg_release((_ptr), ___o, (_new)); \
-	if (unlikely(___r != ___o)) \
-		*___op = ___r; \
-	likely(___r == ___o); \
-})
+#define arch_try_cmpxchg_release(_ptr, _oldp, _new) ({ 	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; 	___r = arch_cmpxchg_release((_ptr), ___o, (_new)); 	if (unlikely(___r != ___o)) 		*___op = ___r; 	likely(___r == ___o); })
 #endif  
 
 #ifndef arch_try_cmpxchg_relaxed
-#define arch_try_cmpxchg_relaxed(_ptr, _oldp, _new) \
-({ \
-	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; \
-	___r = arch_cmpxchg_relaxed((_ptr), ___o, (_new)); \
-	if (unlikely(___r != ___o)) \
-		*___op = ___r; \
-	likely(___r == ___o); \
-})
+#define arch_try_cmpxchg_relaxed(_ptr, _oldp, _new) ({ 	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; 	___r = arch_cmpxchg_relaxed((_ptr), ___o, (_new)); 	if (unlikely(___r != ___o)) 		*___op = ___r; 	likely(___r == ___o); })
 #endif
 
 #endif
@@ -71,36 +50,15 @@
 #endif  
 
 #ifndef arch_try_cmpxchg64_acquire
-#define arch_try_cmpxchg64_acquire(_ptr, _oldp, _new) \
-({ \
-	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; \
-	___r = arch_cmpxchg64_acquire((_ptr), ___o, (_new)); \
-	if (unlikely(___r != ___o)) \
-		*___op = ___r; \
-	likely(___r == ___o); \
-})
+#define arch_try_cmpxchg64_acquire(_ptr, _oldp, _new) ({ 	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; 	___r = arch_cmpxchg64_acquire((_ptr), ___o, (_new)); 	if (unlikely(___r != ___o)) 		*___op = ___r; 	likely(___r == ___o); })
 #endif  
 
 #ifndef arch_try_cmpxchg64_release
-#define arch_try_cmpxchg64_release(_ptr, _oldp, _new) \
-({ \
-	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; \
-	___r = arch_cmpxchg64_release((_ptr), ___o, (_new)); \
-	if (unlikely(___r != ___o)) \
-		*___op = ___r; \
-	likely(___r == ___o); \
-})
+#define arch_try_cmpxchg64_release(_ptr, _oldp, _new) ({ 	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; 	___r = arch_cmpxchg64_release((_ptr), ___o, (_new)); 	if (unlikely(___r != ___o)) 		*___op = ___r; 	likely(___r == ___o); })
 #endif  
 
 #ifndef arch_try_cmpxchg64_relaxed
-#define arch_try_cmpxchg64_relaxed(_ptr, _oldp, _new) \
-({ \
-	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; \
-	___r = arch_cmpxchg64_relaxed((_ptr), ___o, (_new)); \
-	if (unlikely(___r != ___o)) \
-		*___op = ___r; \
-	likely(___r == ___o); \
-})
+#define arch_try_cmpxchg64_relaxed(_ptr, _oldp, _new) ({ 	typeof(*(_ptr)) *___op = (_oldp), ___o = *___op, ___r; 	___r = arch_cmpxchg64_relaxed((_ptr), ___o, (_new)); 	if (unlikely(___r != ___o)) 		*___op = ___r; 	likely(___r == ___o); })
 #endif
 
 #endif

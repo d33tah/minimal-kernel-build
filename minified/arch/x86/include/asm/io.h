@@ -35,33 +35,7 @@ static inline void slow_down_io(void)
 }
 
 
-#define BUILDIO(bwl, bw, type)						\
-static inline void out##bwl##_p(type value, u16 port)			\
-{									\
-	out##bwl(value, port);						\
-	slow_down_io();							\
-}									\
-									\
-static inline type in##bwl##_p(u16 port)				\
-{									\
-	type value = in##bwl(port);					\
-	slow_down_io();							\
-	return value;							\
-}									\
-									\
-static inline void outs##bwl(u16 port, const void *addr, unsigned long count) \
-{									\
-	asm volatile("rep; outs" #bwl					\
-		     : "+S"(addr), "+c"(count)				\
-		     : "d"(port) : "memory");				\
-}									\
-									\
-static inline void ins##bwl(u16 port, void *addr, unsigned long count)	\
-{									\
-	asm volatile("rep; ins" #bwl					\
-		     : "+D"(addr), "+c"(count)				\
-		     : "d"(port) : "memory");				\
-}
+#define BUILDIO(bwl, bw, type)						static inline void out##bwl##_p(type value, u16 port)			{										out##bwl(value, port);							slow_down_io();							}																		static inline type in##bwl##_p(u16 port)				{										type value = in##bwl(port);						slow_down_io();								return value;							}																		static inline void outs##bwl(u16 port, const void *addr, unsigned long count) {										asm volatile("rep; outs" #bwl							     : "+S"(addr), "+c"(count)						     : "d"(port) : "memory");				}																		static inline void ins##bwl(u16 port, void *addr, unsigned long count)	{										asm volatile("rep; ins" #bwl							     : "+D"(addr), "+c"(count)						     : "d"(port) : "memory");				}
 
 BUILDIO(b, b, u8)
 /* BUILDIO(w)/BUILDIO(l) removed - only generate 0-caller _p/outs/ins wrappers */

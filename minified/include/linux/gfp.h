@@ -76,8 +76,7 @@ struct vm_area_struct;
 #define GFP_NOWAIT	(__GFP_KSWAPD_RECLAIM)
 #define GFP_USER	(__GFP_RECLAIM | __GFP_IO | __GFP_FS | __GFP_HARDWALL)
 #define GFP_HIGHUSER	(GFP_USER | __GFP_HIGHMEM)
-#define GFP_HIGHUSER_MOVABLE	(GFP_HIGHUSER | __GFP_MOVABLE | \
-			 __GFP_SKIP_KASAN_POISON)
+#define GFP_HIGHUSER_MOVABLE	(GFP_HIGHUSER | __GFP_MOVABLE | 			 __GFP_SKIP_KASAN_POISON)
 
 #define GFP_MOVABLE_MASK (__GFP_RECLAIMABLE|__GFP_MOVABLE)
 #define GFP_MOVABLE_SHIFT 3
@@ -112,27 +111,9 @@ static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
 
 #define GFP_ZONES_SHIFT ZONES_SHIFT
 
-#define GFP_ZONE_TABLE ( \
-	(ZONE_NORMAL << 0 * GFP_ZONES_SHIFT)				       \
-	| (OPT_ZONE_DMA << ___GFP_DMA * GFP_ZONES_SHIFT)		       \
-	| (OPT_ZONE_HIGHMEM << ___GFP_HIGHMEM * GFP_ZONES_SHIFT)	       \
-	| (OPT_ZONE_DMA32 << ___GFP_DMA32 * GFP_ZONES_SHIFT)		       \
-	| (ZONE_NORMAL << ___GFP_MOVABLE * GFP_ZONES_SHIFT)		       \
-	| (OPT_ZONE_DMA << (___GFP_MOVABLE | ___GFP_DMA) * GFP_ZONES_SHIFT)    \
-	| (ZONE_MOVABLE << (___GFP_MOVABLE | ___GFP_HIGHMEM) * GFP_ZONES_SHIFT)\
-	| (OPT_ZONE_DMA32 << (___GFP_MOVABLE | ___GFP_DMA32) * GFP_ZONES_SHIFT)\
-)
+#define GFP_ZONE_TABLE ( 	(ZONE_NORMAL << 0 * GFP_ZONES_SHIFT)				       	| (OPT_ZONE_DMA << ___GFP_DMA * GFP_ZONES_SHIFT)		       	| (OPT_ZONE_HIGHMEM << ___GFP_HIGHMEM * GFP_ZONES_SHIFT)	       	| (OPT_ZONE_DMA32 << ___GFP_DMA32 * GFP_ZONES_SHIFT)		       	| (ZONE_NORMAL << ___GFP_MOVABLE * GFP_ZONES_SHIFT)		       	| (OPT_ZONE_DMA << (___GFP_MOVABLE | ___GFP_DMA) * GFP_ZONES_SHIFT)    	| (ZONE_MOVABLE << (___GFP_MOVABLE | ___GFP_HIGHMEM) * GFP_ZONES_SHIFT)	| (OPT_ZONE_DMA32 << (___GFP_MOVABLE | ___GFP_DMA32) * GFP_ZONES_SHIFT))
 
-#define GFP_ZONE_BAD ( \
-	1 << (___GFP_DMA | ___GFP_HIGHMEM)				      \
-	| 1 << (___GFP_DMA | ___GFP_DMA32)				      \
-	| 1 << (___GFP_DMA32 | ___GFP_HIGHMEM)				      \
-	| 1 << (___GFP_DMA | ___GFP_DMA32 | ___GFP_HIGHMEM)		      \
-	| 1 << (___GFP_MOVABLE | ___GFP_HIGHMEM | ___GFP_DMA)		      \
-	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_DMA)		      \
-	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_HIGHMEM)		      \
-	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_DMA | ___GFP_HIGHMEM)  \
-)
+#define GFP_ZONE_BAD ( 	1 << (___GFP_DMA | ___GFP_HIGHMEM)				      	| 1 << (___GFP_DMA | ___GFP_DMA32)				      	| 1 << (___GFP_DMA32 | ___GFP_HIGHMEM)				      	| 1 << (___GFP_DMA | ___GFP_DMA32 | ___GFP_HIGHMEM)		      	| 1 << (___GFP_MOVABLE | ___GFP_HIGHMEM | ___GFP_DMA)		      	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_DMA)		      	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_HIGHMEM)		      	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_DMA | ___GFP_HIGHMEM)  )
 
 static inline enum zone_type gfp_zone(gfp_t flags)
 {
@@ -194,8 +175,7 @@ static inline struct folio *folio_alloc(gfp_t gfp, unsigned int order)
 {
 	return __folio_alloc_node(gfp, order, numa_node_id());
 }
-#define vma_alloc_folio(gfp, order, vma, addr, hugepage)		\
-	folio_alloc(gfp, order)
+#define vma_alloc_folio(gfp, order, vma, addr, hugepage)			folio_alloc(gfp, order)
 #define alloc_page(gfp_mask) alloc_pages(gfp_mask, 0)
 static inline struct page *alloc_page_vma(gfp_t gfp,
 		struct vm_area_struct *vma, unsigned long addr)

@@ -41,12 +41,7 @@ struct va_format {
 	va_list *va;
 };
 
-#define no_printk(fmt, ...)				\
-({							\
-	if (0)						\
-		printk(fmt, ##__VA_ARGS__);		\
-	0;						\
-})
+#define no_printk(fmt, ...)				({								if (0)								printk(fmt, ##__VA_ARGS__);			0;						})
 
 static inline __printf(1, 2) __cold
 void early_printk(const char *s, ...) { }
@@ -76,58 +71,38 @@ static inline void dump_stack(void)
 
 #define __printk_index_emit(...) do {} while (0)
 
-#define printk_index_wrap(_p_func, _fmt, ...)				\
-	({								\
-		__printk_index_emit(_fmt, NULL, NULL);			\
-		_p_func(_fmt, ##__VA_ARGS__);				\
-	})
+#define printk_index_wrap(_p_func, _fmt, ...)					({										__printk_index_emit(_fmt, NULL, NULL);					_p_func(_fmt, ##__VA_ARGS__);					})
 
 
 #define printk(fmt, ...) printk_index_wrap(_printk, fmt, ##__VA_ARGS__)
-#define printk_deferred(fmt, ...)					\
-	printk_index_wrap(_printk_deferred, fmt, ##__VA_ARGS__)
+#define printk_deferred(fmt, ...)						printk_index_wrap(_printk_deferred, fmt, ##__VA_ARGS__)
 
-#define pr_emerg(fmt, ...) \
-	printk(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_crit(fmt, ...) \
-	printk(KERN_CRIT pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_err(fmt, ...) \
-	printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_warn(fmt, ...) \
-	printk(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_notice(fmt, ...) \
-	printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_info(fmt, ...) \
-	printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_emerg(fmt, ...) 	printk(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_crit(fmt, ...) 	printk(KERN_CRIT pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_err(fmt, ...) 	printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_warn(fmt, ...) 	printk(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_notice(fmt, ...) 	printk(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_info(fmt, ...) 	printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
 
-#define pr_cont(fmt, ...) \
-	printk(KERN_CONT fmt, ##__VA_ARGS__)
+#define pr_cont(fmt, ...) 	printk(KERN_CONT fmt, ##__VA_ARGS__)
 
 #if defined(DEBUG)
-#define pr_debug(fmt, ...) \
-	printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_debug(fmt, ...) 	printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
 #else
-#define pr_debug(fmt, ...) \
-	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_debug(fmt, ...) 	no_printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
 #endif
 
 
-#define printk_once(fmt, ...)					\
-	no_printk(fmt, ##__VA_ARGS__)
+#define printk_once(fmt, ...)						no_printk(fmt, ##__VA_ARGS__)
 
-#define pr_warn_once(fmt, ...)					\
-	printk_once(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_warn_once(fmt, ...)						printk_once(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
 
 
-#define printk_ratelimited(fmt, ...)					\
-	no_printk(fmt, ##__VA_ARGS__)
+#define printk_ratelimited(fmt, ...)						no_printk(fmt, ##__VA_ARGS__)
 
-#define pr_emerg_ratelimited(fmt, ...)					\
-	printk_ratelimited(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_warn_ratelimited(fmt, ...)					\
-	printk_ratelimited(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
-#define pr_info_ratelimited(fmt, ...)					\
-	printk_ratelimited(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_emerg_ratelimited(fmt, ...)						printk_ratelimited(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_warn_ratelimited(fmt, ...)						printk_ratelimited(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
+#define pr_info_ratelimited(fmt, ...)						printk_ratelimited(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
 
 
 #endif

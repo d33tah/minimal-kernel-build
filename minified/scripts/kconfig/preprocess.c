@@ -91,8 +91,7 @@ void env_write_dep(FILE *f, const char *autoconfig_name)
 
 struct function {
 	const char *name;
-	unsigned int min_args;
-	unsigned int max_args;
+	unsigned int min_args, max_args;
 	char *(*func)(int argc, char *argv[]);
 };
 

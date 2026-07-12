@@ -16,8 +16,7 @@ static void usage(void)
 
 int main(int argc, char **argv)
 {
-	int show_absolute_relocs;
-	int use_real_mode;
+	int show_absolute_relocs, use_real_mode;
 	const char *fname;
 	FILE *fp;
 	int i;

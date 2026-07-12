@@ -50,9 +50,7 @@ static inline bool radix_tree_is_internal_node(void *ptr)
 
 
 struct radix_tree_iter {
-	unsigned long	index;
-	unsigned long	next_index;
-	unsigned long	tags;
+	unsigned long index, next_index, tags;
 	struct radix_tree_node *node;
 };
 

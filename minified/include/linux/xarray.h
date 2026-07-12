@@ -112,9 +112,7 @@ static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 #define XA_MARK_LONGS		DIV_ROUND_UP(XA_CHUNK_SIZE, BITS_PER_LONG)
 
 struct xa_node {
-	unsigned char	shift;		 
-	unsigned char	offset;		 
-	unsigned char	count;
+	unsigned char shift, offset, count;
 	struct xa_node __rcu *parent;
 	struct xarray	*array;		 
 	union {
@@ -200,8 +198,7 @@ typedef void (*xa_update_node_t)(struct xa_node *node);
 struct xa_state {
 	struct xarray *xa;
 	unsigned long xa_index;
-	unsigned char xa_shift;
-	unsigned char xa_offset;
+	unsigned char xa_shift, xa_offset;
 	struct xa_node *xa_node;
 	struct xa_node *xa_alloc;
 	xa_update_node_t xa_update;

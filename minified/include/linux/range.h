@@ -3,8 +3,7 @@
 #include <linux/types.h>
 
 struct range {
-	u64   start;
-	u64   end;
+	u64 start, end;
 };
 
 int add_range_with_merge(struct range *range, int az, int nr_range,

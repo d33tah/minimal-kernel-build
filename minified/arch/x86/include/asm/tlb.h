@@ -13,8 +13,7 @@
 
 struct mmu_gather_batch {
 	struct mmu_gather_batch	*next;
-	unsigned int		nr;
-	unsigned int		max;
+	unsigned int nr, max;
 	struct page		*pages[];
 };
 
@@ -25,8 +24,7 @@ extern bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page,
 struct mmu_gather {
 	struct mm_struct	*mm;
 
-	unsigned long		start;
-	unsigned long		end;
+	unsigned long start, end;
 
 	unsigned int		fullmm : 1;
 	unsigned int		need_flush_all : 1;

@@ -183,8 +183,7 @@ struct zone {
 	struct pglist_data	*zone_pgdat;
 	struct per_cpu_pages	__percpu *per_cpu_pageset;
 
-	int pageset_high;
-	int pageset_batch;
+	int pageset_high, pageset_batch;
 
 	 
 	unsigned long		*pageblock_flags;
@@ -194,8 +193,7 @@ struct zone {
 
 	 
 	atomic_long_t		managed_pages;
-	unsigned long		spanned_pages;
-	unsigned long		present_pages;
+	unsigned long spanned_pages, present_pages;
 
 	const char		*name;
 
@@ -259,8 +257,7 @@ typedef struct pglist_data {
 
 	int nr_zones;  
 	struct page *node_mem_map;
-	unsigned long node_start_pfn;
-	unsigned long node_spanned_pages;
+	unsigned long node_start_pfn, node_spanned_pages;
 	int node_id;
 
 	ZONE_PADDING(_pad1_)

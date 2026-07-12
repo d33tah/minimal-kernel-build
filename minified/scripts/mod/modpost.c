@@ -93,8 +93,7 @@ struct symbol {
 	struct list_head list;	 
 	struct module *module;
 	char *namespace;
-	bool weak;
-	bool is_gpl_only;	 
+	bool weak, is_gpl_only;
 	char name[];
 };
 
@@ -102,8 +101,7 @@ static struct symbol *symbolhash[SYMBOL_HASH_SIZE];
 
 static inline unsigned int tdb_hash(const char *name)
 {
-	unsigned value;	 
-	unsigned   i;	 
+	unsigned value, i;
 
 	 
 	for (value = 0x238F13AF * strlen(name), i = 0; name[i]; i++)

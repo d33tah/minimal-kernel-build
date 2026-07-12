@@ -25,8 +25,7 @@ struct clock_event_device {
 	int			(*set_state_shutdown)(struct clock_event_device *);
 
 	const char		*name;
-	int			rating;
-	int			irq;
+	int rating, irq;
 	const struct cpumask	*cpumask;
 	struct list_head	list;
 } ____cacheline_aligned;

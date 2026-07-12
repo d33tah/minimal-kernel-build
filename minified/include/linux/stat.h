@@ -44,8 +44,7 @@
 struct kstat {
 	umode_t		mode;
 	unsigned int	nlink;
-	u64		attributes;
-	u64		ino;
+	u64 attributes, ino;
 	dev_t		dev;
 	dev_t		rdev;
 	kuid_t		uid;

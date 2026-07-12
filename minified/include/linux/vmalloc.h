@@ -20,8 +20,7 @@
 
 
 struct vmap_area {
-	unsigned long va_start;
-	unsigned long va_end;
+	unsigned long va_start, va_end;
 
 	struct rb_node rb_node;
 	struct list_head list;

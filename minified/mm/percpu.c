@@ -15,14 +15,7 @@ static inline unsigned long lcm(unsigned long a, unsigned long b)
 
 
 struct pcpu_block_md {
-	int			scan_hint;
-	int			scan_hint_start;
-	int                     contig_hint;
-	int                     contig_hint_start;
-	int                     left_free;
-	int                     right_free;
-	int                     first_free;
-	int			nr_bits;
+	int scan_hint, scan_hint_start, contig_hint, contig_hint_start, left_free, right_free, first_free, nr_bits;
 };
 
 struct pcpu_chunk {
@@ -34,11 +27,8 @@ struct pcpu_chunk {
 	unsigned long		*bound_map;
 	struct pcpu_block_md	*md_blocks;
 	void			*data;
-	bool			immutable;
-	bool			isolated;
-	int			nr_pages;
-	int			nr_populated;
-	int                     nr_empty_pop_pages;
+	bool immutable, isolated;
+	int nr_pages, nr_populated, nr_empty_pop_pages;
 	unsigned long		populated[];
 };
 

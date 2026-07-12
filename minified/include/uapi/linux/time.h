@@ -20,8 +20,7 @@ struct __kernel_old_timeval {
 /* End time_types.h */
 
 struct timezone {
-	int	tz_minuteswest;
-	int	tz_dsttime;
+	int tz_minuteswest, tz_dsttime;
 };
 
 /* Only keep clock IDs actually used */

@@ -15,8 +15,7 @@ struct linux_binprm {
 	struct vm_area_struct *vma;
 	unsigned long vma_pages;
 	struct mm_struct *mm;
-	unsigned long p;  
-	unsigned long argmin;  
+	unsigned long p, argmin;
 	unsigned int
 
 		secureexec:1,

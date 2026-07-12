@@ -89,8 +89,7 @@ void irqentry_exit_to_user_mode(struct pt_regs *regs);
 #ifndef irqentry_state
 typedef struct irqentry_state {
 	union {
-		bool	exit_rcu;
-		bool	lockdep;
+		bool exit_rcu, lockdep;
 	};
 } irqentry_state_t;
 #endif

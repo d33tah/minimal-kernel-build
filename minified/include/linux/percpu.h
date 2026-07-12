@@ -30,12 +30,7 @@ struct pcpu_group_info {
 };
 
 struct pcpu_alloc_info {
-	size_t			static_size;
-	size_t			reserved_size;
-	size_t			dyn_size;
-	size_t			unit_size;
-	size_t			atom_size;
-	size_t			__ai_size;	 
+	size_t static_size, reserved_size, dyn_size, unit_size, atom_size, __ai_size;
 	int			nr_groups;	 
 	struct pcpu_group_info	groups[];
 };

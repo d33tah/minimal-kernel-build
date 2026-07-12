@@ -19,8 +19,7 @@ static int sym_index(Elf_Sym *sym);
 
 struct relocs {
 	uint32_t	*offset;
-	unsigned long	count;
-	unsigned long	size;
+	unsigned long count, size;
 };
 
 static struct relocs relocs16;

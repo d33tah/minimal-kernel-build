@@ -82,8 +82,7 @@ void *do_nofail(void *ptr, const char *expr);
 
 struct buffer {
 	char *p;
-	int pos;
-	int size;
+	int pos, size;
 };
 
 void __attribute__((format(printf, 2, 3)))
@@ -96,8 +95,7 @@ struct module {
 	struct list_head list;
 	struct list_head exported_symbols;
 	struct list_head unresolved_symbols;
-	bool from_dump;
-	bool is_vmlinux;
+	bool from_dump, is_vmlinux;
 	char name[];
 };
 
@@ -111,8 +109,7 @@ struct elf_info {
 
 
 
-	unsigned int num_sections;  
-	unsigned int secindex_strings;
+	unsigned int num_sections, secindex_strings;
 	 
 	Elf32_Word   *symtab_shndx_start;
 	Elf32_Word   *symtab_shndx_stop;

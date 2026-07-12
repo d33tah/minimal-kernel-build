@@ -34,10 +34,7 @@ enum vdso_clock_mode {
 struct clocksource {
 	u64			(*read)(struct clocksource *cs);
 	u64			mask;
-	u32			mult;
-	u32			shift;
-	u32			maxadj;
-	u32			uncertainty_margin;
+	u32 mult, shift, maxadj, uncertainty_margin;
 	const char		*name;
 	struct list_head	list;
 	int			rating;

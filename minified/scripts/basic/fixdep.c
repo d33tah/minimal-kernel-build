@@ -17,8 +17,7 @@ static void usage(void)
 
 struct item {
 	struct item	*next;
-	unsigned int	len;
-	unsigned int	hash;
+	unsigned int len, hash;
 	char		name[];
 };
 

@@ -20,13 +20,7 @@ struct vdso_image {
 
 	long sym_vvar_start;   
 
-	long sym_vvar_page;
-	long sym_pvclock_page;
-	long sym_hvclock_page;
-	long sym_timens_page;
-	long sym_VDSO32_NOTE_MASK;
-	long sym___kernel_vsyscall;
-	long sym_int80_landing_pad;
+	long sym_vvar_page, sym_pvclock_page, sym_hvclock_page, sym_timens_page, sym_VDSO32_NOTE_MASK, sym___kernel_vsyscall, sym_int80_landing_pad;
 };
 
 

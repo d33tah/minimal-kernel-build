@@ -19,8 +19,7 @@ struct task_struct;
 #include <linux/atomic.h>
 
 struct thread_info {
-	unsigned long		flags;
-	unsigned long		syscall_work;
+	unsigned long flags, syscall_work;
 };
 
 #define INIT_THREAD_INFO(tsk)			\

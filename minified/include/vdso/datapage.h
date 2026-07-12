@@ -30,28 +30,23 @@
 #define CS_BASES	(CS_RAW + 1)
 
 struct vdso_timestamp {
-	u64	sec;
-	u64	nsec;
+	u64 sec, nsec;
 };
 
 struct vdso_data {
 	u32			seq;
 
 	s32			clock_mode;
-	u64			cycle_last;
-	u64			mask;
-	u32			mult;
-	u32			shift;
+	u64 cycle_last, mask;
+	u32 mult, shift;
 
 	union {
 		struct vdso_timestamp	basetime[VDSO_BASES];
 		struct timens_offset	offset[VDSO_BASES];
 	};
 
-	s32			tz_minuteswest;
-	s32			tz_dsttime;
-	u32			hrtimer_res;
-	u32			__unused;
+	s32 tz_minuteswest, tz_dsttime;
+	u32 hrtimer_res, __unused;
 };
 
 extern struct vdso_data _vdso_data[CS_BASES] __attribute__((visibility("hidden")));

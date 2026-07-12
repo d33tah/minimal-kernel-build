@@ -11,11 +11,9 @@
 
  
 struct real_mode_header {
-	u32	text_start;
-	u32	ro_end;
+	u32 text_start, ro_end;
 	 
-	u32	trampoline_start;
-	u32	trampoline_header;
+	u32 trampoline_start, trampoline_header;
 	 
 	 
 	u32	machine_real_restart_asm;
@@ -24,8 +22,7 @@ struct real_mode_header {
  
 struct trampoline_header {
 	u32 start;
-	u16 gdt_pad;
-	u16 gdt_limit;
+	u16 gdt_pad, gdt_limit;
 	u32 gdt_base;
 };
 

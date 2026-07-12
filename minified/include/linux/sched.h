@@ -106,10 +106,7 @@ struct sched_entity {
 	struct rb_node			run_node;
 	unsigned int			on_rq;
 
-	u64				exec_start;
-	u64				sum_exec_runtime;
-	u64				vruntime;
-	u64				prev_sum_exec_runtime;
+	u64 exec_start, sum_exec_runtime, vruntime, prev_sum_exec_runtime;
 };
 
 struct wake_q_node {

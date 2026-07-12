@@ -65,8 +65,7 @@ static inline void cr4_clear_bits(unsigned long mask)
 #define TLB_NR_DYN_ASIDS	6
 
 struct tlb_context {
-	u64 ctx_id;
-	u64 tlb_gen;
+	u64 ctx_id, tlb_gen;
 };
 
 struct tlb_state {

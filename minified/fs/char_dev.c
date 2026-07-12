@@ -23,8 +23,7 @@ static DEFINE_MUTEX(chrdevs_lock);
 
 static struct char_device_struct {
 	struct char_device_struct *next;
-	unsigned int major;
-	unsigned int baseminor;
+	unsigned int major, baseminor;
 	int minorct;
 } *chrdevs[CHRDEV_MAJOR_HASH_SIZE];
 

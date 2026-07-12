@@ -35,8 +35,7 @@ struct irqaction {
 	irq_handler_t		handler;
 	void			*dev_id;
 	struct irqaction	*next;
-	unsigned int		irq;
-	unsigned int		flags;
+	unsigned int irq, flags;
 	const char		*name;
 } ____cacheline_internodealigned_in_smp;
 

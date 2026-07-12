@@ -6,24 +6,9 @@
 
 /* 32-bit only kernel - removed x86_64 stat structures */
 struct stat {
-	unsigned long  st_dev;
-	unsigned long  st_ino;
-	unsigned short st_mode;
-	unsigned short st_nlink;
-	unsigned short st_uid;
-	unsigned short st_gid;
-	unsigned long  st_rdev;
-	unsigned long  st_size;
-	unsigned long  st_blksize;
-	unsigned long  st_blocks;
-	unsigned long  st_atime;
-	unsigned long  st_atime_nsec;
-	unsigned long  st_mtime;
-	unsigned long  st_mtime_nsec;
-	unsigned long  st_ctime;
-	unsigned long  st_ctime_nsec;
-	unsigned long  __unused4;
-	unsigned long  __unused5;
+	unsigned long st_dev, st_ino;
+	unsigned short st_mode, st_nlink, st_uid, st_gid;
+	unsigned long st_rdev, st_size, st_blksize, st_blocks, st_atime, st_atime_nsec, st_mtime, st_mtime_nsec, st_ctime, st_ctime_nsec, __unused4, __unused5;
 };
 
 

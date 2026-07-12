@@ -14,8 +14,7 @@ enum e820_type {
 };
 
 struct e820_entry {
-	u64			addr;
-	u64			size;
+	u64 addr, size;
 	enum e820_type		type;
 } __attribute__((packed));
 

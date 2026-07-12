@@ -25,8 +25,7 @@ struct memblock_region {
 };
 
 struct memblock_type {
-	unsigned long cnt;
-	unsigned long max;
+	unsigned long cnt, max;
 	phys_addr_t total_size;
 	struct memblock_region *regions;
 	char *name;

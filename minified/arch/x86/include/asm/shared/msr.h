@@ -5,8 +5,7 @@
 struct msr {
 	union {
 		struct {
-			u32 l;
-			u32 h;
+			u32 l, h;
 		};
 		u64 q;
 	};

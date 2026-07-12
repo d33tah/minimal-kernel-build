@@ -97,8 +97,7 @@ static inline int task_has_idle_policy(struct task_struct *p)
 
 struct cfs_rq {
 	struct load_weight	load;
-	unsigned int		nr_running;
-	unsigned int		h_nr_running;
+	unsigned int nr_running, h_nr_running;
 
 	u64			min_vruntime;
 

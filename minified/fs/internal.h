@@ -34,9 +34,7 @@ extern struct file *alloc_empty_file(int, const struct cred *);
 struct open_flags {
 	int open_flag;
 	umode_t mode;
-	int acc_mode;
-	int intent;
-	int lookup_flags;
+	int acc_mode, intent, lookup_flags;
 };
 extern struct file *do_filp_open(struct filename *pathname,
 		const struct open_flags *op);

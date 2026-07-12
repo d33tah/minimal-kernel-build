@@ -16,14 +16,10 @@ asmlinkage void ret_from_fork(void);
 
  
 struct inactive_task_frame {
-	unsigned long flags;
-	unsigned long si;
-	unsigned long di;
-	unsigned long bx;
+	unsigned long flags, si, di, bx;
 
 	 
-	unsigned long bp;
-	unsigned long ret_addr;
+	unsigned long bp, ret_addr;
 };
 
 struct fork_frame {

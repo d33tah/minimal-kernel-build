@@ -28,8 +28,7 @@ enum iter_type {
 
 struct iov_iter {
 	u8 iter_type;
-	size_t iov_offset;
-	size_t count;
+	size_t iov_offset, count;
 	union {
 		const struct iovec *iov;
 		const struct kvec *kvec;
@@ -40,8 +39,7 @@ struct iov_iter {
 	union {
 		unsigned long nr_segs;
 		struct {
-			unsigned int head;
-			unsigned int start_head;
+			unsigned int head, start_head;
 		};
 		loff_t xarray_start;
 	};

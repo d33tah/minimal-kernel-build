@@ -133,8 +133,7 @@ static int cpio_mkslink_line(const char *line)
 	char name[PATH_MAX + 1];
 	char target[PATH_MAX + 1];
 	unsigned int mode;
-	int uid;
-	int gid;
+	int uid, gid;
 	int rc = -1;
 
 	if (5 != sscanf(line, "%" str(PATH_MAX) "s %" str(PATH_MAX) "s %o %d %d", name, target, &mode, &uid, &gid)) {
@@ -204,8 +203,7 @@ static int cpio_mkgeneric_line(const char *line, enum generic_types gt)
 {
 	char name[PATH_MAX + 1];
 	unsigned int mode;
-	int uid;
-	int gid;
+	int uid, gid;
 	int rc = -1;
 
 	if (4 != sscanf(line, "%" str(PATH_MAX) "s %o %d %d", name, &mode, &uid, &gid)) {
@@ -272,11 +270,9 @@ static int cpio_mknod_line(const char *line)
 {
 	char name[PATH_MAX + 1];
 	unsigned int mode;
-	int uid;
-	int gid;
+	int uid, gid;
 	char dev_type;
-	unsigned int maj;
-	unsigned int min;
+	unsigned int maj, min;
 	int rc = -1;
 
 	if (7 != sscanf(line, "%" str(PATH_MAX) "s %o %d %d %c %u %u",
@@ -440,8 +436,7 @@ static int cpio_mkfile_line(const char *line)
 	char *dname = NULL;  
 	char location[PATH_MAX + 1];
 	unsigned int mode;
-	int uid;
-	int gid;
+	int uid, gid;
 	int nlinks = 1;
 	int end = 0, dname_len = 0;
 	int rc = -1;
@@ -453,8 +448,7 @@ static int cpio_mkfile_line(const char *line)
 		goto fail;
 	}
 	if (end && isgraph(line[end])) {
-		int len;
-		int nend;
+		int len, nend;
 
 		dname = malloc(strlen(line));
 		if (!dname) {

@@ -60,8 +60,7 @@ struct page {
 			unsigned long compound_head;
 
 			 
-			unsigned char compound_dtor;
-			unsigned char compound_order;
+			unsigned char compound_dtor, compound_order;
 			atomic_t compound_mapcount;
 			atomic_t compound_pincount;
 		};
@@ -146,8 +145,7 @@ typedef unsigned long vm_flags_t;
 struct vm_area_struct {
 	 
 
-	unsigned long vm_start;		 
-	unsigned long vm_end;		 
+	unsigned long vm_start, vm_end;
 
 	 
 	struct vm_area_struct *vm_next, *vm_prev;
@@ -207,8 +205,7 @@ struct mm_struct {
 
 		unsigned long def_flags;
 
-		unsigned long brk;
-		unsigned long arg_start;
+		unsigned long brk, arg_start;
 
 		unsigned long saved_auxv[AT_VECTOR_SIZE];
 

@@ -91,8 +91,7 @@ int after_bootmem;
  * dead and have been removed.
  */
 struct map_range {
-	unsigned long start;
-	unsigned long end;
+	unsigned long start, end;
 	unsigned page_size_mask;
 };
 

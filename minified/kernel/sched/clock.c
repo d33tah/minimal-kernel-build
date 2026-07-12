@@ -13,9 +13,7 @@ __read_mostly u64 __sched_clock_offset;
 static __read_mostly u64 __gtod_offset;
 
 struct sched_clock_data {
-	u64			tick_raw;
-	u64			tick_gtod;
-	u64			clock;
+	u64 tick_raw, tick_gtod, clock;
 };
 
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct sched_clock_data, sched_clock_data);

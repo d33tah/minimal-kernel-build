@@ -9,29 +9,12 @@
 #ifndef __ASSEMBLY__
 /* 32-bit only kernel - removed x86_64 pt_regs */
 struct pt_regs {
-	unsigned long bx;
-	unsigned long cx;
-	unsigned long dx;
-	unsigned long si;
-	unsigned long di;
-	unsigned long bp;
-	unsigned long ax;
-	unsigned short ds;
-	unsigned short __dsh;
-	unsigned short es;
-	unsigned short __esh;
-	unsigned short fs;
-	unsigned short __fsh;
-	unsigned short gs;
-	unsigned short __gsh;
-	unsigned long orig_ax;
-	unsigned long ip;
-	unsigned short cs;
-	unsigned short __csh;
-	unsigned long flags;
-	unsigned long sp;
-	unsigned short ss;
-	unsigned short __ssh;
+	unsigned long bx, cx, dx, si, di, bp, ax;
+	unsigned short ds, __dsh, es, __esh, fs, __fsh, gs, __gsh;
+	unsigned long orig_ax, ip;
+	unsigned short cs, __csh;
+	unsigned long flags, sp;
+	unsigned short ss, __ssh;
 };
 
 #include <asm/proto.h>

@@ -142,8 +142,7 @@ static void __init setup_cr_pinning(void)
 
 
 struct cpuid_dependent_feature {
-	u32 feature;
-	u32 level;
+	u32 feature, level;
 };
 
 static const struct cpuid_dependent_feature

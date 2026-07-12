@@ -12,11 +12,7 @@ struct irq_desc {
 	unsigned int __percpu	*kstat_irqs;
 	irq_flow_handler_t	handle_irq;
 	struct irqaction	*action;	 
-	unsigned int		status_use_accessors;
-	unsigned int		core_internal_state__do_not_mess_with_it;
-	unsigned int		depth;
-	unsigned int		irq_count;
-	unsigned int		irqs_unhandled;
+	unsigned int status_use_accessors, core_internal_state__do_not_mess_with_it, depth, irq_count, irqs_unhandled;
 	raw_spinlock_t		lock;
 	unsigned long		threads_oneshot;
 	struct kobject		kobj;

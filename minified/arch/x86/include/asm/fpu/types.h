@@ -5,13 +5,7 @@
 
  
 struct fregs_state {
-	u32			cwd;	 
-	u32			swd;	 
-	u32			twd;	 
-	u32			fip;	 
-	u32			fcs;	 
-	u32			foo;	 
-	u32			fos;	 
+	u32 cwd, swd, twd, fip, fcs, foo, fos;
 
 	 
 	u32			st_space[20];
@@ -22,24 +16,16 @@ struct fregs_state {
 
  
 struct fxregs_state {
-	u16			cwd;  
-	u16			swd;  
-	u16			twd;  
-	u16			fop;  
+	u16 cwd, swd, twd, fop;
 	union {
 		struct {
-			u64	rip;  
-			u64	rdp;  
+			u64 rip, rdp;
 		};
 		struct {
-			u32	fip;  
-			u32	fcs;  
-			u32	foo;  
-			u32	fos;  
+			u32 fip, fcs, foo, fos;
 		};
 	};
-	u32			mxcsr;		 
-	u32			mxcsr_mask;	 
+	u32 mxcsr, mxcsr_mask;
 
 	 
 	u32			st_space[32];
@@ -63,21 +49,10 @@ struct fxregs_state {
 
  
 struct swregs_state {
-	u32			cwd;
-	u32			swd;
-	u32			twd;
-	u32			fip;
-	u32			fcs;
-	u32			foo;
-	u32			fos;
+	u32 cwd, swd, twd, fip, fcs, foo, fos;
 	 
 	u32			st_space[20];
-	u8			ftop;
-	u8			changed;
-	u8			lookahead;
-	u8			no_update;
-	u8			rm;
-	u8			alimit;
+	u8 ftop, changed, lookahead, no_update, rm, alimit;
 	struct math_emu_info	*info;
 	u32			entry_eip;
 };
@@ -90,8 +65,7 @@ struct swregs_state {
  */
 
 struct xstate_header {
-	u64				xfeatures;
-	u64				xcomp_bv;
+	u64 xfeatures, xcomp_bv;
 	u64				reserved[6];
 } __attribute__((packed));
 

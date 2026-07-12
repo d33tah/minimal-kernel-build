@@ -1,8 +1,7 @@
 #include <asm/cpufeature.h>
 
 struct cpuid_dep {
-	unsigned int	feature;
-	unsigned int	depends;
+	unsigned int feature, depends;
 };
 
 static const struct cpuid_dep cpuid_deps[] = {

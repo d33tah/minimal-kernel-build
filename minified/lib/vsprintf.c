@@ -587,8 +587,7 @@ int format_decode(const char *fmt, struct printf_spec *spec)
 		spec->base = 16;
 		break;
 
-	case 'd':
-	case 'i':
+	case 'd': case 'i':
 		spec->flags |= SIGN;
 		break;
 	case 'u':

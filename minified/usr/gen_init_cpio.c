@@ -547,8 +547,7 @@ int main (int argc, char *argv[])
 		case 'c':
 			do_csum = true;
 			break;
-		case 'h':
-		case '?':
+		case 'h': case '?':
 			usage(argv[0]);
 			exit(opt == 'h' ? 0 : 1);
 		}

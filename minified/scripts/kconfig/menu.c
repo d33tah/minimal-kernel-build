@@ -79,8 +79,7 @@ static struct expr *rewrite_m(struct expr *e)
 	case E_NOT:
 		e->left.expr = rewrite_m(e->left.expr);
 		break;
-	case E_OR:
-	case E_AND:
+	case E_OR: case E_AND:
 		e->left.expr = rewrite_m(e->left.expr);
 		e->right.expr = rewrite_m(e->right.expr);
 		break;
@@ -233,8 +232,7 @@ static void sym_check_prop(struct symbol *sym)
 						  sym2->name);
 			}
 			break;
-		case P_SELECT:
-		case P_IMPLY:
+		case P_SELECT: case P_IMPLY:
 			use = prop->type == P_SELECT ? "select" : "imply";
 			sym2 = prop_get_symbol(prop);
 			if (sym->type != S_BOOLEAN && sym->type != S_TRISTATE)

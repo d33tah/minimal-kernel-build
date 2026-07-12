@@ -327,13 +327,10 @@ void sym_calc_value(struct symbol *sym)
 	oldval = sym->curr;
 
 	switch (sym->type) {
-	case S_INT:
-	case S_HEX:
-	case S_STRING:
+	case S_INT: case S_HEX: case S_STRING:
 		newval = symbol_empty.curr;
 		break;
-	case S_BOOLEAN:
-	case S_TRISTATE:
+	case S_BOOLEAN: case S_TRISTATE:
 		newval = symbol_no.curr;
 		break;
 	default:
@@ -352,8 +349,7 @@ void sym_calc_value(struct symbol *sym)
 	sym->curr = newval;
 
 	switch (sym_get_type(sym)) {
-	case S_BOOLEAN:
-	case S_TRISTATE:
+	case S_BOOLEAN: case S_TRISTATE:
 		if (sym_is_choice_value(sym) && sym->visible == yes) {
 			prop = sym_get_choice_prop(sym);
 			newval.tri = (prop_get_symbol(prop)->curr.val == sym) ? yes : no;
@@ -391,9 +387,7 @@ void sym_calc_value(struct symbol *sym)
 		if (newval.tri == mod && sym_get_type(sym) == S_BOOLEAN)
 			newval.tri = yes;
 		break;
-	case S_STRING:
-	case S_HEX:
-	case S_INT:
+	case S_STRING: case S_HEX: case S_INT:
 		if (sym->visible != no && sym_has_value(sym)) {
 			newval.val = sym->def[S_DEF_USER].val;
 			break;
@@ -501,8 +495,7 @@ bool sym_string_valid(struct symbol *sym, const char *str)
 				return false;
 		} while ((ch = *str++));
 		return true;
-	case S_BOOLEAN:
-	case S_TRISTATE:
+	case S_BOOLEAN: case S_TRISTATE:
 		switch (str[0]) {
 		case 'y': case 'Y':
 		case 'm': case 'M':
@@ -541,8 +534,7 @@ bool sym_string_within_range(struct symbol *sym, const char *str)
 		val = strtoll(str, NULL, 16);
 		return val >= sym_get_range_val(prop->expr->left.sym, 16) &&
 		       val <= sym_get_range_val(prop->expr->right.sym, 16);
-	case S_BOOLEAN:
-	case S_TRISTATE:
+	case S_BOOLEAN: case S_TRISTATE:
 		switch (str[0]) {
 		case 'y': case 'Y':
 			return sym_tristate_within_range(sym, yes);
@@ -562,8 +554,7 @@ const char *sym_get_string_value(struct symbol *sym)
 	tristate val;
 
 	switch (sym->type) {
-	case S_BOOLEAN:
-	case S_TRISTATE:
+	case S_BOOLEAN: case S_TRISTATE:
 		val = sym_get_tristate_value(sym);
 		switch (val) {
 		case no:
@@ -775,20 +766,14 @@ static struct symbol *sym_check_expr_deps(struct expr *e)
 	if (!e)
 		return NULL;
 	switch (e->type) {
-	case E_OR:
-	case E_AND:
+	case E_OR: case E_AND:
 		sym = sym_check_expr_deps(e->left.expr);
 		if (sym)
 			return sym;
 		return sym_check_expr_deps(e->right.expr);
 	case E_NOT:
 		return sym_check_expr_deps(e->left.expr);
-	case E_EQUAL:
-	case E_GEQ:
-	case E_GTH:
-	case E_LEQ:
-	case E_LTH:
-	case E_UNEQUAL:
+	case E_EQUAL: case E_GEQ: case E_GTH: case E_LEQ: case E_LTH: case E_UNEQUAL:
 		sym = sym_check_deps(e->left.sym);
 		if (sym)
 			return sym;

@@ -988,8 +988,7 @@ static void report_sec_mismatch(const char *modname,
 		free(prl_to);
 		break;
 	}
-	case XXXINIT_TO_SOME_INIT:
-	case XXXEXIT_TO_SOME_EXIT:
+	case XXXINIT_TO_SOME_INIT: case XXXEXIT_TO_SOME_EXIT:
 		prl_from = sec2annotation(fromsec);
 		prl_to = sec2annotation(tosec);
 		fprintf(stderr,

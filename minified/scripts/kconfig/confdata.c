@@ -248,8 +248,7 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
 			}
 		}
 		 
-	case S_INT:
-	case S_HEX:
+	case S_INT: case S_HEX:
 		if (sym_string_valid(sym, p)) {
 			sym->def[def].val = xstrdup(p);
 			sym->flags |= def_flags;
@@ -387,9 +386,7 @@ load:
 		if (sym_is_choice(sym))
 			sym->flags |= def_flags;
 		switch (sym->type) {
-		case S_INT:
-		case S_HEX:
-		case S_STRING:
+		case S_INT: case S_HEX: case S_STRING:
 			if (sym->def[def].val)
 				free(sym->def[def].val);
 			 
@@ -426,8 +423,7 @@ load:
 				conf_warning("override: reassigning to symbol %s", sym->name);
 			}
 			switch (sym->type) {
-			case S_BOOLEAN:
-			case S_TRISTATE:
+			case S_BOOLEAN: case S_TRISTATE:
 				sym->def[def].tri = no;
 				sym->flags |= def_flags;
 			}
@@ -512,8 +508,7 @@ int conf_read(const char *name)
 		if (sym_has_value(sym) && (sym->flags & SYMBOL_WRITE)) {
 			 
 			switch (sym->type) {
-			case S_BOOLEAN:
-			case S_TRISTATE:
+			case S_BOOLEAN: case S_TRISTATE:
 				if (sym->def[S_DEF_USER].tri == sym_get_tristate_value(sym))
 					continue;
 				break;
@@ -534,9 +529,7 @@ int conf_read(const char *name)
 			if (sym->visible == no && !conf_unsaved)
 				sym->flags &= ~SYMBOL_DEF_USER;
 			switch (sym->type) {
-			case S_STRING:
-			case S_INT:
-			case S_HEX:
+			case S_STRING: case S_INT: case S_HEX:
 				 
 				if (sym_string_within_range(sym, sym->def[S_DEF_USER].val))
 					break;
@@ -677,8 +670,7 @@ static void print_symbol_for_c(FILE *fp, struct symbol *sym)
 	val = sym_get_string_value(sym);
 
 	switch (sym->type) {
-	case S_BOOLEAN:
-	case S_TRISTATE:
+	case S_BOOLEAN: case S_TRISTATE:
 		switch (*val) {
 		case 'n':
 			return;
@@ -894,15 +886,12 @@ static int conf_touch_deps(void)
 			if (sym->flags & SYMBOL_DEF_AUTO) {
 				 
 				switch (sym->type) {
-				case S_BOOLEAN:
-				case S_TRISTATE:
+				case S_BOOLEAN: case S_TRISTATE:
 					if (sym_get_tristate_value(sym) ==
 					    sym->def[S_DEF_AUTO].tri)
 						continue;
 					break;
-				case S_STRING:
-				case S_HEX:
-				case S_INT:
+				case S_STRING: case S_HEX: case S_INT:
 					if (!strcmp(sym_get_string_value(sym),
 						    sym->def[S_DEF_AUTO].val))
 						continue;
@@ -910,8 +899,7 @@ static int conf_touch_deps(void)
 			} else {
 				 
 				switch (sym->type) {
-				case S_BOOLEAN:
-				case S_TRISTATE:
+				case S_BOOLEAN: case S_TRISTATE:
 					if (sym_get_tristate_value(sym) == no)
 						continue;
 				}

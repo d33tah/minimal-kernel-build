@@ -262,9 +262,7 @@ retry:
 			case -EBUSY:
 				ret = 0;
 				fallthrough;
-			case -EFAULT:
-			case -ENOMEM:
-			case -EHWPOISON:
+			case -EFAULT: case -ENOMEM: case -EHWPOISON:
 				goto out;
 			}
 			BUG();

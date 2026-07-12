@@ -548,11 +548,7 @@ static int do_reloc32(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
 	int shn_abs = (sym->st_shndx == SHN_ABS) && !is_reloc(S_REL, symname);
 
 	switch (r_type) {
-	case R_386_NONE:
-	case R_386_PC32:
-	case R_386_PC16:
-	case R_386_PC8:
-	case R_386_PLT32:
+	case R_386_NONE: case R_386_PC32: case R_386_PC16: case R_386_PC8: case R_386_PLT32:
 		 
 		break;
 
@@ -585,11 +581,7 @@ static int do_reloc_real(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
 	int shn_abs = (sym->st_shndx == SHN_ABS) && !is_reloc(S_REL, symname);
 
 	switch (r_type) {
-	case R_386_NONE:
-	case R_386_PC32:
-	case R_386_PC16:
-	case R_386_PC8:
-	case R_386_PLT32:
+	case R_386_NONE: case R_386_PC32: case R_386_PC16: case R_386_PC8: case R_386_PLT32:
 		 
 		break;
 

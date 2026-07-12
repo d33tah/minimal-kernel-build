@@ -105,11 +105,7 @@
 
 #endif
 
-#ifndef arch_atomic_read_acquire
-#endif
 
-#ifndef arch_atomic_set_release
-#endif
 
 #ifndef arch_atomic_add_return_relaxed
 #define arch_atomic_add_return_acquire arch_atomic_add_return
@@ -121,110 +117,19 @@
 #define arch_atomic_fetch_add_relaxed arch_atomic_fetch_add
 #endif
 
-#ifndef arch_atomic_sub_return_relaxed
-#endif
 
 #ifndef arch_atomic_fetch_sub_relaxed
 #define arch_atomic_fetch_sub_release arch_atomic_fetch_sub
 #endif
 
 
-#ifndef arch_atomic_inc_return_relaxed
-#ifdef arch_atomic_inc_return
-#endif  
-
-#ifndef arch_atomic_inc_return
-#endif
-
-#ifndef arch_atomic_inc_return_acquire
-#endif
-
-#ifndef arch_atomic_inc_return_release
-#endif
-
-#ifndef arch_atomic_inc_return_relaxed
-#endif
-
-#endif
-
-#ifndef arch_atomic_fetch_inc_relaxed
-#ifdef arch_atomic_fetch_inc
-#endif  
-
-#ifndef arch_atomic_fetch_inc
-#endif
-
-#ifndef arch_atomic_fetch_inc_acquire
-#endif
-
-#ifndef arch_atomic_fetch_inc_release
-#endif
-
-#ifndef arch_atomic_fetch_inc_relaxed
-#endif
-
-#endif
 
 
-#ifndef arch_atomic_dec_return_relaxed
-#ifdef arch_atomic_dec_return
-#endif  
 
-#ifndef arch_atomic_dec_return
-#endif
 
-#ifndef arch_atomic_dec_return_acquire
-#endif
 
-#ifndef arch_atomic_dec_return_release
-#endif
 
-#ifndef arch_atomic_dec_return_relaxed
-#endif
 
-#endif
-
-#ifndef arch_atomic_fetch_dec_relaxed
-#ifdef arch_atomic_fetch_dec
-#endif  
-
-#ifndef arch_atomic_fetch_dec
-#endif
-
-#ifndef arch_atomic_fetch_dec_acquire
-#endif
-
-#ifndef arch_atomic_fetch_dec_release
-#endif
-
-#ifndef arch_atomic_fetch_dec_relaxed
-#endif
-
-#endif
-
-#ifndef arch_atomic_fetch_and_relaxed
-#endif
-
-#ifndef arch_atomic_andnot
-#endif
-
-#ifndef arch_atomic_fetch_andnot_relaxed
-#ifdef arch_atomic_fetch_andnot
-#endif  
-
-#ifndef arch_atomic_fetch_andnot
-#endif
-
-#ifndef arch_atomic_fetch_andnot_acquire
-#endif
-
-#ifndef arch_atomic_fetch_andnot_release
-#endif
-
-#ifndef arch_atomic_fetch_andnot_relaxed
-#endif
-
-#endif
 
 #ifndef arch_atomic_cmpxchg_relaxed
 #define arch_atomic_cmpxchg_acquire arch_atomic_cmpxchg
@@ -368,159 +273,31 @@ arch_atomic_dec_if_positive(atomic_t *v)
 #endif
 
 
-#ifndef arch_atomic64_read_acquire
-#endif
-
-#ifndef arch_atomic64_set_release
-#endif
-
-#ifndef arch_atomic64_add_return_relaxed
-#endif
-
-#ifndef arch_atomic64_fetch_add_relaxed
-#endif
-
-#ifndef arch_atomic64_sub_return_relaxed
-#endif
-
-#ifndef arch_atomic64_fetch_sub_relaxed
-#endif
-
-
-#ifndef arch_atomic64_inc_return_relaxed
-#ifdef arch_atomic64_inc_return
-#endif  
-
-#ifndef arch_atomic64_inc_return_acquire
-#endif
-
-#ifndef arch_atomic64_inc_return_release
-#endif
-
-#ifndef arch_atomic64_inc_return_relaxed
-#endif
-
-#endif
-
-#ifndef arch_atomic64_fetch_inc_relaxed
-#ifdef arch_atomic64_fetch_inc
-#endif  
-
-#ifndef arch_atomic64_fetch_inc
-#endif
-
-#ifndef arch_atomic64_fetch_inc_acquire
-#endif
-
-#ifndef arch_atomic64_fetch_inc_release
-#endif
-
-#ifndef arch_atomic64_fetch_inc_relaxed
-#endif
-
-#endif
-
-
-#ifndef arch_atomic64_dec_return_relaxed
-#ifdef arch_atomic64_dec_return
-#endif  
-
-#ifndef arch_atomic64_dec_return_acquire
-#endif
-
-#ifndef arch_atomic64_dec_return_release
-#endif
-
-#ifndef arch_atomic64_dec_return_relaxed
-#endif
-
-#endif
-
-#ifndef arch_atomic64_fetch_dec_relaxed
-#ifdef arch_atomic64_fetch_dec
-#endif  
-
-#ifndef arch_atomic64_fetch_dec
-#endif
-
-#ifndef arch_atomic64_fetch_dec_acquire
-#endif
-
-#ifndef arch_atomic64_fetch_dec_release
-#endif
-
-#ifndef arch_atomic64_fetch_dec_relaxed
-#endif
-
-#endif
-
-#ifndef arch_atomic64_fetch_and_relaxed
-#endif
-
-#ifndef arch_atomic64_andnot
-#endif
-
-#ifndef arch_atomic64_fetch_andnot_relaxed
-#ifdef arch_atomic64_fetch_andnot
-#endif  
-
-#ifndef arch_atomic64_fetch_andnot
-#endif
-
-#ifndef arch_atomic64_fetch_andnot_acquire
-#endif
-
-#ifndef arch_atomic64_fetch_andnot_release
-#endif
-
-#ifndef arch_atomic64_fetch_andnot_relaxed
-#endif
-
-#endif
-
-#ifndef arch_atomic64_cmpxchg_relaxed
-#endif
-
-#ifndef arch_atomic64_try_cmpxchg_relaxed
-#ifdef arch_atomic64_try_cmpxchg
-#endif  
-
-#ifndef arch_atomic64_try_cmpxchg
-#endif
-
-#ifndef arch_atomic64_try_cmpxchg_acquire
-#endif
-
-#ifndef arch_atomic64_try_cmpxchg_release
-#endif
-
-#ifndef arch_atomic64_try_cmpxchg_relaxed
-#endif
-
-#endif
-
-#ifndef arch_atomic64_sub_and_test
-#endif
-
-#ifndef arch_atomic64_dec_and_test
-#endif
-
-#ifndef arch_atomic64_inc_and_test
-#endif
-
-#ifndef arch_atomic64_add_negative
-#endif
-
-#ifndef arch_atomic64_fetch_add_unless
-#endif
 
 
 
-#ifndef arch_atomic64_inc_unless_negative
-#endif
 
-#ifndef arch_atomic64_dec_unless_positive
-#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #endif  

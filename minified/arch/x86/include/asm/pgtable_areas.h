@@ -6,8 +6,6 @@
 
 #define VMALLOC_OFFSET	(8 * 1024 * 1024)
 
-#ifndef __ASSEMBLY__
-#endif
 
 #define VMALLOC_START	((unsigned long)high_memory + VMALLOC_OFFSET)
 #define CPU_ENTRY_AREA_PAGES		(NR_CPUS * DIV_ROUND_UP(sizeof(struct cpu_entry_area), PAGE_SIZE))

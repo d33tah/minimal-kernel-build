@@ -141,12 +141,10 @@ static inline void chip_bus_sync_unlock(struct irq_desc *desc)
 
 #define for_each_action_of_desc(desc, act)				for (act = desc->action; act; act = act->next)
 
-struct irq_desc *
-__irq_get_desc_lock(unsigned int irq, unsigned long *flags, bool bus, unsigned int check);
+struct irq_desc * __irq_get_desc_lock(unsigned int irq, unsigned long *flags, bool bus, unsigned int check);
 void __irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags, bool bus);
 
-static inline struct irq_desc *
-irq_get_desc_buslock(unsigned int irq, unsigned long *flags, unsigned int check)
+static inline struct irq_desc * irq_get_desc_buslock(unsigned int irq, unsigned long *flags, unsigned int check)
 {
 	return __irq_get_desc_lock(irq, flags, true, check);
 }
@@ -157,8 +155,7 @@ irq_put_desc_busunlock(struct irq_desc *desc, unsigned long flags)
 	__irq_put_desc_unlock(desc, flags, true);
 }
 
-static inline struct irq_desc *
-irq_get_desc_lock(unsigned int irq, unsigned long *flags, unsigned int check)
+static inline struct irq_desc * irq_get_desc_lock(unsigned int irq, unsigned long *flags, unsigned int check)
 {
 	return __irq_get_desc_lock(irq, flags, false, check);
 }

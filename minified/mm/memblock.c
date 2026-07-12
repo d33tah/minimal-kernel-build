@@ -426,8 +426,7 @@ void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags, struct membl
 			
 			if (m_start < r_end) {
 				if (out_start)
-					*out_start =
-						max(m_start, r_start);
+					*out_start = max(m_start, r_start);
 				if (out_end)
 					*out_end = min(m_end, r_end);
 				if (out_nid)

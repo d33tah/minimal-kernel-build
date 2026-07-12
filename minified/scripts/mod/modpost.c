@@ -321,22 +321,17 @@ static int parse_elf(struct elf_info *info, const char *filename)
 		if (sechdrs[i].sh_type == SHT_SYMTAB) {
 			unsigned int sh_link_idx;
 			symtab_idx = i;
-			info->symtab_start = (void *)hdr +
-			    sechdrs[i].sh_offset;
-			info->symtab_stop  = (void *)hdr +
-			    sechdrs[i].sh_offset + sechdrs[i].sh_size;
+			info->symtab_start = (void *)hdr + sechdrs[i].sh_offset;
+			info->symtab_stop  = (void *)hdr + sechdrs[i].sh_offset + sechdrs[i].sh_size;
 			sh_link_idx = sechdrs[i].sh_link;
-			info->strtab       = (void *)hdr +
-			    sechdrs[sh_link_idx].sh_offset;
+			info->strtab       = (void *)hdr + sechdrs[sh_link_idx].sh_offset;
 		}
 
 		 
 		if (sechdrs[i].sh_type == SHT_SYMTAB_SHNDX) {
 			symtab_shndx_idx = i;
-			info->symtab_shndx_start = (void *)hdr +
-			    sechdrs[i].sh_offset;
-			info->symtab_shndx_stop  = (void *)hdr +
-			    sechdrs[i].sh_offset + sechdrs[i].sh_size;
+			info->symtab_shndx_start = (void *)hdr + sechdrs[i].sh_offset;
+			info->symtab_shndx_stop  = (void *)hdr + sechdrs[i].sh_offset + sechdrs[i].sh_size;
 		}
 	}
 	if (!info->symtab_start)
@@ -457,8 +452,7 @@ static bool match(const char *string, const char *const patterns[])
 	return false;
 }
 
-static const char *const section_white_list[] =
-{
+static const char *const section_white_list[] = {
 	".comment*",
 	".debug*",
 	".cranges",		 
@@ -517,13 +511,11 @@ static void check_section(const char *modname, struct elf_info *elf, Elf_Shdr *s
 
 #define ALL_TEXT_SECTIONS  ALL_INIT_TEXT_SECTIONS, ALL_EXIT_TEXT_SECTIONS, 		TEXT_SECTIONS, OTHER_TEXT_SECTIONS
 
-static const char *const init_data_sections[] =
-	{ ALL_INIT_DATA_SECTIONS, NULL };
+static const char *const init_data_sections[] = { ALL_INIT_DATA_SECTIONS, NULL };
 
 static const char *const init_sections[] = { ALL_INIT_SECTIONS, NULL };
 
-static const char *const init_exit_sections[] =
-	{ALL_INIT_SECTIONS, ALL_EXIT_SECTIONS, NULL };
+static const char *const init_exit_sections[] = {ALL_INIT_SECTIONS, ALL_EXIT_SECTIONS, NULL };
 
 static const char *const text_sections[] = { ALL_TEXT_SECTIONS, NULL };
 
@@ -533,8 +525,7 @@ static const char *const data_sections[] = { DATA_SECTIONS, NULL };
 #define DEFAULT_SYMBOL_WHITE_LIST						"*driver",								"*_template",  				"*_timer",     		"*_sht",       			"*_ops",								"*_probe",								"*_probe_one",								"*_console"
 
 static const char *const head_sections[] = { ".head.text*", NULL };
-static const char *const linker_symbols[] =
-	{ "__init_begin", "_sinittext", "_einittext", NULL };
+static const char *const linker_symbols[] = { "__init_begin", "_sinittext", "_einittext", NULL };
 static const char *const optim_symbols[] = { "*.constprop.*", NULL };
 
 enum mismatch { TEXT_TO_ANY_INIT, DATA_TO_ANY_INIT, TEXT_TO_ANY_EXIT, DATA_TO_ANY_EXIT, XXXINIT_TO_SOME_INIT, XXXEXIT_TO_SOME_EXIT, ANY_INIT_TO_ANY_EXIT, ANY_EXIT_TO_ANY_INIT, EXPORT_TO_INIT_EXIT, EXTABLE_TO_NON_TEXT, };
@@ -601,8 +592,7 @@ static int secref_whitelist(const struct sectioncheck *mismatch, const char *fro
 
 static inline int is_arm_mapping_symbol(const char *str)
 {
-	return str[0] == '$' &&
-	       (str[1] == 'a' || str[1] == 'd' || str[1] == 't' || str[1] == 'x')
+	return str[0] == '$' && (str[1] == 'a' || str[1] == 'd' || str[1] == 't' || str[1] == 'x')
 	       && (str[2] == '\0' || str[2] == '.');
 }
 

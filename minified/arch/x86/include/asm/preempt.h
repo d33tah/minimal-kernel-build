@@ -26,8 +26,7 @@ static __always_inline void preempt_count_set(int pc)
 
 	do {
 		old = raw_cpu_read_4(__preempt_count);
-		new = (old & PREEMPT_NEED_RESCHED) |
-			(pc & ~PREEMPT_NEED_RESCHED);
+		new = (old & PREEMPT_NEED_RESCHED) | (pc & ~PREEMPT_NEED_RESCHED);
 	} while (raw_cpu_cmpxchg_4(__preempt_count, old, new) != old);
 }
 

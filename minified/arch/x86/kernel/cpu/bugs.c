@@ -9,8 +9,7 @@ void __init check_bugs(void)
 	if (boot_cpu_data.x86 < 4)
 		panic("Kernel requires i486+ for 'invlpg' and other features");
 
-	init_utsname()->machine[1] =
-		'0' + (boot_cpu_data.x86 > 6 ? 6 : boot_cpu_data.x86);
+	init_utsname()->machine[1] = '0' + (boot_cpu_data.x86 > 6 ? 6 : boot_cpu_data.x86);
 	
 	alternative_instructions();
 }

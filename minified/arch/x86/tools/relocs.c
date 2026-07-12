@@ -36,8 +36,7 @@ static const char * const *sym_regex;
 static regex_t sym_regex_c[S_NSYMTYPES];
 static int is_reloc(enum symtype type, const char *sym_name)
 {
-	return sym_regex[type] &&
-		!regexec(&sym_regex_c[type], sym_name, 0, NULL, 0);
+	return sym_regex[type] && !regexec(&sym_regex_c[type], sym_name, 0, NULL, 0);
 }
 
 static void regex_init(int use_real_mode)

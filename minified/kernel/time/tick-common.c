@@ -88,9 +88,7 @@ static bool tick_check_preferred(struct clock_event_device *curdev, struct clock
 	 * (the only device, i8253, is PERIODIC-only), so neither newdev nor
 	 * curdev is ever oneshot -- the oneshot preference check was dead.
 	 */
-	return !curdev ||
-		newdev->rating > curdev->rating ||
-	       !cpumask_equal(curdev->cpumask, newdev->cpumask);
+	return !curdev || newdev->rating > curdev->rating || !cpumask_equal(curdev->cpumask, newdev->cpumask);
 }
 
 void tick_check_new_device(struct clock_event_device *newdev)

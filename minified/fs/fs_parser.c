@@ -1,8 +1,7 @@
 
 #include <linux/fs_parser.h>
 
-static const struct constant_table *
-__lookup_constant(const struct constant_table *tbl, const char *name)
+static const struct constant_table * __lookup_constant(const struct constant_table *tbl, const char *name)
 {
 	for ( ; tbl->name; tbl++)
 		if (strcmp(name, tbl->name) == 0)

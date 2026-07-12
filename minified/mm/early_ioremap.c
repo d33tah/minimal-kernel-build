@@ -73,8 +73,7 @@ void __init early_memunmap(void *vaddr, unsigned long size)
 	prev_map[slot] = NULL;
 }
 
-void __init *
-early_memremap(resource_size_t phys_addr, unsigned long size)
+void __init * early_memremap(resource_size_t phys_addr, unsigned long size)
 {
 	unsigned long offset;
 	resource_size_t last_addr;

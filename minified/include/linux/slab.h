@@ -81,8 +81,7 @@ static inline unsigned int arch_slab_minalign(void)
 
 enum kmalloc_cache_type { KMALLOC_NORMAL = 0, KMALLOC_RECLAIM, NR_KMALLOC_TYPES };
 
-extern struct kmem_cache *
-kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1];
+extern struct kmem_cache * kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1];
 
 /* CONFIG_ZONE_DMA and CONFIG_MEMCG_KMEM are off on this build, so the only
  * "not normal" bit that ever distinguishes a cache type is __GFP_RECLAIMABLE.

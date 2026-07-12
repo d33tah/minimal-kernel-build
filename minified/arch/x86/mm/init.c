@@ -259,8 +259,7 @@ static unsigned long __init init_range_memory_mapping( unsigned long r_start, un
 			continue;
 
 		 
-		can_use_brk_pgt = max(start, (u64)pgt_buf_end<<PAGE_SHIFT) >=
-				    min(end, (u64)pgt_buf_top<<PAGE_SHIFT);
+		can_use_brk_pgt = max(start, (u64)pgt_buf_end<<PAGE_SHIFT) >= min(end, (u64)pgt_buf_top<<PAGE_SHIFT);
 		init_memory_mapping(start, end, PAGE_KERNEL);
 		mapped_ram_size += end - start;
 		can_use_brk_pgt = true;

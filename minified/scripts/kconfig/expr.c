@@ -655,13 +655,11 @@ int expr_contains_symbol(struct expr *dep, struct symbol *sym)
 
 	switch (dep->type) {
 	case E_AND: case E_OR:
-		return expr_contains_symbol(dep->left.expr, sym) ||
-		       expr_contains_symbol(dep->right.expr, sym);
+		return expr_contains_symbol(dep->left.expr, sym) || expr_contains_symbol(dep->right.expr, sym);
 	case E_SYMBOL:
 		return dep->left.sym == sym;
 	case E_EQUAL: case E_GEQ: case E_GTH: case E_LEQ: case E_LTH: case E_UNEQUAL:
-		return dep->left.sym == sym ||
-		       dep->right.sym == sym;
+		return dep->left.sym == sym || dep->right.sym == sym;
 	case E_NOT:
 		return expr_contains_symbol(dep->left.expr, sym);
 	}
@@ -675,8 +673,7 @@ bool expr_depends_symbol(struct expr *dep, struct symbol *sym)
 
 	switch (dep->type) {
 	case E_AND:
-		return expr_depends_symbol(dep->left.expr, sym) ||
-		       expr_depends_symbol(dep->right.expr, sym);
+		return expr_depends_symbol(dep->left.expr, sym) || expr_depends_symbol(dep->right.expr, sym);
 	case E_SYMBOL:
 		return dep->left.sym == sym;
 	case E_EQUAL:

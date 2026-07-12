@@ -170,8 +170,7 @@ static void device_create_release(struct device *dev)
 	kfree(dev);
 }
 
-static __printf(5, 0) struct device *
-device_create_groups_vargs(struct class *class, struct device *parent, dev_t devt, void *drvdata, const char *fmt, va_list args)
+static __printf(5, 0) struct device * device_create_groups_vargs(struct class *class, struct device *parent, dev_t devt, void *drvdata, const char *fmt, va_list args)
 {
 	struct device *dev = NULL;
 	int retval = -ENODEV;

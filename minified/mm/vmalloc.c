@@ -29,8 +29,7 @@ va_size(struct vmap_area *va)
 
 RB_DECLARE_CALLBACKS_MAX(static, free_vmap_area_rb_augment_cb, struct vmap_area, rb_node, unsigned long, subtree_max_size, va_size)
 
-static __always_inline struct rb_node **
-find_va_links(struct vmap_area *va, struct rb_root *root, struct rb_node *from, struct rb_node **parent)
+static __always_inline struct rb_node ** find_va_links(struct vmap_area *va, struct rb_root *root, struct rb_node *from, struct rb_node **parent)
 {
 	struct vmap_area *tmp_va;
 	struct rb_node **link;

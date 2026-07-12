@@ -495,8 +495,7 @@ bool sym_string_within_range(struct symbol *sym, const char *str)
 		if (!prop)
 			return true;
 		val = strtoll(str, NULL, 10);
-		return val >= sym_get_range_val(prop->expr->left.sym, 10) &&
-		       val <= sym_get_range_val(prop->expr->right.sym, 10);
+		return val >= sym_get_range_val(prop->expr->left.sym, 10) && val <= sym_get_range_val(prop->expr->right.sym, 10);
 	case S_HEX:
 		if (!sym_string_valid(sym, str))
 			return false;
@@ -504,8 +503,7 @@ bool sym_string_within_range(struct symbol *sym, const char *str)
 		if (!prop)
 			return true;
 		val = strtoll(str, NULL, 16);
-		return val >= sym_get_range_val(prop->expr->left.sym, 16) &&
-		       val <= sym_get_range_val(prop->expr->right.sym, 16);
+		return val >= sym_get_range_val(prop->expr->left.sym, 16) && val <= sym_get_range_val(prop->expr->right.sym, 16);
 	case S_BOOLEAN: case S_TRISTATE:
 		switch (str[0]) {
 		case 'y': case 'Y':

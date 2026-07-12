@@ -71,8 +71,7 @@ static void __set_cyc2ns_scale(unsigned long khz, int cpu, unsigned long long ts
 		data.cyc2ns_mul >>= 1;
 	}
 
-	data.cyc2ns_offset = ns_now -
-		mul_u64_u32_shr(tsc_now, data.cyc2ns_mul, data.cyc2ns_shift);
+	data.cyc2ns_offset = ns_now - mul_u64_u32_shr(tsc_now, data.cyc2ns_mul, data.cyc2ns_shift);
 
 	c2n = per_cpu_ptr(&cyc2ns, cpu);
 

@@ -95,8 +95,7 @@ int __init early_irq_init(void)
 }
 
 
-struct irq_desc *
-__irq_get_desc_lock(unsigned int irq, unsigned long *flags, bool bus, unsigned int check)
+struct irq_desc * __irq_get_desc_lock(unsigned int irq, unsigned long *flags, bool bus, unsigned int check)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
 

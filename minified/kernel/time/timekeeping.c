@@ -364,8 +364,7 @@ static void timekeeping_adjust(struct timekeeper *tk, s64 offset)
 	}
 
 	if (unlikely((s64)tk->tkr_mono.xtime_nsec < 0)) {
-		tk->tkr_mono.xtime_nsec += (u64)NSEC_PER_SEC <<
-							tk->tkr_mono.shift;
+		tk->tkr_mono.xtime_nsec += (u64)NSEC_PER_SEC << tk->tkr_mono.shift;
 		tk->xtime_sec--;
 		tk->skip_second_overflow = 1;
 	}
@@ -417,8 +416,7 @@ static u64 logarithmic_accumulation(struct timekeeper *tk, u64 offset, u32 shift
 	}
 
 	tk->ntp_error += tk->ntp_tick << shift;
-	tk->ntp_error -= (tk->xtime_interval + tk->xtime_remainder) <<
-						(tk->ntp_error_shift + shift);
+	tk->ntp_error -= (tk->xtime_interval + tk->xtime_remainder) << (tk->ntp_error_shift + shift);
 
 	return offset;
 }

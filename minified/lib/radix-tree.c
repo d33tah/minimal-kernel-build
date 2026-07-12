@@ -146,8 +146,7 @@ static unsigned long next_index(unsigned long index, const struct radix_tree_nod
 	return (index & ~node_maxindex(node)) + (offset << node->shift);
 }
 
-static struct radix_tree_node *
-radix_tree_node_alloc(gfp_t gfp_mask, struct radix_tree_node *parent, struct radix_tree_root *root, unsigned int shift, unsigned int offset, unsigned int count)
+static struct radix_tree_node * radix_tree_node_alloc(gfp_t gfp_mask, struct radix_tree_node *parent, struct radix_tree_root *root, unsigned int shift, unsigned int offset, unsigned int count)
 {
 	struct radix_tree_node *ret = NULL;
 
@@ -181,8 +180,7 @@ out:
 
 void radix_tree_node_rcu_free(struct rcu_head *head)
 {
-	struct radix_tree_node *node =
-			container_of(head, struct radix_tree_node, rcu_head);
+	struct radix_tree_node *node = container_of(head, struct radix_tree_node, rcu_head);
 
 	memset(node->slots, 0, sizeof(node->slots));
 	memset(node->tags, 0, sizeof(node->tags));
@@ -600,8 +598,7 @@ static void set_iter_tags(struct radix_tree_iter *iter, struct radix_tree_node *
 	if (tag_long < RADIX_TREE_TAG_LONGS - 1) {
 		
 		if (tag_bit)
-			iter->tags |= node->tags[tag][tag_long + 1] <<
-						(BITS_PER_LONG - tag_bit);
+			iter->tags |= node->tags[tag][tag_long + 1] << (BITS_PER_LONG - tag_bit);
 		
 		iter->next_index = __radix_tree_iter_add(iter, BITS_PER_LONG);
 	}

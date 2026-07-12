@@ -82,8 +82,7 @@ void __init_rwsem(struct rw_semaphore *sem, const char *name, struct lock_class_
 	atomic_long_set(&sem->owner, 0L);
 }
 
-static struct rw_semaphore __sched *
-rwsem_down_read_slowpath(struct rw_semaphore *sem, long count, unsigned int state)
+static struct rw_semaphore __sched * rwsem_down_read_slowpath(struct rw_semaphore *sem, long count, unsigned int state)
 {
 
 	rwsem_set_reader_owned(sem);

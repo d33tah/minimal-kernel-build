@@ -20,8 +20,7 @@ DECLARE_PER_CPU(struct radix_tree_preload, radix_tree_preloads);
 
 static inline bool radix_tree_is_internal_node(void *ptr)
 {
-	return ((unsigned long)ptr & RADIX_TREE_ENTRY_MASK) ==
-				RADIX_TREE_INTERNAL_NODE;
+	return ((unsigned long)ptr & RADIX_TREE_ENTRY_MASK) == RADIX_TREE_INTERNAL_NODE;
 }
 
 
@@ -58,8 +57,7 @@ void radix_tree_iter_tag_clear(struct radix_tree_root *, const struct radix_tree
 
 void __rcu **idr_get_free(struct radix_tree_root *root, struct radix_tree_iter *iter, gfp_t gfp, unsigned long max);
 
-static __always_inline void __rcu **
-radix_tree_iter_init(struct radix_tree_iter *iter, unsigned long start)
+static __always_inline void __rcu ** radix_tree_iter_init(struct radix_tree_iter *iter, unsigned long start)
 {
 	 
 	iter->index = 0;

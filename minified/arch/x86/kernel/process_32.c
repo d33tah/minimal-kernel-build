@@ -32,8 +32,7 @@ start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
 }
 
 
-__visible struct task_struct *
-__switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+__visible struct task_struct * __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 {
 	struct thread_struct *prev = &prev_p->thread,
 			     *next = &next_p->thread;

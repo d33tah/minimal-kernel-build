@@ -110,12 +110,10 @@ repeat:
 				unsigned int addr2;
 				pgprot_t prot = PAGE_KERNEL_LARGE;
 				 
-				pgprot_t init_prot =
-					__pgprot(PTE_IDENT_ATTR | _PAGE_PSE);
+				pgprot_t init_prot = __pgprot(PTE_IDENT_ATTR | _PAGE_PSE);
 
 				pfn &= PMD_MASK >> PAGE_SHIFT;
-				addr2 = (pfn + PTRS_PER_PTE-1) * PAGE_SIZE +
-					PAGE_OFFSET + PAGE_SIZE-1;
+				addr2 = (pfn + PTRS_PER_PTE-1) * PAGE_SIZE + PAGE_OFFSET + PAGE_SIZE-1;
 
 				if (is_x86_32_kernel_text(addr) || is_x86_32_kernel_text(addr2))
 					prot = PAGE_KERNEL_LARGE_EXEC;

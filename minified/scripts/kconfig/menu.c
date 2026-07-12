@@ -185,8 +185,7 @@ void menu_add_symbol(enum prop_type type, struct symbol *sym, struct expr *dep)
 
 static int menu_validate_number(struct symbol *sym, struct symbol *sym2)
 {
-	return sym2->type == S_INT || sym2->type == S_HEX ||
-	       (sym2->type == S_UNKNOWN && sym_string_valid(sym, sym2->name));
+	return sym2->type == S_INT || sym2->type == S_HEX || (sym2->type == S_UNKNOWN && sym_string_valid(sym, sym2->name));
 }
 
 static void sym_check_prop(struct symbol *sym)
@@ -208,8 +207,7 @@ static void sym_check_prop(struct symbol *sym)
 					prop_warn(prop, "'%s': number is invalid", sym->name);
 			}
 			if (sym_is_choice(sym)) {
-				struct property *choice_prop =
-					sym_get_choice_prop(sym2);
+				struct property *choice_prop = sym_get_choice_prop(sym2);
 
 				if (!choice_prop || prop_get_symbol(choice_prop) != sym)
 					prop_warn(prop, "choice default symbol '%s' is not contained in the choice", sym2->name);

@@ -60,8 +60,7 @@ out_free_cache:
 	goto out;
 }
 
-struct kmem_cache *
-kmem_cache_create_usercopy(const char *name, unsigned int size, unsigned int align, slab_flags_t flags, unsigned int useroffset, unsigned int usersize, void (*ctor)(void *))
+struct kmem_cache * kmem_cache_create_usercopy(const char *name, unsigned int size, unsigned int align, slab_flags_t flags, unsigned int useroffset, unsigned int usersize, void (*ctor)(void *))
 {
 	struct kmem_cache *s = NULL;
 	const char *cache_name;
@@ -112,8 +111,7 @@ out_unlock:
 	return s;
 }
 
-struct kmem_cache *
-kmem_cache_create(const char *name, unsigned int size, unsigned int align, slab_flags_t flags, void (*ctor)(void *))
+struct kmem_cache * kmem_cache_create(const char *name, unsigned int size, unsigned int align, slab_flags_t flags, void (*ctor)(void *))
 {
 	return kmem_cache_create_usercopy(name, size, align, flags, 0, 0, ctor);
 }
@@ -155,9 +153,7 @@ struct kmem_cache *__init create_kmalloc_cache(const char *name, unsigned int si
 	return s;
 }
 
-struct kmem_cache *
-kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1] __ro_after_init =
-{   };
+struct kmem_cache * kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1] __ro_after_init = {   };
 
 static u8 size_index[24] __ro_after_init = { 3, 4, 5, 5, 6, 6, 6, 6, 1, 1, 1, 1, 7, 7, 7, 7, 2, 2, 2, 2, 2, 2, 2, 2 };
 

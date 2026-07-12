@@ -159,8 +159,7 @@ static void conf_default_message_callback(const char *s)
 	printf("\n#\n");
 }
 
-static void (*conf_message_callback)(const char *s) =
-	conf_default_message_callback;
+static void (*conf_message_callback)(const char *s) = conf_default_message_callback;
 void conf_set_message_callback(void (*fn)(const char *s))
 {
 	conf_message_callback = fn;

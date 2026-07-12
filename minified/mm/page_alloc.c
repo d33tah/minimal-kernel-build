@@ -407,8 +407,7 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype, unsigned
 	return false;
 }
 
-static __always_inline struct page *
-__rmqueue(struct zone *zone, unsigned int order, int migratetype, unsigned int alloc_flags)
+static __always_inline struct page * __rmqueue(struct zone *zone, unsigned int order, int migratetype, unsigned int alloc_flags)
 {
 	struct page *page;
 
@@ -578,8 +577,7 @@ alloc_flags_nofragment(struct zone *zone, gfp_t gfp_mask)
 	return alloc_flags;
 }
 
-static struct page *
-get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags, const struct alloc_context *ac)
+static struct page * get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags, const struct alloc_context *ac)
 {
 	/* Minimal stub: simplified zone iteration */
 	struct zoneref *z;
@@ -1129,8 +1127,7 @@ static void __ref setup_usemap(struct zone *zone)
 	unsigned long usemapsize = usemap_size(zone->zone_start_pfn, zone->spanned_pages);
 	zone->pageblock_flags = NULL;
 	if (usemapsize) {
-		zone->pageblock_flags =
-			memblock_alloc_node(usemapsize, SMP_CACHE_BYTES, zone_to_nid(zone));
+		zone->pageblock_flags = memblock_alloc_node(usemapsize, SMP_CACHE_BYTES, zone_to_nid(zone));
 		if (!zone->pageblock_flags)
 			panic("Failed to allocate %ld bytes for zone %s pageblock flags on node %d\n", usemapsize, zone->name, zone_to_nid(zone));
 	}

@@ -11,8 +11,7 @@
 
 #define EMBEDDED_NAME_MAX	(PATH_MAX - offsetof(struct filename, iname))
 
-struct filename *
-getname_kernel(const char * filename)
+struct filename * getname_kernel(const char * filename)
 {
 	struct filename *result;
 	int len = strlen(filename) + 1;

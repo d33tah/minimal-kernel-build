@@ -273,8 +273,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len, 
 	}
 
 	
-	vm_flags = calc_vm_prot_bits(prot, pkey) | calc_vm_flag_bits(flags) |
-			mm->def_flags | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC;
+	vm_flags = calc_vm_prot_bits(prot, pkey) | calc_vm_flag_bits(flags) | mm->def_flags | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC;
 
 	/*
 	 * MAP_TYPE is always MAP_PRIVATE on this build: there is no mmap(2)
@@ -483,8 +482,7 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 
 
 /* Used by arch_get_unmapped_area and generic_get_unmapped_area_topdown */
-struct vm_area_struct *
-find_vma_prev(struct mm_struct *mm, unsigned long addr, struct vm_area_struct **pprev)
+struct vm_area_struct * find_vma_prev(struct mm_struct *mm, unsigned long addr, struct vm_area_struct **pprev)
 {
 	*pprev = NULL;
 	return find_vma(mm, addr);
@@ -563,8 +561,7 @@ int expand_stack(struct vm_area_struct *vma, unsigned long address)
 	return expand_downwards(vma, address);
 }
 
-struct vm_area_struct *
-find_extend_vma(struct mm_struct *mm, unsigned long addr)
+struct vm_area_struct * find_extend_vma(struct mm_struct *mm, unsigned long addr)
 {
 	struct vm_area_struct *vma;
 

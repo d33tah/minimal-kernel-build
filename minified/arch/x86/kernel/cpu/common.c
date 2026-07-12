@@ -47,9 +47,7 @@ static __always_inline void setup_umip(struct cpuinfo_x86 *c)
 	cr4_clear_bits(X86_CR4_UMIP);
 }
 
-static const unsigned long cr4_pinned_mask =
-	X86_CR4_SMEP | X86_CR4_SMAP | X86_CR4_UMIP |
-	X86_CR4_FSGSBASE | X86_CR4_CET;
+static const unsigned long cr4_pinned_mask = X86_CR4_SMEP | X86_CR4_SMAP | X86_CR4_UMIP | X86_CR4_FSGSBASE | X86_CR4_CET;
 static DEFINE_STATIC_KEY_FALSE_RO(cr_pinning);
 static unsigned long cr4_pinned_bits __ro_after_init;
 
@@ -463,8 +461,7 @@ void __init identify_boot_cpu(void)
 DEFINE_PER_CPU(struct task_struct *, current_task) = &init_task;
 DEFINE_PER_CPU(int, __preempt_count) = INIT_PREEMPT_COUNT;
 
-DEFINE_PER_CPU(unsigned long, cpu_current_top_of_stack) =
-	(unsigned long)&init_thread_union + THREAD_SIZE;
+DEFINE_PER_CPU(unsigned long, cpu_current_top_of_stack) = (unsigned long)&init_thread_union + THREAD_SIZE;
 
 static void clear_all_debug_regs(void)
 {

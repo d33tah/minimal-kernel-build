@@ -18,8 +18,7 @@ extern char __irqentry_text_start[], __irqentry_text_end[];
 
 static inline bool is_kernel_rodata(unsigned long addr)
 {
-	return addr >= (unsigned long)__start_rodata &&
-	       addr < (unsigned long)__end_rodata;
+	return addr >= (unsigned long)__start_rodata && addr < (unsigned long)__end_rodata;
 }
 
 #include <asm/extable.h>

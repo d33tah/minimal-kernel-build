@@ -334,8 +334,7 @@ static inline bool fast_dput(struct dentry *dentry)
 	
 	smp_rmb();
 	d_flags = READ_ONCE(dentry->d_flags);
-	d_flags &= DCACHE_REFERENCED | DCACHE_LRU_LIST |
-			DCACHE_DISCONNECTED | DCACHE_DONTCACHE;
+	d_flags &= DCACHE_REFERENCED | DCACHE_LRU_LIST | DCACHE_DISCONNECTED | DCACHE_DONTCACHE;
 
 	
 	if (d_flags == (DCACHE_REFERENCED | DCACHE_LRU_LIST) && !d_unhashed(dentry))
@@ -808,8 +807,7 @@ void d_add(struct dentry *entry, struct inode *inode)
 
 static void __init dcache_init_early(void)
 {
-	dentry_hashtable =
-		alloc_large_system_hash("Dentry cache", sizeof(struct hlist_bl_head), 0, 13, HASH_EARLY | HASH_ZERO, &d_hash_shift, NULL, 0, 0);
+	dentry_hashtable = alloc_large_system_hash("Dentry cache", sizeof(struct hlist_bl_head), 0, 13, HASH_EARLY | HASH_ZERO, &d_hash_shift, NULL, 0, 0);
 	d_hash_shift = 32 - d_hash_shift;
 }
 

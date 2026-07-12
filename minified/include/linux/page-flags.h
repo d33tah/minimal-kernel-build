@@ -80,8 +80,7 @@ static __always_inline int PageTail(struct page *page)
 
 static __always_inline int PageCompound(struct page *page)
 {
-	return test_bit(PG_head, &page->flags) ||
-	       READ_ONCE(page->compound_head) & 1;
+	return test_bit(PG_head, &page->flags) || READ_ONCE(page->compound_head) & 1;
 }
 
 #define	PAGE_POISON_PATTERN	-1l

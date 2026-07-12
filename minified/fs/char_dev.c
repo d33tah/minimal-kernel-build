@@ -54,8 +54,7 @@ static int find_dynamic_major(void)
 	return -EBUSY;
 }
 
-static struct char_device_struct *
-__register_chrdev_region(unsigned int major, unsigned int baseminor, int minorct, const char *name)
+static struct char_device_struct * __register_chrdev_region(unsigned int major, unsigned int baseminor, int minorct, const char *name)
 {
 	struct char_device_struct *cd, *curr, *prev = NULL;
 	int ret, i;

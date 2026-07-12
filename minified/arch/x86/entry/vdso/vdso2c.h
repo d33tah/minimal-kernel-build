@@ -64,8 +64,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len, void *stripped_addr, si
 			found_load = 1;
 		} else if (GET_LE(&pt[i].p_type) == PT_DYNAMIC) {
 			dyn = raw_addr + GET_LE(&pt[i].p_offset);
-			dyn_end = raw_addr + GET_LE(&pt[i].p_offset) +
-				GET_LE(&pt[i].p_memsz);
+			dyn_end = raw_addr + GET_LE(&pt[i].p_offset) + GET_LE(&pt[i].p_memsz);
 		}
 	}
 	if (!found_load)
@@ -85,12 +84,10 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len, void *stripped_addr, si
 	}
 
 	 
-	secstrings_hdr = raw_addr + GET_LE(&hdr->e_shoff) +
-		GET_LE(&hdr->e_shentsize)*GET_LE(&hdr->e_shstrndx);
+	secstrings_hdr = raw_addr + GET_LE(&hdr->e_shoff) + GET_LE(&hdr->e_shentsize)*GET_LE(&hdr->e_shstrndx);
 	secstrings = raw_addr + GET_LE(&secstrings_hdr->sh_offset);
 	for (i = 0; i < GET_LE(&hdr->e_shnum); i++) {
-		ELF(Shdr) *sh = raw_addr + GET_LE(&hdr->e_shoff) +
-			GET_LE(&hdr->e_shentsize) * i;
+		ELF(Shdr) *sh = raw_addr + GET_LE(&hdr->e_shoff) + GET_LE(&hdr->e_shentsize) * i;
 		if (GET_LE(&sh->sh_type) == SHT_SYMTAB)
 			symtab_hdr = sh;
 
@@ -103,18 +100,14 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len, void *stripped_addr, si
 	if (!symtab_hdr)
 		fail("no symbol table\n");
 
-	strtab_hdr = raw_addr + GET_LE(&hdr->e_shoff) +
-		GET_LE(&hdr->e_shentsize) * GET_LE(&symtab_hdr->sh_link);
+	strtab_hdr = raw_addr + GET_LE(&hdr->e_shoff) + GET_LE(&hdr->e_shentsize) * GET_LE(&symtab_hdr->sh_link);
 
 	syms_nr = GET_LE(&symtab_hdr->sh_size) / GET_LE(&symtab_hdr->sh_entsize);
 	 
 	for (i = 0; i < syms_nr; i++) {
 		unsigned int k;
-		ELF(Sym) *sym = raw_addr + GET_LE(&symtab_hdr->sh_offset) +
-			GET_LE(&symtab_hdr->sh_entsize) * i;
-		const char *sym_name = raw_addr +
-				       GET_LE(&strtab_hdr->sh_offset) +
-				       GET_LE(&sym->st_name);
+		ELF(Sym) *sym = raw_addr + GET_LE(&symtab_hdr->sh_offset) + GET_LE(&symtab_hdr->sh_entsize) * i;
+		const char *sym_name = raw_addr + GET_LE(&strtab_hdr->sh_offset) + GET_LE(&sym->st_name);
 
 		for (k = 0; k < NSYMS; k++) {
 			if (!strcmp(sym_name, required_syms[k].name)) {

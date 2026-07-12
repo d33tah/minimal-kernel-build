@@ -398,8 +398,7 @@ asmlinkage __visible void schedule_tail(struct task_struct *prev)
 	calculate_sigpending();
 }
 
-static __always_inline struct rq *
-context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next, struct rq_flags *rf)
+static __always_inline struct rq * context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next, struct rq_flags *rf)
 {
 	prepare_task_switch(rq, prev, next);
 
@@ -473,8 +472,7 @@ static void put_prev_task_balance(struct rq *rq, struct task_struct *prev, struc
 	put_prev_task(rq, prev);
 }
 
-static inline struct task_struct *
-__pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
+static inline struct task_struct * __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 {
 	const struct sched_class *class;
 	struct task_struct *p;
@@ -507,8 +505,7 @@ restart:
 	BUG();
 }
 
-static struct task_struct *
-pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
+static struct task_struct * pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 {
 	return __pick_next_task(rq, prev, rf);
 }

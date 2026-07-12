@@ -311,8 +311,7 @@ static inline bool fsuidgid_has_mapping(struct super_block *sb, struct user_name
 	kgid = mapped_fsgid(mnt_userns, fs_userns);
 	if (!gid_valid(kgid))
 		return false;
-	return kuid_has_mapping(fs_userns, kuid) &&
-	       kgid_has_mapping(fs_userns, kgid);
+	return kuid_has_mapping(fs_userns, kuid) && kgid_has_mapping(fs_userns, kgid);
 }
 
 extern struct timespec64 current_time(struct inode *inode);
@@ -413,8 +412,7 @@ static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags 
 
 static inline bool HAS_UNMAPPED_ID(struct user_namespace *mnt_userns, struct inode *inode)
 {
-	return !uid_valid(i_uid_into_mnt(mnt_userns, inode)) ||
-	       !gid_valid(i_gid_into_mnt(mnt_userns, inode));
+	return !uid_valid(i_uid_into_mnt(mnt_userns, inode)) || !gid_valid(i_gid_into_mnt(mnt_userns, inode));
 }
 
 static inline int iocb_flags(struct file *file);
@@ -580,8 +578,7 @@ extern struct inode *new_inode_pseudo(struct super_block *sb);
 extern struct inode *new_inode(struct super_block *sb);
 extern int file_remove_privs(struct file *);
 
-static inline void *
-alloc_inode_sb(struct super_block *sb, struct kmem_cache *cache, gfp_t gfp)
+static inline void * alloc_inode_sb(struct super_block *sb, struct kmem_cache *cache, gfp_t gfp)
 {
 	return kmem_cache_alloc_lru(cache, &sb->s_inode_lru, gfp);
 }

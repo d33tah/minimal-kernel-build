@@ -80,8 +80,7 @@ close1:
 
 static int make_parent_dir(const char *path)
 {
-	char tmp[PATH_MAX + 1];
-	char *p;
+	char tmp[PATH_MAX + 1], *p;
 
 	strncpy(tmp, path, sizeof(tmp));
 	tmp[sizeof(tmp) - 1] = 0;
@@ -546,9 +545,7 @@ int conf_read(const char *name)
 }
 
 struct comment_style {
-	const char *decoration;
-	const char *prefix;
-	const char *postfix;
+	const char *decoration, *prefix, *postfix;
 };
 
 static const struct comment_style comment_style_pound = {

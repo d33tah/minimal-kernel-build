@@ -30,8 +30,7 @@ static void __attribute__((noreturn)) pperror(const char *format, ...)
 static LIST_HEAD(env_list);
 
 struct env {
-	char *name;
-	char *value;
+	char *name, *value;
 	struct list_head node;
 };
 
@@ -106,8 +105,7 @@ static char *do_error_if(int argc, char *argv[])
 static char *do_shell(int argc, char *argv[])
 {
 	FILE *p;
-	char buf[4096];
-	char *cmd;
+	char buf[4096], *cmd;
 	size_t nread;
 	int i;
 
@@ -178,8 +176,7 @@ static char *function_expand(const char *name, int argc, char *argv[])
 static LIST_HEAD(variable_list);
 
 struct variable {
-	char *name;
-	char *value;
+	char *name, *value;
 	enum variable_flavor flavor;
 	int exp_count;
 	struct list_head node;

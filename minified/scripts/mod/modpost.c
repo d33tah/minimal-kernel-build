@@ -614,9 +614,7 @@ enum mismatch {
 };
 
 struct sectioncheck {
-	const char *fromsec[20];
-	const char *bad_tosec[20];
-	const char *good_tosec[20];
+	const char *fromsec[20], *bad_tosec[20], *good_tosec[20];
 	enum mismatch mismatch;
 	const char *symbol_white_list[20];
 	void (*handler)(const char *modname, struct elf_info *elf,
@@ -923,8 +921,7 @@ static void report_sec_mismatch(const char *modname,
 {
 	const char *from, *from_p;
 	const char *to, *to_p;
-	char *prl_from;
-	char *prl_to;
+	char *prl_from, *prl_to;
 
 	sec_mismatch_count++;
 
@@ -1057,8 +1054,7 @@ static void default_mismatch_handler(const char *modname, struct elf_info *elf,
 	const char *tosec;
 	Elf_Sym *to;
 	Elf_Sym *from;
-	const char *tosym;
-	const char *fromsym;
+	const char *tosym, *fromsym;
 
 	from = find_elf_symbol2(elf, r->r_offset, fromsec);
 	fromsym = sym_name(elf, from);

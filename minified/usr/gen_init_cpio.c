@@ -130,8 +130,7 @@ static int cpio_mkslink(const char *name, const char *target,
 
 static int cpio_mkslink_line(const char *line)
 {
-	char name[PATH_MAX + 1];
-	char target[PATH_MAX + 1];
+	char name[PATH_MAX + 1], target[PATH_MAX + 1];
 	unsigned int mode;
 	int uid, gid;
 	int rc = -1;

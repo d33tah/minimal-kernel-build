@@ -25,8 +25,7 @@ struct linux_binprm {
 	struct cred *cred;
 	unsigned int per_clear;
 	int argc, envc;
-	const char *filename;	 
-	const char *interp;
+	const char *filename, *interp;
 	unsigned long loader, exec;
 
 	struct rlimit rlim_stack;  

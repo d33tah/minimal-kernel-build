@@ -36,8 +36,7 @@ struct fxregs_state {
 	u32			padding[12];
 
 	union {
-		u32		padding1[12];
-		u32		sw_reserved[12];
+		u32 padding1[12], sw_reserved[12];
 	};
 
 } __attribute__((aligned(16)));

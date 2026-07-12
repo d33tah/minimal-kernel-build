@@ -140,8 +140,7 @@ static const char *rel_type(unsigned type)
 
 static const char *sec_name(unsigned shndx)
 {
-	const char *sec_strtab;
-	const char *name;
+	const char *sec_strtab, *name;
 	sec_strtab = secs[shstrndx].strtab;
 	name = "<noname>";
 	if (shndx < shnum) {

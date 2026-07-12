@@ -16,9 +16,7 @@
 struct fdtable {
 	unsigned int max_fds;
 	struct file __rcu **fd;       
-	unsigned long *close_on_exec;
-	unsigned long *open_fds;
-	unsigned long *full_fds_bits;
+	unsigned long *close_on_exec, *open_fds, *full_fds_bits;
 	struct rcu_head rcu;
 };
 
@@ -33,9 +31,7 @@ struct files_struct {
    
 	spinlock_t file_lock ____cacheline_aligned_in_smp;
 	unsigned int next_fd;
-	unsigned long close_on_exec_init[1];
-	unsigned long open_fds_init[1];
-	unsigned long full_fds_bits_init[1];
+	unsigned long close_on_exec_init[1], open_fds_init[1], full_fds_bits_init[1];
 	struct file __rcu * fd_array[NR_OPEN_DEFAULT];
 };
 

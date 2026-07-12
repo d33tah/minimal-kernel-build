@@ -23,8 +23,7 @@ struct pcpu_chunk {
 	int			free_bytes;
 	struct pcpu_block_md	chunk_md;
 	void			*base_addr;
-	unsigned long		*alloc_map;
-	unsigned long		*bound_map;
+	unsigned long *alloc_map, *bound_map;
 	struct pcpu_block_md	*md_blocks;
 	void			*data;
 	bool immutable, isolated;

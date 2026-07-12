@@ -9,8 +9,7 @@
 #define list_next_rcu(list)	(*((struct list_head __rcu **)(&(list)->next)))
 
 
-static inline void __list_add_rcu(struct list_head *new,
-		struct list_head *prev, struct list_head *next)
+static inline void __list_add_rcu(struct list_head *new, struct list_head *prev, struct list_head *next)
 {
 	new->next = next;
 	new->prev = prev;
@@ -18,8 +17,7 @@ static inline void __list_add_rcu(struct list_head *new,
 	next->prev = new;
 }
 
-static inline void list_add_tail_rcu(struct list_head *new,
-					struct list_head *head)
+static inline void list_add_tail_rcu(struct list_head *new, struct list_head *head)
 {
 	__list_add_rcu(new, head->prev, head);
 }
@@ -30,8 +28,7 @@ static inline void list_add_tail_rcu(struct list_head *new,
 
 #define hlist_first_rcu(head)	(*((struct hlist_node __rcu **)(&(head)->first)))
 
-static inline void hlist_add_head_rcu(struct hlist_node *n,
-					struct hlist_head *h)
+static inline void hlist_add_head_rcu(struct hlist_node *n, struct hlist_head *h)
 {
 	struct hlist_node *first = h->first;
 

@@ -25,9 +25,7 @@ static void pgd_set_mm(pgd_t *pgd, struct mm_struct *mm)
 
 static void pgd_ctor(struct mm_struct *mm, pgd_t *pgd)
 {
-	clone_pgd_range(pgd + KERNEL_PGD_BOUNDARY,
-			swapper_pg_dir + KERNEL_PGD_BOUNDARY,
-			KERNEL_PGD_PTRS);
+	clone_pgd_range(pgd + KERNEL_PGD_BOUNDARY, swapper_pg_dir + KERNEL_PGD_BOUNDARY, KERNEL_PGD_PTRS);
 
 	pgd_set_mm(pgd, mm);
 	pgd_list_add(pgd);
@@ -35,8 +33,7 @@ static void pgd_ctor(struct mm_struct *mm, pgd_t *pgd)
 
 static inline pgd_t *_pgd_alloc(void)
 {
-	return (pgd_t *)__get_free_pages(GFP_PGTABLE_USER,
-					 PGD_ALLOCATION_ORDER);
+	return (pgd_t *)__get_free_pages(GFP_PGTABLE_USER, PGD_ALLOCATION_ORDER);
 }
 
 pgd_t *pgd_alloc(struct mm_struct *mm)
@@ -68,9 +65,7 @@ void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 	 * pgd_list_del, _pgd_free (all private to this teardown root). */
 }
 
-int ptep_set_access_flags(struct vm_area_struct *vma,
-			  unsigned long address, pte_t *ptep,
-			  pte_t entry, int dirty)
+int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address, pte_t *ptep, pte_t entry, int dirty)
 {
 	int changed = !pte_same(*ptep, entry);
 
@@ -88,8 +83,7 @@ int ptep_set_access_flags(struct vm_area_struct *vma,
 
 
 
-void native_set_fixmap(unsigned   idx,
-		       phys_addr_t phys, pgprot_t flags)
+void native_set_fixmap(unsigned   idx, phys_addr_t phys, pgprot_t flags)
 {
 	unsigned long address = __fix_to_virt(idx);
 

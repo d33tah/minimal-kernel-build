@@ -21,8 +21,7 @@ struct zone *next_zone(struct zone *zone)
 	return zone;
 }
 
-struct zoneref *__next_zones_zonelist(struct zoneref *z,
-					enum zone_type highest_zoneidx)
+struct zoneref *__next_zones_zonelist(struct zoneref *z, enum zone_type highest_zoneidx)
 {
 
 	while (zonelist_zone_idx(z) > highest_zoneidx)

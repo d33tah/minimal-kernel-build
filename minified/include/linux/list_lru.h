@@ -19,8 +19,7 @@ struct list_lru {
 	struct list_lru_node	*node;
 };
 
-int __list_lru_init(struct list_lru *lru, bool memcg_aware,
-		    struct lock_class_key *key);
+int __list_lru_init(struct list_lru *lru, bool memcg_aware, struct lock_class_key *key);
 
 #define list_lru_init(lru)					__list_lru_init((lru), false, NULL)
 #define list_lru_init_memcg(lru, shrinker)			__list_lru_init((lru), true, NULL)

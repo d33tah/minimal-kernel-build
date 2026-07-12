@@ -170,9 +170,7 @@ struct vfsmount *fc_mount(struct fs_context *fc)
 	return ERR_PTR(err);
 }
 
-struct vfsmount *vfs_kern_mount(struct file_system_type *type,
-				int flags, const char *name,
-				void *data)
+struct vfsmount *vfs_kern_mount(struct file_system_type *type, int flags, const char *name, void *data)
 {
 	struct fs_context *fc;
 	struct vfsmount *mnt;
@@ -186,8 +184,7 @@ struct vfsmount *vfs_kern_mount(struct file_system_type *type,
 		return ERR_CAST(fc);
 
 	if (name)
-		ret = vfs_parse_fs_string(fc, "source",
-					  name, strlen(name));
+		ret = vfs_parse_fs_string(fc, "source", name, strlen(name));
 	if (!ret)
 		ret = parse_monolithic_mount_data(fc, data);
 	if (!ret)
@@ -304,8 +301,7 @@ static void __init init_mount_tree(void)
 
 void __init mnt_init(void)
 {
-	mnt_cache = kmem_cache_create("mnt_cache", sizeof(struct mount),
-			0, SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, NULL);
+	mnt_cache = kmem_cache_create("mnt_cache", sizeof(struct mount), 0, SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, NULL);
 
 	/* Stub: fs_kobj not used in minimal kernel */
 	shmem_init();

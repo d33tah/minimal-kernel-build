@@ -56,14 +56,7 @@ static inline unsigned long load_unaligned_zeropad(const void *addr)
 	unsigned long offset, data;
 	unsigned long ret;
 
-	asm_volatile_goto(
-		"1:	mov %[mem], %[ret]\n"
-
-		_ASM_EXTABLE(1b, %l[do_exception])
-
-		: [ret] "=r" (ret)
-		: [mem] "m" (*(unsigned long *)addr)
-		: : do_exception);
+	asm_volatile_goto( "1:	mov %[mem], %[ret]\n" _ASM_EXTABLE(1b, %l[do_exception]) : [ret] "=r" (ret) : [mem] "m" (*(unsigned long *)addr) : : do_exception);
 
 	return ret;
 

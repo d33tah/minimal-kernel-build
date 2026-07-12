@@ -100,8 +100,7 @@ static void regex_init(int use_real_mode)
 		if (!sym_regex[i])
 			continue;
 
-		err = regcomp(&sym_regex_c[i], sym_regex[i],
-			      REG_EXTENDED|REG_NOSUB);
+		err = regcomp(&sym_regex_c[i], sym_regex[i], REG_EXTENDED|REG_NOSUB);
 
 		if (err) {
 			regerror(err, &sym_regex_c[i], errbuf, sizeof(errbuf));
@@ -213,8 +212,7 @@ static int sym_index(Elf_Sym *sym)
 static void read_ehdr(FILE *fp)
 {
 	if (fread(&ehdr, sizeof(ehdr), 1, fp) != 1) {
-		die("Cannot read ELF header: %s\n",
-			strerror(errno));
+		die("Cannot read ELF header: %s\n", strerror(errno));
 	}
 	if (memcmp(ehdr.e_ident, ELFMAG, SELFMAG) != 0) {
 		die("No ELF magic\n");
@@ -287,18 +285,15 @@ static void read_shdrs(FILE *fp)
 
 	secs = calloc(shnum, sizeof(struct section));
 	if (!secs) {
-		die("Unable to allocate %ld section headers\n",
-		    shnum);
+		die("Unable to allocate %ld section headers\n", shnum);
 	}
 	if (fseek(fp, ehdr.e_shoff, SEEK_SET) < 0) {
-		die("Seek to %" FMT " failed: %s\n",
-		    ehdr.e_shoff, strerror(errno));
+		die("Seek to %" FMT " failed: %s\n", ehdr.e_shoff, strerror(errno));
 	}
 	for (i = 0; i < shnum; i++) {
 		struct section *sec = &secs[i];
 		if (fread(&shdr, sizeof(shdr), 1, fp) != 1)
-			die("Cannot read ELF section headers %d/%ld: %s\n",
-			    i, shnum, strerror(errno));
+			die("Cannot read ELF section headers %d/%ld: %s\n", i, shnum, strerror(errno));
 		sec->shdr.sh_name      = elf_word_to_cpu(shdr.sh_name);
 		sec->shdr.sh_type      = elf_word_to_cpu(shdr.sh_type);
 		sec->shdr.sh_flags     = elf_xword_to_cpu(shdr.sh_flags);
@@ -325,17 +320,13 @@ static void read_strtabs(FILE *fp)
 		}
 		sec->strtab = malloc(sec->shdr.sh_size);
 		if (!sec->strtab) {
-			die("malloc of %" FMT " bytes for strtab failed\n",
-			    sec->shdr.sh_size);
+			die("malloc of %" FMT " bytes for strtab failed\n", sec->shdr.sh_size);
 		}
 		if (fseek(fp, sec->shdr.sh_offset, SEEK_SET) < 0) {
-			die("Seek to %" FMT " failed: %s\n",
-			    sec->shdr.sh_offset, strerror(errno));
+			die("Seek to %" FMT " failed: %s\n", sec->shdr.sh_offset, strerror(errno));
 		}
-		if (fread(sec->strtab, 1, sec->shdr.sh_size, fp)
-		    != sec->shdr.sh_size) {
-			die("Cannot read symbol table: %s\n",
-				strerror(errno));
+		if (fread(sec->strtab, 1, sec->shdr.sh_size, fp) != sec->shdr.sh_size) {
+			die("Cannot read symbol table: %s\n", strerror(errno));
 		}
 	}
 }
@@ -352,17 +343,13 @@ static void read_symtabs(FILE *fp)
 		case SHT_SYMTAB_SHNDX:
 			sec->xsymtab = malloc(sec->shdr.sh_size);
 			if (!sec->xsymtab) {
-				die("malloc of %" FMT " bytes for xsymtab failed\n",
-				    sec->shdr.sh_size);
+				die("malloc of %" FMT " bytes for xsymtab failed\n", sec->shdr.sh_size);
 			}
 			if (fseek(fp, sec->shdr.sh_offset, SEEK_SET) < 0) {
-				die("Seek to %" FMT " failed: %s\n",
-				    sec->shdr.sh_offset, strerror(errno));
+				die("Seek to %" FMT " failed: %s\n", sec->shdr.sh_offset, strerror(errno));
 			}
-			if (fread(sec->xsymtab, 1, sec->shdr.sh_size, fp)
-			    != sec->shdr.sh_size) {
-				die("Cannot read extended symbol table: %s\n",
-				    strerror(errno));
+			if (fread(sec->xsymtab, 1, sec->shdr.sh_size, fp) != sec->shdr.sh_size) {
+				die("Cannot read extended symbol table: %s\n", strerror(errno));
 			}
 			shxsymtabndx = i;
 			continue;
@@ -372,17 +359,13 @@ static void read_symtabs(FILE *fp)
 
 			sec->symtab = malloc(sec->shdr.sh_size);
 			if (!sec->symtab) {
-				die("malloc of %" FMT " bytes for symtab failed\n",
-				    sec->shdr.sh_size);
+				die("malloc of %" FMT " bytes for symtab failed\n", sec->shdr.sh_size);
 			}
 			if (fseek(fp, sec->shdr.sh_offset, SEEK_SET) < 0) {
-				die("Seek to %" FMT " failed: %s\n",
-				    sec->shdr.sh_offset, strerror(errno));
+				die("Seek to %" FMT " failed: %s\n", sec->shdr.sh_offset, strerror(errno));
 			}
-			if (fread(sec->symtab, 1, sec->shdr.sh_size, fp)
-			    != sec->shdr.sh_size) {
-				die("Cannot read symbol table: %s\n",
-				    strerror(errno));
+			if (fread(sec->symtab, 1, sec->shdr.sh_size, fp) != sec->shdr.sh_size) {
+				die("Cannot read symbol table: %s\n", strerror(errno));
 			}
 			for (j = 0; j < num_syms; j++) {
 				Elf_Sym *sym = &sec->symtab[j];
@@ -412,17 +395,13 @@ static void read_relocs(FILE *fp)
 		}
 		sec->reltab = malloc(sec->shdr.sh_size);
 		if (!sec->reltab) {
-			die("malloc of %" FMT " bytes for relocs failed\n",
-			    sec->shdr.sh_size);
+			die("malloc of %" FMT " bytes for relocs failed\n", sec->shdr.sh_size);
 		}
 		if (fseek(fp, sec->shdr.sh_offset, SEEK_SET) < 0) {
-			die("Seek to %" FMT " failed: %s\n",
-			    sec->shdr.sh_offset, strerror(errno));
+			die("Seek to %" FMT " failed: %s\n", sec->shdr.sh_offset, strerror(errno));
 		}
-		if (fread(sec->reltab, 1, sec->shdr.sh_size, fp)
-		    != sec->shdr.sh_size) {
-			die("Cannot read symbol table: %s\n",
-				strerror(errno));
+		if (fread(sec->reltab, 1, sec->shdr.sh_size, fp) != sec->shdr.sh_size) {
+			die("Cannot read symbol table: %s\n", strerror(errno));
 		}
 		for (j = 0; j < sec->shdr.sh_size/sizeof(Elf_Rel); j++) {
 			Elf_Rel *rel = &sec->reltab[j];
@@ -472,19 +451,12 @@ static void print_absolute_relocs(void)
 				continue;
 
 			if (!printed) {
-				printf("WARNING: Absolute relocations"
-					" present\n");
-				printf("Offset     Info     Type     Sym.Value "
-					"Sym.Name\n");
+				printf("WARNING: Absolute relocations" " present\n");
+				printf("Offset     Info     Type     Sym.Value " "Sym.Name\n");
 				printed = 1;
 			}
 
-			printf(format,
-				rel->r_offset,
-				rel->r_info,
-				rel_type(ELF_R_TYPE(rel->r_info)),
-				sym->st_value,
-				name);
+			printf(format, rel->r_offset, rel->r_info, rel_type(ELF_R_TYPE(rel->r_info)), sym->st_value, name);
 		}
 	}
 
@@ -499,16 +471,14 @@ static void add_reloc(struct relocs *r, uint32_t offset)
 		void *mem = realloc(r->offset, newsize * sizeof(r->offset[0]));
 
 		if (!mem)
-			die("realloc of %ld entries for relocs failed\n",
-                                newsize);
+			die("realloc of %ld entries for relocs failed\n", newsize);
 		r->offset = mem;
 		r->size = newsize;
 	}
 	r->offset[r->count++] = offset;
 }
 
-static void walk_relocs(int (*process)(struct section *sec, Elf_Rel *rel,
-			Elf_Sym *sym, const char *symname))
+static void walk_relocs(int (*process)(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const char *symname))
 {
 	int i;
 	 
@@ -539,8 +509,7 @@ static void walk_relocs(int (*process)(struct section *sec, Elf_Rel *rel,
 	}
 }
 
-static int do_reloc32(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
-		      const char *symname)
+static int do_reloc32(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const char *symname)
 {
 	unsigned r_type = ELF32_R_TYPE(rel->r_info);
 	int shn_abs = (sym->st_shndx == SHN_ABS) && !is_reloc(S_REL, symname);
@@ -556,8 +525,7 @@ static int do_reloc32(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
 			if (is_reloc(S_ABS, symname))
 				break;
 
-			die("Invalid absolute %s relocation: %s\n",
-			    rel_type(r_type), symname);
+			die("Invalid absolute %s relocation: %s\n", rel_type(r_type), symname);
 			break;
 		}
 
@@ -565,15 +533,13 @@ static int do_reloc32(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
 		break;
 
 	default:
-		die("Unsupported relocation type: %s (%d)\n",
-		    rel_type(r_type), r_type);
+		die("Unsupported relocation type: %s (%d)\n", rel_type(r_type), r_type);
 	}
 
 	return 0;
 }
 
-static int do_reloc_real(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
-			 const char *symname)
+static int do_reloc_real(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const char *symname)
 {
 	unsigned r_type = ELF32_R_TYPE(rel->r_info);
 	int shn_abs = (sym->st_shndx == SHN_ABS) && !is_reloc(S_REL, symname);
@@ -597,9 +563,7 @@ static int do_reloc_real(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
 			if (!is_reloc(S_LIN, symname))
 				break;
 		}
-		die("Invalid %s %s relocation: %s\n",
-		    shn_abs ? "absolute" : "relative",
-		    rel_type(r_type), symname);
+		die("Invalid %s %s relocation: %s\n", shn_abs ? "absolute" : "relative", rel_type(r_type), symname);
 		break;
 
 	case R_386_32:
@@ -617,14 +581,11 @@ static int do_reloc_real(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
 				add_reloc(&relocs32, rel->r_offset);
 			break;
 		}
-		die("Invalid %s %s relocation: %s\n",
-		    shn_abs ? "absolute" : "relative",
-		    rel_type(r_type), symname);
+		die("Invalid %s %s relocation: %s\n", shn_abs ? "absolute" : "relative", rel_type(r_type), symname);
 		break;
 
 	default:
-		die("Unsupported relocation type: %s (%d)\n",
-		    rel_type(r_type), r_type);
+		die("Unsupported relocation type: %s (%d)\n", rel_type(r_type), r_type);
 	}
 
 	return 0;
@@ -654,8 +615,7 @@ static void emit_relocs(int use_real_mode)
 {
 	int i;
 	int (*write_reloc)(uint32_t, FILE *) = write32;
-	int (*do_reloc)(struct section *sec, Elf_Rel *rel, Elf_Sym *sym,
-			const char *symname);
+	int (*do_reloc)(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const char *symname);
 
 	if (!use_real_mode)
 		do_reloc = do_reloc32;

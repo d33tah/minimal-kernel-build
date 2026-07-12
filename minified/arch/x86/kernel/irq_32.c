@@ -9,13 +9,7 @@ DEFINE_PER_CPU(struct irq_stack *, softirq_stack_ptr);
 
 static void call_on_stack(void *func, void *stack)
 {
-	asm volatile("xchgl	%%ebx,%%esp	\n"
-		     CALL_NOSPEC
-		     "movl	%%ebx,%%esp	\n"
-		     : "=b" (stack)
-		     : "0" (stack),
-		       [thunk_target] "D"(func)
-		     : "memory", "cc", "edx", "ecx", "eax");
+	asm volatile("xchgl	%%ebx,%%esp	\n" CALL_NOSPEC "movl	%%ebx,%%esp	\n" : "=b" (stack) : "0" (stack), [thunk_target] "D"(func) : "memory", "cc", "edx", "ecx", "eax");
 }
 
 static inline void *current_stack(void)
@@ -41,13 +35,7 @@ static inline int execute_on_irq_stack(struct irq_desc *desc)
 	prev_esp = (u32 *)irqstk;
 	*prev_esp = current_stack_pointer;
 
-	asm volatile("xchgl	%%ebx,%%esp	\n"
-		     CALL_NOSPEC
-		     "movl	%%ebx,%%esp	\n"
-		     : "=a" (arg1), "=b" (isp)
-		     :  "0" (desc),   "1" (isp),
-			[thunk_target] "D" (desc->handle_irq)
-		     : "memory", "cc", "ecx");
+	asm volatile("xchgl	%%ebx,%%esp	\n" CALL_NOSPEC "movl	%%ebx,%%esp	\n" : "=a" (arg1), "=b" (isp) :  "0" (desc),   "1" (isp), [thunk_target] "D" (desc->handle_irq) : "memory", "cc", "ecx");
 	return 1;
 }
 

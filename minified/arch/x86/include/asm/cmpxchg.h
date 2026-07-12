@@ -40,13 +40,7 @@ extern void __xadd_wrong_size(void)
 static inline u64 __cmpxchg64(volatile u64 *ptr, u64 old, u64 new)
 {
 	u64 prev;
-	asm volatile(LOCK_PREFIX "cmpxchg8b %1"
-		     : "=A" (prev),
-		       "+m" (*ptr)
-		     : "b" ((u32)new),
-		       "c" ((u32)(new >> 32)),
-		       "0" (old)
-		     : "memory");
+	asm volatile(LOCK_PREFIX "cmpxchg8b %1" : "=A" (prev), "+m" (*ptr) : "b" ((u32)new), "c" ((u32)(new >> 32)), "0" (old) : "memory");
 	return prev;
 }
 
@@ -54,14 +48,7 @@ static inline bool __try_cmpxchg64(volatile u64 *ptr, u64 *pold, u64 new)
 {
 	bool success;
 	u64 old = *pold;
-	asm volatile(LOCK_PREFIX "cmpxchg8b %[ptr]"
-		     CC_SET(z)
-		     : CC_OUT(z) (success),
-		       [ptr] "+m" (*ptr),
-		       "+A" (old)
-		     : "b" ((u32)new),
-		       "c" ((u32)(new >> 32))
-		     : "memory");
+	asm volatile(LOCK_PREFIX "cmpxchg8b %[ptr]" CC_SET(z) : CC_OUT(z) (success), [ptr] "+m" (*ptr), "+A" (old) : "b" ((u32)new), "c" ((u32)(new >> 32)) : "memory");
 
 	if (unlikely(!success))
 		*pold = old;

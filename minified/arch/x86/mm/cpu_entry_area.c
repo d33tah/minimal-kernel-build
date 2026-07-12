@@ -22,8 +22,7 @@ void cea_set_pte(void *cea_vaddr, phys_addr_t pa, pgprot_t flags)
 	pte_t pte = pfn_pte(pa >> PAGE_SHIFT, flags);
 
 	 
-	if (boot_cpu_has(X86_FEATURE_PGE) &&
-	    (pgprot_val(flags) & _PAGE_PRESENT))
+	if (boot_cpu_has(X86_FEATURE_PGE) && (pgprot_val(flags) & _PAGE_PRESENT))
 		pte = pte_set_flags(pte, _PAGE_GLOBAL);
 
 	set_pte_vaddr(va, pte);
@@ -40,8 +39,7 @@ static inline void percpu_setup_exception_stacks(unsigned int cpu)
 {
 	struct cpu_entry_area *cea = get_cpu_entry_area(cpu);
 
-	cea_map_percpu_pages(&cea->doublefault_stack,
-			     &per_cpu(doublefault_stack, cpu), 1, PAGE_KERNEL);
+	cea_map_percpu_pages(&cea->doublefault_stack, &per_cpu(doublefault_stack, cpu), 1, PAGE_KERNEL);
 }
 
 static void __init setup_cpu_entry_area(unsigned int cpu)
@@ -54,20 +52,16 @@ static void __init setup_cpu_entry_area(unsigned int cpu)
 
 	cea_set_pte(&cea->gdt, get_cpu_gdt_paddr(cpu), gdt_prot);
 
-	cea_map_percpu_pages(&cea->entry_stack_page,
-			     per_cpu_ptr(&entry_stack_storage, cpu), 1,
-			     PAGE_KERNEL);
+	cea_map_percpu_pages(&cea->entry_stack_page, per_cpu_ptr(&entry_stack_storage, cpu), 1, PAGE_KERNEL);
 
 	 
-	BUILD_BUG_ON((offsetof(struct tss_struct, x86_tss) ^
-		      offsetofend(struct tss_struct, x86_tss)) & PAGE_MASK);
+	BUILD_BUG_ON((offsetof(struct tss_struct, x86_tss) ^ offsetofend(struct tss_struct, x86_tss)) & PAGE_MASK);
 	BUILD_BUG_ON(sizeof(struct tss_struct) % PAGE_SIZE != 0);
 	 
 	BUILD_BUG_ON(offsetof(struct tss_struct, x86_tss) != 0);
 	BUILD_BUG_ON(sizeof(struct x86_hw_tss) != 0x68);
 
-	cea_map_percpu_pages(&cea->tss, &per_cpu(cpu_tss_rw, cpu),
-			     sizeof(struct tss_struct) / PAGE_SIZE, tss_prot);
+	cea_map_percpu_pages(&cea->tss, &per_cpu(cpu_tss_rw, cpu), sizeof(struct tss_struct) / PAGE_SIZE, tss_prot);
 
 	per_cpu(cpu_entry_area, cpu) = cea;
 

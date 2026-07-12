@@ -172,9 +172,7 @@ static void device_create_release(struct device *dev)
 }
 
 static __printf(5, 0) struct device *
-device_create_groups_vargs(struct class *class, struct device *parent,
-			   dev_t devt, void *drvdata,
-			   const char *fmt, va_list args)
+device_create_groups_vargs(struct class *class, struct device *parent, dev_t devt, void *drvdata, const char *fmt, va_list args)
 {
 	struct device *dev = NULL;
 	int retval = -ENODEV;
@@ -207,15 +205,13 @@ error:
 	return ERR_PTR(retval);
 }
 
-struct device *device_create(struct class *class, struct device *parent,
-			     dev_t devt, void *drvdata, const char *fmt, ...)
+struct device *device_create(struct class *class, struct device *parent, dev_t devt, void *drvdata, const char *fmt, ...)
 {
 	va_list vargs;
 	struct device *dev;
 
 	va_start(vargs, fmt);
-	dev = device_create_groups_vargs(class, parent, devt, drvdata,
-					  fmt, vargs);
+	dev = device_create_groups_vargs(class, parent, devt, drvdata, fmt, vargs);
 	va_end(vargs);
 	return dev;
 }

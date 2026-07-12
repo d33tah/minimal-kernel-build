@@ -35,10 +35,7 @@ __ref void *alloc_low_pages(unsigned int num)
 		unsigned long ret = 0;
 
 		if (min_pfn_mapped < max_pfn_mapped) {
-			ret = memblock_phys_alloc_range(
-					PAGE_SIZE * num, PAGE_SIZE,
-					min_pfn_mapped << PAGE_SHIFT,
-					max_pfn_mapped << PAGE_SHIFT);
+			ret = memblock_phys_alloc_range( PAGE_SIZE * num, PAGE_SIZE, min_pfn_mapped << PAGE_SHIFT, max_pfn_mapped << PAGE_SHIFT);
 		}
 		if (!ret && can_use_brk_pgt)
 			ret = __pa(extend_brk(PAGE_SIZE * num, PAGE_SIZE));
@@ -126,9 +123,7 @@ static void __init probe_page_size_mask(void)
 
 #define NR_RANGE_MR 3
 
-static int __meminit save_mr(struct map_range *mr, int nr_range,
-			     unsigned long start_pfn, unsigned long end_pfn,
-			     unsigned long page_size_mask)
+static int __meminit save_mr(struct map_range *mr, int nr_range, unsigned long start_pfn, unsigned long end_pfn, unsigned long page_size_mask)
 {
 	if (start_pfn < end_pfn) {
 		if (nr_range >= NR_RANGE_MR)
@@ -142,14 +137,12 @@ static int __meminit save_mr(struct map_range *mr, int nr_range,
 	return nr_range;
 }
 
-static void __ref adjust_range_page_size_mask(struct map_range *mr,
-							 int nr_range)
+static void __ref adjust_range_page_size_mask(struct map_range *mr, int nr_range)
 {
 	int i;
 
 	for (i = 0; i < nr_range; i++) {
-		if ((page_size_mask & (1<<PG_LEVEL_2M)) &&
-		    !(mr[i].page_size_mask & (1<<PG_LEVEL_2M))) {
+		if ((page_size_mask & (1<<PG_LEVEL_2M)) && !(mr[i].page_size_mask & (1<<PG_LEVEL_2M))) {
 			unsigned long start = round_down(mr[i].start, PMD_SIZE);
 			unsigned long end = round_up(mr[i].end, PMD_SIZE);
 
@@ -162,9 +155,7 @@ static void __ref adjust_range_page_size_mask(struct map_range *mr,
 	}
 }
 
-static int __meminit split_mem_range(struct map_range *mr, int nr_range,
-				     unsigned long start,
-				     unsigned long end)
+static int __meminit split_mem_range(struct map_range *mr, int nr_range, unsigned long start, unsigned long end)
 {
 	unsigned long start_pfn, end_pfn, limit_pfn;
 	unsigned long pfn;
@@ -191,8 +182,7 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 	end_pfn = round_down(limit_pfn, PFN_DOWN(PMD_SIZE));
 
 	if (start_pfn < end_pfn) {
-		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn,
-				page_size_mask & (1<<PG_LEVEL_2M));
+		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, page_size_mask & (1<<PG_LEVEL_2M));
 		pfn = end_pfn;
 	}
 
@@ -208,13 +198,11 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 	 
 	for (i = 0; nr_range > 1 && i < nr_range - 1; i++) {
 		unsigned long old_start;
-		if (mr[i].end != mr[i+1].start ||
-		    mr[i].page_size_mask != mr[i+1].page_size_mask)
+		if (mr[i].end != mr[i+1].start || mr[i].page_size_mask != mr[i+1].page_size_mask)
 			continue;
 		 
 		old_start = mr[i].start;
-		memmove(&mr[i], &mr[i+1],
-			(nr_range - 1 - i) * sizeof(struct map_range));
+		memmove(&mr[i], &mr[i+1], (nr_range - 1 - i) * sizeof(struct map_range));
 		mr[i--].start = old_start;
 		nr_range--;
 	}
@@ -227,8 +215,7 @@ int nr_pfn_mapped;
 
 static void add_pfn_range_mapped(unsigned long start_pfn, unsigned long end_pfn)
 {
-	nr_pfn_mapped = add_range_with_merge(pfn_mapped, E820_MAX_ENTRIES,
-					     nr_pfn_mapped, start_pfn, end_pfn);
+	nr_pfn_mapped = add_range_with_merge(pfn_mapped, E820_MAX_ENTRIES, nr_pfn_mapped, start_pfn, end_pfn);
 	nr_pfn_mapped = clean_sort_range(pfn_mapped, E820_MAX_ENTRIES);
 
 	max_pfn_mapped = max(max_pfn_mapped, end_pfn);
@@ -239,15 +226,13 @@ bool pfn_range_is_mapped(unsigned long start_pfn, unsigned long end_pfn)
 	int i;
 
 	for (i = 0; i < nr_pfn_mapped; i++)
-		if ((start_pfn >= pfn_mapped[i].start) &&
-		    (end_pfn <= pfn_mapped[i].end))
+		if ((start_pfn >= pfn_mapped[i].start) && (end_pfn <= pfn_mapped[i].end))
 			return true;
 
 	return false;
 }
 
-unsigned long __ref init_memory_mapping(unsigned long start,
-					unsigned long end, pgprot_t prot)
+unsigned long __ref init_memory_mapping(unsigned long start, unsigned long end, pgprot_t prot)
 {
 	struct map_range mr[NR_RANGE_MR];
 	unsigned long ret = 0;
@@ -257,18 +242,14 @@ unsigned long __ref init_memory_mapping(unsigned long start,
 	nr_range = split_mem_range(mr, 0, start, end);
 
 	for (i = 0; i < nr_range; i++)
-		ret = kernel_physical_mapping_init(mr[i].start, mr[i].end,
-						   mr[i].page_size_mask,
-						   prot);
+		ret = kernel_physical_mapping_init(mr[i].start, mr[i].end, mr[i].page_size_mask, prot);
 
 	add_pfn_range_mapped(start >> PAGE_SHIFT, ret >> PAGE_SHIFT);
 
 	return ret >> PAGE_SHIFT;
 }
 
-static unsigned long __init init_range_memory_mapping(
-					   unsigned long r_start,
-					   unsigned long r_end)
+static unsigned long __init init_range_memory_mapping( unsigned long r_start, unsigned long r_end)
 {
 	unsigned long start_pfn, end_pfn;
 	unsigned long mapped_ram_size = 0;
@@ -297,16 +278,14 @@ static unsigned long __init get_new_step_size(unsigned long step_size)
 	return step_size << (PMD_SHIFT - PAGE_SHIFT - 1);
 }
 
-static void __init memory_map_top_down(unsigned long map_start,
-				       unsigned long map_end)
+static void __init memory_map_top_down(unsigned long map_start, unsigned long map_end)
 {
 	unsigned long real_end, last_start;
 	unsigned long step_size, addr;
 	unsigned long mapped_ram_size = 0;
 
 	 
-	addr = memblock_phys_alloc_range(PMD_SIZE, PMD_SIZE, map_start,
-					 map_end);
+	addr = memblock_phys_alloc_range(PMD_SIZE, PMD_SIZE, map_start, map_end);
 	memblock_phys_free(addr, PMD_SIZE);
 	real_end = addr + PMD_SIZE;
 
@@ -326,8 +305,7 @@ static void __init memory_map_top_down(unsigned long map_start,
 				start = map_start;
 		} else
 			start = map_start;
-		mapped_ram_size += init_range_memory_mapping(start,
-							last_start);
+		mapped_ram_size += init_range_memory_mapping(start, last_start);
 		last_start = start;
 		min_pfn_mapped = last_start >> PAGE_SHIFT;
 		if (mapped_ram_size >= step_size)

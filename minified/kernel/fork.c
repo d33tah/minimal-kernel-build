@@ -45,8 +45,7 @@ static inline void free_task_struct(struct task_struct *tsk)
 
 static int alloc_thread_stack_node(struct task_struct *tsk, int node)
 {
-	struct page *page = alloc_pages_node(node, THREADINFO_GFP,
-					     THREAD_SIZE_ORDER);
+	struct page *page = alloc_pages_node(node, THREADINFO_GFP, THREAD_SIZE_ORDER);
 
 	if (likely(page)) {
 		tsk->stack = page_address(page);
@@ -102,8 +101,7 @@ static void account_kernel_stack(struct task_struct *tsk, int account)
 {
 	void *stack = task_stack_page(tsk);
 
-	mod_lruvec_kmem_state(stack, NR_KERNEL_STACK_KB,
-			      account * (THREAD_SIZE / 1024));
+	mod_lruvec_kmem_state(stack, NR_KERNEL_STACK_KB, account * (THREAD_SIZE / 1024));
 }
 
 void exit_task_stack_account(struct task_struct *tsk)
@@ -141,8 +139,7 @@ static void dup_mm_exe_file(struct mm_struct *mm, struct mm_struct *oldmm)
 	RCU_INIT_POINTER(mm->exe_file, NULL);
 }
 
-static __latent_entropy int dup_mmap(struct mm_struct *mm,
-					struct mm_struct *oldmm)
+static __latent_entropy int dup_mmap(struct mm_struct *mm, struct mm_struct *oldmm)
 {
 	/* Minimal stub: simplified VMA duplication for fork */
 	struct vm_area_struct *mpnt, *tmp, *prev, **pprev;
@@ -240,8 +237,7 @@ static void set_max_threads(unsigned int max_threads_suggested)
 	if (fls64(nr_pages) + fls64(PAGE_SIZE) > 64)
 		threads = MAX_THREADS;
 	else
-		threads = div64_u64((u64) nr_pages * (u64) PAGE_SIZE,
-				    (u64) THREAD_SIZE * 8UL);
+		threads = div64_u64((u64) nr_pages * (u64) PAGE_SIZE, (u64) THREAD_SIZE * 8UL);
 
 	if (threads > max_threads_suggested)
 		threads = max_threads_suggested;
@@ -274,10 +270,7 @@ void __init fork_init(void)
 
 	
 	task_struct_whitelist(&useroffset, &usersize);
-	task_struct_cachep = kmem_cache_create_usercopy("task_struct",
-			arch_task_struct_size, align,
-			SLAB_PANIC|SLAB_ACCOUNT,
-			useroffset, usersize, NULL);
+	task_struct_cachep = kmem_cache_create_usercopy("task_struct", arch_task_struct_size, align, SLAB_PANIC|SLAB_ACCOUNT, useroffset, usersize, NULL);
 #endif
 
 	
@@ -353,8 +346,7 @@ free_tsk:
 
 
 
-static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
-	struct user_namespace *user_ns)
+static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p, struct user_namespace *user_ns)
 {
 	mm->mmap = NULL;
 	mm->mm_rb = RB_ROOT;
@@ -464,8 +456,7 @@ void exec_mm_release(struct task_struct *tsk, struct mm_struct *mm)
 	mm_release(tsk, mm);
 }
 
-static struct mm_struct *dup_mm(struct task_struct *tsk,
-				struct mm_struct *oldmm)
+static struct mm_struct *dup_mm(struct task_struct *tsk, struct mm_struct *oldmm)
 {
 	struct mm_struct *mm;
 	int err;
@@ -649,10 +640,7 @@ static __always_inline void delayed_free_task(struct task_struct *tsk)
 	free_task(tsk);
 }
 
-static __latent_entropy struct task_struct *copy_process(
-					struct pid *pid,
-					int node,
-					struct kernel_clone_args *args)
+static __latent_entropy struct task_struct *copy_process( struct pid *pid, int node, struct kernel_clone_args *args)
 {
 	int retval;
 	struct task_struct *p;
@@ -899,8 +887,7 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
 {
 	struct kernel_clone_args args = {
-		.flags		= ((lower_32_bits(flags) | CLONE_VM |
-				    CLONE_UNTRACED) & ~CSIGNAL),
+		.flags		= ((lower_32_bits(flags) | CLONE_VM | CLONE_UNTRACED) & ~CSIGNAL),
 		.exit_signal	= (lower_32_bits(flags) & CSIGNAL),
 		.fn		= fn,
 		.fn_arg		= arg,
@@ -913,8 +900,7 @@ pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
 pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 {
 	struct kernel_clone_args args = {
-		.flags		= ((lower_32_bits(flags) | CLONE_VM |
-				    CLONE_UNTRACED) & ~CSIGNAL),
+		.flags		= ((lower_32_bits(flags) | CLONE_VM | CLONE_UNTRACED) & ~CSIGNAL),
 		.exit_signal	= (lower_32_bits(flags) & CSIGNAL),
 		.fn		= fn,
 		.fn_arg		= arg,
@@ -934,32 +920,15 @@ void __init proc_caches_init(void)
 {
 	unsigned int mm_size;
 
-	sighand_cachep = kmem_cache_create("sighand_cache",
-			sizeof(struct sighand_struct), 0,
-			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_TYPESAFE_BY_RCU|
-			SLAB_ACCOUNT, sighand_ctor);
-	signal_cachep = kmem_cache_create("signal_cache",
-			sizeof(struct signal_struct), 0,
-			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT,
-			NULL);
-	files_cachep = kmem_cache_create("files_cache",
-			sizeof(struct files_struct), 0,
-			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT,
-			NULL);
-	fs_cachep = kmem_cache_create("fs_cache",
-			sizeof(struct fs_struct), 0,
-			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT,
-			NULL);
+	sighand_cachep = kmem_cache_create("sighand_cache", sizeof(struct sighand_struct), 0, SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_TYPESAFE_BY_RCU| SLAB_ACCOUNT, sighand_ctor);
+	signal_cachep = kmem_cache_create("signal_cache", sizeof(struct signal_struct), 0, SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, NULL);
+	files_cachep = kmem_cache_create("files_cache", sizeof(struct files_struct), 0, SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, NULL);
+	fs_cachep = kmem_cache_create("fs_cache", sizeof(struct fs_struct), 0, SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, NULL);
 
 	
 	mm_size = sizeof(struct mm_struct) + cpumask_size();
 
-	mm_cachep = kmem_cache_create_usercopy("mm_struct",
-			mm_size, ARCH_MIN_MMSTRUCT_ALIGN,
-			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT,
-			offsetof(struct mm_struct, saved_auxv),
-			sizeof_field(struct mm_struct, saved_auxv),
-			NULL);
+	mm_cachep = kmem_cache_create_usercopy("mm_struct", mm_size, ARCH_MIN_MMSTRUCT_ALIGN, SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, offsetof(struct mm_struct, saved_auxv), sizeof_field(struct mm_struct, saved_auxv), NULL);
 	vm_area_cachep = KMEM_CACHE(vm_area_struct, SLAB_PANIC|SLAB_ACCOUNT);
 	mmap_init();
 	nsproxy_cache_init();

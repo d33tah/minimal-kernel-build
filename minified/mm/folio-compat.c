@@ -24,8 +24,7 @@ void lru_cache_add(struct page *page)
 }
 
 noinline
-struct page *pagecache_get_page(struct address_space *mapping, pgoff_t index,
-		int fgp_flags, gfp_t gfp)
+struct page *pagecache_get_page(struct address_space *mapping, pgoff_t index, int fgp_flags, gfp_t gfp)
 {
 	struct folio *folio;
 
@@ -35,11 +34,9 @@ struct page *pagecache_get_page(struct address_space *mapping, pgoff_t index,
 	return folio_file_page(folio, index);
 }
 
-struct page *grab_cache_page_write_begin(struct address_space *mapping,
-					pgoff_t index)
+struct page *grab_cache_page_write_begin(struct address_space *mapping, pgoff_t index)
 {
 	unsigned fgp_flags = FGP_LOCK | FGP_WRITE | FGP_CREAT | FGP_STABLE;
 
-	return pagecache_get_page(mapping, index, fgp_flags,
-			mapping_gfp_mask(mapping));
+	return pagecache_get_page(mapping, index, fgp_flags, mapping_gfp_mask(mapping));
 }

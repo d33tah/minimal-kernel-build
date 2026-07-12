@@ -6,8 +6,7 @@
 #include <linux/kobject.h>
 typedef struct kobject *kobj_probe_t(dev_t, int *, void *);
 struct kobj_map;
-int kobj_map(struct kobj_map *, dev_t, unsigned long, struct module *,
-	     kobj_probe_t *, int (*)(dev_t, void *), void *);
+int kobj_map(struct kobj_map *, dev_t, unsigned long, struct module *, kobj_probe_t *, int (*)(dev_t, void *), void *);
 struct kobject *kobj_lookup(struct kobj_map *, dev_t, int *);
 struct kobj_map *kobj_map_init(kobj_probe_t *, struct mutex *);
 /* end kobj_map.h */
@@ -43,8 +42,7 @@ static int find_dynamic_major(void)
 			return i;
 	}
 
-	for (i = CHRDEV_MAJOR_DYN_EXT_START;
-	     i >= CHRDEV_MAJOR_DYN_EXT_END; i--) {
+	for (i = CHRDEV_MAJOR_DYN_EXT_START; i >= CHRDEV_MAJOR_DYN_EXT_END; i--) {
 		for (cd = chrdevs[major_to_index(i)]; cd; cd = cd->next)
 			if (cd->major == i)
 				break;
@@ -57,21 +55,18 @@ static int find_dynamic_major(void)
 }
 
 static struct char_device_struct *
-__register_chrdev_region(unsigned int major, unsigned int baseminor,
-			   int minorct, const char *name)
+__register_chrdev_region(unsigned int major, unsigned int baseminor, int minorct, const char *name)
 {
 	struct char_device_struct *cd, *curr, *prev = NULL;
 	int ret, i;
 
 	if (major >= CHRDEV_MAJOR_MAX) {
-		pr_err("CHRDEV \"%s\" major requested (%u) is greater than the maximum (%u)\n",
-		       name, major, CHRDEV_MAJOR_MAX-1);
+		pr_err("CHRDEV \"%s\" major requested (%u) is greater than the maximum (%u)\n", name, major, CHRDEV_MAJOR_MAX-1);
 		return ERR_PTR(-EINVAL);
 	}
 
 	if (minorct > MINORMASK + 1 - baseminor) {
-		pr_err("CHRDEV \"%s\" minor range requested (%u-%u) is out of range of maximum range (%u-%u) for a single major\n",
-			name, baseminor, baseminor + minorct - 1, 0, MINORMASK);
+		pr_err("CHRDEV \"%s\" minor range requested (%u-%u) is out of range of maximum range (%u-%u) for a single major\n", name, baseminor, baseminor + minorct - 1, 0, MINORMASK);
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -84,8 +79,7 @@ __register_chrdev_region(unsigned int major, unsigned int baseminor,
 	if (major == 0) {
 		ret = find_dynamic_major();
 		if (ret < 0) {
-			pr_err("CHRDEV \"%s\" dynamic allocation region is full\n",
-			       name);
+			pr_err("CHRDEV \"%s\" dynamic allocation region is full\n", name);
 			goto out;
 		}
 		major = ret;
@@ -139,16 +133,14 @@ int register_chrdev_region(dev_t from, unsigned count, const char *name)
 		next = MKDEV(MAJOR(n)+1, 0);
 		if (next > to)
 			next = to;
-		cd = __register_chrdev_region(MAJOR(n), MINOR(n),
-			       next - n, name);
+		cd = __register_chrdev_region(MAJOR(n), MINOR(n), next - n, name);
 		if (IS_ERR(cd))
 			return PTR_ERR(cd);
 	}
 	return 0;
 }
 
-int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count,
-			const char *name)
+int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count, const char *name)
 {
 	struct char_device_struct *cd = __register_chrdev_region(0, baseminor, count, name);
 	if (IS_ERR(cd))
@@ -249,8 +241,7 @@ int cdev_add(struct cdev *p, dev_t dev, unsigned count)
 	if (WARN_ON(dev == WHITEOUT_DEV))
 		return -EBUSY;
 
-	error = kobj_map(cdev_map, dev, count, NULL,
-			 exact_match, exact_lock, p);
+	error = kobj_map(cdev_map, dev, count, NULL, exact_match, exact_lock, p);
 	if (error)
 		return error;
 

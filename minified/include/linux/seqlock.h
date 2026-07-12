@@ -14,8 +14,7 @@ typedef struct seqcount {
 	unsigned sequence;
 } seqcount_t;
 
-static inline void __seqcount_init(seqcount_t *s, const char *name,
-					  struct lock_class_key *key)
+static inline void __seqcount_init(seqcount_t *s, const char *name, struct lock_class_key *key)
 {
 	s->sequence = 0;
 }

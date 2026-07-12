@@ -37,9 +37,7 @@ early_initcall(init_zero_pfn);
  * private free_folded_range / free_pte_range page-table free walkers it solely
  * drove were deleted with it.
  */
-void free_pgd_range(struct mmu_gather *tlb,
-			unsigned long addr, unsigned long end,
-			unsigned long floor, unsigned long ceiling)
+void free_pgd_range(struct mmu_gather *tlb, unsigned long addr, unsigned long end, unsigned long floor, unsigned long ceiling)
 {
 }
 
@@ -69,8 +67,7 @@ int __pte_alloc(struct mm_struct *mm, pmd_t *pmd)
 	return 0;
 }
 
-struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
-			    pte_t pte)
+struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr, pte_t pte)
 {
 	unsigned long pfn = pte_pfn(pte);
 
@@ -121,8 +118,7 @@ static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr)
 	return pmd;
 }
 
-pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
-			spinlock_t **ptl)
+pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr, spinlock_t **ptl)
 {
 	pmd_t *pmd = walk_to_pmd(mm, addr);
 
@@ -299,8 +295,7 @@ static vm_fault_t __do_fault(struct vm_fault *vmf)
 	}
 
 	ret = vma->vm_ops->fault(vmf);
-	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY |
-			    VM_FAULT_DONE_COW)))
+	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY | VM_FAULT_DONE_COW)))
 		return ret;
 
 	if (unlikely(!(ret & VM_FAULT_LOCKED)))
@@ -368,8 +363,7 @@ vm_fault_t finish_fault(struct vm_fault *vmf)
 			return VM_FAULT_OOM;
 	}
 
-	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd,
-				      vmf->address, &vmf->ptl);
+	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address, &vmf->ptl);
 	ret = 0;
 	
 	if (likely(!vmf_pte_changed(vmf)))
@@ -442,16 +436,14 @@ static vm_fault_t do_shared_fault(struct vm_fault *vmf)
 	if (vma->vm_ops->page_mkwrite) {
 		unlock_page(vmf->page);
 		tmp = do_page_mkwrite(vmf);
-		if (unlikely(!tmp ||
-				(tmp & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))) {
+		if (unlikely(!tmp || (tmp & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))) {
 			put_page(vmf->page);
 			return tmp;
 		}
 	}
 
 	ret |= finish_fault(vmf);
-	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE |
-					VM_FAULT_RETRY))) {
+	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY))) {
 		unlock_page(vmf->page);
 		put_page(vmf->page);
 		return ret;
@@ -473,10 +465,7 @@ static vm_fault_t do_fault(struct vm_fault *vmf)
 		if (unlikely(!pmd_present(*vmf->pmd)))
 			ret = VM_FAULT_SIGBUS;
 		else {
-			vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm,
-						       vmf->pmd,
-						       vmf->address,
-						       &vmf->ptl);
+			vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd, vmf->address, &vmf->ptl);
 			
 			if (unlikely(pte_none(*vmf->pte)))
 				ret = VM_FAULT_SIGBUS;
@@ -530,8 +519,7 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 	return 0;
 }
 
-static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
-		unsigned long address, unsigned int flags)
+static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma, unsigned long address, unsigned int flags)
 {
 	/* Minimal stub: simplified page fault handling without huge pages */
 	struct vm_fault vmf = {
@@ -553,8 +541,7 @@ static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
 	return handle_pte_fault(&vmf);
 }
 
-vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
-			   unsigned int flags, struct pt_regs *regs)
+vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address, unsigned int flags, struct pt_regs *regs)
 {
 	vm_fault_t ret;
 

@@ -49,8 +49,7 @@ static void acct_arg_size(struct linux_binprm *bprm, unsigned long pages)
 	add_mm_counter(mm, MM_ANONPAGES, diff);
 }
 
-static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
-		int write)
+static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos, int write)
 {
 	struct page *page;
 	int ret;
@@ -60,8 +59,7 @@ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
 		gup_flags |= FOLL_WRITE;
 
 	mmap_read_lock(bprm->mm);
-	ret = get_user_pages_remote(bprm->mm, pos, 1, gup_flags,
-			&page, NULL, NULL);
+	ret = get_user_pages_remote(bprm->mm, pos, 1, gup_flags, &page, NULL, NULL);
 	mmap_read_unlock(bprm->mm);
 	if (ret <= 0)
 		return NULL;
@@ -198,8 +196,7 @@ int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 		return -E2BIG;
 
 	while (len > 0) {
-		unsigned int bytes_to_copy = min_t(unsigned int, len,
-				min_not_zero(offset_in_page(pos), PAGE_SIZE));
+		unsigned int bytes_to_copy = min_t(unsigned int, len, min_not_zero(offset_in_page(pos), PAGE_SIZE));
 		struct page *page;
 		char *kaddr;
 
@@ -220,8 +217,7 @@ int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 	return 0;
 }
 
-static int copy_strings_kernel(int argc, const char *const *argv,
-			       struct linux_binprm *bprm)
+static int copy_strings_kernel(int argc, const char *const *argv, struct linux_binprm *bprm)
 {
 	while (argc-- > 0) {
 		int ret = copy_string_kernel(argv[argc], bprm);
@@ -252,20 +248,17 @@ static int shift_arg_pages(struct vm_area_struct *vma, unsigned long shift)
 	if (vma_adjust(vma, new_start, old_end, vma->vm_pgoff, NULL))
 		return -ENOMEM;
 
-	if (length != move_page_tables(vma, old_start,
-				       vma, new_start, length, false))
+	if (length != move_page_tables(vma, old_start, vma, new_start, length, false))
 		return -ENOMEM;
 
 	lru_add_drain();
 	tlb_gather_mmu(&tlb, mm);
 	if (new_end > old_start) {
 		
-		free_pgd_range(&tlb, new_end, old_end, new_end,
-			vma->vm_next ? vma->vm_next->vm_start : USER_PGTABLES_CEILING);
+		free_pgd_range(&tlb, new_end, old_end, new_end, vma->vm_next ? vma->vm_next->vm_start : USER_PGTABLES_CEILING);
 	} else {
 		
-		free_pgd_range(&tlb, old_start, old_end, new_end,
-			vma->vm_next ? vma->vm_next->vm_start : USER_PGTABLES_CEILING);
+		free_pgd_range(&tlb, old_start, old_end, new_end, vma->vm_next ? vma->vm_next->vm_start : USER_PGTABLES_CEILING);
 	}
 	tlb_finish_mmu(&tlb);
 
@@ -274,9 +267,7 @@ static int shift_arg_pages(struct vm_area_struct *vma, unsigned long shift)
 	return 0;
 }
 
-int setup_arg_pages(struct linux_binprm *bprm,
-		    unsigned long stack_top,
-		    int executable_stack)
+int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top, int executable_stack)
 {
 	unsigned long ret, stack_shift;
 	struct mm_struct *mm = current->mm;
@@ -288,8 +279,7 @@ int setup_arg_pages(struct linux_binprm *bprm,
 	stack_top = arch_align_stack(stack_top);
 	stack_top = PAGE_ALIGN(stack_top);
 
-	if (unlikely(stack_top < mmap_min_addr) ||
-	    unlikely(vma->vm_end - vma->vm_start >= stack_top - mmap_min_addr))
+	if (unlikely(stack_top < mmap_min_addr) || unlikely(vma->vm_end - vma->vm_start >= stack_top - mmap_min_addr))
 		return -ENOMEM;
 
 	stack_shift = vma->vm_end - stack_top;
@@ -313,8 +303,7 @@ int setup_arg_pages(struct linux_binprm *bprm,
 	vm_flags |= mm->def_flags;
 
 	tlb_gather_mmu(&tlb, mm);
-	ret = mprotect_fixup(&tlb, vma, &prev, vma->vm_start, vma->vm_end,
-			vm_flags);
+	ret = mprotect_fixup(&tlb, vma, &prev, vma->vm_start, vma->vm_end, vm_flags);
 	tlb_finish_mmu(&tlb);
 
 	if (ret)
@@ -367,8 +356,7 @@ static struct file *do_open_execat(struct filename *name, int flags)
 		goto out;
 
 	err = -EACCES;
-	if (WARN_ON_ONCE(!S_ISREG(file_inode(file)->i_mode) ||
-			 path_noexec(&file->f_path)))
+	if (WARN_ON_ONCE(!S_ISREG(file_inode(file)->i_mode) || path_noexec(&file->f_path)))
 		goto exit;
 
 	err = deny_write_access(file);
@@ -486,8 +474,7 @@ int begin_new_exec(struct linux_binprm * bprm)
 
 	do_close_on_exec(me->files);
 
-	if (!(uid_eq(current_euid(), current_uid()) &&
-	      gid_eq(current_egid(), current_gid())))
+	if (!(uid_eq(current_euid(), current_uid()) && gid_eq(current_egid(), current_gid())))
 		set_dumpable(current->mm, 0);
 	else
 		set_dumpable(current->mm, SUID_DUMP_USER);
@@ -691,8 +678,7 @@ static int exec_binprm(struct linux_binprm *bprm)
 	return 0;
 }
 
-static int bprm_execve(struct linux_binprm *bprm,
-		       struct filename *filename, int flags)
+static int bprm_execve(struct linux_binprm *bprm, struct filename *filename, int flags)
 {
 	struct file *file;
 	int retval;
@@ -730,8 +716,7 @@ out_unmark:
 	return retval;
 }
 
-int kernel_execve(const char *kernel_filename,
-		  const char *const *argv, const char *const *envp)
+int kernel_execve(const char *kernel_filename, const char *const *argv, const char *const *envp)
 {
 	struct filename *filename;
 	struct linux_binprm *bprm;

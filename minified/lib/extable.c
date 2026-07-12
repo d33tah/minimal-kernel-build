@@ -33,11 +33,9 @@ static int cmp_ex_sort(const void *a, const void *b)
 	return 0;
 }
 
-void sort_extable(struct exception_table_entry *start,
-		  struct exception_table_entry *finish)
+void sort_extable(struct exception_table_entry *start, struct exception_table_entry *finish)
 {
-	sort(start, finish - start, sizeof(struct exception_table_entry),
-	     cmp_ex_sort, swap_ex);
+	sort(start, finish - start, sizeof(struct exception_table_entry), cmp_ex_sort, swap_ex);
 }
 
 
@@ -55,10 +53,7 @@ static int cmp_ex_search(const void *key, const void *elt)
 }
 
 const struct exception_table_entry *
-search_extable(const struct exception_table_entry *base,
-	       const size_t num,
-	       unsigned long value)
+search_extable(const struct exception_table_entry *base, const size_t num, unsigned long value)
 {
-	return __inline_bsearch(&value, base, num,
-		       sizeof(struct exception_table_entry), cmp_ex_search);
+	return __inline_bsearch(&value, base, num, sizeof(struct exception_table_entry), cmp_ex_search);
 }

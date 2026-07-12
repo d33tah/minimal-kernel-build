@@ -103,12 +103,9 @@ static inline int signal_pending_state(unsigned int state, struct task_struct *p
 	return (state & TASK_INTERRUPTIBLE) || __fatal_signal_pending(p);
 }
 
-static inline bool fault_signal_pending(vm_fault_t fault_flags,
-					struct pt_regs *regs)
+static inline bool fault_signal_pending(vm_fault_t fault_flags, struct pt_regs *regs)
 {
-	return unlikely((fault_flags & VM_FAULT_RETRY) &&
-			(fatal_signal_pending(current) ||
-			 (user_mode(regs) && signal_pending(current))));
+	return unlikely((fault_flags & VM_FAULT_RETRY) && (fatal_signal_pending(current) || (user_mode(regs) && signal_pending(current))));
 }
 
 /* recalc_sigpending_and_wake only used internally in signal.c */
@@ -150,12 +147,10 @@ static inline bool thread_group_leader(struct task_struct *p)
 
 static inline struct task_struct *next_thread(const struct task_struct *p)
 {
-	return list_entry_rcu(p->thread_group.next,
-			      struct task_struct, thread_group);
+	return list_entry_rcu(p->thread_group.next, struct task_struct, thread_group);
 }
 
-static inline unsigned long task_rlimit(const struct task_struct *task,
-		unsigned int limit)
+static inline unsigned long task_rlimit(const struct task_struct *task, unsigned int limit)
 {
 	return READ_ONCE(task->signal->rlim[limit].rlim_cur);
 }

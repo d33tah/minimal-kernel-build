@@ -33,8 +33,7 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 	return 0;
 }
 
-struct class *__class_create(struct module *owner, const char *name,
-			     struct lock_class_key *key)
+struct class *__class_create(struct module *owner, const char *name, struct lock_class_key *key)
 {
 	struct class *cls;
 	int retval;

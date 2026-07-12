@@ -49,8 +49,7 @@ static __always_inline void __exit_to_user_mode(void)
 	arch_exit_to_user_mode();
 }
 
-static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
-					    unsigned long ti_work)
+static unsigned long exit_to_user_mode_loop(struct pt_regs *regs, unsigned long ti_work)
 {
 	 
 	while (ti_work & EXIT_TO_USER_MODE_WORK) {

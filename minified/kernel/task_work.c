@@ -3,8 +3,7 @@
 
 static struct callback_head work_exited;  
 
-int task_work_add(struct task_struct *task, struct callback_head *work,
-		  enum task_work_notify_mode notify)
+int task_work_add(struct task_struct *task, struct callback_head *work, enum task_work_notify_mode notify)
 {
 	/*
 	 * SAFE-FALLBACK STUB (runtime-dead). The sole caller fput()

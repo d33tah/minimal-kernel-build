@@ -31,8 +31,7 @@ get_slot_offset(const struct radix_tree_node *parent, void __rcu **slot)
 	return parent ? slot - parent->slots : 0;
 }
 
-static unsigned int radix_tree_descend(const struct radix_tree_node *parent,
-			struct radix_tree_node **nodep, unsigned long index)
+static unsigned int radix_tree_descend(const struct radix_tree_node *parent, struct radix_tree_node **nodep, unsigned long index)
 {
 	unsigned int offset = (index >> parent->shift) & RADIX_TREE_MAP_MASK;
 	void __rcu **entry = rcu_dereference_raw(parent->slots[offset]);
@@ -46,20 +45,17 @@ static inline gfp_t root_gfp_mask(const struct radix_tree_root *root)
 	return root->xa_flags & (__GFP_BITS_MASK & ~GFP_ZONEMASK);
 }
 
-static inline void tag_set(struct radix_tree_node *node, unsigned int tag,
-		int offset)
+static inline void tag_set(struct radix_tree_node *node, unsigned int tag, int offset)
 {
 	__set_bit(offset, node->tags[tag]);
 }
 
-static inline void tag_clear(struct radix_tree_node *node, unsigned int tag,
-		int offset)
+static inline void tag_clear(struct radix_tree_node *node, unsigned int tag, int offset)
 {
 	__clear_bit(offset, node->tags[tag]);
 }
 
-static inline int tag_get(const struct radix_tree_node *node, unsigned int tag,
-		int offset)
+static inline int tag_get(const struct radix_tree_node *node, unsigned int tag, int offset)
 {
 	return test_bit(offset, node->tags[tag]);
 }
@@ -94,8 +90,7 @@ static inline bool is_idr(const struct radix_tree_root *root)
 	return !!(root->xa_flags & ROOT_IS_IDR);
 }
 
-static inline int any_tag_set(const struct radix_tree_node *node,
-							unsigned int tag)
+static inline int any_tag_set(const struct radix_tree_node *node, unsigned int tag)
 {
 	unsigned idx;
 	for (idx = 0; idx < RADIX_TREE_TAG_LONGS; idx++) {
@@ -111,8 +106,7 @@ static inline void all_tag_set(struct radix_tree_node *node, unsigned int tag)
 }
 
 static __always_inline unsigned long
-radix_tree_find_next_bit(struct radix_tree_node *node, unsigned int tag,
-			 unsigned long offset)
+radix_tree_find_next_bit(struct radix_tree_node *node, unsigned int tag, unsigned long offset)
 {
 	const unsigned long *addr = node->tags[tag];
 
@@ -149,26 +143,20 @@ static inline unsigned long node_maxindex(const struct radix_tree_node *node)
 	return shift_maxindex(node->shift);
 }
 
-static unsigned long next_index(unsigned long index,
-				const struct radix_tree_node *node,
-				unsigned long offset)
+static unsigned long next_index(unsigned long index, const struct radix_tree_node *node, unsigned long offset)
 {
 	return (index & ~node_maxindex(node)) + (offset << node->shift);
 }
 
 static struct radix_tree_node *
-radix_tree_node_alloc(gfp_t gfp_mask, struct radix_tree_node *parent,
-			struct radix_tree_root *root,
-			unsigned int shift, unsigned int offset,
-			unsigned int count)
+radix_tree_node_alloc(gfp_t gfp_mask, struct radix_tree_node *parent, struct radix_tree_root *root, unsigned int shift, unsigned int offset, unsigned int count)
 {
 	struct radix_tree_node *ret = NULL;
 
 	if (!gfpflags_allow_blocking(gfp_mask) && !in_interrupt()) {
 		struct radix_tree_preload *rtp;
 
-		ret = kmem_cache_alloc(radix_tree_node_cachep,
-				       gfp_mask | __GFP_NOWARN);
+		ret = kmem_cache_alloc(radix_tree_node_cachep, gfp_mask | __GFP_NOWARN);
 		if (ret)
 			goto out;
 
@@ -242,8 +230,7 @@ out:
 }
 
 
-static unsigned radix_tree_load_root(const struct radix_tree_root *root,
-		struct radix_tree_node **nodep, unsigned long *maxindex)
+static unsigned radix_tree_load_root(const struct radix_tree_root *root, struct radix_tree_node **nodep, unsigned long *maxindex)
 {
 	struct radix_tree_node *node = rcu_dereference_raw(root->xa_head);
 
@@ -259,8 +246,7 @@ static unsigned radix_tree_load_root(const struct radix_tree_root *root,
 	return 0;
 }
 
-static int radix_tree_extend(struct radix_tree_root *root, gfp_t gfp,
-				unsigned long index, unsigned int shift)
+static int radix_tree_extend(struct radix_tree_root *root, gfp_t gfp, unsigned long index, unsigned int shift)
 {
 	void *entry;
 	unsigned int maxshift;
@@ -275,8 +261,7 @@ static int radix_tree_extend(struct radix_tree_root *root, gfp_t gfp,
 		goto out;
 
 	do {
-		struct radix_tree_node *node = radix_tree_node_alloc(gfp, NULL,
-							root, shift, 0, 1);
+		struct radix_tree_node *node = radix_tree_node_alloc(gfp, NULL, root, shift, 0, 1);
 		if (!node)
 			return -ENOMEM;
 
@@ -349,8 +334,7 @@ static inline bool radix_tree_shrink(struct radix_tree_root *root)
 	return shrunk;
 }
 
-static bool delete_node(struct radix_tree_root *root,
-			struct radix_tree_node *node)
+static bool delete_node(struct radix_tree_root *root, struct radix_tree_node *node)
 {
 	bool deleted = false;
 
@@ -358,8 +342,7 @@ static bool delete_node(struct radix_tree_root *root,
 		struct radix_tree_node *parent;
 
 		if (node->count) {
-			if (node_to_entry(node) ==
-					rcu_dereference_raw(root->xa_head))
+			if (node_to_entry(node) == rcu_dereference_raw(root->xa_head))
 				deleted |= radix_tree_shrink(root);
 			return deleted;
 		}
@@ -385,9 +368,7 @@ static bool delete_node(struct radix_tree_root *root,
 	return deleted;
 }
 
-static int __radix_tree_create(struct radix_tree_root *root,
-		unsigned long index, struct radix_tree_node **nodep,
-		void __rcu ***slotp)
+static int __radix_tree_create(struct radix_tree_root *root, unsigned long index, struct radix_tree_node **nodep, void __rcu ***slotp)
 {
 	struct radix_tree_node *node = NULL, *child;
 	void __rcu **slot = (void __rcu **)&root->xa_head;
@@ -410,8 +391,7 @@ static int __radix_tree_create(struct radix_tree_root *root,
 		shift -= RADIX_TREE_MAP_SHIFT;
 		if (child == NULL) {
 			
-			child = radix_tree_node_alloc(gfp, node, root, shift,
-							offset, 0);
+			child = radix_tree_node_alloc(gfp, node, root, shift, offset, 0);
 			if (!child)
 				return -ENOMEM;
 			rcu_assign_pointer(*slot, node_to_entry(child));
@@ -432,8 +412,7 @@ static int __radix_tree_create(struct radix_tree_root *root,
 	return 0;
 }
 
-static inline int insert_entries(struct radix_tree_node *node,
-		void __rcu **slot, void *item, bool replace)
+static inline int insert_entries(struct radix_tree_node *node, void __rcu **slot, void *item, bool replace)
 {
 	if (*slot)
 		return -EEXIST;
@@ -444,8 +423,7 @@ static inline int insert_entries(struct radix_tree_node *node,
 	return 1;
 }
 
-int radix_tree_insert(struct radix_tree_root *root, unsigned long index,
-			void *item)
+int radix_tree_insert(struct radix_tree_root *root, unsigned long index, void *item)
 {
 	struct radix_tree_node *node;
 	void __rcu **slot;
@@ -473,9 +451,7 @@ int radix_tree_insert(struct radix_tree_root *root, unsigned long index,
 	return 0;
 }
 
-void *__radix_tree_lookup(const struct radix_tree_root *root,
-			  unsigned long index, struct radix_tree_node **nodep,
-			  void __rcu ***slotp)
+void *__radix_tree_lookup(const struct radix_tree_root *root, unsigned long index, struct radix_tree_node **nodep, void __rcu ***slotp)
 {
 	struct radix_tree_node *node, *parent;
 	unsigned long maxindex;
@@ -512,8 +488,7 @@ void *radix_tree_lookup(const struct radix_tree_root *root, unsigned long index)
 	return __radix_tree_lookup(root, index, NULL, NULL);
 }
 
-static void replace_slot(void __rcu **slot, void *item,
-		struct radix_tree_node *node, int count, int values)
+static void replace_slot(void __rcu **slot, void *item, struct radix_tree_node *node, int count, int values)
 {
 	if (node && (count || values)) {
 		node->count += count;
@@ -522,18 +497,14 @@ static void replace_slot(void __rcu **slot, void *item,
 	rcu_assign_pointer(*slot, item);
 }
 
-static bool node_tag_get(const struct radix_tree_root *root,
-				const struct radix_tree_node *node,
-				unsigned int tag, unsigned int offset)
+static bool node_tag_get(const struct radix_tree_root *root, const struct radix_tree_node *node, unsigned int tag, unsigned int offset)
 {
 	if (node)
 		return tag_get(node, tag, offset);
 	return root_tag_get(root, tag);
 }
 
-static int calculate_count(struct radix_tree_root *root,
-				struct radix_tree_node *node, void __rcu **slot,
-				void *item, void *old)
+static int calculate_count(struct radix_tree_root *root, struct radix_tree_node *node, void __rcu **slot, void *item, void *old)
 {
 	if (is_idr(root)) {
 		unsigned offset = get_slot_offset(node, slot);
@@ -546,16 +517,13 @@ static int calculate_count(struct radix_tree_root *root,
 	return !!item - !!old;
 }
 
-void __radix_tree_replace(struct radix_tree_root *root,
-			  struct radix_tree_node *node,
-			  void __rcu **slot, void *item)
+void __radix_tree_replace(struct radix_tree_root *root, struct radix_tree_node *node, void __rcu **slot, void *item)
 {
 	void *old = rcu_dereference_raw(*slot);
 	int values = !!xa_is_value(item) - !!xa_is_value(old);
 	int count = calculate_count(root, node, slot, item, old);
 
-	WARN_ON_ONCE(!node && (slot != (void __rcu **)&root->xa_head) &&
-			(count || values));
+	WARN_ON_ONCE(!node && (slot != (void __rcu **)&root->xa_head) && (count || values));
 	replace_slot(slot, item, node, count, values);
 
 	if (!node)
@@ -564,16 +532,12 @@ void __radix_tree_replace(struct radix_tree_root *root,
 	delete_node(root, node);
 }
 
-void radix_tree_iter_replace(struct radix_tree_root *root,
-				const struct radix_tree_iter *iter,
-				void __rcu **slot, void *item)
+void radix_tree_iter_replace(struct radix_tree_root *root, const struct radix_tree_iter *iter, void __rcu **slot, void *item)
 {
 	__radix_tree_replace(root, iter->node, slot, item);
 }
 
-static void node_tag_clear(struct radix_tree_root *root,
-				struct radix_tree_node *node,
-				unsigned int tag, unsigned int offset)
+static void node_tag_clear(struct radix_tree_root *root, struct radix_tree_node *node, unsigned int tag, unsigned int offset)
 {
 	while (node) {
 		if (!tag_get(node, tag, offset))
@@ -591,14 +555,12 @@ static void node_tag_clear(struct radix_tree_root *root,
 }
 
 
-void radix_tree_iter_tag_clear(struct radix_tree_root *root,
-			const struct radix_tree_iter *iter, unsigned int tag)
+void radix_tree_iter_tag_clear(struct radix_tree_root *root, const struct radix_tree_iter *iter, unsigned int tag)
 {
 	node_tag_clear(root, iter->node, tag, iter_offset(iter));
 }
 
-int radix_tree_tag_get(const struct radix_tree_root *root,
-			unsigned long index, unsigned int tag)
+int radix_tree_tag_get(const struct radix_tree_root *root, unsigned long index, unsigned int tag)
 {
 	struct radix_tree_node *node, *parent;
 	unsigned long maxindex;
@@ -625,9 +587,7 @@ int radix_tree_tag_get(const struct radix_tree_root *root,
 	return 1;
 }
 
-static void set_iter_tags(struct radix_tree_iter *iter,
-				struct radix_tree_node *node, unsigned offset,
-				unsigned tag)
+static void set_iter_tags(struct radix_tree_iter *iter, struct radix_tree_node *node, unsigned offset, unsigned tag)
 {
 	unsigned tag_long = offset / BITS_PER_LONG;
 	unsigned tag_bit  = offset % BITS_PER_LONG;
@@ -656,8 +616,7 @@ static void set_iter_tags(struct radix_tree_iter *iter,
  * helpers __radix_tree_delete and node_tag_set deleted; symbol kept for the
  * radix-tree.h extern and the idr.c call site.
  */
-void *radix_tree_delete_item(struct radix_tree_root *root,
-			     unsigned long index, void *item)
+void *radix_tree_delete_item(struct radix_tree_root *root, unsigned long index, void *item)
 {
 	return NULL;
 }
@@ -674,9 +633,7 @@ void idr_preload(gfp_t gfp_mask)
 		local_lock(&radix_tree_preloads.lock);
 }
 
-void __rcu **idr_get_free(struct radix_tree_root *root,
-			      struct radix_tree_iter *iter, gfp_t gfp,
-			      unsigned long max)
+void __rcu **idr_get_free(struct radix_tree_root *root, struct radix_tree_iter *iter, gfp_t gfp, unsigned long max)
 {
 	struct radix_tree_node *node = NULL, *child;
 	void __rcu **slot = (void __rcu **)&root->xa_head;
@@ -704,8 +661,7 @@ void __rcu **idr_get_free(struct radix_tree_root *root,
 		shift -= RADIX_TREE_MAP_SHIFT;
 		if (child == NULL) {
 			
-			child = radix_tree_node_alloc(gfp, node, root, shift,
-							offset, 0);
+			child = radix_tree_node_alloc(gfp, node, root, shift, offset, 0);
 			if (!child)
 				return ERR_PTR(-ENOMEM);
 			all_tag_set(child, IDR_FREE);
@@ -718,8 +674,7 @@ void __rcu **idr_get_free(struct radix_tree_root *root,
 		node = entry_to_node(child);
 		offset = radix_tree_descend(node, &child, start);
 		if (!tag_get(node, IDR_FREE, offset)) {
-			offset = radix_tree_find_next_bit(node, IDR_FREE,
-							offset + 1);
+			offset = radix_tree_find_next_bit(node, IDR_FREE, offset + 1);
 			start = next_index(start, node, offset);
 			if (start > max || start == 0)
 				return ERR_PTR(-ENOSPC);
@@ -760,8 +715,5 @@ void __init radix_tree_init(void)
 	BUILD_BUG_ON(RADIX_TREE_MAX_TAGS + __GFP_BITS_SHIFT > 32);
 	BUILD_BUG_ON(ROOT_IS_IDR & ~GFP_ZONEMASK);
 	BUILD_BUG_ON(XA_CHUNK_SIZE > 255);
-	radix_tree_node_cachep = kmem_cache_create("radix_tree_node",
-			sizeof(struct radix_tree_node), 0,
-			SLAB_PANIC | SLAB_RECLAIM_ACCOUNT,
-			radix_tree_node_ctor);
+	radix_tree_node_cachep = kmem_cache_create("radix_tree_node", sizeof(struct radix_tree_node), 0, SLAB_PANIC | SLAB_RECLAIM_ACCOUNT, radix_tree_node_ctor);
 }

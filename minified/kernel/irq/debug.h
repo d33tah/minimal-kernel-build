@@ -13,16 +13,12 @@ static inline void print_irq_desc(unsigned int irq, struct irq_desc *desc)
 	if (!__ratelimit(&ratelimit))
 		return;
 
-	printk("irq %d, desc: %p, depth: %d, count: %d, unhandled: %d\n",
-		irq, desc, desc->depth, desc->irq_count, desc->irqs_unhandled);
-	printk("->handle_irq():  %p, %pS\n",
-		desc->handle_irq, desc->handle_irq);
-	printk("->irq_data.chip(): %p, %pS\n",
-		desc->irq_data.chip, desc->irq_data.chip);
+	printk("irq %d, desc: %p, depth: %d, count: %d, unhandled: %d\n", irq, desc, desc->depth, desc->irq_count, desc->irqs_unhandled);
+	printk("->handle_irq():  %p, %pS\n", desc->handle_irq, desc->handle_irq);
+	printk("->irq_data.chip(): %p, %pS\n", desc->irq_data.chip, desc->irq_data.chip);
 	printk("->action(): %p\n", desc->action);
 	if (desc->action) {
-		printk("->action->handler(): %p, %pS\n",
-			desc->action->handler, desc->action->handler);
+		printk("->action->handler(): %p, %pS\n", desc->action->handler, desc->action->handler);
 	}
 
 	___P(IRQ_LEVEL);

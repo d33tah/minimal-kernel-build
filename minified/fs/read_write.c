@@ -8,9 +8,7 @@
 
 static int warn_unsupported(struct file *file, const char *op)
 {
-	pr_warn_ratelimited(
-		"kernel %s not supported for file %pD4 (pid: %d comm: %.20s)\n",
-		op, file, current->pid, current->comm);
+	pr_warn_ratelimited( "kernel %s not supported for file %pD4 (pid: %d comm: %.20s)\n", op, file, current->pid, current->comm);
 	return -EINVAL;
 }
 
@@ -95,8 +93,7 @@ ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t 
 	return ret;
 }
 
-ssize_t kernel_write(struct file *file, const void *buf, size_t count,
-			    loff_t *pos)
+ssize_t kernel_write(struct file *file, const void *buf, size_t count, loff_t *pos)
 {
 	ssize_t ret;
 
@@ -130,8 +127,7 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 	return ret;
 }
 
-SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf,
-		size_t, count)
+SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf, size_t, count)
 {
 	struct fd f = fdget_pos(fd);
 	ssize_t ret = -EBADF;

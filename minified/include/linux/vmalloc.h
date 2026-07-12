@@ -33,12 +33,8 @@ struct vmap_area {
 extern void __init vmalloc_init(void);
 
 extern void *__vmalloc(unsigned long size, gfp_t gfp_mask) __alloc_size(1);
-extern void *__vmalloc_node_range(unsigned long size, unsigned long align,
-			unsigned long start, unsigned long end, gfp_t gfp_mask,
-			pgprot_t prot, unsigned long vm_flags, int node,
-			const void *caller) __alloc_size(1);
-void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask,
-		int node, const void *caller) __alloc_size(1);
+extern void *__vmalloc_node_range(unsigned long size, unsigned long align, unsigned long start, unsigned long end, gfp_t gfp_mask, pgprot_t prot, unsigned long vm_flags, int node, const void *caller) __alloc_size(1);
+void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask, int node, const void *caller) __alloc_size(1);
 
 extern void vfree(const void *addr);
 

@@ -10,8 +10,7 @@ static struct e820_table e820_table_init		__initdata;
 struct e820_table *e820_table __refdata			= &e820_table_init;
 
 
-static struct e820_entry *__e820__mapped_all(u64 start, u64 end,
-					     enum e820_type type)
+static struct e820_entry *__e820__mapped_all(u64 start, u64 end, enum e820_type type)
 {
 	int i;
 
@@ -48,8 +47,7 @@ static void __init __e820__range_add(struct e820_table *table, u64 start, u64 si
 	int x = table->nr_entries;
 
 	if (x >= ARRAY_SIZE(table->entries)) {
-		pr_err("too many entries; ignoring [mem %#010llx-%#010llx]\n",
-		       start, start + size - 1);
+		pr_err("too many entries; ignoring [mem %#010llx-%#010llx]\n", start, start + size - 1);
 		return;
 	}
 
@@ -408,8 +406,7 @@ static unsigned long __init e820_end_pfn(unsigned long limit_pfn, enum e820_type
 	if (last_pfn > max_arch_pfn)
 		last_pfn = max_arch_pfn;
 
-	pr_info("last_pfn = %#lx max_arch_pfn = %#lx\n",
-		last_pfn, max_arch_pfn);
+	pr_info("last_pfn = %#lx max_arch_pfn = %#lx\n", last_pfn, max_arch_pfn);
 	return last_pfn;
 }
 
@@ -455,8 +452,7 @@ void __init e820__reserve_setup_data(void)
 			indirect = (struct setup_indirect *)data->data;
 
 			if (indirect->type != SETUP_INDIRECT) {
-				e820__range_update(indirect->addr, indirect->len,
-						   E820_TYPE_RAM, E820_TYPE_RESERVED_KERN);
+				e820__range_update(indirect->addr, indirect->len, E820_TYPE_RAM, E820_TYPE_RESERVED_KERN);
 				/* kexec table update removed */
 			}
 		}

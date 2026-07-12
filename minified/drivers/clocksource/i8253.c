@@ -49,6 +49,5 @@ void __init clockevent_i8253_init(bool oneshot)
 {
 	i8253_clockevent.cpumask = cpumask_of(smp_processor_id());
 
-	clockevents_config_and_register(&i8253_clockevent, PIT_TICK_RATE,
-					0xF, 0x7FFF);
+	clockevents_config_and_register(&i8253_clockevent, PIT_TICK_RATE, 0xF, 0x7FFF);
 }

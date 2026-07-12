@@ -32,8 +32,7 @@ enum fixed_addresses {
 #define FIX_BTMAPS_SLOTS	8
 #define TOTAL_FIX_BTMAPS	(NR_FIX_BTMAPS * FIX_BTMAPS_SLOTS)
 	FIX_BTMAP_END =
-	 (__end_of_permanent_fixed_addresses ^
-	  (__end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS - 1)) &
+	 (__end_of_permanent_fixed_addresses ^ (__end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS - 1)) &
 	 -PTRS_PER_PTE
 	 ? __end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS -
 	   (__end_of_permanent_fixed_addresses & (TOTAL_FIX_BTMAPS - 1))
@@ -49,11 +48,9 @@ enum fixed_addresses {
 #define FIXADDR_TOT_START	(FIXADDR_TOP - FIXADDR_TOT_SIZE)
 
 
-void native_set_fixmap(unsigned   idx,
-		       phys_addr_t phys, pgprot_t flags);
+void native_set_fixmap(unsigned   idx, phys_addr_t phys, pgprot_t flags);
 
-static inline void __set_fixmap(enum fixed_addresses idx,
-				phys_addr_t phys, pgprot_t flags)
+static inline void __set_fixmap(enum fixed_addresses idx, phys_addr_t phys, pgprot_t flags)
 {
 	native_set_fixmap(idx, phys, flags);
 }
@@ -85,8 +82,7 @@ static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 #define __late_set_fixmap(idx, phys, flags) __set_fixmap(idx, phys, flags)
 #define __late_clear_fixmap(idx) __set_fixmap(idx, 0, __pgprot(0))
 
-void __early_set_fixmap(enum fixed_addresses idx,
-			phys_addr_t phys, pgprot_t flags);
+void __early_set_fixmap(enum fixed_addresses idx, phys_addr_t phys, pgprot_t flags);
 
 #endif  
 #endif  

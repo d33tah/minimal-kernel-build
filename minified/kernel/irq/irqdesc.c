@@ -76,8 +76,7 @@ int __init early_irq_init(void)
 	struct irq_desc *desc;
 
 	initcnt = arch_probe_nr_irqs();
-	printk(KERN_INFO "NR_IRQS: %d, nr_irqs: %d, preallocated irqs: %d\n",
-	       NR_IRQS, nr_irqs, initcnt);
+	printk(KERN_INFO "NR_IRQS: %d, nr_irqs: %d, preallocated irqs: %d\n", NR_IRQS, nr_irqs, initcnt);
 
 	if (WARN_ON(nr_irqs > IRQ_BITMAP_BITS))
 		nr_irqs = IRQ_BITMAP_BITS;
@@ -98,19 +97,16 @@ int __init early_irq_init(void)
 
 
 struct irq_desc *
-__irq_get_desc_lock(unsigned int irq, unsigned long *flags, bool bus,
-		    unsigned int check)
+__irq_get_desc_lock(unsigned int irq, unsigned long *flags, bool bus, unsigned int check)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
 
 	if (desc) {
 		if (check & _IRQ_DESC_CHECK) {
-			if ((check & _IRQ_DESC_PERCPU) &&
-			    !irq_settings_is_per_cpu_devid(desc))
+			if ((check & _IRQ_DESC_PERCPU) && !irq_settings_is_per_cpu_devid(desc))
 				return NULL;
 
-			if (!(check & _IRQ_DESC_PERCPU) &&
-			    irq_settings_is_per_cpu_devid(desc))
+			if (!(check & _IRQ_DESC_PERCPU) && irq_settings_is_per_cpu_devid(desc))
 				return NULL;
 		}
 

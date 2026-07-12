@@ -84,8 +84,7 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack) = {
 static void set_df_gdt_entry(unsigned int cpu)
 {
 	 
-	__set_tss_desc(cpu, GDT_ENTRY_DOUBLEFAULT_TSS,
-		       &get_cpu_entry_area(cpu)->doublefault_stack.tss);
+	__set_tss_desc(cpu, GDT_ENTRY_DOUBLEFAULT_TSS, &get_cpu_entry_area(cpu)->doublefault_stack.tss);
 
 }
 
@@ -95,9 +94,7 @@ void doublefault_init_cpu_tss(void)
 	struct cpu_entry_area *cea = get_cpu_entry_area(cpu);
 
 	 
-        this_cpu_write(doublefault_stack.tss.sp,
-                       (unsigned long)&cea->doublefault_stack.stack +
-                       sizeof(doublefault_stack.stack));
+        this_cpu_write(doublefault_stack.tss.sp, (unsigned long)&cea->doublefault_stack.stack + sizeof(doublefault_stack.stack));
 
 	set_df_gdt_entry(cpu);
 }

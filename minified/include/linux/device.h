@@ -69,8 +69,7 @@ int __must_check device_add(struct device *dev);
    root_device_unregister removed - unused */
 
 __printf(5, 6) struct device *
-device_create(struct class *cls, struct device *parent, dev_t devt,
-	      void *drvdata, const char *fmt, ...);
+device_create(struct class *cls, struct device *parent, dev_t devt, void *drvdata, const char *fmt, ...);
 /* device_create_with_groups removed - sole caller switched to device_create */
 
 

@@ -25,8 +25,7 @@ static bool pagevec_add_and_need_flush(struct pagevec *pvec, struct page *page)
 {
 	bool ret = false;
 
-	if (!pagevec_add(pvec, page) || PageCompound(page) ||
-			lru_cache_disabled())
+	if (!pagevec_add(pvec, page) || PageCompound(page) || lru_cache_disabled())
 		ret = true;
 
 	return ret;
@@ -102,8 +101,7 @@ void folio_add_lru(struct folio *folio)
 	local_unlock(&lru_pvecs.lock);
 }
 
-void lru_cache_add_inactive_or_unevictable(struct page *page,
-					 struct vm_area_struct *vma)
+void lru_cache_add_inactive_or_unevictable(struct page *page, struct vm_area_struct *vma)
 {
 	VM_BUG_ON_PAGE(PageLRU(page), page);
 

@@ -13,8 +13,7 @@ struct pt_regs;
 
 #define swap_ex_entry_fixup(a, b, tmp, delta)				do {									(a)->fixup = (b)->fixup + (delta);				(b)->fixup = (tmp).fixup - (delta);				(a)->data = (b)->data;						(b)->data = (tmp).data;					} while (0)
 
-extern int fixup_exception(struct pt_regs *regs, int trapnr,
-			   unsigned long error_code, unsigned long fault_addr);
+extern int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code, unsigned long fault_addr);
 extern void early_fixup_exception(struct pt_regs *regs, int trapnr);
 
 static inline void __noreturn ex_handler_msr_mce(struct pt_regs *regs, bool wrmsr)
@@ -23,7 +22,6 @@ static inline void __noreturn ex_handler_msr_mce(struct pt_regs *regs, bool wrms
 		cpu_relax();
 }
 
-static inline bool ex_handler_bpf(const struct exception_table_entry *x,
-				  struct pt_regs *regs) { return false; }
+static inline bool ex_handler_bpf(const struct exception_table_entry *x, struct pt_regs *regs) { return false; }
 
 #endif

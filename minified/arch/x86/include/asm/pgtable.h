@@ -267,13 +267,11 @@ static inline int pmd_bad(pmd_t pmd)
 void init_mem_mapping(void);
 void early_alloc_pgt_buf(void);
 void __init poking_init(void);
-unsigned long init_memory_mapping(unsigned long start,
-				  unsigned long end, pgprot_t prot);
+unsigned long init_memory_mapping(unsigned long start, unsigned long end, pgprot_t prot);
 
 
  
-static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
-			      pte_t *ptep, pte_t pte)
+static inline void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_t pte)
 {
 	set_pte(ptep, pte);
 }
@@ -283,9 +281,7 @@ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
  
 struct vm_area_struct;
 
-extern int ptep_set_access_flags(struct vm_area_struct *vma,
-				 unsigned long address, pte_t *ptep,
-				 pte_t entry, int dirty);
+extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address, pte_t *ptep, pte_t entry, int dirty);
 
 /* ptep_test_and_clear_young / ptep_clear_flush_young removed - no callers */
 

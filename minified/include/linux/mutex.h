@@ -28,8 +28,7 @@ struct mutex {
 
 #define DEFINE_MUTEX(mutexname) 	struct mutex mutexname = __MUTEX_INITIALIZER(mutexname)
 
-extern void __mutex_init(struct mutex *lock, const char *name,
-			 struct lock_class_key *key);
+extern void __mutex_init(struct mutex *lock, const char *name, struct lock_class_key *key);
 
 extern void mutex_lock(struct mutex *lock);
 extern int __must_check mutex_lock_interruptible(struct mutex *lock);

@@ -18,8 +18,7 @@ static struct file_system_type **find_filesystem(const char *name, unsigned len)
 {
 	struct file_system_type **p;
 	for (p = &file_systems; *p; p = &(*p)->next)
-		if (strncmp((*p)->name, name, len) == 0 &&
-		    !(*p)->name[len])
+		if (strncmp((*p)->name, name, len) == 0 && !(*p)->name[len])
 			break;
 	return p;
 }

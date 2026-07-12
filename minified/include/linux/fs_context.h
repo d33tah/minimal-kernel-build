@@ -62,21 +62,16 @@ struct fs_context_operations {
 	int (*get_tree)(struct fs_context *fc);
 };
 
-extern struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
-						unsigned int sb_flags);
+extern struct fs_context *fs_context_for_mount(struct file_system_type *fs_type, unsigned int sb_flags);
 
 extern int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param);
-extern int vfs_parse_fs_string(struct fs_context *fc, const char *key,
-			       const char *value, size_t v_size);
+extern int vfs_parse_fs_string(struct fs_context *fc, const char *key, const char *value, size_t v_size);
 extern int generic_parse_monolithic(struct fs_context *fc, void *data);
 extern int vfs_get_tree(struct fs_context *fc);
 extern void put_fs_context(struct fs_context *fc);
-extern int vfs_parse_fs_param_source(struct fs_context *fc,
-				     struct fs_parameter *param);
+extern int vfs_parse_fs_param_source(struct fs_context *fc, struct fs_parameter *param);
 
-extern int get_tree_nodev(struct fs_context *fc,
-			 int (*fill_super)(struct super_block *sb,
-					   struct fs_context *fc));
+extern int get_tree_nodev(struct fs_context *fc, int (*fill_super)(struct super_block *sb, struct fs_context *fc));
 
 struct fc_log {
 	refcount_t	usage;

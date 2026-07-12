@@ -113,9 +113,7 @@ restart:
 		h->action(h);
 		 
 		if (unlikely(prev_count != preempt_count())) {
-			pr_err("huh, entered softirq %u %s %p with preempt_count %08x, exited with %08x?\n",
-			       vec_nr, softirq_to_name[vec_nr], h->action,
-			       prev_count, preempt_count());
+			pr_err("huh, entered softirq %u %s %p with preempt_count %08x, exited with %08x?\n", vec_nr, softirq_to_name[vec_nr], h->action, prev_count, preempt_count());
 			preempt_count_set(prev_count);
 		}
 		h++;
@@ -126,8 +124,7 @@ restart:
 
 	pending = local_softirq_pending();
 	if (pending) {
-		if (time_before(jiffies, end) && !need_resched() &&
-		    --max_restart)
+		if (time_before(jiffies, end) && !need_resched() && --max_restart)
 			goto restart;
 	}
 

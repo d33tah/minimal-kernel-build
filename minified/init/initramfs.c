@@ -9,8 +9,7 @@
 static __initdata bool csum_present;
 static __initdata u32 io_csum;
 
-static ssize_t __init xwrite(struct file *file, const unsigned char *p,
-		size_t count, loff_t *pos)
+static ssize_t __init xwrite(struct file *file, const unsigned char *p, size_t count, loff_t *pos)
 {
 	ssize_t out = 0;
 
@@ -246,8 +245,7 @@ static void __init clean_path(char *path, umode_t fmode)
 {
 	struct kstat st;
 
-	if (!init_stat(path, &st, AT_SYMLINK_NOFOLLOW) &&
-	    (st.mode ^ fmode) & S_IFMT) {
+	if (!init_stat(path, &st, AT_SYMLINK_NOFOLLOW) && (st.mode ^ fmode) & S_IFMT) {
 		if (S_ISDIR(st.mode))
 			init_rmdir(path);
 		else
@@ -328,8 +326,7 @@ static int __init do_name(void)
 		init_chown(collected, uid, gid, 0);
 		init_chmod(collected, mode);
 		dir_add(collected, mtime);
-	} else if (S_ISBLK(mode) || S_ISCHR(mode) ||
-		   S_ISFIFO(mode) || S_ISSOCK(mode)) {
+	} else if (S_ISBLK(mode) || S_ISCHR(mode) || S_ISFIFO(mode) || S_ISSOCK(mode)) {
 		if (maybe_link() == 0) {
 			init_mknod(collected, mode, rdev);
 			init_chown(collected, uid, gid, 0);
@@ -465,8 +462,7 @@ static void __init do_populate_rootfs(void)
 done:
 	 
 	if (initrd_start)
-		free_reserved_area((void *)initrd_start, (void *)initrd_end,
-				POISON_FREE_INITMEM, "initrd");
+		free_reserved_area((void *)initrd_start, (void *)initrd_end, POISON_FREE_INITMEM, "initrd");
 	initrd_start = 0;
 	initrd_end = 0;
 

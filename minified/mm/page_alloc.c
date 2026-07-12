@@ -42,8 +42,7 @@ static inline void set_pcppage_migratetype(struct page *page, int migratetype)
 	page->index = migratetype;
 }
 
-static void __free_pages_ok(struct page *page, unsigned int order,
-			    fpi_t fpi_flags);
+static void __free_pages_ok(struct page *page, unsigned int order, fpi_t fpi_flags);
 
 static char * const zone_names[MAX_NR_ZONES] = {
 	 "Normal",
@@ -74,9 +73,7 @@ static inline int pfn_to_bitidx(const struct page *page, unsigned long pfn)
 }
 
 static __always_inline
-unsigned long __get_pfnblock_flags_mask(const struct page *page,
-					unsigned long pfn,
-					unsigned long mask)
+unsigned long __get_pfnblock_flags_mask(const struct page *page, unsigned long pfn, unsigned long mask)
 {
 	unsigned long *bitmap;
 	unsigned long bitidx, word_bitidx;
@@ -91,15 +88,12 @@ unsigned long __get_pfnblock_flags_mask(const struct page *page,
 	return (word >> bitidx) & mask;
 }
 
-static __always_inline int get_pfnblock_migratetype(const struct page *page,
-					unsigned long pfn)
+static __always_inline int get_pfnblock_migratetype(const struct page *page, unsigned long pfn)
 {
 	return __get_pfnblock_flags_mask(page, pfn, MIGRATETYPE_MASK);
 }
 
-void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
-					unsigned long pfn,
-					unsigned long mask)
+void set_pfnblock_flags_mask(struct page *page, unsigned long flags, unsigned long pfn, unsigned long mask)
 {
 	unsigned long *bitmap;
 	unsigned long bitidx, word_bitidx;
@@ -178,8 +172,7 @@ static inline void set_buddy_order(struct page *page, unsigned int order)
 }
 
 
-static inline void add_to_free_list(struct page *page, struct zone *zone,
-				    unsigned int order, int migratetype)
+static inline void add_to_free_list(struct page *page, struct zone *zone, unsigned int order, int migratetype)
 {
 	struct free_area *area = &zone->free_area[order];
 
@@ -187,8 +180,7 @@ static inline void add_to_free_list(struct page *page, struct zone *zone,
 	area->nr_free++;
 }
 
-static inline void add_to_free_list_tail(struct page *page, struct zone *zone,
-					 unsigned int order, int migratetype)
+static inline void add_to_free_list_tail(struct page *page, struct zone *zone, unsigned int order, int migratetype)
 {
 	struct free_area *area = &zone->free_area[order];
 
@@ -196,16 +188,14 @@ static inline void add_to_free_list_tail(struct page *page, struct zone *zone,
 	area->nr_free++;
 }
 
-static inline void move_to_free_list(struct page *page, struct zone *zone,
-				     unsigned int order, int migratetype)
+static inline void move_to_free_list(struct page *page, struct zone *zone, unsigned int order, int migratetype)
 {
 	struct free_area *area = &zone->free_area[order];
 
 	list_move_tail(&page->lru, &area->free_list[migratetype]);
 }
 
-static inline void del_page_from_free_list(struct page *page, struct zone *zone,
-					   unsigned int order)
+static inline void del_page_from_free_list(struct page *page, struct zone *zone, unsigned int order)
 {
 	list_del(&page->lru);
 	__ClearPageBuddy(page);
@@ -213,9 +203,7 @@ static inline void del_page_from_free_list(struct page *page, struct zone *zone,
 	zone->free_area[order].nr_free--;
 }
 
-static inline void __free_one_page(struct page *page,
-		struct zone *zone, unsigned int order,
-		int migratetype, fpi_t fpi_flags)
+static inline void __free_one_page(struct page *page, struct zone *zone, unsigned int order, int migratetype, fpi_t fpi_flags)
 {
 	/* Simplified buddy allocator: just add to free list without merging */
 	__mod_zone_freepage_state(zone, 1 << order, migratetype);
@@ -229,8 +217,7 @@ static inline void __free_one_page(struct page *page,
 }
 
 
-static __always_inline bool free_pages_prepare(struct page *page,
-			unsigned int order)
+static __always_inline bool free_pages_prepare(struct page *page, unsigned int order)
 {
 	/* Stub: minimal page freeing for simple system */
 	if (PageMappingFlags(page))
@@ -241,8 +228,7 @@ static __always_inline bool free_pages_prepare(struct page *page,
 	return true;
 }
 
-static void __meminit __init_single_page(struct page *page, unsigned long pfn,
-				unsigned long zone, int nid)
+static void __meminit __init_single_page(struct page *page, unsigned long pfn, unsigned long zone, int nid)
 {
 	mm_zero_struct_page(page);
 	set_page_links(page, zone, nid, pfn);
@@ -270,8 +256,7 @@ void __meminit reserve_bootmem_region(phys_addr_t start, phys_addr_t end)
 	}
 }
 
-static void __free_pages_ok(struct page *page, unsigned int order,
-			    fpi_t fpi_flags)
+static void __free_pages_ok(struct page *page, unsigned int order, fpi_t fpi_flags)
 {
 	unsigned long flags;
 	int migratetype;
@@ -310,8 +295,7 @@ void __free_pages_core(struct page *page, unsigned int order)
 	__free_pages_ok(page, order, FPI_TO_TAIL | FPI_SKIP_KASAN_POISON);
 }
 
-void __init memblock_free_pages(struct page *page, unsigned long pfn,
-							unsigned int order)
+void __init memblock_free_pages(struct page *page, unsigned long pfn, unsigned int order)
 {
 	__free_pages_core(page, order);
 }
@@ -324,8 +308,7 @@ void __init page_alloc_init_late(void)
 	/* Stub: skip memory shuffling for minimal system */
 }
 
-static void prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags,
-							unsigned int alloc_flags)
+static void prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags, unsigned int alloc_flags)
 {
 	/* folded sole caller of post_alloc_hook(): minimal post-alloc setup */
 	set_page_private(page, 0);
@@ -348,8 +331,7 @@ static void prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags
 }
 
 static __always_inline
-struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
-						int migratetype)
+struct page *__rmqueue_smallest(struct zone *zone, unsigned int order, int migratetype)
 {
 	unsigned int current_order;
 	struct free_area *area;
@@ -386,8 +368,7 @@ static int fallbacks[MIGRATE_TYPES][3] = {
 	[MIGRATE_RECLAIMABLE] = { MIGRATE_UNMOVABLE,   MIGRATE_MOVABLE,   MIGRATE_TYPES },
 };
 
-static void steal_suitable_fallback(struct zone *zone, struct page *page,
-		unsigned int alloc_flags, int start_type)
+static void steal_suitable_fallback(struct zone *zone, struct page *page, unsigned int alloc_flags, int start_type)
 {
 	/* Minimal stub: just move page to target type */
 	unsigned int current_order = buddy_order(page);
@@ -418,8 +399,7 @@ static int find_suitable_fallback(struct free_area *area, int migratetype)
 
 
 static __always_inline bool
-__rmqueue_fallback(struct zone *zone, int order, int start_migratetype,
-						unsigned int alloc_flags)
+__rmqueue_fallback(struct zone *zone, int order, int start_migratetype, unsigned int alloc_flags)
 {
 	/* Simplified fallback: try all orders, take first match */
 	struct free_area *area;
@@ -441,8 +421,7 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype,
 }
 
 static __always_inline struct page *
-__rmqueue(struct zone *zone, unsigned int order, int migratetype,
-						unsigned int alloc_flags)
+__rmqueue(struct zone *zone, unsigned int order, int migratetype, unsigned int alloc_flags)
 {
 	struct page *page;
 
@@ -455,17 +434,14 @@ retry:
 	return page;
 }
 
-static int rmqueue_bulk(struct zone *zone, unsigned int order,
-			unsigned long count, struct list_head *list,
-			int migratetype, unsigned int alloc_flags)
+static int rmqueue_bulk(struct zone *zone, unsigned int order, unsigned long count, struct list_head *list, int migratetype, unsigned int alloc_flags)
 {
 	int i, allocated = 0;
 
 	
 	spin_lock(&zone->lock);
 	for (i = 0; i < count; ++i) {
-		struct page *page = __rmqueue(zone, order, migratetype,
-								alloc_flags);
+		struct page *page = __rmqueue(zone, order, migratetype, alloc_flags);
 		if (unlikely(page == NULL))
 			break;
 
@@ -480,8 +456,7 @@ static int rmqueue_bulk(struct zone *zone, unsigned int order,
 }
 
 
-static bool free_unref_page_prepare(struct page *page, unsigned long pfn,
-							unsigned int order)
+static bool free_unref_page_prepare(struct page *page, unsigned long pfn, unsigned int order)
 {
 	int migratetype;
 
@@ -493,8 +468,7 @@ static bool free_unref_page_prepare(struct page *page, unsigned long pfn,
 	return true;
 }
 
-static void free_unref_page_commit(struct page *page, int migratetype,
-				   unsigned int order)
+static void free_unref_page_commit(struct page *page, int migratetype, unsigned int order)
 {
 	struct zone *zone = page_zone(page);
 	struct per_cpu_pages *pcp;
@@ -525,11 +499,7 @@ void free_unref_page(struct page *page, unsigned int order)
 }
 
 static inline
-struct page *__rmqueue_pcplist(struct zone *zone, unsigned int order,
-			int migratetype,
-			unsigned int alloc_flags,
-			struct per_cpu_pages *pcp,
-			struct list_head *list)
+struct page *__rmqueue_pcplist(struct zone *zone, unsigned int order, int migratetype, unsigned int alloc_flags, struct per_cpu_pages *pcp, struct list_head *list)
 {
 	struct page *page;
 
@@ -538,9 +508,7 @@ struct page *__rmqueue_pcplist(struct zone *zone, unsigned int order,
 
 		if (batch > 1)
 			batch = max(batch >> order, 2);
-		rmqueue_bulk(zone, order,
-				batch, list,
-				migratetype, alloc_flags);
+		rmqueue_bulk(zone, order, batch, list, migratetype, alloc_flags);
 
 		if (unlikely(list_empty(list)))
 			return NULL;
@@ -552,9 +520,7 @@ struct page *__rmqueue_pcplist(struct zone *zone, unsigned int order,
 	return page;
 }
 
-static struct page *rmqueue_pcplist(struct zone *preferred_zone,
-			struct zone *zone, unsigned int order,
-			int migratetype, unsigned int alloc_flags)
+static struct page *rmqueue_pcplist(struct zone *preferred_zone, struct zone *zone, unsigned int order, int migratetype, unsigned int alloc_flags)
 {
 	struct per_cpu_pages *pcp;
 	struct list_head *list;
@@ -571,10 +537,7 @@ static struct page *rmqueue_pcplist(struct zone *preferred_zone,
 }
 
 static inline
-struct page *rmqueue(struct zone *preferred_zone,
-			struct zone *zone, unsigned int order,
-			gfp_t gfp_flags, unsigned int alloc_flags,
-			int migratetype)
+struct page *rmqueue(struct zone *preferred_zone, struct zone *zone, unsigned int order, gfp_t gfp_flags, unsigned int alloc_flags, int migratetype)
 {
 	unsigned long flags;
 	struct page *page;
@@ -595,8 +558,7 @@ struct page *rmqueue(struct zone *preferred_zone,
 		if (!page)
 			goto failed;
 	}
-	__mod_zone_freepage_state(zone, -(1 << order),
-				  get_pcppage_migratetype(page));
+	__mod_zone_freepage_state(zone, -(1 << order), get_pcppage_migratetype(page));
 	spin_unlock_irqrestore(&zone->lock, flags);
 
 out:
@@ -630,8 +592,7 @@ alloc_flags_nofragment(struct zone *zone, gfp_t gfp_mask)
 }
 
 static struct page *
-get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags,
-						const struct alloc_context *ac)
+get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags, const struct alloc_context *ac)
 {
 	/* Minimal stub: simplified zone iteration */
 	struct zoneref *z;
@@ -643,12 +604,10 @@ get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags,
 		unsigned long mark = wmark_pages(zone, alloc_flags & ALLOC_WMARK_MASK);
 
 		/* Skip watermark check if NO_WATERMARKS flag set */
-		if (!(alloc_flags & ALLOC_NO_WATERMARKS) &&
-		    !zone_watermark_fast(zone, mark))
+		if (!(alloc_flags & ALLOC_NO_WATERMARKS) && !zone_watermark_fast(zone, mark))
 			continue;
 
-		page = rmqueue(ac->preferred_zoneref->zone, zone, order,
-				gfp_mask, alloc_flags, ac->migratetype);
+		page = rmqueue(ac->preferred_zoneref->zone, zone, order, gfp_mask, alloc_flags, ac->migratetype);
 		if (page) {
 			prep_new_page(page, order, gfp_mask, alloc_flags);
 			return page;
@@ -675,10 +634,7 @@ bool gfp_pfmemalloc_allowed(gfp_t gfp_mask)
 }
 
 
-static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
-		int preferred_nid,
-		struct alloc_context *ac, gfp_t *alloc_gfp,
-		unsigned int *alloc_flags)
+static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order, int preferred_nid, struct alloc_context *ac, gfp_t *alloc_gfp, unsigned int *alloc_flags)
 {
 	ac->highest_zoneidx = gfp_zone(gfp_mask);
 	ac->zonelist = node_zonelist(preferred_nid, gfp_mask);
@@ -687,8 +643,7 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 	might_sleep_if(gfp_mask & __GFP_DIRECT_RECLAIM);
 
 
-	ac->preferred_zoneref = first_zones_zonelist(ac->zonelist,
-					ac->highest_zoneidx);
+	ac->preferred_zoneref = first_zones_zonelist(ac->zonelist, ac->highest_zoneidx);
 
 	return true;
 }
@@ -708,8 +663,7 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid)
 	
 	gfp = current_gfp_context(gfp);
 	alloc_gfp = gfp;
-	if (!prepare_alloc_pages(gfp, order, preferred_nid, &ac,
-			&alloc_gfp, &alloc_flags))
+	if (!prepare_alloc_pages(gfp, order, preferred_nid, &ac, &alloc_gfp, &alloc_flags))
 		return NULL;
 
 	
@@ -723,8 +677,7 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid)
 
 struct folio *__folio_alloc(gfp_t gfp, unsigned int order, int preferred_nid)
 {
-	struct page *page = __alloc_pages(gfp | __GFP_COMP, order,
-			preferred_nid);
+	struct page *page = __alloc_pages(gfp | __GFP_COMP, order, preferred_nid);
 
 	return (struct folio *)page;
 }
@@ -868,10 +821,7 @@ void __ref build_all_zonelists(pg_data_t *pgdat)
 		page_group_by_mobility_disabled = 0;
 }
 
-static void __meminit memmap_init_range(unsigned long size, int nid, unsigned long zone,
-		unsigned long start_pfn, unsigned long zone_end_pfn,
-		enum meminit_context context,
-		struct vmem_altmap *altmap, int migratetype)
+static void __meminit memmap_init_range(unsigned long size, int nid, unsigned long zone, unsigned long start_pfn, unsigned long zone_end_pfn, enum meminit_context context, struct vmem_altmap *altmap, int migratetype)
 {
 	unsigned long pfn, end_pfn = start_pfn + size;
 	struct page *page;
@@ -889,12 +839,9 @@ static void __meminit memmap_init_range(unsigned long size, int nid, unsigned lo
 		if (IS_ALIGNED(pfn, pageblock_nr_pages)) {
 			int mt = migratetype;
 
-			if (unlikely(page_group_by_mobility_disabled &&
-				     mt < MIGRATE_PCPTYPES))
+			if (unlikely(page_group_by_mobility_disabled && mt < MIGRATE_PCPTYPES))
 				mt = MIGRATE_UNMOVABLE;
-			set_pfnblock_flags_mask(page, (unsigned long)mt,
-						page_to_pfn(page),
-						MIGRATETYPE_MASK);
+			set_pfnblock_flags_mask(page, (unsigned long)mt, page_to_pfn(page), MIGRATETYPE_MASK);
 			cond_resched();
 		}
 		pfn++;
@@ -910,9 +857,7 @@ static void __meminit zone_init_free_lists(struct zone *zone)
 	}
 }
 
-static void __init init_unavailable_range(unsigned long spfn,
-					  unsigned long epfn,
-					  int zone, int node)
+static void __init init_unavailable_range(unsigned long spfn, unsigned long epfn, int zone, int node)
 {
 	unsigned long pfn;
 
@@ -928,10 +873,7 @@ static void __init init_unavailable_range(unsigned long spfn,
 
 }
 
-static void __init memmap_init_zone_range(struct zone *zone,
-					  unsigned long start_pfn,
-					  unsigned long end_pfn,
-					  unsigned long *hole_pfn)
+static void __init memmap_init_zone_range(struct zone *zone, unsigned long start_pfn, unsigned long end_pfn, unsigned long *hole_pfn)
 {
 	unsigned long zone_start_pfn = zone->zone_start_pfn;
 	unsigned long zone_end_pfn = zone_start_pfn + zone->spanned_pages;
@@ -943,8 +885,7 @@ static void __init memmap_init_zone_range(struct zone *zone,
 	if (start_pfn >= end_pfn)
 		return;
 
-	memmap_init_range(end_pfn - start_pfn, nid, zone_id, start_pfn,
-			  zone_end_pfn, MEMINIT_EARLY, NULL, MIGRATE_MOVABLE);
+	memmap_init_range(end_pfn - start_pfn, nid, zone_id, start_pfn, zone_end_pfn, MEMINIT_EARLY, NULL, MIGRATE_MOVABLE);
 
 	if (*hole_pfn < start_pfn)
 		init_unavailable_range(*hole_pfn, start_pfn, zone_id, nid);
@@ -967,8 +908,7 @@ static void __init memmap_init(void)
 			if (!populated_zone(zone))
 				continue;
 
-			memmap_init_zone_range(zone, start_pfn, end_pfn,
-					       &hole_pfn);
+			memmap_init_zone_range(zone, start_pfn, end_pfn, &hole_pfn);
 			zone_id = j;
 		}
 	}
@@ -988,8 +928,7 @@ static int zone_highsize(struct zone *zone, int batch, int cpu_online)
 	return batch << 2;
 }
 
-static void pageset_update(struct per_cpu_pages *pcp, unsigned long high,
-		unsigned long batch)
+static void pageset_update(struct per_cpu_pages *pcp, unsigned long high, unsigned long batch)
 {
 	WRITE_ONCE(pcp->batch, batch);
 }
@@ -1007,8 +946,7 @@ static void per_cpu_pages_init(struct per_cpu_pages *pcp)
 	pcp->batch = BOOT_PAGESET_BATCH;
 }
 
-static void __zone_set_pageset_high_and_batch(struct zone *zone, unsigned long high,
-		unsigned long batch)
+static void __zone_set_pageset_high_and_batch(struct zone *zone, unsigned long high, unsigned long batch)
 {
 	struct per_cpu_pages *pcp;
 	int cpu;
@@ -1026,8 +964,7 @@ static void zone_set_pageset_high_and_batch(struct zone *zone, int cpu_online)
 	new_batch = max(1, zone_batchsize(zone));
 	new_high = zone_highsize(zone, new_batch, cpu_online);
 
-	if (zone->pageset_high == new_high &&
-	    zone->pageset_batch == new_batch)
+	if (zone->pageset_high == new_high && zone->pageset_batch == new_batch)
 		return;
 
 	zone->pageset_high = new_high;
@@ -1068,9 +1005,7 @@ static __meminit void zone_pcp_init(struct zone *zone)
 
 }
 
-void __meminit init_currently_empty_zone(struct zone *zone,
-					unsigned long zone_start_pfn,
-					unsigned long size)
+void __meminit init_currently_empty_zone(struct zone *zone, unsigned long zone_start_pfn, unsigned long size)
 {
 	struct pglist_data *pgdat = zone->zone_pgdat;
 	int zone_idx = zone_idx(zone) + 1;
@@ -1083,8 +1018,7 @@ void __meminit init_currently_empty_zone(struct zone *zone,
 	zone_init_free_lists(zone);
 }
 
-static void __init get_pfn_range_for_nid(unsigned int nid,
-			unsigned long *start_pfn, unsigned long *end_pfn)
+static void __init get_pfn_range_for_nid(unsigned int nid, unsigned long *start_pfn, unsigned long *end_pfn)
 {
 	unsigned long this_start_pfn, this_end_pfn;
 	int i;
@@ -1101,12 +1035,7 @@ static void __init get_pfn_range_for_nid(unsigned int nid,
 		*start_pfn = 0;
 }
 
-static unsigned long __init zone_spanned_pages_in_node(int nid,
-					unsigned long zone_type,
-					unsigned long node_start_pfn,
-					unsigned long node_end_pfn,
-					unsigned long *zone_start_pfn,
-					unsigned long *zone_end_pfn)
+static unsigned long __init zone_spanned_pages_in_node(int nid, unsigned long zone_type, unsigned long node_start_pfn, unsigned long node_end_pfn, unsigned long *zone_start_pfn, unsigned long *zone_end_pfn)
 {
 	unsigned long zone_low = arch_zone_lowest_possible_pfn[zone_type];
 	unsigned long zone_high = arch_zone_highest_possible_pfn[zone_type];
@@ -1130,9 +1059,7 @@ static unsigned long __init zone_spanned_pages_in_node(int nid,
 	return *zone_end_pfn - *zone_start_pfn;
 }
 
-static unsigned long __init __absent_pages_in_range(int nid,
-				unsigned long range_start_pfn,
-				unsigned long range_end_pfn)
+static unsigned long __init __absent_pages_in_range(int nid, unsigned long range_start_pfn, unsigned long range_end_pfn)
 {
 	unsigned long nr_absent = range_end_pfn - range_start_pfn;
 	unsigned long start_pfn, end_pfn;
@@ -1147,10 +1074,7 @@ static unsigned long __init __absent_pages_in_range(int nid,
 }
 
 
-static unsigned long __init zone_absent_pages_in_node(int nid,
-					unsigned long zone_type,
-					unsigned long node_start_pfn,
-					unsigned long node_end_pfn)
+static unsigned long __init zone_absent_pages_in_node(int nid, unsigned long zone_type, unsigned long node_start_pfn, unsigned long node_end_pfn)
 {
 	unsigned long zone_low = arch_zone_lowest_possible_pfn[zone_type];
 	unsigned long zone_high = arch_zone_highest_possible_pfn[zone_type];
@@ -1170,9 +1094,7 @@ static unsigned long __init zone_absent_pages_in_node(int nid,
 	return nr_absent;
 }
 
-static void __init calculate_node_totalpages(struct pglist_data *pgdat,
-						unsigned long node_start_pfn,
-						unsigned long node_end_pfn)
+static void __init calculate_node_totalpages(struct pglist_data *pgdat, unsigned long node_start_pfn, unsigned long node_end_pfn)
 {
 	unsigned long totalpages = 0;
 	enum zone_type i;
@@ -1183,14 +1105,8 @@ static void __init calculate_node_totalpages(struct pglist_data *pgdat,
 		unsigned long spanned, absent;
 		unsigned long size, real_size;
 
-		spanned = zone_spanned_pages_in_node(pgdat->node_id, i,
-						     node_start_pfn,
-						     node_end_pfn,
-						     &zone_start_pfn,
-						     &zone_end_pfn);
-		absent = zone_absent_pages_in_node(pgdat->node_id, i,
-						   node_start_pfn,
-						   node_end_pfn);
+		spanned = zone_spanned_pages_in_node(pgdat->node_id, i, node_start_pfn, node_end_pfn, &zone_start_pfn, &zone_end_pfn);
+		absent = zone_absent_pages_in_node(pgdat->node_id, i, node_start_pfn, node_end_pfn);
 
 		size = spanned;
 		real_size = size - absent;
@@ -1223,16 +1139,13 @@ static unsigned long __init usemap_size(unsigned long zone_start_pfn, unsigned l
 
 static void __ref setup_usemap(struct zone *zone)
 {
-	unsigned long usemapsize = usemap_size(zone->zone_start_pfn,
-					       zone->spanned_pages);
+	unsigned long usemapsize = usemap_size(zone->zone_start_pfn, zone->spanned_pages);
 	zone->pageblock_flags = NULL;
 	if (usemapsize) {
 		zone->pageblock_flags =
-			memblock_alloc_node(usemapsize, SMP_CACHE_BYTES,
-					    zone_to_nid(zone));
+			memblock_alloc_node(usemapsize, SMP_CACHE_BYTES, zone_to_nid(zone));
 		if (!zone->pageblock_flags)
-			panic("Failed to allocate %ld bytes for zone %s pageblock flags on node %d\n",
-			      usemapsize, zone->name, zone_to_nid(zone));
+			panic("Failed to allocate %ld bytes for zone %s pageblock flags on node %d\n", usemapsize, zone->name, zone_to_nid(zone));
 	}
 }
 
@@ -1246,8 +1159,7 @@ static void __meminit pgdat_init_internals(struct pglist_data *pgdat)
 	lruvec_init(&pgdat->__lruvec);
 }
 
-static void __meminit zone_init_internals(struct zone *zone, enum zone_type idx, int nid,
-							unsigned long remaining_pages)
+static void __meminit zone_init_internals(struct zone *zone, enum zone_type idx, int nid, unsigned long remaining_pages)
 {
 	atomic_long_set(&zone->managed_pages, remaining_pages);
 	zone->name = zone_names[idx];
@@ -1307,13 +1219,9 @@ static void __init alloc_node_mem_map(struct pglist_data *pgdat)
 		end = pgdat_end_pfn(pgdat);
 		end = ALIGN(end, MAX_ORDER_NR_PAGES);
 		size =  (end - start) * sizeof(struct page);
-		map = memblock_alloc_try_nid_raw(size, SMP_CACHE_BYTES,
-						 MEMBLOCK_LOW_LIMIT,
-						 MEMBLOCK_ALLOC_ACCESSIBLE,
-						 pgdat->node_id);
+		map = memblock_alloc_try_nid_raw(size, SMP_CACHE_BYTES, MEMBLOCK_LOW_LIMIT, MEMBLOCK_ALLOC_ACCESSIBLE, pgdat->node_id);
 		if (!map)
-			panic("Failed to allocate %ld bytes for node %d memory map\n",
-			      size, pgdat->node_id);
+			panic("Failed to allocate %ld bytes for node %d memory map\n", size, pgdat->node_id);
 		pgdat->node_mem_map = map + offset;
 	}
 	
@@ -1357,10 +1265,8 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 	int i;
 
 	/* Minimal zone setup - just set up basic pfn ranges */
-	memset(arch_zone_lowest_possible_pfn, 0,
-				sizeof(arch_zone_lowest_possible_pfn));
-	memset(arch_zone_highest_possible_pfn, 0,
-				sizeof(arch_zone_highest_possible_pfn));
+	memset(arch_zone_lowest_possible_pfn, 0, sizeof(arch_zone_lowest_possible_pfn));
+	memset(arch_zone_highest_possible_pfn, 0, sizeof(arch_zone_highest_possible_pfn));
 
 	start_pfn = find_min_pfn_with_active_regions();
 
@@ -1439,15 +1345,7 @@ int __meminit init_per_zone_wmark_min(void)
 }
 postcore_initcall(init_per_zone_wmark_min)
 
-void *__init alloc_large_system_hash(const char *tablename,
-				     unsigned long bucketsize,
-				     unsigned long numentries,
-				     int scale,
-				     int flags,
-				     unsigned int *_hash_shift,
-				     unsigned int *_hash_mask,
-				     unsigned long low_limit,
-				     unsigned long high_limit)
+void *__init alloc_large_system_hash(const char *tablename, unsigned long bucketsize, unsigned long numentries, int scale, int flags, unsigned int *_hash_shift, unsigned int *_hash_mask, unsigned long low_limit, unsigned long high_limit)
 {
 	unsigned long log2qty, size;
 	void *table;

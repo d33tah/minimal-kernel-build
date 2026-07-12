@@ -69,11 +69,9 @@ static inline void cpumask_clear(struct cpumask *dstp)
 
 
 
-static inline bool cpumask_equal(const struct cpumask *src1p,
-				const struct cpumask *src2p)
+static inline bool cpumask_equal(const struct cpumask *src1p, const struct cpumask *src2p)
 {
-	return bitmap_equal(cpumask_bits(src1p), cpumask_bits(src2p),
-						 nr_cpumask_bits);
+	return bitmap_equal(cpumask_bits(src1p), cpumask_bits(src2p), nr_cpumask_bits);
 }
 
 #define cpumask_of(cpu) (get_cpu_mask(cpu))

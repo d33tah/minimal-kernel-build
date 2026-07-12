@@ -226,8 +226,7 @@ struct expr *expr_trans_compare(struct expr *e, enum expr_type type, struct symb
 
 struct gstr;
 void expr_gstr_print(struct expr *e, struct gstr *gs);
-void expr_gstr_print_revdep(struct expr *e, struct gstr *gs,
-			    tristate pr_type, const char *title);
+void expr_gstr_print_revdep(struct expr *e, struct gstr *gs, tristate pr_type, const char *title);
 
 static inline int expr_is_yes(struct expr *e)
 {

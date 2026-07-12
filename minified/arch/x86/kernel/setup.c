@@ -55,8 +55,7 @@ void * __init extend_brk(size_t size, size_t align)
 static void __init reserve_brk(void)
 {
 	if (_brk_end > _brk_start)
-		memblock_reserve(__pa_symbol(_brk_start),
-				 _brk_end - _brk_start);
+		memblock_reserve(__pa_symbol(_brk_start), _brk_end - _brk_start);
 
 	 
 	_brk_start = 0;
@@ -92,8 +91,7 @@ static void __init early_reserve_initrd(void)
 	u64 ramdisk_size  = get_ramdisk_size();
 	u64 ramdisk_end   = PAGE_ALIGN(ramdisk_image + ramdisk_size);
 
-	if (!boot_params.hdr.type_of_loader ||
-	    !ramdisk_image || !ramdisk_size)
+	if (!boot_params.hdr.type_of_loader || !ramdisk_image || !ramdisk_size)
 		return;		 
 
 	memblock_reserve(ramdisk_image, ramdisk_end - ramdisk_image);
@@ -106,17 +104,14 @@ static void __init reserve_initrd(void)
 	u64 ramdisk_size  = get_ramdisk_size();
 	u64 ramdisk_end   = PAGE_ALIGN(ramdisk_image + ramdisk_size);
 
-	if (!boot_params.hdr.type_of_loader ||
-	    !ramdisk_image || !ramdisk_size)
+	if (!boot_params.hdr.type_of_loader || !ramdisk_image || !ramdisk_size)
 		return;		 
 
 	initrd_start = 0;
 
-	printk(KERN_INFO "RAMDISK: [mem %#010llx-%#010llx]\n", ramdisk_image,
-			ramdisk_end - 1);
+	printk(KERN_INFO "RAMDISK: [mem %#010llx-%#010llx]\n", ramdisk_image, ramdisk_end - 1);
 
-	if (pfn_range_is_mapped(PFN_DOWN(ramdisk_image),
-				PFN_DOWN(ramdisk_end))) {
+	if (pfn_range_is_mapped(PFN_DOWN(ramdisk_image), PFN_DOWN(ramdisk_end))) {
 		 
 		initrd_start = ramdisk_image + PAGE_OFFSET;
 		initrd_end = initrd_start + ramdisk_size;
@@ -126,23 +121,17 @@ static void __init reserve_initrd(void)
 	{
 		u64 area_size = PAGE_ALIGN(ramdisk_size);
 
-		relocated_ramdisk = memblock_phys_alloc_range(area_size, PAGE_SIZE, 0,
-							      PFN_PHYS(max_pfn_mapped));
+		relocated_ramdisk = memblock_phys_alloc_range(area_size, PAGE_SIZE, 0, PFN_PHYS(max_pfn_mapped));
 		if (!relocated_ramdisk)
-			panic("Cannot find place for new RAMDISK of size %lld\n",
-			      ramdisk_size);
+			panic("Cannot find place for new RAMDISK of size %lld\n", ramdisk_size);
 
 		initrd_start = relocated_ramdisk + PAGE_OFFSET;
 		initrd_end   = initrd_start + ramdisk_size;
-		printk(KERN_INFO "Allocated new RAMDISK: [mem %#010llx-%#010llx]\n",
-		       relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1);
+		printk(KERN_INFO "Allocated new RAMDISK: [mem %#010llx-%#010llx]\n", relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1);
 
 		copy_from_early_mem((void *)initrd_start, ramdisk_image, ramdisk_size);
 
-		printk(KERN_INFO "Move RAMDISK from [mem %#010llx-%#010llx] to"
-			" [mem %#010llx-%#010llx]\n",
-			ramdisk_image, ramdisk_image + ramdisk_size - 1,
-			relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1);
+		printk(KERN_INFO "Move RAMDISK from [mem %#010llx-%#010llx] to" " [mem %#010llx-%#010llx]\n", ramdisk_image, ramdisk_image + ramdisk_size - 1, relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1);
 	}
 
 	memblock_phys_free(ramdisk_image, ramdisk_end - ramdisk_image);
@@ -249,8 +238,7 @@ static void __init e820_add_kernel_range(void)
 static void __init early_reserve_memory(void)
 {
 	 
-	memblock_reserve(__pa_symbol(_text),
-			 (unsigned long)__end_of_kernel_reserve - (unsigned long)_text);
+	memblock_reserve(__pa_symbol(_text), (unsigned long)__end_of_kernel_reserve - (unsigned long)_text);
 
 	 
 	memblock_reserve(0, SZ_64K);
@@ -274,9 +262,7 @@ void __init setup_arch(char **cmdline_p)
 	memcpy(&boot_cpu_data, &new_cpu_data, sizeof(new_cpu_data));
 
 	 
-	clone_pgd_range(swapper_pg_dir     + KERNEL_PGD_BOUNDARY,
-			initial_page_table + KERNEL_PGD_BOUNDARY,
-			KERNEL_PGD_PTRS);
+	clone_pgd_range(swapper_pg_dir     + KERNEL_PGD_BOUNDARY, initial_page_table + KERNEL_PGD_BOUNDARY, KERNEL_PGD_PTRS);
 
 	load_cr3(swapper_pg_dir);
 	 
@@ -345,8 +331,7 @@ void __init setup_arch(char **cmdline_p)
 	memblock_set_current_limit(ISA_END_ADDRESS);
 	e820__memblock_setup();
 
-	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n",
-			(max_pfn_mapped<<PAGE_SHIFT) - 1);
+	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n", (max_pfn_mapped<<PAGE_SHIFT) - 1);
 
 	 
 	reserve_real_mode();

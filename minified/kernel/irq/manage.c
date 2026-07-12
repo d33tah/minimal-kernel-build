@@ -69,8 +69,7 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 
 	ret = irq_request_resources(desc);
 	if (ret) {
-		pr_err("Failed to request resources for %s (irq %d) on irqchip %s\n",
-		       new->name, irq, desc->irq_data.chip->name);
+		pr_err("Failed to request resources for %s (irq %d) on irqchip %s\n", new->name, irq, desc->irq_data.chip->name);
 		goto out_bus_unlock;
 	}
 
@@ -89,8 +88,7 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 		irqd_set(&desc->irq_data, IRQD_NO_BALANCING);
 	}
 
-	if (!(new->flags & IRQF_NO_AUTOEN) &&
-	    irq_settings_can_autoenable(desc)) {
+	if (!(new->flags & IRQF_NO_AUTOEN) && irq_settings_can_autoenable(desc)) {
 		irq_startup(desc, IRQ_RESEND, IRQ_START_COND);
 	} else {
 		desc->depth = 1;
@@ -119,9 +117,7 @@ out_bus_unlock:
 	return ret;
 }
 
-int request_threaded_irq(unsigned int irq, irq_handler_t handler,
-			 irq_handler_t thread_fn, unsigned long irqflags,
-			 const char *devname, void *dev_id)
+int request_threaded_irq(unsigned int irq, irq_handler_t handler, irq_handler_t thread_fn, unsigned long irqflags, const char *devname, void *dev_id)
 {
 	struct irqaction *action;
 	struct irq_desc *desc;
@@ -142,8 +138,7 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	if (!desc)
 		return -EINVAL;
 
-	if (!irq_settings_can_request(desc) ||
-	    WARN_ON(irq_settings_is_per_cpu_devid(desc)))
+	if (!irq_settings_can_request(desc) || WARN_ON(irq_settings_is_per_cpu_devid(desc)))
 		return -EINVAL;
 
 	if (!handler)

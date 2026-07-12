@@ -5,8 +5,7 @@
 
 #include "internal.h"
 
-int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry,
-		loff_t length, unsigned int time_attrs, struct file *filp)
+int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry, loff_t length, unsigned int time_attrs, struct file *filp)
 {
 	int ret;
 	struct iattr newattrs;
@@ -86,9 +85,7 @@ int vfs_fchown(struct file *file, uid_t user, gid_t group)
 	return -ENOSYS;
 }
 
-static int do_dentry_open(struct file *f,
-			  struct inode *inode,
-			  int (*open)(struct inode *, struct file *))
+static int do_dentry_open(struct file *f, struct inode *inode, int (*open)(struct inode *, struct file *))
 {
 	static const struct file_operations empty_fops = {};
 	int error;
@@ -135,11 +132,9 @@ static int do_dentry_open(struct file *f,
 	f->f_mode |= FMODE_OPENED;
 	if ((f->f_mode & (FMODE_READ | FMODE_WRITE)) == FMODE_READ)
 		i_readcount_inc(inode);
-	if ((f->f_mode & FMODE_READ) &&
-	     likely(f->f_op->read || f->f_op->read_iter))
+	if ((f->f_mode & FMODE_READ) && likely(f->f_op->read || f->f_op->read_iter))
 		f->f_mode |= FMODE_CAN_READ;
-	if ((f->f_mode & FMODE_WRITE) &&
-	     likely(f->f_op->write || f->f_op->write_iter))
+	if ((f->f_mode & FMODE_WRITE) && likely(f->f_op->write || f->f_op->write_iter))
 		f->f_mode |= FMODE_CAN_WRITE;
 	/*
 	 * No address_space_operations on this build sets ->direct_IO, so
@@ -184,8 +179,7 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 	int lookup_flags = 0;
 	int acc_mode = ACC_MODE(flags);
 
-	BUILD_BUG_ON_MSG(upper_32_bits(VALID_OPEN_FLAGS),
-			 "struct open_flags doesn't yet handle flags > 32 bits");
+	BUILD_BUG_ON_MSG(upper_32_bits(VALID_OPEN_FLAGS), "struct open_flags doesn't yet handle flags > 32 bits");
 
 	 
 	flags &= ~strip;

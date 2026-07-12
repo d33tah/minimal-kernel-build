@@ -19,8 +19,7 @@ struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry, unsigned 
 	return NULL;
 }
 
-int simple_setattr(struct user_namespace *mnt_userns, struct dentry *dentry,
-		   struct iattr *iattr)
+int simple_setattr(struct user_namespace *mnt_userns, struct dentry *dentry, struct iattr *iattr)
 {
 	struct inode *inode = d_inode(dentry);
 	int error;
@@ -41,9 +40,7 @@ static int simple_read_folio(struct file *file, struct folio *folio)
 	return 0;
 }
 
-int simple_write_begin(struct file *file, struct address_space *mapping,
-			loff_t pos, unsigned len,
-			struct page **pagep, void **fsdata)
+int simple_write_begin(struct file *file, struct address_space *mapping, loff_t pos, unsigned len, struct page **pagep, void **fsdata)
 {
 	struct page *page;
 	pgoff_t index;
@@ -64,9 +61,7 @@ int simple_write_begin(struct file *file, struct address_space *mapping,
 	return 0;
 }
 
-static int simple_write_end(struct file *file, struct address_space *mapping,
-			loff_t pos, unsigned len, unsigned copied,
-			struct page *page, void *fsdata)
+static int simple_write_end(struct file *file, struct address_space *mapping, loff_t pos, unsigned len, unsigned copied, struct page *page, void *fsdata)
 {
 	struct inode *inode = page->mapping->host;
 	loff_t last_pos = pos + copied;

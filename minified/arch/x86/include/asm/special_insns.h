@@ -50,10 +50,7 @@ static inline unsigned long native_read_cr4(void)
 {
 	unsigned long val;
 	 
-	asm volatile("1: mov %%cr4, %0\n"
-		     "2:\n"
-		     _ASM_EXTABLE(1b, 2b)
-		     : "=r" (val) : "0" (0), __FORCE_ORDER);
+	asm volatile("1: mov %%cr4, %0\n" "2:\n" _ASM_EXTABLE(1b, 2b) : "=r" (val) : "0" (0), __FORCE_ORDER);
 	return val;
 }
 

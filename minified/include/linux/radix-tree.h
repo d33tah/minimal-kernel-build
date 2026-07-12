@@ -54,25 +54,17 @@ struct radix_tree_iter {
 };
 
 
-int radix_tree_insert(struct radix_tree_root *, unsigned long index,
-			void *);
-void *__radix_tree_lookup(const struct radix_tree_root *, unsigned long index,
-			  struct radix_tree_node **nodep, void __rcu ***slotp);
+int radix_tree_insert(struct radix_tree_root *, unsigned long index, void *);
+void *__radix_tree_lookup(const struct radix_tree_root *, unsigned long index, struct radix_tree_node **nodep, void __rcu ***slotp);
 void *radix_tree_lookup(const struct radix_tree_root *, unsigned long);
-void __radix_tree_replace(struct radix_tree_root *, struct radix_tree_node *,
-			  void __rcu **slot, void *entry);
-void radix_tree_iter_replace(struct radix_tree_root *,
-		const struct radix_tree_iter *, void __rcu **slot, void *entry);
+void __radix_tree_replace(struct radix_tree_root *, struct radix_tree_node *, void __rcu **slot, void *entry);
+void radix_tree_iter_replace(struct radix_tree_root *, const struct radix_tree_iter *, void __rcu **slot, void *entry);
 void *radix_tree_delete_item(struct radix_tree_root *, unsigned long, void *);
 void radix_tree_init(void);
-int radix_tree_tag_get(const struct radix_tree_root *,
-			unsigned long index, unsigned int tag);
-void radix_tree_iter_tag_clear(struct radix_tree_root *,
-		const struct radix_tree_iter *iter, unsigned int tag);
+int radix_tree_tag_get(const struct radix_tree_root *, unsigned long index, unsigned int tag);
+void radix_tree_iter_tag_clear(struct radix_tree_root *, const struct radix_tree_iter *iter, unsigned int tag);
 
-void __rcu **idr_get_free(struct radix_tree_root *root,
-			      struct radix_tree_iter *iter, gfp_t gfp,
-			      unsigned long max);
+void __rcu **idr_get_free(struct radix_tree_root *root, struct radix_tree_iter *iter, gfp_t gfp, unsigned long max);
 
 static __always_inline void __rcu **
 radix_tree_iter_init(struct radix_tree_iter *iter, unsigned long start)

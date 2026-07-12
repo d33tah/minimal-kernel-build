@@ -31,20 +31,17 @@ static inline unsigned long *node_marks(struct xa_node *node, xa_mark_t mark)
 	return node->marks[(__force unsigned)mark];
 }
 
-static inline bool node_get_mark(struct xa_node *node,
-		unsigned int offset, xa_mark_t mark)
+static inline bool node_get_mark(struct xa_node *node, unsigned int offset, xa_mark_t mark)
 {
 	return test_bit(offset, node_marks(node, mark));
 }
 
-static inline bool node_set_mark(struct xa_node *node, unsigned int offset,
-				xa_mark_t mark)
+static inline bool node_set_mark(struct xa_node *node, unsigned int offset, xa_mark_t mark)
 {
 	return __test_and_set_bit(offset, node_marks(node, mark));
 }
 
-static inline bool node_clear_mark(struct xa_node *node, unsigned int offset,
-				xa_mark_t mark)
+static inline bool node_clear_mark(struct xa_node *node, unsigned int offset, xa_mark_t mark)
 {
 	return __test_and_clear_bit(offset, node_marks(node, mark));
 }
@@ -417,8 +414,7 @@ static void *xas_create(struct xa_state *xas, bool allow_root)
 }
 
 
-static void update_node(struct xa_state *xas, struct xa_node *node,
-		int count, int values)
+static void update_node(struct xa_state *xas, struct xa_node *node, int count, int values)
 {
 	if (!node || (!count && !values))
 		return;

@@ -37,8 +37,7 @@ static void init_one_lru(struct list_lru_one *l)
 	INIT_LIST_HEAD(&l->list);
 }
 
-int __list_lru_init(struct list_lru *lru, bool memcg_aware,
-		    struct lock_class_key *key)
+int __list_lru_init(struct list_lru *lru, bool memcg_aware, struct lock_class_key *key)
 {
 	int i;
 

@@ -43,8 +43,7 @@ static inline void rwsem_clear_owner(struct rw_semaphore *sem)
 	atomic_long_set(&sem->owner, 0);
 }
 
-static inline void __rwsem_set_reader_owned(struct rw_semaphore *sem,
-					    struct task_struct *owner)
+static inline void __rwsem_set_reader_owned(struct rw_semaphore *sem, struct task_struct *owner)
 {
 	unsigned long val = (unsigned long)owner | RWSEM_READER_OWNED;
 
@@ -82,8 +81,7 @@ static inline bool rwsem_write_trylock(struct rw_semaphore *sem)
 	return false;
 }
 
-void __init_rwsem(struct rw_semaphore *sem, const char *name,
-		  struct lock_class_key *key)
+void __init_rwsem(struct rw_semaphore *sem, const char *name, struct lock_class_key *key)
 {
 	atomic_long_set(&sem->count, RWSEM_UNLOCKED_VALUE);
 	raw_spin_lock_init(&sem->wait_lock);
@@ -135,8 +133,7 @@ static inline int __down_read_trylock(struct rw_semaphore *sem)
 
 	tmp = atomic_long_read(&sem->count);
 	while (!(tmp & RWSEM_READ_FAILED_MASK)) {
-		if (atomic_long_try_cmpxchg_acquire(&sem->count, &tmp,
-						    tmp + RWSEM_READER_BIAS)) {
+		if (atomic_long_try_cmpxchg_acquire(&sem->count, &tmp, tmp + RWSEM_READER_BIAS)) {
 			rwsem_set_reader_owned(sem);
 			return 1;
 		}
@@ -174,8 +171,7 @@ static inline void __up_read(struct rw_semaphore *sem)
 
 	tmp = atomic_long_add_return_release(-RWSEM_READER_BIAS, &sem->count);
 	DEBUG_RWSEMS_WARN_ON(tmp < 0, sem);
-	if (unlikely((tmp & (RWSEM_LOCK_MASK|RWSEM_FLAG_WAITERS)) ==
-		      RWSEM_FLAG_WAITERS)) {
+	if (unlikely((tmp & (RWSEM_LOCK_MASK|RWSEM_FLAG_WAITERS)) == RWSEM_FLAG_WAITERS)) {
 		rwsem_wake(sem);
 	}
 }
@@ -236,8 +232,7 @@ int __sched down_write_killable(struct rw_semaphore *sem)
 	might_sleep();
 	rwsem_acquire(&sem->dep_map, 0, 0, _RET_IP_);
 
-	if (LOCK_CONTENDED_RETURN(sem, __down_write_trylock,
-				  __down_write_killable)) {
+	if (LOCK_CONTENDED_RETURN(sem, __down_write_trylock, __down_write_killable)) {
 		rwsem_release(&sem->dep_map, _RET_IP_);
 		return -EINTR;
 	}

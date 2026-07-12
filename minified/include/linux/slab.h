@@ -37,14 +37,8 @@ struct list_lru;
 void __init kmem_cache_init(void);
 bool slab_is_available(void);
 
-struct kmem_cache *kmem_cache_create(const char *name, unsigned int size,
-			unsigned int align, slab_flags_t flags,
-			void (*ctor)(void *));
-struct kmem_cache *kmem_cache_create_usercopy(const char *name,
-			unsigned int size, unsigned int align,
-			slab_flags_t flags,
-			unsigned int useroffset, unsigned int usersize,
-			void (*ctor)(void *));
+struct kmem_cache *kmem_cache_create(const char *name, unsigned int size, unsigned int align, slab_flags_t flags, void (*ctor)(void *));
+struct kmem_cache *kmem_cache_create_usercopy(const char *name, unsigned int size, unsigned int align, slab_flags_t flags, unsigned int useroffset, unsigned int usersize, void (*ctor)(void *));
 #define KMEM_CACHE(__struct, __flags)							kmem_cache_create(#__struct, sizeof(struct __struct),				__alignof__(struct __struct), (__flags), NULL)
 
 #define KMEM_CACHE_USERCOPY(__struct, __flags, __field)					kmem_cache_create_usercopy(#__struct,						sizeof(struct __struct),						__alignof__(struct __struct), (__flags),				offsetof(struct __struct, __field),					sizeof_field(struct __struct, __field), NULL)
@@ -105,8 +99,7 @@ static __always_inline enum kmalloc_cache_type kmalloc_type(gfp_t flags)
 	return KMALLOC_RECLAIM;
 }
 
-static __always_inline unsigned int __kmalloc_index(size_t size,
-						    bool size_is_constant)
+static __always_inline unsigned int __kmalloc_index(size_t size, bool size_is_constant)
 {
 	if (!size)
 		return 0;
@@ -154,8 +147,7 @@ static __always_inline unsigned int __kmalloc_index(size_t size,
 
 void *__kmalloc(size_t size, gfp_t flags) __assume_kmalloc_alignment __alloc_size(1);
 void *kmem_cache_alloc(struct kmem_cache *s, gfp_t flags) __assume_slab_alignment __malloc;
-void *kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru,
-			   gfp_t gfpflags) __assume_slab_alignment __malloc;
+void *kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru, gfp_t gfpflags) __assume_slab_alignment __malloc;
 void kmem_cache_free(struct kmem_cache *s, void *objp);
 
 static __always_inline __alloc_size(1) void *__kmalloc_node(size_t size, gfp_t flags, int node)
@@ -168,16 +160,14 @@ static __always_inline void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t f
 	return kmem_cache_alloc(s, flags);
 }
 
-static __always_inline __alloc_size(3) void *kmem_cache_alloc_trace(struct kmem_cache *s,
-								    gfp_t flags, size_t size)
+static __always_inline __alloc_size(3) void *kmem_cache_alloc_trace(struct kmem_cache *s, gfp_t flags, size_t size)
 {
 	void *ret = kmem_cache_alloc(s, flags);
 
 	return ret;
 }
 
-static __always_inline void *kmem_cache_alloc_node_trace(struct kmem_cache *s, gfp_t gfpflags,
-							 int node, size_t size)
+static __always_inline void *kmem_cache_alloc_node_trace(struct kmem_cache *s, gfp_t gfpflags, int node, size_t size)
 {
 	void *ret = kmem_cache_alloc_node(s, gfpflags, node);
 
@@ -187,8 +177,7 @@ static __always_inline void *kmem_cache_alloc_node_trace(struct kmem_cache *s, g
 extern void *kmalloc_order(size_t size, gfp_t flags, unsigned int order) __assume_page_alignment
 									 __alloc_size(1);
 
-static __always_inline __alloc_size(1) void *kmalloc_order_trace(size_t size, gfp_t flags,
-								 unsigned int order)
+static __always_inline __alloc_size(1) void *kmalloc_order_trace(size_t size, gfp_t flags, unsigned int order)
 {
 	return kmalloc_order(size, flags, order);
 }
@@ -210,25 +199,20 @@ static __always_inline __alloc_size(1) void *kmalloc(size_t size, gfp_t flags)
 		if (!index)
 			return ZERO_SIZE_PTR;
 
-		return kmem_cache_alloc_trace(
-				kmalloc_caches[kmalloc_type(flags)][index],
-				flags, size);
+		return kmem_cache_alloc_trace( kmalloc_caches[kmalloc_type(flags)][index], flags, size);
 	}
 	return __kmalloc(size, flags);
 }
 
 static __always_inline __alloc_size(1) void *kmalloc_node(size_t size, gfp_t flags, int node)
 {
-	if (__builtin_constant_p(size) &&
-		size <= KMALLOC_MAX_CACHE_SIZE) {
+	if (__builtin_constant_p(size) && size <= KMALLOC_MAX_CACHE_SIZE) {
 		unsigned int i = kmalloc_index(size);
 
 		if (!i)
 			return ZERO_SIZE_PTR;
 
-		return kmem_cache_alloc_node_trace(
-				kmalloc_caches[kmalloc_type(flags)][i],
-						flags, node, size);
+		return kmem_cache_alloc_node_trace( kmalloc_caches[kmalloc_type(flags)][i], flags, node, size);
 	}
 	return __kmalloc_node(size, flags, node);
 }

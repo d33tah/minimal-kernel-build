@@ -203,8 +203,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	 
 	sched_init();
 
-	if (WARN(!irqs_disabled(),
-		 "Interrupts were enabled *very* early, fixing it\n"))
+	if (WARN(!irqs_disabled(), "Interrupts were enabled *very* early, fixing it\n"))
 		local_irq_disable();
 	radix_tree_init();
 
@@ -350,8 +349,7 @@ static int try_to_run_init_process(const char *init_filename)
 	ret = run_init_process(init_filename);
 
 	if (ret && ret != -ENOENT) {
-		pr_err("Starting init: %s exists but couldn't execute it (error %d)\n",
-		       init_filename, ret);
+		pr_err("Starting init: %s exists but couldn't execute it (error %d)\n", init_filename, ret);
 	}
 
 	return ret;
@@ -387,18 +385,13 @@ static int __ref kernel_init(void *unused)
 		ret = run_init_process(ramdisk_execute_command);
 		if (!ret)
 			return 0;
-		pr_err("Failed to execute %s (error %d)\n",
-		       ramdisk_execute_command, ret);
+		pr_err("Failed to execute %s (error %d)\n", ramdisk_execute_command, ret);
 	}
 
-	if (!try_to_run_init_process("/sbin/init") ||
-	    !try_to_run_init_process("/etc/init") ||
-	    !try_to_run_init_process("/bin/init") ||
-	    !try_to_run_init_process("/bin/sh"))
+	if (!try_to_run_init_process("/sbin/init") || !try_to_run_init_process("/etc/init") || !try_to_run_init_process("/bin/init") || !try_to_run_init_process("/bin/sh"))
 		return 0;
 
-	panic("No working init found.  Try passing init= option to kernel. "
-	      "See Linux Documentation/admin-guide/init.rst for guidance.");
+	panic("No working init found.  Try passing init= option to kernel. " "See Linux Documentation/admin-guide/init.rst for guidance.");
 }
 
 void __init console_on_rootfs(void)

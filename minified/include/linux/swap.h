@@ -26,8 +26,7 @@ static inline bool lru_cache_disabled(void)
 }
 
 extern void lru_add_drain(void);
-extern void lru_cache_add_inactive_or_unevictable(struct page *page,
-						struct vm_area_struct *vma);
+extern void lru_cache_add_inactive_or_unevictable(struct page *page, struct vm_area_struct *vma);
 
 #define total_swap_pages			0L
 

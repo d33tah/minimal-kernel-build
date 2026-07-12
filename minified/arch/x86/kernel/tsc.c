@@ -67,8 +67,7 @@ static void __set_cyc2ns_scale(unsigned long khz, int cpu, unsigned long long ts
 	ns_now = cycles_2_ns(tsc_now);
 
 	 
-	clocks_calc_mult_shift(&data.cyc2ns_mul, &data.cyc2ns_shift, khz,
-			       NSEC_PER_MSEC, 0);
+	clocks_calc_mult_shift(&data.cyc2ns_mul, &data.cyc2ns_shift, khz, NSEC_PER_MSEC, 0);
 
 	 
 	if (data.cyc2ns_shift == 32) {
@@ -172,8 +171,7 @@ static unsigned long quick_pit_calibrate(void)
 			delta -= tsc;
 
 			 
-			if (i == 1 &&
-			    d1 + d2 >= (delta * MAX_QUICK_PIT_ITERATIONS) >> 11)
+			if (i == 1 && d1 + d2 >= (delta * MAX_QUICK_PIT_ITERATIONS) >> 11)
 				return 0;
 
 			 
@@ -310,14 +308,10 @@ static bool __init determine_cpu_tsc_frequencies(bool early)
 	if (tsc_khz == 0)
 		return false;
 
-	pr_info("Detected %lu.%03lu MHz processor\n",
-		(unsigned long)cpu_khz / KHZ,
-		(unsigned long)cpu_khz % KHZ);
+	pr_info("Detected %lu.%03lu MHz processor\n", (unsigned long)cpu_khz / KHZ, (unsigned long)cpu_khz % KHZ);
 
 	if (cpu_khz != tsc_khz) {
-		pr_info("Detected %lu.%03lu MHz TSC",
-			(unsigned long)tsc_khz / KHZ,
-			(unsigned long)tsc_khz % KHZ);
+		pr_info("Detected %lu.%03lu MHz TSC", (unsigned long)tsc_khz / KHZ, (unsigned long)tsc_khz % KHZ);
 	}
 	return true;
 }

@@ -11,15 +11,12 @@ static inline int folio_is_file_lru(struct folio *folio)
 	return !folio_test_swapbacked(folio);
 }
 
-static __always_inline void update_lru_size(struct lruvec *lruvec,
-				enum lru_list lru, enum zone_type zid,
-				long nr_pages)
+static __always_inline void update_lru_size(struct lruvec *lruvec, enum lru_list lru, enum zone_type zid, long nr_pages)
 {
 	struct pglist_data *pgdat = lruvec_pgdat(lruvec);
 
 	__mod_lruvec_state(lruvec, NR_LRU_BASE + lru, nr_pages);
-	__mod_zone_page_state(&pgdat->node_zones[zid],
-				NR_ZONE_LRU_BASE + lru, nr_pages);
+	__mod_zone_page_state(&pgdat->node_zones[zid], NR_ZONE_LRU_BASE + lru, nr_pages);
 }
 
 
@@ -39,8 +36,7 @@ void lruvec_add_folio(struct lruvec *lruvec, struct folio *folio)
 {
 	enum lru_list lru = folio_lru_list(folio);
 
-	update_lru_size(lruvec, lru, folio_zonenum(folio),
-			folio_nr_pages(folio));
+	update_lru_size(lruvec, lru, folio_zonenum(folio), folio_nr_pages(folio));
 	if (lru != LRU_UNEVICTABLE)
 		list_add(&folio->lru, &lruvec->lists[lru]);
 }
@@ -52,12 +48,10 @@ void lruvec_del_folio(struct lruvec *lruvec, struct folio *folio)
 
 	if (lru != LRU_UNEVICTABLE)
 		list_del(&folio->lru);
-	update_lru_size(lruvec, lru, folio_zonenum(folio),
-			-folio_nr_pages(folio));
+	update_lru_size(lruvec, lru, folio_zonenum(folio), -folio_nr_pages(folio));
 }
 
-static inline void dup_anon_vma_name(struct vm_area_struct *orig_vma,
-				     struct vm_area_struct *new_vma) {}
+static inline void dup_anon_vma_name(struct vm_area_struct *orig_vma, struct vm_area_struct *new_vma) {}
 
 static inline void init_tlb_flush_pending(struct mm_struct *mm)
 {

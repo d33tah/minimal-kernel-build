@@ -13,8 +13,7 @@ static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs)
 }
 #define arch_enter_from_user_mode arch_enter_from_user_mode
 
-static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
-						  unsigned long ti_work)
+static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs, unsigned long ti_work)
 {
 	if (unlikely(ti_work & _TIF_NEED_FPU_LOAD))
 		switch_fpu_return();

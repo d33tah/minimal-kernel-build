@@ -218,8 +218,7 @@ struct printf_spec {
 static_assert(sizeof(struct printf_spec) == 8);
 
 static noinline_for_stack
-char *number(char *buf, char *end, unsigned long long num,
-	     struct printf_spec spec)
+char *number(char *buf, char *end, unsigned long long num, struct printf_spec spec)
 {
 	
 	char tmp[3 * sizeof(num)] __aligned(2);
@@ -343,8 +342,7 @@ char *widen_string(char *buf, int n, char *end, struct printf_spec spec)
 	return buf + spaces;
 }
 
-static char *string_nocheck(char *buf, char *end, const char *s,
-			    struct printf_spec spec)
+static char *string_nocheck(char *buf, char *end, const char *s, struct printf_spec spec)
 {
 	int len = 0;
 	int lim = spec.precision;
@@ -361,8 +359,7 @@ static char *string_nocheck(char *buf, char *end, const char *s,
 	return widen_string(buf, len, end, spec);
 }
 
-static char *error_string(char *buf, char *end, const char *s,
-			  struct printf_spec spec)
+static char *error_string(char *buf, char *end, const char *s, struct printf_spec spec)
 {
 	
 	if (spec.precision == -1)
@@ -382,8 +379,7 @@ static const char *check_pointer_msg(const void *ptr)
 	return NULL;
 }
 
-static int check_pointer(char **buf, char *end, const void *ptr,
-			 struct printf_spec spec)
+static int check_pointer(char **buf, char *end, const void *ptr, struct printf_spec spec)
 {
 	const char *err_msg;
 
@@ -397,8 +393,7 @@ static int check_pointer(char **buf, char *end, const void *ptr,
 }
 
 static noinline_for_stack
-char *string(char *buf, char *end, const char *s,
-	     struct printf_spec spec)
+char *string(char *buf, char *end, const char *s, struct printf_spec spec)
 {
 	if (check_pointer(&buf, end, s, spec))
 		return buf;
@@ -406,9 +401,7 @@ char *string(char *buf, char *end, const char *s,
 	return string_nocheck(buf, end, s, spec);
 }
 
-static char *pointer_string(char *buf, char *end,
-			    const void *ptr,
-			    struct printf_spec spec)
+static char *pointer_string(char *buf, char *end, const void *ptr, struct printf_spec spec)
 {
 	spec.base = 16;
 	spec.flags |= SMALL;
@@ -438,8 +431,7 @@ static inline int ptr_to_hashval(const void *ptr, unsigned long *hashval_out)
 		static DECLARE_WORK(enable_ptr_key_work, enable_ptr_key_workfn);
 		unsigned long flags;
 
-		if (!system_unbound_wq || !rng_is_initialized() ||
-		    !spin_trylock_irqsave(&filling, flags))
+		if (!system_unbound_wq || !rng_is_initialized() || !spin_trylock_irqsave(&filling, flags))
 			return -EAGAIN;
 
 		if (!filled) {
@@ -455,8 +447,7 @@ static inline int ptr_to_hashval(const void *ptr, unsigned long *hashval_out)
 	return 0;
 }
 
-static char *ptr_to_id(char *buf, char *end, const void *ptr,
-		       struct printf_spec spec)
+static char *ptr_to_id(char *buf, char *end, const void *ptr, struct printf_spec spec)
 {
 	const char *str = sizeof(ptr) == 8 ? "(____ptrval____)" : "(ptrval)";
 	unsigned long hashval;
@@ -476,8 +467,7 @@ static char *ptr_to_id(char *buf, char *end, const void *ptr,
 	return pointer_string(buf, end, (const void *)hashval, spec);
 }
 
-static char *default_pointer(char *buf, char *end, const void *ptr,
-			     struct printf_spec spec)
+static char *default_pointer(char *buf, char *end, const void *ptr, struct printf_spec spec)
 {
 	
 	return ptr_to_id(buf, end, ptr, spec);
@@ -541,8 +531,7 @@ int format_decode(const char *fmt, struct printf_spec *spec)
 
 
 	qualifier = 0;
-	if (*fmt == 'h' || _tolower(*fmt) == 'l' ||
-	    *fmt == 'z' || *fmt == 't') {
+	if (*fmt == 'h' || _tolower(*fmt) == 'l' || *fmt == 'z' || *fmt == 't') {
 		qualifier = *fmt++;
 		if (unlikely(qualifier == *fmt)) {
 			if (qualifier == 'l') {
@@ -696,8 +685,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 			 * CONFIG_PRINTK off), so the arm is dead.  All pointers
 			 * fall through to the hashed-pointer path.
 			 */
-			str = default_pointer(str, end, va_arg(args, void *),
-					      spec);
+			str = default_pointer(str, end, va_arg(args, void *), spec);
 			while (isalnum(*fmt))
 				fmt++;
 			break;

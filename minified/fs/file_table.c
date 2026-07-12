@@ -67,8 +67,7 @@ static void __fput(struct file *file)
 
 	if (file->f_op->release)
 		file->f_op->release(inode, file);
-	if (unlikely(S_ISCHR(inode->i_mode) && inode->i_cdev != NULL &&
-		     !(mode & FMODE_PATH))) {
+	if (unlikely(S_ISCHR(inode->i_mode) && inode->i_cdev != NULL && !(mode & FMODE_PATH))) {
 		cdev_put(inode->i_cdev);
 	}
 	fops_put(file->f_op);
@@ -127,7 +126,6 @@ void fput(struct file *file)
 
 void __init files_init(void)
 {
-	filp_cachep = kmem_cache_create("filp", sizeof(struct file), 0,
-			SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
+	filp_cachep = kmem_cache_create("filp", sizeof(struct file), 0, SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
 }
 

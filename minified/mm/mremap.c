@@ -15,10 +15,7 @@
  * `length != move_page_tables(...)`; a full successful move returns
  * `len + old_addr - old_end` with old_addr reaching old_end, i.e. exactly len.
  */
-unsigned long move_page_tables(struct vm_area_struct *vma,
-		unsigned long old_addr, struct vm_area_struct *new_vma,
-		unsigned long new_addr, unsigned long len,
-		bool need_rmap_locks)
+unsigned long move_page_tables(struct vm_area_struct *vma, unsigned long old_addr, struct vm_area_struct *new_vma, unsigned long new_addr, unsigned long len, bool need_rmap_locks)
 {
 	return len;
 }

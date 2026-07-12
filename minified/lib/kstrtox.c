@@ -22,8 +22,7 @@ const char *_parse_integer_fixup_radix(const char *s, unsigned int *base)
 }
 
 noinline
-unsigned int _parse_integer_limit(const char *s, unsigned int base, unsigned long long *p,
-				  size_t max_chars)
+unsigned int _parse_integer_limit(const char *s, unsigned int base, unsigned long long *p, size_t max_chars)
 {
 	unsigned long long res;
 	unsigned int rv;

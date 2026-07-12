@@ -11,15 +11,11 @@
 #define rmb() asm volatile(ALTERNATIVE("lock; addl $0,-4(%%esp)", "lfence", 				       X86_FEATURE_XMM2) ::: "memory", "cc")
 
  
-static inline unsigned long array_index_mask_nospec(unsigned long index,
-		unsigned long size)
+static inline unsigned long array_index_mask_nospec(unsigned long index, unsigned long size)
 {
 	unsigned long mask;
 
-	asm volatile ("cmp %1,%2; sbb %0,%0;"
-			:"=r" (mask)
-			:"g"(size),"r" (index)
-			:"cc");
+	asm volatile ("cmp %1,%2; sbb %0,%0;" :"=r" (mask) :"g"(size),"r" (index) :"cc");
 	return mask;
 }
 

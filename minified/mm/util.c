@@ -62,8 +62,7 @@ char *kmemdup_nul(const char *s, size_t len, gfp_t gfp)
 	return buf;
 }
 
-void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
-		struct vm_area_struct *prev)
+void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma, struct vm_area_struct *prev)
 {
 	struct vm_area_struct *next;
 
@@ -116,9 +115,7 @@ unsigned long randomize_page(unsigned long start, unsigned long range)
 
 
 
-unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
-	unsigned long len, unsigned long prot,
-	unsigned long flag, unsigned long pgoff)
+unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr, unsigned long len, unsigned long prot, unsigned long flag, unsigned long pgoff)
 {
 	unsigned long ret;
 	struct mm_struct *mm = current->mm;
@@ -132,9 +129,7 @@ unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 	return ret;
 }
 
-unsigned long vm_mmap(struct file *file, unsigned long addr,
-	unsigned long len, unsigned long prot,
-	unsigned long flag, unsigned long offset)
+unsigned long vm_mmap(struct file *file, unsigned long addr, unsigned long len, unsigned long prot, unsigned long flag, unsigned long offset)
 {
 	if (unlikely(offset + PAGE_ALIGN(len) < offset))
 		return -EINVAL;
@@ -173,9 +168,7 @@ void *kvmalloc_node(size_t size, gfp_t flags, int node)
 	}
 
 	 
-	return __vmalloc_node_range(size, 1, VMALLOC_START, VMALLOC_END,
-			flags, PAGE_KERNEL, VM_ALLOW_HUGE_VMAP,
-			node, __builtin_return_address(0));
+	return __vmalloc_node_range(size, 1, VMALLOC_START, VMALLOC_END, flags, PAGE_KERNEL, VM_ALLOW_HUGE_VMAP, node, __builtin_return_address(0));
 }
 
 void kvfree(const void *addr)

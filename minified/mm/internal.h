@@ -82,8 +82,7 @@ static inline unsigned int buddy_order(struct page *page)
 /* __pageblock_pfn_to_page, pageblock_pfn_to_page removed - unused */
 
 /* __isolate_free_page, __putback_isolated_page removed - unused */
-extern void memblock_free_pages(struct page *page, unsigned long pfn,
-					unsigned int order);
+extern void memblock_free_pages(struct page *page, unsigned long pfn, unsigned int order);
 extern void __free_pages_core(struct page *page, unsigned int order);
 
 extern void free_unref_page(struct page *page, unsigned int order);
@@ -91,16 +90,14 @@ extern void free_unref_page(struct page *page, unsigned int order);
 /* split_free_page, find_suitable_fallback declaration removed - unused */
 /* is_exec_mapping, is_stack_mapping, is_data_mapping removed - unused */
 
-void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
-		struct vm_area_struct *prev);
+void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma, struct vm_area_struct *prev);
 
 /* populate_vma_page_range / faultin_vma_page_range removed - unused */
 
 /* maybe_pmd_mkwrite removed - unused */
 
 
-static inline struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf,
-						    struct file *fpin)
+static inline struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf, struct file *fpin)
 {
 	int flags = vmf->flags;
 
@@ -115,9 +112,7 @@ static inline struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf,
 	return fpin;
 }
 
-extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
-        unsigned long, unsigned long,
-        unsigned long, unsigned long);
+extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);
 
 
 /* ALLOC_WMARK_MIN, ALLOC_WMARK_HIGH removed - never referenced */

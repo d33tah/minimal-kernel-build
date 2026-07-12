@@ -18,9 +18,7 @@ struct kobj_map {
 	struct mutex *lock;
 };
 
-int kobj_map(struct kobj_map *domain, dev_t dev, unsigned long range,
-	     struct module *module, kobj_probe_t *probe,
-	     int (*lock)(dev_t, void *), void *data)
+int kobj_map(struct kobj_map *domain, dev_t dev, unsigned long range, struct module *module, kobj_probe_t *probe, int (*lock)(dev_t, void *), void *data)
 {
 	unsigned int n = MAJOR(dev + range - 1) - MAJOR(dev) + 1;
 	unsigned int index = MAJOR(dev);

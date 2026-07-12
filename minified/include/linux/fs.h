@@ -118,12 +118,8 @@ struct kiocb {
 struct address_space_operations {
 	int (*read_folio)(struct file *, struct folio *);
 
-	int (*write_begin)(struct file *, struct address_space *mapping,
-				loff_t pos, unsigned len,
-				struct page **pagep, void **fsdata);
-	int (*write_end)(struct file *, struct address_space *mapping,
-				loff_t pos, unsigned len, unsigned copied,
-				struct page *page, void *fsdata);
+	int (*write_begin)(struct file *, struct address_space *mapping, loff_t pos, unsigned len, struct page **pagep, void **fsdata);
+	int (*write_end)(struct file *, struct address_space *mapping, loff_t pos, unsigned len, unsigned copied, struct page *page, void *fsdata);
 
 	/* writepage, writepages, dirty_folio, readahead, bmap, launder_folio,
 	 * migratepage, isolate_page, putback_page, is_dirty_writeback,
@@ -263,14 +259,12 @@ static inline void filemap_invalidate_lock_shared(struct address_space *mapping)
 	down_read(&mapping->invalidate_lock);
 }
 
-static inline int filemap_invalidate_trylock_shared(
-					struct address_space *mapping)
+static inline int filemap_invalidate_trylock_shared( struct address_space *mapping)
 {
 	return down_read_trylock(&mapping->invalidate_lock);
 }
 
-static inline void filemap_invalidate_unlock_shared(
-					struct address_space *mapping)
+static inline void filemap_invalidate_unlock_shared( struct address_space *mapping)
 {
 	up_read(&mapping->invalidate_lock);
 }
@@ -403,32 +397,27 @@ static inline void i_gid_write(struct inode *inode, gid_t gid)
 	inode->i_gid = make_kgid(i_user_ns(inode), gid);
 }
 
-static inline kuid_t i_uid_into_mnt(struct user_namespace *mnt_userns,
-				    const struct inode *inode)
+static inline kuid_t i_uid_into_mnt(struct user_namespace *mnt_userns, const struct inode *inode)
 {
 	return mapped_kuid_fs(mnt_userns, i_user_ns(inode), inode->i_uid);
 }
 
-static inline kgid_t i_gid_into_mnt(struct user_namespace *mnt_userns,
-				    const struct inode *inode)
+static inline kgid_t i_gid_into_mnt(struct user_namespace *mnt_userns, const struct inode *inode)
 {
 	return mapped_kgid_fs(mnt_userns, i_user_ns(inode), inode->i_gid);
 }
 
-static inline void inode_fsuid_set(struct inode *inode,
-				   struct user_namespace *mnt_userns)
+static inline void inode_fsuid_set(struct inode *inode, struct user_namespace *mnt_userns)
 {
 	inode->i_uid = mapped_fsuid(mnt_userns, i_user_ns(inode));
 }
 
-static inline void inode_fsgid_set(struct inode *inode,
-				   struct user_namespace *mnt_userns)
+static inline void inode_fsgid_set(struct inode *inode, struct user_namespace *mnt_userns)
 {
 	inode->i_gid = mapped_fsgid(mnt_userns, i_user_ns(inode));
 }
 
-static inline bool fsuidgid_has_mapping(struct super_block *sb,
-					struct user_namespace *mnt_userns)
+static inline bool fsuidgid_has_mapping(struct super_block *sb, struct user_namespace *mnt_userns)
 {
 	struct user_namespace *fs_userns = sb->s_user_ns;
 	kuid_t kuid;
@@ -464,23 +453,17 @@ static inline void sb_start_write(struct super_block *sb)
 	__sb_start_write(sb, SB_FREEZE_WRITE);
 }
 
-bool inode_owner_or_capable(struct user_namespace *mnt_userns,
-			    const struct inode *inode);
+bool inode_owner_or_capable(struct user_namespace *mnt_userns, const struct inode *inode);
 
-int vfs_mkdir(struct user_namespace *, struct inode *,
-	      struct dentry *, umode_t);
-int vfs_mknod(struct user_namespace *, struct inode *, struct dentry *,
-              umode_t, dev_t);
-int vfs_symlink(struct user_namespace *, struct inode *,
-		struct dentry *, const char *);
-int vfs_link(struct dentry *, struct user_namespace *, struct inode *,
-	     struct dentry *, struct inode **);
+int vfs_mkdir(struct user_namespace *, struct inode *, struct dentry *, umode_t);
+int vfs_mknod(struct user_namespace *, struct inode *, struct dentry *, umode_t, dev_t);
+int vfs_symlink(struct user_namespace *, struct inode *, struct dentry *, const char *);
+int vfs_link(struct dentry *, struct user_namespace *, struct inode *, struct dentry *, struct inode **);
 
 int vfs_fchown(struct file *file, uid_t user, gid_t group);
 int vfs_fchmod(struct file *file, umode_t mode);
 
-void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
-		      const struct inode *dir, umode_t mode);
+void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode, const struct inode *dir, umode_t mode);
 
 struct file_operations {
 	ssize_t (*read) (struct file *, char __user *, size_t, loff_t *);
@@ -502,22 +485,17 @@ struct file_operations {
 
 struct inode_operations {
 	struct dentry * (*lookup) (struct inode *,struct dentry *, unsigned int);
-	int (*create) (struct user_namespace *, struct inode *,struct dentry *,
-		       umode_t, bool);
-	int (*mkdir) (struct user_namespace *, struct inode *,struct dentry *,
-		      umode_t);
-	int (*mknod) (struct user_namespace *, struct inode *,struct dentry *,
-		      umode_t,dev_t);
-	int (*setattr) (struct user_namespace *, struct dentry *,
-			struct iattr *);
+	int (*create) (struct user_namespace *, struct inode *,struct dentry *, umode_t, bool);
+	int (*mkdir) (struct user_namespace *, struct inode *,struct dentry *, umode_t);
+	int (*mknod) (struct user_namespace *, struct inode *,struct dentry *, umode_t,dev_t);
+	int (*setattr) (struct user_namespace *, struct dentry *, struct iattr *);
 	/* permission/readlink/link/unlink/symlink/rmdir/rename/getattr/
 	 * listxattr/update_time/get_link removed - zero ->field deref or
 	 * dispatched-but-never-assigned (only lookup/create/mkdir/mknod/setattr
 	 * are live). get_acl/fiemap/set_acl/fileattr_set/fileattr_get - unused */
 } ____cacheline_aligned;
 
-static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio,
-				      struct iov_iter *iter)
+static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio, struct iov_iter *iter)
 {
 	return file->f_op->write_iter(kio, iter);
 }
@@ -551,8 +529,7 @@ static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags 
 /* IS_APPEND, IS_IMMUTABLE, IS_DEADDIR, IS_NOCMTIME, IS_SWAPFILE,
  * IS_AUTOMOUNT, IS_NOSEC, IS_DAX removed - underlying S_* flags never set */
 
-static inline bool HAS_UNMAPPED_ID(struct user_namespace *mnt_userns,
-				   struct inode *inode)
+static inline bool HAS_UNMAPPED_ID(struct user_namespace *mnt_userns, struct inode *inode)
 {
 	return !uid_valid(i_uid_into_mnt(mnt_userns, inode)) ||
 	       !gid_valid(i_gid_into_mnt(mnt_userns, inode));
@@ -606,8 +583,7 @@ void kill_litter_super(struct super_block *sb);
 void deactivate_super(struct super_block *sb);
 void deactivate_locked_super(struct super_block *sb);
 int set_anon_super_fc(struct super_block *s, struct fs_context *fc);
-struct super_block *sget_fc(struct fs_context *fc,
-			    int (*set)(struct super_block *, struct fs_context *));
+struct super_block *sget_fc(struct fs_context *fc, int (*set)(struct super_block *, struct fs_context *));
 
 #define fops_get(fops) 	((fops) ? (fops) : NULL)
 #define fops_put(fops) 	do { (void)(fops); } while(0)
@@ -636,8 +612,7 @@ static inline struct user_namespace *file_mnt_user_ns(struct file *file)
 }
 
 extern long vfs_truncate(const struct path *, loff_t);
-int do_truncate(struct user_namespace *, struct dentry *, loff_t start,
-		unsigned int time_attrs, struct file *filp);
+int do_truncate(struct user_namespace *, struct dentry *, loff_t start, unsigned int time_attrs, struct file *filp);
 /* vfs_fallocate, do_sys_open, file_open_name, file_open_root, dentry_open,
    dentry_create, open_with_fake_path removed - unused/internal only */
 extern struct file *filp_open(const char *, int, umode_t);
@@ -675,8 +650,7 @@ static inline ssize_t generic_write_sync(struct kiocb *iocb, ssize_t count)
 }
 
 
-int notify_change(struct user_namespace *, struct dentry *,
-		  struct iattr *, struct inode **);
+int notify_change(struct user_namespace *, struct dentry *, struct iattr *, struct inode **);
 int inode_permission(struct user_namespace *, struct inode *, int);
 int generic_permission(struct user_namespace *, struct inode *, int);
 
@@ -741,8 +715,7 @@ alloc_inode_sb(struct super_block *sb, struct kmem_cache *cache, gfp_t gfp)
 
 extern int generic_file_mmap(struct file *, struct vm_area_struct *);
 extern ssize_t generic_write_checks(struct kiocb *, struct iov_iter *);
-ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *to,
-		ssize_t already_read);
+ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *to, ssize_t already_read);
 extern ssize_t generic_file_read_iter(struct kiocb *, struct iov_iter *);
 extern ssize_t __generic_file_write_iter(struct kiocb *, struct iov_iter *);
 extern ssize_t generic_file_write_iter(struct kiocb *, struct iov_iter *);
@@ -758,11 +731,8 @@ extern void put_filesystem(struct file_system_type *fs);
 /* Removed: get_super, get_active_super, drop_super, drop_super_exclusive,
    iterate_supers, iterate_supers_type - never called */
 
-extern int simple_setattr(struct user_namespace *, struct dentry *,
-			  struct iattr *);
-extern int simple_write_begin(struct file *file, struct address_space *mapping,
-			loff_t pos, unsigned len,
-			struct page **pagep, void **fsdata);
+extern int simple_setattr(struct user_namespace *, struct dentry *, struct iattr *);
+extern int simple_write_begin(struct file *file, struct address_space *mapping, loff_t pos, unsigned len, struct page **pagep, void **fsdata);
 extern const struct address_space_operations ram_aops;
 extern int always_delete_dentry(const struct dentry *);
 extern const struct dentry_operations simple_dentry_operations;
@@ -772,8 +742,7 @@ extern struct dentry *simple_lookup(struct inode *, struct dentry *, unsigned in
 
 
 int setattr_prepare(struct user_namespace *, struct dentry *, struct iattr *);
-void setattr_copy(struct user_namespace *, struct inode *inode,
-		  const struct iattr *attr);
+void setattr_copy(struct user_namespace *, struct inode *inode, const struct iattr *attr);
 
 extern int file_update_time(struct file *file);
 

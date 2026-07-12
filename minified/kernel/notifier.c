@@ -1,8 +1,7 @@
 #include <linux/kdebug.h>
 #include <linux/kprobes.h>
 
-int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
-			       unsigned long val, void *v)
+int atomic_notifier_call_chain(struct atomic_notifier_head *nh, unsigned long val, void *v)
 {
 	/*
 	 * No notifier is ever registered on any atomic chain in this build
@@ -15,8 +14,7 @@ int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 	return NOTIFY_DONE;
 }
 
-int notrace notify_die(enum die_val val, const char *str,
-	       struct pt_regs *regs, long err, int trap, int sig)
+int notrace notify_die(enum die_val val, const char *str, struct pt_regs *regs, long err, int trap, int sig)
 {
 	/*
 	 * No die-notifier is ever registered in this build (there is no

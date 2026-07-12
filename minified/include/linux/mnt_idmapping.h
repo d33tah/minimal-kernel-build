@@ -12,15 +12,12 @@ static inline bool initial_idmapping(const struct user_namespace *ns)
 	return ns == &init_user_ns;
 }
 
-static inline bool no_idmapping(const struct user_namespace *mnt_userns,
-				const struct user_namespace *fs_userns)
+static inline bool no_idmapping(const struct user_namespace *mnt_userns, const struct user_namespace *fs_userns)
 {
 	return initial_idmapping(mnt_userns) || mnt_userns == fs_userns;
 }
 
-static inline kuid_t mapped_kuid_fs(struct user_namespace *mnt_userns,
-				    struct user_namespace *fs_userns,
-				    kuid_t kuid)
+static inline kuid_t mapped_kuid_fs(struct user_namespace *mnt_userns, struct user_namespace *fs_userns, kuid_t kuid)
 {
 	uid_t uid;
 
@@ -35,9 +32,7 @@ static inline kuid_t mapped_kuid_fs(struct user_namespace *mnt_userns,
 	return make_kuid(mnt_userns, uid);
 }
 
-static inline kgid_t mapped_kgid_fs(struct user_namespace *mnt_userns,
-				    struct user_namespace *fs_userns,
-				    kgid_t kgid)
+static inline kgid_t mapped_kgid_fs(struct user_namespace *mnt_userns, struct user_namespace *fs_userns, kgid_t kgid)
 {
 	gid_t gid;
 
@@ -52,9 +47,7 @@ static inline kgid_t mapped_kgid_fs(struct user_namespace *mnt_userns,
 	return make_kgid(mnt_userns, gid);
 }
 
-static inline kuid_t mapped_kuid_user(struct user_namespace *mnt_userns,
-				      struct user_namespace *fs_userns,
-				      kuid_t kuid)
+static inline kuid_t mapped_kuid_user(struct user_namespace *mnt_userns, struct user_namespace *fs_userns, kuid_t kuid)
 {
 	uid_t uid;
 
@@ -68,9 +61,7 @@ static inline kuid_t mapped_kuid_user(struct user_namespace *mnt_userns,
 	return make_kuid(fs_userns, uid);
 }
 
-static inline kgid_t mapped_kgid_user(struct user_namespace *mnt_userns,
-				      struct user_namespace *fs_userns,
-				      kgid_t kgid)
+static inline kgid_t mapped_kgid_user(struct user_namespace *mnt_userns, struct user_namespace *fs_userns, kgid_t kgid)
 {
 	gid_t gid;
 
@@ -84,14 +75,12 @@ static inline kgid_t mapped_kgid_user(struct user_namespace *mnt_userns,
 	return make_kgid(fs_userns, gid);
 }
 
-static inline kuid_t mapped_fsuid(struct user_namespace *mnt_userns,
-				  struct user_namespace *fs_userns)
+static inline kuid_t mapped_fsuid(struct user_namespace *mnt_userns, struct user_namespace *fs_userns)
 {
 	return mapped_kuid_user(mnt_userns, fs_userns, current_fsuid());
 }
 
-static inline kgid_t mapped_fsgid(struct user_namespace *mnt_userns,
-				  struct user_namespace *fs_userns)
+static inline kgid_t mapped_fsgid(struct user_namespace *mnt_userns, struct user_namespace *fs_userns)
 {
 	return mapped_kgid_user(mnt_userns, fs_userns, current_fsgid());
 }

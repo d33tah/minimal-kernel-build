@@ -32,8 +32,7 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc)
 		res = action->handler(irq, action->dev_id);
 
 
-		if (WARN_ONCE(!irqs_disabled(),"irq %u handler %pS enabled interrupts\n",
-			      irq, action->handler))
+		if (WARN_ONCE(!irqs_disabled(),"irq %u handler %pS enabled interrupts\n", irq, action->handler))
 			local_irq_disable();
 
 		retval |= res;

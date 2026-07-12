@@ -39,26 +39,20 @@ void __init early_ioremap_init(void)
 
 	 
 #define __FIXADDR_TOP (-PAGE_SIZE)
-	BUILD_BUG_ON((__fix_to_virt(FIX_BTMAP_BEGIN) >> PMD_SHIFT)
-		     != (__fix_to_virt(FIX_BTMAP_END) >> PMD_SHIFT));
+	BUILD_BUG_ON((__fix_to_virt(FIX_BTMAP_BEGIN) >> PMD_SHIFT) != (__fix_to_virt(FIX_BTMAP_END) >> PMD_SHIFT));
 #undef __FIXADDR_TOP
 	if (pmd != early_ioremap_pmd(fix_to_virt(FIX_BTMAP_END))) {
 		WARN_ON(1);
-		printk(KERN_WARNING "pmd %p != %p\n",
-		       pmd, early_ioremap_pmd(fix_to_virt(FIX_BTMAP_END)));
-		printk(KERN_WARNING "fix_to_virt(FIX_BTMAP_BEGIN): %08lx\n",
-			fix_to_virt(FIX_BTMAP_BEGIN));
-		printk(KERN_WARNING "fix_to_virt(FIX_BTMAP_END):   %08lx\n",
-			fix_to_virt(FIX_BTMAP_END));
+		printk(KERN_WARNING "pmd %p != %p\n", pmd, early_ioremap_pmd(fix_to_virt(FIX_BTMAP_END)));
+		printk(KERN_WARNING "fix_to_virt(FIX_BTMAP_BEGIN): %08lx\n", fix_to_virt(FIX_BTMAP_BEGIN));
+		printk(KERN_WARNING "fix_to_virt(FIX_BTMAP_END):   %08lx\n", fix_to_virt(FIX_BTMAP_END));
 
 		printk(KERN_WARNING "FIX_BTMAP_END:       %d\n", FIX_BTMAP_END);
-		printk(KERN_WARNING "FIX_BTMAP_BEGIN:     %d\n",
-		       FIX_BTMAP_BEGIN);
+		printk(KERN_WARNING "FIX_BTMAP_BEGIN:     %d\n", FIX_BTMAP_BEGIN);
 	}
 }
 
-void __init __early_set_fixmap(enum fixed_addresses idx,
-			       phys_addr_t phys, pgprot_t flags)
+void __init __early_set_fixmap(enum fixed_addresses idx, phys_addr_t phys, pgprot_t flags)
 {
 	unsigned long addr = __fix_to_virt(idx);
 	pte_t *pte;

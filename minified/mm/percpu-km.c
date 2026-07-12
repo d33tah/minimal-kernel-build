@@ -2,8 +2,7 @@
 
 #include <linux/log2.h>
 
-static int pcpu_populate_chunk(struct pcpu_chunk *chunk,
-			       int page_start, int page_end, gfp_t gfp)
+static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int page_start, int page_end, gfp_t gfp)
 {
 	return 0;
 }
@@ -47,8 +46,7 @@ static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai)
 	alloc_pages = roundup_pow_of_two(nr_pages);
 
 	if (alloc_pages > nr_pages)
-		pr_warn("wasting %zu pages per chunk\n",
-			alloc_pages - nr_pages);
+		pr_warn("wasting %zu pages per chunk\n", alloc_pages - nr_pages);
 
 	return 0;
 }

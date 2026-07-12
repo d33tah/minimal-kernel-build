@@ -55,12 +55,9 @@ extern void finalize_exec(struct linux_binprm *bprm);
 #define EXSTACK_DISABLE_X 1	 
 #define EXSTACK_ENABLE_X  2	 
 
-extern int setup_arg_pages(struct linux_binprm * bprm,
-			   unsigned long stack_top,
-			   int executable_stack);
+extern int setup_arg_pages(struct linux_binprm * bprm, unsigned long stack_top, int executable_stack);
 int copy_string_kernel(const char *arg, struct linux_binprm *bprm);
 
-int kernel_execve(const char *filename,
-		  const char *const *argv, const char *const *envp);
+int kernel_execve(const char *filename, const char *const *argv, const char *const *envp);
 
 #endif  

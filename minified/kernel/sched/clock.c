@@ -50,9 +50,7 @@ notrace static void __set_sched_clock_stable(void)
 	__sched_clock_offset = (scd->tick_gtod + __gtod_offset) - (scd->tick_raw);
 	local_irq_enable();
 
-	printk(KERN_INFO "sched_clock: Marking stable (%lld, %lld)->(%lld, %lld)\n",
-			scd->tick_gtod, __gtod_offset,
-			scd->tick_raw,  __sched_clock_offset);
+	printk(KERN_INFO "sched_clock: Marking stable (%lld, %lld)->(%lld, %lld)\n", scd->tick_gtod, __gtod_offset, scd->tick_raw,  __sched_clock_offset);
 
 	static_branch_enable(&__sched_clock_stable);
 }

@@ -48,13 +48,10 @@ void __init early_memunmap(void *vaddr, unsigned long size)
 		}
 	}
 
-	if (WARN(slot < 0, "%s(%p, %08lx) not found slot\n",
-		  __func__, addr, size))
+	if (WARN(slot < 0, "%s(%p, %08lx) not found slot\n", __func__, addr, size))
 		return;
 
-	if (WARN(prev_size[slot] != size,
-		 "%s(%p, %08lx) [%d] size not consistent %08lx\n",
-		  __func__, addr, size, slot, prev_size[slot]))
+	if (WARN(prev_size[slot] != size, "%s(%p, %08lx) [%d] size not consistent %08lx\n", __func__, addr, size, slot, prev_size[slot]))
 		return;
 
 	virt_addr = (unsigned long)addr;
@@ -95,8 +92,7 @@ early_memremap(resource_size_t phys_addr, unsigned long size)
 		}
 	}
 
-	if (WARN(slot < 0, "%s(%pa, %08lx) not found slot\n",
-		 __func__, &phys_addr, size))
+	if (WARN(slot < 0, "%s(%pa, %08lx) not found slot\n", __func__, &phys_addr, size))
 		return NULL;
 
 	last_addr = phys_addr + size - 1;

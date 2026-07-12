@@ -186,8 +186,7 @@ int kthreadd(void *unused)
 		while (!list_empty(&kthread_create_list)) {
 			struct kthread_create_info *create;
 
-			create = list_entry(kthread_create_list.next,
-					    struct kthread_create_info, list);
+			create = list_entry(kthread_create_list.next, struct kthread_create_info, list);
 			list_del_init(&create->list);
 			spin_unlock(&kthread_create_lock);
 

@@ -226,8 +226,7 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
 			break;
 		}
 		if (def != S_DEF_AUTO)
-			conf_warning("symbol value '%s' invalid for %s",
-				     p, sym->name);
+			conf_warning("symbol value '%s' invalid for %s", p, sym->name);
 		return 1;
 	case S_STRING:
 		 
@@ -253,8 +252,7 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
 			sym->flags |= def_flags;
 		} else {
 			if (def != S_DEF_AUTO)
-				conf_warning("symbol value '%s' invalid for %s",
-					     p, sym->name);
+				conf_warning("symbol value '%s' invalid for %s", p, sym->name);
 			return 1;
 		}
 	}
@@ -359,8 +357,7 @@ int conf_read_simple(const char *name, int def)
 
 			in = zconf_fopen(env);
 			if (in) {
-				conf_message("using defaults found in %s",
-					     env);
+				conf_message("using defaults found in %s", env);
 				goto load;
 			}
 
@@ -455,8 +452,7 @@ load:
 				continue;
 		} else {
 			if (line[0] != '\r' && line[0] != '\n')
-				conf_warning("unexpected data: %.*s",
-					     (int)strcspn(line, "\r\n"), line);
+				conf_warning("unexpected data: %.*s", (int)strcspn(line, "\r\n"), line);
 
 			continue;
 		}
@@ -564,8 +560,7 @@ static void conf_write_heading(FILE *fp, const struct comment_style *cs)
 {
 	fprintf(fp, "%s\n", cs->prefix);
 
-	fprintf(fp, "%s Automatically generated file; DO NOT EDIT.\n",
-		cs->decoration);
+	fprintf(fp, "%s Automatically generated file; DO NOT EDIT.\n", cs->decoration);
 
 	fprintf(fp, "%s %s\n", cs->decoration, rootmenu.prompt->text);
 
@@ -616,8 +611,7 @@ static char *escape_string_value(const char *in)
 
 enum output_n { OUTPUT_N_AS_UNSET, OUTPUT_N_NONE };
 
-static void __print_symbol(FILE *fp, struct symbol *sym, enum output_n output_n,
-			   bool escape_string)
+static void __print_symbol(FILE *fp, struct symbol *sym, enum output_n output_n, bool escape_string)
 {
 	const char *val;
 	char *escaped = NULL;
@@ -627,8 +621,7 @@ static void __print_symbol(FILE *fp, struct symbol *sym, enum output_n output_n,
 
 	val = sym_get_string_value(sym);
 
-	if ((sym->type == S_BOOLEAN || sym->type == S_TRISTATE) &&
-	    *val == 'n') {
+	if ((sym->type == S_BOOLEAN || sym->type == S_TRISTATE) && *val == 'n') {
 		if (output_n == OUTPUT_N_AS_UNSET)
 			fprintf(fp, "# %s%s is not set\n", CONFIG_, sym->name);
 		return;
@@ -687,8 +680,7 @@ static void print_symbol_for_c(FILE *fp, struct symbol *sym)
 		val = escaped;
 	}
 
-	fprintf(fp, "#define %s%s%s %s%s\n", CONFIG_, sym->name, sym_suffix,
-		val_prefix, val);
+	fprintf(fp, "#define %s%s%s %s%s\n", CONFIG_, sym->name, sym_suffix, val_prefix, val);
 
 	free(escaped);
 }
@@ -725,8 +717,7 @@ int conf_write(const char *name)
 		*tmpname = 0;
 		out = fopen(name, "w");
 	} else {
-		snprintf(tmpname, sizeof(tmpname), "%s.%d.tmp",
-			 name, (int)getpid());
+		snprintf(tmpname, sizeof(tmpname), "%s.%d.tmp", name, (int)getpid());
 		out = fopen(tmpname, "w");
 	}
 	if (!out)
@@ -744,13 +735,9 @@ int conf_write(const char *name)
 			if (!menu_is_visible(menu))
 				goto next;
 			str = menu_get_prompt(menu);
-			fprintf(out, "\n"
-				     "#\n"
-				     "# %s\n"
-				     "#\n", str);
+			fprintf(out, "\n" "#\n" "# %s\n" "#\n", str);
 			need_newline = false;
-		} else if (!(sym->flags & SYMBOL_CHOICE) &&
-			   !(sym->flags & SYMBOL_WRITTEN)) {
+		} else if (!(sym->flags & SYMBOL_CHOICE) && !(sym->flags & SYMBOL_WRITTEN)) {
 			sym_calc_value(sym);
 			if (!(sym->flags & SYMBOL_WRITE))
 				goto next;
@@ -769,8 +756,7 @@ next:
 		}
 
 end_check:
-		if (!menu->sym && menu_is_visible(menu) && menu != &rootmenu &&
-		    menu->prompt->type == P_MENU) {
+		if (!menu->sym && menu_is_visible(menu) && menu != &rootmenu && menu->prompt->type == P_MENU) {
 			fprintf(out, "# end of %s\n", menu_get_prompt(menu));
 			need_newline = true;
 		}
@@ -884,13 +870,11 @@ static int conf_touch_deps(void)
 				 
 				switch (sym->type) {
 				case S_BOOLEAN: case S_TRISTATE:
-					if (sym_get_tristate_value(sym) ==
-					    sym->def[S_DEF_AUTO].tri)
+					if (sym_get_tristate_value(sym) == sym->def[S_DEF_AUTO].tri)
 						continue;
 					break;
 				case S_STRING: case S_HEX: case S_INT:
-					if (!strcmp(sym_get_string_value(sym),
-						    sym->def[S_DEF_AUTO].val))
+					if (!strcmp(sym_get_string_value(sym), sym->def[S_DEF_AUTO].val))
 						continue;
 				}
 			} else {
@@ -914,9 +898,7 @@ static int conf_touch_deps(void)
 	return 0;
 }
 
-static int __conf_write_autoconf(const char *filename,
-				 void (*print_symbol)(FILE *, struct symbol *),
-				 const struct comment_style *comment_style)
+static int __conf_write_autoconf(const char *filename, void (*print_symbol)(FILE *, struct symbol *), const struct comment_style *comment_style)
 {
 	char tmp[PATH_MAX];
 	FILE *file;
@@ -976,16 +958,12 @@ int conf_write_autoconf(int overwrite)
 	for_all_symbols(i, sym)
 		sym_calc_value(sym);
 
-	ret = __conf_write_autoconf(conf_get_autoheader_name(),
-				    print_symbol_for_c,
-				    &comment_style_c);
+	ret = __conf_write_autoconf(conf_get_autoheader_name(), print_symbol_for_c, &comment_style_c);
 	if (ret)
 		return ret;
 
 	 
-	ret = __conf_write_autoconf(conf_get_autoconfig_name(),
-				    print_symbol_for_autoconf,
-				    &comment_style_pound);
+	ret = __conf_write_autoconf(conf_get_autoconfig_name(), print_symbol_for_autoconf, &comment_style_pound);
 	if (ret)
 		return ret;
 

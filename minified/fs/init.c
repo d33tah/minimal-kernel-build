@@ -65,8 +65,7 @@ int __init init_mknod(const char *filename, umode_t mode, unsigned int dev)
 		return PTR_ERR(dentry);
 
 	mode &= ~current_umask();
-	error = vfs_mknod(mnt_user_ns(path.mnt), path.dentry->d_inode,
-			  dentry, mode, new_decode_dev(dev));
+	error = vfs_mknod(mnt_user_ns(path.mnt), path.dentry->d_inode, dentry, mode, new_decode_dev(dev));
 	done_path_create(&path, dentry);
 	return error;
 }
@@ -91,8 +90,7 @@ int __init init_link(const char *oldname, const char *newname)
 	if (old_path.mnt != new_path.mnt)
 		goto out_dput;
 	mnt_userns = mnt_user_ns(new_path.mnt);
-	error = vfs_link(old_path.dentry, mnt_userns, new_path.dentry->d_inode,
-			 new_dentry, NULL);
+	error = vfs_link(old_path.dentry, mnt_userns, new_path.dentry->d_inode, new_dentry, NULL);
 out_dput:
 	done_path_create(&new_path, new_dentry);
 out:
@@ -109,8 +107,7 @@ int __init init_symlink(const char *oldname, const char *newname)
 	dentry = kern_path_create(newname, &path, 0);
 	if (IS_ERR(dentry))
 		return PTR_ERR(dentry);
-	error = vfs_symlink(mnt_user_ns(path.mnt), path.dentry->d_inode,
-			    dentry, oldname);
+	error = vfs_symlink(mnt_user_ns(path.mnt), path.dentry->d_inode, dentry, oldname);
 	done_path_create(&path, dentry);
 	return error;
 }
@@ -130,8 +127,7 @@ int __init init_mkdir(const char *pathname, umode_t mode)
 	if (IS_ERR(dentry))
 		return PTR_ERR(dentry);
 	mode &= ~current_umask();
-	error = vfs_mkdir(mnt_user_ns(path.mnt), path.dentry->d_inode,
-			  dentry, mode);
+	error = vfs_mkdir(mnt_user_ns(path.mnt), path.dentry->d_inode, dentry, mode);
 	done_path_create(&path, dentry);
 	return error;
 }

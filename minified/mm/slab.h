@@ -158,12 +158,8 @@ gfp_t kmalloc_fix_flags(gfp_t flags);
  
 int __kmem_cache_create(struct kmem_cache *, slab_flags_t flags);
 
-struct kmem_cache *create_kmalloc_cache(const char *name, unsigned int size,
-			slab_flags_t flags, unsigned int useroffset,
-			unsigned int usersize);
-extern void create_boot_cache(struct kmem_cache *, const char *name,
-			unsigned int size, slab_flags_t flags,
-			unsigned int useroffset, unsigned int usersize);
+struct kmem_cache *create_kmalloc_cache(const char *name, unsigned int size, slab_flags_t flags, unsigned int useroffset, unsigned int usersize);
+extern void create_boot_cache(struct kmem_cache *, const char *name, unsigned int size, slab_flags_t flags, unsigned int useroffset, unsigned int usersize);
 
 
  
@@ -190,11 +186,9 @@ static inline enum node_stat_item cache_vmstat_idx(struct kmem_cache *s)
 
 /* slab_objcgs, memcg_from_slab_obj removed - unused */
 
-static __always_inline void account_slab(struct slab *slab, int order,
-					 struct kmem_cache *s, gfp_t gfp)
+static __always_inline void account_slab(struct slab *slab, int order, struct kmem_cache *s, gfp_t gfp)
 {
-	mod_node_page_state(slab_pgdat(slab), cache_vmstat_idx(s),
-			    PAGE_SIZE << order);
+	mod_node_page_state(slab_pgdat(slab), cache_vmstat_idx(s), PAGE_SIZE << order);
 }
 
 /* unaccount_slab removed - only caller was __free_slab (dead slab-free path) */
@@ -204,10 +198,7 @@ static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 	return s;
 }
 
-static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
-						     struct list_lru *lru,
-						     struct obj_cgroup **objcgp,
-						     size_t size, gfp_t flags)
+static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s, struct list_lru *lru, struct obj_cgroup **objcgp, size_t size, gfp_t flags)
 {
 	flags &= gfp_allowed_mask;
 
@@ -216,9 +207,7 @@ static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
 	return s;
 }
 
-static inline void slab_post_alloc_hook(struct kmem_cache *s,
-					struct obj_cgroup *objcg, gfp_t flags,
-					size_t size, void **p, bool init)
+static inline void slab_post_alloc_hook(struct kmem_cache *s, struct obj_cgroup *objcg, gfp_t flags, size_t size, void **p, bool init)
 {
 	size_t i;
 

@@ -3,8 +3,7 @@
 
 #include <linux/fs_parser.h>  
 
-struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir,
-	 umode_t mode, dev_t dev);
+struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir, umode_t mode, dev_t dev);
 extern int ramfs_init_fs_context(struct fs_context *fc);
 
 

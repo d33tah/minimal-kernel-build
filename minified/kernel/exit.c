@@ -66,8 +66,7 @@ void __noreturn do_exit(long code)
 	if (group_dead) {
 		
 		if (unlikely(is_global_init(tsk)))
-			panic("Attempted to kill init! exitcode=0x%08x\n",
-				(int)code);
+			panic("Attempted to kill init! exitcode=0x%08x\n", (int)code);
 	}
 
 	exit_mm();

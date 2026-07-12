@@ -174,8 +174,7 @@ void register_console(struct console *newcon)
 	int err;
 
 	for_each_console(con) {
-		if (WARN(con == newcon, "console '%s%d' already registered\n",
-					 con->name, con->index))
+		if (WARN(con == newcon, "console '%s%d' already registered\n", con->name, con->index))
 			return;
 	}
 

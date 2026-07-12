@@ -1,8 +1,7 @@
 
 #include <linux/mm.h>
 
-int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry,
-		    struct iattr *attr)
+int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry, struct iattr *attr)
 {
 	struct inode *inode = d_inode(dentry);
 	unsigned int ia_valid = attr->ia_valid;
@@ -26,8 +25,7 @@ kill_priv:
 	return 0;
 }
 
-void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
-		  const struct iattr *attr)
+void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode, const struct iattr *attr)
 {
 	unsigned int ia_valid = attr->ia_valid;
 
@@ -43,8 +41,7 @@ void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode,
 	}
 }
 
-int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
-		  struct iattr *attr, struct inode **delegated_inode)
+int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry, struct iattr *attr, struct inode **delegated_inode)
 {
 	struct inode *inode = dentry->d_inode;
 	umode_t mode = inode->i_mode;
@@ -62,8 +59,7 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry,
 	attr->ia_mtime = now;
 
 
-	if ((ia_valid & (ATTR_KILL_SUID|ATTR_KILL_SGID)) &&
-	    (ia_valid & ATTR_MODE))
+	if ((ia_valid & (ATTR_KILL_SUID|ATTR_KILL_SGID)) && (ia_valid & ATTR_MODE))
 		BUG();
 
 	if (ia_valid & ATTR_KILL_SUID) {

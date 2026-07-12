@@ -29,9 +29,7 @@ extern const struct vdso_image vdso_image_32;
 
 extern void __init init_vdso_image(const struct vdso_image *image);
 
-extern bool fixup_vdso_exception(struct pt_regs *regs, int trapnr,
-				 unsigned long error_code,
-				 unsigned long fault_addr);
+extern bool fixup_vdso_exception(struct pt_regs *regs, int trapnr, unsigned long error_code, unsigned long fault_addr);
 #endif  
 
 #endif  

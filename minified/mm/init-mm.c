@@ -16,8 +16,7 @@ struct mm_struct init_mm = {
 	INIT_MM_CONTEXT(init_mm)
 };
 
-void setup_initial_init_mm(void *start_code, void *end_code,
-			   void *end_data, void *brk)
+void setup_initial_init_mm(void *start_code, void *end_code, void *end_data, void *brk)
 {
 	init_mm.brk = (unsigned long)brk;
 }

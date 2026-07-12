@@ -12,8 +12,7 @@ unsigned int sysctl_nr_open __read_mostly = 1024*1024;
 #define BITBIT_NR(nr)	BITS_TO_LONGS(BITS_TO_LONGS(nr))
 #define BITBIT_SIZE(nr)	(BITBIT_NR(nr) * sizeof(long))
 
-static void copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt,
-			    unsigned int count)
+static void copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt, unsigned int count)
 {
 	unsigned int cpy, set;
 
@@ -355,8 +354,7 @@ void do_close_on_exec(struct files_struct *files)
 	spin_unlock(&files->file_lock);
 }
 
-static inline struct file *__fget_files_rcu(struct files_struct *files,
-	unsigned int fd, fmode_t mask)
+static inline struct file *__fget_files_rcu(struct files_struct *files, unsigned int fd, fmode_t mask)
 {
 	for (;;) {
 		struct file *file;
@@ -379,8 +377,7 @@ static inline struct file *__fget_files_rcu(struct files_struct *files,
 			continue;
 
 		 
-		if (unlikely(rcu_dereference_raw(files->fdt) != fdt) ||
-		    unlikely(rcu_dereference_raw(*fdentry) != file)) {
+		if (unlikely(rcu_dereference_raw(files->fdt) != fdt) || unlikely(rcu_dereference_raw(*fdentry) != file)) {
 			fput(file);
 			continue;
 		}
@@ -390,8 +387,7 @@ static inline struct file *__fget_files_rcu(struct files_struct *files,
 	}
 }
 
-static struct file *__fget_files(struct files_struct *files, unsigned int fd,
-				 fmode_t mask)
+static struct file *__fget_files(struct files_struct *files, unsigned int fd, fmode_t mask)
 {
 	struct file *file;
 

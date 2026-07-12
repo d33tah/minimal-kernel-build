@@ -120,8 +120,7 @@ extern void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op
 
 
 extern struct dentry * d_alloc(struct dentry *, const struct qstr *);
-extern struct dentry * d_alloc_parallel(struct dentry *, const struct qstr *,
-					wait_queue_head_t *);
+extern struct dentry * d_alloc_parallel(struct dentry *, const struct qstr *, wait_queue_head_t *);
 extern struct dentry * d_make_root(struct inode *);
 
 
@@ -129,8 +128,7 @@ extern void d_add(struct dentry *, struct inode *);
 
 extern struct dentry *d_lookup(const struct dentry *, const struct qstr *);
 extern struct dentry *__d_lookup(const struct dentry *, const struct qstr *);
-extern struct dentry *__d_lookup_rcu(const struct dentry *parent,
-				const struct qstr *name, unsigned *seq);
+extern struct dentry *__d_lookup_rcu(const struct dentry *parent, const struct qstr *name, unsigned *seq);
 
 
 static inline struct dentry *dget(struct dentry *dentry)

@@ -122,8 +122,7 @@ static bool cred_cap_issubset(const struct cred *set, const struct cred *subset)
 
 	 
 	for (;subset_ns != &init_user_ns; subset_ns = subset_ns->parent) {
-		if ((set_ns == subset_ns->parent)  &&
-		    uid_eq(subset_ns->owner, set->euid))
+		if ((set_ns == subset_ns->parent)  && uid_eq(subset_ns->owner, set->euid))
 			return true;
 	}
 
@@ -141,11 +140,7 @@ int commit_creds(struct cred *new)
 	get_cred(new);  
 
 	 
-	if (!uid_eq(old->euid, new->euid) ||
-	    !gid_eq(old->egid, new->egid) ||
-	    !uid_eq(old->fsuid, new->fsuid) ||
-	    !gid_eq(old->fsgid, new->fsgid) ||
-	    !cred_cap_issubset(old, new)) {
+	if (!uid_eq(old->euid, new->euid) || !gid_eq(old->egid, new->egid) || !uid_eq(old->fsuid, new->fsuid) || !gid_eq(old->fsgid, new->fsgid) || !cred_cap_issubset(old, new)) {
 		if (task->mm)
 			set_dumpable(task->mm, 0);
 
@@ -195,8 +190,7 @@ int set_cred_ucounts(struct cred *new)
 void __init cred_init(void)
 {
 	 
-	cred_jar = kmem_cache_create("cred_jar", sizeof(struct cred), 0,
-			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, NULL);
+	cred_jar = kmem_cache_create("cred_jar", sizeof(struct cred), 0, SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, NULL);
 }
 
 

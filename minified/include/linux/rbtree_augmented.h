@@ -12,20 +12,16 @@ struct rb_augment_callbacks {
 	void (*rotate)(struct rb_node *old, struct rb_node *new);
 };
 
-extern void __rb_insert_augmented(struct rb_node *node, struct rb_root *root,
-	void (*augment_rotate)(struct rb_node *old, struct rb_node *new));
+extern void __rb_insert_augmented(struct rb_node *node, struct rb_root *root, void (*augment_rotate)(struct rb_node *old, struct rb_node *new));
 
 static inline void
-rb_insert_augmented(struct rb_node *node, struct rb_root *root,
-		    const struct rb_augment_callbacks *augment)
+rb_insert_augmented(struct rb_node *node, struct rb_root *root, const struct rb_augment_callbacks *augment)
 {
 	__rb_insert_augmented(node, root, augment->rotate);
 }
 
 static inline void
-rb_insert_augmented_cached(struct rb_node *node,
-			   struct rb_root_cached *root, bool newleft,
-			   const struct rb_augment_callbacks *augment)
+rb_insert_augmented_cached(struct rb_node *node, struct rb_root_cached *root, bool newleft, const struct rb_augment_callbacks *augment)
 {
 	if (newleft)
 		root->rb_leftmost = node;
@@ -56,15 +52,13 @@ static inline void rb_set_parent(struct rb_node *rb, struct rb_node *p)
 	rb->__rb_parent_color = rb_color(rb) | (unsigned long)p;
 }
 
-static inline void rb_set_parent_color(struct rb_node *rb,
-				       struct rb_node *p, int color)
+static inline void rb_set_parent_color(struct rb_node *rb, struct rb_node *p, int color)
 {
 	rb->__rb_parent_color = (unsigned long)p | color;
 }
 
 static inline void
-__rb_change_child(struct rb_node *old, struct rb_node *new,
-		  struct rb_node *parent, struct rb_root *root)
+__rb_change_child(struct rb_node *old, struct rb_node *new, struct rb_node *parent, struct rb_root *root)
 {
 	if (parent) {
 		if (parent->rb_left == old)
@@ -75,12 +69,10 @@ __rb_change_child(struct rb_node *old, struct rb_node *new,
 		WRITE_ONCE(root->rb_node, new);
 }
 
-extern void __rb_erase_color(struct rb_node *parent, struct rb_root *root,
-	void (*augment_rotate)(struct rb_node *old, struct rb_node *new));
+extern void __rb_erase_color(struct rb_node *parent, struct rb_root *root, void (*augment_rotate)(struct rb_node *old, struct rb_node *new));
 
 static __always_inline struct rb_node *
-__rb_erase_augmented(struct rb_node *node, struct rb_root *root,
-		     const struct rb_augment_callbacks *augment)
+__rb_erase_augmented(struct rb_node *node, struct rb_root *root, const struct rb_augment_callbacks *augment)
 {
 	struct rb_node *child = node->rb_right;
 	struct rb_node *tmp = node->rb_left;
@@ -154,8 +146,7 @@ __rb_erase_augmented(struct rb_node *node, struct rb_root *root,
 }
 
 static __always_inline void
-rb_erase_augmented(struct rb_node *node, struct rb_root *root,
-		   const struct rb_augment_callbacks *augment)
+rb_erase_augmented(struct rb_node *node, struct rb_root *root, const struct rb_augment_callbacks *augment)
 {
 	struct rb_node *rebalance = __rb_erase_augmented(node, root, augment);
 	if (rebalance)
@@ -163,8 +154,7 @@ rb_erase_augmented(struct rb_node *node, struct rb_root *root,
 }
 
 static __always_inline void
-rb_erase_augmented_cached(struct rb_node *node, struct rb_root_cached *root,
-			  const struct rb_augment_callbacks *augment)
+rb_erase_augmented_cached(struct rb_node *node, struct rb_root_cached *root, const struct rb_augment_callbacks *augment)
 {
 	if (root->rb_leftmost == node)
 		root->rb_leftmost = rb_next(node);

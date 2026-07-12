@@ -1,8 +1,7 @@
 #include <linux/idr.h>
 #include <linux/slab.h>
 
-int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid,
-			unsigned long max, gfp_t gfp)
+int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid, unsigned long max, gfp_t gfp)
 {
 	struct radix_tree_iter iter;
 	void __rcu **slot;
@@ -75,8 +74,7 @@ void *idr_replace(struct idr *idr, void *ptr, unsigned long id)
 
 
 
-int ida_alloc_range(struct ida *ida, unsigned int min, unsigned int max,
-			gfp_t gfp)
+int ida_alloc_range(struct ida *ida, unsigned int min, unsigned int max, gfp_t gfp)
 {
 	XA_STATE(xas, &ida->xa, min / IDA_BITMAP_BITS);
 	unsigned bit = min % IDA_BITMAP_BITS;

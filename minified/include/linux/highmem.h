@@ -57,9 +57,7 @@ static inline void flush_anon_page(struct vm_area_struct *vma, struct page *page
  * __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE_MOVABLE (asm/page.h), so the generic inline never
  * compiled and clear_user_highpage (its sole consumer) was dead. */
 
-static inline void zero_user_segments(struct page *page,
-		unsigned start1, unsigned end1,
-		unsigned start2, unsigned end2)
+static inline void zero_user_segments(struct page *page, unsigned start1, unsigned end1, unsigned start2, unsigned end2)
 {
 	void *kaddr = kmap_local_page(page);
 	unsigned int i;
@@ -78,16 +76,14 @@ static inline void zero_user_segments(struct page *page,
 }
 
 
-static inline void zero_user(struct page *page,
-	unsigned start, unsigned size)
+static inline void zero_user(struct page *page, unsigned start, unsigned size)
 {
 	zero_user_segments(page, start, start + size, 0, 0);
 }
 
 #ifndef __HAVE_ARCH_COPY_USER_HIGHPAGE
 
-static inline void copy_user_highpage(struct page *to, struct page *from,
-	unsigned long vaddr, struct vm_area_struct *vma)
+static inline void copy_user_highpage(struct page *to, struct page *from, unsigned long vaddr, struct vm_area_struct *vma)
 {
 	char *vfrom, *vto;
 

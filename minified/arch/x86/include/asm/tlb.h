@@ -17,8 +17,7 @@ struct mmu_gather_batch {
 	struct page		*pages[];
 };
 
-extern bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page,
-				   int page_size);
+extern bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page, int page_size);
 #endif
 
 struct mmu_gather {
@@ -94,8 +93,7 @@ static inline void tlb_flush(struct mmu_gather *tlb)
 
 static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
 {
-	if (!(tlb->freed_tables || tlb->cleared_ptes || tlb->cleared_pmds ||
-	      tlb->cleared_puds || tlb->cleared_p4ds))
+	if (!(tlb->freed_tables || tlb->cleared_ptes || tlb->cleared_pmds || tlb->cleared_puds || tlb->cleared_p4ds))
 		return;
 
 	tlb_flush(tlb);

@@ -87,8 +87,7 @@ spurious_8259A_irq:
 		static int spurious_irq_mask;
 		 
 		if (!(spurious_irq_mask & irqmask)) {
-			printk_deferred(KERN_DEBUG
-			       "spurious 8259A interrupt: IRQ%d.\n", irq);
+			printk_deferred(KERN_DEBUG "spurious 8259A interrupt: IRQ%d.\n", irq);
 			spurious_irq_mask |= irqmask;
 		}
 

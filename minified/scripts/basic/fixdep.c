@@ -39,8 +39,7 @@ static int is_defined_config(const char *name, int len, unsigned int hash)
 	struct item *aux;
 
 	for (aux = hashtab[hash % HASHSZ]; aux; aux = aux->next) {
-		if (aux->hash == hash && aux->len == len &&
-		    memcmp(aux->name, name, len) == 0)
+		if (aux->hash == hash && aux->len == len && memcmp(aux->name, name, len) == 0)
 			return 1;
 	}
 	return 0;
@@ -180,8 +179,7 @@ static void parse_dep_file(char *m, const char *target)
 				 
 				if (!saw_any_target) {
 					saw_any_target = 1;
-					printf("source_%s := %s\n\n",
-					       target, m);
+					printf("source_%s := %s\n\n", target, m);
 					printf("deps_%s := \\\n", target);
 				}
 				is_first_dep = 0;

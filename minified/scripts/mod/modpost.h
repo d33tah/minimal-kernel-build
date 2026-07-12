@@ -117,8 +117,7 @@ static inline int is_shndx_special(unsigned int i)
 #define SPECIAL(i) ((i) - (SHN_HIRESERVE + 1))
 
  
-static inline unsigned int get_secindex(const struct elf_info *info,
-					const Elf_Sym *sym)
+static inline unsigned int get_secindex(const struct elf_info *info, const Elf_Sym *sym)
 {
 	if (is_shndx_special(sym->st_shndx))
 		return SPECIAL(sym->st_shndx);

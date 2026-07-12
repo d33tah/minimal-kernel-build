@@ -102,8 +102,7 @@ static __init void set_intr_gate(unsigned int n, const void *addr)
 
 void __init idt_setup_early_traps(void)
 {
-	idt_setup_from_table(idt_table, early_idts, ARRAY_SIZE(early_idts),
-			     true);
+	idt_setup_from_table(idt_table, early_idts, ARRAY_SIZE(early_idts), true);
 	load_idt(&idt_descr);
 }
 
@@ -116,8 +115,7 @@ void __init idt_setup_traps(void)
 static void __init idt_map_in_cea(void)
 {
 	 
-	cea_set_pte(CPU_ENTRY_AREA_RO_IDT_VADDR, __pa_symbol(idt_table),
-		    PAGE_KERNEL_RO);
+	cea_set_pte(CPU_ENTRY_AREA_RO_IDT_VADDR, __pa_symbol(idt_table), PAGE_KERNEL_RO);
 	idt_descr.address = CPU_ENTRY_AREA_RO_IDT;
 }
 

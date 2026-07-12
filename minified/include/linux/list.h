@@ -20,9 +20,7 @@ static inline void INIT_LIST_HEAD(struct list_head *list)
 	WRITE_ONCE(list->prev, list);
 }
 
-static inline void __list_add(struct list_head *new,
-			      struct list_head *prev,
-			      struct list_head *next)
+static inline void __list_add(struct list_head *new, struct list_head *prev, struct list_head *next)
 {
 	next->prev = new;
 	new->next = next;
@@ -71,8 +69,7 @@ static inline void list_move(struct list_head *list, struct list_head *head)
 	list_add(list, head);
 }
 
-static inline void list_move_tail(struct list_head *list,
-				  struct list_head *head)
+static inline void list_move_tail(struct list_head *list, struct list_head *head)
 {
 	__list_del_entry(list);
 	list_add_tail(list, head);

@@ -44,13 +44,10 @@ extern irqreturn_t no_action(int cpl, void *dev_id);
 #define IRQ_NOTCONNECTED	(1U << 31)
 
 extern int __must_check
-request_threaded_irq(unsigned int irq, irq_handler_t handler,
-		     irq_handler_t thread_fn,
-		     unsigned long flags, const char *name, void *dev);
+request_threaded_irq(unsigned int irq, irq_handler_t handler, irq_handler_t thread_fn, unsigned long flags, const char *name, void *dev);
 
 static inline int __must_check
-request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
-	    const char *name, void *dev)
+request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags, const char *name, void *dev)
 {
 	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
 }

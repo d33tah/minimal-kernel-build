@@ -246,12 +246,7 @@ int file_update_time(struct file *file)
 void __init inode_init(void)
 {
 	
-	inode_cachep = kmem_cache_create("inode_cache",
-					 sizeof(struct inode),
-					 0,
-					 (SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|
-					 SLAB_ACCOUNT),
-					 init_once);
+	inode_cachep = kmem_cache_create("inode_cache", sizeof(struct inode), 0, (SLAB_RECLAIM_ACCOUNT|SLAB_PANIC| SLAB_ACCOUNT), init_once);
 }
 
 void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
@@ -265,13 +260,10 @@ void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 		inode->i_fop = &def_chr_fops;
 		inode->i_rdev = rdev;
 	} else
-		printk(KERN_DEBUG "init_special_inode: bogus i_mode (%o) for"
-				  " inode %s:%lu\n", mode, inode->i_sb->s_id,
-				  inode->i_ino);
+		printk(KERN_DEBUG "init_special_inode: bogus i_mode (%o) for" " inode %s:%lu\n", mode, inode->i_sb->s_id, inode->i_ino);
 }
 
-void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
-		      const struct inode *dir, umode_t mode)
+void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode, const struct inode *dir, umode_t mode)
 {
 	inode_fsuid_set(inode, mnt_userns);
 	if (dir && dir->i_mode & S_ISGID) {
@@ -284,8 +276,7 @@ void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 	inode->i_mode = mode;
 }
 
-bool inode_owner_or_capable(struct user_namespace *mnt_userns,
-			    const struct inode *inode)
+bool inode_owner_or_capable(struct user_namespace *mnt_userns, const struct inode *inode)
 {
 	kuid_t i_uid;
 	struct user_namespace *ns;

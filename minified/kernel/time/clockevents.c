@@ -7,8 +7,7 @@ static LIST_HEAD(clockevent_devices);
 static LIST_HEAD(clockevents_released);
 static DEFINE_RAW_SPINLOCK(clockevents_lock);
 
-static int __clockevents_switch_state(struct clock_event_device *dev,
-				      enum clock_event_state state)
+static int __clockevents_switch_state(struct clock_event_device *dev, enum clock_event_state state)
 {
 	/*
 	 * No device sets CLOCK_EVT_FEAT_DUMMY on this build, so the dummy
@@ -42,8 +41,7 @@ static int __clockevents_switch_state(struct clock_event_device *dev,
 	}
 }
 
-void clockevents_switch_state(struct clock_event_device *dev,
-			      enum clock_event_state state)
+void clockevents_switch_state(struct clock_event_device *dev, enum clock_event_state state)
 {
 	if (clockevent_get_state(dev) != state) {
 		if (__clockevents_switch_state(dev, state))
@@ -66,8 +64,7 @@ static void clockevents_notify_released(void)
 	struct clock_event_device *dev;
 
 	while (!list_empty(&clockevents_released)) {
-		dev = list_entry(clockevents_released.next,
-				 struct clock_event_device, list);
+		dev = list_entry(clockevents_released.next, struct clock_event_device, list);
 		list_move(&dev->list, &clockevent_devices);
 		tick_check_new_device(dev);
 	}
@@ -86,8 +83,7 @@ void clockevents_register_device(struct clock_event_device *dev)
 	}
 
 	if (dev->cpumask == cpu_all_mask) {
-		WARN(1, "%s cpumask == cpu_all_mask, using cpu_possible_mask instead\n",
-		     dev->name);
+		WARN(1, "%s cpumask == cpu_all_mask, using cpu_possible_mask instead\n", dev->name);
 		dev->cpumask = cpu_possible_mask;
 	}
 
@@ -108,9 +104,7 @@ void clockevents_register_device(struct clock_event_device *dev)
  * reprogramming path, so the freq/min_delta/max_delta arguments here are dead;
  * config_and_register just registers the device.
  */
-void clockevents_config_and_register(struct clock_event_device *dev,
-				     u32 freq, unsigned long min_delta,
-				     unsigned long max_delta)
+void clockevents_config_and_register(struct clock_event_device *dev, u32 freq, unsigned long min_delta, unsigned long max_delta)
 {
 	clockevents_register_device(dev);
 }
@@ -119,8 +113,7 @@ void clockevents_handle_noop(struct clock_event_device *dev)
 {
 }
 
-void clockevents_exchange_device(struct clock_event_device *old,
-				 struct clock_event_device *new)
+void clockevents_exchange_device(struct clock_event_device *old, struct clock_event_device *new)
 {
 	 
 	if (old) {

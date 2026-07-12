@@ -14,8 +14,7 @@ extern void __init chrdev_init(void);
 extern int parse_monolithic_mount_data(struct fs_context *, void *);
 
  
-extern int filename_lookup(struct filename *name, unsigned flags,
-			   struct path *path);
+extern int filename_lookup(struct filename *name, unsigned flags, struct path *path);
 int do_rmdir(struct filename *name);
 int do_unlinkat(struct filename *name);
 
@@ -36,8 +35,7 @@ struct open_flags {
 	umode_t mode;
 	int acc_mode, intent, lookup_flags;
 };
-extern struct file *do_filp_open(struct filename *pathname,
-		const struct open_flags *op);
+extern struct file *do_filp_open(struct filename *pathname, const struct open_flags *op);
 extern int build_open_flags(const struct open_how *how, struct open_flags *op);
 
 int chmod_common(const struct path *path, umode_t mode);

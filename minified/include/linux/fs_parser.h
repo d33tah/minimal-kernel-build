@@ -11,10 +11,7 @@ struct constant_table {
 
 struct fs_parameter_spec;
 struct fs_parse_result;
-typedef int fs_param_type(struct p_log *,
-			  const struct fs_parameter_spec *,
-			  struct fs_parameter *,
-			  struct fs_parse_result *);
+typedef int fs_param_type(struct p_log *, const struct fs_parameter_spec *, struct fs_parameter *, struct fs_parse_result *);
 fs_param_type fs_param_is_u32;
 
 struct fs_parameter_spec {
@@ -37,15 +34,9 @@ struct fs_parse_result {
 	};
 };
 
-extern int __fs_parse(struct p_log *log,
-		    const struct fs_parameter_spec *desc,
-		    struct fs_parameter *value,
-		    struct fs_parse_result *result);
+extern int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc, struct fs_parameter *value, struct fs_parse_result *result);
 
-static inline int fs_parse(struct fs_context *fc,
-	     const struct fs_parameter_spec *desc,
-	     struct fs_parameter *param,
-	     struct fs_parse_result *result)
+static inline int fs_parse(struct fs_context *fc, const struct fs_parameter_spec *desc, struct fs_parameter *param, struct fs_parse_result *result)
 {
 	return __fs_parse(&fc->log, desc, param, result);
 }

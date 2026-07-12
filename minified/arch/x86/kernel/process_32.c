@@ -12,8 +12,7 @@
 
 #include "process.h"
 
-void __show_regs(struct pt_regs *regs, enum show_regs_mode mode,
-		 const char *log_lvl)
+void __show_regs(struct pt_regs *regs, enum show_regs_mode mode, const char *log_lvl)
 {
 	/* Stub: register dump not needed for minimal kernel */
 }
@@ -60,9 +59,7 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 	 
 	update_task_stack(next_p);
 	refresh_sysenter_cs(next);
-	this_cpu_write(cpu_current_top_of_stack,
-		       (unsigned long)task_stack_page(next_p) +
-		       THREAD_SIZE);
+	this_cpu_write(cpu_current_top_of_stack, (unsigned long)task_stack_page(next_p) + THREAD_SIZE);
 
 	 
 	if (prev->gs | next->gs)

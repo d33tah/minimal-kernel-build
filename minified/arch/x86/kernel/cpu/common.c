@@ -111,8 +111,7 @@ set_register:
 			goto set_register;
 		}
 		
-		WARN_ONCE(bits_changed, "pinned CR4 bits changed: 0x%lx!?\n",
-			  bits_changed);
+		WARN_ONCE(bits_changed, "pinned CR4 bits changed: 0x%lx!?\n", bits_changed);
 	}
 }
 
@@ -162,17 +161,14 @@ static void filter_cpuid_features(struct cpuinfo_x86 *c, bool warn)
 		if (!cpu_has(c, df->feature))
 			continue;
 		
-		if (!((s32)df->level < 0 ?
-		     (u32)df->level > (u32)c->extended_cpuid_level :
-		     (s32)df->level > (s32)c->cpuid_level))
+		if (!((s32)df->level < 0 ? (u32)df->level > (u32)c->extended_cpuid_level : (s32)df->level > (s32)c->cpuid_level))
 			continue;
 
 		clear_cpu_cap(c, df->feature);
 		if (!warn)
 			continue;
 
-		pr_warn("CPU: CPU feature " X86_CAP_FMT " disabled, no CPUID level 0x%x\n",
-			x86_cap_flag(df->feature), df->level);
+		pr_warn("CPU: CPU feature " X86_CAP_FMT " disabled, no CPUID level 0x%x\n", x86_cap_flag(df->feature), df->level);
 	}
 }
 
@@ -224,10 +220,7 @@ static void get_cpu_vendor(struct cpuinfo_x86 *c)
 void cpu_detect(struct cpuinfo_x86 *c)
 {
 	
-	cpuid(0x00000000, (unsigned int *)&c->cpuid_level,
-	      (unsigned int *)&c->x86_vendor_id[0],
-	      (unsigned int *)&c->x86_vendor_id[8],
-	      (unsigned int *)&c->x86_vendor_id[4]);
+	cpuid(0x00000000, (unsigned int *)&c->cpuid_level, (unsigned int *)&c->x86_vendor_id[0], (unsigned int *)&c->x86_vendor_id[8], (unsigned int *)&c->x86_vendor_id[4]);
 
 	c->x86 = 4;
 	
@@ -454,8 +447,7 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 		 * zero-initialized (->family == 0) -> the lookup always returned
 		 * NULL, so synthesize the family/model name directly.
 		 */
-		sprintf(c->x86_model_id, "%02x/%02x",
-			c->x86, c->x86_model);
+		sprintf(c->x86_model_id, "%02x/%02x", c->x86, c->x86_model);
 	}
 
 	apply_forced_caps(c);
@@ -547,8 +539,7 @@ void cpu_init(void)
 	int cpu = raw_smp_processor_id();
 	struct desc_ptr gdt_descr;
 
-	if (cpu_feature_enabled(X86_FEATURE_VME) ||
-	    boot_cpu_has(X86_FEATURE_TSC) || boot_cpu_has(X86_FEATURE_DE))
+	if (cpu_feature_enabled(X86_FEATURE_VME) || boot_cpu_has(X86_FEATURE_TSC) || boot_cpu_has(X86_FEATURE_DE))
 		cr4_clear_bits(X86_CR4_VME|X86_CR4_PVI|X86_CR4_TSD|X86_CR4_DE);
 
 	gdt_descr.address = (long)get_cpu_gdt_rw(cpu);

@@ -21,8 +21,7 @@ static void destroy_unused_super(struct super_block *s)
 {
 }
 
-static struct super_block *alloc_super(struct file_system_type *type, int flags,
-				       struct user_namespace *user_ns)
+static struct super_block *alloc_super(struct file_system_type *type, int flags, struct user_namespace *user_ns)
 {
 	struct super_block *s = kzalloc(sizeof(struct super_block),  GFP_USER);
 	static const struct super_operations default_op;
@@ -88,8 +87,7 @@ void deactivate_super(struct super_block *s)
  * the sb-list unlink tail is kept so the symbol still links for the kill_sb
  * function-pointer table entries.
  */
-struct super_block *sget_fc(struct fs_context *fc,
-			    int (*set)(struct super_block *, struct fs_context *))
+struct super_block *sget_fc(struct fs_context *fc, int (*set)(struct super_block *, struct fs_context *))
 {
 	struct super_block *s;
 	struct user_namespace *user_ns = fc->user_ns;
@@ -135,8 +133,7 @@ int set_anon_super_fc(struct super_block *sb, struct fs_context *fc)
 {
 	int dev;
 
-	dev = ida_alloc_range(&unnamed_dev_ida, 1, (1 << MINORBITS) - 1,
-			GFP_ATOMIC);
+	dev = ida_alloc_range(&unnamed_dev_ida, 1, (1 << MINORBITS) - 1, GFP_ATOMIC);
 	if (dev == -ENOSPC)
 		dev = -EMFILE;
 	if (dev < 0)
@@ -145,9 +142,7 @@ int set_anon_super_fc(struct super_block *sb, struct fs_context *fc)
 	return 0;
 }
 
-int get_tree_nodev(struct fs_context *fc,
-		  int (*fill_super)(struct super_block *sb,
-				    struct fs_context *fc))
+int get_tree_nodev(struct fs_context *fc, int (*fill_super)(struct super_block *sb, struct fs_context *fc))
 {
 	struct super_block *sb;
 	int err;
@@ -183,16 +178,14 @@ int vfs_get_tree(struct fs_context *fc)
 		return error;
 
 	if (!fc->root) {
-		pr_err("Filesystem %s get_tree() didn't set fc->root\n",
-		       fc->fs_type->name);
+		pr_err("Filesystem %s get_tree() didn't set fc->root\n", fc->fs_type->name);
 		
 		BUG();
 	}
 
 	sb = fc->root->d_sb;
 
-	WARN((sb->s_maxbytes < 0), "%s set sb->s_maxbytes to "
-		"negative value (%lld)\n", fc->fs_type->name, sb->s_maxbytes);
+	WARN((sb->s_maxbytes < 0), "%s set sb->s_maxbytes to " "negative value (%lld)\n", fc->fs_type->name, sb->s_maxbytes);
 
 	return 0;
 }

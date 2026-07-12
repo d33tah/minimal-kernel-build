@@ -18,8 +18,7 @@ struct atomic_notifier_head {
 
 
 
-extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
-		unsigned long val, void *v);
+extern int atomic_notifier_call_chain(struct atomic_notifier_head *nh, unsigned long val, void *v);
 
 
 #define NOTIFY_DONE		0x0000

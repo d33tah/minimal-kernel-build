@@ -166,8 +166,7 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 }
 
 
-static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
-			   struct rq_flags *rf)
+static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags, struct rq_flags *rf)
 {
 	check_preempt_curr(rq, p, wake_flags);
 	WRITE_ONCE(p->__state, TASK_RUNNING);
@@ -176,8 +175,7 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 }
 
 static void
-ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
-		 struct rq_flags *rf)
+ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags, struct rq_flags *rf)
 {
 	int en_flags = ENQUEUE_WAKEUP | ENQUEUE_NOCLOCK;
 
@@ -348,8 +346,7 @@ static inline void finish_lock_switch(struct rq *rq)
 #endif
 
 static inline void
-prepare_task_switch(struct rq *rq, struct task_struct *prev,
-		    struct task_struct *next)
+prepare_task_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next)
 {
 	prepare_arch_switch(next);
 }
@@ -362,9 +359,7 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 	unsigned int prev_state;
 
 	
-	if (WARN_ONCE(preempt_count() != 2*PREEMPT_DISABLE_OFFSET,
-		      "corrupted preempt_count: %s/%d/0x%x\n",
-		      current->comm, current->pid, preempt_count()))
+	if (WARN_ONCE(preempt_count() != 2*PREEMPT_DISABLE_OFFSET, "corrupted preempt_count: %s/%d/0x%x\n", current->comm, current->pid, preempt_count()))
 		preempt_count_set(FORK_PREEMPT_COUNT);
 
 	rq->prev_mm = NULL;
@@ -404,8 +399,7 @@ asmlinkage __visible void schedule_tail(struct task_struct *prev)
 }
 
 static __always_inline struct rq *
-context_switch(struct rq *rq, struct task_struct *prev,
-	       struct task_struct *next, struct rq_flags *rf)
+context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next, struct rq_flags *rf)
 {
 	prepare_task_switch(rq, prev, next);
 
@@ -473,8 +467,7 @@ static inline void schedule_debug(struct task_struct *prev, bool preempt)
 	}
 }
 
-static void put_prev_task_balance(struct rq *rq, struct task_struct *prev,
-				  struct rq_flags *rf)
+static void put_prev_task_balance(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 {
 
 	put_prev_task(rq, prev);
@@ -487,8 +480,7 @@ __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 	struct task_struct *p;
 
 	
-	if (likely(!sched_class_above(prev->sched_class, &fair_sched_class) &&
-		   rq->nr_running == rq->cfs.h_nr_running)) {
+	if (likely(!sched_class_above(prev->sched_class, &fair_sched_class) && rq->nr_running == rq->cfs.h_nr_running)) {
 
 		p = pick_next_task_fair(rq, prev, rf);
 		if (unlikely(p == RETRY_TASK))
@@ -637,8 +629,7 @@ static void __sched notrace preempt_schedule_common(void)
 	} while (need_resched());
 }
 
-int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flags,
-			  void *key)
+int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flags, void *key)
 {
 	WARN_ON_ONCE(IS_ENABLED(CONFIG_SCHED_DEBUG) && wake_flags & ~WF_SYNC);
 	return try_to_wake_up(curr->private, mode, wake_flags);
@@ -651,8 +642,7 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flag
  * __sched_setscheduler, both private to this chain) is never executed.
  * Symbol kept link-live for the sched.h extern + kthread.c:139 reference.
  */
-int sched_setscheduler_nocheck(struct task_struct *p, int policy,
-			       const struct sched_param *param)
+int sched_setscheduler_nocheck(struct task_struct *p, int policy, const struct sched_param *param)
 {
 	return 0;
 }

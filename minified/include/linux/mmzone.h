@@ -28,10 +28,7 @@ enum pageblock_bits {
 #define pageblock_order		(MAX_ORDER-1)
 #define pageblock_nr_pages	(1UL << pageblock_order)
 
-void set_pfnblock_flags_mask(struct page *page,
-				unsigned long flags,
-				unsigned long pfn,
-				unsigned long mask);
+void set_pfnblock_flags_mask(struct page *page, unsigned long flags, unsigned long pfn, unsigned long mask);
 /* end pageblock-flags.h */
 #include <linux/atomic.h>
 #include <linux/mm_types.h>
@@ -70,11 +67,9 @@ struct free_area {
 	unsigned long		nr_free;
 };
 
-static inline struct page *get_page_from_free_area(struct free_area *area,
-					    int migratetype)
+static inline struct page *get_page_from_free_area(struct free_area *area, int migratetype)
 {
-	return list_first_entry_or_null(&area->free_list[migratetype],
-					struct page, lru);
+	return list_first_entry_or_null(&area->free_list[migratetype], struct page, lru);
 }
 
 static inline bool free_area_empty(struct free_area *area, int migratetype)
@@ -282,8 +277,7 @@ enum meminit_context {
 	MEMINIT_HOTPLUG,
 };
 
-extern void init_currently_empty_zone(struct zone *zone, unsigned long start_pfn,
-				     unsigned long size);
+extern void init_currently_empty_zone(struct zone *zone, unsigned long start_pfn, unsigned long size);
 
 extern void lruvec_init(struct lruvec *lruvec);
 
@@ -332,22 +326,18 @@ static inline int zonelist_zone_idx(struct zoneref *zoneref)
 	return zoneref->zone_idx;
 }
 
-struct zoneref *__next_zones_zonelist(struct zoneref *z,
-					enum zone_type highest_zoneidx);
+struct zoneref *__next_zones_zonelist(struct zoneref *z, enum zone_type highest_zoneidx);
 
-static __always_inline struct zoneref *next_zones_zonelist(struct zoneref *z,
-					enum zone_type highest_zoneidx)
+static __always_inline struct zoneref *next_zones_zonelist(struct zoneref *z, enum zone_type highest_zoneidx)
 {
 	if (likely(zonelist_zone_idx(z) <= highest_zoneidx))
 		return z;
 	return __next_zones_zonelist(z, highest_zoneidx);
 }
 
-static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
-					enum zone_type highest_zoneidx)
+static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist, enum zone_type highest_zoneidx)
 {
-	return next_zones_zonelist(zonelist->_zonerefs,
-							highest_zoneidx);
+	return next_zones_zonelist(zonelist->_zonerefs, highest_zoneidx);
 }
 
 #define for_each_zone_zonelist(zone, z, zlist, highidx) 	for (z = first_zones_zonelist(zlist, highidx), zone = zonelist_zone(z);			zone;									z = next_zones_zonelist(++z, highidx),				zone = zonelist_zone(z))

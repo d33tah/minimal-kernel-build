@@ -44,8 +44,7 @@ pgprot_t protection_map[16] __ro_after_init = {
 #define validate_mm_rb(root, ignore) do { } while (0)
 #define validate_mm(mm) do { } while (0)
 
-static inline void vma_rb_insert(struct vm_area_struct *vma,
-				 struct rb_root *root)
+static inline void vma_rb_insert(struct vm_area_struct *vma, struct rb_root *root)
 {
 
 	validate_mm_rb(root, NULL);
@@ -71,9 +70,7 @@ anon_vma_interval_tree_post_update_vma(struct vm_area_struct *vma)
 		anon_vma_interval_tree_insert(avc, &avc->anon_vma->rb_root);
 }
 
-static int find_vma_links(struct mm_struct *mm, unsigned long addr,
-		unsigned long end, struct vm_area_struct **pprev,
-		struct rb_node ***rb_link, struct rb_node **rb_parent)
+static int find_vma_links(struct mm_struct *mm, unsigned long addr, unsigned long end, struct vm_area_struct **pprev, struct rb_node ***rb_link, struct rb_node **rb_parent)
 {
 	struct rb_node **__rb_link, *__rb_parent, *rb_prev;
 
@@ -107,9 +104,7 @@ static int find_vma_links(struct mm_struct *mm, unsigned long addr,
 }
 
 static inline int
-munmap_vma_range(struct mm_struct *mm, unsigned long start, unsigned long len,
-		 struct vm_area_struct **pprev, struct rb_node ***link,
-		 struct rb_node **parent)
+munmap_vma_range(struct mm_struct *mm, unsigned long start, unsigned long len, struct vm_area_struct **pprev, struct rb_node ***link, struct rb_node **parent)
 {
 
 	while (find_vma_links(mm, start, start + len, pprev, link, parent))
@@ -119,8 +114,7 @@ munmap_vma_range(struct mm_struct *mm, unsigned long start, unsigned long len,
 	return 0;
 }
 
-void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
-		struct rb_node **rb_link, struct rb_node *rb_parent)
+void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma, struct rb_node **rb_link, struct rb_node *rb_parent)
 {
 	rb_link_node(&vma->vm_rb, rb_parent, rb_link);
 	vma_rb_insert(vma, &mm->mm_rb);
@@ -142,17 +136,13 @@ static void __vma_link_file(struct vm_area_struct *vma)
 }
 
 static void
-__vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
-	struct vm_area_struct *prev, struct rb_node **rb_link,
-	struct rb_node *rb_parent)
+__vma_link(struct mm_struct *mm, struct vm_area_struct *vma, struct vm_area_struct *prev, struct rb_node **rb_link, struct rb_node *rb_parent)
 {
 	__vma_link_list(mm, vma, prev);
 	__vma_link_rb(mm, vma, rb_link, rb_parent);
 }
 
-static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
-			struct vm_area_struct *prev, struct rb_node **rb_link,
-			struct rb_node *rb_parent)
+static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma, struct vm_area_struct *prev, struct rb_node **rb_link, struct rb_node *rb_parent)
 {
 	struct address_space *mapping = NULL;
 
@@ -171,9 +161,7 @@ static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 	validate_mm(mm);
 }
 
-int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
-	unsigned long end, pgoff_t pgoff, struct vm_area_struct *insert,
-	struct vm_area_struct *expand)
+int __vma_adjust(struct vm_area_struct *vma, unsigned long start, unsigned long end, pgoff_t pgoff, struct vm_area_struct *insert, struct vm_area_struct *expand)
 {
 	/* Minimal stub: simple VMA adjustment without complex merging */
 	vma->vm_start = start;
@@ -216,8 +204,7 @@ struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *vma)
 static inline unsigned long round_hint_to_min(unsigned long hint)
 {
 	hint &= PAGE_MASK;
-	if (((void *)hint != NULL) &&
-	    (hint < mmap_min_addr))
+	if (((void *)hint != NULL) && (hint < mmap_min_addr))
 		return PAGE_ALIGN(mmap_min_addr);
 	return hint;
 }
@@ -238,8 +225,7 @@ static inline u64 file_mmap_size_max(struct file *file, struct inode *inode)
 	return ULONG_MAX;
 }
 
-static inline bool file_mmap_ok(struct file *file, struct inode *inode,
-				unsigned long pgoff, unsigned long len)
+static inline bool file_mmap_ok(struct file *file, struct inode *inode, unsigned long pgoff, unsigned long len)
 {
 	u64 maxsize = file_mmap_size_max(file, inode);
 
@@ -251,10 +237,7 @@ static inline bool file_mmap_ok(struct file *file, struct inode *inode,
 	return true;
 }
 
-unsigned long do_mmap(struct file *file, unsigned long addr,
-			unsigned long len, unsigned long prot,
-			unsigned long flags, unsigned long pgoff,
-			unsigned long *populate)
+unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len, unsigned long prot, unsigned long flags, unsigned long pgoff, unsigned long *populate)
 {
 	struct mm_struct *mm = current->mm;
 	vm_flags_t vm_flags;
@@ -350,8 +333,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 
 /* Removed: vma_wants_writenotify - was used only by vma_set_page_prot (~4 LOC) */
 
-unsigned long mmap_region(struct file *file, unsigned long addr,
-		unsigned long len, vm_flags_t vm_flags, unsigned long pgoff)
+unsigned long mmap_region(struct file *file, unsigned long addr, unsigned long len, vm_flags_t vm_flags, unsigned long pgoff)
 {
 	/* Minimal stub: simplified mmap without complex VMA merging/splitting */
 	struct mm_struct *mm = current->mm;
@@ -401,9 +383,7 @@ unsigned long vm_unmapped_area(void)
 
 #ifndef HAVE_ARCH_UNMAPPED_AREA
 unsigned long
-arch_get_unmapped_area(struct file *filp, unsigned long addr,
-		       unsigned long len, unsigned long pgoff,
-		       unsigned long flags)
+arch_get_unmapped_area(struct file *filp, unsigned long addr, unsigned long len, unsigned long pgoff, unsigned long flags)
 {
 	/*
 	 * Legacy bottom-up layout is never selected on this boot
@@ -415,9 +395,7 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
 #endif
 
 unsigned long
-generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
-				  unsigned long len, unsigned long pgoff,
-				  unsigned long flags)
+generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr, unsigned long len, unsigned long pgoff, unsigned long flags)
 {
 	struct vm_area_struct *vma, *prev;
 	struct mm_struct *mm = current->mm;
@@ -434,9 +412,7 @@ generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
 	if (addr) {
 		addr = PAGE_ALIGN(addr);
 		vma = find_vma_prev(mm, addr, &prev);
-		if (mmap_end - len >= addr && addr >= mmap_min_addr &&
-				(!vma || addr + len <= vm_start_gap(vma)) &&
-				(!prev || addr >= vm_end_gap(prev)))
+		if (mmap_end - len >= addr && addr >= mmap_min_addr && (!vma || addr + len <= vm_start_gap(vma)) && (!prev || addr >= vm_end_gap(prev)))
 			return addr;
 	}
 
@@ -453,20 +429,16 @@ generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
 
 #ifndef HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
 unsigned long
-arch_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
-			       unsigned long len, unsigned long pgoff,
-			       unsigned long flags)
+arch_get_unmapped_area_topdown(struct file *filp, unsigned long addr, unsigned long len, unsigned long pgoff, unsigned long flags)
 {
 	return generic_get_unmapped_area_topdown(filp, addr, len, pgoff, flags);
 }
 #endif
 
 unsigned long
-get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
-		unsigned long pgoff, unsigned long flags)
+get_unmapped_area(struct file *file, unsigned long addr, unsigned long len, unsigned long pgoff, unsigned long flags)
 {
-	unsigned long (*get_area)(struct file *, unsigned long,
-				  unsigned long, unsigned long, unsigned long);
+	unsigned long (*get_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
 
 	unsigned long error = arch_mmap_check(addr, len, flags);
 	if (error)
@@ -529,15 +501,13 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 
 /* Used by arch_get_unmapped_area and generic_get_unmapped_area_topdown */
 struct vm_area_struct *
-find_vma_prev(struct mm_struct *mm, unsigned long addr,
-			struct vm_area_struct **pprev)
+find_vma_prev(struct mm_struct *mm, unsigned long addr, struct vm_area_struct **pprev)
 {
 	*pprev = NULL;
 	return find_vma(mm, addr);
 }
 
-static int acct_stack_growth(struct vm_area_struct *vma,
-			     unsigned long size, unsigned long grow)
+static int acct_stack_growth(struct vm_area_struct *vma, unsigned long size, unsigned long grow)
 {
 	struct mm_struct *mm = vma->vm_mm;
 
@@ -552,8 +522,7 @@ static int acct_stack_growth(struct vm_area_struct *vma,
 	return 0;
 }
 
-int expand_downwards(struct vm_area_struct *vma,
-				   unsigned long address)
+int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 {
 	struct mm_struct *mm = vma->vm_mm;
 	struct vm_area_struct *prev;
@@ -662,11 +631,9 @@ int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 	struct vm_area_struct *prev;
 	struct rb_node **rb_link, *rb_parent;
 
-	if (find_vma_links(mm, vma->vm_start, vma->vm_end,
-			   &prev, &rb_link, &rb_parent))
+	if (find_vma_links(mm, vma->vm_start, vma->vm_end, &prev, &rb_link, &rb_parent))
 		return -ENOMEM;
-	if ((vma->vm_flags & VM_ACCOUNT) &&
-	     security_vm_enough_memory_mm(mm, vma_pages(vma)))
+	if ((vma->vm_flags & VM_ACCOUNT) && security_vm_enough_memory_mm(mm, vma_pages(vma)))
 		return -ENOMEM;
 
 	

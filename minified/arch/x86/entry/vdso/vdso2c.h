@@ -14,8 +14,7 @@ static void BITSFUNC(copy)(FILE *outfile, const unsigned char *data, size_t len)
 
 
  
-static void BITSFUNC(extract)(const unsigned char *data, size_t data_len,
-			      FILE *outfile, ELF(Shdr) *sec, const char *name)
+static void BITSFUNC(extract)(const unsigned char *data, size_t data_len, FILE *outfile, ELF(Shdr) *sec, const char *name)
 {
 	unsigned long offset;
 	size_t len;
@@ -31,9 +30,7 @@ static void BITSFUNC(extract)(const unsigned char *data, size_t data_len,
 	fprintf(outfile, "\n};\n\n");
 }
 
-static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
-			 void *stripped_addr, size_t stripped_len,
-			 FILE *outfile, const char *image_name)
+static void BITSFUNC(go)(void *raw_addr, size_t raw_len, void *stripped_addr, size_t stripped_len, FILE *outfile, const char *image_name)
 {
 	int found_load = 0;
 	unsigned long load_size = -1;   
@@ -57,8 +54,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 			if (found_load)
 				fail("multiple PT_LOAD segs\n");
 
-			if (GET_LE(&pt[i].p_offset) != 0 ||
-			    GET_LE(&pt[i].p_vaddr) != 0)
+			if (GET_LE(&pt[i].p_offset) != 0 || GET_LE(&pt[i].p_vaddr) != 0)
 				fail("PT_LOAD in wrong place\n");
 
 			if (GET_LE(&pt[i].p_memsz) != GET_LE(&pt[i].p_filesz))
@@ -82,11 +78,9 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 		fail("input has no PT_DYNAMIC section -- your toolchain is buggy\n");
 
 	 
-	for (i = 0; dyn + i < dyn_end &&
-		     GET_LE(&dyn[i].d_tag) != DT_NULL; i++) {
+	for (i = 0; dyn + i < dyn_end && GET_LE(&dyn[i].d_tag) != DT_NULL; i++) {
 		typeof(dyn[i].d_tag) tag = GET_LE(&dyn[i].d_tag);
-		if (tag == DT_REL || tag == DT_RELSZ || tag == DT_RELA ||
-		    tag == DT_RELENT || tag == DT_TEXTREL)
+		if (tag == DT_REL || tag == DT_RELSZ || tag == DT_RELA || tag == DT_RELENT || tag == DT_TEXTREL)
 			fail("vdso image contains dynamic relocations\n");
 	}
 
@@ -100,8 +94,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 		if (GET_LE(&sh->sh_type) == SHT_SYMTAB)
 			symtab_hdr = sh;
 
-		if (!strcmp(secstrings + GET_LE(&sh->sh_name),
-			    ".altinstructions"))
+		if (!strcmp(secstrings + GET_LE(&sh->sh_name), ".altinstructions"))
 			alt_sec = sh;
 		if (!strcmp(secstrings + GET_LE(&sh->sh_name), "__ex_table"))
 			extable_sec = sh;
@@ -126,8 +119,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 		for (k = 0; k < NSYMS; k++) {
 			if (!strcmp(sym_name, required_syms[k].name)) {
 				if (syms[k]) {
-					fail("duplicate symbol %s\n",
-					     required_syms[k].name);
+					fail("duplicate symbol %s\n", required_syms[k].name);
 				}
 
 				 
@@ -144,14 +136,11 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 			continue;   
 
 		if (symval % 4096)
-			fail("%s must be a multiple of 4096\n",
-			     required_syms[i].name);
+			fail("%s must be a multiple of 4096\n", required_syms[i].name);
 		if (symval + 4096 < syms[sym_vvar_start])
-			fail("%s underruns vvar_start\n",
-			     required_syms[i].name);
+			fail("%s underruns vvar_start\n", required_syms[i].name);
 		if (symval + 4096 > 0)
-			fail("%s is on the wrong side of the vdso text\n",
-			     required_syms[i].name);
+			fail("%s is on the wrong side of the vdso text\n", required_syms[i].name);
 	}
 	if (syms[sym_vvar_start] % 4096)
 		fail("vvar_begin must be a multiple of 4096\n");
@@ -168,41 +157,32 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
 	fprintf(outfile, "#include <asm/page_types.h>\n");
 	fprintf(outfile, "#include <asm/vdso.h>\n");
 	fprintf(outfile, "\n");
-	fprintf(outfile,
-		"static unsigned char raw_data[%lu] __ro_after_init __aligned(PAGE_SIZE) = {",
-		mapping_size);
+	fprintf(outfile, "static unsigned char raw_data[%lu] __ro_after_init __aligned(PAGE_SIZE) = {", mapping_size);
 	for (i = 0; i < stripped_len; i++) {
 		if (i % 10 == 0)
 			fprintf(outfile, "\n\t");
-		fprintf(outfile, "0x%02X, ",
-			(int)((unsigned char *)stripped_addr)[i]);
+		fprintf(outfile, "0x%02X, ", (int)((unsigned char *)stripped_addr)[i]);
 	}
 	fprintf(outfile, "\n};\n\n");
 	if (extable_sec)
-		BITSFUNC(extract)(raw_addr, raw_len, outfile,
-				  extable_sec, "extable");
+		BITSFUNC(extract)(raw_addr, raw_len, outfile, extable_sec, "extable");
 
 	fprintf(outfile, "const struct vdso_image %s = {\n", image_name);
 	fprintf(outfile, "\t.data = raw_data,\n");
 	fprintf(outfile, "\t.size = %lu,\n", mapping_size);
 	if (alt_sec) {
-		fprintf(outfile, "\t.alt = %lu,\n",
-			(unsigned long)GET_LE(&alt_sec->sh_offset));
-		fprintf(outfile, "\t.alt_len = %lu,\n",
-			(unsigned long)GET_LE(&alt_sec->sh_size));
+		fprintf(outfile, "\t.alt = %lu,\n", (unsigned long)GET_LE(&alt_sec->sh_offset));
+		fprintf(outfile, "\t.alt_len = %lu,\n", (unsigned long)GET_LE(&alt_sec->sh_size));
 	}
 	if (extable_sec) {
-		fprintf(outfile, "\t.extable_base = %lu,\n",
-			(unsigned long)GET_LE(&extable_sec->sh_offset));
-		fprintf(outfile, "\t.extable_len = %lu,\n",
-			(unsigned long)GET_LE(&extable_sec->sh_size));
+		fprintf(outfile, "\t.extable_base = %lu,\n", (unsigned long)GET_LE(&extable_sec->sh_offset));
+		fprintf(outfile, "\t.extable_len = %lu,\n", (unsigned long)GET_LE(&extable_sec->sh_size));
 		fprintf(outfile, "\t.extable = extable,\n");
 	}
 
 	for (i = 0; i < NSYMS; i++) {
 		if (required_syms[i].export && syms[i])
-			fprintf(outfile, "\t.sym_%s = %" PRIi64 ",\n",
-				required_syms[i].name, (int64_t)syms[i]);
+			fprintf(outfile, "\t.sym_%s = %" PRIi64 ",\n", required_syms[i].name, (int64_t)syms[i]);
 	}
 	fprintf(outfile, "};\n");
 }

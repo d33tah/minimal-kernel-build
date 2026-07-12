@@ -93,15 +93,13 @@ static __always_inline void rcu_read_lock(void)
 {
 	__rcu_read_lock();
 	__acquire(RCU);
-	RCU_LOCKDEP_WARN(!rcu_is_watching(),
-			 "rcu_read_lock() used illegally while idle");
+	RCU_LOCKDEP_WARN(!rcu_is_watching(), "rcu_read_lock() used illegally while idle");
 }
 
 
 static inline void rcu_read_unlock(void)
 {
-	RCU_LOCKDEP_WARN(!rcu_is_watching(),
-			 "rcu_read_unlock() used illegally while idle");
+	RCU_LOCKDEP_WARN(!rcu_is_watching(), "rcu_read_unlock() used illegally while idle");
 	__release(RCU);
 	__rcu_read_unlock();
 }
@@ -110,14 +108,12 @@ static inline void rcu_read_lock_sched(void)
 {
 	preempt_disable();
 	__acquire(RCU_SCHED);
-	RCU_LOCKDEP_WARN(!rcu_is_watching(),
-			 "rcu_read_lock_sched() used illegally while idle");
+	RCU_LOCKDEP_WARN(!rcu_is_watching(), "rcu_read_lock_sched() used illegally while idle");
 }
 
 static inline void rcu_read_unlock_sched(void)
 {
-	RCU_LOCKDEP_WARN(!rcu_is_watching(),
-			 "rcu_read_unlock_sched() used illegally while idle");
+	RCU_LOCKDEP_WARN(!rcu_is_watching(), "rcu_read_unlock_sched() used illegally while idle");
 	__release(RCU_SCHED);
 	preempt_enable();
 }

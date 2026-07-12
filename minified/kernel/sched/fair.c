@@ -97,8 +97,7 @@ static inline u64 min_vruntime(u64 min_vruntime, u64 vruntime)
 	return min_vruntime;
 }
 
-static inline bool entity_before(struct sched_entity *a,
-				struct sched_entity *b)
+static inline bool entity_before(struct sched_entity *a, struct sched_entity *b)
 {
 	return (s64)(a->vruntime - b->vruntime) < 0;
 }

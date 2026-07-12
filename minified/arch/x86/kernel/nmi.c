@@ -68,8 +68,7 @@ nmi_restart:
 
 	if (reason & NMI_REASON_MASK) {
 		if (reason & NMI_REASON_SERR) {
-			pr_emerg("NMI: PCI system error (SERR) for reason %02x on CPU %d.\n",
-				 reason, smp_processor_id());
+			pr_emerg("NMI: PCI system error (SERR) for reason %02x on CPU %d.\n", reason, smp_processor_id());
 
 			pr_emerg("Dazed and confused, but trying to continue\n");
 
@@ -78,9 +77,7 @@ nmi_restart:
 		} else if (reason & NMI_REASON_IOCHK) {
 			unsigned long i;
 
-			pr_emerg(
-			"NMI: IOCK error (debug interrupt?) for reason %02x on CPU %d.\n",
-				 reason, smp_processor_id());
+			pr_emerg( "NMI: IOCK error (debug interrupt?) for reason %02x on CPU %d.\n", reason, smp_processor_id());
 			show_regs(regs);
 
 			reason = (reason & NMI_REASON_CLEAR_MASK) | NMI_REASON_CLEAR_IOCHK;
@@ -101,8 +98,7 @@ nmi_restart:
 
 
 		if (!(b2b && __this_cpu_read(swallow_nmi))) {
-			pr_emerg("Uhhuh. NMI received for unknown reason %02x on CPU %d.\n",
-				 reason, smp_processor_id());
+			pr_emerg("Uhhuh. NMI received for unknown reason %02x on CPU %d.\n", reason, smp_processor_id());
 
 			pr_emerg("Dazed and confused, but trying to continue\n");
 		}

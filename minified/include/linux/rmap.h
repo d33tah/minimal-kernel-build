@@ -63,9 +63,7 @@ static inline int anon_vma_prepare(struct vm_area_struct *vma)
 	return __anon_vma_prepare(vma);
 }
 
-void page_add_new_anon_rmap(struct page *, struct vm_area_struct *,
-		unsigned long address);
-void page_add_file_rmap(struct page *, struct vm_area_struct *,
-		bool compound);
+void page_add_new_anon_rmap(struct page *, struct vm_area_struct *, unsigned long address);
+void page_add_file_rmap(struct page *, struct vm_area_struct *, bool compound);
 
 #endif

@@ -8,13 +8,11 @@
 #define MMAP_LOCK_INITIALIZER(name) 	.mmap_lock = __RWSEM_INITIALIZER((name).mmap_lock),
 
 
-static inline void __mmap_lock_trace_start_locking(struct mm_struct *mm,
-						   bool write)
+static inline void __mmap_lock_trace_start_locking(struct mm_struct *mm, bool write)
 {
 }
 
-static inline void __mmap_lock_trace_acquire_returned(struct mm_struct *mm,
-						      bool write, bool success)
+static inline void __mmap_lock_trace_acquire_returned(struct mm_struct *mm, bool write, bool success)
 {
 }
 

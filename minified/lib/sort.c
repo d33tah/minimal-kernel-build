@@ -87,10 +87,7 @@ static size_t parent(size_t i, unsigned int lsbit, size_t size)
 	return i / 2;
 }
 
-void sort_r(void *base, size_t num, size_t size,
-	    cmp_r_func_t cmp_func,
-	    swap_r_func_t swap_func,
-	    const void *priv)
+void sort_r(void *base, size_t num, size_t size, cmp_r_func_t cmp_func, swap_r_func_t swap_func, const void *priv)
 {
 	 
 	size_t n = num * size, a = (num/2) * size;
@@ -140,9 +137,7 @@ void sort_r(void *base, size_t num, size_t size,
 	}
 }
 
-void sort(void *base, size_t num, size_t size,
-	  cmp_func_t cmp_func,
-	  swap_func_t swap_func)
+void sort(void *base, size_t num, size_t size, cmp_func_t cmp_func, swap_func_t swap_func)
 {
 	struct wrapper w = {
 		.cmp  = cmp_func,

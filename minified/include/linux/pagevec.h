@@ -37,8 +37,7 @@ struct folio_batch {
 };
 
 static_assert(sizeof(struct pagevec) == sizeof(struct folio_batch));
-static_assert(offsetof(struct pagevec, pages) ==
-		offsetof(struct folio_batch, folios));
+static_assert(offsetof(struct pagevec, pages) == offsetof(struct folio_batch, folios));
 
 static inline void folio_batch_init(struct folio_batch *fbatch)
 {
@@ -56,8 +55,7 @@ static inline unsigned int fbatch_space(struct folio_batch *fbatch)
 	return PAGEVEC_SIZE - fbatch->nr;
 }
 
-static inline unsigned folio_batch_add(struct folio_batch *fbatch,
-		struct folio *folio)
+static inline unsigned folio_batch_add(struct folio_batch *fbatch, struct folio *folio)
 {
 	fbatch->folios[fbatch->nr++] = folio;
 	return fbatch_space(fbatch);

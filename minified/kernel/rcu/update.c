@@ -19,15 +19,13 @@ void wakeme_after_rcu(struct rcu_head *head)
 	complete(&rcu->completion);
 }
 
-void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
-		   struct rcu_synchronize *rs_array)
+void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array, struct rcu_synchronize *rs_array)
 {
 	int i, j;
 
 	 
 	for (i = 0; i < n; i++) {
-		if (checktiny &&
-		    (crcu_array[i] == call_rcu)) {
+		if (checktiny && (crcu_array[i] == call_rcu)) {
 			might_sleep();
 			continue;
 		}
@@ -42,8 +40,7 @@ void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array,
 
 	 
 	for (i = 0; i < n; i++) {
-		if (checktiny &&
-		    (crcu_array[i] == call_rcu))
+		if (checktiny && (crcu_array[i] == call_rcu))
 			continue;
 		for (j = 0; j < i; j++)
 			if (crcu_array[j] == crcu_array[i])

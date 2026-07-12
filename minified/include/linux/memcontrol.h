@@ -17,8 +17,7 @@ static inline struct lruvec *folio_lruvec_lock_irq(struct folio *folio)
 	return &pgdat->__lruvec;
 }
 
-static inline void mod_lruvec_kmem_state(void *p, enum node_stat_item idx,
-					 int val)
+static inline void mod_lruvec_kmem_state(void *p, enum node_stat_item idx, int val)
 {
 	struct page *page = virt_to_head_page(p);
 	mod_node_page_state(page_pgdat(page), idx, val);

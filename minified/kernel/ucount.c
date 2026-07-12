@@ -118,8 +118,7 @@ static inline bool atomic_long_inc_below(atomic_long_t *v, int u)
 	}
 }
 
-struct ucounts *inc_ucount(struct user_namespace *ns, kuid_t uid,
-			   enum ucount_type type)
+struct ucounts *inc_ucount(struct user_namespace *ns, kuid_t uid, enum ucount_type type)
 {
 	struct ucounts *ucounts, *iter, *bad;
 	struct user_namespace *tns;

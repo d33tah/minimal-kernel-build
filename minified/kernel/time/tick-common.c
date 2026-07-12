@@ -40,9 +40,7 @@ void tick_handle_periodic(struct clock_event_device *dev)
 	 */
 }
 
-static void tick_setup_device(struct tick_device *td,
-			      struct clock_event_device *newdev, int cpu,
-			      const struct cpumask *cpumask)
+static void tick_setup_device(struct tick_device *td, struct clock_event_device *newdev, int cpu, const struct cpumask *cpumask)
 {
 
 	if (!td->evtdev) {
@@ -68,8 +66,7 @@ static void tick_setup_device(struct tick_device *td,
 	clockevents_switch_state(newdev, CLOCK_EVT_STATE_PERIODIC);
 }
 
-static bool tick_check_percpu(struct clock_event_device *curdev,
-			      struct clock_event_device *newdev, int cpu)
+static bool tick_check_percpu(struct clock_event_device *curdev, struct clock_event_device *newdev, int cpu)
 {
 	if (!cpumask_test_cpu(cpu, newdev->cpumask))
 		return false;
@@ -84,8 +81,7 @@ static bool tick_check_percpu(struct clock_event_device *curdev,
 	return true;
 }
 
-static bool tick_check_preferred(struct clock_event_device *curdev,
-				 struct clock_event_device *newdev)
+static bool tick_check_preferred(struct clock_event_device *curdev, struct clock_event_device *newdev)
 {
 	/*
 	 * No clockevent device on this build carries CLOCK_EVT_FEAT_ONESHOT

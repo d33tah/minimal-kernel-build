@@ -122,44 +122,34 @@ struct xa_node {
 
 static inline void *xa_head(const struct xarray *xa)
 {
-	return rcu_dereference_check(xa->xa_head,
-						lockdep_is_held(&xa->xa_lock));
+	return rcu_dereference_check(xa->xa_head, lockdep_is_held(&xa->xa_lock));
 }
 
 static inline void *xa_head_locked(const struct xarray *xa)
 {
-	return rcu_dereference_protected(xa->xa_head,
-						lockdep_is_held(&xa->xa_lock));
+	return rcu_dereference_protected(xa->xa_head, lockdep_is_held(&xa->xa_lock));
 }
 
-static inline void *xa_entry(const struct xarray *xa,
-				const struct xa_node *node, unsigned int offset)
+static inline void *xa_entry(const struct xarray *xa, const struct xa_node *node, unsigned int offset)
 {
 	XA_NODE_BUG_ON(node, offset >= XA_CHUNK_SIZE);
-	return rcu_dereference_check(node->slots[offset],
-						lockdep_is_held(&xa->xa_lock));
+	return rcu_dereference_check(node->slots[offset], lockdep_is_held(&xa->xa_lock));
 }
 
-static inline void *xa_entry_locked(const struct xarray *xa,
-				const struct xa_node *node, unsigned int offset)
+static inline void *xa_entry_locked(const struct xarray *xa, const struct xa_node *node, unsigned int offset)
 {
 	XA_NODE_BUG_ON(node, offset >= XA_CHUNK_SIZE);
-	return rcu_dereference_protected(node->slots[offset],
-						lockdep_is_held(&xa->xa_lock));
+	return rcu_dereference_protected(node->slots[offset], lockdep_is_held(&xa->xa_lock));
 }
 
-static inline struct xa_node *xa_parent(const struct xarray *xa,
-					const struct xa_node *node)
+static inline struct xa_node *xa_parent(const struct xarray *xa, const struct xa_node *node)
 {
-	return rcu_dereference_check(node->parent,
-						lockdep_is_held(&xa->xa_lock));
+	return rcu_dereference_check(node->parent, lockdep_is_held(&xa->xa_lock));
 }
 
-static inline struct xa_node *xa_parent_locked(const struct xarray *xa,
-					const struct xa_node *node)
+static inline struct xa_node *xa_parent_locked(const struct xarray *xa, const struct xa_node *node)
 {
-	return rcu_dereference_protected(node->parent,
-						lockdep_is_held(&xa->xa_lock));
+	return rcu_dereference_protected(node->parent, lockdep_is_held(&xa->xa_lock));
 }
 
 static inline void *xa_mk_node(const struct xa_node *node)
@@ -299,8 +289,7 @@ static inline void xas_advance(struct xa_state *xas, unsigned long index)
 	xas->xa_offset = (index >> shift) & XA_CHUNK_MASK;
 }
 
-static inline void xas_set_order(struct xa_state *xas, unsigned long index,
-					unsigned int order)
+static inline void xas_set_order(struct xa_state *xas, unsigned long index, unsigned int order)
 {
 	BUG_ON(order > 0);
 	xas_set(xas, index);
@@ -316,8 +305,7 @@ static inline void xas_set_lru(struct xa_state *xas, struct list_lru *lru)
 	xas->xa_lru = lru;
 }
 
-static inline unsigned int xas_find_chunk(struct xa_state *xas, bool advance,
-		xa_mark_t mark)
+static inline unsigned int xas_find_chunk(struct xa_state *xas, bool advance, xa_mark_t mark)
 {
 	unsigned long *addr = xas->xa_node->marks[(__force unsigned)mark];
 	unsigned int offset = xas->xa_offset;
@@ -333,8 +321,7 @@ static inline void *xas_next(struct xa_state *xas)
 {
 	struct xa_node *node = xas->xa_node;
 
-	if (unlikely(xas_not_node(node) || node->shift ||
-				xas->xa_offset == XA_CHUNK_MASK))
+	if (unlikely(xas_not_node(node) || node->shift || xas->xa_offset == XA_CHUNK_MASK))
 		return __xas_next(xas);
 
 	xas->xa_index++;

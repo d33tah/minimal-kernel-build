@@ -116,8 +116,7 @@ int fpu_clone(struct task_struct *dst)
 
 	set_tsk_thread_flag(dst, TIF_NEED_FPU_LOAD);
 
-	memcpy(&dst_fpu->fpstate->regs, &init_fpstate.regs,
-	       init_fpstate_copy_size());
+	memcpy(&dst_fpu->fpstate->regs, &init_fpstate.regs, init_fpstate_copy_size());
 	return 0;
 }
 
@@ -134,9 +133,7 @@ void fpu__drop(struct fpu *fpu)
 
 	if (fpu == &current->thread.fpu) {
 		 
-		asm volatile("1: fwait\n"
-			     "2:\n"
-			     _ASM_EXTABLE(1b, 2b));
+		asm volatile("1: fwait\n" "2:\n" _ASM_EXTABLE(1b, 2b));
 		fpregs_deactivate(fpu);
 	}
 

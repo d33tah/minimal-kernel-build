@@ -53,8 +53,7 @@ static int finished_booting;
 
 static void clocksource_enqueue_watchdog(struct clocksource *cs)
 {
-	if (!(cs->flags & CLOCK_SOURCE_MUST_VERIFY) &&
-	    (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS))
+	if (!(cs->flags & CLOCK_SOURCE_MUST_VERIFY) && (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS))
 		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
 }
 
@@ -155,8 +154,7 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq
 		else if (sec > 600 && cs->mask > UINT_MAX)
 			sec = 600;
 
-		clocks_calc_mult_shift(&cs->mult, &cs->shift, freq,
-				       NSEC_PER_SEC / scale, sec * scale);
+		clocks_calc_mult_shift(&cs->mult, &cs->shift, freq, NSEC_PER_SEC / scale, sec * scale);
 	}
 
 	 
@@ -171,17 +169,14 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq
 
 	 
 	cs->maxadj = clocksource_max_adjustment(cs);
-	while (freq && ((cs->mult + cs->maxadj < cs->mult)
-		|| (cs->mult - cs->maxadj > cs->mult))) {
+	while (freq && ((cs->mult + cs->maxadj < cs->mult) || (cs->mult - cs->maxadj > cs->mult))) {
 		cs->mult >>= 1;
 		cs->shift--;
 		cs->maxadj = clocksource_max_adjustment(cs);
 	}
 
 	 
-	WARN_ONCE(cs->mult + cs->maxadj < cs->mult,
-		"timekeeping: Clocksource %s might overflow on 11%% adjustment\n",
-		cs->name);
+	WARN_ONCE(cs->mult + cs->maxadj < cs->mult, "timekeeping: Clocksource %s might overflow on 11%% adjustment\n", cs->name);
 }
 
 int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
@@ -191,8 +186,7 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 	if (WARN_ON_ONCE((unsigned int)cs->id >= CSID_MAX))
 		cs->id = CSID_GENERIC;
 	if (cs->vdso_clock_mode >= VDSO_CLOCKMODE_MAX) {
-		pr_warn("clocksource %s registered with invalid VDSO mode %d. Disabling VDSO support.\n",
-			cs->name, cs->vdso_clock_mode);
+		pr_warn("clocksource %s registered with invalid VDSO mode %d. Disabling VDSO support.\n", cs->name, cs->vdso_clock_mode);
 		cs->vdso_clock_mode = VDSO_CLOCKMODE_NONE;
 	}
 

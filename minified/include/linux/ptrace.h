@@ -49,8 +49,7 @@ static inline int ptrace_report_syscall(unsigned long message)
 	return 0;
 }
 
-static inline __must_check int ptrace_report_syscall_entry(
-	struct pt_regs *regs)
+static inline __must_check int ptrace_report_syscall_entry( struct pt_regs *regs)
 {
 	return ptrace_report_syscall(PTRACE_EVENTMSG_SYSCALL_ENTRY);
 }

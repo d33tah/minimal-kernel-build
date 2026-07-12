@@ -40,9 +40,7 @@ static int kobject_add_internal(struct kobject *kobj)
 		return -ENOENT;
 
 	if (!kobj->name || !kobj->name[0]) {
-		WARN(1,
-		     "kobject: (%p): attempted to be registered with empty name!\n",
-		     kobj);
+		WARN(1, "kobject: (%p): attempted to be registered with empty name!\n", kobj);
 		return -EINVAL;
 	}
 
@@ -61,8 +59,7 @@ static int kobject_add_internal(struct kobject *kobj)
 	return 0;
 }
 
-int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
-				  va_list vargs)
+int kobject_set_name_vargs(struct kobject *kobj, const char *fmt, va_list vargs)
 {
 	const char *s;
 
@@ -116,8 +113,7 @@ void kobject_init(struct kobject *kobj, const struct kobj_type *ktype)
 	}
 	if (kobj->state_initialized) {
 		 
-		pr_err("kobject (%p): tried to init an initialized object, something is seriously wrong.\n",
-		       kobj);
+		pr_err("kobject (%p): tried to init an initialized object, something is seriously wrong.\n", kobj);
 		dump_stack();
 	}
 
@@ -130,9 +126,7 @@ error:
 	dump_stack();
 }
 
-static __printf(3, 0) int kobject_add_varg(struct kobject *kobj,
-					   struct kobject *parent,
-					   const char *fmt, va_list vargs)
+static __printf(3, 0) int kobject_add_varg(struct kobject *kobj, struct kobject *parent, const char *fmt, va_list vargs)
 {
 	int retval;
 
@@ -145,8 +139,7 @@ static __printf(3, 0) int kobject_add_varg(struct kobject *kobj,
 	return kobject_add_internal(kobj);
 }
 
-int kobject_add(struct kobject *kobj, struct kobject *parent,
-		const char *fmt, ...)
+int kobject_add(struct kobject *kobj, struct kobject *parent, const char *fmt, ...)
 {
 	va_list args;
 	int retval;
@@ -155,8 +148,7 @@ int kobject_add(struct kobject *kobj, struct kobject *parent,
 		return -EINVAL;
 
 	if (!kobj->state_initialized) {
-		pr_err("kobject '%s' (%p): tried to add an uninitialized object, something is seriously wrong.\n",
-		       kobject_name(kobj), kobj);
+		pr_err("kobject '%s' (%p): tried to add an uninitialized object, something is seriously wrong.\n", kobject_name(kobj), kobj);
 		dump_stack();
 		return -EINVAL;
 	}
@@ -181,9 +173,7 @@ struct kobject *kobject_get(struct kobject *kobj)
 {
 	if (kobj) {
 		if (!kobj->state_initialized)
-			WARN(1, KERN_WARNING
-				"kobject: '%s' (%p): is not initialized, yet kobject_get() is being called.\n",
-			     kobject_name(kobj), kobj);
+			WARN(1, KERN_WARNING "kobject: '%s' (%p): is not initialized, yet kobject_get() is being called.\n", kobject_name(kobj), kobj);
 		kref_get(&kobj->kref);
 	}
 	return kobj;
@@ -235,9 +225,7 @@ void kobject_put(struct kobject *kobj)
 {
 	if (kobj) {
 		if (!kobj->state_initialized)
-			WARN(1, KERN_WARNING
-				"kobject: '%s' (%p): is not initialized, yet kobject_put() is being called.\n",
-			     kobject_name(kobj), kobj);
+			WARN(1, KERN_WARNING "kobject: '%s' (%p): is not initialized, yet kobject_put() is being called.\n", kobject_name(kobj), kobj);
 		kref_put(&kobj->kref, kobject_release);
 	}
 }
@@ -295,8 +283,7 @@ int kset_register(struct kset *k)
 static struct kobj_type kset_ktype = {
 };
 
-static struct kset *kset_create(const char *name,
-				struct kobject *parent_kobj)
+static struct kset *kset_create(const char *name, struct kobject *parent_kobj)
 {
 	struct kset *kset;
 	int retval;
@@ -318,8 +305,7 @@ static struct kset *kset_create(const char *name,
 	return kset;
 }
 
-struct kset *kset_create_and_add(const char *name,
-				 struct kobject *parent_kobj)
+struct kset *kset_create_and_add(const char *name, struct kobject *parent_kobj)
 {
 	struct kset *kset;
 	int error;

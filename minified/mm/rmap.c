@@ -33,9 +33,7 @@ static void anon_vma_chain_free(struct anon_vma_chain *anon_vma_chain)
 	kmem_cache_free(anon_vma_chain_cachep, anon_vma_chain);
 }
 
-static void anon_vma_chain_link(struct vm_area_struct *vma,
-				struct anon_vma_chain *avc,
-				struct anon_vma *anon_vma)
+static void anon_vma_chain_link(struct vm_area_struct *vma, struct anon_vma_chain *avc, struct anon_vma *anon_vma)
 {
 	avc->vma = vma;
 	avc->anon_vma = anon_vma;
@@ -102,16 +100,12 @@ static void anon_vma_ctor(void *data)
 
 void __init anon_vma_init(void)
 {
-	anon_vma_cachep = kmem_cache_create("anon_vma", sizeof(struct anon_vma),
-			0, SLAB_TYPESAFE_BY_RCU|SLAB_PANIC|SLAB_ACCOUNT,
-			anon_vma_ctor);
-	anon_vma_chain_cachep = KMEM_CACHE(anon_vma_chain,
-			SLAB_PANIC|SLAB_ACCOUNT);
+	anon_vma_cachep = kmem_cache_create("anon_vma", sizeof(struct anon_vma), 0, SLAB_TYPESAFE_BY_RCU|SLAB_PANIC|SLAB_ACCOUNT, anon_vma_ctor);
+	anon_vma_chain_cachep = KMEM_CACHE(anon_vma_chain, SLAB_PANIC|SLAB_ACCOUNT);
 }
 
 
-static void __page_set_anon_rmap(struct page *page,
-	struct vm_area_struct *vma, unsigned long address, int exclusive)
+static void __page_set_anon_rmap(struct page *page, struct vm_area_struct *vma, unsigned long address, int exclusive)
 {
 	struct anon_vma *anon_vma = vma->anon_vma;
 
@@ -131,8 +125,7 @@ out:
 		SetPageAnonExclusive(page);
 }
 
-void page_add_new_anon_rmap(struct page *page,
-	struct vm_area_struct *vma, unsigned long address)
+void page_add_new_anon_rmap(struct page *page, struct vm_area_struct *vma, unsigned long address)
 {
 	const bool compound = PageCompound(page);
 	int nr = compound ? thp_nr_pages(page) : 1;
@@ -152,8 +145,7 @@ void page_add_new_anon_rmap(struct page *page,
 	__page_set_anon_rmap(page, vma, address, 1);
 }
 
-void page_add_file_rmap(struct page *page,
-	struct vm_area_struct *vma, bool compound)
+void page_add_file_rmap(struct page *page, struct vm_area_struct *vma, bool compound)
 {
 	int nr = 0;
 

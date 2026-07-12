@@ -31,13 +31,9 @@ static __always_inline void
 arch_set_bit(long nr, volatile unsigned long *addr)
 {
 	if (__builtin_constant_p(nr)) {
-		asm volatile(LOCK_PREFIX "orb %b1,%0"
-			: CONST_MASK_ADDR(nr, addr)
-			: "iq" (CONST_MASK(nr))
-			: "memory");
+		asm volatile(LOCK_PREFIX "orb %b1,%0" : CONST_MASK_ADDR(nr, addr) : "iq" (CONST_MASK(nr)) : "memory");
 	} else {
-		asm volatile(LOCK_PREFIX __ASM_SIZE(bts) " %1,%0"
-			: : RLONG_ADDR(addr), "Ir" (nr) : "memory");
+		asm volatile(LOCK_PREFIX __ASM_SIZE(bts) " %1,%0" : : RLONG_ADDR(addr), "Ir" (nr) : "memory");
 	}
 }
 
@@ -51,12 +47,9 @@ static __always_inline void
 arch_clear_bit(long nr, volatile unsigned long *addr)
 {
 	if (__builtin_constant_p(nr)) {
-		asm volatile(LOCK_PREFIX "andb %b1,%0"
-			: CONST_MASK_ADDR(nr, addr)
-			: "iq" (~CONST_MASK(nr)));
+		asm volatile(LOCK_PREFIX "andb %b1,%0" : CONST_MASK_ADDR(nr, addr) : "iq" (~CONST_MASK(nr)));
 	} else {
-		asm volatile(LOCK_PREFIX __ASM_SIZE(btr) " %1,%0"
-			: : RLONG_ADDR(addr), "Ir" (nr) : "memory");
+		asm volatile(LOCK_PREFIX __ASM_SIZE(btr) " %1,%0" : : RLONG_ADDR(addr), "Ir" (nr) : "memory");
 	}
 }
 
@@ -70,10 +63,7 @@ static __always_inline bool
 arch_clear_bit_unlock_is_negative_byte(long nr, volatile unsigned long *addr)
 {
 	bool negative;
-	asm volatile(LOCK_PREFIX "andb %2,%1"
-		CC_SET(s)
-		: CC_OUT(s) (negative), WBYTE_ADDR(addr)
-		: "ir" ((char) ~(1 << nr)) : "memory");
+	asm volatile(LOCK_PREFIX "andb %2,%1" CC_SET(s) : CC_OUT(s) (negative), WBYTE_ADDR(addr) : "ir" ((char) ~(1 << nr)) : "memory");
 	return negative;
 }
 #define arch_clear_bit_unlock_is_negative_byte                                 	arch_clear_bit_unlock_is_negative_byte
@@ -97,10 +87,7 @@ arch___test_and_set_bit(long nr, volatile unsigned long *addr)
 {
 	bool oldbit;
 
-	asm(__ASM_SIZE(bts) " %2,%1"
-	    CC_SET(c)
-	    : CC_OUT(c) (oldbit)
-	    : ADDR, "Ir" (nr) : "memory");
+	asm(__ASM_SIZE(bts) " %2,%1" CC_SET(c) : CC_OUT(c) (oldbit) : ADDR, "Ir" (nr) : "memory");
 	return oldbit;
 }
 
@@ -116,28 +103,21 @@ arch___test_and_clear_bit(long nr, volatile unsigned long *addr)
 {
 	bool oldbit;
 
-	asm volatile(__ASM_SIZE(btr) " %2,%1"
-		     CC_SET(c)
-		     : CC_OUT(c) (oldbit)
-		     : ADDR, "Ir" (nr) : "memory");
+	asm volatile(__ASM_SIZE(btr) " %2,%1" CC_SET(c) : CC_OUT(c) (oldbit) : ADDR, "Ir" (nr) : "memory");
 	return oldbit;
 }
 
 
 static __always_inline bool constant_test_bit(long nr, const volatile unsigned long *addr)
 {
-	return ((1UL << (nr & (BITS_PER_LONG-1))) &
-		(addr[nr >> _BITOPS_LONG_SHIFT])) != 0;
+	return ((1UL << (nr & (BITS_PER_LONG-1))) & (addr[nr >> _BITOPS_LONG_SHIFT])) != 0;
 }
 
 static __always_inline bool variable_test_bit(long nr, volatile const unsigned long *addr)
 {
 	bool oldbit;
 
-	asm volatile(__ASM_SIZE(bt) " %2,%1"
-		     CC_SET(c)
-		     : CC_OUT(c) (oldbit)
-		     : "m" (*(unsigned long *)addr), "Ir" (nr) : "memory");
+	asm volatile(__ASM_SIZE(bt) " %2,%1" CC_SET(c) : CC_OUT(c) (oldbit) : "m" (*(unsigned long *)addr), "Ir" (nr) : "memory");
 
 	return oldbit;
 }
@@ -147,27 +127,21 @@ static __always_inline bool variable_test_bit(long nr, volatile const unsigned l
  
 static __always_inline unsigned long __ffs(unsigned long word)
 {
-	asm("rep; bsf %1,%0"
-		: "=r" (word)
-		: "rm" (word));
+	asm("rep; bsf %1,%0" : "=r" (word) : "rm" (word));
 	return word;
 }
 
  
 static __always_inline unsigned long ffz(unsigned long word)
 {
-	asm("rep; bsf %1,%0"
-		: "=r" (word)
-		: "r" (~word));
+	asm("rep; bsf %1,%0" : "=r" (word) : "r" (~word));
 	return word;
 }
 
  
 static __always_inline unsigned long __fls(unsigned long word)
 {
-	asm("bsr %1,%0"
-	    : "=r" (word)
-	    : "rm" (word));
+	asm("bsr %1,%0" : "=r" (word) : "rm" (word));
 	return word;
 }
 
@@ -178,9 +152,7 @@ static __always_inline int ffs(int x)
 {
 	int r;
 
-	asm("bsfl %1,%0\n\t"
-	    "cmovzl %2,%0"
-	    : "=&r" (r) : "rm" (x), "r" (-1));
+	asm("bsfl %1,%0\n\t" "cmovzl %2,%0" : "=&r" (r) : "rm" (x), "r" (-1));
 	return r + 1;
 }
 
@@ -189,9 +161,7 @@ static __always_inline int fls(unsigned int x)
 {
 	int r;
 
-	asm("bsrl %1,%0\n\t"
-	    "cmovzl %2,%0"
-	    : "=&r" (r) : "rm" (x), "rm" (-1));
+	asm("bsrl %1,%0\n\t" "cmovzl %2,%0" : "=&r" (r) : "rm" (x), "rm" (-1));
 	return r + 1;
 }
 

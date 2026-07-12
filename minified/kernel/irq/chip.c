@@ -184,8 +184,7 @@ static bool irq_may_run(struct irq_desc *desc)
 static void cond_unmask_irq(struct irq_desc *desc)
 {
 	 
-	if (!irqd_irq_disabled(&desc->irq_data) &&
-	    irqd_irq_masked(&desc->irq_data) && !desc->threads_oneshot)
+	if (!irqd_irq_disabled(&desc->irq_data) && irqd_irq_masked(&desc->irq_data) && !desc->threads_oneshot)
 		unmask_irq(desc);
 }
 
@@ -222,8 +221,7 @@ out_unlock:
 
 
 static void
-__irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle,
-		     int is_chained, const char *name)
+__irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle, int is_chained, const char *name)
 {
 	if (!handle) {
 		handle = handle_bad_irq;
@@ -264,8 +262,7 @@ __irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle,
 }
 
 void
-__irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
-		  const char *name)
+__irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained, const char *name)
 {
 	unsigned long flags;
 	struct irq_desc *desc = irq_get_desc_buslock(irq, &flags, 0);
@@ -279,8 +276,7 @@ __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
 
 
 void
-irq_set_chip_and_handler_name(unsigned int irq, const struct irq_chip *chip,
-			      irq_flow_handler_t handle, const char *name)
+irq_set_chip_and_handler_name(unsigned int irq, const struct irq_chip *chip, irq_flow_handler_t handle, const char *name)
 {
 	irq_set_chip(irq, chip);
 	__irq_set_handler(irq, handle, 0, name);

@@ -29,8 +29,7 @@ struct timespec64 {
 #define TIME_UPTIME_SEC_MAX		(30LL * 365 * 24 *3600)
 #define TIME_SETTOD_SEC_MAX		(KTIME_SEC_MAX - TIME_UPTIME_SEC_MAX)
 
-static inline int timespec64_equal(const struct timespec64 *a,
-				   const struct timespec64 *b)
+static inline int timespec64_equal(const struct timespec64 *a, const struct timespec64 *b)
 {
 	return (a->tv_sec == b->tv_sec) && (a->tv_nsec == b->tv_nsec);
 }
@@ -47,12 +46,10 @@ static inline int timespec64_compare(const struct timespec64 *lhs, const struct 
 extern void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec);
 
 
-static inline struct timespec64 timespec64_sub(struct timespec64 lhs,
-						struct timespec64 rhs)
+static inline struct timespec64 timespec64_sub(struct timespec64 lhs, struct timespec64 rhs)
 {
 	struct timespec64 ts_delta;
-	set_normalized_timespec64(&ts_delta, lhs.tv_sec - rhs.tv_sec,
-				lhs.tv_nsec - rhs.tv_nsec);
+	set_normalized_timespec64(&ts_delta, lhs.tv_sec - rhs.tv_sec, lhs.tv_nsec - rhs.tv_nsec);
 	return ts_delta;
 }
 

@@ -56,8 +56,7 @@ static bool conf_set_all_new_symbols(enum conf_def_mode mode)
 
 
 	for_all_symbols(i, csym) {
-		if ((sym_is_choice(csym) && !sym_has_value(csym)) ||
-		    sym_is_choice_value(csym))
+		if ((sym_is_choice(csym) && !sym_has_value(csym)) || sym_is_choice_value(csym))
 			csym->flags |= SYMBOL_NEED_SET_CHOICE_VALUES;
 	}
 
@@ -133,19 +132,14 @@ int main(int ac, char **av)
 			break;
 		if ((strcmp(name, "") != 0) && (strcmp(name, "1") != 0)) {
 			if (conf_read_simple(name, S_DEF_USER)) {
-				fprintf(stderr,
-					"*** Can't read seed configuration \"%s\"!\n",
-					name);
+				fprintf(stderr, "*** Can't read seed configuration \"%s\"!\n", name);
 				exit(1);
 			}
 			break;
 		}
 		name = "allno.config";
-		if (conf_read_simple(name, S_DEF_USER) &&
-		    conf_read_simple("all.config", S_DEF_USER)) {
-			fprintf(stderr,
-				"*** KCONFIG_ALLCONFIG set, but no \"%s\" or \"all.config\" file found\n",
-				name);
+		if (conf_read_simple(name, S_DEF_USER) && conf_read_simple("all.config", S_DEF_USER)) {
+			fprintf(stderr, "*** KCONFIG_ALLCONFIG set, but no \"%s\" or \"all.config\" file found\n", name);
 			exit(1);
 		}
 	}
@@ -154,8 +148,7 @@ int main(int ac, char **av)
 		name = getenv("KCONFIG_NOSILENTUPDATE");
 		if (name && *name) {
 			if (conf_get_changed()) {
-				fprintf(stderr,
-					"\n*** The configuration requires explicit update.\n\n");
+				fprintf(stderr, "\n*** The configuration requires explicit update.\n\n");
 				return 1;
 			}
 			no_conf_write = 1;
@@ -174,8 +167,7 @@ int main(int ac, char **av)
 
 
 	if (conf_write_autoconf(sync_kconfig) && sync_kconfig) {
-		fprintf(stderr,
-			"\n*** Error during sync of the configuration.\n\n");
+		fprintf(stderr, "\n*** Error during sync of the configuration.\n\n");
 		return 1;
 	}
 	return 0;

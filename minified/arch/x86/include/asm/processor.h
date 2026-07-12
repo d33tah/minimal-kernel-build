@@ -85,17 +85,10 @@ extern void early_cpu_init(void);
 extern void identify_boot_cpu(void);
 /* identify_secondary_cpu, print_cpu_info, print_cpu_msr removed - never called */
 
-static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
-				unsigned int *ecx, unsigned int *edx)
+static inline void native_cpuid(unsigned int *eax, unsigned int *ebx, unsigned int *ecx, unsigned int *edx)
 {
 	 
-	asm volatile("cpuid"
-	    : "=a" (*eax),
-	      "=b" (*ebx),
-	      "=c" (*ecx),
-	      "=d" (*edx)
-	    : "0" (*eax), "2" (*ecx)
-	    : "memory");
+	asm volatile("cpuid" : "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx) : "0" (*eax), "2" (*ecx) : "memory");
 }
 
 /* native_cpuid_reg + native_cpuid_{eax,ebx,ecx,edx} removed - unused */
@@ -189,8 +182,7 @@ struct thread_struct {
 
 extern void fpu_thread_struct_whitelist(unsigned long *offset, unsigned long *size);
 
-static inline void arch_thread_struct_whitelist(unsigned long *offset,
-						unsigned long *size)
+static inline void arch_thread_struct_whitelist(unsigned long *offset, unsigned long *size)
 {
 	fpu_thread_struct_whitelist(offset, size);
 }
@@ -213,9 +205,7 @@ static inline void load_sp0(unsigned long sp0)
 
 
 
-static inline void cpuid(unsigned int op,
-			 unsigned int *eax, unsigned int *ebx,
-			 unsigned int *ecx, unsigned int *edx)
+static inline void cpuid(unsigned int op, unsigned int *eax, unsigned int *ebx, unsigned int *ecx, unsigned int *edx)
 {
 	*eax = op;
 	*ecx = 0;
@@ -223,9 +213,7 @@ static inline void cpuid(unsigned int op,
 }
 
  
-static inline void cpuid_count(unsigned int op, int count,
-			       unsigned int *eax, unsigned int *ebx,
-			       unsigned int *ecx, unsigned int *edx)
+static inline void cpuid_count(unsigned int op, int count, unsigned int *eax, unsigned int *ebx, unsigned int *ecx, unsigned int *edx)
 {
 	*eax = op;
 	*ecx = count;
@@ -273,17 +261,13 @@ extern void cpu_init_exception_handling(void);
  
 static inline void prefetch(const void *x)
 {
-	alternative_input(BASE_PREFETCH, "prefetchnta %P1",
-			  X86_FEATURE_XMM,
-			  "m" (*(const char *)x));
+	alternative_input(BASE_PREFETCH, "prefetchnta %P1", X86_FEATURE_XMM, "m" (*(const char *)x));
 }
 
  
 static __always_inline void prefetchw(const void *x)
 {
-	alternative_input(BASE_PREFETCH, "prefetchw %P1",
-			  X86_FEATURE_3DNOWPREFETCH,
-			  "m" (*(const char *)x));
+	alternative_input(BASE_PREFETCH, "prefetchw %P1", X86_FEATURE_3DNOWPREFETCH, "m" (*(const char *)x));
 }
 
 #define TOP_OF_INIT_STACK ((unsigned long)&init_stack + sizeof(init_stack) - 			   TOP_OF_KERNEL_STACK_PADDING)
@@ -292,8 +276,7 @@ static __always_inline void prefetchw(const void *x)
 
 #define INIT_THREAD  {							  	.sp0			= TOP_OF_INIT_STACK,			  	.sysenter_cs		= __KERNEL_CS,				  }
 
-extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
-					       unsigned long new_sp);
+extern void start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp);
 
  
 #define __TASK_UNMAPPED_BASE(task_size)	(PAGE_ALIGN(task_size / 3))

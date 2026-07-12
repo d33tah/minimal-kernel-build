@@ -70,8 +70,7 @@ static __always_inline unsigned long read_ti_thread_flags(struct thread_info *ti
 #define tif_need_resched() test_thread_flag(TIF_NEED_RESCHED)
 
 
-static inline void check_object_size(const void *ptr, unsigned long n,
-				     bool to_user)
+static inline void check_object_size(const void *ptr, unsigned long n, bool to_user)
 { }
 
 extern void __compiletime_error("copy source size is too small")

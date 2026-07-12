@@ -22,9 +22,7 @@ static inline bool is_flag(const struct fs_parameter_spec *p)
 	return p->type == NULL;
 }
 
-static const struct fs_parameter_spec *fs_lookup_key(
-	const struct fs_parameter_spec *desc,
-	struct fs_parameter *param, bool *negated)
+static const struct fs_parameter_spec *fs_lookup_key( const struct fs_parameter_spec *desc, struct fs_parameter *param, bool *negated)
 {
 	const struct fs_parameter_spec *p, *other = NULL;
 	const char *name = param->key;
@@ -53,10 +51,7 @@ static const struct fs_parameter_spec *fs_lookup_key(
 	return other;
 }
 
-int __fs_parse(struct p_log *log,
-	     const struct fs_parameter_spec *desc,
-	     struct fs_parameter *param,
-	     struct fs_parse_result *result)
+int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc, struct fs_parameter *param, struct fs_parse_result *result)
 {
 	const struct fs_parameter_spec *p;
 
@@ -72,8 +67,7 @@ int __fs_parse(struct p_log *log,
 	 
 	if (is_flag(p)) {
 		if (param->type != fs_value_is_flag)
-			return inval_plog(log, "Unexpected value for '%s'",
-				      param->key);
+			return inval_plog(log, "Unexpected value for '%s'", param->key);
 		result->boolean = !result->negated;
 	} else  {
 		int ret = p->type(log, p, param, result);
@@ -83,8 +77,7 @@ int __fs_parse(struct p_log *log,
 	return p->opt;
 }
 
-int fs_param_is_u32(struct p_log *log, const struct fs_parameter_spec *p,
-		    struct fs_parameter *param, struct fs_parse_result *result)
+int fs_param_is_u32(struct p_log *log, const struct fs_parameter_spec *p, struct fs_parameter *param, struct fs_parse_result *result)
 {
 	/* SAFE-FALLBACK: the only spec that points .type here is ramfs's "mode"
 	 * (fsparam_u32oct), which this boot never passes -- runtime-dead. Returning

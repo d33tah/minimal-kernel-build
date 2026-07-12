@@ -19,8 +19,7 @@ static inline void flush_dcache_page(struct page *page) { }
 /* flush_icache_user_range removed - unused (macro for flush_icache_range) */
 
 #ifndef flush_icache_page
-static inline void flush_icache_page(struct vm_area_struct *vma,
-				     struct page *page) { }
+static inline void flush_icache_page(struct vm_area_struct *vma, struct page *page) { }
 #endif
 
 #include <asm/special_insns.h>

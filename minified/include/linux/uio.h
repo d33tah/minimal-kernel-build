@@ -62,17 +62,14 @@ static inline bool iov_iter_is_kvec(const struct iov_iter *i)
 }
 
 
-size_t copy_page_from_iter_atomic(struct page *page, unsigned offset,
-				  size_t bytes, struct iov_iter *i);
+size_t copy_page_from_iter_atomic(struct page *page, unsigned offset, size_t bytes, struct iov_iter *i);
 void iov_iter_revert(struct iov_iter *i, size_t bytes);
-size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes,
-			 struct iov_iter *i);
+size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes, struct iov_iter *i);
 
 size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i);
 size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i);
 
-static inline size_t copy_folio_to_iter(struct folio *folio, size_t offset,
-		size_t bytes, struct iov_iter *i)
+static inline size_t copy_folio_to_iter(struct folio *folio, size_t offset, size_t bytes, struct iov_iter *i)
 {
 	return copy_page_to_iter(&folio->page, offset, bytes, i);
 }
@@ -87,10 +84,8 @@ size_t copy_from_iter(void *addr, size_t bytes, struct iov_iter *i)
 }
 
 
-void iov_iter_init(struct iov_iter *i, unsigned int direction, const struct iovec *iov,
-			unsigned long nr_segs, size_t count);
-void iov_iter_kvec(struct iov_iter *i, unsigned int direction, const struct kvec *kvec,
-			unsigned long nr_segs, size_t count);
+void iov_iter_init(struct iov_iter *i, unsigned int direction, const struct iovec *iov, unsigned long nr_segs, size_t count);
+void iov_iter_kvec(struct iov_iter *i, unsigned int direction, const struct kvec *kvec, unsigned long nr_segs, size_t count);
 /* iov_iter_bvec, iov_iter_pipe, iov_iter_discard, iov_iter_xarray, iov_iter_get_pages,
    iov_iter_get_pages_alloc, iov_iter_npages, iov_iter_restore, dup_iter
    removed - unused */

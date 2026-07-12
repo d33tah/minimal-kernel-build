@@ -31,9 +31,7 @@ struct list_head {
 
 
  
-static inline void __list_add(struct list_head *_new,
-			      struct list_head *prev,
-			      struct list_head *next)
+static inline void __list_add(struct list_head *_new, struct list_head *prev, struct list_head *next)
 {
 	next->prev = _new;
 	_new->next = next;

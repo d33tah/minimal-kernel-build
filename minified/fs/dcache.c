@@ -22,8 +22,7 @@ static inline struct hlist_bl_head *d_hash(unsigned int hash)
 #define IN_LOOKUP_SHIFT 10
 static struct hlist_bl_head in_lookup_hashtable[1 << IN_LOOKUP_SHIFT];
 
-static inline struct hlist_bl_head *in_lookup_hash(const struct dentry *parent,
-					unsigned int hash)
+static inline struct hlist_bl_head *in_lookup_hash(const struct dentry *parent, unsigned int hash)
 {
 	hash += (unsigned long) parent / L1_CACHE_BYTES;
 	return in_lookup_hashtable + hash_32(hash, IN_LOOKUP_SHIFT);
@@ -93,9 +92,7 @@ static inline int dname_external(const struct dentry *dentry)
 	return dentry->d_name.name != dentry->d_iname;
 }
 
-static inline void __d_set_inode_and_type(struct dentry *dentry,
-					  struct inode *inode,
-					  unsigned type_flags)
+static inline void __d_set_inode_and_type(struct dentry *dentry, struct inode *inode, unsigned type_flags)
 {
 	unsigned flags;
 
@@ -398,8 +395,7 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	struct dentry *dentry;
 	char *dname;
 
-	dentry = kmem_cache_alloc_lru(dentry_cache, &sb->s_dentry_lru,
-				      GFP_KERNEL);
+	dentry = kmem_cache_alloc_lru(dentry_cache, &sb->s_dentry_lru, GFP_KERNEL);
 	if (!dentry)
 		return NULL;
 
@@ -410,9 +406,7 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 		dname = dentry->d_iname;
 	} else if (name->len > DNAME_INLINE_LEN-1) {
 		size_t size = offsetof(struct external_name, name[1]);
-		struct external_name *p = kmalloc(size + name->len,
-						  GFP_KERNEL_ACCOUNT |
-						  __GFP_RECLAIMABLE);
+		struct external_name *p = kmalloc(size + name->len, GFP_KERNEL_ACCOUNT | __GFP_RECLAIMABLE);
 		if (!p) {
 			kmem_cache_free(dentry_cache, dentry); 
 			return NULL;
@@ -540,8 +534,7 @@ struct dentry *d_make_root(struct inode *root_inode)
 	return res;
 }
 
-static inline bool d_same_name(const struct dentry *dentry,
-				const struct qstr *name)
+static inline bool d_same_name(const struct dentry *dentry, const struct qstr *name)
 {
 	/*
 	 * DCACHE_OP_COMPARE is never set on this build (no ->d_compare
@@ -553,9 +546,7 @@ static inline bool d_same_name(const struct dentry *dentry,
 	return dentry_cmp(dentry, name->name, name->len) == 0;
 }
 
-struct dentry *__d_lookup_rcu(const struct dentry *parent,
-				const struct qstr *name,
-				unsigned *seqp)
+struct dentry *__d_lookup_rcu(const struct dentry *parent, const struct qstr *name, unsigned *seqp)
 {
 	u64 hashlen = name->hash_len;
 	const unsigned char *str = name->name;
@@ -682,9 +673,7 @@ static void d_wait_lookup(struct dentry *dentry)
 	}
 }
 
-struct dentry *d_alloc_parallel(struct dentry *parent,
-				const struct qstr *name,
-				wait_queue_head_t *wq)
+struct dentry *d_alloc_parallel(struct dentry *parent, const struct qstr *name, wait_queue_head_t *wq)
 {
 	unsigned int hash = name->hash;
 	struct hlist_bl_head *b = in_lookup_hash(parent, hash);
@@ -779,8 +768,7 @@ mismatch:
 
 void __d_lookup_done(struct dentry *dentry)
 {
-	struct hlist_bl_head *b = in_lookup_hash(dentry->d_parent,
-						 dentry->d_name.hash);
+	struct hlist_bl_head *b = in_lookup_hash(dentry->d_parent, dentry->d_name.hash);
 	hlist_bl_lock(b);
 	dentry->d_flags &= ~DCACHE_PAR_LOOKUP;
 	__hlist_bl_del(&dentry->d_u.d_in_lookup_hash);
@@ -827,24 +815,14 @@ void d_add(struct dentry *entry, struct inode *inode)
 static void __init dcache_init_early(void)
 {
 	dentry_hashtable =
-		alloc_large_system_hash("Dentry cache",
-					sizeof(struct hlist_bl_head),
-					0,
-					13,
-					HASH_EARLY | HASH_ZERO,
-					&d_hash_shift,
-					NULL,
-					0,
-					0);
+		alloc_large_system_hash("Dentry cache", sizeof(struct hlist_bl_head), 0, 13, HASH_EARLY | HASH_ZERO, &d_hash_shift, NULL, 0, 0);
 	d_hash_shift = 32 - d_hash_shift;
 }
 
 static void __init dcache_init(void)
 {
 	
-	dentry_cache = KMEM_CACHE_USERCOPY(dentry,
-		SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_ACCOUNT,
-		d_iname);
+	dentry_cache = KMEM_CACHE_USERCOPY(dentry, SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_ACCOUNT, d_iname);
 }
 
 struct kmem_cache *names_cachep __read_mostly;
@@ -861,8 +839,7 @@ void __init vfs_caches_init_early(void)
 
 void __init vfs_caches_init(void)
 {
-	names_cachep = kmem_cache_create_usercopy("names_cache", PATH_MAX, 0,
-			SLAB_HWCACHE_ALIGN|SLAB_PANIC, 0, PATH_MAX, NULL);
+	names_cachep = kmem_cache_create_usercopy("names_cache", PATH_MAX, 0, SLAB_HWCACHE_ALIGN|SLAB_PANIC, 0, PATH_MAX, NULL);
 
 	dcache_init();
 	inode_init();

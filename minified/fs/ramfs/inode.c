@@ -19,8 +19,7 @@ struct ramfs_fs_info {
 static const struct super_operations ramfs_ops;
 static const struct inode_operations ramfs_dir_inode_operations;
 
-struct inode *ramfs_get_inode(struct super_block *sb,
-				const struct inode *dir, umode_t mode, dev_t dev)
+struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir, umode_t mode, dev_t dev)
 {
 	struct inode * inode = new_inode(sb);
 
@@ -49,8 +48,7 @@ struct inode *ramfs_get_inode(struct super_block *sb,
 }
 
 static int
-ramfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
-	    struct dentry *dentry, umode_t mode, dev_t dev)
+ramfs_mknod(struct user_namespace *mnt_userns, struct inode *dir, struct dentry *dentry, umode_t mode, dev_t dev)
 {
 	struct inode * inode = ramfs_get_inode(dir->i_sb, dir, mode, dev);
 	int error = -ENOSPC;
@@ -64,8 +62,7 @@ ramfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 	return error;
 }
 
-static int ramfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
-		       struct dentry *dentry, umode_t mode)
+static int ramfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir, struct dentry *dentry, umode_t mode)
 {
 	int retval = ramfs_mknod(&init_user_ns, dir, dentry, mode | S_IFDIR, 0);
 	if (!retval)
@@ -73,8 +70,7 @@ static int ramfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
 	return retval;
 }
 
-static int ramfs_create(struct user_namespace *mnt_userns, struct inode *dir,
-			struct dentry *dentry, umode_t mode, bool excl)
+static int ramfs_create(struct user_namespace *mnt_userns, struct inode *dir, struct dentry *dentry, umode_t mode, bool excl)
 {
 	return ramfs_mknod(&init_user_ns, dir, dentry, mode | S_IFREG, 0);
 }

@@ -20,8 +20,7 @@ static int add_range(struct range *range, int az, int nr_range, u64 start, u64 e
 	return nr_range;
 }
 
-int add_range_with_merge(struct range *range, int az, int nr_range,
-		     u64 start, u64 end)
+int add_range_with_merge(struct range *range, int az, int nr_range, u64 start, u64 end)
 {
 	int i;
 
@@ -44,8 +43,7 @@ int add_range_with_merge(struct range *range, int az, int nr_range,
 		start = min(range[i].start, start);
 		end = max(range[i].end, end);
 
-		memmove(&range[i], &range[i + 1],
-			(nr_range - (i + 1)) * sizeof(range[i]));
+		memmove(&range[i], &range[i + 1], (nr_range - (i + 1)) * sizeof(range[i]));
 		range[nr_range - 1].start = 0;
 		range[nr_range - 1].end   = 0;
 		nr_range--;

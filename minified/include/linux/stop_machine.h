@@ -9,8 +9,7 @@ typedef int (*cpu_stop_fn_t)(void *arg);
 
 #include <linux/workqueue.h>
 
-static __always_inline int stop_machine_cpuslocked(cpu_stop_fn_t fn, void *data,
-					  const struct cpumask *cpus)
+static __always_inline int stop_machine_cpuslocked(cpu_stop_fn_t fn, void *data, const struct cpumask *cpus)
 {
 	unsigned long flags;
 	int ret;

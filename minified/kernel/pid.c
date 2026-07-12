@@ -84,8 +84,7 @@ struct pid *alloc_pid(struct pid_namespace *ns)
 			pid_min = RESERVED_PIDS;
 
 
-		nr = idr_alloc_cyclic(&tmp->idr, NULL, pid_min,
-				      pid_max, GFP_ATOMIC);
+		nr = idr_alloc_cyclic(&tmp->idr, NULL, pid_min, pid_max, GFP_ATOMIC);
 		spin_unlock_irq(&pidmap_lock);
 		idr_preload_end();
 
@@ -158,12 +157,10 @@ struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
 	struct pid *pid = idr_find(&ns->idr, nr);
 	struct task_struct *result = NULL;
 
-	RCU_LOCKDEP_WARN(!rcu_read_lock_held(),
-			 "find_task_by_pid_ns() needs rcu_read_lock() protection");
+	RCU_LOCKDEP_WARN(!rcu_read_lock_held(), "find_task_by_pid_ns() needs rcu_read_lock() protection");
 	if (pid) {
 		struct hlist_node *first;
-		first = rcu_dereference_check(hlist_first_rcu(&pid->tasks[PIDTYPE_PID]),
-					      lockdep_tasklist_lock_is_held());
+		first = rcu_dereference_check(hlist_first_rcu(&pid->tasks[PIDTYPE_PID]), lockdep_tasklist_lock_is_held());
 		if (first)
 			result = hlist_entry(first, struct task_struct, pid_links[(PIDTYPE_PID)]);
 	}
@@ -198,8 +195,7 @@ pid_t pid_vnr(struct pid *pid)
 	return pid_nr_ns(pid, task_active_pid_ns(current));
 }
 
-pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type,
-			struct pid_namespace *ns)
+pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type, struct pid_namespace *ns)
 {
 	pid_t nr = 0;
 
@@ -223,13 +219,10 @@ void __init pid_idr_init(void)
 	BUILD_BUG_ON(PID_MAX_LIMIT >= PIDNS_ADDING);
 
 	 
-	pid_max = min(pid_max_max, max_t(int, pid_max,
-				PIDS_PER_CPU_DEFAULT * num_possible_cpus()));
-	pid_max_min = max_t(int, pid_max_min,
-				PIDS_PER_CPU_MIN * num_possible_cpus());
+	pid_max = min(pid_max_max, max_t(int, pid_max, PIDS_PER_CPU_DEFAULT * num_possible_cpus()));
+	pid_max_min = max_t(int, pid_max_min, PIDS_PER_CPU_MIN * num_possible_cpus());
 
 	idr_init(&init_pid_ns.idr);
 
-	init_pid_ns.pid_cachep = KMEM_CACHE(pid,
-			SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT);
+	init_pid_ns.pid_cachep = KMEM_CACHE(pid, SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT);
 }

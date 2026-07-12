@@ -90,18 +90,14 @@ extern void bad_get_le(void);
 #include "vdso2c.h"
 #undef ELF_BITS
 
-static void go(void *raw_addr, size_t raw_len,
-	       void *stripped_addr, size_t stripped_len,
-	       FILE *outfile, const char *name)
+static void go(void *raw_addr, size_t raw_len, void *stripped_addr, size_t stripped_len, FILE *outfile, const char *name)
 {
 	Elf64_Ehdr *hdr = (Elf64_Ehdr *)raw_addr;
 
 	if (hdr->e_ident[EI_CLASS] == ELFCLASS64) {
-		go64(raw_addr, raw_len, stripped_addr, stripped_len,
-		     outfile, name);
+		go64(raw_addr, raw_len, stripped_addr, stripped_len, outfile, name);
 	} else if (hdr->e_ident[EI_CLASS] == ELFCLASS32) {
-		go32(raw_addr, raw_len, stripped_addr, stripped_len,
-		     outfile, name);
+		go32(raw_addr, raw_len, stripped_addr, stripped_len, outfile, name);
 	} else {
 		fail("unknown ELF class\n");
 	}

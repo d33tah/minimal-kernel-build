@@ -17,8 +17,7 @@ const struct exception_table_entry *search_exception_tables(unsigned long addr)
 {
 	const struct exception_table_entry *e;
 
-	e = search_extable(__start___ex_table,
-			   __stop___ex_table - __start___ex_table, addr);
+	e = search_extable(__start___ex_table, __stop___ex_table - __start___ex_table, addr);
 	return e;
 }
 

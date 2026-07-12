@@ -26,16 +26,13 @@ static inline enum clock_event_state clockevent_get_state(struct clock_event_dev
 	return dev->state_use_accessors;
 }
 
-static inline void clockevent_set_state(struct clock_event_device *dev,
-					enum clock_event_state state)
+static inline void clockevent_set_state(struct clock_event_device *dev, enum clock_event_state state)
 {
 	dev->state_use_accessors = state;
 }
 
-extern void clockevents_exchange_device(struct clock_event_device *old,
-					struct clock_event_device *new);
-extern void clockevents_switch_state(struct clock_event_device *dev,
-				     enum clock_event_state state);
+extern void clockevents_exchange_device(struct clock_event_device *old, struct clock_event_device *new);
+extern void clockevents_switch_state(struct clock_event_device *dev, enum clock_event_state state);
 extern void clockevents_handle_noop(struct clock_event_device *dev);
 
 

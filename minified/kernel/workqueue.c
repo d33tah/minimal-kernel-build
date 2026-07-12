@@ -15,8 +15,7 @@ bool queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *wor
     return true;
 }
 
-bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
-                           struct delayed_work *dwork, unsigned long delay)
+bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq, struct delayed_work *dwork, unsigned long delay)
 {
     if (delay == 0)
         return queue_work_on(cpu, wq, &dwork->work);

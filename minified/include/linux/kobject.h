@@ -23,8 +23,7 @@ struct kobject {
 extern __printf(2, 3)
 int kobject_set_name(struct kobject *kobj, const char *name, ...);
 extern __printf(2, 0)
-int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
-			   va_list vargs);
+int kobject_set_name_vargs(struct kobject *kobj, const char *fmt, va_list vargs);
 
 static inline const char *kobject_name(const struct kobject *kobj)
 {
@@ -33,15 +32,12 @@ static inline const char *kobject_name(const struct kobject *kobj)
 
 extern void kobject_init(struct kobject *kobj, const struct kobj_type *ktype);
 extern __printf(3, 4) __must_check
-int kobject_add(struct kobject *kobj, struct kobject *parent,
-		const char *fmt, ...);
+int kobject_add(struct kobject *kobj, struct kobject *parent, const char *fmt, ...);
 
-extern struct kobject * __must_check kobject_create_and_add(const char *name,
-						struct kobject *parent);
+extern struct kobject * __must_check kobject_create_and_add(const char *name, struct kobject *parent);
 
 extern struct kobject *kobject_get(struct kobject *kobj);
-extern struct kobject * __must_check kobject_get_unless_zero(
-						struct kobject *kobj);
+extern struct kobject * __must_check kobject_get_unless_zero( struct kobject *kobj);
 extern void kobject_put(struct kobject *kobj);
 
 struct kobj_type {
@@ -55,8 +51,7 @@ struct kset {
 } __randomize_layout;
 
 extern int __must_check kset_register(struct kset *kset);
-extern struct kset * __must_check kset_create_and_add(const char *name,
-						struct kobject *parent_kobj);
+extern struct kset * __must_check kset_create_and_add(const char *name, struct kobject *parent_kobj);
 
 static inline struct kset *to_kset(struct kobject *kobj)
 {

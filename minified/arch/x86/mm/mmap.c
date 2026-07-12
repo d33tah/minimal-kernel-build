@@ -35,8 +35,7 @@ static unsigned long arch_rnd(unsigned int rndbits)
 	return (get_random_long() & ((1UL << rndbits) - 1)) << PAGE_SHIFT;
 }
 
-static unsigned long mmap_base(unsigned long rnd, unsigned long task_size,
-			       struct rlimit *rlim_stack)
+static unsigned long mmap_base(unsigned long rnd, unsigned long task_size, struct rlimit *rlim_stack)
 {
 	unsigned long gap = rlim_stack->rlim_cur;
 	unsigned long pad = stack_maxrandom_size(task_size) + stack_guard_gap;
@@ -58,15 +57,12 @@ static unsigned long mmap_base(unsigned long rnd, unsigned long task_size,
 	return PAGE_ALIGN(task_size - gap - rnd);
 }
 
-static unsigned long mmap_legacy_base(unsigned long rnd,
-				      unsigned long task_size)
+static unsigned long mmap_legacy_base(unsigned long rnd, unsigned long task_size)
 {
 	return __TASK_UNMAPPED_BASE(task_size) + rnd;
 }
 
-static void arch_pick_mmap_base(unsigned long *base,
-		unsigned long random_factor, unsigned long task_size,
-		struct rlimit *rlim_stack)
+static void arch_pick_mmap_base(unsigned long *base, unsigned long random_factor, unsigned long task_size, struct rlimit *rlim_stack)
 {
 	if (mmap_is_legacy())
 		*base = mmap_legacy_base(random_factor, task_size);
@@ -81,9 +77,7 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
 	else
 		mm->get_unmapped_area = arch_get_unmapped_area_topdown;
 
-	arch_pick_mmap_base(&mm->mmap_base,
-			arch_rnd(mmap64_rnd_bits), DEFAULT_MAP_WINDOW,
-			rlim_stack);
+	arch_pick_mmap_base(&mm->mmap_base, arch_rnd(mmap64_rnd_bits), DEFAULT_MAP_WINDOW, rlim_stack);
 
 }
 

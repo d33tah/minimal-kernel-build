@@ -34,8 +34,7 @@ static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid)
 	write_cr3(build_cr3(pgdir, new_asid));
 }
 
-void switch_mm(struct mm_struct *prev, struct mm_struct *next,
-	       struct task_struct *tsk)
+void switch_mm(struct mm_struct *prev, struct mm_struct *next, struct task_struct *tsk)
 {
 	unsigned long flags;
 
@@ -61,8 +60,7 @@ static inline void cr4_update_pce_mm(struct mm_struct *mm)
 	cr4_clear_bits_irqsoff(X86_CR4_PCE);
 }
 
-void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
-			struct task_struct *tsk)
+void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next, struct task_struct *tsk)
 {
 	struct mm_struct *real_prev = this_cpu_read(cpu_tlbstate.loaded_mm);
 	u16 prev_asid = this_cpu_read(cpu_tlbstate.loaded_mm_asid);
@@ -79,12 +77,10 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 
 	 
 	if (real_prev == next) {
-		VM_WARN_ON(this_cpu_read(cpu_tlbstate.ctxs[prev_asid].ctx_id) !=
-			   next->context.ctx_id);
+		VM_WARN_ON(this_cpu_read(cpu_tlbstate.ctxs[prev_asid].ctx_id) != next->context.ctx_id);
 
 		 
-		if (WARN_ON_ONCE(real_prev != &init_mm &&
-				 !cpumask_test_cpu(cpu, mm_cpumask(next))))
+		if (WARN_ON_ONCE(real_prev != &init_mm && !cpumask_test_cpu(cpu, mm_cpumask(next))))
 			cpumask_set_cpu(cpu, mm_cpumask(next));
 
 		 
@@ -94,8 +90,7 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 		 
 		smp_mb();
 		next_tlb_gen = atomic64_read(&next->context.tlb_gen);
-		if (this_cpu_read(cpu_tlbstate.ctxs[prev_asid].tlb_gen) ==
-				next_tlb_gen)
+		if (this_cpu_read(cpu_tlbstate.ctxs[prev_asid].tlb_gen) == next_tlb_gen)
 			return;
 
 
@@ -103,8 +98,7 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 	} else {
 
 		if (real_prev != &init_mm) {
-			VM_WARN_ON_ONCE(!cpumask_test_cpu(cpu,
-						mm_cpumask(real_prev)));
+			VM_WARN_ON_ONCE(!cpumask_test_cpu(cpu, mm_cpumask(real_prev)));
 			cpumask_clear_cpu(cpu, mm_cpumask(real_prev));
 		}
 
@@ -156,8 +150,7 @@ void initialize_tlbstate_and_flush(void)
 	WARN_ON((cr3 & CR3_ADDR_MASK) != __pa(mm->pgd));
 
 	 
-	WARN_ON(boot_cpu_has(X86_FEATURE_PCID) &&
-		!(cr4_read_shadow() & X86_CR4_PCIDE));
+	WARN_ON(boot_cpu_has(X86_FEATURE_PCID) && !(cr4_read_shadow() & X86_CR4_PCIDE));
 
 	 
 	write_cr3(build_cr3(mm->pgd, 0));
@@ -173,9 +166,7 @@ void initialize_tlbstate_and_flush(void)
 
 DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
 
-void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
-				unsigned long end, unsigned int stride_shift,
-				bool freed_tables)
+void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start, unsigned long end, unsigned int stride_shift, bool freed_tables)
 {
 	/* mmu_gather/unmap teardown never runs on this single-shot boot, so this
 	 * range-flush root is runtime-dead; bump the generation counter so any

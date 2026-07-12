@@ -77,8 +77,7 @@ native_write_gdt_entry(struct desc_struct *gdt, int entry, const void *desc, int
 	memcpy(&gdt[entry], desc, size);
 }
 
-static inline void set_tssldt_descriptor(void *d, unsigned long addr,
-					 unsigned type, unsigned size)
+static inline void set_tssldt_descriptor(void *d, unsigned long addr, unsigned type, unsigned size)
 {
 	struct ldttss_desc *desc = d;
 
@@ -98,8 +97,7 @@ static inline void __set_tss_desc(unsigned cpu, unsigned int entry, struct x86_h
 	struct desc_struct *d = get_cpu_gdt_rw(cpu);
 	tss_desc tss;
 
-	set_tssldt_descriptor(&tss, (unsigned long)addr, DESC_TSS,
-			      __KERNEL_TSS_LIMIT);
+	set_tssldt_descriptor(&tss, (unsigned long)addr, DESC_TSS, __KERNEL_TSS_LIMIT);
 	write_gdt_entry(d, entry, &tss, DESC_TSS);
 }
 
@@ -113,10 +111,8 @@ static inline void native_set_ldt(const void *addr, unsigned int entries)
 		unsigned cpu = smp_processor_id();
 		ldt_desc ldt;
 
-		set_tssldt_descriptor(&ldt, (unsigned long)addr, DESC_LDT,
-				      entries * LDT_ENTRY_SIZE - 1);
-		write_gdt_entry(get_cpu_gdt_rw(cpu), GDT_ENTRY_LDT,
-				&ldt, DESC_LDT);
+		set_tssldt_descriptor(&ldt, (unsigned long)addr, DESC_LDT, entries * LDT_ENTRY_SIZE - 1);
+		write_gdt_entry(get_cpu_gdt_rw(cpu), GDT_ENTRY_LDT, &ldt, DESC_LDT);
 		asm volatile("lldt %w0"::"q" (GDT_ENTRY_LDT*8));
 	}
 }
@@ -157,8 +153,7 @@ static inline void clear_LDT(void)
 	set_ldt(NULL, 0);
 }
 
-static inline void init_idt_data(struct idt_data *data, unsigned int n,
-				 const void *addr)
+static inline void init_idt_data(struct idt_data *data, unsigned int n, const void *addr)
 {
 	BUG_ON(n > 0xFF);
 

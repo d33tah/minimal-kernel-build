@@ -69,12 +69,10 @@ int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param)
 	if (ret != -ENOPARAM)
 		return ret;
 
-	return invalf(fc, "%s: Unknown parameter '%s'",
-		      fc->fs_type->name, param->key);
+	return invalf(fc, "%s: Unknown parameter '%s'", fc->fs_type->name, param->key);
 }
 
-int vfs_parse_fs_string(struct fs_context *fc, const char *key,
-			const char *value, size_t v_size)
+int vfs_parse_fs_string(struct fs_context *fc, const char *key, const char *value, size_t v_size)
 {
 	int ret;
 
@@ -123,10 +121,7 @@ int generic_parse_monolithic(struct fs_context *fc, void *data)
 	return ret;
 }
 
-static struct fs_context *alloc_fs_context(struct file_system_type *fs_type,
-				      struct dentry *reference,
-				      unsigned int sb_flags,
-				      enum fs_context_purpose purpose)
+static struct fs_context *alloc_fs_context(struct file_system_type *fs_type, struct dentry *reference, unsigned int sb_flags, enum fs_context_purpose purpose)
 {
 	int (*init_fs_context)(struct fs_context *);
 	struct fs_context *fc;
@@ -168,11 +163,9 @@ err_fc:
 	return ERR_PTR(ret);
 }
 
-struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
-					unsigned int sb_flags)
+struct fs_context *fs_context_for_mount(struct file_system_type *fs_type, unsigned int sb_flags)
 {
-	return alloc_fs_context(fs_type, NULL, sb_flags,
-					FS_CONTEXT_FOR_MOUNT);
+	return alloc_fs_context(fs_type, NULL, sb_flags, FS_CONTEXT_FOR_MOUNT);
 }
 
 void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, ...)
@@ -189,16 +182,13 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, 
 	va_start(va, fmt);
 	switch (level) {
 	case 'w':
-		printk(KERN_WARNING "%s%s%pV\n", prefix ? prefix : "",
-					prefix ? ": " : "", &vaf);
+		printk(KERN_WARNING "%s%s%pV\n", prefix ? prefix : "", prefix ? ": " : "", &vaf);
 		break;
 	case 'e':
-		printk(KERN_ERR "%s%s%pV\n", prefix ? prefix : "",
-					prefix ? ": " : "", &vaf);
+		printk(KERN_ERR "%s%s%pV\n", prefix ? prefix : "", prefix ? ": " : "", &vaf);
 		break;
 	default:
-		printk(KERN_NOTICE "%s%s%pV\n", prefix ? prefix : "",
-					prefix ? ": " : "", &vaf);
+		printk(KERN_NOTICE "%s%s%pV\n", prefix ? prefix : "", prefix ? ": " : "", &vaf);
 	}
 	va_end(va);
 }

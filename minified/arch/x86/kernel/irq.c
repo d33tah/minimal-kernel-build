@@ -13,8 +13,7 @@ void ack_bad_irq(unsigned int irq)
 }
 
 
-static __always_inline void handle_irq(struct irq_desc *desc,
-				       struct pt_regs *regs)
+static __always_inline void handle_irq(struct irq_desc *desc, struct pt_regs *regs)
 {
 	__handle_irq(desc, regs);
 }
@@ -34,9 +33,7 @@ DEFINE_IDTENTRY_IRQ(common_interrupt)
 		ack_APIC_irq();
 
 		if (desc == VECTOR_UNUSED) {
-			pr_emerg_ratelimited("%s: %d.%u No irq handler for vector\n",
-					     __func__, smp_processor_id(),
-					     vector);
+			pr_emerg_ratelimited("%s: %d.%u No irq handler for vector\n", __func__, smp_processor_id(), vector);
 		} else {
 			__this_cpu_write(vector_irq[vector], VECTOR_UNUSED);
 		}

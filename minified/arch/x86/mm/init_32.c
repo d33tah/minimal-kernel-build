@@ -53,8 +53,7 @@ page_table_range_init(unsigned long start, unsigned long end, pgd_t *pgd_base)
 	for ( ; (pgd_idx < PTRS_PER_PGD) && (vaddr != end); pgd++, pgd_idx++) {
 		pmd = one_md_table_init(pgd);
 		pmd = pmd + pmd_index(vaddr);
-		for (; (pmd_idx < PTRS_PER_PMD) && (vaddr != end);
-							pmd++, pmd_idx++) {
+		for (; (pmd_idx < PTRS_PER_PMD) && (vaddr != end); pmd++, pmd_idx++) {
 			one_page_table_init(pmd);
 
 			vaddr += PMD_SIZE;
@@ -71,10 +70,7 @@ static inline int is_x86_32_kernel_text(unsigned long addr)
 }
 
 unsigned long __init
-kernel_physical_mapping_init(unsigned long start,
-			     unsigned long end,
-			     unsigned long page_size_mask,
-			     pgprot_t prot)
+kernel_physical_mapping_init(unsigned long start, unsigned long end, unsigned long page_size_mask, pgprot_t prot)
 {
 	int use_pse = page_size_mask == (1<<PG_LEVEL_2M);
 	unsigned long last_map_addr = end;
@@ -106,8 +102,7 @@ repeat:
 		if (pfn >= end_pfn)
 			continue;
 		pmd_idx = 0;
-		for (; pmd_idx < PTRS_PER_PMD && pfn < end_pfn;
-		     pmd++, pmd_idx++) {
+		for (; pmd_idx < PTRS_PER_PMD && pfn < end_pfn; pmd++, pmd_idx++) {
 			unsigned int addr = pfn * PAGE_SIZE + PAGE_OFFSET;
 
 			 
@@ -116,15 +111,13 @@ repeat:
 				pgprot_t prot = PAGE_KERNEL_LARGE;
 				 
 				pgprot_t init_prot =
-					__pgprot(PTE_IDENT_ATTR |
-						 _PAGE_PSE);
+					__pgprot(PTE_IDENT_ATTR | _PAGE_PSE);
 
 				pfn &= PMD_MASK >> PAGE_SHIFT;
 				addr2 = (pfn + PTRS_PER_PTE-1) * PAGE_SIZE +
 					PAGE_OFFSET + PAGE_SIZE-1;
 
-				if (is_x86_32_kernel_text(addr) ||
-				    is_x86_32_kernel_text(addr2))
+				if (is_x86_32_kernel_text(addr) || is_x86_32_kernel_text(addr2))
 					prot = PAGE_KERNEL_LARGE_EXEC;
 
 				if (mapping_iter == 1)
@@ -139,8 +132,7 @@ repeat:
 
 			pte_ofs = pte_index((pfn<<PAGE_SHIFT) + PAGE_OFFSET);
 			pte += pte_ofs;
-			for (; pte_ofs < PTRS_PER_PTE && pfn < end_pfn;
-			     pte++, pfn++, pte_ofs++, addr += PAGE_SIZE) {
+			for (; pte_ofs < PTRS_PER_PTE && pfn < end_pfn; pte++, pfn++, pte_ofs++, addr += PAGE_SIZE) {
 				pgprot_t prot = PAGE_KERNEL;
 				 
 				pgprot_t init_prot = __pgprot(PTE_IDENT_ATTR);
@@ -169,14 +161,10 @@ repeat:
 
 void __init sync_initial_page_table(void)
 {
-	clone_pgd_range(initial_page_table + KERNEL_PGD_BOUNDARY,
-			swapper_pg_dir     + KERNEL_PGD_BOUNDARY,
-			KERNEL_PGD_PTRS);
+	clone_pgd_range(initial_page_table + KERNEL_PGD_BOUNDARY, swapper_pg_dir     + KERNEL_PGD_BOUNDARY, KERNEL_PGD_PTRS);
 
 	 
-	clone_pgd_range(initial_page_table,
-			swapper_pg_dir     + KERNEL_PGD_BOUNDARY,
-			min(KERNEL_PGD_PTRS, KERNEL_PGD_BOUNDARY));
+	clone_pgd_range(initial_page_table, swapper_pg_dir     + KERNEL_PGD_BOUNDARY, min(KERNEL_PGD_PTRS, KERNEL_PGD_BOUNDARY));
 }
 
 void __init native_pagetable_init(void)
@@ -198,8 +186,7 @@ void __init native_pagetable_init(void)
 
 		 
 		if (pmd_large(*pmd)) {
-			pr_warn("try to clear pte for ram above max_low_pfn: pfn: %lx pmd: %p pmd phys: %lx, but pmd is big page and is not using pte !\n",
-				pfn, pmd, __pa(pmd));
+			pr_warn("try to clear pte for ram above max_low_pfn: pfn: %lx pmd: %p pmd phys: %lx, but pmd is big page and is not using pte !\n", pfn, pmd, __pa(pmd));
 			BUG_ON(1);
 		}
 
@@ -293,8 +280,7 @@ void mark_rodata_ro(void)
 	unsigned long start = PFN_ALIGN(_text);
 	unsigned long size = (unsigned long)__end_rodata - start;
 
-	pr_info("Write protecting kernel text and read-only data: %luk\n",
-		size >> 10);
+	pr_info("Write protecting kernel text and read-only data: %luk\n", size >> 10);
 
 	mark_nxdata_nx();
 }

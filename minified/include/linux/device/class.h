@@ -20,8 +20,7 @@ struct class {
 /* sysfs_dev_block_kobj / sysfs_dev_char_kobj externs removed - both globals
    are only referenced inside drivers/base/core.c (sysfs anchor creation);
    no external consumer reads them. */
-extern int __must_check __class_register(struct class *class,
-					 struct lock_class_key *key);
+extern int __must_check __class_register(struct class *class, struct lock_class_key *key);
 
 /* class_register macro + class_unregister removed - sole user was the
    devlink class registration, which has been removed. */
@@ -37,9 +36,7 @@ extern int __must_check __class_register(struct class *class,
    class attributes or class interfaces are defined anywhere, and the
    show_class_attr_string / class_interface_register users were already removed. */
 
-extern struct class * __must_check __class_create(struct module *owner,
-						  const char *name,
-						  struct lock_class_key *key);
+extern struct class * __must_check __class_create(struct module *owner, const char *name, struct lock_class_key *key);
 
 #define class_create(owner, name)		({							static struct lock_class_key __key;		__class_create(owner, name, &__key);	})
 

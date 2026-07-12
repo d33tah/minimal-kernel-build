@@ -159,8 +159,7 @@ static const char *sec_name(unsigned shndx)
 
 static const char *sym_name(const char *sym_strtab, Elf_Sym *sym)
 {
-	const char *name;
-	name = "<noname>";
+	const char *name = "<noname>";
 	if (sym->st_name) {
 		name = sym_strtab + sym->st_name;
 	}

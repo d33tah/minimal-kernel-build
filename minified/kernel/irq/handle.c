@@ -10,12 +10,10 @@ void handle_bad_irq(struct irq_desc *desc) {
 
 	print_irq_desc(irq, desc);
 	kstat_incr_irqs_this_cpu(desc);
-	ack_bad_irq(irq);
-}
+	ack_bad_irq(irq); }
 
 irqreturn_t no_action(int cpl, void *dev_id) {
-	return IRQ_NONE;
-}
+	return IRQ_NONE; }
 
 irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc) {
 	irqreturn_t retval = IRQ_NONE;
@@ -32,11 +30,9 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc) {
 		if (WARN_ONCE(!irqs_disabled(),"irq %u handler %pS enabled interrupts\n", irq, action->handler))
 			local_irq_disable();
 
-		retval |= res;
-	}
+		retval |= res; }
 
-	return retval;
-}
+	return retval; }
 
 irqreturn_t handle_irq_event(struct irq_desc *desc) {
 	irqreturn_t ret;
@@ -50,6 +46,5 @@ irqreturn_t handle_irq_event(struct irq_desc *desc) {
 
 	raw_spin_lock(&desc->lock);
 	irqd_clear(&desc->irq_data, IRQD_IRQ_INPROGRESS);
-	return ret;
-}
+	return ret; }
 

@@ -39,8 +39,7 @@ request_threaded_irq(unsigned int irq, irq_handler_t handler, irq_handler_t thre
 
 static inline int __must_check
 request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags, const char *name, void *dev) {
-	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
-}
+	return request_threaded_irq(irq, handler, NULL, flags, name, dev); }
 
 #ifndef local_softirq_pending
 
@@ -59,12 +58,10 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags, const 
 enum {
 	HI_SOFTIRQ=0, TIMER_SOFTIRQ, NET_TX_SOFTIRQ, NET_RX_SOFTIRQ, BLOCK_SOFTIRQ, IRQ_POLL_SOFTIRQ, TASKLET_SOFTIRQ, SCHED_SOFTIRQ, HRTIMER_SOFTIRQ, RCU_SOFTIRQ,
 
-	NR_SOFTIRQS
-};
+	NR_SOFTIRQS };
 
 struct softirq_action {
-	void	(*action)(struct softirq_action *);
-};
+	void	(*action)(struct softirq_action *); };
 
 asmlinkage void __do_softirq(void);
 

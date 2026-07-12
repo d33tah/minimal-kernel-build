@@ -10,12 +10,10 @@
 void call_rcu(struct rcu_head *head, rcu_callback_t func);
 
 static inline void __rcu_read_lock(void) {
-	preempt_disable();
-}
+	preempt_disable(); }
 
 static inline void __rcu_read_unlock(void) {
-	preempt_enable();
-}
+	preempt_enable(); }
 
 
 void rcu_init(void);
@@ -41,13 +39,11 @@ static inline bool rcu_is_watching(void) { return true; }
 static inline void rcu_all_qs(void) { barrier(); }
 
 static inline int rcu_read_lock_held(void) {
-	return 1;
-}
+	return 1; }
 
 
 static inline int rcu_read_lock_sched_held(void) {
-	return !preemptible();
-}
+	return !preemptible(); }
 
 
 
@@ -88,27 +84,23 @@ static inline int rcu_read_lock_sched_held(void) {
 static __always_inline void rcu_read_lock(void) {
 	__rcu_read_lock();
 	__acquire(RCU);
-	RCU_LOCKDEP_WARN(!rcu_is_watching(), "rcu_read_lock() used illegally while idle");
-}
+	RCU_LOCKDEP_WARN(!rcu_is_watching(), "rcu_read_lock() used illegally while idle"); }
 
 
 static inline void rcu_read_unlock(void) {
 	RCU_LOCKDEP_WARN(!rcu_is_watching(), "rcu_read_unlock() used illegally while idle");
 	__release(RCU);
-	__rcu_read_unlock();
-}
+	__rcu_read_unlock(); }
 
 static inline void rcu_read_lock_sched(void) {
 	preempt_disable();
 	__acquire(RCU_SCHED);
-	RCU_LOCKDEP_WARN(!rcu_is_watching(), "rcu_read_lock_sched() used illegally while idle");
-}
+	RCU_LOCKDEP_WARN(!rcu_is_watching(), "rcu_read_lock_sched() used illegally while idle"); }
 
 static inline void rcu_read_unlock_sched(void) {
 	RCU_LOCKDEP_WARN(!rcu_is_watching(), "rcu_read_unlock_sched() used illegally while idle");
 	__release(RCU_SCHED);
-	preempt_enable();
-}
+	preempt_enable(); }
 
 #define RCU_INIT_POINTER(p, v) 	do { 		rcu_check_sparse(p, __rcu); 		WRITE_ONCE(p, RCU_INITIALIZER(v)); 	} while (0)
 

@@ -19,8 +19,7 @@ int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src) {
 	 
 	dst->thread.fpu.fpstate = NULL;
 
-	return 0;
-}
+	return 0; }
 
 
 void exit_thread(struct task_struct *tsk) {
@@ -58,8 +57,7 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args) {
 	if (unlikely(p->flags & PF_KTHREAD)) {
 		memset(childregs, 0, sizeof(struct pt_regs));
 		kthread_frame_init(frame, args->fn, args->fn_arg);
-		return 0;
-	}
+		return 0; }
 
 
 	frame->bx = 0;
@@ -71,19 +69,16 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args) {
 		childregs->sp = 0;
 		childregs->ip = 0;
 		kthread_frame_init(frame, args->fn, args->fn_arg);
-		return 0;
-	}
+		return 0; }
 
-	return ret;
-}
+	return ret; }
 
 void flush_thread(void) {
 	struct task_struct *tsk = current;
 
 	memset(tsk->thread.tls_array, 0, sizeof(tsk->thread.tls_array));
 
-	fpu_flush_thread();
-}
+	fpu_flush_thread(); }
 
 
 void arch_setup_new_exec(void) {
@@ -102,27 +97,22 @@ static void (*x86_idle)(void);
  * (idle-loop body never runs; weak stubs in kernel/sched/idle.c suffice) */
 
 void arch_cpu_idle(void) {
-	x86_idle();
-}
+	x86_idle(); }
 
 void __cpuidle default_idle(void) {
-	raw_safe_halt();
-}
+	raw_safe_halt(); }
 
 /* Simplified: just use default_idle for minimal kernel */
 void select_idle_routine(const struct cpuinfo_x86 *c) {
 	if (!x86_idle)
-		x86_idle = default_idle;
-}
+		x86_idle = default_idle; }
 
 
 unsigned long arch_align_stack(unsigned long sp) {
 	if (!(current->personality & ADDR_NO_RANDOMIZE))
 		sp -= get_random_int() % 8192;
-	return sp & ~0xf;
-}
+	return sp & ~0xf; }
 
 unsigned long arch_randomize_brk(struct mm_struct *mm) {
-	return randomize_page(mm->brk, 0x02000000);
-}
+	return randomize_page(mm->brk, 0x02000000); }
 

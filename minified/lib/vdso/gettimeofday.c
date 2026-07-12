@@ -3,8 +3,7 @@
 
 #ifndef vdso_shift_ns
 static __always_inline u64 vdso_shift_ns(u64 ns, u32 shift) {
-	return ns >> shift;
-}
+	return ns >> shift; }
 #endif
 
 static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk, struct __kernel_timespec *ts) {
@@ -32,8 +31,7 @@ static __always_inline int do_hres(const struct vdso_data *vd, clockid_t clk, st
 	ts->tv_sec = sec + __iter_div_u64_rem(ns, NSEC_PER_SEC, &ns);
 	ts->tv_nsec = ns;
 
-	return 0;
-}
+	return 0; }
 
 static __always_inline int do_coarse(const struct vdso_data *vd, clockid_t clk, struct __kernel_timespec *ts) {
 	const struct vdso_timestamp *vdso_ts = &vd->basetime[clk];
@@ -49,8 +47,7 @@ static __always_inline int do_coarse(const struct vdso_data *vd, clockid_t clk, 
 		ts->tv_nsec = vdso_ts->nsec;
 	} while (unlikely(vdso_read_retry(vd, seq)));
 
-	return 0;
-}
+	return 0; }
 
 static __always_inline int
 __cvdso_clock_gettime_common(const struct vdso_data *vd, clockid_t clock, struct __kernel_timespec *ts) {
@@ -71,8 +68,7 @@ __cvdso_clock_gettime_common(const struct vdso_data *vd, clockid_t clock, struct
 	else
 		return -1;
 
-	return do_hres(vd, clock, ts);
-}
+	return do_hres(vd, clock, ts); }
 
 static __maybe_unused int
 __cvdso_clock_gettime_data(const struct vdso_data *vd, clockid_t clock, struct __kernel_timespec *ts) {
@@ -80,13 +76,11 @@ __cvdso_clock_gettime_data(const struct vdso_data *vd, clockid_t clock, struct _
 
 	if (unlikely(ret))
 		return clock_gettime_fallback(clock, ts);
-	return 0;
-}
+	return 0; }
 
 static __maybe_unused int
 __cvdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts) {
-	return __cvdso_clock_gettime_data(__arch_get_vdso_data(), clock, ts);
-}
+	return __cvdso_clock_gettime_data(__arch_get_vdso_data(), clock, ts); }
 
 #ifdef BUILD_VDSO32
 static __maybe_unused int
@@ -103,13 +97,11 @@ __cvdso_clock_gettime32_data(const struct vdso_data *vd, clockid_t clock, struct
 	res->tv_sec = ts.tv_sec;
 	res->tv_nsec = ts.tv_nsec;
 
-	return ret;
-}
+	return ret; }
 
 static __maybe_unused int
 __cvdso_clock_gettime32(clockid_t clock, struct old_timespec32 *res) {
-	return __cvdso_clock_gettime32_data(__arch_get_vdso_data(), clock, res);
-}
+	return __cvdso_clock_gettime32_data(__arch_get_vdso_data(), clock, res); }
 #endif  
 
 static __maybe_unused int
@@ -122,21 +114,17 @@ __cvdso_gettimeofday_data(const struct vdso_data *vd, struct __kernel_old_timeva
 			return gettimeofday_fallback(tv, tz);
 
 		tv->tv_sec = ts.tv_sec;
-		tv->tv_usec = (u32)ts.tv_nsec / NSEC_PER_USEC;
-	}
+		tv->tv_usec = (u32)ts.tv_nsec / NSEC_PER_USEC; }
 
 	if (unlikely(tz != NULL)) {
 		tz->tz_minuteswest = vd[CS_HRES_COARSE].tz_minuteswest;
-		tz->tz_dsttime = vd[CS_HRES_COARSE].tz_dsttime;
-	}
+		tz->tz_dsttime = vd[CS_HRES_COARSE].tz_dsttime; }
 
-	return 0;
-}
+	return 0; }
 
 static __maybe_unused int
 __cvdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz) {
-	return __cvdso_gettimeofday_data(__arch_get_vdso_data(), tv, tz);
-}
+	return __cvdso_gettimeofday_data(__arch_get_vdso_data(), tv, tz); }
 
 #ifdef VDSO_HAS_TIME
 static __maybe_unused __kernel_old_time_t
@@ -148,12 +136,10 @@ __cvdso_time_data(const struct vdso_data *vd, __kernel_old_time_t *time) {
 	if (time)
 		*time = t;
 
-	return t;
-}
+	return t; }
 
 static __maybe_unused __kernel_old_time_t __cvdso_time(__kernel_old_time_t *time) {
-	return __cvdso_time_data(__arch_get_vdso_data(), time);
-}
+	return __cvdso_time_data(__arch_get_vdso_data(), time); }
 #endif  
 
 #ifdef VDSO_HAS_CLOCK_GETRES
@@ -175,15 +161,12 @@ int __cvdso_clock_getres_common(const struct vdso_data *vd, clockid_t clock, str
 		 
 		ns = LOW_RES_NSEC;
 	} else {
-		return -1;
-	}
+		return -1; }
 
 	if (likely(res)) {
 		res->tv_sec = 0;
-		res->tv_nsec = ns;
-	}
-	return 0;
-}
+		res->tv_nsec = ns; }
+	return 0; }
 
 #ifdef BUILD_VDSO32
 static __maybe_unused int
@@ -198,14 +181,11 @@ __cvdso_clock_getres_time32_data(const struct vdso_data *vd, clockid_t clock, st
 
 	if (likely(res)) {
 		res->tv_sec = ts.tv_sec;
-		res->tv_nsec = ts.tv_nsec;
-	}
-	return ret;
-}
+		res->tv_nsec = ts.tv_nsec; }
+	return ret; }
 
 static __maybe_unused int
 __cvdso_clock_getres_time32(clockid_t clock, struct old_timespec32 *res) {
-	return __cvdso_clock_getres_time32_data(__arch_get_vdso_data(), clock, res);
-}
+	return __cvdso_clock_getres_time32_data(__arch_get_vdso_data(), clock, res); }
 #endif  
 #endif  

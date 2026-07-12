@@ -20,12 +20,10 @@ extern void tick_check_new_device(struct clock_event_device *dev);
 /* tick_suspend, tick_resume removed - unused */
 
 static inline enum clock_event_state clockevent_get_state(struct clock_event_device *dev) {
-	return dev->state_use_accessors;
-}
+	return dev->state_use_accessors; }
 
 static inline void clockevent_set_state(struct clock_event_device *dev, enum clock_event_state state) {
-	dev->state_use_accessors = state;
-}
+	dev->state_use_accessors = state; }
 
 extern void clockevents_exchange_device(struct clock_event_device *old, struct clock_event_device *new);
 extern void clockevents_switch_state(struct clock_event_device *dev, enum clock_event_state state);
@@ -33,8 +31,7 @@ extern void clockevents_handle_noop(struct clock_event_device *dev);
 
 
 static inline void tick_set_periodic_handler(struct clock_event_device *dev, int broadcast) {
-	dev->event_handler = tick_handle_periodic;
-}
+	dev->event_handler = tick_handle_periodic; }
 
 
 

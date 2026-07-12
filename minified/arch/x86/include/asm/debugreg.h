@@ -33,10 +33,8 @@ static __always_inline unsigned long native_get_debugreg(int regno) {
 		asm("mov %%db7, %0" :"=r" (val));
 		break;
 	default:
-		BUG();
-	}
-	return val;
-}
+		BUG(); }
+	return val; }
 
 static __always_inline void native_set_debugreg(int regno, unsigned long value) {
 	switch (regno) {
@@ -59,9 +57,7 @@ static __always_inline void native_set_debugreg(int regno, unsigned long value) 
 		asm("mov %0, %%db7"	::"r" (value));
 		break;
 	default:
-		BUG();
-	}
-}
+		BUG(); } }
 
 
 /* hw_breakpoint_active() folded out: cpu_dr7 was never written (write-only,
@@ -80,15 +76,13 @@ static __always_inline unsigned long local_db_save(void) {
 	 
 	barrier();
 
-	return dr7;
-}
+	return dr7; }
 
 static __always_inline void local_db_restore(unsigned long dr7) {
 	 
 	barrier();
 	if (dr7)
-		set_debugreg(dr7, 7);
-}
+		set_debugreg(dr7, 7); }
 
 /* set_dr_addr_mask removed - never defined/used */
 

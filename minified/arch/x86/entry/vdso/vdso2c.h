@@ -7,9 +7,7 @@ static void BITSFUNC(copy)(FILE *outfile, const unsigned char *data, size_t len)
 	for (i = 0; i < len; i++) {
 		if (i % 10 == 0)
 			fprintf(outfile, "\n\t");
-		fprintf(outfile, "0x%02X, ", (int)(data)[i]);
-	}
-}
+		fprintf(outfile, "0x%02X, ", (int)(data)[i]); } }
 
 
  
@@ -25,8 +23,7 @@ static void BITSFUNC(extract)(const unsigned char *data, size_t data_len, FILE *
 
 	fprintf(outfile, "static const unsigned char %s[%zu] = {", name, len);
 	BITSFUNC(copy)(outfile, data + offset, len);
-	fprintf(outfile, "\n};\n\n");
-}
+	fprintf(outfile, "\n};\n\n"); }
 
 static void BITSFUNC(go)(void *raw_addr, size_t raw_len, void *stripped_addr, size_t stripped_len, FILE *outfile, const char *image_name) {
 	int found_load = 0;
@@ -60,9 +57,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len, void *stripped_addr, si
 			found_load = 1;
 		} else if (GET_LE(&pt[i].p_type) == PT_DYNAMIC) {
 			dyn = raw_addr + GET_LE(&pt[i].p_offset);
-			dyn_end = raw_addr + GET_LE(&pt[i].p_offset) + GET_LE(&pt[i].p_memsz);
-		}
-	}
+			dyn_end = raw_addr + GET_LE(&pt[i].p_offset) + GET_LE(&pt[i].p_memsz); } }
 	if (!found_load)
 		fail("no PT_LOAD seg\n");
 
@@ -76,8 +71,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len, void *stripped_addr, si
 	for (i = 0; dyn + i < dyn_end && GET_LE(&dyn[i].d_tag) != DT_NULL; i++) {
 		typeof(dyn[i].d_tag) tag = GET_LE(&dyn[i].d_tag);
 		if (tag == DT_REL || tag == DT_RELSZ || tag == DT_RELA || tag == DT_RELENT || tag == DT_TEXTREL)
-			fail("vdso image contains dynamic relocations\n");
-	}
+			fail("vdso image contains dynamic relocations\n"); }
 
 	 
 	secstrings_hdr = raw_addr + GET_LE(&hdr->e_shoff) + GET_LE(&hdr->e_shentsize)*GET_LE(&hdr->e_shstrndx);
@@ -90,8 +84,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len, void *stripped_addr, si
 		if (!strcmp(secstrings + GET_LE(&sh->sh_name), ".altinstructions"))
 			alt_sec = sh;
 		if (!strcmp(secstrings + GET_LE(&sh->sh_name), "__ex_table"))
-			extable_sec = sh;
-	}
+			extable_sec = sh; }
 
 	if (!symtab_hdr)
 		fail("no symbol table\n");
@@ -108,14 +101,10 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len, void *stripped_addr, si
 		for (k = 0; k < NSYMS; k++) {
 			if (!strcmp(sym_name, required_syms[k].name)) {
 				if (syms[k]) {
-					fail("duplicate symbol %s\n", required_syms[k].name);
-				}
+					fail("duplicate symbol %s\n", required_syms[k].name); }
 
 				 
-				syms[k] = GET_LE(&sym->st_value);
-			}
-		}
-	}
+				syms[k] = GET_LE(&sym->st_value); } } }
 
 	 
 	for (i = 0; i < sizeof(special_pages) / sizeof(special_pages[0]); i++) {
@@ -129,15 +118,13 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len, void *stripped_addr, si
 		if (symval + 4096 < syms[sym_vvar_start])
 			fail("%s underruns vvar_start\n", required_syms[i].name);
 		if (symval + 4096 > 0)
-			fail("%s is on the wrong side of the vdso text\n", required_syms[i].name);
-	}
+			fail("%s is on the wrong side of the vdso text\n", required_syms[i].name); }
 	if (syms[sym_vvar_start] % 4096)
 		fail("vvar_begin must be a multiple of 4096\n");
 
 	if (!image_name) {
 		fwrite(stripped_addr, stripped_len, 1, outfile);
-		return;
-	}
+		return; }
 
 	mapping_size = (stripped_len + 4095) / 4096 * 4096;
 
@@ -150,8 +137,7 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len, void *stripped_addr, si
 	for (i = 0; i < stripped_len; i++) {
 		if (i % 10 == 0)
 			fprintf(outfile, "\n\t");
-		fprintf(outfile, "0x%02X, ", (int)((unsigned char *)stripped_addr)[i]);
-	}
+		fprintf(outfile, "0x%02X, ", (int)((unsigned char *)stripped_addr)[i]); }
 	fprintf(outfile, "\n};\n\n");
 	if (extable_sec)
 		BITSFUNC(extract)(raw_addr, raw_len, outfile, extable_sec, "extable");
@@ -161,17 +147,13 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len, void *stripped_addr, si
 	fprintf(outfile, "\t.size = %lu,\n", mapping_size);
 	if (alt_sec) {
 		fprintf(outfile, "\t.alt = %lu,\n", (unsigned long)GET_LE(&alt_sec->sh_offset));
-		fprintf(outfile, "\t.alt_len = %lu,\n", (unsigned long)GET_LE(&alt_sec->sh_size));
-	}
+		fprintf(outfile, "\t.alt_len = %lu,\n", (unsigned long)GET_LE(&alt_sec->sh_size)); }
 	if (extable_sec) {
 		fprintf(outfile, "\t.extable_base = %lu,\n", (unsigned long)GET_LE(&extable_sec->sh_offset));
 		fprintf(outfile, "\t.extable_len = %lu,\n", (unsigned long)GET_LE(&extable_sec->sh_size));
-		fprintf(outfile, "\t.extable = extable,\n");
-	}
+		fprintf(outfile, "\t.extable = extable,\n"); }
 
 	for (i = 0; i < NSYMS; i++) {
 		if (required_syms[i].export && syms[i])
-			fprintf(outfile, "\t.sym_%s = %" PRIi64 ",\n", required_syms[i].name, (int64_t)syms[i]);
-	}
-	fprintf(outfile, "};\n");
-}
+			fprintf(outfile, "\t.sym_%s = %" PRIi64 ",\n", required_syms[i].name, (int64_t)syms[i]); }
+	fprintf(outfile, "};\n"); }

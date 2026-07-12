@@ -23,66 +23,53 @@
 static nodemask_t slab_nodes;
 
 static inline void *get_freepointer(struct kmem_cache *s, void *object) {
-	return *(void **)(object + s->offset);
-}
+	return *(void **)(object + s->offset); }
 
 static void prefetch_freepointer(const struct kmem_cache *s, void *object) {
-	prefetchw(object + s->offset);
-}
+	prefetchw(object + s->offset); }
 
 static inline void *get_freepointer_safe(struct kmem_cache *s, void *object) {
-	return get_freepointer(s, object);
-}
+	return get_freepointer(s, object); }
 
 static inline void set_freepointer(struct kmem_cache *s, void *object, void *fp) {
 	unsigned long freeptr_addr = (unsigned long)object + s->offset;
 
-	*(void **)freeptr_addr = fp;
-}
+	*(void **)freeptr_addr = fp; }
 
 
 static inline unsigned int order_objects(unsigned int order, unsigned int size) {
-	return ((unsigned int)PAGE_SIZE << order) / size;
-}
+	return ((unsigned int)PAGE_SIZE << order) / size; }
 
 static inline struct kmem_cache_order_objects oo_make(unsigned int order, unsigned int size) {
 	struct kmem_cache_order_objects x = {
-		(order << OO_SHIFT) + order_objects(order, size)
-	};
+		(order << OO_SHIFT) + order_objects(order, size) };
 
-	return x;
-}
+	return x; }
 
 static inline unsigned int oo_order(struct kmem_cache_order_objects x) {
-	return x.x >> OO_SHIFT;
-}
+	return x.x >> OO_SHIFT; }
 
 static inline unsigned int oo_objects(struct kmem_cache_order_objects x) {
-	return x.x & OO_MASK;
-}
+	return x.x & OO_MASK; }
 
 
 static __always_inline void __slab_lock(struct slab *slab) {
 	struct page *page = slab_page(slab);
 
 	VM_BUG_ON_PAGE(PageTail(page), page);
-	bit_spin_lock(PG_locked, &page->flags);
-}
+	bit_spin_lock(PG_locked, &page->flags); }
 
 static __always_inline void __slab_unlock(struct slab *slab) {
 	struct page *page = slab_page(slab);
 
 	VM_BUG_ON_PAGE(PageTail(page), page);
-	__bit_spin_unlock(PG_locked, &page->flags);
-}
+	__bit_spin_unlock(PG_locked, &page->flags); }
 
 static __always_inline void slab_lock(struct slab *slab) {
-	__slab_lock(slab);
-}
+	__slab_lock(slab); }
 
 static __always_inline void slab_unlock(struct slab *slab) {
-	__slab_unlock(slab);
-}
+	__slab_unlock(slab); }
 
 static inline bool __cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab, void *freelist_old, unsigned long counters_old, void *freelist_new, unsigned long counters_new) {
 	lockdep_assert_irqs_disabled();
@@ -99,14 +86,11 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab
 			slab->freelist = freelist_new;
 			slab->counters = counters_new;
 			slab_unlock(slab);
-			return true;
-		}
-		slab_unlock(slab);
-	}
+			return true; }
+		slab_unlock(slab); }
 
 	cpu_relax();
-	return false;
-}
+	return false; }
 
 static inline bool cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab, void *freelist_old, unsigned long counters_old, void *freelist_new, unsigned long counters_new) {
 #if defined(CONFIG_HAVE_CMPXCHG_DOUBLE) && \
@@ -126,21 +110,17 @@ static inline bool cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab, 
 			slab->counters = counters_new;
 			__slab_unlock(slab);
 			local_irq_restore(flags);
-			return true;
-		}
+			return true; }
 		__slab_unlock(slab);
-		local_irq_restore(flags);
-	}
+		local_irq_restore(flags); }
 
 	cpu_relax();
-	return false;
-}
+	return false; }
 
 static __always_inline bool slab_free_hook(struct kmem_cache *s, void *x) {
 	debug_check_no_locks_freed(x, s->object_size);
 
-	return false;
-}
+	return false; }
 
 static inline bool slab_free_freelist_hook(struct kmem_cache *s, void **head, void **tail, int *cnt) {
 
@@ -166,15 +146,12 @@ static inline bool slab_free_freelist_hook(struct kmem_cache *s, void **head, vo
 	if (*head == *tail)
 		*tail = NULL;
 
-	return *head != NULL;
-}
+	return *head != NULL; }
 
 static void *setup_object(struct kmem_cache *s, void *object) {
 	if (unlikely(s->ctor)) {
-		s->ctor(object);
-	}
-	return object;
-}
+		s->ctor(object); }
+	return object; }
 
 static inline struct slab *alloc_slab_page(gfp_t flags, int node, struct kmem_cache_order_objects oo) {
 	struct folio *folio;
@@ -194,8 +171,7 @@ static inline struct slab *alloc_slab_page(gfp_t flags, int node, struct kmem_ca
 	if (page_is_pfmemalloc(folio_page(folio, 0)))
 		slab_set_pfmemalloc(slab);
 
-	return slab;
-}
+	return slab; }
 
 static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node) {
 	struct slab *slab;
@@ -220,8 +196,7 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node) {
 		
 		slab = alloc_slab_page(alloc_gfp, node, oo);
 		if (unlikely(!slab))
-			goto out;
-	}
+			goto out; }
 
 	slab->objects = oo_objects(oo);
 
@@ -238,10 +213,8 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node) {
 			next = p + s->size;
 			next = setup_object(s, next);
 			set_freepointer(s, p, next);
-			p = next;
-		}
-		set_freepointer(s, p, NULL);
-	}
+			p = next; }
+		set_freepointer(s, p, NULL); }
 
 	slab->inuse = slab->objects;
 	slab->frozen = 1;
@@ -250,8 +223,7 @@ out:
 	if (!slab)
 		return NULL;
 
-	return slab;
-}
+	return slab; }
 
 static struct slab *new_slab(struct kmem_cache *s, gfp_t flags, int node) {
 	if (unlikely(flags & GFP_SLAB_BUG_MASK))
@@ -259,8 +231,7 @@ static struct slab *new_slab(struct kmem_cache *s, gfp_t flags, int node) {
 
 	WARN_ON_ONCE(s->ctor && (flags & __GFP_ZERO));
 
-	return allocate_slab(s, flags & (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK), node);
-}
+	return allocate_slab(s, flags & (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK), node); }
 
 /* __free_slab/rcu_free_slab/free_slab/discard_slab removed - the slab-empty
  * free paths (deactivate_slab M_FREE, __slab_free slab_empty) are never taken
@@ -272,19 +243,16 @@ __add_partial(struct kmem_cache_node *n, struct slab *slab, int tail) {
 	if (tail == DEACTIVATE_TO_TAIL)
 		list_add_tail(&slab->slab_list, &n->partial);
 	else
-		list_add(&slab->slab_list, &n->partial);
-}
+		list_add(&slab->slab_list, &n->partial); }
 
 static inline void add_partial(struct kmem_cache_node *n, struct slab *slab, int tail) {
 	lockdep_assert_held(&n->list_lock);
-	__add_partial(n, slab, tail);
-}
+	__add_partial(n, slab, tail); }
 
 static inline void remove_partial(struct kmem_cache_node *n, struct slab *slab) {
 	lockdep_assert_held(&n->list_lock);
 	list_del(&slab->slab_list);
-	n->nr_partial--;
-}
+	n->nr_partial--; }
 
 static inline void *acquire_slab(struct kmem_cache *s, struct kmem_cache_node *n, struct slab *slab, int mode) {
 	void *freelist;
@@ -301,8 +269,7 @@ static inline void *acquire_slab(struct kmem_cache *s, struct kmem_cache_node *n
 		new.inuse = slab->objects;
 		new.freelist = NULL;
 	} else {
-		new.freelist = freelist;
-	}
+		new.freelist = freelist; }
 
 	VM_BUG_ON(new.frozen);
 	new.frozen = 1;
@@ -312,8 +279,7 @@ static inline void *acquire_slab(struct kmem_cache *s, struct kmem_cache_node *n
 
 	remove_partial(n, slab);
 	WARN_ON(!freelist);
-	return freelist;
-}
+	return freelist; }
 
 static inline bool pfmemalloc_match(struct slab *slab, gfp_t gfpflags);
 
@@ -343,8 +309,7 @@ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n, s
 
 	}
 	spin_unlock_irqrestore(&n->list_lock, flags);
-	return object;
-}
+	return object; }
 
 static void *get_partial(struct kmem_cache *s, gfp_t flags, int node, struct slab **ret_slab) {
 	int searchnode = node;
@@ -357,18 +322,15 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node, struct sla
 	 * cross-node fallback scan (get_any_partial) can only ever return NULL.
 	 * The local partial list is the only source, so return it directly.
 	 */
-	return get_partial_node(s, get_node(s, searchnode), ret_slab, flags);
-}
+	return get_partial_node(s, get_node(s, searchnode), ret_slab, flags); }
 
 #define TID_STEP 1
 
 static inline unsigned long next_tid(unsigned long tid) {
-	return tid + TID_STEP;
-}
+	return tid + TID_STEP; }
 
 static inline unsigned int init_tid(int cpu) {
-	return cpu;
-}
+	return cpu; }
 
 static void init_kmem_cache_cpus(struct kmem_cache *s) {
 	int cpu;
@@ -376,9 +338,7 @@ static void init_kmem_cache_cpus(struct kmem_cache *s) {
 
 	for_each_possible_cpu(cpu) {
 		c = per_cpu_ptr(s->cpu_slab, cpu);
-		c->tid = init_tid(cpu);
-	}
-}
+		c->tid = init_tid(cpu); } }
 
 static void deactivate_slab(struct kmem_cache *s, struct slab *slab, void *freelist) {
 	enum slab_modes { M_NONE, M_PARTIAL, M_FULL_NOLIST };
@@ -391,8 +351,7 @@ static void deactivate_slab(struct kmem_cache *s, struct slab *slab, void *freel
 	struct slab new, old;
 
 	if (slab->freelist) {
-		tail = DEACTIVATE_TO_TAIL;
-	}
+		tail = DEACTIVATE_TO_TAIL; }
 
 	
 	freelist_tail = NULL;
@@ -403,8 +362,7 @@ static void deactivate_slab(struct kmem_cache *s, struct slab *slab, void *freel
 		freelist_tail = freelist_iter;
 		free_delta++;
 
-		freelist_iter = nextfree;
-	}
+		freelist_iter = nextfree; }
 
 	
 redo:
@@ -429,20 +387,16 @@ redo:
 
 		spin_lock_irqsave(&n->list_lock, flags);
 	} else {
-		mode = M_FULL_NOLIST;
-	}
+		mode = M_FULL_NOLIST; }
 
 	if (!cmpxchg_double_slab(s, slab, old.freelist, old.counters, new.freelist, new.counters)) {
 		if (mode == M_PARTIAL)
 			spin_unlock_irqrestore(&n->list_lock, flags);
-		goto redo;
-	}
+		goto redo; }
 
 	if (mode == M_PARTIAL) {
 		add_partial(n, slab, tail);
-		spin_unlock_irqrestore(&n->list_lock, flags);
-	}
-}
+		spin_unlock_irqrestore(&n->list_lock, flags); } }
 
 static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu) {
 	struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, cpu);
@@ -454,16 +408,13 @@ static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu) {
 	c->tid = next_tid(c->tid);
 
 	if (slab) {
-		deactivate_slab(s, slab, freelist);
-	}
-}
+		deactivate_slab(s, slab, freelist); } }
 
 static inline bool pfmemalloc_match(struct slab *slab, gfp_t gfpflags) {
 	if (unlikely(slab_test_pfmemalloc(slab)))
 		return gfp_pfmemalloc_allowed(gfpflags);
 
-	return true;
-}
+	return true; }
 
 static void *___slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node, unsigned long addr, struct kmem_cache_cpu *c) {
 	void *freelist;
@@ -482,20 +433,17 @@ static void *___slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node, unsig
 	slub_get_cpu_ptr(s->cpu_slab);
 
 	if (!slab) {
-		return NULL;
-	}
+		return NULL; }
 
 	freelist = slab->freelist;
 	slab->freelist = NULL;
-	return freelist;
-}
+	return freelist; }
 
 static void *__slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node, unsigned long addr, struct kmem_cache_cpu *c) {
 	void *p;
 
 	p = ___slab_alloc(s, gfpflags, node, addr, c);
-	return p;
-}
+	return p; }
 
 static __always_inline void *slab_alloc_node(struct kmem_cache *s, struct list_lru *lru, gfp_t gfpflags, int node, unsigned long addr, size_t orig_size) {
 	void *object;
@@ -530,37 +478,30 @@ redo:
 		
 		if (unlikely(!this_cpu_cmpxchg_double( s->cpu_slab->freelist, s->cpu_slab->tid, object, tid, next_object, next_tid(tid)))) {
 
-			goto redo;
-		}
-		prefetch_freepointer(s, next_object);
-	}
+			goto redo; }
+		prefetch_freepointer(s, next_object); }
 
 	init = slab_want_init_on_alloc(gfpflags, s);
 
 	slab_post_alloc_hook(s, objcg, gfpflags, 1, &object, init);
 
-	return object;
-}
+	return object; }
 
 static __always_inline void *slab_alloc(struct kmem_cache *s, struct list_lru *lru, gfp_t gfpflags, unsigned long addr, size_t orig_size) {
-	return slab_alloc_node(s, lru, gfpflags, NUMA_NO_NODE, addr, orig_size);
-}
+	return slab_alloc_node(s, lru, gfpflags, NUMA_NO_NODE, addr, orig_size); }
 
 static __always_inline
 void *__kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru, gfp_t gfpflags) {
 	void *ret = slab_alloc(s, lru, gfpflags, _RET_IP_, s->object_size);
 
 
-	return ret;
-}
+	return ret; }
 
 void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags) {
-	return __kmem_cache_alloc_lru(s, NULL, gfpflags);
-}
+	return __kmem_cache_alloc_lru(s, NULL, gfpflags); }
 
 void *kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru, gfp_t gfpflags) {
-	return __kmem_cache_alloc_lru(s, lru, gfpflags);
-}
+	return __kmem_cache_alloc_lru(s, lru, gfpflags); }
 
 static void __slab_free(struct kmem_cache *s, struct slab *slab, void *head, void *tail, int cnt, unsigned long addr)
 
@@ -575,8 +516,7 @@ static void __slab_free(struct kmem_cache *s, struct slab *slab, void *head, voi
 	do {
 		if (unlikely(n)) {
 			spin_unlock_irqrestore(&n->list_lock, flags);
-			n = NULL;
-		}
+			n = NULL; }
 		prior = slab->freelist;
 		counters = slab->counters;
 		set_freepointer(s, tail, prior);
@@ -586,20 +526,16 @@ static void __slab_free(struct kmem_cache *s, struct slab *slab, void *head, voi
 		if ((!new.inuse || !prior) && !was_frozen) {
 			n = get_node(s, slab_nid(slab));
 
-			spin_lock_irqsave(&n->list_lock, flags);
-		}
+			spin_lock_irqsave(&n->list_lock, flags); }
 
 	} while (!cmpxchg_double_slab(s, slab, prior, counters, head, new.counters));
 
 	if (likely(!n)) {
-		return;
-	}
+		return; }
 
 	if (unlikely(!prior)) {
-		add_partial(n, slab, DEACTIVATE_TO_TAIL);
-	}
-	spin_unlock_irqrestore(&n->list_lock, flags);
-}
+		add_partial(n, slab, DEACTIVATE_TO_TAIL); }
+	spin_unlock_irqrestore(&n->list_lock, flags); }
 
 static __always_inline void do_slab_free(struct kmem_cache *s, struct slab *slab, void *head, void *tail, int cnt, unsigned long addr) {
 	void *tail_obj = tail ? : head;
@@ -621,8 +557,7 @@ redo:
 
 		if (unlikely(!this_cpu_cmpxchg_double( s->cpu_slab->freelist, s->cpu_slab->tid, freelist, tid, head, next_tid(tid)))) {
 
-			goto redo;
-		}
+			goto redo; }
 	} else
 		__slab_free(s, slab, head, tail_obj, cnt, addr);
 
@@ -631,15 +566,13 @@ redo:
 static __always_inline void slab_free(struct kmem_cache *s, struct slab *slab, void *head, void *tail, int cnt, unsigned long addr) {
 	
 	if (slab_free_freelist_hook(s, &head, &tail, &cnt))
-		do_slab_free(s, slab, head, tail, cnt, addr);
-}
+		do_slab_free(s, slab, head, tail, cnt, addr); }
 
 void kmem_cache_free(struct kmem_cache *s, void *x) {
 	s = cache_from_obj(s, x);
 	if (!s)
 		return;
-	slab_free(s, virt_to_slab(x), x, NULL, 1, _RET_IP_);
-}
+	slab_free(s, virt_to_slab(x), x, NULL, 1, _RET_IP_); }
 
 static inline void free_large_kmalloc(struct folio *folio, void *object) {
 	unsigned int order = folio_order(folio);
@@ -648,8 +581,7 @@ static inline void free_large_kmalloc(struct folio *folio, void *object) {
 		pr_warn_once("object pointer: 0x%p\n", object);
 
 	mod_lruvec_page_state(folio_page(folio, 0), NR_SLAB_UNRECLAIMABLE_B, -(PAGE_SIZE << order));
-	__free_pages(folio_page(folio, 0), order);
-}
+	__free_pages(folio_page(folio, 0), order); }
 
 #define slub_max_order ((unsigned int)PAGE_ALLOC_COSTLY_ORDER)
 
@@ -664,11 +596,9 @@ static inline unsigned int calc_slab_order(unsigned int size, unsigned int min_o
 		rem = slab_size % size;
 
 		if (rem <= slab_size / fract_leftover)
-			break;
-	}
+			break; }
 
-	return order;
-}
+	return order; }
 
 static inline int calculate_order(unsigned int size) {
 	unsigned int order, min_objects, max_objects, nr_cpus;
@@ -688,10 +618,8 @@ static inline int calculate_order(unsigned int size) {
 			order = calc_slab_order(size, min_objects, slub_max_order, fraction);
 			if (order <= slub_max_order)
 				return order;
-			fraction /= 2;
-		}
-		min_objects--;
-	}
+			fraction /= 2; }
+		min_objects--; }
 
 	
 	order = calc_slab_order(size, 1, slub_max_order, 1);
@@ -702,15 +630,13 @@ static inline int calculate_order(unsigned int size) {
 	order = calc_slab_order(size, 1, MAX_ORDER, 1);
 	if (order < MAX_ORDER)
 		return order;
-	return -ENOSYS;
-}
+	return -ENOSYS; }
 
 static void
 init_kmem_cache_node(struct kmem_cache_node *n) {
 	n->nr_partial = 0;
 	spin_lock_init(&n->list_lock);
-	INIT_LIST_HEAD(&n->partial);
-}
+	INIT_LIST_HEAD(&n->partial); }
 
 static inline int alloc_kmem_cache_cpus(struct kmem_cache *s) {
 	BUILD_BUG_ON(PERCPU_DYNAMIC_EARLY_SIZE < KMALLOC_SHIFT_HIGH * sizeof(struct kmem_cache_cpu));
@@ -723,8 +649,7 @@ static inline int alloc_kmem_cache_cpus(struct kmem_cache *s) {
 
 	init_kmem_cache_cpus(s);
 
-	return 1;
-}
+	return 1; }
 
 static struct kmem_cache *kmem_cache_node;
 
@@ -751,8 +676,7 @@ static void early_kmem_cache_node_alloc(int node) {
 	init_kmem_cache_node(n);
 
 
-	__add_partial(n, slab, DEACTIVATE_TO_HEAD);
-}
+	__add_partial(n, slab, DEACTIVATE_TO_HEAD); }
 
 
 static int init_kmem_cache_nodes(struct kmem_cache *s) {
@@ -763,18 +687,15 @@ static int init_kmem_cache_nodes(struct kmem_cache *s) {
 
 		if (slab_state == DOWN) {
 			early_kmem_cache_node_alloc(node);
-			continue;
-		}
+			continue; }
 		n = kmem_cache_alloc_node(kmem_cache_node, GFP_KERNEL, node);
 
 		if (!n)
 			return 0;
 
 		init_kmem_cache_node(n);
-		s->node[node] = n;
-	}
-	return 1;
-}
+		s->node[node] = n; }
+	return 1; }
 
 static int calculate_sizes(struct kmem_cache *s) {
 	slab_flags_t flags = s->flags;
@@ -792,8 +713,7 @@ static int calculate_sizes(struct kmem_cache *s) {
 		size += sizeof(void *);
 	} else {
 		
-		s->offset = ALIGN_DOWN(s->object_size / 2, sizeof(void *));
-	}
+		s->offset = ALIGN_DOWN(s->object_size / 2, sizeof(void *)); }
 
 	size = ALIGN(size, s->align);
 	s->size = size;
@@ -816,8 +736,7 @@ static int calculate_sizes(struct kmem_cache *s) {
 	s->oo = oo_make(order, size);
 	s->min = oo_make(get_order(size), size);
 
-	return !!oo_objects(s->oo);
-}
+	return !!oo_objects(s->oo); }
 
 static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags) {
 	s->flags = flags;
@@ -838,8 +757,7 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags) {
 	if (alloc_kmem_cache_cpus(s))
 		return 0;
 
-	return -EINVAL;
-}
+	return -EINVAL; }
 
 /* setup_slub_min_order, setup_slub_max_order, setup_slub_min_objects and __setup
  * handlers removed - not needed for minimal kernel. slub_min_order/min_objects
@@ -859,8 +777,7 @@ void *__kmalloc(size_t size, gfp_t flags) {
 
 	ret = slab_alloc(s, NULL, flags, _RET_IP_, size);
 
-	return ret;
-}
+	return ret; }
 
 void kfree(const void *x) {
 	struct folio *folio;
@@ -874,11 +791,9 @@ void kfree(const void *x) {
 	folio = virt_to_folio(x);
 	if (unlikely(!folio_test_slab(folio))) {
 		free_large_kmalloc(folio, object);
-		return;
-	}
+		return; }
 	slab = folio_slab(folio);
-	slab_free(slab->slab_cache, slab, object, NULL, 1, _RET_IP_);
-}
+	slab_free(slab->slab_cache, slab, object, NULL, 1, _RET_IP_); }
 
 /* Memory hotplug callbacks removed - not needed for minimal kernel
  * (register_hotmemory_notifier is already a no-op) */
@@ -899,8 +814,7 @@ static struct kmem_cache * __init bootstrap(struct kmem_cache *static_cache) {
 			p->slab_cache = s;
 
 	}
-	return s;
-}
+	return s; }
 
 void __init kmem_cache_init(void) {
 	static __initdata struct kmem_cache boot_kmem_cache, boot_kmem_cache_node;
@@ -927,8 +841,7 @@ void __init kmem_cache_init(void) {
 
 	
 	setup_kmalloc_cache_index_table();
-	create_kmalloc_caches(0);
-}
+	create_kmalloc_caches(0); }
 
 int __kmem_cache_create(struct kmem_cache *s, slab_flags_t flags) {
 	int err;
@@ -937,11 +850,9 @@ int __kmem_cache_create(struct kmem_cache *s, slab_flags_t flags) {
 	if (err)
 		return err;
 
-	return 0;
-}
+	return 0; }
 
 /* Stub: __kmalloc_track_caller not used in minimal kernel */
 void *__kmalloc_track_caller(size_t size, gfp_t gfpflags, unsigned long caller) {
-	return __kmalloc(size, gfpflags);
-}
+	return __kmalloc(size, gfpflags); }
 

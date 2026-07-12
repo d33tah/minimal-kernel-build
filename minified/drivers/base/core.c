@@ -42,8 +42,7 @@ struct kset *devices_kset;
 
 void device_initialize(struct device *dev) {
 	dev->kobj.kset = devices_kset;
-	kobject_init(&dev->kobj, &device_ktype);
-}
+	kobject_init(&dev->kobj, &device_ktype); }
 
 
 
@@ -59,15 +58,13 @@ int dev_set_name(struct device *dev, const char *fmt, ...) {
 	va_start(vargs, fmt);
 	err = kobject_set_name_vargs(&dev->kobj, fmt, vargs);
 	va_end(vargs);
-	return err;
-}
+	return err; }
 
 static int device_private_init(struct device *dev) {
 	dev->p = kzalloc(sizeof(*dev->p), GFP_KERNEL);
 	if (!dev->p)
 		return -ENOMEM;
-	return 0;
-}
+	return 0; }
 
 int device_add(struct device *dev) {
 	struct device *parent;
@@ -81,15 +78,13 @@ int device_add(struct device *dev) {
 	if (!dev->p) {
 		error = device_private_init(dev);
 		if (error)
-			goto done;
-	}
+			goto done; }
 
 	/* init_name removed - never set non-NULL, so this naming path was dead */
 
 	if (!dev_name(dev)) {
 		error = -EINVAL;
-		goto name_error;
-	}
+		goto name_error; }
 
 	parent = get_device(dev->parent);
 
@@ -108,23 +103,19 @@ name_error:
 	dev->p = NULL;
 done:
 	put_device(dev);
-	return error;
-}
+	return error; }
 
 int device_register(struct device *dev) {
 	device_initialize(dev);
-	return device_add(dev);
-}
+	return device_add(dev); }
 
 struct device *get_device(struct device *dev) {
-	return dev ? kobj_to_dev(kobject_get(&dev->kobj)) : NULL;
-}
+	return dev ? kobj_to_dev(kobject_get(&dev->kobj)) : NULL; }
 
 void put_device(struct device *dev) {
 	
 	if (dev)
-		kobject_put(&dev->kobj);
-}
+		kobject_put(&dev->kobj); }
 
 /* Removed: kill_device / device_del / device_unregister - the device teardown
    path is runtime-dead (no device is ever unregistered on this build); its only
@@ -152,14 +143,12 @@ int __init devices_init(void) {
 	kobject_put(dev_kobj);
  dev_kobj_err:
 	/* kset_unregister(devices_kset) removed - boot never hits this path */
-	return -ENOMEM;
-}
+	return -ENOMEM; }
 
 /* Removed: __root_device_register, root_device_unregister - no callers */
 
 static void device_create_release(struct device *dev) {
-	kfree(dev);
-}
+	kfree(dev); }
 
 static __printf(5, 0) struct device * device_create_groups_vargs(struct class *class, struct device *parent, dev_t devt, void *drvdata, const char *fmt, va_list args) {
 	struct device *dev = NULL;
@@ -171,8 +160,7 @@ static __printf(5, 0) struct device * device_create_groups_vargs(struct class *c
 	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
 	if (!dev) {
 		retval = -ENOMEM;
-		goto error;
-	}
+		goto error; }
 
 	device_initialize(dev);
 	dev->parent = parent;
@@ -190,8 +178,7 @@ static __printf(5, 0) struct device * device_create_groups_vargs(struct class *c
 
 error:
 	put_device(dev);
-	return ERR_PTR(retval);
-}
+	return ERR_PTR(retval); }
 
 struct device *device_create(struct class *class, struct device *parent, dev_t devt, void *drvdata, const char *fmt, ...) {
 	va_list vargs;
@@ -200,8 +187,7 @@ struct device *device_create(struct class *class, struct device *parent, dev_t d
 	va_start(vargs, fmt);
 	dev = device_create_groups_vargs(class, parent, devt, drvdata, fmt, vargs);
 	va_end(vargs);
-	return dev;
-}
+	return dev; }
 
 /* Removed: device_create_with_groups - its only caller (vt.c vty_init) passed
    vt_dev_groups, but device_create_groups_vargs ignored the groups arg (no

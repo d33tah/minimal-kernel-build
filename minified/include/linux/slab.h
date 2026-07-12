@@ -53,8 +53,7 @@ void kfree(const void *objp);
 
 #ifndef arch_slab_minalign
 static inline unsigned int arch_slab_minalign(void) {
-	return ARCH_SLAB_MINALIGN;
-}
+	return ARCH_SLAB_MINALIGN; }
 #endif
 
 #define __assume_kmalloc_alignment __assume_aligned(ARCH_KMALLOC_MINALIGN)
@@ -89,8 +88,7 @@ static __always_inline enum kmalloc_cache_type kmalloc_type(gfp_t flags) {
 	if (likely((flags & __GFP_RECLAIMABLE) == 0))
 		return KMALLOC_NORMAL;
 
-	return KMALLOC_RECLAIM;
-}
+	return KMALLOC_RECLAIM; }
 
 static __always_inline unsigned int __kmalloc_index(size_t size, bool size_is_constant) {
 	if (!size)
@@ -133,8 +131,7 @@ static __always_inline unsigned int __kmalloc_index(size_t size, bool size_is_co
 		BUG();
 
 	 
-	return -1;
-}
+	return -1; }
 #define kmalloc_index(s) __kmalloc_index(s, true)
 
 void *__kmalloc(size_t size, gfp_t flags) __assume_kmalloc_alignment __alloc_size(1);
@@ -143,36 +140,30 @@ void *kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru, gfp_t gfp
 void kmem_cache_free(struct kmem_cache *s, void *objp);
 
 static __always_inline __alloc_size(1) void *__kmalloc_node(size_t size, gfp_t flags, int node) {
-	return __kmalloc(size, flags);
-}
+	return __kmalloc(size, flags); }
 
 static __always_inline void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t flags, int node) {
-	return kmem_cache_alloc(s, flags);
-}
+	return kmem_cache_alloc(s, flags); }
 
 static __always_inline __alloc_size(3) void *kmem_cache_alloc_trace(struct kmem_cache *s, gfp_t flags, size_t size) {
 	void *ret = kmem_cache_alloc(s, flags);
 
-	return ret;
-}
+	return ret; }
 
 static __always_inline void *kmem_cache_alloc_node_trace(struct kmem_cache *s, gfp_t gfpflags, int node, size_t size) {
 	void *ret = kmem_cache_alloc_node(s, gfpflags, node);
 
-	return ret;
-}
+	return ret; }
 
 extern void *kmalloc_order(size_t size, gfp_t flags, unsigned int order) __assume_page_alignment
 									 __alloc_size(1);
 
 static __always_inline __alloc_size(1) void *kmalloc_order_trace(size_t size, gfp_t flags, unsigned int order) {
-	return kmalloc_order(size, flags, order);
-}
+	return kmalloc_order(size, flags, order); }
 
 static __always_inline __alloc_size(1) void *kmalloc_large(size_t size, gfp_t flags) {
 	unsigned int order = get_order(size);
-	return kmalloc_order_trace(size, flags, order);
-}
+	return kmalloc_order_trace(size, flags, order); }
 
 static __always_inline __alloc_size(1) void *kmalloc(size_t size, gfp_t flags) {
 	if (__builtin_constant_p(size)) {
@@ -184,10 +175,8 @@ static __always_inline __alloc_size(1) void *kmalloc(size_t size, gfp_t flags) {
 		if (!index)
 			return ZERO_SIZE_PTR;
 
-		return kmem_cache_alloc_trace( kmalloc_caches[kmalloc_type(flags)][index], flags, size);
-	}
-	return __kmalloc(size, flags);
-}
+		return kmem_cache_alloc_trace( kmalloc_caches[kmalloc_type(flags)][index], flags, size); }
+	return __kmalloc(size, flags); }
 
 static __always_inline __alloc_size(1) void *kmalloc_node(size_t size, gfp_t flags, int node) {
 	if (__builtin_constant_p(size) && size <= KMALLOC_MAX_CACHE_SIZE) {
@@ -196,10 +185,8 @@ static __always_inline __alloc_size(1) void *kmalloc_node(size_t size, gfp_t fla
 		if (!i)
 			return ZERO_SIZE_PTR;
 
-		return kmem_cache_alloc_node_trace( kmalloc_caches[kmalloc_type(flags)][i], flags, node, size);
-	}
-	return __kmalloc_node(size, flags, node);
-}
+		return kmem_cache_alloc_node_trace( kmalloc_caches[kmalloc_type(flags)][i], flags, node, size); }
+	return __kmalloc_node(size, flags, node); }
 
 static inline __alloc_size(1, 2) void *kmalloc_array(size_t n, size_t size, gfp_t flags) {
 	size_t bytes;
@@ -208,13 +195,11 @@ static inline __alloc_size(1, 2) void *kmalloc_array(size_t n, size_t size, gfp_
 		return NULL;
 	if (__builtin_constant_p(n) && __builtin_constant_p(size))
 		return kmalloc(bytes, flags);
-	return __kmalloc(bytes, flags);
-}
+	return __kmalloc(bytes, flags); }
 
 
 static inline __alloc_size(1, 2) void *kcalloc(size_t n, size_t size, gfp_t flags) {
-	return kmalloc_array(n, size, flags | __GFP_ZERO);
-}
+	return kmalloc_array(n, size, flags | __GFP_ZERO); }
 
 extern void *__kmalloc_track_caller(size_t size, gfp_t flags, unsigned long caller);
 #define kmalloc_track_caller(size, flags) 	__kmalloc_track_caller(size, flags, _RET_IP_)
@@ -222,21 +207,17 @@ extern void *__kmalloc_track_caller(size_t size, gfp_t flags, unsigned long call
 
 
 static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags) {
-	return kmem_cache_alloc(k, flags | __GFP_ZERO);
-}
+	return kmem_cache_alloc(k, flags | __GFP_ZERO); }
 
 static inline __alloc_size(1) void *kzalloc(size_t size, gfp_t flags) {
-	return kmalloc(size, flags | __GFP_ZERO);
-}
+	return kmalloc(size, flags | __GFP_ZERO); }
 
 static inline __alloc_size(1) void *kzalloc_node(size_t size, gfp_t flags, int node) {
-	return kmalloc_node(size, flags | __GFP_ZERO, node);
-}
+	return kmalloc_node(size, flags | __GFP_ZERO, node); }
 
 extern void *kvmalloc_node(size_t size, gfp_t flags, int node) __alloc_size(1);
 static inline __alloc_size(1) void *kvmalloc(size_t size, gfp_t flags) {
-	return kvmalloc_node(size, flags, NUMA_NO_NODE);
-}
+	return kvmalloc_node(size, flags, NUMA_NO_NODE); }
 extern void kvfree(const void *addr);
 
 

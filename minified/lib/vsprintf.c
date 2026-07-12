@@ -30,23 +30,19 @@ static noinline unsigned long long simple_strntoull(const char *startp, size_t m
 		cp += (rv & ~KSTRTOX_OVERFLOW);
 	} else {
 		
-		cp = startp + max_chars;
-	}
+		cp = startp + max_chars; }
 
 	if (endp)
 		*endp = (char *)cp;
 
-	return result;
-}
+	return result; }
 
 noinline
 unsigned long long simple_strtoull(const char *cp, char **endp, unsigned int base) {
-	return simple_strntoull(cp, INT_MAX, endp, base);
-}
+	return simple_strntoull(cp, INT_MAX, endp, base); }
 
 unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base) {
-	return simple_strtoull(cp, endp, base);
-}
+	return simple_strtoull(cp, endp, base); }
 
 
 static noinline_for_stack
@@ -57,8 +53,7 @@ int skip_atoi(const char **s) {
 		i = i*10 + *((*s)++) - '0';
 	} while (isdigit(**s));
 
-	return i;
-}
+	return i; }
 
 static const u16 decpair[100] = {
 #define _(x) (__force u16) cpu_to_le16(((x % 10) | ((x / 10) << 8)) + 0x3030)
@@ -103,8 +98,7 @@ out_r:
 	
 	*((u16 *)buf) = decpair[r];
 	buf += r < 10 ? 1 : 2;
-	return buf;
-}
+	return buf; }
 
 static void
 put_dec_full4(char *buf, unsigned r) {
@@ -115,16 +109,14 @@ put_dec_full4(char *buf, unsigned r) {
 	*((u16 *)buf) = decpair[r - 100*q];
 	buf += 2;
 	
-	*((u16 *)buf) = decpair[q];
-}
+	*((u16 *)buf) = decpair[q]; }
 
 static noinline_for_stack
 unsigned put_dec_helper4(char *buf, unsigned x) {
         uint32_t q = (x * (uint64_t)0x346DC5D7) >> 43;
 
         put_dec_full4(buf, x - q * 10000);
-        return q;
-}
+        return q; }
 
 static
 char *put_dec(char *buf, unsigned long long n) {
@@ -155,8 +147,7 @@ char *put_dec(char *buf, unsigned long long n) {
 	else while (buf[-1] == '0')
 		--buf;
 
-	return buf;
-}
+	return buf; }
 
 /*
  * LEFT (2) / PLUS (4) / SPACE (8) / SPECIAL (64) flags removed: no reachable
@@ -196,9 +187,7 @@ char *number(char *buf, char *end, unsigned long long num, struct printf_spec sp
 		if ((signed long long)num < 0) {
 			sign = '-';
 			num = -(signed long long)num;
-			field_width--;
-		}
-	}
+			field_width--; } }
 
 
 	i = 0;
@@ -215,8 +204,7 @@ char *number(char *buf, char *end, unsigned long long num, struct printf_spec sp
 			num >>= shift;
 		} while (num);
 	} else { 
-		i = put_dec(tmp, num) - tmp;
-	}
+		i = put_dec(tmp, num) - tmp; }
 
 	
 	if (i > precision)
@@ -227,15 +215,12 @@ char *number(char *buf, char *end, unsigned long long num, struct printf_spec sp
 		while (--field_width >= 0) {
 			if (buf < end)
 				*buf = ' ';
-			++buf;
-		}
-	}
+			++buf; } }
 
 	if (sign) {
 		if (buf < end)
 			*buf = sign;
-		++buf;
-	}
+		++buf; }
 
 	{
 		char c = ' ' + (spec.flags & ZEROPAD);
@@ -243,30 +228,24 @@ char *number(char *buf, char *end, unsigned long long num, struct printf_spec sp
 		while (--field_width >= 0) {
 			if (buf < end)
 				*buf = c;
-			++buf;
-		}
-	}
+			++buf; } }
 
 	while (i <= --precision) {
 		if (buf < end)
 			*buf = '0';
-		++buf;
-	}
+		++buf; }
 	
 	while (--i >= 0) {
 		if (buf < end)
 			*buf = tmp[i];
-		++buf;
-	}
+		++buf; }
 	
 	while (--field_width >= 0) {
 		if (buf < end)
 			*buf = ' ';
-		++buf;
-	}
+		++buf; }
 
-	return buf;
-}
+	return buf; }
 
 static void move_right(char *buf, char *end, unsigned len, unsigned spaces) {
 	size_t size;
@@ -275,15 +254,12 @@ static void move_right(char *buf, char *end, unsigned len, unsigned spaces) {
 	size = end - buf;
 	if (size <= spaces) {
 		memset(buf, ' ', size);
-		return;
-	}
+		return; }
 	if (len) {
 		if (len > size - spaces)
 			len = size - spaces;
-		memmove(buf + spaces, buf, len);
-	}
-	memset(buf, ' ', spaces);
-}
+		memmove(buf + spaces, buf, len); }
+	memset(buf, ' ', spaces); }
 
 static noinline_for_stack
 char *widen_string(char *buf, int n, char *end, struct printf_spec spec) {
@@ -295,8 +271,7 @@ char *widen_string(char *buf, int n, char *end, struct printf_spec spec) {
 	spaces = spec.field_width - n;
 	/* LEFT (left-justify) flag is never set on this build -> always pad left. */
 	move_right(buf - n, end, n, spaces);
-	return buf + spaces;
-}
+	return buf + spaces; }
 
 static char *string_nocheck(char *buf, char *end, const char *s, struct printf_spec spec) {
 	int len = 0;
@@ -309,18 +284,15 @@ static char *string_nocheck(char *buf, char *end, const char *s, struct printf_s
 		if (buf < end)
 			*buf = c;
 		++buf;
-		++len;
-	}
-	return widen_string(buf, len, end, spec);
-}
+		++len; }
+	return widen_string(buf, len, end, spec); }
 
 static char *error_string(char *buf, char *end, const char *s, struct printf_spec spec) {
 	
 	if (spec.precision == -1)
 		spec.precision = 2 * sizeof(void *);
 
-	return string_nocheck(buf, end, s, spec);
-}
+	return string_nocheck(buf, end, s, spec); }
 
 static const char *check_pointer_msg(const void *ptr) {
 	if (!ptr)
@@ -329,8 +301,7 @@ static const char *check_pointer_msg(const void *ptr) {
 	if ((unsigned long)ptr < PAGE_SIZE || IS_ERR_VALUE(ptr))
 		return "(efault)";
 
-	return NULL;
-}
+	return NULL; }
 
 static int check_pointer(char **buf, char *end, const void *ptr, struct printf_spec spec) {
 	const char *err_msg;
@@ -338,36 +309,30 @@ static int check_pointer(char **buf, char *end, const void *ptr, struct printf_s
 	err_msg = check_pointer_msg(ptr);
 	if (err_msg) {
 		*buf = error_string(*buf, end, err_msg, spec);
-		return -EFAULT;
-	}
+		return -EFAULT; }
 
-	return 0;
-}
+	return 0; }
 
 static noinline_for_stack
 char *string(char *buf, char *end, const char *s, struct printf_spec spec) {
 	if (check_pointer(&buf, end, s, spec))
 		return buf;
 
-	return string_nocheck(buf, end, s, spec);
-}
+	return string_nocheck(buf, end, s, spec); }
 
 static char *pointer_string(char *buf, char *end, const void *ptr, struct printf_spec spec) {
 	spec.base = 16;
 	spec.flags |= SMALL;
 	if (spec.field_width == -1) {
 		spec.field_width = 2 * sizeof(ptr);
-		spec.flags |= ZEROPAD;
-	}
+		spec.flags |= ZEROPAD; }
 
-	return number(buf, end, (unsigned long int)ptr, spec);
-}
+	return number(buf, end, (unsigned long int)ptr, spec); }
 
 static DEFINE_STATIC_KEY_FALSE(filled_random_ptr_key);
 
 static void enable_ptr_key_workfn(struct work_struct *work) {
-	static_branch_enable(&filled_random_ptr_key);
-}
+	static_branch_enable(&filled_random_ptr_key); }
 
 static inline int ptr_to_hashval(const void *ptr, unsigned long *hashval_out) {
 	static siphash_key_t ptr_key __read_mostly;
@@ -385,15 +350,12 @@ static inline int ptr_to_hashval(const void *ptr, unsigned long *hashval_out) {
 		if (!filled) {
 			get_random_bytes(&ptr_key, sizeof(ptr_key));
 			queue_work(system_unbound_wq, &enable_ptr_key_work);
-			filled = true;
-		}
-		spin_unlock_irqrestore(&filling, flags);
-	}
+			filled = true; }
+		spin_unlock_irqrestore(&filling, flags); }
 
 	hashval = (unsigned long)siphash_1u32((u32)ptr, &ptr_key);
 	*hashval_out = hashval;
-	return 0;
-}
+	return 0; }
 
 static char *ptr_to_id(char *buf, char *end, const void *ptr, struct printf_spec spec) {
 	const char *str = sizeof(ptr) == 8 ? "(____ptrval____)" : "(ptrval)";
@@ -408,16 +370,13 @@ static char *ptr_to_id(char *buf, char *end, const void *ptr, struct printf_spec
 	if (ret) {
 		spec.field_width = 2 * sizeof(ptr);
 		
-		return error_string(buf, end, str, spec);
-	}
+		return error_string(buf, end, str, spec); }
 
-	return pointer_string(buf, end, (const void *)hashval, spec);
-}
+	return pointer_string(buf, end, (const void *)hashval, spec); }
 
 static char *default_pointer(char *buf, char *end, const void *ptr, struct printf_spec spec) {
 	
-	return ptr_to_id(buf, end, ptr, spec);
-}
+	return ptr_to_id(buf, end, ptr, spec); }
 
 
 static noinline_for_stack
@@ -430,8 +389,7 @@ int format_decode(const char *fmt, struct printf_spec *spec) {
 
 	for (; *fmt ; ++fmt) {
 		if (*fmt == '%')
-			break;
-	}
+			break; }
 
 	
 	if (fmt != start || !*fmt)
@@ -454,8 +412,7 @@ int format_decode(const char *fmt, struct printf_spec *spec) {
 		if (*fmt == '0')
 			spec->flags |= ZEROPAD;
 		else
-			break;
-	}
+			break; }
 
 	
 	spec->field_width = -1;
@@ -470,9 +427,7 @@ int format_decode(const char *fmt, struct printf_spec *spec) {
 		if (isdigit(*fmt)) {
 			spec->precision = skip_atoi(&fmt);
 			if (spec->precision < 0)
-				spec->precision = 0;
-		}
-	}
+				spec->precision = 0; } }
 
 
 	qualifier = 0;
@@ -484,10 +439,7 @@ int format_decode(const char *fmt, struct printf_spec *spec) {
 				++fmt;
 			} else if (qualifier == 'h') {
 				qualifier = 'H';
-				++fmt;
-			}
-		}
-	}
+				++fmt; } } }
 
 	
 	spec->base = 10;
@@ -534,8 +486,7 @@ int format_decode(const char *fmt, struct printf_spec *spec) {
 	default:
 		WARN_ONCE(1, "Please remove unsupported %%%c in format string\n", *fmt);
 		spec->type = FORMAT_TYPE_INVALID;
-		return fmt - start;
-	}
+		return fmt - start; }
 
 	if (qualifier == 'L')
 		spec->type = FORMAT_TYPE_LONG_LONG;
@@ -554,11 +505,9 @@ int format_decode(const char *fmt, struct printf_spec *spec) {
 		spec->type = FORMAT_TYPE_USHORT + (spec->flags & SIGN);
 	} else {
 		BUILD_BUG_ON(FORMAT_TYPE_UINT + SIGN != FORMAT_TYPE_INT);
-		spec->type = FORMAT_TYPE_UINT + (spec->flags & SIGN);
-	}
+		spec->type = FORMAT_TYPE_UINT + (spec->flags & SIGN); }
 
-	return ++fmt - start;
-}
+	return ++fmt - start; }
 
 int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 	unsigned long long num;
@@ -575,8 +524,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 	
 	if (end < buf) {
 		end = ((void *)-1);
-		size = end - buf;
-	}
+		size = end - buf; }
 
 	while (*fmt) {
 		const char *old_fmt = fmt;
@@ -590,11 +538,9 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 			if (str < end) {
 				if (copy > end - str)
 					copy = end - str;
-				memcpy(str, old_fmt, copy);
-			}
+				memcpy(str, old_fmt, copy); }
 			str += read;
-			break;
-		}
+			break; }
 
 		case FORMAT_TYPE_CHAR: {
 			char c;
@@ -603,8 +549,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 			while (--spec.field_width > 0) {
 				if (str < end)
 					*str = ' ';
-				++str;
-			}
+				++str; }
 			c = (unsigned char) va_arg(args, int);
 			if (str < end)
 				*str = c;
@@ -612,10 +557,8 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 			while (--spec.field_width > 0) {
 				if (str < end)
 					*str = ' ';
-				++str;
-			}
-			break;
-		}
+				++str; }
+			break; }
 
 		case FORMAT_TYPE_STR:
 			str = string(str, end, va_arg(args, char *), spec);
@@ -680,20 +623,16 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 				num = (int) va_arg(args, int);
 				break;
 			default:
-				num = va_arg(args, unsigned int);
-			}
+				num = va_arg(args, unsigned int); }
 
-			str = number(str, end, num, spec);
-		}
-	}
+			str = number(str, end, num, spec); } }
 
 out:
 	if (size > 0) {
 		if (str < end)
 			*str = '\0';
 		else
-			end[-1] = '\0';
-	}
+			end[-1] = '\0'; }
 
 	
 	return str-buf;
@@ -711,8 +650,7 @@ int vscnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 	if (likely(i < size))
 		return i;
 
-	return size - 1;
-}
+	return size - 1; }
 
 int snprintf(char *buf, size_t size, const char *fmt, ...) {
 	va_list args;
@@ -722,8 +660,7 @@ int snprintf(char *buf, size_t size, const char *fmt, ...) {
 	i = vsnprintf(buf, size, fmt, args);
 	va_end(args);
 
-	return i;
-}
+	return i; }
 
 int sprintf(char *buf, const char *fmt, ...) {
 	va_list args;
@@ -733,5 +670,4 @@ int sprintf(char *buf, const char *fmt, ...) {
 	i = vsnprintf(buf, INT_MAX, fmt, args);
 	va_end(args);
 
-	return i;
-}
+	return i; }

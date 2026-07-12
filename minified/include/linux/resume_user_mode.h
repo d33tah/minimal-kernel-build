@@ -14,7 +14,6 @@ static inline void resume_user_mode_work(struct pt_regs *regs) {
 	 
 	smp_mb__after_atomic();
 	if (unlikely(task_work_pending(current)))
-		task_work_run();
-}
+		task_work_run(); }
 
 #endif  

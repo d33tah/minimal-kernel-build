@@ -12,8 +12,7 @@ noinstr struct cpu_entry_area *get_cpu_entry_area(int cpu) {
 	unsigned long va = CPU_ENTRY_AREA_PER_CPU + cpu * CPU_ENTRY_AREA_SIZE;
 	BUILD_BUG_ON(sizeof(struct cpu_entry_area) % PAGE_SIZE != 0);
 
-	return (struct cpu_entry_area *) va;
-}
+	return (struct cpu_entry_area *) va; }
 
 void cea_set_pte(void *cea_vaddr, phys_addr_t pa, pgprot_t flags) {
 	unsigned long va = (unsigned long) cea_vaddr;
@@ -23,20 +22,17 @@ void cea_set_pte(void *cea_vaddr, phys_addr_t pa, pgprot_t flags) {
 	if (boot_cpu_has(X86_FEATURE_PGE) && (pgprot_val(flags) & _PAGE_PRESENT))
 		pte = pte_set_flags(pte, _PAGE_GLOBAL);
 
-	set_pte_vaddr(va, pte);
-}
+	set_pte_vaddr(va, pte); }
 
 static void __init
 cea_map_percpu_pages(void *cea_vaddr, void *ptr, int pages, pgprot_t prot) {
 	for ( ; pages; pages--, cea_vaddr+= PAGE_SIZE, ptr += PAGE_SIZE)
-		cea_set_pte(cea_vaddr, per_cpu_ptr_to_phys(ptr), prot);
-}
+		cea_set_pte(cea_vaddr, per_cpu_ptr_to_phys(ptr), prot); }
 
 static inline void percpu_setup_exception_stacks(unsigned int cpu) {
 	struct cpu_entry_area *cea = get_cpu_entry_area(cpu);
 
-	cea_map_percpu_pages(&cea->doublefault_stack, &per_cpu(doublefault_stack, cpu), 1, PAGE_KERNEL);
-}
+	cea_map_percpu_pages(&cea->doublefault_stack, &per_cpu(doublefault_stack, cpu), 1, PAGE_KERNEL); }
 
 static void __init setup_cpu_entry_area(unsigned int cpu) {
 	struct cpu_entry_area *cea = get_cpu_entry_area(cpu);
@@ -60,8 +56,7 @@ static void __init setup_cpu_entry_area(unsigned int cpu) {
 
 	per_cpu(cpu_entry_area, cpu) = cea;
 
-	percpu_setup_exception_stacks(cpu);
-}
+	percpu_setup_exception_stacks(cpu); }
 
 static __init void setup_cpu_entry_area_ptes(void) {
 	unsigned long start, end;
@@ -76,8 +71,7 @@ static __init void setup_cpu_entry_area_ptes(void) {
 
 	 
 	for (; start < end && start >= CPU_ENTRY_AREA_BASE; start += PMD_SIZE)
-		populate_extra_pte(start);
-}
+		populate_extra_pte(start); }
 
 void __init setup_cpu_entry_areas(void) {
 	unsigned int cpu;
@@ -88,5 +82,4 @@ void __init setup_cpu_entry_areas(void) {
 		setup_cpu_entry_area(cpu);
 
 	 
-	sync_initial_page_table();
-}
+	sync_initial_page_table(); }

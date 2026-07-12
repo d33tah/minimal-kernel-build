@@ -9,17 +9,14 @@ struct file *file_lookup(const char *name) {
 
 	for (file = file_list; file; file = file->next) {
 		if (!strcmp(name, file->name)) {
-			return file;
-		}
-	}
+			return file; } }
 
 	file = xmalloc(sizeof(*file));
 	memset(file, 0, sizeof(*file));
 	file->name = xstrdup(name);
 	file->next = file_list;
 	file_list = file;
-	return file;
-}
+	return file; }
 
 struct gstr str_new(void) {
 	struct gstr gs;
@@ -27,8 +24,7 @@ struct gstr str_new(void) {
 	gs.len = 64;
 	gs.max_width = 0;
 	strcpy(gs.s, "\0");
-	return gs;
-}
+	return gs; }
 
 void str_append(struct gstr *gs, const char *s) {
 	size_t l;
@@ -36,11 +32,8 @@ void str_append(struct gstr *gs, const char *s) {
 		l = strlen(gs->s) + strlen(s) + 1;
 		if (l > gs->len) {
 			gs->s = xrealloc(gs->s, l);
-			gs->len = l;
-		}
-		strcat(gs->s, s);
-	}
-}
+			gs->len = l; }
+		strcat(gs->s, s); } }
 
 void str_printf(struct gstr *gs, const char *fmt, ...) {
 	va_list ap;
@@ -48,36 +41,31 @@ void str_printf(struct gstr *gs, const char *fmt, ...) {
 	va_start(ap, fmt);
 	vsnprintf(s, sizeof(s), fmt, ap);
 	str_append(gs, s);
-	va_end(ap);
-}
+	va_end(ap); }
 
 const char *str_get(struct gstr *gs) {
-	return gs->s;
-}
+	return gs->s; }
 
 void *xmalloc(size_t size) {
 	void *p = malloc(size);
 	if (p)
 		return p;
 	fprintf(stderr, "Out of memory.\n");
-	exit(1);
-}
+	exit(1); }
 
 void *xcalloc(size_t nmemb, size_t size) {
 	void *p = calloc(nmemb, size);
 	if (p)
 		return p;
 	fprintf(stderr, "Out of memory.\n");
-	exit(1);
-}
+	exit(1); }
 
 void *xrealloc(void *p, size_t size) {
 	p = realloc(p, size);
 	if (p)
 		return p;
 	fprintf(stderr, "Out of memory.\n");
-	exit(1);
-}
+	exit(1); }
 
 char *xstrdup(const char *s) {
 	char *p;
@@ -86,8 +74,7 @@ char *xstrdup(const char *s) {
 	if (p)
 		return p;
 	fprintf(stderr, "Out of memory.\n");
-	exit(1);
-}
+	exit(1); }
 
 char *xstrndup(const char *s, size_t n) {
 	char *p;
@@ -96,5 +83,4 @@ char *xstrndup(const char *s, size_t n) {
 	if (p)
 		return p;
 	fprintf(stderr, "Out of memory.\n");
-	exit(1);
-}
+	exit(1); }

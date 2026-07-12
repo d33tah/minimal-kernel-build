@@ -11,8 +11,7 @@
 
 #ifndef numa_mem_id
 static inline int numa_mem_id(void) {
-	return numa_node_id();
-}
+	return numa_node_id(); }
 #endif
 
 /* Removed as unused:

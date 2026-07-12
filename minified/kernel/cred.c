@@ -59,8 +59,7 @@ struct cred *prepare_creds(void) {
 
 error:
 	abort_creds(new);
-	return NULL;
-}
+	return NULL; }
 
 struct cred *prepare_exec_creds(void) {
 	struct cred *new;
@@ -73,8 +72,7 @@ struct cred *prepare_exec_creds(void) {
 	new->fsuid = new->euid;
 	new->fsgid = new->egid;
 
-	return new;
-}
+	return new; }
 
 int copy_creds(struct task_struct *p, unsigned long clone_flags) {
 	struct cred *new;
@@ -90,8 +88,7 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags) {
 
 	p->cred = p->real_cred = get_cred(new);
 	inc_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
-	return 0;
-}
+	return 0; }
 
 static bool cred_cap_issubset(const struct cred *set, const struct cred *subset) {
 	const struct user_namespace *set_ns = set->user_ns;
@@ -104,11 +101,9 @@ static bool cred_cap_issubset(const struct cred *set, const struct cred *subset)
 	 
 	for (;subset_ns != &init_user_ns; subset_ns = subset_ns->parent) {
 		if ((set_ns == subset_ns->parent)  && uid_eq(subset_ns->owner, set->euid))
-			return true;
-	}
+			return true; }
 
-	return false;
-}
+	return false; }
 
 int commit_creds(struct cred *new) {
 	struct task_struct *task = current;
@@ -124,8 +119,7 @@ int commit_creds(struct cred *new) {
 		if (task->mm)
 			set_dumpable(task->mm, 0);
 
-		smp_wmb();
-	}
+		smp_wmb(); }
 
 
 	if (new->user != old->user || new->user_ns != old->user_ns)
@@ -139,13 +133,11 @@ int commit_creds(struct cred *new) {
 
 	put_cred(old);
 	put_cred(old);
-	return 0;
-}
+	return 0; }
 
 void abort_creds(struct cred *new) {
 	BUG_ON(atomic_read(&new->usage) < 1);
-	put_cred(new);
-}
+	put_cred(new); }
 
 
 
@@ -162,12 +154,10 @@ int set_cred_ucounts(struct cred *new) {
 	new->ucounts = new_ucounts;
 	put_ucounts(old_ucounts);
 
-	return 0;
-}
+	return 0; }
 
 void __init cred_init(void) {
 	 
-	cred_jar = kmem_cache_create("cred_jar", sizeof(struct cred), 0, SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, NULL);
-}
+	cred_jar = kmem_cache_create("cred_jar", sizeof(struct cred), 0, SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, NULL); }
 
 

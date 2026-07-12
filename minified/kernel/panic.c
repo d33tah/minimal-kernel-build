@@ -15,15 +15,13 @@ ATOMIC_NOTIFIER_HEAD(panic_notifier_list);
 
 
 static long no_blink(int state) {
-	return 0;
-}
+	return 0; }
 
 long (*panic_blink)(int state);
 
 void __weak panic_smp_self_stop(void) {
 	while (1)
-		cpu_relax();
-}
+		cpu_relax(); }
 
 atomic_t panic_cpu = ATOMIC_INIT(PANIC_CPU_INVALID);
 
@@ -76,11 +74,8 @@ void panic(const char *fmt, ...) {
 	for (i = 0; ; i += PANIC_TIMER_STEP) {
 		if (i >= i_next) {
 			i += panic_blink(state ^= 1);
-			i_next = i + 3600 / PANIC_BLINK_SPD;
-		}
-		mdelay(PANIC_TIMER_STEP);
-	}
-}
+			i_next = i + 3600 / PANIC_BLINK_SPD; }
+		mdelay(PANIC_TIMER_STEP); } }
 
 
 

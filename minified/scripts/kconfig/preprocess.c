@@ -23,8 +23,7 @@ static void __attribute__((noreturn)) pperror(const char *format, ...) {
 	va_end(ap);
 	fprintf(stderr, "\n");
 
-	exit(1);
-}
+	exit(1); }
 
 static LIST_HEAD(env_list);
 
@@ -37,15 +36,13 @@ static void env_add(const char *name, const char *value) {
 	e->name = xstrdup(name);
 	e->value = xstrdup(value);
 
-	list_add_tail(&e->node, &env_list);
-}
+	list_add_tail(&e->node, &env_list); }
 
 static void env_del(struct env *e) {
 	list_del(&e->node);
 	free(e->name);
 	free(e->value);
-	free(e);
-}
+	free(e); }
 
 static char *env_expand(const char *name) {
 	struct env *e;
@@ -56,8 +53,7 @@ static char *env_expand(const char *name) {
 
 	list_for_each_entry(e, &env_list, node) {
 		if (!strcmp(name, e->name))
-			return xstrdup(e->value);
-	}
+			return xstrdup(e->value); }
 
 	value = getenv(name);
 	if (!value)
@@ -66,8 +62,7 @@ static char *env_expand(const char *name) {
 	 
 	env_add(name, value);
 
-	return xstrdup(value);
-}
+	return xstrdup(value); }
 
 void env_write_dep(FILE *f, const char *autoconfig_name) {
 	struct env *e, *tmp;
@@ -76,9 +71,7 @@ void env_write_dep(FILE *f, const char *autoconfig_name) {
 		fprintf(f, "ifneq \"$(%s)\" \"%s\"\n", e->name, e->value);
 		fprintf(f, "%s: FORCE\n", autoconfig_name);
 		fprintf(f, "endif\n");
-		env_del(e);
-	}
-}
+		env_del(e); } }
 
 struct function { const char *name; unsigned int min_args, max_args; char *(*func)(int argc, char *argv[]); };
 
@@ -86,8 +79,7 @@ static char *do_error_if(int argc, char *argv[]) {
 	if (!strcmp(argv[0], "y"))
 		pperror("%s", argv[1]);
 
-	return xstrdup("");
-}
+	return xstrdup(""); }
 
 static char *do_shell(int argc, char *argv[]) {
 	FILE *p;
@@ -100,8 +92,7 @@ static char *do_shell(int argc, char *argv[]) {
 	p = popen(cmd, "r");
 	if (!p) {
 		perror(cmd);
-		exit(1);
-	}
+		exit(1); }
 
 	nread = fread(buf, 1, sizeof(buf), p);
 	if (nread == sizeof(buf))
@@ -116,16 +107,13 @@ static char *do_shell(int argc, char *argv[]) {
 	 
 	for (i = 0; i < nread; i++) {
 		if (buf[i] == '\n')
-			buf[i] = ' ';
-	}
+			buf[i] = ' '; }
 
 	if (pclose(p) == -1) {
 		perror(cmd);
-		exit(1);
-	}
+		exit(1); }
 
-	return xstrdup(buf);
-}
+	return xstrdup(buf); }
 
 static const struct function function_table[] = { { "error-if",	2,	2,	do_error_if }, { "shell",	1,	1,	do_shell }, };
 
@@ -146,11 +134,9 @@ static char *function_expand(const char *name, int argc, char *argv[]) {
 		if (argc > f->max_args)
 			pperror("too many function arguments passed to '%s'", name);
 
-		return f->func(argc, argv);
-	}
+		return f->func(argc, argv); }
 
-	return NULL;
-}
+	return NULL; }
 
 static LIST_HEAD(variable_list);
 
@@ -161,11 +147,9 @@ static struct variable *variable_lookup(const char *name) {
 
 	list_for_each_entry(v, &variable_list, node) {
 		if (!strcmp(name, v->name))
-			return v;
-	}
+			return v; }
 
-	return NULL;
-}
+	return NULL; }
 
 static char *variable_expand(const char *name, int argc, char *argv[]) {
 	struct variable *v;
@@ -190,8 +174,7 @@ static char *variable_expand(const char *name, int argc, char *argv[]) {
 
 	v->exp_count--;
 
-	return res;
-}
+	return res; }
 
 void variable_add(const char *name, const char *value, enum variable_flavor flavor) {
 	struct variable *v;
@@ -205,8 +188,7 @@ void variable_add(const char *name, const char *value, enum variable_flavor flav
 			flavor = v->flavor;
 			append = true;
 		} else {
-			free(v->value);
-		}
+			free(v->value); }
 	} else {
 		 
 		if (flavor == VAR_APPEND)
@@ -215,8 +197,7 @@ void variable_add(const char *name, const char *value, enum variable_flavor flav
 		v = xmalloc(sizeof(*v));
 		v->name = xstrdup(name);
 		v->exp_count = 0;
-		list_add_tail(&v->node, &variable_list);
-	}
+		list_add_tail(&v->node, &variable_list); }
 
 	v->flavor = flavor;
 
@@ -231,23 +212,19 @@ void variable_add(const char *name, const char *value, enum variable_flavor flav
 		strcat(v->value, new_value);
 		free(new_value);
 	} else {
-		v->value = new_value;
-	}
-}
+		v->value = new_value; } }
 
 static void variable_del(struct variable *v) {
 	list_del(&v->node);
 	free(v->name);
 	free(v->value);
-	free(v);
-}
+	free(v); }
 
 void variable_all_del(void) {
 	struct variable *v, *tmp;
 
 	list_for_each_entry_safe(v, tmp, &variable_list, node)
-		variable_del(v);
-}
+		variable_del(v); }
 
 static char *eval_clause(const char *str, size_t len, int argc, char *argv[]) {
 	char *tmp, *name, *res, *endptr, *prev, *p;
@@ -263,8 +240,7 @@ static char *eval_clause(const char *str, size_t len, int argc, char *argv[]) {
 	n = strtoul(tmp, &endptr, 10);
 	if (!*endptr && n > 0 && n <= argc) {
 		res = xstrdup(argv[n - 1]);
-		goto free_tmp;
-	}
+		goto free_tmp; }
 
 	prev = p = tmp;
 
@@ -279,11 +255,9 @@ static char *eval_clause(const char *str, size_t len, int argc, char *argv[]) {
 		} else if (*p == '(') {
 			nest++;
 		} else if (*p == ')') {
-			nest--;
-		}
+			nest--; }
 
-		p++;
-	}
+		p++; }
 	new_argv[new_argc++] = prev;
 
 	 
@@ -306,8 +280,7 @@ static char *eval_clause(const char *str, size_t len, int argc, char *argv[]) {
 	if (new_argc == 0) {
 		res = env_expand(name);
 		if (res)
-			goto free;
-	}
+			goto free; }
 
 	res = xstrdup("");
 free:
@@ -317,8 +290,7 @@ free:
 free_tmp:
 	free(tmp);
 
-	return res;
-}
+	return res; }
 
 static char *expand_dollar_with_args(const char **str, int argc, char *argv[]) {
 	const char *p = *str;
@@ -328,8 +300,7 @@ static char *expand_dollar_with_args(const char **str, int argc, char *argv[]) {
 	 
 	if (*p != '(') {
 		*str = p;
-		return xstrdup("$");
-	}
+		return xstrdup("$"); }
 
 	p++;
 	q = p;
@@ -338,10 +309,8 @@ static char *expand_dollar_with_args(const char **str, int argc, char *argv[]) {
 			nest++;
 		} else if (*q == ')') {
 			if (nest-- == 0)
-				break;
-		}
-		q++;
-	}
+				break; }
+		q++; }
 
 	if (!*q)
 		pperror("unterminated reference to '%s': missing ')'", p);
@@ -349,12 +318,10 @@ static char *expand_dollar_with_args(const char **str, int argc, char *argv[]) {
 	 
 	*str = q + 1;
 
-	return eval_clause(p, q - p, argc, argv);
-}
+	return eval_clause(p, q - p, argc, argv); }
 
 char *expand_dollar(const char **str) {
-	return expand_dollar_with_args(str, 0, NULL);
-}
+	return expand_dollar_with_args(str, 0, NULL); }
 
 static char *__expand_string(const char **str, bool (*is_end)(char c), int argc, char *argv[]) {
 	const char *in, *p;
@@ -378,14 +345,12 @@ static char *__expand_string(const char **str, bool (*is_end)(char c), int argc,
 			strcat(out, expansion);
 			free(expansion);
 			in = p;
-			continue;
-		}
+			continue; }
 
 		if (is_end(*p))
 			break;
 
-		p++;
-	}
+		p++; }
 
 	in_len = p - in;
 	out_len += in_len;
@@ -395,25 +360,19 @@ static char *__expand_string(const char **str, bool (*is_end)(char c), int argc,
 	 
 	*str = p;
 
-	return out;
-}
+	return out; }
 
 static bool is_end_of_str(char c) {
-	return !c;
-}
+	return !c; }
 
 static char *expand_string_with_args(const char *in, int argc, char *argv[]) {
-	return __expand_string(&in, is_end_of_str, argc, argv);
-}
+	return __expand_string(&in, is_end_of_str, argc, argv); }
 
 static char *expand_string(const char *in) {
-	return expand_string_with_args(in, 0, NULL);
-}
+	return expand_string_with_args(in, 0, NULL); }
 
 static bool is_end_of_token(char c) {
-	return !(isalnum(c) || c == '_' || c == '-');
-}
+	return !(isalnum(c) || c == '_' || c == '-'); }
 
 char *expand_one_token(const char **str) {
-	return __expand_string(str, is_end_of_token, 0, NULL);
-}
+	return __expand_string(str, is_end_of_token, 0, NULL); }

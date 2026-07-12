@@ -10,16 +10,14 @@ bool queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *wor
 
     work->func(work);
     clear_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work));
-    return true;
-}
+    return true; }
 
 bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq, struct delayed_work *dwork, unsigned long delay) {
     if (delay == 0)
         return queue_work_on(cpu, wq, &dwork->work);
 
 
-    return queue_work_on(cpu, wq, &dwork->work);
-}
+    return queue_work_on(cpu, wq, &dwork->work); }
 
 
 /* cancel_work_sync removed: zero callers on this boot. */
@@ -42,6 +40,5 @@ void __init workqueue_init(void) {
 void delayed_work_timer_fn(struct timer_list *t) {
     struct delayed_work *dwork = from_timer(dwork, t, timer);
 
-    queue_work(dwork->wq, &dwork->work);
-}
+    queue_work(dwork->wq, &dwork->work); }
 

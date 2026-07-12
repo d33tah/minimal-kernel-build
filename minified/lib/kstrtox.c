@@ -13,12 +13,10 @@ const char *_parse_integer_fixup_radix(const char *s, unsigned int *base) {
 			else
 				*base = 8;
 		} else
-			*base = 10;
-	}
+			*base = 10; }
 	if (*base == 16 && s[0] == '0' && _tolower(s[1]) == 'x')
 		s += 2;
-	return s;
-}
+	return s; }
 
 noinline
 unsigned int _parse_integer_limit(const char *s, unsigned int base, unsigned long long *p, size_t max_chars) {
@@ -44,14 +42,11 @@ unsigned int _parse_integer_limit(const char *s, unsigned int base, unsigned lon
 		 
 		if (unlikely(res & (~0ull << 60))) {
 			if (res > div_u64(ULLONG_MAX - val, base))
-				rv |= KSTRTOX_OVERFLOW;
-		}
+				rv |= KSTRTOX_OVERFLOW; }
 		res = res * base + val;
 		rv++;
-		s++;
-	}
+		s++; }
 	*p = res;
-	return rv;
-}
+	return rv; }
 
 

@@ -21,15 +21,13 @@ static __always_inline long do_strnlen_user(const char __user *src, unsigned lon
 		if (has_zero(c, &data, &constants)) {
 			data = prep_zero_mask(c, data, &constants);
 			data = create_zero_mask(data);
-			return res + find_zero(data) + 1 - align;
-		}
+			return res + find_zero(data) + 1 - align; }
 		res += sizeof(unsigned long);
 		 
 		if (unlikely(max <= sizeof(unsigned long)))
 			break;
 		max -= sizeof(unsigned long);
-		unsafe_get_user(c, (unsigned long __user *)(src+res), efault);
-	}
+		unsafe_get_user(c, (unsigned long __user *)(src+res), efault); }
 	res -= align;
 
 	 
@@ -38,8 +36,7 @@ static __always_inline long do_strnlen_user(const char __user *src, unsigned lon
 
 	 
 efault:
-	return 0;
-}
+	return 0; }
 
 long strnlen_user(const char __user *str, long count) {
 	unsigned long max_addr, src_addr;
@@ -60,8 +57,5 @@ long strnlen_user(const char __user *str, long count) {
 		if (user_read_access_begin(str, max)) {
 			retval = do_strnlen_user(str, count, max);
 			user_read_access_end();
-			return retval;
-		}
-	}
-	return 0;
-}
+			return retval; } }
+	return 0; }

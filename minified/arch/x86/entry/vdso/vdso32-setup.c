@@ -5,6 +5,5 @@
 int __init sysenter_setup(void) {
 	init_vdso_image(&vdso_image_32);
 
-	return 0;
-}
+	return 0; }
 

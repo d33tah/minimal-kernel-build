@@ -10,30 +10,24 @@ static inline void flush_dcache_folio(struct folio *folio) {}
 
 static inline void *kmap(struct page *page) {
 	might_sleep();
-	return page_address(page);
-}
+	return page_address(page); }
 
 
-static inline void kunmap(struct page *page) {
-}
+static inline void kunmap(struct page *page) { }
 
 static inline void *kmap_local_page(struct page *page) {
-	return page_address(page);
-}
+	return page_address(page); }
 
-static inline void __kunmap_local(void *addr) {
-}
+static inline void __kunmap_local(void *addr) { }
 
 static inline void *kmap_atomic(struct page *page) {
 	preempt_disable();
 	pagefault_disable();
-	return page_address(page);
-}
+	return page_address(page); }
 
 static inline void __kunmap_atomic(void *addr) {
 	pagefault_enable();
-	preempt_enable();
-}
+	preempt_enable(); }
 
 #define kunmap_atomic(__addr)					do {									BUILD_BUG_ON(__same_type((__addr), struct page *));		__kunmap_atomic(__addr);				} while (0)
 
@@ -41,8 +35,7 @@ static inline void __kunmap_atomic(void *addr) {
 
 
 #ifndef ARCH_HAS_FLUSH_ANON_PAGE
-static inline void flush_anon_page(struct vm_area_struct *vma, struct page *page, unsigned long vmaddr) {
-}
+static inline void flush_anon_page(struct vm_area_struct *vma, struct page *page, unsigned long vmaddr) { }
 #endif
 
 
@@ -64,13 +57,11 @@ static inline void zero_user_segments(struct page *page, unsigned start1, unsign
 
 	kunmap_local(kaddr);
 	for (i = 0; i < compound_nr(page); i++)
-		flush_dcache_page(page + i);
-}
+		flush_dcache_page(page + i); }
 
 
 static inline void zero_user(struct page *page, unsigned start, unsigned size) {
-	zero_user_segments(page, start, start + size, 0, 0);
-}
+	zero_user_segments(page, start, start + size, 0, 0); }
 
 #ifndef __HAVE_ARCH_COPY_USER_HIGHPAGE
 
@@ -81,8 +72,7 @@ static inline void copy_user_highpage(struct page *to, struct page *from, unsign
 	vto = kmap_local_page(to);
 	copy_user_page(vto, vfrom, vaddr, to);
 	kunmap_local(vto);
-	kunmap_local(vfrom);
-}
+	kunmap_local(vfrom); }
 
 #endif
 

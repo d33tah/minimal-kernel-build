@@ -15,12 +15,10 @@ static __always_inline int stop_machine_cpuslocked(cpu_stop_fn_t fn, void *data,
 	local_irq_save(flags);
 	ret = fn(data);
 	local_irq_restore(flags);
-	return ret;
-}
+	return ret; }
 
 static __always_inline int
 stop_machine(cpu_stop_fn_t fn, void *data, const struct cpumask *cpus) {
-	return stop_machine_cpuslocked(fn, data, cpus);
-}
+	return stop_machine_cpuslocked(fn, data, cpus); }
 
 #endif 

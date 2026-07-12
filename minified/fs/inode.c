@@ -21,8 +21,7 @@ static struct kmem_cache *inode_cachep __read_mostly;
 
 
 static int no_open(struct inode *inode, struct file *file) {
-	return -ENXIO;
-}
+	return -ENXIO; }
 
 int inode_init_always(struct super_block *sb, struct inode *inode) {
 	static const struct inode_operations empty_iops;
@@ -57,17 +56,14 @@ int inode_init_always(struct super_block *sb, struct inode *inode) {
 	inode->i_mapping = mapping;
 	INIT_HLIST_HEAD(&inode->i_dentry);
 
-	return 0;
-}
+	return 0; }
 
 static void free_inode_nonrcu(struct inode *inode) {
-	kmem_cache_free(inode_cachep, inode);
-}
+	kmem_cache_free(inode_cachep, inode); }
 
 static void i_callback(struct rcu_head *head) {
 	struct inode *inode = container_of(head, struct inode, i_rcu);
-	free_inode_nonrcu(inode);
-}
+	free_inode_nonrcu(inode); }
 
 static struct inode *alloc_inode(struct super_block *sb) {
 	struct inode *inode;
@@ -79,21 +75,17 @@ static struct inode *alloc_inode(struct super_block *sb) {
 
 	if (unlikely(inode_init_always(sb, inode))) {
 		i_callback(&inode->i_rcu);
-		return NULL;
-	}
+		return NULL; }
 
-	return inode;
-}
+	return inode; }
 
 void inc_nlink(struct inode *inode) {
-	inode->__i_nlink++;
-}
+	inode->__i_nlink++; }
 
 static void __address_space_init_once(struct address_space *mapping) {
 	xa_init_flags(&mapping->i_pages, XA_FLAGS_LOCK_IRQ | XA_FLAGS_ACCOUNT);
 	init_rwsem(&mapping->i_mmap_rwsem);
-	mapping->i_mmap = RB_ROOT_CACHED;
-}
+	mapping->i_mmap = RB_ROOT_CACHED; }
 
 
 static void init_once(void *foo) {
@@ -104,8 +96,7 @@ static void init_once(void *foo) {
 	INIT_LIST_HEAD(&inode->i_devices);
 	INIT_LIST_HEAD(&inode->i_lru);
 	__address_space_init_once(&inode->i_data);
-	i_size_ordered_init(inode);
-}
+	i_size_ordered_init(inode); }
 
 static DEFINE_PER_CPU(unsigned int, last_ino);
 
@@ -119,25 +110,21 @@ unsigned int get_next_ino(void) {
 		res++;
 	*p = res;
 	put_cpu_var(last_ino);
-	return res;
-}
+	return res; }
 
 struct inode *new_inode_pseudo(struct super_block *sb) {
 	struct inode *inode = alloc_inode(sb);
 
 	if (inode) {
 		spin_lock(&inode->i_lock);
-		spin_unlock(&inode->i_lock);
-	}
-	return inode;
-}
+		spin_unlock(&inode->i_lock); }
+	return inode; }
 
 struct inode *new_inode(struct super_block *sb) {
 	struct inode *inode;
 
 	inode = new_inode_pseudo(sb);
-	return inode;
-}
+	return inode; }
 
 /*
  * Runtime-dead on this single-shot boot: nothing is ever the last reference to
@@ -147,13 +134,11 @@ struct inode *new_inode(struct super_block *sb) {
  * an inode whose count never drops to zero simply stays referenced -- harmless
  * on a system that never destroys inodes.
  */
-void iput(struct inode *inode) {
-}
+void iput(struct inode *inode) { }
 
 int inode_update_time(struct inode *inode, struct timespec64 *time, int flags) {
 	/* Runtime-dead: no live path reaches a timestamp update. */
-	return 0;
-}
+	return 0; }
 
 bool atime_needs_update(const struct path *path, struct inode *inode) {
 	struct vfsmount *mnt = path->mnt;
@@ -170,8 +155,7 @@ bool atime_needs_update(const struct path *path, struct inode *inode) {
 	if (timespec64_equal(&inode->i_atime, &now))
 		return false;
 
-	return true;
-}
+	return true; }
 
 void touch_atime(const struct path *path) {
 	struct vfsmount *mnt = path->mnt;
@@ -188,16 +172,14 @@ void touch_atime(const struct path *path) {
 	inode_update_time(inode, &now, S_ATIME);
 	__mnt_drop_write(mnt);
 skip_update:
-	sb_end_write(inode->i_sb);
-}
+	sb_end_write(inode->i_sb); }
 
 int file_remove_privs(struct file *file) {
 	/*
 	 * No live path sets suid/sgid removal flags (should_remove_suid was a
 	 * constant-0 stub), so there is never anything to strip here.
 	 */
-	return 0;
-}
+	return 0; }
 
 int file_update_time(struct file *file) {
 	struct inode *inode = file_inode(file);
@@ -221,14 +203,12 @@ int file_update_time(struct file *file) {
 	ret = inode_update_time(inode, &now, sync_it);
 	__mnt_drop_write_file(file);
 
-	return ret;
-}
+	return ret; }
 
 
 void __init inode_init(void) {
 	
-	inode_cachep = kmem_cache_create("inode_cache", sizeof(struct inode), 0, (SLAB_RECLAIM_ACCOUNT|SLAB_PANIC| SLAB_ACCOUNT), init_once);
-}
+	inode_cachep = kmem_cache_create("inode_cache", sizeof(struct inode), 0, (SLAB_RECLAIM_ACCOUNT|SLAB_PANIC| SLAB_ACCOUNT), init_once); }
 
 void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev) {
 	/* This minimal kernel's initramfs creates exactly one special node,
@@ -240,8 +220,7 @@ void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev) {
 		inode->i_fop = &def_chr_fops;
 		inode->i_rdev = rdev;
 	} else
-		printk(KERN_DEBUG "init_special_inode: bogus i_mode (%o) for" " inode %s:%lu\n", mode, inode->i_sb->s_id, inode->i_ino);
-}
+		printk(KERN_DEBUG "init_special_inode: bogus i_mode (%o) for" " inode %s:%lu\n", mode, inode->i_sb->s_id, inode->i_ino); }
 
 void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode, const struct inode *dir, umode_t mode) {
 	inode_fsuid_set(inode, mnt_userns);
@@ -252,8 +231,7 @@ void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode, co
 			mode |= S_ISGID;
 	} else
 		inode_fsgid_set(inode, mnt_userns);
-	inode->i_mode = mode;
-}
+	inode->i_mode = mode; }
 
 bool inode_owner_or_capable(struct user_namespace *mnt_userns, const struct inode *inode) {
 	kuid_t i_uid;
@@ -266,8 +244,7 @@ bool inode_owner_or_capable(struct user_namespace *mnt_userns, const struct inod
 	ns = current_user_ns();
 	if (kuid_has_mapping(ns, i_uid))
 		return true;
-	return false;
-}
+	return false; }
 
 struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode) {
 	struct super_block *sb = inode->i_sb;
@@ -285,8 +262,7 @@ struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode) {
 		t.tv_nsec -= t.tv_nsec % gran;
 	else
 		WARN(1, "invalid file time granularity: %u", gran);
-	return t;
-}
+	return t; }
 
 struct timespec64 current_time(struct inode *inode) {
 	struct timespec64 now;
@@ -295,8 +271,6 @@ struct timespec64 current_time(struct inode *inode) {
 
 	if (unlikely(!inode->i_sb)) {
 		WARN(1, "current_time() called with uninitialized super_block in the inode");
-		return now;
-	}
+		return now; }
 
-	return timestamp_truncate(now, inode);
-}
+	return timestamp_truncate(now, inode); }

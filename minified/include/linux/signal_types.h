@@ -21,8 +21,7 @@ struct sigaction {
 #ifdef __ARCH_HAS_SA_RESTORER
 	__sigrestore_t sa_restorer;
 #endif
-	sigset_t	sa_mask;	 
-};
+	sigset_t	sa_mask; };
 
 struct k_sigaction { struct sigaction sa; };
 

@@ -16,62 +16,50 @@
 
 static inline void INIT_LIST_HEAD(struct list_head *list) {
 	WRITE_ONCE(list->next, list);
-	WRITE_ONCE(list->prev, list);
-}
+	WRITE_ONCE(list->prev, list); }
 
 static inline void __list_add(struct list_head *new, struct list_head *prev, struct list_head *next) {
 	next->prev = new;
 	new->next = next;
 	new->prev = prev;
-	WRITE_ONCE(prev->next, new);
-}
+	WRITE_ONCE(prev->next, new); }
 
 static inline void list_add(struct list_head *new, struct list_head *head) {
-	__list_add(new, head, head->next);
-}
+	__list_add(new, head, head->next); }
 
 
 static inline void list_add_tail(struct list_head *new, struct list_head *head) {
-	__list_add(new, head->prev, head);
-}
+	__list_add(new, head->prev, head); }
 
 static inline void __list_del(struct list_head * prev, struct list_head * next) {
 	next->prev = prev;
-	WRITE_ONCE(prev->next, next);
-}
+	WRITE_ONCE(prev->next, next); }
 
 static inline void __list_del_entry(struct list_head *entry) {
-	__list_del(entry->prev, entry->next);
-}
+	__list_del(entry->prev, entry->next); }
 
 static inline void list_del(struct list_head *entry) {
 	__list_del_entry(entry);
 	entry->next = LIST_POISON1;
-	entry->prev = LIST_POISON2;
-}
+	entry->prev = LIST_POISON2; }
 
 static inline void list_del_init(struct list_head *entry) {
 	__list_del_entry(entry);
-	INIT_LIST_HEAD(entry);
-}
+	INIT_LIST_HEAD(entry); }
 
 static inline void list_move(struct list_head *list, struct list_head *head) {
 	__list_del_entry(list);
-	list_add(list, head);
-}
+	list_add(list, head); }
 
 static inline void list_move_tail(struct list_head *list, struct list_head *head) {
 	__list_del_entry(list);
-	list_add_tail(list, head);
-}
+	list_add_tail(list, head); }
 
 static inline int list_is_head(const struct list_head *list, const struct list_head *head) {
-	return list == head;
-}
+	return list == head; }
 
 static inline int list_empty(const struct list_head *head) {
-	return READ_ONCE(head->next) == head;
-}
+	return READ_ONCE(head->next) == head; }
 
 /* list_del_init_careful removed: 0-caller orphan */
 
@@ -105,12 +93,10 @@ static inline int list_empty(const struct list_head *head) {
 #define INIT_HLIST_HEAD(ptr) ((ptr)->first = NULL)
 static inline void INIT_HLIST_NODE(struct hlist_node *h) {
 	h->next = NULL;
-	h->pprev = NULL;
-}
+	h->pprev = NULL; }
 
 static inline int hlist_unhashed(const struct hlist_node *h) {
-	return !h->pprev;
-}
+	return !h->pprev; }
 
 /* hlist_unhashed_lockless removed: 0-caller orphan (was only used by timer_pending) */
 
@@ -122,15 +108,12 @@ static inline void __hlist_del(struct hlist_node *n) {
 
 	WRITE_ONCE(*pprev, next);
 	if (next)
-		WRITE_ONCE(next->pprev, pprev);
-}
+		WRITE_ONCE(next->pprev, pprev); }
 
 static inline void hlist_del_init(struct hlist_node *n) {
 	if (!hlist_unhashed(n)) {
 		__hlist_del(n);
-		INIT_HLIST_NODE(n);
-	}
-}
+		INIT_HLIST_NODE(n); } }
 
 static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h) {
 	struct hlist_node *first = h->first;
@@ -138,8 +121,7 @@ static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h) {
 	if (first)
 		WRITE_ONCE(first->pprev, &n->next);
 	WRITE_ONCE(h->first, n);
-	WRITE_ONCE(n->pprev, &h->first);
-}
+	WRITE_ONCE(n->pprev, &h->first); }
 
 /* hlist_is_singular_node removed: 0-caller orphan */
 

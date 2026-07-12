@@ -9,7 +9,6 @@
  * the tty_init() call that this fs_initcall chains into.
  */
 static int __init chr_dev_init(void) {
-	return tty_init();
-}
+	return tty_init(); }
 
 fs_initcall(chr_dev_init);

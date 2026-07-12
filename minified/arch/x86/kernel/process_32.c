@@ -26,8 +26,7 @@ start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp) {
 	regs->cs		= __USER_CS;
 	regs->ip		= new_ip;
 	regs->sp		= new_sp;
-	regs->flags		= X86_EFLAGS_IF;
-}
+	regs->flags		= X86_EFLAGS_IF; }
 
 
 __visible struct task_struct * __switch_to(struct task_struct *prev_p, struct task_struct *next_p) {
@@ -64,5 +63,4 @@ __visible struct task_struct * __switch_to(struct task_struct *prev_p, struct ta
 
 	switch_fpu_finish();
 
-	return prev_p;
-}
+	return prev_p; }

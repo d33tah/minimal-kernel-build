@@ -14,8 +14,7 @@ clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 maxsec) {
 	tmp = ((u64)maxsec * from) >> 32;
 	while (tmp) {
 		tmp >>=1;
-		sftacc--;
-	}
+		sftacc--; }
 
 	 
 	for (sft = 32; sft > 0; sft--) {
@@ -23,11 +22,9 @@ clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 maxsec) {
 		tmp += from / 2;
 		do_div(tmp, from);
 		if ((tmp >> sftacc) == 0)
-			break;
-	}
+			break; }
 	*mult = tmp;
-	*shift = sft;
-}
+	*shift = sft; }
 
 static struct clocksource *curr_clocksource;
 static struct clocksource *suspend_clocksource;
@@ -52,8 +49,7 @@ static int finished_booting;
 
 static void clocksource_enqueue_watchdog(struct clocksource *cs) {
 	if (!(cs->flags & CLOCK_SOURCE_MUST_VERIFY) && (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS))
-		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
-}
+		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES; }
 
 static void __clocksource_suspend_select(struct clocksource *cs) {
 	 
@@ -62,16 +58,14 @@ static void __clocksource_suspend_select(struct clocksource *cs) {
 
 
 	if (!suspend_clocksource || cs->rating > suspend_clocksource->rating)
-		suspend_clocksource = cs;
-}
+		suspend_clocksource = cs; }
 
 static u32 clocksource_max_adjustment(struct clocksource *cs) {
 	u64 ret;
 	 
 	ret = (u64)cs->mult * 11;
 	do_div(ret,100);
-	return (u32)ret;
-}
+	return (u32)ret; }
 
 static struct clocksource *clocksource_find_best(bool skipcur) {
 	struct clocksource *cs;
@@ -83,10 +77,8 @@ static struct clocksource *clocksource_find_best(bool skipcur) {
 	list_for_each_entry(cs, &clocksource_list, list) {
 		if (skipcur && cs == curr_clocksource)
 			continue;
-		return cs;
-	}
-	return NULL;
-}
+		return cs; }
+	return NULL; }
 
 static void __clocksource_select(bool skipcur) {
 	struct clocksource *best;
@@ -99,13 +91,10 @@ static void __clocksource_select(bool skipcur) {
 		return;
 
 	if (curr_clocksource != best && !timekeeping_notify(best)) {
-		curr_clocksource = best;
-	}
-}
+		curr_clocksource = best; } }
 
 static void clocksource_select(void) {
-	__clocksource_select(false);
-}
+	__clocksource_select(false); }
 
 static int __init clocksource_done_booting(void) {
 	mutex_lock(&clocksource_mutex);
@@ -113,8 +102,7 @@ static int __init clocksource_done_booting(void) {
 	finished_booting = 1;
 	clocksource_select();
 	mutex_unlock(&clocksource_mutex);
-	return 0;
-}
+	return 0; }
 fs_initcall(clocksource_done_booting);
 
 static void clocksource_enqueue(struct clocksource *cs) {
@@ -125,10 +113,8 @@ static void clocksource_enqueue(struct clocksource *cs) {
 		 
 		if (tmp->rating < cs->rating)
 			break;
-		entry = &tmp->list;
-	}
-	list_add(&cs->list, entry);
-}
+		entry = &tmp->list; }
+	list_add(&cs->list, entry); }
 
 void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq) {
 	u64 sec;
@@ -144,8 +130,7 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq
 		else if (sec > 600 && cs->mask > UINT_MAX)
 			sec = 600;
 
-		clocks_calc_mult_shift(&cs->mult, &cs->shift, freq, NSEC_PER_SEC / scale, sec * scale);
-	}
+		clocks_calc_mult_shift(&cs->mult, &cs->shift, freq, NSEC_PER_SEC / scale, sec * scale); }
 
 	 
 	if (scale && freq && !cs->uncertainty_margin) {
@@ -153,8 +138,7 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq
 		if (cs->uncertainty_margin < 2 * WATCHDOG_MAX_SKEW)
 			cs->uncertainty_margin = 2 * WATCHDOG_MAX_SKEW;
 	} else if (!cs->uncertainty_margin) {
-		cs->uncertainty_margin = WATCHDOG_THRESHOLD;
-	}
+		cs->uncertainty_margin = WATCHDOG_THRESHOLD; }
 	WARN_ON_ONCE(cs->uncertainty_margin < 2 * WATCHDOG_MAX_SKEW);
 
 	 
@@ -162,12 +146,10 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq
 	while (freq && ((cs->mult + cs->maxadj < cs->mult) || (cs->mult - cs->maxadj > cs->mult))) {
 		cs->mult >>= 1;
 		cs->shift--;
-		cs->maxadj = clocksource_max_adjustment(cs);
-	}
+		cs->maxadj = clocksource_max_adjustment(cs); }
 
 	 
-	WARN_ONCE(cs->mult + cs->maxadj < cs->mult, "timekeeping: Clocksource %s might overflow on 11%% adjustment\n", cs->name);
-}
+	WARN_ONCE(cs->mult + cs->maxadj < cs->mult, "timekeeping: Clocksource %s might overflow on 11%% adjustment\n", cs->name); }
 
 int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq) {
 	clocksource_arch_init(cs);
@@ -176,8 +158,7 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq) {
 		cs->id = CSID_GENERIC;
 	if (cs->vdso_clock_mode >= VDSO_CLOCKMODE_MAX) {
 		pr_warn("clocksource %s registered with invalid VDSO mode %d. Disabling VDSO support.\n", cs->name, cs->vdso_clock_mode);
-		cs->vdso_clock_mode = VDSO_CLOCKMODE_NONE;
-	}
+		cs->vdso_clock_mode = VDSO_CLOCKMODE_NONE; }
 
 	 
 	__clocksource_update_freq_scale(cs, scale, freq);
@@ -191,11 +172,9 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq) {
 	clocksource_select();
 	__clocksource_suspend_select(cs);
 	mutex_unlock(&clocksource_mutex);
-	return 0;
-}
+	return 0; }
 
 int clocksource_unregister(struct clocksource *cs) {
-	return 0;
-}
+	return 0; }
 
 

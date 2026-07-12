@@ -26,5 +26,4 @@ void foo(void) {
 	 
 	DEFINE(TSS_entry2task_stack, offsetof(struct cpu_entry_area, tss.x86_tss.sp1) - offsetofend(struct cpu_entry_area, entry_stack_page.stack));
 
-	BLANK();
-}
+	BLANK(); }

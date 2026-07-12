@@ -36,18 +36,14 @@ static int __clockevents_switch_state(struct clock_event_device *dev, enum clock
 	 * DETACHED, so those cases were unreachable.
 	 */
 	default:
-		return -ENOSYS;
-	}
-}
+		return -ENOSYS; } }
 
 void clockevents_switch_state(struct clock_event_device *dev, enum clock_event_state state) {
 	if (clockevent_get_state(dev) != state) {
 		if (__clockevents_switch_state(dev, state))
 			return;
 
-		clockevent_set_state(dev, state);
-	}
-}
+		clockevent_set_state(dev, state); } }
 
 /*
  * TICK_ONESHOT/HIGH_RES_TIMERS/NO_HZ are all unset and broadcast is off, so the
@@ -63,9 +59,7 @@ static void clockevents_notify_released(void) {
 	while (!list_empty(&clockevents_released)) {
 		dev = list_entry(clockevents_released.next, struct clock_event_device, list);
 		list_move(&dev->list, &clockevent_devices);
-		tick_check_new_device(dev);
-	}
-}
+		tick_check_new_device(dev); } }
 
 void clockevents_register_device(struct clock_event_device *dev) {
 	unsigned long flags;
@@ -75,13 +69,11 @@ void clockevents_register_device(struct clock_event_device *dev) {
 
 	if (!dev->cpumask) {
 		WARN_ON(num_possible_cpus() > 1);
-		dev->cpumask = cpumask_of(smp_processor_id());
-	}
+		dev->cpumask = cpumask_of(smp_processor_id()); }
 
 	if (dev->cpumask == cpu_all_mask) {
 		WARN(1, "%s cpumask == cpu_all_mask, using cpu_possible_mask instead\n", dev->name);
-		dev->cpumask = cpu_possible_mask;
-	}
+		dev->cpumask = cpu_possible_mask; }
 
 	raw_spin_lock_irqsave(&clockevents_lock, flags);
 
@@ -89,8 +81,7 @@ void clockevents_register_device(struct clock_event_device *dev) {
 	tick_check_new_device(dev);
 	clockevents_notify_released();
 
-	raw_spin_unlock_irqrestore(&clockevents_lock, flags);
-}
+	raw_spin_unlock_irqrestore(&clockevents_lock, flags); }
 
 /*
  * The tick device is only ever switched to PERIODIC (oneshot/high-res/no-hz
@@ -101,24 +92,19 @@ void clockevents_register_device(struct clock_event_device *dev) {
  * config_and_register just registers the device.
  */
 void clockevents_config_and_register(struct clock_event_device *dev, u32 freq, unsigned long min_delta, unsigned long max_delta) {
-	clockevents_register_device(dev);
-}
+	clockevents_register_device(dev); }
 
-void clockevents_handle_noop(struct clock_event_device *dev) {
-}
+void clockevents_handle_noop(struct clock_event_device *dev) { }
 
 void clockevents_exchange_device(struct clock_event_device *old, struct clock_event_device *new) {
 	 
 	if (old) {
 		clockevents_switch_state(old, CLOCK_EVT_STATE_DETACHED);
-		list_move(&old->list, &clockevents_released);
-	}
+		list_move(&old->list, &clockevents_released); }
 
 	if (new) {
 		BUG_ON(!clockevent_state_detached(new));
-		clockevents_switch_state(new, CLOCK_EVT_STATE_SHUTDOWN);
-	}
-}
+		clockevents_switch_state(new, CLOCK_EVT_STATE_SHUTDOWN); } }
 
 
 

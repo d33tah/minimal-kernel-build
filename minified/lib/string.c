@@ -15,10 +15,8 @@ size_t strlcpy(char *dest, const char *src, size_t size) {
 	if (size) {
 		size_t len = (ret >= size) ? size - 1 : ret;
 		memcpy(dest, src, len);
-		dest[len] = '\0';
-	}
-	return ret;
-}
+		dest[len] = '\0'; }
+	return ret; }
 #endif
 
 #ifndef __HAVE_ARCH_STRSCPY
@@ -34,8 +32,7 @@ ssize_t strscpy(char *dest, const char *src, size_t count) {
 	if ((long)src & (sizeof(long) - 1)) {
 		size_t limit = PAGE_SIZE - ((long)src & (PAGE_SIZE - 1));
 		if (limit < max)
-			max = limit;
-	}
+			max = limit; }
 
 	while (max >= sizeof(unsigned long)) {
 		unsigned long c, data;
@@ -45,13 +42,11 @@ ssize_t strscpy(char *dest, const char *src, size_t count) {
 			data = prep_zero_mask(c, data, &constants);
 			data = create_zero_mask(data);
 			*(unsigned long *)(dest+res) = c & zero_bytemask(data);
-			return res + find_zero(data);
-		}
+			return res + find_zero(data); }
 		*(unsigned long *)(dest+res) = c;
 		res += sizeof(unsigned long);
 		count -= sizeof(unsigned long);
-		max -= sizeof(unsigned long);
-	}
+		max -= sizeof(unsigned long); }
 
 	while (count) {
 		char c;
@@ -61,22 +56,19 @@ ssize_t strscpy(char *dest, const char *src, size_t count) {
 		if (!c)
 			return res;
 		res++;
-		count--;
-	}
+		count--; }
 
 	 
 	if (res)
 		dest[res-1] = '\0';
 
-	return -E2BIG;
-}
+	return -E2BIG; }
 #endif
 
 
 #ifndef __HAVE_ARCH_STRLCAT
 size_t strlcat(char *dest, const char *src, size_t count) {
-	return 0;
-}
+	return 0; }
 #endif
 
 #ifndef __HAVE_ARCH_STRRCHR
@@ -86,14 +78,12 @@ char *strrchr(const char *s, int c) {
 		if (*s == (char)c)
 			last = s;
 	} while (*s++);
-	return (char *)last;
-}
+	return (char *)last; }
 #endif
 
 #ifndef __HAVE_ARCH_STRSEP
 char *strsep(char **s, const char *ct) {
-	return NULL;
-}
+	return NULL; }
 #endif
 
 #ifndef __HAVE_ARCH_MEMCMP
@@ -113,13 +103,11 @@ __visible int memcmp(const void *cs, const void *ct, size_t count) {
 			count -= sizeof(unsigned long);
 		} while (count >= sizeof(unsigned long));
 		cs = u1;
-		ct = u2;
-	}
+		ct = u2; }
 	for (su1 = cs, su2 = ct; 0 < count; ++su1, ++su2, count--)
 		if ((res = *su1 - *su2) != 0)
 			break;
-	return res;
-}
+	return res; }
 #endif
 
 

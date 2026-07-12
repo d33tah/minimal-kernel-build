@@ -28,8 +28,7 @@
 static inline void *folio_raw_mapping(struct folio *folio) {
 	unsigned long mapping = (unsigned long)folio->mapping;
 
-	return (void *)(mapping & ~PAGE_MAPPING_FLAGS);
-}
+	return (void *)(mapping & ~PAGE_MAPPING_FLAGS); }
 
 /* acct_reclaim_writeback removed - reclaim throttling never engaged */
 
@@ -43,8 +42,7 @@ void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte);
 static inline void set_page_refcounted(struct page *page) {
 	VM_BUG_ON_PAGE(PageTail(page), page);
 	VM_BUG_ON_PAGE(page_ref_count(page), page);
-	set_page_count(page, 1);
-}
+	set_page_count(page, 1); }
 
 extern unsigned long highest_memmap_pfn;
 
@@ -61,8 +59,7 @@ struct alloc_context { struct zonelist *zonelist; struct zoneref *preferred_zone
  
 static inline unsigned int buddy_order(struct page *page) {
 	 
-	return page_private(page);
-}
+	return page_private(page); }
 
  
 
@@ -96,10 +93,8 @@ static inline struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf, struct
 	 
 	if (fault_flag_allow_retry_first(flags)) {
 		fpin = get_file(vmf->vma->vm_file);
-		mmap_read_unlock(vmf->vma->vm_mm);
-	}
-	return fpin;
-}
+		mmap_read_unlock(vmf->vma->vm_mm); }
+	return fpin; }
 
 extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long);
 

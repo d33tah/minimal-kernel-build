@@ -15,8 +15,7 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk) {
 	 * off). The shared nsproxy is simply pinned and inherited.
 	 */
 	get_nsproxy(old_ns);
-	return 0;
-}
+	return 0; }
 
 void exit_task_namespaces(struct task_struct *p) {
 	/*
@@ -37,5 +36,4 @@ int __init nsproxy_cache_init(void) {
 	 * never frees one (free_nsproxy was cascade-deleted with exit_task_namespaces).
 	 * No allocation ever comes from this cache, so it is no longer created.
 	 */
-	return 0;
-}
+	return 0; }

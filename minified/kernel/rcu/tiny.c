@@ -9,8 +9,7 @@ struct rcu_ctrlblk { struct rcu_head *rcucblist, **donetail, **curtail; unsigned
 static struct rcu_ctrlblk rcu_ctrlblk = { .donetail	= &rcu_ctrlblk.rcucblist, .curtail	= &rcu_ctrlblk.rcucblist, .gp_seq		= 0 - 300UL, };
 
 void rcu_barrier(void) {
-	wait_rcu_gp(call_rcu);
-}
+	wait_rcu_gp(call_rcu); }
 
 void rcu_qs(void) {
 	unsigned long flags;
@@ -18,20 +17,16 @@ void rcu_qs(void) {
 	local_irq_save(flags);
 	if (rcu_ctrlblk.donetail != rcu_ctrlblk.curtail) {
 		rcu_ctrlblk.donetail = rcu_ctrlblk.curtail;
-		raise_softirq_irqoff(RCU_SOFTIRQ);
-	}
+		raise_softirq_irqoff(RCU_SOFTIRQ); }
 	WRITE_ONCE(rcu_ctrlblk.gp_seq, rcu_ctrlblk.gp_seq + 1);
-	local_irq_restore(flags);
-}
+	local_irq_restore(flags); }
 
 void rcu_sched_clock_irq(int user) {
 	if (user) {
 		rcu_qs();
 	} else if (rcu_ctrlblk.donetail != rcu_ctrlblk.curtail) {
 		set_tsk_need_resched(current);
-		set_preempt_need_resched();
-	}
-}
+		set_preempt_need_resched(); } }
 
 static inline bool rcu_reclaim_tiny(struct rcu_head *head) {
 	rcu_callback_t f;
@@ -40,15 +35,13 @@ static inline bool rcu_reclaim_tiny(struct rcu_head *head) {
 	if (__is_kvfree_rcu_offset(offset)) {
 
 		kvfree((void *)head - offset);
-		return true;
-	}
+		return true; }
 
 
 	f = head->func;
 	WRITE_ONCE(head->func, (rcu_callback_t)0L);
 	f(head);
-	return false;
-}
+	return false; }
 
 static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused) {
 	struct rcu_head *next, *list;
@@ -59,8 +52,7 @@ static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused
 	if (rcu_ctrlblk.donetail == &rcu_ctrlblk.rcucblist) {
 		 
 		local_irq_restore(flags);
-		return;
-	}
+		return; }
 	list = rcu_ctrlblk.rcucblist;
 	rcu_ctrlblk.rcucblist = *rcu_ctrlblk.donetail;
 	*rcu_ctrlblk.donetail = NULL;
@@ -77,9 +69,7 @@ static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused
 		local_bh_disable();
 		rcu_reclaim_tiny(list);
 		local_bh_enable();
-		list = next;
-	}
-}
+		list = next; } }
 
 void call_rcu(struct rcu_head *head, rcu_callback_t func) {
 	unsigned long flags;
@@ -94,10 +84,7 @@ void call_rcu(struct rcu_head *head, rcu_callback_t func) {
 
 	if (unlikely(is_idle_task(current))) {
 		 
-		resched_cpu(0);
-	}
-}
+		resched_cpu(0); } }
 
 void __init rcu_init(void) {
-	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
-}
+	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks); }

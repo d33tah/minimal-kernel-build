@@ -25,8 +25,7 @@ static void copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt, unsigned
 	cpy = BITBIT_SIZE(count);
 	set = BITBIT_SIZE(nfdt->max_fds) - cpy;
 	memcpy(nfdt->full_fds_bits, ofdt->full_fds_bits, cpy);
-	memset((char *)nfdt->full_fds_bits + cpy, 0, set);
-}
+	memset((char *)nfdt->full_fds_bits + cpy, 0, set); }
 
 /*
  * Runtime-dead: expand_files only reaches here when an fd index exceeds
@@ -36,8 +35,7 @@ static void copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt, unsigned
 static int expand_fdtable(struct files_struct *files, unsigned int nr)
 	__releases(files->file_lock)
 	__acquires(files->file_lock) {
-	return -EMFILE;
-}
+	return -EMFILE; }
 
 static int expand_files(struct files_struct *files, unsigned int nr)
 	__releases(files->file_lock)
@@ -61,8 +59,7 @@ repeat:
 		expanded = 1;
 		wait_event(files->resize_wait, !files->resize_in_progress);
 		spin_lock(&files->file_lock);
-		goto repeat;
-	}
+		goto repeat; }
 
 	 
 	files->resize_in_progress = true;
@@ -70,29 +67,24 @@ repeat:
 	files->resize_in_progress = false;
 
 	wake_up_all(&files->resize_wait);
-	return expanded;
-}
+	return expanded; }
 
 static inline void __set_close_on_exec(unsigned int fd, struct fdtable *fdt) {
-	__set_bit(fd, fdt->close_on_exec);
-}
+	__set_bit(fd, fdt->close_on_exec); }
 
 static inline void __clear_close_on_exec(unsigned int fd, struct fdtable *fdt) {
 	if (test_bit(fd, fdt->close_on_exec))
-		__clear_bit(fd, fdt->close_on_exec);
-}
+		__clear_bit(fd, fdt->close_on_exec); }
 
 static inline void __set_open_fd(unsigned int fd, struct fdtable *fdt) {
 	__set_bit(fd, fdt->open_fds);
 	fd /= BITS_PER_LONG;
 	if (!~fdt->open_fds[fd])
-		__set_bit(fd, fdt->full_fds_bits);
-}
+		__set_bit(fd, fdt->full_fds_bits); }
 
 static inline void __clear_open_fd(unsigned int fd, struct fdtable *fdt) {
 	__clear_bit(fd, fdt->open_fds);
-	__clear_bit(fd / BITS_PER_LONG, fdt->full_fds_bits);
-}
+	__clear_bit(fd / BITS_PER_LONG, fdt->full_fds_bits); }
 
 static unsigned int count_open_files(struct fdtable *fdt) {
 	unsigned int size = fdt->max_fds;
@@ -101,11 +93,9 @@ static unsigned int count_open_files(struct fdtable *fdt) {
 	 
 	for (i = size / BITS_PER_LONG; i > 0; ) {
 		if (fdt->open_fds[--i])
-			break;
-	}
+			break; }
 	i = (i + 1) * BITS_PER_LONG;
-	return i;
-}
+	return i; }
 
 static unsigned int sane_fdtable_size(struct fdtable *fdt) {
 	/*
@@ -113,8 +103,7 @@ static unsigned int sane_fdtable_size(struct fdtable *fdt) {
 	 * (~0U), so the upstream min(count, max_fds) clamp and the
 	 * "max_fds < NR_OPEN_DEFAULT" fixup were both no-ops.
 	 */
-	return ALIGN(count_open_files(fdt), BITS_PER_LONG);
-}
+	return ALIGN(count_open_files(fdt), BITS_PER_LONG); }
 
 struct files_struct *dup_fd(struct files_struct *oldf, int *errorp) {
 	struct files_struct *newf;
@@ -163,10 +152,8 @@ struct files_struct *dup_fd(struct files_struct *oldf, int *errorp) {
 			get_file(f);
 		} else {
 			 
-			__clear_open_fd(open_files - i, new_fdt);
-		}
-		rcu_assign_pointer(*new_fds++, f);
-	}
+			__clear_open_fd(open_files - i, new_fdt); }
+		rcu_assign_pointer(*new_fds++, f); }
 	spin_unlock(&oldf->file_lock);
 
 	 
@@ -177,15 +164,13 @@ struct files_struct *dup_fd(struct files_struct *oldf, int *errorp) {
 	return newf;
 
 out:
-	return NULL;
-}
+	return NULL; }
 
 /*
  * Runtime-dead: nothing exits / closes its fd table on a single-shot boot.
  * Link-live via kernel/exit.c do_exit tail; never executes.
  */
-void exit_files(struct task_struct *tsk) {
-}
+void exit_files(struct task_struct *tsk) { }
 
 struct files_struct init_files = { .count		= ATOMIC_INIT(1), .fdt		= &init_files.fdtab, .fdtab		= { .max_fds	= NR_OPEN_DEFAULT, .fd		= &init_files.fd_array[0], .close_on_exec	= init_files.close_on_exec_init, .open_fds	= init_files.open_fds_init, .full_fds_bits	= init_files.full_fds_bits_init, }, .file_lock	= __SPIN_LOCK_UNLOCKED(init_files.file_lock), .resize_wait	= __WAIT_QUEUE_HEAD_INITIALIZER(init_files.resize_wait), };
 
@@ -199,8 +184,7 @@ static unsigned int find_next_fd(struct fdtable *fdt, unsigned int start) {
 		return maxfd;
 	if (bitbit > start)
 		start = bitbit;
-	return find_next_zero_bit(fdt->open_fds, maxfd, start);
-}
+	return find_next_zero_bit(fdt->open_fds, maxfd, start); }
 
 static int alloc_fd(unsigned start, unsigned end, unsigned flags) {
 	struct files_struct *files = current->files;
@@ -242,28 +226,23 @@ repeat:
 	error = fd;
 	if (rcu_access_pointer(fdt->fd[fd]) != NULL) {
 		printk(KERN_WARNING "alloc_fd: slot %d not NULL!\n", fd);
-		rcu_assign_pointer(fdt->fd[fd], NULL);
-	}
+		rcu_assign_pointer(fdt->fd[fd], NULL); }
 
 out:
 	spin_unlock(&files->file_lock);
-	return error;
-}
+	return error; }
 
 static int __get_unused_fd_flags(unsigned flags, unsigned long nofile) {
-	return alloc_fd(0, nofile, flags);
-}
+	return alloc_fd(0, nofile, flags); }
 
 int get_unused_fd_flags(unsigned flags) {
-	return __get_unused_fd_flags(flags, rlimit(RLIMIT_NOFILE));
-}
+	return __get_unused_fd_flags(flags, rlimit(RLIMIT_NOFILE)); }
 
 static void __put_unused_fd(struct files_struct *files, unsigned int fd) {
 	struct fdtable *fdt = files_fdtable(files);
 	__clear_open_fd(fd, fdt);
 	if (fd < files->next_fd)
-		files->next_fd = fd;
-}
+		files->next_fd = fd; }
 
 void fd_install(unsigned int fd, struct file *file) {
 	struct files_struct *files = current->files;
@@ -278,15 +257,13 @@ void fd_install(unsigned int fd, struct file *file) {
 		BUG_ON(fdt->fd[fd] != NULL);
 		rcu_assign_pointer(fdt->fd[fd], file);
 		spin_unlock(&files->file_lock);
-		return;
-	}
+		return; }
 	 
 	smp_rmb();
 	fdt = rcu_dereference_sched(files->fdt);
 	BUG_ON(fdt->fd[fd] != NULL);
 	rcu_assign_pointer(fdt->fd[fd], file);
-	rcu_read_unlock_sched();
-}
+	rcu_read_unlock_sched(); }
 
 
 void do_close_on_exec(struct files_struct *files) {
@@ -317,12 +294,10 @@ void do_close_on_exec(struct files_struct *files) {
 			spin_unlock(&files->file_lock);
 			filp_close(file, files);
 			cond_resched();
-			spin_lock(&files->file_lock);
-		}
+			spin_lock(&files->file_lock); }
 
 	}
-	spin_unlock(&files->file_lock);
-}
+	spin_unlock(&files->file_lock); }
 
 static inline struct file *__fget_files_rcu(struct files_struct *files, unsigned int fd, fmode_t mask) {
 	for (;;) {
@@ -348,13 +323,10 @@ static inline struct file *__fget_files_rcu(struct files_struct *files, unsigned
 		 
 		if (unlikely(rcu_dereference_raw(files->fdt) != fdt) || unlikely(rcu_dereference_raw(*fdentry) != file)) {
 			fput(file);
-			continue;
-		}
+			continue; }
 
 		 
-		return file;
-	}
-}
+		return file; } }
 
 static struct file *__fget_files(struct files_struct *files, unsigned int fd, fmode_t mask) {
 	struct file *file;
@@ -363,12 +335,10 @@ static struct file *__fget_files(struct files_struct *files, unsigned int fd, fm
 	file = __fget_files_rcu(files, fd, mask);
 	rcu_read_unlock();
 
-	return file;
-}
+	return file; }
 
 static inline struct file *__fget(unsigned int fd, fmode_t mask) {
-	return __fget_files(current->files, fd, mask);
-}
+	return __fget_files(current->files, fd, mask); }
 
 static unsigned long __fget_light(unsigned int fd, fmode_t mask) {
 	struct files_struct *files = current->files;
@@ -383,12 +353,9 @@ static unsigned long __fget_light(unsigned int fd, fmode_t mask) {
 		file = __fget(fd, mask);
 		if (!file)
 			return 0;
-		return FDPUT_FPUT | (unsigned long)file;
-	}
-}
+		return FDPUT_FPUT | (unsigned long)file; } }
 unsigned long __fdget(unsigned int fd) {
-	return __fget_light(fd, FMODE_PATH);
-}
+	return __fget_light(fd, FMODE_PATH); }
 
 unsigned long __fdget_pos(unsigned int fd) {
 	unsigned long v = __fdget(fd);
@@ -397,14 +364,10 @@ unsigned long __fdget_pos(unsigned int fd) {
 	if (file && (file->f_mode & FMODE_ATOMIC_POS)) {
 		if (file_count(file) > 1) {
 			v |= FDPUT_POS_UNLOCK;
-			mutex_lock(&file->f_pos_lock);
-		}
-	}
-	return v;
-}
+			mutex_lock(&file->f_pos_lock); } }
+	return v; }
 
 void __f_unlock_pos(struct file *f) {
-	mutex_unlock(&f->f_pos_lock);
-}
+	mutex_unlock(&f->f_pos_lock); }
 
 

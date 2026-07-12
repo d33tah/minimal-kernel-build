@@ -12,8 +12,7 @@ static void ack_bad(struct irq_data *data) {
 static void noop(struct irq_data *data) { }
 
 static unsigned int noop_ret(struct irq_data *data) {
-	return 0;
-}
+	return 0; }
 
 struct irq_chip no_irq_chip = { .name		= "none", .irq_startup	= noop_ret, .irq_enable	= noop, .irq_disable	= noop, .irq_ack	= ack_bad, .flags		= IRQCHIP_SKIP_SET_WAKE, };
 

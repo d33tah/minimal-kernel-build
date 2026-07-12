@@ -10,18 +10,14 @@
 static int copyout(void __user *to, const void *from, size_t n) {
 	if (access_ok(to, n)) {
 		instrument_copy_to_user(to, from, n);
-		n = raw_copy_to_user(to, from, n);
-	}
-	return n;
-}
+		n = raw_copy_to_user(to, from, n); }
+	return n; }
 
 static int copyin(void *to, const void __user *from, size_t n) {
 	if (access_ok(from, n)) {
 		instrument_copy_from_user(to, from, n);
-		n = raw_copy_from_user(to, from, n);
-	}
-	return n;
-}
+		n = raw_copy_from_user(to, from, n); }
+	return n; }
 
 static size_t copy_page_to_iter_iovec(struct page *page, size_t offset, size_t bytes, struct iov_iter *i) {
 	size_t skip, copy, left, wanted;
@@ -57,35 +53,29 @@ static size_t copy_page_to_iter_iovec(struct page *page, size_t offset, size_t b
 		copy -= left;
 		skip = copy;
 		from += copy;
-		bytes -= copy;
-	}
+		bytes -= copy; }
 	kunmap(page);
 
 	if (skip == iov->iov_len) {
 		iov++;
-		skip = 0;
-	}
+		skip = 0; }
 	i->count -= wanted - bytes;
 	i->nr_segs -= iov - i->iov;
 	i->iov = iov;
 	i->iov_offset = skip;
-	return wanted - bytes;
-}
+	return wanted - bytes; }
 
 void iov_iter_init(struct iov_iter *i, unsigned int direction, const struct iovec *iov, unsigned long nr_segs, size_t count) {
 	WARN_ON(direction & ~(READ | WRITE));
 	*i = (struct iov_iter) {
-		.iter_type = ITER_IOVEC, .iov = iov, .nr_segs = nr_segs, .iov_offset = 0, .count = count
-	};
-}
+		.iter_type = ITER_IOVEC, .iov = iov, .nr_segs = nr_segs, .iov_offset = 0, .count = count }; }
 
 size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i) {
 	if (iter_is_iovec(i))
 		might_fault();
 	iterate_and_advance(i, bytes, base, len, off, copyout(base, addr + off, len), memcpy(base, addr + off, len) )
 
-	return bytes;
-}
+	return bytes; }
 
 
 size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i) {
@@ -93,8 +83,7 @@ size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i) {
 		might_fault();
 	iterate_and_advance(i, bytes, base, len, off, copyin(addr + off, base, len), memcpy(addr + off, base, len) )
 
-	return bytes;
-}
+	return bytes; }
 
 
 static inline bool page_copy_sane(struct page *page, size_t offset, size_t n) {
@@ -111,8 +100,7 @@ static inline bool page_copy_sane(struct page *page, size_t offset, size_t n) {
 	if (likely(n <= v && v <= (page_size(head))))
 		return true;
 	WARN_ON(1);
-	return false;
-}
+	return false; }
 
 static size_t __copy_page_to_iter(struct page *page, size_t offset, size_t bytes, struct iov_iter *i) {
 	if (likely(iter_is_iovec(i)))
@@ -121,11 +109,9 @@ static size_t __copy_page_to_iter(struct page *page, size_t offset, size_t bytes
 		void *kaddr = kmap_local_page(page);
 		size_t wanted = _copy_to_iter(kaddr + offset, bytes, i);
 		kunmap_local(kaddr);
-		return wanted;
-	}
+		return wanted; }
 	WARN_ON(1);
-	return 0;
-}
+	return 0; }
 
 size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes, struct iov_iter *i) {
 	size_t res = 0;
@@ -142,22 +128,17 @@ size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes, struct 
 		offset += n;
 		if (offset == PAGE_SIZE) {
 			page++;
-			offset = 0;
-		}
-	}
-	return res;
-}
+			offset = 0; } }
+	return res; }
 
 size_t copy_page_from_iter_atomic(struct page *page, unsigned offset, size_t bytes, struct iov_iter *i) {
 	char *kaddr = kmap_atomic(page), *p = kaddr + offset;
 	if (unlikely(!page_copy_sane(page, offset, bytes))) {
 		kunmap_atomic(kaddr);
-		return 0;
-	}
+		return 0; }
 	iterate_and_advance(i, bytes, base, len, off, copyin(p + off, base, len), memcpy(p + off, base, len) )
 	kunmap_atomic(kaddr);
-	return bytes;
-}
+	return bytes; }
 
 void iov_iter_revert(struct iov_iter *i, size_t unroll) {
 	/*
@@ -172,9 +153,7 @@ void iov_iter_revert(struct iov_iter *i, size_t unroll) {
 void iov_iter_kvec(struct iov_iter *i, unsigned int direction, const struct kvec *kvec, unsigned long nr_segs, size_t count) {
 	WARN_ON(direction & ~(READ | WRITE));
 	*i = (struct iov_iter){
-		.iter_type = ITER_KVEC, .kvec = kvec, .nr_segs = nr_segs, .iov_offset = 0, .count = count
-	};
-}
+		.iter_type = ITER_KVEC, .kvec = kvec, .nr_segs = nr_segs, .iov_offset = 0, .count = count }; }
 
 
 /* iov_iter_pipe, iov_iter_xarray, iov_iter_discard, iov_iter_alignment,

@@ -12,8 +12,7 @@ void set_fs_root(struct fs_struct *fs, const struct path *path) {
 	write_seqcount_end(&fs->seq);
 	spin_unlock(&fs->lock);
 	if (old_root.dentry)
-		path_put(&old_root);
-}
+		path_put(&old_root); }
 
 void set_fs_pwd(struct fs_struct *fs, const struct path *path) {
 	struct path old_pwd;
@@ -27,8 +26,7 @@ void set_fs_pwd(struct fs_struct *fs, const struct path *path) {
 	spin_unlock(&fs->lock);
 
 	if (old_pwd.dentry)
-		path_put(&old_pwd);
-}
+		path_put(&old_pwd); }
 
 
 void exit_fs(struct task_struct *tsk) {
@@ -43,7 +41,6 @@ void exit_fs(struct task_struct *tsk) {
 }
 
 int current_umask(void) {
-	return current->fs->umask;
-}
+	return current->fs->umask; }
 
 struct fs_struct init_fs = { .users		= 1, .lock		= __SPIN_LOCK_UNLOCKED(init_fs.lock), .seq		= SEQCNT_SPINLOCK_ZERO(init_fs.seq, &init_fs.lock), .umask		= 0022, };

@@ -16,8 +16,7 @@ void __init init_ISA_irqs(void) {
 	legacy_pic->init(0);
 
 	for (i = 0; i < nr_legacy_irqs(); i++)
-		irq_set_chip_and_handler(i, chip, handle_level_irq);
-}
+		irq_set_chip_and_handler(i, chip, handle_level_irq); }
 
 void __init init_IRQ(void) {
 	int i;
@@ -28,8 +27,7 @@ void __init init_IRQ(void) {
 
 	BUG_ON(irq_init_percpu_irqstack(smp_processor_id()));
 
-	x86_init.irqs.intr_init();
-}
+	x86_init.irqs.intr_init(); }
 
 void __init native_init_IRQ(void) {
 	 
@@ -40,6 +38,4 @@ void __init native_init_IRQ(void) {
 	if (!acpi_ioapic && !of_ioapic && nr_legacy_irqs()) {
 		 
 		if (request_irq(2, no_action, IRQF_NO_THREAD, "cascade", NULL))
-			pr_err("%s: request_irq() failed\n", "cascade");
-	}
-}
+			pr_err("%s: request_irq() failed\n", "cascade"); } }

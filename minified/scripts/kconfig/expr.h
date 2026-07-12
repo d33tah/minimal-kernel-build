@@ -18,26 +18,22 @@ extern "C" {
 struct file {
 	struct file *next, *parent;
 	const char *name;
-	int lineno;
-};
+	int lineno; };
 
 typedef enum tristate {
 	no, mod, yes
 } tristate;
 
 enum expr_type {
-	E_NONE, E_OR, E_AND, E_NOT, E_EQUAL, E_UNEQUAL, E_LTH, E_LEQ, E_GTH, E_GEQ, E_LIST, E_SYMBOL, E_RANGE
-};
+	E_NONE, E_OR, E_AND, E_NOT, E_EQUAL, E_UNEQUAL, E_LTH, E_LEQ, E_GTH, E_GEQ, E_LIST, E_SYMBOL, E_RANGE };
 
 union expr_data {
 	struct expr *expr;
-	struct symbol *sym;
-};
+	struct symbol *sym; };
 
 struct expr {
 	enum expr_type type;
-	union expr_data left, right;
-};
+	union expr_data left, right; };
 
 #define EXPR_OR(dep1, dep2)	(((dep1)>(dep2))?(dep1):(dep2))
 #define EXPR_AND(dep1, dep2)	(((dep1)<(dep2))?(dep1):(dep2))
@@ -47,22 +43,18 @@ struct expr {
 
 struct expr_value {
 	struct expr *expr;
-	tristate tri;
-};
+	tristate tri; };
 
 struct symbol_value {
 	void *val;
-	tristate tri;
-};
+	tristate tri; };
 
 enum symbol_type {
-	S_UNKNOWN, S_BOOLEAN, S_TRISTATE, S_INT, S_HEX, S_STRING
-};
+	S_UNKNOWN, S_BOOLEAN, S_TRISTATE, S_INT, S_HEX, S_STRING };
 
  
 enum {
-	S_DEF_USER, S_DEF_AUTO, S_DEF_DEF3, S_DEF_DEF4, S_DEF_COUNT
-};
+	S_DEF_USER, S_DEF_AUTO, S_DEF_DEF3, S_DEF_DEF4, S_DEF_COUNT };
 
  
 struct symbol {
@@ -97,8 +89,7 @@ struct symbol {
 	struct expr_value rev_dep;
 
 	 
-	struct expr_value implied;
-};
+	struct expr_value implied; };
 
 #define for_all_symbols(i, sym) for (i = 0; i < SYMBOL_HASHSIZE; i++) for (sym = symbol_hash[i]; sym; sym = sym->next)
 
@@ -137,8 +128,7 @@ struct property {
 	struct expr *expr;          
 	struct menu *menu;          
 	struct file *file;          
-	int lineno;                 
-};
+	int lineno; };
 
 #define for_all_properties(sym, st, tok) 	for (st = sym->prop; st; st = st->next) 		if (st->type == (tok))
 #define for_all_defaults(sym, st) for_all_properties(sym, st, P_DEFAULT)
@@ -179,8 +169,7 @@ struct menu {
 	int lineno;
 
 	 
-	void *data;
-};
+	void *data; };
 
  
 #define MENU_CHANGED		0x0001
@@ -213,8 +202,7 @@ void expr_gstr_print(struct expr *e, struct gstr *gs);
 void expr_gstr_print_revdep(struct expr *e, struct gstr *gs, tristate pr_type, const char *title);
 
 static inline int expr_is_yes(struct expr *e) {
-	return !e || (e->type == E_SYMBOL && e->left.sym == &symbol_yes);
-}
+	return !e || (e->type == E_SYMBOL && e->left.sym == &symbol_yes); }
 
 #ifdef __cplusplus
 }

@@ -19,8 +19,7 @@
 static bool is_present(const char *path) {
 	struct stat st;
 
-	return !stat(path, &st);
-}
+	return !stat(path, &st); }
 
 static bool is_dir(const char *path) {
 	struct stat st;
@@ -28,8 +27,7 @@ static bool is_dir(const char *path) {
 	if (stat(path, &st))
 		return false;
 
-	return S_ISDIR(st.st_mode);
-}
+	return S_ISDIR(st.st_mode); }
 
 static bool is_same(const char *file1, const char *file2) {
 	int fd1, fd2;
@@ -72,8 +70,7 @@ close2:
 close1:
 	close(fd1);
 
-	return ret;
-}
+	return ret; }
 
 static int make_parent_dir(const char *path) {
 	char tmp[PATH_MAX + 1], *p;
@@ -101,11 +98,9 @@ static int make_parent_dir(const char *path) {
 
 		*p = '/';
 		while (*p == '/')
-			p++;
-	}
+			p++; }
 
-	return 0;
-}
+	return 0; }
 
 static char depfile_path[PATH_MAX];
 static size_t depfile_prefix_len;
@@ -124,8 +119,7 @@ static int conf_touch_dep(const char *name) {
 		return -1;
 	close(fd);
 
-	return 0;
-}
+	return 0; }
 
 static void conf_warning(const char *fmt, ...)
 	__attribute__ ((format (printf, 1, 2)));
@@ -143,19 +137,16 @@ static void conf_warning(const char *fmt, ...) {
 	vfprintf(stderr, fmt, ap);
 	fprintf(stderr, "\n");
 	va_end(ap);
-	conf_warnings++;
-}
+	conf_warnings++; }
 
 static void conf_default_message_callback(const char *s) {
 	printf("#\n# ");
 	printf("%s", s);
-	printf("\n#\n");
-}
+	printf("\n#\n"); }
 
 static void (*conf_message_callback)(const char *s) = conf_default_message_callback;
 void conf_set_message_callback(void (*fn)(const char *s)) {
-	conf_message_callback = fn;
-}
+	conf_message_callback = fn; }
 
 static void conf_message(const char *fmt, ...) {
 	va_list ap;
@@ -168,26 +159,22 @@ static void conf_message(const char *fmt, ...) {
 
 	vsnprintf(buf, sizeof(buf), fmt, ap);
 	conf_message_callback(buf);
-	va_end(ap);
-}
+	va_end(ap); }
 
 const char *conf_get_configname(void) {
 	char *name = getenv("KCONFIG_CONFIG");
 
-	return name ? name : ".config";
-}
+	return name ? name : ".config"; }
 
 static const char *conf_get_autoconfig_name(void) {
 	char *name = getenv("KCONFIG_AUTOCONFIG");
 
-	return name ? name : "include/config/auto.conf";
-}
+	return name ? name : "include/config/auto.conf"; }
 
 static const char *conf_get_autoheader_name(void) {
 	char *name = getenv("KCONFIG_AUTOHEADER");
 
-	return name ? name : "include/generated/autoconf.h";
-}
+	return name ? name : "include/generated/autoconf.h"; }
 
 static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p) {
 	char *p2;
@@ -197,20 +184,17 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
 		if (p[0] == 'm') {
 			sym->def[def].tri = mod;
 			sym->flags |= def_flags;
-			break;
-		}
+			break; }
 		 
 	case S_BOOLEAN:
 		if (p[0] == 'y') {
 			sym->def[def].tri = yes;
 			sym->flags |= def_flags;
-			break;
-		}
+			break; }
 		if (p[0] == 'n') {
 			sym->def[def].tri = no;
 			sym->flags |= def_flags;
-			break;
-		}
+			break; }
 		if (def != S_DEF_AUTO)
 			conf_warning("symbol value '%s' invalid for %s", p, sym->name);
 		return 1;
@@ -222,15 +206,11 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
 			for (p2 = p; (p2 = strpbrk(p2, "\"\\")); p2++) {
 				if (*p2 == '"') {
 					*p2 = 0;
-					break;
-				}
-				memmove(p2, p2 + 1, strlen(p2));
-			}
+					break; }
+				memmove(p2, p2 + 1, strlen(p2)); }
 			if (!p2) {
 				conf_warning("invalid string found");
-				return 1;
-			}
-		}
+				return 1; } }
 		 
 	case S_INT: case S_HEX:
 		if (sym_string_valid(sym, p)) {
@@ -239,11 +219,8 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
 		} else {
 			if (def != S_DEF_AUTO)
 				conf_warning("symbol value '%s' invalid for %s", p, sym->name);
-			return 1;
-		}
-	}
-	return 0;
-}
+			return 1; } }
+	return 0; }
 
 #define LINE_GROWTH 16
 static int add_byte(int c, char **lineptr, size_t slen, size_t *n) {
@@ -257,13 +234,11 @@ static int add_byte(int c, char **lineptr, size_t slen, size_t *n) {
 			return -1;
 
 		*lineptr = nline;
-		*n = new_size;
-	}
+		*n = new_size; }
 
 	(*lineptr)[slen] = c;
 
-	return 0;
-}
+	return 0; }
 
 static ssize_t compat_getline(char **lineptr, size_t *n, FILE *stream) {
 	char *line = *lineptr;
@@ -288,15 +263,12 @@ static ssize_t compat_getline(char **lineptr, size_t *n, FILE *stream) {
 		default:
 			if (add_byte(c, &line, slen, n) < 0)
 				goto e_out;
-			slen++;
-		}
-	}
+			slen++; } }
 
 e_out:
 	line[slen-1] = '\0';
 	*lineptr = line;
-	return -1;
-}
+	return -1; }
 
 int conf_read_simple(const char *name, int def) {
 	FILE *in = NULL;
@@ -341,15 +313,12 @@ int conf_read_simple(const char *name, int def) {
 			in = zconf_fopen(env);
 			if (in) {
 				conf_message("using defaults found in %s", env);
-				goto load;
-			}
+				goto load; }
 
 			if (is_last)
 				break;
 
-			env = p + 1;
-		}
-	}
+			env = p + 1; } }
 	if (!in)
 		return 1;
 
@@ -371,9 +340,7 @@ load:
 			 
 		default:
 			sym->def[def].val = NULL;
-			sym->def[def].tri = no;
-		}
-	}
+			sym->def[def].tri = no; } }
 
 	while (compat_getline(&line, &line_asize, in) != -1) {
 		conf_lineno++;
@@ -391,21 +358,17 @@ load:
 				sym = sym_find(line + 2 + strlen(CONFIG_));
 				if (!sym) {
 					conf_set_changed(true);
-					continue;
-				}
+					continue; }
 			} else {
 				sym = sym_lookup(line + 2 + strlen(CONFIG_), 0);
 				if (sym->type == S_UNKNOWN)
-					sym->type = S_BOOLEAN;
-			}
+					sym->type = S_BOOLEAN; }
 			if (sym->flags & def_flags) {
-				conf_warning("override: reassigning to symbol %s", sym->name);
-			}
+				conf_warning("override: reassigning to symbol %s", sym->name); }
 			switch (sym->type) {
 			case S_BOOLEAN: case S_TRISTATE:
 				sym->def[def].tri = no;
-				sym->flags |= def_flags;
-			}
+				sym->flags |= def_flags; }
 		} else if (memcmp(line, CONFIG_, strlen(CONFIG_)) == 0) {
 			p = strchr(line + strlen(CONFIG_), '=');
 			if (!p)
@@ -415,8 +378,7 @@ load:
 			if (p2) {
 				*p2-- = 0;
 				if (*p2 == '\r')
-					*p2 = 0;
-			}
+					*p2 = 0; }
 
 			sym = sym_find(line + strlen(CONFIG_));
 			if (!sym) {
@@ -425,20 +387,17 @@ load:
 					conf_touch_dep(line + strlen(CONFIG_));
 				else
 					conf_set_changed(true);
-				continue;
-			}
+				continue; }
 
 			if (sym->flags & def_flags) {
-				conf_warning("override: reassigning to symbol %s", sym->name);
-			}
+				conf_warning("override: reassigning to symbol %s", sym->name); }
 			if (conf_set_sym_val(sym, def, def_flags, p))
 				continue;
 		} else {
 			if (line[0] != '\r' && line[0] != '\n')
 				conf_warning("unexpected data: %.*s", (int)strcspn(line, "\r\n"), line);
 
-			continue;
-		}
+			continue; }
 
 		if (sym && sym_is_choice_value(sym)) {
 			struct symbol *cs = prop_get_symbol(sym_get_choice_prop(sym));
@@ -448,21 +407,16 @@ load:
 			case mod:
 				if (cs->def[def].tri == yes) {
 					conf_warning("%s creates inconsistent choice state", sym->name);
-					cs->flags &= ~def_flags;
-				}
+					cs->flags &= ~def_flags; }
 				break;
 			case yes:
 				if (cs->def[def].tri != no)
 					conf_warning("override: %s changes choice state", sym->name);
-				cs->def[def].val = sym;
-			}
-			cs->def[def].tri = EXPR_OR(cs->def[def].tri, sym->def[def].tri);
-		}
-	}
+				cs->def[def].val = sym; }
+			cs->def[def].tri = EXPR_OR(cs->def[def].tri, sym->def[def].tri); } }
 	free(line);
 	fclose(in);
-	return 0;
-}
+	return 0; }
 
 int conf_read(const char *name) {
 	struct symbol *sym;
@@ -473,8 +427,7 @@ int conf_read(const char *name) {
 
 	if (conf_read_simple(name, S_DEF_USER)) {
 		sym_calc_value(modules_sym);
-		return 1;
-	}
+		return 1; }
 
 	sym_calc_value(modules_sym);
 
@@ -491,8 +444,7 @@ int conf_read(const char *name) {
 				break;
 			default:
 				if (!strcmp(sym->curr.val, sym->def[S_DEF_USER].val))
-					continue;
-			}
+					continue; }
 		} else if (!sym_has_value(sym) && !(sym->flags & SYMBOL_WRITE))
 			 
 			continue;
@@ -511,16 +463,12 @@ int conf_read(const char *name) {
 				if (sym_string_within_range(sym, sym->def[S_DEF_USER].val))
 					break;
 				sym->flags &= ~(SYMBOL_VALID|SYMBOL_DEF_USER);
-				conf_unsaved++;
-			}
-		}
-	}
+				conf_unsaved++; } } }
 
 	if (conf_warnings || conf_unsaved)
 		conf_set_changed(true);
 
-	return 0;
-}
+	return 0; }
 
 struct comment_style { const char *decoration, *prefix, *postfix; };
 
@@ -535,8 +483,7 @@ static void conf_write_heading(FILE *fp, const struct comment_style *cs) {
 
 	fprintf(fp, "%s %s\n", cs->decoration, rootmenu.prompt->text);
 
-	fprintf(fp, "%s\n", cs->postfix);
-}
+	fprintf(fp, "%s\n", cs->postfix); }
 
 static char *escape_string_value(const char *in) {
 	const char *p;
@@ -553,8 +500,7 @@ static char *escape_string_value(const char *in) {
 			break;
 
 		len++;
-		p++;
-	}
+		p++; }
 
 	out = xmalloc(len);
 	out[0] = '\0';
@@ -571,13 +517,11 @@ static char *escape_string_value(const char *in) {
 			break;
 
 		strcat(out, "\\");
-		strncat(out, p++, 1);
-	}
+		strncat(out, p++, 1); }
 
 	strcat(out, "\"");
 
-	return out;
-}
+	return out; }
 
 enum output_n { OUTPUT_N_AS_UNSET, OUTPUT_N_NONE };
 
@@ -593,26 +537,21 @@ static void __print_symbol(FILE *fp, struct symbol *sym, enum output_n output_n,
 	if ((sym->type == S_BOOLEAN || sym->type == S_TRISTATE) && *val == 'n') {
 		if (output_n == OUTPUT_N_AS_UNSET)
 			fprintf(fp, "# %s%s is not set\n", CONFIG_, sym->name);
-		return;
-	}
+		return; }
 
 	if (sym->type == S_STRING && escape_string) {
 		escaped = escape_string_value(val);
-		val = escaped;
-	}
+		val = escaped; }
 
 	fprintf(fp, "%s%s=%s\n", CONFIG_, sym->name, val);
 
-	free(escaped);
-}
+	free(escaped); }
 
 static void print_symbol_for_dotconfig(FILE *fp, struct symbol *sym) {
-	__print_symbol(fp, sym, OUTPUT_N_AS_UNSET, true);
-}
+	__print_symbol(fp, sym, OUTPUT_N_AS_UNSET, true); }
 
 static void print_symbol_for_autoconf(FILE *fp, struct symbol *sym) {
-	__print_symbol(fp, sym, OUTPUT_N_NONE, false);
-}
+	__print_symbol(fp, sym, OUTPUT_N_NONE, false); }
 
 static void print_symbol_for_c(FILE *fp, struct symbol *sym) {
 	const char *val;
@@ -634,8 +573,7 @@ static void print_symbol_for_c(FILE *fp, struct symbol *sym) {
 			sym_suffix = "_MODULE";
 			 
 		default:
-			val = "1";
-		}
+			val = "1"; }
 		break;
 	case S_HEX:
 		if (val[0] != '0' || (val[1] != 'x' && val[1] != 'X'))
@@ -643,13 +581,11 @@ static void print_symbol_for_c(FILE *fp, struct symbol *sym) {
 		break;
 	case S_STRING:
 		escaped = escape_string_value(val);
-		val = escaped;
-	}
+		val = escaped; }
 
 	fprintf(fp, "#define %s%s%s %s%s\n", CONFIG_, sym->name, sym_suffix, val_prefix, val);
 
-	free(escaped);
-}
+	free(escaped); }
 
 int conf_write(const char *name) {
 	FILE *out;
@@ -666,13 +602,11 @@ int conf_write(const char *name) {
 
 	if (!*name) {
 		fprintf(stderr, "config name is empty\n");
-		return -1;
-	}
+		return -1; }
 
 	if (is_dir(name)) {
 		fprintf(stderr, "%s: Is a directory\n", name);
-		return -1;
-	}
+		return -1; }
 
 	if (make_parent_dir(name))
 		return -1;
@@ -683,8 +617,7 @@ int conf_write(const char *name) {
 		out = fopen(name, "w");
 	} else {
 		snprintf(tmpname, sizeof(tmpname), "%s.%d.tmp", name, (int)getpid());
-		out = fopen(tmpname, "w");
-	}
+		out = fopen(tmpname, "w"); }
 	if (!out)
 		return 1;
 
@@ -708,32 +641,26 @@ int conf_write(const char *name) {
 				goto next;
 			if (need_newline) {
 				fprintf(out, "\n");
-				need_newline = false;
-			}
+				need_newline = false; }
 			sym->flags |= SYMBOL_WRITTEN;
-			print_symbol_for_dotconfig(out, sym);
-		}
+			print_symbol_for_dotconfig(out, sym); }
 
 next:
 		if (menu->list) {
 			menu = menu->list;
-			continue;
-		}
+			continue; }
 
 end_check:
 		if (!menu->sym && menu_is_visible(menu) && menu != &rootmenu && menu->prompt->type == P_MENU) {
 			fprintf(out, "# end of %s\n", menu_get_prompt(menu));
-			need_newline = true;
-		}
+			need_newline = true; }
 
 		if (menu->next) {
 			menu = menu->next;
 		} else {
 			menu = menu->parent;
 			if (menu)
-				goto end_check;
-		}
-	}
+				goto end_check; } }
 	fclose(out);
 
 	for_all_symbols(i, sym)
@@ -744,21 +671,18 @@ end_check:
 			conf_message("No change to %s", name);
 			unlink(tmpname);
 			conf_set_changed(false);
-			return 0;
-		}
+			return 0; }
 
 		snprintf(oldname, sizeof(oldname), "%s.old", name);
 		rename(name, oldname);
 		if (rename(tmpname, name))
-			return 1;
-	}
+			return 1; }
 
 	conf_message("configuration written to %s", name);
 
 	conf_set_changed(false);
 
-	return 0;
-}
+	return 0; }
 
 static int conf_write_autoconf_cmd(const char *autoconf_name) {
 	char name[PATH_MAX], tmp[PATH_MAX];
@@ -780,8 +704,7 @@ static int conf_write_autoconf_cmd(const char *autoconf_name) {
 	out = fopen(tmp, "w");
 	if (!out) {
 		perror("fopen");
-		return -1;
-	}
+		return -1; }
 
 	fprintf(out, "deps_config := \\\n");
 	for (file = file_list; file; file = file->next)
@@ -801,11 +724,9 @@ static int conf_write_autoconf_cmd(const char *autoconf_name) {
 
 	if (rename(tmp, name)) {
 		perror("rename");
-		return -1;
-	}
+		return -1; }
 
-	return 0;
-}
+	return 0; }
 
 static int conf_touch_deps(void) {
 	const char *name, *tmp;
@@ -838,16 +759,13 @@ static int conf_touch_deps(void) {
 					break;
 				case S_STRING: case S_HEX: case S_INT:
 					if (!strcmp(sym_get_string_value(sym), sym->def[S_DEF_AUTO].val))
-						continue;
-				}
+						continue; }
 			} else {
 				 
 				switch (sym->type) {
 				case S_BOOLEAN: case S_TRISTATE:
 					if (sym_get_tristate_value(sym) == no)
-						continue;
-				}
-			}
+						continue; } }
 		} else if (!(sym->flags & SYMBOL_DEF_AUTO))
 			 
 			continue;
@@ -855,11 +773,9 @@ static int conf_touch_deps(void) {
 
 		res = conf_touch_dep(sym->name);
 		if (res)
-			return res;
-	}
+			return res; }
 
-	return 0;
-}
+	return 0; }
 
 static int __conf_write_autoconf(const char *filename, void (*print_symbol)(FILE *, struct symbol *), const struct comment_style *comment_style) {
 	char tmp[PATH_MAX];
@@ -877,8 +793,7 @@ static int __conf_write_autoconf(const char *filename, void (*print_symbol)(FILE
 	file = fopen(tmp, "w");
 	if (!file) {
 		perror("fopen");
-		return -1;
-	}
+		return -1; }
 
 	conf_write_heading(file, comment_style);
 
@@ -895,11 +810,9 @@ static int __conf_write_autoconf(const char *filename, void (*print_symbol)(FILE
 
 	if (rename(tmp, filename)) {
 		perror("rename");
-		return -1;
-	}
+		return -1; }
 
-	return 0;
-}
+	return 0; }
 
 int conf_write_autoconf(int overwrite) {
 	struct symbol *sym;
@@ -928,8 +841,7 @@ int conf_write_autoconf(int overwrite) {
 	if (ret)
 		return ret;
 
-	return 0;
-}
+	return 0; }
 
 static bool conf_changed;
 static void (*conf_changed_callback)(void);
@@ -938,12 +850,10 @@ void conf_set_changed(bool val) {
 	if (conf_changed_callback && conf_changed != val)
 		conf_changed_callback();
 
-	conf_changed = val;
-}
+	conf_changed = val; }
 
 bool conf_get_changed(void) {
-	return conf_changed;
-}
+	return conf_changed; }
 
 void set_all_choice_values(struct symbol *csym) {
 	struct property *prop;
@@ -955,9 +865,7 @@ void set_all_choice_values(struct symbol *csym) {
 	 
 	expr_list_for_each_sym(prop->expr, e, sym) {
 		if (!sym_has_value(sym))
-			sym->def[S_DEF_USER].tri = no;
-	}
+			sym->def[S_DEF_USER].tri = no; }
 	csym->flags |= SYMBOL_DEF_USER;
 	 
-	csym->flags &= ~(SYMBOL_VALID | SYMBOL_NEED_SET_CHOICE_VALUES);
-}
+	csym->flags &= ~(SYMBOL_VALID | SYMBOL_NEED_SET_CHOICE_VALUES); }

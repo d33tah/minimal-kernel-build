@@ -14,8 +14,7 @@
 
 static struct page *no_page_table(void) {
 	/* FOLL_DUMP never set -> always returns NULL */
-	return NULL;
-}
+	return NULL; }
 
 static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address, pte_t *pte, unsigned int flags) {
 	if (flags & FOLL_TOUCH) {
@@ -26,17 +25,13 @@ static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address, pte
 		entry = pte_mkyoung(entry);
 
 		if (!pte_same(*pte, entry)) {
-			set_pte_at(vma->vm_mm, address, pte, entry);
-		}
-	}
+			set_pte_at(vma->vm_mm, address, pte, entry); } }
 
 	
-	return -EEXIST;
-}
+	return -EEXIST; }
 
 static inline bool can_follow_write_pte(pte_t pte, unsigned int flags) {
-	return pte_write(pte) || ((flags & FOLL_FORCE) && (flags & FOLL_COW) && pte_dirty(pte));
-}
+	return pte_write(pte) || ((flags & FOLL_FORCE) && (flags & FOLL_COW) && pte_dirty(pte)); }
 
 static struct page *follow_page_pte(struct vm_area_struct *vma, unsigned long address, pmd_t *pmd, unsigned int flags) {
 	struct mm_struct *mm = vma->vm_mm;
@@ -55,8 +50,7 @@ static struct page *follow_page_pte(struct vm_area_struct *vma, unsigned long ad
 		goto no_page;
 	if ((flags & FOLL_WRITE) && !can_follow_write_pte(pte, flags)) {
 		pte_unmap_unlock(ptep, ptl);
-		return NULL;
-	}
+		return NULL; }
 
 	page = vm_normal_page(vma, address, pte);
 	if (unlikely(!page)) {
@@ -66,32 +60,26 @@ static struct page *follow_page_pte(struct vm_area_struct *vma, unsigned long ad
 		} else {
 			ret = follow_pfn_pte(vma, address, ptep, flags);
 			page = ERR_PTR(ret);
-			goto out;
-		}
-	}
+			goto out; } }
 
 	if (!pte_write(pte) && gup_must_unshare(flags, page)) {
 		page = ERR_PTR(-EMLINK);
-		goto out;
-	}
+		goto out; }
 
 	{
 		struct folio *folio = page_folio(page);
 
 		if (unlikely(WARN_ON_ONCE(folio_ref_count(folio) <= 0))) {
 			page = ERR_PTR(-ENOMEM);
-			goto out;
-		}
+			goto out; }
 		/* FOLL_PIN never set on this build (no pin_user_pages callers) */
 		if (flags & FOLL_GET)
-			folio_ref_inc(folio);
-	}
+			folio_ref_inc(folio); }
 	if (flags & FOLL_TOUCH) {
 		if ((flags & FOLL_WRITE) && !pte_dirty(pte) && !PageDirty(page))
 			set_page_dirty(page);
 		
-		mark_page_accessed(page);
-	}
+		mark_page_accessed(page); }
 out:
 	pte_unmap_unlock(ptep, ptl);
 	return page;
@@ -99,8 +87,7 @@ no_page:
 	pte_unmap_unlock(ptep, ptl);
 	if (!pte_none(pte))
 		return NULL;
-	return no_page_table();
-}
+	return no_page_table(); }
 
 static struct page *follow_page_mask(struct vm_area_struct *vma, unsigned long address, unsigned int flags) {
 	pgd_t *pgd;
@@ -126,8 +113,7 @@ static struct page *follow_page_mask(struct vm_area_struct *vma, unsigned long a
 		return no_page_table();
 	if (!pmd_present(pmdval))
 		return no_page_table();
-	return follow_page_pte(vma, address, pmd, flags);
-}
+	return follow_page_pte(vma, address, pmd, flags); }
 
 
 static int faultin_page(struct vm_area_struct *vma, unsigned long address, unsigned int *flags, bool unshare, int *locked) {
@@ -141,13 +127,11 @@ static int faultin_page(struct vm_area_struct *vma, unsigned long address, unsig
 		fault_flags |= FAULT_FLAG_ALLOW_RETRY;
 	if (*flags & FOLL_TRIED) {
 		
-		fault_flags |= FAULT_FLAG_TRIED;
-	}
+		fault_flags |= FAULT_FLAG_TRIED; }
 	if (unshare) {
 		fault_flags |= FAULT_FLAG_UNSHARE;
 		
-		VM_BUG_ON(fault_flags & FAULT_FLAG_WRITE);
-	}
+		VM_BUG_ON(fault_flags & FAULT_FLAG_WRITE); }
 
 	ret = handle_mm_fault(vma, address, fault_flags, NULL);
 	if (ret & VM_FAULT_ERROR) {
@@ -155,20 +139,17 @@ static int faultin_page(struct vm_area_struct *vma, unsigned long address, unsig
 
 		if (err)
 			return err;
-		BUG();
-	}
+		BUG(); }
 
 	if (ret & VM_FAULT_RETRY) {
 		if (locked)
 			*locked = 0;
-		return -EBUSY;
-	}
+		return -EBUSY; }
 
 	
 	if ((ret & VM_FAULT_WRITE) && !(vma->vm_flags & VM_WRITE))
 		*flags |= FOLL_COW;
-	return 0;
-}
+	return 0; }
 
 static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags) {
 	vm_flags_t vm_flags = vma->vm_flags;
@@ -185,19 +166,16 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags) 
 				return -EFAULT;
 			
 			if (!is_cow_mapping(vm_flags))
-				return -EFAULT;
-		}
+				return -EFAULT; }
 	} else if (!(vm_flags & VM_READ)) {
 		if (!(gup_flags & FOLL_FORCE))
 			return -EFAULT;
 		
 		if (!(vm_flags & VM_MAYREAD))
-			return -EFAULT;
-	}
+			return -EFAULT; }
 
 	/* arch_vma_access_permitted() is constant-true (no PKU) => guard dropped. */
-	return 0;
-}
+	return 0; }
 
 static long __get_user_pages(struct mm_struct *mm, unsigned long start, unsigned long nr_pages, unsigned int gup_flags, struct page **pages, struct vm_area_struct **vmas, int *locked) {
 	long ret = 0, i = 0;
@@ -219,8 +197,7 @@ static long __get_user_pages(struct mm_struct *mm, unsigned long start, unsigned
 			vma = find_extend_vma(mm, start);
 			if (!vma) {
 				ret = -EFAULT;
-				goto out;
-			}
+				goto out; }
 			ret = check_vma_flags(vma, gup_flags);
 			if (ret)
 				goto out;
@@ -230,8 +207,7 @@ retry:
 		
 		if (fatal_signal_pending(current)) {
 			ret = -EINTR;
-			goto out;
-		}
+			goto out; }
 		cond_resched();
 
 		page = follow_page_mask(vma, start, foll_flags);
@@ -244,26 +220,22 @@ retry:
 				ret = 0;
 				fallthrough;
 			case -EFAULT: case -ENOMEM: case -EHWPOISON:
-				goto out;
-			}
+				goto out; }
 			BUG();
 		} else if (PTR_ERR(page) == -EEXIST) {
 			
 			if (pages) {
 				ret = PTR_ERR(page);
-				goto out;
-			}
+				goto out; }
 
 			goto next_page;
 		} else if (IS_ERR(page)) {
 			ret = PTR_ERR(page);
-			goto out;
-		}
+			goto out; }
 		if (pages) {
 			pages[i] = page;
 			flush_anon_page(vma, page, start);
-			flush_dcache_page(page);
-		}
+			flush_dcache_page(page); }
 next_page:
 		if (vmas)
 			vmas[i] = vma;
@@ -272,8 +244,7 @@ next_page:
 		nr_pages -= 1;
 	} while (nr_pages);
 out:
-	return i ? i : ret;
-}
+	return i ? i : ret; }
 
 
 static __always_inline long __get_user_pages_locked(struct mm_struct *mm, unsigned long start, unsigned long nr_pages, struct page **pages, struct vm_area_struct **vmas, int *locked, unsigned int flags) {
@@ -284,8 +255,7 @@ static __always_inline long __get_user_pages_locked(struct mm_struct *mm, unsign
 		
 		BUG_ON(vmas);
 		
-		BUG_ON(*locked != 1);
-	}
+		BUG_ON(*locked != 1); }
 
 	/* FOLL_PIN never set: pages always implies FOLL_GET */
 	if (pages)
@@ -302,21 +272,18 @@ static __always_inline long __get_user_pages_locked(struct mm_struct *mm, unsign
 		
 		if (!*locked) {
 			BUG_ON(ret < 0);
-			BUG_ON(ret >= nr_pages);
-		}
+			BUG_ON(ret >= nr_pages); }
 
 		if (ret > 0) {
 			nr_pages -= ret;
 			pages_done += ret;
 			if (!nr_pages)
-				break;
-		}
+				break; }
 		if (*locked) {
 			
 			if (!pages_done)
 				pages_done = ret;
-			break;
-		}
+			break; }
 		
 		if (likely(pages))
 			pages += ret;
@@ -329,54 +296,45 @@ retry:
 		if (fatal_signal_pending(current)) {
 			if (!pages_done)
 				pages_done = -EINTR;
-			break;
-		}
+			break; }
 
 		ret = mmap_read_lock_killable(mm);
 		if (ret) {
 			BUG_ON(ret > 0);
 			if (!pages_done)
 				pages_done = ret;
-			break;
-		}
+			break; }
 
 		*locked = 1;
 		ret = __get_user_pages(mm, start, 1, flags | FOLL_TRIED, pages, NULL, locked);
 		if (!*locked) {
 			
 			BUG_ON(ret != 0);
-			goto retry;
-		}
+			goto retry; }
 		if (ret != 1) {
 			BUG_ON(ret > 1);
 			if (!pages_done)
 				pages_done = ret;
-			break;
-		}
+			break; }
 		nr_pages--;
 		pages_done++;
 		if (!nr_pages)
 			break;
 		if (likely(pages))
 			pages++;
-		start += PAGE_SIZE;
-	}
+		start += PAGE_SIZE; }
 	if (lock_dropped && *locked) {
 		
 		mmap_read_unlock(mm);
-		*locked = 0;
-	}
-	return pages_done;
-}
+		*locked = 0; }
+	return pages_done; }
 
 static long __get_user_pages_remote(struct mm_struct *mm, unsigned long start, unsigned long nr_pages, unsigned int gup_flags, struct page **pages, struct vm_area_struct **vmas, int *locked) {
-	return __get_user_pages_locked(mm, start, nr_pages, pages, vmas, locked, gup_flags | FOLL_TOUCH | FOLL_REMOTE);
-}
+	return __get_user_pages_locked(mm, start, nr_pages, pages, vmas, locked, gup_flags | FOLL_TOUCH | FOLL_REMOTE); }
 
 long get_user_pages_remote(struct mm_struct *mm, unsigned long start, unsigned long nr_pages, unsigned int gup_flags, struct page **pages, struct vm_area_struct **vmas, int *locked) {
 	/* FOLL_LONGTERM never set -> formerly is_valid_gup_flags, always valid */
-	return __get_user_pages_remote(mm, start, nr_pages, gup_flags, pages, vmas, locked);
-}
+	return __get_user_pages_remote(mm, start, nr_pages, gup_flags, pages, vmas, locked); }
 
 /* get_user_pages_unlocked, get_user_pages_fast_only, get_user_pages_fast,
    pin_user_pages_fast, pin_user_pages_fast_only, pin_user_pages_remote,

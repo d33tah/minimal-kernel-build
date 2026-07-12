@@ -26,9 +26,7 @@ void put_pid(struct pid *pid) {
 	ns = pid->numbers[pid->level].ns;
 	if (refcount_dec_and_test(&pid->count)) {
 		kmem_cache_free(ns->pid_cachep, pid);
-		put_pid_ns(ns);
-	}
-}
+		put_pid_ns(ns); } }
 
 void free_pid(struct pid *pid) {
 	/*
@@ -71,12 +69,10 @@ struct pid *alloc_pid(struct pid_namespace *ns) {
 
 		if (nr < 0) {
 			retval = (nr == -ENOSPC) ? -EAGAIN : nr;
-			goto out_free;
-		}
+			goto out_free; }
 
 		pid->numbers[i].nr = nr;
-		pid->numbers[i].ns = tmp;
-	}
+		pid->numbers[i].ns = tmp; }
 
 	 
 	retval = -ENOMEM;
@@ -93,8 +89,7 @@ struct pid *alloc_pid(struct pid_namespace *ns) {
 	for ( ; upid >= pid->numbers; --upid) {
 		 
 		idr_replace(&upid->ns->idr, pid, upid->nr);
-		upid->ns->pid_allocated++;
-	}
+		upid->ns->pid_allocated++; }
 	spin_unlock_irq(&pidmap_lock);
 
 	return pid;
@@ -107,8 +102,7 @@ out_free:
 	spin_lock_irq(&pidmap_lock);
 	while (++i <= ns->level) {
 		upid = pid->numbers + i;
-		idr_remove(&upid->ns->idr, upid->nr);
-	}
+		idr_remove(&upid->ns->idr, upid->nr); }
 
 	 
 	if (ns->pid_allocated == PIDNS_ADDING)
@@ -117,19 +111,16 @@ out_free:
 	spin_unlock_irq(&pidmap_lock);
 
 	kmem_cache_free(ns->pid_cachep, pid);
-	return ERR_PTR(retval);
-}
+	return ERR_PTR(retval); }
 
 static struct pid **task_pid_ptr(struct task_struct *task, enum pid_type type) {
 	return (type == PIDTYPE_PID) ?
 		&task->thread_pid :
-		&task->signal->pids[type];
-}
+		&task->signal->pids[type]; }
 
 void attach_pid(struct task_struct *task, enum pid_type type) {
 	struct pid *pid = *task_pid_ptr(task, type);
-	hlist_add_head_rcu(&task->pid_links[type], &pid->tasks[type]);
-}
+	hlist_add_head_rcu(&task->pid_links[type], &pid->tasks[type]); }
 
 struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns) {
 	struct pid *pid = idr_find(&ns->idr, nr);
@@ -140,10 +131,8 @@ struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns) {
 		struct hlist_node *first;
 		first = rcu_dereference_check(hlist_first_rcu(&pid->tasks[PIDTYPE_PID]), lockdep_tasklist_lock_is_held());
 		if (first)
-			result = hlist_entry(first, struct task_struct, pid_links[(PIDTYPE_PID)]);
-	}
-	return result;
-}
+			result = hlist_entry(first, struct task_struct, pid_links[(PIDTYPE_PID)]); }
+	return result; }
 
 
 struct pid *get_task_pid(struct task_struct *task, enum pid_type type) {
@@ -151,8 +140,7 @@ struct pid *get_task_pid(struct task_struct *task, enum pid_type type) {
 	rcu_read_lock();
 	pid = get_pid(rcu_dereference(*task_pid_ptr(task, type)));
 	rcu_read_unlock();
-	return pid;
-}
+	return pid; }
 
 pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns) {
 	struct upid *upid;
@@ -161,14 +149,11 @@ pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns) {
 	if (pid && ns->level <= pid->level) {
 		upid = &pid->numbers[ns->level];
 		if (upid->ns == ns)
-			nr = upid->nr;
-	}
-	return nr;
-}
+			nr = upid->nr; }
+	return nr; }
 
 pid_t pid_vnr(struct pid *pid) {
-	return pid_nr_ns(pid, task_active_pid_ns(current));
-}
+	return pid_nr_ns(pid, task_active_pid_ns(current)); }
 
 pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type, struct pid_namespace *ns) {
 	pid_t nr = 0;
@@ -179,12 +164,10 @@ pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type, struct pid_
 	nr = pid_nr_ns(rcu_dereference(*task_pid_ptr(task, type)), ns);
 	rcu_read_unlock();
 
-	return nr;
-}
+	return nr; }
 
 struct pid_namespace *task_active_pid_ns(struct task_struct *tsk) {
-	return ns_of_pid(task_pid(tsk));
-}
+	return ns_of_pid(task_pid(tsk)); }
 
 void __init pid_idr_init(void) {
 	 
@@ -196,5 +179,4 @@ void __init pid_idr_init(void) {
 
 	idr_init(&init_pid_ns.idr);
 
-	init_pid_ns.pid_cachep = KMEM_CACHE(pid, SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT);
-}
+	init_pid_ns.pid_cachep = KMEM_CACHE(pid, SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT); }

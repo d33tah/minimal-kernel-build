@@ -29,15 +29,12 @@ static struct e820_entry *__e820__mapped_all(u64 start, u64 end, enum e820_type 
 
 		 
 		if (start >= end)
-			return entry;
-	}
+			return entry; }
 
-	return NULL;
-}
+	return NULL; }
 
 bool __init e820__mapped_all(u64 start, u64 end, enum e820_type type) {
-	return __e820__mapped_all(start, end, type);
-}
+	return __e820__mapped_all(start, end, type); }
 
 
 static void __init __e820__range_add(struct e820_table *table, u64 start, u64 size, enum e820_type type) {
@@ -45,18 +42,15 @@ static void __init __e820__range_add(struct e820_table *table, u64 start, u64 si
 
 	if (x >= ARRAY_SIZE(table->entries)) {
 		pr_err("too many entries; ignoring [mem %#010llx-%#010llx]\n", start, start + size - 1);
-		return;
-	}
+		return; }
 
 	table->entries[x].addr = start;
 	table->entries[x].size = size;
 	table->entries[x].type = type;
-	table->nr_entries++;
-}
+	table->nr_entries++; }
 
 void __init e820__range_add(u64 start, u64 size, enum e820_type type) {
-	__e820__range_add(e820_table, start, size, type);
-}
+	__e820__range_add(e820_table, start, size, type); }
 
 struct change_member { struct e820_entry	*entry; unsigned long long	addr; };
 
@@ -73,8 +67,7 @@ static int __init cpcompare(const void *a, const void *b) {
 	if (ap->addr != bp->addr)
 		return ap->addr > bp->addr ? 1 : -1;
 
-	return (ap->addr != ap->entry->addr) - (bp->addr != bp->entry->addr);
-}
+	return (ap->addr != ap->entry->addr) - (bp->addr != bp->entry->addr); }
 
 static bool e820_nomerge(enum e820_type type) {
 	 
@@ -82,8 +75,7 @@ static bool e820_nomerge(enum e820_type type) {
 		return true;
 	if (type == E820_TYPE_SOFT_RESERVED)
 		return true;
-	return false;
-}
+	return false; }
 
 int __init e820__update_table(struct e820_table *table) {
 	struct e820_entry *entries = table->entries;
@@ -102,8 +94,7 @@ int __init e820__update_table(struct e820_table *table) {
 	 
 	for (i = 0; i < table->nr_entries; i++) {
 		if (entries[i].addr + entries[i].size < entries[i].addr)
-			return -1;
-	}
+			return -1; }
 
 	 
 	for (i = 0; i < 2 * table->nr_entries; i++)
@@ -116,9 +107,7 @@ int __init e820__update_table(struct e820_table *table) {
 			change_point[chg_idx]->addr	= entries[i].addr;
 			change_point[chg_idx++]->entry	= &entries[i];
 			change_point[chg_idx]->addr	= entries[i].addr + entries[i].size;
-			change_point[chg_idx++]->entry	= &entries[i];
-		}
-	}
+			change_point[chg_idx++]->entry	= &entries[i]; } }
 	chg_nr = chg_idx;
 
 	 
@@ -140,16 +129,13 @@ int __init e820__update_table(struct e820_table *table) {
 			 
 			for (i = 0; i < overlap_entries; i++) {
 				if (overlap_list[i] == change_point[chg_idx]->entry)
-					overlap_list[i] = overlap_list[overlap_entries-1];
-			}
-			overlap_entries--;
-		}
+					overlap_list[i] = overlap_list[overlap_entries-1]; }
+			overlap_entries--; }
 		 
 		current_type = 0;
 		for (i = 0; i < overlap_entries; i++) {
 			if (overlap_list[i]->type > current_type)
-				current_type = overlap_list[i]->type;
-		}
+				current_type = overlap_list[i]->type; }
 
 		 
 		if (current_type != last_type || e820_nomerge(current_type)) {
@@ -159,23 +145,18 @@ int __init e820__update_table(struct e820_table *table) {
 				if (new_entries[new_nr_entries].size != 0)
 					 
 					if (++new_nr_entries >= max_nr_entries)
-						break;
-			}
+						break; }
 			if (current_type != 0)	{
 				new_entries[new_nr_entries].addr = change_point[chg_idx]->addr;
 				new_entries[new_nr_entries].type = current_type;
-				last_addr = change_point[chg_idx]->addr;
-			}
-			last_type = current_type;
-		}
-	}
+				last_addr = change_point[chg_idx]->addr; }
+			last_type = current_type; } }
 
 	 
 	memcpy(entries, new_entries, new_nr_entries*sizeof(*entries));
 	table->nr_entries = new_nr_entries;
 
-	return 0;
-}
+	return 0; }
 
 static int __init __append_e820_table(struct boot_e820_entry *entries, u32 nr_entries) {
 	struct boot_e820_entry *entry = entries;
@@ -193,18 +174,15 @@ static int __init __append_e820_table(struct boot_e820_entry *entries, u32 nr_en
 		e820__range_add(start, size, type);
 
 		entry++;
-		nr_entries--;
-	}
-	return 0;
-}
+		nr_entries--; }
+	return 0; }
 
 static int __init append_e820_table(struct boot_e820_entry *entries, u32 nr_entries) {
 	 
 	if (nr_entries < 2)
 		return -1;
 
-	return __append_e820_table(entries, nr_entries);
-}
+	return __append_e820_table(entries, nr_entries); }
 
 static u64 __init
 __e820__range_update(struct e820_table *table, u64 start, u64 size, enum e820_type old_type, enum e820_type new_type) {
@@ -236,8 +214,7 @@ __e820__range_update(struct e820_table *table, u64 start, u64 size, enum e820_ty
 		if (entry->addr >= start && entry_end <= end) {
 			entry->type = new_type;
 			real_updated_size += entry->size;
-			continue;
-		}
+			continue; }
 
 		 
 		if (entry->addr < start && entry_end > end) {
@@ -245,8 +222,7 @@ __e820__range_update(struct e820_table *table, u64 start, u64 size, enum e820_ty
 			__e820__range_add(table, end, entry_end - end, entry->type);
 			entry->size = start - entry->addr;
 			real_updated_size += size;
-			continue;
-		}
+			continue; }
 
 		 
 		final_start = max(start, entry->addr);
@@ -263,14 +239,11 @@ __e820__range_update(struct e820_table *table, u64 start, u64 size, enum e820_ty
 		if (entry->addr < final_start)
 			continue;
 
-		entry->addr = final_end;
-	}
-	return real_updated_size;
-}
+		entry->addr = final_end; }
+	return real_updated_size; }
 
 u64 __init e820__range_update(u64 start, u64 size, enum e820_type old_type, enum e820_type new_type) {
-	return __e820__range_update(e820_table, start, size, old_type, new_type);
-}
+	return __e820__range_update(e820_table, start, size, old_type, new_type); }
 
 
 u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type, bool check_type) {
@@ -299,16 +272,14 @@ u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type, bool
 		if (entry->addr >= start && entry_end <= end) {
 			real_removed_size += entry->size;
 			memset(entry, 0, sizeof(*entry));
-			continue;
-		}
+			continue; }
 
 		 
 		if (entry->addr < start && entry_end > end) {
 			e820__range_add(end, entry_end - end, entry->type);
 			entry->size = start - entry->addr;
 			real_removed_size += size;
-			continue;
-		}
+			continue; }
 
 		 
 		final_start = max(start, entry->addr);
@@ -323,10 +294,8 @@ u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type, bool
 		if (entry->addr < final_start)
 			continue;
 
-		entry->addr = final_end;
-	}
-	return real_removed_size;
-}
+		entry->addr = final_end; }
+	return real_removed_size; }
 
 __init void e820__reallocate_tables(void) {
 	struct e820_table *n;
@@ -352,8 +321,7 @@ void __init e820__memory_setup_extended(u64 phys_addr, u32 data_len) {
 	e820__update_table(e820_table);
 	/* kexec/firmware table copy removed - unused in minimal kernel */
 
-	early_memunmap(sdata, data_len);
-}
+	early_memunmap(sdata, data_len); }
 
 
 #  define MAX_ARCH_PFN		(1ULL<<(32-PAGE_SHIFT))
@@ -377,22 +345,18 @@ static unsigned long __init e820_end_pfn(unsigned long limit_pfn, enum e820_type
 			continue;
 		if (end_pfn > limit_pfn) {
 			last_pfn = limit_pfn;
-			break;
-		}
+			break; }
 		if (end_pfn > last_pfn)
-			last_pfn = end_pfn;
-	}
+			last_pfn = end_pfn; }
 
 	if (last_pfn > max_arch_pfn)
 		last_pfn = max_arch_pfn;
 
 	pr_info("last_pfn = %#lx max_arch_pfn = %#lx\n", last_pfn, max_arch_pfn);
-	return last_pfn;
-}
+	return last_pfn; }
 
 unsigned long __init e820__end_of_ram_pfn(void) {
-	return e820_end_pfn(MAX_ARCH_PFN, E820_TYPE_RAM);
-}
+	return e820_end_pfn(MAX_ARCH_PFN, E820_TYPE_RAM); }
 
 
 void __init e820__reserve_setup_data(void) {
@@ -409,8 +373,7 @@ void __init e820__reserve_setup_data(void) {
 		data = early_memremap(pa_data, sizeof(*data));
 		if (!data) {
 			pr_warn("e820: failed to memremap setup_data entry\n");
-			return;
-		}
+			return; }
 
 		len = sizeof(*data);
 		pa_next = data->next;
@@ -424,20 +387,17 @@ void __init e820__reserve_setup_data(void) {
 			data = early_memremap(pa_data, len);
 			if (!data) {
 				pr_warn("e820: failed to memremap indirect setup_data\n");
-				return;
-			}
+				return; }
 
 			indirect = (struct setup_indirect *)data->data;
 
 			if (indirect->type != SETUP_INDIRECT) {
 				e820__range_update(indirect->addr, indirect->len, E820_TYPE_RAM, E820_TYPE_RESERVED_KERN);
 				/* kexec table update removed */
-			}
-		}
+			} }
 
 		pa_data = pa_next;
-		early_memunmap(data, len);
-	}
+		early_memunmap(data, len); }
 
 	e820__update_table(e820_table);
 	/* kexec table update removed - unused in minimal kernel */
@@ -473,19 +433,16 @@ char *__init e820__memory_setup_default(void) {
 			who = "BIOS-88";
 		} else {
 			mem_size = boot_params.alt_mem_k;
-			who = "BIOS-e801";
-		}
+			who = "BIOS-e801"; }
 
 		e820_table->nr_entries = 0;
 		e820__range_add(0, LOWMEMSIZE(), E820_TYPE_RAM);
-		e820__range_add(HIGH_MEMORY, mem_size << 10, E820_TYPE_RAM);
-	}
+		e820__range_add(HIGH_MEMORY, mem_size << 10, E820_TYPE_RAM); }
 
 	 
 	e820__update_table(e820_table);
 
-	return who;
-}
+	return who; }
 
 void __init e820__memory_setup(void) {
 
@@ -515,9 +472,7 @@ void __init e820__memblock_setup(void) {
 		if (entry->type != E820_TYPE_RAM && entry->type != E820_TYPE_RESERVED_KERN)
 			continue;
 
-		memblock_add(entry->addr, entry->size);
-	}
+		memblock_add(entry->addr, entry->size); }
 
 
-	memblock_trim_memory(PAGE_SIZE);
-}
+	memblock_trim_memory(PAGE_SIZE); }

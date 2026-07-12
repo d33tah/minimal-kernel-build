@@ -15,29 +15,25 @@ static inline unsigned long build_cr3(pgd_t *pgd, u16 asid) {
 	 * arch/x86/kernel/cpu/common.c), so the kernel never runs with PCIDs
 	 * and asid is always 0. */
 	VM_WARN_ON_ONCE(asid != 0);
-	return __sme_pa(pgd);
-}
+	return __sme_pa(pgd); }
 
 atomic64_t last_mm_ctx_id = ATOMIC64_INIT(1);
 
 
 static void choose_new_asid(u16 *new_asid) {
 	/* No PCID (cleared at boot): always use ASID 0 and force a flush. */
-	*new_asid = 0;
-}
+	*new_asid = 0; }
 
 static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid) {
 	/* Without PCID every switch reloads CR3 (always a full flush). */
-	write_cr3(build_cr3(pgdir, new_asid));
-}
+	write_cr3(build_cr3(pgdir, new_asid)); }
 
 void switch_mm(struct mm_struct *prev, struct mm_struct *next, struct task_struct *tsk) {
 	unsigned long flags;
 
 	local_irq_save(flags);
 	switch_mm_irqs_off(prev, next, tsk);
-	local_irq_restore(flags);
-}
+	local_irq_restore(flags); }
 
 /* Speculation-mitigation switch_mm path removed: CONFIG_SPECULATION_MITIGATIONS
  * is unset, so switch_mm_cond_ibpb / switch_mm_always_ibpb /
@@ -52,8 +48,7 @@ static inline void cr4_update_pce_mm(struct mm_struct *mm) {
 	 * enabled (constant false); rdpmc_never_available_key is
 	 * DEFINE_STATIC_KEY_TRUE and never disabled (constant true), so the
 	 * RDPMC-enable condition is always false and CR4.PCE stays cleared. */
-	cr4_clear_bits_irqsoff(X86_CR4_PCE);
-}
+	cr4_clear_bits_irqsoff(X86_CR4_PCE); }
 
 void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next, struct task_struct *tsk) {
 	struct mm_struct *real_prev = this_cpu_read(cpu_tlbstate.loaded_mm);
@@ -93,8 +88,7 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next, struct t
 
 		if (real_prev != &init_mm) {
 			VM_WARN_ON_ONCE(!cpumask_test_cpu(cpu, mm_cpumask(real_prev)));
-			cpumask_clear_cpu(cpu, mm_cpumask(real_prev));
-		}
+			cpumask_clear_cpu(cpu, mm_cpumask(real_prev)); }
 
 		 
 		if (next != &init_mm)
@@ -105,8 +99,7 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next, struct t
 
 		 
 		this_cpu_write(cpu_tlbstate.loaded_mm, LOADED_MM_SWITCHING);
-		barrier();
-	}
+		barrier(); }
 
 	/* need_flush is always true: no PCID, so every switch reloads CR3. */
 	this_cpu_write(cpu_tlbstate.ctxs[new_asid].ctx_id, next->context.ctx_id);
@@ -121,16 +114,13 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next, struct t
 
 	if (next != real_prev) {
 		cr4_update_pce_mm(next);
-		switch_ldt(real_prev, next);
-	}
-}
+		switch_ldt(real_prev, next); } }
 
 void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk) {
 	if (this_cpu_read(cpu_tlbstate.loaded_mm) == &init_mm)
 		return;
 
-	this_cpu_write(cpu_tlbstate_shared.is_lazy, true);
-}
+	this_cpu_write(cpu_tlbstate_shared.is_lazy, true); }
 
 void initialize_tlbstate_and_flush(void) {
 	int i;
@@ -153,8 +143,7 @@ void initialize_tlbstate_and_flush(void) {
 	this_cpu_write(cpu_tlbstate.ctxs[0].tlb_gen, tlb_gen);
 
 	for (i = 1; i < TLB_NR_DYN_ASIDS; i++)
-		this_cpu_write(cpu_tlbstate.ctxs[i].ctx_id, 0);
-}
+		this_cpu_write(cpu_tlbstate.ctxs[i].ctx_id, 0); }
 
 DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
 
@@ -162,8 +151,7 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start, unsigned long
 	/* mmu_gather/unmap teardown never runs on this single-shot boot, so this
 	 * range-flush root is runtime-dead; bump the generation counter so any
 	 * live reader of mm->context.tlb_gen stays consistent and return. */
-	inc_mm_tlb_gen(mm);
-}
+	inc_mm_tlb_gen(mm); }
 
 
 void flush_tlb_one_kernel(unsigned long addr) {
@@ -171,8 +159,7 @@ void flush_tlb_one_kernel(unsigned long addr) {
 	 * PAGE_TABLE_ISOLATION is unset on this build, so X86_FEATURE_PTI is
 	 * never set and the user-mapping invalidation below is dead.
 	 */
-	flush_tlb_one_user(addr);
-}
+	flush_tlb_one_user(addr); }
 
 STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr) {
 	asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
@@ -184,8 +171,7 @@ STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr) {
 }
 
 void flush_tlb_one_user(unsigned long addr) {
-	__flush_tlb_one_user(addr);
-}
+	__flush_tlb_one_user(addr); }
 
 STATIC_NOPV void native_flush_tlb_global(void) {
 	unsigned long flags;
@@ -193,28 +179,24 @@ STATIC_NOPV void native_flush_tlb_global(void) {
 	if (static_cpu_has(X86_FEATURE_INVPCID)) {
 		 
 		invpcid_flush_all();
-		return;
-	}
+		return; }
 
 	 
 	raw_local_irq_save(flags);
 
 	__native_tlb_flush_global(this_cpu_read(cpu_tlbstate.cr4));
 
-	raw_local_irq_restore(flags);
-}
+	raw_local_irq_restore(flags); }
 
 STATIC_NOPV void native_flush_tlb_local(void) {
 	 
 	WARN_ON_ONCE(preemptible());
 
 
-	native_write_cr3(__native_read_cr3());
-}
+	native_write_cr3(__native_read_cr3()); }
 
 void flush_tlb_local(void) {
-	__flush_tlb_local();
-}
+	__flush_tlb_local(); }
 
 void __flush_tlb_all(void) {
 	 
@@ -224,8 +206,6 @@ void __flush_tlb_all(void) {
 		__flush_tlb_global();
 	} else {
 		 
-		flush_tlb_local();
-	}
-}
+		flush_tlb_local(); } }
 
 /* Stub: TLB flush debugfs tuning not needed for minimal kernel */

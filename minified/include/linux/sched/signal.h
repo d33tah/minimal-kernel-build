@@ -43,23 +43,19 @@ extern void force_fatal_sig(int);
 /* zap_other_threads removed: only caller was do_group_exit (exit_group), gone */
 
 static inline int task_sigpending(struct task_struct *p) {
-	return unlikely(test_tsk_thread_flag(p,TIF_SIGPENDING));
-}
+	return unlikely(test_tsk_thread_flag(p,TIF_SIGPENDING)); }
 
 static inline int signal_pending(struct task_struct *p) {
 	 
 	if (unlikely(test_tsk_thread_flag(p, TIF_NOTIFY_SIGNAL)))
 		return 1;
-	return task_sigpending(p);
-}
+	return task_sigpending(p); }
 
 static inline int __fatal_signal_pending(struct task_struct *p) {
-	return unlikely(sigismember(&p->pending.signal, SIGKILL));
-}
+	return unlikely(sigismember(&p->pending.signal, SIGKILL)); }
 
 static inline int fatal_signal_pending(struct task_struct *p) {
-	return task_sigpending(p) && __fatal_signal_pending(p);
-}
+	return task_sigpending(p) && __fatal_signal_pending(p); }
 
 static inline int signal_pending_state(unsigned int state, struct task_struct *p) {
 	if (!(state & (TASK_INTERRUPTIBLE | TASK_WAKEKILL)))
@@ -67,12 +63,10 @@ static inline int signal_pending_state(unsigned int state, struct task_struct *p
 	if (!signal_pending(p))
 		return 0;
 
-	return (state & TASK_INTERRUPTIBLE) || __fatal_signal_pending(p);
-}
+	return (state & TASK_INTERRUPTIBLE) || __fatal_signal_pending(p); }
 
 static inline bool fault_signal_pending(vm_fault_t fault_flags, struct pt_regs *regs) {
-	return unlikely((fault_flags & VM_FAULT_RETRY) && (fatal_signal_pending(current) || (user_mode(regs) && signal_pending(current))));
-}
+	return unlikely((fault_flags & VM_FAULT_RETRY) && (fatal_signal_pending(current) || (user_mode(regs) && signal_pending(current)))); }
 
 /* recalc_sigpending_and_wake only used internally in signal.c */
 extern void recalc_sigpending(void);
@@ -97,27 +91,21 @@ extern void __cleanup_sighand(struct sighand_struct *);
 
 
 static inline struct pid *task_pgrp(struct task_struct *task) {
-	return task->signal->pids[PIDTYPE_PGID];
-}
+	return task->signal->pids[PIDTYPE_PGID]; }
 
 static inline struct pid *task_session(struct task_struct *task) {
-	return task->signal->pids[PIDTYPE_SID];
-}
+	return task->signal->pids[PIDTYPE_SID]; }
 
 static inline bool thread_group_leader(struct task_struct *p) {
-	return p->exit_signal >= 0;
-}
+	return p->exit_signal >= 0; }
 
 static inline struct task_struct *next_thread(const struct task_struct *p) {
-	return list_entry_rcu(p->thread_group.next, struct task_struct, thread_group);
-}
+	return list_entry_rcu(p->thread_group.next, struct task_struct, thread_group); }
 
 static inline unsigned long task_rlimit(const struct task_struct *task, unsigned int limit) {
-	return READ_ONCE(task->signal->rlim[limit].rlim_cur);
-}
+	return READ_ONCE(task->signal->rlim[limit].rlim_cur); }
 
 static inline unsigned long rlimit(unsigned int limit) {
-	return task_rlimit(current, limit);
-}
+	return task_rlimit(current, limit); }
 
 #endif  

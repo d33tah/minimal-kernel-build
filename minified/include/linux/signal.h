@@ -10,8 +10,7 @@ struct task_struct;
 /* Removed: print_fatal_signals - never used */
 
 static inline void clear_siginfo(kernel_siginfo_t *info) {
-	memset(info, 0, sizeof(*info));
-}
+	memset(info, 0, sizeof(*info)); }
 
 #ifndef __HAVE_ARCH_SIG_SETOPS
 
@@ -22,9 +21,7 @@ static inline void sigemptyset(sigset_t *set) {
 		break;
 	case 2: set->sig[1] = 0;
 		fallthrough;
-	case 1:	set->sig[0] = 0;
-	}
-}
+	case 1:	set->sig[0] = 0; } }
 
 
 
@@ -33,8 +30,7 @@ static inline void sigemptyset(sigset_t *set) {
 
 static inline void init_sigpending(struct sigpending *sig) {
 	sigemptyset(&sig->signal);
-	INIT_LIST_HEAD(&sig->list);
-}
+	INIT_LIST_HEAD(&sig->list); }
 
 extern void exit_signals(struct task_struct *tsk);
 

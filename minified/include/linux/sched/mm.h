@@ -12,24 +12,20 @@
 extern struct mm_struct *mm_alloc(void);
 
 static inline void mmgrab(struct mm_struct *mm) {
-	atomic_inc(&mm->mm_count);
-}
+	atomic_inc(&mm->mm_count); }
 
 extern void __mmdrop(struct mm_struct *mm);
 
 static inline void mmdrop(struct mm_struct *mm) {
 	 
 	if (unlikely(atomic_dec_and_test(&mm->mm_count)))
-		__mmdrop(mm);
-}
+		__mmdrop(mm); }
 
 static inline void mmdrop_sched(struct mm_struct *mm) {
-	mmdrop(mm);
-}
+	mmdrop(mm); }
 
 static inline void mmget(struct mm_struct *mm) {
-	atomic_inc(&mm->mm_users);
-}
+	atomic_inc(&mm->mm_users); }
 
 
 extern void mmput(struct mm_struct *);
@@ -59,14 +55,11 @@ static inline gfp_t current_gfp_context(gfp_t flags) {
 		if (pflags & PF_MEMALLOC_NOIO)
 			flags &= ~(__GFP_IO | __GFP_FS);
 		else if (pflags & PF_MEMALLOC_NOFS)
-			flags &= ~__GFP_FS;
-	}
-	return flags;
-}
+			flags &= ~__GFP_FS; }
+	return flags; }
 
 static inline void might_alloc(gfp_t gfp_mask) {
-	might_sleep_if(gfpflags_allow_blocking(gfp_mask));
-}
+	might_sleep_if(gfpflags_allow_blocking(gfp_mask)); }
 
 
 #endif

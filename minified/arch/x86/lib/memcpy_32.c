@@ -5,12 +5,10 @@
 #undef memmove
 
 __visible void *memcpy(void *to, const void *from, size_t n) {
-	return __memcpy(to, from, n);
-}
+	return __memcpy(to, from, n); }
 
 __visible void *memset(void *s, int c, size_t count) {
-	return __memset(s, c, count);
-}
+	return __memset(s, c, count); }
 
 __visible void *memmove(void *dest, const void *src, size_t n) {
 	int d0,d1,d2,d3,d4,d5;

@@ -37,8 +37,7 @@ static int __down_trylock_console_sem(unsigned long ip) {
 	if (lock_failed)
 		return 1;
 	mutex_acquire(&console_lock_dep_map, 0, 1, ip);
-	return 0;
-}
+	return 0; }
 #define down_trylock_console_sem() __down_trylock_console_sem(_RET_IP_)
 
 static void __up_console_sem(unsigned long ip) {
@@ -48,8 +47,7 @@ static void __up_console_sem(unsigned long ip) {
 
 	printk_safe_enter_irqsave(flags);
 	up(&console_sem);
-	printk_safe_exit_irqrestore(flags);
-}
+	printk_safe_exit_irqrestore(flags); }
 #define up_console_sem() __up_console_sem(_RET_IP_)
 
 
@@ -57,18 +55,15 @@ static void __up_console_sem(unsigned long ip) {
 
 void console_verbose(void) {
 	if (console_loglevel)
-		console_loglevel = CONSOLE_LOGLEVEL_MOTORMOUTH;
-}
+		console_loglevel = CONSOLE_LOGLEVEL_MOTORMOUTH; }
 
 void console_lock(void) {
 	might_sleep();
 
-	down_console_sem();
-}
+	down_console_sem(); }
 
 static void __console_unlock(void) {
-	up_console_sem();
-}
+	up_console_sem(); }
 
 void console_unlock(void) {
 	/*
@@ -76,8 +71,7 @@ void console_unlock(void) {
 	 * console_emit_next_record() never reads a record and the flush
 	 * loop has nothing to do. Just release the console lock.
 	 */
-	__console_unlock();
-}
+	__console_unlock(); }
 
 
 void console_unblank(void) {
@@ -93,8 +87,7 @@ void console_unblank(void) {
 	for_each_console(c)
 		if ((c->flags & CON_ENABLED) && c->unblank)
 			c->unblank();
-	console_unlock();
-}
+	console_unlock(); }
 
 void console_flush_on_panic(enum con_flush_mode mode) {
 	/*
@@ -102,8 +95,7 @@ void console_flush_on_panic(enum con_flush_mode mode) {
 	 * buffer there is nothing to flush — just take and drop the lock.
 	 */
 	down_trylock_console_sem();
-	console_unlock();
-}
+	console_unlock(); }
 
 struct tty_driver *console_device(int *index) {
 	struct console *c;
@@ -115,11 +107,9 @@ struct tty_driver *console_device(int *index) {
 			continue;
 		driver = c->device(c, index);
 		if (driver)
-			break;
-	}
+			break; }
 	console_unlock();
-	return driver;
-}
+	return driver; }
 
 
 static int try_enable_preferred_console(struct console *newcon) {
@@ -134,8 +124,7 @@ static int try_enable_preferred_console(struct console *newcon) {
 	if (newcon->flags & CON_ENABLED)
 		return 0;
 
-	return -ENOENT;
-}
+	return -ENOENT; }
 
 static void try_enable_default_console(struct console *newcon) {
 	if (newcon->index < 0)
@@ -147,8 +136,7 @@ static void try_enable_default_console(struct console *newcon) {
 	newcon->flags |= CON_ENABLED;
 
 	if (newcon->device)
-		newcon->flags |= CON_CONSDEV;
-}
+		newcon->flags |= CON_CONSDEV; }
 
 #define con_printk(lvl, con, fmt, ...)				printk(lvl pr_fmt("%sconsole [%s%d] " fmt),		       (con->flags & CON_BOOT) ? "boot" : "",		       con->name, con->index, ##__VA_ARGS__)
 
@@ -158,8 +146,7 @@ void register_console(struct console *newcon) {
 
 	for_each_console(con) {
 		if (WARN(con == newcon, "console '%s%d' already registered\n", con->name, con->index))
-			return;
-	}
+			return; }
 
 	/*
 	 * No console on this build sets CON_BOOT (the only registrant is
@@ -190,13 +177,11 @@ void register_console(struct console *newcon) {
 		newcon->flags |= CON_CONSDEV;
 	} else {
 		newcon->next = console_drivers->next;
-		console_drivers->next = newcon;
-	}
+		console_drivers->next = newcon; }
 
 	console_unlock();
 
-	con_printk(KERN_INFO, newcon, "enabled\n");
-}
+	con_printk(KERN_INFO, newcon, "enabled\n"); }
 
 void __init console_init(void) {
 	initcall_t call;
@@ -213,9 +198,7 @@ void __init console_init(void) {
 
 		call();
 		 
-		ce++;
-	}
-}
+		ce++; } }
 
 
 

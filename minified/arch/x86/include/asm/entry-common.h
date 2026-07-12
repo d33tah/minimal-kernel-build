@@ -8,8 +8,7 @@
 #include <asm/fpu/api.h>
 
  
-static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs) {
-}
+static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs) { }
 #define arch_enter_from_user_mode arch_enter_from_user_mode
 
 static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs, unsigned long ti_work) {
@@ -21,8 +20,7 @@ static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs, unsigned
 }
 #define arch_exit_to_user_mode_prepare arch_exit_to_user_mode_prepare
 
-static __always_inline void arch_exit_to_user_mode(void) {
-}
+static __always_inline void arch_exit_to_user_mode(void) { }
 #define arch_exit_to_user_mode arch_exit_to_user_mode
 
 #endif

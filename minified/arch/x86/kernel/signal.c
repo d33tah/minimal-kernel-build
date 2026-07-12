@@ -12,5 +12,4 @@
  * asm/elf.h.  No signal frame is ever built, so report a zero minimum.
  */
 unsigned long get_sigframe_size(void) {
-	return 0;
-}
+	return 0; }

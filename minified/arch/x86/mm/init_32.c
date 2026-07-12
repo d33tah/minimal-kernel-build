@@ -10,19 +10,16 @@
 #include "mm_internal.h"
 
 static pmd_t * __init one_md_table_init(pgd_t *pgd) {
-	return pmd_offset(pud_offset(p4d_offset(pgd, 0), 0), 0);
-}
+	return pmd_offset(pud_offset(p4d_offset(pgd, 0), 0), 0); }
 
 static pte_t * __init one_page_table_init(pmd_t *pmd) {
 	if (!(pmd_val(*pmd) & _PAGE_PRESENT)) {
 		pte_t *page_table = (pte_t *)alloc_low_page();
 
 		set_pmd(pmd, __pmd(__pa(page_table) | _PAGE_TABLE));
-		BUG_ON(page_table != pte_offset_kernel(pmd, 0));
-	}
+		BUG_ON(page_table != pte_offset_kernel(pmd, 0)); }
 
-	return pte_offset_kernel(pmd, 0);
-}
+	return pte_offset_kernel(pmd, 0); }
 
 pte_t * __init populate_extra_pte(unsigned long vaddr) {
 	int pte_idx = pte_index(vaddr);
@@ -31,8 +28,7 @@ pte_t * __init populate_extra_pte(unsigned long vaddr) {
 	pmd_t *pmd;
 
 	pmd = one_md_table_init(swapper_pg_dir + pgd_idx) + pmd_idx;
-	return one_page_table_init(pmd) + pte_idx;
-}
+	return one_page_table_init(pmd) + pte_idx; }
 
 static void __init
 page_table_range_init(unsigned long start, unsigned long end, pgd_t *pgd_base) {
@@ -52,17 +48,13 @@ page_table_range_init(unsigned long start, unsigned long end, pgd_t *pgd_base) {
 		for (; (pmd_idx < PTRS_PER_PMD) && (vaddr != end); pmd++, pmd_idx++) {
 			one_page_table_init(pmd);
 
-			vaddr += PMD_SIZE;
-		}
-		pmd_idx = 0;
-	}
-}
+			vaddr += PMD_SIZE; }
+		pmd_idx = 0; } }
 
 static inline int is_x86_32_kernel_text(unsigned long addr) {
 	if (addr >= (unsigned long)_text && addr <= (unsigned long)__init_end)
 		return 1;
-	return 0;
-}
+	return 0; }
 
 unsigned long __init
 kernel_physical_mapping_init(unsigned long start, unsigned long end, unsigned long page_size_mask, pgprot_t prot) {
@@ -118,8 +110,7 @@ repeat:
 					set_pmd(pmd, pfn_pmd(pfn, prot));
 
 				pfn += PTRS_PER_PTE;
-				continue;
-			}
+				continue; }
 			pte = one_page_table_init(pmd);
 
 			pte_ofs = pte_index((pfn<<PAGE_SHIFT) + PAGE_OFFSET);
@@ -136,27 +127,21 @@ repeat:
 					set_pte(pte, pfn_pte(pfn, init_prot));
 					last_map_addr = (pfn << PAGE_SHIFT) + PAGE_SIZE;
 				} else
-					set_pte(pte, pfn_pte(pfn, prot));
-			}
-		}
-	}
+					set_pte(pte, pfn_pte(pfn, prot)); } } }
 	if (mapping_iter == 1) {
 
 		__flush_tlb_all();
 
 		 
 		mapping_iter = 2;
-		goto repeat;
-	}
-	return last_map_addr;
-}
+		goto repeat; }
+	return last_map_addr; }
 
 void __init sync_initial_page_table(void) {
 	clone_pgd_range(initial_page_table + KERNEL_PGD_BOUNDARY, swapper_pg_dir     + KERNEL_PGD_BOUNDARY, KERNEL_PGD_PTRS);
 
 	 
-	clone_pgd_range(initial_page_table, swapper_pg_dir     + KERNEL_PGD_BOUNDARY, min(KERNEL_PGD_PTRS, KERNEL_PGD_BOUNDARY));
-}
+	clone_pgd_range(initial_page_table, swapper_pg_dir     + KERNEL_PGD_BOUNDARY, min(KERNEL_PGD_PTRS, KERNEL_PGD_BOUNDARY)); }
 
 void __init native_pagetable_init(void) {
 	unsigned long pfn, va;
@@ -177,21 +162,18 @@ void __init native_pagetable_init(void) {
 		 
 		if (pmd_large(*pmd)) {
 			pr_warn("try to clear pte for ram above max_low_pfn: pfn: %lx pmd: %p pmd phys: %lx, but pmd is big page and is not using pte !\n", pfn, pmd, __pa(pmd));
-			BUG_ON(1);
-		}
+			BUG_ON(1); }
 
 		pte = pte_offset_kernel(pmd, va);
 		if (!pte_present(*pte))
 			break;
 
-		pte_clear(NULL, va, pte);
-	}
+		pte_clear(NULL, va, pte); }
 
 	__flush_tlb_all();
 
 	sparse_init();
-	zone_sizes_init();
-}
+	zone_sizes_init(); }
 
 void __init early_ioremap_page_table_range_init(void) {
 	pgd_t *pgd_base = swapper_pg_dir;
@@ -201,8 +183,7 @@ void __init early_ioremap_page_table_range_init(void) {
 	vaddr = __fix_to_virt(__end_of_fixed_addresses - 1) & PMD_MASK;
 	end = (FIXADDR_TOP + PMD_SIZE - 1) & PMD_MASK;
 	page_table_range_init(vaddr, end, pgd_base);
-	early_ioremap_reset();
-}
+	early_ioremap_reset(); }
 
 #define DEFAULT_PTE_MASK ~(_PAGE_NX | _PAGE_GLOBAL)
 pteval_t __supported_pte_mask __read_mostly = DEFAULT_PTE_MASK;
@@ -213,14 +194,12 @@ void __init find_low_pfn_range(void) {
 	 * CONFIG_HIGHMEM=n: no highmem can ever be mapped, so all RAM is
 	 * low memory. (The highmem-trimming branch is dropped as dead.)
 	 */
-	max_low_pfn = max_pfn;
-}
+	max_low_pfn = max_pfn; }
 
 void __init initmem_init(void) {
 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE - 1) + 1;
 
-	max_mapnr = max_low_pfn;
-}
+	max_mapnr = max_low_pfn; }
 
 static void __init test_wp_bit(void) {
 	char z = 0;
@@ -229,11 +208,9 @@ static void __init test_wp_bit(void) {
 
 	if (copy_to_kernel_nofault((char *)fix_to_virt(FIX_WP_TEST), &z, 1)) {
 		clear_fixmap(FIX_WP_TEST);
-		return;
-	}
+		return; }
 
-	panic("Linux doesn't support CPUs with broken WP.");
-}
+	panic("Linux doesn't support CPUs with broken WP."); }
 
 void __init mem_init(void) {
 	BUG_ON(!mem_map);
@@ -253,11 +230,9 @@ void __init mem_init(void) {
 	BUG_ON(VMALLOC_START				>= VMALLOC_END);
 	BUG_ON((unsigned long)high_memory		> VMALLOC_START);
 
-	test_wp_bit();
-}
+	test_wp_bit(); }
 
-static void mark_nxdata_nx(void) {
-}
+static void mark_nxdata_nx(void) { }
 
 void mark_rodata_ro(void) {
 	unsigned long start = PFN_ALIGN(_text);
@@ -265,5 +240,4 @@ void mark_rodata_ro(void) {
 
 	pr_info("Write protecting kernel text and read-only data: %luk\n", size >> 10);
 
-	mark_nxdata_nx();
-}
+	mark_nxdata_nx(); }

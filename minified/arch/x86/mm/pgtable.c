@@ -7,29 +7,24 @@
 gfp_t __userpte_alloc_gfp = GFP_PGTABLE_USER | PGTABLE_HIGHMEM;
 
 pgtable_t pte_alloc_one(struct mm_struct *mm) {
-	return __pte_alloc_one(mm, __userpte_alloc_gfp);
-}
+	return __pte_alloc_one(mm, __userpte_alloc_gfp); }
 
 static inline void pgd_list_add(pgd_t *pgd) {
 	struct page *page = virt_to_page(pgd);
 
-	list_add(&page->lru, &pgd_list);
-}
+	list_add(&page->lru, &pgd_list); }
 
 static void pgd_set_mm(pgd_t *pgd, struct mm_struct *mm) {
-	virt_to_page(pgd)->pt_mm = mm;
-}
+	virt_to_page(pgd)->pt_mm = mm; }
 
 static void pgd_ctor(struct mm_struct *mm, pgd_t *pgd) {
 	clone_pgd_range(pgd + KERNEL_PGD_BOUNDARY, swapper_pg_dir + KERNEL_PGD_BOUNDARY, KERNEL_PGD_PTRS);
 
 	pgd_set_mm(pgd, mm);
-	pgd_list_add(pgd);
-}
+	pgd_list_add(pgd); }
 
 static inline pgd_t *_pgd_alloc(void) {
-	return (pgd_t *)__get_free_pages(GFP_PGTABLE_USER, PGD_ALLOCATION_ORDER);
-}
+	return (pgd_t *)__get_free_pages(GFP_PGTABLE_USER, PGD_ALLOCATION_ORDER); }
 
 pgd_t *pgd_alloc(struct mm_struct *mm) {
 	pgd_t *pgd;
@@ -47,8 +42,7 @@ pgd_t *pgd_alloc(struct mm_struct *mm) {
 
 	spin_unlock(&pgd_lock);
 
-	return pgd;
-}
+	return pgd; }
 
 void pgd_free(struct mm_struct *mm, pgd_t *pgd) {
 	/* runtime-dead: reached only via mm_free_pgd<-__mmdrop (mm teardown at
@@ -64,8 +58,7 @@ int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address, pte
 	if (changed && dirty)
 		set_pte(ptep, entry);
 
-	return changed;
-}
+	return changed; }
 
 
 /*
@@ -81,8 +74,6 @@ void native_set_fixmap(unsigned   idx, phys_addr_t phys, pgprot_t flags) {
 	pgprot_val(flags) &= __default_kernel_pte_mask;
 
 	if (idx >= __end_of_fixed_addresses) {
-		BUG();
-	}
-	set_pte_vaddr(address, pfn_pte(phys >> PAGE_SHIFT, flags));
-}
+		BUG(); }
+	set_pte_vaddr(address, pfn_pte(phys >> PAGE_SHIFT, flags)); }
 

@@ -23,8 +23,7 @@ static DEFINE_PER_CPU(struct timer_base, timer_bases[NR_BASES]);
  */
 void update_process_times(int user_tick) {
 	rcu_sched_clock_irq(user_tick);
-	scheduler_tick();
-}
+	scheduler_tick(); }
 
 static void __init init_timer_cpu(int cpu) {
 	struct timer_base *base;
@@ -32,20 +31,16 @@ static void __init init_timer_cpu(int cpu) {
 
 	for (i = 0; i < NR_BASES; i++) {
 		base = per_cpu_ptr(&timer_bases[i], cpu);
-		raw_spin_lock_init(&base->lock);
-	}
-}
+		raw_spin_lock_init(&base->lock); } }
 
 static void __init init_timer_cpus(void) {
 	int cpu;
 
 	for_each_possible_cpu(cpu)
-		init_timer_cpu(cpu);
-}
+		init_timer_cpu(cpu); }
 
 void __init init_timers(void) {
-	init_timer_cpus();
-}
+	init_timer_cpus(); }
 
 
 

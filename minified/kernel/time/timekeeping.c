@@ -25,26 +25,21 @@ static struct timekeeper shadow_timekeeper;
 static inline void tk_normalize_xtime(struct timekeeper *tk) {
 	while (tk->tkr_mono.xtime_nsec >= ((u64)NSEC_PER_SEC << tk->tkr_mono.shift)) {
 		tk->tkr_mono.xtime_nsec -= (u64)NSEC_PER_SEC << tk->tkr_mono.shift;
-		tk->xtime_sec++;
-	}
+		tk->xtime_sec++; }
 	while (tk->tkr_raw.xtime_nsec >= ((u64)NSEC_PER_SEC << tk->tkr_raw.shift)) {
 		tk->tkr_raw.xtime_nsec -= (u64)NSEC_PER_SEC << tk->tkr_raw.shift;
-		tk->raw_sec++;
-	}
-}
+		tk->raw_sec++; } }
 
 static inline struct timespec64 tk_xtime(const struct timekeeper *tk) {
 	struct timespec64 ts;
 
 	ts.tv_sec = tk->xtime_sec;
 	ts.tv_nsec = (long)(tk->tkr_mono.xtime_nsec >> tk->tkr_mono.shift);
-	return ts;
-}
+	return ts; }
 
 static void tk_set_xtime(struct timekeeper *tk, const struct timespec64 *ts) {
 	tk->xtime_sec = ts->tv_sec;
-	tk->tkr_mono.xtime_nsec = (u64)ts->tv_nsec << tk->tkr_mono.shift;
-}
+	tk->tkr_mono.xtime_nsec = (u64)ts->tv_nsec << tk->tkr_mono.shift; }
 
 static void tk_set_wall_to_mono(struct timekeeper *tk, struct timespec64 wtm) {
 	struct timespec64 tmp;
@@ -53,15 +48,13 @@ static void tk_set_wall_to_mono(struct timekeeper *tk, struct timespec64 wtm) {
 	WARN_ON_ONCE(tk->offs_real != timespec64_to_ktime(tmp));
 	tk->wall_to_monotonic = wtm;
 	set_normalized_timespec64(&tmp, -wtm.tv_sec, -wtm.tv_nsec);
-	tk->offs_real = timespec64_to_ktime(tmp);
-}
+	tk->offs_real = timespec64_to_ktime(tmp); }
 
 
 static inline u64 tk_clock_read(const struct tk_read_base *tkr) {
 	struct clocksource *clock = READ_ONCE(tkr->clock);
 
-	return clock->read(clock);
-}
+	return clock->read(clock); }
 
 static inline u64 timekeeping_get_delta(const struct tk_read_base *tkr) {
 	u64 cycle_now, delta;
@@ -70,8 +63,7 @@ static inline u64 timekeeping_get_delta(const struct tk_read_base *tkr) {
 
 	delta = clocksource_delta(cycle_now, tkr->cycle_last, tkr->mask);
 
-	return delta;
-}
+	return delta; }
 
 static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock) {
 	u64 interval;
@@ -109,9 +101,7 @@ static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
 			tk->tkr_raw.xtime_nsec >>= -shift_change;
 		} else {
 			tk->tkr_mono.xtime_nsec <<= shift_change;
-			tk->tkr_raw.xtime_nsec <<= shift_change;
-		}
-	}
+			tk->tkr_raw.xtime_nsec <<= shift_change; } }
 
 	tk->tkr_mono.shift = clock->shift;
 	tk->tkr_raw.shift = clock->shift;
@@ -123,8 +113,7 @@ static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
 	tk->tkr_mono.mult = clock->mult;
 	tk->tkr_raw.mult = clock->mult;
 	tk->ntp_err_mult = 0;
-	tk->skip_second_overflow = 0;
-}
+	tk->skip_second_overflow = 0; }
 
 static inline u64 timekeeping_delta_to_ns(const struct tk_read_base *tkr, u64 delta) {
 	u64 nsec;
@@ -132,15 +121,13 @@ static inline u64 timekeeping_delta_to_ns(const struct tk_read_base *tkr, u64 de
 	nsec = delta * tkr->mult + tkr->xtime_nsec;
 	nsec >>= tkr->shift;
 
-	return nsec;
-}
+	return nsec; }
 
 static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr) {
 	u64 delta;
 
 	delta = timekeeping_get_delta(tkr);
-	return timekeeping_delta_to_ns(tkr, delta);
-}
+	return timekeeping_delta_to_ns(tkr, delta); }
 
 
 static inline void tk_update_ktime_data(struct timekeeper *tk) {
@@ -151,19 +138,16 @@ static inline void tk_update_ktime_data(struct timekeeper *tk) {
 	nsec = (u32) tk->wall_to_monotonic.tv_nsec;
 	tk->tkr_mono.base = ns_to_ktime(seconds * NSEC_PER_SEC + nsec);
 
-	tk->tkr_raw.base = ns_to_ktime(tk->raw_sec * NSEC_PER_SEC);
-}
+	tk->tkr_raw.base = ns_to_ktime(tk->raw_sec * NSEC_PER_SEC); }
 
 static void timekeeping_update(struct timekeeper *tk, unsigned int action) {
 	if (action & TK_CLEAR_NTP) {
-		tk->ntp_error = 0;
-	}
+		tk->ntp_error = 0; }
 
 	tk_update_ktime_data(tk);
 
 	if (action & TK_MIRROR)
-		memcpy(&shadow_timekeeper, &tk_core.timekeeper, sizeof(tk_core.timekeeper));
-}
+		memcpy(&shadow_timekeeper, &tk_core.timekeeper, sizeof(tk_core.timekeeper)); }
 
 static void timekeeping_forward_now(struct timekeeper *tk) {
 	u64 cycle_now, delta;
@@ -176,8 +160,7 @@ static void timekeeping_forward_now(struct timekeeper *tk) {
 	tk->tkr_mono.xtime_nsec += delta * tk->tkr_mono.mult;
 	tk->tkr_raw.xtime_nsec += delta * tk->tkr_raw.mult;
 
-	tk_normalize_xtime(tk);
-}
+	tk_normalize_xtime(tk); }
 
 /* ktime_get_real_ts64 removed - only caller was gettimeofday (now stubbed) */
 
@@ -194,8 +177,7 @@ ktime_t ktime_get(void) {
 
 	} while (read_seqcount_retry(&tk_core.seq, seq));
 
-	return ktime_add_ns(base, nsecs);
-}
+	return ktime_add_ns(base, nsecs); }
 
 /* Removed: ktime_get_with_offset + offsets[], ktime_get_coarse_with_offset, ktime_mono_to_any, ktime_get_raw - no callers */
 
@@ -210,8 +192,7 @@ time64_t ktime_get_real_seconds(void) {
 
 	} while (read_seqcount_retry(&tk_core.seq, seq));
 
-	return seconds;
-}
+	return seconds; }
 
 
 static int change_clocksource(void *data) {
@@ -238,8 +219,7 @@ static int change_clocksource(void *data) {
 	write_seqcount_end(&tk_core.seq);
 	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
 
-	return 0;
-}
+	return 0; }
 
 int timekeeping_notify(struct clocksource *clock) {
 	struct timekeeper *tk = &tk_core.timekeeper;
@@ -247,19 +227,16 @@ int timekeeping_notify(struct clocksource *clock) {
 	if (tk->tkr_mono.clock == clock)
 		return 0;
 	stop_machine(change_clocksource, clock, NULL);
-	return tk->tkr_mono.clock == clock ? 0 : -1;
-}
+	return tk->tkr_mono.clock == clock ? 0 : -1; }
 
 void __weak read_persistent_clock64(struct timespec64 *ts) {
 	ts->tv_sec = 0;
-	ts->tv_nsec = 0;
-}
+	ts->tv_nsec = 0; }
 
 void __weak __init
 read_persistent_wall_and_boot_offset(struct timespec64 *wall_time, struct timespec64 *boot_offset) {
 	read_persistent_clock64(wall_time);
-	*boot_offset = ns_to_timespec64(local_clock());
-}
+	*boot_offset = ns_to_timespec64(local_clock()); }
 
 void __init timekeeping_init(void) {
 	struct timespec64 wall_time, boot_offset, wall_to_mono;
@@ -270,8 +247,7 @@ void __init timekeeping_init(void) {
 	read_persistent_wall_and_boot_offset(&wall_time, &boot_offset);
 	if (!(timespec64_valid_settod(&wall_time) && timespec64_to_ns(&wall_time) > 0) && timespec64_to_ns(&wall_time) != 0) {
 		pr_warn("Persistent clock returned invalid value");
-		wall_time = (struct timespec64){0};
-	}
+		wall_time = (struct timespec64){0}; }
 
 	if (timespec64_compare(&wall_time, &boot_offset) < 0)
 		boot_offset = (struct timespec64){0};
@@ -294,8 +270,7 @@ void __init timekeeping_init(void) {
 	timekeeping_update(tk, TK_MIRROR | TK_CLOCK_WAS_SET);
 
 	write_seqcount_end(&tk_core.seq);
-	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
-}
+	raw_spin_unlock_irqrestore(&timekeeper_lock, flags); }
 
 
 static __always_inline void timekeeping_apply_adjustment(struct timekeeper *tk, s64 offset, s32 mult_adj) {
@@ -308,19 +283,16 @@ static __always_inline void timekeeping_apply_adjustment(struct timekeeper *tk, 
 		offset = -offset;
 	} else if (mult_adj != 1) {
 		interval *= mult_adj;
-		offset *= mult_adj;
-	}
+		offset *= mult_adj; }
 
 	if ((mult_adj > 0) && (tk->tkr_mono.mult + mult_adj < mult_adj)) {
 		
 		WARN_ON_ONCE(1);
-		return;
-	}
+		return; }
 
 	tk->tkr_mono.mult += mult_adj;
 	tk->xtime_interval += interval;
-	tk->tkr_mono.xtime_nsec -= offset;
-}
+	tk->tkr_mono.xtime_nsec -= offset; }
 
 static void timekeeping_adjust(struct timekeeper *tk, s64 offset) {
 	u32 mult;
@@ -329,8 +301,7 @@ static void timekeeping_adjust(struct timekeeper *tk, s64 offset) {
 		mult = tk->tkr_mono.mult - tk->ntp_err_mult;
 	} else {
 		tk->ntp_tick = ntp_tick_length();
-		mult = div64_u64((tk->ntp_tick >> tk->ntp_error_shift) - tk->xtime_remainder, tk->cycle_interval);
-	}
+		mult = div64_u64((tk->ntp_tick >> tk->ntp_error_shift) - tk->xtime_remainder, tk->cycle_interval); }
 
 	tk->ntp_err_mult = tk->ntp_error > 0 ? 1 : 0;
 	mult += tk->ntp_err_mult;
@@ -338,15 +309,12 @@ static void timekeeping_adjust(struct timekeeper *tk, s64 offset) {
 	timekeeping_apply_adjustment(tk, offset, mult - tk->tkr_mono.mult);
 
 	if (unlikely(tk->tkr_mono.clock->maxadj && (abs(tk->tkr_mono.mult - tk->tkr_mono.clock->mult) > tk->tkr_mono.clock->maxadj))) {
-		printk_once(KERN_WARNING "Adjusting %s more than 11%% (%ld vs %ld)\n", tk->tkr_mono.clock->name, (long)tk->tkr_mono.mult, (long)tk->tkr_mono.clock->mult + tk->tkr_mono.clock->maxadj);
-	}
+		printk_once(KERN_WARNING "Adjusting %s more than 11%% (%ld vs %ld)\n", tk->tkr_mono.clock->name, (long)tk->tkr_mono.mult, (long)tk->tkr_mono.clock->mult + tk->tkr_mono.clock->maxadj); }
 
 	if (unlikely((s64)tk->tkr_mono.xtime_nsec < 0)) {
 		tk->tkr_mono.xtime_nsec += (u64)NSEC_PER_SEC << tk->tkr_mono.shift;
 		tk->xtime_sec--;
-		tk->skip_second_overflow = 1;
-	}
-}
+		tk->skip_second_overflow = 1; } }
 
 static inline unsigned int accumulate_nsecs_to_secs(struct timekeeper *tk) {
 	u64 nsecps = (u64)NSEC_PER_SEC << tk->tkr_mono.shift;
@@ -358,8 +326,7 @@ static inline unsigned int accumulate_nsecs_to_secs(struct timekeeper *tk) {
 
 		if (unlikely(tk->skip_second_overflow)) {
 			tk->skip_second_overflow = 0;
-			continue;
-		}
+			continue; }
 
 		/*
 		 * Leap-second handling removed: second_overflow() is a
@@ -367,8 +334,7 @@ static inline unsigned int accumulate_nsecs_to_secs(struct timekeeper *tk) {
 		 * leap correction never fired.
 		 */
 	}
-	return clock_set;
-}
+	return clock_set; }
 
 static u64 logarithmic_accumulation(struct timekeeper *tk, u64 offset, u32 shift, unsigned int *clock_set) {
 	u64 interval = tk->cycle_interval << shift;
@@ -388,14 +354,12 @@ static u64 logarithmic_accumulation(struct timekeeper *tk, u64 offset, u32 shift
 	snsec_per_sec = (u64)NSEC_PER_SEC << tk->tkr_raw.shift;
 	while (tk->tkr_raw.xtime_nsec >= snsec_per_sec) {
 		tk->tkr_raw.xtime_nsec -= snsec_per_sec;
-		tk->raw_sec++;
-	}
+		tk->raw_sec++; }
 
 	tk->ntp_error += tk->ntp_tick << shift;
 	tk->ntp_error -= (tk->xtime_interval + tk->xtime_remainder) << (tk->ntp_error_shift + shift);
 
-	return offset;
-}
+	return offset; }
 
 static bool timekeeping_advance(void) {
 	struct timekeeper *real_tk = &tk_core.timekeeper;
@@ -420,8 +384,7 @@ static bool timekeeping_advance(void) {
 	while (offset >= tk->cycle_interval) {
 		offset = logarithmic_accumulation(tk, offset, shift, &clock_set);
 		if (offset < tk->cycle_interval<<shift)
-			shift--;
-	}
+			shift--; }
 
 	timekeeping_adjust(tk, offset);
 
@@ -436,12 +399,10 @@ static bool timekeeping_advance(void) {
 out:
 	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
 
-	return !!clock_set;
-}
+	return !!clock_set; }
 
 void update_wall_time(void) {
-	timekeeping_advance();
-}
+	timekeeping_advance(); }
 
 
 void ktime_get_coarse_real_ts64(struct timespec64 *ts) {
@@ -452,11 +413,9 @@ void ktime_get_coarse_real_ts64(struct timespec64 *ts) {
 		seq = read_seqcount_begin(&tk_core.seq);
 
 		*ts = tk_xtime(tk);
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-}
+	} while (read_seqcount_retry(&tk_core.seq, seq)); }
 
 
 void do_timer(unsigned long ticks) {
-	jiffies_64 += ticks;
-}
+	jiffies_64 += ticks; }
 

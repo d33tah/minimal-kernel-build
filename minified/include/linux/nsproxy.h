@@ -18,7 +18,6 @@ void exit_task_namespaces(struct task_struct *tsk);
 int __init nsproxy_cache_init(void);
 
 static inline void get_nsproxy(struct nsproxy *ns) {
-	atomic_inc(&ns->count);
-}
+	atomic_inc(&ns->count); }
 
 #endif

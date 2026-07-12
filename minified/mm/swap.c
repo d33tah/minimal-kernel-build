@@ -21,16 +21,13 @@ static bool pagevec_add_and_need_flush(struct pagevec *pvec, struct page *page) 
 	if (!pagevec_add(pvec, page) || PageCompound(page) || lru_cache_disabled())
 		ret = true;
 
-	return ret;
-}
+	return ret; }
 
 static void __folio_activate(struct folio *folio, struct lruvec *lruvec) {
 	if (!folio_test_active(folio)) {
 		lruvec_del_folio(lruvec, folio);
 		folio_set_active(folio);
-		lruvec_add_folio(lruvec, folio);
-	}
-}
+		lruvec_add_folio(lruvec, folio); } }
 
 static void folio_activate(struct folio *folio) {
 	struct lruvec *lruvec;
@@ -39,9 +36,7 @@ static void folio_activate(struct folio *folio) {
 		lruvec = folio_lruvec_lock_irq(folio);
 		__folio_activate(folio, lruvec);
 		unlock_page_lruvec_irq(lruvec);
-		folio_set_lru(folio);
-	}
-}
+		folio_set_lru(folio); } }
 
 static void __lru_cache_activate_folio(struct folio *folio) {
 	struct pagevec *pvec;
@@ -56,12 +51,9 @@ static void __lru_cache_activate_folio(struct folio *folio) {
 
 		if (pagevec_page == &folio->page) {
 			folio_set_active(folio);
-			break;
-		}
-	}
+			break; } }
 
-	local_unlock(&lru_pvecs.lock);
-}
+	local_unlock(&lru_pvecs.lock); }
 
 void folio_mark_accessed(struct folio *folio) {
 	if (!folio_test_referenced(folio)) {
@@ -72,9 +64,7 @@ void folio_mark_accessed(struct folio *folio) {
 			folio_activate(folio);
 		else
 			__lru_cache_activate_folio(folio);
-		folio_clear_referenced(folio);
-	}
-}
+		folio_clear_referenced(folio); } }
 
 void folio_add_lru(struct folio *folio) {
 	struct pagevec *pvec;
@@ -86,15 +76,13 @@ void folio_add_lru(struct folio *folio) {
 	pvec = this_cpu_ptr(&lru_pvecs.lru_add);
 	if (pagevec_add_and_need_flush(pvec, &folio->page))
 		__pagevec_lru_add(pvec);
-	local_unlock(&lru_pvecs.lock);
-}
+	local_unlock(&lru_pvecs.lock); }
 
 void lru_cache_add_inactive_or_unevictable(struct page *page, struct vm_area_struct *vma) {
 	VM_BUG_ON_PAGE(PageLRU(page), page);
 
 	if (!unlikely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) == VM_LOCKED))
-		lru_cache_add(page);
-}
+		lru_cache_add(page); }
 
 void lru_add_drain(void) {
 	struct pagevec *pvec;
@@ -104,8 +92,7 @@ void lru_add_drain(void) {
 	pvec = &per_cpu(lru_pvecs.lru_add, smp_processor_id());
 	if (pagevec_count(pvec))
 		__pagevec_lru_add(pvec);
-	local_unlock(&lru_pvecs.lock);
-}
+	local_unlock(&lru_pvecs.lock); }
 
 atomic_t lru_disable_count = ATOMIC_INIT(0);
 

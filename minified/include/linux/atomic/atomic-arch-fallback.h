@@ -109,8 +109,7 @@ arch_atomic_try_cmpxchg_acquire(atomic_t *v, int *old, int new) {
 	r = arch_atomic_cmpxchg_acquire(v, o, new);
 	if (unlikely(r != o))
 		*old = r;
-	return likely(r == o);
-}
+	return likely(r == o); }
 #define arch_atomic_try_cmpxchg_acquire arch_atomic_try_cmpxchg_acquire
 #endif
 
@@ -121,8 +120,7 @@ arch_atomic_try_cmpxchg_release(atomic_t *v, int *old, int new) {
 	r = arch_atomic_cmpxchg_release(v, o, new);
 	if (unlikely(r != o))
 		*old = r;
-	return likely(r == o);
-}
+	return likely(r == o); }
 #define arch_atomic_try_cmpxchg_release arch_atomic_try_cmpxchg_release
 #endif
 
@@ -133,8 +131,7 @@ arch_atomic_try_cmpxchg_relaxed(atomic_t *v, int *old, int new) {
 	r = arch_atomic_cmpxchg_relaxed(v, o, new);
 	if (unlikely(r != o))
 		*old = r;
-	return likely(r == o);
-}
+	return likely(r == o); }
 #define arch_atomic_try_cmpxchg_relaxed arch_atomic_try_cmpxchg_relaxed
 #endif
 
@@ -154,24 +151,21 @@ arch_atomic_fetch_add_unless(atomic_t *v, int a, int u) {
 			break;
 	} while (!arch_atomic_try_cmpxchg(v, &c, c + a));
 
-	return c;
-}
+	return c; }
 #define arch_atomic_fetch_add_unless arch_atomic_fetch_add_unless
 #endif
 
 #ifndef arch_atomic_add_unless
 static __always_inline bool
 arch_atomic_add_unless(atomic_t *v, int a, int u) {
-	return arch_atomic_fetch_add_unless(v, a, u) != u;
-}
+	return arch_atomic_fetch_add_unless(v, a, u) != u; }
 #define arch_atomic_add_unless arch_atomic_add_unless
 #endif
 
 #ifndef arch_atomic_inc_not_zero
 static __always_inline bool
 arch_atomic_inc_not_zero(atomic_t *v) {
-	return arch_atomic_add_unless(v, 1, 0);
-}
+	return arch_atomic_add_unless(v, 1, 0); }
 #define arch_atomic_inc_not_zero arch_atomic_inc_not_zero
 #endif
 
@@ -185,8 +179,7 @@ arch_atomic_inc_unless_negative(atomic_t *v) {
 			return false;
 	} while (!arch_atomic_try_cmpxchg(v, &c, c + 1));
 
-	return true;
-}
+	return true; }
 #define arch_atomic_inc_unless_negative arch_atomic_inc_unless_negative
 #endif
 
@@ -200,8 +193,7 @@ arch_atomic_dec_unless_positive(atomic_t *v) {
 			return false;
 	} while (!arch_atomic_try_cmpxchg(v, &c, c - 1));
 
-	return true;
-}
+	return true; }
 #define arch_atomic_dec_unless_positive arch_atomic_dec_unless_positive
 #endif
 
@@ -216,8 +208,7 @@ arch_atomic_dec_if_positive(atomic_t *v) {
 			break;
 	} while (!arch_atomic_try_cmpxchg(v, &c, dec));
 
-	return dec;
-}
+	return dec; }
 #define arch_atomic_dec_if_positive arch_atomic_dec_if_positive
 #endif
 

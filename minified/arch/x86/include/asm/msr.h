@@ -26,21 +26,18 @@
 /* __rdmsr / native_read_msr / rdmsr() removed - unused (no MSR reads in this build) */
 
 static __always_inline void __wrmsr(unsigned int msr, u32 low, u32 high) {
-	asm volatile("1: wrmsr\n" "2:\n" _ASM_EXTABLE_TYPE(1b, 2b, EX_TYPE_WRMSR) : : "c" (msr), "a"(low), "d" (high) : "memory");
-}
+	asm volatile("1: wrmsr\n" "2:\n" _ASM_EXTABLE_TYPE(1b, 2b, EX_TYPE_WRMSR) : : "c" (msr), "a"(low), "d" (high) : "memory"); }
 
 static inline void notrace
 native_write_msr(unsigned int msr, u32 low, u32 high) {
-	__wrmsr(msr, low, high);
-}
+	__wrmsr(msr, low, high); }
 
 static __always_inline unsigned long long rdtsc(void) {
 	DECLARE_ARGS(val, low, high);
 
 	asm volatile("rdtsc" : EAX_EDX_RET(val, low, high));
 
-	return EAX_EDX_VAL(val, low, high);
-}
+	return EAX_EDX_VAL(val, low, high); }
 
  
 static __always_inline unsigned long long rdtsc_ordered(void) {
@@ -49,15 +46,13 @@ static __always_inline unsigned long long rdtsc_ordered(void) {
 	 
 	asm volatile(ALTERNATIVE_2("rdtsc", "lfence; rdtsc", X86_FEATURE_LFENCE_RDTSC, "rdtscp", X86_FEATURE_RDTSCP) : EAX_EDX_RET(val, low, high) :: "ecx");
 
-	return EAX_EDX_VAL(val, low, high);
-}
+	return EAX_EDX_VAL(val, low, high); }
 
 #include <linux/errno.h>
  
 
 static inline void wrmsr(unsigned int msr, u32 low, u32 high) {
-	native_write_msr(msr, low, high);
-}
+	native_write_msr(msr, low, high); }
 
 #endif
 #endif

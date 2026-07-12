@@ -36,11 +36,8 @@ struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir, u
 		case S_IFDIR:
 			inode->i_op = &ramfs_dir_inode_operations;
 
-			inc_nlink(inode);
-		}
-	}
-	return inode;
-}
+			inc_nlink(inode); } }
+	return inode; }
 
 static int
 ramfs_mknod(struct user_namespace *mnt_userns, struct inode *dir, struct dentry *dentry, umode_t mode, dev_t dev) {
@@ -51,21 +48,17 @@ ramfs_mknod(struct user_namespace *mnt_userns, struct inode *dir, struct dentry 
 		d_instantiate(dentry, inode);
 		dget(dentry);	 
 		error = 0;
-		dir->i_mtime = dir->i_ctime = current_time(dir);
-	}
-	return error;
-}
+		dir->i_mtime = dir->i_ctime = current_time(dir); }
+	return error; }
 
 static int ramfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir, struct dentry *dentry, umode_t mode) {
 	int retval = ramfs_mknod(&init_user_ns, dir, dentry, mode | S_IFDIR, 0);
 	if (!retval)
 		inc_nlink(dir);
-	return retval;
-}
+	return retval; }
 
 static int ramfs_create(struct user_namespace *mnt_userns, struct inode *dir, struct dentry *dentry, umode_t mode, bool excl) {
-	return ramfs_mknod(&init_user_ns, dir, dentry, mode | S_IFREG, 0);
-}
+	return ramfs_mknod(&init_user_ns, dir, dentry, mode | S_IFREG, 0); }
 
 static const struct inode_operations ramfs_dir_inode_operations = { .create		= ramfs_create, .lookup		= simple_lookup, .mkdir		= ramfs_mkdir, .mknod		= ramfs_mknod, };
 
@@ -89,18 +82,15 @@ static int ramfs_parse_param(struct fs_context *fc, struct fs_parameter *param) 
 		if (opt != -ENOPARAM)
 			return opt;
 		 
-		return 0;
-	}
+		return 0; }
 	if (opt < 0)
 		return opt;
 
 	switch (opt) {
 	case Opt_mode:
-		fsi->mount_opts.mode = result.uint_32 & S_IALLUGO;
-	}
+		fsi->mount_opts.mode = result.uint_32 & S_IALLUGO; }
 
-	return 0;
-}
+	return 0; }
 
 static int ramfs_fill_super(struct super_block *sb, struct fs_context *fc) {
 	struct ramfs_fs_info *fsi = sb->s_fs_info;
@@ -116,16 +106,13 @@ static int ramfs_fill_super(struct super_block *sb, struct fs_context *fc) {
 	if (!sb->s_root)
 		return -ENOMEM;
 
-	return 0;
-}
+	return 0; }
 
 static int ramfs_get_tree(struct fs_context *fc) {
-	return get_tree_nodev(fc, ramfs_fill_super);
-}
+	return get_tree_nodev(fc, ramfs_fill_super); }
 
 static void ramfs_free_fc(struct fs_context *fc) {
-	kfree(fc->s_fs_info);
-}
+	kfree(fc->s_fs_info); }
 
 static const struct fs_context_operations ramfs_context_ops = { .free		= ramfs_free_fc, .parse_param	= ramfs_parse_param, .get_tree	= ramfs_get_tree, };
 
@@ -139,8 +126,7 @@ int ramfs_init_fs_context(struct fs_context *fc) {
 	fsi->mount_opts.mode = RAMFS_DEFAULT_MODE;
 	fc->s_fs_info = fsi;
 	fc->ops = &ramfs_context_ops;
-	return 0;
-}
+	return 0; }
 
 static void ramfs_kill_sb(struct super_block *sb) {
 	/* .kill_sb superblock teardown: never fires on a no-unmount boot.
@@ -150,6 +136,5 @@ static void ramfs_kill_sb(struct super_block *sb) {
 static struct file_system_type ramfs_fs_type = { .name		= "ramfs", .init_fs_context = ramfs_init_fs_context, .kill_sb	= ramfs_kill_sb, .fs_flags	= FS_USERNS_MOUNT, };
 
 static int __init init_ramfs_fs(void) {
-	return register_filesystem(&ramfs_fs_type);
-}
+	return register_filesystem(&ramfs_fs_type); }
 fs_initcall(init_ramfs_fs);

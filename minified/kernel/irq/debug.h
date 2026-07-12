@@ -17,8 +17,7 @@ static inline void print_irq_desc(unsigned int irq, struct irq_desc *desc) {
 	printk("->irq_data.chip(): %p, %pS\n", desc->irq_data.chip, desc->irq_data.chip);
 	printk("->action(): %p\n", desc->action);
 	if (desc->action) {
-		printk("->action->handler(): %p, %pS\n", desc->action->handler, desc->action->handler);
-	}
+		printk("->action->handler(): %p, %pS\n", desc->action->handler, desc->action->handler); }
 
 	___P(IRQ_LEVEL);
 	___P(IRQ_PER_CPU);
@@ -34,8 +33,7 @@ static inline void print_irq_desc(unsigned int irq, struct irq_desc *desc) {
 
 	___PD(IRQS_INPROGRESS);
 	___PD(IRQS_DISABLED);
-	___PD(IRQS_MASKED);
-}
+	___PD(IRQS_MASKED); }
 
 #undef ___P
 #undef ___PS

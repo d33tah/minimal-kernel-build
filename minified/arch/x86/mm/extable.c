@@ -30,13 +30,11 @@ static inline unsigned long *pt_regs_nr(struct pt_regs *regs, int nr) {
 	if (WARN_ON_ONCE(reg_offset < 0))
 		return &__dummy;
 
-	return (unsigned long *)((unsigned long)regs + reg_offset);
-}
+	return (unsigned long *)((unsigned long)regs + reg_offset); }
 
 static inline unsigned long
 ex_fixup_addr(const struct exception_table_entry *x) {
-	return (unsigned long)&x->fixup + x->fixup;
-}
+	return (unsigned long)&x->fixup + x->fixup; }
 
 static bool ex_handler_default(const struct exception_table_entry *e, struct pt_regs *regs) {
 	if (e->data & EX_FLAG_CLEAR_AX)
@@ -45,18 +43,15 @@ static bool ex_handler_default(const struct exception_table_entry *e, struct pt_
 		regs->dx = 0;
 
 	regs->ip = ex_fixup_addr(e);
-	return true;
-}
+	return true; }
 
 static bool ex_handler_fault(const struct exception_table_entry *fixup, struct pt_regs *regs, int trapnr) {
 	regs->ax = trapnr;
-	return ex_handler_default(fixup, regs);
-}
+	return ex_handler_default(fixup, regs); }
 
 static bool ex_handler_sgx(const struct exception_table_entry *fixup, struct pt_regs *regs, int trapnr) {
 	regs->ax = trapnr | SGX_ENCLS_FAULT_FLAG;
-	return ex_handler_default(fixup, regs);
-}
+	return ex_handler_default(fixup, regs); }
 
 static bool ex_handler_fprestore(const struct exception_table_entry *fixup, struct pt_regs *regs) {
 	regs->ip = ex_fixup_addr(fixup);
@@ -64,48 +59,40 @@ static bool ex_handler_fprestore(const struct exception_table_entry *fixup, stru
 	WARN_ONCE(1, "Bad FPU state detected at %pB, reinitializing FPU registers.", (void *)instruction_pointer(regs));
 
 	fpu_reset_from_exception_fixup();
-	return true;
-}
+	return true; }
 
 static bool ex_handler_uaccess(const struct exception_table_entry *fixup, struct pt_regs *regs, int trapnr) {
 	WARN_ONCE(trapnr == X86_TRAP_GP, "General protection fault in user access. Non-canonical address?");
-	return ex_handler_default(fixup, regs);
-}
+	return ex_handler_default(fixup, regs); }
 
 static bool ex_handler_copy(const struct exception_table_entry *fixup, struct pt_regs *regs, int trapnr) {
 	WARN_ONCE(trapnr == X86_TRAP_GP, "General protection fault in user access. Non-canonical address?");
-	return ex_handler_fault(fixup, regs, trapnr);
-}
+	return ex_handler_fault(fixup, regs, trapnr); }
 
 static bool ex_handler_msr(const struct exception_table_entry *fixup, struct pt_regs *regs, bool wrmsr, bool safe, int reg) {
 	if (!wrmsr) {
 		 
 		regs->ax = 0;
-		regs->dx = 0;
-	}
+		regs->dx = 0; }
 
 	if (safe)
 		*pt_regs_nr(regs, reg) = -EIO;
 
-	return ex_handler_default(fixup, regs);
-}
+	return ex_handler_default(fixup, regs); }
 
 static bool ex_handler_clear_fs(const struct exception_table_entry *fixup, struct pt_regs *regs) {
 	if (static_cpu_has(X86_BUG_NULL_SEG))
 		asm volatile ("mov %0, %%fs" : : "rm" (__USER_DS));
 	asm volatile ("mov %0, %%fs" : : "rm" (0));
-	return ex_handler_default(fixup, regs);
-}
+	return ex_handler_default(fixup, regs); }
 
 static bool ex_handler_imm_reg(const struct exception_table_entry *fixup, struct pt_regs *regs, int reg, int imm) {
 	*pt_regs_nr(regs, reg) = (long)imm;
-	return ex_handler_default(fixup, regs);
-}
+	return ex_handler_default(fixup, regs); }
 
 static bool ex_handler_ucopy_len(const struct exception_table_entry *fixup, struct pt_regs *regs, int trapnr, int reg, int imm) {
 	regs->cx = imm * regs->cx + *pt_regs_nr(regs, reg);
-	return ex_handler_uaccess(fixup, regs, trapnr);
-}
+	return ex_handler_uaccess(fixup, regs, trapnr); }
 
 int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code, unsigned long fault_addr) {
 	const struct exception_table_entry *e;
@@ -155,10 +142,8 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code, 
 	case EX_TYPE_FAULT_SGX:
 		return ex_handler_sgx(e, regs, trapnr);
 	case EX_TYPE_UCOPY_LEN:
-		return ex_handler_ucopy_len(e, regs, trapnr, reg, imm);
-	}
-	BUG();
-}
+		return ex_handler_ucopy_len(e, regs, trapnr, reg, imm); }
+	BUG(); }
 
 extern unsigned int early_recursion_flag;
 
@@ -191,5 +176,4 @@ fail:
 
 halt_loop:
 	while (true)
-		halt();
-}
+		halt(); }

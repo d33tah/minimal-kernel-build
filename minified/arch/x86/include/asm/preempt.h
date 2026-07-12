@@ -16,8 +16,7 @@ DECLARE_PER_CPU(int, __preempt_count);
 
  
 static __always_inline int preempt_count(void) {
-	return raw_cpu_read_4(__preempt_count) & ~PREEMPT_NEED_RESCHED;
-}
+	return raw_cpu_read_4(__preempt_count) & ~PREEMPT_NEED_RESCHED; }
 
 static __always_inline void preempt_count_set(int pc) {
 	int old, new;
@@ -25,8 +24,7 @@ static __always_inline void preempt_count_set(int pc) {
 	do {
 		old = raw_cpu_read_4(__preempt_count);
 		new = (old & PREEMPT_NEED_RESCHED) | (pc & ~PREEMPT_NEED_RESCHED);
-	} while (raw_cpu_cmpxchg_4(__preempt_count, old, new) != old);
-}
+	} while (raw_cpu_cmpxchg_4(__preempt_count, old, new) != old); }
 
  
 #define init_task_preempt_count(p) do { } while (0)
@@ -36,31 +34,26 @@ static __always_inline void preempt_count_set(int pc) {
  
 
 static __always_inline void set_preempt_need_resched(void) {
-	raw_cpu_and_4(__preempt_count, ~PREEMPT_NEED_RESCHED);
-}
+	raw_cpu_and_4(__preempt_count, ~PREEMPT_NEED_RESCHED); }
 
 static __always_inline void clear_preempt_need_resched(void) {
-	raw_cpu_or_4(__preempt_count, PREEMPT_NEED_RESCHED);
-}
+	raw_cpu_or_4(__preempt_count, PREEMPT_NEED_RESCHED); }
 
 
  
 
 static __always_inline void __preempt_count_add(int val) {
-	raw_cpu_add_4(__preempt_count, val);
-}
+	raw_cpu_add_4(__preempt_count, val); }
 
 static __always_inline void __preempt_count_sub(int val) {
-	raw_cpu_add_4(__preempt_count, -val);
-}
+	raw_cpu_add_4(__preempt_count, -val); }
 
  
 /* __preempt_count_dec_and_test removed - unused */
 
 
 static __always_inline bool should_resched(int preempt_offset) {
-	return unlikely(raw_cpu_read_4(__preempt_count) == preempt_offset);
-}
+	return unlikely(raw_cpu_read_4(__preempt_count) == preempt_offset); }
 
 
 #endif  

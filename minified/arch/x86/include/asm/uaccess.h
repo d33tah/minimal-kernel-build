@@ -20,11 +20,9 @@
 #define ASM_STAC 	ALTERNATIVE "", __ASM_STAC, X86_FEATURE_SMAP
 #else
 static __always_inline void clac(void) {
-	alternative("", __ASM_CLAC, X86_FEATURE_SMAP);
-}
+	alternative("", __ASM_CLAC, X86_FEATURE_SMAP); }
 static __always_inline void stac(void) {
-	alternative("", __ASM_STAC, X86_FEATURE_SMAP);
-}
+	alternative("", __ASM_STAC, X86_FEATURE_SMAP); }
 #define ASM_CLAC 	ALTERNATIVE("", __ASM_CLAC, X86_FEATURE_SMAP)
 #define ASM_STAC 	ALTERNATIVE("", __ASM_STAC, X86_FEATURE_SMAP)
 #endif
@@ -43,8 +41,7 @@ static inline int __access_ok(const void __user *ptr, unsigned long size) {
 	unsigned long limit = TASK_SIZE_MAX;
 	unsigned long addr = (unsigned long)ptr;
 
-	return (size <= limit) && (addr <= (limit - size));
-}
+	return (size <= limit) && (addr <= (limit - size)); }
 #endif
 
 #define access_ok(addr, size)					({										WARN_ON_IN_IRQ();							likely(__access_ok(addr, size));				})
@@ -131,20 +128,17 @@ unsigned long __must_check __copy_user_ll
 
 static __always_inline unsigned long __must_check
 raw_copy_to_user(void __user *to, const void *from, unsigned long n) {
-	return __copy_user_ll((__force void *)to, from, n);
-}
+	return __copy_user_ll((__force void *)to, from, n); }
 
 static __always_inline unsigned long
 raw_copy_from_user(void *to, const void __user *from, unsigned long n) {
-	return __copy_user_ll(to, (__force const void *)from, n);
-}
+	return __copy_user_ll(to, (__force const void *)from, n); }
 
 static __must_check __always_inline bool user_access_begin(const void __user *ptr, size_t len) {
 	if (unlikely(!access_ok(ptr,len)))
 		return 0;
 	__uaccess_begin_nospec();
-	return 1;
-}
+	return 1; }
 #define user_access_begin(a,b)	user_access_begin(a,b)
 #define user_access_end()	__uaccess_end()
 

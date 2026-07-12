@@ -8,5 +8,4 @@ pgprot_t vm_get_page_prot(unsigned long vm_flags) {
 	val = __sme_set(val);
 	if (val & _PAGE_PRESENT)
 		val &= __supported_pte_mask;
-	return __pgprot(val);
-}
+	return __pgprot(val); }

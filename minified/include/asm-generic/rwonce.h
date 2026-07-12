@@ -21,8 +21,7 @@
 static __no_kasan_or_inline
 unsigned long read_word_at_a_time(const void *addr) {
 	kasan_check_read(addr, 1);
-	return *(unsigned long *)addr;
-}
+	return *(unsigned long *)addr; }
 
 #endif
 #endif

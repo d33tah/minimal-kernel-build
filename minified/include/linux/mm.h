@@ -17,70 +17,55 @@
 #include <linux/overflow.h>
 
 static inline int page_ref_count(const struct page *page) {
-	return atomic_read(&page->_refcount);
-}
+	return atomic_read(&page->_refcount); }
 
 static inline int folio_ref_count(const struct folio *folio) {
-	return page_ref_count(&folio->page);
-}
+	return page_ref_count(&folio->page); }
 
 /* Removed: page_count, update_hiwater_rss - 0-caller orphans */
 
 static inline void set_page_count(struct page *page, int v) {
-	atomic_set(&page->_refcount, v);
-}
+	atomic_set(&page->_refcount, v); }
 
 
 static inline void init_page_count(struct page *page) {
-	set_page_count(page, 1);
-}
+	set_page_count(page, 1); }
 
 static inline void page_ref_add(struct page *page, int nr) {
-	atomic_add(nr, &page->_refcount);
-}
+	atomic_add(nr, &page->_refcount); }
 
 static inline void folio_ref_add(struct folio *folio, int nr) {
-	page_ref_add(&folio->page, nr);
-}
+	page_ref_add(&folio->page, nr); }
 
 static inline void page_ref_inc(struct page *page) {
-	atomic_inc(&page->_refcount);
-}
+	atomic_inc(&page->_refcount); }
 
 static inline void folio_ref_inc(struct folio *folio) {
-	page_ref_inc(&folio->page);
-}
+	page_ref_inc(&folio->page); }
 
 
 static inline int page_ref_sub_and_test(struct page *page, int nr) {
-	return atomic_sub_and_test(nr, &page->_refcount);
-}
+	return atomic_sub_and_test(nr, &page->_refcount); }
 
 static inline int folio_ref_sub_and_test(struct folio *folio, int nr) {
-	return page_ref_sub_and_test(&folio->page, nr);
-}
+	return page_ref_sub_and_test(&folio->page, nr); }
 
 static inline int page_ref_dec_and_test(struct page *page) {
-	return atomic_dec_and_test(&page->_refcount);
-}
+	return atomic_dec_and_test(&page->_refcount); }
 
 
 static inline bool page_ref_add_unless(struct page *page, int nr, int u) {
-	return atomic_add_unless(&page->_refcount, nr, u);
-}
+	return atomic_add_unless(&page->_refcount, nr, u); }
 
 static inline bool folio_ref_add_unless(struct folio *folio, int nr, int u) {
-	return page_ref_add_unless(&folio->page, nr, u);
-}
+	return page_ref_add_unless(&folio->page, nr, u); }
 
 
 static inline bool folio_ref_try_add_rcu(struct folio *folio, int count) {
-	return folio_ref_add_unless(folio, count, 0);
-}
+	return folio_ref_add_unless(folio, count, 0); }
 
 static inline bool folio_try_get_rcu(struct folio *folio) {
-	return folio_ref_try_add_rcu(folio, 1);
-}
+	return folio_ref_try_add_rcu(folio, 1); }
 #include <linux/sizes.h>
 #include <linux/sched.h>
 #include <linux/pgtable.h>
@@ -94,16 +79,13 @@ extern unsigned long max_mapnr;
 
 extern atomic_long_t _totalram_pages;
 static inline unsigned long totalram_pages(void) {
-	return (unsigned long)atomic_long_read(&_totalram_pages);
-}
+	return (unsigned long)atomic_long_read(&_totalram_pages); }
 
 static inline void totalram_pages_inc(void) {
-	atomic_long_inc(&_totalram_pages);
-}
+	atomic_long_inc(&_totalram_pages); }
 
 static inline void totalram_pages_add(long count) {
-	atomic_long_add(count, &_totalram_pages);
-}
+	atomic_long_add(count, &_totalram_pages); }
 
 extern void * high_memory;
 
@@ -197,8 +179,7 @@ extern pgprot_t protection_map[16];
 #define FAULT_FLAG_DEFAULT  (FAULT_FLAG_ALLOW_RETRY)
 
 static inline bool fault_flag_allow_retry_first(enum fault_flag flags) {
-	return (flags & FAULT_FLAG_ALLOW_RETRY) && (!(flags & FAULT_FLAG_TRIED));
-}
+	return (flags & FAULT_FLAG_ALLOW_RETRY) && (!(flags & FAULT_FLAG_TRIED)); }
 
 
 struct vm_fault { const struct { struct vm_area_struct *vma; gfp_t gfp_mask; pgoff_t pgoff; unsigned long address; }; enum fault_flag flags; pmd_t *pmd; pud_t *pud; union { pte_t orig_pte; pmd_t orig_pmd; }; struct page *cow_page, *page; pte_t *pte; spinlock_t *ptl; pgtable_t prealloc_pte; };
@@ -211,20 +192,16 @@ static inline void vma_init(struct vm_area_struct *vma, struct mm_struct *mm) {
 	memset(vma, 0, sizeof(*vma));
 	vma->vm_mm = mm;
 	vma->vm_ops = &dummy_vm_ops;
-	INIT_LIST_HEAD(&vma->anon_vma_chain);
-}
+	INIT_LIST_HEAD(&vma->anon_vma_chain); }
 
 static inline void vma_set_anonymous(struct vm_area_struct *vma) {
-	vma->vm_ops = NULL;
-}
+	vma->vm_ops = NULL; }
 
 static inline bool vma_is_anonymous(struct vm_area_struct *vma) {
-	return !vma->vm_ops;
-}
+	return !vma->vm_ops; }
 
 static inline bool vma_is_accessible(struct vm_area_struct *vma) {
-	return vma->vm_flags & VM_ACCESS_FLAGS;
-}
+	return vma->vm_flags & VM_ACCESS_FLAGS; }
 
 struct mmu_gather;
 struct inode;
@@ -232,23 +209,19 @@ struct inode;
 static inline unsigned int compound_order(struct page *page) {
 	if (!PageHead(page))
 		return 0;
-	return page[1].compound_order;
-}
+	return page[1].compound_order; }
 
 static inline unsigned int folio_order(struct folio *folio) {
-	return compound_order(&folio->page);
-}
+	return compound_order(&folio->page); }
 
 #include <linux/huge_mm.h>
 
 static inline int put_page_testzero(struct page *page) {
 	VM_BUG_ON_PAGE(page_ref_count(page) == 0, page);
-	return page_ref_dec_and_test(page);
-}
+	return page_ref_dec_and_test(page); }
 
 static inline int folio_put_testzero(struct folio *folio) {
-	return put_page_testzero(&folio->page);
-}
+	return put_page_testzero(&folio->page); }
 
 
 
@@ -256,20 +229,17 @@ extern bool is_vmalloc_addr(const void *x);
 
 
 static inline void page_mapcount_reset(struct page *page) {
-	atomic_set(&(page)->_mapcount, -1);
-}
+	atomic_set(&(page)->_mapcount, -1); }
 
 static inline struct page *virt_to_head_page(const void *x) {
 	struct page *page = virt_to_page(x);
 
-	return compound_head(page);
-}
+	return compound_head(page); }
 
 static inline struct folio *virt_to_folio(const void *x) {
 	struct page *page = virt_to_page(x);
 
-	return page_folio(page);
-}
+	return page_folio(page); }
 
 void __put_page(struct page *page);
 
@@ -278,33 +248,27 @@ enum compound_dtor_id { NULL_COMPOUND_DTOR, COMPOUND_PAGE_DTOR, NR_COMPOUND_DTOR
 
 static inline void set_compound_page_dtor(struct page *page, enum compound_dtor_id compound_dtor) {
 	VM_BUG_ON_PAGE(compound_dtor >= NR_COMPOUND_DTORS, page);
-	page[1].compound_dtor = compound_dtor;
-}
+	page[1].compound_dtor = compound_dtor; }
 
 static inline void set_compound_order(struct page *page, unsigned int order) {
-	page[1].compound_order = order;
-}
+	page[1].compound_order = order; }
 
 static inline unsigned long compound_nr(struct page *page) {
 	if (!PageHead(page))
 		return 1;
-	return 1UL << compound_order(page);
-}
+	return 1UL << compound_order(page); }
 
 static inline unsigned long page_size(struct page *page) {
-	return PAGE_SIZE << compound_order(page);
-}
+	return PAGE_SIZE << compound_order(page); }
 
 static inline int thp_nr_pages(struct page *page) {
 	VM_BUG_ON_PGFLAGS(PageTail(page), page);
-	return compound_nr(page);
-}
+	return compound_nr(page); }
 
 static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma) {
 	if (likely(vma->vm_flags & VM_WRITE))
 		pte = pte_mkwrite(pte);
-	return pte;
-}
+	return pte; }
 
 void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr);
 
@@ -322,43 +286,35 @@ vm_fault_t finish_fault(struct vm_fault *vmf);
 
 static inline enum zone_type page_zonenum(const struct page *page) {
 	ASSERT_EXCLUSIVE_BITS(page->flags, ZONES_MASK << ZONES_PGSHIFT);
-	return (page->flags >> ZONES_PGSHIFT) & ZONES_MASK;
-}
+	return (page->flags >> ZONES_PGSHIFT) & ZONES_MASK; }
 
 static inline enum zone_type folio_zonenum(const struct folio *folio) {
-	return page_zonenum(&folio->page);
-}
+	return page_zonenum(&folio->page); }
 
 #define folio_ref_zero_or_close_to_overflow(folio) 	((unsigned int) folio_ref_count(folio) + 127u <= 127u)
 
 static inline void folio_get(struct folio *folio) {
 	VM_BUG_ON_FOLIO(folio_ref_zero_or_close_to_overflow(folio), folio);
-	folio_ref_inc(folio);
-}
+	folio_ref_inc(folio); }
 
 static inline void get_page(struct page *page) {
-	folio_get(page_folio(page));
-}
+	folio_get(page_folio(page)); }
 
 static inline void folio_put(struct folio *folio) {
 	if (folio_put_testzero(folio))
-		__put_page(&folio->page);
-}
+		__put_page(&folio->page); }
 
 static inline void folio_put_refs(struct folio *folio, int refs) {
 	if (folio_ref_sub_and_test(folio, refs))
-		__put_page(&folio->page);
-}
+		__put_page(&folio->page); }
 
 static inline void put_page(struct page *page) {
 	struct folio *folio = page_folio(page);
 
-	folio_put(folio);
-}
+	folio_put(folio); }
 
 static inline bool is_cow_mapping(vm_flags_t flags) {
-	return (flags & (VM_SHARED | VM_MAYWRITE)) == VM_MAYWRITE;
-}
+	return (flags & (VM_SHARED | VM_MAYWRITE)) == VM_MAYWRITE; }
 
 /*
  * NODES_SHIFT is unconditionally 0 in this tree (linux/numa.h), so
@@ -369,85 +325,68 @@ static inline bool is_cow_mapping(vm_flags_t flags) {
 static inline int page_to_nid(const struct page *page) {
 	struct page *p = (struct page *)page;
 
-	return (PF_POISONED_CHECK(p)->flags >> NODES_PGSHIFT) & NODES_MASK;
-}
+	return (PF_POISONED_CHECK(p)->flags >> NODES_PGSHIFT) & NODES_MASK; }
 
 static inline int folio_nid(const struct folio *folio) {
-	return page_to_nid(&folio->page);
-}
+	return page_to_nid(&folio->page); }
 
 static inline int page_cpupid_xchg_last(struct page *page, int cpupid) {
-	return page_to_nid(page);
-}
+	return page_to_nid(page); }
 
 static inline struct zone *page_zone(const struct page *page) {
-	return &NODE_DATA(page_to_nid(page))->node_zones[page_zonenum(page)];
-}
+	return &NODE_DATA(page_to_nid(page))->node_zones[page_zonenum(page)]; }
 
 static inline pg_data_t *page_pgdat(const struct page *page) {
-	return NODE_DATA(page_to_nid(page));
-}
+	return NODE_DATA(page_to_nid(page)); }
 
 
 static inline pg_data_t *folio_pgdat(const struct folio *folio) {
-	return page_pgdat(&folio->page);
-}
+	return page_pgdat(&folio->page); }
 
 static inline void set_page_zone(struct page *page, enum zone_type zone) {
 	page->flags &= ~(ZONES_MASK << ZONES_PGSHIFT);
-	page->flags |= (zone & ZONES_MASK) << ZONES_PGSHIFT;
-}
+	page->flags |= (zone & ZONES_MASK) << ZONES_PGSHIFT; }
 
 static inline void set_page_node(struct page *page, unsigned long node) {
 	page->flags &= ~(NODES_MASK << NODES_PGSHIFT);
-	page->flags |= (node & NODES_MASK) << NODES_PGSHIFT;
-}
+	page->flags |= (node & NODES_MASK) << NODES_PGSHIFT; }
 
 static inline void set_page_links(struct page *page, enum zone_type zone, unsigned long node, unsigned long pfn) {
 	set_page_zone(page, zone);
-	set_page_node(page, node);
-}
+	set_page_node(page, node); }
 
 static inline long folio_nr_pages(struct folio *folio) {
-	return compound_nr(&folio->page);
-}
+	return compound_nr(&folio->page); }
 
 
 static inline unsigned int folio_shift(struct folio *folio) {
-	return PAGE_SHIFT + folio_order(folio);
-}
+	return PAGE_SHIFT + folio_order(folio); }
 
 static inline size_t folio_size(struct folio *folio) {
-	return PAGE_SIZE << folio_order(folio);
-}
+	return PAGE_SIZE << folio_order(folio); }
 
 #include <linux/vmstat.h>
 
 static __always_inline void *lowmem_page_address(const struct page *page) {
-	return page_to_virt(page);
-}
+	return page_to_virt(page); }
 
 #define page_address(page) lowmem_page_address(page)
 #define page_address_init()  do { } while(0)
 
 static inline void *folio_address(const struct folio *folio) {
-	return page_address(&folio->page);
-}
+	return page_address(&folio->page); }
 
 extern void *page_rmapping(struct page *page);
 
 static inline bool page_is_pfmemalloc(const struct page *page) {
 	
-	return (uintptr_t)page->lru.next & BIT(1);
-}
+	return (uintptr_t)page->lru.next & BIT(1); }
 
 static inline void set_page_pfmemalloc(struct page *page) {
-	page->lru.next = (void *)BIT(1);
-}
+	page->lru.next = (void *)BIT(1); }
 
 static inline void clear_page_pfmemalloc(struct page *page) {
-	page->lru.next = NULL;
-}
+	page->lru.next = NULL; }
 
 #define offset_in_page(p)	((unsigned long)(p) & ~PAGE_MASK)
 
@@ -481,8 +420,7 @@ extern unsigned long move_page_tables(struct vm_area_struct *vma, unsigned long 
  */
 static inline int mprotect_fixup(struct mmu_gather *tlb, struct vm_area_struct *vma, struct vm_area_struct **pprev, unsigned long start, unsigned long end, unsigned long newflags) {
 	*pprev = vma;
-	return 0;
-}
+	return 0; }
 
 
 /*
@@ -490,22 +428,18 @@ static inline int mprotect_fixup(struct mmu_gather *tlb, struct vm_area_struct *
  * READS the per-mm counters (no get_mm_rss/get_mm_counter, hiwater/sync stubs).
  * The remaining call sites only ever wrote them, so the writers are no-ops.
  */
-static inline void add_mm_counter(struct mm_struct *mm, int member, long value) {
-}
+static inline void add_mm_counter(struct mm_struct *mm, int member, long value) { }
 
-static inline void inc_mm_counter(struct mm_struct *mm, int member) {
-}
+static inline void inc_mm_counter(struct mm_struct *mm, int member) { }
 
 /* dec_mm_counter removed - 0 callers (dec_mm_counter_fast macro never invoked) */
 
 static inline int mm_counter_file(struct page *page) {
 	if (PageSwapBacked(page))
 		return MM_SHMEMPAGES;
-	return MM_FILEPAGES;
-}
+	return MM_FILEPAGES; }
 
-static inline void sync_mm_rss(struct mm_struct *mm) {
-}
+static inline void sync_mm_rss(struct mm_struct *mm) { }
 
 /* Removed: vma_wants_writenotify - never called */
 
@@ -513,47 +447,37 @@ extern pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr, spinloc
 static inline pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr, spinlock_t **ptl) {
 	pte_t *ptep;
 	__cond_lock(*ptl, ptep = __get_locked_pte(mm, addr, ptl));
-	return ptep;
-}
+	return ptep; }
 
-static inline void mm_pgtables_bytes_init(struct mm_struct *mm) {
-}
+static inline void mm_pgtables_bytes_init(struct mm_struct *mm) { }
 
 
-static inline void mm_inc_nr_ptes(struct mm_struct *mm) {
-}
+static inline void mm_inc_nr_ptes(struct mm_struct *mm) { }
 
 int __pte_alloc(struct mm_struct *mm, pmd_t *pmd);
 
 static inline p4d_t *p4d_alloc(struct mm_struct *mm, pgd_t *pgd, unsigned long address) {
-	return p4d_offset(pgd, address);
-}
+	return p4d_offset(pgd, address); }
 
 static inline pud_t *pud_alloc(struct mm_struct *mm, p4d_t *p4d, unsigned long address) {
-	return pud_offset(p4d, address);
-}
+	return pud_offset(p4d, address); }
 
 static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address) {
-	return pmd_offset(pud, address);
-}
+	return pmd_offset(pud, address); }
 
 static inline spinlock_t *pte_lockptr(struct mm_struct *mm, pmd_t *pmd) {
-	return &mm->page_table_lock;
-}
+	return &mm->page_table_lock; }
 static inline void pgtable_init(void) {
-	pgtable_cache_init();
-}
+	pgtable_cache_init(); }
 
 static inline bool pgtable_pte_page_ctor(struct page *page) {
 	__SetPageTable(page);
 	inc_lruvec_page_state(page, NR_PAGETABLE);
-	return true;
-}
+	return true; }
 
 static inline void pgtable_pte_page_dtor(struct page *page) {
 	__ClearPageTable(page);
-	dec_lruvec_page_state(page, NR_PAGETABLE);
-}
+	dec_lruvec_page_state(page, NR_PAGETABLE); }
 
 #define pte_offset_map_lock(mm, pmd, address, ptlp)	({								spinlock_t *__ptl = pte_lockptr(mm, pmd);		pte_t *__pte = pte_offset_map(pmd, address);		*(ptlp) = __ptl;					spin_lock(__ptl);					__pte;						})
 
@@ -564,16 +488,14 @@ static inline void pgtable_pte_page_dtor(struct page *page) {
 #define pte_alloc_map_lock(mm, pmd, address, ptlp)		(pte_alloc(mm, pmd) ?					 NULL : pte_offset_map_lock(mm, pmd, address, ptlp))
 
 static inline spinlock_t *pmd_lockptr(struct mm_struct *mm, pmd_t *pmd) {
-	return &mm->page_table_lock;
-}
+	return &mm->page_table_lock; }
 
 #define pmd_huge_pte(mm, pmd) ((mm)->pmd_huge_pte)
 
 static inline spinlock_t *pmd_lock(struct mm_struct *mm, pmd_t *pmd) {
 	spinlock_t *ptl = pmd_lockptr(mm, pmd);
 	spin_lock(ptl);
-	return ptl;
-}
+	return ptl; }
 
 extern void __init pagecache_init(void);
 extern void free_initmem(void);
@@ -603,8 +525,7 @@ void anon_vma_interval_tree_remove(struct anon_vma_chain *node, struct rb_root_c
 extern int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin);
 extern int __vma_adjust(struct vm_area_struct *vma, unsigned long start, unsigned long end, pgoff_t pgoff, struct vm_area_struct *insert, struct vm_area_struct *expand);
 static inline int vma_adjust(struct vm_area_struct *vma, unsigned long start, unsigned long end, pgoff_t pgoff, struct vm_area_struct *insert) {
-	return __vma_adjust(vma, start, end, pgoff, insert, NULL);
-}
+	return __vma_adjust(vma, start, end, pgoff, insert, NULL); }
 extern struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *);
 extern int insert_vm_struct(struct mm_struct *, struct vm_area_struct *);
 extern void __vma_link_rb(struct mm_struct *, struct vm_area_struct *, struct rb_node **, struct rb_node *);
@@ -644,22 +565,18 @@ struct vm_area_struct *find_vma_intersection(struct mm_struct *mm, unsigned long
 
 	if (vma && end_addr <= vma->vm_start)
 		vma = NULL;
-	return vma;
-}
+	return vma; }
 
 
 static inline unsigned long vm_start_gap(struct vm_area_struct *vma) {
-	return vma->vm_start;
-}
+	return vma->vm_start; }
 
 static inline unsigned long vm_end_gap(struct vm_area_struct *vma) {
 	/* VM_GROWSUP=VM_NONE (=0) on x86-32: the growsup gap branch is dead */
-	return vma->vm_end;
-}
+	return vma->vm_end; }
 
 static inline unsigned long vma_pages(struct vm_area_struct *vma) {
-	return (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
-}
+	return (vma->vm_end - vma->vm_start) >> PAGE_SHIFT; }
 
 pgprot_t vm_get_page_prot(unsigned long vm_flags);
 /* Removed: vma_set_page_prot - never called */
@@ -684,13 +601,11 @@ static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags) {
 		return -EFAULT; /* FOLL_HWPOISON never set */
 	if (vm_fault & (VM_FAULT_SIGBUS | VM_FAULT_SIGSEGV))
 		return -EFAULT;
-	return 0;
-}
+	return 0; }
 
 static inline bool gup_must_unshare(unsigned int flags, struct page *page) {
 	/* FOLL_PIN never set: (flags & FOLL_WRITE) can never equal FOLL_PIN */
-	return false;
-}
+	return false; }
 
 
 

@@ -22,8 +22,7 @@ extern "C" {
 #define CONFIG_ "CONFIG_"
 #endif
 static inline const char *CONFIG_prefix(void) {
-	return getenv( "CONFIG_" ) ?: CONFIG_;
-}
+	return getenv( "CONFIG_" ) ?: CONFIG_; }
 #undef CONFIG_
 #define CONFIG_ CONFIG_prefix()
 
@@ -54,8 +53,7 @@ struct gstr {
 	size_t len;
 	char  *s;
 	 
-	int max_width;
-};
+	int max_width; };
 struct gstr str_new(void);
 void str_append(struct gstr *gs, const char *s);
 void str_printf(struct gstr *gs, const char *fmt, ...);
@@ -89,25 +87,20 @@ struct symbol *sym_check_deps(struct symbol *sym);
 struct symbol *prop_get_symbol(struct property *prop);
 
 static inline tristate sym_get_tristate_value(struct symbol *sym) {
-	return sym->curr.tri;
-}
+	return sym->curr.tri; }
 
 
 static inline bool sym_is_choice(struct symbol *sym) {
-	return sym->flags & SYMBOL_CHOICE ? true : false;
-}
+	return sym->flags & SYMBOL_CHOICE ? true : false; }
 
 static inline bool sym_is_choice_value(struct symbol *sym) {
-	return sym->flags & SYMBOL_CHOICEVAL ? true : false;
-}
+	return sym->flags & SYMBOL_CHOICEVAL ? true : false; }
 
 static inline bool sym_is_optional(struct symbol *sym) {
-	return sym->flags & SYMBOL_OPTIONAL ? true : false;
-}
+	return sym->flags & SYMBOL_OPTIONAL ? true : false; }
 
 static inline bool sym_has_value(struct symbol *sym) {
-	return sym->flags & SYMBOL_DEF_USER ? true : false;
-}
+	return sym->flags & SYMBOL_DEF_USER ? true : false; }
 
 #ifdef __cplusplus
 }

@@ -45,18 +45,14 @@ void early_printk(const char *s, ...) { }
 
 static inline __printf(1, 2) __cold
 int _printk(const char *s, ...) {
-	return 0;
-}
+	return 0; }
 static inline __printf(1, 2) __cold
 int _printk_deferred(const char *s, ...) {
-	return 0;
-}
+	return 0; }
 
-static inline void setup_log_buf(int early) {
-}
+static inline void setup_log_buf(int early) { }
 
-static inline void dump_stack(void) {
-}
+static inline void dump_stack(void) { }
 
 #ifndef pr_fmt
 #define pr_fmt(fmt) fmt

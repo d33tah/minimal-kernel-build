@@ -12,8 +12,7 @@ struct group_info { atomic_t	usage; int		ngroups; kgid_t		gid[]; } __randomize_l
 
 static inline struct group_info *get_group_info(struct group_info *gi) {
 	atomic_inc(&gi->usage);
-	return gi;
-}
+	return gi; }
 
 
 struct cred { atomic_t	usage; kuid_t		uid; kgid_t		gid; kuid_t		euid; kgid_t		egid; kuid_t		fsuid; kgid_t		fsgid; kernel_cap_t	cap_permitted; struct user_struct *user; struct user_namespace *user_ns; struct ucounts *ucounts; struct group_info *group_info; union { struct rcu_head	rcu; }; } __randomize_layout;
@@ -30,24 +29,20 @@ extern int set_cred_ucounts(struct cred *);
 
 static inline struct cred *get_new_cred(struct cred *cred) {
 	atomic_inc(&cred->usage);
-	return cred;
-}
+	return cred; }
 
 static inline const struct cred *get_cred(const struct cred *cred) {
 	struct cred *nonconst_cred = (struct cred *) cred;
 	if (!cred)
 		return cred;
-	return get_new_cred(nonconst_cred);
-}
+	return get_new_cred(nonconst_cred); }
 
 static inline void put_cred(const struct cred *_cred) {
 	struct cred *cred = (struct cred *) _cred;
 
 	if (cred) {
 		if (atomic_dec_and_test(&(cred)->usage))
-			__put_cred(cred);
-	}
-}
+			__put_cred(cred); } }
 
 #define current_cred() 	rcu_dereference_protected(current->cred, 1)
 
@@ -70,8 +65,7 @@ static inline void put_cred(const struct cred *_cred) {
 
 extern struct user_namespace init_user_ns;
 static inline struct user_namespace *current_user_ns(void) {
-	return &init_user_ns;
-}
+	return &init_user_ns; }
 
 
 #endif

@@ -23,14 +23,12 @@ LIST_HEAD(pgd_list);
 static void sanitize_error_code(unsigned long address, unsigned long *error_code) {
 	 
 	if (address >= TASK_SIZE_MAX)
-		*error_code |= X86_PF_PROT;
-}
+		*error_code |= X86_PF_PROT; }
 
 static void set_signal_archinfo(unsigned long address, unsigned long error_code) {
 	struct task_struct *tsk = current;
 
-	tsk->thread.trap_nr = X86_TRAP_PF;
-}
+	tsk->thread.trap_nr = X86_TRAP_PF; }
 
 static noinline void
 page_fault_oops(struct pt_regs *regs, unsigned long error_code, unsigned long address) {
@@ -50,11 +48,9 @@ kernelmode_fixup_or_oops(struct pt_regs *regs, unsigned long error_code, unsigne
 
 		/* sig_on_uaccess_err branch removed - field was never set (always 0) */
 
-		return;
-	}
+		return; }
 
-	page_fault_oops(regs, error_code, address);
-}
+	page_fault_oops(regs, error_code, address); }
 
 static inline void
 show_signal_msg(struct pt_regs *regs, unsigned long error_code, unsigned long address, struct task_struct *tsk) {
@@ -67,14 +63,12 @@ __bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code, unsigned 
 
 	if (!user_mode(regs)) {
 		kernelmode_fixup_or_oops(regs, error_code, address, SIGSEGV, si_code);
-		return;
-	}
+		return; }
 
 	if (!(error_code & X86_PF_USER)) {
 		 
 		page_fault_oops(regs, error_code, address);
-		return;
-	}
+		return; }
 
 	 
 	local_irq_enable();
@@ -90,13 +84,11 @@ __bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code, unsigned 
 
 	force_sig_fault(SIGSEGV, si_code, (void __user *)address);
 
-	local_irq_disable();
-}
+	local_irq_disable(); }
 
 static noinline void
 bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code, unsigned long address) {
-	__bad_area_nosemaphore(regs, error_code, address, SEGV_MAPERR);
-}
+	__bad_area_nosemaphore(regs, error_code, address, SEGV_MAPERR); }
 
 static void
 __bad_area(struct pt_regs *regs, unsigned long error_code, unsigned long address, int si_code) {
@@ -104,13 +96,11 @@ __bad_area(struct pt_regs *regs, unsigned long error_code, unsigned long address
 
 	mmap_read_unlock(mm);
 
-	__bad_area_nosemaphore(regs, error_code, address, si_code);
-}
+	__bad_area_nosemaphore(regs, error_code, address, si_code); }
 
 static noinline void
 bad_area(struct pt_regs *regs, unsigned long error_code, unsigned long address) {
-	__bad_area(regs, error_code, address, SEGV_MAPERR);
-}
+	__bad_area(regs, error_code, address, SEGV_MAPERR); }
 
 static int spurious_kernel_fault_check(unsigned long error_code, pte_t *pte) {
 	if ((error_code & X86_PF_WRITE) && !pte_write(*pte))
@@ -119,8 +109,7 @@ static int spurious_kernel_fault_check(unsigned long error_code, pte_t *pte) {
 	if ((error_code & X86_PF_INSTR) && !pte_exec(*pte))
 		return 0;
 
-	return 1;
-}
+	return 1; }
 
 static noinline int
 spurious_kernel_fault(unsigned long error_code, unsigned long address) {
@@ -160,8 +149,7 @@ spurious_kernel_fault(unsigned long error_code, unsigned long address) {
 	ret = spurious_kernel_fault_check(error_code, (pte_t *) pmd);
 	WARN_ONCE(!ret, "PMD has incorrect permission bits\n");
 
-	return ret;
-}
+	return ret; }
 
 static inline int
 access_error(unsigned long error_code, struct vm_area_struct *vma) {
@@ -175,8 +163,7 @@ access_error(unsigned long error_code, struct vm_area_struct *vma) {
 		 
 		if (unlikely(!(vma->vm_flags & VM_WRITE)))
 			return 1;
-		return 0;
-	}
+		return 0; }
 
 	 
 	if (unlikely(error_code & X86_PF_PROT))
@@ -186,12 +173,10 @@ access_error(unsigned long error_code, struct vm_area_struct *vma) {
 	if (unlikely(!vma_is_accessible(vma)))
 		return 1;
 
-	return 0;
-}
+	return 0; }
 
 bool fault_in_kernel_space(unsigned long address) {
-	return address >= TASK_SIZE_MAX;
-}
+	return address >= TASK_SIZE_MAX; }
 
 static void
 do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code, unsigned long address) {
@@ -206,8 +191,7 @@ do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code, unsigned l
 		return;
 
 	 
-	bad_area_nosemaphore(regs, hw_error_code, address);
-}
+	bad_area_nosemaphore(regs, hw_error_code, address); }
 
 static inline
 void do_user_addr_fault(struct pt_regs *regs, unsigned long error_code, unsigned long address) {
@@ -222,8 +206,7 @@ void do_user_addr_fault(struct pt_regs *regs, unsigned long error_code, unsigned
 
 	if (unlikely((error_code & (X86_PF_USER | X86_PF_INSTR)) == X86_PF_INSTR)) {
 		page_fault_oops(regs, error_code, address);
-		return;
-	}
+		return; }
 
 	 
 	if (WARN_ON_ONCE(kprobe_page_fault(regs, X86_TRAP_PF)))
@@ -233,22 +216,19 @@ void do_user_addr_fault(struct pt_regs *regs, unsigned long error_code, unsigned
 	if (unlikely(cpu_feature_enabled(X86_FEATURE_SMAP) && !(error_code & X86_PF_USER) && !(regs->flags & X86_EFLAGS_AC))) {
 		 
 		page_fault_oops(regs, error_code, address);
-		return;
-	}
+		return; }
 
 	 
 	if (unlikely(faulthandler_disabled() || !mm)) {
 		bad_area_nosemaphore(regs, error_code, address);
-		return;
-	}
+		return; }
 
 	 
 	if (user_mode(regs)) {
 		local_irq_enable();
 	} else {
 		if (regs->flags & X86_EFLAGS_IF)
-			local_irq_enable();
-	}
+			local_irq_enable(); }
 
 	if (error_code & X86_PF_WRITE)
 		flags |= FAULT_FLAG_WRITE;
@@ -259,20 +239,17 @@ void do_user_addr_fault(struct pt_regs *regs, unsigned long error_code, unsigned
 		if (!user_mode(regs) && !search_exception_tables(regs->ip)) {
 			 
 			bad_area_nosemaphore(regs, error_code, address);
-			return;
-		}
+			return; }
 retry:
 		mmap_read_lock(mm);
 	} else {
 		 
-		might_sleep();
-	}
+		might_sleep(); }
 
 	vma = find_vma(mm, address);
 	if (unlikely(!vma)) {
 		bad_area(regs, error_code, address);
-		return;
-	}
+		return; }
 	if (likely(vma->vm_start <= address))
 		goto good_area;
 	bad_area(regs, error_code, address);
@@ -287,8 +264,7 @@ good_area:
 		 * always SEGV_ACCERR.
 		 */
 		__bad_area(regs, error_code, address, SEGV_ACCERR);
-		return;
-	}
+		return; }
 
 
 	fault = handle_mm_fault(vma, address, flags, regs);
@@ -297,14 +273,12 @@ good_area:
 		 
 		if (!user_mode(regs))
 			kernelmode_fixup_or_oops(regs, error_code, address, SIGBUS, BUS_ADRERR);
-		return;
-	}
+		return; }
 
 	 
 	if (unlikely(fault & VM_FAULT_RETRY)) {
 		flags |= FAULT_FLAG_TRIED;
-		goto retry;
-	}
+		goto retry; }
 
 	mmap_read_unlock(mm);
 	if (likely(!(fault & VM_FAULT_ERROR)))
@@ -312,21 +286,18 @@ good_area:
 
 	if (fatal_signal_pending(current) && !user_mode(regs)) {
 		kernelmode_fixup_or_oops(regs, error_code, address, 0, 0);
-		return;
-	}
+		return; }
 
 	if (fault & VM_FAULT_OOM) {
 		 
 		if (!user_mode(regs)) {
 			kernelmode_fixup_or_oops(regs, error_code, address, SIGSEGV, SEGV_MAPERR);
-			return;
-		}
+			return; }
 	} else {
 		if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON| VM_FAULT_HWPOISON_LARGE)) {
 			if (!user_mode(regs)) {
 				kernelmode_fixup_or_oops(regs, error_code, address, SIGBUS, BUS_ADRERR);
-				return;
-			}
+				return; }
 
 			sanitize_error_code(address, &error_code);
 
@@ -339,9 +310,7 @@ good_area:
 		} else if (fault & VM_FAULT_SIGSEGV)
 			bad_area_nosemaphore(regs, error_code, address);
 		else
-			BUG();
-	}
-}
+			BUG(); } }
 
 static __always_inline void
 handle_page_fault(struct pt_regs *regs, unsigned long error_code, unsigned long address) {
@@ -350,9 +319,7 @@ handle_page_fault(struct pt_regs *regs, unsigned long error_code, unsigned long 
 	} else {
 		do_user_addr_fault(regs, error_code, address);
 		 
-		local_irq_disable();
-	}
-}
+		local_irq_disable(); } }
 
 DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault) {
 	unsigned long address = read_cr2();
@@ -365,5 +332,4 @@ DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault) {
 
 	handle_page_fault(regs, error_code, address);
 
-	irqentry_exit(regs, state);
-}
+	irqentry_exit(regs, state); }

@@ -35,8 +35,7 @@ static struct desc_ptr idt_descr __ro_after_init = { .size		= IDT_TABLE_SIZE - 1
 
 void load_current_idt(void) {
 	lockdep_assert_irqs_disabled();
-	load_idt(&idt_descr);
-}
+	load_idt(&idt_descr); }
 
 
 static __init void
@@ -47,33 +46,27 @@ idt_setup_from_table(gate_desc *idt, const struct idt_data *t, int size, bool sy
 		idt_init_desc(&desc, t);
 		write_idt_entry(idt, t->vector, &desc);
 		if (sys)
-			set_bit(t->vector, system_vectors);
-	}
-}
+			set_bit(t->vector, system_vectors); } }
 
 static __init void set_intr_gate(unsigned int n, const void *addr) {
 	struct idt_data data;
 
 	init_idt_data(&data, n, addr);
 
-	idt_setup_from_table(idt_table, &data, 1, false);
-}
+	idt_setup_from_table(idt_table, &data, 1, false); }
 
 void __init idt_setup_early_traps(void) {
 	idt_setup_from_table(idt_table, early_idts, ARRAY_SIZE(early_idts), true);
-	load_idt(&idt_descr);
-}
+	load_idt(&idt_descr); }
 
 void __init idt_setup_traps(void) {
-	idt_setup_from_table(idt_table, def_idts, ARRAY_SIZE(def_idts), true);
-}
+	idt_setup_from_table(idt_table, def_idts, ARRAY_SIZE(def_idts), true); }
 
 
 static void __init idt_map_in_cea(void) {
 	 
 	cea_set_pte(CPU_ENTRY_AREA_RO_IDT_VADDR, __pa_symbol(idt_table), PAGE_KERNEL_RO);
-	idt_descr.address = CPU_ENTRY_AREA_RO_IDT;
-}
+	idt_descr.address = CPU_ENTRY_AREA_RO_IDT; }
 
 void __init idt_setup_apic_and_irq_gates(void) {
 	int i = FIRST_EXTERNAL_VECTOR;
@@ -83,13 +76,11 @@ void __init idt_setup_apic_and_irq_gates(void) {
 
 	for_each_clear_bit_from(i, system_vectors, FIRST_SYSTEM_VECTOR) {
 		entry = irq_entries_start + IDT_ALIGN * (i - FIRST_EXTERNAL_VECTOR);
-		set_intr_gate(i, entry);
-	}
+		set_intr_gate(i, entry); }
 
 	 
 	idt_map_in_cea();
-	load_idt(&idt_descr);
-}
+	load_idt(&idt_descr); }
 
 void __init idt_setup_early_handler(void) {
 	int i;
@@ -98,5 +89,4 @@ void __init idt_setup_early_handler(void) {
 		set_intr_gate(i, early_idt_handler_array[i]);
 	for ( ; i < NR_VECTORS; i++)
 		set_intr_gate(i, early_ignore_irq);
-	load_idt(&idt_descr);
-}
+	load_idt(&idt_descr); }

@@ -13,16 +13,14 @@ int setattr_prepare(struct user_namespace *mnt_userns, struct dentry *dentry, st
 
 	if (ia_valid & ATTR_MODE) {
 		if (!inode_owner_or_capable(mnt_userns, inode))
-			return -EPERM;
-	}
+			return -EPERM; }
 
 	/* ATTR_*TIME_SET / ATTR_TIMES_SET are never set on this build (utimes path removed) */
 
 kill_priv:
 	 
 
-	return 0;
-}
+	return 0; }
 
 void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode, const struct iattr *attr) {
 	unsigned int ia_valid = attr->ia_valid;
@@ -35,9 +33,7 @@ void setattr_copy(struct user_namespace *mnt_userns, struct inode *inode, const 
 	if (ia_valid & ATTR_CTIME)
 		inode->i_ctime = attr->ia_ctime;
 	if (ia_valid & ATTR_MODE) {
-		inode->i_mode = attr->ia_mode;
-	}
-}
+		inode->i_mode = attr->ia_mode; } }
 
 int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry, struct iattr *attr, struct inode **delegated_inode) {
 	struct inode *inode = dentry->d_inode;
@@ -62,18 +58,13 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry, stru
 	if (ia_valid & ATTR_KILL_SUID) {
 		if (mode & S_ISUID) {
 			ia_valid = attr->ia_valid |= ATTR_MODE;
-			attr->ia_mode = (inode->i_mode & ~S_ISUID);
-		}
-	}
+			attr->ia_mode = (inode->i_mode & ~S_ISUID); } }
 	if (ia_valid & ATTR_KILL_SGID) {
 		if ((mode & (S_ISGID | S_IXGRP)) == (S_ISGID | S_IXGRP)) {
 			if (!(ia_valid & ATTR_MODE)) {
 				ia_valid = attr->ia_valid |= ATTR_MODE;
-				attr->ia_mode = inode->i_mode;
-			}
-			attr->ia_mode &= ~S_ISGID;
-		}
-	}
+				attr->ia_mode = inode->i_mode; }
+			attr->ia_mode &= ~S_ISGID; } }
 	if (!(attr->ia_valid & ~(ATTR_KILL_SUID | ATTR_KILL_SGID)))
 		return 0;
 
@@ -88,5 +79,4 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry, stru
 	else
 		error = simple_setattr(mnt_userns, dentry, attr);
 
-	return error;
-}
+	return error; }

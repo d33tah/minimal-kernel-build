@@ -39,23 +39,20 @@ static inline void local_irq_enable_exit_to_user(unsigned long ti_work);
 
 #ifndef local_irq_enable_exit_to_user
 static inline void local_irq_enable_exit_to_user(unsigned long ti_work) {
-	local_irq_enable();
-}
+	local_irq_enable(); }
 #endif
 
 static inline void local_irq_disable_exit_to_user(void);
 
 #ifndef local_irq_disable_exit_to_user
 static inline void local_irq_disable_exit_to_user(void) {
-	local_irq_disable();
-}
+	local_irq_disable(); }
 #endif
 
 static inline void arch_exit_to_user_mode_work(struct pt_regs *regs, unsigned long ti_work);
 
 #ifndef arch_exit_to_user_mode_work
-static inline void arch_exit_to_user_mode_work(struct pt_regs *regs, unsigned long ti_work) {
-}
+static inline void arch_exit_to_user_mode_work(struct pt_regs *regs, unsigned long ti_work) { }
 #endif
 
 static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs, unsigned long ti_work);

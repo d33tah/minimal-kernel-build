@@ -57,8 +57,7 @@
 static inline void __endian(const void *src, void *dest, unsigned int size) {
 	unsigned int i;
 	for (i = 0; i < size; i++)
-		((unsigned char*)dest)[i] = ((unsigned char*)src)[size - i-1];
-}
+		((unsigned char*)dest)[i] = ((unsigned char*)src)[size - i-1]; }
 
 #define TO_NATIVE(x)						({									typeof(x) __x;							__endian(&(x), &(__x), sizeof(__x));				__x;							})
 
@@ -87,8 +86,7 @@ struct module { struct list_head list, exported_symbols, unresolved_symbols; boo
 struct elf_info { size_t size; Elf_Ehdr     *hdr; Elf_Shdr     *sechdrs; Elf_Sym      *symtab_start; Elf_Sym      *symtab_stop; char         *strtab; unsigned int num_sections, secindex_strings; Elf32_Word   *symtab_shndx_start; Elf32_Word   *symtab_shndx_stop; };
 
 static inline int is_shndx_special(unsigned int i) {
-	return i != SHN_XINDEX && i >= SHN_LORESERVE && i <= SHN_HIRESERVE;
-}
+	return i != SHN_XINDEX && i >= SHN_LORESERVE && i <= SHN_HIRESERVE; }
 
  
 #define SPECIAL(i) ((i) - (SHN_HIRESERVE + 1))
@@ -99,8 +97,7 @@ static inline unsigned int get_secindex(const struct elf_info *info, const Elf_S
 		return SPECIAL(sym->st_shndx);
 	if (sym->st_shndx != SHN_XINDEX)
 		return sym->st_shndx;
-	return info->symtab_shndx_start[sym - info->symtab_start];
-}
+	return info->symtab_shndx_start[sym - info->symtab_start]; }
 
 enum loglevel { LOG_WARN, LOG_ERROR, LOG_FATAL };
 

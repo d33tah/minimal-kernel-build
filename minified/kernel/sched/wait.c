@@ -2,8 +2,7 @@
 void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *name, struct lock_class_key *key) {
 	spin_lock_init(&wq_head->lock);
 	lockdep_set_class_and_name(&wq_head->lock, key, name);
-	INIT_LIST_HEAD(&wq_head->head);
-}
+	INIT_LIST_HEAD(&wq_head->head); }
 
 
 void add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry) {
@@ -12,8 +11,7 @@ void add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq
 	wq_entry->flags &= ~WQ_FLAG_EXCLUSIVE;
 	spin_lock_irqsave(&wq_head->lock, flags);
 	__add_wait_queue(wq_head, wq_entry);
-	spin_unlock_irqrestore(&wq_head->lock, flags);
-}
+	spin_unlock_irqrestore(&wq_head->lock, flags); }
 
 #define WAITQUEUE_WALK_BREAK_CNT 64
 
@@ -50,12 +48,9 @@ static int __wake_up_common(struct wait_queue_head *wq_head, unsigned int mode, 
 		if (bookmark && (++cnt > WAITQUEUE_WALK_BREAK_CNT) && (&next->entry != &wq_head->head)) {
 			bookmark->flags = WQ_FLAG_BOOKMARK;
 			list_add_tail(&bookmark->entry, &next->entry);
-			break;
-		}
-	}
+			break; } }
 
-	return nr_exclusive;
-}
+	return nr_exclusive; }
 
 static void __wake_up_common_lock(struct wait_queue_head *wq_head, unsigned int mode, int nr_exclusive, int wake_flags, void *key) {
 	unsigned long flags;
@@ -70,16 +65,13 @@ static void __wake_up_common_lock(struct wait_queue_head *wq_head, unsigned int 
 		spin_lock_irqsave(&wq_head->lock, flags);
 		nr_exclusive = __wake_up_common(wq_head, mode, nr_exclusive, wake_flags, key, &bookmark);
 		spin_unlock_irqrestore(&wq_head->lock, flags);
-	} while (bookmark.flags & WQ_FLAG_BOOKMARK);
-}
+	} while (bookmark.flags & WQ_FLAG_BOOKMARK); }
 
 void __wake_up(struct wait_queue_head *wq_head, unsigned int mode, int nr_exclusive, void *key) {
-	__wake_up_common_lock(wq_head, mode, nr_exclusive, 0, key);
-}
+	__wake_up_common_lock(wq_head, mode, nr_exclusive, 0, key); }
 
 void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head, unsigned int mode, void *key, wait_queue_entry_t *bookmark) {
-	__wake_up_common(wq_head, mode, 1, 0, key, bookmark);
-}
+	__wake_up_common(wq_head, mode, 1, 0, key, bookmark); }
 
 /*
  * Wait-side blocking path (init_wait_entry / prepare_to_wait_event /
@@ -88,17 +80,13 @@ void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head, unsigned int
  * never blocks, so the ___wait_event loop never expands. Symbols kept
  * link-live for the wait.h macros / DEFINE_WAIT externs.
  */
-void init_wait_entry(struct wait_queue_entry *wq_entry, int flags) {
-}
+void init_wait_entry(struct wait_queue_entry *wq_entry, int flags) { }
 
 long prepare_to_wait_event(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state) {
-	return 0;
-}
+	return 0; }
 
-void finish_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry) {
-}
+void finish_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry) { }
 
 int autoremove_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int sync, void *key) {
-	return 0;
-}
+	return 0; }
 

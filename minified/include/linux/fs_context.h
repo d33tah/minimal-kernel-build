@@ -31,8 +31,7 @@ struct fs_context_operations {
 	/* parse_monolithic removed - never set by any instance, so the
 	 * fc->ops->parse_monolithic dispatch always fell through to
 	 * generic_parse_monolithic */
-	int (*get_tree)(struct fs_context *fc);
-};
+	int (*get_tree)(struct fs_context *fc); };
 
 extern struct fs_context *fs_context_for_mount(struct file_system_type *fs_type, unsigned int sb_flags);
 

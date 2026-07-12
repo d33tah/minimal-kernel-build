@@ -15,8 +15,7 @@ extern unsigned int tsc_khz;
 /* disable_TSC removed - unused */
 
 static inline cycles_t get_cycles(void) {
-	return rdtsc();
-}
+	return rdtsc(); }
 #define get_cycles get_cycles
 
 /* convert_art_to_tsc, convert_art_ns_to_tsc removed - unused */

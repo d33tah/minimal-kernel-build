@@ -48,16 +48,14 @@ void * __init extend_brk(size_t size, size_t align) {
 
 	memset(ret, 0, size);
 
-	return ret;
-}
+	return ret; }
 
 static void __init reserve_brk(void) {
 	if (_brk_end > _brk_start)
 		memblock_reserve(__pa_symbol(_brk_start), _brk_end - _brk_start);
 
 	 
-	_brk_start = 0;
-}
+	_brk_start = 0; }
 
 u64 relocated_ramdisk;
 
@@ -70,15 +68,13 @@ static u64 __init get_ramdisk_image(void) {
 	if (ramdisk_image == 0)
 		ramdisk_image = phys_initrd_start;
 
-	return ramdisk_image;
-}
+	return ramdisk_image; }
 static u64 __init get_ramdisk_size(void) {
 	u64 ramdisk_size = boot_params.hdr.ramdisk_size;
 
 	ramdisk_size |= (u64)boot_params.ext_ramdisk_size << 32;
 
-	return ramdisk_size;
-}
+	return ramdisk_size; }
 
 static void __init early_reserve_initrd(void) {
 	 
@@ -89,8 +85,7 @@ static void __init early_reserve_initrd(void) {
 	if (!boot_params.hdr.type_of_loader || !ramdisk_image || !ramdisk_size)
 		return;		 
 
-	memblock_reserve(ramdisk_image, ramdisk_end - ramdisk_image);
-}
+	memblock_reserve(ramdisk_image, ramdisk_end - ramdisk_image); }
 
 static void __init reserve_initrd(void) {
 	 
@@ -109,8 +104,7 @@ static void __init reserve_initrd(void) {
 		 
 		initrd_start = ramdisk_image + PAGE_OFFSET;
 		initrd_end = initrd_start + ramdisk_size;
-		return;
-	}
+		return; }
 
 	{
 		u64 area_size = PAGE_ALIGN(ramdisk_size);
@@ -125,11 +119,9 @@ static void __init reserve_initrd(void) {
 
 		copy_from_early_mem((void *)initrd_start, ramdisk_image, ramdisk_size);
 
-		printk(KERN_INFO "Move RAMDISK from [mem %#010llx-%#010llx] to" " [mem %#010llx-%#010llx]\n", ramdisk_image, ramdisk_image + ramdisk_size - 1, relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1);
-	}
+		printk(KERN_INFO "Move RAMDISK from [mem %#010llx-%#010llx] to" " [mem %#010llx-%#010llx]\n", ramdisk_image, ramdisk_image + ramdisk_size - 1, relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1); }
 
-	memblock_phys_free(ramdisk_image, ramdisk_end - ramdisk_image);
-}
+	memblock_phys_free(ramdisk_image, ramdisk_end - ramdisk_image); }
 
 
 static void __init parse_setup_data(void) {
@@ -153,9 +145,7 @@ static void __init parse_setup_data(void) {
 		 */
 		if (data_type == SETUP_E820_EXT)
 			e820__memory_setup_extended(pa_data, data_len);
-		pa_data = pa_next;
-	}
-}
+		pa_data = pa_next; } }
 
 static void __init memblock_x86_reserve_range_setup_data(void) {
 	struct setup_indirect *indirect;
@@ -168,8 +158,7 @@ static void __init memblock_x86_reserve_range_setup_data(void) {
 		data = early_memremap(pa_data, sizeof(*data));
 		if (!data) {
 			pr_warn("setup: failed to memremap setup_data entry\n");
-			return;
-		}
+			return; }
 
 		len = sizeof(*data);
 		pa_next = data->next;
@@ -182,19 +171,15 @@ static void __init memblock_x86_reserve_range_setup_data(void) {
 			data = early_memremap(pa_data, len);
 			if (!data) {
 				pr_warn("setup: failed to memremap indirect setup_data\n");
-				return;
-			}
+				return; }
 
 			indirect = (struct setup_indirect *)data->data;
 
 			if (indirect->type != SETUP_INDIRECT)
-				memblock_reserve(indirect->addr, indirect->len);
-		}
+				memblock_reserve(indirect->addr, indirect->len); }
 
 		pa_data = pa_next;
-		early_memunmap(data, len);
-	}
-}
+		early_memunmap(data, len); } }
 
 
 static void __init trim_snb_memory(void) {
@@ -208,8 +193,7 @@ static void __init trim_bios_range(void) {
 	 
 	e820__range_remove(BIOS_BEGIN, BIOS_END - BIOS_BEGIN, E820_TYPE_RAM, 1);
 
-	e820__update_table(e820_table);
-}
+	e820__update_table(e820_table); }
 
 static void __init e820_add_kernel_range(void) {
 	u64 start = __pa_symbol(_text);
@@ -221,8 +205,7 @@ static void __init e820_add_kernel_range(void) {
 
 	pr_warn(".text .data .bss are not marked as E820_TYPE_RAM!\n");
 	e820__range_remove(start, size, E820_TYPE_RAM, 0);
-	e820__range_add(start, size, E820_TYPE_RAM);
-}
+	e820__range_add(start, size, E820_TYPE_RAM); }
 
 static void __init early_reserve_memory(void) {
 	 
@@ -236,8 +219,7 @@ static void __init early_reserve_memory(void) {
 	memblock_x86_reserve_range_setup_data();
 
 	reserve_bios_regions();
-	trim_snb_memory();
-}
+	trim_snb_memory(); }
 
 static void __init x86_report_nx(void) {
 	/* Stub: NX reporting not needed for minimal kernel */
@@ -353,7 +335,6 @@ void __init setup_arch(char **cmdline_p) {
 	/* x86_init.oem.banner() removed - dispatched to x86_init_noop */
 	/* x86_init.timers.wallclock_init() removed - dispatched to x86_init_noop */
 
-	register_refined_jiffies(CLOCK_TICK_RATE);
-}
+	register_refined_jiffies(CLOCK_TICK_RATE); }
 
 

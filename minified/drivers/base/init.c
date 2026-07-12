@@ -6,5 +6,4 @@
 
 void __init driver_init(void) {
 	devices_init();
-	classes_init();
-}
+	classes_init(); }

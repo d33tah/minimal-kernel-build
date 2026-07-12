@@ -18,12 +18,9 @@ void *__inline_bsearch(const void *key, const void *base, size_t num, size_t siz
 
 		if (result > 0) {
 			base = pivot + size;
-			num--;
-		}
-		num >>= 1;
-	}
+			num--; }
+		num >>= 1; }
 
-	return NULL;
-}
+	return NULL; }
 
 #endif

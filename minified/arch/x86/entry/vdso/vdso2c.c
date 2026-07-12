@@ -36,8 +36,7 @@ static void fail(const char *format, ...) {
 	if (outfilename)
 		unlink(outfilename);
 	exit(1);
-	va_end(ap);
-}
+	va_end(ap); }
 
 #define GLE(x, bits, ifnot)							__builtin_choose_expr(								(sizeof(*(x)) == bits/8),						(__typeof__(*(x)))get_unaligned_le##bits(x), ifnot)
 
@@ -74,9 +73,7 @@ static void go(void *raw_addr, size_t raw_len, void *stripped_addr, size_t strip
 	} else if (hdr->e_ident[EI_CLASS] == ELFCLASS32) {
 		go32(raw_addr, raw_len, stripped_addr, stripped_len, outfile, name);
 	} else {
-		fail("unknown ELF class\n");
-	}
-}
+		fail("unknown ELF class\n"); } }
 
 static void map_input(const char *name, void **addr, size_t *len, int prot) {
 	off_t tmp_len;
@@ -94,8 +91,7 @@ static void map_input(const char *name, void **addr, size_t *len, int prot) {
 	if (*addr == MAP_FAILED)
 		err(1, "mmap");
 
-	close(fd);
-}
+	close(fd); }
 
 int main(int argc, char **argv) {
 	size_t raw_len, stripped_len;
@@ -106,8 +102,7 @@ int main(int argc, char **argv) {
 
 	if (argc != 4) {
 		printf("Usage: vdso2c RAW_INPUT STRIPPED_INPUT OUTPUT\n");
-		return 1;
-	}
+		return 1; }
 
 	 
 	name = strdup(argv[3]);
@@ -123,8 +118,7 @@ int main(int argc, char **argv) {
 			*tmp = '\0';
 		for (tmp = name; *tmp; tmp++)
 			if (*tmp == '-')
-				*tmp = '_';
-	}
+				*tmp = '_'; }
 
 	map_input(argv[1], &raw_addr, &raw_len, PROT_READ);
 	map_input(argv[2], &stripped_addr, &stripped_len, PROT_READ);
@@ -140,5 +134,4 @@ int main(int argc, char **argv) {
 	munmap(stripped_addr, stripped_len);
 	fclose(outfile);
 
-	return 0;
-}
+	return 0; }

@@ -15,7 +15,6 @@ extern struct user_struct root_user;
 
 static inline struct user_struct *get_uid(struct user_struct *u) {
 	refcount_inc(&u->__count);
-	return u;
-}
+	return u; }
 
 #endif  

@@ -29,8 +29,7 @@ enum fixed_addresses {
 #define TOTAL_FIX_BTMAPS	(NR_FIX_BTMAPS * FIX_BTMAPS_SLOTS)
 	FIX_BTMAP_END = (__end_of_permanent_fixed_addresses ^ (__end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS - 1)) & -PTRS_PER_PTE
 	 ? __end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS - (__end_of_permanent_fixed_addresses & (TOTAL_FIX_BTMAPS - 1))
-	 : __end_of_permanent_fixed_addresses, FIX_BTMAP_BEGIN = FIX_BTMAP_END + TOTAL_FIX_BTMAPS - 1, FIX_WP_TEST, __end_of_fixed_addresses
-};
+	 : __end_of_permanent_fixed_addresses, FIX_BTMAP_BEGIN = FIX_BTMAP_END + TOTAL_FIX_BTMAPS - 1, FIX_WP_TEST, __end_of_fixed_addresses };
 
 
 
@@ -41,8 +40,7 @@ enum fixed_addresses {
 void native_set_fixmap(unsigned   idx, phys_addr_t phys, pgprot_t flags);
 
 static inline void __set_fixmap(enum fixed_addresses idx, phys_addr_t phys, pgprot_t flags) {
-	native_set_fixmap(idx, phys, flags);
-}
+	native_set_fixmap(idx, phys, flags); }
 
 /* Inlined from asm-generic/fixmap.h */
 #include <linux/bug.h>
@@ -52,8 +50,7 @@ static inline void __set_fixmap(enum fixed_addresses idx, phys_addr_t phys, pgpr
 
 static __always_inline unsigned long fix_to_virt(const unsigned int idx) {
 	BUILD_BUG_ON(idx >= __end_of_fixed_addresses);
-	return __fix_to_virt(idx);
-}
+	return __fix_to_virt(idx); }
 
 
 #ifndef FIXMAP_PAGE_NORMAL

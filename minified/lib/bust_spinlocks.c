@@ -9,6 +9,4 @@ void bust_spinlocks(int yes) {
 	} else {
 		unblank_screen();
 		console_unblank();
-		--oops_in_progress;
-	}
-}
+		--oops_in_progress; } }

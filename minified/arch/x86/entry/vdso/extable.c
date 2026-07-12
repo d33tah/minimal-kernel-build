@@ -10,5 +10,4 @@ bool fixup_vdso_exception(struct pt_regs *regs, int trapnr, unsigned long error_
 	 * mm->context.vdso is never set in this minimal build, so the vdso
 	 * exception fixup table is never installed and there is nothing to fix.
 	 */
-	return false;
-}
+	return false; }

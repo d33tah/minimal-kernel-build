@@ -15,6 +15,5 @@ static int __init workingset_init(void) {
 	if (ret)
 		return ret;
 
-	return 0;
-}
+	return 0; }
 module_init(workingset_init);

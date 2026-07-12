@@ -23,11 +23,9 @@ void __init reserve_real_mode(void) {
 		set_real_mode_mem(mem);
 
 	 
-	memblock_reserve(0, SZ_1M);
-}
+	memblock_reserve(0, SZ_1M); }
 
-static void __init sme_sev_setup_real_mode(struct trampoline_header *th) {
-}
+static void __init sme_sev_setup_real_mode(struct trampoline_header *th) { }
 
 static void __init setup_real_mode(void) {
 	u16 real_mode_seg;
@@ -51,15 +49,13 @@ static void __init setup_real_mode(void) {
 	count = *rel++;
 	while (count--) {
 		u16 *seg = (u16 *) (base + *rel++);
-		*seg = real_mode_seg;
-	}
+		*seg = real_mode_seg; }
 
 	 
 	count = *rel++;
 	while (count--) {
 		u32 *ptr = (u32 *) (base + *rel++);
-		*ptr += phys_base;
-	}
+		*ptr += phys_base; }
 
 	 
 	trampoline_header = (struct trampoline_header *)
@@ -69,8 +65,7 @@ static void __init setup_real_mode(void) {
 	trampoline_header->gdt_limit = __BOOT_DS + 7;
 	trampoline_header->gdt_base = __pa_symbol(boot_gdt);
 
-	sme_sev_setup_real_mode(trampoline_header);
-}
+	sme_sev_setup_real_mode(trampoline_header); }
 
 static int __init init_real_mode(void) {
 	if (!real_mode_header)
@@ -78,6 +73,5 @@ static int __init init_real_mode(void) {
 
 	setup_real_mode();
 
-	return 0;
-}
+	return 0; }
 early_initcall(init_real_mode);

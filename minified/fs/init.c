@@ -16,11 +16,9 @@ int __init init_chown(const char *filename, uid_t user, gid_t group, int flags) 
 	error = mnt_want_write(path.mnt);
 	if (!error) {
 		error = chown_common(&path, user, group);
-		mnt_drop_write(path.mnt);
-	}
+		mnt_drop_write(path.mnt); }
 	path_put(&path);
-	return error;
-}
+	return error; }
 
 int __init init_chmod(const char *filename, umode_t mode) {
 	struct path path;
@@ -31,8 +29,7 @@ int __init init_chmod(const char *filename, umode_t mode) {
 		return error;
 	error = chmod_common(&path, mode);
 	path_put(&path);
-	return error;
-}
+	return error; }
 
 int __init init_stat(const char *filename, struct kstat *stat, int flags) {
 	int lookup_flags = (flags & AT_SYMLINK_NOFOLLOW) ? 0 : LOOKUP_FOLLOW;
@@ -43,8 +40,7 @@ int __init init_stat(const char *filename, struct kstat *stat, int flags) {
 	if (error)
 		return error;
 	path_put(&path);
-	return error;
-}
+	return error; }
 
 int __init init_mknod(const char *filename, umode_t mode, unsigned int dev) {
 	struct dentry *dentry;
@@ -63,8 +59,7 @@ int __init init_mknod(const char *filename, umode_t mode, unsigned int dev) {
 	mode &= ~current_umask();
 	error = vfs_mknod(mnt_user_ns(path.mnt), path.dentry->d_inode, dentry, mode, new_decode_dev(dev));
 	done_path_create(&path, dentry);
-	return error;
-}
+	return error; }
 
 int __init init_link(const char *oldname, const char *newname) {
 	struct dentry *new_dentry;
@@ -90,8 +85,7 @@ out_dput:
 	done_path_create(&new_path, new_dentry);
 out:
 	path_put(&old_path);
-	return error;
-}
+	return error; }
 
 int __init init_symlink(const char *oldname, const char *newname) {
 	struct dentry *dentry;
@@ -103,12 +97,10 @@ int __init init_symlink(const char *oldname, const char *newname) {
 		return PTR_ERR(dentry);
 	error = vfs_symlink(mnt_user_ns(path.mnt), path.dentry->d_inode, dentry, oldname);
 	done_path_create(&path, dentry);
-	return error;
-}
+	return error; }
 
 int __init init_unlink(const char *pathname) {
-	return do_unlinkat(getname_kernel(pathname));
-}
+	return do_unlinkat(getname_kernel(pathname)); }
 
 int __init init_mkdir(const char *pathname, umode_t mode) {
 	struct dentry *dentry;
@@ -121,12 +113,10 @@ int __init init_mkdir(const char *pathname, umode_t mode) {
 	mode &= ~current_umask();
 	error = vfs_mkdir(mnt_user_ns(path.mnt), path.dentry->d_inode, dentry, mode);
 	done_path_create(&path, dentry);
-	return error;
-}
+	return error; }
 
 int __init init_rmdir(const char *pathname) {
-	return do_rmdir(getname_kernel(pathname));
-}
+	return do_rmdir(getname_kernel(pathname)); }
 
 int __init init_dup(struct file *file) {
 	int fd;
@@ -135,5 +125,4 @@ int __init init_dup(struct file *file) {
 	if (fd < 0)
 		return fd;
 	fd_install(fd, get_file(file));
-	return 0;
-}
+	return 0; }

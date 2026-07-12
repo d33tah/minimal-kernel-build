@@ -23,11 +23,9 @@ unsigned long find_next_bit(const unsigned long *addr, unsigned long size, unsig
 			return size;
 
 		val = *addr & GENMASK(size - 1, offset);
-		return val ? __ffs(val) : size;
-	}
+		return val ? __ffs(val) : size; }
 
-	return _find_next_bit(addr, NULL, size, offset, 0UL, 0);
-}
+	return _find_next_bit(addr, NULL, size, offset, 0UL, 0); }
 #endif
 
 
@@ -41,11 +39,9 @@ unsigned long find_next_zero_bit(const unsigned long *addr, unsigned long size, 
 			return size;
 
 		val = *addr | ~GENMASK(size - 1, offset);
-		return val == ~0UL ? size : ffz(val);
-	}
+		return val == ~0UL ? size : ffz(val); }
 
-	return _find_next_bit(addr, NULL, size, offset, ~0UL, 0);
-}
+	return _find_next_bit(addr, NULL, size, offset, ~0UL, 0); }
 #endif
 
 #ifndef find_first_bit
@@ -54,11 +50,9 @@ unsigned long find_first_bit(const unsigned long *addr, unsigned long size) {
 	if (small_const_nbits(size)) {
 		unsigned long val = *addr & GENMASK(size - 1, 0);
 
-		return val ? __ffs(val) : size;
-	}
+		return val ? __ffs(val) : size; }
 
-	return _find_first_bit(addr, size);
-}
+	return _find_first_bit(addr, size); }
 #endif
 
 
@@ -68,11 +62,9 @@ unsigned long find_first_zero_bit(const unsigned long *addr, unsigned long size)
 	if (small_const_nbits(size)) {
 		unsigned long val = *addr | ~GENMASK(size - 1, 0);
 
-		return val == ~0UL ? size : ffz(val);
-	}
+		return val == ~0UL ? size : ffz(val); }
 
-	return _find_first_zero_bit(addr, size);
-}
+	return _find_first_zero_bit(addr, size); }
 #endif
 
 #ifndef find_last_bit
@@ -81,11 +73,9 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size) {
 	if (small_const_nbits(size)) {
 		unsigned long val = *addr & GENMASK(size - 1, 0);
 
-		return val ? __fls(val) : size;
-	}
+		return val ? __fls(val) : size; }
 
-	return _find_last_bit(addr, size);
-}
+	return _find_last_bit(addr, size); }
 #endif
 
 
@@ -113,13 +103,11 @@ void __bitmap_clear(unsigned long *map, unsigned int start, int len);
 
 static inline void bitmap_zero(unsigned long *dst, unsigned int nbits) {
 	unsigned int len = BITS_TO_LONGS(nbits) * sizeof(unsigned long);
-	memset(dst, 0, len);
-}
+	memset(dst, 0, len); }
 
 static inline void bitmap_fill(unsigned long *dst, unsigned int nbits) {
 	unsigned int len = BITS_TO_LONGS(nbits) * sizeof(unsigned long);
-	memset(dst, 0xff, len);
-}
+	memset(dst, 0xff, len); }
 
 
 
@@ -130,23 +118,20 @@ static inline void bitmap_fill(unsigned long *dst, unsigned int nbits) {
 #define BITMAP_MEM_MASK (BITMAP_MEM_ALIGNMENT - 1)
 
 static inline bool bitmap_equal(const unsigned long *src1, const unsigned long *src2, unsigned int nbits) {
-	return !((*src1 ^ *src2) & BITMAP_LAST_WORD_MASK(nbits));
-}
+	return !((*src1 ^ *src2) & BITMAP_LAST_WORD_MASK(nbits)); }
 
 
 static inline bool bitmap_empty(const unsigned long *src, unsigned nbits) {
 	if (small_const_nbits(nbits))
 		return ! (*src & BITMAP_LAST_WORD_MASK(nbits));
 
-	return find_first_bit(src, nbits) == nbits;
-}
+	return find_first_bit(src, nbits) == nbits; }
 
 static inline bool bitmap_full(const unsigned long *src, unsigned int nbits) {
 	if (small_const_nbits(nbits))
 		return ! (~(*src) & BITMAP_LAST_WORD_MASK(nbits));
 
-	return find_first_zero_bit(src, nbits) == nbits;
-}
+	return find_first_zero_bit(src, nbits) == nbits; }
 
 
 static __always_inline void bitmap_set(unsigned long *map, unsigned int start, unsigned int nbits) {
@@ -155,8 +140,7 @@ static __always_inline void bitmap_set(unsigned long *map, unsigned int start, u
 	else if (__builtin_constant_p(start & BITMAP_MEM_MASK) && IS_ALIGNED(start, BITMAP_MEM_ALIGNMENT) && __builtin_constant_p(nbits & BITMAP_MEM_MASK) && IS_ALIGNED(nbits, BITMAP_MEM_ALIGNMENT))
 		memset((char *)map + start / 8, 0xff, nbits / 8);
 	else
-		__bitmap_set(map, start, nbits);
-}
+		__bitmap_set(map, start, nbits); }
 
 static __always_inline void bitmap_clear(unsigned long *map, unsigned int start, unsigned int nbits) {
 	if (__builtin_constant_p(nbits) && nbits == 1)
@@ -164,8 +148,7 @@ static __always_inline void bitmap_clear(unsigned long *map, unsigned int start,
 	else if (__builtin_constant_p(start & BITMAP_MEM_MASK) && IS_ALIGNED(start, BITMAP_MEM_ALIGNMENT) && __builtin_constant_p(nbits & BITMAP_MEM_MASK) && IS_ALIGNED(nbits, BITMAP_MEM_ALIGNMENT))
 		memset((char *)map + start / 8, 0, nbits / 8);
 	else
-		__bitmap_clear(map, start, nbits);
-}
+		__bitmap_clear(map, start, nbits); }
 
 #endif
 

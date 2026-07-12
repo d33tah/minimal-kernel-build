@@ -24,8 +24,7 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = { [GDT_ENTRY_K
 
 static __always_inline void setup_smep(struct cpuinfo_x86 *c) {
 	if (cpu_has(c, X86_FEATURE_SMEP))
-		cr4_set_bits(X86_CR4_SMEP);
-}
+		cr4_set_bits(X86_CR4_SMEP); }
 
 static __always_inline void setup_smap(struct cpuinfo_x86 *c) {
 	unsigned long eflags = native_save_fl();
@@ -33,16 +32,14 @@ static __always_inline void setup_smap(struct cpuinfo_x86 *c) {
 	BUG_ON(eflags & X86_EFLAGS_AC);
 
 	if (cpu_has(c, X86_FEATURE_SMAP))
-		cr4_set_bits(X86_CR4_SMAP);
-}
+		cr4_set_bits(X86_CR4_SMAP); }
 
 static __always_inline void setup_umip(struct cpuinfo_x86 *c) {
 	/*
 	 * UMIP is in DISABLED_MASK16, so cpu_feature_enabled(X86_FEATURE_UMIP)
 	 * is constant 0 -- the activate path was dead; only the clear remains.
 	 */
-	cr4_clear_bits(X86_CR4_UMIP);
-}
+	cr4_clear_bits(X86_CR4_UMIP); }
 
 static const unsigned long cr4_pinned_mask = X86_CR4_SMEP | X86_CR4_SMAP | X86_CR4_UMIP | X86_CR4_FSGSBASE | X86_CR4_CET;
 static DEFINE_STATIC_KEY_FALSE_RO(cr_pinning);
@@ -58,12 +55,9 @@ set_register:
 		if (unlikely((val & X86_CR0_WP) != X86_CR0_WP)) {
 			bits_missing = X86_CR0_WP;
 			val |= bits_missing;
-			goto set_register;
-		}
+			goto set_register; }
 		
-		WARN_ONCE(bits_missing, "CR0 WP bit went missing!?\n");
-	}
-}
+		WARN_ONCE(bits_missing, "CR0 WP bit went missing!?\n"); } }
 
 void __no_profile native_write_cr4(unsigned long val) {
 	unsigned long bits_changed = 0;
@@ -75,12 +69,9 @@ set_register:
 		if (unlikely((val & cr4_pinned_mask) != cr4_pinned_bits)) {
 			bits_changed = (val & cr4_pinned_mask) ^ cr4_pinned_bits;
 			val = (val & ~cr4_pinned_mask) | cr4_pinned_bits;
-			goto set_register;
-		}
+			goto set_register; }
 		
-		WARN_ONCE(bits_changed, "pinned CR4 bits changed: 0x%lx!?\n", bits_changed);
-	}
-}
+		WARN_ONCE(bits_changed, "pinned CR4 bits changed: 0x%lx!?\n", bits_changed); } }
 
 void cr4_update_irqsoff(unsigned long set, unsigned long clear) {
 	unsigned long newval, cr4 = this_cpu_read(cpu_tlbstate.cr4);
@@ -90,18 +81,14 @@ void cr4_update_irqsoff(unsigned long set, unsigned long clear) {
 	newval = (cr4 & ~clear) | set;
 	if (newval != cr4) {
 		this_cpu_write(cpu_tlbstate.cr4, newval);
-		__write_cr4(newval);
-	}
-}
+		__write_cr4(newval); } }
 
 unsigned long cr4_read_shadow(void) {
-	return this_cpu_read(cpu_tlbstate.cr4);
-}
+	return this_cpu_read(cpu_tlbstate.cr4); }
 
 static void __init setup_cr_pinning(void) {
 	cr4_pinned_bits = this_cpu_read(cpu_tlbstate.cr4) & cr4_pinned_mask;
-	static_key_enable(&cr_pinning.key);
-}
+	static_key_enable(&cr_pinning.key); }
 
 
 struct cpuid_dependent_feature { u32 feature, level; };
@@ -124,9 +111,7 @@ static void filter_cpuid_features(struct cpuinfo_x86 *c, bool warn) {
 		if (!warn)
 			continue;
 
-		pr_warn("CPU: CPU feature " X86_CAP_FMT " disabled, no CPUID level 0x%x\n", x86_cap_flag(df->feature), df->level);
-	}
-}
+		pr_warn("CPU: CPU feature " X86_CAP_FMT " disabled, no CPUID level 0x%x\n", x86_cap_flag(df->feature), df->level); } }
 
 __u32 cpu_caps_cleared[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 __u32 cpu_caps_set[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
@@ -156,11 +141,9 @@ static void get_model_name(struct cpuinfo_x86 *c) {
 		if (!isspace(*p))
 			s = q;
 
-		*q++ = *p++;
-	}
+		*q++ = *p++; }
 
-	*(s + 1) = '\0';
-}
+	*(s + 1) = '\0'; }
 
 static void get_cpu_vendor(struct cpuinfo_x86 *c) {
 	/*
@@ -168,8 +151,7 @@ static void get_cpu_vendor(struct cpuinfo_x86 *c) {
 	 * has zero invocations -> the .x86_cpu_dev.init section is empty ->
 	 * the vendor-string match loop never finds an entry). Always generic.
 	 */
-	c->x86_vendor = X86_VENDOR_UNKNOWN;
-}
+	c->x86_vendor = X86_VENDOR_UNKNOWN; }
 
 void cpu_detect(struct cpuinfo_x86 *c) {
 	
@@ -187,19 +169,14 @@ void cpu_detect(struct cpuinfo_x86 *c) {
 
 		if (cap0 & (1<<19)) {
 			c->x86_clflush_size = ((misc >> 8) & 0xff) * 8;
-			c->x86_cache_alignment = c->x86_clflush_size;
-		}
-	}
-}
+			c->x86_cache_alignment = c->x86_clflush_size; } } }
 
 static void apply_forced_caps(struct cpuinfo_x86 *c) {
 	int i;
 
 	for (i = 0; i < NCAPINTS + NBUGINTS; i++) {
 		c->x86_capability[i] &= ~cpu_caps_cleared[i];
-		c->x86_capability[i] |= cpu_caps_set[i];
-	}
-}
+		c->x86_capability[i] |= cpu_caps_set[i]; } }
 
 void get_cpu_cap(struct cpuinfo_x86 *c) {
 	u32 eax, ebx, ecx, edx;
@@ -208,8 +185,7 @@ void get_cpu_cap(struct cpuinfo_x86 *c) {
 		cpuid(0x00000001, &eax, &ebx, &ecx, &edx);
 
 		c->x86_capability[CPUID_1_ECX] = ecx;
-		c->x86_capability[CPUID_1_EDX] = edx;
-	}
+		c->x86_capability[CPUID_1_EDX] = edx; }
 
 	if (c->cpuid_level >= 0x00000006)
 		c->x86_capability[CPUID_6_EAX] = cpuid_eax(0x00000006);
@@ -222,15 +198,12 @@ void get_cpu_cap(struct cpuinfo_x86 *c) {
 
 		if (eax >= 1) {
 			cpuid_count(0x00000007, 1, &eax, &ebx, &ecx, &edx);
-			c->x86_capability[CPUID_7_1_EAX] = eax;
-		}
-	}
+			c->x86_capability[CPUID_7_1_EAX] = eax; } }
 
 	if (c->cpuid_level >= 0x0000000d) {
 		cpuid_count(0x0000000d, 1, &eax, &ebx, &ecx, &edx);
 
-		c->x86_capability[CPUID_D_1_EAX] = eax;
-	}
+		c->x86_capability[CPUID_D_1_EAX] = eax; }
 
 	eax = cpuid_eax(0x80000000);
 	c->extended_cpuid_level = eax;
@@ -240,20 +213,16 @@ void get_cpu_cap(struct cpuinfo_x86 *c) {
 			cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
 
 			c->x86_capability[CPUID_8000_0001_ECX] = ecx;
-			c->x86_capability[CPUID_8000_0001_EDX] = edx;
-		}
-	}
+			c->x86_capability[CPUID_8000_0001_EDX] = edx; } }
 
 	if (c->extended_cpuid_level >= 0x80000007) {
 		cpuid(0x80000007, &eax, &ebx, &ecx, &edx);
 
-		c->x86_capability[CPUID_8000_0007_EBX] = ebx;
-	}
+		c->x86_capability[CPUID_8000_0007_EBX] = ebx; }
 
 	if (c->extended_cpuid_level >= 0x80000008) {
 		cpuid(0x80000008, &eax, &ebx, &ecx, &edx);
-		c->x86_capability[CPUID_8000_0008_EBX] = ebx;
-	}
+		c->x86_capability[CPUID_8000_0008_EBX] = ebx; }
 
 	if (c->extended_cpuid_level >= 0x8000000a)
 		c->x86_capability[CPUID_8000_000A_EDX] = cpuid_edx(0x8000000a);
@@ -261,8 +230,7 @@ void get_cpu_cap(struct cpuinfo_x86 *c) {
 	if (c->extended_cpuid_level >= 0x8000001f)
 		c->x86_capability[CPUID_8000_001F_EAX] = cpuid_eax(0x8000001f);
 
-	apply_forced_caps(c);
-}
+	apply_forced_caps(c); }
 
 void get_cpu_address_sizes(struct cpuinfo_x86 *c) {
 	u32 eax, ebx, ecx, edx;
@@ -270,19 +238,16 @@ void get_cpu_address_sizes(struct cpuinfo_x86 *c) {
 	if (c->extended_cpuid_level >= 0x80000008) {
 		cpuid(0x80000008, &eax, &ebx, &ecx, &edx);
 
-		c->x86_phys_bits = eax & 0xff;
-	}
+		c->x86_phys_bits = eax & 0xff; }
 	else if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
-		c->x86_phys_bits = 36;
-}
+		c->x86_phys_bits = 36; }
 
 static void __init cpu_set_bug_bits(struct cpuinfo_x86 *c) {
 	/* Stub: CPU bug detection not needed for minimal kernel */
 }
 
 static void detect_nopl(void) {
-	setup_clear_cpu_cap(X86_FEATURE_NOPL);
-}
+	setup_clear_cpu_cap(X86_FEATURE_NOPL); }
 
 static void __init cpu_parse_early_param(void) {
 	/* Stub: CPU early param parsing not needed for minimal kernel */
@@ -325,8 +290,7 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c) {
 
 	setup_clear_cpu_cap(X86_FEATURE_LA57);
 
-	detect_nopl();
-}
+	detect_nopl(); }
 
 void __init early_cpu_init(void) {
 	/*
@@ -335,8 +299,7 @@ void __init early_cpu_init(void) {
 	 * the per-vendor population loop never iterated and cpu_devs[]
 	 * stays all-NULL (its initializer).  Folded away.
 	 */
-	early_identify_cpu(&boot_cpu_data);
-}
+	early_identify_cpu(&boot_cpu_data); }
 
 static void generic_identify(struct cpuinfo_x86 *c) {
 	c->extended_cpuid_level = 0;
@@ -351,8 +314,7 @@ static void generic_identify(struct cpuinfo_x86 *c) {
 
 	get_model_name(c);
 
-	set_cpu_bug(c, X86_BUG_ESPFIX);
-}
+	set_cpu_bug(c, X86_BUG_ESPFIX); }
 
 static void identify_cpu(struct cpuinfo_x86 *c) {
 	c->loops_per_jiffy = loops_per_jiffy;
@@ -378,8 +340,7 @@ static void identify_cpu(struct cpuinfo_x86 *c) {
 
 	if (cpu_has(c, X86_FEATURE_FSGSBASE)) {
 		cr4_set_bits(X86_CR4_FSGSBASE);
-		elf_hwcap2 |= HWCAP2_FSGSBASE;
-	}
+		elf_hwcap2 |= HWCAP2_FSGSBASE; }
 
 	filter_cpuid_features(c, true);
 
@@ -390,8 +351,7 @@ static void identify_cpu(struct cpuinfo_x86 *c) {
 		 * zero-initialized (->family == 0) -> the lookup always returned
 		 * NULL, so synthesize the family/model name directly.
 		 */
-		sprintf(c->x86_model_id, "%02x/%02x", c->x86, c->x86_model);
-	}
+		sprintf(c->x86_model_id, "%02x/%02x", c->x86, c->x86_model); }
 
 	apply_forced_caps(c);
 
@@ -421,8 +381,7 @@ void enable_sep_cpu(void) {
 	wrmsr(MSR_IA32_SYSENTER_ESP, (unsigned long)(cpu_entry_stack(cpu) + 1), 0);
 	wrmsr(MSR_IA32_SYSENTER_EIP, (unsigned long)entry_SYSENTER_32, 0);
 
-	put_cpu();
-}
+	put_cpu(); }
 
 void __init identify_boot_cpu(void) {
 	identify_cpu(&boot_cpu_data);
@@ -430,8 +389,7 @@ void __init identify_boot_cpu(void) {
 	sysenter_setup();
 	enable_sep_cpu();
 	/* cpu_detect_tlb removed - TLB info never used */
-	setup_cr_pinning();
-}
+	setup_cr_pinning(); }
 
 
 DEFINE_PER_CPU(struct task_struct *, current_task) = &init_task;
@@ -447,9 +405,7 @@ static void clear_all_debug_regs(void) {
 		if ((i == 4) || (i == 5))
 			continue;
 
-		set_debugreg(0, i);
-	}
-}
+		set_debugreg(0, i); } }
 
 #define dbg_restore_debug_regs()
 
@@ -467,8 +423,7 @@ void cpu_init_exception_handling(void) {
 
 	load_TR_desc();
 
-	load_current_idt();
-}
+	load_current_idt(); }
 
 void cpu_init(void) {
 	struct task_struct *cur = current;
@@ -505,7 +460,5 @@ void cpu_init(void) {
 
 		gdt_descr.address = (long)get_cpu_gdt_ro(cpu);
 		gdt_descr.size = GDT_SIZE - 1;
-		load_gdt(&gdt_descr);
-	}
-}
+		load_gdt(&gdt_descr); } }
 

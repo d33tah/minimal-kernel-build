@@ -87,28 +87,23 @@ struct wake_q_node { struct wake_q_node *next; };
 struct task_struct { struct thread_info		thread_info; unsigned int			__state; randomized_struct_fields_start void				*stack; refcount_t			usage; unsigned int			flags; int				on_rq; int				static_prio; struct sched_entity		se; const struct sched_class	*sched_class; unsigned int			policy; const cpumask_t			*cpus_ptr; cpumask_t			cpus_mask; struct list_head		tasks; struct mm_struct *mm, *active_mm; int				exit_signal; unsigned long			jobctl; unsigned int			personality; unsigned			in_iowait:1; pid_t				pid; pid_t				tgid; struct task_struct __rcu	*real_parent; struct task_struct __rcu	*parent; struct task_struct		*group_leader; struct list_head		ptrace_entry; struct pid			*thread_pid; struct hlist_node		pid_links[PIDTYPE_MAX]; struct list_head thread_group, thread_node; struct completion		*vfork_done; void				*worker_private; const struct cred __rcu		*real_cred; const struct cred __rcu		*cred; char				comm[TASK_COMM_LEN]; struct nameidata		*nameidata; struct fs_struct		*fs; struct files_struct		*files; struct nsproxy			*nsproxy; struct signal_struct		*signal; struct sighand_struct __rcu		*sighand; sigset_t			blocked; struct sigpending		pending; struct callback_head		*task_works; spinlock_t			alloc_lock; raw_spinlock_t			pi_lock; struct wake_q_node		wake_q; union { refcount_t		rcu_users; struct rcu_head		rcu; }; int				pagefault_disabled; refcount_t			stack_refcount; randomized_struct_fields_end struct thread_struct		thread; };
 
 static inline struct pid *task_pid(struct task_struct *task) {
-	return task->thread_pid;
-}
+	return task->thread_pid; }
 
 pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type, struct pid_namespace *ns);
 
 static inline pid_t task_pid_nr(struct task_struct *tsk) {
-	return tsk->pid;
-}
+	return tsk->pid; }
 
 static inline pid_t task_pid_nr_ns(struct task_struct *tsk, struct pid_namespace *ns) {
-	return __task_pid_nr_ns(tsk, PIDTYPE_PID, ns);
-}
+	return __task_pid_nr_ns(tsk, PIDTYPE_PID, ns); }
 
 static inline pid_t task_tgid_nr(struct task_struct *tsk) {
-	return tsk->tgid;
-}
+	return tsk->tgid; }
 
 
 
 static inline int is_global_init(struct task_struct *tsk) {
-	return task_tgid_nr(tsk) == 1;
-}
+	return task_tgid_nr(tsk) == 1; }
 
 
 #define PF_IDLE			0x00000002
@@ -122,13 +117,11 @@ static inline int is_global_init(struct task_struct *tsk) {
 static inline int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask) {
 	if (!cpumask_test_cpu(0, new_mask))
 		return -EINVAL;
-	return 0;
-}
+	return 0; }
 extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sched_param *);
 
 static __always_inline bool is_idle_task(const struct task_struct *p) {
-	return !!(p->flags & PF_IDLE);
-}
+	return !!(p->flags & PF_IDLE); }
 
 
 union thread_union { struct task_struct task; unsigned long stack[THREAD_SIZE/sizeof(long)]; };
@@ -146,42 +139,34 @@ extern void wake_up_new_task(struct task_struct *tsk);
 extern void __set_task_comm(struct task_struct *tsk, const char *from, bool exec);
 
 static inline void set_task_comm(struct task_struct *tsk, const char *from) {
-	__set_task_comm(tsk, from, false);
-}
+	__set_task_comm(tsk, from, false); }
 
 
 static inline void set_tsk_thread_flag(struct task_struct *tsk, int flag) {
-	set_ti_thread_flag(task_thread_info(tsk), flag);
-}
+	set_ti_thread_flag(task_thread_info(tsk), flag); }
 
 static inline void clear_tsk_thread_flag(struct task_struct *tsk, int flag) {
-	clear_ti_thread_flag(task_thread_info(tsk), flag);
-}
+	clear_ti_thread_flag(task_thread_info(tsk), flag); }
 
 /* test_and_set_tsk_thread_flag: orphaned with set_notify_resume, removed (LOC reduction) */
 
 static inline int test_tsk_thread_flag(struct task_struct *tsk, int flag) {
-	return test_ti_thread_flag(task_thread_info(tsk), flag);
-}
+	return test_ti_thread_flag(task_thread_info(tsk), flag); }
 
 static inline void set_tsk_need_resched(struct task_struct *tsk) {
-	set_tsk_thread_flag(tsk,TIF_NEED_RESCHED);
-}
+	set_tsk_thread_flag(tsk,TIF_NEED_RESCHED); }
 
 static inline void clear_tsk_need_resched(struct task_struct *tsk) {
-	clear_tsk_thread_flag(tsk,TIF_NEED_RESCHED);
-}
+	clear_tsk_thread_flag(tsk,TIF_NEED_RESCHED); }
 
 static inline int test_tsk_need_resched(struct task_struct *tsk) {
-	return unlikely(test_tsk_thread_flag(tsk,TIF_NEED_RESCHED));
-}
+	return unlikely(test_tsk_thread_flag(tsk,TIF_NEED_RESCHED)); }
 
 extern int __cond_resched(void);
 
 
 static inline int _cond_resched(void) {
-	return __cond_resched();
-}
+	return __cond_resched(); }
 
 
 
@@ -189,13 +174,11 @@ static inline int _cond_resched(void) {
 
 
 static __always_inline bool need_resched(void) {
-	return unlikely(tif_need_resched());
-}
+	return unlikely(tif_need_resched()); }
 
 
 static inline unsigned int task_cpu(const struct task_struct *p) {
-	return 0;
-}
+	return 0; }
 
 
 

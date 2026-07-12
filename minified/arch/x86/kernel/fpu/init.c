@@ -23,12 +23,10 @@ static void fpu__init_cpu_generic(void) {
 	write_cr0(cr0);
 
 	 
-		asm volatile ("fninit");
-}
+		asm volatile ("fninit"); }
 
 void fpu__init_cpu(void) {
-	fpu__init_cpu_generic();
-}
+	fpu__init_cpu_generic(); }
 
 static void fpu__init_system_early_generic(struct cpuinfo_x86 *c) {
 	/*
@@ -40,16 +38,13 @@ static void fpu__init_system_early_generic(struct cpuinfo_x86 *c) {
 	if (!test_cpu_cap(&boot_cpu_data, X86_FEATURE_FPU)) {
 		pr_emerg("x86/fpu: Giving up, no FPU found and no math emulation present\n");
 		for (;;)
-			asm volatile("hlt");
-	}
-}
+			asm volatile("hlt"); } }
 
 static void __init fpu__init_system_generic(void) {
 	/* fpu__init_system_mxcsr() removed: it only computed mxcsr_feature_mask,
 	 * a global that is never read anywhere in this tree (the MXCSR-validation
 	 * signal-restore paths were removed in minification). Pure dead write. */
-	fpstate_init_user(&init_fpstate);
-}
+	fpstate_init_user(&init_fpstate); }
 
 #define TYPE_ALIGN(TYPE) offsetof(struct { char x; TYPE test; }, test)
 
@@ -69,8 +64,7 @@ static void __init fpu__init_task_struct_size(void) {
 	CHECK_MEMBER_AT_END_OF(struct thread_struct, fpu);
 	CHECK_MEMBER_AT_END_OF(struct task_struct, thread);
 
-	arch_task_struct_size = task_size;
-}
+	arch_task_struct_size = task_size; }
 
 static void __init fpu__init_system_xstate_size_legacy(void) {
 	unsigned int size;
@@ -79,18 +73,15 @@ static void __init fpu__init_system_xstate_size_legacy(void) {
 	if (cpu_feature_enabled(X86_FEATURE_FXSR)) {
 		size = sizeof(struct fxregs_state);
 	} else {
-		size = sizeof(struct fregs_state);
-	}
+		size = sizeof(struct fregs_state); }
 
 	fpu_kernel_cfg.default_size = size;
 	fpu_user_cfg.default_size = size;
-	fpstate_reset(&current->thread.fpu);
-}
+	fpstate_reset(&current->thread.fpu); }
 
 static void __init fpu__init_init_fpstate(void) {
 	 
-	init_fpstate.xfeatures		= fpu_kernel_cfg.max_features;
-}
+	init_fpstate.xfeatures		= fpu_kernel_cfg.max_features; }
 
 void __init fpu__init_system(struct cpuinfo_x86 *c) {
 	fpstate_reset(&current->thread.fpu);
@@ -102,5 +93,4 @@ void __init fpu__init_system(struct cpuinfo_x86 *c) {
 	fpu__init_system_generic();
 	fpu__init_system_xstate_size_legacy();
 	fpu__init_task_struct_size();
-	fpu__init_init_fpstate();
-}
+	fpu__init_init_fpstate(); }

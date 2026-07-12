@@ -27,15 +27,13 @@ __ref void *alloc_low_pages(unsigned int num) {
 		unsigned int order;
 
 		order = get_order((unsigned long)num << PAGE_SHIFT);
-		return (void *)__get_free_pages(GFP_ATOMIC | __GFP_ZERO, order);
-	}
+		return (void *)__get_free_pages(GFP_ATOMIC | __GFP_ZERO, order); }
 
 	if ((pgt_buf_end + num) > pgt_buf_top || !can_use_brk_pgt) {
 		unsigned long ret = 0;
 
 		if (min_pfn_mapped < max_pfn_mapped) {
-			ret = memblock_phys_alloc_range( PAGE_SIZE * num, PAGE_SIZE, min_pfn_mapped << PAGE_SHIFT, max_pfn_mapped << PAGE_SHIFT);
-		}
+			ret = memblock_phys_alloc_range( PAGE_SIZE * num, PAGE_SIZE, min_pfn_mapped << PAGE_SHIFT, max_pfn_mapped << PAGE_SHIFT); }
 		if (!ret && can_use_brk_pgt)
 			ret = __pa(extend_brk(PAGE_SIZE * num, PAGE_SIZE));
 
@@ -45,18 +43,15 @@ __ref void *alloc_low_pages(unsigned int num) {
 		pfn = ret >> PAGE_SHIFT;
 	} else {
 		pfn = pgt_buf_end;
-		pgt_buf_end += num;
-	}
+		pgt_buf_end += num; }
 
 	for (i = 0; i < num; i++) {
 		void *adr;
 
 		adr = __va((pfn + i) << PAGE_SHIFT);
-		clear_page(adr);
-	}
+		clear_page(adr); }
 
-	return __va(pfn << PAGE_SHIFT);
-}
+	return __va(pfn << PAGE_SHIFT); }
 
 
 #define INIT_PGD_PAGE_TABLES    3
@@ -73,8 +68,7 @@ void  __init early_alloc_pgt_buf(void) {
 
 	pgt_buf_start = base >> PAGE_SHIFT;
 	pgt_buf_end = pgt_buf_start;
-	pgt_buf_top = pgt_buf_start + (tables >> PAGE_SHIFT);
-}
+	pgt_buf_top = pgt_buf_start + (tables >> PAGE_SHIFT); }
 
 int after_bootmem;
 
@@ -91,8 +85,7 @@ static int page_size_mask;
 
 static inline void cr4_set_bits_and_update_boot(unsigned long mask) {
 	mmu_cr4_features |= mask;
-	cr4_set_bits(mask);
-}
+	cr4_set_bits(mask); }
 
 static void __init probe_page_size_mask(void) {
 
@@ -107,12 +100,10 @@ static void __init probe_page_size_mask(void) {
 	__supported_pte_mask &= ~_PAGE_GLOBAL;
 	if (boot_cpu_has(X86_FEATURE_PGE)) {
 		cr4_set_bits_and_update_boot(X86_CR4_PGE);
-		__supported_pte_mask |= _PAGE_GLOBAL;
-	}
+		__supported_pte_mask |= _PAGE_GLOBAL; }
 
 
-	__default_kernel_pte_mask = __supported_pte_mask;
-}
+	__default_kernel_pte_mask = __supported_pte_mask; }
 
 #define NR_RANGE_MR 3
 
@@ -123,11 +114,9 @@ static int __meminit save_mr(struct map_range *mr, int nr_range, unsigned long s
 		mr[nr_range].start = start_pfn<<PAGE_SHIFT;
 		mr[nr_range].end   = end_pfn<<PAGE_SHIFT;
 		mr[nr_range].page_size_mask = page_size_mask;
-		nr_range++;
-	}
+		nr_range++; }
 
-	return nr_range;
-}
+	return nr_range; }
 
 static void __ref adjust_range_page_size_mask(struct map_range *mr, int nr_range) {
 	int i;
@@ -141,10 +130,7 @@ static void __ref adjust_range_page_size_mask(struct map_range *mr, int nr_range
 				continue;
 
 			if (memblock_is_region_memory(start, end - start))
-				mr[i].page_size_mask |= 1<<PG_LEVEL_2M;
-		}
-	}
-}
+				mr[i].page_size_mask |= 1<<PG_LEVEL_2M; } } }
 
 static int __meminit split_mem_range(struct map_range *mr, int nr_range, unsigned long start, unsigned long end) {
 	unsigned long start_pfn, end_pfn, limit_pfn;
@@ -164,8 +150,7 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range, unsigne
 		end_pfn = limit_pfn;
 	if (start_pfn < end_pfn) {
 		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, 0);
-		pfn = end_pfn;
-	}
+		pfn = end_pfn; }
 
 	 
 	start_pfn = round_up(pfn, PFN_DOWN(PMD_SIZE));
@@ -173,8 +158,7 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range, unsigne
 
 	if (start_pfn < end_pfn) {
 		nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, page_size_mask & (1<<PG_LEVEL_2M));
-		pfn = end_pfn;
-	}
+		pfn = end_pfn; }
 
 
 	 
@@ -194,11 +178,9 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range, unsigne
 		old_start = mr[i].start;
 		memmove(&mr[i], &mr[i+1], (nr_range - 1 - i) * sizeof(struct map_range));
 		mr[i--].start = old_start;
-		nr_range--;
-	}
+		nr_range--; }
 
-	return nr_range;
-}
+	return nr_range; }
 
 struct range pfn_mapped[E820_MAX_ENTRIES];
 int nr_pfn_mapped;
@@ -207,8 +189,7 @@ static void add_pfn_range_mapped(unsigned long start_pfn, unsigned long end_pfn)
 	nr_pfn_mapped = add_range_with_merge(pfn_mapped, E820_MAX_ENTRIES, nr_pfn_mapped, start_pfn, end_pfn);
 	nr_pfn_mapped = clean_sort_range(pfn_mapped, E820_MAX_ENTRIES);
 
-	max_pfn_mapped = max(max_pfn_mapped, end_pfn);
-}
+	max_pfn_mapped = max(max_pfn_mapped, end_pfn); }
 
 bool pfn_range_is_mapped(unsigned long start_pfn, unsigned long end_pfn) {
 	int i;
@@ -217,8 +198,7 @@ bool pfn_range_is_mapped(unsigned long start_pfn, unsigned long end_pfn) {
 		if ((start_pfn >= pfn_mapped[i].start) && (end_pfn <= pfn_mapped[i].end))
 			return true;
 
-	return false;
-}
+	return false; }
 
 unsigned long __ref init_memory_mapping(unsigned long start, unsigned long end, pgprot_t prot) {
 	struct map_range mr[NR_RANGE_MR];
@@ -233,8 +213,7 @@ unsigned long __ref init_memory_mapping(unsigned long start, unsigned long end, 
 
 	add_pfn_range_mapped(start >> PAGE_SHIFT, ret >> PAGE_SHIFT);
 
-	return ret >> PAGE_SHIFT;
-}
+	return ret >> PAGE_SHIFT; }
 
 static unsigned long __init init_range_memory_mapping( unsigned long r_start, unsigned long r_end) {
 	unsigned long start_pfn, end_pfn;
@@ -251,16 +230,13 @@ static unsigned long __init init_range_memory_mapping( unsigned long r_start, un
 		can_use_brk_pgt = max(start, (u64)pgt_buf_end<<PAGE_SHIFT) >= min(end, (u64)pgt_buf_top<<PAGE_SHIFT);
 		init_memory_mapping(start, end, PAGE_KERNEL);
 		mapped_ram_size += end - start;
-		can_use_brk_pgt = true;
-	}
+		can_use_brk_pgt = true; }
 
-	return mapped_ram_size;
-}
+	return mapped_ram_size; }
 
 static unsigned long __init get_new_step_size(unsigned long step_size) {
 	 
-	return step_size << (PMD_SHIFT - PAGE_SHIFT - 1);
-}
+	return step_size << (PMD_SHIFT - PAGE_SHIFT - 1); }
 
 static void __init memory_map_top_down(unsigned long map_start, unsigned long map_end) {
 	unsigned long real_end, last_start;
@@ -292,12 +268,10 @@ static void __init memory_map_top_down(unsigned long map_start, unsigned long ma
 		last_start = start;
 		min_pfn_mapped = last_start >> PAGE_SHIFT;
 		if (mapped_ram_size >= step_size)
-			step_size = get_new_step_size(step_size);
-	}
+			step_size = get_new_step_size(step_size); }
 
 	if (real_end < map_end)
-		init_range_memory_mapping(real_end, map_end);
-}
+		init_range_memory_mapping(real_end, map_end); }
 
 void __init init_mem_mapping(void) {
 	unsigned long end;
@@ -320,8 +294,7 @@ void __init init_mem_mapping(void) {
 	load_cr3(swapper_pg_dir);
 	__flush_tlb_all();
 
-	early_memtest(0, max_pfn_mapped << PAGE_SHIFT);
-}
+	early_memtest(0, max_pfn_mapped << PAGE_SHIFT); }
 
 void __init poking_init(void) {
 	spinlock_t *ptl;
@@ -339,12 +312,10 @@ void __init poking_init(void) {
 	 
 	ptep = get_locked_pte(poking_mm, poking_addr, &ptl);
 	BUG_ON(!ptep);
-	pte_unmap_unlock(ptep, ptl);
-}
+	pte_unmap_unlock(ptep, ptl); }
 
 void __ref free_initmem(void) {
-	e820__reallocate_tables();
-}
+	e820__reallocate_tables(); }
 
 void __init zone_sizes_init(void) {
 	unsigned long max_zone_pfns[MAX_NR_ZONES];
@@ -353,8 +324,7 @@ void __init zone_sizes_init(void) {
 
 	max_zone_pfns[ZONE_NORMAL]	= max_low_pfn;
 
-	free_area_init(max_zone_pfns);
-}
+	free_area_init(max_zone_pfns); }
 
 __visible DEFINE_PER_CPU_ALIGNED(struct tlb_state, cpu_tlbstate) = { .loaded_mm = &init_mm, .cr4 = ~0UL, };
 

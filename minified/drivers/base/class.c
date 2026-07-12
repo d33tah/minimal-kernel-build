@@ -17,8 +17,7 @@ int __class_register(struct class *cls, struct lock_class_key *key) {
 	error = kobject_set_name(&cp->subsys.kobj, "%s", cls->name);
 	if (error) {
 		kfree(cp);
-		return error;
-	}
+		return error; }
 
 	cp->subsys.kobj.kset = class_kset;
 	cp->subsys.kobj.ktype = &class_ktype;
@@ -26,10 +25,8 @@ int __class_register(struct class *cls, struct lock_class_key *key) {
 	error = kset_register(&cp->subsys);
 	if (error) {
 		kfree(cp);
-		return error;
-	}
-	return 0;
-}
+		return error; }
+	return 0; }
 
 struct class *__class_create(struct module *owner, const char *name, struct lock_class_key *key) {
 	struct class *cls;
@@ -38,8 +35,7 @@ struct class *__class_create(struct module *owner, const char *name, struct lock
 	cls = kzalloc(sizeof(*cls), GFP_KERNEL);
 	if (!cls) {
 		retval = -ENOMEM;
-		goto error;
-	}
+		goto error; }
 
 	cls->name = name;
 
@@ -51,8 +47,7 @@ struct class *__class_create(struct module *owner, const char *name, struct lock
 
 error:
 	kfree(cls);
-	return ERR_PTR(retval);
-}
+	return ERR_PTR(retval); }
 
 
 /* Removed: class_dev_iter_init/next/exit and class_find_device - the
@@ -67,7 +62,6 @@ int __init classes_init(void) {
 	class_kset = kset_create_and_add("class", NULL);
 	if (!class_kset)
 		return -ENOMEM;
-	return 0;
-}
+	return 0; }
 
 

@@ -16,8 +16,7 @@ extern void early_fixup_exception(struct pt_regs *regs, int trapnr);
 
 static inline void __noreturn ex_handler_msr_mce(struct pt_regs *regs, bool wrmsr) {
 	for (;;)
-		cpu_relax();
-}
+		cpu_relax(); }
 
 static inline bool ex_handler_bpf(const struct exception_table_entry *x, struct pt_regs *regs) { return false; }
 

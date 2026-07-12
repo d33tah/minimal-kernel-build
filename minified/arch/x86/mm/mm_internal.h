@@ -4,8 +4,7 @@
 
 void *alloc_low_pages(unsigned int num);
 static inline void *alloc_low_page(void) {
-	return alloc_low_pages(1);
-}
+	return alloc_low_pages(1); }
 
 void early_ioremap_page_table_range_init(void);
 

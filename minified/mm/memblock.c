@@ -32,12 +32,10 @@ static int memblock_memory_in_slab __initdata_memblock = 0;
 static int memblock_reserved_in_slab __initdata_memblock = 0;
 
 static enum memblock_flags __init_memblock choose_memblock_flags(void) {
-	return MEMBLOCK_NONE;
-}
+	return MEMBLOCK_NONE; }
 
 static inline phys_addr_t memblock_cap_size(phys_addr_t base, phys_addr_t *size) {
-	return *size = min(*size, PHYS_ADDR_MAX - base);
-}
+	return *size = min(*size, PHYS_ADDR_MAX - base); }
 
 /*
  * The bottom-up allocator (__memblock_find_range_bottom_up) was removed: this
@@ -59,11 +57,9 @@ __memblock_find_range_top_down(phys_addr_t start, phys_addr_t end, phys_addr_t s
 
 		cand = round_down(this_end - size, align);
 		if (cand >= this_start)
-			return cand;
-	}
+			return cand; }
 
-	return 0;
-}
+	return 0; }
 
 static phys_addr_t __init_memblock memblock_find_in_range_node(phys_addr_t size, phys_addr_t align, phys_addr_t start, phys_addr_t end, int nid, enum memblock_flags flags) {
 	
@@ -73,12 +69,10 @@ static phys_addr_t __init_memblock memblock_find_in_range_node(phys_addr_t size,
 	start = max_t(phys_addr_t, start, PAGE_SIZE);
 	end = max(start, end);
 
-	return __memblock_find_range_top_down(start, end, size, align, nid, flags);
-}
+	return __memblock_find_range_top_down(start, end, size, align, nid, flags); }
 
 static phys_addr_t __init_memblock memblock_find_in_range(phys_addr_t start, phys_addr_t end, phys_addr_t size, phys_addr_t align) {
-	return memblock_find_in_range_node(size, align, start, end, NUMA_NO_NODE, choose_memblock_flags());
-}
+	return memblock_find_in_range_node(size, align, start, end, NUMA_NO_NODE, choose_memblock_flags()); }
 
 static void __init_memblock memblock_remove_region(struct memblock_type *type, unsigned long r) {
 	type->total_size -= type->regions[r].size;
@@ -91,9 +85,7 @@ static void __init_memblock memblock_remove_region(struct memblock_type *type, u
 		type->regions[0].base = 0;
 		type->regions[0].size = 0;
 		type->regions[0].flags = 0;
-		memblock_set_region_node(&type->regions[0], MAX_NUMNODES);
-	}
-}
+		memblock_set_region_node(&type->regions[0], MAX_NUMNODES); } }
 
 void __init memblock_discard(void) {
 	phys_addr_t addr, size;
@@ -104,8 +96,7 @@ void __init memblock_discard(void) {
 		if (memblock_reserved_in_slab)
 			kfree(memblock.reserved.regions);
 		else
-			memblock_free_late(addr, size);
-	}
+			memblock_free_late(addr, size); }
 
 	if (memblock.memory.regions != memblock_memory_init_regions) {
 		addr = __pa(memblock.memory.regions);
@@ -113,11 +104,9 @@ void __init memblock_discard(void) {
 		if (memblock_memory_in_slab)
 			kfree(memblock.memory.regions);
 		else
-			memblock_free_late(addr, size);
-	}
+			memblock_free_late(addr, size); }
 
-	memblock_memory = NULL;
-}
+	memblock_memory = NULL; }
 
 static int __init_memblock memblock_double_array(struct memblock_type *type, phys_addr_t new_area_start, phys_addr_t new_area_size) {
 	struct memblock_region *new_array, *old_array;
@@ -152,12 +141,10 @@ static int __init_memblock memblock_double_array(struct memblock_type *type, phy
 		if (!addr && new_area_size)
 			addr = memblock_find_in_range(0, min(new_area_start, memblock.current_limit), new_alloc_size, PAGE_SIZE);
 
-		new_array = addr ? __va(addr) : NULL;
-	}
+		new_array = addr ? __va(addr) : NULL; }
 	if (!addr) {
 		pr_err("memblock: Failed to double %s array from %ld to %ld entries !\n", type->name, type->max, type->max * 2);
-		return -1;
-	}
+		return -1; }
 
 	memcpy(new_array, type->regions, old_size);
 	memset(new_array + type->max, 0, old_size);
@@ -175,8 +162,7 @@ static int __init_memblock memblock_double_array(struct memblock_type *type, phy
 
 	*in_slab = use_slab;
 
-	return 0;
-}
+	return 0; }
 
 static void __init_memblock memblock_merge_regions(struct memblock_type *type) {
 	int i = 0;
@@ -188,15 +174,12 @@ static void __init_memblock memblock_merge_regions(struct memblock_type *type) {
 		if (this->base + this->size != next->base || this->flags != next->flags) {
 			BUG_ON(this->base + this->size > next->base);
 			i++;
-			continue;
-		}
+			continue; }
 
 		this->size += next->size;
 		
 		memmove(next, next + 1, (type->cnt - (i + 2)) * sizeof(*next));
-		type->cnt--;
-	}
-}
+		type->cnt--; } }
 
 static void __init_memblock memblock_insert_region(struct memblock_type *type, int idx, phys_addr_t base, phys_addr_t size, int nid, enum memblock_flags flags) {
 	struct memblock_region *rgn = &type->regions[idx];
@@ -208,8 +191,7 @@ static void __init_memblock memblock_insert_region(struct memblock_type *type, i
 	rgn->flags = flags;
 	memblock_set_region_node(rgn, nid);
 	type->cnt++;
-	type->total_size += size;
-}
+	type->total_size += size; }
 
 static int __init_memblock memblock_add_range(struct memblock_type *type, phys_addr_t base, phys_addr_t size, int nid, enum memblock_flags flags) {
 	bool insert = false;
@@ -228,8 +210,7 @@ static int __init_memblock memblock_add_range(struct memblock_type *type, phys_a
 		type->regions[0].flags = flags;
 		memblock_set_region_node(&type->regions[0], nid);
 		type->total_size = size;
-		return 0;
-	}
+		return 0; }
 repeat:
 	
 	base = obase;
@@ -248,17 +229,14 @@ repeat:
 			WARN_ON(flags != rgn->flags);
 			nr_new++;
 			if (insert)
-				memblock_insert_region(type, idx++, base, rbase - base, nid, flags);
-		}
+				memblock_insert_region(type, idx++, base, rbase - base, nid, flags); }
 		
-		base = min(rend, end);
-	}
+		base = min(rend, end); }
 
 	if (base < end) {
 		nr_new++;
 		if (insert)
-			memblock_insert_region(type, idx, base, end - base, nid, flags);
-	}
+			memblock_insert_region(type, idx, base, end - base, nid, flags); }
 
 	if (!nr_new)
 		return 0;
@@ -271,13 +249,10 @@ repeat:
 		goto repeat;
 	} else {
 		memblock_merge_regions(type);
-		return 0;
-	}
-}
+		return 0; } }
 
 int __init_memblock memblock_add(phys_addr_t base, phys_addr_t size) {
-	return memblock_add_range(&memblock.memory, base, size, MAX_NUMNODES, 0);
-}
+	return memblock_add_range(&memblock.memory, base, size, MAX_NUMNODES, 0); }
 
 static int __init_memblock memblock_isolate_range(struct memblock_type *type, phys_addr_t base, phys_addr_t size, int *start_rgn, int *end_rgn) {
 	phys_addr_t end = base + memblock_cap_size(base, &size);
@@ -318,12 +293,9 @@ static int __init_memblock memblock_isolate_range(struct memblock_type *type, ph
 			
 			if (!*end_rgn)
 				*start_rgn = idx;
-			*end_rgn = idx + 1;
-		}
-	}
+			*end_rgn = idx + 1; } }
 
-	return 0;
-}
+	return 0; }
 
 static int __init_memblock memblock_remove_range(struct memblock_type *type, phys_addr_t base, phys_addr_t size) {
 	int start_rgn, end_rgn;
@@ -335,21 +307,17 @@ static int __init_memblock memblock_remove_range(struct memblock_type *type, phy
 
 	for (i = end_rgn - 1; i >= start_rgn; i--)
 		memblock_remove_region(type, i);
-	return 0;
-}
+	return 0; }
 
 void __init_memblock memblock_free(void *ptr, size_t size) {
 	if (ptr)
-		memblock_phys_free(__pa(ptr), size);
-}
+		memblock_phys_free(__pa(ptr), size); }
 
 int __init_memblock memblock_phys_free(phys_addr_t base, phys_addr_t size) {
-	return memblock_remove_range(&memblock.reserved, base, size);
-}
+	return memblock_remove_range(&memblock.reserved, base, size); }
 
 int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size) {
-	return memblock_add_range(&memblock.reserved, base, size, MAX_NUMNODES, 0);
-}
+	return memblock_add_range(&memblock.reserved, base, size, MAX_NUMNODES, 0); }
 
 static bool should_skip_region(struct memblock_type *type, struct memblock_region *m, int nid, int flags) {
 	int m_nid = memblock_get_region_node(m);
@@ -360,8 +328,7 @@ static bool should_skip_region(struct memblock_type *type, struct memblock_regio
 	if (nid != NUMA_NO_NODE && nid != m_nid)
 		return true;
 
-	return false;
-}
+	return false; }
 
 void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags, struct memblock_type *type_a, struct memblock_type *type_b, phys_addr_t *out_start, phys_addr_t *out_end, int *out_nid) {
 	int idx_a = *idx & 0xffffffff;
@@ -389,8 +356,7 @@ void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags, struct membl
 				*out_nid = m_nid;
 			idx_a++;
 			*idx = (u32)idx_a | (u64)idx_b << 32;
-			return;
-		}
+			return; }
 
 		for (; idx_b < type_b->cnt + 1; idx_b++) {
 			struct memblock_region *r;
@@ -418,13 +384,9 @@ void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags, struct membl
 				else
 					idx_b++;
 				*idx = (u32)idx_a | (u64)idx_b << 32;
-				return;
-			}
-		}
-	}
+				return; } } }
 
-	*idx = ULLONG_MAX;
-}
+	*idx = ULLONG_MAX; }
 
 void __init_memblock __next_mem_range_rev(u64 *idx, int nid, enum memblock_flags flags, struct memblock_type *type_a, struct memblock_type *type_b, phys_addr_t *out_start, phys_addr_t *out_end, int *out_nid) {
 	int idx_a = *idx & 0xffffffff;
@@ -438,8 +400,7 @@ void __init_memblock __next_mem_range_rev(u64 *idx, int nid, enum memblock_flags
 		if (type_b != NULL)
 			idx_b = type_b->cnt;
 		else
-			idx_b = 0;
-	}
+			idx_b = 0; }
 
 	for (; idx_a >= 0; idx_a--) {
 		struct memblock_region *m = &type_a->regions[idx_a];
@@ -460,8 +421,7 @@ void __init_memblock __next_mem_range_rev(u64 *idx, int nid, enum memblock_flags
 				*out_nid = m_nid;
 			idx_a--;
 			*idx = (u32)idx_a | (u64)idx_b << 32;
-			return;
-		}
+			return; }
 
 		for (; idx_b >= 0; idx_b--) {
 			struct memblock_region *r;
@@ -489,13 +449,9 @@ void __init_memblock __next_mem_range_rev(u64 *idx, int nid, enum memblock_flags
 				else
 					idx_b--;
 				*idx = (u32)idx_a | (u64)idx_b << 32;
-				return;
-			}
-		}
-	}
+				return; } } }
 	
-	*idx = ULLONG_MAX;
-}
+	*idx = ULLONG_MAX; }
 
 void __init_memblock __next_mem_pfn_range(int *idx, int nid, unsigned long *out_start_pfn, unsigned long *out_end_pfn, int *out_nid) {
 	struct memblock_type *type = &memblock.memory;
@@ -509,20 +465,17 @@ void __init_memblock __next_mem_pfn_range(int *idx, int nid, unsigned long *out_
 		if (PFN_UP(r->base) >= PFN_DOWN(r->base + r->size))
 			continue;
 		if (nid == MAX_NUMNODES || nid == r_nid)
-			break;
-	}
+			break; }
 	if (*idx >= type->cnt) {
 		*idx = -1;
-		return;
-	}
+		return; }
 
 	if (out_start_pfn)
 		*out_start_pfn = PFN_UP(r->base);
 	if (out_end_pfn)
 		*out_end_pfn = PFN_DOWN(r->base + r->size);
 	if (out_nid)
-		*out_nid = r_nid;
-}
+		*out_nid = r_nid; }
 
 phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size, phys_addr_t align, phys_addr_t start, phys_addr_t end, int nid, bool exact_nid) {
 	enum memblock_flags flags = choose_memblock_flags();
@@ -534,8 +487,7 @@ phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size, phys_addr_t align,
 	if (!align) {
 
 		dump_stack();
-		align = SMP_CACHE_BYTES;
-	}
+		align = SMP_CACHE_BYTES; }
 
 	found = memblock_find_in_range_node(size, align, start, end, nid, flags);
 	if (found && !memblock_reserve(found, size))
@@ -544,15 +496,12 @@ phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size, phys_addr_t align,
 	if (nid != NUMA_NO_NODE && !exact_nid) {
 		found = memblock_find_in_range_node(size, align, start, end, NUMA_NO_NODE, flags);
 		if (found && !memblock_reserve(found, size))
-			return found;
-	}
+			return found; }
 
-	return 0;
-}
+	return 0; }
 
 phys_addr_t __init memblock_phys_alloc_range(phys_addr_t size, phys_addr_t align, phys_addr_t start, phys_addr_t end) {
-	return memblock_alloc_range_nid(size, align, start, end, NUMA_NO_NODE, false);
-}
+	return memblock_alloc_range_nid(size, align, start, end, NUMA_NO_NODE, false); }
 
 static void * __init memblock_alloc_internal( phys_addr_t size, phys_addr_t align, phys_addr_t min_addr, phys_addr_t max_addr, int nid, bool exact_nid) {
 	phys_addr_t alloc;
@@ -571,12 +520,10 @@ static void * __init memblock_alloc_internal( phys_addr_t size, phys_addr_t alig
 	if (!alloc)
 		return NULL;
 
-	return phys_to_virt(alloc);
-}
+	return phys_to_virt(alloc); }
 
 void * __init memblock_alloc_try_nid_raw( phys_addr_t size, phys_addr_t align, phys_addr_t min_addr, phys_addr_t max_addr, int nid) {
-	return memblock_alloc_internal(size, align, min_addr, max_addr, nid, false);
-}
+	return memblock_alloc_internal(size, align, min_addr, max_addr, nid, false); }
 
 void * __init memblock_alloc_try_nid( phys_addr_t size, phys_addr_t align, phys_addr_t min_addr, phys_addr_t max_addr, int nid) {
 	void *ptr;
@@ -585,8 +532,7 @@ void * __init memblock_alloc_try_nid( phys_addr_t size, phys_addr_t align, phys_
 	if (ptr)
 		memset(ptr, 0, size);
 
-	return ptr;
-}
+	return ptr; }
 
 void __init memblock_free_late(phys_addr_t base, phys_addr_t size) {
 	phys_addr_t cursor, end;
@@ -596,14 +542,11 @@ void __init memblock_free_late(phys_addr_t base, phys_addr_t size) {
 
 	for (; cursor < end; cursor++) {
 		memblock_free_pages(pfn_to_page(cursor), cursor, 0);
-		totalram_pages_inc();
-	}
-}
+		totalram_pages_inc(); } }
 
 
 phys_addr_t __init_memblock memblock_start_of_DRAM(void) {
-	return memblock.memory.regions[0].base;
-}
+	return memblock.memory.regions[0].base; }
 
 static int __init_memblock memblock_search(struct memblock_type *type, phys_addr_t addr) {
 	unsigned int left = 0, right = type->cnt;
@@ -618,8 +561,7 @@ static int __init_memblock memblock_search(struct memblock_type *type, phys_addr
 		else
 			return mid;
 	} while (left < right);
-	return -1;
-}
+	return -1; }
 
 
 bool __init_memblock memblock_is_region_memory(phys_addr_t base, phys_addr_t size) {
@@ -628,8 +570,7 @@ bool __init_memblock memblock_is_region_memory(phys_addr_t base, phys_addr_t siz
 
 	if (idx == -1)
 		return false;
-	return (memblock.memory.regions[idx].base + memblock.memory.regions[idx].size) >= end;
-}
+	return (memblock.memory.regions[idx].base + memblock.memory.regions[idx].size) >= end; }
 
 void __init_memblock memblock_trim_memory(phys_addr_t align) {
 	phys_addr_t start, end, orig_start, orig_end;
@@ -649,18 +590,13 @@ void __init_memblock memblock_trim_memory(phys_addr_t align) {
 			r->size = end - start;
 		} else {
 			memblock_remove_region(&memblock.memory, r - memblock.memory.regions);
-			r--;
-		}
-	}
-}
+			r--; } } }
 
 void __init_memblock memblock_set_current_limit(phys_addr_t limit) {
-	memblock.current_limit = limit;
-}
+	memblock.current_limit = limit; }
 
 void __init memblock_allow_resize(void) {
-	memblock_can_resize = 1;
-}
+	memblock_can_resize = 1; }
 
 static void __init __free_pages_memory(unsigned long start, unsigned long end) {
 	int order;
@@ -673,9 +609,7 @@ static void __init __free_pages_memory(unsigned long start, unsigned long end) {
 
 		memblock_free_pages(pfn_to_page(start), start, order);
 
-		start += (1UL << order);
-	}
-}
+		start += (1UL << order); } }
 
 static unsigned long __init __free_memory_core(phys_addr_t start, phys_addr_t end) {
 	unsigned long start_pfn = PFN_UP(start);
@@ -686,16 +620,14 @@ static unsigned long __init __free_memory_core(phys_addr_t start, phys_addr_t en
 
 	__free_pages_memory(start_pfn, end_pfn);
 
-	return end_pfn - start_pfn;
-}
+	return end_pfn - start_pfn; }
 
 static void __init memmap_init_reserved_pages(void) {
 	phys_addr_t start, end;
 	u64 i;
 
 	for_each_reserved_mem_range(i, &start, &end)
-		reserve_bootmem_region(start, end);
-}
+		reserve_bootmem_region(start, end); }
 
 static unsigned long __init free_low_memory_core_early(void) {
 	unsigned long count = 0;
@@ -707,13 +639,11 @@ static unsigned long __init free_low_memory_core_early(void) {
 	for_each_free_mem_range(i, NUMA_NO_NODE, MEMBLOCK_NONE, &start, &end, NULL)
 		count += __free_memory_core(start, end);
 
-	return count;
-}
+	return count; }
 
 
 void __init memblock_free_all(void) {
 	unsigned long pages;
 
 	pages = free_low_memory_core_early();
-	totalram_pages_add(pages);
-}
+	totalram_pages_add(pages); }

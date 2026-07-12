@@ -29,8 +29,7 @@ extern raw_spinlock_t i8259A_lock;
 static inline void outb_pic(unsigned char value, unsigned int port) {
 	outb(value, port);
 	 
-	udelay(2);
-}
+	udelay(2); }
 
 extern struct irq_chip i8259A_chip;
 
@@ -45,11 +44,9 @@ extern struct legacy_pic *legacy_pic;
 extern struct legacy_pic null_legacy_pic;
 
 static inline bool has_legacy_pic(void) {
-	return legacy_pic != &null_legacy_pic;
-}
+	return legacy_pic != &null_legacy_pic; }
 
 static inline int nr_legacy_irqs(void) {
-	return legacy_pic->nr_legacy_irqs;
-}
+	return legacy_pic->nr_legacy_irqs; }
 
 #endif  

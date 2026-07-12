@@ -10,12 +10,10 @@ main(int argc, char **argv) {
 
 	if (fread(ei, 1, EI_NIDENT, stdin) != EI_NIDENT) {
 		fprintf(stderr, "Error: input truncated\n");
-		return 1;
-	}
+		return 1; }
 	if (memcmp(ei, ELFMAG, SELFMAG) != 0) {
 		fprintf(stderr, "Error: not ELF\n");
-		return 1;
-	}
+		return 1; }
 	switch (ei[EI_CLASS]) {
 	case ELFCLASS32:
 		printf("#define KERNEL_ELFCLASS ELFCLASS32\n");
@@ -24,8 +22,7 @@ main(int argc, char **argv) {
 		printf("#define KERNEL_ELFCLASS ELFCLASS64\n");
 		break;
 	default:
-		exit(1);
-	}
+		exit(1); }
 	switch (ei[EI_DATA]) {
 	case ELFDATA2LSB:
 		printf("#define KERNEL_ELFDATA ELFDATA2LSB\n");
@@ -34,14 +31,12 @@ main(int argc, char **argv) {
 		printf("#define KERNEL_ELFDATA ELFDATA2MSB\n");
 		break;
 	default:
-		exit(1);
-	}
+		exit(1); }
 
 	if (sizeof(unsigned long) == 4) {
 		printf("#define HOST_ELFCLASS ELFCLASS32\n");
 	} else if (sizeof(unsigned long) == 8) {
-		printf("#define HOST_ELFCLASS ELFCLASS64\n");
-	}
+		printf("#define HOST_ELFCLASS ELFCLASS64\n"); }
 
 	endian_test.s = 0x0102;
 	if (memcmp(endian_test.c, "\x01\x02", 2) == 0)
@@ -51,5 +46,4 @@ main(int argc, char **argv) {
 	else
 		exit(1);
 
-	return 0;
-}
+	return 0; }

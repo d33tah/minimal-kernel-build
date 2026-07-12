@@ -44,12 +44,10 @@ extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffi
  * so they could never have compiled if enabled.  Emit the live arm only.
  */
 static inline unsigned long _msecs_to_jiffies(const unsigned int m) {
-	return (m + (MSEC_PER_SEC / HZ) - 1) / (MSEC_PER_SEC / HZ);
-}
+	return (m + (MSEC_PER_SEC / HZ) - 1) / (MSEC_PER_SEC / HZ); }
 static __always_inline unsigned long msecs_to_jiffies(const unsigned int m) {
 	if ((int)m < 0)
 		return MAX_JIFFY_OFFSET;
-	return _msecs_to_jiffies(m);
-}
+	return _msecs_to_jiffies(m); }
 
 #endif

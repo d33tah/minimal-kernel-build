@@ -15,11 +15,9 @@ extern struct uts_namespace init_uts_ns;
 
 
 static inline struct new_utsname *utsname(void) {
-	return &current->nsproxy->uts_ns->name;
-}
+	return &current->nsproxy->uts_ns->name; }
 
 static inline struct new_utsname *init_utsname(void) {
-	return &init_uts_ns.name;
-}
+	return &init_uts_ns.name; }
 
 #endif

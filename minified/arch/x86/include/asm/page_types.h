@@ -38,8 +38,7 @@
 extern unsigned long max_pfn_mapped;
 
 static inline phys_addr_t get_max_mapped(void) {
-	return (phys_addr_t)max_pfn_mapped << PAGE_SHIFT;
-}
+	return (phys_addr_t)max_pfn_mapped << PAGE_SHIFT; }
 
 bool pfn_range_is_mapped(unsigned long start_pfn, unsigned long end_pfn);
 

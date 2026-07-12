@@ -15,12 +15,10 @@ struct idr { struct radix_tree_root	idr_rt; unsigned int idr_base, idr_next; };
 #define IDR_INIT(name)	IDR_INIT_BASE(name, 0)
 
 static inline unsigned int idr_get_cursor(const struct idr *idr) {
-	return READ_ONCE(idr->idr_next);
-}
+	return READ_ONCE(idr->idr_next); }
 
 static inline void idr_set_cursor(struct idr *idr, unsigned int val) {
-	WRITE_ONCE(idr->idr_next, val);
-}
+	WRITE_ONCE(idr->idr_next, val); }
 
 
 void idr_preload(gfp_t gfp_mask);
@@ -34,17 +32,14 @@ void *idr_replace(struct idr *, void *, unsigned long id);
 static inline void idr_init_base(struct idr *idr, int base) {
 	INIT_RADIX_TREE(&idr->idr_rt, IDR_RT_MARKER);
 	idr->idr_base = base;
-	idr->idr_next = 0;
-}
+	idr->idr_next = 0; }
 
 static inline void idr_init(struct idr *idr) {
-	idr_init_base(idr, 0);
-}
+	idr_init_base(idr, 0); }
 
 
 static inline void idr_preload_end(void) {
-	local_unlock(&radix_tree_preloads.lock);
-}
+	local_unlock(&radix_tree_preloads.lock); }
 
 
 #define IDA_CHUNK_SIZE		128	 

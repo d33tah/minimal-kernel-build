@@ -21,24 +21,19 @@ extern __always_inline unsigned long native_save_fl(void) {
 	 
 	asm volatile("# __raw_save_flags\n\t" "pushf ; pop %0" : "=rm" (flags) : : "memory");
 
-	return flags;
-}
+	return flags; }
 
 static __always_inline void native_irq_disable(void) {
-	asm volatile("cli": : :"memory");
-}
+	asm volatile("cli": : :"memory"); }
 
 static __always_inline void native_irq_enable(void) {
-	asm volatile("sti": : :"memory");
-}
+	asm volatile("sti": : :"memory"); }
 
 static inline __cpuidle void native_safe_halt(void) {
-	asm volatile("sti; hlt": : :"memory");
-}
+	asm volatile("sti; hlt": : :"memory"); }
 
 static inline __cpuidle void native_halt(void) {
-	asm volatile("hlt": : :"memory");
-}
+	asm volatile("hlt": : :"memory"); }
 
 #endif
 
@@ -46,46 +41,38 @@ static inline __cpuidle void native_halt(void) {
 #include <linux/types.h>
 
 static __always_inline unsigned long arch_local_save_flags(void) {
-	return native_save_fl();
-}
+	return native_save_fl(); }
 
 static __always_inline void arch_local_irq_disable(void) {
-	native_irq_disable();
-}
+	native_irq_disable(); }
 
 static __always_inline void arch_local_irq_enable(void) {
-	native_irq_enable();
-}
+	native_irq_enable(); }
 
  
 static inline __cpuidle void arch_safe_halt(void) {
-	native_safe_halt();
-}
+	native_safe_halt(); }
 
  
 static inline __cpuidle void halt(void) {
-	native_halt();
-}
+	native_halt(); }
 
  
 static __always_inline unsigned long arch_local_irq_save(void) {
 	unsigned long flags = arch_local_save_flags();
 	arch_local_irq_disable();
-	return flags;
-}
+	return flags; }
 
 
 #endif  
 
 #ifndef __ASSEMBLY__
 static __always_inline int arch_irqs_disabled_flags(unsigned long flags) {
-	return !(flags & X86_EFLAGS_IF);
-}
+	return !(flags & X86_EFLAGS_IF); }
 
 static __always_inline void arch_local_irq_restore(unsigned long flags) {
 	if (!arch_irqs_disabled_flags(flags))
-		arch_local_irq_enable();
-}
+		arch_local_irq_enable(); }
 #endif  
 
 #endif

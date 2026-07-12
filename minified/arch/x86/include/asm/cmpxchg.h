@@ -40,8 +40,7 @@ extern void __xadd_wrong_size(void)
 static inline u64 __cmpxchg64(volatile u64 *ptr, u64 old, u64 new) {
 	u64 prev;
 	asm volatile(LOCK_PREFIX "cmpxchg8b %1" : "=A" (prev), "+m" (*ptr) : "b" ((u32)new), "c" ((u32)(new >> 32)), "0" (old) : "memory");
-	return prev;
-}
+	return prev; }
 
 static inline bool __try_cmpxchg64(volatile u64 *ptr, u64 *pold, u64 new) {
 	bool success;
@@ -50,8 +49,7 @@ static inline bool __try_cmpxchg64(volatile u64 *ptr, u64 *pold, u64 new) {
 
 	if (unlikely(!success))
 		*pold = old;
-	return success;
-}
+	return success; }
 
 #define system_has_cmpxchg_double() boot_cpu_has(X86_FEATURE_CX8)
 

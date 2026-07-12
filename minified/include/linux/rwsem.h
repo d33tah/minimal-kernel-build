@@ -14,8 +14,7 @@
 struct rw_semaphore { atomic_long_t count; atomic_long_t owner; raw_spinlock_t wait_lock; struct list_head wait_list; };
 
 static inline int rwsem_is_locked(struct rw_semaphore *sem) {
-	return atomic_long_read(&sem->count) != 0;
-}
+	return atomic_long_read(&sem->count) != 0; }
 
 #define RWSEM_UNLOCKED_VALUE		0L
 #define __RWSEM_COUNT_INIT(name)	.count = ATOMIC_LONG_INIT(RWSEM_UNLOCKED_VALUE)

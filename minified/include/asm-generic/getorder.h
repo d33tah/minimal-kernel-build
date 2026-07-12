@@ -14,8 +14,7 @@ static __always_inline __attribute_const__ int get_order(unsigned long size) {
 		if (size < (1UL << PAGE_SHIFT))
 			return 0;
 
-		return ilog2((size) - 1) - PAGE_SHIFT + 1;
-	}
+		return ilog2((size) - 1) - PAGE_SHIFT + 1; }
 
 	size--;
 	size >>= PAGE_SHIFT;

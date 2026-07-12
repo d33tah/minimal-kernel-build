@@ -58,8 +58,7 @@ asmlinkage noinstr void __noreturn doublefault_shim(void) {
 	exc_double_fault(&regs, 0, cr2);
 
 	 
-	panic("cannot return from double fault\n");
-}
+	panic("cannot return from double fault\n"); }
 
 DEFINE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack) = { .tss = { .ldt		= 0, .io_bitmap_base	= IO_BITMAP_OFFSET_INVALID, .ip		= (unsigned long) asm_exc_double_fault, .flags		= X86_EFLAGS_FIXED, .es		= __USER_DS, .cs		= __KERNEL_CS, .ss		= __KERNEL_DS, .ds		= __USER_DS, .fs		= __KERNEL_PERCPU, .gs		= 0, .__cr3		= __pa_nodebug(swapper_pg_dir), }, };
 
@@ -76,5 +75,4 @@ void doublefault_init_cpu_tss(void) {
 	 
         this_cpu_write(doublefault_stack.tss.sp, (unsigned long)&cea->doublefault_stack.stack + sizeof(doublefault_stack.stack));
 
-	set_df_gdt_entry(cpu);
-}
+	set_df_gdt_entry(cpu); }

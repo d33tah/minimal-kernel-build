@@ -28,11 +28,8 @@ static void sanitize_boot_params(struct boot_params *boot_params) {
 		memset(&scratch, 0, sizeof(scratch));
 
 		for (i = 0; i < ARRAY_SIZE(to_save); i++) {
-			memcpy(save_base + to_save[i].start, bp_base + to_save[i].start, to_save[i].len);
-		}
+			memcpy(save_base + to_save[i].start, bp_base + to_save[i].start, to_save[i].len); }
 
-		memcpy(boot_params, save_base, sizeof(*boot_params));
-	}
-}
+		memcpy(boot_params, save_base, sizeof(*boot_params)); } }
 
 #endif  

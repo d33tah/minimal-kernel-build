@@ -27,10 +27,8 @@ static inline struct file *files_lookup_fd_raw(struct files_struct *files, unsig
 
 	if (fd < fdt->max_fds) {
 		fd = array_index_nospec(fd, fdt->max_fds);
-		return rcu_dereference_raw(fdt->fd[fd]);
-	}
-	return NULL;
-}
+		return rcu_dereference_raw(fdt->fd[fd]); }
+	return NULL; }
 
 struct files_struct *dup_fd(struct files_struct *, int *) __latent_entropy;
 void do_close_on_exec(struct files_struct *);

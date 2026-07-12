@@ -119,23 +119,19 @@ struct address_space { struct inode		*host; struct xarray		i_pages; struct rw_se
 
 
 static inline void i_mmap_lock_write(struct address_space *mapping) {
-	down_write(&mapping->i_mmap_rwsem);
-}
+	down_write(&mapping->i_mmap_rwsem); }
 
 static inline void i_mmap_unlock_write(struct address_space *mapping) {
-	up_write(&mapping->i_mmap_rwsem);
-}
+	up_write(&mapping->i_mmap_rwsem); }
 
 
 /* i_mmap_lock_read / i_mmap_unlock_read removed: 0-caller static-inline orphans */
 
 static inline int mapping_writably_mapped(struct address_space *mapping) {
-	return atomic_read(&mapping->i_mmap_writable) > 0;
-}
+	return atomic_read(&mapping->i_mmap_writable) > 0; }
 
 static inline void mapping_allow_writable(struct address_space *mapping) {
-	atomic_inc(&mapping->i_mmap_writable);
-}
+	atomic_inc(&mapping->i_mmap_writable); }
 
 #define i_size_ordered_init(inode) do { } while (0)
 
@@ -147,56 +143,44 @@ struct inode { umode_t			i_mode; unsigned short		i_opflags; kuid_t			i_uid; kgid
 struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode);
 
 static inline unsigned int i_blocksize(const struct inode *node) {
-	return (1 << node->i_blkbits);
-}
+	return (1 << node->i_blkbits); }
 
 /* Reduced inode_i_mutex_lock_class - only I_MUTEX_PARENT used (lockdep off: value unused) */
 enum inode_i_mutex_lock_class { I_MUTEX_PARENT };
 
 static inline void inode_lock(struct inode *inode) {
-	down_write(&inode->i_rwsem);
-}
+	down_write(&inode->i_rwsem); }
 
 static inline void inode_unlock(struct inode *inode) {
-	up_write(&inode->i_rwsem);
-}
+	up_write(&inode->i_rwsem); }
 
 static inline void inode_lock_shared(struct inode *inode) {
-	down_read(&inode->i_rwsem);
-}
+	down_read(&inode->i_rwsem); }
 
 static inline void inode_unlock_shared(struct inode *inode) {
-	up_read(&inode->i_rwsem);
-}
+	up_read(&inode->i_rwsem); }
 
 static inline int inode_is_locked(struct inode *inode) {
-	return rwsem_is_locked(&inode->i_rwsem);
-}
+	return rwsem_is_locked(&inode->i_rwsem); }
 
 static inline void inode_lock_nested(struct inode *inode, unsigned subclass) {
-	down_write_nested(&inode->i_rwsem, subclass);
-}
+	down_write_nested(&inode->i_rwsem, subclass); }
 
 static inline void filemap_invalidate_lock_shared(struct address_space *mapping) {
-	down_read(&mapping->invalidate_lock);
-}
+	down_read(&mapping->invalidate_lock); }
 
 static inline int filemap_invalidate_trylock_shared( struct address_space *mapping) {
-	return down_read_trylock(&mapping->invalidate_lock);
-}
+	return down_read_trylock(&mapping->invalidate_lock); }
 
 static inline void filemap_invalidate_unlock_shared( struct address_space *mapping) {
-	up_read(&mapping->invalidate_lock);
-}
+	up_read(&mapping->invalidate_lock); }
 
 
 static inline loff_t i_size_read(const struct inode *inode) {
-	return inode->i_size;
-}
+	return inode->i_size; }
 
 static inline void i_size_write(struct inode *inode, loff_t i_size) {
-	inode->i_size = i_size;
-}
+	inode->i_size = i_size; }
 
 
 
@@ -210,8 +194,7 @@ struct file { union { struct llist_node	fu_llist; struct rcu_head 	fu_rcuhead; }
 
 static inline struct file *get_file(struct file *f) {
 	atomic_long_inc(&f->f_count);
-	return f;
-}
+	return f; }
 #define get_file_rcu(x) atomic_long_inc_not_zero(&(x)->f_count)
 #define file_count(x)	atomic_long_read(&(x)->f_count)
 
@@ -227,8 +210,7 @@ typedef void *fl_owner_t;
  * assigned or dispatched in this build (no locking syscalls reach it) */
 
 static inline struct inode *file_inode(const struct file *f) {
-	return f->f_inode;
-}
+	return f->f_inode; }
 
 #define SB_RDONLY	 1
 #define SB_SYNCHRONOUS	16
@@ -247,32 +229,25 @@ enum { SB_FREEZE_WRITE	= 1, };
 struct super_block { unsigned char		s_blocksize_bits; loff_t			s_maxbytes; struct file_system_type	*s_type; const struct super_operations	*s_op; unsigned long s_flags, s_iflags; struct dentry		*s_root; struct rw_semaphore	s_umount; atomic_t		s_active; struct hlist_bl_head	s_roots; void			*s_fs_info; u32			s_time_gran; time64_t		   s_time_min; time64_t		   s_time_max; char			s_id[32]; struct user_namespace *s_user_ns; struct list_lru s_dentry_lru, s_inode_lru; struct rcu_head		rcu; } __randomize_layout;
 
 static inline struct user_namespace *i_user_ns(const struct inode *inode) {
-	return inode->i_sb->s_user_ns;
-}
+	return inode->i_sb->s_user_ns; }
 
 static inline void i_uid_write(struct inode *inode, uid_t uid) {
-	inode->i_uid = make_kuid(i_user_ns(inode), uid);
-}
+	inode->i_uid = make_kuid(i_user_ns(inode), uid); }
 
 static inline void i_gid_write(struct inode *inode, gid_t gid) {
-	inode->i_gid = make_kgid(i_user_ns(inode), gid);
-}
+	inode->i_gid = make_kgid(i_user_ns(inode), gid); }
 
 static inline kuid_t i_uid_into_mnt(struct user_namespace *mnt_userns, const struct inode *inode) {
-	return mapped_kuid_fs(mnt_userns, i_user_ns(inode), inode->i_uid);
-}
+	return mapped_kuid_fs(mnt_userns, i_user_ns(inode), inode->i_uid); }
 
 static inline kgid_t i_gid_into_mnt(struct user_namespace *mnt_userns, const struct inode *inode) {
-	return mapped_kgid_fs(mnt_userns, i_user_ns(inode), inode->i_gid);
-}
+	return mapped_kgid_fs(mnt_userns, i_user_ns(inode), inode->i_gid); }
 
 static inline void inode_fsuid_set(struct inode *inode, struct user_namespace *mnt_userns) {
-	inode->i_uid = mapped_fsuid(mnt_userns, i_user_ns(inode));
-}
+	inode->i_uid = mapped_fsuid(mnt_userns, i_user_ns(inode)); }
 
 static inline void inode_fsgid_set(struct inode *inode, struct user_namespace *mnt_userns) {
-	inode->i_gid = mapped_fsgid(mnt_userns, i_user_ns(inode));
-}
+	inode->i_gid = mapped_fsgid(mnt_userns, i_user_ns(inode)); }
 
 static inline bool fsuidgid_has_mapping(struct super_block *sb, struct user_namespace *mnt_userns) {
 	struct user_namespace *fs_userns = sb->s_user_ns;
@@ -285,24 +260,19 @@ static inline bool fsuidgid_has_mapping(struct super_block *sb, struct user_name
 	kgid = mapped_fsgid(mnt_userns, fs_userns);
 	if (!gid_valid(kgid))
 		return false;
-	return kuid_has_mapping(fs_userns, kuid) && kgid_has_mapping(fs_userns, kgid);
-}
+	return kuid_has_mapping(fs_userns, kuid) && kgid_has_mapping(fs_userns, kgid); }
 
 extern struct timespec64 current_time(struct inode *inode);
 
-static inline void __sb_end_write(struct super_block *sb, int level) {
-}
+static inline void __sb_end_write(struct super_block *sb, int level) { }
 
-static inline void __sb_start_write(struct super_block *sb, int level) {
-}
+static inline void __sb_start_write(struct super_block *sb, int level) { }
 
 static inline void sb_end_write(struct super_block *sb) {
-	__sb_end_write(sb, SB_FREEZE_WRITE);
-}
+	__sb_end_write(sb, SB_FREEZE_WRITE); }
 
 static inline void sb_start_write(struct super_block *sb) {
-	__sb_start_write(sb, SB_FREEZE_WRITE);
-}
+	__sb_start_write(sb, SB_FREEZE_WRITE); }
 
 bool inode_owner_or_capable(struct user_namespace *mnt_userns, const struct inode *inode);
 
@@ -347,12 +317,10 @@ struct inode_operations {
 } ____cacheline_aligned;
 
 static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio, struct iov_iter *iter) {
-	return file->f_op->write_iter(kio, iter);
-}
+	return file->f_op->write_iter(kio, iter); }
 
 static inline int call_mmap(struct file *file, struct vm_area_struct *vma) {
-	return file->f_op->mmap(file, vma);
-}
+	return file->f_op->mmap(file, vma); }
 
 extern ssize_t vfs_write(struct file *, const char __user *, size_t, loff_t *);
 
@@ -379,18 +347,15 @@ static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags 
  * IS_AUTOMOUNT, IS_NOSEC, IS_DAX removed - underlying S_* flags never set */
 
 static inline bool HAS_UNMAPPED_ID(struct user_namespace *mnt_userns, struct inode *inode) {
-	return !uid_valid(i_uid_into_mnt(mnt_userns, inode)) || !gid_valid(i_gid_into_mnt(mnt_userns, inode));
-}
+	return !uid_valid(i_uid_into_mnt(mnt_userns, inode)) || !gid_valid(i_gid_into_mnt(mnt_userns, inode)); }
 
 static inline int iocb_flags(struct file *file);
 
 static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp) {
 	*kiocb = (struct kiocb) {
-		.ki_filp = filp, .ki_flags = iocb_flags(filp), };
-}
+		.ki_filp = filp, .ki_flags = iocb_flags(filp), }; }
 
-static inline void mark_inode_dirty(struct inode *inode) {
-}
+static inline void mark_inode_dirty(struct inode *inode) { }
 
 extern void inc_nlink(struct inode *inode);
 
@@ -402,8 +367,7 @@ int inode_update_time(struct inode *inode, struct timespec64 *time, int flags);
 
 static inline void file_accessed(struct file *file) {
 	if (!(file->f_flags & O_NOATIME))
-		touch_atime(&file->f_path);
-}
+		touch_atime(&file->f_path); }
 
 
 struct file_system_type {
@@ -413,8 +377,7 @@ struct file_system_type {
 	int (*init_fs_context)(struct fs_context *);
 	void (*kill_sb) (struct super_block *);
 	struct module *owner;
-	struct file_system_type * next;
-};
+	struct file_system_type * next; };
 
 /* Removed: mount_nodev, kill_block_super - never called */
 void kill_litter_super(struct super_block *sb);
@@ -440,8 +403,7 @@ struct filename { const char		*name; const __user char	*uptr; int			refcnt; cons
 static_assert(offsetof(struct filename, iname) % sizeof(long) == 0);
 
 static inline struct user_namespace *file_mnt_user_ns(struct file *file) {
-	return mnt_user_ns(file->f_path.mnt);
-}
+	return mnt_user_ns(file->f_path.mnt); }
 
 extern long vfs_truncate(const struct path *, loff_t);
 int do_truncate(struct user_namespace *, struct dentry *, loff_t start, unsigned int time_attrs, struct file *filp);
@@ -477,8 +439,7 @@ extern void unregister_chrdev_region(dev_t, unsigned);
 extern void init_special_inode(struct inode *, umode_t, dev_t);
 
 static inline ssize_t generic_write_sync(struct kiocb *iocb, ssize_t count) {
-	return count;
-}
+	return count; }
 
 
 int notify_change(struct user_namespace *, struct dentry *, struct iattr *, struct inode **);
@@ -488,33 +449,25 @@ int generic_permission(struct user_namespace *, struct inode *, int);
 static inline void file_start_write(struct file *file) {
 	if (!S_ISREG(file_inode(file)->i_mode))
 		return;
-	sb_start_write(file_inode(file)->i_sb);
-}
+	sb_start_write(file_inode(file)->i_sb); }
 
 static inline void file_end_write(struct file *file) {
 	if (!S_ISREG(file_inode(file)->i_mode))
 		return;
-	__sb_end_write(file_inode(file)->i_sb, SB_FREEZE_WRITE);
-}
+	__sb_end_write(file_inode(file)->i_sb, SB_FREEZE_WRITE); }
 
 static inline int get_write_access(struct inode *inode) {
-	return atomic_inc_unless_negative(&inode->i_writecount) ? 0 : -ETXTBSY;
-}
+	return atomic_inc_unless_negative(&inode->i_writecount) ? 0 : -ETXTBSY; }
 static inline int deny_write_access(struct file *file) {
 	struct inode *inode = file_inode(file);
-	return atomic_dec_unless_positive(&inode->i_writecount) ? 0 : -ETXTBSY;
-}
+	return atomic_dec_unless_positive(&inode->i_writecount) ? 0 : -ETXTBSY; }
 static inline void put_write_access(struct inode * inode) {
-	atomic_dec(&inode->i_writecount);
-}
+	atomic_dec(&inode->i_writecount); }
 static inline void allow_write_access(struct file *file) {
 	if (file)
-		atomic_inc(&file_inode(file)->i_writecount);
-}
-static inline void i_readcount_dec(struct inode *inode) {
-}
-static inline void i_readcount_inc(struct inode *inode) {
-}
+		atomic_inc(&file_inode(file)->i_writecount); }
+static inline void i_readcount_dec(struct inode *inode) { }
+static inline void i_readcount_inc(struct inode *inode) { }
 extern ssize_t kernel_read(struct file *, void *, size_t, loff_t *);
 ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos);
 extern ssize_t kernel_write(struct file *, const void *, size_t, loff_t *);
@@ -531,8 +484,7 @@ extern struct inode *new_inode(struct super_block *sb);
 extern int file_remove_privs(struct file *);
 
 static inline void * alloc_inode_sb(struct super_block *sb, struct kmem_cache *cache, gfp_t gfp) {
-	return kmem_cache_alloc_lru(cache, &sb->s_inode_lru, gfp);
-}
+	return kmem_cache_alloc_lru(cache, &sb->s_inode_lru, gfp); }
 
 extern int generic_file_mmap(struct file *, struct vm_area_struct *);
 extern ssize_t generic_write_checks(struct kiocb *, struct iov_iter *);
@@ -569,8 +521,7 @@ extern int file_update_time(struct file *file);
 
 static inline int iocb_flags(struct file *file) {
 	int res = 0;
-	return res;
-}
+	return res; }
 
 
 

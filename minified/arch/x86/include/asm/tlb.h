@@ -42,14 +42,12 @@ static inline void __tlb_reset_range(struct mmu_gather *tlb) {
 		tlb->start = tlb->end = ~0;
 	} else {
 		tlb->start = TASK_SIZE;
-		tlb->end = 0;
-	}
+		tlb->end = 0; }
 	tlb->freed_tables = 0;
 	tlb->cleared_ptes = 0;
 	tlb->cleared_pmds = 0;
 	tlb->cleared_puds = 0;
-	tlb->cleared_p4ds = 0;
-}
+	tlb->cleared_p4ds = 0; }
 
 /* tlb_update_vma_flags removed - 0-caller once tlb_start_vma (its sole
  * caller) was dropped; wrote only the never-read vma_huge/vma_exec/vma_pfn
@@ -65,8 +63,7 @@ static inline unsigned long tlb_get_unmap_shift(struct mmu_gather *tlb) {
 	if (tlb->cleared_p4ds)
 		return P4D_SHIFT;
 
-	return PAGE_SHIFT;
-}
+	return PAGE_SHIFT; }
 
 /* tlb_get_unmap_size removed - unused */
 
@@ -78,19 +75,16 @@ static inline void tlb_flush(struct mmu_gather *tlb) {
 
 	if (!tlb->fullmm && !tlb->need_flush_all) {
 		start = tlb->start;
-		end = tlb->end;
-	}
+		end = tlb->end; }
 
-	flush_tlb_mm_range(tlb->mm, start, end, stride_shift, tlb->freed_tables);
-}
+	flush_tlb_mm_range(tlb->mm, start, end, stride_shift, tlb->freed_tables); }
 
 static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb) {
 	if (!(tlb->freed_tables || tlb->cleared_ptes || tlb->cleared_pmds || tlb->cleared_puds || tlb->cleared_p4ds))
 		return;
 
 	tlb_flush(tlb);
-	__tlb_reset_range(tlb);
-}
+	__tlb_reset_range(tlb); }
 
 /* tlb_remove_page_size + tlb_remove_page + tlb_change_page_size removed -
  * 0-caller tlb-gather user wrappers (externs __tlb_remove_page_size/tlb_flush_mmu stay live) */

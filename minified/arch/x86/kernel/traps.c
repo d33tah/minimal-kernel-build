@@ -14,13 +14,11 @@ DECLARE_BITMAP(system_vectors, NR_VECTORS);
 
 static inline void cond_local_irq_enable(struct pt_regs *regs) {
 	if (regs->flags & X86_EFLAGS_IF)
-		local_irq_enable();
-}
+		local_irq_enable(); }
 
 static inline void cond_local_irq_disable(struct pt_regs *regs) {
 	if (regs->flags & X86_EFLAGS_IF)
-		local_irq_disable();
-}
+		local_irq_disable(); }
 
 static nokprobe_inline int
 do_trap_no_signal(struct task_struct *tsk, int trapnr, const char *str, struct pt_regs *regs,	long error_code) {
@@ -32,14 +30,12 @@ do_trap_no_signal(struct task_struct *tsk, int trapnr, const char *str, struct p
 		die(str, regs, error_code);
 	} else {
 		if (fixup_vdso_exception(regs, trapnr, error_code, 0))
-			return 0;
-	}
+			return 0; }
 
 
 	tsk->thread.trap_nr = trapnr;
 
-	return -1;
-}
+	return -1; }
 
 static void
 do_trap(int trapnr, int signr, char *str, struct pt_regs *regs, long error_code, int sicode, void __user *addr) {
@@ -51,8 +47,7 @@ do_trap(int trapnr, int signr, char *str, struct pt_regs *regs, long error_code,
 	if (!sicode)
 		force_sig(signr);
 	else
-		force_sig_fault(signr, sicode, addr);
-}
+		force_sig_fault(signr, sicode, addr); }
 
 static void do_error_trap(struct pt_regs *regs, long error_code, char *str, unsigned long trapnr, int signr, int sicode, void __user *addr) {
 	RCU_LOCKDEP_WARN(!rcu_is_watching(), "entry code didn't wake RCU");
@@ -60,21 +55,16 @@ static void do_error_trap(struct pt_regs *regs, long error_code, char *str, unsi
 	if (notify_die(DIE_TRAP, str, regs, error_code, trapnr, signr) != NOTIFY_STOP) {
 		cond_local_irq_enable(regs);
 		do_trap(trapnr, signr, str, regs, error_code, sicode, addr);
-		cond_local_irq_disable(regs);
-	}
-}
+		cond_local_irq_disable(regs); } }
 
 static __always_inline void __user *error_get_trap_addr(struct pt_regs *regs) {
-	return (void __user *)uprobe_get_trap_addr(regs);
-}
+	return (void __user *)uprobe_get_trap_addr(regs); }
 
 DEFINE_IDTENTRY(exc_divide_error) {
-	do_error_trap(regs, 0, "divide error", X86_TRAP_DE, SIGFPE, FPE_INTDIV, error_get_trap_addr(regs));
-}
+	do_error_trap(regs, 0, "divide error", X86_TRAP_DE, SIGFPE, FPE_INTDIV, error_get_trap_addr(regs)); }
 
 DEFINE_IDTENTRY(exc_overflow) {
-	do_error_trap(regs, 0, "overflow", X86_TRAP_OF, SIGSEGV, 0, NULL);
-}
+	do_error_trap(regs, 0, "overflow", X86_TRAP_OF, SIGSEGV, 0, NULL); }
 
 
 DEFINE_IDTENTRY_RAW(exc_invalid_op) {
@@ -87,24 +77,19 @@ DEFINE_IDTENTRY_RAW(exc_invalid_op) {
 	 */
 	state = irqentry_enter(regs);
 	do_error_trap(regs, 0, "invalid opcode", X86_TRAP_UD, SIGILL, ILL_ILLOPN, error_get_trap_addr(regs));
-	irqentry_exit(regs, state);
-}
+	irqentry_exit(regs, state); }
 
 DEFINE_IDTENTRY(exc_coproc_segment_overrun) {
-	do_error_trap(regs, 0, "coprocessor segment overrun", X86_TRAP_OLD_MF, SIGFPE, 0, NULL);
-}
+	do_error_trap(regs, 0, "coprocessor segment overrun", X86_TRAP_OLD_MF, SIGFPE, 0, NULL); }
 
 DEFINE_IDTENTRY_ERRORCODE(exc_invalid_tss) {
-	do_error_trap(regs, error_code, "invalid TSS", X86_TRAP_TS, SIGSEGV, 0, NULL);
-}
+	do_error_trap(regs, error_code, "invalid TSS", X86_TRAP_TS, SIGSEGV, 0, NULL); }
 
 DEFINE_IDTENTRY_ERRORCODE(exc_segment_not_present) {
-	do_error_trap(regs, error_code, "segment not present", X86_TRAP_NP, SIGBUS, 0, NULL);
-}
+	do_error_trap(regs, error_code, "segment not present", X86_TRAP_NP, SIGBUS, 0, NULL); }
 
 DEFINE_IDTENTRY_ERRORCODE(exc_stack_segment) {
-	do_error_trap(regs, error_code, "stack segment", X86_TRAP_SS, SIGBUS, 0, NULL);
-}
+	do_error_trap(regs, error_code, "stack segment", X86_TRAP_SS, SIGBUS, 0, NULL); }
 
 DEFINE_IDTENTRY_ERRORCODE(exc_alignment_check) {
 	char *str = "alignment check";
@@ -119,8 +104,7 @@ DEFINE_IDTENTRY_ERRORCODE(exc_alignment_check) {
 
 	do_trap(X86_TRAP_AC, SIGBUS, "alignment check", regs, error_code, BUS_ADRALN, NULL);
 
-	local_irq_disable();
-}
+	local_irq_disable(); }
 
 
 DEFINE_IDTENTRY_DF(exc_double_fault) {
@@ -137,8 +121,7 @@ DEFINE_IDTENTRY_DF(exc_double_fault) {
 
 	pr_emerg("PANIC: double fault, error_code: 0x%lx\n", error_code);
 	die("double fault", regs, error_code);
-	panic("Machine halted.");
-}
+	panic("Machine halted."); }
 
 DEFINE_IDTENTRY(exc_bounds) {
 	if (notify_die(DIE_TRAP, "bounds", regs, 0, X86_TRAP_BR, SIGSEGV) == NOTIFY_STOP)
@@ -150,15 +133,13 @@ DEFINE_IDTENTRY(exc_bounds) {
 
 	do_trap(X86_TRAP_BR, SIGSEGV, "bounds", regs, 0, 0, NULL);
 
-	cond_local_irq_disable(regs);
-}
+	cond_local_irq_disable(regs); }
 
 enum kernel_gp_hint { GP_NO_HINT, GP_NON_CANONICAL, };
 
 static enum kernel_gp_hint get_kernel_gp_address(void) {
 	/* Stub: GP address hint not needed for minimal kernel */
-	return GP_NO_HINT;
-}
+	return GP_NO_HINT; }
 
 #define GPFSTR "general protection fault"
 
@@ -180,8 +161,7 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection) {
 
 		current->thread.trap_nr = X86_TRAP_GP;
 		force_sig(SIGSEGV);
-		goto exit;
-	}
+		goto exit; }
 
 	if (fixup_exception(regs, X86_TRAP_GP, error_code, 0))
 		goto exit;
@@ -206,8 +186,7 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection) {
 	die_addr(desc, regs, error_code, gp_addr);
 
 exit:
-	cond_local_irq_disable(regs);
-}
+	cond_local_irq_disable(regs); }
 
 static bool do_int3(struct pt_regs *regs) {
 	int res;
@@ -215,8 +194,7 @@ static bool do_int3(struct pt_regs *regs) {
 
 	res = notify_die(DIE_INT3, "int3", regs, 0, X86_TRAP_BP, SIGTRAP);
 
-	return res == NOTIFY_STOP;
-}
+	return res == NOTIFY_STOP; }
 
 DEFINE_IDTENTRY_RAW(exc_int3) {
 
@@ -225,17 +203,14 @@ DEFINE_IDTENTRY_RAW(exc_int3) {
 		if (!do_int3(regs)) {
 			cond_local_irq_enable(regs);
 			do_trap(X86_TRAP_BP, SIGTRAP, "int3", regs, 0, 0, NULL);
-			cond_local_irq_disable(regs);
-		}
+			cond_local_irq_disable(regs); }
 		irqentry_exit_to_user_mode(regs);
 	} else {
 		irqentry_state_t irq_state = irqentry_nmi_enter(regs);
 
 		if (!do_int3(regs))
 			die("int3", regs, 0);
-		irqentry_nmi_exit(regs, irq_state);
-	}
-}
+		irqentry_nmi_exit(regs, irq_state); } }
 
 
 static __always_inline unsigned long debug_read_clear_dr6(void) {
@@ -246,8 +221,7 @@ static __always_inline unsigned long debug_read_clear_dr6(void) {
 	set_debugreg(DR6_RESERVED, 6);
 	dr6 ^= DR6_RESERVED;  
 
-	return dr6;
-}
+	return dr6; }
 
 
 static bool notify_debug(struct pt_regs *regs, unsigned long *dr6) {
@@ -255,8 +229,7 @@ static bool notify_debug(struct pt_regs *regs, unsigned long *dr6) {
 	if (notify_die(DIE_DEBUG, "debug", regs, (long)dr6, 0, SIGTRAP) == NOTIFY_STOP)
 		return true;
 
-	return false;
-}
+	return false; }
 
 static __always_inline void exc_debug_kernel(struct pt_regs *regs, unsigned long dr6) {
 	 
@@ -285,8 +258,7 @@ static __always_inline void exc_debug_kernel(struct pt_regs *regs, unsigned long
 out:
 	irqentry_nmi_exit(regs, irq_state);
 
-	local_db_restore(dr7);
-}
+	local_db_restore(dr7); }
 
 static __always_inline void exc_debug_user(struct pt_regs *regs, unsigned long dr6) {
 	bool icebp;
@@ -318,8 +290,7 @@ static __always_inline void exc_debug_user(struct pt_regs *regs, unsigned long d
 
 	local_irq_disable();
 out:
-	irqentry_exit_to_user_mode(regs);
-}
+	irqentry_exit_to_user_mode(regs); }
 
 DEFINE_IDTENTRY_RAW(exc_debug) {
 	unsigned long dr6 = debug_read_clear_dr6();
@@ -327,14 +298,11 @@ DEFINE_IDTENTRY_RAW(exc_debug) {
 	if (user_mode(regs))
 		exc_debug_user(regs, dr6);
 	else
-		exc_debug_kernel(regs, dr6);
-}
+		exc_debug_kernel(regs, dr6); }
 
-DEFINE_IDTENTRY(exc_coprocessor_error) {
-}
+DEFINE_IDTENTRY(exc_coprocessor_error) { }
 
-DEFINE_IDTENTRY(exc_simd_coprocessor_error) {
-}
+DEFINE_IDTENTRY(exc_simd_coprocessor_error) { }
 
 DEFINE_IDTENTRY(exc_spurious_interrupt_bug) {
 	 
@@ -349,18 +317,14 @@ DEFINE_IDTENTRY(exc_device_not_available) {
 		write_cr0(cr0 & ~X86_CR0_TS);
 	} else {
 		 
-		die("unexpected #NM exception", regs, 0);
-	}
-}
+		die("unexpected #NM exception", regs, 0); } }
 
 
 DEFINE_IDTENTRY_SW(iret_error) {
 	local_irq_enable();
 	if (notify_die(DIE_TRAP, "iret exception", regs, 0, X86_TRAP_IRET, SIGILL) != NOTIFY_STOP) {
-		do_trap(X86_TRAP_IRET, SIGILL, "iret exception", regs, 0, ILL_BADSTK, (void __user *)NULL);
-	}
-	local_irq_disable();
-}
+		do_trap(X86_TRAP_IRET, SIGILL, "iret exception", regs, 0, ILL_BADSTK, (void __user *)NULL); }
+	local_irq_disable(); }
 
 void __init trap_init(void) {
 	 
@@ -370,5 +334,4 @@ void __init trap_init(void) {
 	cpu_init_exception_handling();
 	 
 	idt_setup_traps();
-	cpu_init();
-}
+	cpu_init(); }

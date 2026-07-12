@@ -22,12 +22,10 @@
 #include <linux/string.h>
 
 static inline void clear_page(void *page) {
-	memset(page, 0, PAGE_SIZE);
-}
+	memset(page, 0, PAGE_SIZE); }
 
 static inline void copy_page(void *to, void *from) {
-	memcpy(to, from, PAGE_SIZE);
-}
+	memcpy(to, from, PAGE_SIZE); }
 /* end page_32.h */
 
 struct page;
@@ -37,8 +35,7 @@ extern struct range pfn_mapped[];
 extern int nr_pfn_mapped;
 
 static inline void copy_user_page(void *to, void *from, unsigned long vaddr, struct page *topage) {
-	copy_page(to, from);
-}
+	copy_page(to, from); }
 
 #define alloc_zeroed_user_highpage_movable(vma, vaddr) 	alloc_page_vma(GFP_HIGHUSER_MOVABLE | __GFP_ZERO, vma, vaddr)
 

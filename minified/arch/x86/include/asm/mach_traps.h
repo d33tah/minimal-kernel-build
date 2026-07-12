@@ -16,7 +16,6 @@
 #define NMI_REASON_CLEAR_MASK	0x0f
 
 static inline unsigned char default_get_nmi_reason(void) {
-	return inb(NMI_REASON_PORT);
-}
+	return inb(NMI_REASON_PORT); }
 
 #endif

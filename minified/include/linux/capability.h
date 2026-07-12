@@ -36,23 +36,19 @@ struct user_namespace;
 static inline kernel_cap_t cap_drop(const kernel_cap_t a, const kernel_cap_t drop) {
 	kernel_cap_t dest;
 	CAP_BOP_ALL(dest, a, drop, &~);
-	return dest;
-}
+	return dest; }
 
 static inline bool cap_isclear(const kernel_cap_t a) {
 	unsigned __capi;
 	CAP_FOR_EACH_U32(__capi) {
 		if (a.cap[__capi] != 0)
-			return false;
-	}
-	return true;
-}
+			return false; }
+	return true; }
 
 static inline bool cap_issubset(const kernel_cap_t a, const kernel_cap_t set) {
 	kernel_cap_t dest;
 	dest = cap_drop(a, set);
-	return cap_isclear(dest);
-}
+	return cap_isclear(dest); }
 
 /* privileged_wrt_inode_uidgid moved to static in capability.c */
 bool capable_wrt_inode_uidgid(struct user_namespace *mnt_userns, const struct inode *inode, int cap);

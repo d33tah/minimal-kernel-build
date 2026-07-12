@@ -7,12 +7,10 @@
 
  
 static __always_inline void rep_nop(void) {
-	asm volatile("rep; nop" ::: "memory");
-}
+	asm volatile("rep; nop" ::: "memory"); }
 
 static __always_inline void cpu_relax(void) {
-	rep_nop();
-}
+	rep_nop(); }
 
 #endif  
 

@@ -9,7 +9,6 @@
 #define nokprobe_inline	inline
 
 static nokprobe_inline bool kprobe_page_fault(struct pt_regs *regs, unsigned int trap) {
-	return false;
-}
+	return false; }
 
 #endif

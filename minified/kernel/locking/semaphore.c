@@ -9,8 +9,7 @@ void down(struct semaphore *sem) {
 	might_sleep();
 	raw_spin_lock_irqsave(&sem->lock, flags);
 	sem->count--;
-	raw_spin_unlock_irqrestore(&sem->lock, flags);
-}
+	raw_spin_unlock_irqrestore(&sem->lock, flags); }
 
 
 int down_trylock(struct semaphore *sem) {
@@ -23,8 +22,7 @@ int down_trylock(struct semaphore *sem) {
 		sem->count = count;
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 
-	return (count < 0);
-}
+	return (count < 0); }
 
 
 void up(struct semaphore *sem) {
@@ -32,5 +30,4 @@ void up(struct semaphore *sem) {
 
 	raw_spin_lock_irqsave(&sem->lock, flags);
 	sem->count++;
-	raw_spin_unlock_irqrestore(&sem->lock, flags);
-}
+	raw_spin_unlock_irqrestore(&sem->lock, flags); }

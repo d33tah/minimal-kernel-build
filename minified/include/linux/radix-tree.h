@@ -19,8 +19,7 @@ DECLARE_PER_CPU(struct radix_tree_preload, radix_tree_preloads);
 #define RADIX_TREE_INTERNAL_NODE	2UL
 
 static inline bool radix_tree_is_internal_node(void *ptr) {
-	return ((unsigned long)ptr & RADIX_TREE_ENTRY_MASK) == RADIX_TREE_INTERNAL_NODE;
-}
+	return ((unsigned long)ptr & RADIX_TREE_ENTRY_MASK) == RADIX_TREE_INTERNAL_NODE; }
 
 
 #define RADIX_TREE_MAP_SHIFT	XA_CHUNK_SHIFT
@@ -60,12 +59,10 @@ static __always_inline void __rcu ** radix_tree_iter_init(struct radix_tree_iter
 	 
 	iter->index = 0;
 	iter->next_index = start;
-	return NULL;
-}
+	return NULL; }
 
 static inline unsigned long
 __radix_tree_iter_add(struct radix_tree_iter *iter, unsigned long slots) {
-	return iter->index + slots;
-}
+	return iter->index + slots; }
 
 #endif

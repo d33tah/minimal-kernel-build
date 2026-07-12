@@ -19,16 +19,13 @@ void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec) {
 		 
 		asm("" : "+rm"(nsec));
 		nsec -= NSEC_PER_SEC;
-		++sec;
-	}
+		++sec; }
 	while (nsec < 0) {
 		asm("" : "+rm"(nsec));
 		nsec += NSEC_PER_SEC;
-		--sec;
-	}
+		--sec; }
 	ts->tv_sec = sec;
-	ts->tv_nsec = nsec;
-}
+	ts->tv_nsec = nsec; }
 
 struct timespec64 ns_to_timespec64(const s64 nsec) {
 	struct timespec64 ts = { 0, 0 };
@@ -40,10 +37,8 @@ struct timespec64 ns_to_timespec64(const s64 nsec) {
 	} else if (nsec < 0) {
 		 
 		ts.tv_sec = -div_u64_rem(-nsec - 1, NSEC_PER_SEC, &rem) - 1;
-		ts.tv_nsec = NSEC_PER_SEC - rem - 1;
-	}
+		ts.tv_nsec = NSEC_PER_SEC - rem - 1; }
 
-	return ts;
-}
+	return ts; }
 
 

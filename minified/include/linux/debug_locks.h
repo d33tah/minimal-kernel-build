@@ -8,8 +8,7 @@ extern int debug_locks __read_mostly;
 
 
 static __always_inline int __debug_locks_off(void) {
-	return xchg(&debug_locks, 0);
-}
+	return xchg(&debug_locks, 0); }
 
 extern int debug_locks_off(void);
 
@@ -17,7 +16,6 @@ extern int debug_locks_off(void);
 
 
 static inline void
-debug_check_no_locks_freed(const void *from, unsigned long len) {
-}
+debug_check_no_locks_freed(const void *from, unsigned long len) { }
 
 #endif

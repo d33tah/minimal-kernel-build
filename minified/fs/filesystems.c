@@ -6,19 +6,16 @@ static struct file_system_type *file_systems;
 static DEFINE_RWLOCK(file_systems_lock);
 
 struct file_system_type *get_filesystem(struct file_system_type *fs) {
-	return fs;
-}
+	return fs; }
 
-void put_filesystem(struct file_system_type *fs) {
-}
+void put_filesystem(struct file_system_type *fs) { }
 
 static struct file_system_type **find_filesystem(const char *name, unsigned len) {
 	struct file_system_type **p;
 	for (p = &file_systems; *p; p = &(*p)->next)
 		if (strncmp((*p)->name, name, len) == 0 && !(*p)->name[len])
 			break;
-	return p;
-}
+	return p; }
 
 int register_filesystem(struct file_system_type * fs) {
 	int res = 0;
@@ -34,6 +31,5 @@ int register_filesystem(struct file_system_type * fs) {
 	else
 		*p = fs;
 	write_unlock(&file_systems_lock);
-	return res;
-}
+	return res; }
 

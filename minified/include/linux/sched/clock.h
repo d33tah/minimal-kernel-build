@@ -15,7 +15,6 @@ extern int sched_clock_stable(void);
 extern void sched_clock_tick(void);
 
 static inline u64 local_clock(void) {
-	return sched_clock_cpu(raw_smp_processor_id());
-}
+	return sched_clock_cpu(raw_smp_processor_id()); }
 
 #endif

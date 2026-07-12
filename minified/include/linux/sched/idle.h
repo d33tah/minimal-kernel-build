@@ -17,8 +17,7 @@ static inline bool __must_check current_clr_polling_and_test(void) {
 	 
 	smp_mb__after_atomic();
 
-	return unlikely(tif_need_resched());
-}
+	return unlikely(tif_need_resched()); }
 
 
 #endif

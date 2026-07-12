@@ -20,11 +20,9 @@ static void tick_periodic(int cpu) {
 		do_timer(1);
 		write_seqcount_end(&jiffies_seq);
 		raw_spin_unlock(&jiffies_lock);
-		update_wall_time();
-	}
+		update_wall_time(); }
 
-	update_process_times(user_mode(get_irq_regs()));
-}
+	update_process_times(user_mode(get_irq_regs())); }
 
 void tick_handle_periodic(struct clock_event_device *dev) {
 	int cpu = smp_processor_id();
@@ -45,11 +43,9 @@ static void tick_setup_device(struct tick_device *td, struct clock_event_device 
 		if (tick_do_timer_cpu == TICK_DO_TIMER_BOOT) {
 			tick_do_timer_cpu = cpu;
 
-			tick_next_period = ktime_get();
-		}
+			tick_next_period = ktime_get(); }
 	} else {
-		td->evtdev->event_handler = clockevents_handle_noop;
-	}
+		td->evtdev->event_handler = clockevents_handle_noop; }
 
 	td->evtdev = newdev;
 
@@ -60,8 +56,7 @@ static void tick_setup_device(struct tick_device *td, struct clock_event_device 
 	 * PERIODIC state; the broadcast and oneshot setup branches were dead.
 	 */
 	tick_set_periodic_handler(newdev, 0);
-	clockevents_switch_state(newdev, CLOCK_EVT_STATE_PERIODIC);
-}
+	clockevents_switch_state(newdev, CLOCK_EVT_STATE_PERIODIC); }
 
 static bool tick_check_percpu(struct clock_event_device *curdev, struct clock_event_device *newdev, int cpu) {
 	if (!cpumask_test_cpu(cpu, newdev->cpumask))
@@ -74,8 +69,7 @@ static bool tick_check_percpu(struct clock_event_device *curdev, struct clock_ev
 	 
 	if (curdev && cpumask_equal(curdev->cpumask, cpumask_of(cpu)))
 		return false;
-	return true;
-}
+	return true; }
 
 static bool tick_check_preferred(struct clock_event_device *curdev, struct clock_event_device *newdev) {
 	/*
@@ -83,8 +77,7 @@ static bool tick_check_preferred(struct clock_event_device *curdev, struct clock
 	 * (the only device, i8253, is PERIODIC-only), so neither newdev nor
 	 * curdev is ever oneshot -- the oneshot preference check was dead.
 	 */
-	return !curdev || newdev->rating > curdev->rating || !cpumask_equal(curdev->cpumask, newdev->cpumask);
-}
+	return !curdev || newdev->rating > curdev->rating || !cpumask_equal(curdev->cpumask, newdev->cpumask); }
 
 void tick_check_new_device(struct clock_event_device *newdev) {
 	struct clock_event_device *curdev;
@@ -106,8 +99,7 @@ void tick_check_new_device(struct clock_event_device *newdev) {
 		return;
 
 	clockevents_exchange_device(curdev, newdev);
-	tick_setup_device(td, newdev, cpu, cpumask_of(cpu));
-}
+	tick_setup_device(td, newdev, cpu, cpumask_of(cpu)); }
 
 
 

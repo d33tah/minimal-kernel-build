@@ -14,8 +14,7 @@
 /* Inlined from asm/invpcid.h */
 static inline void __invpcid(unsigned long pcid, unsigned long addr, unsigned long type) {
 	struct { u64 d[2]; } desc = { { pcid, addr } };
-	asm volatile("invpcid %[desc], %[type]" :: [desc] "m" (desc), [type] "r" (type) : "memory");
-}
+	asm volatile("invpcid %[desc], %[type]" :: [desc] "m" (desc), [type] "r" (type) : "memory"); }
 #define INVPCID_TYPE_ALL_INCL_GLOBAL	2
 static inline void invpcid_flush_all(void) { __invpcid(0, 0, INVPCID_TYPE_ALL_INCL_GLOBAL); }
 /* End of invpcid.h */
@@ -29,13 +28,11 @@ unsigned long cr4_read_shadow(void);
 
  
 static inline void cr4_set_bits_irqsoff(unsigned long mask) {
-	cr4_update_irqsoff(mask, 0);
-}
+	cr4_update_irqsoff(mask, 0); }
 
  
 static inline void cr4_clear_bits_irqsoff(unsigned long mask) {
-	cr4_update_irqsoff(0, mask);
-}
+	cr4_update_irqsoff(0, mask); }
 
  
 static inline void cr4_set_bits(unsigned long mask) {
@@ -43,8 +40,7 @@ static inline void cr4_set_bits(unsigned long mask) {
 
 	local_irq_save(flags);
 	cr4_set_bits_irqsoff(mask);
-	local_irq_restore(flags);
-}
+	local_irq_restore(flags); }
 
  
 static inline void cr4_clear_bits(unsigned long mask) {
@@ -52,8 +48,7 @@ static inline void cr4_clear_bits(unsigned long mask) {
 
 	local_irq_save(flags);
 	cr4_clear_bits_irqsoff(mask);
-	local_irq_restore(flags);
-}
+	local_irq_restore(flags); }
 
 #ifndef MODULE
  
@@ -73,8 +68,7 @@ struct tlb_state {
 	unsigned long cr4;
 
 	 
-	struct tlb_context ctxs[TLB_NR_DYN_ASIDS];
-};
+	struct tlb_context ctxs[TLB_NR_DYN_ASIDS]; };
 DECLARE_PER_CPU_ALIGNED(struct tlb_state, cpu_tlbstate);
 
 struct tlb_state_shared { bool is_lazy; };
@@ -82,8 +76,7 @@ DECLARE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
 
 
 static inline void cr4_init_shadow(void) {
-	this_cpu_write(cpu_tlbstate.cr4, __read_cr4());
-}
+	this_cpu_write(cpu_tlbstate.cr4, __read_cr4()); }
 
 extern unsigned long mmu_cr4_features;
 
@@ -99,8 +92,7 @@ extern void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start, unsign
 
 static inline u64 inc_mm_tlb_gen(struct mm_struct *mm) {
 	 
-	return atomic64_inc_return(&mm->context.tlb_gen);
-}
+	return atomic64_inc_return(&mm->context.tlb_gen); }
 
 /* arch_tlbbatch_flush declaration removed - no implementation */
 /* pte_flags_need_flush / pte_needs_flush / huge_pmd_needs_flush removed - zero callers tree-wide */
@@ -109,6 +101,5 @@ static inline u64 inc_mm_tlb_gen(struct mm_struct *mm) {
 
 static inline void __native_tlb_flush_global(unsigned long cr4) {
 	native_write_cr4(cr4 ^ X86_CR4_PGE);
-	native_write_cr4(cr4);
-}
+	native_write_cr4(cr4); }
 #endif  

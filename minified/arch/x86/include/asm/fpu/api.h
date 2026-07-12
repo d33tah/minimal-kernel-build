@@ -13,12 +13,10 @@
 static inline void fpregs_lock(void) {
 	/* CONFIG_PREEMPT_RT is off on this build; the RT preempt_disable()
 	 * else-arm was compile-time dead. */
-	local_bh_disable();
-}
+	local_bh_disable(); }
 
 static inline void fpregs_unlock(void) {
-	local_bh_enable();
-}
+	local_bh_enable(); }
 
 extern void switch_fpu_return(void);
 

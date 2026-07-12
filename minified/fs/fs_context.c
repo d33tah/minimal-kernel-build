@@ -15,22 +15,18 @@ static int vfs_parse_sb_flag(struct fs_context *fc, const char *key) {
 	token = lookup_constant(common_set_sb_flag, key, 0);
 	if (token) {
 		fc->sb_flags |= token;
-		return 0;
-	}
+		return 0; }
 
 	token = lookup_constant(common_clear_sb_flag, key, 0);
 	if (token) {
 		fc->sb_flags &= ~token;
-		return 0;
-	}
+		return 0; }
 
-	return -ENOPARAM;
-}
+	return -ENOPARAM; }
 
 int vfs_parse_fs_param_source(struct fs_context *fc, struct fs_parameter *param) {
 	/* SAFE-FALLBACK: HIT=False; callers treat -ENOPARAM as "fall through". */
-	return -ENOPARAM;
-}
+	return -ENOPARAM; }
 
 int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param) {
 	int ret;
@@ -45,16 +41,14 @@ int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param) {
 	if (fc->ops->parse_param) {
 		ret = fc->ops->parse_param(fc, param);
 		if (ret != -ENOPARAM)
-			return ret;
-	}
+			return ret; }
 
 	 
 	ret = vfs_parse_fs_param_source(fc, param);
 	if (ret != -ENOPARAM)
 		return ret;
 
-	return invalf(fc, "%s: Unknown parameter '%s'", fc->fs_type->name, param->key);
-}
+	return invalf(fc, "%s: Unknown parameter '%s'", fc->fs_type->name, param->key); }
 
 int vfs_parse_fs_string(struct fs_context *fc, const char *key, const char *value, size_t v_size) {
 	int ret;
@@ -66,13 +60,11 @@ int vfs_parse_fs_string(struct fs_context *fc, const char *key, const char *valu
 		param.string = kmemdup_nul(value, v_size, GFP_KERNEL);
 		if (!param.string)
 			return -ENOMEM;
-		param.type = fs_value_is_string;
-	}
+		param.type = fs_value_is_string; }
 
 	ret = vfs_parse_fs_param(fc, &param);
 	kfree(param.string);
-	return ret;
-}
+	return ret; }
 
 int generic_parse_monolithic(struct fs_context *fc, void *data) {
 	char *options = data, *key;
@@ -90,16 +82,12 @@ int generic_parse_monolithic(struct fs_context *fc, void *data) {
 				if (value == key)
 					continue;
 				*value++ = 0;
-				v_len = strlen(value);
-			}
+				v_len = strlen(value); }
 			ret = vfs_parse_fs_string(fc, key, value, v_len);
 			if (ret < 0)
-				break;
-		}
-	}
+				break; } }
 
-	return ret;
-}
+	return ret; }
 
 static struct fs_context *alloc_fs_context(struct file_system_type *fs_type, struct dentry *reference, unsigned int sb_flags, enum fs_context_purpose purpose) {
 	int (*init_fs_context)(struct fs_context *);
@@ -127,8 +115,7 @@ static struct fs_context *alloc_fs_context(struct file_system_type *fs_type, str
 	case FS_CONTEXT_FOR_RECONFIGURE:
 		atomic_inc(&reference->d_sb->s_active);
 		fc->user_ns = get_user_ns(reference->d_sb->s_user_ns);
-		fc->root = dget(reference);
-	}
+		fc->root = dget(reference); }
 
 	init_fs_context = fc->fs_type->init_fs_context;
 	ret = init_fs_context(fc);
@@ -139,12 +126,10 @@ static struct fs_context *alloc_fs_context(struct file_system_type *fs_type, str
 
 err_fc:
 	put_fs_context(fc);
-	return ERR_PTR(ret);
-}
+	return ERR_PTR(ret); }
 
 struct fs_context *fs_context_for_mount(struct file_system_type *fs_type, unsigned int sb_flags) {
-	return alloc_fs_context(fs_type, NULL, sb_flags, FS_CONTEXT_FOR_MOUNT);
-}
+	return alloc_fs_context(fs_type, NULL, sb_flags, FS_CONTEXT_FOR_MOUNT); }
 
 void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, ...) {
 	va_list va;
@@ -165,10 +150,8 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, 
 		printk(KERN_ERR "%s%s%pV\n", prefix ? prefix : "", prefix ? ": " : "", &vaf);
 		break;
 	default:
-		printk(KERN_NOTICE "%s%s%pV\n", prefix ? prefix : "", prefix ? ": " : "", &vaf);
-	}
-	va_end(va);
-}
+		printk(KERN_NOTICE "%s%s%pV\n", prefix ? prefix : "", prefix ? ": " : "", &vaf); }
+	va_end(va); }
 
 static void put_fc_log(struct fs_context *fc) {
 	struct fc_log *log = fc->log.log;
@@ -180,10 +163,7 @@ static void put_fc_log(struct fs_context *fc) {
 			for (i = 0; i <= 7; i++)
 				if (log->need_free & (1 << i))
 					kfree(log->buffer[i]);
-			kfree(log);
-		}
-	}
-}
+			kfree(log); } } }
 
 void put_fs_context(struct fs_context *fc) {
 	struct super_block *sb;
@@ -192,8 +172,7 @@ void put_fs_context(struct fs_context *fc) {
 		sb = fc->root->d_sb;
 		dput(fc->root);
 		fc->root = NULL;
-		deactivate_super(sb);
-	}
+		deactivate_super(sb); }
 
 	if (fc->need_free && fc->ops && fc->ops->free)
 		fc->ops->free(fc);
@@ -203,13 +182,11 @@ void put_fs_context(struct fs_context *fc) {
 	put_fc_log(fc);
 	put_filesystem(fc->fs_type);
 	kfree(fc->source);
-	kfree(fc);
-}
+	kfree(fc); }
 
 int parse_monolithic_mount_data(struct fs_context *fc, void *data) {
 	/* no instance sets ->parse_monolithic, so it always falls through to
 	 * generic_parse_monolithic */
-	return generic_parse_monolithic(fc, data);
-}
+	return generic_parse_monolithic(fc, data); }
 
 

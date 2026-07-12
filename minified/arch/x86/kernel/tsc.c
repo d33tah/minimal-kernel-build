@@ -50,8 +50,7 @@ static __always_inline unsigned long long cycles_2_ns(unsigned long long cyc) {
 
 	preempt_enable_notrace();
 
-	return ns;
-}
+	return ns; }
 
 static void __set_cyc2ns_scale(unsigned long khz, int cpu, unsigned long long tsc_now) {
 	unsigned long long ns_now;
@@ -66,8 +65,7 @@ static void __set_cyc2ns_scale(unsigned long khz, int cpu, unsigned long long ts
 	 
 	if (data.cyc2ns_shift == 32) {
 		data.cyc2ns_shift = 31;
-		data.cyc2ns_mul >>= 1;
-	}
+		data.cyc2ns_mul >>= 1; }
 
 	data.cyc2ns_offset = ns_now - mul_u64_u32_shr(tsc_now, data.cyc2ns_mul, data.cyc2ns_shift);
 
@@ -76,8 +74,7 @@ static void __set_cyc2ns_scale(unsigned long khz, int cpu, unsigned long long ts
 	raw_write_seqcount_latch(&c2n->seq);
 	c2n->data[0] = data;
 	raw_write_seqcount_latch(&c2n->seq);
-	c2n->data[1] = data;
-}
+	c2n->data[1] = data; }
 
 /*
  * cyc2ns_init_secondary_cpus() removed: NR_CPUS=1 / SMP off, so there are
@@ -91,14 +88,12 @@ u64 native_sched_clock(void) {
 		u64 tsc_now = rdtsc();
 
 		 
-		return cycles_2_ns(tsc_now);
-	}
+		return cycles_2_ns(tsc_now); }
 
 	 
 
 	 
-	return (jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ);
-}
+	return (jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ); }
 
 unsigned long long
 sched_clock(void) __attribute__((alias("native_sched_clock")));
@@ -108,8 +103,7 @@ sched_clock(void) __attribute__((alias("native_sched_clock")));
 static inline int pit_verify_msb(unsigned char val) {
 	 
 	inb(0x42);
-	return inb(0x42) == val;
-}
+	return inb(0x42) == val; }
 
 static inline int pit_expect_msb(unsigned char val, u64 *tscp, unsigned long *deltap) {
 	int count;
@@ -119,14 +113,12 @@ static inline int pit_expect_msb(unsigned char val, u64 *tscp, unsigned long *de
 		if (!pit_verify_msb(val))
 			break;
 		prev_tsc = tsc;
-		tsc = get_cycles();
-	}
+		tsc = get_cycles(); }
 	*deltap = get_cycles() - prev_tsc;
 	*tscp = tsc;
 
 	 
-	return count > 5;
-}
+	return count > 5; }
 
 #define MAX_QUICK_PIT_MS 50
 #define MAX_QUICK_PIT_ITERATIONS (MAX_QUICK_PIT_MS * PIT_TICK_RATE / 1000 / 256)
@@ -170,9 +162,7 @@ static unsigned long quick_pit_calibrate(void) {
 			 
 			if (!pit_verify_msb(0xfe - i))
 				break;
-			goto success;
-		}
-	}
+			goto success; } }
 	pr_info("Fast TSC calibration failed\n");
 	return 0;
 
@@ -181,8 +171,7 @@ success:
 	delta *= PIT_TICK_RATE;
 	do_div(delta, i*256*1000);
 	pr_info("Fast TSC calibration using PIT\n");
-	return delta;
-}
+	return delta; }
 
 unsigned long native_calibrate_tsc(void) {
 	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
@@ -192,8 +181,7 @@ unsigned long native_calibrate_tsc(void) {
 	 * on this build (x86_vendor is always X86_VENDOR_UNKNOWN, so the guard
 	 * above always returns). It was the sole setter of the TSC_KNOWN_FREQ /
 	 * TSC_RELIABLE feature caps, which therefore stay clear. */
-	return 0;
-}
+	return 0; }
 
 static unsigned long cpu_khz_from_cpuid(void) {
 	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
@@ -201,8 +189,7 @@ static unsigned long cpu_khz_from_cpuid(void) {
 
 	/* Intel CPUID.0x16 base-frequency path elided: unreachable (vendor
 	 * always UNKNOWN); native_calibrate_cpu_early falls to quick_pit. */
-	return 0;
-}
+	return 0; }
 
 unsigned long native_calibrate_cpu_early(void) {
 	unsigned long flags, fast_calibrate = cpu_khz_from_cpuid();
@@ -210,22 +197,18 @@ unsigned long native_calibrate_cpu_early(void) {
 	if (!fast_calibrate) {
 		local_irq_save(flags);
 		fast_calibrate = quick_pit_calibrate();
-		local_irq_restore(flags);
-	}
-	return fast_calibrate;
-}
+		local_irq_restore(flags); }
+	return fast_calibrate; }
 
 
 
 static u64 read_tsc(struct clocksource *cs) {
-	return (u64)rdtsc_ordered();
-}
+	return (u64)rdtsc_ordered(); }
 
 static int tsc_cs_enable(struct clocksource *cs) {
 	/* clocksource .enable callback: HIT=False this boot (the VDSO
 	 * clockmode marking never fires). Safe-fallback return 0 = enabled. */
-	return 0;
-}
+	return 0; }
 
 static struct clocksource clocksource_tsc_early = { .name			= "tsc-early", .rating			= 299, .uncertainty_margin	= 32 * NSEC_PER_MSEC, .read			= read_tsc, .mask			= CLOCKSOURCE_MASK(64), .flags			= CLOCK_SOURCE_IS_CONTINUOUS | CLOCK_SOURCE_MUST_VERIFY, .vdso_clock_mode	= VDSO_CLOCKMODE_TSC, .enable			= tsc_cs_enable, .list			= LIST_HEAD_INIT(clocksource_tsc_early.list), };
 
@@ -236,8 +219,7 @@ static DECLARE_DELAYED_WORK(tsc_irqwork, tsc_refine_calibration_work);
 static void tsc_refine_calibration_work(struct work_struct *work) {
 	/* Stub: TSC refinement not needed for minimal kernel */
 	clocksource_register_khz(&clocksource_tsc, tsc_khz);
-	clocksource_unregister(&clocksource_tsc_early);
-}
+	clocksource_unregister(&clocksource_tsc_early); }
 
 
 static int __init init_tsc_clocksource(void) {
@@ -245,8 +227,7 @@ static int __init init_tsc_clocksource(void) {
 		return 0;
 
 	schedule_delayed_work(&tsc_irqwork, 0);
-	return 0;
-}
+	return 0; }
 device_initcall(init_tsc_clocksource);
 
 static bool __init determine_cpu_tsc_frequencies(bool early) {
@@ -269,10 +250,8 @@ static bool __init determine_cpu_tsc_frequencies(bool early) {
 	pr_info("Detected %lu.%03lu MHz processor\n", (unsigned long)cpu_khz / KHZ, (unsigned long)cpu_khz % KHZ);
 
 	if (cpu_khz != tsc_khz) {
-		pr_info("Detected %lu.%03lu MHz TSC", (unsigned long)tsc_khz / KHZ, (unsigned long)tsc_khz % KHZ);
-	}
-	return true;
-}
+		pr_info("Detected %lu.%03lu MHz TSC", (unsigned long)tsc_khz / KHZ, (unsigned long)tsc_khz % KHZ); }
+	return true; }
 
 static void __init tsc_enable_sched_clock(void) {
 	struct cyc2ns *c2n = this_cpu_ptr(&cyc2ns);
@@ -284,8 +263,7 @@ static void __init tsc_enable_sched_clock(void) {
 
 	seqcount_latch_init(&c2n->seq);
 	__set_cyc2ns_scale(tsc_khz, smp_processor_id(), rdtsc());
-	static_branch_enable(&__use_tsc);
-}
+	static_branch_enable(&__use_tsc); }
 
 void __init tsc_early_init(void) {
 	if (!boot_cpu_has(X86_FEATURE_TSC))
@@ -293,8 +271,7 @@ void __init tsc_early_init(void) {
 
 	if (!determine_cpu_tsc_frequencies(true))
 		return;
-	tsc_enable_sched_clock();
-}
+	tsc_enable_sched_clock(); }
 
 void __init tsc_init(void) {
 	/*
@@ -306,11 +283,9 @@ void __init tsc_init(void) {
 	 */
 	if (!boot_cpu_has(X86_FEATURE_TSC)) {
 		setup_clear_cpu_cap(X86_FEATURE_TSC_DEADLINE_TIMER);
-		return;
-	}
+		return; }
 
 	/* lpj_fine assignment removed - never read */
 
-	clocksource_register_khz(&clocksource_tsc_early, tsc_khz);
-}
+	clocksource_register_khz(&clocksource_tsc_early, tsc_khz); }
 

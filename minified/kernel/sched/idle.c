@@ -3,8 +3,7 @@ static void cpuidle_idle_call(void) {
 
 	if (need_resched()) {
 		local_irq_enable();
-		return;
-	}
+		return; }
 
 	/* folded sole caller of default_idle_call() */
 	if (current_clr_polling_and_test()) {
@@ -28,8 +27,7 @@ static void cpuidle_idle_call(void) {
 
 
 	if (WARN_ON_ONCE(irqs_disabled()))
-		local_irq_enable();
-}
+		local_irq_enable(); }
 
 static void do_idle(void) {
 	__current_set_polling();
@@ -39,8 +37,7 @@ static void do_idle(void) {
 
 		local_irq_disable();
 
-		cpuidle_idle_call();
-	}
+		cpuidle_idle_call(); }
 
 	 
 	preempt_set_need_resched();
@@ -50,24 +47,19 @@ static void do_idle(void) {
 	smp_mb__after_atomic();
 
 
-	schedule_idle();
-}
+	schedule_idle(); }
 
 void cpu_startup_entry(enum cpuhp_state state) {
 	while (1)
-		do_idle();
-}
+		do_idle(); }
 
 
 
-static void check_preempt_curr_idle(struct rq *rq, struct task_struct *p, int flags) {
-}
+static void check_preempt_curr_idle(struct rq *rq, struct task_struct *p, int flags) { }
 
-static void put_prev_task_idle(struct rq *rq, struct task_struct *prev) {
-}
+static void put_prev_task_idle(struct rq *rq, struct task_struct *prev) { }
 
-static void set_next_task_idle(struct rq *rq, struct task_struct *next, bool first) {
-}
+static void set_next_task_idle(struct rq *rq, struct task_struct *next, bool first) { }
 
 
 struct task_struct *pick_next_task_idle(struct rq *rq) {
@@ -75,14 +67,11 @@ struct task_struct *pick_next_task_idle(struct rq *rq) {
 
 	set_next_task_idle(rq, next, true);
 
-	return next;
-}
+	return next; }
 
 static void
-dequeue_task_idle(struct rq *rq, struct task_struct *p, int flags) {
-}
+dequeue_task_idle(struct rq *rq, struct task_struct *p, int flags) { }
 
-static void task_tick_idle(struct rq *rq, struct task_struct *curr, int queued) {
-}
+static void task_tick_idle(struct rq *rq, struct task_struct *curr, int queued) { }
 
 DEFINE_SCHED_CLASS(idle) = { .dequeue_task		= dequeue_task_idle, .check_preempt_curr	= check_preempt_curr_idle, .pick_next_task		= pick_next_task_idle, .put_prev_task		= put_prev_task_idle, .set_next_task          = set_next_task_idle, .task_tick		= task_tick_idle, };

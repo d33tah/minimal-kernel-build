@@ -133,12 +133,10 @@ typedef struct { pgdval_t pgd; } pgd_t;
 #define PGD_ALLOWED_BITS	(~0ULL)
 
 static inline pgd_t native_make_pgd(pgdval_t val) {
-	return (pgd_t) { val & PGD_ALLOWED_BITS };
-}
+	return (pgd_t) { val & PGD_ALLOWED_BITS }; }
 
 static inline pgdval_t native_pgd_val(pgd_t pgd) {
-	return pgd.pgd & PGD_ALLOWED_BITS;
-}
+	return pgd.pgd & PGD_ALLOWED_BITS; }
 
 /* --- 2025-12-07 10:14 --- Inlined asm-generic/pgtable-nop4d.h content */
 #define __PAGETABLE_P4D_FOLDED 1
@@ -152,8 +150,7 @@ static inline int pgd_bad(pgd_t pgd)		{ return 0; }
 /* pgd_present() removed - constant 1, all callers folded */
 
 static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address) {
-	return (p4d_t *)pgd;
-}
+	return (p4d_t *)pgd; }
 
 #define p4d_val(x)				(pgd_val((x).pgd))
 #define __p4d(x)				((p4d_t) { __pgd(x) })
@@ -174,8 +171,7 @@ typedef struct { p4d_t p4d; } pud_t;
 /* p4d_present() removed - constant 1, all callers folded */
 
 static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address) {
-	return (pud_t *)p4d;
-}
+	return (pud_t *)p4d; }
 #define pud_offset pud_offset
 
 #define pud_val(x)				(p4d_val((x).p4d))
@@ -205,8 +201,7 @@ typedef struct { pud_t pud; } pmd_t;
 #define set_pud(pudptr, pudval)			set_pmd((pmd_t *)(pudptr), (pmd_t) { pudval })
 
 static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address) {
-	return (pmd_t *)pud;
-}
+	return (pmd_t *)pud; }
 #define pmd_offset pmd_offset
 
 #define pmd_val(x)				(pud_val((x).pud))
@@ -219,8 +214,7 @@ static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address) {
 /* native_make_pmd removed - unused */
 
 static inline pmdval_t native_pmd_val(pmd_t pmd) {
-	return native_pgd_val(pmd.pud.p4d.pgd);
-}
+	return native_pgd_val(pmd.pud.p4d.pgd); }
 
 /* pud_pfn_mask, pud_flags_mask, pud_flags removed - unused (sole caller pud_write/pud_present removed) */
 
@@ -228,28 +222,22 @@ static inline pmdval_t pmd_pfn_mask(pmd_t pmd) {
 	if (native_pmd_val(pmd) & _PAGE_PSE)
 		return PHYSICAL_PMD_PAGE_MASK;
 	else
-		return PTE_PFN_MASK;
-}
+		return PTE_PFN_MASK; }
 
 static inline pmdval_t pmd_flags_mask(pmd_t pmd) {
-	return ~pmd_pfn_mask(pmd);
-}
+	return ~pmd_pfn_mask(pmd); }
 
 static inline pmdval_t pmd_flags(pmd_t pmd) {
-	return native_pmd_val(pmd) & pmd_flags_mask(pmd);
-}
+	return native_pmd_val(pmd) & pmd_flags_mask(pmd); }
 
 static inline pte_t native_make_pte(pteval_t val) {
-	return (pte_t) { .pte = val };
-}
+	return (pte_t) { .pte = val }; }
 
 static inline pteval_t native_pte_val(pte_t pte) {
-	return pte.pte;
-}
+	return pte.pte; }
 
 static inline pteval_t pte_flags(pte_t pte) {
-	return native_pte_val(pte) & PTE_FLAGS_MASK;
-}
+	return native_pte_val(pte) & PTE_FLAGS_MASK; }
 
 
 typedef struct page *pgtable_t;

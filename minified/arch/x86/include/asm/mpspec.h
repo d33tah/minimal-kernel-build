@@ -6,12 +6,10 @@
 
 
 static inline void get_smp_config(void) {
-	x86_init.mpparse.get_smp_config(0);
-}
+	x86_init.mpparse.get_smp_config(0); }
 
 static inline void find_smp_config(void) {
-	x86_init.mpparse.find_smp_config();
-}
+	x86_init.mpparse.find_smp_config(); }
 
 #define default_find_smp_config x86_init_noop
 #define default_get_smp_config x86_init_uint_noop

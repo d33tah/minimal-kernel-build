@@ -10,11 +10,9 @@ bool list_lru_add(struct list_lru *lru, struct list_head *item) {
 	if (list_empty(item)) {
 		list_add_tail(item, &nlru->lru.list);
 		spin_unlock(&nlru->lock);
-		return true;
-	}
+		return true; }
 	spin_unlock(&nlru->lock);
-	return false;
-}
+	return false; }
 
 bool list_lru_del(struct list_lru *lru, struct list_head *item) {
 	int nid = page_to_nid(virt_to_page(item));
@@ -24,15 +22,12 @@ bool list_lru_del(struct list_lru *lru, struct list_head *item) {
 	if (!list_empty(item)) {
 		list_del_init(item);
 		spin_unlock(&nlru->lock);
-		return true;
-	}
+		return true; }
 	spin_unlock(&nlru->lock);
-	return false;
-}
+	return false; }
 
 static void init_one_lru(struct list_lru_one *l) {
-	INIT_LIST_HEAD(&l->list);
-}
+	INIT_LIST_HEAD(&l->list); }
 
 int __list_lru_init(struct list_lru *lru, bool memcg_aware, struct lock_class_key *key) {
 	int i;
@@ -46,9 +41,7 @@ int __list_lru_init(struct list_lru *lru, bool memcg_aware, struct lock_class_ke
 		spin_lock_init(&lru->node[i].lock);
 		if (key)
 			lockdep_set_class(&lru->node[i].lock, key);
-		init_one_lru(&lru->node[i].lru);
-	}
+		init_one_lru(&lru->node[i].lru); }
 
-	return 0;
-}
+	return 0; }
 

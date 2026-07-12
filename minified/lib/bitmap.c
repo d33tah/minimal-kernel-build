@@ -13,13 +13,10 @@ void __bitmap_set(unsigned long *map, unsigned int start, int len) {
 		len -= bits_to_set;
 		bits_to_set = BITS_PER_LONG;
 		mask_to_set = ~0UL;
-		p++;
-	}
+		p++; }
 	if (len) {
 		mask_to_set &= BITMAP_LAST_WORD_MASK(size);
-		*p |= mask_to_set;
-	}
-}
+		*p |= mask_to_set; } }
 
 void __bitmap_clear(unsigned long *map, unsigned int start, int len) {
 	unsigned long *p = map + BIT_WORD(start);
@@ -32,13 +29,10 @@ void __bitmap_clear(unsigned long *map, unsigned int start, int len) {
 		len -= bits_to_clear;
 		bits_to_clear = BITS_PER_LONG;
 		mask_to_clear = ~0UL;
-		p++;
-	}
+		p++; }
 	if (len) {
 		mask_to_clear &= BITMAP_LAST_WORD_MASK(size);
-		*p &= ~mask_to_clear;
-	}
-}
+		*p &= ~mask_to_clear; } }
 
 /* bitmap_parselist, bitmap_parselist_user, bitmap_parse,
    bitmap_from_arr32, bitmap_to_arr32, bitmap_from_arr64, bitmap_to_arr64 removed - unused */

@@ -12,5 +12,4 @@ int main(void) {
 	DEFINE(SPINLOCK_SIZE, sizeof(spinlock_t));
 	 
 
-	return 0;
-}
+	return 0; }

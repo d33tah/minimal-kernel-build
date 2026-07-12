@@ -16,12 +16,10 @@ static inline pmd_t * __init early_ioremap_pmd(unsigned long addr) {
 	pud_t *pud = pud_offset(p4d, addr);
 	pmd_t *pmd = pmd_offset(pud, addr);
 
-	return pmd;
-}
+	return pmd; }
 
 static inline pte_t * __init early_ioremap_pte(unsigned long addr) {
-	return &bm_pte[pte_index(addr)];
-}
+	return &bm_pte[pte_index(addr)]; }
 
 void __init early_ioremap_init(void) {
 	pmd_t *pmd;
@@ -45,17 +43,14 @@ void __init early_ioremap_init(void) {
 		printk(KERN_WARNING "fix_to_virt(FIX_BTMAP_END):   %08lx\n", fix_to_virt(FIX_BTMAP_END));
 
 		printk(KERN_WARNING "FIX_BTMAP_END:       %d\n", FIX_BTMAP_END);
-		printk(KERN_WARNING "FIX_BTMAP_BEGIN:     %d\n", FIX_BTMAP_BEGIN);
-	}
-}
+		printk(KERN_WARNING "FIX_BTMAP_BEGIN:     %d\n", FIX_BTMAP_BEGIN); } }
 
 void __init __early_set_fixmap(enum fixed_addresses idx, phys_addr_t phys, pgprot_t flags) {
 	unsigned long addr = __fix_to_virt(idx);
 	pte_t *pte;
 
 	if (idx >= __end_of_fixed_addresses) {
-		BUG();
-	}
+		BUG(); }
 	pte = early_ioremap_pte(addr);
 
 	 
@@ -65,5 +60,4 @@ void __init __early_set_fixmap(enum fixed_addresses idx, phys_addr_t phys, pgpro
 		set_pte(pte, pfn_pte(phys >> PAGE_SHIFT, flags));
 	else
 		pte_clear(&init_mm, addr, pte);
-	flush_tlb_one_kernel(addr);
-}
+	flush_tlb_one_kernel(addr); }

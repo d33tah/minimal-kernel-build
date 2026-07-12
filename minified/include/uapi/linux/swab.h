@@ -13,8 +13,7 @@
 
 /* 32-bit only kernel */
 static __always_inline unsigned long __swab(const unsigned long y) {
-	return __swab32(y);
-}
+	return __swab32(y); }
 
 /* __swab{16,32,64}{p,s} helpers removed - 0-ref (byteorder p/s aliases gone) */
 

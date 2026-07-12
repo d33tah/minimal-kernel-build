@@ -31,22 +31,18 @@ enum syscall_work_bit { SYSCALL_WORK_BIT_SECCOMP, SYSCALL_WORK_BIT_SYSCALL_TRACE
 
 
 static inline void set_ti_thread_flag(struct thread_info *ti, int flag) {
-	set_bit(flag, (unsigned long *)&ti->flags);
-}
+	set_bit(flag, (unsigned long *)&ti->flags); }
 
 static inline void clear_ti_thread_flag(struct thread_info *ti, int flag) {
-	clear_bit(flag, (unsigned long *)&ti->flags);
-}
+	clear_bit(flag, (unsigned long *)&ti->flags); }
 
 /* test_and_set_ti_thread_flag: orphaned with set_notify_resume cascade, removed (LOC reduction) */
 
 static inline int test_ti_thread_flag(struct thread_info *ti, int flag) {
-	return test_bit(flag, (unsigned long *)&ti->flags);
-}
+	return test_bit(flag, (unsigned long *)&ti->flags); }
 
 static __always_inline unsigned long read_ti_thread_flags(struct thread_info *ti) {
-	return READ_ONCE(ti->flags);
-}
+	return READ_ONCE(ti->flags); }
 
 #define set_thread_flag(flag) 	set_ti_thread_flag(current_thread_info(), flag)
 #define clear_thread_flag(flag) 	clear_ti_thread_flag(current_thread_info(), flag)
@@ -67,8 +63,7 @@ __bad_copy_from(void);
 extern void __compiletime_error("copy destination size is too small")
 __bad_copy_to(void);
 
-static inline void copy_overflow(int size, unsigned long count) {
-}
+static inline void copy_overflow(int size, unsigned long count) { }
 
 static __always_inline __must_check bool
 check_copy_size(const void *addr, size_t bytes, bool is_source) {
@@ -80,13 +75,11 @@ check_copy_size(const void *addr, size_t bytes, bool is_source) {
 			__bad_copy_from();
 		else
 			__bad_copy_to();
-		return false;
-	}
+		return false; }
 	if (WARN_ON_ONCE(bytes > INT_MAX))
 		return false;
 	check_object_size(addr, bytes, is_source);
-	return true;
-}
+	return true; }
 
 
 

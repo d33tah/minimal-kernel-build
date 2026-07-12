@@ -20,8 +20,7 @@ struct vfsmount { struct dentry *mnt_root; struct super_block *mnt_sb; struct us
 
 static inline struct user_namespace *mnt_user_ns(const struct vfsmount *mnt) {
 	 
-	return smp_load_acquire(&mnt->mnt_userns);
-}
+	return smp_load_acquire(&mnt->mnt_userns); }
 
 extern int mnt_want_write(struct vfsmount *mnt);
 extern void mnt_drop_write(struct vfsmount *mnt);

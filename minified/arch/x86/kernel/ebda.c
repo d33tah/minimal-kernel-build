@@ -31,5 +31,4 @@ void __init reserve_bios_regions(void) {
 		bios_start = ebda_start;
 
 	 
-	memblock_reserve(bios_start, 0x100000 - bios_start);
-}
+	memblock_reserve(bios_start, 0x100000 - bios_start); }

@@ -16,7 +16,6 @@ extern const sys_call_ptr_t sys_call_table[];
 
  
 static inline int syscall_get_nr(struct task_struct *task, struct pt_regs *regs) {
-	return regs->orig_ax;
-}
+	return regs->orig_ax; }
 
 #endif	 

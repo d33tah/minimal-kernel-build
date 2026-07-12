@@ -33,14 +33,12 @@ typedef sigset_t compat_sigset_t;
 
 static inline int __const_sigismember(sigset_t *set, int _sig) {
 	unsigned long sig = _sig - 1;
-	return 1 & (set->sig[sig / _NSIG_BPW] >> (sig % _NSIG_BPW));
-}
+	return 1 & (set->sig[sig / _NSIG_BPW] >> (sig % _NSIG_BPW)); }
 
 static inline int __gen_sigismember(sigset_t *set, int _sig) {
 	bool ret;
 	asm("btl %2,%1" CC_SET(c) : CC_OUT(c) (ret) : "m"(*set), "Ir"(_sig-1));
-	return ret;
-}
+	return ret; }
 
 #define sigismember(set, sig)				(__builtin_constant_p(sig)			 ? __const_sigismember((set), (sig))		 : __gen_sigismember((set), (sig)))
 

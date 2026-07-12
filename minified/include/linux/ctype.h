@@ -22,12 +22,10 @@ extern const unsigned char _ctype[];
 #define isxdigit(c)	((__ismask(c)&(_D|_X)) != 0)
 
 static inline int isdigit(int c) {
-	return '0' <= c && c <= '9';
-}
+	return '0' <= c && c <= '9'; }
 
 static inline char _tolower(const char c) {
-	return c | 0x20;
-}
+	return c | 0x20; }
 
 
 #endif

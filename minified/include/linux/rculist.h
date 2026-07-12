@@ -13,12 +13,10 @@ static inline void __list_add_rcu(struct list_head *new, struct list_head *prev,
 	new->next = next;
 	new->prev = prev;
 	rcu_assign_pointer(list_next_rcu(prev), new);
-	next->prev = new;
-}
+	next->prev = new; }
 
 static inline void list_add_tail_rcu(struct list_head *new, struct list_head *head) {
-	__list_add_rcu(new, head->prev, head);
-}
+	__list_add_rcu(new, head->prev, head); }
 
 #define list_entry_rcu(ptr, type, member) 	container_of(READ_ONCE(ptr), type, member)
 
@@ -33,8 +31,7 @@ static inline void hlist_add_head_rcu(struct hlist_node *n, struct hlist_head *h
 	WRITE_ONCE(n->pprev, &h->first);
 	rcu_assign_pointer(hlist_first_rcu(h), n);
 	if (first)
-		WRITE_ONCE(first->pprev, &n->next);
-}
+		WRITE_ONCE(first->pprev, &n->next); }
 
 
 #endif

@@ -7,8 +7,7 @@
 
 
 static inline int numa_node_id(void) {
-	return 0;
-}
+	return 0; }
  
 #define numa_node_id numa_node_id
 

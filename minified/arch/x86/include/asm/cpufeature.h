@@ -49,8 +49,7 @@ static __always_inline bool _static_cpu_has(u16 bit) {
 t_yes:
 	return true;
 t_no:
-	return false;
-}
+	return false; }
 
 #define static_cpu_has(bit)					(									__builtin_constant_p(boot_cpu_has(bit)) ?				boot_cpu_has(bit) :						_static_cpu_has(bit)				)
 

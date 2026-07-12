@@ -31,8 +31,7 @@ static inline void rb_link_node(struct rb_node *node, struct rb_node *parent, st
 	node->__rb_parent_color = (unsigned long)parent;
 	node->rb_left = node->rb_right = NULL;
 
-	*rb_link = node;
-}
+	*rb_link = node; }
 
 
 
@@ -42,8 +41,7 @@ static inline void rb_link_node(struct rb_node *node, struct rb_node *parent, st
 static inline void rb_insert_color_cached(struct rb_node *node, struct rb_root_cached *root, bool leftmost) {
 	if (leftmost)
 		root->rb_leftmost = node;
-	rb_insert_color(node, &root->rb_root);
-}
+	rb_insert_color(node, &root->rb_root); }
 
 
 static inline struct rb_node * rb_erase_cached(struct rb_node *node, struct rb_root_cached *root) {
@@ -54,8 +52,7 @@ static inline struct rb_node * rb_erase_cached(struct rb_node *node, struct rb_r
 
 	rb_erase(node, &root->rb_root);
 
-	return leftmost;
-}
+	return leftmost; }
 
 /* Removed: rb_replace_node_cached - never called (~7 LOC) */
 
@@ -70,15 +67,12 @@ static __always_inline struct rb_node * rb_add_cached(struct rb_node *node, stru
 			link = &parent->rb_left;
 		} else {
 			link = &parent->rb_right;
-			leftmost = false;
-		}
-	}
+			leftmost = false; } }
 
 	rb_link_node(node, parent, link);
 	rb_insert_color_cached(node, tree, leftmost);
 
-	return leftmost ? node : NULL;
-}
+	return leftmost ? node : NULL; }
 
 /* rb_add, rb_find_add, rb_find, rb_find_first, rb_next_match - unused */
 

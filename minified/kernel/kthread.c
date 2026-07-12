@@ -18,8 +18,7 @@ struct kthread_create_info {
 
 	struct completion *done;
 
-	struct list_head list;
-};
+	struct list_head list; };
 
 struct kthread { unsigned long flags; int (*threadfn)(void *); void *data; struct completion parked, exited; };
 
@@ -27,8 +26,7 @@ enum KTHREAD_BITS { KTHREAD_IS_PER_CPU = 0, KTHREAD_SHOULD_STOP, KTHREAD_SHOULD_
 
 static inline struct kthread *to_kthread(struct task_struct *k) {
 	WARN_ON(!(k->flags & PF_KTHREAD));
-	return k->worker_private;
-}
+	return k->worker_private; }
 
 
 bool set_kthread_struct(struct task_struct *p) {
@@ -46,8 +44,7 @@ bool set_kthread_struct(struct task_struct *p) {
 	p->vfork_done = &kthread->exited;
 
 	p->worker_private = kthread;
-	return true;
-}
+	return true; }
 
 static void __kthread_parkme(struct kthread *self) {
 	for (;;) {
@@ -60,15 +57,12 @@ static void __kthread_parkme(struct kthread *self) {
 		preempt_disable();
 		complete(&self->parked);
 		schedule_preempt_disabled();
-		preempt_enable();
-	}
-	__set_current_state(TASK_RUNNING);
-}
+		preempt_enable(); }
+	__set_current_state(TASK_RUNNING); }
 
 
 void __noreturn kthread_exit(long result) {
-	do_exit(0);
-}
+	do_exit(0); }
 
 static int kthread(void *_create) {
 	static const struct sched_param param = { .sched_priority = 0 };
@@ -86,8 +80,7 @@ static int kthread(void *_create) {
 	done = xchg(&create->done, NULL);
 	if (!done) {
 		kfree(create);
-		kthread_exit(-EINTR);
-	}
+		kthread_exit(-EINTR); }
 
 	self->threadfn = threadfn;
 	self->data = data;
@@ -107,14 +100,11 @@ static int kthread(void *_create) {
 	ret = -EINTR;
 	if (!test_bit(KTHREAD_SHOULD_STOP, &self->flags)) {
 		__kthread_parkme(self);
-		ret = threadfn(data);
-	}
-	kthread_exit(ret);
-}
+		ret = threadfn(data); }
+	kthread_exit(ret); }
 
 int tsk_fork_get_node(struct task_struct *tsk) {
-	return NUMA_NO_NODE;
-}
+	return NUMA_NO_NODE; }
 
 static void create_kthread(struct kthread_create_info *create) {
 	int pid;
@@ -127,11 +117,8 @@ static void create_kthread(struct kthread_create_info *create) {
 
 		if (!done) {
 			kfree(create);
-			return;
-		}
-		complete(done);
-	}
-}
+			return; }
+		complete(done); } }
 
 void kthread_set_per_cpu(struct task_struct *k, int cpu) {
 	struct kthread *kthread = to_kthread(k);
@@ -142,11 +129,9 @@ void kthread_set_per_cpu(struct task_struct *k, int cpu) {
 
 	if (cpu < 0) {
 		clear_bit(KTHREAD_IS_PER_CPU, &kthread->flags);
-		return;
-	}
+		return; }
 
-	set_bit(KTHREAD_IS_PER_CPU, &kthread->flags);
-}
+	set_bit(KTHREAD_IS_PER_CPU, &kthread->flags); }
 
 
 int kthreadd(void *unused) {
@@ -173,11 +158,8 @@ int kthreadd(void *unused) {
 
 			create_kthread(create);
 
-			spin_lock(&kthread_create_lock);
-		}
-		spin_unlock(&kthread_create_lock);
-	}
-}
+			spin_lock(&kthread_create_lock); }
+		spin_unlock(&kthread_create_lock); } }
 
 /* Kthread worker infrastructure - stubbed (not used) */
 

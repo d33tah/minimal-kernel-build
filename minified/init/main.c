@@ -97,8 +97,7 @@ static void __init setup_command_line(char *command_line) {
 		panic("%s: Failed to allocate %zu bytes\n", __func__, len);
 
 	strcpy(saved_command_line, boot_command_line);
-	strcpy(static_command_line, command_line);
-}
+	strcpy(static_command_line, command_line); }
 
 
 static __initdata DECLARE_COMPLETION(kthreadd_done);
@@ -128,19 +127,15 @@ noinline void __ref rest_init(void) {
 	 
 	schedule_preempt_disabled();
 	 
-	cpu_startup_entry(CPUHP_ONLINE);
-}
+	cpu_startup_entry(CPUHP_ONLINE); }
 
-void __init parse_early_param(void) {
-}
+void __init parse_early_param(void) { }
 
 void __init __weak arch_post_acpi_subsys_init(void) { }
 
-void __init __weak smp_setup_processor_id(void) {
-}
+void __init __weak smp_setup_processor_id(void) { }
 
-void __init __weak thread_stack_cache_init(void) {
-}
+void __init __weak thread_stack_cache_init(void) { }
 
 void __init __weak mem_encrypt_init(void) { }
 
@@ -153,13 +148,11 @@ static void __init mm_init(void) {
 	kmem_cache_init();
 
 	pgtable_init();
-	vmalloc_init();
-}
+	vmalloc_init(); }
 
 
 void __init __weak arch_call_rest_init(void) {
-	rest_init();
-}
+	rest_init(); }
 
 asmlinkage __visible void __init __no_sanitize_address start_kernel(void) {
 	char *command_line;
@@ -246,8 +239,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void) {
 	 
 	arch_call_rest_init();
 
-	prevent_tail_call_optimization();
-}
+	prevent_tail_call_optimization(); }
 
 int __init_or_module do_one_initcall(initcall_t fn) {
 	int count = preempt_count();
@@ -260,16 +252,13 @@ int __init_or_module do_one_initcall(initcall_t fn) {
 
 	if (preempt_count() != count) {
 		sprintf(msgbuf, "preemption imbalance ");
-		preempt_count_set(count);
-	}
+		preempt_count_set(count); }
 	if (irqs_disabled()) {
 		strlcat(msgbuf, "disabled interrupts ", sizeof(msgbuf));
-		local_irq_enable();
-	}
+		local_irq_enable(); }
 	WARN(msgbuf[0], "initcall %pS returned with %s\n", fn, msgbuf);
 
-	return ret;
-}
+	return ret; }
 
 
 extern initcall_entry_t __initcall_start[];
@@ -289,34 +278,29 @@ static void __init do_initcall_level(int level) {
 	initcall_entry_t *fn;
 
 	for (fn = initcall_levels[level]; fn < initcall_levels[level+1]; fn++)
-		do_one_initcall(initcall_from_entry(fn));
-}
+		do_one_initcall(initcall_from_entry(fn)); }
 
 static void __init do_initcalls(void) {
 	int level;
 
 	for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1; level++)
-		do_initcall_level(level);
-}
+		do_initcall_level(level); }
 
 static void __init do_basic_setup(void) {
 	driver_init();
-	do_initcalls();
-}
+	do_initcalls(); }
 
 static void __init do_pre_smp_initcalls(void) {
 	initcall_entry_t *fn;
 
 
 	for (fn = __initcall_start; fn < __initcall0_start; fn++)
-		do_one_initcall(initcall_from_entry(fn));
-}
+		do_one_initcall(initcall_from_entry(fn)); }
 
 static int run_init_process(const char *init_filename) {
 	argv_init[0] = init_filename;
 	pr_info("Run %s as init process\n", init_filename);
-	return kernel_execve(init_filename, argv_init, envp_init);
-}
+	return kernel_execve(init_filename, argv_init, envp_init); }
 
 static int try_to_run_init_process(const char *init_filename) {
 	int ret;
@@ -324,18 +308,15 @@ static int try_to_run_init_process(const char *init_filename) {
 	ret = run_init_process(init_filename);
 
 	if (ret && ret != -ENOENT) {
-		pr_err("Starting init: %s exists but couldn't execute it (error %d)\n", init_filename, ret);
-	}
+		pr_err("Starting init: %s exists but couldn't execute it (error %d)\n", init_filename, ret); }
 
-	return ret;
-}
+	return ret; }
 
 static noinline void __init kernel_init_freeable(void);
 
 static void mark_readonly(void) {
 	rcu_barrier();
-	mark_rodata_ro();
-}
+	mark_rodata_ro(); }
 
 static int __ref kernel_init(void *unused) {
 	int ret;
@@ -358,27 +339,23 @@ static int __ref kernel_init(void *unused) {
 		ret = run_init_process(ramdisk_execute_command);
 		if (!ret)
 			return 0;
-		pr_err("Failed to execute %s (error %d)\n", ramdisk_execute_command, ret);
-	}
+		pr_err("Failed to execute %s (error %d)\n", ramdisk_execute_command, ret); }
 
 	if (!try_to_run_init_process("/sbin/init") || !try_to_run_init_process("/etc/init") || !try_to_run_init_process("/bin/init") || !try_to_run_init_process("/bin/sh"))
 		return 0;
 
-	panic("No working init found.  Try passing init= option to kernel. " "See Linux Documentation/admin-guide/init.rst for guidance.");
-}
+	panic("No working init found.  Try passing init= option to kernel. " "See Linux Documentation/admin-guide/init.rst for guidance."); }
 
 void __init console_on_rootfs(void) {
 	struct file *file = filp_open("/dev/console", O_RDWR, 0);
 
 	if (IS_ERR(file)) {
 		pr_err("Warning: unable to open an initial console.\n");
-		return;
-	}
+		return; }
 	init_dup(file);
 	init_dup(file);
 	init_dup(file);
-	fput(file);
-}
+	fput(file); }
 
 static noinline void __init kernel_init_freeable(void) {
 	 

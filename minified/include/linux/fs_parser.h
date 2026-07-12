@@ -19,16 +19,14 @@ struct fs_parameter_spec {
 #define fs_param_neg_with_no	0x0002
 /* fs_param_can_be_empty(0x0004) removed: 0-caller flag bit, not in any composite mask */
 #define fs_param_deprecated	0x0008
-	const void		*data;
-};
+	const void		*data; };
 
 struct fs_parse_result { bool			negated; union { bool		boolean; unsigned int	uint_32; u64		uint_64; }; };
 
 extern int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc, struct fs_parameter *value, struct fs_parse_result *result);
 
 static inline int fs_parse(struct fs_context *fc, const struct fs_parameter_spec *desc, struct fs_parameter *param, struct fs_parse_result *result) {
-	return __fs_parse(&fc->log, desc, param, result);
-}
+	return __fs_parse(&fc->log, desc, param, result); }
 
 extern int lookup_constant(const struct constant_table tbl[], const char *name, int not_found);
 

@@ -26,8 +26,7 @@ static void enable_8259A_irq(struct irq_data *data) {
 		outb(cached_slave_mask, PIC_SLAVE_IMR);
 	else
 		outb(cached_master_mask, PIC_MASTER_IMR);
-	raw_spin_unlock_irqrestore(&i8259A_lock, flags);
-}
+	raw_spin_unlock_irqrestore(&i8259A_lock, flags); }
 
 
 static inline int i8259A_irq_real(unsigned int irq) {
@@ -38,13 +37,11 @@ static inline int i8259A_irq_real(unsigned int irq) {
 		outb(0x0B, PIC_MASTER_CMD);	 
 		value = inb(PIC_MASTER_CMD) & irqmask;
 		outb(0x0A, PIC_MASTER_CMD);	 
-		return value;
-	}
+		return value; }
 	outb(0x0B, PIC_SLAVE_CMD);	 
 	value = inb(PIC_SLAVE_CMD) & (irqmask >> 8);
 	outb(0x0A, PIC_SLAVE_CMD);	 
-	return value;
-}
+	return value; }
 
 static void mask_and_ack_8259A(struct irq_data *data) {
 	unsigned int irq = data->irq;
@@ -68,8 +65,7 @@ handle_real_irq:
 	} else {
 		inb(PIC_MASTER_IMR);	 
 		outb(cached_master_mask, PIC_MASTER_IMR);
-		outb(0x60+irq, PIC_MASTER_CMD);	 
-	}
+		outb(0x60+irq, PIC_MASTER_CMD); }
 	raw_spin_unlock_irqrestore(&i8259A_lock, flags);
 	return;
 
@@ -84,12 +80,9 @@ spurious_8259A_irq:
 		 
 		if (!(spurious_irq_mask & irqmask)) {
 			printk_deferred(KERN_DEBUG "spurious 8259A interrupt: IRQ%d.\n", irq);
-			spurious_irq_mask |= irqmask;
-		}
+			spurious_irq_mask |= irqmask; }
 
-		goto handle_real_irq;
-	}
-}
+		goto handle_real_irq; } }
 
 struct irq_chip i8259A_chip = { .name		= "XT-PIC", .irq_mask	= disable_8259A_irq, .irq_disable	= disable_8259A_irq, .irq_unmask	= enable_8259A_irq, .irq_mask_ack	= mask_and_ack_8259A, };
 
@@ -135,8 +128,7 @@ static void init_8259A(int auto_eoi) {
 	outb(cached_master_mask, PIC_MASTER_IMR);  
 	outb(cached_slave_mask, PIC_SLAVE_IMR);	   
 
-	raw_spin_unlock_irqrestore(&i8259A_lock, flags);
-}
+	raw_spin_unlock_irqrestore(&i8259A_lock, flags); }
 
 
 static void legacy_pic_int_noop(int unused) { };

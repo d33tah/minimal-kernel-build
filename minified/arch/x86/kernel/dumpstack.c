@@ -7,13 +7,10 @@
  * in arch/x86/kernel/traps.c. The die-report internals (__die/__die_header/
  * __die_body) and oops_begin/oops_end were cascade-deleted (tick #323) once
  * the fault-path anchor page_fault_oops was stubbed too. */
-void die(const char *str, struct pt_regs *regs, long err) {
-}
+void die(const char *str, struct pt_regs *regs, long err) { }
 
-void die_addr(const char *str, struct pt_regs *regs, long err, long gp_addr) {
-}
+void die_addr(const char *str, struct pt_regs *regs, long err, long gp_addr) { }
 
 void show_regs(struct pt_regs *regs) {
 	/* Stub: minimal register display for crash */
-	__show_regs(regs, SHOW_REGS_ALL, KERN_DEFAULT);
-}
+	__show_regs(regs, SHOW_REGS_ALL, KERN_DEFAULT); }

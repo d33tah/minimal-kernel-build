@@ -20,8 +20,7 @@
 
 /* 11 p static inlines + 12 s macros removed - 0-ref; le32_to_cpup kept (xz get_le32) */
 static __always_inline __u32 __le32_to_cpup(const __le32 *p) {
-	return (__force __u32)*p;
-}
+	return (__force __u32)*p; }
 /* end little_endian.h */
 
 /* Inlined from linux/byteorder/generic.h */

@@ -21,7 +21,5 @@ unsigned long gcd(unsigned long a, unsigned long b) {
 
 		if (a < b)
 			swap(a, b);
-		a -= b;
-	}
-}
+		a -= b; } }
 

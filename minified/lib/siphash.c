@@ -17,5 +17,4 @@ u64 siphash_1u32(const u32 first, const siphash_key_t *key) {
 	for (i = 0; i < sizeof(first); i++)
 		hash = hash * 31 + p[i];
 
-	return hash;
-}
+	return hash; }

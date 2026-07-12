@@ -12,8 +12,7 @@ struct llist_node { struct llist_node *next; };
 #define LLIST_HEAD(name)	struct llist_head name = LLIST_HEAD_INIT(name)
 
 static inline void init_llist_head(struct llist_head *list) {
-	list->first = NULL;
-}
+	list->first = NULL; }
 
 #define llist_entry(ptr, type, member)			container_of(ptr, type, member)
 
@@ -29,16 +28,13 @@ static inline bool llist_add_batch(struct llist_node *new_first, struct llist_no
 		new_last->next = first = READ_ONCE(head->first);
 	} while (cmpxchg(&head->first, first, new_first) != first);
 
-	return !first;
-}
+	return !first; }
 
 static inline bool llist_add(struct llist_node *new, struct llist_head *head) {
-	return llist_add_batch(new, new, head);
-}
+	return llist_add_batch(new, new, head); }
 
 static inline struct llist_node *llist_del_all(struct llist_head *head) {
-	return xchg(&head->first, NULL);
-}
+	return xchg(&head->first, NULL); }
 
 
 #endif

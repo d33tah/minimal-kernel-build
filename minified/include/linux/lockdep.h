@@ -5,11 +5,9 @@
 #include <linux/lockdep_types.h>
 
 
-static inline void lockdep_off(void) {
-}
+static inline void lockdep_off(void) { }
 
-static inline void lockdep_on(void) {
-}
+static inline void lockdep_on(void) { }
 
 
 # define lock_acquire(l, s, t, r, c, n, i)	do { } while (0)

@@ -5,8 +5,7 @@
 static int after_paging_init __initdata;
 
 void __init early_ioremap_reset(void) {
-	after_paging_init = 1;
-}
+	after_paging_init = 1; }
 
 /*
  * x86 unconditionally #defines __late_set_fixmap / __late_clear_fixmap in
@@ -26,8 +25,7 @@ void __init early_ioremap_setup(void) {
 			break;
 
 	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)
-		slot_virt[i] = __fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i);
-}
+		slot_virt[i] = __fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i); }
 
 
 void __init early_memunmap(void *vaddr, unsigned long size) {
@@ -41,9 +39,7 @@ void __init early_memunmap(void *vaddr, unsigned long size) {
 	for (i = 0; i < FIX_BTMAPS_SLOTS; i++) {
 		if (prev_map[i] == addr) {
 			slot = i;
-			break;
-		}
-	}
+			break; } }
 
 	if (WARN(slot < 0, "%s(%p, %08lx) not found slot\n", __func__, addr, size))
 		return;
@@ -65,10 +61,8 @@ void __init early_memunmap(void *vaddr, unsigned long size) {
 		else
 			__early_set_fixmap(idx, 0, FIXMAP_PAGE_CLEAR);
 		--idx;
-		--nrpages;
-	}
-	prev_map[slot] = NULL;
-}
+		--nrpages; }
+	prev_map[slot] = NULL; }
 
 void __init * early_memremap(resource_size_t phys_addr, unsigned long size) {
 	unsigned long offset;
@@ -83,9 +77,7 @@ void __init * early_memremap(resource_size_t phys_addr, unsigned long size) {
 	for (i = 0; i < FIX_BTMAPS_SLOTS; i++) {
 		if (!prev_map[i]) {
 			slot = i;
-			break;
-		}
-	}
+			break; } }
 
 	if (WARN(slot < 0, "%s(%pa, %08lx) not found slot\n", __func__, &phys_addr, size))
 		return NULL;
@@ -111,11 +103,9 @@ void __init * early_memremap(resource_size_t phys_addr, unsigned long size) {
 			__early_set_fixmap(idx, phys_addr, FIXMAP_PAGE_NORMAL);
 		phys_addr += PAGE_SIZE;
 		--idx;
-		--nrpages;
-	}
+		--nrpages; }
 	prev_map[slot] = (void __iomem *)(offset + slot_virt[slot]);
-	return (__force void *)prev_map[slot];
-}
+	return (__force void *)prev_map[slot]; }
 
 
 #define MAX_MAP_CHUNK	(NR_FIX_BTMAPS << PAGE_SHIFT)
@@ -134,6 +124,4 @@ void __init copy_from_early_mem(void *dest, phys_addr_t src, unsigned long size)
 		early_memunmap(p, clen + slop);
 		dest += clen;
 		src += clen;
-		size -= clen;
-	}
-}
+		size -= clen; } }

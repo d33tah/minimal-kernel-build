@@ -32,8 +32,7 @@ DEFINE_IDTENTRY_RAW(exc_nmi) {
 
 	if (this_cpu_read(nmi_state) != NMI_NOT_RUNNING) {
 		this_cpu_write(nmi_state, NMI_LATCHED);
-		return;
-	}
+		return; }
 	this_cpu_write(nmi_state, NMI_EXECUTING);
 	this_cpu_write(nmi_cr2, read_cr2());
 nmi_restart:
@@ -56,8 +55,7 @@ nmi_restart:
 
 
 	while (!raw_spin_trylock(&nmi_reason_lock)) {
-		cpu_relax();
-	}
+		cpu_relax(); }
 
 	reason = x86_platform.get_nmi_reason();
 
@@ -81,12 +79,10 @@ nmi_restart:
 			i = 20000;
 			while (--i) {
 				touch_nmi_watchdog();
-				udelay(100);
-			}
+				udelay(100); }
 
 			reason &= ~NMI_REASON_CLEAR_IOCHK;
-			outb(reason, NMI_REASON_PORT);
-		}
+			outb(reason, NMI_REASON_PORT); }
 		raw_spin_unlock(&nmi_reason_lock);
 	} else {
 		raw_spin_unlock(&nmi_reason_lock);
@@ -95,9 +91,7 @@ nmi_restart:
 		if (!(b2b && __this_cpu_read(swallow_nmi))) {
 			pr_emerg("Uhhuh. NMI received for unknown reason %02x on CPU %d.\n", reason, smp_processor_id());
 
-			pr_emerg("Dazed and confused, but trying to continue\n");
-		}
-	}
+			pr_emerg("Dazed and confused, but trying to continue\n"); } }
 
 	irqentry_nmi_exit(regs, irq_state);
 
@@ -106,5 +100,4 @@ nmi_restart:
 	if (unlikely(this_cpu_read(nmi_cr2) != read_cr2()))
 		write_cr2(this_cpu_read(nmi_cr2));
 	if (this_cpu_dec_return(nmi_state))
-		goto nmi_restart;
-}
+		goto nmi_restart; }

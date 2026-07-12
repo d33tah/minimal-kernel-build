@@ -27,29 +27,24 @@ static ssize_t __init xwrite(struct file *file, const unsigned char *p, size_t c
 			ssize_t i;
 
 			for (i = 0; i < rv; i++)
-				io_csum += p[i];
-		}
+				io_csum += p[i]; }
 
 		p += rv;
 		out += rv;
-		count -= rv;
-	}
+		count -= rv; }
 
-	return out;
-}
+	return out; }
 
 static __initdata char *message;
 static void __init error(char *x) {
 	if (!message)
-		message = x;
-}
+		message = x; }
 
 static void panic_show_mem(const char *fmt, ...) {
 	va_list args;
 
 	va_start(args, fmt);
-	panic(fmt, args);
-}
+	panic(fmt, args); }
 
 
 #define N_ALIGN(len) ((((len) + 1) & ~3) + 2)
@@ -64,8 +59,7 @@ static __initdata struct hash {
 static inline int hash(int major, int minor, int ino) {
 	unsigned long tmp = ino + minor + (major << 3);
 	tmp += tmp >> 5;
-	return tmp & 31;
-}
+	return tmp & 31; }
 
 static void __init free_hash(void) {
 	struct hash **p, *q;
@@ -73,10 +67,7 @@ static void __init free_hash(void) {
 		while (*p) {
 			q = *p;
 			*p = q->next;
-			kfree(q);
-		}
-	}
-}
+			kfree(q); } } }
 
 static void __init do_utime(char *filename, time64_t mtime) {}
 static void __init do_utime_path(const struct path *path, time64_t mtime) {}
@@ -102,8 +93,7 @@ static void __init parse_header(char *s) {
 	buf[8] = '\0';
 	for (i = 0, s += 6; i < 13; i++, s += 8) {
 		memcpy(buf, s, 8);
-		parsed[i] = simple_strtoul(buf, NULL, 16);
-	}
+		parsed[i] = simple_strtoul(buf, NULL, 16); }
 	ino = parsed[0];
 	mode = parsed[1];
 	uid = parsed[2];
@@ -115,8 +105,7 @@ static void __init parse_header(char *s) {
 	minor = parsed[8];
 	rdev = new_encode_dev(MKDEV(parsed[9], parsed[10]));
 	name_len = parsed[11];
-	hdr_csum = parsed[12];
-}
+	hdr_csum = parsed[12]; }
 
 
 static __initdata enum state {
@@ -130,8 +119,7 @@ static __initdata loff_t this_header, next_header;
 static inline void __init eat(unsigned n) {
 	victim += n;
 	this_header += n;
-	byte_count -= n;
-}
+	byte_count -= n; }
 
 static __initdata char *collected;
 static long remains __initdata;
@@ -146,16 +134,13 @@ static void __init read_into(char *buf, unsigned size, enum state next) {
 		collect = collected = buf;
 		remains = size;
 		next_state = next;
-		state = Collect;
-	}
-}
+		state = Collect; } }
 
 static __initdata char *header_buf, *symlink_buf, *name_buf;
 
 static int __init do_start(void) {
 	read_into(header_buf, 110, GotHeader);
-	return 0;
-}
+	return 0; }
 
 static int __init do_collect(void) {
 	unsigned long n = remains;
@@ -167,8 +152,7 @@ static int __init do_collect(void) {
 	if ((remains -= n) != 0)
 		return 1;
 	state = next_state;
-	return 0;
-}
+	return 0; }
 
 static int __init do_header(void) {
 	if (!memcmp(collected, "070701", 6)) {
@@ -180,8 +164,7 @@ static int __init do_header(void) {
 			error("incorrect cpio method used: use -H newc option");
 		else
 			error("no cpio magic");
-		return 1;
-	}
+		return 1; }
 	parse_header(collected);
 	next_header = this_header + N_ALIGN(name_len) + body_len;
 	next_header = (next_header + 3) & ~3;
@@ -195,12 +178,10 @@ static int __init do_header(void) {
 		remains = N_ALIGN(name_len) + body_len;
 		next_state = GotSymlink;
 		state = Collect;
-		return 0;
-	}
+		return 0; }
 	if (S_ISREG(mode) || !body_len)
 		read_into(name_buf, N_ALIGN(name_len), GotName);
-	return 0;
-}
+	return 0; }
 
 static int __init do_skip(void) {
 	if (this_header + byte_count < next_header) {
@@ -209,17 +190,14 @@ static int __init do_skip(void) {
 	} else {
 		eat(next_header - this_header);
 		state = next_state;
-		return 0;
-	}
-}
+		return 0; } }
 
 static int __init do_reset(void) {
 	while (byte_count && *victim == '\0')
 		eat(1);
 	if (byte_count && (this_header & 3))
 		error("broken padding");
-	return 1;
-}
+	return 1; }
 
 static void __init clean_path(char *path, umode_t fmode) {
 	struct kstat st;
@@ -228,9 +206,7 @@ static void __init clean_path(char *path, umode_t fmode) {
 		if (S_ISDIR(st.mode))
 			init_rmdir(path);
 		else
-			init_unlink(path);
-	}
-}
+			init_unlink(path); } }
 
 static int __init maybe_link(void) {
 	if (nlink >= 2) {
@@ -247,8 +223,7 @@ static int __init maybe_link(void) {
 			if (((*p)->mode ^ mode) & S_IFMT)
 				continue;
 			old = (*p)->name;
-			break;
-		}
+			break; }
 		if (!*p) {
 			q = kmalloc(sizeof(struct hash), GFP_KERNEL);
 			if (!q)
@@ -259,15 +234,11 @@ static int __init maybe_link(void) {
 			q->mode = mode;
 			strcpy(q->name, collected);
 			q->next = NULL;
-			*p = q;
-		}
+			*p = q; }
 		if (old) {
 			clean_path(collected, 0);
-			return (init_link(old, collected) < 0) ? -1 : 1;
-		}
-	}
-	return 0;
-}
+			return (init_link(old, collected) < 0) ? -1 : 1; } }
+	return 0; }
 
 static __initdata struct file *wfile;
 static __initdata loff_t wfile_pos;
@@ -277,8 +248,7 @@ static int __init do_name(void) {
 	next_state = Reset;
 	if (strcmp(collected, "TRAILER!!!") == 0) {
 		free_hash();
-		return 0;
-	}
+		return 0; }
 	clean_path(collected, mode);
 	if (S_ISREG(mode)) {
 		int ml = maybe_link();
@@ -296,8 +266,7 @@ static int __init do_name(void) {
 			vfs_fchmod(wfile, mode);
 			if (body_len)
 				vfs_truncate(&wfile->f_path, body_len);
-			state = CopyFile;
-		}
+			state = CopyFile; }
 	} else if (S_ISDIR(mode)) {
 		init_mkdir(collected, mode);
 		init_chown(collected, uid, gid, 0);
@@ -308,11 +277,8 @@ static int __init do_name(void) {
 			init_mknod(collected, mode, rdev);
 			init_chown(collected, uid, gid, 0);
 			init_chmod(collected, mode);
-			do_utime(collected, mtime);
-		}
-	}
-	return 0;
-}
+			do_utime(collected, mtime); } }
+	return 0; }
 
 static int __init do_copy(void) {
 	if (byte_count >= body_len) {
@@ -331,9 +297,7 @@ static int __init do_copy(void) {
 			error("write error");
 		body_len -= byte_count;
 		eat(byte_count);
-		return 1;
-	}
-}
+		return 1; } }
 
 static int __init do_symlink(void) {
 	collected[N_ALIGN(name_len) + body_len] = '\0';
@@ -343,8 +307,7 @@ static int __init do_symlink(void) {
 	do_utime(collected, mtime);
 	state = SkipIt;
 	next_state = Reset;
-	return 0;
-}
+	return 0; }
 
 static __initdata int (*actions[])(void) = { [Start]		= do_start, [Collect]	= do_collect, [GotHeader]	= do_header, [SkipIt]	= do_skip, [GotName]	= do_name, [CopyFile]	= do_copy, [GotSymlink]	= do_symlink, [Reset]		= do_reset, };
 
@@ -354,8 +317,7 @@ static long __init write_buffer(char *buf, unsigned long len) {
 
 	while (!actions[state]())
 		;
-	return len - byte_count;
-}
+	return len - byte_count; }
 
 static char * __init unpack_to_rootfs(char *buf, unsigned long len) {
 	long written;
@@ -376,14 +338,12 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len) {
 			written = write_buffer(buf, len);
 			buf += written;
 			len -= written;
-			continue;
-		}
+			continue; }
 		if (!*buf) {
 			buf++;
 			len--;
 			this_header++;
-			continue;
-		}
+			continue; }
 		this_header = 0;
 		/*
 		 * Anchor-stub: the compressed-archive path is runtime-dead --
@@ -394,14 +354,12 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len) {
 		 * padding NUL is corruption.
 		 */
 		error("invalid magic at start of archive");
-		break;
-	}
+		break; }
 	dir_utime();
 	kfree(name_buf);
 	kfree(symlink_buf);
 	kfree(header_buf);
-	return message;
-}
+	return message; }
 
 
 #include <linux/initrd.h>
@@ -419,8 +377,7 @@ static void __init do_populate_rootfs(void) {
 
 	err = unpack_to_rootfs((char *)initrd_start, initrd_end - initrd_start);
 	if (err) {
-		printk(KERN_EMERG "Initramfs unpacking failed: %s\n", err);
-	}
+		printk(KERN_EMERG "Initramfs unpacking failed: %s\n", err); }
 
 done:
 	 
@@ -430,8 +387,7 @@ done:
 	initrd_end = 0;
 
 	flush_delayed_fput();
-	task_work_run();
-}
+	task_work_run(); }
 
 static bool __initdata initramfs_done;
 
@@ -439,14 +395,11 @@ void wait_for_initramfs(void) {
 	if (!initramfs_done) {
 
 		pr_warn_once("wait_for_initramfs() called before rootfs_initcalls\n");
-		return;
-	}
-}
+		return; } }
 
 static int __init populate_rootfs(void) {
 	/* The async scheduler stub ran synchronously; do so directly. */
 	do_populate_rootfs();
 	initramfs_done = true;
-	return 0;
-}
+	return 0; }
 rootfs_initcall(populate_rootfs);

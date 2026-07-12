@@ -12,5 +12,4 @@ int ___ratelimit(struct ratelimit_state *rs, const char *func) {
 	 * (the suppression accounting is the only thing dropped).  The full
 	 * jiffies/spinlock/printk_deferred body is therefore the dead payoff.
 	 */
-	return 1;
-}
+	return 1; }

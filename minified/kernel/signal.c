@@ -26,22 +26,18 @@ static inline bool has_pending_signals(sigset_t *signal, sigset_t *blocked) {
 		ready |= signal->sig[0] &~ blocked->sig[0];
 		break;
 
-	case 1: ready  = signal->sig[0] &~ blocked->sig[0];
-	}
-	return ready !=	0;
-}
+	case 1: ready  = signal->sig[0] &~ blocked->sig[0]; }
+	return ready !=	0; }
 
 #define PENDING(p,b) has_pending_signals(&(p)->signal, (b))
 
 static bool recalc_sigpending_tsk(struct task_struct *t) {
 	if ((t->jobctl & (JOBCTL_PENDING_MASK | JOBCTL_TRAP_FREEZE)) || PENDING(&t->pending, &t->blocked) || PENDING(&t->signal->shared_pending, &t->blocked)) {
 		set_tsk_thread_flag(t, TIF_SIGPENDING);
-		return true;
-	}
+		return true; }
 
 	
-	return false;
-}
+	return false; }
 
 void recalc_sigpending(void) {
 	if (!recalc_sigpending_tsk(current))
@@ -54,15 +50,13 @@ void calculate_sigpending(void) {
 	spin_lock_irq(&current->sighand->siglock);
 	set_tsk_thread_flag(current, TIF_SIGPENDING);
 	recalc_sigpending();
-	spin_unlock_irq(&current->sighand->siglock);
-}
+	spin_unlock_irq(&current->sighand->siglock); }
 
 void ignore_signals(struct task_struct *t) {
 	int i;
 
 	for (i = 0; i < _NSIG; ++i)
-		t->sighand->action[i].sa.sa_handler = SIG_IGN;
-}
+		t->sighand->action[i].sa.sa_handler = SIG_IGN; }
 
 void
 flush_signal_handlers(struct task_struct *t, int force_default) {
@@ -76,9 +70,7 @@ flush_signal_handlers(struct task_struct *t, int force_default) {
 		ka->sa.sa_restorer = NULL;
 #endif
 		sigemptyset(&ka->sa.sa_mask);
-		ka++;
-	}
-}
+		ka++; } }
 
 
 /*
@@ -100,8 +92,7 @@ force_sig_info_to_task(struct kernel_siginfo *info, struct task_struct *t, enum 
 	 * private delivery subtree (__send_signal_locked/prepare_signal/
 	 * sig_ignored/__sigqueue_alloc) has been deleted; nothing is queued.
 	 */
-	return 0;
-}
+	return 0; }
 
 /*
  * Removed: zap_other_threads - unreachable. Its only caller was the removed
@@ -118,8 +109,7 @@ void force_sig(int sig) {
 	info.si_code = SI_KERNEL;
 	info.si_pid = 0;
 	info.si_uid = 0;
-	force_sig_info_to_task(&info, current, HANDLER_CURRENT);
-}
+	force_sig_info_to_task(&info, current, HANDLER_CURRENT); }
 
 void force_fatal_sig(int sig) {
 	struct kernel_siginfo info;
@@ -130,8 +120,7 @@ void force_fatal_sig(int sig) {
 	info.si_code = SI_KERNEL;
 	info.si_pid = 0;
 	info.si_uid = 0;
-	force_sig_info_to_task(&info, current, HANDLER_SIG_DFL);
-}
+	force_sig_info_to_task(&info, current, HANDLER_SIG_DFL); }
 
 int force_sig_fault(int sig, int code, void __user *addr) {
 	struct kernel_siginfo info;
@@ -141,15 +130,12 @@ int force_sig_fault(int sig, int code, void __user *addr) {
 	info.si_errno = 0;
 	info.si_code  = code;
 	info.si_addr  = addr;
-	return force_sig_info_to_task(&info, current, HANDLER_CURRENT);
-}
+	return force_sig_info_to_task(&info, current, HANDLER_CURRENT); }
 
 void exit_signals(struct task_struct *tsk) {
 	/* Minimal stub: just mark as exiting */
-	tsk->flags |= PF_EXITING;
-}
+	tsk->flags |= PF_EXITING; }
 
 void __init signals_init(void) {
-	sigqueue_cachep = KMEM_CACHE(sigqueue, SLAB_PANIC | SLAB_ACCOUNT);
-}
+	sigqueue_cachep = KMEM_CACHE(sigqueue, SLAB_PANIC | SLAB_ACCOUNT); }
 

@@ -750,16 +750,9 @@ struct expr *expr_trans_compare(struct expr *e, enum expr_type type, struct symb
 	return NULL;
 }
 
-enum string_value_kind {
-	k_string,
-	k_signed,
-	k_unsigned,
-};
+enum string_value_kind { k_string, k_signed, k_unsigned, };
 
-union string_value {
-	unsigned long long u;
-	signed long long s;
-};
+union string_value { unsigned long long u; signed long long s; };
 
 static enum string_value_kind expr_parse_string(const char *str, enum symbol_type type, union string_value *val)
 {

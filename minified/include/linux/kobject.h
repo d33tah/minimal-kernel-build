@@ -10,15 +10,7 @@
 #include <linux/workqueue.h>
 #include <linux/uidgid.h>
 
-struct kobject {
-	const char		*name;
-	struct kobject		*parent;
-	struct kset		*kset;
-	const struct kobj_type	*ktype;
-	struct kref		kref;
-	unsigned int state_initialized:1;
-	unsigned int state_in_sysfs:1;
-};
+struct kobject { const char		*name; struct kobject		*parent; struct kset		*kset; const struct kobj_type	*ktype; struct kref		kref; unsigned int state_initialized:1; unsigned int state_in_sysfs:1; };
 
 extern __printf(2, 3)
 int kobject_set_name(struct kobject *kobj, const char *name, ...);
@@ -40,15 +32,11 @@ extern struct kobject *kobject_get(struct kobject *kobj);
 extern struct kobject * __must_check kobject_get_unless_zero( struct kobject *kobj);
 extern void kobject_put(struct kobject *kobj);
 
-struct kobj_type {
-	void (*release)(struct kobject *kobj);
-};
+struct kobj_type { void (*release)(struct kobject *kobj); };
 
 /* struct kset_uevent_ops removed - uevent_ops never dispatched (all NULL) */
 
-struct kset {
-	struct kobject kobj;
-} __randomize_layout;
+struct kset { struct kobject kobj; } __randomize_layout;
 
 extern int __must_check kset_register(struct kset *kset);
 extern struct kset * __must_check kset_create_and_add(const char *name, struct kobject *parent_kobj);

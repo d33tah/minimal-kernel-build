@@ -95,54 +95,12 @@ static inline int task_has_idle_policy(struct task_struct *p)
    dl_cpu_busy removed - never defined/called */
 
 
-struct cfs_rq {
-	struct load_weight	load;
-	unsigned int nr_running, h_nr_running;
-
-	u64			min_vruntime;
-
-	struct rb_root_cached	tasks_timeline;
-
-	 
-	struct sched_entity *curr, *next, *last;
-
-
-
-};
+struct cfs_rq { struct load_weight	load; unsigned int nr_running, h_nr_running; u64			min_vruntime; struct rb_root_cached	tasks_timeline; struct sched_entity *curr, *next, *last; };
 
 
 #define entity_is_task(se)	1
 
-struct rq {
-	 
-	raw_spinlock_t		__lock;
-
-
-	unsigned int		nr_running;
-
-
-	struct cfs_rq		cfs;
-
-
-	struct task_struct __rcu	*curr;
-	struct task_struct	*idle;
-	struct mm_struct	*prev_mm;
-
-	unsigned int		clock_update_flags;
-	u64			clock;
-
-	u64			clock_task ____cacheline_aligned;
-
-
-
-
-
-
-
-
-
-
-};
+struct rq { raw_spinlock_t		__lock; unsigned int		nr_running; struct cfs_rq		cfs; struct task_struct __rcu	*curr; struct task_struct	*idle; struct mm_struct	*prev_mm; unsigned int		clock_update_flags; u64			clock; u64			clock_task ____cacheline_aligned; };
 
 
 static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
@@ -247,10 +205,7 @@ static inline void rq_clock_skip_update(struct rq *rq)
 
 /* rq_clock_cancel_skipupdate removed - unused */
 
-struct rq_flags {
-	unsigned long flags;
-	struct pin_cookie cookie;
-};
+struct rq_flags { unsigned long flags; struct pin_cookie cookie; };
 
 
 static inline void rq_pin_lock(struct rq *rq, struct rq_flags *rf)
@@ -370,24 +325,7 @@ extern const u32		sched_prio_to_wmult[40];
 
 #define RETRY_TASK		((void *)-1UL)
 
-struct sched_class {
-
-
-	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int flags);
-	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int flags);
-
-	void (*check_preempt_curr)(struct rq *rq, struct task_struct *p, int flags);
-
-	struct task_struct *(*pick_next_task)(struct rq *rq);
-
-	void (*put_prev_task)(struct rq *rq, struct task_struct *p);
-	void (*set_next_task)(struct rq *rq, struct task_struct *p, bool first);
-
-
-	void (*task_tick)(struct rq *rq, struct task_struct *p, int queued);
-	void (*task_fork)(struct task_struct *p);
-	void (*task_dead)(struct task_struct *p);
-};
+struct sched_class { void (*enqueue_task) (struct rq *rq, struct task_struct *p, int flags); void (*dequeue_task) (struct rq *rq, struct task_struct *p, int flags); void (*check_preempt_curr)(struct rq *rq, struct task_struct *p, int flags); struct task_struct *(*pick_next_task)(struct rq *rq); void (*put_prev_task)(struct rq *rq, struct task_struct *p); void (*set_next_task)(struct rq *rq, struct task_struct *p, bool first); void (*task_tick)(struct rq *rq, struct task_struct *p, int queued); void (*task_fork)(struct task_struct *p); void (*task_dead)(struct task_struct *p); };
 
 static inline void put_prev_task(struct rq *rq, struct task_struct *prev)
 {

@@ -9,9 +9,6 @@
 
 
 /* Inlined from vdso/time.h */
-struct timens_offset {
-	s64	sec;
-	u64	nsec;
-};
+struct timens_offset { s64	sec; u64	nsec; };
 
 #endif

@@ -10,9 +10,7 @@
 
 #include <asm/processor.h>
 
-typedef struct seqcount {
-	unsigned sequence;
-} seqcount_t;
+typedef struct seqcount { unsigned sequence; } seqcount_t;
 
 static inline void __seqcount_init(seqcount_t *s, const char *name, struct lock_class_key *key)
 {
@@ -148,9 +146,7 @@ static inline void do_write_seqcount_invalidate(seqcount_t *s)
 	s->sequence+=2;
 }
 
-typedef struct {
-	seqcount_t seqcount;
-} seqcount_latch_t;
+typedef struct { seqcount_t seqcount; } seqcount_latch_t;
 
 #define seqcount_latch_init(s) seqcount_init(&(s)->seqcount)
 
@@ -162,11 +158,7 @@ static inline void raw_write_seqcount_latch(seqcount_latch_t *s)
 	smp_wmb();       
 }
 
-typedef struct {
-	 
-	seqcount_spinlock_t seqcount;
-	spinlock_t lock;
-} seqlock_t;
+typedef struct { seqcount_spinlock_t seqcount; spinlock_t lock; } seqlock_t;
 
 #define __SEQLOCK_UNLOCKED(lockname)						{										.seqcount = SEQCNT_SPINLOCK_ZERO(lockname, &(lockname).lock), 		.lock =	__SPIN_LOCK_UNLOCKED(lockname)				}
 

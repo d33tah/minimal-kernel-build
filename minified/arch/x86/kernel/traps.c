@@ -169,10 +169,7 @@ DEFINE_IDTENTRY(exc_bounds)
 	cond_local_irq_disable(regs);
 }
 
-enum kernel_gp_hint {
-	GP_NO_HINT,
-	GP_NON_CANONICAL,
-};
+enum kernel_gp_hint { GP_NO_HINT, GP_NON_CANONICAL, };
 
 static enum kernel_gp_hint get_kernel_gp_address(void)
 {

@@ -87,10 +87,7 @@ int after_bootmem;
  * matching 1G fold in adjust_range_page_size_mask() were all statically
  * dead and have been removed.
  */
-struct map_range {
-	unsigned long start, end;
-	unsigned page_size_mask;
-};
+struct map_range { unsigned long start, end; unsigned page_size_mask; };
 
 static int page_size_mask;
 

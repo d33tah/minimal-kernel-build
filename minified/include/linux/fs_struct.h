@@ -5,13 +5,7 @@
 #include <linux/spinlock.h>
 #include <linux/seqlock.h>
 
-struct fs_struct {
-	int users;
-	spinlock_t lock;
-	seqcount_spinlock_t seq;
-	int umask, in_exec;
-	struct path root, pwd;
-} __randomize_layout;
+struct fs_struct { int users; spinlock_t lock; seqcount_spinlock_t seq; int umask, in_exec; struct path root, pwd; } __randomize_layout;
 
 extern struct kmem_cache *fs_cachep;
 

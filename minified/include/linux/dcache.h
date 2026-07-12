@@ -26,15 +26,7 @@
  #define HASH_LEN_DECLARE u32 hash; u32 len
  #define bytemask_from_count(cnt)	(~(~0ul << (cnt)*8))
 
-struct qstr {
-	union {
-		struct {
-			HASH_LEN_DECLARE;
-		};
-		u64 hash_len;
-	};
-	const unsigned char *name;
-};
+struct qstr { union { struct { HASH_LEN_DECLARE; }; u64 hash_len; }; const unsigned char *name; };
 
 #define QSTR_INIT(n,l) { { { .len = l } }, .name = n }
 
@@ -43,32 +35,7 @@ struct qstr {
 
 #define d_lock	d_lockref.lock
 
-struct dentry {
-	 
-	unsigned int d_flags;		 
-	seqcount_spinlock_t d_seq;	 
-	struct hlist_bl_node d_hash;	 
-	struct dentry *d_parent;	 
-	struct qstr d_name;
-	struct inode *d_inode;		 
-	unsigned char d_iname[DNAME_INLINE_LEN];	 
-
-	 
-	struct lockref d_lockref;	 
-	const struct dentry_operations *d_op;
-	struct super_block *d_sb;
-
-	union {
-		struct list_head d_lru;		 
-		wait_queue_head_t *d_wait;	 
-	};
-
-	union {
-		struct hlist_node d_alias;	 
-		struct hlist_bl_node d_in_lookup_hash;	 
-	 	struct rcu_head d_rcu;
-	} d_u;
-} __randomize_layout;
+struct dentry { unsigned int d_flags; seqcount_spinlock_t d_seq; struct hlist_bl_node d_hash; struct dentry *d_parent; struct qstr d_name; struct inode *d_inode; unsigned char d_iname[DNAME_INLINE_LEN]; struct lockref d_lockref; const struct dentry_operations *d_op; struct super_block *d_sb; union { struct list_head d_lru; wait_queue_head_t *d_wait; }; union { struct hlist_node d_alias; struct hlist_bl_node d_in_lookup_hash; struct rcu_head d_rcu; } d_u; } __randomize_layout;
 
 enum dentry_d_lock_class
 {

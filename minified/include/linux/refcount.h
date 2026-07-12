@@ -7,9 +7,7 @@
 #include <linux/limits.h>
 #include <linux/spinlock_types.h>
 
-typedef struct refcount_struct {
-	atomic_t refs;
-} refcount_t;
+typedef struct refcount_struct { atomic_t refs; } refcount_t;
 
 #define REFCOUNT_INIT(n)	{ .refs = ATOMIC_INIT(n), }
 

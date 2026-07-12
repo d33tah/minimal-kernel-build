@@ -31,14 +31,7 @@ struct class;
 /* devres alloc/add/free + devm_kstrdup/devm_kasprintf removed - never called */
 
 
-struct device {
-	struct kobject kobj;
-	struct device		*parent;
-
-	struct device_private	*p;
-
-	void	(*release)(struct device *dev);
-};
+struct device { struct kobject kobj; struct device		*parent; struct device_private	*p; void	(*release)(struct device *dev); };
 
 static inline struct device *kobj_to_dev(struct kobject *kobj)
 {

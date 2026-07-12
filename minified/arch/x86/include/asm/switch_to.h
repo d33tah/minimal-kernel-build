@@ -13,17 +13,9 @@ __visible struct task_struct *__switch_to(struct task_struct *prev, struct task_
 asmlinkage void ret_from_fork(void);
 
  
-struct inactive_task_frame {
-	unsigned long flags, si, di, bx;
+struct inactive_task_frame { unsigned long flags, si, di, bx; unsigned long bp, ret_addr; };
 
-	 
-	unsigned long bp, ret_addr;
-};
-
-struct fork_frame {
-	struct inactive_task_frame frame;
-	struct pt_regs regs;
-};
+struct fork_frame { struct inactive_task_frame frame; struct pt_regs regs; };
 
 #define switch_to(prev, next, last)					do {										((last) = __switch_to_asm((prev), (next)));			} while (0)
 

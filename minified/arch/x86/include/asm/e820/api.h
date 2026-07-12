@@ -5,27 +5,15 @@
 /* --- 2025-12-07 20:10 --- Inlined e820/types.h */
 #include <uapi/asm/bootparam.h>
 
-enum e820_type {
-	E820_TYPE_RAM		= 1,
-	E820_TYPE_RESERVED	= 2,
-	E820_TYPE_PRAM		= 12,
-	E820_TYPE_SOFT_RESERVED	= 0xefffffff,
-	E820_TYPE_RESERVED_KERN	= 128,
-};
+enum e820_type { E820_TYPE_RAM		= 1, E820_TYPE_RESERVED	= 2, E820_TYPE_PRAM		= 12, E820_TYPE_SOFT_RESERVED	= 0xefffffff, E820_TYPE_RESERVED_KERN	= 128, };
 
-struct e820_entry {
-	u64 addr, size;
-	enum e820_type		type;
-} __attribute__((packed));
+struct e820_entry { u64 addr, size; enum e820_type		type; } __attribute__((packed));
 
 #include <linux/numa.h>
 
 #define E820_MAX_ENTRIES	(E820_MAX_ENTRIES_ZEROPAGE + 3*MAX_NUMNODES)
 
-struct e820_table {
-	__u32 nr_entries;
-	struct e820_entry entries[E820_MAX_ENTRIES];
-};
+struct e820_table { __u32 nr_entries; struct e820_entry entries[E820_MAX_ENTRIES]; };
 
 #define ISA_END_ADDRESS		0x00100000
 #define BIOS_BEGIN		0x000a0000

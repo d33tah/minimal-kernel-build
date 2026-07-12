@@ -70,11 +70,7 @@ enum xa_lock_type {
 
 #define XA_FLAGS_ALLOC	(XA_FLAGS_TRACK_FREE | XA_FLAGS_MARK(XA_FREE_MARK))
 
-struct xarray {
-	spinlock_t	xa_lock;
-	gfp_t		xa_flags;
-	void __rcu *	xa_head;
-};
+struct xarray { spinlock_t	xa_lock; gfp_t		xa_flags; void __rcu *	xa_head; };
 
 #define XARRAY_INIT(name, flags) {					.xa_lock = __SPIN_LOCK_UNLOCKED(name.xa_lock),			.xa_flags = flags,						.xa_head = NULL,					}
 
@@ -104,19 +100,7 @@ static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 #define XA_MAX_MARKS		3
 #define XA_MARK_LONGS		DIV_ROUND_UP(XA_CHUNK_SIZE, BITS_PER_LONG)
 
-struct xa_node {
-	unsigned char shift, offset, count;
-	struct xa_node __rcu *parent;
-	struct xarray	*array;		 
-	union {
-		struct list_head private_list;	 
-		struct rcu_head	rcu_head;	 
-	};
-	void __rcu	*slots[XA_CHUNK_SIZE];
-	union {
-		unsigned long tags[XA_MAX_MARKS][XA_MARK_LONGS], marks[XA_MAX_MARKS][XA_MARK_LONGS];
-	};
-};
+struct xa_node { unsigned char shift, offset, count; struct xa_node __rcu *parent; struct xarray	*array; union { struct list_head private_list; struct rcu_head	rcu_head; }; void __rcu	*slots[XA_CHUNK_SIZE]; union { unsigned long tags[XA_MAX_MARKS][XA_MARK_LONGS], marks[XA_MAX_MARKS][XA_MARK_LONGS]; }; };
 
 #define XA_NODE_BUG_ON(node, x)	do { } while (0)
 
@@ -177,14 +161,7 @@ static inline bool xa_is_retry(const void *entry)
 typedef void (*xa_update_node_t)(struct xa_node *node);
 
 
-struct xa_state {
-	struct xarray *xa;
-	unsigned long xa_index;
-	unsigned char xa_shift, xa_offset;
-	struct xa_node *xa_node, *xa_alloc;
-	xa_update_node_t xa_update;
-	struct list_lru *xa_lru;
-};
+struct xa_state { struct xarray *xa; unsigned long xa_index; unsigned char xa_shift, xa_offset; struct xa_node *xa_node, *xa_alloc; xa_update_node_t xa_update; struct list_lru *xa_lru; };
 
 #define XA_ERROR(errno) ((struct xa_node *)(((unsigned long)errno << 2) | 2UL))
 #define XAS_BOUNDS	((struct xa_node *)1UL)

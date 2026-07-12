@@ -14,47 +14,14 @@ void delayed_work_timer_fn(struct timer_list *t);
 
 #define work_data_bits(work) ((unsigned long *)(&(work)->data))
 
-enum {
-	WORK_STRUCT_PENDING_BIT	= 0,
-	WORK_STRUCT_COLOR_SHIFT	= 4,
+enum { WORK_STRUCT_PENDING_BIT	= 0, WORK_STRUCT_COLOR_SHIFT	= 4, WORK_STRUCT_STATIC	= 0, WORK_CPU_UNBOUND	= NR_CPUS, WORK_OFFQ_FLAG_BASE	= WORK_STRUCT_COLOR_SHIFT, WORK_OFFQ_FLAG_BITS	= 1, WORK_OFFQ_POOL_SHIFT	= WORK_OFFQ_FLAG_BASE + WORK_OFFQ_FLAG_BITS, WORK_OFFQ_LEFT		= BITS_PER_LONG - WORK_OFFQ_POOL_SHIFT, WORK_OFFQ_POOL_BITS	= WORK_OFFQ_LEFT <= 31 ? WORK_OFFQ_LEFT : 31, WORK_OFFQ_POOL_NONE	= (1LU << WORK_OFFQ_POOL_BITS) - 1, WORK_STRUCT_NO_POOL	= (unsigned long)WORK_OFFQ_POOL_NONE << WORK_OFFQ_POOL_SHIFT, };
 
-	WORK_STRUCT_STATIC	= 0,
-
-
-	WORK_CPU_UNBOUND	= NR_CPUS,
-
-	 
-
-	 
-	WORK_OFFQ_FLAG_BASE	= WORK_STRUCT_COLOR_SHIFT,
-
-
-	WORK_OFFQ_FLAG_BITS	= 1,
-	WORK_OFFQ_POOL_SHIFT	= WORK_OFFQ_FLAG_BASE + WORK_OFFQ_FLAG_BITS,
-	WORK_OFFQ_LEFT		= BITS_PER_LONG - WORK_OFFQ_POOL_SHIFT,
-	WORK_OFFQ_POOL_BITS	= WORK_OFFQ_LEFT <= 31 ? WORK_OFFQ_LEFT : 31,
-	WORK_OFFQ_POOL_NONE	= (1LU << WORK_OFFQ_POOL_BITS) - 1,
-
-	 
-	WORK_STRUCT_NO_POOL	= (unsigned long)WORK_OFFQ_POOL_NONE << WORK_OFFQ_POOL_SHIFT,
-};
-
-struct work_struct {
-	atomic_long_t data;
-	struct list_head entry;
-	work_func_t func;
-};
+struct work_struct { atomic_long_t data; struct list_head entry; work_func_t func; };
 
 #define WORK_DATA_INIT()	ATOMIC_LONG_INIT((unsigned long)WORK_STRUCT_NO_POOL)
 #define WORK_DATA_STATIC_INIT()		ATOMIC_LONG_INIT((unsigned long)(WORK_STRUCT_NO_POOL | WORK_STRUCT_STATIC))
 
-struct delayed_work {
-	struct work_struct work;
-	struct timer_list timer;
-
-	 
-	struct workqueue_struct *wq;
-};
+struct delayed_work { struct work_struct work; struct timer_list timer; struct workqueue_struct *wq; };
 
 
 #define __WORK_INIT_LOCKDEP_MAP(n, k)

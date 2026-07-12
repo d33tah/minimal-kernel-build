@@ -5,10 +5,7 @@
 #include <linux/rcupdate.h>
 #include <linux/completion.h>
 
-struct rcu_synchronize {
-	struct rcu_head head;
-	struct completion completion;
-};
+struct rcu_synchronize { struct rcu_head head; struct completion completion; };
 void wakeme_after_rcu(struct rcu_head *head);
 
 void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array, struct rcu_synchronize *rs_array);

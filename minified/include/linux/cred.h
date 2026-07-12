@@ -8,11 +8,7 @@
 #include <linux/sched.h>
 #include <linux/sched/user.h>
 
-struct group_info {
-	atomic_t	usage;
-	int		ngroups;
-	kgid_t		gid[];
-} __randomize_layout;
+struct group_info { atomic_t	usage; int		ngroups; kgid_t		gid[]; } __randomize_layout;
 
 static inline struct group_info *get_group_info(struct group_info *gi)
 {
@@ -21,24 +17,7 @@ static inline struct group_info *get_group_info(struct group_info *gi)
 }
 
 
-struct cred {
-	atomic_t	usage;
-	kuid_t		uid;		 
-	kgid_t		gid;		 
-	kuid_t		euid;
-	kgid_t		egid;		 
-	kuid_t		fsuid;		 
-	kgid_t		fsgid;
-	kernel_cap_t	cap_permitted;
-	struct user_struct *user;
-	struct user_namespace *user_ns;  
-	struct ucounts *ucounts;
-	struct group_info *group_info;	 
-	 
-	union {
-		struct rcu_head	rcu;		 
-	};
-} __randomize_layout;
+struct cred { atomic_t	usage; kuid_t		uid; kgid_t		gid; kuid_t		euid; kgid_t		egid; kuid_t		fsuid; kgid_t		fsgid; kernel_cap_t	cap_permitted; struct user_struct *user; struct user_namespace *user_ns; struct ucounts *ucounts; struct group_info *group_info; union { struct rcu_head	rcu; }; } __randomize_layout;
 
 extern void __put_cred(struct cred *);
 extern void exit_creds(struct task_struct *);

@@ -13,11 +13,7 @@
 # define __DEP_MAP_MUTEX_INITIALIZER(lockname)
 
 
-struct mutex {
-	atomic_long_t		owner;
-	raw_spinlock_t		wait_lock;
-	struct list_head	wait_list;
-};
+struct mutex { atomic_long_t		owner; raw_spinlock_t		wait_lock; struct list_head	wait_list; };
 
 
 # define __DEBUG_MUTEX_INITIALIZER(lockname)

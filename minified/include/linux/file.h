@@ -11,10 +11,7 @@ struct file;
 
 extern void fput(struct file *);
 
-struct fd {
-	struct file *file;
-	unsigned int flags;
-};
+struct fd { struct file *file; unsigned int flags; };
 #define FDPUT_FPUT       1
 #define FDPUT_POS_UNLOCK 2
 

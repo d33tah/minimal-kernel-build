@@ -12,10 +12,7 @@ init_task_work(struct callback_head *twork, task_work_func_t func)
 	twork->func = func;
 }
 
-enum task_work_notify_mode {
-	TWA_NONE,
-	TWA_RESUME,
-};
+enum task_work_notify_mode { TWA_NONE, TWA_RESUME, };
 
 static inline bool task_work_pending(struct task_struct *task)
 {

@@ -13,17 +13,9 @@ int default_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int 
 #define WQ_FLAG_EXCLUSIVE	0x01
 #define WQ_FLAG_BOOKMARK	0x04
 
-struct wait_queue_entry {
-	unsigned int		flags;
-	void			*private;
-	wait_queue_func_t	func;
-	struct list_head	entry;
-};
+struct wait_queue_entry { unsigned int		flags; void			*private; wait_queue_func_t	func; struct list_head	entry; };
 
-struct wait_queue_head {
-	spinlock_t		lock;
-	struct list_head	head;
-};
+struct wait_queue_head { spinlock_t		lock; struct list_head	head; };
 typedef struct wait_queue_head wait_queue_head_t;
 
 

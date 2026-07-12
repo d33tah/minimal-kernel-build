@@ -5,9 +5,7 @@
 #include <linux/spinlock.h>
 #include <linux/refcount.h>
 
-struct kref {
-	refcount_t refcount;
-};
+struct kref { refcount_t refcount; };
 
 static inline void kref_init(struct kref *kref)
 {

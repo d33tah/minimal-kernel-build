@@ -57,29 +57,18 @@ typedef u32 phys_addr_t;
 
 typedef phys_addr_t resource_size_t;
 
-typedef struct {
-	int counter;
-} atomic_t;
+typedef struct { int counter; } atomic_t;
 
 #define ATOMIC_INIT(i) { (i) }
 
 
-struct list_head {
-	struct list_head *next, *prev;
-};
+struct list_head { struct list_head *next, *prev; };
 
-struct hlist_head {
-	struct hlist_node *first;
-};
+struct hlist_head { struct hlist_node *first; };
 
-struct hlist_node {
-	struct hlist_node *next, **pprev;
-};
+struct hlist_node { struct hlist_node *next, **pprev; };
 
-struct callback_head {
-	struct callback_head *next;
-	void (*func)(struct callback_head *head);
-} __attribute__((aligned(sizeof(void *))));
+struct callback_head { struct callback_head *next; void (*func)(struct callback_head *head); } __attribute__((aligned(sizeof(void *))));
 #define rcu_head callback_head
 
 typedef void (*rcu_callback_t)(struct rcu_head *head);

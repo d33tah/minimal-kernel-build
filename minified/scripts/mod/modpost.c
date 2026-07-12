@@ -88,14 +88,7 @@ static struct module *new_module(const char *name, size_t namelen)
 
 #define SYMBOL_HASH_SIZE 1024
 
-struct symbol {
-	struct symbol *next;
-	struct list_head list;	 
-	struct module *module;
-	char *namespace;
-	bool weak, is_gpl_only;
-	char name[];
-};
+struct symbol { struct symbol *next; struct list_head list; struct module *module; char *namespace; bool weak, is_gpl_only; char name[]; };
 
 static struct symbol *symbolhash[SYMBOL_HASH_SIZE];
 
@@ -544,26 +537,9 @@ static const char *const linker_symbols[] =
 	{ "__init_begin", "_sinittext", "_einittext", NULL };
 static const char *const optim_symbols[] = { "*.constprop.*", NULL };
 
-enum mismatch {
-	TEXT_TO_ANY_INIT,
-	DATA_TO_ANY_INIT,
-	TEXT_TO_ANY_EXIT,
-	DATA_TO_ANY_EXIT,
-	XXXINIT_TO_SOME_INIT,
-	XXXEXIT_TO_SOME_EXIT,
-	ANY_INIT_TO_ANY_EXIT,
-	ANY_EXIT_TO_ANY_INIT,
-	EXPORT_TO_INIT_EXIT,
-	EXTABLE_TO_NON_TEXT,
-};
+enum mismatch { TEXT_TO_ANY_INIT, DATA_TO_ANY_INIT, TEXT_TO_ANY_EXIT, DATA_TO_ANY_EXIT, XXXINIT_TO_SOME_INIT, XXXEXIT_TO_SOME_EXIT, ANY_INIT_TO_ANY_EXIT, ANY_EXIT_TO_ANY_INIT, EXPORT_TO_INIT_EXIT, EXTABLE_TO_NON_TEXT, };
 
-struct sectioncheck {
-	const char *fromsec[20], *bad_tosec[20], *good_tosec[20];
-	enum mismatch mismatch;
-	const char *symbol_white_list[20];
-	void (*handler)(const char *modname, struct elf_info *elf, const struct sectioncheck* const mismatch, Elf_Rela *r, Elf_Sym *sym, const char *fromsec);
-
-};
+struct sectioncheck { const char *fromsec[20], *bad_tosec[20], *good_tosec[20]; enum mismatch mismatch; const char *symbol_white_list[20]; void (*handler)(const char *modname, struct elf_info *elf, const struct sectioncheck* const mismatch, Elf_Rela *r, Elf_Sym *sym, const char *fromsec); };
 
 static void extable_mismatch_handler(const char *modname, struct elf_info *elf, const struct sectioncheck* const mismatch, Elf_Rela *r, Elf_Sym *sym, const char *fromsec);
 

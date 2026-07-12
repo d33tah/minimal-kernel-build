@@ -11,9 +11,7 @@ typedef unsigned long	pmdval_t;
 typedef unsigned long	pgdval_t;
 typedef unsigned long	pgprotval_t;
 
-typedef union {
-	pteval_t pte;
-} pte_t;
+typedef union { pteval_t pte; } pte_t;
 #endif
 
 #define PGDIR_SHIFT	22

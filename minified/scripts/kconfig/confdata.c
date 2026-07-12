@@ -540,9 +540,7 @@ int conf_read(const char *name)
 	return 0;
 }
 
-struct comment_style {
-	const char *decoration, *prefix, *postfix;
-};
+struct comment_style { const char *decoration, *prefix, *postfix; };
 
 static const struct comment_style comment_style_pound = { .decoration = "#", .prefix = "#", .postfix = "#", };
 

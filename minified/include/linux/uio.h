@@ -15,35 +15,11 @@ struct page;
 struct pipe_inode_info;
 struct bio_vec;
 
-struct kvec {
-	void *iov_base;  
-	size_t iov_len;
-};
+struct kvec { void *iov_base; size_t iov_len; };
 
-enum iter_type {
-	 
-	ITER_IOVEC,
-	ITER_KVEC,
-};
+enum iter_type { ITER_IOVEC, ITER_KVEC, };
 
-struct iov_iter {
-	u8 iter_type;
-	size_t iov_offset, count;
-	union {
-		const struct iovec *iov;
-		const struct kvec *kvec;
-		const struct bio_vec *bvec;
-		struct xarray *xarray;
-		struct pipe_inode_info *pipe;
-	};
-	union {
-		unsigned long nr_segs;
-		struct {
-			unsigned int head, start_head;
-		};
-		loff_t xarray_start;
-	};
-};
+struct iov_iter { u8 iter_type; size_t iov_offset, count; union { const struct iovec *iov; const struct kvec *kvec; const struct bio_vec *bvec; struct xarray *xarray; struct pipe_inode_info *pipe; }; union { unsigned long nr_segs; struct { unsigned int head, start_head; }; loff_t xarray_start; }; };
 
 static inline enum iter_type iov_iter_type(const struct iov_iter *i)
 {

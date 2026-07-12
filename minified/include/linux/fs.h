@@ -87,12 +87,7 @@ extern unsigned int sysctl_nr_open;
 
 #define WHITEOUT_DEV 0
 
-struct iattr {
-	unsigned int	ia_valid;
-	umode_t		ia_mode;
-	loff_t		ia_size;
-	struct timespec64 ia_atime, ia_mtime, ia_ctime;
-};
+struct iattr { unsigned int	ia_valid; umode_t		ia_mode; loff_t		ia_size; struct timespec64 ia_atime, ia_mtime, ia_ctime; };
 
 /* Reduced positive_aop_returns - only AOP_TRUNCATED_PAGE used */
 enum positive_aop_returns { AOP_TRUNCATED_PAGE = 0x80001 };
@@ -104,16 +99,7 @@ struct address_space;
 #define IOCB_WAITQ		(1 << 19)
 #define IOCB_NOIO		(1 << 20)
 
-struct kiocb {
-	struct file		*ki_filp;
-
-	
-	randomized_struct_fields_start
-
-	loff_t			ki_pos;
-	int			ki_flags;
-	randomized_struct_fields_end
-};
+struct kiocb { struct file		*ki_filp; randomized_struct_fields_start loff_t			ki_pos; int			ki_flags; randomized_struct_fields_end };
 
 struct address_space_operations {
 	int (*read_folio)(struct file *, struct folio *);
@@ -127,17 +113,7 @@ struct address_space_operations {
 	 * is_partially_uptodate removed - unused */
 };
 
-struct address_space {
-	struct inode		*host;
-	struct xarray		i_pages;
-	struct rw_semaphore	invalidate_lock;
-	gfp_t			gfp_mask;
-	atomic_t		i_mmap_writable;
-	struct rb_root_cached	i_mmap;
-	struct rw_semaphore	i_mmap_rwsem;
-	const struct address_space_operations *a_ops;
-	unsigned long		flags;
-} __attribute__((aligned(sizeof(long)))) __randomize_layout;
+struct address_space { struct inode		*host; struct xarray		i_pages; struct rw_semaphore	invalidate_lock; gfp_t			gfp_mask; atomic_t		i_mmap_writable; struct rb_root_cached	i_mmap; struct rw_semaphore	i_mmap_rwsem; const struct address_space_operations *a_ops; unsigned long		flags; } __attribute__((aligned(sizeof(long)))) __randomize_layout;
 	
 
 
@@ -170,49 +146,7 @@ static inline void mapping_allow_writable(struct address_space *mapping)
 #define IOP_LOOKUP	0x0002
 #define IOP_NOFOLLOW	0x0004
 
-struct inode {
-	umode_t			i_mode;
-	unsigned short		i_opflags;
-	kuid_t			i_uid;
-	kgid_t			i_gid;
-
-	const struct inode_operations	*i_op;
-	struct super_block	*i_sb;
-	struct address_space	*i_mapping;
-
-	
-	unsigned long		i_ino;
-	
-	union {
-		const unsigned int i_nlink;
-		unsigned int __i_nlink;
-	};
-	dev_t			i_rdev;
-	loff_t			i_size;
-	struct timespec64 i_atime, i_mtime, i_ctime;
-	spinlock_t		i_lock;
-	u8			i_blkbits;
-
-
-	struct rw_semaphore	i_rwsem;
-
-	struct hlist_node	i_hash;
-	struct list_head	i_lru;
-	union {
-		struct hlist_head	i_dentry;
-		struct rcu_head		i_rcu;
-	};
-	atomic_t		i_count;
-	atomic_t		i_writecount;
-	const struct file_operations	*i_fop;
-	struct address_space	i_data;
-	struct list_head	i_devices;
-	union {
-		struct cdev		*i_cdev;
-		unsigned		i_dir_seq;
-	};
-
-} __randomize_layout;
+struct inode { umode_t			i_mode; unsigned short		i_opflags; kuid_t			i_uid; kgid_t			i_gid; const struct inode_operations	*i_op; struct super_block	*i_sb; struct address_space	*i_mapping; unsigned long		i_ino; union { const unsigned int i_nlink; unsigned int __i_nlink; }; dev_t			i_rdev; loff_t			i_size; struct timespec64 i_atime, i_mtime, i_ctime; spinlock_t		i_lock; u8			i_blkbits; struct rw_semaphore	i_rwsem; struct hlist_node	i_hash; struct list_head	i_lru; union { struct hlist_head	i_dentry; struct rcu_head		i_rcu; }; atomic_t		i_count; atomic_t		i_writecount; const struct file_operations	*i_fop; struct address_space	i_data; struct list_head	i_devices; union { struct cdev		*i_cdev; unsigned		i_dir_seq; }; } __randomize_layout;
 
 struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode);
 
@@ -285,32 +219,9 @@ static inline void i_size_write(struct inode *inode, loff_t i_size)
 /* struct fown_struct removed - f_owner field was write-only (lock never
    acquired, pid never assigned -> put_pid(NULL) no-op) */
 
-struct file_ra_state {
-	loff_t prev_pos;
-};
+struct file_ra_state { loff_t prev_pos; };
 
-struct file {
-	union {
-		struct llist_node	fu_llist;
-		struct rcu_head 	fu_rcuhead;
-	} f_u;
-	struct path		f_path;
-	struct inode		*f_inode;	
-	const struct file_operations	*f_op;
-
-
-	atomic_long_t		f_count;
-	unsigned int 		f_flags;
-	fmode_t			f_mode;
-	struct mutex		f_pos_lock;
-	loff_t			f_pos;
-	const struct cred	*f_cred;
-	struct file_ra_state	f_ra;
-
-	void			*private_data;
-
-	struct address_space	*f_mapping;
-} __randomize_layout
+struct file { union { struct llist_node	fu_llist; struct rcu_head 	fu_rcuhead; } f_u; struct path		f_path; struct inode		*f_inode; const struct file_operations	*f_op; atomic_long_t		f_count; unsigned int 		f_flags; fmode_t			f_mode; struct mutex		f_pos_lock; loff_t			f_pos; const struct cred	*f_cred; struct file_ra_state	f_ra; void			*private_data; struct address_space	*f_mapping; } __randomize_layout
   __attribute__((aligned(4)));	
 
 static inline struct file *get_file(struct file *f)
@@ -349,38 +260,9 @@ static inline struct inode *file_inode(const struct file *f)
 #define SB_I_NOEXEC	0x00000002
 #define SB_I_NODEV	0x00000004
 
-enum {
-	SB_FREEZE_WRITE	= 1,
-};
+enum { SB_FREEZE_WRITE	= 1, };
 
-struct super_block {
-	unsigned char		s_blocksize_bits;
-	loff_t			s_maxbytes;
-	struct file_system_type	*s_type;
-	const struct super_operations	*s_op;
-	unsigned long s_flags, s_iflags;
-	struct dentry		*s_root;
-	struct rw_semaphore	s_umount;
-	atomic_t		s_active;
-	struct hlist_bl_head	s_roots;
-
-	void			*s_fs_info;
-
-	
-	u32			s_time_gran;
-	
-	time64_t		   s_time_min;
-	time64_t		   s_time_max;
-
-	char			s_id[32];
-
-
-	struct user_namespace *s_user_ns;
-
-	
-	struct list_lru s_dentry_lru, s_inode_lru;
-	struct rcu_head		rcu;
-} __randomize_layout;
+struct super_block { unsigned char		s_blocksize_bits; loff_t			s_maxbytes; struct file_system_type	*s_type; const struct super_operations	*s_op; unsigned long s_flags, s_iflags; struct dentry		*s_root; struct rw_semaphore	s_umount; atomic_t		s_active; struct hlist_bl_head	s_roots; void			*s_fs_info; u32			s_time_gran; time64_t		   s_time_min; time64_t		   s_time_max; char			s_id[32]; struct user_namespace *s_user_ns; struct list_lru s_dentry_lru, s_inode_lru; struct rcu_head		rcu; } __randomize_layout;
 
 static inline struct user_namespace *i_user_ns(const struct inode *inode)
 {
@@ -551,11 +433,7 @@ static inline void mark_inode_dirty(struct inode *inode)
 
 extern void inc_nlink(struct inode *inode);
 
-enum file_time_flags {
-	S_ATIME = 1,
-	S_MTIME = 2,
-	S_CTIME = 4,
-};
+enum file_time_flags { S_ATIME = 1, S_MTIME = 2, S_CTIME = 4, };
 
 extern bool atime_needs_update(const struct path *, struct inode *);
 extern void touch_atime(const struct path *);
@@ -598,12 +476,7 @@ extern void iput(struct inode *);
 
 #define MAX_RW_COUNT (INT_MAX & PAGE_MASK)
 
-struct filename {
-	const char		*name;
-	const __user char	*uptr;
-	int			refcnt;
-	const char		iname[];
-};
+struct filename { const char		*name; const __user char	*uptr; int			refcnt; const char		iname[]; };
 static_assert(offsetof(struct filename, iname) % sizeof(long) == 0);
 
 static inline struct user_namespace *file_mnt_user_ns(struct file *file)

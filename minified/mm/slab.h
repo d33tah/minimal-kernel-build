@@ -4,30 +4,7 @@
  
 
  
-struct slab {
-	unsigned long __page_flags;
-
-
-	union {
-		struct list_head slab_list;
-		struct rcu_head rcu_head;
-	};
-	struct kmem_cache *slab_cache;
-	 
-	void *freelist;		 
-	union {
-		unsigned long counters;
-		struct {
-			unsigned inuse:16;
-			unsigned objects:15;
-			unsigned frozen:1;
-		};
-	};
-	unsigned int __unused;
-
-
-	atomic_t __page_refcount;
-};
+struct slab { unsigned long __page_flags; union { struct list_head slab_list; struct rcu_head rcu_head; }; struct kmem_cache *slab_cache; void *freelist; union { unsigned long counters; struct { unsigned inuse:16; unsigned objects:15; unsigned frozen:1; }; }; unsigned int __unused; atomic_t __page_refcount; };
 
 #define SLAB_MATCH(pg, sl)							static_assert(offsetof(struct page, pg) == offsetof(struct slab, sl))
 SLAB_MATCH(flags, __page_flags);
@@ -91,31 +68,14 @@ static inline struct slab *virt_to_slab(const void *addr)
 #include <linux/kobject.h>
 #include <linux/local_lock.h>
 
-enum slab_deactivate_mode {
-	DEACTIVATE_TO_HEAD,
-	DEACTIVATE_TO_TAIL };
+enum slab_deactivate_mode { DEACTIVATE_TO_HEAD, DEACTIVATE_TO_TAIL };
 
-struct kmem_cache_cpu {
-	void **freelist;
-	unsigned long tid;
-	struct slab *slab;
-};
+struct kmem_cache_cpu { void **freelist; unsigned long tid; struct slab *slab; };
 
 
-struct kmem_cache_order_objects {
-	unsigned int x;
-};
+struct kmem_cache_order_objects { unsigned int x; };
 
-struct kmem_cache {
-	struct kmem_cache_cpu __percpu *cpu_slab;
-	slab_flags_t flags;
-	unsigned int size, object_size, offset;
-	struct kmem_cache_order_objects oo, min;
-	gfp_t allocflags;
-	void (*ctor)(void *);
-	unsigned int align;
-	struct kmem_cache_node *node[MAX_NUMNODES];
-};
+struct kmem_cache { struct kmem_cache_cpu __percpu *cpu_slab; slab_flags_t flags; unsigned int size, object_size, offset; struct kmem_cache_order_objects oo, min; gfp_t allocflags; void (*ctor)(void *); unsigned int align; struct kmem_cache_node *node[MAX_NUMNODES]; };
 
 /* sysfs_slab_unlink/release removed - unused */
 
@@ -125,12 +85,7 @@ struct kmem_cache {
 #include <linux/list_lru.h>
 
  
-enum slab_state {
-	DOWN,			 
-	PARTIAL,		 
-	PARTIAL_NODE,		 
-	UP,
-};
+enum slab_state { DOWN, PARTIAL, PARTIAL_NODE, UP, };
 
 extern enum slab_state slab_state;
 
@@ -218,14 +173,7 @@ static inline void slab_post_alloc_hook(struct kmem_cache *s, struct obj_cgroup 
 }
 
  
-struct kmem_cache_node {
-	spinlock_t list_lock;
-
-
-	unsigned long nr_partial;
-	struct list_head partial;
-
-};
+struct kmem_cache_node { spinlock_t list_lock; unsigned long nr_partial; struct list_head partial; };
 
 static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
 {

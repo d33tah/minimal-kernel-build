@@ -4,9 +4,7 @@
 #include <linux/cpumask.h>
 #include <linux/tick.h>
 
-enum hk_type {
-	HK_TYPE_KTHREAD,
-};
+enum hk_type { HK_TYPE_KTHREAD, };
 
 
 static inline const struct cpumask *housekeeping_cpumask(enum hk_type type)

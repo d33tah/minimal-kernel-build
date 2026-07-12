@@ -16,11 +16,7 @@ struct fs_context;
  * always-false branch.  Branches folded, field dropped.
  */
 
-struct vfsmount {
-	struct dentry *mnt_root;
-	struct super_block *mnt_sb;
-	struct user_namespace *mnt_userns;
-} __randomize_layout;
+struct vfsmount { struct dentry *mnt_root; struct super_block *mnt_sb; struct user_namespace *mnt_userns; } __randomize_layout;
 
 static inline struct user_namespace *mnt_user_ns(const struct vfsmount *mnt)
 {

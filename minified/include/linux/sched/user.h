@@ -6,9 +6,7 @@
 #include <linux/refcount.h>
 #include <linux/ratelimit.h>
 
-struct user_struct {
-	refcount_t __count;
-};
+struct user_struct { refcount_t __count; };
 
 
 extern struct user_struct root_user;

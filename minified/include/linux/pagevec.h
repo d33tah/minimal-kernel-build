@@ -9,11 +9,7 @@
 struct page;
 struct folio;
 
-struct pagevec {
-	unsigned char nr;
-	bool percpu_pvec_drained;
-	struct page *pages[PAGEVEC_SIZE];
-};
+struct pagevec { unsigned char nr; bool percpu_pvec_drained; struct page *pages[PAGEVEC_SIZE]; };
 
 void __pagevec_lru_add(struct pagevec *pvec);
 
@@ -30,11 +26,7 @@ static inline unsigned pagevec_add(struct pagevec *pvec, struct page *page)
 	return PAGEVEC_SIZE - pvec->nr;
 }
 
-struct folio_batch {
-	unsigned char nr;
-	bool percpu_pvec_drained;
-	struct folio *folios[PAGEVEC_SIZE];
-};
+struct folio_batch { unsigned char nr; bool percpu_pvec_drained; struct folio *folios[PAGEVEC_SIZE]; };
 
 static_assert(sizeof(struct pagevec) == sizeof(struct folio_batch));
 static_assert(offsetof(struct pagevec, pages) == offsetof(struct folio_batch, folios));

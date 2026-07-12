@@ -62,12 +62,7 @@ void __init e820__range_add(u64 start, u64 size, enum e820_type type)
 	__e820__range_add(e820_table, start, size, type);
 }
 
-struct change_member {
-	 
-	struct e820_entry	*entry;
-	 
-	unsigned long long	addr;
-};
+struct change_member { struct e820_entry	*entry; unsigned long long	addr; };
 
 static struct change_member	change_point_list[2*E820_MAX_ENTRIES]	__initdata;
 static struct change_member	*change_point[2*E820_MAX_ENTRIES]	__initdata;

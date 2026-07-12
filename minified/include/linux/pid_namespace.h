@@ -7,12 +7,7 @@
 #include <linux/ns_common.h>
 #include <linux/idr.h>
 
-struct pid_namespace {
-	struct idr idr;
-	unsigned int pid_allocated;
-	struct kmem_cache *pid_cachep;
-	unsigned int level;
-} __randomize_layout;
+struct pid_namespace { struct idr idr; unsigned int pid_allocated; struct kmem_cache *pid_cachep; unsigned int level; } __randomize_layout;
 
 extern struct pid_namespace init_pid_ns;
 

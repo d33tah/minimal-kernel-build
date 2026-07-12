@@ -12,12 +12,7 @@
 #define radix_tree_root		xarray
 #define radix_tree_node		xa_node
 
-struct radix_tree_preload {
-	local_lock_t lock;
-	unsigned nr;
-	 
-	struct radix_tree_node *nodes;
-};
+struct radix_tree_preload { local_lock_t lock; unsigned nr; struct radix_tree_node *nodes; };
 DECLARE_PER_CPU(struct radix_tree_preload, radix_tree_preloads);
 
 #define RADIX_TREE_ENTRY_MASK		3UL
@@ -48,10 +43,7 @@ static inline bool radix_tree_is_internal_node(void *ptr)
 #define INIT_RADIX_TREE(root, mask) xa_init_flags(root, mask)
 
 
-struct radix_tree_iter {
-	unsigned long index, next_index, tags;
-	struct radix_tree_node *node;
-};
+struct radix_tree_iter { unsigned long index, next_index, tags; struct radix_tree_node *node; };
 
 
 int radix_tree_insert(struct radix_tree_root *, unsigned long index, void *);

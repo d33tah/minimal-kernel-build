@@ -10,9 +10,7 @@
    registers on bus_notifier. */
 /* class back-pointer removed - was write-only (set in __class_register,
    never read by any consumer). */
-struct subsys_private {
-	struct kset subsys;
-};
+struct subsys_private { struct kset subsys; };
 
 /* Removed: struct driver_private - the driver-side klist/kobj is never built
    (no driver_register/bus_add_driver), and driver->p is never dereferenced. */
@@ -24,8 +22,7 @@ struct subsys_private {
 /* Removed: ->device back-pointer - write-only (set in device_private_init,
    never read; its readers were the removed klist/glue-dir machinery). dev->p
    itself is kept solely as a kzalloc presence-marker, so the struct is empty. */
-struct device_private {
-};
+struct device_private { };
 
  
 extern int devices_init(void);

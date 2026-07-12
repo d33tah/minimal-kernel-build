@@ -20,9 +20,7 @@
 #define VGA_CRTC_CURSOR_START	0x0A
 #define VGA_CRTC_CURSOR_END	0x0B
 
-struct vgastate {
-	void __iomem *vgabase;
-};
+struct vgastate { void __iomem *vgabase; };
 
 /* vga_io_w, vga_mm_w, vga_w removed - unused */
 

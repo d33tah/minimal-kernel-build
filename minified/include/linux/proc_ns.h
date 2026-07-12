@@ -4,9 +4,7 @@
 #include <linux/ns_common.h>
 
 
-enum {
-	PROC_UTS_INIT_INO	= 0xEFFFFFFEU,
-};
+enum { PROC_UTS_INIT_INO	= 0xEFFFFFFEU, };
 
 
 static inline int proc_alloc_inum(unsigned int *inum)

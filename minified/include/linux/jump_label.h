@@ -11,9 +11,7 @@ extern bool static_key_initialized;
 
 #define STATIC_KEY_CHECK_USE(key) WARN(!static_key_initialized,		      				    "%s(): static key '%pS' used before call to jump_label_init()", 				    __func__, (key))
 
-struct static_key {
-	atomic_t enabled;
-};
+struct static_key { atomic_t enabled; };
 
 #endif  
 
@@ -53,13 +51,9 @@ static inline void static_key_enable(struct static_key *key)
 #define STATIC_KEY_INIT_FALSE	{ .enabled = ATOMIC_INIT(0) }
 
 
-struct static_key_true {
-	struct static_key key;
-};
+struct static_key_true { struct static_key key; };
 
-struct static_key_false {
-	struct static_key key;
-};
+struct static_key_false { struct static_key key; };
 
 #define STATIC_KEY_FALSE_INIT (struct static_key_false){ .key = STATIC_KEY_INIT_FALSE, }
 

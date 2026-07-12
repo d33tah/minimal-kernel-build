@@ -6,18 +6,7 @@
 #include <linux/mutex.h>
 
 
-struct irq_desc {
-	struct irq_common_data	irq_common_data;
-	struct irq_data		irq_data;
-	unsigned int __percpu	*kstat_irqs;
-	irq_flow_handler_t	handle_irq;
-	struct irqaction	*action;	 
-	unsigned int status_use_accessors, core_internal_state__do_not_mess_with_it, depth, irq_count, irqs_unhandled;
-	raw_spinlock_t		lock;
-	unsigned long		threads_oneshot;
-	struct kobject		kobj;
-	struct mutex		request_mutex;
-} ____cacheline_internodealigned_in_smp;
+struct irq_desc { struct irq_common_data	irq_common_data; struct irq_data		irq_data; unsigned int __percpu	*kstat_irqs; irq_flow_handler_t	handle_irq; struct irqaction	*action; unsigned int status_use_accessors, core_internal_state__do_not_mess_with_it, depth, irq_count, irqs_unhandled; raw_spinlock_t		lock; unsigned long		threads_oneshot; struct kobject		kobj; struct mutex		request_mutex; } ____cacheline_internodealigned_in_smp;
 
 
 

@@ -75,10 +75,7 @@ static inline void __endian(const void *src, void *dest, unsigned int size)
 
 void *do_nofail(void *ptr, const char *expr);
 
-struct buffer {
-	char *p;
-	int pos, size;
-};
+struct buffer { char *p; int pos, size; };
 
 void __attribute__((format(printf, 2, 3)))
 buf_printf(struct buffer *buf, const char *fmt, ...);
@@ -86,27 +83,9 @@ buf_printf(struct buffer *buf, const char *fmt, ...);
 void
 buf_write(struct buffer *buf, const char *s, int len);
 
-struct module {
-	struct list_head list, exported_symbols, unresolved_symbols;
-	bool from_dump, is_vmlinux;
-	char name[];
-};
+struct module { struct list_head list, exported_symbols, unresolved_symbols; bool from_dump, is_vmlinux; char name[]; };
 
-struct elf_info {
-	size_t size;
-	Elf_Ehdr     *hdr;
-	Elf_Shdr     *sechdrs;
-	Elf_Sym      *symtab_start;
-	Elf_Sym      *symtab_stop;
-	char         *strtab;
-
-
-
-	unsigned int num_sections, secindex_strings;
-	 
-	Elf32_Word   *symtab_shndx_start;
-	Elf32_Word   *symtab_shndx_stop;
-};
+struct elf_info { size_t size; Elf_Ehdr     *hdr; Elf_Shdr     *sechdrs; Elf_Sym      *symtab_start; Elf_Sym      *symtab_stop; char         *strtab; unsigned int num_sections, secindex_strings; Elf32_Word   *symtab_shndx_start; Elf32_Word   *symtab_shndx_stop; };
 
 static inline int is_shndx_special(unsigned int i)
 {
@@ -126,11 +105,7 @@ static inline unsigned int get_secindex(const struct elf_info *info, const Elf_S
 	return info->symtab_shndx_start[sym - info->symtab_start];
 }
 
-enum loglevel {
-	LOG_WARN,
-	LOG_ERROR,
-	LOG_FATAL
-};
+enum loglevel { LOG_WARN, LOG_ERROR, LOG_FATAL };
 
 void modpost_log(enum loglevel loglevel, const char *fmt, ...);
 

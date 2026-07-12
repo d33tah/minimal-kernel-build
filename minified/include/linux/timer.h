@@ -4,14 +4,7 @@
 #include <linux/list.h>
 #include <linux/ktime.h>
 
-struct timer_list {
-	 
-	struct hlist_node	entry;
-	unsigned long		expires;
-	void			(*function)(struct timer_list *);
-	u32			flags;
-
-};
+struct timer_list { struct hlist_node	entry; unsigned long		expires; void			(*function)(struct timer_list *); u32			flags; };
 
 #define __TIMER_LOCKDEP_MAP_INITIALIZER(_kn)
 

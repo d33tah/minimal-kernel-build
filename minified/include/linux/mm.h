@@ -221,32 +221,9 @@ static inline bool fault_flag_allow_retry_first(enum fault_flag flags)
 }
 
 
-struct vm_fault {
-	const struct {
-		struct vm_area_struct *vma;	
-		gfp_t gfp_mask;			
-		pgoff_t pgoff;			
-		unsigned long address;
-	};
-	enum fault_flag flags;		
-	pmd_t *pmd;			
-	pud_t *pud;			
-	union {
-		pte_t orig_pte;		
-		pmd_t orig_pmd;		
-	};
+struct vm_fault { const struct { struct vm_area_struct *vma; gfp_t gfp_mask; pgoff_t pgoff; unsigned long address; }; enum fault_flag flags; pmd_t *pmd; pud_t *pud; union { pte_t orig_pte; pmd_t orig_pmd; }; struct page *cow_page, *page; pte_t *pte; spinlock_t *ptl; pgtable_t prealloc_pte; };
 
-	struct page *cow_page, *page;
-	
-	pte_t *pte;			
-	spinlock_t *ptl;		
-	pgtable_t prealloc_pte;		
-};
-
-struct vm_operations_struct {
-	vm_fault_t (*fault)(struct vm_fault *vmf);
-	vm_fault_t (*page_mkwrite)(struct vm_fault *vmf);
-};
+struct vm_operations_struct { vm_fault_t (*fault)(struct vm_fault *vmf); vm_fault_t (*page_mkwrite)(struct vm_fault *vmf); };
 
 static inline void vma_init(struct vm_area_struct *vma, struct mm_struct *mm)
 {
@@ -328,11 +305,7 @@ static inline struct folio *virt_to_folio(const void *x)
 void __put_page(struct page *page);
 
 
-enum compound_dtor_id {
-	NULL_COMPOUND_DTOR,
-	COMPOUND_PAGE_DTOR,
-	NR_COMPOUND_DTORS,
-};
+enum compound_dtor_id { NULL_COMPOUND_DTOR, COMPOUND_PAGE_DTOR, NR_COMPOUND_DTORS, };
 
 static inline void set_compound_page_dtor(struct page *page, enum compound_dtor_id compound_dtor)
 {

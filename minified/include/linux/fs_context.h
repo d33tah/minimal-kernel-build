@@ -13,45 +13,17 @@ struct file_system_type;
 struct super_block;
 struct user_namespace;
 
-enum fs_context_purpose {
-	FS_CONTEXT_FOR_MOUNT,		 
-	FS_CONTEXT_FOR_SUBMOUNT,	 
-	FS_CONTEXT_FOR_RECONFIGURE,	 
-};
+enum fs_context_purpose { FS_CONTEXT_FOR_MOUNT, FS_CONTEXT_FOR_SUBMOUNT, FS_CONTEXT_FOR_RECONFIGURE, };
 
 /* enum fs_context_phase + struct fs_context.phase field removed - 0-ref (never set/read) */
 
-enum fs_value_type {
-	fs_value_is_flag,
-	fs_value_is_string,
-};
+enum fs_value_type { fs_value_is_flag, fs_value_is_string, };
 
-struct fs_parameter {
-	const char		*key;		 
-	enum fs_value_type	type:8;		 
-	union {
-		char		*string;
-	};
-};
+struct fs_parameter { const char		*key; enum fs_value_type	type:8; union { char		*string; }; };
 
-struct p_log {
-	const char *prefix;
-	struct fc_log *log;
-};
+struct p_log { const char *prefix; struct fc_log *log; };
 
-struct fs_context {
-	const struct fs_context_operations *ops;
-	struct mutex		uapi_mutex;	 
-	struct file_system_type	*fs_type;
-	struct dentry		*root;
-	struct user_namespace	*user_ns;
-	const struct cred	*cred;
-	struct p_log		log;		 
-	const char		*source;
-	void			*s_fs_info;
-	unsigned int		sb_flags;
-	bool			need_free:1;
-};
+struct fs_context { const struct fs_context_operations *ops; struct mutex		uapi_mutex; struct file_system_type	*fs_type; struct dentry		*root; struct user_namespace	*user_ns; const struct cred	*cred; struct p_log		log; const char		*source; void			*s_fs_info; unsigned int		sb_flags; bool			need_free:1; };
 
 struct fs_context_operations {
 	void (*free)(struct fs_context *fc);
@@ -73,11 +45,7 @@ extern int vfs_parse_fs_param_source(struct fs_context *fc, struct fs_parameter 
 
 extern int get_tree_nodev(struct fs_context *fc, int (*fill_super)(struct super_block *sb, struct fs_context *fc));
 
-struct fc_log {
-	refcount_t	usage;
-	u8		need_free;
-	char		*buffer[8];
-};
+struct fc_log { refcount_t	usage; u8		need_free; char		*buffer[8]; };
 
 extern __attribute__((format(printf, 4, 5)))
 void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, ...);

@@ -62,9 +62,7 @@ struct signal_struct;
 
 #define set_special_state(state_value)						do {										unsigned long flags;  														raw_spin_lock_irqsave(&current->pi_lock, flags);			debug_special_state_change((state_value));				WRITE_ONCE(current->__state, (state_value));				raw_spin_unlock_irqrestore(&current->pi_lock, flags);		} while (0)
 
-enum {
-	TASK_COMM_LEN = 16,
-};
+enum { TASK_COMM_LEN = 16, };
 
 extern void scheduler_tick(void);
 
@@ -79,166 +77,14 @@ extern void schedule_preempt_disabled(void);
 # define SCHED_FIXEDPOINT_SHIFT		10
 /* SCHED_CAPACITY_SHIFT/SCHED_CAPACITY_SCALE removed - 0-caller (FIXEDPOINT_SHIFT stays live via NICE_0_LOAD_SHIFT) */
 
-struct load_weight {
-	unsigned long			weight;
-	u32				inv_weight;
-};
+struct load_weight { unsigned long			weight; u32				inv_weight; };
 
-struct sched_entity {
-	 
-	struct load_weight		load;
-	struct rb_node			run_node;
-	unsigned int			on_rq;
+struct sched_entity { struct load_weight		load; struct rb_node			run_node; unsigned int			on_rq; u64 exec_start, sum_exec_runtime, vruntime, prev_sum_exec_runtime; };
 
-	u64 exec_start, sum_exec_runtime, vruntime, prev_sum_exec_runtime;
-};
+struct wake_q_node { struct wake_q_node *next; };
 
-struct wake_q_node {
-	struct wake_q_node *next;
-};
 
-
-struct task_struct {
-	 
-	struct thread_info		thread_info;
-	unsigned int			__state;
-
-
-	 
-	randomized_struct_fields_start
-
-	void				*stack;
-	refcount_t			usage;
-	 
-	unsigned int			flags;
-
-	int				on_rq;
-
-	int				static_prio;
-
-	struct sched_entity		se;
-	const struct sched_class	*sched_class;
-
-	unsigned int			policy;
-	const cpumask_t			*cpus_ptr;
-	cpumask_t			cpus_mask;
-
-	struct list_head		tasks;
-
-	struct mm_struct *mm, *active_mm;
-
-	int				exit_signal;
-	unsigned long			jobctl;
-
-
-	unsigned int			personality;
-
-	unsigned			in_iowait:1;
-
-
-	pid_t				pid;
-	pid_t				tgid;
-
-	 
-
-	 
-	struct task_struct __rcu	*real_parent;
-
-	 
-	struct task_struct __rcu	*parent;
-
-
-	struct task_struct		*group_leader;
-
-
-	struct list_head		ptrace_entry;
-
-	 
-	struct pid			*thread_pid;
-	struct hlist_node		pid_links[PIDTYPE_MAX];
-	struct list_head thread_group, thread_node;
-
-	struct completion		*vfork_done;
-
-
-	void				*worker_private;
-
-
-	 
-
-
-	 
-
-
-	const struct cred __rcu		*real_cred;
-
-	 
-	const struct cred __rcu		*cred;
-
-
-	 
-	char				comm[TASK_COMM_LEN];
-
-	struct nameidata		*nameidata;
-
-	 
-	struct fs_struct		*fs;
-
-	 
-	struct files_struct		*files;
-
-
-	 
-	struct nsproxy			*nsproxy;
-
-	 
-	struct signal_struct		*signal;
-	struct sighand_struct __rcu		*sighand;
-	sigset_t			blocked;
-
-	struct sigpending		pending;
-
-	struct callback_head		*task_works;
-
-
-
-	spinlock_t			alloc_lock;
-
-
-	raw_spinlock_t			pi_lock;
-
-	struct wake_q_node		wake_q;
-
-
-
-
-
-
-
-	union {
-		refcount_t		rcu_users;
-		struct rcu_head		rcu;
-	};
-
-
-
-
-
-	int				pagefault_disabled;
-
-	refcount_t			stack_refcount;
-
-
-
-
-
-	randomized_struct_fields_end
-
-	 
-	struct thread_struct		thread;
-
-	 
-};
+struct task_struct { struct thread_info		thread_info; unsigned int			__state; randomized_struct_fields_start void				*stack; refcount_t			usage; unsigned int			flags; int				on_rq; int				static_prio; struct sched_entity		se; const struct sched_class	*sched_class; unsigned int			policy; const cpumask_t			*cpus_ptr; cpumask_t			cpus_mask; struct list_head		tasks; struct mm_struct *mm, *active_mm; int				exit_signal; unsigned long			jobctl; unsigned int			personality; unsigned			in_iowait:1; pid_t				pid; pid_t				tgid; struct task_struct __rcu	*real_parent; struct task_struct __rcu	*parent; struct task_struct		*group_leader; struct list_head		ptrace_entry; struct pid			*thread_pid; struct hlist_node		pid_links[PIDTYPE_MAX]; struct list_head thread_group, thread_node; struct completion		*vfork_done; void				*worker_private; const struct cred __rcu		*real_cred; const struct cred __rcu		*cred; char				comm[TASK_COMM_LEN]; struct nameidata		*nameidata; struct fs_struct		*fs; struct files_struct		*files; struct nsproxy			*nsproxy; struct signal_struct		*signal; struct sighand_struct __rcu		*sighand; sigset_t			blocked; struct sigpending		pending; struct callback_head		*task_works; spinlock_t			alloc_lock; raw_spinlock_t			pi_lock; struct wake_q_node		wake_q; union { refcount_t		rcu_users; struct rcu_head		rcu; }; int				pagefault_disabled; refcount_t			stack_refcount; randomized_struct_fields_end struct thread_struct		thread; };
 
 static inline struct pid *task_pid(struct task_struct *task)
 {
@@ -292,10 +138,7 @@ static __always_inline bool is_idle_task(const struct task_struct *p)
 }
 
 
-union thread_union {
-	struct task_struct task;
-	unsigned long stack[THREAD_SIZE/sizeof(long)];
-};
+union thread_union { struct task_struct task; unsigned long stack[THREAD_SIZE/sizeof(long)]; };
 
 
 extern unsigned long init_stack[THREAD_SIZE / sizeof(unsigned long)];

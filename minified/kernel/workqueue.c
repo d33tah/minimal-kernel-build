@@ -1,8 +1,7 @@
 /* Stub workqueue - runs work immediately (no threading) */
 #include <linux/workqueue.h>
 
-struct workqueue_struct {
-};
+struct workqueue_struct { };
 
 bool queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *work)
 {

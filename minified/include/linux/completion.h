@@ -2,8 +2,7 @@
 #define __LINUX_COMPLETION_H
 
 
-struct completion {
-};
+struct completion { };
 
 #define COMPLETION_INITIALIZER(work) 	{ }
 

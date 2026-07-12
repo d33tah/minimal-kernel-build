@@ -10,9 +10,6 @@ unsigned long long native_sched_clock(void);
 
 
 
-struct cyc2ns_data {
-	u32 cyc2ns_mul, cyc2ns_shift;
-	u64 cyc2ns_offset;
-};
+struct cyc2ns_data { u32 cyc2ns_mul, cyc2ns_shift; u64 cyc2ns_offset; };
 
 #endif

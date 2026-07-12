@@ -22,11 +22,7 @@ static DEFINE_STATIC_KEY_FALSE(__use_tsc);
 /* art_to_tsc_numerator, art_to_tsc_denominator, art_to_tsc_offset,
    art_related_clocksource removed - unused after convert_art_to_tsc removal */
 
-struct cyc2ns {
-	struct cyc2ns_data data[2];	 
-	seqcount_latch_t   seq;		 
-
-};  
+struct cyc2ns { struct cyc2ns_data data[2]; seqcount_latch_t   seq; };
 
 static DEFINE_PER_CPU_ALIGNED(struct cyc2ns, cyc2ns);
 

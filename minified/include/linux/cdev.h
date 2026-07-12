@@ -7,11 +7,7 @@
 
 struct file_operations;
 
-struct cdev {
-	struct kobject kobj;
-	const struct file_operations *ops;
-	struct list_head list;
-} __randomize_layout;
+struct cdev { struct kobject kobj; const struct file_operations *ops; struct list_head list; } __randomize_layout;
 
 void cdev_init(struct cdev *, const struct file_operations *);
 

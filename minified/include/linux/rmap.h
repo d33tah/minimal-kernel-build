@@ -9,30 +9,9 @@
 #include <linux/pagemap.h>
 #include <linux/memremap.h>
 
-struct anon_vma {
-	struct anon_vma *root;		 
-	struct rw_semaphore rwsem;	 
-	 
-	atomic_t refcount;
+struct anon_vma { struct anon_vma *root; struct rw_semaphore rwsem; atomic_t refcount; unsigned degree; struct anon_vma *parent; struct rb_root_cached rb_root; };
 
-	 
-	unsigned degree;
-
-	struct anon_vma *parent;	 
-
-	 
-
-	 
-	struct rb_root_cached rb_root;
-};
-
-struct anon_vma_chain {
-	struct vm_area_struct *vma;
-	struct anon_vma *anon_vma;
-	struct list_head same_vma;    
-	struct rb_node rb;			 
-	unsigned long rb_subtree_last;
-};
+struct anon_vma_chain { struct vm_area_struct *vma; struct anon_vma *anon_vma; struct list_head same_vma; struct rb_node rb; unsigned long rb_subtree_last; };
 
 void __put_anon_vma(struct anon_vma *anon_vma);
 

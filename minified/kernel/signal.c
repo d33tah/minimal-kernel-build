@@ -96,10 +96,7 @@ flush_signal_handlers(struct task_struct *t, int force_default)
 
 /* Removed: setup_print_fatal_signals and __setup - never used */
 
-enum sig_handler {
-	HANDLER_CURRENT, 
-	HANDLER_SIG_DFL,
-};
+enum sig_handler { HANDLER_CURRENT, HANDLER_SIG_DFL, };
 
 static int
 force_sig_info_to_task(struct kernel_siginfo *info, struct task_struct *t, enum sig_handler handler)

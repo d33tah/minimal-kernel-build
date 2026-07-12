@@ -20,39 +20,11 @@
 #include <asm/ptrace.h>
 
 
-struct sighand_struct {
-	spinlock_t		siglock;
-	refcount_t		count;
-	struct k_sigaction	action[_NSIG];
-};
+struct sighand_struct { spinlock_t		siglock; refcount_t		count; struct k_sigaction	action[_NSIG]; };
 
-struct multiprocess_signals {
-	sigset_t signal;
-};
+struct multiprocess_signals { sigset_t signal; };
 
-struct signal_struct {
-	refcount_t		sigcnt;
-	atomic_t		live;
-	struct list_head	thread_head;
-
-
-	struct sigpending	shared_pending;
-
-
-	unsigned int		flags;
-
-	struct pid *pids[PIDTYPE_MAX];
-
-
-	struct tty_struct *tty;
-
-
-	struct rlimit rlim[RLIM_NLIMITS];
-
-
-	struct mutex cred_guard_mutex;
-	struct rw_semaphore exec_update_lock;	 
-} __randomize_layout;
+struct signal_struct { refcount_t		sigcnt; atomic_t		live; struct list_head	thread_head; struct sigpending	shared_pending; unsigned int		flags; struct pid *pids[PIDTYPE_MAX]; struct tty_struct *tty; struct rlimit rlim[RLIM_NLIMITS]; struct mutex cred_guard_mutex; struct rw_semaphore exec_update_lock; } __randomize_layout;
 
 #define SIGNAL_UNKILLABLE	0x00000040
 

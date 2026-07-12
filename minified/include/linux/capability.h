@@ -18,9 +18,7 @@
 #define _KERNEL_CAPABILITY_U32S    _LINUX_CAPABILITY_U32S_3
 
 
-typedef struct kernel_cap_struct {
-	__u32 cap[_KERNEL_CAPABILITY_U32S];
-} kernel_cap_t;
+typedef struct kernel_cap_struct { __u32 cap[_KERNEL_CAPABILITY_U32S]; } kernel_cap_t;
 
 
 struct inode;

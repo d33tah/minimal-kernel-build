@@ -8,9 +8,7 @@
 
  
 
-typedef struct {
-	s64 __aligned(8) counter;
-} atomic64_t;
+typedef struct { s64 __aligned(8) counter; } atomic64_t;
 
 #define ATOMIC64_INIT(val)	{ (val) }
 

@@ -41,17 +41,6 @@
 #include <linux/time.h>
 #include <linux/uidgid.h>
 
-struct kstat {
-	umode_t		mode;
-	unsigned int	nlink;
-	u64 attributes, ino;
-	dev_t		dev;
-	dev_t		rdev;
-	kuid_t		uid;
-	kgid_t		gid;
-	loff_t		size;
-	struct timespec64 mtime;
-	u64		blocks;
-};
+struct kstat { umode_t		mode; unsigned int	nlink; u64 attributes, ino; dev_t		dev; dev_t		rdev; kuid_t		uid; kgid_t		gid; loff_t		size; struct timespec64 mtime; u64		blocks; };
 
 #endif

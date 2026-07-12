@@ -79,11 +79,7 @@ static inline unsigned int arch_slab_minalign(void)
 #endif
 
 
-enum kmalloc_cache_type {
-	KMALLOC_NORMAL = 0,
-	KMALLOC_RECLAIM,
-	NR_KMALLOC_TYPES
-};
+enum kmalloc_cache_type { KMALLOC_NORMAL = 0, KMALLOC_RECLAIM, NR_KMALLOC_TYPES };
 
 extern struct kmem_cache *
 kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1];

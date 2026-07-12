@@ -19,16 +19,7 @@ typedef unsigned int	speed_t;
 typedef unsigned int	tcflag_t;
 
 #define NCCS 19
-struct ktermios {
-	tcflag_t c_iflag;		 
-	tcflag_t c_oflag;		 
-	tcflag_t c_cflag;		 
-	tcflag_t c_lflag;		 
-	cc_t c_line;			 
-	cc_t c_cc[NCCS];		 
-	speed_t c_ispeed;		 
-	speed_t c_ospeed;		 
-};
+struct ktermios { tcflag_t c_iflag; tcflag_t c_oflag; tcflag_t c_cflag; tcflag_t c_lflag; cc_t c_line; cc_t c_cc[NCCS]; speed_t c_ispeed; speed_t c_ospeed; };
 
 #define IXON	0x0400
 #define IUTF8	0x4000

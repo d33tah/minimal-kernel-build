@@ -10,15 +10,7 @@
 #define rt_sigframe_ia32	rt_sigframe
 #define ucontext_ia32		ucontext
 
-struct rt_sigframe_ia32 {
-	u32 pretcode;
-	int sig;
-	u32 pinfo, puc;
-	struct siginfo info;
-	struct ucontext_ia32 uc;
-	char retcode[8];
-	 
-};
+struct rt_sigframe_ia32 { u32 pretcode; int sig; u32 pinfo, puc; struct siginfo info; struct ucontext_ia32 uc; char retcode[8]; };
 
 
 #endif

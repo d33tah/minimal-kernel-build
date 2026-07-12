@@ -12,9 +12,7 @@
 
 #define BOOT_PARAM_PRESERVE(struct_member)					{										.start = offsetof(struct boot_params, struct_member),			.len   = sizeof_mbr(struct boot_params, struct_member),		}
 
-struct boot_params_to_save {
-	unsigned int start, len;
-};
+struct boot_params_to_save { unsigned int start, len; };
 
 static void sanitize_boot_params(struct boot_params *boot_params)
 {

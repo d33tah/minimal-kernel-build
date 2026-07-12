@@ -14,27 +14,13 @@ extern unsigned long max_low_pfn;
 
 extern unsigned long max_pfn;
 
-enum memblock_flags {
-	MEMBLOCK_NONE		= 0x0,
-};
+enum memblock_flags { MEMBLOCK_NONE		= 0x0, };
 
-struct memblock_region {
-	phys_addr_t base;
-	phys_addr_t size;
-	enum memblock_flags flags;
-};
+struct memblock_region { phys_addr_t base; phys_addr_t size; enum memblock_flags flags; };
 
-struct memblock_type {
-	unsigned long cnt, max;
-	phys_addr_t total_size;
-	struct memblock_region *regions;
-	char *name;
-};
+struct memblock_type { unsigned long cnt, max; phys_addr_t total_size; struct memblock_region *regions; char *name; };
 
-struct memblock {
-	phys_addr_t current_limit;
-	struct memblock_type memory, reserved;
-};
+struct memblock { phys_addr_t current_limit; struct memblock_type memory, reserved; };
 
 extern struct memblock memblock;
 

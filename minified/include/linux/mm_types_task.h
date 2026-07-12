@@ -9,10 +9,6 @@
 
 #include <asm/page.h>
 
-enum {
-	MM_FILEPAGES,
-	MM_ANONPAGES,
-	MM_SHMEMPAGES,
-};
+enum { MM_FILEPAGES, MM_ANONPAGES, MM_SHMEMPAGES, };
 
 #endif

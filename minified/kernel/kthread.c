@@ -22,18 +22,9 @@ struct kthread_create_info
 	struct list_head list;
 };
 
-struct kthread {
-	unsigned long flags;
-	int (*threadfn)(void *);
-	void *data;
-	struct completion parked, exited;
-};
+struct kthread { unsigned long flags; int (*threadfn)(void *); void *data; struct completion parked, exited; };
 
-enum KTHREAD_BITS {
-	KTHREAD_IS_PER_CPU = 0,
-	KTHREAD_SHOULD_STOP,
-	KTHREAD_SHOULD_PARK,
-};
+enum KTHREAD_BITS { KTHREAD_IS_PER_CPU = 0, KTHREAD_SHOULD_STOP, KTHREAD_SHOULD_PARK, };
 
 static inline struct kthread *to_kthread(struct task_struct *k)
 {

@@ -29,10 +29,7 @@ static void __attribute__((noreturn)) pperror(const char *format, ...)
 
 static LIST_HEAD(env_list);
 
-struct env {
-	char *name, *value;
-	struct list_head node;
-};
+struct env { char *name, *value; struct list_head node; };
 
 static void env_add(const char *name, const char *value)
 {
@@ -88,11 +85,7 @@ void env_write_dep(FILE *f, const char *autoconfig_name)
 	}
 }
 
-struct function {
-	const char *name;
-	unsigned int min_args, max_args;
-	char *(*func)(int argc, char *argv[]);
-};
+struct function { const char *name; unsigned int min_args, max_args; char *(*func)(int argc, char *argv[]); };
 
 static char *do_error_if(int argc, char *argv[])
 {
@@ -169,12 +162,7 @@ static char *function_expand(const char *name, int argc, char *argv[])
 
 static LIST_HEAD(variable_list);
 
-struct variable {
-	char *name, *value;
-	enum variable_flavor flavor;
-	int exp_count;
-	struct list_head node;
-};
+struct variable { char *name, *value; enum variable_flavor flavor; int exp_count; struct list_head node; };
 
 static struct variable *variable_lookup(const char *name)
 {

@@ -7,12 +7,7 @@
 #include <linux/compiler.h>
 #include <linux/minmax.h>
 #include <linux/types.h>
-struct resource {
-	resource_size_t start;
-	resource_size_t end;
-	const char *name;
-	unsigned long flags;
-};
+struct resource { resource_size_t start; resource_size_t end; const char *name; unsigned long flags; };
 
 #define IORESOURCE_MEM		0x00000200
 

@@ -12,9 +12,7 @@ static DEFINE_STATIC_KEY_FALSE(__sched_clock_stable);
 __read_mostly u64 __sched_clock_offset;
 static __read_mostly u64 __gtod_offset;
 
-struct sched_clock_data {
-	u64 tick_raw, tick_gtod, clock;
-};
+struct sched_clock_data { u64 tick_raw, tick_gtod, clock; };
 
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct sched_clock_data, sched_clock_data);
 

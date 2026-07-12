@@ -36,10 +36,7 @@ extern int console_printk[];
 extern void console_verbose(void);
 
 
-struct va_format {
-	const char *fmt;
-	va_list *va;
-};
+struct va_format { const char *fmt; va_list *va; };
 
 #define no_printk(fmt, ...)				({								if (0)								printk(fmt, ##__VA_ARGS__);			0;						})
 

@@ -16,49 +16,15 @@ typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 #include <asm/ptrace.h>
 #include <asm/irq_regs.h>
 
-enum {
-	IRQ_TYPE_NONE		= 0x00000000,
-	IRQ_TYPE_SENSE_MASK	= 0x0000000f,
-
-	IRQ_LEVEL		= (1 <<  8),
-	IRQ_PER_CPU		= (1 <<  9),
-	IRQ_NOPROBE		= (1 << 10),
-	IRQ_NOREQUEST		= (1 << 11),
-	IRQ_NOAUTOEN		= (1 << 12),
-	IRQ_NO_BALANCING	= (1 << 13),
-	IRQ_MOVE_PCNTXT		= (1 << 14),
-	IRQ_NESTED_THREAD	= (1 << 15),
-	IRQ_NOTHREAD		= (1 << 16),
-	IRQ_PER_CPU_DEVID	= (1 << 17),
-	IRQ_IS_POLLED		= (1 << 18),
-	IRQ_DISABLE_UNLAZY	= (1 << 19),
-	IRQ_HIDDEN		= (1 << 20),
-	IRQ_NO_DEBUG		= (1 << 21),
-};
+enum { IRQ_TYPE_NONE		= 0x00000000, IRQ_TYPE_SENSE_MASK	= 0x0000000f, IRQ_LEVEL		= (1 <<  8), IRQ_PER_CPU		= (1 <<  9), IRQ_NOPROBE		= (1 << 10), IRQ_NOREQUEST		= (1 << 11), IRQ_NOAUTOEN		= (1 << 12), IRQ_NO_BALANCING	= (1 << 13), IRQ_MOVE_PCNTXT		= (1 << 14), IRQ_NESTED_THREAD	= (1 << 15), IRQ_NOTHREAD		= (1 << 16), IRQ_PER_CPU_DEVID	= (1 << 17), IRQ_IS_POLLED		= (1 << 18), IRQ_DISABLE_UNLAZY	= (1 << 19), IRQ_HIDDEN		= (1 << 20), IRQ_NO_DEBUG		= (1 << 21), };
 
 #define IRQF_MODIFY_MASK		(IRQ_TYPE_SENSE_MASK | IRQ_NOPROBE | IRQ_NOREQUEST | 	 IRQ_NOAUTOEN | IRQ_MOVE_PCNTXT | IRQ_LEVEL | IRQ_NO_BALANCING | 	 IRQ_PER_CPU | IRQ_NESTED_THREAD | IRQ_NOTHREAD | IRQ_PER_CPU_DEVID | 	 IRQ_IS_POLLED | IRQ_DISABLE_UNLAZY | IRQ_HIDDEN)
 
-struct irq_common_data {
-	unsigned int		__private state_use_accessors;
-};
+struct irq_common_data { unsigned int		__private state_use_accessors; };
 
-struct irq_data {
-	unsigned int		irq;
-	struct irq_common_data	*common;
-	struct irq_chip		*chip;
-};
+struct irq_data { unsigned int		irq; struct irq_common_data	*common; struct irq_chip		*chip; };
 
-enum {
-	IRQD_TRIGGER_MASK		= 0xf,
-	IRQD_ACTIVATED			= (1 <<  9),
-	IRQD_NO_BALANCING		= (1 << 10),
-	IRQD_IRQ_DISABLED		= (1 << 16),
-	IRQD_IRQ_MASKED			= (1 << 17),
-	IRQD_IRQ_INPROGRESS		= (1 << 18),
-	IRQD_WAKEUP_ARMED		= (1 << 19),
-	IRQD_AFFINITY_MANAGED		= (1 << 21),
-	IRQD_IRQ_STARTED		= (1 << 22),
-};
+enum { IRQD_TRIGGER_MASK		= 0xf, IRQD_ACTIVATED			= (1 <<  9), IRQD_NO_BALANCING		= (1 << 10), IRQD_IRQ_DISABLED		= (1 << 16), IRQD_IRQ_MASKED			= (1 << 17), IRQD_IRQ_INPROGRESS		= (1 << 18), IRQD_WAKEUP_ARMED		= (1 << 19), IRQD_AFFINITY_MANAGED		= (1 << 21), IRQD_IRQ_STARTED		= (1 << 22), };
 
 #define __irqd_to_state(d) ACCESS_PRIVATE((d)->common, state_use_accessors)
 
@@ -99,31 +65,9 @@ static inline bool irqd_is_started(struct irq_data *d)
 
 #undef __irqd_to_state
 
-struct irq_chip {
-	const char	*name;
-	unsigned int	(*irq_startup)(struct irq_data *data);
-	void		(*irq_enable)(struct irq_data *data);
-	void		(*irq_disable)(struct irq_data *data);
+struct irq_chip { const char	*name; unsigned int	(*irq_startup)(struct irq_data *data); void		(*irq_enable)(struct irq_data *data); void		(*irq_disable)(struct irq_data *data); void		(*irq_ack)(struct irq_data *data); void		(*irq_mask)(struct irq_data *data); void		(*irq_mask_ack)(struct irq_data *data); void		(*irq_unmask)(struct irq_data *data); int		(*irq_set_type)(struct irq_data *data, unsigned int flow_type); void		(*irq_bus_lock)(struct irq_data *data); void		(*irq_bus_sync_unlock)(struct irq_data *data); int		(*irq_request_resources)(struct irq_data *data); void		(*irq_release_resources)(struct irq_data *data); unsigned long	flags; };
 
-	void		(*irq_ack)(struct irq_data *data);
-	void		(*irq_mask)(struct irq_data *data);
-	void		(*irq_mask_ack)(struct irq_data *data);
-	void		(*irq_unmask)(struct irq_data *data);
-
-	int		(*irq_set_type)(struct irq_data *data, unsigned int flow_type);
-
-	void		(*irq_bus_lock)(struct irq_data *data);
-	void		(*irq_bus_sync_unlock)(struct irq_data *data);
-
-	int		(*irq_request_resources)(struct irq_data *data);
-	void		(*irq_release_resources)(struct irq_data *data);
-
-	unsigned long	flags;
-};
-
-enum {
-	IRQCHIP_SKIP_SET_WAKE			= (1 <<  4),
-};
+enum { IRQCHIP_SKIP_SET_WAKE			= (1 <<  4), };
 
 #include <linux/irqdesc.h>
 

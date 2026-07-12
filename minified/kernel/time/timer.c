@@ -8,9 +8,7 @@ __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 
 # define NR_BASES	1
 
-struct timer_base {
-	raw_spinlock_t		lock;
-} ____cacheline_aligned;
+struct timer_base { raw_spinlock_t		lock; } ____cacheline_aligned;
 
 static DEFINE_PER_CPU(struct timer_base, timer_bases[NR_BASES]);
 

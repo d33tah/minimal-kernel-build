@@ -5,12 +5,7 @@
 #include <linux/spinlock_types_raw.h>
 
 
-typedef struct spinlock {
-	union {
-		struct raw_spinlock rlock;
-
-	};
-} spinlock_t;
+typedef struct spinlock { union { struct raw_spinlock rlock; }; } spinlock_t;
 
 #define ___SPIN_LOCK_INITIALIZER(lockname)		{						.raw_lock = __ARCH_SPIN_LOCK_UNLOCKED,		SPIN_DEBUG_INIT(lockname)			SPIN_DEP_MAP_INIT(lockname) }
 
@@ -23,9 +18,7 @@ typedef struct spinlock {
 
 /* Inlined from rwlock_types.h */
 # define RW_DEP_MAP_INIT(lockname)
-typedef struct {
-	arch_rwlock_t raw_lock;
-} rwlock_t;
+typedef struct { arch_rwlock_t raw_lock; } rwlock_t;
 #define __RW_LOCK_UNLOCKED(lockname) 	(rwlock_t)	{	.raw_lock = __ARCH_RW_LOCK_UNLOCKED,					RW_DEP_MAP_INIT(lockname) }
 #define DEFINE_RWLOCK(x)	rwlock_t x = __RW_LOCK_UNLOCKED(x)
 

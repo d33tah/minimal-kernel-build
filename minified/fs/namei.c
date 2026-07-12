@@ -169,25 +169,7 @@ void path_put(const struct path *path)
 }
 
 #define EMBEDDED_LEVELS 2
-struct nameidata {
-	struct path	path;
-	struct qstr	last;
-	struct path	root;
-	struct inode	*inode; 
-	unsigned int	flags, state;
-	unsigned	seq, m_seq;
-	int		last_type;
-	unsigned	depth;
-	int		total_link_count;
-	struct saved {
-		struct path link;
-		const char *name;
-		unsigned seq;
-	} *stack, internal[EMBEDDED_LEVELS];
-	struct filename	*name;
-	struct nameidata *saved;
-	unsigned	root_seq;
-} __randomize_layout;
+struct nameidata { struct path	path; struct qstr	last; struct path	root; struct inode	*inode; unsigned int	flags, state; unsigned	seq, m_seq; int		last_type; unsigned	depth; int		total_link_count; struct saved { struct path link; const char *name; unsigned seq; } *stack, internal[EMBEDDED_LEVELS]; struct filename	*name; struct nameidata *saved; unsigned	root_seq; } __randomize_layout;
 
 #define ND_ROOT_GRABBED 2
 #define ND_JUMPED 4

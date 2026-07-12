@@ -14,22 +14,9 @@ static inline unsigned long lcm(unsigned long a, unsigned long b)
 #include <linux/sched/mm.h>
 
 
-struct pcpu_block_md {
-	int scan_hint, scan_hint_start, contig_hint, contig_hint_start, left_free, right_free, first_free, nr_bits;
-};
+struct pcpu_block_md { int scan_hint, scan_hint_start, contig_hint, contig_hint_start, left_free, right_free, first_free, nr_bits; };
 
-struct pcpu_chunk {
-	struct list_head	list;
-	int			free_bytes;
-	struct pcpu_block_md	chunk_md;
-	void			*base_addr;
-	unsigned long *alloc_map, *bound_map;
-	struct pcpu_block_md	*md_blocks;
-	void			*data;
-	bool immutable, isolated;
-	int nr_pages, nr_populated, nr_empty_pop_pages;
-	unsigned long		populated[];
-};
+struct pcpu_chunk { struct list_head	list; int			free_bytes; struct pcpu_block_md	chunk_md; void			*base_addr; unsigned long *alloc_map, *bound_map; struct pcpu_block_md	*md_blocks; void			*data; bool immutable, isolated; int nr_pages, nr_populated, nr_empty_pop_pages; unsigned long		populated[]; };
 
 static inline int pcpu_chunk_nr_blocks(struct pcpu_chunk *chunk)
 {

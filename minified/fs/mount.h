@@ -3,16 +3,9 @@
 #include <linux/poll.h>
 #include <linux/ns_common.h>
 
-struct mnt_namespace {
-	struct ns_common	ns;
-	struct user_namespace	*user_ns;
-	struct ucounts		*ucounts;
-} __randomize_layout;
+struct mnt_namespace { struct ns_common	ns; struct user_namespace	*user_ns; struct ucounts		*ucounts; } __randomize_layout;
 
-struct mount {
-	struct vfsmount mnt;
-	struct mnt_namespace *mnt_ns;
-} __randomize_layout;
+struct mount { struct vfsmount mnt; struct mnt_namespace *mnt_ns; } __randomize_layout;
 
 #define MNT_NS_INTERNAL ERR_PTR(-EINVAL)  
 

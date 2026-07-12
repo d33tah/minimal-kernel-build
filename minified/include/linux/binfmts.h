@@ -11,33 +11,9 @@
 
 struct filename;
 
-struct linux_binprm {
-	struct vm_area_struct *vma;
-	unsigned long vma_pages;
-	struct mm_struct *mm;
-	unsigned long p, argmin;
-	unsigned int
+struct linux_binprm { struct vm_area_struct *vma; unsigned long vma_pages; struct mm_struct *mm; unsigned long p, argmin; unsigned int secureexec:1, point_of_no_return:1; struct file *file; struct cred *cred; unsigned int per_clear; int argc, envc; const char *filename, *interp; unsigned long loader, exec; struct rlimit rlim_stack; char buf[BINPRM_BUF_SIZE]; } __randomize_layout;
 
-		secureexec:1,
-
-		point_of_no_return:1;
-	struct file *file;
-	struct cred *cred;
-	unsigned int per_clear;
-	int argc, envc;
-	const char *filename, *interp;
-	unsigned long loader, exec;
-
-	struct rlimit rlim_stack;  
-
-	char buf[BINPRM_BUF_SIZE];
-} __randomize_layout;
-
-struct linux_binfmt {
-	struct list_head lh;
-	struct module *module;
-	int (*load_binary)(struct linux_binprm *);
-} __randomize_layout;
+struct linux_binfmt { struct list_head lh; struct module *module; int (*load_binary)(struct linux_binprm *); } __randomize_layout;
 
 extern void __register_binfmt(struct linux_binfmt *fmt, int insert);
 

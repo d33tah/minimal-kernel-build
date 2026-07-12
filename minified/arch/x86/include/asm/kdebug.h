@@ -7,17 +7,9 @@
 struct pt_regs;
 
  
-enum die_val {
-	DIE_OOPS = 1,
-	DIE_INT3,
-	DIE_DEBUG,
-	DIE_TRAP,
-	DIE_GPF,
-};
+enum die_val { DIE_OOPS = 1, DIE_INT3, DIE_DEBUG, DIE_TRAP, DIE_GPF, };
 
-enum show_regs_mode {
-	SHOW_REGS_ALL
-};
+enum show_regs_mode { SHOW_REGS_ALL };
 
 extern void die(const char *, struct pt_regs *,long);
 void die_addr(const char *str, struct pt_regs *regs, long err, long gp_addr);

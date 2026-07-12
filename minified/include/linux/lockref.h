@@ -5,12 +5,7 @@
 #include <linux/spinlock.h>
 #include <generated/bounds.h>
 
-struct lockref {
-	struct {
-		spinlock_t lock;
-		int count;
-	};
-};
+struct lockref { struct { spinlock_t lock; int count; }; };
 
 extern void lockref_get(struct lockref *);
 extern int lockref_put_return(struct lockref *);

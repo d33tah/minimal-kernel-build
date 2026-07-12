@@ -4,10 +4,7 @@
 
 #include <linux/fs_context.h>
 
-struct constant_table {
-	const char	*name;
-	int		value;
-};
+struct constant_table { const char	*name; int		value; };
 
 struct fs_parameter_spec;
 struct fs_parse_result;
@@ -25,14 +22,7 @@ struct fs_parameter_spec {
 	const void		*data;
 };
 
-struct fs_parse_result {
-	bool			negated;	 
-	union {
-		bool		boolean;
-		unsigned int	uint_32;
-		u64		uint_64;
-	};
-};
+struct fs_parse_result { bool			negated; union { bool		boolean; unsigned int	uint_32; u64		uint_64; }; };
 
 extern int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc, struct fs_parameter *value, struct fs_parse_result *result);
 

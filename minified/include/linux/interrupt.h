@@ -5,10 +5,7 @@
 #include <linux/cpumask.h>
 
 /* Inlined from irqreturn.h */
-enum irqreturn {
-	IRQ_NONE		= (0 << 0),
-	IRQ_HANDLED		= (1 << 0),
-};
+enum irqreturn { IRQ_NONE		= (0 << 0), IRQ_HANDLED		= (1 << 0), };
 typedef enum irqreturn irqreturn_t;
 
 #include <linux/irqnr.h>
@@ -31,13 +28,7 @@ typedef enum irqreturn irqreturn_t;
 
 typedef irqreturn_t (*irq_handler_t)(int, void *);
 
-struct irqaction {
-	irq_handler_t		handler;
-	void			*dev_id;
-	struct irqaction	*next;
-	unsigned int irq, flags;
-	const char		*name;
-} ____cacheline_internodealigned_in_smp;
+struct irqaction { irq_handler_t		handler; void			*dev_id; struct irqaction	*next; unsigned int irq, flags; const char		*name; } ____cacheline_internodealigned_in_smp;
 
 extern irqreturn_t no_action(int cpl, void *dev_id);
 

@@ -5,18 +5,7 @@
 typedef struct kobject *kobj_probe_t(dev_t, int *, void *);
 /* end kobj_map.h */
 
-struct kobj_map {
-	struct probe {
-		struct probe *next;
-		dev_t dev;
-		unsigned long range;
-		struct module *owner;
-		kobj_probe_t *get;
-		int (*lock)(dev_t, void *);
-		void *data;
-	} *probes[255];
-	struct mutex *lock;
-};
+struct kobj_map { struct probe { struct probe *next; dev_t dev; unsigned long range; struct module *owner; kobj_probe_t *get; int (*lock)(dev_t, void *); void *data; } *probes[255]; struct mutex *lock; };
 
 int kobj_map(struct kobj_map *domain, dev_t dev, unsigned long range, struct module *module, kobj_probe_t *probe, int (*lock)(dev_t, void *), void *data)
 {

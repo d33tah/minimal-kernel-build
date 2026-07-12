@@ -8,14 +8,9 @@
 
 #define __NEW_UTS_LEN 64
 
-struct new_utsname {
-	char sysname[__NEW_UTS_LEN + 1], nodename[__NEW_UTS_LEN + 1], release[__NEW_UTS_LEN + 1], version[__NEW_UTS_LEN + 1], machine[__NEW_UTS_LEN + 1], domainname[__NEW_UTS_LEN + 1];
-};
+struct new_utsname { char sysname[__NEW_UTS_LEN + 1], nodename[__NEW_UTS_LEN + 1], release[__NEW_UTS_LEN + 1], version[__NEW_UTS_LEN + 1], machine[__NEW_UTS_LEN + 1], domainname[__NEW_UTS_LEN + 1]; };
 
-struct uts_namespace {
-	struct new_utsname name;
-	struct ns_common ns;
-} __randomize_layout;
+struct uts_namespace { struct new_utsname name; struct ns_common ns; } __randomize_layout;
 extern struct uts_namespace init_uts_ns;
 
 

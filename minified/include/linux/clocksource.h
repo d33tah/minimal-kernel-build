@@ -25,25 +25,9 @@
 #include <asm/vdso/clocksource.h>
 
 /* Inlined from vdso/clocksource.h */
-enum vdso_clock_mode {
-	VDSO_CLOCKMODE_NONE,
-	VDSO_ARCH_CLOCKMODES,
-	VDSO_CLOCKMODE_MAX,
-};
+enum vdso_clock_mode { VDSO_CLOCKMODE_NONE, VDSO_ARCH_CLOCKMODES, VDSO_CLOCKMODE_MAX, };
 
-struct clocksource {
-	u64			(*read)(struct clocksource *cs);
-	u64			mask;
-	u32 mult, shift, maxadj, uncertainty_margin;
-	const char		*name;
-	struct list_head	list;
-	int			rating;
-	enum clocksource_ids	id;
-	enum vdso_clock_mode	vdso_clock_mode;
-	unsigned long		flags;
-
-	int			(*enable)(struct clocksource *cs);
-};
+struct clocksource { u64			(*read)(struct clocksource *cs); u64			mask; u32 mult, shift, maxadj, uncertainty_margin; const char		*name; struct list_head	list; int			rating; enum clocksource_ids	id; enum vdso_clock_mode	vdso_clock_mode; unsigned long		flags; int			(*enable)(struct clocksource *cs); };
 
 #define CLOCK_SOURCE_IS_CONTINUOUS		0x01
 #define CLOCK_SOURCE_MUST_VERIFY		0x02

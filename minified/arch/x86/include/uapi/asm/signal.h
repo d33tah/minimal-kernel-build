@@ -57,11 +57,7 @@ typedef __restorefn_t __user *__sigrestore_t;
 
 /* userspace-only struct sigaction + sa_handler/sa_sigaction (#ifndef __KERNEL__) removed - kernel uses struct sigaction in signal_types.h */
 
-typedef struct sigaltstack {
-	void __user *ss_sp;
-	int ss_flags;
-	__kernel_size_t ss_size;
-} stack_t;
+typedef struct sigaltstack { void __user *ss_sp; int ss_flags; __kernel_size_t ss_size; } stack_t;
 
 #endif  
 

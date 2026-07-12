@@ -277,12 +277,7 @@ extern void native_pagetable_init(void);
 
 /* arch_report_meminfo removed - unused */
 
-enum pg_level {
-	PG_LEVEL_NONE,
-	PG_LEVEL_4K,
-	PG_LEVEL_2M,
-	PG_LEVEL_1G
-};
+enum pg_level { PG_LEVEL_NONE, PG_LEVEL_4K, PG_LEVEL_2M, PG_LEVEL_1G };
 
 /* lookup_address, lookup_address_in_pgd, lookup_pmd_address,
    slow_virt_to_phys, kernel_map_pages_in_pgd, kernel_unmap_pages_in_pgd

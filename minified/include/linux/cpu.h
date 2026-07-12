@@ -5,9 +5,7 @@
 #include <linux/cpumask.h>
 
 /* cpu_startup_entry() ignores its argument; only CPUHP_ONLINE is passed. */
-enum cpuhp_state {
-	CPUHP_ONLINE,
-};
+enum cpuhp_state { CPUHP_ONLINE, };
 
 extern void boot_cpu_init(void);
 extern void cpu_init(void);

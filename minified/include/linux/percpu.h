@@ -22,17 +22,9 @@
 
 extern const unsigned long *pcpu_unit_offsets;
 
-struct pcpu_group_info {
-	int			nr_units;	 
-	unsigned long		base_offset;	 
-	unsigned int		*cpu_map;	 
-};
+struct pcpu_group_info { int			nr_units; unsigned long		base_offset; unsigned int		*cpu_map; };
 
-struct pcpu_alloc_info {
-	size_t static_size, reserved_size, dyn_size, unit_size, atom_size, __ai_size;
-	int			nr_groups;	 
-	struct pcpu_group_info	groups[];
-};
+struct pcpu_alloc_info { size_t static_size, reserved_size, dyn_size, unit_size, atom_size, __ai_size; int			nr_groups; struct pcpu_group_info	groups[]; };
 
 extern struct pcpu_alloc_info * __init pcpu_alloc_alloc_info(int nr_groups, int nr_units);
 

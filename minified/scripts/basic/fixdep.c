@@ -15,11 +15,7 @@ static void usage(void)
 	exit(1);
 }
 
-struct item {
-	struct item	*next;
-	unsigned int len, hash;
-	char		name[];
-};
+struct item { struct item	*next; unsigned int len, hash; char		name[]; };
 
 #define HASHSZ 256
 static struct item *hashtab[HASHSZ];

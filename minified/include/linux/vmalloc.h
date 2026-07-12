@@ -19,14 +19,7 @@
 
 
 
-struct vmap_area {
-	unsigned long va_start, va_end;
-
-	struct rb_node rb_node;
-	struct list_head list;
-
-	unsigned long subtree_max_size;
-};
+struct vmap_area { unsigned long va_start, va_end; struct rb_node rb_node; struct list_head list; unsigned long subtree_max_size; };
 
 
 

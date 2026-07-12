@@ -4,10 +4,7 @@
 
 #include <linux/radix-tree.h>
 
-struct idr {
-	struct radix_tree_root	idr_rt;
-	unsigned int idr_base, idr_next;
-};
+struct idr { struct radix_tree_root	idr_rt; unsigned int idr_base, idr_next; };
 
 #define IDR_FREE	0
 
@@ -59,13 +56,9 @@ static inline void idr_preload_end(void)
 #define IDA_BITMAP_LONGS	(IDA_CHUNK_SIZE / sizeof(long))
 #define IDA_BITMAP_BITS 	(IDA_BITMAP_LONGS * sizeof(long) * 8)
 
-struct ida_bitmap {
-	unsigned long		bitmap[IDA_BITMAP_LONGS];
-};
+struct ida_bitmap { unsigned long		bitmap[IDA_BITMAP_LONGS]; };
 
-struct ida {
-	struct xarray xa;
-};
+struct ida { struct xarray xa; };
 
 #define IDA_INIT_FLAGS	(XA_FLAGS_LOCK_IRQ | XA_FLAGS_ALLOC)
 

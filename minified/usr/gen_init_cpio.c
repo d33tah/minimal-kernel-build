@@ -22,10 +22,7 @@ static unsigned int ino = 721;
 static time_t default_mtime;
 static bool do_csum = false;
 
-struct file_handler {
-	const char *type;
-	int (*handler)(const char *line);
-};
+struct file_handler { const char *type; int (*handler)(const char *line); };
 
 static void push_string(const char *name)
 {
@@ -125,16 +122,9 @@ static int cpio_mkgeneric(const char *name, unsigned int mode, uid_t uid, gid_t 
 	return 0;
 }
 
-enum generic_types {
-	GT_DIR,
-	GT_PIPE,
-	GT_SOCK
-};
+enum generic_types { GT_DIR, GT_PIPE, GT_SOCK };
 
-struct generic_type {
-	const char *type;
-	mode_t mode;
-};
+struct generic_type { const char *type; mode_t mode; };
 
 static const struct generic_type generic_type_table[] = { [GT_DIR] = { .type = "dir", .mode = S_IFDIR }, [GT_PIPE] = { .type = "pipe", .mode = S_IFIFO }, [GT_SOCK] = { .type = "sock", .mode = S_IFSOCK } };
 

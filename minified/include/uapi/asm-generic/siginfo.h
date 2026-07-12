@@ -13,16 +13,7 @@
 /* Trimmed to the union members actually read in this build: _kill (_pid/_uid)
  * and _sigfault._addr. siginfo_t is padded to SI_MAX_SIZE and both consumers
  * (copy_siginfo/clear_siginfo) use sizeof(self), so the layout is self-consistent. */
-union __sifields {
-	struct {
-		__kernel_pid_t _pid;
-		__kernel_uid32_t _uid;
-	} _kill;
-
-	struct {
-		void __user *_addr;
-	} _sigfault;
-};
+union __sifields { struct { __kernel_pid_t _pid; __kernel_uid32_t _uid; } _kill; struct { void __user *_addr; } _sigfault; };
 
 /*
  * __ARCH_HAS_SWAPPED_SIGINFO is never defined tree-wide (x86 uses the canonical
@@ -31,12 +22,7 @@ union __sifields {
  */
 #define __SIGINFO 			struct {					int si_signo;				int si_errno;				int si_code;				union __sifields _sifields;	}
 
-typedef struct siginfo {
-	union {
-		__SIGINFO;
-		int _si_pad[SI_MAX_SIZE/sizeof(int)];
-	};
-} __ARCH_SI_ATTRIBUTES siginfo_t;
+typedef struct siginfo { union { __SIGINFO; int _si_pad[SI_MAX_SIZE/sizeof(int)]; }; } __ARCH_SI_ATTRIBUTES siginfo_t;
 
 #define si_pid		_sifields._kill._pid
 #define si_uid		_sifields._kill._uid

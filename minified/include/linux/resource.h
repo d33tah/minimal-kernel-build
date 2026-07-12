@@ -4,10 +4,7 @@
 #include <linux/time.h>
 
 /* Inlined from uapi/linux/resource.h */
-struct rlimit {
-	__kernel_ulong_t	rlim_cur;
-	__kernel_ulong_t	rlim_max;
-};
+struct rlimit { __kernel_ulong_t	rlim_cur; __kernel_ulong_t	rlim_max; };
 
 #define _STK_LIM	(8*1024*1024)
 #define MLOCK_LIMIT	(8*1024*1024)

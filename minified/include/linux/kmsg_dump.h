@@ -9,9 +9,7 @@
  * is kept only to type the KMSG_DUMP_PANIC argument at the no-op
  * kmsg_dump() callsite (panic.c); the value is never read.
  */
-enum kmsg_dump_reason {
-	KMSG_DUMP_PANIC,
-};
+enum kmsg_dump_reason { KMSG_DUMP_PANIC, };
 
 static inline void kmsg_dump(enum kmsg_dump_reason reason)
 {

@@ -6,8 +6,7 @@
 #include <linux/lockdep.h>
 
 
-typedef struct {
-} local_lock_t;
+typedef struct { } local_lock_t;
 
 #define INIT_LOCAL_LOCK(lockname)	{ }
 

@@ -13,9 +13,7 @@
 
 #define _NSIG_WORDS	(_NSIG / _NSIG_BPW)
 
-typedef struct {
-	unsigned long sig[_NSIG_WORDS];
-} sigset_t;
+typedef struct { unsigned long sig[_NSIG_WORDS]; } sigset_t;
 
  
 #define compat_sigset_t compat_sigset_t

@@ -13,10 +13,7 @@ typedef __s64 time64_t;
 
 #include <uapi/linux/time.h>
 
-struct timespec64 {
-	time64_t	tv_sec;			 
-	long		tv_nsec;		 
-};
+struct timespec64 { time64_t	tv_sec; long		tv_nsec; };
 
 #define TIME64_MAX			((s64)~((u64)1 << 63))
 #define TIME64_MIN			(-TIME64_MAX - 1)

@@ -4,10 +4,7 @@
 #include <linux/errno.h>
 
 /* Inlined from clocksource_ids.h */
-enum clocksource_ids {
-	CSID_GENERIC		= 0,
-	CSID_MAX,
-};
+enum clocksource_ids { CSID_GENERIC		= 0, CSID_MAX, };
 
 void timekeeping_init(void);
 

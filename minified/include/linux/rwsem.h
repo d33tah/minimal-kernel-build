@@ -11,13 +11,7 @@
 
 
 
-struct rw_semaphore {
-	atomic_long_t count;
-	 
-	atomic_long_t owner;
-	raw_spinlock_t wait_lock;
-	struct list_head wait_list;
-};
+struct rw_semaphore { atomic_long_t count; atomic_long_t owner; raw_spinlock_t wait_lock; struct list_head wait_list; };
 
 static inline int rwsem_is_locked(struct rw_semaphore *sem)
 {

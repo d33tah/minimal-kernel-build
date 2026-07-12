@@ -6,13 +6,9 @@
 #include <linux/fs_context.h>
 #include "internal.h"
 
-struct ramfs_mount_opts {
-	umode_t mode;
-};
+struct ramfs_mount_opts { umode_t mode; };
 
-struct ramfs_fs_info {
-	struct ramfs_mount_opts mount_opts;
-};
+struct ramfs_fs_info { struct ramfs_mount_opts mount_opts; };
 
 #define RAMFS_DEFAULT_MODE	0755
 
@@ -82,9 +78,7 @@ static const struct inode_operations ramfs_dir_inode_operations = { .create		= r
  * assignment was write-only. ramfs_ops is now empty but kept for sb->s_op. */
 static const struct super_operations ramfs_ops = { };
 
-enum ramfs_param {
-	Opt_mode,
-};
+enum ramfs_param { Opt_mode, };
 
 const struct fs_parameter_spec ramfs_fs_parameters[] = { fsparam_u32oct("mode",	Opt_mode), {} };
 

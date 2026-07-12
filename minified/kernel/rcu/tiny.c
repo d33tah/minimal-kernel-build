@@ -4,10 +4,7 @@
 
 #include "rcu.h"
 
-struct rcu_ctrlblk {
-	struct rcu_head *rcucblist, **donetail, **curtail;
-	unsigned long gp_seq;		 
-};
+struct rcu_ctrlblk { struct rcu_head *rcucblist, **donetail, **curtail; unsigned long gp_seq; };
 
 static struct rcu_ctrlblk rcu_ctrlblk = { .donetail	= &rcu_ctrlblk.rcucblist, .curtail	= &rcu_ctrlblk.rcucblist, .gp_seq		= 0 - 300UL, };
 

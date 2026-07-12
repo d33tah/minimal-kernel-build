@@ -12,22 +12,9 @@
 
 struct kernel_param;
 
-struct kernel_param_ops {
-	 
-	unsigned int flags;
-	 
-	int (*set)(const char *val, const struct kernel_param *kp);
-};
+struct kernel_param_ops { unsigned int flags; int (*set)(const char *val, const struct kernel_param *kp); };
 
-struct kernel_param {
-	const char *name;
-	struct module *mod;
-	const struct kernel_param_ops *ops;
-	const u16 perm;
-	s8 level;
-	u8 flags;
-	void *arg;
-};
+struct kernel_param { const char *name; struct module *mod; const struct kernel_param_ops *ops; const u16 perm; s8 level; u8 flags; void *arg; };
 
 extern const struct kernel_param __start___param[], __stop___param[];
 

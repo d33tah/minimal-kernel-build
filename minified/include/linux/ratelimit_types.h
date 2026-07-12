@@ -5,9 +5,7 @@
 #include <linux/param.h>
 #include <linux/spinlock_types_raw.h>
 
-struct ratelimit_state {
-	raw_spinlock_t	lock;
-};
+struct ratelimit_state { raw_spinlock_t	lock; };
 
 #define RATELIMIT_STATE_INIT_FLAGS(name, interval_init, burst_init, flags_init) { 		.lock		= __RAW_SPIN_LOCK_UNLOCKED(name.lock),		  	}
 

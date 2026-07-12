@@ -4,10 +4,7 @@
 #include <linux/list.h>
 #include <linux/spinlock.h>
 
-struct semaphore {
-	raw_spinlock_t		lock;
-	unsigned int		count;
-};
+struct semaphore { raw_spinlock_t		lock; unsigned int		count; };
 
 #define __SEMAPHORE_INITIALIZER(name, n)				{										.lock		= __RAW_SPIN_LOCK_UNLOCKED((name).lock),		.count		= n,						}
 

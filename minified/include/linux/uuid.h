@@ -4,8 +4,6 @@
 #include <linux/types.h>
 #include <linux/string.h>
 
-typedef struct {
-	__u8 b[16];
-} guid_t;
+typedef struct { __u8 b[16]; } guid_t;
 
 #endif

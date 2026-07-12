@@ -4,10 +4,7 @@
 #include <linux/stat.h>
 #include <asm/fcntl.h>
 
-struct open_how {
-	__u64 flags;
-	__u64 mode;
-};
+struct open_how { __u64 flags; __u64 mode; };
 
 /* Inlined from uapi/linux/fcntl.h */
 #define AT_SYMLINK_NOFOLLOW	0x100

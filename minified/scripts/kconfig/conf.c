@@ -12,20 +12,13 @@
 
 #include "lkc.h"
 
-enum input_mode {
-	syncconfig,
-	allnoconfig,
-	olddefconfig,
-};
+enum input_mode { syncconfig, allnoconfig, olddefconfig, };
 static enum input_mode input_mode = allnoconfig;
 static int input_mode_opt;
 static int tty_stdio;
 static int sync_kconfig;
 
-enum conf_def_mode {
-	def_no,
-	def_random
-};
+enum conf_def_mode { def_no, def_random };
 
 static bool conf_set_all_new_symbols(enum conf_def_mode mode)
 {

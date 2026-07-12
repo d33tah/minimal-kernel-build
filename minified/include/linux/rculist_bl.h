@@ -11,13 +11,9 @@
 #define LIST_BL_BUG_ON(x)
 
 
-struct hlist_bl_head {
-	struct hlist_bl_node *first;
-};
+struct hlist_bl_head { struct hlist_bl_node *first; };
 
-struct hlist_bl_node {
-	struct hlist_bl_node *next, **pprev;
-};
+struct hlist_bl_node { struct hlist_bl_node *next, **pprev; };
 #define INIT_HLIST_BL_HEAD(ptr) 	((ptr)->first = NULL)
 
 static inline void INIT_HLIST_BL_NODE(struct hlist_bl_node *h)

@@ -58,14 +58,7 @@ extern unsigned long highest_memmap_pfn;
  
 
  
-struct alloc_context {
-	struct zonelist *zonelist;
-	struct zoneref *preferred_zoneref;
-	int migratetype;
-
-	 
-	enum zone_type highest_zoneidx;
-};
+struct alloc_context { struct zonelist *zonelist; struct zoneref *preferred_zoneref; int migratetype; enum zone_type highest_zoneidx; };
 
  
 static inline unsigned int buddy_order(struct page *page)

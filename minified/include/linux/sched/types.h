@@ -3,8 +3,6 @@
 
 #include <linux/types.h>
 
-struct sched_param {
-	int sched_priority;
-};
+struct sched_param { int sched_priority; };
 
 #endif

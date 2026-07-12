@@ -8,14 +8,7 @@
 struct task_struct;
 union thread_union;
 
-struct kernel_clone_args {
-	u64 flags;
-	int exit_signal;
-	unsigned long stack;
-	int kthread;
-	int (*fn)(void *);
-	void *fn_arg;
-};
+struct kernel_clone_args { u64 flags; int exit_signal; unsigned long stack; int kthread; int (*fn)(void *); void *fn_arg; };
 
 extern rwlock_t tasklist_lock;
 

@@ -22,11 +22,7 @@ static DEFINE_RAW_SPINLOCK(nmi_reason_lock);
 static DEFINE_PER_CPU(bool, swallow_nmi);
 static DEFINE_PER_CPU(unsigned long, last_nmi_rip);
 
-enum nmi_states {
-	NMI_NOT_RUNNING = 0,
-	NMI_EXECUTING,
-	NMI_LATCHED,
-};
+enum nmi_states { NMI_NOT_RUNNING = 0, NMI_EXECUTING, NMI_LATCHED, };
 static DEFINE_PER_CPU(enum nmi_states, nmi_state);
 static DEFINE_PER_CPU(unsigned long, nmi_cr2);
 static DEFINE_PER_CPU(unsigned long, nmi_dr7);

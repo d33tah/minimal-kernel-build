@@ -188,33 +188,9 @@ static_assert(SIGN == 1);
 static_assert(ZEROPAD == ('0' - ' '));
 static_assert(SMALL == ('a' ^ 'A'));
 
-enum format_type {
-	FORMAT_TYPE_NONE,
-	FORMAT_TYPE_CHAR,
-	FORMAT_TYPE_STR,
-	FORMAT_TYPE_PTR,
-	FORMAT_TYPE_PERCENT_CHAR,
-	FORMAT_TYPE_INVALID,
-	FORMAT_TYPE_LONG_LONG,
-	FORMAT_TYPE_ULONG,
-	FORMAT_TYPE_LONG,
-	FORMAT_TYPE_UBYTE,
-	FORMAT_TYPE_BYTE,
-	FORMAT_TYPE_USHORT,
-	FORMAT_TYPE_SHORT,
-	FORMAT_TYPE_UINT,
-	FORMAT_TYPE_INT,
-	FORMAT_TYPE_SIZE_T,
-	FORMAT_TYPE_PTRDIFF
-};
+enum format_type { FORMAT_TYPE_NONE, FORMAT_TYPE_CHAR, FORMAT_TYPE_STR, FORMAT_TYPE_PTR, FORMAT_TYPE_PERCENT_CHAR, FORMAT_TYPE_INVALID, FORMAT_TYPE_LONG_LONG, FORMAT_TYPE_ULONG, FORMAT_TYPE_LONG, FORMAT_TYPE_UBYTE, FORMAT_TYPE_BYTE, FORMAT_TYPE_USHORT, FORMAT_TYPE_SHORT, FORMAT_TYPE_UINT, FORMAT_TYPE_INT, FORMAT_TYPE_SIZE_T, FORMAT_TYPE_PTRDIFF };
 
-struct printf_spec {
-	unsigned int	type:8;		
-	signed int	field_width:24;	
-	unsigned int	flags:8;	
-	unsigned int	base:8;		
-	signed int	precision:16;	
-} __packed;
+struct printf_spec { unsigned int	type:8; signed int	field_width:24; unsigned int	flags:8; unsigned int	base:8; signed int	precision:16; } __packed;
 static_assert(sizeof(struct printf_spec) == 8);
 
 static noinline_for_stack

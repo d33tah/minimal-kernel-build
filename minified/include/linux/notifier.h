@@ -7,10 +7,7 @@
 
 struct notifier_block;
 
-struct atomic_notifier_head {
-	spinlock_t lock;
-	struct notifier_block __rcu *head;
-};
+struct atomic_notifier_head { spinlock_t lock; struct notifier_block __rcu *head; };
 
 #define ATOMIC_NOTIFIER_INIT(name) {						.lock = __SPIN_LOCK_UNLOCKED(name.lock),			.head = NULL }
 

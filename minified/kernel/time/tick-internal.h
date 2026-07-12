@@ -5,9 +5,7 @@
 
 #include "timekeeping.h"
 
-struct tick_device {
-	struct clock_event_device *evtdev;
-};
+struct tick_device { struct clock_event_device *evtdev; };
 
 
 /* TICK_DO_TIMER_NONE removed - 0-caller object-like const */

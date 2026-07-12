@@ -48,10 +48,7 @@ static void swap_bytes(void *a, void *b, size_t n)
 #define SWAP_BYTES    (swap_r_func_t)2
 #define SWAP_WRAPPER  (swap_r_func_t)3
 
-struct wrapper {
-	cmp_func_t cmp;
-	swap_func_t swap;
-};
+struct wrapper { cmp_func_t cmp; swap_func_t swap; };
 
 static void do_swap(void *a, void *b, size_t size, swap_r_func_t swap_func, const void *priv)
 {

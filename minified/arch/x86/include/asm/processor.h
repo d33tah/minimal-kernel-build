@@ -39,29 +39,7 @@
 
 /* TLB arrays removed - never used in minimal kernel */
 
-struct cpuinfo_x86 {
-	__u8			x86;		 
-	__u8			x86_vendor;	 
-	__u8			x86_model;
-	__u8			x86_stepping;
-	__u8			x86_phys_bits;
-
-	__u32			extended_cpuid_level;
-	 
-	int			cpuid_level;
-	 
-	union {
-		__u32		x86_capability[NCAPINTS + NBUGINTS];
-		unsigned long	x86_capability_alignment;
-	};
-	char x86_vendor_id[16], x86_model_id[64];
-	 
-	int			x86_cache_alignment;
-
-	unsigned long		loops_per_jiffy;
-
-	u16			x86_clflush_size;
-} __randomize_layout;
+struct cpuinfo_x86 { __u8			x86; __u8			x86_vendor; __u8			x86_model; __u8			x86_stepping; __u8			x86_phys_bits; __u32			extended_cpuid_level; int			cpuid_level; union { __u32		x86_capability[NCAPINTS + NBUGINTS]; unsigned long	x86_capability_alignment; }; char x86_vendor_id[16], x86_model_id[64]; int			x86_cache_alignment; unsigned long		loops_per_jiffy; u16			x86_clflush_size; } __randomize_layout;
 
 #define X86_VENDOR_INTEL	0
 /* X86_VENDOR_CYRIX, UMC, CENTAUR, TRANSMETA, NSC, HYGON, ZHAOXIN, VORTEX, AMD removed - unused */
@@ -107,29 +85,7 @@ static inline void load_cr3(pgd_t *pgdir)
 
  
  
-struct x86_hw_tss {
-	unsigned short		back_link, __blh;
-	unsigned long		sp0;
-	unsigned short		ss0, __ss0h;
-	unsigned long		sp1;
-
-	 
-	unsigned short		ss1;	 
-
-	unsigned short		__ss1h;
-	unsigned long		sp2;
-	unsigned short		ss2, __ss2h;
-	unsigned long __cr3, ip, flags, ax, cx, dx, bx, sp, bp, si, di;
-	unsigned short		es, __esh;
-	unsigned short		cs, __csh;
-	unsigned short		ss, __ssh;
-	unsigned short		ds, __dsh;
-	unsigned short		fs, __fsh;
-	unsigned short		gs, __gsh;
-	unsigned short		ldt, __ldth;
-	unsigned short trace, io_bitmap_base;
-
-} __attribute__((packed));
+struct x86_hw_tss { unsigned short		back_link, __blh; unsigned long		sp0; unsigned short		ss0, __ss0h; unsigned long		sp1; unsigned short		ss1; unsigned short		__ss1h; unsigned long		sp2; unsigned short		ss2, __ss2h; unsigned long __cr3, ip, flags, ax, cx, dx, bx, sp, bp, si, di; unsigned short		es, __esh; unsigned short		cs, __csh; unsigned short		ss, __ssh; unsigned short		ds, __dsh; unsigned short		fs, __fsh; unsigned short		gs, __gsh; unsigned short		ldt, __ldth; unsigned short trace, io_bitmap_base; } __attribute__((packed));
 
 
 # define __KERNEL_TSS_LIMIT	\
@@ -138,47 +94,23 @@ struct x86_hw_tss {
  
 #define IO_BITMAP_OFFSET_INVALID	(__KERNEL_TSS_LIMIT + 1)
 
-struct entry_stack {
-	char	stack[PAGE_SIZE];
-};
+struct entry_stack { char	stack[PAGE_SIZE]; };
 
-struct entry_stack_page {
-	struct entry_stack stack;
-} __aligned(PAGE_SIZE);
+struct entry_stack_page { struct entry_stack stack; } __aligned(PAGE_SIZE);
 
-struct tss_struct {
-
-	struct x86_hw_tss	x86_tss;
-} __aligned(PAGE_SIZE);
+struct tss_struct { struct x86_hw_tss	x86_tss; } __aligned(PAGE_SIZE);
 
 DECLARE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw);
 
  
-struct irq_stack {
-	char		stack[IRQ_STACK_SIZE];
-} __aligned(IRQ_STACK_SIZE);
+struct irq_stack { char		stack[IRQ_STACK_SIZE]; } __aligned(IRQ_STACK_SIZE);
 
 DECLARE_PER_CPU(unsigned long, cpu_current_top_of_stack);
 
 DECLARE_PER_CPU(struct irq_stack *, hardirq_stack_ptr);
 DECLARE_PER_CPU(struct irq_stack *, softirq_stack_ptr);
 
-struct thread_struct {
-	 
-	struct desc_struct	tls_array[GDT_ENTRY_TLS_ENTRIES];
-	unsigned long sp0, sp, sysenter_cs;
-
-
-	unsigned long gs;
-
-
-	unsigned long           virtual_dr6;
-
-	unsigned long		trap_nr;
-
-	struct fpu		fpu;
-	 
-};
+struct thread_struct { struct desc_struct	tls_array[GDT_ENTRY_TLS_ENTRIES]; unsigned long sp0, sp, sysenter_cs; unsigned long gs; unsigned long           virtual_dr6; unsigned long		trap_nr; struct fpu		fpu; };
 
 extern void fpu_thread_struct_whitelist(unsigned long *offset, unsigned long *size);
 

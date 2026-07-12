@@ -17,10 +17,7 @@ enum pid_type
 
 
 
-struct upid {
-	int nr;
-	struct pid_namespace *ns;
-};
+struct upid { int nr; struct pid_namespace *ns; };
 
 struct pid
 {

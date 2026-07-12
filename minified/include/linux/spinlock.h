@@ -33,30 +33,17 @@
 	_raw_spin_lock(((void)(subclass), (lock)))
 
 
-#define raw_spin_lock_irqsave(lock, flags)		\
-	do {						\
-		typecheck(unsigned long, flags);	\
-		_raw_spin_lock_irqsave(lock, flags);	\
-	} while (0)
+#define raw_spin_lock_irqsave(lock, flags)			do {								typecheck(unsigned long, flags);			_raw_spin_lock_irqsave(lock, flags);		} while (0)
 
 
 #define raw_spin_lock_irq(lock)		_raw_spin_lock_irq(lock)
 #define raw_spin_unlock(lock)		_raw_spin_unlock(lock)
 #define raw_spin_unlock_irq(lock)	_raw_spin_unlock_irq(lock)
 
-#define raw_spin_unlock_irqrestore(lock, flags)		\
-	do {							\
-		typecheck(unsigned long, flags);		\
-		_raw_spin_unlock_irqrestore(lock, flags);	\
-	} while (0)
+#define raw_spin_unlock_irqrestore(lock, flags)			do {									typecheck(unsigned long, flags);				_raw_spin_unlock_irqrestore(lock, flags);		} while (0)
 
 
-#define raw_spin_trylock_irqsave(lock, flags) \
-({ \
-	local_irq_save(flags); \
-	raw_spin_trylock(lock) ? \
-	1 : ({ local_irq_restore(flags); 0; }); \
-})
+#define raw_spin_trylock_irqsave(lock, flags) ({ 	local_irq_save(flags); 	raw_spin_trylock(lock) ? 	1 : ({ local_irq_restore(flags); 0; }); })
 
 /* do_raw_read_lock, do_raw_read_trylock, do_raw_read_unlock,
    do_raw_write_lock, do_raw_write_trylock, do_raw_write_unlock removed - unused */
@@ -120,20 +107,14 @@ static __always_inline int spin_trylock(spinlock_t *lock)
 	return raw_spin_trylock(&lock->rlock);
 }
 
-#define spin_lock_nested(lock, subclass)			\
-do {								\
-	raw_spin_lock_nested(spinlock_check(lock), subclass);	\
-} while (0)
+#define spin_lock_nested(lock, subclass)			do {									raw_spin_lock_nested(spinlock_check(lock), subclass);	} while (0)
 
 static __always_inline void spin_lock_irq(spinlock_t *lock)
 {
 	raw_spin_lock_irq(&lock->rlock);
 }
 
-#define spin_lock_irqsave(lock, flags)				\
-do {								\
-	raw_spin_lock_irqsave(spinlock_check(lock), flags);	\
-} while (0)
+#define spin_lock_irqsave(lock, flags)				do {									raw_spin_lock_irqsave(spinlock_check(lock), flags);	} while (0)
 
 static __always_inline void spin_unlock(spinlock_t *lock)
 {
@@ -151,10 +132,7 @@ static __always_inline void spin_unlock_irqrestore(spinlock_t *lock, unsigned lo
 }
 
 
-#define spin_trylock_irqsave(lock, flags)			\
-({								\
-	raw_spin_trylock_irqsave(spinlock_check(lock), flags); \
-})
+#define spin_trylock_irqsave(lock, flags)			({									raw_spin_trylock_irqsave(spinlock_check(lock), flags); })
 
 #define assert_spin_locked(lock)	assert_raw_spin_locked(&(lock)->rlock)
 
@@ -162,8 +140,7 @@ static __always_inline void spin_unlock_irqrestore(spinlock_t *lock, unsigned lo
 #include <linux/atomic.h>
 extern int _atomic_dec_and_lock_irqsave(atomic_t *atomic, spinlock_t *lock,
 					unsigned long *flags);
-#define atomic_dec_and_lock_irqsave(atomic, lock, flags) \
-		__cond_lock(lock, _atomic_dec_and_lock_irqsave(atomic, lock, &(flags)))
+#define atomic_dec_and_lock_irqsave(atomic, lock, flags) 		__cond_lock(lock, _atomic_dec_and_lock_irqsave(atomic, lock, &(flags)))
 
 
 #endif

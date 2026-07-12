@@ -21,8 +21,7 @@
 
 #define __exit          __section(".exit.text") __exitused __cold notrace
 
-#define __meminit        __section(".meminit.text") __cold notrace \
-						  __latent_entropy
+#define __meminit        __section(".meminit.text") __cold notrace 						  __latent_entropy
 #define __meminitdata    __section(".meminit.data")
 
 #define __HEAD		.section	".head.text","ax"
@@ -62,44 +61,21 @@ extern void (*late_time_init)(void);
 #ifndef __ASSEMBLY__
 
 
-#define __initcall_id(fn)					\
-	__PASTE(__KBUILD_MODNAME,				\
-	__PASTE(__,						\
-	__PASTE(__COUNTER__,					\
-	__PASTE(_,						\
-	__PASTE(__LINE__,					\
-	__PASTE(_, fn))))))
+#define __initcall_id(fn)						__PASTE(__KBUILD_MODNAME,					__PASTE(__,							__PASTE(__COUNTER__,						__PASTE(_,							__PASTE(__LINE__,						__PASTE(_, fn))))))
 
-#define __initcall_name(prefix, __iid, id)			\
-	__PASTE(__,						\
-	__PASTE(prefix,						\
-	__PASTE(__,						\
-	__PASTE(__iid, id))))
+#define __initcall_name(prefix, __iid, id)				__PASTE(__,							__PASTE(prefix,							__PASTE(__,							__PASTE(__iid, id))))
 
-#define __initcall_section(__sec, __iid)			\
-	#__sec ".init"
+#define __initcall_section(__sec, __iid)				#__sec ".init"
 
 #define __initcall_stub(fn, __iid, id)	fn
 
-#define __define_initcall_stub(__stub, fn)			\
-	__ADDRESSABLE(fn)
+#define __define_initcall_stub(__stub, fn)				__ADDRESSABLE(fn)
 
-#define ____define_initcall(fn, __stub, __name, __sec)		\
-	__define_initcall_stub(__stub, fn)			\
-	asm(".section	\"" __sec "\", \"a\"		\n"	\
-	    __stringify(__name) ":			\n"	\
-	    ".long	" __stringify(__stub) " - .	\n"	\
-	    ".previous					\n");	\
-	static_assert(__same_type(initcall_t, &fn));
+#define ____define_initcall(fn, __stub, __name, __sec)			__define_initcall_stub(__stub, fn)				asm(".section	\"" __sec "\", \"a\"		\n"		    __stringify(__name) ":			\n"		    ".long	" __stringify(__stub) " - .	\n"		    ".previous					\n");		static_assert(__same_type(initcall_t, &fn));
 
-#define __unique_initcall(fn, id, __sec, __iid)			\
-	____define_initcall(fn,					\
-		__initcall_stub(fn, __iid, id),			\
-		__initcall_name(initcall, __iid, id),		\
-		__initcall_section(__sec, __iid))
+#define __unique_initcall(fn, id, __sec, __iid)				____define_initcall(fn,							__initcall_stub(fn, __iid, id),					__initcall_name(initcall, __iid, id),				__initcall_section(__sec, __iid))
 
-#define ___define_initcall(fn, id, __sec)			\
-	__unique_initcall(fn, id, __sec, __initcall_id(fn))
+#define ___define_initcall(fn, id, __sec)				__unique_initcall(fn, id, __sec, __initcall_id(fn))
 
 #define __define_initcall(fn, id) ___define_initcall(fn, id, .initcall##id)
 

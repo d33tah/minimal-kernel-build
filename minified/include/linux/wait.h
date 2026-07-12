@@ -27,29 +27,17 @@ struct wait_queue_head {
 typedef struct wait_queue_head wait_queue_head_t;
 
 
-#define __WAITQUEUE_INITIALIZER(name, tsk) {					\
-	.private	= tsk,							\
-	.func		= default_wake_function,				\
-	.entry		= { NULL, NULL } }
+#define __WAITQUEUE_INITIALIZER(name, tsk) {						.private	= tsk,								.func		= default_wake_function,					.entry		= { NULL, NULL } }
 
-#define DECLARE_WAITQUEUE(name, tsk)						\
-	struct wait_queue_entry name = __WAITQUEUE_INITIALIZER(name, tsk)
+#define DECLARE_WAITQUEUE(name, tsk)							struct wait_queue_entry name = __WAITQUEUE_INITIALIZER(name, tsk)
 
-#define __WAIT_QUEUE_HEAD_INITIALIZER(name) {					\
-	.lock		= __SPIN_LOCK_UNLOCKED(name.lock),			\
-	.head		= LIST_HEAD_INIT(name.head) }
+#define __WAIT_QUEUE_HEAD_INITIALIZER(name) {						.lock		= __SPIN_LOCK_UNLOCKED(name.lock),				.head		= LIST_HEAD_INIT(name.head) }
 
-#define DECLARE_WAIT_QUEUE_HEAD(name) \
-	struct wait_queue_head name = __WAIT_QUEUE_HEAD_INITIALIZER(name)
+#define DECLARE_WAIT_QUEUE_HEAD(name) 	struct wait_queue_head name = __WAIT_QUEUE_HEAD_INITIALIZER(name)
 
 extern void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *name, struct lock_class_key *);
 
-#define init_waitqueue_head(wq_head)						\
-	do {									\
-		static struct lock_class_key __key;				\
-										\
-		__init_waitqueue_head((wq_head), #wq_head, &__key);		\
-	} while (0)
+#define init_waitqueue_head(wq_head)							do {											static struct lock_class_key __key;																__init_waitqueue_head((wq_head), #wq_head, &__key);			} while (0)
 
 # define DECLARE_WAIT_QUEUE_HEAD_ONSTACK(name) DECLARE_WAIT_QUEUE_HEAD(name)
 
@@ -75,51 +63,17 @@ void __wake_up_locked_key_bookmark(struct wait_queue_head *wq_head,
 #define wake_up_interruptible_all(x)	__wake_up(x, TASK_INTERRUPTIBLE, 0, NULL)
 
 #define poll_to_key(m) ((void *)(__force uintptr_t)(__poll_t)(m))
-#define wake_up_interruptible_poll(x, m)					\
-	__wake_up(x, TASK_INTERRUPTIBLE, 1, poll_to_key(m))
+#define wake_up_interruptible_poll(x, m)						__wake_up(x, TASK_INTERRUPTIBLE, 1, poll_to_key(m))
 
-#define ___wait_is_interruptible(state)						\
-	(!__builtin_constant_p(state) ||					\
-		state == TASK_INTERRUPTIBLE || state == TASK_KILLABLE)		\
-
+#define ___wait_is_interruptible(state)							(!__builtin_constant_p(state) ||							state == TASK_INTERRUPTIBLE || state == TASK_KILLABLE)		
 extern void init_wait_entry(struct wait_queue_entry *wq_entry, int flags);
 
 
-#define ___wait_event(wq_head, condition, state, exclusive, ret, cmd)		\
-({										\
-	__label__ __out;							\
-	struct wait_queue_entry __wq_entry;					\
-	long __ret = ret;	 				\
-										\
-	init_wait_entry(&__wq_entry, exclusive ? WQ_FLAG_EXCLUSIVE : 0);	\
-	for (;;) {								\
-		long __int = prepare_to_wait_event(&wq_head, &__wq_entry, state);\
-										\
-		if (condition)							\
-			break;							\
-										\
-		if (___wait_is_interruptible(state) && __int) {			\
-			__ret = __int;						\
-			goto __out;						\
-		}								\
-										\
-		cmd;								\
-	}									\
-	finish_wait(&wq_head, &__wq_entry);					\
-__out:	__ret;									\
-})
+#define ___wait_event(wq_head, condition, state, exclusive, ret, cmd)		({											__label__ __out;								struct wait_queue_entry __wq_entry;						long __ret = ret;	 															init_wait_entry(&__wq_entry, exclusive ? WQ_FLAG_EXCLUSIVE : 0);		for (;;) {										long __int = prepare_to_wait_event(&wq_head, &__wq_entry, state);												if (condition)										break;																			if (___wait_is_interruptible(state) && __int) {						__ret = __int;									goto __out;								}																				cmd;									}										finish_wait(&wq_head, &__wq_entry);					__out:	__ret;									})
 
-#define __wait_event(wq_head, condition)					\
-	(void)___wait_event(wq_head, condition, TASK_UNINTERRUPTIBLE, 0, 0,	\
-			    schedule())
+#define __wait_event(wq_head, condition)						(void)___wait_event(wq_head, condition, TASK_UNINTERRUPTIBLE, 0, 0,				    schedule())
 
-#define wait_event(wq_head, condition)						\
-do {										\
-	might_sleep();								\
-	if (condition)								\
-		break;								\
-	__wait_event(wq_head, condition);					\
-} while (0)
+#define wait_event(wq_head, condition)						do {											might_sleep();									if (condition)										break;									__wait_event(wq_head, condition);					} while (0)
 
 long prepare_to_wait_event(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry, int state);
 void finish_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry);

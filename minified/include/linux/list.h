@@ -12,8 +12,7 @@
 
 #define LIST_HEAD_INIT(name) { &(name), &(name) }
 
-#define LIST_HEAD(name) \
-	struct list_head name = LIST_HEAD_INIT(name)
+#define LIST_HEAD(name) 	struct list_head name = LIST_HEAD_INIT(name)
 
 static inline void INIT_LIST_HEAD(struct list_head *list)
 {
@@ -95,45 +94,26 @@ static inline int list_empty(const struct list_head *head)
 
 /* list_is_singular removed: 0-caller orphan */
 
-#define list_entry(ptr, type, member) \
-	container_of(ptr, type, member)
+#define list_entry(ptr, type, member) 	container_of(ptr, type, member)
 
-#define list_first_entry(ptr, type, member) \
-	list_entry((ptr)->next, type, member)
+#define list_first_entry(ptr, type, member) 	list_entry((ptr)->next, type, member)
 
-#define list_first_entry_or_null(ptr, type, member) ({ \
-	struct list_head *head__ = (ptr); \
-	struct list_head *pos__ = READ_ONCE(head__->next); \
-	pos__ != head__ ? list_entry(pos__, type, member) : NULL; \
-})
+#define list_first_entry_or_null(ptr, type, member) ({ 	struct list_head *head__ = (ptr); 	struct list_head *pos__ = READ_ONCE(head__->next); 	pos__ != head__ ? list_entry(pos__, type, member) : NULL; })
 
-#define list_next_entry(pos, member) \
-	list_entry((pos)->member.next, typeof(*(pos)), member)
+#define list_next_entry(pos, member) 	list_entry((pos)->member.next, typeof(*(pos)), member)
 
 
-#define list_for_each(pos, head) \
-	for (pos = (head)->next; !list_is_head(pos, (head)); pos = pos->next)
+#define list_for_each(pos, head) 	for (pos = (head)->next; !list_is_head(pos, (head)); pos = pos->next)
 
-#define list_entry_is_head(pos, head, member)				\
-	(&pos->member == (head))
+#define list_entry_is_head(pos, head, member)					(&pos->member == (head))
 
-#define list_for_each_entry(pos, head, member)				\
-	for (pos = list_first_entry(head, typeof(*pos), member);	\
-	     !list_entry_is_head(pos, head, member);			\
-	     pos = list_next_entry(pos, member))
+#define list_for_each_entry(pos, head, member)					for (pos = list_first_entry(head, typeof(*pos), member);		     !list_entry_is_head(pos, head, member);				     pos = list_next_entry(pos, member))
 
 
 
-#define list_for_each_entry_safe(pos, n, head, member)			\
-	for (pos = list_first_entry(head, typeof(*pos), member),	\
-		n = list_next_entry(pos, member);			\
-	     !list_entry_is_head(pos, head, member); 			\
-	     pos = n, n = list_next_entry(n, member))
+#define list_for_each_entry_safe(pos, n, head, member)				for (pos = list_first_entry(head, typeof(*pos), member),			n = list_next_entry(pos, member);				     !list_entry_is_head(pos, head, member); 				     pos = n, n = list_next_entry(n, member))
 
-#define list_for_each_entry_safe_from(pos, n, head, member) 			\
-	for (n = list_next_entry(pos, member);					\
-	     !list_entry_is_head(pos, head, member);				\
-	     pos = n, n = list_next_entry(n, member))
+#define list_for_each_entry_safe_from(pos, n, head, member) 				for (n = list_next_entry(pos, member);						     !list_entry_is_head(pos, head, member);					     pos = n, n = list_next_entry(n, member))
 
 
 
@@ -187,14 +167,8 @@ static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 
 #define hlist_entry(ptr, type, member) container_of(ptr,type,member)
 
-#define hlist_entry_safe(ptr, type, member) \
-	({ typeof(ptr) ____ptr = (ptr); \
-	   ____ptr ? hlist_entry(____ptr, type, member) : NULL; \
-	})
+#define hlist_entry_safe(ptr, type, member) 	({ typeof(ptr) ____ptr = (ptr); 	   ____ptr ? hlist_entry(____ptr, type, member) : NULL; 	})
 
-#define hlist_for_each_entry(pos, head, member)				\
-	for (pos = hlist_entry_safe((head)->first, typeof(*(pos)), member);\
-	     pos;							\
-	     pos = hlist_entry_safe((pos)->member.next, typeof(*(pos)), member))
+#define hlist_for_each_entry(pos, head, member)					for (pos = hlist_entry_safe((head)->first, typeof(*(pos)), member);	     pos;								     pos = hlist_entry_safe((pos)->member.next, typeof(*(pos)), member))
 
 #endif

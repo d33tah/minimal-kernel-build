@@ -64,43 +64,21 @@ void __next_mem_range_rev(u64 *idx, int nid, enum memblock_flags flags,
 void memblock_free_late(phys_addr_t base, phys_addr_t size);
 
 
-#define __for_each_mem_range(i, type_a, type_b, nid, flags,		\
-			   p_start, p_end, p_nid)			\
-	for (i = 0, __next_mem_range(&i, nid, flags, type_a, type_b,	\
-				     p_start, p_end, p_nid);		\
-	     i != (u64)ULLONG_MAX;					\
-	     __next_mem_range(&i, nid, flags, type_a, type_b,		\
-			      p_start, p_end, p_nid))
+#define __for_each_mem_range(i, type_a, type_b, nid, flags,					   p_start, p_end, p_nid)				for (i = 0, __next_mem_range(&i, nid, flags, type_a, type_b,					     p_start, p_end, p_nid);			     i != (u64)ULLONG_MAX;						     __next_mem_range(&i, nid, flags, type_a, type_b,					      p_start, p_end, p_nid))
 
-#define __for_each_mem_range_rev(i, type_a, type_b, nid, flags,		\
-				 p_start, p_end, p_nid)			\
-	for (i = (u64)ULLONG_MAX,					\
-		     __next_mem_range_rev(&i, nid, flags, type_a, type_b, \
-					  p_start, p_end, p_nid);	\
-	     i != (u64)ULLONG_MAX;					\
-	     __next_mem_range_rev(&i, nid, flags, type_a, type_b,	\
-				  p_start, p_end, p_nid))
+#define __for_each_mem_range_rev(i, type_a, type_b, nid, flags,						 p_start, p_end, p_nid)				for (i = (u64)ULLONG_MAX,							     __next_mem_range_rev(&i, nid, flags, type_a, type_b, 					  p_start, p_end, p_nid);		     i != (u64)ULLONG_MAX;						     __next_mem_range_rev(&i, nid, flags, type_a, type_b,					  p_start, p_end, p_nid))
 
-#define for_each_reserved_mem_range(i, p_start, p_end)			\
-	__for_each_mem_range(i, &memblock.reserved, NULL, NUMA_NO_NODE,	\
-			     MEMBLOCK_NONE, p_start, p_end, NULL)
+#define for_each_reserved_mem_range(i, p_start, p_end)				__for_each_mem_range(i, &memblock.reserved, NULL, NUMA_NO_NODE,				     MEMBLOCK_NONE, p_start, p_end, NULL)
 
 void __next_mem_pfn_range(int *idx, int nid, unsigned long *out_start_pfn,
 			  unsigned long *out_end_pfn, int *out_nid);
 
-#define for_each_mem_pfn_range(i, nid, p_start, p_end, p_nid)		\
-	for (i = -1, __next_mem_pfn_range(&i, nid, p_start, p_end, p_nid); \
-	     i >= 0; __next_mem_pfn_range(&i, nid, p_start, p_end, p_nid))
+#define for_each_mem_pfn_range(i, nid, p_start, p_end, p_nid)			for (i = -1, __next_mem_pfn_range(&i, nid, p_start, p_end, p_nid); 	     i >= 0; __next_mem_pfn_range(&i, nid, p_start, p_end, p_nid))
 
 
-#define for_each_free_mem_range(i, nid, flags, p_start, p_end, p_nid)	\
-	__for_each_mem_range(i, &memblock.memory, &memblock.reserved,	\
-			     nid, flags, p_start, p_end, p_nid)
+#define for_each_free_mem_range(i, nid, flags, p_start, p_end, p_nid)		__for_each_mem_range(i, &memblock.memory, &memblock.reserved,				     nid, flags, p_start, p_end, p_nid)
 
-#define for_each_free_mem_range_reverse(i, nid, flags, p_start, p_end,	\
-					p_nid)				\
-	__for_each_mem_range_rev(i, &memblock.memory, &memblock.reserved, \
-				 nid, flags, p_start, p_end, p_nid)
+#define for_each_free_mem_range_reverse(i, nid, flags, p_start, p_end,						p_nid)					__for_each_mem_range_rev(i, &memblock.memory, &memblock.reserved, 				 nid, flags, p_start, p_end, p_nid)
 
 static inline void memblock_set_region_node(struct memblock_region *r, int nid)
 {
@@ -166,10 +144,7 @@ void memblock_set_current_limit(phys_addr_t limit);
 
 
 
-#define for_each_mem_region(region)					\
-	for (region = memblock.memory.regions;				\
-	     region < (memblock.memory.regions + memblock.memory.cnt);	\
-	     region++)
+#define for_each_mem_region(region)						for (region = memblock.memory.regions;					     region < (memblock.memory.regions + memblock.memory.cnt);		     region++)
 
 extern void *alloc_large_system_hash(const char *tablename,
 				     unsigned long bucketsize,

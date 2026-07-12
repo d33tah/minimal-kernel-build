@@ -5,8 +5,7 @@
 #include <linux/sched/mm.h>
 #include <asm/elf.h>
 
-static unsigned long stack_maxrandom_size(unsigned long task_size)
-{
+static unsigned long stack_maxrandom_size(unsigned long task_size) {
 	unsigned long max = 0;
 	if (current->flags & PF_RANDOMIZE) {
 		max = (-1UL) & __STACK_RND_MASK(task_size == IA32_PAGE_OFFSET);
@@ -20,23 +19,20 @@ static unsigned long stack_maxrandom_size(unsigned long task_size)
 
 #define SIZE_128M    (128 * 1024 * 1024UL)
 
-static int mmap_is_legacy(void)
-{
+static int mmap_is_legacy(void) {
 	if (current->personality & ADDR_COMPAT_LAYOUT)
 		return 1;
 
 	return sysctl_legacy_va_layout;
 }
 
-static unsigned long arch_rnd(unsigned int rndbits)
-{
+static unsigned long arch_rnd(unsigned int rndbits) {
 	if (!(current->flags & PF_RANDOMIZE))
 		return 0;
 	return (get_random_long() & ((1UL << rndbits) - 1)) << PAGE_SHIFT;
 }
 
-static unsigned long mmap_base(unsigned long rnd, unsigned long task_size, struct rlimit *rlim_stack)
-{
+static unsigned long mmap_base(unsigned long rnd, unsigned long task_size, struct rlimit *rlim_stack) {
 	unsigned long gap = rlim_stack->rlim_cur;
 	unsigned long pad = stack_maxrandom_size(task_size) + stack_guard_gap;
 	unsigned long gap_min, gap_max;
@@ -57,21 +53,18 @@ static unsigned long mmap_base(unsigned long rnd, unsigned long task_size, struc
 	return PAGE_ALIGN(task_size - gap - rnd);
 }
 
-static unsigned long mmap_legacy_base(unsigned long rnd, unsigned long task_size)
-{
+static unsigned long mmap_legacy_base(unsigned long rnd, unsigned long task_size) {
 	return __TASK_UNMAPPED_BASE(task_size) + rnd;
 }
 
-static void arch_pick_mmap_base(unsigned long *base, unsigned long random_factor, unsigned long task_size, struct rlimit *rlim_stack)
-{
+static void arch_pick_mmap_base(unsigned long *base, unsigned long random_factor, unsigned long task_size, struct rlimit *rlim_stack) {
 	if (mmap_is_legacy())
 		*base = mmap_legacy_base(random_factor, task_size);
 	else
 		*base = mmap_base(random_factor, task_size, rlim_stack);
 }
 
-void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
-{
+void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack) {
 	if (mmap_is_legacy())
 		mm->get_unmapped_area = arch_get_unmapped_area;
 	else

@@ -23,8 +23,7 @@ static void bprm_creds_from_file(struct linux_binprm *bprm);
 static LIST_HEAD(formats);
 static DEFINE_RWLOCK(binfmt_lock);
 
-void __register_binfmt(struct linux_binfmt * fmt, int insert)
-{
+void __register_binfmt(struct linux_binfmt * fmt, int insert) {
 	write_lock(&binfmt_lock);
 	insert ? list_add(&fmt->lh, &formats) :
 		 list_add_tail(&fmt->lh, &formats);
@@ -32,13 +31,11 @@ void __register_binfmt(struct linux_binfmt * fmt, int insert)
 }
 
 
-bool path_noexec(const struct path *path)
-{
+bool path_noexec(const struct path *path) {
 	return (path->mnt->mnt_sb->s_iflags & SB_I_NOEXEC);
 }
 
-static void acct_arg_size(struct linux_binprm *bprm, unsigned long pages)
-{
+static void acct_arg_size(struct linux_binprm *bprm, unsigned long pages) {
 	struct mm_struct *mm = current->mm;
 	long diff = (long)(pages - bprm->vma_pages);
 
@@ -49,8 +46,7 @@ static void acct_arg_size(struct linux_binprm *bprm, unsigned long pages)
 	add_mm_counter(mm, MM_ANONPAGES, diff);
 }
 
-static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos, int write)
-{
+static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos, int write) {
 	struct page *page;
 	int ret;
 	unsigned int gup_flags = FOLL_FORCE;
@@ -70,13 +66,11 @@ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos, i
 	return page;
 }
 
-static void put_arg_page(struct page *page)
-{
+static void put_arg_page(struct page *page) {
 	put_page(page);
 }
 
-static int __bprm_mm_init(struct linux_binprm *bprm)
-{
+static int __bprm_mm_init(struct linux_binprm *bprm) {
 	int err;
 	struct vm_area_struct *vma = NULL;
 	struct mm_struct *mm = bprm->mm;
@@ -111,13 +105,11 @@ err_free:
 	return err;
 }
 
-static bool valid_arg_len(struct linux_binprm *bprm, long len)
-{
+static bool valid_arg_len(struct linux_binprm *bprm, long len) {
 	return len <= MAX_ARG_STRLEN;
 }
 
-static int bprm_mm_init(struct linux_binprm *bprm)
-{
+static int bprm_mm_init(struct linux_binprm *bprm) {
 	int err;
 	struct mm_struct *mm = NULL;
 
@@ -145,8 +137,7 @@ err:
 	return err;
 }
 
-static int count_strings_kernel(const char *const *argv)
-{
+static int count_strings_kernel(const char *const *argv) {
 	int i;
 
 	if (!argv)
@@ -162,8 +153,7 @@ static int count_strings_kernel(const char *const *argv)
 	return i;
 }
 
-static int bprm_stack_limits(struct linux_binprm *bprm)
-{
+static int bprm_stack_limits(struct linux_binprm *bprm) {
 	unsigned long limit, ptr_size;
 
 	limit = _STK_LIM / 4 * 3;
@@ -180,8 +170,7 @@ static int bprm_stack_limits(struct linux_binprm *bprm)
 	return 0;
 }
 
-int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
-{
+int copy_string_kernel(const char *arg, struct linux_binprm *bprm) {
 	int len = strnlen(arg, MAX_ARG_STRLEN) + 1 ;
 	unsigned long pos = bprm->p;
 
@@ -217,8 +206,7 @@ int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 	return 0;
 }
 
-static int copy_strings_kernel(int argc, const char *const *argv, struct linux_binprm *bprm)
-{
+static int copy_strings_kernel(int argc, const char *const *argv, struct linux_binprm *bprm) {
 	while (argc-- > 0) {
 		int ret = copy_string_kernel(argv[argc], bprm);
 		if (ret < 0)
@@ -230,8 +218,7 @@ static int copy_strings_kernel(int argc, const char *const *argv, struct linux_b
 	return 0;
 }
 
-static int shift_arg_pages(struct vm_area_struct *vma, unsigned long shift)
-{
+static int shift_arg_pages(struct vm_area_struct *vma, unsigned long shift) {
 	struct mm_struct *mm = vma->vm_mm;
 	unsigned long old_start = vma->vm_start;
 	unsigned long old_end = vma->vm_end;
@@ -267,8 +254,7 @@ static int shift_arg_pages(struct vm_area_struct *vma, unsigned long shift)
 	return 0;
 }
 
-int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top, int executable_stack)
-{
+int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top, int executable_stack) {
 	unsigned long ret, stack_shift;
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma = bprm->vma;
@@ -333,8 +319,7 @@ out_unlock:
 	return ret;
 }
 
-static struct file *do_open_execat(struct filename *name, int flags)
-{
+static struct file *do_open_execat(struct filename *name, int flags) {
 	struct file *file;
 	int err;
 	struct open_flags open_exec_flags = {
@@ -367,8 +352,7 @@ exit:
 	return ERR_PTR(err);
 }
 
-static int exec_mmap(struct mm_struct *mm)
-{
+static int exec_mmap(struct mm_struct *mm) {
 	struct task_struct *tsk;
 	struct mm_struct *old_mm, *active_mm;
 	int ret;
@@ -412,8 +396,7 @@ static int exec_mmap(struct mm_struct *mm)
 	return 0;
 }
 
-static int de_thread(struct task_struct *tsk)
-{
+static int de_thread(struct task_struct *tsk) {
 	/*
 	 * The only execve() callers in this kernel (init via user_mode_thread,
 	 * kernel_execve) are always single-threaded thread-group leaders, so
@@ -426,16 +409,14 @@ static int de_thread(struct task_struct *tsk)
 	return 0;
 }
 
-void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
-{
+void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec) {
 	task_lock(tsk);
 	
 	strscpy_pad(tsk->comm, buf, sizeof(tsk->comm));
 	task_unlock(tsk);
 }
 
-int begin_new_exec(struct linux_binprm * bprm)
-{
+int begin_new_exec(struct linux_binprm * bprm) {
 	struct task_struct *me = current;
 	int retval;
 
@@ -494,8 +475,7 @@ out:
 	return retval;
 }
 
-void setup_new_exec(struct linux_binprm * bprm)
-{
+void setup_new_exec(struct linux_binprm * bprm) {
 	
 	struct task_struct *me = current;
 
@@ -507,16 +487,14 @@ void setup_new_exec(struct linux_binprm * bprm)
 	mutex_unlock(&me->signal->cred_guard_mutex);
 }
 
-void finalize_exec(struct linux_binprm *bprm)
-{
+void finalize_exec(struct linux_binprm *bprm) {
 	
 	task_lock(current->group_leader);
 	current->signal->rlim[RLIMIT_STACK] = bprm->rlim_stack;
 	task_unlock(current->group_leader);
 }
 
-static int prepare_bprm_creds(struct linux_binprm *bprm)
-{
+static int prepare_bprm_creds(struct linux_binprm *bprm) {
 	if (mutex_lock_interruptible(&current->signal->cred_guard_mutex))
 		return -ERESTARTNOINTR;
 
@@ -528,8 +506,7 @@ static int prepare_bprm_creds(struct linux_binprm *bprm)
 	return -ENOMEM;
 }
 
-static void free_bprm(struct linux_binprm *bprm)
-{
+static void free_bprm(struct linux_binprm *bprm) {
 	if (bprm->mm) {
 		acct_arg_size(bprm, 0);
 		mmput(bprm->mm);
@@ -548,8 +525,7 @@ static void free_bprm(struct linux_binprm *bprm)
 	kfree(bprm);
 }
 
-static struct linux_binprm *alloc_bprm(struct filename *filename)
-{
+static struct linux_binprm *alloc_bprm(struct filename *filename) {
 	struct linux_binprm *bprm = kzalloc(sizeof(*bprm), GFP_KERNEL);
 	int retval = -ENOMEM;
 	if (!bprm)
@@ -572,8 +548,7 @@ out:
 
 /* Removed: bprm_change_interp - never called */
 
-static void check_unsafe_exec(struct linux_binprm *bprm)
-{
+static void check_unsafe_exec(struct linux_binprm *bprm) {
 	struct task_struct *p = current, *t;
 	unsigned n_fs;
 
@@ -592,8 +567,7 @@ static void check_unsafe_exec(struct linux_binprm *bprm)
 	spin_unlock(&p->fs->lock);
 }
 
-static void bprm_fill_uid(struct linux_binprm *bprm, struct file *file)
-{
+static void bprm_fill_uid(struct linux_binprm *bprm, struct file *file) {
 	/* Stub: simplified setuid/setgid handling for minimal kernel */
 	struct inode *inode;
 	unsigned int mode;
@@ -617,13 +591,11 @@ static void bprm_fill_uid(struct linux_binprm *bprm, struct file *file)
 	}
 }
 
-static void bprm_creds_from_file(struct linux_binprm *bprm)
-{
+static void bprm_creds_from_file(struct linux_binprm *bprm) {
 	bprm_fill_uid(bprm, bprm->file);
 }
 
-static int prepare_binprm(struct linux_binprm *bprm)
-{
+static int prepare_binprm(struct linux_binprm *bprm) {
 	loff_t pos = 0;
 
 	memset(bprm->buf, 0, BINPRM_BUF_SIZE);
@@ -631,8 +603,7 @@ static int prepare_binprm(struct linux_binprm *bprm)
 }
 
 
-static int search_binary_handler(struct linux_binprm *bprm)
-{
+static int search_binary_handler(struct linux_binprm *bprm) {
 	struct linux_binfmt *fmt;
 	int retval;
 
@@ -657,8 +628,7 @@ static int search_binary_handler(struct linux_binprm *bprm)
 	return retval;
 }
 
-static int exec_binprm(struct linux_binprm *bprm)
-{
+static int exec_binprm(struct linux_binprm *bprm) {
 	pid_t old_vpid;
 	int ret;
 
@@ -674,8 +644,7 @@ static int exec_binprm(struct linux_binprm *bprm)
 	return 0;
 }
 
-static int bprm_execve(struct linux_binprm *bprm, struct filename *filename, int flags)
-{
+static int bprm_execve(struct linux_binprm *bprm, struct filename *filename, int flags) {
 	struct file *file;
 	int retval;
 
@@ -712,8 +681,7 @@ out_unmark:
 	return retval;
 }
 
-int kernel_execve(const char *kernel_filename, const char *const *argv, const char *const *envp)
-{
+int kernel_execve(const char *kernel_filename, const char *const *argv, const char *const *envp) {
 	struct filename *filename;
 	struct linux_binprm *bprm;
 	int retval;
@@ -768,8 +736,7 @@ out_ret:
 	return retval;
 }
 
-void set_dumpable(struct mm_struct *mm, int value)
-{
+void set_dumpable(struct mm_struct *mm, int value) {
 	if (WARN_ON((unsigned)value > SUID_DUMP_ROOT))
 		return;
 

@@ -6,8 +6,7 @@ static struct kmem_cache *sigqueue_cachep;
 
 /* Removed: print_fatal_signals - never used */
 
-static inline bool has_pending_signals(sigset_t *signal, sigset_t *blocked)
-{
+static inline bool has_pending_signals(sigset_t *signal, sigset_t *blocked) {
 	unsigned long ready;
 	long i;
 
@@ -34,8 +33,7 @@ static inline bool has_pending_signals(sigset_t *signal, sigset_t *blocked)
 
 #define PENDING(p,b) has_pending_signals(&(p)->signal, (b))
 
-static bool recalc_sigpending_tsk(struct task_struct *t)
-{
+static bool recalc_sigpending_tsk(struct task_struct *t) {
 	if ((t->jobctl & (JOBCTL_PENDING_MASK | JOBCTL_TRAP_FREEZE)) || PENDING(&t->pending, &t->blocked) || PENDING(&t->signal->shared_pending, &t->blocked)) {
 		set_tsk_thread_flag(t, TIF_SIGPENDING);
 		return true;
@@ -45,15 +43,13 @@ static bool recalc_sigpending_tsk(struct task_struct *t)
 	return false;
 }
 
-void recalc_sigpending(void)
-{
+void recalc_sigpending(void) {
 	if (!recalc_sigpending_tsk(current))
 		clear_thread_flag(TIF_SIGPENDING);
 
 }
 
-void calculate_sigpending(void)
-{
+void calculate_sigpending(void) {
 	
 	spin_lock_irq(&current->sighand->siglock);
 	set_tsk_thread_flag(current, TIF_SIGPENDING);
@@ -61,8 +57,7 @@ void calculate_sigpending(void)
 	spin_unlock_irq(&current->sighand->siglock);
 }
 
-void ignore_signals(struct task_struct *t)
-{
+void ignore_signals(struct task_struct *t) {
 	int i;
 
 	for (i = 0; i < _NSIG; ++i)
@@ -70,8 +65,7 @@ void ignore_signals(struct task_struct *t)
 }
 
 void
-flush_signal_handlers(struct task_struct *t, int force_default)
-{
+flush_signal_handlers(struct task_struct *t, int force_default) {
 	int i;
 	struct k_sigaction *ka = &t->sighand->action[0];
 	for (i = _NSIG ; i != 0 ; i--) {
@@ -99,8 +93,7 @@ flush_signal_handlers(struct task_struct *t, int force_default)
 enum sig_handler { HANDLER_CURRENT, HANDLER_SIG_DFL, };
 
 static int
-force_sig_info_to_task(struct kernel_siginfo *info, struct task_struct *t, enum sig_handler handler)
-{
+force_sig_info_to_task(struct kernel_siginfo *info, struct task_struct *t, enum sig_handler handler) {
 	/*
 	 * Anchor-stub: runtime-dead. No fault/trap ever fires on this
 	 * single-shot boot, so no forced signal is ever delivered. The whole
@@ -116,8 +109,7 @@ force_sig_info_to_task(struct kernel_siginfo *info, struct task_struct *t, enum 
  * the multi-thread teardown is never reached.
  */
 
-void force_sig(int sig)
-{
+void force_sig(int sig) {
 	struct kernel_siginfo info;
 
 	clear_siginfo(&info);
@@ -129,8 +121,7 @@ void force_sig(int sig)
 	force_sig_info_to_task(&info, current, HANDLER_CURRENT);
 }
 
-void force_fatal_sig(int sig)
-{
+void force_fatal_sig(int sig) {
 	struct kernel_siginfo info;
 
 	clear_siginfo(&info);
@@ -142,8 +133,7 @@ void force_fatal_sig(int sig)
 	force_sig_info_to_task(&info, current, HANDLER_SIG_DFL);
 }
 
-int force_sig_fault(int sig, int code, void __user *addr)
-{
+int force_sig_fault(int sig, int code, void __user *addr) {
 	struct kernel_siginfo info;
 
 	clear_siginfo(&info);
@@ -154,14 +144,12 @@ int force_sig_fault(int sig, int code, void __user *addr)
 	return force_sig_info_to_task(&info, current, HANDLER_CURRENT);
 }
 
-void exit_signals(struct task_struct *tsk)
-{
+void exit_signals(struct task_struct *tsk) {
 	/* Minimal stub: just mark as exiting */
 	tsk->flags |= PF_EXITING;
 }
 
-void __init signals_init(void)
-{
+void __init signals_init(void) {
 	sigqueue_cachep = KMEM_CACHE(sigqueue, SLAB_PANIC | SLAB_ACCOUNT);
 }
 

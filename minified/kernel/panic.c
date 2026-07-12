@@ -14,23 +14,20 @@ ATOMIC_NOTIFIER_HEAD(panic_notifier_list);
 
 
 
-static long no_blink(int state)
-{
+static long no_blink(int state) {
 	return 0;
 }
 
 long (*panic_blink)(int state);
 
-void __weak panic_smp_self_stop(void)
-{
+void __weak panic_smp_self_stop(void) {
 	while (1)
 		cpu_relax();
 }
 
 atomic_t panic_cpu = ATOMIC_INIT(PANIC_CPU_INVALID);
 
-void panic(const char *fmt, ...)
-{
+void panic(const char *fmt, ...) {
 	static char buf[1024];
 	va_list args;
 	long i, i_next = 0, len;

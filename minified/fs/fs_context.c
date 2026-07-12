@@ -9,8 +9,7 @@ static const struct constant_table common_set_sb_flag[] = { { "dirsync",	SB_DIRS
 
 static const struct constant_table common_clear_sb_flag[] = { { "async",	SB_SYNCHRONOUS }, { "nolazytime",	SB_LAZYTIME }, { "nomand",	SB_MANDLOCK }, { "rw",		SB_RDONLY }, { }, };
 
-static int vfs_parse_sb_flag(struct fs_context *fc, const char *key)
-{
+static int vfs_parse_sb_flag(struct fs_context *fc, const char *key) {
 	unsigned int token;
 
 	token = lookup_constant(common_set_sb_flag, key, 0);
@@ -28,14 +27,12 @@ static int vfs_parse_sb_flag(struct fs_context *fc, const char *key)
 	return -ENOPARAM;
 }
 
-int vfs_parse_fs_param_source(struct fs_context *fc, struct fs_parameter *param)
-{
+int vfs_parse_fs_param_source(struct fs_context *fc, struct fs_parameter *param) {
 	/* SAFE-FALLBACK: HIT=False; callers treat -ENOPARAM as "fall through". */
 	return -ENOPARAM;
 }
 
-int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param)
-{
+int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param) {
 	int ret;
 
 	if (!param->key)
@@ -59,8 +56,7 @@ int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param)
 	return invalf(fc, "%s: Unknown parameter '%s'", fc->fs_type->name, param->key);
 }
 
-int vfs_parse_fs_string(struct fs_context *fc, const char *key, const char *value, size_t v_size)
-{
+int vfs_parse_fs_string(struct fs_context *fc, const char *key, const char *value, size_t v_size) {
 	int ret;
 
 	struct fs_parameter param = {
@@ -78,8 +74,7 @@ int vfs_parse_fs_string(struct fs_context *fc, const char *key, const char *valu
 	return ret;
 }
 
-int generic_parse_monolithic(struct fs_context *fc, void *data)
-{
+int generic_parse_monolithic(struct fs_context *fc, void *data) {
 	char *options = data, *key;
 	int ret = 0;
 
@@ -106,8 +101,7 @@ int generic_parse_monolithic(struct fs_context *fc, void *data)
 	return ret;
 }
 
-static struct fs_context *alloc_fs_context(struct file_system_type *fs_type, struct dentry *reference, unsigned int sb_flags, enum fs_context_purpose purpose)
-{
+static struct fs_context *alloc_fs_context(struct file_system_type *fs_type, struct dentry *reference, unsigned int sb_flags, enum fs_context_purpose purpose) {
 	int (*init_fs_context)(struct fs_context *);
 	struct fs_context *fc;
 	int ret = -ENOMEM;
@@ -148,13 +142,11 @@ err_fc:
 	return ERR_PTR(ret);
 }
 
-struct fs_context *fs_context_for_mount(struct file_system_type *fs_type, unsigned int sb_flags)
-{
+struct fs_context *fs_context_for_mount(struct file_system_type *fs_type, unsigned int sb_flags) {
 	return alloc_fs_context(fs_type, NULL, sb_flags, FS_CONTEXT_FOR_MOUNT);
 }
 
-void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, ...)
-{
+void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, ...) {
 	va_list va;
 	struct va_format vaf = {.fmt = fmt, .va = &va};
 
@@ -178,8 +170,7 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, 
 	va_end(va);
 }
 
-static void put_fc_log(struct fs_context *fc)
-{
+static void put_fc_log(struct fs_context *fc) {
 	struct fc_log *log = fc->log.log;
 	int i;
 
@@ -194,8 +185,7 @@ static void put_fc_log(struct fs_context *fc)
 	}
 }
 
-void put_fs_context(struct fs_context *fc)
-{
+void put_fs_context(struct fs_context *fc) {
 	struct super_block *sb;
 
 	if (fc->root) {
@@ -216,8 +206,7 @@ void put_fs_context(struct fs_context *fc)
 	kfree(fc);
 }
 
-int parse_monolithic_mount_data(struct fs_context *fc, void *data)
-{
+int parse_monolithic_mount_data(struct fs_context *fc, void *data) {
 	/* no instance sets ->parse_monolithic, so it always falls through to
 	 * generic_parse_monolithic */
 	return generic_parse_monolithic(fc, data);

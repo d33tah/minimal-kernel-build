@@ -12,8 +12,7 @@
 
 typedef struct seqcount { unsigned sequence; } seqcount_t;
 
-static inline void __seqcount_init(seqcount_t *s, const char *name, struct lock_class_key *key)
-{
+static inline void __seqcount_init(seqcount_t *s, const char *name, struct lock_class_key *key) {
 	s->sequence = 0;
 }
 
@@ -35,23 +34,19 @@ static inline void __seqcount_init(seqcount_t *s, const char *name, struct lock_
 #define SEQCOUNT_LOCKNAME(lockname, locktype, preemptible, lockmember, lockbase, lock_acquire) typedef struct seqcount_##lockname {						seqcount_t		seqcount;					__SEQ_LOCK(locktype	*lock);					} seqcount_##lockname##_t;															static __always_inline seqcount_t *					__seqprop_##lockname##_ptr(seqcount_##lockname##_t *s)			{										return &s->seqcount;						}																		static __always_inline unsigned						__seqprop_##lockname##_sequence(const seqcount_##lockname##_t *s)	{										unsigned seq = READ_ONCE(s->seqcount.sequence);													if (!IS_ENABLED(CONFIG_PREEMPT_RT))						return seq;																if (preemptible && unlikely(seq & 1)) {						__SEQ_LOCK(lock_acquire);						__SEQ_LOCK(lockbase##_unlock(s->lock));														 									seq = READ_ONCE(s->seqcount.sequence);				}																		return seq;							}																		static __always_inline bool						__seqprop_##lockname##_preemptible(const seqcount_##lockname##_t *s)	{										if (!IS_ENABLED(CONFIG_PREEMPT_RT))						return preemptible;															 			return false;							}																		static __always_inline void						__seqprop_##lockname##_assert(const seqcount_##lockname##_t *s)		{										__SEQ_LOCK(lockdep_assert_held(lockmember));			}
 
 
-static inline seqcount_t *__seqprop_ptr(seqcount_t *s)
-{
+static inline seqcount_t *__seqprop_ptr(seqcount_t *s) {
 	return s;
 }
 
-static inline unsigned __seqprop_sequence(const seqcount_t *s)
-{
+static inline unsigned __seqprop_sequence(const seqcount_t *s) {
 	return READ_ONCE(s->sequence);
 }
 
-static inline bool __seqprop_preemptible(const seqcount_t *s)
-{
+static inline bool __seqprop_preemptible(const seqcount_t *s) {
 	return false;
 }
 
-static inline void __seqprop_assert(const seqcount_t *s)
-{
+static inline void __seqprop_assert(const seqcount_t *s) {
 	lockdep_assert_preemption_disabled();
 }
 
@@ -89,59 +84,51 @@ SEQCOUNT_LOCKNAME(mutex,        struct mutex,    true,     s->lock,        mutex
 
 #define __read_seqcount_retry(s, start)						do___read_seqcount_retry(seqprop_ptr(s), start)
 
-static inline int do___read_seqcount_retry(const seqcount_t *s, unsigned start)
-{
+static inline int do___read_seqcount_retry(const seqcount_t *s, unsigned start) {
 	return unlikely(READ_ONCE(s->sequence) != start);
 }
 
 #define read_seqcount_retry(s, start)						do_read_seqcount_retry(seqprop_ptr(s), start)
 
-static inline int do_read_seqcount_retry(const seqcount_t *s, unsigned start)
-{
+static inline int do_read_seqcount_retry(const seqcount_t *s, unsigned start) {
 	smp_rmb();
 	return do___read_seqcount_retry(s, start);
 }
 
 #define raw_write_seqcount_begin(s)					do {										if (seqprop_preemptible(s))							preempt_disable();															do_raw_write_seqcount_begin(seqprop_ptr(s));			} while (0)
 
-static inline void do_raw_write_seqcount_begin(seqcount_t *s)
-{
+static inline void do_raw_write_seqcount_begin(seqcount_t *s) {
 	s->sequence++;
 	smp_wmb();
 }
 
 #define raw_write_seqcount_end(s)					do {										do_raw_write_seqcount_end(seqprop_ptr(s));													if (seqprop_preemptible(s))							preempt_enable();					} while (0)
 
-static inline void do_raw_write_seqcount_end(seqcount_t *s)
-{
+static inline void do_raw_write_seqcount_end(seqcount_t *s) {
 	smp_wmb();
 	s->sequence++;
 }
 
 
-static inline void do_write_seqcount_begin_nested(seqcount_t *s, int subclass)
-{
+static inline void do_write_seqcount_begin_nested(seqcount_t *s, int subclass) {
 	do_raw_write_seqcount_begin(s);
 }
 
 #define write_seqcount_begin(s)						do {										seqprop_assert(s);																if (seqprop_preemptible(s))							preempt_disable();															do_write_seqcount_begin(seqprop_ptr(s));			} while (0)
 
-static inline void do_write_seqcount_begin(seqcount_t *s)
-{
+static inline void do_write_seqcount_begin(seqcount_t *s) {
 	do_write_seqcount_begin_nested(s, 0);
 }
 
 #define write_seqcount_end(s)						do {										do_write_seqcount_end(seqprop_ptr(s));														if (seqprop_preemptible(s))							preempt_enable();					} while (0)
 
-static inline void do_write_seqcount_end(seqcount_t *s)
-{
+static inline void do_write_seqcount_end(seqcount_t *s) {
 	do_raw_write_seqcount_end(s);
 }
 
 #define write_seqcount_invalidate(s)						do_write_seqcount_invalidate(seqprop_ptr(s))
 
-static inline void do_write_seqcount_invalidate(seqcount_t *s)
-{
+static inline void do_write_seqcount_invalidate(seqcount_t *s) {
 	smp_wmb();
 	s->sequence+=2;
 }
@@ -151,8 +138,7 @@ typedef struct { seqcount_t seqcount; } seqcount_latch_t;
 #define seqcount_latch_init(s) seqcount_init(&(s)->seqcount)
 
 
-static inline void raw_write_seqcount_latch(seqcount_latch_t *s)
-{
+static inline void raw_write_seqcount_latch(seqcount_latch_t *s) {
 	smp_wmb();	 
 	s->seqcount.sequence++;
 	smp_wmb();       
@@ -164,30 +150,26 @@ typedef struct { seqcount_spinlock_t seqcount; spinlock_t lock; } seqlock_t;
 
 #define DEFINE_SEQLOCK(sl) 		seqlock_t sl = __SEQLOCK_UNLOCKED(sl)
 
-static inline unsigned read_seqbegin(const seqlock_t *sl)
-{
+static inline unsigned read_seqbegin(const seqlock_t *sl) {
 	unsigned ret = read_seqcount_begin(&sl->seqcount);
 
 	return ret;
 }
 
-static inline unsigned read_seqretry(const seqlock_t *sl, unsigned start)
-{
+static inline unsigned read_seqretry(const seqlock_t *sl, unsigned start) {
 	 
 
 	return read_seqcount_retry(&sl->seqcount, start);
 }
 
 
-static inline void write_seqlock(seqlock_t *sl)
-{
+static inline void write_seqlock(seqlock_t *sl) {
 	spin_lock(&sl->lock);
 	do_write_seqcount_begin(&sl->seqcount.seqcount);
 }
 
 
-static inline void write_sequnlock(seqlock_t *sl)
-{
+static inline void write_sequnlock(seqlock_t *sl) {
 	do_write_seqcount_end(&sl->seqcount.seqcount);
 	spin_unlock(&sl->lock);
 }

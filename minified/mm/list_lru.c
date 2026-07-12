@@ -2,8 +2,7 @@
 #include "slab.h"
 #include "internal.h"
 
-bool list_lru_add(struct list_lru *lru, struct list_head *item)
-{
+bool list_lru_add(struct list_lru *lru, struct list_head *item) {
 	int nid = page_to_nid(virt_to_page(item));
 	struct list_lru_node *nlru = &lru->node[nid];
 
@@ -17,8 +16,7 @@ bool list_lru_add(struct list_lru *lru, struct list_head *item)
 	return false;
 }
 
-bool list_lru_del(struct list_lru *lru, struct list_head *item)
-{
+bool list_lru_del(struct list_lru *lru, struct list_head *item) {
 	int nid = page_to_nid(virt_to_page(item));
 	struct list_lru_node *nlru = &lru->node[nid];
 
@@ -32,13 +30,11 @@ bool list_lru_del(struct list_lru *lru, struct list_head *item)
 	return false;
 }
 
-static void init_one_lru(struct list_lru_one *l)
-{
+static void init_one_lru(struct list_lru_one *l) {
 	INIT_LIST_HEAD(&l->list);
 }
 
-int __list_lru_init(struct list_lru *lru, bool memcg_aware, struct lock_class_key *key)
-{
+int __list_lru_init(struct list_lru *lru, bool memcg_aware, struct lock_class_key *key) {
 	int i;
 
 

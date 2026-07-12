@@ -3,8 +3,7 @@
 #include <linux/string.h>
 #include <linux/range.h>
 
-static int add_range(struct range *range, int az, int nr_range, u64 start, u64 end)
-{
+static int add_range(struct range *range, int az, int nr_range, u64 start, u64 end) {
 	if (start >= end)
 		return nr_range;
 
@@ -20,8 +19,7 @@ static int add_range(struct range *range, int az, int nr_range, u64 start, u64 e
 	return nr_range;
 }
 
-int add_range_with_merge(struct range *range, int az, int nr_range, u64 start, u64 end)
-{
+int add_range_with_merge(struct range *range, int az, int nr_range, u64 start, u64 end) {
 	int i;
 
 	if (start >= end)
@@ -55,8 +53,7 @@ int add_range_with_merge(struct range *range, int az, int nr_range, u64 start, u
 }
 
 
-static int cmp_range(const void *x1, const void *x2)
-{
+static int cmp_range(const void *x1, const void *x2) {
 	const struct range *r1 = x1;
 	const struct range *r2 = x2;
 
@@ -67,8 +64,7 @@ static int cmp_range(const void *x1, const void *x2)
 	return 0;
 }
 
-int clean_sort_range(struct range *range, int az)
-{
+int clean_sort_range(struct range *range, int az) {
 	int i, j, k = az - 1, nr_range = az;
 
 	for (i = 0; i < k; i++) {

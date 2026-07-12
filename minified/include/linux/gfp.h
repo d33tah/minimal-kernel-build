@@ -81,8 +81,7 @@ struct vm_area_struct;
 #define GFP_MOVABLE_MASK (__GFP_RECLAIMABLE|__GFP_MOVABLE)
 #define GFP_MOVABLE_SHIFT 3
 
-static inline int gfp_migratetype(const gfp_t gfp_flags)
-{
+static inline int gfp_migratetype(const gfp_t gfp_flags) {
 	VM_WARN_ON((gfp_flags & GFP_MOVABLE_MASK) == GFP_MOVABLE_MASK);
 	BUILD_BUG_ON((1UL << GFP_MOVABLE_SHIFT) != ___GFP_MOVABLE);
 	BUILD_BUG_ON((___GFP_MOVABLE >> GFP_MOVABLE_SHIFT) != MIGRATE_MOVABLE);
@@ -96,8 +95,7 @@ static inline int gfp_migratetype(const gfp_t gfp_flags)
 #undef GFP_MOVABLE_MASK
 #undef GFP_MOVABLE_SHIFT
 
-static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
-{
+static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags) {
 	return !!(gfp_flags & __GFP_DIRECT_RECLAIM);
 }
 
@@ -115,8 +113,7 @@ static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
 
 #define GFP_ZONE_BAD ( 	1 << (___GFP_DMA | ___GFP_HIGHMEM)				      	| 1 << (___GFP_DMA | ___GFP_DMA32)				      	| 1 << (___GFP_DMA32 | ___GFP_HIGHMEM)				      	| 1 << (___GFP_DMA | ___GFP_DMA32 | ___GFP_HIGHMEM)		      	| 1 << (___GFP_MOVABLE | ___GFP_HIGHMEM | ___GFP_DMA)		      	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_DMA)		      	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_HIGHMEM)		      	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_DMA | ___GFP_HIGHMEM)  )
 
-static inline enum zone_type gfp_zone(gfp_t flags)
-{
+static inline enum zone_type gfp_zone(gfp_t flags) {
 	enum zone_type z;
 	int bit = (__force int) (flags & GFP_ZONEMASK);
 
@@ -126,21 +123,18 @@ static inline enum zone_type gfp_zone(gfp_t flags)
 }
 
 
-static inline int gfp_zonelist(gfp_t flags)
-{
+static inline int gfp_zonelist(gfp_t flags) {
 	return ZONELIST_FALLBACK;
 }
 
-static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
-{
+static inline struct zonelist *node_zonelist(int nid, gfp_t flags) {
 	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags);
 }
 
 struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid);
 struct folio *__folio_alloc(gfp_t gfp, unsigned int order, int preferred_nid);
 
-static inline struct page * __alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order)
-{
+static inline struct page * __alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order) {
 	VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES);
 	VM_WARN_ON((gfp_mask & __GFP_THISNODE) && !node_online(nid));
 
@@ -148,34 +142,29 @@ static inline struct page * __alloc_pages_node(int nid, gfp_t gfp_mask, unsigned
 }
 
 static inline
-struct folio *__folio_alloc_node(gfp_t gfp, unsigned int order, int nid)
-{
+struct folio *__folio_alloc_node(gfp_t gfp, unsigned int order, int nid) {
 	VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES);
 	VM_WARN_ON((gfp & __GFP_THISNODE) && !node_online(nid));
 
 	return __folio_alloc(gfp, order, nid);
 }
 
-static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order)
-{
+static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order) {
 	if (nid == NUMA_NO_NODE)
 		nid = numa_mem_id();
 
 	return __alloc_pages_node(nid, gfp_mask, order);
 }
 
-static inline struct page *alloc_pages(gfp_t gfp_mask, unsigned int order)
-{
+static inline struct page *alloc_pages(gfp_t gfp_mask, unsigned int order) {
 	return alloc_pages_node(numa_node_id(), gfp_mask, order);
 }
-static inline struct folio *folio_alloc(gfp_t gfp, unsigned int order)
-{
+static inline struct folio *folio_alloc(gfp_t gfp, unsigned int order) {
 	return __folio_alloc_node(gfp, order, numa_node_id());
 }
 #define vma_alloc_folio(gfp, order, vma, addr, hugepage)			folio_alloc(gfp, order)
 #define alloc_page(gfp_mask) alloc_pages(gfp_mask, 0)
-static inline struct page *alloc_page_vma(gfp_t gfp, struct vm_area_struct *vma, unsigned long addr)
-{
+static inline struct page *alloc_page_vma(gfp_t gfp, struct vm_area_struct *vma, unsigned long addr) {
 	struct folio *folio = vma_alloc_folio(gfp, 0, vma, addr, false);
 
 	return &folio->page;

@@ -5,13 +5,11 @@
 #include <asm/x86_init.h>
 
 
-static inline void get_smp_config(void)
-{
+static inline void get_smp_config(void) {
 	x86_init.mpparse.get_smp_config(0);
 }
 
-static inline void find_smp_config(void)
-{
+static inline void find_smp_config(void) {
 	x86_init.mpparse.find_smp_config();
 }
 

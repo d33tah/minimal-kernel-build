@@ -7,12 +7,10 @@
 
 
 
-static inline bool kasan_check_read(const volatile void *p, unsigned int size)
-{
+static inline bool kasan_check_read(const volatile void *p, unsigned int size) {
 	return true;
 }
-static inline bool kasan_check_write(const volatile void *p, unsigned int size)
-{
+static inline bool kasan_check_write(const volatile void *p, unsigned int size) {
 	return true;
 }
 

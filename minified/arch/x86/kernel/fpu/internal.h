@@ -5,8 +5,7 @@
 extern struct fpstate init_fpstate;
 
 
-static __always_inline __pure bool use_fxsr(void)
-{
+static __always_inline __pure bool use_fxsr(void) {
 	return cpu_feature_enabled(X86_FEATURE_FXSR);
 }
 

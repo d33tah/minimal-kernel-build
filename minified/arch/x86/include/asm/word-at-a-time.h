@@ -11,8 +11,7 @@ struct word_at_a_time { const unsigned long one_bits, high_bits; };
 
 
  
-static inline long count_masked_bytes(long mask)
-{
+static inline long count_masked_bytes(long mask) {
 	 
 	long a = (0x0ff0001+mask) >> 23;
 	 
@@ -21,20 +20,17 @@ static inline long count_masked_bytes(long mask)
 
 
  
-static inline unsigned long has_zero(unsigned long a, unsigned long *bits, const struct word_at_a_time *c)
-{
+static inline unsigned long has_zero(unsigned long a, unsigned long *bits, const struct word_at_a_time *c) {
 	unsigned long mask = ((a - c->one_bits) & ~a) & c->high_bits;
 	*bits = mask;
 	return mask;
 }
 
-static inline unsigned long prep_zero_mask(unsigned long a, unsigned long bits, const struct word_at_a_time *c)
-{
+static inline unsigned long prep_zero_mask(unsigned long a, unsigned long bits, const struct word_at_a_time *c) {
 	return bits;
 }
 
-static inline unsigned long create_zero_mask(unsigned long bits)
-{
+static inline unsigned long create_zero_mask(unsigned long bits) {
 	bits = (bits - 1) & ~bits;
 	return bits >> 7;
 }
@@ -42,15 +38,13 @@ static inline unsigned long create_zero_mask(unsigned long bits)
  
 #define zero_bytemask(mask) (mask)
 
-static inline unsigned long find_zero(unsigned long mask)
-{
+static inline unsigned long find_zero(unsigned long mask) {
 	return count_masked_bytes(mask);
 }
 
  
 
-static inline unsigned long load_unaligned_zeropad(const void *addr)
-{
+static inline unsigned long load_unaligned_zeropad(const void *addr) {
 	unsigned long offset, data;
 	unsigned long ret;
 

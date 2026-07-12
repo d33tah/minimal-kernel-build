@@ -30,25 +30,21 @@ enum syscall_work_bit { SYSCALL_WORK_BIT_SECCOMP, SYSCALL_WORK_BIT_SYSCALL_TRACE
 #define THREADINFO_GFP		(GFP_KERNEL_ACCOUNT | __GFP_ZERO)
 
 
-static inline void set_ti_thread_flag(struct thread_info *ti, int flag)
-{
+static inline void set_ti_thread_flag(struct thread_info *ti, int flag) {
 	set_bit(flag, (unsigned long *)&ti->flags);
 }
 
-static inline void clear_ti_thread_flag(struct thread_info *ti, int flag)
-{
+static inline void clear_ti_thread_flag(struct thread_info *ti, int flag) {
 	clear_bit(flag, (unsigned long *)&ti->flags);
 }
 
 /* test_and_set_ti_thread_flag: orphaned with set_notify_resume cascade, removed (LOC reduction) */
 
-static inline int test_ti_thread_flag(struct thread_info *ti, int flag)
-{
+static inline int test_ti_thread_flag(struct thread_info *ti, int flag) {
 	return test_bit(flag, (unsigned long *)&ti->flags);
 }
 
-static __always_inline unsigned long read_ti_thread_flags(struct thread_info *ti)
-{
+static __always_inline unsigned long read_ti_thread_flags(struct thread_info *ti) {
 	return READ_ONCE(ti->flags);
 }
 
@@ -71,13 +67,11 @@ __bad_copy_from(void);
 extern void __compiletime_error("copy destination size is too small")
 __bad_copy_to(void);
 
-static inline void copy_overflow(int size, unsigned long count)
-{
+static inline void copy_overflow(int size, unsigned long count) {
 }
 
 static __always_inline __must_check bool
-check_copy_size(const void *addr, size_t bytes, bool is_source)
-{
+check_copy_size(const void *addr, size_t bytes, bool is_source) {
 	int sz = __builtin_object_size(addr, 0);
 	if (unlikely(sz >= 0 && sz < bytes)) {
 		if (!__builtin_constant_p(bytes))

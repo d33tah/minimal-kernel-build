@@ -33,8 +33,7 @@ struct screen_info screen_info;
 
 static char __initdata command_line[COMMAND_LINE_SIZE];
 
-void * __init extend_brk(size_t size, size_t align)
-{
+void * __init extend_brk(size_t size, size_t align) {
 	size_t mask = align - 1;
 	void *ret;
 
@@ -52,8 +51,7 @@ void * __init extend_brk(size_t size, size_t align)
 	return ret;
 }
 
-static void __init reserve_brk(void)
-{
+static void __init reserve_brk(void) {
 	if (_brk_end > _brk_start)
 		memblock_reserve(__pa_symbol(_brk_start), _brk_end - _brk_start);
 
@@ -64,8 +62,7 @@ static void __init reserve_brk(void)
 u64 relocated_ramdisk;
 
 
-static u64 __init get_ramdisk_image(void)
-{
+static u64 __init get_ramdisk_image(void) {
 	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
 
 	ramdisk_image |= (u64)boot_params.ext_ramdisk_image << 32;
@@ -75,8 +72,7 @@ static u64 __init get_ramdisk_image(void)
 
 	return ramdisk_image;
 }
-static u64 __init get_ramdisk_size(void)
-{
+static u64 __init get_ramdisk_size(void) {
 	u64 ramdisk_size = boot_params.hdr.ramdisk_size;
 
 	ramdisk_size |= (u64)boot_params.ext_ramdisk_size << 32;
@@ -84,8 +80,7 @@ static u64 __init get_ramdisk_size(void)
 	return ramdisk_size;
 }
 
-static void __init early_reserve_initrd(void)
-{
+static void __init early_reserve_initrd(void) {
 	 
 	u64 ramdisk_image = get_ramdisk_image();
 	u64 ramdisk_size  = get_ramdisk_size();
@@ -97,8 +92,7 @@ static void __init early_reserve_initrd(void)
 	memblock_reserve(ramdisk_image, ramdisk_end - ramdisk_image);
 }
 
-static void __init reserve_initrd(void)
-{
+static void __init reserve_initrd(void) {
 	 
 	u64 ramdisk_image = get_ramdisk_image();
 	u64 ramdisk_size  = get_ramdisk_size();
@@ -138,8 +132,7 @@ static void __init reserve_initrd(void)
 }
 
 
-static void __init parse_setup_data(void)
-{
+static void __init parse_setup_data(void) {
 	struct setup_data *data;
 	u64 pa_data, pa_next;
 
@@ -164,8 +157,7 @@ static void __init parse_setup_data(void)
 	}
 }
 
-static void __init memblock_x86_reserve_range_setup_data(void)
-{
+static void __init memblock_x86_reserve_range_setup_data(void) {
 	struct setup_indirect *indirect;
 	struct setup_data *data;
 	u64 pa_data, pa_next;
@@ -205,13 +197,11 @@ static void __init memblock_x86_reserve_range_setup_data(void)
 }
 
 
-static void __init trim_snb_memory(void)
-{
+static void __init trim_snb_memory(void) {
 	/* Stub: Sandy Bridge graphics workaround not needed for minimal kernel */
 }
 
-static void __init trim_bios_range(void)
-{
+static void __init trim_bios_range(void) {
 	 
 	e820__range_update(0, PAGE_SIZE, E820_TYPE_RAM, E820_TYPE_RESERVED);
 
@@ -221,8 +211,7 @@ static void __init trim_bios_range(void)
 	e820__update_table(e820_table);
 }
 
-static void __init e820_add_kernel_range(void)
-{
+static void __init e820_add_kernel_range(void) {
 	u64 start = __pa_symbol(_text);
 	u64 size = __pa_symbol(_end) - start;
 
@@ -235,8 +224,7 @@ static void __init e820_add_kernel_range(void)
 	e820__range_add(start, size, E820_TYPE_RAM);
 }
 
-static void __init early_reserve_memory(void)
-{
+static void __init early_reserve_memory(void) {
 	 
 	memblock_reserve(__pa_symbol(_text), (unsigned long)__end_of_kernel_reserve - (unsigned long)_text);
 
@@ -251,14 +239,12 @@ static void __init early_reserve_memory(void)
 	trim_snb_memory();
 }
 
-static void __init x86_report_nx(void)
-{
+static void __init x86_report_nx(void) {
 	/* Stub: NX reporting not needed for minimal kernel */
 }
 
 
-void __init setup_arch(char **cmdline_p)
-{
+void __init setup_arch(char **cmdline_p) {
 	memcpy(&boot_cpu_data, &new_cpu_data, sizeof(new_cpu_data));
 
 	 

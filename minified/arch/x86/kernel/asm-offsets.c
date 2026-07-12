@@ -14,8 +14,7 @@
 
 # include "asm-offsets_32.c"
 
-static void __used common(void)
-{
+static void __used common(void) {
 	BLANK();
 	OFFSET(TASK_threadsp, task_struct, thread.sp);
 

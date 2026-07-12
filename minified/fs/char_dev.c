@@ -26,14 +26,12 @@ static struct char_device_struct {
 	int minorct;
 } *chrdevs[CHRDEV_MAJOR_HASH_SIZE];
 
-static inline int major_to_index(unsigned major)
-{
+static inline int major_to_index(unsigned major) {
 	return major % CHRDEV_MAJOR_HASH_SIZE;
 }
 
 
-static int find_dynamic_major(void)
-{
+static int find_dynamic_major(void) {
 	int i;
 	struct char_device_struct *cd;
 
@@ -54,8 +52,7 @@ static int find_dynamic_major(void)
 	return -EBUSY;
 }
 
-static struct char_device_struct * __register_chrdev_region(unsigned int major, unsigned int baseminor, int minorct, const char *name)
-{
+static struct char_device_struct * __register_chrdev_region(unsigned int major, unsigned int baseminor, int minorct, const char *name) {
 	struct char_device_struct *cd, *curr, *prev = NULL;
 	int ret, i;
 
@@ -122,8 +119,7 @@ out:
 	return ERR_PTR(ret);
 }
 
-int register_chrdev_region(dev_t from, unsigned count, const char *name)
-{
+int register_chrdev_region(dev_t from, unsigned count, const char *name) {
 	struct char_device_struct *cd;
 	dev_t to = from + count;
 	dev_t n, next;
@@ -139,8 +135,7 @@ int register_chrdev_region(dev_t from, unsigned count, const char *name)
 	return 0;
 }
 
-int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count, const char *name)
-{
+int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count, const char *name) {
 	struct char_device_struct *cd = __register_chrdev_region(0, baseminor, count, name);
 	if (IS_ERR(cd))
 		return PTR_ERR(cd);
@@ -148,25 +143,21 @@ int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count, const ch
 	return 0;
 }
 
-void unregister_chrdev_region(dev_t from, unsigned count)
-{
+void unregister_chrdev_region(dev_t from, unsigned count) {
 }
 
 static DEFINE_SPINLOCK(cdev_lock);
 
-static struct kobject *cdev_get(struct cdev *p)
-{
+static struct kobject *cdev_get(struct cdev *p) {
 	return kobject_get_unless_zero(&p->kobj);
 }
 
-void cdev_put(struct cdev *p)
-{
+void cdev_put(struct cdev *p) {
 	if (p)
 		kobject_put(&p->kobj);
 }
 
-static int chrdev_open(struct inode *inode, struct file *filp)
-{
+static int chrdev_open(struct inode *inode, struct file *filp) {
 	const struct file_operations *fops;
 	struct cdev *p;
 	struct cdev *new = NULL;
@@ -219,20 +210,17 @@ static int chrdev_open(struct inode *inode, struct file *filp)
 
 const struct file_operations def_chr_fops = { .open = chrdev_open, };
 
-static struct kobject *exact_match(dev_t dev, int *part, void *data)
-{
+static struct kobject *exact_match(dev_t dev, int *part, void *data) {
 	struct cdev *p = data;
 	return &p->kobj;
 }
 
-static int exact_lock(dev_t dev, void *data)
-{
+static int exact_lock(dev_t dev, void *data) {
 	struct cdev *p = data;
 	return cdev_get(p) ? 0 : -1;
 }
 
-int cdev_add(struct cdev *p, dev_t dev, unsigned count)
-{
+int cdev_add(struct cdev *p, dev_t dev, unsigned count) {
 	int error;
 
 	if (WARN_ON(dev == WHITEOUT_DEV))
@@ -258,8 +246,7 @@ static struct kobj_type ktype_cdev_default = { };
 
 static struct kobj_type ktype_cdev_dynamic = { };
 
-struct cdev *cdev_alloc(void)
-{
+struct cdev *cdev_alloc(void) {
 	struct cdev *p = kzalloc(sizeof(struct cdev), GFP_KERNEL);
 	if (p) {
 		INIT_LIST_HEAD(&p->list);
@@ -268,21 +255,18 @@ struct cdev *cdev_alloc(void)
 	return p;
 }
 
-void cdev_init(struct cdev *cdev, const struct file_operations *fops)
-{
+void cdev_init(struct cdev *cdev, const struct file_operations *fops) {
 	memset(cdev, 0, sizeof *cdev);
 	INIT_LIST_HEAD(&cdev->list);
 	kobject_init(&cdev->kobj, &ktype_cdev_default);
 	cdev->ops = fops;
 }
 
-static struct kobject *base_probe(dev_t dev, int *part, void *data)
-{
+static struct kobject *base_probe(dev_t dev, int *part, void *data) {
 	return NULL;
 }
 
-void __init chrdev_init(void)
-{
+void __init chrdev_init(void) {
 	cdev_map = kobj_map_init(base_probe, &chrdevs_lock);
 }
 

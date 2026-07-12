@@ -1,7 +1,6 @@
 #include "relocs.h"
 
-void die(char *fmt, ...)
-{
+void die(char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
 	vfprintf(stderr, fmt, ap);
@@ -9,13 +8,11 @@ void die(char *fmt, ...)
 	exit(1);
 }
 
-static void usage(void)
-{
+static void usage(void) {
 	die("relocs [--abs-relocs|--realmode] vmlinux\n");
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 	int show_absolute_relocs, use_real_mode;
 	const char *fname;
 	FILE *fp;

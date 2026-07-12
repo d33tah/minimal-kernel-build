@@ -34,13 +34,11 @@ static const char * const sym_regex_realmode[S_NSYMTYPES] = { [S_REL] = "^pa_", 
 static const char * const *sym_regex;
 
 static regex_t sym_regex_c[S_NSYMTYPES];
-static int is_reloc(enum symtype type, const char *sym_name)
-{
+static int is_reloc(enum symtype type, const char *sym_name) {
 	return sym_regex[type] && !regexec(&sym_regex_c[type], sym_name, 0, NULL, 0);
 }
 
-static void regex_init(int use_real_mode)
-{
+static void regex_init(int use_real_mode) {
         char errbuf[128];
         int err;
 	int i;
@@ -63,8 +61,7 @@ static void regex_init(int use_real_mode)
         }
 }
 
-static const char *rel_type(unsigned type)
-{
+static const char *rel_type(unsigned type) {
 	static const char *type_name[] = {
 #define REL_TYPE(X) [X] = #X
 		REL_TYPE(R_386_NONE), REL_TYPE(R_386_32), REL_TYPE(R_386_PC32), REL_TYPE(R_386_GOT32), REL_TYPE(R_386_PLT32), REL_TYPE(R_386_COPY), REL_TYPE(R_386_GLOB_DAT), REL_TYPE(R_386_JMP_SLOT), REL_TYPE(R_386_RELATIVE), REL_TYPE(R_386_GOTOFF), REL_TYPE(R_386_GOTPC), REL_TYPE(R_386_8), REL_TYPE(R_386_PC8), REL_TYPE(R_386_16), REL_TYPE(R_386_PC16),
@@ -77,8 +74,7 @@ static const char *rel_type(unsigned type)
 	return name;
 }
 
-static const char *sec_name(unsigned shndx)
-{
+static const char *sec_name(unsigned shndx) {
 	const char *sec_strtab, *name;
 	sec_strtab = secs[shstrndx].strtab;
 	name = "<noname>";
@@ -94,8 +90,7 @@ static const char *sec_name(unsigned shndx)
 	return name;
 }
 
-static const char *sym_name(const char *sym_strtab, Elf_Sym *sym)
-{
+static const char *sym_name(const char *sym_strtab, Elf_Sym *sym) {
 	const char *name = "<noname>";
 	if (sym->st_name) {
 		name = sym_strtab + sym->st_name;
@@ -115,13 +110,11 @@ static const char *sym_name(const char *sym_strtab, Elf_Sym *sym)
 #define le32_to_cpu(val) bswap_32(val)
 #endif
 
-static uint16_t elf16_to_cpu(uint16_t val)
-{
+static uint16_t elf16_to_cpu(uint16_t val) {
 	return le16_to_cpu(val);
 }
 
-static uint32_t elf32_to_cpu(uint32_t val)
-{
+static uint32_t elf32_to_cpu(uint32_t val) {
 	return le32_to_cpu(val);
 }
 
@@ -132,8 +125,7 @@ static uint32_t elf32_to_cpu(uint32_t val)
 #define elf_off_to_cpu(x)	elf32_to_cpu(x)
 #define elf_xword_to_cpu(x)	elf32_to_cpu(x)
 
-static int sym_index(Elf_Sym *sym)
-{
+static int sym_index(Elf_Sym *sym) {
 	Elf_Sym *symtab = secs[shsymtabndx].symtab;
 	Elf32_Word *xsymtab = secs[shxsymtabndx].xsymtab;
 	unsigned long offset;
@@ -149,8 +141,7 @@ static int sym_index(Elf_Sym *sym)
 	return elf32_to_cpu(xsymtab[index]);
 }
 
-static void read_ehdr(FILE *fp)
-{
+static void read_ehdr(FILE *fp) {
 	if (fread(&ehdr, sizeof(ehdr), 1, fp) != 1) {
 		die("Cannot read ELF header: %s\n", strerror(errno));
 	}
@@ -218,8 +209,7 @@ static void read_ehdr(FILE *fp)
 		die("String table index out of bounds\n");
 }
 
-static void read_shdrs(FILE *fp)
-{
+static void read_shdrs(FILE *fp) {
 	int i;
 	Elf_Shdr shdr;
 
@@ -250,8 +240,7 @@ static void read_shdrs(FILE *fp)
 
 }
 
-static void read_strtabs(FILE *fp)
-{
+static void read_strtabs(FILE *fp) {
 	int i;
 	for (i = 0; i < shnum; i++) {
 		struct section *sec = &secs[i];
@@ -271,8 +260,7 @@ static void read_strtabs(FILE *fp)
 	}
 }
 
-static void read_symtabs(FILE *fp)
-{
+static void read_symtabs(FILE *fp) {
 	int i,j;
 
 	for (i = 0; i < shnum; i++) {
@@ -325,8 +313,7 @@ static void read_symtabs(FILE *fp)
 }
 
 
-static void read_relocs(FILE *fp)
-{
+static void read_relocs(FILE *fp) {
 	int i,j;
 	for (i = 0; i < shnum; i++) {
 		struct section *sec = &secs[i];
@@ -352,8 +339,7 @@ static void read_relocs(FILE *fp)
 }
 
 
-static void print_absolute_relocs(void)
-{
+static void print_absolute_relocs(void) {
 	int i, printed = 0;
 	const char *format;
 
@@ -404,8 +390,7 @@ static void print_absolute_relocs(void)
 		printf("\n");
 }
 
-static void add_reloc(struct relocs *r, uint32_t offset)
-{
+static void add_reloc(struct relocs *r, uint32_t offset) {
 	if (r->count == r->size) {
 		unsigned long newsize = r->size + 50000;
 		void *mem = realloc(r->offset, newsize * sizeof(r->offset[0]));
@@ -418,8 +403,7 @@ static void add_reloc(struct relocs *r, uint32_t offset)
 	r->offset[r->count++] = offset;
 }
 
-static void walk_relocs(int (*process)(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const char *symname))
-{
+static void walk_relocs(int (*process)(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const char *symname)) {
 	int i;
 	 
 	for (i = 0; i < shnum; i++) {
@@ -449,8 +433,7 @@ static void walk_relocs(int (*process)(struct section *sec, Elf_Rel *rel, Elf_Sy
 	}
 }
 
-static int do_reloc32(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const char *symname)
-{
+static int do_reloc32(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const char *symname) {
 	unsigned r_type = ELF32_R_TYPE(rel->r_info);
 	int shn_abs = (sym->st_shndx == SHN_ABS) && !is_reloc(S_REL, symname);
 
@@ -479,8 +462,7 @@ static int do_reloc32(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const cha
 	return 0;
 }
 
-static int do_reloc_real(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const char *symname)
-{
+static int do_reloc_real(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const char *symname) {
 	unsigned r_type = ELF32_R_TYPE(rel->r_info);
 	int shn_abs = (sym->st_shndx == SHN_ABS) && !is_reloc(S_REL, symname);
 
@@ -531,28 +513,24 @@ static int do_reloc_real(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const 
 	return 0;
 }
 
-static int cmp_relocs(const void *va, const void *vb)
-{
+static int cmp_relocs(const void *va, const void *vb) {
 	const uint32_t *a, *b;
 	a = va; b = vb;
 	return (*a == *b)? 0 : (*a > *b)? 1 : -1;
 }
 
-static void sort_relocs(struct relocs *r)
-{
+static void sort_relocs(struct relocs *r) {
 	qsort(r->offset, r->count, sizeof(r->offset[0]), cmp_relocs);
 }
 
-static int write32(uint32_t v, FILE *f)
-{
+static int write32(uint32_t v, FILE *f) {
 	unsigned char buf[4];
 
 	put_unaligned_le32(v, buf);
 	return fwrite(buf, 1, 4, f) == 4 ? 0 : -1;
 }
 
-static void emit_relocs(int use_real_mode)
-{
+static void emit_relocs(int use_real_mode) {
 	int i;
 	int (*write_reloc)(uint32_t, FILE *) = write32;
 	int (*do_reloc)(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const char *symname);
@@ -592,8 +570,7 @@ static void emit_relocs(int use_real_mode)
 
 # define process process_32
 
-void process(FILE *fp, int use_real_mode, int show_absolute_relocs)
-{
+void process(FILE *fp, int use_real_mode, int show_absolute_relocs) {
 	regex_init(use_real_mode);
 	read_ehdr(fp);
 	read_shdrs(fp);

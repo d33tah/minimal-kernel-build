@@ -15,13 +15,11 @@ struct pt_regs { unsigned long bx, cx, dx, si, di, bp, ax; unsigned short ds, __
 
 extern void send_sigtrap(struct pt_regs *regs, int error_code, int si_code);
 
-static __always_inline int user_mode(struct pt_regs *regs)
-{
+static __always_inline int user_mode(struct pt_regs *regs) {
 	return ((regs->cs & SEGMENT_RPL_MASK) | (regs->flags & X86_VM_MASK)) >= USER_RPL;
 }
 
-static inline unsigned long instruction_pointer(struct pt_regs *regs)
-{
+static inline unsigned long instruction_pointer(struct pt_regs *regs) {
 	return regs->ip;
 }
 

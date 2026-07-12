@@ -1,8 +1,7 @@
 #include <linux/idr.h>
 #include <linux/slab.h>
 
-int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid, unsigned long max, gfp_t gfp)
-{
+int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid, unsigned long max, gfp_t gfp) {
 	struct radix_tree_iter iter;
 	void __rcu **slot;
 	unsigned int base = idr->idr_base;
@@ -25,8 +24,7 @@ int idr_alloc_u32(struct idr *idr, void *ptr, u32 *nextid, unsigned long max, gf
 	return 0;
 }
 
-int idr_alloc_cyclic(struct idr *idr, void *ptr, int start, int end, gfp_t gfp)
-{
+int idr_alloc_cyclic(struct idr *idr, void *ptr, int start, int end, gfp_t gfp) {
 	u32 id = idr->idr_next;
 	int err, max = end > 0 ? end - 1 : INT_MAX;
 
@@ -45,18 +43,15 @@ int idr_alloc_cyclic(struct idr *idr, void *ptr, int start, int end, gfp_t gfp)
 	return id;
 }
 
-void *idr_remove(struct idr *idr, unsigned long id)
-{
+void *idr_remove(struct idr *idr, unsigned long id) {
 	return radix_tree_delete_item(&idr->idr_rt, id - idr->idr_base, NULL);
 }
 
-void *idr_find(const struct idr *idr, unsigned long id)
-{
+void *idr_find(const struct idr *idr, unsigned long id) {
 	return radix_tree_lookup(&idr->idr_rt, id - idr->idr_base);
 }
 
-void *idr_replace(struct idr *idr, void *ptr, unsigned long id)
-{
+void *idr_replace(struct idr *idr, void *ptr, unsigned long id) {
 	struct radix_tree_node *node;
 	void __rcu **slot = NULL;
 	void *entry;
@@ -74,8 +69,7 @@ void *idr_replace(struct idr *idr, void *ptr, unsigned long id)
 
 
 
-int ida_alloc_range(struct ida *ida, unsigned int min, unsigned int max, gfp_t gfp)
-{
+int ida_alloc_range(struct ida *ida, unsigned int min, unsigned int max, gfp_t gfp) {
 	XA_STATE(xas, &ida->xa, min / IDA_BITMAP_BITS);
 	unsigned bit = min % IDA_BITMAP_BITS;
 	unsigned long flags;

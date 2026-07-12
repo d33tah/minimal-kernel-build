@@ -63,23 +63,20 @@ extern void early_cpu_init(void);
 extern void identify_boot_cpu(void);
 /* identify_secondary_cpu, print_cpu_info, print_cpu_msr removed - never called */
 
-static inline void native_cpuid(unsigned int *eax, unsigned int *ebx, unsigned int *ecx, unsigned int *edx)
-{
+static inline void native_cpuid(unsigned int *eax, unsigned int *ebx, unsigned int *ecx, unsigned int *edx) {
 	 
 	asm volatile("cpuid" : "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx) : "0" (*eax), "2" (*ecx) : "memory");
 }
 
 /* native_cpuid_reg + native_cpuid_{eax,ebx,ecx,edx} removed - unused */
 
-static inline unsigned long read_cr3_pa(void)
-{
+static inline unsigned long read_cr3_pa(void) {
 	return __read_cr3() & CR3_ADDR_MASK;
 }
 
 /* native_read_cr3_pa removed - unused */
 
-static inline void load_cr3(pgd_t *pgdir)
-{
+static inline void load_cr3(pgd_t *pgdir) {
 	write_cr3(__sme_pa(pgdir));
 }
 
@@ -114,14 +111,12 @@ struct thread_struct { struct desc_struct	tls_array[GDT_ENTRY_TLS_ENTRIES]; unsi
 
 extern void fpu_thread_struct_whitelist(unsigned long *offset, unsigned long *size);
 
-static inline void arch_thread_struct_whitelist(unsigned long *offset, unsigned long *size)
-{
+static inline void arch_thread_struct_whitelist(unsigned long *offset, unsigned long *size) {
 	fpu_thread_struct_whitelist(offset, size);
 }
 
 static inline void
-native_load_sp0(unsigned long sp0)
-{
+native_load_sp0(unsigned long sp0) {
 	this_cpu_write(cpu_tss_rw.x86_tss.sp0, sp0);
 }
 
@@ -129,32 +124,28 @@ native_load_sp0(unsigned long sp0)
 
 #define __cpuid			native_cpuid
 
-static inline void load_sp0(unsigned long sp0)
-{
+static inline void load_sp0(unsigned long sp0) {
 	native_load_sp0(sp0);
 }
 
 
 
 
-static inline void cpuid(unsigned int op, unsigned int *eax, unsigned int *ebx, unsigned int *ecx, unsigned int *edx)
-{
+static inline void cpuid(unsigned int op, unsigned int *eax, unsigned int *ebx, unsigned int *ecx, unsigned int *edx) {
 	*eax = op;
 	*ecx = 0;
 	__cpuid(eax, ebx, ecx, edx);
 }
 
  
-static inline void cpuid_count(unsigned int op, int count, unsigned int *eax, unsigned int *ebx, unsigned int *ecx, unsigned int *edx)
-{
+static inline void cpuid_count(unsigned int op, int count, unsigned int *eax, unsigned int *ebx, unsigned int *ecx, unsigned int *edx) {
 	*eax = op;
 	*ecx = count;
 	__cpuid(eax, ebx, ecx, edx);
 }
 
  
-static inline unsigned int cpuid_eax(unsigned int op)
-{
+static inline unsigned int cpuid_eax(unsigned int op) {
 	unsigned int eax, ebx, ecx, edx;
 
 	cpuid(op, &eax, &ebx, &ecx, &edx);
@@ -162,8 +153,7 @@ static inline unsigned int cpuid_eax(unsigned int op)
 	return eax;
 }
 
-static inline unsigned int cpuid_edx(unsigned int op)
-{
+static inline unsigned int cpuid_edx(unsigned int op) {
 	unsigned int eax, ebx, ecx, edx;
 
 	cpuid(op, &eax, &ebx, &ecx, &edx);
@@ -191,14 +181,12 @@ extern void cpu_init_exception_handling(void);
 # define BASE_PREFETCH		""
 
  
-static inline void prefetch(const void *x)
-{
+static inline void prefetch(const void *x) {
 	alternative_input(BASE_PREFETCH, "prefetchnta %P1", X86_FEATURE_XMM, "m" (*(const char *)x));
 }
 
  
-static __always_inline void prefetchw(const void *x)
-{
+static __always_inline void prefetchw(const void *x) {
 	alternative_input(BASE_PREFETCH, "prefetchw %P1", X86_FEATURE_3DNOWPREFETCH, "m" (*(const char *)x));
 }
 

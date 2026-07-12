@@ -6,13 +6,11 @@
 
 
 
-static __always_inline int syscall_32_enter(struct pt_regs *regs)
-{
+static __always_inline int syscall_32_enter(struct pt_regs *regs) {
 	return (int)regs->orig_ax;
 }
 
-static __always_inline void do_syscall_32_irqs_on(struct pt_regs *regs, int nr)
-{
+static __always_inline void do_syscall_32_irqs_on(struct pt_regs *regs, int nr) {
 	 
 	unsigned int unr = nr;
 
@@ -24,8 +22,7 @@ static __always_inline void do_syscall_32_irqs_on(struct pt_regs *regs, int nr)
 	}
 }
 
-__visible noinstr void do_int80_syscall_32(struct pt_regs *regs)
-{
+__visible noinstr void do_int80_syscall_32(struct pt_regs *regs) {
 	int nr = syscall_32_enter(regs);
 
 	 
@@ -36,8 +33,7 @@ __visible noinstr void do_int80_syscall_32(struct pt_regs *regs)
 	syscall_exit_to_user_mode(regs);
 }
 
-__visible noinstr long do_SYSENTER_32(struct pt_regs *regs)
-{
+__visible noinstr long do_SYSENTER_32(struct pt_regs *regs) {
 	/*
 	 * Runtime-dead in this minimal build: userspace enters via int 0x80
 	 * (do_int80_syscall_32), never via SYSENTER. Body stubbed; symbol
@@ -46,8 +42,7 @@ __visible noinstr long do_SYSENTER_32(struct pt_regs *regs)
 	return 0;
 }
 
-SYSCALL_DEFINE0(ni_syscall)
-{
+SYSCALL_DEFINE0(ni_syscall) {
 	return -ENOSYS;
 }
 

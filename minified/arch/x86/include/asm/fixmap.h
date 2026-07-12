@@ -40,8 +40,7 @@ enum fixed_addresses {
 
 void native_set_fixmap(unsigned   idx, phys_addr_t phys, pgprot_t flags);
 
-static inline void __set_fixmap(enum fixed_addresses idx, phys_addr_t phys, pgprot_t flags)
-{
+static inline void __set_fixmap(enum fixed_addresses idx, phys_addr_t phys, pgprot_t flags) {
 	native_set_fixmap(idx, phys, flags);
 }
 
@@ -51,8 +50,7 @@ static inline void __set_fixmap(enum fixed_addresses idx, phys_addr_t phys, pgpr
 
 #define __fix_to_virt(x)	(FIXADDR_TOP - ((x) << PAGE_SHIFT))
 
-static __always_inline unsigned long fix_to_virt(const unsigned int idx)
-{
+static __always_inline unsigned long fix_to_virt(const unsigned int idx) {
 	BUILD_BUG_ON(idx >= __end_of_fixed_addresses);
 	return __fix_to_virt(idx);
 }

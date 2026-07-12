@@ -22,8 +22,7 @@
 
 DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
-void raw_spin_rq_lock_nested(struct rq *rq, int subclass)
-{
+void raw_spin_rq_lock_nested(struct rq *rq, int subclass) {
 	/* SCHED_CORE off: rq lock is always rq->__lock, no core-cookie retry */
 	preempt_disable();
 	raw_spin_lock_nested(&rq->__lock, subclass);
@@ -31,14 +30,12 @@ void raw_spin_rq_lock_nested(struct rq *rq, int subclass)
 }
 
 
-void raw_spin_rq_unlock(struct rq *rq)
-{
+void raw_spin_rq_unlock(struct rq *rq) {
 	raw_spin_unlock(rq_lockp(rq));
 }
 
 struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
-	__acquires(rq->lock)
-{
+	__acquires(rq->lock) {
 	struct rq *rq;
 
 	lockdep_assert_held(&p->pi_lock);
@@ -57,13 +54,11 @@ struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 	}
 }
 
-static void update_rq_clock_task(struct rq *rq, s64 delta)
-{
+static void update_rq_clock_task(struct rq *rq, s64 delta) {
 	rq->clock_task += delta;
 }
 
-void update_rq_clock(struct rq *rq)
-{
+void update_rq_clock(struct rq *rq) {
 	s64 delta;
 
 	lockdep_assert_rq_held(rq);
@@ -85,8 +80,7 @@ void update_rq_clock(struct rq *rq)
  * of which fires here (no DEFINE_WAKE_Q / wake_q_init / wake_q_add anywhere).
  */
 
-void resched_curr(struct rq *rq)
-{
+void resched_curr(struct rq *rq) {
 	struct task_struct *curr = rq->curr;
 
 	lockdep_assert_rq_held(rq);
@@ -98,8 +92,7 @@ void resched_curr(struct rq *rq)
 	set_preempt_need_resched();
 }
 
-void resched_cpu(int cpu)
-{
+void resched_cpu(int cpu) {
 	/*
 	 * RUNTIME-DEAD ANCHOR-STUB: the sole call site is call_rcu()'s
 	 * `if (unlikely(is_idle_task(current))) resched_cpu(0)` (rcu/tiny.c).
@@ -109,8 +102,7 @@ void resched_cpu(int cpu)
 	 */
 }
 
-static void set_load_weight(struct task_struct *p, bool update_load)
-{
+static void set_load_weight(struct task_struct *p, bool update_load) {
 	int prio = p->static_prio - MAX_RT_PRIO;
 	struct load_weight *load = &p->se.load;
 
@@ -130,31 +122,27 @@ static void set_load_weight(struct task_struct *p, bool update_load)
 	}
 }
 
-static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
-{
+static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags) {
 	if (!(flags & ENQUEUE_NOCLOCK))
 		update_rq_clock(rq);
 
 	p->sched_class->enqueue_task(rq, p, flags);
 }
 
-static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
-{
+static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags) {
 	if (!(flags & DEQUEUE_NOCLOCK))
 		update_rq_clock(rq);
 
 	p->sched_class->dequeue_task(rq, p, flags);
 }
 
-void activate_task(struct rq *rq, struct task_struct *p, int flags)
-{
+void activate_task(struct rq *rq, struct task_struct *p, int flags) {
 	enqueue_task(rq, p, flags);
 
 	p->on_rq = TASK_ON_RQ_QUEUED;
 }
 
-void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
-{
+void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags) {
 	if (p->sched_class == rq->curr->sched_class)
 		rq->curr->sched_class->check_preempt_curr(rq, p, flags);
 	else if (sched_class_above(p->sched_class, rq->curr->sched_class))
@@ -166,8 +154,7 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 }
 
 
-static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags, struct rq_flags *rf)
-{
+static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags, struct rq_flags *rf) {
 	check_preempt_curr(rq, p, wake_flags);
 	WRITE_ONCE(p->__state, TASK_RUNNING);
 	
@@ -175,8 +162,7 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 }
 
 static void
-ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags, struct rq_flags *rf)
-{
+ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags, struct rq_flags *rf) {
 	int en_flags = ENQUEUE_WAKEUP | ENQUEUE_NOCLOCK;
 
 	lockdep_assert_rq_held(rq);
@@ -185,8 +171,7 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags, struct rq
 	ttwu_do_wakeup(rq, p, wake_flags, rf);
 }
 
-static int ttwu_runnable(struct task_struct *p, int wake_flags)
-{
+static int ttwu_runnable(struct task_struct *p, int wake_flags) {
 	struct rq_flags rf;
 	struct rq *rq;
 	int ret = 0;
@@ -203,8 +188,7 @@ static int ttwu_runnable(struct task_struct *p, int wake_flags)
 	return ret;
 }
 
-static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
-{
+static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags) {
 	struct rq *rq = cpu_rq(cpu);
 	struct rq_flags rf;
 
@@ -215,8 +199,7 @@ static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
 }
 
 static __always_inline
-bool ttwu_state_match(struct task_struct *p, unsigned int state, int *success)
-{
+bool ttwu_state_match(struct task_struct *p, unsigned int state, int *success) {
 	if (READ_ONCE(p->__state) & state) {
 		*success = 1;
 		return true;
@@ -226,8 +209,7 @@ bool ttwu_state_match(struct task_struct *p, unsigned int state, int *success)
 }
 
 static int
-try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
-{
+try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags) {
 	int cpu, success = 0;
 
 	preempt_disable();
@@ -263,8 +245,7 @@ out:
 }
 
 
-static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
-{
+static void __sched_fork(unsigned long clone_flags, struct task_struct *p) {
 	p->on_rq			= 0;
 
 	p->se.on_rq			= 0;
@@ -275,8 +256,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 }
 
 
-int sched_fork(unsigned long clone_flags, struct task_struct *p)
-{
+int sched_fork(unsigned long clone_flags, struct task_struct *p) {
 	__sched_fork(clone_flags, p);
 	
 	p->__state = TASK_NEW;
@@ -293,8 +273,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	return 0;
 }
 
-void sched_cgroup_fork(struct task_struct *p, struct kernel_clone_args *kargs)
-{
+void sched_cgroup_fork(struct task_struct *p, struct kernel_clone_args *kargs) {
 	unsigned long flags;
 
 	
@@ -306,8 +285,7 @@ void sched_cgroup_fork(struct task_struct *p, struct kernel_clone_args *kargs)
 }
 
 
-void wake_up_new_task(struct task_struct *p)
-{
+void wake_up_new_task(struct task_struct *p) {
 	struct rq_flags rf;
 	struct rq *rq;
 
@@ -323,15 +301,13 @@ void wake_up_new_task(struct task_struct *p)
 }
 
 static inline void
-prepare_lock_switch(struct rq *rq, struct task_struct *next, struct rq_flags *rf)
-{
+prepare_lock_switch(struct rq *rq, struct task_struct *next, struct rq_flags *rf) {
 	
 	rq_unpin_lock(rq, rf);
 	spin_release(&__rq_lockp(rq)->dep_map, _THIS_IP_);
 }
 
-static inline void finish_lock_switch(struct rq *rq)
-{
+static inline void finish_lock_switch(struct rq *rq) {
 	
 	spin_acquire(&__rq_lockp(rq)->dep_map, 0, 0, _THIS_IP_);
 	raw_spin_rq_unlock_irq(rq);
@@ -346,14 +322,12 @@ static inline void finish_lock_switch(struct rq *rq)
 #endif
 
 static inline void
-prepare_task_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next)
-{
+prepare_task_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next) {
 	prepare_arch_switch(next);
 }
 
 static struct rq *finish_task_switch(struct task_struct *prev)
-	__releases(rq->lock)
-{
+	__releases(rq->lock) {
 	struct rq *rq = this_rq();
 	struct mm_struct *mm = rq->prev_mm;
 	unsigned int prev_state;
@@ -388,8 +362,7 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 }
 
 asmlinkage __visible void schedule_tail(struct task_struct *prev)
-	__releases(rq->lock)
-{
+	__releases(rq->lock) {
 	
 
 	finish_task_switch(prev);
@@ -398,8 +371,7 @@ asmlinkage __visible void schedule_tail(struct task_struct *prev)
 	calculate_sigpending();
 }
 
-static __always_inline struct rq * context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next, struct rq_flags *rf)
-{
+static __always_inline struct rq * context_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next, struct rq_flags *rf) {
 	prepare_task_switch(rq, prev, next);
 
 	
@@ -438,8 +410,7 @@ static __always_inline struct rq * context_switch(struct rq *rq, struct task_str
 
 
 
-void scheduler_tick(void)
-{
+void scheduler_tick(void) {
 	int cpu = smp_processor_id();
 	struct rq *rq = cpu_rq(cpu);
 	struct task_struct *curr = rq->curr;
@@ -458,22 +429,19 @@ void scheduler_tick(void)
 	rq_unlock(rq, &rf);
 }
 
-static inline void schedule_debug(struct task_struct *prev, bool preempt)
-{
+static inline void schedule_debug(struct task_struct *prev, bool preempt) {
 
 	if (unlikely(in_atomic_preempt_off())) {
 		preempt_count_set(PREEMPT_DISABLED);
 	}
 }
 
-static void put_prev_task_balance(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
-{
+static void put_prev_task_balance(struct rq *rq, struct task_struct *prev, struct rq_flags *rf) {
 
 	put_prev_task(rq, prev);
 }
 
-static inline struct task_struct * __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
-{
+static inline struct task_struct * __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf) {
 	const struct sched_class *class;
 	struct task_struct *p;
 
@@ -505,8 +473,7 @@ restart:
 	BUG();
 }
 
-static struct task_struct * pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
-{
+static struct task_struct * pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf) {
 	return __pick_next_task(rq, prev, rf);
 }
 
@@ -515,8 +482,7 @@ static struct task_struct * pick_next_task(struct rq *rq, struct task_struct *pr
 
 # define SM_MASK_PREEMPT	(~0U)
 
-static void __sched notrace __schedule(unsigned int sched_mode)
-{
+static void __sched notrace __schedule(unsigned int sched_mode) {
 	struct task_struct *prev, *next;
 	unsigned long prev_state;
 	struct rq_flags rf;
@@ -569,8 +535,7 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 	}
 }
 
-void __noreturn do_task_dead(void)
-{
+void __noreturn do_task_dead(void) {
 	
 	set_special_state(TASK_DEAD);
 
@@ -582,12 +547,10 @@ void __noreturn do_task_dead(void)
 		cpu_relax();
 }
 
-static inline void sched_submit_work(struct task_struct *tsk)
-{
+static inline void sched_submit_work(struct task_struct *tsk) {
 }
 
-asmlinkage __visible void __sched schedule(void)
-{
+asmlinkage __visible void __sched schedule(void) {
 	struct task_struct *tsk = current;
 
 	sched_submit_work(tsk);
@@ -598,8 +561,7 @@ asmlinkage __visible void __sched schedule(void)
 	} while (need_resched());
 }
 
-void __sched schedule_idle(void)
-{
+void __sched schedule_idle(void) {
 	
 	WARN_ON_ONCE(current->__state);
 	do {
@@ -607,15 +569,13 @@ void __sched schedule_idle(void)
 	} while (need_resched());
 }
 
-void __sched schedule_preempt_disabled(void)
-{
+void __sched schedule_preempt_disabled(void) {
 	sched_preempt_enable_no_resched();
 	schedule();
 	preempt_disable();
 }
 
-static void __sched notrace preempt_schedule_common(void)
-{
+static void __sched notrace preempt_schedule_common(void) {
 	do {
 		
 		preempt_disable_notrace();
@@ -626,8 +586,7 @@ static void __sched notrace preempt_schedule_common(void)
 	} while (need_resched());
 }
 
-int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flags, void *key)
-{
+int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flags, void *key) {
 	WARN_ON_ONCE(IS_ENABLED(CONFIG_SCHED_DEBUG) && wake_flags & ~WF_SYNC);
 	return try_to_wake_up(curr->private, mode, wake_flags);
 }
@@ -639,13 +598,11 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flag
  * __sched_setscheduler, both private to this chain) is never executed.
  * Symbol kept link-live for the sched.h extern + kthread.c:139 reference.
  */
-int sched_setscheduler_nocheck(struct task_struct *p, int policy, const struct sched_param *param)
-{
+int sched_setscheduler_nocheck(struct task_struct *p, int policy, const struct sched_param *param) {
 	return 0;
 }
 
-int __sched __cond_resched(void)
-{
+int __sched __cond_resched(void) {
 	if (should_resched(0)) {
 		preempt_schedule_common();
 		return 1;
@@ -656,8 +613,7 @@ int __sched __cond_resched(void)
 }
 
 
-void __init init_idle(struct task_struct *idle, int cpu)
-{
+void __init init_idle(struct task_struct *idle, int cpu) {
 	struct rq *rq = cpu_rq(cpu);
 	unsigned long flags;
 
@@ -685,14 +641,12 @@ void __init init_idle(struct task_struct *idle, int cpu)
 	idle->sched_class = &idle_sched_class;
 }
 
-void __init sched_init_smp(void)
-{
+void __init sched_init_smp(void) {
 	sched_init_granularity();
 }
 
 
-void __init sched_init(void)
-{
+void __init sched_init(void) {
 	int i;
 
 

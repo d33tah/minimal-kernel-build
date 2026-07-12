@@ -1,8 +1,7 @@
 
 #include <asm/tlbflush.h>
 
-void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
-{
+void set_pte_vaddr(unsigned long vaddr, pte_t pteval) {
 	pgd_t *pgd;
 	pmd_t *pmd;
 	pte_t *pte;

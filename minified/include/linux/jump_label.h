@@ -21,24 +21,20 @@ struct static_key { atomic_t enabled; };
 #include <linux/atomic.h>
 #include <linux/bug.h>
 
-static __always_inline int static_key_count(struct static_key *key)
-{
+static __always_inline int static_key_count(struct static_key *key) {
 	return arch_atomic_read(&key->enabled);
 }
 
-static __always_inline void jump_label_init(void)
-{
+static __always_inline void jump_label_init(void) {
 	static_key_initialized = true;
 }
 
-static inline void static_key_slow_inc(struct static_key *key)
-{
+static inline void static_key_slow_inc(struct static_key *key) {
 	STATIC_KEY_CHECK_USE(key);
 	atomic_inc(&key->enabled);
 }
 
-static inline void static_key_enable(struct static_key *key)
-{
+static inline void static_key_enable(struct static_key *key) {
 	STATIC_KEY_CHECK_USE(key);
 
 	if (atomic_read(&key->enabled) != 0) {

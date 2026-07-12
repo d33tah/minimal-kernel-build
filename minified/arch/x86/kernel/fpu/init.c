@@ -7,8 +7,7 @@
 #include "legacy.h"
 #include "xstate.h"
 
-static void fpu__init_cpu_generic(void)
-{
+static void fpu__init_cpu_generic(void) {
 	unsigned long cr0;
 	unsigned long cr4_mask = 0;
 
@@ -27,13 +26,11 @@ static void fpu__init_cpu_generic(void)
 		asm volatile ("fninit");
 }
 
-void fpu__init_cpu(void)
-{
+void fpu__init_cpu(void) {
 	fpu__init_cpu_generic();
 }
 
-static void fpu__init_system_early_generic(struct cpuinfo_x86 *c)
-{
+static void fpu__init_system_early_generic(struct cpuinfo_x86 *c) {
 	/*
 	 * The CPUID-less 386/486 FPU probe (guarded by !boot_cpu_has(
 	 * X86_FEATURE_CPUID)) was unreachable on the QEMU target: CPUID is
@@ -47,8 +44,7 @@ static void fpu__init_system_early_generic(struct cpuinfo_x86 *c)
 	}
 }
 
-static void __init fpu__init_system_generic(void)
-{
+static void __init fpu__init_system_generic(void) {
 	/* fpu__init_system_mxcsr() removed: it only computed mxcsr_feature_mask,
 	 * a global that is never read anywhere in this tree (the MXCSR-validation
 	 * signal-restore paths were removed in minification). Pure dead write. */
@@ -59,8 +55,7 @@ static void __init fpu__init_system_generic(void)
 
 #define CHECK_MEMBER_AT_END_OF(TYPE, MEMBER) 	BUILD_BUG_ON(sizeof(TYPE) != ALIGN(offsetofend(TYPE, MEMBER), 					   TYPE_ALIGN(TYPE)))
 
-static void __init fpu__init_task_struct_size(void)
-{
+static void __init fpu__init_task_struct_size(void) {
 	int task_size = sizeof(struct task_struct);
 
 	 
@@ -77,8 +72,7 @@ static void __init fpu__init_task_struct_size(void)
 	arch_task_struct_size = task_size;
 }
 
-static void __init fpu__init_system_xstate_size_legacy(void)
-{
+static void __init fpu__init_system_xstate_size_legacy(void) {
 	unsigned int size;
 
 	 
@@ -93,14 +87,12 @@ static void __init fpu__init_system_xstate_size_legacy(void)
 	fpstate_reset(&current->thread.fpu);
 }
 
-static void __init fpu__init_init_fpstate(void)
-{
+static void __init fpu__init_init_fpstate(void) {
 	 
 	init_fpstate.xfeatures		= fpu_kernel_cfg.max_features;
 }
 
-void __init fpu__init_system(struct cpuinfo_x86 *c)
-{
+void __init fpu__init_system(struct cpuinfo_x86 *c) {
 	fpstate_reset(&current->thread.fpu);
 	fpu__init_system_early_generic(c);
 

@@ -26,8 +26,7 @@ extern unsigned int cached_irq_mask;
 extern raw_spinlock_t i8259A_lock;
 
  
-static inline void outb_pic(unsigned char value, unsigned int port)
-{
+static inline void outb_pic(unsigned char value, unsigned int port) {
 	outb(value, port);
 	 
 	udelay(2);
@@ -45,13 +44,11 @@ struct legacy_pic {
 extern struct legacy_pic *legacy_pic;
 extern struct legacy_pic null_legacy_pic;
 
-static inline bool has_legacy_pic(void)
-{
+static inline bool has_legacy_pic(void) {
 	return legacy_pic != &null_legacy_pic;
 }
 
-static inline int nr_legacy_irqs(void)
-{
+static inline int nr_legacy_irqs(void) {
 	return legacy_pic->nr_legacy_irqs;
 }
 

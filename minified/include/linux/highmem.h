@@ -8,35 +8,29 @@ static inline void flush_dcache_folio(struct folio *folio) {}
 #include <linux/uaccess.h>
 #include <linux/hardirq.h>
 
-static inline void *kmap(struct page *page)
-{
+static inline void *kmap(struct page *page) {
 	might_sleep();
 	return page_address(page);
 }
 
 
-static inline void kunmap(struct page *page)
-{
+static inline void kunmap(struct page *page) {
 }
 
-static inline void *kmap_local_page(struct page *page)
-{
+static inline void *kmap_local_page(struct page *page) {
 	return page_address(page);
 }
 
-static inline void __kunmap_local(void *addr)
-{
+static inline void __kunmap_local(void *addr) {
 }
 
-static inline void *kmap_atomic(struct page *page)
-{
+static inline void *kmap_atomic(struct page *page) {
 	preempt_disable();
 	pagefault_disable();
 	return page_address(page);
 }
 
-static inline void __kunmap_atomic(void *addr)
-{
+static inline void __kunmap_atomic(void *addr) {
 	pagefault_enable();
 	preempt_enable();
 }
@@ -47,8 +41,7 @@ static inline void __kunmap_atomic(void *addr)
 
 
 #ifndef ARCH_HAS_FLUSH_ANON_PAGE
-static inline void flush_anon_page(struct vm_area_struct *vma, struct page *page, unsigned long vmaddr)
-{
+static inline void flush_anon_page(struct vm_area_struct *vma, struct page *page, unsigned long vmaddr) {
 }
 #endif
 
@@ -57,8 +50,7 @@ static inline void flush_anon_page(struct vm_area_struct *vma, struct page *page
  * __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE_MOVABLE (asm/page.h), so the generic inline never
  * compiled and clear_user_highpage (its sole consumer) was dead. */
 
-static inline void zero_user_segments(struct page *page, unsigned start1, unsigned end1, unsigned start2, unsigned end2)
-{
+static inline void zero_user_segments(struct page *page, unsigned start1, unsigned end1, unsigned start2, unsigned end2) {
 	void *kaddr = kmap_local_page(page);
 	unsigned int i;
 
@@ -76,15 +68,13 @@ static inline void zero_user_segments(struct page *page, unsigned start1, unsign
 }
 
 
-static inline void zero_user(struct page *page, unsigned start, unsigned size)
-{
+static inline void zero_user(struct page *page, unsigned start, unsigned size) {
 	zero_user_segments(page, start, start + size, 0, 0);
 }
 
 #ifndef __HAVE_ARCH_COPY_USER_HIGHPAGE
 
-static inline void copy_user_highpage(struct page *to, struct page *from, unsigned long vaddr, struct vm_area_struct *vma)
-{
+static inline void copy_user_highpage(struct page *to, struct page *from, unsigned long vaddr, struct vm_area_struct *vma) {
 	char *vfrom, *vto;
 
 	vfrom = kmap_local_page(from);

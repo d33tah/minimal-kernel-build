@@ -5,8 +5,7 @@
 #include <linux/stddef.h>
 
 static __always_inline
-void *__inline_bsearch(const void *key, const void *base, size_t num, size_t size, cmp_func_t cmp)
-{
+void *__inline_bsearch(const void *key, const void *base, size_t num, size_t size, cmp_func_t cmp) {
 	const char *pivot;
 	int result;
 

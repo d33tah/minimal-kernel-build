@@ -8,8 +8,7 @@
 
  
 
-static inline u64 clocksource_delta(u64 now, u64 last, u64 mask)
-{
+static inline u64 clocksource_delta(u64 now, u64 last, u64 mask) {
 	u64 ret = (now - last) & mask;
 
 	 

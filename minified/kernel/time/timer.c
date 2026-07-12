@@ -21,14 +21,12 @@ static DEFINE_PER_CPU(struct timer_base, timer_bases[NR_BASES]);
  * called it -- the entire raise/handle chain was a verified behavioral no-op and
  * is dropped. update_process_times keeps the live RCU + scheduler tick work.
  */
-void update_process_times(int user_tick)
-{
+void update_process_times(int user_tick) {
 	rcu_sched_clock_irq(user_tick);
 	scheduler_tick();
 }
 
-static void __init init_timer_cpu(int cpu)
-{
+static void __init init_timer_cpu(int cpu) {
 	struct timer_base *base;
 	int i;
 
@@ -38,16 +36,14 @@ static void __init init_timer_cpu(int cpu)
 	}
 }
 
-static void __init init_timer_cpus(void)
-{
+static void __init init_timer_cpus(void) {
 	int cpu;
 
 	for_each_possible_cpu(cpu)
 		init_timer_cpu(cpu);
 }
 
-void __init init_timers(void)
-{
+void __init init_timers(void) {
 	init_timer_cpus();
 }
 

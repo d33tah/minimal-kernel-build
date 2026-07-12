@@ -1,7 +1,6 @@
 #include <asm/cpu.h>
 
-unsigned int x86_family(unsigned int sig)
-{
+unsigned int x86_family(unsigned int sig) {
 	unsigned int x86;
 
 	x86 = (sig >> 8) & 0xf;
@@ -12,8 +11,7 @@ unsigned int x86_family(unsigned int sig)
 	return x86;
 }
 
-unsigned int x86_model(unsigned int sig)
-{
+unsigned int x86_model(unsigned int sig) {
 	unsigned int fam, model;
 
 	fam = x86_family(sig);
@@ -26,7 +24,6 @@ unsigned int x86_model(unsigned int sig)
 	return model;
 }
 
-unsigned int x86_stepping(unsigned int sig)
-{
+unsigned int x86_stepping(unsigned int sig) {
 	return sig & 0xf;
 }

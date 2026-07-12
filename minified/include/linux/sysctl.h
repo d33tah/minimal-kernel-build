@@ -10,8 +10,7 @@
 
 
 
-static inline void do_sysctl_args(void)
-{
+static inline void do_sysctl_args(void) {
 }
 
 

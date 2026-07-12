@@ -7,24 +7,21 @@
 #include <linux/instrumented.h>
 
 static __always_inline int
-atomic_read(const atomic_t *v)
-{
+atomic_read(const atomic_t *v) {
 	instrument_atomic_read(v, sizeof(*v));
 	return arch_atomic_read(v);
 }
 
 
 static __always_inline void
-atomic_set(atomic_t *v, int i)
-{
+atomic_set(atomic_t *v, int i) {
 	instrument_atomic_write(v, sizeof(*v));
 	arch_atomic_set(v, i);
 }
 
 
 static __always_inline void
-atomic_add(int i, atomic_t *v)
-{
+atomic_add(int i, atomic_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	arch_atomic_add(i, v);
 }
@@ -37,8 +34,7 @@ atomic_add(int i, atomic_t *v)
 
 
 static __always_inline int
-atomic_fetch_add_relaxed(int i, atomic_t *v)
-{
+atomic_fetch_add_relaxed(int i, atomic_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_fetch_add_relaxed(i, v);
 }
@@ -51,16 +47,14 @@ atomic_fetch_add_relaxed(int i, atomic_t *v)
 
 
 static __always_inline int
-atomic_fetch_sub_release(int i, atomic_t *v)
-{
+atomic_fetch_sub_release(int i, atomic_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_fetch_sub_release(i, v);
 }
 
 
 static __always_inline void
-atomic_inc(atomic_t *v)
-{
+atomic_inc(atomic_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	arch_atomic_inc(v);
 }
@@ -74,8 +68,7 @@ atomic_inc(atomic_t *v)
 
 
 static __always_inline void
-atomic_dec(atomic_t *v)
-{
+atomic_dec(atomic_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	arch_atomic_dec(v);
 }
@@ -113,8 +106,7 @@ atomic_dec(atomic_t *v)
 
 
 static __always_inline int
-atomic_cmpxchg(atomic_t *v, int old, int new)
-{
+atomic_cmpxchg(atomic_t *v, int old, int new) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_cmpxchg(v, old, new);
 }
@@ -126,76 +118,66 @@ atomic_cmpxchg(atomic_t *v, int old, int new)
 
 
 static __always_inline bool
-atomic_try_cmpxchg_relaxed(atomic_t *v, int *old, int new)
-{
+atomic_try_cmpxchg_relaxed(atomic_t *v, int *old, int new) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	instrument_atomic_read_write(old, sizeof(*old));
 	return arch_atomic_try_cmpxchg_relaxed(v, old, new);
 }
 
 static __always_inline bool
-atomic_sub_and_test(int i, atomic_t *v)
-{
+atomic_sub_and_test(int i, atomic_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_sub_and_test(i, v);
 }
 
 static __always_inline bool
-atomic_dec_and_test(atomic_t *v)
-{
+atomic_dec_and_test(atomic_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_dec_and_test(v);
 }
 
 static __always_inline bool
-atomic_inc_and_test(atomic_t *v)
-{
+atomic_inc_and_test(atomic_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_inc_and_test(v);
 }
 
 static __always_inline bool
-atomic_add_negative(int i, atomic_t *v)
-{
+atomic_add_negative(int i, atomic_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_add_negative(i, v);
 }
 
 
 static __always_inline bool
-atomic_add_unless(atomic_t *v, int a, int u)
-{
+atomic_add_unless(atomic_t *v, int a, int u) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_add_unless(v, a, u);
 }
 
 
 static __always_inline bool
-atomic_inc_unless_negative(atomic_t *v)
-{
+atomic_inc_unless_negative(atomic_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_inc_unless_negative(v);
 }
 
 static __always_inline bool
-atomic_dec_unless_positive(atomic_t *v)
-{
+atomic_dec_unless_positive(atomic_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_dec_unless_positive(v);
 }
 
 
 static __always_inline s64
-atomic64_read(const atomic64_t *v)
-{
+atomic64_read(const atomic64_t *v) {
 	instrument_atomic_read(v, sizeof(*v));
 	return arch_atomic64_read(v);
 }
 
 
 static __always_inline void
-atomic64_set(atomic64_t *v, s64 i)
-{
+atomic64_set(atomic64_t *v, s64 i) {
 	instrument_atomic_write(v, sizeof(*v));
 	arch_atomic64_set(v, i);
 }
@@ -221,8 +203,7 @@ atomic64_set(atomic64_t *v, s64 i)
 
 
 static __always_inline s64
-atomic64_inc_return(atomic64_t *v)
-{
+atomic64_inc_return(atomic64_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic64_inc_return(v);
 }
@@ -286,45 +267,39 @@ atomic64_inc_return(atomic64_t *v)
 
 
 static __always_inline long
-atomic_long_read(const atomic_long_t *v)
-{
+atomic_long_read(const atomic_long_t *v) {
 	instrument_atomic_read(v, sizeof(*v));
 	return arch_atomic_long_read(v);
 }
 
 
 static __always_inline void
-atomic_long_set(atomic_long_t *v, long i)
-{
+atomic_long_set(atomic_long_t *v, long i) {
 	instrument_atomic_write(v, sizeof(*v));
 	arch_atomic_long_set(v, i);
 }
 
 
 static __always_inline void
-atomic_long_add(long i, atomic_long_t *v)
-{
+atomic_long_add(long i, atomic_long_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	arch_atomic_long_add(i, v);
 }
 
 static __always_inline long
-atomic_long_add_return(long i, atomic_long_t *v)
-{
+atomic_long_add_return(long i, atomic_long_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_long_add_return(i, v);
 }
 
 static __always_inline long
-atomic_long_add_return_acquire(long i, atomic_long_t *v)
-{
+atomic_long_add_return_acquire(long i, atomic_long_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_long_add_return_acquire(i, v);
 }
 
 static __always_inline long
-atomic_long_add_return_release(long i, atomic_long_t *v)
-{
+atomic_long_add_return_release(long i, atomic_long_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_long_add_return_release(i, v);
 }
@@ -333,8 +308,7 @@ atomic_long_add_return_release(long i, atomic_long_t *v)
 
 
 static __always_inline long
-atomic_long_fetch_add_release(long i, atomic_long_t *v)
-{
+atomic_long_fetch_add_release(long i, atomic_long_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_long_fetch_add_release(i, v);
 }
@@ -350,8 +324,7 @@ atomic_long_fetch_add_release(long i, atomic_long_t *v)
 
 
 static __always_inline void
-atomic_long_inc(atomic_long_t *v)
-{
+atomic_long_inc(atomic_long_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	arch_atomic_long_inc(v);
 }
@@ -365,8 +338,7 @@ atomic_long_inc(atomic_long_t *v)
 
 
 static __always_inline void
-atomic_long_dec(atomic_long_t *v)
-{
+atomic_long_dec(atomic_long_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	arch_atomic_long_dec(v);
 }
@@ -404,8 +376,7 @@ atomic_long_dec(atomic_long_t *v)
 
 
 static __always_inline long
-atomic_long_cmpxchg(atomic_long_t *v, long old, long new)
-{
+atomic_long_cmpxchg(atomic_long_t *v, long old, long new) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_long_cmpxchg(v, old, new);
 }
@@ -415,16 +386,14 @@ atomic_long_cmpxchg(atomic_long_t *v, long old, long new)
 
 
 static __always_inline bool
-atomic_long_try_cmpxchg_acquire(atomic_long_t *v, long *old, long new)
-{
+atomic_long_try_cmpxchg_acquire(atomic_long_t *v, long *old, long new) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	instrument_atomic_read_write(old, sizeof(*old));
 	return arch_atomic_long_try_cmpxchg_acquire(v, old, new);
 }
 
 static __always_inline bool
-atomic_long_try_cmpxchg_release(atomic_long_t *v, long *old, long new)
-{
+atomic_long_try_cmpxchg_release(atomic_long_t *v, long *old, long new) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	instrument_atomic_read_write(old, sizeof(*old));
 	return arch_atomic_long_try_cmpxchg_release(v, old, new);
@@ -433,8 +402,7 @@ atomic_long_try_cmpxchg_release(atomic_long_t *v, long *old, long new)
 
 
 static __always_inline bool
-atomic_long_dec_and_test(atomic_long_t *v)
-{
+atomic_long_dec_and_test(atomic_long_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_long_dec_and_test(v);
 }
@@ -444,8 +412,7 @@ atomic_long_dec_and_test(atomic_long_t *v)
 
 
 static __always_inline bool
-atomic_long_inc_not_zero(atomic_long_t *v)
-{
+atomic_long_inc_not_zero(atomic_long_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_long_inc_not_zero(v);
 }
@@ -453,8 +420,7 @@ atomic_long_inc_not_zero(atomic_long_t *v)
 
 
 static __always_inline long
-atomic_long_dec_if_positive(atomic_long_t *v)
-{
+atomic_long_dec_if_positive(atomic_long_t *v) {
 	instrument_atomic_read_write(v, sizeof(*v));
 	return arch_atomic_long_dec_if_positive(v);
 }

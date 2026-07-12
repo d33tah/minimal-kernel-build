@@ -5,8 +5,7 @@
 
 #include "internal.h"
 
-int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry, loff_t length, unsigned int time_attrs, struct file *filp)
-{
+int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry, loff_t length, unsigned int time_attrs, struct file *filp) {
 	int ret;
 	struct iattr newattrs;
 
@@ -27,8 +26,7 @@ int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry, loff_t
 	return ret;
 }
 
-long vfs_truncate(const struct path *path, loff_t length)
-{
+long vfs_truncate(const struct path *path, loff_t length) {
 	struct user_namespace *mnt_userns;
 	struct inode *inode;
 	long error;
@@ -63,30 +61,25 @@ out:
 	return error;
 }
 
-int chmod_common(const struct path *path, umode_t mode)
-{
+int chmod_common(const struct path *path, umode_t mode) {
 	/* Stub: chmod not needed for minimal kernel */
 	return -EOPNOTSUPP;
 }
 
-int vfs_fchmod(struct file *file, umode_t mode)
-{
+int vfs_fchmod(struct file *file, umode_t mode) {
 	return chmod_common(&file->f_path, mode);
 }
 
-int chown_common(const struct path *path, uid_t user, gid_t group)
-{
+int chown_common(const struct path *path, uid_t user, gid_t group) {
 	/* Stub: chown not needed for minimal kernel */
 	return -EOPNOTSUPP;
 }
 
-int vfs_fchown(struct file *file, uid_t user, gid_t group)
-{
+int vfs_fchown(struct file *file, uid_t user, gid_t group) {
 	return -ENOSYS;
 }
 
-static int do_dentry_open(struct file *f, struct inode *inode, int (*open)(struct inode *, struct file *))
-{
+static int do_dentry_open(struct file *f, struct inode *inode, int (*open)(struct inode *, struct file *)) {
 	static const struct file_operations empty_fops = {};
 	int error;
 
@@ -163,8 +156,7 @@ cleanup_file:
 	return error;
 }
 
-int vfs_open(const struct path *path, struct file *file)
-{
+int vfs_open(const struct path *path, struct file *file) {
 	file->f_path = *path;
 	return do_dentry_open(file, d_backing_inode(path->dentry), NULL);
 }
@@ -172,8 +164,7 @@ int vfs_open(const struct path *path, struct file *file)
 #define WILL_CREATE(flags)	(flags & (O_CREAT | __O_TMPFILE))
 #define O_PATH_FLAGS		(O_DIRECTORY | O_NOFOLLOW | O_PATH | O_CLOEXEC)
 
-inline int build_open_flags(const struct open_how *how, struct open_flags *op)
-{
+inline int build_open_flags(const struct open_how *how, struct open_flags *op) {
 	u64 flags = how->flags;
 	u64 strip = FMODE_NONOTIFY | O_CLOEXEC;
 	int lookup_flags = 0;
@@ -248,8 +239,7 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op)
 	return 0;
 }
 
-struct file *file_open_name(struct filename *name, int flags, umode_t mode)
-{
+struct file *file_open_name(struct filename *name, int flags, umode_t mode) {
 	struct open_flags op;
 	struct open_how how = {
 		.flags = flags & VALID_OPEN_FLAGS, .mode = mode & S_IALLUGO, };
@@ -266,8 +256,7 @@ struct file *file_open_name(struct filename *name, int flags, umode_t mode)
 	return do_filp_open(name, &op);
 }
 
-struct file *filp_open(const char *filename, int flags, umode_t mode)
-{
+struct file *filp_open(const char *filename, int flags, umode_t mode) {
 	struct filename *name = getname_kernel(filename);
 	struct file *file = ERR_CAST(name);
 	
@@ -279,8 +268,7 @@ struct file *filp_open(const char *filename, int flags, umode_t mode)
 }
 
 
-int filp_close(struct file *filp, fl_owner_t id)
-{
+int filp_close(struct file *filp, fl_owner_t id) {
 	int retval = 0;
 
 	if (!file_count(filp)) {
@@ -294,8 +282,7 @@ int filp_close(struct file *filp, fl_owner_t id)
 }
 
 
-int nonseekable_open(struct inode *inode, struct file *filp)
-{
+int nonseekable_open(struct inode *inode, struct file *filp) {
 	return 0;
 }
 

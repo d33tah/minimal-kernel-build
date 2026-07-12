@@ -33,8 +33,7 @@ struct cpumask __cpu_possible_mask __read_mostly;
 struct cpumask __cpu_online_mask __read_mostly;
 
 
-void __init boot_cpu_init(void)
-{
+void __init boot_cpu_init(void) {
 	int cpu = smp_processor_id();
 
 

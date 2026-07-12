@@ -1,6 +1,5 @@
 
-notrace unsigned long long __weak sched_clock(void)
-{
+notrace unsigned long long __weak sched_clock(void) {
 	return (unsigned long long)(jiffies - INITIAL_JIFFIES)
 					* (NSEC_PER_SEC / HZ);
 }
@@ -16,29 +15,24 @@ struct sched_clock_data { u64 tick_raw, tick_gtod, clock; };
 
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct sched_clock_data, sched_clock_data);
 
-notrace static inline struct sched_clock_data *this_scd(void)
-{
+notrace static inline struct sched_clock_data *this_scd(void) {
 	return this_cpu_ptr(&sched_clock_data);
 }
 
-notrace static inline struct sched_clock_data *cpu_sdc(int cpu)
-{
+notrace static inline struct sched_clock_data *cpu_sdc(int cpu) {
 	return &per_cpu(sched_clock_data, cpu);
 }
 
-notrace int sched_clock_stable(void)
-{
+notrace int sched_clock_stable(void) {
 	return static_branch_likely(&__sched_clock_stable);
 }
 
-notrace static void __scd_stamp(struct sched_clock_data *scd)
-{
+notrace static void __scd_stamp(struct sched_clock_data *scd) {
 	scd->tick_gtod = ktime_get_ns();
 	scd->tick_raw = sched_clock();
 }
 
-notrace static void __set_sched_clock_stable(void)
-{
+notrace static void __set_sched_clock_stable(void) {
 	struct sched_clock_data *scd;
 
 	 
@@ -53,16 +47,14 @@ notrace static void __set_sched_clock_stable(void)
 	static_branch_enable(&__sched_clock_stable);
 }
 
-notrace static void __sched_clock_gtod_offset(void)
-{
+notrace static void __sched_clock_gtod_offset(void) {
 	struct sched_clock_data *scd = this_scd();
 
 	__scd_stamp(scd);
 	__gtod_offset = (scd->tick_raw + __sched_clock_offset) - scd->tick_gtod;
 }
 
-void __init sched_clock_init(void)
-{
+void __init sched_clock_init(void) {
 	 
 	local_irq_disable();
 	__sched_clock_gtod_offset();
@@ -70,8 +62,7 @@ void __init sched_clock_init(void)
 
 	static_branch_inc(&sched_clock_running);
 }
-static int __init sched_clock_init_late(void)
-{
+static int __init sched_clock_init_late(void) {
 	static_branch_inc(&sched_clock_running);
 
 	smp_mb();
@@ -85,18 +76,15 @@ static int __init sched_clock_init_late(void)
 late_initcall(sched_clock_init_late);
 
 
-notrace static inline u64 wrap_min(u64 x, u64 y)
-{
+notrace static inline u64 wrap_min(u64 x, u64 y) {
 	return (s64)(x - y) < 0 ? x : y;
 }
 
-notrace static inline u64 wrap_max(u64 x, u64 y)
-{
+notrace static inline u64 wrap_max(u64 x, u64 y) {
 	return (s64)(x - y) > 0 ? x : y;
 }
 
-notrace static u64 sched_clock_local(struct sched_clock_data *scd)
-{
+notrace static u64 sched_clock_local(struct sched_clock_data *scd) {
 	u64 now, clock, old_clock, min_clock, max_clock, gtod;
 	s64 delta;
 
@@ -124,8 +112,7 @@ again:
 	return clock;
 }
 
-notrace u64 sched_clock_cpu(int cpu)
-{
+notrace u64 sched_clock_cpu(int cpu) {
 	struct sched_clock_data *scd;
 	u64 clock;
 
@@ -144,8 +131,7 @@ notrace u64 sched_clock_cpu(int cpu)
 	return clock;
 }
 
-notrace void sched_clock_tick(void)
-{
+notrace void sched_clock_tick(void) {
 	struct sched_clock_data *scd;
 
 	if (sched_clock_stable())

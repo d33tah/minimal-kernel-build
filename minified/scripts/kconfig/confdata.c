@@ -16,15 +16,13 @@
 
 #include "lkc.h"
 
-static bool is_present(const char *path)
-{
+static bool is_present(const char *path) {
 	struct stat st;
 
 	return !stat(path, &st);
 }
 
-static bool is_dir(const char *path)
-{
+static bool is_dir(const char *path) {
 	struct stat st;
 
 	if (stat(path, &st))
@@ -33,8 +31,7 @@ static bool is_dir(const char *path)
 	return S_ISDIR(st.st_mode);
 }
 
-static bool is_same(const char *file1, const char *file2)
-{
+static bool is_same(const char *file1, const char *file2) {
 	int fd1, fd2;
 	struct stat st1, st2;
 	void *map1, *map2;
@@ -78,8 +75,7 @@ close1:
 	return ret;
 }
 
-static int make_parent_dir(const char *path)
-{
+static int make_parent_dir(const char *path) {
 	char tmp[PATH_MAX + 1], *p;
 
 	strncpy(tmp, path, sizeof(tmp));
@@ -114,8 +110,7 @@ static int make_parent_dir(const char *path)
 static char depfile_path[PATH_MAX];
 static size_t depfile_prefix_len;
 
-static int conf_touch_dep(const char *name)
-{
+static int conf_touch_dep(const char *name) {
 	int fd;
 
 	 
@@ -141,8 +136,7 @@ static void conf_message(const char *fmt, ...)
 static const char *conf_filename;
 static int conf_lineno, conf_warnings;
 
-static void conf_warning(const char *fmt, ...)
-{
+static void conf_warning(const char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
 	fprintf(stderr, "%s:%d:warning: ", conf_filename, conf_lineno);
@@ -152,21 +146,18 @@ static void conf_warning(const char *fmt, ...)
 	conf_warnings++;
 }
 
-static void conf_default_message_callback(const char *s)
-{
+static void conf_default_message_callback(const char *s) {
 	printf("#\n# ");
 	printf("%s", s);
 	printf("\n#\n");
 }
 
 static void (*conf_message_callback)(const char *s) = conf_default_message_callback;
-void conf_set_message_callback(void (*fn)(const char *s))
-{
+void conf_set_message_callback(void (*fn)(const char *s)) {
 	conf_message_callback = fn;
 }
 
-static void conf_message(const char *fmt, ...)
-{
+static void conf_message(const char *fmt, ...) {
 	va_list ap;
 	char buf[4096];
 
@@ -180,29 +171,25 @@ static void conf_message(const char *fmt, ...)
 	va_end(ap);
 }
 
-const char *conf_get_configname(void)
-{
+const char *conf_get_configname(void) {
 	char *name = getenv("KCONFIG_CONFIG");
 
 	return name ? name : ".config";
 }
 
-static const char *conf_get_autoconfig_name(void)
-{
+static const char *conf_get_autoconfig_name(void) {
 	char *name = getenv("KCONFIG_AUTOCONFIG");
 
 	return name ? name : "include/config/auto.conf";
 }
 
-static const char *conf_get_autoheader_name(void)
-{
+static const char *conf_get_autoheader_name(void) {
 	char *name = getenv("KCONFIG_AUTOHEADER");
 
 	return name ? name : "include/generated/autoconf.h";
 }
 
-static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
-{
+static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p) {
 	char *p2;
 
 	switch (sym->type) {
@@ -259,8 +246,7 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
 }
 
 #define LINE_GROWTH 16
-static int add_byte(int c, char **lineptr, size_t slen, size_t *n)
-{
+static int add_byte(int c, char **lineptr, size_t slen, size_t *n) {
 	char *nline;
 	size_t new_size = slen + 1;
 	if (new_size > *n) {
@@ -279,8 +265,7 @@ static int add_byte(int c, char **lineptr, size_t slen, size_t *n)
 	return 0;
 }
 
-static ssize_t compat_getline(char **lineptr, size_t *n, FILE *stream)
-{
+static ssize_t compat_getline(char **lineptr, size_t *n, FILE *stream) {
 	char *line = *lineptr;
 	size_t slen = 0;
 
@@ -313,8 +298,7 @@ e_out:
 	return -1;
 }
 
-int conf_read_simple(const char *name, int def)
-{
+int conf_read_simple(const char *name, int def) {
 	FILE *in = NULL;
 	char   *line = NULL;
 	size_t  line_asize = 0;
@@ -480,8 +464,7 @@ load:
 	return 0;
 }
 
-int conf_read(const char *name)
-{
+int conf_read(const char *name) {
 	struct symbol *sym;
 	int conf_unsaved = 0;
 	int i;
@@ -545,8 +528,7 @@ static const struct comment_style comment_style_pound = { .decoration = "#", .pr
 
 static const struct comment_style comment_style_c = { .decoration = " *", .prefix = "/*", .postfix = " */", };
 
-static void conf_write_heading(FILE *fp, const struct comment_style *cs)
-{
+static void conf_write_heading(FILE *fp, const struct comment_style *cs) {
 	fprintf(fp, "%s\n", cs->prefix);
 
 	fprintf(fp, "%s Automatically generated file; DO NOT EDIT.\n", cs->decoration);
@@ -556,8 +538,7 @@ static void conf_write_heading(FILE *fp, const struct comment_style *cs)
 	fprintf(fp, "%s\n", cs->postfix);
 }
 
-static char *escape_string_value(const char *in)
-{
+static char *escape_string_value(const char *in) {
 	const char *p;
 	char *out;
 	size_t len;
@@ -600,8 +581,7 @@ static char *escape_string_value(const char *in)
 
 enum output_n { OUTPUT_N_AS_UNSET, OUTPUT_N_NONE };
 
-static void __print_symbol(FILE *fp, struct symbol *sym, enum output_n output_n, bool escape_string)
-{
+static void __print_symbol(FILE *fp, struct symbol *sym, enum output_n output_n, bool escape_string) {
 	const char *val;
 	char *escaped = NULL;
 
@@ -626,18 +606,15 @@ static void __print_symbol(FILE *fp, struct symbol *sym, enum output_n output_n,
 	free(escaped);
 }
 
-static void print_symbol_for_dotconfig(FILE *fp, struct symbol *sym)
-{
+static void print_symbol_for_dotconfig(FILE *fp, struct symbol *sym) {
 	__print_symbol(fp, sym, OUTPUT_N_AS_UNSET, true);
 }
 
-static void print_symbol_for_autoconf(FILE *fp, struct symbol *sym)
-{
+static void print_symbol_for_autoconf(FILE *fp, struct symbol *sym) {
 	__print_symbol(fp, sym, OUTPUT_N_NONE, false);
 }
 
-static void print_symbol_for_c(FILE *fp, struct symbol *sym)
-{
+static void print_symbol_for_c(FILE *fp, struct symbol *sym) {
 	const char *val;
 	const char *sym_suffix = "";
 	const char *val_prefix = "";
@@ -674,8 +651,7 @@ static void print_symbol_for_c(FILE *fp, struct symbol *sym)
 	free(escaped);
 }
 
-int conf_write(const char *name)
-{
+int conf_write(const char *name) {
 	FILE *out;
 	struct symbol *sym;
 	struct menu *menu;
@@ -784,8 +760,7 @@ end_check:
 	return 0;
 }
 
-static int conf_write_autoconf_cmd(const char *autoconf_name)
-{
+static int conf_write_autoconf_cmd(const char *autoconf_name) {
 	char name[PATH_MAX], tmp[PATH_MAX];
 	struct file *file;
 	FILE *out;
@@ -832,8 +807,7 @@ static int conf_write_autoconf_cmd(const char *autoconf_name)
 	return 0;
 }
 
-static int conf_touch_deps(void)
-{
+static int conf_touch_deps(void) {
 	const char *name, *tmp;
 	struct symbol *sym;
 	int res, i;
@@ -887,8 +861,7 @@ static int conf_touch_deps(void)
 	return 0;
 }
 
-static int __conf_write_autoconf(const char *filename, void (*print_symbol)(FILE *, struct symbol *), const struct comment_style *comment_style)
-{
+static int __conf_write_autoconf(const char *filename, void (*print_symbol)(FILE *, struct symbol *), const struct comment_style *comment_style) {
 	char tmp[PATH_MAX];
 	FILE *file;
 	struct symbol *sym;
@@ -928,8 +901,7 @@ static int __conf_write_autoconf(const char *filename, void (*print_symbol)(FILE
 	return 0;
 }
 
-int conf_write_autoconf(int overwrite)
-{
+int conf_write_autoconf(int overwrite) {
 	struct symbol *sym;
 	const char *autoconf_name = conf_get_autoconfig_name();
 	int ret, i;
@@ -962,21 +934,18 @@ int conf_write_autoconf(int overwrite)
 static bool conf_changed;
 static void (*conf_changed_callback)(void);
 
-void conf_set_changed(bool val)
-{
+void conf_set_changed(bool val) {
 	if (conf_changed_callback && conf_changed != val)
 		conf_changed_callback();
 
 	conf_changed = val;
 }
 
-bool conf_get_changed(void)
-{
+bool conf_get_changed(void) {
 	return conf_changed;
 }
 
-void set_all_choice_values(struct symbol *csym)
-{
+void set_all_choice_values(struct symbol *csym) {
 	struct property *prop;
 	struct symbol *sym;
 	struct expr *e;

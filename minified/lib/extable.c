@@ -4,13 +4,11 @@
 #include <linux/uaccess.h>
 #include <linux/extable.h>
 
-static inline unsigned long ex_to_insn(const struct exception_table_entry *x)
-{
+static inline unsigned long ex_to_insn(const struct exception_table_entry *x) {
 	return (unsigned long)&x->insn + x->insn;
 }
 
-static void swap_ex(void *a, void *b, int size)
-{
+static void swap_ex(void *a, void *b, int size) {
 	struct exception_table_entry *x = a, *y = b, tmp;
 	int delta = b - a;
 
@@ -21,8 +19,7 @@ static void swap_ex(void *a, void *b, int size)
 	swap_ex_entry_fixup(x, y, tmp, delta);
 }
 
-static int cmp_ex_sort(const void *a, const void *b)
-{
+static int cmp_ex_sort(const void *a, const void *b) {
 	const struct exception_table_entry *x = a, *y = b;
 
 	 
@@ -33,14 +30,12 @@ static int cmp_ex_sort(const void *a, const void *b)
 	return 0;
 }
 
-void sort_extable(struct exception_table_entry *start, struct exception_table_entry *finish)
-{
+void sort_extable(struct exception_table_entry *start, struct exception_table_entry *finish) {
 	sort(start, finish - start, sizeof(struct exception_table_entry), cmp_ex_sort, swap_ex);
 }
 
 
-static int cmp_ex_search(const void *key, const void *elt)
-{
+static int cmp_ex_search(const void *key, const void *elt) {
 	const struct exception_table_entry *_elt = elt;
 	unsigned long _key = *(unsigned long *)key;
 
@@ -52,7 +47,6 @@ static int cmp_ex_search(const void *key, const void *elt)
 	return 0;
 }
 
-const struct exception_table_entry * search_extable(const struct exception_table_entry *base, const size_t num, unsigned long value)
-{
+const struct exception_table_entry * search_extable(const struct exception_table_entry *base, const size_t num, unsigned long value) {
 	return __inline_bsearch(&value, base, num, sizeof(struct exception_table_entry), cmp_ex_search);
 }

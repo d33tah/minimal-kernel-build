@@ -15,13 +15,11 @@ DECLARE_PER_CPU(int, __preempt_count);
 #define PREEMPT_ENABLED	(0 + PREEMPT_NEED_RESCHED)
 
  
-static __always_inline int preempt_count(void)
-{
+static __always_inline int preempt_count(void) {
 	return raw_cpu_read_4(__preempt_count) & ~PREEMPT_NEED_RESCHED;
 }
 
-static __always_inline void preempt_count_set(int pc)
-{
+static __always_inline void preempt_count_set(int pc) {
 	int old, new;
 
 	do {
@@ -37,26 +35,22 @@ static __always_inline void preempt_count_set(int pc)
 
  
 
-static __always_inline void set_preempt_need_resched(void)
-{
+static __always_inline void set_preempt_need_resched(void) {
 	raw_cpu_and_4(__preempt_count, ~PREEMPT_NEED_RESCHED);
 }
 
-static __always_inline void clear_preempt_need_resched(void)
-{
+static __always_inline void clear_preempt_need_resched(void) {
 	raw_cpu_or_4(__preempt_count, PREEMPT_NEED_RESCHED);
 }
 
 
  
 
-static __always_inline void __preempt_count_add(int val)
-{
+static __always_inline void __preempt_count_add(int val) {
 	raw_cpu_add_4(__preempt_count, val);
 }
 
-static __always_inline void __preempt_count_sub(int val)
-{
+static __always_inline void __preempt_count_sub(int val) {
 	raw_cpu_add_4(__preempt_count, -val);
 }
 
@@ -64,8 +58,7 @@ static __always_inline void __preempt_count_sub(int val)
 /* __preempt_count_dec_and_test removed - unused */
 
 
-static __always_inline bool should_resched(int preempt_offset)
-{
+static __always_inline bool should_resched(int preempt_offset) {
 	return unlikely(raw_cpu_read_4(__preempt_count) == preempt_offset);
 }
 

@@ -4,8 +4,7 @@
 
 int debug_locks __read_mostly = 1;
 
-int debug_locks_off(void)
-{
+int debug_locks_off(void) {
 	if (debug_locks && __debug_locks_off()) {
 		console_verbose();
 		return 1;

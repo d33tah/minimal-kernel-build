@@ -20,14 +20,12 @@
 #endif
 
 
-static inline unsigned long pte_index(unsigned long address)
-{
+static inline unsigned long pte_index(unsigned long address) {
 	return (address >> PAGE_SHIFT) & (PTRS_PER_PTE - 1);
 }
 
 #ifndef pmd_index
-static inline unsigned long pmd_index(unsigned long address)
-{
+static inline unsigned long pmd_index(unsigned long address) {
 	return (address >> PMD_SHIFT) & (PTRS_PER_PMD - 1);
 }
 #define pmd_index pmd_index
@@ -40,8 +38,7 @@ static inline unsigned long pmd_index(unsigned long address)
 #endif
 
 #ifndef pte_offset_kernel
-static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)
-{
+static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address) {
 	return (pte_t *)pmd_page_vaddr(*pmd) + pte_index(address);
 }
 #define pte_offset_kernel pte_offset_kernel
@@ -50,8 +47,7 @@ static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)
 #define pte_offset_map(dir, address)	pte_offset_kernel((dir), (address))
 #define pte_unmap(pte) ((void)(pte))	 
 
-static inline pgd_t *pgd_offset_pgd(pgd_t *pgd, unsigned long address)
-{
+static inline pgd_t *pgd_offset_pgd(pgd_t *pgd, unsigned long address) {
 	return (pgd + pgd_index(address));
 };
 
@@ -60,16 +56,14 @@ static inline pgd_t *pgd_offset_pgd(pgd_t *pgd, unsigned long address)
 #endif
 
 #ifndef __HAVE_ARCH_UPDATE_MMU_TLB
-static inline void update_mmu_tlb(struct vm_area_struct *vma, unsigned long address, pte_t *ptep)
-{
+static inline void update_mmu_tlb(struct vm_area_struct *vma, unsigned long address, pte_t *ptep) {
 }
 #define __HAVE_ARCH_UPDATE_MMU_TLB
 #endif
 
 
 #ifndef pte_sw_mkyoung
-static inline pte_t pte_sw_mkyoung(pte_t pte)
-{
+static inline pte_t pte_sw_mkyoung(pte_t pte) {
 	return pte;
 }
 #define pte_sw_mkyoung	pte_sw_mkyoung
@@ -103,8 +97,7 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 
 
 /* __HAVE_COLOR_ZERO_PAGE never defined tree-wide; dead #ifdef arm removed */
-static inline int is_zero_pfn(unsigned long pfn)
-{
+static inline int is_zero_pfn(unsigned long pfn) {
 	extern unsigned long zero_pfn;
 	return pfn == zero_pfn;
 }
@@ -112,8 +105,7 @@ static inline int is_zero_pfn(unsigned long pfn)
 /* my_zero_pfn removed - unused */
 
 
-static inline int pmd_trans_huge(pmd_t pmd)
-{
+static inline int pmd_trans_huge(pmd_t pmd) {
 	return 0;
 }
 /* pmd_read_atomic / pmd_none_or_trans_huge_or_clear_bad removed - 0 callers. */

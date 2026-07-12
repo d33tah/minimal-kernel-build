@@ -10,8 +10,7 @@
 #include <linux/bitops.h>
 #include <asm/alternative.h>
 
-enum cpuid_leafs
-{
+enum cpuid_leafs {
 	CPUID_1_EDX		= 0, CPUID_8000_0001_EDX, CPUID_8086_0001_EDX, CPUID_LNX_1, CPUID_1_ECX, CPUID_C000_0001_EDX, CPUID_8000_0001_ECX, CPUID_LNX_2, CPUID_LNX_3, CPUID_7_0_EBX, CPUID_D_1_EAX, CPUID_LNX_4, CPUID_7_1_EAX, CPUID_8000_0008_EBX, CPUID_6_EAX, CPUID_8000_000A_EDX, CPUID_7_ECX, CPUID_8000_0007_EBX, CPUID_7_EDX, CPUID_8000_001F_EAX, };
 
 #define X86_CAP_FMT_NUM "%d:%d"
@@ -45,8 +44,7 @@ extern void clear_cpu_cap(struct cpuinfo_x86 *c, unsigned int bit);
 
 
 
-static __always_inline bool _static_cpu_has(u16 bit)
-{
+static __always_inline bool _static_cpu_has(u16 bit) {
 	asm_volatile_goto( ALTERNATIVE_TERNARY("jmp 6f", %P[feature], "", "jmp %l[t_no]") ".pushsection .altinstr_aux,\"ax\"\n" "6:\n" " testb %[bitnum]," _ASM_RIP(%P[cap_byte]) "\n" " jnz %l[t_yes]\n" " jmp %l[t_no]\n" ".popsection\n" : : [feature]  "i" (bit), [bitnum]   "i" (1 << (bit & 7)), [cap_byte] "i" (&((const char *)boot_cpu_data.x86_capability)[bit >> 3]) : : t_yes, t_no);
 t_yes:
 	return true;

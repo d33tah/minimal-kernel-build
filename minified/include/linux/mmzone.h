@@ -52,13 +52,11 @@ extern int page_group_by_mobility_disabled;
 
 struct free_area { struct list_head	free_list[MIGRATE_TYPES]; unsigned long		nr_free; };
 
-static inline struct page *get_page_from_free_area(struct free_area *area, int migratetype)
-{
+static inline struct page *get_page_from_free_area(struct free_area *area, int migratetype) {
 	return list_first_entry_or_null(&area->free_list[migratetype], struct page, lru);
 }
 
-static inline bool free_area_empty(struct free_area *area, int migratetype)
-{
+static inline bool free_area_empty(struct free_area *area, int migratetype) {
 	return list_empty(&area->free_list[migratetype]);
 }
 
@@ -102,18 +100,15 @@ enum zone_type { ZONE_NORMAL, ZONE_MOVABLE, __MAX_NR_ZONES };
 
 struct zone { unsigned long _watermark[NR_WMARK]; struct pglist_data	*zone_pgdat; struct per_cpu_pages	__percpu *per_cpu_pageset; int pageset_high, pageset_batch; unsigned long		*pageblock_flags; unsigned long		zone_start_pfn; atomic_long_t		managed_pages; unsigned long spanned_pages, present_pages; const char		*name; ZONE_PADDING(_pad1_) struct free_area	free_area[MAX_ORDER]; spinlock_t		lock; ZONE_PADDING(_pad2_) ZONE_PADDING(_pad3_) atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS]; } ____cacheline_internodealigned_in_smp;
 
-static inline unsigned long zone_managed_pages(struct zone *zone)
-{
+static inline unsigned long zone_managed_pages(struct zone *zone) {
 	return (unsigned long)atomic_long_read(&zone->managed_pages);
 }
 
-static inline unsigned long zone_end_pfn(const struct zone *zone)
-{
+static inline unsigned long zone_end_pfn(const struct zone *zone) {
 	return zone->zone_start_pfn + zone->spanned_pages;
 }
 
-static inline bool zone_spans_pfn(const struct zone *zone, unsigned long pfn)
-{
+static inline bool zone_spans_pfn(const struct zone *zone, unsigned long pfn) {
 	return zone->zone_start_pfn <= pfn && pfn < zone_end_pfn(zone);
 }
 
@@ -131,8 +126,7 @@ extern struct page *mem_map;
 typedef struct pglist_data { struct zone node_zones[MAX_NR_ZONES]; struct zonelist node_zonelists[MAX_ZONELISTS]; int nr_zones; struct page *node_mem_map; unsigned long node_start_pfn, node_spanned_pages; int node_id; ZONE_PADDING(_pad1_) struct lruvec		__lruvec; ZONE_PADDING(_pad2_) } pg_data_t;
 
 
-static inline unsigned long pgdat_end_pfn(pg_data_t *pgdat)
-{
+static inline unsigned long pgdat_end_pfn(pg_data_t *pgdat) {
 	return pgdat->node_start_pfn + pgdat->node_spanned_pages;
 }
 
@@ -143,8 +137,7 @@ extern void init_currently_empty_zone(struct zone *zone, unsigned long start_pfn
 
 extern void lruvec_init(struct lruvec *lruvec);
 
-static inline struct pglist_data *lruvec_pgdat(struct lruvec *lruvec)
-{
+static inline struct pglist_data *lruvec_pgdat(struct lruvec *lruvec) {
 	return container_of(lruvec, struct pglist_data, __lruvec);
 }
 
@@ -153,19 +146,16 @@ static inline struct pglist_data *lruvec_pgdat(struct lruvec *lruvec)
 
 
 
-static inline bool populated_zone(struct zone *zone)
-{
+static inline bool populated_zone(struct zone *zone) {
 	return zone->present_pages;
 }
 
-static inline int zone_to_nid(struct zone *zone)
-{
+static inline int zone_to_nid(struct zone *zone) {
 	return 0;
 }
 
 extern struct pglist_data contig_page_data;
-static inline struct pglist_data *NODE_DATA(int nid)
-{
+static inline struct pglist_data *NODE_DATA(int nid) {
 	return &contig_page_data;
 }
 
@@ -178,27 +168,23 @@ extern struct zone *next_zone(struct zone *zone);
 
 #define for_each_populated_zone(zone)		        	for (zone = (first_online_pgdat())->node_zones; 	     zone;						     zone = next_zone(zone))					if (!populated_zone(zone))					;  				else
 
-static inline struct zone *zonelist_zone(struct zoneref *zoneref)
-{
+static inline struct zone *zonelist_zone(struct zoneref *zoneref) {
 	return zoneref->zone;
 }
 
-static inline int zonelist_zone_idx(struct zoneref *zoneref)
-{
+static inline int zonelist_zone_idx(struct zoneref *zoneref) {
 	return zoneref->zone_idx;
 }
 
 struct zoneref *__next_zones_zonelist(struct zoneref *z, enum zone_type highest_zoneidx);
 
-static __always_inline struct zoneref *next_zones_zonelist(struct zoneref *z, enum zone_type highest_zoneidx)
-{
+static __always_inline struct zoneref *next_zones_zonelist(struct zoneref *z, enum zone_type highest_zoneidx) {
 	if (likely(zonelist_zone_idx(z) <= highest_zoneidx))
 		return z;
 	return __next_zones_zonelist(z, highest_zoneidx);
 }
 
-static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist, enum zone_type highest_zoneidx)
-{
+static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist, enum zone_type highest_zoneidx) {
 	return next_zones_zonelist(zonelist->_zonerefs, highest_zoneidx);
 }
 

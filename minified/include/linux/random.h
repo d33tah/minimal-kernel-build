@@ -10,12 +10,10 @@
 
 void get_random_bytes(void *buf, size_t len);
 u32 get_random_u32(void);
-static inline unsigned int get_random_int(void)
-{
+static inline unsigned int get_random_int(void) {
 	return get_random_u32();
 }
-static inline unsigned long get_random_long(void)
-{
+static inline unsigned long get_random_long(void) {
 	return get_random_u32(); /* BITS_PER_LONG == 32 */
 }
 

@@ -12,8 +12,7 @@
 #define __swab32(x) (__u32)__builtin_bswap32((__u32)(x))
 
 /* 32-bit only kernel */
-static __always_inline unsigned long __swab(const unsigned long y)
-{
+static __always_inline unsigned long __swab(const unsigned long y) {
 	return __swab32(y);
 }
 

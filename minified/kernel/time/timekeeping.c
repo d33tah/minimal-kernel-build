@@ -22,8 +22,7 @@ static struct {
 
 static struct timekeeper shadow_timekeeper;
 
-static inline void tk_normalize_xtime(struct timekeeper *tk)
-{
+static inline void tk_normalize_xtime(struct timekeeper *tk) {
 	while (tk->tkr_mono.xtime_nsec >= ((u64)NSEC_PER_SEC << tk->tkr_mono.shift)) {
 		tk->tkr_mono.xtime_nsec -= (u64)NSEC_PER_SEC << tk->tkr_mono.shift;
 		tk->xtime_sec++;
@@ -34,8 +33,7 @@ static inline void tk_normalize_xtime(struct timekeeper *tk)
 	}
 }
 
-static inline struct timespec64 tk_xtime(const struct timekeeper *tk)
-{
+static inline struct timespec64 tk_xtime(const struct timekeeper *tk) {
 	struct timespec64 ts;
 
 	ts.tv_sec = tk->xtime_sec;
@@ -43,14 +41,12 @@ static inline struct timespec64 tk_xtime(const struct timekeeper *tk)
 	return ts;
 }
 
-static void tk_set_xtime(struct timekeeper *tk, const struct timespec64 *ts)
-{
+static void tk_set_xtime(struct timekeeper *tk, const struct timespec64 *ts) {
 	tk->xtime_sec = ts->tv_sec;
 	tk->tkr_mono.xtime_nsec = (u64)ts->tv_nsec << tk->tkr_mono.shift;
 }
 
-static void tk_set_wall_to_mono(struct timekeeper *tk, struct timespec64 wtm)
-{
+static void tk_set_wall_to_mono(struct timekeeper *tk, struct timespec64 wtm) {
 	struct timespec64 tmp;
 
 	set_normalized_timespec64(&tmp, -tk->wall_to_monotonic.tv_sec, -tk->wall_to_monotonic.tv_nsec);
@@ -61,15 +57,13 @@ static void tk_set_wall_to_mono(struct timekeeper *tk, struct timespec64 wtm)
 }
 
 
-static inline u64 tk_clock_read(const struct tk_read_base *tkr)
-{
+static inline u64 tk_clock_read(const struct tk_read_base *tkr) {
 	struct clocksource *clock = READ_ONCE(tkr->clock);
 
 	return clock->read(clock);
 }
 
-static inline u64 timekeeping_get_delta(const struct tk_read_base *tkr)
-{
+static inline u64 timekeeping_get_delta(const struct tk_read_base *tkr) {
 	u64 cycle_now, delta;
 
 	cycle_now = tk_clock_read(tkr);
@@ -79,8 +73,7 @@ static inline u64 timekeeping_get_delta(const struct tk_read_base *tkr)
 	return delta;
 }
 
-static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
-{
+static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock) {
 	u64 interval;
 	u64 tmp, ntpinterval;
 	struct clocksource *old_clock;
@@ -133,8 +126,7 @@ static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
 	tk->skip_second_overflow = 0;
 }
 
-static inline u64 timekeeping_delta_to_ns(const struct tk_read_base *tkr, u64 delta)
-{
+static inline u64 timekeeping_delta_to_ns(const struct tk_read_base *tkr, u64 delta) {
 	u64 nsec;
 
 	nsec = delta * tkr->mult + tkr->xtime_nsec;
@@ -143,8 +135,7 @@ static inline u64 timekeeping_delta_to_ns(const struct tk_read_base *tkr, u64 de
 	return nsec;
 }
 
-static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr)
-{
+static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr) {
 	u64 delta;
 
 	delta = timekeeping_get_delta(tkr);
@@ -152,8 +143,7 @@ static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr)
 }
 
 
-static inline void tk_update_ktime_data(struct timekeeper *tk)
-{
+static inline void tk_update_ktime_data(struct timekeeper *tk) {
 	u64 seconds;
 	u32 nsec;
 
@@ -164,8 +154,7 @@ static inline void tk_update_ktime_data(struct timekeeper *tk)
 	tk->tkr_raw.base = ns_to_ktime(tk->raw_sec * NSEC_PER_SEC);
 }
 
-static void timekeeping_update(struct timekeeper *tk, unsigned int action)
-{
+static void timekeeping_update(struct timekeeper *tk, unsigned int action) {
 	if (action & TK_CLEAR_NTP) {
 		tk->ntp_error = 0;
 	}
@@ -176,8 +165,7 @@ static void timekeeping_update(struct timekeeper *tk, unsigned int action)
 		memcpy(&shadow_timekeeper, &tk_core.timekeeper, sizeof(tk_core.timekeeper));
 }
 
-static void timekeeping_forward_now(struct timekeeper *tk)
-{
+static void timekeeping_forward_now(struct timekeeper *tk) {
 	u64 cycle_now, delta;
 
 	cycle_now = tk_clock_read(&tk->tkr_mono);
@@ -193,8 +181,7 @@ static void timekeeping_forward_now(struct timekeeper *tk)
 
 /* ktime_get_real_ts64 removed - only caller was gettimeofday (now stubbed) */
 
-ktime_t ktime_get(void)
-{
+ktime_t ktime_get(void) {
 	struct timekeeper *tk = &tk_core.timekeeper;
 	unsigned int seq;
 	ktime_t base;
@@ -212,8 +199,7 @@ ktime_t ktime_get(void)
 
 /* Removed: ktime_get_with_offset + offsets[], ktime_get_coarse_with_offset, ktime_mono_to_any, ktime_get_raw - no callers */
 
-time64_t ktime_get_real_seconds(void)
-{
+time64_t ktime_get_real_seconds(void) {
 	struct timekeeper *tk = &tk_core.timekeeper;
 	time64_t seconds;
 	unsigned int seq;
@@ -228,8 +214,7 @@ time64_t ktime_get_real_seconds(void)
 }
 
 
-static int change_clocksource(void *data)
-{
+static int change_clocksource(void *data) {
 	struct timekeeper *tk = &tk_core.timekeeper;
 	struct clocksource *new;
 	unsigned long flags;
@@ -256,8 +241,7 @@ static int change_clocksource(void *data)
 	return 0;
 }
 
-int timekeeping_notify(struct clocksource *clock)
-{
+int timekeeping_notify(struct clocksource *clock) {
 	struct timekeeper *tk = &tk_core.timekeeper;
 
 	if (tk->tkr_mono.clock == clock)
@@ -266,21 +250,18 @@ int timekeeping_notify(struct clocksource *clock)
 	return tk->tkr_mono.clock == clock ? 0 : -1;
 }
 
-void __weak read_persistent_clock64(struct timespec64 *ts)
-{
+void __weak read_persistent_clock64(struct timespec64 *ts) {
 	ts->tv_sec = 0;
 	ts->tv_nsec = 0;
 }
 
 void __weak __init
-read_persistent_wall_and_boot_offset(struct timespec64 *wall_time, struct timespec64 *boot_offset)
-{
+read_persistent_wall_and_boot_offset(struct timespec64 *wall_time, struct timespec64 *boot_offset) {
 	read_persistent_clock64(wall_time);
 	*boot_offset = ns_to_timespec64(local_clock());
 }
 
-void __init timekeeping_init(void)
-{
+void __init timekeeping_init(void) {
 	struct timespec64 wall_time, boot_offset, wall_to_mono;
 	struct timekeeper *tk = &tk_core.timekeeper;
 	struct clocksource *clock;
@@ -317,8 +298,7 @@ void __init timekeeping_init(void)
 }
 
 
-static __always_inline void timekeeping_apply_adjustment(struct timekeeper *tk, s64 offset, s32 mult_adj)
-{
+static __always_inline void timekeeping_apply_adjustment(struct timekeeper *tk, s64 offset, s32 mult_adj) {
 	s64 interval = tk->cycle_interval;
 
 	if (mult_adj == 0) {
@@ -342,8 +322,7 @@ static __always_inline void timekeeping_apply_adjustment(struct timekeeper *tk, 
 	tk->tkr_mono.xtime_nsec -= offset;
 }
 
-static void timekeeping_adjust(struct timekeeper *tk, s64 offset)
-{
+static void timekeeping_adjust(struct timekeeper *tk, s64 offset) {
 	u32 mult;
 
 	if (likely(tk->ntp_tick == ntp_tick_length())) {
@@ -369,8 +348,7 @@ static void timekeeping_adjust(struct timekeeper *tk, s64 offset)
 	}
 }
 
-static inline unsigned int accumulate_nsecs_to_secs(struct timekeeper *tk)
-{
+static inline unsigned int accumulate_nsecs_to_secs(struct timekeeper *tk) {
 	u64 nsecps = (u64)NSEC_PER_SEC << tk->tkr_mono.shift;
 	unsigned int clock_set = 0;
 
@@ -392,8 +370,7 @@ static inline unsigned int accumulate_nsecs_to_secs(struct timekeeper *tk)
 	return clock_set;
 }
 
-static u64 logarithmic_accumulation(struct timekeeper *tk, u64 offset, u32 shift, unsigned int *clock_set)
-{
+static u64 logarithmic_accumulation(struct timekeeper *tk, u64 offset, u32 shift, unsigned int *clock_set) {
 	u64 interval = tk->cycle_interval << shift;
 	u64 snsec_per_sec;
 
@@ -420,8 +397,7 @@ static u64 logarithmic_accumulation(struct timekeeper *tk, u64 offset, u32 shift
 	return offset;
 }
 
-static bool timekeeping_advance(void)
-{
+static bool timekeeping_advance(void) {
 	struct timekeeper *real_tk = &tk_core.timekeeper;
 	struct timekeeper *tk = &shadow_timekeeper;
 	u64 offset;
@@ -463,14 +439,12 @@ out:
 	return !!clock_set;
 }
 
-void update_wall_time(void)
-{
+void update_wall_time(void) {
 	timekeeping_advance();
 }
 
 
-void ktime_get_coarse_real_ts64(struct timespec64 *ts)
-{
+void ktime_get_coarse_real_ts64(struct timespec64 *ts) {
 	struct timekeeper *tk = &tk_core.timekeeper;
 	unsigned int seq;
 
@@ -482,8 +456,7 @@ void ktime_get_coarse_real_ts64(struct timespec64 *ts)
 }
 
 
-void do_timer(unsigned long ticks)
-{
+void do_timer(unsigned long ticks) {
 	jiffies_64 += ticks;
 }
 

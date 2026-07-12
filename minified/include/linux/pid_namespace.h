@@ -14,13 +14,11 @@ extern struct pid_namespace init_pid_ns;
 #define PIDNS_ADDING (1U << 31)
 
 
-static inline struct pid_namespace *get_pid_ns(struct pid_namespace *ns)
-{
+static inline struct pid_namespace *get_pid_ns(struct pid_namespace *ns) {
 	return ns;
 }
 
-static inline void put_pid_ns(struct pid_namespace *ns)
-{
+static inline void put_pid_ns(struct pid_namespace *ns) {
 }
 
 

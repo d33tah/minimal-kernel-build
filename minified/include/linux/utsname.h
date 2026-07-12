@@ -14,13 +14,11 @@ struct uts_namespace { struct new_utsname name; struct ns_common ns; } __randomi
 extern struct uts_namespace init_uts_ns;
 
 
-static inline struct new_utsname *utsname(void)
-{
+static inline struct new_utsname *utsname(void) {
 	return &current->nsproxy->uts_ns->name;
 }
 
-static inline struct new_utsname *init_utsname(void)
-{
+static inline struct new_utsname *init_utsname(void) {
 	return &init_uts_ns.name;
 }
 

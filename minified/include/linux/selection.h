@@ -13,22 +13,19 @@
 #endif
 
 #ifndef VT_BUF_HAVE_MEMSETW
-static inline void scr_memsetw(u16 *s, u16 c, unsigned int count)
-{
+static inline void scr_memsetw(u16 *s, u16 c, unsigned int count) {
 	memset16(s, c, count / 2);
 }
 #endif
 
 #ifndef VT_BUF_HAVE_MEMCPYW
-static inline void scr_memcpyw(u16 *d, const u16 *s, unsigned int count)
-{
+static inline void scr_memcpyw(u16 *d, const u16 *s, unsigned int count) {
 	memcpy(d, s, count);
 }
 #endif
 
 #ifndef VT_BUF_HAVE_MEMMOVEW
-static inline void scr_memmovew(u16 *d, const u16 *s, unsigned int count)
-{
+static inline void scr_memmovew(u16 *d, const u16 *s, unsigned int count) {
 	memmove(d, s, count);
 }
 #endif

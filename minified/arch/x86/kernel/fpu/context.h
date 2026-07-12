@@ -7,24 +7,20 @@
  
 
 
-static inline int fpregs_state_valid(struct fpu *fpu, unsigned int cpu)
-{
+static inline int fpregs_state_valid(struct fpu *fpu, unsigned int cpu) {
 	return fpu == this_cpu_read(fpu_fpregs_owner_ctx) && cpu == fpu->last_cpu;
 }
 
-static inline void fpregs_deactivate(struct fpu *fpu)
-{
+static inline void fpregs_deactivate(struct fpu *fpu) {
 	__this_cpu_write(fpu_fpregs_owner_ctx, NULL);
 }
 
-static inline void fpregs_activate(struct fpu *fpu)
-{
+static inline void fpregs_activate(struct fpu *fpu) {
 	__this_cpu_write(fpu_fpregs_owner_ctx, fpu);
 }
 
  
-static inline void fpregs_restore_userregs(void)
-{
+static inline void fpregs_restore_userregs(void) {
 	struct fpu *fpu = &current->thread.fpu;
 	int cpu = smp_processor_id();
 

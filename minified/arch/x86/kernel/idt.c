@@ -33,16 +33,14 @@ static gate_desc idt_table[IDT_ENTRIES] __page_aligned_bss;
 
 static struct desc_ptr idt_descr __ro_after_init = { .size		= IDT_TABLE_SIZE - 1, .address	= (unsigned long) idt_table, };
 
-void load_current_idt(void)
-{
+void load_current_idt(void) {
 	lockdep_assert_irqs_disabled();
 	load_idt(&idt_descr);
 }
 
 
 static __init void
-idt_setup_from_table(gate_desc *idt, const struct idt_data *t, int size, bool sys)
-{
+idt_setup_from_table(gate_desc *idt, const struct idt_data *t, int size, bool sys) {
 	gate_desc desc;
 
 	for (; size > 0; t++, size--) {
@@ -53,8 +51,7 @@ idt_setup_from_table(gate_desc *idt, const struct idt_data *t, int size, bool sy
 	}
 }
 
-static __init void set_intr_gate(unsigned int n, const void *addr)
-{
+static __init void set_intr_gate(unsigned int n, const void *addr) {
 	struct idt_data data;
 
 	init_idt_data(&data, n, addr);
@@ -62,27 +59,23 @@ static __init void set_intr_gate(unsigned int n, const void *addr)
 	idt_setup_from_table(idt_table, &data, 1, false);
 }
 
-void __init idt_setup_early_traps(void)
-{
+void __init idt_setup_early_traps(void) {
 	idt_setup_from_table(idt_table, early_idts, ARRAY_SIZE(early_idts), true);
 	load_idt(&idt_descr);
 }
 
-void __init idt_setup_traps(void)
-{
+void __init idt_setup_traps(void) {
 	idt_setup_from_table(idt_table, def_idts, ARRAY_SIZE(def_idts), true);
 }
 
 
-static void __init idt_map_in_cea(void)
-{
+static void __init idt_map_in_cea(void) {
 	 
 	cea_set_pte(CPU_ENTRY_AREA_RO_IDT_VADDR, __pa_symbol(idt_table), PAGE_KERNEL_RO);
 	idt_descr.address = CPU_ENTRY_AREA_RO_IDT;
 }
 
-void __init idt_setup_apic_and_irq_gates(void)
-{
+void __init idt_setup_apic_and_irq_gates(void) {
 	int i = FIRST_EXTERNAL_VECTOR;
 	void *entry;
 
@@ -98,8 +91,7 @@ void __init idt_setup_apic_and_irq_gates(void)
 	load_idt(&idt_descr);
 }
 
-void __init idt_setup_early_handler(void)
-{
+void __init idt_setup_early_handler(void) {
 	int i;
 
 	for (i = 0; i < NUM_EXCEPTION_VECTORS; i++)

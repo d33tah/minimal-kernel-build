@@ -5,8 +5,7 @@
 
 static struct lock_class_key irq_desc_lock_class;
 
-static void desc_set_defaults(unsigned int irq, struct irq_desc *desc)
-{
+static void desc_set_defaults(unsigned int irq, struct irq_desc *desc) {
 	int cpu;
 
 	desc->irq_data.common = &desc->irq_common_data;
@@ -32,18 +31,15 @@ static struct kobj_type irq_kobj_type = { };
 
 static RADIX_TREE(irq_desc_tree, GFP_KERNEL);
 
-static void irq_insert_desc(unsigned int irq, struct irq_desc *desc)
-{
+static void irq_insert_desc(unsigned int irq, struct irq_desc *desc) {
 	radix_tree_insert(&irq_desc_tree, irq, desc);
 }
 
-struct irq_desc *irq_to_desc(unsigned int irq)
-{
+struct irq_desc *irq_to_desc(unsigned int irq) {
 	return radix_tree_lookup(&irq_desc_tree, irq);
 }
 
-static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags)
-{
+static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags) {
 	struct irq_desc *desc;
 
 	desc = kzalloc_node(sizeof(*desc), GFP_KERNEL, node);
@@ -69,8 +65,7 @@ err_desc:
 	return NULL;
 }
 
-int __init early_irq_init(void)
-{
+int __init early_irq_init(void) {
 	int i, initcnt, node = first_online_node;
 	struct irq_desc *desc;
 
@@ -95,8 +90,7 @@ int __init early_irq_init(void)
 }
 
 
-struct irq_desc * __irq_get_desc_lock(unsigned int irq, unsigned long *flags, bool bus, unsigned int check)
-{
+struct irq_desc * __irq_get_desc_lock(unsigned int irq, unsigned long *flags, bool bus, unsigned int check) {
 	struct irq_desc *desc = irq_to_desc(irq);
 
 	if (desc) {
@@ -116,8 +110,7 @@ struct irq_desc * __irq_get_desc_lock(unsigned int irq, unsigned long *flags, bo
 }
 
 void __irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags, bool bus)
-	__releases(&desc->lock)
-{
+	__releases(&desc->lock) {
 	raw_spin_unlock_irqrestore(&desc->lock, flags);
 	if (bus)
 		chip_bus_sync_unlock(desc);

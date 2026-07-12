@@ -5,8 +5,7 @@
 #include <linux/thread_info.h>
 #include <linux/mm_types.h>
 
-struct iovec
-{
+struct iovec {
 	void __user *iov_base;
 	__kernel_size_t iov_len;
 };
@@ -21,19 +20,16 @@ enum iter_type { ITER_IOVEC, ITER_KVEC, };
 
 struct iov_iter { u8 iter_type; size_t iov_offset, count; union { const struct iovec *iov; const struct kvec *kvec; const struct bio_vec *bvec; struct xarray *xarray; struct pipe_inode_info *pipe; }; union { unsigned long nr_segs; struct { unsigned int head, start_head; }; loff_t xarray_start; }; };
 
-static inline enum iter_type iov_iter_type(const struct iov_iter *i)
-{
+static inline enum iter_type iov_iter_type(const struct iov_iter *i) {
 	return i->iter_type;
 }
 
 
-static inline bool iter_is_iovec(const struct iov_iter *i)
-{
+static inline bool iter_is_iovec(const struct iov_iter *i) {
 	return iov_iter_type(i) == ITER_IOVEC;
 }
 
-static inline bool iov_iter_is_kvec(const struct iov_iter *i)
-{
+static inline bool iov_iter_is_kvec(const struct iov_iter *i) {
 	return iov_iter_type(i) == ITER_KVEC;
 }
 
@@ -45,14 +41,12 @@ size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes, struct 
 size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i);
 size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i);
 
-static inline size_t copy_folio_to_iter(struct folio *folio, size_t offset, size_t bytes, struct iov_iter *i)
-{
+static inline size_t copy_folio_to_iter(struct folio *folio, size_t offset, size_t bytes, struct iov_iter *i) {
 	return copy_page_to_iter(&folio->page, offset, bytes, i);
 }
 
 static __always_inline __must_check
-size_t copy_from_iter(void *addr, size_t bytes, struct iov_iter *i)
-{
+size_t copy_from_iter(void *addr, size_t bytes, struct iov_iter *i) {
 	if (unlikely(!check_copy_size(addr, bytes, false)))
 		return 0;
 	else
@@ -66,13 +60,11 @@ void iov_iter_kvec(struct iov_iter *i, unsigned int direction, const struct kvec
    iov_iter_get_pages_alloc, iov_iter_npages, iov_iter_restore, dup_iter
    removed - unused */
 
-static inline size_t iov_iter_count(const struct iov_iter *i)
-{
+static inline size_t iov_iter_count(const struct iov_iter *i) {
 	return i->count;
 }
 
-static inline void iov_iter_truncate(struct iov_iter *i, u64 count)
-{
+static inline void iov_iter_truncate(struct iov_iter *i, u64 count) {
 	if (i->count > count)
 		i->count = count;
 }

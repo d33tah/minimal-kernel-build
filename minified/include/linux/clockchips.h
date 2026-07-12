@@ -13,18 +13,15 @@ enum clock_event_state { CLOCK_EVT_STATE_DETACHED, CLOCK_EVT_STATE_SHUTDOWN, CLO
 
 struct clock_event_device { void			(*event_handler)(struct clock_event_device *); enum clock_event_state	state_use_accessors; unsigned int		features; int			(*set_state_periodic)(struct clock_event_device *); int			(*set_state_shutdown)(struct clock_event_device *); const char		*name; int rating, irq; const struct cpumask	*cpumask; struct list_head	list; } ____cacheline_aligned;
 
-static inline bool clockevent_state_detached(struct clock_event_device *dev)
-{
+static inline bool clockevent_state_detached(struct clock_event_device *dev) {
 	return dev->state_use_accessors == CLOCK_EVT_STATE_DETACHED;
 }
 
-static inline bool clockevent_state_periodic(struct clock_event_device *dev)
-{
+static inline bool clockevent_state_periodic(struct clock_event_device *dev) {
 	return dev->state_use_accessors == CLOCK_EVT_STATE_PERIODIC;
 }
 
-static inline bool clockevent_state_oneshot(struct clock_event_device *dev)
-{
+static inline bool clockevent_state_oneshot(struct clock_event_device *dev) {
 	return dev->state_use_accessors == CLOCK_EVT_STATE_ONESHOT;
 }
 

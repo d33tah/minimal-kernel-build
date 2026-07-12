@@ -24,8 +24,7 @@ static bool do_csum = false;
 
 struct file_handler { const char *type; int (*handler)(const char *line); };
 
-static void push_string(const char *name)
-{
+static void push_string(const char *name) {
 	unsigned int name_len = strlen(name) + 1;
 
 	fputs(name, stdout);
@@ -33,16 +32,14 @@ static void push_string(const char *name)
 	offset += name_len;
 }
 
-static void push_pad (void)
-{
+static void push_pad (void) {
 	while (offset & 3) {
 		putchar(0);
 		offset++;
 	}
 }
 
-static void push_rest(const char *name)
-{
+static void push_rest(const char *name) {
 	unsigned int name_len = strlen(name) + 1;
 	unsigned int tmp_ofs;
 
@@ -58,14 +55,12 @@ static void push_rest(const char *name)
 	}
 }
 
-static void push_hdr(const char *s)
-{
+static void push_hdr(const char *s) {
 	fputs(s, stdout);
 	offset += 110;
 }
 
-static void cpio_trailer(void)
-{
+static void cpio_trailer(void) {
 	char s[256];
 	const char name[] = "TRAILER!!!";
 
@@ -79,8 +74,7 @@ static void cpio_trailer(void)
 	}
 }
 
-static int cpio_mkslink(const char *name, const char *target, unsigned int mode, uid_t uid, gid_t gid)
-{
+static int cpio_mkslink(const char *name, const char *target, unsigned int mode, uid_t uid, gid_t gid) {
 	char s[256];
 
 	if (name[0] == '/')
@@ -94,8 +88,7 @@ static int cpio_mkslink(const char *name, const char *target, unsigned int mode,
 	return 0;
 }
 
-static int cpio_mkslink_line(const char *line)
-{
+static int cpio_mkslink_line(const char *line) {
 	char name[PATH_MAX + 1], target[PATH_MAX + 1];
 	unsigned int mode;
 	int uid, gid;
@@ -110,8 +103,7 @@ static int cpio_mkslink_line(const char *line)
 	return rc;
 }
 
-static int cpio_mkgeneric(const char *name, unsigned int mode, uid_t uid, gid_t gid)
-{
+static int cpio_mkgeneric(const char *name, unsigned int mode, uid_t uid, gid_t gid) {
 	char s[256];
 
 	if (name[0] == '/')
@@ -128,8 +120,7 @@ struct generic_type { const char *type; mode_t mode; };
 
 static const struct generic_type generic_type_table[] = { [GT_DIR] = { .type = "dir", .mode = S_IFDIR }, [GT_PIPE] = { .type = "pipe", .mode = S_IFIFO }, [GT_SOCK] = { .type = "sock", .mode = S_IFSOCK } };
 
-static int cpio_mkgeneric_line(const char *line, enum generic_types gt)
-{
+static int cpio_mkgeneric_line(const char *line, enum generic_types gt) {
 	char name[PATH_MAX + 1];
 	unsigned int mode;
 	int uid, gid;
@@ -145,23 +136,19 @@ static int cpio_mkgeneric_line(const char *line, enum generic_types gt)
 	return rc;
 }
 
-static int cpio_mkdir_line(const char *line)
-{
+static int cpio_mkdir_line(const char *line) {
 	return cpio_mkgeneric_line(line, GT_DIR);
 }
 
-static int cpio_mkpipe_line(const char *line)
-{
+static int cpio_mkpipe_line(const char *line) {
 	return cpio_mkgeneric_line(line, GT_PIPE);
 }
 
-static int cpio_mksock_line(const char *line)
-{
+static int cpio_mksock_line(const char *line) {
 	return cpio_mkgeneric_line(line, GT_SOCK);
 }
 
-static int cpio_mknod(const char *name, unsigned int mode, uid_t uid, gid_t gid, char dev_type, unsigned int maj, unsigned int min)
-{
+static int cpio_mknod(const char *name, unsigned int mode, uid_t uid, gid_t gid, char dev_type, unsigned int maj, unsigned int min) {
 	char s[256];
 
 	if (dev_type == 'b')
@@ -177,8 +164,7 @@ static int cpio_mknod(const char *name, unsigned int mode, uid_t uid, gid_t gid,
 	return 0;
 }
 
-static int cpio_mknod_line(const char *line)
-{
+static int cpio_mknod_line(const char *line) {
 	char name[PATH_MAX + 1];
 	unsigned int mode;
 	int uid, gid;
@@ -195,8 +181,7 @@ static int cpio_mknod_line(const char *line)
 	return rc;
 }
 
-static int cpio_mkfile_csum(int fd, unsigned long size, uint32_t *csum)
-{
+static int cpio_mkfile_csum(int fd, unsigned long size, uint32_t *csum) {
 	while (size) {
 		unsigned char filebuf[65536];
 		ssize_t this_read;
@@ -218,8 +203,7 @@ static int cpio_mkfile_csum(int fd, unsigned long size, uint32_t *csum)
 	return 0;
 }
 
-static int cpio_mkfile(const char *name, const char *location, unsigned int mode, uid_t uid, gid_t gid, unsigned int nlinks)
-{
+static int cpio_mkfile(const char *name, const char *location, unsigned int mode, uid_t uid, gid_t gid, unsigned int nlinks) {
 	char s[256];
 	struct stat buf;
 	unsigned long size;
@@ -304,8 +288,7 @@ error:
 	return rc;
 }
 
-static char *cpio_replace_env(char *new_location)
-{
+static char *cpio_replace_env(char *new_location) {
 	char expanded[PATH_MAX + 1];
 	char *start, *end, *var;
 
@@ -319,8 +302,7 @@ static char *cpio_replace_env(char *new_location)
 	return new_location;
 }
 
-static int cpio_mkfile_line(const char *line)
-{
+static int cpio_mkfile_line(const char *line) {
 	char name[PATH_MAX + 1];
 	char *dname = NULL;  
 	char location[PATH_MAX + 1];
@@ -365,8 +347,7 @@ static int cpio_mkfile_line(const char *line)
 	return rc;
 }
 
-static void usage(const char *prog)
-{
+static void usage(const char *prog) {
 	fprintf(stderr, "Usage: %s [-t <timestamp>] [-c] <cpio_list>\n", prog);
 }
 
@@ -374,8 +355,7 @@ static const struct file_handler file_handler_table[] = { { .type    = "file", .
 
 #define LINE_SIZE (2 * PATH_MAX + 50)
 
-int main (int argc, char *argv[])
-{
+int main (int argc, char *argv[]) {
 	FILE *cpio_list;
 	char line[LINE_SIZE];
 	char *args, *type;

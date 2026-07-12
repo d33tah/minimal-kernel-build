@@ -5,8 +5,7 @@
 #include <asm/io.h>
 
  
-static inline unsigned int get_bios_ebda(void)
-{
+static inline unsigned int get_bios_ebda(void) {
 	 
 	unsigned int address = *(unsigned short *)phys_to_virt(0x40E);
 	address <<= 4;

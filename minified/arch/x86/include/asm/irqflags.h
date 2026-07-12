@@ -15,8 +15,7 @@
 
  
 extern inline unsigned long native_save_fl(void);
-extern __always_inline unsigned long native_save_fl(void)
-{
+extern __always_inline unsigned long native_save_fl(void) {
 	unsigned long flags;
 
 	 
@@ -25,23 +24,19 @@ extern __always_inline unsigned long native_save_fl(void)
 	return flags;
 }
 
-static __always_inline void native_irq_disable(void)
-{
+static __always_inline void native_irq_disable(void) {
 	asm volatile("cli": : :"memory");
 }
 
-static __always_inline void native_irq_enable(void)
-{
+static __always_inline void native_irq_enable(void) {
 	asm volatile("sti": : :"memory");
 }
 
-static inline __cpuidle void native_safe_halt(void)
-{
+static inline __cpuidle void native_safe_halt(void) {
 	asm volatile("sti; hlt": : :"memory");
 }
 
-static inline __cpuidle void native_halt(void)
-{
+static inline __cpuidle void native_halt(void) {
 	asm volatile("hlt": : :"memory");
 }
 
@@ -50,36 +45,30 @@ static inline __cpuidle void native_halt(void)
 #ifndef __ASSEMBLY__
 #include <linux/types.h>
 
-static __always_inline unsigned long arch_local_save_flags(void)
-{
+static __always_inline unsigned long arch_local_save_flags(void) {
 	return native_save_fl();
 }
 
-static __always_inline void arch_local_irq_disable(void)
-{
+static __always_inline void arch_local_irq_disable(void) {
 	native_irq_disable();
 }
 
-static __always_inline void arch_local_irq_enable(void)
-{
+static __always_inline void arch_local_irq_enable(void) {
 	native_irq_enable();
 }
 
  
-static inline __cpuidle void arch_safe_halt(void)
-{
+static inline __cpuidle void arch_safe_halt(void) {
 	native_safe_halt();
 }
 
  
-static inline __cpuidle void halt(void)
-{
+static inline __cpuidle void halt(void) {
 	native_halt();
 }
 
  
-static __always_inline unsigned long arch_local_irq_save(void)
-{
+static __always_inline unsigned long arch_local_irq_save(void) {
 	unsigned long flags = arch_local_save_flags();
 	arch_local_irq_disable();
 	return flags;
@@ -89,13 +78,11 @@ static __always_inline unsigned long arch_local_irq_save(void)
 #endif  
 
 #ifndef __ASSEMBLY__
-static __always_inline int arch_irqs_disabled_flags(unsigned long flags)
-{
+static __always_inline int arch_irqs_disabled_flags(unsigned long flags) {
 	return !(flags & X86_EFLAGS_IF);
 }
 
-static __always_inline void arch_local_irq_restore(unsigned long flags)
-{
+static __always_inline void arch_local_irq_restore(unsigned long flags) {
 	if (!arch_irqs_disabled_flags(flags))
 		arch_local_irq_enable();
 }

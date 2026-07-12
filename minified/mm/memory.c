@@ -21,8 +21,7 @@ unsigned long zero_pfn __read_mostly;
 
 unsigned long highest_memmap_pfn __read_mostly;
 
-static int __init init_zero_pfn(void)
-{
+static int __init init_zero_pfn(void) {
 	zero_pfn = page_to_pfn(ZERO_PAGE(0));
 	return 0;
 }
@@ -37,12 +36,10 @@ early_initcall(init_zero_pfn);
  * private free_folded_range / free_pte_range page-table free walkers it solely
  * drove were deleted with it.
  */
-void free_pgd_range(struct mmu_gather *tlb, unsigned long addr, unsigned long end, unsigned long floor, unsigned long ceiling)
-{
+void free_pgd_range(struct mmu_gather *tlb, unsigned long addr, unsigned long end, unsigned long floor, unsigned long ceiling) {
 }
 
-void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte)
-{
+void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte) {
 	spinlock_t *ptl = pmd_lock(mm, pmd);
 
 	if (likely(pmd_none(*pmd))) {	
@@ -55,8 +52,7 @@ void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte)
 	spin_unlock(ptl);
 }
 
-int __pte_alloc(struct mm_struct *mm, pmd_t *pmd)
-{
+int __pte_alloc(struct mm_struct *mm, pmd_t *pmd) {
 	pgtable_t new = pte_alloc_one(mm);
 	if (!new)
 		return -ENOMEM;
@@ -67,8 +63,7 @@ int __pte_alloc(struct mm_struct *mm, pmd_t *pmd)
 	return 0;
 }
 
-struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr, pte_t pte)
-{
+struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr, pte_t pte) {
 	unsigned long pfn = pte_pfn(pte);
 
 	/*
@@ -102,8 +97,7 @@ check_pfn:
  */
 
 
-static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr)
-{
+static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr) {
 	pgd_t *pgd;
 	p4d_t *p4d;
 	pud_t *pud;
@@ -118,8 +112,7 @@ static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr)
 	return pmd;
 }
 
-pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr, spinlock_t **ptl)
-{
+pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr, spinlock_t **ptl) {
 	pmd_t *pmd = walk_to_pmd(mm, addr);
 
 	if (!pmd)
@@ -127,8 +120,7 @@ pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr, spinlock_t **p
 	return pte_alloc_map_lock(mm, pmd, addr, ptl);
 }
 
-static gfp_t __get_fault_gfp_mask(struct vm_area_struct *vma)
-{
+static gfp_t __get_fault_gfp_mask(struct vm_area_struct *vma) {
 	struct file *vm_file = vma->vm_file;
 
 	if (vm_file)
@@ -138,8 +130,7 @@ static gfp_t __get_fault_gfp_mask(struct vm_area_struct *vma)
 	return GFP_KERNEL;
 }
 
-static vm_fault_t do_page_mkwrite(struct vm_fault *vmf)
-{
+static vm_fault_t do_page_mkwrite(struct vm_fault *vmf) {
 	vm_fault_t ret;
 	struct page *page = vmf->page;
 	unsigned int old_flags = vmf->flags;
@@ -163,8 +154,7 @@ static vm_fault_t do_page_mkwrite(struct vm_fault *vmf)
 	return ret;
 }
 
-static vm_fault_t fault_dirty_shared_page(struct vm_fault *vmf)
-{
+static vm_fault_t fault_dirty_shared_page(struct vm_fault *vmf) {
 	struct vm_area_struct *vma = vmf->vma;
 	struct address_space *mapping;
 	struct page *page = vmf->page;
@@ -195,8 +185,7 @@ static vm_fault_t fault_dirty_shared_page(struct vm_fault *vmf)
 }
 
 static inline void wp_page_reuse(struct vm_fault *vmf)
-	__releases(vmf->ptl)
-{
+	__releases(vmf->ptl) {
 	struct vm_area_struct *vma = vmf->vma;
 	struct page *page = vmf->page;
 	pte_t entry;
@@ -214,8 +203,7 @@ static inline void wp_page_reuse(struct vm_fault *vmf)
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
 }
 
-static vm_fault_t wp_page_copy(struct vm_fault *vmf)
-{
+static vm_fault_t wp_page_copy(struct vm_fault *vmf) {
 	/* Minimal stub: init doesn't fork, so no COW faults */
 	return VM_FAULT_OOM;
 }
@@ -223,8 +211,7 @@ static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 
 
 static vm_fault_t do_wp_page(struct vm_fault *vmf)
-	__releases(vmf->ptl)
-{
+	__releases(vmf->ptl) {
 	vmf->page = vm_normal_page(vmf->vma, vmf->address, vmf->orig_pte);
 	if (!vmf->page) {
 		pte_unmap_unlock(vmf->pte, vmf->ptl);
@@ -241,8 +228,7 @@ static vm_fault_t do_wp_page(struct vm_fault *vmf)
 	return wp_page_copy(vmf);
 }
 
-static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
-{
+static vm_fault_t do_anonymous_page(struct vm_fault *vmf) {
 	/* Minimal stub: simplified anonymous page fault handling */
 	struct vm_area_struct *vma = vmf->vma;
 	struct page *page;
@@ -282,8 +268,7 @@ unlock:
 	return 0;
 }
 
-static vm_fault_t __do_fault(struct vm_fault *vmf)
-{
+static vm_fault_t __do_fault(struct vm_fault *vmf) {
 	struct vm_area_struct *vma = vmf->vma;
 	vm_fault_t ret;
 
@@ -306,8 +291,7 @@ static vm_fault_t __do_fault(struct vm_fault *vmf)
 	return ret;
 }
 
-void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr)
-{
+void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr) {
 	struct vm_area_struct *vma = vmf->vma;
 	bool write = vmf->flags & FAULT_FLAG_WRITE;
 	pte_t entry;
@@ -331,14 +315,12 @@ void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr)
 	set_pte_at(vma->vm_mm, addr, vmf->pte, entry);
 }
 
-static bool vmf_pte_changed(struct vm_fault *vmf)
-{
+static bool vmf_pte_changed(struct vm_fault *vmf) {
 	/* FAULT_FLAG_ORIG_PTE_VALID is never set on this build => always false. */
 	return !pte_none(*vmf->pte);
 }
 
-vm_fault_t finish_fault(struct vm_fault *vmf)
-{
+vm_fault_t finish_fault(struct vm_fault *vmf) {
 	struct vm_area_struct *vma = vmf->vma;
 	struct page *page;
 	vm_fault_t ret;
@@ -376,8 +358,7 @@ vm_fault_t finish_fault(struct vm_fault *vmf)
 	return ret;
 }
 
-static vm_fault_t do_read_fault(struct vm_fault *vmf)
-{
+static vm_fault_t do_read_fault(struct vm_fault *vmf) {
 	vm_fault_t ret = 0;
 
 	ret = __do_fault(vmf);
@@ -391,8 +372,7 @@ static vm_fault_t do_read_fault(struct vm_fault *vmf)
 	return ret;
 }
 
-static vm_fault_t do_cow_fault(struct vm_fault *vmf)
-{
+static vm_fault_t do_cow_fault(struct vm_fault *vmf) {
 	struct vm_area_struct *vma = vmf->vma;
 	vm_fault_t ret;
 
@@ -423,8 +403,7 @@ uncharge_out:
 	return ret;
 }
 
-static vm_fault_t do_shared_fault(struct vm_fault *vmf)
-{
+static vm_fault_t do_shared_fault(struct vm_fault *vmf) {
 	struct vm_area_struct *vma = vmf->vma;
 	vm_fault_t ret, tmp;
 
@@ -453,8 +432,7 @@ static vm_fault_t do_shared_fault(struct vm_fault *vmf)
 	return ret;
 }
 
-static vm_fault_t do_fault(struct vm_fault *vmf)
-{
+static vm_fault_t do_fault(struct vm_fault *vmf) {
 	struct vm_area_struct *vma = vmf->vma;
 	struct mm_struct *vm_mm = vma->vm_mm;
 	vm_fault_t ret;
@@ -489,8 +467,7 @@ static vm_fault_t do_fault(struct vm_fault *vmf)
 	return ret;
 }
 
-static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
-{
+static vm_fault_t handle_pte_fault(struct vm_fault *vmf) {
 	if (unlikely(pmd_none(*vmf->pmd))) {
 		vmf->pte = NULL;
 	} else {
@@ -519,8 +496,7 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 	return 0;
 }
 
-static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma, unsigned long address, unsigned int flags)
-{
+static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma, unsigned long address, unsigned int flags) {
 	/* Minimal stub: simplified page fault handling without huge pages */
 	struct vm_fault vmf = {
 		.vma = vma, .address = address & PAGE_MASK, .flags = flags, .pgoff = linear_page_index(vma, address), .gfp_mask = __get_fault_gfp_mask(vma), };
@@ -536,8 +512,7 @@ static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma, unsigned long ad
 	return handle_pte_fault(&vmf);
 }
 
-vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address, unsigned int flags, struct pt_regs *regs)
-{
+vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address, unsigned int flags, struct pt_regs *regs) {
 	vm_fault_t ret;
 
 	__set_current_state(TASK_RUNNING);

@@ -5,8 +5,7 @@
 #include <linux/kbuild.h>
 #include <linux/spinlock_types.h>
 
-int main(void)
-{
+int main(void) {
 	 
 	DEFINE(NR_PAGEFLAGS, __NR_PAGEFLAGS);
 	DEFINE(MAX_NR_ZONES, __MAX_NR_ZONES);

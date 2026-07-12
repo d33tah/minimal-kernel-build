@@ -1,7 +1,6 @@
 
 
-int ___ratelimit(struct ratelimit_state *rs, const char *func)
-{
+int ___ratelimit(struct ratelimit_state *rs, const char *func) {
 	/*
 	 * RUNTIME-DEAD SAFE-FALLBACK STUB: ___ratelimit is the rate-limit core
 	 * (returns 1 = "allowed to emit", 0 = "suppressed").  Its only callers

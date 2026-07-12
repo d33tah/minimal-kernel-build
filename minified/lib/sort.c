@@ -4,15 +4,13 @@
 #include <linux/sort.h>
 
 __attribute_const__ __always_inline
-static bool is_aligned(const void *base, size_t size, unsigned char align)
-{
+static bool is_aligned(const void *base, size_t size, unsigned char align) {
 	unsigned char lsbits = (unsigned char)size;
 
 	return (lsbits & (align - 1)) == 0;
 }
 
-static void swap_words_32(void *a, void *b, size_t n)
-{
+static void swap_words_32(void *a, void *b, size_t n) {
 	do {
 		u32 t = *(u32 *)(a + (n -= 4));
 		*(u32 *)(a + n) = *(u32 *)(b + n);
@@ -20,8 +18,7 @@ static void swap_words_32(void *a, void *b, size_t n)
 	} while (n);
 }
 
-static void swap_words_64(void *a, void *b, size_t n)
-{
+static void swap_words_64(void *a, void *b, size_t n) {
 	do {
 		 
 		u32 t = *(u32 *)(a + (n -= 4));
@@ -34,8 +31,7 @@ static void swap_words_64(void *a, void *b, size_t n)
 	} while (n);
 }
 
-static void swap_bytes(void *a, void *b, size_t n)
-{
+static void swap_bytes(void *a, void *b, size_t n) {
 	do {
 		char t = ((char *)a)[--n];
 		((char *)a)[n] = ((char *)b)[n];
@@ -50,8 +46,7 @@ static void swap_bytes(void *a, void *b, size_t n)
 
 struct wrapper { cmp_func_t cmp; swap_func_t swap; };
 
-static void do_swap(void *a, void *b, size_t size, swap_r_func_t swap_func, const void *priv)
-{
+static void do_swap(void *a, void *b, size_t size, swap_r_func_t swap_func, const void *priv) {
 	if (swap_func == SWAP_WRAPPER) {
 		((const struct wrapper *)priv)->swap(a, b, (int)size);
 		return;
@@ -69,23 +64,20 @@ static void do_swap(void *a, void *b, size_t size, swap_r_func_t swap_func, cons
 
 #define _CMP_WRAPPER ((cmp_r_func_t)0L)
 
-static int do_cmp(const void *a, const void *b, cmp_r_func_t cmp, const void *priv)
-{
+static int do_cmp(const void *a, const void *b, cmp_r_func_t cmp, const void *priv) {
 	if (cmp == _CMP_WRAPPER)
 		return ((const struct wrapper *)priv)->cmp(a, b);
 	return cmp(a, b, priv);
 }
 
 __attribute_const__ __always_inline
-static size_t parent(size_t i, unsigned int lsbit, size_t size)
-{
+static size_t parent(size_t i, unsigned int lsbit, size_t size) {
 	i -= size;
 	i -= size & -(i & lsbit);
 	return i / 2;
 }
 
-void sort_r(void *base, size_t num, size_t size, cmp_r_func_t cmp_func, swap_r_func_t swap_func, const void *priv)
-{
+void sort_r(void *base, size_t num, size_t size, cmp_r_func_t cmp_func, swap_r_func_t swap_func, const void *priv) {
 	 
 	size_t n = num * size, a = (num/2) * size;
 	const unsigned int lsbit = size & -size;   
@@ -134,8 +126,7 @@ void sort_r(void *base, size_t num, size_t size, cmp_r_func_t cmp_func, swap_r_f
 	}
 }
 
-void sort(void *base, size_t num, size_t size, cmp_func_t cmp_func, swap_func_t swap_func)
-{
+void sort(void *base, size_t num, size_t size, cmp_func_t cmp_func, swap_func_t swap_func) {
 	struct wrapper w = {
 		.cmp  = cmp_func, .swap = swap_func, };
 

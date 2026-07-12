@@ -4,8 +4,7 @@
 
 static int after_paging_init __initdata;
 
-void __init early_ioremap_reset(void)
-{
+void __init early_ioremap_reset(void) {
 	after_paging_init = 1;
 }
 
@@ -19,8 +18,7 @@ static void __iomem *prev_map[FIX_BTMAPS_SLOTS] __initdata;
 static unsigned long prev_size[FIX_BTMAPS_SLOTS] __initdata;
 static unsigned long slot_virt[FIX_BTMAPS_SLOTS] __initdata;
 
-void __init early_ioremap_setup(void)
-{
+void __init early_ioremap_setup(void) {
 	int i;
 
 	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)
@@ -32,8 +30,7 @@ void __init early_ioremap_setup(void)
 }
 
 
-void __init early_memunmap(void *vaddr, unsigned long size)
-{
+void __init early_memunmap(void *vaddr, unsigned long size) {
 	void __iomem *addr = (__force void __iomem *)vaddr;
 	unsigned long virt_addr, offset;
 	unsigned int nrpages;
@@ -73,8 +70,7 @@ void __init early_memunmap(void *vaddr, unsigned long size)
 	prev_map[slot] = NULL;
 }
 
-void __init * early_memremap(resource_size_t phys_addr, unsigned long size)
-{
+void __init * early_memremap(resource_size_t phys_addr, unsigned long size) {
 	unsigned long offset;
 	resource_size_t last_addr;
 	unsigned int nrpages;
@@ -124,8 +120,7 @@ void __init * early_memremap(resource_size_t phys_addr, unsigned long size)
 
 #define MAX_MAP_CHUNK	(NR_FIX_BTMAPS << PAGE_SHIFT)
 
-void __init copy_from_early_mem(void *dest, phys_addr_t src, unsigned long size)
-{
+void __init copy_from_early_mem(void *dest, phys_addr_t src, unsigned long size) {
 	unsigned long slop, clen;
 	char *p;
 

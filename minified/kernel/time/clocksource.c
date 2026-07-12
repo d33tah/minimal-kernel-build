@@ -6,8 +6,7 @@
 #include "tick-internal.h"
 
 void
-clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 maxsec)
-{
+clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 maxsec) {
 	u64 tmp;
 	u32 sft, sftacc= 32;
 
@@ -51,14 +50,12 @@ static int finished_booting;
  * live clocksource-select path needs.
  */
 
-static void clocksource_enqueue_watchdog(struct clocksource *cs)
-{
+static void clocksource_enqueue_watchdog(struct clocksource *cs) {
 	if (!(cs->flags & CLOCK_SOURCE_MUST_VERIFY) && (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS))
 		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
 }
 
-static void __clocksource_suspend_select(struct clocksource *cs)
-{
+static void __clocksource_suspend_select(struct clocksource *cs) {
 	 
 	if (!(cs->flags & CLOCK_SOURCE_SUSPEND_NONSTOP))
 		return;
@@ -68,8 +65,7 @@ static void __clocksource_suspend_select(struct clocksource *cs)
 		suspend_clocksource = cs;
 }
 
-static u32 clocksource_max_adjustment(struct clocksource *cs)
-{
+static u32 clocksource_max_adjustment(struct clocksource *cs) {
 	u64 ret;
 	 
 	ret = (u64)cs->mult * 11;
@@ -77,8 +73,7 @@ static u32 clocksource_max_adjustment(struct clocksource *cs)
 	return (u32)ret;
 }
 
-static struct clocksource *clocksource_find_best(bool skipcur)
-{
+static struct clocksource *clocksource_find_best(bool skipcur) {
 	struct clocksource *cs;
 
 	if (!finished_booting || list_empty(&clocksource_list))
@@ -93,8 +88,7 @@ static struct clocksource *clocksource_find_best(bool skipcur)
 	return NULL;
 }
 
-static void __clocksource_select(bool skipcur)
-{
+static void __clocksource_select(bool skipcur) {
 	struct clocksource *best;
 
 	/* override_name is never set on this build, so the override-match
@@ -109,13 +103,11 @@ static void __clocksource_select(bool skipcur)
 	}
 }
 
-static void clocksource_select(void)
-{
+static void clocksource_select(void) {
 	__clocksource_select(false);
 }
 
-static int __init clocksource_done_booting(void)
-{
+static int __init clocksource_done_booting(void) {
 	mutex_lock(&clocksource_mutex);
 	curr_clocksource = clocksource_default_clock();
 	finished_booting = 1;
@@ -125,8 +117,7 @@ static int __init clocksource_done_booting(void)
 }
 fs_initcall(clocksource_done_booting);
 
-static void clocksource_enqueue(struct clocksource *cs)
-{
+static void clocksource_enqueue(struct clocksource *cs) {
 	struct list_head *entry = &clocksource_list;
 	struct clocksource *tmp;
 
@@ -139,8 +130,7 @@ static void clocksource_enqueue(struct clocksource *cs)
 	list_add(&cs->list, entry);
 }
 
-void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq)
-{
+void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq) {
 	u64 sec;
 
 	 
@@ -179,8 +169,7 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq
 	WARN_ONCE(cs->mult + cs->maxadj < cs->mult, "timekeeping: Clocksource %s might overflow on 11%% adjustment\n", cs->name);
 }
 
-int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
-{
+int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq) {
 	clocksource_arch_init(cs);
 
 	if (WARN_ON_ONCE((unsigned int)cs->id >= CSID_MAX))
@@ -205,8 +194,7 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 	return 0;
 }
 
-int clocksource_unregister(struct clocksource *cs)
-{
+int clocksource_unregister(struct clocksource *cs) {
 	return 0;
 }
 

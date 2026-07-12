@@ -9,8 +9,7 @@
 #include <asm/page.h>
 
 #ifndef __HAVE_ARCH_STRLCPY
-size_t strlcpy(char *dest, const char *src, size_t size)
-{
+size_t strlcpy(char *dest, const char *src, size_t size) {
 	size_t ret = strlen(src);
 
 	if (size) {
@@ -23,8 +22,7 @@ size_t strlcpy(char *dest, const char *src, size_t size)
 #endif
 
 #ifndef __HAVE_ARCH_STRSCPY
-ssize_t strscpy(char *dest, const char *src, size_t count)
-{
+ssize_t strscpy(char *dest, const char *src, size_t count) {
 	const struct word_at_a_time constants = WORD_AT_A_TIME_CONSTANTS;
 	size_t max = count;
 	long res = 0;
@@ -76,15 +74,13 @@ ssize_t strscpy(char *dest, const char *src, size_t count)
 
 
 #ifndef __HAVE_ARCH_STRLCAT
-size_t strlcat(char *dest, const char *src, size_t count)
-{
+size_t strlcat(char *dest, const char *src, size_t count) {
 	return 0;
 }
 #endif
 
 #ifndef __HAVE_ARCH_STRRCHR
-char *strrchr(const char *s, int c)
-{
+char *strrchr(const char *s, int c) {
 	const char *last = NULL;
 	do {
 		if (*s == (char)c)
@@ -95,16 +91,14 @@ char *strrchr(const char *s, int c)
 #endif
 
 #ifndef __HAVE_ARCH_STRSEP
-char *strsep(char **s, const char *ct)
-{
+char *strsep(char **s, const char *ct) {
 	return NULL;
 }
 #endif
 
 #ifndef __HAVE_ARCH_MEMCMP
 #undef memcmp
-__visible int memcmp(const void *cs, const void *ct, size_t count)
-{
+__visible int memcmp(const void *cs, const void *ct, size_t count) {
 	const unsigned char *su1, *su2;
 	int res = 0;
 

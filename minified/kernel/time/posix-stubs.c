@@ -4,8 +4,7 @@
 
 #include <asm/syscall_wrapper.h>
 
-asmlinkage long sys_ni_posix_timers(void)
-{
+asmlinkage long sys_ni_posix_timers(void) {
 	return -ENOSYS;
 }
 

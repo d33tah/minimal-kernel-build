@@ -27,8 +27,7 @@ extern void rb_erase(struct rb_node *, struct rb_root *);
 
 extern struct rb_node *rb_next(const struct rb_node *);
 
-static inline void rb_link_node(struct rb_node *node, struct rb_node *parent, struct rb_node **rb_link)
-{
+static inline void rb_link_node(struct rb_node *node, struct rb_node *parent, struct rb_node **rb_link) {
 	node->__rb_parent_color = (unsigned long)parent;
 	node->rb_left = node->rb_right = NULL;
 
@@ -40,16 +39,14 @@ static inline void rb_link_node(struct rb_node *node, struct rb_node *parent, st
 
 #define rb_first_cached(root) (root)->rb_leftmost
 
-static inline void rb_insert_color_cached(struct rb_node *node, struct rb_root_cached *root, bool leftmost)
-{
+static inline void rb_insert_color_cached(struct rb_node *node, struct rb_root_cached *root, bool leftmost) {
 	if (leftmost)
 		root->rb_leftmost = node;
 	rb_insert_color(node, &root->rb_root);
 }
 
 
-static inline struct rb_node * rb_erase_cached(struct rb_node *node, struct rb_root_cached *root)
-{
+static inline struct rb_node * rb_erase_cached(struct rb_node *node, struct rb_root_cached *root) {
 	struct rb_node *leftmost = NULL;
 
 	if (root->rb_leftmost == node)
@@ -62,8 +59,7 @@ static inline struct rb_node * rb_erase_cached(struct rb_node *node, struct rb_r
 
 /* Removed: rb_replace_node_cached - never called (~7 LOC) */
 
-static __always_inline struct rb_node * rb_add_cached(struct rb_node *node, struct rb_root_cached *tree, bool (*less)(struct rb_node *, const struct rb_node *))
-{
+static __always_inline struct rb_node * rb_add_cached(struct rb_node *node, struct rb_root_cached *tree, bool (*less)(struct rb_node *, const struct rb_node *)) {
 	struct rb_node **link = &tree->rb_root.rb_node;
 	struct rb_node *parent = NULL;
 	bool leftmost = true;

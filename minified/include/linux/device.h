@@ -33,16 +33,14 @@ struct class;
 
 struct device { struct kobject kobj; struct device		*parent; struct device_private	*p; void	(*release)(struct device *dev); };
 
-static inline struct device *kobj_to_dev(struct kobject *kobj)
-{
+static inline struct device *kobj_to_dev(struct kobject *kobj) {
 	return container_of(kobj, struct device, kobj);
 }
 
 
 
 
-static inline const char *dev_name(const struct device *dev)
-{
+static inline const char *dev_name(const struct device *dev) {
 	/* init_name removed - never set non-NULL by any device, so this
 	 * always fell through to the kobject name */
 	return kobject_name(&dev->kobj);

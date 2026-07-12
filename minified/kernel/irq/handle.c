@@ -5,8 +5,7 @@
 #include "internals.h"
 
 
-void handle_bad_irq(struct irq_desc *desc)
-{
+void handle_bad_irq(struct irq_desc *desc) {
 	unsigned int irq = irq_desc_get_irq(desc);
 
 	print_irq_desc(irq, desc);
@@ -14,13 +13,11 @@ void handle_bad_irq(struct irq_desc *desc)
 	ack_bad_irq(irq);
 }
 
-irqreturn_t no_action(int cpl, void *dev_id)
-{
+irqreturn_t no_action(int cpl, void *dev_id) {
 	return IRQ_NONE;
 }
 
-irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc)
-{
+irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc) {
 	irqreturn_t retval = IRQ_NONE;
 	unsigned int irq = desc->irq_data.irq;
 	struct irqaction *action;
@@ -41,8 +38,7 @@ irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc)
 	return retval;
 }
 
-irqreturn_t handle_irq_event(struct irq_desc *desc)
-{
+irqreturn_t handle_irq_event(struct irq_desc *desc) {
 	irqreturn_t ret;
 
 	desc->istate &= ~IRQS_PENDING;

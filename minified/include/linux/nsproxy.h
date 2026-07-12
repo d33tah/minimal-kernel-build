@@ -17,8 +17,7 @@ void exit_task_namespaces(struct task_struct *tsk);
  * exit_task_namespaces (nsproxy teardown is runtime-dead on a 1-shot boot). */
 int __init nsproxy_cache_init(void);
 
-static inline void get_nsproxy(struct nsproxy *ns)
-{
+static inline void get_nsproxy(struct nsproxy *ns) {
 	atomic_inc(&ns->count);
 }
 

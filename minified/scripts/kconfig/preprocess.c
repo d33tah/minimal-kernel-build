@@ -14,8 +14,7 @@
 static char *expand_string_with_args(const char *in, int argc, char *argv[]);
 static char *expand_string(const char *in);
 
-static void __attribute__((noreturn)) pperror(const char *format, ...)
-{
+static void __attribute__((noreturn)) pperror(const char *format, ...) {
 	va_list ap;
 
 	fprintf(stderr, "%s:%d: ", current_file->name, yylineno);
@@ -31,8 +30,7 @@ static LIST_HEAD(env_list);
 
 struct env { char *name, *value; struct list_head node; };
 
-static void env_add(const char *name, const char *value)
-{
+static void env_add(const char *name, const char *value) {
 	struct env *e;
 
 	e = xmalloc(sizeof(*e));
@@ -42,16 +40,14 @@ static void env_add(const char *name, const char *value)
 	list_add_tail(&e->node, &env_list);
 }
 
-static void env_del(struct env *e)
-{
+static void env_del(struct env *e) {
 	list_del(&e->node);
 	free(e->name);
 	free(e->value);
 	free(e);
 }
 
-static char *env_expand(const char *name)
-{
+static char *env_expand(const char *name) {
 	struct env *e;
 	const char *value;
 
@@ -73,8 +69,7 @@ static char *env_expand(const char *name)
 	return xstrdup(value);
 }
 
-void env_write_dep(FILE *f, const char *autoconfig_name)
-{
+void env_write_dep(FILE *f, const char *autoconfig_name) {
 	struct env *e, *tmp;
 
 	list_for_each_entry_safe(e, tmp, &env_list, node) {
@@ -87,16 +82,14 @@ void env_write_dep(FILE *f, const char *autoconfig_name)
 
 struct function { const char *name; unsigned int min_args, max_args; char *(*func)(int argc, char *argv[]); };
 
-static char *do_error_if(int argc, char *argv[])
-{
+static char *do_error_if(int argc, char *argv[]) {
 	if (!strcmp(argv[0], "y"))
 		pperror("%s", argv[1]);
 
 	return xstrdup("");
 }
 
-static char *do_shell(int argc, char *argv[])
-{
+static char *do_shell(int argc, char *argv[]) {
 	FILE *p;
 	char buf[4096], *cmd;
 	size_t nread;
@@ -138,8 +131,7 @@ static const struct function function_table[] = { { "error-if",	2,	2,	do_error_i
 
 #define FUNCTION_MAX_ARGS		16
 
-static char *function_expand(const char *name, int argc, char *argv[])
-{
+static char *function_expand(const char *name, int argc, char *argv[]) {
 	const struct function *f;
 	int i;
 
@@ -164,8 +156,7 @@ static LIST_HEAD(variable_list);
 
 struct variable { char *name, *value; enum variable_flavor flavor; int exp_count; struct list_head node; };
 
-static struct variable *variable_lookup(const char *name)
-{
+static struct variable *variable_lookup(const char *name) {
 	struct variable *v;
 
 	list_for_each_entry(v, &variable_list, node) {
@@ -176,8 +167,7 @@ static struct variable *variable_lookup(const char *name)
 	return NULL;
 }
 
-static char *variable_expand(const char *name, int argc, char *argv[])
-{
+static char *variable_expand(const char *name, int argc, char *argv[]) {
 	struct variable *v;
 	char *res;
 
@@ -203,8 +193,7 @@ static char *variable_expand(const char *name, int argc, char *argv[])
 	return res;
 }
 
-void variable_add(const char *name, const char *value, enum variable_flavor flavor)
-{
+void variable_add(const char *name, const char *value, enum variable_flavor flavor) {
 	struct variable *v;
 	char *new_value;
 	bool append = false;
@@ -246,24 +235,21 @@ void variable_add(const char *name, const char *value, enum variable_flavor flav
 	}
 }
 
-static void variable_del(struct variable *v)
-{
+static void variable_del(struct variable *v) {
 	list_del(&v->node);
 	free(v->name);
 	free(v->value);
 	free(v);
 }
 
-void variable_all_del(void)
-{
+void variable_all_del(void) {
 	struct variable *v, *tmp;
 
 	list_for_each_entry_safe(v, tmp, &variable_list, node)
 		variable_del(v);
 }
 
-static char *eval_clause(const char *str, size_t len, int argc, char *argv[])
-{
+static char *eval_clause(const char *str, size_t len, int argc, char *argv[]) {
 	char *tmp, *name, *res, *endptr, *prev, *p;
 	int new_argc = 0;
 	char *new_argv[FUNCTION_MAX_ARGS];
@@ -334,8 +320,7 @@ free_tmp:
 	return res;
 }
 
-static char *expand_dollar_with_args(const char **str, int argc, char *argv[])
-{
+static char *expand_dollar_with_args(const char **str, int argc, char *argv[]) {
 	const char *p = *str;
 	const char *q;
 	int nest = 0;
@@ -367,13 +352,11 @@ static char *expand_dollar_with_args(const char **str, int argc, char *argv[])
 	return eval_clause(p, q - p, argc, argv);
 }
 
-char *expand_dollar(const char **str)
-{
+char *expand_dollar(const char **str) {
 	return expand_dollar_with_args(str, 0, NULL);
 }
 
-static char *__expand_string(const char **str, bool (*is_end)(char c), int argc, char *argv[])
-{
+static char *__expand_string(const char **str, bool (*is_end)(char c), int argc, char *argv[]) {
 	const char *in, *p;
 	char *expansion, *out;
 	size_t in_len, out_len;
@@ -415,27 +398,22 @@ static char *__expand_string(const char **str, bool (*is_end)(char c), int argc,
 	return out;
 }
 
-static bool is_end_of_str(char c)
-{
+static bool is_end_of_str(char c) {
 	return !c;
 }
 
-static char *expand_string_with_args(const char *in, int argc, char *argv[])
-{
+static char *expand_string_with_args(const char *in, int argc, char *argv[]) {
 	return __expand_string(&in, is_end_of_str, argc, argv);
 }
 
-static char *expand_string(const char *in)
-{
+static char *expand_string(const char *in) {
 	return expand_string_with_args(in, 0, NULL);
 }
 
-static bool is_end_of_token(char c)
-{
+static bool is_end_of_token(char c) {
 	return !(isalnum(c) || c == '_' || c == '-');
 }
 
-char *expand_one_token(const char **str)
-{
+char *expand_one_token(const char **str) {
 	return __expand_string(str, is_end_of_token, 0, NULL);
 }

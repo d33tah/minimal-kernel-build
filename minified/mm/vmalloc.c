@@ -5,8 +5,7 @@
 
 #include "internal.h"
 
-bool is_vmalloc_addr(const void *x)
-{
+bool is_vmalloc_addr(const void *x) {
 	unsigned long addr = (unsigned long)x;
 
 	return addr >= VMALLOC_START && addr < VMALLOC_END;
@@ -22,15 +21,13 @@ static LIST_HEAD(free_vmap_area_list);
 static struct rb_root free_vmap_area_root = RB_ROOT;
 
 static __always_inline unsigned long
-va_size(struct vmap_area *va)
-{
+va_size(struct vmap_area *va) {
 	return (va->va_end - va->va_start);
 }
 
 RB_DECLARE_CALLBACKS_MAX(static, free_vmap_area_rb_augment_cb, struct vmap_area, rb_node, unsigned long, subtree_max_size, va_size)
 
-static __always_inline struct rb_node ** find_va_links(struct vmap_area *va, struct rb_root *root, struct rb_node *from, struct rb_node **parent)
-{
+static __always_inline struct rb_node ** find_va_links(struct vmap_area *va, struct rb_root *root, struct rb_node *from, struct rb_node **parent) {
 	struct vmap_area *tmp_va;
 	struct rb_node **link;
 
@@ -65,8 +62,7 @@ static __always_inline struct rb_node ** find_va_links(struct vmap_area *va, str
 }
 
 static __always_inline void
-link_va(struct vmap_area *va, struct rb_root *root, struct rb_node *parent, struct rb_node **link, struct list_head *head)
-{
+link_va(struct vmap_area *va, struct rb_root *root, struct rb_node *parent, struct rb_node **link, struct list_head *head) {
 	
 	if (likely(parent)) {
 		head = &rb_entry(parent, struct vmap_area, rb_node)->list;
@@ -89,14 +85,12 @@ link_va(struct vmap_area *va, struct rb_root *root, struct rb_node *parent, stru
 }
 
 static __always_inline void
-augment_tree_propagate_from(struct vmap_area *va)
-{
+augment_tree_propagate_from(struct vmap_area *va) {
 	free_vmap_area_rb_augment_cb_propagate(&va->rb_node, NULL);
 }
 
 static void
-insert_vmap_area_augment(struct vmap_area *va, struct rb_node *from, struct rb_root *root, struct list_head *head)
-{
+insert_vmap_area_augment(struct vmap_area *va, struct rb_node *from, struct rb_root *root, struct list_head *head) {
 	struct rb_node **link, *parent;
 
 	if (from)
@@ -117,8 +111,7 @@ insert_vmap_area_augment(struct vmap_area *va, struct rb_node *from, struct rb_r
 /* adjust_va_to_fit_type removed - 0-caller orphan (__alloc_vmap_area gone) */
 /* __alloc_vmap_area removed - 0-caller orphan (alloc_vmap_area absent in this minimal tree) */
 
-static void vmap_init_free_space(void)
-{
+static void vmap_init_free_space(void) {
 	unsigned long vmap_start = 1;
 	const unsigned long vmap_end = ULONG_MAX;
 	struct vmap_area *busy, *free;
@@ -149,8 +142,7 @@ static void vmap_init_free_space(void)
 	}
 }
 
-void __init vmalloc_init(void)
-{
+void __init vmalloc_init(void) {
 	vmap_area_cachep = KMEM_CACHE(vmap_area, SLAB_PANIC);
 
 	/* The early-boot vmlist (vm_area_add_early) is never populated in this
@@ -161,8 +153,7 @@ void __init vmalloc_init(void)
 
 /* setup_vmalloc_vm_locked removed - 0-caller orphan (setup_vmalloc_vm absent). */
 
-void vfree(const void *addr)
-{
+void vfree(const void *addr) {
 	/*
 	 * Anchor stub: runtime coverage (qemu -d exec) shows the kernel never
 	 * vfree()s on its only job (boot + print + stay alive) -- vmalloc()
@@ -174,8 +165,7 @@ void vfree(const void *addr)
 }
 
 
-void *__vmalloc_node_range(unsigned long size, unsigned long align, unsigned long start, unsigned long end, gfp_t gfp_mask, pgprot_t prot, unsigned long vm_flags, int node, const void *caller)
-{
+void *__vmalloc_node_range(unsigned long size, unsigned long align, unsigned long start, unsigned long end, gfp_t gfp_mask, pgprot_t prot, unsigned long vm_flags, int node, const void *caller) {
 	/*
 	 * Anchor stub: this kernel's only job is boot + print + stay alive,
 	 * and runtime coverage (qemu -d exec) shows __vmalloc_node_range is
@@ -185,13 +175,11 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align, unsigned lon
 	return NULL;
 }
 
-void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask, int node, const void *caller)
-{
+void *__vmalloc_node(unsigned long size, unsigned long align, gfp_t gfp_mask, int node, const void *caller) {
 	return __vmalloc_node_range(size, align, VMALLOC_START, VMALLOC_END, gfp_mask, PAGE_KERNEL, 0, node, caller);
 }
 
-void *__vmalloc(unsigned long size, gfp_t gfp_mask)
-{
+void *__vmalloc(unsigned long size, gfp_t gfp_mask) {
 	return __vmalloc_node(size, 1, gfp_mask, NUMA_NO_NODE, __builtin_return_address(0));
 }
 

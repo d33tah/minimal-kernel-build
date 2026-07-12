@@ -17,8 +17,7 @@ struct fd { struct file *file; unsigned int flags; };
 
 extern void __f_unlock_pos(struct file *);
 
-static inline void fdput(struct fd fd)
-{
+static inline void fdput(struct fd fd) {
 	if (fd.flags & FDPUT_POS_UNLOCK)
 		__f_unlock_pos(fd.file);
 	fput(fd.file);
@@ -28,18 +27,15 @@ extern void fput(struct file *file);
 extern unsigned long __fdget(unsigned int fd);
 extern unsigned long __fdget_pos(unsigned int fd);
 
-static inline struct fd __to_fd(unsigned long v)
-{
+static inline struct fd __to_fd(unsigned long v) {
 	return (struct fd){(struct file *)(v & ~3),v & 3};
 }
 
-static inline struct fd fdget_pos(int fd)
-{
+static inline struct fd fdget_pos(int fd) {
 	return __to_fd(__fdget_pos(fd));
 }
 
-static inline void fdput_pos(struct fd f)
-{
+static inline void fdput_pos(struct fd f) {
 	if (f.flags & FDPUT_POS_UNLOCK)
 		__f_unlock_pos(f.file);
 	fdput(f);

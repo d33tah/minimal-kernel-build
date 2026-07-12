@@ -14,8 +14,7 @@ struct pt_regs;
 extern int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code, unsigned long fault_addr);
 extern void early_fixup_exception(struct pt_regs *regs, int trapnr);
 
-static inline void __noreturn ex_handler_msr_mce(struct pt_regs *regs, bool wrmsr)
-{
+static inline void __noreturn ex_handler_msr_mce(struct pt_regs *regs, bool wrmsr) {
 	for (;;)
 		cpu_relax();
 }

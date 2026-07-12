@@ -1,15 +1,13 @@
 
 #include <linux/pagemap.h>
 
-int always_delete_dentry(const struct dentry *dentry)
-{
+int always_delete_dentry(const struct dentry *dentry) {
 	return 1;
 }
 
 const struct dentry_operations simple_dentry_operations = { .d_delete = always_delete_dentry, };
 
-struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
-{
+struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags) {
 	if (dentry->d_name.len > NAME_MAX)
 		return ERR_PTR(-ENAMETOOLONG);
 	d_set_d_op(dentry, &simple_dentry_operations);
@@ -17,8 +15,7 @@ struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry, unsigned 
 	return NULL;
 }
 
-int simple_setattr(struct user_namespace *mnt_userns, struct dentry *dentry, struct iattr *iattr)
-{
+int simple_setattr(struct user_namespace *mnt_userns, struct dentry *dentry, struct iattr *iattr) {
 	struct inode *inode = d_inode(dentry);
 	int error;
 
@@ -33,13 +30,11 @@ int simple_setattr(struct user_namespace *mnt_userns, struct dentry *dentry, str
 	return 0;
 }
 
-static int simple_read_folio(struct file *file, struct folio *folio)
-{
+static int simple_read_folio(struct file *file, struct folio *folio) {
 	return 0;
 }
 
-int simple_write_begin(struct file *file, struct address_space *mapping, loff_t pos, unsigned len, struct page **pagep, void **fsdata)
-{
+int simple_write_begin(struct file *file, struct address_space *mapping, loff_t pos, unsigned len, struct page **pagep, void **fsdata) {
 	struct page *page;
 	pgoff_t index;
 
@@ -59,8 +54,7 @@ int simple_write_begin(struct file *file, struct address_space *mapping, loff_t 
 	return 0;
 }
 
-static int simple_write_end(struct file *file, struct address_space *mapping, loff_t pos, unsigned len, unsigned copied, struct page *page, void *fsdata)
-{
+static int simple_write_end(struct file *file, struct address_space *mapping, loff_t pos, unsigned len, unsigned copied, struct page *page, void *fsdata) {
 	struct inode *inode = page->mapping->host;
 	loff_t last_pos = pos + copied;
 

@@ -11,19 +11,16 @@ struct irq_desc { struct irq_common_data	irq_common_data; struct irq_data		irq_d
 
 
 
-static inline unsigned int irq_desc_get_irq(struct irq_desc *desc)
-{
+static inline unsigned int irq_desc_get_irq(struct irq_desc *desc) {
 	return desc->irq_data.irq;
 }
 
-static inline struct irq_data *irq_desc_get_irq_data(struct irq_desc *desc)
-{
+static inline struct irq_data *irq_desc_get_irq_data(struct irq_desc *desc) {
 	return &desc->irq_data;
 }
 
 
-static inline void generic_handle_irq_desc(struct irq_desc *desc)
-{
+static inline void generic_handle_irq_desc(struct irq_desc *desc) {
 	desc->handle_irq(desc);
 }
 

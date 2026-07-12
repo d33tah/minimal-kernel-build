@@ -5,8 +5,7 @@
 #include "kstrtox.h"
 
 noinline
-const char *_parse_integer_fixup_radix(const char *s, unsigned int *base)
-{
+const char *_parse_integer_fixup_radix(const char *s, unsigned int *base) {
 	if (*base == 0) {
 		if (s[0] == '0') {
 			if (_tolower(s[1]) == 'x' && isxdigit(s[2]))
@@ -22,8 +21,7 @@ const char *_parse_integer_fixup_radix(const char *s, unsigned int *base)
 }
 
 noinline
-unsigned int _parse_integer_limit(const char *s, unsigned int base, unsigned long long *p, size_t max_chars)
-{
+unsigned int _parse_integer_limit(const char *s, unsigned int base, unsigned long long *p, size_t max_chars) {
 	unsigned long long res;
 	unsigned int rv;
 

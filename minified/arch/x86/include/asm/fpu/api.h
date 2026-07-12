@@ -10,15 +10,13 @@
  
 
 
-static inline void fpregs_lock(void)
-{
+static inline void fpregs_lock(void) {
 	/* CONFIG_PREEMPT_RT is off on this build; the RT preempt_disable()
 	 * else-arm was compile-time dead. */
 	local_bh_disable();
 }
 
-static inline void fpregs_unlock(void)
-{
+static inline void fpregs_unlock(void) {
 	local_bh_enable();
 }
 

@@ -4,8 +4,7 @@
 #include <linux/string.h>
 
 
-ssize_t strscpy_pad(char *dest, const char *src, size_t count)
-{
+ssize_t strscpy_pad(char *dest, const char *src, size_t count) {
 	size_t len;
 	if (!dest || !src || !count)
 		return -E2BIG;
@@ -17,8 +16,7 @@ ssize_t strscpy_pad(char *dest, const char *src, size_t count)
 }
 
 
-char *strreplace(char *s, char old, char new)
-{
+char *strreplace(char *s, char old, char new) {
 	for (; *s; ++s)
 		if (*s == old)
 			*s = new;

@@ -1,8 +1,7 @@
  
  
 
-static void BITSFUNC(copy)(FILE *outfile, const unsigned char *data, size_t len)
-{
+static void BITSFUNC(copy)(FILE *outfile, const unsigned char *data, size_t len) {
 	size_t i;
 
 	for (i = 0; i < len; i++) {
@@ -14,8 +13,7 @@ static void BITSFUNC(copy)(FILE *outfile, const unsigned char *data, size_t len)
 
 
  
-static void BITSFUNC(extract)(const unsigned char *data, size_t data_len, FILE *outfile, ELF(Shdr) *sec, const char *name)
-{
+static void BITSFUNC(extract)(const unsigned char *data, size_t data_len, FILE *outfile, ELF(Shdr) *sec, const char *name) {
 	unsigned long offset;
 	size_t len;
 
@@ -30,8 +28,7 @@ static void BITSFUNC(extract)(const unsigned char *data, size_t data_len, FILE *
 	fprintf(outfile, "\n};\n\n");
 }
 
-static void BITSFUNC(go)(void *raw_addr, size_t raw_len, void *stripped_addr, size_t stripped_len, FILE *outfile, const char *image_name)
-{
+static void BITSFUNC(go)(void *raw_addr, size_t raw_len, void *stripped_addr, size_t stripped_len, FILE *outfile, const char *image_name) {
 	int found_load = 0;
 	unsigned long load_size = -1;   
 	unsigned long mapping_size;

@@ -14,8 +14,7 @@
 
 struct boot_params_to_save { unsigned int start, len; };
 
-static void sanitize_boot_params(struct boot_params *boot_params)
-{
+static void sanitize_boot_params(struct boot_params *boot_params) {
 	 
 	if (boot_params->sentinel) {
 		static struct boot_params scratch;

@@ -4,8 +4,7 @@
 #include <elf.h>
 
 int
-main(int argc, char **argv)
-{
+main(int argc, char **argv) {
 	unsigned char ei[EI_NIDENT];
 	union { short s; char c[2]; } endian_test;
 

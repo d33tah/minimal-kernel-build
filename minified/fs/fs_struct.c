@@ -1,8 +1,7 @@
 #include <linux/sched/task.h>
 #include <linux/fs_struct.h>
 
-void set_fs_root(struct fs_struct *fs, const struct path *path)
-{
+void set_fs_root(struct fs_struct *fs, const struct path *path) {
 	struct path old_root;
 
 	path_get(path);
@@ -16,8 +15,7 @@ void set_fs_root(struct fs_struct *fs, const struct path *path)
 		path_put(&old_root);
 }
 
-void set_fs_pwd(struct fs_struct *fs, const struct path *path)
-{
+void set_fs_pwd(struct fs_struct *fs, const struct path *path) {
 	struct path old_pwd;
 
 	path_get(path);
@@ -33,8 +31,7 @@ void set_fs_pwd(struct fs_struct *fs, const struct path *path)
 }
 
 
-void exit_fs(struct task_struct *tsk)
-{
+void exit_fs(struct task_struct *tsk) {
 	/*
 	 * RUNTIME-DEAD ANCHOR-STUB: exit_fs drops the dying task's fs_struct.
 	 * Both call sites are runtime-dead on this 1-shot boot: do_exit's tail
@@ -45,8 +42,7 @@ void exit_fs(struct task_struct *tsk)
 	 */
 }
 
-int current_umask(void)
-{
+int current_umask(void) {
 	return current->fs->umask;
 }
 

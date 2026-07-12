@@ -44,8 +44,7 @@ extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
 extern char *kmemdup_nul(const char *s, size_t len, gfp_t gfp);
 
 
-static inline const char *kbasename(const char *path)
-{
+static inline const char *kbasename(const char *path) {
 	const char *tail = strrchr(path, '/');
 	return tail ? tail + 1 : path;
 }

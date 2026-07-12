@@ -20,8 +20,7 @@ static int sync_kconfig;
 
 enum conf_def_mode { def_no, def_random };
 
-static bool conf_set_all_new_symbols(enum conf_def_mode mode)
-{
+static bool conf_set_all_new_symbols(enum conf_def_mode mode) {
 	struct symbol *sym, *csym;
 	int i;
 	bool has_changed = false;
@@ -67,15 +66,13 @@ static bool conf_set_all_new_symbols(enum conf_def_mode mode)
 
 static const struct option long_opts[] = { {"help",          no_argument,       NULL,            'h'}, {"silent",        no_argument,       NULL,            's'}, {"syncconfig",    no_argument,       &input_mode_opt, syncconfig}, {"allnoconfig",   no_argument,       &input_mode_opt, allnoconfig}, {"olddefconfig",  no_argument,       &input_mode_opt, olddefconfig}, {NULL, 0, NULL, 0} };
 
-static void conf_usage(const char *progname)
-{
+static void conf_usage(const char *progname) {
 	printf("Usage: %s [options] <kconfig-file>\n", progname);
 	printf("  -h, --help, -s, --silent\n");
 	printf("  --syncconfig, --allnoconfig, --olddefconfig\n");
 }
 
-int main(int ac, char **av)
-{
+int main(int ac, char **av) {
 	const char *progname = av[0];
 	int opt;
 	const char *name;

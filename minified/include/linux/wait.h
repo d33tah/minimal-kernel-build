@@ -33,15 +33,13 @@ extern void __init_waitqueue_head(struct wait_queue_head *wq_head, const char *n
 
 # define DECLARE_WAIT_QUEUE_HEAD_ONSTACK(name) DECLARE_WAIT_QUEUE_HEAD(name)
 
-static inline int waitqueue_active(struct wait_queue_head *wq_head)
-{
+static inline int waitqueue_active(struct wait_queue_head *wq_head) {
 	return !list_empty(&wq_head->head);
 }
 
 extern void add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry);
 
-static inline void __add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry)
-{
+static inline void __add_wait_queue(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_entry) {
 	list_add(&wq_entry->entry, &wq_head->head);
 }
 

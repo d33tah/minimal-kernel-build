@@ -212,8 +212,7 @@ struct gstr;
 void expr_gstr_print(struct expr *e, struct gstr *gs);
 void expr_gstr_print_revdep(struct expr *e, struct gstr *gs, tristate pr_type, const char *title);
 
-static inline int expr_is_yes(struct expr *e)
-{
+static inline int expr_is_yes(struct expr *e) {
 	return !e || (e->type == E_SYMBOL && e->left.sym == &symbol_yes);
 }
 

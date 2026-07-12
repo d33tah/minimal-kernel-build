@@ -3,8 +3,7 @@
 
 static struct callback_head work_exited;  
 
-int task_work_add(struct task_struct *task, struct callback_head *work, enum task_work_notify_mode notify)
-{
+int task_work_add(struct task_struct *task, struct callback_head *work, enum task_work_notify_mode notify) {
 	/*
 	 * SAFE-FALLBACK STUB (runtime-dead). The sole caller fput()
 	 * only reaches this on the non-interrupt, non-kthread file-close
@@ -17,8 +16,7 @@ int task_work_add(struct task_struct *task, struct callback_head *work, enum tas
 	return -ESRCH;
 }
 
-void task_work_run(void)
-{
+void task_work_run(void) {
 	struct task_struct *task = current;
 	struct callback_head *work, *head, *next;
 

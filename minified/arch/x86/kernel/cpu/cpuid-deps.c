@@ -4,8 +4,7 @@ struct cpuid_dep { unsigned int feature, depends; };
 
 static const struct cpuid_dep cpuid_deps[] = { { X86_FEATURE_FXSR,			X86_FEATURE_FPU	      }, { X86_FEATURE_XSAVE,			X86_FEATURE_FXSR      }, { X86_FEATURE_XMM,			X86_FEATURE_FXSR      }, { X86_FEATURE_XMM2,			X86_FEATURE_XMM       }, {} };
 
-static inline void clear_feature(struct cpuinfo_x86 *c, unsigned int feature)
-{
+static inline void clear_feature(struct cpuinfo_x86 *c, unsigned int feature) {
 	 
 	if (!c) {
 		clear_cpu_cap(&boot_cpu_data, feature);
@@ -17,8 +16,7 @@ static inline void clear_feature(struct cpuinfo_x86 *c, unsigned int feature)
 
 #define MAX_FEATURE_BITS ((NCAPINTS + NBUGINTS) * sizeof(u32) * 8)
 
-static void do_clear_cpu_cap(struct cpuinfo_x86 *c, unsigned int feature)
-{
+static void do_clear_cpu_cap(struct cpuinfo_x86 *c, unsigned int feature) {
 	DECLARE_BITMAP(disable, MAX_FEATURE_BITS);
 	const struct cpuid_dep *d;
 	bool changed;
@@ -47,12 +45,10 @@ static void do_clear_cpu_cap(struct cpuinfo_x86 *c, unsigned int feature)
 	} while (changed);
 }
 
-void clear_cpu_cap(struct cpuinfo_x86 *c, unsigned int feature)
-{
+void clear_cpu_cap(struct cpuinfo_x86 *c, unsigned int feature) {
 	do_clear_cpu_cap(c, feature);
 }
 
-void setup_clear_cpu_cap(unsigned int feature)
-{
+void setup_clear_cpu_cap(unsigned int feature) {
 	do_clear_cpu_cap(NULL, feature);
 }

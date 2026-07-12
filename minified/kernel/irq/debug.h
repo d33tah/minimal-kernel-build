@@ -6,8 +6,7 @@
  
 #define ___PD(f) do { } while (0)
 
-static inline void print_irq_desc(unsigned int irq, struct irq_desc *desc)
-{
+static inline void print_irq_desc(unsigned int irq, struct irq_desc *desc) {
 	static DEFINE_RATELIMIT_STATE(ratelimit, 5 * HZ, 5);
 
 	if (!__ratelimit(&ratelimit))

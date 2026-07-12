@@ -20,8 +20,7 @@ void folio_mark_accessed(struct folio *);
 
 extern atomic_t lru_disable_count;
 
-static inline bool lru_cache_disabled(void)
-{
+static inline bool lru_cache_disabled(void) {
 	return atomic_read(&lru_disable_count);
 }
 

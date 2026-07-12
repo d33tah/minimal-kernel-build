@@ -31,14 +31,12 @@ typedef sigset_t compat_sigset_t;
 /* __i386__ - 32-bit x86 */
 
 
-static inline int __const_sigismember(sigset_t *set, int _sig)
-{
+static inline int __const_sigismember(sigset_t *set, int _sig) {
 	unsigned long sig = _sig - 1;
 	return 1 & (set->sig[sig / _NSIG_BPW] >> (sig % _NSIG_BPW));
 }
 
-static inline int __gen_sigismember(sigset_t *set, int _sig)
-{
+static inline int __gen_sigismember(sigset_t *set, int _sig) {
 	bool ret;
 	asm("btl %2,%1" CC_SET(c) : CC_OUT(c) (ret) : "m"(*set), "Ir"(_sig-1));
 	return ret;

@@ -17,8 +17,7 @@ extern time64_t ktime_get_real_seconds(void);
 
 extern ktime_t ktime_get(void);
 
-static inline u64 ktime_get_ns(void)
-{
+static inline u64 ktime_get_ns(void) {
 	return ktime_to_ns(ktime_get());
 }
 

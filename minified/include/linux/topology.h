@@ -10,8 +10,7 @@
 
 
 #ifndef numa_mem_id
-static inline int numa_mem_id(void)
-{
+static inline int numa_mem_id(void) {
 	return numa_node_id();
 }
 #endif

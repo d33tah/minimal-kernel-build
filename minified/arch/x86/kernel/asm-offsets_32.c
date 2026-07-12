@@ -2,8 +2,7 @@
 # error "Please do not build this file directly, build asm-offsets.c instead"
 #endif
 
-void foo(void)
-{
+void foo(void) {
 	OFFSET(CPUINFO_x86, cpuinfo_x86, x86);
 	OFFSET(CPUINFO_x86_model, cpuinfo_x86, x86_model);
 	OFFSET(CPUINFO_x86_stepping, cpuinfo_x86, x86_stepping);

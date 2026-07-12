@@ -41,8 +41,7 @@
 
 #define __PROTECT(...) asmlinkage_protect(__VA_ARGS__)
 
-static inline void addr_limit_user_check(void)
-{
+static inline void addr_limit_user_check(void) {
 }
 
 

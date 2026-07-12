@@ -6,8 +6,7 @@
 
 struct real_mode_header *real_mode_header;
 
-void __init reserve_real_mode(void)
-{
+void __init reserve_real_mode(void) {
 	phys_addr_t mem;
 	size_t size = real_mode_size_needed();
 
@@ -27,12 +26,10 @@ void __init reserve_real_mode(void)
 	memblock_reserve(0, SZ_1M);
 }
 
-static void __init sme_sev_setup_real_mode(struct trampoline_header *th)
-{
+static void __init sme_sev_setup_real_mode(struct trampoline_header *th) {
 }
 
-static void __init setup_real_mode(void)
-{
+static void __init setup_real_mode(void) {
 	u16 real_mode_seg;
 	const u32 *rel;
 	u32 count;
@@ -75,8 +72,7 @@ static void __init setup_real_mode(void)
 	sme_sev_setup_real_mode(trampoline_header);
 }
 
-static int __init init_real_mode(void)
-{
+static int __init init_real_mode(void) {
 	if (!real_mode_header)
 		panic("Real mode trampoline was not allocated");
 

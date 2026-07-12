@@ -37,8 +37,7 @@
 
 extern unsigned long max_pfn_mapped;
 
-static inline phys_addr_t get_max_mapped(void)
-{
+static inline phys_addr_t get_max_mapped(void) {
 	return (phys_addr_t)max_pfn_mapped << PAGE_SHIFT;
 }
 

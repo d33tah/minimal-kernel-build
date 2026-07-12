@@ -2,8 +2,7 @@
 unsigned long gcd(unsigned long a, unsigned long b) __attribute_const__;
 
 
-unsigned long gcd(unsigned long a, unsigned long b)
-{
+unsigned long gcd(unsigned long a, unsigned long b) {
 	unsigned long r = a | b;
 
 	if (!a || !b)

@@ -19,8 +19,7 @@ static unsigned long min_pfn_mapped;
 
 static bool __initdata can_use_brk_pgt = true;
 
-__ref void *alloc_low_pages(unsigned int num)
-{
+__ref void *alloc_low_pages(unsigned int num) {
 	unsigned long pfn;
 	int i;
 
@@ -66,8 +65,7 @@ __ref void *alloc_low_pages(unsigned int num)
 
 #define INIT_PGT_BUF_SIZE	(INIT_PGD_PAGE_COUNT * PAGE_SIZE)
 RESERVE_BRK(early_pgt_alloc, INIT_PGT_BUF_SIZE);
-void  __init early_alloc_pgt_buf(void)
-{
+void  __init early_alloc_pgt_buf(void) {
 	unsigned long tables = INIT_PGT_BUF_SIZE;
 	phys_addr_t base;
 
@@ -91,14 +89,12 @@ struct map_range { unsigned long start, end; unsigned page_size_mask; };
 
 static int page_size_mask;
 
-static inline void cr4_set_bits_and_update_boot(unsigned long mask)
-{
+static inline void cr4_set_bits_and_update_boot(unsigned long mask) {
 	mmu_cr4_features |= mask;
 	cr4_set_bits(mask);
 }
 
-static void __init probe_page_size_mask(void)
-{
+static void __init probe_page_size_mask(void) {
 
 	if (boot_cpu_has(X86_FEATURE_PSE))
 		page_size_mask |= 1 << PG_LEVEL_2M;
@@ -120,8 +116,7 @@ static void __init probe_page_size_mask(void)
 
 #define NR_RANGE_MR 3
 
-static int __meminit save_mr(struct map_range *mr, int nr_range, unsigned long start_pfn, unsigned long end_pfn, unsigned long page_size_mask)
-{
+static int __meminit save_mr(struct map_range *mr, int nr_range, unsigned long start_pfn, unsigned long end_pfn, unsigned long page_size_mask) {
 	if (start_pfn < end_pfn) {
 		if (nr_range >= NR_RANGE_MR)
 			panic("run out of range for init_memory_mapping\n");
@@ -134,8 +129,7 @@ static int __meminit save_mr(struct map_range *mr, int nr_range, unsigned long s
 	return nr_range;
 }
 
-static void __ref adjust_range_page_size_mask(struct map_range *mr, int nr_range)
-{
+static void __ref adjust_range_page_size_mask(struct map_range *mr, int nr_range) {
 	int i;
 
 	for (i = 0; i < nr_range; i++) {
@@ -152,8 +146,7 @@ static void __ref adjust_range_page_size_mask(struct map_range *mr, int nr_range
 	}
 }
 
-static int __meminit split_mem_range(struct map_range *mr, int nr_range, unsigned long start, unsigned long end)
-{
+static int __meminit split_mem_range(struct map_range *mr, int nr_range, unsigned long start, unsigned long end) {
 	unsigned long start_pfn, end_pfn, limit_pfn;
 	unsigned long pfn;
 	int i;
@@ -210,16 +203,14 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range, unsigne
 struct range pfn_mapped[E820_MAX_ENTRIES];
 int nr_pfn_mapped;
 
-static void add_pfn_range_mapped(unsigned long start_pfn, unsigned long end_pfn)
-{
+static void add_pfn_range_mapped(unsigned long start_pfn, unsigned long end_pfn) {
 	nr_pfn_mapped = add_range_with_merge(pfn_mapped, E820_MAX_ENTRIES, nr_pfn_mapped, start_pfn, end_pfn);
 	nr_pfn_mapped = clean_sort_range(pfn_mapped, E820_MAX_ENTRIES);
 
 	max_pfn_mapped = max(max_pfn_mapped, end_pfn);
 }
 
-bool pfn_range_is_mapped(unsigned long start_pfn, unsigned long end_pfn)
-{
+bool pfn_range_is_mapped(unsigned long start_pfn, unsigned long end_pfn) {
 	int i;
 
 	for (i = 0; i < nr_pfn_mapped; i++)
@@ -229,8 +220,7 @@ bool pfn_range_is_mapped(unsigned long start_pfn, unsigned long end_pfn)
 	return false;
 }
 
-unsigned long __ref init_memory_mapping(unsigned long start, unsigned long end, pgprot_t prot)
-{
+unsigned long __ref init_memory_mapping(unsigned long start, unsigned long end, pgprot_t prot) {
 	struct map_range mr[NR_RANGE_MR];
 	unsigned long ret = 0;
 	int nr_range, i;
@@ -246,8 +236,7 @@ unsigned long __ref init_memory_mapping(unsigned long start, unsigned long end, 
 	return ret >> PAGE_SHIFT;
 }
 
-static unsigned long __init init_range_memory_mapping( unsigned long r_start, unsigned long r_end)
-{
+static unsigned long __init init_range_memory_mapping( unsigned long r_start, unsigned long r_end) {
 	unsigned long start_pfn, end_pfn;
 	unsigned long mapped_ram_size = 0;
 	int i;
@@ -268,14 +257,12 @@ static unsigned long __init init_range_memory_mapping( unsigned long r_start, un
 	return mapped_ram_size;
 }
 
-static unsigned long __init get_new_step_size(unsigned long step_size)
-{
+static unsigned long __init get_new_step_size(unsigned long step_size) {
 	 
 	return step_size << (PMD_SHIFT - PAGE_SHIFT - 1);
 }
 
-static void __init memory_map_top_down(unsigned long map_start, unsigned long map_end)
-{
+static void __init memory_map_top_down(unsigned long map_start, unsigned long map_end) {
 	unsigned long real_end, last_start;
 	unsigned long step_size, addr;
 	unsigned long mapped_ram_size = 0;
@@ -312,8 +299,7 @@ static void __init memory_map_top_down(unsigned long map_start, unsigned long ma
 		init_range_memory_mapping(real_end, map_end);
 }
 
-void __init init_mem_mapping(void)
-{
+void __init init_mem_mapping(void) {
 	unsigned long end;
 
 	probe_page_size_mask();
@@ -337,8 +323,7 @@ void __init init_mem_mapping(void)
 	early_memtest(0, max_pfn_mapped << PAGE_SHIFT);
 }
 
-void __init poking_init(void)
-{
+void __init poking_init(void) {
 	spinlock_t *ptl;
 	pte_t *ptep;
 
@@ -357,13 +342,11 @@ void __init poking_init(void)
 	pte_unmap_unlock(ptep, ptl);
 }
 
-void __ref free_initmem(void)
-{
+void __ref free_initmem(void) {
 	e820__reallocate_tables();
 }
 
-void __init zone_sizes_init(void)
-{
+void __init zone_sizes_init(void) {
 	unsigned long max_zone_pfns[MAX_NR_ZONES];
 
 	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));

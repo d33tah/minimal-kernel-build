@@ -12,8 +12,7 @@
 #include <asm/processor-flags.h>
 
 /* Inlined from asm/invpcid.h */
-static inline void __invpcid(unsigned long pcid, unsigned long addr, unsigned long type)
-{
+static inline void __invpcid(unsigned long pcid, unsigned long addr, unsigned long type) {
 	struct { u64 d[2]; } desc = { { pcid, addr } };
 	asm volatile("invpcid %[desc], %[type]" :: [desc] "m" (desc), [type] "r" (type) : "memory");
 }
@@ -29,20 +28,17 @@ void cr4_update_irqsoff(unsigned long set, unsigned long clear);
 unsigned long cr4_read_shadow(void);
 
  
-static inline void cr4_set_bits_irqsoff(unsigned long mask)
-{
+static inline void cr4_set_bits_irqsoff(unsigned long mask) {
 	cr4_update_irqsoff(mask, 0);
 }
 
  
-static inline void cr4_clear_bits_irqsoff(unsigned long mask)
-{
+static inline void cr4_clear_bits_irqsoff(unsigned long mask) {
 	cr4_update_irqsoff(0, mask);
 }
 
  
-static inline void cr4_set_bits(unsigned long mask)
-{
+static inline void cr4_set_bits(unsigned long mask) {
 	unsigned long flags;
 
 	local_irq_save(flags);
@@ -51,8 +47,7 @@ static inline void cr4_set_bits(unsigned long mask)
 }
 
  
-static inline void cr4_clear_bits(unsigned long mask)
-{
+static inline void cr4_clear_bits(unsigned long mask) {
 	unsigned long flags;
 
 	local_irq_save(flags);
@@ -86,8 +81,7 @@ struct tlb_state_shared { bool is_lazy; };
 DECLARE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
 
 
-static inline void cr4_init_shadow(void)
-{
+static inline void cr4_init_shadow(void) {
 	this_cpu_write(cpu_tlbstate.cr4, __read_cr4());
 }
 
@@ -103,8 +97,7 @@ void flush_tlb_one_kernel(unsigned long addr);
 
 extern void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start, unsigned long end, unsigned int stride_shift, bool freed_tables);
 
-static inline u64 inc_mm_tlb_gen(struct mm_struct *mm)
-{
+static inline u64 inc_mm_tlb_gen(struct mm_struct *mm) {
 	 
 	return atomic64_inc_return(&mm->context.tlb_gen);
 }
@@ -114,8 +107,7 @@ static inline u64 inc_mm_tlb_gen(struct mm_struct *mm)
 
 #endif
 
-static inline void __native_tlb_flush_global(unsigned long cr4)
-{
+static inline void __native_tlb_flush_global(unsigned long cr4) {
 	native_write_cr4(cr4 ^ X86_CR4_PGE);
 	native_write_cr4(cr4);
 }

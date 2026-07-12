@@ -2,8 +2,7 @@
 #include <linux/bitmap.h>
 
 
-void __bitmap_set(unsigned long *map, unsigned int start, int len)
-{
+void __bitmap_set(unsigned long *map, unsigned int start, int len) {
 	unsigned long *p = map + BIT_WORD(start);
 	const unsigned int size = start + len;
 	int bits_to_set = BITS_PER_LONG - (start % BITS_PER_LONG);
@@ -22,8 +21,7 @@ void __bitmap_set(unsigned long *map, unsigned int start, int len)
 	}
 }
 
-void __bitmap_clear(unsigned long *map, unsigned int start, int len)
-{
+void __bitmap_clear(unsigned long *map, unsigned int start, int len) {
 	unsigned long *p = map + BIT_WORD(start);
 	const unsigned int size = start + len;
 	int bits_to_clear = BITS_PER_LONG - (start % BITS_PER_LONG);

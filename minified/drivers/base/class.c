@@ -7,8 +7,7 @@ static struct kobj_type class_ktype = { };
 
 static struct kset *class_kset;
 
-int __class_register(struct class *cls, struct lock_class_key *key)
-{
+int __class_register(struct class *cls, struct lock_class_key *key) {
 	struct subsys_private *cp;
 	int error;
 
@@ -32,8 +31,7 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 	return 0;
 }
 
-struct class *__class_create(struct module *owner, const char *name, struct lock_class_key *key)
-{
+struct class *__class_create(struct module *owner, const char *name, struct lock_class_key *key) {
 	struct class *cls;
 	int retval;
 
@@ -65,8 +63,7 @@ error:
  * registration, which has been removed. class_interface_unregister,
  * show_class_attr_string, class_compat_* were already removed - unused. */
 
-int __init classes_init(void)
-{
+int __init classes_init(void) {
 	class_kset = kset_create_and_add("class", NULL);
 	if (!class_kset)
 		return -ENOMEM;

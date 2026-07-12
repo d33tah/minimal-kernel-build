@@ -17,8 +17,7 @@ int kobject_set_name(struct kobject *kobj, const char *name, ...);
 extern __printf(2, 0)
 int kobject_set_name_vargs(struct kobject *kobj, const char *fmt, va_list vargs);
 
-static inline const char *kobject_name(const struct kobject *kobj)
-{
+static inline const char *kobject_name(const struct kobject *kobj) {
 	return kobj->name;
 }
 
@@ -41,23 +40,19 @@ struct kset { struct kobject kobj; } __randomize_layout;
 extern int __must_check kset_register(struct kset *kset);
 extern struct kset * __must_check kset_create_and_add(const char *name, struct kobject *parent_kobj);
 
-static inline struct kset *to_kset(struct kobject *kobj)
-{
+static inline struct kset *to_kset(struct kobject *kobj) {
 	return kobj ? container_of(kobj, struct kset, kobj) : NULL;
 }
 
-static inline struct kset *kset_get(struct kset *k)
-{
+static inline struct kset *kset_get(struct kset *k) {
 	return k ? to_kset(kobject_get(&k->kobj)) : NULL;
 }
 
-static inline void kset_put(struct kset *k)
-{
+static inline void kset_put(struct kset *k) {
 	kobject_put(&k->kobj);
 }
 
-static inline const struct kobj_type *get_ktype(struct kobject *kobj)
-{
+static inline const struct kobj_type *get_ktype(struct kobject *kobj) {
 	return kobj->ktype;
 }
 

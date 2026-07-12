@@ -9,15 +9,13 @@ struct task_struct;
 
 /* Removed: print_fatal_signals - never used */
 
-static inline void clear_siginfo(kernel_siginfo_t *info)
-{
+static inline void clear_siginfo(kernel_siginfo_t *info) {
 	memset(info, 0, sizeof(*info));
 }
 
 #ifndef __HAVE_ARCH_SIG_SETOPS
 
-static inline void sigemptyset(sigset_t *set)
-{
+static inline void sigemptyset(sigset_t *set) {
 	switch (_NSIG_WORDS) {
 	default:
 		memset(set, 0, sizeof(sigset_t));
@@ -33,8 +31,7 @@ static inline void sigemptyset(sigset_t *set)
 
 #endif
 
-static inline void init_sigpending(struct sigpending *sig)
-{
+static inline void init_sigpending(struct sigpending *sig) {
 	sigemptyset(&sig->signal);
 	INIT_LIST_HEAD(&sig->list);
 }

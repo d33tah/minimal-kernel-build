@@ -59,20 +59,17 @@ FOLIO_MATCH(_mapcount, _mapcount);
 FOLIO_MATCH(_refcount, _refcount);
 #undef FOLIO_MATCH
 
-static inline atomic_t *compound_mapcount_ptr(struct page *page)
-{
+static inline atomic_t *compound_mapcount_ptr(struct page *page) {
 	return &page[1].compound_mapcount;
 }
 
-static inline atomic_t *compound_pincount_ptr(struct page *page)
-{
+static inline atomic_t *compound_pincount_ptr(struct page *page) {
 	return &page[1].compound_pincount;
 }
 
 #define page_private(page)		((page)->private)
 
-static inline void set_page_private(struct page *page, unsigned long private)
-{
+static inline void set_page_private(struct page *page, unsigned long private) {
 	page->private = private;
 }
 
@@ -84,16 +81,14 @@ struct mm_struct { struct { struct vm_area_struct *mmap; struct rb_root mm_rb; u
 
 extern struct mm_struct init_mm;
 
-static inline void mm_init_cpumask(struct mm_struct *mm)
-{
+static inline void mm_init_cpumask(struct mm_struct *mm) {
 	unsigned long cpu_bitmap = (unsigned long)mm;
 
 	cpu_bitmap += offsetof(struct mm_struct, cpu_bitmap);
 	cpumask_clear((struct cpumask *)cpu_bitmap);
 }
 
-static inline cpumask_t *mm_cpumask(struct mm_struct *mm)
-{
+static inline cpumask_t *mm_cpumask(struct mm_struct *mm) {
 	return (struct cpumask *)&mm->cpu_bitmap;
 }
 

@@ -9,24 +9,21 @@
 
 static struct expr *expr_eliminate_yn(struct expr *e);
 
-struct expr *expr_alloc_symbol(struct symbol *sym)
-{
+struct expr *expr_alloc_symbol(struct symbol *sym) {
 	struct expr *e = xcalloc(1, sizeof(*e));
 	e->type = E_SYMBOL;
 	e->left.sym = sym;
 	return e;
 }
 
-struct expr *expr_alloc_one(enum expr_type type, struct expr *ce)
-{
+struct expr *expr_alloc_one(enum expr_type type, struct expr *ce) {
 	struct expr *e = xcalloc(1, sizeof(*e));
 	e->type = type;
 	e->left.expr = ce;
 	return e;
 }
 
-struct expr *expr_alloc_two(enum expr_type type, struct expr *e1, struct expr *e2)
-{
+struct expr *expr_alloc_two(enum expr_type type, struct expr *e1, struct expr *e2) {
 	struct expr *e = xcalloc(1, sizeof(*e));
 	e->type = type;
 	e->left.expr = e1;
@@ -34,8 +31,7 @@ struct expr *expr_alloc_two(enum expr_type type, struct expr *e1, struct expr *e
 	return e;
 }
 
-struct expr *expr_alloc_comp(enum expr_type type, struct symbol *s1, struct symbol *s2)
-{
+struct expr *expr_alloc_comp(enum expr_type type, struct symbol *s1, struct symbol *s2) {
 	struct expr *e = xcalloc(1, sizeof(*e));
 	e->type = type;
 	e->left.sym = s1;
@@ -43,22 +39,19 @@ struct expr *expr_alloc_comp(enum expr_type type, struct symbol *s1, struct symb
 	return e;
 }
 
-struct expr *expr_alloc_and(struct expr *e1, struct expr *e2)
-{
+struct expr *expr_alloc_and(struct expr *e1, struct expr *e2) {
 	if (!e1)
 		return e2;
 	return e2 ? expr_alloc_two(E_AND, e1, e2) : e1;
 }
 
-struct expr *expr_alloc_or(struct expr *e1, struct expr *e2)
-{
+struct expr *expr_alloc_or(struct expr *e1, struct expr *e2) {
 	if (!e1)
 		return e2;
 	return e2 ? expr_alloc_two(E_OR, e1, e2) : e1;
 }
 
-struct expr *expr_copy(const struct expr *org)
-{
+struct expr *expr_copy(const struct expr *org) {
 	struct expr *e;
 
 	if (!org)
@@ -90,8 +83,7 @@ struct expr *expr_copy(const struct expr *org)
 	return e;
 }
 
-void expr_free(struct expr *e)
-{
+void expr_free(struct expr *e) {
 	if (!e)
 		return;
 
@@ -118,8 +110,7 @@ static int trans_count;
 #define e1 (*ep1)
 #define e2 (*ep2)
 
-static void __expr_eliminate_eq(enum expr_type type, struct expr **ep1, struct expr **ep2)
-{
+static void __expr_eliminate_eq(enum expr_type type, struct expr **ep1, struct expr **ep2) {
 	 
 
 	if (e1->type == type) {
@@ -155,8 +146,7 @@ static void __expr_eliminate_eq(enum expr_type type, struct expr **ep1, struct e
 	}
 }
 
-void expr_eliminate_eq(struct expr **ep1, struct expr **ep2)
-{
+void expr_eliminate_eq(struct expr **ep1, struct expr **ep2) {
 	if (!e1 || !e2)
 		return;
 	switch (e1->type) {
@@ -174,8 +164,7 @@ void expr_eliminate_eq(struct expr **ep1, struct expr **ep2)
 #undef e1
 #undef e2
 
-int expr_eq(struct expr *e1, struct expr *e2)
-{
+int expr_eq(struct expr *e1, struct expr *e2) {
 	int res, old_count;
 
 	 
@@ -206,8 +195,7 @@ int expr_eq(struct expr *e1, struct expr *e2)
 	return 0;
 }
 
-static struct expr *expr_eliminate_yn(struct expr *e)
-{
+static struct expr *expr_eliminate_yn(struct expr *e) {
 	struct expr *tmp;
 
 	if (e) switch (e->type) {
@@ -287,8 +275,7 @@ static struct expr *expr_eliminate_yn(struct expr *e)
 	return e;
 }
 
-struct expr *expr_trans_bool(struct expr *e)
-{
+struct expr *expr_trans_bool(struct expr *e) {
 	if (!e)
 		return NULL;
 	switch (e->type) {
@@ -308,8 +295,7 @@ struct expr *expr_trans_bool(struct expr *e)
 	return e;
 }
 
-static struct expr *expr_join_or(struct expr *e1, struct expr *e2)
-{
+static struct expr *expr_join_or(struct expr *e1, struct expr *e2) {
 	struct expr *tmp;
 	struct symbol *sym1, *sym2;
 
@@ -358,8 +344,7 @@ static struct expr *expr_join_or(struct expr *e1, struct expr *e2)
 	return NULL;
 }
 
-static struct expr *expr_join_and(struct expr *e1, struct expr *e2)
-{
+static struct expr *expr_join_and(struct expr *e1, struct expr *e2) {
 	struct expr *tmp;
 	struct symbol *sym1, *sym2;
 
@@ -433,8 +418,7 @@ static struct expr *expr_join_and(struct expr *e1, struct expr *e2)
 	return NULL;
 }
 
-static void expr_eliminate_dups1(enum expr_type type, struct expr **ep1, struct expr **ep2)
-{
+static void expr_eliminate_dups1(enum expr_type type, struct expr **ep1, struct expr **ep2) {
 #define e1 (*ep1)
 #define e2 (*ep2)
 	struct expr *tmp;
@@ -485,8 +469,7 @@ static void expr_eliminate_dups1(enum expr_type type, struct expr **ep1, struct 
 #undef e2
 }
 
-struct expr *expr_eliminate_dups(struct expr *e)
-{
+struct expr *expr_eliminate_dups(struct expr *e) {
 	int oldcount;
 	if (!e)
 		return e;
@@ -507,8 +490,7 @@ struct expr *expr_eliminate_dups(struct expr *e)
 	return e;
 }
 
-struct expr *expr_transform(struct expr *e)
-{
+struct expr *expr_transform(struct expr *e) {
 	struct expr *tmp;
 
 	if (!e)
@@ -648,8 +630,7 @@ struct expr *expr_transform(struct expr *e)
 	return e;
 }
 
-int expr_contains_symbol(struct expr *dep, struct symbol *sym)
-{
+int expr_contains_symbol(struct expr *dep, struct symbol *sym) {
 	if (!dep)
 		return 0;
 
@@ -666,8 +647,7 @@ int expr_contains_symbol(struct expr *dep, struct symbol *sym)
 	return 0;
 }
 
-bool expr_depends_symbol(struct expr *dep, struct symbol *sym)
-{
+bool expr_depends_symbol(struct expr *dep, struct symbol *sym) {
 	if (!dep)
 		return false;
 
@@ -691,8 +671,7 @@ bool expr_depends_symbol(struct expr *dep, struct symbol *sym)
  	return false;
 }
 
-struct expr *expr_trans_compare(struct expr *e, enum expr_type type, struct symbol *sym)
-{
+struct expr *expr_trans_compare(struct expr *e, enum expr_type type, struct symbol *sym) {
 	struct expr *e1, *e2;
 
 	if (!e) {
@@ -751,8 +730,7 @@ enum string_value_kind { k_string, k_signed, k_unsigned, };
 
 union string_value { unsigned long long u; signed long long s; };
 
-static enum string_value_kind expr_parse_string(const char *str, enum symbol_type type, union string_value *val)
-{
+static enum string_value_kind expr_parse_string(const char *str, enum symbol_type type, union string_value *val) {
 	char *tail;
 	enum string_value_kind kind;
 
@@ -779,8 +757,7 @@ static enum string_value_kind expr_parse_string(const char *str, enum symbol_typ
 	       ? kind : k_string;
 }
 
-tristate expr_calc_value(struct expr *e)
-{
+tristate expr_calc_value(struct expr *e) {
 	tristate val1, val2;
 	const char *str1, *str2;
 	enum string_value_kind k1 = k_string, k2 = k_string;
@@ -848,8 +825,7 @@ tristate expr_calc_value(struct expr *e)
 	}
 }
 
-static int expr_compare_type(enum expr_type t1, enum expr_type t2)
-{
+static int expr_compare_type(enum expr_type t1, enum expr_type t2) {
 	if (t1 == t2)
 		return 0;
 	switch (t1) {
@@ -878,8 +854,7 @@ static int expr_compare_type(enum expr_type t1, enum expr_type t2)
 	return 0;
 }
 
-void expr_print(struct expr *e, void (*fn)(void *, struct symbol *, const char *), void *data, int prevtoken)
-{
+void expr_print(struct expr *e, void (*fn)(void *, struct symbol *, const char *), void *data, int prevtoken) {
 	if (!e) {
 		fn(data, NULL, "y");
 		return;
@@ -954,8 +929,7 @@ void expr_print(struct expr *e, void (*fn)(void *, struct symbol *, const char *
 		fn(data, e->right.sym, e->right.sym->name);
 		fn(data, NULL, "]");
 		break;
-	default:
-	  {
+	default: {
 		char buf[32];
 		sprintf(buf, "<unknown type %d>", e->type);
 		fn(data, NULL, buf);
@@ -966,8 +940,7 @@ void expr_print(struct expr *e, void (*fn)(void *, struct symbol *, const char *
 		fn(data, NULL, ")");
 }
 
-static void expr_print_gstr_helper(void *data, struct symbol *sym, const char *str)
-{
+static void expr_print_gstr_helper(void *data, struct symbol *sym, const char *str) {
 	struct gstr *gs = (struct gstr*)data;
 	const char *sym_str = NULL;
 
@@ -996,13 +969,11 @@ static void expr_print_gstr_helper(void *data, struct symbol *sym, const char *s
 		str_printf(gs, " [=%s]", sym_str);
 }
 
-void expr_gstr_print(struct expr *e, struct gstr *gs)
-{
+void expr_gstr_print(struct expr *e, struct gstr *gs) {
 	expr_print(e, expr_print_gstr_helper, gs, E_NONE);
 }
 
-static void expr_print_revdep(struct expr *e, void (*fn)(void *, struct symbol *, const char *), void *data, tristate pr_type, const char **title)
-{
+static void expr_print_revdep(struct expr *e, void (*fn)(void *, struct symbol *, const char *), void *data, tristate pr_type, const char **title) {
 	if (e->type == E_OR) {
 		expr_print_revdep(e->left.expr, fn, data, pr_type, title);
 		expr_print_revdep(e->right.expr, fn, data, pr_type, title);
@@ -1018,7 +989,6 @@ static void expr_print_revdep(struct expr *e, void (*fn)(void *, struct symbol *
 	}
 }
 
-void expr_gstr_print_revdep(struct expr *e, struct gstr *gs, tristate pr_type, const char *title)
-{
+void expr_gstr_print_revdep(struct expr *e, struct gstr *gs, tristate pr_type, const char *title) {
 	expr_print_revdep(e, expr_print_gstr_helper, gs, pr_type, &title);
 }

@@ -16,12 +16,10 @@
 
 
 
-static inline void ptrace_event(int event, unsigned long message)
-{
+static inline void ptrace_event(int event, unsigned long message) {
 }
 
-static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
-{
+static inline void ptrace_init_task(struct task_struct *child, bool ptrace) {
 	INIT_LIST_HEAD(&child->ptrace_entry);
 	child->jobctl = 0;
 	child->parent = child->real_parent;
@@ -31,8 +29,7 @@ static inline void ptrace_init_task(struct task_struct *child, bool ptrace)
 
 #ifndef arch_has_single_step
 
-static inline void user_disable_single_step(struct task_struct *task)
-{
+static inline void user_disable_single_step(struct task_struct *task) {
 }
 #endif
 
@@ -43,19 +40,16 @@ static inline void user_disable_single_step(struct task_struct *task)
 
 
 
-static inline int ptrace_report_syscall(unsigned long message)
-{
+static inline int ptrace_report_syscall(unsigned long message) {
 	/* task->ptrace is never set (no ptrace(2)), so this is a no-op. */
 	return 0;
 }
 
-static inline __must_check int ptrace_report_syscall_entry( struct pt_regs *regs)
-{
+static inline __must_check int ptrace_report_syscall_entry( struct pt_regs *regs) {
 	return ptrace_report_syscall(PTRACE_EVENTMSG_SYSCALL_ENTRY);
 }
 
-static inline void ptrace_report_syscall_exit(struct pt_regs *regs, int step)
-{
+static inline void ptrace_report_syscall_exit(struct pt_regs *regs, int step) {
 	ptrace_report_syscall(PTRACE_EVENTMSG_SYSCALL_EXIT);
 }
 #endif

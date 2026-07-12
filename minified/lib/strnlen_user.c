@@ -3,8 +3,7 @@
 
 #include <asm/word-at-a-time.h>
 
-static __always_inline long do_strnlen_user(const char __user *src, unsigned long count, unsigned long max)
-{
+static __always_inline long do_strnlen_user(const char __user *src, unsigned long count, unsigned long max) {
 	const struct word_at_a_time constants = WORD_AT_A_TIME_CONSTANTS;
 	unsigned long align, res = 0;
 	unsigned long c;
@@ -42,8 +41,7 @@ efault:
 	return 0;
 }
 
-long strnlen_user(const char __user *str, long count)
-{
+long strnlen_user(const char __user *str, long count) {
 	unsigned long max_addr, src_addr;
 
 	if (unlikely(count <= 0))

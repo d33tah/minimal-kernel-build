@@ -6,14 +6,12 @@
 
 #include <linux/uaccess.h>
 
-static int warn_unsupported(struct file *file, const char *op)
-{
+static int warn_unsupported(struct file *file, const char *op) {
 	pr_warn_ratelimited( "kernel %s not supported for file %pD4 (pid: %d comm: %.20s)\n", op, file, current->pid, current->comm);
 	return -EINVAL;
 }
 
-ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
-{
+ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos) {
 	struct kvec iov = {
 		.iov_base	= buf, .iov_len	= min_t(size_t, count, MAX_RW_COUNT), };
 	struct kiocb kiocb;
@@ -39,13 +37,11 @@ ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
 	return ret;
 }
 
-ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
-{
+ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos) {
 	return __kernel_read(file, buf, count, pos);
 }
 
-static ssize_t new_sync_write(struct file *filp, const char __user *buf, size_t len, loff_t *ppos)
-{
+static ssize_t new_sync_write(struct file *filp, const char __user *buf, size_t len, loff_t *ppos) {
 	struct iovec iov = { .iov_base = (void __user *)buf, .iov_len = len };
 	struct kiocb kiocb;
 	struct iov_iter iter;
@@ -62,8 +58,7 @@ static ssize_t new_sync_write(struct file *filp, const char __user *buf, size_t 
 	return ret;
 }
 
-ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t *pos)
-{
+ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t *pos) {
 	struct kvec iov = {
 		.iov_base	= (void *)buf, .iov_len	= min_t(size_t, count, MAX_RW_COUNT), };
 	struct kiocb kiocb;
@@ -89,8 +84,7 @@ ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t 
 	return ret;
 }
 
-ssize_t kernel_write(struct file *file, const void *buf, size_t count, loff_t *pos)
-{
+ssize_t kernel_write(struct file *file, const void *buf, size_t count, loff_t *pos) {
 	ssize_t ret;
 
 	file_start_write(file);
@@ -99,8 +93,7 @@ ssize_t kernel_write(struct file *file, const void *buf, size_t count, loff_t *p
 	return ret;
 }
 
-ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_t *pos)
-{
+ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_t *pos) {
 	ssize_t ret;
 
 	if (!(file->f_mode & FMODE_WRITE))
@@ -123,8 +116,7 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 	return ret;
 }
 
-SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf, size_t, count)
-{
+SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf, size_t, count) {
 	struct fd f = fdget_pos(fd);
 	ssize_t ret = -EBADF;
 
@@ -141,8 +133,7 @@ SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf, size_t, count
 	return ret;
 }
 
-ssize_t generic_write_checks(struct kiocb *iocb, struct iov_iter *from)
-{
+ssize_t generic_write_checks(struct kiocb *iocb, struct iov_iter *from) {
 	iov_iter_truncate(from, iov_iter_count(from));
 	return iov_iter_count(from);
 }

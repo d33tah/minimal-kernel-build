@@ -12,14 +12,12 @@
 #include "internal.h"
 
 
-static struct page *no_page_table(void)
-{
+static struct page *no_page_table(void) {
 	/* FOLL_DUMP never set -> always returns NULL */
 	return NULL;
 }
 
-static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address, pte_t *pte, unsigned int flags)
-{
+static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address, pte_t *pte, unsigned int flags) {
 	if (flags & FOLL_TOUCH) {
 		pte_t entry = *pte;
 
@@ -36,13 +34,11 @@ static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address, pte
 	return -EEXIST;
 }
 
-static inline bool can_follow_write_pte(pte_t pte, unsigned int flags)
-{
+static inline bool can_follow_write_pte(pte_t pte, unsigned int flags) {
 	return pte_write(pte) || ((flags & FOLL_FORCE) && (flags & FOLL_COW) && pte_dirty(pte));
 }
 
-static struct page *follow_page_pte(struct vm_area_struct *vma, unsigned long address, pmd_t *pmd, unsigned int flags)
-{
+static struct page *follow_page_pte(struct vm_area_struct *vma, unsigned long address, pmd_t *pmd, unsigned int flags) {
 	struct mm_struct *mm = vma->vm_mm;
 	struct page *page;
 	spinlock_t *ptl;
@@ -106,8 +102,7 @@ no_page:
 	return no_page_table();
 }
 
-static struct page *follow_page_mask(struct vm_area_struct *vma, unsigned long address, unsigned int flags)
-{
+static struct page *follow_page_mask(struct vm_area_struct *vma, unsigned long address, unsigned int flags) {
 	pgd_t *pgd;
 	pmd_t *pmd, pmdval;
 	struct mm_struct *mm = vma->vm_mm;
@@ -135,8 +130,7 @@ static struct page *follow_page_mask(struct vm_area_struct *vma, unsigned long a
 }
 
 
-static int faultin_page(struct vm_area_struct *vma, unsigned long address, unsigned int *flags, bool unshare, int *locked)
-{
+static int faultin_page(struct vm_area_struct *vma, unsigned long address, unsigned int *flags, bool unshare, int *locked) {
 	unsigned int fault_flags = 0;
 	vm_fault_t ret;
 
@@ -176,8 +170,7 @@ static int faultin_page(struct vm_area_struct *vma, unsigned long address, unsig
 	return 0;
 }
 
-static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
-{
+static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags) {
 	vm_flags_t vm_flags = vma->vm_flags;
 	int write = (gup_flags & FOLL_WRITE);
 
@@ -206,8 +199,7 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 	return 0;
 }
 
-static long __get_user_pages(struct mm_struct *mm, unsigned long start, unsigned long nr_pages, unsigned int gup_flags, struct page **pages, struct vm_area_struct **vmas, int *locked)
-{
+static long __get_user_pages(struct mm_struct *mm, unsigned long start, unsigned long nr_pages, unsigned int gup_flags, struct page **pages, struct vm_area_struct **vmas, int *locked) {
 	long ret = 0, i = 0;
 	struct vm_area_struct *vma = NULL;
 
@@ -284,8 +276,7 @@ out:
 }
 
 
-static __always_inline long __get_user_pages_locked(struct mm_struct *mm, unsigned long start, unsigned long nr_pages, struct page **pages, struct vm_area_struct **vmas, int *locked, unsigned int flags)
-{
+static __always_inline long __get_user_pages_locked(struct mm_struct *mm, unsigned long start, unsigned long nr_pages, struct page **pages, struct vm_area_struct **vmas, int *locked, unsigned int flags) {
 	long ret, pages_done;
 	bool lock_dropped;
 
@@ -378,13 +369,11 @@ retry:
 	return pages_done;
 }
 
-static long __get_user_pages_remote(struct mm_struct *mm, unsigned long start, unsigned long nr_pages, unsigned int gup_flags, struct page **pages, struct vm_area_struct **vmas, int *locked)
-{
+static long __get_user_pages_remote(struct mm_struct *mm, unsigned long start, unsigned long nr_pages, unsigned int gup_flags, struct page **pages, struct vm_area_struct **vmas, int *locked) {
 	return __get_user_pages_locked(mm, start, nr_pages, pages, vmas, locked, gup_flags | FOLL_TOUCH | FOLL_REMOTE);
 }
 
-long get_user_pages_remote(struct mm_struct *mm, unsigned long start, unsigned long nr_pages, unsigned int gup_flags, struct page **pages, struct vm_area_struct **vmas, int *locked)
-{
+long get_user_pages_remote(struct mm_struct *mm, unsigned long start, unsigned long nr_pages, unsigned int gup_flags, struct page **pages, struct vm_area_struct **vmas, int *locked) {
 	/* FOLL_LONGTERM never set -> formerly is_valid_gup_flags, always valid */
 	return __get_user_pages_remote(mm, start, nr_pages, gup_flags, pages, vmas, locked);
 }

@@ -33,15 +33,13 @@ struct user_namespace;
 
 #define CAP_BOP_ALL(c, a, b, OP)                                    do {                                                                	unsigned __capi;                                            	CAP_FOR_EACH_U32(__capi) {                                  		c.cap[__capi] = a.cap[__capi] OP b.cap[__capi];     	}                                                           } while (0)
 
-static inline kernel_cap_t cap_drop(const kernel_cap_t a, const kernel_cap_t drop)
-{
+static inline kernel_cap_t cap_drop(const kernel_cap_t a, const kernel_cap_t drop) {
 	kernel_cap_t dest;
 	CAP_BOP_ALL(dest, a, drop, &~);
 	return dest;
 }
 
-static inline bool cap_isclear(const kernel_cap_t a)
-{
+static inline bool cap_isclear(const kernel_cap_t a) {
 	unsigned __capi;
 	CAP_FOR_EACH_U32(__capi) {
 		if (a.cap[__capi] != 0)
@@ -50,8 +48,7 @@ static inline bool cap_isclear(const kernel_cap_t a)
 	return true;
 }
 
-static inline bool cap_issubset(const kernel_cap_t a, const kernel_cap_t set)
-{
+static inline bool cap_issubset(const kernel_cap_t a, const kernel_cap_t set) {
 	kernel_cap_t dest;
 	dest = cap_drop(a, set);
 	return cap_isclear(dest);

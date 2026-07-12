@@ -26,35 +26,29 @@ static_assert(sizeof(struct slab) <= sizeof(struct page));
 #define slab_page(s) folio_page(slab_folio(s), 0)
 
  
-static inline bool slab_test_pfmemalloc(const struct slab *slab)
-{
+static inline bool slab_test_pfmemalloc(const struct slab *slab) {
 	return folio_test_active((struct folio *)slab_folio(slab));
 }
 
-static inline void slab_set_pfmemalloc(struct slab *slab)
-{
+static inline void slab_set_pfmemalloc(struct slab *slab) {
 	folio_set_active(slab_folio(slab));
 }
 
 /* slab_clear_pfmemalloc removed - unused */
 
-static inline void *slab_address(const struct slab *slab)
-{
+static inline void *slab_address(const struct slab *slab) {
 	return folio_address(slab_folio(slab));
 }
 
-static inline int slab_nid(const struct slab *slab)
-{
+static inline int slab_nid(const struct slab *slab) {
 	return folio_nid(slab_folio(slab));
 }
 
-static inline pg_data_t *slab_pgdat(const struct slab *slab)
-{
+static inline pg_data_t *slab_pgdat(const struct slab *slab) {
 	return folio_pgdat(slab_folio(slab));
 }
 
-static inline struct slab *virt_to_slab(const void *addr)
-{
+static inline struct slab *virt_to_slab(const void *addr) {
 	struct folio *folio = virt_to_folio(addr);
 
 	if (!folio_test_slab(folio))
@@ -133,28 +127,24 @@ extern void create_boot_cache(struct kmem_cache *, const char *name, unsigned in
 /* __kmem_cache_release, __kmem_cache_free_bulk, __kmem_cache_alloc_bulk
  * removed - error-path/bulk cleanup never reached on this workload */
 
-static inline enum node_stat_item cache_vmstat_idx(struct kmem_cache *s)
-{
+static inline enum node_stat_item cache_vmstat_idx(struct kmem_cache *s) {
 	return (s->flags & SLAB_RECLAIM_ACCOUNT) ?
 		NR_SLAB_RECLAIMABLE_B : NR_SLAB_UNRECLAIMABLE_B;
 }
 
 /* slab_objcgs, memcg_from_slab_obj removed - unused */
 
-static __always_inline void account_slab(struct slab *slab, int order, struct kmem_cache *s, gfp_t gfp)
-{
+static __always_inline void account_slab(struct slab *slab, int order, struct kmem_cache *s, gfp_t gfp) {
 	mod_node_page_state(slab_pgdat(slab), cache_vmstat_idx(s), PAGE_SIZE << order);
 }
 
 /* unaccount_slab removed - only caller was __free_slab (dead slab-free path) */
 
-static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
-{
+static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x) {
 	return s;
 }
 
-static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s, struct list_lru *lru, struct obj_cgroup **objcgp, size_t size, gfp_t flags)
-{
+static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s, struct list_lru *lru, struct obj_cgroup **objcgp, size_t size, gfp_t flags) {
 	flags &= gfp_allowed_mask;
 
 	might_alloc(flags);
@@ -162,8 +152,7 @@ static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s, struc
 	return s;
 }
 
-static inline void slab_post_alloc_hook(struct kmem_cache *s, struct obj_cgroup *objcg, gfp_t flags, size_t size, void **p, bool init)
-{
+static inline void slab_post_alloc_hook(struct kmem_cache *s, struct obj_cgroup *objcg, gfp_t flags, size_t size, void **p, bool init) {
 	size_t i;
 
 	for (i = 0; i < size; i++) {
@@ -175,8 +164,7 @@ static inline void slab_post_alloc_hook(struct kmem_cache *s, struct obj_cgroup 
  
 struct kmem_cache_node { spinlock_t list_lock; unsigned long nr_partial; struct list_head partial; };
 
-static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
-{
+static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node) {
 	return s->node[node];
 }
 
@@ -186,8 +174,7 @@ static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
 
 /* dump_unreclaimable_slab / cache_random_seq_destroy removed - unused */
 
-static inline bool slab_want_init_on_alloc(gfp_t flags, struct kmem_cache *c)
-{
+static inline bool slab_want_init_on_alloc(gfp_t flags, struct kmem_cache *c) {
 	return flags & __GFP_ZERO;
 }
 

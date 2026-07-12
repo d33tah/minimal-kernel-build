@@ -8,16 +8,14 @@ DEFINE_RAW_SPINLOCK(i8259A_lock);
 
 unsigned int cached_irq_mask = 0xffff;
 
-static void disable_8259A_irq(struct irq_data *data)
-{
+static void disable_8259A_irq(struct irq_data *data) {
 	/* Anchor-stub: i8259A_chip .irq_mask/.irq_disable/.irq_mask_ack
 	 * callback. On this boot-once artifact no legacy 8259 IRQ is ever
 	 * masked through the generic layer (HIT=False in the icount trace),
 	 * so the PIC IMR write is dead. Symbol kept for the three fn-ptrs. */
 }
 
-static void enable_8259A_irq(struct irq_data *data)
-{
+static void enable_8259A_irq(struct irq_data *data) {
 	unsigned int irq = data->irq;
 	unsigned int mask = ~(1 << irq);
 	unsigned long flags;
@@ -32,8 +30,7 @@ static void enable_8259A_irq(struct irq_data *data)
 }
 
 
-static inline int i8259A_irq_real(unsigned int irq)
-{
+static inline int i8259A_irq_real(unsigned int irq) {
 	int value;
 	int irqmask = 1<<irq;
 
@@ -49,8 +46,7 @@ static inline int i8259A_irq_real(unsigned int irq)
 	return value;
 }
 
-static void mask_and_ack_8259A(struct irq_data *data)
-{
+static void mask_and_ack_8259A(struct irq_data *data) {
 	unsigned int irq = data->irq;
 	unsigned int irqmask = 1 << irq;
 	unsigned long flags;
@@ -98,8 +94,7 @@ spurious_8259A_irq:
 struct irq_chip i8259A_chip = { .name		= "XT-PIC", .irq_mask	= disable_8259A_irq, .irq_disable	= disable_8259A_irq, .irq_unmask	= enable_8259A_irq, .irq_mask_ack	= mask_and_ack_8259A, };
 
 
-static void init_8259A(int auto_eoi)
-{
+static void init_8259A(int auto_eoi) {
 	unsigned long flags;
 
 	raw_spin_lock_irqsave(&i8259A_lock, flags);

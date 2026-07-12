@@ -25,8 +25,7 @@ struct console *console_drivers;
 
 #define down_console_sem() do { 	down(&console_sem);	mutex_acquire(&console_lock_dep_map, 0, 0, _RET_IP_);} while (0)
 
-static int __down_trylock_console_sem(unsigned long ip)
-{
+static int __down_trylock_console_sem(unsigned long ip) {
 	int lock_failed;
 	unsigned long flags;
 
@@ -42,8 +41,7 @@ static int __down_trylock_console_sem(unsigned long ip)
 }
 #define down_trylock_console_sem() __down_trylock_console_sem(_RET_IP_)
 
-static void __up_console_sem(unsigned long ip)
-{
+static void __up_console_sem(unsigned long ip) {
 	unsigned long flags;
 
 	mutex_release(&console_lock_dep_map, ip);
@@ -57,26 +55,22 @@ static void __up_console_sem(unsigned long ip)
 
 
 
-void console_verbose(void)
-{
+void console_verbose(void) {
 	if (console_loglevel)
 		console_loglevel = CONSOLE_LOGLEVEL_MOTORMOUTH;
 }
 
-void console_lock(void)
-{
+void console_lock(void) {
 	might_sleep();
 
 	down_console_sem();
 }
 
-static void __console_unlock(void)
-{
+static void __console_unlock(void) {
 	up_console_sem();
 }
 
-void console_unlock(void)
-{
+void console_unlock(void) {
 	/*
 	 * On this !CONFIG_PRINTK build there is no ring buffer, so
 	 * console_emit_next_record() never reads a record and the flush
@@ -86,8 +80,7 @@ void console_unlock(void)
 }
 
 
-void console_unblank(void)
-{
+void console_unblank(void) {
 	struct console *c;
 
 	 
@@ -103,8 +96,7 @@ void console_unblank(void)
 	console_unlock();
 }
 
-void console_flush_on_panic(enum con_flush_mode mode)
-{
+void console_flush_on_panic(enum con_flush_mode mode) {
 	/*
 	 * The only caller passes CONSOLE_FLUSH_PENDING, and with no ring
 	 * buffer there is nothing to flush — just take and drop the lock.
@@ -113,8 +105,7 @@ void console_flush_on_panic(enum con_flush_mode mode)
 	console_unlock();
 }
 
-struct tty_driver *console_device(int *index)
-{
+struct tty_driver *console_device(int *index) {
 	struct console *c;
 	struct tty_driver *driver = NULL;
 
@@ -131,8 +122,7 @@ struct tty_driver *console_device(int *index)
 }
 
 
-static int try_enable_preferred_console(struct console *newcon)
-{
+static int try_enable_preferred_console(struct console *newcon) {
 	/*
 	 * console_cmdline[] is never populated on this build (no console=
 	 * boot-param parser / __add_preferred_console), so the cmdline-match
@@ -147,8 +137,7 @@ static int try_enable_preferred_console(struct console *newcon)
 	return -ENOENT;
 }
 
-static void try_enable_default_console(struct console *newcon)
-{
+static void try_enable_default_console(struct console *newcon) {
 	if (newcon->index < 0)
 		newcon->index = 0;
 
@@ -163,8 +152,7 @@ static void try_enable_default_console(struct console *newcon)
 
 #define con_printk(lvl, con, fmt, ...)				printk(lvl pr_fmt("%sconsole [%s%d] " fmt),		       (con->flags & CON_BOOT) ? "boot" : "",		       con->name, con->index, ##__VA_ARGS__)
 
-void register_console(struct console *newcon)
-{
+void register_console(struct console *newcon) {
 	struct console *con;
 	int err;
 
@@ -210,8 +198,7 @@ void register_console(struct console *newcon)
 	con_printk(KERN_INFO, newcon, "enabled\n");
 }
 
-void __init console_init(void)
-{
+void __init console_init(void) {
 	initcall_t call;
 	initcall_entry_t *ce;
 

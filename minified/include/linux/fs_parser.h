@@ -26,8 +26,7 @@ struct fs_parse_result { bool			negated; union { bool		boolean; unsigned int	uin
 
 extern int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc, struct fs_parameter *value, struct fs_parse_result *result);
 
-static inline int fs_parse(struct fs_context *fc, const struct fs_parameter_spec *desc, struct fs_parameter *param, struct fs_parse_result *result)
-{
+static inline int fs_parse(struct fs_context *fc, const struct fs_parameter_spec *desc, struct fs_parameter *param, struct fs_parse_result *result) {
 	return __fs_parse(&fc->log, desc, param, result);
 }
 

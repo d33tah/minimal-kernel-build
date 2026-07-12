@@ -44,8 +44,7 @@
 
 #define __ADDRESSABLE(sym) 	static void * __section(".discard.addressable") __used 		__UNIQUE_ID(__PASTE(__addressable_,sym)) = (void *)&sym;
 
-static inline void *offset_to_ptr(const int *off)
-{
+static inline void *offset_to_ptr(const int *off) {
 	return (void *)((unsigned long)off + *off);
 }
 

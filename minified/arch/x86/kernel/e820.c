@@ -10,8 +10,7 @@ static struct e820_table e820_table_init		__initdata;
 struct e820_table *e820_table __refdata			= &e820_table_init;
 
 
-static struct e820_entry *__e820__mapped_all(u64 start, u64 end, enum e820_type type)
-{
+static struct e820_entry *__e820__mapped_all(u64 start, u64 end, enum e820_type type) {
 	int i;
 
 	for (i = 0; i < e820_table->nr_entries; i++) {
@@ -36,14 +35,12 @@ static struct e820_entry *__e820__mapped_all(u64 start, u64 end, enum e820_type 
 	return NULL;
 }
 
-bool __init e820__mapped_all(u64 start, u64 end, enum e820_type type)
-{
+bool __init e820__mapped_all(u64 start, u64 end, enum e820_type type) {
 	return __e820__mapped_all(start, end, type);
 }
 
 
-static void __init __e820__range_add(struct e820_table *table, u64 start, u64 size, enum e820_type type)
-{
+static void __init __e820__range_add(struct e820_table *table, u64 start, u64 size, enum e820_type type) {
 	int x = table->nr_entries;
 
 	if (x >= ARRAY_SIZE(table->entries)) {
@@ -57,8 +54,7 @@ static void __init __e820__range_add(struct e820_table *table, u64 start, u64 si
 	table->nr_entries++;
 }
 
-void __init e820__range_add(u64 start, u64 size, enum e820_type type)
-{
+void __init e820__range_add(u64 start, u64 size, enum e820_type type) {
 	__e820__range_add(e820_table, start, size, type);
 }
 
@@ -69,8 +65,7 @@ static struct change_member	*change_point[2*E820_MAX_ENTRIES]	__initdata;
 static struct e820_entry	*overlap_list[E820_MAX_ENTRIES]		__initdata;
 static struct e820_entry	new_entries[E820_MAX_ENTRIES]		__initdata;
 
-static int __init cpcompare(const void *a, const void *b)
-{
+static int __init cpcompare(const void *a, const void *b) {
 	struct change_member * const *app = a, * const *bpp = b;
 	const struct change_member *ap = *app, *bp = *bpp;
 
@@ -81,8 +76,7 @@ static int __init cpcompare(const void *a, const void *b)
 	return (ap->addr != ap->entry->addr) - (bp->addr != bp->entry->addr);
 }
 
-static bool e820_nomerge(enum e820_type type)
-{
+static bool e820_nomerge(enum e820_type type) {
 	 
 	if (type == E820_TYPE_PRAM)
 		return true;
@@ -91,8 +85,7 @@ static bool e820_nomerge(enum e820_type type)
 	return false;
 }
 
-int __init e820__update_table(struct e820_table *table)
-{
+int __init e820__update_table(struct e820_table *table) {
 	struct e820_entry *entries = table->entries;
 	u32 max_nr_entries = ARRAY_SIZE(table->entries);
 	enum e820_type current_type, last_type;
@@ -184,8 +177,7 @@ int __init e820__update_table(struct e820_table *table)
 	return 0;
 }
 
-static int __init __append_e820_table(struct boot_e820_entry *entries, u32 nr_entries)
-{
+static int __init __append_e820_table(struct boot_e820_entry *entries, u32 nr_entries) {
 	struct boot_e820_entry *entry = entries;
 
 	while (nr_entries) {
@@ -206,8 +198,7 @@ static int __init __append_e820_table(struct boot_e820_entry *entries, u32 nr_en
 	return 0;
 }
 
-static int __init append_e820_table(struct boot_e820_entry *entries, u32 nr_entries)
-{
+static int __init append_e820_table(struct boot_e820_entry *entries, u32 nr_entries) {
 	 
 	if (nr_entries < 2)
 		return -1;
@@ -216,8 +207,7 @@ static int __init append_e820_table(struct boot_e820_entry *entries, u32 nr_entr
 }
 
 static u64 __init
-__e820__range_update(struct e820_table *table, u64 start, u64 size, enum e820_type old_type, enum e820_type new_type)
-{
+__e820__range_update(struct e820_table *table, u64 start, u64 size, enum e820_type old_type, enum e820_type new_type) {
 	u64 end;
 	unsigned int i;
 	u64 real_updated_size = 0;
@@ -278,14 +268,12 @@ __e820__range_update(struct e820_table *table, u64 start, u64 size, enum e820_ty
 	return real_updated_size;
 }
 
-u64 __init e820__range_update(u64 start, u64 size, enum e820_type old_type, enum e820_type new_type)
-{
+u64 __init e820__range_update(u64 start, u64 size, enum e820_type old_type, enum e820_type new_type) {
 	return __e820__range_update(e820_table, start, size, old_type, new_type);
 }
 
 
-u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type, bool check_type)
-{
+u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type, bool check_type) {
 	int i;
 	u64 end;
 	u64 real_removed_size = 0;
@@ -340,8 +328,7 @@ u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type, bool
 	return real_removed_size;
 }
 
-__init void e820__reallocate_tables(void)
-{
+__init void e820__reallocate_tables(void) {
 	struct e820_table *n;
 	int size;
 
@@ -352,8 +339,7 @@ __init void e820__reallocate_tables(void)
 	/* kexec/firmware table reallocation removed - unused in minimal kernel */
 }
 
-void __init e820__memory_setup_extended(u64 phys_addr, u32 data_len)
-{
+void __init e820__memory_setup_extended(u64 phys_addr, u32 data_len) {
 	int entries;
 	struct boot_e820_entry *extmap;
 	struct setup_data *sdata;
@@ -372,8 +358,7 @@ void __init e820__memory_setup_extended(u64 phys_addr, u32 data_len)
 
 #  define MAX_ARCH_PFN		(1ULL<<(32-PAGE_SHIFT))
 
-static unsigned long __init e820_end_pfn(unsigned long limit_pfn, enum e820_type type)
-{
+static unsigned long __init e820_end_pfn(unsigned long limit_pfn, enum e820_type type) {
 	int i;
 	unsigned long last_pfn = 0;
 	unsigned long max_arch_pfn = MAX_ARCH_PFN;
@@ -405,14 +390,12 @@ static unsigned long __init e820_end_pfn(unsigned long limit_pfn, enum e820_type
 	return last_pfn;
 }
 
-unsigned long __init e820__end_of_ram_pfn(void)
-{
+unsigned long __init e820__end_of_ram_pfn(void) {
 	return e820_end_pfn(MAX_ARCH_PFN, E820_TYPE_RAM);
 }
 
 
-void __init e820__reserve_setup_data(void)
-{
+void __init e820__reserve_setup_data(void) {
 	struct setup_indirect *indirect;
 	struct setup_data *data;
 	u64 pa_data, pa_next;
@@ -460,8 +443,7 @@ void __init e820__reserve_setup_data(void)
 	/* kexec table update removed - unused in minimal kernel */
 }
 
-void __init e820__finish_early_params(void)
-{
+void __init e820__finish_early_params(void) {
 	/*
 	 * The user-supplied-memory-map path (mem=/memmap= early params) is
 	 * gone on this build: `userdef` was write-never (no parse_memmap/mem=
@@ -478,8 +460,7 @@ void __init e820__finish_early_params(void)
  */
 
 
-char *__init e820__memory_setup_default(void)
-{
+char *__init e820__memory_setup_default(void) {
 	char *who = "BIOS-e820";
 
 	 
@@ -506,8 +487,7 @@ char *__init e820__memory_setup_default(void)
 	return who;
 }
 
-void __init e820__memory_setup(void)
-{
+void __init e820__memory_setup(void) {
 
 	BUILD_BUG_ON(sizeof(struct boot_e820_entry) != 20);
 
@@ -515,8 +495,7 @@ void __init e820__memory_setup(void)
 	/* kexec/firmware table copies removed - unused in minimal kernel */
 }
 
-void __init e820__memblock_setup(void)
-{
+void __init e820__memblock_setup(void) {
 	int i;
 	u64 end;
 

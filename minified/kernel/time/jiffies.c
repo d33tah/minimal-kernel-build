@@ -6,8 +6,7 @@
 #include "tick-internal.h"
 
 
-static u64 jiffies_read(struct clocksource *cs)
-{
+static u64 jiffies_read(struct clocksource *cs) {
 	return (u64) jiffies;
 }
 
@@ -16,22 +15,19 @@ static struct clocksource clocksource_jiffies = { .name			= "jiffies", .rating		
 __cacheline_aligned_in_smp DEFINE_RAW_SPINLOCK(jiffies_lock);
 __cacheline_aligned_in_smp seqcount_raw_spinlock_t jiffies_seq = SEQCNT_RAW_SPINLOCK_ZERO(jiffies_seq, &jiffies_lock);
 
-static int __init init_jiffies_clocksource(void)
-{
+static int __init init_jiffies_clocksource(void) {
 	return __clocksource_register(&clocksource_jiffies);
 }
 
 core_initcall(init_jiffies_clocksource);
 
-struct clocksource * __init __weak clocksource_default_clock(void)
-{
+struct clocksource * __init __weak clocksource_default_clock(void) {
 	return &clocksource_jiffies;
 }
 
 static struct clocksource refined_jiffies;
 
-int register_refined_jiffies(long cycles_per_second)
-{
+int register_refined_jiffies(long cycles_per_second) {
 	u64 nsec_per_tick, shift_hz;
 	long cycles_per_tick;
 

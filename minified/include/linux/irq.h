@@ -28,38 +28,31 @@ enum { IRQD_TRIGGER_MASK		= 0xf, IRQD_ACTIVATED			= (1 <<  9), IRQD_NO_BALANCING
 
 #define __irqd_to_state(d) ACCESS_PRIVATE((d)->common, state_use_accessors)
 
-static inline u32 irqd_get_trigger_type(struct irq_data *d)
-{
+static inline u32 irqd_get_trigger_type(struct irq_data *d) {
 	return __irqd_to_state(d) & IRQD_TRIGGER_MASK;
 }
 
-static inline bool irqd_irq_disabled(struct irq_data *d)
-{
+static inline bool irqd_irq_disabled(struct irq_data *d) {
 	return __irqd_to_state(d) & IRQD_IRQ_DISABLED;
 }
 
-static inline bool irqd_irq_masked(struct irq_data *d)
-{
+static inline bool irqd_irq_masked(struct irq_data *d) {
 	return __irqd_to_state(d) & IRQD_IRQ_MASKED;
 }
 
-static inline bool irqd_affinity_is_managed(struct irq_data *d)
-{
+static inline bool irqd_affinity_is_managed(struct irq_data *d) {
 	return __irqd_to_state(d) & IRQD_AFFINITY_MANAGED;
 }
 
-static inline bool irqd_is_activated(struct irq_data *d)
-{
+static inline bool irqd_is_activated(struct irq_data *d) {
 	return __irqd_to_state(d) & IRQD_ACTIVATED;
 }
 
-static inline void irqd_set_activated(struct irq_data *d)
-{
+static inline void irqd_set_activated(struct irq_data *d) {
 	__irqd_to_state(d) |= IRQD_ACTIVATED;
 }
 
-static inline bool irqd_is_started(struct irq_data *d)
-{
+static inline bool irqd_is_started(struct irq_data *d) {
 	return __irqd_to_state(d) & IRQD_IRQ_STARTED;
 }
 
@@ -92,8 +85,7 @@ extern struct irq_chip dummy_irq_chip;
 extern void
 irq_set_chip_and_handler_name(unsigned int irq, const struct irq_chip *chip, irq_flow_handler_t handle, const char *name);
 
-static inline void irq_set_chip_and_handler(unsigned int irq, const struct irq_chip *chip, irq_flow_handler_t handle)
-{
+static inline void irq_set_chip_and_handler(unsigned int irq, const struct irq_chip *chip, irq_flow_handler_t handle) {
 	irq_set_chip_and_handler_name(irq, chip, handle, NULL);
 }
 

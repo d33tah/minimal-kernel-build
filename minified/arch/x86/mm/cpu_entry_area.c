@@ -8,16 +8,14 @@ static DEFINE_PER_CPU_PAGE_ALIGNED(struct entry_stack_page, entry_stack_storage)
 
 DECLARE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack);
 
-noinstr struct cpu_entry_area *get_cpu_entry_area(int cpu)
-{
+noinstr struct cpu_entry_area *get_cpu_entry_area(int cpu) {
 	unsigned long va = CPU_ENTRY_AREA_PER_CPU + cpu * CPU_ENTRY_AREA_SIZE;
 	BUILD_BUG_ON(sizeof(struct cpu_entry_area) % PAGE_SIZE != 0);
 
 	return (struct cpu_entry_area *) va;
 }
 
-void cea_set_pte(void *cea_vaddr, phys_addr_t pa, pgprot_t flags)
-{
+void cea_set_pte(void *cea_vaddr, phys_addr_t pa, pgprot_t flags) {
 	unsigned long va = (unsigned long) cea_vaddr;
 	pte_t pte = pfn_pte(pa >> PAGE_SHIFT, flags);
 
@@ -29,21 +27,18 @@ void cea_set_pte(void *cea_vaddr, phys_addr_t pa, pgprot_t flags)
 }
 
 static void __init
-cea_map_percpu_pages(void *cea_vaddr, void *ptr, int pages, pgprot_t prot)
-{
+cea_map_percpu_pages(void *cea_vaddr, void *ptr, int pages, pgprot_t prot) {
 	for ( ; pages; pages--, cea_vaddr+= PAGE_SIZE, ptr += PAGE_SIZE)
 		cea_set_pte(cea_vaddr, per_cpu_ptr_to_phys(ptr), prot);
 }
 
-static inline void percpu_setup_exception_stacks(unsigned int cpu)
-{
+static inline void percpu_setup_exception_stacks(unsigned int cpu) {
 	struct cpu_entry_area *cea = get_cpu_entry_area(cpu);
 
 	cea_map_percpu_pages(&cea->doublefault_stack, &per_cpu(doublefault_stack, cpu), 1, PAGE_KERNEL);
 }
 
-static void __init setup_cpu_entry_area(unsigned int cpu)
-{
+static void __init setup_cpu_entry_area(unsigned int cpu) {
 	struct cpu_entry_area *cea = get_cpu_entry_area(cpu);
 	 
 	pgprot_t gdt_prot = boot_cpu_has(X86_FEATURE_XENPV) ?
@@ -68,8 +63,7 @@ static void __init setup_cpu_entry_area(unsigned int cpu)
 	percpu_setup_exception_stacks(cpu);
 }
 
-static __init void setup_cpu_entry_area_ptes(void)
-{
+static __init void setup_cpu_entry_area_ptes(void) {
 	unsigned long start, end;
 
 	 
@@ -85,8 +79,7 @@ static __init void setup_cpu_entry_area_ptes(void)
 		populate_extra_pte(start);
 }
 
-void __init setup_cpu_entry_areas(void)
-{
+void __init setup_cpu_entry_areas(void) {
 	unsigned int cpu;
 
 	setup_cpu_entry_area_ptes();

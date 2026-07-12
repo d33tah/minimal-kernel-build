@@ -2,8 +2,7 @@
 
 #include "internals.h"
 
-static void ack_bad(struct irq_data *data)
-{
+static void ack_bad(struct irq_data *data) {
 	/* Anchor-stub: no_irq_chip .irq_ack. A "bad" (unconnected) IRQ is
 	 * never acked on this boot-once artifact (HIT=False), so the
 	 * diagnostic print + ack_bad_irq are dead. Symbol kept for the
@@ -12,8 +11,7 @@ static void ack_bad(struct irq_data *data)
 
 static void noop(struct irq_data *data) { }
 
-static unsigned int noop_ret(struct irq_data *data)
-{
+static unsigned int noop_ret(struct irq_data *data) {
 	return 0;
 }
 

@@ -10,8 +10,7 @@
 #define get_debugreg(var, register)					(var) = native_get_debugreg(register)
 #define set_debugreg(value, register)					native_set_debugreg(register, value)
 
-static __always_inline unsigned long native_get_debugreg(int regno)
-{
+static __always_inline unsigned long native_get_debugreg(int regno) {
 	unsigned long val = 0;	 
 
 	switch (regno) {
@@ -39,8 +38,7 @@ static __always_inline unsigned long native_get_debugreg(int regno)
 	return val;
 }
 
-static __always_inline void native_set_debugreg(int regno, unsigned long value)
-{
+static __always_inline void native_set_debugreg(int regno, unsigned long value) {
 	switch (regno) {
 	case 0:
 		asm("mov %0, %%db0"	::"r" (value));
@@ -69,8 +67,7 @@ static __always_inline void native_set_debugreg(int regno, unsigned long value)
 /* hw_breakpoint_active() folded out: cpu_dr7 was never written (write-only,
  * always 0) so it always returned false. hw_breakpoint_restore removed - unused */
 
-static __always_inline unsigned long local_db_save(void)
-{
+static __always_inline unsigned long local_db_save(void) {
 	unsigned long dr7;
 
 	if (static_cpu_has(X86_FEATURE_HYPERVISOR))
@@ -86,8 +83,7 @@ static __always_inline unsigned long local_db_save(void)
 	return dr7;
 }
 
-static __always_inline void local_db_restore(unsigned long dr7)
-{
+static __always_inline void local_db_restore(unsigned long dr7) {
 	 
 	barrier();
 	if (dr7)

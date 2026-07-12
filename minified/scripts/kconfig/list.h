@@ -29,8 +29,7 @@ struct list_head { struct list_head *next, *prev; };
 
 
  
-static inline void __list_add(struct list_head *_new, struct list_head *prev, struct list_head *next)
-{
+static inline void __list_add(struct list_head *_new, struct list_head *prev, struct list_head *next) {
 	next->prev = _new;
 	_new->next = next;
 	_new->prev = prev;
@@ -38,14 +37,12 @@ static inline void __list_add(struct list_head *_new, struct list_head *prev, st
 }
 
  
-static inline void list_add_tail(struct list_head *_new, struct list_head *head)
-{
+static inline void list_add_tail(struct list_head *_new, struct list_head *head) {
 	__list_add(_new, head->prev, head);
 }
 
  
-static inline void __list_del(struct list_head *prev, struct list_head *next)
-{
+static inline void __list_del(struct list_head *prev, struct list_head *next) {
 	next->prev = prev;
 	prev->next = next;
 }
@@ -53,8 +50,7 @@ static inline void __list_del(struct list_head *prev, struct list_head *next)
 #define LIST_POISON1  ((void *) 0x00100100)
 #define LIST_POISON2  ((void *) 0x00200200)
  
-static inline void list_del(struct list_head *entry)
-{
+static inline void list_del(struct list_head *entry) {
 	__list_del(entry->prev, entry->next);
 	entry->next = (struct list_head*)LIST_POISON1;
 	entry->prev = (struct list_head*)LIST_POISON2;

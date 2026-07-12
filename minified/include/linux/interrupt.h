@@ -38,8 +38,7 @@ extern int __must_check
 request_threaded_irq(unsigned int irq, irq_handler_t handler, irq_handler_t thread_fn, unsigned long flags, const char *name, void *dev);
 
 static inline int __must_check
-request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags, const char *name, void *dev)
-{
+request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags, const char *name, void *dev) {
 	return request_threaded_irq(irq, handler, NULL, flags, name, dev);
 }
 
@@ -57,15 +56,13 @@ request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags, const 
 
 
 
-enum
-{
+enum {
 	HI_SOFTIRQ=0, TIMER_SOFTIRQ, NET_TX_SOFTIRQ, NET_RX_SOFTIRQ, BLOCK_SOFTIRQ, IRQ_POLL_SOFTIRQ, TASKLET_SOFTIRQ, SCHED_SOFTIRQ, HRTIMER_SOFTIRQ, RCU_SOFTIRQ,
 
 	NR_SOFTIRQS
 };
 
-struct softirq_action
-{
+struct softirq_action {
 	void	(*action)(struct softirq_action *);
 };
 

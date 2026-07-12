@@ -7,8 +7,7 @@
 #define __iterate_and_advance(i, n, base, len, off, I, K) {		if (unlikely(i->count < n))						n = i->count;						if (likely(n)) {							if (likely(iter_is_iovec(i))) {						const struct iovec *iov = i->iov;				void __user *base;						size_t len;							iterate_iovec(i, n, base, len, off,							iov, (I))				i->nr_segs -= iov - i->iov;					i->iov = iov;						} else if (iov_iter_is_kvec(i)) {					const struct kvec *kvec = i->kvec;				void *base;							size_t len;							iterate_iovec(i, n, base, len, off,							kvec, (K))				i->nr_segs -= kvec - i->kvec;					i->kvec = kvec;						}								i->count -= n;						}							}
 #define iterate_and_advance(i, n, base, len, off, I, K) 	__iterate_and_advance(i, n, base, len, off, I, ((void)(K),0))
 
-static int copyout(void __user *to, const void *from, size_t n)
-{
+static int copyout(void __user *to, const void *from, size_t n) {
 	if (access_ok(to, n)) {
 		instrument_copy_to_user(to, from, n);
 		n = raw_copy_to_user(to, from, n);
@@ -16,8 +15,7 @@ static int copyout(void __user *to, const void *from, size_t n)
 	return n;
 }
 
-static int copyin(void *to, const void __user *from, size_t n)
-{
+static int copyin(void *to, const void __user *from, size_t n) {
 	if (access_ok(from, n)) {
 		instrument_copy_from_user(to, from, n);
 		n = raw_copy_from_user(to, from, n);
@@ -25,8 +23,7 @@ static int copyin(void *to, const void __user *from, size_t n)
 	return n;
 }
 
-static size_t copy_page_to_iter_iovec(struct page *page, size_t offset, size_t bytes, struct iov_iter *i)
-{
+static size_t copy_page_to_iter_iovec(struct page *page, size_t offset, size_t bytes, struct iov_iter *i) {
 	size_t skip, copy, left, wanted;
 	const struct iovec *iov;
 	char __user *buf;
@@ -75,16 +72,14 @@ static size_t copy_page_to_iter_iovec(struct page *page, size_t offset, size_t b
 	return wanted - bytes;
 }
 
-void iov_iter_init(struct iov_iter *i, unsigned int direction, const struct iovec *iov, unsigned long nr_segs, size_t count)
-{
+void iov_iter_init(struct iov_iter *i, unsigned int direction, const struct iovec *iov, unsigned long nr_segs, size_t count) {
 	WARN_ON(direction & ~(READ | WRITE));
 	*i = (struct iov_iter) {
 		.iter_type = ITER_IOVEC, .iov = iov, .nr_segs = nr_segs, .iov_offset = 0, .count = count
 	};
 }
 
-size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
-{
+size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i) {
 	if (iter_is_iovec(i))
 		might_fault();
 	iterate_and_advance(i, bytes, base, len, off, copyout(base, addr + off, len), memcpy(base, addr + off, len) )
@@ -93,8 +88,7 @@ size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
 }
 
 
-size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i)
-{
+size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i) {
 	if (iter_is_iovec(i))
 		might_fault();
 	iterate_and_advance(i, bytes, base, len, off, copyin(addr + off, base, len), memcpy(addr + off, base, len) )
@@ -103,8 +97,7 @@ size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i)
 }
 
 
-static inline bool page_copy_sane(struct page *page, size_t offset, size_t n)
-{
+static inline bool page_copy_sane(struct page *page, size_t offset, size_t n) {
 	struct page *head;
 	size_t v = n + offset;
 
@@ -121,8 +114,7 @@ static inline bool page_copy_sane(struct page *page, size_t offset, size_t n)
 	return false;
 }
 
-static size_t __copy_page_to_iter(struct page *page, size_t offset, size_t bytes, struct iov_iter *i)
-{
+static size_t __copy_page_to_iter(struct page *page, size_t offset, size_t bytes, struct iov_iter *i) {
 	if (likely(iter_is_iovec(i)))
 		return copy_page_to_iter_iovec(page, offset, bytes, i);
 	if (iov_iter_is_kvec(i)) {
@@ -135,8 +127,7 @@ static size_t __copy_page_to_iter(struct page *page, size_t offset, size_t bytes
 	return 0;
 }
 
-size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes, struct iov_iter *i)
-{
+size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes, struct iov_iter *i) {
 	size_t res = 0;
 	if (unlikely(!page_copy_sane(page, offset, bytes)))
 		return 0;
@@ -157,8 +148,7 @@ size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes, struct 
 	return res;
 }
 
-size_t copy_page_from_iter_atomic(struct page *page, unsigned offset, size_t bytes, struct iov_iter *i)
-{
+size_t copy_page_from_iter_atomic(struct page *page, unsigned offset, size_t bytes, struct iov_iter *i) {
 	char *kaddr = kmap_atomic(page), *p = kaddr + offset;
 	if (unlikely(!page_copy_sane(page, offset, bytes))) {
 		kunmap_atomic(kaddr);
@@ -169,8 +159,7 @@ size_t copy_page_from_iter_atomic(struct page *page, unsigned offset, size_t byt
 	return bytes;
 }
 
-void iov_iter_revert(struct iov_iter *i, size_t unroll)
-{
+void iov_iter_revert(struct iov_iter *i, size_t unroll) {
 	/*
 	 * VOID-CALLBACK-NEVER-FIRES (runtime trace: HIT=False).  The sole caller
 	 * (tty_io.c redirected_tty_write) only reverts on a partial write
@@ -180,8 +169,7 @@ void iov_iter_revert(struct iov_iter *i, size_t unroll)
 }
 
 
-void iov_iter_kvec(struct iov_iter *i, unsigned int direction, const struct kvec *kvec, unsigned long nr_segs, size_t count)
-{
+void iov_iter_kvec(struct iov_iter *i, unsigned int direction, const struct kvec *kvec, unsigned long nr_segs, size_t count) {
 	WARN_ON(direction & ~(READ | WRITE));
 	*i = (struct iov_iter){
 		.iter_type = ITER_KVEC, .kvec = kvec, .nr_segs = nr_segs, .iov_offset = 0, .count = count

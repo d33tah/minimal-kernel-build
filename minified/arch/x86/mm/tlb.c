@@ -10,8 +10,7 @@
 # define __flush_tlb_one_user(addr)	native_flush_tlb_one_user(addr)
 
 
-static inline unsigned long build_cr3(pgd_t *pgd, u16 asid)
-{
+static inline unsigned long build_cr3(pgd_t *pgd, u16 asid) {
 	/* PCID is unconditionally cleared at boot (setup_clear_cpu_cap in
 	 * arch/x86/kernel/cpu/common.c), so the kernel never runs with PCIDs
 	 * and asid is always 0. */
@@ -22,20 +21,17 @@ static inline unsigned long build_cr3(pgd_t *pgd, u16 asid)
 atomic64_t last_mm_ctx_id = ATOMIC64_INIT(1);
 
 
-static void choose_new_asid(u16 *new_asid)
-{
+static void choose_new_asid(u16 *new_asid) {
 	/* No PCID (cleared at boot): always use ASID 0 and force a flush. */
 	*new_asid = 0;
 }
 
-static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid)
-{
+static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid) {
 	/* Without PCID every switch reloads CR3 (always a full flush). */
 	write_cr3(build_cr3(pgdir, new_asid));
 }
 
-void switch_mm(struct mm_struct *prev, struct mm_struct *next, struct task_struct *tsk)
-{
+void switch_mm(struct mm_struct *prev, struct mm_struct *next, struct task_struct *tsk) {
 	unsigned long flags;
 
 	local_irq_save(flags);
@@ -51,8 +47,7 @@ void switch_mm(struct mm_struct *prev, struct mm_struct *next, struct task_struc
  * (cond_mitigation / mm_mangle_tif_spec_bits / l1d_flush_evaluate /
  * l1d_flush_force_sigbus) was dead. */
 
-static inline void cr4_update_pce_mm(struct mm_struct *mm)
-{
+static inline void cr4_update_pce_mm(struct mm_struct *mm) {
 	/* rdpmc_always_available_key is DEFINE_STATIC_KEY_FALSE and never
 	 * enabled (constant false); rdpmc_never_available_key is
 	 * DEFINE_STATIC_KEY_TRUE and never disabled (constant true), so the
@@ -60,8 +55,7 @@ static inline void cr4_update_pce_mm(struct mm_struct *mm)
 	cr4_clear_bits_irqsoff(X86_CR4_PCE);
 }
 
-void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next, struct task_struct *tsk)
-{
+void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next, struct task_struct *tsk) {
 	struct mm_struct *real_prev = this_cpu_read(cpu_tlbstate.loaded_mm);
 	u16 prev_asid = this_cpu_read(cpu_tlbstate.loaded_mm_asid);
 	bool was_lazy = this_cpu_read(cpu_tlbstate_shared.is_lazy);
@@ -131,16 +125,14 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next, struct t
 	}
 }
 
-void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
-{
+void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk) {
 	if (this_cpu_read(cpu_tlbstate.loaded_mm) == &init_mm)
 		return;
 
 	this_cpu_write(cpu_tlbstate_shared.is_lazy, true);
 }
 
-void initialize_tlbstate_and_flush(void)
-{
+void initialize_tlbstate_and_flush(void) {
 	int i;
 	struct mm_struct *mm = this_cpu_read(cpu_tlbstate.loaded_mm);
 	u64 tlb_gen = atomic64_read(&init_mm.context.tlb_gen);
@@ -166,8 +158,7 @@ void initialize_tlbstate_and_flush(void)
 
 DEFINE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
 
-void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start, unsigned long end, unsigned int stride_shift, bool freed_tables)
-{
+void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start, unsigned long end, unsigned int stride_shift, bool freed_tables) {
 	/* mmu_gather/unmap teardown never runs on this single-shot boot, so this
 	 * range-flush root is runtime-dead; bump the generation counter so any
 	 * live reader of mm->context.tlb_gen stays consistent and return. */
@@ -175,8 +166,7 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start, unsigned long
 }
 
 
-void flush_tlb_one_kernel(unsigned long addr)
-{
+void flush_tlb_one_kernel(unsigned long addr) {
 	/*
 	 * PAGE_TABLE_ISOLATION is unset on this build, so X86_FEATURE_PTI is
 	 * never set and the user-mapping invalidation below is dead.
@@ -184,8 +174,7 @@ void flush_tlb_one_kernel(unsigned long addr)
 	flush_tlb_one_user(addr);
 }
 
-STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr)
-{
+STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr) {
 	asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
 
 	/*
@@ -194,13 +183,11 @@ STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr)
 	 */
 }
 
-void flush_tlb_one_user(unsigned long addr)
-{
+void flush_tlb_one_user(unsigned long addr) {
 	__flush_tlb_one_user(addr);
 }
 
-STATIC_NOPV void native_flush_tlb_global(void)
-{
+STATIC_NOPV void native_flush_tlb_global(void) {
 	unsigned long flags;
 
 	if (static_cpu_has(X86_FEATURE_INVPCID)) {
@@ -217,8 +204,7 @@ STATIC_NOPV void native_flush_tlb_global(void)
 	raw_local_irq_restore(flags);
 }
 
-STATIC_NOPV void native_flush_tlb_local(void)
-{
+STATIC_NOPV void native_flush_tlb_local(void) {
 	 
 	WARN_ON_ONCE(preemptible());
 
@@ -226,13 +212,11 @@ STATIC_NOPV void native_flush_tlb_local(void)
 	native_write_cr3(__native_read_cr3());
 }
 
-void flush_tlb_local(void)
-{
+void flush_tlb_local(void) {
 	__flush_tlb_local();
 }
 
-void __flush_tlb_all(void)
-{
+void __flush_tlb_all(void) {
 	 
 	VM_WARN_ON_ONCE(preemptible());
 

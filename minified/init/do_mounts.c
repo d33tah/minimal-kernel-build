@@ -10,8 +10,7 @@
  * empty so no such arg is ever present.
  */
 
-static int rootfs_init_fs_context(struct fs_context *fc)
-{
+static int rootfs_init_fs_context(struct fs_context *fc) {
 	return ramfs_init_fs_context(fc);
 }
 

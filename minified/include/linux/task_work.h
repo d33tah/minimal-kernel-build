@@ -7,15 +7,13 @@
 typedef void (*task_work_func_t)(struct callback_head *);
 
 static inline void
-init_task_work(struct callback_head *twork, task_work_func_t func)
-{
+init_task_work(struct callback_head *twork, task_work_func_t func) {
 	twork->func = func;
 }
 
 enum task_work_notify_mode { TWA_NONE, TWA_RESUME, };
 
-static inline bool task_work_pending(struct task_struct *task)
-{
+static inline bool task_work_pending(struct task_struct *task) {
 	return READ_ONCE(task->task_works);
 }
 
@@ -23,8 +21,7 @@ int task_work_add(struct task_struct *task, struct callback_head *twork, enum ta
 
 void task_work_run(void);
 
-static inline void exit_task_work(struct task_struct *task)
-{
+static inline void exit_task_work(struct task_struct *task) {
 	task_work_run();
 }
 

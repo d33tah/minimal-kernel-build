@@ -13,19 +13,16 @@
  * folded away.  truncate_inode_pages_range had a single caller
  * (truncate_inode_pages); its surviving guard body was folded in directly.
  */
-void truncate_inode_pages(struct address_space *mapping, loff_t lstart)
-{
+void truncate_inode_pages(struct address_space *mapping, loff_t lstart) {
 }
 
-void truncate_pagecache(struct inode *inode, loff_t newsize)
-{
+void truncate_pagecache(struct inode *inode, loff_t newsize) {
 	struct address_space *mapping = inode->i_mapping;
 
 	truncate_inode_pages(mapping, newsize);
 }
 
-void truncate_setsize(struct inode *inode, loff_t newsize)
-{
+void truncate_setsize(struct inode *inode, loff_t newsize) {
 	loff_t oldsize = inode->i_size;
 
 	i_size_write(inode, newsize);
@@ -34,8 +31,7 @@ void truncate_setsize(struct inode *inode, loff_t newsize)
 	truncate_pagecache(inode, newsize);
 }
 
-void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to)
-{
+void pagecache_isize_extended(struct inode *inode, loff_t from, loff_t to) {
 	int bsize = i_blocksize(inode);
 	loff_t rounded_from;
 	struct page *page;

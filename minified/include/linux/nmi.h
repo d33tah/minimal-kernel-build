@@ -4,8 +4,7 @@
 #include <linux/sched.h>
 #include <asm/irq.h>
 
-static inline void touch_nmi_watchdog(void)
-{
+static inline void touch_nmi_watchdog(void) {
 }
 
 #endif

@@ -7,19 +7,16 @@
 
 DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
 
-void ack_bad_irq(unsigned int irq)
-{
+void ack_bad_irq(unsigned int irq) {
 	ack_APIC_irq();
 }
 
 
-static __always_inline void handle_irq(struct irq_desc *desc, struct pt_regs *regs)
-{
+static __always_inline void handle_irq(struct irq_desc *desc, struct pt_regs *regs) {
 	__handle_irq(desc, regs);
 }
 
-DEFINE_IDTENTRY_IRQ(common_interrupt)
-{
+DEFINE_IDTENTRY_IRQ(common_interrupt) {
 	struct pt_regs *old_regs = set_irq_regs(regs);
 	struct irq_desc *desc;
 

@@ -8,8 +8,7 @@
 
 static pte_t bm_pte[PAGE_SIZE/sizeof(pte_t)] __page_aligned_bss;
 
-static inline pmd_t * __init early_ioremap_pmd(unsigned long addr)
-{
+static inline pmd_t * __init early_ioremap_pmd(unsigned long addr) {
 	 
 	pgd_t *base = __va(read_cr3_pa());
 	pgd_t *pgd = &base[pgd_index(addr)];
@@ -20,13 +19,11 @@ static inline pmd_t * __init early_ioremap_pmd(unsigned long addr)
 	return pmd;
 }
 
-static inline pte_t * __init early_ioremap_pte(unsigned long addr)
-{
+static inline pte_t * __init early_ioremap_pte(unsigned long addr) {
 	return &bm_pte[pte_index(addr)];
 }
 
-void __init early_ioremap_init(void)
-{
+void __init early_ioremap_init(void) {
 	pmd_t *pmd;
 
 	WARN_ON((fix_to_virt(0) + PAGE_SIZE) & ((1 << PMD_SHIFT) - 1));
@@ -52,8 +49,7 @@ void __init early_ioremap_init(void)
 	}
 }
 
-void __init __early_set_fixmap(enum fixed_addresses idx, phys_addr_t phys, pgprot_t flags)
-{
+void __init __early_set_fixmap(enum fixed_addresses idx, phys_addr_t phys, pgprot_t flags) {
 	unsigned long addr = __fix_to_virt(idx);
 	pte_t *pte;
 

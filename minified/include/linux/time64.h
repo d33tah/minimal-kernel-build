@@ -26,13 +26,11 @@ struct timespec64 { time64_t	tv_sec; long		tv_nsec; };
 #define TIME_UPTIME_SEC_MAX		(30LL * 365 * 24 *3600)
 #define TIME_SETTOD_SEC_MAX		(KTIME_SEC_MAX - TIME_UPTIME_SEC_MAX)
 
-static inline int timespec64_equal(const struct timespec64 *a, const struct timespec64 *b)
-{
+static inline int timespec64_equal(const struct timespec64 *a, const struct timespec64 *b) {
 	return (a->tv_sec == b->tv_sec) && (a->tv_nsec == b->tv_nsec);
 }
 
-static inline int timespec64_compare(const struct timespec64 *lhs, const struct timespec64 *rhs)
-{
+static inline int timespec64_compare(const struct timespec64 *lhs, const struct timespec64 *rhs) {
 	if (lhs->tv_sec < rhs->tv_sec)
 		return -1;
 	if (lhs->tv_sec > rhs->tv_sec)
@@ -43,15 +41,13 @@ static inline int timespec64_compare(const struct timespec64 *lhs, const struct 
 extern void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec);
 
 
-static inline struct timespec64 timespec64_sub(struct timespec64 lhs, struct timespec64 rhs)
-{
+static inline struct timespec64 timespec64_sub(struct timespec64 lhs, struct timespec64 rhs) {
 	struct timespec64 ts_delta;
 	set_normalized_timespec64(&ts_delta, lhs.tv_sec - rhs.tv_sec, lhs.tv_nsec - rhs.tv_nsec);
 	return ts_delta;
 }
 
-static inline bool timespec64_valid(const struct timespec64 *ts)
-{
+static inline bool timespec64_valid(const struct timespec64 *ts) {
 	 
 	if (ts->tv_sec < 0)
 		return false;
@@ -62,8 +58,7 @@ static inline bool timespec64_valid(const struct timespec64 *ts)
 }
 
 
-static inline bool timespec64_valid_settod(const struct timespec64 *ts)
-{
+static inline bool timespec64_valid_settod(const struct timespec64 *ts) {
 	if (!timespec64_valid(ts))
 		return false;
 	 
@@ -72,8 +67,7 @@ static inline bool timespec64_valid_settod(const struct timespec64 *ts)
 	return true;
 }
 
-static inline s64 timespec64_to_ns(const struct timespec64 *ts)
-{
+static inline s64 timespec64_to_ns(const struct timespec64 *ts) {
 	 
 	if (ts->tv_sec >= KTIME_SEC_MAX)
 		return KTIME_MAX;

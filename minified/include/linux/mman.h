@@ -23,14 +23,12 @@
 #define _calc_vm_trans(x, bit1, bit2)   ((!(bit1) || !(bit2)) ? 0 :   ((bit1) <= (bit2) ? ((x) & (bit1)) * ((bit2) / (bit1))    : ((x) & (bit1)) / ((bit1) / (bit2))))
 
 static inline unsigned long
-calc_vm_prot_bits(unsigned long prot, unsigned long pkey)
-{
+calc_vm_prot_bits(unsigned long prot, unsigned long pkey) {
 	return _calc_vm_trans(prot, PROT_READ,  VM_READ ) | _calc_vm_trans(prot, PROT_WRITE, VM_WRITE) | _calc_vm_trans(prot, PROT_EXEC,  VM_EXEC) | arch_calc_vm_prot_bits(prot, pkey);
 }
 
 static inline unsigned long
-calc_vm_flag_bits(unsigned long flags)
-{
+calc_vm_flag_bits(unsigned long flags) {
 	return _calc_vm_trans(flags, MAP_GROWSDOWN,  VM_GROWSDOWN ) | _calc_vm_trans(flags, MAP_LOCKED,     VM_LOCKED    ) | arch_calc_vm_flag_bits(flags);
 }
 

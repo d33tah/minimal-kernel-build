@@ -4,21 +4,18 @@
 #define _THIS_IP_  ({ __label__ __here; __here: (unsigned long)&&__here; })
 #include <linux/preempt.h>
 
-static __always_inline void __local_bh_disable_ip(unsigned long ip, unsigned int cnt)
-{
+static __always_inline void __local_bh_disable_ip(unsigned long ip, unsigned int cnt) {
 	preempt_count_add(cnt);
 	barrier();
 }
 
-static inline void local_bh_disable(void)
-{
+static inline void local_bh_disable(void) {
 	__local_bh_disable_ip(_THIS_IP_, SOFTIRQ_DISABLE_OFFSET);
 }
 
 extern void __local_bh_enable_ip(unsigned long ip, unsigned int cnt);
 
-static inline void local_bh_enable(void)
-{
+static inline void local_bh_enable(void) {
 	__local_bh_enable_ip(_THIS_IP_, SOFTIRQ_DISABLE_OFFSET);
 }
 

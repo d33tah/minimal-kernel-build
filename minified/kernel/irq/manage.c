@@ -14,21 +14,18 @@
  * path returned, i.e. "trigger configured OK, nothing to do". Both callers
  * tolerate ret==0. The full set_type / mask-unmask body is dead.
  */
-int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
-{
+int __irq_set_trigger(struct irq_desc *desc, unsigned long flags) {
 	return 0;
 }
 
-static int irq_request_resources(struct irq_desc *desc)
-{
+static int irq_request_resources(struct irq_desc *desc) {
 	struct irq_data *d = &desc->irq_data;
 	struct irq_chip *c = d->chip;
 
 	return c->irq_request_resources ? c->irq_request_resources(d) : 0;
 }
 
-static void irq_release_resources(struct irq_desc *desc)
-{
+static void irq_release_resources(struct irq_desc *desc) {
 	struct irq_data *d = &desc->irq_data;
 	struct irq_chip *c = d->chip;
 
@@ -48,8 +45,7 @@ static void irq_release_resources(struct irq_desc *desc)
  * survives.
  */
 static int
-__setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
-{
+__setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new) {
 	unsigned long flags;
 	int ret;
 
@@ -117,8 +113,7 @@ out_bus_unlock:
 	return ret;
 }
 
-int request_threaded_irq(unsigned int irq, irq_handler_t handler, irq_handler_t thread_fn, unsigned long irqflags, const char *devname, void *dev_id)
-{
+int request_threaded_irq(unsigned int irq, irq_handler_t handler, irq_handler_t thread_fn, unsigned long irqflags, const char *devname, void *dev_id) {
 	struct irqaction *action;
 	struct irq_desc *desc;
 	int retval;

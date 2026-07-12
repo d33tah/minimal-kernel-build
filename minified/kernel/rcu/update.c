@@ -11,16 +11,14 @@
 
 
 
-void wakeme_after_rcu(struct rcu_head *head)
-{
+void wakeme_after_rcu(struct rcu_head *head) {
 	struct rcu_synchronize *rcu;
 
 	rcu = container_of(head, struct rcu_synchronize, head);
 	complete(&rcu->completion);
 }
 
-void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array, struct rcu_synchronize *rs_array)
-{
+void __wait_rcu_gp(bool checktiny, int n, call_rcu_func_t *crcu_array, struct rcu_synchronize *rs_array) {
 	int i, j;
 
 	 

@@ -1,6 +1,5 @@
 
-static void cpuidle_idle_call(void)
-{
+static void cpuidle_idle_call(void) {
 
 	if (need_resched()) {
 		local_irq_enable();
@@ -32,8 +31,7 @@ static void cpuidle_idle_call(void)
 		local_irq_enable();
 }
 
-static void do_idle(void)
-{
+static void do_idle(void) {
 	__current_set_polling();
 
 	while (!need_resched()) {
@@ -55,29 +53,24 @@ static void do_idle(void)
 	schedule_idle();
 }
 
-void cpu_startup_entry(enum cpuhp_state state)
-{
+void cpu_startup_entry(enum cpuhp_state state) {
 	while (1)
 		do_idle();
 }
 
 
 
-static void check_preempt_curr_idle(struct rq *rq, struct task_struct *p, int flags)
-{
+static void check_preempt_curr_idle(struct rq *rq, struct task_struct *p, int flags) {
 }
 
-static void put_prev_task_idle(struct rq *rq, struct task_struct *prev)
-{
+static void put_prev_task_idle(struct rq *rq, struct task_struct *prev) {
 }
 
-static void set_next_task_idle(struct rq *rq, struct task_struct *next, bool first)
-{
+static void set_next_task_idle(struct rq *rq, struct task_struct *next, bool first) {
 }
 
 
-struct task_struct *pick_next_task_idle(struct rq *rq)
-{
+struct task_struct *pick_next_task_idle(struct rq *rq) {
 	struct task_struct *next = rq->idle;
 
 	set_next_task_idle(rq, next, true);
@@ -86,12 +79,10 @@ struct task_struct *pick_next_task_idle(struct rq *rq)
 }
 
 static void
-dequeue_task_idle(struct rq *rq, struct task_struct *p, int flags)
-{
+dequeue_task_idle(struct rq *rq, struct task_struct *p, int flags) {
 }
 
-static void task_tick_idle(struct rq *rq, struct task_struct *curr, int queued)
-{
+static void task_tick_idle(struct rq *rq, struct task_struct *curr, int queued) {
 }
 
 DEFINE_SCHED_CLASS(idle) = { .dequeue_task		= dequeue_task_idle, .check_preempt_curr	= check_preempt_curr_idle, .pick_next_task		= pick_next_task_idle, .put_prev_task		= put_prev_task_idle, .set_next_task          = set_next_task_idle, .task_tick		= task_tick_idle, };

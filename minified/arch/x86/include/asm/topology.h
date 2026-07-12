@@ -6,8 +6,7 @@
 #include <linux/numa.h>
 
 
-static inline int numa_node_id(void)
-{
+static inline int numa_node_id(void) {
 	return 0;
 }
  

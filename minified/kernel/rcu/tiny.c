@@ -8,13 +8,11 @@ struct rcu_ctrlblk { struct rcu_head *rcucblist, **donetail, **curtail; unsigned
 
 static struct rcu_ctrlblk rcu_ctrlblk = { .donetail	= &rcu_ctrlblk.rcucblist, .curtail	= &rcu_ctrlblk.rcucblist, .gp_seq		= 0 - 300UL, };
 
-void rcu_barrier(void)
-{
+void rcu_barrier(void) {
 	wait_rcu_gp(call_rcu);
 }
 
-void rcu_qs(void)
-{
+void rcu_qs(void) {
 	unsigned long flags;
 
 	local_irq_save(flags);
@@ -26,8 +24,7 @@ void rcu_qs(void)
 	local_irq_restore(flags);
 }
 
-void rcu_sched_clock_irq(int user)
-{
+void rcu_sched_clock_irq(int user) {
 	if (user) {
 		rcu_qs();
 	} else if (rcu_ctrlblk.donetail != rcu_ctrlblk.curtail) {
@@ -36,8 +33,7 @@ void rcu_sched_clock_irq(int user)
 	}
 }
 
-static inline bool rcu_reclaim_tiny(struct rcu_head *head)
-{
+static inline bool rcu_reclaim_tiny(struct rcu_head *head) {
 	rcu_callback_t f;
 	unsigned long offset = (unsigned long)head->func;
 
@@ -54,8 +50,7 @@ static inline bool rcu_reclaim_tiny(struct rcu_head *head)
 	return false;
 }
 
-static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused)
-{
+static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused) {
 	struct rcu_head *next, *list;
 	unsigned long flags;
 
@@ -86,8 +81,7 @@ static __latent_entropy void rcu_process_callbacks(struct softirq_action *unused
 	}
 }
 
-void call_rcu(struct rcu_head *head, rcu_callback_t func)
-{
+void call_rcu(struct rcu_head *head, rcu_callback_t func) {
 	unsigned long flags;
 
 	head->func = func;
@@ -104,7 +98,6 @@ void call_rcu(struct rcu_head *head, rcu_callback_t func)
 	}
 }
 
-void __init rcu_init(void)
-{
+void __init rcu_init(void) {
 	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
 }

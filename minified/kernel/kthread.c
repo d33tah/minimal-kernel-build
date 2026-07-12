@@ -10,8 +10,7 @@ static DEFINE_SPINLOCK(kthread_create_lock);
 static LIST_HEAD(kthread_create_list);
 struct task_struct *kthreadd_task;
 
-struct kthread_create_info
-{
+struct kthread_create_info {
 
 	int (*threadfn)(void *data);
 	void *data;
@@ -26,15 +25,13 @@ struct kthread { unsigned long flags; int (*threadfn)(void *); void *data; struc
 
 enum KTHREAD_BITS { KTHREAD_IS_PER_CPU = 0, KTHREAD_SHOULD_STOP, KTHREAD_SHOULD_PARK, };
 
-static inline struct kthread *to_kthread(struct task_struct *k)
-{
+static inline struct kthread *to_kthread(struct task_struct *k) {
 	WARN_ON(!(k->flags & PF_KTHREAD));
 	return k->worker_private;
 }
 
 
-bool set_kthread_struct(struct task_struct *p)
-{
+bool set_kthread_struct(struct task_struct *p) {
 	struct kthread *kthread;
 
 	if (WARN_ON_ONCE(to_kthread(p)))
@@ -52,8 +49,7 @@ bool set_kthread_struct(struct task_struct *p)
 	return true;
 }
 
-static void __kthread_parkme(struct kthread *self)
-{
+static void __kthread_parkme(struct kthread *self) {
 	for (;;) {
 		 
 		set_special_state(TASK_PARKED);
@@ -70,13 +66,11 @@ static void __kthread_parkme(struct kthread *self)
 }
 
 
-void __noreturn kthread_exit(long result)
-{
+void __noreturn kthread_exit(long result) {
 	do_exit(0);
 }
 
-static int kthread(void *_create)
-{
+static int kthread(void *_create) {
 	static const struct sched_param param = { .sched_priority = 0 };
 	 
 	struct kthread_create_info *create = _create;
@@ -118,13 +112,11 @@ static int kthread(void *_create)
 	kthread_exit(ret);
 }
 
-int tsk_fork_get_node(struct task_struct *tsk)
-{
+int tsk_fork_get_node(struct task_struct *tsk) {
 	return NUMA_NO_NODE;
 }
 
-static void create_kthread(struct kthread_create_info *create)
-{
+static void create_kthread(struct kthread_create_info *create) {
 	int pid;
 
 	 
@@ -141,8 +133,7 @@ static void create_kthread(struct kthread_create_info *create)
 	}
 }
 
-void kthread_set_per_cpu(struct task_struct *k, int cpu)
-{
+void kthread_set_per_cpu(struct task_struct *k, int cpu) {
 	struct kthread *kthread = to_kthread(k);
 	if (!kthread)
 		return;
@@ -158,8 +149,7 @@ void kthread_set_per_cpu(struct task_struct *k, int cpu)
 }
 
 
-int kthreadd(void *unused)
-{
+int kthreadd(void *unused) {
 	struct task_struct *tsk = current;
 
 	 

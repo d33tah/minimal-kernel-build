@@ -1,28 +1,24 @@
 
 #include <linux/fs_parser.h>
 
-static const struct constant_table * __lookup_constant(const struct constant_table *tbl, const char *name)
-{
+static const struct constant_table * __lookup_constant(const struct constant_table *tbl, const char *name) {
 	for ( ; tbl->name; tbl++)
 		if (strcmp(name, tbl->name) == 0)
 			return tbl;
 	return NULL;
 }
 
-int lookup_constant(const struct constant_table *tbl, const char *name, int not_found)
-{
+int lookup_constant(const struct constant_table *tbl, const char *name, int not_found) {
 	const struct constant_table *p = __lookup_constant(tbl, name);
 
 	return p ? p->value : not_found;
 }
 
-static inline bool is_flag(const struct fs_parameter_spec *p)
-{
+static inline bool is_flag(const struct fs_parameter_spec *p) {
 	return p->type == NULL;
 }
 
-static const struct fs_parameter_spec *fs_lookup_key( const struct fs_parameter_spec *desc, struct fs_parameter *param, bool *negated)
-{
+static const struct fs_parameter_spec *fs_lookup_key( const struct fs_parameter_spec *desc, struct fs_parameter *param, bool *negated) {
 	const struct fs_parameter_spec *p, *other = NULL;
 	const char *name = param->key;
 	bool want_flag = param->type == fs_value_is_flag;
@@ -50,8 +46,7 @@ static const struct fs_parameter_spec *fs_lookup_key( const struct fs_parameter_
 	return other;
 }
 
-int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc, struct fs_parameter *param, struct fs_parse_result *result)
-{
+int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc, struct fs_parameter *param, struct fs_parse_result *result) {
 	const struct fs_parameter_spec *p;
 
 	result->uint_64 = 0;
@@ -76,8 +71,7 @@ int __fs_parse(struct p_log *log, const struct fs_parameter_spec *desc, struct f
 	return p->opt;
 }
 
-int fs_param_is_u32(struct p_log *log, const struct fs_parameter_spec *p, struct fs_parameter *param, struct fs_parse_result *result)
-{
+int fs_param_is_u32(struct p_log *log, const struct fs_parameter_spec *p, struct fs_parameter *param, struct fs_parse_result *result) {
 	/* SAFE-FALLBACK: the only spec that points .type here is ramfs's "mode"
 	 * (fsparam_u32oct), which this boot never passes -- runtime-dead. Returning
 	 * success (with result->uint_32 left zero) is what __fs_parse tolerates: it

@@ -11,13 +11,11 @@
 struct lru_pvecs { local_lock_t lock; struct pagevec lru_add; };
 static DEFINE_PER_CPU(struct lru_pvecs, lru_pvecs) = { .lock = INIT_LOCAL_LOCK(lock), };
 
-void __put_page(struct page *page)
-{
+void __put_page(struct page *page) {
 	/* runtime-dead: nothing is ever freed on this single-shot boot */
 }
 
-static bool pagevec_add_and_need_flush(struct pagevec *pvec, struct page *page)
-{
+static bool pagevec_add_and_need_flush(struct pagevec *pvec, struct page *page) {
 	bool ret = false;
 
 	if (!pagevec_add(pvec, page) || PageCompound(page) || lru_cache_disabled())
@@ -26,8 +24,7 @@ static bool pagevec_add_and_need_flush(struct pagevec *pvec, struct page *page)
 	return ret;
 }
 
-static void __folio_activate(struct folio *folio, struct lruvec *lruvec)
-{
+static void __folio_activate(struct folio *folio, struct lruvec *lruvec) {
 	if (!folio_test_active(folio)) {
 		lruvec_del_folio(lruvec, folio);
 		folio_set_active(folio);
@@ -35,8 +32,7 @@ static void __folio_activate(struct folio *folio, struct lruvec *lruvec)
 	}
 }
 
-static void folio_activate(struct folio *folio)
-{
+static void folio_activate(struct folio *folio) {
 	struct lruvec *lruvec;
 
 	if (folio_test_clear_lru(folio)) {
@@ -47,8 +43,7 @@ static void folio_activate(struct folio *folio)
 	}
 }
 
-static void __lru_cache_activate_folio(struct folio *folio)
-{
+static void __lru_cache_activate_folio(struct folio *folio) {
 	struct pagevec *pvec;
 	int i;
 
@@ -68,8 +63,7 @@ static void __lru_cache_activate_folio(struct folio *folio)
 	local_unlock(&lru_pvecs.lock);
 }
 
-void folio_mark_accessed(struct folio *folio)
-{
+void folio_mark_accessed(struct folio *folio) {
 	if (!folio_test_referenced(folio)) {
 		folio_set_referenced(folio);
 	} else if (!folio_test_active(folio)) {
@@ -82,8 +76,7 @@ void folio_mark_accessed(struct folio *folio)
 	}
 }
 
-void folio_add_lru(struct folio *folio)
-{
+void folio_add_lru(struct folio *folio) {
 	struct pagevec *pvec;
 
 	VM_BUG_ON_FOLIO(folio_test_lru(folio), folio);
@@ -96,16 +89,14 @@ void folio_add_lru(struct folio *folio)
 	local_unlock(&lru_pvecs.lock);
 }
 
-void lru_cache_add_inactive_or_unevictable(struct page *page, struct vm_area_struct *vma)
-{
+void lru_cache_add_inactive_or_unevictable(struct page *page, struct vm_area_struct *vma) {
 	VM_BUG_ON_PAGE(PageLRU(page), page);
 
 	if (!unlikely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) == VM_LOCKED))
 		lru_cache_add(page);
 }
 
-void lru_add_drain(void)
-{
+void lru_add_drain(void) {
 	struct pagevec *pvec;
 
 	local_lock(&lru_pvecs.lock);
@@ -118,13 +109,11 @@ void lru_add_drain(void)
 
 atomic_t lru_disable_count = ATOMIC_INIT(0);
 
-void release_pages(struct page **pages, int nr)
-{
+void release_pages(struct page **pages, int nr) {
 	/* runtime-dead: page-free batch (munmap/mmu_gather) never fires here */
 }
 
-void __pagevec_lru_add(struct pagevec *pvec)
-{
+void __pagevec_lru_add(struct pagevec *pvec) {
 	/* runtime-dead: lru_add pagevec never fills on this single-shot boot */
 }
 

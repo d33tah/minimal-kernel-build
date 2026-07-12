@@ -7,8 +7,7 @@ typedef struct kobject *kobj_probe_t(dev_t, int *, void *);
 
 struct kobj_map { struct probe { struct probe *next; dev_t dev; unsigned long range; struct module *owner; kobj_probe_t *get; int (*lock)(dev_t, void *); void *data; } *probes[255]; struct mutex *lock; };
 
-int kobj_map(struct kobj_map *domain, dev_t dev, unsigned long range, struct module *module, kobj_probe_t *probe, int (*lock)(dev_t, void *), void *data)
-{
+int kobj_map(struct kobj_map *domain, dev_t dev, unsigned long range, struct module *module, kobj_probe_t *probe, int (*lock)(dev_t, void *), void *data) {
 	unsigned int n = MAJOR(dev + range - 1) - MAJOR(dev) + 1;
 	unsigned int index = MAJOR(dev);
 	unsigned int i;
@@ -41,8 +40,7 @@ int kobj_map(struct kobj_map *domain, dev_t dev, unsigned long range, struct mod
 	return 0;
 }
 
-struct kobject *kobj_lookup(struct kobj_map *domain, dev_t dev, int *index)
-{
+struct kobject *kobj_lookup(struct kobj_map *domain, dev_t dev, int *index) {
 	struct kobject *kobj;
 	struct probe *p;
 	unsigned long best = ~0UL;
@@ -75,8 +73,7 @@ retry:
 	return NULL;
 }
 
-struct kobj_map *kobj_map_init(kobj_probe_t *base_probe, struct mutex *lock)
-{
+struct kobj_map *kobj_map_init(kobj_probe_t *base_probe, struct mutex *lock) {
 	struct kobj_map *p = kmalloc(sizeof(struct kobj_map), GFP_KERNEL);
 	struct probe *base = kzalloc(sizeof(*base), GFP_KERNEL);
 	int i;

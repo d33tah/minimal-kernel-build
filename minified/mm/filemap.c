@@ -7,8 +7,7 @@
 #include <linux/pagevec.h>
 #include "internal.h"
 
-noinline int __filemap_add_folio(struct address_space *mapping, struct folio *folio, pgoff_t index, gfp_t gfp, void **shadowp)
-{
+noinline int __filemap_add_folio(struct address_space *mapping, struct folio *folio, pgoff_t index, gfp_t gfp, void **shadowp) {
 	XA_STATE(xas, &mapping->i_pages, index);
 	long nr = 1;
 
@@ -51,8 +50,7 @@ error:
 	return xas_error(&xas);
 }
 
-int filemap_add_folio(struct address_space *mapping, struct folio *folio, pgoff_t index, gfp_t gfp)
-{
+int filemap_add_folio(struct address_space *mapping, struct folio *folio, pgoff_t index, gfp_t gfp) {
 	void *shadow = NULL;
 	int ret;
 
@@ -73,13 +71,11 @@ int filemap_add_folio(struct address_space *mapping, struct folio *folio, pgoff_
 #define PAGE_WAIT_TABLE_SIZE (1 << PAGE_WAIT_TABLE_BITS)
 static wait_queue_head_t folio_wait_table[PAGE_WAIT_TABLE_SIZE] __cacheline_aligned;
 
-static wait_queue_head_t *folio_waitqueue(struct folio *folio)
-{
+static wait_queue_head_t *folio_waitqueue(struct folio *folio) {
 	return &folio_wait_table[hash_ptr(folio, PAGE_WAIT_TABLE_BITS)];
 }
 
-void __init pagecache_init(void)
-{
+void __init pagecache_init(void) {
 	int i;
 
 	for (i = 0; i < PAGE_WAIT_TABLE_SIZE; i++)
@@ -87,8 +83,7 @@ void __init pagecache_init(void)
 }
 
 
-static void folio_wake_bit(struct folio *folio, int bit_nr)
-{
+static void folio_wake_bit(struct folio *folio, int bit_nr) {
 	wait_queue_head_t *q = folio_waitqueue(folio);
 	struct wait_page_key key;
 	unsigned long flags;
@@ -127,8 +122,7 @@ static void folio_wake_bit(struct folio *folio, int bit_nr)
  * helpers (folio_trylock_flag, wake_page_function) were runtime-dead; the
  * two link-live callers below are reduced to no-op waits.
  */
-int folio_wait_bit_killable(struct folio *folio, int bit_nr)
-{
+int folio_wait_bit_killable(struct folio *folio, int bit_nr) {
 	return 0;
 }
 
@@ -140,8 +134,7 @@ int folio_wait_bit_killable(struct folio *folio, int bit_nr)
  * taken. folio_unlock() below resolves the call to the x86 arch version.
  */
 
-void folio_unlock(struct folio *folio)
-{
+void folio_unlock(struct folio *folio) {
 	
 	BUILD_BUG_ON(PG_waiters != 7);
 	BUILD_BUG_ON(PG_locked > 7);
@@ -152,12 +145,10 @@ void folio_unlock(struct folio *folio)
 
 
 
-void __folio_lock(struct folio *folio)
-{
+void __folio_lock(struct folio *folio) {
 }
 
-static void *mapping_get_entry(struct address_space *mapping, pgoff_t index)
-{
+static void *mapping_get_entry(struct address_space *mapping, pgoff_t index) {
 	XA_STATE(xas, &mapping->i_pages, index);
 	struct folio *folio;
 
@@ -184,8 +175,7 @@ out:
 	return folio;
 }
 
-struct folio *__filemap_get_folio(struct address_space *mapping, pgoff_t index, int fgp_flags, gfp_t gfp)
-{
+struct folio *__filemap_get_folio(struct address_space *mapping, pgoff_t index, int fgp_flags, gfp_t gfp) {
 	struct folio *folio;
 
 repeat:
@@ -253,8 +243,7 @@ no_page:
 	return folio;
 }
 
-static void filemap_get_read_batch(struct address_space *mapping, pgoff_t index, pgoff_t max, struct folio_batch *fbatch)
-{
+static void filemap_get_read_batch(struct address_space *mapping, pgoff_t index, pgoff_t max, struct folio_batch *fbatch) {
 	XA_STATE(xas, &mapping->i_pages, index);
 	struct folio *folio;
 
@@ -287,8 +276,7 @@ retry:
 	rcu_read_unlock();
 }
 
-static int filemap_read_folio(struct file *file, struct address_space *mapping, struct folio *folio)
-{
+static int filemap_read_folio(struct file *file, struct address_space *mapping, struct folio *folio) {
 	int error;
 
 	error = mapping->a_ops->read_folio(file, folio);
@@ -303,8 +291,7 @@ static int filemap_read_folio(struct file *file, struct address_space *mapping, 
 	return -EIO;
 }
 
-static bool filemap_range_uptodate(struct folio *folio)
-{
+static bool filemap_range_uptodate(struct folio *folio) {
 	/*
 	 * No address_space_operations on this build sets
 	 * ->is_partially_uptodate (ram_aops only sets read_folio/write_begin/
@@ -314,8 +301,7 @@ static bool filemap_range_uptodate(struct folio *folio)
 	return folio_test_uptodate(folio);
 }
 
-static int filemap_update_page(struct kiocb *iocb, struct address_space *mapping, struct iov_iter *iter, struct folio *folio)
-{
+static int filemap_update_page(struct kiocb *iocb, struct address_space *mapping, struct iov_iter *iter, struct folio *folio) {
 	int error;
 
 	if (iocb->ki_flags & IOCB_NOWAIT) {
@@ -360,8 +346,7 @@ unlock_mapping:
 	return error;
 }
 
-static int filemap_create_folio(struct file *file, struct address_space *mapping, pgoff_t index, struct folio_batch *fbatch)
-{
+static int filemap_create_folio(struct file *file, struct address_space *mapping, pgoff_t index, struct folio_batch *fbatch) {
 	struct folio *folio;
 	int error;
 
@@ -390,8 +375,7 @@ error:
 	return error;
 }
 
-static int filemap_get_pages(struct kiocb *iocb, struct iov_iter *iter, struct folio_batch *fbatch)
-{
+static int filemap_get_pages(struct kiocb *iocb, struct iov_iter *iter, struct folio_batch *fbatch) {
 	struct file *filp = iocb->ki_filp;
 	struct address_space *mapping = filp->f_mapping;
 	struct file_ra_state *ra = &filp->f_ra;
@@ -441,15 +425,13 @@ err:
 	return err;
 }
 
-static inline bool pos_same_folio(loff_t pos1, loff_t pos2, struct folio *folio)
-{
+static inline bool pos_same_folio(loff_t pos1, loff_t pos2, struct folio *folio) {
 	unsigned int shift = folio_shift(folio);
 
 	return (pos1 >> shift == pos2 >> shift);
 }
 
-ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter, ssize_t already_read)
-{
+ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter, ssize_t already_read) {
 	struct file *filp = iocb->ki_filp;
 	struct file_ra_state *ra = &filp->f_ra;
 	struct address_space *mapping = filp->f_mapping;
@@ -532,8 +514,7 @@ put_folios:
 }
 
 ssize_t
-generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
-{
+generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter) {
 	size_t count = iov_iter_count(iter);
 	ssize_t retval = 0;
 
@@ -545,8 +526,7 @@ generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 
 
 
-vm_fault_t filemap_fault(struct vm_fault *vmf)
-{
+vm_fault_t filemap_fault(struct vm_fault *vmf) {
 	struct file *file = vmf->vma->vm_file;
 	struct address_space *mapping = file->f_mapping;
 	pgoff_t index = vmf->pgoff;
@@ -563,8 +543,7 @@ vm_fault_t filemap_fault(struct vm_fault *vmf)
 	return VM_FAULT_LOCKED;
 }
 
-vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf)
-{
+vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf) {
 	/*
 	 * RUNTIME-DEAD SAFE-FALLBACK STUB: the .page_mkwrite fn-ptr of
 	 * generic_file_vm_ops. This kernel never takes a shared file-backed
@@ -579,8 +558,7 @@ vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf)
 
 const struct vm_operations_struct generic_file_vm_ops = { .fault		= filemap_fault, .page_mkwrite	= filemap_page_mkwrite, };
 
-int generic_file_mmap(struct file *file, struct vm_area_struct *vma)
-{
+int generic_file_mmap(struct file *file, struct vm_area_struct *vma) {
 	struct address_space *mapping = file->f_mapping;
 
 	if (!mapping->a_ops->read_folio)
@@ -590,8 +568,7 @@ int generic_file_mmap(struct file *file, struct vm_area_struct *vma)
 	return 0;
 }
 
-ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
-{
+ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i) {
 	struct file *file = iocb->ki_filp;
 	struct address_space *mapping = file->f_mapping;
 	const struct address_space_operations *a_ops = mapping->a_ops;
@@ -607,8 +584,7 @@ ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
 	return written;
 }
 
-ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
-{
+ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from) {
 	struct file *file = iocb->ki_filp;
 	ssize_t		written = 0;
 	ssize_t		err;
@@ -629,8 +605,7 @@ out:
 	return written ? written : err;
 }
 
-ssize_t generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
-{
+ssize_t generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from) {
 	struct file *file = iocb->ki_filp;
 	struct inode *inode = file->f_mapping->host;
 	ssize_t ret;

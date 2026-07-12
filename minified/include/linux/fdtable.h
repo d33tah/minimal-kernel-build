@@ -22,8 +22,7 @@ struct files_struct { atomic_t count; bool resize_in_progress; wait_queue_head_t
 
 #define files_fdtable(files) 	rcu_dereference_check_fdtable((files), (files)->fdt)
 
-static inline struct file *files_lookup_fd_raw(struct files_struct *files, unsigned int fd)
-{
+static inline struct file *files_lookup_fd_raw(struct files_struct *files, unsigned int fd) {
 	struct fdtable *fdt = rcu_dereference_raw(files->fdt);
 
 	if (fd < fdt->max_fds) {

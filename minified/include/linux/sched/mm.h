@@ -11,27 +11,23 @@
 
 extern struct mm_struct *mm_alloc(void);
 
-static inline void mmgrab(struct mm_struct *mm)
-{
+static inline void mmgrab(struct mm_struct *mm) {
 	atomic_inc(&mm->mm_count);
 }
 
 extern void __mmdrop(struct mm_struct *mm);
 
-static inline void mmdrop(struct mm_struct *mm)
-{
+static inline void mmdrop(struct mm_struct *mm) {
 	 
 	if (unlikely(atomic_dec_and_test(&mm->mm_count)))
 		__mmdrop(mm);
 }
 
-static inline void mmdrop_sched(struct mm_struct *mm)
-{
+static inline void mmdrop_sched(struct mm_struct *mm) {
 	mmdrop(mm);
 }
 
-static inline void mmget(struct mm_struct *mm)
-{
+static inline void mmget(struct mm_struct *mm) {
 	atomic_inc(&mm->mm_users);
 }
 
@@ -55,8 +51,7 @@ unsigned long
 generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr, unsigned long len, unsigned long pgoff, unsigned long flags);
 
 
-static inline gfp_t current_gfp_context(gfp_t flags)
-{
+static inline gfp_t current_gfp_context(gfp_t flags) {
 	unsigned int pflags = READ_ONCE(current->flags);
 
 	if (unlikely(pflags & (PF_MEMALLOC_NOIO | PF_MEMALLOC_NOFS))) {
@@ -69,8 +64,7 @@ static inline gfp_t current_gfp_context(gfp_t flags)
 	return flags;
 }
 
-static inline void might_alloc(gfp_t gfp_mask)
-{
+static inline void might_alloc(gfp_t gfp_mask) {
 	might_sleep_if(gfpflags_allow_blocking(gfp_mask));
 }
 

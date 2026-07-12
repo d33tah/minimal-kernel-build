@@ -50,8 +50,7 @@ extern void free_task(struct task_struct *tsk);
 
 extern void __put_task_struct(struct task_struct *t);
 
-static inline void put_task_struct(struct task_struct *t)
-{
+static inline void put_task_struct(struct task_struct *t) {
 	if (refcount_dec_and_test(&t->usage))
 		__put_task_struct(t);
 }
@@ -62,13 +61,11 @@ void put_task_struct_rcu_user(struct task_struct *task);
 extern int arch_task_struct_size __read_mostly;
 
 
-static inline void task_lock(struct task_struct *p)
-{
+static inline void task_lock(struct task_struct *p) {
 	spin_lock(&p->alloc_lock);
 }
 
-static inline void task_unlock(struct task_struct *p)
-{
+static inline void task_unlock(struct task_struct *p) {
 	spin_unlock(&p->alloc_lock);
 }
 

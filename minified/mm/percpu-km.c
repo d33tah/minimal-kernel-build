@@ -2,13 +2,11 @@
 
 #include <linux/log2.h>
 
-static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int page_start, int page_end, gfp_t gfp)
-{
+static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int page_start, int page_end, gfp_t gfp) {
 	return 0;
 }
 
-static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
-{
+static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp) {
 	const int nr_pages = pcpu_group_sizes[0] >> PAGE_SHIFT;
 	struct pcpu_chunk *chunk;
 	struct page *pages;
@@ -38,8 +36,7 @@ static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
 	return chunk;
 }
 
-static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai)
-{
+static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai) {
 	size_t nr_pages, alloc_pages;
 
 	nr_pages = (ai->groups[0].nr_units * ai->unit_size) >> PAGE_SHIFT;

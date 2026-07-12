@@ -14,8 +14,7 @@ extern unsigned int tsc_khz;
 
 /* disable_TSC removed - unused */
 
-static inline cycles_t get_cycles(void)
-{
+static inline cycles_t get_cycles(void) {
 	return rdtsc();
 }
 #define get_cycles get_cycles

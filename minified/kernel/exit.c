@@ -10,22 +10,19 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/fs_struct.h>
 
 
-static void delayed_put_task_struct(struct rcu_head *rhp)
-{
+static void delayed_put_task_struct(struct rcu_head *rhp) {
 	struct task_struct *tsk = container_of(rhp, struct task_struct, rcu);
 
 
 	put_task_struct(tsk);
 }
 
-void put_task_struct_rcu_user(struct task_struct *task)
-{
+void put_task_struct_rcu_user(struct task_struct *task) {
 	if (refcount_dec_and_test(&task->rcu_users))
 		call_rcu(&task->rcu, delayed_put_task_struct);
 }
 
-static void exit_mm(void)
-{
+static void exit_mm(void) {
 	/*
 	 * RUNTIME-DEAD ANCHOR-STUB: exit_mm drops the dying task's mm. On this
 	 * single-shot boot the only task that exits is PID-1 init, and do_exit
@@ -38,8 +35,7 @@ static void exit_mm(void)
 	 */
 }
 
-static void exit_notify(struct task_struct *tsk, int group_dead)
-{
+static void exit_notify(struct task_struct *tsk, int group_dead) {
 	/*
 	 * RUNTIME-DEAD anchor-stub: exit_notify is the process-reap/reparent
 	 * notification root. On this single-shot boot nothing is ever reaped --
@@ -53,8 +49,7 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 	 */
 }
 
-void __noreturn do_exit(long code)
-{
+void __noreturn do_exit(long code) {
 	struct task_struct *tsk = current;
 	int group_dead;
 
@@ -90,8 +85,7 @@ void __noreturn do_exit(long code)
 	do_task_dead();
 }
 
-SYSCALL_DEFINE1(exit, int, error_code)
-{
+SYSCALL_DEFINE1(exit, int, error_code) {
 	do_exit((error_code&0xff)<<8);
 }
 

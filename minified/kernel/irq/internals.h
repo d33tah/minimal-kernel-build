@@ -35,21 +35,18 @@ enum { _IRQ_DEFAULT_INIT_FLAGS	= IRQ_DEFAULT_INIT_FLAGS, _IRQ_NOPROBE		= IRQ_NOP
 #define IRQF_MODIFY_MASK	GOT_YOU_MORON
 
 static inline void
-irq_settings_clr_and_set(struct irq_desc *desc, u32 clr, u32 set)
-{
+irq_settings_clr_and_set(struct irq_desc *desc, u32 clr, u32 set) {
 	desc->status_use_accessors &= ~(clr & _IRQF_MODIFY_MASK);
 	desc->status_use_accessors |= (set & _IRQF_MODIFY_MASK);
 }
 
-static inline bool irq_settings_is_per_cpu_devid(struct irq_desc *desc)
-{
+static inline bool irq_settings_is_per_cpu_devid(struct irq_desc *desc) {
 	return desc->status_use_accessors & _IRQ_PER_CPU_DEVID;
 }
 
 /* irq_settings_set_per_cpu removed - 0-caller */
 
-static inline void irq_settings_set_no_balancing(struct irq_desc *desc)
-{
+static inline void irq_settings_set_no_balancing(struct irq_desc *desc) {
 	desc->status_use_accessors |= _IRQ_NO_BALANCING;
 }
 
@@ -57,41 +54,35 @@ static inline void irq_settings_set_no_balancing(struct irq_desc *desc)
 
 /* irq_settings_clr_level + irq_settings_set_level removed - 0-caller */
 
-static inline bool irq_settings_can_request(struct irq_desc *desc)
-{
+static inline bool irq_settings_can_request(struct irq_desc *desc) {
 	return !(desc->status_use_accessors & _IRQ_NOREQUEST);
 }
 
 /* irq_settings_clr_norequest removed - unused */
 
-static inline void irq_settings_set_norequest(struct irq_desc *desc)
-{
+static inline void irq_settings_set_norequest(struct irq_desc *desc) {
 	desc->status_use_accessors |= _IRQ_NOREQUEST;
 }
 
 /* irq_settings_clr_nothread removed - unused */
 
-static inline void irq_settings_set_nothread(struct irq_desc *desc)
-{
+static inline void irq_settings_set_nothread(struct irq_desc *desc) {
 	desc->status_use_accessors |= _IRQ_NOTHREAD;
 }
 
 /* irq_settings_can_probe and irq_settings_clr_noprobe removed - unused */
 
-static inline void irq_settings_set_noprobe(struct irq_desc *desc)
-{
+static inline void irq_settings_set_noprobe(struct irq_desc *desc) {
 	desc->status_use_accessors |= _IRQ_NOPROBE;
 }
 
-static inline bool irq_settings_can_autoenable(struct irq_desc *desc)
-{
+static inline bool irq_settings_can_autoenable(struct irq_desc *desc) {
 	return !(desc->status_use_accessors & _IRQ_NOAUTOEN);
 }
 
 /* irq_settings_is_polled removed - unused */
 
-static inline bool irq_settings_disable_unlazy(struct irq_desc *desc)
-{
+static inline bool irq_settings_disable_unlazy(struct irq_desc *desc) {
 	return desc->status_use_accessors & _IRQ_DISABLE_UNLAZY;
 }
 
@@ -117,21 +108,18 @@ extern void unmask_irq(struct irq_desc *desc);
 irqreturn_t __handle_irq_event_percpu(struct irq_desc *desc);
 irqreturn_t handle_irq_event(struct irq_desc *desc);
 
-static inline int check_irq_resend(struct irq_desc *desc, bool inject)
-{
+static inline int check_irq_resend(struct irq_desc *desc, bool inject) {
 	desc->istate &= ~IRQS_PENDING;
 	return 0;
 }
 
 
-static inline void chip_bus_lock(struct irq_desc *desc)
-{
+static inline void chip_bus_lock(struct irq_desc *desc) {
 	if (unlikely(desc->irq_data.chip->irq_bus_lock))
 		desc->irq_data.chip->irq_bus_lock(&desc->irq_data);
 }
 
-static inline void chip_bus_sync_unlock(struct irq_desc *desc)
-{
+static inline void chip_bus_sync_unlock(struct irq_desc *desc) {
 	if (unlikely(desc->irq_data.chip->irq_bus_sync_unlock))
 		desc->irq_data.chip->irq_bus_sync_unlock(&desc->irq_data);
 }
@@ -144,64 +132,53 @@ static inline void chip_bus_sync_unlock(struct irq_desc *desc)
 struct irq_desc * __irq_get_desc_lock(unsigned int irq, unsigned long *flags, bool bus, unsigned int check);
 void __irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags, bool bus);
 
-static inline struct irq_desc * irq_get_desc_buslock(unsigned int irq, unsigned long *flags, unsigned int check)
-{
+static inline struct irq_desc * irq_get_desc_buslock(unsigned int irq, unsigned long *flags, unsigned int check) {
 	return __irq_get_desc_lock(irq, flags, true, check);
 }
 
 static inline void
-irq_put_desc_busunlock(struct irq_desc *desc, unsigned long flags)
-{
+irq_put_desc_busunlock(struct irq_desc *desc, unsigned long flags) {
 	__irq_put_desc_unlock(desc, flags, true);
 }
 
-static inline struct irq_desc * irq_get_desc_lock(unsigned int irq, unsigned long *flags, unsigned int check)
-{
+static inline struct irq_desc * irq_get_desc_lock(unsigned int irq, unsigned long *flags, unsigned int check) {
 	return __irq_get_desc_lock(irq, flags, false, check);
 }
 
 static inline void
-irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags)
-{
+irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags) {
 	__irq_put_desc_unlock(desc, flags, false);
 }
 
 #define __irqd_to_state(d) ACCESS_PRIVATE((d)->common, state_use_accessors)
 
-static inline void irqd_clear(struct irq_data *d, unsigned int mask)
-{
+static inline void irqd_clear(struct irq_data *d, unsigned int mask) {
 	__irqd_to_state(d) &= ~mask;
 }
 
-static inline void irqd_set(struct irq_data *d, unsigned int mask)
-{
+static inline void irqd_set(struct irq_data *d, unsigned int mask) {
 	__irqd_to_state(d) |= mask;
 }
 
-static inline bool irqd_has_set(struct irq_data *d, unsigned int mask)
-{
+static inline bool irqd_has_set(struct irq_data *d, unsigned int mask) {
 	return __irqd_to_state(d) & mask;
 }
 
-static inline void irq_state_set_disabled(struct irq_desc *desc)
-{
+static inline void irq_state_set_disabled(struct irq_desc *desc) {
 	irqd_set(&desc->irq_data, IRQD_IRQ_DISABLED);
 }
 
-static inline void irq_state_set_masked(struct irq_desc *desc)
-{
+static inline void irq_state_set_masked(struct irq_desc *desc) {
 	irqd_set(&desc->irq_data, IRQD_IRQ_MASKED);
 }
 
 #undef __irqd_to_state
 
-static inline void __kstat_incr_irqs_this_cpu(struct irq_desc *desc)
-{
+static inline void __kstat_incr_irqs_this_cpu(struct irq_desc *desc) {
 	__this_cpu_inc(*desc->kstat_irqs);
 }
 
-static inline void kstat_incr_irqs_this_cpu(struct irq_desc *desc)
-{
+static inline void kstat_incr_irqs_this_cpu(struct irq_desc *desc) {
 	__kstat_incr_irqs_this_cpu(desc);
 }
 
@@ -213,8 +190,7 @@ static inline void kstat_incr_irqs_this_cpu(struct irq_desc *desc)
    irq_copy_pending, irq_get_pending, irq_desc_get_pending_mask,
    irq_fixup_move_pending removed - unused */
 
-static inline int irq_domain_activate_irq(struct irq_data *data, bool reserve)
-{
+static inline int irq_domain_activate_irq(struct irq_data *data, bool reserve) {
 	irqd_set_activated(data);
 	return 0;
 }

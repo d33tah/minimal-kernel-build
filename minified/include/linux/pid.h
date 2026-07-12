@@ -5,8 +5,7 @@
 #include <linux/wait.h>
 #include <linux/refcount.h>
 
-enum pid_type
-{
+enum pid_type {
 	PIDTYPE_PID, PIDTYPE_TGID, PIDTYPE_PGID, PIDTYPE_SID, PIDTYPE_MAX, };
 
 
@@ -14,8 +13,7 @@ enum pid_type
 
 struct upid { int nr; struct pid_namespace *ns; };
 
-struct pid
-{
+struct pid {
 	refcount_t count;
 	unsigned int level;
 	struct hlist_head tasks[PIDTYPE_MAX];
@@ -26,8 +24,7 @@ struct pid
 
 extern struct pid init_struct_pid;
 
-static inline struct pid *get_pid(struct pid *pid)
-{
+static inline struct pid *get_pid(struct pid *pid) {
 	if (pid)
 		refcount_inc(&pid->count);
 	return pid;
@@ -45,22 +42,19 @@ extern struct pid_namespace init_pid_ns;
 extern struct pid *alloc_pid(struct pid_namespace *ns);
 extern void free_pid(struct pid *pid);
 
-static inline struct pid_namespace *ns_of_pid(struct pid *pid)
-{
+static inline struct pid_namespace *ns_of_pid(struct pid *pid) {
 	struct pid_namespace *ns = NULL;
 	if (pid)
 		ns = pid->numbers[pid->level].ns;
 	return ns;
 }
 
-static inline bool is_child_reaper(struct pid *pid)
-{
+static inline bool is_child_reaper(struct pid *pid) {
 	return pid->numbers[pid->level].nr == 1;
 }
 
 
-static inline pid_t pid_nr(struct pid *pid)
-{
+static inline pid_t pid_nr(struct pid *pid) {
 	pid_t nr = 0;
 	if (pid)
 		nr = pid->numbers[0].nr;

@@ -83,8 +83,7 @@ unsigned long loops_per_jiffy = (1<<12);
  * branch in kernel_init was dead and has been removed; ramdisk_execute_command
  * keeps its "/init" default and drives the honest boot.
  */
-static void __init setup_command_line(char *command_line)
-{
+static void __init setup_command_line(char *command_line) {
 	size_t len;
 
 	len = strlen(boot_command_line) + 1;
@@ -104,8 +103,7 @@ static void __init setup_command_line(char *command_line)
 
 static __initdata DECLARE_COMPLETION(kthreadd_done);
 
-noinline void __ref rest_init(void)
-{
+noinline void __ref rest_init(void) {
 	struct task_struct *tsk;
 	int pid;
 
@@ -133,26 +131,22 @@ noinline void __ref rest_init(void)
 	cpu_startup_entry(CPUHP_ONLINE);
 }
 
-void __init parse_early_param(void)
-{
+void __init parse_early_param(void) {
 }
 
 void __init __weak arch_post_acpi_subsys_init(void) { }
 
-void __init __weak smp_setup_processor_id(void)
-{
+void __init __weak smp_setup_processor_id(void) {
 }
 
-void __init __weak thread_stack_cache_init(void)
-{
+void __init __weak thread_stack_cache_init(void) {
 }
 
 void __init __weak mem_encrypt_init(void) { }
 
 void __init __weak pgtable_cache_init(void) { }
 
-static void __init mm_init(void)
-{
+static void __init mm_init(void) {
 
 	mem_init();
 	mem_init_print_info();
@@ -163,13 +157,11 @@ static void __init mm_init(void)
 }
 
 
-void __init __weak arch_call_rest_init(void)
-{
+void __init __weak arch_call_rest_init(void) {
 	rest_init();
 }
 
-asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
-{
+asmlinkage __visible void __init __no_sanitize_address start_kernel(void) {
 	char *command_line;
 
 	set_task_stack_end_magic(&init_task);
@@ -257,8 +249,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	prevent_tail_call_optimization();
 }
 
-int __init_or_module do_one_initcall(initcall_t fn)
-{
+int __init_or_module do_one_initcall(initcall_t fn) {
 	int count = preempt_count();
 	char msgbuf[64];
 	int ret;
@@ -294,30 +285,26 @@ extern initcall_entry_t __initcall_end[];
 
 static initcall_entry_t *initcall_levels[] __initdata = { __initcall0_start, __initcall1_start, __initcall2_start, __initcall3_start, __initcall4_start, __initcall5_start, __initcall6_start, __initcall7_start, __initcall_end, };
 
-static void __init do_initcall_level(int level)
-{
+static void __init do_initcall_level(int level) {
 	initcall_entry_t *fn;
 
 	for (fn = initcall_levels[level]; fn < initcall_levels[level+1]; fn++)
 		do_one_initcall(initcall_from_entry(fn));
 }
 
-static void __init do_initcalls(void)
-{
+static void __init do_initcalls(void) {
 	int level;
 
 	for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1; level++)
 		do_initcall_level(level);
 }
 
-static void __init do_basic_setup(void)
-{
+static void __init do_basic_setup(void) {
 	driver_init();
 	do_initcalls();
 }
 
-static void __init do_pre_smp_initcalls(void)
-{
+static void __init do_pre_smp_initcalls(void) {
 	initcall_entry_t *fn;
 
 
@@ -325,15 +312,13 @@ static void __init do_pre_smp_initcalls(void)
 		do_one_initcall(initcall_from_entry(fn));
 }
 
-static int run_init_process(const char *init_filename)
-{
+static int run_init_process(const char *init_filename) {
 	argv_init[0] = init_filename;
 	pr_info("Run %s as init process\n", init_filename);
 	return kernel_execve(init_filename, argv_init, envp_init);
 }
 
-static int try_to_run_init_process(const char *init_filename)
-{
+static int try_to_run_init_process(const char *init_filename) {
 	int ret;
 
 	ret = run_init_process(init_filename);
@@ -347,14 +332,12 @@ static int try_to_run_init_process(const char *init_filename)
 
 static noinline void __init kernel_init_freeable(void);
 
-static void mark_readonly(void)
-{
+static void mark_readonly(void) {
 	rcu_barrier();
 	mark_rodata_ro();
 }
 
-static int __ref kernel_init(void *unused)
-{
+static int __ref kernel_init(void *unused) {
 	int ret;
 
 	 
@@ -384,8 +367,7 @@ static int __ref kernel_init(void *unused)
 	panic("No working init found.  Try passing init= option to kernel. " "See Linux Documentation/admin-guide/init.rst for guidance.");
 }
 
-void __init console_on_rootfs(void)
-{
+void __init console_on_rootfs(void) {
 	struct file *file = filp_open("/dev/console", O_RDWR, 0);
 
 	if (IS_ERR(file)) {
@@ -398,8 +380,7 @@ void __init console_on_rootfs(void)
 	fput(file);
 }
 
-static noinline void __init kernel_init_freeable(void)
-{
+static noinline void __init kernel_init_freeable(void) {
 	 
 	gfp_allowed_mask = __GFP_BITS_MASK;
 

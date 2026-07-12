@@ -45,24 +45,20 @@ extern bool queue_work_on(int cpu, struct workqueue_struct *wq, struct work_stru
 extern bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq, struct delayed_work *work, unsigned long delay);
 
 
-static inline bool queue_work(struct workqueue_struct *wq, struct work_struct *work)
-{
+static inline bool queue_work(struct workqueue_struct *wq, struct work_struct *work) {
 	return queue_work_on(WORK_CPU_UNBOUND, wq, work);
 }
 
-static inline bool queue_delayed_work(struct workqueue_struct *wq, struct delayed_work *dwork, unsigned long delay)
-{
+static inline bool queue_delayed_work(struct workqueue_struct *wq, struct delayed_work *dwork, unsigned long delay) {
 	return queue_delayed_work_on(WORK_CPU_UNBOUND, wq, dwork, delay);
 }
 
-static inline bool schedule_work(struct work_struct *work)
-{
+static inline bool schedule_work(struct work_struct *work) {
 	return queue_work(system_wq, work);
 }
 
 
-static inline bool schedule_delayed_work(struct delayed_work *dwork, unsigned long delay)
-{
+static inline bool schedule_delayed_work(struct delayed_work *dwork, unsigned long delay) {
 	return queue_delayed_work(system_wq, dwork, delay);
 }
 

@@ -14,8 +14,7 @@
  * path and the reverse conversion are unreferenced under CONFIG_HZ=250.
  */
 
-void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
-{
+void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec) {
 	while (nsec >= NSEC_PER_SEC) {
 		 
 		asm("" : "+rm"(nsec));
@@ -31,8 +30,7 @@ void set_normalized_timespec64(struct timespec64 *ts, time64_t sec, s64 nsec)
 	ts->tv_nsec = nsec;
 }
 
-struct timespec64 ns_to_timespec64(const s64 nsec)
-{
+struct timespec64 ns_to_timespec64(const s64 nsec) {
 	struct timespec64 ts = { 0, 0 };
 	s32 rem;
 

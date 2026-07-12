@@ -15,37 +15,31 @@ static struct kmem_cache *mnt_cache __read_mostly;
 
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(mount_lock);
 
-static inline void lock_mount_hash(void)
-{
+static inline void lock_mount_hash(void) {
 	write_seqlock(&mount_lock);
 }
 
-static inline void unlock_mount_hash(void)
-{
+static inline void unlock_mount_hash(void) {
 	write_sequnlock(&mount_lock);
 }
 
-static struct mount *alloc_vfsmnt(const char *name)
-{
+static struct mount *alloc_vfsmnt(const char *name) {
 	struct mount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
 	if (mnt)
 		mnt->mnt.mnt_userns = &init_user_ns;
 	return mnt;
 }
 
-static bool __mnt_is_readonly(struct vfsmount *mnt)
-{
+static bool __mnt_is_readonly(struct vfsmount *mnt) {
 	return sb_rdonly(mnt->mnt_sb);
 }
 
-static int mnt_is_readonly(struct vfsmount *mnt)
-{
+static int mnt_is_readonly(struct vfsmount *mnt) {
 	smp_rmb();
 	return __mnt_is_readonly(mnt);
 }
 
-int __mnt_want_write(struct vfsmount *m)
-{
+int __mnt_want_write(struct vfsmount *m) {
 	int ret = 0;
 
 	preempt_disable();
@@ -61,8 +55,7 @@ int __mnt_want_write(struct vfsmount *m)
 	return ret;
 }
 
-int mnt_want_write(struct vfsmount *m)
-{
+int mnt_want_write(struct vfsmount *m) {
 	int ret;
 
 	sb_start_write(m->mnt_sb);
@@ -72,8 +65,7 @@ int mnt_want_write(struct vfsmount *m)
 	return ret;
 }
 
-int __mnt_want_write_file(struct file *file)
-{
+int __mnt_want_write_file(struct file *file) {
 	if (file->f_mode & FMODE_WRITER) {
 		
 		if (__mnt_is_readonly(file->f_path.mnt))
@@ -83,26 +75,22 @@ int __mnt_want_write_file(struct file *file)
 	return __mnt_want_write(file->f_path.mnt);
 }
 
-void __mnt_drop_write(struct vfsmount *mnt)
-{
+void __mnt_drop_write(struct vfsmount *mnt) {
 	preempt_disable();
 	preempt_enable();
 }
 
-void mnt_drop_write(struct vfsmount *mnt)
-{
+void mnt_drop_write(struct vfsmount *mnt) {
 	__mnt_drop_write(mnt);
 	sb_end_write(mnt->mnt_sb);
 }
 
-void __mnt_drop_write_file(struct file *file)
-{
+void __mnt_drop_write_file(struct file *file) {
 	if (!(file->f_mode & FMODE_WRITER))
 		__mnt_drop_write(file->f_path.mnt);
 }
 
-int __legitimize_mnt(struct vfsmount *bastard, unsigned seq)
-{
+int __legitimize_mnt(struct vfsmount *bastard, unsigned seq) {
 	if (read_seqretry(&mount_lock, seq))
 		return 1;
 	if (bastard == NULL)
@@ -117,8 +105,7 @@ int __legitimize_mnt(struct vfsmount *bastard, unsigned seq)
 	return -1;
 }
 
-bool legitimize_mnt(struct vfsmount *bastard, unsigned seq)
-{
+bool legitimize_mnt(struct vfsmount *bastard, unsigned seq) {
 	int res = __legitimize_mnt(bastard, seq);
 	if (likely(!res))
 		return true;
@@ -130,13 +117,11 @@ bool legitimize_mnt(struct vfsmount *bastard, unsigned seq)
 	return false;
 }
 
-static inline int check_mnt(struct mount *mnt)
-{
+static inline int check_mnt(struct mount *mnt) {
 	return mnt->mnt_ns == current->nsproxy->mnt_ns;
 }
 
-struct vfsmount *vfs_create_mount(struct fs_context *fc)
-{
+struct vfsmount *vfs_create_mount(struct fs_context *fc) {
 	struct mount *mnt;
 	struct user_namespace *fs_userns;
 
@@ -160,8 +145,7 @@ struct vfsmount *vfs_create_mount(struct fs_context *fc)
 	return &mnt->mnt;
 }
 
-struct vfsmount *fc_mount(struct fs_context *fc)
-{
+struct vfsmount *fc_mount(struct fs_context *fc) {
 	int err = vfs_get_tree(fc);
 	if (!err) {
 		up_write(&fc->root->d_sb->s_umount);
@@ -170,8 +154,7 @@ struct vfsmount *fc_mount(struct fs_context *fc)
 	return ERR_PTR(err);
 }
 
-struct vfsmount *vfs_kern_mount(struct file_system_type *type, int flags, const char *name, void *data)
-{
+struct vfsmount *vfs_kern_mount(struct file_system_type *type, int flags, const char *name, void *data) {
 	struct fs_context *fc;
 	struct vfsmount *mnt;
 	int ret = 0;
@@ -198,8 +181,7 @@ struct vfsmount *vfs_kern_mount(struct file_system_type *type, int flags, const 
 
 
 
-static void mntput_no_expire(struct mount *mnt)
-{
+static void mntput_no_expire(struct mount *mnt) {
 	/*
 	 * Every mount on this minimal kernel is attached to a namespace:
 	 * the rootfs mount carries the initial mnt_namespace and the shmem
@@ -213,8 +195,7 @@ static void mntput_no_expire(struct mount *mnt)
 	rcu_read_unlock();
 }
 
-void mntput(struct vfsmount *mnt)
-{
+void mntput(struct vfsmount *mnt) {
 	if (mnt) {
 		struct mount *m = real_mount(mnt);
 
@@ -222,8 +203,7 @@ void mntput(struct vfsmount *mnt)
 	}
 }
 
-struct vfsmount *mntget(struct vfsmount *mnt)
-{
+struct vfsmount *mntget(struct vfsmount *mnt) {
 	return mnt;
 }
 
@@ -232,18 +212,15 @@ struct vfsmount *mntget(struct vfsmount *mnt)
 
 
 
-static struct ucounts *inc_mnt_namespaces(struct user_namespace *ns)
-{
+static struct ucounts *inc_mnt_namespaces(struct user_namespace *ns) {
 	return inc_ucount(ns, current_euid(), UCOUNT_MNT_NAMESPACES);
 }
 
-static void dec_mnt_namespaces(struct ucounts *ucounts)
-{
+static void dec_mnt_namespaces(struct ucounts *ucounts) {
 	dec_ucount(ucounts, UCOUNT_MNT_NAMESPACES);
 }
 
-static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns, bool anon)
-{
+static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns, bool anon) {
 	struct mnt_namespace *new_ns;
 	struct ucounts *ucounts;
 	int ret;
@@ -272,8 +249,7 @@ static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns, bool a
 }
 
 __latent_entropy
-static void __init init_mount_tree(void)
-{
+static void __init init_mount_tree(void) {
 	struct vfsmount *mnt;
 	struct mount *m;
 	struct mnt_namespace *ns;
@@ -299,8 +275,7 @@ static void __init init_mount_tree(void)
 	set_fs_root(current->fs, &root);
 }
 
-void __init mnt_init(void)
-{
+void __init mnt_init(void) {
 	mnt_cache = kmem_cache_create("mnt_cache", sizeof(struct mount), 0, SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, NULL);
 
 	/* Stub: fs_kobj not used in minimal kernel */
@@ -314,8 +289,7 @@ void __init mnt_init(void)
  * a 1-shot boot that never clones a namespace.
  */
 
-struct vfsmount *kern_mount(struct file_system_type *type)
-{
+struct vfsmount *kern_mount(struct file_system_type *type) {
 	struct vfsmount *mnt = vfs_kern_mount(type, SB_KERNMOUNT, type->name, NULL);
 	if (!IS_ERR(mnt)) {
 		
@@ -326,8 +300,7 @@ struct vfsmount *kern_mount(struct file_system_type *type)
 
 
 
-bool mnt_may_suid(struct vfsmount *mnt)
-{
+bool mnt_may_suid(struct vfsmount *mnt) {
 	
 	return check_mnt(real_mount(mnt));
 }

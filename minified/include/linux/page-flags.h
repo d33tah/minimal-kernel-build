@@ -26,19 +26,16 @@ enum pageflags {
 
 #ifndef __GENERATING_BOUNDS_H
 
-static inline const struct page *page_fixed_fake_head(const struct page *page)
-{
+static inline const struct page *page_fixed_fake_head(const struct page *page) {
 	return page;
 }
 
 
-static __always_inline int page_is_fake_head(struct page *page)
-{
+static __always_inline int page_is_fake_head(struct page *page) {
 	return page_fixed_fake_head(page) != page;
 }
 
-static inline unsigned long _compound_head(const struct page *page)
-{
+static inline unsigned long _compound_head(const struct page *page) {
 	unsigned long head = READ_ONCE(page->compound_head);
 
 	if (unlikely(head & 1))
@@ -52,24 +49,20 @@ static inline unsigned long _compound_head(const struct page *page)
 
 #define folio_page(folio, n)	nth_page(&(folio)->page, n)
 
-static __always_inline int PageTail(struct page *page)
-{
+static __always_inline int PageTail(struct page *page) {
 	return READ_ONCE(page->compound_head) & 1 || page_is_fake_head(page);
 }
 
-static __always_inline int PageCompound(struct page *page)
-{
+static __always_inline int PageCompound(struct page *page) {
 	return test_bit(PG_head, &page->flags) || READ_ONCE(page->compound_head) & 1;
 }
 
 #define	PAGE_POISON_PATTERN	-1l
-static inline int PagePoisoned(const struct page *page)
-{
+static inline int PagePoisoned(const struct page *page) {
 	return READ_ONCE(page->flags) == PAGE_POISON_PATTERN;
 }
 
-static unsigned long *folio_flags(struct folio *folio, unsigned n)
-{
+static unsigned long *folio_flags(struct folio *folio, unsigned n) {
 	struct page *page = &folio->page;
 
 	VM_BUG_ON_PGFLAGS(PageTail(page), page);
@@ -144,25 +137,21 @@ PAGEFLAG(Readahead, readahead, PF_NO_COMPOUND)
 #define PAGE_MAPPING_FLAGS	(PAGE_MAPPING_ANON | PAGE_MAPPING_MOVABLE)
 
 
-static __always_inline int PageMappingFlags(struct page *page)
-{
+static __always_inline int PageMappingFlags(struct page *page) {
 	return ((unsigned long)page->mapping & PAGE_MAPPING_FLAGS) != 0;
 }
 
-static __always_inline bool folio_test_anon(struct folio *folio)
-{
+static __always_inline bool folio_test_anon(struct folio *folio) {
 	return ((unsigned long)folio->mapping & PAGE_MAPPING_ANON) != 0;
 }
 
-static __always_inline bool PageAnon(struct page *page)
-{
+static __always_inline bool PageAnon(struct page *page) {
 	return folio_test_anon(page_folio(page));
 }
 
 
 
-static inline bool folio_test_uptodate(struct folio *folio)
-{
+static inline bool folio_test_uptodate(struct folio *folio) {
 	bool ret = test_bit(PG_uptodate, folio_flags(folio, 0));
 	 
 	if (ret)
@@ -171,39 +160,33 @@ static inline bool folio_test_uptodate(struct folio *folio)
 	return ret;
 }
 
-static inline int PageUptodate(struct page *page)
-{
+static inline int PageUptodate(struct page *page) {
 	return folio_test_uptodate(page_folio(page));
 }
 
-static __always_inline void __folio_mark_uptodate(struct folio *folio)
-{
+static __always_inline void __folio_mark_uptodate(struct folio *folio) {
 	smp_wmb();
 	__set_bit(PG_uptodate, folio_flags(folio, 0));
 }
 
-static __always_inline void folio_mark_uptodate(struct folio *folio)
-{
+static __always_inline void folio_mark_uptodate(struct folio *folio) {
 	 
 	smp_wmb();
 	set_bit(PG_uptodate, folio_flags(folio, 0));
 }
 
-static __always_inline void __SetPageUptodate(struct page *page)
-{
+static __always_inline void __SetPageUptodate(struct page *page) {
 	__folio_mark_uptodate((struct folio *)page);
 }
 
-static __always_inline void SetPageUptodate(struct page *page)
-{
+static __always_inline void SetPageUptodate(struct page *page) {
 	folio_mark_uptodate((struct folio *)page);
 }
 
 CLEARPAGEFLAG(Uptodate, uptodate, PF_NO_TAIL)
 
 
-static __always_inline int PageHead(struct page *page)
-{
+static __always_inline int PageHead(struct page *page) {
 	PF_POISONED_CHECK(page);
 	return test_bit(PG_head, &page->flags) && !page_is_fake_head(page);
 }
@@ -212,8 +195,7 @@ __SETPAGEFLAG(Head, head, PF_ANY)
 __CLEARPAGEFLAG(Head, head, PF_ANY)
 CLEARPAGEFLAG(Head, head, PF_ANY)
 
-static __always_inline void set_compound_head(struct page *page, struct page *head)
-{
+static __always_inline void set_compound_head(struct page *page, struct page *head) {
 	WRITE_ONCE(page->compound_head, (unsigned long)head + 1);
 }
 
@@ -237,15 +219,13 @@ PAGE_TYPE_OPS(Table, table)
 
 
 
-static __always_inline int PageAnonExclusive(struct page *page)
-{
+static __always_inline int PageAnonExclusive(struct page *page) {
 	VM_BUG_ON_PGFLAGS(!PageAnon(page), page);
 	VM_BUG_ON_PGFLAGS(PageHuge(page) && !PageHead(page), page);
 	return test_bit(PG_anon_exclusive, &PF_ANY(page, 1)->flags);
 }
 
-static __always_inline void SetPageAnonExclusive(struct page *page)
-{
+static __always_inline void SetPageAnonExclusive(struct page *page) {
 	VM_BUG_ON_PGFLAGS(!PageAnon(page), page);
 	VM_BUG_ON_PGFLAGS(PageHuge(page) && !PageHead(page), page);
 	set_bit(PG_anon_exclusive, &PF_ANY(page, 1)->flags);

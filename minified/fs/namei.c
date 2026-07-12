@@ -11,8 +11,7 @@
 
 #define EMBEDDED_NAME_MAX	(PATH_MAX - offsetof(struct filename, iname))
 
-struct filename * getname_kernel(const char * filename)
-{
+struct filename * getname_kernel(const char * filename) {
 	struct filename *result;
 	int len = strlen(filename) + 1;
 
@@ -44,8 +43,7 @@ struct filename * getname_kernel(const char * filename)
 	return result;
 }
 
-void putname(struct filename *name)
-{
+void putname(struct filename *name) {
 	if (IS_ERR(name))
 		return;
 
@@ -61,8 +59,7 @@ void putname(struct filename *name)
 		__putname(name);
 }
 
-static int acl_permission_check(struct user_namespace *mnt_userns, struct inode *inode, int mask)
-{
+static int acl_permission_check(struct user_namespace *mnt_userns, struct inode *inode, int mask) {
 	unsigned int mode = inode->i_mode;
 	kuid_t i_uid;
 
@@ -84,8 +81,7 @@ static int acl_permission_check(struct user_namespace *mnt_userns, struct inode 
 	return (mask & ~mode) ? -EACCES : 0;
 }
 
-int generic_permission(struct user_namespace *mnt_userns, struct inode *inode, int mask)
-{
+int generic_permission(struct user_namespace *mnt_userns, struct inode *inode, int mask) {
 	int ret;
 
 	
@@ -116,14 +112,12 @@ int generic_permission(struct user_namespace *mnt_userns, struct inode *inode, i
 	return -EACCES;
 }
 
-static inline int do_inode_permission(struct user_namespace *mnt_userns, struct inode *inode, int mask)
-{
+static inline int do_inode_permission(struct user_namespace *mnt_userns, struct inode *inode, int mask) {
 	/* No live inode_operations sets ->permission; always generic. */
 	return generic_permission(mnt_userns, inode, mask);
 }
 
-static int sb_permission(struct super_block *sb, struct inode *inode, int mask)
-{
+static int sb_permission(struct super_block *sb, struct inode *inode, int mask) {
 	if (unlikely(mask & MAY_WRITE)) {
 		umode_t mode = inode->i_mode;
 
@@ -134,8 +128,7 @@ static int sb_permission(struct super_block *sb, struct inode *inode, int mask)
 	return 0;
 }
 
-int inode_permission(struct user_namespace *mnt_userns, struct inode *inode, int mask)
-{
+int inode_permission(struct user_namespace *mnt_userns, struct inode *inode, int mask) {
 	int retval;
 
 	retval = sb_permission(inode->i_sb, inode, mask);
@@ -155,14 +148,12 @@ int inode_permission(struct user_namespace *mnt_userns, struct inode *inode, int
 	return 0;
 }
 
-void path_get(const struct path *path)
-{
+void path_get(const struct path *path) {
 	mntget(path->mnt);
 	dget(path->dentry);
 }
 
-void path_put(const struct path *path)
-{
+void path_put(const struct path *path) {
 	dput(path->dentry);
 	mntput(path->mnt);
 }
@@ -173,8 +164,7 @@ struct nameidata { struct path	path; struct qstr	last; struct path	root; struct 
 #define ND_ROOT_GRABBED 2
 #define ND_JUMPED 4
 
-static void __set_nameidata(struct nameidata *p, struct filename *name)
-{
+static void __set_nameidata(struct nameidata *p, struct filename *name) {
 	struct nameidata *old = current->nameidata;
 	p->stack = p->internal;
 	p->depth = 0;
@@ -186,14 +176,12 @@ static void __set_nameidata(struct nameidata *p, struct filename *name)
 	current->nameidata = p;
 }
 
-static inline void set_nameidata(struct nameidata *p, struct filename *name)
-{
+static inline void set_nameidata(struct nameidata *p, struct filename *name) {
 	__set_nameidata(p, name);
 	p->state = 0;
 }
 
-static void restore_nameidata(void)
-{
+static void restore_nameidata(void) {
 	struct nameidata *now = current->nameidata, *old = now->saved;
 
 	current->nameidata = old;
@@ -203,8 +191,7 @@ static void restore_nameidata(void)
 		kfree(now->stack);
 }
 
-static void terminate_walk(struct nameidata *nd)
-{
+static void terminate_walk(struct nameidata *nd) {
 	/*
 	 * nd->depth is always 0 on this build (no symlink is ever followed --
 	 * see step_into), so drop_links() and the nd->stack[] path_put loop
@@ -225,8 +212,7 @@ static void terminate_walk(struct nameidata *nd)
 	nd->path.dentry = NULL;
 }
 
-static bool __legitimize_path(struct path *path, unsigned seq, unsigned mseq)
-{
+static bool __legitimize_path(struct path *path, unsigned seq, unsigned mseq) {
 	int res = __legitimize_mnt(path->mnt, mseq);
 	if (unlikely(res)) {
 		if (res > 0)
@@ -241,14 +227,12 @@ static bool __legitimize_path(struct path *path, unsigned seq, unsigned mseq)
 	return !read_seqcount_retry(&path->dentry->d_seq, seq);
 }
 
-static inline bool legitimize_path(struct nameidata *nd, struct path *path, unsigned seq)
-{
+static inline bool legitimize_path(struct nameidata *nd, struct path *path, unsigned seq) {
 	return __legitimize_path(path, seq, nd->m_seq);
 }
 
 
-static bool legitimize_root(struct nameidata *nd)
-{
+static bool legitimize_root(struct nameidata *nd) {
 	
 	if (!nd->root.mnt)
 		return true;
@@ -256,8 +240,7 @@ static bool legitimize_root(struct nameidata *nd)
 	return legitimize_path(nd, &nd->root, nd->root_seq);
 }
 
-static bool try_to_unlazy(struct nameidata *nd)
-{
+static bool try_to_unlazy(struct nameidata *nd) {
 	struct dentry *parent = nd->path.dentry;
 
 	BUG_ON(!(nd->flags & LOOKUP_RCU));
@@ -276,8 +259,7 @@ out:
 	return false;
 }
 
-static bool try_to_unlazy_next(struct nameidata *nd, struct dentry *dentry, unsigned seq)
-{
+static bool try_to_unlazy_next(struct nameidata *nd, struct dentry *dentry, unsigned seq) {
 	BUG_ON(!(nd->flags & LOOKUP_RCU));
 
 	nd->flags &= ~LOOKUP_RCU;
@@ -310,8 +292,7 @@ out_dput:
 	return false;
 }
 
-static int complete_walk(struct nameidata *nd)
-{
+static int complete_walk(struct nameidata *nd) {
 	/* Stub: simplified walk completion for minimal kernel */
 	if (nd->flags & LOOKUP_RCU) {
 		nd->root.mnt = NULL;
@@ -321,8 +302,7 @@ static int complete_walk(struct nameidata *nd)
 	return 0;
 }
 
-static int set_root(struct nameidata *nd)
-{
+static int set_root(struct nameidata *nd) {
 	struct fs_struct *fs = current->fs;
 
 	if (nd->flags & LOOKUP_RCU) {
@@ -340,8 +320,7 @@ static int set_root(struct nameidata *nd)
 	return 0;
 }
 
-static int nd_jump_root(struct nameidata *nd)
-{
+static int nd_jump_root(struct nameidata *nd) {
 	if (!nd->root.mnt) {
 		int error = set_root(nd);
 		if (error)
@@ -366,8 +345,7 @@ static int nd_jump_root(struct nameidata *nd)
 }
 
 
-static inline int traverse_mounts(struct path *path, bool *jumped)
-{
+static inline int traverse_mounts(struct path *path, bool *jumped) {
 	unsigned flags = smp_load_acquire(&path->dentry->d_flags);
 
 	/*
@@ -383,8 +361,7 @@ static inline int traverse_mounts(struct path *path, bool *jumped)
 }
 
 
-static bool __follow_mount_rcu(void)
-{
+static bool __follow_mount_rcu(void) {
 	/*
 	 * DCACHE_MANAGED_DENTRY (DCACHE_MOUNTED|DCACHE_NEED_AUTOMOUNT|
 	 * DCACHE_MANAGE_TRANSIT) is never set on this build -- nothing
@@ -395,8 +372,7 @@ static bool __follow_mount_rcu(void)
 	return true;
 }
 
-static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry, struct path *path, struct inode **inode, unsigned int *seqp)
-{
+static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry, struct path *path, struct inode **inode, unsigned int *seqp) {
 	bool jumped;
 	int ret;
 
@@ -429,8 +405,7 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry, str
 	return ret;
 }
 
-static struct dentry *lookup_dcache(const struct qstr *name, struct dentry *dir)
-{
+static struct dentry *lookup_dcache(const struct qstr *name, struct dentry *dir) {
 	/*
 	 * No dentry_operations on this build defines ->d_revalidate
 	 * (the only ops object, simple_dentry_operations, sets only
@@ -441,8 +416,7 @@ static struct dentry *lookup_dcache(const struct qstr *name, struct dentry *dir)
 	return d_lookup(dir, name);
 }
 
-static struct dentry *__lookup_hash(const struct qstr *name, struct dentry *base, unsigned int flags)
-{
+static struct dentry *__lookup_hash(const struct qstr *name, struct dentry *base, unsigned int flags) {
 	struct dentry *dentry = lookup_dcache(name, base);
 	struct dentry *old;
 	struct inode *dir = base->d_inode;
@@ -462,8 +436,7 @@ static struct dentry *__lookup_hash(const struct qstr *name, struct dentry *base
 	return dentry;
 }
 
-static struct dentry *lookup_fast(struct nameidata *nd, struct inode **inode, unsigned *seqp)
-{
+static struct dentry *lookup_fast(struct nameidata *nd, struct inode **inode, unsigned *seqp) {
 	struct dentry *dentry, *parent = nd->path.dentry;
 
 	/*
@@ -499,8 +472,7 @@ static struct dentry *lookup_fast(struct nameidata *nd, struct inode **inode, un
 	return dentry;
 }
 
-static struct dentry *__lookup_slow(const struct qstr *name, struct dentry *dir, unsigned int flags)
-{
+static struct dentry *__lookup_slow(const struct qstr *name, struct dentry *dir, unsigned int flags) {
 	struct dentry *dentry, *old;
 	struct inode *inode = dir->d_inode;
 	DECLARE_WAIT_QUEUE_HEAD_ONSTACK(wq);
@@ -525,8 +497,7 @@ static struct dentry *__lookup_slow(const struct qstr *name, struct dentry *dir,
 	return dentry;
 }
 
-static struct dentry *lookup_slow(const struct qstr *name, struct dentry *dir, unsigned int flags)
-{
+static struct dentry *lookup_slow(const struct qstr *name, struct dentry *dir, unsigned int flags) {
 	struct inode *inode = dir->d_inode;
 	struct dentry *res;
 	inode_lock_shared(inode);
@@ -535,8 +506,7 @@ static struct dentry *lookup_slow(const struct qstr *name, struct dentry *dir, u
 	return res;
 }
 
-static inline int may_lookup(struct user_namespace *mnt_userns, struct nameidata *nd)
-{
+static inline int may_lookup(struct user_namespace *mnt_userns, struct nameidata *nd) {
 	if (nd->flags & LOOKUP_RCU) {
 		int err = inode_permission(mnt_userns, nd->inode, MAY_EXEC|MAY_NOT_BLOCK);
 		if (err != -ECHILD || !try_to_unlazy(nd))
@@ -547,8 +517,7 @@ static inline int may_lookup(struct user_namespace *mnt_userns, struct nameidata
 
 enum {WALK_TRAILING = 1, WALK_MORE = 2, WALK_NOFOLLOW = 4};
 
-static const char *step_into(struct nameidata *nd, int flags, struct dentry *dentry, struct inode *inode, unsigned seq)
-{
+static const char *step_into(struct nameidata *nd, int flags, struct dentry *dentry, struct inode *inode, unsigned seq) {
 	struct path path;
 	int err = handle_mounts(nd, dentry, &path, &inode, &seq);
 
@@ -571,8 +540,7 @@ static const char *step_into(struct nameidata *nd, int flags, struct dentry *den
 	return NULL;
 }
 
-static const char *handle_dots(struct nameidata *nd, int type)
-{
+static const char *handle_dots(struct nameidata *nd, int type) {
 	/*
 	 * RUNTIME-DEAD ANCHOR-STUB: handle_dots only fires for non-LAST_NORM
 	 * path components ("."/".."). This boot-once artifact only walks
@@ -583,8 +551,7 @@ static const char *handle_dots(struct nameidata *nd, int type)
 	return NULL;
 }
 
-static const char *walk_component(struct nameidata *nd, int flags)
-{
+static const char *walk_component(struct nameidata *nd, int flags) {
 	struct dentry *dentry;
 	struct inode *inode;
 	unsigned seq;
@@ -606,15 +573,13 @@ static const char *walk_component(struct nameidata *nd, int flags)
 
 #define HASH_MIX(x, y, a)		(	x ^= (a),		y ^= x,	x = rol32(x, 7),	x += y,	y = rol32(y,20),	y *= 9			)
 
-static inline unsigned int fold_hash(unsigned long x, unsigned long y)
-{
+static inline unsigned int fold_hash(unsigned long x, unsigned long y) {
 
 	return __hash_32(y ^ __hash_32(x));
 }
 
 
-static inline u64 hash_name(const void *salt, const char *name)
-{
+static inline u64 hash_name(const void *salt, const char *name) {
 	unsigned long a = 0, b, x = 0, y = (unsigned long)salt;
 	unsigned long adata, bdata, mask, len;
 	const struct word_at_a_time constants = WORD_AT_A_TIME_CONSTANTS;
@@ -638,8 +603,7 @@ inside:
 	return hashlen_create(fold_hash(x, y), len + find_zero(mask));
 }
 
-static int link_path_walk(const char *name, struct nameidata *nd)
-{
+static int link_path_walk(const char *name, struct nameidata *nd) {
 	int depth = 0;  
 	int err;
 
@@ -730,8 +694,7 @@ OK:
 	}
 }
 
-static const char *path_init(struct nameidata *nd, unsigned flags)
-{
+static const char *path_init(struct nameidata *nd, unsigned flags) {
 	int error;
 	const char *s = nd->name->name;
 
@@ -760,23 +723,20 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 	return s;
 }
 
-static inline const char *lookup_last(struct nameidata *nd)
-{
+static inline const char *lookup_last(struct nameidata *nd) {
 	if (nd->last_type == LAST_NORM && nd->last.name[nd->last.len])
 		nd->flags |= LOOKUP_FOLLOW | LOOKUP_DIRECTORY;
 
 	return walk_component(nd, WALK_TRAILING);
 }
 
-static int handle_lookup_down(struct nameidata *nd)
-{
+static int handle_lookup_down(struct nameidata *nd) {
 	if (!(nd->flags & LOOKUP_RCU))
 		dget(nd->path.dentry);
 	return PTR_ERR(step_into(nd, WALK_NOFOLLOW, nd->path.dentry, nd->inode, nd->seq));
 }
 
-static int path_lookupat(struct nameidata *nd, unsigned flags, struct path *path)
-{
+static int path_lookupat(struct nameidata *nd, unsigned flags, struct path *path) {
 	const char *s = path_init(nd, flags);
 	int err;
 
@@ -807,8 +767,7 @@ static int path_lookupat(struct nameidata *nd, unsigned flags, struct path *path
 	return err;
 }
 
-int filename_lookup(struct filename *name, unsigned flags, struct path *path)
-{
+int filename_lookup(struct filename *name, unsigned flags, struct path *path) {
 	int retval;
 	struct nameidata nd;
 	if (IS_ERR(name))
@@ -824,8 +783,7 @@ int filename_lookup(struct filename *name, unsigned flags, struct path *path)
 	return retval;
 }
 
-static int path_parentat(struct nameidata *nd, unsigned flags, struct path *parent)
-{
+static int path_parentat(struct nameidata *nd, unsigned flags, struct path *parent) {
 	const char *s = path_init(nd, flags);
 	int err = link_path_walk(s, nd);
 	if (!err)
@@ -839,8 +797,7 @@ static int path_parentat(struct nameidata *nd, unsigned flags, struct path *pare
 	return err;
 }
 
-static int filename_parentat(struct filename *name, unsigned int flags, struct path *parent, struct qstr *last, int *type)
-{
+static int filename_parentat(struct filename *name, unsigned int flags, struct path *parent, struct qstr *last, int *type) {
 	int retval;
 	struct nameidata nd;
 
@@ -860,8 +817,7 @@ static int filename_parentat(struct filename *name, unsigned int flags, struct p
 	return retval;
 }
 
-int kern_path(const char *name, unsigned int flags, struct path *path)
-{
+int kern_path(const char *name, unsigned int flags, struct path *path) {
 	struct filename *filename = getname_kernel(name);
 	int ret = filename_lookup(filename, flags, path);
 
@@ -870,8 +826,7 @@ int kern_path(const char *name, unsigned int flags, struct path *path)
 
 }
 
-static inline int may_create(struct user_namespace *mnt_userns, struct inode *dir, struct dentry *child)
-{
+static inline int may_create(struct user_namespace *mnt_userns, struct inode *dir, struct dentry *child) {
 	if (child->d_inode)
 		return -EEXIST;
 	if (!fsuidgid_has_mapping(dir->i_sb, mnt_userns))
@@ -881,8 +836,7 @@ static inline int may_create(struct user_namespace *mnt_userns, struct inode *di
 }
 
 
-static int may_open(struct user_namespace *mnt_userns, const struct path *path, int acc_mode, int flag)
-{
+static int may_open(struct user_namespace *mnt_userns, const struct path *path, int acc_mode, int flag) {
 	struct dentry *dentry = path->dentry;
 	struct inode *inode = dentry->d_inode;
 	int error;
@@ -922,8 +876,7 @@ static int may_open(struct user_namespace *mnt_userns, const struct path *path, 
 	return 0;
 }
 
-static int handle_truncate(struct user_namespace *mnt_userns, struct file *filp)
-{
+static int handle_truncate(struct user_namespace *mnt_userns, struct file *filp) {
 	const struct path *path = &filp->f_path;
 	struct inode *inode = path->dentry->d_inode;
 	int error = get_write_access(inode);
@@ -935,8 +888,7 @@ static int handle_truncate(struct user_namespace *mnt_userns, struct file *filp)
 	return error;
 }
 
-static struct dentry *lookup_open(struct nameidata *nd, struct file *file, const struct open_flags *op)
-{
+static struct dentry *lookup_open(struct nameidata *nd, struct file *file, const struct open_flags *op) {
 	/* Simplified: basic lookup with minimal revalidation */
 	struct user_namespace *mnt_userns;
 	struct dentry *dir = nd->path.dentry;
@@ -989,8 +941,7 @@ static struct dentry *lookup_open(struct nameidata *nd, struct file *file, const
 	return dentry;
 }
 
-static const char *open_last_lookups(struct nameidata *nd, struct file *file, const struct open_flags *op)
-{
+static const char *open_last_lookups(struct nameidata *nd, struct file *file, const struct open_flags *op) {
 	struct dentry *dir = nd->path.dentry;
 	int open_flag = op->open_flag;
 	bool got_write = false;
@@ -1058,8 +1009,7 @@ finish_lookup:
 	return res;
 }
 
-static int do_open(struct nameidata *nd, struct file *file, const struct open_flags *op)
-{
+static int do_open(struct nameidata *nd, struct file *file, const struct open_flags *op) {
 	struct user_namespace *mnt_userns;
 	int open_flag = op->open_flag;
 	bool do_truncate;
@@ -1106,8 +1056,7 @@ static int do_open(struct nameidata *nd, struct file *file, const struct open_fl
 	return error;
 }
 
-static struct file *path_openat(struct nameidata *nd, const struct open_flags *op, unsigned flags)
-{
+static struct file *path_openat(struct nameidata *nd, const struct open_flags *op, unsigned flags) {
 	struct file *file;
 	int error;
 
@@ -1146,8 +1095,7 @@ static struct file *path_openat(struct nameidata *nd, const struct open_flags *o
 	return ERR_PTR(error);
 }
 
-struct file *do_filp_open(struct filename *pathname, const struct open_flags *op)
-{
+struct file *do_filp_open(struct filename *pathname, const struct open_flags *op) {
 	struct nameidata nd;
 	int flags = op->lookup_flags;
 	struct file *filp;
@@ -1162,8 +1110,7 @@ struct file *do_filp_open(struct filename *pathname, const struct open_flags *op
 	return filp;
 }
 
-static struct dentry *filename_create(struct filename *name, struct path *path, unsigned int lookup_flags)
-{
+static struct dentry *filename_create(struct filename *name, struct path *path, unsigned int lookup_flags) {
 	struct dentry *dentry = ERR_PTR(-EEXIST);
 	struct qstr last;
 	bool want_dir = lookup_flags & LOOKUP_DIRECTORY;
@@ -1215,8 +1162,7 @@ out:
 	return dentry;
 }
 
-struct dentry *kern_path_create(const char *pathname, struct path *path, unsigned int lookup_flags)
-{
+struct dentry *kern_path_create(const char *pathname, struct path *path, unsigned int lookup_flags) {
 	struct filename *filename = getname_kernel(pathname);
 	struct dentry *res = filename_create(filename, path, lookup_flags);
 
@@ -1224,16 +1170,14 @@ struct dentry *kern_path_create(const char *pathname, struct path *path, unsigne
 	return res;
 }
 
-void done_path_create(struct path *path, struct dentry *dentry)
-{
+void done_path_create(struct path *path, struct dentry *dentry) {
 	dput(dentry);
 	inode_unlock(path->dentry->d_inode);
 	mnt_drop_write(path->mnt);
 	path_put(path);
 }
 
-int vfs_mknod(struct user_namespace *mnt_userns, struct inode *dir, struct dentry *dentry, umode_t mode, dev_t dev)
-{
+int vfs_mknod(struct user_namespace *mnt_userns, struct inode *dir, struct dentry *dentry, umode_t mode, dev_t dev) {
 	int error = may_create(mnt_userns, dir, dentry);
 
 	if (error)
@@ -1246,8 +1190,7 @@ int vfs_mknod(struct user_namespace *mnt_userns, struct inode *dir, struct dentr
 	return error;
 }
 
-int vfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir, struct dentry *dentry, umode_t mode)
-{
+int vfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir, struct dentry *dentry, umode_t mode) {
 	int error = may_create(mnt_userns, dir, dentry);
 
 	if (error)
@@ -1262,26 +1205,22 @@ int vfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir, struct dentr
 	return error;
 }
 
-int do_rmdir(struct filename *name)
-{
+int do_rmdir(struct filename *name) {
 	putname(name);
 	return -ENOSYS;
 }
 
-int do_unlinkat(struct filename *name)
-{
+int do_unlinkat(struct filename *name) {
 	putname(name);
 	return -ENOSYS;
 }
 
-int vfs_symlink(struct user_namespace *mnt_userns, struct inode *dir, struct dentry *dentry, const char *oldname)
-{
+int vfs_symlink(struct user_namespace *mnt_userns, struct inode *dir, struct dentry *dentry, const char *oldname) {
 	/* Stub: symlink creation not needed for minimal kernel */
 	return -EPERM;
 }
 
-int vfs_link(struct dentry *old_dentry, struct user_namespace *mnt_userns, struct inode *dir, struct dentry *new_dentry, struct inode **delegated_inode)
-{
+int vfs_link(struct dentry *old_dentry, struct user_namespace *mnt_userns, struct inode *dir, struct dentry *new_dentry, struct inode **delegated_inode) {
 	/* Stub: hard link creation not needed for minimal kernel */
 	return -EPERM;
 }

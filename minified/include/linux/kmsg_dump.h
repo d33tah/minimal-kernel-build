@@ -11,8 +11,7 @@
  */
 enum kmsg_dump_reason { KMSG_DUMP_PANIC, };
 
-static inline void kmsg_dump(enum kmsg_dump_reason reason)
-{
+static inline void kmsg_dump(enum kmsg_dump_reason reason) {
 }
 
 

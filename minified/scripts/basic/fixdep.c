@@ -9,8 +9,7 @@
 #include <stdio.h>
 #include <ctype.h>
 
-static void usage(void)
-{
+static void usage(void) {
 	fprintf(stderr, "Usage: fixdep <depfile> <target> <cmdline>\n");
 	exit(1);
 }
@@ -20,8 +19,7 @@ struct item { struct item	*next; unsigned int len, hash; char		name[]; };
 #define HASHSZ 256
 static struct item *hashtab[HASHSZ];
 
-static unsigned int strhash(const char *str, unsigned int sz)
-{
+static unsigned int strhash(const char *str, unsigned int sz) {
 	 
 	unsigned int i, hash = 2166136261U;
 
@@ -30,8 +28,7 @@ static unsigned int strhash(const char *str, unsigned int sz)
 	return hash;
 }
 
-static int is_defined_config(const char *name, int len, unsigned int hash)
-{
+static int is_defined_config(const char *name, int len, unsigned int hash) {
 	struct item *aux;
 
 	for (aux = hashtab[hash % HASHSZ]; aux; aux = aux->next) {
@@ -41,8 +38,7 @@ static int is_defined_config(const char *name, int len, unsigned int hash)
 	return 0;
 }
 
-static void define_config(const char *name, int len, unsigned int hash)
-{
+static void define_config(const char *name, int len, unsigned int hash) {
 	struct item *aux = malloc(sizeof(*aux) + len);
 
 	if (!aux) {
@@ -56,8 +52,7 @@ static void define_config(const char *name, int len, unsigned int hash)
 	hashtab[hash % HASHSZ] = aux;
 }
 
-static void use_config(const char *m, int slen)
-{
+static void use_config(const char *m, int slen) {
 	unsigned int hash = strhash(m, slen);
 
 	if (is_defined_config(m, slen, hash))
@@ -68,8 +63,7 @@ static void use_config(const char *m, int slen)
 	printf("    $(wildcard include/config/%.*s) \\\n", slen, m);
 }
 
-static int str_ends_with(const char *s, int slen, const char *sub)
-{
+static int str_ends_with(const char *s, int slen, const char *sub) {
 	int sublen = strlen(sub);
 
 	if (sublen > slen)
@@ -78,8 +72,7 @@ static int str_ends_with(const char *s, int slen, const char *sub)
 	return !memcmp(s + slen - sublen, sub, sublen);
 }
 
-static void parse_config_file(const char *p)
-{
+static void parse_config_file(const char *p) {
 	const char *q, *r;
 	const char *start = p;
 
@@ -102,8 +95,7 @@ static void parse_config_file(const char *p)
 	}
 }
 
-static void *read_file(const char *filename)
-{
+static void *read_file(const char *filename) {
 	struct stat st;
 	int fd;
 	char *buf;
@@ -134,13 +126,11 @@ static void *read_file(const char *filename)
 	return buf;
 }
 
-static int is_ignored_file(const char *s, int len)
-{
+static int is_ignored_file(const char *s, int len) {
 	return str_ends_with(s, len, "include/generated/autoconf.h") || str_ends_with(s, len, "include/generated/autoksyms.h");
 }
 
-static void parse_dep_file(char *m, const char *target)
-{
+static void parse_dep_file(char *m, const char *target) {
 	char *p;
 	int is_last, is_target;
 	int saw_any_target = 0;
@@ -203,8 +193,7 @@ static void parse_dep_file(char *m, const char *target)
 	printf("$(deps_%s):\n", target);
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	const char *depfile, *target, *cmdline;
 	void *buf;
 

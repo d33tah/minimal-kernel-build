@@ -22,14 +22,12 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = { [GDT_ENTRY_K
 
 
 
-static __always_inline void setup_smep(struct cpuinfo_x86 *c)
-{
+static __always_inline void setup_smep(struct cpuinfo_x86 *c) {
 	if (cpu_has(c, X86_FEATURE_SMEP))
 		cr4_set_bits(X86_CR4_SMEP);
 }
 
-static __always_inline void setup_smap(struct cpuinfo_x86 *c)
-{
+static __always_inline void setup_smap(struct cpuinfo_x86 *c) {
 	unsigned long eflags = native_save_fl();
 
 	BUG_ON(eflags & X86_EFLAGS_AC);
@@ -38,8 +36,7 @@ static __always_inline void setup_smap(struct cpuinfo_x86 *c)
 		cr4_set_bits(X86_CR4_SMAP);
 }
 
-static __always_inline void setup_umip(struct cpuinfo_x86 *c)
-{
+static __always_inline void setup_umip(struct cpuinfo_x86 *c) {
 	/*
 	 * UMIP is in DISABLED_MASK16, so cpu_feature_enabled(X86_FEATURE_UMIP)
 	 * is constant 0 -- the activate path was dead; only the clear remains.
@@ -51,8 +48,7 @@ static const unsigned long cr4_pinned_mask = X86_CR4_SMEP | X86_CR4_SMAP | X86_C
 static DEFINE_STATIC_KEY_FALSE_RO(cr_pinning);
 static unsigned long cr4_pinned_bits __ro_after_init;
 
-void native_write_cr0(unsigned long val)
-{
+void native_write_cr0(unsigned long val) {
 	unsigned long bits_missing = 0;
 
 set_register:
@@ -69,8 +65,7 @@ set_register:
 	}
 }
 
-void __no_profile native_write_cr4(unsigned long val)
-{
+void __no_profile native_write_cr4(unsigned long val) {
 	unsigned long bits_changed = 0;
 
 set_register:
@@ -87,8 +82,7 @@ set_register:
 	}
 }
 
-void cr4_update_irqsoff(unsigned long set, unsigned long clear)
-{
+void cr4_update_irqsoff(unsigned long set, unsigned long clear) {
 	unsigned long newval, cr4 = this_cpu_read(cpu_tlbstate.cr4);
 
 	lockdep_assert_irqs_disabled();
@@ -100,13 +94,11 @@ void cr4_update_irqsoff(unsigned long set, unsigned long clear)
 	}
 }
 
-unsigned long cr4_read_shadow(void)
-{
+unsigned long cr4_read_shadow(void) {
 	return this_cpu_read(cpu_tlbstate.cr4);
 }
 
-static void __init setup_cr_pinning(void)
-{
+static void __init setup_cr_pinning(void) {
 	cr4_pinned_bits = this_cpu_read(cpu_tlbstate.cr4) & cr4_pinned_mask;
 	static_key_enable(&cr_pinning.key);
 }
@@ -117,8 +109,7 @@ struct cpuid_dependent_feature { u32 feature, level; };
 static const struct cpuid_dependent_feature
 cpuid_dependent_features[] = { { X86_FEATURE_MWAIT,		0x00000005 }, { X86_FEATURE_DCA,		0x00000009 }, { X86_FEATURE_XSAVE,		0x0000000d }, { 0, 0 } };
 
-static void filter_cpuid_features(struct cpuinfo_x86 *c, bool warn)
-{
+static void filter_cpuid_features(struct cpuinfo_x86 *c, bool warn) {
 	const struct cpuid_dependent_feature *df;
 
 	for (df = cpuid_dependent_features; df->feature; df++) {
@@ -142,8 +133,7 @@ __u32 cpu_caps_set[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 
 DEFINE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);
 
-static void get_model_name(struct cpuinfo_x86 *c)
-{
+static void get_model_name(struct cpuinfo_x86 *c) {
 	unsigned int *v;
 	char *p, *q, *s;
 
@@ -172,8 +162,7 @@ static void get_model_name(struct cpuinfo_x86 *c)
 	*(s + 1) = '\0';
 }
 
-static void get_cpu_vendor(struct cpuinfo_x86 *c)
-{
+static void get_cpu_vendor(struct cpuinfo_x86 *c) {
 	/*
 	 * No vendor cpu_dev is registered on this build (cpu_dev_register
 	 * has zero invocations -> the .x86_cpu_dev.init section is empty ->
@@ -182,8 +171,7 @@ static void get_cpu_vendor(struct cpuinfo_x86 *c)
 	c->x86_vendor = X86_VENDOR_UNKNOWN;
 }
 
-void cpu_detect(struct cpuinfo_x86 *c)
-{
+void cpu_detect(struct cpuinfo_x86 *c) {
 	
 	cpuid(0x00000000, (unsigned int *)&c->cpuid_level, (unsigned int *)&c->x86_vendor_id[0], (unsigned int *)&c->x86_vendor_id[8], (unsigned int *)&c->x86_vendor_id[4]);
 
@@ -204,8 +192,7 @@ void cpu_detect(struct cpuinfo_x86 *c)
 	}
 }
 
-static void apply_forced_caps(struct cpuinfo_x86 *c)
-{
+static void apply_forced_caps(struct cpuinfo_x86 *c) {
 	int i;
 
 	for (i = 0; i < NCAPINTS + NBUGINTS; i++) {
@@ -214,8 +201,7 @@ static void apply_forced_caps(struct cpuinfo_x86 *c)
 	}
 }
 
-void get_cpu_cap(struct cpuinfo_x86 *c)
-{
+void get_cpu_cap(struct cpuinfo_x86 *c) {
 	u32 eax, ebx, ecx, edx;
 
 	if (c->cpuid_level >= 0x00000001) {
@@ -278,8 +264,7 @@ void get_cpu_cap(struct cpuinfo_x86 *c)
 	apply_forced_caps(c);
 }
 
-void get_cpu_address_sizes(struct cpuinfo_x86 *c)
-{
+void get_cpu_address_sizes(struct cpuinfo_x86 *c) {
 	u32 eax, ebx, ecx, edx;
 
 	if (c->extended_cpuid_level >= 0x80000008) {
@@ -291,23 +276,19 @@ void get_cpu_address_sizes(struct cpuinfo_x86 *c)
 		c->x86_phys_bits = 36;
 }
 
-static void __init cpu_set_bug_bits(struct cpuinfo_x86 *c)
-{
+static void __init cpu_set_bug_bits(struct cpuinfo_x86 *c) {
 	/* Stub: CPU bug detection not needed for minimal kernel */
 }
 
-static void detect_nopl(void)
-{
+static void detect_nopl(void) {
 	setup_clear_cpu_cap(X86_FEATURE_NOPL);
 }
 
-static void __init cpu_parse_early_param(void)
-{
+static void __init cpu_parse_early_param(void) {
 	/* Stub: CPU early param parsing not needed for minimal kernel */
 }
 
-static void __init early_identify_cpu(struct cpuinfo_x86 *c)
-{
+static void __init early_identify_cpu(struct cpuinfo_x86 *c) {
 	c->x86_clflush_size = 32;
 	c->x86_phys_bits = 32;
 	c->x86_cache_alignment = c->x86_clflush_size;
@@ -347,8 +328,7 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 	detect_nopl();
 }
 
-void __init early_cpu_init(void)
-{
+void __init early_cpu_init(void) {
 	/*
 	 * The .x86_cpu_dev.init section is empty on this build (no
 	 * cpu_dev_register), so __x86_cpu_dev_start == __x86_cpu_dev_end:
@@ -358,8 +338,7 @@ void __init early_cpu_init(void)
 	early_identify_cpu(&boot_cpu_data);
 }
 
-static void generic_identify(struct cpuinfo_x86 *c)
-{
+static void generic_identify(struct cpuinfo_x86 *c) {
 	c->extended_cpuid_level = 0;
 
 	cpu_detect(c);
@@ -375,8 +354,7 @@ static void generic_identify(struct cpuinfo_x86 *c)
 	set_cpu_bug(c, X86_BUG_ESPFIX);
 }
 
-static void identify_cpu(struct cpuinfo_x86 *c)
-{
+static void identify_cpu(struct cpuinfo_x86 *c) {
 	c->loops_per_jiffy = loops_per_jiffy;
 	c->x86_vendor = X86_VENDOR_UNKNOWN;
 	c->x86_model = c->x86_stepping = 0;	
@@ -428,8 +406,7 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 
 }
 
-void enable_sep_cpu(void)
-{
+void enable_sep_cpu(void) {
 	struct tss_struct *tss;
 	int cpu;
 
@@ -447,8 +424,7 @@ void enable_sep_cpu(void)
 	put_cpu();
 }
 
-void __init identify_boot_cpu(void)
-{
+void __init identify_boot_cpu(void) {
 	identify_cpu(&boot_cpu_data);
 	/* HAS_KERNEL_IBT==0 -> CET/IBT pr_info branch was const-dead; removed */
 	sysenter_setup();
@@ -463,8 +439,7 @@ DEFINE_PER_CPU(int, __preempt_count) = INIT_PREEMPT_COUNT;
 
 DEFINE_PER_CPU(unsigned long, cpu_current_top_of_stack) = (unsigned long)&init_thread_union + THREAD_SIZE;
 
-static void clear_all_debug_regs(void)
-{
+static void clear_all_debug_regs(void) {
 	int i;
 
 	for (i = 0; i < 8; i++) {
@@ -478,14 +453,12 @@ static void clear_all_debug_regs(void)
 
 #define dbg_restore_debug_regs()
 
-static inline void tss_setup_io_bitmap(struct tss_struct *tss)
-{
+static inline void tss_setup_io_bitmap(struct tss_struct *tss) {
 	tss->x86_tss.io_bitmap_base = IO_BITMAP_OFFSET_INVALID;
 
 }
 
-void cpu_init_exception_handling(void)
-{
+void cpu_init_exception_handling(void) {
 	struct tss_struct *tss = this_cpu_ptr(&cpu_tss_rw);
 	int cpu = raw_smp_processor_id();
 
@@ -497,8 +470,7 @@ void cpu_init_exception_handling(void)
 	load_current_idt();
 }
 
-void cpu_init(void)
-{
+void cpu_init(void) {
 	struct task_struct *cur = current;
 	int cpu = raw_smp_processor_id();
 	struct desc_ptr gdt_descr;

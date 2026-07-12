@@ -10,8 +10,7 @@
 typedef struct { DECLARE_BITMAP(bits, MAX_NUMNODES); } nodemask_t;
 
 #define node_set(node, dst) __node_set((node), &(dst))
-static __always_inline void __node_set(int node, volatile nodemask_t *dstp)
-{
+static __always_inline void __node_set(int node, volatile nodemask_t *dstp) {
 	set_bit(node, dstp->bits);
 }
 
@@ -20,8 +19,7 @@ static __always_inline void __node_set(int node, volatile nodemask_t *dstp)
  * nodes_intersects, nodes_subset removed - unused */
 
 #define nodes_empty(src) __nodes_empty(&(src), MAX_NUMNODES)
-static inline bool __nodes_empty(const nodemask_t *srcp, unsigned int nbits)
-{
+static inline bool __nodes_empty(const nodemask_t *srcp, unsigned int nbits) {
 	return bitmap_empty(srcp->bits, nbits);
 }
 
@@ -45,8 +43,7 @@ enum node_states { N_POSSIBLE, N_ONLINE, N_NORMAL_MEMORY, N_MEMORY, N_CPU, NR_NO
 extern nodemask_t node_states[NR_NODE_STATES];
 
 /* MAX_NUMNODES=1, simplified node state functions */
-static inline int node_state(int node, enum node_states state)
-{
+static inline int node_state(int node, enum node_states state) {
 	return node == 0;
 }
 

@@ -9,13 +9,11 @@
 
 #include "mm_internal.h"
 
-static pmd_t * __init one_md_table_init(pgd_t *pgd)
-{
+static pmd_t * __init one_md_table_init(pgd_t *pgd) {
 	return pmd_offset(pud_offset(p4d_offset(pgd, 0), 0), 0);
 }
 
-static pte_t * __init one_page_table_init(pmd_t *pmd)
-{
+static pte_t * __init one_page_table_init(pmd_t *pmd) {
 	if (!(pmd_val(*pmd) & _PAGE_PRESENT)) {
 		pte_t *page_table = (pte_t *)alloc_low_page();
 
@@ -26,8 +24,7 @@ static pte_t * __init one_page_table_init(pmd_t *pmd)
 	return pte_offset_kernel(pmd, 0);
 }
 
-pte_t * __init populate_extra_pte(unsigned long vaddr)
-{
+pte_t * __init populate_extra_pte(unsigned long vaddr) {
 	int pte_idx = pte_index(vaddr);
 	int pgd_idx = pgd_index(vaddr);
 	int pmd_idx = pmd_index(vaddr);
@@ -38,8 +35,7 @@ pte_t * __init populate_extra_pte(unsigned long vaddr)
 }
 
 static void __init
-page_table_range_init(unsigned long start, unsigned long end, pgd_t *pgd_base)
-{
+page_table_range_init(unsigned long start, unsigned long end, pgd_t *pgd_base) {
 	int pgd_idx, pmd_idx;
 	unsigned long vaddr;
 	pgd_t *pgd;
@@ -62,16 +58,14 @@ page_table_range_init(unsigned long start, unsigned long end, pgd_t *pgd_base)
 	}
 }
 
-static inline int is_x86_32_kernel_text(unsigned long addr)
-{
+static inline int is_x86_32_kernel_text(unsigned long addr) {
 	if (addr >= (unsigned long)_text && addr <= (unsigned long)__init_end)
 		return 1;
 	return 0;
 }
 
 unsigned long __init
-kernel_physical_mapping_init(unsigned long start, unsigned long end, unsigned long page_size_mask, pgprot_t prot)
-{
+kernel_physical_mapping_init(unsigned long start, unsigned long end, unsigned long page_size_mask, pgprot_t prot) {
 	int use_pse = page_size_mask == (1<<PG_LEVEL_2M);
 	unsigned long last_map_addr = end;
 	unsigned long start_pfn, end_pfn;
@@ -157,16 +151,14 @@ repeat:
 	return last_map_addr;
 }
 
-void __init sync_initial_page_table(void)
-{
+void __init sync_initial_page_table(void) {
 	clone_pgd_range(initial_page_table + KERNEL_PGD_BOUNDARY, swapper_pg_dir     + KERNEL_PGD_BOUNDARY, KERNEL_PGD_PTRS);
 
 	 
 	clone_pgd_range(initial_page_table, swapper_pg_dir     + KERNEL_PGD_BOUNDARY, min(KERNEL_PGD_PTRS, KERNEL_PGD_BOUNDARY));
 }
 
-void __init native_pagetable_init(void)
-{
+void __init native_pagetable_init(void) {
 	unsigned long pfn, va;
 	pgd_t *pgd, *base = swapper_pg_dir;
 	pmd_t *pmd;
@@ -201,8 +193,7 @@ void __init native_pagetable_init(void)
 	zone_sizes_init();
 }
 
-void __init early_ioremap_page_table_range_init(void)
-{
+void __init early_ioremap_page_table_range_init(void) {
 	pgd_t *pgd_base = swapper_pg_dir;
 	unsigned long vaddr, end;
 
@@ -217,8 +208,7 @@ void __init early_ioremap_page_table_range_init(void)
 pteval_t __supported_pte_mask __read_mostly = DEFAULT_PTE_MASK;
 pteval_t __default_kernel_pte_mask __read_mostly = DEFAULT_PTE_MASK;
 
-void __init find_low_pfn_range(void)
-{
+void __init find_low_pfn_range(void) {
 	/*
 	 * CONFIG_HIGHMEM=n: no highmem can ever be mapped, so all RAM is
 	 * low memory. (The highmem-trimming branch is dropped as dead.)
@@ -226,15 +216,13 @@ void __init find_low_pfn_range(void)
 	max_low_pfn = max_pfn;
 }
 
-void __init initmem_init(void)
-{
+void __init initmem_init(void) {
 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE - 1) + 1;
 
 	max_mapnr = max_low_pfn;
 }
 
-static void __init test_wp_bit(void)
-{
+static void __init test_wp_bit(void) {
 	char z = 0;
 
 	__set_fixmap(FIX_WP_TEST, __pa_symbol(empty_zero_page), PAGE_KERNEL_RO);
@@ -247,8 +235,7 @@ static void __init test_wp_bit(void)
 	panic("Linux doesn't support CPUs with broken WP.");
 }
 
-void __init mem_init(void)
-{
+void __init mem_init(void) {
 	BUG_ON(!mem_map);
 
 
@@ -269,12 +256,10 @@ void __init mem_init(void)
 	test_wp_bit();
 }
 
-static void mark_nxdata_nx(void)
-{
+static void mark_nxdata_nx(void) {
 }
 
-void mark_rodata_ro(void)
-{
+void mark_rodata_ro(void) {
 	unsigned long start = PFN_ALIGN(_text);
 	unsigned long size = (unsigned long)__end_rodata - start;
 

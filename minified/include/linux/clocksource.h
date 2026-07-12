@@ -49,13 +49,11 @@ __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq);
 extern void
 __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq);
 
-static inline int __clocksource_register(struct clocksource *cs)
-{
+static inline int __clocksource_register(struct clocksource *cs) {
 	return __clocksource_register_scale(cs, 1, 0);
 }
 
-static inline int clocksource_register_khz(struct clocksource *cs, u32 khz)
-{
+static inline int clocksource_register_khz(struct clocksource *cs, u32 khz) {
 	return __clocksource_register_scale(cs, 1000, khz);
 }
 

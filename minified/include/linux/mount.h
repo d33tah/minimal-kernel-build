@@ -18,8 +18,7 @@ struct fs_context;
 
 struct vfsmount { struct dentry *mnt_root; struct super_block *mnt_sb; struct user_namespace *mnt_userns; } __randomize_layout;
 
-static inline struct user_namespace *mnt_user_ns(const struct vfsmount *mnt)
-{
+static inline struct user_namespace *mnt_user_ns(const struct vfsmount *mnt) {
 	 
 	return smp_load_acquire(&mnt->mnt_userns);
 }

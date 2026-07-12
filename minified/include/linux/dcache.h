@@ -37,8 +37,7 @@ struct qstr { union { struct { HASH_LEN_DECLARE; }; u64 hash_len; }; const unsig
 
 struct dentry { unsigned int d_flags; seqcount_spinlock_t d_seq; struct hlist_bl_node d_hash; struct dentry *d_parent; struct qstr d_name; struct inode *d_inode; unsigned char d_iname[DNAME_INLINE_LEN]; struct lockref d_lockref; const struct dentry_operations *d_op; struct super_block *d_sb; union { struct list_head d_lru; wait_queue_head_t *d_wait; }; union { struct hlist_node d_alias; struct hlist_bl_node d_in_lookup_hash; struct rcu_head d_rcu; } d_u; } __randomize_layout;
 
-enum dentry_d_lock_class
-{
+enum dentry_d_lock_class {
 	DENTRY_D_LOCK_NORMAL, DENTRY_D_LOCK_NESTED
 };
 
@@ -97,16 +96,14 @@ extern struct dentry *__d_lookup(const struct dentry *, const struct qstr *);
 extern struct dentry *__d_lookup_rcu(const struct dentry *parent, const struct qstr *name, unsigned *seq);
 
 
-static inline struct dentry *dget(struct dentry *dentry)
-{
+static inline struct dentry *dget(struct dentry *dentry) {
 	if (dentry)
 		lockref_get(&dentry->d_lockref);
 	return dentry;
 }
 
 
-static inline int d_unhashed(const struct dentry *dentry)
-{
+static inline int d_unhashed(const struct dentry *dentry) {
 	return hlist_bl_unhashed(&dentry->d_hash);
 }
 
@@ -114,13 +111,11 @@ static inline int d_unhashed(const struct dentry *dentry)
 
 extern void __d_lookup_done(struct dentry *);
 
-static inline int d_in_lookup(const struct dentry *dentry)
-{
+static inline int d_in_lookup(const struct dentry *dentry) {
 	return dentry->d_flags & DCACHE_PAR_LOOKUP;
 }
 
-static inline void d_lookup_done(struct dentry *dentry)
-{
+static inline void d_lookup_done(struct dentry *dentry) {
 	if (unlikely(d_in_lookup(dentry))) {
 		spin_lock(&dentry->d_lock);
 		__d_lookup_done(dentry);
@@ -130,56 +125,46 @@ static inline void d_lookup_done(struct dentry *dentry)
 
 extern void dput(struct dentry *);
 
-static inline unsigned __d_entry_type(const struct dentry *dentry)
-{
+static inline unsigned __d_entry_type(const struct dentry *dentry) {
 	return dentry->d_flags & DCACHE_ENTRY_TYPE;
 }
 
-static inline bool d_is_miss(const struct dentry *dentry)
-{
+static inline bool d_is_miss(const struct dentry *dentry) {
 	return __d_entry_type(dentry) == DCACHE_MISS_TYPE;
 }
 
-static inline bool d_can_lookup(const struct dentry *dentry)
-{
+static inline bool d_can_lookup(const struct dentry *dentry) {
 	return __d_entry_type(dentry) == DCACHE_DIRECTORY_TYPE;
 }
 
 
-static inline bool d_is_dir(const struct dentry *dentry)
-{
+static inline bool d_is_dir(const struct dentry *dentry) {
 	/* Simplified: only check d_can_lookup since d_is_autodir was unused */
 	return d_can_lookup(dentry);
 }
 
-static inline bool d_is_reg(const struct dentry *dentry)
-{
+static inline bool d_is_reg(const struct dentry *dentry) {
 	return __d_entry_type(dentry) == DCACHE_REGULAR_TYPE;
 }
 
-static inline bool d_is_negative(const struct dentry *dentry)
-{
+static inline bool d_is_negative(const struct dentry *dentry) {
 	 
 	return d_is_miss(dentry);
 }
 
-static inline bool d_flags_negative(unsigned flags)
-{
+static inline bool d_flags_negative(unsigned flags) {
 	return (flags & DCACHE_ENTRY_TYPE) == DCACHE_MISS_TYPE;
 }
 
-static inline bool d_is_positive(const struct dentry *dentry)
-{
+static inline bool d_is_positive(const struct dentry *dentry) {
 	return !d_is_negative(dentry);
 }
 
-static inline struct inode *d_inode(const struct dentry *dentry)
-{
+static inline struct inode *d_inode(const struct dentry *dentry) {
 	return dentry->d_inode;
 }
 
-static inline struct inode *d_backing_inode(const struct dentry *upper)
-{
+static inline struct inode *d_backing_inode(const struct dentry *upper) {
 	struct inode *inode = upper->d_inode;
 
 	return inode;

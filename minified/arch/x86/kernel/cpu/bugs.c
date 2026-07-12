@@ -2,8 +2,7 @@
 #include <linux/utsname.h>
 #include <asm/bugs.h>
 
-void __init check_bugs(void)
-{
+void __init check_bugs(void) {
 	identify_boot_cpu();
 
 	if (boot_cpu_data.x86 < 4)

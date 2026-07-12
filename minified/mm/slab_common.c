@@ -12,8 +12,7 @@ DEFINE_MUTEX(slab_mutex);
 struct kmem_cache *kmem_cache;
 
 
-static unsigned int calculate_alignment(slab_flags_t flags, unsigned int align, unsigned int size)
-{
+static unsigned int calculate_alignment(slab_flags_t flags, unsigned int align, unsigned int size) {
 	 
 	if (flags & SLAB_HWCACHE_ALIGN) {
 		unsigned int ralign;
@@ -29,8 +28,7 @@ static unsigned int calculate_alignment(slab_flags_t flags, unsigned int align, 
 	return ALIGN(align, sizeof(void *));
 }
 
-static struct kmem_cache *create_cache(unsigned int object_size, unsigned int align, slab_flags_t flags, unsigned int useroffset, unsigned int usersize, void (*ctor)(void *))
-{
+static struct kmem_cache *create_cache(unsigned int object_size, unsigned int align, slab_flags_t flags, unsigned int useroffset, unsigned int usersize, void (*ctor)(void *)) {
 	struct kmem_cache *s;
 	int err;
 
@@ -60,8 +58,7 @@ out_free_cache:
 	goto out;
 }
 
-struct kmem_cache * kmem_cache_create_usercopy(const char *name, unsigned int size, unsigned int align, slab_flags_t flags, unsigned int useroffset, unsigned int usersize, void (*ctor)(void *))
-{
+struct kmem_cache * kmem_cache_create_usercopy(const char *name, unsigned int size, unsigned int align, slab_flags_t flags, unsigned int useroffset, unsigned int usersize, void (*ctor)(void *)) {
 	struct kmem_cache *s = NULL;
 	const char *cache_name;
 	int err;
@@ -111,20 +108,17 @@ out_unlock:
 	return s;
 }
 
-struct kmem_cache * kmem_cache_create(const char *name, unsigned int size, unsigned int align, slab_flags_t flags, void (*ctor)(void *))
-{
+struct kmem_cache * kmem_cache_create(const char *name, unsigned int size, unsigned int align, slab_flags_t flags, void (*ctor)(void *)) {
 	return kmem_cache_create_usercopy(name, size, align, flags, 0, 0, ctor);
 }
 
 
-bool slab_is_available(void)
-{
+bool slab_is_available(void) {
 	return slab_state >= UP;
 }
 
 
-void __init create_boot_cache(struct kmem_cache *s, const char *name, unsigned int size, slab_flags_t flags, unsigned int useroffset, unsigned int usersize)
-{
+void __init create_boot_cache(struct kmem_cache *s, const char *name, unsigned int size, slab_flags_t flags, unsigned int useroffset, unsigned int usersize) {
 	int err;
 	unsigned int align = ARCH_KMALLOC_MINALIGN;
 
@@ -142,8 +136,7 @@ void __init create_boot_cache(struct kmem_cache *s, const char *name, unsigned i
 
 }
 
-struct kmem_cache *__init create_kmalloc_cache(const char *name, unsigned int size, slab_flags_t flags, unsigned int useroffset, unsigned int usersize)
-{
+struct kmem_cache *__init create_kmalloc_cache(const char *name, unsigned int size, slab_flags_t flags, unsigned int useroffset, unsigned int usersize) {
 	struct kmem_cache *s = kmem_cache_zalloc(kmem_cache, GFP_NOWAIT);
 
 	if (!s)
@@ -157,13 +150,11 @@ struct kmem_cache * kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1] __r
 
 static u8 size_index[24] __ro_after_init = { 3, 4, 5, 5, 6, 6, 6, 6, 1, 1, 1, 1, 7, 7, 7, 7, 2, 2, 2, 2, 2, 2, 2, 2 };
 
-static inline unsigned int size_index_elem(unsigned int bytes)
-{
+static inline unsigned int size_index_elem(unsigned int bytes) {
 	return (bytes - 1) / 8;
 }
 
-struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
-{
+struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags) {
 	unsigned int index;
 
 	if (size <= 192) {
@@ -184,8 +175,7 @@ struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
 
 const struct kmalloc_info_struct kmalloc_info[] __initconst = { INIT_KMALLOC_INFO(0, 0), INIT_KMALLOC_INFO(96, 96), INIT_KMALLOC_INFO(192, 192), INIT_KMALLOC_INFO(8, 8), INIT_KMALLOC_INFO(16, 16), INIT_KMALLOC_INFO(32, 32), INIT_KMALLOC_INFO(64, 64), INIT_KMALLOC_INFO(128, 128), INIT_KMALLOC_INFO(256, 256), INIT_KMALLOC_INFO(512, 512), INIT_KMALLOC_INFO(1024, 1k), INIT_KMALLOC_INFO(2048, 2k), INIT_KMALLOC_INFO(4096, 4k), INIT_KMALLOC_INFO(8192, 8k), INIT_KMALLOC_INFO(16384, 16k), INIT_KMALLOC_INFO(32768, 32k), INIT_KMALLOC_INFO(65536, 64k), INIT_KMALLOC_INFO(131072, 128k), INIT_KMALLOC_INFO(262144, 256k), INIT_KMALLOC_INFO(524288, 512k), INIT_KMALLOC_INFO(1048576, 1M), INIT_KMALLOC_INFO(2097152, 2M), INIT_KMALLOC_INFO(4194304, 4M), INIT_KMALLOC_INFO(8388608, 8M), INIT_KMALLOC_INFO(16777216, 16M), INIT_KMALLOC_INFO(33554432, 32M) };
 
-void __init setup_kmalloc_cache_index_table(void)
-{
+void __init setup_kmalloc_cache_index_table(void) {
 	unsigned int i;
 
 	BUILD_BUG_ON(KMALLOC_MIN_SIZE > 256 || !is_power_of_2(KMALLOC_MIN_SIZE));
@@ -200,8 +190,7 @@ void __init setup_kmalloc_cache_index_table(void)
 }
 
 static void __init
-new_kmalloc_cache(int idx, enum kmalloc_cache_type type, slab_flags_t flags)
-{
+new_kmalloc_cache(int idx, enum kmalloc_cache_type type, slab_flags_t flags) {
 	/* CONFIG_ZONE_DMA and CONFIG_MEMCG_KMEM are off on this build, so the
 	 * KMALLOC_DMA (SLAB_CACHE_DMA) and KMALLOC_NORMAL (refcount = -1) arms
 	 * were statically dead; only the KMALLOC_RECLAIM arm survives. */
@@ -211,8 +200,7 @@ new_kmalloc_cache(int idx, enum kmalloc_cache_type type, slab_flags_t flags)
 	kmalloc_caches[type][idx] = create_kmalloc_cache( kmalloc_info[idx].name[type], kmalloc_info[idx].size, flags, 0, kmalloc_info[idx].size);
 }
 
-void __init create_kmalloc_caches(slab_flags_t flags)
-{
+void __init create_kmalloc_caches(slab_flags_t flags) {
 	int i;
 	enum kmalloc_cache_type type;
 
@@ -234,8 +222,7 @@ void __init create_kmalloc_caches(slab_flags_t flags)
 	slab_state = UP;
 }
 
-gfp_t kmalloc_fix_flags(gfp_t flags)
-{
+gfp_t kmalloc_fix_flags(gfp_t flags) {
 	gfp_t invalid_mask = flags & GFP_SLAB_BUG_MASK;
 
 	flags &= ~GFP_SLAB_BUG_MASK;
@@ -245,8 +232,7 @@ gfp_t kmalloc_fix_flags(gfp_t flags)
 	return flags;
 }
 
-void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)
-{
+void *kmalloc_order(size_t size, gfp_t flags, unsigned int order) {
 	void *ret = NULL;
 	struct page *page;
 

@@ -6,8 +6,7 @@
 
 #ifndef CONFIG_MMU_GATHER_NO_GATHER
 
-static void tlb_batch_pages_flush(struct mmu_gather *tlb)
-{
+static void tlb_batch_pages_flush(struct mmu_gather *tlb) {
 	struct mmu_gather_batch *batch;
 
 	for (batch = &tlb->local; batch && batch->nr; batch = batch->next) {
@@ -27,8 +26,7 @@ static void tlb_batch_pages_flush(struct mmu_gather *tlb)
 	tlb->active = &tlb->local;
 }
 
-static void tlb_batch_list_free(struct mmu_gather *tlb)
-{
+static void tlb_batch_list_free(struct mmu_gather *tlb) {
 	struct mmu_gather_batch *batch, *next;
 
 	for (batch = tlb->local.next; batch; batch = next) {
@@ -38,8 +36,7 @@ static void tlb_batch_list_free(struct mmu_gather *tlb)
 	tlb->local.next = NULL;
 }
 
-bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page, int page_size)
-{
+bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page, int page_size) {
 	/* runtime-dead: page-table teardown (pte_free_tlb<-free_pgd_range) never
 	 * fires on a 1-shot boot that never unmaps; the page-batching gather path
 	 * is never entered. Stubbed; symbol kept for the asm/tlb.h inline caller. */
@@ -49,21 +46,18 @@ bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page, int page_
 #endif  
 
 
-static void tlb_flush_mmu_free(struct mmu_gather *tlb)
-{
+static void tlb_flush_mmu_free(struct mmu_gather *tlb) {
 #ifndef CONFIG_MMU_GATHER_NO_GATHER
 	tlb_batch_pages_flush(tlb);
 #endif
 }
 
-void tlb_flush_mmu(struct mmu_gather *tlb)
-{
+void tlb_flush_mmu(struct mmu_gather *tlb) {
 	tlb_flush_mmu_tlbonly(tlb);
 	tlb_flush_mmu_free(tlb);
 }
 
-static void __tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm, bool fullmm)
-{
+static void __tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm, bool fullmm) {
 	tlb->mm = mm;
 	tlb->fullmm = fullmm;
 
@@ -79,13 +73,11 @@ static void __tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm, bool 
 	inc_tlb_flush_pending(tlb->mm);
 }
 
-void tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm)
-{
+void tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm) {
 	__tlb_gather_mmu(tlb, mm, false);
 }
 
-void tlb_finish_mmu(struct mmu_gather *tlb)
-{
+void tlb_finish_mmu(struct mmu_gather *tlb) {
 	 
 	if (mm_tlb_flush_nested(tlb->mm)) {
 		 

@@ -15,8 +15,7 @@ extern const sys_call_ptr_t sys_call_table[];
 #define ia32_sys_call_table sys_call_table
 
  
-static inline int syscall_get_nr(struct task_struct *task, struct pt_regs *regs)
-{
+static inline int syscall_get_nr(struct task_struct *task, struct pt_regs *regs) {
 	return regs->orig_ax;
 }
 

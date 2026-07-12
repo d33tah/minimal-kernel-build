@@ -27,8 +27,7 @@ static DEFINE_PER_CPU(enum nmi_states, nmi_state);
 static DEFINE_PER_CPU(unsigned long, nmi_cr2);
 static DEFINE_PER_CPU(unsigned long, nmi_dr7);
 
-DEFINE_IDTENTRY_RAW(exc_nmi)
-{
+DEFINE_IDTENTRY_RAW(exc_nmi) {
 	irqentry_state_t irq_state;
 
 	if (this_cpu_read(nmi_state) != NMI_NOT_RUNNING) {

@@ -29,8 +29,7 @@ extern struct cpumask __cpu_possible_mask;
 extern struct cpumask __cpu_online_mask;
 #define cpu_possible_mask ((const struct cpumask *)&__cpu_possible_mask)
 
-static __always_inline unsigned int cpumask_check(unsigned int cpu)
-{
+static __always_inline unsigned int cpumask_check(unsigned int cpu) {
 	return cpu;
 }
 
@@ -40,45 +39,38 @@ static __always_inline unsigned int cpumask_check(unsigned int cpu)
 #define CPU_BITS_NONE						{									[0 ... BITS_TO_LONGS(NR_CPUS)-1] = 0UL			}
 
 
-static __always_inline void cpumask_set_cpu(unsigned int cpu, struct cpumask *dstp)
-{
+static __always_inline void cpumask_set_cpu(unsigned int cpu, struct cpumask *dstp) {
 	set_bit(cpumask_check(cpu), cpumask_bits(dstp));
 }
 
 
-static __always_inline void cpumask_clear_cpu(int cpu, struct cpumask *dstp)
-{
+static __always_inline void cpumask_clear_cpu(int cpu, struct cpumask *dstp) {
 	clear_bit(cpumask_check(cpu), cpumask_bits(dstp));
 }
 
-static __always_inline int cpumask_test_cpu(int cpu, const struct cpumask *cpumask)
-{
+static __always_inline int cpumask_test_cpu(int cpu, const struct cpumask *cpumask) {
 	return test_bit(cpumask_check(cpu), cpumask_bits((cpumask)));
 }
 
-static __always_inline int cpumask_test_and_set_cpu(int cpu, struct cpumask *cpumask)
-{
+static __always_inline int cpumask_test_and_set_cpu(int cpu, struct cpumask *cpumask) {
 	return test_and_set_bit(cpumask_check(cpu), cpumask_bits(cpumask));
 }
 
-static inline void cpumask_clear(struct cpumask *dstp)
-{
+static inline void cpumask_clear(struct cpumask *dstp) {
 	bitmap_zero(cpumask_bits(dstp), nr_cpumask_bits);
 }
 
 
 
 
-static inline bool cpumask_equal(const struct cpumask *src1p, const struct cpumask *src2p)
-{
+static inline bool cpumask_equal(const struct cpumask *src1p, const struct cpumask *src2p) {
 	return bitmap_equal(cpumask_bits(src1p), cpumask_bits(src2p), nr_cpumask_bits);
 }
 
 #define cpumask_of(cpu) (get_cpu_mask(cpu))
 
 
-static inline unsigned int cpumask_size(void)
-{
+static inline unsigned int cpumask_size(void) {
 	return BITS_TO_LONGS(nr_cpumask_bits) * sizeof(long);
 }
 
@@ -90,8 +82,7 @@ extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
 #define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
 
 static inline void
-set_cpu_possible(unsigned int cpu, bool possible)
-{
+set_cpu_possible(unsigned int cpu, bool possible) {
 	if (possible)
 		cpumask_set_cpu(cpu, &__cpu_possible_mask);
 	else
@@ -100,8 +91,7 @@ set_cpu_possible(unsigned int cpu, bool possible)
 
 #define to_cpumask(bitmap)							((struct cpumask *)(1 ? (bitmap)							    : (void *)sizeof(__check_is_bitmap(bitmap))))
 
-static inline int __check_is_bitmap(const unsigned long *bitmap)
-{
+static inline int __check_is_bitmap(const unsigned long *bitmap) {
 	return 1;
 }
 
@@ -109,8 +99,7 @@ static inline int __check_is_bitmap(const unsigned long *bitmap)
 extern const unsigned long
 	cpu_bit_bitmap[BITS_PER_LONG+1][BITS_TO_LONGS(NR_CPUS)];
 
-static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
-{
+static inline const struct cpumask *get_cpu_mask(unsigned int cpu) {
 	const unsigned long *p = cpu_bit_bitmap[1 + cpu % BITS_PER_LONG];
 	p -= cpu / BITS_PER_LONG;
 	return to_cpumask(p);
@@ -120,8 +109,7 @@ static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
 #define num_possible_cpus()	1U
 #define num_present_cpus()	1U
 
-static inline bool cpu_possible(unsigned int cpu)
-{
+static inline bool cpu_possible(unsigned int cpu) {
 	return cpu == 0;
 }
 

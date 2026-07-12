@@ -5,8 +5,7 @@
 #include <linux/limits.h>
 #include <linux/const.h>
 
-static inline bool __must_check __must_check_overflow(bool overflow)
-{
+static inline bool __must_check __must_check_overflow(bool overflow) {
 	return unlikely(overflow);
 }
 
@@ -14,8 +13,7 @@ static inline bool __must_check __must_check_overflow(bool overflow)
 
 #define check_mul_overflow(a, b, d) __must_check_overflow(({		typeof(a) __a = (a);				typeof(b) __b = (b);				typeof(d) __d = (d);				(void) (&__a == &__b);				(void) (&__a == __d);				__builtin_mul_overflow(__a, __b, __d);	}))
 
-static inline size_t __must_check size_mul(size_t factor1, size_t factor2)
-{
+static inline size_t __must_check size_mul(size_t factor1, size_t factor2) {
 	size_t bytes;
 
 	if (check_mul_overflow(factor1, factor2, &bytes))
@@ -24,8 +22,7 @@ static inline size_t __must_check size_mul(size_t factor1, size_t factor2)
 	return bytes;
 }
 
-static inline size_t __must_check size_add(size_t addend1, size_t addend2)
-{
+static inline size_t __must_check size_add(size_t addend1, size_t addend2) {
 	size_t bytes;
 
 	if (check_add_overflow(addend1, addend2, &bytes))

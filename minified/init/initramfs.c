@@ -9,8 +9,7 @@
 static __initdata bool csum_present;
 static __initdata u32 io_csum;
 
-static ssize_t __init xwrite(struct file *file, const unsigned char *p, size_t count, loff_t *pos)
-{
+static ssize_t __init xwrite(struct file *file, const unsigned char *p, size_t count, loff_t *pos) {
 	ssize_t out = 0;
 
 	 
@@ -40,14 +39,12 @@ static ssize_t __init xwrite(struct file *file, const unsigned char *p, size_t c
 }
 
 static __initdata char *message;
-static void __init error(char *x)
-{
+static void __init error(char *x) {
 	if (!message)
 		message = x;
 }
 
-static void panic_show_mem(const char *fmt, ...)
-{
+static void panic_show_mem(const char *fmt, ...) {
 	va_list args;
 
 	va_start(args, fmt);
@@ -64,15 +61,13 @@ static __initdata struct hash {
 	char name[N_ALIGN(PATH_MAX)];
 } *head[32];
 
-static inline int hash(int major, int minor, int ino)
-{
+static inline int hash(int major, int minor, int ino) {
 	unsigned long tmp = ino + minor + (major << 3);
 	tmp += tmp >> 5;
 	return tmp & 31;
 }
 
-static void __init free_hash(void)
-{
+static void __init free_hash(void) {
 	struct hash **p, *q;
 	for (p = head; p < head + 32; p++) {
 		while (*p) {
@@ -99,8 +94,7 @@ static __initdata gid_t gid;
 static __initdata unsigned rdev;
 static __initdata u32 hdr_csum;
 
-static void __init parse_header(char *s)
-{
+static void __init parse_header(char *s) {
 	unsigned long parsed[13];
 	char buf[9];
 	int i;
@@ -133,8 +127,7 @@ static __initdata char *victim;
 static unsigned long byte_count __initdata;
 static __initdata loff_t this_header, next_header;
 
-static inline void __init eat(unsigned n)
-{
+static inline void __init eat(unsigned n) {
 	victim += n;
 	this_header += n;
 	byte_count -= n;
@@ -144,8 +137,7 @@ static __initdata char *collected;
 static long remains __initdata;
 static __initdata char *collect;
 
-static void __init read_into(char *buf, unsigned size, enum state next)
-{
+static void __init read_into(char *buf, unsigned size, enum state next) {
 	if (byte_count >= size) {
 		collected = victim;
 		eat(size);
@@ -160,14 +152,12 @@ static void __init read_into(char *buf, unsigned size, enum state next)
 
 static __initdata char *header_buf, *symlink_buf, *name_buf;
 
-static int __init do_start(void)
-{
+static int __init do_start(void) {
 	read_into(header_buf, 110, GotHeader);
 	return 0;
 }
 
-static int __init do_collect(void)
-{
+static int __init do_collect(void) {
 	unsigned long n = remains;
 	if (byte_count < n)
 		n = byte_count;
@@ -180,8 +170,7 @@ static int __init do_collect(void)
 	return 0;
 }
 
-static int __init do_header(void)
-{
+static int __init do_header(void) {
 	if (!memcmp(collected, "070701", 6)) {
 		csum_present = false;
 	} else if (!memcmp(collected, "070702", 6)) {
@@ -213,8 +202,7 @@ static int __init do_header(void)
 	return 0;
 }
 
-static int __init do_skip(void)
-{
+static int __init do_skip(void) {
 	if (this_header + byte_count < next_header) {
 		eat(byte_count);
 		return 1;
@@ -225,8 +213,7 @@ static int __init do_skip(void)
 	}
 }
 
-static int __init do_reset(void)
-{
+static int __init do_reset(void) {
 	while (byte_count && *victim == '\0')
 		eat(1);
 	if (byte_count && (this_header & 3))
@@ -234,8 +221,7 @@ static int __init do_reset(void)
 	return 1;
 }
 
-static void __init clean_path(char *path, umode_t fmode)
-{
+static void __init clean_path(char *path, umode_t fmode) {
 	struct kstat st;
 
 	if (!init_stat(path, &st, AT_SYMLINK_NOFOLLOW) && (st.mode ^ fmode) & S_IFMT) {
@@ -246,8 +232,7 @@ static void __init clean_path(char *path, umode_t fmode)
 	}
 }
 
-static int __init maybe_link(void)
-{
+static int __init maybe_link(void) {
 	if (nlink >= 2) {
 		struct hash **p, *q;
 		char *old = NULL;
@@ -287,8 +272,7 @@ static int __init maybe_link(void)
 static __initdata struct file *wfile;
 static __initdata loff_t wfile_pos;
 
-static int __init do_name(void)
-{
+static int __init do_name(void) {
 	state = SkipIt;
 	next_state = Reset;
 	if (strcmp(collected, "TRAILER!!!") == 0) {
@@ -330,8 +314,7 @@ static int __init do_name(void)
 	return 0;
 }
 
-static int __init do_copy(void)
-{
+static int __init do_copy(void) {
 	if (byte_count >= body_len) {
 		if (xwrite(wfile, victim, body_len, &wfile_pos) != body_len)
 			error("write error");
@@ -352,8 +335,7 @@ static int __init do_copy(void)
 	}
 }
 
-static int __init do_symlink(void)
-{
+static int __init do_symlink(void) {
 	collected[N_ALIGN(name_len) + body_len] = '\0';
 	clean_path(collected, 0);
 	init_symlink(collected + N_ALIGN(name_len), collected);
@@ -366,8 +348,7 @@ static int __init do_symlink(void)
 
 static __initdata int (*actions[])(void) = { [Start]		= do_start, [Collect]	= do_collect, [GotHeader]	= do_header, [SkipIt]	= do_skip, [GotName]	= do_name, [CopyFile]	= do_copy, [GotSymlink]	= do_symlink, [Reset]		= do_reset, };
 
-static long __init write_buffer(char *buf, unsigned long len)
-{
+static long __init write_buffer(char *buf, unsigned long len) {
 	byte_count = len;
 	victim = buf;
 
@@ -376,8 +357,7 @@ static long __init write_buffer(char *buf, unsigned long len)
 	return len - byte_count;
 }
 
-static char * __init unpack_to_rootfs(char *buf, unsigned long len)
-{
+static char * __init unpack_to_rootfs(char *buf, unsigned long len) {
 	long written;
 
 	header_buf = kmalloc(110, GFP_KERNEL);
@@ -426,8 +406,7 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
 
 #include <linux/initrd.h>
 
-static void __init do_populate_rootfs(void)
-{
+static void __init do_populate_rootfs(void) {
 	 
 	char *err = unpack_to_rootfs(__initramfs_start, __initramfs_size);
 	if (err)
@@ -456,8 +435,7 @@ done:
 
 static bool __initdata initramfs_done;
 
-void wait_for_initramfs(void)
-{
+void wait_for_initramfs(void) {
 	if (!initramfs_done) {
 
 		pr_warn_once("wait_for_initramfs() called before rootfs_initcalls\n");
@@ -465,8 +443,7 @@ void wait_for_initramfs(void)
 	}
 }
 
-static int __init populate_rootfs(void)
-{
+static int __init populate_rootfs(void) {
 	/* The async scheduler stub ran synchronously; do so directly. */
 	do_populate_rootfs();
 	initramfs_done = true;

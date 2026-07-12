@@ -21,8 +21,7 @@ extern "C" {
 #ifndef CONFIG_
 #define CONFIG_ "CONFIG_"
 #endif
-static inline const char *CONFIG_prefix(void)
-{
+static inline const char *CONFIG_prefix(void) {
 	return getenv( "CONFIG_" ) ?: CONFIG_;
 }
 #undef CONFIG_
@@ -89,29 +88,24 @@ struct property *sym_get_range_prop(struct symbol *sym);
 struct symbol *sym_check_deps(struct symbol *sym);
 struct symbol *prop_get_symbol(struct property *prop);
 
-static inline tristate sym_get_tristate_value(struct symbol *sym)
-{
+static inline tristate sym_get_tristate_value(struct symbol *sym) {
 	return sym->curr.tri;
 }
 
 
-static inline bool sym_is_choice(struct symbol *sym)
-{
+static inline bool sym_is_choice(struct symbol *sym) {
 	return sym->flags & SYMBOL_CHOICE ? true : false;
 }
 
-static inline bool sym_is_choice_value(struct symbol *sym)
-{
+static inline bool sym_is_choice_value(struct symbol *sym) {
 	return sym->flags & SYMBOL_CHOICEVAL ? true : false;
 }
 
-static inline bool sym_is_optional(struct symbol *sym)
-{
+static inline bool sym_is_optional(struct symbol *sym) {
 	return sym->flags & SYMBOL_OPTIONAL ? true : false;
 }
 
-static inline bool sym_has_value(struct symbol *sym)
-{
+static inline bool sym_has_value(struct symbol *sym) {
 	return sym->flags & SYMBOL_DEF_USER ? true : false;
 }
 

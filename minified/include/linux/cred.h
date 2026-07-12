@@ -10,8 +10,7 @@
 
 struct group_info { atomic_t	usage; int		ngroups; kgid_t		gid[]; } __randomize_layout;
 
-static inline struct group_info *get_group_info(struct group_info *gi)
-{
+static inline struct group_info *get_group_info(struct group_info *gi) {
 	atomic_inc(&gi->usage);
 	return gi;
 }
@@ -29,22 +28,19 @@ extern void abort_creds(struct cred *);
 extern void __init cred_init(void);
 extern int set_cred_ucounts(struct cred *);
 
-static inline struct cred *get_new_cred(struct cred *cred)
-{
+static inline struct cred *get_new_cred(struct cred *cred) {
 	atomic_inc(&cred->usage);
 	return cred;
 }
 
-static inline const struct cred *get_cred(const struct cred *cred)
-{
+static inline const struct cred *get_cred(const struct cred *cred) {
 	struct cred *nonconst_cred = (struct cred *) cred;
 	if (!cred)
 		return cred;
 	return get_new_cred(nonconst_cred);
 }
 
-static inline void put_cred(const struct cred *_cred)
-{
+static inline void put_cred(const struct cred *_cred) {
 	struct cred *cred = (struct cred *) _cred;
 
 	if (cred) {
@@ -73,8 +69,7 @@ static inline void put_cred(const struct cred *_cred)
 #define current_fsgid() 	(current_cred_xxx(fsgid))
 
 extern struct user_namespace init_user_ns;
-static inline struct user_namespace *current_user_ns(void)
-{
+static inline struct user_namespace *current_user_ns(void) {
 	return &init_user_ns;
 }
 

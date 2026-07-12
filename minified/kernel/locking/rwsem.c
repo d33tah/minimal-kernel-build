@@ -26,30 +26,25 @@ enum lock_events { LOCK_EVENT(rwsem_sleep_reader) LOCK_EVENT(rwsem_sleep_writer)
 #define RWSEM_LOCK_MASK		(RWSEM_WRITER_MASK|RWSEM_READER_MASK)
 #define RWSEM_READ_FAILED_MASK	(RWSEM_WRITER_MASK|RWSEM_FLAG_WAITERS|				 RWSEM_FLAG_HANDOFF|RWSEM_FLAG_READFAIL)
 
-static inline void rwsem_set_owner(struct rw_semaphore *sem)
-{
+static inline void rwsem_set_owner(struct rw_semaphore *sem) {
 	atomic_long_set(&sem->owner, (long)current);
 }
 
-static inline void rwsem_clear_owner(struct rw_semaphore *sem)
-{
+static inline void rwsem_clear_owner(struct rw_semaphore *sem) {
 	atomic_long_set(&sem->owner, 0);
 }
 
-static inline void __rwsem_set_reader_owned(struct rw_semaphore *sem, struct task_struct *owner)
-{
+static inline void __rwsem_set_reader_owned(struct rw_semaphore *sem, struct task_struct *owner) {
 	unsigned long val = (unsigned long)owner | RWSEM_READER_OWNED;
 
 	atomic_long_set(&sem->owner, val);
 }
 
-static inline void rwsem_set_reader_owned(struct rw_semaphore *sem)
-{
+static inline void rwsem_set_reader_owned(struct rw_semaphore *sem) {
 	__rwsem_set_reader_owned(sem, current);
 }
 
-static inline bool rwsem_read_trylock(struct rw_semaphore *sem, long *cntp)
-{
+static inline bool rwsem_read_trylock(struct rw_semaphore *sem, long *cntp) {
 	*cntp = atomic_long_add_return_acquire(RWSEM_READER_BIAS, &sem->count);
 
 	WARN_ON_ONCE(*cntp < 0);
@@ -62,8 +57,7 @@ static inline bool rwsem_read_trylock(struct rw_semaphore *sem, long *cntp)
 	return false;
 }
 
-static inline bool rwsem_write_trylock(struct rw_semaphore *sem)
-{
+static inline bool rwsem_write_trylock(struct rw_semaphore *sem) {
 	long tmp = RWSEM_UNLOCKED_VALUE;
 
 	if (atomic_long_try_cmpxchg_acquire(&sem->count, &tmp, RWSEM_WRITER_LOCKED)) {
@@ -74,29 +68,25 @@ static inline bool rwsem_write_trylock(struct rw_semaphore *sem)
 	return false;
 }
 
-void __init_rwsem(struct rw_semaphore *sem, const char *name, struct lock_class_key *key)
-{
+void __init_rwsem(struct rw_semaphore *sem, const char *name, struct lock_class_key *key) {
 	atomic_long_set(&sem->count, RWSEM_UNLOCKED_VALUE);
 	raw_spin_lock_init(&sem->wait_lock);
 	INIT_LIST_HEAD(&sem->wait_list);
 	atomic_long_set(&sem->owner, 0L);
 }
 
-static struct rw_semaphore __sched * rwsem_down_read_slowpath(struct rw_semaphore *sem, long count, unsigned int state)
-{
+static struct rw_semaphore __sched * rwsem_down_read_slowpath(struct rw_semaphore *sem, long count, unsigned int state) {
 
 	rwsem_set_reader_owned(sem);
 	return sem;
 }
 
-static struct rw_semaphore *rwsem_wake(struct rw_semaphore *sem)
-{
+static struct rw_semaphore *rwsem_wake(struct rw_semaphore *sem) {
 
 	return sem;
 }
 
-static inline int __down_read_common(struct rw_semaphore *sem, int state)
-{
+static inline int __down_read_common(struct rw_semaphore *sem, int state) {
 	long count;
 
 	if (!rwsem_read_trylock(sem, &count)) {
@@ -106,19 +96,16 @@ static inline int __down_read_common(struct rw_semaphore *sem, int state)
 	return 0;
 }
 
-static inline void __down_read(struct rw_semaphore *sem)
-{
+static inline void __down_read(struct rw_semaphore *sem) {
 	__down_read_common(sem, TASK_UNINTERRUPTIBLE);
 }
 
 
-static inline int __down_read_killable(struct rw_semaphore *sem)
-{
+static inline int __down_read_killable(struct rw_semaphore *sem) {
 	return __down_read_common(sem, TASK_KILLABLE);
 }
 
-static inline int __down_read_trylock(struct rw_semaphore *sem)
-{
+static inline int __down_read_trylock(struct rw_semaphore *sem) {
 	long tmp;
 
 	DEBUG_RWSEMS_WARN_ON(sem->magic != sem, sem);
@@ -133,30 +120,25 @@ static inline int __down_read_trylock(struct rw_semaphore *sem)
 	return 0;
 }
 
-static inline int __down_write_common(struct rw_semaphore *sem, int state)
-{
+static inline int __down_write_common(struct rw_semaphore *sem, int state) {
 	rwsem_write_trylock(sem);
 	return 0;
 }
 
-static inline void __down_write(struct rw_semaphore *sem)
-{
+static inline void __down_write(struct rw_semaphore *sem) {
 	__down_write_common(sem, TASK_UNINTERRUPTIBLE);
 }
 
-static inline int __down_write_killable(struct rw_semaphore *sem)
-{
+static inline int __down_write_killable(struct rw_semaphore *sem) {
 	return __down_write_common(sem, TASK_KILLABLE);
 }
 
-static inline int __down_write_trylock(struct rw_semaphore *sem)
-{
+static inline int __down_write_trylock(struct rw_semaphore *sem) {
 	DEBUG_RWSEMS_WARN_ON(sem->magic != sem, sem);
 	return rwsem_write_trylock(sem);
 }
 
-static inline void __up_read(struct rw_semaphore *sem)
-{
+static inline void __up_read(struct rw_semaphore *sem) {
 	long tmp;
 
 	DEBUG_RWSEMS_WARN_ON(sem->magic != sem, sem);
@@ -168,8 +150,7 @@ static inline void __up_read(struct rw_semaphore *sem)
 	}
 }
 
-static inline void __up_write(struct rw_semaphore *sem)
-{
+static inline void __up_write(struct rw_semaphore *sem) {
 	long tmp;
 
 	DEBUG_RWSEMS_WARN_ON(sem->magic != sem, sem);
@@ -181,8 +162,7 @@ static inline void __up_write(struct rw_semaphore *sem)
 }
 
 
-void __sched down_read(struct rw_semaphore *sem)
-{
+void __sched down_read(struct rw_semaphore *sem) {
 	might_sleep();
 	rwsem_acquire_read(&sem->dep_map, 0, 0, _RET_IP_);
 
@@ -190,8 +170,7 @@ void __sched down_read(struct rw_semaphore *sem)
 }
 
 
-int __sched down_read_killable(struct rw_semaphore *sem)
-{
+int __sched down_read_killable(struct rw_semaphore *sem) {
 	might_sleep();
 	rwsem_acquire_read(&sem->dep_map, 0, 0, _RET_IP_);
 
@@ -203,8 +182,7 @@ int __sched down_read_killable(struct rw_semaphore *sem)
 	return 0;
 }
 
-int down_read_trylock(struct rw_semaphore *sem)
-{
+int down_read_trylock(struct rw_semaphore *sem) {
 	int ret = __down_read_trylock(sem);
 
 	if (ret == 1)
@@ -212,15 +190,13 @@ int down_read_trylock(struct rw_semaphore *sem)
 	return ret;
 }
 
-void __sched down_write(struct rw_semaphore *sem)
-{
+void __sched down_write(struct rw_semaphore *sem) {
 	might_sleep();
 	rwsem_acquire(&sem->dep_map, 0, 0, _RET_IP_);
 	LOCK_CONTENDED(sem, __down_write_trylock, __down_write);
 }
 
-int __sched down_write_killable(struct rw_semaphore *sem)
-{
+int __sched down_write_killable(struct rw_semaphore *sem) {
 	might_sleep();
 	rwsem_acquire(&sem->dep_map, 0, 0, _RET_IP_);
 
@@ -232,14 +208,12 @@ int __sched down_write_killable(struct rw_semaphore *sem)
 	return 0;
 }
 
-void up_read(struct rw_semaphore *sem)
-{
+void up_read(struct rw_semaphore *sem) {
 	rwsem_release(&sem->dep_map, _RET_IP_);
 	__up_read(sem);
 }
 
-void up_write(struct rw_semaphore *sem)
-{
+void up_write(struct rw_semaphore *sem) {
 	rwsem_release(&sem->dep_map, _RET_IP_);
 	__up_write(sem);
 }

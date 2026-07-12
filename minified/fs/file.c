@@ -12,8 +12,7 @@ unsigned int sysctl_nr_open __read_mostly = 1024*1024;
 #define BITBIT_NR(nr)	BITS_TO_LONGS(BITS_TO_LONGS(nr))
 #define BITBIT_SIZE(nr)	(BITBIT_NR(nr) * sizeof(long))
 
-static void copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt, unsigned int count)
-{
+static void copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt, unsigned int count) {
 	unsigned int cpy, set;
 
 	cpy = count / BITS_PER_BYTE;
@@ -36,15 +35,13 @@ static void copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt, unsigned
  */
 static int expand_fdtable(struct files_struct *files, unsigned int nr)
 	__releases(files->file_lock)
-	__acquires(files->file_lock)
-{
+	__acquires(files->file_lock) {
 	return -EMFILE;
 }
 
 static int expand_files(struct files_struct *files, unsigned int nr)
 	__releases(files->file_lock)
-	__acquires(files->file_lock)
-{
+	__acquires(files->file_lock) {
 	struct fdtable *fdt;
 	int expanded = 0;
 
@@ -76,33 +73,28 @@ repeat:
 	return expanded;
 }
 
-static inline void __set_close_on_exec(unsigned int fd, struct fdtable *fdt)
-{
+static inline void __set_close_on_exec(unsigned int fd, struct fdtable *fdt) {
 	__set_bit(fd, fdt->close_on_exec);
 }
 
-static inline void __clear_close_on_exec(unsigned int fd, struct fdtable *fdt)
-{
+static inline void __clear_close_on_exec(unsigned int fd, struct fdtable *fdt) {
 	if (test_bit(fd, fdt->close_on_exec))
 		__clear_bit(fd, fdt->close_on_exec);
 }
 
-static inline void __set_open_fd(unsigned int fd, struct fdtable *fdt)
-{
+static inline void __set_open_fd(unsigned int fd, struct fdtable *fdt) {
 	__set_bit(fd, fdt->open_fds);
 	fd /= BITS_PER_LONG;
 	if (!~fdt->open_fds[fd])
 		__set_bit(fd, fdt->full_fds_bits);
 }
 
-static inline void __clear_open_fd(unsigned int fd, struct fdtable *fdt)
-{
+static inline void __clear_open_fd(unsigned int fd, struct fdtable *fdt) {
 	__clear_bit(fd, fdt->open_fds);
 	__clear_bit(fd / BITS_PER_LONG, fdt->full_fds_bits);
 }
 
-static unsigned int count_open_files(struct fdtable *fdt)
-{
+static unsigned int count_open_files(struct fdtable *fdt) {
 	unsigned int size = fdt->max_fds;
 	unsigned int i;
 
@@ -115,8 +107,7 @@ static unsigned int count_open_files(struct fdtable *fdt)
 	return i;
 }
 
-static unsigned int sane_fdtable_size(struct fdtable *fdt)
-{
+static unsigned int sane_fdtable_size(struct fdtable *fdt) {
 	/*
 	 * The sole caller (dup_fd) always passed max_fds == NR_OPEN_MAX
 	 * (~0U), so the upstream min(count, max_fds) clamp and the
@@ -125,8 +116,7 @@ static unsigned int sane_fdtable_size(struct fdtable *fdt)
 	return ALIGN(count_open_files(fdt), BITS_PER_LONG);
 }
 
-struct files_struct *dup_fd(struct files_struct *oldf, int *errorp)
-{
+struct files_struct *dup_fd(struct files_struct *oldf, int *errorp) {
 	struct files_struct *newf;
 	struct file **old_fds, **new_fds;
 	unsigned int open_files, i;
@@ -194,14 +184,12 @@ out:
  * Runtime-dead: nothing exits / closes its fd table on a single-shot boot.
  * Link-live via kernel/exit.c do_exit tail; never executes.
  */
-void exit_files(struct task_struct *tsk)
-{
+void exit_files(struct task_struct *tsk) {
 }
 
 struct files_struct init_files = { .count		= ATOMIC_INIT(1), .fdt		= &init_files.fdtab, .fdtab		= { .max_fds	= NR_OPEN_DEFAULT, .fd		= &init_files.fd_array[0], .close_on_exec	= init_files.close_on_exec_init, .open_fds	= init_files.open_fds_init, .full_fds_bits	= init_files.full_fds_bits_init, }, .file_lock	= __SPIN_LOCK_UNLOCKED(init_files.file_lock), .resize_wait	= __WAIT_QUEUE_HEAD_INITIALIZER(init_files.resize_wait), };
 
-static unsigned int find_next_fd(struct fdtable *fdt, unsigned int start)
-{
+static unsigned int find_next_fd(struct fdtable *fdt, unsigned int start) {
 	unsigned int maxfd = fdt->max_fds;
 	unsigned int maxbit = maxfd / BITS_PER_LONG;
 	unsigned int bitbit = start / BITS_PER_LONG;
@@ -214,8 +202,7 @@ static unsigned int find_next_fd(struct fdtable *fdt, unsigned int start)
 	return find_next_zero_bit(fdt->open_fds, maxfd, start);
 }
 
-static int alloc_fd(unsigned start, unsigned end, unsigned flags)
-{
+static int alloc_fd(unsigned start, unsigned end, unsigned flags) {
 	struct files_struct *files = current->files;
 	unsigned int fd;
 	int error;
@@ -263,26 +250,22 @@ out:
 	return error;
 }
 
-static int __get_unused_fd_flags(unsigned flags, unsigned long nofile)
-{
+static int __get_unused_fd_flags(unsigned flags, unsigned long nofile) {
 	return alloc_fd(0, nofile, flags);
 }
 
-int get_unused_fd_flags(unsigned flags)
-{
+int get_unused_fd_flags(unsigned flags) {
 	return __get_unused_fd_flags(flags, rlimit(RLIMIT_NOFILE));
 }
 
-static void __put_unused_fd(struct files_struct *files, unsigned int fd)
-{
+static void __put_unused_fd(struct files_struct *files, unsigned int fd) {
 	struct fdtable *fdt = files_fdtable(files);
 	__clear_open_fd(fd, fdt);
 	if (fd < files->next_fd)
 		files->next_fd = fd;
 }
 
-void fd_install(unsigned int fd, struct file *file)
-{
+void fd_install(unsigned int fd, struct file *file) {
 	struct files_struct *files = current->files;
 	struct fdtable *fdt;
 
@@ -306,8 +289,7 @@ void fd_install(unsigned int fd, struct file *file)
 }
 
 
-void do_close_on_exec(struct files_struct *files)
-{
+void do_close_on_exec(struct files_struct *files) {
 	unsigned i;
 	struct fdtable *fdt;
 
@@ -342,8 +324,7 @@ void do_close_on_exec(struct files_struct *files)
 	spin_unlock(&files->file_lock);
 }
 
-static inline struct file *__fget_files_rcu(struct files_struct *files, unsigned int fd, fmode_t mask)
-{
+static inline struct file *__fget_files_rcu(struct files_struct *files, unsigned int fd, fmode_t mask) {
 	for (;;) {
 		struct file *file;
 		struct fdtable *fdt = rcu_dereference_raw(files->fdt);
@@ -375,8 +356,7 @@ static inline struct file *__fget_files_rcu(struct files_struct *files, unsigned
 	}
 }
 
-static struct file *__fget_files(struct files_struct *files, unsigned int fd, fmode_t mask)
-{
+static struct file *__fget_files(struct files_struct *files, unsigned int fd, fmode_t mask) {
 	struct file *file;
 
 	rcu_read_lock();
@@ -386,13 +366,11 @@ static struct file *__fget_files(struct files_struct *files, unsigned int fd, fm
 	return file;
 }
 
-static inline struct file *__fget(unsigned int fd, fmode_t mask)
-{
+static inline struct file *__fget(unsigned int fd, fmode_t mask) {
 	return __fget_files(current->files, fd, mask);
 }
 
-static unsigned long __fget_light(unsigned int fd, fmode_t mask)
-{
+static unsigned long __fget_light(unsigned int fd, fmode_t mask) {
 	struct files_struct *files = current->files;
 	struct file *file;
 
@@ -408,13 +386,11 @@ static unsigned long __fget_light(unsigned int fd, fmode_t mask)
 		return FDPUT_FPUT | (unsigned long)file;
 	}
 }
-unsigned long __fdget(unsigned int fd)
-{
+unsigned long __fdget(unsigned int fd) {
 	return __fget_light(fd, FMODE_PATH);
 }
 
-unsigned long __fdget_pos(unsigned int fd)
-{
+unsigned long __fdget_pos(unsigned int fd) {
 	unsigned long v = __fdget(fd);
 	struct file *file = (struct file *)(v & ~3);
 
@@ -427,8 +403,7 @@ unsigned long __fdget_pos(unsigned int fd)
 	return v;
 }
 
-void __f_unlock_pos(struct file *f)
-{
+void __f_unlock_pos(struct file *f) {
 	mutex_unlock(&f->f_pos_lock);
 }
 

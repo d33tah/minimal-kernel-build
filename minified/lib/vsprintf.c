@@ -16,8 +16,7 @@
 
 #include "kstrtox.h"
 
-static noinline unsigned long long simple_strntoull(const char *startp, size_t max_chars, char **endp, unsigned int base)
-{
+static noinline unsigned long long simple_strntoull(const char *startp, size_t max_chars, char **endp, unsigned int base) {
 	const char *cp;
 	unsigned long long result = 0ULL;
 	size_t prefix_chars;
@@ -41,20 +40,17 @@ static noinline unsigned long long simple_strntoull(const char *startp, size_t m
 }
 
 noinline
-unsigned long long simple_strtoull(const char *cp, char **endp, unsigned int base)
-{
+unsigned long long simple_strtoull(const char *cp, char **endp, unsigned int base) {
 	return simple_strntoull(cp, INT_MAX, endp, base);
 }
 
-unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base)
-{
+unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base) {
 	return simple_strtoull(cp, endp, base);
 }
 
 
 static noinline_for_stack
-int skip_atoi(const char **s)
-{
+int skip_atoi(const char **s) {
 	int i = 0;
 
 	do {
@@ -71,8 +67,7 @@ static const u16 decpair[100] = {
 };
 
 static noinline_for_stack
-char *put_dec_trunc8(char *buf, unsigned r)
-{
+char *put_dec_trunc8(char *buf, unsigned r) {
 	unsigned q;
 
 	
@@ -112,8 +107,7 @@ out_r:
 }
 
 static void
-put_dec_full4(char *buf, unsigned r)
-{
+put_dec_full4(char *buf, unsigned r) {
 	unsigned q;
 
 	
@@ -125,8 +119,7 @@ put_dec_full4(char *buf, unsigned r)
 }
 
 static noinline_for_stack
-unsigned put_dec_helper4(char *buf, unsigned x)
-{
+unsigned put_dec_helper4(char *buf, unsigned x) {
         uint32_t q = (x * (uint64_t)0x346DC5D7) >> 43;
 
         put_dec_full4(buf, x - q * 10000);
@@ -134,8 +127,7 @@ unsigned put_dec_helper4(char *buf, unsigned x)
 }
 
 static
-char *put_dec(char *buf, unsigned long long n)
-{
+char *put_dec(char *buf, unsigned long long n) {
 	uint32_t d3, d2, d1, q, h;
 
 	if (n < 100*1000*1000)
@@ -185,8 +177,7 @@ struct printf_spec { unsigned int	type:8; signed int	field_width:24; unsigned in
 static_assert(sizeof(struct printf_spec) == 8);
 
 static noinline_for_stack
-char *number(char *buf, char *end, unsigned long long num, struct printf_spec spec)
-{
+char *number(char *buf, char *end, unsigned long long num, struct printf_spec spec) {
 	
 	char tmp[3 * sizeof(num)] __aligned(2);
 	char sign, locase;
@@ -277,8 +268,7 @@ char *number(char *buf, char *end, unsigned long long num, struct printf_spec sp
 	return buf;
 }
 
-static void move_right(char *buf, char *end, unsigned len, unsigned spaces)
-{
+static void move_right(char *buf, char *end, unsigned len, unsigned spaces) {
 	size_t size;
 	if (buf >= end)	
 		return;
@@ -296,8 +286,7 @@ static void move_right(char *buf, char *end, unsigned len, unsigned spaces)
 }
 
 static noinline_for_stack
-char *widen_string(char *buf, int n, char *end, struct printf_spec spec)
-{
+char *widen_string(char *buf, int n, char *end, struct printf_spec spec) {
 	unsigned spaces;
 
 	if (likely(n >= spec.field_width))
@@ -309,8 +298,7 @@ char *widen_string(char *buf, int n, char *end, struct printf_spec spec)
 	return buf + spaces;
 }
 
-static char *string_nocheck(char *buf, char *end, const char *s, struct printf_spec spec)
-{
+static char *string_nocheck(char *buf, char *end, const char *s, struct printf_spec spec) {
 	int len = 0;
 	int lim = spec.precision;
 
@@ -326,8 +314,7 @@ static char *string_nocheck(char *buf, char *end, const char *s, struct printf_s
 	return widen_string(buf, len, end, spec);
 }
 
-static char *error_string(char *buf, char *end, const char *s, struct printf_spec spec)
-{
+static char *error_string(char *buf, char *end, const char *s, struct printf_spec spec) {
 	
 	if (spec.precision == -1)
 		spec.precision = 2 * sizeof(void *);
@@ -335,8 +322,7 @@ static char *error_string(char *buf, char *end, const char *s, struct printf_spe
 	return string_nocheck(buf, end, s, spec);
 }
 
-static const char *check_pointer_msg(const void *ptr)
-{
+static const char *check_pointer_msg(const void *ptr) {
 	if (!ptr)
 		return "(null)";
 
@@ -346,8 +332,7 @@ static const char *check_pointer_msg(const void *ptr)
 	return NULL;
 }
 
-static int check_pointer(char **buf, char *end, const void *ptr, struct printf_spec spec)
-{
+static int check_pointer(char **buf, char *end, const void *ptr, struct printf_spec spec) {
 	const char *err_msg;
 
 	err_msg = check_pointer_msg(ptr);
@@ -360,16 +345,14 @@ static int check_pointer(char **buf, char *end, const void *ptr, struct printf_s
 }
 
 static noinline_for_stack
-char *string(char *buf, char *end, const char *s, struct printf_spec spec)
-{
+char *string(char *buf, char *end, const char *s, struct printf_spec spec) {
 	if (check_pointer(&buf, end, s, spec))
 		return buf;
 
 	return string_nocheck(buf, end, s, spec);
 }
 
-static char *pointer_string(char *buf, char *end, const void *ptr, struct printf_spec spec)
-{
+static char *pointer_string(char *buf, char *end, const void *ptr, struct printf_spec spec) {
 	spec.base = 16;
 	spec.flags |= SMALL;
 	if (spec.field_width == -1) {
@@ -382,13 +365,11 @@ static char *pointer_string(char *buf, char *end, const void *ptr, struct printf
 
 static DEFINE_STATIC_KEY_FALSE(filled_random_ptr_key);
 
-static void enable_ptr_key_workfn(struct work_struct *work)
-{
+static void enable_ptr_key_workfn(struct work_struct *work) {
 	static_branch_enable(&filled_random_ptr_key);
 }
 
-static inline int ptr_to_hashval(const void *ptr, unsigned long *hashval_out)
-{
+static inline int ptr_to_hashval(const void *ptr, unsigned long *hashval_out) {
 	static siphash_key_t ptr_key __read_mostly;
 	unsigned long hashval;
 
@@ -414,8 +395,7 @@ static inline int ptr_to_hashval(const void *ptr, unsigned long *hashval_out)
 	return 0;
 }
 
-static char *ptr_to_id(char *buf, char *end, const void *ptr, struct printf_spec spec)
-{
+static char *ptr_to_id(char *buf, char *end, const void *ptr, struct printf_spec spec) {
 	const char *str = sizeof(ptr) == 8 ? "(____ptrval____)" : "(ptrval)";
 	unsigned long hashval;
 	int ret;
@@ -434,16 +414,14 @@ static char *ptr_to_id(char *buf, char *end, const void *ptr, struct printf_spec
 	return pointer_string(buf, end, (const void *)hashval, spec);
 }
 
-static char *default_pointer(char *buf, char *end, const void *ptr, struct printf_spec spec)
-{
+static char *default_pointer(char *buf, char *end, const void *ptr, struct printf_spec spec) {
 	
 	return ptr_to_id(buf, end, ptr, spec);
 }
 
 
 static noinline_for_stack
-int format_decode(const char *fmt, struct printf_spec *spec)
-{
+int format_decode(const char *fmt, struct printf_spec *spec) {
 	const char *start = fmt;
 	char qualifier;
 
@@ -582,8 +560,7 @@ int format_decode(const char *fmt, struct printf_spec *spec)
 	return ++fmt - start;
 }
 
-int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
-{
+int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 	unsigned long long num;
 	char *str, *end;
 	struct printf_spec spec = {0};
@@ -723,8 +700,7 @@ out:
 
 }
 
-int vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
-{
+int vscnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 	int i;
 
 	if (unlikely(!size))
@@ -738,8 +714,7 @@ int vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
 	return size - 1;
 }
 
-int snprintf(char *buf, size_t size, const char *fmt, ...)
-{
+int snprintf(char *buf, size_t size, const char *fmt, ...) {
 	va_list args;
 	int i;
 
@@ -750,8 +725,7 @@ int snprintf(char *buf, size_t size, const char *fmt, ...)
 	return i;
 }
 
-int sprintf(char *buf, const char *fmt, ...)
-{
+int sprintf(char *buf, const char *fmt, ...) {
 	va_list args;
 	int i;
 

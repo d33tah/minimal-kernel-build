@@ -9,21 +9,18 @@
 
 static struct kmem_cache *filp_cachep __read_mostly;
 
-static void file_free_rcu(struct rcu_head *head)
-{
+static void file_free_rcu(struct rcu_head *head) {
 	struct file *f = container_of(head, struct file, f_u.fu_rcuhead);
 
 	put_cred(f->f_cred);
 	kmem_cache_free(filp_cachep, f);
 }
 
-static inline void file_free(struct file *f)
-{
+static inline void file_free(struct file *f) {
 	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
 }
 
-static struct file *__alloc_file(int flags, const struct cred *cred)
-{
+static struct file *__alloc_file(int flags, const struct cred *cred) {
 	struct file *f;
 
 	f = kmem_cache_zalloc(filp_cachep, GFP_KERNEL);
@@ -41,8 +38,7 @@ static struct file *__alloc_file(int flags, const struct cred *cred)
 	return f;
 }
 
-struct file *alloc_empty_file(int flags, const struct cred *cred)
-{
+struct file *alloc_empty_file(int flags, const struct cred *cred) {
 	struct file *f;
 
 	f = __alloc_file(flags, cred);
@@ -53,8 +49,7 @@ struct file *alloc_empty_file(int flags, const struct cred *cred)
 
 
 
-static void __fput(struct file *file)
-{
+static void __fput(struct file *file) {
 	struct dentry *dentry = file->f_path.dentry;
 	struct vfsmount *mnt = file->f_path.mnt;
 	struct inode *inode = file->f_inode;
@@ -84,8 +79,7 @@ out:
 }
 
 static LLIST_HEAD(delayed_fput_list);
-static void delayed_fput(struct work_struct *unused)
-{
+static void delayed_fput(struct work_struct *unused) {
 	struct llist_node *node = llist_del_all(&delayed_fput_list);
 	struct file *f, *t;
 
@@ -93,20 +87,17 @@ static void delayed_fput(struct work_struct *unused)
 		__fput(f);
 }
 
-static void ____fput(struct callback_head *work)
-{
+static void ____fput(struct callback_head *work) {
 	__fput(container_of(work, struct file, f_u.fu_rcuhead));
 }
 
-void flush_delayed_fput(void)
-{
+void flush_delayed_fput(void) {
 	delayed_fput(NULL);
 }
 
 static DECLARE_DELAYED_WORK(delayed_fput_work, delayed_fput);
 
-void fput(struct file *file)
-{
+void fput(struct file *file) {
 	if (atomic_long_dec_and_test(&file->f_count)) {
 		struct task_struct *task = current;
 
@@ -124,8 +115,7 @@ void fput(struct file *file)
 
 
 
-void __init files_init(void)
-{
+void __init files_init(void) {
 	filp_cachep = kmem_cache_create("filp", sizeof(struct file), 0, SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
 }
 

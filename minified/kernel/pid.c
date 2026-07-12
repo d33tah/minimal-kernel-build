@@ -17,8 +17,7 @@ struct pid_namespace init_pid_ns = { .idr = IDR_INIT(init_pid_ns.idr), .pid_allo
 
 static  __cacheline_aligned_in_smp DEFINE_SPINLOCK(pidmap_lock);
 
-void put_pid(struct pid *pid)
-{
+void put_pid(struct pid *pid) {
 	struct pid_namespace *ns;
 
 	if (!pid)
@@ -31,8 +30,7 @@ void put_pid(struct pid *pid)
 	}
 }
 
-void free_pid(struct pid *pid)
-{
+void free_pid(struct pid *pid) {
 	/*
 	 * RUNTIME-DEAD ANCHOR-STUB: returns a pid to the idr on task teardown.
 	 * Sole caller is copy_process's bad_fork rollback (dead -- copy_process
@@ -41,8 +39,7 @@ void free_pid(struct pid *pid)
 	 */
 }
 
-struct pid *alloc_pid(struct pid_namespace *ns)
-{
+struct pid *alloc_pid(struct pid_namespace *ns) {
 	struct pid *pid;
 	enum pid_type type;
 	int i, nr;
@@ -123,21 +120,18 @@ out_free:
 	return ERR_PTR(retval);
 }
 
-static struct pid **task_pid_ptr(struct task_struct *task, enum pid_type type)
-{
+static struct pid **task_pid_ptr(struct task_struct *task, enum pid_type type) {
 	return (type == PIDTYPE_PID) ?
 		&task->thread_pid :
 		&task->signal->pids[type];
 }
 
-void attach_pid(struct task_struct *task, enum pid_type type)
-{
+void attach_pid(struct task_struct *task, enum pid_type type) {
 	struct pid *pid = *task_pid_ptr(task, type);
 	hlist_add_head_rcu(&task->pid_links[type], &pid->tasks[type]);
 }
 
-struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
-{
+struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns) {
 	struct pid *pid = idr_find(&ns->idr, nr);
 	struct task_struct *result = NULL;
 
@@ -152,8 +146,7 @@ struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
 }
 
 
-struct pid *get_task_pid(struct task_struct *task, enum pid_type type)
-{
+struct pid *get_task_pid(struct task_struct *task, enum pid_type type) {
 	struct pid *pid;
 	rcu_read_lock();
 	pid = get_pid(rcu_dereference(*task_pid_ptr(task, type)));
@@ -161,8 +154,7 @@ struct pid *get_task_pid(struct task_struct *task, enum pid_type type)
 	return pid;
 }
 
-pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
-{
+pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns) {
 	struct upid *upid;
 	pid_t nr = 0;
 
@@ -174,13 +166,11 @@ pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
 	return nr;
 }
 
-pid_t pid_vnr(struct pid *pid)
-{
+pid_t pid_vnr(struct pid *pid) {
 	return pid_nr_ns(pid, task_active_pid_ns(current));
 }
 
-pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type, struct pid_namespace *ns)
-{
+pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type, struct pid_namespace *ns) {
 	pid_t nr = 0;
 
 	rcu_read_lock();
@@ -192,13 +182,11 @@ pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type, struct pid_
 	return nr;
 }
 
-struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
-{
+struct pid_namespace *task_active_pid_ns(struct task_struct *tsk) {
 	return ns_of_pid(task_pid(tsk));
 }
 
-void __init pid_idr_init(void)
-{
+void __init pid_idr_init(void) {
 	 
 	BUILD_BUG_ON(PID_MAX_LIMIT >= PIDNS_ADDING);
 

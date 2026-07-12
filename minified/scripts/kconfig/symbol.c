@@ -17,8 +17,7 @@ static struct symbol symbol_empty = { .name = "", .curr = { "", no }, .flags = S
 struct symbol *modules_sym;
 static tristate modules_val;
 
-enum symbol_type sym_get_type(struct symbol *sym)
-{
+enum symbol_type sym_get_type(struct symbol *sym) {
 	enum symbol_type type = sym->type;
 
 	if (type == S_TRISTATE) {
@@ -30,8 +29,7 @@ enum symbol_type sym_get_type(struct symbol *sym)
 	return type;
 }
 
-const char *sym_type_name(enum symbol_type type)
-{
+const char *sym_type_name(enum symbol_type type) {
 	switch (type) {
 	case S_BOOLEAN:
 		return "bool";
@@ -49,8 +47,7 @@ const char *sym_type_name(enum symbol_type type)
 	return "???";
 }
 
-struct property *sym_get_choice_prop(struct symbol *sym)
-{
+struct property *sym_get_choice_prop(struct symbol *sym) {
 	struct property *prop;
 
 	for_all_choices(sym, prop)
@@ -58,8 +55,7 @@ struct property *sym_get_choice_prop(struct symbol *sym)
 	return NULL;
 }
 
-static struct property *sym_get_default_prop(struct symbol *sym)
-{
+static struct property *sym_get_default_prop(struct symbol *sym) {
 	struct property *prop;
 
 	for_all_defaults(sym, prop) {
@@ -70,8 +66,7 @@ static struct property *sym_get_default_prop(struct symbol *sym)
 	return NULL;
 }
 
-struct property *sym_get_range_prop(struct symbol *sym)
-{
+struct property *sym_get_range_prop(struct symbol *sym) {
 	struct property *prop;
 
 	for_all_properties(sym, prop, P_RANGE) {
@@ -82,8 +77,7 @@ struct property *sym_get_range_prop(struct symbol *sym)
 	return NULL;
 }
 
-static long long sym_get_range_val(struct symbol *sym, int base)
-{
+static long long sym_get_range_val(struct symbol *sym, int base) {
 	sym_calc_value(sym);
 	switch (sym->type) {
 	case S_INT:
@@ -95,8 +89,7 @@ static long long sym_get_range_val(struct symbol *sym, int base)
 	return strtoll(sym->curr.val, NULL, base);
 }
 
-static void sym_validate_range(struct symbol *sym)
-{
+static void sym_validate_range(struct symbol *sym) {
 	struct property *prop;
 	int base;
 	long long val, val2;
@@ -129,8 +122,7 @@ static void sym_validate_range(struct symbol *sym)
 	sym->curr.val = xstrdup(str);
 }
 
-static void sym_set_changed(struct symbol *sym)
-{
+static void sym_set_changed(struct symbol *sym) {
 	struct property *prop;
 
 	sym->flags |= SYMBOL_CHANGED;
@@ -140,8 +132,7 @@ static void sym_set_changed(struct symbol *sym)
 	}
 }
 
-static void sym_set_all_changed(void)
-{
+static void sym_set_all_changed(void) {
 	struct symbol *sym;
 	int i;
 
@@ -149,8 +140,7 @@ static void sym_set_all_changed(void)
 		sym_set_changed(sym);
 }
 
-static void sym_calc_visibility(struct symbol *sym)
-{
+static void sym_calc_visibility(struct symbol *sym) {
 	struct property *prop;
 	struct symbol *choice_sym = NULL;
 	tristate tri;
@@ -207,8 +197,7 @@ static void sym_calc_visibility(struct symbol *sym)
 	}
 }
 
-struct symbol *sym_choice_default(struct symbol *sym)
-{
+struct symbol *sym_choice_default(struct symbol *sym) {
 	struct symbol *def_sym;
 	struct property *prop;
 	struct expr *e;
@@ -233,8 +222,7 @@ struct symbol *sym_choice_default(struct symbol *sym)
 	return NULL;
 }
 
-static struct symbol *sym_calc_choice(struct symbol *sym)
-{
+static struct symbol *sym_calc_choice(struct symbol *sym) {
 	struct symbol *def_sym;
 	struct property *prop;
 	struct expr *e;
@@ -265,8 +253,7 @@ static struct symbol *sym_calc_choice(struct symbol *sym)
 	return def_sym;
 }
 
-static void sym_warn_unmet_dep(struct symbol *sym)
-{
+static void sym_warn_unmet_dep(struct symbol *sym) {
 	struct gstr gs = str_new();
 
 	str_printf(&gs, "\nWARNING: unmet direct dependencies detected for %s\n", sym->name);
@@ -280,8 +267,7 @@ static void sym_warn_unmet_dep(struct symbol *sym)
 	fputs(str_get(&gs), stderr);
 }
 
-void sym_calc_value(struct symbol *sym)
-{
+void sym_calc_value(struct symbol *sym) {
 	struct symbol_value newval, oldval;
 	struct property *prop;
 	struct expr *e;
@@ -408,8 +394,7 @@ void sym_calc_value(struct symbol *sym)
 		set_all_choice_values(sym);
 }
 
-void sym_clear_all_valid(void)
-{
+void sym_clear_all_valid(void) {
 	struct symbol *sym;
 	int i;
 
@@ -419,8 +404,7 @@ void sym_clear_all_valid(void)
 	sym_calc_value(modules_sym);
 }
 
-bool sym_tristate_within_range(struct symbol *sym, tristate val)
-{
+bool sym_tristate_within_range(struct symbol *sym, tristate val) {
 	int type = sym_get_type(sym);
 
 	if (sym->visible == no)
@@ -438,8 +422,7 @@ bool sym_tristate_within_range(struct symbol *sym, tristate val)
 	return val >= sym->rev_dep.tri && val <= sym->visible;
 }
 
-bool sym_string_valid(struct symbol *sym, const char *str)
-{
+bool sym_string_valid(struct symbol *sym, const char *str) {
 	signed char ch;
 
 	switch (sym->type) {
@@ -480,8 +463,7 @@ bool sym_string_valid(struct symbol *sym, const char *str)
 	}
 }
 
-bool sym_string_within_range(struct symbol *sym, const char *str)
-{
+bool sym_string_within_range(struct symbol *sym, const char *str) {
 	struct property *prop;
 	long long val;
 
@@ -519,8 +501,7 @@ bool sym_string_within_range(struct symbol *sym, const char *str)
 	}
 }
 
-const char *sym_get_string_value(struct symbol *sym)
-{
+const char *sym_get_string_value(struct symbol *sym) {
 	tristate val;
 
 	switch (sym->type) {
@@ -539,8 +520,7 @@ const char *sym_get_string_value(struct symbol *sym)
 	return (const char *)sym->curr.val;
 }
 
-static unsigned strhash(const char *s)
-{
+static unsigned strhash(const char *s) {
 	 
 	unsigned hash = 2166136261U;
 	for (; *s; s++)
@@ -548,8 +528,7 @@ static unsigned strhash(const char *s)
 	return hash;
 }
 
-struct symbol *sym_lookup(const char *name, int flags)
-{
+struct symbol *sym_lookup(const char *name, int flags) {
 	struct symbol *symbol;
 	char *new_name;
 	int hash;
@@ -586,8 +565,7 @@ struct symbol *sym_lookup(const char *name, int flags)
 	return symbol;
 }
 
-struct symbol *sym_find(const char *name)
-{
+struct symbol *sym_find(const char *name) {
 	struct symbol *symbol = NULL;
 	int hash = 0;
 
@@ -618,8 +596,7 @@ static struct dep_stack {
 	struct expr **expr;
 } *check_top;
 
-static void dep_stack_insert(struct dep_stack *stack, struct symbol *sym)
-{
+static void dep_stack_insert(struct dep_stack *stack, struct symbol *sym) {
 	memset(stack, 0, sizeof(*stack));
 	if (check_top)
 		check_top->next = stack;
@@ -628,15 +605,13 @@ static void dep_stack_insert(struct dep_stack *stack, struct symbol *sym)
 	check_top = stack;
 }
 
-static void dep_stack_remove(void)
-{
+static void dep_stack_remove(void) {
 	check_top = check_top->prev;
 	if (check_top)
 		check_top->next = NULL;
 }
 
-static void sym_check_print_recursive(struct symbol *last_sym)
-{
+static void sym_check_print_recursive(struct symbol *last_sym) {
 	struct dep_stack *stack;
 	struct symbol *sym, *next_sym;
 	struct menu *menu = NULL;
@@ -697,8 +672,7 @@ static void sym_check_print_recursive(struct symbol *last_sym)
 		dep_stack_remove();
 }
 
-static struct symbol *sym_check_expr_deps(struct expr *e)
-{
+static struct symbol *sym_check_expr_deps(struct expr *e) {
 	struct symbol *sym;
 
 	if (!e)
@@ -723,8 +697,7 @@ static struct symbol *sym_check_expr_deps(struct expr *e)
 	return NULL;
 }
 
-static struct symbol *sym_check_sym_deps(struct symbol *sym)
-{
+static struct symbol *sym_check_sym_deps(struct symbol *sym) {
 	struct symbol *sym2;
 	struct property *prop;
 	struct dep_stack stack;
@@ -770,8 +743,7 @@ out:
 	return sym2;
 }
 
-static struct symbol *sym_check_choice_deps(struct symbol *choice)
-{
+static struct symbol *sym_check_choice_deps(struct symbol *choice) {
 	struct symbol *sym, *sym2;
 	struct property *prop;
 	struct expr *e;
@@ -806,8 +778,7 @@ out:
 	return sym2;
 }
 
-struct symbol *sym_check_deps(struct symbol *sym)
-{
+struct symbol *sym_check_deps(struct symbol *sym) {
 	struct symbol *sym2;
 	struct property *prop;
 
@@ -837,15 +808,13 @@ struct symbol *sym_check_deps(struct symbol *sym)
 	return sym2;
 }
 
-struct symbol *prop_get_symbol(struct property *prop)
-{
+struct symbol *prop_get_symbol(struct property *prop) {
 	if (prop->expr && (prop->expr->type == E_SYMBOL || prop->expr->type == E_LIST))
 		return prop->expr->left.sym;
 	return NULL;
 }
 
-const char *prop_get_type_name(enum prop_type type)
-{
+const char *prop_get_type_name(enum prop_type type) {
 	switch (type) {
 	case P_PROMPT:
 		return "prompt";

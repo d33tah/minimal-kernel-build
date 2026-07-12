@@ -20,30 +20,26 @@ LIST_HEAD(pgd_list);
  * sole caller was vmalloc_sync_one's loop).
  */
 
-static void sanitize_error_code(unsigned long address, unsigned long *error_code)
-{
+static void sanitize_error_code(unsigned long address, unsigned long *error_code) {
 	 
 	if (address >= TASK_SIZE_MAX)
 		*error_code |= X86_PF_PROT;
 }
 
-static void set_signal_archinfo(unsigned long address, unsigned long error_code)
-{
+static void set_signal_archinfo(unsigned long address, unsigned long error_code) {
 	struct task_struct *tsk = current;
 
 	tsk->thread.trap_nr = X86_TRAP_PF;
 }
 
 static noinline void
-page_fault_oops(struct pt_regs *regs, unsigned long error_code, unsigned long address)
-{
+page_fault_oops(struct pt_regs *regs, unsigned long error_code, unsigned long address) {
 	/* Anchor-stub: unhandled-kernel-fault oops path, runtime-dead in a
 	 * healthy boot. Kept link-live for its callers in this file. */
 }
 
 static noinline void
-kernelmode_fixup_or_oops(struct pt_regs *regs, unsigned long error_code, unsigned long address, int signal, int si_code)
-{
+kernelmode_fixup_or_oops(struct pt_regs *regs, unsigned long error_code, unsigned long address, int signal, int si_code) {
 	WARN_ON_ONCE(user_mode(regs));
 
 
@@ -61,14 +57,12 @@ kernelmode_fixup_or_oops(struct pt_regs *regs, unsigned long error_code, unsigne
 }
 
 static inline void
-show_signal_msg(struct pt_regs *regs, unsigned long error_code, unsigned long address, struct task_struct *tsk)
-{
+show_signal_msg(struct pt_regs *regs, unsigned long error_code, unsigned long address, struct task_struct *tsk) {
 	/* Stub: verbose segfault messages not needed for minimal kernel */
 }
 
 static void
-__bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code, unsigned long address, int si_code)
-{
+__bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code, unsigned long address, int si_code) {
 	struct task_struct *tsk = current;
 
 	if (!user_mode(regs)) {
@@ -100,14 +94,12 @@ __bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code, unsigned 
 }
 
 static noinline void
-bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code, unsigned long address)
-{
+bad_area_nosemaphore(struct pt_regs *regs, unsigned long error_code, unsigned long address) {
 	__bad_area_nosemaphore(regs, error_code, address, SEGV_MAPERR);
 }
 
 static void
-__bad_area(struct pt_regs *regs, unsigned long error_code, unsigned long address, int si_code)
-{
+__bad_area(struct pt_regs *regs, unsigned long error_code, unsigned long address, int si_code) {
 	struct mm_struct *mm = current->mm;
 
 	mmap_read_unlock(mm);
@@ -116,13 +108,11 @@ __bad_area(struct pt_regs *regs, unsigned long error_code, unsigned long address
 }
 
 static noinline void
-bad_area(struct pt_regs *regs, unsigned long error_code, unsigned long address)
-{
+bad_area(struct pt_regs *regs, unsigned long error_code, unsigned long address) {
 	__bad_area(regs, error_code, address, SEGV_MAPERR);
 }
 
-static int spurious_kernel_fault_check(unsigned long error_code, pte_t *pte)
-{
+static int spurious_kernel_fault_check(unsigned long error_code, pte_t *pte) {
 	if ((error_code & X86_PF_WRITE) && !pte_write(*pte))
 		return 0;
 
@@ -133,8 +123,7 @@ static int spurious_kernel_fault_check(unsigned long error_code, pte_t *pte)
 }
 
 static noinline int
-spurious_kernel_fault(unsigned long error_code, unsigned long address)
-{
+spurious_kernel_fault(unsigned long error_code, unsigned long address) {
 	pgd_t *pgd;
 	pmd_t *pmd;
 	pte_t *pte;
@@ -175,8 +164,7 @@ spurious_kernel_fault(unsigned long error_code, unsigned long address)
 }
 
 static inline int
-access_error(unsigned long error_code, struct vm_area_struct *vma)
-{
+access_error(unsigned long error_code, struct vm_area_struct *vma) {
 	/*
 	 * X86_PF_PK (protection-key violation) error-code bit is never set on
 	 * this build: PKU/OSPKE are compile-disabled (CR4.PKE never set, no
@@ -201,14 +189,12 @@ access_error(unsigned long error_code, struct vm_area_struct *vma)
 	return 0;
 }
 
-bool fault_in_kernel_space(unsigned long address)
-{
+bool fault_in_kernel_space(unsigned long address) {
 	return address >= TASK_SIZE_MAX;
 }
 
 static void
-do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code, unsigned long address)
-{
+do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code, unsigned long address) {
 	 
 	WARN_ON_ONCE(hw_error_code & X86_PF_PK);
 
@@ -224,8 +210,7 @@ do_kern_addr_fault(struct pt_regs *regs, unsigned long hw_error_code, unsigned l
 }
 
 static inline
-void do_user_addr_fault(struct pt_regs *regs, unsigned long error_code, unsigned long address)
-{
+void do_user_addr_fault(struct pt_regs *regs, unsigned long error_code, unsigned long address) {
 	struct vm_area_struct *vma;
 	struct task_struct *tsk;
 	struct mm_struct *mm;
@@ -359,8 +344,7 @@ good_area:
 }
 
 static __always_inline void
-handle_page_fault(struct pt_regs *regs, unsigned long error_code, unsigned long address)
-{
+handle_page_fault(struct pt_regs *regs, unsigned long error_code, unsigned long address) {
 	if (unlikely(fault_in_kernel_space(address))) {
 		do_kern_addr_fault(regs, error_code, address);
 	} else {
@@ -370,8 +354,7 @@ handle_page_fault(struct pt_regs *regs, unsigned long error_code, unsigned long 
 	}
 }
 
-DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)
-{
+DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault) {
 	unsigned long address = read_cr2();
 	irqentry_state_t state;
 

@@ -40,8 +40,7 @@ struct kset *devices_kset;
 /* Removed: device_remove_file (0-caller no-op stub after dev_attr_dev/uevent
  * removal), device_remove_file_self, device_create_bin_file, device_remove_bin_file. */
 
-void device_initialize(struct device *dev)
-{
+void device_initialize(struct device *dev) {
 	dev->kobj.kset = devices_kset;
 	kobject_init(&dev->kobj, &device_ktype);
 }
@@ -53,8 +52,7 @@ void device_initialize(struct device *dev)
    is unconditionally devices_kset, never &class->p->glue_dirs), so
    live_in_glue_dir always returned false and cleanup_glue_dir early-returned. */
 
-int dev_set_name(struct device *dev, const char *fmt, ...)
-{
+int dev_set_name(struct device *dev, const char *fmt, ...) {
 	va_list vargs;
 	int err;
 
@@ -64,16 +62,14 @@ int dev_set_name(struct device *dev, const char *fmt, ...)
 	return err;
 }
 
-static int device_private_init(struct device *dev)
-{
+static int device_private_init(struct device *dev) {
 	dev->p = kzalloc(sizeof(*dev->p), GFP_KERNEL);
 	if (!dev->p)
 		return -ENOMEM;
 	return 0;
 }
 
-int device_add(struct device *dev)
-{
+int device_add(struct device *dev) {
 	struct device *parent;
 	int error = -EINVAL;
 
@@ -115,19 +111,16 @@ done:
 	return error;
 }
 
-int device_register(struct device *dev)
-{
+int device_register(struct device *dev) {
 	device_initialize(dev);
 	return device_add(dev);
 }
 
-struct device *get_device(struct device *dev)
-{
+struct device *get_device(struct device *dev) {
 	return dev ? kobj_to_dev(kobject_get(&dev->kobj)) : NULL;
 }
 
-void put_device(struct device *dev)
-{
+void put_device(struct device *dev) {
 	
 	if (dev)
 		kobject_put(&dev->kobj);
@@ -137,8 +130,7 @@ void put_device(struct device *dev)
    path is runtime-dead (no device is ever unregistered on this build); its only
    callers were the (now removed) tty teardown chain and device_destroy. */
 
-int __init devices_init(void)
-{
+int __init devices_init(void) {
 	devices_kset = kset_create_and_add("devices", NULL);
 	if (!devices_kset)
 		return -ENOMEM;
@@ -165,13 +157,11 @@ int __init devices_init(void)
 
 /* Removed: __root_device_register, root_device_unregister - no callers */
 
-static void device_create_release(struct device *dev)
-{
+static void device_create_release(struct device *dev) {
 	kfree(dev);
 }
 
-static __printf(5, 0) struct device * device_create_groups_vargs(struct class *class, struct device *parent, dev_t devt, void *drvdata, const char *fmt, va_list args)
-{
+static __printf(5, 0) struct device * device_create_groups_vargs(struct class *class, struct device *parent, dev_t devt, void *drvdata, const char *fmt, va_list args) {
 	struct device *dev = NULL;
 	int retval = -ENODEV;
 
@@ -203,8 +193,7 @@ error:
 	return ERR_PTR(retval);
 }
 
-struct device *device_create(struct class *class, struct device *parent, dev_t devt, void *drvdata, const char *fmt, ...)
-{
+struct device *device_create(struct class *class, struct device *parent, dev_t devt, void *drvdata, const char *fmt, ...) {
 	va_list vargs;
 	struct device *dev;
 

@@ -2,15 +2,13 @@
 #include <linux/module.h>
 #include <linux/list_lru.h>
 
-void workingset_update_node(struct xa_node *node)
-{
+void workingset_update_node(struct xa_node *node) {
 	 
 }
 
 struct list_lru shadow_nodes;
 
-static int __init workingset_init(void)
-{
+static int __init workingset_init(void) {
 	int ret;
 
 	ret = list_lru_init(&shadow_nodes);

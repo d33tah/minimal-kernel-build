@@ -23,8 +23,7 @@
 /* Inlined from asm/sgx.h */
 #define SGX_ENCLS_FAULT_FLAG 0x40000000
 
-static inline unsigned long *pt_regs_nr(struct pt_regs *regs, int nr)
-{
+static inline unsigned long *pt_regs_nr(struct pt_regs *regs, int nr) {
 	int reg_offset = pt_regs_offset(regs, nr);
 	static unsigned long __dummy;
 
@@ -35,13 +34,11 @@ static inline unsigned long *pt_regs_nr(struct pt_regs *regs, int nr)
 }
 
 static inline unsigned long
-ex_fixup_addr(const struct exception_table_entry *x)
-{
+ex_fixup_addr(const struct exception_table_entry *x) {
 	return (unsigned long)&x->fixup + x->fixup;
 }
 
-static bool ex_handler_default(const struct exception_table_entry *e, struct pt_regs *regs)
-{
+static bool ex_handler_default(const struct exception_table_entry *e, struct pt_regs *regs) {
 	if (e->data & EX_FLAG_CLEAR_AX)
 		regs->ax = 0;
 	if (e->data & EX_FLAG_CLEAR_DX)
@@ -51,20 +48,17 @@ static bool ex_handler_default(const struct exception_table_entry *e, struct pt_
 	return true;
 }
 
-static bool ex_handler_fault(const struct exception_table_entry *fixup, struct pt_regs *regs, int trapnr)
-{
+static bool ex_handler_fault(const struct exception_table_entry *fixup, struct pt_regs *regs, int trapnr) {
 	regs->ax = trapnr;
 	return ex_handler_default(fixup, regs);
 }
 
-static bool ex_handler_sgx(const struct exception_table_entry *fixup, struct pt_regs *regs, int trapnr)
-{
+static bool ex_handler_sgx(const struct exception_table_entry *fixup, struct pt_regs *regs, int trapnr) {
 	regs->ax = trapnr | SGX_ENCLS_FAULT_FLAG;
 	return ex_handler_default(fixup, regs);
 }
 
-static bool ex_handler_fprestore(const struct exception_table_entry *fixup, struct pt_regs *regs)
-{
+static bool ex_handler_fprestore(const struct exception_table_entry *fixup, struct pt_regs *regs) {
 	regs->ip = ex_fixup_addr(fixup);
 
 	WARN_ONCE(1, "Bad FPU state detected at %pB, reinitializing FPU registers.", (void *)instruction_pointer(regs));
@@ -73,20 +67,17 @@ static bool ex_handler_fprestore(const struct exception_table_entry *fixup, stru
 	return true;
 }
 
-static bool ex_handler_uaccess(const struct exception_table_entry *fixup, struct pt_regs *regs, int trapnr)
-{
+static bool ex_handler_uaccess(const struct exception_table_entry *fixup, struct pt_regs *regs, int trapnr) {
 	WARN_ONCE(trapnr == X86_TRAP_GP, "General protection fault in user access. Non-canonical address?");
 	return ex_handler_default(fixup, regs);
 }
 
-static bool ex_handler_copy(const struct exception_table_entry *fixup, struct pt_regs *regs, int trapnr)
-{
+static bool ex_handler_copy(const struct exception_table_entry *fixup, struct pt_regs *regs, int trapnr) {
 	WARN_ONCE(trapnr == X86_TRAP_GP, "General protection fault in user access. Non-canonical address?");
 	return ex_handler_fault(fixup, regs, trapnr);
 }
 
-static bool ex_handler_msr(const struct exception_table_entry *fixup, struct pt_regs *regs, bool wrmsr, bool safe, int reg)
-{
+static bool ex_handler_msr(const struct exception_table_entry *fixup, struct pt_regs *regs, bool wrmsr, bool safe, int reg) {
 	if (!wrmsr) {
 		 
 		regs->ax = 0;
@@ -99,28 +90,24 @@ static bool ex_handler_msr(const struct exception_table_entry *fixup, struct pt_
 	return ex_handler_default(fixup, regs);
 }
 
-static bool ex_handler_clear_fs(const struct exception_table_entry *fixup, struct pt_regs *regs)
-{
+static bool ex_handler_clear_fs(const struct exception_table_entry *fixup, struct pt_regs *regs) {
 	if (static_cpu_has(X86_BUG_NULL_SEG))
 		asm volatile ("mov %0, %%fs" : : "rm" (__USER_DS));
 	asm volatile ("mov %0, %%fs" : : "rm" (0));
 	return ex_handler_default(fixup, regs);
 }
 
-static bool ex_handler_imm_reg(const struct exception_table_entry *fixup, struct pt_regs *regs, int reg, int imm)
-{
+static bool ex_handler_imm_reg(const struct exception_table_entry *fixup, struct pt_regs *regs, int reg, int imm) {
 	*pt_regs_nr(regs, reg) = (long)imm;
 	return ex_handler_default(fixup, regs);
 }
 
-static bool ex_handler_ucopy_len(const struct exception_table_entry *fixup, struct pt_regs *regs, int trapnr, int reg, int imm)
-{
+static bool ex_handler_ucopy_len(const struct exception_table_entry *fixup, struct pt_regs *regs, int trapnr, int reg, int imm) {
 	regs->cx = imm * regs->cx + *pt_regs_nr(regs, reg);
 	return ex_handler_uaccess(fixup, regs, trapnr);
 }
 
-int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code, unsigned long fault_addr)
-{
+int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code, unsigned long fault_addr) {
 	const struct exception_table_entry *e;
 	int type, reg, imm;
 
@@ -175,8 +162,7 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code, 
 
 extern unsigned int early_recursion_flag;
 
-void __init early_fixup_exception(struct pt_regs *regs, int trapnr)
-{
+void __init early_fixup_exception(struct pt_regs *regs, int trapnr) {
 	 
 	if (trapnr == X86_TRAP_NMI)
 		return;

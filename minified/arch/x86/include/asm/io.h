@@ -20,8 +20,7 @@
 
  
 
-static inline void *phys_to_virt(phys_addr_t address)
-{
+static inline void *phys_to_virt(phys_addr_t address) {
 	return __va(address);
 }
 #define phys_to_virt phys_to_virt
@@ -29,8 +28,7 @@ static inline void *phys_to_virt(phys_addr_t address)
 extern void native_io_delay(void);
 
 
-static inline void slow_down_io(void)
-{
+static inline void slow_down_io(void) {
 	native_io_delay();
 }
 

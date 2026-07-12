@@ -59,12 +59,10 @@ void __next_mem_pfn_range(int *idx, int nid, unsigned long *out_start_pfn, unsig
 
 #define for_each_free_mem_range_reverse(i, nid, flags, p_start, p_end,						p_nid)					__for_each_mem_range_rev(i, &memblock.memory, &memblock.reserved, 				 nid, flags, p_start, p_end, p_nid)
 
-static inline void memblock_set_region_node(struct memblock_region *r, int nid)
-{
+static inline void memblock_set_region_node(struct memblock_region *r, int nid) {
 }
 
-static inline int memblock_get_region_node(const struct memblock_region *r)
-{
+static inline int memblock_get_region_node(const struct memblock_region *r) {
 	return 0;
 }
 
@@ -82,20 +80,17 @@ phys_addr_t memblock_alloc_range_nid(phys_addr_t size, phys_addr_t align, phys_a
 void *memblock_alloc_try_nid_raw(phys_addr_t size, phys_addr_t align, phys_addr_t min_addr, phys_addr_t max_addr, int nid);
 void *memblock_alloc_try_nid(phys_addr_t size, phys_addr_t align, phys_addr_t min_addr, phys_addr_t max_addr, int nid);
 
-static __always_inline void *memblock_alloc(phys_addr_t size, phys_addr_t align)
-{
+static __always_inline void *memblock_alloc(phys_addr_t size, phys_addr_t align) {
 	return memblock_alloc_try_nid(size, align, MEMBLOCK_LOW_LIMIT, MEMBLOCK_ALLOC_ACCESSIBLE, NUMA_NO_NODE);
 }
 
 
-static inline void *memblock_alloc_from(phys_addr_t size, phys_addr_t align, phys_addr_t min_addr)
-{
+static inline void *memblock_alloc_from(phys_addr_t size, phys_addr_t align, phys_addr_t min_addr) {
 	return memblock_alloc_try_nid(size, align, min_addr, MEMBLOCK_ALLOC_ACCESSIBLE, NUMA_NO_NODE);
 }
 
 
-static inline void *memblock_alloc_node(phys_addr_t size, phys_addr_t align, int nid)
-{
+static inline void *memblock_alloc_node(phys_addr_t size, phys_addr_t align, int nid) {
 	return memblock_alloc_try_nid(size, align, MEMBLOCK_LOW_LIMIT, MEMBLOCK_ALLOC_ACCESSIBLE, nid);
 }
 
@@ -117,8 +112,7 @@ extern void *alloc_large_system_hash(const char *tablename, unsigned long bucket
 #define HASH_EARLY	0x00000001
 #define HASH_ZERO	0x00000004
 
-static inline void early_memtest(phys_addr_t start, phys_addr_t end)
-{
+static inline void early_memtest(phys_addr_t start, phys_addr_t end) {
 }
 
 

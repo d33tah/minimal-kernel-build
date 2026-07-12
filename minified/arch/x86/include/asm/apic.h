@@ -30,8 +30,7 @@ struct apic;
 /* apic_read removed - unused */
 /* apic_eoi() was an empty no-op stub; folded out of ack_APIC_irq */
 
-static inline void ack_APIC_irq(void)
-{
+static inline void ack_APIC_irq(void) {
 
 }
 

@@ -7,8 +7,7 @@
 
 /* Inlined from vdso/math64.h */
 static __always_inline u32
-__iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
-{
+__iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder) {
 	u32 ret = 0;
 
 	while (dividend >= divisor) {
@@ -27,16 +26,14 @@ extern u64 div64_u64(u64 dividend, u64 divisor);
 #endif
 
 #ifndef div_u64
-static inline u64 div_u64(u64 dividend, u32 divisor)
-{
+static inline u64 div_u64(u64 dividend, u32 divisor) {
 	u32 remainder;
 	return div_u64_rem(dividend, divisor, &remainder);
 }
 #endif
 
 #ifndef mul_u64_u32_shr
-static inline u64 mul_u64_u32_shr(u64 a, u32 mul, unsigned int shift)
-{
+static inline u64 mul_u64_u32_shr(u64 a, u32 mul, unsigned int shift) {
 	u32 ah, al;
 	u64 ret;
 

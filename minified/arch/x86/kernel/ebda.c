@@ -8,8 +8,7 @@
 #define BIOS_START_MIN		0x20000U	 
 #define BIOS_START_MAX		0x9f000U	 
 
-void __init reserve_bios_regions(void)
-{
+void __init reserve_bios_regions(void) {
 	unsigned int bios_start, ebda_start;
 
 	 

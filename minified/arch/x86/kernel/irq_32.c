@@ -7,18 +7,15 @@
 DEFINE_PER_CPU(struct irq_stack *, hardirq_stack_ptr);
 DEFINE_PER_CPU(struct irq_stack *, softirq_stack_ptr);
 
-static void call_on_stack(void *func, void *stack)
-{
+static void call_on_stack(void *func, void *stack) {
 	asm volatile("xchgl	%%ebx,%%esp	\n" CALL_NOSPEC "movl	%%ebx,%%esp	\n" : "=b" (stack) : "0" (stack), [thunk_target] "D"(func) : "memory", "cc", "edx", "ecx", "eax");
 }
 
-static inline void *current_stack(void)
-{
+static inline void *current_stack(void) {
 	return (void *)(current_stack_pointer & ~(THREAD_SIZE - 1));
 }
 
-static inline int execute_on_irq_stack(struct irq_desc *desc)
-{
+static inline int execute_on_irq_stack(struct irq_desc *desc) {
 	struct irq_stack *curstk, *irqstk;
 	u32 *isp, *prev_esp, arg1;
 
@@ -39,8 +36,7 @@ static inline int execute_on_irq_stack(struct irq_desc *desc)
 	return 1;
 }
 
-int irq_init_percpu_irqstack(unsigned int cpu)
-{
+int irq_init_percpu_irqstack(unsigned int cpu) {
 	int node = cpu_to_node(cpu);
 	struct page *ph, *ps;
 
@@ -61,8 +57,7 @@ int irq_init_percpu_irqstack(unsigned int cpu)
 	return 0;
 }
 
-void do_softirq_own_stack(void)
-{
+void do_softirq_own_stack(void) {
 	struct irq_stack *irqstk;
 	u32 *isp, *prev_esp;
 
@@ -78,8 +73,7 @@ void do_softirq_own_stack(void)
 	call_on_stack(__do_softirq, isp);
 }
 
-void __handle_irq(struct irq_desc *desc, struct pt_regs *regs)
-{
+void __handle_irq(struct irq_desc *desc, struct pt_regs *regs) {
 	if (user_mode(regs) || !execute_on_irq_stack(desc)) {
 		generic_handle_irq_desc(desc);
 	}

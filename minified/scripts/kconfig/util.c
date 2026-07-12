@@ -4,8 +4,7 @@
 #include <string.h>
 #include "lkc.h"
 
-struct file *file_lookup(const char *name)
-{
+struct file *file_lookup(const char *name) {
 	struct file *file;
 
 	for (file = file_list; file; file = file->next) {
@@ -22,8 +21,7 @@ struct file *file_lookup(const char *name)
 	return file;
 }
 
-struct gstr str_new(void)
-{
+struct gstr str_new(void) {
 	struct gstr gs;
 	gs.s = xmalloc(sizeof(char) * 64);
 	gs.len = 64;
@@ -32,8 +30,7 @@ struct gstr str_new(void)
 	return gs;
 }
 
-void str_append(struct gstr *gs, const char *s)
-{
+void str_append(struct gstr *gs, const char *s) {
 	size_t l;
 	if (s) {
 		l = strlen(gs->s) + strlen(s) + 1;
@@ -45,8 +42,7 @@ void str_append(struct gstr *gs, const char *s)
 	}
 }
 
-void str_printf(struct gstr *gs, const char *fmt, ...)
-{
+void str_printf(struct gstr *gs, const char *fmt, ...) {
 	va_list ap;
 	char s[10000];  
 	va_start(ap, fmt);
@@ -55,13 +51,11 @@ void str_printf(struct gstr *gs, const char *fmt, ...)
 	va_end(ap);
 }
 
-const char *str_get(struct gstr *gs)
-{
+const char *str_get(struct gstr *gs) {
 	return gs->s;
 }
 
-void *xmalloc(size_t size)
-{
+void *xmalloc(size_t size) {
 	void *p = malloc(size);
 	if (p)
 		return p;
@@ -69,8 +63,7 @@ void *xmalloc(size_t size)
 	exit(1);
 }
 
-void *xcalloc(size_t nmemb, size_t size)
-{
+void *xcalloc(size_t nmemb, size_t size) {
 	void *p = calloc(nmemb, size);
 	if (p)
 		return p;
@@ -78,8 +71,7 @@ void *xcalloc(size_t nmemb, size_t size)
 	exit(1);
 }
 
-void *xrealloc(void *p, size_t size)
-{
+void *xrealloc(void *p, size_t size) {
 	p = realloc(p, size);
 	if (p)
 		return p;
@@ -87,8 +79,7 @@ void *xrealloc(void *p, size_t size)
 	exit(1);
 }
 
-char *xstrdup(const char *s)
-{
+char *xstrdup(const char *s) {
 	char *p;
 
 	p = strdup(s);
@@ -98,8 +89,7 @@ char *xstrdup(const char *s)
 	exit(1);
 }
 
-char *xstrndup(const char *s, size_t n)
-{
+char *xstrndup(const char *s, size_t n) {
 	char *p;
 
 	p = strndup(s, n);

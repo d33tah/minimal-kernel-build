@@ -6,24 +6,21 @@
  * The kset membership list (kset->list / kobj->entry) was never iterated
  * anywhere tree-wide, so join/leave reduce to the kset refcount get/put.
  */
-static void kobj_kset_join(struct kobject *kobj)
-{
+static void kobj_kset_join(struct kobject *kobj) {
 	if (!kobj->kset)
 		return;
 
 	kset_get(kobj->kset);
 }
 
-static void kobj_kset_leave(struct kobject *kobj)
-{
+static void kobj_kset_leave(struct kobject *kobj) {
 	if (!kobj->kset)
 		return;
 
 	kset_put(kobj->kset);
 }
 
-static void kobject_init_internal(struct kobject *kobj)
-{
+static void kobject_init_internal(struct kobject *kobj) {
 	if (!kobj)
 		return;
 	kref_init(&kobj->kref);
@@ -32,8 +29,7 @@ static void kobject_init_internal(struct kobject *kobj)
 }
 
 
-static int kobject_add_internal(struct kobject *kobj)
-{
+static int kobject_add_internal(struct kobject *kobj) {
 	struct kobject *parent;
 
 	if (!kobj)
@@ -59,8 +55,7 @@ static int kobject_add_internal(struct kobject *kobj)
 	return 0;
 }
 
-int kobject_set_name_vargs(struct kobject *kobj, const char *fmt, va_list vargs)
-{
+int kobject_set_name_vargs(struct kobject *kobj, const char *fmt, va_list vargs) {
 	const char *s;
 
 	if (kobj->name && !fmt)
@@ -87,8 +82,7 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt, va_list vargs)
 	return 0;
 }
 
-int kobject_set_name(struct kobject *kobj, const char *fmt, ...)
-{
+int kobject_set_name(struct kobject *kobj, const char *fmt, ...) {
 	va_list vargs;
 	int retval;
 
@@ -99,8 +93,7 @@ int kobject_set_name(struct kobject *kobj, const char *fmt, ...)
 	return retval;
 }
 
-void kobject_init(struct kobject *kobj, const struct kobj_type *ktype)
-{
+void kobject_init(struct kobject *kobj, const struct kobj_type *ktype) {
 	char *err_str;
 
 	if (!kobj) {
@@ -126,8 +119,7 @@ error:
 	dump_stack();
 }
 
-static __printf(3, 0) int kobject_add_varg(struct kobject *kobj, struct kobject *parent, const char *fmt, va_list vargs)
-{
+static __printf(3, 0) int kobject_add_varg(struct kobject *kobj, struct kobject *parent, const char *fmt, va_list vargs) {
 	int retval;
 
 	retval = kobject_set_name_vargs(kobj, fmt, vargs);
@@ -139,8 +131,7 @@ static __printf(3, 0) int kobject_add_varg(struct kobject *kobj, struct kobject 
 	return kobject_add_internal(kobj);
 }
 
-int kobject_add(struct kobject *kobj, struct kobject *parent, const char *fmt, ...)
-{
+int kobject_add(struct kobject *kobj, struct kobject *parent, const char *fmt, ...) {
 	va_list args;
 	int retval;
 
@@ -160,8 +151,7 @@ int kobject_add(struct kobject *kobj, struct kobject *parent, const char *fmt, .
 }
 
 /* Simplified: sysfs functions are already stubs */
-static void __kobject_del(struct kobject *kobj)
-{
+static void __kobject_del(struct kobject *kobj) {
 	kobj->state_in_sysfs = 0;
 	kobj_kset_leave(kobj);
 	kobj->parent = NULL;
@@ -169,8 +159,7 @@ static void __kobject_del(struct kobject *kobj)
 
 /* Removed: kobject_del - only caller was kset_unregister (also removed). */
 
-struct kobject *kobject_get(struct kobject *kobj)
-{
+struct kobject *kobject_get(struct kobject *kobj) {
 	if (kobj) {
 		if (!kobj->state_initialized)
 			WARN(1, KERN_WARNING "kobject: '%s' (%p): is not initialized, yet kobject_get() is being called.\n", kobject_name(kobj), kobj);
@@ -179,8 +168,7 @@ struct kobject *kobject_get(struct kobject *kobj)
 	return kobj;
 }
 
-struct kobject * __must_check kobject_get_unless_zero(struct kobject *kobj)
-{
+struct kobject * __must_check kobject_get_unless_zero(struct kobject *kobj) {
 	if (!kobj)
 		return NULL;
 	if (!kref_get_unless_zero(&kobj->kref))
@@ -188,8 +176,7 @@ struct kobject * __must_check kobject_get_unless_zero(struct kobject *kobj)
 	return kobj;
 }
 
-static void kobject_cleanup(struct kobject *kobj)
-{
+static void kobject_cleanup(struct kobject *kobj) {
 	struct kobject *parent = kobj->parent;
 	const struct kobj_type *t = get_ktype(kobj);
 	const char *name = kobj->name;
@@ -215,14 +202,12 @@ static void kobject_cleanup(struct kobject *kobj)
 }
 
 
-static void kobject_release(struct kref *kref)
-{
+static void kobject_release(struct kref *kref) {
 	struct kobject *kobj = container_of(kref, struct kobject, kref);
 	kobject_cleanup(kobj);
 }
 
-void kobject_put(struct kobject *kobj)
-{
+void kobject_put(struct kobject *kobj) {
 	if (kobj) {
 		if (!kobj->state_initialized)
 			WARN(1, KERN_WARNING "kobject: '%s' (%p): is not initialized, yet kobject_put() is being called.\n", kobject_name(kobj), kobj);
@@ -232,8 +217,7 @@ void kobject_put(struct kobject *kobj)
 
 static struct kobj_type dynamic_kobj_ktype = { };
 
-static struct kobject *kobject_create(void)
-{
+static struct kobject *kobject_create(void) {
 	struct kobject *kobj;
 
 	kobj = kzalloc(sizeof(*kobj), GFP_KERNEL);
@@ -244,8 +228,7 @@ static struct kobject *kobject_create(void)
 	return kobj;
 }
 
-struct kobject *kobject_create_and_add(const char *name, struct kobject *parent)
-{
+struct kobject *kobject_create_and_add(const char *name, struct kobject *parent) {
 	struct kobject *kobj;
 	int retval;
 
@@ -262,8 +245,7 @@ struct kobject *kobject_create_and_add(const char *name, struct kobject *parent)
 	return kobj;
 }
 
-int kset_register(struct kset *k)
-{
+int kset_register(struct kset *k) {
 	int err;
 
 	if (!k)
@@ -281,8 +263,7 @@ int kset_register(struct kset *k)
 
 static struct kobj_type kset_ktype = { };
 
-static struct kset *kset_create(const char *name, struct kobject *parent_kobj)
-{
+static struct kset *kset_create(const char *name, struct kobject *parent_kobj) {
 	struct kset *kset;
 	int retval;
 
@@ -303,8 +284,7 @@ static struct kset *kset_create(const char *name, struct kobject *parent_kobj)
 	return kset;
 }
 
-struct kset *kset_create_and_add(const char *name, struct kobject *parent_kobj)
-{
+struct kset *kset_create_and_add(const char *name, struct kobject *parent_kobj) {
 	struct kset *kset;
 	int error;
 

@@ -5,8 +5,7 @@
 #include "internal.h"
 
 
-int __init init_chown(const char *filename, uid_t user, gid_t group, int flags)
-{
+int __init init_chown(const char *filename, uid_t user, gid_t group, int flags) {
 	int lookup_flags = (flags & AT_SYMLINK_NOFOLLOW) ? 0 : LOOKUP_FOLLOW;
 	struct path path;
 	int error;
@@ -23,8 +22,7 @@ int __init init_chown(const char *filename, uid_t user, gid_t group, int flags)
 	return error;
 }
 
-int __init init_chmod(const char *filename, umode_t mode)
-{
+int __init init_chmod(const char *filename, umode_t mode) {
 	struct path path;
 	int error;
 
@@ -36,8 +34,7 @@ int __init init_chmod(const char *filename, umode_t mode)
 	return error;
 }
 
-int __init init_stat(const char *filename, struct kstat *stat, int flags)
-{
+int __init init_stat(const char *filename, struct kstat *stat, int flags) {
 	int lookup_flags = (flags & AT_SYMLINK_NOFOLLOW) ? 0 : LOOKUP_FOLLOW;
 	struct path path;
 	int error;
@@ -49,8 +46,7 @@ int __init init_stat(const char *filename, struct kstat *stat, int flags)
 	return error;
 }
 
-int __init init_mknod(const char *filename, umode_t mode, unsigned int dev)
-{
+int __init init_mknod(const char *filename, umode_t mode, unsigned int dev) {
 	struct dentry *dentry;
 	struct path path;
 	int error;
@@ -70,8 +66,7 @@ int __init init_mknod(const char *filename, umode_t mode, unsigned int dev)
 	return error;
 }
 
-int __init init_link(const char *oldname, const char *newname)
-{
+int __init init_link(const char *oldname, const char *newname) {
 	struct dentry *new_dentry;
 	struct path old_path, new_path;
 	struct user_namespace *mnt_userns;
@@ -98,8 +93,7 @@ out:
 	return error;
 }
 
-int __init init_symlink(const char *oldname, const char *newname)
-{
+int __init init_symlink(const char *oldname, const char *newname) {
 	struct dentry *dentry;
 	struct path path;
 	int error;
@@ -112,13 +106,11 @@ int __init init_symlink(const char *oldname, const char *newname)
 	return error;
 }
 
-int __init init_unlink(const char *pathname)
-{
+int __init init_unlink(const char *pathname) {
 	return do_unlinkat(getname_kernel(pathname));
 }
 
-int __init init_mkdir(const char *pathname, umode_t mode)
-{
+int __init init_mkdir(const char *pathname, umode_t mode) {
 	struct dentry *dentry;
 	struct path path;
 	int error;
@@ -132,13 +124,11 @@ int __init init_mkdir(const char *pathname, umode_t mode)
 	return error;
 }
 
-int __init init_rmdir(const char *pathname)
-{
+int __init init_rmdir(const char *pathname) {
 	return do_rmdir(getname_kernel(pathname));
 }
 
-int __init init_dup(struct file *file)
-{
+int __init init_dup(struct file *file) {
 	int fd;
 
 	fd = get_unused_fd_flags(0);

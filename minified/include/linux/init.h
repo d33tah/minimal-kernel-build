@@ -36,8 +36,7 @@ typedef int (*initcall_t)(void);
 
 typedef int initcall_entry_t;
 
-static inline initcall_t initcall_from_entry(initcall_entry_t *entry)
-{
+static inline initcall_t initcall_from_entry(initcall_entry_t *entry) {
 	return offset_to_ptr(entry);
 }
 

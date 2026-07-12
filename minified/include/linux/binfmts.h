@@ -17,8 +17,7 @@ struct linux_binfmt { struct list_head lh; struct module *module; int (*load_bin
 
 extern void __register_binfmt(struct linux_binfmt *fmt, int insert);
 
-static inline void register_binfmt(struct linux_binfmt *fmt)
-{
+static inline void register_binfmt(struct linux_binfmt *fmt) {
 	__register_binfmt(fmt, 0);
 }
 

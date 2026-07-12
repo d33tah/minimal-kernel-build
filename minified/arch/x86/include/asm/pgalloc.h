@@ -12,8 +12,7 @@
 
 /* pte_alloc_one_kernel + its sole callee __pte_alloc_one_kernel + pte_free_kernel removed - 0-caller kernel pte-table alloc/free wrappers (cascade cluster) */
 
-static inline pgtable_t __pte_alloc_one(struct mm_struct *mm, gfp_t gfp)
-{
+static inline pgtable_t __pte_alloc_one(struct mm_struct *mm, gfp_t gfp) {
 	struct page *pte;
 
 	pte = alloc_page(gfp);
@@ -27,8 +26,7 @@ static inline pgtable_t __pte_alloc_one(struct mm_struct *mm, gfp_t gfp)
 	return pte;
 }
 
-static inline void pte_free(struct mm_struct *mm, struct page *pte_page)
-{
+static inline void pte_free(struct mm_struct *mm, struct page *pte_page) {
 	pgtable_pte_page_dtor(pte_page);
 	__free_page(pte_page);
 }
@@ -53,14 +51,12 @@ extern void pgd_free(struct mm_struct *mm, pgd_t *pgd);
 
 extern pgtable_t pte_alloc_one(struct mm_struct *);
 
-static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd, pte_t *pte)
-{
+static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd, pte_t *pte) {
 	set_pmd(pmd, __pmd(__pa(pte) | _PAGE_TABLE));
 }
 
 
-static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd, struct page *pte)
-{
+static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd, struct page *pte) {
 	unsigned long pfn = page_to_pfn(pte);
 
 	set_pmd(pmd, __pmd(((pteval_t)pfn << PAGE_SHIFT) | _PAGE_TABLE));

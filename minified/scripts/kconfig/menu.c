@@ -13,8 +13,7 @@ static struct menu **last_entry_ptr;
 struct file *file_list;
 struct file *current_file;
 
-void menu_warn(struct menu *menu, const char *fmt, ...)
-{
+void menu_warn(struct menu *menu, const char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
 	fprintf(stderr, "%s:%d:warning: ", menu->file->name, menu->lineno);
@@ -23,8 +22,7 @@ void menu_warn(struct menu *menu, const char *fmt, ...)
 	va_end(ap);
 }
 
-static void prop_warn(struct property *prop, const char *fmt, ...)
-{
+static void prop_warn(struct property *prop, const char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
 	fprintf(stderr, "%s:%d:warning: ", prop->file->name, prop->lineno);
@@ -33,14 +31,12 @@ static void prop_warn(struct property *prop, const char *fmt, ...)
 	va_end(ap);
 }
 
-void _menu_init(void)
-{
+void _menu_init(void) {
 	current_entry = current_menu = &rootmenu;
 	last_entry_ptr = &rootmenu.list;
 }
 
-void menu_add_entry(struct symbol *sym)
-{
+void menu_add_entry(struct symbol *sym) {
 	struct menu *menu;
 
 	menu = xmalloc(sizeof(*menu));
@@ -57,21 +53,18 @@ void menu_add_entry(struct symbol *sym)
 		menu_add_symbol(P_SYMBOL, sym, NULL);
 }
 
-struct menu *menu_add_menu(void)
-{
+struct menu *menu_add_menu(void) {
 	last_entry_ptr = &current_entry->list;
 	current_menu = current_entry;
 	return current_menu;
 }
 
-void menu_end_menu(void)
-{
+void menu_end_menu(void) {
 	last_entry_ptr = &current_menu->next;
 	current_menu = current_menu->parent;
 }
 
-static struct expr *rewrite_m(struct expr *e)
-{
+static struct expr *rewrite_m(struct expr *e) {
 	if (!e)
 		return e;
 
@@ -91,13 +84,11 @@ static struct expr *rewrite_m(struct expr *e)
 	return e;
 }
 
-void menu_add_dep(struct expr *dep)
-{
+void menu_add_dep(struct expr *dep) {
 	current_entry->dep = expr_alloc_and(current_entry->dep, dep);
 }
 
-void menu_set_type(int type)
-{
+void menu_set_type(int type) {
 	struct symbol *sym = current_entry->sym;
 
 	if (sym->type == type)
@@ -109,8 +100,7 @@ void menu_set_type(int type)
 	menu_warn(current_entry, "ignoring type redefinition of '%s' from '%s' to '%s'", sym->name ? sym->name : "<choice>", sym_type_name(sym->type), sym_type_name(type));
 }
 
-static struct property *menu_add_prop(enum prop_type type, struct expr *expr, struct expr *dep)
-{
+static struct property *menu_add_prop(enum prop_type type, struct expr *expr, struct expr *dep) {
 	struct property *prop;
 
 	prop = xmalloc(sizeof(*prop));
@@ -134,8 +124,7 @@ static struct property *menu_add_prop(enum prop_type type, struct expr *expr, st
 	return prop;
 }
 
-struct property *menu_add_prompt(enum prop_type type, char *prompt, struct expr *dep)
-{
+struct property *menu_add_prompt(enum prop_type type, char *prompt, struct expr *dep) {
 	struct property *prop = menu_add_prop(type, NULL, dep);
 
 	if (isspace(*prompt)) {
@@ -168,28 +157,23 @@ struct property *menu_add_prompt(enum prop_type type, char *prompt, struct expr 
 	return prop;
 }
 
-void menu_add_visibility(struct expr *expr)
-{
+void menu_add_visibility(struct expr *expr) {
 	current_entry->visibility = expr_alloc_and(current_entry->visibility, expr);
 }
 
-void menu_add_expr(enum prop_type type, struct expr *expr, struct expr *dep)
-{
+void menu_add_expr(enum prop_type type, struct expr *expr, struct expr *dep) {
 	menu_add_prop(type, expr, dep);
 }
 
-void menu_add_symbol(enum prop_type type, struct symbol *sym, struct expr *dep)
-{
+void menu_add_symbol(enum prop_type type, struct symbol *sym, struct expr *dep) {
 	menu_add_prop(type, expr_alloc_symbol(sym), dep);
 }
 
-static int menu_validate_number(struct symbol *sym, struct symbol *sym2)
-{
+static int menu_validate_number(struct symbol *sym, struct symbol *sym2) {
 	return sym2->type == S_INT || sym2->type == S_HEX || (sym2->type == S_UNKNOWN && sym_string_valid(sym, sym2->name));
 }
 
-static void sym_check_prop(struct symbol *sym)
-{
+static void sym_check_prop(struct symbol *sym) {
 	struct property *prop;
 	struct symbol *sym2;
 	char *use;
@@ -230,8 +214,7 @@ static void sym_check_prop(struct symbol *sym)
 	}
 }
 
-void menu_finalize(struct menu *parent)
-{
+void menu_finalize(struct menu *parent) {
 	struct menu *menu, *last_menu;
 	struct symbol *sym;
 	struct property *prop;
@@ -422,15 +405,13 @@ void menu_finalize(struct menu *parent)
 	}
 }
 
-bool menu_has_prompt(struct menu *menu)
-{
+bool menu_has_prompt(struct menu *menu) {
 	if (!menu->prompt)
 		return false;
 	return true;
 }
 
-bool menu_is_visible(struct menu *menu)
-{
+bool menu_is_visible(struct menu *menu) {
 	struct menu *child;
 	struct symbol *sym;
 	tristate visible;
@@ -467,8 +448,7 @@ bool menu_is_visible(struct menu *menu)
 	return false;
 }
 
-const char *menu_get_prompt(struct menu *menu)
-{
+const char *menu_get_prompt(struct menu *menu) {
 	if (menu->prompt)
 		return menu->prompt->text;
 	else if (menu->sym)

@@ -21,8 +21,7 @@ static unsigned int nr_unresolved;
 
 
 void __attribute__((format(printf, 2, 3)))
-modpost_log(enum loglevel loglevel, const char *fmt, ...)
-{
+modpost_log(enum loglevel loglevel, const char *fmt, ...) {
 	va_list arglist;
 
 	switch (loglevel) {
@@ -48,16 +47,14 @@ modpost_log(enum loglevel loglevel, const char *fmt, ...)
 		error_occurred = true;
 }
 
-static inline bool strends(const char *str, const char *postfix)
-{
+static inline bool strends(const char *str, const char *postfix) {
 	if (strlen(str) < strlen(postfix))
 		return false;
 
 	return strcmp(str + strlen(str) - strlen(postfix), postfix) == 0;
 }
 
-void *do_nofail(void *ptr, const char *expr)
-{
+void *do_nofail(void *ptr, const char *expr) {
 	if (!ptr)
 		fatal("Memory allocation failure: %s.\n", expr);
 
@@ -66,8 +63,7 @@ void *do_nofail(void *ptr, const char *expr)
 
 LIST_HEAD(modules);
 
-static struct module *new_module(const char *name, size_t namelen)
-{
+static struct module *new_module(const char *name, size_t namelen) {
 	struct module *mod;
 
 	mod = NOFAIL(malloc(sizeof(*mod) + namelen + 1));
@@ -92,8 +88,7 @@ struct symbol { struct symbol *next; struct list_head list; struct module *modul
 
 static struct symbol *symbolhash[SYMBOL_HASH_SIZE];
 
-static inline unsigned int tdb_hash(const char *name)
-{
+static inline unsigned int tdb_hash(const char *name) {
 	unsigned value, i;
 
 	 
@@ -103,8 +98,7 @@ static inline unsigned int tdb_hash(const char *name)
 	return (1103515243 * value + 12345);
 }
 
-static struct symbol *alloc_symbol(const char *name)
-{
+static struct symbol *alloc_symbol(const char *name) {
 	struct symbol *s = NOFAIL(malloc(sizeof(*s) + strlen(name) + 1));
 
 	memset(s, 0, sizeof(*s));
@@ -113,8 +107,7 @@ static struct symbol *alloc_symbol(const char *name)
 	return s;
 }
 
-static void hash_add_symbol(struct symbol *sym)
-{
+static void hash_add_symbol(struct symbol *sym) {
 	unsigned int hash;
 
 	hash = tdb_hash(sym->name) % SYMBOL_HASH_SIZE;
@@ -122,8 +115,7 @@ static void hash_add_symbol(struct symbol *sym)
 	symbolhash[hash] = sym;
 }
 
-static void sym_add_unresolved(const char *name, struct module *mod, bool weak)
-{
+static void sym_add_unresolved(const char *name, struct module *mod, bool weak) {
 	struct symbol *sym;
 
 	sym = alloc_symbol(name);
@@ -132,8 +124,7 @@ static void sym_add_unresolved(const char *name, struct module *mod, bool weak)
 	list_add_tail(&sym->list, &mod->unresolved_symbols);
 }
 
-static struct symbol *sym_find_with_module(const char *name, struct module *mod)
-{
+static struct symbol *sym_find_with_module(const char *name, struct module *mod) {
 	struct symbol *s;
 
 	 
@@ -147,13 +138,11 @@ static struct symbol *sym_find_with_module(const char *name, struct module *mod)
 	return NULL;
 }
 
-static struct symbol *find_symbol(const char *name)
-{
+static struct symbol *find_symbol(const char *name) {
 	return sym_find_with_module(name, NULL);
 }
 
-static void *sym_get_data_by_offset(const struct elf_info *info, unsigned int secindex, unsigned long offset)
-{
+static void *sym_get_data_by_offset(const struct elf_info *info, unsigned int secindex, unsigned long offset) {
 	Elf_Shdr *sechdr = &info->sechdrs[secindex];
 
 	if (info->hdr->e_type != ET_REL)
@@ -162,25 +151,21 @@ static void *sym_get_data_by_offset(const struct elf_info *info, unsigned int se
 	return (void *)info->hdr + sechdr->sh_offset + offset;
 }
 
-static void *sym_get_data(const struct elf_info *info, const Elf_Sym *sym)
-{
+static void *sym_get_data(const struct elf_info *info, const Elf_Sym *sym) {
 	return sym_get_data_by_offset(info, get_secindex(info, sym), sym->st_value);
 }
 
-static const char *sech_name(const struct elf_info *info, Elf_Shdr *sechdr)
-{
+static const char *sech_name(const struct elf_info *info, Elf_Shdr *sechdr) {
 	return sym_get_data_by_offset(info, info->secindex_strings, sechdr->sh_name);
 }
 
-static const char *sec_name(const struct elf_info *info, int secindex)
-{
+static const char *sec_name(const struct elf_info *info, int secindex) {
 	return sech_name(info, &info->sechdrs[secindex]);
 }
 
 #define strstarts(str, prefix) (strncmp(str, prefix, strlen(prefix)) == 0)
 
-static void sym_update_namespace(const char *symname, const char *namespace)
-{
+static void sym_update_namespace(const char *symname, const char *namespace) {
 	struct symbol *s = find_symbol(symname);
 
 	 
@@ -193,8 +178,7 @@ static void sym_update_namespace(const char *symname, const char *namespace)
 	s->namespace = namespace[0] ? NOFAIL(strdup(namespace)) : NULL;
 }
 
-static struct symbol *sym_add_exported(const char *name, struct module *mod, bool gpl_only)
-{
+static struct symbol *sym_add_exported(const char *name, struct module *mod, bool gpl_only) {
 	struct symbol *s = find_symbol(name);
 
 	if (s) {
@@ -210,8 +194,7 @@ static struct symbol *sym_add_exported(const char *name, struct module *mod, boo
 	return s;
 }
 
-static void *grab_file(const char *filename, size_t *size)
-{
+static void *grab_file(const char *filename, size_t *size) {
 	struct stat st;
 	void *map = MAP_FAILED;
 	int fd;
@@ -232,13 +215,11 @@ failed:
 	return map;
 }
 
-static void release_file(void *file, size_t size)
-{
+static void release_file(void *file, size_t size) {
 	munmap(file, size);
 }
 
-static int parse_elf(struct elf_info *info, const char *filename)
-{
+static int parse_elf(struct elf_info *info, const char *filename) {
 	unsigned int i;
 	Elf_Ehdr *hdr;
 	Elf_Shdr *sechdrs;
@@ -357,13 +338,11 @@ static int parse_elf(struct elf_info *info, const char *filename)
 	return 1;
 }
 
-static void parse_elf_finish(struct elf_info *info)
-{
+static void parse_elf_finish(struct elf_info *info) {
 	release_file(info->hdr, info->size);
 }
 
-static int ignore_undef_symbol(struct elf_info *info, const char *symname)
-{
+static int ignore_undef_symbol(struct elf_info *info, const char *symname) {
 	 
 	if (strcmp(symname, "__this_module") == 0)
 		return 1;
@@ -387,8 +366,7 @@ static int ignore_undef_symbol(struct elf_info *info, const char *symname)
 	return 0;
 }
 
-static void handle_symbol(struct module *mod, struct elf_info *info, const Elf_Sym *sym, const char *symname)
-{
+static void handle_symbol(struct module *mod, struct elf_info *info, const Elf_Sym *sym, const char *symname) {
 	switch (sym->st_shndx) {
 	case SHN_COMMON:
 		if (strstarts(symname, "__gnu_lto_")) {
@@ -432,16 +410,14 @@ static void handle_symbol(struct module *mod, struct elf_info *info, const Elf_S
 	}
 }
 
-static const char *sym_name(struct elf_info *elf, Elf_Sym *sym)
-{
+static const char *sym_name(struct elf_info *elf, Elf_Sym *sym) {
 	if (sym)
 		return elf->strtab + sym->st_name;
 	else
 		return "(unknown)";
 }
 
-static bool match(const char *string, const char *const patterns[])
-{
+static bool match(const char *string, const char *const patterns[]) {
 	const char *pattern;
 
 	while ((pattern = *patterns++)) {
@@ -456,8 +432,7 @@ static const char *const section_white_list[] = {
 	".comment*", ".debug*", ".cranges", ".zdebug*", ".GCC.command.line", ".mdebug*", ".pdr", ".stab*", ".note*", ".got*", ".toc*", ".xt.prop", ".xt.lit", ".arcextmap*", ".gnu.linkonce.arcext*", ".cmem*", ".fmt_slot*", ".gnu.lto*", ".discard.*", NULL
 };
 
-static void check_section(const char *modname, struct elf_info *elf, Elf_Shdr *sechdr)
-{
+static void check_section(const char *modname, struct elf_info *elf, Elf_Shdr *sechdr) {
 	const char *sec = sech_name(elf, sechdr);
 
 	if (sechdr->sh_type == SHT_PROGBITS && !(sechdr->sh_flags & SHF_ALLOC) && !match(sec, section_white_list)) {
@@ -517,8 +492,7 @@ static void extable_mismatch_handler(const char *modname, struct elf_info *elf, 
 
 static const struct sectioncheck sectioncheck[] = { { .fromsec = { TEXT_SECTIONS, NULL }, .bad_tosec = { ALL_INIT_SECTIONS, NULL }, .mismatch = TEXT_TO_ANY_INIT, .symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL }, }, { .fromsec = { DATA_SECTIONS, NULL }, .bad_tosec = { ALL_XXXINIT_SECTIONS, NULL }, .mismatch = DATA_TO_ANY_INIT, .symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL }, }, { .fromsec = { DATA_SECTIONS, NULL }, .bad_tosec = { INIT_SECTIONS, NULL }, .mismatch = DATA_TO_ANY_INIT, .symbol_white_list = { "*_template", "*_timer", "*_sht", "*_ops", "*_probe", "*_probe_one", "*_console", NULL }, }, { .fromsec = { TEXT_SECTIONS, NULL }, .bad_tosec = { ALL_EXIT_SECTIONS, NULL }, .mismatch = TEXT_TO_ANY_EXIT, .symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL }, }, { .fromsec = { DATA_SECTIONS, NULL }, .bad_tosec = { ALL_EXIT_SECTIONS, NULL }, .mismatch = DATA_TO_ANY_EXIT, .symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL }, }, { .fromsec = { ALL_XXXINIT_SECTIONS, NULL }, .bad_tosec = { INIT_SECTIONS, NULL }, .mismatch = XXXINIT_TO_SOME_INIT, .symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL }, }, { .fromsec = { ALL_XXXEXIT_SECTIONS, NULL }, .bad_tosec = { EXIT_SECTIONS, NULL }, .mismatch = XXXEXIT_TO_SOME_EXIT, .symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL }, }, { .fromsec = { ALL_INIT_SECTIONS, NULL }, .bad_tosec = { ALL_EXIT_SECTIONS, NULL }, .mismatch = ANY_INIT_TO_ANY_EXIT, .symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL }, }, { .fromsec = { ALL_EXIT_SECTIONS, NULL }, .bad_tosec = { ALL_INIT_SECTIONS, NULL }, .mismatch = ANY_EXIT_TO_ANY_INIT, .symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL }, }, { .fromsec = { ALL_PCI_INIT_SECTIONS, NULL }, .bad_tosec = { INIT_SECTIONS, NULL }, .mismatch = ANY_INIT_TO_ANY_EXIT, .symbol_white_list = { NULL }, }, { .fromsec = { "___ksymtab*", NULL }, .bad_tosec = { INIT_SECTIONS, EXIT_SECTIONS, NULL }, .mismatch = EXPORT_TO_INIT_EXIT, .symbol_white_list = { DEFAULT_SYMBOL_WHITE_LIST, NULL }, }, { .fromsec = { "__ex_table", NULL }, .bad_tosec = { ".altinstr_replacement", NULL }, .good_tosec = {ALL_TEXT_SECTIONS , NULL}, .mismatch = EXTABLE_TO_NON_TEXT, .handler = extable_mismatch_handler, } };
 
-static const struct sectioncheck *section_mismatch( const char *fromsec, const char *tosec)
-{
+static const struct sectioncheck *section_mismatch( const char *fromsec, const char *tosec) {
 	int i;
 
 	 
@@ -538,8 +512,7 @@ static const struct sectioncheck *section_mismatch( const char *fromsec, const c
 	return NULL;
 }
 
-static int secref_whitelist(const struct sectioncheck *mismatch, const char *fromsec, const char *fromsym, const char *tosec, const char *tosym)
-{
+static int secref_whitelist(const struct sectioncheck *mismatch, const char *fromsec, const char *fromsym, const char *tosec, const char *tosym) {
 	 
 	if (match(tosec, init_data_sections) && match(fromsec, data_sections) && strstarts(fromsym, "__param"))
 		return 0;
@@ -571,14 +544,12 @@ static int secref_whitelist(const struct sectioncheck *mismatch, const char *fro
 	return 1;
 }
 
-static inline int is_arm_mapping_symbol(const char *str)
-{
+static inline int is_arm_mapping_symbol(const char *str) {
 	return str[0] == '$' && (str[1] == 'a' || str[1] == 'd' || str[1] == 't' || str[1] == 'x')
 	       && (str[2] == '\0' || str[2] == '.');
 }
 
-static inline int is_valid_name(struct elf_info *elf, Elf_Sym *sym)
-{
+static inline int is_valid_name(struct elf_info *elf, Elf_Sym *sym) {
 	const char *name = elf->strtab + sym->st_name;
 
 	if (!name || !strlen(name))
@@ -586,8 +557,7 @@ static inline int is_valid_name(struct elf_info *elf, Elf_Sym *sym)
 	return !is_arm_mapping_symbol(name);
 }
 
-static Elf_Sym *find_elf_symbol(struct elf_info *elf, Elf64_Sword addr, Elf_Sym *relsym)
-{
+static Elf_Sym *find_elf_symbol(struct elf_info *elf, Elf64_Sword addr, Elf_Sym *relsym) {
 	Elf_Sym *sym;
 	Elf_Sym *near = NULL;
 	Elf64_Sword distance = 20;
@@ -623,8 +593,7 @@ static Elf_Sym *find_elf_symbol(struct elf_info *elf, Elf64_Sword addr, Elf_Sym 
 		return NULL;
 }
 
-static Elf_Sym *find_elf_symbol2(struct elf_info *elf, Elf_Addr addr, const char *sec)
-{
+static Elf_Sym *find_elf_symbol2(struct elf_info *elf, Elf_Addr addr, const char *sec) {
 	Elf_Sym *sym;
 	Elf_Sym *near = NULL;
 	Elf_Addr distance = ~0;
@@ -647,8 +616,7 @@ static Elf_Sym *find_elf_symbol2(struct elf_info *elf, Elf_Addr addr, const char
 	return near;
 }
 
-static char *sec2annotation(const char *s)
-{
+static char *sec2annotation(const char *s) {
 	if (match(s, init_exit_sections)) {
 		char *p = NOFAIL(malloc(20));
 		char *r = p;
@@ -674,16 +642,14 @@ static char *sec2annotation(const char *s)
 	}
 }
 
-static int is_function(Elf_Sym *sym)
-{
+static int is_function(Elf_Sym *sym) {
 	if (sym)
 		return ELF_ST_TYPE(sym->st_info) == STT_FUNC;
 	else
 		return -1;
 }
 
-static void print_section_list(const char * const list[20])
-{
+static void print_section_list(const char * const list[20]) {
 	const char *const *s = list;
 
 	while (*s) {
@@ -695,8 +661,7 @@ static void print_section_list(const char * const list[20])
 	fprintf(stderr, "\n");
 }
 
-static inline void get_pretty_name(int is_func, const char** name, const char** name_p)
-{
+static inline void get_pretty_name(int is_func, const char** name, const char** name_p) {
 	switch (is_func) {
 	case 0:	*name = "variable"; *name_p = ""; break;
 	case 1:	*name = "function"; *name_p = "()"; break;
@@ -704,8 +669,7 @@ static inline void get_pretty_name(int is_func, const char** name, const char** 
 	}
 }
 
-static void report_sec_mismatch(const char *modname, const struct sectioncheck *mismatch, const char *fromsec, unsigned long long fromaddr, const char *fromsym, int from_is_func, const char *tosec, const char *tosym, int to_is_func)
-{
+static void report_sec_mismatch(const char *modname, const struct sectioncheck *mismatch, const char *fromsec, unsigned long long fromaddr, const char *fromsym, int from_is_func, const char *tosec, const char *tosym, int to_is_func) {
 	const char *from, *from_p;
 	const char *to, *to_p;
 	char *prl_from, *prl_to;
@@ -776,8 +740,7 @@ static void report_sec_mismatch(const char *modname, const struct sectioncheck *
 	fprintf(stderr, "\n");
 }
 
-static void default_mismatch_handler(const char *modname, struct elf_info *elf, const struct sectioncheck* const mismatch, Elf_Rela *r, Elf_Sym *sym, const char *fromsec)
-{
+static void default_mismatch_handler(const char *modname, struct elf_info *elf, const struct sectioncheck* const mismatch, Elf_Rela *r, Elf_Sym *sym, const char *fromsec) {
 	const char *tosec;
 	Elf_Sym *to;
 	Elf_Sym *from;
@@ -799,8 +762,7 @@ static void default_mismatch_handler(const char *modname, struct elf_info *elf, 
 	}
 }
 
-static int is_executable_section(struct elf_info* elf, unsigned int section_index)
-{
+static int is_executable_section(struct elf_info* elf, unsigned int section_index) {
 	if (section_index > elf->num_sections)
 		fatal("section_index is outside elf->num_sections!\n");
 
@@ -808,15 +770,13 @@ static int is_executable_section(struct elf_info* elf, unsigned int section_inde
 }
 
 static unsigned int extable_entry_size = 0;
-static void find_extable_entry_size(const char* const sec, const Elf_Rela* r)
-{
+static void find_extable_entry_size(const char* const sec, const Elf_Rela* r) {
 	 
 	if (!extable_entry_size)
 		extable_entry_size = r->r_offset * 2;
 }
 
-static inline bool is_extable_fault_address(Elf_Rela *r)
-{
+static inline bool is_extable_fault_address(Elf_Rela *r) {
 	 
 	if (r->r_offset && extable_entry_size == 0)
 		fatal("extable_entry size hasn't been discovered!\n");
@@ -826,8 +786,7 @@ static inline bool is_extable_fault_address(Elf_Rela *r)
 
 #define is_second_extable_reloc(Start, Cur, Sec)				(((Cur) == (Start) + 1) && (strcmp("__ex_table", (Sec)) == 0))
 
-static void report_extable_warnings(const char* modname, struct elf_info* elf, const struct sectioncheck* const mismatch, Elf_Rela* r, Elf_Sym* sym, const char* fromsec, const char* tosec)
-{
+static void report_extable_warnings(const char* modname, struct elf_info* elf, const struct sectioncheck* const mismatch, Elf_Rela* r, Elf_Sym* sym, const char* fromsec, const char* tosec) {
 	Elf_Sym* fromsym = find_elf_symbol2(elf, r->r_offset, fromsec);
 	const char* fromsym_name = sym_name(elf, fromsym);
 	Elf_Sym* tosym = find_elf_symbol(elf, r->r_addend, sym);
@@ -846,8 +805,7 @@ static void report_extable_warnings(const char* modname, struct elf_info* elf, c
 		fprintf(stderr, "The relocation at %s+0x%lx references\n" "section \"%s\" which is not in the list of\n" "authorized sections.  If you're adding a new section\n" "and/or if this reference is valid, add \"%s\" to the\n" "list of authorized sections to jump to on fault.\n" "This can be achieved by adding \"%s\" to \n" "OTHER_TEXT_SECTIONS in scripts/mod/modpost.c.\n", fromsec, (long)r->r_offset, tosec, tosec, tosec);
 }
 
-static void extable_mismatch_handler(const char* modname, struct elf_info *elf, const struct sectioncheck* const mismatch, Elf_Rela* r, Elf_Sym* sym, const char *fromsec)
-{
+static void extable_mismatch_handler(const char* modname, struct elf_info *elf, const struct sectioncheck* const mismatch, Elf_Rela* r, Elf_Sym* sym, const char *fromsec) {
 	const char* tosec = sec_name(elf, get_secindex(elf, sym));
 
 	sec_mismatch_count++;
@@ -864,8 +822,7 @@ static void extable_mismatch_handler(const char* modname, struct elf_info *elf, 
 	}
 }
 
-static void check_section_mismatch(const char *modname, struct elf_info *elf, Elf_Rela *r, Elf_Sym *sym, const char *fromsec)
-{
+static void check_section_mismatch(const char *modname, struct elf_info *elf, Elf_Rela *r, Elf_Sym *sym, const char *fromsec) {
 	const char *tosec = sec_name(elf, get_secindex(elf, sym));
 	const struct sectioncheck *mismatch = section_mismatch(fromsec, tosec);
 
@@ -877,13 +834,11 @@ static void check_section_mismatch(const char *modname, struct elf_info *elf, El
 	}
 }
 
-static unsigned int *reloc_location(struct elf_info *elf, Elf_Shdr *sechdr, Elf_Rela *r)
-{
+static unsigned int *reloc_location(struct elf_info *elf, Elf_Shdr *sechdr, Elf_Rela *r) {
 	return sym_get_data_by_offset(elf, sechdr->sh_info, r->r_offset);
 }
 
-static int addend_386_rel(struct elf_info *elf, Elf_Shdr *sechdr, Elf_Rela *r)
-{
+static int addend_386_rel(struct elf_info *elf, Elf_Shdr *sechdr, Elf_Rela *r) {
 	unsigned int r_typ = ELF_R_TYPE(r->r_info);
 	unsigned int *location = reloc_location(elf, sechdr, r);
 
@@ -900,8 +855,7 @@ static int addend_386_rel(struct elf_info *elf, Elf_Shdr *sechdr, Elf_Rela *r)
 	return 0;
 }
 
-static void section_rela(const char *modname, struct elf_info *elf, Elf_Shdr *sechdr)
-{
+static void section_rela(const char *modname, struct elf_info *elf, Elf_Shdr *sechdr) {
 	Elf_Sym  *sym;
 	Elf_Rela *rela;
 	Elf_Rela r;
@@ -933,8 +887,7 @@ static void section_rela(const char *modname, struct elf_info *elf, Elf_Shdr *se
 	}
 }
 
-static void section_rel(const char *modname, struct elf_info *elf, Elf_Shdr *sechdr)
-{
+static void section_rel(const char *modname, struct elf_info *elf, Elf_Shdr *sechdr) {
 	Elf_Sym *sym;
 	Elf_Rel *rel;
 	Elf_Rela r;
@@ -968,8 +921,7 @@ static void section_rel(const char *modname, struct elf_info *elf, Elf_Shdr *sec
 	}
 }
 
-static void check_sec_ref(const char *modname, struct elf_info *elf)
-{
+static void check_sec_ref(const char *modname, struct elf_info *elf) {
 	int i;
 	Elf_Shdr *sechdrs = elf->sechdrs;
 
@@ -984,8 +936,7 @@ static void check_sec_ref(const char *modname, struct elf_info *elf)
 	}
 }
 
-static char *remove_dot(char *s)
-{
+static char *remove_dot(char *s) {
 	size_t n = strcspn(s, ".");
 
 	if (n && s[n]) {
@@ -996,8 +947,7 @@ static char *remove_dot(char *s)
 	return s;
 }
 
-static void read_symbols(const char *modname)
-{
+static void read_symbols(const char *modname) {
 	const char *symname;
 	struct module *mod;
 	struct elf_info info = { };
@@ -1042,8 +992,7 @@ static void read_symbols(const char *modname)
 #define SZ 500
 
 
-void __attribute__((format(printf, 2, 3))) buf_printf(struct buffer *buf, const char *fmt, ...)
-{
+void __attribute__((format(printf, 2, 3))) buf_printf(struct buffer *buf, const char *fmt, ...) {
 	char tmp[SZ];
 	int len;
 	va_list ap;
@@ -1054,8 +1003,7 @@ void __attribute__((format(printf, 2, 3))) buf_printf(struct buffer *buf, const 
 	va_end(ap);
 }
 
-void buf_write(struct buffer *buf, const char *s, int len)
-{
+void buf_write(struct buffer *buf, const char *s, int len) {
 	if (buf->size - buf->pos < len) {
 		buf->size += len + SZ;
 		buf->p = NOFAIL(realloc(buf->p, buf->size));
@@ -1064,8 +1012,7 @@ void buf_write(struct buffer *buf, const char *s, int len)
 	buf->pos += len;
 }
 
-static void write_buf(struct buffer *b, const char *fname)
-{
+static void write_buf(struct buffer *b, const char *fname) {
 	FILE *file;
 
 	if (error_occurred)
@@ -1086,8 +1033,7 @@ static void write_buf(struct buffer *b, const char *fname)
 	}
 }
 
-static void write_if_changed(struct buffer *b, const char *fname)
-{
+static void write_if_changed(struct buffer *b, const char *fname) {
 	char *tmp;
 	FILE *file;
 	struct stat st;
@@ -1121,8 +1067,7 @@ static void write_if_changed(struct buffer *b, const char *fname)
 	write_buf(b, fname);
 }
 
-static void write_vmlinux_export_c_file(struct module *mod)
-{
+static void write_vmlinux_export_c_file(struct module *mod) {
 	struct buffer buf = { };
 
 	buf_printf(&buf, "#include <linux/export-internal.h>\n");
@@ -1131,8 +1076,7 @@ static void write_vmlinux_export_c_file(struct module *mod)
 	free(buf.p);
 }
 
-static void write_dump(const char *fname)
-{
+static void write_dump(const char *fname) {
 	struct buffer buf = { };
 	struct module *mod;
 	struct symbol *sym;
@@ -1148,8 +1092,7 @@ static void write_dump(const char *fname)
 	free(buf.p);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 	struct module *mod;
 	char *dump_write = NULL;
 	int opt;

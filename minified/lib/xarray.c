@@ -4,81 +4,67 @@
 #include <linux/slab.h>
 #include <linux/xarray.h>
 
-static inline bool xa_track_free(const struct xarray *xa)
-{
+static inline bool xa_track_free(const struct xarray *xa) {
 	return xa->xa_flags & XA_FLAGS_TRACK_FREE;
 }
 
-static inline bool xa_zero_busy(const struct xarray *xa)
-{
+static inline bool xa_zero_busy(const struct xarray *xa) {
 	return xa->xa_flags & XA_FLAGS_ZERO_BUSY;
 }
 
-static inline void xa_mark_set(struct xarray *xa, xa_mark_t mark)
-{
+static inline void xa_mark_set(struct xarray *xa, xa_mark_t mark) {
 	if (!(xa->xa_flags & XA_FLAGS_MARK(mark)))
 		xa->xa_flags |= XA_FLAGS_MARK(mark);
 }
 
-static inline void xa_mark_clear(struct xarray *xa, xa_mark_t mark)
-{
+static inline void xa_mark_clear(struct xarray *xa, xa_mark_t mark) {
 	if (xa->xa_flags & XA_FLAGS_MARK(mark))
 		xa->xa_flags &= ~(XA_FLAGS_MARK(mark));
 }
 
-static inline unsigned long *node_marks(struct xa_node *node, xa_mark_t mark)
-{
+static inline unsigned long *node_marks(struct xa_node *node, xa_mark_t mark) {
 	return node->marks[(__force unsigned)mark];
 }
 
-static inline bool node_get_mark(struct xa_node *node, unsigned int offset, xa_mark_t mark)
-{
+static inline bool node_get_mark(struct xa_node *node, unsigned int offset, xa_mark_t mark) {
 	return test_bit(offset, node_marks(node, mark));
 }
 
-static inline bool node_set_mark(struct xa_node *node, unsigned int offset, xa_mark_t mark)
-{
+static inline bool node_set_mark(struct xa_node *node, unsigned int offset, xa_mark_t mark) {
 	return __test_and_set_bit(offset, node_marks(node, mark));
 }
 
-static inline bool node_clear_mark(struct xa_node *node, unsigned int offset, xa_mark_t mark)
-{
+static inline bool node_clear_mark(struct xa_node *node, unsigned int offset, xa_mark_t mark) {
 	return __test_and_clear_bit(offset, node_marks(node, mark));
 }
 
 
-static inline void node_mark_all(struct xa_node *node, xa_mark_t mark)
-{
+static inline void node_mark_all(struct xa_node *node, xa_mark_t mark) {
 	bitmap_fill(node_marks(node, mark), XA_CHUNK_SIZE);
 }
 
 #define mark_inc(mark) do { 	mark = (__force xa_mark_t)((__force unsigned)(mark) + 1); } while (0)
 
-static unsigned int get_offset(unsigned long index, struct xa_node *node)
-{
+static unsigned int get_offset(unsigned long index, struct xa_node *node) {
 	return (index >> node->shift) & XA_CHUNK_MASK;
 }
 
-static void xas_set_offset(struct xa_state *xas)
-{
+static void xas_set_offset(struct xa_state *xas) {
 	xas->xa_offset = get_offset(xas->xa_index, xas->xa_node);
 }
 
-static void xas_move_index(struct xa_state *xas, unsigned long offset)
-{
+static void xas_move_index(struct xa_state *xas, unsigned long offset) {
 	unsigned int shift = xas->xa_node->shift;
 	xas->xa_index &= ~XA_CHUNK_MASK << shift;
 	xas->xa_index += offset << shift;
 }
 
-static void *set_bounds(struct xa_state *xas)
-{
+static void *set_bounds(struct xa_state *xas) {
 	xas->xa_node = XAS_BOUNDS;
 	return NULL;
 }
 
-static void *xas_start(struct xa_state *xas)
-{
+static void *xas_start(struct xa_state *xas) {
 	void *entry;
 
 	if (xas_valid(xas))
@@ -99,8 +85,7 @@ static void *xas_start(struct xa_state *xas)
 	return entry;
 }
 
-static void *xas_descend(struct xa_state *xas, struct xa_node *node)
-{
+static void *xas_descend(struct xa_state *xas, struct xa_node *node) {
 	unsigned int offset = get_offset(xas->xa_index, node);
 	void *entry = xa_entry(xas->xa, node, offset);
 
@@ -110,8 +95,7 @@ static void *xas_descend(struct xa_state *xas, struct xa_node *node)
 	return entry;
 }
 
-void *xas_load(struct xa_state *xas)
-{
+void *xas_load(struct xa_state *xas) {
 	void *entry = xas_start(xas);
 
 	while (xa_is_node(entry)) {
@@ -131,15 +115,13 @@ extern void radix_tree_node_rcu_free(struct rcu_head *head);
 
 #define XA_RCU_FREE	((struct xarray *)1)
 
-static void xa_node_free(struct xa_node *node)
-{
+static void xa_node_free(struct xa_node *node) {
 	XA_NODE_BUG_ON(node, !list_empty(&node->private_list));
 	node->array = XA_RCU_FREE;
 	call_rcu(&node->rcu_head, radix_tree_node_rcu_free);
 }
 
-bool xas_nomem(struct xa_state *xas, gfp_t gfp)
-{
+bool xas_nomem(struct xa_state *xas, gfp_t gfp) {
 	if (xas->xa_node != XA_ERROR(-ENOMEM)) {
 		struct xa_node *next, *node = xas->xa_alloc;
 
@@ -162,16 +144,14 @@ bool xas_nomem(struct xa_state *xas, gfp_t gfp)
 	return true;
 }
 
-static void xas_update(struct xa_state *xas, struct xa_node *node)
-{
+static void xas_update(struct xa_state *xas, struct xa_node *node) {
 	if (xas->xa_update)
 		xas->xa_update(node);
 	else
 		XA_NODE_BUG_ON(node, !list_empty(&node->private_list));
 }
 
-static void *xas_alloc(struct xa_state *xas, unsigned int shift)
-{
+static void *xas_alloc(struct xa_state *xas, unsigned int shift) {
 	/*
 	 * Runtime-dead on this minimal target: the only callers (xas_create,
 	 * xas_expand) are reached only via xas_store's entry!=NULL branch,
@@ -183,22 +163,19 @@ static void *xas_alloc(struct xa_state *xas, unsigned int shift)
 	return NULL;
 }
 
-static unsigned long xas_max(struct xa_state *xas)
-{
+static unsigned long xas_max(struct xa_state *xas) {
 	unsigned long max = xas->xa_index;
 
 	return max;
 }
 
-static unsigned long max_index(void *entry)
-{
+static unsigned long max_index(void *entry) {
 	if (!xa_is_node(entry))
 		return 0;
 	return (XA_CHUNK_SIZE << xa_to_node(entry)->shift) - 1;
 }
 
-static void xas_shrink(struct xa_state *xas)
-{
+static void xas_shrink(struct xa_state *xas) {
 	struct xarray *xa = xas->xa;
 	struct xa_node *node = xas->xa_node;
 
@@ -233,8 +210,7 @@ static void xas_shrink(struct xa_state *xas)
 	}
 }
 
-static void xas_delete_node(struct xa_state *xas)
-{
+static void xas_delete_node(struct xa_state *xas) {
 	struct xa_node *node = xas->xa_node;
 
 	for (;;) {
@@ -266,8 +242,7 @@ static void xas_delete_node(struct xa_state *xas)
 		xas_shrink(xas);
 }
 
-static void xas_free_nodes(struct xa_state *xas, struct xa_node *top)
-{
+static void xas_free_nodes(struct xa_state *xas, struct xa_node *top) {
 	unsigned int offset = 0;
 	struct xa_node *node = top;
 
@@ -297,8 +272,7 @@ static void xas_free_nodes(struct xa_state *xas, struct xa_node *top)
 	}
 }
 
-static int xas_expand(struct xa_state *xas, void *head)
-{
+static int xas_expand(struct xa_state *xas, void *head) {
 	struct xarray *xa = xas->xa;
 	struct xa_node *node = NULL;
 	unsigned int shift = 0;
@@ -357,8 +331,7 @@ static int xas_expand(struct xa_state *xas, void *head)
 	return shift;
 }
 
-static void *xas_create(struct xa_state *xas, bool allow_root)
-{
+static void *xas_create(struct xa_state *xas, bool allow_root) {
 	struct xarray *xa = xas->xa;
 	void *entry;
 	void __rcu **slot;
@@ -414,8 +387,7 @@ static void *xas_create(struct xa_state *xas, bool allow_root)
 }
 
 
-static void update_node(struct xa_state *xas, struct xa_node *node, int count, int values)
-{
+static void update_node(struct xa_state *xas, struct xa_node *node, int count, int values) {
 	if (!node || (!count && !values))
 		return;
 
@@ -426,8 +398,7 @@ static void update_node(struct xa_state *xas, struct xa_node *node, int count, i
 		xas_delete_node(xas);
 }
 
-void *xas_store(struct xa_state *xas, void *entry)
-{
+void *xas_store(struct xa_state *xas, void *entry) {
 	struct xa_node *node;
 	void __rcu **slot = &xas->xa->xa_head;
 	unsigned int offset, max;
@@ -503,8 +474,7 @@ void *xas_store(struct xa_state *xas, void *entry)
 }
 
 
-void xas_set_mark(const struct xa_state *xas, xa_mark_t mark)
-{
+void xas_set_mark(const struct xa_state *xas, xa_mark_t mark) {
 	/*
 	 * Runtime-dead on this minimal target: the sole caller (xas_store's
 	 * erase-path mark loop) reaches it only when storing NULL with a
@@ -515,8 +485,7 @@ void xas_set_mark(const struct xa_state *xas, xa_mark_t mark)
 	 */
 }
 
-void xas_clear_mark(const struct xa_state *xas, xa_mark_t mark)
-{
+void xas_clear_mark(const struct xa_state *xas, xa_mark_t mark) {
 	/*
 	 * Runtime-dead on this minimal target: both callers reach it only
 	 * conditionally (xas_store's erase-path mark-clear loop; ida_alloc
@@ -527,8 +496,7 @@ void xas_clear_mark(const struct xa_state *xas, xa_mark_t mark)
 }
 
 
-void *__xas_next(struct xa_state *xas)
-{
+void *__xas_next(struct xa_state *xas) {
 	void *entry;
 
 	if (!xas_frozen(xas->xa_node))
@@ -558,8 +526,7 @@ void *__xas_next(struct xa_state *xas)
 	}
 }
 
-void *xas_find_marked(struct xa_state *xas, unsigned long max, xa_mark_t mark)
-{
+void *xas_find_marked(struct xa_state *xas, unsigned long max, xa_mark_t mark) {
 	bool advance = true;
 	unsigned int offset;
 	void *entry;

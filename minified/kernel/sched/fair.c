@@ -12,27 +12,23 @@ unsigned int sysctl_sched_latency			= 6000000ULL;
 
 unsigned int sysctl_sched_min_granularity			= 750000ULL;
 
-static inline void update_load_add(struct load_weight *lw, unsigned long inc)
-{
+static inline void update_load_add(struct load_weight *lw, unsigned long inc) {
 	lw->weight += inc;
 	lw->inv_weight = 0;
 }
 
-static inline void update_load_sub(struct load_weight *lw, unsigned long dec)
-{
+static inline void update_load_sub(struct load_weight *lw, unsigned long dec) {
 	lw->weight -= dec;
 	lw->inv_weight = 0;
 }
 
-void __init sched_init_granularity(void)
-{
+void __init sched_init_granularity(void) {
 }
 
 #define WMULT_CONST	(~0U)
 #define WMULT_SHIFT	32
 
-static void __update_inv_weight(struct load_weight *lw)
-{
+static void __update_inv_weight(struct load_weight *lw) {
 	unsigned long w;
 
 	if (likely(lw->inv_weight))
@@ -48,8 +44,7 @@ static void __update_inv_weight(struct load_weight *lw)
 		lw->inv_weight = WMULT_CONST / w;
 }
 
-static u64 __calc_delta(u64 delta_exec, unsigned long weight, struct load_weight *lw)
-{
+static u64 __calc_delta(u64 delta_exec, unsigned long weight, struct load_weight *lw) {
 	u64 fact = scale_load_down(weight);
 	u32 fact_hi = (u32)(fact >> 32);
 	int shift = WMULT_SHIFT;
@@ -79,8 +74,7 @@ const struct sched_class fair_sched_class;
 
 #define for_each_sched_entity(se) 		for (; se; se = NULL)
 
-static inline u64 max_vruntime(u64 max_vruntime, u64 vruntime)
-{
+static inline u64 max_vruntime(u64 max_vruntime, u64 vruntime) {
 	s64 delta = (s64)(vruntime - max_vruntime);
 	if (delta > 0)
 		max_vruntime = vruntime;
@@ -88,8 +82,7 @@ static inline u64 max_vruntime(u64 max_vruntime, u64 vruntime)
 	return max_vruntime;
 }
 
-static inline u64 min_vruntime(u64 min_vruntime, u64 vruntime)
-{
+static inline u64 min_vruntime(u64 min_vruntime, u64 vruntime) {
 	s64 delta = (s64)(vruntime - min_vruntime);
 	if (delta < 0)
 		min_vruntime = vruntime;
@@ -97,15 +90,13 @@ static inline u64 min_vruntime(u64 min_vruntime, u64 vruntime)
 	return min_vruntime;
 }
 
-static inline bool entity_before(struct sched_entity *a, struct sched_entity *b)
-{
+static inline bool entity_before(struct sched_entity *a, struct sched_entity *b) {
 	return (s64)(a->vruntime - b->vruntime) < 0;
 }
 
 #define __node_2_se(node) 	rb_entry((node), struct sched_entity, run_node)
 
-static void update_min_vruntime(struct cfs_rq *cfs_rq)
-{
+static void update_min_vruntime(struct cfs_rq *cfs_rq) {
 	struct sched_entity *curr = cfs_rq->curr;
 	struct rb_node *leftmost = rb_first_cached(&cfs_rq->tasks_timeline);
 
@@ -130,23 +121,19 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
 	cfs_rq->min_vruntime = max_vruntime(cfs_rq->min_vruntime, vruntime);
 }
 
-static inline bool __entity_less(struct rb_node *a, const struct rb_node *b)
-{
+static inline bool __entity_less(struct rb_node *a, const struct rb_node *b) {
 	return entity_before(__node_2_se(a), __node_2_se(b));
 }
 
-static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
+static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se) {
 	rb_add_cached(&se->run_node, &cfs_rq->tasks_timeline, __entity_less);
 }
 
-static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
+static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se) {
 	rb_erase_cached(&se->run_node, &cfs_rq->tasks_timeline);
 }
 
-struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq)
-{
+struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq) {
 	struct rb_node *left = rb_first_cached(&cfs_rq->tasks_timeline);
 
 	if (!left)
@@ -155,24 +142,21 @@ struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq)
 	return __node_2_se(left);
 }
 
-static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se)
-{
+static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se) {
 	if (unlikely(se->load.weight != NICE_0_LOAD))
 		delta = __calc_delta(delta, NICE_0_LOAD, &se->load);
 
 	return delta;
 }
 
-static u64 __sched_period(unsigned long nr_running)
-{
+static u64 __sched_period(unsigned long nr_running) {
 	if (unlikely(nr_running > 8))
 		return nr_running * sysctl_sched_min_granularity;
 	else
 		return sysctl_sched_latency;
 }
 
-static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
+static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se) {
 	unsigned int nr_running = cfs_rq->nr_running;
 	unsigned int min_gran;
 	u64 slice;
@@ -207,13 +191,11 @@ static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 	return slice;
 }
 
-static u64 sched_vslice(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
+static u64 sched_vslice(struct cfs_rq *cfs_rq, struct sched_entity *se) {
 	return calc_delta_fair(sched_slice(cfs_rq, se), se);
 }
 
-static void update_curr(struct cfs_rq *cfs_rq)
-{
+static void update_curr(struct cfs_rq *cfs_rq) {
 	struct sched_entity *curr = cfs_rq->curr;
 	u64 now = rq_clock_task(rq_of(cfs_rq));
 	u64 delta_exec;
@@ -240,22 +222,19 @@ static void update_curr(struct cfs_rq *cfs_rq)
 }
 
 static inline void
-update_stats_curr_start(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
+update_stats_curr_start(struct cfs_rq *cfs_rq, struct sched_entity *se) {
 	
 	se->exec_start = rq_clock_task(rq_of(cfs_rq));
 }
 
 static void
-account_entity_enqueue(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
+account_entity_enqueue(struct cfs_rq *cfs_rq, struct sched_entity *se) {
 	update_load_add(&cfs_rq->load, se->load.weight);
 	cfs_rq->nr_running++;
 }
 
 static void
-account_entity_dequeue(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
+account_entity_dequeue(struct cfs_rq *cfs_rq, struct sched_entity *se) {
 	update_load_sub(&cfs_rq->load, se->load.weight);
 	cfs_rq->nr_running--;
 }
@@ -266,13 +245,11 @@ account_entity_dequeue(struct cfs_rq *cfs_rq, struct sched_entity *se)
  * on this build; zero callers remained tree-wide.
  */
 
-void reweight_task(struct task_struct *p, int prio)
-{
+void reweight_task(struct task_struct *p, int prio) {
 }
 
 static void
-place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
-{
+place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial) {
 	u64 vruntime = cfs_rq->min_vruntime;
 
 	if (initial && sched_feat(START_DEBIT))
@@ -293,8 +270,7 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
 }
 
 static void
-enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
-{
+enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags) {
 	bool renorm = !(flags & ENQUEUE_WAKEUP) || (flags & ENQUEUE_MIGRATED);
 	bool curr = cfs_rq->curr == se;
 
@@ -316,8 +292,7 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	se->on_rq = 1;
 }
 
-static void __clear_buddies_last(struct sched_entity *se)
-{
+static void __clear_buddies_last(struct sched_entity *se) {
 	for_each_sched_entity(se) {
 		struct cfs_rq *cfs_rq = cfs_rq_of(se);
 		if (cfs_rq->last != se)
@@ -327,8 +302,7 @@ static void __clear_buddies_last(struct sched_entity *se)
 	}
 }
 
-static void __clear_buddies_next(struct sched_entity *se)
-{
+static void __clear_buddies_next(struct sched_entity *se) {
 	for_each_sched_entity(se) {
 		struct cfs_rq *cfs_rq = cfs_rq_of(se);
 		if (cfs_rq->next != se)
@@ -338,8 +312,7 @@ static void __clear_buddies_next(struct sched_entity *se)
 	}
 }
 
-static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
+static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se) {
 	if (cfs_rq->last == se)
 		__clear_buddies_last(se);
 
@@ -348,8 +321,7 @@ static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
 }
 
 static void
-dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
-{
+dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags) {
 	
 	update_curr(cfs_rq);
 
@@ -368,8 +340,7 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 }
 
 static void
-check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
-{
+check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr) {
 	unsigned long ideal_runtime, delta_exec;
 	struct sched_entity *se;
 	s64 delta;
@@ -397,8 +368,7 @@ check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 }
 
 static void
-set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
-{
+set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se) {
 	clear_buddies(cfs_rq, se);
 
 	if (se->on_rq) {
@@ -414,8 +384,7 @@ set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 static int
 wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se);
 
-static struct sched_entity * pick_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *curr)
-{
+static struct sched_entity * pick_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *curr) {
 	struct sched_entity *left = __pick_first_entity(cfs_rq);
 	struct sched_entity *se;
 
@@ -435,8 +404,7 @@ static struct sched_entity * pick_next_entity(struct cfs_rq *cfs_rq, struct sche
 	return se;
 }
 
-static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
-{
+static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev) {
 
 	if (prev->on_rq)
 		update_curr(cfs_rq);
@@ -448,8 +416,7 @@ static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
 }
 
 static void
-entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
-{
+entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued) {
 	
 	update_curr(cfs_rq);
 
@@ -458,8 +425,7 @@ entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued)
 }
 
 static void
-enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
-{
+enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags) {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
 
@@ -486,8 +452,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	add_nr_running(rq, 1);
 }
 
-static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
-{
+static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags) {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
 
@@ -512,8 +477,7 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 }
 
 static int
-wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
-{
+wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se) {
 	/*
 	 * Runtime-dead on a boot-once-and-print artifact: the only callers are
 	 * the conditional cfs_rq->next / cfs_rq->last buddy branches in
@@ -534,12 +498,10 @@ wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
  * task simply keeps running until the next tick), and the buddy helpers
  * set_next_buddy/set_last_buddy (only callers were here) cascade out.
  */
-static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_flags)
-{
+static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_flags) {
 }
 
-struct task_struct * pick_next_task_fair(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
-{
+struct task_struct * pick_next_task_fair(struct rq *rq, struct task_struct *prev, struct rq_flags *rf) {
 	struct cfs_rq *cfs_rq = &rq->cfs;
 	struct sched_entity *se;
 	struct task_struct *p;
@@ -561,13 +523,11 @@ idle:
 	return NULL;
 }
 
-static struct task_struct *__pick_next_task_fair(struct rq *rq)
-{
+static struct task_struct *__pick_next_task_fair(struct rq *rq) {
 	return pick_next_task_fair(rq, NULL, NULL);
 }
 
-static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
-{
+static void put_prev_task_fair(struct rq *rq, struct task_struct *prev) {
 	struct sched_entity *se = &prev->se;
 	struct cfs_rq *cfs_rq;
 
@@ -577,8 +537,7 @@ static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
 	}
 }
 
-static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
-{
+static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued) {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &curr->se;
 
@@ -588,8 +547,7 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 	}
 }
 
-static void task_fork_fair(struct task_struct *p)
-{
+static void task_fork_fair(struct task_struct *p) {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se, *curr;
 	struct rq *rq = this_rq();
@@ -610,8 +568,7 @@ static void task_fork_fair(struct task_struct *p)
 	rq_unlock(rq, &rf);
 }
 
-static void set_next_task_fair(struct rq *rq, struct task_struct *p, bool first)
-{
+static void set_next_task_fair(struct rq *rq, struct task_struct *p, bool first) {
 	struct sched_entity *se = &p->se;
 
 	for_each_sched_entity(se) {
@@ -621,8 +578,7 @@ static void set_next_task_fair(struct rq *rq, struct task_struct *p, bool first)
 	}
 }
 
-void init_cfs_rq(struct cfs_rq *cfs_rq)
-{
+void init_cfs_rq(struct cfs_rq *cfs_rq) {
 	cfs_rq->tasks_timeline = RB_ROOT_CACHED;
 	cfs_rq->min_vruntime = (u64)(-(1LL << 20));
 }
@@ -630,7 +586,6 @@ void init_cfs_rq(struct cfs_rq *cfs_rq)
 
 DEFINE_SCHED_CLASS(fair) = { .enqueue_task		= enqueue_task_fair, .dequeue_task		= dequeue_task_fair, .check_preempt_curr	= check_preempt_wakeup, .pick_next_task		= __pick_next_task_fair, .put_prev_task		= put_prev_task_fair, .set_next_task          = set_next_task_fair, .task_tick		= task_tick_fair, .task_fork		= task_fork_fair, };
 
-__init void init_sched_fair_class(void)
-{
+__init void init_sched_fair_class(void) {
 
 }

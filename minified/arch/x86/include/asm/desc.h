@@ -20,27 +20,23 @@ struct gdt_page { struct desc_struct gdt[GDT_ENTRIES]; } __attribute__((aligned(
 DECLARE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page);
 
  
-static inline struct desc_struct *get_cpu_gdt_rw(unsigned int cpu)
-{
+static inline struct desc_struct *get_cpu_gdt_rw(unsigned int cpu) {
 	return per_cpu(gdt_page, cpu).gdt;
 }
 
  
-static inline struct desc_struct *get_current_gdt_rw(void)
-{
+static inline struct desc_struct *get_current_gdt_rw(void) {
 	return this_cpu_ptr(&gdt_page)->gdt;
 }
 
  
-static inline struct desc_struct *get_cpu_gdt_ro(int cpu)
-{
+static inline struct desc_struct *get_cpu_gdt_ro(int cpu) {
 	return (struct desc_struct *)&get_cpu_entry_area(cpu)->gdt;
 }
 
 /* get_current_gdt_ro removed - unused */
 
-static inline phys_addr_t get_cpu_gdt_paddr(unsigned int cpu)
-{
+static inline phys_addr_t get_cpu_gdt_paddr(unsigned int cpu) {
 	return per_cpu_ptr_to_phys(get_cpu_gdt_rw(cpu));
 }
 
@@ -56,14 +52,12 @@ static inline phys_addr_t get_cpu_gdt_paddr(unsigned int cpu)
 #define write_gdt_entry(dt, entry, desc, type)	native_write_gdt_entry(dt, entry, desc, type)
 #define write_idt_entry(dt, entry, g)		native_write_idt_entry(dt, entry, g)
 
-static inline void native_write_idt_entry(gate_desc *idt, int entry, const gate_desc *gate)
-{
+static inline void native_write_idt_entry(gate_desc *idt, int entry, const gate_desc *gate) {
 	memcpy(&idt[entry], gate, sizeof(*gate));
 }
 
 static inline void
-native_write_gdt_entry(struct desc_struct *gdt, int entry, const void *desc, int type)
-{
+native_write_gdt_entry(struct desc_struct *gdt, int entry, const void *desc, int type) {
 	unsigned int size;
 
 	switch (type) {
@@ -75,8 +69,7 @@ native_write_gdt_entry(struct desc_struct *gdt, int entry, const void *desc, int
 	memcpy(&gdt[entry], desc, size);
 }
 
-static inline void set_tssldt_descriptor(void *d, unsigned long addr, unsigned type, unsigned size)
-{
+static inline void set_tssldt_descriptor(void *d, unsigned long addr, unsigned type, unsigned size) {
 	struct ldttss_desc *desc = d;
 
 	memset(desc, 0, sizeof(*desc));
@@ -90,8 +83,7 @@ static inline void set_tssldt_descriptor(void *d, unsigned long addr, unsigned t
 	desc->base2		= (addr >> 24) & 0xFF;
 }
 
-static inline void __set_tss_desc(unsigned cpu, unsigned int entry, struct x86_hw_tss *addr)
-{
+static inline void __set_tss_desc(unsigned cpu, unsigned int entry, struct x86_hw_tss *addr) {
 	struct desc_struct *d = get_cpu_gdt_rw(cpu);
 	tss_desc tss;
 
@@ -101,8 +93,7 @@ static inline void __set_tss_desc(unsigned cpu, unsigned int entry, struct x86_h
 
 #define set_tss_desc(cpu, addr) __set_tss_desc(cpu, GDT_ENTRY_TSS, addr)
 
-static inline void native_set_ldt(const void *addr, unsigned int entries)
-{
+static inline void native_set_ldt(const void *addr, unsigned int entries) {
 	if (likely(entries == 0))
 		asm volatile("lldt %w0"::"q" (0));
 	else {
@@ -115,25 +106,21 @@ static inline void native_set_ldt(const void *addr, unsigned int entries)
 	}
 }
 
-static inline void native_load_gdt(const struct desc_ptr *dtr)
-{
+static inline void native_load_gdt(const struct desc_ptr *dtr) {
 	asm volatile("lgdt %0"::"m" (*dtr));
 }
 
-static __always_inline void native_load_idt(const struct desc_ptr *dtr)
-{
+static __always_inline void native_load_idt(const struct desc_ptr *dtr) {
 	asm volatile("lidt %0"::"m" (*dtr));
 }
 
 /* native_store_gdt, store_idt, native_store_tr removed - unused */
 
-static inline void native_load_tr_desc(void)
-{
+static inline void native_load_tr_desc(void) {
 	asm volatile("ltr %w0"::"q" (GDT_ENTRY_TSS*8));
 }
 
-static inline void native_load_tls(struct thread_struct *t, unsigned int cpu)
-{
+static inline void native_load_tls(struct thread_struct *t, unsigned int cpu) {
 	struct desc_struct *gdt = get_cpu_gdt_rw(cpu);
 	unsigned int i;
 
@@ -146,13 +133,11 @@ static inline void native_load_tls(struct thread_struct *t, unsigned int cpu)
 /* refresh_tss_limit, invalidate_tss_limit removed - unused */
 /* get_desc_base, set_desc_base, get_desc_limit, set_desc_limit removed - unused */
 
-static inline void clear_LDT(void)
-{
+static inline void clear_LDT(void) {
 	set_ldt(NULL, 0);
 }
 
-static inline void init_idt_data(struct idt_data *data, unsigned int n, const void *addr)
-{
+static inline void init_idt_data(struct idt_data *data, unsigned int n, const void *addr) {
 	BUG_ON(n > 0xFF);
 
 	memset(data, 0, sizeof(*data));
@@ -163,8 +148,7 @@ static inline void init_idt_data(struct idt_data *data, unsigned int n, const vo
 	data->bits.p	= 1;
 }
 
-static inline void idt_init_desc(gate_desc *gate, const struct idt_data *d)
-{
+static inline void idt_init_desc(gate_desc *gate, const struct idt_data *d) {
 	unsigned long addr = (unsigned long) d->addr;
 
 	gate->offset_low	= (u16) addr;

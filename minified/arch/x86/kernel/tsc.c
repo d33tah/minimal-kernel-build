@@ -27,8 +27,7 @@ struct cyc2ns { struct cyc2ns_data data[2]; seqcount_latch_t   seq; };
 static DEFINE_PER_CPU_ALIGNED(struct cyc2ns, cyc2ns);
 
 
-static __always_inline unsigned long long cycles_2_ns(unsigned long long cyc)
-{
+static __always_inline unsigned long long cycles_2_ns(unsigned long long cyc) {
 	struct cyc2ns_data data;
 	unsigned long long ns;
 	int seq, idx;
@@ -54,8 +53,7 @@ static __always_inline unsigned long long cycles_2_ns(unsigned long long cyc)
 	return ns;
 }
 
-static void __set_cyc2ns_scale(unsigned long khz, int cpu, unsigned long long tsc_now)
-{
+static void __set_cyc2ns_scale(unsigned long khz, int cpu, unsigned long long tsc_now) {
 	unsigned long long ns_now;
 	struct cyc2ns_data data;
 	struct cyc2ns *c2n;
@@ -88,8 +86,7 @@ static void __set_cyc2ns_scale(unsigned long khz, int cpu, unsigned long long ts
  * tsc_enable_sched_clock(); the cpu != this_cpu body never ran.
  */
 
-u64 native_sched_clock(void)
-{
+u64 native_sched_clock(void) {
 	if (static_branch_likely(&__use_tsc)) {
 		u64 tsc_now = rdtsc();
 
@@ -108,15 +105,13 @@ sched_clock(void) __attribute__((alias("native_sched_clock")));
 
 
 
-static inline int pit_verify_msb(unsigned char val)
-{
+static inline int pit_verify_msb(unsigned char val) {
 	 
 	inb(0x42);
 	return inb(0x42) == val;
 }
 
-static inline int pit_expect_msb(unsigned char val, u64 *tscp, unsigned long *deltap)
-{
+static inline int pit_expect_msb(unsigned char val, u64 *tscp, unsigned long *deltap) {
 	int count;
 	u64 tsc = 0, prev_tsc = 0;
 
@@ -136,8 +131,7 @@ static inline int pit_expect_msb(unsigned char val, u64 *tscp, unsigned long *de
 #define MAX_QUICK_PIT_MS 50
 #define MAX_QUICK_PIT_ITERATIONS (MAX_QUICK_PIT_MS * PIT_TICK_RATE / 1000 / 256)
 
-static unsigned long quick_pit_calibrate(void)
-{
+static unsigned long quick_pit_calibrate(void) {
 	int i;
 	u64 tsc, delta;
 	unsigned long d1, d2;
@@ -190,8 +184,7 @@ success:
 	return delta;
 }
 
-unsigned long native_calibrate_tsc(void)
-{
+unsigned long native_calibrate_tsc(void) {
 	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
 		return 0;
 
@@ -202,8 +195,7 @@ unsigned long native_calibrate_tsc(void)
 	return 0;
 }
 
-static unsigned long cpu_khz_from_cpuid(void)
-{
+static unsigned long cpu_khz_from_cpuid(void) {
 	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
 		return 0;
 
@@ -212,8 +204,7 @@ static unsigned long cpu_khz_from_cpuid(void)
 	return 0;
 }
 
-unsigned long native_calibrate_cpu_early(void)
-{
+unsigned long native_calibrate_cpu_early(void) {
 	unsigned long flags, fast_calibrate = cpu_khz_from_cpuid();
 
 	if (!fast_calibrate) {
@@ -226,13 +217,11 @@ unsigned long native_calibrate_cpu_early(void)
 
 
 
-static u64 read_tsc(struct clocksource *cs)
-{
+static u64 read_tsc(struct clocksource *cs) {
 	return (u64)rdtsc_ordered();
 }
 
-static int tsc_cs_enable(struct clocksource *cs)
-{
+static int tsc_cs_enable(struct clocksource *cs) {
 	/* clocksource .enable callback: HIT=False this boot (the VDSO
 	 * clockmode marking never fires). Safe-fallback return 0 = enabled. */
 	return 0;
@@ -244,16 +233,14 @@ static struct clocksource clocksource_tsc = { .name			= "tsc", .rating			= 300, 
 
 static void tsc_refine_calibration_work(struct work_struct *work);
 static DECLARE_DELAYED_WORK(tsc_irqwork, tsc_refine_calibration_work);
-static void tsc_refine_calibration_work(struct work_struct *work)
-{
+static void tsc_refine_calibration_work(struct work_struct *work) {
 	/* Stub: TSC refinement not needed for minimal kernel */
 	clocksource_register_khz(&clocksource_tsc, tsc_khz);
 	clocksource_unregister(&clocksource_tsc_early);
 }
 
 
-static int __init init_tsc_clocksource(void)
-{
+static int __init init_tsc_clocksource(void) {
 	if (!boot_cpu_has(X86_FEATURE_TSC) || !tsc_khz)
 		return 0;
 
@@ -262,8 +249,7 @@ static int __init init_tsc_clocksource(void)
 }
 device_initcall(init_tsc_clocksource);
 
-static bool __init determine_cpu_tsc_frequencies(bool early)
-{
+static bool __init determine_cpu_tsc_frequencies(bool early) {
 
 	WARN_ON(cpu_khz || tsc_khz);
 
@@ -288,8 +274,7 @@ static bool __init determine_cpu_tsc_frequencies(bool early)
 	return true;
 }
 
-static void __init tsc_enable_sched_clock(void)
-{
+static void __init tsc_enable_sched_clock(void) {
 	struct cyc2ns *c2n = this_cpu_ptr(&cyc2ns);
 	u64 lpj = (u64)tsc_khz * KHZ;
 
@@ -302,8 +287,7 @@ static void __init tsc_enable_sched_clock(void)
 	static_branch_enable(&__use_tsc);
 }
 
-void __init tsc_early_init(void)
-{
+void __init tsc_early_init(void) {
 	if (!boot_cpu_has(X86_FEATURE_TSC))
 		return;
 
@@ -312,8 +296,7 @@ void __init tsc_early_init(void)
 	tsc_enable_sched_clock();
 }
 
-void __init tsc_init(void)
-{
+void __init tsc_init(void) {
 	/*
 	 * tsc_early_init() already calibrated cpu_khz/tsc_khz from CPUID on this
 	 * build, so the PIT/HPET fallback (the !tsc_khz path that re-ran

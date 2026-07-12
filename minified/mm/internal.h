@@ -25,8 +25,7 @@
  
 #define WARN_ON_ONCE_GFP(cond, gfp)	({					static bool __section(".data.once") __warned;				int __ret_warn_once = !!(cond);															if (unlikely(!(gfp & __GFP_NOWARN) && __ret_warn_once && !__warned)) { 		__warned = true;							WARN_ON(1);							}									unlikely(__ret_warn_once);					})
 
-static inline void *folio_raw_mapping(struct folio *folio)
-{
+static inline void *folio_raw_mapping(struct folio *folio) {
 	unsigned long mapping = (unsigned long)folio->mapping;
 
 	return (void *)(mapping & ~PAGE_MAPPING_FLAGS);
@@ -41,8 +40,7 @@ void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte);
 
 /* page_evictable removed - unused */
 
-static inline void set_page_refcounted(struct page *page)
-{
+static inline void set_page_refcounted(struct page *page) {
 	VM_BUG_ON_PAGE(PageTail(page), page);
 	VM_BUG_ON_PAGE(page_ref_count(page), page);
 	set_page_count(page, 1);
@@ -61,8 +59,7 @@ extern unsigned long highest_memmap_pfn;
 struct alloc_context { struct zonelist *zonelist; struct zoneref *preferred_zoneref; int migratetype; enum zone_type highest_zoneidx; };
 
  
-static inline unsigned int buddy_order(struct page *page)
-{
+static inline unsigned int buddy_order(struct page *page) {
 	 
 	return page_private(page);
 }
@@ -90,8 +87,7 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma, struct vm
 /* maybe_pmd_mkwrite removed - unused */
 
 
-static inline struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf, struct file *fpin)
-{
+static inline struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf, struct file *fpin) {
 	int flags = vmf->flags;
 
 	if (fpin)

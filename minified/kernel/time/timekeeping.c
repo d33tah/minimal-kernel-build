@@ -333,8 +333,7 @@ static inline unsigned int accumulate_nsecs_to_secs(struct timekeeper *tk) {
 		 * permanent return-0 stub on this build (NTP gutted), so the
 		 * leap correction never fired.
 		 */
-	}
-	return clock_set; }
+} return clock_set; }
 
 static u64 logarithmic_accumulation(struct timekeeper *tk, u64 offset, u32 shift, unsigned int *clock_set) {
 	u64 interval = tk->cycle_interval << shift;

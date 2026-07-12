@@ -66,8 +66,7 @@ static struct page *follow_page_pte(struct vm_area_struct *vma, unsigned long ad
 		page = ERR_PTR(-EMLINK);
 		goto out; }
 
-	{
-		struct folio *folio = page_folio(page);
+{ struct folio *folio = page_folio(page);
 
 		if (unlikely(WARN_ON_ONCE(folio_ref_count(folio) <= 0))) {
 			page = ERR_PTR(-ENOMEM);
@@ -202,8 +201,7 @@ static long __get_user_pages(struct mm_struct *mm, unsigned long start, unsigned
 			if (ret)
 				goto out;
 
-		}
-retry:
+} retry:
 		
 		if (fatal_signal_pending(current)) {
 			ret = -EINTR;

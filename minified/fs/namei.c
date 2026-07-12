@@ -881,8 +881,7 @@ static const char *open_last_lookups(struct nameidata *nd, struct file *file, co
 	if (open_flag & (O_CREAT | O_TRUNC | O_WRONLY | O_RDWR)) {
 		got_write = !mnt_want_write(nd->path.mnt);
 		
-	}
-	if (open_flag & O_CREAT)
+} if (open_flag & O_CREAT)
 		inode_lock(dir->d_inode);
 	else
 		inode_lock_shared(dir->d_inode);

@@ -222,8 +222,7 @@ char *number(char *buf, char *end, unsigned long long num, struct printf_spec sp
 			*buf = sign;
 		++buf; }
 
-	{
-		char c = ' ' + (spec.flags & ZEROPAD);
+{ char c = ' ' + (spec.flags & ZEROPAD);
 
 		while (--field_width >= 0) {
 			if (buf < end)

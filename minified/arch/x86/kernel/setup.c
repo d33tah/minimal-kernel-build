@@ -106,8 +106,7 @@ static void __init reserve_initrd(void) {
 		initrd_end = initrd_start + ramdisk_size;
 		return; }
 
-	{
-		u64 area_size = PAGE_ALIGN(ramdisk_size);
+{ u64 area_size = PAGE_ALIGN(ramdisk_size);
 
 		relocated_ramdisk = memblock_phys_alloc_range(area_size, PAGE_SIZE, 0, PFN_PHYS(max_pfn_mapped));
 		if (!relocated_ramdisk)

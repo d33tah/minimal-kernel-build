@@ -75,8 +75,7 @@ spurious_8259A_irq:
 		 
 		goto handle_real_irq;
 
-	{
-		static int spurious_irq_mask;
+{ static int spurious_irq_mask;
 		 
 		if (!(spurious_irq_mask & irqmask)) {
 			printk_deferred(KERN_DEBUG "spurious 8259A interrupt: IRQ%d.\n", irq);

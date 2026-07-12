@@ -772,8 +772,7 @@ restart:
 area_found:
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 
-	{
-		unsigned int page_end, rs, re;
+{ unsigned int page_end, rs, re;
 
 		rs = PFN_DOWN(off);
 		page_end = PFN_UP(off + size);

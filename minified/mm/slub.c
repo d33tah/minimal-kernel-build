@@ -80,8 +80,7 @@ static inline bool __cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab
 			return true;
 	} else
 #endif
-	{
-		slab_lock(slab);
+{ slab_lock(slab);
 		if (slab->freelist == freelist_old && slab->counters == counters_old) {
 			slab->freelist = freelist_new;
 			slab->counters = counters_new;
@@ -100,8 +99,7 @@ static inline bool cmpxchg_double_slab(struct kmem_cache *s, struct slab *slab, 
 			return true;
 	} else
 #endif
-	{
-		unsigned long flags;
+{ unsigned long flags;
 
 		local_irq_save(flags);
 		__slab_lock(slab);
@@ -206,8 +204,7 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node) {
 
 	start = slab_address(slab);
 
-	{
-		start = setup_object(s, start);
+{ start = setup_object(s, start);
 		slab->freelist = start;
 		for (idx = 0, p = start; idx < slab->objects - 1; idx++) {
 			next = p + s->size;
@@ -307,8 +304,7 @@ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n, s
 		object = t;
 		break;
 
-	}
-	spin_unlock_irqrestore(&n->list_lock, flags);
+} spin_unlock_irqrestore(&n->list_lock, flags);
 	return object; }
 
 static void *get_partial(struct kmem_cache *s, gfp_t flags, int node, struct slab **ret_slab) {
@@ -505,8 +501,7 @@ void *kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru, gfp_t gfp
 
 static void __slab_free(struct kmem_cache *s, struct slab *slab, void *head, void *tail, int cnt, unsigned long addr)
 
-{
-	void *prior;
+{ void *prior;
 	int was_frozen;
 	struct slab new;
 	unsigned long counters;
@@ -813,8 +808,7 @@ static struct kmem_cache * __init bootstrap(struct kmem_cache *static_cache) {
 		list_for_each_entry(p, &n->partial, slab_list)
 			p->slab_cache = s;
 
-	}
-	return s; }
+} return s; }
 
 void __init kmem_cache_init(void) {
 	static __initdata struct kmem_cache boot_kmem_cache, boot_kmem_cache_node;

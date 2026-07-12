@@ -455,8 +455,7 @@ void cpu_init(void) {
 
 	fpu__init_cpu();
 
-	{
-		struct desc_ptr gdt_descr;
+{ struct desc_ptr gdt_descr;
 
 		gdt_descr.address = (long)get_cpu_gdt_ro(cpu);
 		gdt_descr.size = GDT_SIZE - 1;

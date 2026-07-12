@@ -296,8 +296,7 @@ void do_close_on_exec(struct files_struct *files) {
 			cond_resched();
 			spin_lock(&files->file_lock); }
 
-	}
-	spin_unlock(&files->file_lock); }
+} spin_unlock(&files->file_lock); }
 
 static inline struct file *__fget_files_rcu(struct files_struct *files, unsigned int fd, fmode_t mask) {
 	for (;;) {

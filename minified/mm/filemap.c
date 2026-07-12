@@ -577,10 +577,7 @@ vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf)
 	return 0;
 }
 
-const struct vm_operations_struct generic_file_vm_ops = {
-	.fault		= filemap_fault,
-	.page_mkwrite	= filemap_page_mkwrite,
-};
+const struct vm_operations_struct generic_file_vm_ops = { .fault		= filemap_fault, .page_mkwrite	= filemap_page_mkwrite, };
 
 int generic_file_mmap(struct file *file, struct vm_area_struct *vma)
 {

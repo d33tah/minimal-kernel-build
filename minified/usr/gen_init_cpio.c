@@ -136,20 +136,7 @@ struct generic_type {
 	mode_t mode;
 };
 
-static const struct generic_type generic_type_table[] = {
-	[GT_DIR] = {
-		.type = "dir",
-		.mode = S_IFDIR
-	},
-	[GT_PIPE] = {
-		.type = "pipe",
-		.mode = S_IFIFO
-	},
-	[GT_SOCK] = {
-		.type = "sock",
-		.mode = S_IFSOCK
-	}
-};
+static const struct generic_type generic_type_table[] = { [GT_DIR] = { .type = "dir", .mode = S_IFDIR }, [GT_PIPE] = { .type = "pipe", .mode = S_IFIFO }, [GT_SOCK] = { .type = "sock", .mode = S_IFSOCK } };
 
 static int cpio_mkgeneric_line(const char *line, enum generic_types gt)
 {
@@ -393,30 +380,7 @@ static void usage(const char *prog)
 	fprintf(stderr, "Usage: %s [-t <timestamp>] [-c] <cpio_list>\n", prog);
 }
 
-static const struct file_handler file_handler_table[] = {
-	{
-		.type    = "file",
-		.handler = cpio_mkfile_line,
-	}, {
-		.type    = "nod",
-		.handler = cpio_mknod_line,
-	}, {
-		.type    = "dir",
-		.handler = cpio_mkdir_line,
-	}, {
-		.type    = "slink",
-		.handler = cpio_mkslink_line,
-	}, {
-		.type    = "pipe",
-		.handler = cpio_mkpipe_line,
-	}, {
-		.type    = "sock",
-		.handler = cpio_mksock_line,
-	}, {
-		.type    = NULL,
-		.handler = NULL,
-	}
-};
+static const struct file_handler file_handler_table[] = { { .type    = "file", .handler = cpio_mkfile_line, }, { .type    = "nod", .handler = cpio_mknod_line, }, { .type    = "dir", .handler = cpio_mkdir_line, }, { .type    = "slink", .handler = cpio_mkslink_line, }, { .type    = "pipe", .handler = cpio_mkpipe_line, }, { .type    = "sock", .handler = cpio_mksock_line, }, { .type    = NULL, .handler = NULL, } };
 
 #define LINE_SIZE (2 * PATH_MAX + 50)
 

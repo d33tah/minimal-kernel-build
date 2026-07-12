@@ -95,13 +95,7 @@ spurious_8259A_irq:
 	}
 }
 
-struct irq_chip i8259A_chip = {
-	.name		= "XT-PIC",
-	.irq_mask	= disable_8259A_irq,
-	.irq_disable	= disable_8259A_irq,
-	.irq_unmask	= enable_8259A_irq,
-	.irq_mask_ack	= mask_and_ack_8259A,
-};
+struct irq_chip i8259A_chip = { .name		= "XT-PIC", .irq_mask	= disable_8259A_irq, .irq_disable	= disable_8259A_irq, .irq_unmask	= enable_8259A_irq, .irq_mask_ack	= mask_and_ack_8259A, };
 
 
 static void init_8259A(int auto_eoi)
@@ -152,17 +146,9 @@ static void init_8259A(int auto_eoi)
 
 static void legacy_pic_int_noop(int unused) { };
 
-struct legacy_pic null_legacy_pic = {
-	.nr_legacy_irqs = 0,
-	.chip = &dummy_irq_chip,
-	.init = legacy_pic_int_noop,
-};
+struct legacy_pic null_legacy_pic = { .nr_legacy_irqs = 0, .chip = &dummy_irq_chip, .init = legacy_pic_int_noop, };
 
-struct legacy_pic default_legacy_pic = {
-	.nr_legacy_irqs = NR_IRQS_LEGACY,
-	.chip  = &i8259A_chip,
-	.init = init_8259A,
-};
+struct legacy_pic default_legacy_pic = { .nr_legacy_irqs = NR_IRQS_LEGACY, .chip  = &i8259A_chip, .init = init_8259A, };
 
 struct legacy_pic *legacy_pic = &default_legacy_pic;
 

@@ -14,8 +14,7 @@
  * write-only (inode_hashtable never read), so the alloc + __remove_inode_hash were
  * pure dead work.
  */
-const struct address_space_operations empty_aops = {
-};
+const struct address_space_operations empty_aops = { };
 
 static struct kmem_cache *inode_cachep __read_mostly;
 

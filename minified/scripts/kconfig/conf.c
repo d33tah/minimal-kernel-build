@@ -72,14 +72,7 @@ static bool conf_set_all_new_symbols(enum conf_def_mode mode)
 	return has_changed;
 }
 
-static const struct option long_opts[] = {
-	{"help",          no_argument,       NULL,            'h'},
-	{"silent",        no_argument,       NULL,            's'},
-	{"syncconfig",    no_argument,       &input_mode_opt, syncconfig},
-	{"allnoconfig",   no_argument,       &input_mode_opt, allnoconfig},
-	{"olddefconfig",  no_argument,       &input_mode_opt, olddefconfig},
-	{NULL, 0, NULL, 0}
-};
+static const struct option long_opts[] = { {"help",          no_argument,       NULL,            'h'}, {"silent",        no_argument,       NULL,            's'}, {"syncconfig",    no_argument,       &input_mode_opt, syncconfig}, {"allnoconfig",   no_argument,       &input_mode_opt, allnoconfig}, {"olddefconfig",  no_argument,       &input_mode_opt, olddefconfig}, {NULL, 0, NULL, 0} };
 
 static void conf_usage(const char *progname)
 {

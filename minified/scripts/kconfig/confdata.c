@@ -544,17 +544,9 @@ struct comment_style {
 	const char *decoration, *prefix, *postfix;
 };
 
-static const struct comment_style comment_style_pound = {
-	.decoration = "#",
-	.prefix = "#",
-	.postfix = "#",
-};
+static const struct comment_style comment_style_pound = { .decoration = "#", .prefix = "#", .postfix = "#", };
 
-static const struct comment_style comment_style_c = {
-	.decoration = " *",
-	.prefix = "/*",
-	.postfix = " */",
-};
+static const struct comment_style comment_style_c = { .decoration = " *", .prefix = "/*", .postfix = " */", };
 
 static void conf_write_heading(FILE *fp, const struct comment_style *cs)
 {

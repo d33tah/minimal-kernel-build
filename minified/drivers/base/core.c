@@ -20,8 +20,7 @@ static struct kobject *sysfs_dev_char_kobj;
 static struct kobject *sysfs_dev_block_kobj;
 
 
-static struct kobj_type device_ktype = {
-};
+static struct kobj_type device_ktype = { };
 
 /* Removed: dev_uevent_filter / dev_uevent_name / dev_uevent / device_uevent_ops
  * - the kset_uevent_ops table was stored in devices_kset but never dispatched.

@@ -36,45 +36,10 @@ struct section {
 };
 static struct section *secs;
 
-static const char * const sym_regex_kernel[S_NSYMTYPES] = {
-	[S_ABS] =
-	"^(xen_irq_disable_direct_reloc$|"
-	"xen_save_fl_direct_reloc$|"
-	"VDSO|"
-	"__crc_)",
-
-	[S_REL] =
-	"^(__init_(begin|end)|"
-	"__x86_cpu_dev_(start|end)|"
-	"(__parainstructions|__alt_instructions)(_end)?|"
-	"(__iommu_table|__apicdrivers|__smp_locks)(_end)?|"
-	"__(start|end)_pci_.*|"
-	"__(start|stop)___ksymtab(_gpl)?|"
-	"__(start|stop)___kcrctab(_gpl)?|"
-	"__(start|stop)___param|"
-	"__(start|stop)___modver|"
-	"__(start|stop)___bug_table|"
-	"__tracedata_(start|end)|"
-	"__(start|stop)_notes|"
-	"__end_rodata|"
-	"__end_rodata_aligned|"
-	"__initramfs_start|"
-	"(jiffies|jiffies_64)|"
-	"__vvar_page|"
-	"_end)$"
-};
+static const char * const sym_regex_kernel[S_NSYMTYPES] = { [S_ABS] = "^(xen_irq_disable_direct_reloc$|" "xen_save_fl_direct_reloc$|" "VDSO|" "__crc_)", [S_REL] = "^(__init_(begin|end)|" "__x86_cpu_dev_(start|end)|" "(__parainstructions|__alt_instructions)(_end)?|" "(__iommu_table|__apicdrivers|__smp_locks)(_end)?|" "__(start|end)_pci_.*|" "__(start|stop)___ksymtab(_gpl)?|" "__(start|stop)___kcrctab(_gpl)?|" "__(start|stop)___param|" "__(start|stop)___modver|" "__(start|stop)___bug_table|" "__tracedata_(start|end)|" "__(start|stop)_notes|" "__end_rodata|" "__end_rodata_aligned|" "__initramfs_start|" "(jiffies|jiffies_64)|" "__vvar_page|" "_end)$" };
 
 
-static const char * const sym_regex_realmode[S_NSYMTYPES] = {
-	[S_REL] =
-	"^pa_",
-
-	[S_SEG] =
-	"^real_mode_seg$",
-
-	[S_LIN] =
-	"^pa_",
-};
+static const char * const sym_regex_realmode[S_NSYMTYPES] = { [S_REL] = "^pa_", [S_SEG] = "^real_mode_seg$", [S_LIN] = "^pa_", };
 
 static const char * const *sym_regex;
 

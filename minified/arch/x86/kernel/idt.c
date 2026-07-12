@@ -23,53 +23,15 @@
 #define IDT_TABLE_SIZE		(IDT_ENTRIES * sizeof(gate_desc))
 
 
-static const __initconst struct idt_data early_idts[] = {
-	INTG(X86_TRAP_DB,		asm_exc_debug),
-	SYSG(X86_TRAP_BP,		asm_exc_int3),
+static const __initconst struct idt_data early_idts[] = { INTG(X86_TRAP_DB,		asm_exc_debug), SYSG(X86_TRAP_BP,		asm_exc_int3), INTG(X86_TRAP_PF,		asm_exc_page_fault), };
 
-	 
-	INTG(X86_TRAP_PF,		asm_exc_page_fault),
-};
+static const __initconst struct idt_data def_idts[] = { INTG(X86_TRAP_DE,		asm_exc_divide_error), ISTG(X86_TRAP_NMI,		asm_exc_nmi, IST_INDEX_NMI), INTG(X86_TRAP_BR,		asm_exc_bounds), INTG(X86_TRAP_UD,		asm_exc_invalid_op), INTG(X86_TRAP_NM,		asm_exc_device_not_available), INTG(X86_TRAP_OLD_MF,		asm_exc_coproc_segment_overrun), INTG(X86_TRAP_TS,		asm_exc_invalid_tss), INTG(X86_TRAP_NP,		asm_exc_segment_not_present), INTG(X86_TRAP_SS,		asm_exc_stack_segment), INTG(X86_TRAP_GP,		asm_exc_general_protection), INTG(X86_TRAP_SPURIOUS,		asm_exc_spurious_interrupt_bug), INTG(X86_TRAP_MF,		asm_exc_coprocessor_error), INTG(X86_TRAP_AC,		asm_exc_alignment_check), INTG(X86_TRAP_XF,		asm_exc_simd_coprocessor_error), TSKG(X86_TRAP_DF,		GDT_ENTRY_DOUBLEFAULT_TSS), ISTG(X86_TRAP_DB,		asm_exc_debug, IST_INDEX_DB), SYSG(X86_TRAP_OF,		asm_exc_overflow), SYSG(IA32_SYSCALL_VECTOR,	entry_INT80_32), };
 
-static const __initconst struct idt_data def_idts[] = {
-	INTG(X86_TRAP_DE,		asm_exc_divide_error),
-	ISTG(X86_TRAP_NMI,		asm_exc_nmi, IST_INDEX_NMI),
-	INTG(X86_TRAP_BR,		asm_exc_bounds),
-	INTG(X86_TRAP_UD,		asm_exc_invalid_op),
-	INTG(X86_TRAP_NM,		asm_exc_device_not_available),
-	INTG(X86_TRAP_OLD_MF,		asm_exc_coproc_segment_overrun),
-	INTG(X86_TRAP_TS,		asm_exc_invalid_tss),
-	INTG(X86_TRAP_NP,		asm_exc_segment_not_present),
-	INTG(X86_TRAP_SS,		asm_exc_stack_segment),
-	INTG(X86_TRAP_GP,		asm_exc_general_protection),
-	INTG(X86_TRAP_SPURIOUS,		asm_exc_spurious_interrupt_bug),
-	INTG(X86_TRAP_MF,		asm_exc_coprocessor_error),
-	INTG(X86_TRAP_AC,		asm_exc_alignment_check),
-	INTG(X86_TRAP_XF,		asm_exc_simd_coprocessor_error),
-
-	TSKG(X86_TRAP_DF,		GDT_ENTRY_DOUBLEFAULT_TSS),
-	ISTG(X86_TRAP_DB,		asm_exc_debug, IST_INDEX_DB),
-
-
-
-
-	SYSG(X86_TRAP_OF,		asm_exc_overflow),
-	SYSG(IA32_SYSCALL_VECTOR,	entry_INT80_32),
-};
-
-static const __initconst struct idt_data apic_idts[] = {
-
-
-
-
-};
+static const __initconst struct idt_data apic_idts[] = { };
 
 static gate_desc idt_table[IDT_ENTRIES] __page_aligned_bss;
 
-static struct desc_ptr idt_descr __ro_after_init = {
-	.size		= IDT_TABLE_SIZE - 1,
-	.address	= (unsigned long) idt_table,
-};
+static struct desc_ptr idt_descr __ro_after_init = { .size		= IDT_TABLE_SIZE - 1, .address	= (unsigned long) idt_table, };
 
 void load_current_idt(void)
 {

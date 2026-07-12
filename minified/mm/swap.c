@@ -12,9 +12,7 @@ struct lru_pvecs {
 	local_lock_t lock;
 	struct pagevec lru_add;
 };
-static DEFINE_PER_CPU(struct lru_pvecs, lru_pvecs) = {
-	.lock = INIT_LOCAL_LOCK(lock),
-};
+static DEFINE_PER_CPU(struct lru_pvecs, lru_pvecs) = { .lock = INIT_LOCAL_LOCK(lock), };
 
 void __put_page(struct page *page)
 {

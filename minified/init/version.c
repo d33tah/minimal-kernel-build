@@ -18,18 +18,7 @@
 #include <generated/utsrelease.h>
 #include <linux/proc_ns.h>
 
-struct uts_namespace init_uts_ns = {
-	.ns.count = REFCOUNT_INIT(2),
-	.name = {
-		.sysname	= UTS_SYSNAME,
-		.nodename	= UTS_NODENAME,
-		.release	= UTS_RELEASE,
-		.version	= UTS_VERSION,
-		.machine	= UTS_MACHINE,
-		.domainname	= UTS_DOMAINNAME,
-	},
-	.ns.inum = PROC_UTS_INIT_INO,
-};
+struct uts_namespace init_uts_ns = { .ns.count = REFCOUNT_INIT(2), .name = { .sysname	= UTS_SYSNAME, .nodename	= UTS_NODENAME, .release	= UTS_RELEASE, .version	= UTS_VERSION, .machine	= UTS_MACHINE, .domainname	= UTS_DOMAINNAME, }, .ns.inum = PROC_UTS_INIT_INO, };
 
 const char linux_banner[] =
 	"Linux version " UTS_RELEASE " (" LINUX_COMPILE_BY "@"

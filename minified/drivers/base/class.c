@@ -3,8 +3,7 @@
 #include <linux/slab.h>
 #include "base.h"
 
-static struct kobj_type class_ktype = {
-};
+static struct kobj_type class_ktype = { };
 
 static struct kset *class_kset;
 

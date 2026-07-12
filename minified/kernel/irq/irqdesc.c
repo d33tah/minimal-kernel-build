@@ -28,8 +28,7 @@ int nr_irqs = NR_IRQS;
 static DECLARE_BITMAP(allocated_irqs, IRQ_BITMAP_BITS);
 
 
-static struct kobj_type irq_kobj_type = {
-};
+static struct kobj_type irq_kobj_type = { };
 
 static RADIX_TREE(irq_desc_tree, GFP_KERNEL);
 

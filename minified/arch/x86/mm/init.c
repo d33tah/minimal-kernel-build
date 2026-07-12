@@ -377,9 +377,6 @@ void __init zone_sizes_init(void)
 	free_area_init(max_zone_pfns);
 }
 
-__visible DEFINE_PER_CPU_ALIGNED(struct tlb_state, cpu_tlbstate) = {
-	.loaded_mm = &init_mm,
-	.cr4 = ~0UL,
-};
+__visible DEFINE_PER_CPU_ALIGNED(struct tlb_state, cpu_tlbstate) = { .loaded_mm = &init_mm, .cr4 = ~0UL, };
 
 

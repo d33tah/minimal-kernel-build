@@ -75,27 +75,18 @@ static int ramfs_create(struct user_namespace *mnt_userns, struct inode *dir, st
 	return ramfs_mknod(&init_user_ns, dir, dentry, mode | S_IFREG, 0);
 }
 
-static const struct inode_operations ramfs_dir_inode_operations = {
-	.create		= ramfs_create,
-	.lookup		= simple_lookup,
-	.mkdir		= ramfs_mkdir,
-	.mknod		= ramfs_mknod,
-};
+static const struct inode_operations ramfs_dir_inode_operations = { .create		= ramfs_create, .lookup		= simple_lookup, .mkdir		= ramfs_mkdir, .mknod		= ramfs_mknod, };
 
 /* drop_inode (generic_delete_inode) removed: the super_operations.drop_inode
  * field is never dispatched in this build (no ->drop_inode() call site), so the
  * assignment was write-only. ramfs_ops is now empty but kept for sb->s_op. */
-static const struct super_operations ramfs_ops = {
-};
+static const struct super_operations ramfs_ops = { };
 
 enum ramfs_param {
 	Opt_mode,
 };
 
-const struct fs_parameter_spec ramfs_fs_parameters[] = {
-	fsparam_u32oct("mode",	Opt_mode),
-	{}
-};
+const struct fs_parameter_spec ramfs_fs_parameters[] = { fsparam_u32oct("mode",	Opt_mode), {} };
 
 static int ramfs_parse_param(struct fs_context *fc, struct fs_parameter *param)
 {
@@ -150,11 +141,7 @@ static void ramfs_free_fc(struct fs_context *fc)
 	kfree(fc->s_fs_info);
 }
 
-static const struct fs_context_operations ramfs_context_ops = {
-	.free		= ramfs_free_fc,
-	.parse_param	= ramfs_parse_param,
-	.get_tree	= ramfs_get_tree,
-};
+static const struct fs_context_operations ramfs_context_ops = { .free		= ramfs_free_fc, .parse_param	= ramfs_parse_param, .get_tree	= ramfs_get_tree, };
 
 int ramfs_init_fs_context(struct fs_context *fc)
 {
@@ -176,12 +163,7 @@ static void ramfs_kill_sb(struct super_block *sb)
 	 * Anchor-stub: keep the symbol for the ramfs_fs_type fn-ptr. */
 }
 
-static struct file_system_type ramfs_fs_type = {
-	.name		= "ramfs",
-	.init_fs_context = ramfs_init_fs_context,
-	.kill_sb	= ramfs_kill_sb,
-	.fs_flags	= FS_USERNS_MOUNT,
-};
+static struct file_system_type ramfs_fs_type = { .name		= "ramfs", .init_fs_context = ramfs_init_fs_context, .kill_sb	= ramfs_kill_sb, .fs_flags	= FS_USERNS_MOUNT, };
 
 static int __init init_ramfs_fs(void)
 {

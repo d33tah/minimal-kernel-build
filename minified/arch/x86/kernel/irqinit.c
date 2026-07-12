@@ -7,9 +7,7 @@
 
 
 
-DEFINE_PER_CPU(vector_irq_t, vector_irq) = {
-	[0 ... NR_VECTORS - 1] = VECTOR_UNUSED,
-};
+DEFINE_PER_CPU(vector_irq_t, vector_irq) = { [0 ... NR_VECTORS - 1] = VECTOR_UNUSED, };
 
 void __init init_ISA_irqs(void)
 {

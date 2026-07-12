@@ -630,21 +630,7 @@ void init_cfs_rq(struct cfs_rq *cfs_rq)
 }
 
 
-DEFINE_SCHED_CLASS(fair) = {
-
-	.enqueue_task		= enqueue_task_fair,
-	.dequeue_task		= dequeue_task_fair,
-
-	.check_preempt_curr	= check_preempt_wakeup,
-
-	.pick_next_task		= __pick_next_task_fair,
-	.put_prev_task		= put_prev_task_fair,
-	.set_next_task          = set_next_task_fair,
-
-	.task_tick		= task_tick_fair,
-	.task_fork		= task_fork_fair,
-
-};
+DEFINE_SCHED_CLASS(fair) = { .enqueue_task		= enqueue_task_fair, .dequeue_task		= dequeue_task_fair, .check_preempt_curr	= check_preempt_wakeup, .pick_next_task		= __pick_next_task_fair, .put_prev_task		= put_prev_task_fair, .set_next_task          = set_next_task_fair, .task_tick		= task_tick_fair, .task_fork		= task_fork_fair, };
 
 __init void init_sched_fair_class(void)
 {

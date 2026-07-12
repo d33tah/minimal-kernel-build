@@ -3,19 +3,7 @@
 #include <linux/pid_namespace.h>
 #include <linux/sched/signal.h>
 
-struct pid init_struct_pid = {
-	.count		= REFCOUNT_INIT(1),
-	.tasks		= {
-		{ .first = NULL },
-		{ .first = NULL },
-		{ .first = NULL },
-	},
-	.level		= 0,
-	.numbers	= { {
-		.nr		= 0,
-		.ns		= &init_pid_ns,
-	}, }
-};
+struct pid init_struct_pid = { .count		= REFCOUNT_INIT(1), .tasks		= { { .first = NULL }, { .first = NULL }, { .first = NULL }, }, .level		= 0, .numbers	= { { .nr		= 0, .ns		= &init_pid_ns, }, } };
 
 int pid_max = PID_MAX_DEFAULT;
 
@@ -24,11 +12,7 @@ int pid_max = PID_MAX_DEFAULT;
 int pid_max_min = RESERVED_PIDS + 1;
 int pid_max_max = PID_MAX_LIMIT;
 
-struct pid_namespace init_pid_ns = {
-	.idr = IDR_INIT(init_pid_ns.idr),
-	.pid_allocated = PIDNS_ADDING,
-	.level = 0,
-};
+struct pid_namespace init_pid_ns = { .idr = IDR_INIT(init_pid_ns.idr), .pid_allocated = PIDNS_ADDING, .level = 0, };
 
 
 static  __cacheline_aligned_in_smp DEFINE_SPINLOCK(pidmap_lock);

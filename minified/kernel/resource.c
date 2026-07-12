@@ -2,12 +2,7 @@
 #include <linux/ioport.h>
 
 
-struct resource iomem_resource = {
-	.name	= "PCI mem",
-	.start	= 0,
-	.end	= -1,
-	.flags	= IORESOURCE_MEM,
-};
+struct resource iomem_resource = { .name	= "PCI mem", .start	= 0, .end	= -1, .flags	= IORESOURCE_MEM, };
 
 /*
  * insert_resource()/__insert_resource() removed: their sole caller

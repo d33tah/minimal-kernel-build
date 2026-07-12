@@ -4,11 +4,7 @@
 #include <linux/hash.h>
 #include <linux/user_namespace.h>
 
-struct ucounts init_ucounts = {
-	.ns    = &init_user_ns,
-	.uid   = GLOBAL_ROOT_UID,
-	.count = ATOMIC_INIT(1),
-};
+struct ucounts init_ucounts = { .ns    = &init_user_ns, .uid   = GLOBAL_ROOT_UID, .count = ATOMIC_INIT(1), };
 
 #define UCOUNTS_HASHTABLE_BITS 10
 static struct hlist_head ucounts_hashtable[(1 << UCOUNTS_HASHTABLE_BITS)];

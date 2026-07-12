@@ -12,18 +12,7 @@
 
 #include "process.h"
 
-__visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
-	.x86_tss = {
-		 
-		.sp0 = (1UL << (BITS_PER_LONG-1)) + 1,
-
-		.sp1 = TOP_OF_INIT_STACK,
-
-		.ss0 = __KERNEL_DS,
-		.ss1 = __KERNEL_CS,
-		.io_bitmap_base	= IO_BITMAP_OFFSET_INVALID,
-	 },
-};
+__visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = { .x86_tss = { .sp0 = (1UL << (BITS_PER_LONG-1)) + 1, .sp1 = TOP_OF_INIT_STACK, .ss0 = __KERNEL_DS, .ss1 = __KERNEL_CS, .io_bitmap_base	= IO_BITMAP_OFFSET_INVALID, }, };
 
 int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
 {

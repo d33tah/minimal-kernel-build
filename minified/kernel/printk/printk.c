@@ -14,12 +14,7 @@
  * record-emit path (console_emit_next_record) never reads a record. */
 #include "internal.h"
 
-int console_printk[4] = {
-	CONSOLE_LOGLEVEL_DEFAULT,	 
-	MESSAGE_LOGLEVEL_DEFAULT,	 
-	CONSOLE_LOGLEVEL_MIN,		 
-	CONSOLE_LOGLEVEL_DEFAULT,	 
-};
+int console_printk[4] = { CONSOLE_LOGLEVEL_DEFAULT, MESSAGE_LOGLEVEL_DEFAULT, CONSOLE_LOGLEVEL_MIN, CONSOLE_LOGLEVEL_DEFAULT, };
 
 int oops_in_progress;
 

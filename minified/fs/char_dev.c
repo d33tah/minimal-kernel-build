@@ -218,9 +218,7 @@ static int chrdev_open(struct inode *inode, struct file *filp)
 	return ret;
 }
 
-const struct file_operations def_chr_fops = {
-	.open = chrdev_open,
-};
+const struct file_operations def_chr_fops = { .open = chrdev_open, };
 
 static struct kobject *exact_match(dev_t dev, int *part, void *data)
 {
@@ -257,11 +255,9 @@ int cdev_add(struct cdev *p, dev_t dev, unsigned count)
 /* Removed: cdev_default_release / cdev_dynamic_release - empty no-op .release
  * stubs; no cdev kobject is ever released on a boot-once artifact. The
  * ktype_cdev_{default,dynamic} tables keep a NULL .release (dispatch is guarded). */
-static struct kobj_type ktype_cdev_default = {
-};
+static struct kobj_type ktype_cdev_default = { };
 
-static struct kobj_type ktype_cdev_dynamic = {
-};
+static struct kobj_type ktype_cdev_dynamic = { };
 
 struct cdev *cdev_alloc(void)
 {

@@ -94,19 +94,4 @@ static void task_tick_idle(struct rq *rq, struct task_struct *curr, int queued)
 {
 }
 
-DEFINE_SCHED_CLASS(idle) = {
-
-	 
-
-	 
-	.dequeue_task		= dequeue_task_idle,
-
-	.check_preempt_curr	= check_preempt_curr_idle,
-
-	.pick_next_task		= pick_next_task_idle,
-	.put_prev_task		= put_prev_task_idle,
-	.set_next_task          = set_next_task_idle,
-
-
-	.task_tick		= task_tick_idle,
-};
+DEFINE_SCHED_CLASS(idle) = { .dequeue_task		= dequeue_task_idle, .check_preempt_curr	= check_preempt_curr_idle, .pick_next_task		= pick_next_task_idle, .put_prev_task		= put_prev_task_idle, .set_next_task          = set_next_task_idle, .task_tick		= task_tick_idle, };

@@ -6,29 +6,13 @@
 
 #include "lkc.h"
 
-struct symbol symbol_yes = {
-	.name = "y",
-	.curr = { "y", yes },
-	.flags = SYMBOL_CONST|SYMBOL_VALID,
-};
+struct symbol symbol_yes = { .name = "y", .curr = { "y", yes }, .flags = SYMBOL_CONST|SYMBOL_VALID, };
 
-struct symbol symbol_mod = {
-	.name = "m",
-	.curr = { "m", mod },
-	.flags = SYMBOL_CONST|SYMBOL_VALID,
-};
+struct symbol symbol_mod = { .name = "m", .curr = { "m", mod }, .flags = SYMBOL_CONST|SYMBOL_VALID, };
 
-struct symbol symbol_no = {
-	.name = "n",
-	.curr = { "n", no },
-	.flags = SYMBOL_CONST|SYMBOL_VALID,
-};
+struct symbol symbol_no = { .name = "n", .curr = { "n", no }, .flags = SYMBOL_CONST|SYMBOL_VALID, };
 
-static struct symbol symbol_empty = {
-	.name = "",
-	.curr = { "", no },
-	.flags = SYMBOL_VALID,
-};
+static struct symbol symbol_empty = { .name = "", .curr = { "", no }, .flags = SYMBOL_VALID, };
 
 struct symbol *modules_sym;
 static tristate modules_val;

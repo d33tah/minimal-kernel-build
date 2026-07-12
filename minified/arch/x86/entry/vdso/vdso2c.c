@@ -27,28 +27,14 @@ enum {
 	sym_timens_page,
 };
 
-const int special_pages[] = {
-	sym_vvar_page,
-	sym_pvclock_page,
-	sym_hvclock_page,
-	sym_timens_page,
-};
+const int special_pages[] = { sym_vvar_page, sym_pvclock_page, sym_hvclock_page, sym_timens_page, };
 
 struct vdso_sym {
 	const char *name;
 	bool export;
 };
 
-struct vdso_sym required_syms[] = {
-	[sym_vvar_start] = {"vvar_start", true},
-	[sym_vvar_page] = {"vvar_page", true},
-	[sym_pvclock_page] = {"pvclock_page", true},
-	[sym_hvclock_page] = {"hvclock_page", true},
-	[sym_timens_page] = {"timens_page", true},
-	{"VDSO32_NOTE_MASK", true},
-	{"__kernel_vsyscall", true},
-	{"int80_landing_pad", true},
-};
+struct vdso_sym required_syms[] = { [sym_vvar_start] = {"vvar_start", true}, [sym_vvar_page] = {"vvar_page", true}, [sym_pvclock_page] = {"pvclock_page", true}, [sym_hvclock_page] = {"hvclock_page", true}, [sym_timens_page] = {"timens_page", true}, {"VDSO32_NOTE_MASK", true}, {"__kernel_vsyscall", true}, {"int80_landing_pad", true}, };
 
 __attribute__((format(printf, 1, 2))) __attribute__((noreturn))
 static void fail(const char *format, ...)

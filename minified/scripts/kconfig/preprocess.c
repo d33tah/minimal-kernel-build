@@ -141,11 +141,7 @@ static char *do_shell(int argc, char *argv[])
 	return xstrdup(buf);
 }
 
-static const struct function function_table[] = {
-
-	{ "error-if",	2,	2,	do_error_if },
-	{ "shell",	1,	1,	do_shell },
-};
+static const struct function function_table[] = { { "error-if",	2,	2,	do_error_if }, { "shell",	1,	1,	do_shell }, };
 
 #define FUNCTION_MAX_ARGS		16
 

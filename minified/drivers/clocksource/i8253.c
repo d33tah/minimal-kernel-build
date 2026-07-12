@@ -33,12 +33,7 @@ static int pit_set_periodic(struct clock_event_device *evt)
 	return 0;
 }
 
-struct clock_event_device i8253_clockevent = {
-	.name			= "pit",
-	.features		= CLOCK_EVT_FEAT_PERIODIC,
-	.set_state_shutdown	= pit_shutdown,
-	.set_state_periodic	= pit_set_periodic,
-};
+struct clock_event_device i8253_clockevent = { .name			= "pit", .features		= CLOCK_EVT_FEAT_PERIODIC, .set_state_shutdown	= pit_shutdown, .set_state_periodic	= pit_set_periodic, };
 
 /*
  * The tick is only ever PERIODIC here, so the oneshot path (set_state_oneshot/

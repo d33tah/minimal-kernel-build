@@ -21,19 +21,7 @@ unsigned long max_pfn;
 static struct memblock_region memblock_memory_init_regions[INIT_MEMBLOCK_REGIONS] __initdata_memblock;
 static struct memblock_region memblock_reserved_init_regions[INIT_MEMBLOCK_RESERVED_REGIONS] __initdata_memblock;
 
-struct memblock memblock __initdata_memblock = {
-	.memory.regions		= memblock_memory_init_regions,
-	.memory.cnt		= 1,	
-	.memory.max		= INIT_MEMBLOCK_REGIONS,
-	.memory.name		= "memory",
-
-	.reserved.regions	= memblock_reserved_init_regions,
-	.reserved.cnt		= 1,	
-	.reserved.max		= INIT_MEMBLOCK_RESERVED_REGIONS,
-	.reserved.name		= "reserved",
-
-	.current_limit		= MEMBLOCK_ALLOC_ANYWHERE,
-};
+struct memblock memblock __initdata_memblock = { .memory.regions		= memblock_memory_init_regions, .memory.cnt		= 1, .memory.max		= INIT_MEMBLOCK_REGIONS, .memory.name		= "memory", .reserved.regions	= memblock_reserved_init_regions, .reserved.cnt		= 1, .reserved.max		= INIT_MEMBLOCK_RESERVED_REGIONS, .reserved.name		= "reserved", .current_limit		= MEMBLOCK_ALLOC_ANYWHERE, };
 
 static __refdata struct memblock_type *memblock_memory = &memblock.memory;
 

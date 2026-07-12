@@ -292,17 +292,7 @@ extern initcall_entry_t __initcall6_start[];
 extern initcall_entry_t __initcall7_start[];
 extern initcall_entry_t __initcall_end[];
 
-static initcall_entry_t *initcall_levels[] __initdata = {
-	__initcall0_start,
-	__initcall1_start,
-	__initcall2_start,
-	__initcall3_start,
-	__initcall4_start,
-	__initcall5_start,
-	__initcall6_start,
-	__initcall7_start,
-	__initcall_end,
-};
+static initcall_entry_t *initcall_levels[] __initdata = { __initcall0_start, __initcall1_start, __initcall2_start, __initcall3_start, __initcall4_start, __initcall5_start, __initcall6_start, __initcall7_start, __initcall_end, };
 
 static void __init do_initcall_level(int level)
 {

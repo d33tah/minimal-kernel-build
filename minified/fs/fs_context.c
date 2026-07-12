@@ -5,22 +5,9 @@
 #include "mount.h"
 #include "internal.h"
 
-static const struct constant_table common_set_sb_flag[] = {
-	{ "dirsync",	SB_DIRSYNC },
-	{ "lazytime",	SB_LAZYTIME },
-	{ "mand",	SB_MANDLOCK },
-	{ "ro",		SB_RDONLY },
-	{ "sync",	SB_SYNCHRONOUS },
-	{ },
-};
+static const struct constant_table common_set_sb_flag[] = { { "dirsync",	SB_DIRSYNC }, { "lazytime",	SB_LAZYTIME }, { "mand",	SB_MANDLOCK }, { "ro",		SB_RDONLY }, { "sync",	SB_SYNCHRONOUS }, { }, };
 
-static const struct constant_table common_clear_sb_flag[] = {
-	{ "async",	SB_SYNCHRONOUS },
-	{ "nolazytime",	SB_LAZYTIME },
-	{ "nomand",	SB_MANDLOCK },
-	{ "rw",		SB_RDONLY },
-	{ },
-};
+static const struct constant_table common_clear_sb_flag[] = { { "async",	SB_SYNCHRONOUS }, { "nolazytime",	SB_LAZYTIME }, { "nomand",	SB_MANDLOCK }, { "rw",		SB_RDONLY }, { }, };
 
 static int vfs_parse_sb_flag(struct fs_context *fc, const char *key)
 {

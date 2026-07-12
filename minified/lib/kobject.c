@@ -230,8 +230,7 @@ void kobject_put(struct kobject *kobj)
 	}
 }
 
-static struct kobj_type dynamic_kobj_ktype = {
-};
+static struct kobj_type dynamic_kobj_ktype = { };
 
 static struct kobject *kobject_create(void)
 {
@@ -280,8 +279,7 @@ int kset_register(struct kset *k)
 /* Removed: kset_unregister - only caller was a runtime-dead devices_init()
    error-cleanup branch (boot never hits the alloc-failure path). */
 
-static struct kobj_type kset_ktype = {
-};
+static struct kobj_type kset_ktype = { };
 
 static struct kset *kset_create(const char *name, struct kobject *parent_kobj)
 {

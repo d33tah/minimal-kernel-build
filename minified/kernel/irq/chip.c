@@ -14,9 +14,7 @@ static irqreturn_t bad_chained_irq(int irq, void *dev_id)
 	return IRQ_NONE;
 }
 
-struct irqaction chained_action = {
-	.handler = bad_chained_irq,
-};
+struct irqaction chained_action = { .handler = bad_chained_irq, };
 
 int irq_set_chip(unsigned int irq, const struct irq_chip *chip)
 {

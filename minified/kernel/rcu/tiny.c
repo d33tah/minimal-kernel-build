@@ -9,11 +9,7 @@ struct rcu_ctrlblk {
 	unsigned long gp_seq;		 
 };
 
-static struct rcu_ctrlblk rcu_ctrlblk = {
-	.donetail	= &rcu_ctrlblk.rcucblist,
-	.curtail	= &rcu_ctrlblk.rcucblist,
-	.gp_seq		= 0 - 300UL,
-};
+static struct rcu_ctrlblk rcu_ctrlblk = { .donetail	= &rcu_ctrlblk.rcucblist, .curtail	= &rcu_ctrlblk.rcucblist, .gp_seq		= 0 - 300UL, };
 
 void rcu_barrier(void)
 {

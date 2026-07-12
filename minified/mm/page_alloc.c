@@ -20,13 +20,7 @@ typedef int __bitwise fpi_t;
 
 #define FPI_SKIP_KASAN_POISON	((__force fpi_t)BIT(2))
 
-nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
-	[N_POSSIBLE] = NODE_MASK_ALL,
-	[N_ONLINE] = { { [0] = 1UL } },
-	[N_NORMAL_MEMORY] = { { [0] = 1UL } },
-	[N_MEMORY] = { { [0] = 1UL } },
-	[N_CPU] = { { [0] = 1UL } },
-};
+nodemask_t node_states[NR_NODE_STATES] __read_mostly = { [N_POSSIBLE] = NODE_MASK_ALL, [N_ONLINE] = { { [0] = 1UL } }, [N_NORMAL_MEMORY] = { { [0] = 1UL } }, [N_MEMORY] = { { [0] = 1UL } }, [N_CPU] = { { [0] = 1UL } }, };
 
 atomic_long_t _totalram_pages __read_mostly;
 gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
@@ -44,10 +38,7 @@ static inline void set_pcppage_migratetype(struct page *page, int migratetype)
 
 static void __free_pages_ok(struct page *page, unsigned int order, fpi_t fpi_flags);
 
-static char * const zone_names[MAX_NR_ZONES] = {
-	 "Normal",
-	 "Movable",
-};
+static char * const zone_names[MAX_NR_ZONES] = { "Normal", "Movable", };
 
 static unsigned long arch_zone_lowest_possible_pfn[MAX_NR_ZONES] __initdata;
 static unsigned long arch_zone_highest_possible_pfn[MAX_NR_ZONES] __initdata;
@@ -362,11 +353,7 @@ struct page *__rmqueue_smallest(struct zone *zone, unsigned int order, int migra
 	return NULL;
 }
 
-static int fallbacks[MIGRATE_TYPES][3] = {
-	[MIGRATE_UNMOVABLE]   = { MIGRATE_RECLAIMABLE, MIGRATE_MOVABLE,   MIGRATE_TYPES },
-	[MIGRATE_MOVABLE]     = { MIGRATE_RECLAIMABLE, MIGRATE_UNMOVABLE, MIGRATE_TYPES },
-	[MIGRATE_RECLAIMABLE] = { MIGRATE_UNMOVABLE,   MIGRATE_MOVABLE,   MIGRATE_TYPES },
-};
+static int fallbacks[MIGRATE_TYPES][3] = { [MIGRATE_UNMOVABLE]   = { MIGRATE_RECLAIMABLE, MIGRATE_MOVABLE,   MIGRATE_TYPES }, [MIGRATE_MOVABLE]     = { MIGRATE_RECLAIMABLE, MIGRATE_UNMOVABLE, MIGRATE_TYPES }, [MIGRATE_RECLAIMABLE] = { MIGRATE_UNMOVABLE,   MIGRATE_MOVABLE,   MIGRATE_TYPES }, };
 
 static void steal_suitable_fallback(struct zone *zone, struct page *page, unsigned int alloc_flags, int start_type)
 {

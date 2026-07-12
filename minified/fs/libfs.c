@@ -6,9 +6,7 @@ int always_delete_dentry(const struct dentry *dentry)
 	return 1;
 }
 
-const struct dentry_operations simple_dentry_operations = {
-	.d_delete = always_delete_dentry,
-};
+const struct dentry_operations simple_dentry_operations = { .d_delete = always_delete_dentry, };
 
 struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
 {
@@ -86,11 +84,7 @@ static int simple_write_end(struct file *file, struct address_space *mapping, lo
 	return copied;
 }
 
-const struct address_space_operations ram_aops = {
-	.read_folio	= simple_read_folio,
-	.write_begin	= simple_write_begin,
-	.write_end	= simple_write_end,
-};
+const struct address_space_operations ram_aops = { .read_folio	= simple_read_folio, .write_begin	= simple_write_begin, .write_end	= simple_write_end, };
 
 /* simple_read_from_buffer, __generic_file_fsync, generic_file_fsync,
  * generic_check_addressable, noop_fsync removed - unused */

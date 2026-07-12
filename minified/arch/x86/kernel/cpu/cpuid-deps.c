@@ -4,13 +4,7 @@ struct cpuid_dep {
 	unsigned int feature, depends;
 };
 
-static const struct cpuid_dep cpuid_deps[] = {
-	{ X86_FEATURE_FXSR,			X86_FEATURE_FPU	      },
-	{ X86_FEATURE_XSAVE,			X86_FEATURE_FXSR      },
-	{ X86_FEATURE_XMM,			X86_FEATURE_FXSR      },
-	{ X86_FEATURE_XMM2,			X86_FEATURE_XMM       },
-	{}
-};
+static const struct cpuid_dep cpuid_deps[] = { { X86_FEATURE_FXSR,			X86_FEATURE_FPU	      }, { X86_FEATURE_XSAVE,			X86_FEATURE_FXSR      }, { X86_FEATURE_XMM,			X86_FEATURE_FXSR      }, { X86_FEATURE_XMM2,			X86_FEATURE_XMM       }, {} };
 
 static inline void clear_feature(struct cpuinfo_x86 *c, unsigned int feature)
 {

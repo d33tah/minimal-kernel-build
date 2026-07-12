@@ -159,32 +159,7 @@ struct kmem_cache *
 kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1] __ro_after_init =
 {   };
 
-static u8 size_index[24] __ro_after_init = {
-	3,	 
-	4,	 
-	5,	 
-	5,	 
-	6,	 
-	6,	 
-	6,	 
-	6,	 
-	1,	 
-	1,	 
-	1,	 
-	1,	 
-	7,	 
-	7,	 
-	7,	 
-	7,	 
-	2,	 
-	2,	 
-	2,	 
-	2,	 
-	2,	 
-	2,	 
-	2,	 
-	2	 
-};
+static u8 size_index[24] __ro_after_init = { 3, 4, 5, 5, 6, 6, 6, 6, 1, 1, 1, 1, 7, 7, 7, 7, 2, 2, 2, 2, 2, 2, 2, 2 };
 
 static inline unsigned int size_index_elem(unsigned int bytes)
 {
@@ -211,34 +186,7 @@ struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
 
 #define INIT_KMALLOC_INFO(__size, __short_size)			{									.name[KMALLOC_NORMAL]  = "kmalloc-" #__short_size,		.name[KMALLOC_RECLAIM] = "kmalloc-rcl-" #__short_size,		.size = __size,						}
 
-const struct kmalloc_info_struct kmalloc_info[] __initconst = {
-	INIT_KMALLOC_INFO(0, 0),
-	INIT_KMALLOC_INFO(96, 96),
-	INIT_KMALLOC_INFO(192, 192),
-	INIT_KMALLOC_INFO(8, 8),
-	INIT_KMALLOC_INFO(16, 16),
-	INIT_KMALLOC_INFO(32, 32),
-	INIT_KMALLOC_INFO(64, 64),
-	INIT_KMALLOC_INFO(128, 128),
-	INIT_KMALLOC_INFO(256, 256),
-	INIT_KMALLOC_INFO(512, 512),
-	INIT_KMALLOC_INFO(1024, 1k),
-	INIT_KMALLOC_INFO(2048, 2k),
-	INIT_KMALLOC_INFO(4096, 4k),
-	INIT_KMALLOC_INFO(8192, 8k),
-	INIT_KMALLOC_INFO(16384, 16k),
-	INIT_KMALLOC_INFO(32768, 32k),
-	INIT_KMALLOC_INFO(65536, 64k),
-	INIT_KMALLOC_INFO(131072, 128k),
-	INIT_KMALLOC_INFO(262144, 256k),
-	INIT_KMALLOC_INFO(524288, 512k),
-	INIT_KMALLOC_INFO(1048576, 1M),
-	INIT_KMALLOC_INFO(2097152, 2M),
-	INIT_KMALLOC_INFO(4194304, 4M),
-	INIT_KMALLOC_INFO(8388608, 8M),
-	INIT_KMALLOC_INFO(16777216, 16M),
-	INIT_KMALLOC_INFO(33554432, 32M)
-};
+const struct kmalloc_info_struct kmalloc_info[] __initconst = { INIT_KMALLOC_INFO(0, 0), INIT_KMALLOC_INFO(96, 96), INIT_KMALLOC_INFO(192, 192), INIT_KMALLOC_INFO(8, 8), INIT_KMALLOC_INFO(16, 16), INIT_KMALLOC_INFO(32, 32), INIT_KMALLOC_INFO(64, 64), INIT_KMALLOC_INFO(128, 128), INIT_KMALLOC_INFO(256, 256), INIT_KMALLOC_INFO(512, 512), INIT_KMALLOC_INFO(1024, 1k), INIT_KMALLOC_INFO(2048, 2k), INIT_KMALLOC_INFO(4096, 4k), INIT_KMALLOC_INFO(8192, 8k), INIT_KMALLOC_INFO(16384, 16k), INIT_KMALLOC_INFO(32768, 32k), INIT_KMALLOC_INFO(65536, 64k), INIT_KMALLOC_INFO(131072, 128k), INIT_KMALLOC_INFO(262144, 256k), INIT_KMALLOC_INFO(524288, 512k), INIT_KMALLOC_INFO(1048576, 1M), INIT_KMALLOC_INFO(2097152, 2M), INIT_KMALLOC_INFO(4194304, 4M), INIT_KMALLOC_INFO(8388608, 8M), INIT_KMALLOC_INFO(16777216, 16M), INIT_KMALLOC_INFO(33554432, 32M) };
 
 void __init setup_kmalloc_cache_index_table(void)
 {

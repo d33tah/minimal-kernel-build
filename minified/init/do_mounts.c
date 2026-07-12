@@ -15,8 +15,4 @@ static int rootfs_init_fs_context(struct fs_context *fc)
 	return ramfs_init_fs_context(fc);
 }
 
-struct file_system_type rootfs_fs_type = {
-	.name		= "rootfs",
-	.init_fs_context = rootfs_init_fs_context,
-	.kill_sb	= kill_litter_super,
-};
+struct file_system_type rootfs_fs_type = { .name		= "rootfs", .init_fs_context = rootfs_init_fs_context, .kill_sb	= kill_litter_super, };

@@ -181,9 +181,7 @@ static inline bool file_mmap_ok(struct file *file, struct inode *inode, unsigned
 	if (maxsize && len > maxsize)
 		return false;
 	maxsize -= len;
-	if (pgoff > maxsize >> PAGE_SHIFT)
-		return false;
-	return true; }
+	return pgoff <= maxsize >> PAGE_SHIFT; }
 
 unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len, unsigned long prot, unsigned long flags, unsigned long pgoff, unsigned long *populate) {
 	struct mm_struct *mm = current->mm;

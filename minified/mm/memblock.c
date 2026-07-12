@@ -325,10 +325,7 @@ static bool should_skip_region(struct memblock_type *type, struct memblock_regio
 	if (type != memblock_memory)
 		return false;
 
-	if (nid != NUMA_NO_NODE && nid != m_nid)
-		return true;
-
-	return false; }
+	return nid != NUMA_NO_NODE && nid != m_nid; }
 
 void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags, struct memblock_type *type_a, struct memblock_type *type_b, phys_addr_t *out_start, phys_addr_t *out_end, int *out_nid) {
 	int idx_a = *idx & 0xffffffff;

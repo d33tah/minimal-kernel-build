@@ -105,9 +105,7 @@ static inline unsigned int order_to_pindex(int migratetype, int order) {
 	return (MIGRATE_PCPTYPES * base) + migratetype; }
 
 static inline bool pcp_allowed_order(unsigned int order) {
-	if (order <= PAGE_ALLOC_COSTLY_ORDER)
-		return true;
-	return false; }
+	return order <= PAGE_ALLOC_COSTLY_ORDER; }
 
 static inline void free_the_page(struct page *page, unsigned int order) {
 	if (pcp_allowed_order(order))		

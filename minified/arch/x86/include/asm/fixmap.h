@@ -27,9 +27,7 @@ enum fixed_addresses {
 #define NR_FIX_BTMAPS		64
 #define FIX_BTMAPS_SLOTS	8
 #define TOTAL_FIX_BTMAPS	(NR_FIX_BTMAPS * FIX_BTMAPS_SLOTS)
-	FIX_BTMAP_END = (__end_of_permanent_fixed_addresses ^ (__end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS - 1)) & -PTRS_PER_PTE
-	 ? __end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS - (__end_of_permanent_fixed_addresses & (TOTAL_FIX_BTMAPS - 1))
-	 : __end_of_permanent_fixed_addresses, FIX_BTMAP_BEGIN = FIX_BTMAP_END + TOTAL_FIX_BTMAPS - 1, FIX_WP_TEST, __end_of_fixed_addresses };
+	FIX_BTMAP_END = (__end_of_permanent_fixed_addresses ^ (__end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS - 1)) & -PTRS_PER_PTE ? __end_of_permanent_fixed_addresses + TOTAL_FIX_BTMAPS - (__end_of_permanent_fixed_addresses & (TOTAL_FIX_BTMAPS - 1)) : __end_of_permanent_fixed_addresses, FIX_BTMAP_BEGIN = FIX_BTMAP_END + TOTAL_FIX_BTMAPS - 1, FIX_WP_TEST, __end_of_fixed_addresses };
 
 
 

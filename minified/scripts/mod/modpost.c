@@ -490,8 +490,7 @@ static int secref_whitelist(const struct sectioncheck *mismatch, const char *fro
 	return 1; }
 
 static inline int is_arm_mapping_symbol(const char *str) {
-	return str[0] == '$' && (str[1] == 'a' || str[1] == 'd' || str[1] == 't' || str[1] == 'x')
-	       && (str[2] == '\0' || str[2] == '.'); }
+	return str[0] == '$' && (str[1] == 'a' || str[1] == 'd' || str[1] == 't' || str[1] == 'x') && (str[2] == '\0' || str[2] == '.'); }
 
 static inline int is_valid_name(struct elf_info *elf, Elf_Sym *sym) {
 	const char *name = elf->strtab + sym->st_name;

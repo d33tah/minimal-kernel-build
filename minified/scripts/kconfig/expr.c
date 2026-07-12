@@ -350,14 +350,12 @@ static struct expr *expr_join_and(struct expr *e1, struct expr *e2) {
 			 
 			sym2 = e1->right.sym;
 			if ((e2->right.sym->flags & SYMBOL_CONST) && (sym2->flags & SYMBOL_CONST))
-				return sym2 != e2->right.sym ? expr_alloc_comp(E_EQUAL, sym1, sym2)
-							     : expr_alloc_symbol(&symbol_no); }
+				return sym2 != e2->right.sym ? expr_alloc_comp(E_EQUAL, sym1, sym2) : expr_alloc_symbol(&symbol_no); }
 		if (e1->type == E_UNEQUAL && e2->type == E_EQUAL) {
 			 
 			sym2 = e2->right.sym;
 			if ((e1->right.sym->flags & SYMBOL_CONST) && (sym2->flags & SYMBOL_CONST))
-				return sym2 != e1->right.sym ? expr_alloc_comp(E_EQUAL, sym1, sym2)
-							     : expr_alloc_symbol(&symbol_no); }
+				return sym2 != e1->right.sym ? expr_alloc_comp(E_EQUAL, sym1, sym2) : expr_alloc_symbol(&symbol_no); }
 		if (e1->type == E_UNEQUAL && e2->type == E_UNEQUAL && ((e1->right.sym == &symbol_yes && e2->right.sym == &symbol_no) || (e1->right.sym == &symbol_no && e2->right.sym == &symbol_yes)))
 			 
 			return expr_alloc_comp(E_EQUAL, sym1, &symbol_mod);
@@ -677,8 +675,7 @@ static enum string_value_kind expr_parse_string(const char *str, enum symbol_typ
 	default:
 		val->s = strtoll(str, &tail, 0);
 		kind = k_signed; }
-	return !errno && !*tail && tail > str && isxdigit(tail[-1])
-	       ? kind : k_string; }
+	return !errno && !*tail && tail > str && isxdigit(tail[-1]) ? kind : k_string; }
 
 tristate expr_calc_value(struct expr *e) {
 	tristate val1, val2;

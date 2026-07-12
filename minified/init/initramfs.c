@@ -315,8 +315,7 @@ static long __init write_buffer(char *buf, unsigned long len) {
 	byte_count = len;
 	victim = buf;
 
-	while (!actions[state]())
-		;
+	while (!actions[state]());
 	return len - byte_count; }
 
 static char * __init unpack_to_rootfs(char *buf, unsigned long len) {

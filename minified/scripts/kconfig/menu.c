@@ -105,8 +105,7 @@ static struct property *menu_add_prop(enum prop_type type, struct expr *expr, st
 	if (current_entry->sym) {
 		struct property **propp;
 
-		for (propp = &current_entry->sym->prop; *propp; propp = &(*propp)->next)
-			;
+		for (propp = &current_entry->sym->prop; *propp; propp = &(*propp)->next);
 		*propp = prop; }
 
 	return prop; }
@@ -327,8 +326,7 @@ void menu_finalize(struct menu *parent) {
 					prop->visible.expr = expr_alloc_and(expr_copy(basedep), prop->visible.expr); } }
 			menu_add_symbol(P_CHOICE, sym, NULL);
 			prop = sym_get_choice_prop(sym);
-			for (ep = &prop->expr; *ep; ep = &(*ep)->left.expr)
-				;
+			for (ep = &prop->expr; *ep; ep = &(*ep)->left.expr);
 			*ep = expr_alloc_one(E_LIST, NULL);
 			(*ep)->right.sym = menu->sym; }
 

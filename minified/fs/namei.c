@@ -670,8 +670,7 @@ static int path_lookupat(struct nameidata *nd, unsigned flags, struct path *path
 		if (unlikely(err < 0))
 			s = ERR_PTR(err); }
 
-	while (!(err = link_path_walk(s, nd)) && (s = lookup_last(nd)) != NULL)
-		;
+	while (!(err = link_path_walk(s, nd)) && (s = lookup_last(nd)) != NULL);
 	if (!err && unlikely(nd->flags & LOOKUP_MOUNTPOINT)) {
 		err = handle_lookup_down(nd);
 		nd->state &= ~ND_JUMPED; }
@@ -966,8 +965,7 @@ static struct file *path_openat(struct nameidata *nd, const struct open_flags *o
 			path_put(&path); }
 	} else {
 		const char *s = path_init(nd, flags);
-		while (!(error = link_path_walk(s, nd)) && (s = open_last_lookups(nd, file, op)) != NULL)
-			;
+		while (!(error = link_path_walk(s, nd)) && (s = open_last_lookups(nd, file, op)) != NULL);
 		if (!error)
 			error = do_open(nd, file, op);
 		terminate_walk(nd); }

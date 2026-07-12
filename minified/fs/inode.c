@@ -254,8 +254,7 @@ struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode) {
 	if (unlikely(t.tv_sec == sb->s_time_max || t.tv_sec == sb->s_time_min))
 		t.tv_nsec = 0;
 
-	if (gran == 1)
-		; 
+	if (gran == 1);
 	else if (gran == NSEC_PER_SEC)
 		t.tv_nsec = 0;
 	else if (gran > 1 && gran < NSEC_PER_SEC)

@@ -16,8 +16,7 @@ static inline void clear_siginfo(kernel_siginfo_t *info) {
 
 static inline void sigemptyset(sigset_t *set) {
 	switch (_NSIG_WORDS) {
-	default:
-		memset(set, 0, sizeof(sigset_t));
+	default: memset(set, 0, sizeof(sigset_t));
 		break;
 	case 2: set->sig[1] = 0;
 		fallthrough;

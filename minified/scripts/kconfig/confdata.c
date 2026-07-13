@@ -178,14 +178,12 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
 	char *p2;
 
 	switch (sym->type) {
-	case S_TRISTATE:
-		if (p[0] == 'm') {
+	case S_TRISTATE: if (p[0] == 'm') {
 			sym->def[def].tri = mod;
 			sym->flags |= def_flags;
 			break; }
 		 
-	case S_BOOLEAN:
-		if (p[0] == 'y') {
+	case S_BOOLEAN: if (p[0] == 'y') {
 			sym->def[def].tri = yes;
 			sym->flags |= def_flags;
 			break; }
@@ -210,8 +208,7 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
 				conf_warning("invalid string found");
 				return 1; } }
 		 
-	case S_INT: case S_HEX:
-		if (sym_string_valid(sym, p)) {
+	case S_INT: case S_HEX: if (sym_string_valid(sym, p)) {
 			sym->def[def].val = xstrdup(p);
 			sym->flags |= def_flags;
 		} else {
@@ -246,20 +243,17 @@ static ssize_t compat_getline(char **lineptr, size_t *n, FILE *stream) {
 		int c = getc(stream);
 
 		switch (c) {
-		case '\n':
-			if (add_byte(c, &line, slen, n) < 0)
+		case '\n': if (add_byte(c, &line, slen, n) < 0)
 				goto e_out;
 			slen++;
 			 
-		case EOF:
-			if (add_byte('\0', &line, slen, n) < 0)
+		case EOF: if (add_byte('\0', &line, slen, n) < 0)
 				goto e_out;
 			*lineptr = line;
 			if (slen == 0)
 				return -1;
 			return slen;
-		default:
-			if (add_byte(c, &line, slen, n) < 0)
+		default: if (add_byte(c, &line, slen, n) < 0)
 				goto e_out;
 			slen++; } }
 
@@ -330,12 +324,10 @@ load: conf_filename = name;
 		if (sym_is_choice(sym))
 			sym->flags |= def_flags;
 		switch (sym->type) {
-		case S_INT: case S_HEX: case S_STRING:
-			if (sym->def[def].val)
+		case S_INT: case S_HEX: case S_STRING: if (sym->def[def].val)
 				free(sym->def[def].val);
 			 
-		default:
-			sym->def[def].val = NULL;
+		default: sym->def[def].val = NULL;
 			sym->def[def].tri = no; } }
 
 	while (compat_getline(&line, &line_asize, in) != -1) {
@@ -362,8 +354,7 @@ load: conf_filename = name;
 			if (sym->flags & def_flags) {
 				conf_warning("override: reassigning to symbol %s", sym->name); }
 			switch (sym->type) {
-			case S_BOOLEAN: case S_TRISTATE:
-				sym->def[def].tri = no;
+			case S_BOOLEAN: case S_TRISTATE: sym->def[def].tri = no;
 				sym->flags |= def_flags; }
 		} else if (memcmp(line, CONFIG_, strlen(CONFIG_)) == 0) {
 			p = strchr(line + strlen(CONFIG_), '=');
@@ -398,15 +389,12 @@ load: conf_filename = name;
 		if (sym && sym_is_choice_value(sym)) {
 			struct symbol *cs = prop_get_symbol(sym_get_choice_prop(sym));
 			switch (sym->def[def].tri) {
-			case no:
-				break;
-			case mod:
-				if (cs->def[def].tri == yes) {
+			case no: break;
+			case mod: if (cs->def[def].tri == yes) {
 					conf_warning("%s creates inconsistent choice state", sym->name);
 					cs->flags &= ~def_flags; }
 				break;
-			case yes:
-				if (cs->def[def].tri != no)
+			case yes: if (cs->def[def].tri != no)
 					conf_warning("override: %s changes choice state", sym->name);
 				cs->def[def].val = sym; }
 			cs->def[def].tri = EXPR_OR(cs->def[def].tri, sym->def[def].tri); } }
@@ -434,12 +422,10 @@ int conf_read(const char *name) {
 		if (sym_has_value(sym) && (sym->flags & SYMBOL_WRITE)) {
 			 
 			switch (sym->type) {
-			case S_BOOLEAN: case S_TRISTATE:
-				if (sym->def[S_DEF_USER].tri == sym_get_tristate_value(sym))
+			case S_BOOLEAN: case S_TRISTATE: if (sym->def[S_DEF_USER].tri == sym_get_tristate_value(sym))
 					continue;
 				break;
-			default:
-				if (!strcmp(sym->curr.val, sym->def[S_DEF_USER].val))
+			default: if (!strcmp(sym->curr.val, sym->def[S_DEF_USER].val))
 					continue; }
 		} else if (!sym_has_value(sym) && !(sym->flags & SYMBOL_WRITE))
 			 
@@ -561,22 +547,16 @@ static void print_symbol_for_c(FILE *fp, struct symbol *sym) {
 	val = sym_get_string_value(sym);
 
 	switch (sym->type) {
-	case S_BOOLEAN: case S_TRISTATE:
-		switch (*val) {
-		case 'n':
-			return;
-		case 'm':
-			sym_suffix = "_MODULE";
+	case S_BOOLEAN: case S_TRISTATE: switch (*val) {
+		case 'n': return;
+		case 'm': sym_suffix = "_MODULE";
 			 
-		default:
-			val = "1"; }
+		default: val = "1"; }
 		break;
-	case S_HEX:
-		if (val[0] != '0' || (val[1] != 'x' && val[1] != 'X'))
+	case S_HEX: if (val[0] != '0' || (val[1] != 'x' && val[1] != 'X'))
 			val_prefix = "0x";
 		break;
-	case S_STRING:
-		escaped = escape_string_value(val);
+	case S_STRING: escaped = escape_string_value(val);
 		val = escaped; }
 
 	fprintf(fp, "#define %s%s%s %s%s\n", CONFIG_, sym->name, sym_suffix, val_prefix, val);
@@ -747,18 +727,15 @@ static int conf_touch_deps(void) {
 			if (sym->flags & SYMBOL_DEF_AUTO) {
 				 
 				switch (sym->type) {
-				case S_BOOLEAN: case S_TRISTATE:
-					if (sym_get_tristate_value(sym) == sym->def[S_DEF_AUTO].tri)
+				case S_BOOLEAN: case S_TRISTATE: if (sym_get_tristate_value(sym) == sym->def[S_DEF_AUTO].tri)
 						continue;
 					break;
-				case S_STRING: case S_HEX: case S_INT:
-					if (!strcmp(sym_get_string_value(sym), sym->def[S_DEF_AUTO].val))
+				case S_STRING: case S_HEX: case S_INT: if (!strcmp(sym_get_string_value(sym), sym->def[S_DEF_AUTO].val))
 						continue; }
 			} else {
 				 
 				switch (sym->type) {
-				case S_BOOLEAN: case S_TRISTATE:
-					if (sym_get_tristate_value(sym) == no)
+				case S_BOOLEAN: case S_TRISTATE: if (sym_get_tristate_value(sym) == no)
 						continue; } }
 		} else if (!(sym->flags & SYMBOL_DEF_AUTO))
 			 

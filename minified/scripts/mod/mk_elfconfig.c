@@ -15,23 +15,17 @@ main(int argc, char **argv) {
 		fprintf(stderr, "Error: not ELF\n");
 		return 1; }
 	switch (ei[EI_CLASS]) {
-	case ELFCLASS32:
-		printf("#define KERNEL_ELFCLASS ELFCLASS32\n");
+	case ELFCLASS32: printf("#define KERNEL_ELFCLASS ELFCLASS32\n");
 		break;
-	case ELFCLASS64:
-		printf("#define KERNEL_ELFCLASS ELFCLASS64\n");
+	case ELFCLASS64: printf("#define KERNEL_ELFCLASS ELFCLASS64\n");
 		break;
-	default:
-		exit(1); }
+	default: exit(1); }
 	switch (ei[EI_DATA]) {
-	case ELFDATA2LSB:
-		printf("#define KERNEL_ELFDATA ELFDATA2LSB\n");
+	case ELFDATA2LSB: printf("#define KERNEL_ELFDATA ELFDATA2LSB\n");
 		break;
-	case ELFDATA2MSB:
-		printf("#define KERNEL_ELFDATA ELFDATA2MSB\n");
+	case ELFDATA2MSB: printf("#define KERNEL_ELFDATA ELFDATA2MSB\n");
 		break;
-	default:
-		exit(1); }
+	default: exit(1); }
 
 	if (sizeof(unsigned long) == 4) {
 		printf("#define HOST_ELFCLASS ELFCLASS32\n");

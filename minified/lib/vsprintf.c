@@ -443,47 +443,37 @@ int format_decode(const char *fmt, struct printf_spec *spec) {
 	
 	spec->base = 10;
 	switch (*fmt) {
-	case 'c':
-		spec->type = FORMAT_TYPE_CHAR;
+	case 'c': spec->type = FORMAT_TYPE_CHAR;
 		return ++fmt - start;
 
-	case 's':
-		spec->type = FORMAT_TYPE_STR;
+	case 's': spec->type = FORMAT_TYPE_STR;
 		return ++fmt - start;
 
-	case 'p':
-		spec->type = FORMAT_TYPE_PTR;
+	case 'p': spec->type = FORMAT_TYPE_PTR;
 		return ++fmt - start;
 
-	case '%':
-		spec->type = FORMAT_TYPE_PERCENT_CHAR;
+	case '%': spec->type = FORMAT_TYPE_PERCENT_CHAR;
 		return ++fmt - start;
 
 	
-	case 'o':
-		spec->base = 8;
+	case 'o': spec->base = 8;
 		break;
 
-	case 'x':
-		spec->flags |= SMALL;
+	case 'x': spec->flags |= SMALL;
 		fallthrough;
 
-	case 'X':
-		spec->base = 16;
+	case 'X': spec->base = 16;
 		break;
 
-	case 'd': case 'i':
-		spec->flags |= SIGN;
+	case 'd': case 'i': spec->flags |= SIGN;
 		break;
-	case 'u':
-		break;
+	case 'u': break;
 
 	case 'n':
 		
 		fallthrough;
 
-	default:
-		WARN_ONCE(1, "Please remove unsupported %%%c in format string\n", *fmt);
+	default: WARN_ONCE(1, "Please remove unsupported %%%c in format string\n", *fmt);
 		spec->type = FORMAT_TYPE_INVALID;
 		return fmt - start; }
 
@@ -559,8 +549,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 				++str; }
 			break; }
 
-		case FORMAT_TYPE_STR:
-			str = string(str, end, va_arg(args, char *), spec);
+		case FORMAT_TYPE_STR: str = string(str, end, va_arg(args, char *), spec);
 			break;
 
 		case FORMAT_TYPE_PTR:
@@ -576,8 +565,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 				fmt++;
 			break;
 
-		case FORMAT_TYPE_PERCENT_CHAR:
-			if (str < end)
+		case FORMAT_TYPE_PERCENT_CHAR: if (str < end)
 				*str = '%';
 			++str;
 			break;
@@ -586,43 +574,31 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 			
 			goto out;
 
-		default:
-			switch (spec.type) {
-			case FORMAT_TYPE_LONG_LONG:
-				num = va_arg(args, long long);
+		default: switch (spec.type) {
+			case FORMAT_TYPE_LONG_LONG: num = va_arg(args, long long);
 				break;
-			case FORMAT_TYPE_ULONG:
-				num = va_arg(args, unsigned long);
+			case FORMAT_TYPE_ULONG: num = va_arg(args, unsigned long);
 				break;
-			case FORMAT_TYPE_LONG:
-				num = va_arg(args, long);
+			case FORMAT_TYPE_LONG: num = va_arg(args, long);
 				break;
-			case FORMAT_TYPE_SIZE_T:
-				if (spec.flags & SIGN)
+			case FORMAT_TYPE_SIZE_T: if (spec.flags & SIGN)
 					num = va_arg(args, ssize_t);
 				else
 					num = va_arg(args, size_t);
 				break;
-			case FORMAT_TYPE_PTRDIFF:
-				num = va_arg(args, ptrdiff_t);
+			case FORMAT_TYPE_PTRDIFF: num = va_arg(args, ptrdiff_t);
 				break;
-			case FORMAT_TYPE_UBYTE:
-				num = (unsigned char) va_arg(args, int);
+			case FORMAT_TYPE_UBYTE: num = (unsigned char) va_arg(args, int);
 				break;
-			case FORMAT_TYPE_BYTE:
-				num = (signed char) va_arg(args, int);
+			case FORMAT_TYPE_BYTE: num = (signed char) va_arg(args, int);
 				break;
-			case FORMAT_TYPE_USHORT:
-				num = (unsigned short) va_arg(args, int);
+			case FORMAT_TYPE_USHORT: num = (unsigned short) va_arg(args, int);
 				break;
-			case FORMAT_TYPE_SHORT:
-				num = (short) va_arg(args, int);
+			case FORMAT_TYPE_SHORT: num = (short) va_arg(args, int);
 				break;
-			case FORMAT_TYPE_INT:
-				num = (int) va_arg(args, int);
+			case FORMAT_TYPE_INT: num = (int) va_arg(args, int);
 				break;
-			default:
-				num = va_arg(args, unsigned int); }
+			default: num = va_arg(args, unsigned int); }
 
 			str = number(str, end, num, spec); } }
 

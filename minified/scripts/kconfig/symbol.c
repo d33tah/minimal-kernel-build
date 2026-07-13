@@ -29,18 +29,12 @@ enum symbol_type sym_get_type(struct symbol *sym) {
 
 const char *sym_type_name(enum symbol_type type) {
 	switch (type) {
-	case S_BOOLEAN:
-		return "bool";
-	case S_TRISTATE:
-		return "tristate";
-	case S_INT:
-		return "integer";
-	case S_HEX:
-		return "hex";
-	case S_STRING:
-		return "string";
-	case S_UNKNOWN:
-		return "unknown"; }
+	case S_BOOLEAN: return "bool";
+	case S_TRISTATE: return "tristate";
+	case S_INT: return "integer";
+	case S_HEX: return "hex";
+	case S_STRING: return "string";
+	case S_UNKNOWN: return "unknown"; }
 	return "???"; }
 
 struct property *sym_get_choice_prop(struct symbol *sym) {
@@ -71,11 +65,9 @@ struct property *sym_get_range_prop(struct symbol *sym) {
 static long long sym_get_range_val(struct symbol *sym, int base) {
 	sym_calc_value(sym);
 	switch (sym->type) {
-	case S_INT:
-		base = 10;
+	case S_INT: base = 10;
 		break;
-	case S_HEX:
-		base = 16; }
+	case S_HEX: base = 16; }
 	return strtoll(sym->curr.val, NULL, base); }
 
 static void sym_validate_range(struct symbol *sym) {
@@ -85,14 +77,11 @@ static void sym_validate_range(struct symbol *sym) {
 	char str[64];
 
 	switch (sym->type) {
-	case S_INT:
-		base = 10;
+	case S_INT: base = 10;
 		break;
-	case S_HEX:
-		base = 16;
+	case S_HEX: base = 16;
 		break;
-	default:
-		return; }
+	default: return; }
 	prop = sym_get_range_prop(sym);
 	if (!prop)
 		return;
@@ -260,14 +249,11 @@ void sym_calc_value(struct symbol *sym) {
 	oldval = sym->curr;
 
 	switch (sym->type) {
-	case S_INT: case S_HEX: case S_STRING:
-		newval = symbol_empty.curr;
+	case S_INT: case S_HEX: case S_STRING: newval = symbol_empty.curr;
 		break;
-	case S_BOOLEAN: case S_TRISTATE:
-		newval = symbol_no.curr;
+	case S_BOOLEAN: case S_TRISTATE: newval = symbol_no.curr;
 		break;
-	default:
-		sym->curr.val = sym->name;
+	default: sym->curr.val = sym->name;
 		sym->curr.tri = no;
 		return; }
 	sym->flags &= ~SYMBOL_WRITE;
@@ -281,8 +267,7 @@ void sym_calc_value(struct symbol *sym) {
 	sym->curr = newval;
 
 	switch (sym_get_type(sym)) {
-	case S_BOOLEAN: case S_TRISTATE:
-		if (sym_is_choice_value(sym) && sym->visible == yes) {
+	case S_BOOLEAN: case S_TRISTATE: if (sym_is_choice_value(sym) && sym->visible == yes) {
 			prop = sym_get_choice_prop(sym);
 			newval.tri = (prop_get_symbol(prop)->curr.val == sym) ? yes : no;
 		} else {
@@ -309,8 +294,7 @@ void sym_calc_value(struct symbol *sym) {
 		if (newval.tri == mod && sym_get_type(sym) == S_BOOLEAN)
 			newval.tri = yes;
 		break;
-	case S_STRING: case S_HEX: case S_INT:
-		if (sym->visible != no && sym_has_value(sym)) {
+	case S_STRING: case S_HEX: case S_INT: if (sym->visible != no && sym_has_value(sym)) {
 			newval.val = sym->def[S_DEF_USER].val;
 			break; }
 		prop = sym_get_default_prop(sym);
@@ -378,10 +362,8 @@ bool sym_string_valid(struct symbol *sym, const char *str) {
 	signed char ch;
 
 	switch (sym->type) {
-	case S_STRING:
-		return true;
-	case S_INT:
-		ch = *str++;
+	case S_STRING: return true;
+	case S_INT: ch = *str++;
 		if (ch == '-')
 			ch = *str++;
 		if (!isdigit(ch))
@@ -392,8 +374,7 @@ bool sym_string_valid(struct symbol *sym, const char *str) {
 			if (!isdigit(ch))
 				return false; }
 		return true;
-	case S_HEX:
-		if (str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+	case S_HEX: if (str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
 			str += 2;
 		ch = *str++;
 		do {
@@ -401,65 +382,50 @@ bool sym_string_valid(struct symbol *sym, const char *str) {
 				return false;
 		} while ((ch = *str++));
 		return true;
-	case S_BOOLEAN: case S_TRISTATE:
-		switch (str[0]) {
+	case S_BOOLEAN: case S_TRISTATE: switch (str[0]) {
 		case 'y': case 'Y':
 		case 'm': case 'M':
-		case 'n': case 'N':
-			return true; }
+		case 'n': case 'N': return true; }
 		return false;
-	default:
-		return false; } }
+	default: return false; } }
 
 bool sym_string_within_range(struct symbol *sym, const char *str) {
 	struct property *prop;
 	long long val;
 
 	switch (sym->type) {
-	case S_STRING:
-		return sym_string_valid(sym, str);
-	case S_INT:
-		if (!sym_string_valid(sym, str))
+	case S_STRING: return sym_string_valid(sym, str);
+	case S_INT: if (!sym_string_valid(sym, str))
 			return false;
 		prop = sym_get_range_prop(sym);
 		if (!prop)
 			return true;
 		val = strtoll(str, NULL, 10);
 		return val >= sym_get_range_val(prop->expr->left.sym, 10) && val <= sym_get_range_val(prop->expr->right.sym, 10);
-	case S_HEX:
-		if (!sym_string_valid(sym, str))
+	case S_HEX: if (!sym_string_valid(sym, str))
 			return false;
 		prop = sym_get_range_prop(sym);
 		if (!prop)
 			return true;
 		val = strtoll(str, NULL, 16);
 		return val >= sym_get_range_val(prop->expr->left.sym, 16) && val <= sym_get_range_val(prop->expr->right.sym, 16);
-	case S_BOOLEAN: case S_TRISTATE:
-		switch (str[0]) {
-		case 'y': case 'Y':
-			return sym_tristate_within_range(sym, yes);
-		case 'm': case 'M':
-			return sym_tristate_within_range(sym, mod);
-		case 'n': case 'N':
-			return sym_tristate_within_range(sym, no); }
+	case S_BOOLEAN: case S_TRISTATE: switch (str[0]) {
+		case 'y': case 'Y': return sym_tristate_within_range(sym, yes);
+		case 'm': case 'M': return sym_tristate_within_range(sym, mod);
+		case 'n': case 'N': return sym_tristate_within_range(sym, no); }
 		return false;
-	default:
-		return false; } }
+	default: return false; } }
 
 const char *sym_get_string_value(struct symbol *sym) {
 	tristate val;
 
 	switch (sym->type) {
-	case S_BOOLEAN: case S_TRISTATE:
-		val = sym_get_tristate_value(sym);
+	case S_BOOLEAN: case S_TRISTATE: val = sym_get_tristate_value(sym);
 		switch (val) {
-		case no:
-			return "n";
-		case mod:
-			sym_calc_value(modules_sym);
+		case no: return "n";
+		case mod: sym_calc_value(modules_sym);
 			return (modules_sym->curr.tri == no) ? "n" : "m";
-		case yes:
-			return "y"; } }
+		case yes: return "y"; } }
 	return (const char *)sym->curr.val; }
 
 static unsigned strhash(const char *s) {
@@ -601,20 +567,16 @@ static struct symbol *sym_check_expr_deps(struct expr *e) {
 	if (!e)
 		return NULL;
 	switch (e->type) {
-	case E_OR: case E_AND:
-		sym = sym_check_expr_deps(e->left.expr);
+	case E_OR: case E_AND: sym = sym_check_expr_deps(e->left.expr);
 		if (sym)
 			return sym;
 		return sym_check_expr_deps(e->right.expr);
-	case E_NOT:
-		return sym_check_expr_deps(e->left.expr);
-	case E_EQUAL: case E_GEQ: case E_GTH: case E_LEQ: case E_LTH: case E_UNEQUAL:
-		sym = sym_check_deps(e->left.sym);
+	case E_NOT: return sym_check_expr_deps(e->left.expr);
+	case E_EQUAL: case E_GEQ: case E_GTH: case E_LEQ: case E_LTH: case E_UNEQUAL: sym = sym_check_deps(e->left.sym);
 		if (sym)
 			return sym;
 		return sym_check_deps(e->right.sym);
-	case E_SYMBOL:
-		return sym_check_deps(e->left.sym); }
+	case E_SYMBOL: return sym_check_deps(e->left.sym); }
 	fprintf(stderr, "Oops! How to check %d?\n", e->type);
 	return NULL; }
 
@@ -727,24 +689,14 @@ struct symbol *prop_get_symbol(struct property *prop) {
 
 const char *prop_get_type_name(enum prop_type type) {
 	switch (type) {
-	case P_PROMPT:
-		return "prompt";
-	case P_COMMENT:
-		return "comment";
-	case P_MENU:
-		return "menu";
-	case P_DEFAULT:
-		return "default";
-	case P_CHOICE:
-		return "choice";
-	case P_SELECT:
-		return "select";
-	case P_IMPLY:
-		return "imply";
-	case P_RANGE:
-		return "range";
-	case P_SYMBOL:
-		return "symbol";
-	case P_UNKNOWN:
-		break; }
+	case P_PROMPT: return "prompt";
+	case P_COMMENT: return "comment";
+	case P_MENU: return "menu";
+	case P_DEFAULT: return "default";
+	case P_CHOICE: return "choice";
+	case P_SELECT: return "select";
+	case P_IMPLY: return "imply";
+	case P_RANGE: return "range";
+	case P_SYMBOL: return "symbol";
+	case P_UNKNOWN: break; }
 	return "unknown"; }

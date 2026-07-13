@@ -11,8 +11,7 @@ static inline bool has_pending_signals(sigset_t *signal, sigset_t *blocked) {
 	long i;
 
 	switch (_NSIG_WORDS) {
-	default:
-		for (i = _NSIG_WORDS, ready = 0; --i >= 0 ;)
+	default: for (i = _NSIG_WORDS, ready = 0; --i >= 0 ;)
 			ready |= signal->sig[i] &~ blocked->sig[i];
 		break;
 

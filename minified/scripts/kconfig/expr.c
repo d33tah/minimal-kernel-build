@@ -54,22 +54,17 @@ struct expr *expr_copy(const struct expr *org) {
 	e = xmalloc(sizeof(*org));
 	memcpy(e, org, sizeof(*org));
 	switch (org->type) {
-	case E_SYMBOL:
-		e->left = org->left;
+	case E_SYMBOL: e->left = org->left;
 		break;
-	case E_NOT:
-		e->left.expr = expr_copy(org->left.expr);
+	case E_NOT: e->left.expr = expr_copy(org->left.expr);
 		break;
-	case E_EQUAL: case E_GEQ: case E_GTH: case E_LEQ: case E_LTH: case E_UNEQUAL:
-		e->left.sym = org->left.sym;
+	case E_EQUAL: case E_GEQ: case E_GTH: case E_LEQ: case E_LTH: case E_UNEQUAL: e->left.sym = org->left.sym;
 		e->right.sym = org->right.sym;
 		break;
-	case E_AND: case E_OR: case E_LIST:
-		e->left.expr = expr_copy(org->left.expr);
+	case E_AND: case E_OR: case E_LIST: e->left.expr = expr_copy(org->left.expr);
 		e->right.expr = expr_copy(org->right.expr);
 		break;
-	default:
-		fprintf(stderr, "can't copy type %d\n", e->type);
+	default: fprintf(stderr, "can't copy type %d\n", e->type);
 		free(e);
 		e = NULL; }
 
@@ -80,19 +75,14 @@ void expr_free(struct expr *e) {
 		return;
 
 	switch (e->type) {
-	case E_SYMBOL:
+	case E_SYMBOL: break;
+	case E_NOT: expr_free(e->left.expr);
 		break;
-	case E_NOT:
-		expr_free(e->left.expr);
-		break;
-	case E_EQUAL: case E_GEQ: case E_GTH: case E_LEQ: case E_LTH: case E_UNEQUAL:
-		break;
-	case E_OR: case E_AND:
-		expr_free(e->left.expr);
+	case E_EQUAL: case E_GEQ: case E_GTH: case E_LEQ: case E_LTH: case E_UNEQUAL: break;
+	case E_OR: case E_AND: expr_free(e->left.expr);
 		expr_free(e->right.expr);
 		break;
-	default:
-		fprintf(stderr, "how to free type %d?\n", e->type); }
+	default: fprintf(stderr, "how to free type %d?\n", e->type); }
 	free(e); }
 
 static int trans_count;
@@ -124,23 +114,19 @@ static void __expr_eliminate_eq(enum expr_type type, struct expr **ep1, struct e
 	trans_count++;
 	expr_free(e1); expr_free(e2);
 	switch (type) {
-	case E_OR:
-		e1 = expr_alloc_symbol(&symbol_no);
+	case E_OR: e1 = expr_alloc_symbol(&symbol_no);
 		e2 = expr_alloc_symbol(&symbol_no);
 		break;
-	case E_AND:
-		e1 = expr_alloc_symbol(&symbol_yes);
+	case E_AND: e1 = expr_alloc_symbol(&symbol_yes);
 		e2 = expr_alloc_symbol(&symbol_yes); } }
 
 void expr_eliminate_eq(struct expr **ep1, struct expr **ep2) {
 	if (!e1 || !e2)
 		return;
 	switch (e1->type) {
-	case E_OR: case E_AND:
-		__expr_eliminate_eq(e1->type, ep1, ep2); }
+	case E_OR: case E_AND: __expr_eliminate_eq(e1->type, ep1, ep2); }
 	if (e1->type != e2->type) switch (e2->type) {
-	case E_OR: case E_AND:
-		__expr_eliminate_eq(e2->type, ep1, ep2); }
+	case E_OR: case E_AND: __expr_eliminate_eq(e2->type, ep1, ep2); }
 	e1 = expr_eliminate_yn(e1);
 	e2 = expr_eliminate_yn(e2); }
 
@@ -157,14 +143,10 @@ int expr_eq(struct expr *e1, struct expr *e2) {
 	if (e1->type != e2->type)
 		return 0;
 	switch (e1->type) {
-	case E_EQUAL: case E_GEQ: case E_GTH: case E_LEQ: case E_LTH: case E_UNEQUAL:
-		return e1->left.sym == e2->left.sym && e1->right.sym == e2->right.sym;
-	case E_SYMBOL:
-		return e1->left.sym == e2->left.sym;
-	case E_NOT:
-		return expr_eq(e1->left.expr, e2->left.expr);
-	case E_AND: case E_OR:
-		e1 = expr_copy(e1);
+	case E_EQUAL: case E_GEQ: case E_GTH: case E_LEQ: case E_LTH: case E_UNEQUAL: return e1->left.sym == e2->left.sym && e1->right.sym == e2->right.sym;
+	case E_SYMBOL: return e1->left.sym == e2->left.sym;
+	case E_NOT: return expr_eq(e1->left.expr, e2->left.expr);
+	case E_AND: case E_OR: e1 = expr_copy(e1);
 		e2 = expr_copy(e2);
 		old_count = trans_count;
 		expr_eliminate_eq(&e1, &e2);
@@ -180,8 +162,7 @@ static struct expr *expr_eliminate_yn(struct expr *e) {
 	struct expr *tmp;
 
 	if (e) switch (e->type) {
-	case E_AND:
-		e->left.expr = expr_eliminate_yn(e->left.expr);
+	case E_AND: e->left.expr = expr_eliminate_yn(e->left.expr);
 		e->right.expr = expr_eliminate_yn(e->right.expr);
 		if (e->left.expr->type == E_SYMBOL) {
 			if (e->left.expr->left.sym == &symbol_no) {
@@ -212,8 +193,7 @@ static struct expr *expr_eliminate_yn(struct expr *e) {
 				free(tmp);
 				return e; } }
 		break;
-	case E_OR:
-		e->left.expr = expr_eliminate_yn(e->left.expr);
+	case E_OR: e->left.expr = expr_eliminate_yn(e->left.expr);
 		e->right.expr = expr_eliminate_yn(e->right.expr);
 		if (e->left.expr->type == E_SYMBOL) {
 			if (e->left.expr->left.sym == &symbol_no) {
@@ -250,8 +230,7 @@ struct expr *expr_trans_bool(struct expr *e) {
 	if (!e)
 		return NULL;
 	switch (e->type) {
-	case E_AND: case E_OR: case E_NOT:
-		e->left.expr = expr_trans_bool(e->left.expr);
+	case E_AND: case E_OR: case E_NOT: e->left.expr = expr_trans_bool(e->left.expr);
 		e->right.expr = expr_trans_bool(e->right.expr);
 		break;
 	case E_UNEQUAL:
@@ -395,20 +374,17 @@ static void expr_eliminate_dups1(enum expr_type type, struct expr **ep1, struct 
 		return;
 
 	switch (e1->type) {
-	case E_OR: case E_AND:
-		expr_eliminate_dups1(e1->type, &e1, &e1); }
+	case E_OR: case E_AND: expr_eliminate_dups1(e1->type, &e1, &e1); }
 
 	switch (type) {
-	case E_OR:
-		tmp = expr_join_or(e1, e2);
+	case E_OR: tmp = expr_join_or(e1, e2);
 		if (tmp) {
 			expr_free(e1); expr_free(e2);
 			e1 = expr_alloc_symbol(&symbol_no);
 			e2 = tmp;
 			trans_count++; }
 		break;
-	case E_AND:
-		tmp = expr_join_and(e1, e2);
+	case E_AND: tmp = expr_join_and(e1, e2);
 		if (tmp) {
 			expr_free(e1); expr_free(e2);
 			e1 = expr_alloc_symbol(&symbol_yes);
@@ -427,8 +403,7 @@ struct expr *expr_eliminate_dups(struct expr *e) {
 	while (1) {
 		trans_count = 0;
 		switch (e->type) {
-		case E_OR: case E_AND:
-			expr_eliminate_dups1(e->type, &e, &e); }
+		case E_OR: case E_AND: expr_eliminate_dups1(e->type, &e, &e); }
 		if (!trans_count)
 			 
 			break;
@@ -442,15 +417,12 @@ struct expr *expr_transform(struct expr *e) {
 	if (!e)
 		return NULL;
 	switch (e->type) {
-	case E_EQUAL: case E_GEQ: case E_GTH: case E_LEQ: case E_LTH: case E_UNEQUAL: case E_SYMBOL: case E_LIST:
-		break;
-	default:
-		e->left.expr = expr_transform(e->left.expr);
+	case E_EQUAL: case E_GEQ: case E_GTH: case E_LEQ: case E_LTH: case E_UNEQUAL: case E_SYMBOL: case E_LIST: break;
+	default: e->left.expr = expr_transform(e->left.expr);
 		e->right.expr = expr_transform(e->right.expr); }
 
 	switch (e->type) {
-	case E_EQUAL:
-		if (e->left.sym->type != S_BOOLEAN)
+	case E_EQUAL: if (e->left.sym->type != S_BOOLEAN)
 			break;
 		if (e->right.sym == &symbol_no) {
 			e->type = E_NOT;
@@ -468,8 +440,7 @@ struct expr *expr_transform(struct expr *e) {
 			e->right.sym = NULL;
 			break; }
 		break;
-	case E_UNEQUAL:
-		if (e->left.sym->type != S_BOOLEAN)
+	case E_UNEQUAL: if (e->left.sym->type != S_BOOLEAN)
 			break;
 		if (e->right.sym == &symbol_no) {
 			e->type = E_SYMBOL;
@@ -487,8 +458,7 @@ struct expr *expr_transform(struct expr *e) {
 			e->right.sym = NULL;
 			break; }
 		break;
-	case E_NOT:
-		switch (e->left.expr->type) {
+	case E_NOT: switch (e->left.expr->type) {
 		case E_NOT:
 			 
 			tmp = e->left.expr->left.expr;
@@ -536,8 +506,7 @@ struct expr *expr_transform(struct expr *e) {
 			tmp->right.expr = NULL;
 			e = expr_transform(e);
 			break;
-		case E_SYMBOL:
-			if (e->left.expr->left.sym == &symbol_yes) {
+		case E_SYMBOL: if (e->left.expr->left.sym == &symbol_yes) {
 				 
 				tmp = e->left.expr;
 				free(e);
@@ -568,14 +537,10 @@ int expr_contains_symbol(struct expr *dep, struct symbol *sym) {
 		return 0;
 
 	switch (dep->type) {
-	case E_AND: case E_OR:
-		return expr_contains_symbol(dep->left.expr, sym) || expr_contains_symbol(dep->right.expr, sym);
-	case E_SYMBOL:
-		return dep->left.sym == sym;
-	case E_EQUAL: case E_GEQ: case E_GTH: case E_LEQ: case E_LTH: case E_UNEQUAL:
-		return dep->left.sym == sym || dep->right.sym == sym;
-	case E_NOT:
-		return expr_contains_symbol(dep->left.expr, sym); }
+	case E_AND: case E_OR: return expr_contains_symbol(dep->left.expr, sym) || expr_contains_symbol(dep->right.expr, sym);
+	case E_SYMBOL: return dep->left.sym == sym;
+	case E_EQUAL: case E_GEQ: case E_GTH: case E_LEQ: case E_LTH: case E_UNEQUAL: return dep->left.sym == sym || dep->right.sym == sym;
+	case E_NOT: return expr_contains_symbol(dep->left.expr, sym); }
 	return 0; }
 
 bool expr_depends_symbol(struct expr *dep, struct symbol *sym) {
@@ -583,17 +548,13 @@ bool expr_depends_symbol(struct expr *dep, struct symbol *sym) {
 		return false;
 
 	switch (dep->type) {
-	case E_AND:
-		return expr_depends_symbol(dep->left.expr, sym) || expr_depends_symbol(dep->right.expr, sym);
-	case E_SYMBOL:
-		return dep->left.sym == sym;
-	case E_EQUAL:
-		if (dep->left.sym == sym) {
+	case E_AND: return expr_depends_symbol(dep->left.expr, sym) || expr_depends_symbol(dep->right.expr, sym);
+	case E_SYMBOL: return dep->left.sym == sym;
+	case E_EQUAL: if (dep->left.sym == sym) {
 			if (dep->right.sym == &symbol_yes || dep->right.sym == &symbol_mod)
 				return true; }
 		break;
-	case E_UNEQUAL:
-		if (dep->left.sym == sym) {
+	case E_UNEQUAL: if (dep->left.sym == sym) {
 			if (dep->right.sym == &symbol_no)
 				return true; } }
  	return false; }
@@ -607,8 +568,7 @@ struct expr *expr_trans_compare(struct expr *e, enum expr_type type, struct symb
 			e = expr_alloc_one(E_NOT, e);
 		return e; }
 	switch (e->type) {
-	case E_AND:
-		e1 = expr_trans_compare(e->left.expr, E_EQUAL, sym);
+	case E_AND: e1 = expr_trans_compare(e->left.expr, E_EQUAL, sym);
 		e2 = expr_trans_compare(e->right.expr, E_EQUAL, sym);
 		if (sym == &symbol_yes)
 			e = expr_alloc_two(E_AND, e1, e2);
@@ -617,8 +577,7 @@ struct expr *expr_trans_compare(struct expr *e, enum expr_type type, struct symb
 		if (type == E_UNEQUAL)
 			e = expr_alloc_one(E_NOT, e);
 		return e;
-	case E_OR:
-		e1 = expr_trans_compare(e->left.expr, E_EQUAL, sym);
+	case E_OR: e1 = expr_trans_compare(e->left.expr, E_EQUAL, sym);
 		e2 = expr_trans_compare(e->right.expr, E_EQUAL, sym);
 		if (sym == &symbol_yes)
 			e = expr_alloc_two(E_OR, e1, e2);
@@ -627,10 +586,8 @@ struct expr *expr_trans_compare(struct expr *e, enum expr_type type, struct symb
 		if (type == E_UNEQUAL)
 			e = expr_alloc_one(E_NOT, e);
 		return e;
-	case E_NOT:
-		return expr_trans_compare(e->left.expr, type == E_EQUAL ? E_UNEQUAL : E_EQUAL, sym);
-	case E_UNEQUAL: case E_LTH: case E_LEQ: case E_GTH: case E_GEQ: case E_EQUAL:
-		if (type == E_EQUAL) {
+	case E_NOT: return expr_trans_compare(e->left.expr, type == E_EQUAL ? E_UNEQUAL : E_EQUAL, sym);
+	case E_UNEQUAL: case E_LTH: case E_LEQ: case E_GTH: case E_GEQ: case E_EQUAL: if (type == E_EQUAL) {
 			if (sym == &symbol_yes)
 				return expr_copy(e);
 			if (sym == &symbol_mod)
@@ -645,8 +602,7 @@ struct expr *expr_trans_compare(struct expr *e, enum expr_type type, struct symb
 			if (sym == &symbol_no)
 				return expr_copy(e); }
 		break;
-	case E_SYMBOL:
-		return expr_alloc_comp(type, e->left.sym, sym); }
+	case E_SYMBOL: return expr_alloc_comp(type, e->left.sym, sym); }
 	return NULL; }
 
 enum string_value_kind { k_string, k_signed, k_unsigned, };
@@ -659,21 +615,17 @@ static enum string_value_kind expr_parse_string(const char *str, enum symbol_typ
 
 	errno = 0;
 	switch (type) {
-	case S_BOOLEAN: case S_TRISTATE:
-		val->s = !strcmp(str, "n") ? 0 :
+	case S_BOOLEAN: case S_TRISTATE: val->s = !strcmp(str, "n") ? 0 :
 			 !strcmp(str, "m") ? 1 :
 			 !strcmp(str, "y") ? 2 : -1;
 		return k_signed;
-	case S_INT:
-		val->s = strtoll(str, &tail, 10);
+	case S_INT: val->s = strtoll(str, &tail, 10);
 		kind = k_signed;
 		break;
-	case S_HEX:
-		val->u = strtoull(str, &tail, 16);
+	case S_HEX: val->u = strtoull(str, &tail, 16);
 		kind = k_unsigned;
 		break;
-	default:
-		val->s = strtoll(str, &tail, 0);
+	default: val->s = strtoll(str, &tail, 0);
 		kind = k_signed; }
 	return !errno && !*tail && tail > str && isxdigit(tail[-1]) ? kind : k_string; }
 
@@ -688,24 +640,18 @@ tristate expr_calc_value(struct expr *e) {
 		return yes;
 
 	switch (e->type) {
-	case E_SYMBOL:
-		sym_calc_value(e->left.sym);
+	case E_SYMBOL: sym_calc_value(e->left.sym);
 		return e->left.sym->curr.tri;
-	case E_AND:
-		val1 = expr_calc_value(e->left.expr);
+	case E_AND: val1 = expr_calc_value(e->left.expr);
 		val2 = expr_calc_value(e->right.expr);
 		return EXPR_AND(val1, val2);
-	case E_OR:
-		val1 = expr_calc_value(e->left.expr);
+	case E_OR: val1 = expr_calc_value(e->left.expr);
 		val2 = expr_calc_value(e->right.expr);
 		return EXPR_OR(val1, val2);
-	case E_NOT:
-		val1 = expr_calc_value(e->left.expr);
+	case E_NOT: val1 = expr_calc_value(e->left.expr);
 		return EXPR_NOT(val1);
-	case E_EQUAL: case E_GEQ: case E_GTH: case E_LEQ: case E_LTH: case E_UNEQUAL:
-		break;
-	default:
-		printf("expr_calc_value: %d?\n", e->type);
+	case E_EQUAL: case E_GEQ: case E_GTH: case E_LEQ: case E_LTH: case E_UNEQUAL: break;
+	default: printf("expr_calc_value: %d?\n", e->type);
 		return no; }
 
 	sym_calc_value(e->left.sym);
@@ -725,46 +671,32 @@ tristate expr_calc_value(struct expr *e) {
 		res = (lval.s > rval.s) - (lval.s < rval.s);
 
 	switch(e->type) {
-	case E_EQUAL:
-		return res ? no : yes;
-	case E_GEQ:
-		return res >= 0 ? yes : no;
-	case E_GTH:
-		return res > 0 ? yes : no;
-	case E_LEQ:
-		return res <= 0 ? yes : no;
-	case E_LTH:
-		return res < 0 ? yes : no;
-	case E_UNEQUAL:
-		return res ? yes : no;
-	default:
-		printf("expr_calc_value: relation %d?\n", e->type);
+	case E_EQUAL: return res ? no : yes;
+	case E_GEQ: return res >= 0 ? yes : no;
+	case E_GTH: return res > 0 ? yes : no;
+	case E_LEQ: return res <= 0 ? yes : no;
+	case E_LTH: return res < 0 ? yes : no;
+	case E_UNEQUAL: return res ? yes : no;
+	default: printf("expr_calc_value: relation %d?\n", e->type);
 		return no; } }
 
 static int expr_compare_type(enum expr_type t1, enum expr_type t2) {
 	if (t1 == t2)
 		return 0;
 	switch (t1) {
-	case E_LEQ: case E_LTH: case E_GEQ: case E_GTH:
-		if (t2 == E_EQUAL || t2 == E_UNEQUAL)
+	case E_LEQ: case E_LTH: case E_GEQ: case E_GTH: if (t2 == E_EQUAL || t2 == E_UNEQUAL)
 			return 1;
-	case E_EQUAL: case E_UNEQUAL:
-		if (t2 == E_NOT)
+	case E_EQUAL: case E_UNEQUAL: if (t2 == E_NOT)
 			return 1;
-	case E_NOT:
-		if (t2 == E_AND)
+	case E_NOT: if (t2 == E_AND)
 			return 1;
-	case E_AND:
-		if (t2 == E_OR)
+	case E_AND: if (t2 == E_OR)
 			return 1;
-	case E_OR:
-		if (t2 == E_LIST)
+	case E_OR: if (t2 == E_LIST)
 			return 1;
-	case E_LIST:
-		if (t2 == 0)
+	case E_LIST: if (t2 == 0)
 			return 1;
-	default:
-		return -1; }
+	default: return -1; }
 	printf("[%dgt%d?]", t1, t2);
 	return 0; }
 
@@ -776,66 +708,56 @@ void expr_print(struct expr *e, void (*fn)(void *, struct symbol *, const char *
 	if (expr_compare_type(prevtoken, e->type) > 0)
 		fn(data, NULL, "(");
 	switch (e->type) {
-	case E_SYMBOL:
-		if (e->left.sym->name)
+	case E_SYMBOL: if (e->left.sym->name)
 			fn(data, e->left.sym, e->left.sym->name);
 		else
 			fn(data, NULL, "<choice>");
 		break;
-	case E_NOT:
-		fn(data, NULL, "!");
+	case E_NOT: fn(data, NULL, "!");
 		expr_print(e->left.expr, fn, data, E_NOT);
 		break;
-	case E_EQUAL:
-		if (e->left.sym->name)
+	case E_EQUAL: if (e->left.sym->name)
 			fn(data, e->left.sym, e->left.sym->name);
 		else
 			fn(data, NULL, "<choice>");
 		fn(data, NULL, "=");
 		fn(data, e->right.sym, e->right.sym->name);
 		break;
-	case E_LEQ: case E_LTH:
-		if (e->left.sym->name)
+	case E_LEQ: case E_LTH: if (e->left.sym->name)
 			fn(data, e->left.sym, e->left.sym->name);
 		else
 			fn(data, NULL, "<choice>");
 		fn(data, NULL, e->type == E_LEQ ? "<=" : "<");
 		fn(data, e->right.sym, e->right.sym->name);
 		break;
-	case E_GEQ: case E_GTH:
-		if (e->left.sym->name)
+	case E_GEQ: case E_GTH: if (e->left.sym->name)
 			fn(data, e->left.sym, e->left.sym->name);
 		else
 			fn(data, NULL, "<choice>");
 		fn(data, NULL, e->type == E_GEQ ? ">=" : ">");
 		fn(data, e->right.sym, e->right.sym->name);
 		break;
-	case E_UNEQUAL:
-		if (e->left.sym->name)
+	case E_UNEQUAL: if (e->left.sym->name)
 			fn(data, e->left.sym, e->left.sym->name);
 		else
 			fn(data, NULL, "<choice>");
 		fn(data, NULL, "!=");
 		fn(data, e->right.sym, e->right.sym->name);
 		break;
-	case E_OR:
-		expr_print(e->left.expr, fn, data, E_OR);
+	case E_OR: expr_print(e->left.expr, fn, data, E_OR);
 		fn(data, NULL, " || ");
 		expr_print(e->right.expr, fn, data, E_OR);
 		break;
-	case E_AND:
-		expr_print(e->left.expr, fn, data, E_AND);
+	case E_AND: expr_print(e->left.expr, fn, data, E_AND);
 		fn(data, NULL, " && ");
 		expr_print(e->right.expr, fn, data, E_AND);
 		break;
-	case E_LIST:
-		fn(data, e->right.sym, e->right.sym->name);
+	case E_LIST: fn(data, e->right.sym, e->right.sym->name);
 		if (e->left.expr) {
 			fn(data, NULL, " ^ ");
 			expr_print(e->left.expr, fn, data, E_LIST); }
 		break;
-	case E_RANGE:
-		fn(data, NULL, "[");
+	case E_RANGE: fn(data, NULL, "[");
 		fn(data, e->left.sym, e->left.sym->name);
 		fn(data, NULL, " ");
 		fn(data, e->right.sym, e->right.sym->name);

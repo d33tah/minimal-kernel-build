@@ -25,14 +25,11 @@ modpost_log(enum loglevel loglevel, const char *fmt, ...) {
 	va_list arglist;
 
 	switch (loglevel) {
-	case LOG_WARN:
-		fprintf(stderr, "WARNING: ");
+	case LOG_WARN: fprintf(stderr, "WARNING: ");
 		break;
-	case LOG_ERROR:
-		fprintf(stderr, "ERROR: ");
+	case LOG_ERROR: fprintf(stderr, "ERROR: ");
 		break;
-	case LOG_FATAL:
-		fprintf(stderr, "FATAL: "); }
+	case LOG_FATAL: fprintf(stderr, "FATAL: "); }
 
 	fprintf(stderr, "modpost: ");
 
@@ -325,8 +322,7 @@ static int ignore_undef_symbol(struct elf_info *info, const char *symname) {
 
 static void handle_symbol(struct module *mod, struct elf_info *info, const Elf_Sym *sym, const char *symname) {
 	switch (sym->st_shndx) {
-	case SHN_COMMON:
-		if (strstarts(symname, "__gnu_lto_")) {
+	case SHN_COMMON: if (strstarts(symname, "__gnu_lto_")) {
 			 
 		} else
 			warn("\"%s\" [%s] is COMMON symbol\n", symname, mod->name);
@@ -608,8 +604,7 @@ static void report_sec_mismatch(const char *modname, const struct sectioncheck *
 	warn("%s(%s+0x%llx): Section mismatch in reference from the %s %s%s " "to the %s %s:%s%s\n", modname, fromsec, fromaddr, from, fromsym, from_p, to, tosec, tosym, to_p);
 
 	switch (mismatch->mismatch) {
-	case TEXT_TO_ANY_INIT:
-		prl_from = sec2annotation(fromsec);
+	case TEXT_TO_ANY_INIT: prl_from = sec2annotation(fromsec);
 		prl_to = sec2annotation(tosec);
 		fprintf(stderr, "The function %s%s() references\n" "the %s %s%s%s.\n" "This is often because %s lacks a %s\n" "annotation or the annotation of %s is wrong.\n", prl_from, fromsym, to, prl_to, tosym, to_p, fromsym, prl_to, tosym);
 		free(prl_from);
@@ -621,8 +616,7 @@ static void report_sec_mismatch(const char *modname, const struct sectioncheck *
 		print_section_list(mismatch->symbol_white_list);
 		free(prl_to);
 		break; }
-	case TEXT_TO_ANY_EXIT:
-		prl_to = sec2annotation(tosec);
+	case TEXT_TO_ANY_EXIT: prl_to = sec2annotation(tosec);
 		fprintf(stderr, "The function %s() references a %s in an exit section.\n" "Often the %s %s%s has valid usage outside the exit section\n" "and the fix is to remove the %sannotation of %s.\n", fromsym, to, to, tosym, to_p, prl_to, tosym);
 		free(prl_to);
 		break;
@@ -632,34 +626,29 @@ static void report_sec_mismatch(const char *modname, const struct sectioncheck *
 		print_section_list(mismatch->symbol_white_list);
 		free(prl_to);
 		break; }
-	case XXXINIT_TO_SOME_INIT: case XXXEXIT_TO_SOME_EXIT:
-		prl_from = sec2annotation(fromsec);
+	case XXXINIT_TO_SOME_INIT: case XXXEXIT_TO_SOME_EXIT: prl_from = sec2annotation(fromsec);
 		prl_to = sec2annotation(tosec);
 		fprintf(stderr, "The %s %s%s%s references\n" "a %s %s%s%s.\n" "If %s is only used by %s then\n" "annotate %s with a matching annotation.\n", from, prl_from, fromsym, from_p, to, prl_to, tosym, to_p, tosym, fromsym, tosym);
 		free(prl_from);
 		free(prl_to);
 		break;
-	case ANY_INIT_TO_ANY_EXIT:
-		prl_from = sec2annotation(fromsec);
+	case ANY_INIT_TO_ANY_EXIT: prl_from = sec2annotation(fromsec);
 		prl_to = sec2annotation(tosec);
 		fprintf(stderr, "The %s %s%s%s references\n" "a %s %s%s%s.\n" "This is often seen when error handling " "in the init function\n" "uses functionality in the exit path.\n" "The fix is often to remove the %sannotation of\n" "%s%s so it may be used outside an exit section.\n", from, prl_from, fromsym, from_p, to, prl_to, tosym, to_p, prl_to, tosym, to_p);
 		free(prl_from);
 		free(prl_to);
 		break;
-	case ANY_EXIT_TO_ANY_INIT:
-		prl_from = sec2annotation(fromsec);
+	case ANY_EXIT_TO_ANY_INIT: prl_from = sec2annotation(fromsec);
 		prl_to = sec2annotation(tosec);
 		fprintf(stderr, "The %s %s%s%s references\n" "a %s %s%s%s.\n" "This is often seen when error handling " "in the exit function\n" "uses functionality in the init path.\n" "The fix is often to remove the %sannotation of\n" "%s%s so it may be used outside an init section.\n", from, prl_from, fromsym, from_p, to, prl_to, tosym, to_p, prl_to, tosym, to_p);
 		free(prl_from);
 		free(prl_to);
 		break;
-	case EXPORT_TO_INIT_EXIT:
-		prl_to = sec2annotation(tosec);
+	case EXPORT_TO_INIT_EXIT: prl_to = sec2annotation(tosec);
 		fprintf(stderr, "The symbol %s is exported and annotated %s\n" "Fix this by removing the %sannotation of %s " "or drop the export.\n", tosym, prl_to, prl_to, tosym);
 		free(prl_to);
 		break;
-	case EXTABLE_TO_NON_TEXT:
-		fatal("There's a special handler for this mismatch type, " "we should never get here."); }
+	case EXTABLE_TO_NON_TEXT: fatal("There's a special handler for this mismatch type, " "we should never get here."); }
 	fprintf(stderr, "\n"); }
 
 static void default_mismatch_handler(const char *modname, struct elf_info *elf, const struct sectioncheck* const mismatch, Elf_Rela *r, Elf_Sym *sym, const char *fromsec) {
@@ -754,11 +743,9 @@ static int addend_386_rel(struct elf_info *elf, Elf_Shdr *sechdr, Elf_Rela *r) {
 	unsigned int *location = reloc_location(elf, sechdr, r);
 
 	switch (r_typ) {
-	case R_386_32:
-		r->r_addend = TO_NATIVE(*location);
+	case R_386_32: r->r_addend = TO_NATIVE(*location);
 		break;
-	case R_386_PC32:
-		r->r_addend = TO_NATIVE(*location) + 4;
+	case R_386_PC32: r->r_addend = TO_NATIVE(*location) + 4;
 		 
 		if (elf->hdr->e_type == ET_EXEC)
 			r->r_addend += r->r_offset; }
@@ -989,14 +976,11 @@ int main(int argc, char **argv) {
 	 */
 	while ((opt = getopt(argc, argv, "o:E")) != -1) {
 		switch (opt) {
-		case 'o':
-			dump_write = optarg;
+		case 'o': dump_write = optarg;
 			break;
-		case 'E':
-			sec_mismatch_warn_only = false;
+		case 'E': sec_mismatch_warn_only = false;
 			break;
-		default:
-			exit(1); } }
+		default: exit(1); } }
 
 	while (optind < argc)
 		read_symbols(argv[optind++]);

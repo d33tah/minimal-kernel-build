@@ -108,41 +108,24 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code, 
 	imm  = FIELD_GET(EX_DATA_IMM_MASK,  e->data);
 
 	switch (type) {
-	case EX_TYPE_DEFAULT: case EX_TYPE_DEFAULT_MCE_SAFE:
-		return ex_handler_default(e, regs);
-	case EX_TYPE_FAULT: case EX_TYPE_FAULT_MCE_SAFE:
-		return ex_handler_fault(e, regs, trapnr);
-	case EX_TYPE_UACCESS:
-		return ex_handler_uaccess(e, regs, trapnr);
-	case EX_TYPE_COPY:
-		return ex_handler_copy(e, regs, trapnr);
-	case EX_TYPE_CLEAR_FS:
-		return ex_handler_clear_fs(e, regs);
-	case EX_TYPE_FPU_RESTORE:
-		return ex_handler_fprestore(e, regs);
-	case EX_TYPE_BPF:
-		return ex_handler_bpf(e, regs);
-	case EX_TYPE_WRMSR:
-		return ex_handler_msr(e, regs, true, false, reg);
-	case EX_TYPE_RDMSR:
-		return ex_handler_msr(e, regs, false, false, reg);
-	case EX_TYPE_WRMSR_SAFE:
-		return ex_handler_msr(e, regs, true, true, reg);
-	case EX_TYPE_RDMSR_SAFE:
-		return ex_handler_msr(e, regs, false, true, reg);
-	case EX_TYPE_WRMSR_IN_MCE:
-		ex_handler_msr_mce(regs, true);
-	case EX_TYPE_RDMSR_IN_MCE:
-		ex_handler_msr_mce(regs, false);
-	case EX_TYPE_POP_REG:
-		regs->sp += sizeof(long);
+	case EX_TYPE_DEFAULT: case EX_TYPE_DEFAULT_MCE_SAFE: return ex_handler_default(e, regs);
+	case EX_TYPE_FAULT: case EX_TYPE_FAULT_MCE_SAFE: return ex_handler_fault(e, regs, trapnr);
+	case EX_TYPE_UACCESS: return ex_handler_uaccess(e, regs, trapnr);
+	case EX_TYPE_COPY: return ex_handler_copy(e, regs, trapnr);
+	case EX_TYPE_CLEAR_FS: return ex_handler_clear_fs(e, regs);
+	case EX_TYPE_FPU_RESTORE: return ex_handler_fprestore(e, regs);
+	case EX_TYPE_BPF: return ex_handler_bpf(e, regs);
+	case EX_TYPE_WRMSR: return ex_handler_msr(e, regs, true, false, reg);
+	case EX_TYPE_RDMSR: return ex_handler_msr(e, regs, false, false, reg);
+	case EX_TYPE_WRMSR_SAFE: return ex_handler_msr(e, regs, true, true, reg);
+	case EX_TYPE_RDMSR_SAFE: return ex_handler_msr(e, regs, false, true, reg);
+	case EX_TYPE_WRMSR_IN_MCE: ex_handler_msr_mce(regs, true);
+	case EX_TYPE_RDMSR_IN_MCE: ex_handler_msr_mce(regs, false);
+	case EX_TYPE_POP_REG: regs->sp += sizeof(long);
 		fallthrough;
-	case EX_TYPE_IMM_REG:
-		return ex_handler_imm_reg(e, regs, reg, imm);
-	case EX_TYPE_FAULT_SGX:
-		return ex_handler_sgx(e, regs, trapnr);
-	case EX_TYPE_UCOPY_LEN:
-		return ex_handler_ucopy_len(e, regs, trapnr, reg, imm); }
+	case EX_TYPE_IMM_REG: return ex_handler_imm_reg(e, regs, reg, imm);
+	case EX_TYPE_FAULT_SGX: return ex_handler_sgx(e, regs, trapnr);
+	case EX_TYPE_UCOPY_LEN: return ex_handler_ucopy_len(e, regs, trapnr, reg, imm); }
 	BUG(); }
 
 extern unsigned int early_recursion_flag;

@@ -327,18 +327,15 @@ int main (int argc, char *argv[]) {
 		if (opt == -1)
 			break;
 		switch (opt) {
-		case 't':
-			default_mtime = strtol(optarg, &invalid, 10);
+		case 't': default_mtime = strtol(optarg, &invalid, 10);
 			if (!*optarg || *invalid) {
 				fprintf(stderr, "Invalid timestamp: %s\n", optarg);
 				usage(argv[0]);
 				exit(1); }
 			break;
-		case 'c':
-			do_csum = true;
+		case 'c': do_csum = true;
 			break;
-		case 'h': case '?':
-			usage(argv[0]);
+		case 'h': case '?': usage(argv[0]);
 			exit(opt == 'h' ? 0 : 1); } }
 
 	 

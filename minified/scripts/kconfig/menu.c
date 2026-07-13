@@ -63,11 +63,9 @@ static struct expr *rewrite_m(struct expr *e) {
 		return e;
 
 	switch (e->type) {
-	case E_NOT:
-		e->left.expr = rewrite_m(e->left.expr);
+	case E_NOT: e->left.expr = rewrite_m(e->left.expr);
 		break;
-	case E_OR: case E_AND:
-		e->left.expr = rewrite_m(e->left.expr);
+	case E_OR: case E_AND: e->left.expr = rewrite_m(e->left.expr);
 		e->right.expr = rewrite_m(e->right.expr);
 		break;
 	case E_SYMBOL:
@@ -158,8 +156,7 @@ static void sym_check_prop(struct symbol *sym) {
 
 	for (prop = sym->prop; prop; prop = prop->next) {
 		switch (prop->type) {
-		case P_DEFAULT:
-			if ((sym->type == S_STRING || sym->type == S_INT || sym->type == S_HEX) && prop->expr->type != E_SYMBOL)
+		case P_DEFAULT: if ((sym->type == S_STRING || sym->type == S_INT || sym->type == S_HEX) && prop->expr->type != E_SYMBOL)
 				prop_warn(prop, "default for config symbol '%s'" " must be a single symbol", sym->name);
 			if (prop->expr->type != E_SYMBOL)
 				break;
@@ -173,16 +170,14 @@ static void sym_check_prop(struct symbol *sym) {
 				if (!choice_prop || prop_get_symbol(choice_prop) != sym)
 					prop_warn(prop, "choice default symbol '%s' is not contained in the choice", sym2->name); }
 			break;
-		case P_SELECT: case P_IMPLY:
-			use = prop->type == P_SELECT ? "select" : "imply";
+		case P_SELECT: case P_IMPLY: use = prop->type == P_SELECT ? "select" : "imply";
 			sym2 = prop_get_symbol(prop);
 			if (sym->type != S_BOOLEAN && sym->type != S_TRISTATE)
 				prop_warn(prop, "config symbol '%s' uses %s, but is " "not bool or tristate", sym->name, use);
 			else if (sym2->type != S_UNKNOWN && sym2->type != S_BOOLEAN && sym2->type != S_TRISTATE)
 				prop_warn(prop, "'%s' has wrong type. '%s' only " "accept arguments of bool and " "tristate type", sym2->name, use);
 			break;
-		case P_RANGE:
-			if (sym->type != S_INT && sym->type != S_HEX)
+		case P_RANGE: if (sym->type != S_INT && sym->type != S_HEX)
 				prop_warn(prop, "range is only allowed " "for int or hex symbols");
 			if (!menu_validate_number(sym, prop->expr->left.sym) || !menu_validate_number(sym, prop->expr->right.sym))
 				prop_warn(prop, "range is invalid"); } } }

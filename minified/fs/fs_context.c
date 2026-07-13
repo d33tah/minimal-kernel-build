@@ -106,14 +106,11 @@ static struct fs_context *alloc_fs_context(struct file_system_type *fs_type, str
 	mutex_init(&fc->uapi_mutex);
 
 	switch (purpose) {
-	case FS_CONTEXT_FOR_MOUNT:
-		fc->user_ns = get_user_ns(fc->cred->user_ns);
+	case FS_CONTEXT_FOR_MOUNT: fc->user_ns = get_user_ns(fc->cred->user_ns);
 		break;
-	case FS_CONTEXT_FOR_SUBMOUNT:
-		fc->user_ns = get_user_ns(reference->d_sb->s_user_ns);
+	case FS_CONTEXT_FOR_SUBMOUNT: fc->user_ns = get_user_ns(reference->d_sb->s_user_ns);
 		break;
-	case FS_CONTEXT_FOR_RECONFIGURE:
-		atomic_inc(&reference->d_sb->s_active);
+	case FS_CONTEXT_FOR_RECONFIGURE: atomic_inc(&reference->d_sb->s_active);
 		fc->user_ns = get_user_ns(reference->d_sb->s_user_ns);
 		fc->root = dget(reference); }
 
@@ -142,14 +139,11 @@ void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, 
 	 */
 	va_start(va, fmt);
 	switch (level) {
-	case 'w':
-		printk(KERN_WARNING "%s%s%pV\n", prefix ? prefix : "", prefix ? ": " : "", &vaf);
+	case 'w': printk(KERN_WARNING "%s%s%pV\n", prefix ? prefix : "", prefix ? ": " : "", &vaf);
 		break;
-	case 'e':
-		printk(KERN_ERR "%s%s%pV\n", prefix ? prefix : "", prefix ? ": " : "", &vaf);
+	case 'e': printk(KERN_ERR "%s%s%pV\n", prefix ? prefix : "", prefix ? ": " : "", &vaf);
 		break;
-	default:
-		printk(KERN_NOTICE "%s%s%pV\n", prefix ? prefix : "", prefix ? ": " : "", &vaf); }
+	default: printk(KERN_NOTICE "%s%s%pV\n", prefix ? prefix : "", prefix ? ": " : "", &vaf); }
 	va_end(va); }
 
 static void put_fc_log(struct fs_context *fc) {

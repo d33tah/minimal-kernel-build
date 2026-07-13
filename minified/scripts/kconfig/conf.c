@@ -29,14 +29,11 @@ static bool conf_set_all_new_symbols(enum conf_def_mode mode) {
 		if (sym_has_value(sym) || sym->flags & SYMBOL_VALID)
 			continue;
 		switch (sym_get_type(sym)) {
-		case S_BOOLEAN: case S_TRISTATE:
-			has_changed = true;
+		case S_BOOLEAN: case S_TRISTATE: has_changed = true;
 			switch (mode) {
-			case def_no:
-				sym->def[S_DEF_USER].tri = no;
+			case def_no: sym->def[S_DEF_USER].tri = no;
 				break;
-			default:
-				continue; }
+			default: continue; }
 			if (!(sym_is_choice(sym) && mode == def_random))
 				sym->flags |= SYMBOL_DEF_USER; }
 
@@ -76,15 +73,12 @@ int main(int ac, char **av) {
 
 	while ((opt = getopt_long(ac, av, "hs", long_opts, NULL)) != -1) {
 		switch (opt) {
-		case 'h':
-			conf_usage(progname);
+		case 'h': conf_usage(progname);
 			exit(1);
 			break;
-		case 's':
-			conf_set_message_callback(NULL);
+		case 's': conf_set_message_callback(NULL);
 			break;
-		case 0:
-			input_mode = input_mode_opt;
+		case 0: input_mode = input_mode_opt;
 			if (input_mode == syncconfig) {
 				conf_set_message_callback(NULL);
 				sync_kconfig = 1; } } }
@@ -96,11 +90,9 @@ int main(int ac, char **av) {
 
 
 	switch (input_mode) {
-	case syncconfig: case olddefconfig:
-		conf_read(NULL);
+	case syncconfig: case olddefconfig: conf_read(NULL);
 		break;
-	case allnoconfig:
-		name = getenv("KCONFIG_ALLCONFIG");
+	case allnoconfig: name = getenv("KCONFIG_ALLCONFIG");
 		if (!name)
 			break;
 		if ((strcmp(name, "") != 0) && (strcmp(name, "1") != 0)) {
@@ -122,8 +114,7 @@ int main(int ac, char **av) {
 			no_conf_write = 1; } }
 
 	switch (input_mode) {
-	case allnoconfig:
-		conf_set_all_new_symbols(def_no); }
+	case allnoconfig: conf_set_all_new_symbols(def_no); }
 
 	if (!no_conf_write && conf_write(NULL)) {
 		fprintf(stderr, "\n*** Error during writing of the configuration.\n\n");

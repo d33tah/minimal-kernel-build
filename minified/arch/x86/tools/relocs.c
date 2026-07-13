@@ -234,8 +234,7 @@ static void read_symtabs(FILE *fp) {
 		int num_syms;
 
 		switch (sec->shdr.sh_type) {
-		case SHT_SYMTAB_SHNDX:
-			sec->xsymtab = malloc(sec->shdr.sh_size);
+		case SHT_SYMTAB_SHNDX: sec->xsymtab = malloc(sec->shdr.sh_size);
 			if (!sec->xsymtab) {
 				die("malloc of %" FMT " bytes for xsymtab failed\n", sec->shdr.sh_size); }
 			if (fseek(fp, sec->shdr.sh_offset, SEEK_SET) < 0) {
@@ -245,8 +244,7 @@ static void read_symtabs(FILE *fp) {
 			shxsymtabndx = i;
 			continue;
 
-		case SHT_SYMTAB:
-			num_syms = sec->shdr.sh_size / sizeof(Elf_Sym);
+		case SHT_SYMTAB: num_syms = sec->shdr.sh_size / sizeof(Elf_Sym);
 
 			sec->symtab = malloc(sec->shdr.sh_size);
 			if (!sec->symtab) {
@@ -265,8 +263,7 @@ static void read_symtabs(FILE *fp) {
 			shsymtabndx = i;
 			continue;
 
-		default:
-			continue; } } }
+		default: continue; } } }
 
 
 static void read_relocs(FILE *fp) {
@@ -377,8 +374,7 @@ static int do_reloc32(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const cha
 		 
 		break;
 
-	case R_386_32:
-		if (shn_abs) {
+	case R_386_32: if (shn_abs) {
 			 
 			if (is_reloc(S_ABS, symname))
 				break;
@@ -389,8 +385,7 @@ static int do_reloc32(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const cha
 		add_reloc(&relocs32, rel->r_offset);
 		break;
 
-	default:
-		die("Unsupported relocation type: %s (%d)\n", rel_type(r_type), r_type); }
+	default: die("Unsupported relocation type: %s (%d)\n", rel_type(r_type), r_type); }
 
 	return 0; }
 
@@ -403,8 +398,7 @@ static int do_reloc_real(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const 
 		 
 		break;
 
-	case R_386_16:
-		if (shn_abs) {
+	case R_386_16: if (shn_abs) {
 			 
 			if (is_reloc(S_ABS, symname))
 				break;
@@ -418,8 +412,7 @@ static int do_reloc_real(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const 
 		die("Invalid %s %s relocation: %s\n", shn_abs ? "absolute" : "relative", rel_type(r_type), symname);
 		break;
 
-	case R_386_32:
-		if (shn_abs) {
+	case R_386_32: if (shn_abs) {
 			 
 			if (is_reloc(S_ABS, symname))
 				break;
@@ -434,8 +427,7 @@ static int do_reloc_real(struct section *sec, Elf_Rel *rel, Elf_Sym *sym, const 
 		die("Invalid %s %s relocation: %s\n", shn_abs ? "absolute" : "relative", rel_type(r_type), symname);
 		break;
 
-	default:
-		die("Unsupported relocation type: %s (%d)\n", rel_type(r_type), r_type); }
+	default: die("Unsupported relocation type: %s (%d)\n", rel_type(r_type), r_type); }
 
 	return 0; }
 

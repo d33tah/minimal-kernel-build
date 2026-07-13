@@ -210,13 +210,10 @@ static long __get_user_pages(struct mm_struct *mm, unsigned long start, unsigned
 		if (!page || PTR_ERR(page) == -EMLINK) {
 			ret = faultin_page(vma, start, &foll_flags, PTR_ERR(page) == -EMLINK, locked);
 			switch (ret) {
-			case 0:
-				goto retry;
-			case -EBUSY:
-				ret = 0;
+			case 0: goto retry;
+			case -EBUSY: ret = 0;
 				fallthrough;
-			case -EFAULT: case -ENOMEM: case -EHWPOISON:
-				goto out; }
+			case -EFAULT: case -ENOMEM: case -EHWPOISON: goto out; }
 			BUG();
 		} else if (PTR_ERR(page) == -EEXIST) {
 			

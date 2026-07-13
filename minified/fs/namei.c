@@ -566,13 +566,11 @@ static int link_path_walk(const char *name, struct nameidata *nd) {
 
 		type = LAST_NORM;
 		if (name[0] == '.') switch (hashlen_len(hash_len)) {
-			case 2:
-				if (name[1] == '.') {
+			case 2: if (name[1] == '.') {
 					type = LAST_DOTDOT;
 					nd->state |= ND_JUMPED; }
 				break;
-			case 1:
-				type = LAST_DOT; }
+			case 1: type = LAST_DOT; }
 		if (likely(type == LAST_NORM)) {
 			/*
 			 * DCACHE_OP_HASH is never set on this build (no
@@ -753,23 +751,18 @@ static int may_open(struct user_namespace *mnt_userns, const struct path *path, 
 		return -ENOENT;
 
 	switch (inode->i_mode & S_IFMT) {
-	case S_IFLNK:
-		return -ELOOP;
-	case S_IFDIR:
-		if (acc_mode & MAY_WRITE)
+	case S_IFLNK: return -ELOOP;
+	case S_IFDIR: if (acc_mode & MAY_WRITE)
 			return -EISDIR;
 		if (acc_mode & MAY_EXEC)
 			return -EACCES;
 		break;
-	case S_IFBLK: case S_IFCHR:
-		fallthrough;
-	case S_IFIFO: case S_IFSOCK:
-		if (acc_mode & MAY_EXEC)
+	case S_IFBLK: case S_IFCHR: fallthrough;
+	case S_IFIFO: case S_IFSOCK: if (acc_mode & MAY_EXEC)
 			return -EACCES;
 		flag &= ~O_TRUNC;
 		break;
-	case S_IFREG:
-		if ((acc_mode & MAY_EXEC) && path_noexec(path))
+	case S_IFREG: if ((acc_mode & MAY_EXEC) && path_noexec(path))
 			return -EACCES; }
 
 	error = inode_permission(mnt_userns, inode, MAY_OPEN | acc_mode);

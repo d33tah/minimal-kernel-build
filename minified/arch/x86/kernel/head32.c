@@ -32,8 +32,7 @@ asmlinkage __visible void __init i386_start_kernel(void)
 	case X86_SUBARCH_INTEL_MID: case X86_SUBARCH_CE4100:
 		/* x86_intel_mid_early_setup/x86_ce4100_early_setup were no-ops */
 		break;
-	default:
-		i386_default_early_setup();
+	default: i386_default_early_setup();
 	}
 
 	start_kernel();

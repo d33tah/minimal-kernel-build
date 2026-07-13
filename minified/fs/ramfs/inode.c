@@ -26,15 +26,12 @@ struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir, u
 		mapping_set_unevictable(inode->i_mapping);
 		inode->i_atime = inode->i_mtime = inode->i_ctime = current_time(inode);
 		switch (mode & S_IFMT) {
-		default:
-			init_special_inode(inode, mode, dev);
+		default: init_special_inode(inode, mode, dev);
 			break;
-		case S_IFREG:
-			inode->i_op = &ramfs_file_inode_operations;
+		case S_IFREG: inode->i_op = &ramfs_file_inode_operations;
 			inode->i_fop = &ramfs_file_operations;
 			break;
-		case S_IFDIR:
-			inode->i_op = &ramfs_dir_inode_operations;
+		case S_IFDIR: inode->i_op = &ramfs_dir_inode_operations;
 
 			inc_nlink(inode); } }
 	return inode; }
@@ -87,8 +84,7 @@ static int ramfs_parse_param(struct fs_context *fc, struct fs_parameter *param) 
 		return opt;
 
 	switch (opt) {
-	case Opt_mode:
-		fsi->mount_opts.mode = result.uint_32 & S_IALLUGO; }
+	case Opt_mode: fsi->mount_opts.mode = result.uint_32 & S_IALLUGO; }
 
 	return 0; }
 

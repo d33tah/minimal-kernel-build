@@ -16,8 +16,7 @@ static int __clockevents_switch_state(struct clock_event_device *dev, enum clock
 	case CLOCK_EVT_STATE_DETACHED:
 		 
 
-	case CLOCK_EVT_STATE_SHUTDOWN:
-		if (dev->set_state_shutdown)
+	case CLOCK_EVT_STATE_SHUTDOWN: if (dev->set_state_shutdown)
 			return dev->set_state_shutdown(dev);
 		return 0;
 
@@ -35,8 +34,7 @@ static int __clockevents_switch_state(struct clock_event_device *dev, enum clock
 	 * only clockevents_switch_state() callers pass PERIODIC/SHUTDOWN/
 	 * DETACHED, so those cases were unreachable.
 	 */
-	default:
-		return -ENOSYS; } }
+	default: return -ENOSYS; } }
 
 void clockevents_switch_state(struct clock_event_device *dev, enum clock_event_state state) {
 	if (clockevent_get_state(dev) != state) {

@@ -4,7 +4,6 @@
 #include <linux/file.h>
 #include <linux/console.h>
 #include <linux/mm.h>
-#include <linux/slab.h>
 #include <linux/poll.h>
 #include <linux/init.h>
 #include <linux/module.h>

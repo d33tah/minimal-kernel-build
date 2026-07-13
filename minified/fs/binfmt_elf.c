@@ -91,8 +91,7 @@ static int padzero(unsigned long elf_bss)
 	(((unsigned long) (sp - items)) &~ 15UL)
 #define STACK_ALLOC(sp, len) (sp -= len)
 
-static int
-create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
+static int create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 		unsigned long interp_load_addr,
 		unsigned long e_entry, unsigned long phdr_addr)
 {

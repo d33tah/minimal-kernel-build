@@ -4,8 +4,7 @@
 
 #define __do_clear_user(addr,size)					do {										int __d0;								might_fault();								__asm__ __volatile__(								ASM_STAC "\n"								"0:	rep; stosl\n"							"	movl %2,%0\n"							"1:	rep; stosb\n"							"2: " ASM_CLAC "\n"							_ASM_EXTABLE_TYPE_REG(0b, 2b, EX_TYPE_UCOPY_LEN4, %2)			_ASM_EXTABLE_UA(1b, 2b)							: "=&c"(size), "=&D" (__d0)						: "r"(size & 3), "0"(size / 4), "1"(addr), "a"(0));	} while (0)
 
-unsigned long
-clear_user(void __user *to, unsigned long n) {
+unsigned long clear_user(void __user *to, unsigned long n) {
 	might_fault();
 	if (access_ok(to, n))
 		__do_clear_user(to, n);

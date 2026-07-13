@@ -61,8 +61,7 @@ static __always_inline void __rcu ** radix_tree_iter_init(struct radix_tree_iter
 	iter->next_index = start;
 	return NULL; }
 
-static inline unsigned long
-__radix_tree_iter_add(struct radix_tree_iter *iter, unsigned long slots) {
+static inline unsigned long __radix_tree_iter_add(struct radix_tree_iter *iter, unsigned long slots) {
 	return iter->index + slots; }
 
 #endif

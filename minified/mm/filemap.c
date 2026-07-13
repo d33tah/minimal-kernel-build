@@ -461,8 +461,7 @@ put_folios: for (i = 0; i < folio_batch_count(&fbatch); i++)
 
 	return already_read ? already_read : error; }
 
-ssize_t
-generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter) {
+ssize_t generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter) {
 	size_t count = iov_iter_count(iter);
 	ssize_t retval = 0;
 

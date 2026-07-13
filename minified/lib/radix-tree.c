@@ -19,8 +19,7 @@ static inline void *node_to_entry(void *ptr) {
 
 #define RADIX_TREE_RETRY	XA_RETRY_ENTRY
 
-static inline unsigned long
-get_slot_offset(const struct radix_tree_node *parent, void __rcu **slot) {
+static inline unsigned long get_slot_offset(const struct radix_tree_node *parent, void __rcu **slot) {
 	return parent ? slot - parent->slots : 0; }
 
 static unsigned int radix_tree_descend(const struct radix_tree_node *parent, struct radix_tree_node **nodep, unsigned long index) {
@@ -70,8 +69,7 @@ static inline int any_tag_set(const struct radix_tree_node *node, unsigned int t
 static inline void all_tag_set(struct radix_tree_node *node, unsigned int tag) {
 	bitmap_fill(node->tags[tag], RADIX_TREE_MAP_SIZE); }
 
-static __always_inline unsigned long
-radix_tree_find_next_bit(struct radix_tree_node *node, unsigned int tag, unsigned long offset) {
+static __always_inline unsigned long radix_tree_find_next_bit(struct radix_tree_node *node, unsigned int tag, unsigned long offset) {
 	const unsigned long *addr = node->tags[tag];
 
 	if (offset < RADIX_TREE_MAP_SIZE) {
@@ -136,8 +134,7 @@ void radix_tree_node_rcu_free(struct rcu_head *head) {
 
 	kmem_cache_free(radix_tree_node_cachep, node); }
 
-static inline void
-radix_tree_node_free(struct radix_tree_node *node) {
+static inline void radix_tree_node_free(struct radix_tree_node *node) {
 	call_rcu(&node->rcu_head, radix_tree_node_rcu_free); }
 
 static __must_check int __radix_tree_preload(gfp_t gfp_mask, unsigned nr) {
@@ -564,8 +561,7 @@ void __rcu **idr_get_free(struct radix_tree_root *root, struct radix_tree_iter *
 
 	return slot; }
 
-static void
-radix_tree_node_ctor(void *arg) {
+static void radix_tree_node_ctor(void *arg) {
 	struct radix_tree_node *node = arg;
 
 	memset(node, 0, sizeof(*node));

@@ -111,8 +111,7 @@ extern void fpu_thread_struct_whitelist(unsigned long *offset, unsigned long *si
 static inline void arch_thread_struct_whitelist(unsigned long *offset, unsigned long *size) {
 	fpu_thread_struct_whitelist(offset, size); }
 
-static inline void
-native_load_sp0(unsigned long sp0) {
+static inline void native_load_sp0(unsigned long sp0) {
 	this_cpu_write(cpu_tss_rw.x86_tss.sp0, sp0); }
 
 /* current_top_of_stack removed - unused */

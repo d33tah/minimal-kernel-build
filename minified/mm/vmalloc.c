@@ -19,8 +19,7 @@ static LIST_HEAD(free_vmap_area_list);
 
 static struct rb_root free_vmap_area_root = RB_ROOT;
 
-static __always_inline unsigned long
-va_size(struct vmap_area *va) {
+static __always_inline unsigned long va_size(struct vmap_area *va) {
 	return (va->va_end - va->va_start); }
 
 RB_DECLARE_CALLBACKS_MAX(static, free_vmap_area_rb_augment_cb, struct vmap_area, rb_node, unsigned long, subtree_max_size, va_size)
@@ -55,8 +54,7 @@ static __always_inline struct rb_node ** find_va_links(struct vmap_area *va, str
 	*parent = &tmp_va->rb_node;
 	return link; }
 
-static __always_inline void
-link_va(struct vmap_area *va, struct rb_root *root, struct rb_node *parent, struct rb_node **link, struct list_head *head) {
+static __always_inline void link_va(struct vmap_area *va, struct rb_root *root, struct rb_node *parent, struct rb_node **link, struct list_head *head) {
 	
 	if (likely(parent)) {
 		head = &rb_entry(parent, struct vmap_area, rb_node)->list;
@@ -75,12 +73,10 @@ link_va(struct vmap_area *va, struct rb_root *root, struct rb_node *parent, stru
 	
 	list_add(&va->list, head); }
 
-static __always_inline void
-augment_tree_propagate_from(struct vmap_area *va) {
+static __always_inline void augment_tree_propagate_from(struct vmap_area *va) {
 	free_vmap_area_rb_augment_cb_propagate(&va->rb_node, NULL); }
 
-static void
-insert_vmap_area_augment(struct vmap_area *va, struct rb_node *from, struct rb_root *root, struct list_head *head) {
+static void insert_vmap_area_augment(struct vmap_area *va, struct rb_node *from, struct rb_root *root, struct list_head *head) {
 	struct rb_node **link, *parent;
 
 	if (from)

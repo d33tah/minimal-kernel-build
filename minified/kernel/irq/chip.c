@@ -170,8 +170,7 @@ out_unlock: raw_spin_unlock(&desc->lock); }
 
 
 
-static void
-__irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle, int is_chained, const char *name) {
+static void __irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle, int is_chained, const char *name) {
 	if (!handle) {
 		handle = handle_bad_irq;
 	} else {
@@ -204,8 +203,7 @@ __irq_do_set_handler(struct irq_desc *desc, irq_flow_handler_t handle, int is_ch
 		if (!WARN_ON(irq_activate(desc)))
 			irq_startup(desc, IRQ_RESEND, IRQ_START_FORCE); } }
 
-void
-__irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained, const char *name) {
+void __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained, const char *name) {
 	unsigned long flags;
 	struct irq_desc *desc = irq_get_desc_buslock(irq, &flags, 0);
 
@@ -216,8 +214,7 @@ __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained, c
 	irq_put_desc_busunlock(desc, flags); }
 
 
-void
-irq_set_chip_and_handler_name(unsigned int irq, const struct irq_chip *chip, irq_flow_handler_t handle, const char *name) {
+void irq_set_chip_and_handler_name(unsigned int irq, const struct irq_chip *chip, irq_flow_handler_t handle, const char *name) {
 	irq_set_chip(irq, chip);
 	__irq_set_handler(irq, handle, 0, name); }
 

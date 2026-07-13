@@ -33,15 +33,13 @@ static inline void vma_rb_insert(struct vm_area_struct *vma, struct rb_root *roo
 
 	rb_insert_color(&vma->vm_rb, root); }
 
-static inline void
-anon_vma_interval_tree_pre_update_vma(struct vm_area_struct *vma) {
+static inline void anon_vma_interval_tree_pre_update_vma(struct vm_area_struct *vma) {
 	struct anon_vma_chain *avc;
 
 	list_for_each_entry(avc, &vma->anon_vma_chain, same_vma)
 		anon_vma_interval_tree_remove(avc, &avc->anon_vma->rb_root); }
 
-static inline void
-anon_vma_interval_tree_post_update_vma(struct vm_area_struct *vma) {
+static inline void anon_vma_interval_tree_post_update_vma(struct vm_area_struct *vma) {
 	struct anon_vma_chain *avc;
 
 	list_for_each_entry(avc, &vma->anon_vma_chain, same_vma)
@@ -76,8 +74,7 @@ static int find_vma_links(struct mm_struct *mm, unsigned long addr, unsigned lon
 	*rb_parent = __rb_parent;
 	return 0; }
 
-static inline int
-munmap_vma_range(struct mm_struct *mm, unsigned long start, unsigned long len, struct vm_area_struct **pprev, struct rb_node ***link, struct rb_node **parent) {
+static inline int munmap_vma_range(struct mm_struct *mm, unsigned long start, unsigned long len, struct vm_area_struct **pprev, struct rb_node ***link, struct rb_node **parent) {
 
 	while (find_vma_links(mm, start, start + len, pprev, link, parent))
 		if (__do_munmap(mm, start, len))
@@ -101,8 +98,7 @@ static void __vma_link_file(struct vm_area_struct *vma) {
 
 		vma_interval_tree_insert(vma, &mapping->i_mmap); } }
 
-static void
-__vma_link(struct mm_struct *mm, struct vm_area_struct *vma, struct vm_area_struct *prev, struct rb_node **rb_link, struct rb_node *rb_parent) {
+static void __vma_link(struct mm_struct *mm, struct vm_area_struct *vma, struct vm_area_struct *prev, struct rb_node **rb_link, struct rb_node *rb_parent) {
 	__vma_link_list(mm, vma, prev);
 	__vma_link_rb(mm, vma, rb_link, rb_parent); }
 
@@ -315,8 +311,7 @@ unsigned long vm_unmapped_area(void) {
 	return -ENOMEM; }
 
 #ifndef HAVE_ARCH_UNMAPPED_AREA
-unsigned long
-arch_get_unmapped_area(struct file *filp, unsigned long addr, unsigned long len, unsigned long pgoff, unsigned long flags) {
+unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr, unsigned long len, unsigned long pgoff, unsigned long flags) {
 	/*
 	 * Legacy bottom-up layout is never selected on this boot
 	 * (arch_pick_mmap_layout uses the topdown variant); never assigned,
@@ -325,8 +320,7 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr, unsigned long len,
 	return -ENOMEM; }
 #endif
 
-unsigned long
-generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr, unsigned long len, unsigned long pgoff, unsigned long flags) {
+unsigned long generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr, unsigned long len, unsigned long pgoff, unsigned long flags) {
 	struct vm_area_struct *vma, *prev;
 	struct mm_struct *mm = current->mm;
 	const unsigned long mmap_end = arch_get_mmap_end(addr, len, flags);
@@ -355,13 +349,11 @@ generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr, unsigne
 	return addr; }
 
 #ifndef HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
-unsigned long
-arch_get_unmapped_area_topdown(struct file *filp, unsigned long addr, unsigned long len, unsigned long pgoff, unsigned long flags) {
+unsigned long arch_get_unmapped_area_topdown(struct file *filp, unsigned long addr, unsigned long len, unsigned long pgoff, unsigned long flags) {
 	return generic_get_unmapped_area_topdown(filp, addr, len, pgoff, flags); }
 #endif
 
-unsigned long
-get_unmapped_area(struct file *file, unsigned long addr, unsigned long len, unsigned long pgoff, unsigned long flags) {
+unsigned long get_unmapped_area(struct file *file, unsigned long addr, unsigned long len, unsigned long pgoff, unsigned long flags) {
 	unsigned long (*get_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
 
 	unsigned long error = arch_mmap_check(addr, len, flags);

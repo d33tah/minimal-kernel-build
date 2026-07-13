@@ -6,8 +6,7 @@
 #include <asm/div64.h>
 
 /* Inlined from vdso/math64.h */
-static __always_inline u32
-__iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder) {
+static __always_inline u32 __iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder) {
 	u32 ret = 0;
 
 	while (dividend >= divisor) {

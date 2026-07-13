@@ -193,22 +193,19 @@ static inline void __task_rq_unlock(struct rq *rq, struct rq_flags *rf)
 	rq_unpin_lock(rq, rf);
 	raw_spin_rq_unlock(rq); }
 
-static inline void
-task_rq_unlock(struct rq *rq, struct task_struct *p, struct rq_flags *rf)
+static inline void task_rq_unlock(struct rq *rq, struct task_struct *p, struct rq_flags *rf)
 	__releases(rq->lock)
 	__releases(p->pi_lock) {
 	rq_unpin_lock(rq, rf);
 	raw_spin_rq_unlock(rq);
 	raw_spin_unlock_irqrestore(&p->pi_lock, rf->flags); }
 
-static inline void
-rq_lock(struct rq *rq, struct rq_flags *rf)
+static inline void rq_lock(struct rq *rq, struct rq_flags *rf)
 	__acquires(rq->lock) {
 	raw_spin_rq_lock(rq);
 	rq_pin_lock(rq, rf); }
 
-static inline void
-rq_unlock(struct rq *rq, struct rq_flags *rf)
+static inline void rq_unlock(struct rq *rq, struct rq_flags *rf)
 	__releases(rq->lock) {
 	rq_unpin_lock(rq, rf);
 	raw_spin_rq_unlock(rq); }

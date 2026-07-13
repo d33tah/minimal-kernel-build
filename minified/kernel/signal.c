@@ -57,8 +57,7 @@ void ignore_signals(struct task_struct *t) {
 	for (i = 0; i < _NSIG; ++i)
 		t->sighand->action[i].sa.sa_handler = SIG_IGN; }
 
-void
-flush_signal_handlers(struct task_struct *t, int force_default) {
+void flush_signal_handlers(struct task_struct *t, int force_default) {
 	int i;
 	struct k_sigaction *ka = &t->sighand->action[0];
 	for (i = _NSIG ; i != 0 ; i--) {
@@ -83,8 +82,7 @@ flush_signal_handlers(struct task_struct *t, int force_default) {
 
 enum sig_handler { HANDLER_CURRENT, HANDLER_SIG_DFL, };
 
-static int
-force_sig_info_to_task(struct kernel_siginfo *info, struct task_struct *t, enum sig_handler handler) {
+static int force_sig_info_to_task(struct kernel_siginfo *info, struct task_struct *t, enum sig_handler handler) {
 	/*
 	 * Anchor-stub: runtime-dead. No fault/trap ever fires on this
 	 * single-shot boot, so no forced signal is ever delivered. The whole

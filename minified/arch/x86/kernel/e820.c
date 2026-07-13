@@ -182,8 +182,7 @@ static int __init append_e820_table(struct boot_e820_entry *entries, u32 nr_entr
 
 	return __append_e820_table(entries, nr_entries); }
 
-static u64 __init
-__e820__range_update(struct e820_table *table, u64 start, u64 size, enum e820_type old_type, enum e820_type new_type) {
+static u64 __init __e820__range_update(struct e820_table *table, u64 start, u64 size, enum e820_type old_type, enum e820_type new_type) {
 	u64 end;
 	unsigned int i;
 	u64 real_updated_size = 0;

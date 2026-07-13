@@ -9,15 +9,13 @@ static inline void rb_set_black(struct rb_node *rb) {
 static inline struct rb_node *rb_red_parent(struct rb_node *red) {
 	return (struct rb_node *)red->__rb_parent_color; }
 
-static inline void
-__rb_rotate_set_parents(struct rb_node *old, struct rb_node *new, struct rb_root *root, int color) {
+static inline void __rb_rotate_set_parents(struct rb_node *old, struct rb_node *new, struct rb_root *root, int color) {
 	struct rb_node *parent = rb_parent(old);
 	new->__rb_parent_color = old->__rb_parent_color;
 	rb_set_parent_color(old, new, color);
 	__rb_change_child(old, new, parent, root); }
 
-static __always_inline void
-__rb_insert(struct rb_node *node, struct rb_root *root, void (*augment_rotate)(struct rb_node *old, struct rb_node *new)) {
+static __always_inline void __rb_insert(struct rb_node *node, struct rb_root *root, void (*augment_rotate)(struct rb_node *old, struct rb_node *new)) {
 	struct rb_node *parent = rb_red_parent(node), *gparent, *tmp;
 
 	while (true) {
@@ -98,8 +96,7 @@ __rb_insert(struct rb_node *node, struct rb_root *root, void (*augment_rotate)(s
 			augment_rotate(gparent, parent);
 			break; } } }
 
-static __always_inline void
-____rb_erase_color(struct rb_node *parent, struct rb_root *root, void (*augment_rotate)(struct rb_node *old, struct rb_node *new)) {
+static __always_inline void ____rb_erase_color(struct rb_node *parent, struct rb_root *root, void (*augment_rotate)(struct rb_node *old, struct rb_node *new)) {
 	struct rb_node *node = NULL, *sibling, *tmp1, *tmp2;
 
 	while (true) {

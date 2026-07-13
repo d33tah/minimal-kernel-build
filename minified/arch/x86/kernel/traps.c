@@ -37,8 +37,7 @@ do_trap_no_signal(struct task_struct *tsk, int trapnr, const char *str, struct p
 
 	return -1; }
 
-static void
-do_trap(int trapnr, int signr, char *str, struct pt_regs *regs, long error_code, int sicode, void __user *addr) {
+static void do_trap(int trapnr, int signr, char *str, struct pt_regs *regs, long error_code, int sicode, void __user *addr) {
 	struct task_struct *tsk = current;
 
 	if (!do_trap_no_signal(tsk, trapnr, str, regs, error_code))

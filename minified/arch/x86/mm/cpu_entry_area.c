@@ -24,8 +24,7 @@ void cea_set_pte(void *cea_vaddr, phys_addr_t pa, pgprot_t flags) {
 
 	set_pte_vaddr(va, pte); }
 
-static void __init
-cea_map_percpu_pages(void *cea_vaddr, void *ptr, int pages, pgprot_t prot) {
+static void __init cea_map_percpu_pages(void *cea_vaddr, void *ptr, int pages, pgprot_t prot) {
 	for ( ; pages; pages--, cea_vaddr+= PAGE_SIZE, ptr += PAGE_SIZE)
 		cea_set_pte(cea_vaddr, per_cpu_ptr_to_phys(ptr), prot); }
 

@@ -15,7 +15,6 @@ extern int debug_locks_off(void);
 #define DEBUG_LOCKS_WARN_ON(c)						({										int __ret = 0;																	if (!oops_in_progress && unlikely(c)) {						if (debug_locks_off())								WARN(1, "DEBUG_LOCKS_WARN_ON(%s)", #c);				__ret = 1;							}									__ret;								})
 
 
-static inline void
-debug_check_no_locks_freed(const void *from, unsigned long len) { }
+static inline void debug_check_no_locks_freed(const void *from, unsigned long len) { }
 
 #endif

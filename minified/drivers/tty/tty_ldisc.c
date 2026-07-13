@@ -84,8 +84,7 @@ void tty_ldisc_deref(struct tty_ldisc *ld)
 }
 
 
-static inline int
-__tty_ldisc_lock(struct tty_struct *tty, unsigned long timeout)
+static inline int __tty_ldisc_lock(struct tty_struct *tty, unsigned long timeout)
 {
 	return ldsem_down_write(&tty->ldisc_sem, timeout);
 }

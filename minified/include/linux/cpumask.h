@@ -73,8 +73,7 @@ extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
 
 #define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
 
-static inline void
-set_cpu_possible(unsigned int cpu, bool possible) {
+static inline void set_cpu_possible(unsigned int cpu, bool possible) {
 	if (possible)
 		cpumask_set_cpu(cpu, &__cpu_possible_mask);
 	else cpumask_clear_cpu(cpu, &__cpu_possible_mask); }

@@ -130,8 +130,7 @@ static __always_inline unsigned long __must_check
 raw_copy_to_user(void __user *to, const void *from, unsigned long n) {
 	return __copy_user_ll((__force void *)to, from, n); }
 
-static __always_inline unsigned long
-raw_copy_from_user(void *to, const void __user *from, unsigned long n) {
+static __always_inline unsigned long raw_copy_from_user(void *to, const void __user *from, unsigned long n) {
 	return __copy_user_ll(to, (__force const void *)from, n); }
 
 static __must_check __always_inline bool user_access_begin(const void __user *ptr, size_t len) {

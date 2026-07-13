@@ -232,8 +232,7 @@ static struct slab *new_slab(struct kmem_cache *s, gfp_t flags, int node) {
  * free paths (deactivate_slab M_FREE, __slab_free slab_empty) are never taken
  * in this single-shot boot workload (slabs never drop to zero in-use). */
 
-static inline void
-__add_partial(struct kmem_cache_node *n, struct slab *slab, int tail) {
+static inline void __add_partial(struct kmem_cache_node *n, struct slab *slab, int tail) {
 	n->nr_partial++;
 	if (tail == DEACTIVATE_TO_TAIL)
 		list_add_tail(&slab->slab_list, &n->partial);
@@ -624,8 +623,7 @@ static inline int calculate_order(unsigned int size) {
 		return order;
 	return -ENOSYS; }
 
-static void
-init_kmem_cache_node(struct kmem_cache_node *n) {
+static void init_kmem_cache_node(struct kmem_cache_node *n) {
 	n->nr_partial = 0;
 	spin_lock_init(&n->list_lock);
 	INIT_LIST_HEAD(&n->partial); }

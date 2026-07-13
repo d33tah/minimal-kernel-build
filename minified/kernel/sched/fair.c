@@ -191,18 +191,15 @@ static void update_curr(struct cfs_rq *cfs_rq) {
 
 		account_group_exec_runtime(curtask, delta_exec); } }
 
-static inline void
-update_stats_curr_start(struct cfs_rq *cfs_rq, struct sched_entity *se) {
+static inline void update_stats_curr_start(struct cfs_rq *cfs_rq, struct sched_entity *se) {
 	
 	se->exec_start = rq_clock_task(rq_of(cfs_rq)); }
 
-static void
-account_entity_enqueue(struct cfs_rq *cfs_rq, struct sched_entity *se) {
+static void account_entity_enqueue(struct cfs_rq *cfs_rq, struct sched_entity *se) {
 	update_load_add(&cfs_rq->load, se->load.weight);
 	cfs_rq->nr_running++; }
 
-static void
-account_entity_dequeue(struct cfs_rq *cfs_rq, struct sched_entity *se) {
+static void account_entity_dequeue(struct cfs_rq *cfs_rq, struct sched_entity *se) {
 	update_load_sub(&cfs_rq->load, se->load.weight);
 	cfs_rq->nr_running--; }
 
@@ -214,8 +211,7 @@ account_entity_dequeue(struct cfs_rq *cfs_rq, struct sched_entity *se) {
 
 void reweight_task(struct task_struct *p, int prio) { }
 
-static void
-place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial) {
+static void place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial) {
 	u64 vruntime = cfs_rq->min_vruntime;
 
 	if (initial && sched_feat(START_DEBIT))
@@ -233,8 +229,7 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial) {
 
 	se->vruntime = max_vruntime(se->vruntime, vruntime); }
 
-static void
-enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags) {
+static void enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags) {
 	bool renorm = !(flags & ENQUEUE_WAKEUP) || (flags & ENQUEUE_MIGRATED);
 	bool curr = cfs_rq->curr == se;
 
@@ -278,8 +273,7 @@ static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se) {
 	if (cfs_rq->next == se)
 		__clear_buddies_next(se); }
 
-static void
-dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags) {
+static void dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags) {
 	
 	update_curr(cfs_rq);
 
@@ -296,8 +290,7 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags) {
 	if ((flags & (DEQUEUE_SAVE | DEQUEUE_MOVE)) != DEQUEUE_SAVE)
 		update_min_vruntime(cfs_rq); }
 
-static void
-check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr) {
+static void check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr) {
 	unsigned long ideal_runtime, delta_exec;
 	struct sched_entity *se;
 	s64 delta;
@@ -322,8 +315,7 @@ check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr) {
 	if (delta > ideal_runtime)
 		resched_curr(rq_of(cfs_rq)); }
 
-static void
-set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se) {
+static void set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se) {
 	clear_buddies(cfs_rq, se);
 
 	if (se->on_rq) {
@@ -334,8 +326,7 @@ set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se) {
 
 	se->prev_sum_exec_runtime = se->sum_exec_runtime; }
 
-static int
-wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se);
+static int wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se);
 
 static struct sched_entity * pick_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *curr) {
 	struct sched_entity *left = __pick_first_entity(cfs_rq);
@@ -364,16 +355,14 @@ static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev) {
 		__enqueue_entity(cfs_rq, prev); }
 	cfs_rq->curr = NULL; }
 
-static void
-entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued) {
+static void entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr, int queued) {
 	
 	update_curr(cfs_rq);
 
 	if (cfs_rq->nr_running > 1)
 		check_preempt_tick(cfs_rq, curr); }
 
-static void
-enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags) {
+static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags) {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
 
@@ -420,8 +409,7 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags) {
 
 	sub_nr_running(rq, 1); }
 
-static int
-wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se) {
+static int wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se) {
 	/*
 	 * Runtime-dead on a boot-once-and-print artifact: the only callers are
 	 * the conditional cfs_rq->next / cfs_rq->last buddy branches in

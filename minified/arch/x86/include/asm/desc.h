@@ -51,8 +51,7 @@ static inline phys_addr_t get_cpu_gdt_paddr(unsigned int cpu) {
 static inline void native_write_idt_entry(gate_desc *idt, int entry, const gate_desc *gate) {
 	memcpy(&idt[entry], gate, sizeof(*gate)); }
 
-static inline void
-native_write_gdt_entry(struct desc_struct *gdt, int entry, const void *desc, int type) {
+static inline void native_write_gdt_entry(struct desc_struct *gdt, int entry, const void *desc, int type) {
 	unsigned int size;
 
 	switch (type) {

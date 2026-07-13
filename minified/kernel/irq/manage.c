@@ -41,8 +41,7 @@ static void irq_release_resources(struct irq_desc *desc) {
  * dead and have been folded out. Only the single-handler fresh-register path
  * survives.
  */
-static int
-__setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new) {
+static int __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new) {
 	unsigned long flags;
 	int ret;
 

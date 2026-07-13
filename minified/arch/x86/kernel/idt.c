@@ -38,8 +38,7 @@ void load_current_idt(void) {
 	load_idt(&idt_descr); }
 
 
-static __init void
-idt_setup_from_table(gate_desc *idt, const struct idt_data *t, int size, bool sys) {
+static __init void idt_setup_from_table(gate_desc *idt, const struct idt_data *t, int size, bool sys) {
 	gate_desc desc;
 
 	for (; size > 0; t++, size--) {

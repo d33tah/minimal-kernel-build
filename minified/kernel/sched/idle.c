@@ -69,8 +69,7 @@ struct task_struct *pick_next_task_idle(struct rq *rq) {
 
 	return next; }
 
-static void
-dequeue_task_idle(struct rq *rq, struct task_struct *p, int flags) { }
+static void dequeue_task_idle(struct rq *rq, struct task_struct *p, int flags) { }
 
 static void task_tick_idle(struct rq *rq, struct task_struct *curr, int queued) { }
 

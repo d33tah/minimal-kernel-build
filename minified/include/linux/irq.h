@@ -75,15 +75,13 @@ extern void handle_bad_irq(struct irq_desc *desc);
 extern struct irq_chip no_irq_chip;
 extern struct irq_chip dummy_irq_chip;
 
-extern void
-irq_set_chip_and_handler_name(unsigned int irq, const struct irq_chip *chip, irq_flow_handler_t handle, const char *name);
+extern void irq_set_chip_and_handler_name(unsigned int irq, const struct irq_chip *chip, irq_flow_handler_t handle, const char *name);
 
 static inline void irq_set_chip_and_handler(unsigned int irq, const struct irq_chip *chip, irq_flow_handler_t handle) {
 	irq_set_chip_and_handler_name(irq, chip, handle, NULL); }
 
 
-extern void
-__irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained, const char *name);
+extern void __irq_set_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained, const char *name);
 
 
 extern int irq_set_chip(unsigned int irq, const struct irq_chip *chip);

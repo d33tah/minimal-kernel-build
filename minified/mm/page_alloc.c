@@ -313,8 +313,7 @@ static int find_suitable_fallback(struct free_area *area, int migratetype) {
 
 
 
-static __always_inline bool
-__rmqueue_fallback(struct zone *zone, int order, int start_migratetype, unsigned int alloc_flags) {
+static __always_inline bool __rmqueue_fallback(struct zone *zone, int order, int start_migratetype, unsigned int alloc_flags) {
 	/* Simplified fallback: try all orders, take first match */
 	struct free_area *area;
 	int current_order, fallback_mt;
@@ -465,8 +464,7 @@ static inline bool zone_watermark_fast(struct zone *z, unsigned long mark) {
 	return free_pages > mark; }
 
 
-static inline unsigned int
-alloc_flags_nofragment(struct zone *zone, gfp_t gfp_mask) {
+static inline unsigned int alloc_flags_nofragment(struct zone *zone, gfp_t gfp_mask) {
 	unsigned int alloc_flags;
 
 	
@@ -638,8 +636,7 @@ static void __build_all_zonelists(void *data) {
 
 	spin_unlock(&lock); }
 
-static noinline void __init
-build_all_zonelists_init(void) {
+static noinline void __init build_all_zonelists_init(void) {
 	int cpu;
 
 	__build_all_zonelists(NULL);

@@ -30,8 +30,7 @@ pte_t * __init populate_extra_pte(unsigned long vaddr) {
 	pmd = one_md_table_init(swapper_pg_dir + pgd_idx) + pmd_idx;
 	return one_page_table_init(pmd) + pte_idx; }
 
-static void __init
-page_table_range_init(unsigned long start, unsigned long end, pgd_t *pgd_base) {
+static void __init page_table_range_init(unsigned long start, unsigned long end, pgd_t *pgd_base) {
 	int pgd_idx, pmd_idx;
 	unsigned long vaddr;
 	pgd_t *pgd;
@@ -56,8 +55,7 @@ static inline int is_x86_32_kernel_text(unsigned long addr) {
 		return 1;
 	return 0; }
 
-unsigned long __init
-kernel_physical_mapping_init(unsigned long start, unsigned long end, unsigned long page_size_mask, pgprot_t prot) {
+unsigned long __init kernel_physical_mapping_init(unsigned long start, unsigned long end, unsigned long page_size_mask, pgprot_t prot) {
 	int use_pse = page_size_mask == (1<<PG_LEVEL_2M);
 	unsigned long last_map_addr = end;
 	unsigned long start_pfn, end_pfn;

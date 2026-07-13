@@ -169,8 +169,7 @@ void __init setup_kmalloc_cache_index_table(void) {
 			break;
 		size_index[elem] = KMALLOC_SHIFT_LOW; } }
 
-static void __init
-new_kmalloc_cache(int idx, enum kmalloc_cache_type type, slab_flags_t flags) {
+static void __init new_kmalloc_cache(int idx, enum kmalloc_cache_type type, slab_flags_t flags) {
 	/* CONFIG_ZONE_DMA and CONFIG_MEMCG_KMEM are off on this build, so the
 	 * KMALLOC_DMA (SLAB_CACHE_DMA) and KMALLOC_NORMAL (refcount = -1) arms
 	 * were statically dead; only the KMALLOC_RECLAIM arm survives. */

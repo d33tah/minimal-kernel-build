@@ -103,8 +103,7 @@
 #endif  
 
 #ifndef arch_atomic_try_cmpxchg_acquire
-static __always_inline bool
-arch_atomic_try_cmpxchg_acquire(atomic_t *v, int *old, int new) {
+static __always_inline bool arch_atomic_try_cmpxchg_acquire(atomic_t *v, int *old, int new) {
 	int r, o = *old;
 	r = arch_atomic_cmpxchg_acquire(v, o, new);
 	if (unlikely(r != o))
@@ -114,8 +113,7 @@ arch_atomic_try_cmpxchg_acquire(atomic_t *v, int *old, int new) {
 #endif
 
 #ifndef arch_atomic_try_cmpxchg_release
-static __always_inline bool
-arch_atomic_try_cmpxchg_release(atomic_t *v, int *old, int new) {
+static __always_inline bool arch_atomic_try_cmpxchg_release(atomic_t *v, int *old, int new) {
 	int r, o = *old;
 	r = arch_atomic_cmpxchg_release(v, o, new);
 	if (unlikely(r != o))
@@ -125,8 +123,7 @@ arch_atomic_try_cmpxchg_release(atomic_t *v, int *old, int new) {
 #endif
 
 #ifndef arch_atomic_try_cmpxchg_relaxed
-static __always_inline bool
-arch_atomic_try_cmpxchg_relaxed(atomic_t *v, int *old, int new) {
+static __always_inline bool arch_atomic_try_cmpxchg_relaxed(atomic_t *v, int *old, int new) {
 	int r, o = *old;
 	r = arch_atomic_cmpxchg_relaxed(v, o, new);
 	if (unlikely(r != o))
@@ -142,8 +139,7 @@ arch_atomic_try_cmpxchg_relaxed(atomic_t *v, int *old, int new) {
 
 
 #ifndef arch_atomic_fetch_add_unless
-static __always_inline int
-arch_atomic_fetch_add_unless(atomic_t *v, int a, int u) {
+static __always_inline int arch_atomic_fetch_add_unless(atomic_t *v, int a, int u) {
 	int c = arch_atomic_read(v);
 
 	do {
@@ -156,22 +152,19 @@ arch_atomic_fetch_add_unless(atomic_t *v, int a, int u) {
 #endif
 
 #ifndef arch_atomic_add_unless
-static __always_inline bool
-arch_atomic_add_unless(atomic_t *v, int a, int u) {
+static __always_inline bool arch_atomic_add_unless(atomic_t *v, int a, int u) {
 	return arch_atomic_fetch_add_unless(v, a, u) != u; }
 #define arch_atomic_add_unless arch_atomic_add_unless
 #endif
 
 #ifndef arch_atomic_inc_not_zero
-static __always_inline bool
-arch_atomic_inc_not_zero(atomic_t *v) {
+static __always_inline bool arch_atomic_inc_not_zero(atomic_t *v) {
 	return arch_atomic_add_unless(v, 1, 0); }
 #define arch_atomic_inc_not_zero arch_atomic_inc_not_zero
 #endif
 
 #ifndef arch_atomic_inc_unless_negative
-static __always_inline bool
-arch_atomic_inc_unless_negative(atomic_t *v) {
+static __always_inline bool arch_atomic_inc_unless_negative(atomic_t *v) {
 	int c = arch_atomic_read(v);
 
 	do {
@@ -184,8 +177,7 @@ arch_atomic_inc_unless_negative(atomic_t *v) {
 #endif
 
 #ifndef arch_atomic_dec_unless_positive
-static __always_inline bool
-arch_atomic_dec_unless_positive(atomic_t *v) {
+static __always_inline bool arch_atomic_dec_unless_positive(atomic_t *v) {
 	int c = arch_atomic_read(v);
 
 	do {
@@ -198,8 +190,7 @@ arch_atomic_dec_unless_positive(atomic_t *v) {
 #endif
 
 #ifndef arch_atomic_dec_if_positive
-static __always_inline int
-arch_atomic_dec_if_positive(atomic_t *v) {
+static __always_inline int arch_atomic_dec_if_positive(atomic_t *v) {
 	int dec, c = arch_atomic_read(v);
 
 	do {

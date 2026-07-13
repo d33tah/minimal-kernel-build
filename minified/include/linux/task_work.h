@@ -6,8 +6,7 @@
 
 typedef void (*task_work_func_t)(struct callback_head *);
 
-static inline void
-init_task_work(struct callback_head *twork, task_work_func_t func) {
+static inline void init_task_work(struct callback_head *twork, task_work_func_t func) {
 	twork->func = func; }
 
 enum task_work_notify_mode { TWA_NONE, TWA_RESUME, };

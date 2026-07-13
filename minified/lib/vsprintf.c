@@ -100,8 +100,7 @@ out_r:
 	buf += r < 10 ? 1 : 2;
 	return buf; }
 
-static void
-put_dec_full4(char *buf, unsigned r) {
+static void put_dec_full4(char *buf, unsigned r) {
 	unsigned q;
 
 	

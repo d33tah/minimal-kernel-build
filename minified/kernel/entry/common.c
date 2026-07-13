@@ -7,8 +7,7 @@
 static __always_inline void __enter_from_user_mode(struct pt_regs *regs) {
 	arch_enter_from_user_mode(regs); }
 
-static __always_inline long
-__syscall_enter_from_user_work(struct pt_regs *regs, long syscall) {
+static __always_inline long __syscall_enter_from_user_work(struct pt_regs *regs, long syscall) {
 	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
 
 	if (work & SYSCALL_WORK_ENTER) {

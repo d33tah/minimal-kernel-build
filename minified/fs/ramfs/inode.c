@@ -36,8 +36,7 @@ struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir, u
 			inc_nlink(inode); } }
 	return inode; }
 
-static int
-ramfs_mknod(struct user_namespace *mnt_userns, struct inode *dir, struct dentry *dentry, umode_t mode, dev_t dev) {
+static int ramfs_mknod(struct user_namespace *mnt_userns, struct inode *dir, struct dentry *dentry, umode_t mode, dev_t dev) {
 	struct inode * inode = ramfs_get_inode(dir->i_sb, dir, mode, dev);
 	int error = -ENOSPC;
 

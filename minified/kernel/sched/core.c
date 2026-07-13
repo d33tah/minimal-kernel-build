@@ -146,8 +146,7 @@ static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
 
 }
 
-static void
-ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags, struct rq_flags *rf) {
+static void ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags, struct rq_flags *rf) {
 	int en_flags = ENQUEUE_WAKEUP | ENQUEUE_NOCLOCK;
 
 	lockdep_assert_rq_held(rq);
@@ -187,8 +186,7 @@ bool ttwu_state_match(struct task_struct *p, unsigned int state, int *success) {
 
 	return false; }
 
-static int
-try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags) {
+static int try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags) {
 	int cpu, success = 0;
 
 	preempt_disable();
@@ -272,8 +270,7 @@ void wake_up_new_task(struct task_struct *p) {
 	check_preempt_curr(rq, p, WF_FORK);
 	task_rq_unlock(rq, p, &rf); }
 
-static inline void
-prepare_lock_switch(struct rq *rq, struct task_struct *next, struct rq_flags *rf) {
+static inline void prepare_lock_switch(struct rq *rq, struct task_struct *next, struct rq_flags *rf) {
 	
 	rq_unpin_lock(rq, rf);
 	spin_release(&__rq_lockp(rq)->dep_map, _THIS_IP_); }
@@ -291,8 +288,7 @@ static inline void finish_lock_switch(struct rq *rq) {
 # define finish_arch_post_lock_switch()	do { } while (0)
 #endif
 
-static inline void
-prepare_task_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next) {
+static inline void prepare_task_switch(struct rq *rq, struct task_struct *prev, struct task_struct *next) {
 	prepare_arch_switch(next); }
 
 static struct rq *finish_task_switch(struct task_struct *prev)

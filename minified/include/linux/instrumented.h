@@ -21,12 +21,10 @@ static __always_inline void instrument_atomic_write(const volatile void *v, size
 static __always_inline void instrument_atomic_read_write(const volatile void *v, size_t size) {
 	kasan_check_write(v, size); }
 
-static __always_inline void
-instrument_copy_to_user(void __user *to, const void *from, unsigned long n) {
+static __always_inline void instrument_copy_to_user(void __user *to, const void *from, unsigned long n) {
 	kasan_check_read(from, n); }
 
-static __always_inline void
-instrument_copy_from_user(const void *to, const void __user *from, unsigned long n) {
+static __always_inline void instrument_copy_from_user(const void *to, const void __user *from, unsigned long n) {
 	kasan_check_write(to, n); }
 
 #endif  

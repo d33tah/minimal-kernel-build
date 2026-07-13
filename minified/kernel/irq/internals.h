@@ -34,8 +34,7 @@ enum { _IRQ_DEFAULT_INIT_FLAGS	= IRQ_DEFAULT_INIT_FLAGS, _IRQ_NOPROBE		= IRQ_NOP
 #undef IRQF_MODIFY_MASK
 #define IRQF_MODIFY_MASK	GOT_YOU_MORON
 
-static inline void
-irq_settings_clr_and_set(struct irq_desc *desc, u32 clr, u32 set) {
+static inline void irq_settings_clr_and_set(struct irq_desc *desc, u32 clr, u32 set) {
 	desc->status_use_accessors &= ~(clr & _IRQF_MODIFY_MASK);
 	desc->status_use_accessors |= (set & _IRQF_MODIFY_MASK); }
 
@@ -123,15 +122,13 @@ void __irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags, bool bus)
 static inline struct irq_desc * irq_get_desc_buslock(unsigned int irq, unsigned long *flags, unsigned int check) {
 	return __irq_get_desc_lock(irq, flags, true, check); }
 
-static inline void
-irq_put_desc_busunlock(struct irq_desc *desc, unsigned long flags) {
+static inline void irq_put_desc_busunlock(struct irq_desc *desc, unsigned long flags) {
 	__irq_put_desc_unlock(desc, flags, true); }
 
 static inline struct irq_desc * irq_get_desc_lock(unsigned int irq, unsigned long *flags, unsigned int check) {
 	return __irq_get_desc_lock(irq, flags, false, check); }
 
-static inline void
-irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags) {
+static inline void irq_put_desc_unlock(struct irq_desc *desc, unsigned long flags) {
 	__irq_put_desc_unlock(desc, flags, false); }
 
 #define __irqd_to_state(d) ACCESS_PRIVATE((d)->common, state_use_accessors)

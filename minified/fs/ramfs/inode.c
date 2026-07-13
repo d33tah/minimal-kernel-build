@@ -3,7 +3,6 @@
 #include <linux/fs.h>
 #include <linux/pagemap.h>
 #include <linux/ramfs.h>
-#include <linux/fs_context.h>
 #include "internal.h"
 
 struct ramfs_mount_opts { umode_t mode; };

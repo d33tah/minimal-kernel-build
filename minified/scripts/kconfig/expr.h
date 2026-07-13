@@ -4,16 +4,10 @@
 #ifndef EXPR_H
 #define EXPR_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <assert.h>
 #include <stdio.h>
 #include "list.h"
-#ifndef __cplusplus
 #include <stdbool.h>
-#endif
 
 struct file {
 	struct file *next, *parent;
@@ -204,8 +198,4 @@ void expr_gstr_print_revdep(struct expr *e, struct gstr *gs, tristate pr_type, c
 static inline int expr_is_yes(struct expr *e) {
 	return !e || (e->type == E_SYMBOL && e->left.sym == &symbol_yes); }
 
-#ifdef __cplusplus
-}
 #endif
-
-#endif  

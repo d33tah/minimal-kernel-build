@@ -10,11 +10,7 @@
 #define ASM_NL		 ;
 #endif
 
-#ifdef __cplusplus
-#define CPP_ASMLINKAGE extern "C"
-#else
 #define CPP_ASMLINKAGE
-#endif
 
 
 #ifndef cond_syscall

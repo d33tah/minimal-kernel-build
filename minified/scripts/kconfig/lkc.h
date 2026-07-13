@@ -10,10 +10,6 @@
 
 #include "expr.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "lkc_proto.h"
 
 #define SRCTREE "srctree"
@@ -102,8 +98,4 @@ static inline bool sym_is_optional(struct symbol *sym) {
 static inline bool sym_has_value(struct symbol *sym) {
 	return sym->flags & SYMBOL_DEF_USER ? true : false; }
 
-#ifdef __cplusplus
-}
 #endif
-
-#endif  

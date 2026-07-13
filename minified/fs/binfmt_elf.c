@@ -225,9 +225,7 @@ create_elf_tables(struct linux_binprm *bprm, const struct elfhdr *exec,
 		return -EFAULT;
 
 	 
-	if (copy_to_user(sp, mm->saved_auxv, ei_index * sizeof(elf_addr_t)))
-		return -EFAULT;
-	return 0;
+	return copy_to_user(sp, mm->saved_auxv, ei_index * sizeof(elf_addr_t)) ? -EFAULT : 0;
 }
 
 static unsigned long elf_map(struct file *filep, unsigned long addr,

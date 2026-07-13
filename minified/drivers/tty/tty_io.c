@@ -65,16 +65,12 @@ void tty_free_file(struct file *file)
 
 const char *tty_name(const struct tty_struct *tty)
 {
-	if (!tty) 
-		return "NULL tty";
-	return tty->name;
+	return !tty ? "NULL tty" : tty->name;
 }
 
 const char *tty_driver_name(const struct tty_struct *tty)
 {
-	if (!tty || !tty->driver)
-		return "";
-	return tty->driver->name;
+	return (!tty || !tty->driver) ? "" : tty->driver->name;
 }
 
 static int tty_paranoia_check(struct tty_struct *tty, struct inode *inode,
@@ -862,9 +858,7 @@ err:
 static int __init tty_class_init(void)
 {
 	tty_class = class_create(THIS_MODULE, "tty");
-	if (IS_ERR(tty_class))
-		return PTR_ERR(tty_class);
-	return 0;
+	return IS_ERR(tty_class) ? PTR_ERR(tty_class) : 0;
 }
 
 postcore_initcall(tty_class_init);

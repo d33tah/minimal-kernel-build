@@ -29,9 +29,7 @@ void tty_port_init(struct tty_port *port);
 
 static inline struct tty_port *tty_port_get(struct tty_port *port)
 {
-	if (port && kref_get_unless_zero(&port->kref))
-		return port;
-	return NULL;
+	return (port && kref_get_unless_zero(&port->kref)) ? port : NULL;
 }
 
 

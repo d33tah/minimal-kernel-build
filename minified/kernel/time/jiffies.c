@@ -1,5 +1,4 @@
 #include <linux/clocksource.h>
-#include <linux/jiffies.h>
 #include <linux/module.h>
 
 #include "timekeeping.h"

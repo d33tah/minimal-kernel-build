@@ -1,11 +1,9 @@
 
 #include <generated/compile.h>
 #include <linux/build-salt.h>
-#include <linux/elfnote.h>
 #define LINUX_ELFNOTE_LTO_INFO	0x101
 #define BUILD_LTO_INFO	ELFNOTE32("Linux", LINUX_ELFNOTE_LTO_INFO, 0)
 /* end elfnote-lto.h */
-#include <linux/export.h>
 
 #ifndef UTS_SYSNAME
 #define UTS_SYSNAME "Linux"
@@ -18,31 +16,12 @@
 #endif
 #include <linux/utsname.h>
 #include <generated/utsrelease.h>
-#include <linux/version.h>
 #include <linux/proc_ns.h>
 
-struct uts_namespace init_uts_ns = {
-	.ns.count = REFCOUNT_INIT(2),
-	.name = {
-		.sysname	= UTS_SYSNAME,
-		.nodename	= UTS_NODENAME,
-		.release	= UTS_RELEASE,
-		.version	= UTS_VERSION,
-		.machine	= UTS_MACHINE,
-		.domainname	= UTS_DOMAINNAME,
-	},
-	.user_ns = &init_user_ns,
-	.ns.inum = PROC_UTS_INIT_INO,
-};
+struct uts_namespace init_uts_ns = { .ns.count = REFCOUNT_INIT(2), .name = { .sysname	= UTS_SYSNAME, .nodename	= UTS_NODENAME, .release	= UTS_RELEASE, .version	= UTS_VERSION, .machine	= UTS_MACHINE, .domainname	= UTS_DOMAINNAME, }, .ns.inum = PROC_UTS_INIT_INO, };
 
-const char linux_banner[] =
-	"Linux version " UTS_RELEASE " (" LINUX_COMPILE_BY "@"
+const char linux_banner[] = "Linux version " UTS_RELEASE " (" LINUX_COMPILE_BY "@"
 	LINUX_COMPILE_HOST ") (" LINUX_COMPILER ") " UTS_VERSION "\n";
-
-const char linux_proc_banner[] =
-	"%s version %s"
-	" (" LINUX_COMPILE_BY "@" LINUX_COMPILE_HOST ")"
-	" (" LINUX_COMPILER ") %s\n";
 
 BUILD_SALT;
 BUILD_LTO_INFO;

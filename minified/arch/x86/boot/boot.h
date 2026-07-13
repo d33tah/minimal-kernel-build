@@ -110,24 +110,16 @@ extern char _end[];
 extern char *HEAP;
 extern char *heap_end;
 #define RESET_HEAP() ((void *)( HEAP = _end ))
-#define GET_HEAP(type, n) \
-	((type *)(HEAP = (char *)(((size_t)HEAP+(__alignof__(type)-1)) & ~(__alignof__(type)-1)), \
-	          HEAP += sizeof(type)*(n), HEAP - sizeof(type)*(n)))
 
  
 
 void copy_to_fs(addr_t dst, void *src, size_t len);
 void *copy_from_fs(void *dst, addr_t src, size_t len);
-void copy_to_gs(addr_t dst, void *src, size_t len);
-void *copy_from_gs(void *dst, addr_t src, size_t len);
 
  
 int enable_a20(void);
 
- 
-int query_apm_bios(void);
 
- 
 struct biosregs {
 	union {
 		struct {
@@ -171,18 +163,7 @@ struct biosregs {
 void intcall(u8 int_no, const struct biosregs *ireg, struct biosregs *oreg);
 
  
-int __cmdline_find_option(unsigned long cmdline_ptr, const char *option, char *buffer, int bufsize);
 int __cmdline_find_option_bool(unsigned long cmdline_ptr, const char *option);
-static inline int cmdline_find_option(const char *option, char *buffer, int bufsize)
-{
-	unsigned long cmd_line_ptr = boot_params.hdr.cmd_line_ptr;
-
-	if (cmd_line_ptr >= 0x100000)
-		return -1;       
-
-	return __cmdline_find_option(cmd_line_ptr, option, buffer, bufsize);
-}
-
 static inline int cmdline_find_option_bool(const char *option)
 {
 	unsigned long cmd_line_ptr = boot_params.hdr.cmd_line_ptr;
@@ -199,13 +180,9 @@ int check_knl_erratum(void);
 int validate_cpu(void);
 
  
-extern int early_serial_base;
 void console_init(void);
 
- 
-void query_edd(void);
 
- 
 void __attribute__((noreturn)) die(void);
 
  
@@ -227,27 +204,19 @@ int printf(const char *fmt, ...);
 void initregs(struct biosregs *regs);
 
  
-int strcmp(const char *str1, const char *str2);
-int strncmp(const char *cs, const char *ct, size_t count);
 size_t strnlen(const char *s, size_t maxlen);
-unsigned int atou(const char *s);
 unsigned long long simple_strtoull(const char *cp, char **endp, unsigned int base);
 size_t strlen(const char *s);
-char *strchr(const char *s, int c);
 
  
 void puts(const char *);
 void putchar(int);
-int getchar(void);
-void kbd_flush(void);
-int getchar_timeout(void);
 
  
 void set_video(void);
 
  
 int set_mode(u16 mode);
-int mode_defined(u16 mode);
 void probe_cards(int unsafe);
 
  

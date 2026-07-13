@@ -1,7 +1,6 @@
  
 #include <linux/jump_label.h>
 #include <asm/unwind_hints.h>
-#include <asm/cpufeatures.h>
 #include <asm/page_types.h>
 #include <asm/percpu.h>
 #include <asm/asm-offsets.h>
@@ -18,8 +17,4 @@
 .macro STACKLEAK_ERASE
 .endm
 
-
-.macro GET_PERCPU_BASE reg:req
-	movq	pcpu_unit_offsets(%rip), \reg
-.endm
 

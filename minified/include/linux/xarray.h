@@ -3,71 +3,43 @@
 
 #include <linux/bitmap.h>
 #include <linux/bug.h>
-#include <linux/compiler.h>
 #include <linux/gfp.h>
-#include <linux/kconfig.h>
-#include <linux/kernel.h>
 #include <linux/rcupdate.h>
 #include <linux/spinlock.h>
-#include <linux/types.h>
 
 
 #define BITS_PER_XA_VALUE	(BITS_PER_LONG - 1)
 
-static inline void *xa_mk_value(unsigned long v)
-{
+static inline void *xa_mk_value(unsigned long v) {
 	WARN_ON((long)v < 0);
-	return (void *)((v << 1) | 1);
-}
+	return (void *)((v << 1) | 1); }
 
-static inline unsigned long xa_to_value(const void *entry)
-{
-	return (unsigned long)entry >> 1;
-}
+static inline unsigned long xa_to_value(const void *entry) {
+	return (unsigned long)entry >> 1; }
 
-static inline bool xa_is_value(const void *entry)
-{
-	return (unsigned long)entry & 1;
-}
+static inline bool xa_is_value(const void *entry) {
+	return (unsigned long)entry & 1; }
 
-static inline void *xa_mk_internal(unsigned long v)
-{
-	return (void *)((v << 2) | 2);
-}
+static inline void *xa_mk_internal(unsigned long v) {
+	return (void *)((v << 2) | 2); }
 
-static inline unsigned long xa_to_internal(const void *entry)
-{
-	return (unsigned long)entry >> 2;
-}
+/* xa_to_internal removed: 0-caller static-inline orphan */
 
-static inline bool xa_is_internal(const void *entry)
-{
-	return ((unsigned long)entry & 3) == 2;
-}
+static inline bool xa_is_internal(const void *entry) {
+	return ((unsigned long)entry & 3) == 2; }
 
 #define XA_ZERO_ENTRY		xa_mk_internal(257)
 
-static inline bool xa_is_zero(const void *entry)
-{
-	return unlikely(entry == XA_ZERO_ENTRY);
-}
+static inline bool xa_is_zero(const void *entry) {
+	return unlikely(entry == XA_ZERO_ENTRY); }
 
-static inline int xa_err(void *entry)
-{
+static inline int xa_err(void *entry) {
 	if (xa_is_internal(entry) && entry >= xa_mk_internal(-MAX_ERRNO))
 		return (long)entry >> 2;
-	return 0;
-}
-
-struct xa_limit {
-	u32 max;
-	u32 min;
-};
+	return 0; }
 
 typedef unsigned __bitwise xa_mark_t;
 #define XA_MARK_0		((__force xa_mark_t)0U)
-#define XA_MARK_1		((__force xa_mark_t)1U)
-#define XA_PRESENT		((__force xa_mark_t)8U)
 #define XA_MARK_MAX		((__force xa_mark_t)2U)
 #define XA_FREE_MARK		XA_MARK_0
 
@@ -80,54 +52,26 @@ enum xa_lock_type {
 #define XA_FLAGS_TRACK_FREE	((__force gfp_t)4U)
 #define XA_FLAGS_ZERO_BUSY	((__force gfp_t)8U)
 #define XA_FLAGS_ACCOUNT	((__force gfp_t)32U)
-#define XA_FLAGS_MARK(mark)	((__force gfp_t)((1U << __GFP_BITS_SHIFT) << \
-						(__force unsigned)(mark)))
+#define XA_FLAGS_MARK(mark)	((__force gfp_t)((1U << __GFP_BITS_SHIFT) << 						(__force unsigned)(mark)))
 
 #define XA_FLAGS_ALLOC	(XA_FLAGS_TRACK_FREE | XA_FLAGS_MARK(XA_FREE_MARK))
 
-struct xarray {
-	spinlock_t	xa_lock;
-	gfp_t		xa_flags;
-	void __rcu *	xa_head;
-};
+struct xarray { spinlock_t	xa_lock; gfp_t		xa_flags; void __rcu *	xa_head; };
 
-#define XARRAY_INIT(name, flags) {				\
-	.xa_lock = __SPIN_LOCK_UNLOCKED(name.xa_lock),		\
-	.xa_flags = flags,					\
-	.xa_head = NULL,					\
-}
+#define XARRAY_INIT(name, flags) {					.xa_lock = __SPIN_LOCK_UNLOCKED(name.xa_lock),			.xa_flags = flags,						.xa_head = NULL,					}
 
-void *xa_load(struct xarray *, unsigned long index);
-
-static inline void xa_init_flags(struct xarray *xa, gfp_t flags)
-{
+static inline void xa_init_flags(struct xarray *xa, gfp_t flags) {
 	spin_lock_init(&xa->xa_lock);
 	xa->xa_flags = flags;
-	xa->xa_head = NULL;
-}
+	xa->xa_head = NULL; }
 
-static inline bool xa_empty(const struct xarray *xa)
-{
-	return xa->xa_head == NULL;
-}
+static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark) {
+	return xa->xa_flags & XA_FLAGS_MARK(mark); }
 
-static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
-{
-	return xa->xa_flags & XA_FLAGS_MARK(mark);
-}
-
-#define xa_trylock(xa)		spin_trylock(&(xa)->xa_lock)
-#define xa_lock(xa)		spin_lock(&(xa)->xa_lock)
-#define xa_unlock(xa)		spin_unlock(&(xa)->xa_lock)
 #define xa_lock_irq(xa)		spin_lock_irq(&(xa)->xa_lock)
 #define xa_unlock_irq(xa)	spin_unlock_irq(&(xa)->xa_lock)
-#define xa_lock_irqsave(xa, flags) \
-				spin_lock_irqsave(&(xa)->xa_lock, flags)
-#define xa_unlock_irqrestore(xa, flags) \
-				spin_unlock_irqrestore(&(xa)->xa_lock, flags)
-
-int __must_check __xa_alloc(struct xarray *, u32 *id, void *entry,
-		struct xa_limit, gfp_t);
+#define xa_lock_irqsave(xa, flags) 				spin_lock_irqsave(&(xa)->xa_lock, flags)
+#define xa_unlock_irqrestore(xa, flags) 				spin_unlock_irqrestore(&(xa)->xa_lock, flags)
 
 
 #ifndef XA_CHUNK_SHIFT
@@ -138,356 +82,154 @@ int __must_check __xa_alloc(struct xarray *, u32 *id, void *entry,
 #define XA_MAX_MARKS		3
 #define XA_MARK_LONGS		DIV_ROUND_UP(XA_CHUNK_SIZE, BITS_PER_LONG)
 
-struct xa_node {
-	unsigned char	shift;		 
-	unsigned char	offset;		 
-	unsigned char	count;		 
-	unsigned char	nr_values;	 
-	struct xa_node __rcu *parent;	 
-	struct xarray	*array;		 
-	union {
-		struct list_head private_list;	 
-		struct rcu_head	rcu_head;	 
-	};
-	void __rcu	*slots[XA_CHUNK_SIZE];
-	union {
-		unsigned long	tags[XA_MAX_MARKS][XA_MARK_LONGS];
-		unsigned long	marks[XA_MAX_MARKS][XA_MARK_LONGS];
-	};
-};
+struct xa_node { unsigned char shift, offset, count; struct xa_node __rcu *parent; struct xarray	*array; union { struct list_head private_list; struct rcu_head	rcu_head; }; void __rcu	*slots[XA_CHUNK_SIZE]; union { unsigned long tags[XA_MAX_MARKS][XA_MARK_LONGS], marks[XA_MAX_MARKS][XA_MARK_LONGS]; }; };
 
 #define XA_NODE_BUG_ON(node, x)	do { } while (0)
 
-static inline void *xa_head(const struct xarray *xa)
-{
-	return rcu_dereference_check(xa->xa_head,
-						lockdep_is_held(&xa->xa_lock));
-}
+static inline void *xa_head(const struct xarray *xa) {
+	return rcu_dereference_check(xa->xa_head, lockdep_is_held(&xa->xa_lock)); }
 
-static inline void *xa_head_locked(const struct xarray *xa)
-{
-	return rcu_dereference_protected(xa->xa_head,
-						lockdep_is_held(&xa->xa_lock));
-}
+static inline void *xa_head_locked(const struct xarray *xa) {
+	return rcu_dereference_protected(xa->xa_head, lockdep_is_held(&xa->xa_lock)); }
 
-static inline void *xa_entry(const struct xarray *xa,
-				const struct xa_node *node, unsigned int offset)
-{
+static inline void *xa_entry(const struct xarray *xa, const struct xa_node *node, unsigned int offset) {
 	XA_NODE_BUG_ON(node, offset >= XA_CHUNK_SIZE);
-	return rcu_dereference_check(node->slots[offset],
-						lockdep_is_held(&xa->xa_lock));
-}
+	return rcu_dereference_check(node->slots[offset], lockdep_is_held(&xa->xa_lock)); }
 
-static inline void *xa_entry_locked(const struct xarray *xa,
-				const struct xa_node *node, unsigned int offset)
-{
+static inline void *xa_entry_locked(const struct xarray *xa, const struct xa_node *node, unsigned int offset) {
 	XA_NODE_BUG_ON(node, offset >= XA_CHUNK_SIZE);
-	return rcu_dereference_protected(node->slots[offset],
-						lockdep_is_held(&xa->xa_lock));
-}
+	return rcu_dereference_protected(node->slots[offset], lockdep_is_held(&xa->xa_lock)); }
 
-static inline struct xa_node *xa_parent(const struct xarray *xa,
-					const struct xa_node *node)
-{
-	return rcu_dereference_check(node->parent,
-						lockdep_is_held(&xa->xa_lock));
-}
+static inline struct xa_node *xa_parent(const struct xarray *xa, const struct xa_node *node) {
+	return rcu_dereference_check(node->parent, lockdep_is_held(&xa->xa_lock)); }
 
-static inline struct xa_node *xa_parent_locked(const struct xarray *xa,
-					const struct xa_node *node)
-{
-	return rcu_dereference_protected(node->parent,
-						lockdep_is_held(&xa->xa_lock));
-}
+static inline struct xa_node *xa_parent_locked(const struct xarray *xa, const struct xa_node *node) {
+	return rcu_dereference_protected(node->parent, lockdep_is_held(&xa->xa_lock)); }
 
-static inline void *xa_mk_node(const struct xa_node *node)
-{
-	return (void *)((unsigned long)node | 2);
-}
+static inline void *xa_mk_node(const struct xa_node *node) {
+	return (void *)((unsigned long)node | 2); }
 
-static inline struct xa_node *xa_to_node(const void *entry)
-{
-	return (struct xa_node *)((unsigned long)entry - 2);
-}
+static inline struct xa_node *xa_to_node(const void *entry) {
+	return (struct xa_node *)((unsigned long)entry - 2); }
 
-static inline bool xa_is_node(const void *entry)
-{
-	return xa_is_internal(entry) && (unsigned long)entry > 4096;
-}
-
-static inline void *xa_mk_sibling(unsigned int offset)
-{
-	return xa_mk_internal(offset);
-}
-
-static inline unsigned long xa_to_sibling(const void *entry)
-{
-	return xa_to_internal(entry);
-}
-
-static inline bool xa_is_sibling(const void *entry)
-{
-	return IS_ENABLED(CONFIG_XARRAY_MULTI) && xa_is_internal(entry) &&
-		(entry < xa_mk_sibling(XA_CHUNK_SIZE - 1));
-}
+static inline bool xa_is_node(const void *entry) {
+	return xa_is_internal(entry) && (unsigned long)entry > 4096; }
 
 #define XA_RETRY_ENTRY		xa_mk_internal(256)
 
-static inline bool xa_is_retry(const void *entry)
-{
-	return unlikely(entry == XA_RETRY_ENTRY);
-}
+static inline bool xa_is_retry(const void *entry) {
+	return unlikely(entry == XA_RETRY_ENTRY); }
 
 typedef void (*xa_update_node_t)(struct xa_node *node);
 
-void xa_delete_node(struct xa_node *, xa_update_node_t);
 
-struct xa_state {
-	struct xarray *xa;
-	unsigned long xa_index;
-	unsigned char xa_shift;
-	unsigned char xa_sibs;
-	unsigned char xa_offset;
-	unsigned char xa_pad;		 
-	struct xa_node *xa_node;
-	struct xa_node *xa_alloc;
-	xa_update_node_t xa_update;
-	struct list_lru *xa_lru;
-};
+struct xa_state { struct xarray *xa; unsigned long xa_index; unsigned char xa_shift, xa_offset; struct xa_node *xa_node, *xa_alloc; xa_update_node_t xa_update; struct list_lru *xa_lru; };
 
 #define XA_ERROR(errno) ((struct xa_node *)(((unsigned long)errno << 2) | 2UL))
 #define XAS_BOUNDS	((struct xa_node *)1UL)
 #define XAS_RESTART	((struct xa_node *)3UL)
 
-#define __XA_STATE(array, index, shift, sibs)  {	\
-	.xa = array,					\
-	.xa_index = index,				\
-	.xa_shift = shift,				\
-	.xa_sibs = sibs,				\
-	.xa_offset = 0,					\
-	.xa_pad = 0,					\
-	.xa_node = XAS_RESTART,				\
-	.xa_alloc = NULL,				\
-	.xa_update = NULL,				\
-	.xa_lru = NULL,					\
-}
+#define __XA_STATE(array, index, shift, sibs)  {		.xa = array,						.xa_index = index,					.xa_shift = shift,					.xa_offset = 0,						.xa_node = XAS_RESTART,					.xa_alloc = NULL,					.xa_update = NULL,					.xa_lru = NULL,					}
 
-#define XA_STATE(name, array, index)				\
-	struct xa_state name = __XA_STATE(array, index, 0, 0)
+#define XA_STATE(name, array, index)					struct xa_state name = __XA_STATE(array, index, 0, 0)
 
-#define xas_lock(xas)		xa_lock((xas)->xa)
-#define xas_unlock(xas)		xa_unlock((xas)->xa)
 #define xas_lock_irq(xas)	xa_lock_irq((xas)->xa)
 #define xas_unlock_irq(xas)	xa_unlock_irq((xas)->xa)
-#define xas_lock_irqsave(xas, flags) \
-				xa_lock_irqsave((xas)->xa, flags)
-#define xas_unlock_irqrestore(xas, flags) \
-				xa_unlock_irqrestore((xas)->xa, flags)
+#define xas_lock_irqsave(xas, flags) 				xa_lock_irqsave((xas)->xa, flags)
+#define xas_unlock_irqrestore(xas, flags) 				xa_unlock_irqrestore((xas)->xa, flags)
 
-static inline int xas_error(const struct xa_state *xas)
-{
-	return xa_err(xas->xa_node);
-}
+static inline int xas_error(const struct xa_state *xas) {
+	return xa_err(xas->xa_node); }
 
-static inline void xas_set_err(struct xa_state *xas, long err)
-{
-	xas->xa_node = XA_ERROR(err);
-}
+static inline void xas_set_err(struct xa_state *xas, long err) {
+	xas->xa_node = XA_ERROR(err); }
 
-static inline bool xas_invalid(const struct xa_state *xas)
-{
-	return (unsigned long)xas->xa_node & 3;
-}
+static inline bool xas_invalid(const struct xa_state *xas) {
+	return (unsigned long)xas->xa_node & 3; }
 
-static inline bool xas_valid(const struct xa_state *xas)
-{
-	return !xas_invalid(xas);
-}
+static inline bool xas_valid(const struct xa_state *xas) {
+	return !xas_invalid(xas); }
 
-static inline bool xas_is_node(const struct xa_state *xas)
-{
-	return xas_valid(xas) && xas->xa_node;
-}
+static inline bool xas_is_node(const struct xa_state *xas) {
+	return xas_valid(xas) && xas->xa_node; }
 
-static inline bool xas_not_node(struct xa_node *node)
-{
-	return ((unsigned long)node & 3) || !node;
-}
+static inline bool xas_not_node(struct xa_node *node) {
+	return ((unsigned long)node & 3) || !node; }
 
-static inline bool xas_frozen(struct xa_node *node)
-{
-	return (unsigned long)node & 2;
-}
+static inline bool xas_frozen(struct xa_node *node) {
+	return (unsigned long)node & 2; }
 
-static inline bool xas_top(struct xa_node *node)
-{
-	return node <= XAS_RESTART;
-}
+static inline bool xas_top(struct xa_node *node) {
+	return node <= XAS_RESTART; }
 
-static inline void xas_reset(struct xa_state *xas)
-{
-	xas->xa_node = XAS_RESTART;
-}
+static inline void xas_reset(struct xa_state *xas) {
+	xas->xa_node = XAS_RESTART; }
 
-static inline bool xas_retry(struct xa_state *xas, const void *entry)
-{
+static inline bool xas_retry(struct xa_state *xas, const void *entry) {
 	if (xa_is_zero(entry))
 		return true;
 	if (!xa_is_retry(entry))
 		return false;
 	xas_reset(xas);
-	return true;
-}
+	return true; }
 
 void *xas_load(struct xa_state *);
 void *xas_store(struct xa_state *, void *entry);
-void *xas_find(struct xa_state *, unsigned long max);
-void *xas_find_conflict(struct xa_state *);
 
 void xas_set_mark(const struct xa_state *, xa_mark_t);
 void xas_clear_mark(const struct xa_state *, xa_mark_t);
 void *xas_find_marked(struct xa_state *, unsigned long max, xa_mark_t);
-void xas_init_marks(const struct xa_state *);
 
 bool xas_nomem(struct xa_state *, gfp_t);
-void xas_destroy(struct xa_state *);
 
 
-static inline int xa_get_order(struct xarray *xa, unsigned long index)
-{
-	return 0;
-}
-
-static inline void xas_split(struct xa_state *xas, void *entry,
-		unsigned int order)
-{
-	xas_store(xas, entry);
-}
-
-static inline void xas_split_alloc(struct xa_state *xas, void *entry,
-		unsigned int order, gfp_t gfp)
-{
-}
-
-static inline void *xas_reload(struct xa_state *xas)
-{
+static inline void *xas_reload(struct xa_state *xas) {
 	struct xa_node *node = xas->xa_node;
-	void *entry;
 	char offset;
 
 	if (!node)
 		return xa_head(xas->xa);
-	if (IS_ENABLED(CONFIG_XARRAY_MULTI)) {
-		offset = (xas->xa_index >> node->shift) & XA_CHUNK_MASK;
-		entry = xa_entry(xas->xa, node, offset);
-		if (!xa_is_sibling(entry))
-			return entry;
-		offset = xa_to_sibling(entry);
-	} else {
-		offset = xas->xa_offset;
-	}
-	return xa_entry(xas->xa, node, offset);
-}
+	offset = xas->xa_offset;
+	return xa_entry(xas->xa, node, offset); }
 
-static inline void xas_set(struct xa_state *xas, unsigned long index)
-{
+static inline void xas_set(struct xa_state *xas, unsigned long index) {
 	xas->xa_index = index;
-	xas->xa_node = XAS_RESTART;
-}
+	xas->xa_node = XAS_RESTART; }
 
-static inline void xas_advance(struct xa_state *xas, unsigned long index)
-{
+static inline void xas_advance(struct xa_state *xas, unsigned long index) {
 	unsigned char shift = xas_is_node(xas) ? xas->xa_node->shift : 0;
 
 	xas->xa_index = index;
-	xas->xa_offset = (index >> shift) & XA_CHUNK_MASK;
-}
+	xas->xa_offset = (index >> shift) & XA_CHUNK_MASK; }
 
-static inline void xas_set_order(struct xa_state *xas, unsigned long index,
-					unsigned int order)
-{
+static inline void xas_set_order(struct xa_state *xas, unsigned long index, unsigned int order) {
 	BUG_ON(order > 0);
-	xas_set(xas, index);
-}
+	xas_set(xas, index); }
 
-static inline void xas_set_update(struct xa_state *xas, xa_update_node_t update)
-{
-	xas->xa_update = update;
-}
+static inline void xas_set_update(struct xa_state *xas, xa_update_node_t update) {
+	xas->xa_update = update; }
 
-static inline void xas_set_lru(struct xa_state *xas, struct list_lru *lru)
-{
-	xas->xa_lru = lru;
-}
+static inline void xas_set_lru(struct xa_state *xas, struct list_lru *lru) {
+	xas->xa_lru = lru; }
 
-static inline void *xas_next_entry(struct xa_state *xas, unsigned long max)
-{
-	struct xa_node *node = xas->xa_node;
-	void *entry;
-
-	if (unlikely(xas_not_node(node) || node->shift ||
-			xas->xa_offset != (xas->xa_index & XA_CHUNK_MASK)))
-		return xas_find(xas, max);
-
-	do {
-		if (unlikely(xas->xa_index >= max))
-			return xas_find(xas, max);
-		if (unlikely(xas->xa_offset == XA_CHUNK_MASK))
-			return xas_find(xas, max);
-		entry = xa_entry(xas->xa, node, xas->xa_offset + 1);
-		if (unlikely(xa_is_internal(entry)))
-			return xas_find(xas, max);
-		xas->xa_offset++;
-		xas->xa_index++;
-	} while (!entry);
-
-	return entry;
-}
-
-static inline unsigned int xas_find_chunk(struct xa_state *xas, bool advance,
-		xa_mark_t mark)
-{
+static inline unsigned int xas_find_chunk(struct xa_state *xas, bool advance, xa_mark_t mark) {
 	unsigned long *addr = xas->xa_node->marks[(__force unsigned)mark];
 	unsigned int offset = xas->xa_offset;
 
 	if (advance)
 		offset++;
-	if (XA_CHUNK_SIZE == BITS_PER_LONG) {
-		if (offset < XA_CHUNK_SIZE) {
-			unsigned long data = *addr & (~0UL << offset);
-			if (data)
-				return __ffs(data);
-		}
-		return XA_CHUNK_SIZE;
-	}
-
-	return find_next_bit(addr, XA_CHUNK_SIZE, offset);
-}
-
-enum {
-	XA_CHECK_SCHED = 4096,
-};
-
-#define xas_for_each(xas, entry, max) \
-	for (entry = xas_find(xas, max); entry; \
-	     entry = xas_next_entry(xas, max))
-
-#define xas_for_each_conflict(xas, entry) \
-	while ((entry = xas_find_conflict(xas)))
+	return find_next_bit(addr, XA_CHUNK_SIZE, offset); }
 
 void *__xas_next(struct xa_state *);
 
-static inline void *xas_next(struct xa_state *xas)
-{
+static inline void *xas_next(struct xa_state *xas) {
 	struct xa_node *node = xas->xa_node;
 
-	if (unlikely(xas_not_node(node) || node->shift ||
-				xas->xa_offset == XA_CHUNK_MASK))
+	if (unlikely(xas_not_node(node) || node->shift || xas->xa_offset == XA_CHUNK_MASK))
 		return __xas_next(xas);
 
 	xas->xa_index++;
 	xas->xa_offset++;
-	return xa_entry(xas->xa, node, xas->xa_offset);
-}
+	return xa_entry(xas->xa, node, xas->xa_offset); }
 
 #endif  

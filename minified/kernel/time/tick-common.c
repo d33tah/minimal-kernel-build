@@ -1,13 +1,4 @@
-#include <linux/cpu.h>
-#include <linux/err.h>
-#include <linux/hrtimer.h>
 #include <linux/interrupt.h>
-#include <linux/nmi.h>
-#include <linux/percpu.h>
-#define CPU_PROFILING 1
-static inline void profile_tick(int type) { }
-#include <linux/sched.h>
-#include <linux/module.h>
 
 #include <asm/irq_regs.h>
 
@@ -18,13 +9,7 @@ ktime_t tick_next_period;
 
 int tick_do_timer_cpu __read_mostly = TICK_DO_TIMER_BOOT;
 
-struct tick_device *tick_get_device(int cpu)
-{
-	return &per_cpu(tick_cpu_device, cpu);
-}
-
-static void tick_periodic(int cpu)
-{
+static void tick_periodic(int cpu) {
 	if (tick_do_timer_cpu == cpu) {
 		raw_spin_lock(&jiffies_lock);
 		write_seqcount_begin(&jiffies_seq);
@@ -35,161 +20,64 @@ static void tick_periodic(int cpu)
 		do_timer(1);
 		write_seqcount_end(&jiffies_seq);
 		raw_spin_unlock(&jiffies_lock);
-		update_wall_time();
-	}
+		update_wall_time(); }
 
-	update_process_times(user_mode(get_irq_regs()));
-	profile_tick(CPU_PROFILING);
-}
+	update_process_times(user_mode(get_irq_regs())); }
 
-void tick_handle_periodic(struct clock_event_device *dev)
-{
+void tick_handle_periodic(struct clock_event_device *dev) {
 	int cpu = smp_processor_id();
-	ktime_t next = dev->next_event;
 
 	tick_periodic(cpu);
 
-
-	if (!clockevent_state_oneshot(dev))
-		return;
-	for (;;) {
-		 
-		next = ktime_add_ns(next, TICK_NSEC);
-
-		if (!clockevents_program_event(dev, next, false))
-			return;
-		 
-		if (timekeeping_valid_for_hres())
-			tick_periodic(cpu);
-	}
+	/*
+	 * TICK_ONESHOT/NO_HZ are unset, so the tick device is never switched to
+	 * oneshot state -- clockevent_state_oneshot() is always false here and the
+	 * oneshot reprogramming loop was unreachable.
+	 */
 }
 
-void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
-{
-	tick_set_periodic_handler(dev, broadcast);
+static void tick_setup_device(struct tick_device *td, struct clock_event_device *newdev, int cpu, const struct cpumask *cpumask) {
 
-	 
-	if (!tick_device_is_functional(dev))
-		return;
-
-	if ((dev->features & CLOCK_EVT_FEAT_PERIODIC) &&
-	    !tick_broadcast_oneshot_active()) {
-		clockevents_switch_state(dev, CLOCK_EVT_STATE_PERIODIC);
-	} else {
-		unsigned int seq;
-		ktime_t next;
-
-		do {
-			seq = read_seqcount_begin(&jiffies_seq);
-			next = tick_next_period;
-		} while (read_seqcount_retry(&jiffies_seq, seq));
-
-		clockevents_switch_state(dev, CLOCK_EVT_STATE_ONESHOT);
-
-		for (;;) {
-			if (!clockevents_program_event(dev, next, false))
-				return;
-			next = ktime_add_ns(next, TICK_NSEC);
-		}
-	}
-}
-
-
-static void tick_setup_device(struct tick_device *td,
-			      struct clock_event_device *newdev, int cpu,
-			      const struct cpumask *cpumask)
-{
-	void (*handler)(struct clock_event_device *) = NULL;
-	ktime_t next_event = 0;
-
-	 
 	if (!td->evtdev) {
-		 
+
 		if (tick_do_timer_cpu == TICK_DO_TIMER_BOOT) {
 			tick_do_timer_cpu = cpu;
 
-			tick_next_period = ktime_get();
-		}
-
-		 
-		td->mode = TICKDEV_MODE_PERIODIC;
+			tick_next_period = ktime_get(); }
 	} else {
-		handler = td->evtdev->event_handler;
-		next_event = td->evtdev->next_event;
-		td->evtdev->event_handler = clockevents_handle_noop;
-	}
+		td->evtdev->event_handler = clockevents_handle_noop; }
 
 	td->evtdev = newdev;
 
-	 
-	if (!cpumask_equal(newdev->cpumask, cpumask))
-		irq_set_affinity(newdev->irq, cpumask);
 
-	 
-	if (tick_device_uses_broadcast(newdev, cpu))
-		return;
+	/*
+	 * No broadcast device on this build (tick_device_uses_broadcast always
+	 * false), and TICK_ONESHOT/NO_HZ are unset, so the device always goes to
+	 * PERIODIC state; the broadcast and oneshot setup branches were dead.
+	 */
+	tick_set_periodic_handler(newdev, 0);
+	clockevents_switch_state(newdev, CLOCK_EVT_STATE_PERIODIC); }
 
-	if (td->mode == TICKDEV_MODE_PERIODIC)
-		tick_setup_periodic(newdev, 0);
-	else
-		tick_setup_oneshot(newdev, handler, next_event);
-}
-
-void tick_install_replacement(struct clock_event_device *newdev)
-{
-	struct tick_device *td = this_cpu_ptr(&tick_cpu_device);
-	int cpu = smp_processor_id();
-
-	clockevents_exchange_device(td->evtdev, newdev);
-	tick_setup_device(td, newdev, cpu, cpumask_of(cpu));
-	if (newdev->features & CLOCK_EVT_FEAT_ONESHOT)
-		tick_oneshot_notify();
-}
-
-static bool tick_check_percpu(struct clock_event_device *curdev,
-			      struct clock_event_device *newdev, int cpu)
-{
+static bool tick_check_percpu(struct clock_event_device *curdev, struct clock_event_device *newdev, int cpu) {
 	if (!cpumask_test_cpu(cpu, newdev->cpumask))
 		return false;
 	if (cpumask_equal(newdev->cpumask, cpumask_of(cpu)))
 		return true;
 	 
-	if (newdev->irq >= 0 && !irq_can_set_affinity(newdev->irq))
+	if (newdev->irq >= 0)
 		return false;
 	 
-	if (curdev && cpumask_equal(curdev->cpumask, cpumask_of(cpu)))
-		return false;
-	return true;
-}
+	return !(curdev && cpumask_equal(curdev->cpumask, cpumask_of(cpu))); }
 
-static bool tick_check_preferred(struct clock_event_device *curdev,
-				 struct clock_event_device *newdev)
-{
-	 
-	if (!(newdev->features & CLOCK_EVT_FEAT_ONESHOT)) {
-		if (curdev && (curdev->features & CLOCK_EVT_FEAT_ONESHOT))
-			return false;
-		if (tick_oneshot_mode_active())
-			return false;
-	}
+static bool tick_check_preferred(struct clock_event_device *curdev, struct clock_event_device *newdev) {
+	/*
+	 * No clockevent device on this build carries CLOCK_EVT_FEAT_ONESHOT
+	 * (the only device, i8253, is PERIODIC-only), so neither newdev nor
+	 * curdev is ever oneshot -- the oneshot preference check was dead.
+	 */
+	return !curdev || newdev->rating > curdev->rating || !cpumask_equal(curdev->cpumask, newdev->cpumask); }
 
-	 
-	return !curdev ||
-		newdev->rating > curdev->rating ||
-	       !cpumask_equal(curdev->cpumask, newdev->cpumask);
-}
-
-bool tick_check_replacement(struct clock_event_device *curdev,
-			    struct clock_event_device *newdev)
-{
-	if (!tick_check_percpu(curdev, newdev, smp_processor_id()))
-		return false;
-
-	return tick_check_preferred(curdev, newdev);
-}
-
-void tick_check_new_device(struct clock_event_device *newdev)
-{
+void tick_check_new_device(struct clock_event_device *newdev) {
 	struct clock_event_device *curdev;
 	struct tick_device *td;
 	int cpu;
@@ -198,35 +86,18 @@ void tick_check_new_device(struct clock_event_device *newdev)
 	td = &per_cpu(tick_cpu_device, cpu);
 	curdev = td->evtdev;
 
-	if (!tick_check_replacement(curdev, newdev))
-		goto out_bc;
-
-	if (!try_module_get(newdev->owner))
+	/*
+	 * No broadcast device on this build, so a rejected replacement just
+	 * returns (tick_install_broadcast_device was a no-op) and curdev is
+	 * never a broadcast device (tick_is_broadcast_device always false).
+	 */
+	if (!tick_check_percpu(curdev, newdev, smp_processor_id()))
+		return;
+	if (!tick_check_preferred(curdev, newdev))
 		return;
 
-	 
-	if (tick_is_broadcast_device(curdev)) {
-		clockevents_shutdown(curdev);
-		curdev = NULL;
-	}
 	clockevents_exchange_device(curdev, newdev);
-	tick_setup_device(td, newdev, cpu, cpumask_of(cpu));
-	if (newdev->features & CLOCK_EVT_FEAT_ONESHOT)
-		tick_oneshot_notify();
-	return;
-
-out_bc:
-	 
-	tick_install_broadcast_device(newdev, cpu);
-}
+	tick_setup_device(td, newdev, cpu, cpumask_of(cpu)); }
 
 
 
-
-
-
-void __init tick_init(void)
-{
-	tick_broadcast_init();
-	tick_nohz_init();
-}

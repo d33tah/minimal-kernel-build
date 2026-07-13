@@ -29,23 +29,11 @@
  *	40(%esp) - %oldss
  */
 
-#include <linux/linkage.h>
 #include <linux/err.h>
-#include <asm/thread_info.h>
-#include <asm/irqflags.h>
-#include <asm/errno.h>
 #include <asm/segment.h>
-#include <asm/smp.h>
-#include <asm/percpu.h>
-#include <asm/processor-flags.h>
 #include <asm/irq_vectors.h>
-#include <asm/cpufeatures.h>
-#include <asm/alternative.h>
-#include <asm/asm.h>
 #include <asm/smap.h>
 #include <asm/frame.h>
-#include <asm/trapnr.h>
-#include <asm/nospec-branch.h>
 
 #include "calling.h"
 
@@ -64,21 +52,6 @@
 .endm
 
 .macro BUG_IF_WRONG_CR3 no_user_check=0
-#ifdef CONFIG_DEBUG_ENTRY
-	ALTERNATIVE "jmp .Lend_\@", "", X86_FEATURE_PTI
-	.if \no_user_check == 0
-	/* coming from usermode? */
-	testl	$USER_SEGMENT_RPL_MASK, PT_CS(%esp)
-	jz	.Lend_\@
-	.endif
-	/* On user-cr3? */
-	movl	%cr3, %eax
-	testl	$PTI_SWITCH_MASK, %eax
-	jnz	.Lend_\@
-	/* From userspace with kernel cr3 - BUG */
-	ud2
-.Lend_\@:
-#endif
 .endm
 
 /*
@@ -101,7 +74,6 @@
 #define CS_FROM_ENTRY_STACK	(1 << 31)
 #define CS_FROM_USER_CR3	(1 << 30)
 #define CS_FROM_KERNEL		(1 << 29)
-#define CS_FROM_ESPFIX		(1 << 28)
 
 .macro FIXUP_FRAME
 	/*
@@ -110,10 +82,6 @@
 	 */
 	andl	$0x0000ffff, 4*4(%esp)
 
-#ifdef CONFIG_VM86
-	testl	$X86_EFLAGS_VM, 5*4(%esp)
-	jnz	.Lfrom_usermode_no_fixup_\@
-#endif
 	testl	$USER_SEGMENT_RPL_MASK, 4*4(%esp)
 	jnz	.Lfrom_usermode_no_fixup_\@
 
@@ -303,53 +271,6 @@
 .endm
 
 .macro CHECK_AND_APPLY_ESPFIX
-#ifdef CONFIG_X86_ESPFIX32
-#define GDT_ESPFIX_OFFSET (GDT_ENTRY_ESPFIX_SS * 8)
-#define GDT_ESPFIX_SS PER_CPU_VAR(gdt_page) + GDT_ESPFIX_OFFSET
-
-	ALTERNATIVE	"jmp .Lend_\@", "", X86_BUG_ESPFIX
-
-	movl	PT_EFLAGS(%esp), %eax		# mix EFLAGS, SS and CS
-	/*
-	 * Warning: PT_OLDSS(%esp) contains the wrong/random values if we
-	 * are returning to the kernel.
-	 * See comments in process.c:copy_thread() for details.
-	 */
-	movb	PT_OLDSS(%esp), %ah
-	movb	PT_CS(%esp), %al
-	andl	$(X86_EFLAGS_VM | (SEGMENT_TI_MASK << 8) | SEGMENT_RPL_MASK), %eax
-	cmpl	$((SEGMENT_LDT << 8) | USER_RPL), %eax
-	jne	.Lend_\@	# returning to user-space with LDT SS
-
-	/*
-	 * Setup and switch to ESPFIX stack
-	 *
-	 * We're returning to userspace with a 16 bit stack. The CPU will not
-	 * restore the high word of ESP for us on executing iret... This is an
-	 * "official" bug of all the x86-compatible CPUs, which we can work
-	 * around to make dosemu and wine happy. We do this by preloading the
-	 * high word of ESP with the high word of the userspace ESP while
-	 * compensating for the offset by changing to the ESPFIX segment with
-	 * a base address that matches for the difference.
-	 */
-	mov	%esp, %edx			/* load kernel esp */
-	mov	PT_OLDESP(%esp), %eax		/* load userspace esp */
-	mov	%dx, %ax			/* eax: new kernel esp */
-	sub	%eax, %edx			/* offset (low word is 0) */
-	shr	$16, %edx
-	mov	%dl, GDT_ESPFIX_SS + 4		/* bits 16..23 */
-	mov	%dh, GDT_ESPFIX_SS + 7		/* bits 24..31 */
-	pushl	$__ESPFIX_SS
-	pushl	%eax				/* new kernel esp */
-	/*
-	 * Disable interrupts, but do not irqtrace this section: we
-	 * will soon execute iret and the tracer was already set to
-	 * the irqstate after the IRET:
-	 */
-	cli
-	lss	(%esp), %esp			/* switch to espfix segment */
-.Lend_\@:
-#endif /* CONFIG_X86_ESPFIX32 */
 .endm
 
 /*
@@ -393,31 +314,14 @@
 	movl	TSS_entry2task_stack(%edi), %edi
 
 	/* Special case - entry from kernel mode via entry stack */
-#ifdef CONFIG_VM86
-	movl	PT_EFLAGS(%esp), %ecx		# mix EFLAGS and CS
-	movb	PT_CS(%esp), %cl
-	andl	$(X86_EFLAGS_VM | SEGMENT_RPL_MASK), %ecx
-#else
 	movl	PT_CS(%esp), %ecx
 	andl	$SEGMENT_RPL_MASK, %ecx
-#endif
 	cmpl	$USER_RPL, %ecx
 	jb	.Lentry_from_kernel_\@
 
 	/* Bytes to copy */
 	movl	$PTREGS_SIZE, %ecx
 
-#ifdef CONFIG_VM86
-	testl	$X86_EFLAGS_VM, PT_EFLAGS(%esi)
-	jz	.Lcopy_pt_regs_\@
-
-	/*
-	 * Stack-frame contains 4 additional segment registers when
-	 * coming from VM86 mode
-	 */
-	addl	$(4 * 4), %ecx
-
-#endif
 .Lcopy_pt_regs_\@:
 
 	/* Allocate frame on task-stack */
@@ -515,16 +419,6 @@
 
 	/* Bytes to copy */
 	movl	$PTREGS_SIZE, %ecx
-
-#ifdef CONFIG_VM86
-	testl	$(X86_EFLAGS_VM), PT_EFLAGS(%esp)
-	jz	.Lcopy_pt_regs_\@
-
-	/* Additional 4 registers to copy when returning to VM86 mode */
-	addl    $(4 * 4), %ecx
-
-.Lcopy_pt_regs_\@:
-#endif
 
 	/* Initialize source and destination for movsl */
 	movl	PER_CPU_VAR(cpu_tss_rw + TSS_sp0), %edi
@@ -649,10 +543,6 @@ SYM_CODE_START_LOCAL(asm_\cfunc)
 SYM_CODE_END(asm_\cfunc)
 .endm
 
-.macro idtentry_sysvec vector cfunc
-	idtentry \vector asm_\cfunc \cfunc has_error_code=0
-.endm
-
 /*
  * Include the defines which emit the idt entries which are shared
  * shared between 32 and 64 bit and emit the __irqentry_text_* markers
@@ -692,11 +582,6 @@ SYM_CODE_START(__switch_to_asm)
 	/* switch stack */
 	movl	%esp, TASK_threadsp(%eax)
 	movl	TASK_threadsp(%edx), %esp
-
-#ifdef CONFIG_STACKPROTECTOR
-	movl	TASK_stack_canary(%edx), %ebx
-	movl	%ebx, PER_CPU_VAR(__stack_chk_guard)
-#endif
 
 	/*
 	 * When switching from a shallower to a deeper call stack
@@ -993,68 +878,12 @@ restore_all_switch_stack:
 	pushl	$0				# no error code
 	pushl	$iret_error
 
-#ifdef CONFIG_DEBUG_ENTRY
-	/*
-	 * The stack-frame here is the one that iret faulted on, so its a
-	 * return-to-user frame. We are on kernel-cr3 because we come here from
-	 * the fixup code. This confuses the CR3 checker, so switch to user-cr3
-	 * as the checker expects it.
-	 */
-	pushl	%eax
-	SWITCH_TO_USER_CR3 scratch_reg=%eax
-	popl	%eax
-#endif
-
 	jmp	handle_exception
 
 	_ASM_EXTABLE(.Lirq_return, .Lasm_iret_error)
 SYM_FUNC_END(entry_INT80_32)
 
-.macro FIXUP_ESPFIX_STACK
-/*
- * Switch back for ESPFIX stack to the normal zerobased stack
- *
- * We can't call C functions using the ESPFIX stack. This code reads
- * the high word of the segment base from the GDT and swiches to the
- * normal stack and adjusts ESP with the matching offset.
- *
- * We might be on user CR3 here, so percpu data is not mapped and we can't
- * access the GDT through the percpu segment.  Instead, use SGDT to find
- * the cpu_entry_area alias of the GDT.
- */
-#ifdef CONFIG_X86_ESPFIX32
-	/* fixup the stack */
-	pushl	%ecx
-	subl	$2*4, %esp
-	sgdt	(%esp)
-	movl	2(%esp), %ecx				/* GDT address */
-	/*
-	 * Careful: ECX is a linear pointer, so we need to force base
-	 * zero.  %cs is the only known-linear segment we have right now.
-	 */
-	mov	%cs:GDT_ESPFIX_OFFSET + 4(%ecx), %al	/* bits 16..23 */
-	mov	%cs:GDT_ESPFIX_OFFSET + 7(%ecx), %ah	/* bits 24..31 */
-	shl	$16, %eax
-	addl	$2*4, %esp
-	popl	%ecx
-	addl	%esp, %eax			/* the adjusted stack pointer */
-	pushl	$__KERNEL_DS
-	pushl	%eax
-	lss	(%esp), %esp			/* switch to the normal stack segment */
-#endif
-.endm
-
 .macro UNWIND_ESPFIX_STACK
-	/* It's safe to clobber %eax, all other regs need to be preserved */
-#ifdef CONFIG_X86_ESPFIX32
-	movl	%ss, %eax
-	/* see if on espfix stack */
-	cmpw	$__ESPFIX_SS, %ax
-	jne	.Lno_fixup_\@
-	/* switch to normal stack */
-	FIXUP_ESPFIX_STACK
-.Lno_fixup_\@:
-#endif
 .endm
 
 SYM_CODE_START_LOCAL_NOALIGN(handle_exception)
@@ -1072,17 +901,11 @@ SYM_CODE_START_LOCAL_NOALIGN(handle_exception)
 	CALL_NOSPEC edi
 
 handle_exception_return:
-#ifdef CONFIG_VM86
-	movl	PT_EFLAGS(%esp), %eax		# mix EFLAGS and CS
-	movb	PT_CS(%esp), %al
-	andl	$(X86_EFLAGS_VM | SEGMENT_RPL_MASK), %eax
-#else
 	/*
 	 * We can be coming here from child spawned by kernel_thread().
 	 */
 	movl	PT_CS(%esp), %eax
 	andl	$SEGMENT_RPL_MASK, %eax
-#endif
 	cmpl	$USER_RPL, %eax			# returning to v8086 or userspace ?
 	jnb	ret_to_user
 
@@ -1146,18 +969,6 @@ SYM_CODE_END(asm_exc_double_fault)
 SYM_CODE_START(asm_exc_nmi)
 	ASM_CLAC
 
-#ifdef CONFIG_X86_ESPFIX32
-	/*
-	 * ESPFIX_SS is only ever set on the return to user path
-	 * after we've switched to the entry stack.
-	 */
-	pushl	%eax
-	movl	%ss, %eax
-	cmpw	$__ESPFIX_SS, %ax
-	popl	%eax
-	je	.Lnmi_espfix_stack
-#endif
-
 	pushl	%eax				# pt_regs->orig_ax
 	SAVE_ALL_NMI cr3_reg=%edi
 	ENCODE_FRAME_POINTER
@@ -1186,67 +997,8 @@ SYM_CODE_START(asm_exc_nmi)
 	movl	%ebx, %esp
 
 .Lnmi_return:
-#ifdef CONFIG_X86_ESPFIX32
-	testl	$CS_FROM_ESPFIX, PT_CS(%esp)
-	jnz	.Lnmi_from_espfix
-#endif
-
 	CHECK_AND_APPLY_ESPFIX
 	RESTORE_ALL_NMI cr3_reg=%edi pop=4
 	jmp	.Lirq_return
 
-#ifdef CONFIG_X86_ESPFIX32
-.Lnmi_espfix_stack:
-	/*
-	 * Create the pointer to LSS back
-	 */
-	pushl	%ss
-	pushl	%esp
-	addl	$4, (%esp)
-
-	/* Copy the (short) IRET frame */
-	pushl	4*4(%esp)	# flags
-	pushl	4*4(%esp)	# cs
-	pushl	4*4(%esp)	# ip
-
-	pushl	%eax		# orig_ax
-
-	SAVE_ALL_NMI cr3_reg=%edi unwind_espfix=1
-	ENCODE_FRAME_POINTER
-
-	/* clear CS_FROM_KERNEL, set CS_FROM_ESPFIX */
-	xorl	$(CS_FROM_ESPFIX | CS_FROM_KERNEL), PT_CS(%esp)
-
-	xorl	%edx, %edx			# zero error code
-	movl	%esp, %eax			# pt_regs pointer
-	jmp	.Lnmi_from_sysenter_stack
-
-.Lnmi_from_espfix:
-	RESTORE_ALL_NMI cr3_reg=%edi
-	/*
-	 * Because we cleared CS_FROM_KERNEL, IRET_FRAME 'forgot' to
-	 * fix up the gap and long frame:
-	 *
-	 *  3 - original frame	(exception)
-	 *  2 - ESPFIX block	(above)
-	 *  6 - gap		(FIXUP_FRAME)
-	 *  5 - long frame	(FIXUP_FRAME)
-	 *  1 - orig_ax
-	 */
-	lss	(1+5+6)*4(%esp), %esp			# back to espfix stack
-	jmp	.Lirq_return
-#endif
 SYM_CODE_END(asm_exc_nmi)
-
-.pushsection .text, "ax"
-SYM_CODE_START(rewind_stack_and_make_dead)
-	/* Prevent any naive code from trying to unwind to our caller. */
-	xorl	%ebp, %ebp
-
-	movl	PER_CPU_VAR(cpu_current_top_of_stack), %esi
-	leal	-TOP_OF_KERNEL_STACK_PADDING-PTREGS_SIZE(%esi), %esp
-
-	call	make_task_dead
-1:	jmp 1b
-SYM_CODE_END(rewind_stack_and_make_dead)
-.popsection

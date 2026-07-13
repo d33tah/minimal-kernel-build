@@ -38,8 +38,7 @@ static inline bool lzma_state_is_literal(enum lzma_state state) { return state <
 #define LEN_MID_SYMBOLS (1 << LEN_MID_BITS)
 #define LEN_HIGH_BITS 8
 #define LEN_HIGH_SYMBOLS (1 << LEN_HIGH_BITS)
-#define LEN_SYMBOLS (LEN_LOW_SYMBOLS + LEN_MID_SYMBOLS + LEN_HIGH_SYMBOLS)
-#define MATCH_LEN_MAX (MATCH_LEN_MIN + LEN_SYMBOLS - 1)
+/* LEN_SYMBOLS removed: 0-caller (orphaned when MATCH_LEN_MAX was cut, tick #229) */
 #define DIST_STATES 4
 static inline uint32_t lzma_get_dist_state(uint32_t len) {
 	return len < DIST_STATES + MATCH_LEN_MIN ? len - MATCH_LEN_MIN : DIST_STATES - 1;
@@ -52,9 +51,7 @@ static inline uint32_t lzma_get_dist_state(uint32_t len) {
 #define FULL_DISTANCES (1 << FULL_DISTANCES_BITS)
 #define ALIGN_BITS 4
 #define ALIGN_SIZE (1 << ALIGN_BITS)
-#define ALIGN_MASK (ALIGN_SIZE - 1)
 #define PROBS_TOTAL (1846 + LITERAL_CODERS_MAX * LITERAL_CODER_SIZE)
-#define REPS 4
 /* end xz_lzma2.h */
 
 #define RC_INIT_BYTES 5
@@ -204,12 +201,8 @@ struct lzma2_dec {
 	 
 	bool need_dict_reset;
 
-	 
-	bool need_props;
 
-#ifdef XZ_DEC_MICROLZMA
-	bool pedantic_microlzma;
-#endif
+	bool need_props;
 };
 
 struct xz_dec_lzma2 {
@@ -337,12 +330,6 @@ static void dict_uncompressed(struct dictionary *dict, struct xz_buf *b,
 	}
 }
 
-#ifdef XZ_DEC_MICROLZMA
-#	define DICT_FLUSH_SUPPORTS_SKIPPING true
-#else
-#	define DICT_FLUSH_SUPPORTS_SKIPPING false
-#endif
-
 static uint32_t dict_flush(struct dictionary *dict, struct xz_buf *b)
 {
 	size_t copy_size = dict->pos - dict->start;
@@ -351,10 +338,8 @@ static uint32_t dict_flush(struct dictionary *dict, struct xz_buf *b)
 		if (dict->pos == dict->end)
 			dict->pos = 0;
 
-		 
-		if (!DICT_FLUSH_SUPPORTS_SKIPPING || b->out != NULL)
-			memcpy(b->out + b->out_pos, dict->buf + dict->start,
-					copy_size);
+		memcpy(b->out + b->out_pos, dict->buf + dict->start,
+				copy_size);
 	}
 
 	dict->start = dict->pos;
@@ -978,123 +963,3 @@ XZ_EXTERN void xz_dec_lzma2_end(struct xz_dec_lzma2 *s)
 
 	kfree(s);
 }
-
-#ifdef XZ_DEC_MICROLZMA
-struct xz_dec_microlzma {
-	struct xz_dec_lzma2 s;
-};
-
-enum xz_ret xz_dec_microlzma_run(struct xz_dec_microlzma *s_ptr,
-				 struct xz_buf *b)
-{
-	struct xz_dec_lzma2 *s = &s_ptr->s;
-
-	 
-	if (s->lzma2.sequence != SEQ_LZMA_RUN) {
-		if (s->lzma2.sequence == SEQ_PROPERTIES) {
-			 
-			if (b->in_pos >= b->in_size)
-				return XZ_OK;
-
-			 
-			if (!lzma_props(s, ~b->in[b->in_pos]))
-				return XZ_DATA_ERROR;
-
-			s->lzma2.sequence = SEQ_LZMA_PREPARE;
-		}
-
-		 
-		if (s->lzma2.compressed < RC_INIT_BYTES
-				|| s->lzma2.compressed > (3U << 30))
-			return XZ_DATA_ERROR;
-
-		if (!rc_read_init(&s->rc, b))
-			return XZ_OK;
-
-		s->lzma2.compressed -= RC_INIT_BYTES;
-		s->lzma2.sequence = SEQ_LZMA_RUN;
-
-		dict_reset(&s->dict, b);
-	}
-
-	 
-	if (DEC_IS_SINGLE(s->dict.mode))
-		s->dict.end = b->out_size - b->out_pos;
-
-	while (true) {
-		dict_limit(&s->dict, min_t(size_t, b->out_size - b->out_pos,
-					   s->lzma2.uncompressed));
-
-		if (!lzma2_lzma(s, b))
-			return XZ_DATA_ERROR;
-
-		s->lzma2.uncompressed -= dict_flush(&s->dict, b);
-
-		if (s->lzma2.uncompressed == 0) {
-			if (s->lzma2.pedantic_microlzma) {
-				if (s->lzma2.compressed > 0 || s->lzma.len > 0
-						|| !rc_is_finished(&s->rc))
-					return XZ_DATA_ERROR;
-			}
-
-			return XZ_STREAM_END;
-		}
-
-		if (b->out_pos == b->out_size)
-			return XZ_OK;
-
-		if (b->in_pos == b->in_size
-				&& s->temp.size < s->lzma2.compressed)
-			return XZ_OK;
-	}
-}
-
-struct xz_dec_microlzma *xz_dec_microlzma_alloc(enum xz_mode mode,
-						uint32_t dict_size)
-{
-	struct xz_dec_microlzma *s;
-
-	 
-	if (dict_size < 4096 || dict_size > (3U << 30))
-		return NULL;
-
-	s = kmalloc(sizeof(*s), GFP_KERNEL);
-	if (s == NULL)
-		return NULL;
-
-	s->s.dict.mode = mode;
-	s->s.dict.size = dict_size;
-
-	if (DEC_IS_MULTI(mode)) {
-		s->s.dict.end = dict_size;
-
-		s->s.dict.buf = vmalloc(dict_size);
-		if (s->s.dict.buf == NULL) {
-			kfree(s);
-			return NULL;
-		}
-	}
-
-	return s;
-}
-
-void xz_dec_microlzma_reset(struct xz_dec_microlzma *s, uint32_t comp_size,
-			    uint32_t uncomp_size, int uncomp_size_is_exact)
-{
-	 
-	s->s.lzma2.compressed = comp_size;
-	s->s.lzma2.uncompressed = uncomp_size;
-	s->s.lzma2.pedantic_microlzma = uncomp_size_is_exact;
-
-	s->s.lzma2.sequence = SEQ_PROPERTIES;
-	s->s.temp.size = 0;
-}
-
-void xz_dec_microlzma_end(struct xz_dec_microlzma *s)
-{
-	if (DEC_IS_MULTI(s->s.dict.mode))
-		vfree(s->s.dict.buf);
-
-	kfree(s);
-}
-#endif

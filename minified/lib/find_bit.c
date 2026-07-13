@@ -1,18 +1,10 @@
 
-#include <linux/bitops.h>
 #include <linux/bitmap.h>
-#include <linux/export.h>
-#include <linux/math.h>
-#include <linux/minmax.h>
-#include <linux/swab.h>
 
 #if !defined(find_next_bit) || !defined(find_next_zero_bit) ||			\
 	!defined(find_next_bit_le) || !defined(find_next_zero_bit_le) ||	\
 	!defined(find_next_and_bit)
-unsigned long _find_next_bit(const unsigned long *addr1,
-		const unsigned long *addr2, unsigned long nbits,
-		unsigned long start, unsigned long invert, unsigned long le)
-{
+unsigned long _find_next_bit(const unsigned long *addr1, const unsigned long *addr2, unsigned long nbits, unsigned long start, unsigned long invert, unsigned long le) {
 	unsigned long tmp, mask;
 
 	if (unlikely(start >= nbits))
@@ -40,47 +32,38 @@ unsigned long _find_next_bit(const unsigned long *addr1,
 		tmp = addr1[start / BITS_PER_LONG];
 		if (addr2)
 			tmp &= addr2[start / BITS_PER_LONG];
-		tmp ^= invert;
-	}
+		tmp ^= invert; }
 
 	if (le)
 		tmp = swab(tmp);
 
-	return min(start + __ffs(tmp), nbits);
-}
+	return min(start + __ffs(tmp), nbits); }
 #endif
 
 #ifndef find_first_bit
-unsigned long _find_first_bit(const unsigned long *addr, unsigned long size)
-{
+unsigned long _find_first_bit(const unsigned long *addr, unsigned long size) {
 	unsigned long idx;
 
 	for (idx = 0; idx * BITS_PER_LONG < size; idx++) {
 		if (addr[idx])
-			return min(idx * BITS_PER_LONG + __ffs(addr[idx]), size);
-	}
+			return min(idx * BITS_PER_LONG + __ffs(addr[idx]), size); }
 
-	return size;
-}
+	return size; }
 #endif
 
 #ifndef find_first_zero_bit
-unsigned long _find_first_zero_bit(const unsigned long *addr, unsigned long size)
-{
+unsigned long _find_first_zero_bit(const unsigned long *addr, unsigned long size) {
 	unsigned long idx;
 
 	for (idx = 0; idx * BITS_PER_LONG < size; idx++) {
 		if (addr[idx] != ~0UL)
-			return min(idx * BITS_PER_LONG + ffz(addr[idx]), size);
-	}
+			return min(idx * BITS_PER_LONG + ffz(addr[idx]), size); }
 
-	return size;
-}
+	return size; }
 #endif
 
 #ifndef find_last_bit
-unsigned long _find_last_bit(const unsigned long *addr, unsigned long size)
-{
+unsigned long _find_last_bit(const unsigned long *addr, unsigned long size) {
 	if (size) {
 		unsigned long val = BITMAP_LAST_WORD_MASK(size);
 		unsigned long idx = (size-1) / BITS_PER_LONG;
@@ -91,8 +74,6 @@ unsigned long _find_last_bit(const unsigned long *addr, unsigned long size)
 				return idx * BITS_PER_LONG + __fls(val);
 
 			val = ~0ul;
-		} while (idx--);
-	}
-	return size;
-}
+		} while (idx--); }
+	return size; }
 #endif

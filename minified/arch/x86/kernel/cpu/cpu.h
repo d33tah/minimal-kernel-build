@@ -3,66 +3,17 @@
 #define ARCH_X86_CPU_H
 
  
-struct cpu_dev {
-	const char	*c_vendor;
+/* struct cpu_dev + cpu_dev_register macro + __x86_cpu_dev_start/end externs
+ * removed - the .x86_cpu_dev.init section is empty (no vendor cpu_dev
+ * registered), this_cpu/default_cpu were always the generic no-op path, and
+ * early_cpu_init no longer walks it. */
 
-	 
-	const char	*c_ident[2];
-
-	void            (*c_early_init)(struct cpuinfo_x86 *);
-	void		(*c_bsp_init)(struct cpuinfo_x86 *);
-	void		(*c_init)(struct cpuinfo_x86 *);
-	void		(*c_identify)(struct cpuinfo_x86 *);
-	void		(*c_detect_tlb)(struct cpuinfo_x86 *);
-	int		c_x86_vendor;
-	 
-	unsigned int	(*legacy_cache_size)(struct cpuinfo_x86 *,
-					     unsigned int);
-
-	 
-	struct legacy_cpu_model_info {
-		int		family;
-		const char	*model_names[16];
-	}		legacy_models[5];
-};
-
-struct _tlb_table {
-	unsigned char descriptor;
-	char tlb_type;
-	unsigned int entries;
-	 
-	char info[128];
-};
-
-#define cpu_dev_register(cpu_devX) \
-	static const struct cpu_dev *const __cpu_dev_##cpu_devX __used \
-	__section(".x86_cpu_dev.init") = \
-	&cpu_devX;
-
-extern const struct cpu_dev *const __x86_cpu_dev_start[],
-			    *const __x86_cpu_dev_end[];
-
-enum tsx_ctrl_states {
-	TSX_CTRL_ENABLE,
-	TSX_CTRL_DISABLE,
-	TSX_CTRL_RTM_ALWAYS_ABORT,
-	TSX_CTRL_NOT_SUPPORTED,
-};
-
-extern __ro_after_init enum tsx_ctrl_states tsx_ctrl_state;
-
-extern void __init tsx_init(void);
-/* tsx_ap_init, init_spectral_chicken removed - no callers */
+/* tsx_init, tsx_ap_init, init_spectral_chicken, tsx_ctrl_state, enum tsx_ctrl_states removed - no callers */
 
 extern void get_cpu_cap(struct cpuinfo_x86 *c);
 extern void get_cpu_address_sizes(struct cpuinfo_x86 *c);
-extern void cpu_detect_cache_sizes(struct cpuinfo_x86 *c);
-extern void init_scattered_cpuid_features(struct cpuinfo_x86 *c);
 /* init_intel_cacheinfo, init_amd_cacheinfo, init_hygon_cacheinfo removed - no callers */
 
-extern void detect_num_cpu_cores(struct cpuinfo_x86 *c);
-extern int detect_extended_topology_early(struct cpuinfo_x86 *c);
-extern int detect_extended_topology(struct cpuinfo_x86 *c);
-/* detect_ht_early, detect_ht, check_null_seg_clears_base, x86_read_arch_cap_msr, aperfmperf_get_khz removed - no callers */
+/* detect_extended_topology_early, detect_extended_topology, detect_ht_early, detect_ht, check_null_seg_clears_base, x86_read_arch_cap_msr, aperfmperf_get_khz removed - no callers */
 
 #endif  

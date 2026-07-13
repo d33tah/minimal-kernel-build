@@ -12,15 +12,9 @@
 
 #define ENCODE_FRAME_POINTER
 
-static inline unsigned long encode_frame_pointer(struct pt_regs *regs)
-{
-	return 0;
-}
-
 #endif
 
 #define FRAME_BEGIN
 #define FRAME_END
-#define FRAME_OFFSET 0
 
 #endif

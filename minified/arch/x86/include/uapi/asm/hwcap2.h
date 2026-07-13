@@ -4,10 +4,7 @@
 
 #include <linux/const.h>
 
- 
-#define HWCAP2_RING3MWAIT		_BITUL(0)
-
- 
+/* HWCAP2_RING3MWAIT removed - 0-ref */
 #define HWCAP2_FSGSBASE			_BITUL(1)
 
 #endif

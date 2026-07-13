@@ -52,10 +52,7 @@
 #define O_CLOEXEC	02000000	 
 #endif
 
-#ifndef O_SYNC
 #define __O_SYNC	04000000
-#define O_SYNC		(__O_SYNC|O_DSYNC)
-#endif
 
 #ifndef O_PATH
 #define O_PATH		010000000
@@ -72,47 +69,7 @@
 #define O_NDELAY	O_NONBLOCK
 #endif
 
-#define F_DUPFD		0	 
-#define F_GETFD		1	 
-#define F_SETFD		2	 
-#define F_GETFL		3	 
-#define F_SETFL		4	 
-#ifndef F_GETLK
-#define F_GETLK		5
-#define F_SETLK		6
-#define F_SETLKW	7
+/* Dead UABI struct flock removed (0-ref; the only other mention is a comment in fs.h). */
+
+
 #endif
-#ifndef F_SETOWN
-#define F_SETOWN	8	 
-#define F_GETOWN	9	 
-#endif
-
-
-#define FD_CLOEXEC	1	 
-
-#ifndef F_RDLCK
-#define F_RDLCK		0
-#define F_WRLCK		1
-#define F_UNLCK		2
-#endif
-
-
-
-#define F_LINUX_SPECIFIC_BASE	1024
-
-struct flock {
-	short	l_type;
-	short	l_whence;
-	__kernel_off_t	l_start;
-	__kernel_off_t	l_len;
-	__kernel_pid_t	l_pid;
-#ifdef	__ARCH_FLOCK_EXTRA_SYSID
-	__ARCH_FLOCK_EXTRA_SYSID
-#endif
-#ifdef	__ARCH_FLOCK_PAD
-	__ARCH_FLOCK_PAD
-#endif
-};
-
-
-#endif  

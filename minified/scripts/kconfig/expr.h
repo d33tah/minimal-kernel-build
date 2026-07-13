@@ -4,73 +4,51 @@
 #ifndef EXPR_H
 #define EXPR_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <assert.h>
 #include <stdio.h>
 #include "list.h"
-#ifndef __cplusplus
 #include <stdbool.h>
-#endif
 
 struct file {
-	struct file *next;
-	struct file *parent;
+	struct file *next, *parent;
 	const char *name;
-	int lineno;
-};
+	int lineno; };
 
 typedef enum tristate {
 	no, mod, yes
 } tristate;
 
 enum expr_type {
-	E_NONE, E_OR, E_AND, E_NOT,
-	E_EQUAL, E_UNEQUAL, E_LTH, E_LEQ, E_GTH, E_GEQ,
-	E_LIST, E_SYMBOL, E_RANGE
-};
+	E_NONE, E_OR, E_AND, E_NOT, E_EQUAL, E_UNEQUAL, E_LTH, E_LEQ, E_GTH, E_GEQ, E_LIST, E_SYMBOL, E_RANGE };
 
 union expr_data {
 	struct expr *expr;
-	struct symbol *sym;
-};
+	struct symbol *sym; };
 
 struct expr {
 	enum expr_type type;
-	union expr_data left, right;
-};
+	union expr_data left, right; };
 
 #define EXPR_OR(dep1, dep2)	(((dep1)>(dep2))?(dep1):(dep2))
 #define EXPR_AND(dep1, dep2)	(((dep1)<(dep2))?(dep1):(dep2))
 #define EXPR_NOT(dep)		(2-(dep))
 
-#define expr_list_for_each_sym(l, e, s) \
-	for (e = (l); e && (s = e->right.sym); e = e->left.expr)
+#define expr_list_for_each_sym(l, e, s) 	for (e = (l); e && (s = e->right.sym); e = e->left.expr)
 
 struct expr_value {
 	struct expr *expr;
-	tristate tri;
-};
+	tristate tri; };
 
 struct symbol_value {
 	void *val;
-	tristate tri;
-};
+	tristate tri; };
 
 enum symbol_type {
-	S_UNKNOWN, S_BOOLEAN, S_TRISTATE, S_INT, S_HEX, S_STRING
-};
+	S_UNKNOWN, S_BOOLEAN, S_TRISTATE, S_INT, S_HEX, S_STRING };
 
  
 enum {
-	S_DEF_USER,		 
-	S_DEF_AUTO,		 
-	S_DEF_DEF3,		 
-	S_DEF_DEF4,		 
-	S_DEF_COUNT
-};
+	S_DEF_USER, S_DEF_AUTO, S_DEF_DEF3, S_DEF_DEF4, S_DEF_COUNT };
 
  
 struct symbol {
@@ -105,8 +83,7 @@ struct symbol {
 	struct expr_value rev_dep;
 
 	 
-	struct expr_value implied;
-};
+	struct expr_value implied; };
 
 #define for_all_symbols(i, sym) for (i = 0; i < SYMBOL_HASHSIZE; i++) for (sym = symbol_hash[i]; sym; sym = sym->next)
 
@@ -126,29 +103,16 @@ struct symbol {
  
 #define SYMBOL_DEF        0x10000   
 #define SYMBOL_DEF_USER   0x10000   
-#define SYMBOL_DEF_AUTO   0x20000   
-#define SYMBOL_DEF3       0x40000   
-#define SYMBOL_DEF4       0x80000   
+#define SYMBOL_DEF_AUTO   0x20000
 
  
 #define SYMBOL_NEED_SET_CHOICE_VALUES  0x100000
 
-#define SYMBOL_MAXLENGTH	256
 #define SYMBOL_HASHSIZE		9973
 
  
 enum prop_type {
-	P_UNKNOWN,
-	P_PROMPT,    
-	P_COMMENT,   
-	P_MENU,      
-	P_DEFAULT,   
-	P_CHOICE,    
-	P_SELECT,    
-	P_IMPLY,     
-	P_RANGE,     
-	P_SYMBOL,    
-};
+	P_UNKNOWN, P_PROMPT, P_COMMENT, P_MENU, P_DEFAULT, P_CHOICE, P_SELECT, P_IMPLY, P_RANGE, P_SYMBOL, };
 
 struct property {
 	struct property *next;      
@@ -158,17 +122,12 @@ struct property {
 	struct expr *expr;          
 	struct menu *menu;          
 	struct file *file;          
-	int lineno;                 
-};
+	int lineno; };
 
-#define for_all_properties(sym, st, tok) \
-	for (st = sym->prop; st; st = st->next) \
-		if (st->type == (tok))
+#define for_all_properties(sym, st, tok) 	for (st = sym->prop; st; st = st->next) 		if (st->type == (tok))
 #define for_all_defaults(sym, st) for_all_properties(sym, st, P_DEFAULT)
 #define for_all_choices(sym, st) for_all_properties(sym, st, P_CHOICE)
-#define for_all_prompts(sym, st) \
-	for (st = sym->prop; st; st = st->next) \
-		if (st->text)
+#define for_all_prompts(sym, st) 	for (st = sym->prop; st; st = st->next) 		if (st->text)
 
  
 struct menu {
@@ -204,28 +163,16 @@ struct menu {
 	int lineno;
 
 	 
-	void *data;
-};
+	void *data; };
 
  
 #define MENU_CHANGED		0x0001
 
-#define MENU_ROOT		0x0002
-
-struct jump_key {
-	struct list_head entries;
-	size_t offset;
-	struct menu *target;
-	int index;
-};
-
 extern struct file *file_list;
 extern struct file *current_file;
-struct file *lookup_file(const char *name);
 
 extern struct symbol symbol_yes, symbol_no, symbol_mod;
 extern struct symbol *modules_sym;
-extern int cdebug;
 struct expr *expr_alloc_symbol(struct symbol *sym);
 struct expr *expr_alloc_one(enum expr_type type, struct expr *ce);
 struct expr *expr_alloc_two(enum expr_type type, struct expr *e1, struct expr *e2);
@@ -244,24 +191,11 @@ int expr_contains_symbol(struct expr *dep, struct symbol *sym);
 bool expr_depends_symbol(struct expr *dep, struct symbol *sym);
 struct expr *expr_trans_compare(struct expr *e, enum expr_type type, struct symbol *sym);
 
-void expr_fprint(struct expr *e, FILE *out);
-struct gstr;  
+struct gstr;
 void expr_gstr_print(struct expr *e, struct gstr *gs);
-void expr_gstr_print_revdep(struct expr *e, struct gstr *gs,
-			    tristate pr_type, const char *title);
+void expr_gstr_print_revdep(struct expr *e, struct gstr *gs, tristate pr_type, const char *title);
 
-static inline int expr_is_yes(struct expr *e)
-{
-	return !e || (e->type == E_SYMBOL && e->left.sym == &symbol_yes);
-}
+static inline int expr_is_yes(struct expr *e) {
+	return !e || (e->type == E_SYMBOL && e->left.sym == &symbol_yes); }
 
-static inline int expr_is_no(struct expr *e)
-{
-	return e && (e->type == E_SYMBOL && e->left.sym == &symbol_no);
-}
-
-#ifdef __cplusplus
-}
 #endif
-
-#endif  

@@ -10,6 +10,4 @@
 #endif  
 
  
-#define REALMODE_END_SIGNATURE	0x65a22c82
-
 #endif  

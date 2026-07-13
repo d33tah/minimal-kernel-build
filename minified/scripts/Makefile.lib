@@ -134,56 +134,6 @@ _a_flags       = $(filter-out $(AFLAGS_REMOVE_$(target-stem).o), \
                      $(AFLAGS_$(target-stem).o))
 _cpp_flags     = $(KBUILD_CPPFLAGS) $(cppflags-y) $(CPPFLAGS_$(target-stem).lds)
 
-#
-# Enable gcov profiling flags for a file, directory or for all files depending
-# on variables GCOV_PROFILE_obj.o, GCOV_PROFILE and CONFIG_GCOV_PROFILE_ALL
-# (in this order)
-#
-ifeq ($(CONFIG_GCOV_KERNEL),y)
-_c_flags += $(if $(patsubst n%,, \
-		$(GCOV_PROFILE_$(basetarget).o)$(GCOV_PROFILE)$(CONFIG_GCOV_PROFILE_ALL)), \
-		$(CFLAGS_GCOV))
-endif
-
-#
-# Enable address sanitizer flags for kernel except some files or directories
-# we don't want to check (depends on variables KASAN_SANITIZE_obj.o, KASAN_SANITIZE)
-#
-ifeq ($(CONFIG_KASAN),y)
-ifneq ($(CONFIG_KASAN_HW_TAGS),y)
-_c_flags += $(if $(patsubst n%,, \
-		$(KASAN_SANITIZE_$(basetarget).o)$(KASAN_SANITIZE)y), \
-		$(CFLAGS_KASAN), $(CFLAGS_KASAN_NOSANITIZE))
-endif
-endif
-
-ifeq ($(CONFIG_UBSAN),y)
-_c_flags += $(if $(patsubst n%,, \
-		$(UBSAN_SANITIZE_$(basetarget).o)$(UBSAN_SANITIZE)$(CONFIG_UBSAN_SANITIZE_ALL)), \
-		$(CFLAGS_UBSAN))
-endif
-
-ifeq ($(CONFIG_KCOV),y)
-_c_flags += $(if $(patsubst n%,, \
-	$(KCOV_INSTRUMENT_$(basetarget).o)$(KCOV_INSTRUMENT)$(CONFIG_KCOV_INSTRUMENT_ALL)), \
-	$(CFLAGS_KCOV))
-endif
-
-#
-# Enable KCSAN flags except some files or directories we don't want to check
-# (depends on variables KCSAN_SANITIZE_obj.o, KCSAN_SANITIZE)
-#
-ifeq ($(CONFIG_KCSAN),y)
-_c_flags += $(if $(patsubst n%,, \
-	$(KCSAN_SANITIZE_$(basetarget).o)$(KCSAN_SANITIZE)y), \
-	$(CFLAGS_KCSAN))
-# Some uninstrumented files provide implied barriers required to avoid false
-# positives: set KCSAN_INSTRUMENT_BARRIERS for barrier instrumentation only.
-_c_flags += $(if $(patsubst n%,, \
-	$(KCSAN_INSTRUMENT_BARRIERS_$(basetarget).o)$(KCSAN_INSTRUMENT_BARRIERS)n), \
-	-D__KCSAN_INSTRUMENT_BARRIERS__)
-endif
-
 # $(srctree)/$(src) for including checkin headers from generated source files
 # $(objtree)/$(obj) for including generated headers from checkin source files
 ifeq ($(KBUILD_EXTMOD),)
@@ -224,33 +174,6 @@ DTC_INCLUDE    := $(srctree)/scripts/dtc/include-prefixes
 dtc_cpp_flags  = -Wp,-MMD,$(depfile).pre.tmp -nostdinc                    \
 		 $(addprefix -I,$(DTC_INCLUDE))                          \
 		 -undef -D__DTS__
-
-ifdef CONFIG_OBJTOOL
-
-objtool := $(objtree)/tools/objtool/objtool
-
-objtool_args =								\
-	$(if $(CONFIG_HAVE_JUMP_LABEL_HACK), --hacks=jump_label)	\
-	$(if $(CONFIG_HAVE_NOINSTR_HACK), --hacks=noinstr)		\
-	$(if $(CONFIG_X86_KERNEL_IBT), --ibt)				\
-	$(if $(CONFIG_FTRACE_MCOUNT_USE_OBJTOOL), --mcount)		\
-	$(if $(CONFIG_UNWINDER_ORC), --orc)				\
-	$(if $(CONFIG_RETPOLINE), --retpoline)				\
-	$(if $(CONFIG_RETHUNK), --rethunk)				\
-	$(if $(CONFIG_SLS), --sls)					\
-	$(if $(CONFIG_STACK_VALIDATION), --stackval)			\
-	$(if $(CONFIG_HAVE_STATIC_CALL_INLINE), --static-call)		\
-	$(if $(CONFIG_HAVE_UACCESS_VALIDATION), --uaccess)		\
-	$(if $(delay-objtool), --link)					\
-	$(if $(part-of-module), --module)				\
-	$(if $(CONFIG_GCOV_KERNEL), --no-unreachable)
-
-delay-objtool := $(or $(CONFIG_LTO_CLANG),$(CONFIG_X86_KERNEL_IBT))
-
-cmd_objtool = $(if $(objtool-enabled), ; $(objtool) $(objtool_args) $@)
-cmd_gen_objtooldep = $(if $(objtool-enabled), { echo ; echo '$@: $$(wildcard $(objtool))' ; } >> $(dot-target).cmd)
-
-endif # CONFIG_OBJTOOL
 
 # Useful for describing the dependency of composite objects
 # Usage:
@@ -438,28 +361,6 @@ quiet_cmd_lz4 = LZ4     $@
 quiet_cmd_lz4_with_size = LZ4     $@
       cmd_lz4_with_size = { cat $(real-prereqs) | $(LZ4) -l -c1 stdin stdout; \
                   $(size_append); } > $@
-
-# U-Boot mkimage
-# ---------------------------------------------------------------------------
-
-MKIMAGE := $(srctree)/scripts/mkuboot.sh
-
-# SRCARCH just happens to match slightly more than ARCH (on sparc), so reduces
-# the number of overrides in arch makefiles
-UIMAGE_ARCH ?= $(SRCARCH)
-UIMAGE_COMPRESSION ?= $(or $(2),none)
-UIMAGE_OPTS-y ?=
-UIMAGE_TYPE ?= kernel
-UIMAGE_LOADADDR ?= arch_must_set_this
-UIMAGE_ENTRYADDR ?= $(UIMAGE_LOADADDR)
-UIMAGE_NAME ?= 'Linux-$(KERNELRELEASE)'
-
-quiet_cmd_uimage = UIMAGE  $@
-      cmd_uimage = $(BASH) $(MKIMAGE) -A $(UIMAGE_ARCH) -O linux \
-			-C $(UIMAGE_COMPRESSION) $(UIMAGE_OPTS-y) \
-			-T $(UIMAGE_TYPE) \
-			-a $(UIMAGE_LOADADDR) -e $(UIMAGE_ENTRYADDR) \
-			-n $(UIMAGE_NAME) -d $< $@
 
 # XZ
 # ---------------------------------------------------------------------------

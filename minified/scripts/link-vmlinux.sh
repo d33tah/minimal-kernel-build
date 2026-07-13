@@ -185,11 +185,6 @@ mksysmap()
 	${CONFIG_SHELL} "${srctree}/scripts/mksysmap" ${1} ${2}
 }
 
-sorttable()
-{
-	${objtree}/scripts/sorttable ${1}
-}
-
 # Delete output files in case of error
 cleanup()
 {
@@ -320,14 +315,6 @@ fi
 
 info SYSMAP System.map
 mksysmap vmlinux System.map
-
-if is_enabled CONFIG_BUILDTIME_TABLE_SORT; then
-	info SORTTAB vmlinux
-	if ! sorttable vmlinux; then
-		echo >&2 Failed to sort kernel tables
-		exit 1
-	fi
-fi
 
 # step a (see comment above)
 if is_enabled CONFIG_KALLSYMS; then

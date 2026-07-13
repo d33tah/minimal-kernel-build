@@ -6,8 +6,7 @@
 #include <linux/compiler.h>
 #include <linux/log2.h>
 
-static __always_inline __attribute_const__ int get_order(unsigned long size)
-{
+static __always_inline __attribute_const__ int get_order(unsigned long size) {
 	if (__builtin_constant_p(size)) {
 		if (!size)
 			return BITS_PER_LONG - PAGE_SHIFT;
@@ -15,8 +14,7 @@ static __always_inline __attribute_const__ int get_order(unsigned long size)
 		if (size < (1UL << PAGE_SHIFT))
 			return 0;
 
-		return ilog2((size) - 1) - PAGE_SHIFT + 1;
-	}
+		return ilog2((size) - 1) - PAGE_SHIFT + 1; }
 
 	size--;
 	size >>= PAGE_SHIFT;

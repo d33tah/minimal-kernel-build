@@ -65,8 +65,7 @@ static char *number(char *str, long num, int base, int size, int precision,
 	i = 0;
 	if (num == 0)
 		tmp[i++] = '0';
-	else
-		while (num != 0)
+	else while (num != 0)
 			tmp[i++] = (digits[__do_div(num, base)] | locase);
 	if (i > precision)
 		precision = i;
@@ -118,23 +117,17 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 
 		 
 		flags = 0;
-	      repeat:
-		++fmt;		 
+	      repeat: ++fmt;
 		switch (*fmt) {
-		case '-':
-			flags |= LEFT;
+		case '-': flags |= LEFT;
 			goto repeat;
-		case '+':
-			flags |= PLUS;
+		case '+': flags |= PLUS;
 			goto repeat;
-		case ' ':
-			flags |= SPACE;
+		case ' ': flags |= SPACE;
 			goto repeat;
-		case '#':
-			flags |= SPECIAL;
+		case '#': flags |= SPECIAL;
 			goto repeat;
-		case '0':
-			flags |= ZEROPAD;
+		case '0': flags |= ZEROPAD;
 			goto repeat;
 		}
 
@@ -178,8 +171,7 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 		base = 10;
 
 		switch (*fmt) {
-		case 'c':
-			if (!(flags & LEFT))
+		case 'c': if (!(flags & LEFT))
 				while (--field_width > 0)
 					*str++ = ' ';
 			*str++ = (unsigned char)va_arg(args, int);
@@ -187,8 +179,7 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 				*str++ = ' ';
 			continue;
 
-		case 's':
-			s = va_arg(args, char *);
+		case 's': s = va_arg(args, char *);
 			len = strnlen(s, precision);
 
 			if (!(flags & LEFT))
@@ -200,8 +191,7 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 				*str++ = ' ';
 			continue;
 
-		case 'p':
-			if (field_width == -1) {
+		case 'p': if (field_width == -1) {
 				field_width = 2 * sizeof(void *);
 				flags |= ZEROPAD;
 			}
@@ -210,8 +200,7 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 				     field_width, precision, flags);
 			continue;
 
-		case 'n':
-			if (qualifier == 'l') {
+		case 'n': if (qualifier == 'l') {
 				long *ip = va_arg(args, long *);
 				*ip = (str - buf);
 			} else {
@@ -225,28 +214,22 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 			continue;
 
 			 
-		case 'o':
-			base = 8;
+		case 'o': base = 8;
 			break;
 
-		case 'x':
-			flags |= SMALL;
-		case 'X':
-			base = 16;
+		case 'x': flags |= SMALL;
+		case 'X': base = 16;
 			break;
 
 		case 'd':
-		case 'i':
-			flags |= SIGN;
-		case 'u':
-			break;
+		case 'i': flags |= SIGN;
+		case 'u': break;
 
 		default:
 			*str++ = '%';
 			if (*fmt)
 				*str++ = *fmt;
-			else
-				--fmt;
+			else --fmt;
 			continue;
 		}
 		if (qualifier == 'l')
@@ -257,8 +240,7 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 				num = (short)num;
 		} else if (flags & SIGN)
 			num = va_arg(args, int);
-		else
-			num = va_arg(args, unsigned int);
+		else num = va_arg(args, unsigned int);
 		str = number(str, num, base, field_width, precision, flags);
 	}
 	*str = '\0';

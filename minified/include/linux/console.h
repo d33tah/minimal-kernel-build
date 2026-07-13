@@ -3,29 +3,18 @@
 #define _LINUX_CONSOLE_H_ 1
 
 #include <linux/atomic.h>
-#include <linux/types.h>
 
 struct vc_data;
-struct console_font_op;
-struct console_font;
 struct module;
-struct tty_struct;
-struct notifier_block;
 
 enum con_scroll {
 	SM_UP,
-	SM_DOWN,
 };
 
-enum vc_intensity;
-
 struct consw {
-	struct module *owner;
 	const char *(*con_startup)(void);
 	void	(*con_init)(struct vc_data *vc, int init);
 	void	(*con_deinit)(struct vc_data *vc);
-	void	(*con_clear)(struct vc_data *vc, int sy, int sx, int height,
-			int width);
 	void	(*con_putc)(struct vc_data *vc, int c, int ypos, int xpos);
 	void	(*con_putcs)(struct vc_data *vc, const unsigned short *s,
 			int count, int ypos, int xpos);
@@ -34,37 +23,15 @@ struct consw {
 			unsigned int bottom, enum con_scroll dir,
 			unsigned int lines);
 	int	(*con_switch)(struct vc_data *vc);
-	int	(*con_blank)(struct vc_data *vc, int blank, int mode_switch);
-	int	(*con_font_set)(struct vc_data *vc, struct console_font *font,
-			unsigned int flags);
-	int	(*con_font_get)(struct vc_data *vc, struct console_font *font);
-	int	(*con_font_default)(struct vc_data *vc,
-			struct console_font *font, char *name);
-	int     (*con_resize)(struct vc_data *vc, unsigned int width,
-			unsigned int height, unsigned int user);
-	void	(*con_set_palette)(struct vc_data *vc,
-			const unsigned char *table);
-	void	(*con_scrolldelta)(struct vc_data *vc, int lines);
 	int	(*con_set_origin)(struct vc_data *vc);
 	void	(*con_save_screen)(struct vc_data *vc);
-	u8	(*con_build_attr)(struct vc_data *vc, u8 color,
-			enum vc_intensity intensity,
-			bool blink, bool underline, bool reverse, bool italic);
-	void	(*con_invert_region)(struct vc_data *vc, u16 *p, int count);
-	u16    *(*con_screen_pos)(const struct vc_data *vc, int offset);
-	unsigned long (*con_getxy)(struct vc_data *vc, unsigned long position,
-			int *px, int *py);
-	 
-	void	(*con_flush_scrollback)(struct vc_data *vc);
-	 
-	int	(*con_debug_enter)(struct vc_data *vc);
-	 
-	int	(*con_debug_leave)(struct vc_data *vc);
+	u8	(*con_build_attr)(struct vc_data *vc, u8 color);
 };
 
 extern const struct consw *conswitchp;
 
-extern const struct consw dummy_con;
+/* dummy_con removed: the dummy console driver was structurally dead on this
+ * build (conswitchp is always &vga_con; no fallback path reaches it). */
 extern const struct consw vga_con;
 
 #define CM_DRAW     (1)
@@ -76,27 +43,14 @@ extern const struct consw vga_con;
 #define CON_CONSDEV	(2)  
 #define CON_ENABLED	(4)
 #define CON_BOOT	(8)
-#define CON_ANYTIME	(16)  
-#define CON_BRL		(32)  
-#define CON_EXTENDED	(64)  
+#define CON_BRL		(32)
 
 struct console {
 	char	name[16];
-	void	(*write)(struct console *, const char *, unsigned);
-	int	(*read)(struct console *, char *, unsigned);
 	struct tty_driver *(*device)(struct console *, int *);
 	void	(*unblank)(void);
-	int	(*setup)(struct console *, char *);
-	int	(*exit)(struct console *);
-	int	(*match)(struct console *, char *name, int idx, char *options);
 	short	flags;
 	short	index;
-	int	cflag;
-	uint	ispeed;
-	uint	ospeed;
-	u64	seq;
-	unsigned long dropped;
-	void	*data;
 	struct	 console *next;
 };
 
@@ -106,27 +60,23 @@ struct console {
 
 enum con_flush_mode {
 	CONSOLE_FLUSH_PENDING,
-	CONSOLE_REPLAY_ALL,
 };
 
 extern void register_console(struct console *);
-extern int unregister_console(struct console *);
 extern struct console *console_drivers;
 extern void console_lock(void);
-extern int console_trylock(void);
 extern void console_unlock(void);
 extern void console_unblank(void);
 extern void console_flush_on_panic(enum con_flush_mode mode);
 extern struct tty_driver *console_device(int *);
-extern int is_console_locked(void);
-extern void console_sysfs_notify(void);
 
-static inline void vcs_make_sysfs(int index) { }
-
-#define WARN_CONSOLE_UNLOCKED()						\
-	WARN_ON(!atomic_read(&ignore_console_lock_warning) &&		\
-		!is_console_locked() && !oops_in_progress)
-extern atomic_t ignore_console_lock_warning;
+/*
+ * CONFIG_PRINTK is unset, so WARN_ON is a no-op (its argument is evaluated only
+ * for an unused value) and the console-lock debug check has no effect.  Folded
+ * to nothing, which orphans is_console_locked()/ignore_console_lock_warning and
+ * the console_locked tracking they read.
+ */
+#define WARN_CONSOLE_UNLOCKED()	do { } while (0)
 
 
 extern void console_init(void);

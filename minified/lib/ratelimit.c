@@ -1,43 +1,15 @@
 
-#include <linux/ratelimit.h>
-#include <linux/jiffies.h>
-#include <linux/export.h>
 
-int ___ratelimit(struct ratelimit_state *rs, const char *func)
-{
-	unsigned long flags;
-	int ret;
-
-	if (!rs->interval)
-		return 1;
-
-	 
-	if (!raw_spin_trylock_irqsave(&rs->lock, flags))
-		return 0;
-
-	if (!rs->begin)
-		rs->begin = jiffies;
-
-	if (time_is_before_jiffies(rs->begin + rs->interval)) {
-		if (rs->missed) {
-			if (!(rs->flags & RATELIMIT_MSG_ON_RELEASE)) {
-				printk_deferred(KERN_WARNING
-						"%s: %d callbacks suppressed\n",
-						func, rs->missed);
-				rs->missed = 0;
-			}
-		}
-		rs->begin   = jiffies;
-		rs->printed = 0;
-	}
-	if (rs->burst && rs->burst > rs->printed) {
-		rs->printed++;
-		ret = 1;
-	} else {
-		rs->missed++;
-		ret = 0;
-	}
-	raw_spin_unlock_irqrestore(&rs->lock, flags);
-
-	return ret;
-}
+int ___ratelimit(struct ratelimit_state *rs, const char *func) {
+	/*
+	 * RUNTIME-DEAD SAFE-FALLBACK STUB: ___ratelimit is the rate-limit core
+	 * (returns 1 = "allowed to emit", 0 = "suppressed").  Its only callers
+	 * are diagnostic/error paths -- irq debug print_irq_desc, the "No irq
+	 * handler for vector" emerg, fs read_write warn, tty info -- none of
+	 * which fire on a clean boot-once-and-print artifact (HIT=False in the
+	 * exec trace).  Returning 1 is the behavior-preserving fallback: should
+	 * any future call occur, the message is simply emitted unsuppressed
+	 * (the suppression accounting is the only thing dropped).  The full
+	 * jiffies/spinlock/printk_deferred body is therefore the dead payoff.
+	 */
+	return 1; }

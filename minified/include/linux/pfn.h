@@ -3,10 +3,6 @@
 
 #ifndef __ASSEMBLY__
 #include <linux/types.h>
-
-typedef struct {
-	u64 val;
-} pfn_t;
 #endif
 
 #define PFN_ALIGN(x)	(((unsigned long)(x) + (PAGE_SIZE - 1)) & PAGE_MASK)

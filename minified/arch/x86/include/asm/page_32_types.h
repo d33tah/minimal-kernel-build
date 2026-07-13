@@ -8,17 +8,13 @@
 #define __PAGE_OFFSET_BASE	_AC(CONFIG_PAGE_OFFSET, UL)
 #define __PAGE_OFFSET		__PAGE_OFFSET_BASE
 
-#define __START_KERNEL_map	__PAGE_OFFSET
 
 #define THREAD_SIZE_ORDER	1
 #define THREAD_SIZE		(PAGE_SIZE << THREAD_SIZE_ORDER)
 
 #define IRQ_STACK_SIZE		THREAD_SIZE
 
-#define N_EXCEPTION_STACKS	1
-
 #define __PHYSICAL_MASK_SHIFT	32
-#define __VIRTUAL_MASK_SHIFT	32
 
  
 #define IA32_PAGE_OFFSET	__PAGE_OFFSET
@@ -34,12 +30,7 @@
 
 #ifndef __ASSEMBLY__
 
- 
-extern unsigned int __VMALLOC_RESERVE;
-extern int sysctl_legacy_va_layout;
-
 extern void find_low_pfn_range(void);
-extern void setup_bootmem_allocator(void);
 
 #endif	 
 

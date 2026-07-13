@@ -7,15 +7,12 @@
 #include <linux/time.h>
 
  
-#define tk_debug_account_sleep_time(x)
 
-static inline u64 clocksource_delta(u64 now, u64 last, u64 mask)
-{
+static inline u64 clocksource_delta(u64 now, u64 last, u64 mask) {
 	u64 ret = (now - last) & mask;
 
 	 
-	return ret & ~(mask >> 1) ? 0 : ret;
-}
+	return ret & ~(mask >> 1) ? 0 : ret; }
 
  
 extern raw_spinlock_t timekeeper_lock;

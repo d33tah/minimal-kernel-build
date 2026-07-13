@@ -11,17 +11,10 @@ extern u64 sched_clock_cpu(int cpu);
 extern void sched_clock_init(void);
 
 extern int sched_clock_stable(void);
-extern void clear_sched_clock_stable(void);
 
 extern void sched_clock_tick(void);
-extern void sched_clock_tick_stable(void);
 
-static inline u64 local_clock(void)
-{
-	return sched_clock_cpu(raw_smp_processor_id());
-}
+static inline u64 local_clock(void) {
+	return sched_clock_cpu(raw_smp_processor_id()); }
 
-static inline void enable_sched_clock_irqtime(void) {}
-static inline void disable_sched_clock_irqtime(void) {}
-
-#endif  
+#endif

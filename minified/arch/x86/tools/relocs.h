@@ -22,18 +22,7 @@ void die(char *fmt, ...) __attribute__((noreturn));
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
-enum symtype {
-	S_ABS,
-	S_REL,
-	S_SEG,
-	S_LIN,
-	S_NSYMTYPES
-};
+enum symtype { S_ABS, S_REL, S_SEG, S_LIN, S_NSYMTYPES };
 
-void process_32(FILE *fp, int use_real_mode, int as_text,
-		int show_absolute_syms, int show_absolute_relocs,
-		int show_reloc_info);
-void process_64(FILE *fp, int use_real_mode, int as_text,
-		int show_absolute_syms, int show_absolute_relocs,
-		int show_reloc_info);
-#endif  
+void process_32(FILE *fp, int use_real_mode, int show_absolute_relocs);
+#endif

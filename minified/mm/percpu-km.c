@@ -2,26 +2,10 @@
 
 #include <linux/log2.h>
 
-static void pcpu_post_unmap_tlb_flush(struct pcpu_chunk *chunk,
-				      int page_start, int page_end)
-{
-	 
-}
+static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int page_start, int page_end, gfp_t gfp) {
+	return 0; }
 
-static int pcpu_populate_chunk(struct pcpu_chunk *chunk,
-			       int page_start, int page_end, gfp_t gfp)
-{
-	return 0;
-}
-
-static void pcpu_depopulate_chunk(struct pcpu_chunk *chunk,
-				  int page_start, int page_end)
-{
-	 
-}
-
-static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
-{
+static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp) {
 	const int nr_pages = pcpu_group_sizes[0] >> PAGE_SHIFT;
 	struct pcpu_chunk *chunk;
 	struct page *pages;
@@ -35,8 +19,7 @@ static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
 	pages = alloc_pages(gfp, order_base_2(nr_pages));
 	if (!pages) {
 		pcpu_free_chunk(chunk);
-		return NULL;
-	}
+		return NULL; }
 
 	for (i = 0; i < nr_pages; i++)
 		pcpu_set_page_chunk(nth_page(pages, i), chunk);
@@ -48,51 +31,16 @@ static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp)
 	pcpu_chunk_populated(chunk, 0, nr_pages);
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 
-	pcpu_stats_chunk_alloc();
+	return chunk; }
 
-	return chunk;
-}
-
-static void pcpu_destroy_chunk(struct pcpu_chunk *chunk)
-{
-	const int nr_pages = pcpu_group_sizes[0] >> PAGE_SHIFT;
-
-	if (!chunk)
-		return;
-
-	pcpu_stats_chunk_dealloc();
-
-	if (chunk->data)
-		__free_pages(chunk->data, order_base_2(nr_pages));
-	pcpu_free_chunk(chunk);
-}
-
-static struct page *pcpu_addr_to_page(void *addr)
-{
-	return virt_to_page(addr);
-}
-
-static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai)
-{
+static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai) {
 	size_t nr_pages, alloc_pages;
-
-	 
-	if (ai->nr_groups != 1) {
-		pr_crit("can't handle more than one group\n");
-		return -EINVAL;
-	}
 
 	nr_pages = (ai->groups[0].nr_units * ai->unit_size) >> PAGE_SHIFT;
 	alloc_pages = roundup_pow_of_two(nr_pages);
 
 	if (alloc_pages > nr_pages)
-		pr_warn("wasting %zu pages per chunk\n",
-			alloc_pages - nr_pages);
+		pr_warn("wasting %zu pages per chunk\n", alloc_pages - nr_pages);
 
-	return 0;
-}
+	return 0; }
 
-static bool pcpu_should_reclaim_chunk(struct pcpu_chunk *chunk)
-{
-	return false;
-}

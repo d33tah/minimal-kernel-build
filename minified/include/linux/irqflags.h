@@ -5,86 +5,24 @@
 #include <asm/irqflags.h>
 #include <asm/percpu.h>
 
-#ifndef ftrace_return_address0
-# define ftrace_return_address0 __builtin_return_address(0)
-#endif
-#define CALLER_ADDR0 ((unsigned long)ftrace_return_address0)
+  /* lockdep_softirqs_on/off + lockdep_hardirqs_on/off/_prepare removed - unused (empty no-op stubs) */
 
-struct task_struct;
-static inline unsigned long ftrace_graph_ret_addr(struct task_struct *task, int *idx,
-						  unsigned long ret, unsigned long *retp)
-{
-	return ret;
-}
-static inline bool is_ftrace_trampoline(unsigned long addr)
-{
-	return false;
-}
-
-  static inline void lockdep_softirqs_on(unsigned long ip) { }
-  /* lockdep_softirqs_off removed - unused */
-  static inline void lockdep_hardirqs_on_prepare(void) { }
-  static inline void lockdep_hardirqs_on(unsigned long ip) { }
-  static inline void lockdep_hardirqs_off(unsigned long ip) { }
-
-# define trace_hardirqs_on_prepare()		do { } while (0)
-# define trace_hardirqs_off_finish()		do { } while (0)
-# define trace_hardirqs_on()			do { } while (0)
 # define trace_hardirqs_off()			do { } while (0)
-# define lockdep_hardirq_context()		0
-# define lockdep_softirq_context(p)		0
 # define lockdep_hardirqs_enabled()		0
-# define lockdep_softirqs_enabled(p)		0
 # define lockdep_hardirq_enter()		do { } while (0)
-# define lockdep_hardirq_threaded()		do { } while (0)
 # define lockdep_hardirq_exit()			do { } while (0)
-# define lockdep_softirq_enter()		do { } while (0)
-# define lockdep_softirq_exit()			do { } while (0)
-# define lockdep_hrtimer_enter(__hrtimer)	false
-# define lockdep_hrtimer_exit(__context)	do { } while (0)
-# define lockdep_posixtimer_enter()		do { } while (0)
-# define lockdep_posixtimer_exit()		do { } while (0)
-# define lockdep_irq_work_enter(__work)		do { } while (0)
-# define lockdep_irq_work_exit(__work)		do { } while (0)
 
-# define lockdep_softirq_enter()		do { } while (0)
-# define lockdep_softirq_exit()			do { } while (0)
-
-#if defined(CONFIG_IRQSOFF_TRACER) || \
-	defined(CONFIG_PREEMPT_TRACER)
- extern void stop_critical_timings(void);
- extern void start_critical_timings(void);
-#else
 # define stop_critical_timings() do { } while (0)
 # define start_critical_timings() do { } while (0)
-#endif
 
 #define raw_check_bogus_irq_restore() do { } while (0)
 
 #define raw_local_irq_disable()		arch_local_irq_disable()
 #define raw_local_irq_enable()		arch_local_irq_enable()
-#define raw_local_irq_save(flags)			\
-	do {						\
-		typecheck(unsigned long, flags);	\
-		flags = arch_local_irq_save();		\
-	} while (0)
-#define raw_local_irq_restore(flags)			\
-	do {						\
-		typecheck(unsigned long, flags);	\
-		raw_check_bogus_irq_restore();		\
-		arch_local_irq_restore(flags);		\
-	} while (0)
-#define raw_local_save_flags(flags)			\
-	do {						\
-		typecheck(unsigned long, flags);	\
-		flags = arch_local_save_flags();	\
-	} while (0)
-#define raw_irqs_disabled_flags(flags)			\
-	({						\
-		typecheck(unsigned long, flags);	\
-		arch_irqs_disabled_flags(flags);	\
-	})
-#define raw_irqs_disabled()		(arch_irqs_disabled())
+#define raw_local_irq_save(flags)				do {								typecheck(unsigned long, flags);			flags = arch_local_irq_save();			} while (0)
+#define raw_local_irq_restore(flags)				do {								typecheck(unsigned long, flags);			raw_check_bogus_irq_restore();				arch_local_irq_restore(flags);			} while (0)
+#define raw_local_save_flags(flags)				do {								typecheck(unsigned long, flags);			flags = arch_local_save_flags();		} while (0)
+#define raw_irqs_disabled_flags(flags)				({								typecheck(unsigned long, flags);			arch_irqs_disabled_flags(flags);		})
 #define raw_safe_halt()			arch_safe_halt()
 
 
@@ -92,18 +30,8 @@ static inline bool is_ftrace_trampoline(unsigned long addr)
 #define local_irq_disable()	do { raw_local_irq_disable(); } while (0)
 #define local_irq_save(flags)	do { raw_local_irq_save(flags); } while (0)
 #define local_irq_restore(flags) do { raw_local_irq_restore(flags); } while (0)
-#define safe_halt()		do { raw_safe_halt(); } while (0)
 
 
-#define local_save_flags(flags)	raw_local_save_flags(flags)
-
-#define irqs_disabled()					\
-	({						\
-		unsigned long _flags;			\
-		raw_local_save_flags(_flags);		\
-		raw_irqs_disabled_flags(_flags);	\
-	})
-
-#define irqs_disabled_flags(flags) raw_irqs_disabled_flags(flags)
+#define irqs_disabled()						({								unsigned long _flags;					raw_local_save_flags(_flags);				raw_irqs_disabled_flags(_flags);		})
 
 #endif

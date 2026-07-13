@@ -5,11 +5,8 @@
 #include <asm/shared/io.h>
 
 #undef inb
-#undef inw
-#undef inl
 #undef outb
 #undef outw
-#undef outl
 
 struct port_io_ops {
 	u8	(*f_inb)(u16 port);

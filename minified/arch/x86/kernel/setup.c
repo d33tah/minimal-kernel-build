@@ -1,66 +1,16 @@
-#include <linux/acpi.h>
 #include <linux/console.h>
-#include <linux/dma-map-ops.h>
-#include <linux/dmi.h>
-#include <linux/efi.h>
 
 #include <linux/initrd.h>
-static inline void reserve_ibft_region(void) {}
 #include <linux/memblock.h>
-extern struct atomic_notifier_head panic_notifier_list;
-extern bool crash_kexec_post_notifiers;
-#include <linux/pci.h>
-#include <linux/root_dev.h>
-#include <linux/hugetlb.h>
-#define tboot_probe() do { } while (0)
-#include <linux/static_call.h>
-#include <linux/swiotlb.h>
-
-#include <uapi/linux/mount.h>
 
 #include <asm/apic.h>
-#include <asm/numa.h>
+#include <asm/e820/api.h>
 #include <asm/bios_ebda.h>
-#include <asm/bugs.h>
-#include <asm/cpu.h>
-#include <asm/efi.h>
-#include <asm/gart.h>
-#include <asm/hypervisor.h>
-#include <asm/io_apic.h>
-/* --- 2025-12-07 20:48 --- Inlined kasan.h */
-#include <linux/const.h>
-#define KASAN_SHADOW_OFFSET _AC(CONFIG_KASAN_SHADOW_OFFSET, UL)
-#define KASAN_SHADOW_SCALE_SHIFT 3
-#define KASAN_SHADOW_START      (KASAN_SHADOW_OFFSET + \
-				((-1UL << __VIRTUAL_MASK_SHIFT) >> \
-					KASAN_SHADOW_SCALE_SHIFT))
-#define KASAN_SHADOW_END        (KASAN_SHADOW_START + \
-				(1ULL << (__VIRTUAL_MASK_SHIFT - \
-					  KASAN_SHADOW_SCALE_SHIFT)))
-static inline void kasan_init(void) { }
-static inline void kernel_randomize_memory(void) { }
-#include <asm/mce.h>
 #include <asm/memtype.h>
-#include <asm/mtrr.h>
 #include <asm/realmode.h>
-static inline void olpc_ofw_detect(void) { }
-static inline void setup_olpc_ofw_pgd(void) { }
-/* --- 2025-12-07 20:54 --- Inlined pci-direct.h */
-#include <linux/types.h>
-extern u32 read_pci_config(u8 bus, u8 slot, u8 func, u8 offset);
-extern u8 read_pci_config_byte(u8 bus, u8 slot, u8 func, u8 offset);
-extern u16 read_pci_config_16(u8 bus, u8 slot, u8 func, u8 offset);
-extern void write_pci_config(u8 bus, u8 slot, u8 func, u8 offset, u32 val);
-extern void write_pci_config_byte(u8 bus, u8 slot, u8 func, u8 offset, u8 val);
-extern void write_pci_config_16(u8 bus, u8 slot, u8 func, u8 offset, u16 val);
-extern int early_pci_allowed(void);
 #include <asm/prom.h>
-#include <asm/proto.h>
-#include <asm/unwind.h>
-#include <asm/vsyscall.h>
-#include <linux/vmalloc.h>
+#include <asm/efi.h>
 
-unsigned long max_low_pfn_mapped;
 unsigned long max_pfn_mapped;
 
 
@@ -71,74 +21,19 @@ unsigned long _brk_end   = (unsigned long)__brk_base;
 struct boot_params boot_params;
 
 
-static struct resource rodata_resource = {
-	.name	= "Kernel rodata",
-	.start	= 0,
-	.end	= 0,
-	.flags	= IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM
-};
-
-static struct resource data_resource = {
-	.name	= "Kernel data",
-	.start	= 0,
-	.end	= 0,
-	.flags	= IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM
-};
-
-static struct resource code_resource = {
-	.name	= "Kernel code",
-	.start	= 0,
-	.end	= 0,
-	.flags	= IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM
-};
-
-static struct resource bss_resource = {
-	.name	= "Kernel bss",
-	.start	= 0,
-	.end	= 0,
-	.flags	= IORESOURCE_BUSY | IORESOURCE_SYSTEM_RAM
-};
-
-
 struct cpuinfo_x86 new_cpu_data;
 
 struct cpuinfo_x86 boot_cpu_data __read_mostly;
-
-unsigned int def_to_bigsmp;
-
-struct apm_info apm_info;
-
-#if defined(CONFIG_X86_SPEEDSTEP_SMI) || \
-	defined(CONFIG_X86_SPEEDSTEP_SMI_MODULE)
-struct ist_info ist_info;
-#else
-struct ist_info ist_info;
-#endif
-
-
 
 __visible unsigned long mmu_cr4_features __ro_after_init;
 
 
 struct screen_info screen_info;
-struct edid_info edid_info;
 
-extern int root_mountflags;
-
-unsigned long saved_video_mode;
-
-#define RAMDISK_IMAGE_START_MASK	0x07FF
-#define RAMDISK_PROMPT_FLAG		0x8000
-#define RAMDISK_LOAD_FLAG		0x4000
 
 static char __initdata command_line[COMMAND_LINE_SIZE];
 
-static inline void __init copy_edd(void)
-{
-}
-
-void * __init extend_brk(size_t size, size_t align)
-{
+void * __init extend_brk(size_t size, size_t align) {
 	size_t mask = align - 1;
 	void *ret;
 
@@ -153,28 +48,19 @@ void * __init extend_brk(size_t size, size_t align)
 
 	memset(ret, 0, size);
 
-	return ret;
-}
+	return ret; }
 
-static void __init cleanup_highmap(void)
-{
-}
-
-static void __init reserve_brk(void)
-{
+static void __init reserve_brk(void) {
 	if (_brk_end > _brk_start)
-		memblock_reserve(__pa_symbol(_brk_start),
-				 _brk_end - _brk_start);
+		memblock_reserve(__pa_symbol(_brk_start), _brk_end - _brk_start);
 
 	 
-	_brk_start = 0;
-}
+	_brk_start = 0; }
 
 u64 relocated_ramdisk;
 
 
-static u64 __init get_ramdisk_image(void)
-{
+static u64 __init get_ramdisk_image(void) {
 	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
 
 	ramdisk_image |= (u64)boot_params.ext_ramdisk_image << 32;
@@ -182,93 +68,62 @@ static u64 __init get_ramdisk_image(void)
 	if (ramdisk_image == 0)
 		ramdisk_image = phys_initrd_start;
 
-	return ramdisk_image;
-}
-static u64 __init get_ramdisk_size(void)
-{
+	return ramdisk_image; }
+static u64 __init get_ramdisk_size(void) {
 	u64 ramdisk_size = boot_params.hdr.ramdisk_size;
 
 	ramdisk_size |= (u64)boot_params.ext_ramdisk_size << 32;
 
-	if (ramdisk_size == 0)
-		ramdisk_size = phys_initrd_size;
+	return ramdisk_size; }
 
-	return ramdisk_size;
-}
-
-static void __init relocate_initrd(void)
-{
-	 
-	u64 ramdisk_image = get_ramdisk_image();
-	u64 ramdisk_size  = get_ramdisk_size();
-	u64 area_size     = PAGE_ALIGN(ramdisk_size);
-
-	 
-	relocated_ramdisk = memblock_phys_alloc_range(area_size, PAGE_SIZE, 0,
-						      PFN_PHYS(max_pfn_mapped));
-	if (!relocated_ramdisk)
-		panic("Cannot find place for new RAMDISK of size %lld\n",
-		      ramdisk_size);
-
-	initrd_start = relocated_ramdisk + PAGE_OFFSET;
-	initrd_end   = initrd_start + ramdisk_size;
-	printk(KERN_INFO "Allocated new RAMDISK: [mem %#010llx-%#010llx]\n",
-	       relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1);
-
-	copy_from_early_mem((void *)initrd_start, ramdisk_image, ramdisk_size);
-
-	printk(KERN_INFO "Move RAMDISK from [mem %#010llx-%#010llx] to"
-		" [mem %#010llx-%#010llx]\n",
-		ramdisk_image, ramdisk_image + ramdisk_size - 1,
-		relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1);
-}
-
-static void __init early_reserve_initrd(void)
-{
+static void __init early_reserve_initrd(void) {
 	 
 	u64 ramdisk_image = get_ramdisk_image();
 	u64 ramdisk_size  = get_ramdisk_size();
 	u64 ramdisk_end   = PAGE_ALIGN(ramdisk_image + ramdisk_size);
 
-	if (!boot_params.hdr.type_of_loader ||
-	    !ramdisk_image || !ramdisk_size)
+	if (!boot_params.hdr.type_of_loader || !ramdisk_image || !ramdisk_size)
 		return;		 
 
-	memblock_reserve(ramdisk_image, ramdisk_end - ramdisk_image);
-}
+	memblock_reserve(ramdisk_image, ramdisk_end - ramdisk_image); }
 
-static void __init reserve_initrd(void)
-{
+static void __init reserve_initrd(void) {
 	 
 	u64 ramdisk_image = get_ramdisk_image();
 	u64 ramdisk_size  = get_ramdisk_size();
 	u64 ramdisk_end   = PAGE_ALIGN(ramdisk_image + ramdisk_size);
 
-	if (!boot_params.hdr.type_of_loader ||
-	    !ramdisk_image || !ramdisk_size)
+	if (!boot_params.hdr.type_of_loader || !ramdisk_image || !ramdisk_size)
 		return;		 
 
 	initrd_start = 0;
 
-	printk(KERN_INFO "RAMDISK: [mem %#010llx-%#010llx]\n", ramdisk_image,
-			ramdisk_end - 1);
+	printk(KERN_INFO "RAMDISK: [mem %#010llx-%#010llx]\n", ramdisk_image, ramdisk_end - 1);
 
-	if (pfn_range_is_mapped(PFN_DOWN(ramdisk_image),
-				PFN_DOWN(ramdisk_end))) {
+	if (pfn_range_is_mapped(PFN_DOWN(ramdisk_image), PFN_DOWN(ramdisk_end))) {
 		 
 		initrd_start = ramdisk_image + PAGE_OFFSET;
 		initrd_end = initrd_start + ramdisk_size;
-		return;
-	}
+		return; }
 
-	relocate_initrd();
+{ u64 area_size = PAGE_ALIGN(ramdisk_size);
 
-	memblock_phys_free(ramdisk_image, ramdisk_end - ramdisk_image);
-}
+		relocated_ramdisk = memblock_phys_alloc_range(area_size, PAGE_SIZE, 0, PFN_PHYS(max_pfn_mapped));
+		if (!relocated_ramdisk)
+			panic("Cannot find place for new RAMDISK of size %lld\n", ramdisk_size);
+
+		initrd_start = relocated_ramdisk + PAGE_OFFSET;
+		initrd_end   = initrd_start + ramdisk_size;
+		printk(KERN_INFO "Allocated new RAMDISK: [mem %#010llx-%#010llx]\n", relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1);
+
+		copy_from_early_mem((void *)initrd_start, ramdisk_image, ramdisk_size);
+
+		printk(KERN_INFO "Move RAMDISK from [mem %#010llx-%#010llx] to" " [mem %#010llx-%#010llx]\n", ramdisk_image, ramdisk_image + ramdisk_size - 1, relocated_ramdisk, relocated_ramdisk + ramdisk_size - 1); }
+
+	memblock_phys_free(ramdisk_image, ramdisk_end - ramdisk_image); }
 
 
-static void __init parse_setup_data(void)
-{
+static void __init parse_setup_data(void) {
 	struct setup_data *data;
 	u64 pa_data, pa_next;
 
@@ -282,25 +137,16 @@ static void __init parse_setup_data(void)
 		pa_next = data->next;
 		early_memunmap(data, sizeof(*data));
 
-		switch (data_type) {
-		case SETUP_E820_EXT:
+		/*
+		 * CONFIG_OF and CONFIG_EFI are both absent on this build, so the
+		 * SETUP_DTB (add_dtb) and SETUP_EFI (parse_efi_setup) handlers were
+		 * empty stubs -- only SETUP_E820_EXT does real work here.
+		 */
+		if (data_type == SETUP_E820_EXT)
 			e820__memory_setup_extended(pa_data, data_len);
-			break;
-		case SETUP_DTB:
-			add_dtb(pa_data);
-			break;
-		case SETUP_EFI:
-			parse_efi_setup(pa_data, data_len);
-			break;
-		default:
-			break;
-		}
-		pa_data = pa_next;
-	}
-}
+		pa_data = pa_next; } }
 
-static void __init memblock_x86_reserve_range_setup_data(void)
-{
+static void __init memblock_x86_reserve_range_setup_data(void) {
 	struct setup_indirect *indirect;
 	struct setup_data *data;
 	u64 pa_data, pa_next;
@@ -311,8 +157,7 @@ static void __init memblock_x86_reserve_range_setup_data(void)
 		data = early_memremap(pa_data, sizeof(*data));
 		if (!data) {
 			pr_warn("setup: failed to memremap setup_data entry\n");
-			return;
-		}
+			return; }
 
 		len = sizeof(*data);
 		pa_next = data->next;
@@ -325,72 +170,31 @@ static void __init memblock_x86_reserve_range_setup_data(void)
 			data = early_memremap(pa_data, len);
 			if (!data) {
 				pr_warn("setup: failed to memremap indirect setup_data\n");
-				return;
-			}
+				return; }
 
 			indirect = (struct setup_indirect *)data->data;
 
 			if (indirect->type != SETUP_INDIRECT)
-				memblock_reserve(indirect->addr, indirect->len);
-		}
+				memblock_reserve(indirect->addr, indirect->len); }
 
 		pa_data = pa_next;
-		early_memunmap(data, len);
-	}
-}
+		early_memunmap(data, len); } }
 
 
-static struct resource standard_io_resources[] = {
-	{ .name = "dma1", .start = 0x00, .end = 0x1f,
-		.flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "pic1", .start = 0x20, .end = 0x21,
-		.flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "timer0", .start = 0x40, .end = 0x43,
-		.flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "timer1", .start = 0x50, .end = 0x53,
-		.flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "keyboard", .start = 0x60, .end = 0x60,
-		.flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "keyboard", .start = 0x64, .end = 0x64,
-		.flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "dma page reg", .start = 0x80, .end = 0x8f,
-		.flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "pic2", .start = 0xa0, .end = 0xa1,
-		.flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "dma2", .start = 0xc0, .end = 0xdf,
-		.flags = IORESOURCE_BUSY | IORESOURCE_IO },
-	{ .name = "fpu", .start = 0xf0, .end = 0xff,
-		.flags = IORESOURCE_BUSY | IORESOURCE_IO }
-};
-
-void __init reserve_standard_io_resources(void)
-{
-	int i;
-
-	 
-	for (i = 0; i < ARRAY_SIZE(standard_io_resources); i++)
-		request_resource(&ioport_resource, &standard_io_resources[i]);
-
-}
-
-static void __init trim_snb_memory(void)
-{
+static void __init trim_snb_memory(void) {
 	/* Stub: Sandy Bridge graphics workaround not needed for minimal kernel */
 }
 
-static void __init trim_bios_range(void)
-{
+static void __init trim_bios_range(void) {
 	 
 	e820__range_update(0, PAGE_SIZE, E820_TYPE_RAM, E820_TYPE_RESERVED);
 
 	 
 	e820__range_remove(BIOS_BEGIN, BIOS_END - BIOS_BEGIN, E820_TYPE_RAM, 1);
 
-	e820__update_table(e820_table);
-}
+	e820__update_table(e820_table); }
 
-static void __init e820_add_kernel_range(void)
-{
+static void __init e820_add_kernel_range(void) {
 	u64 start = __pa_symbol(_text);
 	u64 size = __pa_symbol(_end) - start;
 
@@ -400,14 +204,11 @@ static void __init e820_add_kernel_range(void)
 
 	pr_warn(".text .data .bss are not marked as E820_TYPE_RAM!\n");
 	e820__range_remove(start, size, E820_TYPE_RAM, 0);
-	e820__range_add(start, size, E820_TYPE_RAM);
-}
+	e820__range_add(start, size, E820_TYPE_RAM); }
 
-static void __init early_reserve_memory(void)
-{
+static void __init early_reserve_memory(void) {
 	 
-	memblock_reserve(__pa_symbol(_text),
-			 (unsigned long)__end_of_kernel_reserve - (unsigned long)_text);
+	memblock_reserve(__pa_symbol(_text), (unsigned long)__end_of_kernel_reserve - (unsigned long)_text);
 
 	 
 	memblock_reserve(0, SZ_64K);
@@ -416,158 +217,74 @@ static void __init early_reserve_memory(void)
 
 	memblock_x86_reserve_range_setup_data();
 
-	reserve_ibft_region();
 	reserve_bios_regions();
-	trim_snb_memory();
-}
+	trim_snb_memory(); }
 
-static int
-dump_kernel_offset(struct notifier_block *self, unsigned long v, void *p)
-{
-	/* Stub: kernel offset dumping not needed for minimal kernel */
-	return 0;
-}
-
-void x86_configure_nx(void)
-{
-	if (boot_cpu_has(X86_FEATURE_NX))
-		__supported_pte_mask |= _PAGE_NX;
-	else
-		__supported_pte_mask &= ~_PAGE_NX;
-}
-
-static void __init x86_report_nx(void)
-{
+static void __init x86_report_nx(void) {
 	/* Stub: NX reporting not needed for minimal kernel */
 }
 
 
-void __init setup_arch(char **cmdline_p)
-{
+void __init setup_arch(char **cmdline_p) {
 	memcpy(&boot_cpu_data, &new_cpu_data, sizeof(new_cpu_data));
 
 	 
-	clone_pgd_range(swapper_pg_dir     + KERNEL_PGD_BOUNDARY,
-			initial_page_table + KERNEL_PGD_BOUNDARY,
-			KERNEL_PGD_PTRS);
+	clone_pgd_range(swapper_pg_dir     + KERNEL_PGD_BOUNDARY, initial_page_table + KERNEL_PGD_BOUNDARY, KERNEL_PGD_PTRS);
 
 	load_cr3(swapper_pg_dir);
 	 
 	__flush_tlb_all();
 
-	 
-	olpc_ofw_detect();
-
 	idt_setup_early_traps();
 	early_cpu_init();
 	jump_label_init();
-	static_call_init();
 	early_ioremap_init();
 
-	setup_olpc_ofw_pgd();
-
-	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
 	screen_info = boot_params.screen_info;
-	edid_info = boot_params.edid_info;
-	apm_info.bios = boot_params.apm_bios_info;
-	ist_info = boot_params.ist_info;
-	saved_video_mode = boot_params.hdr.vid_mode;
-	/* bootloader_type/version setup removed - never read */
+	/* edid_info/apm_info/ist_info/saved_video_mode copies removed - never read */
 
-	x86_init.oem.arch_setup();
+	/* x86_init.oem.arch_setup() removed - dispatched to x86_init_noop */
 
-	 
+
 	early_reserve_memory();
 
 	iomem_resource.end = (1ULL << boot_cpu_data.x86_phys_bits) - 1;
 	e820__memory_setup();
 	parse_setup_data();
 
-	copy_edd();
-
-	if (!boot_params.hdr.root_flags)
-		root_mountflags &= ~MS_RDONLY;
 	setup_initial_init_mm(_text, _etext, _edata, (void *)_brk_end);
-
-	code_resource.start = __pa_symbol(_text);
-	code_resource.end = __pa_symbol(_etext)-1;
-	rodata_resource.start = __pa_symbol(__start_rodata);
-	rodata_resource.end = __pa_symbol(__end_rodata)-1;
-	data_resource.start = __pa_symbol(_sdata);
-	data_resource.end = __pa_symbol(_edata)-1;
-	bss_resource.start = __pa_symbol(__bss_start);
-	bss_resource.end = __pa_symbol(__bss_stop)-1;
 
 
 	strscpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
 	*cmdline_p = command_line;
 
-	 
-	x86_configure_nx();
 
 	parse_early_param();
 
-	if (efi_enabled(EFI_BOOT))
-		efi_memblock_x86_reserve_range();
-
-
 	x86_report_nx();
-
-	if (acpi_mps_check()) {
-		setup_clear_cpu_cap(X86_FEATURE_APIC);
-	}
 
 	e820__reserve_setup_data();
 	e820__finish_early_params();
 
-	if (efi_enabled(EFI_BOOT))
-		efi_init();
-
-	dmi_setup();
-
-	 
-	init_hypervisor_platform();
 
 	tsc_early_init();
-	x86_init.resources.probe_roms();
 
-	 
-	insert_resource(&iomem_resource, &code_resource);
-	insert_resource(&iomem_resource, &rodata_resource);
-	insert_resource(&iomem_resource, &data_resource);
-	insert_resource(&iomem_resource, &bss_resource);
 
 	e820_add_kernel_range();
 	trim_bios_range();
-	if (ppro_with_ram_bug()) {
-		e820__range_update(0x70000000ULL, 0x40000ULL, E820_TYPE_RAM,
-				  E820_TYPE_RESERVED);
-		e820__update_table(e820_table);
-		printk(KERN_INFO "fixed physical RAM map:\n");
-		e820__print_table("bad_ppro");
-	}
 
-	 
+
 	max_pfn = e820__end_of_ram_pfn();
 
-	 
-	if (IS_ENABLED(CONFIG_MTRR))
-		mtrr_bp_init();
-	else
-		pat_disable("PAT support disabled because CONFIG_MTRR is disabled in the kernel.");
 
-	if (mtrr_trim_uncached_memory(max_pfn))
-		max_pfn = e820__end_of_ram_pfn();
+	pat_disable("PAT support disabled because CONFIG_MTRR is disabled in the kernel.");
 
 	/* max_possible_pfn assignment removed - never read */
 
 
 	init_cache_modes();
 
-	 
-	kernel_randomize_memory();
 
-	 
 	find_low_pfn_range();
 
 	 
@@ -578,37 +295,17 @@ void __init setup_arch(char **cmdline_p)
 	 
 	reserve_brk();
 
-	cleanup_highmap();
-
 	memblock_set_current_limit(ISA_END_ADDRESS);
 	e820__memblock_setup();
 
-	 
-	sev_setup_arch();
-
-	efi_fake_memmap();
-	efi_find_mirror();
-	efi_esrt_init();
-	efi_mokvar_table_init();
-
-	 
-	efi_reserve_boot_services();
-
-	 
-	e820__memblock_alloc_reserved_mpc_new();
-
-
-	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n",
-			(max_pfn_mapped<<PAGE_SHIFT) - 1);
+	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n", (max_pfn_mapped<<PAGE_SHIFT) - 1);
 
 	 
 	reserve_real_mode();
 
 	init_mem_mapping();
 
-	idt_setup_early_pf();
 
-	 
 	mmu_cr4_features = __read_cr4() & ~X86_CR4_PCIDE;
 
 	memblock_set_current_limit(get_max_mapped());
@@ -618,33 +315,7 @@ void __init setup_arch(char **cmdline_p)
 	 
 	setup_log_buf(1);
 
-	if (efi_enabled(EFI_BOOT)) {
-		switch (boot_params.secure_boot) {
-		case efi_secureboot_mode_disabled:
-			pr_info("Secure boot disabled\n");
-			break;
-		case efi_secureboot_mode_enabled:
-			pr_info("Secure boot enabled\n");
-			break;
-		default:
-			pr_info("Secure boot could not be determined\n");
-			break;
-		}
-	}
-
 	reserve_initrd();
-
-	acpi_table_upgrade();
-	 
-	acpi_boot_table_init();
-
-	vsmp_init();
-
-	io_delay_init();
-
-	early_platform_quirks();
-
-	early_acpi_boot_init();
 
 	initmem_init();
 
@@ -652,84 +323,17 @@ void __init setup_arch(char **cmdline_p)
 
 	x86_init.paging.pagetable_init();
 
-	kasan_init();
 
-	 
 	sync_initial_page_table();
 
-	tboot_probe();
-
-	map_vsyscall();
-
-	generic_apic_probe();
-
-	early_quirks();
-
-	 
-	acpi_boot_init();
-	x86_dtb_init();
-
-	 
-	get_smp_config();
-
-	 
-	init_apic_mappings();
-
-	prefill_possible_map();
-
-	init_cpu_to_node();
-	init_gi_nodes();
-
-	io_apic_init_mappings();
-
-	x86_init.hyper.guest_late_init();
-
-	e820__reserve_resources();
-	e820__register_nosave_regions(max_pfn);
+	/* e820__reserve_resources() removed: built write-only iomem-tree state */
 
 	x86_init.resources.reserve_resources();
 
-	e820__setup_pci_gap();
+	conswitchp = &vga_con;
+	/* x86_init.oem.banner() removed - dispatched to x86_init_noop */
+	/* x86_init.timers.wallclock_init() removed - dispatched to x86_init_noop */
 
-	if (!efi_enabled(EFI_BOOT) || (efi_mem_type(0xa0000) != EFI_CONVENTIONAL_MEMORY))
-		conswitchp = &vga_con;
-	x86_init.oem.banner();
-
-	x86_init.timers.wallclock_init();
-
-	 
-
-	mcheck_init();
-
-	register_refined_jiffies(CLOCK_TICK_RATE);
+	register_refined_jiffies(CLOCK_TICK_RATE); }
 
 
-	unwind_init();
-}
-
-
-static struct resource video_ram_resource = {
-	.name	= "Video RAM area",
-	.start	= 0xa0000,
-	.end	= 0xbffff,
-	.flags	= IORESOURCE_BUSY | IORESOURCE_MEM
-};
-
-void __init i386_reserve_resources(void)
-{
-	request_resource(&iomem_resource, &video_ram_resource);
-	reserve_standard_io_resources();
-}
-
-
-static struct notifier_block kernel_offset_notifier = {
-	.notifier_call = dump_kernel_offset
-};
-
-static int __init register_kernel_offset_dumper(void)
-{
-	atomic_notifier_chain_register(&panic_notifier_list,
-					&kernel_offset_notifier);
-	return 0;
-}
-__initcall(register_kernel_offset_dumper);

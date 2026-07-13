@@ -1,13 +1,10 @@
 /* Minimal video mode setup - simplified for text-only boot */
 #include "boot.h"
 #include "video.h"
-#include "vesa.h"
 #include <uapi/asm/boot.h>
 
 int adapter;
 int force_x, force_y;
-int do_restore;
-int graphic_mode;
 
 void probe_cards(int unsafe)
 {
@@ -23,26 +20,9 @@ void probe_cards(int unsafe)
 		if (card->unsafe == unsafe) {
 			if (card->probe)
 				card->nmodes = card->probe();
-			else
-				card->nmodes = 0;
+			else card->nmodes = 0;
 		}
 	}
-}
-
-int mode_defined(u16 mode)
-{
-	struct card_info *card;
-	struct mode_info *mi;
-	int i;
-
-	for (card = video_cards; card < video_cards_end; card++) {
-		mi = card->modes;
-		for (i = 0; i < card->nmodes; i++, mi++) {
-			if (mi->mode == mode)
-				return 1;
-		}
-	}
-	return 0;
 }
 
 static int raw_set_mode(u16 mode, u16 *real_mode)

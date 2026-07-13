@@ -24,13 +24,7 @@ static u8 vga_set_basic_mode(void)
 
 	ireg.ax = mode;
 	intcall(0x10, &ireg, NULL);
-	do_restore = 1;
 	return mode;
-}
-
-u16 vga_crtc(void)
-{
-	return (inb(0x3cc) & 1) ? 0x3d4 : 0x3b4;
 }
 
 static int vga_set_mode(struct mode_info *mode)

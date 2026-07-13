@@ -2,50 +2,10 @@
 #define _LINUX_RESOURCE_H
 
 #include <linux/time.h>
-#include <linux/types.h>
 
 /* Inlined from uapi/linux/resource.h */
-#define	RUSAGE_SELF	0
-#define	RUSAGE_CHILDREN	(-1)
-#define RUSAGE_BOTH	(-2)
-#define	RUSAGE_THREAD	1
+struct rlimit { __kernel_ulong_t	rlim_cur; __kernel_ulong_t	rlim_max; };
 
-struct	rusage {
-	struct __kernel_old_timeval ru_utime;
-	struct __kernel_old_timeval ru_stime;
-	__kernel_long_t	ru_maxrss;
-	__kernel_long_t	ru_ixrss;
-	__kernel_long_t	ru_idrss;
-	__kernel_long_t	ru_isrss;
-	__kernel_long_t	ru_minflt;
-	__kernel_long_t	ru_majflt;
-	__kernel_long_t	ru_nswap;
-	__kernel_long_t	ru_inblock;
-	__kernel_long_t	ru_oublock;
-	__kernel_long_t	ru_msgsnd;
-	__kernel_long_t	ru_msgrcv;
-	__kernel_long_t	ru_nsignals;
-	__kernel_long_t	ru_nvcsw;
-	__kernel_long_t	ru_nivcsw;
-};
-
-struct rlimit {
-	__kernel_ulong_t	rlim_cur;
-	__kernel_ulong_t	rlim_max;
-};
-
-#define RLIM64_INFINITY		(~0ULL)
-
-struct rlimit64 {
-	__u64 rlim_cur;
-	__u64 rlim_max;
-};
-
-#define	PRIO_MIN	(-20)
-#define	PRIO_MAX	20
-#define	PRIO_PROCESS	0
-#define	PRIO_PGRP	1
-#define	PRIO_USER	2
 #define _STK_LIM	(8*1024*1024)
 #define MLOCK_LIMIT	(8*1024*1024)
 
@@ -86,28 +46,6 @@ struct rlimit64 {
 
 #define MQ_BYTES_MAX	819200
 
-#define INIT_RLIMITS							\
-{									\
-	[RLIMIT_CPU]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
-	[RLIMIT_FSIZE]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
-	[RLIMIT_DATA]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
-	[RLIMIT_STACK]		= {       _STK_LIM,  RLIM_INFINITY },	\
-	[RLIMIT_CORE]		= {              0,  RLIM_INFINITY },	\
-	[RLIMIT_RSS]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
-	[RLIMIT_NPROC]		= {              0,              0 },	\
-	[RLIMIT_NOFILE]		= {   INR_OPEN_CUR,   INR_OPEN_MAX },	\
-	[RLIMIT_MEMLOCK]	= {    MLOCK_LIMIT,    MLOCK_LIMIT },	\
-	[RLIMIT_AS]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
-	[RLIMIT_LOCKS]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
-	[RLIMIT_SIGPENDING]	= { 		0,	       0 },	\
-	[RLIMIT_MSGQUEUE]	= {   MQ_BYTES_MAX,   MQ_BYTES_MAX },	\
-	[RLIMIT_NICE]		= { 0, 0 },				\
-	[RLIMIT_RTPRIO]		= { 0, 0 },				\
-	[RLIMIT_RTTIME]		= {  RLIM_INFINITY,  RLIM_INFINITY },	\
-}
-
-struct task_struct;
-
-void getrusage(struct task_struct *p, int who, struct rusage *ru);
+#define INIT_RLIMITS							{										[RLIMIT_CPU]		= {  RLIM_INFINITY,  RLIM_INFINITY },		[RLIMIT_FSIZE]		= {  RLIM_INFINITY,  RLIM_INFINITY },		[RLIMIT_DATA]		= {  RLIM_INFINITY,  RLIM_INFINITY },		[RLIMIT_STACK]		= {       _STK_LIM,  RLIM_INFINITY },		[RLIMIT_CORE]		= {              0,  RLIM_INFINITY },		[RLIMIT_RSS]		= {  RLIM_INFINITY,  RLIM_INFINITY },		[RLIMIT_NPROC]		= {              0,              0 },		[RLIMIT_NOFILE]		= {   INR_OPEN_CUR,   INR_OPEN_MAX },		[RLIMIT_MEMLOCK]	= {    MLOCK_LIMIT,    MLOCK_LIMIT },		[RLIMIT_AS]		= {  RLIM_INFINITY,  RLIM_INFINITY },		[RLIMIT_LOCKS]		= {  RLIM_INFINITY,  RLIM_INFINITY },		[RLIMIT_SIGPENDING]	= { 		0,	       0 },		[RLIMIT_MSGQUEUE]	= {   MQ_BYTES_MAX,   MQ_BYTES_MAX },		[RLIMIT_NICE]		= { 0, 0 },					[RLIMIT_RTPRIO]		= { 0, 0 },					[RLIMIT_RTTIME]		= {  RLIM_INFINITY,  RLIM_INFINITY },	}
 
 #endif

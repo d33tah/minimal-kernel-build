@@ -171,7 +171,6 @@ dir_filelist() {
 }
 
 input_file() {
-	source="$1"
 	if [ -f "$1" ]; then
 		# If a regular file is specified, assume it is in
 		# gen_init_cpio format

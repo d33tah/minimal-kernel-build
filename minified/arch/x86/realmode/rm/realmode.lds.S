@@ -27,10 +27,6 @@ SECTIONS
 	.rodata : {
 		*(.rodata)
 		*(.rodata.*)
-		. = ALIGN(16);
-		video_cards = .;
-		*(.videocards)
-		video_cards_end = .;
 	}
 
 	. = ALIGN(PAGE_SIZE);
@@ -44,11 +40,6 @@ SECTIONS
 		*(.text32)
 		*(.text32.*)
 	}
-
-	.text64 : {
-		*(.text64)
-		*(.text64.*)
-	}
 	pa_ro_end = .;
 
 	. = ALIGN(PAGE_SIZE);
@@ -60,12 +51,6 @@ SECTIONS
 	. = ALIGN(128);
 	.bss : {
 		*(.bss*)
-	}
-
-	/* End signature for integrity checking */
-	. = ALIGN(4);
-	.signature : {
-		*(.signature)
 	}
 
 	/DISCARD/ : {

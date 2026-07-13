@@ -1,8 +1,5 @@
-#include <linux/kernel.h>
-#include <linux/init.h>
 #include <linux/memblock.h>
 
-#include <asm/setup.h>
 #include <asm/bios_ebda.h>
 
 
@@ -11,8 +8,7 @@
 #define BIOS_START_MIN		0x20000U	 
 #define BIOS_START_MAX		0x9f000U	 
 
-void __init reserve_bios_regions(void)
-{
+void __init reserve_bios_regions(void) {
 	unsigned int bios_start, ebda_start;
 
 	 
@@ -35,5 +31,4 @@ void __init reserve_bios_regions(void)
 		bios_start = ebda_start;
 
 	 
-	memblock_reserve(bios_start, 0x100000 - bios_start);
-}
+	memblock_reserve(bios_start, 0x100000 - bios_start); }

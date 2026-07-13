@@ -1,14 +1,7 @@
-#include <linux/export.h>
-#include <linux/sched/signal.h>
 #include <linux/sched/task.h>
-#include <linux/fs.h>
-#include <linux/path.h>
-#include <linux/slab.h>
 #include <linux/fs_struct.h>
-#include "internal.h"
 
-void set_fs_root(struct fs_struct *fs, const struct path *path)
-{
+void set_fs_root(struct fs_struct *fs, const struct path *path) {
 	struct path old_root;
 
 	path_get(path);
@@ -19,11 +12,9 @@ void set_fs_root(struct fs_struct *fs, const struct path *path)
 	write_seqcount_end(&fs->seq);
 	spin_unlock(&fs->lock);
 	if (old_root.dentry)
-		path_put(&old_root);
-}
+		path_put(&old_root); }
 
-void set_fs_pwd(struct fs_struct *fs, const struct path *path)
-{
+void set_fs_pwd(struct fs_struct *fs, const struct path *path) {
 	struct path old_pwd;
 
 	path_get(path);
@@ -35,64 +26,21 @@ void set_fs_pwd(struct fs_struct *fs, const struct path *path)
 	spin_unlock(&fs->lock);
 
 	if (old_pwd.dentry)
-		path_put(&old_pwd);
+		path_put(&old_pwd); }
+
+
+void exit_fs(struct task_struct *tsk) {
+	/*
+	 * RUNTIME-DEAD ANCHOR-STUB: exit_fs drops the dying task's fs_struct.
+	 * Both call sites are runtime-dead on this 1-shot boot: do_exit's tail
+	 * (init panics on is_global_init() before reaching it, HIT=False) and
+	 * copy_process's bad_fork_cleanup_fs rollback (copy_process succeeds for
+	 * every spawn -- init + the few kthreads -- so the error path never runs,
+	 * HIT=False). No task ever tears down its fs_struct here.
+	 */
 }
 
+int current_umask(void) {
+	return current->fs->umask; }
 
-void free_fs_struct(struct fs_struct *fs)
-{
-	path_put(&fs->root);
-	path_put(&fs->pwd);
-	kmem_cache_free(fs_cachep, fs);
-}
-
-void exit_fs(struct task_struct *tsk)
-{
-	struct fs_struct *fs = tsk->fs;
-
-	if (fs) {
-		int kill;
-		task_lock(tsk);
-		spin_lock(&fs->lock);
-		tsk->fs = NULL;
-		kill = !--fs->users;
-		spin_unlock(&fs->lock);
-		task_unlock(tsk);
-		if (kill)
-			free_fs_struct(fs);
-	}
-}
-
-struct fs_struct *copy_fs_struct(struct fs_struct *old)
-{
-	struct fs_struct *fs = kmem_cache_alloc(fs_cachep, GFP_KERNEL);
-	 
-	if (fs) {
-		fs->users = 1;
-		fs->in_exec = 0;
-		spin_lock_init(&fs->lock);
-		seqcount_spinlock_init(&fs->seq, &fs->lock);
-		fs->umask = old->umask;
-
-		spin_lock(&old->lock);
-		fs->root = old->root;
-		path_get(&fs->root);
-		fs->pwd = old->pwd;
-		path_get(&fs->pwd);
-		spin_unlock(&old->lock);
-	}
-	return fs;
-}
-
-
-int current_umask(void)
-{
-	return current->fs->umask;
-}
-
-struct fs_struct init_fs = {
-	.users		= 1,
-	.lock		= __SPIN_LOCK_UNLOCKED(init_fs.lock),
-	.seq		= SEQCNT_SPINLOCK_ZERO(init_fs.seq, &init_fs.lock),
-	.umask		= 0022,
-};
+struct fs_struct init_fs = { .users		= 1, .lock		= __SPIN_LOCK_UNLOCKED(init_fs.lock), .seq		= SEQCNT_SPINLOCK_ZERO(init_fs.seq, &init_fs.lock), .umask		= 0022, };

@@ -3,11 +3,9 @@
 #define _ASM_X86_IRQ_H
  
 
-#include <asm/apicdef.h>
 #include <asm/irq_vectors.h>
 
  
-#define __irq_entry __invalid_section
 
 /* irq_canonicalize removed - unused */
 

@@ -18,8 +18,7 @@ static void copy_boot_params(void)
 		u16 cl_magic;
 		u16 cl_offset;
 	};
-	const struct old_cmdline * const oldcmd =
-		absolute_pointer(OLD_CL_ADDRESS);
+	const struct old_cmdline * const oldcmd = absolute_pointer(OLD_CL_ADDRESS);
 
 	BUILD_BUG_ON(sizeof(boot_params) != 4096);
 	memcpy(&boot_params.hdr, &hdr, sizeof(hdr));
@@ -32,11 +31,9 @@ static void copy_boot_params(void)
 		 
 		if (oldcmd->cl_offset < boot_params.hdr.setup_move_size)
 			cmdline_seg = ds();
-		else
-			cmdline_seg = 0x9000;
+		else cmdline_seg = 0x9000;
 
-		boot_params.hdr.cmd_line_ptr =
-			(cmdline_seg << 4) + oldcmd->cl_offset;
+		boot_params.hdr.cmd_line_ptr = (cmdline_seg << 4) + oldcmd->cl_offset;
 	}
 }
 
@@ -129,12 +126,7 @@ void main(void)
 	 
 	query_ist();
 
-	 
-#if defined(CONFIG_APM) || defined(CONFIG_APM_MODULE)
-	query_apm_bios();
-#endif
 
-	 
 
 	 
 	set_video();

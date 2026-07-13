@@ -4,7 +4,6 @@
 # Check if atomic headers are up-to-date
 
 ATOMICDIR=$(dirname $0)
-ATOMICTBL=${ATOMICDIR}/atomics.tbl
 LINUXDIR=${ATOMICDIR}/../..
 
 echo '' | sha1sum - > /dev/null 2>&1

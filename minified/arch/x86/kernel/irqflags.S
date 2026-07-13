@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 
 #include <asm/asm.h>
-#include <asm/export.h>
 #include <linux/linkage.h>
 
 /*
@@ -14,4 +13,3 @@ SYM_FUNC_START(native_save_fl)
 	RET
 SYM_FUNC_END(native_save_fl)
 .popsection
-EXPORT_SYMBOL(native_save_fl)

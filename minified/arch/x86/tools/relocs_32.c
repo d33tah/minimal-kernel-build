@@ -12,6 +12,5 @@
 #define ELF_R_TYPE(val)		ELF32_R_TYPE(val)
 #define ELF_ST_TYPE(o)		ELF32_ST_TYPE(o)
 #define ELF_ST_BIND(o)		ELF32_ST_BIND(o)
-#define ELF_ST_VISIBILITY(o)	ELF32_ST_VISIBILITY(o)
 
 #include "relocs.c"

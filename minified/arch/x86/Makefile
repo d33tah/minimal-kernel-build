@@ -12,19 +12,9 @@ else
         KBUILD_DEFCONFIG := $(ARCH)_defconfig
 endif
 
-ifdef CONFIG_CC_IS_GCC
-RETPOLINE_CFLAGS	:= $(call cc-option,-mindirect-branch=thunk-extern -mindirect-branch-register)
-RETPOLINE_CFLAGS	+= $(call cc-option,-mindirect-branch-cs-prefix)
-RETPOLINE_VDSO_CFLAGS	:= $(call cc-option,-mindirect-branch=thunk-inline -mindirect-branch-register)
-endif
 ifdef CONFIG_CC_IS_CLANG
 RETPOLINE_CFLAGS	:= -mretpoline-external-thunk
 RETPOLINE_VDSO_CFLAGS	:= -mretpoline
-endif
-
-ifdef CONFIG_RETHUNK
-RETHUNK_CFLAGS		:= -mfunction-return=thunk-extern
-RETPOLINE_CFLAGS	+= $(RETHUNK_CFLAGS)
 endif
 
 export RETHUNK_CFLAGS
@@ -69,20 +59,7 @@ export BITS
 #
 KBUILD_CFLAGS += -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx
 
-ifeq ($(CONFIG_X86_KERNEL_IBT),y)
-#
-# Kernel IBT has S_CET.NOTRACK_EN=0, as such the compilers must not generate
-# NOTRACK prefixes. Current generation compilers unconditionally employ NOTRACK
-# for jump-tables, as such, disable jump-tables for now.
-#
-# (jump-tables are implicitly disabled by RETPOLINE)
-#
-#   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=104816
-#
-KBUILD_CFLAGS += $(call cc-option,-fcf-protection=branch -fno-jump-tables)
-else
 KBUILD_CFLAGS += $(call cc-option,-fcf-protection=none)
-endif
 
 ifeq ($(CONFIG_X86_32),y)
         BITS := 32
@@ -109,14 +86,6 @@ ifeq ($(CONFIG_X86_32),y)
 
         # temporary until string.h is fixed
         KBUILD_CFLAGS += -ffreestanding
-
-	ifeq ($(CONFIG_STACKPROTECTOR),y)
-		ifeq ($(CONFIG_SMP),y)
-			KBUILD_CFLAGS += -mstack-protector-guard-reg=fs -mstack-protector-guard-symbol=__stack_chk_guard
-		else
-			KBUILD_CFLAGS += -mstack-protector-guard=global
-		endif
-	endif
 else
         BITS := 64
         UTS_MACHINE := x86_64
@@ -147,27 +116,10 @@ else
 	# Use -mskip-rax-setup if supported.
 	KBUILD_CFLAGS += $(call cc-option,-mskip-rax-setup)
 
-        # FIXME - should be integrated in Makefile.cpu (Makefile_32.cpu)
-        cflags-$(CONFIG_MK8)		+= -march=k8
-        cflags-$(CONFIG_MPSC)		+= -march=nocona
-        cflags-$(CONFIG_MCORE2)		+= -march=core2
-        cflags-$(CONFIG_MATOM)		+= -march=atom
-        cflags-$(CONFIG_GENERIC_CPU)	+= -mtune=generic
         KBUILD_CFLAGS += $(cflags-y)
 
         KBUILD_CFLAGS += -mno-red-zone
         KBUILD_CFLAGS += -mcmodel=kernel
-endif
-
-#
-# If the function graph tracer is used with mcount instead of fentry,
-# '-maccumulate-outgoing-args' is needed to prevent a GCC bug
-# (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=42109)
-#
-ifdef CONFIG_FUNCTION_GRAPH_TRACER
-  ifndef CONFIG_HAVE_FENTRY
-	ACCUMULATE_OUTGOING_ARGS := 1
-  endif
 endif
 
 ifeq ($(ACCUMULATE_OUTGOING_ARGS), 1)
@@ -180,24 +132,6 @@ KBUILD_CFLAGS += -Wno-sign-compare
 #
 KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
 
-# Avoid indirect branches in kernel to deal with Spectre
-ifdef CONFIG_RETPOLINE
-  KBUILD_CFLAGS += $(RETPOLINE_CFLAGS)
-  # Additionally, avoid generating expensive indirect jumps which
-  # are subject to retpolines for small number of switch cases.
-  # clang turns off jump table generation by default when under
-  # retpoline builds, however, gcc does not for x86. This has
-  # only been fixed starting from gcc stable version 8.4.0 and
-  # onwards, but not for older ones. See gcc bug #86952.
-  ifndef CONFIG_CC_IS_CLANG
-    KBUILD_CFLAGS += -fno-jump-tables
-  endif
-endif
-
-ifdef CONFIG_SLS
-  KBUILD_CFLAGS += -mharden-sls=all
-endif
-
 KBUILD_LDFLAGS += -m elf_$(UTS_MACHINE)
 
 ifdef CONFIG_LTO_CLANG
@@ -206,21 +140,7 @@ KBUILD_LDFLAGS	+= -plugin-opt=-stack-alignment=$(if $(CONFIG_X86_32),4,8)
 endif
 endif
 
-ifdef CONFIG_X86_NEED_RELOCS
-LDFLAGS_vmlinux := --emit-relocs --discard-none
-else
 LDFLAGS_vmlinux :=
-endif
-
-#
-# The 64-bit kernel must be aligned to 2MB.  Pass -z max-page-size=0x200000 to
-# the linker to force 2MB page size regardless of the default page size used
-# by the linker.
-#
-ifdef CONFIG_X86_64
-LDFLAGS_vmlinux += -z max-page-size=0x200000
-endif
-
 
 archscripts: scripts_basic
 	$(Q)$(MAKE) $(build)=arch/x86/tools relocs
@@ -246,9 +166,7 @@ libs-y  += arch/x86/lib/
 
 boot := arch/x86/boot
 
-BOOT_TARGETS = bzdisk fdimage fdimage144 fdimage288 hdimage isoimage
-
-PHONY += bzImage $(BOOT_TARGETS)
+PHONY += bzImage
 
 # Default kernel to build
 all: bzImage
@@ -257,19 +175,9 @@ all: bzImage
 KBUILD_IMAGE := $(boot)/bzImage
 
 bzImage: vmlinux
-ifeq ($(CONFIG_X86_DECODER_SELFTEST),y)
-	$(Q)$(MAKE) $(build)=arch/x86/tools posttest
-endif
 	$(Q)$(MAKE) $(build)=$(boot) $(KBUILD_IMAGE)
 	$(Q)mkdir -p $(objtree)/arch/$(UTS_MACHINE)/boot
 	$(Q)ln -fsn ../../x86/boot/bzImage $(objtree)/arch/$(UTS_MACHINE)/boot/$@
-
-$(BOOT_TARGETS): vmlinux
-	$(Q)$(MAKE) $(build)=$(boot) $@
-
-PHONY += install
-install:
-	$(call cmd,install)
 
 PHONY += vdso_install
 vdso_install:
@@ -277,17 +185,6 @@ vdso_install:
 
 archprepare: checkbin
 checkbin:
-ifndef CONFIG_CC_HAS_ASM_GOTO
-	@echo Compiler lacks asm-goto support.
-	@exit 1
-endif
-ifdef CONFIG_RETPOLINE
-ifeq ($(RETPOLINE_CFLAGS),)
-	@echo "You are building kernel with non-retpoline compiler." >&2
-	@echo "Please update your compiler." >&2
-	@false
-endif
-endif
 
 archclean:
 	$(Q)rm -rf $(objtree)/arch/i386

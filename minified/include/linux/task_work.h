@@ -6,35 +6,19 @@
 
 typedef void (*task_work_func_t)(struct callback_head *);
 
-static inline void
-init_task_work(struct callback_head *twork, task_work_func_t func)
-{
-	twork->func = func;
-}
+static inline void init_task_work(struct callback_head *twork, task_work_func_t func) {
+	twork->func = func; }
 
-enum task_work_notify_mode {
-	TWA_NONE,
-	TWA_RESUME,
-	TWA_SIGNAL,
-	TWA_SIGNAL_NO_IPI,
-};
+enum task_work_notify_mode { TWA_NONE, TWA_RESUME, };
 
-static inline bool task_work_pending(struct task_struct *task)
-{
-	return READ_ONCE(task->task_works);
-}
+static inline bool task_work_pending(struct task_struct *task) {
+	return READ_ONCE(task->task_works); }
 
-int task_work_add(struct task_struct *task, struct callback_head *twork,
-			enum task_work_notify_mode mode);
+int task_work_add(struct task_struct *task, struct callback_head *twork, enum task_work_notify_mode mode);
 
-struct callback_head *task_work_cancel_match(struct task_struct *task,
-	bool (*match)(struct callback_head *, void *data), void *data);
-struct callback_head *task_work_cancel(struct task_struct *, task_work_func_t);
 void task_work_run(void);
 
-static inline void exit_task_work(struct task_struct *task)
-{
-	task_work_run();
-}
+static inline void exit_task_work(struct task_struct *task) {
+	task_work_run(); }
 
 #endif	 

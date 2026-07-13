@@ -1,22 +1,17 @@
 #ifndef _LINUX_TYPES_H
 #define _LINUX_TYPES_H
 
-#define __EXPORTED_HEADERS__
 #include <uapi/linux/types.h>
 
 #ifndef __ASSEMBLY__
 
-#define DECLARE_BITMAP(name,bits) \
-	unsigned long name[BITS_TO_LONGS(bits)]
+#define DECLARE_BITMAP(name,bits) 	unsigned long name[BITS_TO_LONGS(bits)]
 
 typedef u32 __kernel_dev_t;
 
-typedef __kernel_fd_set		fd_set;
 typedef __kernel_dev_t		dev_t;
-typedef __kernel_ulong_t	ino_t;
 typedef __kernel_mode_t		mode_t;
 typedef unsigned short		umode_t;
-typedef u32			nlink_t;
 typedef __kernel_off_t		off_t;
 typedef __kernel_pid_t		pid_t;
 typedef __kernel_clockid_t	clockid_t;
@@ -28,9 +23,7 @@ typedef __kernel_gid32_t	gid_t;
 
 typedef unsigned long		uintptr_t;
 
-#if defined(__GNUC__)
 typedef __kernel_loff_t		loff_t;
-#endif
 
 #ifndef _SIZE_T
 #define _SIZE_T
@@ -47,39 +40,14 @@ typedef __kernel_ssize_t	ssize_t;
 typedef __kernel_ptrdiff_t	ptrdiff_t;
 #endif
 
-#ifndef _CLOCK_T
-#define _CLOCK_T
-typedef __kernel_clock_t	clock_t;
-#endif
-
-typedef unsigned short		ushort;
-typedef unsigned int		uint;
-typedef unsigned long		ulong;
-
-#ifndef __BIT_TYPES_DEFINED__
-#define __BIT_TYPES_DEFINED__
-typedef s32			int32_t;
-#endif
-
 typedef u8			uint8_t;
 typedef u16			uint16_t;
 typedef u32			uint32_t;
 
-#if defined(__GNUC__)
 typedef u64			uint64_t;
 typedef s64			int64_t;
-#endif
-
-#define aligned_u64		__aligned_u64
-#define aligned_be64		__aligned_be64
-#define aligned_le64		__aligned_le64
-
-typedef u64 sector_t;
-typedef u64 blkcnt_t;
 
 #define pgoff_t unsigned long
-
-typedef u32 dma_addr_t;
 
 typedef unsigned int __bitwise gfp_t;
 typedef unsigned int __bitwise slab_flags_t;
@@ -89,38 +57,18 @@ typedef u32 phys_addr_t;
 
 typedef phys_addr_t resource_size_t;
 
-typedef unsigned long irq_hw_number_t;
-
-typedef struct {
-	int counter;
-} atomic_t;
+typedef struct { int counter; } atomic_t;
 
 #define ATOMIC_INIT(i) { (i) }
 
 
-struct list_head {
-	struct list_head *next, *prev;
-};
+struct list_head { struct list_head *next, *prev; };
 
-struct hlist_head {
-	struct hlist_node *first;
-};
+struct hlist_head { struct hlist_node *first; };
 
-struct hlist_node {
-	struct hlist_node *next, **pprev;
-};
+struct hlist_node { struct hlist_node *next, **pprev; };
 
-struct ustat {
-	__kernel_daddr_t	f_tfree;
-	unsigned long		f_tinode;
-	char			f_fname[6];
-	char			f_fpack[6];
-};
-
-struct callback_head {
-	struct callback_head *next;
-	void (*func)(struct callback_head *head);
-} __attribute__((aligned(sizeof(void *))));
+struct callback_head { struct callback_head *next; void (*func)(struct callback_head *head); } __attribute__((aligned(sizeof(void *))));
 #define rcu_head callback_head
 
 typedef void (*rcu_callback_t)(struct rcu_head *head);

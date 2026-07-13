@@ -6,48 +6,9 @@
 #include <linux/mutex.h>
 #include <linux/workqueue.h>
 
-struct tty_buffer {
-	union {
-		struct tty_buffer *next;
-		struct llist_node free;
-	};
-	int used;
-	int size;
-	int commit;
-	int read;
-	int flags;
-	 
-	unsigned long data[];
-};
+struct tty_buffer { union { struct tty_buffer *next; struct llist_node free; }; int size; unsigned long data[]; };
 
-#define TTYB_NORMAL	1	 
 
-static inline unsigned char *char_buf_ptr(struct tty_buffer *b, int ofs)
-{
-	return ((unsigned char *)b->data) + ofs;
-}
-
-static inline char *flag_buf_ptr(struct tty_buffer *b, int ofs)
-{
-	return (char *)char_buf_ptr(b, ofs) + b->size;
-}
-
-struct tty_bufhead {
-	struct tty_buffer *head;	 
-	struct work_struct work;
-	struct mutex	   lock;
-	atomic_t	   priority;
-	struct tty_buffer sentinel;
-	struct llist_head free;		 
-	atomic_t	   mem_used;     
-	int		   mem_limit;
-	struct tty_buffer *tail;	 
-};
-
-#define TTY_NORMAL	0
-#define TTY_BREAK	1
-#define TTY_FRAME	2
-#define TTY_PARITY	3
-#define TTY_OVERRUN	4
+struct tty_bufhead { struct tty_buffer *head; struct work_struct work; struct mutex	   lock; struct tty_buffer sentinel; struct llist_head free; atomic_t	   mem_used; };
 
 #endif

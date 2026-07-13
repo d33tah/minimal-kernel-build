@@ -2,25 +2,18 @@
 #include <linux/init.h>
 #include <linux/linkage.h>
 extern asmlinkage void __init start_kernel(void);
-#include <linux/mm.h>
-#include <linux/memblock.h>
 
 #include <asm/desc.h>
 #include <asm/setup.h>
 #include <asm/sections.h>
-#include <asm/e820/api.h>
-#include <asm/page.h>
-#include <asm/apic.h>
-#include <asm/io_apic.h>
-#include <asm/bios_ebda.h>
 #include <asm/tlbflush.h>
 #include <asm/bootparam_utils.h>
 
 static void __init i386_default_early_setup(void)
 {
-	 
-	x86_init.resources.reserve_resources = i386_reserve_resources;
-	x86_init.mpparse.setup_ioapic_ids = setup_ioapic_ids_from_mpc;
+	/* reserve_resources override removed: the iomem/ioport resource tree is
+	 * never walked on this build, so the requested resources were write-only.
+	 */
 }
 
 asmlinkage __visible void __init i386_start_kernel(void)
@@ -36,15 +29,10 @@ asmlinkage __visible void __init i386_start_kernel(void)
 
 	 
 	switch (boot_params.hdr.hardware_subarch) {
-	case X86_SUBARCH_INTEL_MID:
-		x86_intel_mid_early_setup();
+	case X86_SUBARCH_INTEL_MID: case X86_SUBARCH_CE4100:
+		/* x86_intel_mid_early_setup/x86_ce4100_early_setup were no-ops */
 		break;
-	case X86_SUBARCH_CE4100:
-		x86_ce4100_early_setup();
-		break;
-	default:
-		i386_default_early_setup();
-		break;
+	default: i386_default_early_setup();
 	}
 
 	start_kernel();
@@ -60,8 +48,7 @@ void __init mk_early_pgtbl_32(void)
 	int i;
 	unsigned long *ptr;
 	 
-	const unsigned long limit = __pa(_end) +
-		(PAGE_TABLE_SIZE(LOWMEM_PAGES) << PAGE_SHIFT);
+	const unsigned long limit = __pa(_end) + (PAGE_TABLE_SIZE(LOWMEM_PAGES) << PAGE_SHIFT);
 	pgd_t pl2, *pl2p = (pgd_t *)__pa(initial_page_table);
 #define SET_PL2(pl2, val)   { (pl2).pgd = (val); }
 

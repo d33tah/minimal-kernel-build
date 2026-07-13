@@ -272,7 +272,6 @@ config X86
 	select PCI_LOCKLESS_CONFIG		if PCI
 	# select PERF_EVENTS  # Disabled for minimal kernel
 	select RTC_LIB
-	select RTC_MC146818_LIB
 	select SPARSE_IRQ
 	select SRCU
 	select SYSCTL_EXCEPTION_TRACE

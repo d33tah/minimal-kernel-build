@@ -7,12 +7,7 @@
 #include <asm/ibt.h>
 
  
-#define GDT_ENTRY(flags, base, limit)			\
-	((((base)  & _AC(0xff000000,ULL)) << (56-24)) |	\
-	 (((flags) & _AC(0x0000f0ff,ULL)) << 40) |	\
-	 (((limit) & _AC(0x000f0000,ULL)) << (48-16)) |	\
-	 (((base)  & _AC(0x00ffffff,ULL)) << 16) |	\
-	 (((limit) & _AC(0x0000ffff,ULL))))
+#define GDT_ENTRY(flags, base, limit)				((((base)  & _AC(0xff000000,ULL)) << (56-24)) |		 (((flags) & _AC(0x0000f0ff,ULL)) << 40) |		 (((limit) & _AC(0x000f0000,ULL)) << (48-16)) |		 (((base)  & _AC(0x00ffffff,ULL)) << 16) |		 (((limit) & _AC(0x0000ffff,ULL))))
 
  
 
@@ -32,18 +27,8 @@
  
 #define USER_RPL		0x3
 
- 
-#define SEGMENT_TI_MASK		0x4
- 
-#define SEGMENT_LDT		0x4
- 
-#define SEGMENT_GDT		0x0
 
-#define GDT_ENTRY_INVALID_SEG	0
-
- 
 #define GDT_ENTRY_TLS_MIN		6
-#define GDT_ENTRY_TLS_MAX 		(GDT_ENTRY_TLS_MIN + GDT_ENTRY_TLS_ENTRIES - 1)
 
 #define GDT_ENTRY_KERNEL_CS		12
 #define GDT_ENTRY_KERNEL_DS		13
@@ -72,22 +57,6 @@
 #define __KERNEL_DS			(GDT_ENTRY_KERNEL_DS*8)
 #define __USER_DS			(GDT_ENTRY_DEFAULT_USER_DS*8 + 3)
 #define __USER_CS			(GDT_ENTRY_DEFAULT_USER_CS*8 + 3)
-#define __ESPFIX_SS			(GDT_ENTRY_ESPFIX_SS*8)
-
- 
-#define PNP_CS32			(GDT_ENTRY_PNPBIOS_CS32*8)
- 
-#define PNP_CS16			(GDT_ENTRY_PNPBIOS_CS16*8)
-
- 
-#define SEGMENT_IS_PNP_CODE(x)		(((x) & 0xf4) == PNP_CS32)
-
- 
-#define PNP_DS				(GDT_ENTRY_PNPBIOS_DS*8)
- 
-#define PNP_TS1				(GDT_ENTRY_PNPBIOS_TS1*8)
- 
-#define PNP_TS2				(GDT_ENTRY_PNPBIOS_TS2*8)
 
 # define __KERNEL_PERCPU		0
 
@@ -100,16 +69,11 @@
 
 #define GDT_SIZE			(GDT_ENTRIES*8)
 #define GDT_ENTRY_TLS_ENTRIES		3
-#define TLS_SIZE			(GDT_ENTRY_TLS_ENTRIES* 8)
 
 
-#ifdef __KERNEL__
 
  
 #define EARLY_IDT_HANDLER_SIZE (9 + ENDBR_INSN_SIZE)
-
- 
-#define XEN_EARLY_IDT_HANDLER_SIZE (8 + ENDBR_INSN_SIZE)
 
 #ifndef __ASSEMBLY__
 
@@ -118,22 +82,9 @@ extern void early_ignore_irq(void);
 
 
  
-#define __loadsegment_simple(seg, value)				\
-do {									\
-	unsigned short __val = (value);					\
-									\
-	asm volatile("						\n"	\
-		     "1:	movl %k0,%%" #seg "		\n"	\
-		     _ASM_EXTABLE_TYPE_REG(1b, 1b, EX_TYPE_ZERO_REG, %k0)\
-		     : "+r" (__val) : : "memory");			\
-} while (0)
-
-#define __loadsegment_ss(value) __loadsegment_simple(ss, (value))
-#define __loadsegment_ds(value) __loadsegment_simple(ds, (value))
-#define __loadsegment_es(value) __loadsegment_simple(es, (value))
+#define __loadsegment_simple(seg, value)				do {										unsigned short __val = (value);															asm volatile("						\n"			     "1:	movl %k0,%%" #seg "		\n"			     _ASM_EXTABLE_TYPE_REG(1b, 1b, EX_TYPE_ZERO_REG, %k0)		     : "+r" (__val) : : "memory");			} while (0)
 
 
- 
 #define __loadsegment_fs(value) __loadsegment_simple(fs, (value))
 #define __loadsegment_gs(value) __loadsegment_simple(gs, (value))
 
@@ -141,10 +92,8 @@ do {									\
 #define loadsegment(seg, value) __loadsegment_ ## seg (value)
 
  
-#define savesegment(seg, value)				\
-	asm("mov %%" #seg ",%0":"=r" (value) : : "memory")
+#define savesegment(seg, value)					asm("mov %%" #seg ",%0":"=r" (value) : : "memory")
 
-#endif  
 #endif  
 
 #endif  

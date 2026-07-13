@@ -240,12 +240,10 @@ static int parse_elf(struct elf_info *info, const char *filename) {
 
 	if (hdr->e_shnum == SHN_UNDEF) {
 		 
-		info->num_sections = TO_NATIVE(sechdrs[0].sh_size); }
-	else {
+		info->num_sections = TO_NATIVE(sechdrs[0].sh_size); } else {
 		info->num_sections = hdr->e_shnum; }
 	if (hdr->e_shstrndx == SHN_XINDEX) {
-		info->secindex_strings = TO_NATIVE(sechdrs[0].sh_link); }
-	else {
+		info->secindex_strings = TO_NATIVE(sechdrs[0].sh_link); } else {
 		info->secindex_strings = hdr->e_shstrndx; }
 
 	 

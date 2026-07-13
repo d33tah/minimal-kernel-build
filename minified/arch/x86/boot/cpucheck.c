@@ -149,8 +149,7 @@ int check_cpu(int *cpu_level_ptr, int *req_level_ptr, u32 **err_flags_ptr)
 			puts("WARNING: Forcing PAE in CPU flags\n");
 			set_bit(X86_FEATURE_PAE, cpu.flags);
 			err = check_cpuflags();
-		}
-		else {
+		} else {
 			puts("WARNING: PAE disabled. Use parameter 'forcepae' to enable at your own risk!\n");
 		}
 	}

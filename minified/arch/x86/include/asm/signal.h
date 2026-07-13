@@ -16,7 +16,6 @@
 typedef struct { unsigned long sig[_NSIG_WORDS]; } sigset_t;
 
  
-#define compat_sigset_t compat_sigset_t
 typedef sigset_t compat_sigset_t;
 
 #endif  

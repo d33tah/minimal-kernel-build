@@ -60,7 +60,6 @@ struct thread_info { unsigned long flags, syscall_work; };
 extern void arch_task_cache_init(void);
 extern int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src);
 extern void arch_setup_new_exec(void);
-#define arch_setup_new_exec arch_setup_new_exec
 #endif	 
 
 #endif  

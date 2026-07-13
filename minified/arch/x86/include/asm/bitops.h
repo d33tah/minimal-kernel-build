@@ -197,7 +197,6 @@ static inline bool
 clear_bit_unlock_is_negative_byte(long nr, volatile unsigned long *addr) {
 	instrument_atomic_write(addr + BIT_WORD(nr), sizeof(long));
 	return arch_clear_bit_unlock_is_negative_byte(nr, addr); }
-#define clear_bit_unlock_is_negative_byte clear_bit_unlock_is_negative_byte
 #endif
 
 

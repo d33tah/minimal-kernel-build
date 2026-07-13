@@ -18,7 +18,6 @@ static inline unsigned long array_index_mask_nospec(unsigned long index, unsigne
 	return mask; }
 
  
-#define array_index_mask_nospec array_index_mask_nospec
 
  
 #define barrier_nospec() alternative("", "lfence", X86_FEATURE_LFENCE_RDTSC)

@@ -76,7 +76,6 @@ u64 vdso_calc_delta(u64 cycles, u64 last, u64 mask, u32 mult) {
 	if (cycles > last)
 		return (cycles - last) * mult;
 	return 0; }
-#define vdso_calc_delta vdso_calc_delta
 
 #endif  
 

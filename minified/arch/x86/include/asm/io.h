@@ -22,7 +22,6 @@
 
 static inline void *phys_to_virt(phys_addr_t address) {
 	return __va(address); }
-#define phys_to_virt phys_to_virt
 
 extern void native_io_delay(void);
 
@@ -37,8 +36,6 @@ BUILDIO(b, b, u8)
 /* BUILDIO(w)/BUILDIO(l) removed - only generate 0-caller _p/outs/ins wrappers */
 #undef BUILDIO
 
-#define inb_p inb_p
-#define outb_p outb_p
 
 /* ioremap_change_attr, ioremap_wc, ioremap_wt removed - no callers */
 

@@ -9,7 +9,6 @@
 static inline int numa_node_id(void) {
 	return 0; }
  
-#define numa_node_id numa_node_id
 
 /* Inlined from asm-generic/topology.h */
 #ifndef cpu_to_node

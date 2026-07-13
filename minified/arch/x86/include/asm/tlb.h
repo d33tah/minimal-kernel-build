@@ -68,7 +68,6 @@ static inline unsigned long tlb_get_unmap_shift(struct mmu_gather *tlb) {
 /* tlb_get_unmap_size removed - unused */
 
 /* X86-specific tlb_flush - defined before generic version would be */
-#define tlb_flush tlb_flush
 static inline void tlb_flush(struct mmu_gather *tlb) {
 	unsigned long start = 0UL, end = TLB_FLUSH_ALL;
 	unsigned int stride_shift = tlb_get_unmap_shift(tlb);

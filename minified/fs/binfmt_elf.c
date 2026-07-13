@@ -270,10 +270,7 @@ static int elf_read(struct file *file, void *buf, size_t len, loff_t pos)
 	ssize_t rv;
 
 	rv = kernel_read(file, buf, len, &pos);
-	if (unlikely(rv != len)) {
-		return (rv < 0) ? rv : -EIO;
-	}
-	return 0;
+	return unlikely(rv != len) ? ((rv < 0) ? rv : -EIO) : 0;
 }
 
 static struct elf_phdr *load_elf_phdrs(const struct elfhdr *elf_ex,

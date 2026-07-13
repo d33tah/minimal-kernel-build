@@ -4,7 +4,6 @@
 
 #include <asm/bios_ebda.h>
 #include <asm/tlb.h>
-#include <asm/set_memory.h>
 #include <asm/pgtable_areas.h>
 
 #include "mm_internal.h"

@@ -4,7 +4,6 @@
 #include <linux/sched/clock.h>
 #include <linux/delay.h>
 #include <linux/clocksource.h>
-#include <linux/jump_label.h>
 
 #include <asm/timer.h>
 #include <asm/x86_init.h>

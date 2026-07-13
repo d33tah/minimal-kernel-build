@@ -8,7 +8,6 @@
 
 #include <asm/timer.h>
 #include <asm/x86_init.h>
-#include <asm/intel-family.h>
 #include <asm/i8259.h>
 
 unsigned int __read_mostly cpu_khz;	 

@@ -1,8 +1,6 @@
 
 #include <linux/delay.h>
 
-#include <asm/processor.h>
-
 
 static void delay_loop(u64 __loops);
 

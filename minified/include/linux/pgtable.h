@@ -110,11 +110,7 @@ static inline int pmd_trans_huge(pmd_t pmd) {
 extern void __init pgtable_cache_init(void);
 
 
-/* __PGTBL_PGD/P4D/PUD/PTE_MODIFIED removed - 0-caller (only PMD feeds ARCH_PAGE_TABLE_SYNC_MASK) */
-#define		__PGTBL_PMD_MODIFIED	3
 
-/* PGTBL_PGD/P4D/PUD/PTE_MODIFIED removed - 0-caller (only PMD is live) */
-#define		PGTBL_PMD_MODIFIED	BIT(__PGTBL_PMD_MODIFIED)
 
 #endif
 

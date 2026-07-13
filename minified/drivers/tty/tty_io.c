@@ -5,7 +5,6 @@
 #include <linux/console.h>
 #include <linux/mm.h>
 #include <linux/poll.h>
-#include <linux/module.h>
 #include <linux/device.h>
 #include <linux/bitops.h>
 #include <linux/ratelimit.h>

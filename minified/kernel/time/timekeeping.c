@@ -395,8 +395,7 @@ static bool timekeeping_advance(void) {
 	memcpy(real_tk, tk, sizeof(*tk));
 	
 	write_seqcount_end(&tk_core.seq);
-out:
-	raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
+out: raw_spin_unlock_irqrestore(&timekeeper_lock, flags);
 
 	return !!clock_set; }
 

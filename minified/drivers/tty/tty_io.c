@@ -237,8 +237,7 @@ static inline ssize_t do_tty_write(
 		tty_update_time(&file_inode(file)->i_mtime);
 		ret = written;
 	}
-out:
-	tty_write_unlock(tty);
+out: tty_write_unlock(tty);
 	return ret;
 }
 
@@ -414,19 +413,15 @@ struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx)
 	
 	return tty;
 
-err_free_tty:
-	tty_unlock(tty);
+err_free_tty: tty_unlock(tty);
 	free_tty_struct(tty);
-err_module_put:
-	return ERR_PTR(retval);
+err_module_put: return ERR_PTR(retval);
 
 	
-err_release_tty:
-	tty_ldisc_unlock(tty);
+err_release_tty: tty_ldisc_unlock(tty);
 	tty_info_ratelimited(tty, "ldisc open failed (%d), clearing slot %d\n",
 			     retval, idx);
-err_release_lock:
-	tty_unlock(tty);
+err_release_lock: tty_unlock(tty);
 	release_tty(tty, idx);
 	return ERR_PTR(retval);
 }
@@ -554,8 +549,7 @@ static struct tty_struct *tty_open_by_driver(dev_t device,
 		tty = tty_init_dev(driver, index);
 		mutex_unlock(&tty_mutex);
 	}
-out:
-	tty_driver_kref_put(driver);
+out: tty_driver_kref_put(driver);
 	return tty;
 }
 
@@ -569,8 +563,7 @@ static int tty_open(struct inode *inode, struct file *filp)
 
 	nonseekable_open(inode, filp);
 
-retry_open:
-	priv = kmalloc(sizeof(*priv), GFP_KERNEL);
+retry_open: priv = kmalloc(sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
 	filp->private_data = priv;
@@ -726,8 +719,7 @@ struct device *tty_register_device(struct tty_driver *driver,
 
 	return dev;
 
-err_put:
-	put_device(dev);
+err_put: put_device(dev);
 
 	return ERR_PTR(retval);
 }
@@ -773,8 +765,7 @@ struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
 	}
 
 	return driver;
-err_free_all:
-	kfree(driver->ports);
+err_free_all: kfree(driver->ports);
 	kfree(driver->ttys);
 	kfree(driver->termios);
 	kfree(driver->cdevs);
@@ -845,14 +836,12 @@ int tty_register_driver(struct tty_driver *driver)
 	driver->flags |= TTY_DRIVER_INSTALLED;
 	return 0;
 
-err_unreg_devs:
-	mutex_lock(&tty_mutex);
+err_unreg_devs: mutex_lock(&tty_mutex);
 	list_del(&driver->tty_drivers);
 	mutex_unlock(&tty_mutex);
 
 	unregister_chrdev_region(dev, driver->num);
-err:
-	return error;
+err: return error;
 }
 
 static int __init tty_class_init(void)

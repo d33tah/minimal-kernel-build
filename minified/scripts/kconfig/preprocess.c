@@ -283,12 +283,10 @@ static char *eval_clause(const char *str, size_t len, int argc, char *argv[]) {
 			goto free; }
 
 	res = xstrdup("");
-free:
-	for (i = 0; i < new_argc; i++)
+free: for (i = 0; i < new_argc; i++)
 		free(new_argv[i]);
 	free(name);
-free_tmp:
-	free(tmp);
+free_tmp: free(tmp);
 
 	return res; }
 

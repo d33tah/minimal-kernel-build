@@ -292,8 +292,7 @@ void menu_finalize(struct menu *parent) {
 				break; }
 			 
 			expr_free(dep2);
-		next:
-			menu_finalize(menu);
+		next: menu_finalize(menu);
 			menu->parent = parent;
 			last_menu = menu; }
 		expr_free(basedep);

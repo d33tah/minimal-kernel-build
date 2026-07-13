@@ -48,8 +48,7 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 		goto fail;
 	return s;
 
-fail:
-	destroy_unused_super(s);
+fail: destroy_unused_super(s);
 	return NULL; }
 
 /*

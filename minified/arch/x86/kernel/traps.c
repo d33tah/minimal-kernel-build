@@ -185,8 +185,7 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection) {
 
 	die_addr(desc, regs, error_code, gp_addr);
 
-exit:
-	cond_local_irq_disable(regs); }
+exit: cond_local_irq_disable(regs); }
 
 static bool do_int3(struct pt_regs *regs) {
 	int res;
@@ -252,8 +251,7 @@ static __always_inline void exc_debug_kernel(struct pt_regs *regs, unsigned long
 	 
 	if (WARN_ON_ONCE(dr6 & DR_STEP))
 		regs->flags &= ~X86_EFLAGS_TF;
-out:
-	irqentry_nmi_exit(regs, irq_state);
+out: irqentry_nmi_exit(regs, irq_state);
 
 	local_db_restore(dr7); }
 
@@ -286,8 +284,7 @@ static __always_inline void exc_debug_user(struct pt_regs *regs, unsigned long d
 		send_sigtrap(regs, 0, (dr6 & DR_STEP) ? TRAP_TRACE : (dr6 & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)) ? TRAP_HWBKPT : TRAP_BRKPT);
 
 	local_irq_disable();
-out:
-	irqentry_exit_to_user_mode(regs); }
+out: irqentry_exit_to_user_mode(regs); }
 
 DEFINE_IDTENTRY_RAW(exc_debug) {
 	unsigned long dr6 = debug_read_clear_dr6();

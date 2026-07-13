@@ -469,8 +469,7 @@ static int pcpu_find_block_fit(struct pcpu_chunk *chunk, int alloc_bits, size_t 
 
 static unsigned long pcpu_find_zero_area(unsigned long *map, unsigned long size, unsigned long start, unsigned long nr, unsigned long align_mask, unsigned long *largest_off, unsigned long *largest_bits) {
 	unsigned long index, end, i, area_off, area_bits;
-again:
-	index = find_next_zero_bit(map, size, start);
+again: index = find_next_zero_bit(map, size, start);
 
 	
 	index = __ALIGN_MASK(index, align_mask);
@@ -671,12 +670,9 @@ static struct pcpu_chunk *pcpu_alloc_chunk(gfp_t gfp) {
 
 	return chunk;
 
-md_blocks_fail:
-	pcpu_mem_free(chunk->bound_map);
-bound_map_fail:
-	pcpu_mem_free(chunk->alloc_map);
-alloc_map_fail:
-	pcpu_mem_free(chunk);
+md_blocks_fail: pcpu_mem_free(chunk->bound_map);
+bound_map_fail: pcpu_mem_free(chunk->alloc_map);
+alloc_map_fail: pcpu_mem_free(chunk);
 
 	return NULL; }
 
@@ -769,8 +765,7 @@ restart:
 
 	goto restart;
 
-area_found:
-	spin_unlock_irqrestore(&pcpu_lock, flags);
+area_found: spin_unlock_irqrestore(&pcpu_lock, flags);
 
 { unsigned int page_end, rs, re;
 
@@ -799,8 +794,7 @@ area_found:
 
 	return ptr;
 
-fail_unlock:
-	spin_unlock_irqrestore(&pcpu_lock, flags);
+fail_unlock: spin_unlock_irqrestore(&pcpu_lock, flags);
 fail:
 
 	if (do_warn && warn_limit) {

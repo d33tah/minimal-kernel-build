@@ -78,8 +78,7 @@ kernel_physical_mapping_init(unsigned long start, unsigned long end, unsigned lo
 	if (!boot_cpu_has(X86_FEATURE_PSE))
 		use_pse = 0;
 
-repeat:
-	pfn = start_pfn;
+repeat: pfn = start_pfn;
 	pgd_idx = pgd_index((pfn<<PAGE_SHIFT) + PAGE_OFFSET);
 	pgd = pgd_base + pgd_idx;
 	for (; pgd_idx < PTRS_PER_PGD; pgd++, pgd_idx++) {

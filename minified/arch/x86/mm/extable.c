@@ -169,11 +169,9 @@ void __init early_fixup_exception(struct pt_regs *regs, int trapnr) {
 	 * always dead; fall straight through to the panic path.
 	 */
 
-fail:
-	early_printk("PANIC: early exception 0x%02x IP %lx:%lx error %lx cr2 0x%lx\n", (unsigned)trapnr, (unsigned long)regs->cs, regs->ip, regs->orig_ax, read_cr2());
+fail: early_printk("PANIC: early exception 0x%02x IP %lx:%lx error %lx cr2 0x%lx\n", (unsigned)trapnr, (unsigned long)regs->cs, regs->ip, regs->orig_ax, read_cr2());
 
 	show_regs(regs);
 
-halt_loop:
-	while (true)
+halt_loop: while (true)
 		halt(); }

@@ -79,11 +79,9 @@ static struct page *follow_page_pte(struct vm_area_struct *vma, unsigned long ad
 			set_page_dirty(page);
 		
 		mark_page_accessed(page); }
-out:
-	pte_unmap_unlock(ptep, ptl);
+out: pte_unmap_unlock(ptep, ptl);
 	return page;
-no_page:
-	pte_unmap_unlock(ptep, ptl);
+no_page: pte_unmap_unlock(ptep, ptl);
 	if (!pte_none(pte))
 		return NULL;
 	return no_page_table(); }
@@ -234,15 +232,13 @@ static long __get_user_pages(struct mm_struct *mm, unsigned long start, unsigned
 			pages[i] = page;
 			flush_anon_page(vma, page, start);
 			flush_dcache_page(page); }
-next_page:
-		if (vmas)
+next_page: if (vmas)
 			vmas[i] = vma;
 		i += 1;
 		start += PAGE_SIZE;
 		nr_pages -= 1;
 	} while (nr_pages);
-out:
-	return i ? i : ret; }
+out: return i ? i : ret; }
 
 
 static __always_inline long __get_user_pages_locked(struct mm_struct *mm, unsigned long start, unsigned long nr_pages, struct page **pages, struct vm_area_struct **vmas, int *locked, unsigned int flags) {

@@ -77,8 +77,7 @@ notrace static u64 sched_clock_local(struct sched_clock_data *scd) {
 	u64 now, clock, old_clock, min_clock, max_clock, gtod;
 	s64 delta;
 
-again:
-	now = sched_clock();
+again: now = sched_clock();
 	delta = now - scd->tick_raw;
 	if (unlikely(delta < 0))
 		delta = 0;

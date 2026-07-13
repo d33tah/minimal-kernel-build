@@ -626,8 +626,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 
 			str = number(str, end, num, spec); } }
 
-out:
-	if (size > 0) {
+out: if (size > 0) {
 		if (str < end)
 			*str = '\0';
 		else

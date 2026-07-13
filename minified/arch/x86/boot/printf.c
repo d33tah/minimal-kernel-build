@@ -118,8 +118,7 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 
 		 
 		flags = 0;
-	      repeat:
-		++fmt;		 
+	      repeat: ++fmt;
 		switch (*fmt) {
 		case '-':
 			flags |= LEFT;

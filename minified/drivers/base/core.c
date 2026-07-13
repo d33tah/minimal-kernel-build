@@ -96,13 +96,10 @@ int device_add(struct device *dev) {
 	put_device(dev);
 	return error;
 
-parent_error:
-	put_device(parent);
-name_error:
-	kfree(dev->p);
+parent_error: put_device(parent);
+name_error: kfree(dev->p);
 	dev->p = NULL;
-done:
-	put_device(dev);
+done: put_device(dev);
 	return error; }
 
 int device_register(struct device *dev) {
@@ -137,10 +134,8 @@ int __init devices_init(void) {
 
 	return 0;
 
- char_kobj_err:
-	kobject_put(sysfs_dev_block_kobj);
- block_kobj_err:
-	kobject_put(dev_kobj);
+ char_kobj_err: kobject_put(sysfs_dev_block_kobj);
+ block_kobj_err: kobject_put(dev_kobj);
  dev_kobj_err:
 	/* kset_unregister(devices_kset) removed - boot never hits this path */
 	return -ENOMEM; }
@@ -176,8 +171,7 @@ static __printf(5, 0) struct device * device_create_groups_vargs(struct class *c
 
 	return dev;
 
-error:
-	put_device(dev);
+error: put_device(dev);
 	return ERR_PTR(retval); }
 
 struct device *device_create(struct class *class, struct device *parent, dev_t devt, void *drvdata, const char *fmt, ...) {

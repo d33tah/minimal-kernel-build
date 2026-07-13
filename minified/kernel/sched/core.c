@@ -216,8 +216,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags) {
 	cpu = task_cpu(p);
 
 	ttwu_queue(p, cpu, wake_flags);
-out:
-	preempt_enable();
+out: preempt_enable();
 
 	return success; }
 
@@ -418,8 +417,7 @@ static inline struct task_struct * __pick_next_task(struct rq *rq, struct task_s
 
 		return p; }
 
-restart:
-	put_prev_task_balance(rq, prev, rf);
+restart: put_prev_task_balance(rq, prev, rf);
 
 	for_each_class(class) {
 		p = class->pick_next_task(rq);

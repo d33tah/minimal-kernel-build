@@ -168,8 +168,7 @@ void touch_atime(const struct path *path) {
 	now = current_time(inode);
 	inode_update_time(inode, &now, S_ATIME);
 	__mnt_drop_write(mnt);
-skip_update:
-	sb_end_write(inode->i_sb); }
+skip_update: sb_end_write(inode->i_sb); }
 
 int file_remove_privs(struct file *file) {
 	/*

@@ -54,10 +54,8 @@ long vfs_truncate(const struct path *path, loff_t length) {
 	error = do_truncate(mnt_userns, path->dentry, length, 0, NULL);
 
 	put_write_access(inode);
-mnt_drop_write_and_out:
-	mnt_drop_write(path->mnt);
-out:
-	return error; }
+mnt_drop_write_and_out: mnt_drop_write(path->mnt);
+out: return error; }
 
 int chmod_common(const struct path *path, umode_t mode) {
 	/* Stub: chmod not needed for minimal kernel */
@@ -129,15 +127,13 @@ static int do_dentry_open(struct file *f, struct inode *inode, int (*open)(struc
 
 	return 0;
 
-cleanup_all:
-	if (WARN_ON_ONCE(error > 0))
+cleanup_all: if (WARN_ON_ONCE(error > 0))
 		error = -EINVAL;
 	fops_put(f->f_op);
 	if (f->f_mode & FMODE_WRITER) {
 		put_write_access(inode);
 		__mnt_drop_write(f->f_path.mnt); }
-cleanup_file:
-	path_put(&f->f_path);
+cleanup_file: path_put(&f->f_path);
 	f->f_path.mnt = NULL;
 	f->f_path.dentry = NULL;
 	f->f_inode = NULL;

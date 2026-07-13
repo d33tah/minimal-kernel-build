@@ -465,8 +465,7 @@ struct task_struct * pick_next_task_fair(struct rq *rq, struct task_struct *prev
 
 	return p;
 
-idle:
-	return NULL; }
+idle: return NULL; }
 
 static struct task_struct *__pick_next_task_fair(struct rq *rq) {
 	return pick_next_task_fair(rq, NULL, NULL); }

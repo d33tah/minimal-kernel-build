@@ -303,8 +303,7 @@ void sym_calc_value(struct symbol *sym) {
 					sym->flags |= SYMBOL_WRITE;
 					newval.tri = EXPR_OR(newval.tri, sym->implied.tri);
 					newval.tri = EXPR_AND(newval.tri, sym->dir_dep.tri); } }
-		calc_newval:
-			if (sym->dir_dep.tri < sym->rev_dep.tri)
+		calc_newval: if (sym->dir_dep.tri < sym->rev_dep.tri)
 				sym_warn_unmet_dep(sym);
 			newval.tri = EXPR_OR(newval.tri, sym->rev_dep.tri); }
 		if (newval.tri == mod && sym_get_type(sym) == S_BOOLEAN)
@@ -658,8 +657,7 @@ static struct symbol *sym_check_sym_deps(struct symbol *sym) {
 			break;
 		stack.expr = NULL; }
 
-out:
-	dep_stack_remove();
+out: dep_stack_remove();
 
 	return sym2; }
 
@@ -685,8 +683,7 @@ static struct symbol *sym_check_choice_deps(struct symbol *choice) {
 		sym2 = sym_check_sym_deps(sym);
 		if (sym2)
 			break; }
-out:
-	expr_list_for_each_sym(prop->expr, e, sym)
+out: expr_list_for_each_sym(prop->expr, e, sym)
 		sym->flags &= ~SYMBOL_CHECK;
 
 	if (sym2 && sym_is_choice_value(sym2) && prop_get_symbol(sym_get_choice_prop(sym2)) == choice)

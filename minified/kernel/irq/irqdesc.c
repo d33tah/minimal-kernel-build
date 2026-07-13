@@ -57,8 +57,7 @@ static struct irq_desc *alloc_desc(int irq, int node, unsigned int flags) {
 
 	return desc;
 
-err_desc:
-	kfree(desc);
+err_desc: kfree(desc);
 	return NULL; }
 
 int __init early_irq_init(void) {

@@ -81,10 +81,8 @@ int __init init_link(const char *oldname, const char *newname) {
 		goto out_dput;
 	mnt_userns = mnt_user_ns(new_path.mnt);
 	error = vfs_link(old_path.dentry, mnt_userns, new_path.dentry->d_inode, new_dentry, NULL);
-out_dput:
-	done_path_create(&new_path, new_dentry);
-out:
-	path_put(&old_path);
+out_dput: done_path_create(&new_path, new_dentry);
+out: path_put(&old_path);
 	return error; }
 
 int __init init_symlink(const char *oldname, const char *newname) {

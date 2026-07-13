@@ -338,8 +338,7 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype, unsigned
 static __always_inline struct page * __rmqueue(struct zone *zone, unsigned int order, int migratetype, unsigned int alloc_flags) {
 	struct page *page;
 
-retry:
-	page = __rmqueue_smallest(zone, order, migratetype);
+retry: page = __rmqueue_smallest(zone, order, migratetype);
 	if (unlikely(!page)) {
 		if (__rmqueue_fallback(zone, order, migratetype, alloc_flags))
 			goto retry; }
@@ -455,11 +454,9 @@ struct page *rmqueue(struct zone *preferred_zone, struct zone *zone, unsigned in
 	__mod_zone_freepage_state(zone, -(1 << order), get_pcppage_migratetype(page));
 	spin_unlock_irqrestore(&zone->lock, flags);
 
-out:
-	return page;
+out: return page;
 
-failed:
-	spin_unlock_irqrestore(&zone->lock, flags);
+failed: spin_unlock_irqrestore(&zone->lock, flags);
 	return NULL; }
 
 static inline bool zone_watermark_fast(struct zone *z, unsigned long mark) {

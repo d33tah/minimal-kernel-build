@@ -188,8 +188,7 @@ static void *grab_file(const char *filename, size_t *size) {
 	*size = st.st_size;
 	map = mmap(NULL, *size, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
 
-failed:
-	close(fd);
+failed: close(fd);
 	if (map == MAP_FAILED)
 		return NULL;
 	return map; }
@@ -950,12 +949,9 @@ static void write_if_changed(struct buffer *b, const char *fname) {
 	fclose(file);
 	return;
 
- free_write:
-	free(tmp);
- close_write:
-	fclose(file);
- write:
-	write_buf(b, fname); }
+ free_write: free(tmp);
+ close_write: fclose(file);
+ write: write_buf(b, fname); }
 
 static void write_vmlinux_export_c_file(struct module *mod) {
 	struct buffer buf = { };

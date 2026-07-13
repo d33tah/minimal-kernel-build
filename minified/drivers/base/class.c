@@ -45,8 +45,7 @@ struct class *__class_create(struct module *owner, const char *name, struct lock
 
 	return cls;
 
-error:
-	kfree(cls);
+error: kfree(cls);
 	return ERR_PTR(retval); }
 
 

@@ -54,8 +54,7 @@ static void mask_and_ack_8259A(struct irq_data *data) {
 		goto spurious_8259A_irq;
 	cached_irq_mask |= irqmask;
 
-handle_real_irq:
-	if (irq & 8) {
+handle_real_irq: if (irq & 8) {
 		inb(PIC_SLAVE_IMR);	 
 		outb(cached_slave_mask, PIC_SLAVE_IMR);
 		 

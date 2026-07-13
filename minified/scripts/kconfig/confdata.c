@@ -65,10 +65,8 @@ static bool is_same(const char *file1, const char *file2) {
 		goto close2;
 
 	ret = true;
-close2:
-	close(fd2);
-close1:
-	close(fd1);
+close2: close(fd2);
+close1: close(fd1);
 
 	return ret; }
 
@@ -265,8 +263,7 @@ static ssize_t compat_getline(char **lineptr, size_t *n, FILE *stream) {
 				goto e_out;
 			slen++; } }
 
-e_out:
-	line[slen-1] = '\0';
+e_out: line[slen-1] = '\0';
 	*lineptr = line;
 	return -1; }
 
@@ -322,8 +319,7 @@ int conf_read_simple(const char *name, int def) {
 	if (!in)
 		return 1;
 
-load:
-	conf_filename = name;
+load: conf_filename = name;
 	conf_lineno = 0;
 	conf_warnings = 0;
 
@@ -645,13 +641,11 @@ int conf_write(const char *name) {
 			sym->flags |= SYMBOL_WRITTEN;
 			print_symbol_for_dotconfig(out, sym); }
 
-next:
-		if (menu->list) {
+next: if (menu->list) {
 			menu = menu->list;
 			continue; }
 
-end_check:
-		if (!menu->sym && menu_is_visible(menu) && menu != &rootmenu && menu->prompt->type == P_MENU) {
+end_check: if (!menu->sym && menu_is_visible(menu) && menu != &rootmenu && menu->prompt->type == P_MENU) {
 			fprintf(out, "# end of %s\n", menu_get_prompt(menu));
 			need_newline = true; }
 

@@ -42,8 +42,7 @@ struct kobject *kobj_lookup(struct kobj_map *domain, dev_t dev, int *index) {
 	struct probe *p;
 	unsigned long best = ~0UL;
 
-retry:
-	mutex_lock(domain->lock);
+retry: mutex_lock(domain->lock);
 	for (p = domain->probes[MAJOR(dev) % 255]; p; p = p->next) {
 		struct kobject *(*probe)(dev_t, int *, void *);
 		void *data;

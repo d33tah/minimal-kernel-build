@@ -94,12 +94,10 @@ struct pid *alloc_pid(struct pid_namespace *ns) {
 
 	return pid;
 
-out_unlock:
-	spin_unlock_irq(&pidmap_lock);
+out_unlock: spin_unlock_irq(&pidmap_lock);
 	put_pid_ns(ns);
 
-out_free:
-	spin_lock_irq(&pidmap_lock);
+out_free: spin_lock_irq(&pidmap_lock);
 	while (++i <= ns->level) {
 		upid = pid->numbers + i;
 		idr_remove(&upid->ns->idr, upid->nr); }

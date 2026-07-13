@@ -103,8 +103,7 @@ static struct char_device_struct * __register_chrdev_region(unsigned int major, 
 
 	mutex_unlock(&chrdevs_lock);
 	return cd;
-out:
-	mutex_unlock(&chrdevs_lock);
+out: mutex_unlock(&chrdevs_lock);
 	kfree(cd);
 	return ERR_PTR(ret); }
 
@@ -185,8 +184,7 @@ static int chrdev_open(struct inode *inode, struct file *filp) {
 
 	return 0;
 
- out_cdev_put:
-	cdev_put(p);
+ out_cdev_put: cdev_put(p);
 	return ret; }
 
 const struct file_operations def_chr_fops = { .open = chrdev_open, };

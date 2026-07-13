@@ -124,8 +124,7 @@ static struct fs_context *alloc_fs_context(struct file_system_type *fs_type, str
 	fc->need_free = true;
 	return fc;
 
-err_fc:
-	put_fs_context(fc);
+err_fc: put_fs_context(fc);
 	return ERR_PTR(ret); }
 
 struct fs_context *fs_context_for_mount(struct file_system_type *fs_type, unsigned int sb_flags) {

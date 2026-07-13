@@ -95,13 +95,11 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new) {
 
 	return 0;
 
-out_unlock:
-	raw_spin_unlock_irqrestore(&desc->lock, flags);
+out_unlock: raw_spin_unlock_irqrestore(&desc->lock, flags);
 
 	if (!desc->action)
 		irq_release_resources(desc);
-out_bus_unlock:
-	chip_bus_sync_unlock(desc);
+out_bus_unlock: chip_bus_sync_unlock(desc);
 	mutex_unlock(&desc->request_mutex);
 
 	return ret; }

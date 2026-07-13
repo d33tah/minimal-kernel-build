@@ -89,8 +89,7 @@ static int cpio_mkslink_line(const char *line) {
 		fprintf(stderr, "Unrecognized dir format '%s'", line);
 		goto fail; }
 	rc = cpio_mkslink(name, target, mode, uid, gid);
- fail:
-	return rc; }
+ fail: return rc; }
 
 static int cpio_mkgeneric(const char *name, unsigned int mode, uid_t uid, gid_t gid) {
 	char s[256];
@@ -119,8 +118,7 @@ static int cpio_mkgeneric_line(const char *line, enum generic_types gt) {
 		goto fail; }
 	mode |= generic_type_table[gt].mode;
 	rc = cpio_mkgeneric(name, mode, uid, gid);
- fail:
-	return rc; }
+ fail: return rc; }
 
 static int cpio_mkdir_line(const char *line) {
 	return cpio_mkgeneric_line(line, GT_DIR); }
@@ -158,8 +156,7 @@ static int cpio_mknod_line(const char *line) {
 		fprintf(stderr, "Unrecognized nod format '%s'", line);
 		goto fail; }
 	rc = cpio_mknod(name, mode, uid, gid, dev_type, maj, min);
- fail:
-	return rc; }
+ fail: return rc; }
 
 static int cpio_mkfile_csum(int fd, unsigned long size, uint32_t *csum) {
 	while (size) {
@@ -251,8 +248,7 @@ static int cpio_mkfile(const char *name, const char *location, unsigned int mode
 	ino++;
 	rc = 0;
 
-error:
-	if (file >= 0)
+error: if (file >= 0)
 		close(file);
 	return rc; }
 
@@ -305,8 +301,7 @@ static int cpio_mkfile_line(const char *line) {
 	} else {
 		dname = name; }
 	rc = cpio_mkfile(dname, cpio_replace_env(location), mode, uid, gid, nlinks);
- fail:
-	if (dname_len) free(dname);
+ fail: if (dname_len) free(dname);
 	return rc; }
 
 static void usage(const char *prog) {

@@ -527,12 +527,10 @@ void *xas_find_marked(struct xa_state *xas, unsigned long max, xa_mark_t mark) {
 		xas->xa_node = xa_to_node(entry);
 		xas_set_offset(xas); }
 
-out:
-	if (xas->xa_index > max)
+out: if (xas->xa_index > max)
 		goto max;
 	return set_bounds(xas);
-max:
-	xas->xa_node = XAS_RESTART;
+max: xas->xa_node = XAS_RESTART;
 	return NULL; }
 
 /* Removed: xa_load, __xa_store, xa_store, __xa_cmpxchg, __xa_insert, __xa_alloc - no callers */

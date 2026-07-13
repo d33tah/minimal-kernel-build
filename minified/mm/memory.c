@@ -80,8 +80,7 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr, pte_
 
 	return NULL;
 
-check_pfn:
-	if (unlikely(pfn > highest_memmap_pfn))
+check_pfn: if (unlikely(pfn > highest_memmap_pfn))
 		return NULL;
 
 	return pfn_to_page(pfn); }
@@ -243,8 +242,7 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf) {
 	lru_cache_add_inactive_or_unevictable(page, vma);
 	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
 
-unlock:
-	pte_unmap_unlock(vmf->pte, vmf->ptl);
+unlock: pte_unmap_unlock(vmf->pte, vmf->ptl);
 	return 0; }
 
 static vm_fault_t __do_fault(struct vm_fault *vmf) {
@@ -368,8 +366,7 @@ static vm_fault_t do_cow_fault(struct vm_fault *vmf) {
 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
 		goto uncharge_out;
 	return ret;
-uncharge_out:
-	put_page(vmf->cow_page);
+uncharge_out: put_page(vmf->cow_page);
 	return ret; }
 
 static vm_fault_t do_shared_fault(struct vm_fault *vmf) {

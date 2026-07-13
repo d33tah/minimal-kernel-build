@@ -46,10 +46,8 @@ extern void clear_cpu_cap(struct cpuinfo_x86 *c, unsigned int bit);
 
 static __always_inline bool _static_cpu_has(u16 bit) {
 	asm_volatile_goto( ALTERNATIVE_TERNARY("jmp 6f", %P[feature], "", "jmp %l[t_no]") ".pushsection .altinstr_aux,\"ax\"\n" "6:\n" " testb %[bitnum]," _ASM_RIP(%P[cap_byte]) "\n" " jnz %l[t_yes]\n" " jmp %l[t_no]\n" ".popsection\n" : : [feature]  "i" (bit), [bitnum]   "i" (1 << (bit & 7)), [cap_byte] "i" (&((const char *)boot_cpu_data.x86_capability)[bit >> 3]) : : t_yes, t_no);
-t_yes:
-	return true;
-t_no:
-	return false; }
+t_yes: return true;
+t_no: return false; }
 
 #define static_cpu_has(bit)					(									__builtin_constant_p(boot_cpu_has(bit)) ?				boot_cpu_has(bit) :						_static_cpu_has(bit)				)
 

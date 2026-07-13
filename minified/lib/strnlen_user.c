@@ -35,8 +35,7 @@ static __always_inline long do_strnlen_user(const char __user *src, unsigned lon
 		return count+1;
 
 	 
-efault:
-	return 0; }
+efault: return 0; }
 
 long strnlen_user(const char __user *str, long count) {
 	unsigned long max_addr, src_addr;

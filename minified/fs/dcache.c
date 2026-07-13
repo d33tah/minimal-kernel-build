@@ -167,8 +167,7 @@ static struct dentry *__lock_parent(struct dentry *dentry) {
 	struct dentry *parent;
 	rcu_read_lock();
 	spin_unlock(&dentry->d_lock);
-again:
-	parent = READ_ONCE(dentry->d_parent);
+again: parent = READ_ONCE(dentry->d_parent);
 	spin_lock(&parent->d_lock);
 	
 	if (unlikely(parent != dentry->d_parent)) {
@@ -236,13 +235,11 @@ static struct dentry *dentry_kill(struct dentry *dentry)
 	__dentry_kill(dentry);
 	return parent;
 
-slow_positive:
-	spin_unlock(&dentry->d_lock);
+slow_positive: spin_unlock(&dentry->d_lock);
 	spin_lock(&inode->i_lock);
 	spin_lock(&dentry->d_lock);
 	parent = lock_parent(dentry);
-got_locks:
-	if (unlikely(dentry->d_lockref.count != 1)) {
+got_locks: if (unlikely(dentry->d_lockref.count != 1)) {
 		dentry->d_lockref.count--;
 	} else if (likely(!retain_dentry(dentry))) {
 		__dentry_kill(dentry);
@@ -413,8 +410,7 @@ static unsigned d_flags_for_inode(struct inode *inode) {
 	if (unlikely(!S_ISREG(inode->i_mode)))
 		add_flags = DCACHE_SPECIAL_TYPE;
 
-type_determined:
-	return add_flags; }
+type_determined: return add_flags; }
 
 static void __d_instantiate(struct dentry *dentry, struct inode *inode) {
 	unsigned add_flags = d_flags_for_inode(inode);
@@ -530,8 +526,7 @@ struct dentry *__d_lookup(const struct dentry *parent, const struct qstr *name) 
 		found = dentry;
 		spin_unlock(&dentry->d_lock);
 		break;
-next:
-		spin_unlock(&dentry->d_lock); }
+next: spin_unlock(&dentry->d_lock); }
  	rcu_read_unlock();
 
  	return found; }
@@ -576,8 +571,7 @@ struct dentry *d_alloc_parallel(struct dentry *parent, const struct qstr *name, 
 	if (unlikely(!new))
 		return ERR_PTR(-ENOMEM);
 
-retry:
-	rcu_read_lock();
+retry: rcu_read_lock();
 	seq = smp_load_acquire(&parent->d_inode->i_dir_seq);
 	r_seq = read_seqbegin(&rename_lock);
 	dentry = __d_lookup_rcu(parent, name, &d_seq);
@@ -643,8 +637,7 @@ retry:
 	hlist_bl_add_head_rcu(&new->d_u.d_in_lookup_hash, b);
 	hlist_bl_unlock(b);
 	return new;
-mismatch:
-	spin_unlock(&dentry->d_lock);
+mismatch: spin_unlock(&dentry->d_lock);
 	dput(dentry);
 	goto retry; }
 

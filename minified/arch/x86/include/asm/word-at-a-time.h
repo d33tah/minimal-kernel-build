@@ -47,8 +47,7 @@ static inline unsigned long load_unaligned_zeropad(const void *addr) {
 
 	return ret;
 
-do_exception:
-	offset = (unsigned long)addr & (sizeof(long) - 1);
+do_exception: offset = (unsigned long)addr & (sizeof(long) - 1);
 	addr = (void *)((unsigned long)addr & ~(sizeof(long) - 1));
 	data = *(unsigned long *)addr;
 	ret = data >> offset * 8;

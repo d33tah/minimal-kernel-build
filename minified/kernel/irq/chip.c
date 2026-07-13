@@ -161,8 +161,7 @@ void handle_level_irq(struct irq_desc *desc) {
 
 	cond_unmask_irq(desc);
 
-out_unlock:
-	raw_spin_unlock(&desc->lock); }
+out_unlock: raw_spin_unlock(&desc->lock); }
 
 
 

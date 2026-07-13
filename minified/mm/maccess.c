@@ -11,6 +11,5 @@ long copy_to_kernel_nofault(void *dst, const void *src, size_t size) {
 	copy_to_kernel_nofault_loop(dst, src, size, u8, Efault);
 	pagefault_enable();
 	return 0;
-Efault:
-	pagefault_enable();
+Efault: pagefault_enable();
 	return -EFAULT; }

@@ -91,10 +91,8 @@ static int __bprm_mm_init(struct linux_binprm *bprm) {
 	mmap_write_unlock(mm);
 	bprm->p = vma->vm_end - sizeof(void *);
 	return 0;
-err:
-	mmap_write_unlock(mm);
-err_free:
-	bprm->vma = NULL;
+err: mmap_write_unlock(mm);
+err_free: bprm->vma = NULL;
 	vm_area_free(vma);
 	return err; }
 
@@ -120,8 +118,7 @@ static int bprm_mm_init(struct linux_binprm *bprm) {
 
 	return 0;
 
-err:
-	if (mm) {
+err: if (mm) {
 		bprm->mm = NULL;
 		mmdrop(mm); }
 
@@ -294,8 +291,7 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top, int exec
 	if (ret)
 		ret = -EFAULT;
 
-out_unlock:
-	mmap_write_unlock(mm);
+out_unlock: mmap_write_unlock(mm);
 	return ret; }
 
 static struct file *do_open_execat(struct filename *name, int flags) {
@@ -323,11 +319,9 @@ static struct file *do_open_execat(struct filename *name, int flags) {
 	if (err)
 		goto exit;
 
-out:
-	return file;
+out: return file;
 
-exit:
-	fput(file);
+exit: fput(file);
 	return ERR_PTR(err); }
 
 static int exec_mmap(struct mm_struct *mm) {
@@ -441,10 +435,8 @@ int begin_new_exec(struct linux_binprm * bprm) {
 
 	return 0;
 
-out_unlock:
-	up_write(&me->signal->exec_update_lock);
-out:
-	return retval; }
+out_unlock: up_write(&me->signal->exec_update_lock);
+out: return retval; }
 
 void setup_new_exec(struct linux_binprm * bprm) {
 	
@@ -504,10 +496,8 @@ static struct linux_binprm *alloc_bprm(struct filename *filename) {
 		goto out_free;
 	return bprm;
 
-out_free:
-	free_bprm(bprm);
-out:
-	return ERR_PTR(retval); }
+out_free: free_bprm(bprm);
+out: return ERR_PTR(retval); }
 
 /* Removed: bprm_change_interp - never called */
 
@@ -627,8 +617,7 @@ out:
 	if (bprm->point_of_no_return && !fatal_signal_pending(current))
 		force_fatal_sig(SIGSEGV);
 
-out_unmark:
-	current->fs->in_exec = 0;
+out_unmark: current->fs->in_exec = 0;
 
 	return retval; }
 
@@ -679,10 +668,8 @@ int kernel_execve(const char *kernel_filename, const char *const *argv, const ch
 		goto out_free;
 
 	retval = bprm_execve(bprm, filename, 0);
-out_free:
-	free_bprm(bprm);
-out_ret:
-	putname(filename);
+out_free: free_bprm(bprm);
+out_ret: putname(filename);
 	return retval; }
 
 void set_dumpable(struct mm_struct *mm, int value) {

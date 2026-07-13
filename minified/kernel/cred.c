@@ -57,8 +57,7 @@ struct cred *prepare_creds(void) {
 
 	return new;
 
-error:
-	abort_creds(new);
+error: abort_creds(new);
 	return NULL; }
 
 struct cred *prepare_exec_creds(void) {

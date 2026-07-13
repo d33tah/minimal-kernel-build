@@ -68,8 +68,7 @@ static void __fput(struct file *file) {
 		__mnt_drop_write(mnt); }
 	dput(dentry);
 	mntput(mnt);
-out:
-	file_free(file); }
+out: file_free(file); }
 
 static LLIST_HEAD(delayed_fput_list);
 static void delayed_fput(struct work_struct *unused) {

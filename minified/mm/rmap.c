@@ -71,10 +71,8 @@ int __anon_vma_prepare(struct vm_area_struct *vma) {
 
 	return 0;
 
- out_enomem_free_avc:
-	anon_vma_chain_free(avc);
- out_enomem:
-	return -ENOMEM; }
+ out_enomem_free_avc: anon_vma_chain_free(avc);
+ out_enomem: return -ENOMEM; }
 
 static void anon_vma_ctor(void *data) {
 	struct anon_vma *anon_vma = data;
@@ -102,8 +100,7 @@ static void __page_set_anon_rmap(struct page *page, struct vm_area_struct *vma, 
 	anon_vma = (void *) anon_vma + PAGE_MAPPING_ANON;
 	WRITE_ONCE(page->mapping, (struct address_space *) anon_vma);
 	page->index = linear_page_index(vma, address);
-out:
-	if (exclusive)
+out: if (exclusive)
 		SetPageAnonExclusive(page); }
 
 void page_add_new_anon_rmap(struct page *page, struct vm_area_struct *vma, unsigned long address) {

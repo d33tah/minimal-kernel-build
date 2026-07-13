@@ -73,10 +73,8 @@ int ida_alloc_range(struct ida *ida, unsigned int min, unsigned int max, gfp_t g
 	 * The sole caller (fs/super.c) passes positive literal min/max, so the
 	 * (int)min<0 / (int)max<0 validations were statically dead and removed.
 	 */
-retry:
-	xas_lock_irqsave(&xas, flags);
-next:
-	bitmap = xas_find_marked(&xas, max / IDA_BITMAP_BITS, XA_FREE_MARK);
+retry: xas_lock_irqsave(&xas, flags);
+next: bitmap = xas_find_marked(&xas, max / IDA_BITMAP_BITS, XA_FREE_MARK);
 	if (xas.xa_index > min / IDA_BITMAP_BITS)
 		bit = 0;
 	if (xas.xa_index * IDA_BITMAP_BITS + bit > max)
@@ -125,8 +123,7 @@ next:
 				goto alloc;
 			__set_bit(bit, bitmap->bitmap); }
 		xas_store(&xas, bitmap); }
-out:
-	xas_unlock_irqrestore(&xas, flags);
+out: xas_unlock_irqrestore(&xas, flags);
 	if (xas_nomem(&xas, gfp)) {
 		xas.xa_index = min / IDA_BITMAP_BITS;
 		bit = min % IDA_BITMAP_BITS;
@@ -136,16 +133,14 @@ out:
 	if (xas_error(&xas))
 		return xas_error(&xas);
 	return xas.xa_index * IDA_BITMAP_BITS + bit;
-alloc:
-	xas_unlock_irqrestore(&xas, flags);
+alloc: xas_unlock_irqrestore(&xas, flags);
 	alloc = kzalloc(sizeof(*bitmap), gfp);
 	if (!alloc)
 		return -ENOMEM;
 	xas_set(&xas, min / IDA_BITMAP_BITS);
 	bit = min % IDA_BITMAP_BITS;
 	goto retry;
-nospc:
-	xas_unlock_irqrestore(&xas, flags);
+nospc: xas_unlock_irqrestore(&xas, flags);
 	kfree(alloc);
 	return -ENOSPC; }
 

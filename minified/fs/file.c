@@ -43,8 +43,7 @@ static int expand_files(struct files_struct *files, unsigned int nr)
 	struct fdtable *fdt;
 	int expanded = 0;
 
-repeat:
-	fdt = files_fdtable(files);
+repeat: fdt = files_fdtable(files);
 
 	 
 	if (nr < fdt->max_fds)
@@ -163,8 +162,7 @@ struct files_struct *dup_fd(struct files_struct *oldf, int *errorp) {
 
 	return newf;
 
-out:
-	return NULL; }
+out: return NULL; }
 
 /*
  * Runtime-dead: nothing exits / closes its fd table on a single-shot boot.
@@ -193,8 +191,7 @@ static int alloc_fd(unsigned start, unsigned end, unsigned flags) {
 	struct fdtable *fdt;
 
 	spin_lock(&files->file_lock);
-repeat:
-	fdt = files_fdtable(files);
+repeat: fdt = files_fdtable(files);
 	fd = start;
 	if (fd < files->next_fd)
 		fd = files->next_fd;
@@ -228,8 +225,7 @@ repeat:
 		printk(KERN_WARNING "alloc_fd: slot %d not NULL!\n", fd);
 		rcu_assign_pointer(fdt->fd[fd], NULL); }
 
-out:
-	spin_unlock(&files->file_lock);
+out: spin_unlock(&files->file_lock);
 	return error; }
 
 static int __get_unused_fd_flags(unsigned flags, unsigned long nofile) {

@@ -104,8 +104,7 @@ struct ucounts *inc_ucount(struct user_namespace *ns, kuid_t uid, enum ucount_ty
 		if (!atomic_long_inc_below(&iter->ucount[type], max))
 			goto fail; }
 	return ucounts;
-fail:
-	bad = iter;
+fail: bad = iter;
 	for (iter = ucounts; iter != bad; iter = iter->ns->ucounts)
 		atomic_long_dec(&iter->ucount[type]);
 

@@ -298,8 +298,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node) {
 
 	return tsk;
 
-free_tsk:
-	free_task_struct(tsk);
+free_tsk: free_task_struct(tsk);
 	return NULL; }
 
 
@@ -333,10 +332,8 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p, st
 	mm->user_ns = get_user_ns(user_ns);
 	return mm;
 
-fail_nocontext:
-	mm_free_pgd(mm);
-fail_nopgd:
-	free_mm(mm);
+fail_nocontext: mm_free_pgd(mm);
+fail_nopgd: free_mm(mm);
 	return NULL; }
 
 struct mm_struct *mm_alloc(void) {
@@ -419,8 +416,7 @@ free_pt:
 
 	mmput(mm);
 
-fail_nomem:
-	return NULL; }
+fail_nomem: return NULL; }
 
 static int copy_mm(unsigned long clone_flags, struct task_struct *tsk) {
 	struct mm_struct *mm, *oldmm;
@@ -480,8 +476,7 @@ static int copy_files(unsigned long clone_flags, struct task_struct *tsk) {
 
 	tsk->files = newf;
 	error = 0;
-out:
-	return error; }
+out: return error; }
 
 static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk) {
 	struct sighand_struct *sig;
@@ -723,40 +718,30 @@ static __latent_entropy struct task_struct *copy_process( struct pid *pid, int n
 
 	return p;
 
-bad_fork_cancel_cgroup:
-	spin_unlock(&current->sighand->siglock);
+bad_fork_cancel_cgroup: spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);
 	if (pid != &init_struct_pid)
 		free_pid(pid);
-bad_fork_cleanup_thread:
-	exit_thread(p);
-bad_fork_cleanup_io:
-	exit_task_namespaces(p);
-bad_fork_cleanup_mm:
-	if (p->mm) {
+bad_fork_cleanup_thread: exit_thread(p);
+bad_fork_cleanup_io: exit_task_namespaces(p);
+bad_fork_cleanup_mm: if (p->mm) {
 		mmput(p->mm); }
 bad_fork_cleanup_signal:
 	/* CLONE_THREAD never set -> signal_struct is always private here */
 	kmem_cache_free(signal_cachep, p->signal);
-bad_fork_cleanup_sighand:
-	__cleanup_sighand(p->sighand);
-bad_fork_cleanup_fs:
-	exit_fs(p); 
-bad_fork_cleanup_files:
-	exit_files(p); 
+bad_fork_cleanup_sighand: __cleanup_sighand(p->sighand);
+bad_fork_cleanup_fs: exit_fs(p);
+bad_fork_cleanup_files: exit_files(p);
 bad_fork_cleanup_semundo:
 bad_fork_cleanup_policy:
 bad_fork_cleanup_delayacct:
-bad_fork_cleanup_count:
-	dec_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
+bad_fork_cleanup_count: dec_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
 	exit_creds(p);
-bad_fork_free:
-	WRITE_ONCE(p->__state, TASK_DEAD);
+bad_fork_free: WRITE_ONCE(p->__state, TASK_DEAD);
 	exit_task_stack_account(p);
 	put_task_stack(p);
 	delayed_free_task(p);
-fork_out:
-	return ERR_PTR(retval); }
+fork_out: return ERR_PTR(retval); }
 
 struct mm_struct *copy_init_mm(void) {
 	return dup_mm(NULL, &init_mm); }

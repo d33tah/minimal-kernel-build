@@ -46,13 +46,11 @@ static struct kmem_cache *create_cache(unsigned int object_size, unsigned int al
 	if (err)
 		goto out_free_cache;
 
-out:
-	if (err)
+out: if (err)
 		return ERR_PTR(err);
 	return s;
 
-out_free_cache:
-	kmem_cache_free(kmem_cache, s);
+out_free_cache: kmem_cache_free(kmem_cache, s);
 	goto out; }
 
 struct kmem_cache * kmem_cache_create_usercopy(const char *name, unsigned int size, unsigned int align, slab_flags_t flags, unsigned int useroffset, unsigned int usersize, void (*ctor)(void *)) {
@@ -87,8 +85,7 @@ struct kmem_cache * kmem_cache_create_usercopy(const char *name, unsigned int si
 		err = PTR_ERR(s);
 		kfree_const(cache_name); }
 
-out_unlock:
-	mutex_unlock(&slab_mutex);
+out_unlock: mutex_unlock(&slab_mutex);
 
 	if (err) {
 		if (flags & SLAB_PANIC)

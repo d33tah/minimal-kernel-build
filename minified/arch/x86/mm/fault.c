@@ -240,8 +240,7 @@ void do_user_addr_fault(struct pt_regs *regs, unsigned long error_code, unsigned
 			 
 			bad_area_nosemaphore(regs, error_code, address);
 			return; }
-retry:
-		mmap_read_lock(mm);
+retry: mmap_read_lock(mm);
 	} else {
 		 
 		might_sleep(); }
@@ -256,8 +255,7 @@ retry:
 	return;
 
 
-good_area:
-	if (unlikely(access_error(error_code, vma))) {
+good_area: if (unlikely(access_error(error_code, vma))) {
 		/*
 		 * Protection keys are compile-time disabled (OSPKE in
 		 * DISABLED_MASK), so a fault can never be a pkey access error --

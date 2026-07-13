@@ -228,8 +228,7 @@ static bool try_to_unlazy(struct nameidata *nd) {
 	BUG_ON(nd->inode != parent->d_inode);
 	return true;
 
-out:
-	rcu_read_unlock();
+out: rcu_read_unlock();
 	return false; }
 
 static bool try_to_unlazy_next(struct nameidata *nd, struct dentry *dentry, unsigned seq) {
@@ -252,15 +251,11 @@ static bool try_to_unlazy_next(struct nameidata *nd, struct dentry *dentry, unsi
 	rcu_read_unlock();
 	return true;
 
-out2:
-	nd->path.mnt = NULL;
-out1:
-	nd->path.dentry = NULL;
-out:
-	rcu_read_unlock();
+out2: nd->path.mnt = NULL;
+out1: nd->path.dentry = NULL;
+out: rcu_read_unlock();
 	return false;
-out_dput:
-	rcu_read_unlock();
+out_dput: rcu_read_unlock();
 	dput(dentry);
 	return false; }
 
@@ -531,8 +526,7 @@ static inline u64 hash_name(const void *salt, const char *name) {
 	do {
 		HASH_MIX(x, y, a);
 		len += sizeof(unsigned long);
-inside:
-		a = load_unaligned_zeropad(name+len);
+inside: a = load_unaligned_zeropad(name+len);
 		b = a ^ REPEAT_BYTE('/');
 	} while (!(has_zero(a, &adata, &constants) | has_zero(b, &bdata, &constants)));
 
@@ -901,8 +895,7 @@ static const char *open_last_lookups(struct nameidata *nd, struct file *file, co
 		nd->path.dentry = dentry;
 		return NULL; }
 
-finish_lookup:
-	res = step_into(nd, WALK_TRAILING, dentry, inode, seq);
+finish_lookup: res = step_into(nd, WALK_TRAILING, dentry, inode, seq);
 	if (unlikely(res))
 		nd->flags &= ~(LOOKUP_OPEN|LOOKUP_CREATE|LOOKUP_EXCL);
 	return res; }
@@ -1034,15 +1027,12 @@ static struct dentry *filename_create(struct filename *name, struct path *path, 
 		error = err2;
 		goto fail; }
 	return dentry;
-fail:
-	dput(dentry);
+fail: dput(dentry);
 	dentry = ERR_PTR(error);
-unlock:
-	inode_unlock(path->dentry->d_inode);
+unlock: inode_unlock(path->dentry->d_inode);
 	if (!err2)
 		mnt_drop_write(path->mnt);
-out:
-	path_put(path);
+out: path_put(path);
 	return dentry; }
 
 struct dentry *kern_path_create(const char *pathname, struct path *path, unsigned int lookup_flags) {

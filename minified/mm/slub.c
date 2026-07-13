@@ -216,8 +216,7 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node) {
 	slab->inuse = slab->objects;
 	slab->frozen = 1;
 
-out:
-	if (!slab)
+out: if (!slab)
 		return NULL;
 
 	return slab; }

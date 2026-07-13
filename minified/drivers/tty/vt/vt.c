@@ -340,8 +340,7 @@ int vc_allocate(unsigned int currcons)
 	atomic_notifier_call_chain(&vt_notifier_list, VT_ALLOCATE, &param);
 
 	return 0;
-err_free:
-	visual_deinit(vc);
+err_free: visual_deinit(vc);
 	kfree(vc);
 	vc_cons[currcons].d = NULL;
 	return err;
@@ -554,8 +553,7 @@ static int vc_translate_unicode(struct vc_data *vc, int c, bool *rescan)
 		return 0xfffd;
 	}
 
-need_more_bytes:
-	return -1;
+need_more_bytes: return -1;
 }
 
 static int vc_translate(struct vc_data *vc, int *c, bool *rescan)
@@ -730,8 +728,7 @@ static int con_install(struct tty_driver *driver, struct tty_struct *tty)
 		tty->termios.c_iflag |= IUTF8;
 	else
 		tty->termios.c_iflag &= ~IUTF8;
-unlock:
-	console_unlock();
+unlock: console_unlock();
 	return ret;
 }
 

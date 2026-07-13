@@ -303,8 +303,7 @@ static struct elf_phdr *load_elf_phdrs(const struct elfhdr *elf_ex,
 
 	 
 	err = 0;
-out:
-	if (err) {
+out: if (err) {
 		kfree(elf_phdata);
 		elf_phdata = NULL;
 	}
@@ -540,11 +539,9 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	finalize_exec(bprm);
 	START_THREAD(elf_ex, regs, elf_entry, bprm->p);
 	retval = 0;
-out:
-	return retval;
+out: return retval;
 
-out_free_dentry:
-	kfree(elf_phdata);
+out_free_dentry: kfree(elf_phdata);
 	goto out;
 }
 

@@ -464,8 +464,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		 
 		if (elf_ppnt->p_offset <= elf_ex->e_phoff &&
 		    elf_ex->e_phoff < elf_ppnt->p_offset + elf_ppnt->p_filesz) {
-			phdr_addr = elf_ex->e_phoff - elf_ppnt->p_offset +
-				    elf_ppnt->p_vaddr;
+			phdr_addr = elf_ex->e_phoff - elf_ppnt->p_offset + elf_ppnt->p_vaddr;
 		}
 
 		k = elf_ppnt->p_vaddr;

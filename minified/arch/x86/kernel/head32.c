@@ -48,8 +48,7 @@ void __init mk_early_pgtbl_32(void)
 	int i;
 	unsigned long *ptr;
 	 
-	const unsigned long limit = __pa(_end) +
-		(PAGE_TABLE_SIZE(LOWMEM_PAGES) << PAGE_SHIFT);
+	const unsigned long limit = __pa(_end) + (PAGE_TABLE_SIZE(LOWMEM_PAGES) << PAGE_SHIFT);
 	pgd_t pl2, *pl2p = (pgd_t *)__pa(initial_page_table);
 #define SET_PL2(pl2, val)   { (pl2).pgd = (val); }
 

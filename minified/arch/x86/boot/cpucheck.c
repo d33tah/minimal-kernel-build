@@ -15,8 +15,7 @@ static u32 err_flags[NCAPINTS];
 
 static const int req_level = CONFIG_X86_MINIMUM_CPU_FAMILY;
 
-static const u32 req_flags[NCAPINTS] =
-{
+static const u32 req_flags[NCAPINTS] = {
 	REQUIRED_MASK0,
 	REQUIRED_MASK1,
 	0,  
@@ -40,30 +39,22 @@ static const u32 req_flags[NCAPINTS] =
 
 static int is_amd(void)
 {
-	return cpu_vendor[0] == A32('A', 'u', 't', 'h') &&
-	       cpu_vendor[1] == A32('e', 'n', 't', 'i') &&
-	       cpu_vendor[2] == A32('c', 'A', 'M', 'D');
+	return cpu_vendor[0] == A32('A', 'u', 't', 'h') && cpu_vendor[1] == A32('e', 'n', 't', 'i') && cpu_vendor[2] == A32('c', 'A', 'M', 'D');
 }
 
 static int is_centaur(void)
 {
-	return cpu_vendor[0] == A32('C', 'e', 'n', 't') &&
-	       cpu_vendor[1] == A32('a', 'u', 'r', 'H') &&
-	       cpu_vendor[2] == A32('a', 'u', 'l', 's');
+	return cpu_vendor[0] == A32('C', 'e', 'n', 't') && cpu_vendor[1] == A32('a', 'u', 'r', 'H') && cpu_vendor[2] == A32('a', 'u', 'l', 's');
 }
 
 static int is_transmeta(void)
 {
-	return cpu_vendor[0] == A32('G', 'e', 'n', 'u') &&
-	       cpu_vendor[1] == A32('i', 'n', 'e', 'T') &&
-	       cpu_vendor[2] == A32('M', 'x', '8', '6');
+	return cpu_vendor[0] == A32('G', 'e', 'n', 'u') && cpu_vendor[1] == A32('i', 'n', 'e', 'T') && cpu_vendor[2] == A32('M', 'x', '8', '6');
 }
 
 static int is_intel(void)
 {
-	return cpu_vendor[0] == A32('G', 'e', 'n', 'u') &&
-	       cpu_vendor[1] == A32('i', 'n', 'e', 'I') &&
-	       cpu_vendor[2] == A32('n', 't', 'e', 'l');
+	return cpu_vendor[0] == A32('G', 'e', 'n', 'u') && cpu_vendor[1] == A32('i', 'n', 'e', 'I') && cpu_vendor[2] == A32('n', 't', 'e', 'l');
 }
 
 static int check_cpuflags(void)

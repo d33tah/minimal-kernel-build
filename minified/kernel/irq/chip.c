@@ -133,10 +133,7 @@ static bool irq_may_run(struct irq_desc *desc) {
 	unsigned int mask = IRQD_IRQ_INPROGRESS | IRQD_WAKEUP_ARMED;
 
 	 
-	if (!irqd_has_set(&desc->irq_data, mask))
-		return true;
-
-	return false; }
+	return !irqd_has_set(&desc->irq_data, mask); }
 
 
 

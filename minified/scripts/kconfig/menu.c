@@ -356,9 +356,7 @@ void menu_finalize(struct menu *parent) {
 		sym->rev_dep.expr = expr_alloc_or(sym->rev_dep.expr, expr_alloc_and(parent->prompt->visible.expr, expr_alloc_symbol(&symbol_mod))); } }
 
 bool menu_has_prompt(struct menu *menu) {
-	if (!menu->prompt)
-		return false;
-	return true; }
+	return menu->prompt != NULL; }
 
 bool menu_is_visible(struct menu *menu) {
 	struct menu *child;

@@ -73,9 +73,7 @@ static bool e820_nomerge(enum e820_type type) {
 	 
 	if (type == E820_TYPE_PRAM)
 		return true;
-	if (type == E820_TYPE_SOFT_RESERVED)
-		return true;
-	return false; }
+	return type == E820_TYPE_SOFT_RESERVED; }
 
 int __init e820__update_table(struct e820_table *table) {
 	struct e820_entry *entries = table->entries;

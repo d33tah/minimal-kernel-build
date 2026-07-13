@@ -49,18 +49,14 @@ static inline bool timespec64_valid(const struct timespec64 *ts) {
 	if (ts->tv_sec < 0)
 		return false;
 	 
-	if ((unsigned long)ts->tv_nsec >= NSEC_PER_SEC)
-		return false;
-	return true; }
+	return (unsigned long)ts->tv_nsec < NSEC_PER_SEC; }
 
 
 static inline bool timespec64_valid_settod(const struct timespec64 *ts) {
 	if (!timespec64_valid(ts))
 		return false;
 	 
-	if ((unsigned long long)ts->tv_sec >= TIME_SETTOD_SEC_MAX)
-		return false;
-	return true; }
+	return (unsigned long long)ts->tv_sec < TIME_SETTOD_SEC_MAX; }
 
 static inline s64 timespec64_to_ns(const struct timespec64 *ts) {
 	 

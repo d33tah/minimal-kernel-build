@@ -152,10 +152,7 @@ bool atime_needs_update(const struct path *path, struct inode *inode) {
 
 	now = current_time(inode);
 
-	if (timespec64_equal(&inode->i_atime, &now))
-		return false;
-
-	return true; }
+	return !timespec64_equal(&inode->i_atime, &now); }
 
 void touch_atime(const struct path *path) {
 	struct vfsmount *mnt = path->mnt;
@@ -242,9 +239,7 @@ bool inode_owner_or_capable(struct user_namespace *mnt_userns, const struct inod
 		return true;
 
 	ns = current_user_ns();
-	if (kuid_has_mapping(ns, i_uid))
-		return true;
-	return false; }
+	return kuid_has_mapping(ns, i_uid); }
 
 struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode) {
 	struct super_block *sb = inode->i_sb;

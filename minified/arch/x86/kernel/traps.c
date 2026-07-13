@@ -226,10 +226,7 @@ static __always_inline unsigned long debug_read_clear_dr6(void) {
 
 static bool notify_debug(struct pt_regs *regs, unsigned long *dr6) {
 	 
-	if (notify_die(DIE_DEBUG, "debug", regs, (long)dr6, 0, SIGTRAP) == NOTIFY_STOP)
-		return true;
-
-	return false; }
+	return notify_die(DIE_DEBUG, "debug", regs, (long)dr6, 0, SIGTRAP) == NOTIFY_STOP; }
 
 static __always_inline void exc_debug_kernel(struct pt_regs *regs, unsigned long dr6) {
 	 

@@ -67,9 +67,7 @@ static bool tick_check_percpu(struct clock_event_device *curdev, struct clock_ev
 	if (newdev->irq >= 0)
 		return false;
 	 
-	if (curdev && cpumask_equal(curdev->cpumask, cpumask_of(cpu)))
-		return false;
-	return true; }
+	return !(curdev && cpumask_equal(curdev->cpumask, cpumask_of(cpu))); }
 
 static bool tick_check_preferred(struct clock_event_device *curdev, struct clock_event_device *newdev) {
 	/*

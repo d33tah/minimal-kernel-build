@@ -1,6 +1,5 @@
 #include <linux/init.h>
 #include <linux/fs.h>
-#include <linux/string.h>
 #include <linux/file.h>
 #include <linux/mm.h>
 #include <linux/init_syscalls.h>

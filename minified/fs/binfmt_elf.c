@@ -8,7 +8,6 @@
 #include <linux/slab.h>
 #include <linux/personality.h>
 #include <linux/ptrace.h>
-#include <linux/compiler.h>
 #include <linux/random.h>
 #include <linux/elf.h>
 #include <linux/utsname.h>

@@ -5,8 +5,6 @@
 
 #include <asm/syscall_wrapper.h>
 
-asmlinkage long sys_ni_syscall(void);
-
 asmlinkage long sys_ni_syscall(void) {
 	return -ENOSYS; }
 

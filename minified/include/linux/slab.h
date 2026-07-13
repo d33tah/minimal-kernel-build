@@ -127,8 +127,7 @@ static __always_inline unsigned int __kmalloc_index(size_t size, bool size_is_co
 
 	if (!IS_ENABLED(CONFIG_PROFILE_ALL_BRANCHES) && size_is_constant)
 		BUILD_BUG_ON_MSG(1, "unexpected size in kmalloc_index()");
-	else
-		BUG();
+	else BUG();
 
 	 
 	return -1; }

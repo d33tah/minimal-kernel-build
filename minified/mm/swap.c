@@ -62,8 +62,7 @@ void folio_mark_accessed(struct folio *folio) {
 		 
 		if (folio_test_lru(folio))
 			folio_activate(folio);
-		else
-			__lru_cache_activate_folio(folio);
+		else __lru_cache_activate_folio(folio);
 		folio_clear_referenced(folio); } }
 
 void folio_add_lru(struct folio *folio) {

@@ -13,8 +13,7 @@ struct zone *next_zone(struct zone *zone) {
 
 	if (zone < pgdat->node_zones + MAX_NR_ZONES - 1)
 		zone++;
-	else
-		zone = NULL;
+	else zone = NULL;
 	return zone; }
 
 struct zoneref *__next_zones_zonelist(struct zoneref *z, enum zone_type highest_zoneidx) {

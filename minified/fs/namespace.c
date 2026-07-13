@@ -153,8 +153,7 @@ struct vfsmount *vfs_kern_mount(struct file_system_type *type, int flags, const 
 		ret = parse_monolithic_mount_data(fc, data);
 	if (!ret)
 		mnt = fc_mount(fc);
-	else
-		mnt = ERR_PTR(ret);
+	else mnt = ERR_PTR(ret);
 
 	put_fs_context(fc);
 	return mnt; }

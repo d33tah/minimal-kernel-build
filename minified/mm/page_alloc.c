@@ -110,8 +110,7 @@ static inline bool pcp_allowed_order(unsigned int order) {
 static inline void free_the_page(struct page *page, unsigned int order) {
 	if (pcp_allowed_order(order))		
 		free_unref_page(page, order);
-	else
-		__free_pages_ok(page, order, FPI_NONE); }
+	else __free_pages_ok(page, order, FPI_NONE); }
 
 static void prep_compound_head(struct page *page, unsigned int order) {
 	set_compound_page_dtor(page, COMPOUND_PAGE_DTOR);
@@ -163,8 +162,7 @@ static inline void __free_one_page(struct page *page, struct zone *zone, unsigne
 
 	if (fpi_flags & FPI_TO_TAIL)
 		add_to_free_list_tail(page, zone, order, migratetype);
-	else
-		add_to_free_list(page, zone, order, migratetype); }
+	else add_to_free_list(page, zone, order, migratetype); }
 
 
 static __always_inline bool free_pages_prepare(struct page *page, unsigned int order) {
@@ -258,8 +256,7 @@ static void prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags
 
 	if (alloc_flags & ALLOC_NO_WATERMARKS)
 		set_page_pfmemalloc(page);
-	else
-		clear_page_pfmemalloc(page); }
+	else clear_page_pfmemalloc(page); }
 
 static __always_inline
 struct page *__rmqueue_smallest(struct zone *zone, unsigned int order, int migratetype) {
@@ -665,8 +662,7 @@ void __ref build_all_zonelists(pg_data_t *pgdat) {
 	
 	if (vm_total_pages < (pageblock_nr_pages * MIGRATE_TYPES))
 		page_group_by_mobility_disabled = 1;
-	else
-		page_group_by_mobility_disabled = 0; }
+	else page_group_by_mobility_disabled = 0; }
 
 static void __meminit memmap_init_range(unsigned long size, int nid, unsigned long zone, unsigned long start_pfn, unsigned long zone_end_pfn, enum meminit_context context, struct vmem_altmap *altmap, int migratetype) {
 	unsigned long pfn, end_pfn = start_pfn + size;
@@ -912,8 +908,7 @@ static void __init calculate_node_totalpages(struct pglist_data *pgdat, unsigned
 
 		if (size)
 			zone->zone_start_pfn = zone_start_pfn;
-		else
-			zone->zone_start_pfn = 0;
+		else zone->zone_start_pfn = 0;
 		zone->spanned_pages = size;
 		zone->present_pages = real_size;
 

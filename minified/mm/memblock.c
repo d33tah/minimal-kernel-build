@@ -95,16 +95,14 @@ void __init memblock_discard(void) {
 		size = PAGE_ALIGN(sizeof(struct memblock_region) * memblock.reserved.max);
 		if (memblock_reserved_in_slab)
 			kfree(memblock.reserved.regions);
-		else
-			memblock_free_late(addr, size); }
+		else memblock_free_late(addr, size); }
 
 	if (memblock.memory.regions != memblock_memory_init_regions) {
 		addr = __pa(memblock.memory.regions);
 		size = PAGE_ALIGN(sizeof(struct memblock_region) * memblock.memory.max);
 		if (memblock_memory_in_slab)
 			kfree(memblock.memory.regions);
-		else
-			memblock_free_late(addr, size); }
+		else memblock_free_late(addr, size); }
 
 	memblock_memory = NULL; }
 
@@ -126,8 +124,7 @@ static int __init_memblock memblock_double_array(struct memblock_type *type, phy
 
 	if (type == &memblock.memory)
 		in_slab = &memblock_memory_in_slab;
-	else
-		in_slab = &memblock_reserved_in_slab;
+	else in_slab = &memblock_reserved_in_slab;
 
 	if (use_slab) {
 		new_array = kmalloc(new_size, GFP_KERNEL);
@@ -378,8 +375,7 @@ void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags, struct membl
 				
 				if (m_end <= r_end)
 					idx_a++;
-				else
-					idx_b++;
+				else idx_b++;
 				*idx = (u32)idx_a | (u64)idx_b << 32;
 				return; } } }
 
@@ -396,8 +392,7 @@ void __init_memblock __next_mem_range_rev(u64 *idx, int nid, enum memblock_flags
 		idx_a = type_a->cnt - 1;
 		if (type_b != NULL)
 			idx_b = type_b->cnt;
-		else
-			idx_b = 0; }
+		else idx_b = 0; }
 
 	for (; idx_a >= 0; idx_a--) {
 		struct memblock_region *m = &type_a->regions[idx_a];
@@ -443,8 +438,7 @@ void __init_memblock __next_mem_range_rev(u64 *idx, int nid, enum memblock_flags
 					*out_nid = m_nid;
 				if (m_start >= r_start)
 					idx_a--;
-				else
-					idx_b--;
+				else idx_b--;
 				*idx = (u32)idx_a | (u64)idx_b << 32;
 				return; } } }
 	
@@ -555,8 +549,7 @@ static int __init_memblock memblock_search(struct memblock_type *type, phys_addr
 			right = mid;
 		else if (addr >= (type->regions[mid].base + type->regions[mid].size))
 			left = mid + 1;
-		else
-			return mid;
+		else return mid;
 	} while (left < right);
 	return -1; }
 

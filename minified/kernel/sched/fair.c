@@ -37,8 +37,7 @@ static void __update_inv_weight(struct load_weight *lw) {
 		lw->inv_weight = 1;
 	else if (unlikely(!w))
 		lw->inv_weight = WMULT_CONST;
-	else
-		lw->inv_weight = WMULT_CONST / w; }
+	else lw->inv_weight = WMULT_CONST / w; }
 
 static u64 __calc_delta(u64 delta_exec, unsigned long weight, struct load_weight *lw) {
 	u64 fact = scale_load_down(weight);
@@ -95,16 +94,14 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq) {
 	if (curr) {
 		if (curr->on_rq)
 			vruntime = curr->vruntime;
-		else
-			curr = NULL; }
+		else curr = NULL; }
 
 	if (leftmost) { 
 		struct sched_entity *se = __node_2_se(leftmost);
 
 		if (!curr)
 			vruntime = se->vruntime;
-		else
-			vruntime = min_vruntime(vruntime, se->vruntime); }
+		else vruntime = min_vruntime(vruntime, se->vruntime); }
 
 	cfs_rq->min_vruntime = max_vruntime(cfs_rq->min_vruntime, vruntime); }
 
@@ -134,8 +131,7 @@ static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se) {
 static u64 __sched_period(unsigned long nr_running) {
 	if (unlikely(nr_running > 8))
 		return nr_running * sysctl_sched_min_granularity;
-	else
-		return sysctl_sched_latency; }
+	else return sysctl_sched_latency; }
 
 static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se) {
 	unsigned int nr_running = cfs_rq->nr_running;

@@ -349,8 +349,7 @@ static __always_inline struct rq * context_switch(struct rq *rq, struct task_str
 		next->active_mm = prev->active_mm;
 		if (prev->mm)                            
 			mmgrab(prev->active_mm);
-		else
-			prev->active_mm = NULL;
+		else prev->active_mm = NULL;
 	} else {
 		switch_mm_irqs_off(prev->active_mm, next->mm, next);
 

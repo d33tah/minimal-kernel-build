@@ -285,8 +285,7 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top, int exec
 	rlim_stack = bprm->rlim_stack.rlim_cur & PAGE_MASK;
 	if (stack_size + stack_expand > rlim_stack)
 		stack_base = vma->vm_end - rlim_stack;
-	else
-		stack_base = vma->vm_start - stack_expand;
+	else stack_base = vma->vm_start - stack_expand;
 	ret = expand_stack(vma, stack_base);
 	if (ret)
 		ret = -EFAULT;
@@ -419,8 +418,7 @@ int begin_new_exec(struct linux_binprm * bprm) {
 
 	if (!(uid_eq(current_euid(), current_uid()) && gid_eq(current_egid(), current_gid())))
 		set_dumpable(current->mm, 0);
-	else
-		set_dumpable(current->mm, SUID_DUMP_USER);
+	else set_dumpable(current->mm, SUID_DUMP_USER);
 
 	__set_task_comm(me, kbasename(bprm->filename), true);
 

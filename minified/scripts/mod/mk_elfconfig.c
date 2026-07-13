@@ -37,7 +37,6 @@ main(int argc, char **argv) {
 		printf("#define HOST_ELFDATA ELFDATA2MSB\n");
 	else if (memcmp(endian_test.c, "\x02\x01", 2) == 0)
 		printf("#define HOST_ELFDATA ELFDATA2LSB\n");
-	else
-		exit(1);
+	else exit(1);
 
 	return 0; }

@@ -43,8 +43,7 @@ void restore_fpregs_from_fpstate(struct fpstate *fpstate) {
 	 */
 	if (use_fxsr())
 		fxrstor(&fpstate->regs.fxsave);
-	else
-		frstor(&fpstate->regs.fsave); }
+	else frstor(&fpstate->regs.fsave); }
 
 void fpu_reset_from_exception_fixup(void) {
 	restore_fpregs_from_fpstate(&init_fpstate); }
@@ -68,8 +67,7 @@ void fpstate_init_user(struct fpstate *fpstate) {
 	 * (no XSAVES on this build's boot CPU), so its body was permanently dead. */
 	if (cpu_feature_enabled(X86_FEATURE_FXSR))
 		fpstate_init_fxstate(fpstate);
-	else
-		fpstate_init_fstate(fpstate); }
+	else fpstate_init_fstate(fpstate); }
 
 static void __fpstate_reset(struct fpstate *fpstate, u64 xfd) {
 	 

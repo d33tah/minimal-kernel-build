@@ -77,8 +77,7 @@ static inline void
 set_cpu_possible(unsigned int cpu, bool possible) {
 	if (possible)
 		cpumask_set_cpu(cpu, &__cpu_possible_mask);
-	else
-		cpumask_clear_cpu(cpu, &__cpu_possible_mask); }
+	else cpumask_clear_cpu(cpu, &__cpu_possible_mask); }
 
 #define to_cpumask(bitmap)							((struct cpumask *)(1 ? (bitmap)							    : (void *)sizeof(__check_is_bitmap(bitmap))))
 

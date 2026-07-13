@@ -869,13 +869,11 @@ static const char *open_last_lookups(struct nameidata *nd, struct file *file, co
 		
 } if (open_flag & O_CREAT)
 		inode_lock(dir->d_inode);
-	else
-		inode_lock_shared(dir->d_inode);
+	else inode_lock_shared(dir->d_inode);
 	dentry = lookup_open(nd, file, op);
 	if (open_flag & O_CREAT)
 		inode_unlock(dir->d_inode);
-	else
-		inode_unlock_shared(dir->d_inode);
+	else inode_unlock_shared(dir->d_inode);
 
 	if (got_write)
 		mnt_drop_write(nd->path.mnt);
@@ -964,8 +962,7 @@ static struct file *path_openat(struct nameidata *nd, const struct open_flags *o
 	if (error == -EOPENSTALE) {
 		if (flags & LOOKUP_RCU)
 			error = -ECHILD;
-		else
-			error = -ESTALE; }
+		else error = -ESTALE; }
 	return ERR_PTR(error); }
 
 struct file *do_filp_open(struct filename *pathname, const struct open_flags *op) {

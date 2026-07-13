@@ -105,8 +105,7 @@ repeat: pfn = start_pfn;
 
 				if (mapping_iter == 1)
 					set_pmd(pmd, pfn_pmd(pfn, init_prot));
-				else
-					set_pmd(pmd, pfn_pmd(pfn, prot));
+				else set_pmd(pmd, pfn_pmd(pfn, prot));
 
 				pfn += PTRS_PER_PTE;
 				continue; }

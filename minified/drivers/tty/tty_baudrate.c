@@ -29,8 +29,7 @@ speed_t tty_termios_baud_rate(struct ktermios *termios)
 
 		if (cbaud < 1 || cbaud + 15 > n_baud_table)
 			termios->c_cflag &= ~CBAUDEX;
-		else
-			cbaud += 15;
+		else cbaud += 15;
 	}
 	return cbaud >= n_baud_table ? 0 : baud_table[cbaud];
 }
@@ -52,8 +51,7 @@ speed_t tty_termios_input_baud_rate(struct ktermios *termios)
 
 		if (cbaud < 1 || cbaud + 15 > n_baud_table)
 			termios->c_cflag &= ~(CBAUDEX << IBSHIFT);
-		else
-			cbaud += 15;
+		else cbaud += 15;
 	}
 	return cbaud >= n_baud_table ? 0 : baud_table[cbaud];
 }

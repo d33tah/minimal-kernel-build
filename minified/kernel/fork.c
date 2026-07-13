@@ -203,8 +203,7 @@ static void set_max_threads(unsigned int max_threads_suggested) {
 	
 	if (fls64(nr_pages) + fls64(PAGE_SIZE) > 64)
 		threads = MAX_THREADS;
-	else
-		threads = div64_u64((u64) nr_pages * (u64) PAGE_SIZE, (u64) THREAD_SIZE * 8UL);
+	else threads = div64_u64((u64) nr_pages * (u64) PAGE_SIZE, (u64) THREAD_SIZE * 8UL);
 
 	if (threads > max_threads_suggested)
 		threads = max_threads_suggested;
@@ -221,8 +220,7 @@ static void task_struct_whitelist(unsigned long *offset, unsigned long *size) {
 	
 	if (unlikely(*size == 0))
 		*offset = 0;
-	else
-		*offset += offsetof(struct task_struct, thread); }
+	else *offset += offsetof(struct task_struct, thread); }
 #endif 
 
 void __init fork_init(void) {
@@ -546,8 +544,7 @@ static inline void
 init_task_pid(struct task_struct *task, enum pid_type type, struct pid *pid) {
 	if (type == PIDTYPE_PID)
 		task->thread_pid = pid;
-	else
-		task->signal->pids[type] = pid; }
+	else task->signal->pids[type] = pid; }
 
 static __always_inline void delayed_free_task(struct task_struct *tsk) {
 	free_task(tsk); }

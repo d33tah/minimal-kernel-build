@@ -410,8 +410,7 @@ int format_decode(const char *fmt, struct printf_spec *spec) {
 
 		if (*fmt == '0')
 			spec->flags |= ZEROPAD;
-		else
-			break; }
+		else break; }
 
 	
 	spec->field_width = -1;
@@ -583,8 +582,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 				break;
 			case FORMAT_TYPE_SIZE_T: if (spec.flags & SIGN)
 					num = va_arg(args, ssize_t);
-				else
-					num = va_arg(args, size_t);
+				else num = va_arg(args, size_t);
 				break;
 			case FORMAT_TYPE_PTRDIFF: num = va_arg(args, ptrdiff_t);
 				break;
@@ -605,8 +603,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args) {
 out: if (size > 0) {
 		if (str < end)
 			*str = '\0';
-		else
-			end[-1] = '\0'; }
+		else end[-1] = '\0'; }
 
 	
 	return str-buf;

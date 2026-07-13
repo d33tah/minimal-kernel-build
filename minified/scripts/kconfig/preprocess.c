@@ -169,8 +169,7 @@ static char *variable_expand(const char *name, int argc, char *argv[]) {
 
 	if (v->flavor == VAR_RECURSIVE)
 		res = expand_string_with_args(v->value, argc, argv);
-	else
-		res = xstrdup(v->value);
+	else res = xstrdup(v->value);
 
 	v->exp_count--;
 
@@ -203,8 +202,7 @@ void variable_add(const char *name, const char *value, enum variable_flavor flav
 
 	if (flavor == VAR_SIMPLE)
 		new_value = expand_string(value);
-	else
-		new_value = xstrdup(value);
+	else new_value = xstrdup(value);
 
 	if (append) {
 		v->value = xrealloc(v->value, strlen(v->value) + strlen(new_value) + 2);

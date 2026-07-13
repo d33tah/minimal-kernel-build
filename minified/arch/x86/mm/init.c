@@ -144,8 +144,7 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range, unsigne
 	 
 	if (pfn == 0)
 		end_pfn = PFN_DOWN(PMD_SIZE);
-	else
-		end_pfn = round_up(pfn, PFN_DOWN(PMD_SIZE));
+	else end_pfn = round_up(pfn, PFN_DOWN(PMD_SIZE));
 	if (end_pfn > limit_pfn)
 		end_pfn = limit_pfn;
 	if (start_pfn < end_pfn) {

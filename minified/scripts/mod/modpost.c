@@ -361,8 +361,7 @@ static void handle_symbol(struct module *mod, struct elf_info *info, const Elf_S
 static const char *sym_name(struct elf_info *elf, Elf_Sym *sym) {
 	if (sym)
 		return elf->strtab + sym->st_name;
-	else
-		return "(unknown)"; }
+	else return "(unknown)"; }
 
 static bool match(const char *string, const char *const patterns[]) {
 	const char *pattern;
@@ -522,8 +521,7 @@ static Elf_Sym *find_elf_symbol(struct elf_info *elf, Elf64_Sword addr, Elf_Sym 
 	 
 	if (distance < 20)
 		return near;
-	else
-		return NULL; }
+	else return NULL; }
 
 static Elf_Sym *find_elf_symbol2(struct elf_info *elf, Elf_Addr addr, const char *sec) {
 	Elf_Sym *sym;
@@ -563,8 +561,7 @@ static char *sec2annotation(const char *s) {
 			strcat(p, "const ");
 		else if (strstr(s, "data") != NULL)
 			strcat(p, "data ");
-		else
-			strcat(p, " ");
+		else strcat(p, " ");
 		return r;
 	} else {
 		return NOFAIL(strdup("")); } }
@@ -572,8 +569,7 @@ static char *sec2annotation(const char *s) {
 static int is_function(Elf_Sym *sym) {
 	if (sym)
 		return ELF_ST_TYPE(sym->st_info) == STT_FUNC;
-	else
-		return -1; }
+	else return -1; }
 
 static void print_section_list(const char * const list[20]) {
 	const char *const *s = list;
@@ -722,8 +718,7 @@ static void extable_mismatch_handler(const char* modname, struct elf_info *elf, 
 	else if (!is_executable_section(elf, get_secindex(elf, sym))) {
 		if (is_extable_fault_address(r))
 			fatal("The relocation at %s+0x%lx references\n" "section \"%s\" which is not executable, IOW\n" "it is not possible for the kernel to fault\n" "at that address.  Something is seriously wrong\n" "and should be fixed.\n", fromsec, (long)r->r_offset, tosec);
-		else
-			fatal("The relocation at %s+0x%lx references\n" "section \"%s\" which is not executable, IOW\n" "the kernel will fault if it ever tries to\n" "jump to it.  Something is seriously wrong\n" "and should be fixed.\n", fromsec, (long)r->r_offset, tosec); } }
+		else fatal("The relocation at %s+0x%lx references\n" "section \"%s\" which is not executable, IOW\n" "the kernel will fault if it ever tries to\n" "jump to it.  Something is seriously wrong\n" "and should be fixed.\n", fromsec, (long)r->r_offset, tosec); } }
 
 static void check_section_mismatch(const char *modname, struct elf_info *elf, Elf_Rela *r, Elf_Sym *sym, const char *fromsec) {
 	const char *tosec = sec_name(elf, get_secindex(elf, sym));
@@ -732,8 +727,7 @@ static void check_section_mismatch(const char *modname, struct elf_info *elf, El
 	if (mismatch) {
 		if (mismatch->handler)
 			mismatch->handler(modname, elf,  mismatch, r, sym, fromsec);
-		else
-			default_mismatch_handler(modname, elf, mismatch, r, sym, fromsec); } }
+		else default_mismatch_handler(modname, elf, mismatch, r, sym, fromsec); } }
 
 static unsigned int *reloc_location(struct elf_info *elf, Elf_Shdr *sechdr, Elf_Rela *r) {
 	return sym_get_data_by_offset(elf, sechdr->sh_info, r->r_offset); }

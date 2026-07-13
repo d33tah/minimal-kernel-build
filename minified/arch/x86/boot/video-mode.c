@@ -20,8 +20,7 @@ void probe_cards(int unsafe)
 		if (card->unsafe == unsafe) {
 			if (card->probe)
 				card->nmodes = card->probe();
-			else
-				card->nmodes = 0;
+			else card->nmodes = 0;
 		}
 	}
 }

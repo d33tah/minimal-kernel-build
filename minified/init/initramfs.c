@@ -162,8 +162,7 @@ static int __init do_header(void) {
 	} else {
 		if (memcmp(collected, "070707", 6) == 0)
 			error("incorrect cpio method used: use -H newc option");
-		else
-			error("no cpio magic");
+		else error("no cpio magic");
 		return 1; }
 	parse_header(collected);
 	next_header = this_header + N_ALIGN(name_len) + body_len;
@@ -205,8 +204,7 @@ static void __init clean_path(char *path, umode_t fmode) {
 	if (!init_stat(path, &st, AT_SYMLINK_NOFOLLOW) && (st.mode ^ fmode) & S_IFMT) {
 		if (S_ISDIR(st.mode))
 			init_rmdir(path);
-		else
-			init_unlink(path); } }
+		else init_unlink(path); } }
 
 static int __init maybe_link(void) {
 	if (nlink >= 2) {

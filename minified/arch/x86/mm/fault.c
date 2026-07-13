@@ -307,8 +307,7 @@ good_area: if (unlikely(access_error(error_code, vma))) {
 			force_sig_fault(SIGBUS, BUS_ADRERR, (void __user *)address);
 		} else if (fault & VM_FAULT_SIGSEGV)
 			bad_area_nosemaphore(regs, error_code, address);
-		else
-			BUG(); } }
+		else BUG(); } }
 
 static __always_inline void
 handle_page_fault(struct pt_regs *regs, unsigned long error_code, unsigned long address) {

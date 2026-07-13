@@ -58,8 +58,7 @@ void __init early_memunmap(void *vaddr, unsigned long size) {
 	while (nrpages > 0) {
 		if (after_paging_init)
 			__late_clear_fixmap(idx);
-		else
-			__early_set_fixmap(idx, 0, FIXMAP_PAGE_CLEAR);
+		else __early_set_fixmap(idx, 0, FIXMAP_PAGE_CLEAR);
 		--idx;
 		--nrpages; }
 	prev_map[slot] = NULL; }
@@ -99,8 +98,7 @@ void __init * early_memremap(resource_size_t phys_addr, unsigned long size) {
 	while (nrpages > 0) {
 		if (after_paging_init)
 			__late_set_fixmap(idx, phys_addr, FIXMAP_PAGE_NORMAL);
-		else
-			__early_set_fixmap(idx, phys_addr, FIXMAP_PAGE_NORMAL);
+		else __early_set_fixmap(idx, phys_addr, FIXMAP_PAGE_NORMAL);
 		phys_addr += PAGE_SIZE;
 		--idx;
 		--nrpages; }

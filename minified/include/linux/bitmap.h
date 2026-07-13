@@ -139,16 +139,14 @@ static __always_inline void bitmap_set(unsigned long *map, unsigned int start, u
 		__set_bit(start, map);
 	else if (__builtin_constant_p(start & BITMAP_MEM_MASK) && IS_ALIGNED(start, BITMAP_MEM_ALIGNMENT) && __builtin_constant_p(nbits & BITMAP_MEM_MASK) && IS_ALIGNED(nbits, BITMAP_MEM_ALIGNMENT))
 		memset((char *)map + start / 8, 0xff, nbits / 8);
-	else
-		__bitmap_set(map, start, nbits); }
+	else __bitmap_set(map, start, nbits); }
 
 static __always_inline void bitmap_clear(unsigned long *map, unsigned int start, unsigned int nbits) {
 	if (__builtin_constant_p(nbits) && nbits == 1)
 		__clear_bit(start, map);
 	else if (__builtin_constant_p(start & BITMAP_MEM_MASK) && IS_ALIGNED(start, BITMAP_MEM_ALIGNMENT) && __builtin_constant_p(nbits & BITMAP_MEM_MASK) && IS_ALIGNED(nbits, BITMAP_MEM_ALIGNMENT))
 		memset((char *)map + start / 8, 0, nbits / 8);
-	else
-		__bitmap_clear(map, start, nbits); }
+	else __bitmap_clear(map, start, nbits); }
 
 #endif
 

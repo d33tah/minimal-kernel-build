@@ -85,8 +85,7 @@ insert_vmap_area_augment(struct vmap_area *va, struct rb_node *from, struct rb_r
 
 	if (from)
 		link = find_va_links(va, NULL, from, &parent);
-	else
-		link = find_va_links(va, root, NULL, &parent);
+	else link = find_va_links(va, root, NULL, &parent);
 
 	if (link) {
 		link_va(va, root, parent, link, head);

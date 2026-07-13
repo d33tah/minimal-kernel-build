@@ -28,8 +28,7 @@ int register_filesystem(struct file_system_type * fs) {
 	p = find_filesystem(fs->name, strlen(fs->name));
 	if (*p)
 		res = -EBUSY;
-	else
-		*p = fs;
+	else *p = fs;
 	write_unlock(&file_systems_lock);
 	return res; }
 

@@ -261,8 +261,7 @@ static vm_fault_t __do_fault(struct vm_fault *vmf) {
 
 	if (unlikely(!(ret & VM_FAULT_LOCKED)))
 		lock_page(vmf->page);
-	else
-		VM_BUG_ON_PAGE(!PageLocked(vmf->page), vmf->page);
+	else VM_BUG_ON_PAGE(!PageLocked(vmf->page), vmf->page);
 
 	return ret; }
 
@@ -300,8 +299,7 @@ vm_fault_t finish_fault(struct vm_fault *vmf) {
 	
 	if ((vmf->flags & FAULT_FLAG_WRITE) && !(vma->vm_flags & VM_SHARED))
 		page = vmf->cow_page;
-	else
-		page = vmf->page;
+	else page = vmf->page;
 
 	
 	if (!(vma->vm_flags & VM_SHARED)) {
@@ -320,8 +318,7 @@ vm_fault_t finish_fault(struct vm_fault *vmf) {
 	
 	if (likely(!vmf_pte_changed(vmf)))
 		do_set_pte(vmf, page, vmf->address);
-	else
-		ret = VM_FAULT_NOPAGE;
+	else ret = VM_FAULT_NOPAGE;
 
 	update_mmu_tlb(vma, vmf->address, vmf->pte);
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
@@ -409,16 +406,14 @@ static vm_fault_t do_fault(struct vm_fault *vmf) {
 			
 			if (unlikely(pte_none(*vmf->pte)))
 				ret = VM_FAULT_SIGBUS;
-			else
-				ret = VM_FAULT_NOPAGE;
+			else ret = VM_FAULT_NOPAGE;
 
 			pte_unmap_unlock(vmf->pte, vmf->ptl); }
 	} else if (!(vmf->flags & FAULT_FLAG_WRITE))
 		ret = do_read_fault(vmf);
 	else if (!(vma->vm_flags & VM_SHARED))
 		ret = do_cow_fault(vmf);
-	else
-		ret = do_shared_fault(vmf);
+	else ret = do_shared_fault(vmf);
 
 	
 	if (vmf->prealloc_pte) {

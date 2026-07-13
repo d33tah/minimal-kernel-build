@@ -158,8 +158,7 @@ static inline struct slab *alloc_slab_page(gfp_t flags, int node, struct kmem_ca
 
 	if (node == NUMA_NO_NODE)
 		folio = (struct folio *)alloc_pages(flags, order);
-	else
-		folio = (struct folio *)__alloc_pages_node(node, flags, order);
+	else folio = (struct folio *)__alloc_pages_node(node, flags, order);
 
 	if (!folio)
 		return NULL;
@@ -238,8 +237,7 @@ __add_partial(struct kmem_cache_node *n, struct slab *slab, int tail) {
 	n->nr_partial++;
 	if (tail == DEACTIVATE_TO_TAIL)
 		list_add_tail(&slab->slab_list, &n->partial);
-	else
-		list_add(&slab->slab_list, &n->partial); }
+	else list_add(&slab->slab_list, &n->partial); }
 
 static inline void add_partial(struct kmem_cache_node *n, struct slab *slab, int tail) {
 	lockdep_assert_held(&n->list_lock);

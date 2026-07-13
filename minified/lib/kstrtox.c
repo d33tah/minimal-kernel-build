@@ -10,8 +10,7 @@ const char *_parse_integer_fixup_radix(const char *s, unsigned int *base) {
 		if (s[0] == '0') {
 			if (_tolower(s[1]) == 'x' && isxdigit(s[2]))
 				*base = 16;
-			else
-				*base = 8;
+			else *base = 8;
 		} else
 			*base = 10; }
 	if (*base == 16 && s[0] == '0' && _tolower(s[1]) == 'x')
@@ -34,8 +33,7 @@ unsigned int _parse_integer_limit(const char *s, unsigned int base, unsigned lon
 			val = c - '0';
 		else if ('a' <= lc && lc <= 'f')
 			val = lc - 'a' + 10;
-		else
-			break;
+		else break;
 
 		if (val >= base)
 			break;

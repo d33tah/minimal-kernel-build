@@ -44,8 +44,7 @@ static __always_inline __must_check
 size_t copy_from_iter(void *addr, size_t bytes, struct iov_iter *i) {
 	if (unlikely(!check_copy_size(addr, bytes, false)))
 		return 0;
-	else
-		return _copy_from_iter(addr, bytes, i); }
+	else return _copy_from_iter(addr, bytes, i); }
 
 
 void iov_iter_init(struct iov_iter *i, unsigned int direction, const struct iovec *iov, unsigned long nr_segs, size_t count);

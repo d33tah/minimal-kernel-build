@@ -46,8 +46,7 @@ do_trap(int trapnr, int signr, char *str, struct pt_regs *regs, long error_code,
 
 	if (!sicode)
 		force_sig(signr);
-	else
-		force_sig_fault(signr, sicode, addr); }
+	else force_sig_fault(signr, sicode, addr); }
 
 static void do_error_trap(struct pt_regs *regs, long error_code, char *str, unsigned long trapnr, int signr, int sicode, void __user *addr) {
 	RCU_LOCKDEP_WARN(!rcu_is_watching(), "entry code didn't wake RCU");
@@ -173,8 +172,7 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection) {
 
 	if (error_code)
 		snprintf(desc, sizeof(desc), "segment-related " GPFSTR);
-	else
-		hint = get_kernel_gp_address();
+	else hint = get_kernel_gp_address();
 
 	if (hint != GP_NO_HINT)
 		snprintf(desc, sizeof(desc), GPFSTR ", %s 0x%lx", (hint == GP_NON_CANONICAL) ? "probably for non-canonical address" : "maybe for address", gp_addr);
@@ -291,8 +289,7 @@ DEFINE_IDTENTRY_RAW(exc_debug) {
 
 	if (user_mode(regs))
 		exc_debug_user(regs, dr6);
-	else
-		exc_debug_kernel(regs, dr6); }
+	else exc_debug_kernel(regs, dr6); }
 
 DEFINE_IDTENTRY(exc_coprocessor_error) { }
 

@@ -667,8 +667,7 @@ tristate expr_calc_value(struct expr *e) {
 		res = strcmp(str1, str2);
 	else if (k1 == k_unsigned || k2 == k_unsigned)
 		res = (lval.u > rval.u) - (lval.u < rval.u);
-	else  
-		res = (lval.s > rval.s) - (lval.s < rval.s);
+	else res = (lval.s > rval.s) - (lval.s < rval.s);
 
 	switch(e->type) {
 	case E_EQUAL: return res ? no : yes;
@@ -710,37 +709,32 @@ void expr_print(struct expr *e, void (*fn)(void *, struct symbol *, const char *
 	switch (e->type) {
 	case E_SYMBOL: if (e->left.sym->name)
 			fn(data, e->left.sym, e->left.sym->name);
-		else
-			fn(data, NULL, "<choice>");
+		else fn(data, NULL, "<choice>");
 		break;
 	case E_NOT: fn(data, NULL, "!");
 		expr_print(e->left.expr, fn, data, E_NOT);
 		break;
 	case E_EQUAL: if (e->left.sym->name)
 			fn(data, e->left.sym, e->left.sym->name);
-		else
-			fn(data, NULL, "<choice>");
+		else fn(data, NULL, "<choice>");
 		fn(data, NULL, "=");
 		fn(data, e->right.sym, e->right.sym->name);
 		break;
 	case E_LEQ: case E_LTH: if (e->left.sym->name)
 			fn(data, e->left.sym, e->left.sym->name);
-		else
-			fn(data, NULL, "<choice>");
+		else fn(data, NULL, "<choice>");
 		fn(data, NULL, e->type == E_LEQ ? "<=" : "<");
 		fn(data, e->right.sym, e->right.sym->name);
 		break;
 	case E_GEQ: case E_GTH: if (e->left.sym->name)
 			fn(data, e->left.sym, e->left.sym->name);
-		else
-			fn(data, NULL, "<choice>");
+		else fn(data, NULL, "<choice>");
 		fn(data, NULL, e->type == E_GEQ ? ">=" : ">");
 		fn(data, e->right.sym, e->right.sym->name);
 		break;
 	case E_UNEQUAL: if (e->left.sym->name)
 			fn(data, e->left.sym, e->left.sym->name);
-		else
-			fn(data, NULL, "<choice>");
+		else fn(data, NULL, "<choice>");
 		fn(data, NULL, "!=");
 		fn(data, e->right.sym, e->right.sym->name);
 		break;

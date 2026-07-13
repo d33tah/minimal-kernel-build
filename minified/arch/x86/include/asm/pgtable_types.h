@@ -219,8 +219,7 @@ static inline pmdval_t native_pmd_val(pmd_t pmd) {
 static inline pmdval_t pmd_pfn_mask(pmd_t pmd) {
 	if (native_pmd_val(pmd) & _PAGE_PSE)
 		return PHYSICAL_PMD_PAGE_MASK;
-	else
-		return PTE_PFN_MASK; }
+	else return PTE_PFN_MASK; }
 
 static inline pmdval_t pmd_flags_mask(pmd_t pmd) {
 	return ~pmd_pfn_mask(pmd); }

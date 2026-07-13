@@ -73,8 +73,7 @@ check_copy_size(const void *addr, size_t bytes, bool is_source) {
 			copy_overflow(sz, bytes);
 		else if (is_source)
 			__bad_copy_from();
-		else
-			__bad_copy_to();
+		else __bad_copy_to();
 		return false; }
 	if (WARN_ON_ONCE(bytes > INT_MAX))
 		return false;

@@ -50,8 +50,7 @@ __rb_change_child(struct rb_node *old, struct rb_node *new, struct rb_node *pare
 	if (parent) {
 		if (parent->rb_left == old)
 			WRITE_ONCE(parent->rb_left, new);
-		else
-			WRITE_ONCE(parent->rb_right, new);
+		else WRITE_ONCE(parent->rb_right, new);
 	} else
 		WRITE_ONCE(root->rb_node, new); }
 

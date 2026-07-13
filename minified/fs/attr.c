@@ -76,7 +76,6 @@ int notify_change(struct user_namespace *mnt_userns, struct dentry *dentry, stru
 
 	if (inode->i_op->setattr)
 		error = inode->i_op->setattr(mnt_userns, dentry, attr);
-	else
-		error = simple_setattr(mnt_userns, dentry, attr);
+	else error = simple_setattr(mnt_userns, dentry, attr);
 
 	return error; }

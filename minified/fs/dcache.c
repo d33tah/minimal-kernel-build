@@ -125,8 +125,7 @@ static void ___d_drop(struct dentry *dentry) {
 	
 	if (unlikely(IS_ROOT(dentry)))
 		b = &dentry->d_sb->s_roots;
-	else
-		b = d_hash(dentry->d_name.hash);
+	else b = d_hash(dentry->d_name.hash);
 
 	hlist_bl_lock(b);
 	__hlist_bl_del(&dentry->d_hash);
@@ -156,8 +155,7 @@ static void __dentry_kill(struct dentry *dentry) {
 		spin_unlock(&parent->d_lock);
 	if (dentry->d_inode)
 		dentry_unlink_inode(dentry);
-	else
-		spin_unlock(&dentry->d_lock);
+	else spin_unlock(&dentry->d_lock);
 	/* no ops object sets ->d_release */
 
 	dentry_free(dentry);
@@ -176,8 +174,7 @@ again: parent = READ_ONCE(dentry->d_parent);
 	rcu_read_unlock();
 	if (parent != dentry)
 		spin_lock_nested(&dentry->d_lock, DENTRY_D_LOCK_NESTED);
-	else
-		parent = NULL;
+	else parent = NULL;
 	return parent; }
 
 static inline struct dentry *lock_parent(struct dentry *dentry) {
@@ -400,8 +397,7 @@ static unsigned d_flags_for_inode(struct inode *inode) {
 		if (unlikely(!(inode->i_opflags & IOP_LOOKUP))) {
 			if (unlikely(!inode->i_op->lookup))
 				add_flags = DCACHE_AUTODIR_TYPE;
-			else
-				inode->i_opflags |= IOP_LOOKUP; }
+			else inode->i_opflags |= IOP_LOOKUP; }
 		goto type_determined; }
 
 	if (unlikely(!(inode->i_opflags & IOP_NOFOLLOW)))
@@ -438,8 +434,7 @@ struct dentry *d_make_root(struct inode *root_inode) {
 		res = __d_alloc(root_inode->i_sb, NULL);
 		if (res)
 			d_instantiate(res, root_inode);
-		else
-			iput(root_inode); }
+		else iput(root_inode); }
 	return res; }
 
 static inline bool d_same_name(const struct dentry *dentry, const struct qstr *name) {

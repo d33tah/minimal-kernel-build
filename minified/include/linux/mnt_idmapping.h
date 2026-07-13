@@ -20,8 +20,7 @@ static inline kuid_t mapped_kuid_fs(struct user_namespace *mnt_userns, struct us
 		return kuid;
 	if (initial_idmapping(fs_userns))
 		uid = __kuid_val(kuid);
-	else
-		uid = from_kuid(fs_userns, kuid);
+	else uid = from_kuid(fs_userns, kuid);
 	if (uid == (uid_t)-1)
 		return INVALID_UID;
 	return make_kuid(mnt_userns, uid); }
@@ -33,8 +32,7 @@ static inline kgid_t mapped_kgid_fs(struct user_namespace *mnt_userns, struct us
 		return kgid;
 	if (initial_idmapping(fs_userns))
 		gid = __kgid_val(kgid);
-	else
-		gid = from_kgid(fs_userns, kgid);
+	else gid = from_kgid(fs_userns, kgid);
 	if (gid == (gid_t)-1)
 		return INVALID_GID;
 	return make_kgid(mnt_userns, gid); }

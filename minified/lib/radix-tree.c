@@ -558,8 +558,7 @@ void __rcu **idr_get_free(struct radix_tree_root *root, struct radix_tree_iter *
 	iter->index = start;
 	if (node)
 		iter->next_index = 1 + min(max, (start | node_maxindex(node)));
-	else
-		iter->next_index = 1;
+	else iter->next_index = 1;
 	iter->node = node;
 	set_iter_tags(iter, node, offset, IDR_FREE);
 

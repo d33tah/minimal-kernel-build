@@ -27,8 +27,7 @@ void task_work_run(void) {
 			if (!work) {
 				if (task->flags & PF_EXITING)
 					head = &work_exited;
-				else
-					break; }
+				else break; }
 		} while (cmpxchg(&task->task_works, work, head) != work);
 
 		if (!work)

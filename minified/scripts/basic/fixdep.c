@@ -78,8 +78,7 @@ static void parse_config_file(const char *p) {
 			q++;
 		if (str_ends_with(p, q - p, "_MODULE"))
 			r = q - 7;
-		else
-			r = q;
+		else r = q;
 		if (r > p)
 			use_config(p, r - p);
 		p = q; } }

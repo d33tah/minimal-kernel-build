@@ -378,8 +378,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		switch (elf_ppnt->p_type) {
 		case PT_GNU_STACK: if (elf_ppnt->p_flags & PF_X)
 				executable_stack = EXSTACK_ENABLE_X;
-			else
-				executable_stack = EXSTACK_DISABLE_X;
+			else executable_stack = EXSTACK_DISABLE_X;
 		}
 
 	retval = begin_new_exec(bprm);

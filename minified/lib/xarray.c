@@ -125,8 +125,7 @@ bool xas_nomem(struct xa_state *xas, gfp_t gfp) {
 static void xas_update(struct xa_state *xas, struct xa_node *node) {
 	if (xas->xa_update)
 		xas->xa_update(node);
-	else
-		XA_NODE_BUG_ON(node, !list_empty(&node->private_list)); }
+	else XA_NODE_BUG_ON(node, !list_empty(&node->private_list)); }
 
 static void *xas_alloc(struct xa_state *xas, unsigned int shift) {
 	/*
@@ -389,8 +388,7 @@ void *xas_store(struct xa_state *xas, void *entry) {
 		for (;;) {
 			if (xa_track_free(xas->xa) && mark == XA_FREE_MARK)
 				xas_set_mark(xas, mark);
-			else
-				xas_clear_mark(xas, mark);
+			else xas_clear_mark(xas, mark);
 			if (mark == XA_MARK_MAX)
 				break;
 			mark_inc(mark); } }

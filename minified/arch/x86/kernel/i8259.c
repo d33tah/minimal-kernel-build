@@ -24,8 +24,7 @@ static void enable_8259A_irq(struct irq_data *data) {
 	cached_irq_mask &= mask;
 	if (irq & 8)
 		outb(cached_slave_mask, PIC_SLAVE_IMR);
-	else
-		outb(cached_master_mask, PIC_MASTER_IMR);
+	else outb(cached_master_mask, PIC_MASTER_IMR);
 	raw_spin_unlock_irqrestore(&i8259A_lock, flags); }
 
 
@@ -103,8 +102,7 @@ static void init_8259A(int auto_eoi) {
 
 	if (auto_eoi)	 
 		outb_pic(MASTER_ICW4_DEFAULT | PIC_ICW4_AEOI, PIC_MASTER_IMR);
-	else		 
-		outb_pic(MASTER_ICW4_DEFAULT, PIC_MASTER_IMR);
+	else outb_pic(MASTER_ICW4_DEFAULT, PIC_MASTER_IMR);
 
 	outb_pic(0x11, PIC_SLAVE_CMD);	 
 
@@ -118,8 +116,7 @@ static void init_8259A(int auto_eoi) {
 	if (auto_eoi)
 		 
 		i8259A_chip.irq_mask_ack = disable_8259A_irq;
-	else
-		i8259A_chip.irq_mask_ack = mask_and_ack_8259A;
+	else i8259A_chip.irq_mask_ack = mask_and_ack_8259A;
 
 	udelay(100);		 
 

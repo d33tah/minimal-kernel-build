@@ -43,8 +43,7 @@ int __cmdline_find_option_bool(unsigned long cmdline_ptr, const char *option)
 		case st_wordcmp: if (!*opptr)
 				if (!c || myisspace(c))
 					return wstart;
-				else
-					state = st_wordskip;
+				else state = st_wordskip;
 			else if (!c)
 				return 0;
 			else if (c != *opptr++)

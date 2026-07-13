@@ -41,8 +41,7 @@ static unsigned int simple_guess_base(const char *cp)
 	if (cp[0] == '0') {
 		if (TOLOWER(cp[1]) == 'x' && isxdigit(cp[2]))
 			return 16;
-		else
-			return 8;
+		else return 8;
 	} else {
 		return 10;
 	}

@@ -31,8 +31,7 @@ static void copy_boot_params(void)
 		 
 		if (oldcmd->cl_offset < boot_params.hdr.setup_move_size)
 			cmdline_seg = ds();
-		else
-			cmdline_seg = 0x9000;
+		else cmdline_seg = 0x9000;
 
 		boot_params.hdr.cmd_line_ptr = (cmdline_seg << 4) + oldcmd->cl_offset;
 	}

@@ -48,8 +48,7 @@ nmi_restart:
 
 	if (regs->ip == __this_cpu_read(last_nmi_rip))
 		b2b = true;
-	else
-		__this_cpu_write(swallow_nmi, false);
+	else __this_cpu_write(swallow_nmi, false);
 
 	__this_cpu_write(last_nmi_rip, regs->ip);
 

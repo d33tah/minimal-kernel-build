@@ -53,8 +53,7 @@ static void do_swap(void *a, void *b, size_t size, swap_r_func_t swap_func, cons
 		swap_words_32(a, b, size);
 	else if (swap_func == SWAP_BYTES)
 		swap_bytes(a, b, size);
-	else
-		swap_func(a, b, (int)size, priv); }
+	else swap_func(a, b, (int)size, priv); }
 
 #define _CMP_WRAPPER ((cmp_r_func_t)0L)
 
@@ -86,8 +85,7 @@ void sort_r(void *base, size_t num, size_t size, cmp_r_func_t cmp_func, swap_r_f
 			swap_func = SWAP_WORDS_64;
 		else if (is_aligned(base, size, 4))
 			swap_func = SWAP_WORDS_32;
-		else
-			swap_func = SWAP_BYTES; }
+		else swap_func = SWAP_BYTES; }
 
 	 
 	for (;;) {
@@ -97,8 +95,7 @@ void sort_r(void *base, size_t num, size_t size, cmp_r_func_t cmp_func, swap_r_f
 			a -= size;
 		else if (n -= size)	 
 			do_swap(base, base + n, size, swap_func, priv);
-		else			 
-			break;
+		else break;
 
 		 
 		for (b = a; c = 2*b + size, (d = c + size) < n;)

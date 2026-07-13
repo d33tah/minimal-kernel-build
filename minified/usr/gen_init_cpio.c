@@ -134,8 +134,7 @@ static int cpio_mknod(const char *name, unsigned int mode, uid_t uid, gid_t gid,
 
 	if (dev_type == 'b')
 		mode |= S_IFBLK;
-	else
-		mode |= S_IFCHR;
+	else mode |= S_IFCHR;
 
 	if (name[0] == '/')
 		name++;

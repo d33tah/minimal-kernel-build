@@ -173,8 +173,7 @@ static void *pcpu_mem_zalloc(size_t size, gfp_t gfp) {
 
 	if (size <= PAGE_SIZE)
 		return kzalloc(size, gfp);
-	else
-		return __vmalloc(size, gfp | __GFP_ZERO); }
+	else return __vmalloc(size, gfp | __GFP_ZERO); }
 
 static void pcpu_mem_free(void *ptr) {
 	kvfree(ptr); }
@@ -182,8 +181,7 @@ static void pcpu_mem_free(void *ptr) {
 static void __pcpu_chunk_move(struct pcpu_chunk *chunk, int slot, bool move_front) {
 	if (move_front)
 		list_move(&chunk->list, &pcpu_chunk_lists[slot]);
-	else
-		list_move_tail(&chunk->list, &pcpu_chunk_lists[slot]); }
+	else list_move_tail(&chunk->list, &pcpu_chunk_lists[slot]); }
 
 static void pcpu_chunk_move(struct pcpu_chunk *chunk, int slot) {
 	__pcpu_chunk_move(chunk, slot, true); }
@@ -343,8 +341,7 @@ static void pcpu_block_update_hint_alloc(struct pcpu_chunk *chunk, int bit_off, 
 		s_block->left_free = min(s_block->left_free, s_off);
 		if (s_index == e_index)
 			s_block->right_free = min_t(int, s_block->right_free, PCPU_BITMAP_BLOCK_BITS - e_off);
-		else
-			s_block->right_free = 0; }
+		else s_block->right_free = 0; }
 
 	
 	if (s_index != e_index) {
@@ -414,8 +411,7 @@ static void pcpu_block_update_hint_free(struct pcpu_chunk *chunk, int bit_off, i
 	end = e_off;
 	if (e_off == e_block->contig_hint_start)
 		end = e_block->contig_hint_start + e_block->contig_hint;
-	else
-		end = find_next_bit(pcpu_index_alloc_map(chunk, e_index), PCPU_BITMAP_BLOCK_BITS, end);
+	else end = find_next_bit(pcpu_index_alloc_map(chunk, e_index), PCPU_BITMAP_BLOCK_BITS, end);
 
 	
 	e_off = (s_index == e_index) ? end : PCPU_BITMAP_BLOCK_BITS;
@@ -446,8 +442,7 @@ static void pcpu_block_update_hint_free(struct pcpu_chunk *chunk, int bit_off, i
 	
 	if (((end - start) >= PCPU_BITMAP_BLOCK_BITS) || s_index != e_index)
 		pcpu_chunk_refresh_hint(chunk, true);
-	else
-		pcpu_block_update(&chunk->chunk_md, pcpu_block_off_to_off(s_index, start), end); }
+	else pcpu_block_update(&chunk->chunk_md, pcpu_block_off_to_off(s_index, start), end); }
 
 static int pcpu_find_block_fit(struct pcpu_chunk *chunk, int alloc_bits, size_t align) {
 	struct pcpu_block_md *chunk_md = &chunk->chunk_md;

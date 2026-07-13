@@ -372,8 +372,7 @@ load: conf_filename = name;
 				if (def == S_DEF_AUTO)
 					 
 					conf_touch_dep(line + strlen(CONFIG_));
-				else
-					conf_set_changed(true);
+				else conf_set_changed(true);
 				continue; }
 
 			if (sym->flags & def_flags) {

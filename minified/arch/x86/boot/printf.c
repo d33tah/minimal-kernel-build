@@ -65,8 +65,7 @@ static char *number(char *str, long num, int base, int size, int precision,
 	i = 0;
 	if (num == 0)
 		tmp[i++] = '0';
-	else
-		while (num != 0)
+	else while (num != 0)
 			tmp[i++] = (digits[__do_div(num, base)] | locase);
 	if (i > precision)
 		precision = i;
@@ -230,8 +229,7 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 			*str++ = '%';
 			if (*fmt)
 				*str++ = *fmt;
-			else
-				--fmt;
+			else --fmt;
 			continue;
 		}
 		if (qualifier == 'l')
@@ -242,8 +240,7 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 				num = (short)num;
 		} else if (flags & SIGN)
 			num = va_arg(args, int);
-		else
-			num = va_arg(args, unsigned int);
+		else num = va_arg(args, unsigned int);
 		str = number(str, num, base, field_width, precision, flags);
 	}
 	*str = '\0';

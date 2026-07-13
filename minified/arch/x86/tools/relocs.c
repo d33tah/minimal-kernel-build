@@ -44,8 +44,7 @@ static void regex_init(int use_real_mode) {
 
 	if (use_real_mode)
 		sym_regex = sym_regex_realmode;
-	else
-		sym_regex = sym_regex_kernel;
+	else sym_regex = sym_regex_kernel;
 
 	for (i = 0; i < S_NSYMTYPES; i++) {
 		if (!sym_regex[i])
@@ -452,8 +451,7 @@ static void emit_relocs(int use_real_mode) {
 
 	if (!use_real_mode)
 		do_reloc = do_reloc32;
-	else
-		do_reloc = do_reloc_real;
+	else do_reloc = do_reloc_real;
 
 
 	walk_relocs(do_reloc);

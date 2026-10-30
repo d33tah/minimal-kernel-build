@@ -55,6 +55,8 @@ static noinline void bad_area_nosemaphore(struct pt_regs *regs,
 
 	if (!(error_code & X86_PF_USER))
 		page_fault_oops(regs, error_code, address);
+	/* No signal delivery: kill the task instead of re-faulting forever. */
+	do_exit(SIGSEGV);
 }
 
 static noinline void bad_area(struct pt_regs *regs, unsigned long error_code,
@@ -252,6 +254,8 @@ good_area:
 		     VM_FAULT_HWPOISON_LARGE)) {
 		if (!user_mode(regs))
 			kernelmode_fixup_or_oops(regs, error_code, address);
+		else
+			do_exit(SIGBUS); /* no signals or OOM killer */
 	} else if (fault & VM_FAULT_SIGSEGV)
 		bad_area_nosemaphore(regs, error_code, address);
 	else

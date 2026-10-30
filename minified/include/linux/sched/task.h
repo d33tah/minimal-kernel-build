@@ -29,8 +29,6 @@ extern int sched_fork(unsigned long clone_flags, struct task_struct *p);
 extern void sched_cgroup_fork(struct task_struct *p,
 			      struct kernel_clone_args *kargs);
 
-void __noreturn do_task_dead(void);
-
 extern void proc_caches_init(void);
 
 extern void fork_init(void);

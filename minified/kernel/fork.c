@@ -400,7 +400,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	if (!sig)
 		return -ENOMEM;
 
-	atomic_set(&sig->live, 1);
 	refcount_set(&sig->sigcnt, 1);
 
 	sig->thread_head = (struct list_head)LIST_HEAD_INIT(tsk->thread_node);

@@ -179,11 +179,6 @@ static inline pid_t task_tgid_nr(struct task_struct *tsk)
 	return tsk->tgid;
 }
 
-static inline int is_global_init(struct task_struct *tsk)
-{
-	return task_tgid_nr(tsk) == 1;
-}
-
 #define PF_IDLE 0x00000002
 #define PF_EXITING 0x00000004
 #define PF_MEMALLOC_NOFS 0x00040000

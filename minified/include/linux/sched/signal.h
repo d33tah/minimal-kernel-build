@@ -17,7 +17,6 @@ struct sighand_struct {
 
 struct signal_struct {
 	refcount_t sigcnt;
-	atomic_t live;
 	struct list_head thread_head;
 	struct pid *pids[PIDTYPE_MAX];
 	struct tty_struct *tty;

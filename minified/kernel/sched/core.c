@@ -527,17 +527,6 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 	}
 }
 
-void __noreturn do_task_dead(void)
-{
-	set_special_state(TASK_DEAD);
-
-	__schedule(SM_NONE);
-	BUG();
-
-	for (;;)
-		cpu_relax();
-}
-
 static inline void sched_submit_work(struct task_struct *tsk)
 {
 }

@@ -10,14 +10,8 @@ struct slab {
 	};
 	struct kmem_cache *slab_cache;
 	void *freelist;
-	union {
-		unsigned long counters;
-		struct {
-			unsigned inuse : 16;
-			unsigned objects : 15;
-			unsigned frozen : 1;
-		};
-	};
+	unsigned inuse : 16;
+	unsigned objects : 15;
 	unsigned int __unused;
 	atomic_t __page_refcount;
 };
@@ -73,18 +67,11 @@ static inline struct slab *virt_to_slab(const void *addr)
 
 enum slab_deactivate_mode { DEACTIVATE_TO_HEAD, DEACTIVATE_TO_TAIL };
 
-struct kmem_cache_cpu {
-	void **freelist;
-	unsigned long tid;
-	struct slab *slab;
-};
-
 struct kmem_cache_order_objects {
 	unsigned int x;
 };
 
 struct kmem_cache {
-	struct kmem_cache_cpu __percpu *cpu_slab;
 	slab_flags_t flags;
 	unsigned int size, object_size, offset;
 	struct kmem_cache_order_objects oo, min;

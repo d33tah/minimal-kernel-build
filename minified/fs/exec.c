@@ -13,7 +13,6 @@
 #include <linux/security.h>
 
 #include <asm/mmu_context.h>
-#include <asm/tlb.h>
 
 #include "internal.h"
 
@@ -231,10 +230,8 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top)
 	unsigned long ret;
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma = bprm->vma;
-	struct vm_area_struct *prev = NULL;
 	unsigned long vm_flags, stack_base, stack_size, stack_expand,
 		rlim_stack;
-	struct mmu_gather tlb;
 
 	if (WARN_ON(vma->vm_end != PAGE_ALIGN(stack_top)))
 		return -ENOMEM;
@@ -244,16 +241,17 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top)
 	if (mmap_write_lock_killable(mm))
 		return -EINTR;
 
+	/*
+	 * __bprm_mm_init() created the stack VMA before binfmt_elf set the
+	 * personality, so apply the final flags now (READ_IMPLIES_EXEC adds
+	 * VM_EXEC). They can only gain access, and VM_EXEC has no PTE bit
+	 * without NX (non-PAE x86-32), so the argument pages already mapped
+	 * keep valid PTEs and need no change_protection().
+	 */
 	vm_flags = VM_STACK_FLAGS | mm->def_flags;
-
-	tlb_gather_mmu(&tlb, mm);
-	ret = mprotect_fixup(&tlb, vma, &prev, vma->vm_start, vma->vm_end,
-			     vm_flags);
-	tlb_finish_mmu(&tlb);
-
-	if (ret)
-		goto out_unlock;
-	BUG_ON(prev != vma);
+	WARN_ON_ONCE(vma->vm_flags & ~vm_flags & (VM_READ | VM_WRITE));
+	vma->vm_flags = vm_flags;
+	vma->vm_page_prot = vm_get_page_prot(vm_flags);
 
 	stack_expand = 131072UL;
 	stack_size = vma->vm_end - vma->vm_start;
@@ -267,7 +265,6 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top)
 	if (ret)
 		ret = -EFAULT;
 
-out_unlock:
 	mmap_write_unlock(mm);
 	return ret;
 }

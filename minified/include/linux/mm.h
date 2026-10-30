@@ -513,21 +513,6 @@ static inline bool folio_mark_dirty(struct folio *folio)
 bool set_page_dirty(struct page *page);
 
 /*
- * mprotect_fixup is a no-op stub on this minimal build (the only caller,
- * setup_arg_pages() in the exec path, just needs *pprev set and success).
- * Inlined here; mm/mprotect.c was dropped.
- */
-static inline int mprotect_fixup(struct mmu_gather *tlb,
-				 struct vm_area_struct *vma,
-				 struct vm_area_struct **pprev,
-				 unsigned long start, unsigned long end,
-				 unsigned long newflags)
-{
-	*pprev = vma;
-	return 0;
-}
-
-/*
  * RSS accounting (mm_struct.rss_stat) was dropped: nothing in this build ever
  * READS the per-mm counters (no get_mm_rss/get_mm_counter, hiwater/sync stubs).
  * The remaining call sites only ever wrote them, so the writers are no-ops.

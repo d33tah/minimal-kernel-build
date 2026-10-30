@@ -322,19 +322,16 @@ void __init tsc_early_init(void)
 
 void __init tsc_init(void)
 {
-	/*
-	 * tsc_early_init() already calibrated cpu_khz/tsc_khz from CPUID on this
-	 * build, so the PIT/HPET fallback (the !tsc_khz path that re-ran
-	 * determine_cpu_tsc_frequencies(false) via native_calibrate_cpu /
-	 * pit_hpet_ptimer_calibrate_cpu) was unreachable here and has been
-	 * removed.
-	 */
 	if (!boot_cpu_has(X86_FEATURE_TSC)) {
 		setup_clear_cpu_cap(X86_FEATURE_TSC_DEADLINE_TIMER);
 		return;
 	}
 
-	/* lpj_fine assignment removed - never read */
+	/* PIT calibration can fail under host load, leaving tsc_khz == 0. */
+	if (!tsc_khz) {
+		setup_clear_cpu_cap(X86_FEATURE_TSC_DEADLINE_TIMER);
+		return;
+	}
 
 	clocksource_register_khz(&clocksource_tsc_early, tsc_khz);
 }

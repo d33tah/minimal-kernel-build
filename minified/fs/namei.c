@@ -338,8 +338,8 @@ static const char *step_into(struct nameidata *nd, int flags,
 	if (err < 0)
 		return ERR_PTR(err);
 	/*
-	 * No symlink inode can ever exist on this build (vfs_symlink is a stub
-	 * returning -EPERM and no i_op->get_link is set anywhere), so
+	 * No symlink inode can ever exist on this build (there is no
+	 * symlink creation and no i_op->get_link is set anywhere), so
 	 * d_is_symlink() is always false: the symlink-follow arm (pick_link)
 	 * is unreachable and has been removed.
 	 */
@@ -645,24 +645,7 @@ static int may_open(struct user_namespace *mnt_userns, const struct path *path,
 	if (error)
 		return error;
 
-	if (flag & O_NOATIME && !inode_owner_or_capable(mnt_userns, inode))
-		return -EPERM;
-
 	return 0;
-}
-
-static int handle_truncate(struct user_namespace *mnt_userns, struct file *filp)
-{
-	const struct path *path = &filp->f_path;
-	struct inode *inode = path->dentry->d_inode;
-	int error = get_write_access(inode);
-	if (error)
-		return error;
-
-	error = do_truncate(mnt_userns, path->dentry, 0,
-			    ATTR_MTIME | ATTR_CTIME, filp);
-	put_write_access(inode);
-	return error;
 }
 
 static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
@@ -759,7 +742,6 @@ static int do_open(struct nameidata *nd, struct file *file,
 {
 	struct user_namespace *mnt_userns;
 	int open_flag = op->open_flag;
-	bool do_truncate;
 	int acc_mode, error;
 
 	mnt_userns = mnt_user_ns(nd->path.mnt);
@@ -772,28 +754,11 @@ static int do_open(struct nameidata *nd, struct file *file,
 	if ((nd->flags & LOOKUP_DIRECTORY) && !d_can_lookup(nd->path.dentry))
 		return -ENOTDIR;
 
-	do_truncate = false;
-	acc_mode = op->acc_mode;
-	if (file->f_mode & FMODE_CREATED) {
-		open_flag &= ~O_TRUNC;
-		acc_mode = 0;
-	} else if (d_is_reg(nd->path.dentry) && open_flag & O_TRUNC) {
-		error = mnt_want_write(nd->path.mnt);
-		if (error)
-			return error;
-		do_truncate = true;
-	}
+	/* No truncation support: nothing opens an existing file with O_TRUNC. */
+	acc_mode = file->f_mode & FMODE_CREATED ? 0 : op->acc_mode;
 	error = may_open(mnt_userns, &nd->path, acc_mode, open_flag);
 	if (!error && !(file->f_mode & FMODE_OPENED))
 		error = vfs_open(&nd->path, file);
-	if (!error && do_truncate)
-		error = handle_truncate(mnt_userns, file);
-	if (unlikely(error > 0)) {
-		WARN_ON(1);
-		error = -EINVAL;
-	}
-	if (do_truncate)
-		mnt_drop_write(nd->path.mnt);
 	return error;
 }
 
@@ -944,31 +909,4 @@ int vfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
 
 	error = dir->i_op->mkdir(mnt_userns, dir, dentry, mode);
 	return error;
-}
-
-int do_rmdir(struct filename *name)
-{
-	putname(name);
-	return -ENOSYS;
-}
-
-int do_unlinkat(struct filename *name)
-{
-	putname(name);
-	return -ENOSYS;
-}
-
-int vfs_symlink(struct user_namespace *mnt_userns, struct inode *dir,
-		struct dentry *dentry, const char *oldname)
-{
-	/* Stub: symlink creation not needed for minimal kernel */
-	return -EPERM;
-}
-
-int vfs_link(struct dentry *old_dentry, struct user_namespace *mnt_userns,
-	     struct inode *dir, struct dentry *new_dentry,
-	     struct inode **delegated_inode)
-{
-	/* Stub: hard link creation not needed for minimal kernel */
-	return -EPERM;
 }

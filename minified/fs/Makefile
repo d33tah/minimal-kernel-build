@@ -10,7 +10,7 @@
 obj-y :=	open.o read_write.o file_table.o super.o \
 		char_dev.o exec.o namei.o \
 		dcache.o inode.o \
-		attr.o file.o namespace.o \
+		file.o namespace.o \
 		libfs.o \
 		fs_struct.o \
 		fs_context.o init.o

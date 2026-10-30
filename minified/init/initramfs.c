@@ -54,52 +54,8 @@ static void panic_show_mem(const char *fmt, ...)
 
 #define N_ALIGN(len) ((((len) + 1) & ~3) + 2)
 
-static __initdata struct hash {
-	int ino, minor, major;
-	umode_t mode;
-	struct hash *next;
-	char name[N_ALIGN(PATH_MAX)];
-} *head[32];
-
-static inline int hash(int major, int minor, int ino)
-{
-	unsigned long tmp = ino + minor + (major << 3);
-	tmp += tmp >> 5;
-	return tmp & 31;
-}
-
-static void __init free_hash(void)
-{
-	struct hash **p, *q;
-	for (p = head; p < head + 32; p++) {
-		while (*p) {
-			q = *p;
-			*p = q->next;
-			kfree(q);
-		}
-	}
-}
-
-static void __init do_utime(char *filename, time64_t mtime)
-{
-}
-static void __init do_utime_path(const struct path *path, time64_t mtime)
-{
-}
-static void __init dir_add(const char *name, time64_t mtime)
-{
-}
-static void __init dir_utime(void)
-{
-}
-
-static __initdata time64_t mtime;
-
-static __initdata unsigned long ino, major, minor, nlink;
 static __initdata umode_t mode;
 static __initdata unsigned long body_len, name_len;
-static __initdata uid_t uid;
-static __initdata gid_t gid;
 static __initdata unsigned rdev;
 static __initdata u32 hdr_csum;
 
@@ -129,15 +85,8 @@ static void __init parse_header(char *s)
 
 	for (i = 0, s += 6; i < 13; i++, s += 8)
 		parsed[i] = parse_hex8(s);
-	ino = parsed[0];
 	mode = parsed[1];
-	uid = parsed[2];
-	gid = parsed[3];
-	nlink = parsed[4];
-	mtime = parsed[5];
 	body_len = parsed[6];
-	major = parsed[7];
-	minor = parsed[8];
 	rdev = new_encode_dev(MKDEV(parsed[9], parsed[10]));
 	name_len = parsed[11];
 	hdr_csum = parsed[12];
@@ -150,7 +99,6 @@ static __initdata enum state {
 	SkipIt,
 	GotName,
 	CopyFile,
-	GotSymlink,
 	Reset
 } state,
 	next_state;
@@ -184,7 +132,7 @@ static void __init read_into(char *buf, unsigned size, enum state next)
 	}
 }
 
-static __initdata char *header_buf, *symlink_buf, *name_buf;
+static __initdata char *header_buf, *name_buf;
 
 static int __init do_start(void)
 {
@@ -225,15 +173,6 @@ static int __init do_header(void)
 	state = SkipIt;
 	if (name_len <= 0 || name_len > PATH_MAX)
 		return 0;
-	if (S_ISLNK(mode)) {
-		if (body_len > PATH_MAX)
-			return 0;
-		collect = collected = symlink_buf;
-		remains = N_ALIGN(name_len) + body_len;
-		next_state = GotSymlink;
-		state = Collect;
-		return 0;
-	}
 	if (S_ISREG(mode) || !body_len)
 		read_into(name_buf, N_ALIGN(name_len), GotName);
 	return 0;
@@ -260,58 +199,6 @@ static int __init do_reset(void)
 	return 1;
 }
 
-static void __init clean_path(char *path, umode_t fmode)
-{
-	struct kstat st;
-
-	if (!init_stat(path, &st, AT_SYMLINK_NOFOLLOW) &&
-	    (st.mode ^ fmode) & S_IFMT) {
-		if (S_ISDIR(st.mode))
-			init_rmdir(path);
-		else
-			init_unlink(path);
-	}
-}
-
-static int __init maybe_link(void)
-{
-	if (nlink >= 2) {
-		struct hash **p, *q;
-		char *old = NULL;
-
-		for (p = head + hash(major, minor, ino); *p; p = &(*p)->next) {
-			if ((*p)->ino != ino)
-				continue;
-			if ((*p)->minor != minor)
-				continue;
-			if ((*p)->major != major)
-				continue;
-			if (((*p)->mode ^ mode) & S_IFMT)
-				continue;
-			old = (*p)->name;
-			break;
-		}
-		if (!*p) {
-			q = kmalloc(sizeof(struct hash), GFP_KERNEL);
-			if (!q)
-				panic_show_mem(
-					"can't allocate link hash entry");
-			q->major = major;
-			q->minor = minor;
-			q->ino = ino;
-			q->mode = mode;
-			strcpy(q->name, collected);
-			q->next = NULL;
-			*p = q;
-		}
-		if (old) {
-			clean_path(collected, 0);
-			return (init_link(old, collected) < 0) ? -1 : 1;
-		}
-	}
-	return 0;
-}
-
 static __initdata struct file *wfile;
 static __initdata loff_t wfile_pos;
 
@@ -319,42 +206,26 @@ static int __init do_name(void)
 {
 	state = SkipIt;
 	next_state = Reset;
-	if (strcmp(collected, "TRAILER!!!") == 0) {
-		free_hash();
+	if (strcmp(collected, "TRAILER!!!") == 0)
 		return 0;
-	}
-	clean_path(collected, mode);
+	/*
+	 * Only the entry types gen_init_cpio emits for this initramfs are
+	 * created: regular files, directories and device nodes. Ownership is
+	 * always root (no chown), there are no hard links or symlinks, and
+	 * every name is new (no clean_path/unlink).
+	 */
 	if (S_ISREG(mode)) {
-		int ml = maybe_link();
-		if (ml >= 0) {
-			int openflags = O_WRONLY | O_CREAT;
-			if (ml != 1)
-				openflags |= O_TRUNC;
-			wfile = filp_open(collected, openflags, mode);
-			if (IS_ERR(wfile))
-				return 0;
-			wfile_pos = 0;
-			io_csum = 0;
-
-			vfs_fchown(wfile, uid, gid);
-			vfs_fchmod(wfile, mode);
-			if (body_len)
-				vfs_truncate(&wfile->f_path, body_len);
-			state = CopyFile;
-		}
+		wfile = filp_open(collected, O_WRONLY | O_CREAT, mode);
+		if (IS_ERR(wfile))
+			return 0;
+		wfile_pos = 0;
+		io_csum = 0;
+		state = CopyFile;
 	} else if (S_ISDIR(mode)) {
 		init_mkdir(collected, mode);
-		init_chown(collected, uid, gid, 0);
-		init_chmod(collected, mode);
-		dir_add(collected, mtime);
 	} else if (S_ISBLK(mode) || S_ISCHR(mode) || S_ISFIFO(mode) ||
 		   S_ISSOCK(mode)) {
-		if (maybe_link() == 0) {
-			init_mknod(collected, mode, rdev);
-			init_chown(collected, uid, gid, 0);
-			init_chmod(collected, mode);
-			do_utime(collected, mtime);
-		}
+		init_mknod(collected, mode, rdev);
 	}
 	return 0;
 }
@@ -365,7 +236,6 @@ static int __init do_copy(void)
 		if (xwrite(wfile, victim, body_len, &wfile_pos) != body_len)
 			error("write error");
 
-		do_utime_path(&wfile->f_path, mtime);
 		fput(wfile);
 		if (csum_present && io_csum != hdr_csum)
 			error("bad data checksum");
@@ -381,23 +251,10 @@ static int __init do_copy(void)
 	}
 }
 
-static int __init do_symlink(void)
-{
-	collected[N_ALIGN(name_len) + body_len] = '\0';
-	clean_path(collected, 0);
-	init_symlink(collected + N_ALIGN(name_len), collected);
-	init_chown(collected, uid, gid, AT_SYMLINK_NOFOLLOW);
-	do_utime(collected, mtime);
-	state = SkipIt;
-	next_state = Reset;
-	return 0;
-}
-
 static __initdata int (*actions[])(void) = {
-	[Start] = do_start,	   [Collect] = do_collect,
-	[GotHeader] = do_header,   [SkipIt] = do_skip,
-	[GotName] = do_name,	   [CopyFile] = do_copy,
-	[GotSymlink] = do_symlink, [Reset] = do_reset,
+	[Start] = do_start, [Collect] = do_collect, [GotHeader] = do_header,
+	[SkipIt] = do_skip, [GotName] = do_name,    [CopyFile] = do_copy,
+	[Reset] = do_reset,
 };
 
 static long __init write_buffer(char *buf, unsigned long len)
@@ -415,10 +272,9 @@ static char *__init unpack_to_rootfs(char *buf, unsigned long len)
 	long written;
 
 	header_buf = kmalloc(110, GFP_KERNEL);
-	symlink_buf = kmalloc(PATH_MAX + N_ALIGN(PATH_MAX) + 1, GFP_KERNEL);
 	name_buf = kmalloc(N_ALIGN(PATH_MAX), GFP_KERNEL);
 
-	if (!header_buf || !symlink_buf || !name_buf)
+	if (!header_buf || !name_buf)
 		panic_show_mem("can't allocate buffers");
 
 	state = Start;
@@ -450,9 +306,7 @@ static char *__init unpack_to_rootfs(char *buf, unsigned long len)
 		error("invalid magic at start of archive");
 		break;
 	}
-	dir_utime();
 	kfree(name_buf);
-	kfree(symlink_buf);
 	kfree(header_buf);
 	return message;
 }

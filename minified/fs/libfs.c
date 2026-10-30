@@ -10,23 +10,6 @@ struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry,
 	return NULL;
 }
 
-int simple_setattr(struct user_namespace *mnt_userns, struct dentry *dentry,
-		   struct iattr *iattr)
-{
-	struct inode *inode = d_inode(dentry);
-	int error;
-
-	error = setattr_prepare(mnt_userns, dentry, iattr);
-	if (error)
-		return error;
-
-	if (iattr->ia_valid & ATTR_SIZE)
-		truncate_setsize(inode, iattr->ia_size);
-	setattr_copy(mnt_userns, inode, iattr);
-	mark_inode_dirty(inode);
-	return 0;
-}
-
 static int simple_read_folio(struct file *file, struct folio *folio)
 {
 	return 0;

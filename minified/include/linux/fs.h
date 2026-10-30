@@ -70,23 +70,7 @@ extern unsigned int sysctl_nr_open;
 
 #define FMODE_NONOTIFY ((__force fmode_t)0x4000000)
 
-#define ATTR_MODE (1 << 0)
-#define ATTR_SIZE (1 << 3)
-#define ATTR_ATIME (1 << 4)
-#define ATTR_MTIME (1 << 5)
-#define ATTR_CTIME (1 << 6)
-#define ATTR_FORCE (1 << 9)
-#define ATTR_KILL_SUID (1 << 11)
-#define ATTR_KILL_SGID (1 << 12)
-
 #define WHITEOUT_DEV 0
-
-struct iattr {
-	unsigned int ia_valid;
-	umode_t ia_mode;
-	loff_t ia_size;
-	struct timespec64 ia_atime, ia_mtime, ia_ctime;
-};
 
 /* Reduced positive_aop_returns - only AOP_TRUNCATED_PAGE used */
 enum positive_aop_returns { AOP_TRUNCATED_PAGE = 0x80001 };
@@ -196,11 +180,6 @@ struct inode {
 } __randomize_layout;
 
 struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode);
-
-static inline unsigned int i_blocksize(const struct inode *node)
-{
-	return (1 << node->i_blkbits);
-}
 
 /* Reduced inode_i_mutex_lock_class - only I_MUTEX_PARENT used (lockdep off: value unused) */
 enum inode_i_mutex_lock_class { I_MUTEX_PARENT };
@@ -411,20 +390,10 @@ static inline void sb_start_write(struct super_block *sb)
 	__sb_start_write(sb, SB_FREEZE_WRITE);
 }
 
-bool inode_owner_or_capable(struct user_namespace *mnt_userns,
-			    const struct inode *inode);
-
 int vfs_mkdir(struct user_namespace *, struct inode *, struct dentry *,
 	      umode_t);
 int vfs_mknod(struct user_namespace *, struct inode *, struct dentry *, umode_t,
 	      dev_t);
-int vfs_symlink(struct user_namespace *, struct inode *, struct dentry *,
-		const char *);
-int vfs_link(struct dentry *, struct user_namespace *, struct inode *,
-	     struct dentry *, struct inode **);
-
-int vfs_fchown(struct file *file, uid_t user, gid_t group);
-int vfs_fchmod(struct file *file, umode_t mode);
 
 void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 		      const struct inode *dir, umode_t mode);
@@ -457,8 +426,6 @@ struct inode_operations {
 		     umode_t);
 	int (*mknod)(struct user_namespace *, struct inode *, struct dentry *,
 		     umode_t, dev_t);
-	int (*setattr)(struct user_namespace *, struct dentry *,
-		       struct iattr *);
 	/* permission/readlink/link/unlink/symlink/rmdir/rename/getattr/
 	 * listxattr/update_time/get_link removed - zero ->field deref or
 	 * dispatched-but-never-assigned (only lookup/create/mkdir/mknod/setattr
@@ -571,9 +538,6 @@ static inline struct user_namespace *file_mnt_user_ns(struct file *file)
 	return mnt_user_ns(file->f_path.mnt);
 }
 
-extern long vfs_truncate(const struct path *, loff_t);
-int do_truncate(struct user_namespace *, struct dentry *, loff_t start,
-		unsigned int time_attrs, struct file *filp);
 /* vfs_fallocate, do_sys_open, file_open_name, file_open_root, dentry_open,
    dentry_create, open_with_fake_path removed - unused/internal only */
 extern struct file *filp_open(const char *, int, umode_t);
@@ -610,8 +574,6 @@ static inline ssize_t generic_write_sync(struct kiocb *iocb, ssize_t count)
 	return count;
 }
 
-int notify_change(struct user_namespace *, struct dentry *, struct iattr *,
-		  struct inode **);
 int inode_permission(struct user_namespace *, struct inode *, int);
 int generic_permission(struct user_namespace *, struct inode *, int);
 
@@ -683,8 +645,6 @@ extern int nonseekable_open(struct inode *inode, struct file *filp);
 /* Removed: get_super, get_active_super, drop_super, drop_super_exclusive,
    iterate_supers, iterate_supers_type - never called */
 
-extern int simple_setattr(struct user_namespace *, struct dentry *,
-			  struct iattr *);
 extern int simple_write_begin(struct file *file, struct address_space *mapping,
 			      loff_t pos, unsigned len, struct page **pagep,
 			      void **fsdata);
@@ -692,10 +652,6 @@ extern const struct address_space_operations ram_aops;
 
 extern struct dentry *simple_lookup(struct inode *, struct dentry *,
 				    unsigned int flags);
-
-int setattr_prepare(struct user_namespace *, struct dentry *, struct iattr *);
-void setattr_copy(struct user_namespace *, struct inode *inode,
-		  const struct iattr *attr);
 
 extern int file_update_time(struct file *file);
 

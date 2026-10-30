@@ -52,12 +52,6 @@ struct folio *__filemap_get_folio(struct address_space *mapping, pgoff_t index,
 struct page *pagecache_get_page(struct address_space *mapping, pgoff_t index,
 				int fgp_flags, gfp_t gfp);
 
-static inline struct page *find_lock_page(struct address_space *mapping,
-					  pgoff_t index)
-{
-	return pagecache_get_page(mapping, index, FGP_LOCK, 0);
-}
-
 static inline pgoff_t folio_index(struct folio *folio)
 {
 	return folio->index;

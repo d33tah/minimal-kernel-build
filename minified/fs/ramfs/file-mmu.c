@@ -21,6 +21,4 @@ const struct file_operations ramfs_file_operations = {
 	.get_unmapped_area = ramfs_mmu_get_unmapped_area,
 };
 
-const struct inode_operations ramfs_file_inode_operations = {
-	.setattr = simple_setattr,
-};
+const struct inode_operations ramfs_file_inode_operations = {};

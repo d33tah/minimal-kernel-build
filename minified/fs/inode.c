@@ -271,20 +271,6 @@ void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 	inode->i_mode = mode;
 }
 
-bool inode_owner_or_capable(struct user_namespace *mnt_userns,
-			    const struct inode *inode)
-{
-	kuid_t i_uid;
-	struct user_namespace *ns;
-
-	i_uid = i_uid_into_mnt(mnt_userns, inode);
-	if (uid_eq(current_fsuid(), i_uid))
-		return true;
-
-	ns = current_user_ns();
-	return kuid_has_mapping(ns, i_uid);
-}
-
 struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode)
 {
 	struct super_block *sb = inode->i_sb;

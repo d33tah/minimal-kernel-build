@@ -19,7 +19,6 @@ struct signal_struct {
 	refcount_t sigcnt;
 	struct list_head thread_head;
 	struct pid *pids[PIDTYPE_MAX];
-	struct tty_struct *tty;
 	struct rlimit rlim[RLIM_NLIMITS];
 	struct mutex cred_guard_mutex;
 	struct rw_semaphore exec_update_lock;

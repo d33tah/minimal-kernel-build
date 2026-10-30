@@ -272,16 +272,6 @@ static void visual_deinit(struct vc_data *vc)
 	vc->vc_sw->con_deinit(vc);
 }
 
-static void vc_port_destruct(struct tty_port *port)
-{
-	/* tty_port .destruct teardown: a vc is never destroyed on a
-	 * boot-once-and-print artifact. Anchor-stub keeps the symbol. */
-}
-
-static const struct tty_port_operations vc_port_ops = {
-	.destruct = vc_port_destruct,
-};
-
 #define VC_MAXCOL (32767)
 #define VC_MAXROW (32767)
 
@@ -303,8 +293,6 @@ int vc_allocate(unsigned int currcons)
 		return -ENOMEM;
 
 	vc_cons[currcons].d = vc;
-	tty_port_init(&vc->port);
-	vc->port.ops = &vc_port_ops;
 
 	visual_init(vc, currcons, 1);
 
@@ -342,7 +330,7 @@ static int vc_do_resize(struct tty_struct *tty, struct vc_data *vc,
 
 int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int rows)
 {
-	return vc_do_resize(vc->port.tty, vc, cols, rows);
+	return vc_do_resize(NULL, vc, cols, rows);
 }
 
 const unsigned char color_table[] = { 0, 4,  2,	 6,  1, 5,  3,	7,
@@ -654,11 +642,6 @@ static int con_write(struct tty_struct *tty, const unsigned char *buf,
 	return retval;
 }
 
-static unsigned int con_write_room(struct tty_struct *tty)
-{
-	return 32768;
-}
-
 static void con_flush_chars(struct tty_struct *tty)
 {
 	struct vc_data *vc;
@@ -676,41 +659,16 @@ static void con_flush_chars(struct tty_struct *tty)
 static int con_install(struct tty_driver *driver, struct tty_struct *tty)
 {
 	unsigned int currcons = tty->index;
-	struct vc_data *vc;
 	int ret;
 
 	console_lock();
 	ret = vc_allocate(currcons);
-	if (ret)
-		goto unlock;
-
-	vc = vc_cons[currcons].d;
-
-	if (vc->port.tty) {
-		ret = -ERESTARTSYS;
-		goto unlock;
+	if (!ret) {
+		tty->driver_data = vc_cons[currcons].d;
+		ret = tty_standard_install(driver, tty);
 	}
-
-	ret = tty_port_install(&vc->port, driver, tty);
-	if (ret)
-		goto unlock;
-
-	tty->driver_data = vc;
-	vc->port.tty = tty;
-	tty_port_get(&vc->port);
-
-	if (vc->vc_utf)
-		tty->termios.c_iflag |= IUTF8;
-	else
-		tty->termios.c_iflag &= ~IUTF8;
-unlock:
 	console_unlock();
 	return ret;
-}
-
-static int con_open(struct tty_struct *tty, struct file *filp)
-{
-	return 0;
 }
 
 static void vc_init(struct vc_data *vc, unsigned int rows, unsigned int cols,
@@ -762,7 +720,6 @@ static int __init con_init(void)
 	for (currcons = 0; currcons < MIN_NR_CONSOLES; currcons++) {
 		vc_cons[currcons].d = vc =
 			kzalloc(sizeof(struct vc_data), GFP_NOWAIT);
-		tty_port_init(&vc->port);
 		visual_init(vc, currcons, 1);
 
 		vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_NOWAIT);
@@ -786,10 +743,7 @@ console_initcall(con_init);
 
 static const struct tty_operations con_ops = {
 	.install = con_install,
-	.open = con_open,
 	.write = con_write,
-	.write_room = con_write_room,
-	.flush_chars = con_flush_chars,
 };
 
 static struct cdev vc0_cdev;
@@ -810,10 +764,7 @@ int __init vty_init(const struct file_operations *console_fops)
 	if (IS_ERR(tty0dev))
 		tty0dev = NULL;
 
-	vcs_init();
-
-	console_driver =
-		tty_alloc_driver(MAX_NR_CONSOLES, TTY_DRIVER_RESET_TERMIOS);
+	console_driver = tty_alloc_driver(MAX_NR_CONSOLES);
 	if (IS_ERR(console_driver))
 		panic("Couldn't allocate console driver\n");
 
@@ -821,8 +772,6 @@ int __init vty_init(const struct file_operations *console_fops)
 	console_driver->name_base = 1;
 	console_driver->major = TTY_MAJOR;
 	console_driver->minor_start = 1;
-	console_driver->init_termios = tty_std_termios;
-	console_driver->init_termios.c_iflag |= IUTF8;
 	tty_set_operations(console_driver, &con_ops);
 	if (tty_register_driver(console_driver))
 		panic("Couldn't register console driver\n");

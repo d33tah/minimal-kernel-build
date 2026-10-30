@@ -213,8 +213,6 @@ void __init console_init(void)
 	initcall_t call;
 	initcall_entry_t *ce;
 
-	n_tty_init();
-
 	ce = __con_initcall_start;
 
 	while (ce < __con_initcall_end) {

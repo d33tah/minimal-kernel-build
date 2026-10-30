@@ -222,16 +222,6 @@ size_t copy_page_from_iter_atomic(struct page *page, unsigned offset,
 	return bytes;
 }
 
-void iov_iter_revert(struct iov_iter *i, size_t unroll)
-{
-	/*
-	 * VOID-CALLBACK-NEVER-FIRES (runtime trace: HIT=False).  The sole caller
-	 * (tty_io.c redirected_tty_write) only reverts on a partial write
-	 * (ret != size); this boot's tty writes always complete fully, so the
-	 * unroll body never executes.
-	 */
-}
-
 void iov_iter_kvec(struct iov_iter *i, unsigned int direction,
 		   const struct kvec *kvec, unsigned long nr_segs, size_t count)
 {

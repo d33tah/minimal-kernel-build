@@ -20,8 +20,6 @@ struct vc_state {
 };
 
 struct vc_data {
-	struct tty_port port;
-
 	struct vc_state state;
 
 	unsigned short vc_num;

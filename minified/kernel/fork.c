@@ -536,8 +536,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 		init_task_pid(p, PIDTYPE_PGID, task_pgrp(current));
 		init_task_pid(p, PIDTYPE_SID, task_session(current));
 
-		p->signal->tty = tty_kref_get(current->signal->tty);
-
 		list_add_tail_rcu(&p->tasks, &init_task.tasks);
 		attach_pid(p, PIDTYPE_TGID);
 		attach_pid(p, PIDTYPE_PGID);

@@ -4,8 +4,6 @@
 *.a.cmd
 
 .vmlinux.cmd
-.vmlinux.export.c
-System.map
 arch/i386/
 arch/x86/boot/.bzImage.cmd
 arch/x86/boot/.setup.bin.cmd

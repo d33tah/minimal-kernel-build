@@ -3,7 +3,6 @@
 *.a
 *.a.cmd
 
-.version
 .vmlinux.cmd
 .vmlinux.export.c
 System.map

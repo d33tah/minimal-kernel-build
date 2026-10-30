@@ -340,9 +340,8 @@ else # !mixed-build
 
 include $(srctree)/scripts/Kbuild.include
 
-# Read KERNELRELEASE from include/config/kernel.release (if it exists)
-KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)
 KERNELVERSION = $(VERSION)$(if $(PATCHLEVEL),.$(PATCHLEVEL)$(if $(SUBLEVEL),.$(SUBLEVEL)))$(EXTRAVERSION)
+KERNELRELEASE = $(KERNELVERSION)
 export VERSION PATCHLEVEL SUBLEVEL KERNELRELEASE KERNELVERSION
 
 include $(srctree)/scripts/subarch.include
@@ -892,13 +891,6 @@ targets := vmlinux
 # make sure no implicit rule kicks in
 $(sort $(vmlinux-deps) $(subdir-modorder)): descend ;
 
-filechk_kernel.release = \
-	echo "$(KERNELVERSION)$$($(CONFIG_SHELL) $(srctree)/scripts/setlocalversion $(srctree))"
-
-# Store (new) KERNELRELEASE string in include/config/kernel.release
-include/config/kernel.release: FORCE
-	$(call filechk,kernel.release)
-
 # Additional helpers built in scripts/
 # Carefully list dependencies so we do not try to build scripts twice
 # in parallel
@@ -914,7 +906,7 @@ scripts: scripts_basic
 
 PHONY += prepare archprepare
 
-archprepare: outputmakefile archheaders scripts include/config/kernel.release \
+archprepare: outputmakefile archheaders scripts \
 	asm-generic $(version_h) $(autoksyms_h) include/generated/utsrelease.h \
 	include/generated/autoconf.h
 
@@ -970,7 +962,7 @@ $(version_h): SUBLEVEL := $(or $(SUBLEVEL), 0)
 $(version_h): FORCE
 	$(call filechk,version.h)
 
-include/generated/utsrelease.h: include/config/kernel.release FORCE
+include/generated/utsrelease.h: FORCE
 	$(call filechk,utsrelease.h)
 
 # ---------------------------------------------------------------------------
@@ -1018,7 +1010,6 @@ CLEAN_FILES += include/ksym modules.nsdeps \
 MRPROPER_FILES += include/config include/generated          \
 		  arch/$(SRCARCH)/include/generated .objdiff \
 		  debian snap tar-install \
-		  .version \
 		  certs/signing_key.pem \
 		  certs/x509.genkey \
 		  vmlinux-gdb.py \
@@ -1264,7 +1255,7 @@ nsdeps: modules
 PHONY += kernelrelease kernelversion image_name
 
 kernelrelease:
-	@echo "$(KERNELVERSION)$$($(CONFIG_SHELL) $(srctree)/scripts/setlocalversion $(srctree))"
+	@echo $(KERNELRELEASE)
 
 kernelversion:
 	@echo $(KERNELVERSION)

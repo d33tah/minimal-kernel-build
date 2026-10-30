@@ -17,17 +17,13 @@ mounts-$(CONFIG_BLK_DEV_INITRD)	+= do_mounts_initrd.o
 # dependencies on generated files need to be listed explicitly
 $(obj)/version.o: include/generated/compile.h
 
-# compile.h changes depending on hostname, generation number, etc,
-# so we regenerate it always.
-# mkcompile_h will make sure to only update the
-# actual file if its content has changed.
-
-quiet_cmd_compile.h = CHK     $@
-      cmd_compile.h = \
-	$(CONFIG_SHELL) $(srctree)/scripts/mkcompile_h $@	\
-	"$(UTS_MACHINE)" "$(CONFIG_SMP)" "$(CONFIG_PREEMPT_BUILD)"	\
-	"$(CONFIG_PREEMPT_DYNAMIC)" "$(CONFIG_PREEMPT_RT)" \
-	"$(CONFIG_CC_VERSION_TEXT)" "$(LD)"
+define filechk_compile.h
+	echo '#define UTS_MACHINE "$(UTS_MACHINE)"';		\
+	echo '#define UTS_VERSION "#1"';			\
+	echo '#define LINUX_COMPILE_BY "kbuild"';		\
+	echo '#define LINUX_COMPILE_HOST "localhost"';		\
+	echo '#define LINUX_COMPILER "$(CONFIG_CC_VERSION_TEXT)"'
+endef
 
 include/generated/compile.h: FORCE
-	$(call cmd,compile.h)
+	$(call filechk,compile.h)

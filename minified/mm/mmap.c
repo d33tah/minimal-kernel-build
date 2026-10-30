@@ -8,6 +8,7 @@
 #include <linux/rmap.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/signal.h>
+#include <asm/pgalloc.h>
 #include <asm/tlbflush.h>
 
 #include "internal.h"
@@ -384,7 +385,7 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)
 /*
  * Clear the PTEs of [start, end) in @vma and drop each page's mapping
  * reference: anonymous pages go back to the free lists, page-cache pages keep
- * the cache's own reference. Page tables stay allocated. Only current->mm is
+ * the cache's own reference. Only current->mm is
  * ever unmapped (mmap_region during exec), so invlpg flushes its entries.
  */
 static void zap_vma_range(struct vm_area_struct *vma, unsigned long start,
@@ -412,6 +413,32 @@ static void zap_vma_range(struct vm_area_struct *vma, unsigned long start,
 			page_remove_rmap(page);
 			put_page(page);
 		}
+	}
+}
+
+/*
+ * Free the page tables in [start, end) that no VMA covers any more (2-level
+ * paging: one PTE page per 4 MiB PMD slot, already emptied by zap_vma_range).
+ */
+static void free_unused_pgtables(struct mm_struct *mm, unsigned long start,
+				 unsigned long end)
+{
+	unsigned long addr;
+
+	for (addr = start & PMD_MASK; addr < end; addr += PMD_SIZE) {
+		struct vm_area_struct *vma = find_vma(mm, addr);
+		pmd_t *pmd = pmd_offset(
+			pud_offset(p4d_offset(pgd_offset(mm, addr), addr),
+				   addr),
+			addr);
+		struct page *pte;
+
+		if (pmd_none(*pmd) || (vma && vma->vm_start < addr + PMD_SIZE))
+			continue;
+		pte = virt_to_page((void *)pmd_page_vaddr(*pmd));
+		set_pmd(pmd, __pmd(0));
+		flush_tlb_mm_range(mm, addr, addr + PMD_SIZE, PAGE_SHIFT, true);
+		pte_free(mm, pte);
 	}
 }
 
@@ -465,6 +492,7 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 			vm_area_free(vma);
 		}
 	}
+	free_unused_pgtables(mm, start, end);
 	return 0;
 }
 

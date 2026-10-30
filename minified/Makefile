@@ -689,33 +689,11 @@ include $(srctree)/arch/$(SRCARCH)/Makefile
 
 ifdef need-config
 ifdef may-sync-config
-# Read in dependencies to all Kconfig* files, make sure to run syncconfig if
-# changes are detected. This should be included after arch/$(SRCARCH)/Makefile
-# because some architectures define CROSS_COMPILE there.
-include include/config/auto.conf.cmd
-
-$(KCONFIG_CONFIG):
-	@echo >&2 '***'
-	@echo >&2 '*** Configuration file "$@" not found!'
-	@echo >&2 '***'
-	@echo >&2 '*** Please run some configurator (e.g. "make oldconfig" or'
-	@echo >&2 '*** "make menuconfig" or "make xconfig").'
-	@echo >&2 '***'
-	@/bin/false
-
-# The actual configuration files used during the build are stored in
-# include/generated/ and include/config/. Update them if .config is newer than
-# include/config/auto.conf (which mirrors .config).
-#
-# This exploits the 'multi-target pattern rule' trick.
-# The syncconfig should be executed only once to make all the targets.
-# (Note: use the grouped target '&:' when we bump to GNU Make 4.3)
-#
-# Do not use $(call cmd,...) here. That would suppress prompts from syncconfig,
-# so you cannot notice that Kconfig is waiting for the user input.
-%/config/auto.conf %/config/auto.conf.cmd %/generated/autoconf.h: $(KCONFIG_CONFIG)
-	$(Q)$(kecho) "  SYNC    $@"
-	$(Q)$(MAKE) -f $(srctree)/Makefile syncconfig
+# The configuration is frozen in .config; mirror it into include/config/ and
+# include/generated/ whenever .config or the generator changes.
+include/config/auto.conf include/generated/autoconf.h &: .config $(srctree)/scripts/gen-autoconf.sh
+	$(Q)$(kecho) "  GEN     $@"
+	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/gen-autoconf.sh
 else # !may-sync-config
 # External modules and some install targets need include/generated/autoconf.h
 # and include/config/auto.conf but do not care if they are up-to-date.
@@ -1116,7 +1094,7 @@ CLEAN_FILES += include/ksym vmlinux.symvers modules-only.symvers \
 MRPROPER_FILES += include/config include/generated          \
 		  arch/$(SRCARCH)/include/generated .objdiff \
 		  debian snap tar-install \
-		  .config .config.old .version \
+		  .version \
 		  Module.symvers \
 		  certs/signing_key.pem \
 		  certs/x509.genkey \
@@ -1292,14 +1270,7 @@ clean: rm-files := $(KBUILD_EXTMOD)/Module.symvers $(KBUILD_EXTMOD)/modules.nsde
 	$(KBUILD_EXTMOD)/compile_commands.json $(KBUILD_EXTMOD)/.thinlto-cache
 
 PHONY += prepare
-# now expand this into a simple variable to reduce the cost of shell evaluations
-prepare: CC_VERSION_TEXT := $(CC_VERSION_TEXT)
 prepare:
-	@if [ "$(CC_VERSION_TEXT)" != "$(CONFIG_CC_VERSION_TEXT)" ]; then \
-		echo >&2 "warning: the compiler differs from the one used to build the kernel"; \
-		echo >&2 "  The kernel was built by: $(CONFIG_CC_VERSION_TEXT)"; \
-		echo >&2 "  You are using:           $(CC_VERSION_TEXT)"; \
-	fi
 
 PHONY += help
 help:

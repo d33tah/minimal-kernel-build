@@ -487,12 +487,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 	kfree(elf_phdata);
 
-#ifdef ARCH_HAS_SETUP_ADDITIONAL_PAGES
-	retval = ARCH_SETUP_ADDITIONAL_PAGES(bprm, elf_ex, 0);
-	if (retval < 0)
-		goto out;
-#endif
-
 	retval = create_elf_tables(bprm, elf_ex, 0, e_entry, phdr_addr);
 	if (retval < 0)
 		goto out;

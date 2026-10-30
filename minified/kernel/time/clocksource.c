@@ -175,15 +175,8 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale,
 
 int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 {
-	clocksource_arch_init(cs);
-
 	if (WARN_ON_ONCE((unsigned int)cs->id >= CSID_MAX))
 		cs->id = CSID_GENERIC;
-	if (cs->vdso_clock_mode >= VDSO_CLOCKMODE_MAX) {
-		pr_warn("clocksource %s registered with invalid VDSO mode %d. Disabling VDSO support.\n",
-			cs->name, cs->vdso_clock_mode);
-		cs->vdso_clock_mode = VDSO_CLOCKMODE_NONE;
-	}
 
 	__clocksource_update_freq_scale(cs, scale, freq);
 

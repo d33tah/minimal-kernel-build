@@ -10,5 +10,3 @@ CFLAGS_common.o			+= -fno-stack-protector
 
 obj-y				:= entry_$(BITS).o syscall_$(BITS).o
 obj-y				+= common.o
-
-obj-y				+= vdso/

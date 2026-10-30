@@ -35,16 +35,6 @@ arch/x86/boot/tools/build
 arch/x86/boot/vmlinux.bin
 arch/x86/boot/voffset.h
 arch/x86/boot/zoffset.h
-arch/x86/entry/vdso/.vdso-image-32.c.cmd
-arch/x86/entry/vdso/.vdso2c.cmd
-arch/x86/entry/vdso/.vdso32.so.cmd
-arch/x86/entry/vdso/.vdso32.so.dbg.cmd
-arch/x86/entry/vdso/vdso-image-32.c
-arch/x86/entry/vdso/vdso2c
-arch/x86/entry/vdso/vdso32.so
-arch/x86/entry/vdso/vdso32.so.dbg
-arch/x86/entry/vdso/vdso32/.vdso32.lds.cmd
-arch/x86/entry/vdso/vdso32/vdso32.lds
 arch/x86/include/generated/
 arch/x86/kernel/.asm-offsets.s.cmd
 arch/x86/kernel/.vmlinux.lds.cmd

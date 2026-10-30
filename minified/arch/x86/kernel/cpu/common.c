@@ -495,7 +495,6 @@ void __init identify_boot_cpu(void)
 {
 	identify_cpu(&boot_cpu_data);
 	/* HAS_KERNEL_IBT==0 -> CET/IBT pr_info branch was const-dead; removed */
-	sysenter_setup();
 	enable_sep_cpu();
 	/* cpu_detect_tlb removed - TLB info never used */
 	setup_cr_pinning();

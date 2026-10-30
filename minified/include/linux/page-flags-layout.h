@@ -8,12 +8,9 @@
 
 #define ZONES_WIDTH ZONES_SHIFT
 
-#ifndef BUILD_VDSO32_64
 #define SECTIONS_WIDTH 0
 
 #define NODES_WIDTH NODES_SHIFT
 
 #define LAST_CPUPID_SHIFT 0
-
-#endif
 #endif

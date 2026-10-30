@@ -19,7 +19,11 @@
 #include <asm/fpu/types.h>
 #include <asm/unwind_hints.h>
 /* Removed: #include <asm/vmxfeatures.h> - not needed for minimal kernel */
-#include <asm/vdso/processor.h>
+
+static __always_inline void cpu_relax(void)
+{
+	asm volatile("rep; nop" ::: "memory");
+}
 
 #include <linux/personality.h>
 #include <linux/cache.h>
@@ -217,7 +221,6 @@ extern void select_idle_routine(const struct cpuinfo_x86 *c);
 /* amd_e400_c1e_apic_setup declaration removed - implementation was removed */
 
 extern void enable_sep_cpu(void);
-extern int sysenter_setup(void);
 
 extern struct desc_ptr early_gdt_descr;
 

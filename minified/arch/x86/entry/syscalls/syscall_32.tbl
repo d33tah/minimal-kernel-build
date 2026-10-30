@@ -97,8 +97,8 @@
 # 262	i386	timer_getoverrun	sys_timer_getoverrun  (posix timers: unreachable, -> sys_ni)
 # 263	i386	timer_delete		sys_timer_delete  (posix timers: unreachable, -> sys_ni)
 # 264	i386	clock_settime		sys_clock_settime32  (posix timers: unreachable, -> sys_ni)
-265	i386	clock_gettime		sys_clock_gettime32
-266	i386	clock_getres		sys_clock_getres_time32
+# 265	i386	clock_gettime		sys_clock_gettime32  (removed with the vDSO, unreachable -> sys_ni)
+# 266	i386	clock_getres		sys_clock_getres_time32  (removed with the vDSO, unreachable -> sys_ni)
 # 267	i386	clock_nanosleep		sys_clock_nanosleep_time32  (posix timers: unreachable, -> sys_ni)
 # 271	i386	utimes			sys_utimes_time32  (removed, unreachable -> sys_ni)
 # 277-282 mq_* removed (unreachable)
@@ -124,10 +124,10 @@
 # 384	i386	arch_prctl		sys_arch_prctl			compat_sys_arch_prctl  (removed: dead syscall -> sys_ni)
 386	i386	rseq			sys_rseq
 # 393-402 SysV IPC (sem/shm/msg) removed (unreachable)
-403	i386	clock_gettime64		sys_clock_gettime
+# 403	i386	clock_gettime64		sys_clock_gettime  (removed with the vDSO, unreachable -> sys_ni)
 # 404	i386	clock_settime64		sys_clock_settime  (posix timers: unreachable, -> sys_ni)
 # 405	i386	clock_adjtime64		sys_clock_adjtime  (posix timers: unreachable, -> sys_ni)
-406	i386	clock_getres_time64	sys_clock_getres
+# 406	i386	clock_getres_time64	sys_clock_getres  (removed with the vDSO, unreachable -> sys_ni)
 # 407	i386	clock_nanosleep_time64	sys_clock_nanosleep  (posix timers: unreachable, -> sys_ni)
 # 408	i386	timer_gettime64		sys_timer_gettime  (posix timers: unreachable, -> sys_ni)
 # 409	i386	timer_settime64		sys_timer_settime  (posix timers: unreachable, -> sys_ni)

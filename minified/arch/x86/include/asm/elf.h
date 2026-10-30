@@ -8,8 +8,6 @@
 #include <asm/user.h>
 #include <asm/auxvec.h>
 
-#include <asm/vdso.h>
-
 #define elf_check_arch_ia32(x) \
 	(((x)->e_machine == EM_386) || ((x)->e_machine == EM_486))
 
@@ -48,13 +46,9 @@ extern u32 elf_hwcap2;
 #define elf_read_implies_exec(ex, executable_stack) \
 	(mmap_is_ia32() && executable_stack == EXSTACK_DEFAULT)
 
-#define ARCH_DLINFO_IA32                                                 \
-	do {                                                             \
-		if (VDSO_CURRENT_BASE) {                                 \
-			NEW_AUX_ENT(AT_SYSINFO, VDSO_ENTRY);             \
-			NEW_AUX_ENT(AT_SYSINFO_EHDR, VDSO_CURRENT_BASE); \
-		}                                                        \
-		NEW_AUX_ENT(AT_MINSIGSTKSZ, get_sigframe_size());        \
+#define ARCH_DLINFO_IA32                                          \
+	do {                                                      \
+		NEW_AUX_ENT(AT_MINSIGSTKSZ, get_sigframe_size()); \
 	} while (0)
 
 static inline int mmap_is_ia32(void)
@@ -69,17 +63,5 @@ extern unsigned long get_sigframe_size(void);
 #define STACK_RND_MASK (0x7ff)
 
 #define ARCH_DLINFO ARCH_DLINFO_IA32
-
-#define VDSO_CURRENT_BASE ((unsigned long)current->mm->context.vdso)
-
-#define VDSO_ENTRY                                  \
-	((unsigned long)current->mm->context.vdso + \
-	 vdso_image_32.sym___kernel_vsyscall)
-
-struct linux_binprm;
-
-#define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
-extern int arch_setup_additional_pages(struct linux_binprm *bprm,
-				       int uses_interp);
 
 #endif

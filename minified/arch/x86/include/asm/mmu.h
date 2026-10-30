@@ -11,7 +11,6 @@
 typedef struct {
 	u64 ctx_id;
 	atomic64_t tlb_gen;
-	void __user *vdso;
 } mm_context_t;
 
 #define INIT_MM_CONTEXT(mm)  \

@@ -34,8 +34,6 @@ arch/x86/include/asm/thread_info.h
 arch/x86/include/asm/trapnr.h
 arch/x86/include/asm/uaccess.h
 arch/x86/include/asm/unwind_hints.h
-arch/x86/include/asm/vdso.h
-arch/x86/include/asm/vvar.h
 arch/x86/include/uapi/asm/bitsperlong.h
 arch/x86/include/uapi/asm/boot.h
 arch/x86/include/uapi/asm/bootparam.h

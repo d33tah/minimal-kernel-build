@@ -221,8 +221,8 @@ static u64 read_tsc(struct clocksource *cs)
 
 static int tsc_cs_enable(struct clocksource *cs)
 {
-	/* clocksource .enable callback: HIT=False this boot (the VDSO
-	 * clockmode marking never fires). Safe-fallback return 0 = enabled. */
+	/* clocksource .enable callback: HIT=False this boot.
+	 * Safe-fallback return 0 = enabled. */
 	return 0;
 }
 
@@ -233,7 +233,6 @@ static struct clocksource clocksource_tsc_early = {
 	.read = read_tsc,
 	.mask = CLOCKSOURCE_MASK(64),
 	.flags = CLOCK_SOURCE_IS_CONTINUOUS | CLOCK_SOURCE_MUST_VERIFY,
-	.vdso_clock_mode = VDSO_CLOCKMODE_TSC,
 	.enable = tsc_cs_enable,
 	.list = LIST_HEAD_INIT(clocksource_tsc_early.list),
 };
@@ -245,7 +244,6 @@ static struct clocksource clocksource_tsc = {
 	.mask = CLOCKSOURCE_MASK(64),
 	.flags = CLOCK_SOURCE_IS_CONTINUOUS | CLOCK_SOURCE_VALID_FOR_HRES |
 		 CLOCK_SOURCE_MUST_VERIFY | CLOCK_SOURCE_VERIFY_PERCPU,
-	.vdso_clock_mode = VDSO_CLOCKMODE_TSC,
 	.enable = tsc_cs_enable,
 	.list = LIST_HEAD_INIT(clocksource_tsc.list),
 };

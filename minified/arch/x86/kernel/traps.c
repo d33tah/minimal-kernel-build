@@ -33,9 +33,6 @@ static nokprobe_inline int do_trap_no_signal(struct task_struct *tsk,
 
 		tsk->thread.trap_nr = trapnr;
 		die(str, regs, error_code);
-	} else {
-		if (fixup_vdso_exception(regs, trapnr, error_code, 0))
-			return 0;
 	}
 
 	tsk->thread.trap_nr = trapnr;
@@ -202,9 +199,6 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 	 */
 
 	if (user_mode(regs)) {
-		if (fixup_vdso_exception(regs, X86_TRAP_GP, error_code, 0))
-			goto exit;
-
 		current->thread.trap_nr = X86_TRAP_GP;
 		force_sig(SIGSEGV);
 		goto exit;

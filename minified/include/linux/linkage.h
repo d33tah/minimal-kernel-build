@@ -17,10 +17,6 @@
 #define cond_syscall(x)	asm(					".weak " __stringify(x) "\n\t"				".set  " __stringify(x) ","					 __stringify(sys_ni_syscall))
 #endif
 
-#ifndef SYSCALL_ALIAS
-#define SYSCALL_ALIAS(alias, name) asm(				".globl " __stringify(alias) "\n\t"			".set   " __stringify(alias) ","				  __stringify(name))
-#endif
-
 #define __page_aligned_bss	__section(".bss..page_aligned") __aligned(PAGE_SIZE)
 
 #define __PAGE_ALIGNED_BSS	.section ".bss..page_aligned", "aw"

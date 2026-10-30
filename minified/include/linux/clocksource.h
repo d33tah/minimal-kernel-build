@@ -9,26 +9,7 @@
 #include <asm/div64.h>
 #include <asm/io.h>
 
-/*
- * Dropped the always-false `defined(CONFIG_ARCH_CLOCKSOURCE_DATA)` OR-operand:
- * CONFIG_ARCH_CLOCKSOURCE_DATA is never defined in this x86-32 build (no Kconfig
- * selects it; this was its sole tree-wide occurrence). The <asm/clocksource.h>
- * include is gated solely by CONFIG_GENERIC_GETTIMEOFDAY (=y here), which alone
- * kept the original OR-arm live -- so this is byte-identical preprocessor output.
- */
-#ifdef CONFIG_GENERIC_GETTIMEOFDAY
-#include <asm/clocksource.h>
-#endif
-
 #include <linux/limits.h>
-#include <asm/vdso/clocksource.h>
-
-/* Inlined from vdso/clocksource.h */
-enum vdso_clock_mode {
-	VDSO_CLOCKMODE_NONE,
-	VDSO_ARCH_CLOCKMODES,
-	VDSO_CLOCKMODE_MAX,
-};
 
 struct clocksource {
 	u64 (*read)(struct clocksource *cs);
@@ -38,7 +19,6 @@ struct clocksource {
 	struct list_head list;
 	int rating;
 	enum clocksource_ids id;
-	enum vdso_clock_mode vdso_clock_mode;
 	unsigned long flags;
 	int (*enable)(struct clocksource *cs);
 };
@@ -71,8 +51,6 @@ static inline int clocksource_register_khz(struct clocksource *cs, u32 khz)
 {
 	return __clocksource_register_scale(cs, 1000, khz);
 }
-
-extern void clocksource_arch_init(struct clocksource *cs);
 
 extern int timekeeping_notify(struct clocksource *clock);
 

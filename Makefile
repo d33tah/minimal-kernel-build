@@ -1,7 +1,7 @@
 
 all: #
 	@echo "Choose target:\n"
-	@grep -e ':$$' Makefile | tr -d ':'
+	@grep -E '^[a-z-]+:' Makefile | cut -d: -f1
 
 copy:
 	docker buildx build . --output minified2 --build-arg BUILD_ENV=copy
@@ -14,5 +14,8 @@ vm:
 	./vmtest.tcl
 	ls -lh minified/arch/x86/boot/bzImage*
 
-test:
+fmt-check:
+	cd minified && git ls-files '*.c' '*.h' | xargs clang-format --dry-run -Werror
+
+test: fmt-check
 	cd minified && make mrproper && cd .. && make vm

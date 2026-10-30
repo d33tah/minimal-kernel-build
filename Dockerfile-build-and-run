@@ -1,7 +1,8 @@
 FROM debian:trixie
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y build-essential llvm clang lld bc qemu-system-x86 expect
+RUN apt-get update && apt-get install -y build-essential llvm clang lld bc qemu-system-x86 expect clang-format
 ADD minified minified
+RUN cd minified && find . \( -name '*.c' -o -name '*.h' \) -not -path '*/generated/*' | xargs clang-format --dry-run -Werror
 RUN cd minified ; LLVM=1 make -j`nproc`
 ADD Makefile Makefile
 # RUN apt-get install screen -y

@@ -1,7 +1,0 @@
-
-#ifndef _ASM_X86_INTEL_FAMILY_H
-#define _ASM_X86_INTEL_FAMILY_H
-
-#define INTEL_FAM6_XEON_PHI_KNL 0x57
-
-#endif

@@ -49,24 +49,6 @@ static void keyboard_init(void)
 	intcall(0x16, &ireg, NULL);
 }
 
-static void query_ist(void)
-{
-	struct biosregs ireg, oreg;
-
-	if (cpu.level < 6)
-		return;
-
-	initregs(&ireg);
-	ireg.ax = 0xe980;
-	ireg.edx = 0x47534943;
-	intcall(0x15, &ireg, &oreg);
-
-	boot_params.ist_info.signature = oreg.eax;
-	boot_params.ist_info.command = oreg.ebx;
-	boot_params.ist_info.event = oreg.ecx;
-	boot_params.ist_info.perf_level = oreg.edx;
-}
-
 static void set_bios_mode(void)
 {
 }
@@ -100,19 +82,11 @@ void main(void)
 
 	init_heap();
 
-	if (validate_cpu()) {
-		puts("Unable to boot - please use a kernel appropriate "
-		     "for your CPU.\n");
-		die();
-	}
-
 	set_bios_mode();
 
 	detect_memory();
 
 	keyboard_init();
-
-	query_ist();
 
 	set_video();
 

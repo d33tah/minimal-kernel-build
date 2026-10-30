@@ -107,29 +107,6 @@ SYM_CODE_START(startup_32)
 	movl $pa(initial_pg_fixmap)+PDE_IDENT_ATTR,%eax
 	movl %eax,pa(initial_page_table+0xffc)
 
-	jmp .Ldefault_entry
-SYM_CODE_END(startup_32)
-
-/*
- * Non-boot CPU entry point; entered from trampoline.S
- * We can't lgdt here, because lgdt itself uses a data segment, but
- * we know the trampoline has already loaded the boot_gdt for us.
- *
- * If cpu hotplug is not supported then this code can go in init section
- * which will be freed later
- */
-SYM_FUNC_START(startup_32_smp)
-	cld
-	movl $(__BOOT_DS),%eax
-	movl %eax,%ds
-	movl %eax,%es
-	movl %eax,%fs
-	movl %eax,%gs
-	movl pa(initial_stack),%ecx
-	movl %eax,%ss
-	leal -__PAGE_OFFSET(%ecx),%esp
-
-.Ldefault_entry:
 	movl $(CR0_STATE & ~X86_CR0_PG),%eax
 	movl %eax,%cr0
 
@@ -214,16 +191,6 @@ SYM_FUNC_START(startup_32_smp)
 	addl $__PAGE_OFFSET, %esp
 
 /*
- * start system 32-bit setup. We need to re-do some of the things done
- * in 16-bit mode for the "real" operations.
- */
-	movl setup_once_ref,%eax
-	andl %eax,%eax
-	jz 1f				# Did we do this already?
-	call *%eax
-1:
-
-/*
  * Check if it is 486
  */
 	movb $4,X86			# at least 486
@@ -278,23 +245,13 @@ SYM_FUNC_START(startup_32_smp)
 	xorl %eax,%eax			# Clear LDT
 	lldt %ax
 
-	call *(initial_code)
+	call i386_start_kernel
 1:	jmp 1b
-SYM_FUNC_END(startup_32_smp)
+SYM_CODE_END(startup_32)
 
 #include "verify_cpu.S"
 
-/*
- *  setup_once
- *
- *  The setup work we only want to run on the BSP.
- *
- *  Warning: %esi is live across this function.
- */
 __INIT
-setup_once:
-	andl $0,setup_once_ref	/* Once is enough, thanks */
-	RET
 
 SYM_FUNC_START(early_idt_handler_array)
 	# 36(%esp) %eflags
@@ -379,11 +336,6 @@ SYM_FUNC_END(early_ignore_irq)
 __INITDATA
 	.align 4
 SYM_DATA(early_recursion_flag, .long 0)
-
-__REFDATA
-	.align 4
-SYM_DATA(initial_code,		.long i386_start_kernel)
-SYM_DATA(setup_once_ref,	.long setup_once)
 
 #define	PGD_ALIGN	(PAGE_SIZE)
 #define PTI_USER_PGD_FILL	0

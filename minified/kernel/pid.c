@@ -131,26 +131,6 @@ void attach_pid(struct task_struct *task, enum pid_type type)
 	hlist_add_head_rcu(&task->pid_links[type], &pid->tasks[type]);
 }
 
-struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
-{
-	struct pid *pid = idr_find(&ns->idr, nr);
-	struct task_struct *result = NULL;
-
-	RCU_LOCKDEP_WARN(
-		!rcu_read_lock_held(),
-		"find_task_by_pid_ns() needs rcu_read_lock() protection");
-	if (pid) {
-		struct hlist_node *first;
-		first = rcu_dereference_check(
-			hlist_first_rcu(&pid->tasks[PIDTYPE_PID]),
-			lockdep_tasklist_lock_is_held());
-		if (first)
-			result = hlist_entry(first, struct task_struct,
-					     pid_links[(PIDTYPE_PID)]);
-	}
-	return result;
-}
-
 struct pid *get_task_pid(struct task_struct *task, enum pid_type type)
 {
 	struct pid *pid;

@@ -106,16 +106,7 @@ static void __init setup_command_line(char *command_line)
 
 noinline void __ref rest_init(void)
 {
-	struct task_struct *tsk;
-	int pid;
-
-	pid = user_mode_thread(kernel_init, NULL, CLONE_FS);
-
-	rcu_read_lock();
-	tsk = find_task_by_pid_ns(pid, &init_pid_ns);
-	tsk->flags |= PF_NO_SETAFFINITY;
-	set_cpus_allowed_ptr(tsk, cpumask_of(smp_processor_id()));
-	rcu_read_unlock();
+	user_mode_thread(kernel_init, NULL, CLONE_FS);
 
 	system_state = SYSTEM_SCHEDULING;
 

@@ -55,8 +55,6 @@ struct task_struct {
 	unsigned int flags;
 	struct list_head run_list;
 	unsigned int slice_ticks;
-	const cpumask_t *cpus_ptr;
-	cpumask_t cpus_mask;
 	struct list_head tasks;
 	struct mm_struct *mm, *active_mm;
 	int exit_signal;
@@ -117,15 +115,6 @@ static inline pid_t task_tgid_nr(struct task_struct *tsk)
 #define PF_MEMALLOC_NOFS 0x00040000
 #define PF_MEMALLOC_NOIO 0x00080000
 #define PF_KTHREAD 0x00200000
-#define PF_NO_SETAFFINITY 0x04000000
-
-static inline int set_cpus_allowed_ptr(struct task_struct *p,
-				       const struct cpumask *new_mask)
-{
-	if (!cpumask_test_cpu(0, new_mask))
-		return -EINVAL;
-	return 0;
-}
 
 static __always_inline bool is_idle_task(const struct task_struct *p)
 {
@@ -140,9 +129,6 @@ union thread_union {
 extern unsigned long init_stack[THREAD_SIZE / sizeof(unsigned long)];
 
 #define task_thread_info(task) (&(task)->thread_info)
-
-extern struct task_struct *find_task_by_pid_ns(pid_t nr,
-					       struct pid_namespace *ns);
 
 extern void wake_up_new_task(struct task_struct *tsk);
 

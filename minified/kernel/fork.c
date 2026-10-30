@@ -192,9 +192,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	clear_tsk_need_resched(tsk);
 	set_task_stack_end_magic(tsk);
 
-	if (orig->cpus_ptr == &orig->cpus_mask)
-		tsk->cpus_ptr = &tsk->cpus_mask;
-
 	refcount_set(&tsk->rcu_users, 2);
 
 	refcount_set(&tsk->usage, 1);
@@ -466,7 +463,7 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	if (retval < 0)
 		goto bad_fork_free;
 
-	p->flags &= ~(PF_IDLE | PF_NO_SETAFFINITY);
+	p->flags &= ~PF_IDLE;
 	spin_lock_init(&p->alloc_lock);
 
 	p->pagefault_disabled = 0;

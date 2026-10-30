@@ -382,7 +382,6 @@ int begin_new_exec(struct linux_binprm *bprm)
 	 * sighand->count is always 1 and the unshare branch was dead.
 	 */
 
-	me->flags &= ~PF_NO_SETAFFINITY;
 	flush_thread();
 
 	__set_task_comm(me, kbasename(bprm->filename), true);

@@ -228,7 +228,7 @@ void __init sched_init(void)
 	enter_lazy_tlb(&init_mm, idle);
 
 	idle->__state = TASK_RUNNING;
-	idle->flags |= PF_IDLE | PF_KTHREAD | PF_NO_SETAFFINITY;
+	idle->flags |= PF_IDLE | PF_KTHREAD;
 	runqueue.idle = idle;
 	runqueue.curr = idle;
 	init_idle_preempt_count(idle, smp_processor_id());

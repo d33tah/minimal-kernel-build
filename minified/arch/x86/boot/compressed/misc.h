@@ -33,8 +33,6 @@
 
 #include "efi.h"
 
-#define memptr unsigned
-
  
 extern char _head[], _end[];
 

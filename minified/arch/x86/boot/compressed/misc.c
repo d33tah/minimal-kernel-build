@@ -157,7 +157,7 @@ static void parse_elf(void *output)
 	}
 }
 
-asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
+asmlinkage __visible void *extract_kernel(void *rmode,
 				  unsigned char *input_data,
 				  unsigned long input_len,
 				  unsigned char *output,
@@ -220,8 +220,6 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 		error("Destination physical address inappropriately aligned");
 	if (virt_addr & (MIN_KERNEL_ALIGN - 1))
 		error("Destination virtual address inappropriately aligned");
-	if (heap > ((-__PAGE_OFFSET-(128<<20)-1) & 0x7fffffff))
-		error("Destination address too large");
 	if (virt_addr != LOAD_PHYSICAL_ADDR)
 		error("Destination virtual address changed when not relocatable");
 

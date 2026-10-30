@@ -29,7 +29,6 @@
 #include <linux/kref.h>
 #include <linux/rbtree.h>
 #include <linux/rwsem.h>
-#include <linux/completion.h>
 #include <linux/page-flags-layout.h>
 #include <linux/workqueue.h>
 #include <linux/seqlock.h>

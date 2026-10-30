@@ -4,7 +4,6 @@
 #include <linux/file.h>
 #include <linux/console.h>
 #include <linux/mm.h>
-#include <linux/poll.h>
 #include <linux/compat.h>
 
 #include <linux/vt_kern.h>
@@ -145,7 +144,6 @@ static void tty_update_time(struct timespec64 *time)
 static void tty_write_unlock(struct tty_struct *tty)
 {
 	mutex_unlock(&tty->atomic_write_lock);
-	wake_up_interruptible_poll(&tty->write_wait, EPOLLOUT);
 }
 
 static int tty_write_lock(struct tty_struct *tty, int ndelay)
@@ -629,8 +627,6 @@ struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 	mutex_init(&tty->legacy_mutex);
 	init_rwsem(&tty->termios_rwsem);
 	init_ldsem(&tty->ldisc_sem);
-	init_waitqueue_head(&tty->write_wait);
-	init_waitqueue_head(&tty->read_wait);
 	mutex_init(&tty->atomic_write_lock);
 	spin_lock_init(&tty->files_lock);
 	INIT_LIST_HEAD(&tty->tty_files);

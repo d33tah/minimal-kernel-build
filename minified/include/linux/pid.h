@@ -2,7 +2,6 @@
 #define _LINUX_PID_H
 
 #include <linux/rculist.h>
-#include <linux/wait.h>
 #include <linux/refcount.h>
 
 enum pid_type {

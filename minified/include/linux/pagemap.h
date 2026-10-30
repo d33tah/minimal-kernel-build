@@ -86,11 +86,6 @@ static inline pgoff_t linear_page_index(struct vm_area_struct *vma,
 	return pgoff;
 }
 
-struct wait_page_key {
-	struct folio *folio;
-	int bit_nr, page_match;
-};
-
 void __folio_lock(struct folio *folio);
 void unlock_page(struct page *page);
 void folio_unlock(struct folio *folio);

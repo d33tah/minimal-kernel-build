@@ -64,56 +64,6 @@ int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 	return ret;
 }
 
-#define PAGE_WAIT_TABLE_BITS 8
-#define PAGE_WAIT_TABLE_SIZE (1 << PAGE_WAIT_TABLE_BITS)
-static wait_queue_head_t
-	folio_wait_table[PAGE_WAIT_TABLE_SIZE] __cacheline_aligned;
-
-static wait_queue_head_t *folio_waitqueue(struct folio *folio)
-{
-	return &folio_wait_table[hash_ptr(folio, PAGE_WAIT_TABLE_BITS)];
-}
-
-void __init pagecache_init(void)
-{
-	int i;
-
-	for (i = 0; i < PAGE_WAIT_TABLE_SIZE; i++)
-		init_waitqueue_head(&folio_wait_table[i]);
-}
-
-static void folio_wake_bit(struct folio *folio, int bit_nr)
-{
-	wait_queue_head_t *q = folio_waitqueue(folio);
-	struct wait_page_key key;
-	unsigned long flags;
-	wait_queue_entry_t bookmark;
-
-	key.folio = folio;
-	key.bit_nr = bit_nr;
-	key.page_match = 0;
-
-	bookmark.flags = 0;
-	bookmark.private = NULL;
-	bookmark.func = NULL;
-	INIT_LIST_HEAD(&bookmark.entry);
-
-	spin_lock_irqsave(&q->lock, flags);
-	__wake_up_locked_key_bookmark(q, TASK_NORMAL, &key, &bookmark);
-
-	while (bookmark.flags & WQ_FLAG_BOOKMARK) {
-		spin_unlock_irqrestore(&q->lock, flags);
-		cpu_relax();
-		spin_lock_irqsave(&q->lock, flags);
-		__wake_up_locked_key_bookmark(q, TASK_NORMAL, &key, &bookmark);
-	}
-
-	if (!waitqueue_active(q) || !key.page_match)
-		folio_clear_waiters(folio);
-
-	spin_unlock_irqrestore(&q->lock, flags);
-}
-
 /*
  * Stub: nothing waits on a folio bit on a single-shot boot (no contention,
  * no async I/O completion wait). folio_wait_bit_common and its private
@@ -126,19 +76,14 @@ int folio_wait_bit_killable(struct folio *folio, int bit_nr)
 }
 
 /*
- * The generic clear_bit_unlock_is_negative_byte() fallback is statically dead:
- * arch/x86/include/asm/bitops.h unconditionally #defines it (via the always-set
- * arch_clear_bit_unlock_is_negative_byte macro), so the #ifndef here is never
- * taken. folio_unlock() below resolves the call to the x86 arch version.
+ * Nothing can wait on a folio bit (no code in this kernel puts a task to
+ * sleep: there are no wait queues), so PG_waiters is never set and unlock only clears
+ * PG_locked (the "negative byte" result, i.e. PG_waiters, is always 0).
  */
-
 void folio_unlock(struct folio *folio)
 {
-	BUILD_BUG_ON(PG_waiters != 7);
-	BUILD_BUG_ON(PG_locked > 7);
 	VM_BUG_ON_FOLIO(!folio_test_locked(folio), folio);
-	if (clear_bit_unlock_is_negative_byte(PG_locked, folio_flags(folio, 0)))
-		folio_wake_bit(folio, PG_locked);
+	clear_bit_unlock_is_negative_byte(PG_locked, folio_flags(folio, 0));
 }
 
 void __folio_lock(struct folio *folio)

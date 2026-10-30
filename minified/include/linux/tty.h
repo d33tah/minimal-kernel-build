@@ -71,8 +71,6 @@ struct tty_struct {
 	int count;
 
 	struct tty_struct *link;
-	wait_queue_head_t write_wait;
-	wait_queue_head_t read_wait;
 	struct work_struct hangup_work;
 	void *disc_data;
 	void *driver_data;

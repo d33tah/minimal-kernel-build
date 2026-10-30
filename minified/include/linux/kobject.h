@@ -6,7 +6,6 @@
 #include <linux/list.h>
 #include <linux/spinlock.h>
 #include <linux/kref.h>
-#include <linux/wait.h>
 #include <linux/workqueue.h>
 #include <linux/uidgid.h>
 

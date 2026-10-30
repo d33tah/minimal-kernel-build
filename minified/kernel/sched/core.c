@@ -152,94 +152,6 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 		rq_clock_skip_update(rq);
 }
 
-static void ttwu_do_wakeup(struct rq *rq, struct task_struct *p, int wake_flags,
-			   struct rq_flags *rf)
-{
-	check_preempt_curr(rq, p, wake_flags);
-	WRITE_ONCE(p->__state, TASK_RUNNING);
-}
-
-static void ttwu_do_activate(struct rq *rq, struct task_struct *p,
-			     int wake_flags, struct rq_flags *rf)
-{
-	int en_flags = ENQUEUE_WAKEUP | ENQUEUE_NOCLOCK;
-
-	lockdep_assert_rq_held(rq);
-
-	activate_task(rq, p, en_flags);
-	ttwu_do_wakeup(rq, p, wake_flags, rf);
-}
-
-static int ttwu_runnable(struct task_struct *p, int wake_flags)
-{
-	struct rq_flags rf;
-	struct rq *rq;
-	int ret = 0;
-
-	rq = __task_rq_lock(p, &rf);
-	if (task_on_rq_queued(p)) {
-		update_rq_clock(rq);
-		ttwu_do_wakeup(rq, p, wake_flags, &rf);
-		ret = 1;
-	}
-	__task_rq_unlock(rq, &rf);
-
-	return ret;
-}
-
-static void ttwu_queue(struct task_struct *p, int cpu, int wake_flags)
-{
-	struct rq *rq = cpu_rq(cpu);
-	struct rq_flags rf;
-
-	rq_lock(rq, &rf);
-	update_rq_clock(rq);
-	ttwu_do_activate(rq, p, wake_flags, &rf);
-	rq_unlock(rq, &rf);
-}
-
-static __always_inline bool ttwu_state_match(struct task_struct *p,
-					     unsigned int state, int *success)
-{
-	if (READ_ONCE(p->__state) & state) {
-		*success = 1;
-		return true;
-	}
-
-	return false;
-}
-
-static int try_to_wake_up(struct task_struct *p, unsigned int state,
-			  int wake_flags)
-{
-	int cpu, success = 0;
-
-	preempt_disable();
-	if (p == current) {
-		if (!ttwu_state_match(p, state, &success))
-			goto out;
-
-		WRITE_ONCE(p->__state, TASK_RUNNING);
-
-		goto out;
-	}
-
-	if (READ_ONCE(p->__state) == TASK_RUNNING)
-		goto out;
-
-	smp_rmb();
-	if (READ_ONCE(p->on_rq) && ttwu_runnable(p, wake_flags))
-		goto out;
-
-	cpu = task_cpu(p);
-
-	ttwu_queue(p, cpu, wake_flags);
-out:
-	preempt_enable();
-
-	return success;
-}
-
 static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
 	p->on_rq = 0;
@@ -566,13 +478,6 @@ static void __sched notrace preempt_schedule_common(void)
 		preempt_enable_no_resched_notrace();
 
 	} while (need_resched());
-}
-
-int default_wake_function(wait_queue_entry_t *curr, unsigned mode,
-			  int wake_flags, void *key)
-{
-	WARN_ON_ONCE(IS_ENABLED(CONFIG_SCHED_DEBUG) && wake_flags & ~WF_SYNC);
-	return try_to_wake_up(curr->private, mode, wake_flags);
 }
 
 int __sched __cond_resched(void)

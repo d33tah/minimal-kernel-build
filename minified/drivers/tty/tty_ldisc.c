@@ -94,9 +94,6 @@ int tty_ldisc_lock(struct tty_struct *tty, unsigned long timeout)
 {
 	int ret;
 
-	wake_up_interruptible_all(&tty->read_wait);
-	wake_up_interruptible_all(&tty->write_wait);
-
 	ret = __tty_ldisc_lock(tty, timeout);
 	return !ret ? -EBUSY : 0;
 }

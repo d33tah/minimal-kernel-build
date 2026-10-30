@@ -49,8 +49,6 @@ struct signal_struct;
 
 #define TASK_KILLABLE (TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)
 
-#define TASK_NORMAL (TASK_INTERRUPTIBLE | TASK_UNINTERRUPTIBLE)
-
 #define debug_normal_state_change(cond) \
 	do {                            \
 	} while (0)

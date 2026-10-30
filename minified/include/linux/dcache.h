@@ -15,8 +15,6 @@
 #define hashlen_len(hashlen) ((u32)((hashlen) >> 32))
 #define hashlen_create(hash, len) ((u64)(len) << 32 | (u32)(hash))
 
-#include <linux/wait.h>
-
 #define IS_ROOT(x) ((x) == (x)->d_parent)
 
 /* x86 is unconditionally little-endian (__LITTLE_ENDIAN defined in kconfig.h,

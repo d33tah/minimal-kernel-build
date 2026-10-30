@@ -4,7 +4,6 @@
 #include <linux/kref.h>
 #include <linux/mutex.h>
 #include <linux/tty_buffer.h>
-#include <linux/wait.h>
 
 struct tty_driver;
 struct tty_port;

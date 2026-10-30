@@ -625,7 +625,6 @@ static inline spinlock_t *pmd_lock(struct mm_struct *mm, pmd_t *pmd)
 	return ptl;
 }
 
-extern void __init pagecache_init(void);
 extern void free_initmem(void);
 
 extern unsigned long free_reserved_area(void *start, void *end, int poison,

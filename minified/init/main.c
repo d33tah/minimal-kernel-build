@@ -228,7 +228,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	fork_init();
 	proc_caches_init();
 	vfs_caches_init();
-	pagecache_init();
 	proc_root_init();
 
 	check_bugs();

@@ -51,8 +51,7 @@ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
 		gup_flags |= FOLL_WRITE;
 
 	mmap_read_lock(bprm->mm);
-	ret = get_user_pages_remote(bprm->mm, pos, 1, gup_flags, &page, NULL,
-				    NULL);
+	ret = get_user_pages_remote(bprm->mm, pos, 1, gup_flags, &page);
 	mmap_read_unlock(bprm->mm);
 	if (ret <= 0)
 		return NULL;

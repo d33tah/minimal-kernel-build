@@ -502,8 +502,7 @@ extern vm_fault_t handle_mm_fault(struct vm_area_struct *vma,
 				  struct pt_regs *regs);
 long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
 			   unsigned long nr_pages, unsigned int gup_flags,
-			   struct page **pages, struct vm_area_struct **vmas,
-			   int *locked);
+			   struct page **pages);
 /* pin_user_pages_remote, get_user_pages, pin_user_pages, get_user_pages_unlocked,
    pin_user_pages_unlocked, get_user_pages_fast, pin_user_pages_fast removed - unused */
 
@@ -725,7 +724,6 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 #define FOLL_TOUCH 0x02
 #define FOLL_GET 0x04
 #define FOLL_FORCE 0x10
-#define FOLL_TRIED 0x800
 #define FOLL_REMOTE 0x2000
 #define FOLL_COW 0x4000
 /* Removed never-set FOLL bits: DUMP/NOWAIT/NOFAULT/HWPOISON/ANON/LONGTERM */

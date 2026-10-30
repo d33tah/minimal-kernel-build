@@ -136,7 +136,7 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 }
 
 static int faultin_page(struct vm_area_struct *vma, unsigned long address,
-			unsigned int *flags, bool unshare, int *locked)
+			unsigned int *flags, bool unshare)
 {
 	unsigned int fault_flags = 0;
 	vm_fault_t ret;
@@ -144,11 +144,6 @@ static int faultin_page(struct vm_area_struct *vma, unsigned long address,
 	/* FOLL_NOFAULT / FOLL_NOWAIT never set */
 	if (*flags & FOLL_WRITE)
 		fault_flags |= FAULT_FLAG_WRITE;
-	if (locked)
-		fault_flags |= FAULT_FLAG_ALLOW_RETRY;
-	if (*flags & FOLL_TRIED) {
-		fault_flags |= FAULT_FLAG_TRIED;
-	}
 	if (unshare) {
 		fault_flags |= FAULT_FLAG_UNSHARE;
 
@@ -164,11 +159,7 @@ static int faultin_page(struct vm_area_struct *vma, unsigned long address,
 		BUG();
 	}
 
-	if (ret & VM_FAULT_RETRY) {
-		if (locked)
-			*locked = 0;
-		return -EBUSY;
-	}
+	/* no FAULT_FLAG_ALLOW_RETRY, so the fault is never retried */
 
 	if ((ret & VM_FAULT_WRITE) && !(vma->vm_flags & VM_WRITE))
 		*flags |= FOLL_COW;
@@ -205,10 +196,13 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 	return 0;
 }
 
-static long __get_user_pages(struct mm_struct *mm, unsigned long start,
-			     unsigned long nr_pages, unsigned int gup_flags,
-			     struct page **pages, struct vm_area_struct **vmas,
-			     int *locked)
+/*
+ * The only caller is exec's get_arg_page(), which takes a reference on one
+ * page of the new mm (mmap lock held by the caller, no vmas, no unlocking).
+ */
+long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
+			   unsigned long nr_pages, unsigned int gup_flags,
+			   struct page **pages)
 {
 	long ret = 0, i = 0;
 	struct vm_area_struct *vma = NULL;
@@ -216,9 +210,8 @@ static long __get_user_pages(struct mm_struct *mm, unsigned long start,
 	if (!nr_pages)
 		return 0;
 
+	gup_flags |= FOLL_GET | FOLL_TOUCH | FOLL_REMOTE;
 	start = untagged_addr(start);
-
-	VM_BUG_ON(!!pages != !!(gup_flags & FOLL_GET));
 
 	do {
 		struct page *page;
@@ -240,38 +233,17 @@ retry:
 		page = follow_page_mask(vma, start, foll_flags);
 		if (!page || PTR_ERR(page) == -EMLINK) {
 			ret = faultin_page(vma, start, &foll_flags,
-					   PTR_ERR(page) == -EMLINK, locked);
-			switch (ret) {
-			case 0:
+					   PTR_ERR(page) == -EMLINK);
+			if (!ret)
 				goto retry;
-			case -EBUSY:
-				ret = 0;
-				fallthrough;
-			case -EFAULT:
-			case -ENOMEM:
-			case -EHWPOISON:
-				goto out;
-			}
-			BUG();
-		} else if (PTR_ERR(page) == -EEXIST) {
-			if (pages) {
-				ret = PTR_ERR(page);
-				goto out;
-			}
-
-			goto next_page;
+			goto out;
 		} else if (IS_ERR(page)) {
 			ret = PTR_ERR(page);
 			goto out;
 		}
-		if (pages) {
-			pages[i] = page;
-			flush_anon_page(vma, page, start);
-			flush_dcache_page(page);
-		}
-next_page:
-		if (vmas)
-			vmas[i] = vma;
+		pages[i] = page;
+		flush_anon_page(vma, page, start);
+		flush_dcache_page(page);
 		i += 1;
 		start += PAGE_SIZE;
 		nr_pages -= 1;
@@ -279,113 +251,3 @@ next_page:
 out:
 	return i ? i : ret;
 }
-
-static __always_inline long
-__get_user_pages_locked(struct mm_struct *mm, unsigned long start,
-			unsigned long nr_pages, struct page **pages,
-			struct vm_area_struct **vmas, int *locked,
-			unsigned int flags)
-{
-	long ret, pages_done;
-	bool lock_dropped;
-
-	if (locked) {
-		BUG_ON(vmas);
-
-		BUG_ON(*locked != 1);
-	}
-
-	/* FOLL_PIN never set: pages always implies FOLL_GET */
-	if (pages)
-		flags |= FOLL_GET;
-
-	pages_done = 0;
-	lock_dropped = false;
-	for (;;) {
-		ret = __get_user_pages(mm, start, nr_pages, flags, pages, vmas,
-				       locked);
-		if (!locked)
-
-			return ret;
-
-		if (!*locked) {
-			BUG_ON(ret < 0);
-			BUG_ON(ret >= nr_pages);
-		}
-
-		if (ret > 0) {
-			nr_pages -= ret;
-			pages_done += ret;
-			if (!nr_pages)
-				break;
-		}
-		if (*locked) {
-			if (!pages_done)
-				pages_done = ret;
-			break;
-		}
-
-		if (likely(pages))
-			pages += ret;
-		start += ret << PAGE_SHIFT;
-		lock_dropped = true;
-
-retry:
-		ret = mmap_read_lock_killable(mm);
-		if (ret) {
-			BUG_ON(ret > 0);
-			if (!pages_done)
-				pages_done = ret;
-			break;
-		}
-
-		*locked = 1;
-		ret = __get_user_pages(mm, start, 1, flags | FOLL_TRIED, pages,
-				       NULL, locked);
-		if (!*locked) {
-			BUG_ON(ret != 0);
-			goto retry;
-		}
-		if (ret != 1) {
-			BUG_ON(ret > 1);
-			if (!pages_done)
-				pages_done = ret;
-			break;
-		}
-		nr_pages--;
-		pages_done++;
-		if (!nr_pages)
-			break;
-		if (likely(pages))
-			pages++;
-		start += PAGE_SIZE;
-	}
-	if (lock_dropped && *locked) {
-		mmap_read_unlock(mm);
-		*locked = 0;
-	}
-	return pages_done;
-}
-
-static long __get_user_pages_remote(struct mm_struct *mm, unsigned long start,
-				    unsigned long nr_pages,
-				    unsigned int gup_flags, struct page **pages,
-				    struct vm_area_struct **vmas, int *locked)
-{
-	return __get_user_pages_locked(mm, start, nr_pages, pages, vmas, locked,
-				       gup_flags | FOLL_TOUCH | FOLL_REMOTE);
-}
-
-long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
-			   unsigned long nr_pages, unsigned int gup_flags,
-			   struct page **pages, struct vm_area_struct **vmas,
-			   int *locked)
-{
-	/* FOLL_LONGTERM never set -> formerly is_valid_gup_flags, always valid */
-	return __get_user_pages_remote(mm, start, nr_pages, gup_flags, pages,
-				       vmas, locked);
-}
-
-/* get_user_pages_unlocked, get_user_pages_fast_only, get_user_pages_fast,
-   pin_user_pages_fast, pin_user_pages_fast_only, pin_user_pages_remote,
-   pin_user_pages, pin_user_pages_unlocked, get_user_pages removed - unused */

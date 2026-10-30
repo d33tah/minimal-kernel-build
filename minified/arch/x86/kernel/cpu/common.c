@@ -382,8 +382,6 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 
 	cpu_set_bug_bits(c);
 
-	fpu__init_system(c);
-
 	setup_clear_cpu_cap(X86_FEATURE_PCID);
 
 	setup_clear_cpu_cap(X86_FEATURE_LA57);
@@ -569,8 +567,6 @@ void cpu_init(void)
 	dbg_restore_debug_regs();
 
 	doublefault_init_cpu_tss();
-
-	fpu__init_cpu();
 
 	{
 		struct desc_ptr gdt_descr;

@@ -73,7 +73,6 @@ void __noreturn do_exit(long code)
 	exit_fs(tsk);
 	exit_task_namespaces(tsk);
 	exit_task_work(tsk);
-	exit_thread(tsk);
 
 	/* sched_autogroup_exit_task - stubbed */
 

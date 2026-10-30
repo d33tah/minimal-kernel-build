@@ -72,9 +72,6 @@ static inline void arch_exit_to_user_mode_work(struct pt_regs *regs,
 }
 #endif
 
-static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
-						  unsigned long ti_work);
-
 static __always_inline void arch_exit_to_user_mode(void);
 
 void syscall_exit_to_user_mode(struct pt_regs *regs);

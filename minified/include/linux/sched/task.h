@@ -39,7 +39,6 @@ extern int copy_thread(struct task_struct *, const struct kernel_clone_args *);
 
 extern void flush_thread(void);
 
-extern void exit_thread(struct task_struct *tsk);
 /* do_group_exit now static in exit.c */
 
 extern void exit_files(struct task_struct *);
@@ -65,8 +64,6 @@ static inline void put_task_struct(struct task_struct *t)
 }
 
 void put_task_struct_rcu_user(struct task_struct *task);
-
-extern int arch_task_struct_size __read_mostly;
 
 static inline void task_lock(struct task_struct *p)
 {

@@ -30,7 +30,6 @@
 #define	EX_TYPE_UACCESS			 3
 #define	EX_TYPE_COPY			 4
 #define	EX_TYPE_CLEAR_FS		 5
-#define	EX_TYPE_FPU_RESTORE		 6
 #define	EX_TYPE_BPF			 7
 #define	EX_TYPE_WRMSR			 8
 #define	EX_TYPE_RDMSR			 9

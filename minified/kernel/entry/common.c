@@ -78,8 +78,6 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 	if (unlikely(ti_work & EXIT_TO_USER_MODE_WORK))
 		ti_work = exit_to_user_mode_loop(regs, ti_work);
 
-	arch_exit_to_user_mode_prepare(regs, ti_work);
-
 	addr_limit_user_check();
 	lockdep_assert_irqs_disabled();
 	lockdep_sys_exit();

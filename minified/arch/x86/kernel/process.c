@@ -6,7 +6,6 @@
 #include <linux/random.h>
 /* end stackprotector.h */
 #include <asm/cpu.h>
-#include <asm/fpu/sched.h>
 #include <asm/switch_to.h>
 #include <asm/unwind.h>
 
@@ -16,22 +15,9 @@ __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = { .x86_ts
 
 int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
 {
-	memcpy(dst, src, arch_task_struct_size);
-
-	dst->thread.fpu.fpstate = NULL;
+	memcpy(dst, src, sizeof(*dst));
 
 	return 0;
-}
-
-void exit_thread(struct task_struct *tsk)
-{
-	/*
-	 * RUNTIME-DEAD ANCHOR-STUB: exit_thread drops the dying task's FPU state.
-	 * Both call sites are runtime-dead on this 1-shot boot: do_exit's tail
-	 * (init panics before reaching it, HIT=False) and copy_process's
-	 * bad_fork_cleanup_thread rollback (copy_process always succeeds at boot,
-	 * HIT=False). fpu__drop stays live via its 2nd caller in fpu/core.c.
-	 */
 }
 
 int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
@@ -54,8 +40,6 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 
 	frame->flags = X86_EFLAGS_FIXED;
 
-	fpu_clone(p);
-
 	frame->bx = 0;
 	*childregs = *current_pt_regs();
 	childregs->ax = 0;
@@ -75,8 +59,6 @@ void flush_thread(void)
 	struct task_struct *tsk = current;
 
 	memset(tsk->thread.tls_array, 0, sizeof(tsk->thread.tls_array));
-
-	fpu_flush_thread();
 }
 
 void arch_setup_new_exec(void)

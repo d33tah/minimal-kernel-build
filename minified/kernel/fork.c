@@ -250,31 +250,14 @@ static void set_max_threads(unsigned int max_threads_suggested)
 	max_threads = clamp_t(u64, threads, MIN_THREADS, MAX_THREADS);
 }
 
-int arch_task_struct_size __read_mostly;
-
-#ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
-static void task_struct_whitelist(unsigned long *offset, unsigned long *size)
-{
-	arch_thread_struct_whitelist(offset, size);
-
-	if (unlikely(*size == 0))
-		*offset = 0;
-	else
-		*offset += offsetof(struct task_struct, thread);
-}
-#endif
-
 void __init fork_init(void)
 {
 	int i;
 #ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
-	int align = max_t(int, L1_CACHE_BYTES, ARCH_MIN_TASKALIGN);
-	unsigned long useroffset, usersize;
-
-	task_struct_whitelist(&useroffset, &usersize);
-	task_struct_cachep = kmem_cache_create_usercopy(
-		"task_struct", arch_task_struct_size, align,
-		SLAB_PANIC | SLAB_ACCOUNT, useroffset, usersize, NULL);
+	task_struct_cachep = kmem_cache_create("task_struct",
+					       sizeof(struct task_struct),
+					       L1_CACHE_BYTES,
+					       SLAB_PANIC | SLAB_ACCOUNT, NULL);
 #endif
 
 	arch_task_cache_init();
@@ -713,7 +696,7 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 		pid = alloc_pid(p->nsproxy->pid_ns_for_children);
 		if (IS_ERR(pid)) {
 			retval = PTR_ERR(pid);
-			goto bad_fork_cleanup_thread;
+			goto bad_fork_cleanup_io;
 		}
 	}
 
@@ -794,8 +777,6 @@ bad_fork_cancel_cgroup:
 	write_unlock_irq(&tasklist_lock);
 	if (pid != &init_struct_pid)
 		free_pid(pid);
-bad_fork_cleanup_thread:
-	exit_thread(p);
 bad_fork_cleanup_io:
 	exit_task_namespaces(p);
 bad_fork_cleanup_mm:

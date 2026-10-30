@@ -4,7 +4,6 @@
 #include <linux/ptrace.h>
 #include <linux/kdebug.h>
 
-#include <asm/fpu/sched.h>
 #include <asm/desc.h>
 
 #include <asm/switch_to.h>
@@ -35,11 +34,7 @@ __visible struct task_struct *__switch_to(struct task_struct *prev_p,
 					  struct task_struct *next_p)
 {
 	struct thread_struct *prev = &prev_p->thread, *next = &next_p->thread;
-	struct fpu *prev_fpu = &prev->fpu;
 	int cpu = smp_processor_id();
-
-	if (!test_thread_flag(TIF_NEED_FPU_LOAD))
-		switch_fpu_prepare(prev_fpu, cpu);
 
 	savesegment(gs, prev->gs);
 
@@ -58,8 +53,6 @@ __visible struct task_struct *__switch_to(struct task_struct *prev_p,
 		loadsegment(gs, next->gs);
 
 	this_cpu_write(current_task, next_p);
-
-	switch_fpu_finish();
 
 	return prev_p;
 }

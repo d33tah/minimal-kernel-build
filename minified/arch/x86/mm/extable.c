@@ -43,7 +43,6 @@
 		(typeof(_mask))(((_reg) & (_mask)) >> __bf_shf(_mask)); \
 	})
 
-#include <asm/fpu/api.h>
 #include <asm/traps.h>
 #include <asm/insn-eval.h>
 #include <asm/kdebug.h>
@@ -91,20 +90,6 @@ static bool ex_handler_sgx(const struct exception_table_entry *fixup,
 {
 	regs->ax = trapnr | SGX_ENCLS_FAULT_FLAG;
 	return ex_handler_default(fixup, regs);
-}
-
-static bool ex_handler_fprestore(const struct exception_table_entry *fixup,
-				 struct pt_regs *regs)
-{
-	regs->ip = ex_fixup_addr(fixup);
-
-	WARN_ONCE(
-		1,
-		"Bad FPU state detected at %pB, reinitializing FPU registers.",
-		(void *)instruction_pointer(regs));
-
-	fpu_reset_from_exception_fixup();
-	return true;
 }
 
 static bool ex_handler_uaccess(const struct exception_table_entry *fixup,
@@ -190,8 +175,6 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 		return ex_handler_copy(e, regs, trapnr);
 	case EX_TYPE_CLEAR_FS:
 		return ex_handler_clear_fs(e, regs);
-	case EX_TYPE_FPU_RESTORE:
-		return ex_handler_fprestore(e, regs);
 	case EX_TYPE_BPF:
 		return ex_handler_bpf(e, regs);
 	case EX_TYPE_WRMSR:

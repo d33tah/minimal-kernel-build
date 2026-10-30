@@ -16,7 +16,6 @@
 #include <asm/desc_defs.h>
 #include <asm/nops.h>
 #include <asm/special_insns.h>
-#include <asm/fpu/types.h>
 #include <asm/unwind_hints.h>
 /* Removed: #include <asm/vmxfeatures.h> - not needed for minimal kernel */
 
@@ -35,7 +34,6 @@ static __always_inline void cpu_relax(void)
 
 /* NET_IP_ALIGN removed - unused */
 
-#define ARCH_MIN_TASKALIGN __alignof__(union fpregs_state)
 #define ARCH_MIN_MMSTRUCT_ALIGN 0
 
 /* TLB arrays removed - never used in minimal kernel */
@@ -156,17 +154,7 @@ struct thread_struct {
 	unsigned long gs;
 	unsigned long virtual_dr6;
 	unsigned long trap_nr;
-	struct fpu fpu;
 };
-
-extern void fpu_thread_struct_whitelist(unsigned long *offset,
-					unsigned long *size);
-
-static inline void arch_thread_struct_whitelist(unsigned long *offset,
-						unsigned long *size)
-{
-	fpu_thread_struct_whitelist(offset, size);
-}
 
 static inline void native_load_sp0(unsigned long sp0)
 {

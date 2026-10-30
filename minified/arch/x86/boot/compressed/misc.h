@@ -39,10 +39,6 @@
 extern char _head[], _end[];
 
  
-extern memptr free_mem_ptr;
-extern memptr free_mem_end_ptr;
-void *malloc(int size);
-void free(void *where);
 extern struct boot_params *boot_params;
 void __putstr(const char *s);
 void __puthex(unsigned long value);

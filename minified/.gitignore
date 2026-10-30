@@ -20,14 +20,14 @@ arch/x86/boot/bzImage
 arch/x86/boot/compressed/.mkpiggy.cmd
 arch/x86/boot/compressed/.piggy.S.cmd
 arch/x86/boot/compressed/.vmlinux.bin.cmd
-arch/x86/boot/compressed/.vmlinux.bin.xz.cmd
+arch/x86/boot/compressed/.vmlinux.bin.raw.cmd
 arch/x86/boot/compressed/.vmlinux.cmd
 arch/x86/boot/compressed/.vmlinux.lds.cmd
 arch/x86/boot/compressed/mkpiggy
 arch/x86/boot/compressed/piggy.S
 arch/x86/boot/compressed/vmlinux
 arch/x86/boot/compressed/vmlinux.bin
-arch/x86/boot/compressed/vmlinux.bin.xz
+arch/x86/boot/compressed/vmlinux.bin.raw
 arch/x86/boot/compressed/vmlinux.lds
 arch/x86/boot/setup.bin
 arch/x86/boot/setup.elf

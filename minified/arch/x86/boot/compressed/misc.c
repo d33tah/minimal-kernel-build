@@ -7,11 +7,6 @@
 #include <asm/bootparam_utils.h>
 
 
-#define STATIC		static
-#define MALLOC_VISIBLE
-#include <linux/decompress/mm.h>
-
-#define memzero(s, n)	memset((s), 0, (n))
 #ifndef memmove
 #define memmove		memmove
 void *memmove(void *dest, const void *src, size_t n);
@@ -20,9 +15,6 @@ void *memmove(void *dest, const void *src, size_t n);
 struct boot_params *boot_params;
 
 struct port_io_ops pio_ops;
-
-memptr free_mem_ptr;
-memptr free_mem_end_ptr;
 
 static char *vidmem;
 static int vidport;
@@ -33,7 +25,6 @@ static int cols __section(".data");
 
 
 
-#include "../../../../lib/decompress_unxz.c"
 
 
 
@@ -134,7 +125,7 @@ static inline void handle_relocations(void *output, unsigned long output_len,
 static void parse_elf(void *output)
 {
 	Elf32_Ehdr ehdr;
-	Elf32_Phdr *phdrs, *phdr;
+	Elf32_Phdr *phdr;
 	void *dest;
 	int i;
 
@@ -149,9 +140,7 @@ static void parse_elf(void *output)
 
 	debug_putstr("Parsing ELF... ");
 
-	phdrs = malloc(sizeof(*phdrs) * ehdr.e_phnum);
-	if (!phdrs)
-		error("Failed to allocate space for phdrs");
+	Elf32_Phdr phdrs[ehdr.e_phnum];
 
 	memcpy(phdrs, output + ehdr.e_phoff, sizeof(*phdrs) * ehdr.e_phnum);
 
@@ -166,8 +155,6 @@ static void parse_elf(void *output)
 		default:   break;
 		}
 	}
-
-	free(phdrs);
 }
 
 asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
@@ -211,9 +198,6 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 
 	debug_putstr("early console in extract_kernel\n");
 
-	free_mem_ptr     = heap;	 
-	free_mem_end_ptr = heap + BOOT_HEAP_SIZE;
-
 	 
 	needed_size = max(output_len, kernel_total_size);
 
@@ -241,9 +225,10 @@ asmlinkage __visible void *extract_kernel(void *rmode, memptr heap,
 	if (virt_addr != LOAD_PHYSICAL_ADDR)
 		error("Destination virtual address changed when not relocatable");
 
-	debug_putstr("\nDecompressing Linux... ");
-	__decompress(input_data, input_len, NULL, NULL, output, output_len,
-			NULL, error);
+	debug_putstr("\nCopying Linux... ");
+	if (input_len < output_len)
+		error("payload shorter than kernel");
+	memmove(output, input_data, output_len);
 	parse_elf(output);
 	handle_relocations(output, output_len, virt_addr);
 	debug_putstr("done.\nBooting the kernel.\n");

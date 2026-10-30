@@ -170,17 +170,6 @@ static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 	validate_mm(mm);
 }
 
-int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
-		 unsigned long end, pgoff_t pgoff,
-		 struct vm_area_struct *insert, struct vm_area_struct *expand)
-{
-	/* Minimal stub: simple VMA adjustment without complex merging */
-	vma->vm_start = start;
-	vma->vm_end = end;
-	vma->vm_pgoff = pgoff;
-	return 0;
-}
-
 static struct anon_vma *reusable_anon_vma(struct vm_area_struct *old,
 					  struct vm_area_struct *a,
 					  struct vm_area_struct *b)
@@ -616,7 +605,7 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 	 * Returning 0 is the success contract the sole live caller expects.
 	 * Stubbing the body made its private subtree (do_brk_flags, vma_merge,
 	 * can_vma_merge_before/after, vma_next, is_mergeable_vma/anon_vma) dead
-	 * -> all deleted.  __vma_adjust kept (link-live via fs/exec.c).
+	 * -> all deleted.
 	 */
 	return 0;
 }
@@ -640,8 +629,4 @@ int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 
 	vma_link(mm, vma, prev, rb_link, rb_parent);
 	return 0;
-}
-
-void __init mmap_init(void)
-{
 }

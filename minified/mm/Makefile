@@ -12,7 +12,7 @@ CFLAGS_init-mm.o += $(call cc-disable-warning, override-init)
 CFLAGS_init-mm.o += $(call cc-disable-warning, initializer-overrides)
 
 mmu-$(CONFIG_MMU)	:= memory.o \
-			   mmap.o mmu_gather.o mremap.o \
+			   mmap.o mmu_gather.o \
 			   rmap.o
 
 obj-y			:= filemap.o \

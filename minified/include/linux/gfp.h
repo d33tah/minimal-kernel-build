@@ -207,7 +207,6 @@ extern void free_pages(unsigned long addr, unsigned int order);
 
 #define __free_page(page) __free_pages((page), 0)
 
-void page_alloc_init(void);
 void page_alloc_init_late(void);
 
 extern gfp_t gfp_allowed_mask;

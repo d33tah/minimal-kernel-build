@@ -1339,19 +1339,6 @@ unsigned long free_reserved_area(void *start, void *end, int poison,
 	return 0;
 }
 
-void __init mem_init_print_info(void)
-{
-}
-
-void __init page_alloc_init(void)
-{
-	/*
-	 * Single-CPU build with no CPU hotplug: the CPUHP_PAGE_ALLOC
-	 * dead/online callbacks would only ever run on a hotplug event,
-	 * which never happens here, so nothing needs to be registered.
-	 */
-}
-
 static void __setup_per_zone_wmarks(void)
 {
 	/* Minimal stub: set basic watermarks without complex calculations */

@@ -152,7 +152,6 @@ void __init __weak pgtable_cache_init(void)
 static void __init mm_init(void)
 {
 	mem_init();
-	mem_init_print_info();
 	kmem_cache_init();
 
 	pgtable_init();
@@ -180,7 +179,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	smp_prepare_boot_cpu();
 
 	build_all_zonelists(NULL);
-	page_alloc_init();
 
 	pr_notice("Kernel command line: %s\n", saved_command_line);
 

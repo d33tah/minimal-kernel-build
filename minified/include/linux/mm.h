@@ -528,10 +528,6 @@ static inline void clear_page_pfmemalloc(struct page *page)
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 			    pte_t pte);
 
-void free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
-		    unsigned long end, unsigned long floor,
-		    unsigned long ceiling);
-
 extern vm_fault_t handle_mm_fault(struct vm_area_struct *vma,
 				  unsigned long address, unsigned int flags,
 				  struct pt_regs *regs);
@@ -547,12 +543,6 @@ static inline bool folio_mark_dirty(struct folio *folio)
 	return true;
 }
 bool set_page_dirty(struct page *page);
-
-extern unsigned long move_page_tables(struct vm_area_struct *vma,
-				      unsigned long old_addr,
-				      struct vm_area_struct *new_vma,
-				      unsigned long new_addr, unsigned long len,
-				      bool need_rmap_locks);
 
 /*
  * mprotect_fixup is a no-op stub on this minimal build (the only caller,
@@ -596,16 +586,6 @@ static inline void sync_mm_rss(struct mm_struct *mm)
 }
 
 /* Removed: vma_wants_writenotify - never called */
-
-extern pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
-			       spinlock_t **ptl);
-static inline pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
-				    spinlock_t **ptl)
-{
-	pte_t *ptep;
-	__cond_lock(*ptl, ptep = __get_locked_pte(mm, addr, ptl));
-	return ptep;
-}
 
 static inline void mm_pgtables_bytes_init(struct mm_struct *mm)
 {
@@ -698,14 +678,11 @@ extern void free_initmem(void);
 extern unsigned long free_reserved_area(void *start, void *end, int poison,
 					const char *s);
 
-extern void mem_init_print_info(void);
-
 extern void reserve_bootmem_region(phys_addr_t start, phys_addr_t end);
 
 void free_area_init(unsigned long *max_zone_pfn);
 extern int __meminit init_per_zone_wmark_min(void);
 extern void mem_init(void);
-extern void __init mmap_init(void);
 
 extern void setup_per_cpu_pageset(void);
 
@@ -722,16 +699,6 @@ void anon_vma_interval_tree_remove(struct anon_vma_chain *node,
 
 extern int __vm_enough_memory(struct mm_struct *mm, long pages,
 			      int cap_sys_admin);
-extern int __vma_adjust(struct vm_area_struct *vma, unsigned long start,
-			unsigned long end, pgoff_t pgoff,
-			struct vm_area_struct *insert,
-			struct vm_area_struct *expand);
-static inline int vma_adjust(struct vm_area_struct *vma, unsigned long start,
-			     unsigned long end, pgoff_t pgoff,
-			     struct vm_area_struct *insert)
-{
-	return __vma_adjust(vma, start, end, pgoff, insert, NULL);
-}
 extern struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *);
 extern int insert_vm_struct(struct mm_struct *, struct vm_area_struct *);
 extern void __vma_link_rb(struct mm_struct *, struct vm_area_struct *,

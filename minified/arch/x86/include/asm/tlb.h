@@ -114,7 +114,7 @@ static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
  * pud_free_tlb/p4d_free_tlb macros (folded away on 2-level paging) used them */
 
 /* pmd_free_tlb / pud_free_tlb / p4d_free_tlb removed - never invoked on
- * 2-level paging (mm/memory.c free_pgd_range only calls pte_free_tlb) */
+ * 2-level paging */
 /* pte_needs_flush / huge_pmd_needs_flush fallback stubs removed - zero callers tree-wide */
 
 #endif /* _ASM_X86_TLB_H */

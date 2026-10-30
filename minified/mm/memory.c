@@ -29,19 +29,6 @@ early_initcall(init_zero_pfn);
 
 #define inc_mm_counter_fast(mm, member) inc_mm_counter(mm, member)
 
-/*
- * RUNTIME-DEAD on a single-shot boot: only reached from shift_arg_pages
- * (fs/exec.c) when the initial stack is relocated, which never happens here
- * (move_page_tables / this whole free path stay HIT=False). Stubbed; the
- * private free_folded_range / free_pte_range page-table free walkers it solely
- * drove were deleted with it.
- */
-void free_pgd_range(struct mmu_gather *tlb, unsigned long addr,
-		    unsigned long end, unsigned long floor,
-		    unsigned long ceiling)
-{
-}
-
 void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte)
 {
 	spinlock_t *ptl = pmd_lock(mm, pmd);
@@ -102,32 +89,6 @@ check_pfn:
 /* All copy_*_range functions removed - copy_page_range is stubbed
  * since simplified dup_mmap doesn't use them (~230 LOC removed)
  */
-
-static pmd_t *walk_to_pmd(struct mm_struct *mm, unsigned long addr)
-{
-	pgd_t *pgd;
-	p4d_t *p4d;
-	pud_t *pud;
-	pmd_t *pmd;
-
-	pgd = pgd_offset(mm, addr);
-	p4d = p4d_alloc(mm, pgd, addr);
-	pud = pud_alloc(mm, p4d, addr);
-	pmd = pmd_alloc(mm, pud, addr);
-
-	VM_BUG_ON(pmd_trans_huge(*pmd));
-	return pmd;
-}
-
-pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
-			spinlock_t **ptl)
-{
-	pmd_t *pmd = walk_to_pmd(mm, addr);
-
-	if (!pmd)
-		return NULL;
-	return pte_alloc_map_lock(mm, pmd, addr, ptl);
-}
 
 static gfp_t __get_fault_gfp_mask(struct vm_area_struct *vma)
 {

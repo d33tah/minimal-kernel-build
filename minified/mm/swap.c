@@ -108,18 +108,6 @@ void lru_cache_add_inactive_or_unevictable(struct page *page,
 		lru_cache_add(page);
 }
 
-void lru_add_drain(void)
-{
-	struct pagevec *pvec;
-
-	local_lock(&lru_pvecs.lock);
-	/* folded sole caller of lru_add_drain_cpu() */
-	pvec = &per_cpu(lru_pvecs.lru_add, smp_processor_id());
-	if (pagevec_count(pvec))
-		__pagevec_lru_add(pvec);
-	local_unlock(&lru_pvecs.lock);
-}
-
 atomic_t lru_disable_count = ATOMIC_INIT(0);
 
 void release_pages(struct page **pages, int nr)

@@ -555,16 +555,13 @@ static void __init calculate_node_totalpages(struct pglist_data *pgdat,
 	pgdat->node_spanned_pages = totalpages;
 }
 
-static unsigned long __init calc_memmap_size(unsigned long spanned_pages)
-{
-	return PAGE_ALIGN(spanned_pages * sizeof(struct page)) >> PAGE_SHIFT;
-}
-
+/*
+ * managed_pages starts at 0: __free_pages_core() adds every page memblock
+ * releases to the buddy allocator, so that is the only count.
+ */
 static void __meminit zone_init_internals(struct zone *zone, enum zone_type idx,
-					  int nid,
-					  unsigned long remaining_pages)
+					  int nid)
 {
-	atomic_long_set(&zone->managed_pages, remaining_pages);
 	zone->name = zone_names[idx];
 	zone->zone_pgdat = NODE_DATA(nid);
 	spin_lock_init(&zone->lock);
@@ -577,18 +574,9 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 
 	for (j = 0; j < MAX_NR_ZONES; j++) {
 		struct zone *zone = pgdat->node_zones + j;
-		unsigned long size, freesize, memmap_pages;
+		unsigned long size = zone->spanned_pages;
 
-		size = zone->spanned_pages;
-		freesize = zone->present_pages;
-
-		memmap_pages = calc_memmap_size(size);
-		if (freesize >= memmap_pages)
-			freesize -= memmap_pages;
-
-		/* dma_reserve, nr_kernel_pages, nr_all_pages removed - never read */
-
-		zone_init_internals(zone, j, nid, freesize);
+		zone_init_internals(zone, j, nid);
 
 		if (!size)
 			continue;

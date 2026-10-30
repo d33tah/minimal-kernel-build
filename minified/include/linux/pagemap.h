@@ -29,14 +29,11 @@ static inline void mapping_set_gfp_mask(struct address_space *m, gfp_t mask)
 	m->gfp_mask = mask;
 }
 
-void release_pages(struct page **pages, int nr);
-
 static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
 {
 	return folio_alloc(gfp, order);
 }
 
-#define FGP_ACCESSED 0x00000001
 #define FGP_LOCK 0x00000002
 #define FGP_CREAT 0x00000004
 #define FGP_WRITE 0x00000008

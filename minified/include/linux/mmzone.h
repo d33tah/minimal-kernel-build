@@ -123,13 +123,6 @@ enum lru_list {
 	NR_LRU_LISTS
 };
 
-#define for_each_lru(lru) for (lru = 0; lru < NR_LRU_LISTS; lru++)
-
-struct lruvec {
-	struct list_head lists[NR_LRU_LISTS];
-	spinlock_t lru_lock;
-};
-
 enum zone_watermarks { WMARK_MIN, WMARK_LOW, WMARK_HIGH, NR_WMARK };
 
 #define NR_PCP_LISTS (MIGRATE_PCPTYPES * (PAGE_ALLOC_COSTLY_ORDER + 1))
@@ -201,8 +194,6 @@ typedef struct pglist_data {
 	struct page *node_mem_map;
 	unsigned long node_start_pfn, node_spanned_pages;
 	int node_id;
-	ZONE_PADDING(_pad1_) struct lruvec __lruvec;
-	ZONE_PADDING(_pad2_)
 } pg_data_t;
 
 static inline unsigned long pgdat_end_pfn(pg_data_t *pgdat)
@@ -219,13 +210,6 @@ enum meminit_context {
 extern void init_currently_empty_zone(struct zone *zone,
 				      unsigned long start_pfn,
 				      unsigned long size);
-
-extern void lruvec_init(struct lruvec *lruvec);
-
-static inline struct pglist_data *lruvec_pgdat(struct lruvec *lruvec)
-{
-	return container_of(lruvec, struct pglist_data, __lruvec);
-}
 
 #define zone_idx(zone) ((zone) - (zone)->zone_pgdat->node_zones)
 

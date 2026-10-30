@@ -61,10 +61,6 @@ int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 	ret = __filemap_add_folio(mapping, folio, index, gfp, &shadow);
 	if (unlikely(ret))
 		__folio_clear_locked(folio);
-	else {
-		WARN_ON_ONCE(folio_test_active(folio));
-		folio_add_lru(folio);
-	}
 	return ret;
 }
 
@@ -210,9 +206,6 @@ repeat:
 		VM_BUG_ON_FOLIO(!folio_contains(folio, index), folio);
 	}
 
-	if (fgp_flags & FGP_ACCESSED)
-		folio_mark_accessed(folio);
-
 no_page:
 	if (!folio && (fgp_flags & FGP_CREAT)) {
 		int err;
@@ -225,9 +218,6 @@ no_page:
 
 		if (WARN_ON_ONCE(!(fgp_flags & (FGP_LOCK | FGP_FOR_MMAP))))
 			fgp_flags |= FGP_LOCK;
-
-		if (fgp_flags & FGP_ACCESSED)
-			__folio_set_referenced(folio);
 
 		err = filemap_add_folio(mapping, folio, index, gfp);
 		if (unlikely(err)) {
@@ -439,13 +429,6 @@ err:
 	return err;
 }
 
-static inline bool pos_same_folio(loff_t pos1, loff_t pos2, struct folio *folio)
-{
-	unsigned int shift = folio_shift(folio);
-
-	return (pos1 >> shift == pos2 >> shift);
-}
-
 ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 		     ssize_t already_read)
 {
@@ -486,10 +469,6 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 
 		writably_mapped = mapping_writably_mapped(mapping);
 
-		if (!pos_same_folio(iocb->ki_pos, ra->prev_pos - 1,
-				    fbatch.folios[0]))
-			folio_mark_accessed(fbatch.folios[0]);
-
 		for (i = 0; i < folio_batch_count(&fbatch); i++) {
 			struct folio *folio = fbatch.folios[i];
 			size_t fsize = folio_size(folio);
@@ -500,8 +479,6 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 
 			if (end_offset < folio_pos(folio))
 				break;
-			if (i > 0)
-				folio_mark_accessed(folio);
 
 			if (writably_mapped)
 				flush_dcache_folio(folio);

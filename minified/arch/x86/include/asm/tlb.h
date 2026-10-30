@@ -7,19 +7,6 @@
 #include <asm/tlbflush.h>
 #include <asm/cacheflush.h>
 
-#ifndef CONFIG_MMU_GATHER_NO_GATHER
-#define MMU_GATHER_BUNDLE 8
-
-struct mmu_gather_batch {
-	struct mmu_gather_batch *next;
-	unsigned int nr, max;
-	struct page *pages[];
-};
-
-extern bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page,
-				   int page_size);
-#endif
-
 struct mmu_gather {
 	struct mm_struct *mm;
 
@@ -32,11 +19,6 @@ struct mmu_gather {
 	unsigned int cleared_pmds : 1;
 	unsigned int cleared_puds : 1;
 	unsigned int cleared_p4ds : 1;
-
-#ifndef CONFIG_MMU_GATHER_NO_GATHER
-	struct mmu_gather_batch *active, local;
-	struct page *__pages[MMU_GATHER_BUNDLE];
-#endif
 };
 
 void tlb_flush_mmu(struct mmu_gather *tlb);
@@ -102,7 +84,7 @@ static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
 }
 
 /* tlb_remove_page_size + tlb_remove_page + tlb_change_page_size removed -
- * 0-caller tlb-gather user wrappers (externs __tlb_remove_page_size/tlb_flush_mmu stay live) */
+ * 0-caller tlb-gather user wrappers */
 
 /* tlb_start_vma removed - 0-caller tlb-gather VMA-iteration wrapper; its
  * exclusive callee tlb_update_vma_flags dropped too; flush_cache_range stays

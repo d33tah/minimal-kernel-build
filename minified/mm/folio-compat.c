@@ -7,19 +7,9 @@ void unlock_page(struct page *page)
 	return folio_unlock(page_folio(page));
 }
 
-void mark_page_accessed(struct page *page)
-{
-	folio_mark_accessed(page_folio(page));
-}
-
 bool set_page_dirty(struct page *page)
 {
 	return folio_mark_dirty(page_folio(page));
-}
-
-void lru_cache_add(struct page *page)
-{
-	folio_add_lru(page_folio(page));
 }
 
 noinline struct page *pagecache_get_page(struct address_space *mapping,

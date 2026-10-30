@@ -1193,11 +1193,6 @@ static unsigned long __init calc_memmap_size(unsigned long spanned_pages)
 	return PAGE_ALIGN(spanned_pages * sizeof(struct page)) >> PAGE_SHIFT;
 }
 
-static void __meminit pgdat_init_internals(struct pglist_data *pgdat)
-{
-	lruvec_init(&pgdat->__lruvec);
-}
-
 static void __meminit zone_init_internals(struct zone *zone, enum zone_type idx,
 					  int nid,
 					  unsigned long remaining_pages)
@@ -1213,8 +1208,6 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 {
 	enum zone_type j;
 	int nid = pgdat->node_id;
-
-	pgdat_init_internals(pgdat);
 
 	for (j = 0; j < MAX_NR_ZONES; j++) {
 		struct zone *zone = pgdat->node_zones + j;

@@ -242,7 +242,6 @@ static inline int pmd_bad(pmd_t pmd)
 
 void init_mem_mapping(void);
 void early_alloc_pgt_buf(void);
-void __init poking_init(void);
 unsigned long init_memory_mapping(unsigned long start, unsigned long end,
 				  pgprot_t prot);
 

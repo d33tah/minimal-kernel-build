@@ -235,7 +235,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	pagecache_init();
 	proc_root_init();
 
-	poking_init();
 	check_bugs();
 
 	arch_post_acpi_subsys_init();

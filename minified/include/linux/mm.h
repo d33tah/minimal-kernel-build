@@ -153,7 +153,6 @@ void setup_initial_init_mm(void *start_code, void *end_code, void *end_data,
 			   void *brk);
 
 struct vm_area_struct *vm_area_alloc(struct mm_struct *);
-struct vm_area_struct *vm_area_dup(struct vm_area_struct *);
 void vm_area_free(struct vm_area_struct *);
 
 #define VM_NONE 0x00000000

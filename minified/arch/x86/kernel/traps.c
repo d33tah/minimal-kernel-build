@@ -85,8 +85,6 @@ DEFINE_IDTENTRY_ERRORCODE(exc_stack_segment)
 
 DEFINE_IDTENTRY_ERRORCODE(exc_alignment_check)
 {
-	char *str = "alignment check";
-
 	if (!user_mode(regs))
 		die("Split lock detected\n", regs, error_code);
 

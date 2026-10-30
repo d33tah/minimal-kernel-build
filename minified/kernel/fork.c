@@ -66,23 +66,6 @@ struct vm_area_struct *vm_area_alloc(struct mm_struct *mm)
 	return vma;
 }
 
-struct vm_area_struct *vm_area_dup(struct vm_area_struct *orig)
-{
-	struct vm_area_struct *new =
-		kmem_cache_alloc(vm_area_cachep, GFP_KERNEL);
-
-	if (new) {
-		ASSERT_EXCLUSIVE_WRITER(orig->vm_flags);
-		ASSERT_EXCLUSIVE_WRITER(orig->vm_file);
-
-		*new = data_race(*orig);
-		INIT_LIST_HEAD(&new->anon_vma_chain);
-		new->vm_next = new->vm_prev = NULL;
-		dup_anon_vma_name(orig, new);
-	}
-	return new;
-}
-
 void vm_area_free(struct vm_area_struct *vma)
 {
 	kmem_cache_free(vm_area_cachep, vma);
@@ -124,63 +107,6 @@ void free_task(struct task_struct *tsk)
 	 * sites are runtime-dead: __put_task_struct (HIT=False -- no task is ever
 	 * fully released on a 1-shot boot) and delayed_free_task (bad_fork rollback).
 	 */
-}
-
-static void dup_mm_exe_file(struct mm_struct *mm, struct mm_struct *oldmm)
-{
-	RCU_INIT_POINTER(mm->exe_file, NULL);
-}
-
-static __latent_entropy int dup_mmap(struct mm_struct *mm,
-				     struct mm_struct *oldmm)
-{
-	/* Minimal stub: simplified VMA duplication for fork */
-	struct vm_area_struct *mpnt, *tmp, *prev, **pprev;
-	struct rb_node **rb_link, *rb_parent;
-	int retval = 0;
-
-	if (mmap_write_lock_killable(oldmm))
-		return -EINTR;
-
-	mmap_write_lock_nested(mm, SINGLE_DEPTH_NESTING);
-
-	dup_mm_exe_file(mm, oldmm);
-
-	rb_link = &mm->mm_rb.rb_node;
-	rb_parent = NULL;
-	pprev = &mm->mmap;
-	prev = NULL;
-
-	for (mpnt = oldmm->mmap; mpnt; mpnt = mpnt->vm_next) {
-		if (mpnt->vm_flags & VM_DONTCOPY)
-			continue;
-
-		tmp = vm_area_dup(mpnt);
-		if (!tmp) {
-			retval = -ENOMEM;
-			break;
-		}
-
-		tmp->vm_mm = mm;
-		tmp->vm_flags &= ~VM_LOCKED;
-
-		if (tmp->vm_file)
-			get_file(tmp->vm_file);
-
-		*pprev = tmp;
-		pprev = &tmp->vm_next;
-		tmp->vm_prev = prev;
-		prev = tmp;
-
-		__vma_link_rb(mm, tmp, rb_link, rb_parent);
-		rb_link = &tmp->vm_rb.rb_right;
-		rb_parent = &tmp->vm_rb;
-		mm->map_count++;
-	}
-
-	mmap_write_unlock(mm);
-	mmap_write_unlock(oldmm);
-	return retval;
 }
 
 static inline int mm_alloc_pgd(struct mm_struct *mm)
@@ -386,35 +312,6 @@ static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 void exec_mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {
 	mm_release(tsk, mm);
-}
-
-static struct mm_struct *dup_mm(struct task_struct *tsk,
-				struct mm_struct *oldmm)
-{
-	struct mm_struct *mm;
-	int err;
-
-	mm = allocate_mm();
-	if (!mm)
-		goto fail_nomem;
-
-	memcpy(mm, oldmm, sizeof(*mm));
-
-	if (!mm_init(mm, tsk, mm->user_ns))
-		goto fail_nomem;
-
-	err = dup_mmap(mm, oldmm);
-	if (err)
-		goto free_pt;
-
-	return mm;
-
-free_pt:
-
-	mmput(mm);
-
-fail_nomem:
-	return NULL;
 }
 
 static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
@@ -712,11 +609,6 @@ bad_fork_free:
 	delayed_free_task(p);
 fork_out:
 	return ERR_PTR(retval);
-}
-
-struct mm_struct *copy_init_mm(void)
-{
-	return dup_mm(NULL, &init_mm);
 }
 
 pid_t kernel_clone(struct kernel_clone_args *args)

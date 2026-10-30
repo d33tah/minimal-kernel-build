@@ -341,24 +341,6 @@ void __init init_mem_mapping(void)
 	early_memtest(0, max_pfn_mapped << PAGE_SHIFT);
 }
 
-void __init poking_init(void)
-{
-	spinlock_t *ptl;
-	pte_t *ptep;
-
-	poking_mm = copy_init_mm();
-	BUG_ON(!poking_mm);
-
-	poking_addr = TASK_UNMAPPED_BASE;
-
-	if (((poking_addr + PAGE_SIZE) & ~PMD_MASK) == 0)
-		poking_addr += PAGE_SIZE;
-
-	ptep = get_locked_pte(poking_mm, poking_addr, &ptl);
-	BUG_ON(!ptep);
-	pte_unmap_unlock(ptep, ptl);
-}
-
 void __ref free_initmem(void)
 {
 	e820__reallocate_tables();

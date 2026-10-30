@@ -1,45 +1,19 @@
 
 #include <linux/entry-common.h>
-#include <linux/resume_user_mode.h>
+#include <linux/hardirq.h>
 
 static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
 {
 	arch_enter_from_user_mode(regs);
 }
 
-static __always_inline long __syscall_enter_from_user_work(struct pt_regs *regs,
-							   long syscall)
-{
-	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
-
-	if (work & SYSCALL_WORK_ENTER) {
-		long ret = 0;
-
-		if (work &
-		    (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)) {
-			ret = ptrace_report_syscall_entry(regs);
-			if (ret || (work & SYSCALL_WORK_SYSCALL_EMU))
-				return -1L;
-		}
-
-		syscall = syscall_get_nr(current, regs);
-
-		syscall = ret ?: syscall;
-	}
-
-	return syscall;
-}
-
 noinstr long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall)
 {
-	long ret;
-
 	__enter_from_user_mode(regs);
 
 	local_irq_enable();
-	ret = __syscall_enter_from_user_work(regs, syscall);
 
-	return ret;
+	return syscall;
 }
 
 static __always_inline void __exit_to_user_mode(void)
@@ -55,11 +29,6 @@ static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
 
 		if (ti_work & _TIF_NEED_RESCHED)
 			schedule();
-
-		if (ti_work & _TIF_NOTIFY_RESUME)
-			resume_user_mode_work(regs);
-
-		arch_exit_to_user_mode_work(regs, ti_work);
 
 		local_irq_disable_exit_to_user();
 
@@ -83,42 +52,10 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 	lockdep_sys_exit();
 }
 
-static inline bool report_single_step(unsigned long work)
-{
-	if (work & SYSCALL_WORK_SYSCALL_EMU)
-		return false;
-
-	return work & SYSCALL_WORK_SYSCALL_EXIT_TRAP;
-}
-
-static void syscall_exit_work(struct pt_regs *regs, unsigned long work)
-{
-	bool step;
-
-	step = report_single_step(work);
-	if (step || work & SYSCALL_WORK_SYSCALL_TRACE)
-		ptrace_report_syscall_exit(regs, step);
-}
-
-static void syscall_exit_to_user_mode_prepare(struct pt_regs *regs)
-{
-	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
-
-	if (unlikely(work & SYSCALL_WORK_EXIT))
-		syscall_exit_work(regs, work);
-}
-
-static __always_inline void
-__syscall_exit_to_user_mode_work(struct pt_regs *regs)
-{
-	syscall_exit_to_user_mode_prepare(regs);
-	local_irq_disable_exit_to_user();
-	exit_to_user_mode_prepare(regs);
-}
-
 __visible noinstr void syscall_exit_to_user_mode(struct pt_regs *regs)
 {
-	__syscall_exit_to_user_mode_work(regs);
+	local_irq_disable_exit_to_user();
+	exit_to_user_mode_prepare(regs);
 	__exit_to_user_mode();
 }
 

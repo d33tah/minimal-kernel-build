@@ -131,9 +131,7 @@ struct task_struct {
 	pid_t pid;
 	pid_t tgid;
 	struct task_struct __rcu *real_parent;
-	struct task_struct __rcu *parent;
 	struct task_struct *group_leader;
-	struct list_head ptrace_entry;
 	struct pid *thread_pid;
 	struct hlist_node pid_links[PIDTYPE_MAX];
 	struct list_head thread_group, thread_node;

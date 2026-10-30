@@ -18,7 +18,7 @@ struct task_struct;
 #include <asm/cpufeature.h>
 #include <linux/atomic.h>
 
-struct thread_info { unsigned long flags, syscall_work; };
+struct thread_info { unsigned long flags; };
 
 #define INIT_THREAD_INFO(tsk)			{							.flags		= 0,			}
 
@@ -29,12 +29,10 @@ struct thread_info { unsigned long flags, syscall_work; };
 #endif
 
  
-#define TIF_NOTIFY_RESUME	1
 #define TIF_SIGPENDING		2
 #define TIF_NEED_RESCHED	3
 #define TIF_NOTIFY_SIGNAL	17
 
-#define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
 #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
 #define _TIF_NEED_RESCHED	(1 << TIF_NEED_RESCHED)
 #define _TIF_NOTIFY_SIGNAL	(1 << TIF_NOTIFY_SIGNAL)

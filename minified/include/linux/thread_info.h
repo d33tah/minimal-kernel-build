@@ -12,22 +12,6 @@
 #include <asm/current.h>
 #define current_thread_info() ((struct thread_info *)current)
 
-enum syscall_work_bit {
-	SYSCALL_WORK_BIT_SECCOMP,
-	SYSCALL_WORK_BIT_SYSCALL_TRACEPOINT,
-	SYSCALL_WORK_BIT_SYSCALL_TRACE,
-	SYSCALL_WORK_BIT_SYSCALL_EMU,
-	SYSCALL_WORK_BIT_SYSCALL_AUDIT,
-	SYSCALL_WORK_BIT_SYSCALL_EXIT_TRAP,
-};
-
-#define SYSCALL_WORK_SECCOMP BIT(SYSCALL_WORK_BIT_SECCOMP)
-#define SYSCALL_WORK_SYSCALL_TRACEPOINT BIT(SYSCALL_WORK_BIT_SYSCALL_TRACEPOINT)
-#define SYSCALL_WORK_SYSCALL_TRACE BIT(SYSCALL_WORK_BIT_SYSCALL_TRACE)
-#define SYSCALL_WORK_SYSCALL_EMU BIT(SYSCALL_WORK_BIT_SYSCALL_EMU)
-#define SYSCALL_WORK_SYSCALL_AUDIT BIT(SYSCALL_WORK_BIT_SYSCALL_AUDIT)
-#define SYSCALL_WORK_SYSCALL_EXIT_TRAP BIT(SYSCALL_WORK_BIT_SYSCALL_EXIT_TRAP)
-
 #include <asm/thread_info.h>
 
 #define THREADINFO_GFP (GFP_KERNEL_ACCOUNT | __GFP_ZERO)
@@ -59,9 +43,6 @@ read_ti_thread_flags(struct thread_info *ti)
 	clear_ti_thread_flag(current_thread_info(), flag)
 #define test_thread_flag(flag) test_ti_thread_flag(current_thread_info(), flag)
 #define read_thread_flags() read_ti_thread_flags(current_thread_info())
-
-#define clear_task_syscall_work(t, fl) \
-	clear_bit(SYSCALL_WORK_BIT_##fl, &task_thread_info(t)->syscall_work)
 
 #define tif_need_resched() test_thread_flag(TIF_NEED_RESCHED)
 

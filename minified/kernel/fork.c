@@ -700,10 +700,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 		}
 	}
 
-	user_disable_single_step(p);
-	clear_task_syscall_work(p, SYSCALL_TRACE);
-	clear_task_syscall_work(p, SYSCALL_EMU);
-
 	p->pid = pid_nr(pid);
 	/* CLONE_THREAD never set -> always a new thread-group leader */
 	p->group_leader = p;
@@ -734,13 +730,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 
 	init_task_pid_links(p);
 	if (likely(p->pid)) {
-		/*
-		 * No ptrace on this build: there is no ptrace(2), no
-		 * fork/clone/vfork syscall, and user_mode_thread
-		 * always passes CLONE_UNTRACED, so the child is never traced.
-		 */
-		ptrace_init_task(p, false);
-
 		init_task_pid(p, PIDTYPE_PID, pid);
 		/*
 		 * thread_group_leader(p) == (p->exit_signal >= 0) is always

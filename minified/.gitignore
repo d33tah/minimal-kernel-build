@@ -7,7 +7,6 @@
 .version
 .vmlinux.cmd
 .vmlinux.export.c
-.vmlinux.objs
 System.map
 arch/i386/
 arch/x86/boot/.bzImage.cmd
@@ -71,20 +70,9 @@ include/config/
 include/generated/
 kernel/.bounds.s.cmd
 kernel/bounds.s
-modules.builtin
-modules.builtin.modinfo
 scripts/.sorttable.cmd
 scripts/basic/.fixdep.cmd
 scripts/basic/fixdep
-scripts/mod/.devicetable-offsets.s.cmd
-scripts/mod/.elfconfig.h.cmd
-scripts/mod/.mk_elfconfig.cmd
-scripts/mod/.modpost.cmd
-scripts/mod/devicetable-offsets.h
-scripts/mod/devicetable-offsets.s
-scripts/mod/elfconfig.h
-scripts/mod/mk_elfconfig
-scripts/mod/modpost
 scripts/sorttable
 usr/.gen_init_cpio.cmd
 usr/.initramfs_data.cpio.cmd
@@ -94,4 +82,3 @@ usr/gen_init_cpio
 usr/initramfs_data.cpio
 usr/initramfs_inc_data
 vmlinux
-vmlinux.symvers

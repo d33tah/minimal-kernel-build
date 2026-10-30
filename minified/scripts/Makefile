@@ -4,4 +4,4 @@
 # the kernel for the build process.
 
 # Let clean descend into subdirs
-subdir-	+= basic mod
+subdir-	+= basic

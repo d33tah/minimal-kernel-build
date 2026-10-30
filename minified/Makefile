@@ -269,7 +269,7 @@ no-compiler-targets := $(no-dot-config-targets) install dtbs_install \
 			headers_install modules_install kernelrelease image_name
 no-sync-config-targets := $(no-dot-config-targets) %install kernelrelease \
 			  image_name
-single-targets := %.a %.i %.ko %.lds %.ll %.lst %.mod %.o %.s %.symtypes %/
+single-targets := %.a %.i %.lds %.ll %.lst %.mod %.o %.s %.symtypes %/
 
 mixed-build	:=
 need-config	:= 1
@@ -920,7 +920,6 @@ archprepare: outputmakefile archheaders archscripts scripts include/config/kerne
 	include/generated/autoconf.h remove-stale-files
 
 prepare0: archprepare
-	$(Q)$(MAKE) $(build)=scripts/mod
 	$(Q)$(MAKE) $(build)=.
 
 # All the preparing..
@@ -1017,8 +1016,7 @@ tools/%: FORCE
 # make distclean Remove editor backup files, patch leftover files and the like
 
 # Directories & files removed with 'make clean'
-CLEAN_FILES += include/ksym vmlinux.symvers modules-only.symvers \
-	       modules.builtin modules.builtin.modinfo modules.nsdeps \
+CLEAN_FILES += include/ksym modules.nsdeps \
 	       compile_commands.json .thinlto-cache
 
 # Directories & files removed with 'make mrproper'
@@ -1026,7 +1024,6 @@ MRPROPER_FILES += include/config include/generated          \
 		  arch/$(SRCARCH)/include/generated .objdiff \
 		  debian snap tar-install \
 		  .version \
-		  Module.symvers \
 		  certs/signing_key.pem \
 		  certs/x509.genkey \
 		  vmlinux-gdb.py \
@@ -1091,7 +1088,6 @@ help:
 	@echo  '                    (requires compiler support for LLVM assembly generation)'
 	@echo  '  dir/file.lst    - Build specified mixed source/assembly target only'
 	@echo  '                    (requires a recent binutils and recent build (System.map))'
-	@echo  '  dir/file.ko     - Build module including final link'
 	@echo  '  modules_prepare - Set up for building external modules'
 	@echo  '  kernelrelease	  - Output the release version string (use with make -s)'
 	@echo  '  kernelversion	  - Output the version stored in Makefile (use with make -s)'
@@ -1163,7 +1159,7 @@ $(MODORDER): descend
 	@:
 
 clean-dirs := $(KBUILD_EXTMOD)
-clean: rm-files := $(KBUILD_EXTMOD)/Module.symvers $(KBUILD_EXTMOD)/modules.nsdeps \
+clean: rm-files := $(KBUILD_EXTMOD)/modules.nsdeps \
 	$(KBUILD_EXTMOD)/compile_commands.json $(KBUILD_EXTMOD)/.thinlto-cache
 
 PHONY += prepare
@@ -1215,30 +1211,10 @@ modules modules_install:
 
 ifdef single-build
 
-# .ko is special because modpost is needed
-single-ko := $(sort $(filter %.ko, $(MAKECMDGOALS)))
-single-no-ko := $(filter-out $(single-ko), $(MAKECMDGOALS)) \
-		$(foreach x, o mod, $(patsubst %.ko, %.$x, $(single-ko)))
-
-$(single-ko): single_modpost
-	@:
-$(single-no-ko): descend
+$(MAKECMDGOALS): descend
 	@:
 
-ifeq ($(KBUILD_EXTMOD),)
-# For the single build of in-tree modules, use a temporary file to avoid
-# the situation of modules_install installing an invalid modules.order.
-MODORDER := .modules.tmp
-endif
-
-PHONY += single_modpost
-single_modpost: $(single-no-ko) modules_prepare
-	$(Q){ $(foreach m, $(single-ko), echo $(extmod_prefix)$m;) } > $(MODORDER)
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
-
-KBUILD_MODULES := 1
-
-export KBUILD_SINGLE_TARGETS := $(addprefix $(extmod_prefix), $(single-no-ko))
+export KBUILD_SINGLE_TARGETS := $(addprefix $(extmod_prefix), $(MAKECMDGOALS))
 
 # trim unrelated directories
 build-dirs := $(foreach d, $(build-dirs), \

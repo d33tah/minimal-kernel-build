@@ -180,13 +180,3 @@ static __init int spawn_ksoftirqd(void)
 	return 0;
 }
 early_initcall(spawn_ksoftirqd);
-
-int __init __weak arch_probe_nr_irqs(void)
-{
-	return NR_IRQS_LEGACY;
-}
-
-int __init __weak arch_early_irq_init(void)
-{
-	return 0;
-}

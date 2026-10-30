@@ -5,7 +5,6 @@
 #include <linux/bug.h>
 #include <linux/kernel.h>
 #include <linux/list.h>
-#include <linux/irqnr.h>
 
 void get_random_bytes(void *buf, size_t len);
 u32 get_random_u32(void);

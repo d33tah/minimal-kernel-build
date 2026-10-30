@@ -39,7 +39,7 @@ void __init native_init_IRQ(void)
 	idt_setup_apic_and_irq_gates();
 
 	if (!acpi_ioapic && !of_ioapic && nr_legacy_irqs()) {
-		if (request_irq(2, no_action, IRQF_NO_THREAD, "cascade", NULL))
+		if (request_irq(2, no_action, NULL))
 			pr_err("%s: request_irq() failed\n", "cascade");
 	}
 }

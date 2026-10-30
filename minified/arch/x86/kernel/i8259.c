@@ -8,10 +8,9 @@ unsigned int cached_irq_mask = 0xffff;
 
 static void disable_8259A_irq(struct irq_data *data)
 {
-	/* Anchor-stub: i8259A_chip .irq_mask/.irq_disable/.irq_mask_ack
-	 * callback. On this boot-once artifact no legacy 8259 IRQ is ever
-	 * masked through the generic layer (HIT=False in the icount trace),
-	 * so the PIC IMR write is dead. Symbol kept for the three fn-ptrs. */
+	/* Anchor-stub: i8259A_chip .irq_mask_ack callback in auto-EOI mode,
+	 * which init_8259A is never asked for (auto_eoi == 0), so the PIC IMR
+	 * write is dead. */
 }
 
 static void enable_8259A_irq(struct irq_data *data)
@@ -96,8 +95,6 @@ spurious_8259A_irq:
 
 struct irq_chip i8259A_chip = {
 	.name = "XT-PIC",
-	.irq_mask = disable_8259A_irq,
-	.irq_disable = disable_8259A_irq,
 	.irq_unmask = enable_8259A_irq,
 	.irq_mask_ack = mask_and_ack_8259A,
 };

@@ -2,10 +2,6 @@
 #include <linux/kernel.h>
 #include <linux/timekeeper_internal.h>
 
-/* gettimeofday + settimeofday removed - init does write(2)+exit only, never
- * reads time. NR 78 now routes to sys_ni_syscall (also -ENOSYS); the vDSO
- * gettimeofday_fallback still resolves __NR_gettimeofday from syscall_32.tbl. */
-
 /*
  * Removed: jiffies_to_msecs, __msecs_to_jiffies - never called. The sole
  * msecs_to_jiffies() callsite (softirq.c) passes a compile-time constant, so

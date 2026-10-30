@@ -8,7 +8,7 @@ obj-y     = fork.o panic.o \
 	    capability.o user.o \
 	    signal.o workqueue.o pid.o task_work.o \
 	    extable.o \
-	    sys_ni.o nsproxy.o \
+	    nsproxy.o \
 	    notifier.o cred.o \
 	    range.o ucount.o
 

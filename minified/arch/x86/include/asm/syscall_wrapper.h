@@ -24,23 +24,13 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 		return __se_##name(__VA_ARGS__);           \
 	}
 
-#define __COND_SYSCALL(abi, name)                                     \
-	__weak long __##abi##_##name(const struct pt_regs *__unused); \
-	__weak long __##abi##_##name(const struct pt_regs *__unused)  \
-	{                                                             \
-		return sys_ni_syscall();                              \
-	}
-
 #define __X64_SYS_STUB0(name)
 #define __X64_SYS_STUBx(x, name, ...)
-#define __X64_COND_SYSCALL(name)
 
 #define __IA32_SYS_STUB0(name) __SYS_STUB0(ia32, sys_##name)
 
 #define __IA32_SYS_STUBx(x, name, ...) \
 	__SYS_STUBx(ia32, sys##name, SC_IA32_REGS_TO_ARGS(x, __VA_ARGS__))
-
-#define __IA32_COND_SYSCALL(name) __COND_SYSCALL(ia32, sys_##name)
 
 #define __SYSCALL_DEFINEx(x, name, ...)                                      \
 	static long __se_sys##name(__MAP(x, __SC_LONG, __VA_ARGS__));        \
@@ -63,7 +53,5 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 	__X64_SYS_STUB0(sname)                                        \
 	__IA32_SYS_STUB0(sname)                                       \
 	static long __do_sys_##sname(const struct pt_regs *__unused)
-
-#define COND_SYSCALL(name) __X64_COND_SYSCALL(name) __IA32_COND_SYSCALL(name)
 
 #endif

@@ -12,11 +12,6 @@
 
 #define CPP_ASMLINKAGE
 
-
-#ifndef cond_syscall
-#define cond_syscall(x)	asm(					".weak " __stringify(x) "\n\t"				".set  " __stringify(x) ","					 __stringify(sys_ni_syscall))
-#endif
-
 #define __page_aligned_bss	__section(".bss..page_aligned") __aligned(PAGE_SIZE)
 
 #define __PAGE_ALIGNED_BSS	.section ".bss..page_aligned", "aw"

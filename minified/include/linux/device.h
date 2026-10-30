@@ -11,7 +11,6 @@
 	} while (0)
 /* end dev_printk.h */
 
-#include <linux/ioport.h>
 #include <linux/kobject.h>
 #include <linux/mutex.h>
 #include <linux/gfp.h>

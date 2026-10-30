@@ -3,7 +3,6 @@
 #include <linux/file.h>
 #include <linux/mm.h>
 #include <linux/init_syscalls.h>
-#include <linux/task_work.h>
 
 static __initdata bool csum_present;
 static __initdata u32 io_csum;
@@ -485,7 +484,6 @@ done:
 	initrd_end = 0;
 
 	flush_delayed_fput();
-	task_work_run();
 }
 
 static bool __initdata initramfs_done;

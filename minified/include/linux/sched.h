@@ -134,7 +134,6 @@ struct task_struct {
 	struct pid *thread_pid;
 	struct hlist_node pid_links[PIDTYPE_MAX];
 	struct list_head thread_group, thread_node;
-	struct completion *vfork_done;
 	const struct cred __rcu *real_cred;
 	const struct cred __rcu *cred;
 	char comm[TASK_COMM_LEN];
@@ -144,7 +143,6 @@ struct task_struct {
 	struct nsproxy *nsproxy;
 	struct signal_struct *signal;
 	struct sighand_struct __rcu *sighand;
-	struct callback_head *task_works;
 	spinlock_t alloc_lock;
 	raw_spinlock_t pi_lock;
 	struct wake_q_node wake_q;

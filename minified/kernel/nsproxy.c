@@ -35,14 +35,3 @@ void exit_task_namespaces(struct task_struct *p)
 	 * never-cloned nsproxy on this boot (copy_namespaces only get_nsproxy's it).
 	 */
 }
-
-int __init nsproxy_cache_init(void)
-{
-	/*
-	 * The nsproxy kmem_cache used to back cloned namespaces, but this kernel
-	 * never clones (copy_namespaces only pins the shared init_nsproxy) and
-	 * never frees one (free_nsproxy was cascade-deleted with exit_task_namespaces).
-	 * No allocation ever comes from this cache, so it is no longer created.
-	 */
-	return 0;
-}

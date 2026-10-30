@@ -288,25 +288,9 @@ int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
 	return 0;
 }
 
-static void complete_vfork_done(struct task_struct *tsk)
-{
-	struct completion *vfork;
-
-	task_lock(tsk);
-	vfork = tsk->vfork_done;
-	if (likely(vfork)) {
-		tsk->vfork_done = NULL;
-		complete(vfork);
-	}
-	task_unlock(tsk);
-}
-
 static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {
 	deactivate_mm(tsk, mm);
-
-	if (tsk->vfork_done)
-		complete_vfork_done(tsk);
 }
 
 void exec_mm_release(struct task_struct *tsk, struct mm_struct *mm)
@@ -490,7 +474,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 		goto bad_fork_free;
 
 	p->flags &= ~(PF_IDLE | PF_NO_SETAFFINITY);
-	p->vfork_done = NULL;
 	spin_lock_init(&p->alloc_lock);
 
 	p->pagefault_disabled = 0;
@@ -535,7 +518,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	p->tgid = p->pid;
 
 	INIT_LIST_HEAD(&p->thread_group);
-	p->task_works = NULL;
 
 	sched_cgroup_fork(p, args);
 
@@ -684,7 +666,6 @@ void __init proc_caches_init(void)
 		sizeof_field(struct mm_struct, saved_auxv), NULL);
 	vm_area_cachep = KMEM_CACHE(vm_area_struct, SLAB_PANIC | SLAB_ACCOUNT);
 	mmap_init();
-	nsproxy_cache_init();
 }
 
 /*

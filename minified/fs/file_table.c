@@ -3,7 +3,6 @@
 #include <linux/file.h>
 #include <linux/fs.h>
 #include <linux/cdev.h>
-#include <linux/task_work.h>
 
 #include "internal.h"
 
@@ -90,11 +89,6 @@ static void delayed_fput(struct work_struct *unused)
 		__fput(f);
 }
 
-static void ____fput(struct callback_head *work)
-{
-	__fput(container_of(work, struct file, f_u.fu_rcuhead));
-}
-
 void flush_delayed_fput(void)
 {
 	delayed_fput(NULL);
@@ -105,15 +99,6 @@ static DECLARE_DELAYED_WORK(delayed_fput_work, delayed_fput);
 void fput(struct file *file)
 {
 	if (atomic_long_dec_and_test(&file->f_count)) {
-		struct task_struct *task = current;
-
-		if (likely(!in_interrupt() && !(task->flags & PF_KTHREAD))) {
-			init_task_work(&file->f_u.fu_rcuhead, ____fput);
-			if (!task_work_add(task, &file->f_u.fu_rcuhead,
-					   TWA_RESUME))
-				return;
-		}
-
 		if (llist_add(&file->f_u.fu_llist, &delayed_fput_list))
 			schedule_delayed_work(&delayed_fput_work, 1);
 	}

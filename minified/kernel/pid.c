@@ -9,9 +9,6 @@ int pid_max = PID_MAX_DEFAULT;
 
 #define RESERVED_PIDS 300
 
-int pid_max_min = RESERVED_PIDS + 1;
-int pid_max_max = PID_MAX_LIMIT;
-
 struct pid_namespace init_pid_ns = {
 	.idr = IDR_INIT(init_pid_ns.idr),
 	.pid_allocated = PIDNS_ADDING,
@@ -204,11 +201,9 @@ void __init pid_idr_init(void)
 {
 	BUILD_BUG_ON(PID_MAX_LIMIT >= PIDNS_ADDING);
 
-	pid_max = min(pid_max_max,
-		      max_t(int, pid_max,
-			    PIDS_PER_CPU_DEFAULT *num_possible_cpus()));
-	pid_max_min =
-		max_t(int, pid_max_min, PIDS_PER_CPU_MIN *num_possible_cpus());
+	pid_max = min_t(int, PID_MAX_LIMIT,
+			max_t(int, pid_max,
+			      PIDS_PER_CPU_DEFAULT *num_possible_cpus()));
 
 	idr_init(&init_pid_ns.idr);
 

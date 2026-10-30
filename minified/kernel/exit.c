@@ -3,7 +3,6 @@
 /* end sched/stat.h */
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
-#include <linux/task_work.h>
 #include <linux/ptrace.h>
 #include <linux/syscalls.h>
 #include <linux/fs_struct.h>
@@ -71,7 +70,6 @@ void __noreturn do_exit(long code)
 	exit_files(tsk);
 	exit_fs(tsk);
 	exit_task_namespaces(tsk);
-	exit_task_work(tsk);
 
 	/* sched_autogroup_exit_task - stubbed */
 

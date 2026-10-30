@@ -103,10 +103,6 @@ static inline u32 rdgs32(addr_t addr)
 
 
  
-extern char _end[];
-extern char *HEAP;
-extern char *heap_end;
-#define RESET_HEAP() ((void *)( HEAP = _end ))
 
  
 
@@ -193,11 +189,8 @@ void putchar(int);
 void set_video(void);
 
  
-int set_mode(u16 mode);
-void probe_cards(int unsafe);
 
  
-void vesa_store_edid(void);
 
 #endif  
 

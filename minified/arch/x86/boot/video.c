@@ -1,8 +1,10 @@
-#include <uapi/asm/boot.h>
 #include "boot.h"
-#include "video.h"
 
-static u16 video_segment;
+#define ADAPTER_CGA 0
+#define ADAPTER_EGA 1
+#define ADAPTER_VGA 2
+
+static int adapter;
 
 static void store_cursor_position(void)
 {
@@ -42,12 +44,6 @@ static void store_mode_params(void)
 	store_cursor_position();
 	store_video_mode();
 
-	if (boot_params.screen_info.orig_video_mode == 0x07) {
-		video_segment = 0xb000;
-	} else {
-		video_segment = 0xb800;
-	}
-
 	set_fs(0);
 	font_size = rdfs16(0x485);
 	boot_params.screen_info.orig_video_points = font_size;
@@ -55,33 +51,39 @@ static void store_mode_params(void)
 	x = rdfs16(0x44a);
 	y = (adapter == ADAPTER_CGA) ? 25 : rdfs8(0x484) + 1;
 
-	if (force_x)
-		x = force_x;
-	if (force_y)
-		y = force_y;
-
 	boot_params.screen_info.orig_video_cols = x;
 	boot_params.screen_info.orig_video_lines = y;
 }
 
+/* Fills orig_video_ega_bx/orig_video_isVGA for vgacon; no mode switch. */
+static void detect_adapter(void)
+{
+	struct biosregs ireg, oreg;
+
+	initregs(&ireg);
+	ireg.ax = 0x1200;
+	ireg.bl = 0x10;
+	intcall(0x10, &ireg, &oreg);
+
+	boot_params.screen_info.orig_video_ega_bx = oreg.bx;
+
+	if (oreg.bl != 0x10) {
+		ireg.ax = 0x1a00;
+		intcall(0x10, &ireg, &oreg);
+
+		if (oreg.al == 0x1a) {
+			adapter = ADAPTER_VGA;
+			boot_params.screen_info.orig_video_isVGA = 1;
+		} else {
+			adapter = ADAPTER_EGA;
+		}
+	} else {
+		adapter = ADAPTER_CGA;
+	}
+}
+
 void set_video(void)
 {
-	u16 mode = boot_params.hdr.vid_mode;
-
-	RESET_HEAP();
-	store_mode_params();
-	probe_cards(0);
-
-	/* For minimal kernel, use VIDEO_CURRENT_MODE or NORMAL_VGA */
-	if (mode == ASK_VGA)
-		mode = VIDEO_CURRENT_MODE;
-
-	if (set_mode(mode)) {
-		/* Fall back to current mode if requested mode fails */
-		set_mode(VIDEO_CURRENT_MODE);
-	}
-
-	boot_params.hdr.vid_mode = mode;
-	vesa_store_edid();
+	detect_adapter();
 	store_mode_params();
 }

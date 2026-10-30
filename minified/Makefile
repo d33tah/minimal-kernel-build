@@ -119,22 +119,6 @@ endif
 
 export KBUILD_CHECKSRC
 
-# Use make M=dir or set the environment variable KBUILD_EXTMOD to specify the
-# directory of external module to build. Setting M= takes precedence.
-ifeq ("$(origin M)", "command line")
-  KBUILD_EXTMOD := $(M)
-endif
-
-$(if $(word 2, $(KBUILD_EXTMOD)), \
-	$(error building multiple external modules is not supported))
-
-# Remove trailing slashes
-ifneq ($(filter %/, $(KBUILD_EXTMOD)),)
-KBUILD_EXTMOD := $(shell dirname $(KBUILD_EXTMOD).)
-endif
-
-export KBUILD_EXTMOD
-
 # Kbuild will save output files in the current working directory.
 # This does not need to match to the root of the kernel source tree.
 #
@@ -292,10 +276,6 @@ ifneq ($(filter $(no-sync-config-targets), $(MAKECMDGOALS)),)
 	ifeq ($(filter-out $(no-sync-config-targets), $(MAKECMDGOALS)),)
 		may-sync-config :=
 	endif
-endif
-
-ifneq ($(KBUILD_EXTMOD),)
-	may-sync-config :=
 endif
 
 # We cannot build single targets and the others at the same time
@@ -573,14 +553,8 @@ ifdef need-compiler
 include $(srctree)/scripts/Makefile.compiler
 endif
 
-# If building an external module we do not care about the all: rule
-# but instead __all depend on modules
 PHONY += all
-ifeq ($(KBUILD_EXTMOD),)
 __all: all
-else
-__all: modules
-endif
 
 # Decide whether to build built-in, modular, or both.
 # Normally, just do built-in.
@@ -597,7 +571,7 @@ endif
 # in addition to whatever we do anyway.
 # Just "make" or "make all" shall build modules as well
 
-ifneq ($(filter all modules nsdeps %compile_commands.json clang-%,$(MAKECMDGOALS)),)
+ifneq ($(filter all modules %compile_commands.json clang-%,$(MAKECMDGOALS)),)
   KBUILD_MODULES := 1
 endif
 
@@ -611,12 +585,10 @@ ifdef need-config
 include include/config/auto.conf
 endif
 
-ifeq ($(KBUILD_EXTMOD),)
 # Objects we will link into vmlinux / subdirs we need to visit
 core-y		:= init/ usr/ arch/$(SRCARCH)/
 drivers-y	:= drivers/
 libs-y		:= lib/
-endif # KBUILD_EXTMOD
 
 # The all: target is the default when no target is given on the
 # command line.
@@ -810,27 +782,9 @@ export KBUILD_IMAGE ?= vmlinux
 # images. Default is /boot, but you can set it to other values
 export	INSTALL_PATH ?= /boot
 
-#
-# INSTALL_DTBS_PATH specifies a prefix for relocations required by build roots.
-# Like INSTALL_MOD_PATH, it isn't defined in the Makefile, but can be passed as
-# an argument if needed. Otherwise it defaults to the kernel install path
-#
-export INSTALL_DTBS_PATH ?= $(INSTALL_PATH)/dtbs/$(KERNELRELEASE)
-
-#
-# INSTALL_MOD_PATH specifies a prefix to MODLIB for module directory
-# relocations required by build roots.  This is not defined in the
-# makefile but the argument can be passed to make if needed.
-#
-
 
 PHONY += prepare0
 
-export extmod_prefix = $(if $(KBUILD_EXTMOD),$(KBUILD_EXTMOD)/)
-export MODORDER := $(extmod_prefix)modules.order
-export MODULES_NSDEPS := $(extmod_prefix)modules.nsdeps
-
-ifeq ($(KBUILD_EXTMOD),)
 core-y			+= kernel/ mm/ fs/ security/
 
 vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, \
@@ -861,18 +815,6 @@ export KBUILD_ALLDIRS := $(sort $(filter-out arch/%,$(vmlinux-alldirs)) LICENSES
 
 vmlinux-deps := $(KBUILD_LDS) $(KBUILD_VMLINUX_OBJS) $(KBUILD_VMLINUX_LIBS)
 
-# Recurse until adjust_autoksyms.sh is satisfied
-PHONY += autoksyms_recursive
-
-autoksyms_h := $(if $(CONFIG_TRIM_UNUSED_KSYMS), include/generated/autoksyms.h)
-
-quiet_cmd_autoksyms_h = GEN     $@
-      cmd_autoksyms_h = mkdir -p $(dir $@); \
-			$(CONFIG_SHELL) $(srctree)/scripts/gen_autoksyms.sh $@
-
-$(autoksyms_h):
-	$(call cmd,autoksyms_h)
-
 ARCH_POSTLINK := $(wildcard $(srctree)/arch/$(SRCARCH)/Makefile.postlink)
 
 # Final link of vmlinux with optional arch pass after final link
@@ -880,7 +822,7 @@ cmd_link-vmlinux =                                                 \
 	$(CONFIG_SHELL) $< "$(LD)" "$(KBUILD_LDFLAGS)" "$(LDFLAGS_vmlinux)";    \
 	$(if $(ARCH_POSTLINK), $(MAKE) -f $(ARCH_POSTLINK) $@, true)
 
-vmlinux: scripts/link-vmlinux.sh autoksyms_recursive $(vmlinux-deps) FORCE
+vmlinux: scripts/link-vmlinux.sh $(vmlinux-deps) FORCE
 	+$(call if_changed_dep,link-vmlinux)
 
 targets := vmlinux
@@ -905,7 +847,7 @@ scripts: scripts_basic
 PHONY += prepare archprepare
 
 archprepare: outputmakefile archheaders scripts \
-	asm-generic $(version_h) $(autoksyms_h) include/generated/utsrelease.h \
+	asm-generic $(version_h) include/generated/utsrelease.h \
 	include/generated/autoconf.h
 
 prepare0: archprepare
@@ -966,33 +908,6 @@ include/generated/utsrelease.h: FORCE
 # ---------------------------------------------------------------------------
 PHONY += archheaders
 
-# ---------------------------------------------------------------------------
-# Tools
-
-PHONY += resolve_btfids_clean
-
-resolve_btfids_O = $(abspath $(objtree))/tools/bpf/resolve_btfids
-
-# tools/bpf/resolve_btfids directory might not exist
-# in output directory, skip its clean in that case
-resolve_btfids_clean:
-ifneq ($(wildcard $(resolve_btfids_O)),)
-	$(Q)$(MAKE) -sC $(srctree)/tools/bpf/resolve_btfids O=$(resolve_btfids_O) clean
-endif
-
-# Clear a bunch of variables before executing the submake
-ifeq ($(quiet),silent_)
-tools_silent=s
-endif
-
-tools/: FORCE
-	$(Q)mkdir -p $(objtree)/tools
-	$(Q)$(MAKE) LDFLAGS= MAKEFLAGS="$(tools_silent) $(filter --j% -j,$(MAKEFLAGS))" O=$(abspath $(objtree)) subdir=tools -C $(srctree)/tools/
-
-tools/%: FORCE
-	$(Q)mkdir -p $(objtree)/tools
-	$(Q)$(MAKE) LDFLAGS= MAKEFLAGS="$(tools_silent) $(filter --j% -j,$(MAKEFLAGS))" O=$(abspath $(objtree)) subdir=tools -C $(srctree)/tools/ $*
-
 ###
 # Cleaning is done on three levels.
 # make clean     Delete most generated files
@@ -1001,7 +916,7 @@ tools/%: FORCE
 # make distclean Remove editor backup files, patch leftover files and the like
 
 # Directories & files removed with 'make clean'
-CLEAN_FILES += include/ksym modules.nsdeps \
+CLEAN_FILES += include/ksym \
 	       compile_commands.json .thinlto-cache
 
 # Directories & files removed with 'make mrproper'
@@ -1023,7 +938,7 @@ vmlinuxclean:
 	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/link-vmlinux.sh clean
 	$(Q)$(if $(ARCH_POSTLINK), $(MAKE) -f $(ARCH_POSTLINK) clean)
 
-clean: archclean vmlinuxclean resolve_btfids_clean
+clean: archclean vmlinuxclean
 
 # mrproper - Delete all generated files (keeps the tracked .config)
 #
@@ -1064,42 +979,13 @@ help:
 	@echo  'Other generic targets:'
 	@echo  '  all		  - Build all targets marked with [*]'
 	@echo  '* vmlinux	  - Build the bare kernel'
-	@echo  '* modules	  - Build all modules'
-	@echo  '  modules_install - Install all modules to INSTALL_MOD_PATH (default: /)'
 	@echo  '  dir/            - Build all files in dir and below'
 	@echo  '  dir/file.[ois]  - Build specified target only'
 	@echo  '  dir/file.ll     - Build the LLVM assembly file'
 	@echo  '                    (requires compiler support for LLVM assembly generation)'
-	@echo  '  modules_prepare - Set up for building external modules'
 	@echo  '  kernelrelease	  - Output the release version string (use with make -s)'
 	@echo  '  kernelversion	  - Output the version stored in Makefile (use with make -s)'
 	@echo  '  image_name	  - Output the image name (use with make -s)'
-	@echo  'Tools:'
-	@echo  '  nsdeps          - Generate missing symbol namespace dependencies'
-	@echo  ''
-	@echo  'Kernel selftest:'
-	@echo  '  kselftest         - Build and run kernel selftest'
-	@echo  '                      Build, install, and boot kernel before'
-	@echo  '                      running kselftest on it'
-	@echo  '                      Run as root for full coverage'
-	@echo  '  kselftest-all     - Build kernel selftest'
-	@echo  '  kselftest-install - Build and install kernel selftest'
-	@echo  '  kselftest-clean   - Remove all generated kselftest files'
-	@echo  ''
-	@$(if $(dtstree), \
-		echo 'Devicetree:'; \
-		echo '* dtbs             - Build device tree blobs for enabled boards'; \
-		echo '  dtbs_install     - Install dtbs to $(INSTALL_DTBS_PATH)'; \
-		echo '  dtbs_check       - Validate device tree source files';\
-		echo '')
-
-	@echo 'Userspace tools targets:'
-	@echo '  use "make tools/help"'
-	@echo '  or  "cd tools; make help"'
-	@echo  ''
-	@echo  'Documentation targets:'
-	@$(MAKE) -f $(srctree)/Documentation/Makefile dochelp
-	@echo  ''
 	@echo  'Architecture specific targets ($(SRCARCH)):'
 	@$(or $(archhelp),\
 		echo '  No architecture specific help defined for $(SRCARCH)')
@@ -1121,46 +1007,6 @@ help:
 	@echo  'Execute "make" or "make all" to build all targets marked with [*] '
 	@echo  'For further info see the ./README file'
 
-
-
-else # KBUILD_EXTMOD
-
-###
-# External module support.
-# When building external modules the kernel used as basis is considered
-# read-only, and no consistency checks are made and the make
-# system is not used on the basis kernel. If updates are required
-# in the basis kernel ordinary make commands (without M=...) must be used.
-
-# We are always building only modules.
-KBUILD_BUILTIN :=
-KBUILD_MODULES := 1
-
-build-dirs := $(KBUILD_EXTMOD)
-$(MODORDER): descend
-	@:
-
-clean-dirs := $(KBUILD_EXTMOD)
-clean: rm-files := $(KBUILD_EXTMOD)/modules.nsdeps \
-	$(KBUILD_EXTMOD)/compile_commands.json $(KBUILD_EXTMOD)/.thinlto-cache
-
-PHONY += prepare
-prepare:
-
-PHONY += help
-help:
-	@echo  '  Building external modules.'
-	@echo  '  Syntax: make -C path/to/kernel/src M=$$PWD target'
-	@echo  ''
-	@echo  '  modules         - default target, build the module(s)'
-	@echo  '  modules_install - install the module'
-	@echo  '  clean           - remove generated files in module directory only'
-	@echo  ''
-
-# no-op for external module builds
-PHONY += modules_prepare
-
-endif # KBUILD_EXTMOD
 
 # ---------------------------------------------------------------------------
 # Modules
@@ -1196,7 +1042,7 @@ ifdef single-build
 $(MAKECMDGOALS): descend
 	@:
 
-export KBUILD_SINGLE_TARGETS := $(addprefix $(extmod_prefix), $(MAKECMDGOALS))
+export KBUILD_SINGLE_TARGETS := $(MAKECMDGOALS)
 
 # trim unrelated directories
 build-dirs := $(foreach d, $(build-dirs), \
@@ -1224,7 +1070,7 @@ $(clean-dirs):
 
 clean: $(clean-dirs)
 	$(call cmd,rmfiles)
-	@find $(or $(KBUILD_EXTMOD), .) $(RCS_FIND_IGNORE) \
+	@find . $(RCS_FIND_IGNORE) \
 		\( -name '*.[aios]' -o -name '*.ko' -o -name '.*.cmd' \
 		-o -name '*.ko.*' \
 		-o -name '*.dtb' -o -name '*.dtbo' -o -name '*.dtb.S' -o -name '*.dt.yaml' \
@@ -1239,14 +1085,6 @@ clean: $(clean-dirs)
 		-o -name '*.ll' \
 		-o -name '*.gcno' \
 		-o -name '*.*.symversions' \) -type f -print | xargs rm -f
-
-# Script to generate missing namespace dependencies
-# ---------------------------------------------------------------------------
-
-PHONY += nsdeps
-nsdeps: export KBUILD_NSDEPS=1
-nsdeps: modules
-	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/nsdeps
 
 PHONY += kernelrelease kernelversion image_name
 

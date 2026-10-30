@@ -10,7 +10,6 @@
 #include <linux/device.h>
 #include <linux/interrupt.h>
 #include <linux/io.h>
-#include <linux/acpi.h>
 
 #ifdef CONFIG_X86
 #include <asm/pci.h>

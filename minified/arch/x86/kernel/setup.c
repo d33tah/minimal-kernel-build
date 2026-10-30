@@ -8,7 +8,7 @@
 #include <asm/bios_ebda.h>
 #include <asm/memtype.h>
 #include <asm/prom.h>
-#include <asm/efi.h>
+#include <asm/tlbflush.h>
 
 unsigned long max_pfn_mapped;
 

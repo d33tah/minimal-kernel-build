@@ -22,13 +22,8 @@
 
 #include "tdx.h"
 
-#define BOOT_CTYPE_H
-#include <linux/acpi.h>
-
 #define BOOT_BOOT_H
 #include "../io.h"
-
-#include "efi.h"
 
 extern char _head[], _end[];
 

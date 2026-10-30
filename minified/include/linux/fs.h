@@ -18,8 +18,6 @@
 #include <linux/semaphore.h>
 #include <linux/fcntl.h>
 
-#include <linux/uuid.h>
-
 #include <linux/mount.h>
 #include <linux/cred.h>
 #include <linux/mnt_idmapping.h>

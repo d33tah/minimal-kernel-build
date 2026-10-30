@@ -7,7 +7,6 @@
 #define ERESTARTNOINTR 513
 #define ERESTARTNOHAND 514
 #define EOPENSTALE 518
-#define ENOPARAM 519
 #define EIOCBQUEUED 529
 
 #endif

@@ -74,7 +74,6 @@ static void __fput(struct file *file)
 		__mnt_drop_write(mnt);
 	}
 	dput(dentry);
-	mntput(mnt);
 out:
 	file_free(file);
 }

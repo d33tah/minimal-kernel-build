@@ -1,11 +1,8 @@
-
 #ifndef _LINUX_FS_CONTEXT_H
 #define _LINUX_FS_CONTEXT_H
 
 #include <linux/kernel.h>
-#include <linux/refcount.h>
 #include <linux/errno.h>
-#include <linux/security.h>
 
 struct cred;
 struct dentry;
@@ -13,91 +10,25 @@ struct file_system_type;
 struct super_block;
 struct user_namespace;
 
-enum fs_context_purpose {
-	FS_CONTEXT_FOR_MOUNT,
-	FS_CONTEXT_FOR_SUBMOUNT,
-	FS_CONTEXT_FOR_RECONFIGURE,
-};
-
-/* enum fs_context_phase + struct fs_context.phase field removed - 0-ref (never set/read) */
-
-enum fs_value_type {
-	fs_value_is_flag,
-	fs_value_is_string,
-};
-
-struct fs_parameter {
-	const char *key;
-	enum fs_value_type type : 8;
-	union {
-		char *string;
-	};
-};
-
-struct p_log {
-	const char *prefix;
-	struct fc_log *log;
-};
-
 struct fs_context {
 	const struct fs_context_operations *ops;
-	struct mutex uapi_mutex;
 	struct file_system_type *fs_type;
 	struct dentry *root;
 	struct user_namespace *user_ns;
 	const struct cred *cred;
-	struct p_log log;
-	const char *source;
-	void *s_fs_info;
 	unsigned int sb_flags;
-	bool need_free : 1;
 };
 
 struct fs_context_operations {
-	void (*free)(struct fs_context *fc);
-	int (*parse_param)(struct fs_context *fc, struct fs_parameter *param);
-	/* parse_monolithic removed - never set by any instance, so the
-	 * fc->ops->parse_monolithic dispatch always fell through to
-	 * generic_parse_monolithic */
 	int (*get_tree)(struct fs_context *fc);
 };
 
 extern struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
 					       unsigned int sb_flags);
-
-extern int vfs_parse_fs_param(struct fs_context *fc,
-			      struct fs_parameter *param);
-extern int vfs_parse_fs_string(struct fs_context *fc, const char *key,
-			       const char *value, size_t v_size);
-extern int generic_parse_monolithic(struct fs_context *fc, void *data);
-extern int vfs_get_tree(struct fs_context *fc);
 extern void put_fs_context(struct fs_context *fc);
-extern int vfs_parse_fs_param_source(struct fs_context *fc,
-				     struct fs_parameter *param);
 
 extern int get_tree_nodev(struct fs_context *fc,
 			  int (*fill_super)(struct super_block *sb,
 					    struct fs_context *fc));
-
-struct fc_log {
-	refcount_t usage;
-	u8 need_free;
-	char *buffer[8];
-};
-
-extern __attribute__((format(printf, 4, 5))) void
-logfc(struct fc_log *log, const char *prefix, char level, const char *fmt, ...);
-
-#define __logfc(fc, l, fmt, ...) \
-	logfc((fc)->log.log, NULL, l, fmt, ##__VA_ARGS__)
-#define __plog(p, l, fmt, ...) \
-	logfc((p)->log, (p)->prefix, l, fmt, ##__VA_ARGS__)
-#define warn_plog(p, fmt, ...) __plog(p, 'w', fmt, ##__VA_ARGS__)
-
-#define errorf(fc, fmt, ...) __logfc(fc, 'e', fmt, ##__VA_ARGS__)
-#define error_plog(p, fmt, ...) __plog(p, 'e', fmt, ##__VA_ARGS__)
-
-#define invalf(fc, fmt, ...) (errorf(fc, fmt, ##__VA_ARGS__), -EINVAL)
-#define inval_plog(p, fmt, ...) (error_plog(p, fmt, ##__VA_ARGS__), -EINVAL)
 
 #endif

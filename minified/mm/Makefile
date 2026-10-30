@@ -17,7 +17,7 @@ mmu-$(CONFIG_MMU)	:= memory.o \
 
 obj-y			:= filemap.o \
 			   maccess.o folio-compat.o \
-			   swap.o truncate.o shmem.o \
+			   swap.o truncate.o \
 			   util.o mmzone.o \
 			   percpu.o slab_common.o \
 			   interval_tree.o list_lru.o workingset.o \

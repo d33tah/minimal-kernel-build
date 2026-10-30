@@ -59,23 +59,4 @@ static inline void idr_preload_end(void)
 	local_unlock(&radix_tree_preloads.lock);
 }
 
-#define IDA_CHUNK_SIZE 128
-#define IDA_BITMAP_LONGS (IDA_CHUNK_SIZE / sizeof(long))
-#define IDA_BITMAP_BITS (IDA_BITMAP_LONGS * sizeof(long) * 8)
-
-struct ida_bitmap {
-	unsigned long bitmap[IDA_BITMAP_LONGS];
-};
-
-struct ida {
-	struct xarray xa;
-};
-
-#define IDA_INIT_FLAGS (XA_FLAGS_LOCK_IRQ | XA_FLAGS_ALLOC)
-
-#define IDA_INIT(name) { .xa = XARRAY_INIT(name, IDA_INIT_FLAGS) }
-#define DEFINE_IDA(name) struct ida name = IDA_INIT(name)
-
-int ida_alloc_range(struct ida *, unsigned int min, unsigned int max, gfp_t);
-
 #endif

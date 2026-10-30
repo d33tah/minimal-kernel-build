@@ -1,245 +1,37 @@
 
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-#include <linux/fs_parser.h>
+#include <linux/fs_context.h>
 #include <linux/user_namespace.h>
 #include "mount.h"
 #include "internal.h"
 
-static const struct constant_table common_set_sb_flag[] = {
-	{ "dirsync", SB_DIRSYNC },  { "lazytime", SB_LAZYTIME },
-	{ "mand", SB_MANDLOCK },    { "ro", SB_RDONLY },
-	{ "sync", SB_SYNCHRONOUS }, {},
-};
-
-static const struct constant_table common_clear_sb_flag[] = {
-	{ "async", SB_SYNCHRONOUS },
-	{ "nolazytime", SB_LAZYTIME },
-	{ "nomand", SB_MANDLOCK },
-	{ "rw", SB_RDONLY },
-	{},
-};
-
-static int vfs_parse_sb_flag(struct fs_context *fc, const char *key)
+/* No mount options are ever passed: there is no option parser. */
+struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
+					unsigned int sb_flags)
 {
-	unsigned int token;
-
-	token = lookup_constant(common_set_sb_flag, key, 0);
-	if (token) {
-		fc->sb_flags |= token;
-		return 0;
-	}
-
-	token = lookup_constant(common_clear_sb_flag, key, 0);
-	if (token) {
-		fc->sb_flags &= ~token;
-		return 0;
-	}
-
-	return -ENOPARAM;
-}
-
-int vfs_parse_fs_param_source(struct fs_context *fc, struct fs_parameter *param)
-{
-	/* SAFE-FALLBACK: HIT=False; callers treat -ENOPARAM as "fall through". */
-	return -ENOPARAM;
-}
-
-int vfs_parse_fs_param(struct fs_context *fc, struct fs_parameter *param)
-{
-	int ret;
-
-	if (!param->key)
-		return invalf(fc, "Unnamed parameter\n");
-
-	ret = vfs_parse_sb_flag(fc, param->key);
-	if (ret != -ENOPARAM)
-		return ret;
-
-	if (fc->ops->parse_param) {
-		ret = fc->ops->parse_param(fc, param);
-		if (ret != -ENOPARAM)
-			return ret;
-	}
-
-	ret = vfs_parse_fs_param_source(fc, param);
-	if (ret != -ENOPARAM)
-		return ret;
-
-	return invalf(fc, "%s: Unknown parameter '%s'", fc->fs_type->name,
-		      param->key);
-}
-
-int vfs_parse_fs_string(struct fs_context *fc, const char *key,
-			const char *value, size_t v_size)
-{
-	int ret;
-
-	struct fs_parameter param = {
-		.key = key,
-		.type = fs_value_is_flag,
-	};
-
-	if (value) {
-		param.string = kmemdup_nul(value, v_size, GFP_KERNEL);
-		if (!param.string)
-			return -ENOMEM;
-		param.type = fs_value_is_string;
-	}
-
-	ret = vfs_parse_fs_param(fc, &param);
-	kfree(param.string);
-	return ret;
-}
-
-int generic_parse_monolithic(struct fs_context *fc, void *data)
-{
-	char *options = data, *key;
-	int ret = 0;
-
-	if (!options)
-		return 0;
-
-	while ((key = strsep(&options, ",")) != NULL) {
-		if (*key) {
-			size_t v_len = 0;
-			char *value = strchr(key, '=');
-
-			if (value) {
-				if (value == key)
-					continue;
-				*value++ = 0;
-				v_len = strlen(value);
-			}
-			ret = vfs_parse_fs_string(fc, key, value, v_len);
-			if (ret < 0)
-				break;
-		}
-	}
-
-	return ret;
-}
-
-static struct fs_context *alloc_fs_context(struct file_system_type *fs_type,
-					   struct dentry *reference,
-					   unsigned int sb_flags,
-					   enum fs_context_purpose purpose)
-{
-	int (*init_fs_context)(struct fs_context *);
 	struct fs_context *fc;
-	int ret = -ENOMEM;
+	int ret;
 
 	fc = kzalloc(sizeof(struct fs_context), GFP_KERNEL_ACCOUNT);
 	if (!fc)
 		return ERR_PTR(-ENOMEM);
 
 	fc->sb_flags = sb_flags;
-	fc->fs_type = get_filesystem(fs_type);
+	fc->fs_type = fs_type;
 	fc->cred = get_current_cred();
-	fc->log.prefix = fs_type->name;
+	fc->user_ns = get_user_ns(fc->cred->user_ns);
 
-	mutex_init(&fc->uapi_mutex);
-
-	switch (purpose) {
-	case FS_CONTEXT_FOR_MOUNT:
-		fc->user_ns = get_user_ns(fc->cred->user_ns);
-		break;
-	case FS_CONTEXT_FOR_SUBMOUNT:
-		fc->user_ns = get_user_ns(reference->d_sb->s_user_ns);
-		break;
-	case FS_CONTEXT_FOR_RECONFIGURE:
-		atomic_inc(&reference->d_sb->s_active);
-		fc->user_ns = get_user_ns(reference->d_sb->s_user_ns);
-		fc->root = dget(reference);
+	ret = fs_type->init_fs_context(fc);
+	if (ret < 0) {
+		put_fs_context(fc);
+		return ERR_PTR(ret);
 	}
-
-	init_fs_context = fc->fs_type->init_fs_context;
-	ret = init_fs_context(fc);
-	if (ret < 0)
-		goto err_fc;
-	fc->need_free = true;
 	return fc;
-
-err_fc:
-	put_fs_context(fc);
-	return ERR_PTR(ret);
-}
-
-struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
-					unsigned int sb_flags)
-{
-	return alloc_fs_context(fs_type, NULL, sb_flags, FS_CONTEXT_FOR_MOUNT);
-}
-
-void logfc(struct fc_log *log, const char *prefix, char level, const char *fmt,
-	   ...)
-{
-	va_list va;
-	struct va_format vaf = { .fmt = fmt, .va = &va };
-
-	/*
-	 * fc->log.log is never assigned non-NULL anywhere in this build, so the
-	 * non-NULL "store to log buffer" branch (the only consumer of %pV via
-	 * kasprintf) was dead.  Every caller (invalf/errorf/...) passes a NULL
-	 * log, taking the printk path -- a no-op with CONFIG_PRINTK off.
-	 */
-	va_start(va, fmt);
-	switch (level) {
-	case 'w':
-		printk(KERN_WARNING "%s%s%pV\n", prefix ? prefix : "",
-		       prefix ? ": " : "", &vaf);
-		break;
-	case 'e':
-		printk(KERN_ERR "%s%s%pV\n", prefix ? prefix : "",
-		       prefix ? ": " : "", &vaf);
-		break;
-	default:
-		printk(KERN_NOTICE "%s%s%pV\n", prefix ? prefix : "",
-		       prefix ? ": " : "", &vaf);
-	}
-	va_end(va);
-}
-
-static void put_fc_log(struct fs_context *fc)
-{
-	struct fc_log *log = fc->log.log;
-	int i;
-
-	if (log) {
-		if (refcount_dec_and_test(&log->usage)) {
-			fc->log.log = NULL;
-			for (i = 0; i <= 7; i++)
-				if (log->need_free & (1 << i))
-					kfree(log->buffer[i]);
-			kfree(log);
-		}
-	}
 }
 
 void put_fs_context(struct fs_context *fc)
 {
-	struct super_block *sb;
-
-	if (fc->root) {
-		sb = fc->root->d_sb;
-		dput(fc->root);
-		fc->root = NULL;
-		deactivate_super(sb);
-	}
-
-	if (fc->need_free && fc->ops && fc->ops->free)
-		fc->ops->free(fc);
-
+	dput(fc->root);
 	put_user_ns(fc->user_ns);
 	put_cred(fc->cred);
-	put_fc_log(fc);
-	put_filesystem(fc->fs_type);
-	kfree(fc->source);
 	kfree(fc);
-}
-
-int parse_monolithic_mount_data(struct fs_context *fc, void *data)
-{
-	/* no instance sets ->parse_monolithic, so it always falls through to
-	 * generic_parse_monolithic */
-	return generic_parse_monolithic(fc, data);
 }

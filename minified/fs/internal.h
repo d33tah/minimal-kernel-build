@@ -7,8 +7,6 @@ struct fs_context;
 
 extern void __init chrdev_init(void);
 
-extern int parse_monolithic_mount_data(struct fs_context *, void *);
-
 extern int filename_lookup(struct filename *name, unsigned flags,
 			   struct path *path);
 int do_rmdir(struct filename *name);

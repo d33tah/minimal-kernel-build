@@ -5,14 +5,13 @@
 #include <linux/fs_struct.h>
 #include <linux/sched/task.h>
 #include <linux/fs_context.h>
-#include <linux/shmem_fs.h>
 
 #include "mount.h"
 #include "internal.h"
 
 static struct kmem_cache *mnt_cache __read_mostly;
 
-static struct mount *alloc_vfsmnt(const char *name)
+static struct mount *alloc_vfsmnt(void)
 {
 	struct mount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
 	if (mnt)
@@ -89,97 +88,34 @@ static inline int check_mnt(struct mount *mnt)
 	return mnt->mnt_ns == current->nsproxy->mnt_ns;
 }
 
-struct vfsmount *vfs_create_mount(struct fs_context *fc)
-{
-	struct mount *mnt;
-	struct user_namespace *fs_userns;
-
-	if (!fc->root)
-		return ERR_PTR(-EINVAL);
-
-	mnt = alloc_vfsmnt(fc->source ?: "none");
-	if (!mnt)
-		return ERR_PTR(-ENOMEM);
-
-	/* MNT_INTERNAL flag dropped: mnt_flags was write-only. */
-
-	atomic_inc(&fc->root->d_sb->s_active);
-	mnt->mnt.mnt_sb = fc->root->d_sb;
-	mnt->mnt.mnt_root = dget(fc->root);
-
-	fs_userns = mnt->mnt.mnt_sb->s_user_ns;
-	if (!initial_idmapping(fs_userns))
-		mnt->mnt.mnt_userns = get_user_ns(fs_userns);
-
-	return &mnt->mnt;
-}
-
-struct vfsmount *fc_mount(struct fs_context *fc)
-{
-	int err = vfs_get_tree(fc);
-	if (!err) {
-		up_write(&fc->root->d_sb->s_umount);
-		return vfs_create_mount(fc);
-	}
-	return ERR_PTR(err);
-}
-
-struct vfsmount *vfs_kern_mount(struct file_system_type *type, int flags,
-				const char *name, void *data)
+static struct vfsmount *vfs_kern_mount(struct file_system_type *type)
 {
 	struct fs_context *fc;
 	struct vfsmount *mnt;
-	int ret = 0;
+	struct mount *m;
+	int err;
 
-	if (!type)
-		return ERR_PTR(-EINVAL);
-
-	fc = fs_context_for_mount(type, flags);
+	fc = fs_context_for_mount(type, 0);
 	if (IS_ERR(fc))
 		return ERR_CAST(fc);
 
-	if (name)
-		ret = vfs_parse_fs_string(fc, "source", name, strlen(name));
-	if (!ret)
-		ret = parse_monolithic_mount_data(fc, data);
-	if (!ret)
-		mnt = fc_mount(fc);
-	else
-		mnt = ERR_PTR(ret);
+	err = fc->ops->get_tree(fc);
+	m = err ? NULL : alloc_vfsmnt();
+	if (!m) {
+		put_fs_context(fc);
+		return ERR_PTR(err ?: -ENOMEM);
+	}
+	mnt = &m->mnt;
+	mnt->mnt_sb = fc->root->d_sb;
+	mnt->mnt_root = dget(fc->root);
+	if (!initial_idmapping(mnt->mnt_sb->s_user_ns))
+		mnt->mnt_userns = get_user_ns(mnt->mnt_sb->s_user_ns);
 
 	put_fs_context(fc);
 	return mnt;
 }
 
-static void mntput_no_expire(struct mount *mnt)
-{
-	/*
-	 * Every mount on this minimal kernel is attached to a namespace:
-	 * the rootfs mount carries the initial mnt_namespace and the shmem
-	 * kern_mount carries MNT_NS_INTERNAL, both non-NULL. There is no
-	 * umount / move_mount / detach machinery, so no mount is ever put
-	 * with mnt_ns == NULL. The teardown tail (refcount-to-zero,
-	 * unhash, free) is therefore unreachable; only the decrement-count
-	 * fast path runs.
-	 */
-	rcu_read_lock();
-	rcu_read_unlock();
-}
-
-void mntput(struct vfsmount *mnt)
-{
-	if (mnt) {
-		struct mount *m = real_mount(mnt);
-
-		mntput_no_expire(m);
-	}
-}
-
-struct vfsmount *mntget(struct vfsmount *mnt)
-{
-	return mnt;
-}
-
+/* Mounts are never detached or freed: no mount refcounting (mntget/mntput). */
 static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns,
 					  bool anon)
 {
@@ -208,7 +144,7 @@ __latent_entropy static void __init init_mount_tree(void)
 	struct mnt_namespace *ns;
 	struct path root;
 
-	mnt = vfs_kern_mount(&rootfs_fs_type, 0, "rootfs", NULL);
+	mnt = vfs_kern_mount(&rootfs_fs_type);
 	if (IS_ERR(mnt))
 		panic("Can't create rootfs");
 
@@ -234,8 +170,6 @@ void __init mnt_init(void)
 		"mnt_cache", sizeof(struct mount), 0,
 		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
 
-	/* Stub: fs_kobj not used in minimal kernel */
-	shmem_init();
 	init_mount_tree();
 }
 
@@ -244,16 +178,6 @@ void __init mnt_init(void)
  * free_nsproxy (deleted with exit_task_namespaces); nothing drops a mnt_ns on
  * a 1-shot boot that never clones a namespace.
  */
-
-struct vfsmount *kern_mount(struct file_system_type *type)
-{
-	struct vfsmount *mnt =
-		vfs_kern_mount(type, SB_KERNMOUNT, type->name, NULL);
-	if (!IS_ERR(mnt)) {
-		real_mount(mnt)->mnt_ns = MNT_NS_INTERNAL;
-	}
-	return mnt;
-}
 
 bool mnt_may_suid(struct vfsmount *mnt)
 {

@@ -44,21 +44,6 @@ void *kmemdup(const void *src, size_t len, gfp_t gfp)
 	return p;
 }
 
-char *kmemdup_nul(const char *s, size_t len, gfp_t gfp)
-{
-	char *buf;
-
-	if (!s)
-		return NULL;
-
-	buf = kmalloc_track_caller(len + 1, gfp);
-	if (buf) {
-		memcpy(buf, s, len);
-		buf[len] = '\0';
-	}
-	return buf;
-}
-
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		     struct vm_area_struct *prev)
 {

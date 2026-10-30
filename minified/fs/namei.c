@@ -157,14 +157,12 @@ int inode_permission(struct user_namespace *mnt_userns, struct inode *inode,
 
 void path_get(const struct path *path)
 {
-	mntget(path->mnt);
 	dget(path->dentry);
 }
 
 void path_put(const struct path *path)
 {
 	dput(path->dentry);
-	mntput(path->mnt);
 }
 
 #define EMBEDDED_LEVELS 2
@@ -278,8 +276,6 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 	}
 	if (unlikely(ret)) {
 		dput(path->dentry);
-		if (path->mnt != nd->path.mnt)
-			mntput(path->mnt);
 	} else {
 		*inode = d_backing_inode(path->dentry);
 	}
@@ -348,8 +344,6 @@ static const char *step_into(struct nameidata *nd, int flags,
 	 * is unreachable and has been removed.
 	 */
 	dput(nd->path.dentry);
-	if (nd->path.mnt != path.mnt)
-		mntput(nd->path.mnt);
 	nd->path = path;
 	nd->inode = inode;
 	return NULL;

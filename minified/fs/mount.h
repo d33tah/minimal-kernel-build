@@ -13,8 +13,6 @@ struct mount {
 	struct mnt_namespace *mnt_ns;
 } __randomize_layout;
 
-#define MNT_NS_INTERNAL ERR_PTR(-EINVAL)
-
 static inline struct mount *real_mount(struct vfsmount *mnt)
 {
 	return container_of(mnt, struct mount, mnt);

@@ -85,13 +85,6 @@ char *strrchr(const char *s, int c)
 }
 #endif
 
-#ifndef __HAVE_ARCH_STRSEP
-char *strsep(char **s, const char *ct)
-{
-	return NULL;
-}
-#endif
-
 #ifndef __HAVE_ARCH_MEMCMP
 #undef memcmp
 __visible int memcmp(const void *cs, const void *ct, size_t count)

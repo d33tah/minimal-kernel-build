@@ -312,16 +312,9 @@ static inline struct inode *file_inode(const struct file *f)
 }
 
 #define SB_RDONLY 1
-#define SB_SYNCHRONOUS 16
-#define SB_MANDLOCK 64
-#define SB_DIRSYNC 128
 #define SB_NOATIME 1024
-#define SB_KERNMOUNT (1 << 22)
-#define SB_LAZYTIME (1 << 25)
-#define SB_ACTIVE (1 << 30)
 
 #define SB_I_NOEXEC 0x00000002
-#define SB_I_NODEV 0x00000004
 
 enum {
 	SB_FREEZE_WRITE = 1,
@@ -331,13 +324,9 @@ struct super_block {
 	unsigned char s_blocksize_bits;
 	loff_t s_maxbytes;
 	struct file_system_type *s_type;
-	const struct super_operations *s_op;
 	unsigned long s_flags, s_iflags;
 	struct dentry *s_root;
-	struct rw_semaphore s_umount;
-	atomic_t s_active;
 	struct hlist_bl_head s_roots;
-	void *s_fs_info;
 	u32 s_time_gran;
 	time64_t s_time_min;
 	time64_t s_time_max;
@@ -489,16 +478,6 @@ static inline int call_mmap(struct file *file, struct vm_area_struct *vma)
 
 extern ssize_t vfs_write(struct file *, const char __user *, size_t, loff_t *);
 
-struct super_operations {
-	/* All fields removed: none are dispatched in this build. drop_inode was
-	 * the last one (assigned by ramfs_ops to generic_delete_inode) but there
-	 * is no ->drop_inode() call site, so it was write-only - removed. The
-	 * earlier set (alloc_inode, destroy_inode, free_inode, dirty_inode,
-	 * write_inode, evict_inode, put_super, sync_fs, statfs, remount_fs,
-	 * umount_begin, show_options, freeze/show_devname/show_path/show_stats)
-	 * had zero dispatch and zero assignment - removed previously. */
-};
-
 /* S_NOSEC, S_DAX, S_NOATIME, S_APPEND, S_IMMUTABLE, S_DEAD, S_NOCMTIME,
  * S_SWAPFILE, S_AUTOMOUNT, S_VERITY, S_KERNEL_FILE removed - never set on
  * any inode (S_NOSEC depended on SB_NOSEC which is never set), so the whole
@@ -555,22 +534,10 @@ static inline void file_accessed(struct file *file)
 
 struct file_system_type {
 	const char *name;
-	int fs_flags;
-#define FS_USERNS_MOUNT 8
 	int (*init_fs_context)(struct fs_context *);
-	void (*kill_sb)(struct super_block *);
-	struct module *owner;
-	struct file_system_type *next;
 };
 
 /* Removed: mount_nodev, kill_block_super - never called */
-void kill_litter_super(struct super_block *sb);
-void deactivate_super(struct super_block *sb);
-void deactivate_locked_super(struct super_block *sb);
-int set_anon_super_fc(struct super_block *s, struct fs_context *fc);
-struct super_block *sget_fc(struct fs_context *fc,
-			    int (*set)(struct super_block *,
-				       struct fs_context *));
 
 #define fops_get(fops) ((fops) ? (fops) : NULL)
 #define fops_put(fops)        \
@@ -584,8 +551,6 @@ struct super_block *sget_fc(struct fs_context *fc,
 		fops_put(__file->f_op);           \
 		BUG_ON(!(__file->f_op = (fops))); \
 	} while (0)
-
-extern int register_filesystem(struct file_system_type *);
 
 extern int current_umask(void);
 
@@ -715,8 +680,6 @@ extern int nonseekable_open(struct inode *inode, struct file *filp);
 
 #define special_file(m) (S_ISCHR(m) || S_ISBLK(m) || S_ISFIFO(m) || S_ISSOCK(m))
 
-extern struct file_system_type *get_filesystem(struct file_system_type *fs);
-extern void put_filesystem(struct file_system_type *fs);
 /* Removed: get_super, get_active_super, drop_super, drop_super_exclusive,
    iterate_supers, iterate_supers_type - never called */
 

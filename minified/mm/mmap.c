@@ -8,6 +8,7 @@
 #include <linux/rmap.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/signal.h>
+#include <asm/tlbflush.h>
 
 #include "internal.h"
 
@@ -380,18 +381,90 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)
 	return NULL;
 }
 
+/*
+ * Clear the PTEs of [start, end) in @vma and drop each page's mapping
+ * reference: anonymous pages go back to the free lists, page-cache pages keep
+ * the cache's own reference. Page tables stay allocated. Only current->mm is
+ * ever unmapped (mmap_region during exec), so invlpg flushes its entries.
+ */
+static void zap_vma_range(struct vm_area_struct *vma, unsigned long start,
+			  unsigned long end)
+{
+	struct mm_struct *mm = vma->vm_mm;
+
+	for (; start < end; start += PAGE_SIZE) {
+		pgd_t *pgd = pgd_offset(mm, start);
+		pmd_t *pmd = pmd_offset(
+			pud_offset(p4d_offset(pgd, start), start), start);
+		struct page *page = NULL;
+		spinlock_t *ptl;
+		pte_t *pte;
+
+		if (pmd_none(*pmd))
+			continue;
+		pte = pte_offset_map_lock(mm, pmd, start, &ptl);
+		if (!pte_none(*pte))
+			page = vm_normal_page(vma, start, *pte);
+		pte_clear(mm, start, pte);
+		pte_unmap_unlock(pte, ptl);
+		flush_tlb_one_user(start);
+		if (page) {
+			page_remove_rmap(page);
+			put_page(page);
+		}
+	}
+}
+
+/*
+ * Remove [start, start + len) from @mm: VMAs inside the range are freed,
+ * VMAs straddling an end are trimmed, and a VMA covering the whole range is
+ * split in two first.
+ */
 int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 {
-	/*
-	 * RUNTIME-DEAD ANCHOR-STUB: this kernel's only job is boot+print+
-	 * stay-alive; it never unmaps a region.  __do_munmap is link-live via
-	 * fs/binfmt_elf.c (ELF loader, never runs on this boot) and via the
-	 * mmap_region->munmap_vma_range overlap path (find_vma_links never finds
-	 * an overlap on this boot, so this is never reached).  Returning 0 is the
-	 * success contract the sole live caller expects.  Stubbing the body made
-	 * its private subtree (__split_vma, detach_vmas_to_be_unmapped,
-	 * unmap_region, remove_vma_list) dead -> all deleted.
-	 */
+	unsigned long end = start + PAGE_ALIGN(len);
+	struct vm_area_struct *vma, *next;
+
+	if (offset_in_page(start) || end <= start || end > TASK_SIZE)
+		return -EINVAL;
+
+	for (vma = find_vma(mm, start); vma && vma->vm_start < end;
+	     vma = next) {
+		if (vma->vm_start < start && vma->vm_end > end) {
+			struct vm_area_struct *tail = vm_area_alloc(mm);
+
+			if (!tail)
+				return -ENOMEM;
+			*tail = *vma;
+			tail->vm_start = end;
+			tail->vm_pgoff += (end - vma->vm_start) >> PAGE_SHIFT;
+			if (tail->vm_file)
+				get_file(tail->vm_file);
+			vma->vm_end = end;
+			insert_vm_struct(mm, tail);
+		}
+		next = vma->vm_next;
+		zap_vma_range(vma, max(start, vma->vm_start),
+			      min(end, vma->vm_end));
+		if (vma->vm_start < start) {
+			vma->vm_end = start;
+		} else if (vma->vm_end > end) {
+			vma->vm_pgoff += (end - vma->vm_start) >> PAGE_SHIFT;
+			vma->vm_start = end;
+		} else {
+			rb_erase(&vma->vm_rb, &mm->mm_rb);
+			if (vma->vm_prev)
+				vma->vm_prev->vm_next = next;
+			else
+				mm->mmap = next;
+			if (next)
+				next->vm_prev = vma->vm_prev;
+			mm->map_count--;
+			if (vma->vm_file)
+				fput(vma->vm_file);
+			vm_area_free(vma);
+		}
+	}
 	return 0;
 }
 
@@ -399,7 +472,7 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
  * Map the zero-filled part of an ELF segment (p_memsz > p_filesz) as a
  * private anonymous region; do_anonymous_page supplies zeroed pages on
  * first touch. MAP_FIXED_NOREPLACE: an overlap with an existing mapping
- * fails with -EEXIST (there is no munmap to replace it).
+ * (e.g. the stack) fails with -EEXIST instead of unmapping it.
  */
 int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 {

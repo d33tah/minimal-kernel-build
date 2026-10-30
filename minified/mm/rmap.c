@@ -41,3 +41,9 @@ void page_add_file_rmap(struct page *page, struct vm_area_struct *vma,
 	if (nr)
 		__mod_lruvec_page_state(page, NR_FILE_MAPPED, nr);
 }
+
+/* The page lost one of its PTEs (munmap, COW replacement). */
+void page_remove_rmap(struct page *page)
+{
+	atomic_dec(&page->_mapcount);
+}

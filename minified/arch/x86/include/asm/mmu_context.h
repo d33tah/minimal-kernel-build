@@ -5,7 +5,6 @@
 #include <asm/desc.h>
 #include <linux/atomic.h>
 #include <linux/mm_types.h>
-#include <linux/pkeys.h>
 
 #include <asm/tlbflush.h>
 #include <asm/debugreg.h>

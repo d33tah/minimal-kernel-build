@@ -2,7 +2,6 @@
 #include <linux/mm.h>
 #include <linux/mm_inline.h>
 #include <linux/rmap.h>
-#include <linux/oom.h>
 #include <linux/file.h>
 
 #include <asm/pgalloc.h>
@@ -242,10 +241,6 @@ vm_fault_t finish_fault(struct vm_fault *vmf)
 		page = vmf->cow_page;
 	else
 		page = vmf->page;
-
-	ret = check_stable_address_space(vma->vm_mm);
-	if (ret)
-		return ret;
 
 	if (pmd_none(*vmf->pmd)) {
 		if (vmf->prealloc_pte)

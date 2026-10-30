@@ -7,7 +7,6 @@
 #include <linux/memcontrol.h>
 #include <linux/highmem.h>
 #include <linux/pagemap.h>
-#include <linux/memremap.h>
 
 void page_add_new_anon_rmap(struct page *, struct vm_area_struct *,
 			    unsigned long address);

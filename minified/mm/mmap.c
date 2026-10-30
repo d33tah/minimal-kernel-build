@@ -6,9 +6,8 @@
 #include <linux/file.h>
 #include <linux/security.h>
 #include <linux/rmap.h>
-#include <linux/pkeys.h>
 #include <linux/sched/mm.h>
-#include <linux/oom.h>
+#include <linux/sched/signal.h>
 
 #include "internal.h"
 
@@ -152,7 +151,6 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 {
 	struct mm_struct *mm = current->mm;
 	vm_flags_t vm_flags;
-	int pkey = 0;
 
 	*populate = 0;
 
@@ -184,13 +182,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 			return -EEXIST;
 	}
 
-	if (prot == PROT_EXEC) {
-		pkey = execute_only_pkey(mm);
-		if (pkey < 0)
-			pkey = 0;
-	}
-
-	vm_flags = calc_vm_prot_bits(prot, pkey) | calc_vm_flag_bits(flags) |
+	vm_flags = calc_vm_prot_bits(prot) | calc_vm_flag_bits(flags) |
 		   mm->def_flags | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC;
 
 	/*

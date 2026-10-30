@@ -4,7 +4,6 @@
 #include <linux/atomic.h>
 #include <linux/huge_mm.h>
 #include <linux/swap.h>
-#include <linux/swapops.h>
 
 static inline void dup_anon_vma_name(struct vm_area_struct *orig_vma,
 				     struct vm_area_struct *new_vma)

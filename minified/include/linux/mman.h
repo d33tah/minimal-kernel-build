@@ -12,10 +12,6 @@
 #define MAP_SYNC 0
 #endif
 
-#ifndef arch_calc_vm_prot_bits
-#define arch_calc_vm_prot_bits(prot, pkey) 0
-#endif
-
 #ifndef arch_calc_vm_flag_bits
 #define arch_calc_vm_flag_bits(flags) 0
 #endif
@@ -26,13 +22,11 @@
 		 ((bit1) <= (bit2) ? ((x) & (bit1)) * ((bit2) / (bit1)) : \
 				     ((x) & (bit1)) / ((bit1) / (bit2))))
 
-static inline unsigned long calc_vm_prot_bits(unsigned long prot,
-					      unsigned long pkey)
+static inline unsigned long calc_vm_prot_bits(unsigned long prot)
 {
 	return _calc_vm_trans(prot, PROT_READ, VM_READ) |
 	       _calc_vm_trans(prot, PROT_WRITE, VM_WRITE) |
-	       _calc_vm_trans(prot, PROT_EXEC, VM_EXEC) |
-	       arch_calc_vm_prot_bits(prot, pkey);
+	       _calc_vm_trans(prot, PROT_EXEC, VM_EXEC);
 }
 
 static inline unsigned long calc_vm_flag_bits(unsigned long flags)

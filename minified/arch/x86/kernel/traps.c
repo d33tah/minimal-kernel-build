@@ -22,31 +22,38 @@ static inline void cond_local_irq_disable(struct pt_regs *regs)
 		local_irq_disable();
 }
 
-static void do_trap(int trapnr, char *str, struct pt_regs *regs,
+/*
+ * There is no signal delivery: a user-mode exception kills the task with the
+ * signal upstream would send, instead of returning to re-execute the faulting
+ * instruction forever (or silently skipping a trap).
+ */
+static void do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
 		    long error_code)
 {
-	if (!user_mode(regs) && !fixup_exception(regs, trapnr, error_code, 0))
+	if (user_mode(regs))
+		do_exit(signr);
+	if (!fixup_exception(regs, trapnr, error_code, 0))
 		die(str, regs, error_code);
 }
 
 static void do_error_trap(struct pt_regs *regs, long error_code, char *str,
-			  unsigned long trapnr)
+			  unsigned long trapnr, int signr)
 {
 	RCU_LOCKDEP_WARN(!rcu_is_watching(), "entry code didn't wake RCU");
 
 	cond_local_irq_enable(regs);
-	do_trap(trapnr, str, regs, error_code);
+	do_trap(trapnr, signr, str, regs, error_code);
 	cond_local_irq_disable(regs);
 }
 
 DEFINE_IDTENTRY(exc_divide_error)
 {
-	do_error_trap(regs, 0, "divide error", X86_TRAP_DE);
+	do_error_trap(regs, 0, "divide error", X86_TRAP_DE, SIGFPE);
 }
 
 DEFINE_IDTENTRY(exc_overflow)
 {
-	do_error_trap(regs, 0, "overflow", X86_TRAP_OF);
+	do_error_trap(regs, 0, "overflow", X86_TRAP_OF, SIGSEGV);
 }
 
 DEFINE_IDTENTRY_RAW(exc_invalid_op)
@@ -59,28 +66,30 @@ DEFINE_IDTENTRY_RAW(exc_invalid_op)
 	 * fixup never recovered (always returned false). Drop it.
 	 */
 	state = irqentry_enter(regs);
-	do_error_trap(regs, 0, "invalid opcode", X86_TRAP_UD);
+	do_error_trap(regs, 0, "invalid opcode", X86_TRAP_UD, SIGILL);
 	irqentry_exit(regs, state);
 }
 
 DEFINE_IDTENTRY(exc_coproc_segment_overrun)
 {
-	do_error_trap(regs, 0, "coprocessor segment overrun", X86_TRAP_OLD_MF);
+	do_error_trap(regs, 0, "coprocessor segment overrun", X86_TRAP_OLD_MF,
+		      SIGFPE);
 }
 
 DEFINE_IDTENTRY_ERRORCODE(exc_invalid_tss)
 {
-	do_error_trap(regs, error_code, "invalid TSS", X86_TRAP_TS);
+	do_error_trap(regs, error_code, "invalid TSS", X86_TRAP_TS, SIGSEGV);
 }
 
 DEFINE_IDTENTRY_ERRORCODE(exc_segment_not_present)
 {
-	do_error_trap(regs, error_code, "segment not present", X86_TRAP_NP);
+	do_error_trap(regs, error_code, "segment not present", X86_TRAP_NP,
+		      SIGBUS);
 }
 
 DEFINE_IDTENTRY_ERRORCODE(exc_stack_segment)
 {
-	do_error_trap(regs, error_code, "stack segment", X86_TRAP_SS);
+	do_error_trap(regs, error_code, "stack segment", X86_TRAP_SS, SIGBUS);
 }
 
 DEFINE_IDTENTRY_ERRORCODE(exc_alignment_check)
@@ -90,7 +99,7 @@ DEFINE_IDTENTRY_ERRORCODE(exc_alignment_check)
 
 	local_irq_enable();
 
-	do_trap(X86_TRAP_AC, "alignment check", regs, error_code);
+	do_trap(X86_TRAP_AC, SIGBUS, "alignment check", regs, error_code);
 
 	local_irq_disable();
 }
@@ -111,7 +120,7 @@ DEFINE_IDTENTRY(exc_bounds)
 	if (!user_mode(regs))
 		die("bounds", regs, 0);
 
-	do_trap(X86_TRAP_BR, "bounds", regs, 0);
+	do_trap(X86_TRAP_BR, SIGSEGV, "bounds", regs, 0);
 
 	cond_local_irq_disable(regs);
 }
@@ -128,7 +137,7 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 	 */
 
 	if (user_mode(regs))
-		goto exit;
+		do_exit(SIGSEGV); /* no signal delivery */
 
 	if (fixup_exception(regs, X86_TRAP_GP, error_code, 0))
 		goto exit;
@@ -146,7 +155,7 @@ DEFINE_IDTENTRY_RAW(exc_int3)
 	if (user_mode(regs)) {
 		irqentry_enter_from_user_mode(regs);
 		cond_local_irq_enable(regs);
-		do_trap(X86_TRAP_BP, "int3", regs, 0);
+		do_trap(X86_TRAP_BP, SIGTRAP, "int3", regs, 0);
 		cond_local_irq_disable(regs);
 		irqentry_exit_to_user_mode(regs);
 	} else {
@@ -204,7 +213,8 @@ static __always_inline void exc_debug_user(struct pt_regs *regs,
 
 	/* TIF_BLOCKSTEP never set in this build -> clear was a no-op. */
 
-	irqentry_exit_to_user_mode(regs);
+	/* Single-step or icebp from user mode: SIGTRAP, i.e. kill the task. */
+	do_exit(SIGTRAP);
 }
 
 DEFINE_IDTENTRY_RAW(exc_debug)
@@ -217,12 +227,17 @@ DEFINE_IDTENTRY_RAW(exc_debug)
 		exc_debug_kernel(regs, dr6);
 }
 
+/* The kernel itself never uses the FPU; a user-mode #MF/#XM kills the task. */
 DEFINE_IDTENTRY(exc_coprocessor_error)
 {
+	if (user_mode(regs))
+		do_exit(SIGFPE);
 }
 
 DEFINE_IDTENTRY(exc_simd_coprocessor_error)
 {
+	if (user_mode(regs))
+		do_exit(SIGFPE);
 }
 
 DEFINE_IDTENTRY(exc_spurious_interrupt_bug)
@@ -243,7 +258,7 @@ DEFINE_IDTENTRY(exc_device_not_available)
 DEFINE_IDTENTRY_SW(iret_error)
 {
 	local_irq_enable();
-	do_trap(X86_TRAP_IRET, "iret exception", regs, 0);
+	do_trap(X86_TRAP_IRET, SIGILL, "iret exception", regs, 0);
 	local_irq_disable();
 }
 

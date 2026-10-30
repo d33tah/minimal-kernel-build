@@ -159,10 +159,24 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 			unsigned long end, unsigned int stride_shift,
 			bool freed_tables)
 {
-	/* mmu_gather/unmap teardown never runs on this single-shot boot, so this
-	 * range-flush root is runtime-dead; bump the generation counter so any
-	 * live reader of mm->context.tlb_gen stays consistent and return. */
+	unsigned long addr;
+
 	inc_mm_tlb_gen(mm);
+	preempt_disable();
+	/*
+	 * UP: only the loaded mm can have TLB entries; any other mm gets a CR3
+	 * reload in switch_mm_irqs_off. Small ranges use invlpg (which also drops
+	 * paging-structure caches), larger ones and TLB_FLUSH_ALL reload CR3.
+	 */
+	if (this_cpu_read(cpu_tlbstate.loaded_mm) == mm) {
+		if ((end - start) >> stride_shift > 33)
+			flush_tlb_local();
+		else
+			for (addr = start; addr < end;
+			     addr += 1UL << stride_shift)
+				flush_tlb_one_user(addr);
+	}
+	preempt_enable();
 }
 
 void flush_tlb_one_kernel(unsigned long addr)

@@ -343,15 +343,12 @@ struct file_operations {
 	int (*mmap)(struct file *, struct vm_area_struct *);
 	int (*open)(struct inode *, struct file *);
 	int (*release)(struct inode *, struct file *);
-	unsigned long (*get_unmapped_area)(struct file *, unsigned long,
-					   unsigned long, unsigned long,
-					   unsigned long);
 	/* iopoll/iterate/iterate_shared/poll/unlocked_ioctl/compat_ioctl/
 	 * mmap_supported_flags/flush/fsync/sendpage/check_flags/flock/
 	 * splice_write/splice_read/setlease/remap_file_range/fadvise/uring_cmd/
 	 * fallocate/show_fdinfo/copy_file_range/llseek/lock removed - zero ->field
 	 * dispatch, bare-deref and assignment tree-wide (only read/write/
-	 * read_iter/write_iter/mmap/open/release/fasync/get_unmapped_area
+	 * read_iter/write_iter/mmap/open/release/fasync
 	 * are live; their syscall consumers were all excised earlier) */
 } __randomize_layout;
 

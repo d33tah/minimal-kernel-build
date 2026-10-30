@@ -404,8 +404,6 @@ void setup_new_exec(struct linux_binprm *bprm)
 {
 	struct task_struct *me = current;
 
-	arch_pick_mmap_layout(me->mm, &bprm->rlim_stack);
-
 	arch_setup_new_exec();
 
 	up_write(&me->signal->exec_update_lock);

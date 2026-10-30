@@ -118,10 +118,6 @@ static inline void totalram_pages_add(long count)
 
 extern void *high_memory;
 
-#define sysctl_legacy_va_layout 0
-
-extern int mmap_rnd_bits __read_mostly;
-
 #include <asm/page.h>
 #include <asm/processor.h>
 
@@ -683,8 +679,6 @@ extern unsigned long __must_check vm_mmap(struct file *, unsigned long,
 					  unsigned long, unsigned long,
 					  unsigned long, unsigned long);
 
-extern unsigned long vm_unmapped_area(void);
-
 extern vm_fault_t filemap_fault(struct vm_fault *vmf);
 
 extern unsigned long stack_guard_gap;
@@ -694,9 +688,6 @@ extern int expand_stack(struct vm_area_struct *vma, unsigned long address);
 extern int expand_downwards(struct vm_area_struct *vma, unsigned long address);
 extern struct vm_area_struct *find_vma(struct mm_struct *mm,
 				       unsigned long addr);
-extern struct vm_area_struct *find_vma_prev(struct mm_struct *mm,
-					    unsigned long addr,
-					    struct vm_area_struct **pprev);
 
 static inline struct vm_area_struct *
 find_vma_intersection(struct mm_struct *mm, unsigned long start_addr,

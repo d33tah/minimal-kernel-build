@@ -12,12 +12,6 @@
 
 #include "internal.h"
 
-#ifndef arch_mmap_check
-#define arch_mmap_check(addr, len, flags) (0)
-#endif
-
-int mmap_rnd_bits __read_mostly = CONFIG_ARCH_MMAP_RND_BITS;
-
 pgprot_t protection_map[16] __ro_after_init = {
 	[VM_NONE] = __P000,
 	[VM_READ] = __P001,
@@ -125,14 +119,6 @@ static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 	validate_mm(mm);
 }
 
-static inline unsigned long round_hint_to_min(unsigned long hint)
-{
-	hint &= PAGE_MASK;
-	if (((void *)hint != NULL) && (hint < mmap_min_addr))
-		return PAGE_ALIGN(mmap_min_addr);
-	return hint;
-}
-
 /* Used internally by acct_stack_growth */
 static inline u64 file_mmap_size_max(struct file *file, struct inode *inode)
 {
@@ -178,9 +164,6 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 
 	if (flags & MAP_FIXED_NOREPLACE)
 		flags |= MAP_FIXED;
-
-	if (!(flags & MAP_FIXED))
-		addr = round_hint_to_min(addr);
 
 	len = PAGE_ALIGN(len);
 	if (!len)
@@ -283,105 +266,21 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 }
 
 /*
- * Runtime-dead on a 1-shot boot: arch_pick_mmap_layout selects the topdown
- * get_unmapped_area, whose addr fast-path always returns before reaching
- * vm_unmapped_area; the legacy bottom-up arch_get_unmapped_area is never
- * assigned. Body stubbed (symbol kept link-live for the mm.h extern); the
- * private unmapped_area / unmapped_area_topdown helpers are deleted.
+ * Every mapping in this kernel is placed at a fixed address: there is no
+ * mmap(2) and the ELF loader maps the PT_LOAD segments of ET_EXEC binaries
+ * MAP_FIXED[_NOREPLACE] (do_mmap turns the latter into MAP_FIXED). So there
+ * is no free-area search, no mmap_base and no layout randomization; a
+ * request without MAP_FIXED fails.
  */
-unsigned long vm_unmapped_area(void)
-{
-	return -ENOMEM;
-}
-
-#ifndef HAVE_ARCH_UNMAPPED_AREA
-unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
-				     unsigned long len, unsigned long pgoff,
-				     unsigned long flags)
-{
-	/*
-	 * Legacy bottom-up layout is never selected on this boot
-	 * (arch_pick_mmap_layout uses the topdown variant); never assigned,
-	 * never called. Body stubbed, symbol kept link-live.
-	 */
-	return -ENOMEM;
-}
-#endif
-
-unsigned long generic_get_unmapped_area_topdown(struct file *filp,
-						unsigned long addr,
-						unsigned long len,
-						unsigned long pgoff,
-						unsigned long flags)
-{
-	struct vm_area_struct *vma, *prev;
-	struct mm_struct *mm = current->mm;
-	const unsigned long mmap_end = arch_get_mmap_end(addr, len, flags);
-
-	if (len > mmap_end - mmap_min_addr)
-		return -ENOMEM;
-
-	if (flags & MAP_FIXED)
-		return addr;
-
-	if (addr) {
-		addr = PAGE_ALIGN(addr);
-		vma = find_vma_prev(mm, addr, &prev);
-		if (mmap_end - len >= addr && addr >= mmap_min_addr &&
-		    (!vma || addr + len <= vm_start_gap(vma)) &&
-		    (!prev || addr >= vm_end_gap(prev)))
-			return addr;
-	}
-
-	addr = vm_unmapped_area();
-
-	if (offset_in_page(addr)) {
-		VM_BUG_ON(addr != -ENOMEM);
-		addr = vm_unmapped_area();
-	}
-
-	return addr;
-}
-
-#ifndef HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
-unsigned long arch_get_unmapped_area_topdown(struct file *filp,
-					     unsigned long addr,
-					     unsigned long len,
-					     unsigned long pgoff,
-					     unsigned long flags)
-{
-	return generic_get_unmapped_area_topdown(filp, addr, len, pgoff, flags);
-}
-#endif
-
 unsigned long get_unmapped_area(struct file *file, unsigned long addr,
 				unsigned long len, unsigned long pgoff,
 				unsigned long flags)
 {
-	unsigned long (*get_area)(struct file *, unsigned long, unsigned long,
-				  unsigned long, unsigned long);
-
-	unsigned long error = arch_mmap_check(addr, len, flags);
-	if (error)
-		return error;
-
-	if (len > TASK_SIZE)
+	if (!(flags & MAP_FIXED))
 		return -ENOMEM;
 
-	/*
-	 * MAP_SHARED is never set on this build (do_mmap is the sole caller and
-	 * the only mmap path is binfmt_elf via vm_mmap with MAP_PRIVATE[|MAP_FIXED]),
-	 * so the shmem_get_unmapped_area arm is dead and folded out.
-	 */
-	get_area = current->mm->get_unmapped_area;
-	if (file) {
-		if (file->f_op->get_unmapped_area)
-			get_area = file->f_op->get_unmapped_area;
-	}
-
-	addr = get_area(file, addr, len, pgoff, flags);
-	if (IS_ERR_VALUE(addr))
-		return addr;
+	if (len > TASK_SIZE - mmap_min_addr)
+		return -ENOMEM;
 
 	if (addr > TASK_SIZE - len)
 		return -ENOMEM;
@@ -415,14 +314,6 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 	}
 
 	return vma;
-}
-
-/* Used by arch_get_unmapped_area and generic_get_unmapped_area_topdown */
-struct vm_area_struct *find_vma_prev(struct mm_struct *mm, unsigned long addr,
-				     struct vm_area_struct **pprev)
-{
-	*pprev = NULL;
-	return find_vma(mm, addr);
 }
 
 static int acct_stack_growth(struct vm_area_struct *vma, unsigned long size,

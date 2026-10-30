@@ -139,12 +139,6 @@ struct mm_struct {
 	struct {
 		struct vm_area_struct *mmap;
 		struct rb_root mm_rb;
-		unsigned long (*get_unmapped_area)(struct file *filp,
-						   unsigned long addr,
-						   unsigned long len,
-						   unsigned long pgoff,
-						   unsigned long flags);
-		unsigned long mmap_base;
 		pgd_t *pgd;
 		atomic_t mm_users;
 		atomic_t mm_count;

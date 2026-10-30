@@ -184,7 +184,6 @@ static inline pid_t task_tgid_nr(struct task_struct *tsk)
 #define PF_MEMALLOC_NOFS 0x00040000
 #define PF_MEMALLOC_NOIO 0x00080000
 #define PF_KTHREAD 0x00200000
-#define PF_RANDOMIZE 0x00400000
 #define PF_NO_SETAFFINITY 0x04000000
 
 static inline int set_cpus_allowed_ptr(struct task_struct *p,

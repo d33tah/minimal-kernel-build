@@ -18,6 +18,4 @@ static inline unsigned long get_random_long(void)
 	return get_random_u32(); /* BITS_PER_LONG == 32 */
 }
 
-bool rng_is_initialized(void);
-
 #endif

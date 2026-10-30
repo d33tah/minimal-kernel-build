@@ -1,7 +1,6 @@
 
 #include <linux/kernel.h>
 #include <linux/percpu.h>
-#include <linux/ctype.h>
 #include <linux/delay.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/task.h>
@@ -185,35 +184,6 @@ __u32 cpu_caps_cleared[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 __u32 cpu_caps_set[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 
 DEFINE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);
-
-static void get_model_name(struct cpuinfo_x86 *c)
-{
-	unsigned int *v;
-	char *p, *q, *s;
-
-	if (c->extended_cpuid_level < 0x80000004)
-		return;
-
-	v = (unsigned int *)c->x86_model_id;
-	cpuid(0x80000002, &v[0], &v[1], &v[2], &v[3]);
-	cpuid(0x80000003, &v[4], &v[5], &v[6], &v[7]);
-	cpuid(0x80000004, &v[8], &v[9], &v[10], &v[11]);
-	c->x86_model_id[48] = 0;
-
-	p = q = s = &c->x86_model_id[0];
-
-	while (*p == ' ')
-		p++;
-
-	while (*p) {
-		if (!isspace(*p))
-			s = q;
-
-		*q++ = *p++;
-	}
-
-	*(s + 1) = '\0';
-}
 
 static void get_cpu_vendor(struct cpuinfo_x86 *c)
 {
@@ -412,8 +382,6 @@ static void generic_identify(struct cpuinfo_x86 *c)
 
 	get_cpu_address_sizes(c);
 
-	get_model_name(c);
-
 	set_cpu_bug(c, X86_BUG_ESPFIX);
 }
 
@@ -423,7 +391,6 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	c->x86_vendor = X86_VENDOR_UNKNOWN;
 	c->x86_model = c->x86_stepping = 0;
 	c->x86_vendor_id[0] = '\0';
-	c->x86_model_id[0] = '\0';
 	c->cpuid_level = -1;
 	c->x86_clflush_size = 32;
 	c->x86_phys_bits = 32;
@@ -446,16 +413,6 @@ static void identify_cpu(struct cpuinfo_x86 *c)
 	}
 
 	filter_cpuid_features(c, true);
-
-	if (!c->x86_model_id[0]) {
-		/*
-		 * table_lookup_model() walked this_cpu->legacy_models, but
-		 * this_cpu is always &default_cpu whose legacy_models table is
-		 * zero-initialized (->family == 0) -> the lookup always returned
-		 * NULL, so synthesize the family/model name directly.
-		 */
-		sprintf(c->x86_model_id, "%02x/%02x", c->x86, c->x86_model);
-	}
 
 	apply_forced_caps(c);
 

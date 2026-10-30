@@ -104,17 +104,32 @@ static __initdata gid_t gid;
 static __initdata unsigned rdev;
 static __initdata u32 hdr_csum;
 
+/* One newc header field: up to 8 hex digits (gen_init_cpio writes %08X). */
+static unsigned long __init parse_hex8(const char *s)
+{
+	unsigned long v = 0;
+	int i;
+
+	for (i = 0; i < 8; i++) {
+		unsigned int c = s[i], lc = c | 0x20;
+
+		if (c >= '0' && c <= '9')
+			v = v * 16 + c - '0';
+		else if (lc >= 'a' && lc <= 'f')
+			v = v * 16 + lc - 'a' + 10;
+		else
+			break;
+	}
+	return v;
+}
+
 static void __init parse_header(char *s)
 {
 	unsigned long parsed[13];
-	char buf[9];
 	int i;
 
-	buf[8] = '\0';
-	for (i = 0, s += 6; i < 13; i++, s += 8) {
-		memcpy(buf, s, 8);
-		parsed[i] = simple_strtoul(buf, NULL, 16);
-	}
+	for (i = 0, s += 6; i < 13; i++, s += 8)
+		parsed[i] = parse_hex8(s);
 	ino = parsed[0];
 	mode = parsed[1];
 	uid = parsed[2];

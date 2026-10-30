@@ -76,7 +76,6 @@ struct delayed_work {
 #define INIT_WORK(_work, _func) __INIT_WORK((_work), (_func), 0)
 
 extern struct workqueue_struct *system_wq;
-extern struct workqueue_struct *system_unbound_wq;
 
 extern bool queue_work_on(int cpu, struct workqueue_struct *wq,
 			  struct work_struct *work);

@@ -20,7 +20,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/capability.h>
 
 #include <linux/cgroup.h>
-#include <linux/ctype.h>
 #include <linux/file.h>
 
 #include <linux/interrupt.h>

@@ -50,7 +50,7 @@ struct cpuinfo_x86 {
 		__u32 x86_capability[NCAPINTS + NBUGINTS];
 		unsigned long x86_capability_alignment;
 	};
-	char x86_vendor_id[16], x86_model_id[64];
+	char x86_vendor_id[16];
 	int x86_cache_alignment;
 	unsigned long loops_per_jiffy;
 	u16 x86_clflush_size;

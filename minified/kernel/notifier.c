@@ -7,9 +7,8 @@ int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
 	/*
 	 * No notifier is ever registered on any atomic chain in this build
 	 * (there is no notifier_chain_register / atomic_notifier_chain_register
-	 * caller anywhere). The only call sites pass panic_notifier_list and
-	 * vt_notifier_list, both ATOMIC_NOTIFIER_HEAD()-initialised and never
-	 * populated, so the chain is permanently empty and walking it always
+	 * caller anywhere). The only call site passes vt_notifier_list,
+	 * ATOMIC_NOTIFIER_HEAD()-initialised and never populated, so the chain is permanently empty and walking it always
 	 * yields NOTIFY_DONE. Return that directly.
 	 */
 	return NOTIFY_DONE;

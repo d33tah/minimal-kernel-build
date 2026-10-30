@@ -1,6 +1,5 @@
 /* STUB: string helper functions - minimal implementations */
 
-#include <linux/ctype.h>
 #include <linux/string.h>
 
 ssize_t strscpy_pad(char *dest, const char *src, size_t count)

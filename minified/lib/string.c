@@ -73,13 +73,6 @@ ssize_t strscpy(char *dest, const char *src, size_t count)
 }
 #endif
 
-#ifndef __HAVE_ARCH_STRLCAT
-size_t strlcat(char *dest, const char *src, size_t count)
-{
-	return 0;
-}
-#endif
-
 #ifndef __HAVE_ARCH_STRRCHR
 char *strrchr(const char *s, int c)
 {

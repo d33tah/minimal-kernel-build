@@ -12,11 +12,11 @@
 # them into calls to themselves.
 CFLAGS_string.o := -ffreestanding
 
-lib-y := ctype.o string.o vsprintf.o \
+lib-y := string.o \
 	 rbtree.o radix-tree.o xarray.o \
 	 idr.o extable.o irq_regs.o \
 	 ratelimit.o \
-	 siphash.o dec_and_lock.o
+	 dec_and_lock.o
 	 # argv_split.o - Removed: not used
 	 # buildid.o - Removed: Not needed (stub functions)
 
@@ -32,8 +32,6 @@ obj-y += sort.o debug_locks.o \
 	 # usercopy.o removed - _copy_from_user/_copy_to_user now header inlines
 	 # (INLINE_COPY_FROM_USER/TO_USER defined in asm/uaccess.h)
 obj-y += string_helpers.o
-obj-y += hexdump.o
-obj-y += kstrtox.o
 
 
 

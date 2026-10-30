@@ -281,9 +281,19 @@ ssize_t redirected_tty_write(struct kiocb *iocb, struct iov_iter *iter)
 	return tty_write(iocb, iter);
 }
 
-static ssize_t tty_line_name(struct tty_driver *driver, int index, char *p)
+/* Writes "<driver->name><index + name_base>", e.g. "tty1"; the decimal
+   number is the only runtime part (index ranges over the driver's lines). */
+static void tty_line_name(struct tty_driver *driver, int index, char *p)
 {
-	return sprintf(p, "%s%d", driver->name, index + driver->name_base);
+	unsigned int n = index + driver->name_base, d = 1;
+
+	strcpy(p, driver->name);
+	p += strlen(p);
+	while (n / d >= 10)
+		d *= 10;
+	for (; d; d /= 10)
+		*p++ = '0' + n / d % 10;
+	*p = '\0';
 }
 
 static struct tty_struct *tty_driver_lookup_tty(struct tty_driver *driver,

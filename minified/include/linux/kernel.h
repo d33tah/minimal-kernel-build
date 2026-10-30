@@ -15,7 +15,6 @@
 #include <linux/compiler.h>
 #include <linux/container_of.h>
 #include <linux/bitops.h>
-#include <linux/kstrtox.h>
 #include <linux/log2.h>
 #include <linux/math.h>
 #include <linux/minmax.h>
@@ -61,13 +60,6 @@ static inline void might_fault(void)
 
 void do_exit(long error_code) __noreturn;
 
-extern __printf(2, 3) int sprintf(char *buf, const char *fmt, ...);
-extern __printf(3, 4) int snprintf(char *buf, size_t size, const char *fmt,
-				   ...);
-extern __printf(3, 0) int vsnprintf(char *buf, size_t size, const char *fmt,
-				    va_list args);
-extern __printf(3, 0) int vscnprintf(char *buf, size_t size, const char *fmt,
-				     va_list args);
 extern __printf(2, 0) __malloc
 	char *kvasprintf(gfp_t gfp, const char *fmt, va_list args);
 extern __printf(2, 0) const
@@ -82,7 +74,6 @@ extern enum system_states {
 	SYSTEM_RUNNING,
 } system_state;
 
-extern const char hex_asc_upper[];
 /* Removed: hex_to_bin, hex2bin, bin2hex, mac_pton - never called */
 /* Removed: tracing_off - empty stub, callers removed (TRACING off) */
 

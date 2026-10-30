@@ -26,10 +26,8 @@ bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 /* cancel_work_sync removed: zero callers on this boot. */
 
 static struct workqueue_struct system_wq_storage = {};
-static struct workqueue_struct system_unbound_wq_storage = {};
 
 struct workqueue_struct *system_wq = &system_wq_storage;
-struct workqueue_struct *system_unbound_wq = &system_unbound_wq_storage;
 
 void __init workqueue_init_early(void)
 {

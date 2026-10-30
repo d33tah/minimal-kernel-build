@@ -250,22 +250,16 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 int __init_or_module do_one_initcall(initcall_t fn)
 {
 	int count = preempt_count();
-	char msgbuf[64];
 	int ret;
 
 	ret = fn();
 
-	msgbuf[0] = 0;
-
-	if (preempt_count() != count) {
-		sprintf(msgbuf, "preemption imbalance ");
+	/* The "initcall returned with ..." WARN is a no_printk, so only the
+	   repairs remain. */
+	if (preempt_count() != count)
 		preempt_count_set(count);
-	}
-	if (irqs_disabled()) {
-		strlcat(msgbuf, "disabled interrupts ", sizeof(msgbuf));
+	if (irqs_disabled())
 		local_irq_enable();
-	}
-	WARN(msgbuf[0], "initcall %pS returned with %s\n", fn, msgbuf);
 
 	return ret;
 }

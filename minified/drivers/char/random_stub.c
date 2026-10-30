@@ -11,8 +11,3 @@ u32 get_random_u32(void)
 {
 	return 0;
 }
-
-bool rng_is_initialized(void)
-{
-	return true;
-}

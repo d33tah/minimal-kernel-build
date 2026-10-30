@@ -7,13 +7,9 @@
 #include <linux/list.h>
 #include <linux/spinlock.h>
 
-#define __RWSEM_DEP_MAP_INIT(lockname)
-
 struct rw_semaphore {
 	atomic_long_t count;
 	atomic_long_t owner;
-	raw_spinlock_t wait_lock;
-	struct list_head wait_list;
 };
 
 static inline int rwsem_is_locked(struct rw_semaphore *sem)
@@ -22,18 +18,9 @@ static inline int rwsem_is_locked(struct rw_semaphore *sem)
 }
 
 #define RWSEM_UNLOCKED_VALUE 0L
-#define __RWSEM_COUNT_INIT(name) .count = ATOMIC_LONG_INIT(RWSEM_UNLOCKED_VALUE)
-
-#define __RWSEM_DEBUG_INIT(lockname)
-
-#define __RWSEM_OPT_INIT(lockname)
-
-#define __RWSEM_INITIALIZER(name)                                 \
-	{ __RWSEM_COUNT_INIT(name), .owner = ATOMIC_LONG_INIT(0), \
-	  __RWSEM_OPT_INIT(name).wait_lock =                      \
-		  __RAW_SPIN_LOCK_UNLOCKED(name.wait_lock),       \
-	  .wait_list = LIST_HEAD_INIT((name).wait_list),          \
-	  __RWSEM_DEBUG_INIT(name) __RWSEM_DEP_MAP_INIT(name) }
+#define __RWSEM_INITIALIZER(name)                          \
+	{ .count = ATOMIC_LONG_INIT(RWSEM_UNLOCKED_VALUE), \
+	  .owner = ATOMIC_LONG_INIT(0) }
 
 extern void __init_rwsem(struct rw_semaphore *sem, const char *name,
 			 struct lock_class_key *key);

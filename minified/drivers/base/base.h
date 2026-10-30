@@ -1,7 +1,5 @@
 
 
-#include <linux/notifier.h>
-
 /* Trimmed: interfaces, drivers_kset, klist_drivers, bus_notifier and
    drivers_autoprobe were write-only on this build - no driver registers
    (subsys_interface_register / class_interface_register are gone, so the

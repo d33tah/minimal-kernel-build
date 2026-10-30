@@ -2,7 +2,7 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/kdebug.h>
+#include <asm/kdebug.h>
 #include <linux/ptrace.h>
 
 #include <asm/debugreg.h>
@@ -30,26 +30,23 @@ static void do_trap(int trapnr, char *str, struct pt_regs *regs,
 }
 
 static void do_error_trap(struct pt_regs *regs, long error_code, char *str,
-			  unsigned long trapnr, int signr)
+			  unsigned long trapnr)
 {
 	RCU_LOCKDEP_WARN(!rcu_is_watching(), "entry code didn't wake RCU");
 
-	if (notify_die(DIE_TRAP, str, regs, error_code, trapnr, signr) !=
-	    NOTIFY_STOP) {
-		cond_local_irq_enable(regs);
-		do_trap(trapnr, str, regs, error_code);
-		cond_local_irq_disable(regs);
-	}
+	cond_local_irq_enable(regs);
+	do_trap(trapnr, str, regs, error_code);
+	cond_local_irq_disable(regs);
 }
 
 DEFINE_IDTENTRY(exc_divide_error)
 {
-	do_error_trap(regs, 0, "divide error", X86_TRAP_DE, SIGFPE);
+	do_error_trap(regs, 0, "divide error", X86_TRAP_DE);
 }
 
 DEFINE_IDTENTRY(exc_overflow)
 {
-	do_error_trap(regs, 0, "overflow", X86_TRAP_OF, SIGSEGV);
+	do_error_trap(regs, 0, "overflow", X86_TRAP_OF);
 }
 
 DEFINE_IDTENTRY_RAW(exc_invalid_op)
@@ -62,39 +59,33 @@ DEFINE_IDTENTRY_RAW(exc_invalid_op)
 	 * fixup never recovered (always returned false). Drop it.
 	 */
 	state = irqentry_enter(regs);
-	do_error_trap(regs, 0, "invalid opcode", X86_TRAP_UD, SIGILL);
+	do_error_trap(regs, 0, "invalid opcode", X86_TRAP_UD);
 	irqentry_exit(regs, state);
 }
 
 DEFINE_IDTENTRY(exc_coproc_segment_overrun)
 {
-	do_error_trap(regs, 0, "coprocessor segment overrun", X86_TRAP_OLD_MF,
-		      SIGFPE);
+	do_error_trap(regs, 0, "coprocessor segment overrun", X86_TRAP_OLD_MF);
 }
 
 DEFINE_IDTENTRY_ERRORCODE(exc_invalid_tss)
 {
-	do_error_trap(regs, error_code, "invalid TSS", X86_TRAP_TS, SIGSEGV);
+	do_error_trap(regs, error_code, "invalid TSS", X86_TRAP_TS);
 }
 
 DEFINE_IDTENTRY_ERRORCODE(exc_segment_not_present)
 {
-	do_error_trap(regs, error_code, "segment not present", X86_TRAP_NP,
-		      SIGBUS);
+	do_error_trap(regs, error_code, "segment not present", X86_TRAP_NP);
 }
 
 DEFINE_IDTENTRY_ERRORCODE(exc_stack_segment)
 {
-	do_error_trap(regs, error_code, "stack segment", X86_TRAP_SS, SIGBUS);
+	do_error_trap(regs, error_code, "stack segment", X86_TRAP_SS);
 }
 
 DEFINE_IDTENTRY_ERRORCODE(exc_alignment_check)
 {
 	char *str = "alignment check";
-
-	if (notify_die(DIE_TRAP, str, regs, error_code, X86_TRAP_AC, SIGBUS) ==
-	    NOTIFY_STOP)
-		return;
 
 	if (!user_mode(regs))
 		die("Split lock detected\n", regs, error_code);
@@ -108,10 +99,7 @@ DEFINE_IDTENTRY_ERRORCODE(exc_alignment_check)
 
 DEFINE_IDTENTRY_DF(exc_double_fault)
 {
-	static const char str[] = "double fault";
-
 	irqentry_nmi_enter(regs);
-	notify_die(DIE_TRAP, str, regs, error_code, X86_TRAP_DF, SIGSEGV);
 
 	pr_emerg("PANIC: double fault, error_code: 0x%lx\n", error_code);
 	die("double fault", regs, error_code);
@@ -120,9 +108,6 @@ DEFINE_IDTENTRY_DF(exc_double_fault)
 
 DEFINE_IDTENTRY(exc_bounds)
 {
-	if (notify_die(DIE_TRAP, "bounds", regs, 0, X86_TRAP_BR, SIGSEGV) ==
-	    NOTIFY_STOP)
-		return;
 	cond_local_irq_enable(regs);
 
 	if (!user_mode(regs))
@@ -150,10 +135,6 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 	if (fixup_exception(regs, X86_TRAP_GP, error_code, 0))
 		goto exit;
 
-	if (notify_die(DIE_GPF, GPFSTR, regs, error_code, X86_TRAP_GP,
-		       SIGSEGV) == NOTIFY_STOP)
-		goto exit;
-
 	/* The address hint was always GP_NO_HINT, so gp_addr was always 0. */
 	die_addr(error_code ? "segment-related " GPFSTR : GPFSTR, regs,
 		 error_code, 0);
@@ -162,30 +143,18 @@ exit:
 	cond_local_irq_disable(regs);
 }
 
-static bool do_int3(struct pt_regs *regs)
-{
-	int res;
-
-	res = notify_die(DIE_INT3, "int3", regs, 0, X86_TRAP_BP, SIGTRAP);
-
-	return res == NOTIFY_STOP;
-}
-
 DEFINE_IDTENTRY_RAW(exc_int3)
 {
 	if (user_mode(regs)) {
 		irqentry_enter_from_user_mode(regs);
-		if (!do_int3(regs)) {
-			cond_local_irq_enable(regs);
-			do_trap(X86_TRAP_BP, "int3", regs, 0);
-			cond_local_irq_disable(regs);
-		}
+		cond_local_irq_enable(regs);
+		do_trap(X86_TRAP_BP, "int3", regs, 0);
+		cond_local_irq_disable(regs);
 		irqentry_exit_to_user_mode(regs);
 	} else {
 		irqentry_state_t irq_state = irqentry_nmi_enter(regs);
 
-		if (!do_int3(regs))
-			die("int3", regs, 0);
+		die("int3", regs, 0);
 		irqentry_nmi_exit(regs, irq_state);
 	}
 }
@@ -199,12 +168,6 @@ static __always_inline unsigned long debug_read_clear_dr6(void)
 	dr6 ^= DR6_RESERVED;
 
 	return dr6;
-}
-
-static bool notify_debug(struct pt_regs *regs, unsigned long *dr6)
-{
-	return notify_die(DIE_DEBUG, "debug", regs, (long)dr6, 0, SIGTRAP) ==
-	       NOTIFY_STOP;
 }
 
 static __always_inline void exc_debug_kernel(struct pt_regs *regs,
@@ -226,9 +189,6 @@ static __always_inline void exc_debug_kernel(struct pt_regs *regs,
 	if (!dr6)
 		goto out;
 
-	if (notify_debug(regs, &dr6))
-		goto out;
-
 	if (WARN_ON_ONCE(dr6 & DR_STEP))
 		regs->flags &= ~X86_EFLAGS_TF;
 out:
@@ -245,8 +205,6 @@ static __always_inline void exc_debug_user(struct pt_regs *regs,
 	irqentry_enter_from_user_mode(regs);
 
 	/* TIF_BLOCKSTEP never set in this build -> clear was a no-op. */
-
-	notify_debug(regs, &dr6);
 
 	irqentry_exit_to_user_mode(regs);
 }
@@ -287,10 +245,7 @@ DEFINE_IDTENTRY(exc_device_not_available)
 DEFINE_IDTENTRY_SW(iret_error)
 {
 	local_irq_enable();
-	if (notify_die(DIE_TRAP, "iret exception", regs, 0, X86_TRAP_IRET,
-		       SIGILL) != NOTIFY_STOP) {
-		do_trap(X86_TRAP_IRET, "iret exception", regs, 0);
-	}
+	do_trap(X86_TRAP_IRET, "iret exception", regs, 0);
 	local_irq_disable();
 }
 

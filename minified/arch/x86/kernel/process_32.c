@@ -2,7 +2,7 @@
 
 #include <linux/sched/task_stack.h>
 #include <linux/ptrace.h>
-#include <linux/kdebug.h>
+#include <asm/kdebug.h>
 
 #include <asm/desc.h>
 

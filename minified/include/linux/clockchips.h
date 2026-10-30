@@ -3,7 +3,6 @@
 
 #include <linux/clocksource.h>
 #include <linux/cpumask.h>
-#include <linux/notifier.h>
 
 enum clock_event_state {
 	CLOCK_EVT_STATE_DETACHED,

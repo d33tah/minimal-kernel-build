@@ -37,8 +37,6 @@ static struct vc_data *master_display_fg;
 
 static struct device *tty0dev;
 
-static ATOMIC_NOTIFIER_HEAD(vt_notifier_list);
-
 static void notify_write(struct vc_data *vc, unsigned int unicode)
 {
 	/* Stub: skip VT notifications for minimal kernel */
@@ -289,7 +287,6 @@ static const struct tty_port_operations vc_port_ops = {
 
 int vc_allocate(unsigned int currcons)
 {
-	struct vt_notifier_param param;
 	struct vc_data *vc;
 	int err;
 
@@ -301,7 +298,7 @@ int vc_allocate(unsigned int currcons)
 	if (vc_cons[currcons].d)
 		return 0;
 
-	param.vc = vc = kzalloc(sizeof(struct vc_data), GFP_KERNEL);
+	vc = kzalloc(sizeof(struct vc_data), GFP_KERNEL);
 	if (!vc)
 		return -ENOMEM;
 
@@ -327,7 +324,6 @@ int vc_allocate(unsigned int currcons)
 		global_cursor_default = 1;
 
 	vc_init(vc, vc->vc_rows, vc->vc_cols, 1);
-	atomic_notifier_call_chain(&vt_notifier_list, VT_ALLOCATE, &param);
 
 	return 0;
 err_free:

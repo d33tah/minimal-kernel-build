@@ -6,7 +6,6 @@
 #include <linux/tty.h>
 #include <linux/mm.h>
 #include <linux/consolemap.h>
-#include <linux/notifier.h>
 
 struct uni_pagedir;
 
@@ -96,10 +95,6 @@ void con_free_unimap(struct vc_data *vc);
 int vty_init(const struct file_operations *console_fops);
 
 extern int global_cursor_default;
-
-struct vt_notifier_param {
-	struct vc_data *vc;
-};
 
 /* hide_boot_cursor, vt_do_diacrit, vt_do_kdskbmode, vt_do_kdskbmeta,
    vt_do_kbkeycode_ioctl, vt_do_kdsk_ioctl, vt_do_kdgkb_ioctl, vt_do_kdskled,

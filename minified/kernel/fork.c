@@ -16,16 +16,6 @@
 #include <asm/pgalloc.h>
 #include <asm/mmu_context.h>
 
-#define MIN_THREADS 20
-
-#define MAX_THREADS 0x3fffffff
-
-int nr_threads;
-
-static int max_threads;
-
-DEFINE_PER_CPU(unsigned long, process_counts) = 0;
-
 __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);
 
 #ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
@@ -233,26 +223,8 @@ void __init __weak arch_task_cache_init(void)
 {
 }
 
-static void set_max_threads(unsigned int max_threads_suggested)
-{
-	u64 threads;
-	unsigned long nr_pages = totalram_pages();
-
-	if (fls64(nr_pages) + fls64(PAGE_SIZE) > 64)
-		threads = MAX_THREADS;
-	else
-		threads = div64_u64((u64)nr_pages * (u64)PAGE_SIZE,
-				    (u64)THREAD_SIZE * 8UL);
-
-	if (threads > max_threads_suggested)
-		threads = max_threads_suggested;
-
-	max_threads = clamp_t(u64, threads, MIN_THREADS, MAX_THREADS);
-}
-
 void __init fork_init(void)
 {
-	int i;
 #ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
 	task_struct_cachep = kmem_cache_create("task_struct",
 					       sizeof(struct task_struct),
@@ -261,25 +233,6 @@ void __init fork_init(void)
 #endif
 
 	arch_task_cache_init();
-
-	set_max_threads(MAX_THREADS);
-
-	init_task.signal->rlim[RLIMIT_NPROC].rlim_cur = max_threads / 2;
-	init_task.signal->rlim[RLIMIT_NPROC].rlim_max = max_threads / 2;
-	init_task.signal->rlim[RLIMIT_SIGPENDING] =
-		init_task.signal->rlim[RLIMIT_NPROC];
-
-	for (i = 0; i < MAX_PER_NAMESPACE_UCOUNTS; i++)
-		init_user_ns.ucount_max[i] = max_threads / 2;
-
-	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_NPROC,
-			      RLIM_INFINITY);
-	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_MSGQUEUE,
-			      RLIM_INFINITY);
-	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_SIGPENDING,
-			      RLIM_INFINITY);
-	set_rlimit_ucount_max(&init_user_ns, UCOUNT_RLIMIT_MEMLOCK,
-			      RLIM_INFINITY);
 }
 
 void set_task_stack_end_magic(struct task_struct *tsk)
@@ -639,10 +592,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	if (retval < 0)
 		goto bad_fork_free;
 
-	retval = -EAGAIN;
-	if (data_race(nr_threads >= max_threads))
-		goto bad_fork_cleanup_count;
-
 	p->flags &= ~(PF_IDLE | PF_NO_SETAFFINITY);
 	p->vfork_done = NULL;
 	spin_lock_init(&p->alloc_lock);
@@ -726,9 +675,7 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 		attach_pid(p, PIDTYPE_TGID);
 		attach_pid(p, PIDTYPE_PGID);
 		attach_pid(p, PIDTYPE_SID);
-		__this_cpu_inc(process_counts);
 		attach_pid(p, PIDTYPE_PID);
-		nr_threads++;
 	}
 	spin_unlock(&current->sighand->siglock);
 	write_unlock_irq(&tasklist_lock);
@@ -757,8 +704,6 @@ bad_fork_cleanup_files:
 	exit_files(p);
 bad_fork_cleanup_semundo:
 bad_fork_cleanup_policy:
-bad_fork_cleanup_count:
-	dec_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
 	exit_creds(p);
 bad_fork_free:
 	WRITE_ONCE(p->__state, TASK_DEAD);

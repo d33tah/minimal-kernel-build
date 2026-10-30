@@ -6,7 +6,6 @@
 struct mnt_namespace {
 	struct ns_common ns;
 	struct user_namespace *user_ns;
-	struct ucounts *ucounts;
 } __randomize_layout;
 
 struct mount {

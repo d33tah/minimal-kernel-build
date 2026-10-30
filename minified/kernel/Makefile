@@ -10,7 +10,7 @@ obj-y     = fork.o panic.o \
 	    extable.o \
 	    nsproxy.o \
 	    cred.o \
-	    range.o ucount.o
+	    range.o
 
 
 # Prevents flicker of uninteresting __do_softirq()/__local_bh_disable_ip()

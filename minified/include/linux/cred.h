@@ -31,7 +31,6 @@ struct cred {
 	kernel_cap_t cap_permitted;
 	struct user_struct *user;
 	struct user_namespace *user_ns;
-	struct ucounts *ucounts;
 	struct group_info *group_info;
 	union {
 		struct rcu_head rcu;
@@ -46,7 +45,6 @@ extern struct cred *prepare_exec_creds(void);
 extern int commit_creds(struct cred *);
 extern void abort_creds(struct cred *);
 extern void __init cred_init(void);
-extern int set_cred_ucounts(struct cred *);
 
 static inline struct cred *get_new_cred(struct cred *cred)
 {
@@ -86,8 +84,6 @@ static inline void put_cred(const struct cred *_cred)
 		rcu_read_unlock();                             \
 		___val;                                        \
 	})
-
-#define task_ucounts(task) (task_cred_xxx((task), ucounts))
 
 #define current_cred_xxx(xxx) ({ current_cred()->xxx; })
 

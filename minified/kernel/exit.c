@@ -1,6 +1,5 @@
 
 #include <linux/sched/mm.h>
-DECLARE_PER_CPU(unsigned long, process_counts);
 /* end sched/stat.h */
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>

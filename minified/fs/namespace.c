@@ -224,43 +224,24 @@ struct vfsmount *mntget(struct vfsmount *mnt)
 	return mnt;
 }
 
-static struct ucounts *inc_mnt_namespaces(struct user_namespace *ns)
-{
-	return inc_ucount(ns, current_euid(), UCOUNT_MNT_NAMESPACES);
-}
-
-static void dec_mnt_namespaces(struct ucounts *ucounts)
-{
-	dec_ucount(ucounts, UCOUNT_MNT_NAMESPACES);
-}
-
 static struct mnt_namespace *alloc_mnt_ns(struct user_namespace *user_ns,
 					  bool anon)
 {
 	struct mnt_namespace *new_ns;
-	struct ucounts *ucounts;
 	int ret;
 
-	ucounts = inc_mnt_namespaces(user_ns);
-	if (!ucounts)
-		return ERR_PTR(-ENOSPC);
-
 	new_ns = kzalloc(sizeof(struct mnt_namespace), GFP_KERNEL_ACCOUNT);
-	if (!new_ns) {
-		dec_mnt_namespaces(ucounts);
+	if (!new_ns)
 		return ERR_PTR(-ENOMEM);
-	}
 	if (!anon) {
 		ret = ns_alloc_inum(&new_ns->ns);
 		if (ret) {
 			kfree(new_ns);
-			dec_mnt_namespaces(ucounts);
 			return ERR_PTR(ret);
 		}
 	}
 	refcount_set(&new_ns->ns.count, 1);
 	new_ns->user_ns = get_user_ns(user_ns);
-	new_ns->ucounts = ucounts;
 	return new_ns;
 }
 

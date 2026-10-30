@@ -21,7 +21,6 @@ struct cred init_cred = {
 	.user = INIT_USER,
 	.user_ns = &init_user_ns,
 	.group_info = &init_groups,
-	.ucounts = &init_ucounts,
 };
 
 void __put_cred(struct cred *cred)
@@ -63,15 +62,7 @@ struct cred *prepare_creds(void)
 	get_uid(new->user);
 	get_user_ns(new->user_ns);
 
-	new->ucounts = get_ucounts(new->ucounts);
-	if (!new->ucounts)
-		goto error;
-
 	return new;
-
-error:
-	abort_creds(new);
-	return NULL;
 }
 
 struct cred *prepare_exec_creds(void)
@@ -102,25 +93,7 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
 		return -ENOMEM;
 
 	p->cred = p->real_cred = get_cred(new);
-	inc_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
 	return 0;
-}
-
-static bool cred_cap_issubset(const struct cred *set, const struct cred *subset)
-{
-	const struct user_namespace *set_ns = set->user_ns;
-	const struct user_namespace *subset_ns = subset->user_ns;
-
-	if (set_ns == subset_ns)
-		return cap_issubset(subset->cap_permitted, set->cap_permitted);
-
-	for (; subset_ns != &init_user_ns; subset_ns = subset_ns->parent) {
-		if ((set_ns == subset_ns->parent) &&
-		    uid_eq(subset_ns->owner, set->euid))
-			return true;
-	}
-
-	return false;
 }
 
 int commit_creds(struct cred *new)
@@ -135,19 +108,16 @@ int commit_creds(struct cred *new)
 
 	if (!uid_eq(old->euid, new->euid) || !gid_eq(old->egid, new->egid) ||
 	    !uid_eq(old->fsuid, new->fsuid) ||
-	    !gid_eq(old->fsgid, new->fsgid) || !cred_cap_issubset(old, new)) {
+	    !gid_eq(old->fsgid, new->fsgid) ||
+	    !cap_issubset(new->cap_permitted, old->cap_permitted)) {
 		if (task->mm)
 			set_dumpable(task->mm, 0);
 
 		smp_wmb();
 	}
 
-	if (new->user != old->user || new->user_ns != old->user_ns)
-		inc_rlimit_ucounts(new->ucounts, UCOUNT_RLIMIT_NPROC, 1);
 	rcu_assign_pointer(task->real_cred, new);
 	rcu_assign_pointer(task->cred, new);
-	if (new->user != old->user || new->user_ns != old->user_ns)
-		dec_rlimit_ucounts(old->ucounts, UCOUNT_RLIMIT_NPROC, 1);
 
 	put_cred(old);
 	put_cred(old);
@@ -158,23 +128,6 @@ void abort_creds(struct cred *new)
 {
 	BUG_ON(atomic_read(&new->usage) < 1);
 	put_cred(new);
-}
-
-int set_cred_ucounts(struct cred *new)
-{
-	struct ucounts *new_ucounts, *old_ucounts = new->ucounts;
-
-	if (old_ucounts->ns == new->user_ns &&
-	    uid_eq(old_ucounts->uid, new->uid))
-		return 0;
-
-	if (!(new_ucounts = alloc_ucounts(new->user_ns, new->uid)))
-		return -EAGAIN;
-
-	new->ucounts = new_ucounts;
-	put_ucounts(old_ucounts);
-
-	return 0;
 }
 
 void __init cred_init(void)

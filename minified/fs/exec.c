@@ -488,17 +488,11 @@ int begin_new_exec(struct linux_binprm *bprm)
 
 	__set_task_comm(me, kbasename(bprm->filename), true);
 
-	retval = set_cred_ucounts(bprm->cred);
-	if (retval < 0)
-		goto out_unlock;
-
 	commit_creds(bprm->cred);
 	bprm->cred = NULL;
 
 	return 0;
 
-out_unlock:
-	up_write(&me->signal->exec_update_lock);
 out:
 	return retval;
 }

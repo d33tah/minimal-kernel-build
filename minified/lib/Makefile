@@ -15,8 +15,7 @@ CFLAGS_string.o := -ffreestanding
 lib-y := string.o \
 	 rbtree.o radix-tree.o xarray.o \
 	 idr.o extable.o irq_regs.o \
-	 ratelimit.o \
-	 dec_and_lock.o
+	 ratelimit.o
 	 # argv_split.o - Removed: not used
 	 # buildid.o - Removed: Not needed (stub functions)
 

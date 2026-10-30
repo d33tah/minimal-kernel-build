@@ -16,13 +16,12 @@ struct linux_binprm {
 	unsigned long vma_pages;
 	struct mm_struct *mm;
 	unsigned long p, argmin;
-	unsigned int secureexec : 1, point_of_no_return : 1;
+	unsigned int point_of_no_return : 1;
 	struct file *file;
 	struct cred *cred;
-	unsigned int per_clear;
 	int argc, envc;
-	const char *filename, *interp;
-	unsigned long loader, exec;
+	const char *filename;
+	unsigned long exec;
 	struct rlimit rlim_stack;
 	char buf[BINPRM_BUF_SIZE];
 } __randomize_layout;
@@ -45,11 +44,8 @@ extern void setup_new_exec(struct linux_binprm *bprm);
 extern void finalize_exec(struct linux_binprm *bprm);
 
 #define EXSTACK_DEFAULT 0
-#define EXSTACK_DISABLE_X 1
-#define EXSTACK_ENABLE_X 2
 
-extern int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
-			   int executable_stack);
+extern int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top);
 int copy_string_kernel(const char *arg, struct linux_binprm *bprm);
 
 int kernel_execve(const char *filename, const char *const *argv,

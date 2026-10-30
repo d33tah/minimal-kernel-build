@@ -1,7 +1,10 @@
 
+#include <linux/fs.h>
+#include <linux/slab.h>
+#include <linux/cred.h>
 #include <linux/fs_context.h>
 #include <linux/user_namespace.h>
-#include "mount.h"
+#include <linux/mount.h>
 #include "internal.h"
 
 /* No mount options are ever passed: there is no option parser. */

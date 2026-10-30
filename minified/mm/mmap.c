@@ -260,8 +260,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 		return -EINVAL;
 
 	if ((prot & PROT_READ) && (current->personality & READ_IMPLIES_EXEC))
-		if (!(file && path_noexec(&file->f_path)))
-			prot |= PROT_EXEC;
+		prot |= PROT_EXEC;
 
 	if (flags & MAP_FIXED_NOREPLACE)
 		flags |= MAP_FIXED;
@@ -313,11 +312,6 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 
 		if (!(file->f_mode & FMODE_READ))
 			return -EACCES;
-		if (path_noexec(&file->f_path)) {
-			if (vm_flags & VM_EXEC)
-				return -EPERM;
-			vm_flags &= ~VM_MAYEXEC;
-		}
 
 		if (!file->f_op->mmap)
 			return -ENODEV;

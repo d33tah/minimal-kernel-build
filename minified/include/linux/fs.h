@@ -286,8 +286,6 @@ static inline struct inode *file_inode(const struct file *f)
 #define SB_RDONLY 1
 #define SB_NOATIME 1024
 
-#define SB_I_NOEXEC 0x00000002
-
 enum {
 	SB_FREEZE_WRITE = 1,
 };
@@ -296,7 +294,7 @@ struct super_block {
 	unsigned char s_blocksize_bits;
 	loff_t s_maxbytes;
 	struct file_system_type *s_type;
-	unsigned long s_flags, s_iflags;
+	unsigned long s_flags;
 	struct dentry *s_root;
 	struct hlist_bl_head s_roots;
 	u32 s_time_gran;
@@ -660,7 +658,5 @@ static inline int iocb_flags(struct file *file)
 #define OPEN_FMODE(flag)                              \
 	((__force fmode_t)(((flag + 1) & O_ACCMODE) | \
 			   (flag & __FMODE_NONOTIFY)))
-
-extern bool path_noexec(const struct path *path);
 
 #endif

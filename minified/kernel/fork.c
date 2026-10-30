@@ -331,10 +331,6 @@ static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)
 	 * always shared, never duplicated.  The copy_fs_struct() arm is dead.
 	 */
 	spin_lock(&fs->lock);
-	if (fs->in_exec) {
-		spin_unlock(&fs->lock);
-		return -EAGAIN;
-	}
 	fs->users++;
 	spin_unlock(&fs->lock);
 	return 0;

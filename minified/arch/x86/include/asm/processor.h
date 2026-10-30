@@ -254,8 +254,6 @@ extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
 #define __TASK_UNMAPPED_BASE(task_size) (PAGE_ALIGN(task_size / 3))
 #define TASK_UNMAPPED_BASE __TASK_UNMAPPED_BASE(TASK_SIZE_LOW)
 
-extern unsigned long arch_align_stack(unsigned long sp);
-
 void default_idle(void);
 
 #endif

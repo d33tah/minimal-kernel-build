@@ -93,15 +93,3 @@ void select_idle_routine(const struct cpuinfo_x86 *c)
 	if (!x86_idle)
 		x86_idle = default_idle;
 }
-
-unsigned long arch_align_stack(unsigned long sp)
-{
-	if (!(current->personality & ADDR_NO_RANDOMIZE))
-		sp -= get_random_int() % 8192;
-	return sp & ~0xf;
-}
-
-unsigned long arch_randomize_brk(struct mm_struct *mm)
-{
-	return randomize_page(mm->brk, 0x02000000);
-}

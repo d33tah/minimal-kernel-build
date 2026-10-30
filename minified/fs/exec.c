@@ -17,8 +17,6 @@
 
 #include "internal.h"
 
-static void bprm_creds_from_file(struct linux_binprm *bprm);
-
 static LIST_HEAD(formats);
 static DEFINE_RWLOCK(binfmt_lock);
 
@@ -28,11 +26,6 @@ void __register_binfmt(struct linux_binfmt *fmt, int insert)
 	insert ? list_add(&fmt->lh, &formats) :
 		 list_add_tail(&fmt->lh, &formats);
 	write_unlock(&binfmt_lock);
-}
-
-bool path_noexec(const struct path *path)
-{
-	return (path->mnt->mnt_sb->s_iflags & SB_I_NOEXEC);
 }
 
 static void acct_arg_size(struct linux_binprm *bprm, unsigned long pages)
@@ -229,50 +222,14 @@ static int copy_strings_kernel(int argc, const char *const *argv,
 	return 0;
 }
 
-static int shift_arg_pages(struct vm_area_struct *vma, unsigned long shift)
+/*
+ * The stack VMA is created at STACK_TOP_MAX and binfmt_elf passes
+ * STACK_TOP (equal on x86-32; there is no stack randomization), so the
+ * stack never needs to be shifted.
+ */
+int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top)
 {
-	struct mm_struct *mm = vma->vm_mm;
-	unsigned long old_start = vma->vm_start;
-	unsigned long old_end = vma->vm_end;
-	unsigned long length = old_end - old_start;
-	unsigned long new_start = old_start - shift;
-	unsigned long new_end = old_end - shift;
-	struct mmu_gather tlb;
-
-	BUG_ON(new_start > new_end);
-
-	if (vma != find_vma(mm, new_start))
-		return -EFAULT;
-
-	if (vma_adjust(vma, new_start, old_end, vma->vm_pgoff, NULL))
-		return -ENOMEM;
-
-	if (length !=
-	    move_page_tables(vma, old_start, vma, new_start, length, false))
-		return -ENOMEM;
-
-	lru_add_drain();
-	tlb_gather_mmu(&tlb, mm);
-	if (new_end > old_start) {
-		free_pgd_range(&tlb, new_end, old_end, new_end,
-			       vma->vm_next ? vma->vm_next->vm_start :
-					      USER_PGTABLES_CEILING);
-	} else {
-		free_pgd_range(&tlb, old_start, old_end, new_end,
-			       vma->vm_next ? vma->vm_next->vm_start :
-					      USER_PGTABLES_CEILING);
-	}
-	tlb_finish_mmu(&tlb);
-
-	vma_adjust(vma, new_start, new_end, vma->vm_pgoff, NULL);
-
-	return 0;
-}
-
-int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
-		    int executable_stack)
-{
-	unsigned long ret, stack_shift;
+	unsigned long ret;
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma = bprm->vma;
 	struct vm_area_struct *prev = NULL;
@@ -280,32 +237,15 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 		rlim_stack;
 	struct mmu_gather tlb;
 
-	stack_top = arch_align_stack(stack_top);
-	stack_top = PAGE_ALIGN(stack_top);
-
-	if (unlikely(stack_top < mmap_min_addr) ||
-	    unlikely(vma->vm_end - vma->vm_start >= stack_top - mmap_min_addr))
+	if (WARN_ON(vma->vm_end != PAGE_ALIGN(stack_top)))
 		return -ENOMEM;
 
-	stack_shift = vma->vm_end - stack_top;
-
-	bprm->p -= stack_shift;
 	mm->arg_start = bprm->p;
-
-	if (bprm->loader)
-		bprm->loader -= stack_shift;
-	bprm->exec -= stack_shift;
 
 	if (mmap_write_lock_killable(mm))
 		return -EINTR;
 
-	vm_flags = VM_STACK_FLAGS;
-
-	if (unlikely(executable_stack == EXSTACK_ENABLE_X))
-		vm_flags |= VM_EXEC;
-	else if (executable_stack == EXSTACK_DISABLE_X)
-		vm_flags &= ~VM_EXEC;
-	vm_flags |= mm->def_flags;
+	vm_flags = VM_STACK_FLAGS | mm->def_flags;
 
 	tlb_gather_mmu(&tlb, mm);
 	ret = mprotect_fixup(&tlb, vma, &prev, vma->vm_start, vma->vm_end,
@@ -315,12 +255,6 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top,
 	if (ret)
 		goto out_unlock;
 	BUG_ON(prev != vma);
-
-	if (stack_shift) {
-		ret = shift_arg_pages(vma, stack_shift);
-		if (ret)
-			goto out_unlock;
-	}
 
 	stack_expand = 131072UL;
 	stack_size = vma->vm_end - vma->vm_start;
@@ -362,8 +296,7 @@ static struct file *do_open_execat(struct filename *name, int flags)
 		goto out;
 
 	err = -EACCES;
-	if (WARN_ON_ONCE(!S_ISREG(file_inode(file)->i_mode) ||
-			 path_noexec(&file->f_path)))
+	if (WARN_ON_ONCE(!S_ISREG(file_inode(file)->i_mode)))
 		goto exit;
 
 	err = deny_write_access(file);
@@ -422,20 +355,6 @@ static int exec_mmap(struct mm_struct *mm)
 	return 0;
 }
 
-static int de_thread(struct task_struct *tsk)
-{
-	/*
-	 * The only execve() callers in this kernel (init via user_mode_thread,
-	 * kernel_execve) are always single-threaded thread-group leaders, so
-	 * thread_group_empty(tsk) is always true and the multi-thread teardown
-	 * path (zap_other_threads / leader exchange) is never reached.
-	 */
-	tsk->exit_signal = SIGCHLD;
-
-	BUG_ON(!thread_group_leader(tsk));
-	return 0;
-}
-
 void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
 {
 	task_lock(tsk);
@@ -449,13 +368,13 @@ int begin_new_exec(struct linux_binprm *bprm)
 	struct task_struct *me = current;
 	int retval;
 
-	bprm_creds_from_file(bprm);
-
+	/*
+	 * No set-id execution: the initramfs is root-owned and no file is
+	 * ever set-uid/gid, so the bprm credentials are the caller's.
+	 * The only exec caller (init) is a single-threaded group leader.
+	 */
 	bprm->point_of_no_return = true;
-
-	retval = de_thread(me);
-	if (retval)
-		goto out;
+	me->exit_signal = SIGCHLD;
 
 	retval = set_mm_exe_file(bprm->mm, bprm->file);
 	if (retval)
@@ -474,15 +393,8 @@ int begin_new_exec(struct linux_binprm *bprm)
 	 * sighand->count is always 1 and the unshare branch was dead.
 	 */
 
-	me->flags &= ~(PF_RANDOMIZE | PF_NO_SETAFFINITY);
+	me->flags &= ~PF_NO_SETAFFINITY;
 	flush_thread();
-	me->personality &= ~bprm->per_clear;
-
-	if (!(uid_eq(current_euid(), current_uid()) &&
-	      gid_eq(current_egid(), current_gid())))
-		set_dumpable(current->mm, 0);
-	else
-		set_dumpable(current->mm, SUID_DUMP_USER);
 
 	__set_task_comm(me, kbasename(bprm->filename), true);
 
@@ -542,8 +454,6 @@ static void free_bprm(struct linux_binprm *bprm)
 		fput(bprm->file);
 	}
 
-	if (bprm->interp != bprm->filename)
-		kfree(bprm->interp);
 	kfree(bprm);
 }
 
@@ -556,7 +466,6 @@ static struct linux_binprm *alloc_bprm(struct filename *filename)
 
 	/* AT_FDCWD-only exec: filename used directly, /dev/fd/N branch dead. */
 	bprm->filename = filename->name;
-	bprm->interp = bprm->filename;
 
 	retval = bprm_mm_init(bprm);
 	if (retval)
@@ -570,59 +479,6 @@ out:
 }
 
 /* Removed: bprm_change_interp - never called */
-
-static void check_unsafe_exec(struct linux_binprm *bprm)
-{
-	struct task_struct *p = current, *t;
-	unsigned n_fs;
-
-	t = p;
-	n_fs = 1;
-	spin_lock(&p->fs->lock);
-	rcu_read_lock();
-	while_each_thread(p, t)
-	{
-		if (t->fs == p->fs)
-			n_fs++;
-	}
-	rcu_read_unlock();
-
-	if (p->fs->users <= n_fs)
-		p->fs->in_exec = 1;
-	spin_unlock(&p->fs->lock);
-}
-
-static void bprm_fill_uid(struct linux_binprm *bprm, struct file *file)
-{
-	/* Stub: simplified setuid/setgid handling for minimal kernel */
-	struct inode *inode;
-	unsigned int mode;
-
-	if (!mnt_may_suid(file->f_path.mnt))
-		return;
-
-	inode = file->f_path.dentry->d_inode;
-	mode = READ_ONCE(inode->i_mode);
-	if (!(mode & (S_ISUID | S_ISGID)))
-		return;
-
-	if (mode & S_ISUID) {
-		bprm->per_clear |= PER_CLEAR_ON_SETID;
-		bprm->cred->euid =
-			i_uid_into_mnt(file_mnt_user_ns(file), inode);
-	}
-
-	if ((mode & (S_ISGID | S_IXGRP)) == (S_ISGID | S_IXGRP)) {
-		bprm->per_clear |= PER_CLEAR_ON_SETID;
-		bprm->cred->egid =
-			i_gid_into_mnt(file_mnt_user_ns(file), inode);
-	}
-}
-
-static void bprm_creds_from_file(struct linux_binprm *bprm)
-{
-	bprm_fill_uid(bprm, bprm->file);
-}
 
 static int prepare_binprm(struct linux_binprm *bprm)
 {
@@ -675,29 +531,13 @@ static int bprm_execve(struct linux_binprm *bprm, struct filename *filename,
 	if (retval)
 		return retval;
 
-	check_unsafe_exec(bprm);
-
 	file = do_open_execat(filename, flags);
 	retval = PTR_ERR(file);
 	if (IS_ERR(file))
-		goto out_unmark;
-
-	sched_exec();
+		return retval;
 
 	bprm->file = file;
-
-	retval = exec_binprm(bprm);
-	if (retval < 0)
-		goto out;
-
-	current->fs->in_exec = 0;
-	return retval;
-
-out:
-out_unmark:
-	current->fs->in_exec = 0;
-
-	return retval;
+	return exec_binprm(bprm);
 }
 
 int kernel_execve(const char *kernel_filename, const char *const *argv,
@@ -755,12 +595,4 @@ out_free:
 out_ret:
 	putname(filename);
 	return retval;
-}
-
-void set_dumpable(struct mm_struct *mm, int value)
-{
-	if (WARN_ON((unsigned)value > SUID_DUMP_ROOT))
-		return;
-
-	set_mask_bits(&mm->flags, MMF_DUMPABLE_MASK, value);
 }

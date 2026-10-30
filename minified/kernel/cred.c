@@ -106,16 +106,6 @@ int commit_creds(struct cred *new)
 
 	get_cred(new);
 
-	if (!uid_eq(old->euid, new->euid) || !gid_eq(old->egid, new->egid) ||
-	    !uid_eq(old->fsuid, new->fsuid) ||
-	    !gid_eq(old->fsgid, new->fsgid) ||
-	    !cap_issubset(new->cap_permitted, old->cap_permitted)) {
-		if (task->mm)
-			set_dumpable(task->mm, 0);
-
-		smp_wmb();
-	}
-
 	rcu_assign_pointer(task->real_cred, new);
 	rcu_assign_pointer(task->cred, new);
 

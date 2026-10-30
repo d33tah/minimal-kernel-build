@@ -739,9 +739,6 @@ extern void __vma_link_rb(struct mm_struct *, struct vm_area_struct *,
 
 extern int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file);
 
-unsigned long randomize_stack_top(unsigned long stack_top);
-unsigned long randomize_page(unsigned long start, unsigned long range);
-
 extern unsigned long get_unmapped_area(struct file *, unsigned long,
 				       unsigned long, unsigned long,
 				       unsigned long);
@@ -836,6 +833,5 @@ static inline bool gup_must_unshare(unsigned int flags, struct page *page)
 }
 
 /* Inlined from elf-randomize.h */
-extern unsigned long arch_randomize_brk(struct mm_struct *mm);
 
 #endif

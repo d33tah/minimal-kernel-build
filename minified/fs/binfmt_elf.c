@@ -18,17 +18,6 @@
 #include <asm/param.h>
 #include <asm/page.h>
 
-#ifndef ELF_COMPAT
-#define ELF_COMPAT 0
-#endif
-
-#ifndef user_long_t
-#define user_long_t long
-#endif
-#ifndef user_siginfo_t
-#define user_siginfo_t siginfo_t
-#endif
-
 static int load_elf_binary(struct linux_binprm *bprm);
 
 /*
@@ -41,10 +30,6 @@ static int load_elf_binary(struct linux_binprm *bprm);
  * surviving PAGE_SIZE definition is byte-identical to what was emitted before.
  */
 #define ELF_MIN_ALIGN PAGE_SIZE
-
-#ifndef ELF_CORE_EFLAGS
-#define ELF_CORE_EFLAGS 0
-#endif
 
 #define ELF_PAGESTART(_v) ((_v) & ~(int)(ELF_MIN_ALIGN - 1))
 #define ELF_PAGEOFFSET(_v) ((_v) & (ELF_MIN_ALIGN - 1))
@@ -108,7 +93,7 @@ static int create_elf_tables(struct linux_binprm *bprm,
 	const struct cred *cred = current_cred();
 	struct vm_area_struct *vma;
 
-	p = arch_align_stack(p);
+	p &= ~0xfUL; /* 16-byte stack alignment; no randomization */
 
 	u_platform = NULL;
 	if (k_platform) {
@@ -150,7 +135,7 @@ static int create_elf_tables(struct linux_binprm *bprm,
 	NEW_AUX_ENT(AT_EUID, from_kuid_munged(cred->user_ns, cred->euid));
 	NEW_AUX_ENT(AT_GID, from_kgid_munged(cred->user_ns, cred->gid));
 	NEW_AUX_ENT(AT_EGID, from_kgid_munged(cred->user_ns, cred->egid));
-	NEW_AUX_ENT(AT_SECURE, bprm->secureexec);
+	NEW_AUX_ENT(AT_SECURE, 0); /* no set-id execution */
 	NEW_AUX_ENT(AT_RANDOM, (elf_addr_t)(unsigned long)u_rand_bytes);
 #ifdef ELF_HWCAP2
 	NEW_AUX_ENT(AT_HWCAP2, ELF_HWCAP2);
@@ -216,8 +201,7 @@ static int create_elf_tables(struct linux_binprm *bprm,
 }
 
 static unsigned long elf_map(struct file *filep, unsigned long addr,
-			     const struct elf_phdr *eppnt, int prot, int type,
-			     unsigned long total_size)
+			     const struct elf_phdr *eppnt, int prot, int type)
 {
 	unsigned long map_addr;
 	unsigned long size = eppnt->p_filesz + ELF_PAGEOFFSET(eppnt->p_vaddr);
@@ -228,26 +212,7 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
 	if (!size)
 		return addr;
 
-	if (total_size) {
-		total_size = ELF_PAGEALIGN(total_size);
-		map_addr = vm_mmap(filep, addr, total_size, prot, type, off);
-		if (!BAD_ADDR(map_addr)) {
-			struct mm_struct *mm = current->mm;
-
-			if (!mmap_write_lock_killable(mm)) {
-				__do_munmap(mm, map_addr + size,
-					    total_size - size);
-				mmap_write_unlock(mm);
-			}
-		}
-	} else
-		map_addr = vm_mmap(filep, addr, size, prot, type, off);
-
-	if ((type & MAP_FIXED_NOREPLACE) &&
-	    PTR_ERR((void *)map_addr) == -EEXIST)
-		pr_info("%d (%s): Uhuuh, elf segment at %px requested but the memory is mapped already\n",
-			task_pid_nr(current), current->comm, (void *)addr);
-
+	map_addr = vm_mmap(filep, addr, size, prot, type, off);
 	return (map_addr);
 }
 
@@ -292,34 +257,9 @@ out:
 	return elf_phdata;
 }
 
-#ifndef CONFIG_ARCH_BINFMT_ELF_STATE
-
-struct arch_elf_state {};
-
-#define INIT_ARCH_ELF_STATE \
-	{                   \
-	}
-
-#endif
-
-static inline int make_prot(u32 p_flags, struct arch_elf_state *arch_state,
-			    bool has_interp, bool is_interp)
-{
-	int prot = 0;
-
-	if (p_flags & PF_R)
-		prot |= PROT_READ;
-	if (p_flags & PF_W)
-		prot |= PROT_WRITE;
-	if (p_flags & PF_X)
-		prot |= PROT_EXEC;
-
-	return arch_elf_adjust_prot(prot, arch_state, has_interp, is_interp);
-}
-
 static int load_elf_binary(struct linux_binprm *bprm)
 {
-	unsigned long load_bias = 0, phdr_addr = 0;
+	unsigned long phdr_addr = 0;
 	int first_pt_load = 1;
 	unsigned long error;
 	struct elf_phdr *elf_ppnt, *elf_phdata;
@@ -329,10 +269,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	unsigned long elf_entry;
 	unsigned long e_entry;
 	unsigned long reloc_func_desc __maybe_unused = 0;
-	int executable_stack = EXSTACK_DEFAULT;
 	struct elfhdr *elf_ex = (struct elfhdr *)bprm->buf;
-	struct arch_elf_state arch_state = INIT_ARCH_ELF_STATE;
-	struct mm_struct *mm;
 	struct pt_regs *regs;
 
 	retval = -ENOEXEC;
@@ -340,7 +277,8 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	if (memcmp(elf_ex->e_ident, ELFMAG, SELFMAG) != 0)
 		goto out;
 
-	if (elf_ex->e_type != ET_EXEC && elf_ex->e_type != ET_DYN)
+	/* Fixed-address executables only (no ET_DYN/PIE load bias). */
+	if (elf_ex->e_type != ET_EXEC)
 		goto out;
 	if (!elf_check_arch(elf_ex))
 		goto out;
@@ -352,34 +290,22 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		goto out;
 
 	/*
-	 * The init ELF is a static ET_EXEC with no PT_INTERP, so no
-	 * interpreter is ever loaded here.
+	 * Static executables only: PT_INTERP is not looked at (no
+	 * interpreter is ever loaded) and neither is PT_GNU_STACK (every
+	 * binary gets the legacy EXSTACK_DEFAULT treatment). There is no
+	 * address-space randomization (the kernel has no entropy source).
 	 */
-	elf_ppnt = elf_phdata;
-	for (i = 0; i < elf_ex->e_phnum; i++, elf_ppnt++)
-		switch (elf_ppnt->p_type) {
-		case PT_GNU_STACK:
-			if (elf_ppnt->p_flags & PF_X)
-				executable_stack = EXSTACK_ENABLE_X;
-			else
-				executable_stack = EXSTACK_DISABLE_X;
-		}
-
 	retval = begin_new_exec(bprm);
 	if (retval)
 		goto out_free_dentry;
 
-	SET_PERSONALITY2(*elf_ex, &arch_state);
-	if (elf_read_implies_exec(*elf_ex, executable_stack))
+	SET_PERSONALITY(*elf_ex);
+	if (elf_read_implies_exec(*elf_ex, EXSTACK_DEFAULT))
 		current->personality |= READ_IMPLIES_EXEC;
-
-	if (!(current->personality & ADDR_NO_RANDOMIZE))
-		current->flags |= PF_RANDOMIZE;
 
 	setup_new_exec(bprm);
 
-	retval = setup_arg_pages(bprm, randomize_stack_top(STACK_TOP),
-				 executable_stack);
+	retval = setup_arg_pages(bprm, STACK_TOP);
 	if (retval < 0)
 		goto out_free_dentry;
 
@@ -390,46 +316,35 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	     i++, elf_ppnt++) {
 		int elf_prot, elf_flags;
 		unsigned long k, vaddr;
-		unsigned long total_size = 0;
 
 		if (elf_ppnt->p_type != PT_LOAD)
 			continue;
 
+		/* Only the last PT_LOAD may carry bss (p_memsz > p_filesz). */
 		if (unlikely(elf_brk > elf_bss)) {
-			unsigned long nbyte;
-
-			retval = set_brk(elf_bss + load_bias,
-					 elf_brk + load_bias, bss_prot);
-			if (retval)
-				goto out_free_dentry;
-			nbyte = ELF_PAGEOFFSET(elf_bss);
-			if (nbyte) {
-				nbyte = ELF_MIN_ALIGN - nbyte;
-				if (nbyte > elf_brk - elf_bss)
-					nbyte = elf_brk - elf_bss;
-				if (clear_user((void __user *)elf_bss +
-						       load_bias,
-					       nbyte)) {
-				}
-			}
+			retval = -EINVAL;
+			goto out_free_dentry;
 		}
 
-		elf_prot =
-			make_prot(elf_ppnt->p_flags, &arch_state, false, false);
+		elf_prot = 0;
+		if (elf_ppnt->p_flags & PF_R)
+			elf_prot |= PROT_READ;
+		if (elf_ppnt->p_flags & PF_W)
+			elf_prot |= PROT_WRITE;
+		if (elf_ppnt->p_flags & PF_X)
+			elf_prot |= PROT_EXEC;
 
 		elf_flags = MAP_PRIVATE;
 
 		vaddr = elf_ppnt->p_vaddr;
 
-		if (!first_pt_load) {
+		if (!first_pt_load)
 			elf_flags |= MAP_FIXED;
-		} else {
-			/* init ELF is a static ET_EXEC; no ET_DYN/PIE here */
+		else
 			elf_flags |= MAP_FIXED_NOREPLACE;
-		}
 
-		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
-				elf_prot, elf_flags, total_size);
+		error = elf_map(bprm->file, vaddr, elf_ppnt, elf_prot,
+				elf_flags);
 		if (BAD_ADDR(error)) {
 			retval = IS_ERR((void *)error) ?
 					 PTR_ERR((void *)error) :
@@ -466,10 +381,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		}
 	}
 
-	e_entry = elf_ex->e_entry + load_bias;
-	phdr_addr += load_bias;
-	elf_bss += load_bias;
-	elf_brk += load_bias;
+	e_entry = elf_ex->e_entry;
 
 	retval = set_brk(elf_bss, elf_brk, bss_prot);
 	if (retval)
@@ -490,12 +402,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	retval = create_elf_tables(bprm, elf_ex, 0, e_entry, phdr_addr);
 	if (retval < 0)
 		goto out;
-
-	mm = current->mm;
-
-	if (current->flags & PF_RANDOMIZE) {
-		mm->brk = arch_randomize_brk(mm);
-	}
 
 	regs = current_pt_regs();
 #ifdef ELF_PLAT_INIT

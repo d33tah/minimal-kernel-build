@@ -6,7 +6,7 @@
 #include <linux/fs_struct.h>
 
 #include "internal.h"
-#include "mount.h"
+#include <linux/mount.h>
 
 #define EMBEDDED_NAME_MAX (PATH_MAX - offsetof(struct filename, iname))
 
@@ -636,9 +636,6 @@ static int may_open(struct user_namespace *mnt_userns, const struct path *path,
 			return -EACCES;
 		flag &= ~O_TRUNC;
 		break;
-	case S_IFREG:
-		if ((acc_mode & MAY_EXEC) && path_noexec(path))
-			return -EACCES;
 	}
 
 	error = inode_permission(mnt_userns, inode, MAY_OPEN | acc_mode);

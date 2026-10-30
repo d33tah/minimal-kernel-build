@@ -3,13 +3,8 @@
 
 #include <linux/mm_types.h>
 
-#define SUID_DUMP_USER 1
-#define SUID_DUMP_ROOT 2
-
 #define MMF_DUMPABLE_BITS 2
 #define MMF_DUMPABLE_MASK ((1 << MMF_DUMPABLE_BITS) - 1)
-
-extern void set_dumpable(struct mm_struct *mm, int value);
 
 #define MMF_DUMP_ANON_PRIVATE 2
 #define MMF_DUMP_ANON_SHARED 3

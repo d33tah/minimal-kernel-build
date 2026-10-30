@@ -8,7 +8,7 @@
 struct fs_struct {
 	int users;
 	spinlock_t lock;
-	int umask, in_exec;
+	int umask;
 	struct path root, pwd;
 } __randomize_layout;
 

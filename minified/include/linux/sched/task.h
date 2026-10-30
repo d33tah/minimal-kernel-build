@@ -46,10 +46,6 @@ extern pid_t user_mode_thread(int (*fn)(void *), void *arg,
 
 extern void free_task(struct task_struct *tsk);
 
-#define sched_exec() \
-	{            \
-	}
-
 extern void __put_task_struct(struct task_struct *t);
 
 static inline void put_task_struct(struct task_struct *t)

@@ -132,11 +132,4 @@ int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 int __filemap_add_folio(struct address_space *mapping, struct folio *folio,
 			pgoff_t index, gfp_t gfp, void **shadowp);
 
-static inline void page_cache_sync_readahead(struct address_space *mapping,
-					     struct file_ra_state *ra,
-					     struct file *file, pgoff_t index,
-					     unsigned long req_count)
-{
-}
-
 #endif

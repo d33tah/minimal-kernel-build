@@ -72,10 +72,6 @@ enum positive_aop_returns { AOP_TRUNCATED_PAGE = 0x80001 };
 struct page;
 struct address_space;
 
-#define IOCB_NOWAIT (__force int)RWF_NOWAIT
-#define IOCB_WAITQ (1 << 19)
-#define IOCB_NOIO (1 << 20)
-
 struct kiocb {
 	struct file *ki_filp;
 	randomized_struct_fields_start loff_t ki_pos;
@@ -188,12 +184,6 @@ static inline void filemap_invalidate_lock_shared(struct address_space *mapping)
 	down_read(&mapping->invalidate_lock);
 }
 
-static inline int
-filemap_invalidate_trylock_shared(struct address_space *mapping)
-{
-	return down_read_trylock(&mapping->invalidate_lock);
-}
-
 static inline void
 filemap_invalidate_unlock_shared(struct address_space *mapping)
 {
@@ -213,10 +203,6 @@ static inline void i_size_write(struct inode *inode, loff_t i_size)
 /* struct fown_struct removed - f_owner field was write-only (lock never
    acquired, pid never assigned -> put_pid(NULL) no-op) */
 
-struct file_ra_state {
-	loff_t prev_pos;
-};
-
 struct file {
 	union {
 		struct llist_node fu_llist;
@@ -230,7 +216,6 @@ struct file {
 	fmode_t f_mode;
 	loff_t f_pos;
 	const struct cred *f_cred;
-	struct file_ra_state f_ra;
 	void *private_data;
 	struct address_space *f_mapping;
 } __randomize_layout __attribute__((aligned(4)));

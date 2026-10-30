@@ -286,65 +286,6 @@ static int filemap_read_folio(struct file *file, struct address_space *mapping,
 	return -EIO;
 }
 
-static bool filemap_range_uptodate(struct folio *folio)
-{
-	/*
-	 * No address_space_operations on this build sets
-	 * ->is_partially_uptodate (ram_aops only sets read_folio/write_begin/
-	 * write_end), so a folio that isn't fully uptodate is never partially
-	 * uptodate here.
-	 */
-	return folio_test_uptodate(folio);
-}
-
-static int filemap_update_page(struct kiocb *iocb,
-			       struct address_space *mapping,
-			       struct iov_iter *iter, struct folio *folio)
-{
-	int error;
-
-	if (iocb->ki_flags & IOCB_NOWAIT) {
-		if (!filemap_invalidate_trylock_shared(mapping))
-			return -EAGAIN;
-	} else {
-		filemap_invalidate_lock_shared(mapping);
-	}
-
-	if (!folio_trylock(folio)) {
-		error = -EAGAIN;
-		if (iocb->ki_flags & (IOCB_NOWAIT | IOCB_NOIO))
-			goto unlock_mapping;
-		/*
-		 * IOCB_WAITQ (io_uring async) is never set in this tree, so the
-		 * async __folio_lock path is unreachable; always wait sync.
-		 */
-		filemap_invalidate_unlock_shared(mapping);
-		return AOP_TRUNCATED_PAGE;
-	}
-
-	error = AOP_TRUNCATED_PAGE;
-	if (!folio->mapping)
-		goto unlock;
-
-	error = 0;
-	if (filemap_range_uptodate(folio))
-		goto unlock;
-
-	error = -EAGAIN;
-	if (iocb->ki_flags & (IOCB_NOIO | IOCB_NOWAIT | IOCB_WAITQ))
-		goto unlock;
-
-	error = filemap_read_folio(iocb->ki_filp, mapping, folio);
-	goto unlock_mapping;
-unlock:
-	folio_unlock(folio);
-unlock_mapping:
-	filemap_invalidate_unlock_shared(mapping);
-	if (error == AOP_TRUNCATED_PAGE)
-		folio_put(folio);
-	return error;
-}
-
 static int filemap_create_folio(struct file *file,
 				struct address_space *mapping, pgoff_t index,
 				struct folio_batch *fbatch)
@@ -382,7 +323,6 @@ static int filemap_get_pages(struct kiocb *iocb, struct iov_iter *iter,
 {
 	struct file *filp = iocb->ki_filp;
 	struct address_space *mapping = filp->f_mapping;
-	struct file_ra_state *ra = &filp->f_ra;
 	pgoff_t index = iocb->ki_pos >> PAGE_SHIFT;
 	pgoff_t last_index;
 	struct folio *folio;
@@ -392,15 +332,6 @@ static int filemap_get_pages(struct kiocb *iocb, struct iov_iter *iter,
 retry:
 	filemap_get_read_batch(mapping, index, last_index, fbatch);
 	if (!folio_batch_count(fbatch)) {
-		if (iocb->ki_flags & IOCB_NOIO)
-			return -EAGAIN;
-		page_cache_sync_readahead(mapping, ra, filp, index,
-					  last_index - index);
-		filemap_get_read_batch(mapping, index, last_index, fbatch);
-	}
-	if (!folio_batch_count(fbatch)) {
-		if (iocb->ki_flags & (IOCB_NOWAIT | IOCB_WAITQ))
-			return -EAGAIN;
 		err = filemap_create_folio(filp, mapping,
 					   iocb->ki_pos >> PAGE_SHIFT, fbatch);
 		if (err == AOP_TRUNCATED_PAGE)
@@ -408,32 +339,26 @@ retry:
 		return err;
 	}
 
+	/*
+	 * ramfs is the only filesystem: its folios are uptodate from the
+	 * moment write_end or read_folio unlocks them, so the read path never
+	 * has to bring a cached folio uptodate.
+	 */
 	folio = fbatch->folios[folio_batch_count(fbatch) - 1];
-	if (!folio_test_uptodate(folio)) {
-		if ((iocb->ki_flags & IOCB_WAITQ) &&
-		    folio_batch_count(fbatch) > 1)
-			iocb->ki_flags |= IOCB_NOWAIT;
-		err = filemap_update_page(iocb, mapping, iter, folio);
-		if (err)
-			goto err;
+	if (WARN_ON_ONCE(!folio_test_uptodate(folio))) {
+		folio_put(folio);
+		if (likely(--fbatch->nr))
+			return 0;
+		return -EIO;
 	}
 
 	return 0;
-err:
-	if (err < 0)
-		folio_put(folio);
-	if (likely(--fbatch->nr))
-		return 0;
-	if (err == AOP_TRUNCATED_PAGE)
-		goto retry;
-	return err;
 }
 
 ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 		     ssize_t already_read)
 {
 	struct file *filp = iocb->ki_filp;
-	struct file_ra_state *ra = &filp->f_ra;
 	struct address_space *mapping = filp->f_mapping;
 	struct inode *inode = mapping->host;
 	struct folio_batch fbatch;
@@ -450,9 +375,6 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 
 	do {
 		cond_resched();
-
-		if ((iocb->ki_flags & IOCB_WAITQ) && already_read)
-			iocb->ki_flags |= IOCB_NOWAIT;
 
 		if (unlikely(iocb->ki_pos >= i_size_read(inode)))
 			break;
@@ -481,7 +403,6 @@ ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 
 			already_read += copied;
 			iocb->ki_pos += copied;
-			ra->prev_pos = iocb->ki_pos;
 
 			if (copied < bytes) {
 				error = -EFAULT;

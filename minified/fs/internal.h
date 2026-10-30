@@ -23,7 +23,6 @@ struct open_flags {
 };
 extern struct file *do_filp_open(struct filename *pathname,
 				 const struct open_flags *op);
-extern int build_open_flags(const struct open_how *how, struct open_flags *op);
 
 /* do_fchownat declaration removed - made static */
 extern int vfs_open(const struct path *, struct file *);

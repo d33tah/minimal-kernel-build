@@ -273,7 +273,7 @@ out_unlock:
 	return ret;
 }
 
-static struct file *do_open_execat(struct filename *name, int flags)
+static struct file *do_open_execat(struct filename *name)
 {
 	struct file *file;
 	int err;
@@ -283,13 +283,6 @@ static struct file *do_open_execat(struct filename *name, int flags)
 		.intent = LOOKUP_OPEN,
 		.lookup_flags = LOOKUP_FOLLOW,
 	};
-
-	if ((flags & ~(AT_SYMLINK_NOFOLLOW | AT_EMPTY_PATH)) != 0)
-		return ERR_PTR(-EINVAL);
-	if (flags & AT_SYMLINK_NOFOLLOW)
-		open_exec_flags.lookup_flags &= ~LOOKUP_FOLLOW;
-	if (flags & AT_EMPTY_PATH)
-		open_exec_flags.lookup_flags |= LOOKUP_EMPTY;
 
 	file = do_filp_open(name, &open_exec_flags);
 	if (IS_ERR(file))
@@ -521,8 +514,7 @@ static int exec_binprm(struct linux_binprm *bprm)
 	return ret < 0 ? ret : 0;
 }
 
-static int bprm_execve(struct linux_binprm *bprm, struct filename *filename,
-		       int flags)
+static int bprm_execve(struct linux_binprm *bprm, struct filename *filename)
 {
 	struct file *file;
 	int retval;
@@ -531,7 +523,7 @@ static int bprm_execve(struct linux_binprm *bprm, struct filename *filename,
 	if (retval)
 		return retval;
 
-	file = do_open_execat(filename, flags);
+	file = do_open_execat(filename);
 	retval = PTR_ERR(file);
 	if (IS_ERR(file))
 		return retval;
@@ -589,7 +581,7 @@ int kernel_execve(const char *kernel_filename, const char *const *argv,
 	if (retval < 0)
 		goto out_free;
 
-	retval = bprm_execve(bprm, filename, 0);
+	retval = bprm_execve(bprm, filename);
 out_free:
 	free_bprm(bprm);
 out_ret:

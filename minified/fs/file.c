@@ -208,7 +208,5 @@ struct file *fget_light(unsigned int fd)
 {
 	struct file *file = files_lookup_fd_raw(current->files, fd);
 
-	if (!file || unlikely(file->f_mode & FMODE_PATH))
-		return NULL;
 	return file;
 }

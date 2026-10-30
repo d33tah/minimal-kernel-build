@@ -54,8 +54,6 @@ extern void __init files_init(void);
 
 #define FMODE_EXEC ((__force fmode_t)0x20)
 
-#define FMODE_PATH ((__force fmode_t)0x4000)
-
 #define FMODE_WRITER ((__force fmode_t)0x10000)
 
 #define FMODE_CAN_READ ((__force fmode_t)0x20000)

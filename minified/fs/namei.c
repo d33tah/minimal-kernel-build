@@ -741,28 +741,20 @@ static struct file *path_openat(struct nameidata *nd,
 				const struct open_flags *op, unsigned flags)
 {
 	struct file *file;
+	const char *s;
 	int error;
 
 	file = alloc_empty_file(op->open_flag, current_cred());
 	if (IS_ERR(file))
 		return file;
 
-	if (unlikely(file->f_flags & O_PATH)) {
-		struct path path;
-		error = path_lookupat(nd, flags, &path);
-		if (!error) {
-			error = vfs_open(&path, file);
-			path_put(&path);
-		}
-	} else {
-		const char *s = path_init(nd, flags);
-		while (!(error = link_path_walk(s, nd)) &&
-		       (s = open_last_lookups(nd, file, op)) != NULL)
-			;
-		if (!error)
-			error = do_open(nd, file, op);
-		terminate_walk(nd);
-	}
+	s = path_init(nd, flags);
+	while (!(error = link_path_walk(s, nd)) &&
+	       (s = open_last_lookups(nd, file, op)) != NULL)
+		;
+	if (!error)
+		error = do_open(nd, file, op);
+	terminate_walk(nd);
 	if (likely(!error)) {
 		if (likely(file->f_mode & FMODE_OPENED))
 			return file;

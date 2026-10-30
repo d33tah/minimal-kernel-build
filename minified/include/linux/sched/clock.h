@@ -1,21 +1,13 @@
 #ifndef _LINUX_SCHED_CLOCK_H
 #define _LINUX_SCHED_CLOCK_H
 
-#include <linux/smp.h>
+#include <linux/types.h>
 
 extern unsigned long long notrace sched_clock(void);
 
-extern u64 sched_clock_cpu(int cpu);
-
-extern void sched_clock_init(void);
-
-extern int sched_clock_stable(void);
-
-extern void sched_clock_tick(void);
-
 static inline u64 local_clock(void)
 {
-	return sched_clock_cpu(raw_smp_processor_id());
+	return sched_clock();
 }
 
 #endif

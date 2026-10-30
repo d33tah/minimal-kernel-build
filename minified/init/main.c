@@ -219,7 +219,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	if (late_time_init)
 		late_time_init();
-	sched_clock_init();
 	calibrate_delay();
 	pid_idr_init();
 	thread_stack_cache_init();

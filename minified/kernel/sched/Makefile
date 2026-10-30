@@ -3,4 +3,4 @@
 # -fno-omit-frame-pointer is needed for x86 (wait-channel unwinding).
 CFLAGS_core.o := $(PROFILING) -fno-omit-frame-pointer
 
-obj-y += core.o clock.o
+obj-y += core.o

@@ -1,6 +1,5 @@
 
 #include <linux/sched/signal.h>
-#include <linux/sched/clock.h>
 #include <linux/sched/debug.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/task.h>
@@ -127,8 +126,6 @@ static __always_inline void context_switch(struct task_struct *prev,
 void scheduler_tick(void)
 {
 	struct task_struct *curr;
-
-	sched_clock_tick();
 
 	raw_spin_lock(&runqueue.lock);
 	curr = runqueue.curr;

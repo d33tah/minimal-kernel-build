@@ -219,8 +219,6 @@ static inline struct slab *alloc_slab_page(gfp_t flags, int node,
 
 	slab = folio_slab(folio);
 	__folio_set_slab(folio);
-	if (page_is_pfmemalloc(folio_page(folio, 0)))
-		slab_set_pfmemalloc(slab);
 
 	return slab;
 }
@@ -353,10 +351,8 @@ static inline void *acquire_slab(struct kmem_cache *s,
 	return freelist;
 }
 
-static inline bool pfmemalloc_match(struct slab *slab, gfp_t gfpflags);
-
 static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
-			      struct slab **ret_slab, gfp_t gfpflags)
+			      struct slab **ret_slab)
 {
 	struct slab *slab, *slab2;
 	void *object = NULL;
@@ -368,9 +364,6 @@ static void *get_partial_node(struct kmem_cache *s, struct kmem_cache_node *n,
 	spin_lock_irqsave(&n->list_lock, flags);
 	list_for_each_entry_safe(slab, slab2, &n->partial, slab_list) {
 		void *t;
-
-		if (!pfmemalloc_match(slab, gfpflags))
-			continue;
 
 		t = acquire_slab(s, n, slab, 1);
 		if (!t)
@@ -397,7 +390,7 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
 	 * cross-node fallback scan (get_any_partial) can only ever return NULL.
 	 * The local partial list is the only source, so return it directly.
 	 */
-	return get_partial_node(s, get_node(s, searchnode), ret_slab, flags);
+	return get_partial_node(s, get_node(s, searchnode), ret_slab);
 }
 
 #define TID_STEP 1
@@ -500,14 +493,6 @@ static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
 	if (slab) {
 		deactivate_slab(s, slab, freelist);
 	}
-}
-
-static inline bool pfmemalloc_match(struct slab *slab, gfp_t gfpflags)
-{
-	if (unlikely(slab_test_pfmemalloc(slab)))
-		return gfp_pfmemalloc_allowed(gfpflags);
-
-	return true;
 }
 
 static void *___slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,

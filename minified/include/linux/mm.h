@@ -496,21 +496,6 @@ static inline void *folio_address(const struct folio *folio)
 	return page_address(&folio->page);
 }
 
-static inline bool page_is_pfmemalloc(const struct page *page)
-{
-	return (uintptr_t)page->lru.next & BIT(1);
-}
-
-static inline void set_page_pfmemalloc(struct page *page)
-{
-	page->lru.next = (void *)BIT(1);
-}
-
-static inline void clear_page_pfmemalloc(struct page *page)
-{
-	page->lru.next = NULL;
-}
-
 #define offset_in_page(p) ((unsigned long)(p) & ~PAGE_MASK)
 
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
@@ -669,10 +654,7 @@ extern unsigned long free_reserved_area(void *start, void *end, int poison,
 extern void reserve_bootmem_region(phys_addr_t start, phys_addr_t end);
 
 void free_area_init(unsigned long *max_zone_pfn);
-extern int __meminit init_per_zone_wmark_min(void);
 extern void mem_init(void);
-
-extern void setup_per_cpu_pageset(void);
 
 extern int __vm_enough_memory(struct mm_struct *mm, long pages,
 			      int cap_sys_admin);

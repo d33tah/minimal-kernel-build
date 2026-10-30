@@ -218,7 +218,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	mem_encrypt_init();
 
-	setup_per_cpu_pageset();
 	if (late_time_init)
 		late_time_init();
 	sched_clock_init();

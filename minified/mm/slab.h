@@ -43,18 +43,6 @@ static_assert(sizeof(struct slab) <= sizeof(struct page));
 
 #define slab_page(s) folio_page(slab_folio(s), 0)
 
-static inline bool slab_test_pfmemalloc(const struct slab *slab)
-{
-	return folio_test_active((struct folio *)slab_folio(slab));
-}
-
-static inline void slab_set_pfmemalloc(struct slab *slab)
-{
-	folio_set_active(slab_folio(slab));
-}
-
-/* slab_clear_pfmemalloc removed - unused */
-
 static inline void *slab_address(const struct slab *slab)
 {
 	return folio_address(slab_folio(slab));

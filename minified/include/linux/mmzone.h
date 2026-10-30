@@ -16,21 +16,6 @@
 #include <linux/nodemask.h>
 #include <linux/page-flags-layout.h>
 
-/* --- 2025-12-08 00:16 --- Inlined from pageblock-flags.h */
-#define PB_migratetype_bits 3
-enum pageblock_bits {
-	PB_migrate,
-	PB_migrate_end = PB_migrate + PB_migratetype_bits - 1,
-	PB_migrate_skip,
-	NR_PAGEBLOCK_BITS
-};
-
-#define pageblock_order (MAX_ORDER - 1)
-#define pageblock_nr_pages (1UL << pageblock_order)
-
-void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
-			     unsigned long pfn, unsigned long mask);
-/* end pageblock-flags.h */
 #include <linux/atomic.h>
 #include <linux/mm_types.h>
 #include <linux/page-flags.h>
@@ -44,41 +29,12 @@ void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 
 #define PAGE_ALLOC_COSTLY_ORDER 3
 
-enum migratetype {
-	MIGRATE_UNMOVABLE,
-	MIGRATE_MOVABLE,
-	MIGRATE_RECLAIMABLE,
-	MIGRATE_PCPTYPES,
-	MIGRATE_HIGHATOMIC = MIGRATE_PCPTYPES,
-	MIGRATE_TYPES
-};
-
-#define is_migrate_cma(migratetype) false
-
-#define for_each_migratetype_order(order, type)     \
-	for (order = 0; order < MAX_ORDER; order++) \
-		for (type = 0; type < MIGRATE_TYPES; type++)
-
-extern int page_group_by_mobility_disabled;
-
-#define MIGRATETYPE_MASK ((1UL << PB_migratetype_bits) - 1)
+#define pageblock_nr_pages (1UL << (MAX_ORDER - 1))
 
 struct free_area {
-	struct list_head free_list[MIGRATE_TYPES];
+	struct list_head free_list;
 	unsigned long nr_free;
 };
-
-static inline struct page *get_page_from_free_area(struct free_area *area,
-						   int migratetype)
-{
-	return list_first_entry_or_null(&area->free_list[migratetype],
-					struct page, lru);
-}
-
-static inline bool free_area_empty(struct free_area *area, int migratetype)
-{
-	return list_empty(&area->free_list[migratetype]);
-}
 
 struct pglist_data;
 
@@ -123,18 +79,6 @@ enum lru_list {
 	NR_LRU_LISTS
 };
 
-enum zone_watermarks { WMARK_MIN, WMARK_LOW, WMARK_HIGH, NR_WMARK };
-
-#define NR_PCP_LISTS (MIGRATE_PCPTYPES * (PAGE_ALLOC_COSTLY_ORDER + 1))
-
-#define high_wmark_pages(z) (z->_watermark[WMARK_HIGH])
-#define wmark_pages(z, i) (z->_watermark[i])
-
-struct per_cpu_pages {
-	int batch;
-	struct list_head lists[NR_PCP_LISTS];
-};
-
 #endif
 
 enum zone_type { ZONE_NORMAL, ZONE_MOVABLE, __MAX_NR_ZONES };
@@ -142,11 +86,7 @@ enum zone_type { ZONE_NORMAL, ZONE_MOVABLE, __MAX_NR_ZONES };
 #ifndef __GENERATING_BOUNDS_H
 
 struct zone {
-	unsigned long _watermark[NR_WMARK];
 	struct pglist_data *zone_pgdat;
-	struct per_cpu_pages __percpu *per_cpu_pageset;
-	int pageset_high, pageset_batch;
-	unsigned long *pageblock_flags;
 	unsigned long zone_start_pfn;
 	atomic_long_t managed_pages;
 	unsigned long spanned_pages, present_pages;
@@ -202,11 +142,6 @@ static inline unsigned long pgdat_end_pfn(pg_data_t *pgdat)
 }
 
 void build_all_zonelists(pg_data_t *pgdat);
-enum meminit_context {
-	MEMINIT_EARLY,
-	MEMINIT_HOTPLUG,
-};
-
 extern void init_currently_empty_zone(struct zone *zone,
 				      unsigned long start_pfn,
 				      unsigned long size);

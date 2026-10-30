@@ -53,18 +53,6 @@ extern unsigned long highest_memmap_pfn;
 
 /* isolate_lru_page, putback_lru_page removed - never called */
 
-struct alloc_context {
-	struct zonelist *zonelist;
-	struct zoneref *preferred_zoneref;
-	int migratetype;
-	enum zone_type highest_zoneidx;
-};
-
-static inline unsigned int buddy_order(struct page *page)
-{
-	return page_private(page);
-}
-
 /* page_is_buddy removed - unused */
 /* __find_buddy_pfn, find_buddy_page_pfn removed - unused */
 
@@ -74,8 +62,6 @@ static inline unsigned int buddy_order(struct page *page)
 extern void memblock_free_pages(struct page *page, unsigned long pfn,
 				unsigned int order);
 extern void __free_pages_core(struct page *page, unsigned int order);
-
-extern void free_unref_page(struct page *page, unsigned int order);
 
 /* split_free_page, find_suitable_fallback declaration removed - unused */
 /* is_exec_mapping, is_stack_mapping, is_data_mapping removed - unused */
@@ -90,16 +76,5 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 extern unsigned long __must_check vm_mmap_pgoff(struct file *, unsigned long,
 						unsigned long, unsigned long,
 						unsigned long, unsigned long);
-
-/* ALLOC_WMARK_MIN, ALLOC_WMARK_HIGH removed - never referenced */
-#define ALLOC_WMARK_LOW WMARK_LOW
-#define ALLOC_NO_WATERMARKS 0x04
-
-#define ALLOC_WMARK_MASK (ALLOC_NO_WATERMARKS - 1)
-/* ALLOC_OOM/HARDER/HIGH/KSWAPD removed - never set on this build */
-
-/* is_migrate_highatomic, is_migrate_highatomic_page removed - unused */
-
-void setup_zone_pageset(struct zone *zone);
 
 #endif

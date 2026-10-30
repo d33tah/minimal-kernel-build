@@ -16,8 +16,4 @@ int bcmp(const void *s1, const void *s2, size_t len);
 #define memset(d, c, l) __builtin_memset(d, c, l)
 #define memcmp __builtin_memcmp
 
-extern size_t strlen(const char *s);
-extern size_t strnlen(const char *s, size_t maxlen);
-extern unsigned long long simple_strtoull(const char *cp, char **endp,
-					  unsigned int base);
 #endif

@@ -28,7 +28,7 @@ subdir-		:= compressed
 
 setup-y		+= a20.o bioscall.o copy.o
 setup-y		+= header.o main.o memory.o
-setup-y		+= pm.o pmjump.o printf.o regs.o string.o tty.o video.o
+setup-y		+= pm.o pmjump.o regs.o string.o tty.o video.o
 setup-y		+= video-mode.o version.o
 
 # The link order of the video-*.o modules can matter.  In particular,

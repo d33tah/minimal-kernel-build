@@ -26,7 +26,6 @@
 #include <linux/acpi.h>
 
 #define BOOT_BOOT_H
-#include "../ctype.h"
 #include "../io.h"
 
 #include "efi.h"

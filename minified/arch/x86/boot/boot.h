@@ -10,13 +10,11 @@
 
 #ifndef __ASSEMBLY__
 
-#include <linux/stdarg.h>
 #include <linux/types.h>
 #include <linux/edd.h>
 #include <asm/setup.h>
 #include <asm/asm.h>
 #include <asm/processor-flags.h>
-#include "ctype.h"
 #include "io.h"
 
  
@@ -181,17 +179,11 @@ void __attribute__((noreturn))
 	protected_mode_jump(u32 entrypoint, u32 bootparams);
 
  
-int sprintf(char *buf, const char *fmt, ...);
-int vsprintf(char *buf, const char *fmt, va_list args);
-int printf(const char *fmt, ...);
 
  
 void initregs(struct biosregs *regs);
 
  
-size_t strnlen(const char *s, size_t maxlen);
-unsigned long long simple_strtoull(const char *cp, char **endp, unsigned int base);
-size_t strlen(const char *s);
 
  
 void puts(const char *);

@@ -23,11 +23,8 @@ extern struct task_struct init_task;
 extern int lockdep_tasklist_lock_is_held(void);
 
 extern asmlinkage void schedule_tail(struct task_struct *prev);
-extern void init_idle(struct task_struct *idle, int cpu);
 
 extern int sched_fork(unsigned long clone_flags, struct task_struct *p);
-extern void sched_cgroup_fork(struct task_struct *p,
-			      struct kernel_clone_args *kargs);
 
 extern void proc_caches_init(void);
 
@@ -53,8 +50,6 @@ static inline void put_task_struct(struct task_struct *t)
 	if (refcount_dec_and_test(&t->usage))
 		__put_task_struct(t);
 }
-
-void put_task_struct_rcu_user(struct task_struct *task);
 
 static inline void task_lock(struct task_struct *p)
 {

@@ -1,85 +1,44 @@
 
-
 #include <linux/sched/signal.h>
 #include <linux/sched/clock.h>
 #include <linux/sched/debug.h>
+#include <linux/sched/mm.h>
+#include <linux/sched/task.h>
+#include <linux/cpu.h>
+#include <linux/rcupdate.h>
 
 #include <linux/mmu_context.h>
 
 #include <asm/switch_to.h>
 
-#include "sched.h"
-#include "pelt.h"
-
-DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
-
-void raw_spin_rq_lock_nested(struct rq *rq, int subclass)
-{
-	/* SCHED_CORE off: rq lock is always rq->__lock, no core-cookie retry */
-	preempt_disable();
-	raw_spin_lock_nested(&rq->__lock, subclass);
-	preempt_enable_no_resched();
-}
-
-void raw_spin_rq_unlock(struct rq *rq)
-{
-	raw_spin_unlock(rq_lockp(rq));
-}
-
-struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
-	__acquires(rq->lock)
-{
-	struct rq *rq;
-
-	lockdep_assert_held(&p->pi_lock);
-
-	for (;;) {
-		rq = task_rq(p);
-		raw_spin_rq_lock(rq);
-		if (likely(rq == task_rq(p) && !task_on_rq_migrating(p))) {
-			rq_pin_lock(rq, rf);
-			return rq;
-		}
-		raw_spin_rq_unlock(rq);
-
-		while (unlikely(task_on_rq_migrating(p)))
-			cpu_relax();
-	}
-}
-
-static void update_rq_clock_task(struct rq *rq, s64 delta)
-{
-	rq->clock_task += delta;
-}
-
-void update_rq_clock(struct rq *rq)
-{
-	s64 delta;
-
-	lockdep_assert_rq_held(rq);
-
-	if (rq->clock_update_flags & RQCF_ACT_SKIP)
-		return;
-
-	delta = sched_clock_cpu(cpu_of(rq)) - rq->clock;
-	if (delta < 0)
-		return;
-	rq->clock += delta;
-	update_rq_clock_task(rq, delta);
-}
+#include "../rcu/rcu.h"
 
 /*
- * wake_q batched-wakeup machinery (wake_q_add / wake_q_add_safe / wake_up_q
- * and the __wake_q_add helper) removed: zero callers on this boot. The wake_q
- * mechanism is only used by futex/rwsem/mutex contended wakeup batching, none
- * of which fires here (no DEFINE_WAKE_Q / wake_q_init / wake_q_add anywhere).
+ * One CPU, one run queue, round robin. Runnable tasks wait in FIFO order on
+ * runqueue.queue; the task on the CPU is not queued. The idle task runs when
+ * the queue is empty and is never queued itself. The tick ends a task's slice
+ * after RR_TIMESLICE ticks when another task is waiting; the switch happens
+ * at the next schedule() point (return to user mode, cond_resched()).
+ *
+ * Nothing in this kernel puts a task to sleep (there are no wait queues and
+ * no code sets a sleeping task state), so a task only leaves the CPU when it
+ * is preempted, and then goes straight back to the tail of the queue.
  */
+#define RR_TIMESLICE (100 * HZ / 1000)
 
-void resched_curr(struct rq *rq)
+static struct {
+	raw_spinlock_t lock;
+	struct list_head queue;
+	struct task_struct *curr, *idle;
+	struct mm_struct *prev_mm;
+} runqueue = {
+	.lock = __RAW_SPIN_LOCK_UNLOCKED(runqueue.lock),
+	.queue = LIST_HEAD_INIT(runqueue.queue),
+};
+
+static void resched_curr(void)
 {
-	struct task_struct *curr = rq->curr;
-
-	lockdep_assert_rq_held(rq);
+	struct task_struct *curr = runqueue.curr;
 
 	if (test_tsk_need_resched(curr))
 		return;
@@ -90,205 +49,58 @@ void resched_curr(struct rq *rq)
 
 void resched_cpu(int cpu)
 {
-	/*
-	 * RUNTIME-DEAD ANCHOR-STUB: the sole call site is call_rcu()'s
-	 * `if (unlikely(is_idle_task(current))) resched_cpu(0)` (rcu/tiny.c).
-	 * On this 1-shot boot call_rcu is never invoked from the idle task, so
-	 * this branch is never taken (HIT=False, verified by exec-trace). The
-	 * live reschedule path (resched_curr) stays reachable via fair.c/core.c.
-	 */
-}
+	unsigned long flags;
 
-static void set_load_weight(struct task_struct *p, bool update_load)
-{
-	int prio = p->static_prio - MAX_RT_PRIO;
-	struct load_weight *load = &p->se.load;
-
-	if (task_has_idle_policy(p)) {
-		load->weight = scale_load(WEIGHT_IDLEPRIO);
-		load->inv_weight = WMULT_IDLEPRIO;
-		return;
-	}
-
-	if (update_load && p->sched_class == &fair_sched_class) {
-		reweight_task(p, prio);
-	} else {
-		load->weight = scale_load(sched_prio_to_weight[prio]);
-		load->inv_weight = sched_prio_to_wmult[prio];
-	}
-}
-
-static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
-{
-	if (!(flags & ENQUEUE_NOCLOCK))
-		update_rq_clock(rq);
-
-	p->sched_class->enqueue_task(rq, p, flags);
-}
-
-static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
-{
-	if (!(flags & DEQUEUE_NOCLOCK))
-		update_rq_clock(rq);
-
-	p->sched_class->dequeue_task(rq, p, flags);
-}
-
-void activate_task(struct rq *rq, struct task_struct *p, int flags)
-{
-	enqueue_task(rq, p, flags);
-
-	p->on_rq = TASK_ON_RQ_QUEUED;
-}
-
-void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
-{
-	if (p->sched_class == rq->curr->sched_class)
-		rq->curr->sched_class->check_preempt_curr(rq, p, flags);
-	else if (sched_class_above(p->sched_class, rq->curr->sched_class))
-		resched_curr(rq);
-
-	if (task_on_rq_queued(rq->curr) && test_tsk_need_resched(rq->curr))
-		rq_clock_skip_update(rq);
-}
-
-static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
-{
-	p->on_rq = 0;
-
-	p->se.on_rq = 0;
-	p->se.exec_start = 0;
-	p->se.sum_exec_runtime = 0;
-	p->se.prev_sum_exec_runtime = 0;
-	p->se.vruntime = 0;
+	raw_spin_lock_irqsave(&runqueue.lock, flags);
+	resched_curr();
+	raw_spin_unlock_irqrestore(&runqueue.lock, flags);
 }
 
 int sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
-	__sched_fork(clone_flags, p);
-
 	p->__state = TASK_NEW;
-
-	/*
-	 * sched_reset_on_fork is never set on this build (it has no setter
-	 * tree-wide -- only ever read here and cleared), so the reset block
-	 * was unreachable and has been removed.
-	 */
-
-	p->sched_class = &fair_sched_class;
-
-	init_task_preempt_count(p);
+	p->slice_ticks = 0;
 	return 0;
-}
-
-void sched_cgroup_fork(struct task_struct *p, struct kernel_clone_args *kargs)
-{
-	unsigned long flags;
-
-	raw_spin_lock_irqsave(&p->pi_lock, flags);
-
-	if (p->sched_class->task_fork)
-		p->sched_class->task_fork(p);
-	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 }
 
 void wake_up_new_task(struct task_struct *p)
 {
-	struct rq_flags rf;
-	struct rq *rq;
+	unsigned long flags;
 
-	raw_spin_lock_irqsave(&p->pi_lock, rf.flags);
+	raw_spin_lock_irqsave(&runqueue.lock, flags);
 	WRITE_ONCE(p->__state, TASK_RUNNING);
-	rq = __task_rq_lock(p, &rf);
-	update_rq_clock(rq);
-
-	activate_task(rq, p, ENQUEUE_NOCLOCK);
-
-	check_preempt_curr(rq, p, WF_FORK);
-	task_rq_unlock(rq, p, &rf);
+	list_add_tail(&p->run_list, &runqueue.queue);
+	if (runqueue.curr == runqueue.idle)
+		resched_curr();
+	raw_spin_unlock_irqrestore(&runqueue.lock, flags);
 }
 
-static inline void prepare_lock_switch(struct rq *rq, struct task_struct *next,
-				       struct rq_flags *rf)
+static void finish_task_switch(void) __releases(runqueue.lock)
 {
-	rq_unpin_lock(rq, rf);
-	spin_release(&__rq_lockp(rq)->dep_map, _THIS_IP_);
-}
-
-static inline void finish_lock_switch(struct rq *rq)
-{
-	spin_acquire(&__rq_lockp(rq)->dep_map, 0, 0, _THIS_IP_);
-	raw_spin_rq_unlock_irq(rq);
-}
-
-#ifndef prepare_arch_switch
-#define prepare_arch_switch(next) \
-	do {                      \
-	} while (0)
-#endif
-
-#ifndef finish_arch_post_lock_switch
-#define finish_arch_post_lock_switch() \
-	do {                           \
-	} while (0)
-#endif
-
-static inline void prepare_task_switch(struct rq *rq, struct task_struct *prev,
-				       struct task_struct *next)
-{
-	prepare_arch_switch(next);
-}
-
-static struct rq *finish_task_switch(struct task_struct *prev)
-	__releases(rq->lock)
-{
-	struct rq *rq = this_rq();
-	struct mm_struct *mm = rq->prev_mm;
-	unsigned int prev_state;
+	struct mm_struct *mm = runqueue.prev_mm;
 
 	if (WARN_ONCE(preempt_count() != 2 * PREEMPT_DISABLE_OFFSET,
 		      "corrupted preempt_count: %s/%d/0x%x\n", current->comm,
 		      current->pid, preempt_count()))
 		preempt_count_set(FORK_PREEMPT_COUNT);
 
-	rq->prev_mm = NULL;
+	runqueue.prev_mm = NULL;
+	raw_spin_unlock_irq(&runqueue.lock);
 
-	prev_state = READ_ONCE(prev->__state);
-
-	finish_lock_switch(rq);
-	finish_arch_post_lock_switch();
-
-	if (mm) {
+	if (mm)
 		mmdrop_sched(mm);
-	}
-	if (unlikely(prev_state == TASK_DEAD)) {
-		if (prev->sched_class->task_dead)
-			prev->sched_class->task_dead(prev);
-
-		put_task_stack(prev);
-
-		put_task_struct_rcu_user(prev);
-	}
-
-	return rq;
 }
 
 asmlinkage __visible void schedule_tail(struct task_struct *prev)
-	__releases(rq->lock)
+	__releases(runqueue.lock)
 {
-	finish_task_switch(prev);
+	finish_task_switch();
 	preempt_enable();
 }
 
-static __always_inline struct rq *context_switch(struct rq *rq,
-						 struct task_struct *prev,
-						 struct task_struct *next,
-						 struct rq_flags *rf)
+static __always_inline void context_switch(struct task_struct *prev,
+					   struct task_struct *next)
 {
-	prepare_task_switch(rq, prev, next);
-
-	arch_start_context_switch(prev);
-
 	if (!next->mm) {
 		enter_lazy_tlb(prev->active_mm, next);
 
@@ -301,165 +113,70 @@ static __always_inline struct rq *context_switch(struct rq *rq,
 		switch_mm_irqs_off(prev->active_mm, next->mm, next);
 
 		if (!prev->mm) {
-			rq->prev_mm = prev->active_mm;
+			runqueue.prev_mm = prev->active_mm;
 			prev->active_mm = NULL;
 		}
 	}
 
-	rq->clock_update_flags &= ~(RQCF_ACT_SKIP | RQCF_REQ_SKIP);
-
-	prepare_lock_switch(rq, next, rf);
-
 	switch_to(prev, next, prev);
 	barrier();
 
-	return finish_task_switch(prev);
+	finish_task_switch();
 }
 
 void scheduler_tick(void)
 {
-	int cpu = smp_processor_id();
-	struct rq *rq = cpu_rq(cpu);
-	struct task_struct *curr = rq->curr;
-	struct rq_flags rf;
-	unsigned long thermal_pressure;
+	struct task_struct *curr;
 
 	sched_clock_tick();
 
-	rq_lock(rq, &rf);
-
-	update_rq_clock(rq);
-	thermal_pressure = arch_scale_thermal_pressure(cpu_of(rq));
-	update_thermal_load_avg(rq_clock_thermal(rq), rq, thermal_pressure);
-	curr->sched_class->task_tick(rq, curr, 0);
-
-	rq_unlock(rq, &rf);
+	raw_spin_lock(&runqueue.lock);
+	curr = runqueue.curr;
+	if (curr != runqueue.idle && ++curr->slice_ticks >= RR_TIMESLICE &&
+	    !list_empty(&runqueue.queue))
+		resched_curr();
+	raw_spin_unlock(&runqueue.lock);
 }
 
-static inline void schedule_debug(struct task_struct *prev, bool preempt)
+static void __sched notrace __schedule(bool preempt)
 {
-	if (unlikely(in_atomic_preempt_off())) {
+	struct task_struct *prev = runqueue.curr, *next;
+
+	if (unlikely(in_atomic_preempt_off()))
 		preempt_count_set(PREEMPT_DISABLED);
-	}
-}
-
-static void put_prev_task_balance(struct rq *rq, struct task_struct *prev,
-				  struct rq_flags *rf)
-{
-	put_prev_task(rq, prev);
-}
-
-static inline struct task_struct *
-__pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
-{
-	const struct sched_class *class;
-	struct task_struct *p;
-
-	if (likely(!sched_class_above(prev->sched_class, &fair_sched_class) &&
-		   rq->nr_running == rq->cfs.h_nr_running)) {
-		p = pick_next_task_fair(rq, prev, rf);
-		if (unlikely(p == RETRY_TASK))
-			goto restart;
-
-		if (!p) {
-			put_prev_task(rq, prev);
-			p = pick_next_task_idle(rq);
-		}
-
-		return p;
-	}
-
-restart:
-	put_prev_task_balance(rq, prev, rf);
-
-	for_each_class(class)
-	{
-		p = class->pick_next_task(rq);
-		if (p)
-			return p;
-	}
-
-	BUG();
-}
-
-static struct task_struct *
-pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
-{
-	return __pick_next_task(rq, prev, rf);
-}
-
-#define SM_NONE 0x0
-#define SM_PREEMPT 0x1
-
-#define SM_MASK_PREEMPT (~0U)
-
-static void __sched notrace __schedule(unsigned int sched_mode)
-{
-	struct task_struct *prev, *next;
-	unsigned long prev_state;
-	struct rq_flags rf;
-	struct rq *rq;
-	int cpu;
-
-	cpu = smp_processor_id();
-	rq = cpu_rq(cpu);
-	prev = rq->curr;
-
-	schedule_debug(prev, !!sched_mode);
 
 	local_irq_disable();
-	rcu_note_context_switch(!!sched_mode);
+	rcu_note_context_switch(preempt);
 
-	rq_lock(rq, &rf);
-	smp_mb__after_spinlock();
+	raw_spin_lock(&runqueue.lock);
 
-	rq->clock_update_flags <<= 1;
-	update_rq_clock(rq);
-
-	prev_state = READ_ONCE(prev->__state);
-	if (!(sched_mode & SM_MASK_PREEMPT) && prev_state) {
-		/* folded sole caller of deactivate_task() */
-		prev->on_rq = 0; /* DEQUEUE_SLEEP set -> not MIGRATING */
-		dequeue_task(rq, prev, DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);
+	if (prev != runqueue.idle)
+		list_add_tail(&prev->run_list, &runqueue.queue);
+	if (list_empty(&runqueue.queue)) {
+		next = runqueue.idle;
+	} else {
+		next = list_first_entry(&runqueue.queue, struct task_struct,
+					run_list);
+		list_del(&next->run_list);
+		next->slice_ticks = 0;
 	}
-
-	next = pick_next_task(rq, prev, &rf);
 	clear_tsk_need_resched(prev);
 	clear_preempt_need_resched();
 
 	if (likely(prev != next)) {
-		RCU_INIT_POINTER(rq->curr, next);
-
-		rq = context_switch(rq, prev, next, &rf);
+		runqueue.curr = next;
+		context_switch(prev, next);
 	} else {
-		rq->clock_update_flags &= ~(RQCF_ACT_SKIP | RQCF_REQ_SKIP);
-
-		rq_unpin_lock(rq, &rf);
-		raw_spin_rq_unlock_irq(rq);
+		raw_spin_unlock_irq(&runqueue.lock);
 	}
-}
-
-static inline void sched_submit_work(struct task_struct *tsk)
-{
 }
 
 asmlinkage __visible void __sched schedule(void)
 {
-	struct task_struct *tsk = current;
-
-	sched_submit_work(tsk);
 	do {
 		preempt_disable();
-		__schedule(SM_NONE);
+		__schedule(false);
 		sched_preempt_enable_no_resched();
-	} while (need_resched());
-}
-
-void __sched schedule_idle(void)
-{
-	WARN_ON_ONCE(current->__state);
-	do {
-		__schedule(SM_NONE);
 	} while (need_resched());
 }
 
@@ -474,7 +191,7 @@ static void __sched notrace preempt_schedule_common(void)
 {
 	do {
 		preempt_disable_notrace();
-		__schedule(SM_PREEMPT);
+		__schedule(true);
 		preempt_enable_no_resched_notrace();
 
 	} while (need_resched());
@@ -491,75 +208,31 @@ int __sched __cond_resched(void)
 	return 0;
 }
 
-void __init init_idle(struct task_struct *idle, int cpu)
+/* The idle task: halt until an interrupt makes another task runnable. */
+void __noreturn cpu_startup_entry(enum cpuhp_state state)
 {
-	struct rq *rq = cpu_rq(cpu);
-	unsigned long flags;
-
-	__sched_fork(0, idle);
-
-	raw_spin_lock_irqsave(&idle->pi_lock, flags);
-	raw_spin_rq_lock(rq);
-
-	idle->__state = TASK_RUNNING;
-	idle->se.exec_start = sched_clock();
-
-	idle->flags |= PF_IDLE | PF_KTHREAD | PF_NO_SETAFFINITY;
-
-	rq->idle = idle;
-	rcu_assign_pointer(rq->curr, idle);
-	idle->on_rq = TASK_ON_RQ_QUEUED;
-	raw_spin_rq_unlock(rq);
-	raw_spin_unlock_irqrestore(&idle->pi_lock, flags);
-
-	init_idle_preempt_count(idle, cpu);
-
-	idle->sched_class = &idle_sched_class;
-}
-
-void __init sched_init_smp(void)
-{
-	sched_init_granularity();
+	for (;;) {
+		while (!need_resched()) {
+			local_irq_disable();
+			if (need_resched())
+				local_irq_enable();
+			else
+				arch_cpu_idle(); /* sti; hlt */
+		}
+		__schedule(false);
+	}
 }
 
 void __init sched_init(void)
 {
-	int i;
-
-	BUG_ON(&idle_sched_class != &fair_sched_class + 1);
-
-	for_each_possible_cpu(i) {
-		struct rq *rq;
-
-		rq = cpu_rq(i);
-		raw_spin_lock_init(&rq->__lock);
-		rq->nr_running = 0;
-		init_cfs_rq(&rq->cfs);
-	}
-
-	set_load_weight(&init_task, false);
+	struct task_struct *idle = current;
 
 	mmgrab(&init_mm);
-	enter_lazy_tlb(&init_mm, current);
+	enter_lazy_tlb(&init_mm, idle);
 
-	init_idle(current, smp_processor_id());
-
-	init_sched_fair_class();
+	idle->__state = TASK_RUNNING;
+	idle->flags |= PF_IDLE | PF_KTHREAD | PF_NO_SETAFFINITY;
+	runqueue.idle = idle;
+	runqueue.curr = idle;
+	init_idle_preempt_count(idle, smp_processor_id());
 }
-
-const int sched_prio_to_weight[40] = {
-	88761, 71755, 56483, 46273, 36291, 29154, 23254, 18705, 14949, 11916,
-	9548,  7620,  6100,  4904,  3906,  3121,  2501,	 1991,	1586,  1277,
-	1024,  820,   655,   526,   423,   335,	  272,	 215,	172,   137,
-	110,   87,    70,    56,    45,	   36,	  29,	 23,	18,    15,
-};
-
-const u32 sched_prio_to_wmult[40] = {
-	48388,	   59856,     76040,	 92818,	    118348,   147320,
-	184698,	   229616,    287308,	 360437,    449829,   563644,
-	704093,	   875809,    1099582,	 1376151,   1717300,  2157191,
-	2708050,   3363326,   4194304,	 5237765,   6557202,  8165337,
-	10153587,  12820798,  15790321,	 19976592,  24970740, 31350126,
-	39045157,  49367440,  61356676,	 76695844,  95443717, 119304647,
-	148102320, 186737708, 238609294, 286331153,
-};

@@ -21,7 +21,6 @@
 /* --- 2025-12-08 00:37 --- padata.h stubbed out */
 #include <linux/device/driver.h>
 extern void sched_init(void);
-extern void sched_init_smp(void);
 #include <linux/file.h>
 
 #include <linux/sched/clock.h>
@@ -388,8 +387,6 @@ static noinline void __init kernel_init_freeable(void)
 	workqueue_init();
 
 	do_pre_smp_initcalls();
-
-	sched_init_smp();
 
 	page_alloc_init_late();
 

@@ -1,3 +1,9 @@
+#include <linux/sched.h>
+#include <linux/sched/clock.h>
+#include <linux/jump_label.h>
+#include <linux/ktime.h>
+#include <linux/timekeeping.h>
+#include <linux/lockdep.h>
 
 notrace unsigned long long __weak sched_clock(void)
 {

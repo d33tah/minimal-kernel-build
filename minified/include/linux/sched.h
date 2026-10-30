@@ -8,9 +8,6 @@
 #define CLONE_FS 0x00000200
 #define CLONE_FILES 0x00000400
 #define CLONE_UNTRACED 0x00800000
-#define SCHED_NORMAL 0
-/* SCHED_FIFO(1), SCHED_RR(2), SCHED_BATCH(3), SCHED_DEADLINE(6) removed - 0-caller policy constants */
-#define SCHED_IDLE 5
 /* End uapi/linux/sched.h */
 
 #include <asm/current.h>
@@ -20,13 +17,6 @@
 #include <linux/hrtimer.h>
 #include <linux/nodemask.h>
 #include <linux/resource.h>
-#define MAX_NICE 19
-#define MIN_NICE -20
-#define NICE_WIDTH (MAX_NICE - MIN_NICE + 1)
-#define MAX_RT_PRIO 100
-#define MAX_PRIO (MAX_RT_PRIO + NICE_WIDTH)
-/* end sched/prio.h */
-#include <linux/sched/types.h>
 #include <linux/signal_types.h>
 #include <linux/mm_types_task.h>
 #include <linux/posix-timers.h>
@@ -36,46 +26,15 @@ struct fs_struct;
 struct nameidata;
 struct nsproxy;
 struct pid_namespace;
-struct sched_param;
 struct sighand_struct;
 struct signal_struct;
 
 #define TASK_RUNNING 0x0000
-#define TASK_INTERRUPTIBLE 0x0001
-#define TASK_UNINTERRUPTIBLE 0x0002
 #define TASK_DEAD 0x0080
-#define TASK_WAKEKILL 0x0100
 #define TASK_NEW 0x0800
 
-#define TASK_KILLABLE (TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)
-
-#define debug_normal_state_change(cond) \
-	do {                            \
-	} while (0)
-#define debug_special_state_change(cond) \
-	do {                             \
-	} while (0)
-
-#define __set_current_state(state_value)                     \
-	do {                                                 \
-		debug_normal_state_change((state_value));    \
-		WRITE_ONCE(current->__state, (state_value)); \
-	} while (0)
-
-#define set_current_state(state_value)                         \
-	do {                                                   \
-		debug_normal_state_change((state_value));      \
-		smp_store_mb(current->__state, (state_value)); \
-	} while (0)
-
-#define set_special_state(state_value)                                \
-	do {                                                          \
-		unsigned long flags;                                  \
-		raw_spin_lock_irqsave(&current->pi_lock, flags);      \
-		debug_special_state_change((state_value));            \
-		WRITE_ONCE(current->__state, (state_value));          \
-		raw_spin_unlock_irqrestore(&current->pi_lock, flags); \
-	} while (0)
+#define __set_current_state(state_value) \
+	WRITE_ONCE(current->__state, (state_value))
 
 enum {
 	TASK_COMM_LEN = 16,
@@ -88,43 +47,20 @@ extern void scheduler_tick(void);
 asmlinkage void schedule(void);
 extern void schedule_preempt_disabled(void);
 
-#define SCHED_FIXEDPOINT_SHIFT 10
-/* SCHED_CAPACITY_SHIFT/SCHED_CAPACITY_SCALE removed - 0-caller (FIXEDPOINT_SHIFT stays live via NICE_0_LOAD_SHIFT) */
-
-struct load_weight {
-	unsigned long weight;
-	u32 inv_weight;
-};
-
-struct sched_entity {
-	struct load_weight load;
-	struct rb_node run_node;
-	unsigned int on_rq;
-	u64 exec_start, sum_exec_runtime, vruntime, prev_sum_exec_runtime;
-};
-
-struct wake_q_node {
-	struct wake_q_node *next;
-};
-
 struct task_struct {
 	struct thread_info thread_info;
 	unsigned int __state;
 	randomized_struct_fields_start void *stack;
 	refcount_t usage;
 	unsigned int flags;
-	int on_rq;
-	int static_prio;
-	struct sched_entity se;
-	const struct sched_class *sched_class;
-	unsigned int policy;
+	struct list_head run_list;
+	unsigned int slice_ticks;
 	const cpumask_t *cpus_ptr;
 	cpumask_t cpus_mask;
 	struct list_head tasks;
 	struct mm_struct *mm, *active_mm;
 	int exit_signal;
 	unsigned int personality;
-	unsigned in_iowait : 1;
 	pid_t pid;
 	pid_t tgid;
 	struct task_struct __rcu *real_parent;
@@ -143,7 +79,6 @@ struct task_struct {
 	struct sighand_struct __rcu *sighand;
 	spinlock_t alloc_lock;
 	raw_spinlock_t pi_lock;
-	struct wake_q_node wake_q;
 	union {
 		refcount_t rcu_users;
 		struct rcu_head rcu;

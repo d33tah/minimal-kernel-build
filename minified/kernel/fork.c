@@ -94,9 +94,8 @@ void put_task_stack(struct task_struct *tsk)
 {
 	/*
 	 * RUNTIME-DEAD ANCHOR-STUB: drops the last kernel-stack ref to free it.
-	 * Both call sites are runtime-dead on this 1-shot boot: finish_task_switch's
-	 * prev_state==TASK_DEAD branch (init panics, never dies, HIT=False) and
-	 * copy_process's bad_fork rollback (copy_process always succeeds, HIT=False).
+	 * The only call site is copy_process's bad_fork rollback (copy_process
+	 * always succeeds, HIT=False); no task ever exits (init's exit panics).
 	 */
 }
 
@@ -199,7 +198,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	refcount_set(&tsk->rcu_users, 2);
 
 	refcount_set(&tsk->usage, 1);
-	tsk->wake_q.next = NULL;
 
 	return tsk;
 
@@ -513,8 +511,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	p->tgid = p->pid;
 
 	INIT_LIST_HEAD(&p->thread_group);
-
-	sched_cgroup_fork(p, args);
 
 	write_lock_irq(&tasklist_lock);
 

@@ -7,19 +7,6 @@
 #include <linux/syscalls.h>
 #include <linux/fs_struct.h>
 
-static void delayed_put_task_struct(struct rcu_head *rhp)
-{
-	struct task_struct *tsk = container_of(rhp, struct task_struct, rcu);
-
-	put_task_struct(tsk);
-}
-
-void put_task_struct_rcu_user(struct task_struct *task)
-{
-	if (refcount_dec_and_test(&task->rcu_users))
-		call_rcu(&task->rcu, delayed_put_task_struct);
-}
-
 void __noreturn do_exit(long code)
 {
 	current->flags |= PF_EXITING;

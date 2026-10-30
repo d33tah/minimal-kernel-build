@@ -4,11 +4,6 @@
 #include <linux/init.h>
 #include <linux/mm.h>
 
-/* Inlined from asm/dma.h */
-#ifndef MAX_DMA_ADDRESS
-#define MAX_DMA_ADDRESS (PAGE_OFFSET + 0x1000000)
-#endif
-
 extern unsigned long max_low_pfn;
 
 extern unsigned long max_pfn;
@@ -127,13 +122,6 @@ void *memblock_alloc_try_nid(phys_addr_t size, phys_addr_t align,
 static __always_inline void *memblock_alloc(phys_addr_t size, phys_addr_t align)
 {
 	return memblock_alloc_try_nid(size, align, MEMBLOCK_LOW_LIMIT,
-				      MEMBLOCK_ALLOC_ACCESSIBLE, NUMA_NO_NODE);
-}
-
-static inline void *memblock_alloc_from(phys_addr_t size, phys_addr_t align,
-					phys_addr_t min_addr)
-{
-	return memblock_alloc_try_nid(size, align, min_addr,
 				      MEMBLOCK_ALLOC_ACCESSIBLE, NUMA_NO_NODE);
 }
 

@@ -39,9 +39,3 @@ int __sched mutex_lock_interruptible(struct mutex *lock)
 	mutex_lock(lock);
 	return 0;
 }
-
-int __sched mutex_lock_killable(struct mutex *lock)
-{
-	mutex_lock(lock);
-	return 0;
-}

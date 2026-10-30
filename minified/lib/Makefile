@@ -25,7 +25,7 @@ lib-y	+= kobject.o
 obj-y	+= lockref.o
 
 obj-y += sort.o debug_locks.o \
-	 bust_spinlocks.o kasprintf.o bitmap.o \
+	 bust_spinlocks.o kasprintf.o \
 	 iov_iter.o \
 	 find_bit.o
 	 # parser.o removed - not used

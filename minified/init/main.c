@@ -177,7 +177,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	pr_notice("%s", linux_banner);
 	setup_arch(&command_line);
 	setup_command_line(command_line);
-	setup_per_cpu_areas();
 	smp_prepare_boot_cpu();
 
 	build_all_zonelists(NULL);

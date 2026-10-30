@@ -101,58 +101,6 @@ static gfp_t __get_fault_gfp_mask(struct vm_area_struct *vma)
 	return GFP_KERNEL;
 }
 
-static vm_fault_t do_page_mkwrite(struct vm_fault *vmf)
-{
-	vm_fault_t ret;
-	struct page *page = vmf->page;
-	unsigned int old_flags = vmf->flags;
-
-	vmf->flags = FAULT_FLAG_WRITE;
-
-	ret = vmf->vma->vm_ops->page_mkwrite(vmf);
-
-	vmf->flags = old_flags;
-	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
-		return ret;
-	if (unlikely(!(ret & VM_FAULT_LOCKED))) {
-		lock_page(page);
-		if (!page->mapping) {
-			unlock_page(page);
-			return 0;
-		}
-		ret |= VM_FAULT_LOCKED;
-	} else
-		VM_BUG_ON_PAGE(!PageLocked(page), page);
-	return ret;
-}
-
-static vm_fault_t fault_dirty_shared_page(struct vm_fault *vmf)
-{
-	struct vm_area_struct *vma = vmf->vma;
-	struct address_space *mapping;
-	struct page *page = vmf->page;
-	bool dirtied;
-	bool page_mkwrite = vma->vm_ops && vma->vm_ops->page_mkwrite;
-
-	dirtied = set_page_dirty(page);
-	VM_BUG_ON_PAGE(PageAnon(page), page);
-
-	mapping = page_rmapping(page);
-	unlock_page(page);
-
-	if ((dirtied || page_mkwrite) && mapping) {
-		struct file *fpin;
-
-		fpin = maybe_unlock_mmap_for_io(vmf, NULL);
-		if (fpin) {
-			fput(fpin);
-			return VM_FAULT_RETRY;
-		}
-	}
-
-	return 0;
-}
-
 static inline void wp_page_reuse(struct vm_fault *vmf) __releases(vmf->ptl)
 {
 	struct vm_area_struct *vma = vmf->vma;
@@ -201,9 +149,6 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 	struct vm_area_struct *vma = vmf->vma;
 	struct page *page;
 	pte_t entry;
-
-	if (vma->vm_flags & VM_SHARED)
-		return VM_FAULT_SIGBUS;
 
 	if (pte_alloc(vma->vm_mm, vmf->pmd))
 		return VM_FAULT_OOM;
@@ -271,7 +216,7 @@ void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr)
 	if (write)
 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
 
-	if (write && !(vma->vm_flags & VM_SHARED)) {
+	if (write) {
 		inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
 		page_add_new_anon_rmap(page, vma, addr);
 	} else {
@@ -293,16 +238,14 @@ vm_fault_t finish_fault(struct vm_fault *vmf)
 	struct page *page;
 	vm_fault_t ret;
 
-	if ((vmf->flags & FAULT_FLAG_WRITE) && !(vma->vm_flags & VM_SHARED))
+	if (vmf->flags & FAULT_FLAG_WRITE)
 		page = vmf->cow_page;
 	else
 		page = vmf->page;
 
-	if (!(vma->vm_flags & VM_SHARED)) {
-		ret = check_stable_address_space(vma->vm_mm);
-		if (ret)
-			return ret;
-	}
+	ret = check_stable_address_space(vma->vm_mm);
+	if (ret)
+		return ret;
 
 	if (pmd_none(*vmf->pmd)) {
 		if (vmf->prealloc_pte)
@@ -369,37 +312,6 @@ uncharge_out:
 	return ret;
 }
 
-static vm_fault_t do_shared_fault(struct vm_fault *vmf)
-{
-	struct vm_area_struct *vma = vmf->vma;
-	vm_fault_t ret, tmp;
-
-	ret = __do_fault(vmf);
-	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
-		return ret;
-
-	if (vma->vm_ops->page_mkwrite) {
-		unlock_page(vmf->page);
-		tmp = do_page_mkwrite(vmf);
-		if (unlikely(!tmp ||
-			     (tmp & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))) {
-			put_page(vmf->page);
-			return tmp;
-		}
-	}
-
-	ret |= finish_fault(vmf);
-	if (unlikely(ret &
-		     (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY))) {
-		unlock_page(vmf->page);
-		put_page(vmf->page);
-		return ret;
-	}
-
-	ret |= fault_dirty_shared_page(vmf);
-	return ret;
-}
-
 static vm_fault_t do_fault(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
@@ -423,10 +335,8 @@ static vm_fault_t do_fault(struct vm_fault *vmf)
 		}
 	} else if (!(vmf->flags & FAULT_FLAG_WRITE))
 		ret = do_read_fault(vmf);
-	else if (!(vma->vm_flags & VM_SHARED))
-		ret = do_cow_fault(vmf);
 	else
-		ret = do_shared_fault(vmf);
+		ret = do_cow_fault(vmf);
 
 	if (vmf->prealloc_pte) {
 		pte_free(vm_mm, vmf->prealloc_pte);

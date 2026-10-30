@@ -90,11 +90,6 @@ unsigned long vm_mmap(struct file *file, unsigned long addr, unsigned long len,
 	return vm_mmap_pgoff(file, addr, len, prot, flag, offset >> PAGE_SHIFT);
 }
 
-void *page_rmapping(struct page *page)
-{
-	return folio_raw_mapping(page_folio(page));
-}
-
 int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
 
 /*

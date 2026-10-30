@@ -204,12 +204,6 @@ extern pgprot_t protection_map[16];
 
 #define FAULT_FLAG_DEFAULT (FAULT_FLAG_ALLOW_RETRY)
 
-static inline bool fault_flag_allow_retry_first(enum fault_flag flags)
-{
-	return (flags & FAULT_FLAG_ALLOW_RETRY) &&
-	       (!(flags & FAULT_FLAG_TRIED));
-}
-
 struct vm_fault {
 	const struct {
 		struct vm_area_struct *vma;
@@ -232,7 +226,6 @@ struct vm_fault {
 
 struct vm_operations_struct {
 	vm_fault_t (*fault)(struct vm_fault *vmf);
-	vm_fault_t (*page_mkwrite)(struct vm_fault *vmf);
 };
 
 static inline void vma_init(struct vm_area_struct *vma, struct mm_struct *mm)
@@ -503,8 +496,6 @@ static inline void *folio_address(const struct folio *folio)
 	return page_address(&folio->page);
 }
 
-extern void *page_rmapping(struct page *page);
-
 static inline bool page_is_pfmemalloc(const struct page *page)
 {
 	return (uintptr_t)page->lru.next & BIT(1);
@@ -713,7 +704,6 @@ extern unsigned long __must_check vm_mmap(struct file *, unsigned long,
 extern unsigned long vm_unmapped_area(void);
 
 extern vm_fault_t filemap_fault(struct vm_fault *vmf);
-extern vm_fault_t filemap_page_mkwrite(struct vm_fault *vmf);
 
 extern unsigned long stack_guard_gap;
 

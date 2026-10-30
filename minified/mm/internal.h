@@ -32,13 +32,6 @@
 		unlikely(__ret_warn_once);                               \
 	})
 
-static inline void *folio_raw_mapping(struct folio *folio)
-{
-	unsigned long mapping = (unsigned long)folio->mapping;
-
-	return (void *)(mapping & ~PAGE_MAPPING_FLAGS);
-}
-
 /* acct_reclaim_writeback removed - reclaim throttling never engaged */
 
 void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte);
@@ -93,21 +86,6 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 /* populate_vma_page_range / faultin_vma_page_range removed - unused */
 
 /* maybe_pmd_mkwrite removed - unused */
-
-static inline struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf,
-						    struct file *fpin)
-{
-	int flags = vmf->flags;
-
-	if (fpin)
-		return fpin;
-
-	if (fault_flag_allow_retry_first(flags)) {
-		fpin = get_file(vmf->vma->vm_file);
-		mmap_read_unlock(vmf->vma->vm_mm);
-	}
-	return fpin;
-}
 
 extern unsigned long __must_check vm_mmap_pgoff(struct file *, unsigned long,
 						unsigned long, unsigned long,

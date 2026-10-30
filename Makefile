@@ -17,5 +17,8 @@ vm:
 fmt-check:
 	cd minified && git ls-files '*.c' '*.h' | xargs clang-format --dry-run -Werror
 
+provenance-test:
+	./syscall-uuid-test.sh
+
 test: fmt-check
 	cd minified && make mrproper && cd .. && make vm

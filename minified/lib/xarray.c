@@ -173,17 +173,39 @@ static void xas_update(struct xa_state *xas, struct xa_node *node)
 	XA_NODE_BUG_ON(node, !list_empty(&node->private_list));
 }
 
+/*
+ * A new node for xas_create/xas_expand: the one xas_nomem preallocated, else
+ * a non-sleeping allocation (the caller holds the xa_lock; on failure
+ * xas_nomem allocates with the caller's gfp and the store is retried).
+ */
 static void *xas_alloc(struct xa_state *xas, unsigned int shift)
 {
-	/*
-	 * Runtime-dead on this minimal target: the only callers (xas_create,
-	 * xas_expand) are reached only via xas_store's entry!=NULL branch,
-	 * which never allocates an xarray node during boot. Stubbed to shed
-	 * the node-allocation body; a bounded qemu -d exec trace confirmed
-	 * xas_alloc never executes.
-	 */
-	xas_set_err(xas, -ENOMEM);
-	return NULL;
+	struct xa_node *parent = xas->xa_node;
+	struct xa_node *node = xas->xa_alloc;
+
+	if (xas_invalid(xas))
+		return NULL;
+
+	if (node) {
+		xas->xa_alloc = NULL;
+	} else {
+		node = kmem_cache_alloc(radix_tree_node_cachep,
+					GFP_NOWAIT | __GFP_NOWARN);
+		if (!node) {
+			xas_set_err(xas, -ENOMEM);
+			return NULL;
+		}
+	}
+
+	if (parent) {
+		node->offset = xas->xa_offset;
+		parent->count++;
+	}
+	node->shift = shift;
+	node->count = 0;
+	RCU_INIT_POINTER(node->parent, xas->xa_node);
+	node->array = xas->xa;
+	return node;
 }
 
 static unsigned long xas_max(struct xa_state *xas)

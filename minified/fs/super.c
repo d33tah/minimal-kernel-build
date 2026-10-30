@@ -21,7 +21,6 @@ int get_tree_nodev(struct fs_context *fc,
 		return -ENOMEM;
 
 	s->s_user_ns = get_user_ns(fc->user_ns);
-	s->s_flags = fc->sb_flags;
 	INIT_HLIST_BL_HEAD(&s->s_roots);
 	s->s_maxbytes = MAX_NON_LFS;
 	s->s_time_gran = 1000000000;

@@ -122,27 +122,12 @@ static inline int do_inode_permission(struct user_namespace *mnt_userns,
 	return generic_permission(mnt_userns, inode, mask);
 }
 
-static int sb_permission(struct super_block *sb, struct inode *inode, int mask)
-{
-	if (unlikely(mask & MAY_WRITE)) {
-		umode_t mode = inode->i_mode;
-
-		if (sb_rdonly(sb) &&
-		    (S_ISREG(mode) || S_ISDIR(mode) || S_ISLNK(mode)))
-			return -EROFS;
-	}
-	return 0;
-}
-
 int inode_permission(struct user_namespace *mnt_userns, struct inode *inode,
 		     int mask)
 {
 	int retval;
 
-	retval = sb_permission(inode->i_sb, inode, mask);
-	if (retval)
-		return retval;
-
+	/* No superblock is ever read-only: there is no MAY_WRITE/-EROFS check. */
 	if (unlikely(mask & MAY_WRITE)) {
 		if (HAS_UNMAPPED_ID(mnt_userns, inode))
 			return -EACCES;
@@ -681,7 +666,6 @@ static const char *open_last_lookups(struct nameidata *nd, struct file *file,
 {
 	struct dentry *dir = nd->path.dentry;
 	int open_flag = op->open_flag;
-	bool got_write = false;
 	struct dentry *dentry;
 	const char *res;
 
@@ -702,9 +686,6 @@ static const char *open_last_lookups(struct nameidata *nd, struct file *file,
 			return ERR_PTR(-EISDIR);
 	}
 
-	if (open_flag & (O_CREAT | O_TRUNC | O_WRONLY | O_RDWR)) {
-		got_write = !mnt_want_write(nd->path.mnt);
-	}
 	if (open_flag & O_CREAT)
 		inode_lock(dir->d_inode);
 	else
@@ -714,9 +695,6 @@ static const char *open_last_lookups(struct nameidata *nd, struct file *file,
 		inode_unlock(dir->d_inode);
 	else
 		inode_unlock_shared(dir->d_inode);
-
-	if (got_write)
-		mnt_drop_write(nd->path.mnt);
 
 	if (IS_ERR(dentry))
 		return ERR_CAST(dentry);
@@ -815,7 +793,7 @@ static struct dentry *filename_create(struct filename *name, struct path *path,
 	struct qstr last;
 	bool want_dir = lookup_flags & LOOKUP_DIRECTORY;
 	unsigned int create_flags = LOOKUP_CREATE | LOOKUP_EXCL;
-	int type, err2, error;
+	int type, error;
 
 	error = filename_parentat(name, 0, path, &last, &type);
 	if (error)
@@ -823,8 +801,6 @@ static struct dentry *filename_create(struct filename *name, struct path *path,
 
 	if (unlikely(type != LAST_NORM))
 		goto out;
-
-	err2 = mnt_want_write(path->mnt);
 
 	if (last.name[last.len] && !want_dir)
 		create_flags = 0;
@@ -841,18 +817,12 @@ static struct dentry *filename_create(struct filename *name, struct path *path,
 		error = -ENOENT;
 		goto fail;
 	}
-	if (unlikely(err2)) {
-		error = err2;
-		goto fail;
-	}
 	return dentry;
 fail:
 	dput(dentry);
 	dentry = ERR_PTR(error);
 unlock:
 	inode_unlock(path->dentry->d_inode);
-	if (!err2)
-		mnt_drop_write(path->mnt);
 out:
 	path_put(path);
 	return dentry;
@@ -872,7 +842,6 @@ void done_path_create(struct path *path, struct dentry *dentry)
 {
 	dput(dentry);
 	inode_unlock(path->dentry->d_inode);
-	mnt_drop_write(path->mnt);
 	path_put(path);
 }
 

@@ -8,8 +8,7 @@
 #include "internal.h"
 
 /* No mount options are ever passed: there is no option parser. */
-struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
-					unsigned int sb_flags)
+struct fs_context *fs_context_for_mount(struct file_system_type *fs_type)
 {
 	struct fs_context *fc;
 	int ret;
@@ -18,7 +17,6 @@ struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
 	if (!fc)
 		return ERR_PTR(-ENOMEM);
 
-	fc->sb_flags = sb_flags;
 	fc->fs_type = fs_type;
 	fc->cred = get_current_cred();
 	fc->user_ns = get_user_ns(fc->cred->user_ns);

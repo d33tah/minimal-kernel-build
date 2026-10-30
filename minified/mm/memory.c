@@ -179,9 +179,6 @@ static vm_fault_t fault_dirty_shared_page(struct vm_fault *vmf)
 	mapping = page_rmapping(page);
 	unlock_page(page);
 
-	if (!page_mkwrite)
-		file_update_time(vma->vm_file);
-
 	if ((dirtied || page_mkwrite) && mapping) {
 		struct file *fpin;
 

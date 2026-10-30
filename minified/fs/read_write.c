@@ -102,9 +102,7 @@ ssize_t kernel_write(struct file *file, const void *buf, size_t count,
 {
 	ssize_t ret;
 
-	file_start_write(file);
 	ret = __kernel_write(file, buf, count, pos);
-	file_end_write(file);
 	return ret;
 }
 
@@ -122,14 +120,12 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count,
 
 	if (count > MAX_RW_COUNT)
 		count = MAX_RW_COUNT;
-	file_start_write(file);
 	/*
 	 * No file_operations on this build sets the non-iter ->write op (ramfs
 	 * and tty both expose only ->write_iter), so the dispatch always goes
 	 * through new_sync_write().
 	 */
 	ret = new_sync_write(file, buf, count, pos);
-	file_end_write(file);
 	return ret;
 }
 

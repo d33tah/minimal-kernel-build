@@ -50,7 +50,6 @@ struct file *alloc_empty_file(int flags, const struct cred *cred)
 static void __fput(struct file *file)
 {
 	struct dentry *dentry = file->f_path.dentry;
-	struct vfsmount *mnt = file->f_path.mnt;
 	struct inode *inode = file->f_inode;
 	fmode_t mode = file->f_mode;
 
@@ -68,10 +67,8 @@ static void __fput(struct file *file)
 	fops_put(file->f_op);
 	if ((mode & (FMODE_READ | FMODE_WRITE)) == FMODE_READ)
 		i_readcount_dec(inode);
-	if (mode & FMODE_WRITER) {
+	if (mode & FMODE_WRITER)
 		put_write_access(inode);
-		__mnt_drop_write(mnt);
-	}
 	dput(dentry);
 out:
 	file_free(file);

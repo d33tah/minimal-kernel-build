@@ -27,10 +27,4 @@ static inline struct user_namespace *mnt_user_ns(const struct vfsmount *mnt)
 	return smp_load_acquire(&mnt->mnt_userns);
 }
 
-extern int mnt_want_write(struct vfsmount *mnt);
-extern void mnt_drop_write(struct vfsmount *mnt);
-
-extern int __mnt_want_write(struct vfsmount *);
-extern void __mnt_drop_write(struct vfsmount *);
-
 #endif

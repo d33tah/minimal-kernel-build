@@ -24,11 +24,6 @@ static int do_dentry_open(struct file *f, struct inode *inode,
 		error = get_write_access(inode);
 		if (unlikely(error))
 			goto cleanup_file;
-		error = __mnt_want_write(f->f_path.mnt);
-		if (unlikely(error)) {
-			put_write_access(inode);
-			goto cleanup_file;
-		}
 		f->f_mode |= FMODE_WRITER;
 	}
 
@@ -69,10 +64,8 @@ cleanup_all:
 	if (WARN_ON_ONCE(error > 0))
 		error = -EINVAL;
 	fops_put(f->f_op);
-	if (f->f_mode & FMODE_WRITER) {
+	if (f->f_mode & FMODE_WRITER)
 		put_write_access(inode);
-		__mnt_drop_write(f->f_path.mnt);
-	}
 cleanup_file:
 	path_put(&f->f_path);
 	f->f_path.mnt = NULL;

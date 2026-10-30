@@ -524,8 +524,6 @@ put_folios:
 		folio_batch_init(&fbatch);
 	} while (iov_iter_count(iter) && iocb->ki_pos < isize && !error);
 
-	file_accessed(filp);
-
 	return already_read ? already_read : error;
 }
 
@@ -584,7 +582,6 @@ int generic_file_mmap(struct file *file, struct vm_area_struct *vma)
 
 	if (!mapping->a_ops->read_folio)
 		return -ENOEXEC;
-	file_accessed(file);
 	vma->vm_ops = &generic_file_vm_ops;
 	return 0;
 }
@@ -610,23 +607,12 @@ ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
 
 ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 {
-	struct file *file = iocb->ki_filp;
-	ssize_t written = 0;
-	ssize_t err;
+	/* No set-id bits to strip and no timestamp updates on this build. */
+	ssize_t written = generic_perform_write(iocb, from);
 
-	err = file_remove_privs(file);
-	if (err)
-		goto out;
-
-	err = file_update_time(file);
-	if (err)
-		goto out;
-
-	written = generic_perform_write(iocb, from);
 	if (likely(written > 0))
 		iocb->ki_pos += written;
-out:
-	return written ? written : err;
+	return written;
 }
 
 ssize_t generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)

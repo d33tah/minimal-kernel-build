@@ -283,18 +283,10 @@ static inline struct inode *file_inode(const struct file *f)
 	return f->f_inode;
 }
 
-#define SB_RDONLY 1
-#define SB_NOATIME 1024
-
-enum {
-	SB_FREEZE_WRITE = 1,
-};
-
 struct super_block {
 	unsigned char s_blocksize_bits;
 	loff_t s_maxbytes;
 	struct file_system_type *s_type;
-	unsigned long s_flags;
 	struct dentry *s_root;
 	struct hlist_bl_head s_roots;
 	u32 s_time_gran;
@@ -363,24 +355,6 @@ static inline bool fsuidgid_has_mapping(struct super_block *sb,
 
 extern struct timespec64 current_time(struct inode *inode);
 
-static inline void __sb_end_write(struct super_block *sb, int level)
-{
-}
-
-static inline void __sb_start_write(struct super_block *sb, int level)
-{
-}
-
-static inline void sb_end_write(struct super_block *sb)
-{
-	__sb_end_write(sb, SB_FREEZE_WRITE);
-}
-
-static inline void sb_start_write(struct super_block *sb)
-{
-	__sb_start_write(sb, SB_FREEZE_WRITE);
-}
-
 int vfs_mkdir(struct user_namespace *, struct inode *, struct dentry *,
 	      umode_t);
 int vfs_mknod(struct user_namespace *, struct inode *, struct dentry *, umode_t,
@@ -441,13 +415,6 @@ extern ssize_t vfs_write(struct file *, const char __user *, size_t, loff_t *);
  * any inode (S_NOSEC depended on SB_NOSEC which is never set), so the whole
  * i_flags field + all IS_NOSEC/IS_DAX/etc tests were statically dead. */
 
-#define __IS_FLG(inode, flg) ((inode)->i_sb->s_flags & (flg))
-
-static inline bool sb_rdonly(const struct super_block *sb)
-{
-	return sb->s_flags & SB_RDONLY;
-}
-#define IS_NOATIME(inode) __IS_FLG(inode, SB_RDONLY | SB_NOATIME)
 /* IS_APPEND, IS_IMMUTABLE, IS_DEADDIR, IS_NOCMTIME, IS_SWAPFILE,
  * IS_AUTOMOUNT, IS_NOSEC, IS_DAX removed - underlying S_* flags never set */
 
@@ -468,27 +435,7 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 	};
 }
 
-static inline void mark_inode_dirty(struct inode *inode)
-{
-}
-
 extern void inc_nlink(struct inode *inode);
-
-enum file_time_flags {
-	S_ATIME = 1,
-	S_MTIME = 2,
-	S_CTIME = 4,
-};
-
-extern bool atime_needs_update(const struct path *, struct inode *);
-extern void touch_atime(const struct path *);
-int inode_update_time(struct inode *inode, struct timespec64 *time, int flags);
-
-static inline void file_accessed(struct file *file)
-{
-	if (!(file->f_flags & O_NOATIME))
-		touch_atime(&file->f_path);
-}
 
 struct file_system_type {
 	const char *name;
@@ -567,20 +514,6 @@ static inline ssize_t generic_write_sync(struct kiocb *iocb, ssize_t count)
 int inode_permission(struct user_namespace *, struct inode *, int);
 int generic_permission(struct user_namespace *, struct inode *, int);
 
-static inline void file_start_write(struct file *file)
-{
-	if (!S_ISREG(file_inode(file)->i_mode))
-		return;
-	sb_start_write(file_inode(file)->i_sb);
-}
-
-static inline void file_end_write(struct file *file)
-{
-	if (!S_ISREG(file_inode(file)->i_mode))
-		return;
-	__sb_end_write(file_inode(file)->i_sb, SB_FREEZE_WRITE);
-}
-
 static inline int get_write_access(struct inode *inode)
 {
 	return atomic_inc_unless_negative(&inode->i_writecount) ? 0 : -ETXTBSY;
@@ -616,7 +549,6 @@ extern int inode_init_always(struct super_block *, struct inode *);
 extern unsigned int get_next_ino(void);
 extern struct inode *new_inode_pseudo(struct super_block *sb);
 extern struct inode *new_inode(struct super_block *sb);
-extern int file_remove_privs(struct file *);
 
 extern int generic_file_mmap(struct file *, struct vm_area_struct *);
 extern ssize_t generic_write_checks(struct kiocb *, struct iov_iter *);
@@ -642,8 +574,6 @@ extern const struct address_space_operations ram_aops;
 
 extern struct dentry *simple_lookup(struct inode *, struct dentry *,
 				    unsigned int flags);
-
-extern int file_update_time(struct file *file);
 
 static inline int iocb_flags(struct file *file)
 {

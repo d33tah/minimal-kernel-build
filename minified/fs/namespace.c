@@ -20,77 +20,13 @@ static struct vfsmount *alloc_vfsmnt(void)
 	return mnt;
 }
 
-static bool __mnt_is_readonly(struct vfsmount *mnt)
-{
-	return sb_rdonly(mnt->mnt_sb);
-}
-
-static int mnt_is_readonly(struct vfsmount *mnt)
-{
-	smp_rmb();
-	return __mnt_is_readonly(mnt);
-}
-
-int __mnt_want_write(struct vfsmount *m)
-{
-	int ret = 0;
-
-	preempt_disable();
-
-	smp_rmb();
-	if (mnt_is_readonly(m))
-		ret = -EROFS;
-	preempt_enable();
-
-	return ret;
-}
-
-int mnt_want_write(struct vfsmount *m)
-{
-	int ret;
-
-	sb_start_write(m->mnt_sb);
-	ret = __mnt_want_write(m);
-	if (ret)
-		sb_end_write(m->mnt_sb);
-	return ret;
-}
-
-int __mnt_want_write_file(struct file *file)
-{
-	if (file->f_mode & FMODE_WRITER) {
-		if (__mnt_is_readonly(file->f_path.mnt))
-			return -EROFS;
-		return 0;
-	}
-	return __mnt_want_write(file->f_path.mnt);
-}
-
-void __mnt_drop_write(struct vfsmount *mnt)
-{
-	preempt_disable();
-	preempt_enable();
-}
-
-void mnt_drop_write(struct vfsmount *mnt)
-{
-	__mnt_drop_write(mnt);
-	sb_end_write(mnt->mnt_sb);
-}
-
-void __mnt_drop_write_file(struct file *file)
-{
-	if (!(file->f_mode & FMODE_WRITER))
-		__mnt_drop_write(file->f_path.mnt);
-}
-
 static struct vfsmount *vfs_kern_mount(struct file_system_type *type)
 {
 	struct fs_context *fc;
 	struct vfsmount *mnt;
 	int err;
 
-	fc = fs_context_for_mount(type, 0);
+	fc = fs_context_for_mount(type);
 	if (IS_ERR(fc))
 		return ERR_CAST(fc);
 

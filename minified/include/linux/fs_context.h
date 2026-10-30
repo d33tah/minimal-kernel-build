@@ -16,15 +16,14 @@ struct fs_context {
 	struct dentry *root;
 	struct user_namespace *user_ns;
 	const struct cred *cred;
-	unsigned int sb_flags;
 };
 
 struct fs_context_operations {
 	int (*get_tree)(struct fs_context *fc);
 };
 
-extern struct fs_context *fs_context_for_mount(struct file_system_type *fs_type,
-					       unsigned int sb_flags);
+extern struct fs_context *
+fs_context_for_mount(struct file_system_type *fs_type);
 extern void put_fs_context(struct fs_context *fc);
 
 extern int get_tree_nodev(struct fs_context *fc,

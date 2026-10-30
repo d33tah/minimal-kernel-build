@@ -49,8 +49,6 @@ extern unsigned int sysctl_nr_open;
 #define MAY_APPEND 0x00000008
 #define MAY_OPEN 0x00000020
 
-#define MAY_NOT_BLOCK 0x00000080
-
 #define FMODE_READ ((__force fmode_t)0x1)
 
 #define FMODE_WRITE ((__force fmode_t)0x2)

@@ -12,18 +12,6 @@
 
 static struct kmem_cache *mnt_cache __read_mostly;
 
-__cacheline_aligned_in_smp DEFINE_SEQLOCK(mount_lock);
-
-static inline void lock_mount_hash(void)
-{
-	write_seqlock(&mount_lock);
-}
-
-static inline void unlock_mount_hash(void)
-{
-	write_sequnlock(&mount_lock);
-}
-
 static struct mount *alloc_vfsmnt(const char *name)
 {
 	struct mount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
@@ -48,9 +36,6 @@ int __mnt_want_write(struct vfsmount *m)
 	int ret = 0;
 
 	preempt_disable();
-
-	smp_mb();
-	might_lock(&mount_lock.lock);
 
 	smp_rmb();
 	if (mnt_is_readonly(m))
@@ -97,35 +82,6 @@ void __mnt_drop_write_file(struct file *file)
 {
 	if (!(file->f_mode & FMODE_WRITER))
 		__mnt_drop_write(file->f_path.mnt);
-}
-
-int __legitimize_mnt(struct vfsmount *bastard, unsigned seq)
-{
-	if (read_seqretry(&mount_lock, seq))
-		return 1;
-	if (bastard == NULL)
-		return 0;
-	smp_mb();
-	if (likely(!read_seqretry(&mount_lock, seq)))
-		return 0;
-	/* MNT_SYNC_UMOUNT / MNT_DOOMED never set -> both branches always false. */
-	lock_mount_hash();
-	unlock_mount_hash();
-
-	return -1;
-}
-
-bool legitimize_mnt(struct vfsmount *bastard, unsigned seq)
-{
-	int res = __legitimize_mnt(bastard, seq);
-	if (likely(!res))
-		return true;
-	if (unlikely(res < 0)) {
-		rcu_read_unlock();
-		mntput(bastard);
-		rcu_read_lock();
-	}
-	return false;
 }
 
 static inline int check_mnt(struct mount *mnt)

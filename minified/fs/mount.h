@@ -20,12 +20,7 @@ static inline struct mount *real_mount(struct vfsmount *mnt)
 	return container_of(mnt, struct mount, mnt);
 }
 
-extern int __legitimize_mnt(struct vfsmount *, unsigned);
-extern bool legitimize_mnt(struct vfsmount *, unsigned);
-
 static inline void get_mnt_ns(struct mnt_namespace *ns)
 {
 	refcount_inc(&ns->ns.count);
 }
-
-extern seqlock_t mount_lock;

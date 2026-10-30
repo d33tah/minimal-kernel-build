@@ -224,7 +224,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	sched_clock_init();
 	calibrate_delay();
 	pid_idr_init();
-	anon_vma_init();
 	thread_stack_cache_init();
 	cred_init();
 	fork_init();

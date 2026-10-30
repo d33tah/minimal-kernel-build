@@ -54,24 +54,6 @@ static inline void vma_rb_insert(struct vm_area_struct *vma,
 	rb_insert_color(&vma->vm_rb, root);
 }
 
-static inline void
-anon_vma_interval_tree_pre_update_vma(struct vm_area_struct *vma)
-{
-	struct anon_vma_chain *avc;
-
-	list_for_each_entry(avc, &vma->anon_vma_chain, same_vma)
-		anon_vma_interval_tree_remove(avc, &avc->anon_vma->rb_root);
-}
-
-static inline void
-anon_vma_interval_tree_post_update_vma(struct vm_area_struct *vma)
-{
-	struct anon_vma_chain *avc;
-
-	list_for_each_entry(avc, &vma->anon_vma_chain, same_vma)
-		anon_vma_interval_tree_insert(avc, &avc->anon_vma->rb_root);
-}
-
 static int find_vma_links(struct mm_struct *mm, unsigned long addr,
 			  unsigned long end, struct vm_area_struct **pprev,
 			  struct rb_node ***rb_link, struct rb_node **rb_parent)
@@ -126,21 +108,6 @@ void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
 	vma_rb_insert(vma, &mm->mm_rb);
 }
 
-static void __vma_link_file(struct vm_area_struct *vma)
-{
-	struct file *file;
-
-	file = vma->vm_file;
-	if (file) {
-		struct address_space *mapping = file->f_mapping;
-
-		if (vma->vm_flags & VM_SHARED)
-			mapping_allow_writable(mapping);
-
-		vma_interval_tree_insert(vma, &mapping->i_mmap);
-	}
-}
-
 static void __vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 		       struct vm_area_struct *prev, struct rb_node **rb_link,
 		       struct rb_node *rb_parent)
@@ -153,51 +120,9 @@ static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 		     struct vm_area_struct *prev, struct rb_node **rb_link,
 		     struct rb_node *rb_parent)
 {
-	struct address_space *mapping = NULL;
-
-	if (vma->vm_file) {
-		mapping = vma->vm_file->f_mapping;
-		i_mmap_lock_write(mapping);
-	}
-
 	__vma_link(mm, vma, prev, rb_link, rb_parent);
-	__vma_link_file(vma);
-
-	if (mapping)
-		i_mmap_unlock_write(mapping);
-
 	mm->map_count++;
 	validate_mm(mm);
-}
-
-static struct anon_vma *reusable_anon_vma(struct vm_area_struct *old,
-					  struct vm_area_struct *a,
-					  struct vm_area_struct *b)
-{
-	/*
-	 * SAFE-FALLBACK stub: returns NULL so find_mergeable_anon_vma() never
-	 * reuses an adjacent VMA's anon_vma. The sole consumer
-	 * (__anon_vma_prepare) allocates a fresh anon_vma when NULL is returned,
-	 * so behavior is preserved (only the merge optimization is skipped).
-	 * Runtime-dead on this boot-once-and-print artifact.
-	 */
-	return NULL;
-}
-
-struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *vma)
-{
-	struct anon_vma *anon_vma = NULL;
-
-	if (vma->vm_next) {
-		anon_vma = reusable_anon_vma(vma->vm_next, vma, vma->vm_next);
-		if (anon_vma)
-			return anon_vma;
-	}
-
-	if (vma->vm_prev)
-		anon_vma = reusable_anon_vma(vma->vm_prev, vma->vm_prev, vma);
-
-	return anon_vma;
 }
 
 static inline unsigned long round_hint_to_min(unsigned long hint)
@@ -531,11 +456,6 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 			return -ENOMEM;
 	}
 
-	if (unlikely(anon_vma_prepare(vma)))
-		return -ENOMEM;
-
-	anon_vma_lock_write(vma->anon_vma);
-
 	if (address < vma->vm_start) {
 		unsigned long size, grow;
 
@@ -547,15 +467,12 @@ int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 			error = acct_stack_growth(vma, size, grow);
 			if (!error) {
 				spin_lock(&mm->page_table_lock);
-				anon_vma_interval_tree_pre_update_vma(vma);
 				vma->vm_start = address;
 				vma->vm_pgoff -= grow;
-				anon_vma_interval_tree_post_update_vma(vma);
 				spin_unlock(&mm->page_table_lock);
 			}
 		}
 	}
-	anon_vma_unlock_write(vma->anon_vma);
 	validate_mm(mm);
 	return error;
 }
@@ -622,10 +539,8 @@ int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 	    security_vm_enough_memory_mm(mm, vma_pages(vma)))
 		return -ENOMEM;
 
-	if (vma_is_anonymous(vma)) {
-		BUG_ON(vma->anon_vma);
+	if (vma_is_anonymous(vma))
 		vma->vm_pgoff = vma->vm_start >> PAGE_SHIFT;
-	}
 
 	vma_link(mm, vma, prev, rb_link, rb_parent);
 	return 0;

@@ -208,9 +208,6 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 	if (pte_alloc(vma->vm_mm, vmf->pmd))
 		return VM_FAULT_OOM;
 
-	if (unlikely(anon_vma_prepare(vma)))
-		return VM_FAULT_OOM;
-
 	page = alloc_zeroed_user_highpage_movable(vma, vmf->address);
 	if (!page)
 		return VM_FAULT_OOM;
@@ -347,9 +344,6 @@ static vm_fault_t do_cow_fault(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	vm_fault_t ret;
-
-	if (unlikely(anon_vma_prepare(vma)))
-		return VM_FAULT_OOM;
 
 	vmf->cow_page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, vmf->address);
 	if (!vmf->cow_page)

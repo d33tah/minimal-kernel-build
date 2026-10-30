@@ -104,34 +104,9 @@ struct address_space {
 	struct xarray i_pages;
 	struct rw_semaphore invalidate_lock;
 	gfp_t gfp_mask;
-	atomic_t i_mmap_writable;
-	struct rb_root_cached i_mmap;
-	struct rw_semaphore i_mmap_rwsem;
 	const struct address_space_operations *a_ops;
 	unsigned long flags;
 } __attribute__((aligned(sizeof(long)))) __randomize_layout;
-
-static inline void i_mmap_lock_write(struct address_space *mapping)
-{
-	down_write(&mapping->i_mmap_rwsem);
-}
-
-static inline void i_mmap_unlock_write(struct address_space *mapping)
-{
-	up_write(&mapping->i_mmap_rwsem);
-}
-
-/* i_mmap_lock_read / i_mmap_unlock_read removed: 0-caller static-inline orphans */
-
-static inline int mapping_writably_mapped(struct address_space *mapping)
-{
-	return atomic_read(&mapping->i_mmap_writable) > 0;
-}
-
-static inline void mapping_allow_writable(struct address_space *mapping)
-{
-	atomic_inc(&mapping->i_mmap_writable);
-}
 
 #define i_size_ordered_init(inode) \
 	do {                       \

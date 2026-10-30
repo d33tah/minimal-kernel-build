@@ -50,7 +50,6 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	mapping->a_ops = &empty_aops;
 	mapping->host = inode;
 	mapping->flags = 0;
-	atomic_set(&mapping->i_mmap_writable, 0);
 	mapping_set_gfp_mask(mapping, GFP_HIGHUSER_MOVABLE);
 	init_rwsem(&mapping->invalidate_lock);
 	inode->i_mapping = mapping;
@@ -95,8 +94,6 @@ void inc_nlink(struct inode *inode)
 static void __address_space_init_once(struct address_space *mapping)
 {
 	xa_init_flags(&mapping->i_pages, XA_FLAGS_LOCK_IRQ | XA_FLAGS_ACCOUNT);
-	init_rwsem(&mapping->i_mmap_rwsem);
-	mapping->i_mmap = RB_ROOT_CACHED;
 }
 
 static void init_once(void *foo)

@@ -96,8 +96,6 @@ static inline bool folio_try_get_rcu(struct folio *folio)
 #include <linux/sched.h>
 #include <linux/pgtable.h>
 
-struct anon_vma;
-struct anon_vma_chain;
 struct pt_regs;
 
 extern unsigned long max_mapnr;
@@ -244,7 +242,6 @@ static inline void vma_init(struct vm_area_struct *vma, struct mm_struct *mm)
 	memset(vma, 0, sizeof(*vma));
 	vma->vm_mm = mm;
 	vma->vm_ops = &dummy_vm_ops;
-	INIT_LIST_HEAD(&vma->anon_vma_chain);
 }
 
 static inline void vma_set_anonymous(struct vm_area_struct *vma)
@@ -686,20 +683,8 @@ extern void mem_init(void);
 
 extern void setup_per_cpu_pageset(void);
 
-void vma_interval_tree_insert(struct vm_area_struct *node,
-			      struct rb_root_cached *root);
-/* vma_interval_tree_{remove,iter_first,iter_next} prototypes dropped:
- * defined via INTERVAL_TREE_DEFINE() in mm/interval_tree.c but never called
- * and no vma_interval_tree_foreach() macro consumes them in this tree. */
-
-void anon_vma_interval_tree_insert(struct anon_vma_chain *node,
-				   struct rb_root_cached *root);
-void anon_vma_interval_tree_remove(struct anon_vma_chain *node,
-				   struct rb_root_cached *root);
-
 extern int __vm_enough_memory(struct mm_struct *mm, long pages,
 			      int cap_sys_admin);
-extern struct anon_vma *find_mergeable_anon_vma(struct vm_area_struct *);
 extern int insert_vm_struct(struct mm_struct *, struct vm_area_struct *);
 extern void __vma_link_rb(struct mm_struct *, struct vm_area_struct *,
 			  struct rb_node **, struct rb_node *);

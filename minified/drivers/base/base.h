@@ -1,8 +1,7 @@
- 
- 
+
+
 #include <linux/notifier.h>
 
- 
 /* Trimmed: interfaces, drivers_kset, klist_drivers, bus_notifier and
    drivers_autoprobe were write-only on this build - no driver registers
    (subsys_interface_register / class_interface_register are gone, so the
@@ -10,7 +9,9 @@
    registers on bus_notifier. */
 /* class back-pointer removed - was write-only (set in __class_register,
    never read by any consumer). */
-struct subsys_private { struct kset subsys; };
+struct subsys_private {
+	struct kset subsys;
+};
 
 /* Removed: struct driver_private - the driver-side klist/kobj is never built
    (no driver_register/bus_add_driver), and driver->p is never dereferenced. */
@@ -22,9 +23,8 @@ struct subsys_private { struct kset subsys; };
 /* Removed: ->device back-pointer - write-only (set in device_private_init,
    never read; its readers were the removed klist/glue-dir machinery). dev->p
    itself is kept solely as a kzalloc presence-marker, so the struct is empty. */
-struct device_private { };
+struct device_private {};
 
- 
 extern int devices_init(void);
 extern int classes_init(void);
 
@@ -34,9 +34,7 @@ extern int classes_init(void);
    is gone (device_del removed). */
 /* Removed: driver_match_device - 0 callers (driver-side bind machinery is gone). */
 
-
 extern struct kset *devices_kset;
-
 
 /* devtmpfs_create_node / devtmpfs_delete_node removed - unused */
 

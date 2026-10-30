@@ -1,4 +1,4 @@
- 
+
 #ifndef _ASM_X86_SYNC_CORE_H
 #define _ASM_X86_SYNC_CORE_H
 

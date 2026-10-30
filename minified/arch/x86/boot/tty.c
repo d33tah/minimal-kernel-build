@@ -17,7 +17,7 @@ static void __section(".inittext") bios_putchar(int ch)
 void __section(".inittext") putchar(int ch)
 {
 	if (ch == '\n')
-		putchar('\r');	 
+		putchar('\r');
 
 	bios_putchar(ch);
 }
@@ -27,4 +27,3 @@ void __section(".inittext") puts(const char *str)
 	while (*str)
 		putchar(*str++);
 }
-

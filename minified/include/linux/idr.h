@@ -4,58 +4,78 @@
 
 #include <linux/radix-tree.h>
 
-struct idr { struct radix_tree_root	idr_rt; unsigned int idr_base, idr_next; };
+struct idr {
+	struct radix_tree_root idr_rt;
+	unsigned int idr_base, idr_next;
+};
 
-#define IDR_FREE	0
+#define IDR_FREE 0
 
-#define IDR_RT_MARKER	(ROOT_IS_IDR | (__force gfp_t)								(1 << (ROOT_TAG_SHIFT + IDR_FREE)))
+#define IDR_RT_MARKER \
+	(ROOT_IS_IDR | (__force gfp_t)(1 << (ROOT_TAG_SHIFT + IDR_FREE)))
 
-#define IDR_INIT_BASE(name, base) {						.idr_rt = RADIX_TREE_INIT(name, IDR_RT_MARKER),				.idr_base = (base),							.idr_next = 0,							}
+#define IDR_INIT_BASE(name, base)                               \
+	{                                                       \
+		.idr_rt = RADIX_TREE_INIT(name, IDR_RT_MARKER), \
+		.idr_base = (base),                             \
+		.idr_next = 0,                                  \
+	}
 
-#define IDR_INIT(name)	IDR_INIT_BASE(name, 0)
+#define IDR_INIT(name) IDR_INIT_BASE(name, 0)
 
-static inline unsigned int idr_get_cursor(const struct idr *idr) {
-	return READ_ONCE(idr->idr_next); }
+static inline unsigned int idr_get_cursor(const struct idr *idr)
+{
+	return READ_ONCE(idr->idr_next);
+}
 
-static inline void idr_set_cursor(struct idr *idr, unsigned int val) {
-	WRITE_ONCE(idr->idr_next, val); }
-
+static inline void idr_set_cursor(struct idr *idr, unsigned int val)
+{
+	WRITE_ONCE(idr->idr_next, val);
+}
 
 void idr_preload(gfp_t gfp_mask);
 
-int __must_check idr_alloc_u32(struct idr *, void *ptr, u32 *id, unsigned long max, gfp_t);
+int __must_check idr_alloc_u32(struct idr *, void *ptr, u32 *id,
+			       unsigned long max, gfp_t);
 int idr_alloc_cyclic(struct idr *, void *ptr, int start, int end, gfp_t);
 void *idr_remove(struct idr *, unsigned long id);
 void *idr_find(const struct idr *, unsigned long id);
 void *idr_replace(struct idr *, void *, unsigned long id);
 
-static inline void idr_init_base(struct idr *idr, int base) {
+static inline void idr_init_base(struct idr *idr, int base)
+{
 	INIT_RADIX_TREE(&idr->idr_rt, IDR_RT_MARKER);
 	idr->idr_base = base;
-	idr->idr_next = 0; }
+	idr->idr_next = 0;
+}
 
-static inline void idr_init(struct idr *idr) {
-	idr_init_base(idr, 0); }
+static inline void idr_init(struct idr *idr)
+{
+	idr_init_base(idr, 0);
+}
 
+static inline void idr_preload_end(void)
+{
+	local_unlock(&radix_tree_preloads.lock);
+}
 
-static inline void idr_preload_end(void) {
-	local_unlock(&radix_tree_preloads.lock); }
+#define IDA_CHUNK_SIZE 128
+#define IDA_BITMAP_LONGS (IDA_CHUNK_SIZE / sizeof(long))
+#define IDA_BITMAP_BITS (IDA_BITMAP_LONGS * sizeof(long) * 8)
 
+struct ida_bitmap {
+	unsigned long bitmap[IDA_BITMAP_LONGS];
+};
 
-#define IDA_CHUNK_SIZE		128	 
-#define IDA_BITMAP_LONGS	(IDA_CHUNK_SIZE / sizeof(long))
-#define IDA_BITMAP_BITS 	(IDA_BITMAP_LONGS * sizeof(long) * 8)
+struct ida {
+	struct xarray xa;
+};
 
-struct ida_bitmap { unsigned long		bitmap[IDA_BITMAP_LONGS]; };
+#define IDA_INIT_FLAGS (XA_FLAGS_LOCK_IRQ | XA_FLAGS_ALLOC)
 
-struct ida { struct xarray xa; };
-
-#define IDA_INIT_FLAGS	(XA_FLAGS_LOCK_IRQ | XA_FLAGS_ALLOC)
-
-#define IDA_INIT(name)	{							.xa = XARRAY_INIT(name, IDA_INIT_FLAGS)				}
-#define DEFINE_IDA(name)	struct ida name = IDA_INIT(name)
+#define IDA_INIT(name) { .xa = XARRAY_INIT(name, IDA_INIT_FLAGS) }
+#define DEFINE_IDA(name) struct ida name = IDA_INIT(name)
 
 int ida_alloc_range(struct ida *, unsigned int min, unsigned int max, gfp_t);
 
-
-#endif  
+#endif

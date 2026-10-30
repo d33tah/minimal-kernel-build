@@ -12,33 +12,59 @@
 #include <linux/hash.h>
 
 #define hashlen_hash(hashlen) ((u32)(hashlen))
-#define hashlen_len(hashlen)  ((u32)((hashlen) >> 32))
-#define hashlen_create(hash, len) ((u64)(len)<<32 | (u32)(hash))
+#define hashlen_len(hashlen) ((u32)((hashlen) >> 32))
+#define hashlen_create(hash, len) ((u64)(len) << 32 | (u32)(hash))
 
 #include <linux/wait.h>
-
-
 
 #define IS_ROOT(x) ((x) == (x)->d_parent)
 
 /* x86 is unconditionally little-endian (__LITTLE_ENDIAN defined in kconfig.h,
  * force-included every TU; __BIG_ENDIAN never defined) -> big-endian #else dead */
- #define HASH_LEN_DECLARE u32 hash; u32 len
- #define bytemask_from_count(cnt)	(~(~0ul << (cnt)*8))
+#define HASH_LEN_DECLARE \
+	u32 hash;        \
+	u32 len
+#define bytemask_from_count(cnt) (~(~0ul << (cnt) * 8))
 
-struct qstr { union { struct { HASH_LEN_DECLARE; }; u64 hash_len; }; const unsigned char *name; };
+struct qstr {
+	union {
+		struct {
+			HASH_LEN_DECLARE;
+		};
+		u64 hash_len;
+	};
+	const unsigned char *name;
+};
 
-#define QSTR_INIT(n,l) { { { .len = l } }, .name = n }
+#define QSTR_INIT(n, l) { { { .len = l } }, .name = n }
 
+#define DNAME_INLINE_LEN 40
 
-#  define DNAME_INLINE_LEN 40  
+#define d_lock d_lockref.lock
 
-#define d_lock	d_lockref.lock
+struct dentry {
+	unsigned int d_flags;
+	seqcount_spinlock_t d_seq;
+	struct hlist_bl_node d_hash;
+	struct dentry *d_parent;
+	struct qstr d_name;
+	struct inode *d_inode;
+	unsigned char d_iname[DNAME_INLINE_LEN];
+	struct lockref d_lockref;
+	const struct dentry_operations *d_op;
+	struct super_block *d_sb;
+	union {
+		struct list_head d_lru;
+		wait_queue_head_t *d_wait;
+	};
+	union {
+		struct hlist_node d_alias;
+		struct hlist_bl_node d_in_lookup_hash;
+		struct rcu_head d_rcu;
+	} d_u;
+} __randomize_layout;
 
-struct dentry { unsigned int d_flags; seqcount_spinlock_t d_seq; struct hlist_bl_node d_hash; struct dentry *d_parent; struct qstr d_name; struct inode *d_inode; unsigned char d_iname[DNAME_INLINE_LEN]; struct lockref d_lockref; const struct dentry_operations *d_op; struct super_block *d_sb; union { struct list_head d_lru; wait_queue_head_t *d_wait; }; union { struct hlist_node d_alias; struct hlist_bl_node d_in_lookup_hash; struct rcu_head d_rcu; } d_u; } __randomize_layout;
-
-enum dentry_d_lock_class {
-	DENTRY_D_LOCK_NORMAL, DENTRY_D_LOCK_NESTED };
+enum dentry_d_lock_class { DENTRY_D_LOCK_NORMAL, DENTRY_D_LOCK_NESTED };
 
 struct dentry_operations {
 	/* only ->d_delete is ever set on this build (simple_dentry_operations);
@@ -48,17 +74,15 @@ struct dentry_operations {
 	int (*d_delete)(const struct dentry *);
 } ____cacheline_aligned;
 
-
 /* DCACHE_OP_HASH/COMPARE/REVALIDATE/PRUNE/WEAK_REVALIDATE/REAL removed -
  * never set (only ->d_delete is ever assigned by an ops object) */
-#define DCACHE_OP_DELETE		0x00000008
+#define DCACHE_OP_DELETE 0x00000008
 
-#define	DCACHE_DISCONNECTED		0x00000020
-      
+#define DCACHE_DISCONNECTED 0x00000020
 
-#define DCACHE_REFERENCED		0x00000040  
+#define DCACHE_REFERENCED 0x00000040
 
-#define DCACHE_DONTCACHE		0x00000080
+#define DCACHE_DONTCACHE 0x00000080
 
 /*
  * DCACHE_SHRINK_LIST / DCACHE_MOUNTED / DCACHE_NEED_AUTOMOUNT /
@@ -66,92 +90,116 @@ struct dentry_operations {
  * build -- removed; their branches were folded out.
  */
 
-#define DCACHE_LRU_LIST			0x00080000
+#define DCACHE_LRU_LIST 0x00080000
 
-#define DCACHE_ENTRY_TYPE		0x00700000
-#define DCACHE_MISS_TYPE		0x00000000
-#define DCACHE_DIRECTORY_TYPE		0x00200000  
-#define DCACHE_AUTODIR_TYPE		0x00300000  
-#define DCACHE_REGULAR_TYPE		0x00400000  
-#define DCACHE_SPECIAL_TYPE		0x00500000
+#define DCACHE_ENTRY_TYPE 0x00700000
+#define DCACHE_MISS_TYPE 0x00000000
+#define DCACHE_DIRECTORY_TYPE 0x00200000
+#define DCACHE_AUTODIR_TYPE 0x00300000
+#define DCACHE_REGULAR_TYPE 0x00400000
+#define DCACHE_SPECIAL_TYPE 0x00500000
 
-#define DCACHE_PAR_LOOKUP		0x10000000
+#define DCACHE_PAR_LOOKUP 0x10000000
 
 extern seqlock_t rename_lock;
 
 extern void d_instantiate(struct dentry *, struct inode *);
-extern void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op);
+extern void d_set_d_op(struct dentry *dentry,
+		       const struct dentry_operations *op);
 
-
-extern struct dentry * d_alloc(struct dentry *, const struct qstr *);
-extern struct dentry * d_alloc_parallel(struct dentry *, const struct qstr *, wait_queue_head_t *);
-extern struct dentry * d_make_root(struct inode *);
-
+extern struct dentry *d_alloc(struct dentry *, const struct qstr *);
+extern struct dentry *d_alloc_parallel(struct dentry *, const struct qstr *,
+				       wait_queue_head_t *);
+extern struct dentry *d_make_root(struct inode *);
 
 extern void d_add(struct dentry *, struct inode *);
 
 extern struct dentry *d_lookup(const struct dentry *, const struct qstr *);
 extern struct dentry *__d_lookup(const struct dentry *, const struct qstr *);
-extern struct dentry *__d_lookup_rcu(const struct dentry *parent, const struct qstr *name, unsigned *seq);
+extern struct dentry *__d_lookup_rcu(const struct dentry *parent,
+				     const struct qstr *name, unsigned *seq);
 
-
-static inline struct dentry *dget(struct dentry *dentry) {
+static inline struct dentry *dget(struct dentry *dentry)
+{
 	if (dentry)
 		lockref_get(&dentry->d_lockref);
-	return dentry; }
+	return dentry;
+}
 
-
-static inline int d_unhashed(const struct dentry *dentry) {
-	return hlist_bl_unhashed(&dentry->d_hash); }
-
-
+static inline int d_unhashed(const struct dentry *dentry)
+{
+	return hlist_bl_unhashed(&dentry->d_hash);
+}
 
 extern void __d_lookup_done(struct dentry *);
 
-static inline int d_in_lookup(const struct dentry *dentry) {
-	return dentry->d_flags & DCACHE_PAR_LOOKUP; }
+static inline int d_in_lookup(const struct dentry *dentry)
+{
+	return dentry->d_flags & DCACHE_PAR_LOOKUP;
+}
 
-static inline void d_lookup_done(struct dentry *dentry) {
+static inline void d_lookup_done(struct dentry *dentry)
+{
 	if (unlikely(d_in_lookup(dentry))) {
 		spin_lock(&dentry->d_lock);
 		__d_lookup_done(dentry);
-		spin_unlock(&dentry->d_lock); } }
+		spin_unlock(&dentry->d_lock);
+	}
+}
 
 extern void dput(struct dentry *);
 
-static inline unsigned __d_entry_type(const struct dentry *dentry) {
-	return dentry->d_flags & DCACHE_ENTRY_TYPE; }
+static inline unsigned __d_entry_type(const struct dentry *dentry)
+{
+	return dentry->d_flags & DCACHE_ENTRY_TYPE;
+}
 
-static inline bool d_is_miss(const struct dentry *dentry) {
-	return __d_entry_type(dentry) == DCACHE_MISS_TYPE; }
+static inline bool d_is_miss(const struct dentry *dentry)
+{
+	return __d_entry_type(dentry) == DCACHE_MISS_TYPE;
+}
 
-static inline bool d_can_lookup(const struct dentry *dentry) {
-	return __d_entry_type(dentry) == DCACHE_DIRECTORY_TYPE; }
+static inline bool d_can_lookup(const struct dentry *dentry)
+{
+	return __d_entry_type(dentry) == DCACHE_DIRECTORY_TYPE;
+}
 
-
-static inline bool d_is_dir(const struct dentry *dentry) {
+static inline bool d_is_dir(const struct dentry *dentry)
+{
 	/* Simplified: only check d_can_lookup since d_is_autodir was unused */
-	return d_can_lookup(dentry); }
+	return d_can_lookup(dentry);
+}
 
-static inline bool d_is_reg(const struct dentry *dentry) {
-	return __d_entry_type(dentry) == DCACHE_REGULAR_TYPE; }
+static inline bool d_is_reg(const struct dentry *dentry)
+{
+	return __d_entry_type(dentry) == DCACHE_REGULAR_TYPE;
+}
 
-static inline bool d_is_negative(const struct dentry *dentry) {
-	 
-	return d_is_miss(dentry); }
+static inline bool d_is_negative(const struct dentry *dentry)
+{
+	return d_is_miss(dentry);
+}
 
-static inline bool d_flags_negative(unsigned flags) {
-	return (flags & DCACHE_ENTRY_TYPE) == DCACHE_MISS_TYPE; }
+static inline bool d_flags_negative(unsigned flags)
+{
+	return (flags & DCACHE_ENTRY_TYPE) == DCACHE_MISS_TYPE;
+}
 
-static inline bool d_is_positive(const struct dentry *dentry) {
-	return !d_is_negative(dentry); }
+static inline bool d_is_positive(const struct dentry *dentry)
+{
+	return !d_is_negative(dentry);
+}
 
-static inline struct inode *d_inode(const struct dentry *dentry) {
-	return dentry->d_inode; }
+static inline struct inode *d_inode(const struct dentry *dentry)
+{
+	return dentry->d_inode;
+}
 
-static inline struct inode *d_backing_inode(const struct dentry *upper) {
+static inline struct inode *d_backing_inode(const struct dentry *upper)
+{
 	struct inode *inode = upper->d_inode;
 
-	return inode; }
+	return inode;
+}
 
 #endif

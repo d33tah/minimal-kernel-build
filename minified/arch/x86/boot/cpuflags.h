@@ -1,4 +1,4 @@
- 
+
 #ifndef BOOT_CPUFLAGS_H
 #define BOOT_CPUFLAGS_H
 
@@ -6,8 +6,8 @@
 #include <asm/processor-flags.h>
 
 struct cpu_features {
-	int level;		 
-	int family;		 
+	int level;
+	int family;
 	int model;
 	u32 flags[NCAPINTS];
 };

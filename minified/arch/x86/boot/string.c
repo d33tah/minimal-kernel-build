@@ -14,7 +14,7 @@ int memcmp(const void *s1, const void *s2, size_t len)
 {
 	bool diff;
 	asm("repe; cmpsb" CC_SET(nz)
-	    : CC_OUT(nz) (diff), "+D" (s1), "+S" (s2), "+c" (len));
+	    : CC_OUT(nz)(diff), "+D"(s1), "+S"(s2), "+c"(len));
 	return diff;
 }
 
@@ -41,13 +41,15 @@ static unsigned int simple_guess_base(const char *cp)
 	if (cp[0] == '0') {
 		if (TOLOWER(cp[1]) == 'x' && isxdigit(cp[2]))
 			return 16;
-		else return 8;
+		else
+			return 8;
 	} else {
 		return 10;
 	}
 }
 
-unsigned long long simple_strtoull(const char *cp, char **endp, unsigned int base)
+unsigned long long simple_strtoull(const char *cp, char **endp,
+				   unsigned int base)
 {
 	unsigned long long result = 0;
 
@@ -76,7 +78,7 @@ size_t strlen(const char *s)
 {
 	const char *sc;
 
-	for (sc = s; *sc != '\0'; ++sc) { }
+	for (sc = s; *sc != '\0'; ++sc) {
+	}
 	return sc - s;
 }
-

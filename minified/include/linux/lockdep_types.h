@@ -6,9 +6,8 @@
 /* Removed (0 users tree-wide): enum lockdep_wait_type + enum lockdep_lock_type
  * (all values 0-ref outside their own defs; lockdep is compiled out). */
 
-struct lock_class_key { };
+struct lock_class_key {};
 
-struct pin_cookie { };
+struct pin_cookie {};
 
-
-#endif  
+#endif

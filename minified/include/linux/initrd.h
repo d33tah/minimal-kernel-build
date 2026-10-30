@@ -13,4 +13,4 @@ extern unsigned long __initramfs_size;
 
 void console_on_rootfs(void);
 
-#endif  
+#endif

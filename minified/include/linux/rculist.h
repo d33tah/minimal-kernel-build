@@ -1,37 +1,41 @@
 #ifndef _LINUX_RCULIST_H
 #define _LINUX_RCULIST_H
 
-
 #include <linux/list.h>
 #include <linux/rcupdate.h>
 
+#define list_next_rcu(list) (*((struct list_head __rcu **)(&(list)->next)))
 
-#define list_next_rcu(list)	(*((struct list_head __rcu **)(&(list)->next)))
-
-
-static inline void __list_add_rcu(struct list_head *new, struct list_head *prev, struct list_head *next) {
+static inline void __list_add_rcu(struct list_head *new, struct list_head *prev,
+				  struct list_head *next)
+{
 	new->next = next;
 	new->prev = prev;
 	rcu_assign_pointer(list_next_rcu(prev), new);
-	next->prev = new; }
+	next->prev = new;
+}
 
-static inline void list_add_tail_rcu(struct list_head *new, struct list_head *head) {
-	__list_add_rcu(new, head->prev, head); }
+static inline void list_add_tail_rcu(struct list_head *new,
+				     struct list_head *head)
+{
+	__list_add_rcu(new, head->prev, head);
+}
 
-#define list_entry_rcu(ptr, type, member) 	container_of(READ_ONCE(ptr), type, member)
+#define list_entry_rcu(ptr, type, member) \
+	container_of(READ_ONCE(ptr), type, member)
 
+#define hlist_first_rcu(head) (*((struct hlist_node __rcu **)(&(head)->first)))
 
-
-#define hlist_first_rcu(head)	(*((struct hlist_node __rcu **)(&(head)->first)))
-
-static inline void hlist_add_head_rcu(struct hlist_node *n, struct hlist_head *h) {
+static inline void hlist_add_head_rcu(struct hlist_node *n,
+				      struct hlist_head *h)
+{
 	struct hlist_node *first = h->first;
 
 	n->next = first;
 	WRITE_ONCE(n->pprev, &h->first);
 	rcu_assign_pointer(hlist_first_rcu(h), n);
 	if (first)
-		WRITE_ONCE(first->pprev, &n->next); }
-
+		WRITE_ONCE(first->pprev, &n->next);
+}
 
 #endif

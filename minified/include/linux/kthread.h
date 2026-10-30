@@ -7,7 +7,6 @@ bool set_kthread_struct(struct task_struct *p);
 
 void kthread_set_per_cpu(struct task_struct *k, int cpu);
 
-
 void kthread_exit(long result) __noreturn;
 
 int kthreadd(void *unused);

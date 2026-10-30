@@ -7,7 +7,6 @@
 #include <linux/pid_namespace.h>
 #include <linux/user_namespace.h>
 
-
 #include <asm/thread_info.h>
 
 extern struct files_struct init_files;
@@ -16,6 +15,5 @@ extern struct nsproxy init_nsproxy;
 extern struct cred init_cred;
 
 #define INIT_TASK_COMM "swapper"
-
 
 #endif

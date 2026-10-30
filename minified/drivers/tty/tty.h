@@ -1,5 +1,4 @@
- 
- 
+
 
 #ifndef _TTY_INTERNAL_H
 #define _TTY_INTERNAL_H
@@ -7,11 +6,11 @@
 #define tty_msg(fn, tty, f, ...) \
 	fn("%s %s: " f, tty_driver_name(tty), tty_name(tty), ##__VA_ARGS__)
 
-#define tty_warn(tty, f, ...)	tty_msg(pr_warn, tty, f, ##__VA_ARGS__)
-#define tty_err(tty, f, ...)	tty_msg(pr_err, tty, f, ##__VA_ARGS__)
+#define tty_warn(tty, f, ...) tty_msg(pr_warn, tty, f, ##__VA_ARGS__)
+#define tty_err(tty, f, ...) tty_msg(pr_err, tty, f, ##__VA_ARGS__)
 
 #define tty_info_ratelimited(tty, f, ...) \
-		tty_msg(pr_info_ratelimited, tty, f, ##__VA_ARGS__)
+	tty_msg(pr_info_ratelimited, tty, f, ##__VA_ARGS__)
 
 /* TTY_THROTTLE_SAFE, TTY_UNTHROTTLE_SAFE removed - never referenced */
 
@@ -28,7 +27,6 @@ int tty_ldisc_reinit(struct tty_struct *tty, int disc);
 struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx);
 void tty_free_file(struct file *file);
 int tty_release(struct inode *inode, struct file *filp);
-
 
 int tty_ldisc_setup(struct tty_struct *tty, struct tty_struct *o_tty);
 int __must_check tty_ldisc_init(struct tty_struct *tty);

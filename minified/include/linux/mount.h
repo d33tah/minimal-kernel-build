@@ -16,11 +16,16 @@ struct fs_context;
  * always-false branch.  Branches folded, field dropped.
  */
 
-struct vfsmount { struct dentry *mnt_root; struct super_block *mnt_sb; struct user_namespace *mnt_userns; } __randomize_layout;
+struct vfsmount {
+	struct dentry *mnt_root;
+	struct super_block *mnt_sb;
+	struct user_namespace *mnt_userns;
+} __randomize_layout;
 
-static inline struct user_namespace *mnt_user_ns(const struct vfsmount *mnt) {
-	 
-	return smp_load_acquire(&mnt->mnt_userns); }
+static inline struct user_namespace *mnt_user_ns(const struct vfsmount *mnt)
+{
+	return smp_load_acquire(&mnt->mnt_userns);
+}
 
 extern int mnt_want_write(struct vfsmount *mnt);
 extern void mnt_drop_write(struct vfsmount *mnt);
@@ -33,9 +38,9 @@ extern void __mnt_drop_write(struct vfsmount *);
 
 extern struct vfsmount *fc_mount(struct fs_context *fc);
 extern struct vfsmount *vfs_create_mount(struct fs_context *fc);
-extern struct vfsmount *vfs_kern_mount(struct file_system_type *type, int flags, const char *name, void *data);
-
+extern struct vfsmount *vfs_kern_mount(struct file_system_type *type, int flags,
+				       const char *name, void *data);
 
 extern struct vfsmount *kern_mount(struct file_system_type *);
 
-#endif  
+#endif

@@ -15,15 +15,16 @@ extern char _end[];
 extern char __start_rodata[], __end_rodata[];
 extern char __irqentry_text_start[], __irqentry_text_end[];
 
-
-static inline bool is_kernel_rodata(unsigned long addr) {
-	return addr >= (unsigned long)__start_rodata && addr < (unsigned long)__end_rodata; }
+static inline bool is_kernel_rodata(unsigned long addr)
+{
+	return addr >= (unsigned long)__start_rodata &&
+	       addr < (unsigned long)__end_rodata;
+}
 
 #include <asm/extable.h>
 
 extern char __brk_base[], __brk_limit[];
 extern char __end_rodata_aligned[];
-
 
 extern char __end_of_kernel_reserve[];
 

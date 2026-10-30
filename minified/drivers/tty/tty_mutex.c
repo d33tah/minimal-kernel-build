@@ -2,8 +2,6 @@
 #include <linux/tty.h>
 #include "tty.h"
 
-
-
 void tty_lock(struct tty_struct *tty)
 {
 	if (WARN(tty->magic != TTY_MAGIC, "L Bad %p\n", tty))

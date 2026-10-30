@@ -1,8 +1,6 @@
 
 #include <linux/mm.h>
 
-
-
 /*
  * RUNTIME-DEAD ANCHOR-STUB: move_page_tables (and its entire private helper
  * subtree get_old_pud/get_old_pmd/alloc_new_pud/alloc_new_pmd/take_rmap_locks/
@@ -15,5 +13,11 @@
  * `length != move_page_tables(...)`; a full successful move returns
  * `len + old_addr - old_end` with old_addr reaching old_end, i.e. exactly len.
  */
-unsigned long move_page_tables(struct vm_area_struct *vma, unsigned long old_addr, struct vm_area_struct *new_vma, unsigned long new_addr, unsigned long len, bool need_rmap_locks) {
-	return len; }
+unsigned long move_page_tables(struct vm_area_struct *vma,
+			       unsigned long old_addr,
+			       struct vm_area_struct *new_vma,
+			       unsigned long new_addr, unsigned long len,
+			       bool need_rmap_locks)
+{
+	return len;
+}

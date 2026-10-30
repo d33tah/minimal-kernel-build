@@ -9,7 +9,8 @@
  * for pointer obfuscation in vsprintf
  */
 
-u64 siphash_1u32(const u32 first, const siphash_key_t *key) {
+u64 siphash_1u32(const u32 first, const siphash_key_t *key)
+{
 	const u8 *p = (const u8 *)&first;
 	u64 hash = key->key[0] ^ key->key[1];
 	size_t i;
@@ -17,4 +18,5 @@ u64 siphash_1u32(const u32 first, const siphash_key_t *key) {
 	for (i = 0; i < sizeof(first); i++)
 		hash = hash * 31 + p[i];
 
-	return hash; }
+	return hash;
+}

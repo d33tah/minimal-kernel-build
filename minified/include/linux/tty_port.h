@@ -18,11 +18,11 @@ struct tty_port_operations {
 };
 
 struct tty_port {
-	struct tty_bufhead	buf;
-	struct tty_struct	*tty;
-	struct tty_struct	*itty;
+	struct tty_bufhead buf;
+	struct tty_struct *tty;
+	struct tty_struct *itty;
 	const struct tty_port_operations *ops;
-	struct kref		kref;
+	struct kref kref;
 };
 
 void tty_port_init(struct tty_port *port);
@@ -32,10 +32,7 @@ static inline struct tty_port *tty_port_get(struct tty_port *port)
 	return (port && kref_get_unless_zero(&port->kref)) ? port : NULL;
 }
 
-
-
 int tty_port_install(struct tty_port *port, struct tty_driver *driver,
-		struct tty_struct *tty);
-
+		     struct tty_struct *tty);
 
 #endif

@@ -1,21 +1,24 @@
 /* Delay loop calibration */
 #include <linux/delay.h>
 
-
 static DEFINE_PER_CPU(unsigned long, cpu_loops_per_jiffy) = { 0 };
 
 /* calibrate_delay_is_known removed - weak stub, no caller (stripped calibrate_delay) */
 
-void __attribute__((weak)) calibration_delay_done(void) { }
+void __attribute__((weak)) calibration_delay_done(void)
+{
+}
 
-void calibrate_delay(void) {
-	 
+void calibrate_delay(void)
+{
 	unsigned long lpj = 12500000;
 	int this_cpu = smp_processor_id();
 
 	if (per_cpu(cpu_loops_per_jiffy, this_cpu)) {
-		lpj = per_cpu(cpu_loops_per_jiffy, this_cpu); }
+		lpj = per_cpu(cpu_loops_per_jiffy, this_cpu);
+	}
 
 	per_cpu(cpu_loops_per_jiffy, this_cpu) = lpj;
 	loops_per_jiffy = lpj;
-	calibration_delay_done(); }
+	calibration_delay_done();
+}

@@ -1,31 +1,32 @@
 #ifndef __LINUX_SMP_H
 #define __LINUX_SMP_H
 
-
 #include <linux/errno.h>
 #include <linux/types.h>
 #include <linux/list.h>
 #include <linux/cpumask.h>
 
-
-
 void panic_smp_self_stop(void);
 
-#define raw_smp_processor_id()			0
+#define raw_smp_processor_id() 0
 
-#define smp_prepare_boot_cpu()			do {} while (0)
-
+#define smp_prepare_boot_cpu() \
+	do {                   \
+	} while (0)
 
 #ifndef __smp_processor_id
 #define __smp_processor_id(x) raw_smp_processor_id(x)
 #endif
 
-# define smp_processor_id() __smp_processor_id()
+#define smp_processor_id() __smp_processor_id()
 
-#define get_cpu()		({ preempt_disable(); __smp_processor_id(); })
-#define put_cpu()		preempt_enable()
-
+#define get_cpu()                     \
+	({                            \
+		preempt_disable();    \
+		__smp_processor_id(); \
+	})
+#define put_cpu() preempt_enable()
 
 void smp_setup_processor_id(void);
 
-#endif  
+#endif

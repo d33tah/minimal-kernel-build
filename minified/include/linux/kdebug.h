@@ -3,7 +3,7 @@
 
 #include <asm/kdebug.h>
 
+int notify_die(enum die_val val, const char *str, struct pt_regs *regs,
+	       long err, int trap, int sig);
 
-int notify_die(enum die_val val, const char *str, struct pt_regs *regs, long err, int trap, int sig);
-
-#endif  
+#endif

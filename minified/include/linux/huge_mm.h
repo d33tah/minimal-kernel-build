@@ -3,6 +3,6 @@
 
 #include <linux/sched/coredump.h>
 
-#include <linux/fs.h>  
+#include <linux/fs.h>
 
 #endif

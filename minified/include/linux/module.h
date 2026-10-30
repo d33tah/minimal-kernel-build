@@ -10,22 +10,17 @@
 #include <linux/moduleparam.h>
 #include <linux/tracepoint-defs.h>
 
-
 #include <asm/orc_types.h>
 
-
-
 /* CONFIG_MODULES off: built-in-only, MODULE never defined. */
-#define module_init(x)	__initcall(x);
-
+#define module_init(x) __initcall(x);
 
 #define __init_or_module __init
 
 #define MODULE_INFO(tag, info) __MODULE_INFO(tag, tag, info)
 
-#define MODULE_FILE	MODULE_INFO(file, KBUILD_MODFILE);
+#define MODULE_FILE MODULE_INFO(file, KBUILD_MODFILE);
 
 #define MODULE_LICENSE(_license) MODULE_FILE MODULE_INFO(license, _license)
-
 
 #endif

@@ -1,14 +1,13 @@
 
 #include <linux/interrupt.h>
 
-
 __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 
+#define NR_BASES 1
 
-
-# define NR_BASES	1
-
-struct timer_base { raw_spinlock_t		lock; } ____cacheline_aligned;
+struct timer_base {
+	raw_spinlock_t lock;
+} ____cacheline_aligned;
 
 static DEFINE_PER_CPU(struct timer_base, timer_bases[NR_BASES]);
 
@@ -21,26 +20,32 @@ static DEFINE_PER_CPU(struct timer_base, timer_bases[NR_BASES]);
  * called it -- the entire raise/handle chain was a verified behavioral no-op and
  * is dropped. update_process_times keeps the live RCU + scheduler tick work.
  */
-void update_process_times(int user_tick) {
+void update_process_times(int user_tick)
+{
 	rcu_sched_clock_irq(user_tick);
-	scheduler_tick(); }
+	scheduler_tick();
+}
 
-static void __init init_timer_cpu(int cpu) {
+static void __init init_timer_cpu(int cpu)
+{
 	struct timer_base *base;
 	int i;
 
 	for (i = 0; i < NR_BASES; i++) {
 		base = per_cpu_ptr(&timer_bases[i], cpu);
-		raw_spin_lock_init(&base->lock); } }
+		raw_spin_lock_init(&base->lock);
+	}
+}
 
-static void __init init_timer_cpus(void) {
+static void __init init_timer_cpus(void)
+{
 	int cpu;
 
 	for_each_possible_cpu(cpu)
-		init_timer_cpu(cpu); }
+		init_timer_cpu(cpu);
+}
 
-void __init init_timers(void) {
-	init_timer_cpus(); }
-
-
-
+void __init init_timers(void)
+{
+	init_timer_cpus();
+}

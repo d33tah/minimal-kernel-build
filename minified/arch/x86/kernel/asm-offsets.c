@@ -11,13 +11,12 @@
 #include <asm/desc.h>
 /* TDX not used in minimal kernel */
 
+#include "asm-offsets_32.c"
 
-# include "asm-offsets_32.c"
-
-static void __used common(void) {
+static void __used common(void)
+{
 	BLANK();
 	OFFSET(TASK_threadsp, task_struct, thread.sp);
-
 
 	/* TDX offsets removed - not used in minimal kernel */
 
@@ -28,13 +27,10 @@ static void __used common(void) {
 	BLANK();
 	DEFINE(PTREGS_SIZE, sizeof(struct pt_regs));
 
-
 	OFFSET(CPU_ENTRY_AREA_entry_stack, cpu_entry_area, entry_stack_page);
 	DEFINE(SIZEOF_entry_stack, sizeof(struct entry_stack));
 	DEFINE(MASK_entry_stack, (~(sizeof(struct entry_stack) - 1)));
 
-	 
 	OFFSET(TSS_sp0, tss_struct, x86_tss.sp0);
 	OFFSET(TSS_sp1, tss_struct, x86_tss.sp1);
-
 }

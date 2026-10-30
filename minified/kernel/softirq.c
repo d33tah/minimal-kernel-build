@@ -5,8 +5,6 @@
 
 void do_softirq_own_stack(void);
 
-
-
 static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp;
 
 /*
@@ -17,15 +15,20 @@ static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp
  * inline (do_softirq_own_stack) from the irq-exit path.
  */
 
-const char * const softirq_to_name[NR_SOFTIRQS] = { "HI", "TIMER", "NET_TX", "NET_RX", "BLOCK", "IRQ_POLL", "TASKLET", "SCHED", "HRTIMER", "RCU" };
+const char *const softirq_to_name[NR_SOFTIRQS] = {
+	"HI",	    "TIMER",   "NET_TX", "NET_RX",  "BLOCK",
+	"IRQ_POLL", "TASKLET", "SCHED",	 "HRTIMER", "RCU"
+};
 
-static void __local_bh_enable(unsigned int cnt) {
+static void __local_bh_enable(unsigned int cnt)
+{
 	lockdep_assert_irqs_disabled();
 
-	__preempt_count_sub(cnt); }
+	__preempt_count_sub(cnt);
+}
 
-
-void __local_bh_enable_ip(unsigned long ip, unsigned int cnt) {
+void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
+{
 	WARN_ON_ONCE(in_hardirq());
 	lockdep_assert_irqs_enabled();
 
@@ -42,30 +45,39 @@ void __local_bh_enable_ip(unsigned long ip, unsigned int cnt) {
 		if (pending)
 			do_softirq_own_stack();
 
-		local_irq_restore(flags); }
+		local_irq_restore(flags);
+	}
 
 	preempt_count_dec();
-	preempt_check_resched(); }
+	preempt_check_resched();
+}
 
-static inline void softirq_handle_begin(void) {
-	__local_bh_disable_ip(_RET_IP_, SOFTIRQ_OFFSET); }
+static inline void softirq_handle_begin(void)
+{
+	__local_bh_disable_ip(_RET_IP_, SOFTIRQ_OFFSET);
+}
 
-static inline void softirq_handle_end(void) {
+static inline void softirq_handle_end(void)
+{
 	__local_bh_enable(SOFTIRQ_OFFSET);
-	WARN_ON_ONCE(in_interrupt()); }
+	WARN_ON_ONCE(in_interrupt());
+}
 
-static inline void invoke_softirq(void) {
+static inline void invoke_softirq(void)
+{
 	/*
 	 * force_irqthreads() is constant false (force_irqthreads_key is a
 	 * never-enabled DEFINE_STATIC_KEY_FALSE; the "threadirqs" boot path is
 	 * absent), so the softirq always runs inline here.
 	 */
-	do_softirq_own_stack(); }
+	do_softirq_own_stack();
+}
 
-#define MAX_SOFTIRQ_TIME  msecs_to_jiffies(2)
+#define MAX_SOFTIRQ_TIME msecs_to_jiffies(2)
 #define MAX_SOFTIRQ_RESTART 10
 
-asmlinkage __visible void __softirq_entry __do_softirq(void) {
+asmlinkage __visible void __softirq_entry __do_softirq(void)
+{
 	unsigned long end = jiffies + MAX_SOFTIRQ_TIME;
 	int max_restart = MAX_SOFTIRQ_RESTART;
 	struct softirq_action *h;
@@ -77,7 +89,7 @@ asmlinkage __visible void __softirq_entry __do_softirq(void) {
 	softirq_handle_begin();
 
 restart:
-	 
+
 	set_softirq_pending(0);
 
 	local_irq_enable();
@@ -93,28 +105,37 @@ restart:
 		vec_nr = h - softirq_vec;
 		prev_count = preempt_count();
 
-
 		h->action(h);
-		 
+
 		if (unlikely(prev_count != preempt_count())) {
-			pr_err("huh, entered softirq %u %s %p with preempt_count %08x, exited with %08x?\n", vec_nr, softirq_to_name[vec_nr], h->action, prev_count, preempt_count());
-			preempt_count_set(prev_count); }
+			pr_err("huh, entered softirq %u %s %p with preempt_count %08x, exited with %08x?\n",
+			       vec_nr, softirq_to_name[vec_nr], h->action,
+			       prev_count, preempt_count());
+			preempt_count_set(prev_count);
+		}
 		h++;
-		pending >>= softirq_bit; }
+		pending >>= softirq_bit;
+	}
 
 	local_irq_disable();
 
 	pending = local_softirq_pending();
 	if (pending) {
-		if (time_before(jiffies, end) && !need_resched() && --max_restart)
-			goto restart; }
+		if (time_before(jiffies, end) && !need_resched() &&
+		    --max_restart)
+			goto restart;
+	}
 
-	softirq_handle_end(); }
+	softirq_handle_end();
+}
 
-void irq_enter_rcu(void) {
-	__irq_enter_raw(); }
+void irq_enter_rcu(void)
+{
+	__irq_enter_raw();
+}
 
-static inline void __irq_exit_rcu(void) {
+static inline void __irq_exit_rcu(void)
+{
 #ifndef __ARCH_IRQ_EXIT_IRQS_DISABLED
 	local_irq_disable();
 #else
@@ -122,39 +143,50 @@ static inline void __irq_exit_rcu(void) {
 #endif
 	preempt_count_sub(HARDIRQ_OFFSET);
 	if (!in_interrupt() && local_softirq_pending())
-		invoke_softirq(); }
+		invoke_softirq();
+}
 
-void irq_exit_rcu(void) {
+void irq_exit_rcu(void)
+{
 	__irq_exit_rcu();
-	  
-	lockdep_hardirq_exit(); }
 
-inline void raise_softirq_irqoff(unsigned int nr) {
+	lockdep_hardirq_exit();
+}
+
+inline void raise_softirq_irqoff(unsigned int nr)
+{
 	lockdep_assert_irqs_disabled();
 
-	or_softirq_pending(1UL << nr); }
+	or_softirq_pending(1UL << nr);
+}
 
-void open_softirq(int nr, void (*action)(struct softirq_action *)) {
-	softirq_vec[nr].action = action; }
+void open_softirq(int nr, void (*action)(struct softirq_action *))
+{
+	softirq_vec[nr].action = action;
+}
 
-
-void __init softirq_init(void) {
+void __init softirq_init(void)
+{
 	/* No tasklets needed in minimal kernel */
 }
 
-static __init int spawn_ksoftirqd(void) {
+static __init int spawn_ksoftirqd(void)
+{
 	/*
 	 * SMP and CPU hotplug are off, so no per-cpu ksoftirqd thread is
 	 * spawned -- softirqs always run inline (do_softirq_own_stack) from
 	 * the irq-exit path. This initcall is a no-op.
 	 */
-	return 0; }
+	return 0;
+}
 early_initcall(spawn_ksoftirqd);
 
+int __init __weak arch_probe_nr_irqs(void)
+{
+	return NR_IRQS_LEGACY;
+}
 
-int __init __weak arch_probe_nr_irqs(void) {
-	return NR_IRQS_LEGACY; }
-
-int __init __weak arch_early_irq_init(void) {
-	return 0; }
-
+int __init __weak arch_early_irq_init(void)
+{
+	return 0;
+}

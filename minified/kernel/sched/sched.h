@@ -1,5 +1,5 @@
- 
- 
+
+
 #ifndef _KERNEL_SCHED_SCHED_H
 #define _KERNEL_SCHED_SCHED_H
 
@@ -23,12 +23,10 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/ctype.h>
 #include <linux/file.h>
 
-
 #include <linux/interrupt.h>
 #include <linux/jiffies.h>
 
 #include <linux/kthread.h>
-
 
 #include <linux/lockdep.h>
 #include <linux/minmax.h>
@@ -40,7 +38,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/rcupdate.h>
 #include <linux/seqlock.h>
 
-
 #include <linux/jump_label.h>
 #include <linux/stop_machine.h>
 
@@ -51,189 +48,225 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 
 #include <linux/uaccess.h>
 
-
-
-
-
-
-
 /* cpupri.h and cpudeadline.h removed - unused structs and macros */
 
-# define SCHED_WARN_ON(x)      ({ (void)(x), 0; })
+#define SCHED_WARN_ON(x) ({ (void)(x), 0; })
 
-
- 
-#define TASK_ON_RQ_QUEUED	1
-#define TASK_ON_RQ_MIGRATING	2
+#define TASK_ON_RQ_QUEUED 1
+#define TASK_ON_RQ_MIGRATING 2
 
 /* calc_global_load_tick / calc_load_fold_active removed - never called */
 
 /* call_trace_sched_update_nr_running removed - unused */
 
+#define NICE_0_LOAD_SHIFT (SCHED_FIXEDPOINT_SHIFT)
+#define scale_load(w) (w)
+#define scale_load_down(w) (w)
 
+#define NICE_0_LOAD (1L << NICE_0_LOAD_SHIFT)
 
-# define NICE_0_LOAD_SHIFT	(SCHED_FIXEDPOINT_SHIFT)
-# define scale_load(w)		(w)
-# define scale_load_down(w)	(w)
-
- 
-#define NICE_0_LOAD		(1L << NICE_0_LOAD_SHIFT)
-
-static inline int idle_policy(int policy) {
-	return policy == SCHED_IDLE; }
+static inline int idle_policy(int policy)
+{
+	return policy == SCHED_IDLE;
+}
 /* fair_policy, rt_policy, dl_policy, valid_policy removed - 0-caller orphans */
 
-static inline int task_has_idle_policy(struct task_struct *p) {
-	return idle_policy(p->policy); }
+static inline int task_has_idle_policy(struct task_struct *p)
+{
+	return idle_policy(p->policy);
+}
 
 /* init_dl_bw, sched_dl_global_validate, sched_dl_do_global, sched_dl_overflow,
    __getparam_dl, __checkparam_dl, dl_param_changed, dl_cpuset_cpumask_can_shrink,
    dl_cpu_busy removed - never defined/called */
 
+struct cfs_rq {
+	struct load_weight load;
+	unsigned int nr_running, h_nr_running;
+	u64 min_vruntime;
+	struct rb_root_cached tasks_timeline;
+	struct sched_entity *curr, *next, *last;
+};
 
-struct cfs_rq { struct load_weight	load; unsigned int nr_running, h_nr_running; u64			min_vruntime; struct rb_root_cached	tasks_timeline; struct sched_entity *curr, *next, *last; };
+#define entity_is_task(se) 1
 
+struct rq {
+	raw_spinlock_t __lock;
+	unsigned int nr_running;
+	struct cfs_rq cfs;
+	struct task_struct __rcu *curr;
+	struct task_struct *idle;
+	struct mm_struct *prev_mm;
+	unsigned int clock_update_flags;
+	u64 clock;
+	u64 clock_task ____cacheline_aligned;
+};
 
-#define entity_is_task(se)	1
+static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
+{
+	return container_of(cfs_rq, struct rq, cfs);
+}
 
-struct rq { raw_spinlock_t		__lock; unsigned int		nr_running; struct cfs_rq		cfs; struct task_struct __rcu	*curr; struct task_struct	*idle; struct mm_struct	*prev_mm; unsigned int		clock_update_flags; u64			clock; u64			clock_task ____cacheline_aligned; };
+static inline int cpu_of(struct rq *rq)
+{
+	return 0;
+}
 
+static inline raw_spinlock_t *rq_lockp(struct rq *rq)
+{
+	return &rq->__lock;
+}
 
-static inline struct rq *rq_of(struct cfs_rq *cfs_rq) {
-	return container_of(cfs_rq, struct rq, cfs); }
+static inline raw_spinlock_t *__rq_lockp(struct rq *rq)
+{
+	return &rq->__lock;
+}
 
-static inline int cpu_of(struct rq *rq) {
-	return 0; }
-
-static inline raw_spinlock_t *rq_lockp(struct rq *rq) {
-	return &rq->__lock; }
-
-static inline raw_spinlock_t *__rq_lockp(struct rq *rq) {
-	return &rq->__lock; }
-
-static inline void lockdep_assert_rq_held(struct rq *rq) {
-	lockdep_assert_held(__rq_lockp(rq)); }
+static inline void lockdep_assert_rq_held(struct rq *rq)
+{
+	lockdep_assert_held(__rq_lockp(rq));
+}
 
 extern void raw_spin_rq_lock_nested(struct rq *rq, int subclass);
 /* extern bool raw_spin_rq_trylock(struct rq *rq); removed - never called */
 extern void raw_spin_rq_unlock(struct rq *rq);
 
-static inline void raw_spin_rq_lock(struct rq *rq) {
-	raw_spin_rq_lock_nested(rq, 0); }
+static inline void raw_spin_rq_lock(struct rq *rq)
+{
+	raw_spin_rq_lock_nested(rq, 0);
+}
 
 /* raw_spin_rq_lock_irq removed - 0-caller orphan */
 
-static inline void raw_spin_rq_unlock_irq(struct rq *rq) {
+static inline void raw_spin_rq_unlock_irq(struct rq *rq)
+{
 	raw_spin_rq_unlock(rq);
-	local_irq_enable(); }
+	local_irq_enable();
+}
 
 DECLARE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 
-#define cpu_rq(cpu)		(&per_cpu(runqueues, (cpu)))
-#define this_rq()		this_cpu_ptr(&runqueues)
-#define task_rq(p)		cpu_rq(task_cpu(p))
+#define cpu_rq(cpu) (&per_cpu(runqueues, (cpu)))
+#define this_rq() this_cpu_ptr(&runqueues)
+#define task_rq(p) cpu_rq(task_cpu(p))
 
+static inline struct task_struct *task_of(struct sched_entity *se)
+{
+	return container_of(se, struct task_struct, se);
+}
 
-static inline struct task_struct *task_of(struct sched_entity *se) {
-	return container_of(se, struct task_struct, se); }
+static inline struct cfs_rq *task_cfs_rq(struct task_struct *p)
+{
+	return &task_rq(p)->cfs;
+}
 
-static inline struct cfs_rq *task_cfs_rq(struct task_struct *p) {
-	return &task_rq(p)->cfs; }
-
-static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se) {
+static inline struct cfs_rq *cfs_rq_of(struct sched_entity *se)
+{
 	struct task_struct *p = task_of(se);
 	struct rq *rq = task_rq(p);
 
-	return &rq->cfs; }
+	return &rq->cfs;
+}
 
- 
 extern void update_rq_clock(struct rq *rq);
 
- 
-#define RQCF_REQ_SKIP		0x01
-#define RQCF_ACT_SKIP		0x02
+#define RQCF_REQ_SKIP 0x01
+#define RQCF_ACT_SKIP 0x02
 
-static inline void assert_clock_updated(struct rq *rq) {
-	 
-	SCHED_WARN_ON(rq->clock_update_flags < RQCF_ACT_SKIP); }
+static inline void assert_clock_updated(struct rq *rq)
+{
+	SCHED_WARN_ON(rq->clock_update_flags < RQCF_ACT_SKIP);
+}
 
-static inline u64 rq_clock_task(struct rq *rq) {
+static inline u64 rq_clock_task(struct rq *rq)
+{
 	lockdep_assert_rq_held(rq);
 	assert_clock_updated(rq);
 
-	return rq->clock_task; }
+	return rq->clock_task;
+}
 
- 
-static inline u64 rq_clock_thermal(struct rq *rq) {
-	return rq_clock_task(rq); }
+static inline u64 rq_clock_thermal(struct rq *rq)
+{
+	return rq_clock_task(rq);
+}
 
-static inline void rq_clock_skip_update(struct rq *rq) {
+static inline void rq_clock_skip_update(struct rq *rq)
+{
 	lockdep_assert_rq_held(rq);
-	rq->clock_update_flags |= RQCF_REQ_SKIP; }
+	rq->clock_update_flags |= RQCF_REQ_SKIP;
+}
 
 /* rq_clock_cancel_skipupdate removed - unused */
 
-struct rq_flags { unsigned long flags; struct pin_cookie cookie; };
+struct rq_flags {
+	unsigned long flags;
+	struct pin_cookie cookie;
+};
 
-
-static inline void rq_pin_lock(struct rq *rq, struct rq_flags *rf) {
+static inline void rq_pin_lock(struct rq *rq, struct rq_flags *rf)
+{
 	rf->cookie = lockdep_pin_lock(__rq_lockp(rq));
-
 }
 
-static inline void rq_unpin_lock(struct rq *rq, struct rq_flags *rf) {
-
-	lockdep_unpin_lock(__rq_lockp(rq), rf->cookie); }
+static inline void rq_unpin_lock(struct rq *rq, struct rq_flags *rf)
+{
+	lockdep_unpin_lock(__rq_lockp(rq), rf->cookie);
+}
 
 struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
 	__acquires(rq->lock);
 
 static inline void __task_rq_unlock(struct rq *rq, struct rq_flags *rf)
-	__releases(rq->lock) {
-	rq_unpin_lock(rq, rf);
-	raw_spin_rq_unlock(rq); }
-
-static inline void task_rq_unlock(struct rq *rq, struct task_struct *p, struct rq_flags *rf)
 	__releases(rq->lock)
-	__releases(p->pi_lock) {
+{
 	rq_unpin_lock(rq, rf);
 	raw_spin_rq_unlock(rq);
-	raw_spin_unlock_irqrestore(&p->pi_lock, rf->flags); }
+}
+
+static inline void task_rq_unlock(struct rq *rq, struct task_struct *p,
+				  struct rq_flags *rf) __releases(rq->lock)
+	__releases(p->pi_lock)
+{
+	rq_unpin_lock(rq, rf);
+	raw_spin_rq_unlock(rq);
+	raw_spin_unlock_irqrestore(&p->pi_lock, rf->flags);
+}
 
 static inline void rq_lock(struct rq *rq, struct rq_flags *rf)
-	__acquires(rq->lock) {
+	__acquires(rq->lock)
+{
 	raw_spin_rq_lock(rq);
-	rq_pin_lock(rq, rf); }
+	rq_pin_lock(rq, rf);
+}
 
 static inline void rq_unlock(struct rq *rq, struct rq_flags *rf)
-	__releases(rq->lock) {
+	__releases(rq->lock)
+{
 	rq_unpin_lock(rq, rf);
-	raw_spin_rq_unlock(rq); }
+	raw_spin_rq_unlock(rq);
+}
 
 /* sched_init_numa, sched_update_numa, sched_domains_numa_masks_set/clear, sched_numa_find_closest removed - unused */
 
 /* init_numa_balancing removed - NUMA_BALANCING off, empty stub */
 
-
-
 /* sched_core_account_forceidle removed - unused */
 
 /* set_task_rq / task_group / __set_task_cpu removed - no CGROUP_SCHED, UP build (all no-ops, 0 callers) */
 
+#define const_debug const
 
-# define const_debug const
-
-#define SCHED_FEAT(name, enabled)		__SCHED_FEAT_##name ,
+#define SCHED_FEAT(name, enabled) __SCHED_FEAT_##name,
 
 enum {
 #include "features.h"
-	__SCHED_FEAT_NR, };
+	__SCHED_FEAT_NR,
+};
 
 #undef SCHED_FEAT
 
-
- 
-#define SCHED_FEAT(name, enabled)		(1UL << __SCHED_FEAT_##name) * enabled |
+#define SCHED_FEAT(name, enabled) (1UL << __SCHED_FEAT_##name) * enabled |
 static const_debug __maybe_unused unsigned int sysctl_sched_features =
 #include "features.h"
 	0;
@@ -241,69 +274,88 @@ static const_debug __maybe_unused unsigned int sysctl_sched_features =
 
 #define sched_feat(x) !!(sysctl_sched_features & (1UL << __SCHED_FEAT_##x))
 
+static inline int task_on_rq_queued(struct task_struct *p)
+{
+	return p->on_rq == TASK_ON_RQ_QUEUED;
+}
 
+static inline int task_on_rq_migrating(struct task_struct *p)
+{
+	return READ_ONCE(p->on_rq) == TASK_ON_RQ_MIGRATING;
+}
 
-static inline int task_on_rq_queued(struct task_struct *p) {
-	return p->on_rq == TASK_ON_RQ_QUEUED; }
+#define WF_FORK 0x04
+#define WF_SYNC 0x10
 
-static inline int task_on_rq_migrating(struct task_struct *p) {
-	return READ_ONCE(p->on_rq) == TASK_ON_RQ_MIGRATING; }
+#define WEIGHT_IDLEPRIO 3
+#define WMULT_IDLEPRIO 1431655765
 
-#define WF_FORK     0x04
-#define WF_SYNC     0x10
+extern const int sched_prio_to_weight[40];
+extern const u32 sched_prio_to_wmult[40];
 
+#define DEQUEUE_SLEEP 0x01
+#define DEQUEUE_SAVE 0x02
+#define DEQUEUE_MOVE 0x04
+#define DEQUEUE_NOCLOCK 0x08
 
-#define WEIGHT_IDLEPRIO		3
-#define WMULT_IDLEPRIO		1431655765
-
-extern const int		sched_prio_to_weight[40];
-extern const u32		sched_prio_to_wmult[40];
-
- 
-
-#define DEQUEUE_SLEEP		0x01
-#define DEQUEUE_SAVE		0x02  
-#define DEQUEUE_MOVE		0x04  
-#define DEQUEUE_NOCLOCK		0x08  
-
-#define ENQUEUE_WAKEUP		0x01
+#define ENQUEUE_WAKEUP 0x01
 /* ENQUEUE_RESTORE removed - never referenced */
-#define ENQUEUE_NOCLOCK		0x08
+#define ENQUEUE_NOCLOCK 0x08
 /* ENQUEUE_HEAD removed - never referenced */
-#define ENQUEUE_MIGRATED	0x00
+#define ENQUEUE_MIGRATED 0x00
 
-#define RETRY_TASK		((void *)-1UL)
+#define RETRY_TASK ((void *)-1UL)
 
-struct sched_class { void (*enqueue_task) (struct rq *rq, struct task_struct *p, int flags); void (*dequeue_task) (struct rq *rq, struct task_struct *p, int flags); void (*check_preempt_curr)(struct rq *rq, struct task_struct *p, int flags); struct task_struct *(*pick_next_task)(struct rq *rq); void (*put_prev_task)(struct rq *rq, struct task_struct *p); void (*set_next_task)(struct rq *rq, struct task_struct *p, bool first); void (*task_tick)(struct rq *rq, struct task_struct *p, int queued); void (*task_fork)(struct task_struct *p); void (*task_dead)(struct task_struct *p); };
+struct sched_class {
+	void (*enqueue_task)(struct rq *rq, struct task_struct *p, int flags);
+	void (*dequeue_task)(struct rq *rq, struct task_struct *p, int flags);
+	void (*check_preempt_curr)(struct rq *rq, struct task_struct *p,
+				   int flags);
+	struct task_struct *(*pick_next_task)(struct rq *rq);
+	void (*put_prev_task)(struct rq *rq, struct task_struct *p);
+	void (*set_next_task)(struct rq *rq, struct task_struct *p, bool first);
+	void (*task_tick)(struct rq *rq, struct task_struct *p, int queued);
+	void (*task_fork)(struct task_struct *p);
+	void (*task_dead)(struct task_struct *p);
+};
 
-static inline void put_prev_task(struct rq *rq, struct task_struct *prev) {
+static inline void put_prev_task(struct rq *rq, struct task_struct *prev)
+{
 	WARN_ON_ONCE(rq->curr != prev);
-	prev->sched_class->put_prev_task(rq, prev); }
+	prev->sched_class->put_prev_task(rq, prev);
+}
 
-static inline void set_next_task(struct rq *rq, struct task_struct *next) {
-	next->sched_class->set_next_task(rq, next, false); }
+static inline void set_next_task(struct rq *rq, struct task_struct *next)
+{
+	next->sched_class->set_next_task(rq, next, false);
+}
 
+#define DEFINE_SCHED_CLASS(name)                                           \
+	const struct sched_class name##_sched_class __aligned(__alignof__( \
+		struct sched_class)) __section("__" #name "_sched_class")
 
- 
-#define DEFINE_SCHED_CLASS(name) const struct sched_class name##_sched_class 	__aligned(__alignof__(struct sched_class)) 	__section("__" #name "_sched_class")
-
- 
 extern struct sched_class __sched_class_highest[];
 extern struct sched_class __sched_class_lowest[];
 
-#define for_class_range(class, _from, _to) 	for (class = (_from); class < (_to); class++)
+#define for_class_range(class, _from, _to) \
+	for (class = (_from); class < (_to); class ++)
 
-#define for_each_class(class) 	for_class_range(class, __sched_class_highest, __sched_class_lowest)
+#define for_each_class(class) \
+	for_class_range(class, __sched_class_highest, __sched_class_lowest)
 
-#define sched_class_above(_a, _b)	((_a) < (_b))
+#define sched_class_above(_a, _b) ((_a) < (_b))
 
 extern const struct sched_class fair_sched_class;
 extern const struct sched_class idle_sched_class;
 
-static inline bool sched_fair_runnable(struct rq *rq) {
-	return rq->cfs.nr_running > 0; }
+static inline bool sched_fair_runnable(struct rq *rq)
+{
+	return rq->cfs.nr_running > 0;
+}
 
-extern struct task_struct *pick_next_task_fair(struct rq *rq, struct task_struct *prev, struct rq_flags *rf);
+extern struct task_struct *pick_next_task_fair(struct rq *rq,
+					       struct task_struct *prev,
+					       struct rq_flags *rf);
 extern struct task_struct *pick_next_task_idle(struct rq *rq);
 
 extern void schedule_idle(void);
@@ -319,19 +371,21 @@ extern void resched_cpu(int cpu);
 
 /* sched_tick_offload_init removed - unused */
 
-static inline void add_nr_running(struct rq *rq, unsigned count) {
+static inline void add_nr_running(struct rq *rq, unsigned count)
+{
 	unsigned prev_nr = rq->nr_running;
 
-	rq->nr_running = prev_nr + count; }
+	rq->nr_running = prev_nr + count;
+}
 
-static inline void sub_nr_running(struct rq *rq, unsigned count) {
-	rq->nr_running -= count; }
+static inline void sub_nr_running(struct rq *rq, unsigned count)
+{
+	rq->nr_running -= count;
+}
 
 extern void activate_task(struct rq *rq, struct task_struct *p, int flags);
 
 extern void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags);
-
-
 
 /* arch_scale_freq_capacity removed - unused (0 callers) */
 
@@ -341,14 +395,8 @@ extern void init_cfs_rq(struct cfs_rq *cfs_rq);
 
 /* nohz_balance_exit_idle removed - unused */
 
-
-
 /* arch_scale_freq_invariant removed - unused (0 callers) */
-
 
 /* uclamp_rq_util_with removed - unused */
 
-
-
-
-#endif  
+#endif

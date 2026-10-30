@@ -7,10 +7,8 @@
 #include <linux/rbtree.h>
 #include <linux/uidgid.h>
 
-
-
-
-static inline void do_sysctl_args(void) { }
-
+static inline void do_sysctl_args(void)
+{
+}
 
 #endif

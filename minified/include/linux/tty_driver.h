@@ -10,10 +10,10 @@ struct tty_struct;
 struct tty_driver;
 
 struct tty_operations {
-	int  (*install)(struct tty_driver *driver, struct tty_struct *tty);
-	int  (*open)(struct tty_struct * tty, struct file * filp);
-	int  (*write)(struct tty_struct * tty,
-		      const unsigned char *buf, int count);
+	int (*install)(struct tty_driver *driver, struct tty_struct *tty);
+	int (*open)(struct tty_struct *tty, struct file *filp);
+	int (*write)(struct tty_struct *tty, const unsigned char *buf,
+		     int count);
 	void (*flush_chars)(struct tty_struct *tty);
 	unsigned int (*write_room)(struct tty_struct *tty);
 	/* put_char, chars_in_buffer, ioctl, compat_ioctl, set_termios, throttle,
@@ -27,20 +27,17 @@ struct tty_operations {
 struct tty_driver {
 	struct kref kref;
 	struct cdev **cdevs;
-	const char	*name;
-	int	name_base;
-	int	major;
-	int	minor_start;
-	unsigned int	num;
+	const char *name;
+	int name_base;
+	int major;
+	int minor_start;
+	unsigned int num;
 	struct ktermios init_termios;
-	unsigned long	flags;
-
+	unsigned long flags;
 
 	struct tty_struct **ttys;
 	struct tty_port **ports;
 	struct ktermios **termios;
-
-
 
 	const struct tty_operations *ops;
 	struct list_head tty_drivers;
@@ -49,12 +46,12 @@ struct tty_driver {
 extern struct list_head tty_drivers;
 
 struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
-		unsigned long flags);
+				      unsigned long flags);
 
 void tty_driver_kref_put(struct tty_driver *driver);
 
 #define tty_alloc_driver(lines, flags) \
-		__tty_alloc_driver(lines, THIS_MODULE, flags)
+	__tty_alloc_driver(lines, THIS_MODULE, flags)
 
 static inline struct tty_driver *tty_driver_kref_get(struct tty_driver *d)
 {
@@ -63,13 +60,13 @@ static inline struct tty_driver *tty_driver_kref_get(struct tty_driver *d)
 }
 
 static inline void tty_set_operations(struct tty_driver *driver,
-		const struct tty_operations *op)
+				      const struct tty_operations *op)
 {
 	driver->ops = op;
 }
 
-#define TTY_DRIVER_INSTALLED		0x0001
-#define TTY_DRIVER_RESET_TERMIOS	0x0002
+#define TTY_DRIVER_INSTALLED 0x0001
+#define TTY_DRIVER_RESET_TERMIOS 0x0002
 /* REAL_RAW/DYNAMIC_DEV/DEVPTS_MEM/DYNAMIC_ALLOC/UNNUMBERED_NODE removed:
  * the sole driver (console) is allocated with only REAL_RAW|RESET_TERMIOS
  * (REAL_RAW itself was never tested), so every other flag was either
@@ -77,6 +74,6 @@ static inline void tty_set_operations(struct tty_driver *driver,
 
 int tty_register_driver(struct tty_driver *driver);
 struct device *tty_register_device(struct tty_driver *driver, unsigned index,
-		struct device *dev);
+				   struct device *dev);
 
-#endif  
+#endif

@@ -1,7 +1,6 @@
 #ifndef _LINUX_HRTIMER_H
 #define _LINUX_HRTIMER_H
 
-
 #include <linux/rbtree.h>
 #include <linux/percpu.h>
 #include <linux/seqlock.h>

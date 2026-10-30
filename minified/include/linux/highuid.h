@@ -3,9 +3,6 @@
 
 #include <linux/types.h>
 
-
-
-
 extern int overflowuid;
 extern int overflowgid;
 

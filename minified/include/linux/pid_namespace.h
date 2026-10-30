@@ -7,20 +7,27 @@
 #include <linux/ns_common.h>
 #include <linux/idr.h>
 
-struct pid_namespace { struct idr idr; unsigned int pid_allocated; struct kmem_cache *pid_cachep; unsigned int level; } __randomize_layout;
+struct pid_namespace {
+	struct idr idr;
+	unsigned int pid_allocated;
+	struct kmem_cache *pid_cachep;
+	unsigned int level;
+} __randomize_layout;
 
 extern struct pid_namespace init_pid_ns;
 
 #define PIDNS_ADDING (1U << 31)
 
+static inline struct pid_namespace *get_pid_ns(struct pid_namespace *ns)
+{
+	return ns;
+}
 
-static inline struct pid_namespace *get_pid_ns(struct pid_namespace *ns) {
-	return ns; }
-
-static inline void put_pid_ns(struct pid_namespace *ns) { }
-
+static inline void put_pid_ns(struct pid_namespace *ns)
+{
+}
 
 extern struct pid_namespace *task_active_pid_ns(struct task_struct *tsk);
 void pid_idr_init(void);
 
-#endif  
+#endif

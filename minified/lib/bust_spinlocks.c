@@ -3,10 +3,13 @@
 #include <linux/vt_kern.h>
 #include <linux/console.h>
 
-void bust_spinlocks(int yes) {
+void bust_spinlocks(int yes)
+{
 	if (yes) {
 		++oops_in_progress;
 	} else {
 		unblank_screen();
 		console_unblank();
-		--oops_in_progress; } }
+		--oops_in_progress;
+	}
+}

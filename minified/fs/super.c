@@ -17,10 +17,14 @@ static DEFINE_SPINLOCK(sb_lock);
  * for the two error-path call sites; the private subtree (destroy_super_work,
  * list_lru_destroy) cascaded away.
  */
-static void destroy_unused_super(struct super_block *s) { }
+static void destroy_unused_super(struct super_block *s)
+{
+}
 
-static struct super_block *alloc_super(struct file_system_type *type, int flags, struct user_namespace *user_ns) {
-	struct super_block *s = kzalloc(sizeof(struct super_block),  GFP_USER);
+static struct super_block *alloc_super(struct file_system_type *type, int flags,
+				       struct user_namespace *user_ns)
+{
+	struct super_block *s = kzalloc(sizeof(struct super_block), GFP_USER);
 	static const struct super_operations default_op;
 
 	if (!s)
@@ -48,8 +52,10 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 		goto fail;
 	return s;
 
-fail: destroy_unused_super(s);
-	return NULL; }
+fail:
+	destroy_unused_super(s);
+	return NULL;
+}
 
 /*
  * Runtime-dead on a 1-shot boot: the boot filesystems are never unmounted, so
@@ -59,14 +65,17 @@ fail: destroy_unused_super(s);
  * the symbol for the fs.h extern + kill_sb function-pointer tables. The private
  * subtree (__put_super -> destroy_super_rcu) cascaded away.
  */
-void deactivate_locked_super(struct super_block *s) { }
+void deactivate_locked_super(struct super_block *s)
+{
+}
 
-
-void deactivate_super(struct super_block *s) {
+void deactivate_super(struct super_block *s)
+{
 	if (!atomic_add_unless(&s->s_active, -1, 1)) {
 		down_write(&s->s_umount);
-		deactivate_locked_super(s); } }
-
+		deactivate_locked_super(s);
+	}
+}
 
 /*
  * generic_shutdown_super() runs only on superblock DESTRUCTION, reached via
@@ -77,7 +86,10 @@ void deactivate_super(struct super_block *s) {
  * the sb-list unlink tail is kept so the symbol still links for the kill_sb
  * function-pointer table entries.
  */
-struct super_block *sget_fc(struct fs_context *fc, int (*set)(struct super_block *, struct fs_context *)) {
+struct super_block *sget_fc(struct fs_context *fc,
+			    int (*set)(struct super_block *,
+				       struct fs_context *))
+{
 	struct super_block *s;
 	struct user_namespace *user_ns = fc->user_ns;
 	int err;
@@ -93,40 +105,48 @@ struct super_block *sget_fc(struct fs_context *fc, int (*set)(struct super_block
 		s->s_fs_info = NULL;
 		spin_unlock(&sb_lock);
 		destroy_unused_super(s);
-		return ERR_PTR(err); }
+		return ERR_PTR(err);
+	}
 	fc->s_fs_info = NULL;
 	s->s_type = fc->fs_type;
 	strlcpy(s->s_id, s->s_type->name, sizeof(s->s_id));
 	spin_unlock(&sb_lock);
 	get_filesystem(s->s_type);
-	return s; }
+	return s;
+}
 
 /* Removed: sget, drop_super, drop_super_exclusive, iterate_supers,
    iterate_supers_type, get_super, get_active_super, user_get_super -
    never called */
 
-
 static DEFINE_IDA(unnamed_dev_ida);
 
-void kill_litter_super(struct super_block *sb) {
+void kill_litter_super(struct super_block *sb)
+{
 	/* TEARDOWN-CALLBACK-NEVER-FIRES anchor-stub: the .kill_sb superblock
 	 * teardown fn-ptr (shmem + rootfs fs_types). A boot-once artifact never
 	 * unmounts, so this never runs (HIT=False). void no-op is behavior-
 	 * preserving; the unnamed-dev IDA id release is moot (never reused). */
 }
 
-int set_anon_super_fc(struct super_block *sb, struct fs_context *fc) {
+int set_anon_super_fc(struct super_block *sb, struct fs_context *fc)
+{
 	int dev;
 
-	dev = ida_alloc_range(&unnamed_dev_ida, 1, (1 << MINORBITS) - 1, GFP_ATOMIC);
+	dev = ida_alloc_range(&unnamed_dev_ida, 1, (1 << MINORBITS) - 1,
+			      GFP_ATOMIC);
 	if (dev == -ENOSPC)
 		dev = -EMFILE;
 	if (dev < 0)
 		return dev;
 
-	return 0; }
+	return 0;
+}
 
-int get_tree_nodev(struct fs_context *fc, int (*fill_super)(struct super_block *sb, struct fs_context *fc)) {
+int get_tree_nodev(struct fs_context *fc,
+		   int (*fill_super)(struct super_block *sb,
+				     struct fs_context *fc))
+{
 	struct super_block *sb;
 	int err;
 
@@ -137,16 +157,18 @@ int get_tree_nodev(struct fs_context *fc, int (*fill_super)(struct super_block *
 	err = fill_super(sb, fc);
 	if (err) {
 		deactivate_locked_super(sb);
-		return err; }
+		return err;
+	}
 
 	sb->s_flags |= SB_ACTIVE;
 	fc->root = dget(sb->s_root);
-	return 0; }
-
+	return 0;
+}
 
 /* Removed: mount_nodev - never called (~7 LOC) */
 
-int vfs_get_tree(struct fs_context *fc) {
+int vfs_get_tree(struct fs_context *fc)
+{
 	struct super_block *sb;
 	int error;
 
@@ -158,12 +180,18 @@ int vfs_get_tree(struct fs_context *fc) {
 		return error;
 
 	if (!fc->root) {
-		pr_err("Filesystem %s get_tree() didn't set fc->root\n", fc->fs_type->name);
-		
-		BUG(); }
+		pr_err("Filesystem %s get_tree() didn't set fc->root\n",
+		       fc->fs_type->name);
+
+		BUG();
+	}
 
 	sb = fc->root->d_sb;
 
-	WARN((sb->s_maxbytes < 0), "%s set sb->s_maxbytes to " "negative value (%lld)\n", fc->fs_type->name, sb->s_maxbytes);
+	WARN((sb->s_maxbytes < 0),
+	     "%s set sb->s_maxbytes to "
+	     "negative value (%lld)\n",
+	     fc->fs_type->name, sb->s_maxbytes);
 
-	return 0; }
+	return 0;
+}

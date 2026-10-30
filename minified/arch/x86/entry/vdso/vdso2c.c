@@ -19,16 +19,40 @@
 
 const char *outfilename;
 
-enum { sym_vvar_start, sym_vvar_page, sym_pvclock_page, sym_hvclock_page, sym_timens_page, };
+enum {
+	sym_vvar_start,
+	sym_vvar_page,
+	sym_pvclock_page,
+	sym_hvclock_page,
+	sym_timens_page,
+};
 
-const int special_pages[] = { sym_vvar_page, sym_pvclock_page, sym_hvclock_page, sym_timens_page, };
+const int special_pages[] = {
+	sym_vvar_page,
+	sym_pvclock_page,
+	sym_hvclock_page,
+	sym_timens_page,
+};
 
-struct vdso_sym { const char *name; bool export; };
+struct vdso_sym {
+	const char *name;
+	bool export;
+};
 
-struct vdso_sym required_syms[] = { [sym_vvar_start] = {"vvar_start", true}, [sym_vvar_page] = {"vvar_page", true}, [sym_pvclock_page] = {"pvclock_page", true}, [sym_hvclock_page] = {"hvclock_page", true}, [sym_timens_page] = {"timens_page", true}, {"VDSO32_NOTE_MASK", true}, {"__kernel_vsyscall", true}, {"int80_landing_pad", true}, };
+struct vdso_sym required_syms[] = {
+	[sym_vvar_start] = { "vvar_start", true },
+	[sym_vvar_page] = { "vvar_page", true },
+	[sym_pvclock_page] = { "pvclock_page", true },
+	[sym_hvclock_page] = { "hvclock_page", true },
+	[sym_timens_page] = { "timens_page", true },
+	{ "VDSO32_NOTE_MASK", true },
+	{ "__kernel_vsyscall", true },
+	{ "int80_landing_pad", true },
+};
 
-__attribute__((format(printf, 1, 2))) __attribute__((noreturn))
-static void fail(const char *format, ...) {
+__attribute__((format(printf, 1, 2))) __attribute__((noreturn)) static void
+fail(const char *format, ...)
+{
 	va_list ap;
 	va_start(ap, format);
 	fprintf(stderr, "Error: ");
@@ -36,14 +60,18 @@ static void fail(const char *format, ...) {
 	if (outfilename)
 		unlink(outfilename);
 	exit(1);
-	va_end(ap); }
+	va_end(ap);
+}
 
-#define GLE(x, bits, ifnot)							__builtin_choose_expr(								(sizeof(*(x)) == bits/8),						(__typeof__(*(x)))get_unaligned_le##bits(x), ifnot)
+#define GLE(x, bits, ifnot)                                                \
+	__builtin_choose_expr((sizeof(*(x)) == bits / 8),                  \
+			      (__typeof__(*(x)))get_unaligned_le##bits(x), \
+			      ifnot)
 
 extern void bad_get_le(void);
-#define LAST_GLE(x)								__builtin_choose_expr(sizeof(*(x)) == 1, *(x), bad_get_le())
+#define LAST_GLE(x) __builtin_choose_expr(sizeof(*(x)) == 1, *(x), bad_get_le())
 
-#define GET_LE(x)								GLE(x, 64, GLE(x, 32, GLE(x, 16, LAST_GLE(x))))
+#define GET_LE(x) GLE(x, 64, GLE(x, 32, GLE(x, 16, LAST_GLE(x))))
 
 #define NSYMS ARRAY_SIZE(required_syms)
 
@@ -65,17 +93,24 @@ extern void bad_get_le(void);
 #include "vdso2c.h"
 #undef ELF_BITS
 
-static void go(void *raw_addr, size_t raw_len, void *stripped_addr, size_t stripped_len, FILE *outfile, const char *name) {
+static void go(void *raw_addr, size_t raw_len, void *stripped_addr,
+	       size_t stripped_len, FILE *outfile, const char *name)
+{
 	Elf64_Ehdr *hdr = (Elf64_Ehdr *)raw_addr;
 
 	if (hdr->e_ident[EI_CLASS] == ELFCLASS64) {
-		go64(raw_addr, raw_len, stripped_addr, stripped_len, outfile, name);
+		go64(raw_addr, raw_len, stripped_addr, stripped_len, outfile,
+		     name);
 	} else if (hdr->e_ident[EI_CLASS] == ELFCLASS32) {
-		go32(raw_addr, raw_len, stripped_addr, stripped_len, outfile, name);
+		go32(raw_addr, raw_len, stripped_addr, stripped_len, outfile,
+		     name);
 	} else {
-		fail("unknown ELF class\n"); } }
+		fail("unknown ELF class\n");
+	}
+}
 
-static void map_input(const char *name, void **addr, size_t *len, int prot) {
+static void map_input(const char *name, void **addr, size_t *len, int prot)
+{
 	off_t tmp_len;
 
 	int fd = open(name, O_RDONLY);
@@ -91,9 +126,11 @@ static void map_input(const char *name, void **addr, size_t *len, int prot) {
 	if (*addr == MAP_FAILED)
 		err(1, "mmap");
 
-	close(fd); }
+	close(fd);
+}
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 	size_t raw_len, stripped_len;
 	void *raw_addr, *stripped_addr;
 	FILE *outfile;
@@ -102,9 +139,9 @@ int main(int argc, char **argv) {
 
 	if (argc != 4) {
 		printf("Usage: vdso2c RAW_INPUT STRIPPED_INPUT OUTPUT\n");
-		return 1; }
+		return 1;
+	}
 
-	 
 	name = strdup(argv[3]);
 	namelen = strlen(name);
 	if (namelen >= 3 && !strcmp(name + namelen - 3, ".so")) {
@@ -118,7 +155,8 @@ int main(int argc, char **argv) {
 			*tmp = '\0';
 		for (tmp = name; *tmp; tmp++)
 			if (*tmp == '-')
-				*tmp = '_'; }
+				*tmp = '_';
+	}
 
 	map_input(argv[1], &raw_addr, &raw_len, PROT_READ);
 	map_input(argv[2], &stripped_addr, &stripped_len, PROT_READ);
@@ -134,4 +172,5 @@ int main(int argc, char **argv) {
 	munmap(stripped_addr, stripped_len);
 	fclose(outfile);
 
-	return 0; }
+	return 0;
+}

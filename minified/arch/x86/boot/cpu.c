@@ -18,7 +18,6 @@ static char *cpu_name(int level)
 
 static void show_cap_strs(u32 *err_flags)
 {
-	 
 }
 
 int validate_cpu(void)
@@ -29,10 +28,8 @@ int validate_cpu(void)
 	check_cpu(&cpu_level, &req_level, &err_flags);
 
 	if (cpu_level < req_level) {
-		printf("This kernel requires an %s CPU, ",
-		       cpu_name(req_level));
-		printf("but only detected an %s CPU.\n",
-		       cpu_name(cpu_level));
+		printf("This kernel requires an %s CPU, ", cpu_name(req_level));
+		printf("but only detected an %s CPU.\n", cpu_name(cpu_level));
 		return -1;
 	}
 

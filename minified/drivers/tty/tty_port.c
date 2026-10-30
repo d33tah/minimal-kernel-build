@@ -11,7 +11,7 @@ void tty_port_init(struct tty_port *port)
 }
 
 int tty_port_install(struct tty_port *port, struct tty_driver *driver,
-		struct tty_struct *tty)
+		     struct tty_struct *tty)
 {
 	tty->port = port;
 	return tty_standard_install(driver, tty);

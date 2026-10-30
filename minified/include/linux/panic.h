@@ -7,8 +7,7 @@
 struct pt_regs;
 
 extern long (*panic_blink)(int state);
-__printf(1, 2)
-void panic(const char *fmt, ...) __noreturn __cold;
+__printf(1, 2) void panic(const char *fmt, ...) __noreturn __cold;
 /* Removed: oops_may_print - never called */
 /* Removed: oops_exit + add_taint - 0-caller after oops_end stubbed (tick #322) */
 
@@ -17,6 +16,6 @@ void panic(const char *fmt, ...) __noreturn __cold;
    sysctl_max_rcu_stall_to_panic, sysctl_panic_on_stackoverflow - never defined/used */
 
 extern atomic_t panic_cpu;
-#define PANIC_CPU_INVALID	-1
+#define PANIC_CPU_INVALID -1
 
 #endif

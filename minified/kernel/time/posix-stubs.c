@@ -4,8 +4,10 @@
 
 #include <asm/syscall_wrapper.h>
 
-asmlinkage long sys_ni_posix_timers(void) {
-	return -ENOSYS; }
+asmlinkage long sys_ni_posix_timers(void)
+{
+	return -ENOSYS;
+}
 
 /*
  * Only clock_gettime / clock_getres remain wired up: the x86 vDSO fallback

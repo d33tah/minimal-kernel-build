@@ -1,4 +1,4 @@
- 
+
 #ifndef _ASM_X86_CPU_H
 #define _ASM_X86_CPU_H
 
@@ -9,13 +9,11 @@
 #include <linux/percpu.h>
 #include <asm/ibt.h>
 
-
 /* ap_init_aperfmperf removed - never defined or called */
-
 
 unsigned int x86_family(unsigned int sig);
 unsigned int x86_model(unsigned int sig);
 unsigned int x86_stepping(unsigned int sig);
 /* get_this_hybrid_cpu_type, init_ia32_feat_ctl, cet_disable, intel_cpu_collect_info, intel_cpu_signatures_match removed - never called */
 
-#endif  
+#endif

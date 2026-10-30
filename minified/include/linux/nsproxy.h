@@ -8,7 +8,12 @@ struct mnt_namespace;
 struct uts_namespace;
 struct pid_namespace;
 
-struct nsproxy { atomic_t count; struct uts_namespace *uts_ns; struct mnt_namespace *mnt_ns; struct pid_namespace *pid_ns_for_children; };
+struct nsproxy {
+	atomic_t count;
+	struct uts_namespace *uts_ns;
+	struct mnt_namespace *mnt_ns;
+	struct pid_namespace *pid_ns_for_children;
+};
 extern struct nsproxy init_nsproxy;
 
 int copy_namespaces(unsigned long flags, struct task_struct *tsk);
@@ -17,7 +22,9 @@ void exit_task_namespaces(struct task_struct *tsk);
  * exit_task_namespaces (nsproxy teardown is runtime-dead on a 1-shot boot). */
 int __init nsproxy_cache_init(void);
 
-static inline void get_nsproxy(struct nsproxy *ns) {
-	atomic_inc(&ns->count); }
+static inline void get_nsproxy(struct nsproxy *ns)
+{
+	atomic_inc(&ns->count);
+}
 
 #endif

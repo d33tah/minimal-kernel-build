@@ -1,4 +1,4 @@
- 
+
 #ifndef _ASM_X86_SET_MEMORY_H
 #define _ASM_X86_SET_MEMORY_H
 
@@ -12,4 +12,4 @@
 /* set_direct_map_*_noflush removed - never called */
 /* kernel_page_present removed - never called */
 
-#endif  
+#endif

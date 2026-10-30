@@ -4,15 +4,16 @@
 #include <linux/random.h>
 #include <linux/vmalloc.h>
 
-
-
 #include "internal.h"
 
-void kfree_const(const void *x) {
+void kfree_const(const void *x)
+{
 	if (!is_kernel_rodata((unsigned long)x))
-		kfree(x); }
+		kfree(x);
+}
 
-char *kstrdup(const char *s, gfp_t gfp) {
+char *kstrdup(const char *s, gfp_t gfp)
+{
 	size_t len;
 	char *buf;
 
@@ -23,23 +24,29 @@ char *kstrdup(const char *s, gfp_t gfp) {
 	buf = kmalloc_track_caller(len, gfp);
 	if (buf)
 		memcpy(buf, s, len);
-	return buf; }
+	return buf;
+}
 
-const char *kstrdup_const(const char *s, gfp_t gfp) {
+const char *kstrdup_const(const char *s, gfp_t gfp)
+{
 	if (is_kernel_rodata((unsigned long)s))
 		return s;
 
-	return kstrdup(s, gfp); }
+	return kstrdup(s, gfp);
+}
 
-void *kmemdup(const void *src, size_t len, gfp_t gfp) {
+void *kmemdup(const void *src, size_t len, gfp_t gfp)
+{
 	void *p;
 
 	p = kmalloc_track_caller(len, gfp);
 	if (p)
 		memcpy(p, src, len);
-	return p; }
+	return p;
+}
 
-char *kmemdup_nul(const char *s, size_t len, gfp_t gfp) {
+char *kmemdup_nul(const char *s, size_t len, gfp_t gfp)
+{
 	char *buf;
 
 	if (!s)
@@ -48,10 +55,14 @@ char *kmemdup_nul(const char *s, size_t len, gfp_t gfp) {
 	buf = kmalloc_track_caller(len + 1, gfp);
 	if (buf) {
 		memcpy(buf, s, len);
-		buf[len] = '\0'; }
-	return buf; }
+		buf[len] = '\0';
+	}
+	return buf;
+}
 
-void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma, struct vm_area_struct *prev) {
+void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
+		     struct vm_area_struct *prev)
+{
 	struct vm_area_struct *next;
 
 	vma->vm_prev = prev;
@@ -60,28 +71,35 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma, struct vm
 		prev->vm_next = vma;
 	} else {
 		next = mm->mmap;
-		mm->mmap = vma; }
+		mm->mmap = vma;
+	}
 	vma->vm_next = next;
 	if (next)
-		next->vm_prev = vma; }
+		next->vm_prev = vma;
+}
 
 #ifndef STACK_RND_MASK
-#define STACK_RND_MASK (0x7ff >> (PAGE_SHIFT - 12))      
+#define STACK_RND_MASK (0x7ff >> (PAGE_SHIFT - 12))
 #endif
 
-unsigned long randomize_stack_top(unsigned long stack_top) {
+unsigned long randomize_stack_top(unsigned long stack_top)
+{
 	unsigned long random_variable = 0;
 
 	if (current->flags & PF_RANDOMIZE) {
 		random_variable = get_random_long();
 		random_variable &= STACK_RND_MASK;
-		random_variable <<= PAGE_SHIFT; }
-	return PAGE_ALIGN(stack_top) - random_variable; }
+		random_variable <<= PAGE_SHIFT;
+	}
+	return PAGE_ALIGN(stack_top) - random_variable;
+}
 
-unsigned long randomize_page(unsigned long start, unsigned long range) {
+unsigned long randomize_page(unsigned long start, unsigned long range)
+{
 	if (!PAGE_ALIGNED(start)) {
 		range -= PAGE_ALIGN(start) - start;
-		start = PAGE_ALIGN(start); }
+		start = PAGE_ALIGN(start);
+	}
 
 	if (start > ULONG_MAX - range)
 		range = ULONG_MAX - start;
@@ -91,11 +109,13 @@ unsigned long randomize_page(unsigned long start, unsigned long range) {
 	if (range == 0)
 		return start;
 
-	return start + (get_random_long() % range << PAGE_SHIFT); }
+	return start + (get_random_long() % range << PAGE_SHIFT);
+}
 
-
-
-unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr, unsigned long len, unsigned long prot, unsigned long flag, unsigned long pgoff) {
+unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
+			    unsigned long len, unsigned long prot,
+			    unsigned long flag, unsigned long pgoff)
+{
 	unsigned long ret;
 	struct mm_struct *mm = current->mm;
 	unsigned long populate;
@@ -105,53 +125,62 @@ unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr, unsigned long
 	ret = do_mmap(file, addr, len, prot, flag, pgoff, &populate);
 	mmap_write_unlock(mm);
 	/* populate is always 0 here (VM_LOCKED/MAP_POPULATE never set). */
-	return ret; }
+	return ret;
+}
 
-unsigned long vm_mmap(struct file *file, unsigned long addr, unsigned long len, unsigned long prot, unsigned long flag, unsigned long offset) {
+unsigned long vm_mmap(struct file *file, unsigned long addr, unsigned long len,
+		      unsigned long prot, unsigned long flag,
+		      unsigned long offset)
+{
 	if (unlikely(offset + PAGE_ALIGN(len) < offset))
 		return -EINVAL;
 	if (unlikely(offset_in_page(offset)))
 		return -EINVAL;
 
-	return vm_mmap_pgoff(file, addr, len, prot, flag, offset >> PAGE_SHIFT); }
+	return vm_mmap_pgoff(file, addr, len, prot, flag, offset >> PAGE_SHIFT);
+}
 
-void *kvmalloc_node(size_t size, gfp_t flags, int node) {
+void *kvmalloc_node(size_t size, gfp_t flags, int node)
+{
 	gfp_t kmalloc_flags = flags;
 	void *ret;
 
-	 
 	if (size > PAGE_SIZE) {
 		kmalloc_flags |= __GFP_NOWARN;
 
 		if (!(kmalloc_flags & __GFP_RETRY_MAYFAIL))
 			kmalloc_flags |= __GFP_NORETRY;
 
-		 
-		kmalloc_flags &= ~__GFP_NOFAIL; }
+		kmalloc_flags &= ~__GFP_NOFAIL;
+	}
 
 	ret = kmalloc_node(size, kmalloc_flags, node);
 
-	 
 	if (ret || size <= PAGE_SIZE)
 		return ret;
 
-	 
 	if (unlikely(size > INT_MAX)) {
 		WARN_ON_ONCE(!(flags & __GFP_NOWARN));
-		return NULL; }
+		return NULL;
+	}
 
-	 
-	return __vmalloc_node_range(size, 1, VMALLOC_START, VMALLOC_END, flags, PAGE_KERNEL, VM_ALLOW_HUGE_VMAP, node, __builtin_return_address(0)); }
+	return __vmalloc_node_range(size, 1, VMALLOC_START, VMALLOC_END, flags,
+				    PAGE_KERNEL, VM_ALLOW_HUGE_VMAP, node,
+				    __builtin_return_address(0));
+}
 
-void kvfree(const void *addr) {
+void kvfree(const void *addr)
+{
 	if (is_vmalloc_addr(addr))
 		vfree(addr);
-	else kfree(addr); }
+	else
+		kfree(addr);
+}
 
-
-
-void *page_rmapping(struct page *page) {
-	return folio_raw_mapping(page_folio(page)); }
+void *page_rmapping(struct page *page)
+{
+	return folio_raw_mapping(page_folio(page));
+}
 
 int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
 
@@ -160,8 +189,10 @@ int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
  * build (no overcommit sysctl writer; the OVERCOMMIT_ALWAYS short-circuit and
  * the OVERCOMMIT_NEVER commit-limit tail were unreachable and are gone).
  */
-int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin) {
+int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
+{
 	if (pages > totalram_pages() + total_swap_pages)
 		return -ENOMEM;
 
-	return 0; }
+	return 0;
+}

@@ -7,29 +7,39 @@
 
 #include <asm/percpu.h>
 
-#define PCPU_MIN_UNIT_SIZE		PFN_ALIGN(32 << 10)
+#define PCPU_MIN_UNIT_SIZE PFN_ALIGN(32 << 10)
 
-#define PCPU_MIN_ALLOC_SHIFT		2
-#define PCPU_MIN_ALLOC_SIZE		(1 << PCPU_MIN_ALLOC_SHIFT)
+#define PCPU_MIN_ALLOC_SHIFT 2
+#define PCPU_MIN_ALLOC_SIZE (1 << PCPU_MIN_ALLOC_SHIFT)
 
-#define PCPU_BITMAP_BLOCK_SIZE		PAGE_SIZE
-#define PCPU_BITMAP_BLOCK_BITS		(PCPU_BITMAP_BLOCK_SIZE >>						 PCPU_MIN_ALLOC_SHIFT)
+#define PCPU_BITMAP_BLOCK_SIZE PAGE_SIZE
+#define PCPU_BITMAP_BLOCK_BITS (PCPU_BITMAP_BLOCK_SIZE >> PCPU_MIN_ALLOC_SHIFT)
 
-#define PERCPU_DYNAMIC_EARLY_SIZE	(12 << 10)
+#define PERCPU_DYNAMIC_EARLY_SIZE (12 << 10)
 
 /* BITS_PER_LONG == 32 */
-#define PERCPU_DYNAMIC_RESERVE		(20 << 10)
+#define PERCPU_DYNAMIC_RESERVE (20 << 10)
 
 extern const unsigned long *pcpu_unit_offsets;
 
-struct pcpu_group_info { int			nr_units; unsigned long		base_offset; unsigned int		*cpu_map; };
+struct pcpu_group_info {
+	int nr_units;
+	unsigned long base_offset;
+	unsigned int *cpu_map;
+};
 
-struct pcpu_alloc_info { size_t static_size, reserved_size, dyn_size, unit_size, atom_size, __ai_size; int			nr_groups; struct pcpu_group_info	groups[]; };
+struct pcpu_alloc_info {
+	size_t static_size, reserved_size, dyn_size, unit_size, atom_size,
+		__ai_size;
+	int nr_groups;
+	struct pcpu_group_info groups[];
+};
 
-extern struct pcpu_alloc_info * __init pcpu_alloc_alloc_info(int nr_groups, int nr_units);
+extern struct pcpu_alloc_info *__init pcpu_alloc_alloc_info(int nr_groups,
+							    int nr_units);
 
-extern void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai, void *base_addr);
-
+extern void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
+					  void *base_addr);
 
 extern void __init setup_per_cpu_areas(void);
 
@@ -37,6 +47,7 @@ extern void __percpu *__alloc_percpu(size_t size, size_t align) __alloc_size(1);
 extern void free_percpu(void __percpu *__pdata);
 extern phys_addr_t per_cpu_ptr_to_phys(void *addr);
 
-#define alloc_percpu(type)							(typeof(type) __percpu *)__alloc_percpu(sizeof(type),								__alignof__(type))
+#define alloc_percpu(type) \
+	(typeof(type) __percpu *)__alloc_percpu(sizeof(type), __alignof__(type))
 
-#endif  
+#endif

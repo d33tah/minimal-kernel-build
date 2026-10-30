@@ -8,55 +8,72 @@
 #include <linux/gfp.h>
 #include <asm/sync_core.h>
 
-
 extern struct mm_struct *mm_alloc(void);
 
-static inline void mmgrab(struct mm_struct *mm) {
-	atomic_inc(&mm->mm_count); }
+static inline void mmgrab(struct mm_struct *mm)
+{
+	atomic_inc(&mm->mm_count);
+}
 
 extern void __mmdrop(struct mm_struct *mm);
 
-static inline void mmdrop(struct mm_struct *mm) {
-	 
+static inline void mmdrop(struct mm_struct *mm)
+{
 	if (unlikely(atomic_dec_and_test(&mm->mm_count)))
-		__mmdrop(mm); }
+		__mmdrop(mm);
+}
 
-static inline void mmdrop_sched(struct mm_struct *mm) {
-	mmdrop(mm); }
+static inline void mmdrop_sched(struct mm_struct *mm)
+{
+	mmdrop(mm);
+}
 
-static inline void mmget(struct mm_struct *mm) {
-	atomic_inc(&mm->mm_users); }
-
+static inline void mmget(struct mm_struct *mm)
+{
+	atomic_inc(&mm->mm_users);
+}
 
 extern void mmput(struct mm_struct *);
 
 extern void exec_mm_release(struct task_struct *, struct mm_struct *);
 
 #ifndef arch_get_mmap_end
-#define arch_get_mmap_end(addr, len, flags)	(TASK_SIZE)
+#define arch_get_mmap_end(addr, len, flags) (TASK_SIZE)
 #endif
 
+extern void arch_pick_mmap_layout(struct mm_struct *mm,
+				  struct rlimit *rlim_stack);
+extern unsigned long arch_get_unmapped_area(struct file *, unsigned long,
+					    unsigned long, unsigned long,
+					    unsigned long);
+extern unsigned long arch_get_unmapped_area_topdown(struct file *filp,
+						    unsigned long addr,
+						    unsigned long len,
+						    unsigned long pgoff,
+						    unsigned long flags);
 
-extern void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack);
-extern unsigned long arch_get_unmapped_area(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
-extern unsigned long arch_get_unmapped_area_topdown(struct file *filp, unsigned long addr, unsigned long len, unsigned long pgoff, unsigned long flags);
+unsigned long generic_get_unmapped_area_topdown(struct file *filp,
+						unsigned long addr,
+						unsigned long len,
+						unsigned long pgoff,
+						unsigned long flags);
 
-unsigned long generic_get_unmapped_area_topdown(struct file *filp, unsigned long addr, unsigned long len, unsigned long pgoff, unsigned long flags);
-
-
-static inline gfp_t current_gfp_context(gfp_t flags) {
+static inline gfp_t current_gfp_context(gfp_t flags)
+{
 	unsigned int pflags = READ_ONCE(current->flags);
 
 	if (unlikely(pflags & (PF_MEMALLOC_NOIO | PF_MEMALLOC_NOFS))) {
-
 		if (pflags & PF_MEMALLOC_NOIO)
 			flags &= ~(__GFP_IO | __GFP_FS);
 		else if (pflags & PF_MEMALLOC_NOFS)
-			flags &= ~__GFP_FS; }
-	return flags; }
+			flags &= ~__GFP_FS;
+	}
+	return flags;
+}
 
-static inline void might_alloc(gfp_t gfp_mask) {
-	might_sleep_if(gfpflags_allow_blocking(gfp_mask)); }
-
+static inline void might_alloc(gfp_t gfp_mask)
+{
+	might_sleep_if(gfpflags_allow_blocking(gfp_mask));
+}
 
 #endif

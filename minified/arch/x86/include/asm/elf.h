@@ -1,8 +1,7 @@
- 
+
 #ifndef _ASM_X86_ELF_H
 #define _ASM_X86_ELF_H
 
- 
 #include <linux/thread_info.h>
 
 #include <asm/ptrace.h>
@@ -18,53 +17,46 @@
 
 #include <asm/desc.h>
 
-#define elf_check_arch(x)	elf_check_arch_ia32(x)
+#define elf_check_arch(x) elf_check_arch_ia32(x)
 
- 
-#define ELF_PLAT_INIT(_r, load_addr)		\
-	do {					\
-	_r->bx = 0; _r->cx = 0; _r->dx = 0;	\
-	_r->si = 0; _r->di = 0; _r->bp = 0;	\
-	_r->ax = 0;				\
-} while (0)
+#define ELF_PLAT_INIT(_r, load_addr) \
+	do {                         \
+		_r->bx = 0;          \
+		_r->cx = 0;          \
+		_r->dx = 0;          \
+		_r->si = 0;          \
+		_r->di = 0;          \
+		_r->bp = 0;          \
+		_r->ax = 0;          \
+	} while (0)
 
- 
+#define ELF_PLATFORM (utsname()->machine)
+#define set_personality_64bit() \
+	do {                    \
+	} while (0)
 
+#define ELF_EXEC_PAGESIZE 4096
 
-#define ELF_PLATFORM	(utsname()->machine)
-#define set_personality_64bit()	do { } while (0)
-
-
-#define ELF_EXEC_PAGESIZE	4096
-
- 
- 
-
-#define ELF_HWCAP		(boot_cpu_data.x86_capability[CPUID_1_EDX])
+#define ELF_HWCAP (boot_cpu_data.x86_capability[CPUID_1_EDX])
 
 extern u32 elf_hwcap2;
 
- 
-#define ELF_HWCAP2		(elf_hwcap2)
-
- 
+#define ELF_HWCAP2 (elf_hwcap2)
 
 #define SET_PERSONALITY(ex) set_personality_64bit()
 
- 
-#define elf_read_implies_exec(ex, executable_stack)	\
+#define elf_read_implies_exec(ex, executable_stack) \
 	(mmap_is_ia32() && executable_stack == EXSTACK_DEFAULT)
 
-#define	ARCH_DLINFO_IA32						\
-do {									\
-	if (VDSO_CURRENT_BASE) {					\
-		NEW_AUX_ENT(AT_SYSINFO,	VDSO_ENTRY);			\
-		NEW_AUX_ENT(AT_SYSINFO_EHDR, VDSO_CURRENT_BASE);	\
-	}								\
-	NEW_AUX_ENT(AT_MINSIGSTKSZ, get_sigframe_size());		\
-} while (0)
+#define ARCH_DLINFO_IA32                                                 \
+	do {                                                             \
+		if (VDSO_CURRENT_BASE) {                                 \
+			NEW_AUX_ENT(AT_SYSINFO, VDSO_ENTRY);             \
+			NEW_AUX_ENT(AT_SYSINFO_EHDR, VDSO_CURRENT_BASE); \
+		}                                                        \
+		NEW_AUX_ENT(AT_MINSIGSTKSZ, get_sigframe_size());        \
+	} while (0)
 
- 
 static inline int mmap_is_ia32(void)
 {
 	/* TIF_ADDR32 never set in this build -> COMPAT term always false */
@@ -73,19 +65,15 @@ static inline int mmap_is_ia32(void)
 
 extern unsigned long get_sigframe_size(void);
 
-
 #define __STACK_RND_MASK(is32bit) (0x7ff)
 #define STACK_RND_MASK (0x7ff)
 
-#define ARCH_DLINFO		ARCH_DLINFO_IA32
+#define ARCH_DLINFO ARCH_DLINFO_IA32
 
- 
+#define VDSO_CURRENT_BASE ((unsigned long)current->mm->context.vdso)
 
-
-#define VDSO_CURRENT_BASE	((unsigned long)current->mm->context.vdso)
-
-#define VDSO_ENTRY							\
-	((unsigned long)current->mm->context.vdso +			\
+#define VDSO_ENTRY                                  \
+	((unsigned long)current->mm->context.vdso + \
 	 vdso_image_32.sym___kernel_vsyscall)
 
 struct linux_binprm;

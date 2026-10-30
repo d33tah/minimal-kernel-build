@@ -8,7 +8,9 @@
  * the whole mem-class registration were dead.  All that remains live here is
  * the tty_init() call that this fs_initcall chains into.
  */
-static int __init chr_dev_init(void) {
-	return tty_init(); }
+static int __init chr_dev_init(void)
+{
+	return tty_init();
+}
 
 fs_initcall(chr_dev_init);

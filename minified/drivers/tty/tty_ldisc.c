@@ -4,8 +4,6 @@
 
 #define tty_ldisc_debug(tty, f, args...)
 
-
-
 static DEFINE_RAW_SPINLOCK(tty_ldiscs_lock);
 static struct tty_ldisc_ops *tty_ldiscs[NR_LDISCS];
 
@@ -23,7 +21,6 @@ int tty_register_ldisc(struct tty_ldisc_ops *new_ldisc)
 
 	return ret;
 }
-
 
 /* tty_unregister_ldisc stubbed - ldisc modules never unloaded in minimal kernel */
 
@@ -59,7 +56,6 @@ static struct tty_ldisc *tty_ldisc_get(struct tty_struct *tty, int disc)
 	if (IS_ERR(ldops))
 		return ERR_CAST(ldops);
 
-	 
 	ld = kmalloc(sizeof(struct tty_ldisc), GFP_KERNEL | __GFP_NOFAIL);
 	ld->ops = ldops;
 	ld->tty = tty;
@@ -83,8 +79,8 @@ void tty_ldisc_deref(struct tty_ldisc *ld)
 	ldsem_up_read(&ld->tty->ldisc_sem);
 }
 
-
-static inline int __tty_ldisc_lock(struct tty_struct *tty, unsigned long timeout)
+static inline int __tty_ldisc_lock(struct tty_struct *tty,
+				   unsigned long timeout)
 {
 	return ldsem_down_write(&tty->ldisc_sem, timeout);
 }
@@ -97,7 +93,6 @@ static inline void __tty_ldisc_unlock(struct tty_struct *tty)
 int tty_ldisc_lock(struct tty_struct *tty, unsigned long timeout)
 {
 	int ret;
-
 
 	wake_up_interruptible_all(&tty->read_wait);
 	wake_up_interruptible_all(&tty->write_wait);
@@ -116,7 +111,7 @@ static int tty_ldisc_open(struct tty_struct *tty, struct tty_ldisc *ld)
 	WARN_ON(test_and_set_bit(TTY_LDISC_OPEN, &tty->flags));
 	if (ld->ops->open) {
 		int ret;
-		 
+
 		ret = ld->ops->open(tty);
 		if (ret)
 			clear_bit(TTY_LDISC_OPEN, &tty->flags);
@@ -153,4 +148,3 @@ int tty_ldisc_init(struct tty_struct *tty)
 	tty->ldisc = ld;
 	return 0;
 }
-

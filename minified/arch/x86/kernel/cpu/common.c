@@ -18,60 +18,113 @@ extern void doublefault_init_cpu_tss(void);
 
 u32 elf_hwcap2 __read_mostly;
 
-DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = { [GDT_ENTRY_KERNEL_CS]		= GDT_ENTRY_INIT(0xc09a, 0, 0xfffff), [GDT_ENTRY_KERNEL_DS]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff), [GDT_ENTRY_DEFAULT_USER_CS]	= GDT_ENTRY_INIT(0xc0fa, 0, 0xfffff), [GDT_ENTRY_DEFAULT_USER_DS]	= GDT_ENTRY_INIT(0xc0f2, 0, 0xfffff), [GDT_ENTRY_PNPBIOS_CS32]	= GDT_ENTRY_INIT(0x409a, 0, 0xffff), [GDT_ENTRY_PNPBIOS_CS16]	= GDT_ENTRY_INIT(0x009a, 0, 0xffff), [GDT_ENTRY_PNPBIOS_DS]		= GDT_ENTRY_INIT(0x0092, 0, 0xffff), [GDT_ENTRY_PNPBIOS_TS1]		= GDT_ENTRY_INIT(0x0092, 0, 0), [GDT_ENTRY_PNPBIOS_TS2]		= GDT_ENTRY_INIT(0x0092, 0, 0), [GDT_ENTRY_APMBIOS_BASE]	= GDT_ENTRY_INIT(0x409a, 0, 0xffff), [GDT_ENTRY_APMBIOS_BASE+1]	= GDT_ENTRY_INIT(0x009a, 0, 0xffff), [GDT_ENTRY_APMBIOS_BASE+2]	= GDT_ENTRY_INIT(0x4092, 0, 0xffff), [GDT_ENTRY_ESPFIX_SS]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff), [GDT_ENTRY_PERCPU]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff), } };
+DEFINE_PER_CPU_PAGE_ALIGNED(
+	struct gdt_page,
+	gdt_page) = { .gdt = {
+			      [GDT_ENTRY_KERNEL_CS] = GDT_ENTRY_INIT(0xc09a, 0,
+								     0xfffff),
+			      [GDT_ENTRY_KERNEL_DS] = GDT_ENTRY_INIT(0xc092, 0,
+								     0xfffff),
+			      [GDT_ENTRY_DEFAULT_USER_CS] =
+				      GDT_ENTRY_INIT(0xc0fa, 0, 0xfffff),
+			      [GDT_ENTRY_DEFAULT_USER_DS] =
+				      GDT_ENTRY_INIT(0xc0f2, 0, 0xfffff),
+			      [GDT_ENTRY_PNPBIOS_CS32] = GDT_ENTRY_INIT(0x409a,
+									0,
+									0xffff),
+			      [GDT_ENTRY_PNPBIOS_CS16] = GDT_ENTRY_INIT(0x009a,
+									0,
+									0xffff),
+			      [GDT_ENTRY_PNPBIOS_DS] = GDT_ENTRY_INIT(0x0092, 0,
+								      0xffff),
+			      [GDT_ENTRY_PNPBIOS_TS1] = GDT_ENTRY_INIT(0x0092,
+								       0, 0),
+			      [GDT_ENTRY_PNPBIOS_TS2] = GDT_ENTRY_INIT(0x0092,
+								       0, 0),
+			      [GDT_ENTRY_APMBIOS_BASE] = GDT_ENTRY_INIT(0x409a,
+									0,
+									0xffff),
+			      [GDT_ENTRY_APMBIOS_BASE +
+				      1] = GDT_ENTRY_INIT(0x009a, 0, 0xffff),
+			      [GDT_ENTRY_APMBIOS_BASE +
+				      2] = GDT_ENTRY_INIT(0x4092, 0, 0xffff),
+			      [GDT_ENTRY_ESPFIX_SS] = GDT_ENTRY_INIT(0xc092, 0,
+								     0xfffff),
+			      [GDT_ENTRY_PERCPU] = GDT_ENTRY_INIT(0xc092, 0,
+								  0xfffff),
+		      } };
 
-
-
-static __always_inline void setup_smep(struct cpuinfo_x86 *c) {
+static __always_inline void setup_smep(struct cpuinfo_x86 *c)
+{
 	if (cpu_has(c, X86_FEATURE_SMEP))
-		cr4_set_bits(X86_CR4_SMEP); }
+		cr4_set_bits(X86_CR4_SMEP);
+}
 
-static __always_inline void setup_smap(struct cpuinfo_x86 *c) {
+static __always_inline void setup_smap(struct cpuinfo_x86 *c)
+{
 	unsigned long eflags = native_save_fl();
 
 	BUG_ON(eflags & X86_EFLAGS_AC);
 
 	if (cpu_has(c, X86_FEATURE_SMAP))
-		cr4_set_bits(X86_CR4_SMAP); }
+		cr4_set_bits(X86_CR4_SMAP);
+}
 
-static __always_inline void setup_umip(struct cpuinfo_x86 *c) {
+static __always_inline void setup_umip(struct cpuinfo_x86 *c)
+{
 	/*
 	 * UMIP is in DISABLED_MASK16, so cpu_feature_enabled(X86_FEATURE_UMIP)
 	 * is constant 0 -- the activate path was dead; only the clear remains.
 	 */
-	cr4_clear_bits(X86_CR4_UMIP); }
+	cr4_clear_bits(X86_CR4_UMIP);
+}
 
-static const unsigned long cr4_pinned_mask = X86_CR4_SMEP | X86_CR4_SMAP | X86_CR4_UMIP | X86_CR4_FSGSBASE | X86_CR4_CET;
+static const unsigned long cr4_pinned_mask = X86_CR4_SMEP | X86_CR4_SMAP |
+					     X86_CR4_UMIP | X86_CR4_FSGSBASE |
+					     X86_CR4_CET;
 static DEFINE_STATIC_KEY_FALSE_RO(cr_pinning);
 static unsigned long cr4_pinned_bits __ro_after_init;
 
-void native_write_cr0(unsigned long val) {
+void native_write_cr0(unsigned long val)
+{
 	unsigned long bits_missing = 0;
 
-set_register: asm volatile("mov %0,%%cr0": "+r" (val) : : "memory");
+set_register:
+	asm volatile("mov %0,%%cr0" : "+r"(val) : : "memory");
 
 	if (static_branch_likely(&cr_pinning)) {
 		if (unlikely((val & X86_CR0_WP) != X86_CR0_WP)) {
 			bits_missing = X86_CR0_WP;
 			val |= bits_missing;
-			goto set_register; }
-		
-		WARN_ONCE(bits_missing, "CR0 WP bit went missing!?\n"); } }
+			goto set_register;
+		}
 
-void __no_profile native_write_cr4(unsigned long val) {
+		WARN_ONCE(bits_missing, "CR0 WP bit went missing!?\n");
+	}
+}
+
+void __no_profile native_write_cr4(unsigned long val)
+{
 	unsigned long bits_changed = 0;
 
-set_register: asm volatile("mov %0,%%cr4": "+r" (val) : : "memory");
+set_register:
+	asm volatile("mov %0,%%cr4" : "+r"(val) : : "memory");
 
 	if (static_branch_likely(&cr_pinning)) {
 		if (unlikely((val & cr4_pinned_mask) != cr4_pinned_bits)) {
-			bits_changed = (val & cr4_pinned_mask) ^ cr4_pinned_bits;
+			bits_changed = (val & cr4_pinned_mask) ^
+				       cr4_pinned_bits;
 			val = (val & ~cr4_pinned_mask) | cr4_pinned_bits;
-			goto set_register; }
-		
-		WARN_ONCE(bits_changed, "pinned CR4 bits changed: 0x%lx!?\n", bits_changed); } }
+			goto set_register;
+		}
 
-void cr4_update_irqsoff(unsigned long set, unsigned long clear) {
+		WARN_ONCE(bits_changed, "pinned CR4 bits changed: 0x%lx!?\n",
+			  bits_changed);
+	}
+}
+
+void cr4_update_irqsoff(unsigned long set, unsigned long clear)
+{
 	unsigned long newval, cr4 = this_cpu_read(cpu_tlbstate.cr4);
 
 	lockdep_assert_irqs_disabled();
@@ -79,44 +132,62 @@ void cr4_update_irqsoff(unsigned long set, unsigned long clear) {
 	newval = (cr4 & ~clear) | set;
 	if (newval != cr4) {
 		this_cpu_write(cpu_tlbstate.cr4, newval);
-		__write_cr4(newval); } }
+		__write_cr4(newval);
+	}
+}
 
-unsigned long cr4_read_shadow(void) {
-	return this_cpu_read(cpu_tlbstate.cr4); }
+unsigned long cr4_read_shadow(void)
+{
+	return this_cpu_read(cpu_tlbstate.cr4);
+}
 
-static void __init setup_cr_pinning(void) {
+static void __init setup_cr_pinning(void)
+{
 	cr4_pinned_bits = this_cpu_read(cpu_tlbstate.cr4) & cr4_pinned_mask;
-	static_key_enable(&cr_pinning.key); }
+	static_key_enable(&cr_pinning.key);
+}
 
+struct cpuid_dependent_feature {
+	u32 feature, level;
+};
 
-struct cpuid_dependent_feature { u32 feature, level; };
+static const struct cpuid_dependent_feature cpuid_dependent_features[] = {
+	{ X86_FEATURE_MWAIT, 0x00000005 },
+	{ X86_FEATURE_DCA, 0x00000009 },
+	{ X86_FEATURE_XSAVE, 0x0000000d },
+	{ 0, 0 }
+};
 
-static const struct cpuid_dependent_feature
-cpuid_dependent_features[] = { { X86_FEATURE_MWAIT,		0x00000005 }, { X86_FEATURE_DCA,		0x00000009 }, { X86_FEATURE_XSAVE,		0x0000000d }, { 0, 0 } };
-
-static void filter_cpuid_features(struct cpuinfo_x86 *c, bool warn) {
+static void filter_cpuid_features(struct cpuinfo_x86 *c, bool warn)
+{
 	const struct cpuid_dependent_feature *df;
 
 	for (df = cpuid_dependent_features; df->feature; df++) {
-
 		if (!cpu_has(c, df->feature))
 			continue;
-		
-		if (!((s32)df->level < 0 ? (u32)df->level > (u32)c->extended_cpuid_level : (s32)df->level > (s32)c->cpuid_level))
+
+		if (!((s32)df->level<0 ? (u32)df->level >
+						     (u32)c->extended_cpuid_level :
+					 (s32)df->level>(s32) c->cpuid_level))
 			continue;
 
 		clear_cpu_cap(c, df->feature);
 		if (!warn)
 			continue;
 
-		pr_warn("CPU: CPU feature " X86_CAP_FMT " disabled, no CPUID level 0x%x\n", x86_cap_flag(df->feature), df->level); } }
+		pr_warn("CPU: CPU feature " X86_CAP_FMT
+			" disabled, no CPUID level 0x%x\n",
+			x86_cap_flag(df->feature), df->level);
+	}
+}
 
 __u32 cpu_caps_cleared[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 __u32 cpu_caps_set[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
 
 DEFINE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);
 
-static void get_model_name(struct cpuinfo_x86 *c) {
+static void get_model_name(struct cpuinfo_x86 *c)
+{
 	unsigned int *v;
 	char *p, *q, *s;
 
@@ -135,55 +206,69 @@ static void get_model_name(struct cpuinfo_x86 *c) {
 		p++;
 
 	while (*p) {
-		
 		if (!isspace(*p))
 			s = q;
 
-		*q++ = *p++; }
+		*q++ = *p++;
+	}
 
-	*(s + 1) = '\0'; }
+	*(s + 1) = '\0';
+}
 
-static void get_cpu_vendor(struct cpuinfo_x86 *c) {
+static void get_cpu_vendor(struct cpuinfo_x86 *c)
+{
 	/*
 	 * No vendor cpu_dev is registered on this build (cpu_dev_register
 	 * has zero invocations -> the .x86_cpu_dev.init section is empty ->
 	 * the vendor-string match loop never finds an entry). Always generic.
 	 */
-	c->x86_vendor = X86_VENDOR_UNKNOWN; }
+	c->x86_vendor = X86_VENDOR_UNKNOWN;
+}
 
-void cpu_detect(struct cpuinfo_x86 *c) {
-	
-	cpuid(0x00000000, (unsigned int *)&c->cpuid_level, (unsigned int *)&c->x86_vendor_id[0], (unsigned int *)&c->x86_vendor_id[8], (unsigned int *)&c->x86_vendor_id[4]);
+void cpu_detect(struct cpuinfo_x86 *c)
+{
+	cpuid(0x00000000, (unsigned int *)&c->cpuid_level,
+	      (unsigned int *)&c->x86_vendor_id[0],
+	      (unsigned int *)&c->x86_vendor_id[8],
+	      (unsigned int *)&c->x86_vendor_id[4]);
 
 	c->x86 = 4;
-	
+
 	if (c->cpuid_level >= 0x00000001) {
 		u32 junk, tfms, cap0, misc;
 
 		cpuid(0x00000001, &tfms, &misc, &junk, &cap0);
-		c->x86		= x86_family(tfms);
-		c->x86_model	= x86_model(tfms);
-		c->x86_stepping	= x86_stepping(tfms);
+		c->x86 = x86_family(tfms);
+		c->x86_model = x86_model(tfms);
+		c->x86_stepping = x86_stepping(tfms);
 
-		if (cap0 & (1<<19)) {
+		if (cap0 & (1 << 19)) {
 			c->x86_clflush_size = ((misc >> 8) & 0xff) * 8;
-			c->x86_cache_alignment = c->x86_clflush_size; } } }
+			c->x86_cache_alignment = c->x86_clflush_size;
+		}
+	}
+}
 
-static void apply_forced_caps(struct cpuinfo_x86 *c) {
+static void apply_forced_caps(struct cpuinfo_x86 *c)
+{
 	int i;
 
 	for (i = 0; i < NCAPINTS + NBUGINTS; i++) {
 		c->x86_capability[i] &= ~cpu_caps_cleared[i];
-		c->x86_capability[i] |= cpu_caps_set[i]; } }
+		c->x86_capability[i] |= cpu_caps_set[i];
+	}
+}
 
-void get_cpu_cap(struct cpuinfo_x86 *c) {
+void get_cpu_cap(struct cpuinfo_x86 *c)
+{
 	u32 eax, ebx, ecx, edx;
 
 	if (c->cpuid_level >= 0x00000001) {
 		cpuid(0x00000001, &eax, &ebx, &ecx, &edx);
 
 		c->x86_capability[CPUID_1_ECX] = ecx;
-		c->x86_capability[CPUID_1_EDX] = edx; }
+		c->x86_capability[CPUID_1_EDX] = edx;
+	}
 
 	if (c->cpuid_level >= 0x00000006)
 		c->x86_capability[CPUID_6_EAX] = cpuid_eax(0x00000006);
@@ -196,12 +281,15 @@ void get_cpu_cap(struct cpuinfo_x86 *c) {
 
 		if (eax >= 1) {
 			cpuid_count(0x00000007, 1, &eax, &ebx, &ecx, &edx);
-			c->x86_capability[CPUID_7_1_EAX] = eax; } }
+			c->x86_capability[CPUID_7_1_EAX] = eax;
+		}
+	}
 
 	if (c->cpuid_level >= 0x0000000d) {
 		cpuid_count(0x0000000d, 1, &eax, &ebx, &ecx, &edx);
 
-		c->x86_capability[CPUID_D_1_EAX] = eax; }
+		c->x86_capability[CPUID_D_1_EAX] = eax;
+	}
 
 	eax = cpuid_eax(0x80000000);
 	c->extended_cpuid_level = eax;
@@ -211,16 +299,20 @@ void get_cpu_cap(struct cpuinfo_x86 *c) {
 			cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
 
 			c->x86_capability[CPUID_8000_0001_ECX] = ecx;
-			c->x86_capability[CPUID_8000_0001_EDX] = edx; } }
+			c->x86_capability[CPUID_8000_0001_EDX] = edx;
+		}
+	}
 
 	if (c->extended_cpuid_level >= 0x80000007) {
 		cpuid(0x80000007, &eax, &ebx, &ecx, &edx);
 
-		c->x86_capability[CPUID_8000_0007_EBX] = ebx; }
+		c->x86_capability[CPUID_8000_0007_EBX] = ebx;
+	}
 
 	if (c->extended_cpuid_level >= 0x80000008) {
 		cpuid(0x80000008, &eax, &ebx, &ecx, &edx);
-		c->x86_capability[CPUID_8000_0008_EBX] = ebx; }
+		c->x86_capability[CPUID_8000_0008_EBX] = ebx;
+	}
 
 	if (c->extended_cpuid_level >= 0x8000000a)
 		c->x86_capability[CPUID_8000_000A_EDX] = cpuid_edx(0x8000000a);
@@ -228,30 +320,38 @@ void get_cpu_cap(struct cpuinfo_x86 *c) {
 	if (c->extended_cpuid_level >= 0x8000001f)
 		c->x86_capability[CPUID_8000_001F_EAX] = cpuid_eax(0x8000001f);
 
-	apply_forced_caps(c); }
+	apply_forced_caps(c);
+}
 
-void get_cpu_address_sizes(struct cpuinfo_x86 *c) {
+void get_cpu_address_sizes(struct cpuinfo_x86 *c)
+{
 	u32 eax, ebx, ecx, edx;
 
 	if (c->extended_cpuid_level >= 0x80000008) {
 		cpuid(0x80000008, &eax, &ebx, &ecx, &edx);
 
-		c->x86_phys_bits = eax & 0xff; }
-	else if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
-		c->x86_phys_bits = 36; }
+		c->x86_phys_bits = eax & 0xff;
+	} else if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
+		c->x86_phys_bits = 36;
+}
 
-static void __init cpu_set_bug_bits(struct cpuinfo_x86 *c) {
+static void __init cpu_set_bug_bits(struct cpuinfo_x86 *c)
+{
 	/* Stub: CPU bug detection not needed for minimal kernel */
 }
 
-static void detect_nopl(void) {
-	setup_clear_cpu_cap(X86_FEATURE_NOPL); }
+static void detect_nopl(void)
+{
+	setup_clear_cpu_cap(X86_FEATURE_NOPL);
+}
 
-static void __init cpu_parse_early_param(void) {
+static void __init cpu_parse_early_param(void)
+{
 	/* Stub: CPU early param parsing not needed for minimal kernel */
 }
 
-static void __init early_identify_cpu(struct cpuinfo_x86 *c) {
+static void __init early_identify_cpu(struct cpuinfo_x86 *c)
+{
 	c->x86_clflush_size = 32;
 	c->x86_phys_bits = 32;
 	c->x86_cache_alignment = c->x86_clflush_size;
@@ -288,18 +388,22 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c) {
 
 	setup_clear_cpu_cap(X86_FEATURE_LA57);
 
-	detect_nopl(); }
+	detect_nopl();
+}
 
-void __init early_cpu_init(void) {
+void __init early_cpu_init(void)
+{
 	/*
 	 * The .x86_cpu_dev.init section is empty on this build (no
 	 * cpu_dev_register), so __x86_cpu_dev_start == __x86_cpu_dev_end:
 	 * the per-vendor population loop never iterated and cpu_devs[]
 	 * stays all-NULL (its initializer).  Folded away.
 	 */
-	early_identify_cpu(&boot_cpu_data); }
+	early_identify_cpu(&boot_cpu_data);
+}
 
-static void generic_identify(struct cpuinfo_x86 *c) {
+static void generic_identify(struct cpuinfo_x86 *c)
+{
 	c->extended_cpuid_level = 0;
 
 	cpu_detect(c);
@@ -312,14 +416,16 @@ static void generic_identify(struct cpuinfo_x86 *c) {
 
 	get_model_name(c);
 
-	set_cpu_bug(c, X86_BUG_ESPFIX); }
+	set_cpu_bug(c, X86_BUG_ESPFIX);
+}
 
-static void identify_cpu(struct cpuinfo_x86 *c) {
+static void identify_cpu(struct cpuinfo_x86 *c)
+{
 	c->loops_per_jiffy = loops_per_jiffy;
 	c->x86_vendor = X86_VENDOR_UNKNOWN;
-	c->x86_model = c->x86_stepping = 0;	
-	c->x86_vendor_id[0] = '\0'; 
-	c->x86_model_id[0] = '\0';  
+	c->x86_model = c->x86_stepping = 0;
+	c->x86_vendor_id[0] = '\0';
+	c->x86_model_id[0] = '\0';
 	c->cpuid_level = -1;
 	c->x86_clflush_size = 32;
 	c->x86_phys_bits = 32;
@@ -338,7 +444,8 @@ static void identify_cpu(struct cpuinfo_x86 *c) {
 
 	if (cpu_has(c, X86_FEATURE_FSGSBASE)) {
 		cr4_set_bits(X86_CR4_FSGSBASE);
-		elf_hwcap2 |= HWCAP2_FSGSBASE; }
+		elf_hwcap2 |= HWCAP2_FSGSBASE;
+	}
 
 	filter_cpuid_features(c, true);
 
@@ -349,7 +456,8 @@ static void identify_cpu(struct cpuinfo_x86 *c) {
 		 * zero-initialized (->family == 0) -> the lookup always returned
 		 * NULL, so synthesize the family/model name directly.
 		 */
-		sprintf(c->x86_model_id, "%02x/%02x", c->x86, c->x86_model); }
+		sprintf(c->x86_model_id, "%02x/%02x", c->x86, c->x86_model);
+	}
 
 	apply_forced_caps(c);
 
@@ -361,10 +469,10 @@ static void identify_cpu(struct cpuinfo_x86 *c) {
 	 */
 
 	select_idle_routine(c);
-
 }
 
-void enable_sep_cpu(void) {
+void enable_sep_cpu(void)
+{
 	struct tss_struct *tss;
 	int cpu;
 
@@ -376,43 +484,51 @@ void enable_sep_cpu(void) {
 
 	tss->x86_tss.ss1 = __KERNEL_CS;
 	wrmsr(MSR_IA32_SYSENTER_CS, tss->x86_tss.ss1, 0);
-	wrmsr(MSR_IA32_SYSENTER_ESP, (unsigned long)(cpu_entry_stack(cpu) + 1), 0);
+	wrmsr(MSR_IA32_SYSENTER_ESP, (unsigned long)(cpu_entry_stack(cpu) + 1),
+	      0);
 	wrmsr(MSR_IA32_SYSENTER_EIP, (unsigned long)entry_SYSENTER_32, 0);
 
-	put_cpu(); }
+	put_cpu();
+}
 
-void __init identify_boot_cpu(void) {
+void __init identify_boot_cpu(void)
+{
 	identify_cpu(&boot_cpu_data);
 	/* HAS_KERNEL_IBT==0 -> CET/IBT pr_info branch was const-dead; removed */
 	sysenter_setup();
 	enable_sep_cpu();
 	/* cpu_detect_tlb removed - TLB info never used */
-	setup_cr_pinning(); }
-
+	setup_cr_pinning();
+}
 
 DEFINE_PER_CPU(struct task_struct *, current_task) = &init_task;
 DEFINE_PER_CPU(int, __preempt_count) = INIT_PREEMPT_COUNT;
 
-DEFINE_PER_CPU(unsigned long, cpu_current_top_of_stack) = (unsigned long)&init_thread_union + THREAD_SIZE;
+DEFINE_PER_CPU(unsigned long,
+	       cpu_current_top_of_stack) = (unsigned long)&init_thread_union
+					   + THREAD_SIZE;
 
-static void clear_all_debug_regs(void) {
+static void clear_all_debug_regs(void)
+{
 	int i;
 
 	for (i = 0; i < 8; i++) {
-		
 		if ((i == 4) || (i == 5))
 			continue;
 
-		set_debugreg(0, i); } }
+		set_debugreg(0, i);
+	}
+}
 
 #define dbg_restore_debug_regs()
 
-static inline void tss_setup_io_bitmap(struct tss_struct *tss) {
+static inline void tss_setup_io_bitmap(struct tss_struct *tss)
+{
 	tss->x86_tss.io_bitmap_base = IO_BITMAP_OFFSET_INVALID;
-
 }
 
-void cpu_init_exception_handling(void) {
+void cpu_init_exception_handling(void)
+{
 	struct tss_struct *tss = this_cpu_ptr(&cpu_tss_rw);
 	int cpu = raw_smp_processor_id();
 
@@ -421,15 +537,19 @@ void cpu_init_exception_handling(void) {
 
 	load_TR_desc();
 
-	load_current_idt(); }
+	load_current_idt();
+}
 
-void cpu_init(void) {
+void cpu_init(void)
+{
 	struct task_struct *cur = current;
 	int cpu = raw_smp_processor_id();
 	struct desc_ptr gdt_descr;
 
-	if (cpu_feature_enabled(X86_FEATURE_VME) || boot_cpu_has(X86_FEATURE_TSC) || boot_cpu_has(X86_FEATURE_DE))
-		cr4_clear_bits(X86_CR4_VME|X86_CR4_PVI|X86_CR4_TSD|X86_CR4_DE);
+	if (cpu_feature_enabled(X86_FEATURE_VME) ||
+	    boot_cpu_has(X86_FEATURE_TSC) || boot_cpu_has(X86_FEATURE_DE))
+		cr4_clear_bits(X86_CR4_VME | X86_CR4_PVI | X86_CR4_TSD |
+			       X86_CR4_DE);
 
 	gdt_descr.address = (long)get_cpu_gdt_rw(cpu);
 	gdt_descr.size = GDT_SIZE - 1;
@@ -453,9 +573,11 @@ void cpu_init(void) {
 
 	fpu__init_cpu();
 
-{ struct desc_ptr gdt_descr;
+	{
+		struct desc_ptr gdt_descr;
 
 		gdt_descr.address = (long)get_cpu_gdt_ro(cpu);
 		gdt_descr.size = GDT_SIZE - 1;
-		load_gdt(&gdt_descr); } }
-
+		load_gdt(&gdt_descr);
+	}
+}

@@ -4,4 +4,4 @@
 
 #include <asm-generic/siginfo.h>
 
-#endif  
+#endif

@@ -2,14 +2,14 @@
 #include <linux/file.h>
 #include <linux/namei.h>
 
-
 #include "internal.h"
 
-int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry, loff_t length, unsigned int time_attrs, struct file *filp) {
+int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry,
+		loff_t length, unsigned int time_attrs, struct file *filp)
+{
 	int ret;
 	struct iattr newattrs;
 
-	 
 	if (length < 0)
 		return -EINVAL;
 
@@ -20,19 +20,20 @@ int do_truncate(struct user_namespace *mnt_userns, struct dentry *dentry, loff_t
 	/* dentry_needs_remove_privs() was a constant 0 on this build. */
 
 	inode_lock(dentry->d_inode);
-	 
+
 	ret = notify_change(mnt_userns, dentry, &newattrs, NULL);
 	inode_unlock(dentry->d_inode);
-	return ret; }
+	return ret;
+}
 
-long vfs_truncate(const struct path *path, loff_t length) {
+long vfs_truncate(const struct path *path, loff_t length)
+{
 	struct user_namespace *mnt_userns;
 	struct inode *inode;
 	long error;
 
 	inode = path->dentry->d_inode;
 
-	 
 	if (S_ISDIR(inode->i_mode))
 		return -EISDIR;
 	if (!S_ISREG(inode->i_mode))
@@ -54,24 +55,37 @@ long vfs_truncate(const struct path *path, loff_t length) {
 	error = do_truncate(mnt_userns, path->dentry, length, 0, NULL);
 
 	put_write_access(inode);
-mnt_drop_write_and_out: mnt_drop_write(path->mnt);
-out: return error; }
+mnt_drop_write_and_out:
+	mnt_drop_write(path->mnt);
+out:
+	return error;
+}
 
-int chmod_common(const struct path *path, umode_t mode) {
+int chmod_common(const struct path *path, umode_t mode)
+{
 	/* Stub: chmod not needed for minimal kernel */
-	return -EOPNOTSUPP; }
+	return -EOPNOTSUPP;
+}
 
-int vfs_fchmod(struct file *file, umode_t mode) {
-	return chmod_common(&file->f_path, mode); }
+int vfs_fchmod(struct file *file, umode_t mode)
+{
+	return chmod_common(&file->f_path, mode);
+}
 
-int chown_common(const struct path *path, uid_t user, gid_t group) {
+int chown_common(const struct path *path, uid_t user, gid_t group)
+{
 	/* Stub: chown not needed for minimal kernel */
-	return -EOPNOTSUPP; }
+	return -EOPNOTSUPP;
+}
 
-int vfs_fchown(struct file *file, uid_t user, gid_t group) {
-	return -ENOSYS; }
+int vfs_fchown(struct file *file, uid_t user, gid_t group)
+{
+	return -ENOSYS;
+}
 
-static int do_dentry_open(struct file *f, struct inode *inode, int (*open)(struct inode *, struct file *)) {
+static int do_dentry_open(struct file *f, struct inode *inode,
+			  int (*open)(struct inode *, struct file *))
+{
 	static const struct file_operations empty_fops = {};
 	int error;
 
@@ -82,7 +96,8 @@ static int do_dentry_open(struct file *f, struct inode *inode, int (*open)(struc
 	if (unlikely(f->f_flags & O_PATH)) {
 		f->f_mode = FMODE_PATH | FMODE_OPENED;
 		f->f_op = &empty_fops;
-		return 0; }
+		return 0;
+	}
 
 	if (f->f_mode & FMODE_WRITE && !special_file(inode->i_mode)) {
 		error = get_write_access(inode);
@@ -91,30 +106,35 @@ static int do_dentry_open(struct file *f, struct inode *inode, int (*open)(struc
 		error = __mnt_want_write(f->f_path.mnt);
 		if (unlikely(error)) {
 			put_write_access(inode);
-			goto cleanup_file; }
-		f->f_mode |= FMODE_WRITER; }
+			goto cleanup_file;
+		}
+		f->f_mode |= FMODE_WRITER;
+	}
 
-	 
 	if (S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode))
 		f->f_mode |= FMODE_ATOMIC_POS;
 
 	f->f_op = fops_get(inode->i_fop);
 	if (WARN_ON(!f->f_op)) {
 		error = -ENODEV;
-		goto cleanup_all; }
+		goto cleanup_all;
+	}
 
 	if (!open)
 		open = f->f_op->open;
 	if (open) {
 		error = open(inode, f);
 		if (error)
-			goto cleanup_all; }
+			goto cleanup_all;
+	}
 	f->f_mode |= FMODE_OPENED;
 	if ((f->f_mode & (FMODE_READ | FMODE_WRITE)) == FMODE_READ)
 		i_readcount_inc(inode);
-	if ((f->f_mode & FMODE_READ) && likely(f->f_op->read || f->f_op->read_iter))
+	if ((f->f_mode & FMODE_READ) &&
+	    likely(f->f_op->read || f->f_op->read_iter))
 		f->f_mode |= FMODE_CAN_READ;
-	if ((f->f_mode & FMODE_WRITE) && likely(f->f_op->write || f->f_op->write_iter))
+	if ((f->f_mode & FMODE_WRITE) &&
+	    likely(f->f_op->write || f->f_op->write_iter))
 		f->f_mode |= FMODE_CAN_WRITE;
 	/*
 	 * No address_space_operations on this build sets ->direct_IO, so
@@ -127,40 +147,46 @@ static int do_dentry_open(struct file *f, struct inode *inode, int (*open)(struc
 
 	return 0;
 
-cleanup_all: if (WARN_ON_ONCE(error > 0))
+cleanup_all:
+	if (WARN_ON_ONCE(error > 0))
 		error = -EINVAL;
 	fops_put(f->f_op);
 	if (f->f_mode & FMODE_WRITER) {
 		put_write_access(inode);
-		__mnt_drop_write(f->f_path.mnt); }
-cleanup_file: path_put(&f->f_path);
+		__mnt_drop_write(f->f_path.mnt);
+	}
+cleanup_file:
+	path_put(&f->f_path);
 	f->f_path.mnt = NULL;
 	f->f_path.dentry = NULL;
 	f->f_inode = NULL;
-	return error; }
+	return error;
+}
 
-int vfs_open(const struct path *path, struct file *file) {
+int vfs_open(const struct path *path, struct file *file)
+{
 	file->f_path = *path;
-	return do_dentry_open(file, d_backing_inode(path->dentry), NULL); }
+	return do_dentry_open(file, d_backing_inode(path->dentry), NULL);
+}
 
-#define WILL_CREATE(flags)	(flags & (O_CREAT | __O_TMPFILE))
-#define O_PATH_FLAGS		(O_DIRECTORY | O_NOFOLLOW | O_PATH | O_CLOEXEC)
+#define WILL_CREATE(flags) (flags & (O_CREAT | __O_TMPFILE))
+#define O_PATH_FLAGS (O_DIRECTORY | O_NOFOLLOW | O_PATH | O_CLOEXEC)
 
-inline int build_open_flags(const struct open_how *how, struct open_flags *op) {
+inline int build_open_flags(const struct open_how *how, struct open_flags *op)
+{
 	u64 flags = how->flags;
 	u64 strip = FMODE_NONOTIFY | O_CLOEXEC;
 	int lookup_flags = 0;
 	int acc_mode = ACC_MODE(flags);
 
-	BUILD_BUG_ON_MSG(upper_32_bits(VALID_OPEN_FLAGS), "struct open_flags doesn't yet handle flags > 32 bits");
+	BUILD_BUG_ON_MSG(
+		upper_32_bits(VALID_OPEN_FLAGS),
+		"struct open_flags doesn't yet handle flags > 32 bits");
 
-	 
 	flags &= ~strip;
 
-	 
 	if (flags & ~VALID_OPEN_FLAGS)
 		return -EINVAL;
-
 
 	if (WILL_CREATE(flags)) {
 		if (how->mode & ~S_IALLUGO)
@@ -169,31 +195,29 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op) {
 	} else {
 		if (how->mode != 0)
 			return -EINVAL;
-		op->mode = 0; }
+		op->mode = 0;
+	}
 
-	 
 	if (flags & __O_TMPFILE) {
 		if ((flags & O_TMPFILE_MASK) != O_TMPFILE)
 			return -EINVAL;
 		if (!(acc_mode & MAY_WRITE))
-			return -EINVAL; }
+			return -EINVAL;
+	}
 	if (flags & O_PATH) {
-		 
 		if (flags & ~O_PATH_FLAGS)
 			return -EINVAL;
-		acc_mode = 0; }
+		acc_mode = 0;
+	}
 
-	 
 	if (flags & __O_SYNC)
 		flags |= O_DSYNC;
 
 	op->open_flag = flags;
 
-	 
 	if (flags & O_TRUNC)
 		acc_mode |= MAY_WRITE;
 
-	 
 	if (flags & O_APPEND)
 		acc_mode |= MAY_APPEND;
 
@@ -205,7 +229,9 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op) {
 		op->intent |= LOOKUP_CREATE;
 		if (flags & O_EXCL) {
 			op->intent |= LOOKUP_EXCL;
-			flags |= O_NOFOLLOW; } }
+			flags |= O_NOFOLLOW;
+		}
+	}
 
 	if (flags & O_DIRECTORY)
 		lookup_flags |= LOOKUP_DIRECTORY;
@@ -213,12 +239,16 @@ inline int build_open_flags(const struct open_how *how, struct open_flags *op) {
 		lookup_flags |= LOOKUP_FOLLOW;
 
 	op->lookup_flags = lookup_flags;
-	return 0; }
+	return 0;
+}
 
-struct file *file_open_name(struct filename *name, int flags, umode_t mode) {
+struct file *file_open_name(struct filename *name, int flags, umode_t mode)
+{
 	struct open_flags op;
 	struct open_how how = {
-		.flags = flags & VALID_OPEN_FLAGS, .mode = mode & S_IALLUGO, };
+		.flags = flags & VALID_OPEN_FLAGS,
+		.mode = mode & S_IALLUGO,
+	};
 	int err;
 
 	if (how.flags & O_PATH)
@@ -229,32 +259,38 @@ struct file *file_open_name(struct filename *name, int flags, umode_t mode) {
 	err = build_open_flags(&how, &op);
 	if (err)
 		return ERR_PTR(err);
-	return do_filp_open(name, &op); }
+	return do_filp_open(name, &op);
+}
 
-struct file *filp_open(const char *filename, int flags, umode_t mode) {
+struct file *filp_open(const char *filename, int flags, umode_t mode)
+{
 	struct filename *name = getname_kernel(filename);
 	struct file *file = ERR_CAST(name);
-	
+
 	if (!IS_ERR(name)) {
 		file = file_open_name(name, flags, mode);
-		putname(name); }
-	return file; }
+		putname(name);
+	}
+	return file;
+}
 
-
-int filp_close(struct file *filp, fl_owner_t id) {
+int filp_close(struct file *filp, fl_owner_t id)
+{
 	int retval = 0;
 
 	if (!file_count(filp)) {
 		printk(KERN_ERR "VFS: Close: file count is 0\n");
-		return 0; }
+		return 0;
+	}
 
 	/* No live file_operations sets ->flush. */
 	fput(filp);
-	return retval; }
+	return retval;
+}
 
-
-int nonseekable_open(struct inode *inode, struct file *filp) {
-	return 0; }
+int nonseekable_open(struct inode *inode, struct file *filp)
+{
+	return 0;
+}
 
 /* Removed: stream_open - never called */
-

@@ -9,10 +9,4 @@
 #include <asm/io.h>
 #include <asm/page.h>
 
-
-
-
-
-
-
 #endif

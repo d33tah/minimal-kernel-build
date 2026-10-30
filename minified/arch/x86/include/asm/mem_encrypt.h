@@ -1,5 +1,4 @@
- 
- 
+
 
 #ifndef __X86_MEM_ENCRYPT_H__
 #define __X86_MEM_ENCRYPT_H__
@@ -10,8 +9,7 @@
 
 #include <asm/bootparam.h>
 
-
-#define sme_me_mask	0ULL
+#define sme_me_mask 0ULL
 
 /* Removed unused: sev_es_init_vc_handling, mem_encrypt_free_decrypted_mem */
 /* Removed unused: sme_early_encrypt, sme_early_decrypt, sme_map_bootdata,
@@ -19,14 +17,10 @@
    early_set_memory_decrypted, early_set_memory_encrypted,
    early_set_mem_enc_dec_hypercall */
 
-
-
- 
 void __init mem_encrypt_init(void);
 
- 
-#define __sme_pa(x)		(__pa(x) | sme_me_mask)
+#define __sme_pa(x) (__pa(x) | sme_me_mask)
 
 #endif
 
-#endif	 
+#endif

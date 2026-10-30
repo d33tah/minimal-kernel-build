@@ -1,8 +1,7 @@
- 
+
 #ifndef _ASM_X86_COMPAT_H
 #define _ASM_X86_COMPAT_H
 
- 
 #include <linux/types.h>
 #include <linux/sched.h>
 #include <linux/sched/task_stack.h>

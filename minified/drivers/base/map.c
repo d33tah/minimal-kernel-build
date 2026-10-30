@@ -5,9 +5,23 @@
 typedef struct kobject *kobj_probe_t(dev_t, int *, void *);
 /* end kobj_map.h */
 
-struct kobj_map { struct probe { struct probe *next; dev_t dev; unsigned long range; struct module *owner; kobj_probe_t *get; int (*lock)(dev_t, void *); void *data; } *probes[255]; struct mutex *lock; };
+struct kobj_map {
+	struct probe {
+		struct probe *next;
+		dev_t dev;
+		unsigned long range;
+		struct module *owner;
+		kobj_probe_t *get;
+		int (*lock)(dev_t, void *);
+		void *data;
+	} *probes[255];
+	struct mutex *lock;
+};
 
-int kobj_map(struct kobj_map *domain, dev_t dev, unsigned long range, struct module *module, kobj_probe_t *probe, int (*lock)(dev_t, void *), void *data) {
+int kobj_map(struct kobj_map *domain, dev_t dev, unsigned long range,
+	     struct module *module, kobj_probe_t *probe,
+	     int (*lock)(dev_t, void *), void *data)
+{
 	unsigned int n = MAJOR(dev + range - 1) - MAJOR(dev) + 1;
 	unsigned int index = MAJOR(dev);
 	unsigned int i;
@@ -26,23 +40,28 @@ int kobj_map(struct kobj_map *domain, dev_t dev, unsigned long range, struct mod
 		p->lock = lock;
 		p->dev = dev;
 		p->range = range;
-		p->data = data; }
+		p->data = data;
+	}
 	mutex_lock(domain->lock);
 	for (i = 0, p -= n; i < n; i++, p++, index++) {
 		struct probe **s = &domain->probes[index % 255];
 		while (*s && (*s)->range < range)
 			s = &(*s)->next;
 		p->next = *s;
-		*s = p; }
+		*s = p;
+	}
 	mutex_unlock(domain->lock);
-	return 0; }
+	return 0;
+}
 
-struct kobject *kobj_lookup(struct kobj_map *domain, dev_t dev, int *index) {
+struct kobject *kobj_lookup(struct kobj_map *domain, dev_t dev, int *index)
+{
 	struct kobject *kobj;
 	struct probe *p;
 	unsigned long best = ~0UL;
 
-retry: mutex_lock(domain->lock);
+retry:
+	mutex_lock(domain->lock);
 	for (p = domain->probes[MAJOR(dev) % 255]; p; p = p->next) {
 		struct kobject *(*probe)(dev_t, int *, void *);
 		void *data;
@@ -56,17 +75,21 @@ retry: mutex_lock(domain->lock);
 		best = p->range - 1;
 		*index = dev - p->dev;
 		if (p->lock && p->lock(dev, data) < 0) {
-			continue; }
+			continue;
+		}
 		mutex_unlock(domain->lock);
 		kobj = probe(dev, index, data);
 
 		if (kobj)
 			return kobj;
-		goto retry; }
+		goto retry;
+	}
 	mutex_unlock(domain->lock);
-	return NULL; }
+	return NULL;
+}
 
-struct kobj_map *kobj_map_init(kobj_probe_t *base_probe, struct mutex *lock) {
+struct kobj_map *kobj_map_init(kobj_probe_t *base_probe, struct mutex *lock)
+{
 	struct kobj_map *p = kmalloc(sizeof(struct kobj_map), GFP_KERNEL);
 	struct probe *base = kzalloc(sizeof(*base), GFP_KERNEL);
 	int i;
@@ -74,7 +97,8 @@ struct kobj_map *kobj_map_init(kobj_probe_t *base_probe, struct mutex *lock) {
 	if ((p == NULL) || (base == NULL)) {
 		kfree(p);
 		kfree(base);
-		return NULL; }
+		return NULL;
+	}
 
 	base->dev = 1;
 	base->range = ~0;
@@ -82,4 +106,5 @@ struct kobj_map *kobj_map_init(kobj_probe_t *base_probe, struct mutex *lock) {
 	for (i = 0; i < 255; i++)
 		p->probes[i] = base;
 	p->lock = lock;
-	return p; }
+	return p;
+}

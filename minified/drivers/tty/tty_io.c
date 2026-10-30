@@ -11,24 +11,26 @@
 
 #include "tty.h"
 
-#define tty_debug_hangup(tty, f, args...)	do { } while (0)
+#define tty_debug_hangup(tty, f, args...) \
+	do {                              \
+	} while (0)
 
 #define TTY_PARANOIA_CHECK 1
 #define CHECK_TTY_COUNT 1
 
-struct ktermios tty_std_termios = {	
+struct ktermios tty_std_termios = {
 	.c_iflag = ICRNL | IXON,
 	.c_oflag = OPOST | ONLCR,
 	.c_cflag = B38400 | CS8 | CREAD | HUPCL,
-	.c_lflag = ISIG | ICANON | ECHO | ECHOE | ECHOK |
-		   ECHOCTL | ECHOKE | IEXTEN,
+	.c_lflag = ISIG | ICANON | ECHO | ECHOE | ECHOK | ECHOCTL | ECHOKE |
+		   IEXTEN,
 	.c_cc = INIT_C_CC,
 	.c_ispeed = 38400,
 	.c_ospeed = 38400,
-	
+
 };
 
-LIST_HEAD(tty_drivers);			
+LIST_HEAD(tty_drivers);
 
 DEFINE_MUTEX(tty_mutex);
 
@@ -93,7 +95,8 @@ static int check_tty_count(struct tty_struct *tty, const char *routine)
 	}
 	spin_unlock(&tty->files_lock);
 	if (tty->count != (count + kopen_count)) {
-		tty_warn(tty, "%s: tty->count(%d) != (#fd's(%d) + #kopen's(%d))\n",
+		tty_warn(tty,
+			 "%s: tty->count(%d) != (#fd's(%d) + #kopen's(%d))\n",
 			 routine, tty->count, count, kopen_count);
 		return (count + kopen_count);
 	}
@@ -116,17 +119,16 @@ static struct tty_driver *get_tty_driver(dev_t device, int *index)
 	return NULL;
 }
 
-
 static const struct file_operations tty_fops = {
-	.write_iter	= tty_write,
-	.open		= tty_open,
-	.release	= tty_release,
+	.write_iter = tty_write,
+	.open = tty_open,
+	.release = tty_release,
 };
 
 static const struct file_operations console_fops = {
-	.write_iter	= redirected_tty_write,
-	.open		= tty_open,
-	.release	= tty_release,
+	.write_iter = redirected_tty_write,
+	.open = tty_open,
+	.release = tty_release,
 };
 
 static DEFINE_SPINLOCK(redirect_lock);
@@ -136,7 +138,6 @@ static void tty_update_time(struct timespec64 *time)
 {
 	time64_t sec = ktime_get_real_seconds();
 
-	
 	if ((sec ^ time->tv_sec) & ~7)
 		time->tv_sec = sec;
 }
@@ -158,11 +159,10 @@ static int tty_write_lock(struct tty_struct *tty, int ndelay)
 	return 0;
 }
 
-static inline ssize_t do_tty_write(
-	ssize_t (*write)(struct tty_struct *, struct file *, const unsigned char *, size_t),
-	struct tty_struct *tty,
-	struct file *file,
-	struct iov_iter *from)
+static inline ssize_t
+do_tty_write(ssize_t (*write)(struct tty_struct *, struct file *,
+			      const unsigned char *, size_t),
+	     struct tty_struct *tty, struct file *file, struct iov_iter *from)
 {
 	size_t count = iov_iter_count(from);
 	ssize_t ret, written = 0;
@@ -172,14 +172,12 @@ static inline ssize_t do_tty_write(
 	if (ret < 0)
 		return ret;
 
-	
 	chunk = 2048;
 	if (test_bit(TTY_NO_WRITE_SPLIT, &tty->flags))
 		chunk = 65536;
 	if (count < chunk)
 		chunk = count;
 
-	
 	if (tty->write_cnt < chunk) {
 		unsigned char *buf_chunk;
 
@@ -196,7 +194,6 @@ static inline ssize_t do_tty_write(
 		tty->write_buf = buf_chunk;
 	}
 
-	
 	for (;;) {
 		size_t size = count;
 
@@ -215,9 +212,8 @@ static inline ssize_t do_tty_write(
 		if (ret > size)
 			break;
 
-		
 		if (ret != size)
-			iov_iter_revert(from, size-ret);
+			iov_iter_revert(from, size - ret);
 
 		count -= ret;
 		if (!count)
@@ -231,12 +227,13 @@ static inline ssize_t do_tty_write(
 		tty_update_time(&file_inode(file)->i_mtime);
 		ret = written;
 	}
-out: tty_write_unlock(tty);
+out:
+	tty_write_unlock(tty);
 	return ret;
 }
 
-
-static ssize_t file_tty_write(struct file *file, struct kiocb *iocb, struct iov_iter *from)
+static ssize_t file_tty_write(struct file *file, struct kiocb *iocb,
+			      struct iov_iter *from)
 {
 	struct tty_struct *tty = file_tty(file);
 	struct tty_ldisc *ld;
@@ -244,9 +241,9 @@ static ssize_t file_tty_write(struct file *file, struct kiocb *iocb, struct iov_
 
 	if (tty_paranoia_check(tty, file_inode(file), "tty_write"))
 		return -EIO;
-	if (!tty || !tty->ops->write ||	tty_io_error(tty))
+	if (!tty || !tty->ops->write || tty_io_error(tty))
 		return -EIO;
-	
+
 	if (tty->ops->write_room == NULL)
 		tty_err(tty, "missing write_room method\n");
 	ld = tty_ldisc_ref_wait(tty);
@@ -274,7 +271,6 @@ ssize_t redirected_tty_write(struct kiocb *iocb, struct iov_iter *iter)
 		p = get_file(redirect);
 	spin_unlock(&redirect_lock);
 
-	
 	if (p) {
 		ssize_t res;
 
@@ -287,12 +283,11 @@ ssize_t redirected_tty_write(struct kiocb *iocb, struct iov_iter *iter)
 
 static ssize_t tty_line_name(struct tty_driver *driver, int index, char *p)
 {
-	return sprintf(p, "%s%d", driver->name,
-		       index + driver->name_base);
+	return sprintf(p, "%s%d", driver->name, index + driver->name_base);
 }
 
 static struct tty_struct *tty_driver_lookup_tty(struct tty_driver *driver,
-		struct file *file, int idx)
+						struct file *file, int idx)
 {
 	struct tty_struct *tty;
 
@@ -312,15 +307,14 @@ void tty_init_termios(struct tty_struct *tty)
 	if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS)
 		tty->termios = tty->driver->init_termios;
 	else {
-		
 		tp = tty->driver->termios[idx];
 		if (tp != NULL) {
 			tty->termios = *tp;
-			tty->termios.c_line  = tty->driver->init_termios.c_line;
+			tty->termios.c_line = tty->driver->init_termios.c_line;
 		} else
 			tty->termios = tty->driver->init_termios;
 	}
-	
+
 	tty->termios.c_ispeed = tty_termios_input_baud_rate(&tty->termios);
 	tty->termios.c_ospeed = tty_termios_baud_rate(&tty->termios);
 }
@@ -335,10 +329,10 @@ int tty_standard_install(struct tty_driver *driver, struct tty_struct *tty)
 }
 
 static int tty_driver_install_tty(struct tty_driver *driver,
-						struct tty_struct *tty)
+				  struct tty_struct *tty)
 {
 	return driver->ops->install ? driver->ops->install(driver, tty) :
-		tty_standard_install(driver, tty);
+				      tty_standard_install(driver, tty);
 }
 
 static int tty_reopen(struct tty_struct *tty)
@@ -387,9 +381,10 @@ struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx)
 	if (!tty->port)
 		tty->port = driver->ports[idx];
 
-	if (WARN_RATELIMIT(!tty->port,
-			"%s: %s driver does not set tty->port. This would crash the kernel. Fix the driver!\n",
-			__func__, tty->driver->name)) {
+	if (WARN_RATELIMIT(
+		    !tty->port,
+		    "%s: %s driver does not set tty->port. This would crash the kernel. Fix the driver!\n",
+		    __func__, tty->driver->name)) {
 		retval = -EINVAL;
 		goto err_release_lock;
 	}
@@ -399,23 +394,25 @@ struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx)
 		goto err_release_lock;
 	tty->port->itty = tty;
 
-	
 	retval = tty_ldisc_setup(tty, tty->link);
 	if (retval)
 		goto err_release_tty;
 	tty_ldisc_unlock(tty);
-	
+
 	return tty;
 
-err_free_tty: tty_unlock(tty);
+err_free_tty:
+	tty_unlock(tty);
 	free_tty_struct(tty);
-err_module_put: return ERR_PTR(retval);
+err_module_put:
+	return ERR_PTR(retval);
 
-	
-err_release_tty: tty_ldisc_unlock(tty);
+err_release_tty:
+	tty_ldisc_unlock(tty);
 	tty_info_ratelimited(tty, "ldisc open failed (%d), clearing slot %d\n",
 			     retval, idx);
-err_release_lock: tty_unlock(tty);
+err_release_lock:
+	tty_unlock(tty);
 	release_tty(tty, idx);
 	return ERR_PTR(retval);
 }
@@ -432,7 +429,6 @@ static void queue_release_one_tty(struct kref *kref)
 {
 	struct tty_struct *tty = container_of(kref, struct tty_struct, kref);
 
-	
 	INIT_WORK(&tty->hangup_work, release_one_tty);
 	schedule_work(&tty->hangup_work);
 }
@@ -466,7 +462,7 @@ static struct tty_struct *tty_open_current_tty(dev_t device, struct file *filp)
 }
 
 static struct tty_driver *tty_lookup_driver(dev_t device, struct file *filp,
-		int *index)
+					    int *index)
 {
 	struct tty_driver *driver = NULL;
 
@@ -484,7 +480,6 @@ static struct tty_driver *tty_lookup_driver(dev_t device, struct file *filp,
 		if (console_driver) {
 			driver = tty_driver_kref_get(console_driver);
 			if (driver && filp) {
-				
 				filp->f_flags |= O_NONBLOCK;
 				break;
 			}
@@ -501,9 +496,7 @@ static struct tty_driver *tty_lookup_driver(dev_t device, struct file *filp,
 	return driver;
 }
 
-
-static struct tty_struct *tty_open_by_driver(dev_t device,
-					     struct file *filp)
+static struct tty_struct *tty_open_by_driver(dev_t device, struct file *filp)
 {
 	struct tty_struct *tty;
 	struct tty_driver *driver = NULL;
@@ -517,7 +510,6 @@ static struct tty_struct *tty_open_by_driver(dev_t device,
 		return ERR_CAST(driver);
 	}
 
-	
 	tty = tty_driver_lookup_tty(driver, filp, index);
 	if (IS_ERR(tty)) {
 		mutex_unlock(&tty_mutex);
@@ -527,7 +519,7 @@ static struct tty_struct *tty_open_by_driver(dev_t device,
 	if (tty) {
 		mutex_unlock(&tty_mutex);
 		retval = tty_lock_interruptible(tty);
-		tty_kref_put(tty);  
+		tty_kref_put(tty);
 		if (retval) {
 			if (retval == -EINTR)
 				retval = -ERESTARTSYS;
@@ -539,11 +531,12 @@ static struct tty_struct *tty_open_by_driver(dev_t device,
 			tty_unlock(tty);
 			tty = ERR_PTR(retval);
 		}
-	} else { 
+	} else {
 		tty = tty_init_dev(driver, index);
 		mutex_unlock(&tty_mutex);
 	}
-out: tty_driver_kref_put(driver);
+out:
+	tty_driver_kref_put(driver);
 	return tty;
 }
 
@@ -557,7 +550,8 @@ static int tty_open(struct inode *inode, struct file *filp)
 
 	nonseekable_open(inode, filp);
 
-retry_open: priv = kmalloc(sizeof(*priv), GFP_KERNEL);
+retry_open:
+	priv = kmalloc(sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
 	filp->private_data = priv;
@@ -597,7 +591,7 @@ retry_open: priv = kmalloc(sizeof(*priv), GFP_KERNEL);
 	if (retval) {
 		tty_debug_hangup(tty, "open error %d, releasing\n", retval);
 
-		tty_unlock(tty); 
+		tty_unlock(tty);
 		tty_release(inode, filp);
 		if (retval != -ERESTARTSYS)
 			return retval;
@@ -645,15 +639,13 @@ struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 	return tty;
 }
 
-
 struct class *tty_class;
 
 static int tty_cdev_add(struct tty_driver *driver, dev_t dev,
-		unsigned int index, unsigned int count)
+			unsigned int index, unsigned int count)
 {
 	int err;
 
-	
 	driver->cdevs[index] = cdev_alloc();
 	if (!driver->cdevs[index])
 		return -ENOMEM;
@@ -672,8 +664,8 @@ static void tty_device_create_release(struct device *dev)
 
 /* tty_register_device_attr folded in: its drvdata + attr_grp params were always
    NULL and never consumed (no sysfs group creation on this build). */
-struct device *tty_register_device(struct tty_driver *driver,
-				   unsigned index, struct device *device)
+struct device *tty_register_device(struct tty_driver *driver, unsigned index,
+				   struct device *device)
 {
 	char name[64];
 	dev_t devt = MKDEV(driver->major, driver->minor_start) + index;
@@ -713,7 +705,8 @@ struct device *tty_register_device(struct tty_driver *driver,
 
 	return dev;
 
-err_put: put_device(dev);
+err_put:
+	put_device(dev);
 
 	return ERR_PTR(retval);
 }
@@ -724,7 +717,7 @@ err_put: put_device(dev);
    the entire char-device teardown path was runtime-dead. */
 
 struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
-		unsigned long flags)
+				      unsigned long flags)
 {
 	struct tty_driver *driver;
 	int err;
@@ -759,7 +752,8 @@ struct tty_driver *__tty_alloc_driver(unsigned int lines, struct module *owner,
 	}
 
 	return driver;
-err_free_all: kfree(driver->ports);
+err_free_all:
+	kfree(driver->ports);
 	kfree(driver->ttys);
 	kfree(driver->termios);
 	kfree(driver->cdevs);
@@ -804,7 +798,7 @@ int tty_register_driver(struct tty_driver *driver)
 
 	if (!driver->major) {
 		error = alloc_chrdev_region(&dev, driver->minor_start,
-						driver->num, driver->name);
+					    driver->num, driver->name);
 		if (!error) {
 			driver->major = MAJOR(dev);
 			driver->minor_start = MINOR(dev);
@@ -830,12 +824,14 @@ int tty_register_driver(struct tty_driver *driver)
 	driver->flags |= TTY_DRIVER_INSTALLED;
 	return 0;
 
-err_unreg_devs: mutex_lock(&tty_mutex);
+err_unreg_devs:
+	mutex_lock(&tty_mutex);
 	list_del(&driver->tty_drivers);
 	mutex_unlock(&tty_mutex);
 
 	unregister_chrdev_region(dev, driver->num);
-err: return error;
+err:
+	return error;
 }
 
 static int __init tty_class_init(void)
@@ -858,11 +854,11 @@ int __init tty_init(void)
 
 	cdev_init(&console_cdev, &console_fops);
 	if (cdev_add(&console_cdev, MKDEV(TTYAUX_MAJOR, 1), 1) ||
-	    register_chrdev_region(MKDEV(TTYAUX_MAJOR, 1), 1, "/dev/console") < 0)
+	    register_chrdev_region(MKDEV(TTYAUX_MAJOR, 1), 1, "/dev/console") <
+		    0)
 		panic("Couldn't register /dev/console driver\n");
 	device_create(tty_class, NULL, MKDEV(TTYAUX_MAJOR, 1), NULL, "console");
 
 	vty_init(&console_fops);
 	return 0;
 }
-

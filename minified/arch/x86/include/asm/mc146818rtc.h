@@ -1,5 +1,5 @@
- 
- 
+
+
 #ifndef _ASM_X86_MC146818RTC_H
 #define _ASM_X86_MC146818RTC_H
 
@@ -11,5 +11,4 @@
  * transitively 0-ref (lock_cmos/unlock_cmos only fed the dead prefix/suffix
  * macros; cmos_lock only fed those inlines; all protos uncalled). */
 
-
-#endif  
+#endif

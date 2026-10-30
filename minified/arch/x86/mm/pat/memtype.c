@@ -3,7 +3,10 @@
 
 #include <asm/memtype.h>
 
+void pat_disable(const char *msg_reason)
+{
+}
 
-void pat_disable(const char *msg_reason) { }
-
-void init_cache_modes(void) { }
+void init_cache_modes(void)
+{
+}

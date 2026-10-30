@@ -7,11 +7,11 @@
 #include <linux/percpu.h>
 #include <asm/topology.h>
 
-
-
 #ifndef numa_mem_id
-static inline int numa_mem_id(void) {
-	return numa_node_id(); }
+static inline int numa_mem_id(void)
+{
+	return numa_node_id();
+}
 #endif
 
 /* Removed as unused:
@@ -25,4 +25,4 @@ static inline int numa_mem_id(void) {
  * - cpu_cpu_mask
  */
 
-#endif  
+#endif

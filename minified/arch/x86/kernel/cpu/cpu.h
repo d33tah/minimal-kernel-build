@@ -1,8 +1,7 @@
- 
+
 #ifndef ARCH_X86_CPU_H
 #define ARCH_X86_CPU_H
 
- 
 /* struct cpu_dev + cpu_dev_register macro + __x86_cpu_dev_start/end externs
  * removed - the .x86_cpu_dev.init section is empty (no vendor cpu_dev
  * registered), this_cpu/default_cpu were always the generic no-op path, and
@@ -16,4 +15,4 @@ extern void get_cpu_address_sizes(struct cpuinfo_x86 *c);
 
 /* detect_extended_topology_early, detect_extended_topology, detect_ht_early, detect_ht, check_null_seg_clears_base, x86_read_arch_cap_msr, aperfmperf_get_khz removed - no callers */
 
-#endif  
+#endif

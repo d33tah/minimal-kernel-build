@@ -1,4 +1,4 @@
- 
+
 #ifndef _ASM_X86_NUMA_H
 #define _ASM_X86_NUMA_H
 

@@ -12,7 +12,7 @@ extern void early_ioremap_setup(void);
 
 extern void early_ioremap_reset(void);
 
-extern void copy_from_early_mem(void *dest, phys_addr_t src, unsigned long size);
+extern void copy_from_early_mem(void *dest, phys_addr_t src,
+				unsigned long size);
 
-
-#endif  
+#endif

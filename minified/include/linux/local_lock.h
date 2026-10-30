@@ -5,17 +5,25 @@
 #include <linux/percpu-defs.h>
 #include <linux/lockdep.h>
 
+typedef struct {
+} local_lock_t;
 
-typedef struct { } local_lock_t;
+#define INIT_LOCAL_LOCK(lockname) \
+	{                         \
+	}
 
-#define INIT_LOCAL_LOCK(lockname)	{ }
+#define __local_lock(lock)         \
+	do {                       \
+		preempt_disable(); \
+	} while (0)
 
-#define __local_lock(lock)						do {									preempt_disable();					} while (0)
+#define __local_unlock(lock)      \
+	do {                      \
+		preempt_enable(); \
+	} while (0)
 
-#define __local_unlock(lock)						do {									preempt_enable();					} while (0)
+#define local_lock(lock) __local_lock(lock)
 
-#define local_lock(lock)		__local_lock(lock)
-
-#define local_unlock(lock)		__local_unlock(lock)
+#define local_unlock(lock) __local_unlock(lock)
 
 #endif

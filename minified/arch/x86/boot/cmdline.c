@@ -4,7 +4,7 @@
 
 static inline int myisspace(u8 c)
 {
-	return c <= ' ';	 
+	return c <= ' ';
 }
 
 int __cmdline_find_option_bool(unsigned long cmdline_ptr, const char *option)
@@ -14,13 +14,13 @@ int __cmdline_find_option_bool(unsigned long cmdline_ptr, const char *option)
 	int pos = 0, wstart = 0;
 	const char *opptr = NULL;
 	enum {
-		st_wordstart,	 
-		st_wordcmp,	 
-		st_wordskip,	 
+		st_wordstart,
+		st_wordcmp,
+		st_wordskip,
 	} state = st_wordstart;
 
 	if (!cmdline_ptr)
-		return -1;       
+		return -1;
 
 	cptr = cmdline_ptr & 0xf;
 	set_fs(cmdline_ptr >> 4);
@@ -30,7 +30,8 @@ int __cmdline_find_option_bool(unsigned long cmdline_ptr, const char *option)
 		pos++;
 
 		switch (state) {
-		case st_wordstart: if (!c)
+		case st_wordstart:
+			if (!c)
 				return 0;
 			else if (myisspace(c))
 				break;
@@ -40,22 +41,25 @@ int __cmdline_find_option_bool(unsigned long cmdline_ptr, const char *option)
 			wstart = pos;
 			fallthrough;
 
-		case st_wordcmp: if (!*opptr)
+		case st_wordcmp:
+			if (!*opptr)
 				if (!c || myisspace(c))
 					return wstart;
-				else state = st_wordskip;
+				else
+					state = st_wordskip;
 			else if (!c)
 				return 0;
 			else if (c != *opptr++)
 				state = st_wordskip;
 			break;
 
-		case st_wordskip: if (!c)
+		case st_wordskip:
+			if (!c)
 				return 0;
 			else if (myisspace(c))
 				state = st_wordstart;
 		}
 	}
 
-	return 0;	 
+	return 0;
 }

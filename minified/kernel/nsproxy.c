@@ -3,10 +3,15 @@
 #include <linux/utsname.h>
 #include <linux/pid_namespace.h>
 
+struct nsproxy init_nsproxy = {
+	.count = ATOMIC_INIT(1),
+	.uts_ns = &init_uts_ns,
+	.mnt_ns = NULL,
+	.pid_ns_for_children = &init_pid_ns,
+};
 
-struct nsproxy init_nsproxy = { .count			= ATOMIC_INIT(1), .uts_ns			= &init_uts_ns, .mnt_ns			= NULL, .pid_ns_for_children	= &init_pid_ns, };
-
-int copy_namespaces(unsigned long flags, struct task_struct *tsk) {
+int copy_namespaces(unsigned long flags, struct task_struct *tsk)
+{
 	struct nsproxy *old_ns = tsk->nsproxy;
 
 	/*
@@ -15,9 +20,11 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk) {
 	 * off). The shared nsproxy is simply pinned and inherited.
 	 */
 	get_nsproxy(old_ns);
-	return 0; }
+	return 0;
+}
 
-void exit_task_namespaces(struct task_struct *p) {
+void exit_task_namespaces(struct task_struct *p)
+{
 	/*
 	 * RUNTIME-DEAD ANCHOR-STUB: detaches the dying task's nsproxy. Both call
 	 * sites are runtime-dead on this 1-shot boot: do_exit's tail (init panics
@@ -29,11 +36,13 @@ void exit_task_namespaces(struct task_struct *p) {
 	 */
 }
 
-int __init nsproxy_cache_init(void) {
+int __init nsproxy_cache_init(void)
+{
 	/*
 	 * The nsproxy kmem_cache used to back cloned namespaces, but this kernel
 	 * never clones (copy_namespaces only pins the shared init_nsproxy) and
 	 * never frees one (free_nsproxy was cascade-deleted with exit_task_namespaces).
 	 * No allocation ever comes from this cache, so it is no longer created.
 	 */
-	return 0; }
+	return 0;
+}

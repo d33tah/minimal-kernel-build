@@ -1,12 +1,11 @@
 #ifndef _LINUX_STRING_H_
 #define _LINUX_STRING_H_
 
-#include <linux/compiler.h>	 
-#include <linux/types.h>	 
-#include <linux/stddef.h>	 
-#include <linux/errno.h>	 
+#include <linux/compiler.h>
+#include <linux/types.h>
+#include <linux/stddef.h>
+#include <linux/errno.h>
 #include <linux/stdarg.h>
-
 
 #include <asm/string_32.h>
 
@@ -23,16 +22,15 @@ ssize_t strscpy_pad(char *dest, const char *src, size_t count);
 extern size_t strlcat(char *, const char *, __kernel_size_t);
 #endif
 #ifndef __HAVE_ARCH_STRRCHR
-extern char * strrchr(const char *,int);
+extern char *strrchr(const char *, int);
 #endif
 
-
 #ifndef __HAVE_ARCH_STRSEP
-extern char * strsep(char **,const char *);
+extern char *strsep(char **, const char *);
 #endif
 
 #ifndef __HAVE_ARCH_MEMCMP
-extern int memcmp(const void *,const void *,__kernel_size_t);
+extern int memcmp(const void *, const void *, __kernel_size_t);
 #endif
 char *strreplace(char *s, char old, char new);
 
@@ -43,9 +41,10 @@ extern const char *kstrdup_const(const char *s, gfp_t gfp);
 extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
 extern char *kmemdup_nul(const char *s, size_t len, gfp_t gfp);
 
-
-static inline const char *kbasename(const char *path) {
+static inline const char *kbasename(const char *path)
+{
 	const char *tail = strrchr(path, '/');
-	return tail ? tail + 1 : path; }
+	return tail ? tail + 1 : path;
+}
 
-#endif  
+#endif

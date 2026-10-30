@@ -1,8 +1,7 @@
- 
+
 #ifndef BOOT_COMPRESSED_MISC_H
 #define BOOT_COMPRESSED_MISC_H
 
- 
 #undef CONFIG_PARAVIRT
 #undef CONFIG_PARAVIRT_XXL
 #undef CONFIG_PARAVIRT_SPINLOCKS
@@ -11,7 +10,6 @@
 
 #define __NO_FORTIFY
 
- 
 #define USE_EARLY_PGTABLE_L5
 
 #include <linux/linkage.h>
@@ -33,22 +31,17 @@
 
 #include "efi.h"
 
- 
 extern char _head[], _end[];
 
- 
 extern struct boot_params *boot_params;
 void __putstr(const char *s);
 void __puthex(unsigned long value);
-#define error_putstr(__x)  __putstr(__x)
-
+#define error_putstr(__x) __putstr(__x)
 
 static inline void debug_putstr(const char *s)
-{ }
-#define debug_putaddr(x)  
-
-
- 
+{
+}
+#define debug_putaddr(x)
 
 static inline void choose_random_location(unsigned long input,
 					  unsigned long input_size,
@@ -58,17 +51,21 @@ static inline void choose_random_location(unsigned long input,
 {
 }
 
-
 static const int early_serial_base;
 static inline void console_init(void)
-{ }
+{
+}
 
 typedef u64 acpi_physical_address;
-static inline acpi_physical_address get_rsdp_addr(void) { return 0; }
-
+static inline acpi_physical_address get_rsdp_addr(void)
+{
+	return 0;
+}
 
 extern pteval_t __default_kernel_pte_mask;
 
-static inline void cleanup_exception_handling(void) { }
+static inline void cleanup_exception_handling(void)
+{
+}
 
 #endif

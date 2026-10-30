@@ -31,7 +31,6 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 
 	down_read(&tty->termios_rwsem);
 
-	 
 	while (nr > 0) {
 		mutex_lock(&ldata->output_lock);
 		c = tty->ops->write(tty, b, nr);
@@ -60,9 +59,9 @@ static ssize_t n_tty_write(struct tty_struct *tty, struct file *file,
 }
 
 static struct tty_ldisc_ops n_tty_ops = {
-	.num		 = N_TTY,
-	.open            = n_tty_open,
-	.write           = n_tty_write,
+	.num = N_TTY,
+	.open = n_tty_open,
+	.write = n_tty_write,
 };
 
 void __init n_tty_init(void)

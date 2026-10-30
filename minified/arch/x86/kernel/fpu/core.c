@@ -5,35 +5,36 @@
 
 /* Removed: #include <uapi/asm/kvm.h> - not needed for minimal kernel */
 
-
 #include "context.h"
 #include "internal.h"
 #include "legacy.h"
 #include "xstate.h"
 
-
-
-struct fpu_state_config	fpu_kernel_cfg __ro_after_init;
+struct fpu_state_config fpu_kernel_cfg __ro_after_init;
 struct fpu_state_config fpu_user_cfg __ro_after_init;
 
 struct fpstate init_fpstate __ro_after_init;
 
 DEFINE_PER_CPU(struct fpu *, fpu_fpregs_owner_ctx);
 
-void save_fpregs_to_fpstate(struct fpu *fpu) {
+void save_fpregs_to_fpstate(struct fpu *fpu)
+{
 	/*
 	 * XSAVE is absent on this build's boot CPU (CR4.OSXSAVE is never set;
 	 * use_xsave() is always false), so the os_xsave() fast path is dead.
 	 */
 	if (likely(use_fxsr())) {
 		fxsave(&fpu->fpstate->regs.fxsave);
-		return; }
+		return;
+	}
 
-	 
-	asm volatile("fnsave %[fp]; fwait" : [fp] "=m" (fpu->fpstate->regs.fsave));
-	frstor(&fpu->fpstate->regs.fsave); }
+	asm volatile("fnsave %[fp]; fwait"
+		     : [fp] "=m"(fpu->fpstate->regs.fsave));
+	frstor(&fpu->fpstate->regs.fsave);
+}
 
-void restore_fpregs_from_fpstate(struct fpstate *fpstate) {
+void restore_fpregs_from_fpstate(struct fpstate *fpstate)
+{
 	/*
 	 * The FXSAVE_LEAK workaround (fnclex/emms/fildl) was gated on
 	 * static_cpu_has_bug(X86_BUG_FXSAVE_LEAK). That bug bit (an old K7 erratum)
@@ -43,41 +44,56 @@ void restore_fpregs_from_fpstate(struct fpstate *fpstate) {
 	 */
 	if (use_fxsr())
 		fxrstor(&fpstate->regs.fxsave);
-	else frstor(&fpstate->regs.fsave); }
+	else
+		frstor(&fpstate->regs.fsave);
+}
 
-void fpu_reset_from_exception_fixup(void) {
-	restore_fpregs_from_fpstate(&init_fpstate); }
+void fpu_reset_from_exception_fixup(void)
+{
+	restore_fpregs_from_fpstate(&init_fpstate);
+}
 
-static inline unsigned int init_fpstate_copy_size(void) {
+static inline unsigned int init_fpstate_copy_size(void)
+{
 	/* No XSAVE on this build: the copy size is always the legacy default. */
-	return fpu_kernel_cfg.default_size; }
+	return fpu_kernel_cfg.default_size;
+}
 
-static inline void fpstate_init_fxstate(struct fpstate *fpstate) {
+static inline void fpstate_init_fxstate(struct fpstate *fpstate)
+{
 	fpstate->regs.fxsave.cwd = 0x37f;
-	fpstate->regs.fxsave.mxcsr = MXCSR_DEFAULT; }
+	fpstate->regs.fxsave.mxcsr = MXCSR_DEFAULT;
+}
 
-static inline void fpstate_init_fstate(struct fpstate *fpstate) {
+static inline void fpstate_init_fstate(struct fpstate *fpstate)
+{
 	fpstate->regs.fsave.cwd = 0xffff037fu;
 	fpstate->regs.fsave.swd = 0xffff0000u;
 	fpstate->regs.fsave.twd = 0xffffffffu;
-	fpstate->regs.fsave.fos = 0xffff0000u; }
+	fpstate->regs.fsave.fos = 0xffff0000u;
+}
 
-void fpstate_init_user(struct fpstate *fpstate) {
+void fpstate_init_user(struct fpstate *fpstate)
+{
 	/* xstate_init_xcomp_bv() removed: X86_FEATURE_XCOMPACTED is never set
 	 * (no XSAVES on this build's boot CPU), so its body was permanently dead. */
 	if (cpu_feature_enabled(X86_FEATURE_FXSR))
 		fpstate_init_fxstate(fpstate);
-	else fpstate_init_fstate(fpstate); }
+	else
+		fpstate_init_fstate(fpstate);
+}
 
-static void __fpstate_reset(struct fpstate *fpstate, u64 xfd) {
-	 
-	fpstate->xfeatures	= fpu_kernel_cfg.default_features;
-	fpstate->xfd		= xfd; }
+static void __fpstate_reset(struct fpstate *fpstate, u64 xfd)
+{
+	fpstate->xfeatures = fpu_kernel_cfg.default_features;
+	fpstate->xfd = xfd;
+}
 
-void fpstate_reset(struct fpu *fpu) {
-	 
+void fpstate_reset(struct fpu *fpu)
+{
 	fpu->fpstate = &fpu->__fpstate;
-	__fpstate_reset(fpu->fpstate, init_fpstate.xfd); }
+	__fpstate_reset(fpu->fpstate, init_fpstate.xfd);
+}
 
 /* fpu_inherit_perms removed - gated on fpu_state_size_dynamic() which is
  * constant false (no XFD dynamic xstate on the QEMU boot CPU); body was dead. */
@@ -85,7 +101,8 @@ void fpstate_reset(struct fpu *fpu) {
 /* minimal arg dropped: the only fork spawners (kernel_thread/user_mode_thread)
  * always set args->fn, so fpu_clone's caller passes minimal=true unconditionally;
  * the non-minimal save_fpregs_to_fpstate tail was statically dead. */
-int fpu_clone(struct task_struct *dst) {
+int fpu_clone(struct task_struct *dst)
+{
 	struct fpu *dst_fpu = &dst->thread.fpu;
 
 	dst_fpu->last_cpu = -1;
@@ -94,38 +111,50 @@ int fpu_clone(struct task_struct *dst) {
 
 	set_tsk_thread_flag(dst, TIF_NEED_FPU_LOAD);
 
-	memcpy(&dst_fpu->fpstate->regs, &init_fpstate.regs, init_fpstate_copy_size());
-	return 0; }
+	memcpy(&dst_fpu->fpstate->regs, &init_fpstate.regs,
+	       init_fpstate_copy_size());
+	return 0;
+}
 
 /* Stub: fpu_thread_struct_whitelist not used externally */
-void fpu_thread_struct_whitelist(unsigned long *offset, unsigned long *size) {
+void fpu_thread_struct_whitelist(unsigned long *offset, unsigned long *size)
+{
 	*offset = 0;
-	*size = 0; }
+	*size = 0;
+}
 
-void fpu__drop(struct fpu *fpu) {
+void fpu__drop(struct fpu *fpu)
+{
 	preempt_disable();
 
 	if (fpu == &current->thread.fpu) {
-		 
-		asm volatile("1: fwait\n" "2:\n" _ASM_EXTABLE(1b, 2b));
-		fpregs_deactivate(fpu); }
+		asm volatile("1: fwait\n"
+			     "2:\n" _ASM_EXTABLE(1b, 2b));
+		fpregs_deactivate(fpu);
+	}
 
-	preempt_enable(); }
+	preempt_enable();
+}
 
-static void fpu_reset_fpregs(void) {
+static void fpu_reset_fpregs(void)
+{
 	struct fpu *fpu = &current->thread.fpu;
 
 	fpregs_lock();
 	fpu__drop(fpu);
-	 
-	memcpy(&fpu->fpstate->regs, &init_fpstate.regs, init_fpstate_copy_size());
+
+	memcpy(&fpu->fpstate->regs, &init_fpstate.regs,
+	       init_fpstate_copy_size());
 	set_thread_flag(TIF_NEED_FPU_LOAD);
-	fpregs_unlock(); }
+	fpregs_unlock();
+}
 
-void fpu_flush_thread(void) {
+void fpu_flush_thread(void)
+{
 	fpstate_reset(&current->thread.fpu);
-	fpu_reset_fpregs(); }
-void switch_fpu_return(void) {
-	fpregs_restore_userregs(); }
-
-
+	fpu_reset_fpregs();
+}
+void switch_fpu_return(void)
+{
+	fpregs_restore_userregs();
+}

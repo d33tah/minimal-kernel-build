@@ -1,4 +1,4 @@
- 
+
 #ifndef _ASM_X86_ENTRY_COMMON_H
 #define _ASM_X86_ENTRY_COMMON_H
 
@@ -7,17 +7,19 @@
 #include <asm/nospec-branch.h>
 #include <asm/fpu/api.h>
 
- 
-static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs) { }
-
-static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs, unsigned long ti_work) {
-	if (unlikely(ti_work & _TIF_NEED_FPU_LOAD))
-		switch_fpu_return();
-
-
-	 
+static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs)
+{
 }
 
-static __always_inline void arch_exit_to_user_mode(void) { }
+static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
+						  unsigned long ti_work)
+{
+	if (unlikely(ti_work & _TIF_NEED_FPU_LOAD))
+		switch_fpu_return();
+}
+
+static __always_inline void arch_exit_to_user_mode(void)
+{
+}
 
 #endif

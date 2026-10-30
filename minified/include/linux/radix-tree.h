@@ -9,59 +9,80 @@
 #include <linux/xarray.h>
 #include <linux/local_lock.h>
 
-#define radix_tree_root		xarray
-#define radix_tree_node		xa_node
+#define radix_tree_root xarray
+#define radix_tree_node xa_node
 
-struct radix_tree_preload { local_lock_t lock; unsigned nr; struct radix_tree_node *nodes; };
+struct radix_tree_preload {
+	local_lock_t lock;
+	unsigned nr;
+	struct radix_tree_node *nodes;
+};
 DECLARE_PER_CPU(struct radix_tree_preload, radix_tree_preloads);
 
-#define RADIX_TREE_ENTRY_MASK		3UL
-#define RADIX_TREE_INTERNAL_NODE	2UL
+#define RADIX_TREE_ENTRY_MASK 3UL
+#define RADIX_TREE_INTERNAL_NODE 2UL
 
-static inline bool radix_tree_is_internal_node(void *ptr) {
-	return ((unsigned long)ptr & RADIX_TREE_ENTRY_MASK) == RADIX_TREE_INTERNAL_NODE; }
+static inline bool radix_tree_is_internal_node(void *ptr)
+{
+	return ((unsigned long)ptr & RADIX_TREE_ENTRY_MASK) ==
+	       RADIX_TREE_INTERNAL_NODE;
+}
 
+#define RADIX_TREE_MAP_SHIFT XA_CHUNK_SHIFT
+#define RADIX_TREE_MAP_SIZE (1UL << RADIX_TREE_MAP_SHIFT)
+#define RADIX_TREE_MAP_MASK (RADIX_TREE_MAP_SIZE - 1)
 
-#define RADIX_TREE_MAP_SHIFT	XA_CHUNK_SHIFT
-#define RADIX_TREE_MAP_SIZE	(1UL << RADIX_TREE_MAP_SHIFT)
-#define RADIX_TREE_MAP_MASK	(RADIX_TREE_MAP_SIZE-1)
+#define RADIX_TREE_MAX_TAGS XA_MAX_MARKS
+#define RADIX_TREE_TAG_LONGS XA_MARK_LONGS
 
-#define RADIX_TREE_MAX_TAGS	XA_MAX_MARKS
-#define RADIX_TREE_TAG_LONGS	XA_MARK_LONGS
+#define ROOT_IS_IDR ((__force gfp_t)4)
+#define ROOT_TAG_SHIFT (__GFP_BITS_SHIFT)
 
+#define RADIX_TREE_INIT(name, mask) XARRAY_INIT(name, mask)
 
-#define ROOT_IS_IDR	((__force gfp_t)4)
-#define ROOT_TAG_SHIFT	(__GFP_BITS_SHIFT)
-
-#define RADIX_TREE_INIT(name, mask)	XARRAY_INIT(name, mask)
-
-#define RADIX_TREE(name, mask) 	struct radix_tree_root name = RADIX_TREE_INIT(name, mask)
+#define RADIX_TREE(name, mask) \
+	struct radix_tree_root name = RADIX_TREE_INIT(name, mask)
 
 #define INIT_RADIX_TREE(root, mask) xa_init_flags(root, mask)
 
-
-struct radix_tree_iter { unsigned long index, next_index, tags; struct radix_tree_node *node; };
-
+struct radix_tree_iter {
+	unsigned long index, next_index, tags;
+	struct radix_tree_node *node;
+};
 
 int radix_tree_insert(struct radix_tree_root *, unsigned long index, void *);
-void *__radix_tree_lookup(const struct radix_tree_root *, unsigned long index, struct radix_tree_node **nodep, void __rcu ***slotp);
+void *__radix_tree_lookup(const struct radix_tree_root *, unsigned long index,
+			  struct radix_tree_node **nodep, void __rcu ***slotp);
 void *radix_tree_lookup(const struct radix_tree_root *, unsigned long);
-void __radix_tree_replace(struct radix_tree_root *, struct radix_tree_node *, void __rcu **slot, void *entry);
-void radix_tree_iter_replace(struct radix_tree_root *, const struct radix_tree_iter *, void __rcu **slot, void *entry);
+void __radix_tree_replace(struct radix_tree_root *, struct radix_tree_node *,
+			  void __rcu **slot, void *entry);
+void radix_tree_iter_replace(struct radix_tree_root *,
+			     const struct radix_tree_iter *, void __rcu **slot,
+			     void *entry);
 void *radix_tree_delete_item(struct radix_tree_root *, unsigned long, void *);
 void radix_tree_init(void);
-int radix_tree_tag_get(const struct radix_tree_root *, unsigned long index, unsigned int tag);
-void radix_tree_iter_tag_clear(struct radix_tree_root *, const struct radix_tree_iter *iter, unsigned int tag);
+int radix_tree_tag_get(const struct radix_tree_root *, unsigned long index,
+		       unsigned int tag);
+void radix_tree_iter_tag_clear(struct radix_tree_root *,
+			       const struct radix_tree_iter *iter,
+			       unsigned int tag);
 
-void __rcu **idr_get_free(struct radix_tree_root *root, struct radix_tree_iter *iter, gfp_t gfp, unsigned long max);
+void __rcu **idr_get_free(struct radix_tree_root *root,
+			  struct radix_tree_iter *iter, gfp_t gfp,
+			  unsigned long max);
 
-static __always_inline void __rcu ** radix_tree_iter_init(struct radix_tree_iter *iter, unsigned long start) {
-	 
+static __always_inline void __rcu **
+radix_tree_iter_init(struct radix_tree_iter *iter, unsigned long start)
+{
 	iter->index = 0;
 	iter->next_index = start;
-	return NULL; }
+	return NULL;
+}
 
-static inline unsigned long __radix_tree_iter_add(struct radix_tree_iter *iter, unsigned long slots) {
-	return iter->index + slots; }
+static inline unsigned long __radix_tree_iter_add(struct radix_tree_iter *iter,
+						  unsigned long slots)
+{
+	return iter->index + slots;
+}
 
 #endif

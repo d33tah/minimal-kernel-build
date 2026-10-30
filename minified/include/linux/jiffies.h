@@ -9,7 +9,7 @@
 #include <asm/param.h>
 
 /* Inlined from vdso/jiffies.h */
-#define TICK_NSEC ((NSEC_PER_SEC+HZ/2)/HZ)
+#define TICK_NSEC ((NSEC_PER_SEC + HZ / 2) / HZ)
 
 #include <generated/timeconst.h>
 
@@ -20,17 +20,17 @@ extern int register_refined_jiffies(long clock_tick_rate);
 #endif
 
 extern u64 __cacheline_aligned_in_smp jiffies_64;
-extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffies;
+extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data
+	jiffies;
 
-#define time_after(a,b)			(typecheck(unsigned long, a) && 	 typecheck(unsigned long, b) && 	 ((long)((b) - (a)) < 0))
-#define time_before(a,b)	time_after(b,a)
+#define time_after(a, b)                                               \
+	(typecheck(unsigned long, a) && typecheck(unsigned long, b) && \
+	 ((long)((b) - (a)) < 0))
+#define time_before(a, b) time_after(b, a)
 
+#define INITIAL_JIFFIES ((unsigned long)(unsigned int)(-300 * HZ))
 
-
-
-#define INITIAL_JIFFIES ((unsigned long)(unsigned int) (-300*HZ))
-
-#define MAX_JIFFY_OFFSET ((LONG_MAX >> 1)-1)
+#define MAX_JIFFY_OFFSET ((LONG_MAX >> 1) - 1)
 
 /*
  * HZ is fixed to CONFIG_HZ==250 in this build (Kconfig "default HZ_250";
@@ -43,11 +43,15 @@ extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffi
  * removed as never-called, and MSEC_TO_HZ_MUL32/ADJ32/SHR32 are undefined),
  * so they could never have compiled if enabled.  Emit the live arm only.
  */
-static inline unsigned long _msecs_to_jiffies(const unsigned int m) {
-	return (m + (MSEC_PER_SEC / HZ) - 1) / (MSEC_PER_SEC / HZ); }
-static __always_inline unsigned long msecs_to_jiffies(const unsigned int m) {
+static inline unsigned long _msecs_to_jiffies(const unsigned int m)
+{
+	return (m + (MSEC_PER_SEC / HZ) - 1) / (MSEC_PER_SEC / HZ);
+}
+static __always_inline unsigned long msecs_to_jiffies(const unsigned int m)
+{
 	if ((int)m < 0)
 		return MAX_JIFFY_OFFSET;
-	return _msecs_to_jiffies(m); }
+	return _msecs_to_jiffies(m);
+}
 
 #endif

@@ -1,5 +1,4 @@
- 
- 
+
 
 #ifndef _ASM_X86_STACKTRACE_H
 #define _ASM_X86_STACKTRACE_H
@@ -14,4 +13,4 @@
 /* STACKSLOTS_PER_LINE removed - 0-ref */
 /* struct stack_frame removed - 0-ref */
 /* show_opcodes, show_ip removed - unused */
-#endif  
+#endif

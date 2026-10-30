@@ -3,16 +3,18 @@
 #include <linux/kernel.h>
 #include <linux/semaphore.h>
 
-void down(struct semaphore *sem) {
+void down(struct semaphore *sem)
+{
 	unsigned long flags;
 
 	might_sleep();
 	raw_spin_lock_irqsave(&sem->lock, flags);
 	sem->count--;
-	raw_spin_unlock_irqrestore(&sem->lock, flags); }
+	raw_spin_unlock_irqrestore(&sem->lock, flags);
+}
 
-
-int down_trylock(struct semaphore *sem) {
+int down_trylock(struct semaphore *sem)
+{
 	unsigned long flags;
 	int count;
 
@@ -22,12 +24,14 @@ int down_trylock(struct semaphore *sem) {
 		sem->count = count;
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 
-	return (count < 0); }
+	return (count < 0);
+}
 
-
-void up(struct semaphore *sem) {
+void up(struct semaphore *sem)
+{
 	unsigned long flags;
 
 	raw_spin_lock_irqsave(&sem->lock, flags);
 	sem->count++;
-	raw_spin_unlock_irqrestore(&sem->lock, flags); }
+	raw_spin_unlock_irqrestore(&sem->lock, flags);
+}

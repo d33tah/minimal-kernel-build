@@ -5,9 +5,11 @@
 #include <linux/timex.h>
 
 /* Inlined from vdso/time32.h */
-typedef s32		old_time32_t;
+typedef s32 old_time32_t;
 
-struct old_timespec32 { old_time32_t	tv_sec; s32		tv_nsec; };
-
+struct old_timespec32 {
+	old_time32_t tv_sec;
+	s32 tv_nsec;
+};
 
 #endif

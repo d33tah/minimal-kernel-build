@@ -3,8 +3,8 @@
 
 #include <linux/const.h>
 
-#define SZ_64K				0x00010000
+#define SZ_64K 0x00010000
 
-#define SZ_1M				0x00100000
+#define SZ_1M 0x00100000
 
 #endif

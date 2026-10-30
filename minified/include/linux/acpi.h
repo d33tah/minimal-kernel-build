@@ -13,5 +13,4 @@
 #define _LINUX
 #endif
 
-
-#endif	 
+#endif

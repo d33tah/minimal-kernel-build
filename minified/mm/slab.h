@@ -1,69 +1,110 @@
- 
+
 #ifndef MM_SLAB_H
 #define MM_SLAB_H
- 
 
- 
-struct slab { unsigned long __page_flags; union { struct list_head slab_list; struct rcu_head rcu_head; }; struct kmem_cache *slab_cache; void *freelist; union { unsigned long counters; struct { unsigned inuse:16; unsigned objects:15; unsigned frozen:1; }; }; unsigned int __unused; atomic_t __page_refcount; };
+struct slab {
+	unsigned long __page_flags;
+	union {
+		struct list_head slab_list;
+		struct rcu_head rcu_head;
+	};
+	struct kmem_cache *slab_cache;
+	void *freelist;
+	union {
+		unsigned long counters;
+		struct {
+			unsigned inuse : 16;
+			unsigned objects : 15;
+			unsigned frozen : 1;
+		};
+	};
+	unsigned int __unused;
+	atomic_t __page_refcount;
+};
 
-#define SLAB_MATCH(pg, sl)							static_assert(offsetof(struct page, pg) == offsetof(struct slab, sl))
+#define SLAB_MATCH(pg, sl) \
+	static_assert(offsetof(struct page, pg) == offsetof(struct slab, sl))
 SLAB_MATCH(flags, __page_flags);
-SLAB_MATCH(compound_head, slab_list);	 
+SLAB_MATCH(compound_head, slab_list);
 SLAB_MATCH(rcu_head, rcu_head);
 SLAB_MATCH(_refcount, __page_refcount);
 #undef SLAB_MATCH
 static_assert(sizeof(struct slab) <= sizeof(struct page));
 
- 
-#define folio_slab(folio)	(_Generic((folio),				const struct folio *:	(const struct slab *)(folio),			struct folio *:		(struct slab *)(folio)))
+#define folio_slab(folio)                                            \
+	(_Generic((folio),                                           \
+		 const struct folio *: (const struct slab *)(folio), \
+		 struct folio *: (struct slab *)(folio)))
 
- 
-#define slab_folio(s)		(_Generic((s),					const struct slab *:	(const struct folio *)s,			struct slab *:		(struct folio *)s))
+#define slab_folio(s)                                          \
+	(_Generic((s),                                         \
+		 const struct slab *: (const struct folio *)s, \
+		 struct slab *: (struct folio *)s))
 
- 
-
- 
 #define slab_page(s) folio_page(slab_folio(s), 0)
 
- 
-static inline bool slab_test_pfmemalloc(const struct slab *slab) {
-	return folio_test_active((struct folio *)slab_folio(slab)); }
+static inline bool slab_test_pfmemalloc(const struct slab *slab)
+{
+	return folio_test_active((struct folio *)slab_folio(slab));
+}
 
-static inline void slab_set_pfmemalloc(struct slab *slab) {
-	folio_set_active(slab_folio(slab)); }
+static inline void slab_set_pfmemalloc(struct slab *slab)
+{
+	folio_set_active(slab_folio(slab));
+}
 
 /* slab_clear_pfmemalloc removed - unused */
 
-static inline void *slab_address(const struct slab *slab) {
-	return folio_address(slab_folio(slab)); }
+static inline void *slab_address(const struct slab *slab)
+{
+	return folio_address(slab_folio(slab));
+}
 
-static inline int slab_nid(const struct slab *slab) {
-	return folio_nid(slab_folio(slab)); }
+static inline int slab_nid(const struct slab *slab)
+{
+	return folio_nid(slab_folio(slab));
+}
 
-static inline pg_data_t *slab_pgdat(const struct slab *slab) {
-	return folio_pgdat(slab_folio(slab)); }
+static inline pg_data_t *slab_pgdat(const struct slab *slab)
+{
+	return folio_pgdat(slab_folio(slab));
+}
 
-static inline struct slab *virt_to_slab(const void *addr) {
+static inline struct slab *virt_to_slab(const void *addr)
+{
 	struct folio *folio = virt_to_folio(addr);
 
 	if (!folio_test_slab(folio))
 		return NULL;
 
-	return folio_slab(folio); }
-
-
+	return folio_slab(folio);
+}
 
 #include <linux/kobject.h>
 #include <linux/local_lock.h>
 
 enum slab_deactivate_mode { DEACTIVATE_TO_HEAD, DEACTIVATE_TO_TAIL };
 
-struct kmem_cache_cpu { void **freelist; unsigned long tid; struct slab *slab; };
+struct kmem_cache_cpu {
+	void **freelist;
+	unsigned long tid;
+	struct slab *slab;
+};
 
+struct kmem_cache_order_objects {
+	unsigned int x;
+};
 
-struct kmem_cache_order_objects { unsigned int x; };
-
-struct kmem_cache { struct kmem_cache_cpu __percpu *cpu_slab; slab_flags_t flags; unsigned int size, object_size, offset; struct kmem_cache_order_objects oo, min; gfp_t allocflags; void (*ctor)(void *); unsigned int align; struct kmem_cache_node *node[MAX_NUMNODES]; };
+struct kmem_cache {
+	struct kmem_cache_cpu __percpu *cpu_slab;
+	slab_flags_t flags;
+	unsigned int size, object_size, offset;
+	struct kmem_cache_order_objects oo, min;
+	gfp_t allocflags;
+	void (*ctor)(void *);
+	unsigned int align;
+	struct kmem_cache_node *node[MAX_NUMNODES];
+};
 
 /* sysfs_slab_unlink/release removed - unused */
 
@@ -72,97 +113,129 @@ struct kmem_cache { struct kmem_cache_cpu __percpu *cpu_slab; slab_flags_t flags
 #include <linux/sched/mm.h>
 #include <linux/list_lru.h>
 
- 
-enum slab_state { DOWN, PARTIAL, PARTIAL_NODE, UP, };
+enum slab_state {
+	DOWN,
+	PARTIAL,
+	PARTIAL_NODE,
+	UP,
+};
 
 extern enum slab_state slab_state;
 
- 
 extern struct mutex slab_mutex;
-
 
 extern struct kmem_cache *kmem_cache;
 
- 
 extern const struct kmalloc_info_struct {
 	const char *name[NR_KMALLOC_TYPES];
 	unsigned int size;
 } kmalloc_info[];
 
- 
 void setup_kmalloc_cache_index_table(void);
 void create_kmalloc_caches(slab_flags_t);
 
- 
 struct kmem_cache *kmalloc_slab(size_t, gfp_t);
 
 gfp_t kmalloc_fix_flags(gfp_t flags);
 
- 
 int __kmem_cache_create(struct kmem_cache *, slab_flags_t flags);
 
-struct kmem_cache *create_kmalloc_cache(const char *name, unsigned int size, slab_flags_t flags, unsigned int useroffset, unsigned int usersize);
-extern void create_boot_cache(struct kmem_cache *, const char *name, unsigned int size, slab_flags_t flags, unsigned int useroffset, unsigned int usersize);
+struct kmem_cache *create_kmalloc_cache(const char *name, unsigned int size,
+					slab_flags_t flags,
+					unsigned int useroffset,
+					unsigned int usersize);
+extern void create_boot_cache(struct kmem_cache *, const char *name,
+			      unsigned int size, slab_flags_t flags,
+			      unsigned int useroffset, unsigned int usersize);
 
-
- 
-#define SLAB_CORE_FLAGS (SLAB_HWCACHE_ALIGN | SLAB_CACHE_DMA | 			 SLAB_CACHE_DMA32 | SLAB_PANIC | 			 SLAB_TYPESAFE_BY_RCU | SLAB_DEBUG_OBJECTS )
+#define SLAB_CORE_FLAGS                                                        \
+	(SLAB_HWCACHE_ALIGN | SLAB_CACHE_DMA | SLAB_CACHE_DMA32 | SLAB_PANIC | \
+	 SLAB_TYPESAFE_BY_RCU | SLAB_DEBUG_OBJECTS)
 
 #define SLAB_DEBUG_FLAGS (0)
 
-#define SLAB_CACHE_FLAGS (SLAB_NOLEAKTRACE | SLAB_RECLAIM_ACCOUNT | 			  SLAB_TEMPORARY | SLAB_ACCOUNT | SLAB_NO_USER_FLAGS)
+#define SLAB_CACHE_FLAGS                                            \
+	(SLAB_NOLEAKTRACE | SLAB_RECLAIM_ACCOUNT | SLAB_TEMPORARY | \
+	 SLAB_ACCOUNT | SLAB_NO_USER_FLAGS)
 
- 
-#define CACHE_CREATE_MASK (SLAB_CORE_FLAGS | SLAB_DEBUG_FLAGS | SLAB_CACHE_FLAGS)
+#define CACHE_CREATE_MASK \
+	(SLAB_CORE_FLAGS | SLAB_DEBUG_FLAGS | SLAB_CACHE_FLAGS)
 
- 
-#define SLAB_FLAGS_PERMITTED (SLAB_CORE_FLAGS | 			      SLAB_RED_ZONE | 			      SLAB_POISON | 			      SLAB_STORE_USER | 			      SLAB_TRACE | 			      SLAB_CONSISTENCY_CHECKS | 			      SLAB_NOLEAKTRACE | 			      SLAB_RECLAIM_ACCOUNT | 			      SLAB_TEMPORARY | 			      SLAB_ACCOUNT | 			      SLAB_NO_USER_FLAGS)
+#define SLAB_FLAGS_PERMITTED                                               \
+	(SLAB_CORE_FLAGS | SLAB_RED_ZONE | SLAB_POISON | SLAB_STORE_USER | \
+	 SLAB_TRACE | SLAB_CONSISTENCY_CHECKS | SLAB_NOLEAKTRACE |         \
+	 SLAB_RECLAIM_ACCOUNT | SLAB_TEMPORARY | SLAB_ACCOUNT |            \
+	 SLAB_NO_USER_FLAGS)
 
 /* __kmem_cache_release, __kmem_cache_free_bulk, __kmem_cache_alloc_bulk
  * removed - error-path/bulk cleanup never reached on this workload */
 
-static inline enum node_stat_item cache_vmstat_idx(struct kmem_cache *s) {
-	return (s->flags & SLAB_RECLAIM_ACCOUNT) ?
-		NR_SLAB_RECLAIMABLE_B : NR_SLAB_UNRECLAIMABLE_B; }
+static inline enum node_stat_item cache_vmstat_idx(struct kmem_cache *s)
+{
+	return (s->flags & SLAB_RECLAIM_ACCOUNT) ? NR_SLAB_RECLAIMABLE_B :
+						   NR_SLAB_UNRECLAIMABLE_B;
+}
 
 /* slab_objcgs, memcg_from_slab_obj removed - unused */
 
-static __always_inline void account_slab(struct slab *slab, int order, struct kmem_cache *s, gfp_t gfp) {
-	mod_node_page_state(slab_pgdat(slab), cache_vmstat_idx(s), PAGE_SIZE << order); }
+static __always_inline void account_slab(struct slab *slab, int order,
+					 struct kmem_cache *s, gfp_t gfp)
+{
+	mod_node_page_state(slab_pgdat(slab), cache_vmstat_idx(s),
+			    PAGE_SIZE << order);
+}
 
 /* unaccount_slab removed - only caller was __free_slab (dead slab-free path) */
 
-static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x) {
-	return s; }
+static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
+{
+	return s;
+}
 
-static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s, struct list_lru *lru, struct obj_cgroup **objcgp, size_t size, gfp_t flags) {
+static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
+						     struct list_lru *lru,
+						     struct obj_cgroup **objcgp,
+						     size_t size, gfp_t flags)
+{
 	flags &= gfp_allowed_mask;
 
 	might_alloc(flags);
 
-	return s; }
+	return s;
+}
 
-static inline void slab_post_alloc_hook(struct kmem_cache *s, struct obj_cgroup *objcg, gfp_t flags, size_t size, void **p, bool init) {
+static inline void slab_post_alloc_hook(struct kmem_cache *s,
+					struct obj_cgroup *objcg, gfp_t flags,
+					size_t size, void **p, bool init)
+{
 	size_t i;
 
 	for (i = 0; i < size; i++) {
 		if (p[i] && init)
-			memset(p[i], 0, s->object_size); } }
+			memset(p[i], 0, s->object_size);
+	}
+}
 
- 
-struct kmem_cache_node { spinlock_t list_lock; unsigned long nr_partial; struct list_head partial; };
+struct kmem_cache_node {
+	spinlock_t list_lock;
+	unsigned long nr_partial;
+	struct list_head partial;
+};
 
-static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node) {
-	return s->node[node]; }
+static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
+{
+	return s->node[node];
+}
 
- 
-#define for_each_kmem_cache_node(__s, __node, __n) 	for (__node = 0; __node < nr_node_ids; __node++) 		 if ((__n = get_node(__s, __node)))
-
+#define for_each_kmem_cache_node(__s, __node, __n)       \
+	for (__node = 0; __node < nr_node_ids; __node++) \
+		if ((__n = get_node(__s, __node)))
 
 /* dump_unreclaimable_slab / cache_random_seq_destroy removed - unused */
 
-static inline bool slab_want_init_on_alloc(gfp_t flags, struct kmem_cache *c) {
-	return flags & __GFP_ZERO; }
-
+static inline bool slab_want_init_on_alloc(gfp_t flags, struct kmem_cache *c)
+{
+	return flags & __GFP_ZERO;
+}
 
 #endif

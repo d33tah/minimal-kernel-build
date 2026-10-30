@@ -19,4 +19,3 @@ void tty_buffer_init(struct tty_port *port)
 	atomic_set(&buf->mem_used, 0);
 	INIT_WORK(&buf->work, NULL);
 }
-

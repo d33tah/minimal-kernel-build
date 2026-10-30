@@ -5,8 +5,6 @@
    register_user_hw_breakpoint, modify_user_hw_breakpoint, unregister_hw_breakpoint
    removed - unused */
 
-
 /* Perf regs - just define minimum needed for pt_regs_offset array */
 #define PERF_REG_X86_MAX 32
 unsigned int pt_regs_offset[PERF_REG_X86_MAX];
-

@@ -4,8 +4,10 @@
 #include <linux/types.h>
 #include <linux/stddef.h>
 
-static __always_inline
-void *__inline_bsearch(const void *key, const void *base, size_t num, size_t size, cmp_func_t cmp) {
+static __always_inline void *__inline_bsearch(const void *key, const void *base,
+					      size_t num, size_t size,
+					      cmp_func_t cmp)
+{
 	const char *pivot;
 	int result;
 
@@ -18,9 +20,12 @@ void *__inline_bsearch(const void *key, const void *base, size_t num, size_t siz
 
 		if (result > 0) {
 			base = pivot + size;
-			num--; }
-		num >>= 1; }
+			num--;
+		}
+		num >>= 1;
+	}
 
-	return NULL; }
+	return NULL;
+}
 
 #endif

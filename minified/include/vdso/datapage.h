@@ -16,23 +16,39 @@
 #include <linux/time32.h>
 #include <linux/time.h>
 
-#define VDSO_BASES	(CLOCK_TAI + 1)
-#define VDSO_HRES	(BIT(CLOCK_REALTIME)		| 			 BIT(CLOCK_MONOTONIC)		| 			 BIT(CLOCK_BOOTTIME)		| 			 BIT(CLOCK_TAI))
-#define VDSO_COARSE	(BIT(CLOCK_REALTIME_COARSE)	| 			 BIT(CLOCK_MONOTONIC_COARSE))
-#define VDSO_RAW	(BIT(CLOCK_MONOTONIC_RAW))
+#define VDSO_BASES (CLOCK_TAI + 1)
+#define VDSO_HRES                                                           \
+	(BIT(CLOCK_REALTIME) | BIT(CLOCK_MONOTONIC) | BIT(CLOCK_BOOTTIME) | \
+	 BIT(CLOCK_TAI))
+#define VDSO_COARSE (BIT(CLOCK_REALTIME_COARSE) | BIT(CLOCK_MONOTONIC_COARSE))
+#define VDSO_RAW (BIT(CLOCK_MONOTONIC_RAW))
 
-#define CS_HRES_COARSE	0
-#define CS_RAW		1
-#define CS_BASES	(CS_RAW + 1)
+#define CS_HRES_COARSE 0
+#define CS_RAW 1
+#define CS_BASES (CS_RAW + 1)
 
-struct vdso_timestamp { u64 sec, nsec; };
+struct vdso_timestamp {
+	u64 sec, nsec;
+};
 
-struct vdso_data { u32			seq; s32			clock_mode; u64 cycle_last, mask; u32 mult, shift; union { struct vdso_timestamp	basetime[VDSO_BASES]; struct timens_offset	offset[VDSO_BASES]; }; s32 tz_minuteswest, tz_dsttime; u32 hrtimer_res, __unused; };
+struct vdso_data {
+	u32 seq;
+	s32 clock_mode;
+	u64 cycle_last, mask;
+	u32 mult, shift;
+	union {
+		struct vdso_timestamp basetime[VDSO_BASES];
+		struct timens_offset offset[VDSO_BASES];
+	};
+	s32 tz_minuteswest, tz_dsttime;
+	u32 hrtimer_res, __unused;
+};
 
-extern struct vdso_data _vdso_data[CS_BASES] __attribute__((visibility("hidden")));
+extern struct vdso_data _vdso_data[CS_BASES]
+	__attribute__((visibility("hidden")));
 
 #include <asm/vdso/gettimeofday.h>
 
-#endif  
+#endif
 
-#endif  
+#endif

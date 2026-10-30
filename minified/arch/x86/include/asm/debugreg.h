@@ -1,75 +1,95 @@
- 
+
 #ifndef _ASM_X86_DEBUGREG_H
 #define _ASM_X86_DEBUGREG_H
-
 
 #include <linux/bug.h>
 #include <uapi/asm/debugreg.h>
 
+#define get_debugreg(var, register) (var) = native_get_debugreg(register)
+#define set_debugreg(value, register) native_set_debugreg(register, value)
 
-#define get_debugreg(var, register)					(var) = native_get_debugreg(register)
-#define set_debugreg(value, register)					native_set_debugreg(register, value)
-
-static __always_inline unsigned long native_get_debugreg(int regno) {
-	unsigned long val = 0;	 
+static __always_inline unsigned long native_get_debugreg(int regno)
+{
+	unsigned long val = 0;
 
 	switch (regno) {
-	case 0: asm("mov %%db0, %0" :"=r" (val));
+	case 0:
+		asm("mov %%db0, %0" : "=r"(val));
 		break;
-	case 1: asm("mov %%db1, %0" :"=r" (val));
+	case 1:
+		asm("mov %%db1, %0" : "=r"(val));
 		break;
-	case 2: asm("mov %%db2, %0" :"=r" (val));
+	case 2:
+		asm("mov %%db2, %0" : "=r"(val));
 		break;
-	case 3: asm("mov %%db3, %0" :"=r" (val));
+	case 3:
+		asm("mov %%db3, %0" : "=r"(val));
 		break;
-	case 6: asm("mov %%db6, %0" :"=r" (val));
+	case 6:
+		asm("mov %%db6, %0" : "=r"(val));
 		break;
-	case 7: asm("mov %%db7, %0" :"=r" (val));
+	case 7:
+		asm("mov %%db7, %0" : "=r"(val));
 		break;
-	default: BUG(); }
-	return val; }
+	default:
+		BUG();
+	}
+	return val;
+}
 
-static __always_inline void native_set_debugreg(int regno, unsigned long value) {
+static __always_inline void native_set_debugreg(int regno, unsigned long value)
+{
 	switch (regno) {
-	case 0: asm("mov %0, %%db0"	::"r" (value));
+	case 0:
+		asm("mov %0, %%db0" ::"r"(value));
 		break;
-	case 1: asm("mov %0, %%db1"	::"r" (value));
+	case 1:
+		asm("mov %0, %%db1" ::"r"(value));
 		break;
-	case 2: asm("mov %0, %%db2"	::"r" (value));
+	case 2:
+		asm("mov %0, %%db2" ::"r"(value));
 		break;
-	case 3: asm("mov %0, %%db3"	::"r" (value));
+	case 3:
+		asm("mov %0, %%db3" ::"r"(value));
 		break;
-	case 6: asm("mov %0, %%db6"	::"r" (value));
+	case 6:
+		asm("mov %0, %%db6" ::"r"(value));
 		break;
-	case 7: asm("mov %0, %%db7"	::"r" (value));
+	case 7:
+		asm("mov %0, %%db7" ::"r"(value));
 		break;
-	default: BUG(); } }
-
+	default:
+		BUG();
+	}
+}
 
 /* hw_breakpoint_active() folded out: cpu_dr7 was never written (write-only,
  * always 0) so it always returned false. hw_breakpoint_restore removed - unused */
 
-static __always_inline unsigned long local_db_save(void) {
+static __always_inline unsigned long local_db_save(void)
+{
 	unsigned long dr7;
 
 	if (static_cpu_has(X86_FEATURE_HYPERVISOR))
 		return 0;
 
 	get_debugreg(dr7, 7);
-	dr7 &= ~0x400;  
+	dr7 &= ~0x400;
 	if (dr7)
 		set_debugreg(0, 7);
-	 
+
 	barrier();
 
-	return dr7; }
+	return dr7;
+}
 
-static __always_inline void local_db_restore(unsigned long dr7) {
-	 
+static __always_inline void local_db_restore(unsigned long dr7)
+{
 	barrier();
 	if (dr7)
-		set_debugreg(dr7, 7); }
+		set_debugreg(dr7, 7);
+}
 
 /* set_dr_addr_mask removed - never defined/used */
 
-#endif  
+#endif

@@ -18,12 +18,18 @@
 
 /* --- 2025-12-08 00:16 --- Inlined from pageblock-flags.h */
 #define PB_migratetype_bits 3
-enum pageblock_bits { PB_migrate, PB_migrate_end = PB_migrate + PB_migratetype_bits - 1, PB_migrate_skip, NR_PAGEBLOCK_BITS };
+enum pageblock_bits {
+	PB_migrate,
+	PB_migrate_end = PB_migrate + PB_migratetype_bits - 1,
+	PB_migrate_skip,
+	NR_PAGEBLOCK_BITS
+};
 
-#define pageblock_order		(MAX_ORDER-1)
-#define pageblock_nr_pages	(1UL << pageblock_order)
+#define pageblock_order (MAX_ORDER - 1)
+#define pageblock_nr_pages (1UL << pageblock_order)
 
-void set_pfnblock_flags_mask(struct page *page, unsigned long flags, unsigned long pfn, unsigned long mask);
+void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
+			     unsigned long pfn, unsigned long mask);
 /* end pageblock-flags.h */
 #include <linux/atomic.h>
 #include <linux/mm_types.h>
@@ -38,56 +44,103 @@ void set_pfnblock_flags_mask(struct page *page, unsigned long flags, unsigned lo
 
 #define PAGE_ALLOC_COSTLY_ORDER 3
 
-enum migratetype { MIGRATE_UNMOVABLE, MIGRATE_MOVABLE, MIGRATE_RECLAIMABLE, MIGRATE_PCPTYPES, MIGRATE_HIGHATOMIC = MIGRATE_PCPTYPES, MIGRATE_TYPES };
+enum migratetype {
+	MIGRATE_UNMOVABLE,
+	MIGRATE_MOVABLE,
+	MIGRATE_RECLAIMABLE,
+	MIGRATE_PCPTYPES,
+	MIGRATE_HIGHATOMIC = MIGRATE_PCPTYPES,
+	MIGRATE_TYPES
+};
 
-#  define is_migrate_cma(migratetype) false
+#define is_migrate_cma(migratetype) false
 
-
-
-#define for_each_migratetype_order(order, type) 	for (order = 0; order < MAX_ORDER; order++) 		for (type = 0; type < MIGRATE_TYPES; type++)
+#define for_each_migratetype_order(order, type)     \
+	for (order = 0; order < MAX_ORDER; order++) \
+		for (type = 0; type < MIGRATE_TYPES; type++)
 
 extern int page_group_by_mobility_disabled;
 
 #define MIGRATETYPE_MASK ((1UL << PB_migratetype_bits) - 1)
 
-struct free_area { struct list_head	free_list[MIGRATE_TYPES]; unsigned long		nr_free; };
+struct free_area {
+	struct list_head free_list[MIGRATE_TYPES];
+	unsigned long nr_free;
+};
 
-static inline struct page *get_page_from_free_area(struct free_area *area, int migratetype) {
-	return list_first_entry_or_null(&area->free_list[migratetype], struct page, lru); }
+static inline struct page *get_page_from_free_area(struct free_area *area,
+						   int migratetype)
+{
+	return list_first_entry_or_null(&area->free_list[migratetype],
+					struct page, lru);
+}
 
-static inline bool free_area_empty(struct free_area *area, int migratetype) {
-	return list_empty(&area->free_list[migratetype]); }
+static inline bool free_area_empty(struct free_area *area, int migratetype)
+{
+	return list_empty(&area->free_list[migratetype]);
+}
 
 struct pglist_data;
 
 #define ZONE_PADDING(name)
 
-enum zone_stat_item { NR_FREE_PAGES, NR_ZONE_LRU_BASE, NR_ZONE_INACTIVE_ANON = NR_ZONE_LRU_BASE, NR_ZONE_ACTIVE_ANON, NR_ZONE_INACTIVE_FILE, NR_ZONE_ACTIVE_FILE, NR_ZONE_UNEVICTABLE, NR_ZONE_WRITE_PENDING, NR_MLOCK, NR_BOUNCE, NR_FREE_CMA_PAGES, NR_VM_ZONE_STAT_ITEMS };
+enum zone_stat_item {
+	NR_FREE_PAGES,
+	NR_ZONE_LRU_BASE,
+	NR_ZONE_INACTIVE_ANON = NR_ZONE_LRU_BASE,
+	NR_ZONE_ACTIVE_ANON,
+	NR_ZONE_INACTIVE_FILE,
+	NR_ZONE_ACTIVE_FILE,
+	NR_ZONE_UNEVICTABLE,
+	NR_ZONE_WRITE_PENDING,
+	NR_MLOCK,
+	NR_BOUNCE,
+	NR_FREE_CMA_PAGES,
+	NR_VM_ZONE_STAT_ITEMS
+};
 
-enum node_stat_item { NR_LRU_BASE, NR_SLAB_RECLAIMABLE_B, NR_SLAB_UNRECLAIMABLE_B, NR_ANON_MAPPED, NR_FILE_MAPPED, NR_FILE_PAGES, NR_ANON_THPS, NR_KERNEL_STACK_KB, NR_PAGETABLE, };
-
+enum node_stat_item {
+	NR_LRU_BASE,
+	NR_SLAB_RECLAIMABLE_B,
+	NR_SLAB_UNRECLAIMABLE_B,
+	NR_ANON_MAPPED,
+	NR_FILE_MAPPED,
+	NR_FILE_PAGES,
+	NR_ANON_THPS,
+	NR_KERNEL_STACK_KB,
+	NR_PAGETABLE,
+};
 
 #define LRU_BASE 0
 #define LRU_ACTIVE 1
 #define LRU_FILE 2
 
-enum lru_list { LRU_INACTIVE_ANON = LRU_BASE, LRU_INACTIVE_FILE = LRU_BASE + LRU_FILE, LRU_ACTIVE_FILE = LRU_BASE + LRU_FILE + LRU_ACTIVE, LRU_UNEVICTABLE, NR_LRU_LISTS };
+enum lru_list {
+	LRU_INACTIVE_ANON = LRU_BASE,
+	LRU_INACTIVE_FILE = LRU_BASE + LRU_FILE,
+	LRU_ACTIVE_FILE = LRU_BASE + LRU_FILE + LRU_ACTIVE,
+	LRU_UNEVICTABLE,
+	NR_LRU_LISTS
+};
 
 #define for_each_lru(lru) for (lru = 0; lru < NR_LRU_LISTS; lru++)
 
-
-struct lruvec { struct list_head		lists[NR_LRU_LISTS]; spinlock_t			lru_lock; };
-
+struct lruvec {
+	struct list_head lists[NR_LRU_LISTS];
+	spinlock_t lru_lock;
+};
 
 enum zone_watermarks { WMARK_MIN, WMARK_LOW, WMARK_HIGH, NR_WMARK };
 
 #define NR_PCP_LISTS (MIGRATE_PCPTYPES * (PAGE_ALLOC_COSTLY_ORDER + 1))
 
-
 #define high_wmark_pages(z) (z->_watermark[WMARK_HIGH])
 #define wmark_pages(z, i) (z->_watermark[i])
 
-struct per_cpu_pages { int batch; struct list_head lists[NR_PCP_LISTS]; };
+struct per_cpu_pages {
+	int batch;
+	struct list_head lists[NR_PCP_LISTS];
+};
 
 #endif
 
@@ -95,93 +148,159 @@ enum zone_type { ZONE_NORMAL, ZONE_MOVABLE, __MAX_NR_ZONES };
 
 #ifndef __GENERATING_BOUNDS_H
 
+struct zone {
+	unsigned long _watermark[NR_WMARK];
+	struct pglist_data *zone_pgdat;
+	struct per_cpu_pages __percpu *per_cpu_pageset;
+	int pageset_high, pageset_batch;
+	unsigned long *pageblock_flags;
+	unsigned long zone_start_pfn;
+	atomic_long_t managed_pages;
+	unsigned long spanned_pages, present_pages;
+	const char *name;
+	ZONE_PADDING(_pad1_) struct free_area free_area[MAX_ORDER];
+	spinlock_t lock;
+	ZONE_PADDING(_pad2_)
+	ZONE_PADDING(_pad3_) atomic_long_t vm_stat[NR_VM_ZONE_STAT_ITEMS];
+} ____cacheline_internodealigned_in_smp;
 
-struct zone { unsigned long _watermark[NR_WMARK]; struct pglist_data	*zone_pgdat; struct per_cpu_pages	__percpu *per_cpu_pageset; int pageset_high, pageset_batch; unsigned long		*pageblock_flags; unsigned long		zone_start_pfn; atomic_long_t		managed_pages; unsigned long spanned_pages, present_pages; const char		*name; ZONE_PADDING(_pad1_) struct free_area	free_area[MAX_ORDER]; spinlock_t		lock; ZONE_PADDING(_pad2_) ZONE_PADDING(_pad3_) atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS]; } ____cacheline_internodealigned_in_smp;
+static inline unsigned long zone_managed_pages(struct zone *zone)
+{
+	return (unsigned long)atomic_long_read(&zone->managed_pages);
+}
 
-static inline unsigned long zone_managed_pages(struct zone *zone) {
-	return (unsigned long)atomic_long_read(&zone->managed_pages); }
+static inline unsigned long zone_end_pfn(const struct zone *zone)
+{
+	return zone->zone_start_pfn + zone->spanned_pages;
+}
 
-static inline unsigned long zone_end_pfn(const struct zone *zone) {
-	return zone->zone_start_pfn + zone->spanned_pages; }
-
-static inline bool zone_spans_pfn(const struct zone *zone, unsigned long pfn) {
-	return zone->zone_start_pfn <= pfn && pfn < zone_end_pfn(zone); }
+static inline bool zone_spans_pfn(const struct zone *zone, unsigned long pfn)
+{
+	return zone->zone_start_pfn <= pfn && pfn < zone_end_pfn(zone);
+}
 
 #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES * MAX_NR_ZONES)
 
 enum { ZONELIST_FALLBACK, MAX_ZONELISTS };
 
-struct zoneref { struct zone *zone; int zone_idx; };
+struct zoneref {
+	struct zone *zone;
+	int zone_idx;
+};
 
-struct zonelist { struct zoneref _zonerefs[MAX_ZONES_PER_ZONELIST + 1]; };
+struct zonelist {
+	struct zoneref _zonerefs[MAX_ZONES_PER_ZONELIST + 1];
+};
 
 extern struct page *mem_map;
 
+typedef struct pglist_data {
+	struct zone node_zones[MAX_NR_ZONES];
+	struct zonelist node_zonelists[MAX_ZONELISTS];
+	int nr_zones;
+	struct page *node_mem_map;
+	unsigned long node_start_pfn, node_spanned_pages;
+	int node_id;
+	ZONE_PADDING(_pad1_) struct lruvec __lruvec;
+	ZONE_PADDING(_pad2_)
+} pg_data_t;
 
-typedef struct pglist_data { struct zone node_zones[MAX_NR_ZONES]; struct zonelist node_zonelists[MAX_ZONELISTS]; int nr_zones; struct page *node_mem_map; unsigned long node_start_pfn, node_spanned_pages; int node_id; ZONE_PADDING(_pad1_) struct lruvec		__lruvec; ZONE_PADDING(_pad2_) } pg_data_t;
-
-
-static inline unsigned long pgdat_end_pfn(pg_data_t *pgdat) {
-	return pgdat->node_start_pfn + pgdat->node_spanned_pages; }
+static inline unsigned long pgdat_end_pfn(pg_data_t *pgdat)
+{
+	return pgdat->node_start_pfn + pgdat->node_spanned_pages;
+}
 
 void build_all_zonelists(pg_data_t *pgdat);
-enum meminit_context { MEMINIT_EARLY, MEMINIT_HOTPLUG, };
+enum meminit_context {
+	MEMINIT_EARLY,
+	MEMINIT_HOTPLUG,
+};
 
-extern void init_currently_empty_zone(struct zone *zone, unsigned long start_pfn, unsigned long size);
+extern void init_currently_empty_zone(struct zone *zone,
+				      unsigned long start_pfn,
+				      unsigned long size);
 
 extern void lruvec_init(struct lruvec *lruvec);
 
-static inline struct pglist_data *lruvec_pgdat(struct lruvec *lruvec) {
-	return container_of(lruvec, struct pglist_data, __lruvec); }
+static inline struct pglist_data *lruvec_pgdat(struct lruvec *lruvec)
+{
+	return container_of(lruvec, struct pglist_data, __lruvec);
+}
 
+#define zone_idx(zone) ((zone) - (zone)->zone_pgdat->node_zones)
 
-#define zone_idx(zone)		((zone) - (zone)->zone_pgdat->node_zones)
+static inline bool populated_zone(struct zone *zone)
+{
+	return zone->present_pages;
+}
 
-
-
-static inline bool populated_zone(struct zone *zone) {
-	return zone->present_pages; }
-
-static inline int zone_to_nid(struct zone *zone) {
-	return 0; }
+static inline int zone_to_nid(struct zone *zone)
+{
+	return 0;
+}
 
 extern struct pglist_data contig_page_data;
-static inline struct pglist_data *NODE_DATA(int nid) {
-	return &contig_page_data; }
-
+static inline struct pglist_data *NODE_DATA(int nid)
+{
+	return &contig_page_data;
+}
 
 extern struct pglist_data *first_online_pgdat(void);
 extern struct zone *next_zone(struct zone *zone);
 
 /* for_each_online_pgdat + next_online_pgdat removed - unused */
-#define for_each_zone(zone)			        	for (zone = (first_online_pgdat())->node_zones; 	     zone;						     zone = next_zone(zone))
+#define for_each_zone(zone)                                   \
+	for (zone = (first_online_pgdat())->node_zones; zone; \
+	     zone = next_zone(zone))
 
-#define for_each_populated_zone(zone)		        	for (zone = (first_online_pgdat())->node_zones; 	     zone;						     zone = next_zone(zone))					if (!populated_zone(zone))					;  				else
+#define for_each_populated_zone(zone)                         \
+	for (zone = (first_online_pgdat())->node_zones; zone; \
+	     zone = next_zone(zone))                          \
+		if (!populated_zone(zone))                    \
+			;                                     \
+		else
 
-static inline struct zone *zonelist_zone(struct zoneref *zoneref) {
-	return zoneref->zone; }
+static inline struct zone *zonelist_zone(struct zoneref *zoneref)
+{
+	return zoneref->zone;
+}
 
-static inline int zonelist_zone_idx(struct zoneref *zoneref) {
-	return zoneref->zone_idx; }
+static inline int zonelist_zone_idx(struct zoneref *zoneref)
+{
+	return zoneref->zone_idx;
+}
 
-struct zoneref *__next_zones_zonelist(struct zoneref *z, enum zone_type highest_zoneidx);
+struct zoneref *__next_zones_zonelist(struct zoneref *z,
+				      enum zone_type highest_zoneidx);
 
-static __always_inline struct zoneref *next_zones_zonelist(struct zoneref *z, enum zone_type highest_zoneidx) {
+static __always_inline struct zoneref *
+next_zones_zonelist(struct zoneref *z, enum zone_type highest_zoneidx)
+{
 	if (likely(zonelist_zone_idx(z) <= highest_zoneidx))
 		return z;
-	return __next_zones_zonelist(z, highest_zoneidx); }
+	return __next_zones_zonelist(z, highest_zoneidx);
+}
 
-static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist, enum zone_type highest_zoneidx) {
-	return next_zones_zonelist(zonelist->_zonerefs, highest_zoneidx); }
+static inline struct zoneref *
+first_zones_zonelist(struct zonelist *zonelist, enum zone_type highest_zoneidx)
+{
+	return next_zones_zonelist(zonelist->_zonerefs, highest_zoneidx);
+}
 
-#define for_each_zone_zonelist(zone, z, zlist, highidx) 	for (z = first_zones_zonelist(zlist, highidx), zone = zonelist_zone(z);			zone;									z = next_zones_zonelist(++z, highidx),				zone = zonelist_zone(z))
+#define for_each_zone_zonelist(zone, z, zlist, highidx) \
+	for (z = first_zones_zonelist(zlist, highidx),  \
+	    zone = zonelist_zone(z);                    \
+	     zone;                                      \
+	     z = next_zones_zonelist(++z, highidx), zone = zonelist_zone(z))
 
-#define for_next_zone_zonelist(zone, z, highidx) 	for (zone = z->zone;			zone;									z = next_zones_zonelist(++z, highidx),				zone = zonelist_zone(z))
+#define for_next_zone_zonelist(zone, z, highidx) \
+	for (zone = z->zone; zone;               \
+	     z = next_zones_zonelist(++z, highidx), zone = zonelist_zone(z))
 
+#define sparse_init() \
+	do {          \
+	} while (0)
 
-
-#define sparse_init()	do {} while (0)
-
-#endif  
-#endif  
-#endif  
+#endif
+#endif
+#endif

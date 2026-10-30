@@ -4,8 +4,10 @@
 
 static int after_paging_init __initdata;
 
-void __init early_ioremap_reset(void) {
-	after_paging_init = 1; }
+void __init early_ioremap_reset(void)
+{
+	after_paging_init = 1;
+}
 
 /*
  * x86 unconditionally #defines __late_set_fixmap / __late_clear_fixmap in
@@ -17,7 +19,8 @@ static void __iomem *prev_map[FIX_BTMAPS_SLOTS] __initdata;
 static unsigned long prev_size[FIX_BTMAPS_SLOTS] __initdata;
 static unsigned long slot_virt[FIX_BTMAPS_SLOTS] __initdata;
 
-void __init early_ioremap_setup(void) {
+void __init early_ioremap_setup(void)
+{
 	int i;
 
 	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)
@@ -25,10 +28,12 @@ void __init early_ioremap_setup(void) {
 			break;
 
 	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)
-		slot_virt[i] = __fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i); }
+		slot_virt[i] =
+			__fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS * i);
+}
 
-
-void __init early_memunmap(void *vaddr, unsigned long size) {
+void __init early_memunmap(void *vaddr, unsigned long size)
+{
 	void __iomem *addr = (__force void __iomem *)vaddr;
 	unsigned long virt_addr, offset;
 	unsigned int nrpages;
@@ -39,12 +44,17 @@ void __init early_memunmap(void *vaddr, unsigned long size) {
 	for (i = 0; i < FIX_BTMAPS_SLOTS; i++) {
 		if (prev_map[i] == addr) {
 			slot = i;
-			break; } }
+			break;
+		}
+	}
 
-	if (WARN(slot < 0, "%s(%p, %08lx) not found slot\n", __func__, addr, size))
+	if (WARN(slot < 0, "%s(%p, %08lx) not found slot\n", __func__, addr,
+		 size))
 		return;
 
-	if (WARN(prev_size[slot] != size, "%s(%p, %08lx) [%d] size not consistent %08lx\n", __func__, addr, size, slot, prev_size[slot]))
+	if (WARN(prev_size[slot] != size,
+		 "%s(%p, %08lx) [%d] size not consistent %08lx\n", __func__,
+		 addr, size, slot, prev_size[slot]))
 		return;
 
 	virt_addr = (unsigned long)addr;
@@ -54,16 +64,20 @@ void __init early_memunmap(void *vaddr, unsigned long size) {
 	offset = offset_in_page(virt_addr);
 	nrpages = PAGE_ALIGN(offset + size) >> PAGE_SHIFT;
 
-	idx = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*slot;
+	idx = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS * slot;
 	while (nrpages > 0) {
 		if (after_paging_init)
 			__late_clear_fixmap(idx);
-		else __early_set_fixmap(idx, 0, FIXMAP_PAGE_CLEAR);
+		else
+			__early_set_fixmap(idx, 0, FIXMAP_PAGE_CLEAR);
 		--idx;
-		--nrpages; }
-	prev_map[slot] = NULL; }
+		--nrpages;
+	}
+	prev_map[slot] = NULL;
+}
 
-void __init * early_memremap(resource_size_t phys_addr, unsigned long size) {
+void __init *early_memremap(resource_size_t phys_addr, unsigned long size)
+{
 	unsigned long offset;
 	resource_size_t last_addr;
 	unsigned int nrpages;
@@ -76,9 +90,12 @@ void __init * early_memremap(resource_size_t phys_addr, unsigned long size) {
 	for (i = 0; i < FIX_BTMAPS_SLOTS; i++) {
 		if (!prev_map[i]) {
 			slot = i;
-			break; } }
+			break;
+		}
+	}
 
-	if (WARN(slot < 0, "%s(%pa, %08lx) not found slot\n", __func__, &phys_addr, size))
+	if (WARN(slot < 0, "%s(%pa, %08lx) not found slot\n", __func__,
+		 &phys_addr, size))
 		return NULL;
 
 	last_addr = phys_addr + size - 1;
@@ -94,21 +111,24 @@ void __init * early_memremap(resource_size_t phys_addr, unsigned long size) {
 	if (WARN_ON(nrpages > NR_FIX_BTMAPS))
 		return NULL;
 
-	idx = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*slot;
+	idx = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS * slot;
 	while (nrpages > 0) {
 		if (after_paging_init)
 			__late_set_fixmap(idx, phys_addr, FIXMAP_PAGE_NORMAL);
-		else __early_set_fixmap(idx, phys_addr, FIXMAP_PAGE_NORMAL);
+		else
+			__early_set_fixmap(idx, phys_addr, FIXMAP_PAGE_NORMAL);
 		phys_addr += PAGE_SIZE;
 		--idx;
-		--nrpages; }
+		--nrpages;
+	}
 	prev_map[slot] = (void __iomem *)(offset + slot_virt[slot]);
-	return (__force void *)prev_map[slot]; }
+	return (__force void *)prev_map[slot];
+}
 
+#define MAX_MAP_CHUNK (NR_FIX_BTMAPS << PAGE_SHIFT)
 
-#define MAX_MAP_CHUNK	(NR_FIX_BTMAPS << PAGE_SHIFT)
-
-void __init copy_from_early_mem(void *dest, phys_addr_t src, unsigned long size) {
+void __init copy_from_early_mem(void *dest, phys_addr_t src, unsigned long size)
+{
 	unsigned long slop, clen;
 	char *p;
 
@@ -122,4 +142,6 @@ void __init copy_from_early_mem(void *dest, phys_addr_t src, unsigned long size)
 		early_memunmap(p, clen + slop);
 		dest += clen;
 		src += clen;
-		size -= clen; } }
+		size -= clen;
+	}
+}

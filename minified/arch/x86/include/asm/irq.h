@@ -1,11 +1,8 @@
- 
+
 #ifndef _ASM_X86_IRQ_H
 #define _ASM_X86_IRQ_H
- 
 
 #include <asm/irq_vectors.h>
-
- 
 
 /* irq_canonicalize removed - unused */
 
@@ -21,5 +18,4 @@ extern void init_ISA_irqs(void);
 
 extern void __init init_IRQ(void);
 
-
-#endif  
+#endif

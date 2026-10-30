@@ -9,18 +9,21 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/syscalls.h>
 #include <linux/fs_struct.h>
 
-
-static void delayed_put_task_struct(struct rcu_head *rhp) {
+static void delayed_put_task_struct(struct rcu_head *rhp)
+{
 	struct task_struct *tsk = container_of(rhp, struct task_struct, rcu);
 
+	put_task_struct(tsk);
+}
 
-	put_task_struct(tsk); }
-
-void put_task_struct_rcu_user(struct task_struct *task) {
+void put_task_struct_rcu_user(struct task_struct *task)
+{
 	if (refcount_dec_and_test(&task->rcu_users))
-		call_rcu(&task->rcu, delayed_put_task_struct); }
+		call_rcu(&task->rcu, delayed_put_task_struct);
+}
 
-static void exit_mm(void) {
+static void exit_mm(void)
+{
 	/*
 	 * RUNTIME-DEAD ANCHOR-STUB: exit_mm drops the dying task's mm. On this
 	 * single-shot boot the only task that exits is PID-1 init, and do_exit
@@ -33,7 +36,8 @@ static void exit_mm(void) {
 	 */
 }
 
-static void exit_notify(struct task_struct *tsk, int group_dead) {
+static void exit_notify(struct task_struct *tsk, int group_dead)
+{
 	/*
 	 * RUNTIME-DEAD anchor-stub: exit_notify is the process-reap/reparent
 	 * notification root. On this single-shot boot nothing is ever reaped --
@@ -47,7 +51,8 @@ static void exit_notify(struct task_struct *tsk, int group_dead) {
 	 */
 }
 
-void __noreturn do_exit(long code) {
+void __noreturn do_exit(long code)
+{
 	struct task_struct *tsk = current;
 	int group_dead;
 
@@ -57,13 +62,12 @@ void __noreturn do_exit(long code) {
 		sync_mm_rss(tsk->mm);
 	group_dead = atomic_dec_and_test(&tsk->signal->live);
 	if (group_dead) {
-		
 		if (unlikely(is_global_init(tsk)))
-			panic("Attempted to kill init! exitcode=0x%08x\n", (int)code); }
+			panic("Attempted to kill init! exitcode=0x%08x\n",
+			      (int)code);
+	}
 
 	exit_mm();
-
-
 
 	exit_files(tsk);
 	exit_fs(tsk);
@@ -79,10 +83,13 @@ void __noreturn do_exit(long code) {
 
 	preempt_disable();
 
-	do_task_dead(); }
+	do_task_dead();
+}
 
-SYSCALL_DEFINE1(exit, int, error_code) {
-	do_exit((error_code&0xff)<<8); }
+SYSCALL_DEFINE1(exit, int, error_code)
+{
+	do_exit((error_code & 0xff) << 8);
+}
 
 /*
  * Removed: do_group_exit + SYSCALL_DEFINE1(exit_group) - unreachable. The init
@@ -90,5 +97,3 @@ SYSCALL_DEFINE1(exit, int, error_code) {
  * entry 252 is gone (routes to sys_ni). Cascade-orphaned zap_other_threads /
  * signal_wake_up / signal_wake_up_state were removed from signal.c too.
  */
-
-

@@ -6,4 +6,4 @@
 int pt_regs_offset(struct pt_regs *regs, int regno);
 /* Other insn-eval functions removed - unused */
 
-#endif  
+#endif

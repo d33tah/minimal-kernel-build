@@ -1,8 +1,8 @@
 
 #include <generated/compile.h>
 #include <linux/build-salt.h>
-#define LINUX_ELFNOTE_LTO_INFO	0x101
-#define BUILD_LTO_INFO	ELFNOTE32("Linux", LINUX_ELFNOTE_LTO_INFO, 0)
+#define LINUX_ELFNOTE_LTO_INFO 0x101
+#define BUILD_LTO_INFO ELFNOTE32("Linux", LINUX_ELFNOTE_LTO_INFO, 0)
 /* end elfnote-lto.h */
 
 #ifndef UTS_SYSNAME
@@ -20,8 +20,9 @@
 
 struct uts_namespace init_uts_ns = { .ns.count = REFCOUNT_INIT(2), .name = { .sysname	= UTS_SYSNAME, .nodename	= UTS_NODENAME, .release	= UTS_RELEASE, .version	= UTS_VERSION, .machine	= UTS_MACHINE, .domainname	= UTS_DOMAINNAME, }, .ns.inum = PROC_UTS_INIT_INO, };
 
-const char linux_banner[] = "Linux version " UTS_RELEASE " (" LINUX_COMPILE_BY "@"
-	LINUX_COMPILE_HOST ") (" LINUX_COMPILER ") " UTS_VERSION "\n";
+const char linux_banner[] = "Linux version " UTS_RELEASE " (" LINUX_COMPILE_BY
+			    "@" LINUX_COMPILE_HOST ") (" LINUX_COMPILER
+			    ") " UTS_VERSION "\n";
 
 BUILD_SALT;
 BUILD_LTO_INFO;

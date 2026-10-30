@@ -1,5 +1,4 @@
- 
- 
+
 
 #ifndef _ASM_X86_PROM_H
 #define _ASM_X86_PROM_H
@@ -14,6 +13,5 @@
 
 #define of_ioapic 0
 
-
-#endif  
+#endif
 #endif

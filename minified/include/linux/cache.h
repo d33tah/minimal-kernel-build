@@ -21,17 +21,17 @@
 #endif
 
 #ifndef __cacheline_aligned
-#define __cacheline_aligned					  __attribute__((__aligned__(SMP_CACHE_BYTES),					 __section__(".data..cacheline_aligned")))
-#endif  
+#define __cacheline_aligned                          \
+	__attribute__((__aligned__(SMP_CACHE_BYTES), \
+		       __section__(".data..cacheline_aligned")))
+#endif
 
 #ifndef __cacheline_aligned_in_smp
 #define __cacheline_aligned_in_smp
 #endif
 
-
 #if !defined(____cacheline_internodealigned_in_smp)
 #define ____cacheline_internodealigned_in_smp
 #endif
 
-
-#endif  
+#endif

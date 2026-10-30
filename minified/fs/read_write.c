@@ -6,13 +6,20 @@
 
 #include <linux/uaccess.h>
 
-static int warn_unsupported(struct file *file, const char *op) {
-	pr_warn_ratelimited( "kernel %s not supported for file %pD4 (pid: %d comm: %.20s)\n", op, file, current->pid, current->comm);
-	return -EINVAL; }
+static int warn_unsupported(struct file *file, const char *op)
+{
+	pr_warn_ratelimited(
+		"kernel %s not supported for file %pD4 (pid: %d comm: %.20s)\n",
+		op, file, current->pid, current->comm);
+	return -EINVAL;
+}
 
-ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos) {
+ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
+{
 	struct kvec iov = {
-		.iov_base	= buf, .iov_len	= min_t(size_t, count, MAX_RW_COUNT), };
+		.iov_base = buf,
+		.iov_len = min_t(size_t, count, MAX_RW_COUNT),
+	};
 	struct kiocb kiocb;
 	struct iov_iter iter;
 	ssize_t ret;
@@ -21,7 +28,7 @@ ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos) {
 		return -EINVAL;
 	if (!(file->f_mode & FMODE_CAN_READ))
 		return -EINVAL;
-	 
+
 	if (unlikely(!file->f_op->read_iter))
 		return warn_unsupported(file, "read");
 
@@ -31,13 +38,19 @@ ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos) {
 	ret = file->f_op->read_iter(&kiocb, &iter);
 	if (ret > 0) {
 		if (pos)
-			*pos = kiocb.ki_pos; }
-	return ret; }
+			*pos = kiocb.ki_pos;
+	}
+	return ret;
+}
 
-ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos) {
-	return __kernel_read(file, buf, count, pos); }
+ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
+{
+	return __kernel_read(file, buf, count, pos);
+}
 
-static ssize_t new_sync_write(struct file *filp, const char __user *buf, size_t len, loff_t *ppos) {
+static ssize_t new_sync_write(struct file *filp, const char __user *buf,
+			      size_t len, loff_t *ppos)
+{
 	struct iovec iov = { .iov_base = (void __user *)buf, .iov_len = len };
 	struct kiocb kiocb;
 	struct iov_iter iter;
@@ -51,11 +64,16 @@ static ssize_t new_sync_write(struct file *filp, const char __user *buf, size_t 
 	BUG_ON(ret == -EIOCBQUEUED);
 	if (ret > 0 && ppos)
 		*ppos = kiocb.ki_pos;
-	return ret; }
+	return ret;
+}
 
-ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t *pos) {
+ssize_t __kernel_write(struct file *file, const void *buf, size_t count,
+		       loff_t *pos)
+{
 	struct kvec iov = {
-		.iov_base	= (void *)buf, .iov_len	= min_t(size_t, count, MAX_RW_COUNT), };
+		.iov_base = (void *)buf,
+		.iov_len = min_t(size_t, count, MAX_RW_COUNT),
+	};
 	struct kiocb kiocb;
 	struct iov_iter iter;
 	ssize_t ret;
@@ -64,7 +82,7 @@ ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t 
 		return -EBADF;
 	if (!(file->f_mode & FMODE_CAN_WRITE))
 		return -EINVAL;
-	 
+
 	if (unlikely(!file->f_op->write_iter))
 		return warn_unsupported(file, "write");
 
@@ -74,18 +92,25 @@ ssize_t __kernel_write(struct file *file, const void *buf, size_t count, loff_t 
 	ret = file->f_op->write_iter(&kiocb, &iter);
 	if (ret > 0) {
 		if (pos)
-			*pos = kiocb.ki_pos; }
-	return ret; }
+			*pos = kiocb.ki_pos;
+	}
+	return ret;
+}
 
-ssize_t kernel_write(struct file *file, const void *buf, size_t count, loff_t *pos) {
+ssize_t kernel_write(struct file *file, const void *buf, size_t count,
+		     loff_t *pos)
+{
 	ssize_t ret;
 
 	file_start_write(file);
-	ret =  __kernel_write(file, buf, count, pos);
+	ret = __kernel_write(file, buf, count, pos);
 	file_end_write(file);
-	return ret; }
+	return ret;
+}
 
-ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_t *pos) {
+ssize_t vfs_write(struct file *file, const char __user *buf, size_t count,
+		  loff_t *pos)
+{
 	ssize_t ret;
 
 	if (!(file->f_mode & FMODE_WRITE))
@@ -96,7 +121,7 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 		return -EFAULT;
 
 	if (count > MAX_RW_COUNT)
-		count =  MAX_RW_COUNT;
+		count = MAX_RW_COUNT;
 	file_start_write(file);
 	/*
 	 * No file_operations on this build sets the non-iter ->write op (ramfs
@@ -105,9 +130,12 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 	 */
 	ret = new_sync_write(file, buf, count, pos);
 	file_end_write(file);
-	return ret; }
+	return ret;
+}
 
-SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf, size_t, count) {
+SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf, size_t,
+		count)
+{
 	struct fd f = fdget_pos(fd);
 	ssize_t ret = -EBADF;
 
@@ -118,11 +146,14 @@ SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf, size_t, count
 		ret = vfs_write(f.file, buf, count, &pos);
 		if (ret >= 0)
 			f.file->f_pos = pos;
-		fdput_pos(f); }
+		fdput_pos(f);
+	}
 
-	return ret; }
+	return ret;
+}
 
-ssize_t generic_write_checks(struct kiocb *iocb, struct iov_iter *from) {
+ssize_t generic_write_checks(struct kiocb *iocb, struct iov_iter *from)
+{
 	iov_iter_truncate(from, iov_iter_count(from));
-	return iov_iter_count(from); }
-
+	return iov_iter_count(from);
+}

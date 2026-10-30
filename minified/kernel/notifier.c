@@ -1,7 +1,9 @@
 #include <linux/kdebug.h>
 #include <linux/kprobes.h>
 
-int atomic_notifier_call_chain(struct atomic_notifier_head *nh, unsigned long val, void *v) {
+int atomic_notifier_call_chain(struct atomic_notifier_head *nh,
+			       unsigned long val, void *v)
+{
 	/*
 	 * No notifier is ever registered on any atomic chain in this build
 	 * (there is no notifier_chain_register / atomic_notifier_chain_register
@@ -10,9 +12,12 @@ int atomic_notifier_call_chain(struct atomic_notifier_head *nh, unsigned long va
 	 * populated, so the chain is permanently empty and walking it always
 	 * yields NOTIFY_DONE. Return that directly.
 	 */
-	return NOTIFY_DONE; }
+	return NOTIFY_DONE;
+}
 
-int notrace notify_die(enum die_val val, const char *str, struct pt_regs *regs, long err, int trap, int sig) {
+int notrace notify_die(enum die_val val, const char *str, struct pt_regs *regs,
+		       long err, int trap, int sig)
+{
 	/*
 	 * No die-notifier is ever registered in this build (there is no
 	 * register_die_notifier() caller anywhere), so the die_chain is
@@ -20,4 +25,5 @@ int notrace notify_die(enum die_val val, const char *str, struct pt_regs *regs, 
 	 * return NOTIFY_DONE (0). Return that directly. Every caller only
 	 * tests for == NOTIFY_STOP, which can never happen here.
 	 */
-	return NOTIFY_DONE; }
+	return NOTIFY_DONE;
+}

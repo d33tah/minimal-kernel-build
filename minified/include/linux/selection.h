@@ -13,20 +13,25 @@
 #endif
 
 #ifndef VT_BUF_HAVE_MEMSETW
-static inline void scr_memsetw(u16 *s, u16 c, unsigned int count) {
-	memset16(s, c, count / 2); }
+static inline void scr_memsetw(u16 *s, u16 c, unsigned int count)
+{
+	memset16(s, c, count / 2);
+}
 #endif
 
 #ifndef VT_BUF_HAVE_MEMCPYW
-static inline void scr_memcpyw(u16 *d, const u16 *s, unsigned int count) {
-	memcpy(d, s, count); }
+static inline void scr_memcpyw(u16 *d, const u16 *s, unsigned int count)
+{
+	memcpy(d, s, count);
+}
 #endif
 
 #ifndef VT_BUF_HAVE_MEMMOVEW
-static inline void scr_memmovew(u16 *d, const u16 *s, unsigned int count) {
-	memmove(d, s, count); }
+static inline void scr_memmovew(u16 *d, const u16 *s, unsigned int count)
+{
+	memmove(d, s, count);
+}
 #endif
-
 
 /* set_selection_user, set_selection_kernel, paste_selection, sel_loadlut,
  * mouse_reporting, mouse_report, clear_selection, vc_is_sel removed - never called */

@@ -1,4 +1,4 @@
- 
+
 #ifndef _ASM_X86_APIC_H
 #define _ASM_X86_APIC_H
 
@@ -18,7 +18,6 @@
 /* Removed: lapic_shutdown, lapic_update_tsc_freq, check_x2apic */
 /* x2apic_enabled removed - unused */
 
-
 /*
  * struct apic body removed: never instantiated, no field is ever
  * accessed tree-wide, and the `apic` / `__apicdrivers` globals are
@@ -30,8 +29,8 @@ struct apic;
 /* apic_read removed - unused */
 /* apic_eoi() was an empty no-op stub; folded out of ack_APIC_irq */
 
-static inline void ack_APIC_irq(void) {
-
+static inline void ack_APIC_irq(void)
+{
 }
 
 #endif

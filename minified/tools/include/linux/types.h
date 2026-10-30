@@ -1,4 +1,4 @@
- 
+
 #ifndef _TOOLS_LINUX_TYPES_H_
 #define _TOOLS_LINUX_TYPES_H_
 
@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #ifndef __SANE_USERSPACE_TYPES__
-#define __SANE_USERSPACE_TYPES__	 
+#define __SANE_USERSPACE_TYPES__
 #endif
 
 #include <asm/types.h>

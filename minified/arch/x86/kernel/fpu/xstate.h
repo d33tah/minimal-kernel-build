@@ -1,4 +1,4 @@
- 
+
 #ifndef __X86_KERNEL_FPU_XSTATE_H
 #define __X86_KERNEL_FPU_XSTATE_H
 

@@ -1,6 +1,7 @@
 
 
-int ___ratelimit(struct ratelimit_state *rs, const char *func) {
+int ___ratelimit(struct ratelimit_state *rs, const char *func)
+{
 	/*
 	 * RUNTIME-DEAD SAFE-FALLBACK STUB: ___ratelimit is the rate-limit core
 	 * (returns 1 = "allowed to emit", 0 = "suppressed").  Its only callers
@@ -12,4 +13,5 @@ int ___ratelimit(struct ratelimit_state *rs, const char *func) {
 	 * (the suppression accounting is the only thing dropped).  The full
 	 * jiffies/spinlock/printk_deferred body is therefore the dead payoff.
 	 */
-	return 1; }
+	return 1;
+}

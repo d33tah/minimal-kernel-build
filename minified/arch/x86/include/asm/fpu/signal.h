@@ -1,5 +1,5 @@
- 
- 
+
+
 #ifndef _ASM_X86_FPU_SIGNAL_H
 #define _ASM_X86_FPU_SIGNAL_H
 
@@ -9,4 +9,4 @@
 #include <asm/fpu/types.h>
 
 extern void restore_fpregs_from_fpstate(struct fpstate *fpstate);
-#endif  
+#endif

@@ -11,5 +11,7 @@
  * Referenced from ARCH_DLINFO (AT_MINSIGSTKSZ) in create_elf_tables() via
  * asm/elf.h.  No signal frame is ever built, so report a zero minimum.
  */
-unsigned long get_sigframe_size(void) {
-	return 0; }
+unsigned long get_sigframe_size(void)
+{
+	return 0;
+}

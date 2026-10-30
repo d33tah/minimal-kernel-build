@@ -1,4 +1,4 @@
- 
+
 #ifndef BOOT_COMPRESSED_EFI_H
 #define BOOT_COMPRESSED_EFI_H
 
@@ -8,22 +8,16 @@
 
 typedef guid_t efi_guid_t __aligned(__alignof__(u32));
 
+#define EFI32_LOADER_SIGNATURE "EL32"
+#define EFI64_LOADER_SIGNATURE "EL64"
 
-
-#define EFI32_LOADER_SIGNATURE	"EL32"
-#define EFI64_LOADER_SIGNATURE	"EL64"
-
- 
-typedef	struct {
+typedef struct {
 	u64 signature;
 	u32 revision;
 	u32 headersize;
 	u32 crc32;
 	u32 reserved;
 } efi_table_hdr_t;
-
-
-
 
 typedef struct {
 	u32 type;
@@ -33,7 +27,6 @@ typedef struct {
 	u64 num_pages;
 	u64 attribute;
 } efi_memory_desc_t;
-
 
 typedef struct {
 	efi_guid_t guid;
@@ -47,7 +40,7 @@ typedef struct {
 
 typedef struct {
 	efi_table_hdr_t hdr;
-	u64 fw_vendor;	 
+	u64 fw_vendor;
 	u32 fw_revision;
 	u32 __pad1;
 	u64 con_in_handle;
@@ -65,7 +58,7 @@ typedef struct {
 
 typedef struct {
 	efi_table_hdr_t hdr;
-	u32 fw_vendor;	 
+	u32 fw_vendor;
 	u32 fw_revision;
 	u32 con_in_handle;
 	u32 con_in;
@@ -79,4 +72,4 @@ typedef struct {
 	u32 tables;
 } efi_system_table_32_t;
 
-#endif  
+#endif

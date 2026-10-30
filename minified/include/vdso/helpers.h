@@ -5,16 +5,18 @@
 
 #include <vdso/datapage.h>
 
-
-static __always_inline u32 vdso_read_retry(const struct vdso_data *vd, u32 start) {
+static __always_inline u32 vdso_read_retry(const struct vdso_data *vd,
+					   u32 start)
+{
 	u32 seq;
 
 	smp_rmb();
 	seq = READ_ONCE(vd->seq);
-	return seq != start; }
+	return seq != start;
+}
 
 /* vdso_write_begin, vdso_write_end removed - unused */
 
 #endif
 
-#endif  
+#endif

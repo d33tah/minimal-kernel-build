@@ -1,5 +1,4 @@
- 
- 
+
 
 #ifndef __LINUX_RCU_H
 #define __LINUX_RCU_H
@@ -9,19 +8,18 @@
 /* rcu_seq_ctr/set_state/start/end/endval/snap/current/started/done,
  * rcu_seq_completed_gp, rcu_seq_new_gp, rcu_seq_diff removed - unused */
 
-static inline void debug_rcu_head_unqueue(struct rcu_head *head) { }
+static inline void debug_rcu_head_unqueue(struct rcu_head *head)
+{
+}
 
 /* rcu_stall_is_suppressed_at_boot and rcu_stall_is_suppressed removed - unused */
 /* rcu_ftrace_dump_stall_suppress/_unsuppress + rcu_ftrace_dump removed - unused */
 
-
 extern void resched_cpu(int cpu);
-
 
 /* RCU_FANOUT/RCU_FANOUT_LEAF/RCU_NUM_LVLS/NUM_RCU_LVL_0/NUM_RCU_NODES/
  * NUM_RCU_LVL_INIT removed - rcu_node tree unused in TinyRCU, never referenced */
 /* end rcu_node_tree.h */
-
 
 /* rcu_init_levelspread removed - unused */
 

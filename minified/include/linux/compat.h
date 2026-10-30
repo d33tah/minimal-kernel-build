@@ -7,8 +7,6 @@
 #include <linux/stat.h>
 #include <linux/uio.h>
 
-
-
 #include <linux/fs.h>
 #include <linux/uaccess.h>
 #include <linux/unistd.h>
@@ -16,7 +14,6 @@
 #include <asm/siginfo.h>
 #include <asm/signal.h>
 #include <asm/syscall_wrapper.h>
-
 
 /* Forward declarations (compat_* 0-ref fwd-decls removed) */
 /* _COMPAT_NSIG_WORDS removed - 0-ref tree-wide */

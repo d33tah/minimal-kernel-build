@@ -4,7 +4,6 @@
 
 #include "base.h"
 
-
 /* Removed: fwnode_link_add, fwnode_links_purge, fw_devlink_purge_absent_suppliers - no callers */
 
 /* Removed: devlink class infrastructure (device_links_read_lock/unlock,
@@ -19,8 +18,7 @@ static struct kobject *dev_kobj;
 static struct kobject *sysfs_dev_char_kobj;
 static struct kobject *sysfs_dev_block_kobj;
 
-
-static struct kobj_type device_ktype = { };
+static struct kobj_type device_ktype = {};
 
 /* Removed: dev_uevent_filter / dev_uevent_name / dev_uevent / device_uevent_ops
  * - the kset_uevent_ops table was stored in devices_kset but never dispatched.
@@ -36,37 +34,41 @@ static struct kobj_type device_ktype = { };
 
 struct kset *devices_kset;
 
-
 /* Removed: device_remove_file (0-caller no-op stub after dev_attr_dev/uevent
  * removal), device_remove_file_self, device_create_bin_file, device_remove_bin_file. */
 
-void device_initialize(struct device *dev) {
+void device_initialize(struct device *dev)
+{
 	dev->kobj.kset = devices_kset;
-	kobject_init(&dev->kobj, &device_ktype); }
-
-
+	kobject_init(&dev->kobj, &device_ktype);
+}
 
 /* Removed: gdp_mutex, live_in_glue_dir, get_glue_dir, kobject_has_children,
    cleanup_glue_dir - class glue_dirs are never populated (SYSFS=n; dev->kobj.kset
    is unconditionally devices_kset, never &class->p->glue_dirs), so
    live_in_glue_dir always returned false and cleanup_glue_dir early-returned. */
 
-int dev_set_name(struct device *dev, const char *fmt, ...) {
+int dev_set_name(struct device *dev, const char *fmt, ...)
+{
 	va_list vargs;
 	int err;
 
 	va_start(vargs, fmt);
 	err = kobject_set_name_vargs(&dev->kobj, fmt, vargs);
 	va_end(vargs);
-	return err; }
+	return err;
+}
 
-static int device_private_init(struct device *dev) {
+static int device_private_init(struct device *dev)
+{
 	dev->p = kzalloc(sizeof(*dev->p), GFP_KERNEL);
 	if (!dev->p)
 		return -ENOMEM;
-	return 0; }
+	return 0;
+}
 
-int device_add(struct device *dev) {
+int device_add(struct device *dev)
+{
 	struct device *parent;
 	int error = -EINVAL;
 
@@ -78,13 +80,15 @@ int device_add(struct device *dev) {
 	if (!dev->p) {
 		error = device_private_init(dev);
 		if (error)
-			goto done; }
+			goto done;
+	}
 
 	/* init_name removed - never set non-NULL, so this naming path was dead */
 
 	if (!dev_name(dev)) {
 		error = -EINVAL;
-		goto name_error; }
+		goto name_error;
+	}
 
 	parent = get_device(dev->parent);
 
@@ -96,29 +100,39 @@ int device_add(struct device *dev) {
 	put_device(dev);
 	return error;
 
-parent_error: put_device(parent);
-name_error: kfree(dev->p);
+parent_error:
+	put_device(parent);
+name_error:
+	kfree(dev->p);
 	dev->p = NULL;
-done: put_device(dev);
-	return error; }
+done:
+	put_device(dev);
+	return error;
+}
 
-int device_register(struct device *dev) {
+int device_register(struct device *dev)
+{
 	device_initialize(dev);
-	return device_add(dev); }
+	return device_add(dev);
+}
 
-struct device *get_device(struct device *dev) {
-	return dev ? kobj_to_dev(kobject_get(&dev->kobj)) : NULL; }
+struct device *get_device(struct device *dev)
+{
+	return dev ? kobj_to_dev(kobject_get(&dev->kobj)) : NULL;
+}
 
-void put_device(struct device *dev) {
-	
+void put_device(struct device *dev)
+{
 	if (dev)
-		kobject_put(&dev->kobj); }
+		kobject_put(&dev->kobj);
+}
 
 /* Removed: kill_device / device_del / device_unregister - the device teardown
    path is runtime-dead (no device is ever unregistered on this build); its only
    callers were the (now removed) tty teardown chain and device_destroy. */
 
-int __init devices_init(void) {
+int __init devices_init(void)
+{
 	devices_kset = kset_create_and_add("devices", NULL);
 	if (!devices_kset)
 		return -ENOMEM;
@@ -134,18 +148,26 @@ int __init devices_init(void) {
 
 	return 0;
 
- char_kobj_err: kobject_put(sysfs_dev_block_kobj);
- block_kobj_err: kobject_put(dev_kobj);
- dev_kobj_err:
+char_kobj_err:
+	kobject_put(sysfs_dev_block_kobj);
+block_kobj_err:
+	kobject_put(dev_kobj);
+dev_kobj_err:
 	/* kset_unregister(devices_kset) removed - boot never hits this path */
-	return -ENOMEM; }
+	return -ENOMEM;
+}
 
 /* Removed: __root_device_register, root_device_unregister - no callers */
 
-static void device_create_release(struct device *dev) {
-	kfree(dev); }
+static void device_create_release(struct device *dev)
+{
+	kfree(dev);
+}
 
-static __printf(5, 0) struct device * device_create_groups_vargs(struct class *class, struct device *parent, dev_t devt, void *drvdata, const char *fmt, va_list args) {
+static __printf(5, 0) struct device *device_create_groups_vargs(
+	struct class *class, struct device *parent, dev_t devt, void *drvdata,
+	const char *fmt, va_list args)
+{
 	struct device *dev = NULL;
 	int retval = -ENODEV;
 
@@ -155,7 +177,8 @@ static __printf(5, 0) struct device * device_create_groups_vargs(struct class *c
 	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
 	if (!dev) {
 		retval = -ENOMEM;
-		goto error; }
+		goto error;
+	}
 
 	device_initialize(dev);
 	dev->parent = parent;
@@ -171,17 +194,23 @@ static __printf(5, 0) struct device * device_create_groups_vargs(struct class *c
 
 	return dev;
 
-error: put_device(dev);
-	return ERR_PTR(retval); }
+error:
+	put_device(dev);
+	return ERR_PTR(retval);
+}
 
-struct device *device_create(struct class *class, struct device *parent, dev_t devt, void *drvdata, const char *fmt, ...) {
+struct device *device_create(struct class *class, struct device *parent,
+			     dev_t devt, void *drvdata, const char *fmt, ...)
+{
 	va_list vargs;
 	struct device *dev;
 
 	va_start(vargs, fmt);
-	dev = device_create_groups_vargs(class, parent, devt, drvdata, fmt, vargs);
+	dev = device_create_groups_vargs(class, parent, devt, drvdata, fmt,
+					 vargs);
 	va_end(vargs);
-	return dev; }
+	return dev;
+}
 
 /* Removed: device_create_with_groups - its only caller (vt.c vty_init) passed
    vt_dev_groups, but device_create_groups_vargs ignored the groups arg (no

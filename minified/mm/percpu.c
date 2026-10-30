@@ -4,34 +4,55 @@
 #include <linux/cpumask.h>
 #include <linux/memblock.h>
 unsigned long gcd(unsigned long a, unsigned long b) __attribute_const__;
-static inline unsigned long lcm(unsigned long a, unsigned long b) {
+static inline unsigned long lcm(unsigned long a, unsigned long b)
+{
 	if (a && b)
 		return (a / gcd(a, b)) * b;
-	return 0; }
+	return 0;
+}
 #include <linux/vmalloc.h>
 #include <linux/sched/mm.h>
 
+struct pcpu_block_md {
+	int scan_hint, scan_hint_start, contig_hint, contig_hint_start,
+		left_free, right_free, first_free, nr_bits;
+};
 
-struct pcpu_block_md { int scan_hint, scan_hint_start, contig_hint, contig_hint_start, left_free, right_free, first_free, nr_bits; };
+struct pcpu_chunk {
+	struct list_head list;
+	int free_bytes;
+	struct pcpu_block_md chunk_md;
+	void *base_addr;
+	unsigned long *alloc_map, *bound_map;
+	struct pcpu_block_md *md_blocks;
+	void *data;
+	bool immutable, isolated;
+	int nr_pages, nr_populated, nr_empty_pop_pages;
+	unsigned long populated[];
+};
 
-struct pcpu_chunk { struct list_head	list; int			free_bytes; struct pcpu_block_md	chunk_md; void			*base_addr; unsigned long *alloc_map, *bound_map; struct pcpu_block_md	*md_blocks; void			*data; bool immutable, isolated; int nr_pages, nr_populated, nr_empty_pop_pages; unsigned long		populated[]; };
+static inline int pcpu_chunk_nr_blocks(struct pcpu_chunk *chunk)
+{
+	return chunk->nr_pages * PAGE_SIZE / PCPU_BITMAP_BLOCK_SIZE;
+}
 
-static inline int pcpu_chunk_nr_blocks(struct pcpu_chunk *chunk) {
-	return chunk->nr_pages * PAGE_SIZE / PCPU_BITMAP_BLOCK_SIZE; }
+static inline int pcpu_nr_pages_to_map_bits(int pages)
+{
+	return pages * PAGE_SIZE / PCPU_MIN_ALLOC_SIZE;
+}
 
-static inline int pcpu_nr_pages_to_map_bits(int pages) {
-	return pages * PAGE_SIZE / PCPU_MIN_ALLOC_SIZE; }
-
-static inline int pcpu_chunk_map_bits(struct pcpu_chunk *chunk) {
-	return pcpu_nr_pages_to_map_bits(chunk->nr_pages); }
+static inline int pcpu_chunk_map_bits(struct pcpu_chunk *chunk)
+{
+	return pcpu_nr_pages_to_map_bits(chunk->nr_pages);
+}
 
 /* end percpu-internal.h */
 
-#define PCPU_SLOT_BASE_SHIFT		5
+#define PCPU_SLOT_BASE_SHIFT 5
 
-#define PCPU_SLOT_FAIL_THRESHOLD	3
+#define PCPU_SLOT_FAIL_THRESHOLD 3
 
-#define __addr_to_pcpu_ptr(addr)	(void __percpu *)(addr)
+#define __addr_to_pcpu_ptr(addr) (void __percpu *)(addr)
 
 static int pcpu_unit_pages __ro_after_init;
 static int pcpu_unit_size __ro_after_init;
@@ -48,168 +69,244 @@ static const size_t *pcpu_group_sizes __ro_after_init;
 struct pcpu_chunk *pcpu_first_chunk __ro_after_init;
 
 DEFINE_SPINLOCK(pcpu_lock);
-static DEFINE_MUTEX(pcpu_alloc_mutex);	
+static DEFINE_MUTEX(pcpu_alloc_mutex);
 
 struct list_head *pcpu_chunk_lists __ro_after_init;
 
-static int __pcpu_size_to_slot(int size) {
-	int highbit = fls(size);	
-	return max(highbit - PCPU_SLOT_BASE_SHIFT + 2, 1); }
+static int __pcpu_size_to_slot(int size)
+{
+	int highbit = fls(size);
+	return max(highbit - PCPU_SLOT_BASE_SHIFT + 2, 1);
+}
 
-static int pcpu_size_to_slot(int size) {
+static int pcpu_size_to_slot(int size)
+{
 	if (size == pcpu_unit_size)
 		return pcpu_free_slot;
-	return __pcpu_size_to_slot(size); }
+	return __pcpu_size_to_slot(size);
+}
 
-static int pcpu_chunk_slot(const struct pcpu_chunk *chunk) {
+static int pcpu_chunk_slot(const struct pcpu_chunk *chunk)
+{
 	const struct pcpu_block_md *chunk_md = &chunk->chunk_md;
 
-	if (chunk->free_bytes < PCPU_MIN_ALLOC_SIZE || chunk_md->contig_hint == 0)
+	if (chunk->free_bytes < PCPU_MIN_ALLOC_SIZE ||
+	    chunk_md->contig_hint == 0)
 		return 0;
 
-	return pcpu_size_to_slot(chunk_md->contig_hint * PCPU_MIN_ALLOC_SIZE); }
+	return pcpu_size_to_slot(chunk_md->contig_hint * PCPU_MIN_ALLOC_SIZE);
+}
 
-static void pcpu_set_page_chunk(struct page *page, struct pcpu_chunk *pcpu) {
-	page->index = (unsigned long)pcpu; }
+static void pcpu_set_page_chunk(struct page *page, struct pcpu_chunk *pcpu)
+{
+	page->index = (unsigned long)pcpu;
+}
 
-static unsigned long pcpu_unit_page_offset(unsigned int cpu, int page_idx) {
-	return pcpu_unit_offsets[cpu] + (page_idx << PAGE_SHIFT); }
+static unsigned long pcpu_unit_page_offset(unsigned int cpu, int page_idx)
+{
+	return pcpu_unit_offsets[cpu] + (page_idx << PAGE_SHIFT);
+}
 
-static unsigned long pcpu_chunk_addr(struct pcpu_chunk *chunk, unsigned int cpu, int page_idx) {
-	return (unsigned long)chunk->base_addr + pcpu_unit_page_offset(cpu, page_idx); }
+static unsigned long pcpu_chunk_addr(struct pcpu_chunk *chunk, unsigned int cpu,
+				     int page_idx)
+{
+	return (unsigned long)chunk->base_addr +
+	       pcpu_unit_page_offset(cpu, page_idx);
+}
 
-static unsigned long *pcpu_index_alloc_map(struct pcpu_chunk *chunk, int index) {
-	return chunk->alloc_map + (index * PCPU_BITMAP_BLOCK_BITS / BITS_PER_LONG); }
+static unsigned long *pcpu_index_alloc_map(struct pcpu_chunk *chunk, int index)
+{
+	return chunk->alloc_map +
+	       (index * PCPU_BITMAP_BLOCK_BITS / BITS_PER_LONG);
+}
 
-static unsigned long pcpu_off_to_block_index(int off) {
-	return off / PCPU_BITMAP_BLOCK_BITS; }
+static unsigned long pcpu_off_to_block_index(int off)
+{
+	return off / PCPU_BITMAP_BLOCK_BITS;
+}
 
-static unsigned long pcpu_off_to_block_off(int off) {
-	return off & (PCPU_BITMAP_BLOCK_BITS - 1); }
+static unsigned long pcpu_off_to_block_off(int off)
+{
+	return off & (PCPU_BITMAP_BLOCK_BITS - 1);
+}
 
-static unsigned long pcpu_block_off_to_off(int index, int off) {
-	return index * PCPU_BITMAP_BLOCK_BITS + off; }
+static unsigned long pcpu_block_off_to_off(int index, int off)
+{
+	return index * PCPU_BITMAP_BLOCK_BITS + off;
+}
 
-static bool pcpu_check_block_hint(struct pcpu_block_md *block, int bits, size_t align) {
-	int bit_off = ALIGN(block->contig_hint_start, align) - block->contig_hint_start;
+static bool pcpu_check_block_hint(struct pcpu_block_md *block, int bits,
+				  size_t align)
+{
+	int bit_off = ALIGN(block->contig_hint_start, align) -
+		      block->contig_hint_start;
 
-	return bit_off + bits <= block->contig_hint; }
+	return bit_off + bits <= block->contig_hint;
+}
 
-static int pcpu_next_hint(struct pcpu_block_md *block, int alloc_bits) {
-	
-	if (block->scan_hint && block->contig_hint_start > block->scan_hint_start && alloc_bits > block->scan_hint)
+static int pcpu_next_hint(struct pcpu_block_md *block, int alloc_bits)
+{
+	if (block->scan_hint &&
+	    block->contig_hint_start > block->scan_hint_start &&
+	    alloc_bits > block->scan_hint)
 		return block->scan_hint_start + block->scan_hint;
 
-	return block->first_free; }
+	return block->first_free;
+}
 
-static void pcpu_next_md_free_region(struct pcpu_chunk *chunk, int *bit_off, int *bits) {
+static void pcpu_next_md_free_region(struct pcpu_chunk *chunk, int *bit_off,
+				     int *bits)
+{
 	int i = pcpu_off_to_block_index(*bit_off);
 	int block_off = pcpu_off_to_block_off(*bit_off);
 	struct pcpu_block_md *block;
 
 	*bits = 0;
-	for (block = chunk->md_blocks + i; i < pcpu_chunk_nr_blocks(chunk); block++, i++) {
-		
+	for (block = chunk->md_blocks + i; i < pcpu_chunk_nr_blocks(chunk);
+	     block++, i++) {
 		if (*bits) {
 			*bits += block->left_free;
 			if (block->left_free == PCPU_BITMAP_BLOCK_BITS)
 				continue;
-			return; }
+			return;
+		}
 
-		
 		*bits = block->contig_hint;
-		if (*bits && block->contig_hint_start >= block_off && *bits + block->contig_hint_start < PCPU_BITMAP_BLOCK_BITS) {
-			*bit_off = pcpu_block_off_to_off(i, block->contig_hint_start);
-			return; }
-		
+		if (*bits && block->contig_hint_start >= block_off &&
+		    *bits + block->contig_hint_start < PCPU_BITMAP_BLOCK_BITS) {
+			*bit_off = pcpu_block_off_to_off(
+				i, block->contig_hint_start);
+			return;
+		}
+
 		block_off = 0;
 
 		*bits = block->right_free;
-		*bit_off = (i + 1) * PCPU_BITMAP_BLOCK_BITS - block->right_free; } }
+		*bit_off = (i + 1) * PCPU_BITMAP_BLOCK_BITS - block->right_free;
+	}
+}
 
-static void pcpu_next_fit_region(struct pcpu_chunk *chunk, int alloc_bits, int align, int *bit_off, int *bits) {
+static void pcpu_next_fit_region(struct pcpu_chunk *chunk, int alloc_bits,
+				 int align, int *bit_off, int *bits)
+{
 	int i = pcpu_off_to_block_index(*bit_off);
 	int block_off = pcpu_off_to_block_off(*bit_off);
 	struct pcpu_block_md *block;
 
 	*bits = 0;
-	for (block = chunk->md_blocks + i; i < pcpu_chunk_nr_blocks(chunk); block++, i++) {
-		
+	for (block = chunk->md_blocks + i; i < pcpu_chunk_nr_blocks(chunk);
+	     block++, i++) {
 		if (*bits) {
 			*bits += block->left_free;
 			if (*bits >= alloc_bits)
 				return;
 			if (block->left_free == PCPU_BITMAP_BLOCK_BITS)
-				continue; }
+				continue;
+		}
 
-		
-		*bits = ALIGN(block->contig_hint_start, align) - block->contig_hint_start;
-		
-		if (block->contig_hint && block->contig_hint_start >= block_off && block->contig_hint >= *bits + alloc_bits) {
+		*bits = ALIGN(block->contig_hint_start, align) -
+			block->contig_hint_start;
+
+		if (block->contig_hint &&
+		    block->contig_hint_start >= block_off &&
+		    block->contig_hint >= *bits + alloc_bits) {
 			int start = pcpu_next_hint(block, alloc_bits);
 
 			*bits += alloc_bits + block->contig_hint_start - start;
 			*bit_off = pcpu_block_off_to_off(i, start);
-			return; }
-		
+			return;
+		}
+
 		block_off = 0;
 
-		*bit_off = ALIGN(PCPU_BITMAP_BLOCK_BITS - block->right_free, align);
+		*bit_off = ALIGN(PCPU_BITMAP_BLOCK_BITS - block->right_free,
+				 align);
 		*bits = PCPU_BITMAP_BLOCK_BITS - *bit_off;
 		*bit_off = pcpu_block_off_to_off(i, *bit_off);
 		if (*bits >= alloc_bits)
-			return; }
+			return;
+	}
 
-	
-	*bit_off = pcpu_chunk_map_bits(chunk); }
+	*bit_off = pcpu_chunk_map_bits(chunk);
+}
 
-#define pcpu_for_each_md_free_region(chunk, bit_off, bits)			for (pcpu_next_md_free_region((chunk), &(bit_off), &(bits));		     (bit_off) < pcpu_chunk_map_bits((chunk));				     (bit_off) += (bits) + 1,						     pcpu_next_md_free_region((chunk), &(bit_off), &(bits)))
+#define pcpu_for_each_md_free_region(chunk, bit_off, bits)           \
+	for (pcpu_next_md_free_region((chunk), &(bit_off), &(bits)); \
+	     (bit_off) < pcpu_chunk_map_bits((chunk));               \
+	     (bit_off) += (bits) + 1,                                \
+	     pcpu_next_md_free_region((chunk), &(bit_off), &(bits)))
 
-#define pcpu_for_each_fit_region(chunk, alloc_bits, align, bit_off, bits)     	for (pcpu_next_fit_region((chunk), (alloc_bits), (align), &(bit_off), 				  &(bits));				      	     (bit_off) < pcpu_chunk_map_bits((chunk));			      	     (bit_off) += (bits),					      	     pcpu_next_fit_region((chunk), (alloc_bits), (align), &(bit_off), 				  &(bits)))
+#define pcpu_for_each_fit_region(chunk, alloc_bits, align, bit_off, bits)     \
+	for (pcpu_next_fit_region((chunk), (alloc_bits), (align), &(bit_off), \
+				  &(bits));                                   \
+	     (bit_off) < pcpu_chunk_map_bits((chunk));                        \
+	     (bit_off) += (bits),                                             \
+	     pcpu_next_fit_region((chunk), (alloc_bits), (align), &(bit_off), \
+				  &(bits)))
 
-static void *pcpu_mem_zalloc(size_t size, gfp_t gfp) {
+static void *pcpu_mem_zalloc(size_t size, gfp_t gfp)
+{
 	if (WARN_ON_ONCE(!slab_is_available()))
 		return NULL;
 
 	if (size <= PAGE_SIZE)
 		return kzalloc(size, gfp);
-	else return __vmalloc(size, gfp | __GFP_ZERO); }
+	else
+		return __vmalloc(size, gfp | __GFP_ZERO);
+}
 
-static void pcpu_mem_free(void *ptr) {
-	kvfree(ptr); }
+static void pcpu_mem_free(void *ptr)
+{
+	kvfree(ptr);
+}
 
-static void __pcpu_chunk_move(struct pcpu_chunk *chunk, int slot, bool move_front) {
+static void __pcpu_chunk_move(struct pcpu_chunk *chunk, int slot,
+			      bool move_front)
+{
 	if (move_front)
 		list_move(&chunk->list, &pcpu_chunk_lists[slot]);
-	else list_move_tail(&chunk->list, &pcpu_chunk_lists[slot]); }
+	else
+		list_move_tail(&chunk->list, &pcpu_chunk_lists[slot]);
+}
 
-static void pcpu_chunk_move(struct pcpu_chunk *chunk, int slot) {
-	__pcpu_chunk_move(chunk, slot, true); }
+static void pcpu_chunk_move(struct pcpu_chunk *chunk, int slot)
+{
+	__pcpu_chunk_move(chunk, slot, true);
+}
 
-static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot) {
+static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
+{
 	int nslot = pcpu_chunk_slot(chunk);
 
-	
 	if (chunk->isolated)
 		return;
 
 	if (oslot != nslot)
-		__pcpu_chunk_move(chunk, nslot, oslot < nslot); }
+		__pcpu_chunk_move(chunk, nslot, oslot < nslot);
+}
 
-static void pcpu_reintegrate_chunk(struct pcpu_chunk *chunk) {
+static void pcpu_reintegrate_chunk(struct pcpu_chunk *chunk)
+{
 	lockdep_assert_held(&pcpu_lock);
 
 	if (chunk->isolated) {
 		chunk->isolated = false;
-		pcpu_chunk_relocate(chunk, -1); } }
+		pcpu_chunk_relocate(chunk, -1);
+	}
+}
 
-static inline void pcpu_update_empty_pages(struct pcpu_chunk *chunk, int nr) {
-	chunk->nr_empty_pop_pages += nr; }
+static inline void pcpu_update_empty_pages(struct pcpu_chunk *chunk, int nr)
+{
+	chunk->nr_empty_pop_pages += nr;
+}
 
-static inline bool pcpu_region_overlap(int a, int b, int x, int y) {
-	return (a < y) && (x < b); }
+static inline bool pcpu_region_overlap(int a, int b, int x, int y)
+{
+	return (a < y) && (x < b);
+}
 
-static void pcpu_block_update(struct pcpu_block_md *block, int start, int end) {
+static void pcpu_block_update(struct pcpu_block_md *block, int start, int end)
+{
 	int contig = end - start;
 
 	block->first_free = min(block->first_free, start);
@@ -220,35 +317,46 @@ static void pcpu_block_update(struct pcpu_block_md *block, int start, int end) {
 		block->right_free = contig;
 
 	if (contig > block->contig_hint) {
-		
 		if (start > block->contig_hint_start) {
 			if (block->contig_hint > block->scan_hint) {
-				block->scan_hint_start = block->contig_hint_start;
+				block->scan_hint_start =
+					block->contig_hint_start;
 				block->scan_hint = block->contig_hint;
 			} else if (start < block->scan_hint_start) {
-				
-				block->scan_hint = 0; }
+				block->scan_hint = 0;
+			}
 		} else {
-			block->scan_hint = 0; }
+			block->scan_hint = 0;
+		}
 		block->contig_hint_start = start;
 		block->contig_hint = contig;
 	} else if (contig == block->contig_hint) {
-		if (block->contig_hint_start && (!start || __ffs(start) > __ffs(block->contig_hint_start))) {
-			
+		if (block->contig_hint_start &&
+		    (!start ||
+		     __ffs(start) > __ffs(block->contig_hint_start))) {
 			block->contig_hint_start = start;
-			if (start < block->scan_hint_start && block->contig_hint > block->scan_hint)
+			if (start < block->scan_hint_start &&
+			    block->contig_hint > block->scan_hint)
 				block->scan_hint = 0;
-		} else if (start > block->scan_hint_start || block->contig_hint > block->scan_hint) {
-			
+		} else if (start > block->scan_hint_start ||
+			   block->contig_hint > block->scan_hint) {
 			block->scan_hint_start = start;
-			block->scan_hint = contig; }
+			block->scan_hint = contig;
+		}
 	} else {
-		
-		if ((start < block->contig_hint_start && (contig > block->scan_hint || (contig == block->scan_hint && start > block->scan_hint_start)))) {
+		if ((start < block->contig_hint_start &&
+		     (contig > block->scan_hint ||
+		      (contig == block->scan_hint &&
+		       start > block->scan_hint_start)))) {
 			block->scan_hint_start = start;
-			block->scan_hint = contig; } } }
+			block->scan_hint = contig;
+		}
+	}
+}
 
-static void pcpu_block_update_scan(struct pcpu_chunk *chunk, int bit_off, int bits) {
+static void pcpu_block_update_scan(struct pcpu_chunk *chunk, int bit_off,
+				   int bits)
+{
 	int s_off = pcpu_off_to_block_off(bit_off);
 	int e_off = s_off + bits;
 	int s_index, l_bit;
@@ -260,17 +368,17 @@ static void pcpu_block_update_scan(struct pcpu_chunk *chunk, int bit_off, int bi
 	s_index = pcpu_off_to_block_index(bit_off);
 	block = chunk->md_blocks + s_index;
 
-	
 	l_bit = find_last_bit(pcpu_index_alloc_map(chunk, s_index), s_off);
 	s_off = (s_off == l_bit) ? 0 : l_bit + 1;
 
-	pcpu_block_update(block, s_off, e_off); }
+	pcpu_block_update(block, s_off, e_off);
+}
 
-static void pcpu_chunk_refresh_hint(struct pcpu_chunk *chunk, bool full_scan) {
+static void pcpu_chunk_refresh_hint(struct pcpu_chunk *chunk, bool full_scan)
+{
 	struct pcpu_block_md *chunk_md = &chunk->chunk_md;
 	int bit_off, bits;
 
-	
 	if (!full_scan && chunk_md->scan_hint) {
 		bit_off = chunk_md->scan_hint_start + chunk_md->scan_hint;
 		chunk_md->contig_hint_start = chunk_md->scan_hint_start;
@@ -278,18 +386,20 @@ static void pcpu_chunk_refresh_hint(struct pcpu_chunk *chunk, bool full_scan) {
 		chunk_md->scan_hint = 0;
 	} else {
 		bit_off = chunk_md->first_free;
-		chunk_md->contig_hint = 0; }
+		chunk_md->contig_hint = 0;
+	}
 
 	bits = 0;
 	pcpu_for_each_md_free_region(chunk, bit_off, bits)
-		pcpu_block_update(chunk_md, bit_off, bit_off + bits); }
+		pcpu_block_update(chunk_md, bit_off, bit_off + bits);
+}
 
-static void pcpu_block_refresh_hint(struct pcpu_chunk *chunk, int index) {
+static void pcpu_block_refresh_hint(struct pcpu_chunk *chunk, int index)
+{
 	struct pcpu_block_md *block = chunk->md_blocks + index;
 	unsigned long *alloc_map = pcpu_index_alloc_map(chunk, index);
-	unsigned int start, end;	
+	unsigned int start, end;
 
-	
 	if (block->scan_hint) {
 		start = block->scan_hint_start + block->scan_hint;
 		block->contig_hint_start = block->scan_hint_start;
@@ -297,22 +407,25 @@ static void pcpu_block_refresh_hint(struct pcpu_chunk *chunk, int index) {
 		block->scan_hint = 0;
 	} else {
 		start = block->first_free;
-		block->contig_hint = 0; }
+		block->contig_hint = 0;
+	}
 
 	block->right_free = 0;
 
-	
-	for_each_clear_bitrange_from(start, end, alloc_map, PCPU_BITMAP_BLOCK_BITS)
-		pcpu_block_update(block, start, end); }
+	for_each_clear_bitrange_from(start, end, alloc_map,
+				     PCPU_BITMAP_BLOCK_BITS)
+		pcpu_block_update(block, start, end);
+}
 
-static void pcpu_block_update_hint_alloc(struct pcpu_chunk *chunk, int bit_off, int bits) {
+static void pcpu_block_update_hint_alloc(struct pcpu_chunk *chunk, int bit_off,
+					 int bits)
+{
 	struct pcpu_block_md *chunk_md = &chunk->chunk_md;
 	int nr_empty_pages = 0;
 	struct pcpu_block_md *s_block, *e_block, *block;
-	int s_index, e_index;	
-	int s_off, e_off;	
+	int s_index, e_index;
+	int s_off, e_off;
 
-	
 	s_index = pcpu_off_to_block_index(bit_off);
 	e_index = pcpu_off_to_block_index(bit_off + bits - 1);
 	s_off = pcpu_off_to_block_off(bit_off);
@@ -321,38 +434,45 @@ static void pcpu_block_update_hint_alloc(struct pcpu_chunk *chunk, int bit_off, 
 	s_block = chunk->md_blocks + s_index;
 	e_block = chunk->md_blocks + e_index;
 
-	
 	if (s_block->contig_hint == PCPU_BITMAP_BLOCK_BITS)
 		nr_empty_pages++;
 
 	if (s_off == s_block->first_free)
-		s_block->first_free = find_next_zero_bit( pcpu_index_alloc_map(chunk, s_index), PCPU_BITMAP_BLOCK_BITS, s_off + bits);
+		s_block->first_free = find_next_zero_bit(
+			pcpu_index_alloc_map(chunk, s_index),
+			PCPU_BITMAP_BLOCK_BITS, s_off + bits);
 
-	if (pcpu_region_overlap(s_block->scan_hint_start, s_block->scan_hint_start + s_block->scan_hint, s_off, s_off + bits))
+	if (pcpu_region_overlap(s_block->scan_hint_start,
+				s_block->scan_hint_start + s_block->scan_hint,
+				s_off, s_off + bits))
 		s_block->scan_hint = 0;
 
-	if (pcpu_region_overlap(s_block->contig_hint_start, s_block->contig_hint_start + s_block->contig_hint, s_off, s_off + bits)) {
-		
+	if (pcpu_region_overlap(s_block->contig_hint_start,
+				s_block->contig_hint_start +
+					s_block->contig_hint,
+				s_off, s_off + bits)) {
 		if (!s_off)
 			s_block->left_free = 0;
 		pcpu_block_refresh_hint(chunk, s_index);
 	} else {
-		
 		s_block->left_free = min(s_block->left_free, s_off);
 		if (s_index == e_index)
-			s_block->right_free = min_t(int, s_block->right_free, PCPU_BITMAP_BLOCK_BITS - e_off);
-		else s_block->right_free = 0; }
+			s_block->right_free =
+				min_t(int, s_block->right_free,
+				      PCPU_BITMAP_BLOCK_BITS - e_off);
+		else
+			s_block->right_free = 0;
+	}
 
-	
 	if (s_index != e_index) {
 		if (e_block->contig_hint == PCPU_BITMAP_BLOCK_BITS)
 			nr_empty_pages++;
 
-		
-		e_block->first_free = find_next_zero_bit( pcpu_index_alloc_map(chunk, e_index), PCPU_BITMAP_BLOCK_BITS, e_off);
+		e_block->first_free =
+			find_next_zero_bit(pcpu_index_alloc_map(chunk, e_index),
+					   PCPU_BITMAP_BLOCK_BITS, e_off);
 
 		if (e_off == PCPU_BITMAP_BLOCK_BITS) {
-			
 			e_block++;
 		} else {
 			if (e_off > e_block->scan_hint_start)
@@ -360,37 +480,47 @@ static void pcpu_block_update_hint_alloc(struct pcpu_chunk *chunk, int bit_off, 
 
 			e_block->left_free = 0;
 			if (e_off > e_block->contig_hint_start) {
-				
 				pcpu_block_refresh_hint(chunk, e_index);
 			} else {
-				e_block->right_free = min_t(int, e_block->right_free, PCPU_BITMAP_BLOCK_BITS - e_off); } }
+				e_block->right_free =
+					min_t(int, e_block->right_free,
+					      PCPU_BITMAP_BLOCK_BITS - e_off);
+			}
+		}
 
-		
 		nr_empty_pages += (e_index - s_index - 1);
 		for (block = s_block + 1; block < e_block; block++) {
 			block->scan_hint = 0;
 			block->contig_hint = 0;
 			block->left_free = 0;
-			block->right_free = 0; } }
+			block->right_free = 0;
+		}
+	}
 
 	if (nr_empty_pages)
 		pcpu_update_empty_pages(chunk, -nr_empty_pages);
 
-	if (pcpu_region_overlap(chunk_md->scan_hint_start, chunk_md->scan_hint_start + chunk_md->scan_hint, bit_off, bit_off + bits))
+	if (pcpu_region_overlap(chunk_md->scan_hint_start,
+				chunk_md->scan_hint_start + chunk_md->scan_hint,
+				bit_off, bit_off + bits))
 		chunk_md->scan_hint = 0;
 
-	
-	if (pcpu_region_overlap(chunk_md->contig_hint_start, chunk_md->contig_hint_start + chunk_md->contig_hint, bit_off, bit_off + bits))
-		pcpu_chunk_refresh_hint(chunk, false); }
+	if (pcpu_region_overlap(chunk_md->contig_hint_start,
+				chunk_md->contig_hint_start +
+					chunk_md->contig_hint,
+				bit_off, bit_off + bits))
+		pcpu_chunk_refresh_hint(chunk, false);
+}
 
-static void pcpu_block_update_hint_free(struct pcpu_chunk *chunk, int bit_off, int bits) {
+static void pcpu_block_update_hint_free(struct pcpu_chunk *chunk, int bit_off,
+					int bits)
+{
 	int nr_empty_pages = 0;
 	struct pcpu_block_md *s_block, *e_block, *block;
-	int s_index, e_index;	
-	int s_off, e_off;	
-	int start, end;		
+	int s_index, e_index;
+	int s_off, e_off;
+	int start, end;
 
-	
 	s_index = pcpu_off_to_block_index(bit_off);
 	e_index = pcpu_off_to_block_index(bit_off + bits - 1);
 	s_off = pcpu_off_to_block_off(bit_off);
@@ -399,34 +529,32 @@ static void pcpu_block_update_hint_free(struct pcpu_chunk *chunk, int bit_off, i
 	s_block = chunk->md_blocks + s_index;
 	e_block = chunk->md_blocks + e_index;
 
-	
 	start = s_off;
 	if (s_off == s_block->contig_hint + s_block->contig_hint_start) {
 		start = s_block->contig_hint_start;
 	} else {
-		
-		int l_bit = find_last_bit(pcpu_index_alloc_map(chunk, s_index), start);
-		start = (start == l_bit) ? 0 : l_bit + 1; }
+		int l_bit = find_last_bit(pcpu_index_alloc_map(chunk, s_index),
+					  start);
+		start = (start == l_bit) ? 0 : l_bit + 1;
+	}
 
 	end = e_off;
 	if (e_off == e_block->contig_hint_start)
 		end = e_block->contig_hint_start + e_block->contig_hint;
-	else end = find_next_bit(pcpu_index_alloc_map(chunk, e_index), PCPU_BITMAP_BLOCK_BITS, end);
+	else
+		end = find_next_bit(pcpu_index_alloc_map(chunk, e_index),
+				    PCPU_BITMAP_BLOCK_BITS, end);
 
-	
 	e_off = (s_index == e_index) ? end : PCPU_BITMAP_BLOCK_BITS;
 	if (!start && e_off == PCPU_BITMAP_BLOCK_BITS)
 		nr_empty_pages++;
 	pcpu_block_update(s_block, start, e_off);
 
-	
 	if (s_index != e_index) {
-		
 		if (end == PCPU_BITMAP_BLOCK_BITS)
 			nr_empty_pages++;
 		pcpu_block_update(e_block, 0, end);
 
-		
 		nr_empty_pages += (e_index - s_index - 1);
 		for (block = s_block + 1; block < e_block; block++) {
 			block->first_free = 0;
@@ -434,39 +562,52 @@ static void pcpu_block_update_hint_free(struct pcpu_chunk *chunk, int bit_off, i
 			block->contig_hint_start = 0;
 			block->contig_hint = PCPU_BITMAP_BLOCK_BITS;
 			block->left_free = PCPU_BITMAP_BLOCK_BITS;
-			block->right_free = PCPU_BITMAP_BLOCK_BITS; } }
+			block->right_free = PCPU_BITMAP_BLOCK_BITS;
+		}
+	}
 
 	if (nr_empty_pages)
 		pcpu_update_empty_pages(chunk, nr_empty_pages);
 
-	
 	if (((end - start) >= PCPU_BITMAP_BLOCK_BITS) || s_index != e_index)
 		pcpu_chunk_refresh_hint(chunk, true);
-	else pcpu_block_update(&chunk->chunk_md, pcpu_block_off_to_off(s_index, start), end); }
+	else
+		pcpu_block_update(&chunk->chunk_md,
+				  pcpu_block_off_to_off(s_index, start), end);
+}
 
-static int pcpu_find_block_fit(struct pcpu_chunk *chunk, int alloc_bits, size_t align) {
+static int pcpu_find_block_fit(struct pcpu_chunk *chunk, int alloc_bits,
+			       size_t align)
+{
 	struct pcpu_block_md *chunk_md = &chunk->chunk_md;
 	int bit_off, bits;
-
 
 	if (!pcpu_check_block_hint(chunk_md, alloc_bits, align))
 		return -1;
 
 	bit_off = pcpu_next_hint(chunk_md, alloc_bits);
 	bits = 0;
-	pcpu_for_each_fit_region(chunk, alloc_bits, align, bit_off, bits) {
-		break; }
+	pcpu_for_each_fit_region(chunk, alloc_bits, align, bit_off, bits)
+	{
+		break;
+	}
 
 	if (bit_off == pcpu_chunk_map_bits(chunk))
 		return -1;
 
-	return bit_off; }
+	return bit_off;
+}
 
-static unsigned long pcpu_find_zero_area(unsigned long *map, unsigned long size, unsigned long start, unsigned long nr, unsigned long align_mask, unsigned long *largest_off, unsigned long *largest_bits) {
+static unsigned long pcpu_find_zero_area(unsigned long *map, unsigned long size,
+					 unsigned long start, unsigned long nr,
+					 unsigned long align_mask,
+					 unsigned long *largest_off,
+					 unsigned long *largest_bits)
+{
 	unsigned long index, end, i, area_off, area_bits;
-again: index = find_next_zero_bit(map, size, start);
+again:
+	index = find_next_zero_bit(map, size, start);
 
-	
 	index = __ALIGN_MASK(index, align_mask);
 	area_off = index;
 
@@ -476,16 +617,23 @@ again: index = find_next_zero_bit(map, size, start);
 	i = find_next_bit(map, end, index);
 	if (i < end) {
 		area_bits = i - area_off;
-		
-		if (area_bits > *largest_bits || (area_bits == *largest_bits && *largest_off && (!area_off || __ffs(area_off) > __ffs(*largest_off)))) {
+
+		if (area_bits > *largest_bits ||
+		    (area_bits == *largest_bits && *largest_off &&
+		     (!area_off || __ffs(area_off) > __ffs(*largest_off)))) {
 			*largest_off = area_off;
-			*largest_bits = area_bits; }
+			*largest_bits = area_bits;
+		}
 
 		start = i + 1;
-		goto again; }
-	return index; }
+		goto again;
+	}
+	return index;
+}
 
-static int pcpu_alloc_area(struct pcpu_chunk *chunk, int alloc_bits, size_t align, int start) {
+static int pcpu_alloc_area(struct pcpu_chunk *chunk, int alloc_bits,
+			   size_t align, int start)
+{
 	struct pcpu_block_md *chunk_md = &chunk->chunk_md;
 	size_t align_mask = (align) ? (align - 1) : 0;
 	unsigned long area_off = 0, area_bits = 0;
@@ -495,36 +643,38 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int alloc_bits, size_t alig
 
 	oslot = pcpu_chunk_slot(chunk);
 
-	
-	end = min_t(int, start + alloc_bits + PCPU_BITMAP_BLOCK_BITS, pcpu_chunk_map_bits(chunk));
-	bit_off = pcpu_find_zero_area(chunk->alloc_map, end, start, alloc_bits, align_mask, &area_off, &area_bits);
+	end = min_t(int, start + alloc_bits + PCPU_BITMAP_BLOCK_BITS,
+		    pcpu_chunk_map_bits(chunk));
+	bit_off = pcpu_find_zero_area(chunk->alloc_map, end, start, alloc_bits,
+				      align_mask, &area_off, &area_bits);
 	if (bit_off >= end)
 		return -1;
 
 	if (area_bits)
 		pcpu_block_update_scan(chunk, area_off, area_bits);
 
-	
 	bitmap_set(chunk->alloc_map, bit_off, alloc_bits);
 
-	
 	set_bit(bit_off, chunk->bound_map);
 	bitmap_clear(chunk->bound_map, bit_off + 1, alloc_bits - 1);
 	set_bit(bit_off + alloc_bits, chunk->bound_map);
 
 	chunk->free_bytes -= alloc_bits * PCPU_MIN_ALLOC_SIZE;
 
-	
 	if (bit_off == chunk_md->first_free)
-		chunk_md->first_free = find_next_zero_bit( chunk->alloc_map, pcpu_chunk_map_bits(chunk), bit_off + alloc_bits);
+		chunk_md->first_free = find_next_zero_bit(
+			chunk->alloc_map, pcpu_chunk_map_bits(chunk),
+			bit_off + alloc_bits);
 
 	pcpu_block_update_hint_alloc(chunk, bit_off, alloc_bits);
 
 	pcpu_chunk_relocate(chunk, oslot);
 
-	return bit_off * PCPU_MIN_ALLOC_SIZE; }
+	return bit_off * PCPU_MIN_ALLOC_SIZE;
+}
 
-static int pcpu_free_area(struct pcpu_chunk *chunk, int off) {
+static int pcpu_free_area(struct pcpu_chunk *chunk, int off)
+{
 	struct pcpu_block_md *chunk_md = &chunk->chunk_md;
 	int bit_off, bits, end, oslot, freed;
 
@@ -534,62 +684,67 @@ static int pcpu_free_area(struct pcpu_chunk *chunk, int off) {
 
 	bit_off = off / PCPU_MIN_ALLOC_SIZE;
 
-	
-	end = find_next_bit(chunk->bound_map, pcpu_chunk_map_bits(chunk), bit_off + 1);
+	end = find_next_bit(chunk->bound_map, pcpu_chunk_map_bits(chunk),
+			    bit_off + 1);
 	bits = end - bit_off;
 	bitmap_clear(chunk->alloc_map, bit_off, bits);
 
 	freed = bits * PCPU_MIN_ALLOC_SIZE;
 
-	
 	chunk->free_bytes += freed;
 
-	
 	chunk_md->first_free = min(chunk_md->first_free, bit_off);
 
 	pcpu_block_update_hint_free(chunk, bit_off, bits);
 
 	pcpu_chunk_relocate(chunk, oslot);
 
-	return freed; }
+	return freed;
+}
 
-static void pcpu_init_md_block(struct pcpu_block_md *block, int nr_bits) {
+static void pcpu_init_md_block(struct pcpu_block_md *block, int nr_bits)
+{
 	block->scan_hint = 0;
 	block->contig_hint = nr_bits;
 	block->left_free = nr_bits;
 	block->right_free = nr_bits;
 	block->first_free = 0;
-	block->nr_bits = nr_bits; }
+	block->nr_bits = nr_bits;
+}
 
-static void pcpu_init_md_blocks(struct pcpu_chunk *chunk) {
+static void pcpu_init_md_blocks(struct pcpu_chunk *chunk)
+{
 	struct pcpu_block_md *md_block;
 
-	
 	pcpu_init_md_block(&chunk->chunk_md, pcpu_chunk_map_bits(chunk));
 
-	for (md_block = chunk->md_blocks; md_block != chunk->md_blocks + pcpu_chunk_nr_blocks(chunk); md_block++)
-		pcpu_init_md_block(md_block, PCPU_BITMAP_BLOCK_BITS); }
+	for (md_block = chunk->md_blocks;
+	     md_block != chunk->md_blocks + pcpu_chunk_nr_blocks(chunk);
+	     md_block++)
+		pcpu_init_md_block(md_block, PCPU_BITMAP_BLOCK_BITS);
+}
 
-static struct pcpu_chunk * __init pcpu_alloc_first_chunk(unsigned long tmp_addr, int map_size) {
+static struct pcpu_chunk *__init pcpu_alloc_first_chunk(unsigned long tmp_addr,
+							int map_size)
+{
 	struct pcpu_chunk *chunk;
 	unsigned long aligned_addr, lcm_align;
 	int start_offset, region_size, region_bits;
 	size_t alloc_size;
 
-	
 	aligned_addr = tmp_addr & PAGE_MASK;
 
 	start_offset = tmp_addr - aligned_addr;
 
-	
 	lcm_align = lcm(PAGE_SIZE, PCPU_BITMAP_BLOCK_SIZE);
 	region_size = ALIGN(start_offset + map_size, lcm_align);
 
-	
-	alloc_size = struct_size(chunk, populated, BITS_TO_LONGS(region_size >> PAGE_SHIFT));
+	alloc_size = struct_size(chunk, populated,
+				 BITS_TO_LONGS(region_size >> PAGE_SHIFT));
 	chunk = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
 	if (!chunk)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, alloc_size);
+		panic("%s: Failed to allocate %zu bytes\n", __func__,
+		      alloc_size);
 
 	INIT_LIST_HEAD(&chunk->list);
 
@@ -601,21 +756,24 @@ static struct pcpu_chunk * __init pcpu_alloc_first_chunk(unsigned long tmp_addr,
 	alloc_size = BITS_TO_LONGS(region_bits) * sizeof(chunk->alloc_map[0]);
 	chunk->alloc_map = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
 	if (!chunk->alloc_map)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, alloc_size);
+		panic("%s: Failed to allocate %zu bytes\n", __func__,
+		      alloc_size);
 
-	alloc_size = BITS_TO_LONGS(region_bits + 1) * sizeof(chunk->bound_map[0]);
+	alloc_size =
+		BITS_TO_LONGS(region_bits + 1) * sizeof(chunk->bound_map[0]);
 	chunk->bound_map = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
 	if (!chunk->bound_map)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, alloc_size);
+		panic("%s: Failed to allocate %zu bytes\n", __func__,
+		      alloc_size);
 
 	alloc_size = pcpu_chunk_nr_blocks(chunk) * sizeof(chunk->md_blocks[0]);
 	chunk->md_blocks = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
 	if (!chunk->md_blocks)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, alloc_size);
+		panic("%s: Failed to allocate %zu bytes\n", __func__,
+		      alloc_size);
 
 	pcpu_init_md_blocks(chunk);
 
-	
 	chunk->immutable = true;
 	bitmap_fill(chunk->populated, chunk->nr_pages);
 	chunk->nr_populated = chunk->nr_pages;
@@ -632,9 +790,11 @@ static struct pcpu_chunk * __init pcpu_alloc_first_chunk(unsigned long tmp_addr,
 	 * The reserved-bitmap-marking blocks for nonzero offsets were dead.
 	 */
 
-	return chunk; }
+	return chunk;
+}
 
-static struct pcpu_chunk *pcpu_alloc_chunk(gfp_t gfp) {
+static struct pcpu_chunk *pcpu_alloc_chunk(gfp_t gfp)
+{
 	struct pcpu_chunk *chunk;
 	int region_bits;
 
@@ -646,40 +806,51 @@ static struct pcpu_chunk *pcpu_alloc_chunk(gfp_t gfp) {
 	chunk->nr_pages = pcpu_unit_pages;
 	region_bits = pcpu_chunk_map_bits(chunk);
 
-	chunk->alloc_map = pcpu_mem_zalloc(BITS_TO_LONGS(region_bits) * sizeof(chunk->alloc_map[0]), gfp);
+	chunk->alloc_map = pcpu_mem_zalloc(
+		BITS_TO_LONGS(region_bits) * sizeof(chunk->alloc_map[0]), gfp);
 	if (!chunk->alloc_map)
 		goto alloc_map_fail;
 
-	chunk->bound_map = pcpu_mem_zalloc(BITS_TO_LONGS(region_bits + 1) * sizeof(chunk->bound_map[0]), gfp);
+	chunk->bound_map = pcpu_mem_zalloc(BITS_TO_LONGS(region_bits + 1) *
+						   sizeof(chunk->bound_map[0]),
+					   gfp);
 	if (!chunk->bound_map)
 		goto bound_map_fail;
 
-	chunk->md_blocks = pcpu_mem_zalloc(pcpu_chunk_nr_blocks(chunk) * sizeof(chunk->md_blocks[0]), gfp);
+	chunk->md_blocks = pcpu_mem_zalloc(
+		pcpu_chunk_nr_blocks(chunk) * sizeof(chunk->md_blocks[0]), gfp);
 	if (!chunk->md_blocks)
 		goto md_blocks_fail;
 
 	pcpu_init_md_blocks(chunk);
 
-	
 	chunk->free_bytes = chunk->nr_pages * PAGE_SIZE;
 
 	return chunk;
 
-md_blocks_fail: pcpu_mem_free(chunk->bound_map);
-bound_map_fail: pcpu_mem_free(chunk->alloc_map);
-alloc_map_fail: pcpu_mem_free(chunk);
+md_blocks_fail:
+	pcpu_mem_free(chunk->bound_map);
+bound_map_fail:
+	pcpu_mem_free(chunk->alloc_map);
+alloc_map_fail:
+	pcpu_mem_free(chunk);
 
-	return NULL; }
+	return NULL;
+}
 
-static void pcpu_free_chunk(struct pcpu_chunk *chunk) {
+static void pcpu_free_chunk(struct pcpu_chunk *chunk)
+{
 	if (!chunk)
 		return;
 	pcpu_mem_free(chunk->md_blocks);
 	pcpu_mem_free(chunk->bound_map);
 	pcpu_mem_free(chunk->alloc_map);
-	pcpu_mem_free(chunk); }
+	pcpu_mem_free(chunk);
+}
 
-static void pcpu_chunk_populated(struct pcpu_chunk *chunk, int page_start, int page_end) {
+static void pcpu_chunk_populated(struct pcpu_chunk *chunk, int page_start,
+				 int page_end)
+{
 	int nr = page_end - page_start;
 
 	lockdep_assert_held(&pcpu_lock);
@@ -687,15 +858,18 @@ static void pcpu_chunk_populated(struct pcpu_chunk *chunk, int page_start, int p
 	bitmap_set(chunk->populated, page_start, nr);
 	chunk->nr_populated += nr;
 
-	pcpu_update_empty_pages(chunk, nr); }
+	pcpu_update_empty_pages(chunk, nr);
+}
 
-static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int page_start, int page_end, gfp_t gfp);
+static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int page_start,
+			       int page_end, gfp_t gfp);
 static struct pcpu_chunk *pcpu_create_chunk(gfp_t gfp);
 static int __init pcpu_verify_alloc_info(const struct pcpu_alloc_info *ai);
 
 #include "percpu-km.c"
 
-static void __percpu *pcpu_alloc(size_t size, size_t align, gfp_t gfp) {
+static void __percpu *pcpu_alloc(size_t size, size_t align, gfp_t gfp)
+{
 	gfp_t pcpu_gfp;
 	bool do_warn;
 	static int warn_limit = 10;
@@ -711,7 +885,6 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, gfp_t gfp) {
 	pcpu_gfp = gfp & (GFP_KERNEL | __GFP_NORETRY | __GFP_NOWARN);
 	do_warn = !(gfp & __GFP_NOWARN);
 
-	
 	if (unlikely(align < PCPU_MIN_ALLOC_SIZE))
 		align = PCPU_MIN_ALLOC_SIZE;
 
@@ -719,31 +892,41 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, gfp_t gfp) {
 	bits = size >> PCPU_MIN_ALLOC_SHIFT;
 	bit_align = align >> PCPU_MIN_ALLOC_SHIFT;
 
-	if (unlikely(!size || size > PCPU_MIN_UNIT_SIZE || align > PAGE_SIZE || !is_power_of_2(align))) {
-		WARN(do_warn, "illegal size (%zu) or align (%zu) for percpu allocation\n", size, align);
-		return NULL; }
+	if (unlikely(!size || size > PCPU_MIN_UNIT_SIZE || align > PAGE_SIZE ||
+		     !is_power_of_2(align))) {
+		WARN(do_warn,
+		     "illegal size (%zu) or align (%zu) for percpu allocation\n",
+		     size, align);
+		return NULL;
+	}
 
 	if (gfp & __GFP_NOFAIL) {
 		mutex_lock(&pcpu_alloc_mutex);
 	} else if (mutex_lock_killable(&pcpu_alloc_mutex)) {
-		return NULL; }
+		return NULL;
+	}
 
 	spin_lock_irqsave(&pcpu_lock, flags);
 
 restart:
 
 	for (slot = pcpu_size_to_slot(size); slot <= pcpu_free_slot; slot++) {
-		list_for_each_entry_safe(chunk, next, &pcpu_chunk_lists[slot], list) {
+		list_for_each_entry_safe(chunk, next, &pcpu_chunk_lists[slot],
+					 list) {
 			off = pcpu_find_block_fit(chunk, bits, bit_align);
 			if (off < 0) {
 				if (slot < PCPU_SLOT_FAIL_THRESHOLD)
 					pcpu_chunk_move(chunk, 0);
-				continue; }
+				continue;
+			}
 
 			off = pcpu_alloc_area(chunk, bits, bit_align, off);
 			if (off >= 0) {
 				pcpu_reintegrate_chunk(chunk);
-				goto area_found; } } }
+				goto area_found;
+			}
+		}
+	}
 
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 
@@ -751,23 +934,28 @@ restart:
 		chunk = pcpu_create_chunk(pcpu_gfp);
 		if (!chunk) {
 			err = "failed to allocate new chunk";
-			goto fail; }
+			goto fail;
+		}
 
 		spin_lock_irqsave(&pcpu_lock, flags);
 		pcpu_chunk_relocate(chunk, -1);
 	} else {
-		spin_lock_irqsave(&pcpu_lock, flags); }
+		spin_lock_irqsave(&pcpu_lock, flags);
+	}
 
 	goto restart;
 
-area_found: spin_unlock_irqrestore(&pcpu_lock, flags);
+area_found:
+	spin_unlock_irqrestore(&pcpu_lock, flags);
 
-{ unsigned int page_end, rs, re;
+	{
+		unsigned int page_end, rs, re;
 
 		rs = PFN_DOWN(off);
 		page_end = PFN_UP(off + size);
 
-		for_each_clear_bitrange_from(rs, re, chunk->populated, page_end) {
+		for_each_clear_bitrange_from(rs, re, chunk->populated,
+					     page_end) {
 			WARN_ON(chunk->immutable);
 
 			ret = pcpu_populate_chunk(chunk, rs, re, pcpu_gfp);
@@ -776,11 +964,14 @@ area_found: spin_unlock_irqrestore(&pcpu_lock, flags);
 			if (ret) {
 				pcpu_free_area(chunk, off);
 				err = "failed to populate";
-				goto fail_unlock; }
+				goto fail_unlock;
+			}
 			pcpu_chunk_populated(chunk, rs, re);
-			spin_unlock_irqrestore(&pcpu_lock, flags); }
+			spin_unlock_irqrestore(&pcpu_lock, flags);
+		}
 
-		mutex_unlock(&pcpu_alloc_mutex); }
+		mutex_unlock(&pcpu_alloc_mutex);
+	}
 
 	for_each_possible_cpu(cpu)
 		memset((void *)pcpu_chunk_addr(chunk, cpu, 0) + off, 0, size);
@@ -789,20 +980,26 @@ area_found: spin_unlock_irqrestore(&pcpu_lock, flags);
 
 	return ptr;
 
-fail_unlock: spin_unlock_irqrestore(&pcpu_lock, flags);
+fail_unlock:
+	spin_unlock_irqrestore(&pcpu_lock, flags);
 fail:
 
 	if (do_warn && warn_limit) {
-		pr_warn("allocation failed, size=%zu align=%zu, %s\n", size, align, err);
+		pr_warn("allocation failed, size=%zu align=%zu, %s\n", size,
+			align, err);
 		dump_stack();
 		if (!--warn_limit)
-			pr_info("limit reached, disable warning\n"); }
+			pr_info("limit reached, disable warning\n");
+	}
 	mutex_unlock(&pcpu_alloc_mutex);
 
-	return NULL; }
+	return NULL;
+}
 
-void __percpu *__alloc_percpu(size_t size, size_t align) {
-	return pcpu_alloc(size, align, GFP_KERNEL); }
+void __percpu *__alloc_percpu(size_t size, size_t align)
+{
+	return pcpu_alloc(size, align, GFP_KERNEL);
+}
 
 /*
  * Anchor-stub: free_percpu is link-live (called from kernel/irq/irqdesc.c
@@ -811,18 +1008,26 @@ void __percpu *__alloc_percpu(size_t size, size_t align) {
  * for the linker. This severs the sole reference to pcpu_chunk_addr_search,
  * which is then deleted (cascade).
  */
-void free_percpu(void __percpu *ptr) { }
+void free_percpu(void __percpu *ptr)
+{
+}
 
 /* Stub: per_cpu_ptr_to_phys not used in minimal kernel */
-phys_addr_t per_cpu_ptr_to_phys(void *addr) { return __pa(addr); }
+phys_addr_t per_cpu_ptr_to_phys(void *addr)
+{
+	return __pa(addr);
+}
 
-struct pcpu_alloc_info * __init pcpu_alloc_alloc_info(int nr_groups, int nr_units) {
+struct pcpu_alloc_info *__init pcpu_alloc_alloc_info(int nr_groups,
+						     int nr_units)
+{
 	struct pcpu_alloc_info *ai;
 	size_t base_size, ai_size;
 	void *ptr;
 	int unit;
 
-	base_size = ALIGN(struct_size(ai, groups, nr_groups), __alignof__(ai->groups[0].cpu_map[0]));
+	base_size = ALIGN(struct_size(ai, groups, nr_groups),
+			  __alignof__(ai->groups[0].cpu_map[0]));
 	ai_size = base_size + nr_units * sizeof(ai->groups[0].cpu_map[0]);
 
 	ptr = memblock_alloc(PFN_ALIGN(ai_size), PAGE_SIZE);
@@ -839,9 +1044,12 @@ struct pcpu_alloc_info * __init pcpu_alloc_alloc_info(int nr_groups, int nr_unit
 	ai->nr_groups = nr_groups;
 	ai->__ai_size = PFN_ALIGN(ai_size);
 
-	return ai; }
+	return ai;
+}
 
-void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai, void *base_addr) {
+void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
+				   void *base_addr)
+{
 	size_t size_sum = ai->static_size + ai->reserved_size + ai->dyn_size;
 	size_t static_size, dyn_size;
 	struct pcpu_chunk *chunk;
@@ -855,9 +1063,16 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai, void *base_
 	unsigned long tmp_addr;
 	size_t alloc_size;
 
-#define PCPU_SETUP_BUG_ON(cond)	do {						if (unlikely(cond)) {								pr_emerg("failed to initialize, %s\n", #cond);				pr_emerg("cpu_possible_mask=%*pb\n",						 cpumask_pr_args(cpu_possible_mask));				BUG();								}								} while (0)
+#define PCPU_SETUP_BUG_ON(cond)                                        \
+	do {                                                           \
+		if (unlikely(cond)) {                                  \
+			pr_emerg("failed to initialize, %s\n", #cond); \
+			pr_emerg("cpu_possible_mask=%*pb\n",           \
+				 cpumask_pr_args(cpu_possible_mask));  \
+			BUG();                                         \
+		}                                                      \
+	} while (0)
 
-	
 	PCPU_SETUP_BUG_ON(ai->nr_groups <= 0);
 	PCPU_SETUP_BUG_ON(!base_addr);
 	PCPU_SETUP_BUG_ON(offset_in_page(base_addr));
@@ -868,29 +1083,33 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai, void *base_
 	PCPU_SETUP_BUG_ON(ai->dyn_size < PERCPU_DYNAMIC_EARLY_SIZE);
 	PCPU_SETUP_BUG_ON(!ai->dyn_size);
 	PCPU_SETUP_BUG_ON(!IS_ALIGNED(ai->reserved_size, PCPU_MIN_ALLOC_SIZE));
-	PCPU_SETUP_BUG_ON(!(IS_ALIGNED(PCPU_BITMAP_BLOCK_SIZE, PAGE_SIZE) || IS_ALIGNED(PAGE_SIZE, PCPU_BITMAP_BLOCK_SIZE)));
+	PCPU_SETUP_BUG_ON(!(IS_ALIGNED(PCPU_BITMAP_BLOCK_SIZE, PAGE_SIZE) ||
+			    IS_ALIGNED(PAGE_SIZE, PCPU_BITMAP_BLOCK_SIZE)));
 	PCPU_SETUP_BUG_ON(pcpu_verify_alloc_info(ai) < 0);
 
-	
 	alloc_size = ai->nr_groups * sizeof(group_offsets[0]);
 	group_offsets = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
 	if (!group_offsets)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, alloc_size);
+		panic("%s: Failed to allocate %zu bytes\n", __func__,
+		      alloc_size);
 
 	alloc_size = ai->nr_groups * sizeof(group_sizes[0]);
 	group_sizes = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
 	if (!group_sizes)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, alloc_size);
+		panic("%s: Failed to allocate %zu bytes\n", __func__,
+		      alloc_size);
 
 	alloc_size = nr_cpu_ids * sizeof(unit_map[0]);
 	unit_map = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
 	if (!unit_map)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, alloc_size);
+		panic("%s: Failed to allocate %zu bytes\n", __func__,
+		      alloc_size);
 
 	alloc_size = nr_cpu_ids * sizeof(unit_off[0]);
 	unit_off = memblock_alloc(alloc_size, SMP_CACHE_BYTES);
 	if (!unit_off)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, alloc_size);
+		panic("%s: Failed to allocate %zu bytes\n", __func__,
+		      alloc_size);
 
 	for (cpu = 0; cpu < nr_cpu_ids; cpu++)
 		unit_map[cpu] = UINT_MAX;
@@ -909,35 +1128,36 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai, void *base_
 			PCPU_SETUP_BUG_ON(unit_map[cpu] != UINT_MAX);
 
 			unit_map[cpu] = unit + i;
-			unit_off[cpu] = gi->base_offset + i * ai->unit_size; } }
+			unit_off[cpu] = gi->base_offset + i * ai->unit_size;
+		}
+	}
 
 	for_each_possible_cpu(cpu)
 		PCPU_SETUP_BUG_ON(unit_map[cpu] == UINT_MAX);
 
-	
 #undef PCPU_SETUP_BUG_ON
 
 	pcpu_group_sizes = group_sizes;
 	pcpu_unit_offsets = unit_off;
 
-	
 	pcpu_unit_pages = ai->unit_size >> PAGE_SHIFT;
 	pcpu_unit_size = pcpu_unit_pages << PAGE_SHIFT;
-	pcpu_chunk_struct_size = struct_size(chunk, populated, BITS_TO_LONGS(pcpu_unit_pages));
+	pcpu_chunk_struct_size =
+		struct_size(chunk, populated, BITS_TO_LONGS(pcpu_unit_pages));
 
-	
 	pcpu_sidelined_slot = __pcpu_size_to_slot(pcpu_unit_size) + 1;
 	pcpu_free_slot = pcpu_sidelined_slot + 1;
 	pcpu_to_depopulate_slot = pcpu_free_slot + 1;
 	pcpu_nr_slots = pcpu_to_depopulate_slot + 1;
-	pcpu_chunk_lists = memblock_alloc(pcpu_nr_slots * sizeof(pcpu_chunk_lists[0]), SMP_CACHE_BYTES);
+	pcpu_chunk_lists = memblock_alloc(
+		pcpu_nr_slots * sizeof(pcpu_chunk_lists[0]), SMP_CACHE_BYTES);
 	if (!pcpu_chunk_lists)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, pcpu_nr_slots * sizeof(pcpu_chunk_lists[0]));
+		panic("%s: Failed to allocate %zu bytes\n", __func__,
+		      pcpu_nr_slots * sizeof(pcpu_chunk_lists[0]));
 
 	for (i = 0; i < pcpu_nr_slots; i++)
 		INIT_LIST_HEAD(&pcpu_chunk_lists[i]);
 
-	
 	static_size = ALIGN(ai->static_size, PCPU_MIN_ALLOC_SIZE);
 	dyn_size = ai->dyn_size - (static_size - ai->static_size);
 
@@ -945,12 +1165,14 @@ void __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai, void *base_
 	map_size = dyn_size;
 	chunk = pcpu_alloc_first_chunk(tmp_addr, map_size);
 
-
 	pcpu_first_chunk = chunk;
-	pcpu_chunk_relocate(pcpu_first_chunk, -1); }
+	pcpu_chunk_relocate(pcpu_first_chunk, -1);
+}
 
-void __init setup_per_cpu_areas(void) {
-	const size_t unit_size = roundup_pow_of_two(max_t(size_t, PCPU_MIN_UNIT_SIZE, PERCPU_DYNAMIC_RESERVE));
+void __init setup_per_cpu_areas(void)
+{
+	const size_t unit_size = roundup_pow_of_two(
+		max_t(size_t, PCPU_MIN_UNIT_SIZE, PERCPU_DYNAMIC_RESERVE));
 	struct pcpu_alloc_info *ai;
 	void *fc;
 
@@ -966,4 +1188,5 @@ void __init setup_per_cpu_areas(void) {
 	ai->groups[0].cpu_map[0] = 0;
 
 	pcpu_setup_first_chunk(ai, fc);
-	memblock_free(ai, ai->__ai_size); }
+	memblock_free(ai, ai->__ai_size);
+}

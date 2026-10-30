@@ -33,28 +33,6 @@ static inline int timespec64_equal(const struct timespec64 *a,
 	return (a->tv_sec == b->tv_sec) && (a->tv_nsec == b->tv_nsec);
 }
 
-static inline int timespec64_compare(const struct timespec64 *lhs,
-				     const struct timespec64 *rhs)
-{
-	if (lhs->tv_sec < rhs->tv_sec)
-		return -1;
-	if (lhs->tv_sec > rhs->tv_sec)
-		return 1;
-	return lhs->tv_nsec - rhs->tv_nsec;
-}
-
-extern void set_normalized_timespec64(struct timespec64 *ts, time64_t sec,
-				      s64 nsec);
-
-static inline struct timespec64 timespec64_sub(struct timespec64 lhs,
-					       struct timespec64 rhs)
-{
-	struct timespec64 ts_delta;
-	set_normalized_timespec64(&ts_delta, lhs.tv_sec - rhs.tv_sec,
-				  lhs.tv_nsec - rhs.tv_nsec);
-	return ts_delta;
-}
-
 static inline bool timespec64_valid(const struct timespec64 *ts)
 {
 	if (ts->tv_sec < 0)
@@ -81,7 +59,5 @@ static inline s64 timespec64_to_ns(const struct timespec64 *ts)
 
 	return ((s64)ts->tv_sec * NSEC_PER_SEC) + ts->tv_nsec;
 }
-
-extern struct timespec64 ns_to_timespec64(const s64 nsec);
 
 #endif

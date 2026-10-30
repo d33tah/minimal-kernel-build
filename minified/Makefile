@@ -916,17 +916,13 @@ PHONY += prepare archprepare
 
 archprepare: outputmakefile archheaders scripts include/config/kernel.release \
 	asm-generic $(version_h) $(autoksyms_h) include/generated/utsrelease.h \
-	include/generated/autoconf.h remove-stale-files
+	include/generated/autoconf.h
 
 prepare0: archprepare
 	$(Q)$(MAKE) $(build)=.
 
 # All the preparing..
 prepare: prepare0
-
-PHONY += remove-stale-files
-remove-stale-files:
-	$(Q)$(srctree)/scripts/remove-stale-files
 
 # Support for using generic headers in asm-generic
 asm-generic := -f $(srctree)/scripts/Makefile.asm-generic obj

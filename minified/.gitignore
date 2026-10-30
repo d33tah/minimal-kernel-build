@@ -3,7 +3,6 @@
 *.a
 *.a.cmd
 
-.missing-syscalls.d
 .version
 .vmlinux.cmd
 .vmlinux.export.c

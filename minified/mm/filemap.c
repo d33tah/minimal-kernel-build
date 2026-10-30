@@ -467,17 +467,30 @@ ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
 	struct file *file = iocb->ki_filp;
 	struct address_space *mapping = file->f_mapping;
 	const struct address_space_operations *a_ops = mapping->a_ops;
-	struct page *page;
-	void *fsdata;
+	loff_t pos = iocb->ki_pos;
 	ssize_t written = 0;
-	size_t bytes = iov_iter_count(i);
 
-	if (a_ops->write_begin(file, mapping, iocb->ki_pos, bytes, &page,
-			       &fsdata) < 0)
-		return -EIO;
-	written = copy_page_from_iter_atomic(page, 0, bytes, i);
-	a_ops->write_end(file, mapping, iocb->ki_pos, bytes, written, page,
-			 fsdata);
+	/* One page-cache page per step, at the offset within that page. */
+	while (iov_iter_count(i)) {
+		unsigned long offset = offset_in_page(pos);
+		size_t bytes =
+			min_t(size_t, PAGE_SIZE - offset, iov_iter_count(i));
+		struct page *page;
+		void *fsdata;
+		int status;
+
+		status = a_ops->write_begin(file, mapping, pos, bytes, &page,
+					    &fsdata);
+		if (status < 0)
+			return written ? written : status;
+		bytes = copy_page_from_iter_atomic(page, offset, bytes, i);
+		a_ops->write_end(file, mapping, pos, bytes, bytes, page,
+				 fsdata);
+		if (!bytes)
+			return written ? written : -EFAULT;
+		pos += bytes;
+		written += bytes;
+	}
 	return written;
 }
 

@@ -32,9 +32,6 @@ static int do_dentry_open(struct file *f, struct inode *inode,
 		f->f_mode |= FMODE_WRITER;
 	}
 
-	if (S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode))
-		f->f_mode |= FMODE_ATOMIC_POS;
-
 	f->f_op = fops_get(inode->i_fop);
 	if (WARN_ON(!f->f_op)) {
 		error = -ENODEV;
@@ -193,20 +190,6 @@ struct file *filp_open(const char *filename, int flags, umode_t mode)
 		putname(name);
 	}
 	return file;
-}
-
-int filp_close(struct file *filp, fl_owner_t id)
-{
-	int retval = 0;
-
-	if (!file_count(filp)) {
-		printk(KERN_ERR "VFS: Close: file count is 0\n");
-		return 0;
-	}
-
-	/* No live file_operations sets ->flush. */
-	fput(filp);
-	return retval;
 }
 
 int nonseekable_open(struct inode *inode, struct file *filp)

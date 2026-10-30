@@ -39,7 +39,6 @@ struct fs_context;
 
 extern void __init inode_init(void);
 extern void __init files_init(void);
-extern unsigned int sysctl_nr_open;
 
 /* dead DIO/get_block callback typedefs + struct buffer_head fwd-decl removed (0-ref) */
 
@@ -56,8 +55,6 @@ extern unsigned int sysctl_nr_open;
 #define FMODE_EXEC ((__force fmode_t)0x20)
 
 #define FMODE_PATH ((__force fmode_t)0x4000)
-
-#define FMODE_ATOMIC_POS ((__force fmode_t)0x8000)
 
 #define FMODE_WRITER ((__force fmode_t)0x10000)
 
@@ -259,7 +256,6 @@ struct file {
 	atomic_long_t f_count;
 	unsigned int f_flags;
 	fmode_t f_mode;
-	struct mutex f_pos_lock;
 	loff_t f_pos;
 	const struct cred *f_cred;
 	struct file_ra_state f_ra;
@@ -272,15 +268,12 @@ static inline struct file *get_file(struct file *f)
 	atomic_long_inc(&f->f_count);
 	return f;
 }
-#define get_file_rcu(x) atomic_long_inc_not_zero(&(x)->f_count)
 #define file_count(x) atomic_long_read(&(x)->f_count)
 
 #define MAX_NON_LFS ((1UL << 31) - 1)
 
 /* 32-bit only kernel */
 #define MAX_LFS_FILESIZE ((loff_t)ULONG_MAX << PAGE_SHIFT)
-
-typedef void *fl_owner_t;
 
 /* struct file_lock removed - file_operations.lock (its sole user) was never
  * assigned or dispatched in this build (no locking syscalls reach it) */
@@ -541,7 +534,6 @@ static inline struct user_namespace *file_mnt_user_ns(struct file *file)
 /* vfs_fallocate, do_sys_open, file_open_name, file_open_root, dentry_open,
    dentry_create, open_with_fake_path removed - unused/internal only */
 extern struct file *filp_open(const char *, int, umode_t);
-extern int filp_close(struct file *, fl_owner_t id);
 
 extern struct filename *getname_kernel(const char *);
 extern void putname(struct filename *name);

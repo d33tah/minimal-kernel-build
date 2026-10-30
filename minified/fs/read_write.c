@@ -136,17 +136,16 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count,
 SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf, size_t,
 		count)
 {
-	struct fd f = fdget_pos(fd);
+	struct file *file = fget_light(fd);
 	ssize_t ret = -EBADF;
 
-	if (f.file) {
+	if (file) {
 		/* No file_operations sets FMODE_STREAM, so f_pos is always used. */
-		loff_t pos = f.file->f_pos;
+		loff_t pos = file->f_pos;
 
-		ret = vfs_write(f.file, buf, count, &pos);
+		ret = vfs_write(file, buf, count, &pos);
 		if (ret >= 0)
-			f.file->f_pos = pos;
-		fdput_pos(f);
+			file->f_pos = pos;
 	}
 
 	return ret;

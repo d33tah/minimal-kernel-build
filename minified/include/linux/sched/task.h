@@ -39,8 +39,6 @@ extern void flush_thread(void);
 
 /* do_group_exit now static in exit.c */
 
-extern void exit_files(struct task_struct *);
-
 extern pid_t kernel_clone(struct kernel_clone_args *kargs);
 extern pid_t user_mode_thread(int (*fn)(void *), void *arg,
 			      unsigned long flags);

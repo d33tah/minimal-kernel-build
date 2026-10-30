@@ -478,8 +478,6 @@ int begin_new_exec(struct linux_binprm *bprm)
 	flush_thread();
 	me->personality &= ~bprm->per_clear;
 
-	do_close_on_exec(me->files);
-
 	if (!(uid_eq(current_euid(), current_uid()) &&
 	      gid_eq(current_egid(), current_gid())))
 		set_dumpable(current->mm, 0);

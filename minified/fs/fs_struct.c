@@ -28,18 +28,6 @@ void set_fs_pwd(struct fs_struct *fs, const struct path *path)
 		path_put(&old_pwd);
 }
 
-void exit_fs(struct task_struct *tsk)
-{
-	/*
-	 * RUNTIME-DEAD ANCHOR-STUB: exit_fs drops the dying task's fs_struct.
-	 * Both call sites are runtime-dead on this 1-shot boot: do_exit's tail
-	 * (init panics on is_global_init() before reaching it, HIT=False) and
-	 * copy_process's bad_fork_cleanup_fs rollback (copy_process succeeds for
-	 * the only spawn, init, so the error path never runs,
-	 * HIT=False). No task ever tears down its fs_struct here.
-	 */
-}
-
 int current_umask(void)
 {
 	return current->fs->umask;

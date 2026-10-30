@@ -577,9 +577,7 @@ bad_fork_cleanup_signal:
 bad_fork_cleanup_sighand:
 	__cleanup_sighand(p->sighand);
 bad_fork_cleanup_fs:
-	exit_fs(p);
 bad_fork_cleanup_files:
-	exit_files(p);
 bad_fork_cleanup_semundo:
 bad_fork_cleanup_policy:
 	exit_creds(p);

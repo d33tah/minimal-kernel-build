@@ -18,20 +18,6 @@ LIST_HEAD(pgd_list);
  * sole caller was vmalloc_sync_one's loop).
  */
 
-static void sanitize_error_code(unsigned long address,
-				unsigned long *error_code)
-{
-	if (address >= TASK_SIZE_MAX)
-		*error_code |= X86_PF_PROT;
-}
-
-static void set_signal_archinfo(unsigned long address, unsigned long error_code)
-{
-	struct task_struct *tsk = current;
-
-	tsk->thread.trap_nr = X86_TRAP_PF;
-}
-
 static noinline void page_fault_oops(struct pt_regs *regs,
 				     unsigned long error_code,
 				     unsigned long address)
@@ -42,8 +28,7 @@ static noinline void page_fault_oops(struct pt_regs *regs,
 
 static noinline void kernelmode_fixup_or_oops(struct pt_regs *regs,
 					      unsigned long error_code,
-					      unsigned long address, int signal,
-					      int si_code)
+					      unsigned long address)
 {
 	WARN_ON_ONCE(user_mode(regs));
 
@@ -59,65 +44,24 @@ static noinline void kernelmode_fixup_or_oops(struct pt_regs *regs,
 	page_fault_oops(regs, error_code, address);
 }
 
-static inline void show_signal_msg(struct pt_regs *regs,
-				   unsigned long error_code,
-				   unsigned long address,
-				   struct task_struct *tsk)
-{
-	/* Stub: verbose segfault messages not needed for minimal kernel */
-}
-
-static void __bad_area_nosemaphore(struct pt_regs *regs,
-				   unsigned long error_code,
-				   unsigned long address, int si_code)
-{
-	struct task_struct *tsk = current;
-
-	if (!user_mode(regs)) {
-		kernelmode_fixup_or_oops(regs, error_code, address, SIGSEGV,
-					 si_code);
-		return;
-	}
-
-	if (!(error_code & X86_PF_USER)) {
-		page_fault_oops(regs, error_code, address);
-		return;
-	}
-
-	local_irq_enable();
-
-	sanitize_error_code(address, &error_code);
-
-	show_signal_msg(regs, error_code, address, tsk);
-
-	set_signal_archinfo(address, error_code);
-
-	force_sig_fault(SIGSEGV, si_code, (void __user *)address);
-
-	local_irq_disable();
-}
-
 static noinline void bad_area_nosemaphore(struct pt_regs *regs,
 					  unsigned long error_code,
 					  unsigned long address)
 {
-	__bad_area_nosemaphore(regs, error_code, address, SEGV_MAPERR);
-}
+	if (!user_mode(regs)) {
+		kernelmode_fixup_or_oops(regs, error_code, address);
+		return;
+	}
 
-static void __bad_area(struct pt_regs *regs, unsigned long error_code,
-		       unsigned long address, int si_code)
-{
-	struct mm_struct *mm = current->mm;
-
-	mmap_read_unlock(mm);
-
-	__bad_area_nosemaphore(regs, error_code, address, si_code);
+	if (!(error_code & X86_PF_USER))
+		page_fault_oops(regs, error_code, address);
 }
 
 static noinline void bad_area(struct pt_regs *regs, unsigned long error_code,
 			      unsigned long address)
 {
-	__bad_area(regs, error_code, address, SEGV_MAPERR);
+	mmap_read_unlock(current->mm);
+	bad_area_nosemaphore(regs, error_code, address);
 }
 
 static int spurious_kernel_fault_check(unsigned long error_code, pte_t *pte)
@@ -289,18 +233,11 @@ good_area:
 		 * DISABLED_MASK), so a fault can never be a pkey access error --
 		 * always SEGV_ACCERR.
 		 */
-		__bad_area(regs, error_code, address, SEGV_ACCERR);
+		bad_area(regs, error_code, address);
 		return;
 	}
 
 	fault = handle_mm_fault(vma, address, flags, regs);
-
-	if (fault_signal_pending(fault, regs)) {
-		if (!user_mode(regs))
-			kernelmode_fixup_or_oops(regs, error_code, address,
-						 SIGBUS, BUS_ADRERR);
-		return;
-	}
 
 	if (unlikely(fault & VM_FAULT_RETRY)) {
 		flags |= FAULT_FLAG_TRIED;
@@ -311,38 +248,14 @@ good_area:
 	if (likely(!(fault & VM_FAULT_ERROR)))
 		return;
 
-	if (fatal_signal_pending(current) && !user_mode(regs)) {
-		kernelmode_fixup_or_oops(regs, error_code, address, 0, 0);
-		return;
-	}
-
-	if (fault & VM_FAULT_OOM) {
-		if (!user_mode(regs)) {
-			kernelmode_fixup_or_oops(regs, error_code, address,
-						 SIGSEGV, SEGV_MAPERR);
-			return;
-		}
-	} else {
-		if (fault & (VM_FAULT_SIGBUS | VM_FAULT_HWPOISON |
-			     VM_FAULT_HWPOISON_LARGE)) {
-			if (!user_mode(regs)) {
-				kernelmode_fixup_or_oops(regs, error_code,
-							 address, SIGBUS,
-							 BUS_ADRERR);
-				return;
-			}
-
-			sanitize_error_code(address, &error_code);
-
-			set_signal_archinfo(address, error_code);
-
-			force_sig_fault(SIGBUS, BUS_ADRERR,
-					(void __user *)address);
-		} else if (fault & VM_FAULT_SIGSEGV)
-			bad_area_nosemaphore(regs, error_code, address);
-		else
-			BUG();
-	}
+	if (fault & (VM_FAULT_OOM | VM_FAULT_SIGBUS | VM_FAULT_HWPOISON |
+		     VM_FAULT_HWPOISON_LARGE)) {
+		if (!user_mode(regs))
+			kernelmode_fixup_or_oops(regs, error_code, address);
+	} else if (fault & VM_FAULT_SIGSEGV)
+		bad_area_nosemaphore(regs, error_code, address);
+	else
+		BUG();
 }
 
 static __always_inline void handle_page_fault(struct pt_regs *regs,

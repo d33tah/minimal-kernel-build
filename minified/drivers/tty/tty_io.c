@@ -218,9 +218,6 @@ do_tty_write(ssize_t (*write)(struct tty_struct *, struct file *,
 		count -= ret;
 		if (!count)
 			break;
-		ret = -ERESTARTSYS;
-		if (signal_pending(current))
-			break;
 		cond_resched();
 	}
 	if (written) {
@@ -573,7 +570,7 @@ retry_open:
 	if (IS_ERR(tty)) {
 		tty_free_file(filp);
 		retval = PTR_ERR(tty);
-		if (retval != -EAGAIN || signal_pending(current))
+		if (retval != -EAGAIN)
 			return retval;
 		schedule();
 		goto retry_open;
@@ -604,9 +601,6 @@ retry_open:
 		tty_unlock(tty);
 		tty_release(inode, filp);
 		if (retval != -ERESTARTSYS)
-			return retval;
-
-		if (signal_pending(current))
 			return retval;
 
 		schedule();

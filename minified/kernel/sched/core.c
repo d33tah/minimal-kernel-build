@@ -366,8 +366,6 @@ asmlinkage __visible void schedule_tail(struct task_struct *prev)
 {
 	finish_task_switch(prev);
 	preempt_enable();
-
-	calculate_sigpending();
 }
 
 static __always_inline struct rq *context_switch(struct rq *rq,
@@ -508,14 +506,9 @@ static void __sched notrace __schedule(unsigned int sched_mode)
 
 	prev_state = READ_ONCE(prev->__state);
 	if (!(sched_mode & SM_MASK_PREEMPT) && prev_state) {
-		if (signal_pending_state(prev_state, prev)) {
-			WRITE_ONCE(prev->__state, TASK_RUNNING);
-		} else {
-			/* folded sole caller of deactivate_task() */
-			prev->on_rq =
-				0; /* DEQUEUE_SLEEP set -> not MIGRATING */
-			dequeue_task(rq, prev, DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);
-		}
+		/* folded sole caller of deactivate_task() */
+		prev->on_rq = 0; /* DEQUEUE_SLEEP set -> not MIGRATING */
+		dequeue_task(rq, prev, DEQUEUE_SLEEP | DEQUEUE_NOCLOCK);
 	}
 
 	next = pick_next_task(rq, prev, &rf);

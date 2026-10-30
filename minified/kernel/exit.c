@@ -56,7 +56,7 @@ void __noreturn do_exit(long code)
 	struct task_struct *tsk = current;
 	int group_dead;
 
-	exit_signals(tsk);
+	tsk->flags |= PF_EXITING;
 
 	if (tsk->mm)
 		sync_mm_rss(tsk->mm);

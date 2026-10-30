@@ -237,11 +237,6 @@ static long __get_user_pages(struct mm_struct *mm, unsigned long start,
 				goto out;
 		}
 retry:
-
-		if (fatal_signal_pending(current)) {
-			ret = -EINTR;
-			goto out;
-		}
 		cond_resched();
 
 		page = follow_page_mask(vma, start, foll_flags);
@@ -338,13 +333,6 @@ __get_user_pages_locked(struct mm_struct *mm, unsigned long start,
 		lock_dropped = true;
 
 retry:
-
-		if (fatal_signal_pending(current)) {
-			if (!pages_done)
-				pages_done = -EINTR;
-			break;
-		}
-
 		ret = mmap_read_lock_killable(mm);
 		if (ret) {
 			BUG_ON(ret > 0);

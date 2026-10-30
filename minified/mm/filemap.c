@@ -401,9 +401,6 @@ static int filemap_get_pages(struct kiocb *iocb, struct iov_iter *iter,
 
 	last_index = DIV_ROUND_UP(iocb->ki_pos + iter->count, PAGE_SIZE);
 retry:
-	if (fatal_signal_pending(current))
-		return -EINTR;
-
 	filemap_get_read_batch(mapping, index, last_index, fbatch);
 	if (!folio_batch_count(fbatch)) {
 		if (iocb->ki_flags & IOCB_NOIO)

@@ -29,13 +29,9 @@ struct thread_info { unsigned long flags; };
 #endif
 
  
-#define TIF_SIGPENDING		2
 #define TIF_NEED_RESCHED	3
-#define TIF_NOTIFY_SIGNAL	17
 
-#define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
 #define _TIF_NEED_RESCHED	(1 << TIF_NEED_RESCHED)
-#define _TIF_NOTIFY_SIGNAL	(1 << TIF_NOTIFY_SIGNAL)
 
 /*
  * _TIF_WORK_CTXSW_{BASE,PREV,NEXT} + the SSBD/NOTSC/USER_RETURN_NOTIFY/UPROBE/

@@ -34,7 +34,6 @@ obj-y			+= tsc.o io_delay.o
 obj-y			+= irqflags.o
 
 obj-y				+= process.o
-obj-y				+= ptrace.o
 # i8237.o removed - empty stub
 # obj-y				+= stacktrace.o
 obj-y				+= cpu/

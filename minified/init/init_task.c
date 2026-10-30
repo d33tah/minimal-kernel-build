@@ -1,9 +1,12 @@
 #include <linux/init_task.h>
 #include <linux/sched/signal.h>
 
-static struct signal_struct init_signals = { .thread_head	= LIST_HEAD_INIT(init_task.thread_node), .shared_pending	= { .list = LIST_HEAD_INIT(init_signals.shared_pending.list), .signal =  {{0}} }, .rlim		= INIT_RLIMITS, .cred_guard_mutex = __MUTEX_INITIALIZER(init_signals.cred_guard_mutex), .exec_update_lock = __RWSEM_INITIALIZER(init_signals.exec_update_lock), .pids = { [PIDTYPE_PID]	= &init_struct_pid, [PIDTYPE_TGID]	= &init_struct_pid, [PIDTYPE_PGID]	= &init_struct_pid, [PIDTYPE_SID]	= &init_struct_pid, }, };
+static struct signal_struct init_signals = { .thread_head	= LIST_HEAD_INIT(init_task.thread_node), .rlim		= INIT_RLIMITS, .cred_guard_mutex = __MUTEX_INITIALIZER(init_signals.cred_guard_mutex), .exec_update_lock = __RWSEM_INITIALIZER(init_signals.exec_update_lock), .pids = { [PIDTYPE_PID]	= &init_struct_pid, [PIDTYPE_TGID]	= &init_struct_pid, [PIDTYPE_PGID]	= &init_struct_pid, [PIDTYPE_SID]	= &init_struct_pid, }, };
 
-static struct sighand_struct init_sighand = { .count		= REFCOUNT_INIT(1), .action		= { { { .sa_handler = SIG_DFL, } }, }, .siglock	= __SPIN_LOCK_UNLOCKED(init_sighand.siglock), };
+static struct sighand_struct init_sighand = {
+	.count = REFCOUNT_INIT(1),
+	.siglock = __SPIN_LOCK_UNLOCKED(init_sighand.siglock),
+};
 
 struct task_struct init_task __aligned(L1_CACHE_BYTES) = {
 	.thread_info = INIT_THREAD_INFO(init_task),
@@ -30,9 +33,6 @@ struct task_struct init_task __aligned(L1_CACHE_BYTES) = {
 	.signal = &init_signals,
 	.sighand = &init_sighand,
 	.nsproxy = &init_nsproxy,
-	.pending = { .list = LIST_HEAD_INIT(init_task.pending.list),
-		     .signal = { { 0 } } },
-	.blocked = { { 0 } },
 	.alloc_lock = __SPIN_LOCK_UNLOCKED(init_task.alloc_lock),
 	.pi_lock = __RAW_SPIN_LOCK_UNLOCKED(init_task.pi_lock),
 	.thread_pid = &init_struct_pid,

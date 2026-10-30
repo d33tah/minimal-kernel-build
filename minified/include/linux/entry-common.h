@@ -6,8 +6,7 @@
 
 #include <asm/entry-common.h>
 
-#define EXIT_TO_USER_MODE_WORK \
-	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | _TIF_NOTIFY_SIGNAL)
+#define EXIT_TO_USER_MODE_WORK (_TIF_NEED_RESCHED)
 
 static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs);
 

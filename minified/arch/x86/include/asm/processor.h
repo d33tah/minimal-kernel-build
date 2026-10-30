@@ -152,8 +152,6 @@ struct thread_struct {
 	struct desc_struct tls_array[GDT_ENTRY_TLS_ENTRIES];
 	unsigned long sp0, sp, sysenter_cs;
 	unsigned long gs;
-	unsigned long virtual_dr6;
-	unsigned long trap_nr;
 };
 
 static inline void native_load_sp0(unsigned long sp0)

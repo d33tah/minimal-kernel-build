@@ -155,8 +155,6 @@ static int count_strings_kernel(const char *const *argv)
 	for (i = 0; argv[i]; ++i) {
 		if (i >= MAX_ARG_STRINGS)
 			return -E2BIG;
-		if (fatal_signal_pending(current))
-			return -ERESTARTNOHAND;
 		cond_resched();
 	}
 	return i;
@@ -226,8 +224,6 @@ static int copy_strings_kernel(int argc, const char *const *argv,
 		int ret = copy_string_kernel(argv[argc], bprm);
 		if (ret < 0)
 			return ret;
-		if (fatal_signal_pending(current))
-			return -ERESTARTNOHAND;
 		cond_resched();
 	}
 	return 0;
@@ -492,8 +488,6 @@ int begin_new_exec(struct linux_binprm *bprm)
 
 	__set_task_comm(me, kbasename(bprm->filename), true);
 
-	flush_signal_handlers(me, 0);
-
 	retval = set_cred_ucounts(bprm->cred);
 	if (retval < 0)
 		goto out_unlock;
@@ -708,10 +702,6 @@ static int bprm_execve(struct linux_binprm *bprm, struct filename *filename,
 	return retval;
 
 out:
-
-	if (bprm->point_of_no_return && !fatal_signal_pending(current))
-		force_fatal_sig(SIGSEGV);
-
 out_unmark:
 	current->fs->in_exec = 0;
 

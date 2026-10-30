@@ -544,9 +544,6 @@ static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
 		return -ENOMEM;
 
 	refcount_set(&sig->count, 1);
-	spin_lock_irq(&current->sighand->siglock);
-	memcpy(sig->action, current->sighand->action, sizeof(sig->action));
-	spin_unlock_irq(&current->sighand->siglock);
 
 	return 0;
 }
@@ -574,8 +571,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 
 	sig->thread_head = (struct list_head)LIST_HEAD_INIT(tsk->thread_node);
 	tsk->thread_node = (struct list_head)LIST_HEAD_INIT(sig->thread_head);
-
-	init_sigpending(&sig->shared_pending);
 
 	task_lock(current->group_leader);
 	memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);
@@ -621,7 +616,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 {
 	int retval;
 	struct task_struct *p;
-	struct multiprocess_signals delayed;
 	const u64 clone_flags = args->flags;
 
 	/*
@@ -631,15 +625,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	 * CLONE_UNTRACED|SIGCHLD), so all the early -EINVAL returns are
 	 * unreachable.
 	 */
-
-	sigemptyset(&delayed.signal);
-
-	spin_lock_irq(&current->sighand->siglock);
-	recalc_sigpending();
-	spin_unlock_irq(&current->sighand->siglock);
-	retval = -ERESTARTNOINTR;
-	if (task_sigpending(current))
-		goto fork_out;
 
 	retval = -ENOMEM;
 	p = dup_task_struct(current, node);
@@ -661,8 +646,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	p->flags &= ~(PF_IDLE | PF_NO_SETAFFINITY);
 	p->vfork_done = NULL;
 	spin_lock_init(&p->alloc_lock);
-
-	init_sigpending(&p->pending);
 
 	p->pagefault_disabled = 0;
 
@@ -723,11 +706,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 		goto bad_fork_cancel_cgroup;
 	}
 
-	if (fatal_signal_pending(current)) {
-		retval = -EINTR;
-		goto bad_fork_cancel_cgroup;
-	}
-
 	init_task_pid_links(p);
 	if (likely(p->pid)) {
 		init_task_pid(p, PIDTYPE_PID, pid);
@@ -742,10 +720,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 		init_task_pid(p, PIDTYPE_PGID, task_pgrp(current));
 		init_task_pid(p, PIDTYPE_SID, task_session(current));
 
-		if (is_child_reaper(pid)) {
-			p->signal->flags |= SIGNAL_UNKILLABLE;
-		}
-		p->signal->shared_pending.signal = delayed.signal;
 		p->signal->tty = tty_kref_get(current->signal->tty);
 
 		list_add_tail_rcu(&p->tasks, &init_task.tasks);

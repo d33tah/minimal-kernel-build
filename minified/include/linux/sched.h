@@ -125,7 +125,6 @@ struct task_struct {
 	struct list_head tasks;
 	struct mm_struct *mm, *active_mm;
 	int exit_signal;
-	unsigned long jobctl;
 	unsigned int personality;
 	unsigned in_iowait : 1;
 	pid_t pid;
@@ -145,8 +144,6 @@ struct task_struct {
 	struct nsproxy *nsproxy;
 	struct signal_struct *signal;
 	struct sighand_struct __rcu *sighand;
-	sigset_t blocked;
-	struct sigpending pending;
 	struct callback_head *task_works;
 	spinlock_t alloc_lock;
 	raw_spinlock_t pi_lock;

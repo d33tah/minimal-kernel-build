@@ -11,8 +11,6 @@
 #
 # vmlinux.bin is:
 #	vmlinux stripped of debugging and comments
-# vmlinux.bin.all is:
-#	vmlinux.bin + vmlinux.relocs
 # vmlinux.bin.raw is:
 #	(see scripts/Makefile.lib size_append)
 #	uncompressed vmlinux.bin.all + u32 size of vmlinux.bin.all
@@ -113,16 +111,9 @@ OBJCOPYFLAGS_vmlinux.bin :=  -R .comment -S
 $(obj)/vmlinux.bin: vmlinux FORCE
 	$(call if_changed,objcopy)
 
-targets += $(patsubst $(obj)/%,%,$(vmlinux-objs-y)) vmlinux.bin.all vmlinux.relocs
-
-CMD_RELOCS = arch/x86/tools/relocs
-quiet_cmd_relocs = RELOCS  $@
-      cmd_relocs = $(CMD_RELOCS) $< > $@;$(CMD_RELOCS) --abs-relocs $<
-$(obj)/vmlinux.relocs: vmlinux FORCE
-	$(call if_changed,relocs)
+targets += $(patsubst $(obj)/%,%,$(vmlinux-objs-y)) vmlinux.bin.all
 
 vmlinux.bin.all-y := $(obj)/vmlinux.bin
-vmlinux.bin.all-$(CONFIG_X86_NEED_RELOCS) += $(obj)/vmlinux.relocs
 
 quiet_cmd_raw_with_size = RAW     $@
       cmd_raw_with_size = { cat $(real-prereqs); $(size_append); } > $@

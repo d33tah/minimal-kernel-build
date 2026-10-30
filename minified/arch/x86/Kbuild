@@ -3,9 +3,8 @@ obj-y += entry/
 
 # Xen paravirtualization support
 
-obj-y += realmode/
 obj-y += kernel/
 obj-y += mm/
 
 # for cleaning
-subdir- += boot tools
+subdir- += boot

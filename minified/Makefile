@@ -260,7 +260,7 @@ version_h := include/generated/uapi/linux/version.h
 clean-targets := %clean mrproper cleandocs
 no-dot-config-targets := $(clean-targets) \
 			 cscope gtags TAGS tags help% %docs check% coccicheck \
-			 $(version_h) headers headers_% archheaders archscripts \
+			 $(version_h) headers headers_% archheaders \
 			 %asm-generic kernelversion %src-pkg \
 			 outputmakefile
 # Installation targets should not require compiler. Unfortunately, vdso_install
@@ -915,7 +915,7 @@ scripts: scripts_basic
 
 PHONY += prepare archprepare
 
-archprepare: outputmakefile archheaders archscripts scripts include/config/kernel.release \
+archprepare: outputmakefile archheaders scripts include/config/kernel.release \
 	asm-generic $(version_h) $(autoksyms_h) include/generated/utsrelease.h \
 	include/generated/autoconf.h remove-stale-files
 
@@ -979,7 +979,7 @@ include/generated/utsrelease.h: include/config/kernel.release FORCE
 	$(call filechk,utsrelease.h)
 
 # ---------------------------------------------------------------------------
-PHONY += archheaders archscripts
+PHONY += archheaders
 
 # ---------------------------------------------------------------------------
 # Tools

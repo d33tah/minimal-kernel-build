@@ -7,7 +7,6 @@
 #include <asm/e820/api.h>
 #include <asm/bios_ebda.h>
 #include <asm/memtype.h>
-#include <asm/realmode.h>
 #include <asm/prom.h>
 #include <asm/efi.h>
 
@@ -320,7 +319,7 @@ void __init setup_arch(char **cmdline_p)
 	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n",
 	       (max_pfn_mapped << PAGE_SHIFT) - 1);
 
-	reserve_real_mode();
+	memblock_reserve(0, SZ_1M);
 
 	init_mem_mapping();
 

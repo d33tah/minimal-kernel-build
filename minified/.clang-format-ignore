@@ -41,7 +41,6 @@ arch/x86/include/uapi/asm/boot.h
 arch/x86/include/uapi/asm/bootparam.h
 arch/x86/include/uapi/asm/processor-flags.h
 arch/x86/include/uapi/asm/ptrace-abi.h
-arch/x86/realmode/rm/realmode.h
 include/asm-generic/getorder.h
 include/asm-generic/int-ll64.h
 include/asm-generic/rwonce.h

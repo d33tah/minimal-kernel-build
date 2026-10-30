@@ -131,9 +131,6 @@ endif
 
 LDFLAGS_vmlinux :=
 
-archscripts: scripts_basic
-	$(Q)$(MAKE) $(build)=arch/x86/tools relocs
-
 ###
 # Syscall table generation
 

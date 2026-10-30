@@ -286,29 +286,18 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 	return ret;
 }
 
-static struct dentry *lookup_dcache(const struct qstr *name, struct dentry *dir)
+/*
+ * No dentry_operations exist on this build, so a cached dentry is always
+ * valid. A single task never races another lookup, so a dcache miss can
+ * allocate and look up directly (no in-lookup hash / d_alloc_parallel).
+ */
+static struct dentry *lookup_real(const struct qstr *name, struct dentry *base,
+				  unsigned int flags)
 {
-	/*
-	 * No dentry_operations on this build defines ->d_revalidate
-	 * (the only ops object, simple_dentry_operations, sets only
-	 * ->d_delete), so DCACHE_OP_REVALIDATE is never set and a
-	 * cached dentry is always valid -- the revalidate/invalidate
-	 * arm is unreachable.
-	 */
-	return d_lookup(dir, name);
-}
-
-static struct dentry *__lookup_hash(const struct qstr *name,
-				    struct dentry *base, unsigned int flags)
-{
-	struct dentry *dentry = lookup_dcache(name, base);
-	struct dentry *old;
 	struct inode *dir = base->d_inode;
+	struct dentry *dentry = d_alloc(base, name);
+	struct dentry *old;
 
-	if (dentry)
-		return dentry;
-
-	dentry = d_alloc(base, name);
 	if (unlikely(!dentry))
 		return ERR_PTR(-ENOMEM);
 
@@ -320,42 +309,14 @@ static struct dentry *__lookup_hash(const struct qstr *name,
 	return dentry;
 }
 
-static struct dentry *lookup_fast(struct nameidata *nd)
+static struct dentry *__lookup_hash(const struct qstr *name,
+				    struct dentry *base, unsigned int flags)
 {
-	/*
-	 * d_revalidate() is always 1 on this build (no ->d_revalidate
-	 * ops object exists, so DCACHE_OP_REVALIDATE is never set), so a
-	 * found dentry is always valid.  Only ref-walk exists: a single
-	 * task never races a rename, so RCU-walk bought nothing.
-	 */
-	return __d_lookup(nd->path.dentry, &nd->last);
-}
+	struct dentry *dentry = d_lookup(base, name);
 
-static struct dentry *__lookup_slow(const struct qstr *name, struct dentry *dir,
-				    unsigned int flags)
-{
-	struct dentry *dentry, *old;
-	struct inode *inode = dir->d_inode;
-	DECLARE_WAIT_QUEUE_HEAD_ONSTACK(wq);
-
-	dentry = d_alloc_parallel(dir, name, &wq);
-	if (IS_ERR(dentry))
+	if (dentry)
 		return dentry;
-	/*
-	 * d_revalidate() is always 1 on this build (no ->d_revalidate
-	 * ops object exists), so a dentry that was already resolved (not
-	 * in-lookup) is always valid -- only the in-lookup arm runs the
-	 * real ->lookup.
-	 */
-	if (likely(d_in_lookup(dentry))) {
-		old = inode->i_op->lookup(inode, dentry, flags);
-		d_lookup_done(dentry);
-		if (unlikely(old)) {
-			dput(dentry);
-			dentry = old;
-		}
-	}
-	return dentry;
+	return lookup_real(name, base, flags);
 }
 
 static struct dentry *lookup_slow(const struct qstr *name, struct dentry *dir,
@@ -364,7 +325,7 @@ static struct dentry *lookup_slow(const struct qstr *name, struct dentry *dir,
 	struct inode *inode = dir->d_inode;
 	struct dentry *res;
 	inode_lock_shared(inode);
-	res = __lookup_slow(name, dir, flags);
+	res = lookup_real(name, dir, flags);
 	inode_unlock_shared(inode);
 	return res;
 }
@@ -412,7 +373,7 @@ static const char *walk_component(struct nameidata *nd, int flags)
 
 	if (unlikely(nd->last_type != LAST_NORM))
 		return handle_dots(nd, nd->last_type);
-	dentry = lookup_fast(nd);
+	dentry = d_lookup(nd->path.dentry, &nd->last);
 	if (unlikely(!dentry)) {
 		dentry = lookup_slow(&nd->last, nd->path.dentry, nd->flags);
 		if (IS_ERR(dentry))
@@ -713,7 +674,6 @@ static int handle_truncate(struct user_namespace *mnt_userns, struct file *filp)
 static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 				  const struct open_flags *op)
 {
-	/* Simplified: basic lookup with minimal revalidation */
 	struct user_namespace *mnt_userns;
 	struct dentry *dir = nd->path.dentry;
 	struct inode *dir_inode = dir->d_inode;
@@ -721,47 +681,21 @@ static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 	struct dentry *dentry;
 	int error;
 	umode_t mode = op->mode;
-	DECLARE_WAIT_QUEUE_HEAD_ONSTACK(wq);
 
 	file->f_mode &= ~FMODE_CREATED;
-	dentry = d_lookup(dir, &nd->last);
-	if (!dentry) {
-		dentry = d_alloc_parallel(dir, &nd->last, &wq);
-		if (IS_ERR(dentry))
-			return dentry;
-	}
-
-	if (dentry->d_inode)
+	dentry = __lookup_hash(&nd->last, dir, nd->flags);
+	if (IS_ERR(dentry) || dentry->d_inode)
 		return dentry;
 
-	/* Simplified creation logic */
 	mnt_userns = mnt_user_ns(nd->path.mnt);
-	if (open_flag & O_CREAT) {
+	if ((open_flag & O_CREAT) && dir_inode->i_op->create) {
 		mode &= ~current_umask();
-
-		if (d_in_lookup(dentry)) {
-			struct dentry *res = dir_inode->i_op->lookup(
-				dir_inode, dentry, nd->flags);
-			d_lookup_done(dentry);
-			if (IS_ERR(res)) {
-				dput(dentry);
-				return res;
-			}
-			if (res) {
-				dput(dentry);
-				dentry = res;
-			}
-		}
-
-		if (!dentry->d_inode && dir_inode->i_op->create) {
-			file->f_mode |= FMODE_CREATED;
-			error = dir_inode->i_op->create(mnt_userns, dir_inode,
-							dentry, mode,
-							open_flag & O_EXCL);
-			if (error) {
-				dput(dentry);
-				return ERR_PTR(error);
-			}
+		file->f_mode |= FMODE_CREATED;
+		error = dir_inode->i_op->create(mnt_userns, dir_inode, dentry,
+						mode, open_flag & O_EXCL);
+		if (error) {
+			dput(dentry);
+			return ERR_PTR(error);
 		}
 	}
 
@@ -786,7 +720,7 @@ static const char *open_last_lookups(struct nameidata *nd, struct file *file,
 		if (nd->last.name[nd->last.len])
 			nd->flags |= LOOKUP_FOLLOW | LOOKUP_DIRECTORY;
 
-		dentry = lookup_fast(nd);
+		dentry = d_lookup(nd->path.dentry, &nd->last);
 		if (likely(dentry))
 			goto finish_lookup;
 	} else {

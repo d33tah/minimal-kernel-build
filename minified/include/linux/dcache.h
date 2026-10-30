@@ -44,53 +44,24 @@ struct qstr {
 
 struct dentry {
 	unsigned int d_flags;
-	seqcount_spinlock_t d_seq;
 	struct hlist_bl_node d_hash;
 	struct dentry *d_parent;
 	struct qstr d_name;
 	struct inode *d_inode;
 	unsigned char d_iname[DNAME_INLINE_LEN];
 	struct lockref d_lockref;
-	const struct dentry_operations *d_op;
 	struct super_block *d_sb;
 	union {
-		struct list_head d_lru;
-		wait_queue_head_t *d_wait;
-	};
-	union {
 		struct hlist_node d_alias;
-		struct hlist_bl_node d_in_lookup_hash;
 		struct rcu_head d_rcu;
 	} d_u;
 } __randomize_layout;
-
-enum dentry_d_lock_class { DENTRY_D_LOCK_NORMAL, DENTRY_D_LOCK_NESTED };
-
-struct dentry_operations {
-	/* only ->d_delete is ever set on this build (simple_dentry_operations);
-	 * d_revalidate/d_weak_revalidate/d_hash/d_compare/d_init/d_release/
-	 * d_prune/d_iput/d_dname/d_real/d_automount/d_manage all removed - never
-	 * assigned by any ops object, so their dispatch branches were always dead */
-	int (*d_delete)(const struct dentry *);
-} ____cacheline_aligned;
-
-/* DCACHE_OP_HASH/COMPARE/REVALIDATE/PRUNE/WEAK_REVALIDATE/REAL removed -
- * never set (only ->d_delete is ever assigned by an ops object) */
-#define DCACHE_OP_DELETE 0x00000008
-
-#define DCACHE_DISCONNECTED 0x00000020
-
-#define DCACHE_REFERENCED 0x00000040
-
-#define DCACHE_DONTCACHE 0x00000080
 
 /*
  * DCACHE_SHRINK_LIST / DCACHE_MOUNTED / DCACHE_NEED_AUTOMOUNT /
  * DCACHE_MANAGE_TRANSIT / DCACHE_MANAGED_DENTRY are never set on this
  * build -- removed; their branches were folded out.
  */
-
-#define DCACHE_LRU_LIST 0x00080000
 
 #define DCACHE_ENTRY_TYPE 0x00700000
 #define DCACHE_MISS_TYPE 0x00000000
@@ -99,25 +70,14 @@ struct dentry_operations {
 #define DCACHE_REGULAR_TYPE 0x00400000
 #define DCACHE_SPECIAL_TYPE 0x00500000
 
-#define DCACHE_PAR_LOOKUP 0x10000000
-
-extern seqlock_t rename_lock;
-
 extern void d_instantiate(struct dentry *, struct inode *);
-extern void d_set_d_op(struct dentry *dentry,
-		       const struct dentry_operations *op);
 
 extern struct dentry *d_alloc(struct dentry *, const struct qstr *);
-extern struct dentry *d_alloc_parallel(struct dentry *, const struct qstr *,
-				       wait_queue_head_t *);
 extern struct dentry *d_make_root(struct inode *);
 
 extern void d_add(struct dentry *, struct inode *);
 
 extern struct dentry *d_lookup(const struct dentry *, const struct qstr *);
-extern struct dentry *__d_lookup(const struct dentry *, const struct qstr *);
-extern struct dentry *__d_lookup_rcu(const struct dentry *parent,
-				     const struct qstr *name, unsigned *seq);
 
 static inline struct dentry *dget(struct dentry *dentry)
 {
@@ -129,22 +89,6 @@ static inline struct dentry *dget(struct dentry *dentry)
 static inline int d_unhashed(const struct dentry *dentry)
 {
 	return hlist_bl_unhashed(&dentry->d_hash);
-}
-
-extern void __d_lookup_done(struct dentry *);
-
-static inline int d_in_lookup(const struct dentry *dentry)
-{
-	return dentry->d_flags & DCACHE_PAR_LOOKUP;
-}
-
-static inline void d_lookup_done(struct dentry *dentry)
-{
-	if (unlikely(d_in_lookup(dentry))) {
-		spin_lock(&dentry->d_lock);
-		__d_lookup_done(dentry);
-		spin_unlock(&dentry->d_lock);
-	}
 }
 
 extern void dput(struct dentry *);

@@ -46,15 +46,7 @@ static struct super_block *alloc_super(struct file_system_type *type, int flags,
 	s->s_time_min = TIME64_MIN;
 	s->s_time_max = TIME64_MAX;
 
-	if (list_lru_init_memcg(&s->s_dentry_lru, NULL))
-		goto fail;
-	if (list_lru_init_memcg(&s->s_inode_lru, NULL))
-		goto fail;
 	return s;
-
-fail:
-	destroy_unused_super(s);
-	return NULL;
 }
 
 /*

@@ -192,10 +192,7 @@ struct inode {
 	const struct file_operations *i_fop;
 	struct address_space i_data;
 	struct list_head i_devices;
-	union {
-		struct cdev *i_cdev;
-		unsigned i_dir_seq;
-	};
+	struct cdev *i_cdev;
 } __randomize_layout;
 
 struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode);
@@ -346,7 +343,6 @@ struct super_block {
 	time64_t s_time_max;
 	char s_id[32];
 	struct user_namespace *s_user_ns;
-	struct list_lru s_dentry_lru, s_inode_lru;
 	struct rcu_head rcu;
 } __randomize_layout;
 
@@ -705,12 +701,6 @@ extern struct inode *new_inode_pseudo(struct super_block *sb);
 extern struct inode *new_inode(struct super_block *sb);
 extern int file_remove_privs(struct file *);
 
-static inline void *alloc_inode_sb(struct super_block *sb,
-				   struct kmem_cache *cache, gfp_t gfp)
-{
-	return kmem_cache_alloc_lru(cache, &sb->s_inode_lru, gfp);
-}
-
 extern int generic_file_mmap(struct file *, struct vm_area_struct *);
 extern ssize_t generic_write_checks(struct kiocb *, struct iov_iter *);
 ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *to,
@@ -736,8 +726,6 @@ extern int simple_write_begin(struct file *file, struct address_space *mapping,
 			      loff_t pos, unsigned len, struct page **pagep,
 			      void **fsdata);
 extern const struct address_space_operations ram_aops;
-extern int always_delete_dentry(const struct dentry *);
-extern const struct dentry_operations simple_dentry_operations;
 
 extern struct dentry *simple_lookup(struct inode *, struct dentry *,
 				    unsigned int flags);

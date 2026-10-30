@@ -42,7 +42,6 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	atomic_set(&inode->i_writecount, 0);
 	inode->i_size = 0;
 	inode->i_cdev = NULL;
-	inode->i_dir_seq = 0;
 	inode->i_rdev = 0;
 
 	spin_lock_init(&inode->i_lock);
@@ -75,7 +74,7 @@ static struct inode *alloc_inode(struct super_block *sb)
 {
 	struct inode *inode;
 
-	inode = alloc_inode_sb(sb, inode_cachep, GFP_KERNEL);
+	inode = kmem_cache_alloc(inode_cachep, GFP_KERNEL);
 
 	if (!inode)
 		return NULL;

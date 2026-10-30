@@ -148,15 +148,6 @@ SEQCOUNT_LOCKNAME(mutex, struct mutex, true, s->lock, mutex,
 		raw_read_seqcount_begin(s);                     \
 	})
 
-#define raw_read_seqcount(s)                          \
-	({                                            \
-		unsigned __seq = seqprop_sequence(s); \
-		smp_rmb();                            \
-		__seq;                                \
-	})
-
-#define raw_seqcount_begin(s) ({ raw_read_seqcount(s) & ~1; })
-
 #define __read_seqcount_retry(s, start) \
 	do___read_seqcount_retry(seqprop_ptr(s), start)
 
@@ -174,25 +165,11 @@ static inline int do_read_seqcount_retry(const seqcount_t *s, unsigned start)
 	return do___read_seqcount_retry(s, start);
 }
 
-#define raw_write_seqcount_begin(s)                          \
-	do {                                                 \
-		if (seqprop_preemptible(s))                  \
-			preempt_disable();                   \
-		do_raw_write_seqcount_begin(seqprop_ptr(s)); \
-	} while (0)
-
 static inline void do_raw_write_seqcount_begin(seqcount_t *s)
 {
 	s->sequence++;
 	smp_wmb();
 }
-
-#define raw_write_seqcount_end(s)                          \
-	do {                                               \
-		do_raw_write_seqcount_end(seqprop_ptr(s)); \
-		if (seqprop_preemptible(s))                \
-			preempt_enable();                  \
-	} while (0)
 
 static inline void do_raw_write_seqcount_end(seqcount_t *s)
 {
@@ -228,15 +205,6 @@ static inline void do_write_seqcount_begin(seqcount_t *s)
 static inline void do_write_seqcount_end(seqcount_t *s)
 {
 	do_raw_write_seqcount_end(s);
-}
-
-#define write_seqcount_invalidate(s) \
-	do_write_seqcount_invalidate(seqprop_ptr(s))
-
-static inline void do_write_seqcount_invalidate(seqcount_t *s)
-{
-	smp_wmb();
-	s->sequence += 2;
 }
 
 typedef struct {

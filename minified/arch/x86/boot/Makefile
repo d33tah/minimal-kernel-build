@@ -26,8 +26,8 @@ SVGA_MODE	:= -DSVGA_MODE=NORMAL_VGA
 targets		:= vmlinux.bin setup.bin setup.elf bzImage
 subdir-		:= compressed
 
-setup-y		+= a20.o bioscall.o cmdline.o copy.o
-setup-y		+= early_serial_console.o header.o main.o memory.o
+setup-y		+= a20.o bioscall.o copy.o
+setup-y		+= header.o main.o memory.o
 setup-y		+= pm.o pmjump.o printf.o regs.o string.o tty.o video.o
 setup-y		+= video-mode.o version.o
 

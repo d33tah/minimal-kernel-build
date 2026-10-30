@@ -76,10 +76,6 @@ void main(void)
 
 	copy_boot_params();
 
-	console_init();
-	if (cmdline_find_option_bool("debug"))
-		puts("early console in setup code\n");
-
 	init_heap();
 
 	set_bios_mode();

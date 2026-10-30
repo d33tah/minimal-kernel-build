@@ -1,5 +1,5 @@
 #include <linux/interrupt.h>
-#include <linux/rcupdate_wait.h>
+#include <linux/rcupdate.h>
 #include <linux/slab.h>
 
 #include "rcu.h"
@@ -14,11 +14,6 @@ static struct rcu_ctrlblk rcu_ctrlblk = {
 	.curtail = &rcu_ctrlblk.rcucblist,
 	.gp_seq = 0 - 300UL,
 };
-
-void rcu_barrier(void)
-{
-	wait_rcu_gp(call_rcu);
-}
 
 void rcu_qs(void)
 {
@@ -87,6 +82,20 @@ rcu_process_callbacks(struct softirq_action *unused)
 		local_bh_enable();
 		list = next;
 	}
+}
+
+/*
+ * Tiny RCU runs on one CPU without preemption, and rcu_barrier() may sleep, so
+ * its caller is in a quiescent state: every callback queued so far has
+ * finished its grace period. Mark them done and invoke them before returning.
+ * The generic wait_rcu_gp() version queued an on-stack rcu_head and relied on
+ * wait_for_completion(), which is a no-op here, so it returned with the head
+ * still queued and the RCU softirq later called garbage from the dead frame.
+ */
+void rcu_barrier(void)
+{
+	rcu_qs();
+	rcu_process_callbacks(NULL);
 }
 
 void call_rcu(struct rcu_head *head, rcu_callback_t func)

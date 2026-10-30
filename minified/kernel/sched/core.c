@@ -593,19 +593,6 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode,
 	return try_to_wake_up(curr->private, mode, wake_flags);
 }
 
-/*
- * Runtime-dead anchor-stub: the only caller, kthread(), never runs on a
- * single-shot boot (no kthreads reach this line), so the full
- * dequeue/enqueue/setparam path (formerly _sched_setscheduler /
- * __sched_setscheduler, both private to this chain) is never executed.
- * Symbol kept link-live for the sched.h extern + kthread.c:139 reference.
- */
-int sched_setscheduler_nocheck(struct task_struct *p, int policy,
-			       const struct sched_param *param)
-{
-	return 0;
-}
-
 int __sched __cond_resched(void)
 {
 	if (should_resched(0)) {
@@ -631,7 +618,6 @@ void __init init_idle(struct task_struct *idle, int cpu)
 	idle->se.exec_start = sched_clock();
 
 	idle->flags |= PF_IDLE | PF_KTHREAD | PF_NO_SETAFFINITY;
-	kthread_set_per_cpu(idle, cpu);
 
 	rq->idle = idle;
 	rcu_assign_pointer(rq->curr, idle);
@@ -668,8 +654,6 @@ void __init sched_init(void)
 
 	mmgrab(&init_mm);
 	enter_lazy_tlb(&init_mm, current);
-
-	WARN_ON(!set_kthread_struct(current));
 
 	init_idle(current, smp_processor_id());
 

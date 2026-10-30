@@ -21,7 +21,6 @@
 
 /* --- 2025-12-08 00:37 --- padata.h stubbed out */
 #include <linux/device/driver.h>
-#include <linux/kthread.h>
 extern void sched_init(void);
 extern void sched_init_smp(void);
 #include <linux/file.h>
@@ -107,8 +106,6 @@ static void __init setup_command_line(char *command_line)
 	strcpy(static_command_line, command_line);
 }
 
-static __initdata DECLARE_COMPLETION(kthreadd_done);
-
 noinline void __ref rest_init(void)
 {
 	struct task_struct *tsk;
@@ -122,14 +119,7 @@ noinline void __ref rest_init(void)
 	set_cpus_allowed_ptr(tsk, cpumask_of(smp_processor_id()));
 	rcu_read_unlock();
 
-	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
-	rcu_read_lock();
-	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
-	rcu_read_unlock();
-
 	system_state = SYSTEM_SCHEDULING;
-
-	complete(&kthreadd_done);
 
 	schedule_preempt_disabled();
 
@@ -361,8 +351,6 @@ static void mark_readonly(void)
 static int __ref kernel_init(void *unused)
 {
 	int ret;
-
-	wait_for_completion(&kthreadd_done);
 
 	kernel_init_freeable();
 

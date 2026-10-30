@@ -902,7 +902,7 @@ SYM_CODE_START_LOCAL_NOALIGN(handle_exception)
 
 handle_exception_return:
 	/*
-	 * We can be coming here from child spawned by kernel_thread().
+	 * We can be coming here from child spawned by user_mode_thread().
 	 */
 	movl	PT_CS(%esp), %eax
 	andl	$SEGMENT_RPL_MASK, %eax

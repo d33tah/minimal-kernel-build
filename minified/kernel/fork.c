@@ -7,7 +7,6 @@
 #include <linux/fdtable.h>
 #include <linux/mm.h>
 #include <linux/nsproxy.h>
-#include <linux/kthread.h>
 #include <linux/mm_inline.h>
 #include <linux/ptrace.h>
 #include <linux/tty.h>
@@ -225,7 +224,7 @@ void __put_task_struct(struct task_struct *tsk)
 {
 	/*
 	 * RUNTIME-DEAD ANCHOR-STUB: releases a task whose last ref dropped. Never
-	 * runs on a 1-shot boot (init panics, kthreads are never reaped, HIT=False).
+	 * runs on a 1-shot boot (init panics, HIT=False).
 	 * Its callees (exit_creds / free_signal_struct / free_task) are all dead too.
 	 */
 }
@@ -313,8 +312,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	struct task_struct *tsk;
 	int err;
 
-	if (node == NUMA_NO_NODE)
-		node = tsk_fork_get_node(orig);
 	tsk = alloc_task_struct_node(node);
 	if (!tsk)
 		return NULL;
@@ -341,7 +338,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 
 	refcount_set(&tsk->usage, 1);
 	tsk->wake_q.next = NULL;
-	tsk->worker_private = NULL;
 
 	return tsk;
 
@@ -497,7 +493,7 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 		return 0;
 
 	/*
-	 * The only spawners (kernel_thread / user_mode_thread) always set
+	 * The only spawner (user_mode_thread) always sets
 	 * CLONE_VM, so the address space is always shared -- the dup_mm()
 	 * (else) arm is statically dead.
 	 */
@@ -514,8 +510,7 @@ static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)
 	struct fs_struct *fs = current->fs;
 
 	/*
-	 * Every spawn on this build sets CLONE_FS (init passes CLONE_FS;
-	 * kthreadd/kthreads pass CLONE_FS|CLONE_FILES) so the fs_struct is
+	 * The only spawn on this build (init) sets CLONE_FS, so the fs_struct is
 	 * always shared, never duplicated.  The copy_fs_struct() arm is dead.
 	 */
 	spin_lock(&fs->lock);
@@ -668,8 +663,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	if (!p)
 		goto fork_out;
 	p->flags &= ~PF_KTHREAD;
-	if (args->kthread)
-		p->flags |= PF_KTHREAD;
 
 	rt_mutex_init_task(p);
 
@@ -687,11 +680,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	spin_lock_init(&p->alloc_lock);
 
 	init_sigpending(&p->pending);
-
-	if (args->kthread) {
-		if (!set_kthread_struct(p))
-			goto bad_fork_cleanup_delayacct;
-	}
 
 	p->pagefault_disabled = 0;
 
@@ -765,8 +753,8 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	if (likely(p->pid)) {
 		/*
 		 * No ptrace on this build: there is no ptrace(2), no
-		 * fork/clone/vfork syscall, and kernel_thread/user_mode_thread
-		 * always pass CLONE_UNTRACED, so the child is never traced.
+		 * fork/clone/vfork syscall, and user_mode_thread
+		 * always passes CLONE_UNTRACED, so the child is never traced.
 		 */
 		ptrace_init_task(p, false);
 
@@ -825,7 +813,6 @@ bad_fork_cleanup_files:
 	exit_files(p);
 bad_fork_cleanup_semundo:
 bad_fork_cleanup_policy:
-bad_fork_cleanup_delayacct:
 bad_fork_cleanup_count:
 	dec_rlimit_ucounts(task_ucounts(p), UCOUNT_RLIMIT_NPROC, 1);
 	exit_creds(p);
@@ -850,7 +837,7 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 	pid_t nr;
 
 	/*
-	 * The only spawners (kernel_thread / user_mode_thread) always set
+	 * The only spawner (user_mode_thread) always sets
 	 * CLONE_UNTRACED and there is no fork/clone/vfork syscall, so the
 	 * ptrace-event clone notification (PTRACE_EVENT_CLONE/FORK) is dead.
 	 */
@@ -866,20 +853,6 @@ pid_t kernel_clone(struct kernel_clone_args *args)
 
 	put_pid(pid);
 	return nr;
-}
-
-pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
-{
-	struct kernel_clone_args args = {
-		.flags = ((lower_32_bits(flags) | CLONE_VM | CLONE_UNTRACED) &
-			  ~CSIGNAL),
-		.exit_signal = (lower_32_bits(flags) & CSIGNAL),
-		.fn = fn,
-		.fn_arg = arg,
-		.kthread = 1,
-	};
-
-	return kernel_clone(&args);
 }
 
 pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)

@@ -98,8 +98,8 @@ void fpstate_reset(struct fpu *fpu)
 /* fpu_inherit_perms removed - gated on fpu_state_size_dynamic() which is
  * constant false (no XFD dynamic xstate on the QEMU boot CPU); body was dead. */
 
-/* minimal arg dropped: the only fork spawners (kernel_thread/user_mode_thread)
- * always set args->fn, so fpu_clone's caller passes minimal=true unconditionally;
+/* minimal arg dropped: the only fork spawner (user_mode_thread)
+ * always sets args->fn, so fpu_clone's caller passes minimal=true unconditionally;
  * the non-minimal save_fpregs_to_fpstate tail was statically dead. */
 int fpu_clone(struct task_struct *dst)
 {

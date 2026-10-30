@@ -26,8 +26,6 @@ DECLARE_PER_CPU(unsigned long, process_counts);
 #include <linux/interrupt.h>
 #include <linux/jiffies.h>
 
-#include <linux/kthread.h>
-
 #include <linux/lockdep.h>
 #include <linux/minmax.h>
 #include <linux/mm.h>

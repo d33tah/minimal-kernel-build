@@ -39,7 +39,7 @@ void exit_fs(struct task_struct *tsk)
 	 * Both call sites are runtime-dead on this 1-shot boot: do_exit's tail
 	 * (init panics on is_global_init() before reaching it, HIT=False) and
 	 * copy_process's bad_fork_cleanup_fs rollback (copy_process succeeds for
-	 * every spawn -- init + the few kthreads -- so the error path never runs,
+	 * the only spawn, init, so the error path never runs,
 	 * HIT=False). No task ever tears down its fs_struct here.
 	 */
 }

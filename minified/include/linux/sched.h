@@ -139,7 +139,6 @@ struct task_struct {
 	struct hlist_node pid_links[PIDTYPE_MAX];
 	struct list_head thread_group, thread_node;
 	struct completion *vfork_done;
-	void *worker_private;
 	const struct cred __rcu *real_cred;
 	const struct cred __rcu *cred;
 	char comm[TASK_COMM_LEN];
@@ -208,8 +207,6 @@ static inline int set_cpus_allowed_ptr(struct task_struct *p,
 		return -EINVAL;
 	return 0;
 }
-extern int sched_setscheduler_nocheck(struct task_struct *, int,
-				      const struct sched_param *);
 
 static __always_inline bool is_idle_task(const struct task_struct *p)
 {

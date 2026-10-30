@@ -41,7 +41,7 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
 	/*
 	 * RUNTIME-DEAD anchor-stub: exit_notify is the process-reap/reparent
 	 * notification root. On this single-shot boot nothing is ever reaped --
-	 * release_task is already a no-op (#8), init/kthreadd never exit, and no
+	 * release_task is already a no-op (#8), init never exits, and no
 	 * task ever has children to reparent. do_exit reaches its entry but
 	 * never gets here (trace HIT=False). Its whole private reap subtree --
 	 * forget_original_parent -> find_child_reaper -> find_alive_thread (and

@@ -56,12 +56,6 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 
 	fpu_clone(p);
 
-	if (unlikely(p->flags & PF_KTHREAD)) {
-		memset(childregs, 0, sizeof(struct pt_regs));
-		kthread_frame_init(frame, args->fn, args->fn_arg);
-		return 0;
-	}
-
 	frame->bx = 0;
 	*childregs = *current_pt_regs();
 	childregs->ax = 0;

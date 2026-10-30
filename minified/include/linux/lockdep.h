@@ -54,10 +54,6 @@ extern int lockdep_is_held(const void *);
 	do {                           \
 	} while (0)
 
-#define LOCK_CONTENDED(_lock, try, lock) lock(_lock)
-
-#define LOCK_CONTENDED_RETURN(_lock, try, lock) lock(_lock)
-
 #define SINGLE_DEPTH_NESTING 1
 
 #define lock_acquire_exclusive(l, s, t, n, i) lock_acquire(l, s, t, 0, 1, n, i)

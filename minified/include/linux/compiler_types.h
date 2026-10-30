@@ -70,7 +70,6 @@
  * is statically dead. Keep only the live __maybe_unused arm. */
 #define __inline_maybe_unused __maybe_unused
 
-#define noinline_for_stack noinline
 
 /*
  * __SANITIZE_ADDRESS__ is #defined at exactly one site (the

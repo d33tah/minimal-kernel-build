@@ -38,8 +38,6 @@
 
 #define __packed __attribute__((__packed__))
 
-#define __pure __attribute__((__pure__))
-
 #define __section(section) __attribute__((__section__(section)))
 
 #define __maybe_unused __attribute__((__unused__))

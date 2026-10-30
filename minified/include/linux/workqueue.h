@@ -61,8 +61,6 @@ struct delayed_work {
 					     (tflags) | TIMER_IRQSAFE), \
 	}
 
-#define DECLARE_WORK(n, f) struct work_struct n = __WORK_INITIALIZER(n, f)
-
 #define DECLARE_DELAYED_WORK(n, f) \
 	struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f, 0)
 

@@ -68,7 +68,6 @@
 /* Word 1 - AMD/extended flags */
 #define X86_FEATURE_NX			( 1*32+20)
 #define X86_FEATURE_RDTSCP		( 1*32+27)
-#define X86_FEATURE_LM			( 1*32+29)
 
 /* Word 3 - Auxiliary flags */
 #define X86_FEATURE_LFENCE_RDTSC	( 3*32+18)

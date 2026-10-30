@@ -4,7 +4,6 @@
 
  
 #define NORMAL_VGA	0xffff		 
-#define EXTENDED_VGA	0xfffe		 
 #define ASK_VGA		0xfffd		 
 
 

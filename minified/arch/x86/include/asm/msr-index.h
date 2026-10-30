@@ -25,6 +25,5 @@
 #define MSR_K7_HWCR			0xc0010015
 
 /* VIA specific */
-#define MSR_VIA_FCR			0x00001107
 
 #endif /* _ASM_X86_MSR_INDEX_H */

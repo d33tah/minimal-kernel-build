@@ -17,9 +17,7 @@
 
 #define __ref            __section(".ref.text") noinline
 #define __refdata        __section(".ref.data")
-#define __exitused  __used
 
-#define __exit          __section(".exit.text") __exitused __cold notrace
 
 #define __meminit        __section(".meminit.text") __cold notrace 						  __latent_entropy
 #define __meminitdata    __section(".meminit.data")

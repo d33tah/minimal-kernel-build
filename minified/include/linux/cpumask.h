@@ -82,8 +82,6 @@ static inline unsigned int cpumask_size(void)
 	return BITS_TO_LONGS(nr_cpumask_bits) * sizeof(long);
 }
 
-typedef struct cpumask cpumask_var_t[1];
-
 extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
 #define cpu_all_mask to_cpumask(cpu_all_bits)
 

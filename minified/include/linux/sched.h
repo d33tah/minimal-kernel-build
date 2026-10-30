@@ -43,7 +43,6 @@ struct signal_struct;
 #define TASK_RUNNING 0x0000
 #define TASK_INTERRUPTIBLE 0x0001
 #define TASK_UNINTERRUPTIBLE 0x0002
-#define TASK_PARKED 0x0040
 #define TASK_DEAD 0x0080
 #define TASK_WAKEKILL 0x0100
 #define TASK_NEW 0x0800
@@ -229,11 +228,6 @@ extern void wake_up_new_task(struct task_struct *tsk);
 
 extern void __set_task_comm(struct task_struct *tsk, const char *from,
 			    bool exec);
-
-static inline void set_task_comm(struct task_struct *tsk, const char *from)
-{
-	__set_task_comm(tsk, from, false);
-}
 
 static inline void set_tsk_thread_flag(struct task_struct *tsk, int flag)
 {

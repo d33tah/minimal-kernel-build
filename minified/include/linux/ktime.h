@@ -30,7 +30,6 @@ static inline s64 ktime_to_ns(const ktime_t kt)
 /* BITS_PER_LONG == 32 */
 
 /* Inlined from vdso/ktime.h */
-#define LOW_RES_NSEC TICK_NSEC
 
 static inline ktime_t ns_to_ktime(u64 ns)
 {

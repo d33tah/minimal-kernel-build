@@ -47,15 +47,6 @@
 		_raw_spin_unlock_irqrestore(lock, flags); \
 	} while (0)
 
-#define raw_spin_trylock_irqsave(lock, flags)     \
-	({                                        \
-		local_irq_save(flags);            \
-		raw_spin_trylock(lock) ? 1 : ({   \
-			local_irq_restore(flags); \
-			0;                        \
-		});                               \
-	})
-
 /* do_raw_read_lock, do_raw_read_trylock, do_raw_read_unlock,
    do_raw_write_lock, do_raw_write_trylock, do_raw_write_unlock removed - unused */
 
@@ -183,9 +174,6 @@ static __always_inline void spin_unlock_irqrestore(spinlock_t *lock,
 {
 	raw_spin_unlock_irqrestore(&lock->rlock, flags);
 }
-
-#define spin_trylock_irqsave(lock, flags) \
-	({ raw_spin_trylock_irqsave(spinlock_check(lock), flags); })
 
 #define assert_spin_locked(lock) assert_raw_spin_locked(&(lock)->rlock)
 

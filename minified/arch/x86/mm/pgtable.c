@@ -57,13 +57,18 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 	return pgd;
 }
 
+/*
+ * Called from __mmdrop() (mm_free_pgd) when an mm's last reference goes.
+ * In this kernel that is the bprm_mm_init() error path of exec; init's own
+ * mm is never torn down (mmput() is an empty stub). Non-PAE: the pgd is a
+ * single page with no separately allocated PMDs.
+ */
 void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 {
-	/* runtime-dead: reached only via mm_free_pgd<-__mmdrop (mm teardown at
-	 * refcount 0 / munmap-exit), which never fires on a 1-shot boot whose
-	 * init mm is never dropped. Stubbed; symbol kept for the asm/pgalloc.h
-	 * extern + fork.c mm_free_pgd caller. Cascaded away: pgd_dtor,
-	 * pgd_list_del, _pgd_free (all private to this teardown root). */
+	spin_lock(&pgd_lock);
+	list_del(&virt_to_page(pgd)->lru);
+	spin_unlock(&pgd_lock);
+	free_pages((unsigned long)pgd, PGD_ALLOCATION_ORDER);
 }
 
 int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,

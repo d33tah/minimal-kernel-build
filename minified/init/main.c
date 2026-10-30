@@ -203,7 +203,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	early_irq_init();
 	init_IRQ();
-	init_timers();
 	/* hrtimers_init() removed: only initialized never-read per-cpu hrtimer_bases */
 	softirq_init();
 	timekeeping_init();

@@ -28,6 +28,4 @@ struct timer_list {
 
 /* timer_pending removed: 0-caller orphan (cascaded hlist_unhashed_lockless) */
 
-extern void init_timers(void);
-
 #endif

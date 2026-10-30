@@ -1,11 +1,2 @@
 # SPDX-License-Identifier: GPL-2.0
-obj-y += time.o timer.o
-# hrtimer.o removed: hrtimer_bases per-cpu data was initialized by hrtimers_init
-# (sole caller init/main.c) but never read anywhere (no struct hrtimer users,
-# no per_cpu(hrtimer_bases) reads outside hrtimer.c) -> whole subsystem inert.
-# ntp.o removed: ntp_tick_length() was a const stub (TICK_NSEC<<32); inlined
-# into ntp_internal.h (its 3 callers are all in timekeeping.c), killing the TU.
-obj-y += timekeeping.o clocksource.o jiffies.o
-# timeconv.o removed
-
-obj-$(CONFIG_GENERIC_CLOCKEVENTS)		+= clockevents.o tick-common.o
+obj-y += time.o timekeeping.o clocksource.o jiffies.o tick-common.o

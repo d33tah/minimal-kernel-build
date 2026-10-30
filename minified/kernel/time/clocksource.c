@@ -3,7 +3,8 @@
 
 #include <linux/clocksource.h>
 
-#include "tick-internal.h"
+#include <linux/mutex.h>
+#include <linux/timekeeping.h>
 
 void clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 maxsec)
 {
@@ -28,40 +29,15 @@ void clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 maxsec)
 }
 
 static struct clocksource *curr_clocksource;
-static struct clocksource *suspend_clocksource;
 static LIST_HEAD(clocksource_list);
 static DEFINE_MUTEX(clocksource_mutex);
 static int finished_booting;
 
-#define WATCHDOG_THRESHOLD (NSEC_PER_SEC >> 5)
-
-#define MAX_SKEW_USEC 100
-
-#define WATCHDOG_MAX_SKEW (MAX_SKEW_USEC * NSEC_PER_USEC)
-
 /*
- * The clocksource skew watchdog (timer + kthread) is gone: this minimal
- * kernel boots, execs one static init, services write(2)+exit and halts,
- * long before the WATCHDOG_INTERVAL timer would ever fire. Only the few
- * register/unregister hooks remain, reduced to the bookkeeping that the
- * live clocksource-select path needs.
+ * No clocksource watchdog (nothing verifies one clocksource against another)
+ * and no suspend: the registered clocksources are kept on a list sorted by
+ * rating and the best one drives timekeeping.
  */
-
-static void clocksource_enqueue_watchdog(struct clocksource *cs)
-{
-	if (!(cs->flags & CLOCK_SOURCE_MUST_VERIFY) &&
-	    (cs->flags & CLOCK_SOURCE_IS_CONTINUOUS))
-		cs->flags |= CLOCK_SOURCE_VALID_FOR_HRES;
-}
-
-static void __clocksource_suspend_select(struct clocksource *cs)
-{
-	if (!(cs->flags & CLOCK_SOURCE_SUSPEND_NONSTOP))
-		return;
-
-	if (!suspend_clocksource || cs->rating > suspend_clocksource->rating)
-		suspend_clocksource = cs;
-}
 
 static u32 clocksource_max_adjustment(struct clocksource *cs)
 {
@@ -150,15 +126,6 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale,
 				       NSEC_PER_SEC / scale, sec * scale);
 	}
 
-	if (scale && freq && !cs->uncertainty_margin) {
-		cs->uncertainty_margin = NSEC_PER_SEC / (scale * freq);
-		if (cs->uncertainty_margin < 2 * WATCHDOG_MAX_SKEW)
-			cs->uncertainty_margin = 2 * WATCHDOG_MAX_SKEW;
-	} else if (!cs->uncertainty_margin) {
-		cs->uncertainty_margin = WATCHDOG_THRESHOLD;
-	}
-	WARN_ON_ONCE(cs->uncertainty_margin < 2 * WATCHDOG_MAX_SKEW);
-
 	cs->maxadj = clocksource_max_adjustment(cs);
 	while (freq && ((cs->mult + cs->maxadj < cs->mult) ||
 			(cs->mult - cs->maxadj > cs->mult))) {
@@ -183,10 +150,7 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 	mutex_lock(&clocksource_mutex);
 
 	clocksource_enqueue(cs);
-	clocksource_enqueue_watchdog(cs);
-
 	clocksource_select();
-	__clocksource_suspend_select(cs);
 	mutex_unlock(&clocksource_mutex);
 	return 0;
 }

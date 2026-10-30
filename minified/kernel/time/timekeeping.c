@@ -1,9 +1,10 @@
 
 #include <linux/timekeeper_internal.h>
+#include <linux/seqlock.h>
 #include <linux/sched/clock.h>
 #include <linux/stop_machine.h>
 
-#include "tick-internal.h"
+#include "timekeeping.h"
 #include "ntp_internal.h"
 #include "timekeeping_internal.h"
 
@@ -72,17 +73,6 @@ static inline u64 tk_clock_read(const struct tk_read_base *tkr)
 	return clock->read(clock);
 }
 
-static inline u64 timekeeping_get_delta(const struct tk_read_base *tkr)
-{
-	u64 cycle_now, delta;
-
-	cycle_now = tk_clock_read(tkr);
-
-	delta = clocksource_delta(cycle_now, tkr->cycle_last, tkr->mask);
-
-	return delta;
-}
-
 static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
 {
 	u64 interval;
@@ -137,25 +127,6 @@ static void tk_setup_internals(struct timekeeper *tk, struct clocksource *clock)
 	tk->skip_second_overflow = 0;
 }
 
-static inline u64 timekeeping_delta_to_ns(const struct tk_read_base *tkr,
-					  u64 delta)
-{
-	u64 nsec;
-
-	nsec = delta * tkr->mult + tkr->xtime_nsec;
-	nsec >>= tkr->shift;
-
-	return nsec;
-}
-
-static inline u64 timekeeping_get_ns(const struct tk_read_base *tkr)
-{
-	u64 delta;
-
-	delta = timekeeping_get_delta(tkr);
-	return timekeeping_delta_to_ns(tkr, delta);
-}
-
 static inline void tk_update_ktime_data(struct timekeeper *tk)
 {
 	u64 seconds;
@@ -198,23 +169,6 @@ static void timekeeping_forward_now(struct timekeeper *tk)
 }
 
 /* ktime_get_real_ts64 removed - only caller was gettimeofday (now stubbed) */
-
-ktime_t ktime_get(void)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	unsigned int seq;
-	ktime_t base;
-	u64 nsecs;
-
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-		base = tk->tkr_mono.base;
-		nsecs = timekeeping_get_ns(&tk->tkr_mono);
-
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
-	return ktime_add_ns(base, nsecs);
-}
 
 /* Removed: ktime_get_with_offset + offsets[], ktime_get_coarse_with_offset, ktime_mono_to_any, ktime_get_raw - no callers */
 

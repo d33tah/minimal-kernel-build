@@ -14,7 +14,7 @@
 struct clocksource {
 	u64 (*read)(struct clocksource *cs);
 	u64 mask;
-	u32 mult, shift, maxadj, uncertainty_margin;
+	u32 mult, shift, maxadj;
 	const char *name;
 	struct list_head list;
 	int rating;
@@ -24,11 +24,6 @@ struct clocksource {
 };
 
 #define CLOCK_SOURCE_IS_CONTINUOUS 0x01
-#define CLOCK_SOURCE_MUST_VERIFY 0x02
-
-#define CLOCK_SOURCE_VALID_FOR_HRES 0x20
-#define CLOCK_SOURCE_SUSPEND_NONSTOP 0x80
-#define CLOCK_SOURCE_VERIFY_PERCPU 0x200
 #define CLOCKSOURCE_MASK(bits) GENMASK_ULL((bits) - 1, 0)
 
 extern int clocksource_unregister(struct clocksource *);

@@ -6,7 +6,7 @@ DEFINE_RAW_SPINLOCK(i8253_lock);
 
 static int pit_shutdown(struct clock_event_device *evt)
 {
-	if (!clockevent_state_oneshot(evt) && !clockevent_state_periodic(evt))
+	if (!clockevent_state_periodic(evt))
 		return 0;
 
 	raw_spin_lock(&i8253_lock);
@@ -48,6 +48,5 @@ void __init clockevent_i8253_init(bool oneshot)
 {
 	i8253_clockevent.cpumask = cpumask_of(smp_processor_id());
 
-	clockevents_config_and_register(&i8253_clockevent, PIT_TICK_RATE, 0xF,
-					0x7FFF);
+	clockevents_register_device(&i8253_clockevent);
 }

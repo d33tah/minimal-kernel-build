@@ -251,13 +251,9 @@ VPATH		:= $(srctree)
 
 export building_out_of_srctree srctree objtree VPATH
 
-# To make sure we do not include .config for any of the *config targets
-# catch them early, and hand them over to scripts/kconfig/Makefile
-# It is allowed to specify more targets when calling make, including
-# mixing *config targets and build targets.
-# For example 'make oldconfig all'.
-# Detect when mixed targets is specified, and make a second invocation
-# of make so .config is not included in this case either (for *config).
+# Targets that do not need include/config/auto.conf (e.g. clean, help).
+# Mixed clean and build targets are handled one by one in a second
+# invocation of make.
 
 version_h := include/generated/uapi/linux/version.h
 
@@ -265,7 +261,7 @@ clean-targets := %clean mrproper cleandocs
 no-dot-config-targets := $(clean-targets) \
 			 cscope gtags TAGS tags help% %docs check% coccicheck \
 			 $(version_h) headers headers_% archheaders archscripts \
-			 %asm-generic kernelversion %src-pkg dt_binding_check \
+			 %asm-generic kernelversion %src-pkg \
 			 outputmakefile
 # Installation targets should not require compiler. Unfortunately, vdso_install
 # is an exception where build artifacts may be updated. This must be fixed.
@@ -275,7 +271,6 @@ no-sync-config-targets := $(no-dot-config-targets) %install kernelrelease \
 			  image_name
 single-targets := %.a %.i %.ko %.lds %.ll %.lst %.mod %.o %.s %.symtypes %/
 
-config-build	:=
 mixed-build	:=
 need-config	:= 1
 need-compiler	:= 1
@@ -304,15 +299,6 @@ ifneq ($(KBUILD_EXTMOD),)
 	may-sync-config :=
 endif
 
-ifeq ($(KBUILD_EXTMOD),)
-        ifneq ($(filter %config,$(MAKECMDGOALS)),)
-		config-build := 1
-                ifneq ($(words $(MAKECMDGOALS)),1)
-			mixed-build := 1
-                endif
-        endif
-endif
-
 # We cannot build single targets and the others at the same time
 ifneq ($(filter $(single-targets), $(MAKECMDGOALS)),)
 	single-build := 1
@@ -321,7 +307,7 @@ ifneq ($(filter $(single-targets), $(MAKECMDGOALS)),)
 	endif
 endif
 
-# For "make -j clean all", "make -j mrproper defconfig all", etc.
+# For "make -j clean all", "make -j mrproper all", etc.
 ifneq ($(filter $(clean-targets),$(MAKECMDGOALS)),)
         ifneq ($(filter-out $(clean-targets),$(MAKECMDGOALS)),)
 		mixed-build := 1
@@ -337,7 +323,7 @@ endif
 
 ifdef mixed-build
 # ===========================================================================
-# We're called with mixed targets (*config and build targets).
+# We're called with mixed targets (clean and build targets).
 # Handle them one by one.
 
 PHONY += $(MAKECMDGOALS) __build_one_by_one
@@ -412,9 +398,6 @@ ifneq ($(SRCARCH),$(SUBARCH))
 cross_compiling := 1
 endif
 
-KCONFIG_CONFIG	?= .config
-export KCONFIG_CONFIG
-
 # SHELL used by kbuild
 CONFIG_SHELL := sh
 
@@ -487,8 +470,6 @@ LZ4		= lz4c
 XZ		= xz
 ZSTD		= zstd
 
-PAHOLE_FLAGS	= $(shell PAHOLE=$(PAHOLE) $(srctree)/scripts/pahole-flags.sh)
-
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void -Wno-unknown-attribute $(CF)
 NOSTDINC_FLAGS :=
@@ -544,7 +525,6 @@ export KBUILD_CFLAGS CFLAGS_KERNEL CFLAGS_MODULE
 export KBUILD_AFLAGS AFLAGS_KERNEL AFLAGS_MODULE
 export KBUILD_AFLAGS_MODULE KBUILD_CFLAGS_MODULE KBUILD_LDFLAGS_MODULE
 export KBUILD_AFLAGS_KERNEL KBUILD_CFLAGS_KERNEL
-export PAHOLE_FLAGS
 
 # Files to ignore in find ... statements
 
@@ -555,7 +535,7 @@ export RCS_TAR_IGNORE := --exclude SCCS --exclude BitKeeper --exclude .svn \
 			 --exclude CVS --exclude .pc --exclude .hg --exclude .git
 
 # ===========================================================================
-# Rules shared between *config targets and build targets
+# Shared helper rules
 
 # Basic helpers built in scripts/basic/
 PHONY += scripts_basic
@@ -595,41 +575,15 @@ endif
 
 # The expansion should be delayed until arch/$(SRCARCH)/Makefile is included.
 # Some architectures define CROSS_COMPILE in arch/$(SRCARCH)/Makefile.
-# CC_VERSION_TEXT is referenced from Kconfig (so it needs export),
-# and from include/config/auto.conf.cmd to detect the compiler upgrade.
 CC_VERSION_TEXT = $(subst $(pound),,$(shell LC_ALL=C $(CC) --version 2>/dev/null | head -n 1))
 
 ifneq ($(findstring clang,$(CC_VERSION_TEXT)),)
 include $(srctree)/scripts/Makefile.clang
 endif
 
-# Include this also for config targets because some architectures need
-# cc-cross-prefix to determine CROSS_COMPILE.
 ifdef need-compiler
 include $(srctree)/scripts/Makefile.compiler
 endif
-
-ifdef config-build
-# ===========================================================================
-# *config targets only - make sure prerequisites are updated, and descend
-# in scripts/kconfig to make the *config target
-
-# Read arch specific Makefile to set KBUILD_DEFCONFIG as needed.
-# KBUILD_DEFCONFIG may point out an alternative default configuration
-# used for 'make defconfig'
-include $(srctree)/arch/$(SRCARCH)/Makefile
-export KBUILD_DEFCONFIG KBUILD_KCONFIG CC_VERSION_TEXT
-
-config: outputmakefile scripts_basic FORCE
-	$(Q)$(MAKE) $(build)=scripts/kconfig $@
-
-%config: outputmakefile scripts_basic FORCE
-	$(Q)$(MAKE) $(build)=scripts/kconfig $@
-
-else #!config-build
-# ===========================================================================
-# Build targets only - this includes vmlinux, arch specific targets, clean
-# targets and others. In general all targets except *config targets.
 
 # If building an external module we do not care about the all: rule
 # but instead __all depend on modules
@@ -705,7 +659,7 @@ include/config/auto.conf:
 	echo >&2;							\
 	echo >&2 "  ERROR: Kernel configuration is invalid.";		\
 	echo >&2 "         include/generated/autoconf.h or $@ are missing.";\
-	echo >&2 "         Run 'make oldconfig && make prepare' on kernel src to fix it.";	\
+	echo >&2 "         Run 'make prepare' on kernel src to fix it.";	\
 	echo >&2 ;							\
 	/bin/false)
 
@@ -958,7 +912,7 @@ include/config/kernel.release: FORCE
 # Carefully list dependencies so we do not try to build scripts twice
 # in parallel
 PHONY += scripts
-scripts: scripts_basic scripts_dtc
+scripts: scripts_basic
 	$(Q)$(MAKE) $(build)=$(@)
 
 # Things we need to do before we recursively start building the kernel
@@ -1063,26 +1017,11 @@ tools/%: FORCE
 	$(Q)mkdir -p $(objtree)/tools
 	$(Q)$(MAKE) LDFLAGS= MAKEFLAGS="$(tools_silent) $(filter --j% -j,$(MAKEFLAGS))" O=$(abspath $(objtree)) subdir=tools -C $(srctree)/tools/ $*
 
-# ---------------------------------------------------------------------------
-# Devicetree files
-
-PHONY += scripts_dtc
-scripts_dtc: scripts_basic
-	$(Q)$(MAKE) $(build)=scripts/dtc
-
-ifneq ($(filter dt_binding_check, $(MAKECMDGOALS)),)
-export CHECK_DT_BINDING=y
-endif
-
-PHONY += dt_binding_check
-dt_binding_check: scripts_dtc
-	$(Q)$(MAKE) $(build)=Documentation/devicetree/bindings
-
 ###
 # Cleaning is done on three levels.
 # make clean     Delete most generated files
 #                Leave enough to build external modules
-# make mrproper  Delete the current configuration, and all generated files
+# make mrproper  Delete all generated files (the frozen .config is kept)
 # make distclean Remove editor backup files, patch leftover files and the like
 
 # Directories & files removed with 'make clean'
@@ -1113,7 +1052,7 @@ vmlinuxclean:
 
 clean: archclean vmlinuxclean resolve_btfids_clean
 
-# mrproper - Delete all generated files, including .config
+# mrproper - Delete all generated files (keeps the tracked .config)
 #
 mrproper: rm-files := $(wildcard $(MRPROPER_FILES))
 mrproper-dirs      := $(addprefix _mrproper_,scripts)
@@ -1141,21 +1080,13 @@ distclean: mrproper
 # Brief documentation of the typical targets used
 # ---------------------------------------------------------------------------
 
-boards := $(wildcard $(srctree)/arch/$(SRCARCH)/configs/*_defconfig)
-boards := $(sort $(notdir $(boards)))
-board-dirs := $(dir $(wildcard $(srctree)/arch/$(SRCARCH)/configs/*/*_defconfig))
-board-dirs := $(sort $(notdir $(board-dirs:/=)))
-
 PHONY += help
 help:
 	@echo  'Cleaning targets:'
 	@echo  '  clean		  - Remove most generated files but keep the config and'
 	@echo  '                    enough build support to build external modules'
-	@echo  '  mrproper	  - Remove all generated files + config + various backup files'
+	@echo  '  mrproper	  - Remove all generated files + various backup files'
 	@echo  '  distclean	  - mrproper + remove editor backup and patch files'
-	@echo  ''
-	@echo  'Configuration targets:'
-	@$(MAKE) -f $(srctree)/scripts/kconfig/Makefile help
 	@echo  ''
 	@echo  'Other generic targets:'
 	@echo  '  all		  - Build all targets marked with [*]'
@@ -1184,14 +1115,11 @@ help:
 	@echo  '  kselftest-all     - Build kernel selftest'
 	@echo  '  kselftest-install - Build and install kernel selftest'
 	@echo  '  kselftest-clean   - Remove all generated kselftest files'
-	@echo  '  kselftest-merge   - Merge all the config dependencies of'
-	@echo  '		      kselftest to existing .config.'
 	@echo  ''
 	@$(if $(dtstree), \
 		echo 'Devicetree:'; \
 		echo '* dtbs             - Build device tree blobs for enabled boards'; \
 		echo '  dtbs_install     - Install dtbs to $(INSTALL_DTBS_PATH)'; \
-		echo '  dt_binding_check - Validate device tree binding documents'; \
 		echo '  dtbs_check       - Validate device tree source files';\
 		echo '')
 
@@ -1206,16 +1134,6 @@ help:
 	@$(or $(archhelp),\
 		echo '  No architecture specific help defined for $(SRCARCH)')
 	@echo  ''
-	@$(if $(boards), \
-		$(foreach b, $(boards), \
-		printf "  %-27s - Build for %s\\n" $(b) $(subst _defconfig,,$(b));) \
-		echo '')
-	@$(if $(board-dirs), \
-		$(foreach b, $(board-dirs), \
-		printf "  %-16s - Show %s-specific targets\\n" help-$(b) $(b);) \
-		printf "  %-16s - Show all of the above\\n" help-boards; \
-		echo '')
-
 	@echo  '  make V=0|1 [targets] 0 => quiet build (default), 1 => verbose build'
 	@echo  '  make V=2   [targets] 2 => give reason for rebuild of target'
 	@echo  '  make O=dir [targets] Locate all output files in "dir", including .config'
@@ -1233,19 +1151,6 @@ help:
 	@echo  'Execute "make" or "make all" to build all targets marked with [*] '
 	@echo  'For further info see the ./README file'
 
-
-help-board-dirs := $(addprefix help-,$(board-dirs))
-
-help-boards: $(help-board-dirs)
-
-boards-per-dir = $(sort $(notdir $(wildcard $(srctree)/arch/$(SRCARCH)/configs/$*/*_defconfig)))
-
-$(help-board-dirs): help-%:
-	@echo  'Architecture specific targets ($(SRCARCH) $*):'
-	@$(if $(boards-per-dir), \
-		$(foreach b, $(boards-per-dir), \
-		printf "  %-24s - Build for %s\\n" $*/$(b) $(subst _defconfig,,$(b));) \
-		echo '')
 
 
 else # KBUILD_EXTMOD
@@ -1299,8 +1204,7 @@ PHONY += modules modules_install
 modules modules_install:
 	@echo >&2 '***'
 	@echo >&2 '*** The present kernel configuration has modules disabled.'
-	@echo >&2 '*** To use the module feature, please run "make menuconfig" etc.'
-	@echo >&2 '*** to enable CONFIG_MODULES.'
+	@echo >&2 '*** The configuration is frozen in .config without CONFIG_MODULES.'
 	@echo >&2 '***'
 	@exit 1
 
@@ -1354,8 +1258,7 @@ KBUILD_MODULES :=
 
 # Handle descending into subdirectories listed in $(build-dirs)
 # Preset locale variables to speed up the build process. Limit locale
-# tweaks to this spot to avoid wrong language settings when running
-# make menuconfig etc.
+# tweaks to this spot to avoid wrong language settings.
 # Error messages still appears in the original language
 PHONY += descend $(build-dirs)
 descend: $(build-dirs)
@@ -1414,7 +1317,6 @@ existing-targets := $(wildcard $(sort $(targets)))
 
 -include $(foreach f,$(existing-targets),$(dir $(f)).$(notdir $(f)).cmd)
 
-endif # config-build
 endif # mixed-build
 endif # need-sub-make
 

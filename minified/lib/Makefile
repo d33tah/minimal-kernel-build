@@ -72,10 +72,6 @@ obj-$(CONFIG_GENERIC_STRNLEN_USER) += strnlen_user.o
 # stackdepot.c should not be instrumented or call instrumented functions.
 
 
-libfdt_files = fdt.o fdt_ro.o fdt_wip.o fdt_rw.o fdt_sw.o fdt_strerror.o \
-	       fdt_empty_tree.o fdt_addresses.o
-$(foreach file, $(libfdt_files), \
-	$(eval CFLAGS_$(file) = -I $(srctree)/scripts/dtc/libfdt))
 
 
 $(obj)/bootconfig-data.o: $(obj)/default.bconf

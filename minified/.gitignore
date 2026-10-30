@@ -76,13 +76,6 @@ modules.builtin.modinfo
 scripts/.sorttable.cmd
 scripts/basic/.fixdep.cmd
 scripts/basic/fixdep
-scripts/kconfig/.conf.cmd
-scripts/kconfig/.lexer.lex.c.cmd
-scripts/kconfig/.parser.tab.h.cmd
-scripts/kconfig/conf
-scripts/kconfig/lexer.lex.c
-scripts/kconfig/parser.tab.c
-scripts/kconfig/parser.tab.h
 scripts/mod/.devicetable-offsets.s.cmd
 scripts/mod/.elfconfig.h.cmd
 scripts/mod/.mk_elfconfig.cmd

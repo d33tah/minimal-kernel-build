@@ -118,10 +118,53 @@ static inline void wp_page_reuse(struct vm_fault *vmf) __releases(vmf->ptl)
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
 }
 
+/*
+ * Write fault on a present read-only PTE of a private mapping whose page is
+ * not an exclusive anonymous page (e.g. a page-cache page mapped by a read
+ * fault): copy it into a new anonymous page and map that writable. The caller
+ * holds a reference on vmf->page (NULL for a special PTE: zero-fill).
+ */
 static vm_fault_t wp_page_copy(struct vm_fault *vmf)
 {
-	/* Minimal stub: init doesn't fork, so no COW faults */
-	return VM_FAULT_OOM;
+	struct vm_area_struct *vma = vmf->vma;
+	struct page *old_page = vmf->page;
+	struct page *new_page;
+	pte_t entry;
+
+	if (old_page)
+		new_page =
+			alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, vmf->address);
+	else
+		new_page =
+			alloc_zeroed_user_highpage_movable(vma, vmf->address);
+	if (!new_page) {
+		if (old_page)
+			put_page(old_page);
+		return VM_FAULT_OOM;
+	}
+	if (old_page)
+		copy_user_highpage(new_page, old_page, vmf->address, vma);
+	__SetPageUptodate(new_page);
+
+	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
+				       &vmf->ptl);
+	if (pte_same(*vmf->pte, vmf->orig_pte)) {
+		entry = mk_pte(new_page, vma->vm_page_prot);
+		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
+		page_add_new_anon_rmap(new_page, vma, vmf->address);
+		set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
+		flush_tlb_one_user(vmf->address);
+		if (old_page)
+			page_remove_rmap(old_page);
+		/* Drop the old PTE's reference below instead of the new page. */
+		new_page = old_page;
+	}
+	pte_unmap_unlock(vmf->pte, vmf->ptl);
+	if (new_page)
+		put_page(new_page);
+	if (old_page)
+		put_page(old_page);
+	return VM_FAULT_WRITE;
 }
 
 static vm_fault_t do_wp_page(struct vm_fault *vmf) __releases(vmf->ptl)

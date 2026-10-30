@@ -260,6 +260,17 @@ void __free_pages(struct page *page, unsigned int order)
 			free_one_block(page + (1 << order), order, false);
 }
 
+/*
+ * The last reference to a refcounted page is gone (folio_put/put_page): give
+ * it back to the free lists. Page cache folios hold their own reference
+ * (__filemap_add_folio) and mapped pages keep the one taken at fault time, so
+ * this only runs for pages nothing indexes or maps any more.
+ */
+void __put_page(struct page *page)
+{
+	free_one_block(page, compound_order(page), false);
+}
+
 void free_pages(unsigned long addr, unsigned int order)
 {
 	if (addr != 0) {

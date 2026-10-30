@@ -1,5 +1,6 @@
 #include <linux/interrupt.h>
 #include <linux/rcupdate_wait.h>
+#include <linux/slab.h>
 
 #include "rcu.h"
 
@@ -48,7 +49,7 @@ static inline bool rcu_reclaim_tiny(struct rcu_head *head)
 	unsigned long offset = (unsigned long)head->func;
 
 	if (__is_kvfree_rcu_offset(offset)) {
-		kvfree((void *)head - offset);
+		kfree((void *)head - offset);
 		return true;
 	}
 

@@ -13,7 +13,7 @@ CFLAGS_init-mm.o += $(call cc-disable-warning, initializer-overrides)
 
 mmu-$(CONFIG_MMU)	:= memory.o \
 			   mmap.o mmu_gather.o mremap.o \
-			   rmap.o vmalloc.o
+			   rmap.o
 
 obj-y			:= filemap.o \
 			   maccess.o folio-compat.o \

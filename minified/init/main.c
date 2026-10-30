@@ -16,7 +16,6 @@
 #include <linux/cpu.h>
 #include <linux/interrupt.h>
 #include <linux/rmap.h>
-#include <linux/vmalloc.h>
 #include <linux/pid_namespace.h>
 
 /* --- 2025-12-08 00:37 --- padata.h stubbed out */
@@ -157,7 +156,6 @@ static void __init mm_init(void)
 	kmem_cache_init();
 
 	pgtable_init();
-	vmalloc_init();
 }
 
 void __init __weak arch_call_rest_init(void)

@@ -10,7 +10,6 @@ static inline unsigned long lcm(unsigned long a, unsigned long b)
 		return (a / gcd(a, b)) * b;
 	return 0;
 }
-#include <linux/vmalloc.h>
 #include <linux/sched/mm.h>
 
 struct pcpu_block_md {
@@ -243,22 +242,6 @@ static void pcpu_next_fit_region(struct pcpu_chunk *chunk, int alloc_bits,
 	     (bit_off) += (bits),                                             \
 	     pcpu_next_fit_region((chunk), (alloc_bits), (align), &(bit_off), \
 				  &(bits)))
-
-static void *pcpu_mem_zalloc(size_t size, gfp_t gfp)
-{
-	if (WARN_ON_ONCE(!slab_is_available()))
-		return NULL;
-
-	if (size <= PAGE_SIZE)
-		return kzalloc(size, gfp);
-	else
-		return __vmalloc(size, gfp | __GFP_ZERO);
-}
-
-static void pcpu_mem_free(void *ptr)
-{
-	kvfree(ptr);
-}
 
 static void __pcpu_chunk_move(struct pcpu_chunk *chunk, int slot,
 			      bool move_front)
@@ -798,7 +781,7 @@ static struct pcpu_chunk *pcpu_alloc_chunk(gfp_t gfp)
 	struct pcpu_chunk *chunk;
 	int region_bits;
 
-	chunk = pcpu_mem_zalloc(pcpu_chunk_struct_size, gfp);
+	chunk = kzalloc(pcpu_chunk_struct_size, gfp);
 	if (!chunk)
 		return NULL;
 
@@ -806,18 +789,18 @@ static struct pcpu_chunk *pcpu_alloc_chunk(gfp_t gfp)
 	chunk->nr_pages = pcpu_unit_pages;
 	region_bits = pcpu_chunk_map_bits(chunk);
 
-	chunk->alloc_map = pcpu_mem_zalloc(
+	chunk->alloc_map = kzalloc(
 		BITS_TO_LONGS(region_bits) * sizeof(chunk->alloc_map[0]), gfp);
 	if (!chunk->alloc_map)
 		goto alloc_map_fail;
 
-	chunk->bound_map = pcpu_mem_zalloc(BITS_TO_LONGS(region_bits + 1) *
-						   sizeof(chunk->bound_map[0]),
-					   gfp);
+	chunk->bound_map = kzalloc(BITS_TO_LONGS(region_bits + 1) *
+					   sizeof(chunk->bound_map[0]),
+				   gfp);
 	if (!chunk->bound_map)
 		goto bound_map_fail;
 
-	chunk->md_blocks = pcpu_mem_zalloc(
+	chunk->md_blocks = kzalloc(
 		pcpu_chunk_nr_blocks(chunk) * sizeof(chunk->md_blocks[0]), gfp);
 	if (!chunk->md_blocks)
 		goto md_blocks_fail;
@@ -829,11 +812,11 @@ static struct pcpu_chunk *pcpu_alloc_chunk(gfp_t gfp)
 	return chunk;
 
 md_blocks_fail:
-	pcpu_mem_free(chunk->bound_map);
+	kfree(chunk->bound_map);
 bound_map_fail:
-	pcpu_mem_free(chunk->alloc_map);
+	kfree(chunk->alloc_map);
 alloc_map_fail:
-	pcpu_mem_free(chunk);
+	kfree(chunk);
 
 	return NULL;
 }
@@ -842,10 +825,10 @@ static void pcpu_free_chunk(struct pcpu_chunk *chunk)
 {
 	if (!chunk)
 		return;
-	pcpu_mem_free(chunk->md_blocks);
-	pcpu_mem_free(chunk->bound_map);
-	pcpu_mem_free(chunk->alloc_map);
-	pcpu_mem_free(chunk);
+	kfree(chunk->md_blocks);
+	kfree(chunk->bound_map);
+	kfree(chunk->alloc_map);
+	kfree(chunk);
 }
 
 static void pcpu_chunk_populated(struct pcpu_chunk *chunk, int page_start,

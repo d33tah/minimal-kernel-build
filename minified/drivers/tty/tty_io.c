@@ -184,12 +184,12 @@ do_tty_write(ssize_t (*write)(struct tty_struct *, struct file *,
 		if (chunk < 1024)
 			chunk = 1024;
 
-		buf_chunk = kvmalloc(chunk, GFP_KERNEL | __GFP_RETRY_MAYFAIL);
+		buf_chunk = kmalloc(chunk, GFP_KERNEL | __GFP_RETRY_MAYFAIL);
 		if (!buf_chunk) {
 			ret = -ENOMEM;
 			goto out;
 		}
-		kvfree(tty->write_buf);
+		kfree(tty->write_buf);
 		tty->write_cnt = chunk;
 		tty->write_buf = buf_chunk;
 	}

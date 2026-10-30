@@ -546,9 +546,10 @@ static void *__slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
 	return p;
 }
 
-static __always_inline void *
-slab_alloc_node(struct kmem_cache *s, struct list_lru *lru, gfp_t gfpflags,
-		int node, unsigned long addr, size_t orig_size)
+static __always_inline void *slab_alloc_node(struct kmem_cache *s,
+					     gfp_t gfpflags, int node,
+					     unsigned long addr,
+					     size_t orig_size)
 {
 	void *object;
 	struct kmem_cache_cpu *c;
@@ -557,7 +558,7 @@ slab_alloc_node(struct kmem_cache *s, struct list_lru *lru, gfp_t gfpflags,
 	struct obj_cgroup *objcg = NULL;
 	bool init = false;
 
-	s = slab_pre_alloc_hook(s, lru, &objcg, 1, gfpflags);
+	s = slab_pre_alloc_hook(s, &objcg, 1, gfpflags);
 	if (!s)
 		return NULL;
 
@@ -591,31 +592,15 @@ redo:
 	return object;
 }
 
-static __always_inline void *slab_alloc(struct kmem_cache *s,
-					struct list_lru *lru, gfp_t gfpflags,
+static __always_inline void *slab_alloc(struct kmem_cache *s, gfp_t gfpflags,
 					unsigned long addr, size_t orig_size)
 {
-	return slab_alloc_node(s, lru, gfpflags, NUMA_NO_NODE, addr, orig_size);
-}
-
-static __always_inline void *__kmem_cache_alloc_lru(struct kmem_cache *s,
-						    struct list_lru *lru,
-						    gfp_t gfpflags)
-{
-	void *ret = slab_alloc(s, lru, gfpflags, _RET_IP_, s->object_size);
-
-	return ret;
+	return slab_alloc_node(s, gfpflags, NUMA_NO_NODE, addr, orig_size);
 }
 
 void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
 {
-	return __kmem_cache_alloc_lru(s, NULL, gfpflags);
-}
-
-void *kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru,
-			   gfp_t gfpflags)
-{
-	return __kmem_cache_alloc_lru(s, lru, gfpflags);
+	return slab_alloc(s, gfpflags, _RET_IP_, s->object_size);
 }
 
 static void __slab_free(struct kmem_cache *s, struct slab *slab, void *head,
@@ -925,7 +910,7 @@ void *__kmalloc(size_t size, gfp_t flags)
 	if (unlikely(ZERO_OR_NULL_PTR(s)))
 		return s;
 
-	ret = slab_alloc(s, NULL, flags, _RET_IP_, size);
+	ret = slab_alloc(s, flags, _RET_IP_, size);
 
 	return ret;
 }

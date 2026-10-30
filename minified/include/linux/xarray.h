@@ -193,15 +193,11 @@ static inline bool xa_is_retry(const void *entry)
 	return unlikely(entry == XA_RETRY_ENTRY);
 }
 
-typedef void (*xa_update_node_t)(struct xa_node *node);
-
 struct xa_state {
 	struct xarray *xa;
 	unsigned long xa_index;
 	unsigned char xa_shift, xa_offset;
 	struct xa_node *xa_node, *xa_alloc;
-	xa_update_node_t xa_update;
-	struct list_lru *xa_lru;
 };
 
 #define XA_ERROR(errno) ((struct xa_node *)(((unsigned long)errno << 2) | 2UL))
@@ -216,8 +212,6 @@ struct xa_state {
 		.xa_offset = 0,               \
 		.xa_node = XAS_RESTART,       \
 		.xa_alloc = NULL,             \
-		.xa_update = NULL,            \
-		.xa_lru = NULL,               \
 	}
 
 #define XA_STATE(name, array, index) \
@@ -322,16 +316,6 @@ static inline void xas_set_order(struct xa_state *xas, unsigned long index,
 {
 	BUG_ON(order > 0);
 	xas_set(xas, index);
-}
-
-static inline void xas_set_update(struct xa_state *xas, xa_update_node_t update)
-{
-	xas->xa_update = update;
-}
-
-static inline void xas_set_lru(struct xa_state *xas, struct list_lru *lru)
-{
-	xas->xa_lru = lru;
 }
 
 static inline unsigned int xas_find_chunk(struct xa_state *xas, bool advance,

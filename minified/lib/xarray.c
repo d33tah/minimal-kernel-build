@@ -158,8 +158,7 @@ bool xas_nomem(struct xa_state *xas, gfp_t gfp)
 	}
 	if (xas->xa->xa_flags & XA_FLAGS_ACCOUNT)
 		gfp |= __GFP_ACCOUNT;
-	xas->xa_alloc =
-		kmem_cache_alloc_lru(radix_tree_node_cachep, xas->xa_lru, gfp);
+	xas->xa_alloc = kmem_cache_alloc(radix_tree_node_cachep, gfp);
 	if (!xas->xa_alloc)
 		return false;
 	xas->xa_alloc->parent = NULL;
@@ -171,10 +170,7 @@ bool xas_nomem(struct xa_state *xas, gfp_t gfp)
 
 static void xas_update(struct xa_state *xas, struct xa_node *node)
 {
-	if (xas->xa_update)
-		xas->xa_update(node);
-	else
-		XA_NODE_BUG_ON(node, !list_empty(&node->private_list));
+	XA_NODE_BUG_ON(node, !list_empty(&node->private_list));
 }
 
 static void *xas_alloc(struct xa_state *xas, unsigned int shift)

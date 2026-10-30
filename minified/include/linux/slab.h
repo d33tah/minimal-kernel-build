@@ -31,7 +31,6 @@
 
 #define ZERO_OR_NULL_PTR(x) ((unsigned long)(x) <= (unsigned long)ZERO_SIZE_PTR)
 
-struct list_lru;
 void __init kmem_cache_init(void);
 bool slab_is_available(void);
 
@@ -179,8 +178,6 @@ void *__kmalloc(size_t size, gfp_t flags) __assume_kmalloc_alignment
 	__alloc_size(1);
 void *kmem_cache_alloc(struct kmem_cache *s,
 		       gfp_t flags) __assume_slab_alignment __malloc;
-void *kmem_cache_alloc_lru(struct kmem_cache *s, struct list_lru *lru,
-			   gfp_t gfpflags) __assume_slab_alignment __malloc;
 void kmem_cache_free(struct kmem_cache *s, void *objp);
 
 static __always_inline

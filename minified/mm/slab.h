@@ -111,7 +111,6 @@ struct kmem_cache {
 #include <linux/memcontrol.h>
 #include <linux/random.h>
 #include <linux/sched/mm.h>
-#include <linux/list_lru.h>
 
 enum slab_state {
 	DOWN,
@@ -193,7 +192,6 @@ static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 }
 
 static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
-						     struct list_lru *lru,
 						     struct obj_cgroup **objcgp,
 						     size_t size, gfp_t flags)
 {

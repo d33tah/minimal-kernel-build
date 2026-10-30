@@ -16,7 +16,6 @@ noinline int __filemap_add_folio(struct address_space *mapping,
 
 	VM_BUG_ON_FOLIO(!folio_test_locked(folio), folio);
 	VM_BUG_ON_FOLIO(folio_test_swapbacked(folio), folio);
-	mapping_set_update(&xas, mapping);
 
 	{
 		VM_BUG_ON_FOLIO(index & (folio_nr_pages(folio) - 1), folio);

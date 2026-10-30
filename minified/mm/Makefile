@@ -20,7 +20,7 @@ obj-y			:= filemap.o \
 			   swap.o \
 			   util.o mmzone.o \
 			   percpu.o slab_common.o \
-			   interval_tree.o list_lru.o workingset.o \
+			   interval_tree.o \
 			   gup.o $(mmu-y)
 
 # Give 'page_alloc' its own module-parameter namespace

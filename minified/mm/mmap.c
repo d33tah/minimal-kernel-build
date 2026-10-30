@@ -395,19 +395,26 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 	return 0;
 }
 
+/*
+ * Map the zero-filled part of an ELF segment (p_memsz > p_filesz) as a
+ * private anonymous region; do_anonymous_page supplies zeroed pages on
+ * first touch. MAP_FIXED_NOREPLACE: an overlap with an existing mapping
+ * fails with -EEXIST (there is no munmap to replace it).
+ */
 int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 {
-	/*
-	 * RUNTIME-DEAD ANCHOR-STUB: this kernel's only job is boot+print+
-	 * stay-alive; it never brk()s an anonymous region.  vm_brk_flags is
-	 * link-live via fs/binfmt_elf.c (the ELF loader's BSS setup, which
-	 * never runs on this boot) + the mm.h:859 extern.  Trace HIT=False.
-	 * Returning 0 is the success contract the sole live caller expects.
-	 * Stubbing the body made its private subtree (do_brk_flags, vma_merge,
-	 * can_vma_merge_before/after, vma_next, is_mergeable_vma/anon_vma) dead
-	 * -> all deleted.
-	 */
-	return 0;
+	unsigned long prot = PROT_READ | PROT_WRITE;
+	unsigned long ret;
+
+	if (flags & ~VM_EXEC)
+		return -EINVAL;
+	if (flags & VM_EXEC)
+		prot |= PROT_EXEC;
+
+	/* No file: do_mmap/mmap_region make it an anonymous mapping. */
+	ret = vm_mmap(NULL, addr, request, prot,
+		      MAP_PRIVATE | MAP_FIXED_NOREPLACE, 0);
+	return IS_ERR_VALUE(ret) ? (int)ret : 0;
 }
 
 int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)

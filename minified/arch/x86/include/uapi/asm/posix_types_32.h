@@ -35,7 +35,6 @@ typedef unsigned int __kernel_gid32_t;
 #ifndef __kernel_size_t
 typedef unsigned int __kernel_size_t;
 typedef int __kernel_ssize_t;
-typedef int __kernel_ptrdiff_t;
 #endif
 
 #ifndef __kernel_fsid_t
@@ -44,10 +43,6 @@ typedef struct {
 } __kernel_fsid_t;
 #endif
 
-typedef __kernel_long_t __kernel_off_t;
 typedef long long __kernel_loff_t;
-typedef __kernel_long_t __kernel_old_time_t;
-typedef long long __kernel_time64_t;
-typedef int __kernel_clockid_t;
 
 #endif

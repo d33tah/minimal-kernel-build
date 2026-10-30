@@ -12,9 +12,7 @@ typedef u32 __kernel_dev_t;
 typedef __kernel_dev_t		dev_t;
 typedef __kernel_mode_t		mode_t;
 typedef unsigned short		umode_t;
-typedef __kernel_off_t		off_t;
 typedef __kernel_pid_t		pid_t;
-typedef __kernel_clockid_t	clockid_t;
 
 typedef _Bool			bool;
 
@@ -37,7 +35,6 @@ typedef __kernel_ssize_t	ssize_t;
 
 #ifndef _PTRDIFF_T
 #define _PTRDIFF_T
-typedef __kernel_ptrdiff_t	ptrdiff_t;
 #endif
 
 typedef u8			uint8_t;
@@ -45,7 +42,6 @@ typedef u16			uint16_t;
 typedef u32			uint32_t;
 
 typedef u64			uint64_t;
-typedef s64			int64_t;
 
 #define pgoff_t unsigned long
 

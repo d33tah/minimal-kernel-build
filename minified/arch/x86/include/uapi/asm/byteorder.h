@@ -16,20 +16,11 @@
 
 #define __cpu_to_le32(x) ((__force __le32)(__u32)(x))
 #define __le32_to_cpu(x) ((__force __u32)(__le32)(x))
-#define __cpu_to_le16(x) ((__force __le16)(__u16)(x))
 
-/* 11 p static inlines + 12 s macros removed - 0-ref; le32_to_cpup kept (xz get_le32) */
-static __always_inline __u32 __le32_to_cpup(const __le32 *p)
-{
-	return (__force __u32)*p;
-}
 /* end little_endian.h */
 
 /* Inlined from linux/byteorder/generic.h */
 #define cpu_to_le32 __cpu_to_le32
 #define le32_to_cpu __le32_to_cpu
-#define cpu_to_le16 __cpu_to_le16
-/* 23 p/s byteorder aliases removed - 0-ref; le32_to_cpup kept (xz get_le32) */
-#define le32_to_cpup __le32_to_cpup
 
 #endif

@@ -11,8 +11,6 @@
 
 typedef __s64 time64_t;
 
-#include <uapi/linux/time.h>
-
 struct timespec64 {
 	time64_t tv_sec;
 	long tv_nsec;

@@ -5,6 +5,6 @@
 #include <linux/math64.h>
 #include <linux/time64.h>
 
-#include <linux/time32.h>
+#include <linux/timex.h>
 
 #endif

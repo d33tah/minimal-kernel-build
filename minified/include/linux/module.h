@@ -17,10 +17,4 @@
 
 #define __init_or_module __init
 
-#define MODULE_INFO(tag, info) __MODULE_INFO(tag, tag, info)
-
-#define MODULE_FILE MODULE_INFO(file, KBUILD_MODFILE);
-
-#define MODULE_LICENSE(_license) MODULE_FILE MODULE_INFO(license, _license)
-
 #endif

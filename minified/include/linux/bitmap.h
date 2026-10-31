@@ -29,12 +29,6 @@ static inline unsigned long find_next_zero_bit(const unsigned long *addr,
 
 #define BITMAP_LAST_WORD_MASK(nbits) (~0UL >> (-(nbits) & (BITS_PER_LONG - 1)))
 
-static inline void bitmap_zero(unsigned long *dst, unsigned int nbits)
-{
-	unsigned int len = BITS_TO_LONGS(nbits) * sizeof(unsigned long);
-	memset(dst, 0, len);
-}
-
 static inline bool bitmap_empty(const unsigned long *src, unsigned nbits)
 {
 	return !(*src & BITMAP_LAST_WORD_MASK(nbits));

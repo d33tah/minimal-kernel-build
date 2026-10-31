@@ -37,11 +37,6 @@ static __always_inline void atomic_dec(atomic_t *v)
 	arch_atomic_dec(v);
 }
 
-static __always_inline int atomic_cmpxchg(atomic_t *v, int old, int new)
-{
-	return arch_atomic_cmpxchg(v, old, new);
-}
-
 static __always_inline bool atomic_sub_and_test(int i, atomic_t *v)
 {
 	return arch_atomic_sub_and_test(i, v);

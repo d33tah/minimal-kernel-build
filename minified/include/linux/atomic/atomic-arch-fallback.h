@@ -3,24 +3,6 @@
 #ifndef _LINUX_ATOMIC_FALLBACK_H
 #define _LINUX_ATOMIC_FALLBACK_H
 
-#define arch_xchg_relaxed arch_xchg
-
-#define arch_cmpxchg_acquire arch_cmpxchg
-#define arch_cmpxchg_release arch_cmpxchg
-#define arch_cmpxchg_relaxed arch_cmpxchg
-
-#define arch_cmpxchg64_acquire arch_cmpxchg64
-#define arch_cmpxchg64_release arch_cmpxchg64
-#define arch_cmpxchg64_relaxed arch_cmpxchg64
-
-#define arch_try_cmpxchg_acquire arch_try_cmpxchg
-#define arch_try_cmpxchg_release arch_try_cmpxchg
-#define arch_try_cmpxchg_relaxed arch_try_cmpxchg
-
-#define arch_try_cmpxchg64_acquire arch_try_cmpxchg64
-#define arch_try_cmpxchg64_release arch_try_cmpxchg64
-#define arch_try_cmpxchg64_relaxed arch_try_cmpxchg64
-
 #define arch_atomic_add_return_acquire arch_atomic_add_return
 #define arch_atomic_add_return_release arch_atomic_add_return
 
@@ -29,13 +11,8 @@
 
 #define arch_atomic_fetch_sub_release arch_atomic_fetch_sub
 
-#define arch_atomic_cmpxchg_acquire arch_atomic_cmpxchg
-#define arch_atomic_cmpxchg_release arch_atomic_cmpxchg
-#define arch_atomic_cmpxchg_relaxed arch_atomic_cmpxchg
-
 #define arch_atomic_try_cmpxchg_acquire arch_atomic_try_cmpxchg
 #define arch_atomic_try_cmpxchg_release arch_atomic_try_cmpxchg
-#define arch_atomic_try_cmpxchg_relaxed arch_atomic_try_cmpxchg
 
 static __always_inline int arch_atomic_fetch_add_unless(atomic_t *v, int a,
 							int u)

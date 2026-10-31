@@ -175,18 +175,6 @@ static __always_inline void clear_bit(long nr, volatile unsigned long *addr)
 	arch_clear_bit(nr, addr);
 }
 
-static __always_inline bool test_and_set_bit(long nr,
-					     volatile unsigned long *addr)
-{
-	return arch_test_and_set_bit(nr, addr);
-}
-
-static __always_inline bool test_and_clear_bit(long nr,
-					       volatile unsigned long *addr)
-{
-	return arch_test_and_clear_bit(nr, addr);
-}
-
 /* Inlined from asm-generic/bitops/instrumented-non-atomic.h */
 static __always_inline void __set_bit(long nr, volatile unsigned long *addr)
 {

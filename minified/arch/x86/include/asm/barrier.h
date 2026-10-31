@@ -20,17 +20,9 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 
 /* #ifdef __mb/__rmb/__wmb fallback blocks removed - __mb/__rmb/__wmb never #defined (statically dead) */
 
-#define smp_mb() barrier()
-
 #define smp_rmb() barrier()
 
 #define smp_wmb() barrier()
-
-#define smp_store_mb(var, value)        \
-	do {                            \
-		WRITE_ONCE(var, value); \
-		barrier();              \
-	} while (0)
 
 #define smp_mb__before_atomic() barrier()
 

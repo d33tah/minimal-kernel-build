@@ -29,14 +29,6 @@ static struct workqueue_struct system_wq_storage = {};
 
 struct workqueue_struct *system_wq = &system_wq_storage;
 
-void __init workqueue_init_early(void)
-{
-}
-
-void __init workqueue_init(void)
-{
-}
-
 void delayed_work_timer_fn(struct timer_list *t)
 {
 	struct delayed_work *dwork = from_timer(dwork, t, timer);

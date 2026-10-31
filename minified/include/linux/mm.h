@@ -481,9 +481,6 @@ static __always_inline void *lowmem_page_address(const struct page *page)
 }
 
 #define page_address(page) lowmem_page_address(page)
-#define page_address_init() \
-	do {                \
-	} while (0)
 
 static inline void *folio_address(const struct folio *folio)
 {
@@ -569,10 +566,6 @@ static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud,
 static inline spinlock_t *pte_lockptr(struct mm_struct *mm, pmd_t *pmd)
 {
 	return &mm->page_table_lock;
-}
-static inline void pgtable_init(void)
-{
-	pgtable_cache_init();
 }
 
 static inline bool pgtable_pte_page_ctor(struct page *page)

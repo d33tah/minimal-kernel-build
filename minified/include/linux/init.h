@@ -39,15 +39,11 @@ static inline initcall_t initcall_from_entry(initcall_entry_t *entry) {
 
 extern initcall_entry_t __con_initcall_start[], __con_initcall_end[];
 
-extern int do_one_initcall(initcall_t fn);
-extern char __initdata boot_command_line[];
-
-void setup_arch(char **);
+void setup_arch(void);
 extern struct file_system_type rootfs_fs_type;
 
 void mark_rodata_ro(void);
 
-extern void (*late_time_init)(void);
 
 
 #endif
@@ -88,13 +84,6 @@ extern void (*late_time_init)(void);
 #define __initcall(fn) device_initcall(fn)
 
 #define console_initcall(fn)	___define_initcall(fn, con, .con_initcall)
-
-/* The __setup()/early_param() registration macros + struct obs_kernel_param
- * were dropped once the last .init.setup registration went away (cmdline-parse
- * cascade, ticks #361-#371): zero __setup/early_param call-sites remain
- * tree-wide, so the .init.setup section is empty and these macros are dead.
- * The (empty) lds section markers + parse_early_param() [2 live callers] stay. */
-void __init parse_early_param(void);
 #endif
 
 #endif

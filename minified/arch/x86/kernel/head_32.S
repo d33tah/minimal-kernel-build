@@ -79,14 +79,6 @@ SYM_CODE_START(startup_32)
 	cld
 	rep
 	movsl
-	movl pa(boot_params) + NEW_CL_POINTER,%esi
-	andl %esi,%esi
-	jz 1f			# No command line
-	movl $pa(boot_command_line),%edi
-	movl $(COMMAND_LINE_SIZE/4),%ecx
-	rep
-	movsl
-1:
 
 	/* Create early pagetables. */
 	call  mk_early_pgtbl_32

@@ -51,7 +51,6 @@ static inline void *offset_to_ptr(const int *off) {
 
 #define __must_be_array(a)	BUILD_BUG_ON_ZERO(__same_type((a), &(a)[0]))
 
-#define prevent_tail_call_optimization()	mb()
 
 #include <asm/rwonce.h>
 

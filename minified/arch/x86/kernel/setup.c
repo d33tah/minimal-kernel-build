@@ -22,8 +22,6 @@ __visible unsigned long mmu_cr4_features __ro_after_init;
 
 struct screen_info screen_info;
 
-static char __initdata command_line[COMMAND_LINE_SIZE];
-
 void *__init extend_brk(size_t size, size_t align)
 {
 	size_t mask = align - 1;
@@ -65,7 +63,7 @@ static void __init early_reserve_memory(void)
 	memblock_reserve(0, SZ_1M);
 }
 
-void __init setup_arch(char **cmdline_p)
+void __init setup_arch(void)
 {
 	clone_pgd_range(swapper_pg_dir + KERNEL_PGD_BOUNDARY,
 			initial_page_table + KERNEL_PGD_BOUNDARY,
@@ -87,11 +85,6 @@ void __init setup_arch(char **cmdline_p)
 	e820__memory_setup();
 
 	setup_initial_init_mm(_text, _etext, _edata, (void *)_brk_end);
-
-	strscpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
-	*cmdline_p = command_line;
-
-	parse_early_param();
 
 	tsc_early_init();
 
@@ -116,8 +109,6 @@ void __init setup_arch(char **cmdline_p)
 	mmu_cr4_features = __read_cr4() & ~X86_CR4_PCIDE;
 
 	memblock_set_current_limit(get_max_mapped());
-
-	setup_log_buf(1);
 
 	initmem_init();
 

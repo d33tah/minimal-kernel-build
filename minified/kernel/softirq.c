@@ -164,19 +164,3 @@ void open_softirq(int nr, void (*action)(struct softirq_action *))
 {
 	softirq_vec[nr].action = action;
 }
-
-void __init softirq_init(void)
-{
-	/* No tasklets needed in minimal kernel */
-}
-
-static __init int spawn_ksoftirqd(void)
-{
-	/*
-	 * SMP and CPU hotplug are off, so no per-cpu ksoftirqd thread is
-	 * spawned -- softirqs always run inline (do_softirq_own_stack) from
-	 * the irq-exit path. This initcall is a no-op.
-	 */
-	return 0;
-}
-early_initcall(spawn_ksoftirqd);

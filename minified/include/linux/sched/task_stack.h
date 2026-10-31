@@ -22,8 +22,6 @@ extern void put_task_stack(struct task_struct *tsk);
 
 void exit_task_stack_account(struct task_struct *tsk);
 
-extern void thread_stack_cache_init(void);
-
 extern void set_task_stack_end_magic(struct task_struct *tsk);
 
 #endif

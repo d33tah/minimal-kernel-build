@@ -17,8 +17,6 @@
    early_set_memory_decrypted, early_set_memory_encrypted,
    early_set_mem_enc_dec_hypercall */
 
-void __init mem_encrypt_init(void);
-
 #define __sme_pa(x) (__pa(x) | sme_me_mask)
 
 #endif

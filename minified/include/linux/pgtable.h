@@ -112,8 +112,6 @@ static inline int pmd_trans_huge(pmd_t pmd)
 /* p4d_set_huge, pud_set_huge, pmd_set_huge, p4d_free_pud_page, pud_free_pmd_page,
    pmd_free_pte_page, p4d_clear_huge, pud_clear_huge, pmd_clear_huge removed - unused */
 
-extern void __init pgtable_cache_init(void);
-
 #endif
 
 #if !defined(MAX_POSSIBLE_PHYSMEM_BITS) && !defined(CONFIG_64BIT)

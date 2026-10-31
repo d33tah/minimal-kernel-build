@@ -1,184 +1,65 @@
-
-#define DEBUG
-
 #include <linux/types.h>
 #include <linux/extable.h>
-#include <linux/proc_fs.h>
 #include <linux/binfmts.h>
 #include <linux/syscalls.h>
-/* end stackprotector.h */
 #include <linux/delay.h>
 #include <linux/initrd.h>
 #include <linux/memblock.h>
 
 #include <linux/console.h>
-#include <linux/security.h>
 #include <linux/cpu.h>
 #include <linux/interrupt.h>
-#include <linux/rmap.h>
 #include <linux/pid_namespace.h>
 
-#include <linux/module.h>
 extern void sched_init(void);
 #include <linux/file.h>
 
-#include <linux/sched/clock.h>
 #include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 
-/* --- 2025-12-08 00:40 --- integrity.h stubbed out */
 #include <linux/init_syscalls.h>
 
 #include <asm/bugs.h>
 #include <asm/setup.h>
+#include <asm/time.h>
 
 static int kernel_init(void *);
 
-enum system_states system_state __read_mostly;
-
-#define MAX_INIT_ARGS CONFIG_INIT_ENV_ARG_LIMIT
-#define MAX_INIT_ENVS CONFIG_INIT_ENV_ARG_LIMIT
-
-extern void time_init(void);
-void (*__initdata late_time_init)(void);
-
-char __initdata boot_command_line[COMMAND_LINE_SIZE];
-char *saved_command_line;
-static char *static_command_line;
-
-static char *ramdisk_execute_command = "/init";
-
 bool static_key_initialized __read_mostly;
 
-static const char *argv_init[MAX_INIT_ARGS + 2] = {
-	"init",
-	NULL,
-};
-const char *envp_init[MAX_INIT_ENVS + 2] = {
-	"HOME=/",
-	"TERM=linux",
-	NULL,
-};
+/* /init is the only program in the built-in initramfs (usr/Makefile). */
+static const char *argv_init[] = { "/init", NULL };
+static const char *envp_init[] = { "HOME=/", "TERM=linux", NULL };
 
 unsigned long loops_per_jiffy = (1 << 12);
-
-/* The debug/quiet/loglevel/bootconfig early_param handlers were empty stubs
- * that only ran when their option appeared on the boot cmdline; the test boot
- * passes an empty cmdline so they never fired (do_mounts/gbpages precedent). */
-#define exit_boot_config() \
-	do {               \
-	} while (0)
-
-/*
- * The runtime-dead cmdline-parse cluster was fully removed. parse_args() had
- * been reduced to a `return NULL;` no-op (empty single-shot cmdline), and every
- * caller discarded its result, so the function and all its call sites (here plus
- * parse_early_param / do_initcall_level) were provably behaviour-neutral and are
- * gone; the `unknown` bootoption callbacks it once dispatched went with it.
- */
-/*
- * The init=/rdinit= __setup handlers were removed with the cmdline-parse
- * cluster: the .init.setup section (__setup_start..__setup_end) is no longer
- * iterated by any code (obsolete_checksetup/unknown_bootoption are gone), so
- * these handlers were provably never invoked on ANY boot. With the init=
- * handler gone there is no writer of execute_command, so its NULL fallback
- * branch in kernel_init was dead and has been removed; ramdisk_execute_command
- * keeps its "/init" default and drives the honest boot.
- */
-static void __init setup_command_line(char *command_line)
-{
-	size_t len;
-
-	len = strlen(boot_command_line) + 1;
-
-	saved_command_line = memblock_alloc(len, SMP_CACHE_BYTES);
-	if (!saved_command_line)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, len);
-
-	static_command_line = memblock_alloc(len, SMP_CACHE_BYTES);
-	if (!static_command_line)
-		panic("%s: Failed to allocate %zu bytes\n", __func__, len);
-
-	strcpy(saved_command_line, boot_command_line);
-	strcpy(static_command_line, command_line);
-}
 
 noinline void __ref rest_init(void)
 {
 	user_mode_thread(kernel_init, NULL, CLONE_FS);
-
-	system_state = SYSTEM_SCHEDULING;
 
 	schedule_preempt_disabled();
 
 	cpu_startup_entry(CPUHP_ONLINE);
 }
 
-void __init parse_early_param(void)
-{
-}
-
-void __init __weak arch_post_acpi_subsys_init(void)
-{
-}
-
-void __init __weak smp_setup_processor_id(void)
-{
-}
-
-void __init __weak thread_stack_cache_init(void)
-{
-}
-
-void __init __weak mem_encrypt_init(void)
-{
-}
-
-void __init __weak pgtable_cache_init(void)
-{
-}
-
-static void __init mm_init(void)
-{
-	mem_init();
-	kmem_cache_init();
-
-	pgtable_init();
-}
-
-void __init __weak arch_call_rest_init(void)
-{
-	rest_init();
-}
-
 asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 {
-	char *command_line;
-
 	set_task_stack_end_magic(&init_task);
-	smp_setup_processor_id();
 
 	local_irq_disable();
 
 	boot_cpu_init();
-	page_address_init();
-	pr_notice("%s", linux_banner);
-	setup_arch(&command_line);
-	setup_command_line(command_line);
-	smp_prepare_boot_cpu();
+	setup_arch();
 
 	build_all_zonelists(NULL);
 
-	pr_notice("Kernel command line: %s\n", saved_command_line);
-
 	jump_label_init();
-	parse_early_param();
 
-	setup_log_buf(0);
 	vfs_caches_init_early();
 	sort_main_extable();
 	trap_init();
-	mm_init();
+	mem_init();
+	kmem_cache_init();
 
 	sched_init();
 
@@ -187,46 +68,30 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		local_irq_disable();
 	radix_tree_init();
 
-	workqueue_init_early();
-
 	rcu_init();
 
 	early_irq_init();
 	init_IRQ();
-	/* hrtimers_init() removed: only initialized never-read per-cpu hrtimer_bases */
-	softirq_init();
 	timekeeping_init();
-	time_init();
-
-	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 
 	local_irq_enable();
 
 	console_init();
 
-	mem_encrypt_init();
-
-	if (late_time_init)
-		late_time_init();
+	time_init();
 	calibrate_delay();
 	pid_idr_init();
-	thread_stack_cache_init();
 	cred_init();
 	fork_init();
 	proc_caches_init();
 	vfs_caches_init();
-	proc_root_init();
 
 	check_bugs();
 
-	arch_post_acpi_subsys_init();
-
-	arch_call_rest_init();
-
-	prevent_tail_call_optimization();
+	rest_init();
 }
 
-int __init_or_module do_one_initcall(initcall_t fn)
+static int __init do_one_initcall(initcall_t fn)
 {
 	int count = preempt_count();
 	int ret;
@@ -276,11 +141,6 @@ static void __init do_initcalls(void)
 		do_initcall_level(level);
 }
 
-static void __init do_basic_setup(void)
-{
-	do_initcalls();
-}
-
 static void __init do_pre_smp_initcalls(void)
 {
 	initcall_entry_t *fn;
@@ -289,75 +149,12 @@ static void __init do_pre_smp_initcalls(void)
 		do_one_initcall(initcall_from_entry(fn));
 }
 
-static int run_init_process(const char *init_filename)
-{
-	argv_init[0] = init_filename;
-	pr_info("Run %s as init process\n", init_filename);
-	return kernel_execve(init_filename, argv_init, envp_init);
-}
-
-static int try_to_run_init_process(const char *init_filename)
-{
-	int ret;
-
-	ret = run_init_process(init_filename);
-
-	if (ret && ret != -ENOENT) {
-		pr_err("Starting init: %s exists but couldn't execute it (error %d)\n",
-		       init_filename, ret);
-	}
-
-	return ret;
-}
-
-static noinline void __init kernel_init_freeable(void);
-
-static void mark_readonly(void)
-{
-	rcu_barrier();
-	mark_rodata_ro();
-}
-
-static int __ref kernel_init(void *unused)
-{
-	int ret;
-
-	kernel_init_freeable();
-
-	system_state = SYSTEM_FREEING_INITMEM;
-	exit_boot_config();
-	mark_readonly();
-
-	system_state = SYSTEM_RUNNING;
-
-	do_sysctl_args();
-
-	if (ramdisk_execute_command) {
-		ret = run_init_process(ramdisk_execute_command);
-		if (!ret)
-			return 0;
-		pr_err("Failed to execute %s (error %d)\n",
-		       ramdisk_execute_command, ret);
-	}
-
-	if (!try_to_run_init_process("/sbin/init") ||
-	    !try_to_run_init_process("/etc/init") ||
-	    !try_to_run_init_process("/bin/init") ||
-	    !try_to_run_init_process("/bin/sh"))
-		return 0;
-
-	panic("No working init found.  Try passing init= option to kernel. "
-	      "See Linux Documentation/admin-guide/init.rst for guidance.");
-}
-
 void __init console_on_rootfs(void)
 {
 	struct file *file = filp_open("/dev/console", O_RDWR, 0);
 
-	if (IS_ERR(file)) {
-		pr_err("Warning: unable to open an initial console.\n");
-		return;
-	}
+	if (IS_ERR(file))
+		panic("cannot open /dev/console");
 	init_dup(file);
 	init_dup(file);
 	init_dup(file);
@@ -368,15 +165,23 @@ static noinline void __init kernel_init_freeable(void)
 {
 	gfp_allowed_mask = __GFP_BITS_MASK;
 
-	/* cad_pid removed - only set, never read */
-
-	workqueue_init();
-
 	do_pre_smp_initcalls();
 
 	page_alloc_init_late();
 
-	do_basic_setup();
+	do_initcalls();
 
 	console_on_rootfs();
+}
+
+static int __ref kernel_init(void *unused)
+{
+	kernel_init_freeable();
+
+	rcu_barrier();
+	mark_rodata_ro();
+
+	if (!kernel_execve(argv_init[0], argv_init, envp_init))
+		return 0;
+	panic("cannot execute /init");
 }

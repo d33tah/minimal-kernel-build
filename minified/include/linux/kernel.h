@@ -60,13 +60,6 @@ static inline void might_fault(void)
 
 void do_exit(long error_code) __noreturn;
 
-extern enum system_states {
-	SYSTEM_BOOTING,
-	SYSTEM_SCHEDULING,
-	SYSTEM_FREEING_INITMEM,
-	SYSTEM_RUNNING,
-} system_state;
-
 /* Removed: hex_to_bin, hex2bin, bin2hex, mac_pton - never called */
 /* Removed: tracing_off - empty stub, callers removed (TRACING off) */
 

@@ -13,15 +13,8 @@
 
 #define PARAM_SIZE 4096
 
-#define OLD_CL_MAGIC		0xA33F
-#define OLD_CL_ADDRESS		0x020	 
-#define NEW_CL_POINTER		0x228	 
-
 #ifndef __ASSEMBLY__
 #include <asm/bootparam.h>
-
-extern u64 relocated_ramdisk;
-
 
 struct pt_regs;
 
@@ -43,7 +36,6 @@ void *extend_brk(size_t size, size_t align);
 
  
 #define RESERVE_BRK(name, size)						__section(".bss..brk") __aligned(1) __used		static char __brk_##name[size]
-
 
 /* 32-bit only kernel */
 asmlinkage void __init i386_start_kernel(void);

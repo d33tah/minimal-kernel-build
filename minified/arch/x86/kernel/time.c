@@ -26,14 +26,10 @@ void __init hpet_time_init(void)
 	setup_default_timer_irq();
 }
 
-static __init void x86_late_time_init(void)
+/* Runs once interrupts are enabled: the PIT tick IRQ, then the TSC clocksource. */
+void __init time_init(void)
 {
 	hpet_time_init();
 
 	tsc_init();
-}
-
-void __init time_init(void)
-{
-	late_time_init = x86_late_time_init;
 }

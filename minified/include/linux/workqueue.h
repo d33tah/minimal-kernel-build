@@ -105,7 +105,4 @@ static inline bool schedule_delayed_work(struct delayed_work *dwork,
 	return queue_delayed_work(system_wq, dwork, delay);
 }
 
-void __init workqueue_init_early(void);
-void __init workqueue_init(void);
-
 #endif

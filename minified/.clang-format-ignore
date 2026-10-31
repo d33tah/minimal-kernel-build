@@ -44,11 +44,9 @@ include/asm-generic/int-ll64.h
 include/asm-generic/rwonce.h
 include/asm-generic/vmlinux.lds.h
 include/linux/bits.h
-include/linux/build-salt.h
 include/linux/compiler.h
 include/linux/compiler_types.h
 include/linux/const.h
-include/linux/elfnote.h
 include/linux/err.h
 include/linux/export.h
 include/linux/init.h

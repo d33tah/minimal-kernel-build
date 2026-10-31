@@ -18,8 +18,7 @@ define filechk_compile.h
 	echo '#define UTS_MACHINE "$(UTS_MACHINE)"';		\
 	echo '#define UTS_VERSION "#1"';			\
 	echo '#define LINUX_COMPILE_BY "kbuild"';		\
-	echo '#define LINUX_COMPILE_HOST "localhost"';		\
-	echo '#define LINUX_COMPILER "$(CONFIG_CC_VERSION_TEXT)"'
+	echo '#define LINUX_COMPILE_HOST "localhost"'
 endef
 
 include/generated/compile.h: FORCE

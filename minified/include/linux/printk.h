@@ -17,8 +17,6 @@
 #define KERN_CONT KERN_SOH "c"
 #include <linux/ratelimit_types.h>
 
-extern const char linux_banner[];
-
 struct va_format {
 	const char *fmt;
 	va_list *va;

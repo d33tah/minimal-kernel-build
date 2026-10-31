@@ -22,13 +22,9 @@ typedef unsigned long		uintptr_t;
 
 typedef __kernel_loff_t		loff_t;
 
-#define _SIZE_T
 typedef __kernel_size_t		size_t;
 
-#define _SSIZE_T
 typedef __kernel_ssize_t	ssize_t;
-
-#define _PTRDIFF_T
 
 typedef u8			uint8_t;
 typedef u16			uint16_t;
@@ -56,8 +52,6 @@ struct hlist_node { struct hlist_node *next, **pprev; };
 
 struct callback_head { struct callback_head *next; void (*func)(struct callback_head *head); } __attribute__((aligned(sizeof(void *))));
 #define rcu_head callback_head
-
-typedef void (*rcu_callback_t)(struct rcu_head *head);
 
 #endif  
 #endif  

@@ -1,45 +1,99 @@
-/* Delay loop calibration */
-#include <linux/delay.h>
-#include <linux/jiffies.h>
+// SPDX-License-Identifier: GPL-2.0
+/* calibrate.c: default delay calibration
+ *
+ * Excised from init/main.c
+ *  Copyright (C) 1991, 1992  Linus Torvalds
+ */
 
-/* Set by tsc.c when the TSC frequency was measured: TSC cycles per jiffy. */
+#include <linux/jiffies.h>
+#include <linux/delay.h>
+
 unsigned long lpj_fine;
 
 /*
- * Classic BogoMIPS search for __delay()'s loop: find the largest power of two
- * that still fits in one tick, then refine the lower bits by binary search.
+ * This is the number of bits of precision for the loops_per_jiffy.  Each
+ * time we refine our estimate after the first takes 1.5/HZ seconds, so try
+ * to start with a good estimate.
+ * For the boot cpu we can skip the delay calibration and assign it a value
+ * calculated based on the timer frequency.
+ * For the rest of the CPUs we cannot assume that the timer frequency is same as
+ * the cpu frequency, hence do the calibration for those.
  */
+#define LPS_PREC 8
+
 static unsigned long calibrate_delay_converge(void)
 {
-	unsigned long lpj = 1 << 12, bit, ticks;
+	/* First stage - slowly accelerate to find initial bounds */
+	unsigned long lpj, lpj_base, ticks, loopadd, loopadd_base, chop_limit;
+	int trials = 0, band = 0, trial_in_band = 0;
 
-	for (;;) {
-		lpj <<= 1;
-		if (!lpj)
-			panic("delay calibration: timer tick does not advance");
+	lpj = (1 << 12);
+
+	/* wait for "start of" clock tick */
+	ticks = jiffies;
+	while (ticks == jiffies)
+		; /* nothing */
+	/* Go .. */
+	ticks = jiffies;
+	do {
+		if (++trial_in_band == (1 << band)) {
+			++band;
+			trial_in_band = 0;
+		}
+		__delay(lpj * band);
+		trials += band;
+	} while (ticks == jiffies);
+	/*
+	 * We overshot, so retreat to a clear underestimate. Then estimate
+	 * the largest likely undershoot. This defines our chop bounds.
+	 */
+	trials -= band;
+	loopadd_base = lpj * band;
+	lpj_base = lpj * trials;
+
+recalibrate:
+	lpj = lpj_base;
+	loopadd = loopadd_base;
+
+	/*
+	 * Do a binary approximation to get lpj set to
+	 * equal one clock (up to LPS_PREC bits)
+	 */
+	chop_limit = lpj >> LPS_PREC;
+	while (loopadd > chop_limit) {
+		lpj += loopadd;
 		ticks = jiffies;
 		while (ticks == jiffies)
-			cpu_relax();
+			; /* nothing */
 		ticks = jiffies;
 		__delay(lpj);
-		if (jiffies != ticks)
-			break;
+		if (jiffies != ticks) /* longer than 1 tick */
+			lpj -= loopadd;
+		loopadd >>= 1;
 	}
-	lpj >>= 1;
-	for (bit = lpj >> 1; bit > lpj >> 8; bit >>= 1) {
-		lpj |= bit;
-		ticks = jiffies;
-		while (ticks == jiffies)
-			cpu_relax();
-		ticks = jiffies;
-		__delay(lpj);
-		if (jiffies != ticks)
-			lpj &= ~bit;
+	/*
+	 * If we incremented every single time possible, presume we've
+	 * massively underestimated initially, and retry with a higher
+	 * start, and larger range. (Only seen on x86_64, due to SMIs)
+	 */
+	if (lpj + loopadd * 2 == lpj_base + loopadd_base * 2) {
+		lpj_base = lpj;
+		loopadd_base <<= 2;
+		goto recalibrate;
 	}
+
 	return lpj;
 }
 
 void calibrate_delay(void)
 {
-	loops_per_jiffy = lpj_fine ? lpj_fine : calibrate_delay_converge();
+	unsigned long lpj;
+
+	if (lpj_fine) {
+		lpj = lpj_fine;
+	} else {
+		lpj = calibrate_delay_converge();
+	}
+
+	loops_per_jiffy = lpj;
 }

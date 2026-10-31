@@ -1,5 +1,4 @@
 
-
 #include <asm/kdebug.h>
 
 #include <asm/traps.h>
@@ -35,8 +34,6 @@ static void do_trap(int trapnr, int signr, char *str, struct pt_regs *regs,
 static void do_error_trap(struct pt_regs *regs, long error_code, char *str,
 			  unsigned long trapnr, int signr)
 {
-	RCU_LOCKDEP_WARN(!rcu_is_watching(), "entry code didn't wake RCU");
-
 	cond_local_irq_enable(regs);
 	do_trap(trapnr, signr, str, regs, error_code);
 	cond_local_irq_disable(regs);

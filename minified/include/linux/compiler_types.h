@@ -11,8 +11,6 @@
 # define __rcu
 # define __chk_user_ptr(x)	(void)0
 # define __releases(x)
-# define __acquire(x)	(void)0
-# define __release(x)	(void)0
 # define __cond_lock(x,c) (c)
 # define __force
 

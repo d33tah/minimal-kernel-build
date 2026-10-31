@@ -55,10 +55,9 @@
 	do {                         \
 		(void)(lock);        \
 	} while (0)
-#define ___LOCK(lock)            \
-	do {                     \
-		__acquire(lock); \
-		(void)(lock);    \
+#define ___LOCK(lock)         \
+	do {                  \
+		(void)(lock); \
 	} while (0)
 #define __LOCK(lock)               \
 	do {                       \
@@ -75,10 +74,9 @@
 		local_irq_save(flags); \
 		__LOCK(lock);          \
 	} while (0)
-#define ___UNLOCK(lock)          \
-	do {                     \
-		__release(lock); \
-		(void)(lock);    \
+#define ___UNLOCK(lock)       \
+	do {                  \
+		(void)(lock); \
 	} while (0)
 #define __UNLOCK(lock)            \
 	do {                      \

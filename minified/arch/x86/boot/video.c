@@ -1,9 +1,5 @@
 #include "boot.h"
-
-#define ADAPTER_CGA 0
-#define ADAPTER_EGA 1
-
-static int adapter;
+#include "video.h"
 
 static void store_cursor_position(void)
 {
@@ -43,30 +39,8 @@ static void store_mode_params(void)
 	boot_params.screen_info.orig_video_lines = y;
 }
 
-/*
- * vgacon reads orig_video_mode/cols/lines/orig_x/orig_y; the CGA check
- * decides how many lines there are. EGA and VGA are not told apart:
- * nothing reads the difference (vgacon only rejects the VLFB/EFI types a
- * boot loader may store in orig_video_isVGA). No mode switch.
- */
-static void detect_adapter(void)
-{
-	struct biosregs ireg, oreg;
-
-	initregs(&ireg);
-	ireg.ax = 0x1200;
-	ireg.bl = 0x10;
-	intcall(0x10, &ireg, &oreg);
-
-	if (oreg.bl != 0x10) {
-		adapter = ADAPTER_EGA;
-	} else {
-		adapter = ADAPTER_CGA;
-	}
-}
-
 void set_video(void)
 {
-	detect_adapter();
+	vga_probe();
 	store_mode_params();
 }

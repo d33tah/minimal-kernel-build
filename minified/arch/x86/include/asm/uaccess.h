@@ -20,14 +20,6 @@ static inline int __access_ok(const void __user *ptr, unsigned long size) {
 
 #define access_ok(addr, size)					({										WARN_ON_IN_IRQ();							likely(__access_ok(addr, size));				})
 
-extern int __get_user_1(void);
-extern int __get_user_2(void);
-extern int __get_user_4(void);
-extern int __get_user_8(void);
-extern int __get_user_nocheck_1(void);
-extern int __get_user_nocheck_2(void);
-extern int __get_user_nocheck_4(void);
-extern int __get_user_nocheck_8(void);
 extern int __get_user_bad(void);
 
 #define __uaccess_end() barrier()

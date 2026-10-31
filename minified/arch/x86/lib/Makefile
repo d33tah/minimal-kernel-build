@@ -9,7 +9,7 @@
 
 
 lib-y := delay.o cpu.o
-lib-y += usercopy_$(BITS).o getuser.o putuser.o
+lib-y += usercopy_$(BITS).o putuser.o
 lib-y += memcpy_$(BITS).o
 
 

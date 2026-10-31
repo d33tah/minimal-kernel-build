@@ -65,30 +65,6 @@
 
 #define per_cpu(var, cpu) (*per_cpu_ptr(&(var), cpu))
 
-#define get_cpu_var(var)            \
-	(*({                        \
-		preempt_disable();  \
-		this_cpu_ptr(&var); \
-	}))
-
-#define put_cpu_var(var)          \
-	do {                      \
-		(void)&(var);     \
-		preempt_enable(); \
-	} while (0)
-
-#define get_cpu_ptr(var)           \
-	({                         \
-		preempt_disable(); \
-		this_cpu_ptr(var); \
-	})
-
-#define put_cpu_ptr(var)          \
-	do {                      \
-		(void)(var);      \
-		preempt_enable(); \
-	} while (0)
-
 extern void __bad_size_call_parameter(void);
 
 #define __pcpu_size_call_return(stem, variable)         \
@@ -168,8 +144,6 @@ extern void __bad_size_call_parameter(void);
 #define __this_cpu_read(pcp) ({ raw_cpu_read(pcp); })
 
 #define __this_cpu_write(pcp, val) ({ raw_cpu_write(pcp, val); })
-
-#define __this_cpu_or(pcp, val) ({ raw_cpu_or(pcp, val); })
 
 #define this_cpu_read(pcp) __pcpu_size_call_return(this_cpu_read_, pcp)
 #define this_cpu_write(pcp, val) __pcpu_size_call(this_cpu_write_, pcp, val)

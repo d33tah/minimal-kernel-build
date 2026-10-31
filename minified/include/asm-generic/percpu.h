@@ -136,41 +136,12 @@
 
 #define raw_cpu_write_8(pcp, val) raw_cpu_generic_to_op(pcp, val, =)
 
-#define raw_cpu_add_8(pcp, val) raw_cpu_generic_to_op(pcp, val, +=)
-
-#define raw_cpu_and_8(pcp, val) raw_cpu_generic_to_op(pcp, val, &=)
-
-#define raw_cpu_or_8(pcp, val) raw_cpu_generic_to_op(pcp, val, |=)
-
-#define raw_cpu_add_return_8(pcp, val) raw_cpu_generic_add_return(pcp, val)
-
-#define raw_cpu_xchg_8(pcp, nval) raw_cpu_generic_xchg(pcp, nval)
-
-#define raw_cpu_cmpxchg_8(pcp, oval, nval) \
-	raw_cpu_generic_cmpxchg(pcp, oval, nval)
-
 #define this_cpu_read_8(pcp) this_cpu_generic_read(pcp)
 
 #define this_cpu_write_8(pcp, val) this_cpu_generic_to_op(pcp, val, =)
 
 #define this_cpu_add_8(pcp, val) this_cpu_generic_to_op(pcp, val, +=)
 
-#define this_cpu_and_8(pcp, val) this_cpu_generic_to_op(pcp, val, &=)
-
-#define this_cpu_or_8(pcp, val) this_cpu_generic_to_op(pcp, val, |=)
-
 #define this_cpu_add_return_8(pcp, val) this_cpu_generic_add_return(pcp, val)
-
-#define this_cpu_xchg_8(pcp, nval) this_cpu_generic_xchg(pcp, nval)
-
-#define this_cpu_cmpxchg_8(pcp, oval, nval) \
-	this_cpu_generic_cmpxchg(pcp, oval, nval)
-
-#define this_cpu_cmpxchg_double_1(pcp1, pcp2, oval1, oval2, nval1, nval2) \
-	this_cpu_generic_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2)
-#define this_cpu_cmpxchg_double_2(pcp1, pcp2, oval1, oval2, nval1, nval2) \
-	this_cpu_generic_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2)
-#define this_cpu_cmpxchg_double_8(pcp1, pcp2, oval1, oval2, nval1, nval2) \
-	this_cpu_generic_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2)
 
 #endif

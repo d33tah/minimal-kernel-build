@@ -76,22 +76,12 @@
 #define raw_cpu_write_1(pcp, val)	percpu_to_op(1, , "mov", (pcp), val)
 #define raw_cpu_write_2(pcp, val)	percpu_to_op(2, , "mov", (pcp), val)
 #define raw_cpu_write_4(pcp, val)	percpu_to_op(4, , "mov", (pcp), val)
-#define raw_cpu_add_1(pcp, val)		percpu_add_op(1, , (pcp), val)
-#define raw_cpu_add_2(pcp, val)		percpu_add_op(2, , (pcp), val)
 #define raw_cpu_add_4(pcp, val)		percpu_add_op(4, , (pcp), val)
-#define raw_cpu_and_1(pcp, val)		percpu_to_op(1, , "and", (pcp), val)
-#define raw_cpu_and_2(pcp, val)		percpu_to_op(2, , "and", (pcp), val)
 #define raw_cpu_and_4(pcp, val)		percpu_to_op(4, , "and", (pcp), val)
-#define raw_cpu_or_1(pcp, val)		percpu_to_op(1, , "or", (pcp), val)
-#define raw_cpu_or_2(pcp, val)		percpu_to_op(2, , "or", (pcp), val)
 #define raw_cpu_or_4(pcp, val)		percpu_to_op(4, , "or", (pcp), val)
 
  
 #define raw_percpu_xchg_op(var, nval)					({										typeof(var) pxo_ret__ = raw_cpu_read(var);				raw_cpu_write(var, (nval));						pxo_ret__;							})
-
-#define raw_cpu_xchg_1(pcp, val)	raw_percpu_xchg_op(pcp, val)
-#define raw_cpu_xchg_2(pcp, val)	raw_percpu_xchg_op(pcp, val)
-#define raw_cpu_xchg_4(pcp, val)	raw_percpu_xchg_op(pcp, val)
 
 #define this_cpu_read_1(pcp)		percpu_from_op(1, volatile, "mov", pcp)
 #define this_cpu_read_2(pcp)		percpu_from_op(2, volatile, "mov", pcp)
@@ -102,33 +92,14 @@
 #define this_cpu_add_1(pcp, val)	percpu_add_op(1, volatile, (pcp), val)
 #define this_cpu_add_2(pcp, val)	percpu_add_op(2, volatile, (pcp), val)
 #define this_cpu_add_4(pcp, val)	percpu_add_op(4, volatile, (pcp), val)
-#define this_cpu_and_1(pcp, val)	percpu_to_op(1, volatile, "and", (pcp), val)
-#define this_cpu_and_2(pcp, val)	percpu_to_op(2, volatile, "and", (pcp), val)
-#define this_cpu_and_4(pcp, val)	percpu_to_op(4, volatile, "and", (pcp), val)
-#define this_cpu_or_1(pcp, val)		percpu_to_op(1, volatile, "or", (pcp), val)
-#define this_cpu_or_2(pcp, val)		percpu_to_op(2, volatile, "or", (pcp), val)
-#define this_cpu_or_4(pcp, val)		percpu_to_op(4, volatile, "or", (pcp), val)
-#define this_cpu_xchg_1(pcp, nval)	percpu_xchg_op(1, volatile, pcp, nval)
-#define this_cpu_xchg_2(pcp, nval)	percpu_xchg_op(2, volatile, pcp, nval)
-#define this_cpu_xchg_4(pcp, nval)	percpu_xchg_op(4, volatile, pcp, nval)
 
-#define raw_cpu_add_return_1(pcp, val)		percpu_add_return_op(1, , pcp, val)
-#define raw_cpu_add_return_2(pcp, val)		percpu_add_return_op(2, , pcp, val)
-#define raw_cpu_add_return_4(pcp, val)		percpu_add_return_op(4, , pcp, val)
-#define raw_cpu_cmpxchg_1(pcp, oval, nval)	percpu_cmpxchg_op(1, , pcp, oval, nval)
-#define raw_cpu_cmpxchg_2(pcp, oval, nval)	percpu_cmpxchg_op(2, , pcp, oval, nval)
 #define raw_cpu_cmpxchg_4(pcp, oval, nval)	percpu_cmpxchg_op(4, , pcp, oval, nval)
 
 #define this_cpu_add_return_1(pcp, val)		percpu_add_return_op(1, volatile, pcp, val)
 #define this_cpu_add_return_2(pcp, val)		percpu_add_return_op(2, volatile, pcp, val)
 #define this_cpu_add_return_4(pcp, val)		percpu_add_return_op(4, volatile, pcp, val)
-#define this_cpu_cmpxchg_1(pcp, oval, nval)	percpu_cmpxchg_op(1, volatile, pcp, oval, nval)
-#define this_cpu_cmpxchg_2(pcp, oval, nval)	percpu_cmpxchg_op(2, volatile, pcp, oval, nval)
-#define this_cpu_cmpxchg_4(pcp, oval, nval)	percpu_cmpxchg_op(4, volatile, pcp, oval, nval)
 
 #define percpu_cmpxchg8b_double(pcp1, pcp2, o1, o2, n1, n2)		({										bool __ret;								typeof(pcp1) __o1 = (o1), __n1 = (n1);					typeof(pcp2) __o2 = (o2), __n2 = (n2);					asm volatile("cmpxchg8b "__percpu_arg(1)					     CC_SET(z)								     : CC_OUT(z) (__ret), "+m" (pcp1), "+m" (pcp2), "+a" (__o1), "+d" (__o2) 		     : "b" (__n1), "c" (__n2));					__ret;								})
-
-#define this_cpu_cmpxchg_double_4	percpu_cmpxchg8b_double
 
  
 

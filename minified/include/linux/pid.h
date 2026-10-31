@@ -6,7 +6,6 @@
 
 enum pid_type {
 	PIDTYPE_PID,
-	PIDTYPE_MAX,
 };
 
 struct upid {

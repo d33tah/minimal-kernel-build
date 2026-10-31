@@ -32,7 +32,6 @@ static inline bool __nodes_empty(const nodemask_t *srcp, unsigned int nbits)
 
 enum node_states {
 	N_POSSIBLE,
-	N_ONLINE,
 	N_NORMAL_MEMORY,
 };
 

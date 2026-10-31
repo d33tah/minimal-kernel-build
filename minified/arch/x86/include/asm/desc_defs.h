@@ -33,7 +33,6 @@ enum {
 
 enum {
 	DESC_TSS = 0x9,
-	DESC_LDT = 0x2,
 };
 
 struct ldttss_desc {

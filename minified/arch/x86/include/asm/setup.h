@@ -8,7 +8,7 @@
 /*
  * Reserved space for vmalloc and iomap - defined in asm/page.h
  */
-#define MAXMEM_PFN	PFN_DOWN(MAXMEM)
+#define MAXMEM_PFN PFN_DOWN(MAXMEM)
 
 /* 32-bit only kernel */
 
@@ -16,25 +16,24 @@
 
 #ifndef __ASSEMBLY__
 
-
 /* __startup_64, startup_64_setup_env removed - 64-bit only, unused in 32-bit build */
 
- 
 extern struct boot_params boot_params;
 extern char _text[];
 
- 
 extern unsigned long _brk_end;
 void *extend_brk(size_t size, size_t align);
 
- 
-#define RESERVE_BRK(name, size)						__section(".bss..brk") __aligned(1) __used		static char __brk_##name[size]
+#define RESERVE_BRK(name, size)             \
+	__section(".bss..brk") __aligned(1) \
+		__used static char __brk_##name[size]
 
 /* 32-bit only kernel */
 asmlinkage void __init i386_start_kernel(void);
 
-#else   
+#else
 
+/* clang-format off */
 .macro __RESERVE_BRK name, size
 	.pushsection .bss..brk, "aw"
 SYM_DATA_START(__brk_\name)
@@ -42,9 +41,10 @@ SYM_DATA_START(__brk_\name)
 SYM_DATA_END(__brk_\name)
 	.popsection
 .endm
+/* clang-format on */
 
 #define RESERVE_BRK(name, size) __RESERVE_BRK name, size
 
-#endif  
+#endif
 
-#endif  
+#endif

@@ -3,8 +3,10 @@
 
 #include <asm/asm.h>
 
+/* clang-format off */
 .macro ENCODE_FRAME_POINTER ptregs_offset=0
 .endm
+/* clang-format on */
 
 #define FRAME_BEGIN
 #define FRAME_END

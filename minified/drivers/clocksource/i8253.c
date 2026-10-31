@@ -24,12 +24,7 @@ struct clock_event_device i8253_clockevent = {
 	.set_state_periodic = pit_set_periodic,
 };
 
-/*
- * The tick is only ever PERIODIC here, so the oneshot path (set_state_oneshot/
- * set_next_event dispatch) is never taken; the oneshot arg is dead and the
- * device is registered PERIODIC-only.
- */
-void __init clockevent_i8253_init(bool oneshot)
+void __init clockevent_i8253_init(void)
 {
 	clockevents_register_device(&i8253_clockevent);
 }

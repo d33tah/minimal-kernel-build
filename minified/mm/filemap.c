@@ -95,8 +95,6 @@ static void *mapping_get_entry(struct address_space *mapping, pgoff_t index)
 repeat:
 	xas_reset(&xas);
 	folio = xas_load(&xas);
-	if (xas_retry(&xas, folio))
-		goto repeat;
 
 	if (!folio || xa_is_value(folio))
 		goto out;
@@ -183,8 +181,6 @@ static void filemap_get_read_batch(struct address_space *mapping, pgoff_t index,
 
 	rcu_read_lock();
 	for (folio = xas_load(&xas); folio; folio = xas_next(&xas)) {
-		if (xas_retry(&xas, folio))
-			continue;
 		if (xas.xa_index > max || xa_is_value(folio))
 			break;
 		/* CONFIG_XARRAY_MULTI off: xa_is_sibling(folio) compile-time false */

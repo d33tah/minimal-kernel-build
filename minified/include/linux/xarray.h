@@ -20,13 +20,6 @@ static inline bool xa_is_internal(const void *entry)
 	return ((unsigned long)entry & 3) == 2;
 }
 
-#define XA_ZERO_ENTRY xa_mk_internal(257)
-
-static inline bool xa_is_zero(const void *entry)
-{
-	return unlikely(entry == XA_ZERO_ENTRY);
-}
-
 static inline int xa_err(void *entry)
 {
 	if (xa_is_internal(entry) && entry >= xa_mk_internal(-MAX_ERRNO))
@@ -34,22 +27,13 @@ static inline int xa_err(void *entry)
 	return 0;
 }
 
-typedef unsigned __bitwise xa_mark_t;
-#define XA_MARK_0 ((__force xa_mark_t)0U)
-#define XA_MARK_MAX ((__force xa_mark_t)2U)
-#define XA_FREE_MARK XA_MARK_0
-
 enum xa_lock_type {
 	XA_LOCK_IRQ = 1,
 	/* XA_LOCK_BH removed - unused */
 };
 
 #define XA_FLAGS_LOCK_IRQ ((__force gfp_t)XA_LOCK_IRQ)
-#define XA_FLAGS_TRACK_FREE ((__force gfp_t)4U)
-#define XA_FLAGS_ZERO_BUSY ((__force gfp_t)8U)
 #define XA_FLAGS_ACCOUNT ((__force gfp_t)32U)
-#define XA_FLAGS_MARK(mark) \
-	((__force gfp_t)((1U << __GFP_BITS_SHIFT) << (__force unsigned)(mark)))
 
 struct xarray {
 	spinlock_t xa_lock;
@@ -71,11 +55,6 @@ static inline void xa_init_flags(struct xarray *xa, gfp_t flags)
 	xa->xa_head = NULL;
 }
 
-static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
-{
-	return xa->xa_flags & XA_FLAGS_MARK(mark);
-}
-
 #define xa_lock_irq(xa) spin_lock_irq(&(xa)->xa_lock)
 #define xa_unlock_irq(xa) spin_unlock_irq(&(xa)->xa_lock)
 
@@ -84,26 +63,14 @@ static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 #endif
 #define XA_CHUNK_SIZE (1UL << XA_CHUNK_SHIFT)
 #define XA_CHUNK_MASK (XA_CHUNK_SIZE - 1)
-#define XA_MAX_MARKS 3
-#define XA_MARK_LONGS DIV_ROUND_UP(XA_CHUNK_SIZE, BITS_PER_LONG)
 
 struct xa_node {
 	unsigned char shift, offset, count;
 	struct xa_node __rcu *parent;
-	struct xarray *array;
-	union {
-		struct list_head private_list;
-		struct rcu_head rcu_head;
-	};
 	void __rcu *slots[XA_CHUNK_SIZE];
-	unsigned long marks[XA_MAX_MARKS][XA_MARK_LONGS];
 };
 
 void xarray_init(void);
-
-#define XA_NODE_BUG_ON(node, x) \
-	do {                    \
-	} while (0)
 
 static inline void *xa_head(const struct xarray *xa)
 {
@@ -120,7 +87,6 @@ static inline void *xa_head_locked(const struct xarray *xa)
 static inline void *xa_entry(const struct xarray *xa,
 			     const struct xa_node *node, unsigned int offset)
 {
-	XA_NODE_BUG_ON(node, offset >= XA_CHUNK_SIZE);
 	return rcu_dereference_check(node->slots[offset],
 				     lockdep_is_held(&xa->xa_lock));
 }
@@ -129,7 +95,6 @@ static inline void *xa_entry_locked(const struct xarray *xa,
 				    const struct xa_node *node,
 				    unsigned int offset)
 {
-	XA_NODE_BUG_ON(node, offset >= XA_CHUNK_SIZE);
 	return rcu_dereference_protected(node->slots[offset],
 					 lockdep_is_held(&xa->xa_lock));
 }
@@ -139,13 +104,6 @@ static inline struct xa_node *xa_parent(const struct xarray *xa,
 {
 	return rcu_dereference_check(node->parent,
 				     lockdep_is_held(&xa->xa_lock));
-}
-
-static inline struct xa_node *xa_parent_locked(const struct xarray *xa,
-					       const struct xa_node *node)
-{
-	return rcu_dereference_protected(node->parent,
-					 lockdep_is_held(&xa->xa_lock));
 }
 
 static inline void *xa_mk_node(const struct xa_node *node)
@@ -161,13 +119,6 @@ static inline struct xa_node *xa_to_node(const void *entry)
 static inline bool xa_is_node(const void *entry)
 {
 	return xa_is_internal(entry) && (unsigned long)entry > 4096;
-}
-
-#define XA_RETRY_ENTRY xa_mk_internal(256)
-
-static inline bool xa_is_retry(const void *entry)
-{
-	return unlikely(entry == XA_RETRY_ENTRY);
 }
 
 struct xa_state {
@@ -242,21 +193,8 @@ static inline void xas_reset(struct xa_state *xas)
 	xas->xa_node = XAS_RESTART;
 }
 
-static inline bool xas_retry(struct xa_state *xas, const void *entry)
-{
-	if (xa_is_zero(entry))
-		return true;
-	if (!xa_is_retry(entry))
-		return false;
-	xas_reset(xas);
-	return true;
-}
-
 void *xas_load(struct xa_state *);
 void *xas_store(struct xa_state *, void *entry);
-
-void xas_set_mark(const struct xa_state *, xa_mark_t);
-void xas_clear_mark(const struct xa_state *, xa_mark_t);
 
 bool xas_nomem(struct xa_state *, gfp_t);
 

@@ -1,7 +1,6 @@
 
 
 struct path;
-struct fs_context;
 
 /* emergency_thaw_bdev removed - unused */
 

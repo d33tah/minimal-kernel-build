@@ -10,7 +10,6 @@
 
 #ifndef __ASSEMBLY__
 
-struct pt_regs;
 
 /* __startup_64, startup_64_setup_env removed - 64-bit only, unused in 32-bit build */
 

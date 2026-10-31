@@ -18,7 +18,6 @@
 
 struct fs_struct;
 struct nsproxy;
-struct pid_namespace;
 struct signal_struct;
 
 #define TASK_RUNNING 0x0000

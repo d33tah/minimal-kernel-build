@@ -4,7 +4,6 @@
 
 #define PAGEVEC_SIZE 15
 
-struct page;
 struct folio;
 
 struct folio_batch {

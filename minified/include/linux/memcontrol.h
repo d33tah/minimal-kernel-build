@@ -7,6 +7,5 @@
 #include <linux/interrupt.h>
 
 struct obj_cgroup;
-struct page;
 
 #endif /* _LINUX_MEMCONTROL_H */

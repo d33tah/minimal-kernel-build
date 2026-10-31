@@ -1,11 +1,8 @@
 #ifndef _LINUX_MOUNT_H
 #define _LINUX_MOUNT_H
 
-struct super_block;
 struct dentry;
 struct user_namespace;
-struct file_system_type;
-struct fs_context;
 
 /*
  * MNT_* flag bits removed: mnt_flags was only ever written with MNT_INTERNAL

@@ -24,7 +24,6 @@
 /* end uapi/linux/fs.h */
 
 struct vm_area_struct;
-struct cred;
 struct iov_iter;
 struct fs_context;
 

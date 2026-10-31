@@ -7,8 +7,6 @@
 #define MAX_ARG_STRINGS 0x7FFFFFFF
 #define BINPRM_BUF_SIZE 256
 
-struct filename;
-
 struct linux_binprm {
 	struct vm_area_struct *vma;
 	struct mm_struct *mm;

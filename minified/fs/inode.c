@@ -90,18 +90,6 @@ struct inode *new_inode(struct super_block *sb)
 	return inode;
 }
 
-/*
- * Runtime-dead on this single-shot boot: nothing is ever the last reference to
- * an inode (init/idle never closes its files), so the whole inode-teardown
- * subtree (iput_final, evict, destroy_inode, __inode_add_lru, inode_lru_list_del,
- * truncate_inode_pages_final, cd_forget) never executes.  Stubbed to a no-op:
- * an inode whose count never drops to zero simply stays referenced -- harmless
- * on a system that never destroys inodes.
- */
-void iput(struct inode *inode)
-{
-}
-
 void __init inode_init(void)
 {
 	inode_cachep = kmem_cache_create(

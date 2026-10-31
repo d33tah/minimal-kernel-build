@@ -339,8 +339,6 @@ struct file_system_type {
 
 extern int current_umask(void);
 
-extern void iput(struct inode *);
-
 #define MAX_RW_COUNT (INT_MAX & PAGE_MASK)
 
 struct filename {

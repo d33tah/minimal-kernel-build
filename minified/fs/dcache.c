@@ -126,8 +126,10 @@ static void dentry_unlink_inode(struct dentry *dentry)
 	__d_clear_type_and_inode(dentry);
 	spin_unlock(&dentry->d_lock);
 	spin_unlock(&inode->i_lock);
-	/* no ops object sets ->d_iput */
-	iput(inode);
+	/*
+	 * No ops object sets ->d_iput, and inodes are never released on this
+	 * kernel (no i_count, no eviction), so there is no iput().
+	 */
 }
 
 static void ___d_drop(struct dentry *dentry)
@@ -330,8 +332,6 @@ struct dentry *d_make_root(struct inode *root_inode)
 		res = __d_alloc(root_inode->i_sb, NULL);
 		if (res)
 			d_instantiate(res, root_inode);
-		else
-			iput(root_inode);
 	}
 	return res;
 }

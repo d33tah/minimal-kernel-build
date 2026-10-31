@@ -373,11 +373,6 @@ static inline int folio_nid(const struct folio *folio)
 	return page_to_nid(&folio->page);
 }
 
-static inline int page_cpupid_xchg_last(struct page *page, int cpupid)
-{
-	return page_to_nid(page);
-}
-
 static inline struct zone *page_zone(const struct page *page)
 {
 	return &NODE_DATA(page_to_nid(page))->node_zones[page_zonenum(page)];
@@ -581,12 +576,6 @@ static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags)
 	if (vm_fault & (VM_FAULT_SIGBUS | VM_FAULT_SIGSEGV))
 		return -EFAULT;
 	return 0;
-}
-
-static inline bool gup_must_unshare(unsigned int flags, struct page *page)
-{
-	/* FOLL_PIN never set: (flags & FOLL_WRITE) can never equal FOLL_PIN */
-	return false;
 }
 
 /* Inlined from elf-randomize.h */

@@ -80,12 +80,6 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 /* pgprot_writecombine, pgprot_device removed - 0 callers tree-wide */
 
 /* __HAVE_COLOR_ZERO_PAGE never defined tree-wide; dead #ifdef arm removed */
-static inline int is_zero_pfn(unsigned long pfn)
-{
-	extern unsigned long zero_pfn;
-	return pfn == zero_pfn;
-}
-
 /* my_zero_pfn removed - unused */
 
 /* pmd_read_atomic / pmd_none_or_trans_huge_or_clear_bad removed - 0 callers. */

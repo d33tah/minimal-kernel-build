@@ -55,18 +55,8 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 
 	page = vm_normal_page(vma, address, pte);
 	if (unlikely(!page)) {
-		/* FOLL_DUMP never set */
-		if (is_zero_pfn(pte_pfn(pte))) {
-			page = pte_page(pte);
-		} else {
-			ret = follow_pfn_pte(vma, address, ptep, flags);
-			page = ERR_PTR(ret);
-			goto out;
-		}
-	}
-
-	if (!pte_write(pte) && gup_must_unshare(flags, page)) {
-		page = ERR_PTR(-EMLINK);
+		ret = follow_pfn_pte(vma, address, ptep, flags);
+		page = ERR_PTR(ret);
 		goto out;
 	}
 

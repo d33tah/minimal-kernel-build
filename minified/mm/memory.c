@@ -16,16 +16,7 @@ struct page *mem_map;
 
 void *high_memory;
 
-unsigned long zero_pfn __read_mostly;
-
 unsigned long highest_memmap_pfn __read_mostly;
-
-static int __init init_zero_pfn(void)
-{
-	zero_pfn = page_to_pfn(ZERO_PAGE(0));
-	return 0;
-}
-early_initcall(init_zero_pfn);
 
 static void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte)
 {
@@ -64,15 +55,10 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 	if (likely(!pte_special(pte)))
 		goto check_pfn;
 	/*
-	 * vm_ops->find_special_page is never set by any vm_operations_struct on
-	 * this build, so the pte_special path falls straight through to the
-	 * VM_PFNMAP/zero_pfn/devmap checks below.
+	 * A special PTE has no struct page. Nothing on this build creates one
+	 * (no pte_mkspecial, no VM_PFNMAP/VM_MIXEDMAP mappings, the zero page
+	 * is never mapped into user space).
 	 */
-	if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
-		return NULL;
-	if (is_zero_pfn(pfn))
-		return NULL;
-
 	return NULL;
 
 check_pfn:
@@ -100,11 +86,7 @@ static gfp_t __get_fault_gfp_mask(struct vm_area_struct *vma)
 static inline void wp_page_reuse(struct vm_fault *vmf) __releases(vmf->ptl)
 {
 	struct vm_area_struct *vma = vmf->vma;
-	struct page *page = vmf->page;
 	pte_t entry;
-
-	if (page)
-		page_cpupid_xchg_last(page, (1 << LAST_CPUPID_SHIFT) - 1);
 
 	entry = pte_mkyoung(vmf->orig_pte);
 	entry = maybe_mkwrite(pte_mkdirty(entry), vma);
@@ -225,12 +207,6 @@ static vm_fault_t __do_fault(struct vm_fault *vmf)
 	}
 
 	ret = vma->vm_ops->fault(vmf);
-	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY |
-			    VM_FAULT_DONE_COW)))
-		return ret;
-
-	if (unlikely(!(ret & VM_FAULT_LOCKED)))
-		lock_page(vmf->page);
 
 	return ret;
 }
@@ -321,8 +297,6 @@ static vm_fault_t do_cow_fault(struct vm_fault *vmf)
 	ret = __do_fault(vmf);
 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
 		goto uncharge_out;
-	if (ret & VM_FAULT_DONE_COW)
-		return ret;
 
 	copy_user_highpage(vmf->cow_page, vmf->page, vmf->address, vma);
 	__SetPageUptodate(vmf->cow_page);

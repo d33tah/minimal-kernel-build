@@ -3,7 +3,7 @@
 #include <linux/sched/task_stack.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
-#include <linux/mm_inline.h>
+#include <linux/swap.h>
 #include <linux/ptrace.h>
 #include <linux/fs_struct.h>
 /* end scs.h */
@@ -116,13 +116,9 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	if (err)
 		goto free_tsk;
 
-	refcount_set(&tsk->stack_refcount, 1);
-
 	setup_thread_stack(tsk, orig);
 	clear_tsk_need_resched(tsk);
 	set_task_stack_end_magic(tsk);
-
-	refcount_set(&tsk->rcu_users, 2);
 
 	refcount_set(&tsk->usage, 1);
 
@@ -142,7 +138,6 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	mmap_init_lock(mm);
 	mm->map_count = 0;
 	spin_lock_init(&mm->page_table_lock);
-	init_tlb_flush_pending(mm);
 
 	if (current->mm) {
 		mm->flags = current->mm->flags & MMF_INIT_MASK;

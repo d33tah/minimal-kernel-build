@@ -36,7 +36,6 @@ enum zone_type { ZONE_NORMAL, __MAX_NR_ZONES };
 struct zone {
 	struct pglist_data *zone_pgdat;
 	unsigned long zone_start_pfn;
-	atomic_long_t managed_pages;
 	unsigned long spanned_pages, present_pages;
 	const char *name;
 	ZONE_PADDING(_pad1_) struct free_area free_area[MAX_ORDER];

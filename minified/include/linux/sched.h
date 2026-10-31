@@ -59,11 +59,7 @@ struct task_struct {
 	struct signal_struct *signal;
 	spinlock_t alloc_lock;
 	raw_spinlock_t pi_lock;
-	union {
-		refcount_t rcu_users;
-	};
 	int pagefault_disabled;
-	refcount_t stack_refcount;
 	randomized_struct_fields_end struct thread_struct thread;
 };
 

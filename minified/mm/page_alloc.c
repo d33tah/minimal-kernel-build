@@ -127,8 +127,6 @@ static void __free_pages_core(struct page *page, unsigned int order)
 	__ClearPageReserved(p);
 	set_page_count(p, 0);
 
-	atomic_long_add(nr_pages, &page_zone(page)->managed_pages);
-
 	free_one_block(page, order, true);
 }
 

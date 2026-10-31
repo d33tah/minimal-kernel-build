@@ -129,7 +129,6 @@ struct mm_struct {
 		unsigned long saved_auxv[AT_VECTOR_SIZE];
 		unsigned long flags;
 		struct user_namespace *user_ns;
-		atomic_t tlb_flush_pending;
 	} __randomize_layout;
 };
 

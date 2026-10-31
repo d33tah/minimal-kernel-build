@@ -28,11 +28,8 @@ __visible struct task_struct *__switch_to(struct task_struct *prev_p,
 					  struct task_struct *next_p)
 {
 	struct thread_struct *prev = &prev_p->thread, *next = &next_p->thread;
-	int cpu = smp_processor_id();
 
 	savesegment(gs, prev->gs);
-
-	load_TLS(next, cpu);
 
 	switch_to_extra(prev_p, next_p);
 

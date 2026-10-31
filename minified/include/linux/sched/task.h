@@ -32,8 +32,6 @@ extern void fork_init(void);
 
 extern int copy_thread(struct task_struct *, const struct kernel_clone_args *);
 
-extern void flush_thread(void);
-
 /* do_group_exit now static in exit.c */
 
 extern pid_t kernel_clone(struct kernel_clone_args *kargs);

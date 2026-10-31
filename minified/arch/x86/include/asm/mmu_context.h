@@ -16,14 +16,6 @@ static inline void paravirt_activate_mm(struct mm_struct *prev,
 {
 }
 
-static inline void load_mm_ldt(struct mm_struct *mm)
-{
-	clear_LDT();
-}
-static inline void switch_ldt(struct mm_struct *prev, struct mm_struct *next)
-{
-}
-
 extern void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk);
 
 static inline int init_new_context(struct task_struct *tsk,

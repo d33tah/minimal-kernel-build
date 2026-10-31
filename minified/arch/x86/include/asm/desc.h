@@ -36,8 +36,6 @@ static inline struct desc_struct *get_current_gdt_rw(void)
 #define load_TR_desc() native_load_tr_desc()
 #define load_gdt(dtr) native_load_gdt(dtr)
 #define load_idt(dtr) native_load_idt(dtr)
-#define load_TLS(t, cpu) native_load_tls(t, cpu)
-#define set_ldt native_set_ldt
 #define write_gdt_entry(dt, entry, desc, type) \
 	native_write_gdt_entry(dt, entry, desc, type)
 #define write_idt_entry(dt, entry, g) native_write_idt_entry(dt, entry, g)
@@ -56,9 +54,6 @@ static inline void native_write_gdt_entry(struct desc_struct *gdt, int entry,
 	switch (type) {
 	case DESC_TSS:
 		size = sizeof(tss_desc);
-		break;
-	case DESC_LDT:
-		size = sizeof(ldt_desc);
 		break;
 	default:
 		size = sizeof(*gdt);
@@ -97,22 +92,6 @@ static inline void __set_tss_desc(unsigned cpu, unsigned int entry,
 
 #define set_tss_desc(cpu, addr) __set_tss_desc(cpu, GDT_ENTRY_TSS, addr)
 
-static inline void native_set_ldt(const void *addr, unsigned int entries)
-{
-	if (likely(entries == 0))
-		asm volatile("lldt %w0" ::"q"(0));
-	else {
-		unsigned cpu = smp_processor_id();
-		ldt_desc ldt;
-
-		set_tssldt_descriptor(&ldt, (unsigned long)addr, DESC_LDT,
-				      entries * LDT_ENTRY_SIZE - 1);
-		write_gdt_entry(get_cpu_gdt_rw(cpu), GDT_ENTRY_LDT, &ldt,
-				DESC_LDT);
-		asm volatile("lldt %w0" ::"q"(GDT_ENTRY_LDT * 8));
-	}
-}
-
 static inline void native_load_gdt(const struct desc_ptr *dtr)
 {
 	asm volatile("lgdt %0" ::"m"(*dtr));
@@ -130,24 +109,10 @@ static inline void native_load_tr_desc(void)
 	asm volatile("ltr %w0" ::"q"(GDT_ENTRY_TSS * 8));
 }
 
-static inline void native_load_tls(struct thread_struct *t, unsigned int cpu)
-{
-	struct desc_struct *gdt = get_cpu_gdt_rw(cpu);
-	unsigned int i;
-
-	for (i = 0; i < GDT_ENTRY_TLS_ENTRIES; i++)
-		gdt[GDT_ENTRY_TLS_MIN + i] = t->tls_array[i];
-}
-
 /* force_reload_TR folded into its sole caller (doublefault_32.c) */
 
 /* refresh_tss_limit, invalidate_tss_limit removed - unused */
 /* get_desc_base, set_desc_base, get_desc_limit, set_desc_limit removed - unused */
-
-static inline void clear_LDT(void)
-{
-	set_ldt(NULL, 0);
-}
 
 static inline void init_idt_data(struct idt_data *data, unsigned int n,
 				 const void *addr)

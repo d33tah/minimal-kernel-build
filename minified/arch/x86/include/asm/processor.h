@@ -122,7 +122,6 @@ DECLARE_PER_CPU(struct irq_stack *, hardirq_stack_ptr);
 DECLARE_PER_CPU(struct irq_stack *, softirq_stack_ptr);
 
 struct thread_struct {
-	struct desc_struct tls_array[GDT_ENTRY_TLS_ENTRIES];
 	unsigned long sp0, sp;
 	unsigned long gs;
 };

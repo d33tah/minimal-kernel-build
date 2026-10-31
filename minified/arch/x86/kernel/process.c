@@ -54,13 +54,6 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 	return ret;
 }
 
-void flush_thread(void)
-{
-	struct task_struct *tsk = current;
-
-	memset(tsk->thread.tls_array, 0, sizeof(tsk->thread.tls_array));
-}
-
 void arch_setup_new_exec(void)
 {
 	/* TIF_NOCPUID is never set in this build, so the cpuid-faulting

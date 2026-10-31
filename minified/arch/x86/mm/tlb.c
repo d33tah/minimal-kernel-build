@@ -119,7 +119,6 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 
 	if (next != real_prev) {
 		cr4_update_pce_mm(next);
-		switch_ldt(real_prev, next);
 	}
 }
 

@@ -26,29 +26,6 @@ DEFINE_PER_CPU_PAGE_ALIGNED(
 				      GDT_ENTRY_INIT(0xc0fa, 0, 0xfffff),
 			      [GDT_ENTRY_DEFAULT_USER_DS] =
 				      GDT_ENTRY_INIT(0xc0f2, 0, 0xfffff),
-			      [GDT_ENTRY_PNPBIOS_CS32] = GDT_ENTRY_INIT(0x409a,
-									0,
-									0xffff),
-			      [GDT_ENTRY_PNPBIOS_CS16] = GDT_ENTRY_INIT(0x009a,
-									0,
-									0xffff),
-			      [GDT_ENTRY_PNPBIOS_DS] = GDT_ENTRY_INIT(0x0092, 0,
-								      0xffff),
-			      [GDT_ENTRY_PNPBIOS_TS1] = GDT_ENTRY_INIT(0x0092,
-								       0, 0),
-			      [GDT_ENTRY_PNPBIOS_TS2] = GDT_ENTRY_INIT(0x0092,
-								       0, 0),
-			      [GDT_ENTRY_APMBIOS_BASE] = GDT_ENTRY_INIT(0x409a,
-									0,
-									0xffff),
-			      [GDT_ENTRY_APMBIOS_BASE +
-				      1] = GDT_ENTRY_INIT(0x009a, 0, 0xffff),
-			      [GDT_ENTRY_APMBIOS_BASE +
-				      2] = GDT_ENTRY_INIT(0x4092, 0, 0xffff),
-			      [GDT_ENTRY_ESPFIX_SS] = GDT_ENTRY_INIT(0xc092, 0,
-								     0xfffff),
-			      [GDT_ENTRY_PERCPU] = GDT_ENTRY_INIT(0xc092, 0,
-								  0xfffff),
 		      } };
 
 static __always_inline void setup_smep(struct cpuinfo_x86 *c)
@@ -217,17 +194,11 @@ static void clear_all_debug_regs(void)
 
 #define dbg_restore_debug_regs()
 
-static inline void tss_setup_io_bitmap(struct tss_struct *tss)
-{
-	tss->x86_tss.io_bitmap_base = IO_BITMAP_OFFSET_INVALID;
-}
-
 void cpu_init_exception_handling(void)
 {
 	struct tss_struct *tss = this_cpu_ptr(&cpu_tss_rw);
 	int cpu = raw_smp_processor_id();
 
-	tss_setup_io_bitmap(tss);
 	set_tss_desc(cpu, &tss->x86_tss);
 
 	load_TR_desc();
@@ -258,8 +229,6 @@ void cpu_init(void)
 	enter_lazy_tlb(&init_mm, cur);
 
 	load_sp0(cur->thread.sp0);
-
-	load_mm_ldt(&init_mm);
 
 	clear_all_debug_regs();
 	dbg_restore_debug_regs();

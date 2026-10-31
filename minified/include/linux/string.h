@@ -6,8 +6,9 @@
 
 #include <asm/string_32.h>
 
-size_t strlcpy(char *, const char *, size_t);
+ssize_t strscpy(char *, const char *, size_t);
 
+/* Wraps calls to strscpy()/memset(), no arch specific code required */
 ssize_t strscpy_pad(char *dest, const char *src, size_t count);
 
 extern char *strrchr(const char *, int);

@@ -12,9 +12,8 @@ struct tty_operations {
 		     int count);
 } __randomize_layout;
 
-/* A tty driver: num lines, each with the tty installed on its first open. */
+/* A tty driver: its lines, each with the tty installed on its first open. */
 struct tty_driver {
-	unsigned int num;
 	struct tty_struct **ttys;
 	const struct tty_operations *ops;
 } __randomize_layout;

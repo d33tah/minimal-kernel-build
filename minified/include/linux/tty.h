@@ -11,7 +11,6 @@
  * never torn down (the single task never closes its console descriptors).
  */
 struct tty_struct {
-	struct tty_driver *driver;
 	const struct tty_operations *ops;
 	int index;
 

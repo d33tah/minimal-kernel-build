@@ -16,7 +16,6 @@ extern const struct consw vga_con;
 
 /* A console: ->device names the tty driver line behind /dev/console. */
 struct console {
-	char name[16];
 	struct tty_driver *(*device)(struct console *, int *);
 	struct console *next;
 };

@@ -113,7 +113,6 @@ static struct tty_driver *vt_console_device(struct console *c, int *index)
 }
 
 static struct console vt_console_driver = {
-	.name = "tty",
 	.device = vt_console_device,
 };
 

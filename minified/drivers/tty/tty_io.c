@@ -95,12 +95,10 @@ static struct tty_struct *tty_init_dev(struct tty_driver *driver, int idx)
 		return ERR_PTR(-ENOMEM);
 
 	mutex_init(&tty->atomic_write_lock);
-	tty->driver = driver;
 	tty->ops = driver->ops;
 	tty->index = idx;
 
-	retval = driver->ops->install ? driver->ops->install(driver, tty) :
-					tty_standard_install(driver, tty);
+	retval = driver->ops->install(driver, tty);
 	if (retval < 0) {
 		kfree(tty);
 		return ERR_PTR(retval);
@@ -146,7 +144,6 @@ struct tty_driver *tty_alloc_driver(unsigned int lines)
 	if (!driver)
 		return ERR_PTR(-ENOMEM);
 
-	driver->num = lines;
 	driver->ttys = kcalloc(lines, sizeof(*driver->ttys), GFP_KERNEL);
 	if (!driver->ttys) {
 		kfree(driver);

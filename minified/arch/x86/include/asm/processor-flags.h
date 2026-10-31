@@ -9,7 +9,6 @@
 
  
  
-#define CR3_ADDR_MASK	0xFFFFFFFFull
 
 
 #endif  

@@ -31,7 +31,6 @@ static inline bool __nodes_empty(const nodemask_t *srcp, unsigned int nbits)
 	for ((node) = 0; (node) < 1 && !nodes_empty(mask); (node)++)
 
 enum node_states {
-	N_POSSIBLE,
 	N_NORMAL_MEMORY,
 };
 
@@ -39,7 +38,5 @@ enum node_states {
 	for ((node) = 0; (node) == 0; (node) = 1)
 
 #define nr_node_ids 1U
-
-#define for_each_node(node) for_each_node_state(node, N_POSSIBLE)
 
 #endif

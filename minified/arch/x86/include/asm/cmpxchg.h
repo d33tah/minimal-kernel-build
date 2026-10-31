@@ -3,8 +3,8 @@
 #define ASM_X86_CMPXCHG_H
 
 #include <linux/compiler.h>
+#include <asm/asm.h>
 #include <asm/cpufeatures.h>
-#include <asm/alternative.h>
 
 extern void __xchg_wrong_size(void)
 	__compiletime_error("Bad argument size for xchg");
@@ -99,7 +99,7 @@ extern void __xadd_wrong_size(void)
 	})
 
 #define __cmpxchg(ptr, old, new, size) \
-	__raw_cmpxchg((ptr), (old), (new), (size), LOCK_PREFIX)
+	__raw_cmpxchg((ptr), (old), (new), (size), "")
 
 /* --- 2025-12-07 20:12 --- Inlined cmpxchg_32.h */
 /* set_64bit removed - unused */
@@ -114,7 +114,7 @@ extern void __xadd_wrong_size(void)
 static inline u64 __cmpxchg64(volatile u64 *ptr, u64 old, u64 new)
 {
 	u64 prev;
-	asm volatile(LOCK_PREFIX "cmpxchg8b %1"
+	asm volatile("cmpxchg8b %1"
 		     : "=A"(prev), "+m"(*ptr)
 		     : "b"((u32) new), "c"((u32)(new >> 32)), "0"(old)
 		     : "memory");
@@ -125,7 +125,7 @@ static inline bool __try_cmpxchg64(volatile u64 *ptr, u64 *pold, u64 new)
 {
 	bool success;
 	u64 old = *pold;
-	asm volatile(LOCK_PREFIX "cmpxchg8b %[ptr]" CC_SET(z)
+	asm volatile("cmpxchg8b %[ptr]" CC_SET(z)
 		     : CC_OUT(z)(success), [ptr] "+m"(*ptr), "+A"(old)
 		     : "b"((u32) new), "c"((u32)(new >> 32))
 		     : "memory");
@@ -191,13 +191,13 @@ static inline bool __try_cmpxchg64(volatile u64 *ptr, u64 *pold, u64 new)
 	})
 
 #define __try_cmpxchg(ptr, pold, new, size) \
-	__raw_try_cmpxchg((ptr), (pold), (new), (size), LOCK_PREFIX)
+	__raw_try_cmpxchg((ptr), (pold), (new), (size), "")
 
 #define arch_try_cmpxchg(ptr, pold, new) \
 	__try_cmpxchg((ptr), (pold), (new), sizeof(*(ptr)))
 
 #define __xadd(ptr, inc, lock) __xchg_op((ptr), (inc), xadd, lock)
-#define xadd(ptr, inc) __xadd((ptr), (inc), LOCK_PREFIX)
+#define xadd(ptr, inc) __xadd((ptr), (inc), "")
 
 #define __cmpxchg_double(pfx, p1, p2, o1, o2, n1, n2)                        \
 	({                                                                   \

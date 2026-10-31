@@ -2,7 +2,6 @@
 # clang-format mangles assembler syntax and % operand escapes in them, so they keep their layout.
 arch/x86/boot/boot.h
 arch/x86/entry/calling.h
-arch/x86/include/asm/alternative.h
 arch/x86/include/asm/asm.h
 arch/x86/include/asm/boot.h
 arch/x86/include/asm/cache.h
@@ -15,7 +14,6 @@ arch/x86/include/asm/irq_vectors.h
 arch/x86/include/asm/linkage.h
 arch/x86/include/asm/msr.h
 arch/x86/include/asm/msr-index.h
-arch/x86/include/asm/nops.h
 arch/x86/include/asm/nospec-branch.h
 arch/x86/include/asm/orc_types.h
 arch/x86/include/asm/page_32_types.h
@@ -29,7 +27,6 @@ arch/x86/include/asm/processor-flags.h
 arch/x86/include/asm/required-features.h
 arch/x86/include/asm/segment.h
 arch/x86/include/asm/setup.h
-arch/x86/include/asm/smap.h
 arch/x86/include/asm/thread_info.h
 arch/x86/include/asm/trapnr.h
 arch/x86/include/asm/uaccess.h

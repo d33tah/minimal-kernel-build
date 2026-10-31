@@ -7,25 +7,7 @@
 #include <linux/string.h>
 #include <asm/asm.h>
 #include <asm/page.h>
-/* --- 2025-12-07 20:15 --- Inlined smap.h */
-#include <asm/nops.h>
 #include <asm/cpufeatures.h>
-#include <asm/alternative.h>
-
-#define __ASM_CLAC	".byte 0x0f,0x01,0xca"
-#define __ASM_STAC	".byte 0x0f,0x01,0xcb"
-
-#ifdef __ASSEMBLY__
-#define ASM_CLAC 	ALTERNATIVE "", __ASM_CLAC, X86_FEATURE_SMAP
-#define ASM_STAC 	ALTERNATIVE "", __ASM_STAC, X86_FEATURE_SMAP
-#else
-static __always_inline void clac(void) {
-	alternative("", __ASM_CLAC, X86_FEATURE_SMAP); }
-static __always_inline void stac(void) {
-	alternative("", __ASM_STAC, X86_FEATURE_SMAP); }
-#define ASM_CLAC 	ALTERNATIVE("", __ASM_CLAC, X86_FEATURE_SMAP)
-#define ASM_STAC 	ALTERNATIVE("", __ASM_STAC, X86_FEATURE_SMAP)
-#endif
 #include <asm/extable.h>
 
 # define WARN_ON_IN_IRQ()
@@ -54,8 +36,8 @@ extern int __get_user_nocheck_4(void);
 extern int __get_user_nocheck_8(void);
 extern int __get_user_bad(void);
 
-#define __uaccess_end()   clac()
-#define __uaccess_begin_nospec()	({						stac();					barrier_nospec();		})
+#define __uaccess_end() barrier()
+#define __uaccess_begin_nospec() barrier()
 
  
 #define __inttype(x) __typeof__(			__typefits(x,char,				  __typefits(x,short,				    __typefits(x,int,				      __typefits(x,long,0ULL)))))

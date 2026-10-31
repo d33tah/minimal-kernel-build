@@ -2,7 +2,6 @@
 #ifndef _ASM_X86_SPECIAL_INSNS_H
 #define _ASM_X86_SPECIAL_INSNS_H
 
-#include <asm/nops.h>
 #include <asm/processor-flags.h>
 #include <linux/irqflags.h>
 #include <linux/jump_label.h>

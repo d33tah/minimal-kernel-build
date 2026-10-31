@@ -119,45 +119,9 @@ SECTIONS
 
 	INIT_TEXT_SECTION(PAGE_SIZE)
 
-	/*
-	 * Section for code used exclusively before alternatives are run. All
-	 * references to such code must be patched out by alternatives, normally
-	 * by using X86_FEATURE_ALWAYS CPU feature bit.
-	 *
-	 * See static_cpu_has() for an example.
-	 */
-	.altinstr_aux : AT(ADDR(.altinstr_aux) - LOAD_OFFSET) {
-		*(.altinstr_aux)
-	}
-
 	INIT_DATA_SECTION(16)
 
-	/*
-	 * struct alt_inst entries. From the header (alternative.h):
-	 * "Alternative instructions for different CPU types or capabilities"
-	 * Think locking instructions on spinlocks.
-	 */
 	. = ALIGN(8);
-	.altinstructions : AT(ADDR(.altinstructions) - LOAD_OFFSET) {
-		__alt_instructions = .;
-		*(.altinstructions)
-		__alt_instructions_end = .;
-	}
-
-	/*
-	 * And here are the replacement instructions. The linker sticks
-	 * them as binary blobs. The .altinstructions has enough data to
-	 * get the address and the length of them to patch the kernel safely.
-	 */
-	.altinstr_replacement : AT(ADDR(.altinstr_replacement) - LOAD_OFFSET) {
-		*(.altinstr_replacement)
-	}
-
-	. = ALIGN(8);
-	/*
-	 * .exit.text is discarded at runtime, not link time, to deal with
-	 *  references from .altinstructions
-	 */
 	.exit.text : AT(ADDR(.exit.text) - LOAD_OFFSET) {
 		EXIT_TEXT
 	}

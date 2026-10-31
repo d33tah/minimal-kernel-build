@@ -29,9 +29,7 @@
 #include <linux/linkage.h>
 #include <asm/page_types.h>
 #include <asm/errno.h>
-#include <asm/smap.h>
-
-#define ASM_BARRIER_NOSPEC ALTERNATIVE "", "lfence", X86_FEATURE_LFENCE_RDTSC
+#include <asm/asm.h>
 
 #define LOAD_TASK_SIZE_MINUS_N(n) 	mov $(TASK_SIZE_MAX - (n)),%_ASM_DX
 
@@ -42,10 +40,8 @@ SYM_FUNC_START(__get_user_1)
 	jae bad_get_user
 	sbb %_ASM_DX, %_ASM_DX		/* array_index_mask_nospec() */
 	and %_ASM_DX, %_ASM_AX
-	ASM_STAC
 1:	movzbl (%_ASM_AX),%edx
 	xor %eax,%eax
-	ASM_CLAC
 	RET
 SYM_FUNC_END(__get_user_1)
 
@@ -55,10 +51,8 @@ SYM_FUNC_START(__get_user_2)
 	jae bad_get_user
 	sbb %_ASM_DX, %_ASM_DX		/* array_index_mask_nospec() */
 	and %_ASM_DX, %_ASM_AX
-	ASM_STAC
 2:	movzwl (%_ASM_AX),%edx
 	xor %eax,%eax
-	ASM_CLAC
 	RET
 SYM_FUNC_END(__get_user_2)
 
@@ -68,10 +62,8 @@ SYM_FUNC_START(__get_user_4)
 	jae bad_get_user
 	sbb %_ASM_DX, %_ASM_DX		/* array_index_mask_nospec() */
 	and %_ASM_DX, %_ASM_AX
-	ASM_STAC
 3:	movl (%_ASM_AX),%edx
 	xor %eax,%eax
-	ASM_CLAC
 	RET
 SYM_FUNC_END(__get_user_4)
 
@@ -81,55 +73,39 @@ SYM_FUNC_START(__get_user_8)
 	jae bad_get_user_8
 	sbb %_ASM_DX, %_ASM_DX		/* array_index_mask_nospec() */
 	and %_ASM_DX, %_ASM_AX
-	ASM_STAC
 4:	movl (%_ASM_AX),%edx
 5:	movl 4(%_ASM_AX),%ecx
 	xor %eax,%eax
-	ASM_CLAC
 	RET
 SYM_FUNC_END(__get_user_8)
 
 /* .. and the same for __get_user, just without the range checks */
 SYM_FUNC_START(__get_user_nocheck_1)
-	ASM_STAC
-	ASM_BARRIER_NOSPEC
 6:	movzbl (%_ASM_AX),%edx
 	xor %eax,%eax
-	ASM_CLAC
 	RET
 SYM_FUNC_END(__get_user_nocheck_1)
 
 SYM_FUNC_START(__get_user_nocheck_2)
-	ASM_STAC
-	ASM_BARRIER_NOSPEC
 7:	movzwl (%_ASM_AX),%edx
 	xor %eax,%eax
-	ASM_CLAC
 	RET
 SYM_FUNC_END(__get_user_nocheck_2)
 
 SYM_FUNC_START(__get_user_nocheck_4)
-	ASM_STAC
-	ASM_BARRIER_NOSPEC
 8:	movl (%_ASM_AX),%edx
 	xor %eax,%eax
-	ASM_CLAC
 	RET
 SYM_FUNC_END(__get_user_nocheck_4)
 
 SYM_FUNC_START(__get_user_nocheck_8)
-	ASM_STAC
-	ASM_BARRIER_NOSPEC
 9:	movl (%_ASM_AX),%edx
 10:	movl 4(%_ASM_AX),%ecx
 	xor %eax,%eax
-	ASM_CLAC
 	RET
 SYM_FUNC_END(__get_user_nocheck_8)
 
-
 SYM_CODE_START_LOCAL(.Lbad_get_user_clac)
-	ASM_CLAC
 bad_get_user:
 	xor %edx,%edx
 	mov $(-EFAULT),%_ASM_AX
@@ -137,7 +113,6 @@ bad_get_user:
 SYM_CODE_END(.Lbad_get_user_clac)
 
 SYM_CODE_START_LOCAL(.Lbad_get_user_8_clac)
-	ASM_CLAC
 bad_get_user_8:
 	xor %edx,%edx
 	xor %ecx,%ecx

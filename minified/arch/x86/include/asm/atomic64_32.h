@@ -14,15 +14,12 @@ typedef struct {
 #define __ATOMIC64_DECL(sym) void atomic64_##sym(atomic64_t *, ...)
 #define ATOMIC64_DECL_ONE __ATOMIC64_DECL
 
-#define __alternative_atomic64(f, g, out, in...) \
-	asm volatile("call %P[func]"             \
-		     : out                       \
-		     : [func] "i"(atomic64_##g##_cx8), ##in)
+#define atomic64_call(f, out, in...) \
+	asm volatile("call %P[func]" \
+		     : out           \
+		     : [func] "i"(atomic64_##f##_cx8), ##in)
 
 #define ATOMIC64_DECL(sym) ATOMIC64_DECL_ONE(sym##_cx8)
-
-#define alternative_atomic64(f, out, in...) \
-	__alternative_atomic64(f, f, ASM_OUTPUT2(out), ##in)
 
 ATOMIC64_DECL(read);
 ATOMIC64_DECL(set);
@@ -43,21 +40,21 @@ static inline void arch_atomic64_set(atomic64_t *v, s64 i)
 {
 	unsigned high = (unsigned)(i >> 32);
 	unsigned low = (unsigned)i;
-	alternative_atomic64(set, , "S"(v), "b"(low), "c"(high) : "eax", "edx",
-			     "memory");
+	atomic64_call(set, , "S"(v), "b"(low), "c"(high) : "eax", "edx",
+		      "memory");
 }
 
 static inline s64 arch_atomic64_read(const atomic64_t *v)
 {
 	s64 r;
-	alternative_atomic64(read, "=&A"(r), "c"(v) : "memory");
+	atomic64_call(read, "=&A"(r), "c"(v) : "memory");
 	return r;
 }
 
 static inline s64 arch_atomic64_inc_return(atomic64_t *v)
 {
 	s64 a;
-	alternative_atomic64(inc_return, "=&A"(a), "S"(v) : "memory", "ecx");
+	atomic64_call(inc_return, "=&A"(a), "S"(v) : "memory", "ecx");
 	return a;
 }
 

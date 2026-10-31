@@ -6,13 +6,10 @@
  */
 
 #include <linux/linkage.h>
-#include <asm/alternative.h>
 
 .macro read64 reg
 	movl %ebx, %eax
 	movl %ecx, %edx
-/* we need LOCK_PREFIX since otherwise cmpxchg8b always does the write */
-	LOCK_PREFIX
 	cmpxchg8b (\reg)
 .endm
 
@@ -23,8 +20,6 @@ SYM_FUNC_END(atomic64_read_cx8)
 
 SYM_FUNC_START(atomic64_set_cx8)
 1:
-/* we don't need LOCK_PREFIX since aligned 64-bit writes
- * are atomic on 586 and newer */
 	cmpxchg8b (%esi)
 	jne 1b
 
@@ -33,7 +28,6 @@ SYM_FUNC_END(atomic64_set_cx8)
 
 SYM_FUNC_START(atomic64_xchg_cx8)
 1:
-	LOCK_PREFIX
 	cmpxchg8b (%esi)
 	jne 1b
 
@@ -57,7 +51,6 @@ SYM_FUNC_START(atomic64_\func\()_return_cx8)
 	movl %edx, %ecx
 	\ins\()l %esi, %ebx
 	\insc\()l %edi, %ecx
-	LOCK_PREFIX
 	cmpxchg8b (%ebp)
 	jne 1b
 
@@ -85,7 +78,6 @@ SYM_FUNC_START(atomic64_\func\()_return_cx8)
 	movl %edx, %ecx
 	\ins\()l $1, %ebx
 	\insc\()l $0, %ecx
-	LOCK_PREFIX
 	cmpxchg8b (%esi)
 	jne 1b
 
@@ -110,7 +102,6 @@ SYM_FUNC_START(atomic64_dec_if_positive_cx8)
 	subl $1, %ebx
 	sbb $0, %ecx
 	js 2f
-	LOCK_PREFIX
 	cmpxchg8b (%esi)
 	jne 1b
 
@@ -140,7 +131,6 @@ SYM_FUNC_START(atomic64_add_unless_cx8)
 	movl %edx, %ecx
 	addl %ebp, %ebx
 	adcl %edi, %ecx
-	LOCK_PREFIX
 	cmpxchg8b (%esi)
 	jne 1b
 
@@ -169,7 +159,6 @@ SYM_FUNC_START(atomic64_inc_not_zero_cx8)
 	xorl %ecx, %ecx
 	addl $1, %ebx
 	adcl %edx, %ecx
-	LOCK_PREFIX
 	cmpxchg8b (%esi)
 	jne 1b
 

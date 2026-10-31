@@ -33,7 +33,6 @@
 #include <linux/err.h>
 #include <asm/segment.h>
 #include <asm/irq_vectors.h>
-#include <asm/smap.h>
 #include <asm/frame.h>
 
 #include "calling.h"
@@ -157,7 +156,6 @@
  */
 .macro idtentry vector asmsym cfunc has_error_code:req
 SYM_CODE_START(\asmsym)
-	ASM_CLAC
 	cld
 
 	.if \has_error_code == 0
@@ -174,7 +172,6 @@ SYM_CODE_END(\asmsym)
 .macro idtentry_irq vector cfunc
 	.p2align CONFIG_X86_L1_CACHE_SHIFT
 SYM_CODE_START_LOCAL(asm_\cfunc)
-	ASM_CLAC
 	SAVE_ALL
 	ENCODE_FRAME_POINTER
 	movl	%esp, %eax
@@ -303,7 +300,6 @@ SYM_CODE_END(ret_from_fork)
  * ebp  arg6
  */
 SYM_FUNC_START(entry_INT80_32)
-	ASM_CLAC
 	pushl	%eax			/* pt_regs->orig_ax */
 
 	SAVE_ALL pt_regs_ax=$-ENOSYS	/* save rest */
@@ -385,7 +381,6 @@ SYM_CODE_START(asm_exc_double_fault)
 SYM_CODE_END(asm_exc_double_fault)
 
 SYM_CODE_START(asm_exc_nmi)
-	ASM_CLAC
 
 	pushl	%eax				# pt_regs->orig_ax
 	SAVE_ALL

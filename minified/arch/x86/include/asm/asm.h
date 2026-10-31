@@ -26,8 +26,6 @@
 #define _ASM_DX		__ASM_REG(dx)
 #define _ASM_SP		__ASM_REG(sp)
 
-#define _ASM_RIP(x)	__ASM_SEL_RAW(x, x (__ASM_REGPFX rip))
-
 #ifdef __GCC_ASM_FLAG_OUTPUTS__
 # define CC_SET(c) "\n\t/* output condition code " #c "*/\n"
 # define CC_OUT(c) "=@cc" #c

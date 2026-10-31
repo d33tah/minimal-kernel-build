@@ -14,7 +14,6 @@
 #include <asm/percpu.h>
 #include <asm/msr.h>
 #include <asm/desc_defs.h>
-#include <asm/nops.h>
 #include <asm/special_insns.h>
 #include <asm/unwind_hints.h>
 /* Removed: #include <asm/vmxfeatures.h> - not needed for minimal kernel */
@@ -161,18 +160,14 @@ extern void cpu_init_exception_handling(void);
 
 /* ARCH_HAS_PREFETCHW, ARCH_HAS_SPINLOCK_PREFETCH, ARCH_HAS_PREFETCH removed - unused */
 
-#define BASE_PREFETCH ""
-
 static inline void prefetch(const void *x)
 {
-	alternative_input(BASE_PREFETCH, "prefetchnta %P1", X86_FEATURE_XMM,
-			  "m"(*(const char *)x));
+	asm volatile("" : : "m"(*(const char *)x));
 }
 
 static __always_inline void prefetchw(const void *x)
 {
-	alternative_input(BASE_PREFETCH, "prefetchw %P1",
-			  X86_FEATURE_3DNOWPREFETCH, "m"(*(const char *)x));
+	asm volatile("" : : "m"(*(const char *)x));
 }
 
 #define TOP_OF_INIT_STACK                                  \

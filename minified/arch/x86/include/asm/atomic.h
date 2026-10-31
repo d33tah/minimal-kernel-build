@@ -3,8 +3,8 @@
 #define _ASM_X86_ATOMIC_H
 
 #include <linux/compiler.h>
+#include <asm/asm.h>
 #include <linux/types.h>
-#include <asm/alternative.h>
 #include <asm/cmpxchg.h>
 #include <asm/rmwcc.h>
 #include <asm/barrier.h>
@@ -21,35 +21,32 @@ static __always_inline void arch_atomic_set(atomic_t *v, int i)
 
 static __always_inline void arch_atomic_add(int i, atomic_t *v)
 {
-	asm volatile(LOCK_PREFIX "addl %1,%0"
-		     : "+m"(v->counter)
-		     : "ir"(i)
-		     : "memory");
+	asm volatile("addl %1,%0" : "+m"(v->counter) : "ir"(i) : "memory");
 }
 
 static __always_inline bool arch_atomic_sub_and_test(int i, atomic_t *v)
 {
-	return GEN_BINARY_RMWcc(LOCK_PREFIX "subl", v->counter, e, "er", i);
+	return GEN_BINARY_RMWcc("subl", v->counter, e, "er", i);
 }
 
 static __always_inline void arch_atomic_inc(atomic_t *v)
 {
-	asm volatile(LOCK_PREFIX "incl %0" : "+m"(v->counter)::"memory");
+	asm volatile("incl %0" : "+m"(v->counter)::"memory");
 }
 
 static __always_inline void arch_atomic_dec(atomic_t *v)
 {
-	asm volatile(LOCK_PREFIX "decl %0" : "+m"(v->counter)::"memory");
+	asm volatile("decl %0" : "+m"(v->counter)::"memory");
 }
 
 static __always_inline bool arch_atomic_dec_and_test(atomic_t *v)
 {
-	return GEN_UNARY_RMWcc(LOCK_PREFIX "decl", v->counter, e);
+	return GEN_UNARY_RMWcc("decl", v->counter, e);
 }
 
 static __always_inline bool arch_atomic_inc_and_test(atomic_t *v)
 {
-	return GEN_UNARY_RMWcc(LOCK_PREFIX "incl", v->counter, e);
+	return GEN_UNARY_RMWcc("incl", v->counter, e);
 }
 
 static __always_inline int arch_atomic_add_return(int i, atomic_t *v)

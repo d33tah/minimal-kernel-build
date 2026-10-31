@@ -2,9 +2,6 @@
 #ifndef _ASM_X86_BARRIER_H
 #define _ASM_X86_BARRIER_H
 
-#include <asm/alternative.h>
-#include <asm/nops.h>
-
 static inline unsigned long array_index_mask_nospec(unsigned long index,
 						    unsigned long size)
 {
@@ -16,8 +13,6 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 		     : "cc");
 	return mask;
 }
-
-#define barrier_nospec() alternative("", "lfence", X86_FEATURE_LFENCE_RDTSC)
 
 /* --- 2025-12-07 10:25 --- Inlined asm-generic/barrier.h content */
 #include <linux/compiler.h>

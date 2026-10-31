@@ -3,7 +3,6 @@
 #define _ASM_X86_SEGMENT_H
 
 #include <linux/const.h>
-#include <asm/alternative.h>
 #include <asm/ibt.h>
 
  
@@ -27,7 +26,6 @@
  
 #define USER_RPL		0x3
 
-
 #define GDT_ENTRY_KERNEL_CS		12
 #define GDT_ENTRY_KERNEL_DS		13
 #define GDT_ENTRY_DEFAULT_USER_CS	14
@@ -48,7 +46,6 @@
 
 # define __KERNEL_PERCPU		0
 
-
 #define IDT_ENTRIES			256
 #define NUM_EXCEPTION_VECTORS		32
 
@@ -56,8 +53,6 @@
 #define EXCEPTION_ERRCODE_MASK		0x20027d00
 
 #define GDT_SIZE			(GDT_ENTRIES*8)
-
-
 
  
 #define EARLY_IDT_HANDLER_SIZE (9 + ENDBR_INSN_SIZE)
@@ -67,14 +62,11 @@
 extern const char early_idt_handler_array[NUM_EXCEPTION_VECTORS][EARLY_IDT_HANDLER_SIZE];
 extern void early_ignore_irq(void);
 
-
  
 #define __loadsegment_simple(seg, value)				do {										unsigned short __val = (value);															asm volatile("						\n"			     "1:	movl %k0,%%" #seg "		\n"			     _ASM_EXTABLE_TYPE_REG(1b, 1b, EX_TYPE_ZERO_REG, %k0)		     : "+r" (__val) : : "memory");			} while (0)
 
-
 #define __loadsegment_fs(value) __loadsegment_simple(fs, (value))
 #define __loadsegment_gs(value) __loadsegment_simple(gs, (value))
-
 
 #define loadsegment(seg, value) __loadsegment_ ## seg (value)
 

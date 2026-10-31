@@ -14,8 +14,7 @@
 #include <linux/linkage.h>
 #include <asm/thread_info.h>
 #include <asm/errno.h>
-#include <asm/smap.h>
-
+#include <asm/asm.h>
 
 /*
  * __put_user_X
@@ -40,10 +39,8 @@ SYM_FUNC_START(__put_user_1)
 	jae .Lbad_put_user
 SYM_INNER_LABEL(__put_user_nocheck_1, SYM_L_GLOBAL)
 	ENDBR
-	ASM_STAC
 1:	movb %al,(%_ASM_CX)
 	xor %ecx,%ecx
-	ASM_CLAC
 	RET
 SYM_FUNC_END(__put_user_1)
 
@@ -53,10 +50,8 @@ SYM_FUNC_START(__put_user_2)
 	jae .Lbad_put_user
 SYM_INNER_LABEL(__put_user_nocheck_2, SYM_L_GLOBAL)
 	ENDBR
-	ASM_STAC
 2:	movw %ax,(%_ASM_CX)
 	xor %ecx,%ecx
-	ASM_CLAC
 	RET
 SYM_FUNC_END(__put_user_2)
 
@@ -66,10 +61,8 @@ SYM_FUNC_START(__put_user_4)
 	jae .Lbad_put_user
 SYM_INNER_LABEL(__put_user_nocheck_4, SYM_L_GLOBAL)
 	ENDBR
-	ASM_STAC
 3:	movl %eax,(%_ASM_CX)
 	xor %ecx,%ecx
-	ASM_CLAC
 	RET
 SYM_FUNC_END(__put_user_4)
 
@@ -79,18 +72,15 @@ SYM_FUNC_START(__put_user_8)
 	jae .Lbad_put_user
 SYM_INNER_LABEL(__put_user_nocheck_8, SYM_L_GLOBAL)
 	ENDBR
-	ASM_STAC
 4:	mov %_ASM_AX,(%_ASM_CX)
 #ifdef CONFIG_X86_32
 5:	movl %edx,4(%_ASM_CX)
 #endif
 	xor %ecx,%ecx
-	ASM_CLAC
 	RET
 SYM_FUNC_END(__put_user_8)
 
 SYM_CODE_START_LOCAL(.Lbad_put_user_clac)
-	ASM_CLAC
 .Lbad_put_user:
 	movl $-EFAULT,%ecx
 	RET

@@ -7,7 +7,7 @@
 #endif
 
 #include <linux/compiler.h>
-#include <asm/alternative.h>
+#include <asm/asm.h>
 #include <asm/rmwcc.h>
 #include <asm/barrier.h>
 
@@ -25,12 +25,12 @@
 static __always_inline void arch_set_bit(long nr, volatile unsigned long *addr)
 {
 	if (__builtin_constant_p(nr)) {
-		asm volatile(LOCK_PREFIX "orb %b1,%0"
+		asm volatile("orb %b1,%0"
 			     : CONST_MASK_ADDR(nr, addr)
 			     : "iq"(CONST_MASK(nr))
 			     : "memory");
 	} else {
-		asm volatile(LOCK_PREFIX __ASM_SIZE(bts) " %1,%0"
+		asm volatile(__ASM_SIZE(bts) " %1,%0"
 			     :
 			     : RLONG_ADDR(addr), "Ir"(nr)
 			     : "memory");
@@ -47,11 +47,11 @@ static __always_inline void arch_clear_bit(long nr,
 					   volatile unsigned long *addr)
 {
 	if (__builtin_constant_p(nr)) {
-		asm volatile(LOCK_PREFIX "andb %b1,%0"
+		asm volatile("andb %b1,%0"
 			     : CONST_MASK_ADDR(nr, addr)
 			     : "iq"(~CONST_MASK(nr)));
 	} else {
-		asm volatile(LOCK_PREFIX __ASM_SIZE(btr) " %1,%0"
+		asm volatile(__ASM_SIZE(btr) " %1,%0"
 			     :
 			     : RLONG_ADDR(addr), "Ir"(nr)
 			     : "memory");
@@ -68,7 +68,7 @@ static __always_inline bool
 arch_clear_bit_unlock_is_negative_byte(long nr, volatile unsigned long *addr)
 {
 	bool negative;
-	asm volatile(LOCK_PREFIX "andb %2,%1" CC_SET(s)
+	asm volatile("andb %2,%1" CC_SET(s)
 		     : CC_OUT(s)(negative), WBYTE_ADDR(addr)
 		     : "ir"((char)~(1 << nr))
 		     : "memory");
@@ -80,8 +80,7 @@ arch_clear_bit_unlock_is_negative_byte(long nr, volatile unsigned long *addr)
 static __always_inline bool arch_test_and_set_bit(long nr,
 						  volatile unsigned long *addr)
 {
-	return GEN_BINARY_RMWcc(LOCK_PREFIX __ASM_SIZE(bts), *addr, c, "Ir",
-				nr);
+	return GEN_BINARY_RMWcc(__ASM_SIZE(bts), *addr, c, "Ir", nr);
 }
 
 static __always_inline bool
@@ -105,8 +104,7 @@ arch___test_and_set_bit(long nr, volatile unsigned long *addr)
 static __always_inline bool
 arch_test_and_clear_bit(long nr, volatile unsigned long *addr)
 {
-	return GEN_BINARY_RMWcc(LOCK_PREFIX __ASM_SIZE(btr), *addr, c, "Ir",
-				nr);
+	return GEN_BINARY_RMWcc(__ASM_SIZE(btr), *addr, c, "Ir", nr);
 }
 
 static __always_inline bool

@@ -58,19 +58,9 @@
 #define X86_FEATURE_CX8			( 0*32+ 8)
 #define X86_FEATURE_PGE			( 0*32+13)
 #define X86_FEATURE_CMOV		( 0*32+15)
-#define X86_FEATURE_XMM			( 0*32+25)
-
-#define X86_FEATURE_RDTSCP		( 1*32+27)
-
-/* Word 3 - Auxiliary flags */
-#define X86_FEATURE_LFENCE_RDTSC	( 3*32+18)
-#define X86_FEATURE_ALWAYS		( 3*32+21)
 
 #define X86_FEATURE_PCID		( 4*32+17)
 #define X86_FEATURE_HYPERVISOR		( 4*32+31)
-
-/* Word 6 - AMD extended */
-#define X86_FEATURE_3DNOWPREFETCH	( 6*32+ 8)
 
 /* Word 7 - Kernel-synthesized flags */
 #define X86_FEATURE_PTI			( 7*32+11)

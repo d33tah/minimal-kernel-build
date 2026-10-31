@@ -7,7 +7,6 @@
 #include <linux/objtool.h>
 #include <linux/linkage.h>
 
-#include <asm/alternative.h>
 #include <asm/cpufeatures.h>
 #include <asm/msr-index.h>
 #include <asm/unwind_hints.h>
@@ -30,10 +29,8 @@
 
   
 
-
  
 #else
-
 
 typedef u8 retpoline_thunk_t[RETPOLINE_THUNK_SIZE];
 

@@ -92,21 +92,14 @@ static int __init do_one_initcall(initcall_t fn)
 	return ret;
 }
 
-extern initcall_entry_t __initcall_start[];
-extern initcall_entry_t __initcall0_start[];
 extern initcall_entry_t __initcall1_start[];
-extern initcall_entry_t __initcall2_start[];
-extern initcall_entry_t __initcall3_start[];
-extern initcall_entry_t __initcall4_start[];
 extern initcall_entry_t __initcall5_start[];
-extern initcall_entry_t __initcall6_start[];
-extern initcall_entry_t __initcall7_start[];
 extern initcall_entry_t __initcall_end[];
 
 static initcall_entry_t *initcall_levels[] __initdata = {
-	__initcall0_start, __initcall1_start, __initcall2_start,
-	__initcall3_start, __initcall4_start, __initcall5_start,
-	__initcall6_start, __initcall7_start, __initcall_end,
+	__initcall1_start,
+	__initcall5_start,
+	__initcall_end,
 };
 
 static void __init do_initcall_level(int level)
@@ -125,14 +118,6 @@ static void __init do_initcalls(void)
 		do_initcall_level(level);
 }
 
-static void __init do_pre_smp_initcalls(void)
-{
-	initcall_entry_t *fn;
-
-	for (fn = __initcall_start; fn < __initcall0_start; fn++)
-		do_one_initcall(initcall_from_entry(fn));
-}
-
 static void __init console_on_rootfs(void)
 {
 	struct file *file = filp_open("/dev/console", O_RDWR, 0);
@@ -148,8 +133,6 @@ static void __init console_on_rootfs(void)
 static noinline void __init kernel_init_freeable(void)
 {
 	gfp_allowed_mask = __GFP_BITS_MASK;
-
-	do_pre_smp_initcalls();
 
 	do_initcalls();
 

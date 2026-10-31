@@ -58,14 +58,9 @@ extern struct file_system_type rootfs_fs_type;
 
 #define __define_initcall(fn, id) ___define_initcall(fn, id, .initcall##id)
 
-#define early_initcall(fn)		__define_initcall(fn, early)
-
 #define core_initcall(fn)		__define_initcall(fn, 1)
 #define fs_initcall(fn)			__define_initcall(fn, 5)
 #define rootfs_initcall(fn)		__define_initcall(fn, rootfs)
-#define device_initcall(fn)		__define_initcall(fn, 6)
-
-#define __initcall(fn) device_initcall(fn)
 
 #define console_initcall(fn)	___define_initcall(fn, con, .con_initcall)
 #endif

@@ -151,7 +151,7 @@
 #define INIT_SETUP(initsetup_align)							. = ALIGN(initsetup_align);						__setup_start = .;							KEEP(*(.init.setup))							__setup_end = .;
 
 #define INIT_CALLS_LEVEL(level)								__initcall##level##_start = .;						KEEP(*(.initcall##level##.init))					KEEP(*(.initcall##level##s.init))			
-#define INIT_CALLS									__initcall_start = .;							KEEP(*(.initcallearly.init))						INIT_CALLS_LEVEL(0)							INIT_CALLS_LEVEL(1)							INIT_CALLS_LEVEL(2)							INIT_CALLS_LEVEL(3)							INIT_CALLS_LEVEL(4)							INIT_CALLS_LEVEL(5)							INIT_CALLS_LEVEL(rootfs)						INIT_CALLS_LEVEL(6)							INIT_CALLS_LEVEL(7)							__initcall_end = .;
+#define INIT_CALLS									INIT_CALLS_LEVEL(1)							INIT_CALLS_LEVEL(5)							INIT_CALLS_LEVEL(rootfs)						__initcall_end = .;
 
 #define CON_INITCALL									__con_initcall_start = .;						KEEP(*(.con_initcall.init))						__con_initcall_end = .;
 

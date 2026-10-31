@@ -127,14 +127,6 @@ export KBUILD_HOSTLDFLAGS KBUILD_HOSTLDLIBS
 export KBUILD_CPPFLAGS NOSTDINC_FLAGS LINUXINCLUDE OBJCOPYFLAGS KBUILD_LDFLAGS
 export KBUILD_CFLAGS KBUILD_AFLAGS
 
-# ===========================================================================
-# Shared helper rules
-
-# Basic helpers built in scripts/basic/
-PHONY += scripts_basic
-scripts_basic:
-	$(Q)$(MAKE) $(build)=scripts/basic
-
 ifdef need-config
 include $(srctree)/scripts/Makefile.clang
 include $(srctree)/scripts/Makefile.compiler
@@ -282,7 +274,7 @@ $(sort $(vmlinux-deps)): descend ;
 # prepare0 generates bounds.h and asm-offsets.h (./Kbuild).
 PHONY += prepare prepare0 archprepare
 
-archprepare: archheaders scripts_basic asm-generic \
+archprepare: archheaders asm-generic \
 	include/generated/utsrelease.h include/generated/autoconf.h
 
 prepare0: archprepare
@@ -323,11 +315,8 @@ clean: archclean vmlinuxclean
 mrproper: rm-files := $(wildcard include/config include/generated \
 		      arch/$(SRCARCH)/include/generated)
 
-PHONY += _mrproper_scripts mrproper
-_mrproper_scripts:
-	$(Q)$(MAKE) $(clean)=scripts
-
-mrproper: clean _mrproper_scripts
+PHONY += mrproper
+mrproper: clean
 	$(call cmd,rmfiles)
 
 # Handle descending into subdirectories listed in $(build-dirs)

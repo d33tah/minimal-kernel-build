@@ -45,8 +45,6 @@ include/generated/
 kernel/.bounds.s.cmd
 kernel/bounds.s
 scripts/.sorttable.cmd
-scripts/basic/.fixdep.cmd
-scripts/basic/fixdep
 scripts/sorttable
 usr/.gen_init_cpio.cmd
 usr/.initramfs_data.cpio.cmd

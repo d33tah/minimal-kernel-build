@@ -39,5 +39,5 @@ info LD vmlinux
 ${LD} ${KBUILD_LDFLAGS} ${LDFLAGS_vmlinux} --script=${objtree}/${KBUILD_LDS} \
 	-o vmlinux --whole-archive vmlinux.o --no-whole-archive
 
-# For fixdep
+# Dependencies of the vmlinux link, read by if_changed_dep
 echo "vmlinux: $0" > .vmlinux.d

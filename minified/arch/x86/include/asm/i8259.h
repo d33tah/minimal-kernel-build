@@ -16,7 +16,6 @@
 #define PIC_CASCADE_IR 2
 #define MASTER_ICW4_DEFAULT 0x01
 #define SLAVE_ICW4_DEFAULT 0x01
-#define PIC_ICW4_AEOI 2
 
 static inline void outb_pic(unsigned char value, unsigned int port)
 {

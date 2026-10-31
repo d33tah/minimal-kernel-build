@@ -58,8 +58,6 @@ static const __initconst struct idt_data def_idts[] = {
 	SYSG(IA32_SYSCALL_VECTOR, entry_INT80_32),
 };
 
-static const __initconst struct idt_data apic_idts[] = {};
-
 static gate_desc idt_table[IDT_ENTRIES] __page_aligned_bss;
 
 static struct desc_ptr idt_descr __ro_after_init = {
@@ -111,8 +109,6 @@ void __init idt_setup_apic_and_irq_gates(void)
 {
 	int i = FIRST_EXTERNAL_VECTOR;
 	void *entry;
-
-	idt_setup_from_table(idt_table, apic_idts, ARRAY_SIZE(apic_idts), true);
 
 	for (; i < FIRST_SYSTEM_VECTOR; i++) {
 		if (test_bit(i, system_vectors))

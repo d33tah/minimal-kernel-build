@@ -28,7 +28,6 @@ struct iov_iter {
 		const struct iovec *iov;
 		const struct kvec *kvec;
 	};
-	unsigned long nr_segs;
 };
 
 static inline enum iter_type iov_iter_type(const struct iov_iter *i)

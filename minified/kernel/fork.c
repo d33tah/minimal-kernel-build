@@ -219,20 +219,6 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 	return 0;
 }
 
-static int copy_fs(unsigned long clone_flags, struct task_struct *tsk)
-{
-	struct fs_struct *fs = current->fs;
-
-	/*
-	 * The only spawn on this build (init) sets CLONE_FS, so the fs_struct is
-	 * always shared, never duplicated.  The copy_fs_struct() arm is dead.
-	 */
-	spin_lock(&fs->lock);
-	fs->users++;
-	spin_unlock(&fs->lock);
-	return 0;
-}
-
 static int copy_files(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct files_struct *oldf, *newf;
@@ -330,9 +316,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	retval = copy_files(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_semundo;
-	retval = copy_fs(clone_flags, p);
-	if (retval)
-		goto bad_fork_cleanup_files;
 	retval = copy_signal(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_fs;
@@ -372,7 +355,6 @@ bad_fork_cleanup_signal:
 	/* CLONE_THREAD never set -> signal_struct is always private here */
 	kmem_cache_free(signal_cachep, p->signal);
 bad_fork_cleanup_fs:
-bad_fork_cleanup_files:
 bad_fork_cleanup_semundo:
 bad_fork_cleanup_policy:
 bad_fork_free:

@@ -33,15 +33,13 @@
 				void __user *base;                             \
 				size_t len;                                    \
 				iterate_iovec(i, n, base, len, off, iov, (I))  \
-					i->nr_segs -= iov - i->iov;            \
-				i->iov = iov;                                  \
+					i->iov = iov;                          \
 			} else if (iov_iter_is_kvec(i)) {                      \
 				const struct kvec *kvec = i->kvec;             \
 				void *base;                                    \
 				size_t len;                                    \
 				iterate_iovec(i, n, base, len, off, kvec, (K)) \
-					i->nr_segs -= kvec - i->kvec;          \
-				i->kvec = kvec;                                \
+					i->kvec = kvec;                        \
 			}                                                      \
 			i->count -= n;                                         \
 		}                                                              \
@@ -71,7 +69,6 @@ void iov_iter_init(struct iov_iter *i, unsigned int direction,
 	WARN_ON(direction & ~(READ | WRITE));
 	*i = (struct iov_iter){ .iter_type = ITER_IOVEC,
 				.iov = iov,
-				.nr_segs = nr_segs,
 				.iov_offset = 0,
 				.count = count };
 }
@@ -169,7 +166,6 @@ void iov_iter_kvec(struct iov_iter *i, unsigned int direction,
 	WARN_ON(direction & ~(READ | WRITE));
 	*i = (struct iov_iter){ .iter_type = ITER_KVEC,
 				.kvec = kvec,
-				.nr_segs = nr_segs,
 				.iov_offset = 0,
 				.count = count };
 }

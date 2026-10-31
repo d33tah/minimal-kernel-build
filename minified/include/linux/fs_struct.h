@@ -4,7 +4,6 @@
 #include <linux/path.h>
 
 struct fs_struct {
-	int users;
 	spinlock_t lock;
 	int umask;
 	struct path root, pwd;

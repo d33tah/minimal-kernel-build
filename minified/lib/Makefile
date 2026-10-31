@@ -22,8 +22,7 @@ lib-y := string.o \
 
 obj-y	+= lockref.o
 
-obj-y += iov_iter.o \
-	 find_bit.o
+obj-y += iov_iter.o
 	 # parser.o removed - not used
 	 # usercopy.o removed - _copy_from_user/_copy_to_user now header inlines
 	 # (INLINE_COPY_FROM_USER/TO_USER defined in asm/uaccess.h)

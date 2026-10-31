@@ -5,67 +5,23 @@
 
 #include <linux/kernel.h>
 
-/* Inlined from find.h */
-extern unsigned long _find_next_bit(const unsigned long *addr1,
-				    const unsigned long *addr2,
-				    unsigned long nbits, unsigned long start,
-				    unsigned long invert, unsigned long le);
-extern unsigned long _find_first_bit(const unsigned long *addr,
-				     unsigned long size);
-
-static inline unsigned long find_next_bit(const unsigned long *addr,
-					  unsigned long size,
-					  unsigned long offset)
-{
-	if (small_const_nbits(size)) {
-		unsigned long val;
-
-		if (unlikely(offset >= size))
-			return size;
-
-		val = *addr & GENMASK(size - 1, offset);
-		return val ? __ffs(val) : size;
-	}
-
-	return _find_next_bit(addr, NULL, size, offset, 0UL, 0);
-}
-
+/*
+ * Every bitmap searched here is a single word (the fd table's open_fds,
+ * NR_OPEN_DEFAULT == BITS_PER_LONG; nodemasks, MAX_NUMNODES == 1), so the
+ * search helpers handle 0 < size <= BITS_PER_LONG only.
+ */
 static inline unsigned long find_next_zero_bit(const unsigned long *addr,
 					       unsigned long size,
 					       unsigned long offset)
 {
-	if (small_const_nbits(size)) {
-		unsigned long val;
+	unsigned long val;
 
-		if (unlikely(offset >= size))
-			return size;
+	if (unlikely(offset >= size))
+		return size;
 
-		val = *addr | ~GENMASK(size - 1, offset);
-		return val == ~0UL ? size : ffz(val);
-	}
-
-	return _find_next_bit(addr, NULL, size, offset, ~0UL, 0);
+	val = *addr | ~GENMASK(size - 1, offset);
+	return val == ~0UL ? size : ffz(val);
 }
-
-static inline unsigned long find_first_bit(const unsigned long *addr,
-					   unsigned long size)
-{
-	if (small_const_nbits(size)) {
-		unsigned long val = *addr & GENMASK(size - 1, 0);
-
-		return val ? __ffs(val) : size;
-	}
-
-	return _find_first_bit(addr, size);
-}
-
-/* _le bitmap functions (find_next_zero_bit_le, find_next_bit_le, find_first_zero_bit_le)
-   removed - never called */
-
-#define for_each_clear_bit_from(bit, addr, size)                \
-	for ((bit) = find_next_zero_bit((addr), (size), (bit)); \
-	     (bit) < (size);                                    \
-	     (bit) = find_next_zero_bit((addr), (size), (bit) + 1))
 
 #include <linux/string.h>
 
@@ -90,10 +46,7 @@ static inline void bitmap_fill(unsigned long *dst, unsigned int nbits)
 
 static inline bool bitmap_empty(const unsigned long *src, unsigned nbits)
 {
-	if (small_const_nbits(nbits))
-		return !(*src & BITMAP_LAST_WORD_MASK(nbits));
-
-	return find_first_bit(src, nbits) == nbits;
+	return !(*src & BITMAP_LAST_WORD_MASK(nbits));
 }
 
 #endif

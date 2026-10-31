@@ -115,7 +115,9 @@ void __init idt_setup_apic_and_irq_gates(void)
 
 	idt_setup_from_table(idt_table, apic_idts, ARRAY_SIZE(apic_idts), true);
 
-	for_each_clear_bit_from(i, system_vectors, FIRST_SYSTEM_VECTOR) {
+	for (; i < FIRST_SYSTEM_VECTOR; i++) {
+		if (test_bit(i, system_vectors))
+			continue;
 		entry = irq_entries_start +
 			IDT_ALIGN * (i - FIRST_EXTERNAL_VECTOR);
 		set_intr_gate(i, entry);

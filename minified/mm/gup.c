@@ -145,9 +145,6 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 	vm_flags_t vm_flags = vma->vm_flags;
 	int write = (gup_flags & FOLL_WRITE);
 
-	if (vm_flags & (VM_IO | VM_PFNMAP))
-		return -EFAULT;
-
 	/* FOLL_ANON never set */
 
 	if (write) {

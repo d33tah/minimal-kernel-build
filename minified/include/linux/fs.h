@@ -90,7 +90,6 @@ struct address_space {
 	struct rw_semaphore invalidate_lock;
 	gfp_t gfp_mask;
 	const struct address_space_operations *a_ops;
-	unsigned long flags;
 } __attribute__((aligned(sizeof(long)))) __randomize_layout;
 
 #define i_size_ordered_init(inode) \

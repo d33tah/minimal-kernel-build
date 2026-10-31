@@ -144,15 +144,12 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_MAYEXEC 0x00000040
 
 #define VM_GROWSDOWN 0x00000100
-#define VM_PFNMAP 0x00000400
 /* VM_UFFD_WP (0x1000) removed - unused */
 
 #define VM_LOCKED 0x00002000
-#define VM_IO 0x00004000
 
 #define VM_ACCOUNT 0x00100000
 
-#define VM_MIXEDMAP 0x10000000
 #define VM_NOHUGEPAGE 0x40000000
 
 #ifndef VM_GROWSUP

@@ -3,15 +3,6 @@
 
 #include <linux/highmem.h>
 
-enum mapping_flags {
-	AS_UNEVICTABLE = 3,
-};
-
-static inline void mapping_set_unevictable(struct address_space *mapping)
-{
-	set_bit(AS_UNEVICTABLE, &mapping->flags);
-}
-
 static inline gfp_t mapping_gfp_mask(struct address_space *mapping)
 {
 	return mapping->gfp_mask;

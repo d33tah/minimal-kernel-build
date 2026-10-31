@@ -56,7 +56,7 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 		goto check_pfn;
 	/*
 	 * A special PTE has no struct page. Nothing on this build creates one
-	 * (no pte_mkspecial, no VM_PFNMAP/VM_MIXEDMAP mappings, the zero page
+	 * (no pte_mkspecial, no PFN-mapped VMAs, the zero page
 	 * is never mapped into user space).
 	 */
 	return NULL;

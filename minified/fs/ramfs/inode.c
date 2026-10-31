@@ -19,7 +19,6 @@ static struct inode *ramfs_get_inode(struct super_block *sb,
 		inode_init_owner(&init_user_ns, inode, dir, mode);
 		inode->i_mapping->a_ops = &ram_aops;
 		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
-		mapping_set_unevictable(inode->i_mapping);
 		switch (mode & S_IFMT) {
 		default:
 			init_special_inode(inode, mode, dev);

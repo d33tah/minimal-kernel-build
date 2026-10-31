@@ -4,8 +4,6 @@
 
 #include <linux/delay.h>
 
-extern unsigned int cached_irq_mask;
-
 #define __byte(x, y) (((unsigned char *)&(y))[x])
 #define cached_master_mask (__byte(0, cached_irq_mask))
 #define cached_slave_mask (__byte(1, cached_irq_mask))
@@ -20,16 +18,12 @@ extern unsigned int cached_irq_mask;
 #define SLAVE_ICW4_DEFAULT 0x01
 #define PIC_ICW4_AEOI 2
 
-extern raw_spinlock_t i8259A_lock;
-
 static inline void outb_pic(unsigned char value, unsigned int port)
 {
 	outb(value, port);
 
 	udelay(2);
 }
-
-extern struct irq_chip i8259A_chip;
 
 struct legacy_pic {
 	int nr_legacy_irqs;

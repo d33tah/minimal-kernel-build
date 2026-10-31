@@ -95,9 +95,6 @@ static inline unsigned long pgdat_end_pfn(pg_data_t *pgdat)
 }
 
 void build_all_zonelists(pg_data_t *pgdat);
-extern void init_currently_empty_zone(struct zone *zone,
-				      unsigned long start_pfn,
-				      unsigned long size);
 
 #define zone_idx(zone) ((zone) - (zone)->zone_pgdat->node_zones)
 

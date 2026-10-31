@@ -162,7 +162,7 @@ static int bprm_stack_limits(struct linux_binprm *bprm)
 	return 0;
 }
 
-int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
+static int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 {
 	int len = strnlen(arg, MAX_ARG_STRLEN) + 1;
 	unsigned long pos = bprm->p;
@@ -333,7 +333,7 @@ static int exec_mmap(struct mm_struct *mm)
 	return 0;
 }
 
-void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
+static void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
 {
 	task_lock(tsk);
 

@@ -108,8 +108,8 @@ static void clocksource_enqueue(struct clocksource *cs)
 	list_add(&cs->list, entry);
 }
 
-void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale,
-				     u32 freq)
+static void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale,
+					    u32 freq)
 {
 	u64 sec;
 

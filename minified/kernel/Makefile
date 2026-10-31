@@ -4,7 +4,7 @@
 #
 
 obj-y     = fork.o panic.o \
-	    cpu.o exit.o softirq.o \
+	    exit.o softirq.o \
 	    capability.o user.o \
  pid.o \
 	    extable.o \

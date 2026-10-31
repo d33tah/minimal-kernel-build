@@ -3,9 +3,9 @@
 #include <linux/pagevec.h>
 #include "internal.h"
 
-noinline int __filemap_add_folio(struct address_space *mapping,
-				 struct folio *folio, pgoff_t index, gfp_t gfp,
-				 void **shadowp)
+static noinline int __filemap_add_folio(struct address_space *mapping,
+					struct folio *folio, pgoff_t index,
+					gfp_t gfp, void **shadowp)
 {
 	XA_STATE(xas, &mapping->i_pages, index);
 	long nr = 1;
@@ -46,8 +46,8 @@ error:
 	return xas_error(&xas);
 }
 
-int filemap_add_folio(struct address_space *mapping, struct folio *folio,
-		      pgoff_t index, gfp_t gfp)
+static int filemap_add_folio(struct address_space *mapping, struct folio *folio,
+			     pgoff_t index, gfp_t gfp)
 {
 	void *shadow = NULL;
 	int ret;
@@ -277,8 +277,8 @@ retry:
 	return 0;
 }
 
-ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
-		     ssize_t already_read)
+static ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
+			    ssize_t already_read)
 {
 	struct file *filp = iocb->ki_filp;
 	struct address_space *mapping = filp->f_mapping;
@@ -351,7 +351,7 @@ ssize_t generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 	return filemap_read(iocb, iter, retval);
 }
 
-vm_fault_t filemap_fault(struct vm_fault *vmf)
+static vm_fault_t filemap_fault(struct vm_fault *vmf)
 {
 	struct file *file = vmf->vma->vm_file;
 	struct address_space *mapping = file->f_mapping;
@@ -370,7 +370,7 @@ vm_fault_t filemap_fault(struct vm_fault *vmf)
 	return VM_FAULT_LOCKED;
 }
 
-const struct vm_operations_struct generic_file_vm_ops = {
+static const struct vm_operations_struct generic_file_vm_ops = {
 	.fault = filemap_fault,
 };
 
@@ -384,7 +384,7 @@ int generic_file_mmap(struct file *file, struct vm_area_struct *vma)
 	return 0;
 }
 
-ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
+static ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
 {
 	struct file *file = iocb->ki_filp;
 	struct address_space *mapping = file->f_mapping;
@@ -416,7 +416,8 @@ ssize_t generic_perform_write(struct kiocb *iocb, struct iov_iter *i)
 	return written;
 }
 
-ssize_t __generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
+static ssize_t __generic_file_write_iter(struct kiocb *iocb,
+					 struct iov_iter *from)
 {
 	/* No set-id bits to strip and no timestamp updates on this build. */
 	ssize_t written = generic_perform_write(iocb, from);

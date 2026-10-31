@@ -7,7 +7,7 @@ void kfree_const(const void *x)
 		kfree(x);
 }
 
-char *kstrdup(const char *s, gfp_t gfp)
+static char *kstrdup(const char *s, gfp_t gfp)
 {
 	size_t len;
 	char *buf;
@@ -48,9 +48,9 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		next->vm_prev = vma;
 }
 
-unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
-			    unsigned long len, unsigned long prot,
-			    unsigned long flag, unsigned long pgoff)
+static unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
+				   unsigned long len, unsigned long prot,
+				   unsigned long flag, unsigned long pgoff)
 {
 	unsigned long ret;
 	struct mm_struct *mm = current->mm;

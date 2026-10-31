@@ -4,7 +4,7 @@
 #include "slab.h"
 
 enum slab_state slab_state;
-DEFINE_MUTEX(slab_mutex);
+static DEFINE_MUTEX(slab_mutex);
 struct kmem_cache *kmem_cache;
 
 static unsigned int calculate_alignment(slab_flags_t flags, unsigned int align,
@@ -145,11 +145,11 @@ void __init create_boot_cache(struct kmem_cache *s, const char *name,
 		      name, size, err);
 }
 
-struct kmem_cache *__init create_kmalloc_cache(const char *name,
-					       unsigned int size,
-					       slab_flags_t flags,
-					       unsigned int useroffset,
-					       unsigned int usersize)
+static struct kmem_cache *__init create_kmalloc_cache(const char *name,
+						      unsigned int size,
+						      slab_flags_t flags,
+						      unsigned int useroffset,
+						      unsigned int usersize)
 {
 	struct kmem_cache *s = kmem_cache_zalloc(kmem_cache, GFP_NOWAIT);
 

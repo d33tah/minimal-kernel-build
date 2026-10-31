@@ -11,7 +11,7 @@
 #include <asm/pgalloc.h>
 #include <asm/mmu_context.h>
 
-__cacheline_aligned DEFINE_RWLOCK(tasklist_lock);
+static __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);
 
 static struct kmem_cache *task_struct_cachep;
 
@@ -39,11 +39,11 @@ static int alloc_thread_stack_node(struct task_struct *tsk, int node)
 
 static struct kmem_cache *signal_cachep;
 
-struct kmem_cache *sighand_cachep;
+static struct kmem_cache *sighand_cachep;
 
 struct kmem_cache *files_cachep;
 
-struct kmem_cache *fs_cachep;
+static struct kmem_cache *fs_cachep;
 
 static struct kmem_cache *vm_area_cachep;
 
@@ -482,7 +482,7 @@ fork_out:
 	return ERR_PTR(retval);
 }
 
-pid_t kernel_clone(struct kernel_clone_args *args)
+static pid_t kernel_clone(struct kernel_clone_args *args)
 {
 	struct pid *pid;
 	struct task_struct *p;

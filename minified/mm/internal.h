@@ -28,10 +28,6 @@
 		unlikely(__ret_warn_once);                               \
 	})
 
-/* acct_reclaim_writeback removed - reclaim throttling never engaged */
-
-void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte);
-
 /* force_page_cache_readahead removed - unused */
 
 /* page_evictable removed - unused */
@@ -57,7 +53,6 @@ extern unsigned long highest_memmap_pfn;
 /* __isolate_free_page, __putback_isolated_page removed - unused */
 extern void memblock_free_pages(struct page *page, unsigned long pfn,
 				unsigned int order);
-extern void __free_pages_core(struct page *page, unsigned int order);
 
 /* split_free_page, find_suitable_fallback declaration removed - unused */
 /* is_exec_mapping, is_stack_mapping, is_data_mapping removed - unused */
@@ -68,9 +63,5 @@ void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 /* populate_vma_page_range / faultin_vma_page_range removed - unused */
 
 /* maybe_pmd_mkwrite removed - unused */
-
-extern unsigned long __must_check vm_mmap_pgoff(struct file *, unsigned long,
-						unsigned long, unsigned long,
-						unsigned long, unsigned long);
 
 #endif

@@ -11,7 +11,7 @@
  * write-only (inode_hashtable never read), so the alloc + __remove_inode_hash were
  * pure dead work.
  */
-const struct address_space_operations empty_aops = {};
+static const struct address_space_operations empty_aops = {};
 
 static struct kmem_cache *inode_cachep __read_mostly;
 
@@ -20,7 +20,7 @@ static int no_open(struct inode *inode, struct file *file)
 	return -ENXIO;
 }
 
-int inode_init_always(struct super_block *sb, struct inode *inode)
+static int inode_init_always(struct super_block *sb, struct inode *inode)
 {
 	static const struct inode_operations empty_iops;
 	static const struct file_operations no_open_fops = { .open = no_open };
@@ -120,7 +120,7 @@ unsigned int get_next_ino(void)
 	return res;
 }
 
-struct inode *new_inode_pseudo(struct super_block *sb)
+static struct inode *new_inode_pseudo(struct super_block *sb)
 {
 	struct inode *inode = alloc_inode(sb);
 
@@ -188,7 +188,8 @@ void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 	inode->i_mode = mode;
 }
 
-struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode)
+static struct timespec64 timestamp_truncate(struct timespec64 t,
+					    struct inode *inode)
 {
 	struct super_block *sb = inode->i_sb;
 	unsigned int gran = sb->s_time_gran;

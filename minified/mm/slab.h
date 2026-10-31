@@ -85,8 +85,6 @@ enum slab_state {
 
 extern enum slab_state slab_state;
 
-extern struct mutex slab_mutex;
-
 extern struct kmem_cache *kmem_cache;
 
 extern const struct kmalloc_info_struct {
@@ -103,10 +101,6 @@ gfp_t kmalloc_fix_flags(gfp_t flags);
 
 int __kmem_cache_create(struct kmem_cache *, slab_flags_t flags);
 
-struct kmem_cache *create_kmalloc_cache(const char *name, unsigned int size,
-					slab_flags_t flags,
-					unsigned int useroffset,
-					unsigned int usersize);
 extern void create_boot_cache(struct kmem_cache *, const char *name,
 			      unsigned int size, slab_flags_t flags,
 			      unsigned int useroffset, unsigned int usersize);

@@ -46,8 +46,6 @@ enum node_states {
 	NR_NODE_STATES
 };
 
-extern nodemask_t node_states[NR_NODE_STATES];
-
 /* MAX_NUMNODES=1, simplified node state functions */
 static inline int node_state(int node, enum node_states state)
 {

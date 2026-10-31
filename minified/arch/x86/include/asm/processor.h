@@ -101,9 +101,6 @@ struct irq_stack {
 
 DECLARE_PER_CPU(unsigned long, cpu_current_top_of_stack);
 
-DECLARE_PER_CPU(struct irq_stack *, hardirq_stack_ptr);
-DECLARE_PER_CPU(struct irq_stack *, softirq_stack_ptr);
-
 struct thread_struct {
 	unsigned long sp0, sp;
 	unsigned long gs;

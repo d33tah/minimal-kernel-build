@@ -18,7 +18,6 @@ struct clock_event_device {
 	int (*set_state_periodic)(struct clock_event_device *);
 	int (*set_state_shutdown)(struct clock_event_device *);
 	const char *name;
-	const struct cpumask *cpumask;
 } ____cacheline_aligned;
 
 static inline bool clockevent_state_periodic(struct clock_event_device *dev)

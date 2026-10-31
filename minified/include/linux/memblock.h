@@ -55,7 +55,6 @@ void __next_mem_range_rev(u64 *idx, int nid, enum memblock_flags flags,
 			  phys_addr_t *out_end, int *out_nid);
 
 void memblock_free_late(phys_addr_t base, phys_addr_t size);
-
 #define __for_each_mem_range(i, type_a, type_b, nid, flags, p_start, p_end,   \
 			     p_nid)                                           \
 	for (i = 0, __next_mem_range(&i, nid, flags, type_a, type_b, p_start, \
@@ -103,9 +102,6 @@ static inline int memblock_get_region_node(const struct memblock_region *r)
 
 phys_addr_t memblock_phys_alloc_range(phys_addr_t size, phys_addr_t align,
 				      phys_addr_t start, phys_addr_t end);
-phys_addr_t memblock_alloc_range_nid(phys_addr_t size, phys_addr_t align,
-				     phys_addr_t start, phys_addr_t end,
-				     int nid, bool exact_nid);
 
 void *memblock_alloc_try_nid_raw(phys_addr_t size, phys_addr_t align,
 				 phys_addr_t min_addr, phys_addr_t max_addr,

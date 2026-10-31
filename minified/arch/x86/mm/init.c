@@ -206,8 +206,8 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 	return nr_range;
 }
 
-unsigned long __ref init_memory_mapping(unsigned long start, unsigned long end,
-					pgprot_t prot)
+static unsigned long __ref init_memory_mapping(unsigned long start,
+					       unsigned long end, pgprot_t prot)
 {
 	struct map_range mr[NR_RANGE_MR];
 	unsigned long ret = 0;

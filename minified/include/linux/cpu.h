@@ -8,7 +8,6 @@ enum cpuhp_state {
 	CPUHP_ONLINE,
 };
 
-extern void boot_cpu_init(void);
 extern void cpu_init(void);
 extern void trap_init(void);
 

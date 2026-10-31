@@ -60,8 +60,6 @@ static inline pid_t pid_nr(struct pid *pid)
 		nr = pid->numbers[0].nr;
 	return nr;
 }
-
-pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns);
 pid_t pid_vnr(struct pid *pid);
 
 #endif

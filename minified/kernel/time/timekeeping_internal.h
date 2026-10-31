@@ -9,6 +9,4 @@ static inline u64 clocksource_delta(u64 now, u64 last, u64 mask)
 	return ret & ~(mask >> 1) ? 0 : ret;
 }
 
-extern raw_spinlock_t timekeeper_lock;
-
 #endif

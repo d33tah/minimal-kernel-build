@@ -78,8 +78,8 @@ static int acl_permission_check(struct user_namespace *mnt_userns,
 	return (mask & ~mode) ? -EACCES : 0;
 }
 
-int generic_permission(struct user_namespace *mnt_userns, struct inode *inode,
-		       int mask)
+static int generic_permission(struct user_namespace *mnt_userns,
+			      struct inode *inode, int mask)
 {
 	int ret;
 
@@ -119,8 +119,8 @@ static inline int do_inode_permission(struct user_namespace *mnt_userns,
 	return generic_permission(mnt_userns, inode, mask);
 }
 
-int inode_permission(struct user_namespace *mnt_userns, struct inode *inode,
-		     int mask)
+static int inode_permission(struct user_namespace *mnt_userns,
+			    struct inode *inode, int mask)
 {
 	int retval;
 

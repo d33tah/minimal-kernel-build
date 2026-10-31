@@ -12,12 +12,6 @@
  * and returned to their order's free list on free (no coalescing).
  */
 
-nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
-	[N_POSSIBLE] = NODE_MASK_ALL,	       [N_ONLINE] = { { [0] = 1UL } },
-	[N_NORMAL_MEMORY] = { { [0] = 1UL } }, [N_MEMORY] = { { [0] = 1UL } },
-	[N_CPU] = { { [0] = 1UL } },
-};
-
 atomic_long_t _totalram_pages __read_mostly;
 gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
 
@@ -122,7 +116,7 @@ static void free_one_block(struct page *page, unsigned int order, bool tail)
 	spin_unlock_irqrestore(&zone->lock, flags);
 }
 
-void __free_pages_core(struct page *page, unsigned int order)
+static void __free_pages_core(struct page *page, unsigned int order)
 {
 	unsigned int nr_pages = 1 << order;
 	struct page *p = page;
@@ -430,9 +424,9 @@ static void __init memmap_init(void)
 	init_unavailable_range(hole_pfn, end_pfn, zone_id, nid);
 }
 
-void __meminit init_currently_empty_zone(struct zone *zone,
-					 unsigned long zone_start_pfn,
-					 unsigned long size)
+static void __meminit init_currently_empty_zone(struct zone *zone,
+						unsigned long zone_start_pfn,
+						unsigned long size)
 {
 	struct pglist_data *pgdat = zone->zone_pgdat;
 	int zone_idx = zone_idx(zone) + 1;

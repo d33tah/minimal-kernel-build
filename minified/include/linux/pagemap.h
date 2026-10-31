@@ -45,8 +45,6 @@ static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
 
 struct folio *__filemap_get_folio(struct address_space *mapping, pgoff_t index,
 				  int fgp_flags, gfp_t gfp);
-struct page *pagecache_get_page(struct address_space *mapping, pgoff_t index,
-				int fgp_flags, gfp_t gfp);
 
 static inline pgoff_t folio_index(struct folio *folio)
 {
@@ -110,11 +108,5 @@ static inline void lock_page(struct page *page)
 	if (!folio_trylock(folio))
 		__folio_lock(folio);
 }
-
-int filemap_add_folio(struct address_space *mapping, struct folio *folio,
-		      pgoff_t index, gfp_t gfp);
-
-int __filemap_add_folio(struct address_space *mapping, struct folio *folio,
-			pgoff_t index, gfp_t gfp, void **shadowp);
 
 #endif

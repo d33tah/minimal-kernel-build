@@ -18,7 +18,7 @@ struct cred init_cred = {
 	.group_info = &init_groups,
 };
 
-struct cred *prepare_creds(void)
+static struct cred *prepare_creds(void)
 {
 	struct task_struct *task = current;
 	const struct cred *old;

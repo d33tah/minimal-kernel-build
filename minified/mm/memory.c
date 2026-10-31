@@ -26,7 +26,7 @@ static int __init init_zero_pfn(void)
 }
 early_initcall(init_zero_pfn);
 
-void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte)
+static void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte)
 {
 	spinlock_t *ptl = pmd_lock(mm, pmd);
 
@@ -38,7 +38,7 @@ void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte)
 	spin_unlock(ptl);
 }
 
-int __pte_alloc(struct mm_struct *mm, pmd_t *pmd)
+static int __pte_alloc(struct mm_struct *mm, pmd_t *pmd)
 {
 	pgtable_t new = pte_alloc_one(mm);
 	if (!new)
@@ -239,7 +239,8 @@ static vm_fault_t __do_fault(struct vm_fault *vmf)
 	return ret;
 }
 
-void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr)
+static void do_set_pte(struct vm_fault *vmf, struct page *page,
+		       unsigned long addr)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	bool write = vmf->flags & FAULT_FLAG_WRITE;
@@ -266,7 +267,7 @@ static bool vmf_pte_changed(struct vm_fault *vmf)
 	return !pte_none(*vmf->pte);
 }
 
-vm_fault_t finish_fault(struct vm_fault *vmf)
+static vm_fault_t finish_fault(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct page *page;

@@ -5,6 +5,4 @@
 
 struct task_struct;
 
-extern struct kmem_cache *sighand_cachep;
-
 #endif

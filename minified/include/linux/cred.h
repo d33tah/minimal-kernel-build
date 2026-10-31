@@ -30,7 +30,6 @@ struct cred {
 } __randomize_layout;
 
 extern int copy_creds(struct task_struct *, unsigned long);
-extern struct cred *prepare_creds(void);
 extern struct cred *prepare_exec_creds(void);
 extern int commit_creds(struct cred *);
 extern void abort_creds(struct cred *);

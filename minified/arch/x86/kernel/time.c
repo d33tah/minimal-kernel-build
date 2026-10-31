@@ -16,7 +16,7 @@ static void __init setup_default_timer_irq(void)
 		pr_info("Failed to register legacy timer interrupt\n");
 }
 
-void __init hpet_time_init(void)
+static void __init hpet_time_init(void)
 {
 	if (!pit_timer_init())
 		return;

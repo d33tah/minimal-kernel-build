@@ -13,8 +13,6 @@ struct kernel_clone_args {
 	void *fn_arg;
 };
 
-extern rwlock_t tasklist_lock;
-
 extern union thread_union init_thread_union;
 extern struct task_struct init_task;
 
@@ -27,10 +25,6 @@ extern void proc_caches_init(void);
 extern void fork_init(void);
 
 extern int copy_thread(struct task_struct *, const struct kernel_clone_args *);
-
-/* do_group_exit now static in exit.c */
-
-extern pid_t kernel_clone(struct kernel_clone_args *kargs);
 extern pid_t user_mode_thread(int (*fn)(void *), void *arg,
 			      unsigned long flags);
 /* kernel_wait4 now static in exit.c */

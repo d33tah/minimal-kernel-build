@@ -264,7 +264,7 @@ static int acct_stack_growth(struct vm_area_struct *vma, unsigned long size,
 	return 0;
 }
 
-int expand_downwards(struct vm_area_struct *vma, unsigned long address)
+static int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 {
 	struct mm_struct *mm = vma->vm_mm;
 	struct vm_area_struct *prev;

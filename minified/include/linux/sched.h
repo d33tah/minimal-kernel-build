@@ -102,9 +102,6 @@ extern unsigned long init_stack[THREAD_SIZE / sizeof(unsigned long)];
 
 extern void wake_up_new_task(struct task_struct *tsk);
 
-extern void __set_task_comm(struct task_struct *tsk, const char *from,
-			    bool exec);
-
 static inline void set_tsk_thread_flag(struct task_struct *tsk, int flag)
 {
 	set_ti_thread_flag(task_thread_info(tsk), flag);

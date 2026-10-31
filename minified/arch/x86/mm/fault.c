@@ -139,7 +139,7 @@ static inline int access_error(unsigned long error_code,
 	return 0;
 }
 
-bool fault_in_kernel_space(unsigned long address)
+static bool fault_in_kernel_space(unsigned long address)
 {
 	return address >= TASK_SIZE_MAX;
 }

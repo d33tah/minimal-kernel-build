@@ -28,7 +28,7 @@ static const char *envp_init[] = { "HOME=/", "TERM=linux", NULL };
 
 unsigned long loops_per_jiffy = (1 << 12);
 
-noinline void __ref rest_init(void)
+static noinline void __ref rest_init(void)
 {
 	user_mode_thread(kernel_init, NULL, CLONE_FS);
 
@@ -43,7 +43,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	local_irq_disable();
 
-	boot_cpu_init();
 	setup_arch();
 
 	build_all_zonelists(NULL);
@@ -143,7 +142,7 @@ static void __init do_pre_smp_initcalls(void)
 		do_one_initcall(initcall_from_entry(fn));
 }
 
-void __init console_on_rootfs(void)
+static void __init console_on_rootfs(void)
 {
 	struct file *file = filp_open("/dev/console", O_RDWR, 0);
 

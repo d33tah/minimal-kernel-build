@@ -4,7 +4,7 @@
 
 struct pid init_struct_pid = { .count		= REFCOUNT_INIT(1), .tasks		= { { .first = NULL }, { .first = NULL }, { .first = NULL }, }, .level		= 0, .numbers	= { { .nr		= 0, .ns		= &init_pid_ns, }, } };
 
-int pid_max = PID_MAX_DEFAULT;
+static int pid_max = PID_MAX_DEFAULT;
 
 struct pid_namespace init_pid_ns = {
 	.level = 0,
@@ -82,7 +82,7 @@ struct pid *get_task_pid(struct task_struct *task, enum pid_type type)
 	return pid;
 }
 
-pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
+static pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
 {
 	struct upid *upid;
 	pid_t nr = 0;

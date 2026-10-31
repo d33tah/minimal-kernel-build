@@ -104,7 +104,7 @@ static int con_write(struct tty_struct *tty, const unsigned char *buf,
 	return count;
 }
 
-struct tty_driver *console_driver;
+static struct tty_driver *console_driver;
 
 static struct tty_driver *vt_console_device(struct console *c, int *index)
 {

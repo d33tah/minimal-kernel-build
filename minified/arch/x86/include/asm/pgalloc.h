@@ -39,8 +39,6 @@ static inline void pte_free(struct mm_struct *mm, struct page *pte_page)
 
 /* paravirt_alloc_pte/paravirt_alloc_pmd/paravirt_release_pte no-op stubs + their discarded calls removed - PARAVIRT off */
 
-extern gfp_t __userpte_alloc_gfp;
-
 #define PGD_ALLOCATION_ORDER 0
 
 extern pgd_t *pgd_alloc(struct mm_struct *);

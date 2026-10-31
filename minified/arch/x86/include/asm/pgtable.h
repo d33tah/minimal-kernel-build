@@ -14,7 +14,6 @@
 extern unsigned long
 	empty_zero_page[PAGE_SIZE / sizeof(unsigned long)] __visible;
 #define ZERO_PAGE(vaddr) ((void)(vaddr), virt_to_page(empty_zero_page))
-
 extern spinlock_t pgd_lock;
 extern struct list_head pgd_list;
 
@@ -229,8 +228,6 @@ static inline int pmd_bad(pmd_t pmd)
 
 void init_mem_mapping(void);
 void early_alloc_pgt_buf(void);
-unsigned long init_memory_mapping(unsigned long start, unsigned long end,
-				  pgprot_t prot);
 
 static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 			      pte_t *ptep, pte_t pte)

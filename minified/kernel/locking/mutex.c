@@ -13,7 +13,7 @@ void __mutex_init(struct mutex *lock, const char *name,
 	atomic_long_set(&lock->owner, 0);
 }
 
-int __sched mutex_trylock(struct mutex *lock)
+static int __sched mutex_trylock(struct mutex *lock)
 {
 	unsigned long zero = 0UL;
 

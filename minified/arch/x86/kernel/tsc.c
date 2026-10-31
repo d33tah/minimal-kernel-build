@@ -5,9 +5,9 @@
 #include <asm/timer.h>
 #include <asm/i8259.h>
 
-unsigned int __read_mostly cpu_khz;
+static unsigned int __read_mostly cpu_khz;
 
-unsigned int __read_mostly tsc_khz;
+static unsigned int __read_mostly tsc_khz;
 
 #define KHZ 1000
 
@@ -166,7 +166,7 @@ success:
  * The CPU (and TSC) frequency is measured against the PIT; there is no
  * vendor-specific CPUID 0x15/0x16 frequency enumeration.
  */
-unsigned long native_calibrate_cpu_early(void)
+static unsigned long native_calibrate_cpu_early(void)
 {
 	unsigned long flags, fast_calibrate;
 

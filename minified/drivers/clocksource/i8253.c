@@ -2,7 +2,7 @@
 #include <linux/i8253.h>
 #include <linux/smp.h>
 
-DEFINE_RAW_SPINLOCK(i8253_lock);
+static DEFINE_RAW_SPINLOCK(i8253_lock);
 
 static int pit_shutdown(struct clock_event_device *evt)
 {
@@ -46,7 +46,5 @@ struct clock_event_device i8253_clockevent = {
  */
 void __init clockevent_i8253_init(bool oneshot)
 {
-	i8253_clockevent.cpumask = cpumask_of(smp_processor_id());
-
 	clockevents_register_device(&i8253_clockevent);
 }

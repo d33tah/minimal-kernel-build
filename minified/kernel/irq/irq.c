@@ -10,7 +10,7 @@
  */
 static struct irq_desc irq_descs[NR_IRQS];
 
-struct irq_chip no_irq_chip = {
+static struct irq_chip no_irq_chip = {
 	.name = "none",
 };
 

@@ -15,9 +15,9 @@ static int simple_read_folio(struct file *file, struct folio *folio)
 	return 0;
 }
 
-int simple_write_begin(struct file *file, struct address_space *mapping,
-		       loff_t pos, unsigned len, struct page **pagep,
-		       void **fsdata)
+static int simple_write_begin(struct file *file, struct address_space *mapping,
+			      loff_t pos, unsigned len, struct page **pagep,
+			      void **fsdata)
 {
 	struct page *page;
 	pgoff_t index;

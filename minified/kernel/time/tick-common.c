@@ -54,8 +54,6 @@ static void clockevents_switch_state(struct clock_event_device *dev,
 void clockevents_register_device(struct clock_event_device *dev)
 {
 	dev->state_use_accessors = CLOCK_EVT_STATE_DETACHED;
-	if (!dev->cpumask)
-		dev->cpumask = cpumask_of(smp_processor_id());
 
 	if (tick_dev)
 		return;

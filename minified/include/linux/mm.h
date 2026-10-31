@@ -305,10 +305,6 @@ static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
 	return pte;
 }
 
-void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr);
-
-vm_fault_t finish_fault(struct vm_fault *vmf);
-
 #define SECTIONS_PGOFF ((sizeof(unsigned long) * 8) - SECTIONS_WIDTH)
 #define NODES_PGOFF (SECTIONS_PGOFF - NODES_WIDTH)
 #define ZONES_PGOFF (NODES_PGOFF - ZONES_WIDTH)
@@ -456,10 +452,6 @@ bool set_page_dirty(struct page *page);
 
 /* dec_mm_counter removed - 0 callers (dec_mm_counter_fast macro never invoked) */
 
-/* Removed: vma_wants_writenotify - never called */
-
-int __pte_alloc(struct mm_struct *mm, pmd_t *pmd);
-
 static inline p4d_t *p4d_alloc(struct mm_struct *mm, pgd_t *pgd,
 			       unsigned long address)
 {
@@ -533,11 +525,9 @@ extern int __vm_enough_memory(struct mm_struct *mm, long pages,
 extern int insert_vm_struct(struct mm_struct *, struct vm_area_struct *);
 
 extern int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file);
-
 extern unsigned long get_unmapped_area(struct file *, unsigned long,
 				       unsigned long, unsigned long,
 				       unsigned long);
-
 extern unsigned long mmap_region(struct file *file, unsigned long addr,
 				 unsigned long len, vm_flags_t vm_flags,
 				 unsigned long pgoff);
@@ -553,13 +543,8 @@ extern unsigned long __must_check vm_mmap(struct file *, unsigned long,
 					  unsigned long, unsigned long,
 					  unsigned long, unsigned long);
 
-extern vm_fault_t filemap_fault(struct vm_fault *vmf);
-
 extern unsigned long stack_guard_gap;
-
 extern int expand_stack(struct vm_area_struct *vma, unsigned long address);
-
-extern int expand_downwards(struct vm_area_struct *vma, unsigned long address);
 extern struct vm_area_struct *find_vma(struct mm_struct *mm,
 				       unsigned long addr);
 

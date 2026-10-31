@@ -24,8 +24,6 @@ extern void clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to,
 
 extern int __clocksource_register_scale(struct clocksource *cs, u32 scale,
 					u32 freq);
-extern void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale,
-					    u32 freq);
 
 static inline int __clocksource_register(struct clocksource *cs)
 {

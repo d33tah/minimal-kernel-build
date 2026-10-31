@@ -78,7 +78,7 @@ void iov_iter_init(struct iov_iter *i, unsigned int direction,
 				.count = count };
 }
 
-size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
+static size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
 {
 	iterate_and_advance(i, bytes, base, len, off,
 			    copyout(base, addr + off, len),

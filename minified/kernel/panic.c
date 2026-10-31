@@ -9,15 +9,15 @@ static long no_blink(int state)
 	return 0;
 }
 
-long (*panic_blink)(int state);
+static long (*panic_blink)(int state);
 
-void __weak panic_smp_self_stop(void)
+static void panic_smp_self_stop(void)
 {
 	while (1)
 		cpu_relax();
 }
 
-atomic_t panic_cpu = ATOMIC_INIT(PANIC_CPU_INVALID);
+static atomic_t panic_cpu = ATOMIC_INIT(PANIC_CPU_INVALID);
 
 void panic(const char *fmt, ...)
 {

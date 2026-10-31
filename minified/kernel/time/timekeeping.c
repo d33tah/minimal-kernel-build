@@ -15,7 +15,7 @@
 #define TK_CLEAR_NTP (1 << 0)
 #define TK_MIRROR (1 << 1)
 
-DEFINE_RAW_SPINLOCK(timekeeper_lock);
+static DEFINE_RAW_SPINLOCK(timekeeper_lock);
 
 static struct {
 	seqcount_raw_spinlock_t seq;
@@ -168,7 +168,7 @@ int timekeeping_notify(struct clocksource *clock)
 	return tk->tkr_mono.clock == clock ? 0 : -1;
 }
 
-void __weak read_persistent_clock64(struct timespec64 *ts)
+static void read_persistent_clock64(struct timespec64 *ts)
 {
 	ts->tv_sec = 0;
 	ts->tv_nsec = 0;

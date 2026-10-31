@@ -43,7 +43,6 @@ extern void finalize_exec(struct linux_binprm *bprm);
 #define EXSTACK_DEFAULT 0
 
 extern int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top);
-int copy_string_kernel(const char *arg, struct linux_binprm *bprm);
 
 int kernel_execve(const char *filename, const char *const *argv,
 		  const char *const *envp);

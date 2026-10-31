@@ -11,9 +11,9 @@ bool set_page_dirty(struct page *page)
 	return folio_mark_dirty(page_folio(page));
 }
 
-noinline struct page *pagecache_get_page(struct address_space *mapping,
-					 pgoff_t index, int fgp_flags,
-					 gfp_t gfp)
+static noinline struct page *pagecache_get_page(struct address_space *mapping,
+						pgoff_t index, int fgp_flags,
+						gfp_t gfp)
 {
 	struct folio *folio;
 

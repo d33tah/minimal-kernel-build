@@ -130,8 +130,6 @@ struct inode {
 	struct cdev *i_cdev;
 } __randomize_layout;
 
-struct timespec64 timestamp_truncate(struct timespec64 t, struct inode *inode);
-
 /* Reduced inode_i_mutex_lock_class - only I_MUTEX_PARENT used (lockdep off: value unused) */
 enum inode_i_mutex_lock_class { I_MUTEX_PARENT };
 
@@ -346,8 +344,6 @@ static inline int call_mmap(struct file *file, struct vm_area_struct *vma)
 	return file->f_op->mmap(file, vma);
 }
 
-extern ssize_t vfs_write(struct file *, const char __user *, size_t, loff_t *);
-
 /* S_NOSEC, S_DAX, S_NOATIME, S_APPEND, S_IMMUTABLE, S_DEAD, S_NOCMTIME,
  * S_SWAPFILE, S_AUTOMOUNT, S_VERITY, S_KERNEL_FILE removed - never set on
  * any inode (S_NOSEC depended on SB_NOSEC which is never set), so the whole
@@ -430,9 +426,6 @@ static inline ssize_t generic_write_sync(struct kiocb *iocb, ssize_t count)
 	return count;
 }
 
-int inode_permission(struct user_namespace *, struct inode *, int);
-int generic_permission(struct user_namespace *, struct inode *, int);
-
 static inline int get_write_access(struct inode *inode)
 {
 	return atomic_inc_unless_negative(&inode->i_writecount) ? 0 : -ETXTBSY;
@@ -452,23 +445,14 @@ static inline void allow_write_access(struct file *file)
 		atomic_inc(&file_inode(file)->i_writecount);
 }
 extern ssize_t kernel_read(struct file *, void *, size_t, loff_t *);
-ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos);
 extern ssize_t kernel_write(struct file *, const void *, size_t, loff_t *);
-extern ssize_t __kernel_write(struct file *, const void *, size_t, loff_t *);
-
-extern int inode_init_always(struct super_block *, struct inode *);
 extern unsigned int get_next_ino(void);
-extern struct inode *new_inode_pseudo(struct super_block *sb);
 extern struct inode *new_inode(struct super_block *sb);
 
 extern int generic_file_mmap(struct file *, struct vm_area_struct *);
 extern ssize_t generic_write_checks(struct kiocb *, struct iov_iter *);
-ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *to,
-		     ssize_t already_read);
 extern ssize_t generic_file_read_iter(struct kiocb *, struct iov_iter *);
-extern ssize_t __generic_file_write_iter(struct kiocb *, struct iov_iter *);
 extern ssize_t generic_file_write_iter(struct kiocb *, struct iov_iter *);
-ssize_t generic_perform_write(struct kiocb *, struct iov_iter *);
 
 extern int nonseekable_open(struct inode *inode, struct file *filp);
 /* Removed: stream_open - never called */
@@ -478,9 +462,6 @@ extern int nonseekable_open(struct inode *inode, struct file *filp);
 /* Removed: get_super, get_active_super, drop_super, drop_super_exclusive,
    iterate_supers, iterate_supers_type - never called */
 
-extern int simple_write_begin(struct file *file, struct address_space *mapping,
-			      loff_t pos, unsigned len, struct page **pagep,
-			      void **fsdata);
 extern const struct address_space_operations ram_aops;
 
 extern struct dentry *simple_lookup(struct inode *, struct dentry *,

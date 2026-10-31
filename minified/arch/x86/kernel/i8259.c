@@ -2,9 +2,9 @@
 
 #include <asm/i8259.h>
 
-DEFINE_RAW_SPINLOCK(i8259A_lock);
+static DEFINE_RAW_SPINLOCK(i8259A_lock);
 
-unsigned int cached_irq_mask = 0xffff;
+static unsigned int cached_irq_mask = 0xffff;
 
 static void disable_8259A_irq(struct irq_data *data)
 {
@@ -93,7 +93,7 @@ spurious_8259A_irq:
 	}
 }
 
-struct irq_chip i8259A_chip = {
+static struct irq_chip i8259A_chip = {
 	.name = "XT-PIC",
 	.irq_unmask = enable_8259A_irq,
 	.irq_mask_ack = mask_and_ack_8259A,
@@ -148,7 +148,7 @@ struct legacy_pic null_legacy_pic = {
 	.init = legacy_pic_int_noop,
 };
 
-struct legacy_pic default_legacy_pic = {
+static struct legacy_pic default_legacy_pic = {
 	.nr_legacy_irqs = NR_IRQS_LEGACY,
 	.chip = &i8259A_chip,
 	.init = init_8259A,

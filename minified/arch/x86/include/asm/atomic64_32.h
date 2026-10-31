@@ -20,14 +20,7 @@ typedef struct {
 
 ATOMIC64_DECL(read);
 ATOMIC64_DECL(set);
-ATOMIC64_DECL(xchg);
-ATOMIC64_DECL(add_return);
-ATOMIC64_DECL(sub_return);
 ATOMIC64_DECL(inc_return);
-ATOMIC64_DECL(dec_return);
-ATOMIC64_DECL(dec_if_positive);
-ATOMIC64_DECL(inc_not_zero);
-ATOMIC64_DECL(add_unless);
 
 #undef ATOMIC64_DECL
 #undef ATOMIC64_DECL_ONE

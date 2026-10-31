@@ -213,6 +213,18 @@ static inline void __dget_dlock(struct dentry *dentry)
 	dentry->d_lockref.count++;
 }
 
+struct dentry *dget_parent(struct dentry *dentry)
+{
+	struct dentry *ret;
+
+	ret = dentry->d_parent;
+	spin_lock(&ret->d_lock);
+	BUG_ON(!ret->d_lockref.count);
+	ret->d_lockref.count++;
+	spin_unlock(&ret->d_lock);
+	return ret;
+}
+
 static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 {
 	struct dentry *dentry;

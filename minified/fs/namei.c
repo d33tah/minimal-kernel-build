@@ -298,15 +298,35 @@ static const char *step_into(struct nameidata *nd, int flags,
 	return NULL;
 }
 
+static struct dentry *follow_dotdot(struct nameidata *nd)
+{
+	struct dentry *parent;
+
+	if (path_equal(&nd->path, &nd->root))
+		goto in_root;
+	/* rare case of legitimate dget_parent()... */
+	parent = dget_parent(nd->path.dentry);
+	return parent;
+
+in_root:
+	dget(nd->path.dentry);
+	return NULL;
+}
+
 static const char *handle_dots(struct nameidata *nd, int type)
 {
-	/*
-	 * RUNTIME-DEAD ANCHOR-STUB: handle_dots only fires for non-LAST_NORM
-	 * path components ("."/".."). This boot-once artifact only walks
-	 * LAST_NORM paths, so it never runs. Returning NULL is the LAST_DOT
-	 * (stay-put) no-op, behavior-preserving for the zero-dotdot boot.
-	 * follow_dotdot/follow_dotdot_rcu/path_connected cascaded out.
-	 */
+	if (type == LAST_DOTDOT) {
+		const char *error = NULL;
+		struct dentry *parent;
+
+		parent = follow_dotdot(nd);
+		if (unlikely(!parent))
+			error = step_into(nd, WALK_NOFOLLOW, nd->path.dentry);
+		else
+			error = step_into(nd, WALK_NOFOLLOW, parent);
+		if (unlikely(error))
+			return error;
+	}
 	return NULL;
 }
 

@@ -1,8 +1,6 @@
 #ifndef _LINUX_CDEV_H
 #define _LINUX_CDEV_H
 
-struct file_operations;
-
 struct cdev {
 	const struct file_operations *ops;
 	struct list_head list;

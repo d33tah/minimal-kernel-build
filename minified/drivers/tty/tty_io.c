@@ -1,8 +1,6 @@
 
 #include <linux/tty.h>
-#include <linux/file.h>
 #include <linux/console.h>
-#include <linux/mm.h>
 #include <linux/uio.h>
 #include <linux/cdev.h>
 

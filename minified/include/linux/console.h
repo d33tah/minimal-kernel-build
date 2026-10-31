@@ -2,7 +2,6 @@
 #define _LINUX_CONSOLE_H_ 1
 
 struct vc_data;
-struct tty_driver;
 
 struct consw {
 	const char *(*con_startup)(void);

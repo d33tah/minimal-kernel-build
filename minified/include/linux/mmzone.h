@@ -31,7 +31,7 @@ enum zone_stat_item { NR_FREE_PAGES, NR_VM_ZONE_STAT_ITEMS };
 
 #endif
 
-enum zone_type { ZONE_NORMAL, ZONE_MOVABLE, __MAX_NR_ZONES };
+enum zone_type { ZONE_NORMAL, __MAX_NR_ZONES };
 
 #ifndef __GENERATING_BOUNDS_H
 
@@ -52,24 +52,10 @@ static inline unsigned long zone_end_pfn(const struct zone *zone)
 	return zone->zone_start_pfn + zone->spanned_pages;
 }
 
-#define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES * MAX_NR_ZONES)
-
-enum { ZONELIST_FALLBACK, MAX_ZONELISTS };
-
-struct zoneref {
-	struct zone *zone;
-	int zone_idx;
-};
-
-struct zonelist {
-	struct zoneref _zonerefs[MAX_ZONES_PER_ZONELIST + 1];
-};
-
 extern struct page *mem_map;
 
 typedef struct pglist_data {
 	struct zone node_zones[MAX_NR_ZONES];
-	struct zonelist node_zonelists[MAX_ZONELISTS];
 	int nr_zones;
 	struct page *node_mem_map;
 	unsigned long node_start_pfn, node_spanned_pages;
@@ -80,8 +66,6 @@ static inline unsigned long pgdat_end_pfn(pg_data_t *pgdat)
 {
 	return pgdat->node_start_pfn + pgdat->node_spanned_pages;
 }
-
-void build_all_zonelists(pg_data_t *pgdat);
 
 #define zone_idx(zone) ((zone) - (zone)->zone_pgdat->node_zones)
 
@@ -100,37 +84,6 @@ static inline struct pglist_data *NODE_DATA(int nid)
 {
 	return &contig_page_data;
 }
-
-static inline struct zone *zonelist_zone(struct zoneref *zoneref)
-{
-	return zoneref->zone;
-}
-
-static inline int zonelist_zone_idx(struct zoneref *zoneref)
-{
-	return zoneref->zone_idx;
-}
-
-struct zoneref *__next_zones_zonelist(struct zoneref *z,
-				      enum zone_type highest_zoneidx);
-
-static __always_inline struct zoneref *
-next_zones_zonelist(struct zoneref *z, enum zone_type highest_zoneidx)
-{
-	if (likely(zonelist_zone_idx(z) <= highest_zoneidx))
-		return z;
-	return __next_zones_zonelist(z, highest_zoneidx);
-}
-
-static inline struct zoneref *
-first_zones_zonelist(struct zonelist *zonelist, enum zone_type highest_zoneidx)
-{
-	return next_zones_zonelist(zonelist->_zonerefs, highest_zoneidx);
-}
-
-#define for_next_zone_zonelist(zone, z, highidx) \
-	for (zone = z->zone; zone;               \
-	     z = next_zones_zonelist(++z, highidx), zone = zonelist_zone(z))
 
 #define sparse_init() \
 	do {          \

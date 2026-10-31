@@ -12,7 +12,7 @@ mmu-$(CONFIG_MMU)	:= memory.o \
 
 obj-y			:= filemap.o \
 			   maccess.o folio-compat.o \
-			   util.o mmzone.o \
+			   util.o \
 			   percpu.o slab_common.o \
 			   gup.o $(mmu-y)
 

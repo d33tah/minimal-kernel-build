@@ -1,7 +1,7 @@
 #ifndef PAGE_FLAGS_LAYOUT_H
 #define PAGE_FLAGS_LAYOUT_H
 
-#define ZONES_SHIFT 1
+#define ZONES_SHIFT 0
 
 #define ZONES_WIDTH ZONES_SHIFT
 

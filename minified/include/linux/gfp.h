@@ -34,7 +34,6 @@ struct vm_area_struct;
 #define __GFP_HIGHMEM ((__force gfp_t)___GFP_HIGHMEM)
 #define __GFP_DMA32 ((__force gfp_t)___GFP_DMA32)
 #define __GFP_MOVABLE ((__force gfp_t)___GFP_MOVABLE)
-#define GFP_ZONEMASK (__GFP_DMA | __GFP_HIGHMEM | __GFP_DMA32 | __GFP_MOVABLE)
 
 #define __GFP_RECLAIMABLE ((__force gfp_t)___GFP_RECLAIMABLE)
 #define __GFP_HARDWALL ((__force gfp_t)___GFP_HARDWALL)
@@ -73,46 +72,6 @@ struct vm_area_struct;
 #define GFP_HIGHUSER (GFP_USER | __GFP_HIGHMEM)
 #define GFP_HIGHUSER_MOVABLE \
 	(GFP_HIGHUSER | __GFP_MOVABLE | __GFP_SKIP_KASAN_POISON)
-
-#define OPT_ZONE_HIGHMEM ZONE_NORMAL
-
-#define OPT_ZONE_DMA ZONE_NORMAL
-
-#define OPT_ZONE_DMA32 ZONE_NORMAL
-
-#define GFP_ZONES_SHIFT ZONES_SHIFT
-
-#define GFP_ZONE_TABLE                                                       \
-	((ZONE_NORMAL << 0 * GFP_ZONES_SHIFT) |                              \
-	 (OPT_ZONE_DMA << ___GFP_DMA * GFP_ZONES_SHIFT) |                    \
-	 (OPT_ZONE_HIGHMEM << ___GFP_HIGHMEM * GFP_ZONES_SHIFT) |            \
-	 (OPT_ZONE_DMA32 << ___GFP_DMA32 * GFP_ZONES_SHIFT) |                \
-	 (ZONE_NORMAL << ___GFP_MOVABLE * GFP_ZONES_SHIFT) |                 \
-	 (OPT_ZONE_DMA << (___GFP_MOVABLE | ___GFP_DMA) * GFP_ZONES_SHIFT) | \
-	 (ZONE_MOVABLE                                                       \
-	  << (___GFP_MOVABLE | ___GFP_HIGHMEM) * GFP_ZONES_SHIFT) |          \
-	 (OPT_ZONE_DMA32                                                     \
-	  << (___GFP_MOVABLE | ___GFP_DMA32) * GFP_ZONES_SHIFT))
-
-static inline enum zone_type gfp_zone(gfp_t flags)
-{
-	enum zone_type z;
-	int bit = (__force int)(flags & GFP_ZONEMASK);
-
-	z = (GFP_ZONE_TABLE >> (bit * GFP_ZONES_SHIFT)) &
-	    ((1 << GFP_ZONES_SHIFT) - 1);
-	return z;
-}
-
-static inline int gfp_zonelist(gfp_t flags)
-{
-	return ZONELIST_FALLBACK;
-}
-
-static inline struct zonelist *node_zonelist(int nid, gfp_t flags)
-{
-	return NODE_DATA(nid)->node_zonelists + gfp_zonelist(flags);
-}
 
 struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid);
 struct folio *__folio_alloc(gfp_t gfp, unsigned int order, int preferred_nid);

@@ -43,8 +43,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	setup_arch();
 
-	build_all_zonelists(NULL);
-
 	vfs_caches_init_early();
 	trap_init();
 	mem_init();

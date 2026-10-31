@@ -17,7 +17,6 @@ gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
 
 static char *const zone_names[MAX_NR_ZONES] = {
 	"Normal",
-	"Movable",
 };
 
 static unsigned long arch_zone_lowest_possible_pfn[MAX_NR_ZONES] __initdata;
@@ -196,11 +195,8 @@ static struct page *rmqueue(struct zone *zone, unsigned int order)
 
 struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid)
 {
-	struct zonelist *zonelist;
-	struct zoneref *z;
-	struct zone *zone;
+	struct zone *zone = &NODE_DATA(preferred_nid)->node_zones[ZONE_NORMAL];
 	struct page *page;
-	enum zone_type highest_zoneidx;
 
 	if (WARN_ON_ONCE_GFP(order >= MAX_ORDER, gfp))
 		return NULL;
@@ -208,19 +204,10 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid)
 	gfp &= gfp_allowed_mask;
 	gfp = current_gfp_context(gfp);
 
-	highest_zoneidx = gfp_zone(gfp);
-	zonelist = node_zonelist(preferred_nid, gfp);
-	z = first_zones_zonelist(zonelist, highest_zoneidx);
-	for_next_zone_zonelist(zone, z, highest_zoneidx)
-	{
-		page = rmqueue(zone, order);
-		if (page) {
-			prep_new_page(page, order, gfp);
-			return page;
-		}
-	}
-
-	return NULL;
+	page = rmqueue(zone, order);
+	if (page)
+		prep_new_page(page, order, gfp);
+	return page;
 }
 
 struct folio *__folio_alloc(gfp_t gfp, unsigned int order, int preferred_nid)
@@ -266,64 +253,6 @@ void free_pages(unsigned long addr, unsigned int order)
 	if (addr != 0) {
 		__free_pages(virt_to_page((void *)addr), order);
 	}
-}
-
-static void zoneref_set_zone(struct zone *zone, struct zoneref *zoneref)
-{
-	zoneref->zone = zone;
-	zoneref->zone_idx = zone_idx(zone);
-}
-
-static int build_zonerefs_node(pg_data_t *pgdat, struct zoneref *zonerefs)
-{
-	struct zone *zone;
-	enum zone_type zone_type = MAX_NR_ZONES;
-	int nr_zones = 0;
-
-	do {
-		zone_type--;
-		zone = pgdat->node_zones + zone_type;
-		if (populated_zone(zone)) {
-			zoneref_set_zone(zone, &zonerefs[nr_zones++]);
-		}
-	} while (zone_type);
-
-	return nr_zones;
-}
-
-static void build_zonelists(pg_data_t *pgdat)
-{
-	struct zoneref *zonerefs;
-	int nr_zones;
-
-	/* Simplified: single-node system, just build local node zonelist */
-	zonerefs = pgdat->node_zonelists[ZONELIST_FALLBACK]._zonerefs;
-	nr_zones = build_zonerefs_node(pgdat, zonerefs);
-	zonerefs += nr_zones;
-
-	zonerefs->zone = NULL;
-	zonerefs->zone_idx = 0;
-}
-
-static void __build_all_zonelists(void *data)
-{
-	int nid;
-	static DEFINE_SPINLOCK(lock);
-
-	spin_lock(&lock);
-
-	for_each_node(nid) {
-		pg_data_t *pgdat = NODE_DATA(nid);
-
-		build_zonelists(pgdat);
-	}
-
-	spin_unlock(&lock);
-}
-
-void __ref build_all_zonelists(pg_data_t *pgdat)
-{
-	__build_all_zonelists(pgdat);
 }
 
 static void __meminit memmap_init_range(unsigned long size, int nid,
@@ -649,8 +578,6 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 
 	/* Simple linear zone setup without movable zones */
 	for (i = 0; i < MAX_NR_ZONES; i++) {
-		if (i == ZONE_MOVABLE)
-			continue;
 		end_pfn = max(max_zone_pfn[i], start_pfn);
 		arch_zone_lowest_possible_pfn[i] = start_pfn;
 		arch_zone_highest_possible_pfn[i] = end_pfn;

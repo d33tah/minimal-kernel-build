@@ -68,6 +68,4 @@ static __always_inline bool arch_atomic_try_cmpxchg(atomic_t *v, int *old,
 }
 #define arch_atomic_try_cmpxchg arch_atomic_try_cmpxchg
 
-#include <asm/atomic64_32.h>
-
 #endif

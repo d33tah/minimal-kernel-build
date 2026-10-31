@@ -24,10 +24,5 @@ static __always_inline int user_mode(struct pt_regs *regs)
 	       USER_RPL;
 }
 
-static inline unsigned long instruction_pointer(struct pt_regs *regs)
-{
-	return regs->ip;
-}
-
 #endif /* !__ASSEMBLY__ */
 #endif /* _ASM_X86_PTRACE_H */

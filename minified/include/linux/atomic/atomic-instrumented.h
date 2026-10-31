@@ -67,21 +67,6 @@ static __always_inline bool atomic_dec_unless_positive(atomic_t *v)
 	return arch_atomic_dec_unless_positive(v);
 }
 
-static __always_inline s64 atomic64_read(const atomic64_t *v)
-{
-	return arch_atomic64_read(v);
-}
-
-static __always_inline void atomic64_set(atomic64_t *v, s64 i)
-{
-	arch_atomic64_set(v, i);
-}
-
-static __always_inline s64 atomic64_inc_return(atomic64_t *v)
-{
-	return arch_atomic64_inc_return(v);
-}
-
 static __always_inline long atomic_long_read(const atomic_long_t *v)
 {
 	return arch_atomic_long_read(v);

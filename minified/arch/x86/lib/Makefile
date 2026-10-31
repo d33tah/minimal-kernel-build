@@ -14,6 +14,5 @@ lib-y += memcpy_$(BITS).o
 
 
 ifeq ($(CONFIG_X86_32),y)
-        lib-y += atomic64_cx8_32.o
         lib-y += string_32.o
 endif

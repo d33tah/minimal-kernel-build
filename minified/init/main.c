@@ -20,8 +20,6 @@ extern void sched_init(void);
 
 static int kernel_init(void *);
 
-bool static_key_initialized __read_mostly;
-
 /* /init is the only program in the built-in initramfs (usr/Makefile). */
 static const char *argv_init[] = { "/init", NULL };
 static const char *envp_init[] = { "HOME=/", "TERM=linux", NULL };
@@ -46,8 +44,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	setup_arch();
 
 	build_all_zonelists(NULL);
-
-	jump_label_init();
 
 	vfs_caches_init_early();
 	trap_init();

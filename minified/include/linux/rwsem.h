@@ -3,6 +3,7 @@
 #define _LINUX_RWSEM_H
 
 #include <linux/spinlock.h>
+#include <linux/atomic.h>
 
 struct rw_semaphore {
 	atomic_long_t count;

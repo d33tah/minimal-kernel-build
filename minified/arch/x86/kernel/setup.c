@@ -75,7 +75,6 @@ void __init setup_arch(void)
 
 	idt_setup_early_traps();
 	early_cpu_init();
-	jump_label_init();
 
 	screen_info = boot_params.screen_info;
 	/* edid_info/apm_info/ist_info/saved_video_mode copies removed - never read */

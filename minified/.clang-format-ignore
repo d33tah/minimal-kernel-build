@@ -47,7 +47,6 @@ include/linux/const.h
 include/linux/err.h
 include/linux/export.h
 include/linux/init.h
-include/linux/jump_label.h
 include/linux/kconfig.h
 include/linux/linkage.h
 include/linux/mem_encrypt.h

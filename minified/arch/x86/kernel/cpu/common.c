@@ -39,48 +39,14 @@ static __always_inline void setup_umip(struct cpuinfo_x86 *c)
 	cr4_clear_bits(X86_CR4_UMIP);
 }
 
-static const unsigned long cr4_pinned_mask = X86_CR4_SMEP | X86_CR4_SMAP |
-					     X86_CR4_UMIP | X86_CR4_FSGSBASE |
-					     X86_CR4_CET;
-static DEFINE_STATIC_KEY_FALSE_RO(cr_pinning);
-static unsigned long cr4_pinned_bits __ro_after_init;
-
 void native_write_cr0(unsigned long val)
 {
-	unsigned long bits_missing = 0;
-
-set_register:
 	asm volatile("mov %0,%%cr0" : "+r"(val) : : "memory");
-
-	if (static_branch_likely(&cr_pinning)) {
-		if (unlikely((val & X86_CR0_WP) != X86_CR0_WP)) {
-			bits_missing = X86_CR0_WP;
-			val |= bits_missing;
-			goto set_register;
-		}
-
-		WARN_ONCE(bits_missing, "CR0 WP bit went missing!?\n");
-	}
 }
 
 void __no_profile native_write_cr4(unsigned long val)
 {
-	unsigned long bits_changed = 0;
-
-set_register:
 	asm volatile("mov %0,%%cr4" : "+r"(val) : : "memory");
-
-	if (static_branch_likely(&cr_pinning)) {
-		if (unlikely((val & cr4_pinned_mask) != cr4_pinned_bits)) {
-			bits_changed = (val & cr4_pinned_mask) ^
-				       cr4_pinned_bits;
-			val = (val & ~cr4_pinned_mask) | cr4_pinned_bits;
-			goto set_register;
-		}
-
-		WARN_ONCE(bits_changed, "pinned CR4 bits changed: 0x%lx!?\n",
-			  bits_changed);
-	}
 }
 
 void cr4_update_irqsoff(unsigned long set, unsigned long clear)
@@ -92,17 +58,6 @@ void cr4_update_irqsoff(unsigned long set, unsigned long clear)
 		this_cpu_write(cpu_tlbstate.cr4, newval);
 		__write_cr4(newval);
 	}
-}
-
-unsigned long cr4_read_shadow(void)
-{
-	return this_cpu_read(cpu_tlbstate.cr4);
-}
-
-static void __init setup_cr_pinning(void)
-{
-	cr4_pinned_bits = this_cpu_read(cpu_tlbstate.cr4) & cr4_pinned_mask;
-	static_key_enable(&cr_pinning.key);
 }
 
 /*
@@ -163,8 +118,6 @@ void __init identify_boot_cpu(void)
 		cr4_set_bits(X86_CR4_FSGSBASE);
 		elf_hwcap2 |= HWCAP2_FSGSBASE;
 	}
-
-	setup_cr_pinning();
 }
 
 DEFINE_PER_CPU(struct task_struct *, current_task) = &init_task;

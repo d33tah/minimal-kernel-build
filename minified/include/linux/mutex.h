@@ -5,6 +5,7 @@
 #include <linux/list.h>
 #include <linux/lockdep.h>
 #include <asm/processor.h>
+#include <linux/atomic.h>
 
 struct mutex {
 	atomic_long_t owner;

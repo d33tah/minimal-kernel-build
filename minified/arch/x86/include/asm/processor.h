@@ -148,11 +148,6 @@ extern void cpu_init_exception_handling(void);
 
 /* ARCH_HAS_PREFETCHW, ARCH_HAS_SPINLOCK_PREFETCH, ARCH_HAS_PREFETCH removed - unused */
 
-static inline void prefetch(const void *x)
-{
-	asm volatile("" : : "m"(*(const char *)x));
-}
-
 static __always_inline void prefetchw(const void *x)
 {
 	asm volatile("" : : "m"(*(const char *)x));

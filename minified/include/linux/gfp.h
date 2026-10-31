@@ -30,7 +30,6 @@ struct vm_area_struct;
 #define ___GFP_SKIP_KASAN_POISON 0
 #define ___GFP_NOLOCKDEP 0
 
-#define __GFP_DMA ((__force gfp_t)___GFP_DMA)
 #define __GFP_HIGHMEM ((__force gfp_t)___GFP_HIGHMEM)
 #define __GFP_DMA32 ((__force gfp_t)___GFP_DMA32)
 #define __GFP_MOVABLE ((__force gfp_t)___GFP_MOVABLE)
@@ -64,7 +63,6 @@ struct vm_area_struct;
 #define __GFP_BITS_SHIFT (27 + IS_ENABLED(CONFIG_LOCKDEP))
 #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
 
-#define GFP_ATOMIC (__GFP_HIGH | __GFP_ATOMIC | __GFP_KSWAPD_RECLAIM)
 #define GFP_KERNEL (__GFP_RECLAIM | __GFP_IO | __GFP_FS)
 #define GFP_KERNEL_ACCOUNT (GFP_KERNEL | __GFP_ACCOUNT)
 #define GFP_NOWAIT (__GFP_KSWAPD_RECLAIM)

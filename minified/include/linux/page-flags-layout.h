@@ -9,5 +9,4 @@
 
 #define NODES_WIDTH NODES_SHIFT
 
-#define LAST_CPUPID_SHIFT 0
 #endif

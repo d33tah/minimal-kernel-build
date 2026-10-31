@@ -94,11 +94,6 @@ static inline unsigned long totalram_pages(void)
 	return (unsigned long)atomic_long_read(&_totalram_pages);
 }
 
-static inline void totalram_pages_inc(void)
-{
-	atomic_long_inc(&_totalram_pages);
-}
-
 static inline void totalram_pages_add(long count)
 {
 	atomic_long_add(count, &_totalram_pages);
@@ -147,8 +142,6 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_ACCOUNT 0x00100000
 
 #define VM_NOHUGEPAGE 0x40000000
-
-#define VM_GROWSUP VM_NONE
 
 #define TASK_EXEC ((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0)
 

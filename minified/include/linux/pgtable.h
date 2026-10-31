@@ -9,8 +9,6 @@
 #error CONFIG_PGTABLE_LEVELS is not consistent with __PAGETABLE_{P4D,PUD,PMD}_FOLDED
 #endif
 
-#define USER_PGTABLES_CEILING 0UL
-
 static inline unsigned long pte_index(unsigned long address)
 {
 	return (address >> PAGE_SHIFT) & (PTRS_PER_PTE - 1);
@@ -42,8 +40,6 @@ static inline pgd_t *pgd_offset_pgd(pgd_t *pgd, unsigned long address)
 
 #define pgd_offset(mm, address) pgd_offset_pgd((mm)->pgd, (address))
 
-#define __HAVE_ARCH_UPDATE_MMU_TLB
-
 static inline pte_t pte_sw_mkyoung(pte_t pte)
 {
 	return pte;
@@ -70,9 +66,5 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 
 /* p4d_set_huge, pud_set_huge, pmd_set_huge, p4d_free_pud_page, pud_free_pmd_page,
    pmd_free_pte_page, p4d_clear_huge, pud_clear_huge, pmd_clear_huge removed - unused */
-
-#define MAX_POSSIBLE_PHYSMEM_BITS 32
-
-#define pud_leaf(x) 0
 
 #endif

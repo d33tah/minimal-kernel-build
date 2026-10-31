@@ -11,7 +11,6 @@
 
 extern unsigned long
 	empty_zero_page[PAGE_SIZE / sizeof(unsigned long)] __visible;
-#define ZERO_PAGE(vaddr) ((void)(vaddr), virt_to_page(empty_zero_page))
 
 #define set_pte(ptep, pte) native_set_pte(ptep, pte)
 

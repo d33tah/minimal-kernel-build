@@ -8,8 +8,6 @@
 #define MAP_SHARED 0x01
 #define MAP_PRIVATE 0x02
 
-#define MAP_SYNC 0
-
 #define arch_calc_vm_flag_bits(flags) 0
 
 #define _calc_vm_trans(x, bit1, bit2)                                     \

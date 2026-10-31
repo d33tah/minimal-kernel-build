@@ -15,8 +15,6 @@ struct doublefault_stack {
 
 struct cpu_entry_area {
 	char gdt[PAGE_SIZE];
-	char guard_entry_stack[PAGE_SIZE];
-	struct entry_stack_page entry_stack_page;
 	char guard_doublefault_stack[PAGE_SIZE];
 	struct doublefault_stack doublefault_stack;
 	struct tss_struct tss;
@@ -34,10 +32,5 @@ extern void setup_cpu_entry_areas(void);
 extern void cea_set_pte(void *cea_vaddr, phys_addr_t pa, pgprot_t flags);
 
 extern struct cpu_entry_area *get_cpu_entry_area(int cpu);
-
-static __always_inline struct entry_stack *cpu_entry_stack(int cpu)
-{
-	return &get_cpu_entry_area(cpu)->entry_stack_page.stack;
-}
 
 #endif

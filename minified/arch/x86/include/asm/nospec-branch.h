@@ -17,11 +17,6 @@
 
  
 
-#define RSB_CLEAR_LOOPS		32	 
-
- 
-#define __FILL_RETURN_BUFFER(reg, nr, sp)		mov	$(nr/2), reg;			771:							ANNOTATE_INTRA_FUNCTION_CALL;			call	772f;				773:	 				UNWIND_HINT_EMPTY;				pause;						lfence;						jmp	773b;				772:							ANNOTATE_INTRA_FUNCTION_CALL;			call	774f;				775:	 				UNWIND_HINT_EMPTY;				pause;						lfence;						jmp	775b;				774:							add	$(BITS_PER_LONG/8) * 2, sp;		dec	reg;					jnz	771b;
-
 #ifdef __ASSEMBLY__
 
  
@@ -34,11 +29,6 @@
 .endm
 
   
-.macro FILL_RETURN_BUFFER reg:req nr:req ftr:req
-	ALTERNATIVE "jmp .Lskip_rsb_\@", "", \ftr
-	__FILL_RETURN_BUFFER(\reg,\nr,%_ASM_SP)
-.Lskip_rsb_\@:
-.endm
 
 
  

@@ -138,7 +138,7 @@ DEFINE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);
 
 /*
  * Only CPUID leaves 1 and 7 feed bits that something reads: the
- * boot_cpu_has() users (TSC, PSE, PGE, SEP, SMEP, FSGSBASE, INVPCID,
+ * boot_cpu_has() users (TSC, PSE, PGE, SMEP, FSGSBASE, INVPCID,
  * HYPERVISOR, WAITPKG, CX8) and ELF_HWCAP (the leaf 1 EDX word). The family
  * is checked by check_bugs(); the CLFLUSH line size is cache_line_size().
  */
@@ -183,26 +183,6 @@ void __init early_cpu_init(void)
 	identify_cpu(&boot_cpu_data);
 }
 
-void enable_sep_cpu(void)
-{
-	struct tss_struct *tss;
-	int cpu;
-
-	if (!boot_cpu_has(X86_FEATURE_SEP))
-		return;
-
-	cpu = get_cpu();
-	tss = &per_cpu(cpu_tss_rw, cpu);
-
-	tss->x86_tss.ss1 = __KERNEL_CS;
-	wrmsr(MSR_IA32_SYSENTER_CS, tss->x86_tss.ss1, 0);
-	wrmsr(MSR_IA32_SYSENTER_ESP, (unsigned long)(cpu_entry_stack(cpu) + 1),
-	      0);
-	wrmsr(MSR_IA32_SYSENTER_EIP, (unsigned long)entry_SYSENTER_32, 0);
-
-	put_cpu();
-}
-
 void __init identify_boot_cpu(void)
 {
 	struct cpuinfo_x86 *c = &boot_cpu_data;
@@ -215,7 +195,6 @@ void __init identify_boot_cpu(void)
 		elf_hwcap2 |= HWCAP2_FSGSBASE;
 	}
 
-	enable_sep_cpu();
 	setup_cr_pinning();
 }
 
@@ -280,7 +259,7 @@ void cpu_init(void)
 	initialize_tlbstate_and_flush();
 	enter_lazy_tlb(&init_mm, cur);
 
-	load_sp0((unsigned long)(cpu_entry_stack(cpu) + 1));
+	load_sp0(cur->thread.sp0);
 
 	load_mm_ldt(&init_mm);
 

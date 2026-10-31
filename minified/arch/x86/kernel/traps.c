@@ -187,12 +187,6 @@ static __always_inline void exc_debug_kernel(struct pt_regs *regs,
 
 	/* TIF_BLOCKSTEP is never set in this build -> branch was always false. */
 
-	if ((dr6 & DR_STEP) &&
-	    (regs->ip - (unsigned long)__begin_SYSENTER_singlestep_region) <
-		    (unsigned long)__end_SYSENTER_singlestep_region -
-			    (unsigned long)__begin_SYSENTER_singlestep_region)
-		dr6 &= ~DR_STEP;
-
 	if (!dr6)
 		goto out;
 

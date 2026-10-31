@@ -3,9 +3,6 @@
 
 #include <asm/desc.h>
 
-static DEFINE_PER_CPU_PAGE_ALIGNED(struct entry_stack_page,
-				   entry_stack_storage);
-
 DECLARE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack);
 
 noinstr struct cpu_entry_area *get_cpu_entry_area(int cpu)
@@ -52,10 +49,6 @@ static void __init setup_cpu_entry_area(unsigned int cpu)
 	pgprot_t tss_prot = PAGE_KERNEL;
 
 	cea_set_pte(&cea->gdt, get_cpu_gdt_paddr(cpu), gdt_prot);
-
-	cea_map_percpu_pages(&cea->entry_stack_page,
-			     per_cpu_ptr(&entry_stack_storage, cpu), 1,
-			     PAGE_KERNEL);
 
 	BUILD_BUG_ON((offsetof(struct tss_struct, x86_tss) ^
 		      offsetofend(struct tss_struct, x86_tss)) &

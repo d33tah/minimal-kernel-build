@@ -44,8 +44,8 @@ __visible struct task_struct *__switch_to(struct task_struct *prev_p,
 
 	arch_end_context_switch(next_p);
 
-	update_task_stack(next_p);
-	refresh_sysenter_cs(next);
+	/* Entries from user mode land on the top of the next task's stack. */
+	load_sp0(next->sp0);
 	this_cpu_write(cpu_current_top_of_stack,
 		       (unsigned long)task_stack_page(next_p) + THREAD_SIZE);
 

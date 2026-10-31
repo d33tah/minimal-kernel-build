@@ -106,14 +106,6 @@ struct x86_hw_tss {
 
 #define IO_BITMAP_OFFSET_INVALID (__KERNEL_TSS_LIMIT + 1)
 
-struct entry_stack {
-	char stack[PAGE_SIZE];
-};
-
-struct entry_stack_page {
-	struct entry_stack stack;
-} __aligned(PAGE_SIZE);
-
 struct tss_struct {
 	struct x86_hw_tss x86_tss;
 } __aligned(PAGE_SIZE);
@@ -131,7 +123,7 @@ DECLARE_PER_CPU(struct irq_stack *, softirq_stack_ptr);
 
 struct thread_struct {
 	struct desc_struct tls_array[GDT_ENTRY_TLS_ENTRIES];
-	unsigned long sp0, sp, sysenter_cs;
+	unsigned long sp0, sp;
 	unsigned long gs;
 };
 
@@ -222,10 +214,9 @@ static __always_inline void prefetchw(const void *x)
 		((struct pt_regs *)__ptr) - 1;                              \
 	})
 
-#define INIT_THREAD                         \
-	{                                   \
-		.sp0 = TOP_OF_INIT_STACK,   \
-		.sysenter_cs = __KERNEL_CS, \
+#define INIT_THREAD                       \
+	{                                 \
+		.sp0 = TOP_OF_INIT_STACK, \
 	}
 
 extern void start_thread(struct pt_regs *regs, unsigned long new_ip,

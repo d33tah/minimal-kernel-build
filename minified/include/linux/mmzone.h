@@ -19,7 +19,6 @@
 
 struct free_area {
 	struct list_head free_list;
-	unsigned long nr_free;
 };
 
 struct pglist_data;

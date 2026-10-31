@@ -251,18 +251,6 @@ static inline struct folio *virt_to_folio(const void *x)
 
 void __put_page(struct page *page);
 
-enum compound_dtor_id {
-	NULL_COMPOUND_DTOR,
-	COMPOUND_PAGE_DTOR,
-	NR_COMPOUND_DTORS,
-};
-
-static inline void set_compound_page_dtor(struct page *page,
-					  enum compound_dtor_id compound_dtor)
-{
-	page[1].compound_dtor = compound_dtor;
-}
-
 static inline void set_compound_order(struct page *page, unsigned int order)
 {
 	page[1].compound_order = order;

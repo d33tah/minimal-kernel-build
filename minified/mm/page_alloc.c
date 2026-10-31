@@ -31,7 +31,6 @@ static unsigned long arch_zone_highest_possible_pfn[MAX_NR_ZONES] __initdata;
 
 static void prep_compound_head(struct page *page, unsigned int order)
 {
-	set_compound_page_dtor(page, COMPOUND_PAGE_DTOR);
 	set_compound_order(page, order);
 	atomic_set(compound_mapcount_ptr(page), -1);
 	atomic_set(compound_pincount_ptr(page), 0);
@@ -60,7 +59,6 @@ static inline void add_to_free_list(struct page *page, struct zone *zone,
 		list_add_tail(&page->lru, &area->free_list);
 	else
 		list_add(&page->lru, &area->free_list);
-	area->nr_free++;
 }
 
 static inline void del_page_from_free_list(struct page *page, struct zone *zone,
@@ -69,7 +67,6 @@ static inline void del_page_from_free_list(struct page *page, struct zone *zone,
 	list_del(&page->lru);
 	__ClearPageBuddy(page);
 	set_page_private(page, 0);
-	zone->free_area[order].nr_free--;
 }
 
 static void __meminit __init_single_page(struct page *page, unsigned long pfn,
@@ -278,7 +275,6 @@ static void __meminit zone_init_free_lists(struct zone *zone)
 
 	for (order = 0; order < MAX_ORDER; order++) {
 		INIT_LIST_HEAD(&zone->free_area[order].free_list);
-		zone->free_area[order].nr_free = 0;
 	}
 }
 

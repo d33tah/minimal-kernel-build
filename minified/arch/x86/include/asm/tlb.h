@@ -21,8 +21,6 @@ struct mmu_gather {
 	unsigned int cleared_p4ds : 1;
 };
 
-void tlb_flush_mmu(struct mmu_gather *tlb);
-
 static inline void __tlb_reset_range(struct mmu_gather *tlb)
 {
 	if (tlb->fullmm) {
@@ -42,46 +40,7 @@ static inline void __tlb_reset_range(struct mmu_gather *tlb)
  * caller) was dropped; wrote only the never-read vma_huge/vma_exec/vma_pfn
  * mmu_gather bitfields, which are now removed too (0 reads/writes tree-wide) */
 
-static inline unsigned long tlb_get_unmap_shift(struct mmu_gather *tlb)
-{
-	if (tlb->cleared_ptes)
-		return PAGE_SHIFT;
-	if (tlb->cleared_pmds)
-		return PMD_SHIFT;
-	if (tlb->cleared_puds)
-		return PUD_SHIFT;
-	if (tlb->cleared_p4ds)
-		return P4D_SHIFT;
-
-	return PAGE_SHIFT;
-}
-
 /* tlb_get_unmap_size removed - unused */
-
-/* X86-specific tlb_flush - defined before generic version would be */
-static inline void tlb_flush(struct mmu_gather *tlb)
-{
-	unsigned long start = 0UL, end = TLB_FLUSH_ALL;
-	unsigned int stride_shift = tlb_get_unmap_shift(tlb);
-
-	if (!tlb->fullmm && !tlb->need_flush_all) {
-		start = tlb->start;
-		end = tlb->end;
-	}
-
-	flush_tlb_mm_range(tlb->mm, start, end, stride_shift,
-			   tlb->freed_tables);
-}
-
-static inline void tlb_flush_mmu_tlbonly(struct mmu_gather *tlb)
-{
-	if (!(tlb->freed_tables || tlb->cleared_ptes || tlb->cleared_pmds ||
-	      tlb->cleared_puds || tlb->cleared_p4ds))
-		return;
-
-	tlb_flush(tlb);
-	__tlb_reset_range(tlb);
-}
 
 /* tlb_remove_page_size + tlb_remove_page + tlb_change_page_size removed -
  * 0-caller tlb-gather user wrappers */

@@ -5,20 +5,7 @@
 
 #include <linux/bits.h>
 
-/* AMD64 MSRs */
-#define MSR_EFER		0xc0000080
-
-/* EFER bits */
-#define _EFER_NX		11
 /* _EFER_LME, _EFER_SCE, _EFER_LMA, _EFER_SVME, _EFER_LMSLE, _EFER_FFXSR - unused */
-
-
-
-/* MISC_ENABLE */
-#define MSR_IA32_MISC_ENABLE		0x000001a0
-
-/* AMD specific */
-#define MSR_K7_HWCR			0xc0010015
 
 /* VIA specific */
 

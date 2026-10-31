@@ -211,9 +211,6 @@ extern void __bad_size_call_parameter(void);
 #define this_cpu_add(pcp, val) __pcpu_size_call(this_cpu_add_, pcp, val)
 #define this_cpu_add_return(pcp, val) \
 	__pcpu_size_call_return2(this_cpu_add_return_, pcp, val)
-#define this_cpu_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2)      \
-	__pcpu_double_call_return_bool(this_cpu_cmpxchg_double_, pcp1, pcp2, \
-				       oval1, oval2, nval1, nval2)
 
 #define this_cpu_inc(pcp) this_cpu_add(pcp, 1)
 #define this_cpu_dec_return(pcp) this_cpu_add_return(pcp, -1)

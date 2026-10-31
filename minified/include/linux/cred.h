@@ -76,15 +76,6 @@ static inline void put_cred(const struct cred *_cred)
 
 #define get_current_cred() (get_cred(current_cred()))
 
-#define task_cred_xxx(task, xxx)                               \
-	({                                                     \
-		__typeof__(((struct cred *)NULL)->xxx) ___val; \
-		rcu_read_lock();                               \
-		___val = __task_cred((task))->xxx;             \
-		rcu_read_unlock();                             \
-		___val;                                        \
-	})
-
 #define current_cred_xxx(xxx) ({ current_cred()->xxx; })
 
 #define current_uid() (current_cred_xxx(uid))

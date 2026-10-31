@@ -55,11 +55,6 @@ static inline struct pid_namespace *ns_of_pid(struct pid *pid)
 	return ns;
 }
 
-static inline bool is_child_reaper(struct pid *pid)
-{
-	return pid->numbers[pid->level].nr == 1;
-}
-
 static inline pid_t pid_nr(struct pid *pid)
 {
 	pid_t nr = 0;

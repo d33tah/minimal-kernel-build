@@ -442,35 +442,6 @@ static inline int insert_entries(struct radix_tree_node *node,
 	return 1;
 }
 
-int radix_tree_insert(struct radix_tree_root *root, unsigned long index,
-		      void *item)
-{
-	struct radix_tree_node *node;
-	void __rcu **slot;
-	int error;
-
-	BUG_ON(radix_tree_is_internal_node(item));
-
-	error = __radix_tree_create(root, index, &node, &slot);
-	if (error)
-		return error;
-
-	error = insert_entries(node, slot, item, false);
-	if (error < 0)
-		return error;
-
-	if (node) {
-		unsigned offset = get_slot_offset(node, slot);
-		BUG_ON(tag_get(node, 0, offset));
-		BUG_ON(tag_get(node, 1, offset));
-		BUG_ON(tag_get(node, 2, offset));
-	} else {
-		BUG_ON(root_tags_get(root));
-	}
-
-	return 0;
-}
-
 void *__radix_tree_lookup(const struct radix_tree_root *root,
 			  unsigned long index, struct radix_tree_node **nodep,
 			  void __rcu ***slotp)
@@ -503,11 +474,6 @@ restart:
 	if (slotp)
 		*slotp = slot;
 	return node;
-}
-
-void *radix_tree_lookup(const struct radix_tree_root *root, unsigned long index)
-{
-	return __radix_tree_lookup(root, index, NULL, NULL);
 }
 
 static void replace_slot(void __rcu **slot, void *item,

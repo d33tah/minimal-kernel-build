@@ -105,19 +105,15 @@
 
 #endif
 
-#ifndef arch_atomic_add_return_relaxed
 #define arch_atomic_add_return_acquire arch_atomic_add_return
 #define arch_atomic_add_return_release arch_atomic_add_return
-#endif
 
 #ifndef arch_atomic_fetch_add_relaxed
 #define arch_atomic_fetch_add_release arch_atomic_fetch_add
 #define arch_atomic_fetch_add_relaxed arch_atomic_fetch_add
 #endif
 
-#ifndef arch_atomic_fetch_sub_relaxed
 #define arch_atomic_fetch_sub_release arch_atomic_fetch_sub
-#endif
 
 #ifndef arch_atomic_cmpxchg_relaxed
 #define arch_atomic_cmpxchg_acquire arch_atomic_cmpxchg

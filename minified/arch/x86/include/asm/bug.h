@@ -22,21 +22,17 @@
 #include <linux/panic.h>
 #include <linux/printk.h>
 
-#ifndef HAVE_ARCH_BUG_ON
 #define BUG_ON(condition)                \
 	do {                             \
 		if (unlikely(condition)) \
 			BUG();           \
 	} while (0)
-#endif
 
-#ifndef HAVE_ARCH_WARN_ON
 #define WARN_ON(condition)                         \
 	({                                         \
 		int __ret_warn_on = !!(condition); \
 		unlikely(__ret_warn_on);           \
 	})
-#endif
 
 #ifndef WARN
 #define WARN(condition, format...)                 \

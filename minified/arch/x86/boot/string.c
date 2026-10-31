@@ -16,8 +16,3 @@ int memcmp(const void *s1, const void *s2, size_t len)
 	    : CC_OUT(nz)(diff), "+D"(s1), "+S"(s2), "+c"(len));
 	return diff;
 }
-
-int bcmp(const void *s1, const void *s2, size_t len)
-{
-	return memcmp(s1, s2, len);
-}

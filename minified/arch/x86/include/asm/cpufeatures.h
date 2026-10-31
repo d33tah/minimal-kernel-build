@@ -55,32 +55,18 @@
 #define X86_FEATURE_DE			( 0*32+ 2)
 #define X86_FEATURE_PSE			( 0*32+ 3)
 #define X86_FEATURE_TSC			( 0*32+ 4)
-#define X86_FEATURE_PAE			( 0*32+ 6)
 #define X86_FEATURE_CX8			( 0*32+ 8)
-#define X86_FEATURE_SEP			( 0*32+11)
 #define X86_FEATURE_PGE			( 0*32+13)
 #define X86_FEATURE_CMOV		( 0*32+15)
-#define X86_FEATURE_PSE36		( 0*32+17)
-#define X86_FEATURE_FXSR		( 0*32+24)
 #define X86_FEATURE_XMM			( 0*32+25)
-#define X86_FEATURE_XMM2		( 0*32+26)
 
-/* Word 1 - AMD/extended flags */
-#define X86_FEATURE_NX			( 1*32+20)
 #define X86_FEATURE_RDTSCP		( 1*32+27)
 
 /* Word 3 - Auxiliary flags */
 #define X86_FEATURE_LFENCE_RDTSC	( 3*32+18)
-#define X86_FEATURE_NOPL		( 3*32+20)
 #define X86_FEATURE_ALWAYS		( 3*32+21)
-#define X86_FEATURE_CPUID		( 3*32+25)
 
-/* Word 4 - Intel extended */
-#define X86_FEATURE_MWAIT		( 4*32+ 3)
 #define X86_FEATURE_PCID		( 4*32+17)
-#define X86_FEATURE_DCA			( 4*32+18)
-#define X86_FEATURE_TSC_DEADLINE_TIMER	( 4*32+24)
-#define X86_FEATURE_XSAVE		( 4*32+26)
 #define X86_FEATURE_HYPERVISOR		( 4*32+31)
 
 /* Word 6 - AMD extended */
@@ -88,10 +74,7 @@
 
 /* Word 7 - Kernel-synthesized flags */
 #define X86_FEATURE_PTI			( 7*32+11)
-#define X86_FEATURE_RSB_CTXSW		( 7*32+19)
 
-/* Word 8 - Virtualization flags */
-#define X86_FEATURE_XENPV		( 8*32+16)
 #define X86_FEATURE_TDX_GUEST		( 8*32+22)
 
 /* Word 9 - Extended leaf 7 */
@@ -113,13 +96,7 @@
 #define X86_FEATURE_UMIP		(16*32+ 2)
 #define X86_FEATURE_PKU			(16*32+ 3)
 #define X86_FEATURE_OSPKE		(16*32+ 4)
-#define X86_FEATURE_WAITPKG		(16*32+ 5)
 #define X86_FEATURE_LA57		(16*32+16)
 #define X86_FEATURE_ENQCMD		(16*32+29)
-
-/* CPU bugs - only keep the used ones */
-#define X86_BUG(x)			(NCAPINTS*32 + (x))
-
-#define X86_BUG_NULL_SEG		X86_BUG(10)
 
 #endif

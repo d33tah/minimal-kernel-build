@@ -20,9 +20,6 @@ enum { false = 0, true = 1 };
 
 #define sizeof_field(TYPE, MEMBER) sizeof((((TYPE *)0)->MEMBER))
 
-#define offsetofend(TYPE, MEMBER) \
-	(offsetof(TYPE, MEMBER) + sizeof_field(TYPE, MEMBER))
-
 /* Removed: struct_group* / DECLARE_FLEX_ARRAY - 0 invocation sites tree-wide */
 
 #endif

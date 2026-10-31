@@ -66,18 +66,6 @@ enum node_stat_item {
 	NR_PAGETABLE,
 };
 
-#define LRU_BASE 0
-#define LRU_ACTIVE 1
-#define LRU_FILE 2
-
-enum lru_list {
-	LRU_INACTIVE_ANON = LRU_BASE,
-	LRU_INACTIVE_FILE = LRU_BASE + LRU_FILE,
-	LRU_ACTIVE_FILE = LRU_BASE + LRU_FILE + LRU_ACTIVE,
-	LRU_UNEVICTABLE,
-	NR_LRU_LISTS
-};
-
 #endif
 
 enum zone_type { ZONE_NORMAL, ZONE_MOVABLE, __MAX_NR_ZONES };
@@ -96,19 +84,9 @@ struct zone {
 	ZONE_PADDING(_pad3_) atomic_long_t vm_stat[NR_VM_ZONE_STAT_ITEMS];
 } ____cacheline_internodealigned_in_smp;
 
-static inline unsigned long zone_managed_pages(struct zone *zone)
-{
-	return (unsigned long)atomic_long_read(&zone->managed_pages);
-}
-
 static inline unsigned long zone_end_pfn(const struct zone *zone)
 {
 	return zone->zone_start_pfn + zone->spanned_pages;
-}
-
-static inline bool zone_spans_pfn(const struct zone *zone, unsigned long pfn)
-{
-	return zone->zone_start_pfn <= pfn && pfn < zone_end_pfn(zone);
 }
 
 #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES * MAX_NR_ZONES)

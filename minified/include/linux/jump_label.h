@@ -1,7 +1,6 @@
 #ifndef _LINUX_JUMP_LABEL_H
 #define _LINUX_JUMP_LABEL_H
 
-
 #ifndef __ASSEMBLY__
 
 #include <linux/types.h>
@@ -15,7 +14,6 @@ struct static_key { atomic_t enabled; };
 
 #endif  
 
-
 #ifndef __ASSEMBLY__
 
 #include <linux/atomic.h>
@@ -27,10 +25,6 @@ static __always_inline int static_key_count(struct static_key *key) {
 static __always_inline void jump_label_init(void) {
 	static_key_initialized = true; }
 
-static inline void static_key_slow_inc(struct static_key *key) {
-	STATIC_KEY_CHECK_USE(key);
-	atomic_inc(&key->enabled); }
-
 static inline void static_key_enable(struct static_key *key) {
 	STATIC_KEY_CHECK_USE(key);
 
@@ -40,7 +34,6 @@ static inline void static_key_enable(struct static_key *key) {
 	atomic_set(&key->enabled, 1); }
 
 #define STATIC_KEY_INIT_FALSE	{ .enabled = ATOMIC_INIT(0) }
-
 
 struct static_key_true { struct static_key key; };
 
@@ -56,10 +49,7 @@ extern bool ____wrong_branch_error(void);
 
 #define static_key_enabled(x)							({											if (!__builtin_types_compatible_p(typeof(*x), struct static_key) &&		    !__builtin_types_compatible_p(typeof(*x), struct static_key_true) &&	    !__builtin_types_compatible_p(typeof(*x), struct static_key_false))			____wrong_branch_error();						static_key_count((struct static_key *)x) > 0;				})
 
-
 #define static_branch_likely(x)		likely_notrace(static_key_enabled(&(x)->key))
-
-#define static_branch_inc(x)		static_key_slow_inc(&(x)->key)
 
 #define static_branch_enable(x)			static_key_enable(&(x)->key)
 

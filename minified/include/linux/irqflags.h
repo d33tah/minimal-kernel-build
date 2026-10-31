@@ -18,13 +18,6 @@
 	do {                   \
 	} while (0)
 
-#define stop_critical_timings() \
-	do {                    \
-	} while (0)
-#define start_critical_timings() \
-	do {                     \
-	} while (0)
-
 #define raw_check_bogus_irq_restore() \
 	do {                          \
 	} while (0)

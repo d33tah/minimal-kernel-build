@@ -4,9 +4,6 @@
 #include <linux/fs.h>
 #include <asm/cacheflush.h>
 struct folio;
-static inline void flush_dcache_folio(struct folio *folio)
-{
-}
 #include <linux/uaccess.h>
 #include <linux/hardirq.h>
 
@@ -54,12 +51,10 @@ static inline void __kunmap_atomic(void *addr)
 		__kunmap_local(__addr);                             \
 	} while (0)
 
-#ifndef ARCH_HAS_FLUSH_ANON_PAGE
 static inline void flush_anon_page(struct vm_area_struct *vma,
 				   struct page *page, unsigned long vmaddr)
 {
 }
-#endif
 
 /* clear_user_highpage + generic alloc_zeroed_user_highpage_movable removed: x86 defines
  * __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE_MOVABLE (asm/page.h), so the generic inline never
@@ -90,8 +85,6 @@ static inline void zero_user(struct page *page, unsigned start, unsigned size)
 	zero_user_segments(page, start, start + size, 0, 0);
 }
 
-#ifndef __HAVE_ARCH_COPY_USER_HIGHPAGE
-
 static inline void copy_user_highpage(struct page *to, struct page *from,
 				      unsigned long vaddr,
 				      struct vm_area_struct *vma)
@@ -104,7 +97,5 @@ static inline void copy_user_highpage(struct page *to, struct page *from,
 	kunmap_local(vto);
 	kunmap_local(vfrom);
 }
-
-#endif
 
 #endif

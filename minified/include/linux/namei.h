@@ -14,8 +14,6 @@ enum { LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT };
 
 #define LOOKUP_PARENT 0x0010
 
-extern int kern_path(const char *, unsigned, struct path *);
-
 extern struct dentry *kern_path_create(const char *, struct path *,
 				       unsigned int);
 extern void done_path_create(struct path *, struct dentry *);

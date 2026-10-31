@@ -4,12 +4,7 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 
-#if defined(__noretpoline) && !defined(MODULE)
-#define __noinitretpoline __noretpoline
-#else
 #define __noinitretpoline
-#endif
-
 
 #define __init		__section(".init.text") __cold  __latent_entropy __noinitretpoline __nocfi
 #define __initdata	__section(".init.data")
@@ -17,7 +12,6 @@
 
 #define __ref            __section(".ref.text") noinline
 #define __refdata        __section(".ref.data")
-
 
 #define __meminit        __section(".meminit.text") __cold notrace 						  __latent_entropy
 #define __meminitdata    __section(".meminit.data")
@@ -44,14 +38,11 @@ extern struct file_system_type rootfs_fs_type;
 
 void mark_rodata_ro(void);
 
-
-
 #endif
   
 #ifndef MODULE
 
 #ifndef __ASSEMBLY__
-
 
 #define __initcall_id(fn)						__PASTE(__KBUILD_MODNAME,					__PASTE(__,							__PASTE(__COUNTER__,						__PASTE(_,							__PASTE(__LINE__,						__PASTE(_, fn))))))
 
@@ -74,12 +65,9 @@ void mark_rodata_ro(void);
 #define early_initcall(fn)		__define_initcall(fn, early)
 
 #define core_initcall(fn)		__define_initcall(fn, 1)
-#define postcore_initcall(fn)		__define_initcall(fn, 2)
-#define subsys_initcall(fn)		__define_initcall(fn, 4)
 #define fs_initcall(fn)			__define_initcall(fn, 5)
 #define rootfs_initcall(fn)		__define_initcall(fn, rootfs)
 #define device_initcall(fn)		__define_initcall(fn, 6)
-#define late_initcall(fn)		__define_initcall(fn, 7)
 
 #define __initcall(fn) device_initcall(fn)
 

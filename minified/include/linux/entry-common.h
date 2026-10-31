@@ -14,21 +14,17 @@ long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall);
 
 static inline void local_irq_enable_exit_to_user(unsigned long ti_work);
 
-#ifndef local_irq_enable_exit_to_user
 static inline void local_irq_enable_exit_to_user(unsigned long ti_work)
 {
 	local_irq_enable();
 }
-#endif
 
 static inline void local_irq_disable_exit_to_user(void);
 
-#ifndef local_irq_disable_exit_to_user
 static inline void local_irq_disable_exit_to_user(void)
 {
 	local_irq_disable();
 }
-#endif
 
 static __always_inline void arch_exit_to_user_mode(void);
 
@@ -38,13 +34,11 @@ void irqentry_enter_from_user_mode(struct pt_regs *regs);
 
 void irqentry_exit_to_user_mode(struct pt_regs *regs);
 
-#ifndef irqentry_state
 typedef struct irqentry_state {
 	union {
 		bool exit_rcu, lockdep;
 	};
 } irqentry_state_t;
-#endif
 
 irqentry_state_t noinstr irqentry_enter(struct pt_regs *regs);
 

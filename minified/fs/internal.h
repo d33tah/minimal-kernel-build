@@ -5,9 +5,6 @@ struct fs_context;
 
 /* emergency_thaw_bdev removed - unused */
 
-extern int filename_lookup(struct filename *name, unsigned flags,
-			   struct path *path);
-
 extern void __init mnt_init(void);
 
 extern struct file *alloc_empty_file(int, const struct cred *);

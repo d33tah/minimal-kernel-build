@@ -28,8 +28,6 @@ struct pt_regs;
 extern struct boot_params boot_params;
 extern char _text[];
 
-#define LOWMEMSIZE()	(0x9f000)
-
  
 extern unsigned long _brk_end;
 void *extend_brk(size_t size, size_t align);

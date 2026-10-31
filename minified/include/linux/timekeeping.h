@@ -13,8 +13,6 @@ void timekeeping_init(void);
 
 extern void ktime_get_coarse_real_ts64(struct timespec64 *ts);
 
-extern time64_t ktime_get_real_seconds(void);
-
 extern void read_persistent_clock64(struct timespec64 *ts);
 
 #endif

@@ -3,10 +3,7 @@
 
 #include <asm/errno.h>
 
-#define ERESTARTSYS 512
 #define ERESTARTNOINTR 513
-#define ERESTARTNOHAND 514
-#define EOPENSTALE 518
 #define EIOCBQUEUED 529
 
 #endif

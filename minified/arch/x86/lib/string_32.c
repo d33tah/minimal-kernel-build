@@ -1,41 +1,6 @@
 
 #include <linux/string.h>
 
-#ifdef __HAVE_ARCH_STRCPY
-char *strcpy(char *dest, const char *src)
-{
-	int d0, d1, d2;
-	asm volatile("1:\tlodsb\n\t"
-		     "stosb\n\t"
-		     "testb %%al,%%al\n\t"
-		     "jne 1b"
-		     : "=&S"(d0), "=&D"(d1), "=&a"(d2)
-		     : "0"(src), "1"(dest)
-		     : "memory");
-	return dest;
-}
-#endif
-
-#ifdef __HAVE_ARCH_STRNCPY
-char *strncpy(char *dest, const char *src, size_t count)
-{
-	int d0, d1, d2, d3;
-	asm volatile("1:\tdecl %2\n\t"
-		     "js 2f\n\t"
-		     "lodsb\n\t"
-		     "stosb\n\t"
-		     "testb %%al,%%al\n\t"
-		     "jne 1b\n\t"
-		     "rep\n\t"
-		     "stosb\n"
-		     "2:"
-		     : "=&S"(d0), "=&D"(d1), "=&c"(d2), "=&a"(d3)
-		     : "0"(src), "1"(dest), "2"(count)
-		     : "memory");
-	return dest;
-}
-#endif
-
 #ifdef __HAVE_ARCH_STRCMP
 int strcmp(const char *cs, const char *ct)
 {

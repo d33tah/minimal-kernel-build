@@ -8,9 +8,7 @@
 #define GOLDEN_RATIO_32 0x61C88647
 #define hash_long(val, bits) hash_32(val, bits)
 
-#ifndef HAVE_ARCH__HASH_32
 #define __hash_32 __hash_32_generic
-#endif
 static inline u32 __hash_32_generic(u32 val)
 {
 	return val * GOLDEN_RATIO_32;

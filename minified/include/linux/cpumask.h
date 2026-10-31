@@ -13,8 +13,6 @@ typedef struct cpumask {
 
 #define cpumask_bits(maskp) ((maskp)->bits)
 
-#define cpumask_pr_args(maskp) nr_cpu_ids, cpumask_bits(maskp)
-
 /*
  * NR_CPUS is fixed to 1 in this build (CONFIG_NR_CPUS=1, unconditional in
  * autoconf.h + threads.h), so `#if NR_CPUS == 1` is always true; the
@@ -68,13 +66,6 @@ static inline void cpumask_clear(struct cpumask *dstp)
 	bitmap_zero(cpumask_bits(dstp), nr_cpumask_bits);
 }
 
-static inline bool cpumask_equal(const struct cpumask *src1p,
-				 const struct cpumask *src2p)
-{
-	return bitmap_equal(cpumask_bits(src1p), cpumask_bits(src2p),
-			    nr_cpumask_bits);
-}
-
 #define cpumask_of(cpu) (get_cpu_mask(cpu))
 
 static inline unsigned int cpumask_size(void)
@@ -83,7 +74,6 @@ static inline unsigned int cpumask_size(void)
 }
 
 extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
-#define cpu_all_mask to_cpumask(cpu_all_bits)
 
 #define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
 
@@ -118,23 +108,8 @@ static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
 #define num_possible_cpus() 1U
 #define num_present_cpus() 1U
 
-static inline bool cpu_possible(unsigned int cpu)
-{
-	return cpu == 0;
-}
-
 /* NR_CPUS <= BITS_PER_LONG always true */
 #define CPU_BITS_ALL \
 	{ [BITS_TO_LONGS(NR_CPUS) - 1] = BITMAP_LAST_WORD_MASK(NR_CPUS) }
-
-/* NR_CPUS <= BITS_PER_LONG always true */
-#define CPU_MASK_ALL                                           \
-	(cpumask_t)                                            \
-	{                                                      \
-		{                                              \
-			[BITS_TO_LONGS(NR_CPUS) - 1] =         \
-				BITMAP_LAST_WORD_MASK(NR_CPUS) \
-		}                                              \
-	}
 
 #endif

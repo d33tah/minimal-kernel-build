@@ -112,8 +112,6 @@ static inline atomic_t *compound_pincount_ptr(struct page *page)
 	return &page[1].compound_pincount;
 }
 
-#define page_private(page) ((page)->private)
-
 static inline void set_page_private(struct page *page, unsigned long private)
 {
 	page->private = private;
@@ -171,8 +169,6 @@ static inline cpumask_t *mm_cpumask(struct mm_struct *mm)
 }
 
 struct mmu_gather;
-extern void tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm);
-extern void tlb_finish_mmu(struct mmu_gather *tlb);
 
 typedef __bitwise unsigned int vm_fault_t;
 

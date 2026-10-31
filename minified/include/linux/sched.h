@@ -42,8 +42,6 @@ enum {
 
 extern void scheduler_tick(void);
 
-#define MAX_SCHEDULE_TIMEOUT LONG_MAX
-
 asmlinkage void schedule(void);
 extern void schedule_preempt_disabled(void);
 
@@ -93,22 +91,6 @@ static inline struct pid *task_pid(struct task_struct *task)
 
 pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type,
 		       struct pid_namespace *ns);
-
-static inline pid_t task_pid_nr(struct task_struct *tsk)
-{
-	return tsk->pid;
-}
-
-static inline pid_t task_pid_nr_ns(struct task_struct *tsk,
-				   struct pid_namespace *ns)
-{
-	return __task_pid_nr_ns(tsk, PIDTYPE_PID, ns);
-}
-
-static inline pid_t task_tgid_nr(struct task_struct *tsk)
-{
-	return tsk->tgid;
-}
 
 #define PF_IDLE 0x00000002
 #define PF_EXITING 0x00000004
@@ -179,11 +161,6 @@ static inline int _cond_resched(void)
 static __always_inline bool need_resched(void)
 {
 	return unlikely(tif_need_resched());
-}
-
-static inline unsigned int task_cpu(const struct task_struct *p)
-{
-	return 0;
 }
 
 #endif

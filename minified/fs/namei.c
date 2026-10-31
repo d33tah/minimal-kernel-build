@@ -529,18 +529,6 @@ static int path_lookupat(struct nameidata *nd, unsigned flags,
 	return err;
 }
 
-int filename_lookup(struct filename *name, unsigned flags, struct path *path)
-{
-	int retval;
-	struct nameidata nd;
-	if (IS_ERR(name))
-		return PTR_ERR(name);
-	set_nameidata(&nd, name);
-	retval = path_lookupat(&nd, flags, path);
-	restore_nameidata();
-	return retval;
-}
-
 static int path_parentat(struct nameidata *nd, unsigned flags,
 			 struct path *parent)
 {
@@ -571,15 +559,6 @@ static int filename_parentat(struct filename *name, unsigned int flags,
 	}
 	restore_nameidata();
 	return retval;
-}
-
-int kern_path(const char *name, unsigned int flags, struct path *path)
-{
-	struct filename *filename = getname_kernel(name);
-	int ret = filename_lookup(filename, flags, path);
-
-	putname(filename);
-	return ret;
 }
 
 static inline int may_create(struct user_namespace *mnt_userns,

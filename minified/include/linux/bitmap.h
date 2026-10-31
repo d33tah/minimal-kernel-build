@@ -14,12 +14,7 @@ extern unsigned long _find_next_bit(const unsigned long *addr1,
 				    unsigned long invert, unsigned long le);
 extern unsigned long _find_first_bit(const unsigned long *addr,
 				     unsigned long size);
-extern unsigned long _find_first_zero_bit(const unsigned long *addr,
-					  unsigned long size);
-extern unsigned long _find_last_bit(const unsigned long *addr,
-				    unsigned long size);
 
-#ifndef find_next_bit
 static inline unsigned long find_next_bit(const unsigned long *addr,
 					  unsigned long size,
 					  unsigned long offset)
@@ -36,9 +31,7 @@ static inline unsigned long find_next_bit(const unsigned long *addr,
 
 	return _find_next_bit(addr, NULL, size, offset, 0UL, 0);
 }
-#endif
 
-#ifndef find_next_zero_bit
 static inline unsigned long find_next_zero_bit(const unsigned long *addr,
 					       unsigned long size,
 					       unsigned long offset)
@@ -55,9 +48,7 @@ static inline unsigned long find_next_zero_bit(const unsigned long *addr,
 
 	return _find_next_bit(addr, NULL, size, offset, ~0UL, 0);
 }
-#endif
 
-#ifndef find_first_bit
 static inline unsigned long find_first_bit(const unsigned long *addr,
 					   unsigned long size)
 {
@@ -69,35 +60,6 @@ static inline unsigned long find_first_bit(const unsigned long *addr,
 
 	return _find_first_bit(addr, size);
 }
-#endif
-
-#ifndef find_first_zero_bit
-static inline unsigned long find_first_zero_bit(const unsigned long *addr,
-						unsigned long size)
-{
-	if (small_const_nbits(size)) {
-		unsigned long val = *addr | ~GENMASK(size - 1, 0);
-
-		return val == ~0UL ? size : ffz(val);
-	}
-
-	return _find_first_zero_bit(addr, size);
-}
-#endif
-
-#ifndef find_last_bit
-static inline unsigned long find_last_bit(const unsigned long *addr,
-					  unsigned long size)
-{
-	if (small_const_nbits(size)) {
-		unsigned long val = *addr & GENMASK(size - 1, 0);
-
-		return val ? __fls(val) : size;
-	}
-
-	return _find_last_bit(addr, size);
-}
-#endif
 
 /* _le bitmap functions (find_next_zero_bit_le, find_next_bit_le, find_first_zero_bit_le)
    removed - never called */
@@ -129,26 +91,12 @@ static inline void bitmap_fill(unsigned long *dst, unsigned int nbits)
 	memset(dst, 0xff, len);
 }
 
-static inline bool bitmap_equal(const unsigned long *src1,
-				const unsigned long *src2, unsigned int nbits)
-{
-	return !((*src1 ^ *src2) & BITMAP_LAST_WORD_MASK(nbits));
-}
-
 static inline bool bitmap_empty(const unsigned long *src, unsigned nbits)
 {
 	if (small_const_nbits(nbits))
 		return !(*src & BITMAP_LAST_WORD_MASK(nbits));
 
 	return find_first_bit(src, nbits) == nbits;
-}
-
-static inline bool bitmap_full(const unsigned long *src, unsigned int nbits)
-{
-	if (small_const_nbits(nbits))
-		return !(~(*src) & BITMAP_LAST_WORD_MASK(nbits));
-
-	return find_first_zero_bit(src, nbits) == nbits;
 }
 
 #endif

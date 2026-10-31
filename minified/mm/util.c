@@ -34,16 +34,6 @@ const char *kstrdup_const(const char *s, gfp_t gfp)
 	return kstrdup(s, gfp);
 }
 
-void *kmemdup(const void *src, size_t len, gfp_t gfp)
-{
-	void *p;
-
-	p = kmalloc_track_caller(len, gfp);
-	if (p)
-		memcpy(p, src, len);
-	return p;
-}
-
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		     struct vm_area_struct *prev)
 {

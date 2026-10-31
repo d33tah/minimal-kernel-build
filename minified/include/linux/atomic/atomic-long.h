@@ -24,12 +24,6 @@ static __always_inline void arch_atomic_long_add(long i, atomic_long_t *v)
 	arch_atomic_add(i, v);
 }
 
-static __always_inline long arch_atomic_long_add_return(long i,
-							atomic_long_t *v)
-{
-	return arch_atomic_add_return(i, v);
-}
-
 static __always_inline long
 arch_atomic_long_add_return_acquire(long i, atomic_long_t *v)
 {
@@ -53,17 +47,6 @@ static __always_inline void arch_atomic_long_inc(atomic_long_t *v)
 	arch_atomic_inc(v);
 }
 
-static __always_inline void arch_atomic_long_dec(atomic_long_t *v)
-{
-	arch_atomic_dec(v);
-}
-
-static __always_inline long arch_atomic_long_cmpxchg(atomic_long_t *v, long old,
-						     long new)
-{
-	return arch_atomic_cmpxchg(v, old, new);
-}
-
 static __always_inline bool
 arch_atomic_long_try_cmpxchg_acquire(atomic_long_t *v, long *old, long new)
 {
@@ -79,16 +62,6 @@ arch_atomic_long_try_cmpxchg_release(atomic_long_t *v, long *old, long new)
 static __always_inline bool arch_atomic_long_dec_and_test(atomic_long_t *v)
 {
 	return arch_atomic_dec_and_test(v);
-}
-
-static __always_inline bool arch_atomic_long_inc_not_zero(atomic_long_t *v)
-{
-	return arch_atomic_inc_not_zero(v);
-}
-
-static __always_inline long arch_atomic_long_dec_if_positive(atomic_long_t *v)
-{
-	return arch_atomic_dec_if_positive(v);
 }
 
 #endif

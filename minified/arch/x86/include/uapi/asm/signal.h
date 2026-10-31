@@ -14,7 +14,6 @@
 #define SIGTRAP 5
 #define SIGBUS 7
 #define SIGFPE 8
-#define SIGKILL 9
 #define SIGSEGV 11
 #define SIGCHLD 17
 /* SIGCONT(18)/SIGSTOP(19)/SIGURG(23)/SIGWINCH(28)/SIGRTMIN(32) removed - 0-ref in this build */
@@ -44,8 +43,6 @@ typedef __signalfn_t __user *__sighandler_t;
 typedef void __restorefn_t(void);
 typedef __restorefn_t __user *__sigrestore_t;
 
-#define SIG_DFL ((__force __sighandler_t)0)
-#define SIG_IGN ((__force __sighandler_t)1)
 #endif
 /* end signal-defs.h inlining */
 

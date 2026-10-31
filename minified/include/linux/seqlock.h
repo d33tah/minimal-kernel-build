@@ -229,30 +229,11 @@ typedef struct {
 	{ .seqcount = SEQCNT_SPINLOCK_ZERO(lockname, &(lockname).lock), \
 	  .lock = __SPIN_LOCK_UNLOCKED(lockname) }
 
-#define DEFINE_SEQLOCK(sl) seqlock_t sl = __SEQLOCK_UNLOCKED(sl)
-
 static inline unsigned read_seqbegin(const seqlock_t *sl)
 {
 	unsigned ret = read_seqcount_begin(&sl->seqcount);
 
 	return ret;
-}
-
-static inline unsigned read_seqretry(const seqlock_t *sl, unsigned start)
-{
-	return read_seqcount_retry(&sl->seqcount, start);
-}
-
-static inline void write_seqlock(seqlock_t *sl)
-{
-	spin_lock(&sl->lock);
-	do_write_seqcount_begin(&sl->seqcount.seqcount);
-}
-
-static inline void write_sequnlock(seqlock_t *sl)
-{
-	do_write_seqcount_end(&sl->seqcount.seqcount);
-	spin_unlock(&sl->lock);
 }
 
 #endif

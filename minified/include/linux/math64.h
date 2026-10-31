@@ -7,11 +7,8 @@
 
 /* Inlined from vdso/math64.h */
 
-#ifndef div64_u64
 extern u64 div64_u64(u64 dividend, u64 divisor);
-#endif
 
-#ifndef mul_u64_u32_shr
 static inline u64 mul_u64_u32_shr(u64 a, u32 mul, unsigned int shift)
 {
 	u32 ah, al;
@@ -26,6 +23,5 @@ static inline u64 mul_u64_u32_shr(u64 a, u32 mul, unsigned int shift)
 
 	return ret;
 }
-#endif
 
 #endif

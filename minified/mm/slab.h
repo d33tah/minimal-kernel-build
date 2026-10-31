@@ -35,8 +35,6 @@ static_assert(sizeof(struct slab) <= sizeof(struct page));
 		 const struct slab *: (const struct folio *)s, \
 		 struct slab *: (struct folio *)s))
 
-#define slab_page(s) folio_page(slab_folio(s), 0)
-
 static inline void *slab_address(const struct slab *slab)
 {
 	return folio_address(slab_folio(slab));

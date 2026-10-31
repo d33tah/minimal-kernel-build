@@ -26,8 +26,6 @@ struct signal_struct {
 
 extern void __cleanup_sighand(struct sighand_struct *);
 
-#define while_each_thread(g, t) while ((t = next_thread(t)) != g)
-
 static inline struct pid *task_pgrp(struct task_struct *task)
 {
 	return task->signal->pids[PIDTYPE_PGID];
@@ -36,17 +34,6 @@ static inline struct pid *task_pgrp(struct task_struct *task)
 static inline struct pid *task_session(struct task_struct *task)
 {
 	return task->signal->pids[PIDTYPE_SID];
-}
-
-static inline bool thread_group_leader(struct task_struct *p)
-{
-	return p->exit_signal >= 0;
-}
-
-static inline struct task_struct *next_thread(const struct task_struct *p)
-{
-	return list_entry_rcu(p->thread_group.next, struct task_struct,
-			      thread_group);
 }
 
 static inline unsigned long task_rlimit(const struct task_struct *task,

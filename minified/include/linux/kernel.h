@@ -9,7 +9,6 @@
 #define ALIGN(x, a) __ALIGN_KERNEL((x), (a))
 #define ALIGN_DOWN(x, a) __ALIGN_KERNEL((x) - ((a) - 1), (a))
 #define __ALIGN_MASK(x, mask) __ALIGN_KERNEL_MASK((x), (mask))
-#define IS_ALIGNED(x, a) (((x) & ((typeof(x))(a) - 1)) == 0)
 #include <linux/linkage.h>
 #include <linux/stddef.h>
 #include <linux/compiler.h>
@@ -35,8 +34,6 @@ __here:                                  \
 #define WRITE 1
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
-
-#define upper_32_bits(n) ((u32)(((n) >> 16) >> 16))
 
 #define lower_32_bits(n) ((u32)((n) & 0xffffffff))
 

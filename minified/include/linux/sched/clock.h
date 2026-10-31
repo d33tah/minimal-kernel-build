@@ -3,6 +3,4 @@
 
 #include <linux/types.h>
 
-extern unsigned long long notrace sched_clock(void);
-
 #endif

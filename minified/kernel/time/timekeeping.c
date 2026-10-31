@@ -130,21 +130,6 @@ static void timekeeping_forward_now(struct timekeeper *tk)
 
 /* Removed: ktime_get_with_offset + offsets[], ktime_get_coarse_with_offset, ktime_mono_to_any, ktime_get_raw - no callers */
 
-time64_t ktime_get_real_seconds(void)
-{
-	struct timekeeper *tk = &tk_core.timekeeper;
-	time64_t seconds;
-	unsigned int seq;
-
-	do {
-		seq = read_seqcount_begin(&tk_core.seq);
-		seconds = tk->xtime_sec;
-
-	} while (read_seqcount_retry(&tk_core.seq, seq));
-
-	return seconds;
-}
-
 static int change_clocksource(void *data)
 {
 	struct timekeeper *tk = &tk_core.timekeeper;

@@ -43,7 +43,6 @@
 
 #define _PAGE_ENC		(_AT(pteval_t, sme_me_mask))
 
-
 #define __PP _PAGE_PRESENT
 #define __RW _PAGE_RW
 #define _USR _PAGE_USER
@@ -74,7 +73,6 @@
 #define __PAGE_KERNEL_RO	 (__PP|   0|   0|___A|__NX|___D|   0|___G)
 #define __PAGE_KERNEL_LARGE	 (__PP|__RW|   0|___A|__NX|___D|_PSE|___G)
 #define __PAGE_KERNEL_LARGE_EXEC (__PP|__RW|   0|___A|   0|___D|_PSE|___G)
-
 
 #ifndef __ASSEMBLY__
 
@@ -196,9 +194,6 @@ typedef struct { pud_t pud; } pmd_t;
 /* pud_none() removed - constant 0, all callers folded (2-level paging) */
 /* pud_present (const 1), pud_user, pud_leaf (generic fallback in linux/pgtable.h) removed - unused */
 
-
-#define set_pud(pudptr, pudval)			set_pmd((pmd_t *)(pudptr), (pmd_t) { pudval })
-
 static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address) {
 	return (pmd_t *)pud; }
 
@@ -236,13 +231,11 @@ static inline pteval_t native_pte_val(pte_t pte) {
 static inline pteval_t pte_flags(pte_t pte) {
 	return native_pte_val(pte) & PTE_FLAGS_MASK; }
 
-
 typedef struct page *pgtable_t;
 
 extern pteval_t __supported_pte_mask;
 extern pteval_t __default_kernel_pte_mask;
 /* set_nx, nx_enabled removed - unused */
-
 
 void set_pte_vaddr(unsigned long vaddr, pte_t pte);
 

@@ -33,12 +33,6 @@ enum cpuid_leafs {
 	CPUID_8000_001F_EAX,
 };
 
-#define X86_CAP_FMT_NUM "%d:%d"
-#define x86_cap_flag_num(flag) ((flag) >> 5), ((flag) & 31)
-
-#define X86_CAP_FMT X86_CAP_FMT_NUM
-#define x86_cap_flag x86_cap_flag_num
-
 #define test_cpu_cap(c, bit) \
 	arch_test_bit(bit, (unsigned long *)((c)->x86_capability))
 

@@ -5,7 +5,6 @@
 
 /* Inlined from vdso/time64.h */
 #define MSEC_PER_SEC 1000L
-#define NSEC_PER_USEC 1000L
 #define NSEC_PER_MSEC 1000000L
 #define NSEC_PER_SEC 1000000000L
 
@@ -26,12 +25,6 @@ struct timespec64 {
 
 #define TIME_UPTIME_SEC_MAX (30LL * 365 * 24 * 3600)
 #define TIME_SETTOD_SEC_MAX (KTIME_SEC_MAX - TIME_UPTIME_SEC_MAX)
-
-static inline int timespec64_equal(const struct timespec64 *a,
-				   const struct timespec64 *b)
-{
-	return (a->tv_sec == b->tv_sec) && (a->tv_nsec == b->tv_nsec);
-}
 
 static inline bool timespec64_valid(const struct timespec64 *ts)
 {

@@ -13,11 +13,8 @@ typedef __u32 Elf32_Word;
 
 #define PT_LOAD 1
 #define PT_NOTE 4
-#define PT_LOOS 0x60000000
-#define PT_GNU_STACK (PT_LOOS + 0x474e551)
 
 #define ET_EXEC 2
-#define ET_DYN 3
 /* ET_CORE, ET_LOPROC, ET_HIPROC - unused */
 
 /* Dynamic section tags - only keep those used */
@@ -66,24 +63,9 @@ typedef struct elf32_phdr {
 
 /* SHN_LORESERVE, SHN_HIRESERVE, SHN_LOPROC, SHN_HIPROC - unused, removed */
 
-#define EI_MAG0 0
-#define EI_MAG1 1
-#define EI_MAG2 2
-#define EI_MAG3 3
-
-#define ELFMAG0 0x7f
-#define ELFMAG1 'E'
-#define ELFMAG2 'L'
-#define ELFMAG3 'F'
 #define ELFMAG "\177ELF"
 #define SELFMAG 4
 
 /* ELFDATA2MSB(2) removed - 0-caller (this tree is little-endian, uses ELFDATA2LSB) */
-
-typedef struct elf32_note {
-	Elf32_Word n_namesz;
-	Elf32_Word n_descsz;
-	Elf32_Word n_type;
-} Elf32_Nhdr;
 
 #endif

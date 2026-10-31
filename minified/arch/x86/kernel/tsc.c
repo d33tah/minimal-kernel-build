@@ -90,20 +90,6 @@ static void __set_cyc2ns_scale(unsigned long khz, int cpu,
  * tsc_enable_sched_clock(); the cpu != this_cpu body never ran.
  */
 
-u64 native_sched_clock(void)
-{
-	if (static_branch_likely(&__use_tsc)) {
-		u64 tsc_now = rdtsc();
-
-		return cycles_2_ns(tsc_now);
-	}
-
-	return (jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ);
-}
-
-unsigned long long sched_clock(void)
-	__attribute__((alias("native_sched_clock")));
-
 static inline int pit_verify_msb(unsigned char val)
 {
 	inb(0x42);

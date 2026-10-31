@@ -11,23 +11,10 @@ struct rb_root {
 	struct rb_node *rb_node;
 };
 
-struct rb_root_cached {
-	struct rb_root rb_root;
-	struct rb_node *rb_leftmost;
-};
-
 #define RB_ROOT          \
 	(struct rb_root) \
 	{                \
 		NULL,    \
-	}
-#define RB_ROOT_CACHED          \
-	(struct rb_root_cached) \
-	{                       \
-		{               \
-			NULL,   \
-		},              \
-			NULL    \
 	}
 /* end rbtree_types.h */
 
@@ -53,55 +40,7 @@ static inline void rb_link_node(struct rb_node *node, struct rb_node *parent,
 	*rb_link = node;
 }
 
-#define rb_first_cached(root) (root)->rb_leftmost
-
-static inline void rb_insert_color_cached(struct rb_node *node,
-					  struct rb_root_cached *root,
-					  bool leftmost)
-{
-	if (leftmost)
-		root->rb_leftmost = node;
-	rb_insert_color(node, &root->rb_root);
-}
-
-static inline struct rb_node *rb_erase_cached(struct rb_node *node,
-					      struct rb_root_cached *root)
-{
-	struct rb_node *leftmost = NULL;
-
-	if (root->rb_leftmost == node)
-		leftmost = root->rb_leftmost = rb_next(node);
-
-	rb_erase(node, &root->rb_root);
-
-	return leftmost;
-}
-
 /* Removed: rb_replace_node_cached - never called (~7 LOC) */
-
-static __always_inline struct rb_node *
-rb_add_cached(struct rb_node *node, struct rb_root_cached *tree,
-	      bool (*less)(struct rb_node *, const struct rb_node *))
-{
-	struct rb_node **link = &tree->rb_root.rb_node;
-	struct rb_node *parent = NULL;
-	bool leftmost = true;
-
-	while (*link) {
-		parent = *link;
-		if (less(node, parent)) {
-			link = &parent->rb_left;
-		} else {
-			link = &parent->rb_right;
-			leftmost = false;
-		}
-	}
-
-	rb_link_node(node, parent, link);
-	rb_insert_color_cached(node, tree, leftmost);
-
-	return leftmost ? node : NULL;
-}
 
 /* rb_add, rb_find_add, rb_find, rb_find_first, rb_next_match - unused */
 

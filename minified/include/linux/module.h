@@ -11,9 +11,6 @@
 
 #include <asm/orc_types.h>
 
-/* CONFIG_MODULES off: built-in-only, MODULE never defined. */
-#define module_init(x) __initcall(x);
-
 #define __init_or_module __init
 
 #endif

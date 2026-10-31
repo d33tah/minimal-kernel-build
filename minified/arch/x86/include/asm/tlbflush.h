@@ -31,8 +31,6 @@ static inline void invpcid_flush_all(void)
 
 void __flush_tlb_all(void);
 
-#define TLB_FLUSH_ALL -1UL
-
 void cr4_update_irqsoff(unsigned long set, unsigned long clear);
 unsigned long cr4_read_shadow(void);
 

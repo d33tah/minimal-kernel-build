@@ -4,8 +4,6 @@
 #include <linux/stringify.h>
 #include <linux/kernel.h>
 
-#define MODULE_PARAM_PREFIX KBUILD_MODNAME "."
-
 struct kernel_param;
 
 struct kernel_param_ops {

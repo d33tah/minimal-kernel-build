@@ -139,8 +139,6 @@ extern int sysctl_max_map_count;
 
 #define PAGE_ALIGN(addr) ALIGN(addr, PAGE_SIZE)
 
-#define PAGE_ALIGNED(addr) IS_ALIGNED((unsigned long)(addr), PAGE_SIZE)
-
 void setup_initial_init_mm(void *start_code, void *end_code, void *end_data,
 			   void *brk);
 
@@ -165,7 +163,6 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_LOCKED 0x00002000
 #define VM_IO 0x00004000
 
-#define VM_DONTCOPY 0x00020000
 #define VM_ACCOUNT 0x00100000
 
 #define VM_MIXEDMAP 0x10000000
@@ -189,8 +186,6 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_STACK_FLAGS (VM_STACK | VM_STACK_DEFAULT_FLAGS | VM_ACCOUNT)
 
 #define VM_ACCESS_FLAGS (VM_READ | VM_WRITE | VM_EXEC)
-
-#define VM_SPECIAL (VM_IO | VM_PFNMAP | VM_MIXEDMAP)
 
 #define VM_INIT_DEF_MASK VM_NOHUGEPAGE
 
@@ -358,11 +353,6 @@ static inline enum zone_type page_zonenum(const struct page *page)
 	return (page->flags >> ZONES_PGSHIFT) & ZONES_MASK;
 }
 
-static inline enum zone_type folio_zonenum(const struct folio *folio)
-{
-	return page_zonenum(&folio->page);
-}
-
 #define folio_ref_zero_or_close_to_overflow(folio) \
 	((unsigned int)folio_ref_count(folio) + 127u <= 127u)
 
@@ -461,11 +451,6 @@ static inline void set_page_links(struct page *page, enum zone_type zone,
 static inline long folio_nr_pages(struct folio *folio)
 {
 	return compound_nr(&folio->page);
-}
-
-static inline unsigned int folio_shift(struct folio *folio)
-{
-	return PAGE_SHIFT + folio_order(folio);
 }
 
 static inline size_t folio_size(struct folio *folio)
@@ -598,10 +583,6 @@ static inline void pgtable_pte_page_dtor(struct page *page)
 
 #define pte_alloc(mm, pmd) (unlikely(pmd_none(*(pmd))) && __pte_alloc(mm, pmd))
 
-#define pte_alloc_map_lock(mm, pmd, address, ptlp) \
-	(pte_alloc(mm, pmd) ? NULL :               \
-			      pte_offset_map_lock(mm, pmd, address, ptlp))
-
 static inline spinlock_t *pmd_lockptr(struct mm_struct *mm, pmd_t *pmd)
 {
 	return &mm->page_table_lock;
@@ -667,17 +648,6 @@ find_vma_intersection(struct mm_struct *mm, unsigned long start_addr,
 	if (vma && end_addr <= vma->vm_start)
 		vma = NULL;
 	return vma;
-}
-
-static inline unsigned long vm_start_gap(struct vm_area_struct *vma)
-{
-	return vma->vm_start;
-}
-
-static inline unsigned long vm_end_gap(struct vm_area_struct *vma)
-{
-	/* VM_GROWSUP=VM_NONE (=0) on x86-32: the growsup gap branch is dead */
-	return vma->vm_end;
 }
 
 static inline unsigned long vma_pages(struct vm_area_struct *vma)

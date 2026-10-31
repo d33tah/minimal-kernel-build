@@ -10,8 +10,6 @@
 
 #define __NO_FORTIFY
 
-#define USE_EARLY_PGTABLE_L5
-
 #include <linux/linkage.h>
 #include <linux/screen_info.h>
 #include <asm/page.h>

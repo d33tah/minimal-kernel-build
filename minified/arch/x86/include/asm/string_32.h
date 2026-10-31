@@ -3,10 +3,8 @@
 #define _ASM_X86_STRING_32_H
 
 #define __HAVE_ARCH_STRCPY
-extern char *strcpy(char *dest, const char *src);
 
 #define __HAVE_ARCH_STRNCPY
-extern char *strncpy(char *dest, const char *src, size_t count);
 
 #define __HAVE_ARCH_STRCMP
 extern int strcmp(const char *cs, const char *ct);

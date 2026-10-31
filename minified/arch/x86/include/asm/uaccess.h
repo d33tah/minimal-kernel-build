@@ -36,13 +36,11 @@ static __always_inline void stac(void) {
 #define TASK_SIZE_MAX			TASK_SIZE
 #endif
 
-#ifndef __access_ok
 static inline int __access_ok(const void __user *ptr, unsigned long size) {
 	unsigned long limit = TASK_SIZE_MAX;
 	unsigned long addr = (unsigned long)ptr;
 
 	return (size <= limit) && (addr <= (limit - size)); }
-#endif
 
 #define access_ok(addr, size)					({										WARN_ON_IN_IRQ();							likely(__access_ok(addr, size));				})
 
@@ -68,14 +66,11 @@ extern int __get_user_bad(void);
 #define do_get_user_call(fn,x,ptr)					({										int __ret_gu;								register __inttype(*(ptr)) __val_gu asm("%"_ASM_DX);			__chk_user_ptr(ptr);							asm volatile("call __" #fn "_%P4"						     : "=a" (__ret_gu), "=r" (__val_gu),					ASM_CALL_CONSTRAINT						     : "0" (ptr), "i" (sizeof(*(ptr))));			(x) = (__force __typeof__(*(ptr))) __val_gu;				__builtin_expect(__ret_gu, 0);					})
 
  
-#define get_user(x,ptr) ({ might_fault(); do_get_user_call(get_user,x,ptr); })
 
  
 #define __get_user(x,ptr) do_get_user_call(get_user_nocheck,x,ptr)
 
-
 #define __put_user_goto_u64(x, addr, label)				asm_volatile_goto("\n"							     "1:	movl %%eax,0(%1)\n"				     "2:	movl %%edx,4(%1)\n"				     _ASM_EXTABLE_UA(1b, %l2)					     _ASM_EXTABLE_UA(2b, %l2)					     : : "A" (x), "r" (addr)					     : : label)
-
 
 extern void __put_user_bad(void);
 
@@ -100,13 +95,11 @@ extern void __put_user_nocheck_8(void);
 
 #define __put_user_size(x, ptr, size, label)				do {										__chk_user_ptr(ptr);							switch (size) {								case 1:										__put_user_goto(x, ptr, "b", "iq", label);				break;								case 2:										__put_user_goto(x, ptr, "w", "ir", label);				break;								case 4:										__put_user_goto(x, ptr, "l", "ir", label);				break;								case 8:										__put_user_goto_u64(x, ptr, label);					break;								default:									__put_user_bad();						}								} while (0)
 
-
 #define __get_user_asm_u64(x, ptr, label) do {					unsigned int __gu_low, __gu_high;					const unsigned int __user *__gu_ptr;					__gu_ptr = (const void __user *)(ptr);					__get_user_asm(__gu_low, __gu_ptr, "l", "=r", label);			__get_user_asm(__gu_high, __gu_ptr+1, "l", "=r", label);		(x) = ((unsigned long long)__gu_high << 32) | __gu_low;		} while (0)
 
 #define __get_user_size(x, ptr, size, label)				do {										__chk_user_ptr(ptr);							switch (size) {								case 1:	{									unsigned char x_u8__;							__get_user_asm(x_u8__, ptr, "b", "=q", label);				(x) = x_u8__;								break;								}									case 2:										__get_user_asm(x, ptr, "w", "=r", label);				break;								case 4:										__get_user_asm(x, ptr, "l", "=r", label);				break;								case 8:										__get_user_asm_u64(x, ptr, label);					break;								default:									(x) = __get_user_bad();						}								} while (0)
 
 #define __get_user_asm(x, addr, itype, ltype, label)				asm_volatile_goto("\n"								     "1:	mov"itype" %[umem],%[output]\n"				     _ASM_EXTABLE_UA(1b, %l2)						     : [output] ltype(x)						     : [umem] "m" (__m(addr))						     : : label)
-
 
 struct __large_struct { unsigned long buf[100]; };
 #define __m(x) (*(struct __large_struct __user *)(x))
@@ -118,9 +111,7 @@ extern __must_check long strnlen_user(const char __user *str, long n);
 
 unsigned long __must_check clear_user(void __user *mem, unsigned long len);
 
-
  
-
 
 /* --- 2025-12-07 20:27 --- Inlined uaccess_32.h */
 unsigned long __must_check __copy_user_ll
@@ -142,9 +133,6 @@ static __must_check __always_inline bool user_access_begin(const void __user *pt
 #define user_access_end()	__uaccess_end()
 
 #define unsafe_get_user(x, ptr, err_label)					do {											__inttype(*(ptr)) __gu_val;							__get_user_size(__gu_val, (ptr), sizeof(*(ptr)), err_label);			(x) = (__force __typeof__(*(ptr)))__gu_val;				} while (0)
-
-
-
 
 #define __put_kernel_nofault(dst, src, type, err_label)				__put_user_size(*((type *)(src)), (__force type __user *)(dst),				sizeof(type), err_label)
 

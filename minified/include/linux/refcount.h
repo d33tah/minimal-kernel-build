@@ -56,11 +56,6 @@ static inline __must_check bool __refcount_inc_not_zero(refcount_t *r,
 	return __refcount_add_not_zero(1, r, oldp);
 }
 
-static inline __must_check bool refcount_inc_not_zero(refcount_t *r)
-{
-	return __refcount_inc_not_zero(r, NULL);
-}
-
 static inline void __refcount_inc(refcount_t *r, int *oldp)
 {
 	__refcount_add(1, r, oldp);

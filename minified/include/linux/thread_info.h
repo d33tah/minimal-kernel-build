@@ -39,8 +39,6 @@ read_ti_thread_flags(struct thread_info *ti)
 	return READ_ONCE(ti->flags);
 }
 
-#define clear_thread_flag(flag) \
-	clear_ti_thread_flag(current_thread_info(), flag)
 #define test_thread_flag(flag) test_ti_thread_flag(current_thread_info(), flag)
 #define read_thread_flags() read_ti_thread_flags(current_thread_info())
 

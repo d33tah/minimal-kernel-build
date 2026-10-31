@@ -5,15 +5,6 @@
 #include <asm/alternative.h>
 #include <asm/nops.h>
 
-#define mb()                                                          \
-	asm volatile(ALTERNATIVE("lock; addl $0,-4(%%esp)", "mfence", \
-				 X86_FEATURE_XMM2)::                  \
-			     : "memory", "cc")
-#define rmb()                                                         \
-	asm volatile(ALTERNATIVE("lock; addl $0,-4(%%esp)", "lfence", \
-				 X86_FEATURE_XMM2)::                  \
-			     : "memory", "cc")
-
 static inline unsigned long array_index_mask_nospec(unsigned long index,
 						    unsigned long size)
 {

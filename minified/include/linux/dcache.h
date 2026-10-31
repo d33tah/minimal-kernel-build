@@ -11,7 +11,6 @@
 #include <linux/lockref.h>
 #include <linux/hash.h>
 
-#define hashlen_hash(hashlen) ((u32)(hashlen))
 #define hashlen_len(hashlen) ((u32)((hashlen) >> 32))
 #define hashlen_create(hash, len) ((u64)(len) << 32 | (u32)(hash))
 

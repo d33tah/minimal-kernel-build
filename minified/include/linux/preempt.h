@@ -58,7 +58,6 @@
 
 #define preempt_disable() barrier()
 #define sched_preempt_enable_no_resched() barrier()
-#define preempt_enable_no_resched() barrier()
 #define preempt_enable() barrier()
 #define preempt_check_resched() \
 	do {                    \
@@ -68,10 +67,5 @@
 #define preempt_enable_no_resched_notrace() barrier()
 #define preempt_enable_notrace() barrier()
 #define preemptible() 0
-
-#define preempt_set_need_resched()          \
-	do {                                \
-		set_preempt_need_resched(); \
-	} while (0)
 
 #endif

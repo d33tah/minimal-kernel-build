@@ -5,7 +5,6 @@
 
 #ifndef __ASSEMBLY__
 
-
 # define likely(x)	__builtin_expect(!!(x), 1)
 # define unlikely(x)	__builtin_expect(!!(x), 0)
 # define likely_notrace(x)	likely(x)
@@ -36,11 +35,7 @@
 # define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __LINE__)
 #endif
 
-#define data_race(expr)							({										__unqual_scalar_typeof(({ expr; })) __v = ({											expr;								});															__v;								})
-
 #define ASSERT_EXCLUSIVE_BITS(var, mask) do { } while (0)
-#define ASSERT_EXCLUSIVE_WRITER(var) do { } while (0)
-
 
 #define __ADDRESSABLE(sym) 	static void * __section(".discard.addressable") __used 		__UNIQUE_ID(__PASTE(__addressable_,sym)) = (void *)&sym;
 
@@ -50,7 +45,6 @@ static inline void *offset_to_ptr(const int *off) {
 #endif  
 
 #define __must_be_array(a)	BUILD_BUG_ON_ZERO(__same_type((a), &(a)[0]))
-
 
 #include <asm/rwonce.h>
 

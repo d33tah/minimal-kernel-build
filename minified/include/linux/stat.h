@@ -18,7 +18,6 @@
 #define S_ISGID 0002000
 #define S_ISVTX 0001000
 
-#define S_ISLNK(m) (((m) & S_IFMT) == S_IFLNK)
 #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 #define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #define S_ISCHR(m) (((m) & S_IFMT) == S_IFCHR)
@@ -40,18 +39,5 @@
 
 #include <linux/time.h>
 #include <linux/uidgid.h>
-
-struct kstat {
-	umode_t mode;
-	unsigned int nlink;
-	u64 attributes, ino;
-	dev_t dev;
-	dev_t rdev;
-	kuid_t uid;
-	kgid_t gid;
-	loff_t size;
-	struct timespec64 mtime;
-	u64 blocks;
-};
 
 #endif

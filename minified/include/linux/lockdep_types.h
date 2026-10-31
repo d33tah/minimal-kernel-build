@@ -8,6 +8,4 @@
 
 struct lock_class_key {};
 
-struct pin_cookie {};
-
 #endif

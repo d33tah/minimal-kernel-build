@@ -136,11 +136,7 @@ void irq_enter_rcu(void)
 
 static inline void __irq_exit_rcu(void)
 {
-#ifndef __ARCH_IRQ_EXIT_IRQS_DISABLED
 	local_irq_disable();
-#else
-	lockdep_assert_irqs_disabled();
-#endif
 	preempt_count_sub(HARDIRQ_OFFSET);
 	if (!in_interrupt() && local_softirq_pending())
 		invoke_softirq();

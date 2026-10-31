@@ -6,7 +6,6 @@
 #include <linux/stringify.h>
 #include <asm/asm.h>
 
-
 #ifndef __ASSEMBLY__
 
 #include <linux/stddef.h>
@@ -51,14 +50,11 @@ struct module;
 
 #define alternative(oldinstr, newinstr, feature)				asm_inline volatile (ALTERNATIVE(oldinstr, newinstr, feature) : : : "memory")
 
-
 #define alternative_input(oldinstr, newinstr, feature, input...)		asm_inline volatile (ALTERNATIVE(oldinstr, newinstr, feature)			: : "i" (0), ## input)
-
 
 #define ASM_OUTPUT2(a...) a
 
  
-#define ASM_NO_INPUT_CLOBBER(clbr...) "i" (0) : clbr
 
 #else  
 
@@ -101,7 +97,6 @@ struct module;
 
  
 #define alt_max_short(a, b)	((a) ^ (((a) ^ (b)) & -(-((a) < (b)))))
-
 
  
 .macro ALTERNATIVE_2 oldinstr, newinstr1, feature1, newinstr2, feature2

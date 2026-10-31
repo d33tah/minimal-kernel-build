@@ -88,12 +88,6 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 
 /* pgprot_writecombine, pgprot_device removed - 0 callers tree-wide */
 
-#ifndef __HAVE_ARCH_START_CONTEXT_SWITCH
-#define arch_start_context_switch(prev) \
-	do {                            \
-	} while (0)
-#endif
-
 /* __HAVE_COLOR_ZERO_PAGE never defined tree-wide; dead #ifdef arm removed */
 static inline int is_zero_pfn(unsigned long pfn)
 {
@@ -103,10 +97,6 @@ static inline int is_zero_pfn(unsigned long pfn)
 
 /* my_zero_pfn removed - unused */
 
-static inline int pmd_trans_huge(pmd_t pmd)
-{
-	return 0;
-}
 /* pmd_read_atomic / pmd_none_or_trans_huge_or_clear_bad removed - 0 callers. */
 
 /* p4d_set_huge, pud_set_huge, pmd_set_huge, p4d_free_pud_page, pud_free_pmd_page,

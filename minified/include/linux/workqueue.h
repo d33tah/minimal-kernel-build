@@ -71,8 +71,6 @@ struct delayed_work {
 		(_work)->func = (_func);                         \
 	} while (0)
 
-#define INIT_WORK(_work, _func) __INIT_WORK((_work), (_func), 0)
-
 extern struct workqueue_struct *system_wq;
 
 extern bool queue_work_on(int cpu, struct workqueue_struct *wq,
@@ -92,11 +90,6 @@ static inline bool queue_delayed_work(struct workqueue_struct *wq,
 				      unsigned long delay)
 {
 	return queue_delayed_work_on(WORK_CPU_UNBOUND, wq, dwork, delay);
-}
-
-static inline bool schedule_work(struct work_struct *work)
-{
-	return queue_work(system_wq, work);
 }
 
 static inline bool schedule_delayed_work(struct delayed_work *dwork,

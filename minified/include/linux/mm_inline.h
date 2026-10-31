@@ -20,14 +20,4 @@ static inline void inc_tlb_flush_pending(struct mm_struct *mm)
 	atomic_inc(&mm->tlb_flush_pending);
 }
 
-static inline void dec_tlb_flush_pending(struct mm_struct *mm)
-{
-	atomic_dec(&mm->tlb_flush_pending);
-}
-
-static inline bool mm_tlb_flush_nested(struct mm_struct *mm)
-{
-	return atomic_read(&mm->tlb_flush_pending) > 1;
-}
-
 #endif

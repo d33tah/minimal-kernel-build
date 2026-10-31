@@ -21,9 +21,6 @@ static inline void list_add_tail_rcu(struct list_head *new,
 	__list_add_rcu(new, head->prev, head);
 }
 
-#define list_entry_rcu(ptr, type, member) \
-	container_of(READ_ONCE(ptr), type, member)
-
 #define hlist_first_rcu(head) (*((struct hlist_node __rcu **)(&(head)->first)))
 
 static inline void hlist_add_head_rcu(struct hlist_node *n,

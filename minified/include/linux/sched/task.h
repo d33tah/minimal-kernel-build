@@ -20,8 +20,6 @@ extern rwlock_t tasklist_lock;
 extern union thread_union init_thread_union;
 extern struct task_struct init_task;
 
-extern int lockdep_tasklist_lock_is_held(void);
-
 extern asmlinkage void schedule_tail(struct task_struct *prev);
 
 extern int sched_fork(unsigned long clone_flags, struct task_struct *p);
@@ -42,12 +40,6 @@ extern pid_t user_mode_thread(int (*fn)(void *), void *arg,
 extern void free_task(struct task_struct *tsk);
 
 extern void __put_task_struct(struct task_struct *t);
-
-static inline void put_task_struct(struct task_struct *t)
-{
-	if (refcount_dec_and_test(&t->usage))
-		__put_task_struct(t);
-}
 
 static inline void task_lock(struct task_struct *p)
 {

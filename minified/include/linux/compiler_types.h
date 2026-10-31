@@ -18,14 +18,11 @@
 # define __cond_lock(x,c) (c)
 # define __force
 # define __private
-# define ACCESS_PRIVATE(p, member) ((p)->member)
 
 #define ___PASTE(a,b) a##b
 #define __PASTE(a,b) ___PASTE(a,b)
 
-
 #include <linux/compiler_attributes.h>
-
 
 #ifdef __clang__
 /* --- 2025-12-08 00:18 --- Inlined from compiler-clang.h */
@@ -38,7 +35,6 @@
 
 #define __diag_clang(version, severity, s) 	__diag_clang_ ## version(__diag_clang_ ## severity s)
 
-
 #define __diag_str1(s)		#s
 #define __diag_str(s)		__diag_str1(s)
 #define __diag(s)		_Pragma(__diag_str(clang diagnostic s))
@@ -50,7 +46,6 @@
 #else
 #error "Unknown compiler"
 #endif
-
 
 /*
  * notrace selector: the CC_USING_HOTPATCH and CC_USING_PATCHABLE_FUNCTION_ENTRY
@@ -69,7 +64,6 @@
  * -D-gated by KBUILD_EXTRA_WARN); the plain gate build passes no W=, so the then-arm
  * is statically dead. Keep only the live __maybe_unused arm. */
 #define __inline_maybe_unused __maybe_unused
-
 
 /*
  * __SANITIZE_ADDRESS__ is #defined at exactly one site (the
@@ -95,7 +89,6 @@
 #endif
 
 #define noinstr									noinline notrace __attribute((__section__(".noinstr.text")))		__no_kcsan __no_sanitize_address __no_profile __no_sanitize_coverage
-
 
 #endif  
 
@@ -160,7 +153,6 @@
 #ifndef __diag_GCC
 #define __diag_GCC(version, severity, string)
 #endif
-
 
 #ifndef __diag_ignore_all
 #define __diag_ignore_all(option, comment)

@@ -51,11 +51,6 @@ void *idr_remove(struct idr *idr, unsigned long id)
 	return radix_tree_delete_item(&idr->idr_rt, id - idr->idr_base, NULL);
 }
 
-void *idr_find(const struct idr *idr, unsigned long id)
-{
-	return radix_tree_lookup(&idr->idr_rt, id - idr->idr_base);
-}
-
 void *idr_replace(struct idr *idr, void *ptr, unsigned long id)
 {
 	struct radix_tree_node *node;

@@ -7,19 +7,6 @@
 #include <linux/rcupdate.h>
 #include <linux/spinlock.h>
 
-#define BITS_PER_XA_VALUE (BITS_PER_LONG - 1)
-
-static inline void *xa_mk_value(unsigned long v)
-{
-	WARN_ON((long)v < 0);
-	return (void *)((v << 1) | 1);
-}
-
-static inline unsigned long xa_to_value(const void *entry)
-{
-	return (unsigned long)entry >> 1;
-}
-
 static inline bool xa_is_value(const void *entry)
 {
 	return (unsigned long)entry & 1;
@@ -68,8 +55,6 @@ enum xa_lock_type {
 #define XA_FLAGS_MARK(mark) \
 	((__force gfp_t)((1U << __GFP_BITS_SHIFT) << (__force unsigned)(mark)))
 
-#define XA_FLAGS_ALLOC (XA_FLAGS_TRACK_FREE | XA_FLAGS_MARK(XA_FREE_MARK))
-
 struct xarray {
 	spinlock_t xa_lock;
 	gfp_t xa_flags;
@@ -97,9 +82,6 @@ static inline bool xa_marked(const struct xarray *xa, xa_mark_t mark)
 
 #define xa_lock_irq(xa) spin_lock_irq(&(xa)->xa_lock)
 #define xa_unlock_irq(xa) spin_unlock_irq(&(xa)->xa_lock)
-#define xa_lock_irqsave(xa, flags) spin_lock_irqsave(&(xa)->xa_lock, flags)
-#define xa_unlock_irqrestore(xa, flags) \
-	spin_unlock_irqrestore(&(xa)->xa_lock, flags)
 
 #ifndef XA_CHUNK_SHIFT
 #define XA_CHUNK_SHIFT (CONFIG_BASE_SMALL ? 4 : 6)
@@ -219,8 +201,6 @@ struct xa_state {
 
 #define xas_lock_irq(xas) xa_lock_irq((xas)->xa)
 #define xas_unlock_irq(xas) xa_unlock_irq((xas)->xa)
-#define xas_lock_irqsave(xas, flags) xa_lock_irqsave((xas)->xa, flags)
-#define xas_unlock_irqrestore(xas, flags) xa_unlock_irqrestore((xas)->xa, flags)
 
 static inline int xas_error(const struct xa_state *xas)
 {
@@ -282,7 +262,6 @@ void *xas_store(struct xa_state *, void *entry);
 
 void xas_set_mark(const struct xa_state *, xa_mark_t);
 void xas_clear_mark(const struct xa_state *, xa_mark_t);
-void *xas_find_marked(struct xa_state *, unsigned long max, xa_mark_t);
 
 bool xas_nomem(struct xa_state *, gfp_t);
 
@@ -316,17 +295,6 @@ static inline void xas_set_order(struct xa_state *xas, unsigned long index,
 {
 	BUG_ON(order > 0);
 	xas_set(xas, index);
-}
-
-static inline unsigned int xas_find_chunk(struct xa_state *xas, bool advance,
-					  xa_mark_t mark)
-{
-	unsigned long *addr = xas->xa_node->marks[(__force unsigned)mark];
-	unsigned int offset = xas->xa_offset;
-
-	if (advance)
-		offset++;
-	return find_next_bit(addr, XA_CHUNK_SIZE, offset);
 }
 
 void *__xas_next(struct xa_state *);

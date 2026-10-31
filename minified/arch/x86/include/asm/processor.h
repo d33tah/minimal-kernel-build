@@ -49,7 +49,6 @@ struct cpuinfo_x86 {
 
 extern struct cpuinfo_x86 boot_cpu_data;
 
-#define cpu_info boot_cpu_data
 /* cpuinfo_op declaration removed - no implementation */
 
 #define cache_line_size() (boot_cpu_data.x86_cache_alignment)
@@ -68,11 +67,6 @@ static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
 }
 
 /* native_cpuid_reg + native_cpuid_{eax,ebx,ecx,edx} removed - unused */
-
-static inline unsigned long read_cr3_pa(void)
-{
-	return __read_cr3() & CR3_ADDR_MASK;
-}
 
 /* native_read_cr3_pa removed - unused */
 
@@ -157,27 +151,7 @@ static inline void cpuid_count(unsigned int op, int count, unsigned int *eax,
 	__cpuid(eax, ebx, ecx, edx);
 }
 
-static inline unsigned int cpuid_eax(unsigned int op)
-{
-	unsigned int eax, ebx, ecx, edx;
-
-	cpuid(op, &eax, &ebx, &ecx, &edx);
-
-	return eax;
-}
-
-static inline unsigned int cpuid_edx(unsigned int op)
-{
-	unsigned int eax, ebx, ecx, edx;
-
-	cpuid(op, &eax, &ebx, &ecx, &edx);
-
-	return edx;
-}
-
 /* amd_e400_c1e_apic_setup declaration removed - implementation was removed */
-
-extern void enable_sep_cpu(void);
 
 extern struct desc_ptr early_gdt_descr;
 
@@ -222,6 +196,5 @@ extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
 			 unsigned long new_sp);
 
 #define __TASK_UNMAPPED_BASE(task_size) (PAGE_ALIGN(task_size / 3))
-#define TASK_UNMAPPED_BASE __TASK_UNMAPPED_BASE(TASK_SIZE_LOW)
 
 #endif

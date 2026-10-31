@@ -52,19 +52,9 @@ static __always_inline bool arch_atomic_inc_and_test(atomic_t *v)
 	return GEN_UNARY_RMWcc(LOCK_PREFIX "incl", v->counter, e);
 }
 
-static __always_inline bool arch_atomic_add_negative(int i, atomic_t *v)
-{
-	return GEN_BINARY_RMWcc(LOCK_PREFIX "addl", v->counter, s, "er", i);
-}
-
 static __always_inline int arch_atomic_add_return(int i, atomic_t *v)
 {
 	return i + xadd(&v->counter, i);
-}
-
-static __always_inline int arch_atomic_sub_return(int i, atomic_t *v)
-{
-	return arch_atomic_add_return(-i, v);
 }
 
 static __always_inline int arch_atomic_fetch_add(int i, atomic_t *v)
@@ -88,41 +78,6 @@ static __always_inline bool arch_atomic_try_cmpxchg(atomic_t *v, int *old,
 	return arch_try_cmpxchg(&v->counter, old, new);
 }
 #define arch_atomic_try_cmpxchg arch_atomic_try_cmpxchg
-
-static __always_inline int arch_atomic_xchg(atomic_t *v, int new)
-{
-	return arch_xchg(&v->counter, new);
-}
-
-static __always_inline int arch_atomic_fetch_and(int i, atomic_t *v)
-{
-	int val = arch_atomic_read(v);
-
-	do {
-	} while (!arch_atomic_try_cmpxchg(v, &val, val & i));
-
-	return val;
-}
-
-static __always_inline int arch_atomic_fetch_or(int i, atomic_t *v)
-{
-	int val = arch_atomic_read(v);
-
-	do {
-	} while (!arch_atomic_try_cmpxchg(v, &val, val | i));
-
-	return val;
-}
-
-static __always_inline int arch_atomic_fetch_xor(int i, atomic_t *v)
-{
-	int val = arch_atomic_read(v);
-
-	do {
-	} while (!arch_atomic_try_cmpxchg(v, &val, val ^ i));
-
-	return val;
-}
 
 #include <asm/atomic64_32.h>
 

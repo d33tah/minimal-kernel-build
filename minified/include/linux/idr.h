@@ -39,7 +39,6 @@ int __must_check idr_alloc_u32(struct idr *, void *ptr, u32 *id,
 			       unsigned long max, gfp_t);
 int idr_alloc_cyclic(struct idr *, void *ptr, int start, int end, gfp_t);
 void *idr_remove(struct idr *, unsigned long id);
-void *idr_find(const struct idr *, unsigned long id);
 void *idr_replace(struct idr *, void *, unsigned long id);
 
 static inline void idr_init_base(struct idr *idr, int base)

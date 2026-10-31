@@ -46,7 +46,6 @@ struct ldttss_desc {
 	u16 limit1 : 4, zero0 : 3, g : 1, base2 : 8;
 } __attribute__((packed));
 
-typedef struct ldttss_desc ldt_desc;
 typedef struct ldttss_desc tss_desc;
 
 struct idt_bits {

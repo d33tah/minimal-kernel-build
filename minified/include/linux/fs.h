@@ -27,8 +27,6 @@
 #define INR_OPEN_CUR 1024
 #define INR_OPEN_MAX 4096
 #define SEEK_END 2
-/* RWF_* values needed for IOCB_* macros */
-#define RWF_NOWAIT 0x00000008
 /* end uapi/linux/fs.h */
 
 struct vm_area_struct;
@@ -44,7 +42,6 @@ extern void __init files_init(void);
 #define MAY_EXEC 0x00000001
 #define MAY_WRITE 0x00000002
 #define MAY_READ 0x00000004
-#define MAY_APPEND 0x00000008
 #define MAY_OPEN 0x00000020
 
 #define FMODE_READ ((__force fmode_t)0x1)
@@ -222,7 +219,6 @@ static inline struct file *get_file(struct file *f)
 	atomic_long_inc(&f->f_count);
 	return f;
 }
-#define file_count(x) atomic_long_read(&(x)->f_count)
 
 #define MAX_NON_LFS ((1UL << 31) - 1)
 
@@ -422,11 +418,6 @@ struct filename {
 };
 static_assert(offsetof(struct filename, iname) % sizeof(long) == 0);
 
-static inline struct user_namespace *file_mnt_user_ns(struct file *file)
-{
-	return mnt_user_ns(file->f_path.mnt);
-}
-
 /* vfs_fallocate, do_sys_open, file_open_name, file_open_root, dentry_open,
    dentry_create, open_with_fake_path removed - unused/internal only */
 extern struct file *filp_open(const char *, int, umode_t);
@@ -443,13 +434,6 @@ extern struct kmem_cache *names_cachep;
 #define __putname(name) kmem_cache_free(names_cachep, (void *)(name))
 
 extern const struct file_operations def_chr_fops;
-
-#define CHRDEV_MAJOR_MAX 512
-
-#define CHRDEV_MAJOR_DYN_END 234
-
-#define CHRDEV_MAJOR_DYN_EXT_START 511
-#define CHRDEV_MAJOR_DYN_EXT_END 384
 
 extern void init_special_inode(struct inode *, umode_t, dev_t);
 

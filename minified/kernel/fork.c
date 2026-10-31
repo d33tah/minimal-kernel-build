@@ -18,7 +18,6 @@
 
 __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);
 
-#ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
 static struct kmem_cache *task_struct_cachep;
 
 static inline struct task_struct *alloc_task_struct_node(int node)
@@ -30,7 +29,6 @@ static inline void free_task_struct(struct task_struct *tsk)
 {
 	kmem_cache_free(task_struct_cachep, tsk);
 }
-#endif
 
 static int alloc_thread_stack_node(struct task_struct *tsk, int node)
 {
@@ -150,12 +148,10 @@ void __init __weak arch_task_cache_init(void)
 
 void __init fork_init(void)
 {
-#ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
 	task_struct_cachep = kmem_cache_create("task_struct",
 					       sizeof(struct task_struct),
 					       L1_CACHE_BYTES,
 					       SLAB_PANIC | SLAB_ACCOUNT, NULL);
-#endif
 
 	arch_task_cache_init();
 }

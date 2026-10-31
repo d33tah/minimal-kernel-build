@@ -11,13 +11,6 @@ static inline void zone_page_state_add(long x, struct zone *zone,
 	atomic_long_add(x, &zone->vm_stat[item]);
 }
 
-static inline unsigned long zone_page_state(struct zone *zone,
-					    enum zone_stat_item item)
-{
-	long x = atomic_long_read(&zone->vm_stat[item]);
-	return x;
-}
-
 static inline void __mod_zone_page_state(struct zone *zone,
 					 enum zone_stat_item item, long delta)
 {

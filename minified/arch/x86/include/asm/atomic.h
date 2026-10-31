@@ -2,9 +2,7 @@
 #ifndef _ASM_X86_ATOMIC_H
 #define _ASM_X86_ATOMIC_H
 
-#include <asm/asm.h>
 #include <asm/cmpxchg.h>
-#include <asm/rmwcc.h>
 
 static __always_inline int arch_atomic_read(const atomic_t *v)
 {

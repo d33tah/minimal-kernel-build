@@ -3,7 +3,6 @@
 
 #include <asm/param.h>
 #include <linux/cache.h>
-#include <linux/limits.h>
 
 #define __jiffy_arch_data
 

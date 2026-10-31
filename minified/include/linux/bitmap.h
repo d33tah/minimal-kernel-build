@@ -21,8 +21,6 @@ static inline unsigned long find_next_zero_bit(const unsigned long *addr,
 	return val == ~0UL ? size : ffz(val);
 }
 
-#include <linux/string.h>
-
 /* bitmap_parse_user, bitmap_parselist, bitmap_parselist_user, bitmap_remap,
  * bitmap_bitremap, bitmap_onto, bitmap_fold, bitmap_find_free_region,
  * bitmap_release_region, bitmap_allocate_region removed - unused */

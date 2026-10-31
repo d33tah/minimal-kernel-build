@@ -6,8 +6,6 @@
 #include <linux/user_namespace.h>
 #include <linux/interrupt.h>
 
-#include <linux/mm.h>
-
 struct obj_cgroup;
 struct page;
 

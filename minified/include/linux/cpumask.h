@@ -2,7 +2,6 @@
 #define __LINUX_CPUMASK_H
 
 #include <linux/threads.h>
-#include <linux/bitmap.h>
 
 /*
  * NR_CPUS is fixed to 1 in this build (CONFIG_NR_CPUS=1, unconditional in

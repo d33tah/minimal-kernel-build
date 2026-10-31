@@ -2,7 +2,6 @@
 #define _LINUX_CLOCKCHIPS_H
 
 #include <linux/cache.h>
-#include <linux/types.h>
 
 enum clock_event_state {
 	CLOCK_EVT_STATE_DETACHED,

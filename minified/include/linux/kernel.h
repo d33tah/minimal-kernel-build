@@ -14,7 +14,6 @@
 #include <linux/minmax.h>
 #include <linux/panic.h>
 #define _RET_IP_ (unsigned long)__builtin_return_address(0)
-#include <asm/byteorder.h>
 
 #define REPEAT_BYTE(x) ((~0ul / 0xff) * (x))
 

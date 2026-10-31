@@ -3,7 +3,6 @@
 
 #include <linux/sched/signal.h>
 #include <linux/pid_namespace.h>
-#include <asm/ptrace.h>
 
 #define current_pt_regs() task_pt_regs(current)
 #endif

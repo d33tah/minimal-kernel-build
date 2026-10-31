@@ -1,8 +1,6 @@
 #ifndef _LINUX_CPU_H_
 #define _LINUX_CPU_H_
 
-#include <linux/cpumask.h>
-
 /* cpu_startup_entry() ignores its argument; only CPUHP_ONLINE is passed. */
 enum cpuhp_state {
 	CPUHP_ONLINE,

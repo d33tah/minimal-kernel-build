@@ -10,13 +10,11 @@
 /* End uapi/linux/sched.h */
 
 #include <linux/pid.h>
-#include <linux/preempt.h>
 #include <linux/smp.h>
 
 #include <linux/mutex.h>
 #include <linux/spinlock.h>
 #include <linux/resource.h>
-#include <linux/mm_types_task.h>
 
 struct fs_struct;
 struct nsproxy;

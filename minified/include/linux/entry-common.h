@@ -3,8 +3,6 @@
 
 #include <linux/syscalls.h>
 
-#include <asm/entry-common.h>
-
 #define EXIT_TO_USER_MODE_WORK (_TIF_NEED_RESCHED)
 
 long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall);

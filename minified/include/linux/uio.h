@@ -1,7 +1,6 @@
 #ifndef __LINUX_UIO_H
 #define __LINUX_UIO_H
 
-#include <linux/kernel.h>
 #include <linux/mm_types.h>
 
 struct iovec {

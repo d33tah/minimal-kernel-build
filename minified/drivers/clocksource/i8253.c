@@ -7,22 +7,6 @@
 
 static DEFINE_RAW_SPINLOCK(i8253_lock);
 
-static int pit_shutdown(struct clock_event_device *evt)
-{
-	if (!clockevent_state_periodic(evt))
-		return 0;
-
-	raw_spin_lock(&i8253_lock);
-
-	outb_p(0x30, PIT_MODE);
-
-	outb_p(0, PIT_CH0);
-	outb_p(0, PIT_CH0);
-
-	raw_spin_unlock(&i8253_lock);
-	return 0;
-}
-
 static int pit_set_periodic(struct clock_event_device *evt)
 {
 	raw_spin_lock(&i8253_lock);
@@ -36,9 +20,7 @@ static int pit_set_periodic(struct clock_event_device *evt)
 }
 
 struct clock_event_device i8253_clockevent = {
-	.name = "pit",
 	.features = CLOCK_EVT_FEAT_PERIODIC,
-	.set_state_shutdown = pit_shutdown,
 	.set_state_periodic = pit_set_periodic,
 };
 

@@ -29,10 +29,6 @@ static void clockevents_switch_state(struct clock_event_device *dev,
 		return;
 
 	switch (state) {
-	case CLOCK_EVT_STATE_SHUTDOWN:
-		if (dev->set_state_shutdown)
-			ret = dev->set_state_shutdown(dev);
-		break;
 	case CLOCK_EVT_STATE_PERIODIC:
 		if (!(dev->features & CLOCK_EVT_FEAT_PERIODIC))
 			return;
@@ -55,7 +51,6 @@ void clockevents_register_device(struct clock_event_device *dev)
 		return;
 
 	tick_dev = dev;
-	clockevents_switch_state(dev, CLOCK_EVT_STATE_SHUTDOWN);
 	dev->event_handler = tick_handle_periodic;
 	clockevents_switch_state(dev, CLOCK_EVT_STATE_PERIODIC);
 }

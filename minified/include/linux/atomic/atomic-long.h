@@ -3,9 +3,6 @@
 #ifndef _LINUX_ATOMIC_LONG_H
 #define _LINUX_ATOMIC_LONG_H
 
-#include <linux/compiler.h>
-#include <asm/types.h>
-
 typedef atomic_t atomic_long_t;
 #define ATOMIC_LONG_INIT(i) ATOMIC_INIT(i)
 

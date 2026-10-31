@@ -1,11 +1,9 @@
 #ifndef _LINUX_HIGHMEM_H
 #define _LINUX_HIGHMEM_H
 
-#include <linux/fs.h>
 #include <asm/cacheflush.h>
 struct folio;
 #include <linux/uaccess.h>
-#include <linux/hardirq.h>
 
 static inline void *kmap(struct page *page)
 {

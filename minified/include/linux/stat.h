@@ -1,10 +1,6 @@
 #ifndef _LINUX_STAT_H
 #define _LINUX_STAT_H
 
-#include <asm/stat.h>
-
-#include <linux/types.h>
-
 #if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
 #define S_IFMT 00170000
 #define S_IFSOCK 0140000
@@ -36,8 +32,5 @@
 #define S_IRWXUGO (S_IRWXU | S_IRWXG | S_IRWXO)
 #define S_IALLUGO (S_ISUID | S_ISGID | S_ISVTX | S_IRWXUGO)
 #define S_IXUGO (S_IXUSR | S_IXGRP | S_IXOTH)
-
-#include <linux/time.h>
-#include <linux/uidgid.h>
 
 #endif

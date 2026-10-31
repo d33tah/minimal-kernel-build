@@ -1,8 +1,6 @@
 #ifndef _ASM_GENERIC_PERCPU_H_
 #define _ASM_GENERIC_PERCPU_H_
 
-#include <linux/compiler.h>
-#include <linux/threads.h>
 #include <linux/percpu-defs.h>
 
 #ifndef PER_CPU_BASE_SECTION

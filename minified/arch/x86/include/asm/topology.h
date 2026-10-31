@@ -2,8 +2,6 @@
 #ifndef _ASM_X86_TOPOLOGY_H
 #define _ASM_X86_TOPOLOGY_H
 
-#include <linux/numa.h>
-
 static inline int numa_node_id(void)
 {
 	return 0;

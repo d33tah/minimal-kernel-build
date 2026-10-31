@@ -2,10 +2,6 @@
 #ifndef _LINUX_CGROUP_H
 #define _LINUX_CGROUP_H
 
-#include <linux/sched.h>
-#include <linux/fs.h>
-#include <linux/ns_common.h>
-#include <linux/nsproxy.h>
 #include <linux/user_namespace.h>
 #include <linux/kernel_stat.h>
 

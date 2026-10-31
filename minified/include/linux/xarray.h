@@ -1,11 +1,7 @@
 #ifndef _LINUX_XARRAY_H
 #define _LINUX_XARRAY_H
 
-#include <linux/bitmap.h>
-#include <linux/bug.h>
-#include <linux/gfp.h>
 #include <linux/rcupdate.h>
-#include <linux/spinlock.h>
 
 static inline bool xa_is_value(const void *entry)
 {

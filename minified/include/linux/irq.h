@@ -1,18 +1,12 @@
 #ifndef _LINUX_IRQ_H
 #define _LINUX_IRQ_H
 
-#include <linux/cache.h>
-#include <linux/spinlock.h>
-#include <linux/cpumask.h>
 struct irq_desc;
 typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 #include <linux/interrupt.h>
-#include <linux/topology.h>
 #include <linux/io.h>
 #include <linux/slab.h>
 
-#include <asm/irq.h>
-#include <asm/ptrace.h>
 #include <asm/irq_regs.h>
 
 struct irq_data {

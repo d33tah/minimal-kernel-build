@@ -2,7 +2,6 @@
 #ifndef _LINUX_KPROBES_H
 #define _LINUX_KPROBES_H
 
-#include <linux/compiler.h>
 #include <linux/ptrace.h>
 
 /* Stubs for kprobes-disabled kernel */

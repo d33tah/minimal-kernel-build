@@ -2,7 +2,6 @@
 #ifndef _ASM_X86_CURRENT_H
 #define _ASM_X86_CURRENT_H
 
-#include <linux/compiler.h>
 #include <asm/percpu.h>
 
 #ifndef __ASSEMBLY__

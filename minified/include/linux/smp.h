@@ -1,9 +1,6 @@
 #ifndef __LINUX_SMP_H
 #define __LINUX_SMP_H
 
-#include <linux/errno.h>
-#include <linux/types.h>
-#include <linux/list.h>
 #include <linux/cpumask.h>
 
 void panic_smp_self_stop(void);

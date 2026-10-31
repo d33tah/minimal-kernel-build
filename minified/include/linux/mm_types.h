@@ -1,8 +1,6 @@
 #ifndef _LINUX_MM_TYPES_H
 #define _LINUX_MM_TYPES_H
 
-#include <linux/mm_types_task.h>
-
 #include <asm/auxvec.h>
 #define AT_PHDR 3
 #define AT_PHENT 4
@@ -27,8 +25,6 @@
 #endif
 #define AT_VECTOR_SIZE_BASE 20
 #include <linux/rbtree.h>
-#include <linux/rwsem.h>
-#include <linux/page-flags-layout.h>
 #include <linux/workqueue.h>
 #include <linux/seqlock.h>
 

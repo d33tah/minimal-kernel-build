@@ -3,8 +3,6 @@
 #define _ASM_X86_SECTIONS_H
 
 /* Inlined from asm-generic/sections.h */
-#include <linux/compiler.h>
-#include <linux/types.h>
 
 extern char _text[], _stext[], _etext[];
 extern char _data[], _sdata[], _edata[];
@@ -20,8 +18,6 @@ static inline bool is_kernel_rodata(unsigned long addr)
 	return addr >= (unsigned long)__start_rodata &&
 	       addr < (unsigned long)__end_rodata;
 }
-
-#include <asm/extable.h>
 
 extern char __brk_base[], __brk_limit[];
 extern char __end_rodata_aligned[];

@@ -1,9 +1,6 @@
 #ifndef PAGE_FLAGS_LAYOUT_H
 #define PAGE_FLAGS_LAYOUT_H
 
-#include <linux/numa.h>
-#include <generated/bounds.h>
-
 #define ZONES_SHIFT 1
 
 #define ZONES_WIDTH ZONES_SHIFT

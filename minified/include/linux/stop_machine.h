@@ -2,11 +2,8 @@
 #define _LINUX_STOP_MACHINE
 
 #include <linux/cpu.h>
-#include <linux/smp.h>
 
 typedef int (*cpu_stop_fn_t)(void *arg);
-
-#include <linux/workqueue.h>
 
 static __always_inline int stop_machine_cpuslocked(cpu_stop_fn_t fn, void *data,
 						   const struct cpumask *cpus)

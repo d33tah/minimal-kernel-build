@@ -2,9 +2,6 @@
 #ifndef _LINUX_HASH_H
 #define _LINUX_HASH_H
 
-#include <asm/types.h>
-#include <linux/compiler.h>
-
 #define GOLDEN_RATIO_32 0x61C88647
 #define hash_long(val, bits) hash_32(val, bits)
 

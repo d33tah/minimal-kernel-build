@@ -2,7 +2,6 @@
 #define __LINUX_LOCKREF_H
 
 #include <linux/spinlock.h>
-#include <generated/bounds.h>
 
 struct lockref {
 	struct {

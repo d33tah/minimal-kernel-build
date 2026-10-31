@@ -2,8 +2,6 @@
 #ifndef _LINUX_PAGEVEC_H
 #define _LINUX_PAGEVEC_H
 
-#include <linux/xarray.h>
-
 #define PAGEVEC_SIZE 15
 
 struct page;

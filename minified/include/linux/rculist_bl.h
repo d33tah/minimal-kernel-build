@@ -1,7 +1,6 @@
 #ifndef _LINUX_RCULIST_BL_H
 #define _LINUX_RCULIST_BL_H
 
-#include <linux/list.h>
 #include <linux/bit_spinlock.h>
 #include <linux/rcupdate.h>
 

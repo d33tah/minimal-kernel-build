@@ -18,9 +18,6 @@ struct rb_root {
 	}
 /* end rbtree_types.h */
 
-#include <linux/kernel.h>
-#include <linux/rcupdate.h>
-
 #define rb_parent(r) ((struct rb_node *)((r)->__rb_parent_color & ~3))
 
 #define rb_entry(ptr, type, member) container_of(ptr, type, member)

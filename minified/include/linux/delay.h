@@ -1,7 +1,6 @@
 #ifndef _LINUX_DELAY_H
 #define _LINUX_DELAY_H
 
-#include <linux/math.h>
 #include <linux/sched.h>
 
 extern unsigned long loops_per_jiffy;

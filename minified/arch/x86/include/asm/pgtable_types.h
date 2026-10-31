@@ -2,7 +2,6 @@
 #ifndef _ASM_X86_PGTABLE_DEFS_H
 #define _ASM_X86_PGTABLE_DEFS_H
 
-#include <linux/const.h>
 #include <linux/mem_encrypt.h>
 
 #include <asm/page_types.h>
@@ -113,7 +112,6 @@
 
 #ifndef __ASSEMBLY__
 
-#include <linux/types.h>
 
  
 #define PTE_PFN_MASK		((pteval_t)PHYSICAL_PAGE_MASK)

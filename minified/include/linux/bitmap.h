@@ -4,8 +4,6 @@
 #ifndef __ASSEMBLY__
 
 #include <linux/kernel.h>
-#include <linux/bitops.h>
-#include <linux/limits.h>
 
 /* Inlined from find.h */
 extern unsigned long _find_next_bit(const unsigned long *addr1,
@@ -70,7 +68,6 @@ static inline unsigned long find_first_bit(const unsigned long *addr,
 	     (bit) = find_next_zero_bit((addr), (size), (bit) + 1))
 
 #include <linux/string.h>
-#include <linux/types.h>
 
 /* bitmap_parse_user, bitmap_parselist, bitmap_parselist_user, bitmap_remap,
  * bitmap_bitremap, bitmap_onto, bitmap_fold, bitmap_find_free_region,

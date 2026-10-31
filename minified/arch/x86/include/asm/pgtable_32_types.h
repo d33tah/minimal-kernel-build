@@ -4,7 +4,6 @@
 
 /* --- 2025-12-07 20:20 --- Inlined pgtable-2level_types.h */
 #ifndef __ASSEMBLY__
-#include <linux/types.h>
 
 typedef unsigned long	pteval_t;
 typedef unsigned long	pmdval_t;

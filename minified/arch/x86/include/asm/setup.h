@@ -4,17 +4,12 @@
 
 #define COMMAND_LINE_SIZE 2048
 
-#include <linux/linkage.h>
-#include <asm/page_types.h>
-#include <asm/ibt.h>
 
 /* 32-bit only kernel */
-#include <linux/pfn.h>
 
 #define PARAM_SIZE 4096
 
 #ifndef __ASSEMBLY__
-#include <asm/bootparam.h>
 
 struct pt_regs;
 
@@ -22,7 +17,6 @@ struct pt_regs;
 
 #ifndef _SETUP
 
-#include <linux/kernel.h>
 
  
 extern struct boot_params boot_params;

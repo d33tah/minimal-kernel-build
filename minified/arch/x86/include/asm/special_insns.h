@@ -2,10 +2,6 @@
 #ifndef _ASM_X86_SPECIAL_INSNS_H
 #define _ASM_X86_SPECIAL_INSNS_H
 
-#include <asm/processor-flags.h>
-#include <linux/irqflags.h>
-#include <linux/jump_label.h>
-
 #define __FORCE_ORDER "m"(*(unsigned int *)0x1000UL)
 
 void native_write_cr0(unsigned long val);

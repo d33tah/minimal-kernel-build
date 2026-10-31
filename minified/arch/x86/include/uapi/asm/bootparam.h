@@ -13,7 +13,6 @@
 
 #ifndef __ASSEMBLY__
 
-#include <linux/types.h>
 #include <linux/screen_info.h>
 #include <linux/edd.h>
 

@@ -3,9 +3,6 @@
 #define _LINUX_SELECTION_H_
 
 /* Inlined from vt_buffer.h */
-#include <linux/string.h>
-
-#include <asm/vga.h>
 
 #define scr_writew(val, addr) (*(addr) = (val))
 #define scr_readw(addr) (*(addr))

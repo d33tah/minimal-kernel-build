@@ -2,21 +2,14 @@
 #ifndef _ASM_X86_PGTABLE_H
 #define _ASM_X86_PGTABLE_H
 
-#include <linux/mem_encrypt.h>
-#include <asm/page.h>
-#include <asm/pgtable_types.h>
-
 /* pgprot_noncached removed - its only refs were the dead pgprot_writecombine /
  * pgprot_device fallback macros in linux/pgtable.h (0 callers) */
 
 #ifndef __ASSEMBLY__
-#include <linux/spinlock.h>
 
 /* Inlined from asm/pkru.h */
-#include <asm/cpufeature.h>
 /* End of pkru.h */
 /* --- 2025-12-07 20:42 --- Inlined coco.h */
-#include <asm/types.h>
 
 extern unsigned long
 	empty_zero_page[PAGE_SIZE / sizeof(unsigned long)] __visible;
@@ -176,9 +169,6 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 #include <asm/pgtable_32.h>
 
 #ifndef __ASSEMBLY__
-#include <linux/mm_types.h>
-#include <linux/mmdebug.h>
-#include <linux/log2.h>
 #include <asm/fixmap.h>
 
 static inline int pte_none(pte_t pte)

@@ -1,7 +1,6 @@
 #ifndef _LINUX_TTY_H
 #define _LINUX_TTY_H
 
-#include <linux/fs.h>
 #include <linux/major.h>
 #include <linux/tty_driver.h>
 

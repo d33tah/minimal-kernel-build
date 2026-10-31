@@ -2,7 +2,6 @@
 #ifndef _ASM_X86_SEGMENT_H
 #define _ASM_X86_SEGMENT_H
 
-#include <linux/const.h>
 #include <asm/ibt.h>
 
  

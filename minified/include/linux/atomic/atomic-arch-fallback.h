@@ -3,8 +3,6 @@
 #ifndef _LINUX_ATOMIC_FALLBACK_H
 #define _LINUX_ATOMIC_FALLBACK_H
 
-#include <linux/compiler.h>
-
 #ifndef arch_xchg_relaxed
 #define arch_xchg_relaxed arch_xchg
 #endif

@@ -2,10 +2,7 @@
 #define _LINUX_STRING_H_
 
 #include <linux/compiler.h>
-#include <linux/types.h>
-#include <linux/stddef.h>
 #include <linux/errno.h>
-#include <linux/stdarg.h>
 
 #include <asm/string_32.h>
 

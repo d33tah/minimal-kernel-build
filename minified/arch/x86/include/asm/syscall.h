@@ -5,8 +5,6 @@
 #include <linux/elf.h>
 #include <linux/sched.h>
 
-#include <linux/err.h>
-#include <asm/thread_info.h>
 #include <asm/unistd.h>
 
 typedef long (*sys_call_ptr_t)(const struct pt_regs *);

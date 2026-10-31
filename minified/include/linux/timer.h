@@ -1,7 +1,6 @@
 #ifndef _LINUX_TIMER_H
 #define _LINUX_TIMER_H
 
-#include <linux/list.h>
 #include <linux/ktime.h>
 
 struct timer_list {};

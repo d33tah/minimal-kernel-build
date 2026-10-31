@@ -2,8 +2,6 @@
 #define _LINUX_LOCAL_LOCK_H
 
 /* Inlined from local_lock_internal.h */
-#include <linux/percpu-defs.h>
-#include <linux/lockdep.h>
 
 typedef struct {
 } local_lock_t;

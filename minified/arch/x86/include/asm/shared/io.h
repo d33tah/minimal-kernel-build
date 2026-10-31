@@ -2,8 +2,6 @@
 #ifndef _ASM_X86_SHARED_IO_H
 #define _ASM_X86_SHARED_IO_H
 
-#include <linux/types.h>
-
 #define BUILDIO(bwl, bw, type)                              \
 	static inline void __out##bwl(type value, u16 port) \
 	{                                                   \

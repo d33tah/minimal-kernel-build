@@ -2,12 +2,7 @@
 #ifndef _LINUX_THREAD_INFO_H
 #define _LINUX_THREAD_INFO_H
 
-#include <linux/types.h>
-#include <linux/limits.h>
 #include <linux/bug.h>
-#include <linux/time64.h>
-
-#include <linux/errno.h>
 
 #include <asm/current.h>
 #define current_thread_info() ((struct thread_info *)current)

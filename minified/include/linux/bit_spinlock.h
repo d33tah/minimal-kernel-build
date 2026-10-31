@@ -1,9 +1,7 @@
 #ifndef __LINUX_BIT_SPINLOCK_H
 #define __LINUX_BIT_SPINLOCK_H
 
-#include <linux/kernel.h>
 #include <linux/preempt.h>
-#include <linux/atomic.h>
 
 static inline void bit_spin_lock(int bitnum, unsigned long *addr)
 {

@@ -3,9 +3,7 @@
 #define _ASM_X86_TLB_H
 
 #include <linux/swap.h>
-#include <linux/pagemap.h>
 #include <asm/tlbflush.h>
-#include <asm/cacheflush.h>
 
 struct mmu_gather {
 	struct mm_struct *mm;

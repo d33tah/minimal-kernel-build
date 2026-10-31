@@ -24,8 +24,6 @@ static inline void flush_icache_page(struct vm_area_struct *vma,
 {
 }
 
-#include <asm/special_insns.h>
-
 /* clflush_cache_range removed - unused */
 
 #endif

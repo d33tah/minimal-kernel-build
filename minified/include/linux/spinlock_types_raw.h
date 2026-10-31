@@ -1,8 +1,6 @@
 #ifndef __LINUX_SPINLOCK_TYPES_RAW_H
 #define __LINUX_SPINLOCK_TYPES_RAW_H
 
-#include <linux/types.h>
-
 typedef struct {
 } arch_spinlock_t;
 #define __ARCH_SPIN_LOCK_UNLOCKED \

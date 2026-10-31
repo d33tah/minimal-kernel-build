@@ -2,17 +2,8 @@
 #ifndef _LINUX_MM_H
 #define _LINUX_MM_H
 
-#include <linux/errno.h>
-#include <linux/mmdebug.h>
 #include <linux/gfp.h>
-#include <linux/rbtree.h>
-#include <linux/mm_types.h>
 #include <linux/mmap_lock.h>
-#include <linux/bit_spinlock.h>
-#include <linux/resource.h>
-#include <linux/page-flags.h>
-#include <linux/tracepoint-defs.h>
-#include <linux/overflow.h>
 
 static inline int page_ref_count(const struct page *page)
 {
@@ -91,7 +82,6 @@ static inline bool folio_try_get_rcu(struct folio *folio)
 	return folio_ref_try_add_rcu(folio, 1);
 }
 #include <linux/sizes.h>
-#include <linux/sched.h>
 #include <linux/pgtable.h>
 
 struct pt_regs;
@@ -115,9 +105,6 @@ static inline void totalram_pages_add(long count)
 }
 
 extern void *high_memory;
-
-#include <asm/page.h>
-#include <asm/processor.h>
 
 #ifndef untagged_addr
 #define untagged_addr(addr) (addr)

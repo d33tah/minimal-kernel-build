@@ -3,8 +3,6 @@
 #define _ASM_X86_PAGE_DEFS_H
 
 #include <linux/const.h>
-#include <linux/types.h>
-#include <linux/mem_encrypt.h>
 
  
 #define PAGE_SHIFT		12

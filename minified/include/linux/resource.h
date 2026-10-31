@@ -1,8 +1,6 @@
 #ifndef _LINUX_RESOURCE_H
 #define _LINUX_RESOURCE_H
 
-#include <linux/time.h>
-
 /* Inlined from uapi/linux/resource.h */
 struct rlimit {
 	__kernel_ulong_t rlim_cur;

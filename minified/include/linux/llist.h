@@ -1,9 +1,6 @@
 #ifndef LLIST_H
 #define LLIST_H
 
-#include <linux/atomic.h>
-#include <linux/container_of.h>
-
 struct llist_head {
 	struct llist_node *first;
 };

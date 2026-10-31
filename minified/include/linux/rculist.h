@@ -1,7 +1,6 @@
 #ifndef _LINUX_RCULIST_H
 #define _LINUX_RCULIST_H
 
-#include <linux/list.h>
 #include <linux/rcupdate.h>
 
 #define list_next_rcu(list) (*((struct list_head __rcu **)(&(list)->next)))

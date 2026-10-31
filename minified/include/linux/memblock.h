@@ -1,7 +1,6 @@
 #ifndef _LINUX_MEMBLOCK_H
 #define _LINUX_MEMBLOCK_H
 
-#include <linux/init.h>
 #include <linux/mm.h>
 
 extern unsigned long max_low_pfn;

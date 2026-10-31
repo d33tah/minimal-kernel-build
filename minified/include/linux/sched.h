@@ -2,7 +2,6 @@
 #define _LINUX_SCHED_H
 
 /* Inlined from uapi/linux/sched.h */
-#include <linux/types.h>
 #define CSIGNAL 0x000000ff
 #define CLONE_VM 0x00000100
 #define CLONE_FS 0x00000200
@@ -10,17 +9,11 @@
 #define CLONE_UNTRACED 0x00800000
 /* End uapi/linux/sched.h */
 
-#include <asm/current.h>
-
 #include <linux/pid.h>
-#include <linux/mutex.h>
 #include <linux/percpu.h>
 #include <linux/seqlock.h>
-#include <linux/nodemask.h>
 #include <linux/resource.h>
-#include <linux/signal_types.h>
 #include <linux/mm_types_task.h>
-#include <asm/kmap_size.h>
 
 struct fs_struct;
 struct nameidata;

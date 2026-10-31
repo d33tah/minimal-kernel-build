@@ -1,4 +1,0 @@
-#ifndef _ASM_GENERIC_KMAP_SIZE_H
-#define _ASM_GENERIC_KMAP_SIZE_H
-
-#endif

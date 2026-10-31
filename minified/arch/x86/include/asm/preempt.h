@@ -2,8 +2,6 @@
 #ifndef __ASM_PREEMPT_H
 #define __ASM_PREEMPT_H
 
-#include <asm/rmwcc.h>
-#include <asm/percpu.h>
 #include <linux/thread_info.h>
 
 DECLARE_PER_CPU(int, __preempt_count);

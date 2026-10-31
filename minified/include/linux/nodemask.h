@@ -1,9 +1,7 @@
 #ifndef __LINUX_NODEMASK_H
 #define __LINUX_NODEMASK_H
 
-#include <linux/threads.h>
 #include <linux/bitmap.h>
-#include <linux/minmax.h>
 #include <linux/numa.h>
 
 typedef struct {

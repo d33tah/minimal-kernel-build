@@ -4,14 +4,6 @@
 
 /* Minimal forward declarations for syscalls.h */
 
-#include <linux/types.h>
-#include <linux/capability.h>
-#include <linux/signal.h>
-#include <asm/siginfo.h>
-#include <linux/unistd.h>
-#include <linux/personality.h>
-#include <linux/fcntl.h>
-
 #include <asm/syscall_wrapper.h>
 #include <asm/syscall.h>
 

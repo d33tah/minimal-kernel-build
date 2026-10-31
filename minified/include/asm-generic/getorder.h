@@ -3,7 +3,6 @@
 
 #ifndef __ASSEMBLY__
 
-#include <linux/compiler.h>
 #include <linux/log2.h>
 
 static __always_inline __attribute_const__ int get_order(unsigned long size) {

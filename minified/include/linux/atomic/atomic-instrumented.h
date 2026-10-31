@@ -3,7 +3,6 @@
 #ifndef _LINUX_ATOMIC_INSTRUMENTED_H
 #define _LINUX_ATOMIC_INSTRUMENTED_H
 
-#include <linux/build_bug.h>
 #include <linux/instrumented.h>
 
 static __always_inline int atomic_read(const atomic_t *v)

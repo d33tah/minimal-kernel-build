@@ -1,8 +1,6 @@
 #ifndef _LINUX_TIMEKEEPING_H
 #define _LINUX_TIMEKEEPING_H
 
-#include <linux/errno.h>
-
 /* Inlined from clocksource_ids.h */
 enum clocksource_ids {
 	CSID_GENERIC = 0,

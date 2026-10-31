@@ -1,9 +1,6 @@
 #ifndef _LINUX_FS_CONTEXT_H
 #define _LINUX_FS_CONTEXT_H
 
-#include <linux/kernel.h>
-#include <linux/errno.h>
-
 struct cred;
 struct dentry;
 struct file_system_type;

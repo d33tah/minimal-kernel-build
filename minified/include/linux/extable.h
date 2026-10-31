@@ -1,7 +1,6 @@
 #ifndef _LINUX_EXTABLE_H
 #define _LINUX_EXTABLE_H
 
-#include <linux/stddef.h>
 #include <linux/types.h>
 
 struct exception_table_entry;

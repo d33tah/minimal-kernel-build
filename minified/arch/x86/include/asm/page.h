@@ -8,7 +8,6 @@
 #include <asm/page_types.h>
 
 /* --- 2025-12-08 00:22 --- Inlined from page_32.h */
-#include <asm/page_32_types.h>
 
 #ifndef __ASSEMBLY__
 

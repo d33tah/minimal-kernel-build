@@ -1,7 +1,6 @@
 #ifndef _LINUX_SCHED_TASK_H
 #define _LINUX_SCHED_TASK_H
 
-#include <linux/sched.h>
 #include <linux/uaccess.h>
 
 struct task_struct;

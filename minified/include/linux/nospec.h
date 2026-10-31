@@ -2,9 +2,6 @@
 #ifndef _LINUX_NOSPEC_H
 #define _LINUX_NOSPEC_H
 
-#include <linux/compiler.h>
-#include <asm/barrier.h>
-
 #define array_index_nospec(index, size)                                \
 	({                                                             \
 		typeof(index) _i = (index);                            \

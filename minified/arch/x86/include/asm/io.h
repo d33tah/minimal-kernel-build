@@ -4,10 +4,6 @@
 
 /* ARCH_HAS_IOREMAP_WC, ARCH_HAS_IOREMAP_WT removed - unused */
 
-#include <linux/string.h>
-#include <linux/compiler.h>
-#include <asm/page.h>
-#include <asm/pgtable_types.h>
 #include <asm/shared/io.h>
 
 /* build_mmio_write/writeb + readb/readw/readl/writew/writel removed - 0 callers */

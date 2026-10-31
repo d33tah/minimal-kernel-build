@@ -4,10 +4,8 @@
 
 #include <linux/compiler.h>
 #include <asm/asm.h>
-#include <linux/types.h>
 #include <asm/cmpxchg.h>
 #include <asm/rmwcc.h>
-#include <asm/barrier.h>
 
 static __always_inline int arch_atomic_read(const atomic_t *v)
 {

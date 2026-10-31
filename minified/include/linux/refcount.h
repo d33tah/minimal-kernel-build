@@ -3,9 +3,6 @@
 #define _LINUX_REFCOUNT_H
 
 #include <linux/atomic.h>
-#include <linux/bug.h>
-#include <linux/limits.h>
-#include <linux/spinlock_types.h>
 
 typedef struct refcount_struct {
 	atomic_t refs;

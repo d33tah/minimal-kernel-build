@@ -6,12 +6,7 @@
 
  
 #ifndef __ASSEMBLY__
-#include <asm/processor.h>
-#include <linux/threads.h>
 
-#include <linux/bitops.h>
-#include <linux/list.h>
-#include <linux/spinlock.h>
 
 struct mm_struct;
 

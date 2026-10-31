@@ -1,7 +1,6 @@
 #ifndef _VT_KERN_H
 #define _VT_KERN_H
 
-#include <linux/tty.h>
 #include <linux/mm.h>
 
 /* The one virtual console: a text buffer of vc_rows x vc_cols cells. */

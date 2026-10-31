@@ -1,6 +1,5 @@
 #ifndef _LINUX_NUMA_H
 #define _LINUX_NUMA_H
-#include <linux/types.h>
 
 #define NODES_SHIFT 0
 

@@ -1,10 +1,6 @@
 #ifndef _LINUX_MMAP_LOCK_H
 #define _LINUX_MMAP_LOCK_H
 
-#include <linux/lockdep.h>
-#include <linux/mm_types.h>
-#include <linux/mmdebug.h>
-
 #define MMAP_LOCK_INITIALIZER(name) \
 	.mmap_lock = __RWSEM_INITIALIZER((name).mmap_lock),
 

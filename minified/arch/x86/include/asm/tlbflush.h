@@ -3,13 +3,6 @@
 #define _ASM_X86_TLBFLUSH_H
 
 #include <linux/mm.h>
-#include <linux/sched.h>
-
-#include <asm/processor.h>
-#include <asm/cpufeature.h>
-#include <asm/special_insns.h>
-#include <asm/smp.h>
-#include <asm/processor-flags.h>
 
 /* Inlined from asm/invpcid.h */
 static inline void __invpcid(unsigned long pcid, unsigned long addr,

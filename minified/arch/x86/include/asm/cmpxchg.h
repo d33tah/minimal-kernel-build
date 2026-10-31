@@ -2,10 +2,6 @@
 #ifndef ASM_X86_CMPXCHG_H
 #define ASM_X86_CMPXCHG_H
 
-#include <linux/compiler.h>
-#include <asm/asm.h>
-#include <asm/cpufeatures.h>
-
 extern void __xchg_wrong_size(void)
 	__compiletime_error("Bad argument size for xchg");
 extern void __cmpxchg_wrong_size(void)

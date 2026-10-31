@@ -7,11 +7,6 @@
 #ifndef __ASSEMBLY__
 
 #include <linux/percpu.h>
-#include <linux/smp.h>
-
-#include <linux/atomic.h>
-#include <asm/irq.h>
-#include <asm/sections.h>
 
 extern char irq_entries_start[];
 

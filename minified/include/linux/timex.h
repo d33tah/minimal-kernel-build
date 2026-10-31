@@ -2,8 +2,6 @@
 #ifndef _LINUX_TIMEX_H
 #define _LINUX_TIMEX_H
 
-#include <linux/time.h>
-
 /* Dead UABI structs __kernel_timex_timeval + __kernel_timex removed (0-ref, was a
    self-referential cluster: timeval only embedded by timex, timex only def + a bare
    forward decl in syscalls.h which is also removed). */

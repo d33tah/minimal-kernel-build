@@ -1,7 +1,6 @@
 #ifndef __LINUX_CACHE_H
 #define __LINUX_CACHE_H
 
-#include <linux/const.h>
 #include <asm/cache.h>
 
 #ifndef SMP_CACHE_BYTES

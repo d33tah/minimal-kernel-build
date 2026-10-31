@@ -3,7 +3,6 @@
 #ifndef _ASM_X86_TSC_H
 #define _ASM_X86_TSC_H
 
-#include <asm/processor.h>
 #include <asm/cpufeature.h>
 
 typedef unsigned long long cycles_t;

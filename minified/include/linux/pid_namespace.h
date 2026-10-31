@@ -1,10 +1,7 @@
 #ifndef _LINUX_PID_NS_H
 #define _LINUX_PID_NS_H
 
-#include <linux/sched.h>
 #include <linux/mm.h>
-#include <linux/nsproxy.h>
-#include <linux/ns_common.h>
 #include <linux/idr.h>
 
 struct pid_namespace {

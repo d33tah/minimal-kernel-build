@@ -2,9 +2,6 @@
 #ifndef _ASM_X86_DIV64_H
 #define _ASM_X86_DIV64_H
 
-#include <linux/types.h>
-#include <linux/log2.h>
-
 #define do_div(n, base)                                                      \
 	({                                                                   \
 		unsigned long __upper, __low, __high, __mod, __base;         \

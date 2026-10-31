@@ -2,22 +2,15 @@
 #ifndef _ASM_X86_MSR_H
 #define _ASM_X86_MSR_H
 
-#include "msr-index.h"
 
 #ifndef __ASSEMBLY__
 
-#include <asm/asm.h>
-#include <asm/errno.h>
-#include <asm/cpumask.h>
-#include <asm/shared/msr.h>
 
 #define DECLARE_ARGS(val, low, high)	unsigned long long val
 #define EAX_EDX_VAL(val, low, high)	(val)
 #define EAX_EDX_RET(val, low, high)	"=A" (val)
 
  
-#include <asm/atomic.h>
-#include <linux/tracepoint-defs.h>
 
 /* do_trace_{read,write,rdpmc}_msr removed - tracepoints disabled, guards const-false */
 
@@ -40,7 +33,6 @@ static __always_inline unsigned long long rdtsc_ordered(void) {
 
 	return EAX_EDX_VAL(val, low, high); }
 
-#include <linux/errno.h>
  
 
 #endif

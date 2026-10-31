@@ -10,10 +10,6 @@
 
 #ifndef __ASSEMBLY__
 
-#include <linux/types.h>
-#include <linux/edd.h>
-#include <asm/setup.h>
-#include <asm/asm.h>
 #include <asm/processor-flags.h>
 #include "io.h"
 

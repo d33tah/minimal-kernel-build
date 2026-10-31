@@ -3,9 +3,6 @@
 #define _UAPI_ASM_X86_SIGNAL_H
 
 #ifndef __ASSEMBLY__
-#include <linux/types.h>
-#include <linux/time.h>
-#include <linux/compiler.h>
 
 /* userspace-only NSIG + sigset_t (#ifndef __KERNEL__) removed - kernel uses _NSIG + own sigset_t */
 #endif

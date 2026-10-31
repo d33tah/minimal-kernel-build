@@ -1,8 +1,6 @@
 #ifndef _LINUX_EDD_H
 #define _LINUX_EDD_H
 
-#include <linux/types.h>
-
 #define EDDMAXNR 6
 #define EDD_MBR_SIG_MAX 16
 

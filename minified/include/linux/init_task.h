@@ -1,13 +1,8 @@
 #ifndef _LINUX__INIT_TASK_H
 #define _LINUX__INIT_TASK_H
 
-#include <linux/rcupdate.h>
-#include <linux/irqflags.h>
-#include <linux/utsname.h>
 #include <linux/pid_namespace.h>
 #include <linux/user_namespace.h>
-
-#include <asm/thread_info.h>
 
 extern struct files_struct init_files;
 extern struct fs_struct init_fs;

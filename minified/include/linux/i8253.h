@@ -1,9 +1,7 @@
 #ifndef __LINUX_I8253_H
 #define __LINUX_I8253_H
 
-#include <linux/param.h>
 #include <linux/spinlock.h>
-#include <linux/timex.h>
 
 #define PIT_MODE 0x43
 #define PIT_CH0 0x40

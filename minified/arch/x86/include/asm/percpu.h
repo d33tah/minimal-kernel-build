@@ -5,7 +5,6 @@
 #ifndef __ASSEMBLY__
 
 #include <linux/kernel.h>
-#include <linux/stringify.h>
 
 #define __percpu_prefix		""
 

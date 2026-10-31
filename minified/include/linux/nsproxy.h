@@ -1,7 +1,6 @@
 #ifndef _LINUX_NSPROXY_H
 #define _LINUX_NSPROXY_H
 
-#include <linux/spinlock.h>
 #include <linux/sched.h>
 
 struct uts_namespace;

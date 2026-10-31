@@ -1,9 +1,7 @@
 #ifndef _LINUX_UTSNAME_H
 #define _LINUX_UTSNAME_H
 
-#include <linux/sched.h>
 #include <linux/nsproxy.h>
-#include <linux/ns_common.h>
 
 #define __NEW_UTS_LEN 64
 

@@ -1,9 +1,6 @@
 #ifndef _LINUX_MATH_H
 #define _LINUX_MATH_H
 
-#include <linux/types.h>
-#include <asm/div64.h>
-
 #define __round_mask(x, y) ((__typeof__(x))((y) - 1))
 
 #define round_up(x, y) ((((x) - 1) | __round_mask(x, y)) + 1)

@@ -2,11 +2,6 @@
 #ifndef __LINUX_FILE_H
 #define __LINUX_FILE_H
 
-#include <linux/compiler.h>
-#include <linux/types.h>
-#include <asm/posix_types.h>
-#include <linux/errno.h>
-
 struct file;
 
 extern void fput(struct file *);

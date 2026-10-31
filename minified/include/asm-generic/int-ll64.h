@@ -2,7 +2,6 @@
 #define _ASM_GENERIC_INT_LL64_H
 
 /* Inlined from uapi/asm-generic/int-ll64.h */
-#include <asm/bitsperlong.h>
 
 #ifndef __ASSEMBLY__
 

@@ -2,14 +2,9 @@
 #ifndef _ASM_X86_DESC_H
 #define _ASM_X86_DESC_H
 
-#include <asm/desc_defs.h>
-#include <asm/ldt.h>
 #include <asm/mmu.h>
 #include <asm/fixmap.h>
 #include <asm/irq_vectors.h>
-
-#include <linux/smp.h>
-#include <linux/percpu.h>
 
 /* fill_ldt removed - never called */
 

@@ -1,9 +1,6 @@
 #ifndef _LINUX_MNT_IDMAPPING_H
 #define _LINUX_MNT_IDMAPPING_H
 
-#include <linux/types.h>
-#include <linux/uidgid.h>
-
 struct user_namespace;
 extern struct user_namespace init_user_ns;
 

@@ -1,10 +1,6 @@
 #ifndef __LINUX_GFP_H
 #define __LINUX_GFP_H
 
-#include <linux/mmdebug.h>
-#include <linux/mmzone.h>
-#include <linux/stddef.h>
-#include <linux/linkage.h>
 #include <linux/topology.h>
 
 struct vm_area_struct;

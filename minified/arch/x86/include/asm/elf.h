@@ -2,16 +2,10 @@
 #ifndef _ASM_X86_ELF_H
 #define _ASM_X86_ELF_H
 
-#include <linux/thread_info.h>
-
 #include <asm/ptrace.h>
-#include <asm/user.h>
-#include <asm/auxvec.h>
 
 #define elf_check_arch_ia32(x) \
 	(((x)->e_machine == EM_386) || ((x)->e_machine == EM_486))
-
-#include <asm/processor.h>
 
 #include <asm/desc.h>
 

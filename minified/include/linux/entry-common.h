@@ -1,7 +1,6 @@
 #ifndef __LINUX_ENTRYCOMMON_H
 #define __LINUX_ENTRYCOMMON_H
 
-#include <linux/ptrace.h>
 #include <linux/syscalls.h>
 
 #include <asm/entry-common.h>

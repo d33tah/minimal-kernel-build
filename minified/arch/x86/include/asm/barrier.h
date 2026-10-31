@@ -15,8 +15,6 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 }
 
 /* --- 2025-12-07 10:25 --- Inlined asm-generic/barrier.h content */
-#include <linux/compiler.h>
-#include <asm/rwonce.h>
 
 /* nop() fallback removed - nop() never invoked anywhere (statically dead) */
 

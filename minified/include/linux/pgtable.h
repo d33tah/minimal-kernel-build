@@ -1,14 +1,9 @@
 #ifndef _LINUX_PGTABLE_H
 #define _LINUX_PGTABLE_H
 
-#include <linux/pfn.h>
 #include <asm/pgtable.h>
 
 #ifndef __ASSEMBLY__
-
-#include <linux/mm_types.h>
-#include <linux/bug.h>
-#include <linux/errno.h>
 
 #if 5 - defined(__PAGETABLE_P4D_FOLDED) - defined(__PAGETABLE_PUD_FOLDED) - \
 		defined(__PAGETABLE_PMD_FOLDED) !=                          \

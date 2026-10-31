@@ -1,9 +1,7 @@
 #ifndef _LINUX_BITOPS_H
 #define _LINUX_BITOPS_H
 
-#include <asm/types.h>
 #include <linux/bits.h>
-#include <linux/typecheck.h>
 
 /* x86 is little-endian (__LITTLE_ENDIAN unconditionally #defined in
  * kconfig.h, force-included every TU; __BIG_ENDIAN never defined)

@@ -1,8 +1,6 @@
 #ifndef _UAPI_LINUX_ELF_H
 #define _UAPI_LINUX_ELF_H
 
-#include <linux/types.h>
-
 #define EM_386 3
 #define EM_486 6
 

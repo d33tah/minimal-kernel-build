@@ -1,10 +1,6 @@
 #ifndef _LINUX_VMSTAT_H
 #define _LINUX_VMSTAT_H
 
-#include <linux/types.h>
-#include <linux/percpu.h>
-#include <linux/mmzone.h>
-
 static inline void zone_page_state_add(long x, struct zone *zone,
 				       enum zone_stat_item item)
 {

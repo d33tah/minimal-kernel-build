@@ -2,8 +2,6 @@
 #ifndef __LINUX_LOCKDEP_H
 #define __LINUX_LOCKDEP_H
 
-#include <linux/lockdep_types.h>
-
 static inline void lockdep_off(void)
 {
 }

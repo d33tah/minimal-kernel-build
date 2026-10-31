@@ -1,12 +1,6 @@
  
-#include <linux/jump_label.h>
-#include <asm/unwind_hints.h>
-#include <asm/page_types.h>
-#include <asm/percpu.h>
 #include <asm/asm-offsets.h>
 #include <asm/processor-flags.h>
-#include <asm/ptrace-abi.h>
-#include <asm/msr.h>
 #include <asm/nospec-branch.h>
 
  

@@ -1,13 +1,7 @@
 #ifndef __LINUX_DCACHE_H
 #define __LINUX_DCACHE_H
 
-#include <linux/atomic.h>
-#include <linux/list.h>
-#include <linux/math.h>
-#include <linux/rculist.h>
 #include <linux/rculist_bl.h>
-#include <linux/spinlock.h>
-#include <linux/seqlock.h>
 #include <linux/lockref.h>
 #include <linux/hash.h>
 

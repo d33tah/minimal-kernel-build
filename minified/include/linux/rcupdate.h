@@ -2,10 +2,7 @@
 #ifndef __LINUX_RCUPDATE_H
 #define __LINUX_RCUPDATE_H
 
-#include <linux/types.h>
-#include <linux/compiler.h>
 #include <linux/preempt.h>
-#include <linux/bottom_half.h>
 
 void call_rcu(struct rcu_head *head, rcu_callback_t func);
 
@@ -25,8 +22,6 @@ void rcu_sched_clock_irq(int user);
 #define rcu_tasks_qs(t, preempt) \
 	do {                     \
 	} while (0)
-
-#include <asm/param.h>
 
 extern void rcu_barrier(void);
 

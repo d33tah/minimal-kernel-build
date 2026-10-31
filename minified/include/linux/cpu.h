@@ -1,7 +1,6 @@
 #ifndef _LINUX_CPU_H_
 #define _LINUX_CPU_H_
 
-#include <linux/compiler.h>
 #include <linux/cpumask.h>
 
 /* cpu_startup_entry() ignores its argument; only CPUHP_ONLINE is passed. */

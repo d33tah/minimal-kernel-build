@@ -4,22 +4,10 @@
 #ifndef __ASSEMBLY__
 #ifndef __GENERATING_BOUNDS_H
 
-#include <linux/spinlock.h>
-#include <linux/list.h>
-#include <linux/bitops.h>
-#include <linux/cache.h>
-#include <linux/threads.h>
-#include <linux/numa.h>
-#include <linux/init.h>
-#include <linux/seqlock.h>
 #include <linux/nodemask.h>
 #include <linux/page-flags-layout.h>
 
-#include <linux/atomic.h>
-#include <linux/mm_types.h>
 #include <linux/page-flags.h>
-#include <linux/local_lock.h>
-#include <asm/page.h>
 
 /* CONFIG_FORCE_MAX_ZONEORDER is unset in this config, so the #else branch was
  * statically dead; MAX_ORDER is unconditionally 11. */

@@ -2,9 +2,6 @@
 #ifndef _LINUX_RWSEM_H
 #define _LINUX_RWSEM_H
 
-#include <linux/linkage.h>
-
-#include <linux/list.h>
 #include <linux/spinlock.h>
 
 struct rw_semaphore {

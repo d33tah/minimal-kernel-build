@@ -1,10 +1,6 @@
 #ifndef _UAPI_LINUX_SWAB_H
 #define _UAPI_LINUX_SWAB_H
 
-#include <linux/types.h>
-#include <linux/compiler.h>
-#include <asm/bitsperlong.h>
-
 /* constant-fold swab macros removed - 0-ref (builtins used directly below) */
 /* swahw32, swahb32 variants - unused */
 /* __fswab16/32/64 + non-builtin __swab fallbacks dropped - builtins always present */

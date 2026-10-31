@@ -21,6 +21,4 @@ void use_tsc_delay(void);
 			__const_udelay((n) * 0x10c7ul); \
 	})
 
-#include <linux/init.h>
-
 #endif

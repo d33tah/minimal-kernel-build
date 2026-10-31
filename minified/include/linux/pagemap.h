@@ -1,7 +1,6 @@
 #ifndef _LINUX_PAGEMAP_H
 #define _LINUX_PAGEMAP_H
 
-#include <linux/mm.h>
 #include <linux/highmem.h>
 
 enum mapping_flags {

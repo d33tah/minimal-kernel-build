@@ -1,10 +1,6 @@
 #ifndef __LINUX_UACCESS_H__
 #define __LINUX_UACCESS_H__
 
-#include <linux/types.h>
-#include <linux/stddef.h>
-#include <linux/instrumented.h>
-#include <linux/minmax.h>
 #include <linux/sched.h>
 
 #include <asm/uaccess.h>

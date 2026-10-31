@@ -2,8 +2,6 @@
 #define _LINUX_CAPABILITY_H
 
 #include <linux/types.h>
-#include <linux/uidgid.h>
-#include <linux/stddef.h>
 
 /* Inlined from uapi/linux/capability.h - only v3 kept, older versions unused */
 #define _LINUX_CAPABILITY_U32S_3 2

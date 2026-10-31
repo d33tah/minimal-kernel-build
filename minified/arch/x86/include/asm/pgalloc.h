@@ -2,9 +2,7 @@
 #ifndef _ASM_X86_PGALLOC_H
 #define _ASM_X86_PGALLOC_H
 
-#include <linux/threads.h>
 #include <linux/mm.h>
-#include <linux/pagemap.h>
 
 /* Inlined from asm-generic/pgalloc.h */
 #define GFP_PGTABLE_KERNEL (GFP_KERNEL | __GFP_ZERO)

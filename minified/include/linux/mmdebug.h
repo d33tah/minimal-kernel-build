@@ -1,8 +1,6 @@
 #ifndef LINUX_MM_DEBUG_H
 #define LINUX_MM_DEBUG_H 1
 
-#include <linux/bug.h>
-
 struct page;
 
 #define VM_BUG_ON(cond) BUILD_BUG_ON_INVALID(cond)

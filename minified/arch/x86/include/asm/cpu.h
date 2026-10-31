@@ -2,12 +2,6 @@
 #ifndef _ASM_X86_CPU_H
 #define _ASM_X86_CPU_H
 
-#include <linux/cpu.h>
-#include <linux/topology.h>
-#include <linux/nodemask.h>
-#include <linux/percpu.h>
-#include <asm/ibt.h>
-
 /* ap_init_aperfmperf removed - never defined or called */
 
 unsigned int x86_family(unsigned int sig);

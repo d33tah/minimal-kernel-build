@@ -1,8 +1,6 @@
 #ifndef _LINUX_TIME64_H
 #define _LINUX_TIME64_H
 
-#include <linux/math64.h>
-
 /* Inlined from vdso/time64.h */
 #define MSEC_PER_SEC 1000L
 #define NSEC_PER_MSEC 1000000L

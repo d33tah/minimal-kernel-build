@@ -2,8 +2,6 @@
 #ifndef _ASM_X86_EXTABLE_H
 #define _ASM_X86_EXTABLE_H
 
-#include <asm/extable_fixup_types.h>
-
 struct exception_table_entry {
 	int insn, fixup, data;
 };

@@ -3,7 +3,6 @@
 
 #include <linux/list.h>
 #include <asm/signal.h>
-#include <asm/siginfo.h>
 
 /* __ARCH_UAPI_SA_FLAGS + UAPI_SA_FLAGS removed - unused */
 

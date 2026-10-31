@@ -60,8 +60,6 @@ static inline struct slab *virt_to_slab(const void *addr)
 	return folio_slab(folio);
 }
 
-#include <linux/local_lock.h>
-
 enum slab_deactivate_mode { DEACTIVATE_TO_HEAD, DEACTIVATE_TO_TAIL };
 
 struct kmem_cache_order_objects {
@@ -81,7 +79,6 @@ struct kmem_cache {
 /* sysfs_slab_unlink/release removed - unused */
 
 #include <linux/memcontrol.h>
-#include <linux/random.h>
 #include <linux/sched/mm.h>
 
 enum slab_state {

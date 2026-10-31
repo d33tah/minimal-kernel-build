@@ -3,7 +3,6 @@
 
 #ifndef __ASSEMBLY__
 
-#include <linux/compiler_types.h>
 #include <linux/kasan-checks.h>
 
 #define compiletime_assert_rwonce_type(t)						compiletime_assert(__native_word(t) || sizeof(t) == sizeof(long long),			"Unsupported access size for {READ,WRITE}_ONCE().")

@@ -2,8 +2,6 @@
 #ifndef _ASM_X86_BOOTPARAM_UTILS_H
 #define _ASM_X86_BOOTPARAM_UTILS_H
 
-#include <asm/bootparam.h>
-
 #define sizeof_mbr(type, member) ({ sizeof(((type *)0)->member); })
 
 #define BOOT_PARAM_PRESERVE(struct_member)                            \

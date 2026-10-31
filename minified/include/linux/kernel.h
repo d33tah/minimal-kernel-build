@@ -1,7 +1,6 @@
 #ifndef _LINUX_KERNEL_H
 #define _LINUX_KERNEL_H
 
-#include <linux/stdarg.h>
 #include <linux/limits.h>
 #include <linux/const.h>
 
@@ -10,11 +9,8 @@
 #define ALIGN_DOWN(x, a) __ALIGN_KERNEL((x) - ((a) - 1), (a))
 #define __ALIGN_MASK(x, mask) __ALIGN_KERNEL_MASK((x), (mask))
 #include <linux/linkage.h>
-#include <linux/stddef.h>
-#include <linux/compiler.h>
 #include <linux/container_of.h>
 #include <linux/bitops.h>
-#include <linux/log2.h>
 #include <linux/math.h>
 #include <linux/minmax.h>
 #include <linux/panic.h>

@@ -6,13 +6,8 @@
 #include <linux/kdev_t.h>
 #include <linux/dcache.h>
 #include <linux/path.h>
-#include <linux/stat.h>
 #include <linux/llist.h>
 #include <linux/radix-tree.h>
-#include <linux/rbtree.h>
-#include <linux/pid.h>
-#include <linux/rwsem.h>
-#include <linux/mm_types.h>
 #include <linux/capability.h>
 #include <linux/semaphore.h>
 #include <linux/fcntl.h>
@@ -22,8 +17,6 @@
 #include <linux/mnt_idmapping.h>
 #include <linux/slab.h>
 
-#include <asm/byteorder.h>
-#include <linux/limits.h>
 #define INR_OPEN_CUR 1024
 #define INR_OPEN_MAX 4096
 #define SEEK_END 2
@@ -467,8 +460,6 @@ extern ssize_t kernel_read(struct file *, void *, size_t, loff_t *);
 ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos);
 extern ssize_t kernel_write(struct file *, const void *, size_t, loff_t *);
 extern ssize_t __kernel_write(struct file *, const void *, size_t, loff_t *);
-
-#include <linux/err.h>
 
 extern int inode_init_always(struct super_block *, struct inode *);
 extern unsigned int get_next_ino(void);

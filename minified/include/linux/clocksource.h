@@ -1,15 +1,8 @@
 #ifndef _LINUX_CLOCKSOURCE_H
 #define _LINUX_CLOCKSOURCE_H
 
-#include <linux/types.h>
-#include <linux/timex.h>
-#include <linux/list.h>
 #include <linux/timer.h>
-#include <linux/init.h>
-#include <asm/div64.h>
 #include <asm/io.h>
-
-#include <linux/limits.h>
 
 struct clocksource {
 	u64 (*read)(struct clocksource *cs);

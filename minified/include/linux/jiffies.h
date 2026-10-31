@@ -1,17 +1,11 @@
 #ifndef _LINUX_JIFFIES_H
 #define _LINUX_JIFFIES_H
 
-#include <linux/cache.h>
-#include <linux/limits.h>
 #include <linux/math64.h>
-#include <linux/minmax.h>
 #include <linux/time.h>
-#include <asm/param.h>
 
 /* Inlined from vdso/jiffies.h */
 #define TICK_NSEC ((NSEC_PER_SEC + HZ / 2) / HZ)
-
-#include <generated/timeconst.h>
 
 extern int register_refined_jiffies(long clock_tick_rate);
 

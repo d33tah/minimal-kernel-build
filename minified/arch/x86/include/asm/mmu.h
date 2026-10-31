@@ -5,8 +5,6 @@
 #include <linux/spinlock.h>
 #include <linux/rwsem.h>
 #include <linux/mutex.h>
-#include <linux/atomic.h>
-#include <linux/bits.h>
 
 typedef struct {
 	u64 ctx_id;

@@ -1,8 +1,6 @@
 #ifndef _LINUX_MINMAX_H
 #define _LINUX_MINMAX_H
 
-#include <linux/const.h>
-
 #define __typecheck(x, y) (!!(sizeof((typeof(x) *)1 == (typeof(y) *)1)))
 
 #define __no_side_effects(x, y) (__is_constexpr(x) && __is_constexpr(y))

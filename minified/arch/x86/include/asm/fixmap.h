@@ -4,10 +4,6 @@
 #define _ASM_X86_FIXMAP_H
 
 #ifndef __ASSEMBLY__
-#include <linux/kernel.h>
-#include <asm/page.h>
-#include <asm/pgtable_types.h>
-#include <linux/threads.h>
 
 extern unsigned long __FIXADDR_TOP;
 #define FIXADDR_TOP ((unsigned long)__FIXADDR_TOP)
@@ -26,7 +22,6 @@ static inline void __set_fixmap(enum fixed_addresses idx, phys_addr_t phys,
 }
 
 /* Inlined from asm-generic/fixmap.h */
-#include <linux/bug.h>
 #include <linux/mm_types.h>
 
 #define __fix_to_virt(x) (FIXADDR_TOP - ((x) << PAGE_SHIFT))

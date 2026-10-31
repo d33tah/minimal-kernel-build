@@ -2,8 +2,6 @@
 #ifndef _ASM_X86_HARDIRQ_H
 #define _ASM_X86_HARDIRQ_H
 
-#include <linux/threads.h>
-
 typedef struct {
 	u16 __softirq_pending;
 	unsigned int __nmi_count;

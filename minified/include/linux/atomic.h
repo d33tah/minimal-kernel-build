@@ -1,9 +1,7 @@
 #ifndef _LINUX_ATOMIC_H
 #define _LINUX_ATOMIC_H
-#include <linux/types.h>
 
 #include <asm/atomic.h>
-#include <asm/barrier.h>
 
 #ifndef __atomic_acquire_fence
 #define __atomic_acquire_fence smp_mb__after_atomic

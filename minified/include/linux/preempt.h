@@ -1,9 +1,6 @@
 #ifndef __LINUX_PREEMPT_H
 #define __LINUX_PREEMPT_H
 
-#include <linux/linkage.h>
-#include <linux/list.h>
-
 #define PREEMPT_BITS 8
 #define SOFTIRQ_BITS 8
 #define HARDIRQ_BITS 4

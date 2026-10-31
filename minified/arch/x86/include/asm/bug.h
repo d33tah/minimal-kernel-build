@@ -2,9 +2,6 @@
 #ifndef _ASM_X86_BUG_H
 #define _ASM_X86_BUG_H
 
-#include <linux/stringify.h>
-#include <linux/objtool.h>
-
 #define ASM_UD2 ".byte 0x0f, 0x0b"
 
 #define _BUG_FLAGS(ins, flags, extra) asm volatile(ins)
@@ -16,10 +13,8 @@
 	} while (0)
 
 /* --- 2025-12-07 10:25 --- Inlined asm-generic/bug.h content */
-#include <linux/compiler.h>
 
 #ifndef __ASSEMBLY__
-#include <linux/panic.h>
 #include <linux/printk.h>
 
 #define BUG_ON(condition)                \

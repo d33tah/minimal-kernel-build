@@ -1,8 +1,6 @@
 #ifndef _LINUX_STDDEF_H
 #define _LINUX_STDDEF_H
 
-#include <linux/compiler_types.h>
-
 /* Inlined from uapi/linux/stddef.h */
 #ifndef __always_inline
 #define __always_inline inline

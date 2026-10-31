@@ -1,8 +1,6 @@
 #ifndef _LINUX_CONSOLE_H_
 #define _LINUX_CONSOLE_H_ 1
 
-#include <linux/atomic.h>
-
 struct vc_data;
 struct tty_driver;
 

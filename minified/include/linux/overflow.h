@@ -1,10 +1,6 @@
 #ifndef __LINUX_OVERFLOW_H
 #define __LINUX_OVERFLOW_H
 
-#include <linux/compiler.h>
-#include <linux/limits.h>
-#include <linux/const.h>
-
 static inline bool __must_check __must_check_overflow(bool overflow)
 {
 	return unlikely(overflow);

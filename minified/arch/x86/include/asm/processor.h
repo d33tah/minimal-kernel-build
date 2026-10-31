@@ -2,20 +2,14 @@
 #ifndef _ASM_X86_PROCESSOR_H
 #define _ASM_X86_PROCESSOR_H
 
-#include <asm/processor-flags.h>
-
 #include <asm/segment.h>
-#include <asm/types.h>
-#include <uapi/asm/sigcontext.h>
 #include <asm/current.h>
 #include <asm/cpufeatures.h>
 #include <asm/page.h>
 #include <asm/pgtable_types.h>
-#include <asm/percpu.h>
 #include <asm/msr.h>
 #include <asm/desc_defs.h>
 #include <asm/special_insns.h>
-#include <asm/unwind_hints.h>
 /* Removed: #include <asm/vmxfeatures.h> - not needed for minimal kernel */
 
 static __always_inline void cpu_relax(void)
@@ -25,11 +19,8 @@ static __always_inline void cpu_relax(void)
 
 #include <linux/personality.h>
 #include <linux/cache.h>
-#include <linux/threads.h>
-#include <linux/math64.h>
 #include <linux/err.h>
 #include <linux/irqflags.h>
-#include <linux/mem_encrypt.h>
 
 /* NET_IP_ALIGN removed - unused */
 

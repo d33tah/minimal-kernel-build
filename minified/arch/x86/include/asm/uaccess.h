@@ -2,12 +2,6 @@
 #ifndef _ASM_X86_UACCESS_H
 #define _ASM_X86_UACCESS_H
  
-#include <linux/compiler.h>
-#include <linux/kasan-checks.h>
-#include <linux/string.h>
-#include <asm/asm.h>
-#include <asm/page.h>
-#include <asm/cpufeatures.h>
 #include <asm/extable.h>
 
 # define WARN_ON_IN_IRQ()

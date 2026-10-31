@@ -2,12 +2,7 @@
 #ifndef __LINUX_FDTABLE_H
 #define __LINUX_FDTABLE_H
 
-#include <asm/posix_types.h>
-#include <linux/compiler.h>
-#include <linux/spinlock.h>
-#include <linux/rcupdate.h>
 #include <linux/nospec.h>
-#include <linux/init.h>
 #include <linux/fs.h>
 
 #define NR_OPEN_DEFAULT BITS_PER_LONG

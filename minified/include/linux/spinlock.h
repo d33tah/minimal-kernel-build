@@ -1,16 +1,11 @@
 #ifndef __LINUX_SPINLOCK_H
 #define __LINUX_SPINLOCK_H
 
-#include <linux/typecheck.h>
-#include <linux/preempt.h>
 #include <linux/irqflags.h>
 #include <linux/bottom_half.h>
-#include <linux/lockdep.h>
-#include <asm/barrier.h>
 
 #include <linux/spinlock_types.h>
 
-#include <asm/processor.h>
 /* end spinlock_up.h */
 
 #define raw_spin_lock_init(lock)                          \
@@ -163,7 +158,5 @@ static __always_inline void spin_unlock_irqrestore(spinlock_t *lock,
 }
 
 #define assert_spin_locked(lock) assert_raw_spin_locked(&(lock)->rlock)
-
-#include <linux/atomic.h>
 
 #endif

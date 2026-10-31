@@ -100,38 +100,6 @@
 		__ret;                                        \
 	})
 
-#define this_cpu_generic_xchg(pcp, nval)                 \
-	({                                               \
-		typeof(pcp) __ret;                       \
-		unsigned long __flags;                   \
-		raw_local_irq_save(__flags);             \
-		__ret = raw_cpu_generic_xchg(pcp, nval); \
-		raw_local_irq_restore(__flags);          \
-		__ret;                                   \
-	})
-
-#define this_cpu_generic_cmpxchg(pcp, oval, nval)                 \
-	({                                                        \
-		typeof(pcp) __ret;                                \
-		unsigned long __flags;                            \
-		raw_local_irq_save(__flags);                      \
-		__ret = raw_cpu_generic_cmpxchg(pcp, oval, nval); \
-		raw_local_irq_restore(__flags);                   \
-		__ret;                                            \
-	})
-
-#define this_cpu_generic_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1,     \
-					nval2)                               \
-	({                                                                   \
-		int __ret;                                                   \
-		unsigned long __flags;                                       \
-		raw_local_irq_save(__flags);                                 \
-		__ret = raw_cpu_generic_cmpxchg_double(pcp1, pcp2, oval1,    \
-						       oval2, nval1, nval2); \
-		raw_local_irq_restore(__flags);                              \
-		__ret;                                                       \
-	})
-
 #define raw_cpu_read_8(pcp) raw_cpu_generic_read(pcp)
 
 #define raw_cpu_write_8(pcp, val) raw_cpu_generic_to_op(pcp, val, =)

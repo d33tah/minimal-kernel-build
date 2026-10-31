@@ -139,7 +139,6 @@ extern void __bad_size_call_parameter(void);
 
 #define raw_cpu_read(pcp) __pcpu_size_call_return(raw_cpu_read_, pcp)
 #define raw_cpu_write(pcp, val) __pcpu_size_call(raw_cpu_write_, pcp, val)
-#define raw_cpu_or(pcp, val) __pcpu_size_call(raw_cpu_or_, pcp, val)
 
 #define __this_cpu_read(pcp) ({ raw_cpu_read(pcp); })
 

@@ -57,7 +57,6 @@
 #define percpu_add_return_op(size, qual, _var, _val)			({										__pcpu_type_##size paro_tmp__ = __pcpu_cast_##size(_val);		asm qual (__pcpu_op2_##size("xadd", "%[tmp]",							     __percpu_arg([var]))				  : [tmp] __pcpu_reg_##size("+", paro_tmp__),				    [var] "+m" (_var)							  : : "memory");						(typeof(_var))(unsigned long) (paro_tmp__ + _val);		})
 
  
-#define percpu_xchg_op(size, qual, _var, _nval)				({										__pcpu_type_##size pxo_old__;						__pcpu_type_##size pxo_new__ = __pcpu_cast_##size(_nval);		asm qual (__pcpu_op2_##size("mov", __percpu_arg([var]),						    "%[oval]")						  "\n1:\t"								  __pcpu_op2_##size("cmpxchg", "%[nval]",						    __percpu_arg([var]))				  "\n\tjnz 1b"								  : [oval] "=&a" (pxo_old__),						    [var] "+m" (_var)							  : [nval] __pcpu_reg_##size(, pxo_new__)				  : "memory");							(typeof(_var))(unsigned long) pxo_old__;			})
 
  
 #define percpu_cmpxchg_op(size, qual, _var, _oval, _nval)		({										__pcpu_type_##size pco_old__ = __pcpu_cast_##size(_oval);		__pcpu_type_##size pco_new__ = __pcpu_cast_##size(_nval);		asm qual (__pcpu_op2_##size("cmpxchg", "%[nval]",						    __percpu_arg([var]))				  : [oval] "+a" (pco_old__),						    [var] "+m" (_var)							  : [nval] __pcpu_reg_##size(, pco_new__)				  : "memory");							(typeof(_var))(unsigned long) pco_old__;			})
@@ -81,7 +80,6 @@
 #define raw_cpu_or_4(pcp, val)		percpu_to_op(4, , "or", (pcp), val)
 
  
-#define raw_percpu_xchg_op(var, nval)					({										typeof(var) pxo_ret__ = raw_cpu_read(var);				raw_cpu_write(var, (nval));						pxo_ret__;							})
 
 #define this_cpu_read_1(pcp)		percpu_from_op(1, volatile, "mov", pcp)
 #define this_cpu_read_2(pcp)		percpu_from_op(2, volatile, "mov", pcp)
@@ -98,8 +96,6 @@
 #define this_cpu_add_return_1(pcp, val)		percpu_add_return_op(1, volatile, pcp, val)
 #define this_cpu_add_return_2(pcp, val)		percpu_add_return_op(2, volatile, pcp, val)
 #define this_cpu_add_return_4(pcp, val)		percpu_add_return_op(4, volatile, pcp, val)
-
-#define percpu_cmpxchg8b_double(pcp1, pcp2, o1, o2, n1, n2)		({										bool __ret;								typeof(pcp1) __o1 = (o1), __n1 = (n1);					typeof(pcp2) __o2 = (o2), __n2 = (n2);					asm volatile("cmpxchg8b "__percpu_arg(1)					     CC_SET(z)								     : CC_OUT(z) (__ret), "+m" (pcp1), "+m" (pcp2), "+a" (__o1), "+d" (__o2) 		     : "b" (__n1), "c" (__n2));					__ret;								})
 
  
 

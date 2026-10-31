@@ -116,7 +116,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	if (err)
 		goto free_tsk;
 
-	setup_thread_stack(tsk, orig);
 	clear_tsk_need_resched(tsk);
 	set_task_stack_end_magic(tsk);
 

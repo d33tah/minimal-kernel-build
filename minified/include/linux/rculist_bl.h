@@ -7,8 +7,6 @@
 /* Inlined from list_bl.h */
 #define LIST_BL_LOCKMASK 0UL
 
-#define LIST_BL_BUG_ON(x)
-
 struct hlist_bl_head {
 	struct hlist_bl_node *first;
 };
@@ -42,8 +40,6 @@ static inline void __hlist_bl_del(struct hlist_bl_node *n)
 	struct hlist_bl_node *next = n->next;
 	struct hlist_bl_node **pprev = n->pprev;
 
-	LIST_BL_BUG_ON((unsigned long)n & LIST_BL_LOCKMASK);
-
 	WRITE_ONCE(*pprev, (struct hlist_bl_node *)((unsigned long)next |
 						    ((unsigned long)*pprev &
 						     LIST_BL_LOCKMASK)));
@@ -70,9 +66,6 @@ static inline bool hlist_bl_is_locked(struct hlist_bl_head *b)
 static inline void hlist_bl_set_first_rcu(struct hlist_bl_head *h,
 					  struct hlist_bl_node *n)
 {
-	LIST_BL_BUG_ON((unsigned long)n & LIST_BL_LOCKMASK);
-	LIST_BL_BUG_ON(((unsigned long)h->first & LIST_BL_LOCKMASK) !=
-		       LIST_BL_LOCKMASK);
 	rcu_assign_pointer(h->first,
 			   (struct hlist_bl_node *)((unsigned long)n |
 						    LIST_BL_LOCKMASK));

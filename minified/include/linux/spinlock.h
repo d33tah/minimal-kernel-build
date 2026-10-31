@@ -43,10 +43,6 @@
 #define write_unlock(lock) _raw_write_unlock(lock)
 
 /* Inlined from spinlock_api_up.h */
-#define assert_raw_spin_locked(lock) \
-	do {                         \
-		(void)(lock);        \
-	} while (0)
 #define ___LOCK(lock)         \
 	do {                  \
 		(void)(lock); \
@@ -144,7 +140,5 @@ static __always_inline void spin_unlock_irqrestore(spinlock_t *lock,
 {
 	raw_spin_unlock_irqrestore(&lock->rlock, flags);
 }
-
-#define assert_spin_locked(lock) assert_raw_spin_locked(&(lock)->rlock)
 
 #endif

@@ -34,10 +34,6 @@ extern unsigned long
 #define pte_val(x) native_pte_val(x)
 #define __pte(x) native_make_pte(x)
 
-#define arch_end_context_switch(prev) \
-	do {                          \
-	} while (0)
-
 static inline int pte_dirty(pte_t pte)
 {
 	return pte_flags(pte) & _PAGE_DIRTY;

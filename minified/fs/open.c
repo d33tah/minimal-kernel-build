@@ -42,7 +42,6 @@ static int do_dentry_open(struct file *f, struct inode *inode,
 cleanup_all:
 	if (WARN_ON_ONCE(error > 0))
 		error = -EINVAL;
-	fops_put(f->f_op);
 	if (f->f_mode & FMODE_WRITER)
 		put_write_access(inode);
 cleanup_file:

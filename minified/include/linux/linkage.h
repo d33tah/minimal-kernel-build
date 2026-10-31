@@ -12,9 +12,6 @@
 
 #define __PAGE_ALIGNED_BSS	.section ".bss..page_aligned", "aw"
 
-#ifndef __ASSEMBLY__
-# define asmlinkage_protect(n, ret, args...)	do { } while (0)
-#endif
 
 #define __ALIGN		.align 4,0x90
 

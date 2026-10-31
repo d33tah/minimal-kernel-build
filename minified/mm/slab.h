@@ -141,8 +141,6 @@ static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
 {
 	flags &= gfp_allowed_mask;
 
-	might_alloc(flags);
-
 	return s;
 }
 

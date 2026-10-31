@@ -180,7 +180,6 @@ void __init native_pagetable_init(void)
 
 	__flush_tlb_all();
 
-	sparse_init();
 	zone_sizes_init();
 }
 

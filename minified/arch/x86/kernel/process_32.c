@@ -25,8 +25,6 @@ __visible struct task_struct *__switch_to(struct task_struct *prev_p,
 
 	savesegment(gs, prev->gs);
 
-	arch_end_context_switch(next_p);
-
 	/* Entries from user mode land on the top of the next task's stack. */
 	load_sp0(next->sp0);
 	this_cpu_write(cpu_current_top_of_stack,

@@ -46,8 +46,4 @@ static inline gfp_t current_gfp_context(gfp_t flags)
 	return flags;
 }
 
-static inline void might_alloc(gfp_t gfp_mask)
-{
-}
-
 #endif

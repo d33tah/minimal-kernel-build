@@ -82,9 +82,5 @@ static inline struct pglist_data *NODE_DATA(int nid)
 	return &contig_page_data;
 }
 
-#define sparse_init() \
-	do {          \
-	} while (0)
-
 #endif
 #endif

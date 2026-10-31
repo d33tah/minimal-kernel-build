@@ -73,7 +73,6 @@ static void init_once(void *foo)
 
 	memset(inode, 0, sizeof(*inode));
 	__address_space_init_once(&inode->i_data);
-	i_size_ordered_init(inode);
 }
 
 static struct inode *new_inode_pseudo(struct super_block *sb)

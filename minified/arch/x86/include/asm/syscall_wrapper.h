@@ -42,7 +42,6 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 	{                                                                    \
 		long ret = __do_sys##name(__MAP(x, __SC_CAST, __VA_ARGS__)); \
 		__MAP(x, __SC_TEST, __VA_ARGS__);                            \
-		__PROTECT(x, ret, __MAP(x, __SC_ARGS, __VA_ARGS__));         \
 		return ret;                                                  \
 	}                                                                    \
 	static inline long __do_sys##name(__MAP(x, __SC_DECL, __VA_ARGS__))

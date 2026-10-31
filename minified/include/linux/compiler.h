@@ -8,10 +8,8 @@
 
 # define barrier() __asm__ __volatile__("": : :"memory")
 
-#define annotate_unreachable()
 
 # define unreachable() do {		\
-	annotate_unreachable();		\
 	__builtin_unreachable();	\
 } while (0)
 
@@ -22,7 +20,6 @@
 
 #define absolute_pointer(val)	RELOC_HIDE((void *)(val), 0)
 
-#define ASSERT_EXCLUSIVE_BITS(var, mask) do { } while (0)
 
 #define __ADDRESSABLE(sym) 	static void * __section(".discard.addressable") __used 		__UNIQUE_ID(__PASTE(__addressable_,sym)) = (void *)&sym;
 

@@ -259,8 +259,6 @@ DEFINE_IDTENTRY_RAW_ERRORCODE(exc_page_fault)
 	unsigned long address = read_cr2();
 	irqentry_state_t state;
 
-	prefetchw(&current->mm->mmap_lock);
-
 	state = irqentry_enter(regs);
 
 	handle_page_fault(regs, error_code, address);

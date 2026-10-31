@@ -13,13 +13,9 @@ typedef struct {
 typedef struct raw_spinlock {
 } raw_spinlock_t;
 
-#define RAW_SPIN_DEP_MAP_INIT(lockname)
-#define SPIN_DEP_MAP_INIT(lockname)
-
-#define SPIN_DEBUG_INIT(lockname)
-
 #define __RAW_SPIN_LOCK_INITIALIZER(lockname) \
-	{ SPIN_DEBUG_INIT(lockname) RAW_SPIN_DEP_MAP_INIT(lockname) }
+	{                                     \
+	}
 
 #define __RAW_SPIN_LOCK_UNLOCKED(lockname) \
 	(raw_spinlock_t) __RAW_SPIN_LOCK_INITIALIZER(lockname)

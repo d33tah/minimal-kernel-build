@@ -13,16 +13,8 @@ void irq_enter_rcu(void);
 
 void irq_exit_rcu(void);
 
-#define arch_nmi_enter() \
-	do {             \
-	} while (0)
-#define arch_nmi_exit() \
-	do {            \
-	} while (0)
-
 #define __nmi_enter()                                             \
 	do {                                                      \
-		arch_nmi_enter();                                 \
 		BUG_ON(in_nmi() == NMI_MASK);                     \
 		__preempt_count_add(NMI_OFFSET + HARDIRQ_OFFSET); \
 	} while (0)
@@ -31,7 +23,6 @@ void irq_exit_rcu(void);
 	do {                                                      \
 		BUG_ON(!in_nmi());                                \
 		__preempt_count_sub(NMI_OFFSET + HARDIRQ_OFFSET); \
-		arch_nmi_exit();                                  \
 	} while (0)
 
 #endif

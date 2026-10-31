@@ -127,8 +127,6 @@ static void clear_all_debug_regs(void)
 	}
 }
 
-#define dbg_restore_debug_regs()
-
 void cpu_init_exception_handling(void)
 {
 	struct tss_struct *tss = this_cpu_ptr(&cpu_tss_rw);
@@ -165,7 +163,6 @@ void cpu_init(void)
 	load_sp0(cur->thread.sp0);
 
 	clear_all_debug_regs();
-	dbg_restore_debug_regs();
 
 	doublefault_init_cpu_tss();
 }

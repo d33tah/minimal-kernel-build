@@ -29,10 +29,6 @@ pgprot_t protection_map[16] __ro_after_init = {
 
 /* Removed: vm_pgprot_modify, vma_set_page_prot - never called */
 
-#define validate_mm(mm) \
-	do {            \
-	} while (0)
-
 /*
  * The VMAs of an mm are kept only as the address-sorted mm->mmap list (no
  * rbtree): a process here has a handful of VMAs (the ELF segments, bss and
@@ -70,7 +66,6 @@ static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 {
 	__vma_link_list(mm, vma, prev);
 	mm->map_count++;
-	validate_mm(mm);
 }
 
 /* Used internally by acct_stack_growth */
@@ -288,7 +283,6 @@ static int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 			}
 		}
 	}
-	validate_mm(mm);
 	return error;
 }
 

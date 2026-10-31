@@ -8,10 +8,6 @@
 
 #define lockdep_hardirqs_enabled() 0
 
-#define raw_check_bogus_irq_restore() \
-	do {                          \
-	} while (0)
-
 #define raw_local_irq_disable() arch_local_irq_disable()
 #define raw_local_irq_enable() arch_local_irq_enable()
 #define raw_local_irq_save(flags)                \
@@ -22,7 +18,6 @@
 #define raw_local_irq_restore(flags)             \
 	do {                                     \
 		typecheck(unsigned long, flags); \
-		raw_check_bogus_irq_restore();   \
 		arch_local_irq_restore(flags);   \
 	} while (0)
 #define raw_local_save_flags(flags)              \

@@ -4,7 +4,6 @@
  
 #include <asm/extable.h>
 
-# define WARN_ON_IN_IRQ()
 
  
 /* Inlined from asm-generic/access_ok.h */
@@ -15,7 +14,7 @@ static inline int __access_ok(const void __user *ptr, unsigned long size) {
 
 	return (size <= limit) && (addr <= (limit - size)); }
 
-#define access_ok(addr, size)					({										WARN_ON_IN_IRQ();							likely(__access_ok(addr, size));				})
+#define access_ok(addr, size)					({																	likely(__access_ok(addr, size));				})
 
 extern int __get_user_bad(void);
 

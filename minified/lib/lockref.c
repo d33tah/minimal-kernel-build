@@ -9,6 +9,5 @@ void lockref_get(struct lockref *lockref)
 
 void lockref_mark_dead(struct lockref *lockref)
 {
-	assert_spin_locked(&lockref->lock);
 	lockref->count = -128;
 }

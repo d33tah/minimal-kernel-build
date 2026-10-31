@@ -10,7 +10,8 @@ typedef struct spinlock {
 } spinlock_t;
 
 #define ___SPIN_LOCK_INITIALIZER(lockname) \
-	{ SPIN_DEBUG_INIT(lockname) SPIN_DEP_MAP_INIT(lockname) }
+	{                                  \
+	}
 
 #define __SPIN_LOCK_INITIALIZER(lockname)                           \
 	{                                                           \
@@ -25,14 +26,13 @@ typedef struct spinlock {
 #define DEFINE_SPINLOCK(x) spinlock_t x = __SPIN_LOCK_UNLOCKED(x)
 
 /* Inlined from rwlock_types.h */
-#define RW_DEP_MAP_INIT(lockname)
 typedef struct {
 	arch_rwlock_t raw_lock;
 } rwlock_t;
-#define __RW_LOCK_UNLOCKED(lockname)                                           \
-	(rwlock_t)                                                             \
-	{                                                                      \
-		.raw_lock = __ARCH_RW_LOCK_UNLOCKED, RW_DEP_MAP_INIT(lockname) \
+#define __RW_LOCK_UNLOCKED(lockname)                 \
+	(rwlock_t)                                   \
+	{                                            \
+		.raw_lock = __ARCH_RW_LOCK_UNLOCKED, \
 	}
 #define DEFINE_RWLOCK(x) rwlock_t x = __RW_LOCK_UNLOCKED(x)
 

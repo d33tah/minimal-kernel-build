@@ -23,9 +23,6 @@
 	} while (0)
 
 #define ELF_PLATFORM (utsname()->machine)
-#define set_personality_64bit() \
-	do {                    \
-	} while (0)
 
 #define ELF_EXEC_PAGESIZE 4096
 
@@ -34,8 +31,6 @@
 extern u32 elf_hwcap2;
 
 #define ELF_HWCAP2 (elf_hwcap2)
-
-#define SET_PERSONALITY(ex) set_personality_64bit()
 
 #define elf_read_implies_exec(ex, executable_stack) \
 	(mmap_is_ia32() && executable_stack == EXSTACK_DEFAULT)

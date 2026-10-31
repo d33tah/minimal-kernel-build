@@ -35,6 +35,4 @@
 	SYSCALL_METADATA(sname, x, __VA_ARGS__) \
 	__SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
 
-#define __PROTECT(...) asmlinkage_protect(__VA_ARGS__)
-
 #endif

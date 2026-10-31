@@ -90,10 +90,6 @@ struct address_space {
 	const struct address_space_operations *a_ops;
 } __attribute__((aligned(sizeof(long)))) __randomize_layout;
 
-#define i_size_ordered_init(inode) \
-	do {                       \
-	} while (0)
-
 struct inode {
 	umode_t i_mode;
 	kuid_t i_uid;
@@ -335,15 +331,9 @@ struct file_system_type {
 /* Removed: mount_nodev, kill_block_super - never called */
 
 #define fops_get(fops) ((fops) ? (fops) : NULL)
-#define fops_put(fops)        \
-	do {                  \
-		(void)(fops); \
-	} while (0)
-
 #define replace_fops(f, fops)                     \
 	do {                                      \
 		struct file *__file = (f);        \
-		fops_put(__file->f_op);           \
 		BUG_ON(!(__file->f_op = (fops))); \
 	} while (0)
 

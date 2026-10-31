@@ -298,7 +298,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	if (retval)
 		goto out_free_dentry;
 
-	SET_PERSONALITY(*elf_ex);
 	if (elf_read_implies_exec(*elf_ex, EXSTACK_DEFAULT))
 		current->personality |= READ_IMPLIES_EXEC;
 

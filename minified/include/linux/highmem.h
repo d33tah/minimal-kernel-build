@@ -64,4 +64,16 @@ static inline void copy_user_highpage(struct page *to, struct page *from,
 	copy_user_page(vto, vfrom, vaddr, to);
 }
 
+/**
+ * folio_zero_range() - Zero a byte range in a folio.
+ * @folio: The folio to write to.
+ * @start: The first byte to zero.
+ * @length: The number of bytes to zero.
+ */
+static inline void folio_zero_range(struct folio *folio, size_t start,
+				    size_t length)
+{
+	zero_user_segments(&folio->page, start, start + length, 0, 0);
+}
+
 #endif

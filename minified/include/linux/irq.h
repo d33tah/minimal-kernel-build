@@ -8,8 +8,6 @@ typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 
 #include <linux/slab.h>
 
-#include <asm/irq_regs.h>
-
 struct irq_data {
 	unsigned int irq;
 	struct irq_chip *chip;

@@ -7,7 +7,7 @@
 # Use -ffreestanding to ensure that the compiler does not try to "optimize"
 # them into calls to themselves.
 
-lib-y := string.o xarray.o irq_regs.o
+lib-y := string.o xarray.o
 
 obj-y += lockref.o iov_iter.o string_helpers.o
 

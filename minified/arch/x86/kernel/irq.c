@@ -12,7 +12,6 @@ static __always_inline void handle_irq(struct irq_desc *desc,
 
 DEFINE_IDTENTRY_IRQ(common_interrupt)
 {
-	struct pt_regs *old_regs = set_irq_regs(regs);
 	struct irq_desc *desc;
 
 	desc = __this_cpu_read(vector_irq[vector]);
@@ -22,6 +21,4 @@ DEFINE_IDTENTRY_IRQ(common_interrupt)
 		if (desc != VECTOR_UNUSED)
 			__this_cpu_write(vector_irq[vector], VECTOR_UNUSED);
 	}
-
-	set_irq_regs(old_regs);
 }

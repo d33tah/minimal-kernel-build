@@ -27,7 +27,6 @@ mandatory-y += hardirq.h
 mandatory-y += hw_irq.h
 mandatory-y += io.h
 mandatory-y += irq.h
-mandatory-y += irq_regs.h
 mandatory-y += irq_work.h
 mandatory-y += kdebug.h
 mandatory-y += kmap_size.h

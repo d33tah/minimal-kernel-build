@@ -10,11 +10,6 @@
  * empty so no such arg is ever present.
  */
 
-static int rootfs_init_fs_context(struct fs_context *fc)
-{
-	return ramfs_init_fs_context(fc);
-}
-
 struct file_system_type rootfs_fs_type = {
-	.init_fs_context = rootfs_init_fs_context,
+	.init_fs_context = ramfs_init_fs_context,
 };

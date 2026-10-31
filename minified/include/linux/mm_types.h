@@ -97,6 +97,8 @@ static inline atomic_t *compound_pincount_ptr(struct page *page)
 	return &page[1].compound_pincount;
 }
 
+#define page_private(page) ((page)->private)
+
 static inline void set_page_private(struct page *page, unsigned long private)
 {
 	page->private = private;

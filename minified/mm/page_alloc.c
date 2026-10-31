@@ -9,7 +9,7 @@
  * Buddy page allocator for one node with one populated zone: one free list
  * per order, no per-cpu page lists, no migratetype grouping and no
  * watermarks (there is no reclaim to wake). Blocks are split on allocation
- * and returned to their order's free list on free (no coalescing).
+ * and coalesced with their free buddies on free.
  */
 
 atomic_long_t _totalram_pages __read_mostly;
@@ -96,19 +96,73 @@ void __meminit reserve_bootmem_region(phys_addr_t start, phys_addr_t end)
 	}
 }
 
-static void free_one_block(struct page *page, unsigned int order, bool tail)
+/*
+ * Freeing function for a buddy system allocator.
+ *
+ * The concept of a buddy system is to maintain direct-mapped table
+ * (containing bit values) for memory blocks of various "orders".
+ * The bottom level table contains the map for the smallest allocatable
+ * units of memory (here, pages), and each level above it describes
+ * pairs of units from the levels below, hence, "buddies".
+ * At a high level, all that happens here is marking the table entry
+ * at the bottom level available, and propagating the changes upward
+ * as necessary, plus some accounting needed to play nicely with other
+ * parts of the VM system.
+ * At each level, we keep a list of pages, which are heads of continuous
+ * free pages of length of (1 << order) and marked with PageBuddy.
+ * Page's order is recorded in page_private(page) field.
+ * So when we are allocating or freeing one, we can derive the state of the
+ * other.  That is, if we allocate a small block, and both were
+ * free, the remainder of the region must be split into blocks.
+ * If a block is freed, and its buddy is also free, then this
+ * triggers coalescing into a block of larger size.
+ *
+ * -- nyc
+ */
+
+static inline void __free_one_page(struct page *page, unsigned long pfn,
+				   struct zone *zone, unsigned int order,
+				   bool to_tail)
 {
-	struct zone *zone = page_zone(page);
+	unsigned long buddy_pfn;
+	unsigned long combined_pfn;
+	struct page *buddy;
+
+	__mod_zone_page_state(zone, NR_FREE_PAGES, 1 << order);
+
+	while (order < MAX_ORDER - 1) {
+		buddy = find_buddy_page_pfn(page, pfn, order, &buddy_pfn);
+		if (!buddy)
+			goto done_merging;
+
+		/*
+		 * Our buddy is free, merge with it and move up one order.
+		 */
+		del_page_from_free_list(buddy, zone, order);
+		combined_pfn = buddy_pfn & pfn;
+		page = page + (combined_pfn - pfn);
+		pfn = combined_pfn;
+		order++;
+	}
+
+done_merging:
+	set_buddy_order(page, order);
+
+	add_to_free_list(page, zone, order, to_tail);
+}
+
+static void __free_pages_ok(struct page *page, unsigned int order, bool tail)
+{
 	unsigned long flags;
+	unsigned long pfn = page_to_pfn(page);
+	struct zone *zone = page_zone(page);
 
 	if (PageMappingFlags(page))
 		page->mapping = NULL;
 	page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
 
 	spin_lock_irqsave(&zone->lock, flags);
-	__mod_zone_page_state(zone, NR_FREE_PAGES, 1 << order);
-	set_buddy_order(page, order);
-	add_to_free_list(page, zone, order, tail);
+	__free_one_page(page, pfn, zone, order, tail);
 	spin_unlock_irqrestore(&zone->lock, flags);
 }
 
@@ -125,7 +179,7 @@ static void __free_pages_core(struct page *page, unsigned int order)
 	__ClearPageReserved(p);
 	set_page_count(p, 0);
 
-	free_one_block(page, order, true);
+	__free_pages_ok(page, order, true);
 }
 
 void __init memblock_free_pages(struct page *page, unsigned long pfn,
@@ -224,10 +278,10 @@ unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
 void __free_pages(struct page *page, unsigned int order)
 {
 	if (put_page_testzero(page))
-		free_one_block(page, order, false);
+		__free_pages_ok(page, order, false);
 	else if (!PageHead(page))
 		while (order-- > 0)
-			free_one_block(page + (1 << order), order, false);
+			__free_pages_ok(page + (1 << order), order, false);
 }
 
 /*
@@ -238,7 +292,7 @@ void __free_pages(struct page *page, unsigned int order)
  */
 void __put_page(struct page *page)
 {
-	free_one_block(page, compound_order(page), false);
+	__free_pages_ok(page, compound_order(page), false);
 }
 
 void free_pages(unsigned long addr, unsigned int order)

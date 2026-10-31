@@ -161,6 +161,10 @@ static void prep_new_page(struct page *page, unsigned int order,
 	set_page_private(page, 0);
 	set_page_refcounted(page);
 
+	/* No highmem: every page has a kernel mapping. */
+	if (gfp_flags & __GFP_ZERO)
+		memset(page_address(page), 0, PAGE_SIZE << order);
+
 	if (order && (gfp_flags & __GFP_COMP)) {
 		int i, nr_pages = 1 << order;
 

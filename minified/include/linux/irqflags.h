@@ -6,8 +6,6 @@
 
 /* lockdep_softirqs_on/off + lockdep_hardirqs_on/off/_prepare removed - unused (empty no-op stubs) */
 
-#define lockdep_hardirqs_enabled() 0
-
 #define raw_local_irq_disable() arch_local_irq_disable()
 #define raw_local_irq_enable() arch_local_irq_enable()
 #define raw_local_irq_save(flags)                \

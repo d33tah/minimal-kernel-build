@@ -47,9 +47,7 @@ noinstr void irqentry_exit_to_user_mode(struct pt_regs *regs)
 
 noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 {
-	irqentry_state_t ret = {
-		.exit_rcu = false,
-	};
+	irqentry_state_t ret = {};
 
 	return ret;
 }
@@ -64,8 +62,6 @@ noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 irqentry_state_t noinstr irqentry_nmi_enter(struct pt_regs *regs)
 {
 	irqentry_state_t irq_state;
-
-	irq_state.lockdep = lockdep_hardirqs_enabled();
 
 	__nmi_enter();
 

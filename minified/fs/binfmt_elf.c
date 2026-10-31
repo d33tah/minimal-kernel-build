@@ -117,10 +117,7 @@ static int create_elf_tables(struct linux_binprm *bprm,
 		*elf_info++ = val; \
 	} while (0)
 
-#ifdef ARCH_DLINFO
-
 	ARCH_DLINFO;
-#endif
 	NEW_AUX_ENT(AT_HWCAP, ELF_HWCAP);
 	NEW_AUX_ENT(AT_PAGESZ, ELF_EXEC_PAGESIZE);
 	NEW_AUX_ENT(AT_CLKTCK, CLOCKS_PER_SEC);
@@ -136,9 +133,7 @@ static int create_elf_tables(struct linux_binprm *bprm,
 	NEW_AUX_ENT(AT_EGID, from_kgid_munged(cred->user_ns, cred->egid));
 	NEW_AUX_ENT(AT_SECURE, 0); /* no set-id execution */
 	NEW_AUX_ENT(AT_RANDOM, (elf_addr_t)(unsigned long)u_rand_bytes);
-#ifdef ELF_HWCAP2
 	NEW_AUX_ENT(AT_HWCAP2, ELF_HWCAP2);
-#endif
 	NEW_AUX_ENT(AT_EXECFN, bprm->exec);
 	if (k_platform) {
 		NEW_AUX_ENT(AT_PLATFORM, (elf_addr_t)(unsigned long)u_platform);
@@ -402,10 +397,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		goto out;
 
 	regs = current_pt_regs();
-#ifdef ELF_PLAT_INIT
-
 	ELF_PLAT_INIT(regs, reloc_func_desc);
-#endif
 
 	finalize_exec(bprm);
 	START_THREAD(elf_ex, regs, elf_entry, bprm->p);

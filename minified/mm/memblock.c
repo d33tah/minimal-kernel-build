@@ -7,9 +7,7 @@
 
 #define INIT_MEMBLOCK_REGIONS 128
 
-#ifndef INIT_MEMBLOCK_RESERVED_REGIONS
 #define INIT_MEMBLOCK_RESERVED_REGIONS INIT_MEMBLOCK_REGIONS
-#endif
 
 struct pglist_data __refdata contig_page_data;
 

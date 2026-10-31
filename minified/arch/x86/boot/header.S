@@ -30,9 +30,7 @@ SYSSEG		= 0x1000		/* historical load address >> 4 */
 #define SVGA_MODE ASK_VGA
 #endif
 
-#ifndef ROOT_RDONLY
 #define ROOT_RDONLY 1
-#endif
 
 	.code16
 	.section ".bstext", "ax"

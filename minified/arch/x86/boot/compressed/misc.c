@@ -4,10 +4,7 @@
 #include <linux/kernel.h>
 #include <asm/bootparam_utils.h>
 
-#ifndef memmove
-#define memmove memmove
 void *memmove(void *dest, const void *src, size_t n);
-#endif
 
 struct boot_params *boot_params;
 

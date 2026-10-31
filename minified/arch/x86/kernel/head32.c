@@ -22,9 +22,7 @@ asmlinkage __visible void __init i386_start_kernel(void)
 
 void __init mk_early_pgtbl_32(void)
 {
-#ifdef __pa
 #undef __pa
-#endif
 #define __pa(x) ((unsigned long)(x) - PAGE_OFFSET)
 	pte_t pte, *ptep;
 	int i;

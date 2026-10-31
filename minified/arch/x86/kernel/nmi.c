@@ -1,5 +1,4 @@
 
-#include <linux/nmi.h>
 #include <linux/delay.h>
 
 #include <asm/traps.h>

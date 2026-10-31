@@ -1,7 +1,7 @@
 #ifndef _LINUX_SCHED_SIGNAL_H
 #define _LINUX_SCHED_SIGNAL_H
 
-#include <linux/signal.h>
+#include <uapi/asm/signal.h>
 #include <linux/sched/task.h>
 
 #include <linux/mm_types.h>

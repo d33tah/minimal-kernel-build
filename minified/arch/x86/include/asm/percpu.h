@@ -2,6 +2,12 @@
 #ifndef _ASM_X86_PERCPU_H
 #define _ASM_X86_PERCPU_H
 
+#ifdef __ASSEMBLY__
+
+#define PER_CPU_VAR(var)	var
+
+#else /* ...!ASSEMBLY */
+
 #include <linux/kernel.h>
 
 #define __percpu_prefix		""
@@ -100,5 +106,7 @@
  
 
 #include <asm-generic/percpu.h>
+
+#endif /* !__ASSEMBLY__ */
 
 #endif

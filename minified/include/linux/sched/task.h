@@ -19,6 +19,8 @@ extern asmlinkage void schedule_tail(struct task_struct *prev);
 
 extern int sched_fork(unsigned long clone_flags, struct task_struct *p);
 
+void __noreturn make_task_dead(int signr);
+
 extern void proc_caches_init(void);
 
 extern void fork_init(void);

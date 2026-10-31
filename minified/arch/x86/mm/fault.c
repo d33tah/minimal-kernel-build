@@ -1,3 +1,4 @@
+#include <asm/kdebug.h>
 #include <linux/extable.h>
 
 #include <asm/traps.h>
@@ -15,8 +16,18 @@ static noinline void page_fault_oops(struct pt_regs *regs,
 				     unsigned long error_code,
 				     unsigned long address)
 {
-	/* Anchor-stub: unhandled-kernel-fault oops path, runtime-dead in a
-	 * healthy boot. Kept link-live for its callers in this file. */
+	unsigned long flags;
+	int sig;
+
+	/*
+	 * Oops. The kernel tried to access some bad page. We'll have to
+	 * terminate things with extreme prejudice:
+	 */
+	flags = oops_begin();
+
+	sig = SIGKILL;
+
+	oops_end(flags, regs, sig);
 }
 
 static noinline void kernelmode_fixup_or_oops(struct pt_regs *regs,

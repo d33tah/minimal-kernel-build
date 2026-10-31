@@ -8,6 +8,7 @@
 #define SIGTRAP 5
 #define SIGBUS 7
 #define SIGFPE 8
+#define SIGKILL 9
 #define SIGSEGV 11
 /* SIGCONT(18)/SIGSTOP(19)/SIGURG(23)/SIGWINCH(28)/SIGRTMIN(32) removed - 0-ref in this build */
 /* SIGUNUSED, SIGRTMAX, SIGSTKSZ removed - unused.

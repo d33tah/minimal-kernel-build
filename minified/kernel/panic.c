@@ -19,5 +19,3 @@ void panic(const char *fmt, ...)
 }
 
 /* Removed: oops_may_print - never called */
-/* Removed: oops_enter - 0-caller (sole caller oops_begin stubbed tick #320) */
-/* Removed: add_taint + oops_exit - 0-caller after oops_end anchor-stubbed (tick #322) */

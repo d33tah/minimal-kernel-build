@@ -3,22 +3,28 @@
 #define _ASM_X86_DELAY_H
 
 extern void __bad_udelay(void);
+
+extern void __udelay(unsigned long usecs);
 extern void __const_udelay(unsigned long xloops);
 extern void __delay(unsigned long loops);
 void use_tsc_delay(void);
 
 /*
- * Every udelay() callsite in this kernel passes a compile-time constant, so
- * __builtin_constant_p(n) is always true and the out-of-line __udelay(n) arm
- * (for non-constant n) is never instantiated -- it has been removed along with
- * the __udelay() function.
+ * The weird n/20000 thing suppresses a "comparison is always false due to
+ * limited range of data type" warning with non-const 8-bit arguments.
  */
-#define udelay(n)                                       \
-	({                                              \
-		if ((n) / 20000 >= 1)                   \
-			__bad_udelay();                 \
-		else                                    \
-			__const_udelay((n) * 0x10c7ul); \
+
+/* 0x10c7 is 2**32 / 1000000 (rounded up) */
+#define udelay(n)                                               \
+	({                                                      \
+		if (__builtin_constant_p(n)) {                  \
+			if ((n) / 20000 >= 1)                   \
+				__bad_udelay();                 \
+			else                                    \
+				__const_udelay((n) * 0x10c7ul); \
+		} else {                                        \
+			__udelay(n);                            \
+		}                                               \
 	})
 
 #endif

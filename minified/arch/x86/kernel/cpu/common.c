@@ -32,10 +32,7 @@ static __always_inline void setup_smep(struct cpuinfo_x86 *c)
 
 static __always_inline void setup_umip(struct cpuinfo_x86 *c)
 {
-	/*
-	 * UMIP is in DISABLED_MASK16, so cpu_feature_enabled(X86_FEATURE_UMIP)
-	 * is constant 0 -- the activate path was dead; only the clear remains.
-	 */
+	/* UMIP is never activated (no #GP emulation); only the clear remains. */
 	cr4_clear_bits(X86_CR4_UMIP);
 }
 
@@ -62,9 +59,11 @@ void cr4_update_irqsoff(unsigned long set, unsigned long clear)
 
 /*
  * Only CPUID leaves 1 and 7 feed bits that something reads: the
- * boot_cpu_has() users (TSC, PSE, PGE, SMEP, FSGSBASE, INVPCID,
- * HYPERVISOR, WAITPKG, CX8) and ELF_HWCAP (the leaf 1 EDX word). The family
- * is checked by check_bugs(); the CLFLUSH line size is cache_line_size().
+ * boot_cpu_has() users (VME, DE, TSC, PSE, PGE, HYPERVISOR, SMEP, FSGSBASE)
+ * and ELF_HWCAP (the leaf 1 EDX word). The family is checked by
+ * check_bugs(); the CLFLUSH line size is cache_line_size().
+ * CR4.SMAP is never set (alternatives are never applied, so STAC/CLAC
+ * would not be patched in) and nothing tests the SMAP bit.
  */
 static void __init identify_cpu(struct cpuinfo_x86 *c)
 {
@@ -88,18 +87,7 @@ static void __init identify_cpu(struct cpuinfo_x86 *c)
 	if (level >= 0x00000007) {
 		cpuid_count(0x00000007, 0, &eax, &ebx, &ecx, &edx);
 		c->x86_capability[CPUID_7_0_EBX] = ebx;
-		c->x86_capability[CPUID_7_ECX] = ecx;
 	}
-
-	/* Process-context identifiers are never used by this kernel. */
-	clear_bit(X86_FEATURE_PCID, (unsigned long *)c->x86_capability);
-	/*
-	 * Alternatives are never applied, so the STAC/CLAC around user
-	 * accesses are never patched in: CR4.SMAP must stay off and the
-	 * feature must read as absent (the page-fault path would otherwise
-	 * treat every kernel fault on a user address as an SMAP violation).
-	 */
-	clear_bit(X86_FEATURE_SMAP, (unsigned long *)c->x86_capability);
 }
 
 void __init early_cpu_init(void)
@@ -159,8 +147,8 @@ void cpu_init(void)
 	int cpu = raw_smp_processor_id();
 	struct desc_ptr gdt_descr;
 
-	if (cpu_feature_enabled(X86_FEATURE_VME) ||
-	    boot_cpu_has(X86_FEATURE_TSC) || boot_cpu_has(X86_FEATURE_DE))
+	if (boot_cpu_has(X86_FEATURE_VME) || boot_cpu_has(X86_FEATURE_TSC) ||
+	    boot_cpu_has(X86_FEATURE_DE))
 		cr4_clear_bits(X86_CR4_VME | X86_CR4_PVI | X86_CR4_TSD |
 			       X86_CR4_DE);
 

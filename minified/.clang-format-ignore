@@ -24,7 +24,6 @@ arch/x86/include/asm/pgtable_32.h
 arch/x86/include/asm/pgtable_32_types.h
 arch/x86/include/asm/pgtable_types.h
 arch/x86/include/asm/processor-flags.h
-arch/x86/include/asm/required-features.h
 arch/x86/include/asm/segment.h
 arch/x86/include/asm/setup.h
 arch/x86/include/asm/thread_info.h

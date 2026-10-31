@@ -2,91 +2,20 @@
 #ifndef _ASM_X86_CPUFEATURES_H
 #define _ASM_X86_CPUFEATURES_H
 
-#ifndef _ASM_X86_REQUIRED_FEATURES_H
-#include <asm/required-features.h>
-#endif
-
-/* Inlined from asm/disabled-features.h */
-# define DISABLE_UMIP	(1<<(X86_FEATURE_UMIP & 31))
-# define DISABLE_VME		0
-# define DISABLE_K6_MTRR	0
-# define DISABLE_CYRIX_ARR	0
-# define DISABLE_CENTAUR_MCR	0
-# define DISABLE_PCID		(1<<(X86_FEATURE_PCID & 31))
-# define DISABLE_PKU		(1<<(X86_FEATURE_PKU & 31))
-# define DISABLE_OSPKE		(1<<(X86_FEATURE_OSPKE & 31))
-# define DISABLE_LA57	(1<<(X86_FEATURE_LA57 & 31))
-# define DISABLE_PTI		(1 << (X86_FEATURE_PTI & 31))
-# define DISABLE_RETPOLINE	((1 << (X86_FEATURE_RETPOLINE & 31)) | (1 << (X86_FEATURE_RETPOLINE_LFENCE & 31)))
-# define DISABLE_RETHUNK	(1 << (X86_FEATURE_RETHUNK & 31))
-# define DISABLE_UNRET		(1 << (X86_FEATURE_UNRET & 31))
-# define DISABLE_ENQCMD		(1 << (X86_FEATURE_ENQCMD & 31))
-# define DISABLE_SGX	(1 << (X86_FEATURE_SGX & 31))
-# define DISABLE_TDX_GUEST	(1 << (X86_FEATURE_TDX_GUEST & 31))
-#define DISABLED_MASK0	(DISABLE_VME)
-#define DISABLED_MASK1	0
-#define DISABLED_MASK2	0
-#define DISABLED_MASK3	(DISABLE_CYRIX_ARR|DISABLE_CENTAUR_MCR|DISABLE_K6_MTRR)
-#define DISABLED_MASK4	(DISABLE_PCID)
-#define DISABLED_MASK5	0
-#define DISABLED_MASK6	0
-#define DISABLED_MASK7	(DISABLE_PTI)
-#define DISABLED_MASK8	(DISABLE_TDX_GUEST)
-#define DISABLED_MASK9	(DISABLE_SGX)
-#define DISABLED_MASK10	0
-#define DISABLED_MASK11	(DISABLE_RETPOLINE|DISABLE_RETHUNK|DISABLE_UNRET)
-#define DISABLED_MASK12	0
-#define DISABLED_MASK13	0
-#define DISABLED_MASK14	0
-#define DISABLED_MASK15	0
-#define DISABLED_MASK16	(DISABLE_PKU|DISABLE_OSPKE|DISABLE_LA57|DISABLE_UMIP|DISABLE_ENQCMD)
-#define DISABLED_MASK17	0
-#define DISABLED_MASK18	0
-#define DISABLED_MASK19	0
-#define DISABLED_MASK_CHECK BUILD_BUG_ON_ZERO(NCAPINTS != 20)
-/* End of disabled-features.h */
-
 #define NCAPINTS			20
 #define NBUGINTS			1
 
 /* Word 0 - Intel flags */
-#define X86_FEATURE_FPU			( 0*32+ 0)
 #define X86_FEATURE_VME			( 0*32+ 1)
 #define X86_FEATURE_DE			( 0*32+ 2)
 #define X86_FEATURE_PSE			( 0*32+ 3)
 #define X86_FEATURE_TSC			( 0*32+ 4)
-#define X86_FEATURE_CX8			( 0*32+ 8)
 #define X86_FEATURE_PGE			( 0*32+13)
-#define X86_FEATURE_CMOV		( 0*32+15)
 
-#define X86_FEATURE_PCID		( 4*32+17)
 #define X86_FEATURE_HYPERVISOR		( 4*32+31)
-
-/* Word 7 - Kernel-synthesized flags */
-#define X86_FEATURE_PTI			( 7*32+11)
-
-#define X86_FEATURE_TDX_GUEST		( 8*32+22)
 
 /* Word 9 - Extended leaf 7 */
 #define X86_FEATURE_FSGSBASE		( 9*32+ 0)
-#define X86_FEATURE_SGX			( 9*32+ 2)
 #define X86_FEATURE_SMEP		( 9*32+ 7)
-#define X86_FEATURE_INVPCID		( 9*32+10)
-#define X86_FEATURE_SMAP		( 9*32+20)
-
-/* Word 11 - Kernel-synthesized */
-#define X86_FEATURE_RETPOLINE		(11*32+12)
-#define X86_FEATURE_RETPOLINE_LFENCE	(11*32+13)
-#define X86_FEATURE_RETHUNK		(11*32+14)
-#define X86_FEATURE_UNRET		(11*32+15)
-
-/* Word 13 - AMD extended 2 */
-
-/* Word 16 - Intel extended 2 */
-#define X86_FEATURE_UMIP		(16*32+ 2)
-#define X86_FEATURE_PKU			(16*32+ 3)
-#define X86_FEATURE_OSPKE		(16*32+ 4)
-#define X86_FEATURE_LA57		(16*32+16)
-#define X86_FEATURE_ENQCMD		(16*32+29)
 
 #endif

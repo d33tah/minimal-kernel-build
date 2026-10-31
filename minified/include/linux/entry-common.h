@@ -25,8 +25,6 @@ static inline void local_irq_disable_exit_to_user(void)
 
 void syscall_exit_to_user_mode(struct pt_regs *regs);
 
-void irqentry_enter_from_user_mode(struct pt_regs *regs);
-
 void irqentry_exit_to_user_mode(struct pt_regs *regs);
 
 typedef struct irqentry_state {

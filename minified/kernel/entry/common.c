@@ -40,10 +40,6 @@ __visible noinstr void syscall_exit_to_user_mode(struct pt_regs *regs)
 	exit_to_user_mode_prepare(regs);
 }
 
-noinstr void irqentry_enter_from_user_mode(struct pt_regs *regs)
-{
-}
-
 noinstr void irqentry_exit_to_user_mode(struct pt_regs *regs)
 {
 	exit_to_user_mode_prepare(regs);
@@ -54,11 +50,6 @@ noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 	irqentry_state_t ret = {
 		.exit_rcu = false,
 	};
-
-	if (user_mode(regs)) {
-		irqentry_enter_from_user_mode(regs);
-		return ret;
-	}
 
 	return ret;
 }

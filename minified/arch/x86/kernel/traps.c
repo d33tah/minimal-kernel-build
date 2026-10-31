@@ -145,7 +145,6 @@ exit:
 DEFINE_IDTENTRY_RAW(exc_int3)
 {
 	if (user_mode(regs)) {
-		irqentry_enter_from_user_mode(regs);
 		cond_local_irq_enable(regs);
 		do_trap(X86_TRAP_BP, SIGTRAP, "int3", regs, 0);
 		cond_local_irq_disable(regs);
@@ -194,8 +193,6 @@ static __always_inline void exc_debug_user(struct pt_regs *regs,
 					   unsigned long dr6)
 {
 	WARN_ON_ONCE(!user_mode(regs));
-
-	irqentry_enter_from_user_mode(regs);
 
 	/* TIF_BLOCKSTEP never set in this build -> clear was a no-op. */
 

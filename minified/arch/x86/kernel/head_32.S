@@ -237,10 +237,6 @@ SYM_CODE_END(early_idt_handler_common)
 SYM_FUNC_START(early_ignore_irq)
 	cld
 	iret
-
-hlt_loop:
-	hlt
-	jmp hlt_loop
 SYM_FUNC_END(early_ignore_irq)
 
 __INITDATA
@@ -248,7 +244,6 @@ __INITDATA
 SYM_DATA(early_recursion_flag, .long 0)
 
 #define	PGD_ALIGN	(PAGE_SIZE)
-#define PTI_USER_PGD_FILL	0
 /*
  * BSS section
  */
@@ -262,7 +257,6 @@ initial_page_table:
 	.align PGD_ALIGN
 swapper_pg_dir:
 	.fill 1024,4,0
-	.fill PTI_USER_PGD_FILL,4,0
 .globl empty_zero_page
 empty_zero_page:
 	.fill 4096,1,0

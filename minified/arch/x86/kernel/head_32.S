@@ -91,9 +91,6 @@ SYM_CODE_START(startup_32)
 	/* Create early pagetables. */
 	call  mk_early_pgtbl_32
 
-	/* Do early initialization of the fixmap area */
-	movl $pa(initial_pg_fixmap)+PDE_IDENT_ATTR,%eax
-	movl %eax,pa(initial_page_table+0xffc)
 
 	movl $(CR0_STATE & ~X86_CR0_PG),%eax
 	movl %eax,%cr0
@@ -271,8 +268,6 @@ __PAGE_ALIGNED_BSS
 initial_page_table:
 	.fill 1024,4,0
 	.align PGD_ALIGN
-initial_pg_fixmap:
-	.fill 1024,4,0
 .globl swapper_pg_dir
 	.align PGD_ALIGN
 swapper_pg_dir:

@@ -30,4 +30,3 @@ obj-y += memblock.o
 
 # obj-$(CONFIG_HAS_DMA)	+= dmapool.o  # deleted
 obj-$(CONFIG_SLUB) += slub.o
-obj-$(CONFIG_GENERIC_EARLY_IOREMAP) += early_ioremap.o

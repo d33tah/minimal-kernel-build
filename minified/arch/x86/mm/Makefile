@@ -4,7 +4,7 @@
 # Disable KCSAN entirely, because otherwise we get warnings that some functions
 # reference __initdata sections.
 
-obj-y				:=  init.o init_$(BITS).o fault.o ioremap.o extable.o \
+obj-y				:=  init.o init_$(BITS).o fault.o extable.o \
 				    pgtable.o tlb.o pgprot.o
 
 

@@ -7,7 +7,6 @@
 #include <linux/string.h>
 #include <linux/compiler.h>
 #include <asm/page.h>
-#include <asm/early_ioremap.h>
 #include <asm/pgtable_types.h>
 #include <asm/shared/io.h>
 

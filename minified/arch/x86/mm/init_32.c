@@ -195,7 +195,8 @@ void __init native_pagetable_init(void)
 	zone_sizes_init();
 }
 
-void __init early_ioremap_page_table_range_init(void)
+/* Page tables for the fixmap (FIX_WP_TEST) range. */
+void __init fixmap_page_table_init(void)
 {
 	pgd_t *pgd_base = swapper_pg_dir;
 	unsigned long vaddr, end;
@@ -203,7 +204,6 @@ void __init early_ioremap_page_table_range_init(void)
 	vaddr = __fix_to_virt(__end_of_fixed_addresses - 1) & PMD_MASK;
 	end = (FIXADDR_TOP + PMD_SIZE - 1) & PMD_MASK;
 	page_table_range_init(vaddr, end, pgd_base);
-	early_ioremap_reset();
 }
 
 #define DEFAULT_PTE_MASK ~(_PAGE_NX | _PAGE_GLOBAL)

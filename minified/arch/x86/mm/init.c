@@ -334,7 +334,7 @@ void __init init_mem_mapping(void)
 	 */
 	memory_map_top_down(ISA_END_ADDRESS, end);
 
-	early_ioremap_page_table_range_init();
+	fixmap_page_table_init();
 
 	load_cr3(swapper_pg_dir);
 	__flush_tlb_all();

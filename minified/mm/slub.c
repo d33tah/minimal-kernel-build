@@ -225,8 +225,6 @@ static void slab_free(struct kmem_cache *s, struct slab *slab, void *object)
 	unsigned long flags;
 	void *prior;
 
-	debug_check_no_locks_freed(object, s->object_size);
-
 	spin_lock_irqsave(&n->list_lock, flags);
 	prior = slab->freelist;
 	set_freepointer(s, object, prior);

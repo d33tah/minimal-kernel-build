@@ -22,8 +22,7 @@ lib-y := string.o \
 
 obj-y	+= lockref.o
 
-obj-y += sort.o debug_locks.o \
-	 bust_spinlocks.o \
+obj-y += sort.o \
 	 iov_iter.o \
 	 find_bit.o
 	 # parser.o removed - not used

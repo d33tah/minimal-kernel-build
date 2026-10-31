@@ -115,8 +115,6 @@ static struct tty_driver *vt_console_device(struct console *c, int *index)
 static struct console vt_console_driver = {
 	.name = "tty",
 	.device = vt_console_device,
-	.flags = CON_PRINTBUFFER,
-	.index = -1,
 };
 
 static int con_install(struct tty_driver *driver, struct tty_struct *tty)

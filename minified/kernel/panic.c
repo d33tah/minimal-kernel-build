@@ -1,7 +1,5 @@
 
-#include <linux/debug_locks.h>
 #include <linux/printk.h>
-#include <linux/kmsg_dump.h>
 #include <linux/delay.h>
 #include <linux/console.h>
 
@@ -38,20 +36,11 @@ void panic(const char *fmt, ...)
 	if (old_cpu != PANIC_CPU_INVALID && old_cpu != this_cpu)
 		panic_smp_self_stop();
 
-	console_verbose();
-	bust_spinlocks(1);
 	/*
 	 * The panic message was formatted only for pr_emerg() (a no-op without
 	 * printk) and the panic notifier chain (never populated), so it is not
-	 * built at all.
+	 * built at all; there is no log to dump or console to flush either.
 	 */
-	kmsg_dump(KMSG_DUMP_PANIC);
-
-	console_unblank();
-
-	debug_locks_off();
-	console_flush_on_panic(CONSOLE_FLUSH_PENDING);
-
 	if (!panic_blink)
 		panic_blink = no_blink;
 

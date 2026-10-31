@@ -22,7 +22,6 @@ static inline void load_mm_ldt(struct mm_struct *mm)
 }
 static inline void switch_ldt(struct mm_struct *prev, struct mm_struct *next)
 {
-	DEBUG_LOCKS_WARN_ON(preemptible());
 }
 
 extern void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk);

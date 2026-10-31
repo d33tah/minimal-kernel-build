@@ -60,8 +60,6 @@ static inline void might_fault(void)
 
 void do_exit(long error_code) __noreturn;
 
-extern void bust_spinlocks(int yes);
-
 extern enum system_states {
 	SYSTEM_BOOTING,
 	SYSTEM_SCHEDULING,

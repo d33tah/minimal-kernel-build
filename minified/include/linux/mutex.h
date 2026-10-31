@@ -8,8 +8,6 @@
 #include <linux/atomic.h>
 #include <asm/processor.h>
 
-#include <linux/debug_locks.h>
-
 struct mutex {
 	atomic_long_t owner;
 };

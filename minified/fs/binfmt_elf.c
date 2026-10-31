@@ -117,7 +117,6 @@ static int create_elf_tables(struct linux_binprm *bprm,
 		*elf_info++ = val; \
 	} while (0)
 
-	ARCH_DLINFO;
 	NEW_AUX_ENT(AT_HWCAP, ELF_HWCAP);
 	NEW_AUX_ENT(AT_PAGESZ, ELF_EXEC_PAGESIZE);
 	NEW_AUX_ENT(AT_CLKTCK, CLOCKS_PER_SEC);

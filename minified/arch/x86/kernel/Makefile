@@ -20,7 +20,7 @@ CPPFLAGS_vmlinux.lds += -U$(UTS_MACHINE)
 # non-deterministic coverage.
 
 
-obj-y			:= process_$(BITS).o signal.o
+obj-y			:= process_$(BITS).o
 obj-y			+= traps.o idt.o irq.o irq_$(BITS).o
 obj-y			+= time.o dumpstack.o nmi.o
 obj-y			+= setup.o i8259.o irqinit.o

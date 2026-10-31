@@ -35,19 +35,10 @@ extern u32 elf_hwcap2;
 #define elf_read_implies_exec(ex, executable_stack) \
 	(mmap_is_ia32() && executable_stack == EXSTACK_DEFAULT)
 
-#define ARCH_DLINFO_IA32                                          \
-	do {                                                      \
-		NEW_AUX_ENT(AT_MINSIGSTKSZ, get_sigframe_size()); \
-	} while (0)
-
 static inline int mmap_is_ia32(void)
 {
 	/* TIF_ADDR32 never set in this build -> COMPAT term always false */
 	return IS_ENABLED(CONFIG_X86_32);
 }
-
-extern unsigned long get_sigframe_size(void);
-
-#define ARCH_DLINFO ARCH_DLINFO_IA32
 
 #endif

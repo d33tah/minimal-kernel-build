@@ -10,9 +10,4 @@ static inline u32 __hash_32_generic(u32 val)
 	return val * GOLDEN_RATIO_32;
 }
 
-static inline u32 hash_32(u32 val, unsigned int bits)
-{
-	return __hash_32(val) >> (32 - bits);
-}
-
 #endif

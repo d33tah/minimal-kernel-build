@@ -30,8 +30,6 @@
 #define __diag_str(s)		__diag_str1(s)
 #define __diag(s)		_Pragma(__diag_str(clang diagnostic s))
 
-#define __diag_clang_11(s)	__diag(s)
-
 /* end compiler-clang.h */
 #else
 #error "Unknown compiler"

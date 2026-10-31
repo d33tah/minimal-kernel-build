@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
-# Minimal char drivers Makefile - only the random stub is needed
+#
+# Makefile for the kernel character device drivers.
+#
 
-obj-y += random_stub.o
+obj-y += random.o

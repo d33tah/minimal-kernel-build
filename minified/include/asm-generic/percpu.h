@@ -3,13 +3,9 @@
 
 #include <linux/percpu-defs.h>
 
-#ifndef PER_CPU_BASE_SECTION
 #define PER_CPU_BASE_SECTION ".data"
-#endif
 
-#ifndef PER_CPU_ATTRIBUTES
 #define PER_CPU_ATTRIBUTES
-#endif
 
 #define raw_cpu_generic_read(pcp) ({ *raw_cpu_ptr(&(pcp)); })
 
@@ -136,83 +132,45 @@
 		__ret;                                                       \
 	})
 
-#ifndef raw_cpu_read_8
 #define raw_cpu_read_8(pcp) raw_cpu_generic_read(pcp)
-#endif
 
-#ifndef raw_cpu_write_8
 #define raw_cpu_write_8(pcp, val) raw_cpu_generic_to_op(pcp, val, =)
-#endif
 
-#ifndef raw_cpu_add_8
 #define raw_cpu_add_8(pcp, val) raw_cpu_generic_to_op(pcp, val, +=)
-#endif
 
-#ifndef raw_cpu_and_8
 #define raw_cpu_and_8(pcp, val) raw_cpu_generic_to_op(pcp, val, &=)
-#endif
 
-#ifndef raw_cpu_or_8
 #define raw_cpu_or_8(pcp, val) raw_cpu_generic_to_op(pcp, val, |=)
-#endif
 
-#ifndef raw_cpu_add_return_8
 #define raw_cpu_add_return_8(pcp, val) raw_cpu_generic_add_return(pcp, val)
-#endif
 
-#ifndef raw_cpu_xchg_8
 #define raw_cpu_xchg_8(pcp, nval) raw_cpu_generic_xchg(pcp, nval)
-#endif
 
-#ifndef raw_cpu_cmpxchg_8
 #define raw_cpu_cmpxchg_8(pcp, oval, nval) \
 	raw_cpu_generic_cmpxchg(pcp, oval, nval)
-#endif
 
-#ifndef this_cpu_read_8
 #define this_cpu_read_8(pcp) this_cpu_generic_read(pcp)
-#endif
 
-#ifndef this_cpu_write_8
 #define this_cpu_write_8(pcp, val) this_cpu_generic_to_op(pcp, val, =)
-#endif
 
-#ifndef this_cpu_add_8
 #define this_cpu_add_8(pcp, val) this_cpu_generic_to_op(pcp, val, +=)
-#endif
 
-#ifndef this_cpu_and_8
 #define this_cpu_and_8(pcp, val) this_cpu_generic_to_op(pcp, val, &=)
-#endif
 
-#ifndef this_cpu_or_8
 #define this_cpu_or_8(pcp, val) this_cpu_generic_to_op(pcp, val, |=)
-#endif
 
-#ifndef this_cpu_add_return_8
 #define this_cpu_add_return_8(pcp, val) this_cpu_generic_add_return(pcp, val)
-#endif
 
-#ifndef this_cpu_xchg_8
 #define this_cpu_xchg_8(pcp, nval) this_cpu_generic_xchg(pcp, nval)
-#endif
 
-#ifndef this_cpu_cmpxchg_8
 #define this_cpu_cmpxchg_8(pcp, oval, nval) \
 	this_cpu_generic_cmpxchg(pcp, oval, nval)
-#endif
 
-#ifndef this_cpu_cmpxchg_double_1
 #define this_cpu_cmpxchg_double_1(pcp1, pcp2, oval1, oval2, nval1, nval2) \
 	this_cpu_generic_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2)
-#endif
-#ifndef this_cpu_cmpxchg_double_2
 #define this_cpu_cmpxchg_double_2(pcp1, pcp2, oval1, oval2, nval1, nval2) \
 	this_cpu_generic_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2)
-#endif
-#ifndef this_cpu_cmpxchg_double_8
 #define this_cpu_cmpxchg_double_8(pcp1, pcp2, oval1, oval2, nval1, nval2) \
 	this_cpu_generic_cmpxchg_double(pcp1, pcp2, oval1, oval2, nval1, nval2)
-#endif
 
 #endif

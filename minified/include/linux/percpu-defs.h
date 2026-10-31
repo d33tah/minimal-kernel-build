@@ -43,8 +43,6 @@
 	DEFINE_PER_CPU_SECTION(type, name, "..page_aligned") \
 	__aligned(PAGE_SIZE)
 
-#ifndef __ASSEMBLY__
-
 #define __verify_pcpu_ptr(ptr)                                               \
 	do {                                                                 \
 		const void __percpu *__vpp_verify = (typeof((ptr) + 0))NULL; \
@@ -182,5 +180,4 @@ extern void __bad_size_call_parameter(void);
 #define this_cpu_inc(pcp) this_cpu_add(pcp, 1)
 #define this_cpu_dec_return(pcp) this_cpu_add_return(pcp, -1)
 
-#endif
 #endif

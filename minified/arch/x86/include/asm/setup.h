@@ -4,6 +4,12 @@
 
 #define COMMAND_LINE_SIZE 2048
 
+#include <linux/pfn.h>
+/*
+ * Reserved space for vmalloc and iomap - defined in asm/page.h
+ */
+#define MAXMEM_PFN	PFN_DOWN(MAXMEM)
+
 /* 32-bit only kernel */
 
 #define PARAM_SIZE 4096

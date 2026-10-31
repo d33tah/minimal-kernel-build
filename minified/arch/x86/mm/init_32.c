@@ -4,6 +4,7 @@
 #include <linux/swap.h>
 #include <asm/cpufeature.h>
 #include <asm/tlbflush.h>
+#include <asm/setup.h>
 
 #include <asm/pgtable_areas.h>
 
@@ -198,13 +199,31 @@ void __init fixmap_page_table_init(void)
 pteval_t __supported_pte_mask __read_mostly = DEFAULT_PTE_MASK;
 pteval_t __default_kernel_pte_mask __read_mostly = DEFAULT_PTE_MASK;
 
+static void __init lowmem_pfn_init(void)
+{
+	/* max_low_pfn is 0, we already have early_res support */
+	max_low_pfn = max_pfn;
+}
+
+static void __init highmem_pfn_init(void)
+{
+	max_low_pfn = MAXMEM_PFN;
+
+	/* Maximum memory usable is what is directly addressable */
+	max_pfn = MAXMEM_PFN;
+}
+
+/*
+ * Determine low and high memory ranges:
+ */
 void __init find_low_pfn_range(void)
 {
-	/*
-	 * CONFIG_HIGHMEM=n: no highmem can ever be mapped, so all RAM is
-	 * low memory. (The highmem-trimming branch is dropped as dead.)
-	 */
-	max_low_pfn = max_pfn;
+	/* it could update max_pfn */
+
+	if (max_pfn <= MAXMEM_PFN)
+		lowmem_pfn_init();
+	else
+		highmem_pfn_init();
 }
 
 void __init initmem_init(void)

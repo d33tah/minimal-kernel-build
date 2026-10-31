@@ -3,13 +3,7 @@
 
 #include <asm/traps.h>
 #include <asm/io.h>
-
-#define NMI_REASON_PORT 0x61
-#define NMI_REASON_SERR 0x80
-#define NMI_REASON_IOCHK 0x40
-#define NMI_REASON_CLEAR_SERR 0x04
-#define NMI_REASON_CLEAR_IOCHK 0x08
-#define NMI_REASON_CLEAR_MASK 0x0f
+#include <asm/mach_traps.h>
 
 static DEFINE_RAW_SPINLOCK(nmi_reason_lock);
 
@@ -30,15 +24,62 @@ static DEFINE_PER_CPU(enum nmi_states, nmi_state);
 static DEFINE_PER_CPU(unsigned long, nmi_cr2);
 static DEFINE_PER_CPU(unsigned long, nmi_dr7);
 
-/*
- * The only NMI sources are the chipset's SERR/IOCHK lines (port 0x61):
- * acknowledge them; an NMI with neither bit set is ignored. printk is a
- * no-op on this build, so there are no diagnostics.
- */
+static void pci_serr_error(unsigned char reason, struct pt_regs *regs)
+{
+	/* Clear and disable the PCI SERR error line. */
+	reason = (reason & NMI_REASON_CLEAR_MASK) | NMI_REASON_CLEAR_SERR;
+	outb(reason, NMI_REASON_PORT);
+}
+
+static void io_check_error(unsigned char reason, struct pt_regs *regs)
+{
+	unsigned long i;
+
+	/* Re-enable the IOCK line, wait for a few seconds */
+	reason = (reason & NMI_REASON_CLEAR_MASK) | NMI_REASON_CLEAR_IOCHK;
+	outb(reason, NMI_REASON_PORT);
+
+	i = 20000;
+	while (--i) {
+		udelay(100);
+	}
+
+	reason &= ~NMI_REASON_CLEAR_IOCHK;
+	outb(reason, NMI_REASON_PORT);
+}
+
+static noinstr void default_do_nmi(struct pt_regs *regs)
+{
+	unsigned char reason = 0;
+
+	/*
+	 * Non-CPU-specific NMI: NMI sources can be processed on any CPU.
+	 */
+	while (!raw_spin_trylock(&nmi_reason_lock)) {
+		cpu_relax();
+	}
+
+	reason = default_get_nmi_reason();
+
+	if (reason & NMI_REASON_MASK) {
+		if (reason & NMI_REASON_SERR)
+			pci_serr_error(reason, regs);
+		else if (reason & NMI_REASON_IOCHK)
+			io_check_error(reason, regs);
+		/*
+		 * Reassert NMI in case it became active
+		 * meanwhile as it's edge-triggered:
+		 */
+		reassert_nmi();
+		raw_spin_unlock(&nmi_reason_lock);
+		return;
+	}
+	raw_spin_unlock(&nmi_reason_lock);
+}
+
 DEFINE_IDTENTRY_RAW(exc_nmi)
 {
 	irqentry_state_t irq_state;
-	unsigned char reason;
 
 	if (this_cpu_read(nmi_state) != NMI_NOT_RUNNING) {
 		this_cpu_write(nmi_state, NMI_LATCHED);
@@ -54,31 +95,7 @@ nmi_restart:
 
 	inc_irq_stat(__nmi_count);
 
-	while (!raw_spin_trylock(&nmi_reason_lock))
-		cpu_relax();
-
-	reason = inb(NMI_REASON_PORT);
-
-	if (reason & NMI_REASON_SERR) {
-		reason = (reason & NMI_REASON_CLEAR_MASK) |
-			 NMI_REASON_CLEAR_SERR;
-		outb(reason, NMI_REASON_PORT);
-	} else if (reason & NMI_REASON_IOCHK) {
-		unsigned long i;
-
-		reason = (reason & NMI_REASON_CLEAR_MASK) |
-			 NMI_REASON_CLEAR_IOCHK;
-		outb(reason, NMI_REASON_PORT);
-
-		i = 20000;
-		while (--i) {
-			udelay(100);
-		}
-
-		reason &= ~NMI_REASON_CLEAR_IOCHK;
-		outb(reason, NMI_REASON_PORT);
-	}
-	raw_spin_unlock(&nmi_reason_lock);
+	default_do_nmi(regs);
 
 	irqentry_nmi_exit(regs, irq_state);
 

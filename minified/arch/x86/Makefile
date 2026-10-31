@@ -1,22 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0
-# Unified Makefile for i386 and x86_64
+# x86_32 (CONFIG_X86_32), built with clang
 
-ifdef CONFIG_CC_IS_CLANG
-RETPOLINE_CFLAGS	:= -mretpoline-external-thunk
-endif
-
-export RETHUNK_CFLAGS
-export RETPOLINE_CFLAGS
-
-# For gcc stack alignment is specified with -mpreferred-stack-boundary,
-# clang has the option -mstack-alignment for that purpose.
-ifneq ($(call cc-option, -mpreferred-stack-boundary=4),)
-      cc_stack_align4 := -mpreferred-stack-boundary=2
-      cc_stack_align8 := -mpreferred-stack-boundary=3
-else ifneq ($(call cc-option, -mstack-alignment=16),)
-      cc_stack_align4 := -mstack-alignment=4
-      cc_stack_align8 := -mstack-alignment=8
-endif
+# Align the stack to the register width instead of the default 16 bytes.
+cc_stack_align4 := -mstack-alignment=4
 
 # How to compile the 16-bit code.  Note we always compile for -march=i386;
 # that way we can complain to the user if the CPU is insufficient.
@@ -35,99 +21,37 @@ export REALMODE_CFLAGS
 # BITS is used as extension for files which are available in a 32 bit
 # and a 64 bit version to simplify shared Makefiles.
 # e.g.: obj-y += foo_$(BITS).o
+BITS := 32
 export BITS
 
-#
-# Prevent GCC from generating any FP code by mistake.
-#
-# This must happen before we try the -mpreferred-stack-boundary, see:
-#
-#    https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53383
-#
+UTS_MACHINE := i386
+
+# Prevent the compiler from generating any FP code by mistake.
 KBUILD_CFLAGS += -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx
 
 KBUILD_CFLAGS += $(call cc-option,-fcf-protection=none)
 
-ifeq ($(CONFIG_X86_32),y)
-        BITS := 32
-        UTS_MACHINE := i386
-        CHECKFLAGS += -D__i386__
+KBUILD_AFLAGS += -m32
+KBUILD_CFLAGS += -m32
 
-        KBUILD_AFLAGS += -m32
-        KBUILD_CFLAGS += -m32
+KBUILD_CFLAGS += -msoft-float -mregparm=3 -freg-struct-return
 
-        KBUILD_CFLAGS += -msoft-float -mregparm=3 -freg-struct-return
+# Never want PIC in a 32-bit kernel
+KBUILD_CFLAGS += -fno-pic
 
-        # Never want PIC in a 32-bit kernel, prevent breakage with GCC built
-        # with nonstandard options
-        KBUILD_CFLAGS += -fno-pic
+KBUILD_CFLAGS += $(cc_stack_align4)
 
-        # Align the stack to the register width instead of using the default
-        # alignment of 16 bytes. This reduces stack usage and the number of
-        # alignment instructions.
-        KBUILD_CFLAGS += $(cc_stack_align4)
+# CPU-specific tuning (CONFIG_M686 etc.)
+include $(srctree)/arch/x86/Makefile_32.cpu
+KBUILD_CFLAGS += $(cflags-y)
 
-        # CPU-specific tuning. Anything which can be shared with UML should go here.
-        include $(srctree)/arch/x86/Makefile_32.cpu
-        KBUILD_CFLAGS += $(cflags-y)
+# temporary until string.h is fixed
+KBUILD_CFLAGS += -ffreestanding
 
-        # temporary until string.h is fixed
-        KBUILD_CFLAGS += -ffreestanding
-else
-        BITS := 64
-        UTS_MACHINE := x86_64
-        CHECKFLAGS += -D__x86_64__
-
-        KBUILD_AFLAGS += -m64
-        KBUILD_CFLAGS += -m64
-
-        # Align jump targets to 1 byte, not the default 16 bytes:
-        KBUILD_CFLAGS += $(call cc-option,-falign-jumps=1)
-
-        # Pack loops tightly as well:
-        KBUILD_CFLAGS += $(call cc-option,-falign-loops=1)
-
-        # Don't autogenerate traditional x87 instructions
-        KBUILD_CFLAGS += -mno-80387
-        KBUILD_CFLAGS += $(call cc-option,-mno-fp-ret-in-387)
-
-        # By default gcc and clang use a stack alignment of 16 bytes for x86.
-        # However the standard kernel entry on x86-64 leaves the stack on an
-        # 8-byte boundary. If the compiler isn't informed about the actual
-        # alignment it will generate extra alignment instructions for the
-        # default alignment which keep the stack *mis*aligned.
-        # Furthermore an alignment to the register width reduces stack usage
-        # and the number of alignment instructions.
-        KBUILD_CFLAGS += $(cc_stack_align8)
-
-	# Use -mskip-rax-setup if supported.
-	KBUILD_CFLAGS += $(call cc-option,-mskip-rax-setup)
-
-        KBUILD_CFLAGS += $(cflags-y)
-
-        KBUILD_CFLAGS += -mno-red-zone
-        KBUILD_CFLAGS += -mcmodel=kernel
-endif
-
-ifeq ($(ACCUMULATE_OUTGOING_ARGS), 1)
-	# This compiler flag is not supported by Clang:
-	KBUILD_CFLAGS += $(call cc-option,-maccumulate-outgoing-args,)
-endif
-
-# Workaround for a gcc prelease that unfortunately was shipped in a suse release
 KBUILD_CFLAGS += -Wno-sign-compare
-#
 KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
 
 KBUILD_LDFLAGS += -m elf_$(UTS_MACHINE)
-
-ifdef CONFIG_LTO_CLANG
-ifeq ($(shell test $(CONFIG_LLD_VERSION) -lt 130000; echo $$?),0)
-KBUILD_LDFLAGS	+= -plugin-opt=-stack-alignment=$(if $(CONFIG_X86_32),4,8)
-endif
-endif
-
-LDFLAGS_vmlinux :=
 
 ###
 # Syscall table generation
@@ -143,9 +67,6 @@ head-y += arch/x86/kernel/head$(BITS).o
 
 libs-y  += arch/x86/lib/
 
-####
-# boot loader support. Several targets are kept for legacy purposes
-
 boot := arch/x86/boot
 
 PHONY += bzImage
@@ -153,34 +74,6 @@ PHONY += bzImage
 # Default kernel to build
 all: bzImage
 
-# KBUILD_IMAGE specify target image being built
-KBUILD_IMAGE := $(boot)/bzImage
-
 bzImage: vmlinux
-	$(Q)$(MAKE) $(build)=$(boot) $(KBUILD_IMAGE)
-	$(Q)mkdir -p $(objtree)/arch/$(UTS_MACHINE)/boot
-	$(Q)ln -fsn ../../x86/boot/bzImage $(objtree)/arch/$(UTS_MACHINE)/boot/$@
+	$(Q)$(MAKE) $(build)=$(boot) $(boot)/bzImage
 
-archprepare: checkbin
-checkbin:
-
-archclean:
-	$(Q)rm -rf $(objtree)/arch/i386
-	$(Q)rm -rf $(objtree)/arch/x86_64
-
-define archhelp
-  echo  '* bzImage		- Compressed kernel image (arch/x86/boot/bzImage)'
-  echo  '  install		- Install kernel using (your) ~/bin/$(INSTALLKERNEL) or'
-  echo  '			  (distribution) /sbin/$(INSTALLKERNEL) or install to '
-  echo  '			  $$(INSTALL_PATH) and run lilo'
-  echo  ''
-  echo  '  fdimage		- Create 1.4MB boot floppy image (arch/x86/boot/fdimage)'
-  echo  '  fdimage144		- Create 1.4MB boot floppy image (arch/x86/boot/fdimage)'
-  echo  '  fdimage288		- Create 2.8MB boot floppy image (arch/x86/boot/fdimage)'
-  echo  '  hdimage		- Create a BIOS/EFI hard disk image (arch/x86/boot/hdimage)'
-  echo  '  isoimage		- Create a boot CD-ROM image (arch/x86/boot/image.iso)'
-  echo  '			  bzdisk/fdimage*/hdimage/isoimage also accept:'
-  echo  '			  FDARGS="..."  arguments for the booted kernel'
-  echo  '			  FDINITRD=file initrd for the booted kernel'
-
-endef

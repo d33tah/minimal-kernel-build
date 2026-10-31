@@ -11,14 +11,13 @@ __clean:
 include $(srctree)/scripts/Kbuild.include
 
 # The filename Kbuild has precedence over Makefile
-kbuild-dir := $(if $(filter /%,$(src)),$(src),$(srctree)/$(src))
+kbuild-dir := $(srctree)/$(src)
 include $(or $(wildcard $(kbuild-dir)/Kbuild),$(kbuild-dir)/Makefile)
 
 # Figure out what we need to build from the various variables
 # ==========================================================================
 
-subdir-ymn := $(sort $(subdir-y) $(subdir-m) $(subdir-) \
-		$(patsubst %/,%, $(filter %/, $(obj-y) $(obj-m) $(obj-))))
+subdir-ymn := $(sort $(subdir-y) $(subdir-) $(patsubst %/,%, $(filter %/, $(obj-y) $(obj-))))
 
 # Add subdir path
 
@@ -28,11 +27,7 @@ subdir-ymn	:= $(addprefix $(obj)/,$(subdir-ymn))
 # directory
 
 __clean-files	:= \
-	$(clean-files) $(targets) $(hostprogs) $(userprogs) \
-	$(extra-y) $(extra-m) $(extra-) \
-	$(always-y) $(always-m) $(always-) \
-	$(hostprogs-always-y) $(hostprogs-always-m) $(hostprogs-always-) \
-	$(userprogs-always-y) $(userprogs-always-m) $(userprogs-always-)
+	$(clean-files) $(targets) $(hostprogs) $(extra-y) $(always-y)
 
 __clean-files   := $(filter-out $(no-clean-files), $(__clean-files))
 

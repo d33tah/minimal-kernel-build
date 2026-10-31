@@ -303,12 +303,12 @@ PHONY += archheaders
 # make clean     Delete most generated files
 # make mrproper  Delete all generated files (the frozen .config is kept)
 
-PHONY += archclean vmlinuxclean
+PHONY += vmlinuxclean
 
 vmlinuxclean:
 	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/link-vmlinux.sh clean
 
-clean: archclean vmlinuxclean
+clean: vmlinuxclean
 
 mrproper: rm-files := $(wildcard include/config include/generated \
 		      arch/$(SRCARCH)/include/generated)

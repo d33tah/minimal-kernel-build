@@ -33,13 +33,6 @@ multi-obj-y := $(call multi-search, $(obj-y), .o, -objs -y)
 # including built-in.a from subdirectories
 real-obj-y := $(call real-search, $(obj-y), .o, -objs -y)
 
-# hostprogs-always-y += foo
-# ... is a shorthand for
-# hostprogs += foo
-# always-y  += foo
-hostprogs += $(hostprogs-always-y)
-always-y += $(hostprogs-always-y)
-
 # Add subdir path
 
 extra-y		:= $(addprefix $(obj)/,$(extra-y))

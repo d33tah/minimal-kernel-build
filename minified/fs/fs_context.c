@@ -13,7 +13,6 @@ struct fs_context *fs_context_for_mount(struct file_system_type *fs_type)
 	if (!fc)
 		return ERR_PTR(-ENOMEM);
 
-	fc->fs_type = fs_type;
 	fc->cred = get_current_cred();
 	fc->user_ns = get_user_ns(fc->cred->user_ns);
 

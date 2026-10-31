@@ -34,7 +34,6 @@ struct filename *getname_kernel(const char *filename)
 		return ERR_PTR(-ENAMETOOLONG);
 	}
 	memcpy((char *)result->name, filename, len);
-	result->uptr = NULL;
 	result->refcnt = 1;
 
 	return result;

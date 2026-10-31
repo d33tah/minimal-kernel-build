@@ -9,7 +9,6 @@ struct user_namespace;
 
 struct fs_context {
 	const struct fs_context_operations *ops;
-	struct file_system_type *fs_type;
 	struct dentry *root;
 	struct user_namespace *user_ns;
 	const struct cred *cred;

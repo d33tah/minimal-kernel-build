@@ -330,7 +330,6 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 }
 
 struct file_system_type {
-	const char *name;
 	int (*init_fs_context)(struct fs_context *);
 };
 
@@ -357,7 +356,6 @@ extern void iput(struct inode *);
 
 struct filename {
 	const char *name;
-	const __user char *uptr;
 	int refcnt;
 	const char iname[];
 };

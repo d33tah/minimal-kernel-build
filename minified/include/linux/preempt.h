@@ -35,7 +35,6 @@
 #define irq_count() (nmi_count() | hardirq_count() | softirq_count())
 
 #define in_nmi() (nmi_count())
-#define in_hardirq() (hardirq_count())
 
 #define in_interrupt() (irq_count())
 

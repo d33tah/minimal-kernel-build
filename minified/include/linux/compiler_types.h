@@ -28,7 +28,6 @@
 
 #define __diag_str1(s)		#s
 #define __diag_str(s)		__diag_str1(s)
-#define __diag(s)		_Pragma(__diag_str(clang diagnostic s))
 
 /* end compiler-clang.h */
 #else
@@ -86,8 +85,6 @@
 # define __alloc_size(x, ...)	__alloc_size__(x, ## __VA_ARGS__) __malloc
 
 #define asm_volatile_goto(x...) asm goto(x)
-
-#define asm_inline asm __inline
 
 #define __same_type(a, b) __builtin_types_compatible_p(typeof(a), typeof(b))
 

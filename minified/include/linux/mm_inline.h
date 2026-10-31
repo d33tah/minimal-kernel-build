@@ -8,9 +8,4 @@ static inline void init_tlb_flush_pending(struct mm_struct *mm)
 	atomic_set(&mm->tlb_flush_pending, 0);
 }
 
-static inline void inc_tlb_flush_pending(struct mm_struct *mm)
-{
-	atomic_inc(&mm->tlb_flush_pending);
-}
-
 #endif

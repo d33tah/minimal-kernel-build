@@ -1,94 +1,191 @@
- 
+
 #ifndef _ASM_X86_UACCESS_H
 #define _ASM_X86_UACCESS_H
- 
+
 #include <asm/extable.h>
 
-
- 
 /* Inlined from asm-generic/access_ok.h */
 
-static inline int __access_ok(const void __user *ptr, unsigned long size) {
+static inline int __access_ok(const void __user *ptr, unsigned long size)
+{
 	unsigned long limit = TASK_SIZE_MAX;
 	unsigned long addr = (unsigned long)ptr;
 
-	return (size <= limit) && (addr <= (limit - size)); }
+	return (size <= limit) && (addr <= (limit - size));
+}
 
-#define access_ok(addr, size)					({																	likely(__access_ok(addr, size));				})
+#define access_ok(addr, size) ({ likely(__access_ok(addr, size)); })
 
 extern int __get_user_bad(void);
 
 #define __uaccess_end() barrier()
 #define __uaccess_begin_nospec() barrier()
 
- 
-#define __inttype(x) __typeof__(			__typefits(x,char,				  __typefits(x,short,				    __typefits(x,int,				      __typefits(x,long,0ULL)))))
+#define __inttype(x)                 \
+	__typeof__(__typefits(       \
+		x, char,             \
+		__typefits(x, short, \
+			   __typefits(x, int, __typefits(x, long, 0ULL)))))
 
-#define __typefits(x,type,not) 	__builtin_choose_expr(sizeof(x)<=sizeof(type),(unsigned type)0,not)
+#define __typefits(x, type, not) \
+	__builtin_choose_expr(sizeof(x) <= sizeof(type), (unsigned type)0, not)
 
- 
-
- 
-
- 
-
-#define __put_user_goto_u64(x, addr, label)				asm_volatile_goto("\n"							     "1:	movl %%eax,0(%1)\n"				     "2:	movl %%edx,4(%1)\n"				     _ASM_EXTABLE_UA(1b, %l2)					     _ASM_EXTABLE_UA(2b, %l2)					     : : "A" (x), "r" (addr)					     : : label)
+/* clang-format off */
+#define __put_user_goto_u64(x, addr, label)			\
+	asm_volatile_goto("\n"					\
+		     "1:	movl %%eax,0(%1)\n"		\
+		     "2:	movl %%edx,4(%1)\n"		\
+		     _ASM_EXTABLE_UA(1b, %l2)			\
+		     _ASM_EXTABLE_UA(2b, %l2)			\
+		     : : "A" (x), "r" (addr)			\
+		     : : label)
+/* clang-format on */
 
 extern void __put_user_bad(void);
 
- 
 extern void __put_user_4(void);
 
- 
-#define do_put_user_call(fn,x,ptr)					({										int __ret_pu;								void __user *__ptr_pu;							register __typeof__(*(ptr)) __val_pu asm("%"_ASM_AX);			__chk_user_ptr(ptr);							__ptr_pu = (ptr);							__val_pu = (x);								asm volatile("call __" #fn "_%P[size]"						     : "=c" (__ret_pu),								ASM_CALL_CONSTRAINT						     : "0" (__ptr_pu),							       "r" (__val_pu),							       [size] "i" (sizeof(*(ptr)))					     :"ebx");							__builtin_expect(__ret_pu, 0);					})
+/* clang-format off */
+#define do_put_user_call(fn,x,ptr)					\
+({									\
+	int __ret_pu;							\
+	void __user *__ptr_pu;						\
+	register __typeof__(*(ptr)) __val_pu asm("%"_ASM_AX);		\
+	__chk_user_ptr(ptr);						\
+	__ptr_pu = (ptr);						\
+	__val_pu = (x);							\
+	asm volatile("call __" #fn "_%P[size]"				\
+		     : "=c" (__ret_pu),					\
+			ASM_CALL_CONSTRAINT				\
+		     : "0" (__ptr_pu),					\
+		       "r" (__val_pu),					\
+		       [size] "i" (sizeof(*(ptr)))			\
+		     :"ebx");						\
+	__builtin_expect(__ret_pu, 0);					\
+})
+/* clang-format on */
 
- 
-#define put_user(x, ptr) ({ do_put_user_call(put_user,x,ptr); })
+#define put_user(x, ptr) ({ do_put_user_call(put_user, x, ptr); })
 
- 
+#define __put_user_size(x, ptr, size, label)                       \
+	do {                                                       \
+		__chk_user_ptr(ptr);                               \
+		switch (size) {                                    \
+		case 1:                                            \
+			__put_user_goto(x, ptr, "b", "iq", label); \
+			break;                                     \
+		case 2:                                            \
+			__put_user_goto(x, ptr, "w", "ir", label); \
+			break;                                     \
+		case 4:                                            \
+			__put_user_goto(x, ptr, "l", "ir", label); \
+			break;                                     \
+		case 8:                                            \
+			__put_user_goto_u64(x, ptr, label);        \
+			break;                                     \
+		default:                                           \
+			__put_user_bad();                          \
+		}                                                  \
+	} while (0)
 
-#define __put_user_size(x, ptr, size, label)				do {										__chk_user_ptr(ptr);							switch (size) {								case 1:										__put_user_goto(x, ptr, "b", "iq", label);				break;								case 2:										__put_user_goto(x, ptr, "w", "ir", label);				break;								case 4:										__put_user_goto(x, ptr, "l", "ir", label);				break;								case 8:										__put_user_goto_u64(x, ptr, label);					break;								default:									__put_user_bad();						}								} while (0)
+#define __get_user_asm_u64(x, ptr, label)                                  \
+	do {                                                               \
+		unsigned int __gu_low, __gu_high;                          \
+		const unsigned int __user *__gu_ptr;                       \
+		__gu_ptr = (const void __user *)(ptr);                     \
+		__get_user_asm(__gu_low, __gu_ptr, "l", "=r", label);      \
+		__get_user_asm(__gu_high, __gu_ptr + 1, "l", "=r", label); \
+		(x) = ((unsigned long long)__gu_high << 32) | __gu_low;    \
+	} while (0)
 
-#define __get_user_asm_u64(x, ptr, label) do {					unsigned int __gu_low, __gu_high;					const unsigned int __user *__gu_ptr;					__gu_ptr = (const void __user *)(ptr);					__get_user_asm(__gu_low, __gu_ptr, "l", "=r", label);			__get_user_asm(__gu_high, __gu_ptr+1, "l", "=r", label);		(x) = ((unsigned long long)__gu_high << 32) | __gu_low;		} while (0)
+#define __get_user_size(x, ptr, size, label)                           \
+	do {                                                           \
+		__chk_user_ptr(ptr);                                   \
+		switch (size) {                                        \
+		case 1: {                                              \
+			unsigned char x_u8__;                          \
+			__get_user_asm(x_u8__, ptr, "b", "=q", label); \
+			(x) = x_u8__;                                  \
+			break;                                         \
+		}                                                      \
+		case 2:                                                \
+			__get_user_asm(x, ptr, "w", "=r", label);      \
+			break;                                         \
+		case 4:                                                \
+			__get_user_asm(x, ptr, "l", "=r", label);      \
+			break;                                         \
+		case 8:                                                \
+			__get_user_asm_u64(x, ptr, label);             \
+			break;                                         \
+		default:                                               \
+			(x) = __get_user_bad();                        \
+		}                                                      \
+	} while (0)
 
-#define __get_user_size(x, ptr, size, label)				do {										__chk_user_ptr(ptr);							switch (size) {								case 1:	{									unsigned char x_u8__;							__get_user_asm(x_u8__, ptr, "b", "=q", label);				(x) = x_u8__;								break;								}									case 2:										__get_user_asm(x, ptr, "w", "=r", label);				break;								case 4:										__get_user_asm(x, ptr, "l", "=r", label);				break;								case 8:										__get_user_asm_u64(x, ptr, label);					break;								default:									(x) = __get_user_bad();						}								} while (0)
+/* clang-format off */
+#define __get_user_asm(x, addr, itype, ltype, label)			\
+	asm_volatile_goto("\n"						\
+		     "1:	mov"itype" %[umem],%[output]\n"		\
+		     _ASM_EXTABLE_UA(1b, %l2)				\
+		     : [output] ltype(x)				\
+		     : [umem] "m" (__m(addr))				\
+		     : : label)
+/* clang-format on */
 
-#define __get_user_asm(x, addr, itype, ltype, label)				asm_volatile_goto("\n"								     "1:	mov"itype" %[umem],%[output]\n"				     _ASM_EXTABLE_UA(1b, %l2)						     : [output] ltype(x)						     : [umem] "m" (__m(addr))						     : : label)
-
-struct __large_struct { unsigned long buf[100]; };
+struct __large_struct {
+	unsigned long buf[100];
+};
 #define __m(x) (*(struct __large_struct __user *)(x))
 
- 
-#define __put_user_goto(x, addr, itype, ltype, label)				asm_volatile_goto("\n"								"1:	mov"itype" %0,%1\n"						_ASM_EXTABLE_UA(1b, %l2)						: : ltype(x), "m" (__m(addr))						: : label)
+/* clang-format off */
+#define __put_user_goto(x, addr, itype, ltype, label)			\
+	asm_volatile_goto("\n"						\
+		"1:	mov"itype" %0,%1\n"				\
+		_ASM_EXTABLE_UA(1b, %l2)				\
+		: : ltype(x), "m" (__m(addr))				\
+		: : label)
+/* clang-format on */
 
 extern __must_check long strnlen_user(const char __user *str, long n);
 
 unsigned long __must_check clear_user(void __user *mem, unsigned long len);
 
- 
-
 /* --- 2025-12-07 20:27 --- Inlined uaccess_32.h */
-unsigned long __must_check __copy_user_ll
-		(void *to, const void *from, unsigned long n);
+unsigned long __must_check __copy_user_ll(void *to, const void *from,
+					  unsigned long n);
 
 static __always_inline unsigned long __must_check
-raw_copy_to_user(void __user *to, const void *from, unsigned long n) {
-	return __copy_user_ll((__force void *)to, from, n); }
+raw_copy_to_user(void __user *to, const void *from, unsigned long n)
+{
+	return __copy_user_ll((__force void *)to, from, n);
+}
 
-static __always_inline unsigned long raw_copy_from_user(void *to, const void __user *from, unsigned long n) {
-	return __copy_user_ll(to, (__force const void *)from, n); }
+static __always_inline unsigned long
+raw_copy_from_user(void *to, const void __user *from, unsigned long n)
+{
+	return __copy_user_ll(to, (__force const void *)from, n);
+}
 
-static __must_check __always_inline bool user_access_begin(const void __user *ptr, size_t len) {
-	if (unlikely(!access_ok(ptr,len)))
+static __must_check __always_inline bool
+user_access_begin(const void __user *ptr, size_t len)
+{
+	if (unlikely(!access_ok(ptr, len)))
 		return 0;
 	__uaccess_begin_nospec();
-	return 1; }
-#define user_access_begin(a,b)	user_access_begin(a,b)
-#define user_access_end()	__uaccess_end()
+	return 1;
+}
+#define user_access_begin(a, b) user_access_begin(a, b)
+#define user_access_end() __uaccess_end()
 
-#define unsafe_get_user(x, ptr, err_label)					do {											__inttype(*(ptr)) __gu_val;							__get_user_size(__gu_val, (ptr), sizeof(*(ptr)), err_label);			(x) = (__force __typeof__(*(ptr)))__gu_val;				} while (0)
+#define unsafe_get_user(x, ptr, err_label)                                   \
+	do {                                                                 \
+		__inttype(*(ptr)) __gu_val;                                  \
+		__get_user_size(__gu_val, (ptr), sizeof(*(ptr)), err_label); \
+		(x) = (__force __typeof__(*(ptr)))__gu_val;                  \
+	} while (0)
 
-#define __put_kernel_nofault(dst, src, type, err_label)				__put_user_size(*((type *)(src)), (__force type __user *)(dst),				sizeof(type), err_label)
+#define __put_kernel_nofault(dst, src, type, err_label)                 \
+	__put_user_size(*((type *)(src)), (__force type __user *)(dst), \
+			sizeof(type), err_label)
 
-#endif  
-
+#endif

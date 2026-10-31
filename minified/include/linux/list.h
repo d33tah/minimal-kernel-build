@@ -90,24 +90,9 @@ static inline void INIT_HLIST_NODE(struct hlist_node *h)
 	h->pprev = NULL;
 }
 
-static inline int hlist_unhashed(const struct hlist_node *h)
-{
-	return !h->pprev;
-}
-
 /* hlist_unhashed_lockless removed: 0-caller orphan (was only used by timer_pending) */
 
 /* hlist_empty removed: 0-caller orphan */
-
-static inline void __hlist_del(struct hlist_node *n)
-{
-	struct hlist_node *next = n->next;
-	struct hlist_node **pprev = n->pprev;
-
-	WRITE_ONCE(*pprev, next);
-	if (next)
-		WRITE_ONCE(next->pprev, pprev);
-}
 
 /* hlist_is_singular_node removed: 0-caller orphan */
 

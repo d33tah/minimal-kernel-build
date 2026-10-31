@@ -5,7 +5,6 @@
 
 struct vm_area_struct;
 
-#define ___GFP_DMA 0x01u
 #define ___GFP_HIGHMEM 0x02u
 #define ___GFP_DMA32 0x04u
 #define ___GFP_MOVABLE 0x08u

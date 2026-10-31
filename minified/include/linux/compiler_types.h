@@ -26,8 +26,6 @@
 
 #define __nocfi		__attribute__((__no_sanitize__("cfi")))
 
-#define __diag_clang(version, severity, s) 	__diag_clang_ ## version(__diag_clang_ ## severity s)
-
 #define __diag_str1(s)		#s
 #define __diag_str(s)		__diag_str1(s)
 #define __diag(s)		_Pragma(__diag_str(clang diagnostic s))

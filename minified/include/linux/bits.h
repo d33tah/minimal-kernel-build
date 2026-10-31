@@ -8,6 +8,4 @@
 #define __GENMASK(h, l) 	(((~UL(0)) - (UL(1) << (l)) + 1) & 	 (~UL(0) >> (BITS_PER_LONG - 1 - (h))))
 #define GENMASK(h, l) 	(GENMASK_INPUT_CHECK(h, l) + __GENMASK(h, l))
 
-#define __GENMASK_ULL(h, l) 	(((~ULL(0)) - (ULL(1) << (l)) + 1) & 	 (~ULL(0) >> (BITS_PER_LONG_LONG - 1 - (h))))
-
 #endif	 

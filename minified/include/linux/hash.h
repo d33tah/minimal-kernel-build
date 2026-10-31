@@ -3,7 +3,6 @@
 #define _LINUX_HASH_H
 
 #define GOLDEN_RATIO_32 0x61C88647
-#define hash_long(val, bits) hash_32(val, bits)
 
 #define __hash_32 __hash_32_generic
 static inline u32 __hash_32_generic(u32 val)

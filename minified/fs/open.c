@@ -73,7 +73,6 @@ struct file *filp_open(const char *filename, int flags, umode_t mode)
 		.open_flag = flags,
 		.acc_mode = ACC_MODE(flags),
 		.intent = LOOKUP_OPEN,
-		.lookup_flags = LOOKUP_FOLLOW,
 	};
 	struct file *file;
 

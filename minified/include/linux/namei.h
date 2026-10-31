@@ -5,14 +5,11 @@
 
 enum { LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT };
 
-#define LOOKUP_FOLLOW 0x0001
 #define LOOKUP_DIRECTORY 0x0002
 
 #define LOOKUP_OPEN 0x0100
 #define LOOKUP_CREATE 0x0200
 #define LOOKUP_EXCL 0x0400
-
-#define LOOKUP_PARENT 0x0010
 
 extern struct dentry *kern_path_create(const char *, struct path *,
 				       unsigned int);

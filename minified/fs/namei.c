@@ -147,7 +147,6 @@ void path_put(const struct path *path)
 	dput(path->dentry);
 }
 
-#define EMBEDDED_LEVELS 2
 struct nameidata {
 	struct path path;
 	struct qstr last;
@@ -155,29 +154,16 @@ struct nameidata {
 	struct inode *inode;
 	unsigned int flags, state;
 	int last_type;
-	unsigned depth;
-	int total_link_count;
-	struct saved {
-		const char *name;
-	} *stack, internal[EMBEDDED_LEVELS];
 	struct filename *name;
-	struct nameidata *saved;
 } __randomize_layout;
 
 #define ND_ROOT_GRABBED 2
-#define ND_JUMPED 4
 
 static void __set_nameidata(struct nameidata *p, struct filename *name)
 {
-	struct nameidata *old = current->nameidata;
-	p->stack = p->internal;
-	p->depth = 0;
 	p->name = name;
 	p->path.mnt = NULL;
 	p->path.dentry = NULL;
-	p->total_link_count = old ? old->total_link_count : 0;
-	p->saved = old;
-	current->nameidata = p;
 }
 
 static inline void set_nameidata(struct nameidata *p, struct filename *name)
@@ -186,30 +172,17 @@ static inline void set_nameidata(struct nameidata *p, struct filename *name)
 	p->state = 0;
 }
 
-static void restore_nameidata(void)
-{
-	struct nameidata *now = current->nameidata, *old = now->saved;
-
-	current->nameidata = old;
-	if (old)
-		old->total_link_count = now->total_link_count;
-	if (now->stack != now->internal)
-		kfree(now->stack);
-}
-
 static void terminate_walk(struct nameidata *nd)
 {
 	/*
-	 * nd->depth is always 0 on this build (no symlink is ever followed --
-	 * see step_into), so drop_links() and the nd->stack[] path_put loop
-	 * were no-ops and have been removed.
+	 * No symlink is ever followed (see step_into), so there is no link
+	 * stack: drop_links() and the nd->stack[] path_put loop are gone.
 	 */
 	path_put(&nd->path);
 	if (nd->state & ND_ROOT_GRABBED) {
 		path_put(&nd->root);
 		nd->state &= ~ND_ROOT_GRABBED;
 	}
-	nd->depth = 0;
 	nd->path.mnt = NULL;
 	nd->path.dentry = NULL;
 }
@@ -224,7 +197,6 @@ static void nd_jump_root(struct nameidata *nd)
 	nd->path = nd->root;
 	path_get(&nd->path);
 	nd->inode = nd->path.dentry->d_inode;
-	nd->state |= ND_JUMPED;
 }
 
 static inline int traverse_mounts(struct path *path, bool *jumped)
@@ -252,9 +224,6 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
 	path->mnt = nd->path.mnt;
 	path->dentry = dentry;
 	ret = traverse_mounts(path, &jumped);
-	if (jumped) {
-		nd->state |= ND_JUMPED;
-	}
 	if (unlikely(ret)) {
 		dput(path->dentry);
 	} else {
@@ -395,11 +364,9 @@ inside:
 
 static int link_path_walk(const char *name, struct nameidata *nd)
 {
-	int depth = 0;
 	int err;
 
 	nd->last_type = LAST_ROOT;
-	nd->flags |= LOOKUP_PARENT;
 	if (IS_ERR(name))
 		return PTR_ERR(name);
 	while (*name == '/')
@@ -425,22 +392,12 @@ static int link_path_walk(const char *name, struct nameidata *nd)
 		if (name[0] == '.')
 			switch (hashlen_len(hash_len)) {
 			case 2:
-				if (name[1] == '.') {
+				if (name[1] == '.')
 					type = LAST_DOTDOT;
-					nd->state |= ND_JUMPED;
-				}
 				break;
 			case 1:
 				type = LAST_DOT;
 			}
-		if (likely(type == LAST_NORM)) {
-			/*
-			 * DCACHE_OP_HASH is never set on this build (no
-			 * ->d_hash ops object exists), so the per-dentry
-			 * name-hash override is unreachable.
-			 */
-			nd->state &= ~ND_JUMPED;
-		}
 
 		nd->last.hash_len = hash_len;
 		nd->last.name = name;
@@ -455,25 +412,11 @@ static int link_path_walk(const char *name, struct nameidata *nd)
 		} while (unlikely(*name == '/'));
 		if (unlikely(!*name)) {
 OK:
-
-			if (!depth) {
-				nd->flags &= ~LOOKUP_PARENT;
-				return 0;
-			}
-
-			name = nd->stack[--depth].name;
-			link = walk_component(nd, 0);
-		} else {
-			link = walk_component(nd, WALK_MORE);
+			return 0;
 		}
-		if (unlikely(link)) {
-			if (IS_ERR(link))
-				return PTR_ERR(link);
-
-			nd->stack[depth++].name = name;
-			name = link;
-			continue;
-		}
+		link = walk_component(nd, WALK_MORE);
+		if (unlikely(link))
+			return PTR_ERR(link);
 		if (unlikely(!d_can_lookup(nd->path.dentry)))
 			return -ENOTDIR;
 	}
@@ -484,7 +427,6 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 	const char *s = nd->name->name;
 
 	nd->flags = flags;
-	nd->state |= ND_JUMPED;
 	nd->root.mnt = NULL;
 
 	if (*s == '/') {
@@ -525,7 +467,6 @@ static int filename_parentat(struct filename *name, unsigned int flags,
 		*last = nd.last;
 		*type = nd.last_type;
 	}
-	restore_nameidata();
 	return retval;
 }
 
@@ -623,7 +564,7 @@ static const char *open_last_lookups(struct nameidata *nd, struct file *file,
 
 	if (!(open_flag & O_CREAT)) {
 		if (nd->last.name[nd->last.len])
-			nd->flags |= LOOKUP_FOLLOW | LOOKUP_DIRECTORY;
+			nd->flags |= LOOKUP_DIRECTORY;
 
 		dentry = d_lookup(nd->path.dentry, &nd->last);
 		if (likely(dentry))
@@ -721,7 +662,6 @@ struct file *do_filp_open(struct filename *pathname,
 
 	set_nameidata(&nd, pathname);
 	filp = path_openat(&nd, op, flags);
-	restore_nameidata();
 	return filp;
 }
 

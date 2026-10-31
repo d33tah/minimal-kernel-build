@@ -19,7 +19,6 @@
 #include <linux/mm_types_task.h>
 
 struct fs_struct;
-struct nameidata;
 struct nsproxy;
 struct pid_namespace;
 struct signal_struct;
@@ -56,7 +55,6 @@ struct task_struct {
 	const struct cred __rcu *real_cred;
 	const struct cred __rcu *cred;
 	char comm[TASK_COMM_LEN];
-	struct nameidata *nameidata;
 	struct fs_struct *fs;
 	struct files_struct *files;
 	struct nsproxy *nsproxy;

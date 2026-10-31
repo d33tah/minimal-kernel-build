@@ -269,7 +269,6 @@ static struct file *do_open_execat(struct filename *name)
 		.open_flag = O_LARGEFILE | O_RDONLY | __FMODE_EXEC,
 		.acc_mode = MAY_EXEC,
 		.intent = LOOKUP_OPEN,
-		.lookup_flags = LOOKUP_FOLLOW,
 	};
 
 	file = do_filp_open(name, &open_exec_flags);

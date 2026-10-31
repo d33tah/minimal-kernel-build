@@ -24,10 +24,6 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 
 #define smp_wmb() barrier()
 
-#define smp_mb__before_atomic() barrier()
-
-#define smp_mb__after_atomic() barrier()
-
 #define smp_store_release(p, v)                     \
 	do {                                        \
 		compiletime_assert_atomic_type(*p); \

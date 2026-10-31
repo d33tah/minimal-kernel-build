@@ -89,12 +89,6 @@ arch_test_and_set_bit_lock(long nr, volatile unsigned long *addr)
 }
 
 static __always_inline bool
-arch_test_and_clear_bit(long nr, volatile unsigned long *addr)
-{
-	return GEN_BINARY_RMWcc(__ASM_SIZE(btr), *addr, c, "Ir", nr);
-}
-
-static __always_inline bool
 constant_test_bit(long nr, const volatile unsigned long *addr)
 {
 	return ((1UL << (nr & (BITS_PER_LONG - 1))) &

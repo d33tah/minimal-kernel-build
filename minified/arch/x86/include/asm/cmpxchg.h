@@ -100,13 +100,6 @@ extern void __xadd_wrong_size(void)
 /* --- 2025-12-07 20:12 --- Inlined cmpxchg_32.h */
 /* set_64bit removed - unused */
 
-#define arch_cmpxchg64(ptr, o, n)                                        \
-	((__typeof__(*(ptr)))__cmpxchg64((ptr), (unsigned long long)(o), \
-					 (unsigned long long)(n)))
-#define arch_try_cmpxchg64(ptr, po, n)                     \
-	__try_cmpxchg64((ptr), (unsigned long long *)(po), \
-			(unsigned long long)(n))
-
 static inline u64 __cmpxchg64(volatile u64 *ptr, u64 old, u64 new)
 {
 	u64 prev;

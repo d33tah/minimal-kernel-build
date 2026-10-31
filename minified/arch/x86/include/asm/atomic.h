@@ -56,11 +56,6 @@ static __always_inline int arch_atomic_fetch_sub(int i, atomic_t *v)
 	return xadd(&v->counter, -i);
 }
 
-static __always_inline int arch_atomic_cmpxchg(atomic_t *v, int old, int new)
-{
-	return arch_cmpxchg(&v->counter, old, new);
-}
-
 static __always_inline bool arch_atomic_try_cmpxchg(atomic_t *v, int *old,
 						    int new)
 {

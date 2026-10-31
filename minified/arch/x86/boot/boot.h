@@ -1,25 +1,21 @@
- 
- 
 
- 
 
 #ifndef BOOT_BOOT_H
 #define BOOT_BOOT_H
 
-#define STACK_SIZE	1024	 
+#define STACK_SIZE 1024
 
 #ifndef __ASSEMBLY__
 
 #include <asm/processor-flags.h>
 #include "io.h"
 
- 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
 
 extern struct setup_header hdr;
 extern struct boot_params boot_params;
 
-#define cpu_relax()	asm volatile("rep; nop")
+#define cpu_relax() asm volatile("rep; nop")
 
 static inline void io_delay(void)
 {
@@ -27,34 +23,32 @@ static inline void io_delay(void)
 	outb(0, DELAY_PORT);
 }
 
- 
-
 static inline u16 ds(void)
 {
 	u16 seg;
-	asm("movw %%ds,%0" : "=rm" (seg));
+	asm("movw %%ds,%0" : "=rm"(seg));
 	return seg;
 }
 
 static inline void set_fs(u16 seg)
 {
-	asm volatile("movw %0,%%fs" : : "rm" (seg));
+	asm volatile("movw %0,%%fs" : : "rm"(seg));
 }
 static inline u16 fs(void)
 {
 	u16 seg;
-	asm volatile("movw %%fs,%0" : "=rm" (seg));
+	asm volatile("movw %%fs,%0" : "=rm"(seg));
 	return seg;
 }
 
 static inline void set_gs(u16 seg)
 {
-	asm volatile("movw %0,%%gs" : : "rm" (seg));
+	asm volatile("movw %0,%%gs" : : "rm"(seg));
 }
 static inline u16 gs(void)
 {
 	u16 seg;
-	asm volatile("movw %%gs,%0" : "=rm" (seg));
+	asm volatile("movw %%gs,%0" : "=rm"(seg));
 	return seg;
 }
 
@@ -64,50 +58,42 @@ static inline u8 rdfs8(addr_t addr)
 {
 	u8 *ptr = (u8 *)absolute_pointer(addr);
 	u8 v;
-	asm volatile("movb %%fs:%1,%0" : "=q" (v) : "m" (*ptr));
+	asm volatile("movb %%fs:%1,%0" : "=q"(v) : "m"(*ptr));
 	return v;
 }
 static inline u16 rdfs16(addr_t addr)
 {
 	u16 *ptr = (u16 *)absolute_pointer(addr);
 	u16 v;
-	asm volatile("movw %%fs:%1,%0" : "=r" (v) : "m" (*ptr));
+	asm volatile("movw %%fs:%1,%0" : "=r"(v) : "m"(*ptr));
 	return v;
 }
 static inline u32 rdfs32(addr_t addr)
 {
 	u32 *ptr = (u32 *)absolute_pointer(addr);
 	u32 v;
-	asm volatile("movl %%fs:%1,%0" : "=r" (v) : "m" (*ptr));
+	asm volatile("movl %%fs:%1,%0" : "=r"(v) : "m"(*ptr));
 	return v;
 }
 
 static inline void wrfs32(u32 v, addr_t addr)
 {
 	u32 *ptr = (u32 *)absolute_pointer(addr);
-	asm volatile("movl %1,%%fs:%0" : "+m" (*ptr) : "ri" (v));
+	asm volatile("movl %1,%%fs:%0" : "+m"(*ptr) : "ri"(v));
 }
 
 static inline u32 rdgs32(addr_t addr)
 {
 	u32 *ptr = (u32 *)absolute_pointer(addr);
 	u32 v;
-	asm volatile("movl %%gs:%1,%0" : "=r" (v) : "m" (*ptr));
+	asm volatile("movl %%gs:%1,%0" : "=r"(v) : "m"(*ptr));
 	return v;
 }
-
-
-
- 
-
- 
 
 void copy_to_fs(addr_t dst, void *src, size_t len);
 void *copy_from_fs(void *dst, addr_t src, size_t len);
 
- 
 int enable_a20(void);
-
 
 struct biosregs {
 	union {
@@ -151,43 +137,22 @@ struct biosregs {
 };
 void intcall(u8 int_no, const struct biosregs *ireg, struct biosregs *oreg);
 
- 
-
- 
-
- 
-
-
 void __attribute__((noreturn)) die(void);
 
- 
 void detect_memory(void);
 
- 
 void __attribute__((noreturn)) go_to_protected_mode(void);
 
- 
-void __attribute__((noreturn))
-	protected_mode_jump(u32 entrypoint, u32 bootparams);
+void __attribute__((noreturn)) protected_mode_jump(u32 entrypoint,
+						   u32 bootparams);
 
- 
-
- 
 void initregs(struct biosregs *regs);
 
- 
-
- 
 void puts(const char *);
 void putchar(int);
 
- 
 void set_video(void);
 
- 
+#endif
 
- 
-
-#endif  
-
-#endif  
+#endif

@@ -7,5 +7,4 @@
 
 #define BITS_PER_LONG_LONG 64
 
-#endif  
-
+#endif

@@ -1,11 +1,8 @@
- 
+
 #ifndef _ASM_X86_IBT_H
 #define _ASM_X86_IBT_H
 
-
- 
-
-#define HAS_KERNEL_IBT	0
+#define HAS_KERNEL_IBT 0
 
 #ifdef __ASSEMBLY__
 
@@ -13,7 +10,6 @@
 
 #endif
 
+#define ENDBR_INSN_SIZE (4 * HAS_KERNEL_IBT)
 
-#define ENDBR_INSN_SIZE		(4*HAS_KERNEL_IBT)
-
-#endif  
+#endif

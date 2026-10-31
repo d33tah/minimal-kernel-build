@@ -5,16 +5,18 @@
 /* --- 2025-12-07 20:20 --- Inlined pgtable-2level_types.h */
 #ifndef __ASSEMBLY__
 
-typedef unsigned long	pteval_t;
-typedef unsigned long	pmdval_t;
-typedef unsigned long	pgdval_t;
-typedef unsigned long	pgprotval_t;
+typedef unsigned long pteval_t;
+typedef unsigned long pmdval_t;
+typedef unsigned long pgdval_t;
+typedef unsigned long pgprotval_t;
 
-typedef union { pteval_t pte; } pte_t;
+typedef union {
+	pteval_t pte;
+} pte_t;
 #endif
 
-#define PGDIR_SHIFT	22
-#define PTRS_PER_PGD	1024
-#define PTRS_PER_PTE	1024
+#define PGDIR_SHIFT 22
+#define PTRS_PER_PGD 1024
+#define PTRS_PER_PTE 1024
 
 #endif

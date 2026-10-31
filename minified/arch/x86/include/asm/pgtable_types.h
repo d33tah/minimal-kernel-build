@@ -1,4 +1,4 @@
- 
+
 #ifndef _ASM_X86_PGTABLE_DEFS_H
 #define _ASM_X86_PGTABLE_DEFS_H
 
@@ -6,41 +6,37 @@
 
 #include <asm/page_types.h>
 
-#define _PAGE_BIT_PRESENT	0	 
-#define _PAGE_BIT_RW		1	 
-#define _PAGE_BIT_USER		2
+#define _PAGE_BIT_PRESENT 0
+#define _PAGE_BIT_RW 1
+#define _PAGE_BIT_USER 2
 /* _PAGE_BIT_PWT(3)/_PAGE_BIT_PCD(4) removed: 0-caller (their _PAGE_PWT/_PAGE_PCD masks cut #225) */
-#define _PAGE_BIT_ACCESSED	5
-#define _PAGE_BIT_DIRTY		6	 
-#define _PAGE_BIT_PSE		7
-#define _PAGE_BIT_GLOBAL	8
-#define _PAGE_BIT_SOFTW1	9
-#define _PAGE_BIT_SPECIAL	_PAGE_BIT_SOFTW1
-#define _PAGE_BIT_PROTNONE	_PAGE_BIT_GLOBAL
+#define _PAGE_BIT_ACCESSED 5
+#define _PAGE_BIT_DIRTY 6
+#define _PAGE_BIT_PSE 7
+#define _PAGE_BIT_GLOBAL 8
+#define _PAGE_BIT_SOFTW1 9
+#define _PAGE_BIT_SPECIAL _PAGE_BIT_SOFTW1
+#define _PAGE_BIT_PROTNONE _PAGE_BIT_GLOBAL
 
-#define _PAGE_PRESENT	(_AT(pteval_t, 1) << _PAGE_BIT_PRESENT)
-#define _PAGE_RW	(_AT(pteval_t, 1) << _PAGE_BIT_RW)
-#define _PAGE_USER	(_AT(pteval_t, 1) << _PAGE_BIT_USER)
+#define _PAGE_PRESENT (_AT(pteval_t, 1) << _PAGE_BIT_PRESENT)
+#define _PAGE_RW (_AT(pteval_t, 1) << _PAGE_BIT_RW)
+#define _PAGE_USER (_AT(pteval_t, 1) << _PAGE_BIT_USER)
 /* _PAGE_PWT/_PAGE_PCD removed - 0-caller cache-bit consts */
-#define _PAGE_ACCESSED	(_AT(pteval_t, 1) << _PAGE_BIT_ACCESSED)
-#define _PAGE_DIRTY	(_AT(pteval_t, 1) << _PAGE_BIT_DIRTY)
-#define _PAGE_PSE	(_AT(pteval_t, 1) << _PAGE_BIT_PSE)
-#define _PAGE_GLOBAL	(_AT(pteval_t, 1) << _PAGE_BIT_GLOBAL)
-#define _PAGE_SPECIAL	(_AT(pteval_t, 1) << _PAGE_BIT_SPECIAL)
+#define _PAGE_ACCESSED (_AT(pteval_t, 1) << _PAGE_BIT_ACCESSED)
+#define _PAGE_DIRTY (_AT(pteval_t, 1) << _PAGE_BIT_DIRTY)
+#define _PAGE_PSE (_AT(pteval_t, 1) << _PAGE_BIT_PSE)
+#define _PAGE_GLOBAL (_AT(pteval_t, 1) << _PAGE_BIT_GLOBAL)
+#define _PAGE_SPECIAL (_AT(pteval_t, 1) << _PAGE_BIT_SPECIAL)
 
 #define _PAGE_KNL_ERRATUM_MASK 0
 
-#define _PAGE_SOFT_DIRTY	(_AT(pteval_t, 0))
+#define _PAGE_SOFT_DIRTY (_AT(pteval_t, 0))
 
-#define _PAGE_NX	(_AT(pteval_t, 0))
+#define _PAGE_NX (_AT(pteval_t, 0))
 
-#define _PAGE_PROTNONE	(_AT(pteval_t, 1) << _PAGE_BIT_PROTNONE)
+#define _PAGE_PROTNONE (_AT(pteval_t, 1) << _PAGE_BIT_PROTNONE)
 
- 
-
- 
-
-#define _PAGE_ENC		(_AT(pteval_t, sme_me_mask))
+#define _PAGE_ENC (_AT(pteval_t, sme_me_mask))
 
 #define __PP _PAGE_PRESENT
 #define __RW _PAGE_RW
@@ -53,103 +49,116 @@
 #define _ENC _PAGE_ENC
 #define _PSE _PAGE_PSE
 
-#define pgprot_val(x)		((x).pgprot)
-#define __pgprot(x)		((pgprot_t) { (x) } )
-#define __pg(x)			__pgprot(x)
+#define pgprot_val(x) ((x).pgprot)
+#define __pgprot(x) ((pgprot_t){ (x) })
+#define __pg(x) __pgprot(x)
 
-#define PAGE_NONE	     __pg(   0|   0|   0|___A|   0|   0|   0|___G)
-#define PAGE_SHARED	     __pg(__PP|__RW|_USR|___A|__NX|   0|   0|   0)
-#define PAGE_SHARED_EXEC     __pg(__PP|__RW|_USR|___A|   0|   0|   0|   0)
-#define PAGE_COPY_EXEC	     __pg(__PP|   0|_USR|___A|   0|   0|   0|   0)
-#define PAGE_COPY	     __pg(__PP|   0|_USR|___A|__NX|   0|   0|   0)
-#define PAGE_READONLY	     __pg(__PP|   0|_USR|___A|__NX|   0|   0|   0)
-#define PAGE_READONLY_EXEC   __pg(__PP|   0|_USR|___A|   0|   0|   0|   0)
+#define PAGE_NONE __pg(0 | 0 | 0 | ___A | 0 | 0 | 0 | ___G)
+#define PAGE_SHARED __pg(__PP | __RW | _USR | ___A | __NX | 0 | 0 | 0)
+#define PAGE_SHARED_EXEC __pg(__PP | __RW | _USR | ___A | 0 | 0 | 0 | 0)
+#define PAGE_COPY_EXEC __pg(__PP | 0 | _USR | ___A | 0 | 0 | 0 | 0)
+#define PAGE_COPY __pg(__PP | 0 | _USR | ___A | __NX | 0 | 0 | 0)
+#define PAGE_READONLY __pg(__PP | 0 | _USR | ___A | __NX | 0 | 0 | 0)
+#define PAGE_READONLY_EXEC __pg(__PP | 0 | _USR | ___A | 0 | 0 | 0 | 0)
 
-#define __PAGE_KERNEL		 (__PP|__RW|   0|___A|__NX|___D|   0|___G)
-#define __PAGE_KERNEL_EXEC	 (__PP|__RW|   0|___A|   0|___D|   0|___G)
-#define _KERNPG_TABLE		 (__PP|__RW|   0|___A|   0|___D|   0|   0| _ENC)
-#define _PAGE_TABLE		 (__PP|__RW|_USR|___A|   0|___D|   0|   0| _ENC)
-#define __PAGE_KERNEL_RO	 (__PP|   0|   0|___A|__NX|___D|   0|___G)
-#define __PAGE_KERNEL_LARGE	 (__PP|__RW|   0|___A|__NX|___D|_PSE|___G)
-#define __PAGE_KERNEL_LARGE_EXEC (__PP|__RW|   0|___A|   0|___D|_PSE|___G)
-
-#ifndef __ASSEMBLY__
-
-#define __pgprot_mask(x)	__pgprot((x) & __default_kernel_pte_mask)
-
-#define PAGE_KERNEL		__pgprot_mask(__PAGE_KERNEL            | _ENC)
-#define PAGE_KERNEL_RO		__pgprot_mask(__PAGE_KERNEL_RO         | _ENC)
-#define PAGE_KERNEL_EXEC	__pgprot_mask(__PAGE_KERNEL_EXEC       | _ENC)
-#define PAGE_KERNEL_LARGE	__pgprot_mask(__PAGE_KERNEL_LARGE      | _ENC)
-#define PAGE_KERNEL_LARGE_EXEC	__pgprot_mask(__PAGE_KERNEL_LARGE_EXEC | _ENC)
-
-#endif	 
-
- 
-#define __P000	PAGE_NONE
-#define __P001	PAGE_READONLY
-#define __P010	PAGE_COPY
-#define __P011	PAGE_COPY
-#define __P100	PAGE_READONLY_EXEC
-#define __P101	PAGE_READONLY_EXEC
-#define __P110	PAGE_COPY_EXEC
-#define __P111	PAGE_COPY_EXEC
-
-#define __S000	PAGE_NONE
-#define __S001	PAGE_READONLY
-#define __S010	PAGE_SHARED
-#define __S011	PAGE_SHARED
-#define __S100	PAGE_READONLY_EXEC
-#define __S101	PAGE_READONLY_EXEC
-#define __S110	PAGE_SHARED_EXEC
-#define __S111	PAGE_SHARED_EXEC
-
- 
-#define PTE_IDENT_ATTR	 0x003		 
-#define PDE_IDENT_ATTR	 0x063		 
-
-# include <asm/pgtable_32_types.h>
+#define __PAGE_KERNEL (__PP | __RW | 0 | ___A | __NX | ___D | 0 | ___G)
+#define __PAGE_KERNEL_EXEC (__PP | __RW | 0 | ___A | 0 | ___D | 0 | ___G)
+#define _KERNPG_TABLE (__PP | __RW | 0 | ___A | 0 | ___D | 0 | 0 | _ENC)
+#define _PAGE_TABLE (__PP | __RW | _USR | ___A | 0 | ___D | 0 | 0 | _ENC)
+#define __PAGE_KERNEL_RO (__PP | 0 | 0 | ___A | __NX | ___D | 0 | ___G)
+#define __PAGE_KERNEL_LARGE (__PP | __RW | 0 | ___A | __NX | ___D | _PSE | ___G)
+#define __PAGE_KERNEL_LARGE_EXEC \
+	(__PP | __RW | 0 | ___A | 0 | ___D | _PSE | ___G)
 
 #ifndef __ASSEMBLY__
 
+#define __pgprot_mask(x) __pgprot((x) & __default_kernel_pte_mask)
 
- 
-#define PTE_PFN_MASK		((pteval_t)PHYSICAL_PAGE_MASK)
+#define PAGE_KERNEL __pgprot_mask(__PAGE_KERNEL | _ENC)
+#define PAGE_KERNEL_RO __pgprot_mask(__PAGE_KERNEL_RO | _ENC)
+#define PAGE_KERNEL_EXEC __pgprot_mask(__PAGE_KERNEL_EXEC | _ENC)
+#define PAGE_KERNEL_LARGE __pgprot_mask(__PAGE_KERNEL_LARGE | _ENC)
+#define PAGE_KERNEL_LARGE_EXEC __pgprot_mask(__PAGE_KERNEL_LARGE_EXEC | _ENC)
 
- 
-#define PTE_FLAGS_MASK		(~PTE_PFN_MASK)
+#endif
 
-typedef struct pgprot { pgprotval_t pgprot; } pgprot_t;
+#define __P000 PAGE_NONE
+#define __P001 PAGE_READONLY
+#define __P010 PAGE_COPY
+#define __P011 PAGE_COPY
+#define __P100 PAGE_READONLY_EXEC
+#define __P101 PAGE_READONLY_EXEC
+#define __P110 PAGE_COPY_EXEC
+#define __P111 PAGE_COPY_EXEC
 
-typedef struct { pgdval_t pgd; } pgd_t;
+#define __S000 PAGE_NONE
+#define __S001 PAGE_READONLY
+#define __S010 PAGE_SHARED
+#define __S011 PAGE_SHARED
+#define __S100 PAGE_READONLY_EXEC
+#define __S101 PAGE_READONLY_EXEC
+#define __S110 PAGE_SHARED_EXEC
+#define __S111 PAGE_SHARED_EXEC
+
+#define PTE_IDENT_ATTR 0x003
+#define PDE_IDENT_ATTR 0x063
+
+#include <asm/pgtable_32_types.h>
+
+#ifndef __ASSEMBLY__
+
+#define PTE_PFN_MASK ((pteval_t)PHYSICAL_PAGE_MASK)
+
+#define PTE_FLAGS_MASK (~PTE_PFN_MASK)
+
+typedef struct pgprot {
+	pgprotval_t pgprot;
+} pgprot_t;
+
+typedef struct {
+	pgdval_t pgd;
+} pgd_t;
 
 /* pgprot_nx removed - no callers */
 
- 
-#define PGD_ALLOWED_BITS	(~0ULL)
+#define PGD_ALLOWED_BITS (~0ULL)
 
-static inline pgd_t native_make_pgd(pgdval_t val) {
-	return (pgd_t) { val & PGD_ALLOWED_BITS }; }
+static inline pgd_t native_make_pgd(pgdval_t val)
+{
+	return (pgd_t){ val & PGD_ALLOWED_BITS };
+}
 
-static inline pgdval_t native_pgd_val(pgd_t pgd) {
-	return pgd.pgd & PGD_ALLOWED_BITS; }
+static inline pgdval_t native_pgd_val(pgd_t pgd)
+{
+	return pgd.pgd & PGD_ALLOWED_BITS;
+}
 
 /* --- 2025-12-07 10:14 --- Inlined asm-generic/pgtable-nop4d.h content */
 #define __PAGETABLE_P4D_FOLDED 1
 
-typedef struct { pgd_t pgd; } p4d_t;
+typedef struct {
+	pgd_t pgd;
+} p4d_t;
 
-#define P4D_SHIFT		PGDIR_SHIFT
+#define P4D_SHIFT PGDIR_SHIFT
 
-static inline int pgd_none(pgd_t pgd)		{ return 0; }
-static inline int pgd_bad(pgd_t pgd)		{ return 0; }
+static inline int pgd_none(pgd_t pgd)
+{
+	return 0;
+}
+static inline int pgd_bad(pgd_t pgd)
+{
+	return 0;
+}
 /* pgd_present() removed - constant 1, all callers folded */
 
-static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address) {
-	return (p4d_t *)pgd; }
+static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
+{
+	return (p4d_t *)pgd;
+}
 
-#define p4d_val(x)				(pgd_val((x).pgd))
-#define __p4d(x)				((p4d_t) { __pgd(x) })
+#define p4d_val(x) (pgd_val((x).pgd))
+#define __p4d(x) ((p4d_t){ __pgd(x) })
 
 /* p4d_free_tlb removed - folded away on 2-level paging, 0 callers (only pte_free_tlb used) */
 
@@ -158,19 +167,23 @@ static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address) {
 /* --- 2025-12-07 10:14 --- Inlined asm-generic/pgtable-nopud.h content */
 #define __PAGETABLE_PUD_FOLDED 1
 
-typedef struct { p4d_t p4d; } pud_t;
+typedef struct {
+	p4d_t p4d;
+} pud_t;
 
-#define PUD_SHIFT	P4D_SHIFT
+#define PUD_SHIFT P4D_SHIFT
 /* PTRS_PER_PUD/PUD_SIZE removed - 0-caller (folded PUD on 32-bit) */
 
 /* p4d_none() removed - constant 0, all callers folded (2-level paging) */
 /* p4d_present() removed - constant 1, all callers folded */
 
-static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address) {
-	return (pud_t *)p4d; }
+static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
+{
+	return (pud_t *)p4d;
+}
 
-#define pud_val(x)				(p4d_val((x).p4d))
-#define __pud(x)				((pud_t) { __p4d(x) })
+#define pud_val(x) (p4d_val((x).p4d))
+#define __pud(x) ((pud_t){ __p4d(x) })
 
 /* pud_free_tlb removed - folded away on 2-level paging, 0 callers (only pte_free_tlb used) */
 
@@ -182,21 +195,25 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address) {
 
 #define __PAGETABLE_PMD_FOLDED 1
 
-typedef struct { pud_t pud; } pmd_t;
+typedef struct {
+	pud_t pud;
+} pmd_t;
 
-#define PMD_SHIFT	PUD_SHIFT
-#define PTRS_PER_PMD	1
-#define PMD_SIZE  	(1UL << PMD_SHIFT)
-#define PMD_MASK  	(~(PMD_SIZE-1))
+#define PMD_SHIFT PUD_SHIFT
+#define PTRS_PER_PMD 1
+#define PMD_SIZE (1UL << PMD_SHIFT)
+#define PMD_MASK (~(PMD_SIZE - 1))
 
 /* pud_none() removed - constant 0, all callers folded (2-level paging) */
 /* pud_present (const 1), pud_user, pud_leaf (generic fallback in linux/pgtable.h) removed - unused */
 
-static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address) {
-	return (pmd_t *)pud; }
+static inline pmd_t *pmd_offset(pud_t *pud, unsigned long address)
+{
+	return (pmd_t *)pud;
+}
 
-#define pmd_val(x)				(pud_val((x).pud))
-#define __pmd(x)				((pmd_t) { __pud(x) } )
+#define pmd_val(x) (pud_val((x).pud))
+#define __pmd(x) ((pmd_t){ __pud(x) })
 
 /* pud_page + pmd_free_tlb removed - folded away on 2-level paging, 0 callers tree-wide */
 
@@ -204,30 +221,45 @@ static inline pmd_t * pmd_offset(pud_t * pud, unsigned long address) {
 
 /* native_make_pmd removed - unused */
 
-static inline pmdval_t native_pmd_val(pmd_t pmd) {
-	return native_pgd_val(pmd.pud.p4d.pgd); }
+static inline pmdval_t native_pmd_val(pmd_t pmd)
+{
+	return native_pgd_val(pmd.pud.p4d.pgd);
+}
 
 /* pud_pfn_mask, pud_flags_mask, pud_flags removed - unused (sole caller pud_write/pud_present removed) */
 
-static inline pmdval_t pmd_pfn_mask(pmd_t pmd) {
+static inline pmdval_t pmd_pfn_mask(pmd_t pmd)
+{
 	if (native_pmd_val(pmd) & _PAGE_PSE)
 		return PHYSICAL_PMD_PAGE_MASK;
-	else return PTE_PFN_MASK; }
+	else
+		return PTE_PFN_MASK;
+}
 
-static inline pmdval_t pmd_flags_mask(pmd_t pmd) {
-	return ~pmd_pfn_mask(pmd); }
+static inline pmdval_t pmd_flags_mask(pmd_t pmd)
+{
+	return ~pmd_pfn_mask(pmd);
+}
 
-static inline pmdval_t pmd_flags(pmd_t pmd) {
-	return native_pmd_val(pmd) & pmd_flags_mask(pmd); }
+static inline pmdval_t pmd_flags(pmd_t pmd)
+{
+	return native_pmd_val(pmd) & pmd_flags_mask(pmd);
+}
 
-static inline pte_t native_make_pte(pteval_t val) {
-	return (pte_t) { .pte = val }; }
+static inline pte_t native_make_pte(pteval_t val)
+{
+	return (pte_t){ .pte = val };
+}
 
-static inline pteval_t native_pte_val(pte_t pte) {
-	return pte.pte; }
+static inline pteval_t native_pte_val(pte_t pte)
+{
+	return pte.pte;
+}
 
-static inline pteval_t pte_flags(pte_t pte) {
-	return native_pte_val(pte) & PTE_FLAGS_MASK; }
+static inline pteval_t pte_flags(pte_t pte)
+{
+	return native_pte_val(pte) & PTE_FLAGS_MASK;
+}
 
 typedef struct page *pgtable_t;
 
@@ -246,6 +278,6 @@ enum pg_level { PG_LEVEL_NONE, PG_LEVEL_4K, PG_LEVEL_2M, PG_LEVEL_1G };
 /* lookup_address, lookup_address_in_pgd, lookup_pmd_address,
    slow_virt_to_phys, kernel_map_pages_in_pgd, kernel_unmap_pages_in_pgd
    removed - unused */
-#endif 
+#endif
 
-#endif  
+#endif

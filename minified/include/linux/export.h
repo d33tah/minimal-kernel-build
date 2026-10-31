@@ -5,6 +5,6 @@
 
 #include <linux/compiler.h>
 
-#endif  
+#endif
 
-#endif  
+#endif

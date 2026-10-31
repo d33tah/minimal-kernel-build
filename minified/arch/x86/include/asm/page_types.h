@@ -1,43 +1,40 @@
- 
+
 #ifndef _ASM_X86_PAGE_DEFS_H
 #define _ASM_X86_PAGE_DEFS_H
 
 #include <linux/const.h>
 
- 
-#define PAGE_SHIFT		12
-#define PAGE_SIZE		(_AC(1,UL) << PAGE_SHIFT)
-#define PAGE_MASK		(~(PAGE_SIZE-1))
+#define PAGE_SHIFT 12
+#define PAGE_SIZE (_AC(1, UL) << PAGE_SHIFT)
+#define PAGE_MASK (~(PAGE_SIZE - 1))
 
-#define PMD_PAGE_SIZE		(_AC(1, UL) << PMD_SHIFT)
-#define PMD_PAGE_MASK		(~(PMD_PAGE_SIZE-1))
+#define PMD_PAGE_SIZE (_AC(1, UL) << PMD_SHIFT)
+#define PMD_PAGE_MASK (~(PMD_PAGE_SIZE - 1))
 
 /* PUD_PAGE_SIZE/PUD_PAGE_MASK removed: 0-caller cascade (mask was PUD_PAGE_SIZE's only user) */
 
+#define PHYSICAL_PAGE_MASK (((signed long)PAGE_MASK) & __PHYSICAL_MASK)
+#define PHYSICAL_PMD_PAGE_MASK (((signed long)PMD_PAGE_MASK) & __PHYSICAL_MASK)
 
-#define PHYSICAL_PAGE_MASK	(((signed long)PAGE_MASK) & __PHYSICAL_MASK)
-#define PHYSICAL_PMD_PAGE_MASK	(((signed long)PMD_PAGE_MASK) & __PHYSICAL_MASK)
+#define PAGE_OFFSET ((unsigned long)__PAGE_OFFSET)
 
-
-#define PAGE_OFFSET		((unsigned long)__PAGE_OFFSET)
-
-#define VM_DATA_DEFAULT_FLAGS	VM_DATA_FLAGS_TSK_EXEC
-
+#define VM_DATA_DEFAULT_FLAGS VM_DATA_FLAGS_TSK_EXEC
 
 #include <asm/page_32_types.h>
 
 #ifndef __ASSEMBLY__
 
-#define __PHYSICAL_MASK		((phys_addr_t)((1ULL << __PHYSICAL_MASK_SHIFT) - 1))
+#define __PHYSICAL_MASK ((phys_addr_t)((1ULL << __PHYSICAL_MASK_SHIFT) - 1))
 
 extern unsigned long max_pfn_mapped;
 
-static inline phys_addr_t get_max_mapped(void) {
-	return (phys_addr_t)max_pfn_mapped << PAGE_SHIFT; }
-
+static inline phys_addr_t get_max_mapped(void)
+{
+	return (phys_addr_t)max_pfn_mapped << PAGE_SHIFT;
+}
 
 extern void initmem_init(void);
 
-#endif	 
+#endif
 
-#endif	 
+#endif

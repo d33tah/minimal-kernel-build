@@ -4,12 +4,10 @@
 
 #ifndef __ASSEMBLY__
 
-
 #include <asm/mem_encrypt.h>
 
+#define __sme_set(x) (x)
 
-#define __sme_set(x)		(x)
+#endif
 
-#endif	 
-
-#endif	 
+#endif

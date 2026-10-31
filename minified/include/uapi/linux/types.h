@@ -9,10 +9,9 @@
 
 #include <asm/posix_types_32.h>
 
-
 #define __bitwise
 
 typedef __u32 __bitwise __le32;
 
-#endif  
-#endif  
+#endif
+#endif

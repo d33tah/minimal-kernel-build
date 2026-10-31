@@ -1,4 +1,4 @@
- 
+
 #ifndef _ASM_X86_LINKAGE_H
 #define _ASM_X86_LINKAGE_H
 
@@ -11,22 +11,16 @@
 
 #ifdef __ASSEMBLY__
 
-#define RET	ret
+#define RET ret
 
-#endif  
+#endif
 
- 
-#define SYM_FUNC_START(name)					SYM_START(name, SYM_L_GLOBAL, SYM_A_ALIGN)		ENDBR
+#define SYM_FUNC_START(name) SYM_START(name, SYM_L_GLOBAL, SYM_A_ALIGN) ENDBR
 
- 
-#define SYM_FUNC_START_NOALIGN(name)				SYM_START(name, SYM_L_GLOBAL, SYM_A_NONE)		ENDBR
+#define SYM_FUNC_START_NOALIGN(name) \
+	SYM_START(name, SYM_L_GLOBAL, SYM_A_NONE) ENDBR
 
- 
+#define SYM_FUNC_START_LOCAL_NOALIGN(name) \
+	SYM_START(name, SYM_L_LOCAL, SYM_A_NONE) ENDBR
 
- 
-#define SYM_FUNC_START_LOCAL_NOALIGN(name)			SYM_START(name, SYM_L_LOCAL, SYM_A_NONE)		ENDBR
-
- 
-
-#endif  
-
+#endif

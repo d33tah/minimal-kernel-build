@@ -2,8 +2,7 @@
 #ifndef _ASM_X86_TRAPS_H
 #define _ASM_X86_TRAPS_H
 
-#include <linux/kprobes.h>
-
+#include <linux/ptrace.h>
 #include <asm/debugreg.h>
 #include <asm/idtentry.h>
 

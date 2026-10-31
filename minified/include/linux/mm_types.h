@@ -53,13 +53,6 @@ struct page {
 			atomic_t compound_mapcount;
 			atomic_t compound_pincount;
 		};
-		struct {
-			unsigned long _pt_pad_1;
-			unsigned long _pt_pad_2;
-			union {
-				struct mm_struct *pt_mm;
-			};
-		};
 		struct rcu_head rcu_head;
 	};
 	union {

@@ -3,9 +3,6 @@
 #include <asm/traps.h>
 /* Removed: #include <asm/kvm_para.h> - stub below */
 
-DEFINE_SPINLOCK(pgd_lock);
-LIST_HEAD(pgd_list);
-
 /*
  * arch_sync_kernel_mappings + its private helper vmalloc_sync_one were
  * runtime-dead (anchor-stub): the vmalloc page-table sync machinery in
@@ -153,9 +150,6 @@ static void do_kern_addr_fault(struct pt_regs *regs,
 	if (spurious_kernel_fault(hw_error_code, address))
 		return;
 
-	if (WARN_ON_ONCE(kprobe_page_fault(regs, X86_TRAP_PF)))
-		return;
-
 	bad_area_nosemaphore(regs, hw_error_code, address);
 }
 
@@ -177,9 +171,6 @@ static inline void do_user_addr_fault(struct pt_regs *regs,
 		page_fault_oops(regs, error_code, address);
 		return;
 	}
-
-	if (WARN_ON_ONCE(kprobe_page_fault(regs, X86_TRAP_PF)))
-		return;
 
 	if (unlikely(faulthandler_disabled() || !mm)) {
 		bad_area_nosemaphore(regs, error_code, address);

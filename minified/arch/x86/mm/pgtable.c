@@ -9,25 +9,10 @@ pgtable_t pte_alloc_one(struct mm_struct *mm)
 	return __pte_alloc_one(mm, __userpte_alloc_gfp);
 }
 
-static inline void pgd_list_add(pgd_t *pgd)
-{
-	struct page *page = virt_to_page(pgd);
-
-	list_add(&page->lru, &pgd_list);
-}
-
-static void pgd_set_mm(pgd_t *pgd, struct mm_struct *mm)
-{
-	virt_to_page(pgd)->pt_mm = mm;
-}
-
 static void pgd_ctor(struct mm_struct *mm, pgd_t *pgd)
 {
 	clone_pgd_range(pgd + KERNEL_PGD_BOUNDARY,
 			swapper_pg_dir + KERNEL_PGD_BOUNDARY, KERNEL_PGD_PTRS);
-
-	pgd_set_mm(pgd, mm);
-	pgd_list_add(pgd);
 }
 
 static inline pgd_t *_pgd_alloc(void)
@@ -47,11 +32,7 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 
 	mm->pgd = pgd;
 
-	spin_lock(&pgd_lock);
-
 	pgd_ctor(mm, pgd);
-
-	spin_unlock(&pgd_lock);
 
 	return pgd;
 }
@@ -64,9 +45,6 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
  */
 void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 {
-	spin_lock(&pgd_lock);
-	list_del(&virt_to_page(pgd)->lru);
-	spin_unlock(&pgd_lock);
 	free_pages((unsigned long)pgd, PGD_ALLOCATION_ORDER);
 }
 

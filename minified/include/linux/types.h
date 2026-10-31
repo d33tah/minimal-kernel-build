@@ -65,11 +65,5 @@ struct callback_head { struct callback_head *next; void (*func)(struct callback_
 
 typedef void (*rcu_callback_t)(struct rcu_head *head);
 
-typedef void (*swap_r_func_t)(void *a, void *b, int size, const void *priv);
-typedef void (*swap_func_t)(void *a, void *b, int size);
-
-typedef int (*cmp_r_func_t)(const void *a, const void *b, const void *priv);
-typedef int (*cmp_func_t)(const void *a, const void *b);
-
 #endif  
 #endif  

@@ -1,4 +1,3 @@
-#include <linux/extable.h>
 #include <linux/binfmts.h>
 #include <linux/delay.h>
 
@@ -52,7 +51,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	jump_label_init();
 
 	vfs_caches_init_early();
-	sort_main_extable();
 	trap_init();
 	mem_init();
 	kmem_cache_init();

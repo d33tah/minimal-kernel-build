@@ -14,7 +14,7 @@ CFLAGS_string.o := -ffreestanding
 
 lib-y := string.o \
 	 rbtree.o xarray.o \
-	 extable.o irq_regs.o \
+	 irq_regs.o \
 	 ratelimit.o
 	 # argv_split.o - Removed: not used
 	 # buildid.o - Removed: Not needed (stub functions)
@@ -22,8 +22,7 @@ lib-y := string.o \
 
 obj-y	+= lockref.o
 
-obj-y += sort.o \
-	 iov_iter.o \
+obj-y += iov_iter.o \
 	 find_bit.o
 	 # parser.o removed - not used
 	 # usercopy.o removed - _copy_from_user/_copy_to_user now header inlines

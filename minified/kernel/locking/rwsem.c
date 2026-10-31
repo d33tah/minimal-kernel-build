@@ -5,7 +5,9 @@
  * Single-task kernel: init is the only schedulable task besides idle, and
  * interrupt context never takes an rwsem, so an rwsem is never contended.
  * Only the count and owner words are kept (rwsem_is_locked() reads count);
- * there is no wait list, no waiter/handoff flags and no slow path.
+ * there is no wait list, no waiter/handoff flags and no slow path. A
+ * contended rwsem would need a second task to release it, so down_read()
+ * of a write-locked rwsem and down_write() of a locked one BUG.
  */
 #define RWSEM_READER_OWNED (1UL << 0)
 
@@ -31,7 +33,10 @@ void __init_rwsem(struct rw_semaphore *sem, const char *name,
 
 void __sched down_read(struct rw_semaphore *sem)
 {
-	atomic_long_add_return_acquire(RWSEM_READER_BIAS, &sem->count);
+	long count;
+
+	count = atomic_long_add_return_acquire(RWSEM_READER_BIAS, &sem->count);
+	BUG_ON(count & RWSEM_READ_FAILED_MASK);
 	rwsem_set_reader_owned(sem);
 }
 
@@ -59,9 +64,9 @@ void __sched down_write(struct rw_semaphore *sem)
 {
 	long tmp = RWSEM_UNLOCKED_VALUE;
 
-	if (atomic_long_try_cmpxchg_acquire(&sem->count, &tmp,
-					    RWSEM_WRITER_LOCKED))
-		atomic_long_set(&sem->owner, (long)current);
+	BUG_ON(!atomic_long_try_cmpxchg_acquire(&sem->count, &tmp,
+						RWSEM_WRITER_LOCKED));
+	atomic_long_set(&sem->owner, (long)current);
 }
 
 int __sched down_write_killable(struct rw_semaphore *sem)

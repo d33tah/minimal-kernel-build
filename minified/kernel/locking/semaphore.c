@@ -6,7 +6,10 @@ void down(struct semaphore *sem)
 	unsigned long flags;
 
 	raw_spin_lock_irqsave(&sem->lock, flags);
-	sem->count--;
+	if (likely(sem->count > 0))
+		sem->count--;
+	else
+		BUG();
 	raw_spin_unlock_irqrestore(&sem->lock, flags);
 }
 

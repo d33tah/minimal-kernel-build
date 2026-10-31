@@ -50,8 +50,6 @@ static void __fput(struct file *file)
 	if (unlikely(!(file->f_mode & FMODE_OPENED)))
 		goto out;
 
-	if (file->f_op->release)
-		file->f_op->release(inode, file);
 	fops_put(file->f_op);
 	if (mode & FMODE_WRITER)
 		put_write_access(inode);

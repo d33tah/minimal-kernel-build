@@ -33,11 +33,9 @@ static int do_dentry_open(struct file *f, struct inode *inode,
 			goto cleanup_all;
 	}
 	f->f_mode |= FMODE_OPENED;
-	if ((f->f_mode & FMODE_READ) &&
-	    likely(f->f_op->read || f->f_op->read_iter))
+	if ((f->f_mode & FMODE_READ) && likely(f->f_op->read_iter))
 		f->f_mode |= FMODE_CAN_READ;
-	if ((f->f_mode & FMODE_WRITE) &&
-	    likely(f->f_op->write || f->f_op->write_iter))
+	if ((f->f_mode & FMODE_WRITE) && likely(f->f_op->write_iter))
 		f->f_mode |= FMODE_CAN_WRITE;
 	return 0;
 

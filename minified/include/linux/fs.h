@@ -106,9 +106,6 @@ struct inode {
 	loff_t i_size;
 	spinlock_t i_lock;
 	struct rw_semaphore i_rwsem;
-	union {
-		struct hlist_head i_dentry;
-	};
 	atomic_t i_writecount;
 	const struct file_operations *i_fop;
 	struct address_space i_data;
@@ -272,20 +269,17 @@ void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 		      const struct inode *dir, umode_t mode);
 
 struct file_operations {
-	ssize_t (*read)(struct file *, char __user *, size_t, loff_t *);
-	ssize_t (*write)(struct file *, const char __user *, size_t, loff_t *);
 	ssize_t (*read_iter)(struct kiocb *, struct iov_iter *);
 	ssize_t (*write_iter)(struct kiocb *, struct iov_iter *);
 	int (*mmap)(struct file *, struct vm_area_struct *);
 	int (*open)(struct inode *, struct file *);
-	int (*release)(struct inode *, struct file *);
 	/* iopoll/iterate/iterate_shared/poll/unlocked_ioctl/compat_ioctl/
 	 * mmap_supported_flags/flush/fsync/sendpage/check_flags/flock/
 	 * splice_write/splice_read/setlease/remap_file_range/fadvise/uring_cmd/
 	 * fallocate/show_fdinfo/copy_file_range/llseek/lock removed - zero ->field
-	 * dispatch, bare-deref and assignment tree-wide (only read/write/
-	 * read_iter/write_iter/mmap/open/release/fasync
-	 * are live; their syscall consumers were all excised earlier) */
+	 * dispatch, bare-deref and assignment tree-wide; read/write/release
+	 * removed - tested or called but never assigned (only read_iter/
+	 * write_iter/mmap/open are live) */
 } __randomize_layout;
 
 struct inode_operations {

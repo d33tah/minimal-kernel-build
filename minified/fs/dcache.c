@@ -102,7 +102,6 @@ static inline void __d_clear_type_and_inode(struct dentry *dentry)
 
 static void dentry_free(struct dentry *dentry)
 {
-	WARN_ON(!hlist_unhashed(&dentry->d_u.d_alias));
 	if (unlikely(dname_external(dentry))) {
 		struct external_name *p = external_name(dentry);
 		if (likely(atomic_dec_and_test(&p->u.count))) {
@@ -125,7 +124,6 @@ static void dentry_unlink_inode(struct dentry *dentry)
 	struct inode *inode = dentry->d_inode;
 
 	__d_clear_type_and_inode(dentry);
-	hlist_del_init(&dentry->d_u.d_alias);
 	spin_unlock(&dentry->d_lock);
 	spin_unlock(&inode->i_lock);
 	/* no ops object sets ->d_iput */
@@ -257,7 +255,6 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	dentry->d_parent = dentry;
 	dentry->d_sb = sb;
 	INIT_HLIST_BL_NODE(&dentry->d_hash);
-	INIT_HLIST_NODE(&dentry->d_u.d_alias);
 
 	return dentry;
 }
@@ -300,14 +297,12 @@ static void __d_instantiate(struct dentry *dentry, struct inode *inode)
 	unsigned add_flags = d_flags_for_inode(inode);
 
 	spin_lock(&dentry->d_lock);
-	hlist_add_head(&dentry->d_u.d_alias, &inode->i_dentry);
 	__d_set_inode_and_type(dentry, inode, add_flags);
 	spin_unlock(&dentry->d_lock);
 }
 
 void d_instantiate(struct dentry *entry, struct inode *inode)
 {
-	BUG_ON(!hlist_unhashed(&entry->d_u.d_alias));
 	if (inode) {
 		spin_lock(&inode->i_lock);
 		__d_instantiate(entry, inode);
@@ -391,7 +386,6 @@ static inline void __d_add(struct dentry *dentry, struct inode *inode)
 	spin_lock(&dentry->d_lock);
 	if (inode) {
 		unsigned add_flags = d_flags_for_inode(inode);
-		hlist_add_head(&dentry->d_u.d_alias, &inode->i_dentry);
 		__d_set_inode_and_type(dentry, inode, add_flags);
 	}
 	__d_rehash(dentry);

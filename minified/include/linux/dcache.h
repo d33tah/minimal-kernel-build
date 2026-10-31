@@ -43,7 +43,6 @@ struct dentry {
 	struct lockref d_lockref;
 	struct super_block *d_sb;
 	union {
-		struct hlist_node d_alias;
 		struct rcu_head d_rcu;
 	} d_u;
 } __randomize_layout;

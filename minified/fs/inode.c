@@ -44,7 +44,6 @@ static int inode_init_always(struct super_block *sb, struct inode *inode)
 	mapping_set_gfp_mask(mapping, GFP_HIGHUSER_MOVABLE);
 	init_rwsem(&mapping->invalidate_lock);
 	inode->i_mapping = mapping;
-	INIT_HLIST_HEAD(&inode->i_dentry);
 
 	return 0;
 }

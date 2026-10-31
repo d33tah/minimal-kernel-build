@@ -327,11 +327,18 @@ ssize_t generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 
 static vm_fault_t filemap_fault(struct vm_fault *vmf)
 {
+	int error;
 	struct file *file = vmf->vma->vm_file;
 	struct address_space *mapping = file->f_mapping;
-	pgoff_t index = vmf->pgoff;
+	struct inode *inode = mapping->host;
+	pgoff_t max_idx, index = vmf->pgoff;
 	struct folio *folio;
 
+	max_idx = DIV_ROUND_UP(i_size_read(inode), PAGE_SIZE);
+	if (unlikely(index >= max_idx))
+		return VM_FAULT_SIGBUS;
+
+retry_find:
 	folio = __filemap_get_folio(mapping, index, FGP_CREAT | FGP_FOR_MMAP,
 				    vmf->gfp_mask);
 	if (!folio)
@@ -340,8 +347,30 @@ static vm_fault_t filemap_fault(struct vm_fault *vmf)
 	if (!folio_test_locked(folio))
 		folio_lock(folio);
 
+	/*
+	 * We have a locked page in the page cache, now we need to check
+	 * that it's up-to-date. If not, it is going to be due to an error.
+	 */
+	if (unlikely(!folio_test_uptodate(folio)))
+		goto page_not_uptodate;
+
 	vmf->page = folio_file_page(folio, index);
 	return VM_FAULT_LOCKED;
+
+page_not_uptodate:
+	/*
+	 * Umm, take care of errors if the page isn't up-to-date.
+	 * Try to re-read it _once_. We do this synchronously,
+	 * because there really aren't any performance issues here
+	 * and we need to check for errors.
+	 */
+	error = filemap_read_folio(file, mapping, folio);
+	folio_put(folio);
+
+	if (!error || error == AOP_TRUNCATED_PAGE)
+		goto retry_find;
+
+	return VM_FAULT_SIGBUS;
 }
 
 static const struct vm_operations_struct generic_file_vm_ops = {

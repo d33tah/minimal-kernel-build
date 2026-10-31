@@ -1,15 +1,7 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/mm.h>
-#include <linux/sched/task.h>
-#include <linux/sched/task_stack.h>
-#include <linux/random.h>
 /* end stackprotector.h */
-#include <asm/cpu.h>
-#include <asm/switch_to.h>
 #include <asm/unwind.h>
-
-#include "process.h"
 
 __visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = { .x86_tss = { .sp0 = TOP_OF_INIT_STACK, .ss0 = __KERNEL_DS, .io_bitmap_base	= IO_BITMAP_OFFSET_INVALID, }, };
 

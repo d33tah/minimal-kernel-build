@@ -10,12 +10,10 @@
 .text
 #include <linux/init.h>
 #include <asm/segment.h>
-#include <asm/pgtable_types.h>
 #include <asm/cache.h>
 #include <asm/thread_info.h>
 #include <asm/setup.h>
 #include <asm/processor-flags.h>
-#include <asm/nospec-branch.h>
 #include <asm/pgtable_32.h>
 
 /* Physical address */

@@ -1,7 +1,6 @@
 #include <linux/console.h>
 #include <linux/vt_kern.h>
 #include <linux/selection.h>
-#include <linux/screen_info.h>
 #include <video/vga.h>
 
 /*

@@ -16,7 +16,6 @@
  *
  */
 
-#include <asm/segment.h>
 #include <asm/boot.h>
 #include <asm/setup.h>
 #include <asm/bootparam.h>

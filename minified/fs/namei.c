@@ -1,12 +1,9 @@
 
-#include <linux/kernel.h>
-#include <linux/slab.h>
 #include <linux/namei.h>
 #include <linux/file.h>
 #include <linux/fs_struct.h>
 
 #include "internal.h"
-#include <linux/mount.h>
 
 #define EMBEDDED_NAME_MAX (PATH_MAX - offsetof(struct filename, iname))
 

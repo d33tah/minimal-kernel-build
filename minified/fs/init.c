@@ -1,8 +1,5 @@
-#include <linux/init.h>
-#include <linux/mount.h>
 #include <linux/namei.h>
 #include <linux/file.h>
-#include "internal.h"
 
 int __init init_mknod(const char *filename, umode_t mode, unsigned int dev)
 {

@@ -1,10 +1,6 @@
-#include <linux/sched.h>
 #include <linux/extable.h>
-#include <linux/kprobes.h>
-#include <asm/kdebug.h>
 
 #include <asm/traps.h>
-#include <asm/mmu_context.h>
 /* Removed: #include <asm/kvm_para.h> - stub below */
 
 DEFINE_SPINLOCK(pgd_lock);

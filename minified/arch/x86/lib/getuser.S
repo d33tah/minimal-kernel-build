@@ -27,7 +27,6 @@
  */
 
 #include <linux/linkage.h>
-#include <asm/page_types.h>
 #include <asm/errno.h>
 #include <asm/asm.h>
 

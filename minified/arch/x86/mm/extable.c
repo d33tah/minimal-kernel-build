@@ -1,5 +1,4 @@
 #include <linux/extable.h>
-#include <linux/sched/debug.h>
 
 /* Inlined from bitfield.h */
 
@@ -45,7 +44,6 @@
 
 #include <asm/traps.h>
 #include <asm/insn-eval.h>
-#include <asm/kdebug.h>
 
 static inline unsigned long *pt_regs_nr(struct pt_regs *regs, int nr)
 {

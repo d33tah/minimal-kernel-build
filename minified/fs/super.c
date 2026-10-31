@@ -1,9 +1,7 @@
 
 #include <linux/fs.h>
-#include <linux/slab.h>
 #include <linux/user_namespace.h>
 #include <linux/fs_context.h>
-#include "internal.h"
 
 /*
  * Each mount gets its own superblock and nothing is ever unmounted, so

@@ -1,7 +1,4 @@
-#include <linux/mm.h>
-#include <linux/sched/debug.h>
 
-#include <asm/desc.h>
 #include <asm/traps.h>
 
 #define TSS(x) this_cpu_read(cpu_tss_rw.x86_tss.x)

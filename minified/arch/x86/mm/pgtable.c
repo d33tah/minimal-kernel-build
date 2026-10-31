@@ -1,5 +1,4 @@
 #include <asm/pgalloc.h>
-#include <asm/tlb.h>
 
 #define PGTABLE_HIGHMEM 0
 

@@ -3,7 +3,6 @@
 #include <linux/seqlock.h>
 #include <linux/stop_machine.h>
 
-#include "timekeeping.h"
 #include "ntp_internal.h"
 #include "timekeeping_internal.h"
 

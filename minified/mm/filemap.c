@@ -1,8 +1,4 @@
 
-#include <linux/fs.h>
-#include <linux/sched/signal.h>
-#include <linux/mm.h>
-#include <linux/swap.h>
 #include <linux/uio.h>
 #include <linux/pagevec.h>
 #include "internal.h"

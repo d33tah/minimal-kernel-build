@@ -1,7 +1,4 @@
 
-#include <linux/kernel.h>
-#include <linux/percpu.h>
-#include <linux/delay.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/task.h>
 
@@ -9,7 +6,6 @@
 
 /* Inlined from asm/doublefault.h */
 extern void doublefault_init_cpu_tss(void);
-#include <asm/proto.h>
 #include <asm/hwcap2.h>
 #include <asm/cpu.h>
 

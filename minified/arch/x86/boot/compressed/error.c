@@ -1,5 +1,4 @@
 #include "misc.h"
-#include "error.h"
 
 void warn(char *m)
 {

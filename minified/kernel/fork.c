@@ -1,15 +1,10 @@
 
-#include <linux/slab.h>
 #include <linux/sched/mm.h>
-#include <linux/sched/task.h>
 #include <linux/sched/task_stack.h>
 #include <linux/file.h>
 #include <linux/fdtable.h>
-#include <linux/mm.h>
-#include <linux/nsproxy.h>
 #include <linux/mm_inline.h>
 #include <linux/ptrace.h>
-#include <linux/tty.h>
 #include <linux/fs_struct.h>
 /* end scs.h */
 

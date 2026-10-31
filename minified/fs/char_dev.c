@@ -1,8 +1,5 @@
-#include <linux/init.h>
 #include <linux/fs.h>
 #include <linux/cdev.h>
-
-#include "internal.h"
 
 /*
  * Character devices: drivers add a cdev for a range of device numbers;

@@ -1,6 +1,4 @@
 
-#include <asm/proto.h>
-#include <asm/desc.h>
 #include <asm/hw_irq.h>
 #include <asm/idtentry.h>
 

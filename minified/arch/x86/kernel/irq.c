@@ -1,4 +1,3 @@
-#include <linux/smp.h>
 #include <linux/irq.h>
 
 #include <asm/traps.h>

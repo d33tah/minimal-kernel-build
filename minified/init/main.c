@@ -1,10 +1,6 @@
-#include <linux/types.h>
 #include <linux/extable.h>
 #include <linux/binfmts.h>
-#include <linux/syscalls.h>
 #include <linux/delay.h>
-#include <linux/initrd.h>
-#include <linux/memblock.h>
 
 #include <linux/console.h>
 #include <linux/cpu.h>
@@ -20,7 +16,6 @@ extern void sched_init(void);
 #include <linux/init_syscalls.h>
 
 #include <asm/bugs.h>
-#include <asm/setup.h>
 #include <asm/time.h>
 
 static int kernel_init(void *);

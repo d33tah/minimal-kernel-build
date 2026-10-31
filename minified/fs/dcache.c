@@ -1,5 +1,4 @@
 
-#include <linux/fs.h>
 #include <linux/memblock.h>
 #include "internal.h"
 

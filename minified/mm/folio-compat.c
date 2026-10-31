@@ -1,6 +1,5 @@
 
 #include <linux/pagemap.h>
-#include <linux/swap.h>
 
 void unlock_page(struct page *page)
 {

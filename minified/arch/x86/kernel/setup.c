@@ -3,9 +3,7 @@
 #include <linux/memblock.h>
 
 #include <asm/e820/api.h>
-#include <asm/setup.h>
 #include <asm/sections.h>
-#include <asm/io.h>
 #include <asm/tlbflush.h>
 #include <asm/desc.h>
 

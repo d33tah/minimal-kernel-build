@@ -1,5 +1,4 @@
 
-#include <linux/file.h>
 #include <linux/namei.h>
 
 #include "internal.h"

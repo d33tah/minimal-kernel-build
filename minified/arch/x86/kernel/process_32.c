@@ -2,11 +2,6 @@
 
 #include <linux/sched/task_stack.h>
 #include <linux/ptrace.h>
-#include <asm/kdebug.h>
-
-#include <asm/desc.h>
-
-#include <asm/switch_to.h>
 
 #include "process.h"
 

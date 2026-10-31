@@ -1,14 +1,8 @@
 
 #include <linux/fs.h>
-#include <linux/slab.h>
 #include <linux/user_namespace.h>
-#include <linux/cred.h>
 #include <linux/fs_struct.h>
-#include <linux/sched/task.h>
 #include <linux/fs_context.h>
-
-#include <linux/mount.h>
-#include "internal.h"
 
 static struct kmem_cache *mnt_cache __read_mostly;
 

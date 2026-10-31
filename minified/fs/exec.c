@@ -1,16 +1,10 @@
 
-#include <linux/slab.h>
 #include <linux/file.h>
-#include <linux/fdtable.h>
-#include <linux/mm.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/signal.h>
 #include <linux/highmem.h>
 #include <linux/binfmts.h>
-#include <linux/ptrace.h>
 #include <linux/namei.h>
-#include <linux/fs_struct.h>
-#include <linux/security.h>
 
 #include <asm/mmu_context.h>
 

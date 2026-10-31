@@ -1,12 +1,9 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/kernel.h>
 #include <linux/mman.h>
 #include <linux/file.h>
 #include <linux/security.h>
-#include <linux/rmap.h>
-#include <linux/sched/mm.h>
 #include <linux/sched/signal.h>
 #include <asm/pgalloc.h>
 #include <asm/tlbflush.h>

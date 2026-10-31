@@ -1,15 +1,5 @@
-#include <linux/kernel.h>
-#include <linux/err.h>
 
-#include <linux/mm.h>
 #include <linux/swap.h>
-
-#include <linux/sched/signal.h>
-#include <linux/sched/mm.h>
-
-#include <asm/mmu_context.h>
-
-#include "internal.h"
 
 static struct page *no_page_table(void)
 {

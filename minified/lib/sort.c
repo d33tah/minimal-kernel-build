@@ -1,7 +1,5 @@
 
-#include <linux/types.h>
 #include <linux/export.h>
-#include <linux/sort.h>
 
 __attribute_const__ __always_inline static bool
 is_aligned(const void *base, size_t size, unsigned char align)

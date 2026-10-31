@@ -1,7 +1,5 @@
 
-#include <linux/kernel.h>
 #include <linux/memblock.h>
-#include <linux/io.h>
 
 #include <asm/tlb.h>
 #include <asm/pgtable_areas.h>

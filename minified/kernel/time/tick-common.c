@@ -1,7 +1,5 @@
 #include <linux/clockchips.h>
 #include <linux/interrupt.h>
-#include <linux/jiffies.h>
-#include <linux/sched.h>
 
 #include <asm/irq_regs.h>
 

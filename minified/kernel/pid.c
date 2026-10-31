@@ -1,5 +1,4 @@
 
-#include <linux/slab.h>
 #include <linux/pid_namespace.h>
 #include <linux/sched/signal.h>
 

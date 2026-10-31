@@ -1,7 +1,5 @@
-#include <linux/kernel.h>
 #include <linux/tty.h>
 #include <linux/console.h>
-#include <linux/semaphore.h>
 
 /*
  * printk() is a no-op in this kernel (no log buffer), so nothing is ever

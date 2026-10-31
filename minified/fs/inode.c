@@ -1,8 +1,5 @@
 
-#include <linux/fs.h>
 #include <linux/swap.h>
-
-#include "internal.h"
 
 /* iversion machinery removed: SB_I_VERSION is never set on any superblock in
  * this build (ramfs/devtmpfs/proc/sysfs), so IS_I_VERSION() is always false and

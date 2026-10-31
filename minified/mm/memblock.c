@@ -1,6 +1,4 @@
 
-#include <linux/kernel.h>
-#include <linux/slab.h>
 #include <linux/memblock.h>
 
 #include <linux/io.h>

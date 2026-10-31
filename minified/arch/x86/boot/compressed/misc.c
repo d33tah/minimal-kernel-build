@@ -1,7 +1,6 @@
 
 #include "misc.h"
 #include "error.h"
-#include "../string.h"
 #include <linux/kernel.h>
 #include <asm/bootparam_utils.h>
 

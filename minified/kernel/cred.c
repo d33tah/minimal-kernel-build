@@ -1,9 +1,5 @@
-#include <linux/cred.h>
-#include <linux/slab.h>
-#include <linux/sched/coredump.h>
 
 #include <linux/init_task.h>
-#include <linux/security.h>
 
 static struct kmem_cache *cred_jar;
 

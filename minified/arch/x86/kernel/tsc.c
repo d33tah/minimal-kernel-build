@@ -1,8 +1,5 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-#include <linux/kernel.h>
-#include <linux/sched/clock.h>
-#include <linux/delay.h>
 #include <linux/clocksource.h>
 
 #include <asm/timer.h>

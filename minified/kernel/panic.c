@@ -1,7 +1,5 @@
 
-#include <linux/printk.h>
 #include <linux/delay.h>
-#include <linux/console.h>
 
 #define PANIC_TIMER_STEP 100
 #define PANIC_BLINK_SPD 18

@@ -1,6 +1,3 @@
-#include <linux/kprobes.h>
-#include <asm/kdebug.h>
-#include <linux/sched/debug.h>
 
 /* Anchor-stub: die/die_addr are the runtime-dead crash path in a healthy
  * boot+print+stay-alive kernel. Kept link-live for their crash-path callers

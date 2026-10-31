@@ -1,11 +1,8 @@
-#include <linux/gfp.h>
 #include <linux/memblock.h>
-#include <linux/sched/task.h>
 
 #include <asm/e820/api.h>
 #include <asm/setup.h>
 #include <asm/tlbflush.h>
-#include <asm/text-patching.h>
 
 #include "mm_internal.h"
 

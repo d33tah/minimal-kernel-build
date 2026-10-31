@@ -1,12 +1,8 @@
 
 
-#include <linux/types.h>
 #include <linux/string.h>
-#include <linux/bug.h>
 
 #include <asm/unaligned.h>
-#include <asm/word-at-a-time.h>
-#include <asm/page.h>
 
 size_t strlcpy(char *dest, const char *src, size_t size)
 {

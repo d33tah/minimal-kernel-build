@@ -1,4 +1,3 @@
-#include <linux/mm.h>
 #include <linux/uaccess.h>
 
 #define copy_to_kernel_nofault_loop(dst, src, len, type, err_label) \

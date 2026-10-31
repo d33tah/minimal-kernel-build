@@ -1,16 +1,11 @@
 
-#include <linux/sched/signal.h>
 #include <linux/sched/debug.h>
 #include <linux/sched/mm.h>
-#include <linux/sched/task.h>
 #include <linux/cpu.h>
-#include <linux/rcupdate.h>
 
 #include <linux/mmu_context.h>
 
 #include <asm/switch_to.h>
-
-#include "../rcu/rcu.h"
 
 /*
  * One CPU, one run queue, round robin. Runnable tasks wait in FIFO order on

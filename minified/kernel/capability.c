@@ -2,7 +2,6 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/security.h>
-#include <linux/user_namespace.h>
 
 static bool privileged_wrt_inode_uidgid(struct user_namespace *ns,
 					struct user_namespace *mnt_userns,

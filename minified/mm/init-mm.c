@@ -1,7 +1,4 @@
-#include <linux/mm_types.h>
 #include <linux/mman.h>
-
-#include <linux/user_namespace.h>
 
 struct mm_struct init_mm = { .mm_rb = RB_ROOT,
 			     .pgd = swapper_pg_dir,

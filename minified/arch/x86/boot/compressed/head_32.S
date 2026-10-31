@@ -27,10 +27,8 @@
 #include <linux/init.h>
 #include <linux/linkage.h>
 #include <asm/segment.h>
-#include <asm/page_types.h>
 #include <asm/boot.h>
 #include <asm/asm-offsets.h>
-#include <asm/bootparam.h>
 
 /*
  * These symbols needed to be marked as .hidden to prevent the BFD linker from

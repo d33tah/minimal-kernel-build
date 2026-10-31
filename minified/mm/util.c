@@ -1,9 +1,4 @@
-#include <linux/mm.h>
-#include <linux/sched/signal.h>
 #include <linux/swap.h>
-#include <linux/random.h>
-
-#include "internal.h"
 
 void kfree_const(const void *x)
 {

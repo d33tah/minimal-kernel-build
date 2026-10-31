@@ -1,9 +1,6 @@
 
 
 #include <linux/fs.h>
-#include <linux/ramfs.h>
-
-#include "internal.h"
 
 const struct file_operations ramfs_file_operations = {
 	.read_iter = generic_file_read_iter,

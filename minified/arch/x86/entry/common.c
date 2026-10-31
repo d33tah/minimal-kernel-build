@@ -1,5 +1,4 @@
 
-#include <linux/kernel.h>
 #include <linux/entry-common.h>
 #include <linux/nospec.h>
 

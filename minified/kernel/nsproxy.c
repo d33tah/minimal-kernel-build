@@ -1,7 +1,5 @@
 
-#include <linux/sched/task.h>
 #include <linux/utsname.h>
-#include <linux/pid_namespace.h>
 
 struct nsproxy init_nsproxy = {
 	.count = ATOMIC_INIT(1),

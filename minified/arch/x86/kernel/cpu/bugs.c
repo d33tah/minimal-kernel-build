@@ -1,6 +1,4 @@
-#include <linux/init.h>
 #include <linux/utsname.h>
-#include <asm/bugs.h>
 
 void __init check_bugs(void)
 {

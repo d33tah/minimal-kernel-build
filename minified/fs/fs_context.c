@@ -1,11 +1,7 @@
 
 #include <linux/fs.h>
-#include <linux/slab.h>
-#include <linux/cred.h>
 #include <linux/fs_context.h>
 #include <linux/user_namespace.h>
-#include <linux/mount.h>
-#include "internal.h"
 
 /* No mount options are ever passed: there is no option parser. */
 struct fs_context *fs_context_for_mount(struct file_system_type *fs_type)

@@ -1,9 +1,7 @@
 
 #include <linux/clockchips.h>
 #include <linux/interrupt.h>
-#include <linux/irq.h>
 
-#include <asm/i8259.h>
 #include <asm/time.h>
 
 static irqreturn_t timer_interrupt(int irq, void *dev_id)

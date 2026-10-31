@@ -1,14 +1,8 @@
 
 #include <linux/sched.h>
-#include <linux/stddef.h>
 #include <linux/kbuild.h>
-#include <asm/processor.h>
-#include <asm/thread_info.h>
-#include <asm/sigframe.h>
-#include <asm/bootparam.h>
 #include <asm/ptrace.h>
 /* --- 2025-12-07 20:29 --- Inlined suspend_32.h */
-#include <asm/desc.h>
 /* TDX not used in minimal kernel */
 
 #include "asm-offsets_32.c"

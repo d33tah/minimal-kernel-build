@@ -1,6 +1,5 @@
 
 
-#include <linux/kernel.h>
 #include <linux/semaphore.h>
 
 void down(struct semaphore *sem)

@@ -2,7 +2,6 @@
 #include <linux/bsearch.h>
 #include <linux/sort.h>
 #include <linux/uaccess.h>
-#include <linux/extable.h>
 
 static inline unsigned long ex_to_insn(const struct exception_table_entry *x)
 {

@@ -57,55 +57,80 @@ void cr4_update_irqsoff(unsigned long set, unsigned long clear)
 	}
 }
 
-/*
- * Only CPUID leaves 1 and 7 feed bits that something reads: the
- * boot_cpu_has() users (VME, DE, TSC, PSE, PGE, HYPERVISOR, SMEP, FSGSBASE)
- * and ELF_HWCAP (the leaf 1 EDX word). The family is checked by
- * check_bugs(); the CLFLUSH line size is cache_line_size().
- * CR4.SMAP is never set (alternatives are never applied, so STAC/CLAC
- * would not be patched in) and nothing tests the SMAP bit.
- */
-static void __init identify_cpu(struct cpuinfo_x86 *c)
+void cpu_detect(struct cpuinfo_x86 *c)
 {
-	u32 level, eax, ebx, ecx, edx;
+	/* Get vendor name */
+	cpuid(0x00000000, (unsigned int *)&c->cpuid_level,
+	      (unsigned int *)&c->x86_vendor_id[0],
+	      (unsigned int *)&c->x86_vendor_id[8],
+	      (unsigned int *)&c->x86_vendor_id[4]);
 
-	memset(c->x86_capability, 0, sizeof(c->x86_capability));
 	c->x86 = 4;
-	c->x86_cache_alignment = 32;
+	/* Intel-defined flags: level 0x00000001 */
+	if (c->cpuid_level >= 0x00000001) {
+		u32 junk, tfms, cap0, misc;
 
-	cpuid(0x00000000, &level, &ebx, &ecx, &edx);
+		cpuid(0x00000001, &tfms, &misc, &junk, &cap0);
+		c->x86 = x86_family(tfms);
 
-	if (level >= 0x00000001) {
+		if (cap0 & (1 << 19)) {
+			c->x86_clflush_size = ((misc >> 8) & 0xff) * 8;
+			c->x86_cache_alignment = c->x86_clflush_size;
+		}
+	}
+}
+
+static void get_cpu_cap(struct cpuinfo_x86 *c)
+{
+	u32 eax, ebx, ecx, edx;
+
+	/* Intel-defined flags: level 0x00000001 */
+	if (c->cpuid_level >= 0x00000001) {
 		cpuid(0x00000001, &eax, &ebx, &ecx, &edx);
-		c->x86 = x86_family(eax);
-		if (edx & (1 << 19))
-			c->x86_cache_alignment = ((ebx >> 8) & 0xff) * 8;
-		c->x86_capability[CPUID_1_EDX] = edx;
+
 		c->x86_capability[CPUID_1_ECX] = ecx;
+		c->x86_capability[CPUID_1_EDX] = edx;
 	}
 
-	if (level >= 0x00000007) {
+	/* Additional Intel-defined flags: level 0x00000007 */
+	if (c->cpuid_level >= 0x00000007) {
 		cpuid_count(0x00000007, 0, &eax, &ebx, &ecx, &edx);
 		c->x86_capability[CPUID_7_0_EBX] = ebx;
 	}
 }
 
-void __init early_cpu_init(void)
+static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 {
-	identify_cpu(&boot_cpu_data);
+	c->x86_clflush_size = 32;
+	c->x86_cache_alignment = c->x86_clflush_size;
+
+	memset(&c->x86_capability, 0, sizeof(c->x86_capability));
+
+	cpu_detect(c);
+	get_cpu_cap(c);
 }
 
-void __init identify_boot_cpu(void)
+void __init early_cpu_init(void)
 {
-	struct cpuinfo_x86 *c = &boot_cpu_data;
+	early_identify_cpu(&boot_cpu_data);
+}
 
+static void identify_cpu(struct cpuinfo_x86 *c)
+{
+	/* Set up SMEP/SMAP/UMIP */
 	setup_smep(c);
 	setup_umip(c);
 
+	/* Enable FSGSBASE instructions if available. */
 	if (cpu_has(c, X86_FEATURE_FSGSBASE)) {
 		cr4_set_bits(X86_CR4_FSGSBASE);
 		elf_hwcap2 |= HWCAP2_FSGSBASE;
 	}
+}
+
+void __init identify_boot_cpu(void)
+{
+	identify_cpu(&boot_cpu_data);
 }
 
 DEFINE_PER_CPU(struct task_struct *, current_task) = &init_task;
@@ -114,6 +139,28 @@ DEFINE_PER_CPU(int, __preempt_count) = INIT_PREEMPT_COUNT;
 DEFINE_PER_CPU(unsigned long,
 	       cpu_current_top_of_stack) = (unsigned long)&init_thread_union
 					   + THREAD_SIZE;
+
+void load_percpu_segment(int cpu)
+{
+	loadsegment(fs, __KERNEL_PERCPU);
+}
+
+void load_direct_gdt(int cpu)
+{
+	struct desc_ptr gdt_descr;
+
+	gdt_descr.address = (long)get_cpu_gdt_rw(cpu);
+	gdt_descr.size = GDT_SIZE - 1;
+	load_gdt(&gdt_descr);
+}
+
+void switch_to_new_gdt(int cpu)
+{
+	/* Load the original GDT */
+	load_direct_gdt(cpu);
+	/* Reload the per-cpu base */
+	load_percpu_segment(cpu);
+}
 
 static void clear_all_debug_regs(void)
 {
@@ -143,17 +190,17 @@ void cpu_init(void)
 {
 	struct task_struct *cur = current;
 	int cpu = raw_smp_processor_id();
-	struct desc_ptr gdt_descr;
 
 	if (boot_cpu_has(X86_FEATURE_VME) || boot_cpu_has(X86_FEATURE_TSC) ||
 	    boot_cpu_has(X86_FEATURE_DE))
 		cr4_clear_bits(X86_CR4_VME | X86_CR4_PVI | X86_CR4_TSD |
 			       X86_CR4_DE);
 
-	gdt_descr.address = (long)get_cpu_gdt_rw(cpu);
-	gdt_descr.size = GDT_SIZE - 1;
-	load_gdt(&gdt_descr);
-	loadsegment(fs, __KERNEL_PERCPU);
+	/*
+	 * Initialize the per-CPU GDT with the boot GDT,
+	 * and set up the GDT descriptor:
+	 */
+	switch_to_new_gdt(cpu);
 
 	mmgrab(&init_mm);
 	cur->active_mm = &init_mm;

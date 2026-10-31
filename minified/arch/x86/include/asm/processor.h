@@ -29,11 +29,15 @@ static __always_inline void cpu_relax(void)
 /* TLB arrays removed - never used in minimal kernel */
 
 struct cpuinfo_x86 {
-	__u8 x86;
+	__u8 x86; /* CPU family */
+	/* Maximum supported CPUID level, -1=no CPUID: */
+	int cpuid_level;
 	union {
 		__u32 x86_capability[NCAPINTS + NBUGINTS];
 	};
-	int x86_cache_alignment;
+	char x86_vendor_id[16];
+	int x86_cache_alignment; /* In bytes */
+	u16 x86_clflush_size;
 } __randomize_layout;
 
 extern struct cpuinfo_x86 boot_cpu_data;
@@ -41,6 +45,8 @@ extern struct cpuinfo_x86 boot_cpu_data;
 /* cpuinfo_op declaration removed - no implementation */
 
 #define cache_line_size() (boot_cpu_data.x86_cache_alignment)
+
+extern void cpu_detect(struct cpuinfo_x86 *c);
 
 extern void early_cpu_init(void);
 extern void identify_boot_cpu(void);
@@ -152,6 +158,10 @@ static inline void cpuid_count(unsigned int op, int count, unsigned int *eax,
 /* amd_e400_c1e_apic_setup declaration removed - implementation was removed */
 
 extern struct desc_ptr early_gdt_descr;
+
+extern void switch_to_new_gdt(int);
+extern void load_direct_gdt(int);
+extern void load_percpu_segment(int);
 
 extern void cpu_init(void);
 /* cpu_init_secondary declaration removed - no implementation */

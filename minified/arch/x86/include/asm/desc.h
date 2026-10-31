@@ -104,7 +104,22 @@ static inline void native_load_tr_desc(void)
 	asm volatile("ltr %w0" ::"q"(GDT_ENTRY_TSS * 8));
 }
 
-/* force_reload_TR folded into its sole caller (doublefault_32.c) */
+static inline void force_reload_TR(void)
+{
+	struct desc_struct *d = get_current_gdt_rw();
+	tss_desc tss;
+
+	memcpy(&tss, &d[GDT_ENTRY_TSS], sizeof(tss_desc));
+
+	/*
+	 * LTR requires an available TSS, and the TSS is currently
+	 * busy.  Make it be available so that LTR will work.
+	 */
+	tss.type = DESC_TSS;
+	write_gdt_entry(d, GDT_ENTRY_TSS, &tss, DESC_TSS);
+
+	load_TR_desc();
+}
 
 /* refresh_tss_limit, invalidate_tss_limit removed - unused */
 /* get_desc_base, set_desc_base, get_desc_limit, set_desc_limit removed - unused */

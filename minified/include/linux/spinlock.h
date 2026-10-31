@@ -13,10 +13,6 @@
 		*(lock) = __RAW_SPIN_LOCK_UNLOCKED(lock); \
 	} while (0)
 
-#define smp_mb__after_spinlock() \
-	do {                     \
-	} while (0)
-
 #define raw_spin_trylock(lock) __cond_lock(lock, _raw_spin_trylock(lock))
 
 #define raw_spin_lock(lock) _raw_spin_lock(lock)
@@ -43,10 +39,8 @@
 #define write_lock(lock) _raw_write_lock(lock)
 #define read_lock(lock) _raw_read_lock(lock)
 
-#define write_lock_irq(lock) _raw_write_lock_irq(lock)
 #define read_unlock(lock) _raw_read_unlock(lock)
 #define write_unlock(lock) _raw_write_unlock(lock)
-#define write_unlock_irq(lock) _raw_write_unlock_irq(lock)
 
 /* Inlined from spinlock_api_up.h */
 #define assert_raw_spin_locked(lock) \

@@ -80,11 +80,6 @@ static inline struct pid *task_pid(struct task_struct *task)
 #define PF_MEMALLOC_NOIO 0x00080000
 #define PF_KTHREAD 0x00200000
 
-static __always_inline bool is_idle_task(const struct task_struct *p)
-{
-	return !!(p->flags & PF_IDLE);
-}
-
 union thread_union {
 	unsigned long stack[THREAD_SIZE / sizeof(long)];
 };

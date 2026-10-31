@@ -84,7 +84,6 @@ static inline int list_empty(const struct list_head *head)
 	     !list_entry_is_head(pos, head, member);             \
 	     pos = list_next_entry(pos, member))
 
-#define INIT_HLIST_HEAD(ptr) ((ptr)->first = NULL)
 static inline void INIT_HLIST_NODE(struct hlist_node *h)
 {
 	h->next = NULL;
@@ -108,24 +107,6 @@ static inline void __hlist_del(struct hlist_node *n)
 	WRITE_ONCE(*pprev, next);
 	if (next)
 		WRITE_ONCE(next->pprev, pprev);
-}
-
-static inline void hlist_del_init(struct hlist_node *n)
-{
-	if (!hlist_unhashed(n)) {
-		__hlist_del(n);
-		INIT_HLIST_NODE(n);
-	}
-}
-
-static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
-{
-	struct hlist_node *first = h->first;
-	WRITE_ONCE(n->next, first);
-	if (first)
-		WRITE_ONCE(first->pprev, &n->next);
-	WRITE_ONCE(h->first, n);
-	WRITE_ONCE(n->pprev, &h->first);
 }
 
 /* hlist_is_singular_node removed: 0-caller orphan */

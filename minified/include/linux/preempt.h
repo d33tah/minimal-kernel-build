@@ -22,8 +22,6 @@
 #define HARDIRQ_OFFSET (1UL << HARDIRQ_SHIFT)
 #define NMI_OFFSET (1UL << NMI_SHIFT)
 
-#define SOFTIRQ_DISABLE_OFFSET (2 * SOFTIRQ_OFFSET)
-
 #define PREEMPT_DISABLED (PREEMPT_DISABLE_OFFSET + PREEMPT_ENABLED)
 
 #define INIT_PREEMPT_COUNT PREEMPT_OFFSET
@@ -51,14 +49,9 @@
 #define preempt_count_add(val) __preempt_count_add(val)
 #define preempt_count_sub(val) __preempt_count_sub(val)
 
-#define preempt_count_dec() preempt_count_sub(1)
-
 #define preempt_disable() barrier()
 #define sched_preempt_enable_no_resched() barrier()
 #define preempt_enable() barrier()
-#define preempt_check_resched() \
-	do {                    \
-	} while (0)
 
 #define preempt_disable_notrace() barrier()
 #define preempt_enable_no_resched_notrace() barrier()

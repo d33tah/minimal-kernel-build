@@ -16,7 +16,6 @@ extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data
 #define time_after(a, b)                                               \
 	(typecheck(unsigned long, a) && typecheck(unsigned long, b) && \
 	 ((long)((b) - (a)) < 0))
-#define time_before(a, b) time_after(b, a)
 
 #define INITIAL_JIFFIES ((unsigned long)(unsigned int)(-300 * HZ))
 
@@ -36,12 +35,6 @@ extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data
 static inline unsigned long _msecs_to_jiffies(const unsigned int m)
 {
 	return (m + (MSEC_PER_SEC / HZ) - 1) / (MSEC_PER_SEC / HZ);
-}
-static __always_inline unsigned long msecs_to_jiffies(const unsigned int m)
-{
-	if ((int)m < 0)
-		return MAX_JIFFY_OFFSET;
-	return _msecs_to_jiffies(m);
 }
 
 #endif

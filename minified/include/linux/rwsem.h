@@ -10,11 +10,6 @@ struct rw_semaphore {
 	atomic_long_t owner;
 };
 
-static inline int rwsem_is_locked(struct rw_semaphore *sem)
-{
-	return atomic_long_read(&sem->count) != 0;
-}
-
 #define RWSEM_UNLOCKED_VALUE 0L
 #define __RWSEM_INITIALIZER(name)                          \
 	{ .count = ATOMIC_LONG_INIT(RWSEM_UNLOCKED_VALUE), \

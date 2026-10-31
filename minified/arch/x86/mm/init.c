@@ -20,13 +20,6 @@ __ref void *alloc_low_pages(unsigned int num)
 	unsigned long pfn;
 	int i;
 
-	if (after_bootmem) {
-		unsigned int order;
-
-		order = get_order((unsigned long)num << PAGE_SHIFT);
-		return (void *)__get_free_pages(GFP_ATOMIC | __GFP_ZERO, order);
-	}
-
 	if ((pgt_buf_end + num) > pgt_buf_top || !can_use_brk_pgt) {
 		unsigned long ret = 0;
 
@@ -75,8 +68,6 @@ void __init early_alloc_pgt_buf(void)
 	pgt_buf_end = pgt_buf_start;
 	pgt_buf_top = pgt_buf_start + (tables >> PAGE_SHIFT);
 }
-
-int after_bootmem;
 
 /*
  * GB-page direct mapping is gone: CONFIG_X86_DIRECT_GBPAGES is unset on
@@ -188,8 +179,7 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 	end_pfn = limit_pfn;
 	nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, 0);
 
-	if (!after_bootmem)
-		adjust_range_page_size_mask(mr, nr_range);
+	adjust_range_page_size_mask(mr, nr_range);
 
 	for (i = 0; nr_range > 1 && i < nr_range - 1; i++) {
 		unsigned long old_start;

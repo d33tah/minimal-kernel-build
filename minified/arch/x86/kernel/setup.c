@@ -112,7 +112,5 @@ void __init setup_arch(void)
 
 	native_pagetable_init();
 
-	sync_initial_page_table();
-
 	conswitchp = &vga_con;
 }

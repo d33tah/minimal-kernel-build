@@ -151,16 +151,6 @@ repeat:
 	return last_map_addr;
 }
 
-void __init sync_initial_page_table(void)
-{
-	clone_pgd_range(initial_page_table + KERNEL_PGD_BOUNDARY,
-			swapper_pg_dir + KERNEL_PGD_BOUNDARY, KERNEL_PGD_PTRS);
-
-	clone_pgd_range(initial_page_table,
-			swapper_pg_dir + KERNEL_PGD_BOUNDARY,
-			min(KERNEL_PGD_PTRS, KERNEL_PGD_BOUNDARY));
-}
-
 void __init native_pagetable_init(void)
 {
 	unsigned long pfn, va;
@@ -244,8 +234,6 @@ void __init mem_init(void)
 	BUG_ON(!mem_map);
 
 	memblock_free_all();
-
-	after_bootmem = 1;
 
 #define __FIXADDR_TOP (-PAGE_SIZE)
 #define high_memory (-128UL << 20)

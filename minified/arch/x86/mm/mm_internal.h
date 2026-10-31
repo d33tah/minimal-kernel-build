@@ -17,8 +17,6 @@ unsigned long kernel_physical_mapping_init(unsigned long start,
 /* kernel_physical_mapping_change removed - unused */
 void zone_sizes_init(void);
 
-extern int after_bootmem;
-
 /* update_cache_mode_entry removed - unused */
 
 #endif

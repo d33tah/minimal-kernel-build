@@ -508,11 +508,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 
 	spin_lock(&current->sighand->siglock);
 
-	if (unlikely(!(ns_of_pid(pid)->pid_allocated & PIDNS_ADDING))) {
-		retval = -ENOMEM;
-		goto bad_fork_cancel_cgroup;
-	}
-
 	init_task_pid_links(p);
 	if (likely(p->pid)) {
 		init_task_pid(p, PIDTYPE_PID, pid);
@@ -538,11 +533,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 
 	return p;
 
-bad_fork_cancel_cgroup:
-	spin_unlock(&current->sighand->siglock);
-	write_unlock_irq(&tasklist_lock);
-	if (pid != &init_struct_pid)
-		free_pid(pid);
 bad_fork_cleanup_io:
 	exit_task_namespaces(p);
 bad_fork_cleanup_mm:

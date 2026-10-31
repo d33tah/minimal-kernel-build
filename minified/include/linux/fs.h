@@ -7,7 +7,8 @@
 #include <linux/dcache.h>
 #include <linux/path.h>
 #include <linux/llist.h>
-#include <linux/radix-tree.h>
+#include <linux/gfp.h>
+#include <linux/xarray.h>
 #include <linux/capability.h>
 #include <linux/semaphore.h>
 #include <linux/fcntl.h>

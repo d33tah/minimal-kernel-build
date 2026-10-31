@@ -122,8 +122,34 @@ void *xas_load(struct xa_state *xas)
 	return entry;
 }
 
-extern struct kmem_cache *radix_tree_node_cachep;
-extern void radix_tree_node_rcu_free(struct rcu_head *head);
+static struct kmem_cache *xa_node_cachep;
+
+static void xa_node_rcu_free(struct rcu_head *head)
+{
+	struct xa_node *node = container_of(head, struct xa_node, rcu_head);
+
+	memset(node->slots, 0, sizeof(node->slots));
+	memset(node->marks, 0, sizeof(node->marks));
+	INIT_LIST_HEAD(&node->private_list);
+
+	kmem_cache_free(xa_node_cachep, node);
+}
+
+static void xa_node_ctor(void *arg)
+{
+	struct xa_node *node = arg;
+
+	memset(node, 0, sizeof(*node));
+	INIT_LIST_HEAD(&node->private_list);
+}
+
+void __init xarray_init(void)
+{
+	BUILD_BUG_ON(XA_CHUNK_SIZE > 255);
+	xa_node_cachep = kmem_cache_create("xa_node", sizeof(struct xa_node), 0,
+					   SLAB_PANIC | SLAB_RECLAIM_ACCOUNT,
+					   xa_node_ctor);
+}
 
 #define XA_RCU_FREE ((struct xarray *)1)
 
@@ -131,7 +157,7 @@ static void xa_node_free(struct xa_node *node)
 {
 	XA_NODE_BUG_ON(node, !list_empty(&node->private_list));
 	node->array = XA_RCU_FREE;
-	call_rcu(&node->rcu_head, radix_tree_node_rcu_free);
+	call_rcu(&node->rcu_head, xa_node_rcu_free);
 }
 
 bool xas_nomem(struct xa_state *xas, gfp_t gfp)
@@ -142,14 +168,14 @@ bool xas_nomem(struct xa_state *xas, gfp_t gfp)
 		while (node) {
 			XA_NODE_BUG_ON(node, !list_empty(&node->private_list));
 			next = rcu_dereference_raw(node->parent);
-			radix_tree_node_rcu_free(&node->rcu_head);
+			xa_node_rcu_free(&node->rcu_head);
 			xas->xa_alloc = node = next;
 		}
 		return false;
 	}
 	if (xas->xa->xa_flags & XA_FLAGS_ACCOUNT)
 		gfp |= __GFP_ACCOUNT;
-	xas->xa_alloc = kmem_cache_alloc(radix_tree_node_cachep, gfp);
+	xas->xa_alloc = kmem_cache_alloc(xa_node_cachep, gfp);
 	if (!xas->xa_alloc)
 		return false;
 	xas->xa_alloc->parent = NULL;
@@ -180,7 +206,7 @@ static void *xas_alloc(struct xa_state *xas, unsigned int shift)
 	if (node) {
 		xas->xa_alloc = NULL;
 	} else {
-		node = kmem_cache_alloc(radix_tree_node_cachep,
+		node = kmem_cache_alloc(xa_node_cachep,
 					GFP_NOWAIT | __GFP_NOWARN);
 		if (!node) {
 			xas_set_err(xas, -ENOMEM);

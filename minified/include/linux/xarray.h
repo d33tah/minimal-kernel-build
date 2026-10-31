@@ -96,11 +96,10 @@ struct xa_node {
 		struct rcu_head rcu_head;
 	};
 	void __rcu *slots[XA_CHUNK_SIZE];
-	union {
-		unsigned long tags[XA_MAX_MARKS][XA_MARK_LONGS],
-			marks[XA_MAX_MARKS][XA_MARK_LONGS];
-	};
+	unsigned long marks[XA_MAX_MARKS][XA_MARK_LONGS];
 };
+
+void xarray_init(void);
 
 #define XA_NODE_BUG_ON(node, x) \
 	do {                    \

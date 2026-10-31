@@ -8,9 +8,7 @@ static inline int numa_node_id(void)
 }
 
 /* Inlined from asm-generic/topology.h */
-#ifndef cpu_to_node
 #define cpu_to_node(cpu) ((void)(cpu), 0)
-#endif
 
 /* cpu_coregroup_mask, cpu_clustergroup_mask declarations removed - no implementation */
 

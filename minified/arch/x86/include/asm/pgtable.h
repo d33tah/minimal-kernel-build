@@ -5,8 +5,6 @@
 /* pgprot_noncached removed - its only refs were the dead pgprot_writecombine /
  * pgprot_device fallback macros in linux/pgtable.h (0 callers) */
 
-#ifndef __ASSEMBLY__
-
 /* Inlined from asm/pkru.h */
 /* End of pkru.h */
 /* --- 2025-12-07 20:42 --- Inlined coco.h */
@@ -161,11 +159,8 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 
 /* pti_set_user_pgtbl removed - unused */
 
-#endif
-
 #include <asm/pgtable_32.h>
 
-#ifndef __ASSEMBLY__
 #include <asm/fixmap.h>
 
 static inline int pte_none(pte_t pte)
@@ -217,12 +212,8 @@ static inline int pmd_bad(pmd_t pmd)
 
 /* p4d_index removed - unused */
 
-#endif
-
 #define KERNEL_PGD_BOUNDARY pgd_index(PAGE_OFFSET)
 #define KERNEL_PGD_PTRS (PTRS_PER_PGD - KERNEL_PGD_BOUNDARY)
-
-#ifndef __ASSEMBLY__
 
 void init_mem_mapping(void);
 void early_alloc_pgt_buf(void);
@@ -268,7 +259,5 @@ static inline void clone_pgd_range(pgd_t *dst, pgd_t *src, int count)
 /* pfn_modify_allowed removed - sole caller vmf_insert_pfn_prot removed */
 
 /* arch_has_pfn_modify_check, arch_faults_on_old_pte removed - unused */
-
-#endif
 
 #endif

@@ -3,8 +3,6 @@
 #ifndef _ASM_X86_FIXMAP_H
 #define _ASM_X86_FIXMAP_H
 
-#ifndef __ASSEMBLY__
-
 extern unsigned long __FIXADDR_TOP;
 #define FIXADDR_TOP ((unsigned long)__FIXADDR_TOP)
 
@@ -34,5 +32,4 @@ static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 
 #define clear_fixmap(idx) __set_fixmap(idx, 0, __pgprot(0))
 
-#endif
 #endif

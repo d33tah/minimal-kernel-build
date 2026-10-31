@@ -60,9 +60,7 @@ static inline bool pagefault_disabled(void)
 
 long notrace copy_to_kernel_nofault(void *dst, const void *src, size_t size);
 
-#ifndef user_read_access_begin
 #define user_read_access_begin user_access_begin
 #define user_read_access_end user_access_end
-#endif
 
 #endif

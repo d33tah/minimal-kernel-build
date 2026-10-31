@@ -8,9 +8,6 @@
 
  
 /* Inlined from asm-generic/access_ok.h */
-#ifndef TASK_SIZE_MAX
-#define TASK_SIZE_MAX			TASK_SIZE
-#endif
 
 static inline int __access_ok(const void __user *ptr, unsigned long size) {
 	unsigned long limit = TASK_SIZE_MAX;

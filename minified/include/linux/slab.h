@@ -57,9 +57,7 @@ void kfree(const void *objp);
 
 #define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long long)
 
-#ifndef ARCH_SLAB_MINALIGN
 #define ARCH_SLAB_MINALIGN __alignof__(unsigned long long)
-#endif
 
 static inline unsigned int arch_slab_minalign(void)
 {
@@ -71,15 +69,11 @@ static inline unsigned int arch_slab_minalign(void)
 #define __assume_page_alignment __assume_aligned(PAGE_SIZE)
 
 #define KMALLOC_SHIFT_HIGH (PAGE_SHIFT + 1)
-#ifndef KMALLOC_SHIFT_LOW
 #define KMALLOC_SHIFT_LOW 3
-#endif
 
 #define KMALLOC_MAX_CACHE_SIZE (1UL << KMALLOC_SHIFT_HIGH)
 
-#ifndef KMALLOC_MIN_SIZE
 #define KMALLOC_MIN_SIZE (1 << KMALLOC_SHIFT_LOW)
-#endif
 
 enum kmalloc_cache_type { KMALLOC_NORMAL = 0, NR_KMALLOC_TYPES };
 

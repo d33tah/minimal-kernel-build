@@ -20,9 +20,7 @@
 #define AT_RANDOM 25
 #define AT_HWCAP2 26
 #define AT_EXECFN 31
-#ifndef AT_MINSIGSTKSZ
 #define AT_MINSIGSTKSZ 51
-#endif
 #define AT_VECTOR_SIZE_BASE 20
 #include <linux/jiffies.h>
 

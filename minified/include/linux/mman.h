@@ -8,13 +8,9 @@
 #define MAP_SHARED 0x01
 #define MAP_PRIVATE 0x02
 
-#ifndef MAP_SYNC
 #define MAP_SYNC 0
-#endif
 
-#ifndef arch_calc_vm_flag_bits
 #define arch_calc_vm_flag_bits(flags) 0
-#endif
 
 #define _calc_vm_trans(x, bit1, bit2)                                     \
 	((!(bit1) || !(bit2)) ?                                           \

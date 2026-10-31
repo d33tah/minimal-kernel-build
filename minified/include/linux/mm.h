@@ -106,13 +106,9 @@ static inline void totalram_pages_add(long count)
 
 extern void *high_memory;
 
-#ifndef untagged_addr
 #define untagged_addr(addr) (addr)
-#endif
 
-#ifndef page_to_virt
 #define page_to_virt(x) __va(PFN_PHYS(page_to_pfn(x)))
-#endif
 
 /* BITS_PER_LONG == 32 */
 #define mm_zero_struct_page(pp) ((void)memset((pp), 0, sizeof(struct page)))
@@ -152,18 +148,14 @@ void vm_area_free(struct vm_area_struct *);
 
 #define VM_NOHUGEPAGE 0x40000000
 
-#ifndef VM_GROWSUP
 #define VM_GROWSUP VM_NONE
-#endif
 
 #define TASK_EXEC ((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0)
 
 #define VM_DATA_FLAGS_TSK_EXEC \
 	(VM_READ | VM_WRITE | TASK_EXEC | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
 
-#ifndef VM_STACK_DEFAULT_FLAGS
 #define VM_STACK_DEFAULT_FLAGS VM_DATA_DEFAULT_FLAGS
-#endif
 
 #define VM_STACK VM_GROWSDOWN
 

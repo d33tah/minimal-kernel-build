@@ -46,9 +46,7 @@ static inline void xa_init_flags(struct xarray *xa, gfp_t flags)
 #define xa_lock_irq(xa) spin_lock_irq(&(xa)->xa_lock)
 #define xa_unlock_irq(xa) spin_unlock_irq(&(xa)->xa_lock)
 
-#ifndef XA_CHUNK_SHIFT
 #define XA_CHUNK_SHIFT (CONFIG_BASE_SMALL ? 4 : 6)
-#endif
 #define XA_CHUNK_SIZE (1UL << XA_CHUNK_SHIFT)
 #define XA_CHUNK_MASK (XA_CHUNK_SIZE - 1)
 

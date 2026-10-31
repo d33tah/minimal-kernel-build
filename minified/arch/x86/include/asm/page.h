@@ -33,18 +33,14 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr, str
 
 #define alloc_zeroed_user_highpage_movable(vma, vaddr) 	alloc_page_vma(GFP_HIGHUSER_MOVABLE | __GFP_ZERO, vma, vaddr)
 
-#ifndef __pa
 #define __pa(x)		__phys_addr((unsigned long)(x))
-#endif
 
 #define __pa_nodebug(x)	__phys_addr_nodebug((unsigned long)(x))
  
  
 #define __pa_symbol(x) 	__phys_addr_symbol(__phys_reloc_hide((unsigned long)(x)))
 
-#ifndef __va
 #define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
-#endif
 
 /* __boot_va, __boot_pa removed - unused */
 
@@ -54,9 +50,7 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr, str
 
 /* Inlined from asm-generic/memory_model.h */
 #include <linux/pfn.h>
-#ifndef ARCH_PFN_OFFSET
 #define ARCH_PFN_OFFSET		(0UL)
-#endif
 #define __pfn_to_page(pfn)	(mem_map + ((pfn) - ARCH_PFN_OFFSET))
 #define __page_to_pfn(page)	((unsigned long)((page) - mem_map) + 				 ARCH_PFN_OFFSET)
 #define page_to_pfn __page_to_pfn

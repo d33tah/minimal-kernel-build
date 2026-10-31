@@ -36,8 +36,6 @@ static inline void cr4_clear_bits(unsigned long mask)
 	local_irq_restore(flags);
 }
 
-#ifndef MODULE
-
 struct tlb_state {
 	struct mm_struct *loaded_mm;
 
@@ -63,8 +61,6 @@ extern void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 
 /* arch_tlbbatch_flush declaration removed - no implementation */
 /* pte_flags_need_flush / pte_needs_flush / huge_pmd_needs_flush removed - zero callers tree-wide */
-
-#endif
 
 static inline void __native_tlb_flush_global(unsigned long cr4)
 {

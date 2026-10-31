@@ -1,7 +1,6 @@
 #ifndef _LINUX_MMZONE_H
 #define _LINUX_MMZONE_H
 
-#ifndef __ASSEMBLY__
 #ifndef __GENERATING_BOUNDS_H
 
 #include <linux/nodemask.h>
@@ -89,6 +88,5 @@ static inline struct pglist_data *NODE_DATA(int nid)
 	do {          \
 	} while (0)
 
-#endif
 #endif
 #endif

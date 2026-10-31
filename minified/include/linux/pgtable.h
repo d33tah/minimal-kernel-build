@@ -3,44 +3,34 @@
 
 #include <asm/pgtable.h>
 
-#ifndef __ASSEMBLY__
-
 #if 5 - defined(__PAGETABLE_P4D_FOLDED) - defined(__PAGETABLE_PUD_FOLDED) - \
 		defined(__PAGETABLE_PMD_FOLDED) !=                          \
 	CONFIG_PGTABLE_LEVELS
 #error CONFIG_PGTABLE_LEVELS is not consistent with __PAGETABLE_{P4D,PUD,PMD}_FOLDED
 #endif
 
-#ifndef USER_PGTABLES_CEILING
 #define USER_PGTABLES_CEILING 0UL
-#endif
 
 static inline unsigned long pte_index(unsigned long address)
 {
 	return (address >> PAGE_SHIFT) & (PTRS_PER_PTE - 1);
 }
 
-#ifndef pmd_index
 static inline unsigned long pmd_index(unsigned long address)
 {
 	return (address >> PMD_SHIFT) & (PTRS_PER_PMD - 1);
 }
 #define pmd_index pmd_index
-#endif
 
 /* pud_index removed - unused */
 
-#ifndef pgd_index
 #define pgd_index(a) (((a) >> PGDIR_SHIFT) & (PTRS_PER_PGD - 1))
-#endif
 
-#ifndef pte_offset_kernel
 static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)
 {
 	return (pte_t *)pmd_page_vaddr(*pmd) + pte_index(address);
 }
 #define pte_offset_kernel pte_offset_kernel
-#endif
 
 #define pte_offset_map(dir, address) pte_offset_kernel((dir), (address))
 #define pte_unmap(pte) ((void)(pte))
@@ -50,21 +40,15 @@ static inline pgd_t *pgd_offset_pgd(pgd_t *pgd, unsigned long address)
 	return (pgd + pgd_index(address));
 };
 
-#ifndef pgd_offset
 #define pgd_offset(mm, address) pgd_offset_pgd((mm)->pgd, (address))
-#endif
 
-#ifndef __HAVE_ARCH_UPDATE_MMU_TLB
 #define __HAVE_ARCH_UPDATE_MMU_TLB
-#endif
 
-#ifndef pte_sw_mkyoung
 static inline pte_t pte_sw_mkyoung(pte_t pte)
 {
 	return pte;
 }
 #define pte_sw_mkyoung pte_sw_mkyoung
-#endif
 
 /* pmd_access_permitted, pud_access_permitted removed - 0 callers tree-wide */
 
@@ -87,14 +71,8 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
 /* p4d_set_huge, pud_set_huge, pmd_set_huge, p4d_free_pud_page, pud_free_pmd_page,
    pmd_free_pte_page, p4d_clear_huge, pud_clear_huge, pmd_clear_huge removed - unused */
 
-#endif
-
-#if !defined(MAX_POSSIBLE_PHYSMEM_BITS) && !defined(CONFIG_64BIT)
 #define MAX_POSSIBLE_PHYSMEM_BITS 32
-#endif
 
-#ifndef pud_leaf
 #define pud_leaf(x) 0
-#endif
 
 #endif

@@ -4,7 +4,6 @@
 
 #define COMMAND_LINE_SIZE 2048
 
-
 /* 32-bit only kernel */
 
 #define PARAM_SIZE 4096
@@ -14,9 +13,6 @@
 struct pt_regs;
 
 /* __startup_64, startup_64_setup_env removed - 64-bit only, unused in 32-bit build */
-
-#ifndef _SETUP
-
 
  
 extern struct boot_params boot_params;
@@ -31,8 +27,6 @@ void *extend_brk(size_t size, size_t align);
 
 /* 32-bit only kernel */
 asmlinkage void __init i386_start_kernel(void);
-
-#endif  
 
 #else   
 

@@ -167,14 +167,19 @@ struct mm_struct *mm_alloc(void)
 	return mm_init(mm, current, current_user_ns());
 }
 
+static inline void __mmput(struct mm_struct *mm)
+{
+	exit_mmap(mm);
+	mmdrop(mm);
+}
+
 /*
- * Anchor-stub: runtime-dead in the minimal init flow. All callers are dead
- * paths (task exit, copy_process/dup_mm error unwind, and exec_mmap's old_mm
- * teardown where the init task has no prior user mm). Body emptied to drop the
- * __mmput teardown chain; symbol kept live for the LTO link.
+ * Decrement the use count and release all resources for an mm.
  */
 void mmput(struct mm_struct *mm)
 {
+	if (atomic_dec_and_test(&mm->mm_users))
+		__mmput(mm);
 }
 
 static void mm_release(struct task_struct *tsk, struct mm_struct *mm)

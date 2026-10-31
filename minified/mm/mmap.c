@@ -446,6 +446,18 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 	return IS_ERR_VALUE(ret) ? (int)ret : 0;
 }
 
+/*
+ * Release all mmaps. Upstream unmaps every VMA with unmap_vmas(), frees the
+ * page tables with free_pgtables() and the VMAs with remove_vma(); this tree
+ * has none of those, and __do_munmap() over the whole user range does the
+ * same three steps (zap_vma_range, VMA unlink + free, free_unused_pgtables).
+ * The mm's last user is gone, so nothing can race for its mmap_lock.
+ */
+void exit_mmap(struct mm_struct *mm)
+{
+	__do_munmap(mm, 0, TASK_SIZE);
+}
+
 int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 {
 	struct vm_area_struct *prev;

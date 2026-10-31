@@ -2,7 +2,6 @@
 
 #define ADAPTER_CGA 0
 #define ADAPTER_EGA 1
-#define ADAPTER_VGA 2
 
 static int adapter;
 
@@ -45,8 +44,10 @@ static void store_mode_params(void)
 }
 
 /*
- * vgacon reads orig_video_mode/isVGA/cols/lines/orig_x/orig_y; the CGA
- * check decides how many lines there are. No mode switch.
+ * vgacon reads orig_video_mode/cols/lines/orig_x/orig_y; the CGA check
+ * decides how many lines there are. EGA and VGA are not told apart:
+ * nothing reads the difference (vgacon only rejects the VLFB/EFI types a
+ * boot loader may store in orig_video_isVGA). No mode switch.
  */
 static void detect_adapter(void)
 {
@@ -58,15 +59,7 @@ static void detect_adapter(void)
 	intcall(0x10, &ireg, &oreg);
 
 	if (oreg.bl != 0x10) {
-		ireg.ax = 0x1a00;
-		intcall(0x10, &ireg, &oreg);
-
-		if (oreg.al == 0x1a) {
-			adapter = ADAPTER_VGA;
-			boot_params.screen_info.orig_video_isVGA = 1;
-		} else {
-			adapter = ADAPTER_EGA;
-		}
+		adapter = ADAPTER_EGA;
 	} else {
 		adapter = ADAPTER_CGA;
 	}

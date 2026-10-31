@@ -65,8 +65,15 @@ void folio_unlock(struct folio *folio)
 	clear_bit_unlock_is_negative_byte(PG_locked, folio_flags(folio, 0));
 }
 
+/*
+ * folio_lock() lands here only when folio_trylock() failed. Upstream sleeps
+ * in folio_wait_bit_common() until the holder unlocks; this kernel has no
+ * wait queues and no second task that could hold the lock, so contention is
+ * a bug: fail loudly instead of continuing without the lock.
+ */
 void __folio_lock(struct folio *folio)
 {
+	BUG();
 }
 
 static void *mapping_get_entry(struct address_space *mapping, pgoff_t index)

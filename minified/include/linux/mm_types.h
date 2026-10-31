@@ -140,7 +140,6 @@ struct mm_struct {
 		mm_context_t context;
 		unsigned long flags;
 		struct user_namespace *user_ns;
-		struct file __rcu *exe_file;
 		atomic_t tlb_flush_pending;
 	} __randomize_layout;
 	unsigned long cpu_bitmap[];

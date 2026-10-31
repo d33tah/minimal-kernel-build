@@ -22,7 +22,6 @@ struct fs_struct;
 struct nameidata;
 struct nsproxy;
 struct pid_namespace;
-struct sighand_struct;
 struct signal_struct;
 
 #define TASK_RUNNING 0x0000
@@ -49,17 +48,12 @@ struct task_struct {
 	unsigned int flags;
 	struct list_head run_list;
 	unsigned int slice_ticks;
-	struct list_head tasks;
 	struct mm_struct *mm, *active_mm;
-	int exit_signal;
 	unsigned int personality;
 	pid_t pid;
-	pid_t tgid;
-	struct task_struct __rcu *real_parent;
 	struct task_struct *group_leader;
 	struct pid *thread_pid;
 	struct hlist_node pid_links[PIDTYPE_MAX];
-	struct list_head thread_group, thread_node;
 	const struct cred __rcu *real_cred;
 	const struct cred __rcu *cred;
 	char comm[TASK_COMM_LEN];
@@ -68,7 +62,6 @@ struct task_struct {
 	struct files_struct *files;
 	struct nsproxy *nsproxy;
 	struct signal_struct *signal;
-	struct sighand_struct __rcu *sighand;
 	spinlock_t alloc_lock;
 	raw_spinlock_t pi_lock;
 	union {

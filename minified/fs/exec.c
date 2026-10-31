@@ -352,11 +352,6 @@ int begin_new_exec(struct linux_binprm *bprm)
 	 * The only exec caller (init) is a single-threaded group leader.
 	 */
 	bprm->point_of_no_return = true;
-	me->exit_signal = SIGCHLD;
-
-	retval = set_mm_exe_file(bprm->mm, bprm->file);
-	if (retval)
-		goto out;
 
 	acct_arg_size(bprm, 0);
 	retval = exec_mmap(bprm->mm);

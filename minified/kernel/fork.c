@@ -11,8 +11,6 @@
 #include <asm/pgalloc.h>
 #include <asm/mmu_context.h>
 
-static __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);
-
 static struct kmem_cache *task_struct_cachep;
 
 static inline struct task_struct *alloc_task_struct_node(int node)
@@ -39,11 +37,7 @@ static int alloc_thread_stack_node(struct task_struct *tsk, int node)
 
 static struct kmem_cache *signal_cachep;
 
-static struct kmem_cache *sighand_cachep;
-
 struct kmem_cache *files_cachep;
-
-static struct kmem_cache *fs_cachep;
 
 static struct kmem_cache *vm_area_cachep;
 
@@ -149,7 +143,6 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	mm->map_count = 0;
 	spin_lock_init(&mm->page_table_lock);
 	mm_init_cpumask(mm);
-	RCU_INIT_POINTER(mm->exe_file, NULL);
 	init_tlb_flush_pending(mm);
 
 	if (current->mm) {
@@ -196,25 +189,6 @@ struct mm_struct *mm_alloc(void)
  */
 void mmput(struct mm_struct *mm)
 {
-}
-
-int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
-{
-	struct file *old_exe_file;
-
-	old_exe_file = rcu_dereference_raw(mm->exe_file);
-
-	if (new_exe_file) {
-		if (unlikely(deny_write_access(new_exe_file)))
-			return -EACCES;
-		get_file(new_exe_file);
-	}
-	rcu_assign_pointer(mm->exe_file, new_exe_file);
-	if (old_exe_file) {
-		allow_write_access(old_exe_file);
-		fput(old_exe_file);
-	}
-	return 0;
 }
 
 static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
@@ -289,24 +263,6 @@ out:
 	return error;
 }
 
-static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
-{
-	struct sighand_struct *sig;
-
-	/*
-	 * Neither CLONE_SIGHAND nor CLONE_CLEAR_SIGHAND is ever set on this
-	 * build, so the sighand is always freshly allocated and inherited.
-	 */
-	sig = kmem_cache_alloc(sighand_cachep, GFP_KERNEL);
-	RCU_INIT_POINTER(tsk->sighand, sig);
-	if (!sig)
-		return -ENOMEM;
-
-	refcount_set(&sig->count, 1);
-
-	return 0;
-}
-
 static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct signal_struct *sig;
@@ -316,11 +272,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	tsk->signal = sig;
 	if (!sig)
 		return -ENOMEM;
-
-	refcount_set(&sig->sigcnt, 1);
-
-	sig->thread_head = (struct list_head)LIST_HEAD_INIT(tsk->thread_node);
-	tsk->thread_node = (struct list_head)LIST_HEAD_INIT(sig->thread_head);
 
 	task_lock(current->group_leader);
 	memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);
@@ -398,12 +349,9 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	retval = copy_fs(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_files;
-	retval = copy_sighand(clone_flags, p);
-	if (retval)
-		goto bad_fork_cleanup_fs;
 	retval = copy_signal(clone_flags, p);
 	if (retval)
-		goto bad_fork_cleanup_sighand;
+		goto bad_fork_cleanup_fs;
 	retval = copy_mm(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_signal;
@@ -425,17 +373,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	p->pid = pid_nr(pid);
 	/* CLONE_THREAD never set -> always a new thread-group leader */
 	p->group_leader = p;
-	p->tgid = p->pid;
-
-	INIT_LIST_HEAD(&p->thread_group);
-
-	write_lock_irq(&tasklist_lock);
-
-	/* CLONE_PARENT|CLONE_THREAD never set -> parent is always current */
-	p->real_parent = current;
-	p->exit_signal = args->exit_signal;
-
-	spin_lock(&current->sighand->siglock);
 
 	init_task_pid_links(p);
 	if (likely(p->pid)) {
@@ -451,14 +388,11 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 		init_task_pid(p, PIDTYPE_PGID, task_pgrp(current));
 		init_task_pid(p, PIDTYPE_SID, task_session(current));
 
-		list_add_tail_rcu(&p->tasks, &init_task.tasks);
 		attach_pid(p, PIDTYPE_TGID);
 		attach_pid(p, PIDTYPE_PGID);
 		attach_pid(p, PIDTYPE_SID);
 		attach_pid(p, PIDTYPE_PID);
 	}
-	spin_unlock(&current->sighand->siglock);
-	write_unlock_irq(&tasklist_lock);
 
 	return p;
 
@@ -470,7 +404,6 @@ bad_fork_cleanup_mm:
 bad_fork_cleanup_signal:
 	/* CLONE_THREAD never set -> signal_struct is always private here */
 	kmem_cache_free(signal_cachep, p->signal);
-bad_fork_cleanup_sighand:
 bad_fork_cleanup_fs:
 bad_fork_cleanup_files:
 bad_fork_cleanup_semundo:
@@ -511,7 +444,6 @@ pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 	struct kernel_clone_args args = {
 		.flags = ((lower_32_bits(flags) | CLONE_VM | CLONE_UNTRACED) &
 			  ~CSIGNAL),
-		.exit_signal = (lower_32_bits(flags) & CSIGNAL),
 		.fn = fn,
 		.fn_arg = arg,
 	};
@@ -519,30 +451,15 @@ pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 	return kernel_clone(&args);
 }
 
-static void sighand_ctor(void *data)
-{
-	struct sighand_struct *sighand = data;
-
-	spin_lock_init(&sighand->siglock);
-}
-
 void __init proc_caches_init(void)
 {
 	unsigned int mm_size;
 
-	sighand_cachep = kmem_cache_create(
-		"sighand_cache", sizeof(struct sighand_struct), 0,
-		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_TYPESAFE_BY_RCU |
-			SLAB_ACCOUNT,
-		sighand_ctor);
 	signal_cachep = kmem_cache_create(
 		"signal_cache", sizeof(struct signal_struct), 0,
 		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
 	files_cachep = kmem_cache_create(
 		"files_cache", sizeof(struct files_struct), 0,
-		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
-	fs_cachep = kmem_cache_create(
-		"fs_cache", sizeof(struct fs_struct), 0,
 		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
 
 	mm_size = sizeof(struct mm_struct) + cpumask_size();

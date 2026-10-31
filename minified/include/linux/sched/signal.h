@@ -6,14 +6,7 @@
 
 #include <linux/mm_types.h>
 
-struct sighand_struct {
-	spinlock_t siglock;
-	refcount_t count;
-};
-
 struct signal_struct {
-	refcount_t sigcnt;
-	struct list_head thread_head;
 	struct pid *pids[PIDTYPE_MAX];
 	struct rlimit rlim[RLIM_NLIMITS];
 	struct mutex cred_guard_mutex;

@@ -3,10 +3,6 @@
 # Makefile for the linux memory manager.
 #
 
-# These files are disabled because they produce non-interesting and/or
-# flaky coverage that is not a function of syscall inputs. E.g. slab is out of
-# free pages, or a task is migrated between nodes.
-
 CFLAGS_init-mm.o += $(call cc-disable-warning, override-init)
 CFLAGS_init-mm.o += $(call cc-disable-warning, initializer-overrides)
 
@@ -20,12 +16,8 @@ obj-y			:= filemap.o \
 			   percpu.o slab_common.o \
 			   gup.o $(mmu-y)
 
-# Give 'page_alloc' its own module-parameter namespace
-page-alloc-y := page_alloc.o
-
-obj-y += page-alloc.o
+obj-y += page_alloc.o
 obj-y += init-mm.o
 obj-y += memblock.o
 
-# obj-$(CONFIG_HAS_DMA)	+= dmapool.o  # deleted
 obj-$(CONFIG_SLUB) += slub.o

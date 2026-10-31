@@ -6,7 +6,6 @@
 # string.o implements standard library functions like memset/memcpy etc.
 # Use -ffreestanding to ensure that the compiler does not try to "optimize"
 # them into calls to themselves.
-CFLAGS_string.o := -ffreestanding
 
 lib-y := string.o xarray.o irq_regs.o
 

@@ -21,11 +21,9 @@ obj-y     = fork.o panic.o \
 
 obj-y += sched/
 obj-y += locking/
-obj-y += power/
 obj-y += printk/
 obj-y += irq/
 obj-y += rcu/
-obj-y += dma/
 obj-y += entry/
 
 obj-y += time/

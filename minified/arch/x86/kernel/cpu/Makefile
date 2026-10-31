@@ -9,7 +9,6 @@
 # As above, instrumenting secondary CPU boot code causes boot hangs.
 
 # Make sure load_percpu_segment has no stackprotector
-CFLAGS_common.o		:= -fno-stack-protector
 
 obj-y			:= common.o
 obj-y			+= bugs.o

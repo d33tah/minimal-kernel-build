@@ -19,7 +19,6 @@ CPPFLAGS_vmlinux.lds += -U$(UTS_MACHINE)
 # boot, dumpstack/stacktrace, etc are either non-interesting or can lead to
 # non-deterministic coverage.
 
-CFLAGS_irq.o := -I $(srctree)/$(src)/../include/asm/trace
 
 obj-y			:= process_$(BITS).o signal.o
 obj-y			+= traps.o idt.o irq.o irq_$(BITS).o

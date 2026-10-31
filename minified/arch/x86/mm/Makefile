@@ -8,7 +8,6 @@ obj-y				:=  init.o init_$(BITS).o fault.o extable.o \
 				    pgtable.o tlb.o pgprot.o
 
 
-CFLAGS_fault.o := -I $(srctree)/$(src)/../include/asm/trace
 
 obj-$(CONFIG_X86_32)		+= pgtable_32.o
 

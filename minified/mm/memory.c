@@ -162,7 +162,6 @@ static vm_fault_t do_wp_page(struct vm_fault *vmf) __releases(vmf->ptl)
 
 static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 {
-	/* Minimal stub: simplified anonymous page fault handling */
 	struct vm_area_struct *vma = vmf->vma;
 	struct page *page;
 	pte_t entry;
@@ -379,7 +378,6 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 static vm_fault_t __handle_mm_fault(struct vm_area_struct *vma,
 				    unsigned long address, unsigned int flags)
 {
-	/* Minimal stub: simplified page fault handling without huge pages */
 	struct vm_fault vmf = {
 		.vma = vma,
 		.address = address & PAGE_MASK,

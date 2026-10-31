@@ -163,17 +163,35 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 
 /* Removed: vma_wants_writenotify - was used only by vma_set_page_prot (~4 LOC) */
 
+/*
+ * We account for memory if it's a private writeable mapping,
+ * not hugepages and VM_NORESERVE wasn't set.
+ */
+static inline int accountable_mapping(struct file *file, vm_flags_t vm_flags)
+{
+	return (vm_flags & (VM_SHARED | VM_WRITE)) == VM_WRITE;
+}
+
 unsigned long mmap_region(struct file *file, unsigned long addr,
 			  unsigned long len, vm_flags_t vm_flags,
 			  unsigned long pgoff)
 {
-	/* Minimal stub: simplified mmap without complex VMA merging/splitting */
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma;
 	struct vm_area_struct *prev = NULL;
+	unsigned long charged = 0;
 
 	if (munmap_vma_range(mm, addr, len, &prev))
 		return -ENOMEM;
+	/*
+	 * Private writable mapping: check memory availability
+	 */
+	if (accountable_mapping(file, vm_flags)) {
+		charged = len >> PAGE_SHIFT;
+		if (security_vm_enough_memory_mm(mm, charged))
+			return -ENOMEM;
+		vm_flags |= VM_ACCOUNT;
+	}
 
 	vma = vm_area_alloc(mm);
 	if (!vma)

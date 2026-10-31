@@ -2,6 +2,7 @@
 #include <linux/memblock.h>
 
 #include <linux/sched/mm.h>
+#include <asm/div64.h>
 
 #include "internal.h"
 
@@ -18,6 +19,9 @@ gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
 static char *const zone_names[MAX_NR_ZONES] = {
 	"Normal",
 };
+
+static unsigned long nr_kernel_pages __initdata;
+static unsigned long nr_all_pages __initdata;
 
 static unsigned long arch_zone_lowest_possible_pfn[MAX_NR_ZONES] __initdata;
 static unsigned long arch_zone_highest_possible_pfn[MAX_NR_ZONES] __initdata;
@@ -557,6 +561,14 @@ static void __meminit zone_init_internals(struct zone *zone, enum zone_type idx,
 	spin_lock_init(&zone->lock);
 }
 
+static unsigned long __init calc_memmap_size(unsigned long spanned_pages,
+					     unsigned long present_pages)
+{
+	unsigned long pages = spanned_pages;
+
+	return PAGE_ALIGN(pages * sizeof(struct page)) >> PAGE_SHIFT;
+}
+
 static void __init free_area_init_core(struct pglist_data *pgdat)
 {
 	enum zone_type j;
@@ -564,7 +576,23 @@ static void __init free_area_init_core(struct pglist_data *pgdat)
 
 	for (j = 0; j < MAX_NR_ZONES; j++) {
 		struct zone *zone = pgdat->node_zones + j;
-		unsigned long size = zone->spanned_pages;
+		unsigned long size, freesize, memmap_pages;
+
+		size = zone->spanned_pages;
+		freesize = zone->present_pages;
+
+		/*
+		 * Adjust freesize so that it accounts for how much memory
+		 * is used by this zone for memmap. This affects the watermark
+		 * and per-cpu initialisations
+		 */
+		memmap_pages = calc_memmap_size(size, freesize);
+		if (freesize >= memmap_pages) {
+			freesize -= memmap_pages;
+		}
+
+		nr_kernel_pages += freesize;
+		nr_all_pages += freesize;
 
 		zone_init_internals(zone, j, nid);
 
@@ -638,7 +666,6 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 	unsigned long start_pfn, end_pfn;
 	int i;
 
-	/* Minimal zone setup - just set up basic pfn ranges */
 	memset(arch_zone_lowest_possible_pfn, 0,
 	       sizeof(arch_zone_lowest_possible_pfn));
 	memset(arch_zone_highest_possible_pfn, 0,
@@ -668,22 +695,55 @@ void *__init alloc_large_system_hash(const char *tablename,
 				     unsigned long low_limit,
 				     unsigned long high_limit)
 {
+	unsigned long long max = high_limit;
 	unsigned long log2qty, size;
-	void *table;
+	void *table = NULL;
 
-	/* Minimal stub: simple hash table allocation */
-	if (!numentries)
-		numentries = 256; /* Small default */
+	/* allow the kernel cmdline to have a say */
+	if (!numentries) {
+		/* round applicable memory size up to nearest megabyte */
+		numentries = nr_kernel_pages;
+
+		/* It isn't necessary when PAGE_SIZE >= 1MB */
+		if (PAGE_SHIFT < 20)
+			numentries =
+				round_up(numentries, (1 << 20) / PAGE_SIZE);
+
+		/* limit to 1 bucket per 2^scale bytes of low memory */
+		if (scale > PAGE_SHIFT)
+			numentries >>= (scale - PAGE_SHIFT);
+		else
+			numentries <<= (PAGE_SHIFT - scale);
+
+		/* Make sure we've got at least a 0-order allocation.. */
+		if (unlikely((numentries * bucketsize) < PAGE_SIZE))
+			numentries = PAGE_SIZE / bucketsize;
+	}
 	numentries = roundup_pow_of_two(numentries);
+
+	/* limit allocation size to 1/16 total memory by default */
+	if (max == 0) {
+		max = ((unsigned long long)nr_all_pages << PAGE_SHIFT) >> 4;
+		do_div(max, bucketsize);
+	}
+	max = min(max, 0x80000000ULL);
+
+	if (numentries < low_limit)
+		numentries = low_limit;
+	if (numentries > max)
+		numentries = max;
+
 	log2qty = ilog2(numentries);
-	size = bucketsize << log2qty;
 
 	/*
 	 * The only runtime caller (dcache_init_early) always passes HASH_EARLY
-	 * because hashdist is the compile-time constant 0, so the non-early
-	 * alloc_pages_exact() arm is unreachable. Always use memblock.
+	 * | HASH_ZERO and hashdist is the compile-time constant 0, so only the
+	 * zeroed memblock arm is reachable.
 	 */
-	table = memblock_alloc(size, SMP_CACHE_BYTES);
+	do {
+		size = bucketsize << log2qty;
+		table = memblock_alloc(size, SMP_CACHE_BYTES);
+	} while (!table && size > PAGE_SIZE && --log2qty);
 
 	if (!table)
 		panic("Failed to allocate %s hash table\n", tablename);

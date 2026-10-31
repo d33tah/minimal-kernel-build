@@ -32,8 +32,6 @@ obj-y += time/
 # obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o  # deleted
 
 
-# Always build events/ for stubs
-obj-y += events/
 
 
 

@@ -43,17 +43,32 @@
 	})
 
 #include <asm/traps.h>
-#include <asm/insn-eval.h>
+
+/*
+ * Register numbers of _ASM_EXTABLE_TYPE_REG (asm.h: ax=0 ... di=7) and
+ * EX_REG_DS/ES/FS (8-10) to their pt_regs slots. This used to be the
+ * instruction decoder's pt_regs_offset(); once that was compiled out, a
+ * zero-filled data array of the same name satisfied the link, so every
+ * register-type fixup (UCOPY_LEN, ZERO_REG, POP_ZERO) executed .bss as code
+ * and a faulting copy_from_user() never returned -EFAULT.
+ */
+static const int pt_regoff[] = {
+	offsetof(struct pt_regs, ax), offsetof(struct pt_regs, cx),
+	offsetof(struct pt_regs, dx), offsetof(struct pt_regs, bx),
+	offsetof(struct pt_regs, sp), offsetof(struct pt_regs, bp),
+	offsetof(struct pt_regs, si), offsetof(struct pt_regs, di),
+	offsetof(struct pt_regs, ds), offsetof(struct pt_regs, es),
+	offsetof(struct pt_regs, fs), offsetof(struct pt_regs, gs),
+};
 
 static inline unsigned long *pt_regs_nr(struct pt_regs *regs, int nr)
 {
-	int reg_offset = pt_regs_offset(regs, nr);
 	static unsigned long __dummy;
 
-	if (WARN_ON_ONCE(reg_offset < 0))
+	if (WARN_ON_ONCE((unsigned int)nr >= ARRAY_SIZE(pt_regoff)))
 		return &__dummy;
 
-	return (unsigned long *)((unsigned long)regs + reg_offset);
+	return (unsigned long *)((unsigned long)regs + pt_regoff[nr]);
 }
 
 static inline unsigned long ex_fixup_addr(const struct exception_table_entry *x)

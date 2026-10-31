@@ -3,13 +3,9 @@
 
 #include <asm/atomic.h>
 
-#ifndef __atomic_acquire_fence
 #define __atomic_acquire_fence smp_mb__after_atomic
-#endif
 
-#ifndef __atomic_release_fence
 #define __atomic_release_fence smp_mb__before_atomic
-#endif
 
 #include <linux/atomic/atomic-arch-fallback.h>
 #include <linux/atomic/atomic-long.h>

@@ -218,12 +218,10 @@ static inline bool test_and_set_bit_lock(long nr, volatile unsigned long *addr)
 	return arch_test_and_set_bit_lock(nr, addr);
 }
 
-#if defined(arch_clear_bit_unlock_is_negative_byte)
 static inline bool
 clear_bit_unlock_is_negative_byte(long nr, volatile unsigned long *addr)
 {
 	return arch_clear_bit_unlock_is_negative_byte(nr, addr);
 }
-#endif
 
 #endif

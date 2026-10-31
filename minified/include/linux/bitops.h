@@ -31,7 +31,6 @@ static inline unsigned fls_long(unsigned long l)
 
 /* __ffs64 - unused */
 
-#ifndef set_mask_bits
 #define set_mask_bits(ptr, mask, bits)                                 \
 	({                                                             \
 		const typeof(*(ptr)) mask__ = (mask), bits__ = (bits); \
@@ -42,6 +41,5 @@ static inline unsigned fls_long(unsigned long l)
 		} while (cmpxchg(ptr, old__, new__) != old__);         \
 		old__;                                                 \
 	})
-#endif
 
 #endif

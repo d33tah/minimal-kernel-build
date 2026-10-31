@@ -2,10 +2,6 @@
 #ifndef _ASM_X86_MSR_H
 #define _ASM_X86_MSR_H
 
-
-#ifndef __ASSEMBLY__
-
-
 #define DECLARE_ARGS(val, low, high)	unsigned long long val
 #define EAX_EDX_VAL(val, low, high)	(val)
 #define EAX_EDX_RET(val, low, high)	"=A" (val)
@@ -35,5 +31,4 @@ static __always_inline unsigned long long rdtsc_ordered(void) {
 
  
 
-#endif
 #endif

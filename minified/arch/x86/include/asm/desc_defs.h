@@ -3,8 +3,6 @@
 #ifndef _ASM_X86_DESC_DEFS_H
 #define _ASM_X86_DESC_DEFS_H
 
-#ifndef __ASSEMBLY__
-
 struct desc_struct {
 	u16 limit0, base0;
 	u16 base1 : 8, type : 4, s : 1, dpl : 2, p : 1;
@@ -68,7 +66,5 @@ struct desc_ptr {
 	unsigned short size;
 	unsigned long address;
 } __attribute__((packed));
-
-#endif
 
 #endif

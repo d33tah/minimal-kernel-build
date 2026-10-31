@@ -5,7 +5,6 @@
 #include <asm/segment.h>
 #include <asm/processor-flags.h>
 
-#ifndef __ASSEMBLY__
 /* 32-bit only kernel - removed x86_64 pt_regs */
 struct pt_regs {
 	unsigned long bx, cx, dx, si, di, bp, ax;
@@ -24,5 +23,4 @@ static __always_inline int user_mode(struct pt_regs *regs)
 	       USER_RPL;
 }
 
-#endif /* !__ASSEMBLY__ */
 #endif /* _ASM_X86_PTRACE_H */

@@ -4,8 +4,6 @@
 #define EDDMAXNR 6
 #define EDD_MBR_SIG_MAX 16
 
-#ifndef __ASSEMBLY__
-
 struct edd_device_params {
 	__u16 length;
 	__u16 info_flags;
@@ -37,5 +35,4 @@ struct edd_info {
 	struct edd_device_params params;
 } __attribute__((packed));
 
-#endif
 #endif

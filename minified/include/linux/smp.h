@@ -5,9 +5,7 @@
 
 #define raw_smp_processor_id() 0
 
-#ifndef __smp_processor_id
 #define __smp_processor_id(x) raw_smp_processor_id(x)
-#endif
 
 #define smp_processor_id() __smp_processor_id()
 

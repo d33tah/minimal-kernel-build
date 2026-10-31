@@ -4,8 +4,6 @@
 
 #include <asm/processor-flags.h>
 
-#ifndef __ASSEMBLY__
-
 #include <asm/nospec-branch.h>
 
 #define __cpuidle __section(".cpuidle.text")
@@ -44,10 +42,6 @@ static inline __cpuidle void native_halt(void)
 	asm volatile("hlt" : : : "memory");
 }
 
-#endif
-
-#ifndef __ASSEMBLY__
-
 static __always_inline unsigned long arch_local_save_flags(void)
 {
 	return native_save_fl();
@@ -80,9 +74,6 @@ static __always_inline unsigned long arch_local_irq_save(void)
 	return flags;
 }
 
-#endif
-
-#ifndef __ASSEMBLY__
 static __always_inline int arch_irqs_disabled_flags(unsigned long flags)
 {
 	return !(flags & X86_EFLAGS_IF);
@@ -93,6 +84,5 @@ static __always_inline void arch_local_irq_restore(unsigned long flags)
 	if (!arch_irqs_disabled_flags(flags))
 		arch_local_irq_enable();
 }
-#endif
 
 #endif

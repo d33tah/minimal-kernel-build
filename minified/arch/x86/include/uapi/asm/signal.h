@@ -2,10 +2,7 @@
 #ifndef _UAPI_ASM_X86_SIGNAL_H
 #define _UAPI_ASM_X86_SIGNAL_H
 
-#ifndef __ASSEMBLY__
-
 /* userspace-only NSIG + sigset_t (#ifndef __KERNEL__) removed - kernel uses _NSIG + own sigset_t */
-#endif
 
 #define SIGILL 4
 #define SIGTRAP 5
@@ -23,22 +20,12 @@
 /* SA_NOCLDSTOP/NOCLDWAIT/SIGINFO/UNSUPPORTED/EXPOSE_TAGBITS/ONSTACK/RESTART/
  * NODEFER/RESETHAND removed - unused (only consumer UAPI_SA_FLAGS was dead) */
 
-#ifndef SIG_BLOCK
 #define SIG_BLOCK 0
-#endif
-#ifndef SIG_UNBLOCK
 #define SIG_UNBLOCK 1
-#endif
-#ifndef SIG_SETMASK
 #define SIG_SETMASK 2
-#endif
 
 /* end signal-defs.h inlining */
 
-#ifndef __ASSEMBLY__
-
 /* userspace-only struct sigaction + sa_handler/sa_sigaction (#ifndef __KERNEL__) removed - kernel uses struct sigaction in signal_types.h */
-
-#endif
 
 #endif

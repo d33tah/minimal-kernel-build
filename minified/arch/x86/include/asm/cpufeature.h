@@ -2,8 +2,6 @@
 #ifndef _ASM_X86_CPUFEATURE_H
 #define _ASM_X86_CPUFEATURE_H
 
-#if defined(__KERNEL__) && !defined(__ASSEMBLY__)
-
 enum cpuid_leafs {
 	CPUID_1_EDX = 0,
 	CPUID_8000_0001_EDX,
@@ -36,5 +34,4 @@ enum cpuid_leafs {
 
 #define static_cpu_has(bit) boot_cpu_has(bit)
 
-#endif
 #endif

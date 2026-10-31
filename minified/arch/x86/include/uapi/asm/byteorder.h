@@ -3,12 +3,7 @@
 #define _ASM_X86_BYTEORDER_H
 
 /* --- 2025-12-07 23:55 --- Inlined from uapi/linux/byteorder/little_endian.h */
-#ifndef __LITTLE_ENDIAN
-#define __LITTLE_ENDIAN 1234
-#endif
-#ifndef __LITTLE_ENDIAN_BITFIELD
 #define __LITTLE_ENDIAN_BITFIELD
-#endif
 
 #include <linux/swab.h>
 

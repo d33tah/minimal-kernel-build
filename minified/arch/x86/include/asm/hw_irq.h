@@ -4,8 +4,6 @@
 
 #include <asm/irq_vectors.h>
 
-#ifndef __ASSEMBLY__
-
 #include <linux/preempt.h>
 #include <linux/smp.h>
 
@@ -15,7 +13,5 @@ extern char irq_entries_start[];
 
 typedef struct irq_desc *vector_irq_t[NR_VECTORS];
 DECLARE_PER_CPU(vector_irq_t, vector_irq);
-
-#endif
 
 #endif

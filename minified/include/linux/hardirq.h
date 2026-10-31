@@ -13,14 +13,12 @@ void irq_enter_rcu(void);
 
 void irq_exit_rcu(void);
 
-#ifndef arch_nmi_enter
 #define arch_nmi_enter() \
 	do {             \
 	} while (0)
 #define arch_nmi_exit() \
 	do {            \
 	} while (0)
-#endif
 
 #define __nmi_enter()                                             \
 	do {                                                      \

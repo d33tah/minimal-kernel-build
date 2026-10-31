@@ -17,21 +17,11 @@ struct rlimit {
 #define RLIMIT_STACK 3
 #define RLIMIT_CORE 4
 
-#ifndef RLIMIT_RSS
 #define RLIMIT_RSS 5
-#endif
-#ifndef RLIMIT_NPROC
 #define RLIMIT_NPROC 6
-#endif
-#ifndef RLIMIT_NOFILE
 #define RLIMIT_NOFILE 7
-#endif
-#ifndef RLIMIT_MEMLOCK
 #define RLIMIT_MEMLOCK 8
-#endif
-#ifndef RLIMIT_AS
 #define RLIMIT_AS 9
-#endif
 
 #define RLIMIT_LOCKS 10
 #define RLIMIT_SIGPENDING 11
@@ -41,9 +31,7 @@ struct rlimit {
 #define RLIMIT_RTTIME 15
 #define RLIM_NLIMITS 16
 
-#ifndef RLIM_INFINITY
 #define RLIM_INFINITY (~0UL)
-#endif
 
 #define MQ_BYTES_MAX 819200
 

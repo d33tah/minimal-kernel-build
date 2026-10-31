@@ -8,11 +8,8 @@ extern unsigned long lpj_fine;
 
 #include <asm/delay.h>
 
-#ifndef MAX_UDELAY_MS
 #define MAX_UDELAY_MS 5
-#endif
 
-#ifndef mdelay
 #define mdelay(n)                                            \
 	((__builtin_constant_p(n) && (n) <= MAX_UDELAY_MS) ? \
 		 udelay((n) * 1000) :                        \
@@ -21,7 +18,6 @@ extern unsigned long lpj_fine;
 			 while (__ms--)                      \
 				 udelay(1000);               \
 		 }))
-#endif
 
 void calibrate_delay(void);
 

@@ -7,9 +7,7 @@
 
 #define MSEC_PER_SEC 1000L
 
-#ifndef __jiffy_arch_data
 #define __jiffy_arch_data
-#endif
 
 extern u64 __cacheline_aligned_in_smp jiffies_64;
 extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data

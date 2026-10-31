@@ -220,6 +220,11 @@ static __always_inline void set_compound_head(struct page *page,
 	WRITE_ONCE(page->compound_head, (unsigned long)head + 1);
 }
 
+static __always_inline void clear_compound_head(struct page *page)
+{
+	WRITE_ONCE(page->compound_head, 0);
+}
+
 #define PAGE_TYPE_BASE 0xf0000000
 #define PG_buddy 0x00000080
 #define PG_table 0x00000200

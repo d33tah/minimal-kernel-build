@@ -151,15 +151,41 @@ done_merging:
 	add_to_free_list(page, zone, order, to_tail);
 }
 
+static void free_tail_pages_check(struct page *head_page, struct page *page)
+{
+	page->mapping = NULL;
+	clear_compound_head(page);
+}
+
+static __always_inline void free_pages_prepare(struct page *page,
+					       unsigned int order)
+{
+	/*
+	 * Check tail pages before head page information is cleared to
+	 * avoid checking PageCompound for order-0 pages.
+	 */
+	if (unlikely(order)) {
+		bool compound = PageCompound(page);
+		int i;
+
+		for (i = 1; i < (1 << order); i++) {
+			if (compound)
+				free_tail_pages_check(page, page + i);
+			(page + i)->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
+		}
+	}
+	if (PageMappingFlags(page))
+		page->mapping = NULL;
+	page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
+}
+
 static void __free_pages_ok(struct page *page, unsigned int order, bool tail)
 {
 	unsigned long flags;
 	unsigned long pfn = page_to_pfn(page);
 	struct zone *zone = page_zone(page);
 
-	if (PageMappingFlags(page))
-		page->mapping = NULL;
-	page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
+	free_pages_prepare(page, order);
 
 	spin_lock_irqsave(&zone->lock, flags);
 	__free_one_page(page, pfn, zone, order, tail);

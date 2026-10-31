@@ -11,8 +11,6 @@ void __init check_bugs(void)
 
 	init_utsname()->machine[1] =
 		'0' + (boot_cpu_data.x86 > 6 ? 6 : boot_cpu_data.x86);
-
-	alternative_instructions();
 }
 
 /* x86_virt_spec_ctrl, x86_spec_ctrl_setup_ap, itlb_multihit_kvm_mitigation,

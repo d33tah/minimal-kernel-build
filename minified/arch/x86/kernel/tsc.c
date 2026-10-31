@@ -6,7 +6,6 @@
 #include <linux/clocksource.h>
 
 #include <asm/timer.h>
-#include <asm/x86_init.h>
 #include <asm/i8259.h>
 
 unsigned int __read_mostly cpu_khz;
@@ -270,8 +269,8 @@ static bool __init determine_cpu_tsc_frequencies(bool early)
 	WARN_ON(cpu_khz || tsc_khz);
 
 	/* Only the early CPUID-based calibration path survives on this build. */
-	cpu_khz = x86_platform.calibrate_cpu();
-	tsc_khz = x86_platform.calibrate_tsc();
+	cpu_khz = native_calibrate_cpu_early();
+	tsc_khz = native_calibrate_tsc();
 
 	if (tsc_khz == 0)
 		tsc_khz = cpu_khz;

@@ -3,7 +3,6 @@
 #include <linux/interrupt.h>
 #include <linux/irq.h>
 
-#include <asm/x86_init.h>
 #include <asm/i8259.h>
 #include <asm/time.h>
 
@@ -29,7 +28,7 @@ void __init hpet_time_init(void)
 
 static __init void x86_late_time_init(void)
 {
-	x86_init.timers.timer_init();
+	hpet_time_init();
 
 	tsc_init();
 

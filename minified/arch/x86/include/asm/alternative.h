@@ -17,7 +17,6 @@
 
  
 
-extern void alternative_instructions(void);
 /* apply_retpolines, apply_returns, apply_ibt_endbr removed - unused stubs */
 
 struct module;

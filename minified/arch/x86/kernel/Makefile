@@ -24,9 +24,9 @@ CFLAGS_irq.o := -I $(srctree)/$(src)/../include/asm/trace
 obj-y			:= process_$(BITS).o signal.o
 obj-y			+= traps.o idt.o irq.o irq_$(BITS).o
 obj-y			+= time.o dumpstack.o nmi.o
-obj-y			+= setup.o x86_init.o i8259.o irqinit.o
+obj-y			+= setup.o i8259.o irqinit.o
 obj-y			+= e820.o
-obj-y			+= alternative.o i8253.o
+obj-y			+= i8253.o
 obj-y			+= tsc.o io_delay.o
 # resource.o removed - arch_remove_reservations never called
 obj-y			+= irqflags.o

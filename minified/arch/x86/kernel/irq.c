@@ -1,15 +1,9 @@
 #include <linux/smp.h>
 #include <linux/irq.h>
 
-#include <asm/apic.h>
 #include <asm/traps.h>
 
 DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
-
-void ack_bad_irq(unsigned int irq)
-{
-	ack_APIC_irq();
-}
 
 static __always_inline void handle_irq(struct irq_desc *desc,
 				       struct pt_regs *regs)
@@ -28,8 +22,6 @@ DEFINE_IDTENTRY_IRQ(common_interrupt)
 	if (likely(!IS_ERR_OR_NULL(desc))) {
 		handle_irq(desc, regs);
 	} else {
-		ack_APIC_irq();
-
 		if (desc == VECTOR_UNUSED) {
 			pr_emerg_ratelimited(
 				"%s: %d.%u No irq handler for vector\n",

@@ -13,6 +13,9 @@ DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
 
 #define inc_irq_stat(member) this_cpu_inc(irq_stat.member)
 
-extern void ack_bad_irq(unsigned int irq);
+/* 8259A only, no local APIC: nothing to acknowledge for a bad IRQ. */
+static inline void ack_bad_irq(unsigned int irq)
+{
+}
 
 #endif

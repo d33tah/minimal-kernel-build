@@ -11,7 +11,6 @@
 
 #ifndef __ASSEMBLY__
 #include <linux/spinlock.h>
-#include <asm/x86_init.h>
 
 /* Inlined from asm/pkru.h */
 #include <asm/cpufeature.h>

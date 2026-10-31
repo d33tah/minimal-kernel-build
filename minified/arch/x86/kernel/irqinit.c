@@ -1,9 +1,7 @@
 #include <linux/irq.h>
 
 #include <asm/desc.h>
-#include <asm/acpi.h>
 #include <asm/i8259.h>
-#include <asm/prom.h>
 
 DEFINE_PER_CPU(vector_irq_t, vector_irq) = {
 	[0 ... NR_VECTORS - 1] = VECTOR_UNUSED,
@@ -29,17 +27,15 @@ void __init init_IRQ(void)
 
 	BUG_ON(irq_init_percpu_irqstack(smp_processor_id()));
 
-	x86_init.irqs.intr_init();
+	native_init_IRQ();
 }
 
 void __init native_init_IRQ(void)
 {
-	x86_init.irqs.pre_vector_init();
+	init_ISA_irqs();
 
 	idt_setup_apic_and_irq_gates();
 
-	if (!acpi_ioapic && !of_ioapic && nr_legacy_irqs()) {
-		if (request_irq(2, no_action, NULL))
-			pr_err("%s: request_irq() failed\n", "cascade");
-	}
+	if (request_irq(2, no_action, NULL))
+		pr_err("%s: request_irq() failed\n", "cascade");
 }

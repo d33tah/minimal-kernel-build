@@ -4,7 +4,15 @@
 #include <linux/delay.h>
 
 #include <asm/traps.h>
-#include <asm/mach_traps.h>
+#include <asm/io.h>
+
+#define NMI_REASON_PORT 0x61
+#define NMI_REASON_SERR 0x80
+#define NMI_REASON_IOCHK 0x40
+#define NMI_REASON_MASK (NMI_REASON_SERR | NMI_REASON_IOCHK)
+#define NMI_REASON_CLEAR_SERR 0x04
+#define NMI_REASON_CLEAR_IOCHK 0x08
+#define NMI_REASON_CLEAR_MASK 0x0f
 
 static DEFINE_RAW_SPINLOCK(nmi_reason_lock);
 
@@ -60,7 +68,7 @@ nmi_restart:
 		cpu_relax();
 	}
 
-	reason = x86_platform.get_nmi_reason();
+	reason = inb(NMI_REASON_PORT);
 
 	if (reason & NMI_REASON_MASK) {
 		if (reason & NMI_REASON_SERR) {

@@ -3,10 +3,10 @@
 #include <linux/initrd.h>
 #include <linux/memblock.h>
 
-#include <asm/apic.h>
 #include <asm/e820/api.h>
-#include <asm/memtype.h>
-#include <asm/prom.h>
+#include <asm/setup.h>
+#include <asm/sections.h>
+#include <asm/io.h>
 #include <asm/tlbflush.h>
 #include <asm/desc.h>
 
@@ -144,8 +144,6 @@ void __init setup_arch(char **cmdline_p)
 	screen_info = boot_params.screen_info;
 	/* edid_info/apm_info/ist_info/saved_video_mode copies removed - never read */
 
-	/* x86_init.oem.arch_setup() removed - dispatched to x86_init_noop */
-
 	early_reserve_memory();
 
 	e820__memory_setup();
@@ -161,16 +159,9 @@ void __init setup_arch(char **cmdline_p)
 
 	max_pfn = e820__end_of_ram_pfn();
 
-	pat_disable(
-		"PAT support disabled because CONFIG_MTRR is disabled in the kernel.");
-
 	/* max_possible_pfn assignment removed - never read */
 
-	init_cache_modes();
-
 	find_low_pfn_range();
-
-	find_smp_config();
 
 	early_alloc_pgt_buf();
 
@@ -196,13 +187,11 @@ void __init setup_arch(char **cmdline_p)
 
 	/* dma_contiguous_reserve, hugetlb_cma_reserve, reserve_crashkernel - stubs */
 
-	x86_init.paging.pagetable_init();
+	native_pagetable_init();
 
 	sync_initial_page_table();
 
 	conswitchp = &vga_con;
-	/* x86_init.oem.banner() removed - dispatched to x86_init_noop */
-	/* x86_init.timers.wallclock_init() removed - dispatched to x86_init_noop */
 
 	register_refined_jiffies(CLOCK_TICK_RATE);
 }

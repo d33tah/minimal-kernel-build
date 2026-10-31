@@ -1,5 +1,6 @@
 #include <linux/memblock.h>
 
+#include <asm/cpufeature.h>
 #include <asm/e820/api.h>
 #include <asm/setup.h>
 #include <asm/tlbflush.h>

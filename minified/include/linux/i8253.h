@@ -3,6 +3,8 @@
 
 #include <linux/spinlock.h>
 
+#define PIT_TICK_RATE 1193182ul
+
 #define PIT_MODE 0x43
 #define PIT_CH0 0x40
 

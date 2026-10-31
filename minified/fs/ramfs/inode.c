@@ -20,8 +20,6 @@ static struct inode *ramfs_get_inode(struct super_block *sb,
 		inode->i_mapping->a_ops = &ram_aops;
 		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
 		mapping_set_unevictable(inode->i_mapping);
-		inode->i_atime = inode->i_mtime = inode->i_ctime =
-			current_time(inode);
 		switch (mode & S_IFMT) {
 		default:
 			init_special_inode(inode, mode, dev);
@@ -49,7 +47,6 @@ static int ramfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 		d_instantiate(dentry, inode);
 		dget(dentry);
 		error = 0;
-		dir->i_mtime = dir->i_ctime = current_time(dir);
 	}
 	return error;
 }
@@ -82,7 +79,6 @@ static int ramfs_fill_super(struct super_block *sb, struct fs_context *fc)
 
 	sb->s_maxbytes = MAX_LFS_FILESIZE;
 	sb->s_blocksize_bits = PAGE_SHIFT;
-	sb->s_time_gran = 1;
 
 	inode = ramfs_get_inode(sb, NULL, S_IFDIR | RAMFS_DEFAULT_MODE, 0);
 	sb->s_root = d_make_root(inode);

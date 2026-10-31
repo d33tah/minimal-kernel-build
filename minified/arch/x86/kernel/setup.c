@@ -7,6 +7,7 @@
 #include <asm/tlbflush.h>
 #include <asm/desc.h>
 #include <asm/setup.h>
+#include <asm/tsc.h>
 
 unsigned long max_pfn_mapped;
 
@@ -115,6 +116,4 @@ void __init setup_arch(void)
 	sync_initial_page_table();
 
 	conswitchp = &vga_con;
-
-	register_refined_jiffies(CLOCK_TICK_RATE);
 }

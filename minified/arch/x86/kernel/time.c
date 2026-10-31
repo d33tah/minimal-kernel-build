@@ -3,6 +3,7 @@
 #include <linux/interrupt.h>
 
 #include <asm/time.h>
+#include <asm/tsc.h>
 
 static irqreturn_t timer_interrupt(int irq, void *dev_id)
 {
@@ -24,7 +25,7 @@ static void __init hpet_time_init(void)
 	setup_default_timer_irq();
 }
 
-/* Runs once interrupts are enabled: the PIT tick IRQ, then the TSC clocksource. */
+/* Runs once interrupts are enabled: the PIT tick IRQ, then the TSC rate record. */
 void __init time_init(void)
 {
 	hpet_time_init();

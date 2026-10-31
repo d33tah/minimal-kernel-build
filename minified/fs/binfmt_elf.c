@@ -15,6 +15,7 @@
 #include <linux/sched/task_stack.h>
 #include <linux/cred.h>
 #include <linux/uaccess.h>
+#include <asm/cpufeature.h>
 #include <asm/param.h>
 #include <asm/page.h>
 

@@ -1,6 +1,9 @@
 #include <linux/clockchips.h>
 #include <linux/i8253.h>
+#include <linux/jiffies.h>
 #include <linux/smp.h>
+
+#include <asm/io.h>
 
 static DEFINE_RAW_SPINLOCK(i8253_lock);
 

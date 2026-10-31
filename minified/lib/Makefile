@@ -9,6 +9,6 @@
 
 lib-y := string.o xarray.o irq_regs.o
 
-obj-y += lockref.o iov_iter.o string_helpers.o math/
+obj-y += lockref.o iov_iter.o string_helpers.o
 
 obj-$(CONFIG_GENERIC_STRNLEN_USER) += strnlen_user.o

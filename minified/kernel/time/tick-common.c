@@ -1,5 +1,6 @@
 #include <linux/clockchips.h>
 #include <linux/interrupt.h>
+#include <linux/jiffies.h>
 
 #include <asm/irq_regs.h>
 
@@ -10,7 +11,7 @@ __visible u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
 /*
  * Periodic tick only: there are no oneshot/NO_HZ/high-resolution timers and
  * no timer wheel (nothing in this kernel arms a timer). One CPU, so the tick
- * CPU also advances jiffies and the wall time. The first clock event device
+ * CPU also advances jiffies. The first clock event device
  * registered drives the tick; i8253 (PIT) is the only one in this kernel.
  */
 static struct clock_event_device *tick_dev;
@@ -18,7 +19,6 @@ static struct clock_event_device *tick_dev;
 static void tick_handle_periodic(struct clock_event_device *dev)
 {
 	do_timer(1);
-	update_wall_time();
 
 	rcu_sched_clock_irq(user_mode(get_irq_regs()));
 	scheduler_tick();

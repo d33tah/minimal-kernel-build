@@ -26,10 +26,9 @@
 #define AT_VECTOR_SIZE_BASE 20
 #include <linux/jiffies.h>
 
-#include <linux/timekeeping.h>
-
 #include <linux/cpumask.h>
-#include <linux/seqlock.h>
+#include <linux/mutex.h>
+#include <linux/spinlock.h>
 
 #include <asm/mmu.h>
 

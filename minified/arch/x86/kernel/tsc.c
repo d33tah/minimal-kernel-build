@@ -1,90 +1,18 @@
 
-#include <linux/clocksource.h>
+#include <linux/delay.h>
+#include <linux/i8253.h>
+#include <linux/jiffies.h>
 
-#include <asm/timer.h>
+#include <asm/div64.h>
+#include <asm/io.h>
 #include <asm/i8259.h>
+#include <asm/tsc.h>
 
 static unsigned int __read_mostly cpu_khz;
 
 static unsigned int __read_mostly tsc_khz;
 
 #define KHZ 1000
-
-static DEFINE_STATIC_KEY_FALSE(__use_tsc);
-
-/* art_to_tsc_numerator, art_to_tsc_denominator, art_to_tsc_offset,
-   art_related_clocksource removed - unused after convert_art_to_tsc removal */
-
-struct cyc2ns {
-	struct cyc2ns_data data[2];
-	seqcount_latch_t seq;
-};
-
-static DEFINE_PER_CPU_ALIGNED(struct cyc2ns, cyc2ns);
-
-static __always_inline unsigned long long cycles_2_ns(unsigned long long cyc)
-{
-	struct cyc2ns_data data;
-	unsigned long long ns;
-	int seq, idx;
-
-	/* folded sole callers cyc2ns_read_begin()/cyc2ns_read_end() inline */
-	preempt_disable_notrace();
-
-	do {
-		seq = this_cpu_read(cyc2ns.seq.seqcount.sequence);
-		idx = seq & 1;
-
-		data.cyc2ns_offset =
-			this_cpu_read(cyc2ns.data[idx].cyc2ns_offset);
-		data.cyc2ns_mul = this_cpu_read(cyc2ns.data[idx].cyc2ns_mul);
-		data.cyc2ns_shift =
-			this_cpu_read(cyc2ns.data[idx].cyc2ns_shift);
-
-	} while (unlikely(seq != this_cpu_read(cyc2ns.seq.seqcount.sequence)));
-
-	ns = data.cyc2ns_offset;
-	ns += mul_u64_u32_shr(cyc, data.cyc2ns_mul, data.cyc2ns_shift);
-
-	preempt_enable_notrace();
-
-	return ns;
-}
-
-static void __set_cyc2ns_scale(unsigned long khz, int cpu,
-			       unsigned long long tsc_now)
-{
-	unsigned long long ns_now;
-	struct cyc2ns_data data;
-	struct cyc2ns *c2n;
-
-	ns_now = cycles_2_ns(tsc_now);
-
-	clocks_calc_mult_shift(&data.cyc2ns_mul, &data.cyc2ns_shift, khz,
-			       NSEC_PER_MSEC, 0);
-
-	if (data.cyc2ns_shift == 32) {
-		data.cyc2ns_shift = 31;
-		data.cyc2ns_mul >>= 1;
-	}
-
-	data.cyc2ns_offset = ns_now - mul_u64_u32_shr(tsc_now, data.cyc2ns_mul,
-						      data.cyc2ns_shift);
-
-	c2n = per_cpu_ptr(&cyc2ns, cpu);
-
-	raw_write_seqcount_latch(&c2n->seq);
-	c2n->data[0] = data;
-	raw_write_seqcount_latch(&c2n->seq);
-	c2n->data[1] = data;
-}
-
-/*
- * cyc2ns_init_secondary_cpus() removed: NR_CPUS=1 / SMP off, so there are
- * no secondary CPUs. Its for_each_possible_cpu() loop only ever visited the
- * boot CPU (cpu == this_cpu), whose per-CPU cyc2ns was already set up in
- * tsc_enable_sched_clock(); the cpu != this_cpu body never ran.
- */
 
 static inline int pit_verify_msb(unsigned char val)
 {
@@ -173,19 +101,6 @@ static unsigned long native_calibrate_cpu_early(void)
 	return fast_calibrate;
 }
 
-static u64 read_tsc(struct clocksource *cs)
-{
-	return (u64)rdtsc_ordered();
-}
-
-static struct clocksource clocksource_tsc = {
-	.name = "tsc",
-	.rating = 300,
-	.read = read_tsc,
-	.mask = CLOCKSOURCE_MASK(64),
-	.list = LIST_HEAD_INIT(clocksource_tsc.list),
-};
-
 static bool __init determine_cpu_tsc_frequencies(bool early)
 {
 	WARN_ON(cpu_khz || tsc_khz);
@@ -200,19 +115,18 @@ static bool __init determine_cpu_tsc_frequencies(bool early)
 	return true;
 }
 
-static void __init tsc_enable_sched_clock(void)
+static unsigned long __init get_loops_per_jiffy(void)
 {
-	struct cyc2ns *c2n = this_cpu_ptr(&cyc2ns);
 	u64 lpj = (u64)tsc_khz * KHZ;
 
 	do_div(lpj, HZ);
-	/* udelay() counts TSC cycles from here on; calibrate_delay() keeps it. */
-	lpj_fine = loops_per_jiffy = lpj;
-	use_tsc_delay();
+	return lpj;
+}
 
-	seqcount_latch_init(&c2n->seq);
-	__set_cyc2ns_scale(tsc_khz, smp_processor_id(), rdtsc());
-	static_branch_enable(&__use_tsc);
+static void __init tsc_enable_sched_clock(void)
+{
+	loops_per_jiffy = get_loops_per_jiffy();
+	use_tsc_delay();
 }
 
 void __init tsc_early_init(void)
@@ -235,8 +149,8 @@ void __init tsc_init(void)
 		return;
 
 	/*
-	 * Registered here, synchronously. The old two-stage scheme registered
-	 * "tsc-early" here and "tsc" from a delayed work item that never ran.
+	 * Nothing keeps wall-clock time, so the TSC is no longer registered
+	 * as a clocksource; calibrate_delay() keeps this TSC-based value.
 	 */
-	clocksource_register_khz(&clocksource_tsc, tsc_khz);
+	lpj_fine = get_loops_per_jiffy();
 }

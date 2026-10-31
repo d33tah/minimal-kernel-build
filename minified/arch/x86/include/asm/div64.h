@@ -24,13 +24,4 @@
 		__mod;                                                       \
 	})
 
-static inline u64 mul_u32_u32(u32 a, u32 b)
-{
-	u32 high, low;
-
-	asm("mull %[b]" : "=a"(low), "=d"(high) : [a] "a"(a), [b] "rm"(b));
-
-	return low | ((u64)high) << 32;
-}
-
 #endif

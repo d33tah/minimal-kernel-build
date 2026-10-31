@@ -114,7 +114,6 @@ struct inode {
 	};
 	dev_t i_rdev;
 	loff_t i_size;
-	struct timespec64 i_atime, i_mtime, i_ctime;
 	spinlock_t i_lock;
 	u8 i_blkbits;
 	struct rw_semaphore i_rwsem;
@@ -230,9 +229,6 @@ struct super_block {
 	struct file_system_type *s_type;
 	struct dentry *s_root;
 	struct hlist_bl_head s_roots;
-	u32 s_time_gran;
-	time64_t s_time_min;
-	time64_t s_time_max;
 	char s_id[32];
 	struct user_namespace *s_user_ns;
 } __randomize_layout;
@@ -292,8 +288,6 @@ static inline bool fsuidgid_has_mapping(struct super_block *sb,
 	return kuid_has_mapping(fs_userns, kuid) &&
 	       kgid_has_mapping(fs_userns, kgid);
 }
-
-extern struct timespec64 current_time(struct inode *inode);
 
 int vfs_mkdir(struct user_namespace *, struct inode *, struct dentry *,
 	      umode_t);

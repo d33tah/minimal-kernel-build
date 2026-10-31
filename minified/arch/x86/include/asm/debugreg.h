@@ -4,6 +4,8 @@
 
 #include <uapi/asm/debugreg.h>
 
+#include <asm/cpufeature.h>
+
 #define get_debugreg(var, register) (var) = native_get_debugreg(register)
 #define set_debugreg(value, register) native_set_debugreg(register, value)
 

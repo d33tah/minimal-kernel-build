@@ -21,9 +21,6 @@ int get_tree_nodev(struct fs_context *fc,
 	s->s_user_ns = get_user_ns(fc->user_ns);
 	INIT_HLIST_BL_HEAD(&s->s_roots);
 	s->s_maxbytes = MAX_NON_LFS;
-	s->s_time_gran = 1000000000;
-	s->s_time_min = TIME64_MIN;
-	s->s_time_max = TIME64_MAX;
 	s->s_type = fc->fs_type;
 	strlcpy(s->s_id, s->s_type->name, sizeof(s->s_id));
 

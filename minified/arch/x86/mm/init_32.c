@@ -2,6 +2,7 @@
 #include <linux/memblock.h>
 
 #include <linux/swap.h>
+#include <asm/cpufeature.h>
 #include <asm/tlbflush.h>
 
 #include <asm/pgtable_areas.h>

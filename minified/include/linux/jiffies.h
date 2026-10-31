@@ -2,16 +2,10 @@
 #define _LINUX_JIFFIES_H
 
 #include <asm/param.h>
-#include <linux/math64.h>
 #include <linux/cache.h>
-#include <linux/time64.h>
+#include <linux/limits.h>
 
-#include <linux/timex.h>
-
-/* Inlined from vdso/jiffies.h */
-#define TICK_NSEC ((NSEC_PER_SEC + HZ / 2) / HZ)
-
-extern int register_refined_jiffies(long clock_tick_rate);
+#define MSEC_PER_SEC 1000L
 
 #ifndef __jiffy_arch_data
 #define __jiffy_arch_data

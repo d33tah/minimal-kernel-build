@@ -6,6 +6,13 @@
 
 #define TSS(x) this_cpu_read(cpu_tss_rw.x86_tss.x)
 
+/* The double-fault task's stack and TSS (a task gate in the IDT uses it). */
+struct doublefault_stack {
+	unsigned long stack[(PAGE_SIZE - sizeof(struct x86_hw_tss)) /
+			    sizeof(unsigned long)];
+	struct x86_hw_tss tss;
+} __aligned(PAGE_SIZE);
+
 static void set_df_gdt_entry(unsigned int cpu);
 
 asmlinkage noinstr void __noreturn doublefault_shim(void)
@@ -65,17 +72,14 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct doublefault_stack, doublefault_stack) = { .ts
 static void set_df_gdt_entry(unsigned int cpu)
 {
 	__set_tss_desc(cpu, GDT_ENTRY_DOUBLEFAULT_TSS,
-		       &get_cpu_entry_area(cpu)->doublefault_stack.tss);
+		       this_cpu_ptr(&doublefault_stack.tss));
 }
 
 void doublefault_init_cpu_tss(void)
 {
-	unsigned int cpu = smp_processor_id();
-	struct cpu_entry_area *cea = get_cpu_entry_area(cpu);
-
 	this_cpu_write(doublefault_stack.tss.sp,
-		       (unsigned long)&cea->doublefault_stack.stack +
+		       (unsigned long)this_cpu_ptr(&doublefault_stack.stack) +
 			       sizeof(doublefault_stack.stack));
 
-	set_df_gdt_entry(cpu);
+	set_df_gdt_entry(smp_processor_id());
 }

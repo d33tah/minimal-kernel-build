@@ -25,17 +25,6 @@ static pte_t *__init one_page_table_init(pmd_t *pmd)
 	return pte_offset_kernel(pmd, 0);
 }
 
-pte_t *__init populate_extra_pte(unsigned long vaddr)
-{
-	int pte_idx = pte_index(vaddr);
-	int pgd_idx = pgd_index(vaddr);
-	int pmd_idx = pmd_index(vaddr);
-	pmd_t *pmd;
-
-	pmd = one_md_table_init(swapper_pg_dir + pgd_idx) + pmd_idx;
-	return one_page_table_init(pmd) + pte_idx;
-}
-
 static void __init page_table_range_init(unsigned long start, unsigned long end,
 					 pgd_t *pgd_base)
 {

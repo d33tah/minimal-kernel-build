@@ -5,7 +5,7 @@
 # reference __initdata sections.
 
 obj-y				:=  init.o init_$(BITS).o fault.o ioremap.o extable.o \
-				    pgtable.o tlb.o cpu_entry_area.o pgprot.o
+				    pgtable.o tlb.o pgprot.o
 
 
 CFLAGS_fault.o := -I $(srctree)/$(src)/../include/asm/trace

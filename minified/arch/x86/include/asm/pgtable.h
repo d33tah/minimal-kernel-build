@@ -169,8 +169,6 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 
 /* pte_modify, pmd_modify, pgprot_modify, flip_protnone_guard removed - unused */
 
-pte_t *populate_extra_pte(unsigned long vaddr);
-
 /* pti_set_user_pgtbl removed - unused */
 
 #endif

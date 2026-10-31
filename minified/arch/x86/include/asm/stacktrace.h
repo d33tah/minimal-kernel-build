@@ -6,7 +6,6 @@
 #include <linux/uaccess.h>
 #include <linux/ptrace.h>
 
-#include <asm/cpu_entry_area.h>
 #include <asm/switch_to.h>
 
 /* enum stack_type + struct stack_info removed - 0-ref (get_stack_info/stack-dump machinery stripped) */

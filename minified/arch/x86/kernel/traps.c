@@ -258,8 +258,6 @@ DEFINE_IDTENTRY_SW(iret_error)
 
 void __init trap_init(void)
 {
-	setup_cpu_entry_areas();
-
 	cpu_init_exception_handling();
 
 	idt_setup_traps();

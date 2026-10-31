@@ -134,8 +134,6 @@ static void __init setup_cr_pinning(void)
 	static_key_enable(&cr_pinning.key);
 }
 
-DEFINE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);
-
 /*
  * Only CPUID leaves 1 and 7 feed bits that something reads: the
  * boot_cpu_has() users (TSC, PSE, PGE, SMEP, FSGSBASE, INVPCID,
@@ -230,7 +228,7 @@ void cpu_init_exception_handling(void)
 	int cpu = raw_smp_processor_id();
 
 	tss_setup_io_bitmap(tss);
-	set_tss_desc(cpu, &get_cpu_entry_area(cpu)->tss.x86_tss);
+	set_tss_desc(cpu, &tss->x86_tss);
 
 	load_TR_desc();
 
@@ -267,12 +265,4 @@ void cpu_init(void)
 	dbg_restore_debug_regs();
 
 	doublefault_init_cpu_tss();
-
-	{
-		struct desc_ptr gdt_descr;
-
-		gdt_descr.address = (long)get_cpu_gdt_ro(cpu);
-		gdt_descr.size = GDT_SIZE - 1;
-		load_gdt(&gdt_descr);
-	}
 }

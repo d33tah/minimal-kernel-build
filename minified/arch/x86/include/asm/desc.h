@@ -7,7 +7,6 @@
 #include <asm/mmu.h>
 #include <asm/fixmap.h>
 #include <asm/irq_vectors.h>
-#include <asm/cpu_entry_area.h>
 
 #include <linux/smp.h>
 #include <linux/percpu.h>
@@ -28,18 +27,6 @@ static inline struct desc_struct *get_cpu_gdt_rw(unsigned int cpu)
 static inline struct desc_struct *get_current_gdt_rw(void)
 {
 	return this_cpu_ptr(&gdt_page)->gdt;
-}
-
-static inline struct desc_struct *get_cpu_gdt_ro(int cpu)
-{
-	return (struct desc_struct *)&get_cpu_entry_area(cpu)->gdt;
-}
-
-/* get_current_gdt_ro removed - unused */
-
-static inline phys_addr_t get_cpu_gdt_paddr(unsigned int cpu)
-{
-	return per_cpu_ptr_to_phys(get_cpu_gdt_rw(cpu));
 }
 
 /* pack_gate removed - unused */

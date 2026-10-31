@@ -76,13 +76,4 @@ static inline void folio_lock(struct folio *folio)
 		__folio_lock(folio);
 }
 
-static inline void lock_page(struct page *page)
-{
-	struct folio *folio;
-
-	folio = page_folio(page);
-	if (!folio_trylock(folio))
-		__folio_lock(folio);
-}
-
 #endif

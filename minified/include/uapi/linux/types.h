@@ -9,14 +9,9 @@
 
 #include <asm/posix_types.h>
 
-
-
 #define __bitwise
 
-typedef __u16 __bitwise __le16;
 typedef __u32 __bitwise __le32;
-
-typedef unsigned __bitwise __poll_t;
 
 #endif  
 #endif  

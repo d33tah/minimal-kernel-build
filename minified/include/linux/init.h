@@ -20,8 +20,6 @@
 
 #define __INITDATA	.section	".init.data","aw",%progbits
 
-#define __REFDATA        .section       ".ref.data", "aw"
-
 #ifndef __ASSEMBLY__
 typedef int (*initcall_t)(void);
 

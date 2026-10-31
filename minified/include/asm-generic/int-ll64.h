@@ -5,7 +5,6 @@
 
 #ifndef __ASSEMBLY__
 
-typedef __signed__ char __s8;
 typedef unsigned char __u8;
 typedef unsigned short __u16;
 typedef __signed__ int __s32;

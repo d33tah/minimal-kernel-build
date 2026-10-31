@@ -497,14 +497,6 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 	return s;
 }
 
-static inline const char *lookup_last(struct nameidata *nd)
-{
-	if (nd->last_type == LAST_NORM && nd->last.name[nd->last.len])
-		nd->flags |= LOOKUP_FOLLOW | LOOKUP_DIRECTORY;
-
-	return walk_component(nd, WALK_TRAILING);
-}
-
 static int path_parentat(struct nameidata *nd, unsigned flags,
 			 struct path *parent)
 {

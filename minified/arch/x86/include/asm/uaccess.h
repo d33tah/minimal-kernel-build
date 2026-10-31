@@ -39,12 +39,10 @@ extern int __get_user_bad(void);
 #define __typefits(x,type,not) 	__builtin_choose_expr(sizeof(x)<=sizeof(type),(unsigned type)0,not)
 
  
-#define do_get_user_call(fn,x,ptr)					({										int __ret_gu;								register __inttype(*(ptr)) __val_gu asm("%"_ASM_DX);			__chk_user_ptr(ptr);							asm volatile("call __" #fn "_%P4"						     : "=a" (__ret_gu), "=r" (__val_gu),					ASM_CALL_CONSTRAINT						     : "0" (ptr), "i" (sizeof(*(ptr))));			(x) = (__force __typeof__(*(ptr))) __val_gu;				__builtin_expect(__ret_gu, 0);					})
 
  
 
  
-#define __get_user(x,ptr) do_get_user_call(get_user_nocheck,x,ptr)
 
 #define __put_user_goto_u64(x, addr, label)				asm_volatile_goto("\n"							     "1:	movl %%eax,0(%1)\n"				     "2:	movl %%edx,4(%1)\n"				     _ASM_EXTABLE_UA(1b, %l2)					     _ASM_EXTABLE_UA(2b, %l2)					     : : "A" (x), "r" (addr)					     : : label)
 
@@ -67,7 +65,6 @@ extern void __put_user_nocheck_8(void);
 #define put_user(x, ptr) ({ might_fault(); do_put_user_call(put_user,x,ptr); })
 
  
-#define __put_user(x, ptr) do_put_user_call(put_user_nocheck,x,ptr)
 
 #define __put_user_size(x, ptr, size, label)				do {										__chk_user_ptr(ptr);							switch (size) {								case 1:										__put_user_goto(x, ptr, "b", "iq", label);				break;								case 2:										__put_user_goto(x, ptr, "w", "ir", label);				break;								case 4:										__put_user_goto(x, ptr, "l", "ir", label);				break;								case 8:										__put_user_goto_u64(x, ptr, label);					break;								default:									__put_user_bad();						}								} while (0)
 

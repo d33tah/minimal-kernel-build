@@ -9,15 +9,4 @@
 
 #define DIV_ROUND_UP __KERNEL_DIV_ROUND_UP
 
-#define __abs_choose_expr(x, type, other)                               \
-	__builtin_choose_expr(                                          \
-		__builtin_types_compatible_p(typeof(x), signed type) || \
-			__builtin_types_compatible_p(typeof(x),         \
-						     unsigned type),    \
-		({                                                      \
-			signed type __x = (x);                          \
-			__x < 0 ? -__x : __x;                           \
-		}),                                                     \
-		other)
-
 #endif

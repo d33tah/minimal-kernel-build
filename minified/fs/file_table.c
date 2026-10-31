@@ -1,5 +1,7 @@
 
 #include <linux/fs.h>
+#include <linux/file.h>
+#include "internal.h"
 
 static struct kmem_cache *filp_cachep __read_mostly;
 

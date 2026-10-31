@@ -105,11 +105,6 @@ static inline bool d_is_dir(const struct dentry *dentry)
 	return d_can_lookup(dentry);
 }
 
-static inline bool d_is_reg(const struct dentry *dentry)
-{
-	return __d_entry_type(dentry) == DCACHE_REGULAR_TYPE;
-}
-
 static inline bool d_is_negative(const struct dentry *dentry)
 {
 	return d_is_miss(dentry);

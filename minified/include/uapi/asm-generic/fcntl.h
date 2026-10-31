@@ -48,8 +48,6 @@
 #define O_CLOEXEC 02000000
 #endif
 
-#define __O_SYNC 04000000
-
 #ifndef O_PATH
 #define O_PATH 010000000
 #endif

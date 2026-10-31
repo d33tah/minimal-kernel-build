@@ -53,14 +53,6 @@ static __always_inline int atomic_cmpxchg(atomic_t *v, int old, int new)
 	return arch_atomic_cmpxchg(v, old, new);
 }
 
-static __always_inline bool atomic_try_cmpxchg_relaxed(atomic_t *v, int *old,
-						       int new)
-{
-	instrument_atomic_read_write(v, sizeof(*v));
-	instrument_atomic_read_write(old, sizeof(*old));
-	return arch_atomic_try_cmpxchg_relaxed(v, old, new);
-}
-
 static __always_inline bool atomic_sub_and_test(int i, atomic_t *v)
 {
 	instrument_atomic_read_write(v, sizeof(*v));

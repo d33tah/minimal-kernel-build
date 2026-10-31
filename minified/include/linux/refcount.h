@@ -18,39 +18,12 @@ static inline void refcount_set(refcount_t *r, int n)
 	atomic_set(&r->refs, n);
 }
 
-static inline unsigned int refcount_read(const refcount_t *r)
-{
-	return atomic_read(&r->refs);
-}
-
-static inline __must_check bool __refcount_add_not_zero(int i, refcount_t *r,
-							int *oldp)
-{
-	int old = refcount_read(r);
-
-	do {
-		if (!old)
-			break;
-	} while (!atomic_try_cmpxchg_relaxed(&r->refs, &old, old + i));
-
-	if (oldp)
-		*oldp = old;
-
-	return old;
-}
-
 static inline void __refcount_add(int i, refcount_t *r, int *oldp)
 {
 	int old = atomic_fetch_add_relaxed(i, &r->refs);
 
 	if (oldp)
 		*oldp = old;
-}
-
-static inline __must_check bool __refcount_inc_not_zero(refcount_t *r,
-							int *oldp)
-{
-	return __refcount_add_not_zero(1, r, oldp);
 }
 
 static inline void __refcount_inc(refcount_t *r, int *oldp)

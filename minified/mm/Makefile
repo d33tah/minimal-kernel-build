@@ -3,7 +3,6 @@
 # Makefile for the linux memory manager.
 #
 
-
 # These files are disabled because they produce non-interesting and/or
 # flaky coverage that is not a function of syscall inputs. E.g. slab is out of
 # free pages, or a task is migrated between nodes.
@@ -12,7 +11,7 @@ CFLAGS_init-mm.o += $(call cc-disable-warning, override-init)
 CFLAGS_init-mm.o += $(call cc-disable-warning, initializer-overrides)
 
 mmu-$(CONFIG_MMU)	:= memory.o \
-			   mmap.o mmu_gather.o \
+			   mmap.o \
 			   rmap.o
 
 obj-y			:= filemap.o \

@@ -7,7 +7,6 @@
 /* Inlined from align.h */
 #define ALIGN(x, a) __ALIGN_KERNEL((x), (a))
 #define ALIGN_DOWN(x, a) __ALIGN_KERNEL((x) - ((a) - 1), (a))
-#define __ALIGN_MASK(x, mask) __ALIGN_KERNEL_MASK((x), (mask))
 #include <linux/linkage.h>
 #include <linux/container_of.h>
 #include <linux/bitops.h>

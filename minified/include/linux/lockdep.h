@@ -13,11 +13,6 @@ static inline void lockdep_on(void)
 #define lock_acquire(l, s, t, r, c, n, i) \
 	do {                              \
 	} while (0)
-#define lockdep_set_class_and_name(lock, key, name) \
-	do {                                        \
-		(void)(key);                        \
-		(void)(name);                       \
-	} while (0)
 
 #define lockdep_sys_exit() \
 	do {               \

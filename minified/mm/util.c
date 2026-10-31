@@ -1,4 +1,5 @@
 #include <linux/swap.h>
+#include "internal.h"
 
 void kfree_const(const void *x)
 {

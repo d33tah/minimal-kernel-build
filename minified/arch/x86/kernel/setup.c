@@ -6,6 +6,7 @@
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
 #include <asm/desc.h>
+#include <asm/setup.h>
 
 unsigned long max_pfn_mapped;
 

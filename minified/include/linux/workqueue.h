@@ -34,7 +34,6 @@ struct work_struct {
 	work_func_t func;
 };
 
-#define WORK_DATA_INIT() ATOMIC_LONG_INIT((unsigned long)WORK_STRUCT_NO_POOL)
 #define WORK_DATA_STATIC_INIT() \
 	ATOMIC_LONG_INIT(       \
 		(unsigned long)(WORK_STRUCT_NO_POOL | WORK_STRUCT_STATIC))
@@ -62,13 +61,6 @@ struct delayed_work {
 
 #define DECLARE_DELAYED_WORK(n, f) \
 	struct delayed_work n = __DELAYED_WORK_INITIALIZER(n, f, 0)
-
-#define __INIT_WORK(_work, _func, _onstack)                      \
-	do {                                                     \
-		(_work)->data = (atomic_long_t)WORK_DATA_INIT(); \
-		INIT_LIST_HEAD(&(_work)->entry);                 \
-		(_work)->func = (_func);                         \
-	} while (0)
 
 extern struct workqueue_struct *system_wq;
 

@@ -53,8 +53,6 @@ static inline int mmap_is_ia32(void)
 
 extern unsigned long get_sigframe_size(void);
 
-#define __STACK_RND_MASK(is32bit) (0x7ff)
-
 #define ARCH_DLINFO ARCH_DLINFO_IA32
 
 #endif

@@ -17,6 +17,7 @@ extern void sched_init(void);
 
 #include <asm/bugs.h>
 #include <asm/time.h>
+#include <linux/initrd.h>
 
 static int kernel_init(void *);
 

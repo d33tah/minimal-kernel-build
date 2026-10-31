@@ -14,7 +14,6 @@
 #define ULONG_MAX (~0UL)
 #define ULLONG_MAX (~0ULL)
 
-#define SIZE_MAX (~(size_t)0)
 #define PHYS_ADDR_MAX (~(phys_addr_t)0)
 
 #endif

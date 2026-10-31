@@ -141,34 +141,6 @@ extern void __bad_size_call_parameter(void);
 		pscr2_ret__;                                          \
 	})
 
-#define __pcpu_double_call_return_bool(stem, pcp1, pcp2, ...)             \
-	({                                                                \
-		bool pdcrb_ret__;                                         \
-		__verify_pcpu_ptr(&(pcp1));                               \
-		BUILD_BUG_ON(sizeof(pcp1) != sizeof(pcp2));               \
-		VM_BUG_ON((unsigned long)(&(pcp1)) % (2 * sizeof(pcp1))); \
-		VM_BUG_ON((unsigned long)(&(pcp2)) !=                     \
-			  (unsigned long)(&(pcp1)) + sizeof(pcp1));       \
-		switch (sizeof(pcp1)) {                                   \
-		case 1:                                                   \
-			pdcrb_ret__ = stem##1(pcp1, pcp2, __VA_ARGS__);   \
-			break;                                            \
-		case 2:                                                   \
-			pdcrb_ret__ = stem##2(pcp1, pcp2, __VA_ARGS__);   \
-			break;                                            \
-		case 4:                                                   \
-			pdcrb_ret__ = stem##4(pcp1, pcp2, __VA_ARGS__);   \
-			break;                                            \
-		case 8:                                                   \
-			pdcrb_ret__ = stem##8(pcp1, pcp2, __VA_ARGS__);   \
-			break;                                            \
-		default:                                                  \
-			__bad_size_call_parameter();                      \
-			break;                                            \
-		}                                                         \
-		pdcrb_ret__;                                              \
-	})
-
 #define __pcpu_size_call(stem, variable, ...)           \
 	do {                                            \
 		__verify_pcpu_ptr(&(variable));         \
@@ -193,18 +165,13 @@ extern void __bad_size_call_parameter(void);
 
 #define raw_cpu_read(pcp) __pcpu_size_call_return(raw_cpu_read_, pcp)
 #define raw_cpu_write(pcp, val) __pcpu_size_call(raw_cpu_write_, pcp, val)
-#define raw_cpu_add(pcp, val) __pcpu_size_call(raw_cpu_add_, pcp, val)
 #define raw_cpu_or(pcp, val) __pcpu_size_call(raw_cpu_or_, pcp, val)
 
 #define __this_cpu_read(pcp) ({ raw_cpu_read(pcp); })
 
 #define __this_cpu_write(pcp, val) ({ raw_cpu_write(pcp, val); })
 
-#define __this_cpu_add(pcp, val) ({ raw_cpu_add(pcp, val); })
-
 #define __this_cpu_or(pcp, val) ({ raw_cpu_or(pcp, val); })
-
-#define __this_cpu_inc(pcp) __this_cpu_add(pcp, 1)
 
 #define this_cpu_read(pcp) __pcpu_size_call_return(this_cpu_read_, pcp)
 #define this_cpu_write(pcp, val) __pcpu_size_call(this_cpu_write_, pcp, val)

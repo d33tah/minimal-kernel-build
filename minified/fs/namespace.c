@@ -3,6 +3,7 @@
 #include <linux/user_namespace.h>
 #include <linux/fs_struct.h>
 #include <linux/fs_context.h>
+#include "internal.h"
 
 static struct kmem_cache *mnt_cache __read_mostly;
 

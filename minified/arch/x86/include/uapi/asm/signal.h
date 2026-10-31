@@ -33,25 +33,11 @@
 #define SIG_SETMASK 2
 #endif
 
-#ifndef __ASSEMBLY__
-typedef void __signalfn_t(int);
-typedef __signalfn_t __user *__sighandler_t;
-
-typedef void __restorefn_t(void);
-typedef __restorefn_t __user *__sigrestore_t;
-
-#endif
 /* end signal-defs.h inlining */
 
 #ifndef __ASSEMBLY__
 
 /* userspace-only struct sigaction + sa_handler/sa_sigaction (#ifndef __KERNEL__) removed - kernel uses struct sigaction in signal_types.h */
-
-typedef struct sigaltstack {
-	void __user *ss_sp;
-	int ss_flags;
-	__kernel_size_t ss_size;
-} stack_t;
 
 #endif
 

@@ -3,9 +3,6 @@
 
 /* Inlined from local_lock_internal.h */
 
-typedef struct {
-} local_lock_t;
-
 #define __local_lock(lock)         \
 	do {                       \
 		preempt_disable(); \

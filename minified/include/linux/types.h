@@ -10,7 +10,6 @@
 typedef u32 __kernel_dev_t;
 
 typedef __kernel_dev_t		dev_t;
-typedef __kernel_mode_t		mode_t;
 typedef unsigned short		umode_t;
 typedef __kernel_pid_t		pid_t;
 
@@ -41,8 +40,6 @@ typedef u8			uint8_t;
 typedef u16			uint16_t;
 typedef u32			uint32_t;
 
-typedef u64			uint64_t;
-
 #define pgoff_t unsigned long
 
 typedef unsigned int __bitwise gfp_t;
@@ -57,7 +54,6 @@ typedef struct { int counter; } atomic_t;
 
 #define ATOMIC_INIT(i) { (i) }
 
-
 struct list_head { struct list_head *next, *prev; };
 
 struct hlist_head { struct hlist_node *first; };
@@ -68,7 +64,6 @@ struct callback_head { struct callback_head *next; void (*func)(struct callback_
 #define rcu_head callback_head
 
 typedef void (*rcu_callback_t)(struct rcu_head *head);
-typedef void (*call_rcu_func_t)(struct rcu_head *head, rcu_callback_t func);
 
 typedef void (*swap_r_func_t)(void *a, void *b, int size, const void *priv);
 typedef void (*swap_func_t)(void *a, void *b, int size);

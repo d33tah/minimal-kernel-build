@@ -3,8 +3,6 @@
 
 #include <linux/jiffies.h>
 
-typedef s64 ktime_t;
-
 /* BITS_PER_LONG == 32 */
 
 /* Inlined from vdso/ktime.h */

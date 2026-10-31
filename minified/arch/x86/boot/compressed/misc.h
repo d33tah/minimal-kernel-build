@@ -8,8 +8,6 @@
 #undef CONFIG_KASAN
 #undef CONFIG_KASAN_GENERIC
 
-#define __NO_FORTIFY
-
 #include <asm/page.h>
 #include <asm/boot.h>
 

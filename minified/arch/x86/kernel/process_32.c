@@ -4,6 +4,7 @@
 #include <linux/ptrace.h>
 
 #include "process.h"
+#include <asm/switch_to.h>
 
 void start_thread(struct pt_regs *regs, unsigned long new_ip,
 		  unsigned long new_sp)

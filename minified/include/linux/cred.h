@@ -64,16 +64,10 @@ static inline void put_cred(const struct cred *_cred)
 
 #define current_cred() rcu_dereference_protected(current->cred, 1)
 
-#define __task_cred(task) rcu_dereference((task)->real_cred)
-
 #define get_current_cred() (get_cred(current_cred()))
 
 #define current_cred_xxx(xxx) ({ current_cred()->xxx; })
 
-#define current_uid() (current_cred_xxx(uid))
-#define current_gid() (current_cred_xxx(gid))
-#define current_euid() (current_cred_xxx(euid))
-#define current_egid() (current_cred_xxx(egid))
 #define current_fsuid() (current_cred_xxx(fsuid))
 #define current_fsgid() (current_cred_xxx(fsgid))
 

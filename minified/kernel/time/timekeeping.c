@@ -5,6 +5,7 @@
 
 #include "ntp_internal.h"
 #include "timekeeping_internal.h"
+#include "timekeeping.h"
 
 /*
  * Only CLOCK_REALTIME is read in this kernel (ktime_get_real_seconds for tty

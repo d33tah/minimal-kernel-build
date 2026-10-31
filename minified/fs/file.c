@@ -1,6 +1,7 @@
 
 #include <linux/sched/signal.h>
 #include <linux/fdtable.h>
+#include <linux/file.h>
 
 #define BITBIT_NR(nr) BITS_TO_LONGS(BITS_TO_LONGS(nr))
 #define BITBIT_SIZE(nr) (BITBIT_NR(nr) * sizeof(long))

@@ -104,7 +104,6 @@ SEQCOUNT_LOCKNAME(mutex, struct mutex, true, s->lock, mutex,
 	  __SEQ_LOCK(.lock = (assoc_lock)) }
 
 #define SEQCNT_RAW_SPINLOCK_ZERO(name, lock) SEQCOUNT_LOCKNAME_ZERO(name, lock)
-#define SEQCNT_SPINLOCK_ZERO(name, lock) SEQCOUNT_LOCKNAME_ZERO(name, lock)
 
 #define __seqprop_case(s, lockname, prop) \
 	seqcount_##lockname##_t : __seqprop_##lockname##_##prop((void *)(s))
@@ -142,9 +141,6 @@ SEQCOUNT_LOCKNAME(mutex, struct mutex, true, s->lock, mutex,
 		seqcount_lockdep_reader_access(seqprop_ptr(s)); \
 		raw_read_seqcount_begin(s);                     \
 	})
-
-#define __read_seqcount_retry(s, start) \
-	do___read_seqcount_retry(seqprop_ptr(s), start)
 
 static inline int do___read_seqcount_retry(const seqcount_t *s, unsigned start)
 {
@@ -213,22 +209,6 @@ static inline void raw_write_seqcount_latch(seqcount_latch_t *s)
 	smp_wmb();
 	s->seqcount.sequence++;
 	smp_wmb();
-}
-
-typedef struct {
-	seqcount_spinlock_t seqcount;
-	spinlock_t lock;
-} seqlock_t;
-
-#define __SEQLOCK_UNLOCKED(lockname)                                    \
-	{ .seqcount = SEQCNT_SPINLOCK_ZERO(lockname, &(lockname).lock), \
-	  .lock = __SPIN_LOCK_UNLOCKED(lockname) }
-
-static inline unsigned read_seqbegin(const seqlock_t *sl)
-{
-	unsigned ret = read_seqcount_begin(&sl->seqcount);
-
-	return ret;
 }
 
 #endif

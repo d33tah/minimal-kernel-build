@@ -6,6 +6,7 @@
 #include <linux/mmu_context.h>
 
 #include <asm/switch_to.h>
+#include <linux/sched/task.h>
 
 /*
  * One CPU, one run queue, round robin. Runnable tasks wait in FIFO order on

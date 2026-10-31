@@ -19,21 +19,6 @@ struct mmu_gather {
 	unsigned int cleared_p4ds : 1;
 };
 
-static inline void __tlb_reset_range(struct mmu_gather *tlb)
-{
-	if (tlb->fullmm) {
-		tlb->start = tlb->end = ~0;
-	} else {
-		tlb->start = TASK_SIZE;
-		tlb->end = 0;
-	}
-	tlb->freed_tables = 0;
-	tlb->cleared_ptes = 0;
-	tlb->cleared_pmds = 0;
-	tlb->cleared_puds = 0;
-	tlb->cleared_p4ds = 0;
-}
-
 /* tlb_update_vma_flags removed - 0-caller once tlb_start_vma (its sole
  * caller) was dropped; wrote only the never-read vma_huge/vma_exec/vma_pfn
  * mmu_gather bitfields, which are now removed too (0 reads/writes tree-wide) */

@@ -2,11 +2,6 @@
 #define __LINUX_SPINLOCK_TYPES_RAW_H
 
 typedef struct {
-} arch_spinlock_t;
-#define __ARCH_SPIN_LOCK_UNLOCKED \
-	{                         \
-	}
-typedef struct {
 } arch_rwlock_t;
 #define __ARCH_RW_LOCK_UNLOCKED \
 	{                       \

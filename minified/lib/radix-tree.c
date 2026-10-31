@@ -39,11 +39,6 @@ static unsigned int radix_tree_descend(const struct radix_tree_node *parent,
 	return offset;
 }
 
-static inline gfp_t root_gfp_mask(const struct radix_tree_root *root)
-{
-	return root->xa_flags & (__GFP_BITS_MASK & ~GFP_ZONEMASK);
-}
-
 static inline void tag_set(struct radix_tree_node *node, unsigned int tag,
 			   int offset)
 {
@@ -80,11 +75,6 @@ static inline void root_tag_clear_all(struct radix_tree_root *root)
 static inline int root_tag_get(const struct radix_tree_root *root, unsigned tag)
 {
 	return (__force int)root->xa_flags & (1 << (tag + ROOT_TAG_SHIFT));
-}
-
-static inline unsigned root_tags_get(const struct radix_tree_root *root)
-{
-	return (__force unsigned)root->xa_flags >> ROOT_TAG_SHIFT;
 }
 
 static inline bool is_idr(const struct radix_tree_root *root)

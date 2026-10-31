@@ -258,10 +258,6 @@ void __init mem_init(void)
 	test_wp_bit();
 }
 
-static void mark_nxdata_nx(void)
-{
-}
-
 void mark_rodata_ro(void)
 {
 	unsigned long start = PFN_ALIGN(_text);
@@ -269,6 +265,4 @@ void mark_rodata_ro(void)
 
 	pr_info("Write protecting kernel text and read-only data: %luk\n",
 		size >> 10);
-
-	mark_nxdata_nx();
 }

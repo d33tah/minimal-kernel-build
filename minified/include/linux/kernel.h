@@ -46,10 +46,6 @@ __here:                                  \
 			might_sleep(); \
 	} while (0)
 
-static inline void might_fault(void)
-{
-}
-
 void do_exit(long error_code) __noreturn;
 
 /* Removed: hex_to_bin, hex2bin, bin2hex, mac_pton - never called */

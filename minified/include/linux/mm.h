@@ -477,41 +477,9 @@ static inline bool folio_mark_dirty(struct folio *folio)
 }
 bool set_page_dirty(struct page *page);
 
-/*
- * RSS accounting (mm_struct.rss_stat) was dropped: nothing in this build ever
- * READS the per-mm counters (no get_mm_rss/get_mm_counter, hiwater/sync stubs).
- * The remaining call sites only ever wrote them, so the writers are no-ops.
- */
-static inline void add_mm_counter(struct mm_struct *mm, int member, long value)
-{
-}
-
-static inline void inc_mm_counter(struct mm_struct *mm, int member)
-{
-}
-
 /* dec_mm_counter removed - 0 callers (dec_mm_counter_fast macro never invoked) */
 
-static inline int mm_counter_file(struct page *page)
-{
-	if (PageSwapBacked(page))
-		return MM_SHMEMPAGES;
-	return MM_FILEPAGES;
-}
-
-static inline void sync_mm_rss(struct mm_struct *mm)
-{
-}
-
 /* Removed: vma_wants_writenotify - never called */
-
-static inline void mm_pgtables_bytes_init(struct mm_struct *mm)
-{
-}
-
-static inline void mm_inc_nr_ptes(struct mm_struct *mm)
-{
-}
 
 int __pte_alloc(struct mm_struct *mm, pmd_t *pmd);
 
@@ -541,14 +509,12 @@ static inline spinlock_t *pte_lockptr(struct mm_struct *mm, pmd_t *pmd)
 static inline bool pgtable_pte_page_ctor(struct page *page)
 {
 	__SetPageTable(page);
-	inc_lruvec_page_state(page, NR_PAGETABLE);
 	return true;
 }
 
 static inline void pgtable_pte_page_dtor(struct page *page)
 {
 	__ClearPageTable(page);
-	dec_lruvec_page_state(page, NR_PAGETABLE);
 }
 
 #define pte_offset_map_lock(mm, pmd, address, ptlp)          \

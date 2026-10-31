@@ -73,7 +73,6 @@ nmi_restart:
 
 		i = 20000;
 		while (--i) {
-			touch_nmi_watchdog();
 			udelay(100);
 		}
 

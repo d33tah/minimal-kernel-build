@@ -138,20 +138,7 @@ extern void create_boot_cache(struct kmem_cache *, const char *name,
 /* __kmem_cache_release, __kmem_cache_free_bulk, __kmem_cache_alloc_bulk
  * removed - error-path/bulk cleanup never reached on this workload */
 
-static inline enum node_stat_item cache_vmstat_idx(struct kmem_cache *s)
-{
-	return (s->flags & SLAB_RECLAIM_ACCOUNT) ? NR_SLAB_RECLAIMABLE_B :
-						   NR_SLAB_UNRECLAIMABLE_B;
-}
-
 /* slab_objcgs, memcg_from_slab_obj removed - unused */
-
-static __always_inline void account_slab(struct slab *slab, int order,
-					 struct kmem_cache *s, gfp_t gfp)
-{
-	mod_node_page_state(slab_pgdat(slab), cache_vmstat_idx(s),
-			    PAGE_SIZE << order);
-}
 
 /* unaccount_slab removed - only caller was __free_slab (dead slab-free path) */
 

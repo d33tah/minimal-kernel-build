@@ -1,5 +1,4 @@
 
-
 #include "internal.h"
 
 #include "slab.h"
@@ -108,7 +107,6 @@ out_unlock:
 		else {
 			pr_warn("%s(%s) failed with error %d\n", __func__, name,
 				err);
-			dump_stack();
 		}
 		return NULL;
 	}
@@ -274,7 +272,6 @@ gfp_t kmalloc_fix_flags(gfp_t flags)
 	flags &= ~GFP_SLAB_BUG_MASK;
 	pr_warn("Unexpected gfp: %#x (%pGg). Fixing up to gfp: %#x (%pGg). Fix your code!\n",
 		invalid_mask, &invalid_mask, flags, &flags);
-	dump_stack();
 
 	return flags;
 }
@@ -291,8 +288,6 @@ void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)
 	page = alloc_pages(flags, order);
 	if (likely(page)) {
 		ret = page_address(page);
-		mod_lruvec_page_state(page, NR_SLAB_UNRECLAIMABLE_B,
-				      PAGE_SIZE << order);
 	}
 	return ret;
 }

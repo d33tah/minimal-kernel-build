@@ -13,43 +13,4 @@ static inline void __mod_zone_page_state(struct zone *zone,
 	zone_page_state_add(delta, zone, item);
 }
 
-static inline void __mod_node_page_state(struct pglist_data *pgdat,
-					 enum node_stat_item item, int delta)
-{
-	/* per-node vm_stat[] + vm_node_stat[] are write-only on this build
-	 * (no node_page_state reader survives) -> no-op. */
-}
-
-#define mod_node_page_state __mod_node_page_state
-
-static inline void __mod_lruvec_page_state(struct page *page,
-					   enum node_stat_item idx, int val)
-{
-	__mod_node_page_state(page_pgdat(page), idx, val);
-}
-
-static inline void mod_lruvec_page_state(struct page *page,
-					 enum node_stat_item idx, int val)
-{
-	mod_node_page_state(page_pgdat(page), idx, val);
-}
-
-static inline void inc_lruvec_page_state(struct page *page,
-					 enum node_stat_item idx)
-{
-	mod_lruvec_page_state(page, idx, 1);
-}
-
-static inline void dec_lruvec_page_state(struct page *page,
-					 enum node_stat_item idx)
-{
-	mod_lruvec_page_state(page, idx, -1);
-}
-
-static inline void __lruvec_stat_mod_folio(struct folio *folio,
-					   enum node_stat_item idx, int val)
-{
-	__mod_lruvec_page_state(&folio->page, idx, val);
-}
-
 #endif

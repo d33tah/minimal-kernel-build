@@ -18,27 +18,6 @@ struct cred init_cred = {
 	.group_info = &init_groups,
 };
 
-void __put_cred(struct cred *cred)
-{
-	/*
-	 * RUNTIME-DEAD ANCHOR-STUB: the cred kref-release root. Reached only via
-	 * put_cred() when ->usage drops to 0, which never happens on this 1-shot
-	 * boot (init_cred holds permanent refs; no cred is ever fully released).
-	 * HIT=False. Private rcu callback put_cred_rcu (group_info/uid/ucounts/
-	 * user_ns release + kmem_cache_free) cascaded away. Symbol kept for the
-	 * put_cred() inline in cred.h.
-	 */
-}
-
-void exit_creds(struct task_struct *tsk)
-{
-	/*
-	 * RUNTIME-DEAD ANCHOR-STUB: drops a dying task's cred refs. Both call sites
-	 * are runtime-dead on this 1-shot boot: __put_task_struct (HIT=False -- no
-	 * task is ever fully released) and copy_process's bad_fork rollback (dead).
-	 */
-}
-
 struct cred *prepare_creds(void)
 {
 	struct task_struct *task = current;

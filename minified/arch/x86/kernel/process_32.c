@@ -1,9 +1,7 @@
 
-
 #include <linux/sched/task_stack.h>
 #include <linux/ptrace.h>
 
-#include "process.h"
 #include <asm/switch_to.h>
 
 void start_thread(struct pt_regs *regs, unsigned long new_ip,
@@ -26,8 +24,6 @@ __visible struct task_struct *__switch_to(struct task_struct *prev_p,
 	struct thread_struct *prev = &prev_p->thread, *next = &next_p->thread;
 
 	savesegment(gs, prev->gs);
-
-	switch_to_extra(prev_p, next_p);
 
 	arch_end_context_switch(next_p);
 

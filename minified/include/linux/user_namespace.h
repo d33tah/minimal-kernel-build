@@ -12,8 +12,4 @@ static inline struct user_namespace *get_user_ns(struct user_namespace *ns)
 	return &init_user_ns;
 }
 
-static inline void put_user_ns(struct user_namespace *ns)
-{
-}
-
 #endif

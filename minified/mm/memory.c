@@ -26,15 +26,11 @@ static int __init init_zero_pfn(void)
 }
 early_initcall(init_zero_pfn);
 
-#define inc_mm_counter_fast(mm, member) inc_mm_counter(mm, member)
-
 void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte)
 {
 	spinlock_t *ptl = pmd_lock(mm, pmd);
 
 	if (likely(pmd_none(*pmd))) {
-		mm_inc_nr_ptes(mm);
-
 		smp_wmb();
 		pmd_populate(mm, pmd, *pte);
 		*pte = NULL;
@@ -211,7 +207,6 @@ static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 		goto unlock;
 	}
 
-	inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
 	page_add_new_anon_rmap(page, vma, vmf->address);
 	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
 
@@ -250,7 +245,6 @@ void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr)
 	bool write = vmf->flags & FAULT_FLAG_WRITE;
 	pte_t entry;
 
-	flush_icache_page(vma, page);
 	entry = mk_pte(page, vma->vm_page_prot);
 
 	entry = pte_sw_mkyoung(entry);
@@ -259,10 +253,8 @@ void do_set_pte(struct vm_fault *vmf, struct page *page, unsigned long addr)
 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
 
 	if (write) {
-		inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
 		page_add_new_anon_rmap(page, vma, addr);
 	} else {
-		inc_mm_counter_fast(vma->vm_mm, mm_counter_file(page));
 		page_add_file_rmap(page, vma, false);
 	}
 	set_pte_at(vma->vm_mm, addr, vmf->pte, entry);
@@ -301,7 +293,6 @@ vm_fault_t finish_fault(struct vm_fault *vmf)
 	else
 		ret = VM_FAULT_NOPAGE;
 
-	update_mmu_tlb(vma, vmf->address, vmf->pte);
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
 	return ret;
 }

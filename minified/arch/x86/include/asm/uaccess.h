@@ -54,7 +54,7 @@ extern void __put_user_nocheck_8(void);
 #define do_put_user_call(fn,x,ptr)					({										int __ret_pu;								void __user *__ptr_pu;							register __typeof__(*(ptr)) __val_pu asm("%"_ASM_AX);			__chk_user_ptr(ptr);							__ptr_pu = (ptr);							__val_pu = (x);								asm volatile("call __" #fn "_%P[size]"						     : "=c" (__ret_pu),								ASM_CALL_CONSTRAINT						     : "0" (__ptr_pu),							       "r" (__val_pu),							       [size] "i" (sizeof(*(ptr)))					     :"ebx");							__builtin_expect(__ret_pu, 0);					})
 
  
-#define put_user(x, ptr) ({ might_fault(); do_put_user_call(put_user,x,ptr); })
+#define put_user(x, ptr) ({ do_put_user_call(put_user,x,ptr); })
 
  
 

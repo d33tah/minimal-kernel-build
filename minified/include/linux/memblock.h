@@ -90,10 +90,6 @@ void __next_mem_pfn_range(int *idx, int nid, unsigned long *out_start_pfn,
 	__for_each_mem_range_rev(i, &memblock.memory, &memblock.reserved, nid, \
 				 flags, p_start, p_end, p_nid)
 
-static inline void memblock_set_region_node(struct memblock_region *r, int nid)
-{
-}
-
 static inline int memblock_get_region_node(const struct memblock_region *r)
 {
 	return 0;
@@ -149,9 +145,5 @@ alloc_large_system_hash(const char *tablename, unsigned long bucketsize,
 
 #define HASH_EARLY 0x00000001
 #define HASH_ZERO 0x00000004
-
-static inline void early_memtest(phys_addr_t start, phys_addr_t end)
-{
-}
 
 #endif

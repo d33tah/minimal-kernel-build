@@ -310,8 +310,6 @@ void __init init_mem_mapping(void)
 
 	load_cr3(swapper_pg_dir);
 	__flush_tlb_all();
-
-	early_memtest(0, max_pfn_mapped << PAGE_SHIFT);
 }
 
 void __init zone_sizes_init(void)

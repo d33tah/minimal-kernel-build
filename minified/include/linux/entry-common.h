@@ -7,8 +7,6 @@
 
 #define EXIT_TO_USER_MODE_WORK (_TIF_NEED_RESCHED)
 
-static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs);
-
 long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall);
 
 static inline void local_irq_enable_exit_to_user(unsigned long ti_work);
@@ -24,8 +22,6 @@ static inline void local_irq_disable_exit_to_user(void)
 {
 	local_irq_disable();
 }
-
-static __always_inline void arch_exit_to_user_mode(void);
 
 void syscall_exit_to_user_mode(struct pt_regs *regs);
 

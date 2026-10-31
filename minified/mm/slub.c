@@ -109,8 +109,6 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 
 	slab->objects = oo_objects(oo);
 
-	account_slab(slab, oo_order(oo), s, flags);
-
 	slab->slab_cache = s;
 
 	start = slab_address(slab);
@@ -250,8 +248,6 @@ static inline void free_large_kmalloc(struct folio *folio, void *object)
 	if (WARN_ON_ONCE(order == 0))
 		pr_warn_once("object pointer: 0x%p\n", object);
 
-	mod_lruvec_page_state(folio_page(folio, 0), NR_SLAB_UNRECLAIMABLE_B,
-			      -(PAGE_SIZE << order));
 	__free_pages(folio_page(folio, 0), order);
 }
 

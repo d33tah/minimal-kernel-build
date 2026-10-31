@@ -35,10 +35,6 @@ extern pid_t user_mode_thread(int (*fn)(void *), void *arg,
 			      unsigned long flags);
 /* kernel_wait4 now static in exit.c */
 
-extern void free_task(struct task_struct *tsk);
-
-extern void __put_task_struct(struct task_struct *t);
-
 static inline void task_lock(struct task_struct *p)
 {
 	spin_lock(&p->alloc_lock);

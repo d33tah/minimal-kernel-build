@@ -37,7 +37,6 @@ void __init early_irq_init(void)
 
 void handle_bad_irq(struct irq_desc *desc)
 {
-	ack_bad_irq(desc->irq_data.irq);
 }
 
 irqreturn_t no_action(int cpl, void *dev_id)

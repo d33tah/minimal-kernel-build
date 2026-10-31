@@ -2,23 +2,11 @@
 #include <linux/entry-common.h>
 #include <linux/hardirq.h>
 
-static __always_inline void __enter_from_user_mode(struct pt_regs *regs)
-{
-	arch_enter_from_user_mode(regs);
-}
-
 noinstr long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall)
 {
-	__enter_from_user_mode(regs);
-
 	local_irq_enable();
 
 	return syscall;
-}
-
-static __always_inline void __exit_to_user_mode(void)
-{
-	arch_exit_to_user_mode();
 }
 
 static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
@@ -47,7 +35,6 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 	if (unlikely(ti_work & EXIT_TO_USER_MODE_WORK))
 		ti_work = exit_to_user_mode_loop(regs, ti_work);
 
-	addr_limit_user_check();
 	lockdep_assert_irqs_disabled();
 	lockdep_sys_exit();
 }
@@ -56,18 +43,15 @@ __visible noinstr void syscall_exit_to_user_mode(struct pt_regs *regs)
 {
 	local_irq_disable_exit_to_user();
 	exit_to_user_mode_prepare(regs);
-	__exit_to_user_mode();
 }
 
 noinstr void irqentry_enter_from_user_mode(struct pt_regs *regs)
 {
-	__enter_from_user_mode(regs);
 }
 
 noinstr void irqentry_exit_to_user_mode(struct pt_regs *regs)
 {
 	exit_to_user_mode_prepare(regs);
-	__exit_to_user_mode();
 }
 
 noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)

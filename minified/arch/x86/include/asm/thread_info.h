@@ -1,15 +1,11 @@
  
- 
-
 #ifndef _ASM_X86_THREAD_INFO_H
 #define _ASM_X86_THREAD_INFO_H
 
 #include <asm/page.h>
 
- 
 #  define TOP_OF_KERNEL_STACK_PADDING 8
 
- 
 #ifndef __ASSEMBLY__
 struct task_struct;
 
@@ -23,7 +19,6 @@ struct thread_info { unsigned long flags; };
 
 #endif
 
- 
 #define TIF_NEED_RESCHED	3
 
 #define _TIF_NEED_RESCHED	(1 << TIF_NEED_RESCHED)
@@ -39,14 +34,9 @@ struct thread_info { unsigned long flags; };
  * never set, so the COMPAT term was always false.
  */
 
- 
-
- 
 #ifndef __ASSEMBLY__
 
-extern void arch_task_cache_init(void);
 extern int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src);
-extern void arch_setup_new_exec(void);
 #endif	 
 
 #endif  

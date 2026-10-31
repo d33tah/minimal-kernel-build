@@ -12,17 +12,8 @@ struct page;
 
 /* flush_cache_page removed - no-op on x86, all callers dropped */
 
-static inline void flush_dcache_page(struct page *page)
-{
-}
-
 /* flush_icache_range removed - unused */
 /* flush_icache_user_range removed - unused (macro for flush_icache_range) */
-
-static inline void flush_icache_page(struct vm_area_struct *vma,
-				     struct page *page)
-{
-}
 
 /* clflush_cache_range removed - unused */
 

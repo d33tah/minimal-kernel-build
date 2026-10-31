@@ -20,8 +20,6 @@ struct signal_struct {
 	struct rw_semaphore exec_update_lock;
 } __randomize_layout;
 
-extern void __cleanup_sighand(struct sighand_struct *);
-
 static inline struct pid *task_pgrp(struct task_struct *task)
 {
 	return task->signal->pids[PIDTYPE_PGID];

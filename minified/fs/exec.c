@@ -30,7 +30,6 @@ static void acct_arg_size(struct linux_binprm *bprm, unsigned long pages)
 		return;
 
 	bprm->vma_pages = pages;
-	add_mm_counter(mm, MM_ANONPAGES, diff);
 }
 
 static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
@@ -194,7 +193,6 @@ int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 			return -E2BIG;
 		kaddr = kmap_atomic(page);
 		memcpy(kaddr + offset_in_page(pos), arg, bytes_to_copy);
-		flush_dcache_page(page);
 		kunmap_atomic(kaddr);
 		put_arg_page(page);
 	}
@@ -303,9 +301,6 @@ static int exec_mmap(struct mm_struct *mm)
 	tsk = current;
 	old_mm = current->mm;
 	exec_mm_release(tsk, old_mm);
-	if (old_mm)
-		sync_mm_rss(old_mm);
-
 	ret = down_write_killable(&tsk->signal->exec_update_lock);
 	if (ret)
 		return ret;
@@ -390,8 +385,6 @@ out:
 void setup_new_exec(struct linux_binprm *bprm)
 {
 	struct task_struct *me = current;
-
-	arch_setup_new_exec();
 
 	up_write(&me->signal->exec_update_lock);
 	mutex_unlock(&me->signal->cred_guard_mutex);

@@ -1,5 +1,4 @@
 
-
 #include "internal.h"
 
 /*
@@ -12,19 +11,15 @@ void page_add_new_anon_rmap(struct page *page, struct vm_area_struct *vma,
 			    unsigned long address)
 {
 	const bool compound = PageCompound(page);
-	int nr = compound ? thp_nr_pages(page) : 1;
 
 	VM_BUG_ON_VMA(address < vma->vm_start || address >= vma->vm_end, vma);
 	__SetPageSwapBacked(page);
 	if (compound) {
 		atomic_set(compound_mapcount_ptr(page), 0);
 		atomic_set(compound_pincount_ptr(page), 0);
-
-		__mod_lruvec_page_state(page, NR_ANON_THPS, nr);
 	} else {
 		atomic_set(&page->_mapcount, 0);
 	}
-	__mod_lruvec_page_state(page, NR_ANON_MAPPED, nr);
 	WRITE_ONCE(page->mapping, (struct address_space *)PAGE_MAPPING_ANON);
 	page->index = linear_page_index(vma, address);
 	SetPageAnonExclusive(page);
@@ -33,12 +28,7 @@ void page_add_new_anon_rmap(struct page *page, struct vm_area_struct *vma,
 void page_add_file_rmap(struct page *page, struct vm_area_struct *vma,
 			bool compound)
 {
-	int nr = 0;
-
-	if (atomic_inc_and_test(&page->_mapcount))
-		nr++;
-	if (nr)
-		__mod_lruvec_page_state(page, NR_FILE_MAPPED, nr);
+	atomic_inc(&page->_mapcount);
 }
 
 /* The page lost one of its PTEs (munmap, COW replacement). */

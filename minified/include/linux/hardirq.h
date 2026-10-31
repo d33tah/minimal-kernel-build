@@ -25,7 +25,6 @@ void irq_exit_rcu(void);
 
 #define __nmi_enter()                                             \
 	do {                                                      \
-		lockdep_off();                                    \
 		arch_nmi_enter();                                 \
 		BUG_ON(in_nmi() == NMI_MASK);                     \
 		__preempt_count_add(NMI_OFFSET + HARDIRQ_OFFSET); \
@@ -36,7 +35,6 @@ void irq_exit_rcu(void);
 		BUG_ON(!in_nmi());                                \
 		__preempt_count_sub(NMI_OFFSET + HARDIRQ_OFFSET); \
 		arch_nmi_exit();                                  \
-		lockdep_on();                                     \
 	} while (0)
 
 #endif

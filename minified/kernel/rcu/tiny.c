@@ -75,7 +75,6 @@ rcu_process_callbacks(struct softirq_action *unused)
 	while (list) {
 		next = list->next;
 		prefetch(next);
-		debug_rcu_head_unqueue(list);
 		local_bh_disable();
 		rcu_reclaim_tiny(list);
 		local_bh_enable();

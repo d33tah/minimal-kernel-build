@@ -11,17 +11,9 @@ static inline void *kmap(struct page *page)
 	return page_address(page);
 }
 
-static inline void kunmap(struct page *page)
-{
-}
-
 static inline void *kmap_local_page(struct page *page)
 {
 	return page_address(page);
-}
-
-static inline void __kunmap_local(void *addr)
-{
 }
 
 static inline void *kmap_atomic(struct page *page)
@@ -43,17 +35,6 @@ static inline void __kunmap_atomic(void *addr)
 		__kunmap_atomic(__addr);                            \
 	} while (0)
 
-#define kunmap_local(__addr)                                        \
-	do {                                                        \
-		BUILD_BUG_ON(__same_type((__addr), struct page *)); \
-		__kunmap_local(__addr);                             \
-	} while (0)
-
-static inline void flush_anon_page(struct vm_area_struct *vma,
-				   struct page *page, unsigned long vmaddr)
-{
-}
-
 /* clear_user_highpage + generic alloc_zeroed_user_highpage_movable removed: x86 defines
  * __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE_MOVABLE (asm/page.h), so the generic inline never
  * compiled and clear_user_highpage (its sole consumer) was dead. */
@@ -63,7 +44,6 @@ static inline void zero_user_segments(struct page *page, unsigned start1,
 				      unsigned end2)
 {
 	void *kaddr = kmap_local_page(page);
-	unsigned int i;
 
 	BUG_ON(end1 > page_size(page) || end2 > page_size(page));
 
@@ -72,10 +52,6 @@ static inline void zero_user_segments(struct page *page, unsigned start1,
 
 	if (end2 > start2)
 		memset(kaddr + start2, 0, end2 - start2);
-
-	kunmap_local(kaddr);
-	for (i = 0; i < compound_nr(page); i++)
-		flush_dcache_page(page + i);
 }
 
 static inline void zero_user(struct page *page, unsigned start, unsigned size)
@@ -92,8 +68,6 @@ static inline void copy_user_highpage(struct page *to, struct page *from,
 	vfrom = kmap_local_page(from);
 	vto = kmap_local_page(to);
 	copy_user_page(vto, vfrom, vaddr, to);
-	kunmap_local(vto);
-	kunmap_local(vfrom);
 }
 
 #endif

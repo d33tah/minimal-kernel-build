@@ -29,8 +29,6 @@ struct cred {
 	};
 } __randomize_layout;
 
-extern void __put_cred(struct cred *);
-extern void exit_creds(struct task_struct *);
 extern int copy_creds(struct task_struct *, unsigned long);
 extern struct cred *prepare_creds(void);
 extern struct cred *prepare_exec_creds(void);
@@ -56,10 +54,8 @@ static inline void put_cred(const struct cred *_cred)
 {
 	struct cred *cred = (struct cred *)_cred;
 
-	if (cred) {
-		if (atomic_dec_and_test(&(cred)->usage))
-			__put_cred(cred);
-	}
+	if (cred)
+		atomic_dec(&cred->usage);
 }
 
 #define current_cred() rcu_dereference_protected(current->cred, 1)

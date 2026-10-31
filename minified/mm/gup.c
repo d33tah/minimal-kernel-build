@@ -232,8 +232,6 @@ retry:
 			goto out;
 		}
 		pages[i] = page;
-		flush_anon_page(vma, page, start);
-		flush_dcache_page(page);
 		i += 1;
 		start += PAGE_SIZE;
 		nr_pages -= 1;

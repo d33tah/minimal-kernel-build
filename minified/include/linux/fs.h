@@ -451,12 +451,6 @@ static inline void allow_write_access(struct file *file)
 	if (file)
 		atomic_inc(&file_inode(file)->i_writecount);
 }
-static inline void i_readcount_dec(struct inode *inode)
-{
-}
-static inline void i_readcount_inc(struct inode *inode)
-{
-}
 extern ssize_t kernel_read(struct file *, void *, size_t, loff_t *);
 ssize_t __kernel_read(struct file *file, void *buf, size_t count, loff_t *pos);
 extern ssize_t kernel_write(struct file *, const void *, size_t, loff_t *);

@@ -80,8 +80,6 @@ void iov_iter_init(struct iov_iter *i, unsigned int direction,
 
 size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
 {
-	if (iter_is_iovec(i))
-		might_fault();
 	iterate_and_advance(i, bytes, base, len, off,
 			    copyout(base, addr + off, len),
 			    memcpy(base, addr + off, len))
@@ -91,8 +89,6 @@ size_t _copy_to_iter(const void *addr, size_t bytes, struct iov_iter *i)
 
 size_t _copy_from_iter(void *addr, size_t bytes, struct iov_iter *i)
 {
-	if (iter_is_iovec(i))
-		might_fault();
 	iterate_and_advance(i, bytes, base, len, off,
 			    copyin(addr + off, base, len),
 			    memcpy(addr + off, base, len))
@@ -124,7 +120,6 @@ static size_t __copy_page_to_iter(struct page *page, size_t offset,
 	if (iov_iter_is_kvec(i)) {
 		void *kaddr = kmap_local_page(page);
 		size_t wanted = _copy_to_iter(kaddr + offset, bytes, i);
-		kunmap_local(kaddr);
 		return wanted;
 	}
 	WARN_ON(1);

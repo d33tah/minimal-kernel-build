@@ -64,43 +64,6 @@ void vm_area_free(struct vm_area_struct *vma)
 	kmem_cache_free(vm_area_cachep, vma);
 }
 
-static void account_kernel_stack(struct task_struct *tsk, int account)
-{
-	void *stack = task_stack_page(tsk);
-
-	mod_lruvec_kmem_state(stack, NR_KERNEL_STACK_KB,
-			      account * (THREAD_SIZE / 1024));
-}
-
-void exit_task_stack_account(struct task_struct *tsk)
-{
-	/*
-	 * RUNTIME-DEAD ANCHOR-STUB: un-accounts the dying task's kernel stack.
-	 * Both call sites are runtime-dead on this 1-shot boot: do_exit's tail
-	 * (init panics before reaching it, HIT=False) and copy_process's
-	 * bad_fork_free rollback (copy_process always succeeds at boot, HIT=False).
-	 * account_kernel_stack stays live via the alloc path (dup_task_struct).
-	 */
-}
-
-void put_task_stack(struct task_struct *tsk)
-{
-	/*
-	 * RUNTIME-DEAD ANCHOR-STUB: drops the last kernel-stack ref to free it.
-	 * The only call site is copy_process's bad_fork rollback (copy_process
-	 * always succeeds, HIT=False); no task ever exits (init's exit panics).
-	 */
-}
-
-void free_task(struct task_struct *tsk)
-{
-	/*
-	 * RUNTIME-DEAD ANCHOR-STUB: frees a fully-released task_struct. Both call
-	 * sites are runtime-dead: __put_task_struct (HIT=False -- no task is ever
-	 * fully released on a 1-shot boot) and delayed_free_task (bad_fork rollback).
-	 */
-}
-
 static inline int mm_alloc_pgd(struct mm_struct *mm)
 {
 	mm->pgd = pgd_alloc(mm);
@@ -123,22 +86,7 @@ void __mmdrop(struct mm_struct *mm)
 	WARN_ON_ONCE(mm == current->mm);
 	WARN_ON_ONCE(mm == current->active_mm);
 	mm_free_pgd(mm);
-	destroy_context(mm);
-	put_user_ns(mm->user_ns);
 	free_mm(mm);
-}
-
-void __put_task_struct(struct task_struct *tsk)
-{
-	/*
-	 * RUNTIME-DEAD ANCHOR-STUB: releases a task whose last ref dropped. Never
-	 * runs on a 1-shot boot (init panics, HIT=False).
-	 * Its callees (exit_creds / free_signal_struct / free_task) are all dead too.
-	 */
-}
-
-void __init __weak arch_task_cache_init(void)
-{
 }
 
 void __init fork_init(void)
@@ -147,8 +95,6 @@ void __init fork_init(void)
 					       sizeof(struct task_struct),
 					       L1_CACHE_BYTES,
 					       SLAB_PANIC | SLAB_ACCOUNT, NULL);
-
-	arch_task_cache_init();
 }
 
 void set_task_stack_end_magic(struct task_struct *tsk)
@@ -177,7 +123,6 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 		goto free_tsk;
 
 	refcount_set(&tsk->stack_refcount, 1);
-	account_kernel_stack(tsk, 1);
 
 	setup_thread_stack(tsk, orig);
 	clear_tsk_need_resched(tsk);
@@ -201,7 +146,6 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	atomic_set(&mm->mm_users, 1);
 	atomic_set(&mm->mm_count, 1);
 	mmap_init_lock(mm);
-	mm_pgtables_bytes_init(mm);
 	mm->map_count = 0;
 	spin_lock_init(&mm->page_table_lock);
 	mm_init_cpumask(mm);
@@ -363,14 +307,6 @@ static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
 	return 0;
 }
 
-void __cleanup_sighand(struct sighand_struct *sighand)
-{
-	/*
-	 * RUNTIME-DEAD ANCHOR-STUB: sole caller is copy_process's bad_fork rollback
-	 * (fork.c), which never runs because copy_process always succeeds at boot.
-	 */
-}
-
 static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct signal_struct *sig;
@@ -418,11 +354,6 @@ static inline void init_task_pid(struct task_struct *task, enum pid_type type,
 		task->thread_pid = pid;
 	else
 		task->signal->pids[type] = pid;
-}
-
-static __always_inline void delayed_free_task(struct task_struct *tsk)
-{
-	free_task(tsk);
 }
 
 static __latent_entropy struct task_struct *
@@ -533,7 +464,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	return p;
 
 bad_fork_cleanup_io:
-	exit_task_namespaces(p);
 bad_fork_cleanup_mm:
 	if (p->mm) {
 		mmput(p->mm);
@@ -542,17 +472,12 @@ bad_fork_cleanup_signal:
 	/* CLONE_THREAD never set -> signal_struct is always private here */
 	kmem_cache_free(signal_cachep, p->signal);
 bad_fork_cleanup_sighand:
-	__cleanup_sighand(p->sighand);
 bad_fork_cleanup_fs:
 bad_fork_cleanup_files:
 bad_fork_cleanup_semundo:
 bad_fork_cleanup_policy:
-	exit_creds(p);
 bad_fork_free:
 	WRITE_ONCE(p->__state, TASK_DEAD);
-	exit_task_stack_account(p);
-	put_task_stack(p);
-	delayed_free_task(p);
 fork_out:
 	return ERR_PTR(retval);
 }

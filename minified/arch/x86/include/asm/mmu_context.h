@@ -9,11 +9,6 @@
 
 extern atomic64_t last_mm_ctx_id;
 
-static inline void paravirt_activate_mm(struct mm_struct *prev,
-					struct mm_struct *next)
-{
-}
-
 extern void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk);
 
 static inline int init_new_context(struct task_struct *tsk,
@@ -25,21 +20,13 @@ static inline int init_new_context(struct task_struct *tsk,
 	return 0;
 }
 
-static inline void destroy_context(struct mm_struct *mm)
-{
-}
-
 extern void switch_mm(struct mm_struct *prev, struct mm_struct *next,
 		      struct task_struct *tsk);
 
 extern void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 			       struct task_struct *tsk);
 
-#define activate_mm(prev, next)                       \
-	do {                                          \
-		paravirt_activate_mm((prev), (next)); \
-		switch_mm((prev), (next), NULL);      \
-	} while (0);
+#define activate_mm(prev, next) switch_mm((prev), (next), NULL)
 
 #define deactivate_mm(tsk, mm)      \
 	do {                        \

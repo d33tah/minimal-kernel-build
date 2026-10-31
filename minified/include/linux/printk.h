@@ -18,10 +18,6 @@
 		0;                                  \
 	})
 
-static inline __printf(1, 2) __cold void early_printk(const char *s, ...)
-{
-}
-
 static inline __printf(1, 2) __cold int _printk(const char *s, ...)
 {
 	return 0;
@@ -29,10 +25,6 @@ static inline __printf(1, 2) __cold int _printk(const char *s, ...)
 static inline __printf(1, 2) __cold int _printk_deferred(const char *s, ...)
 {
 	return 0;
-}
-
-static inline void dump_stack(void)
-{
 }
 
 #ifndef pr_fmt

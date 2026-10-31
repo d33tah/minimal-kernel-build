@@ -19,16 +19,3 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk)
 	get_nsproxy(old_ns);
 	return 0;
 }
-
-void exit_task_namespaces(struct task_struct *p)
-{
-	/*
-	 * RUNTIME-DEAD ANCHOR-STUB: detaches the dying task's nsproxy. Both call
-	 * sites are runtime-dead on this 1-shot boot: do_exit's tail (init panics
-	 * before reaching it, HIT=False) and copy_process's bad_fork_cleanup_io
-	 * rollback (copy_process always succeeds at boot, HIT=False). The whole
-	 * private teardown subtree (switch_task_namespaces -> put_nsproxy ->
-	 * free_nsproxy) was cascade-deleted; nothing ever drops the shared,
-	 * never-cloned nsproxy on this boot (copy_namespaces only get_nsproxy's it).
-	 */
-}

@@ -58,8 +58,6 @@ static void __fput(struct file *file)
 	if (file->f_op->release)
 		file->f_op->release(inode, file);
 	fops_put(file->f_op);
-	if ((mode & (FMODE_READ | FMODE_WRITE)) == FMODE_READ)
-		i_readcount_dec(inode);
 	if (mode & FMODE_WRITER)
 		put_write_access(inode);
 	dput(dentry);

@@ -28,7 +28,6 @@ struct fs_context *fs_context_for_mount(struct file_system_type *fs_type)
 void put_fs_context(struct fs_context *fc)
 {
 	dput(fc->root);
-	put_user_ns(fc->user_ns);
 	put_cred(fc->cred);
 	kfree(fc);
 }

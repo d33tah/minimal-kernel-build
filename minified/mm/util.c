@@ -1,35 +1,6 @@
 #include <linux/swap.h>
 #include "internal.h"
 
-void kfree_const(const void *x)
-{
-	if (!is_kernel_rodata((unsigned long)x))
-		kfree(x);
-}
-
-static char *kstrdup(const char *s, gfp_t gfp)
-{
-	size_t len;
-	char *buf;
-
-	if (!s)
-		return NULL;
-
-	len = strlen(s) + 1;
-	buf = kmalloc_track_caller(len, gfp);
-	if (buf)
-		memcpy(buf, s, len);
-	return buf;
-}
-
-const char *kstrdup_const(const char *s, gfp_t gfp)
-{
-	if (is_kernel_rodata((unsigned long)s))
-		return s;
-
-	return kstrdup(s, gfp);
-}
-
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		     struct vm_area_struct *prev)
 {

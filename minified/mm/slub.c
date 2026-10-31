@@ -395,9 +395,6 @@ static int calculate_sizes(struct kmem_cache *s)
 	/* SLAB_CACHE_DMA/DMA32 never set (KMALLOC_DMA == KMALLOC_NORMAL, no DMA
 	 * cache, no callsite passes them) -> both arms dead. */
 
-	if (s->flags & SLAB_RECLAIM_ACCOUNT)
-		s->allocflags |= __GFP_RECLAIMABLE;
-
 	s->oo = oo_make(order, size);
 	s->min = oo_make(get_order(size), size);
 
@@ -520,10 +517,4 @@ int __kmem_cache_create(struct kmem_cache *s, slab_flags_t flags)
 		return err;
 
 	return 0;
-}
-
-/* Stub: __kmalloc_track_caller not used in minimal kernel */
-void *__kmalloc_track_caller(size_t size, gfp_t gfpflags, unsigned long caller)
-{
-	return __kmalloc(size, gfpflags);
 }

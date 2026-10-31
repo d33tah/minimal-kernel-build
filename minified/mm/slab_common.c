@@ -33,9 +33,6 @@ static struct kmem_cache *create_cache(unsigned int object_size,
 	struct kmem_cache *s;
 	int err;
 
-	if (WARN_ON(useroffset + usersize > object_size))
-		useroffset = usersize = 0;
-
 	err = -ENOMEM;
 	s = kmem_cache_zalloc(kmem_cache, GFP_KERNEL);
 	if (!s)
@@ -66,7 +63,6 @@ kmem_cache_create_usercopy(const char *name, unsigned int size,
 			   void (*ctor)(void *))
 {
 	struct kmem_cache *s = NULL;
-	const char *cache_name;
 	int err;
 
 	mutex_lock(&slab_mutex);
@@ -80,21 +76,10 @@ kmem_cache_create_usercopy(const char *name, unsigned int size,
 
 	flags &= CACHE_CREATE_MASK;
 
-	if (WARN_ON(!usersize && useroffset) ||
-	    WARN_ON(size < usersize || size - usersize < useroffset))
-		usersize = useroffset = 0;
-
-	cache_name = kstrdup_const(name, GFP_KERNEL);
-	if (!cache_name) {
-		err = -ENOMEM;
-		goto out_unlock;
-	}
-
 	s = create_cache(size, calculate_alignment(flags, align, size), flags,
 			 useroffset, usersize, ctor);
 	if (IS_ERR(s)) {
 		err = PTR_ERR(s);
-		kfree_const(cache_name);
 	}
 
 out_unlock:
@@ -186,27 +171,20 @@ struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
 	return kmalloc_caches[kmalloc_type(flags)][index];
 }
 
-#define INIT_KMALLOC_INFO(__size, __short_size)                        \
-	{                                                              \
-		.name[KMALLOC_NORMAL] = "kmalloc-" #__short_size,      \
-		.name[KMALLOC_RECLAIM] = "kmalloc-rcl-" #__short_size, \
-		.size = __size,                                        \
+#define INIT_KMALLOC_INFO(__size, __short_size)                   \
+	{                                                         \
+		.name[KMALLOC_NORMAL] = "kmalloc-" #__short_size, \
+		.size = __size,                                   \
 	}
 
 const struct kmalloc_info_struct kmalloc_info[] __initconst = {
-	INIT_KMALLOC_INFO(0, 0),	  INIT_KMALLOC_INFO(96, 96),
-	INIT_KMALLOC_INFO(192, 192),	  INIT_KMALLOC_INFO(8, 8),
-	INIT_KMALLOC_INFO(16, 16),	  INIT_KMALLOC_INFO(32, 32),
-	INIT_KMALLOC_INFO(64, 64),	  INIT_KMALLOC_INFO(128, 128),
-	INIT_KMALLOC_INFO(256, 256),	  INIT_KMALLOC_INFO(512, 512),
-	INIT_KMALLOC_INFO(1024, 1k),	  INIT_KMALLOC_INFO(2048, 2k),
-	INIT_KMALLOC_INFO(4096, 4k),	  INIT_KMALLOC_INFO(8192, 8k),
-	INIT_KMALLOC_INFO(16384, 16k),	  INIT_KMALLOC_INFO(32768, 32k),
-	INIT_KMALLOC_INFO(65536, 64k),	  INIT_KMALLOC_INFO(131072, 128k),
-	INIT_KMALLOC_INFO(262144, 256k),  INIT_KMALLOC_INFO(524288, 512k),
-	INIT_KMALLOC_INFO(1048576, 1M),	  INIT_KMALLOC_INFO(2097152, 2M),
-	INIT_KMALLOC_INFO(4194304, 4M),	  INIT_KMALLOC_INFO(8388608, 8M),
-	INIT_KMALLOC_INFO(16777216, 16M), INIT_KMALLOC_INFO(33554432, 32M)
+	INIT_KMALLOC_INFO(0, 0),     INIT_KMALLOC_INFO(96, 96),
+	INIT_KMALLOC_INFO(192, 192), INIT_KMALLOC_INFO(8, 8),
+	INIT_KMALLOC_INFO(16, 16),   INIT_KMALLOC_INFO(32, 32),
+	INIT_KMALLOC_INFO(64, 64),   INIT_KMALLOC_INFO(128, 128),
+	INIT_KMALLOC_INFO(256, 256), INIT_KMALLOC_INFO(512, 512),
+	INIT_KMALLOC_INFO(1024, 1k), INIT_KMALLOC_INFO(2048, 2k),
+	INIT_KMALLOC_INFO(4096, 4k), INIT_KMALLOC_INFO(8192, 8k)
 };
 
 void __init setup_kmalloc_cache_index_table(void)
@@ -228,12 +206,6 @@ void __init setup_kmalloc_cache_index_table(void)
 static void __init new_kmalloc_cache(int idx, enum kmalloc_cache_type type,
 				     slab_flags_t flags)
 {
-	/* CONFIG_ZONE_DMA and CONFIG_MEMCG_KMEM are off on this build, so the
-	 * KMALLOC_DMA (SLAB_CACHE_DMA) and KMALLOC_NORMAL (refcount = -1) arms
-	 * were statically dead; only the KMALLOC_RECLAIM arm survives. */
-	if (type == KMALLOC_RECLAIM)
-		flags |= SLAB_RECLAIM_ACCOUNT;
-
 	kmalloc_caches[type][idx] = create_kmalloc_cache(
 		kmalloc_info[idx].name[type], kmalloc_info[idx].size, flags, 0,
 		kmalloc_info[idx].size);

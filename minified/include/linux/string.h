@@ -14,9 +14,6 @@ extern char *strrchr(const char *, int);
 
 extern int memcmp(const void *, const void *, __kernel_size_t);
 
-extern void kfree_const(const void *x);
-extern const char *kstrdup_const(const char *s, gfp_t gfp);
-
 static inline const char *kbasename(const char *path)
 {
 	const char *tail = strrchr(path, '/');

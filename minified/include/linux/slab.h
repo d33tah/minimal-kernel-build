@@ -81,11 +81,7 @@ static inline unsigned int arch_slab_minalign(void)
 #define KMALLOC_MIN_SIZE (1 << KMALLOC_SHIFT_LOW)
 #endif
 
-enum kmalloc_cache_type {
-	KMALLOC_NORMAL = 0,
-	KMALLOC_RECLAIM,
-	NR_KMALLOC_TYPES
-};
+enum kmalloc_cache_type { KMALLOC_NORMAL = 0, NR_KMALLOC_TYPES };
 
 extern struct kmem_cache
 	*kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1];
@@ -95,10 +91,7 @@ extern struct kmem_cache
  * The DMA / CGROUP arms folded to compile-time-false and were removed. */
 static __always_inline enum kmalloc_cache_type kmalloc_type(gfp_t flags)
 {
-	if (likely((flags & __GFP_RECLAIMABLE) == 0))
-		return KMALLOC_NORMAL;
-
-	return KMALLOC_RECLAIM;
+	return KMALLOC_NORMAL;
 }
 
 static __always_inline unsigned int __kmalloc_index(size_t size,
@@ -136,30 +129,6 @@ static __always_inline unsigned int __kmalloc_index(size_t size,
 		return 12;
 	if (size <= 8 * 1024)
 		return 13;
-	if (size <= 16 * 1024)
-		return 14;
-	if (size <= 32 * 1024)
-		return 15;
-	if (size <= 64 * 1024)
-		return 16;
-	if (size <= 128 * 1024)
-		return 17;
-	if (size <= 256 * 1024)
-		return 18;
-	if (size <= 512 * 1024)
-		return 19;
-	if (size <= 1024 * 1024)
-		return 20;
-	if (size <= 2 * 1024 * 1024)
-		return 21;
-	if (size <= 4 * 1024 * 1024)
-		return 22;
-	if (size <= 8 * 1024 * 1024)
-		return 23;
-	if (size <= 16 * 1024 * 1024)
-		return 24;
-	if (size <= 32 * 1024 * 1024)
-		return 25;
 
 	if (!IS_ENABLED(CONFIG_PROFILE_ALL_BRANCHES) && size_is_constant)
 		BUILD_BUG_ON_MSG(1, "unexpected size in kmalloc_index()");
@@ -275,11 +244,6 @@ static inline __alloc_size(1, 2) void *kcalloc(size_t n, size_t size,
 {
 	return kmalloc_array(n, size, flags | __GFP_ZERO);
 }
-
-extern void *__kmalloc_track_caller(size_t size, gfp_t flags,
-				    unsigned long caller);
-#define kmalloc_track_caller(size, flags) \
-	__kmalloc_track_caller(size, flags, _RET_IP_)
 
 static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
 {

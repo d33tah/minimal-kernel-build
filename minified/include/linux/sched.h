@@ -53,7 +53,6 @@ struct task_struct {
 	pid_t pid;
 	struct task_struct *group_leader;
 	struct pid *thread_pid;
-	struct hlist_node pid_links[PIDTYPE_MAX];
 	const struct cred __rcu *real_cred;
 	const struct cred __rcu *cred;
 	char comm[TASK_COMM_LEN];

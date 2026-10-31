@@ -2,7 +2,14 @@
 #include <linux/pid_namespace.h>
 #include <linux/sched/signal.h>
 
-struct pid init_struct_pid = { .count		= REFCOUNT_INIT(1), .tasks		= { { .first = NULL }, { .first = NULL }, { .first = NULL }, }, .level		= 0, .numbers	= { { .nr		= 0, .ns		= &init_pid_ns, }, } };
+struct pid init_struct_pid = {
+	.count = REFCOUNT_INIT(1),
+	.level = 0,
+	.numbers = { {
+		.nr = 0,
+		.ns = &init_pid_ns,
+	}, },
+};
 
 static int pid_max = PID_MAX_DEFAULT;
 
@@ -35,7 +42,6 @@ void put_pid(struct pid *pid)
 struct pid *alloc_pid(struct pid_namespace *ns)
 {
 	struct pid *pid;
-	enum pid_type type;
 	int nr;
 
 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
@@ -55,22 +61,13 @@ struct pid *alloc_pid(struct pid_namespace *ns)
 	pid->numbers[ns->level].ns = ns;
 	get_pid_ns(ns);
 	refcount_set(&pid->count, 1);
-	for (type = 0; type < PIDTYPE_MAX; ++type)
-		INIT_HLIST_HEAD(&pid->tasks[type]);
 
 	return pid;
 }
 
 static struct pid **task_pid_ptr(struct task_struct *task, enum pid_type type)
 {
-	return (type == PIDTYPE_PID) ? &task->thread_pid :
-				       &task->signal->pids[type];
-}
-
-void attach_pid(struct task_struct *task, enum pid_type type)
-{
-	struct pid *pid = *task_pid_ptr(task, type);
-	hlist_add_head_rcu(&task->pid_links[type], &pid->tasks[type]);
+	return &task->thread_pid;
 }
 
 struct pid *get_task_pid(struct task_struct *task, enum pid_type type)

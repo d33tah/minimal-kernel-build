@@ -6,9 +6,6 @@
 
 enum pid_type {
 	PIDTYPE_PID,
-	PIDTYPE_TGID,
-	PIDTYPE_PGID,
-	PIDTYPE_SID,
 	PIDTYPE_MAX,
 };
 
@@ -20,8 +17,6 @@ struct upid {
 struct pid {
 	refcount_t count;
 	unsigned int level;
-	struct hlist_head tasks[PIDTYPE_MAX];
-
 	struct upid numbers[1];
 };
 
@@ -37,8 +32,6 @@ static inline struct pid *get_pid(struct pid *pid)
 extern void put_pid(struct pid *pid);
 
 extern struct pid *get_task_pid(struct task_struct *task, enum pid_type type);
-
-extern void attach_pid(struct task_struct *task, enum pid_type);
 
 struct pid_namespace;
 extern struct pid_namespace init_pid_ns;

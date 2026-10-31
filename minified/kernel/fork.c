@@ -290,21 +290,11 @@ static void rt_mutex_init_task(struct task_struct *p)
 	raw_spin_lock_init(&p->pi_lock);
 }
 
-static inline void init_task_pid_links(struct task_struct *task)
-{
-	enum pid_type type;
-
-	for (type = PIDTYPE_PID; type < PIDTYPE_MAX; ++type)
-		INIT_HLIST_NODE(&task->pid_links[type]);
-}
-
 static inline void init_task_pid(struct task_struct *task, enum pid_type type,
 				 struct pid *pid)
 {
 	if (type == PIDTYPE_PID)
 		task->thread_pid = pid;
-	else
-		task->signal->pids[type] = pid;
 }
 
 static __latent_entropy struct task_struct *
@@ -374,25 +364,8 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	/* CLONE_THREAD never set -> always a new thread-group leader */
 	p->group_leader = p;
 
-	init_task_pid_links(p);
-	if (likely(p->pid)) {
+	if (likely(p->pid))
 		init_task_pid(p, PIDTYPE_PID, pid);
-		/*
-		 * thread_group_leader(p) == (p->exit_signal >= 0) is always
-		 * true here: CLONE_THREAD is never set, so p->exit_signal =
-		 * args->exit_signal = (flags & CSIGNAL) >= 0. The CLONE_THREAD
-		 * else-arm (thread-join) is therefore unreachable and was
-		 * removed (it was the sole caller of task_join_group_stop).
-		 */
-		init_task_pid(p, PIDTYPE_TGID, pid);
-		init_task_pid(p, PIDTYPE_PGID, task_pgrp(current));
-		init_task_pid(p, PIDTYPE_SID, task_session(current));
-
-		attach_pid(p, PIDTYPE_TGID);
-		attach_pid(p, PIDTYPE_PGID);
-		attach_pid(p, PIDTYPE_SID);
-		attach_pid(p, PIDTYPE_PID);
-	}
 
 	return p;
 

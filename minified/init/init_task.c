@@ -1,7 +1,11 @@
 #include <linux/init_task.h>
 #include <linux/sched/signal.h>
 
-static struct signal_struct init_signals = { .rlim		= INIT_RLIMITS, .cred_guard_mutex = __MUTEX_INITIALIZER(init_signals.cred_guard_mutex), .exec_update_lock = __RWSEM_INITIALIZER(init_signals.exec_update_lock), .pids = { [PIDTYPE_PID]	= &init_struct_pid, [PIDTYPE_TGID]	= &init_struct_pid, [PIDTYPE_PGID]	= &init_struct_pid, [PIDTYPE_SID]	= &init_struct_pid, }, };
+static struct signal_struct init_signals = {
+	.rlim = INIT_RLIMITS,
+	.cred_guard_mutex = __MUTEX_INITIALIZER(init_signals.cred_guard_mutex),
+	.exec_update_lock = __RWSEM_INITIALIZER(init_signals.exec_update_lock),
+};
 
 struct task_struct init_task __aligned(L1_CACHE_BYTES) = {
 	.thread_info = INIT_THREAD_INFO(init_task),

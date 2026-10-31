@@ -10,26 +10,11 @@
 
 enum pageflags {
 	PG_locked,
-	PG_referenced,
 	PG_uptodate,
-	PG_dirty,
-	PG_lru,
-	PG_active,
-	PG_workingset,
-	PG_waiters,
 	PG_slab,
-	PG_owner_priv_1,
-	PG_arch_1,
 	PG_reserved,
-	PG_private,
-	PG_private_2,
-	PG_writeback,
 	PG_head,
 	PG_mappedtodisk,
-	PG_reclaim,
-	PG_swapbacked,
-	PG_unevictable,
-	PG_mlocked,
 	__NR_PAGEFLAGS,
 
 	PG_anon_exclusive = PG_mappedtodisk,
@@ -69,21 +54,10 @@ static inline unsigned long _compound_head(const struct page *page)
 
 #define folio_page(folio, n) nth_page(&(folio)->page, n)
 
-static __always_inline int PageTail(struct page *page)
-{
-	return READ_ONCE(page->compound_head) & 1 || page_is_fake_head(page);
-}
-
 static __always_inline int PageCompound(struct page *page)
 {
 	return test_bit(PG_head, &page->flags) ||
 	       READ_ONCE(page->compound_head) & 1;
-}
-
-#define PAGE_POISON_PATTERN -1l
-static inline int PagePoisoned(const struct page *page)
-{
-	return READ_ONCE(page->flags) == PAGE_POISON_PATTERN;
 }
 
 static unsigned long *folio_flags(struct folio *folio, unsigned n)
@@ -95,14 +69,10 @@ static unsigned long *folio_flags(struct folio *folio, unsigned n)
 
 #define PF_POISONED_CHECK(page) ({ page; })
 #define PF_ANY(page, enforce) PF_POISONED_CHECK(page)
-#define PF_HEAD(page, enforce) PF_POISONED_CHECK(compound_head(page))
-#define PF_ONLY_HEAD(page, enforce) ({ PF_POISONED_CHECK(page); })
 #define PF_NO_TAIL(page, enforce) ({ PF_POISONED_CHECK(compound_head(page)); })
 #define PF_NO_COMPOUND(page, enforce) ({ PF_POISONED_CHECK(page); })
 
 #define FOLIO_PF_ANY 0
-#define FOLIO_PF_HEAD 0
-#define FOLIO_PF_ONLY_HEAD 0
 #define FOLIO_PF_NO_TAIL 0
 #define FOLIO_PF_NO_COMPOUND 0
 
@@ -157,31 +127,6 @@ static unsigned long *folio_flags(struct folio *folio, unsigned n)
 		__clear_bit(PG_##lname, &policy(page, 1)->flags);              \
 	}
 
-#define TESTSETFLAG(uname, lname, policy)                                     \
-	static __always_inline bool folio_test_set_##lname(                   \
-		struct folio *folio)                                          \
-	{                                                                     \
-		return test_and_set_bit(PG_##lname,                           \
-					folio_flags(folio, FOLIO_##policy));  \
-	}                                                                     \
-	static __always_inline int TestSetPage##uname(struct page *page)      \
-	{                                                                     \
-		return test_and_set_bit(PG_##lname, &policy(page, 1)->flags); \
-	}
-
-#define TESTCLEARFLAG(uname, lname, policy)                                    \
-	static __always_inline bool folio_test_clear_##lname(                  \
-		struct folio *folio)                                           \
-	{                                                                      \
-		return test_and_clear_bit(PG_##lname,                          \
-					  folio_flags(folio, FOLIO_##policy)); \
-	}                                                                      \
-	static __always_inline int TestClearPage##uname(struct page *page)     \
-	{                                                                      \
-		return test_and_clear_bit(PG_##lname,                          \
-					  &policy(page, 1)->flags);            \
-	}
-
 #define PAGEFLAG(uname, lname, policy)     \
 	TESTPAGEFLAG(uname, lname, policy) \
 	SETPAGEFLAG(uname, lname, policy) CLEARPAGEFLAG(uname, lname, policy)
@@ -191,38 +136,12 @@ static unsigned long *folio_flags(struct folio *folio, unsigned n)
 	__SETPAGEFLAG(uname, lname, policy) \
 	__CLEARPAGEFLAG(uname, lname, policy)
 
-#define TESTSCFLAG(uname, lname, policy) \
-	TESTSETFLAG(uname, lname, policy) TESTCLEARFLAG(uname, lname, policy)
-
-#define TESTPAGEFLAG_FALSE(uname, lname)                                 \
-	static inline bool folio_test_##lname(const struct folio *folio) \
-	{                                                                \
-		return false;                                            \
-	}                                                                \
-	static inline int Page##uname(const struct page *page)           \
-	{                                                                \
-		return 0;                                                \
-	}
-
 /* clang-format off */
 __PAGEFLAG(Locked, locked, PF_NO_TAIL)
-PAGEFLAG(Waiters, waiters, PF_ONLY_HEAD)
-PAGEFLAG(Referenced, referenced, PF_HEAD)
-	TESTCLEARFLAG(Referenced, referenced, PF_HEAD)
-	__SETPAGEFLAG(Referenced, referenced, PF_HEAD)
-PAGEFLAG(Dirty, dirty, PF_HEAD) TESTSCFLAG(Dirty, dirty, PF_HEAD)
-	__CLEARPAGEFLAG(Dirty, dirty, PF_HEAD)
-PAGEFLAG(LRU, lru, PF_HEAD) __CLEARPAGEFLAG(LRU, lru, PF_HEAD)
-	TESTCLEARFLAG(LRU, lru, PF_HEAD)
-PAGEFLAG(Active, active, PF_HEAD) __CLEARPAGEFLAG(Active, active, PF_HEAD)
-	TESTCLEARFLAG(Active, active, PF_HEAD)
 __PAGEFLAG(Slab, slab, PF_NO_TAIL)
 PAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
 	__CLEARPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
 	__SETPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
-PAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
-	__CLEARPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
-	__SETPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 /* PAGEFLAG(Private)/TESTPAGEFLAG+TESTSCFLAG(Writeback)/PAGEFLAG(Reclaim) removed - 0 callers */
 /* clang-format on */
 
@@ -232,8 +151,7 @@ PAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 #define PAGE_MAPPING_MOVABLE 0x2
 #define PAGE_MAPPING_FLAGS (PAGE_MAPPING_ANON | PAGE_MAPPING_MOVABLE)
 
-							static __always_inline
-	int PageMappingFlags(struct page *page)
+static __always_inline int PageMappingFlags(struct page *page)
 {
 	return ((unsigned long)page->mapping & PAGE_MAPPING_FLAGS) != 0;
 }
@@ -303,8 +221,6 @@ static __always_inline void set_compound_head(struct page *page,
 	WRITE_ONCE(page->compound_head, (unsigned long)head + 1);
 }
 
-TESTPAGEFLAG_FALSE(Huge, hugetlb)
-
 #define PAGE_TYPE_BASE 0xf0000000
 #define PG_buddy 0x00000080
 #define PG_table 0x00000200
@@ -343,8 +259,6 @@ static __always_inline void SetPageAnonExclusive(struct page *page)
 #define PAGE_FLAGS_CHECK_AT_PREP (PAGEFLAGS_MASK & ~__PG_HWPOISON)
 
 #undef PF_ANY
-#undef PF_HEAD
-#undef PF_ONLY_HEAD
 #undef PF_NO_TAIL
 #undef PF_NO_COMPOUND
 #endif

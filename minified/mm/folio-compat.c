@@ -6,11 +6,6 @@ void unlock_page(struct page *page)
 	return folio_unlock(page_folio(page));
 }
 
-bool set_page_dirty(struct page *page)
-{
-	return folio_mark_dirty(page_folio(page));
-}
-
 static noinline struct page *pagecache_get_page(struct address_space *mapping,
 						pgoff_t index, int fgp_flags,
 						gfp_t gfp)

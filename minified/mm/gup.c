@@ -71,10 +71,6 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 		if (flags & FOLL_GET)
 			folio_ref_inc(folio);
 	}
-	if (flags & FOLL_TOUCH) {
-		if ((flags & FOLL_WRITE) && !pte_dirty(pte) && !PageDirty(page))
-			set_page_dirty(page);
-	}
 out:
 	pte_unmap_unlock(ptep, ptl);
 	return page;

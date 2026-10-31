@@ -57,8 +57,8 @@ static int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 
 /*
  * Nothing can wait on a folio bit (no code in this kernel puts a task to
- * sleep: there are no wait queues), so PG_waiters is never set and unlock only clears
- * PG_locked (the "negative byte" result, i.e. PG_waiters, is always 0).
+ * sleep: there are no wait queues), so there is no PG_waiters flag and unlock
+ * only clears PG_locked (the "negative byte" result is ignored).
  */
 void folio_unlock(struct folio *folio)
 {

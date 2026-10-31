@@ -435,12 +435,6 @@ long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
 /* pin_user_pages_remote, get_user_pages, pin_user_pages, get_user_pages_unlocked,
    pin_user_pages_unlocked, get_user_pages_fast, pin_user_pages_fast removed - unused */
 
-static inline bool folio_mark_dirty(struct folio *folio)
-{
-	return true;
-}
-bool set_page_dirty(struct page *page);
-
 /* dec_mm_counter removed - 0 callers (dec_mm_counter_fast macro never invoked) */
 
 static inline p4d_t *p4d_alloc(struct mm_struct *mm, pgd_t *pgd,

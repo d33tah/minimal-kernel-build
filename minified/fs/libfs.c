@@ -57,7 +57,6 @@ static int simple_write_end(struct file *file, struct address_space *mapping,
 	if (last_pos > inode->i_size)
 		i_size_write(inode, last_pos);
 
-	set_page_dirty(page);
 	unlock_page(page);
 	put_page(page);
 

@@ -104,8 +104,3 @@ extract_kernel(void *rmode, unsigned char *input_data, unsigned long input_len,
 
 	return output;
 }
-
-void fortify_panic(const char *name)
-{
-	error("detected buffer overflow");
-}

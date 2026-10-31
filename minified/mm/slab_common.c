@@ -104,10 +104,6 @@ out_unlock:
 		if (flags & SLAB_PANIC)
 			panic("%s: Failed to create slab '%s'. Error %d\n",
 			      __func__, name, err);
-		else {
-			pr_warn("%s(%s) failed with error %d\n", __func__, name,
-				err);
-		}
 		return NULL;
 	}
 	return s;
@@ -267,11 +263,7 @@ void __init create_kmalloc_caches(slab_flags_t flags)
 
 gfp_t kmalloc_fix_flags(gfp_t flags)
 {
-	gfp_t invalid_mask = flags & GFP_SLAB_BUG_MASK;
-
 	flags &= ~GFP_SLAB_BUG_MASK;
-	pr_warn("Unexpected gfp: %#x (%pGg). Fixing up to gfp: %#x (%pGg). Fix your code!\n",
-		invalid_mask, &invalid_mask, flags, &flags);
 
 	return flags;
 }

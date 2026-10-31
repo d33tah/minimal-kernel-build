@@ -1,4 +1,3 @@
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/clocksource.h>
 
@@ -151,14 +150,12 @@ static unsigned long quick_pit_calibrate(void)
 			goto success;
 		}
 	}
-	pr_info("Fast TSC calibration failed\n");
 	return 0;
 
 success:
 
 	delta *= PIT_TICK_RATE;
 	do_div(delta, i * 256 * 1000);
-	pr_info("Fast TSC calibration using PIT\n");
 	return delta;
 }
 
@@ -200,8 +197,6 @@ static bool __init determine_cpu_tsc_frequencies(bool early)
 	if (tsc_khz == 0)
 		return false;
 
-	pr_info("Detected %lu.%03lu MHz processor\n",
-		(unsigned long)cpu_khz / KHZ, (unsigned long)cpu_khz % KHZ);
 	return true;
 }
 

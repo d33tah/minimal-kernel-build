@@ -24,7 +24,10 @@
 #define AT_MINSIGSTKSZ 51
 #endif
 #define AT_VECTOR_SIZE_BASE 20
-#include <linux/ktime.h>
+#include <linux/jiffies.h>
+
+#include <linux/timekeeping.h>
+
 #include <linux/cpumask.h>
 #include <linux/seqlock.h>
 

@@ -33,7 +33,6 @@ extern initcall_entry_t __con_initcall_start[], __con_initcall_end[];
 void setup_arch(void);
 extern struct file_system_type rootfs_fs_type;
 
-void mark_rodata_ro(void);
 
 #endif
   

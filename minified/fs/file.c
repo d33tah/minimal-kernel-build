@@ -145,7 +145,6 @@ static int alloc_fd(unsigned start, unsigned end)
 	__set_open_fd(fd, fdt);
 	error = fd;
 	if (rcu_access_pointer(fdt->fd[fd]) != NULL) {
-		printk(KERN_WARNING "alloc_fd: slot %d not NULL!\n", fd);
 		rcu_assign_pointer(fdt->fd[fd], NULL);
 	}
 

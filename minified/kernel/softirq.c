@@ -1,5 +1,4 @@
 
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/jiffies.h>
 #include <linux/interrupt.h>
@@ -15,11 +14,6 @@ static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp
  * predicate and wakeup_softirqd() a no-op -- both removed. Softirqs always run
  * inline (do_softirq_own_stack) from the irq-exit path.
  */
-
-static const char *const softirq_to_name[NR_SOFTIRQS] = {
-	"HI",	    "TIMER",   "NET_TX", "NET_RX",  "BLOCK",
-	"IRQ_POLL", "TASKLET", "SCHED",	 "HRTIMER", "RCU"
-};
 
 static void __local_bh_enable(unsigned int cnt)
 {
@@ -98,22 +92,16 @@ restart:
 	h = softirq_vec;
 
 	while ((softirq_bit = ffs(pending))) {
-		unsigned int vec_nr;
 		int prev_count;
 
 		h += softirq_bit - 1;
 
-		vec_nr = h - softirq_vec;
 		prev_count = preempt_count();
 
 		h->action(h);
 
-		if (unlikely(prev_count != preempt_count())) {
-			pr_err("huh, entered softirq %u %s %p with preempt_count %08x, exited with %08x?\n",
-			       vec_nr, softirq_to_name[vec_nr], h->action,
-			       prev_count, preempt_count());
+		if (unlikely(prev_count != preempt_count()))
 			preempt_count_set(prev_count);
-		}
 		h++;
 		pending >>= softirq_bit;
 	}

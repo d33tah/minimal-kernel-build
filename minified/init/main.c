@@ -172,7 +172,6 @@ static int __ref kernel_init(void *unused)
 	kernel_init_freeable();
 
 	rcu_barrier();
-	mark_rodata_ro();
 
 	if (!kernel_execve(argv_init[0], argv_init, envp_init))
 		return 0;

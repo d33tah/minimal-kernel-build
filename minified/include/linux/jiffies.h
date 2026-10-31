@@ -1,8 +1,12 @@
 #ifndef _LINUX_JIFFIES_H
 #define _LINUX_JIFFIES_H
 
+#include <asm/param.h>
 #include <linux/math64.h>
-#include <linux/time.h>
+#include <linux/cache.h>
+#include <linux/time64.h>
+
+#include <linux/timex.h>
 
 /* Inlined from vdso/jiffies.h */
 #define TICK_NSEC ((NSEC_PER_SEC + HZ / 2) / HZ)

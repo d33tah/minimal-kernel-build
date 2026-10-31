@@ -6,14 +6,6 @@
 
 #include <linux/uaccess.h>
 
-static int warn_unsupported(struct file *file, const char *op)
-{
-	pr_warn_ratelimited(
-		"kernel %s not supported for file %pD4 (pid: %d comm: %.20s)\n",
-		op, file, current->pid, current->comm);
-	return -EINVAL;
-}
-
 static ssize_t __kernel_read(struct file *file, void *buf, size_t count,
 			     loff_t *pos)
 {
@@ -31,7 +23,7 @@ static ssize_t __kernel_read(struct file *file, void *buf, size_t count,
 		return -EINVAL;
 
 	if (unlikely(!file->f_op->read_iter))
-		return warn_unsupported(file, "read");
+		return -EINVAL;
 
 	init_sync_kiocb(&kiocb, file);
 	kiocb.ki_pos = pos ? *pos : 0;
@@ -85,7 +77,7 @@ static ssize_t __kernel_write(struct file *file, const void *buf, size_t count,
 		return -EINVAL;
 
 	if (unlikely(!file->f_op->write_iter))
-		return warn_unsupported(file, "write");
+		return -EINVAL;
 
 	init_sync_kiocb(&kiocb, file);
 	kiocb.ki_pos = pos ? *pos : 0;

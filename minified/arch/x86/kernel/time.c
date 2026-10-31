@@ -13,7 +13,7 @@ static irqreturn_t timer_interrupt(int irq, void *dev_id)
 static void __init setup_default_timer_irq(void)
 {
 	if (request_irq(0, timer_interrupt, NULL))
-		pr_info("Failed to register legacy timer interrupt\n");
+		panic("cannot register the timer interrupt");
 }
 
 static void __init hpet_time_init(void)

@@ -4,7 +4,8 @@
 struct irq_desc;
 typedef void (*irq_flow_handler_t)(struct irq_desc *desc);
 #include <linux/interrupt.h>
-#include <linux/io.h>
+#include <asm/io.h>
+
 #include <linux/slab.h>
 
 #include <asm/irq_regs.h>

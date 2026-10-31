@@ -6,7 +6,8 @@
 
 #ifndef __ASSEMBLY__
 
-#include <linux/percpu.h>
+#include <linux/preempt.h>
+#include <linux/smp.h>
 
 extern char irq_entries_start[];
 

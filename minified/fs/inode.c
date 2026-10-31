@@ -168,10 +168,7 @@ void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 	if (S_ISCHR(mode)) {
 		inode->i_fop = &def_chr_fops;
 		inode->i_rdev = rdev;
-	} else
-		printk(KERN_DEBUG "init_special_inode: bogus i_mode (%o) for"
-				  " inode %s:%lu\n",
-		       mode, inode->i_sb->s_id, inode->i_ino);
+	}
 }
 
 void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,

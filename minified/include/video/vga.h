@@ -2,7 +2,8 @@
 #ifndef __linux_video_vga_h__
 #define __linux_video_vga_h__
 
-#include <linux/io.h>
+#include <asm/io.h>
+
 #include <asm/vga.h>
 
 /* VGA port addresses - only those used */

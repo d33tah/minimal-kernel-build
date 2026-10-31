@@ -15,7 +15,8 @@ struct static_key { atomic_t enabled; };
 #ifndef __ASSEMBLY__
 
 #include <linux/atomic.h>
-#include <linux/bug.h>
+#include <asm/bug.h>
+
 
 static __always_inline int static_key_count(struct static_key *key) {
 	return arch_atomic_read(&key->enabled); }

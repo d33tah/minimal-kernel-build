@@ -1,7 +1,10 @@
 #ifndef _LINUX_CLOCKSOURCE_H
 #define _LINUX_CLOCKSOURCE_H
 
-#include <linux/ktime.h>
+#include <linux/jiffies.h>
+
+#include <linux/timekeeping.h>
+
 #include <asm/io.h>
 
 struct clocksource {

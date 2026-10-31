@@ -3,7 +3,9 @@
 #ifndef _LINUX_MEMCONTROL_H
 #define _LINUX_MEMCONTROL_H
 
-#include <linux/cgroup.h>
+#include <linux/user_namespace.h>
+#include <linux/interrupt.h>
+
 #include <linux/mm.h>
 
 struct obj_cgroup;

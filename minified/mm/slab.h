@@ -79,7 +79,6 @@ struct kmem_cache {
 enum slab_state {
 	DOWN,
 	PARTIAL,
-	PARTIAL_NODE,
 	UP,
 };
 

@@ -2,7 +2,8 @@
 #ifndef _ASM_GENERIC_IRQ_REGS_H
 #define _ASM_GENERIC_IRQ_REGS_H
 
-#include <linux/percpu.h>
+#include <linux/preempt.h>
+#include <linux/smp.h>
 
 DECLARE_PER_CPU(struct pt_regs *, __irq_regs);
 

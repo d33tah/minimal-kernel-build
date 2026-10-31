@@ -45,12 +45,6 @@ static __always_inline int cpumask_test_cpu(int cpu,
 	return test_bit(cpumask_check(cpu), cpumask_bits((cpumask)));
 }
 
-static __always_inline int cpumask_test_and_set_cpu(int cpu,
-						    struct cpumask *cpumask)
-{
-	return test_and_set_bit(cpumask_check(cpu), cpumask_bits(cpumask));
-}
-
 static inline void cpumask_clear(struct cpumask *dstp)
 {
 	bitmap_zero(cpumask_bits(dstp), nr_cpumask_bits);
@@ -59,15 +53,6 @@ static inline void cpumask_clear(struct cpumask *dstp)
 static inline unsigned int cpumask_size(void)
 {
 	return BITS_TO_LONGS(nr_cpumask_bits) * sizeof(long);
-}
-
-#define to_cpumask(bitmap)                 \
-	((struct cpumask *)(1 ? (bitmap) : \
-				(void *)sizeof(__check_is_bitmap(bitmap))))
-
-static inline int __check_is_bitmap(const unsigned long *bitmap)
-{
-	return 1;
 }
 
 /* NR_CPUS == 1 - simplified */

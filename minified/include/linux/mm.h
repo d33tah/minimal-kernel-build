@@ -241,7 +241,9 @@ static inline unsigned int folio_order(struct folio *folio)
 	return compound_order(&folio->page);
 }
 
-#include <linux/huge_mm.h>
+#include <linux/sched/coredump.h>
+
+#include <linux/fs.h>
 
 static inline int put_page_testzero(struct page *page)
 {

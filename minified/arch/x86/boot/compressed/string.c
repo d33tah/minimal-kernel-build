@@ -1,6 +1,5 @@
 #include "error.h"
-
-#include "../string.c"
+#include <linux/types.h>
 
 static void *____memcpy(void *dest, const void *src, size_t n)
 {

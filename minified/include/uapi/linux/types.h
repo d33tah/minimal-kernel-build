@@ -7,7 +7,8 @@
 /* userspace-only #ifndef __KERNEL__ #warning block removed - never compiled
  * (kernel build always defines __KERNEL__). */
 
-#include <asm/posix_types.h>
+#include <asm/posix_types_32.h>
+
 
 #define __bitwise
 

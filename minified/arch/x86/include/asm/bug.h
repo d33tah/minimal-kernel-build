@@ -15,7 +15,6 @@
 /* --- 2025-12-07 10:25 --- Inlined asm-generic/bug.h content */
 
 #ifndef __ASSEMBLY__
-#include <linux/printk.h>
 
 #define BUG_ON(condition)                \
 	do {                             \
@@ -33,7 +32,6 @@
 #define WARN(condition, format...)                 \
 	({                                         \
 		int __ret_warn_on = !!(condition); \
-		no_printk(format);                 \
 		unlikely(__ret_warn_on);           \
 	})
 #endif

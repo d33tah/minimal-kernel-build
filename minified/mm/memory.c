@@ -5,7 +5,8 @@
 #include <linux/file.h>
 
 #include <asm/pgalloc.h>
-#include <asm/tlb.h>
+#include <linux/swap.h>
+#include <asm/tlbflush.h>
 
 #include "internal.h"
 

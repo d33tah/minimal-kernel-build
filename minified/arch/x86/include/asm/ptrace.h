@@ -3,7 +3,7 @@
 #define _ASM_X86_PTRACE_H
 
 #include <asm/segment.h>
-#include <uapi/asm/ptrace.h>
+#include <asm/processor-flags.h>
 
 #ifndef __ASSEMBLY__
 /* 32-bit only kernel - removed x86_64 pt_regs */

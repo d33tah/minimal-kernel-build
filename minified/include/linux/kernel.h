@@ -13,7 +13,6 @@
 #include <linux/math.h>
 #include <linux/minmax.h>
 #include <linux/panic.h>
-#include <linux/printk.h>
 #define _RET_IP_ (unsigned long)__builtin_return_address(0)
 #define _THIS_IP_                        \
 	({                               \

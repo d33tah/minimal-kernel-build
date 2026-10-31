@@ -100,9 +100,6 @@ void __init setup_arch(void)
 	memblock_set_current_limit(ISA_END_ADDRESS);
 	e820__memblock_setup();
 
-	printk(KERN_DEBUG "initial memory mapped: [mem 0x00000000-%#010lx]\n",
-	       (max_pfn_mapped << PAGE_SHIFT) - 1);
-
 	init_mem_mapping();
 
 	mmu_cr4_features = __read_cr4() & ~X86_CR4_PCIDE;

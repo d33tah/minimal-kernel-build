@@ -1,4 +1,5 @@
 
+#include <asm/param.h>
 #include <linux/delay.h>
 
 static void delay_loop(u64 __loops)

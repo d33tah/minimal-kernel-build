@@ -1,6 +1,7 @@
 #ifndef __LINUX_MUTEX_H
 #define __LINUX_MUTEX_H
 
+#include <linux/spinlock_types_raw.h>
 #include <linux/list.h>
 #include <linux/lockdep.h>
 #include <asm/processor.h>

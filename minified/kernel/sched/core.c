@@ -3,7 +3,7 @@
 #include <linux/sched/mm.h>
 #include <linux/cpu.h>
 
-#include <linux/mmu_context.h>
+#include <asm/mmu_context.h>
 
 #include <asm/switch_to.h>
 #include <linux/sched/task.h>

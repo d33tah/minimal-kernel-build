@@ -3,9 +3,6 @@
 
 /* Inlined from uapi/linux/personality.h */
 enum {
-	ADDR_NO_RANDOMIZE = 0x0040000,
-	MMAP_PAGE_ZERO = 0x0100000,
-	ADDR_COMPAT_LAYOUT = 0x0200000,
 	READ_IMPLIES_EXEC = 0x0400000,
 };
 

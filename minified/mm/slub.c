@@ -245,8 +245,7 @@ static inline void free_large_kmalloc(struct folio *folio, void *object)
 {
 	unsigned int order = folio_order(folio);
 
-	if (WARN_ON_ONCE(order == 0))
-		pr_warn_once("object pointer: 0x%p\n", object);
+	WARN_ON_ONCE(order == 0);
 
 	__free_pages(folio_page(folio, 0), order);
 }

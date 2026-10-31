@@ -1,7 +1,5 @@
 
 
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-
 #include <asm/kdebug.h>
 
 #include <asm/traps.h>
@@ -106,7 +104,6 @@ DEFINE_IDTENTRY_DF(exc_double_fault)
 {
 	irqentry_nmi_enter(regs);
 
-	pr_emerg("PANIC: double fault, error_code: 0x%lx\n", error_code);
 	die("double fault", regs, error_code);
 	panic("Machine halted.");
 }

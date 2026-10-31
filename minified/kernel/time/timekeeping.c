@@ -184,10 +184,8 @@ void __init timekeeping_init(void)
 	read_persistent_clock64(&wall_time);
 	if (!(timespec64_valid_settod(&wall_time) &&
 	      timespec64_to_ns(&wall_time) > 0) &&
-	    timespec64_to_ns(&wall_time) != 0) {
-		pr_warn("Persistent clock returned invalid value");
+	    timespec64_to_ns(&wall_time) != 0)
 		wall_time = (struct timespec64){ 0 };
-	}
 
 	raw_spin_lock_irqsave(&timekeeper_lock, flags);
 	write_seqcount_begin(&tk_core.seq);

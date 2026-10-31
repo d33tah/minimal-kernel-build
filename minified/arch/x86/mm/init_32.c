@@ -1,7 +1,9 @@
 
 #include <linux/memblock.h>
 
-#include <asm/tlb.h>
+#include <linux/swap.h>
+#include <asm/tlbflush.h>
+
 #include <asm/pgtable_areas.h>
 
 #include "mm_internal.h"
@@ -175,8 +177,6 @@ void __init native_pagetable_init(void)
 			break;
 
 		if (pmd_large(*pmd)) {
-			pr_warn("try to clear pte for ram above max_low_pfn: pfn: %lx pmd: %p pmd phys: %lx, but pmd is big page and is not using pte !\n",
-				pfn, pmd, __pa(pmd));
 			BUG_ON(1);
 		}
 
@@ -256,13 +256,4 @@ void __init mem_init(void)
 	BUG_ON((unsigned long)high_memory > VMALLOC_START);
 
 	test_wp_bit();
-}
-
-void mark_rodata_ro(void)
-{
-	unsigned long start = PFN_ALIGN(_text);
-	unsigned long size = (unsigned long)__end_rodata - start;
-
-	pr_info("Write protecting kernel text and read-only data: %luk\n",
-		size >> 10);
 }

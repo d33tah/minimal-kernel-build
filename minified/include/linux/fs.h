@@ -11,7 +11,8 @@
 #include <linux/xarray.h>
 #include <linux/capability.h>
 #include <linux/semaphore.h>
-#include <linux/fcntl.h>
+#include <linux/stat.h>
+#include <asm/fcntl.h>
 
 #include <linux/mount.h>
 #include <linux/cred.h>

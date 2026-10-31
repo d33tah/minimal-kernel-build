@@ -1,7 +1,7 @@
 
 #include <linux/memblock.h>
 
-#include <linux/io.h>
+#include <asm/io.h>
 
 #include "internal.h"
 
@@ -191,11 +191,8 @@ static int __init_memblock memblock_double_array(struct memblock_type *type,
 
 		new_array = addr ? __va(addr) : NULL;
 	}
-	if (!addr) {
-		pr_err("memblock: Failed to double %s array from %ld to %ld entries !\n",
-		       type->name, type->max, type->max * 2);
+	if (!addr)
 		return -1;
-	}
 
 	memcpy(new_array, type->regions, old_size);
 	memset(new_array + type->max, 0, old_size);

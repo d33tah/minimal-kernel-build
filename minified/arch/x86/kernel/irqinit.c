@@ -37,5 +37,5 @@ void __init native_init_IRQ(void)
 	idt_setup_apic_and_irq_gates();
 
 	if (request_irq(2, no_action, NULL))
-		pr_err("%s: request_irq() failed\n", "cascade");
+		panic("cannot register the 8259 cascade");
 }

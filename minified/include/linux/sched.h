@@ -10,7 +10,9 @@
 /* End uapi/linux/sched.h */
 
 #include <linux/pid.h>
-#include <linux/percpu.h>
+#include <linux/preempt.h>
+#include <linux/smp.h>
+
 #include <linux/seqlock.h>
 #include <linux/resource.h>
 #include <linux/mm_types_task.h>

@@ -2,7 +2,7 @@
 #define _LINUX_SCHED_USER_H
 
 #include <linux/uidgid.h>
-#include <linux/ratelimit.h>
+#include <linux/sched.h>
 
 struct user_struct {
 	refcount_t __count;

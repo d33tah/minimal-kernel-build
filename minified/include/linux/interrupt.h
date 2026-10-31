@@ -40,15 +40,6 @@ extern int __must_check request_irq(unsigned int irq, irq_handler_t handler,
 #endif
 
 enum {
-	HI_SOFTIRQ = 0,
-	TIMER_SOFTIRQ,
-	NET_TX_SOFTIRQ,
-	NET_RX_SOFTIRQ,
-	BLOCK_SOFTIRQ,
-	IRQ_POLL_SOFTIRQ,
-	TASKLET_SOFTIRQ,
-	SCHED_SOFTIRQ,
-	HRTIMER_SOFTIRQ,
 	RCU_SOFTIRQ,
 
 	NR_SOFTIRQS

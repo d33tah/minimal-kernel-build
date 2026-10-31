@@ -51,7 +51,9 @@ static inline void xa_init_flags(struct xarray *xa, gfp_t flags)
 #define XA_CHUNK_MASK (XA_CHUNK_SIZE - 1)
 
 struct xa_node {
-	unsigned char shift, offset, count;
+	unsigned char shift;
+	unsigned char offset;
+	unsigned char count;
 	struct xa_node __rcu *parent;
 	void __rcu *slots[XA_CHUNK_SIZE];
 };
@@ -110,8 +112,10 @@ static inline bool xa_is_node(const void *entry)
 struct xa_state {
 	struct xarray *xa;
 	unsigned long xa_index;
-	unsigned char xa_shift, xa_offset;
-	struct xa_node *xa_node, *xa_alloc;
+	unsigned char xa_shift;
+	unsigned char xa_offset;
+	struct xa_node *xa_node;
+	struct xa_node *xa_alloc;
 };
 
 #define XA_ERROR(errno) ((struct xa_node *)(((unsigned long)errno << 2) | 2UL))

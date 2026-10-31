@@ -18,13 +18,15 @@ struct memblock_region {
 };
 
 struct memblock_type {
-	unsigned long cnt, max;
+	unsigned long cnt;
+	unsigned long max;
 	struct memblock_region *regions;
 };
 
 struct memblock {
 	phys_addr_t current_limit;
-	struct memblock_type memory, reserved;
+	struct memblock_type memory;
+	struct memblock_type reserved;
 };
 
 extern struct memblock memblock;

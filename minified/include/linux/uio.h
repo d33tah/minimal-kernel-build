@@ -22,7 +22,8 @@ enum iter_type {
 
 struct iov_iter {
 	u8 iter_type;
-	size_t iov_offset, count;
+	size_t iov_offset;
+	size_t count;
 	union {
 		const struct iovec *iov;
 		const struct kvec *kvec;

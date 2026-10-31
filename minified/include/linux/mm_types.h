@@ -106,7 +106,8 @@ static inline void set_page_private(struct page *page, unsigned long private)
 typedef unsigned long vm_flags_t;
 
 struct vm_area_struct {
-	unsigned long vm_start, vm_end;
+	unsigned long vm_start;
+	unsigned long vm_end;
 	struct vm_area_struct *vm_next, *vm_prev;
 	struct mm_struct *vm_mm;
 	pgprot_t vm_page_prot;
@@ -126,7 +127,8 @@ struct mm_struct {
 		spinlock_t page_table_lock;
 		struct rw_semaphore mmap_lock;
 		unsigned long def_flags;
-		unsigned long brk, arg_start;
+		unsigned long brk;
+		unsigned long arg_start;
 		unsigned long saved_auxv[AT_VECTOR_SIZE];
 		unsigned long flags;
 		struct user_namespace *user_ns;

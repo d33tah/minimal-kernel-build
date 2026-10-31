@@ -10,7 +10,8 @@
 struct linux_binprm {
 	struct vm_area_struct *vma;
 	struct mm_struct *mm;
-	unsigned long p, argmin;
+	unsigned long p;
+	unsigned long argmin;
 	unsigned int point_of_no_return : 1;
 	struct file *file;
 	struct cred *cred;

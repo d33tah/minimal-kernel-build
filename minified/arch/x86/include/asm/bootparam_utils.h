@@ -11,7 +11,8 @@
 	}
 
 struct boot_params_to_save {
-	unsigned int start, len;
+	unsigned int start;
+	unsigned int len;
 };
 
 static void sanitize_boot_params(struct boot_params *boot_params)

@@ -36,7 +36,8 @@ enum zone_type { ZONE_NORMAL, __MAX_NR_ZONES };
 struct zone {
 	struct pglist_data *zone_pgdat;
 	unsigned long zone_start_pfn;
-	unsigned long spanned_pages, present_pages;
+	unsigned long spanned_pages;
+	unsigned long present_pages;
 	const char *name;
 	ZONE_PADDING(_pad1_) struct free_area free_area[MAX_ORDER];
 	spinlock_t lock;
@@ -55,7 +56,8 @@ typedef struct pglist_data {
 	struct zone node_zones[MAX_NR_ZONES];
 	int nr_zones;
 	struct page *node_mem_map;
-	unsigned long node_start_pfn, node_spanned_pages;
+	unsigned long node_start_pfn;
+	unsigned long node_spanned_pages;
 	int node_id;
 } pg_data_t;
 

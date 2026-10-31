@@ -73,7 +73,17 @@ struct x86_hw_tss {
 	unsigned short __ss1h;
 	unsigned long sp2;
 	unsigned short ss2, __ss2h;
-	unsigned long __cr3, ip, flags, ax, cx, dx, bx, sp, bp, si, di;
+	unsigned long __cr3;
+	unsigned long ip;
+	unsigned long flags;
+	unsigned long ax;
+	unsigned long cx;
+	unsigned long dx;
+	unsigned long bx;
+	unsigned long sp;
+	unsigned long bp;
+	unsigned long si;
+	unsigned long di;
 	unsigned short es, __esh;
 	unsigned short cs, __csh;
 	unsigned short ss, __ssh;
@@ -81,7 +91,8 @@ struct x86_hw_tss {
 	unsigned short fs, __fsh;
 	unsigned short gs, __gsh;
 	unsigned short ldt, __ldth;
-	unsigned short trace, io_bitmap_base;
+	unsigned short trace;
+	unsigned short io_bitmap_base;
 } __attribute__((packed));
 
 #define __KERNEL_TSS_LIMIT \
@@ -102,7 +113,8 @@ struct irq_stack {
 DECLARE_PER_CPU(unsigned long, cpu_current_top_of_stack);
 
 struct thread_struct {
-	unsigned long sp0, sp;
+	unsigned long sp0;
+	unsigned long sp;
 	unsigned long gs;
 };
 

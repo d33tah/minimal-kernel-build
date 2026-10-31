@@ -6,7 +6,14 @@
 
 #include <linux/cpu.h>
 
-__visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = { .x86_tss = { .sp0 = TOP_OF_INIT_STACK, .ss0 = __KERNEL_DS, .io_bitmap_base	= IO_BITMAP_OFFSET_INVALID, }, };
+__visible DEFINE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw) = {
+	.x86_tss = {
+		.sp0 = TOP_OF_INIT_STACK,
+
+		.ss0 = __KERNEL_DS,
+		.io_bitmap_base	= IO_BITMAP_OFFSET_INVALID,
+	 },
+};
 
 int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
 {

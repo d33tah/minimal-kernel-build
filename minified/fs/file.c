@@ -107,7 +107,16 @@ out:
 	return NULL;
 }
 
-struct files_struct init_files = { .count		= ATOMIC_INIT(1), .fdt		= &init_files.fdtab, .fdtab		= { .max_fds	= NR_OPEN_DEFAULT, .fd		= &init_files.fd_array[0], .open_fds	= init_files.open_fds_init, }, .file_lock	= __SPIN_LOCK_UNLOCKED(init_files.file_lock), };
+struct files_struct init_files = {
+	.count		= ATOMIC_INIT(1),
+	.fdt		= &init_files.fdtab,
+	.fdtab		= {
+		.max_fds	= NR_OPEN_DEFAULT,
+		.fd		= &init_files.fd_array[0],
+		.open_fds	= init_files.open_fds_init,
+	},
+	.file_lock	= __SPIN_LOCK_UNLOCKED(init_files.file_lock),
+};
 
 /*
  * The table never grows (max_fds is always NR_OPEN_DEFAULT, BITS_PER_LONG),

@@ -35,7 +35,9 @@ ENTRY(phys_startup_32)
 jiffies = jiffies_64;
 
 #define X86_ALIGN_RODATA_BEGIN
-#define X86_ALIGN_RODATA_END							. = ALIGN(PAGE_SIZE);						__end_rodata_aligned = .;
+#define X86_ALIGN_RODATA_END					\
+		. = ALIGN(PAGE_SIZE);				\
+		__end_rodata_aligned = .;
 
 #define ALIGN_ENTRY_TEXT_BEGIN
 #define ALIGN_ENTRY_TEXT_END

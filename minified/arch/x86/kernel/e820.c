@@ -45,8 +45,6 @@ void __init e820__memblock_setup(void)
 {
 	int i;
 
-	memblock_allow_resize();
-
 	for (i = 0; i < boot_params.e820_entries; i++) {
 		struct boot_e820_entry *entry = &boot_params.e820_table[i];
 		u64 end = entry->addr + entry->size;

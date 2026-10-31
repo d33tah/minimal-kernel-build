@@ -155,8 +155,6 @@ static noinline void __init kernel_init_freeable(void)
 
 	do_pre_smp_initcalls();
 
-	page_alloc_init_late();
-
 	do_initcalls();
 
 	console_on_rootfs();

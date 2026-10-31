@@ -19,9 +19,7 @@ struct memblock_region {
 
 struct memblock_type {
 	unsigned long cnt, max;
-	phys_addr_t total_size;
 	struct memblock_region *regions;
-	char *name;
 };
 
 struct memblock {
@@ -33,16 +31,12 @@ extern struct memblock memblock;
 
 #define __init_memblock __meminit
 #define __initdata_memblock __meminitdata
-void memblock_discard(void);
-
-void memblock_allow_resize(void);
 int memblock_add(phys_addr_t base, phys_addr_t size);
 int memblock_phys_free(phys_addr_t base, phys_addr_t size);
 int memblock_reserve(phys_addr_t base, phys_addr_t size);
 void memblock_trim_memory(phys_addr_t align);
 
 void memblock_free_all(void);
-void memblock_free(void *ptr, size_t size);
 
 void __next_mem_range(u64 *idx, int nid, enum memblock_flags flags,
 		      struct memblock_type *type_a,
@@ -54,7 +48,6 @@ void __next_mem_range_rev(u64 *idx, int nid, enum memblock_flags flags,
 			  struct memblock_type *type_b, phys_addr_t *out_start,
 			  phys_addr_t *out_end, int *out_nid);
 
-void memblock_free_late(phys_addr_t base, phys_addr_t size);
 #define __for_each_mem_range(i, type_a, type_b, nid, flags, p_start, p_end,   \
 			     p_nid)                                           \
 	for (i = 0, __next_mem_range(&i, nid, flags, type_a, type_b, p_start, \
@@ -96,7 +89,6 @@ static inline int memblock_get_region_node(const struct memblock_region *r)
 
 #define MEMBLOCK_ALLOC_ANYWHERE (~(phys_addr_t)0)
 #define MEMBLOCK_ALLOC_ACCESSIBLE 0
-#define MEMBLOCK_ALLOC_NOLEAKTRACE 1
 
 #define MEMBLOCK_LOW_LIMIT 0
 
@@ -114,13 +106,6 @@ static __always_inline void *memblock_alloc(phys_addr_t size, phys_addr_t align)
 {
 	return memblock_alloc_try_nid(size, align, MEMBLOCK_LOW_LIMIT,
 				      MEMBLOCK_ALLOC_ACCESSIBLE, NUMA_NO_NODE);
-}
-
-static inline void *memblock_alloc_node(phys_addr_t size, phys_addr_t align,
-					int nid)
-{
-	return memblock_alloc_try_nid(size, align, MEMBLOCK_LOW_LIMIT,
-				      MEMBLOCK_ALLOC_ACCESSIBLE, nid);
 }
 
 phys_addr_t memblock_start_of_DRAM(void);

@@ -142,11 +142,6 @@ void __init memblock_free_pages(struct page *page, unsigned long pfn,
 	__free_pages_core(page, order);
 }
 
-void __init page_alloc_init_late(void)
-{
-	memblock_discard();
-}
-
 static void prep_new_page(struct page *page, unsigned int order,
 			  gfp_t gfp_flags)
 {

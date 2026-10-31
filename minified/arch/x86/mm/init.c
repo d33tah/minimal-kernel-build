@@ -209,14 +209,15 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 	return nr_range;
 }
 
-struct range pfn_mapped[E820_MAX_ENTRIES];
+struct range pfn_mapped[E820_MAX_ENTRIES_ZEROPAGE];
 int nr_pfn_mapped;
 
 static void add_pfn_range_mapped(unsigned long start_pfn, unsigned long end_pfn)
 {
-	nr_pfn_mapped = add_range_with_merge(pfn_mapped, E820_MAX_ENTRIES,
+	nr_pfn_mapped = add_range_with_merge(pfn_mapped,
+					     E820_MAX_ENTRIES_ZEROPAGE,
 					     nr_pfn_mapped, start_pfn, end_pfn);
-	nr_pfn_mapped = clean_sort_range(pfn_mapped, E820_MAX_ENTRIES);
+	nr_pfn_mapped = clean_sort_range(pfn_mapped, E820_MAX_ENTRIES_ZEROPAGE);
 
 	max_pfn_mapped = max(max_pfn_mapped, end_pfn);
 }
@@ -339,11 +340,6 @@ void __init init_mem_mapping(void)
 	__flush_tlb_all();
 
 	early_memtest(0, max_pfn_mapped << PAGE_SHIFT);
-}
-
-void __ref free_initmem(void)
-{
-	e820__reallocate_tables();
 }
 
 void __init zone_sizes_init(void)

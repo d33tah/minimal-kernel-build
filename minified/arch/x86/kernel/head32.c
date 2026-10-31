@@ -9,13 +9,6 @@ extern asmlinkage void __init start_kernel(void);
 #include <asm/tlbflush.h>
 #include <asm/bootparam_utils.h>
 
-static void __init i386_default_early_setup(void)
-{
-	/* reserve_resources override removed: the iomem/ioport resource tree is
-	 * never walked on this build, so the requested resources were write-only.
-	 */
-}
-
 asmlinkage __visible void __init i386_start_kernel(void)
 {
 	idt_setup_early_handler();
@@ -23,17 +16,6 @@ asmlinkage __visible void __init i386_start_kernel(void)
 	cr4_init_shadow();
 
 	sanitize_boot_params(&boot_params);
-
-	x86_early_init_platform_quirks();
-
-	switch (boot_params.hdr.hardware_subarch) {
-	case X86_SUBARCH_INTEL_MID:
-	case X86_SUBARCH_CE4100:
-		/* x86_intel_mid_early_setup/x86_ce4100_early_setup were no-ops */
-		break;
-	default:
-		i386_default_early_setup();
-	}
 
 	start_kernel();
 }

@@ -5,8 +5,6 @@
 
 extra-y	:= head_$(BITS).o
 extra-y	+= head$(BITS).o
-extra-y	+= ebda.o
-extra-y	+= platform-quirks.o
 extra-y	+= vmlinux.lds
 
 CPPFLAGS_vmlinux.lds += -U$(UTS_MACHINE)

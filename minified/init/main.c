@@ -326,7 +326,6 @@ static int __ref kernel_init(void *unused)
 
 	system_state = SYSTEM_FREEING_INITMEM;
 	exit_boot_config();
-	free_initmem();
 	mark_readonly();
 
 	system_state = SYSTEM_RUNNING;

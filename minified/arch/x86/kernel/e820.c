@@ -1,531 +1,57 @@
-#include <asm/early_ioremap.h>
 #include <linux/memblock.h>
-#include <linux/sort.h>
 
 #include <asm/e820/api.h>
 #include <asm/setup.h>
 
-static struct e820_table e820_table_init __initdata;
-
-struct e820_table *e820_table __refdata = &e820_table_init;
-
-static struct e820_entry *__e820__mapped_all(u64 start, u64 end,
-					     enum e820_type type)
-{
-	int i;
-
-	for (i = 0; i < e820_table->nr_entries; i++) {
-		struct e820_entry *entry = &e820_table->entries[i];
-
-		if (type && entry->type != type)
-			continue;
-
-		if (entry->addr >= end || entry->addr + entry->size <= start)
-			continue;
-
-		if (entry->addr <= start)
-			start = entry->addr + entry->size;
-
-		if (start >= end)
-			return entry;
-	}
-
-	return NULL;
-}
-
-bool __init e820__mapped_all(u64 start, u64 end, enum e820_type type)
-{
-	return __e820__mapped_all(start, end, type);
-}
-
-static void __init __e820__range_add(struct e820_table *table, u64 start,
-				     u64 size, enum e820_type type)
-{
-	int x = table->nr_entries;
-
-	if (x >= ARRAY_SIZE(table->entries)) {
-		pr_err("too many entries; ignoring [mem %#010llx-%#010llx]\n",
-		       start, start + size - 1);
-		return;
-	}
-
-	table->entries[x].addr = start;
-	table->entries[x].size = size;
-	table->entries[x].type = type;
-	table->nr_entries++;
-}
-
-void __init e820__range_add(u64 start, u64 size, enum e820_type type)
-{
-	__e820__range_add(e820_table, start, size, type);
-}
-
-struct change_member {
-	struct e820_entry *entry;
-	unsigned long long addr;
-};
-
-static struct change_member change_point_list[2 * E820_MAX_ENTRIES] __initdata;
-static struct change_member *change_point[2 * E820_MAX_ENTRIES] __initdata;
-static struct e820_entry *overlap_list[E820_MAX_ENTRIES] __initdata;
-static struct e820_entry new_entries[E820_MAX_ENTRIES] __initdata;
-
-static int __init cpcompare(const void *a, const void *b)
-{
-	struct change_member *const *app = a, *const *bpp = b;
-	const struct change_member *ap = *app, *bp = *bpp;
-
-	if (ap->addr != bp->addr)
-		return ap->addr > bp->addr ? 1 : -1;
-
-	return (ap->addr != ap->entry->addr) - (bp->addr != bp->entry->addr);
-}
-
-static bool e820_nomerge(enum e820_type type)
-{
-	if (type == E820_TYPE_PRAM)
-		return true;
-	return type == E820_TYPE_SOFT_RESERVED;
-}
-
-int __init e820__update_table(struct e820_table *table)
-{
-	struct e820_entry *entries = table->entries;
-	u32 max_nr_entries = ARRAY_SIZE(table->entries);
-	enum e820_type current_type, last_type;
-	unsigned long long last_addr;
-	u32 new_nr_entries, overlap_entries;
-	u32 i, chg_idx, chg_nr;
-
-	if (table->nr_entries < 2)
-		return -1;
-
-	BUG_ON(table->nr_entries > max_nr_entries);
-
-	for (i = 0; i < table->nr_entries; i++) {
-		if (entries[i].addr + entries[i].size < entries[i].addr)
-			return -1;
-	}
-
-	for (i = 0; i < 2 * table->nr_entries; i++)
-		change_point[i] = &change_point_list[i];
-
-	chg_idx = 0;
-	for (i = 0; i < table->nr_entries; i++) {
-		if (entries[i].size != 0) {
-			change_point[chg_idx]->addr = entries[i].addr;
-			change_point[chg_idx++]->entry = &entries[i];
-			change_point[chg_idx]->addr =
-				entries[i].addr + entries[i].size;
-			change_point[chg_idx++]->entry = &entries[i];
-		}
-	}
-	chg_nr = chg_idx;
-
-	sort(change_point, chg_nr, sizeof(*change_point), cpcompare, NULL);
-
-	overlap_entries = 0;
-	new_nr_entries = 0;
-	last_type = 0;
-	last_addr = 0;
-
-	for (chg_idx = 0; chg_idx < chg_nr; chg_idx++) {
-		if (change_point[chg_idx]->addr ==
-		    change_point[chg_idx]->entry->addr) {
-			overlap_list[overlap_entries++] =
-				change_point[chg_idx]->entry;
-		} else {
-			for (i = 0; i < overlap_entries; i++) {
-				if (overlap_list[i] ==
-				    change_point[chg_idx]->entry)
-					overlap_list[i] =
-						overlap_list[overlap_entries -
-							     1];
-			}
-			overlap_entries--;
-		}
-
-		current_type = 0;
-		for (i = 0; i < overlap_entries; i++) {
-			if (overlap_list[i]->type > current_type)
-				current_type = overlap_list[i]->type;
-		}
-
-		if (current_type != last_type || e820_nomerge(current_type)) {
-			if (last_type != 0) {
-				new_entries[new_nr_entries].size =
-					change_point[chg_idx]->addr - last_addr;
-
-				if (new_entries[new_nr_entries].size != 0)
-
-					if (++new_nr_entries >= max_nr_entries)
-						break;
-			}
-			if (current_type != 0) {
-				new_entries[new_nr_entries].addr =
-					change_point[chg_idx]->addr;
-				new_entries[new_nr_entries].type = current_type;
-				last_addr = change_point[chg_idx]->addr;
-			}
-			last_type = current_type;
-		}
-	}
-
-	memcpy(entries, new_entries, new_nr_entries * sizeof(*entries));
-	table->nr_entries = new_nr_entries;
-
-	return 0;
-}
-
-static int __init __append_e820_table(struct boot_e820_entry *entries,
-				      u32 nr_entries)
-{
-	struct boot_e820_entry *entry = entries;
-
-	while (nr_entries) {
-		u64 start = entry->addr;
-		u64 size = entry->size;
-		u64 end = start + size - 1;
-		u32 type = entry->type;
-
-		if (start > end && likely(size))
-			return -1;
-
-		e820__range_add(start, size, type);
-
-		entry++;
-		nr_entries--;
-	}
-	return 0;
-}
-
-static int __init append_e820_table(struct boot_e820_entry *entries,
-				    u32 nr_entries)
-{
-	if (nr_entries < 2)
-		return -1;
-
-	return __append_e820_table(entries, nr_entries);
-}
-
-static u64 __init __e820__range_update(struct e820_table *table, u64 start,
-				       u64 size, enum e820_type old_type,
-				       enum e820_type new_type)
-{
-	u64 end;
-	unsigned int i;
-	u64 real_updated_size = 0;
-
-	BUG_ON(old_type == new_type);
-
-	if (size > (ULLONG_MAX - start))
-		size = ULLONG_MAX - start;
-
-	end = start + size;
-	printk(KERN_DEBUG "e820: update [mem %#010Lx-%#010Lx] ", start,
-	       end - 1);
-	pr_cont(" ==> ");
-	pr_cont("\n");
-
-	for (i = 0; i < table->nr_entries; i++) {
-		struct e820_entry *entry = &table->entries[i];
-		u64 final_start, final_end;
-		u64 entry_end;
-
-		if (entry->type != old_type)
-			continue;
-
-		entry_end = entry->addr + entry->size;
-
-		if (entry->addr >= start && entry_end <= end) {
-			entry->type = new_type;
-			real_updated_size += entry->size;
-			continue;
-		}
-
-		if (entry->addr < start && entry_end > end) {
-			__e820__range_add(table, start, size, new_type);
-			__e820__range_add(table, end, entry_end - end,
-					  entry->type);
-			entry->size = start - entry->addr;
-			real_updated_size += size;
-			continue;
-		}
-
-		final_start = max(start, entry->addr);
-		final_end = min(end, entry_end);
-		if (final_start >= final_end)
-			continue;
-
-		__e820__range_add(table, final_start, final_end - final_start,
-				  new_type);
-
-		real_updated_size += final_end - final_start;
-
-		entry->size -= final_end - final_start;
-		if (entry->addr < final_start)
-			continue;
-
-		entry->addr = final_end;
-	}
-	return real_updated_size;
-}
-
-u64 __init e820__range_update(u64 start, u64 size, enum e820_type old_type,
-			      enum e820_type new_type)
-{
-	return __e820__range_update(e820_table, start, size, old_type,
-				    new_type);
-}
-
-u64 __init e820__range_remove(u64 start, u64 size, enum e820_type old_type,
-			      bool check_type)
-{
-	int i;
-	u64 end;
-	u64 real_removed_size = 0;
-
-	if (size > (ULLONG_MAX - start))
-		size = ULLONG_MAX - start;
-
-	end = start + size;
-	printk(KERN_DEBUG "e820: remove [mem %#010Lx-%#010Lx] ", start,
-	       end - 1);
-	pr_cont("\n");
-
-	for (i = 0; i < e820_table->nr_entries; i++) {
-		struct e820_entry *entry = &e820_table->entries[i];
-		u64 final_start, final_end;
-		u64 entry_end;
-
-		if (check_type && entry->type != old_type)
-			continue;
-
-		entry_end = entry->addr + entry->size;
-
-		if (entry->addr >= start && entry_end <= end) {
-			real_removed_size += entry->size;
-			memset(entry, 0, sizeof(*entry));
-			continue;
-		}
-
-		if (entry->addr < start && entry_end > end) {
-			e820__range_add(end, entry_end - end, entry->type);
-			entry->size = start - entry->addr;
-			real_removed_size += size;
-			continue;
-		}
-
-		final_start = max(start, entry->addr);
-		final_end = min(end, entry_end);
-		if (final_start >= final_end)
-			continue;
-
-		real_removed_size += final_end - final_start;
-
-		entry->size -= final_end - final_start;
-		if (entry->addr < final_start)
-			continue;
-
-		entry->addr = final_end;
-	}
-	return real_removed_size;
-}
-
-__init void e820__reallocate_tables(void)
-{
-	struct e820_table *n;
-	int size;
-
-	size = offsetof(struct e820_table, entries) +
-	       sizeof(struct e820_entry) * e820_table->nr_entries;
-	n = kmemdup(e820_table, size, GFP_KERNEL);
-	BUG_ON(!n);
-	e820_table = n;
-	/* kexec/firmware table reallocation removed - unused in minimal kernel */
-}
-
-void __init e820__memory_setup_extended(u64 phys_addr, u32 data_len)
-{
-	int entries;
-	struct boot_e820_entry *extmap;
-	struct setup_data *sdata;
-
-	sdata = early_memremap(phys_addr, data_len);
-	entries = sdata->len / sizeof(*extmap);
-	extmap = (struct boot_e820_entry *)(sdata->data);
-
-	__append_e820_table(extmap, entries);
-	e820__update_table(e820_table);
-	/* kexec/firmware table copy removed - unused in minimal kernel */
-
-	early_memunmap(sdata, data_len);
-}
-
-#define MAX_ARCH_PFN (1ULL << (32 - PAGE_SHIFT))
-
-static unsigned long __init e820_end_pfn(unsigned long limit_pfn,
-					 enum e820_type type)
-{
-	int i;
-	unsigned long last_pfn = 0;
-	unsigned long max_arch_pfn = MAX_ARCH_PFN;
-
-	for (i = 0; i < e820_table->nr_entries; i++) {
-		struct e820_entry *entry = &e820_table->entries[i];
-		unsigned long start_pfn, end_pfn;
-
-		if (entry->type != type)
-			continue;
-
-		start_pfn = entry->addr >> PAGE_SHIFT;
-		end_pfn = (entry->addr + entry->size) >> PAGE_SHIFT;
-
-		if (start_pfn >= limit_pfn)
-			continue;
-		if (end_pfn > limit_pfn) {
-			last_pfn = limit_pfn;
-			break;
-		}
-		if (end_pfn > last_pfn)
-			last_pfn = end_pfn;
-	}
-
-	if (last_pfn > max_arch_pfn)
-		last_pfn = max_arch_pfn;
-
-	pr_info("last_pfn = %#lx max_arch_pfn = %#lx\n", last_pfn,
-		max_arch_pfn);
-	return last_pfn;
-}
-
-unsigned long __init e820__end_of_ram_pfn(void)
-{
-	return e820_end_pfn(MAX_ARCH_PFN, E820_TYPE_RAM);
-}
-
-void __init e820__reserve_setup_data(void)
-{
-	struct setup_indirect *indirect;
-	struct setup_data *data;
-	u64 pa_data, pa_next;
-	u32 len;
-
-	pa_data = boot_params.hdr.setup_data;
-	if (!pa_data)
-		return;
-
-	while (pa_data) {
-		data = early_memremap(pa_data, sizeof(*data));
-		if (!data) {
-			pr_warn("e820: failed to memremap setup_data entry\n");
-			return;
-		}
-
-		len = sizeof(*data);
-		pa_next = data->next;
-
-		e820__range_update(pa_data, sizeof(*data) + data->len,
-				   E820_TYPE_RAM, E820_TYPE_RESERVED_KERN);
-		/* kexec table update removed - unused in minimal kernel */
-
-		if (data->type == SETUP_INDIRECT) {
-			len += data->len;
-			early_memunmap(data, sizeof(*data));
-			data = early_memremap(pa_data, len);
-			if (!data) {
-				pr_warn("e820: failed to memremap indirect setup_data\n");
-				return;
-			}
-
-			indirect = (struct setup_indirect *)data->data;
-
-			if (indirect->type != SETUP_INDIRECT) {
-				e820__range_update(indirect->addr,
-						   indirect->len, E820_TYPE_RAM,
-						   E820_TYPE_RESERVED_KERN);
-				/* kexec table update removed */
-			}
-		}
-
-		pa_data = pa_next;
-		early_memunmap(data, len);
-	}
-
-	e820__update_table(e820_table);
-	/* kexec table update removed - unused in minimal kernel */
-}
-
-void __init e820__finish_early_params(void)
-{
-	/*
-	 * The user-supplied-memory-map path (mem=/memmap= early params) is
-	 * gone on this build: `userdef` was write-never (no parse_memmap/mem=
-	 * __setup handler survives), so the `if (userdef)` body -- the e820
-	 * re-validate + early_panic + user-map print -- was statically dead.
-	 */
-}
-
 /*
- * e820__reserve_resources() + its e820_type_to_string/iomem_type/iores_desc/
- * do_mark_busy helpers removed: they only built write-only state in the
- * iomem_resource tree, which is NEVER WALKED on this build (no walk_iomem_res/
- * allocate_resource/lookup_resource/region_intersects readers, no /proc/iomem).
+ * The memory map is the BIOS E820 table the real-mode setup code stored in
+ * the zero page, used as is: RAM entries go to memblock, the highest RAM
+ * end below 4 GiB is max_pfn. There is no sanitising/merging of overlapping
+ * entries, no E801/88 fallback and no SETUP_E820_EXT extension.
  */
 
-char *__init e820__memory_setup_default(void)
-{
-	char *who = "BIOS-e820";
-
-	if (append_e820_table(boot_params.e820_table,
-			      boot_params.e820_entries) < 0) {
-		u64 mem_size;
-
-		if (boot_params.alt_mem_k < boot_params.screen_info.ext_mem_k) {
-			mem_size = boot_params.screen_info.ext_mem_k;
-			who = "BIOS-88";
-		} else {
-			mem_size = boot_params.alt_mem_k;
-			who = "BIOS-e801";
-		}
-
-		e820_table->nr_entries = 0;
-		e820__range_add(0, LOWMEMSIZE(), E820_TYPE_RAM);
-		e820__range_add(HIGH_MEMORY, mem_size << 10, E820_TYPE_RAM);
-	}
-
-	e820__update_table(e820_table);
-
-	return who;
-}
+#define MAX_ARCH_PFN (1ULL << (32 - PAGE_SHIFT))
 
 void __init e820__memory_setup(void)
 {
 	BUILD_BUG_ON(sizeof(struct boot_e820_entry) != 20);
 
-	x86_init.resources.memory_setup();
-	/* kexec/firmware table copies removed - unused in minimal kernel */
+	if (!boot_params.e820_entries)
+		panic("no BIOS E820 memory map");
+}
+
+unsigned long __init e820__end_of_ram_pfn(void)
+{
+	unsigned long last_pfn = 0;
+	int i;
+
+	for (i = 0; i < boot_params.e820_entries; i++) {
+		struct boot_e820_entry *entry = &boot_params.e820_table[i];
+		u64 end_pfn = (entry->addr + entry->size) >> PAGE_SHIFT;
+
+		if (entry->type != E820_TYPE_RAM ||
+		    entry->addr >> PAGE_SHIFT >= MAX_ARCH_PFN)
+			continue;
+		if (end_pfn > MAX_ARCH_PFN)
+			end_pfn = MAX_ARCH_PFN;
+		if (end_pfn > last_pfn)
+			last_pfn = end_pfn;
+	}
+
+	return last_pfn;
 }
 
 void __init e820__memblock_setup(void)
 {
 	int i;
-	u64 end;
 
 	memblock_allow_resize();
 
-	for (i = 0; i < e820_table->nr_entries; i++) {
-		struct e820_entry *entry = &e820_table->entries[i];
+	for (i = 0; i < boot_params.e820_entries; i++) {
+		struct boot_e820_entry *entry = &boot_params.e820_table[i];
+		u64 end = entry->addr + entry->size;
 
-		end = entry->addr + entry->size;
-		if (end != (resource_size_t)end)
-			continue;
-
-		if (entry->type == E820_TYPE_SOFT_RESERVED)
-			memblock_reserve(entry->addr, entry->size);
-
-		if (entry->type != E820_TYPE_RAM &&
-		    entry->type != E820_TYPE_RESERVED_KERN)
+		if (entry->type != E820_TYPE_RAM || end != (resource_size_t)end)
 			continue;
 
 		memblock_add(entry->addr, entry->size);

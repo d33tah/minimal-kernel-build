@@ -1,8 +1,8 @@
 #ifndef __LINUX_SPINLOCK_H
 #define __LINUX_SPINLOCK_H
 
+#include <linux/preempt.h>
 #include <linux/irqflags.h>
-#include <linux/bottom_half.h>
 
 #include <linux/spinlock_types.h>
 

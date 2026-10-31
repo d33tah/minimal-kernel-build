@@ -1,118 +1,11 @@
 
-#include <linux/jiffies.h>
 #include <linux/interrupt.h>
 
-void do_softirq_own_stack(void);
-
-static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp;
-
 /*
- * No per-cpu ksoftirqd thread is ever spawned in this build (SMP and CPU
- * hotplug are off; spawn_ksoftirqd is a no-op). The ksoftirqd per-cpu pointer
- * was therefore always NULL, which made ksoftirqd_running() a constant-false
- * predicate and wakeup_softirqd() a no-op -- both removed. Softirqs always run
- * inline (do_softirq_own_stack) from the irq-exit path.
+ * No softirq vector is left (RCU was the last one), so nothing raises a
+ * softirq: local_bh_*, the pending mask, __do_softirq() and the softirq
+ * stack are gone. Only the hardirq preempt-count accounting remains.
  */
-
-static void __local_bh_enable(unsigned int cnt)
-{
-	__preempt_count_sub(cnt);
-}
-
-void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
-{
-	WARN_ON_ONCE(in_hardirq());
-
-	__preempt_count_sub(cnt - 1);
-
-	if (unlikely(!in_interrupt() && local_softirq_pending())) {
-		__u32 pending;
-		unsigned long flags;
-
-		local_irq_save(flags);
-
-		pending = local_softirq_pending();
-
-		if (pending)
-			do_softirq_own_stack();
-
-		local_irq_restore(flags);
-	}
-
-	preempt_count_dec();
-	preempt_check_resched();
-}
-
-static inline void softirq_handle_begin(void)
-{
-	__local_bh_disable_ip(_RET_IP_, SOFTIRQ_OFFSET);
-}
-
-static inline void softirq_handle_end(void)
-{
-	__local_bh_enable(SOFTIRQ_OFFSET);
-	WARN_ON_ONCE(in_interrupt());
-}
-
-static inline void invoke_softirq(void)
-{
-	/*
-	 * force_irqthreads() is constant false (force_irqthreads_key is a
-	 * never-enabled DEFINE_STATIC_KEY_FALSE; the "threadirqs" boot path is
-	 * absent), so the softirq always runs inline here.
-	 */
-	do_softirq_own_stack();
-}
-
-#define MAX_SOFTIRQ_TIME msecs_to_jiffies(2)
-#define MAX_SOFTIRQ_RESTART 10
-
-asmlinkage __visible void __softirq_entry __do_softirq(void)
-{
-	unsigned long end = jiffies + MAX_SOFTIRQ_TIME;
-	int max_restart = MAX_SOFTIRQ_RESTART;
-	struct softirq_action *h;
-	__u32 pending;
-	int softirq_bit;
-
-	pending = local_softirq_pending();
-
-	softirq_handle_begin();
-
-restart:
-
-	set_softirq_pending(0);
-
-	local_irq_enable();
-
-	h = softirq_vec;
-
-	while ((softirq_bit = ffs(pending))) {
-		int prev_count;
-
-		h += softirq_bit - 1;
-
-		prev_count = preempt_count();
-
-		h->action(h);
-
-		if (unlikely(prev_count != preempt_count()))
-			preempt_count_set(prev_count);
-		h++;
-		pending >>= softirq_bit;
-	}
-
-	local_irq_disable();
-
-	pending = local_softirq_pending();
-	if (pending) {
-		if (time_before(jiffies, end) && !need_resched() &&
-		    --max_restart)
-			goto restart;
-	}
-
-	softirq_handle_end();
-}
 
 void irq_enter_rcu(void)
 {
@@ -123,21 +16,9 @@ static inline void __irq_exit_rcu(void)
 {
 	local_irq_disable();
 	preempt_count_sub(HARDIRQ_OFFSET);
-	if (!in_interrupt() && local_softirq_pending())
-		invoke_softirq();
 }
 
 void irq_exit_rcu(void)
 {
 	__irq_exit_rcu();
-}
-
-inline void raise_softirq_irqoff(unsigned int nr)
-{
-	or_softirq_pending(1UL << nr);
-}
-
-void open_softirq(int nr, void (*action)(struct softirq_action *))
-{
-	softirq_vec[nr].action = action;
 }

@@ -19,8 +19,6 @@ static struct clock_event_device *tick_dev;
 static void tick_handle_periodic(struct clock_event_device *dev)
 {
 	do_timer(1);
-
-	rcu_sched_clock_irq(user_mode(get_irq_regs()));
 	scheduler_tick();
 }
 

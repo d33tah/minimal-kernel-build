@@ -55,8 +55,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 		local_irq_disable();
 	xarray_init();
 
-	rcu_init();
-
 	early_irq_init();
 	init_IRQ();
 
@@ -161,8 +159,6 @@ static noinline void __init kernel_init_freeable(void)
 static int __ref kernel_init(void *unused)
 {
 	kernel_init_freeable();
-
-	rcu_barrier();
 
 	if (!kernel_execve(argv_init[0], argv_init, envp_init))
 		return 0;

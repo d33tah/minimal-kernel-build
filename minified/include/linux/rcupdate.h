@@ -4,8 +4,6 @@
 
 #include <linux/preempt.h>
 
-void call_rcu(struct rcu_head *head, rcu_callback_t func);
-
 static inline void __rcu_read_lock(void)
 {
 	preempt_disable();
@@ -15,23 +13,6 @@ static inline void __rcu_read_unlock(void)
 {
 	preempt_enable();
 }
-
-void rcu_init(void);
-void rcu_sched_clock_irq(int user);
-
-#define rcu_tasks_qs(t, preempt) \
-	do {                     \
-	} while (0)
-
-extern void rcu_barrier(void);
-
-void rcu_qs(void);
-
-#define rcu_note_context_switch(preempt)          \
-	do {                                      \
-		rcu_qs();                         \
-		rcu_tasks_qs(current, (preempt)); \
-	} while (0)
 
 static inline void rcu_all_qs(void)
 {
@@ -122,7 +103,5 @@ static inline void rcu_read_unlock_sched(void)
 	} while (0)
 
 #define RCU_POINTER_INITIALIZER(p, v) .p = RCU_INITIALIZER(v)
-
-#define __is_kvfree_rcu_offset(offset) ((offset) < 4096)
 
 #endif

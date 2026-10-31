@@ -109,7 +109,6 @@
 
 #define ENTRY_TEXT									ALIGN_FUNCTION();							__entry_text_start = .;							*(.entry.text)								__entry_text_end = .;
 
-#define SOFTIRQENTRY_TEXT								ALIGN_FUNCTION();							__softirqentry_text_start = .;						*(.softirqentry.text)							__softirqentry_text_end = .;
 
 #define STATIC_CALL_TEXT								ALIGN_FUNCTION();							__static_call_text_start = .;						*(.static_call.text)							__static_call_text_end = .;
 

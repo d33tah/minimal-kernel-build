@@ -3,7 +3,6 @@
 #define _ASM_X86_HARDIRQ_H
 
 typedef struct {
-	u16 __softirq_pending;
 	unsigned int __nmi_count;
 } ____cacheline_aligned irq_cpustat_t;
 

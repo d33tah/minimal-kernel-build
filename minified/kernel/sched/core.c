@@ -42,15 +42,6 @@ static void resched_curr(void)
 	set_preempt_need_resched();
 }
 
-void resched_cpu(int cpu)
-{
-	unsigned long flags;
-
-	raw_spin_lock_irqsave(&runqueue.lock, flags);
-	resched_curr();
-	raw_spin_unlock_irqrestore(&runqueue.lock, flags);
-}
-
 int sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
 	p->__state = TASK_NEW;
@@ -137,7 +128,6 @@ static void __sched notrace __schedule(bool preempt)
 		preempt_count_set(PREEMPT_DISABLED);
 
 	local_irq_disable();
-	rcu_note_context_switch(preempt);
 
 	raw_spin_lock(&runqueue.lock);
 

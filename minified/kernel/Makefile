@@ -23,7 +23,6 @@ obj-y += sched/
 obj-y += locking/
 obj-y += printk/
 obj-y += irq/
-obj-y += rcu/
 obj-y += entry/
 
 obj-y += time/

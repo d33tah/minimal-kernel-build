@@ -3,16 +3,6 @@
 #include <linux/mm.h>
 
 static DEFINE_PER_CPU(struct irq_stack *, hardirq_stack_ptr);
-static DEFINE_PER_CPU(struct irq_stack *, softirq_stack_ptr);
-
-static void call_on_stack(void *func, void *stack)
-{
-	asm volatile("xchgl	%%ebx,%%esp	\n" CALL_NOSPEC
-		     "movl	%%ebx,%%esp	\n"
-		     : "=b"(stack)
-		     : "0"(stack), [thunk_target] "D"(func)
-		     : "memory", "cc", "edx", "ecx", "eax");
-}
 
 static inline void *current_stack(void)
 {
@@ -46,7 +36,7 @@ static inline int execute_on_irq_stack(struct irq_desc *desc)
 int irq_init_percpu_irqstack(unsigned int cpu)
 {
 	int node = cpu_to_node(cpu);
-	struct page *ph, *ps;
+	struct page *ph;
 
 	if (per_cpu(hardirq_stack_ptr, cpu))
 		return 0;
@@ -54,30 +44,9 @@ int irq_init_percpu_irqstack(unsigned int cpu)
 	ph = alloc_pages_node(node, THREADINFO_GFP, THREAD_SIZE_ORDER);
 	if (!ph)
 		return -ENOMEM;
-	ps = alloc_pages_node(node, THREADINFO_GFP, THREAD_SIZE_ORDER);
-	if (!ps) {
-		__free_pages(ph, THREAD_SIZE_ORDER);
-		return -ENOMEM;
-	}
 
 	per_cpu(hardirq_stack_ptr, cpu) = page_address(ph);
-	per_cpu(softirq_stack_ptr, cpu) = page_address(ps);
 	return 0;
-}
-
-void do_softirq_own_stack(void)
-{
-	struct irq_stack *irqstk;
-	u32 *isp, *prev_esp;
-
-	irqstk = __this_cpu_read(softirq_stack_ptr);
-
-	isp = (u32 *)((char *)irqstk + sizeof(*irqstk));
-
-	prev_esp = (u32 *)irqstk;
-	*prev_esp = current_stack_pointer;
-
-	call_on_stack(__do_softirq, isp);
 }
 
 void __handle_irq(struct irq_desc *desc, struct pt_regs *regs)

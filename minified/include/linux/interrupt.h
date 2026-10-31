@@ -26,37 +26,6 @@ extern irqreturn_t no_action(int cpl, void *dev_id);
 extern int __must_check request_irq(unsigned int irq, irq_handler_t handler,
 				    void *dev_id);
 
-#ifndef local_softirq_pending
-
-#ifndef local_softirq_pending_ref
-#define local_softirq_pending_ref irq_stat.__softirq_pending
-#endif
-
-#define local_softirq_pending() (__this_cpu_read(local_softirq_pending_ref))
-#define set_softirq_pending(x) \
-	(__this_cpu_write(local_softirq_pending_ref, (x)))
-#define or_softirq_pending(x) (__this_cpu_or(local_softirq_pending_ref, (x)))
-
-#endif
-
-enum {
-	RCU_SOFTIRQ,
-
-	NR_SOFTIRQS
-};
-
-struct softirq_action {
-	void (*action)(struct softirq_action *);
-};
-
-asmlinkage void __do_softirq(void);
-
-extern void open_softirq(int nr, void (*action)(struct softirq_action *));
-
-extern void raise_softirq_irqoff(unsigned int nr);
-
 extern void early_irq_init(void);
-
-#define __softirq_entry __section(".softirqentry.text")
 
 #endif

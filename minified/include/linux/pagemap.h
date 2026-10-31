@@ -111,15 +111,6 @@ static inline void lock_page(struct page *page)
 		__folio_lock(folio);
 }
 
-int folio_wait_bit_killable(struct folio *folio, int bit_nr);
-
-static inline int folio_wait_locked_killable(struct folio *folio)
-{
-	if (!folio_test_locked(folio))
-		return 0;
-	return folio_wait_bit_killable(folio, PG_locked);
-}
-
 int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 		      pgoff_t index, gfp_t gfp);
 

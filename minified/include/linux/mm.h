@@ -259,13 +259,6 @@ static inline void page_mapcount_reset(struct page *page)
 	atomic_set(&(page)->_mapcount, -1);
 }
 
-static inline struct page *virt_to_head_page(const void *x)
-{
-	struct page *page = virt_to_page(x);
-
-	return compound_head(page);
-}
-
 static inline struct folio *virt_to_folio(const void *x)
 {
 	struct page *page = virt_to_page(x);
@@ -303,12 +296,6 @@ static inline unsigned long compound_nr(struct page *page)
 static inline unsigned long page_size(struct page *page)
 {
 	return PAGE_SIZE << compound_order(page);
-}
-
-static inline int thp_nr_pages(struct page *page)
-{
-	VM_BUG_ON_PGFLAGS(PageTail(page), page);
-	return compound_nr(page);
 }
 
 static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
@@ -402,16 +389,6 @@ static inline int page_cpupid_xchg_last(struct page *page, int cpupid)
 static inline struct zone *page_zone(const struct page *page)
 {
 	return &NODE_DATA(page_to_nid(page))->node_zones[page_zonenum(page)];
-}
-
-static inline pg_data_t *page_pgdat(const struct page *page)
-{
-	return NODE_DATA(page_to_nid(page));
-}
-
-static inline pg_data_t *folio_pgdat(const struct folio *folio)
-{
-	return page_pgdat(&folio->page);
 }
 
 static inline void set_page_zone(struct page *page, enum zone_type zone)

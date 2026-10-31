@@ -89,33 +89,9 @@ arch_test_and_set_bit_lock(long nr, volatile unsigned long *addr)
 }
 
 static __always_inline bool
-arch___test_and_set_bit(long nr, volatile unsigned long *addr)
-{
-	bool oldbit;
-
-	asm(__ASM_SIZE(bts) " %2,%1" CC_SET(c)
-	    : CC_OUT(c)(oldbit)
-	    : ADDR, "Ir"(nr)
-	    : "memory");
-	return oldbit;
-}
-
-static __always_inline bool
 arch_test_and_clear_bit(long nr, volatile unsigned long *addr)
 {
 	return GEN_BINARY_RMWcc(__ASM_SIZE(btr), *addr, c, "Ir", nr);
-}
-
-static __always_inline bool
-arch___test_and_clear_bit(long nr, volatile unsigned long *addr)
-{
-	bool oldbit;
-
-	asm volatile(__ASM_SIZE(btr) " %2,%1" CC_SET(c)
-		     : CC_OUT(c)(oldbit)
-		     : ADDR, "Ir"(nr)
-		     : "memory");
-	return oldbit;
 }
 
 static __always_inline bool
@@ -233,20 +209,6 @@ static __always_inline void
 __instrument_read_write_bitop(long nr, volatile unsigned long *addr)
 {
 	instrument_read_write(addr + BIT_WORD(nr), sizeof(long));
-}
-
-static __always_inline bool __test_and_set_bit(long nr,
-					       volatile unsigned long *addr)
-{
-	__instrument_read_write_bitop(nr, addr);
-	return arch___test_and_set_bit(nr, addr);
-}
-
-static __always_inline bool __test_and_clear_bit(long nr,
-						 volatile unsigned long *addr)
-{
-	__instrument_read_write_bitop(nr, addr);
-	return arch___test_and_clear_bit(nr, addr);
 }
 
 static __always_inline bool test_bit(long nr,

@@ -51,12 +51,6 @@ static inline void list_del(struct list_head *entry)
 	entry->prev = LIST_POISON2;
 }
 
-static inline int list_is_head(const struct list_head *list,
-			       const struct list_head *head)
-{
-	return list == head;
-}
-
 static inline int list_empty(const struct list_head *head)
 {
 	return READ_ONCE(head->next) == head;
@@ -83,26 +77,12 @@ static inline int list_empty(const struct list_head *head)
 #define list_next_entry(pos, member) \
 	list_entry((pos)->member.next, typeof(*(pos)), member)
 
-#define list_for_each(pos, head) \
-	for (pos = (head)->next; !list_is_head(pos, (head)); pos = pos->next)
-
 #define list_entry_is_head(pos, head, member) (&pos->member == (head))
 
 #define list_for_each_entry(pos, head, member)                   \
 	for (pos = list_first_entry(head, typeof(*pos), member); \
 	     !list_entry_is_head(pos, head, member);             \
 	     pos = list_next_entry(pos, member))
-
-#define list_for_each_entry_safe(pos, n, head, member)           \
-	for (pos = list_first_entry(head, typeof(*pos), member), \
-	    n = list_next_entry(pos, member);                    \
-	     !list_entry_is_head(pos, head, member);             \
-	     pos = n, n = list_next_entry(n, member))
-
-#define list_for_each_entry_safe_from(pos, n, head, member) \
-	for (n = list_next_entry(pos, member);              \
-	     !list_entry_is_head(pos, head, member);        \
-	     pos = n, n = list_next_entry(n, member))
 
 #define INIT_HLIST_HEAD(ptr) ((ptr)->first = NULL)
 static inline void INIT_HLIST_NODE(struct hlist_node *h)
@@ -151,18 +131,5 @@ static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 /* hlist_is_singular_node removed: 0-caller orphan */
 
 /* hlist_move_list removed - 0 callers tree-wide */
-
-#define hlist_entry(ptr, type, member) container_of(ptr, type, member)
-
-#define hlist_entry_safe(ptr, type, member)                          \
-	({                                                           \
-		typeof(ptr) ____ptr = (ptr);                         \
-		____ptr ? hlist_entry(____ptr, type, member) : NULL; \
-	})
-
-#define hlist_for_each_entry(pos, head, member)                              \
-	for (pos = hlist_entry_safe((head)->first, typeof(*(pos)), member);  \
-	     pos; pos = hlist_entry_safe((pos)->member.next, typeof(*(pos)), \
-					 member))
 
 #endif

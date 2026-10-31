@@ -23,15 +23,11 @@ typedef struct cpumask {
 
 extern struct cpumask __cpu_possible_mask;
 extern struct cpumask __cpu_online_mask;
-#define cpu_possible_mask ((const struct cpumask *)&__cpu_possible_mask)
 
 static __always_inline unsigned int cpumask_check(unsigned int cpu)
 {
 	return cpu;
 }
-
-/* cpumask_next removed: 0-caller static-inline orphan (NR_CPUS==1). */
-#define for_each_cpu(cpu, mask) for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
 
 #define CPU_BITS_NONE { [0 ... BITS_TO_LONGS(NR_CPUS) - 1] = 0UL }
 
@@ -71,8 +67,6 @@ static inline unsigned int cpumask_size(void)
 }
 
 extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
-
-#define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
 
 static inline void set_cpu_possible(unsigned int cpu, bool possible)
 {

@@ -41,13 +41,6 @@ struct xarray {
 	void __rcu *xa_head;
 };
 
-#define XARRAY_INIT(name, flags)                               \
-	{                                                      \
-		.xa_lock = __SPIN_LOCK_UNLOCKED(name.xa_lock), \
-		.xa_flags = flags,                             \
-		.xa_head = NULL,                               \
-	}
-
 static inline void xa_init_flags(struct xarray *xa, gfp_t flags)
 {
 	spin_lock_init(&xa->xa_lock);

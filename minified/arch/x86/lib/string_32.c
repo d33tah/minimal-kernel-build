@@ -1,7 +1,6 @@
 
 #include <linux/string.h>
 
-#ifdef __HAVE_ARCH_STRCMP
 int strcmp(const char *cs, const char *ct)
 {
 	int d0, d1;
@@ -21,54 +20,7 @@ int strcmp(const char *cs, const char *ct)
 		     : "memory");
 	return res;
 }
-#endif
 
-#ifdef __HAVE_ARCH_STRNCMP
-int strncmp(const char *cs, const char *ct, size_t count)
-{
-	int res;
-	int d0, d1, d2;
-	asm volatile("1:\tdecl %3\n\t"
-		     "js 2f\n\t"
-		     "lodsb\n\t"
-		     "scasb\n\t"
-		     "jne 3f\n\t"
-		     "testb %%al,%%al\n\t"
-		     "jne 1b\n"
-		     "2:\txorl %%eax,%%eax\n\t"
-		     "jmp 4f\n"
-		     "3:\tsbbl %%eax,%%eax\n\t"
-		     "orb $1,%%al\n"
-		     "4:"
-		     : "=a"(res), "=&S"(d0), "=&D"(d1), "=&c"(d2)
-		     : "1"(cs), "2"(ct), "3"(count)
-		     : "memory");
-	return res;
-}
-#endif
-
-#ifdef __HAVE_ARCH_STRCHR
-char *strchr(const char *s, int c)
-{
-	int d0;
-	char *res;
-	asm volatile("movb %%al,%%ah\n"
-		     "1:\tlodsb\n\t"
-		     "cmpb %%ah,%%al\n\t"
-		     "je 2f\n\t"
-		     "testb %%al,%%al\n\t"
-		     "jne 1b\n\t"
-		     "movl $1,%1\n"
-		     "2:\tmovl %1,%0\n\t"
-		     "decl %0"
-		     : "=a"(res), "=&S"(d0)
-		     : "1"(s), "0"(c)
-		     : "memory");
-	return res;
-}
-#endif
-
-#ifdef __HAVE_ARCH_STRLEN
 size_t strlen(const char *s)
 {
 	int d0;
@@ -80,9 +32,7 @@ size_t strlen(const char *s)
 		     : "memory");
 	return ~res - 1;
 }
-#endif
 
-#ifdef __HAVE_ARCH_STRNLEN
 size_t strnlen(const char *s, size_t count)
 {
 	int d0, res;
@@ -100,4 +50,3 @@ size_t strnlen(const char *s, size_t count)
 		     : "memory");
 	return res;
 }
-#endif

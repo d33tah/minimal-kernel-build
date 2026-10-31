@@ -1,10 +1,4 @@
 #ifndef _LINUX_MM_TYPES_TASK_H
 #define _LINUX_MM_TYPES_TASK_H
 
-enum {
-	MM_FILEPAGES,
-	MM_ANONPAGES,
-	MM_SHMEMPAGES,
-};
-
 #endif

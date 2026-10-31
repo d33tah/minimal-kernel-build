@@ -11,6 +11,4 @@ extern int get_unused_fd_flags(unsigned flags);
 
 extern void fd_install(unsigned int fd, struct file *file);
 
-extern void flush_delayed_fput(void);
-
 #endif

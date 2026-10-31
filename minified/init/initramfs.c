@@ -95,7 +95,6 @@ static void __init unpack_to_rootfs(const char *buf, unsigned long len)
 static int __init populate_rootfs(void)
 {
 	unpack_to_rootfs(__initramfs_start, __initramfs_size);
-	flush_delayed_fput();
 	return 0;
 }
 rootfs_initcall(populate_rootfs);

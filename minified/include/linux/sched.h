@@ -81,9 +81,6 @@ static inline struct pid *task_pid(struct task_struct *task)
 	return task->thread_pid;
 }
 
-pid_t __task_pid_nr_ns(struct task_struct *task, enum pid_type type,
-		       struct pid_namespace *ns);
-
 #define PF_IDLE 0x00000002
 #define PF_EXITING 0x00000004
 #define PF_MEMALLOC_NOFS 0x00040000

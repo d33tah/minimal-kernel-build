@@ -41,11 +41,6 @@ static __always_inline bool arch_atomic_dec_and_test(atomic_t *v)
 	return GEN_UNARY_RMWcc("decl", v->counter, e);
 }
 
-static __always_inline bool arch_atomic_inc_and_test(atomic_t *v)
-{
-	return GEN_UNARY_RMWcc("incl", v->counter, e);
-}
-
 static __always_inline int arch_atomic_add_return(int i, atomic_t *v)
 {
 	return i + xadd(&v->counter, i);

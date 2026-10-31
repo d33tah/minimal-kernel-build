@@ -9,7 +9,6 @@ enum irqreturn {
 typedef enum irqreturn irqreturn_t;
 
 #include <linux/hardirq.h>
-#include <linux/workqueue.h>
 
 #include <asm/ptrace.h>
 #include <asm/irq.h>

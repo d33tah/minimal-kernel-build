@@ -24,7 +24,8 @@
 #define AT_MINSIGSTKSZ 51
 #endif
 #define AT_VECTOR_SIZE_BASE 20
-#include <linux/workqueue.h>
+#include <linux/ktime.h>
+#include <linux/cpumask.h>
 #include <linux/seqlock.h>
 
 #include <asm/mmu.h>

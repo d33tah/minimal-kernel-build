@@ -60,17 +60,6 @@ int filemap_add_folio(struct address_space *mapping, struct folio *folio,
 }
 
 /*
- * Stub: nothing waits on a folio bit on a single-shot boot (no contention,
- * no async I/O completion wait). folio_wait_bit_common and its private
- * helpers (folio_trylock_flag, wake_page_function) were runtime-dead; the
- * two link-live callers below are reduced to no-op waits.
- */
-int folio_wait_bit_killable(struct folio *folio, int bit_nr)
-{
-	return 0;
-}
-
-/*
  * Nothing can wait on a folio bit (no code in this kernel puts a task to
  * sleep: there are no wait queues), so PG_waiters is never set and unlock only clears
  * PG_locked (the "negative byte" result, i.e. PG_waiters, is always 0).
@@ -214,9 +203,6 @@ static int filemap_read_folio(struct file *file, struct address_space *mapping,
 	if (error)
 		return error;
 
-	error = folio_wait_locked_killable(folio);
-	if (error)
-		return error;
 	if (folio_test_uptodate(folio))
 		return 0;
 	return -EIO;

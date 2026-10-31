@@ -42,18 +42,6 @@ enum zone_stat_item {
 	NR_VM_ZONE_STAT_ITEMS
 };
 
-enum node_stat_item {
-	NR_LRU_BASE,
-	NR_SLAB_RECLAIMABLE_B,
-	NR_SLAB_UNRECLAIMABLE_B,
-	NR_ANON_MAPPED,
-	NR_FILE_MAPPED,
-	NR_FILE_PAGES,
-	NR_ANON_THPS,
-	NR_KERNEL_STACK_KB,
-	NR_PAGETABLE,
-};
-
 #endif
 
 enum zone_type { ZONE_NORMAL, ZONE_MOVABLE, __MAX_NR_ZONES };
@@ -129,21 +117,6 @@ static inline struct pglist_data *NODE_DATA(int nid)
 	return &contig_page_data;
 }
 
-extern struct pglist_data *first_online_pgdat(void);
-extern struct zone *next_zone(struct zone *zone);
-
-/* for_each_online_pgdat + next_online_pgdat removed - unused */
-#define for_each_zone(zone)                                   \
-	for (zone = (first_online_pgdat())->node_zones; zone; \
-	     zone = next_zone(zone))
-
-#define for_each_populated_zone(zone)                         \
-	for (zone = (first_online_pgdat())->node_zones; zone; \
-	     zone = next_zone(zone))                          \
-		if (!populated_zone(zone))                    \
-			;                                     \
-		else
-
 static inline struct zone *zonelist_zone(struct zoneref *zoneref)
 {
 	return zoneref->zone;
@@ -170,12 +143,6 @@ first_zones_zonelist(struct zonelist *zonelist, enum zone_type highest_zoneidx)
 {
 	return next_zones_zonelist(zonelist->_zonerefs, highest_zoneidx);
 }
-
-#define for_each_zone_zonelist(zone, z, zlist, highidx) \
-	for (z = first_zones_zonelist(zlist, highidx),  \
-	    zone = zonelist_zone(z);                    \
-	     zone;                                      \
-	     z = next_zones_zonelist(++z, highidx), zone = zonelist_zone(z))
 
 #define for_next_zone_zonelist(zone, z, highidx) \
 	for (zone = z->zone; zone;               \

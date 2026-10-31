@@ -65,12 +65,6 @@ static __always_inline bool atomic_dec_and_test(atomic_t *v)
 	return arch_atomic_dec_and_test(v);
 }
 
-static __always_inline bool atomic_inc_and_test(atomic_t *v)
-{
-	instrument_atomic_read_write(v, sizeof(*v));
-	return arch_atomic_inc_and_test(v);
-}
-
 static __always_inline bool atomic_add_unless(atomic_t *v, int a, int u)
 {
 	instrument_atomic_read_write(v, sizeof(*v));

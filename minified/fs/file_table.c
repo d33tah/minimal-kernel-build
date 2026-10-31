@@ -65,29 +65,10 @@ out:
 	file_free(file);
 }
 
-static LLIST_HEAD(delayed_fput_list);
-static void delayed_fput(struct work_struct *unused)
-{
-	struct llist_node *node = llist_del_all(&delayed_fput_list);
-	struct file *f, *t;
-
-	llist_for_each_entry_safe(f, t, node, f_u.fu_llist)
-		__fput(f);
-}
-
-void flush_delayed_fput(void)
-{
-	delayed_fput(NULL);
-}
-
-static DECLARE_DELAYED_WORK(delayed_fput_work, delayed_fput);
-
 void fput(struct file *file)
 {
-	if (atomic_long_dec_and_test(&file->f_count)) {
-		if (llist_add(&file->f_u.fu_llist, &delayed_fput_list))
-			schedule_delayed_work(&delayed_fput_work, 1);
-	}
+	if (atomic_long_dec_and_test(&file->f_count))
+		__fput(file);
 }
 
 void __init files_init(void)

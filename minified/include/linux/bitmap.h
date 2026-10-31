@@ -29,19 +29,12 @@ static inline unsigned long find_next_zero_bit(const unsigned long *addr,
  * bitmap_bitremap, bitmap_onto, bitmap_fold, bitmap_find_free_region,
  * bitmap_release_region, bitmap_allocate_region removed - unused */
 
-#define BITMAP_FIRST_WORD_MASK(start) (~0UL << ((start) & (BITS_PER_LONG - 1)))
 #define BITMAP_LAST_WORD_MASK(nbits) (~0UL >> (-(nbits) & (BITS_PER_LONG - 1)))
 
 static inline void bitmap_zero(unsigned long *dst, unsigned int nbits)
 {
 	unsigned int len = BITS_TO_LONGS(nbits) * sizeof(unsigned long);
 	memset(dst, 0, len);
-}
-
-static inline void bitmap_fill(unsigned long *dst, unsigned int nbits)
-{
-	unsigned int len = BITS_TO_LONGS(nbits) * sizeof(unsigned long);
-	memset(dst, 0xff, len);
 }
 
 static inline bool bitmap_empty(const unsigned long *src, unsigned nbits)

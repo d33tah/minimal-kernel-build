@@ -209,9 +209,19 @@ retry:
 	}
 	if (likely(vma->vm_start <= address))
 		goto good_area;
-	bad_area(regs, error_code, address);
-	return;
+	if (unlikely(!(vma->vm_flags & VM_GROWSDOWN))) {
+		bad_area(regs, error_code, address);
+		return;
+	}
+	if (unlikely(expand_stack(vma, address))) {
+		bad_area(regs, error_code, address);
+		return;
+	}
 
+	/*
+	 * Ok, we have a good vm_area for this memory access, so
+	 * we can handle it..
+	 */
 good_area:
 	if (unlikely(access_error(error_code, vma))) {
 		/*

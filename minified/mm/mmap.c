@@ -259,9 +259,10 @@ static int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 	if (address < mmap_min_addr)
 		return -EPERM;
 
+	/* Enforce stack_guard_gap */
 	prev = vma->vm_prev;
-
-	if (prev && vma_is_accessible(prev)) {
+	if (prev && !(prev->vm_flags & VM_GROWSDOWN) &&
+	    vma_is_accessible(prev)) {
 		if (address - prev->vm_end < stack_guard_gap)
 			return -ENOMEM;
 	}
@@ -303,7 +304,11 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *mm, unsigned long addr)
 		return NULL;
 	if (vma->vm_start <= addr)
 		return vma;
-	return NULL;
+	if (!(vma->vm_flags & VM_GROWSDOWN))
+		return NULL;
+	if (expand_stack(vma, addr))
+		return NULL;
+	return vma;
 }
 
 /*

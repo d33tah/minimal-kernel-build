@@ -60,11 +60,6 @@ static inline void might_fault(void)
 
 void do_exit(long error_code) __noreturn;
 
-extern __printf(2, 0) __malloc
-	char *kvasprintf(gfp_t gfp, const char *fmt, va_list args);
-extern __printf(2, 0) const
-	char *kvasprintf_const(gfp_t gfp, const char *fmt, va_list args);
-
 extern void bust_spinlocks(int yes);
 
 extern enum system_states {

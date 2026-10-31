@@ -18,8 +18,7 @@
 #include <linux/rmap.h>
 #include <linux/pid_namespace.h>
 
-/* --- 2025-12-08 00:37 --- padata.h stubbed out */
-#include <linux/device/driver.h>
+#include <linux/module.h>
 extern void sched_init(void);
 #include <linux/file.h>
 
@@ -279,7 +278,6 @@ static void __init do_initcalls(void)
 
 static void __init do_basic_setup(void)
 {
-	driver_init();
 	do_initcalls();
 }
 

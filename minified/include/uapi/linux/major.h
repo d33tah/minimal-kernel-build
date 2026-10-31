@@ -2,7 +2,6 @@
 #ifndef _LINUX_MAJOR_H
 #define _LINUX_MAJOR_H
 
-#define TTY_MAJOR 4
 #define TTYAUX_MAJOR 5
 
 #endif

@@ -23,10 +23,6 @@ struct tty_struct {
 	int write_cnt;
 };
 
-int __init tty_init(void);
-
-extern struct class *tty_class;
-
 int tty_standard_install(struct tty_driver *driver, struct tty_struct *tty);
 
 #endif

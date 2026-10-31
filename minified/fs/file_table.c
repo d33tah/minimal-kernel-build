@@ -2,7 +2,6 @@
 #include <linux/slab.h>
 #include <linux/file.h>
 #include <linux/fs.h>
-#include <linux/cdev.h>
 
 #include "internal.h"
 
@@ -60,8 +59,6 @@ static void __fput(struct file *file)
 
 	if (file->f_op->release)
 		file->f_op->release(inode, file);
-	if (unlikely(S_ISCHR(inode->i_mode) && inode->i_cdev != NULL))
-		cdev_put(inode->i_cdev);
 	fops_put(file->f_op);
 	if ((mode & (FMODE_READ | FMODE_WRITE)) == FMODE_READ)
 		i_readcount_dec(inode);

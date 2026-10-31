@@ -17,6 +17,6 @@ struct vc_data {
 	unsigned int vc_need_wrap : 1;
 };
 
-int vty_init(const struct file_operations *console_fops);
+int vty_init(void);
 
 #endif

@@ -26,7 +26,6 @@
 #define AT_MINSIGSTKSZ 51
 #endif
 #define AT_VECTOR_SIZE_BASE 20
-#include <linux/kref.h>
 #include <linux/rbtree.h>
 #include <linux/rwsem.h>
 #include <linux/page-flags-layout.h>

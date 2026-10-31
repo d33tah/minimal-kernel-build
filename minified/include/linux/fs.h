@@ -64,8 +64,6 @@ extern void __init files_init(void);
 
 #define FMODE_NONOTIFY ((__force fmode_t)0x4000000)
 
-#define WHITEOUT_DEV 0
-
 /* Reduced positive_aop_returns - only AOP_TRUNCATED_PAGE used */
 enum positive_aop_returns { AOP_TRUNCATED_PAGE = 0x80001 };
 
@@ -140,7 +138,6 @@ struct inode {
 	atomic_t i_writecount;
 	const struct file_operations *i_fop;
 	struct address_space i_data;
-	struct list_head i_devices;
 	struct cdev *i_cdev;
 } __randomize_layout;
 
@@ -453,10 +450,6 @@ extern const struct file_operations def_chr_fops;
 
 #define CHRDEV_MAJOR_DYN_EXT_START 511
 #define CHRDEV_MAJOR_DYN_EXT_END 384
-
-extern int alloc_chrdev_region(dev_t *, unsigned, unsigned, const char *);
-extern int register_chrdev_region(dev_t, unsigned, const char *);
-extern void unregister_chrdev_region(dev_t, unsigned);
 
 extern void init_special_inode(struct inode *, umode_t, dev_t);
 

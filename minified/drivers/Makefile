@@ -12,7 +12,6 @@ obj-y				+= video/
 obj-y				+= tty/
 obj-y				+= char/
 
-obj-y				+= base/
 # obj-$(CONFIG_SERIO)		+= input/serio/
 # obj-$(CONFIG_INPUT)		+= input/
 obj-y				+= clocksource/

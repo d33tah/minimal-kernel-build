@@ -9,6 +9,7 @@
 #include <asm/memtype.h>
 #include <asm/prom.h>
 #include <asm/tlbflush.h>
+#include <asm/desc.h>
 
 unsigned long max_pfn_mapped;
 

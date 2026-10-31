@@ -62,7 +62,6 @@ static inline struct slab *virt_to_slab(const void *addr)
 	return folio_slab(folio);
 }
 
-#include <linux/kobject.h>
 #include <linux/local_lock.h>
 
 enum slab_deactivate_mode { DEACTIVATE_TO_HEAD, DEACTIVATE_TO_TAIL };

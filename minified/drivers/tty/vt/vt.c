@@ -3,8 +3,6 @@
 #include <linux/vt_kern.h>
 #include <linux/selection.h>
 
-#include <linux/device.h>
-
 /*
  * One virtual console on the text buffer of the console driver (vgacon).
  *
@@ -25,7 +23,6 @@
 const struct consw *conswitchp;
 
 static struct vc_data vc0;
-static struct device *tty0dev;
 
 #define VC_DEFAULT_ATTR 0x07
 
@@ -169,29 +166,11 @@ static const struct tty_operations con_ops = {
 	.write = con_write,
 };
 
-static struct cdev vc0_cdev;
-
-int __init vty_init(const struct file_operations *console_fops)
+int __init vty_init(void)
 {
-	cdev_init(&vc0_cdev, console_fops);
-	if (cdev_add(&vc0_cdev, MKDEV(TTY_MAJOR, 0), 1) ||
-	    register_chrdev_region(MKDEV(TTY_MAJOR, 0), 1, "/dev/vc/0") < 0)
-		panic("Couldn't register /dev/tty0 driver\n");
-	tty0dev = device_create(tty_class, NULL, MKDEV(TTY_MAJOR, 0), NULL,
-				"tty0");
-	if (IS_ERR(tty0dev))
-		tty0dev = NULL;
-
 	console_driver = tty_alloc_driver(1);
 	if (IS_ERR(console_driver))
 		panic("Couldn't allocate console driver\n");
-
-	console_driver->name = "tty";
-	console_driver->name_base = 1;
-	console_driver->major = TTY_MAJOR;
-	console_driver->minor_start = 1;
 	tty_set_operations(console_driver, &con_ops);
-	if (tty_register_driver(console_driver))
-		panic("Couldn't register console driver\n");
 	return 0;
 }

@@ -3,6 +3,7 @@
 #define _ASM_X86_SWITCH_TO_H
 
 #include <linux/sched/task_stack.h>
+#include <asm/ptrace.h>
 
 struct task_struct;
 

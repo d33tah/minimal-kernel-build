@@ -5,8 +5,6 @@ struct fs_context;
 
 /* emergency_thaw_bdev removed - unused */
 
-extern void __init chrdev_init(void);
-
 extern int filename_lookup(struct filename *name, unsigned flags,
 			   struct path *path);
 

@@ -25,7 +25,6 @@ extern char *strrchr(const char *, int);
 #ifndef __HAVE_ARCH_MEMCMP
 extern int memcmp(const void *, const void *, __kernel_size_t);
 #endif
-char *strreplace(char *s, char old, char new);
 
 extern void kfree_const(const void *x);
 

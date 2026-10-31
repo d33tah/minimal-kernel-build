@@ -2,7 +2,6 @@
 #ifndef _ASM_X86_CPU_H
 #define _ASM_X86_CPU_H
 
-#include <linux/device.h>
 #include <linux/cpu.h>
 #include <linux/topology.h>
 #include <linux/nodemask.h>

@@ -20,11 +20,10 @@ lib-y := string.o \
 	 # buildid.o - Removed: Not needed (stub functions)
 
 
-lib-y	+= kobject.o
 obj-y	+= lockref.o
 
 obj-y += sort.o debug_locks.o \
-	 bust_spinlocks.o kasprintf.o \
+	 bust_spinlocks.o \
 	 iov_iter.o \
 	 find_bit.o
 	 # parser.o removed - not used

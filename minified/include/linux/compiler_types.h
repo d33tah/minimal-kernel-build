@@ -34,7 +34,6 @@
 
 #define __diag_clang_11(s)	__diag(s)
 
-#define __diag_ignore_all(option, comment) 	__diag_clang(11, ignore, option)
 /* end compiler-clang.h */
 #else
 #error "Unknown compiler"
@@ -76,8 +75,6 @@
  * then-arm is statically dead. Keep only the live empty arm.
  */
 # define __no_kcsan
-
-#define __no_sanitize_or_inline __always_inline
 
 #define noinstr									noinline notrace __attribute((__section__(".noinstr.text")))		__no_kcsan __no_sanitize_address __no_profile __no_sanitize_coverage
 
@@ -122,7 +119,5 @@
 #define compiletime_assert(condition, msg) 	_compiletime_assert(condition, msg, __compiletime_assert_, __COUNTER__)
 
 #define compiletime_assert_atomic_type(t)					compiletime_assert(__native_word(t),						"Need native word sized stores/loads for atomicity.")
-
-#define __diag_GCC(version, severity, string)
 
 #endif  

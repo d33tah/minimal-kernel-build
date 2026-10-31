@@ -43,8 +43,6 @@
 
 #define SYM_END(name, sym_type)					.type name sym_type ASM_NL				.set .L__sym_size_##name, .-name ASM_NL			.size name, .L__sym_size_##name
 
-#define SYM_INNER_LABEL(name, linkage)			.type name SYM_T_NONE ASM_NL				SYM_ENTRY(name, linkage, SYM_A_NONE)
-
 #define SYM_FUNC_END(name)					SYM_END(name, SYM_T_FUNC)
 
 #define SYM_CODE_START(name)					SYM_START(name, SYM_L_GLOBAL, SYM_A_ALIGN)
@@ -64,8 +62,6 @@
 #define SYM_DATA_END_LABEL(name, linkage, label)		linkage(label) ASM_NL					.type label SYM_T_OBJECT ASM_NL				label:							SYM_END(name, SYM_T_OBJECT)
 
 #define SYM_DATA(name, data...)					SYM_DATA_START(name) ASM_NL					data ASM_NL							SYM_DATA_END(name)
-
-#define SYM_DATA_LOCAL(name, data...)				SYM_DATA_START_LOCAL(name) ASM_NL				data ASM_NL							SYM_DATA_END(name)
 
 #endif  
 

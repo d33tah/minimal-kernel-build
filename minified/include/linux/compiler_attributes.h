@@ -46,6 +46,4 @@
 
 #define __must_check __attribute__((__warn_unused_result__))
 
-#define __weak __attribute__((__weak__))
-
 #endif

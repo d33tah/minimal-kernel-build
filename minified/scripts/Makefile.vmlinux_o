@@ -6,33 +6,15 @@ __default: vmlinux.o
 include include/config/auto.conf
 include $(srctree)/scripts/Kbuild.include
 
-# for objtool
 include $(srctree)/scripts/Makefile.lib
 
-# Generate a linker script to ensure correct ordering of initcalls for Clang LTO
-# ---------------------------------------------------------------------------
-
-quiet_cmd_gen_initcalls_lds = GEN     $@
-      cmd_gen_initcalls_lds = \
-	$(PERL) $(real-prereqs) > $@
-
-.tmp_initcalls.lds: $(srctree)/scripts/generate_initcall_order.pl \
-		$(KBUILD_VMLINUX_OBJS) $(KBUILD_VMLINUX_LIBS) FORCE
-	$(call if_changed,gen_initcalls_lds)
-
-targets := .tmp_initcalls.lds
-
-ifdef CONFIG_LTO_CLANG
-initcalls-lds := .tmp_initcalls.lds
-endif
-
-# Link of vmlinux.o used for section mismatch analysis
+# vmlinux.o: the LTO link of all built-in objects and libraries; the final
+# link of vmlinux (link-vmlinux.sh) only applies the linker script
 # ---------------------------------------------------------------------------
 
 quiet_cmd_ld_vmlinux.o = LD      $@
       cmd_ld_vmlinux.o = \
 	$(LD) ${KBUILD_LDFLAGS} -r -o $@ \
-	$(addprefix -T , $(initcalls-lds)) \
 	--whole-archive $(KBUILD_VMLINUX_OBJS) --no-whole-archive \
 	--start-group $(KBUILD_VMLINUX_LIBS) --end-group
 
@@ -40,10 +22,10 @@ define rule_ld_vmlinux.o
 	$(call cmd_and_savecmd,ld_vmlinux.o)
 endef
 
-vmlinux.o: $(initcalls-lds) $(KBUILD_VMLINUX_OBJS) $(KBUILD_VMLINUX_LIBS) FORCE
+vmlinux.o: $(KBUILD_VMLINUX_OBJS) $(KBUILD_VMLINUX_LIBS) FORCE
 	$(call if_changed_rule,ld_vmlinux.o)
 
-targets += vmlinux.o
+targets := vmlinux.o
 
 # Add FORCE to the prequisites of a target to force it to be always rebuilt.
 # ---------------------------------------------------------------------------

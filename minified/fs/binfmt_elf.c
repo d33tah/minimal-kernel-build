@@ -36,7 +36,6 @@ static int load_elf_binary(struct linux_binprm *bprm);
 #define ELF_PAGEALIGN(_v) (((_v) + ELF_MIN_ALIGN - 1) & ~(ELF_MIN_ALIGN - 1))
 
 static struct linux_binfmt elf_format = {
-	.module = THIS_MODULE,
 	.load_binary = load_elf_binary,
 };
 

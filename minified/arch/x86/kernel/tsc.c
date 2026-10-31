@@ -189,7 +189,6 @@ static struct clocksource clocksource_tsc = {
 	.rating = 300,
 	.read = read_tsc,
 	.mask = CLOCKSOURCE_MASK(64),
-	.flags = CLOCK_SOURCE_IS_CONTINUOUS,
 	.list = LIST_HEAD_INIT(clocksource_tsc.list),
 };
 

@@ -51,7 +51,6 @@ static inline int dentry_cmp(const struct dentry *dentry,
 struct external_name {
 	union {
 		atomic_t count;
-		struct rcu_head head;
 	} u;
 	unsigned char name[];
 };

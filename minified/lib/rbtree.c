@@ -239,7 +239,6 @@ static inline void dummy_rotate(struct rb_node *old, struct rb_node *new)
 static const struct rb_augment_callbacks dummy_callbacks = {
 	.propagate = dummy_propagate,
 	.copy = dummy_copy,
-	.rotate = dummy_rotate
 };
 
 void rb_insert_color(struct rb_node *node, struct rb_root *root)

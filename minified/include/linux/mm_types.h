@@ -57,13 +57,10 @@ struct page {
 		};
 		struct {
 			unsigned long _pt_pad_1;
-			pgtable_t pmd_huge_pte;
 			unsigned long _pt_pad_2;
 			union {
 				struct mm_struct *pt_mm;
-				atomic_t pt_frag_refcount;
 			};
-			spinlock_t ptl;
 		};
 		struct rcu_head rcu_head;
 	};

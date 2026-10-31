@@ -18,7 +18,6 @@ typedef struct {
 #include <linux/lockdep_types.h>
 
 typedef struct raw_spinlock {
-	arch_spinlock_t raw_lock;
 } raw_spinlock_t;
 
 #define RAW_SPIN_DEP_MAP_INIT(lockname)
@@ -26,9 +25,8 @@ typedef struct raw_spinlock {
 
 #define SPIN_DEBUG_INIT(lockname)
 
-#define __RAW_SPIN_LOCK_INITIALIZER(lockname)    \
-	{ .raw_lock = __ARCH_SPIN_LOCK_UNLOCKED, \
-	  SPIN_DEBUG_INIT(lockname) RAW_SPIN_DEP_MAP_INIT(lockname) }
+#define __RAW_SPIN_LOCK_INITIALIZER(lockname) \
+	{ SPIN_DEBUG_INIT(lockname) RAW_SPIN_DEP_MAP_INIT(lockname) }
 
 #define __RAW_SPIN_LOCK_UNLOCKED(lockname) \
 	(raw_spinlock_t) __RAW_SPIN_LOCK_INITIALIZER(lockname)

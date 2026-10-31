@@ -7,7 +7,6 @@ struct msr {
 		struct {
 			u32 l, h;
 		};
-		u64 q;
 	};
 };
 

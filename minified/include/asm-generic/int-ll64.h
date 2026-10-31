@@ -15,7 +15,6 @@ __extension__ typedef __signed__ long long __s64;
 __extension__ typedef unsigned long long __u64;
 /* End uapi/asm-generic/int-ll64.h */
 
-typedef __s8  s8;
 typedef __u8  u8;
 typedef __u16 u16;
 typedef __s32 s32;

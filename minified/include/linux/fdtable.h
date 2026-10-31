@@ -16,7 +16,6 @@ struct fdtable {
 	unsigned int max_fds;
 	struct file __rcu **fd;
 	unsigned long *open_fds, *full_fds_bits;
-	struct rcu_head rcu;
 };
 
 struct files_struct {

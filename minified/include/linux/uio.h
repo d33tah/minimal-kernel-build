@@ -11,8 +11,6 @@ struct iovec {
 };
 
 struct page;
-struct pipe_inode_info;
-struct bio_vec;
 
 struct kvec {
 	void *iov_base;
@@ -30,16 +28,12 @@ struct iov_iter {
 	union {
 		const struct iovec *iov;
 		const struct kvec *kvec;
-		const struct bio_vec *bvec;
-		struct xarray *xarray;
-		struct pipe_inode_info *pipe;
 	};
 	union {
 		unsigned long nr_segs;
 		struct {
 			unsigned int head, start_head;
 		};
-		loff_t xarray_start;
 	};
 };
 

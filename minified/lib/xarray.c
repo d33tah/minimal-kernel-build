@@ -69,13 +69,6 @@ static void xas_set_offset(struct xa_state *xas)
 	xas->xa_offset = get_offset(xas->xa_index, xas->xa_node);
 }
 
-static void xas_move_index(struct xa_state *xas, unsigned long offset)
-{
-	unsigned int shift = xas->xa_node->shift;
-	xas->xa_index &= ~XA_CHUNK_MASK << shift;
-	xas->xa_index += offset << shift;
-}
-
 static void *set_bounds(struct xa_state *xas)
 {
 	xas->xa_node = XAS_BOUNDS;

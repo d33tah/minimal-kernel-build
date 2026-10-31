@@ -13,7 +13,6 @@
 #define radix_tree_node xa_node
 
 struct radix_tree_preload {
-	local_lock_t lock;
 	unsigned nr;
 	struct radix_tree_node *nodes;
 };

@@ -77,7 +77,6 @@ struct task_struct {
 	raw_spinlock_t pi_lock;
 	union {
 		refcount_t rcu_users;
-		struct rcu_head rcu;
 	};
 	int pagefault_disabled;
 	refcount_t stack_refcount;
@@ -104,7 +103,6 @@ static __always_inline bool is_idle_task(const struct task_struct *p)
 }
 
 union thread_union {
-	struct task_struct task;
 	unsigned long stack[THREAD_SIZE / sizeof(long)];
 };
 

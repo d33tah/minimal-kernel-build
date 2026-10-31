@@ -6,8 +6,6 @@
 #define LIST_POISON1 ((void *)0x100 + POISON_POINTER_DELTA)
 #define LIST_POISON2 ((void *)0x122 + POISON_POINTER_DELTA)
 
-#define TIMER_ENTRY_STATIC ((void *)0x300 + POISON_POINTER_DELTA)
-
 #define TAIL_MAPPING ((void *)0x400 + POISON_POINTER_DELTA)
 
 /* Removed unused poison defines: PAGE_POISON, RED_INACTIVE, RED_ACTIVE,

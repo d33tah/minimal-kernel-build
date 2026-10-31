@@ -22,7 +22,6 @@ struct pid {
 	unsigned int level;
 	struct hlist_head tasks[PIDTYPE_MAX];
 
-	struct rcu_head rcu;
 	struct upid numbers[1];
 };
 

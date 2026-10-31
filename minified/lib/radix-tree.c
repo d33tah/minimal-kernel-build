@@ -9,9 +9,7 @@ struct kmem_cache *radix_tree_node_cachep;
 #define IDR_MAX_PATH (DIV_ROUND_UP(IDR_INDEX_BITS, RADIX_TREE_MAP_SHIFT))
 #define IDR_PRELOAD_SIZE (IDR_MAX_PATH * 2 - 1)
 
-DEFINE_PER_CPU(struct radix_tree_preload, radix_tree_preloads) = {
-	.lock = INIT_LOCAL_LOCK(lock),
-};
+DEFINE_PER_CPU(struct radix_tree_preload, radix_tree_preloads) = {};
 
 static inline struct radix_tree_node *entry_to_node(void *ptr)
 {
@@ -381,53 +379,6 @@ static bool delete_node(struct radix_tree_root *root,
 	} while (node);
 
 	return deleted;
-}
-
-static int __radix_tree_create(struct radix_tree_root *root,
-			       unsigned long index,
-			       struct radix_tree_node **nodep,
-			       void __rcu ***slotp)
-{
-	struct radix_tree_node *node = NULL, *child;
-	void __rcu **slot = (void __rcu **)&root->xa_head;
-	unsigned long maxindex;
-	unsigned int shift, offset = 0;
-	unsigned long max = index;
-	gfp_t gfp = root_gfp_mask(root);
-
-	shift = radix_tree_load_root(root, &child, &maxindex);
-
-	if (max > maxindex) {
-		int error = radix_tree_extend(root, gfp, max, shift);
-		if (error < 0)
-			return error;
-		shift = error;
-		child = rcu_dereference_raw(root->xa_head);
-	}
-
-	while (shift > 0) {
-		shift -= RADIX_TREE_MAP_SHIFT;
-		if (child == NULL) {
-			child = radix_tree_node_alloc(gfp, node, root, shift,
-						      offset, 0);
-			if (!child)
-				return -ENOMEM;
-			rcu_assign_pointer(*slot, node_to_entry(child));
-			if (node)
-				node->count++;
-		} else if (!radix_tree_is_internal_node(child))
-			break;
-
-		node = entry_to_node(child);
-		offset = radix_tree_descend(node, &child, index);
-		slot = &node->slots[offset];
-	}
-
-	if (nodep)
-		*nodep = node;
-	if (slotp)
-		*slotp = slot;
-	return 0;
 }
 
 static inline int insert_entries(struct radix_tree_node *node,

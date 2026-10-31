@@ -10,8 +10,6 @@
 
 struct group_info {
 	atomic_t usage;
-	int ngroups;
-	kgid_t gid[];
 } __randomize_layout;
 
 static inline struct group_info *get_group_info(struct group_info *gi)
@@ -28,12 +26,10 @@ struct cred {
 	kgid_t egid;
 	kuid_t fsuid;
 	kgid_t fsgid;
-	kernel_cap_t cap_permitted;
 	struct user_struct *user;
 	struct user_namespace *user_ns;
 	struct group_info *group_info;
 	union {
-		struct rcu_head rcu;
 	};
 } __randomize_layout;
 

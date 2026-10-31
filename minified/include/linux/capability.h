@@ -10,9 +10,6 @@
 
 #define CAP_DAC_OVERRIDE 1
 #define CAP_DAC_READ_SEARCH 2
-#define CAP_CHECKPOINT_RESTORE 40
-#define CAP_LAST_CAP CAP_CHECKPOINT_RESTORE
-#define CAP_TO_MASK(x) (1 << ((x) & 31))
 /* End uapi/linux/capability.h */
 
 #define _KERNEL_CAPABILITY_U32S _LINUX_CAPABILITY_U32S_3
@@ -26,10 +23,6 @@ struct user_namespace;
 
 #define CAP_FOR_EACH_U32(__capi) \
 	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)
-
-#define CAP_LAST_U32_VALID_MASK (CAP_TO_MASK(CAP_LAST_CAP + 1) - 1)
-
-#define CAP_FULL_SET ((kernel_cap_t){ { ~0, CAP_LAST_U32_VALID_MASK } })
 
 #define CAP_BOP_ALL(c, a, b, OP)                                        \
 	do {                                                            \

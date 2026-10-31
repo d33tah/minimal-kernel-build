@@ -70,7 +70,6 @@ struct address_space;
 struct kiocb {
 	struct file *ki_filp;
 	randomized_struct_fields_start loff_t ki_pos;
-	int ki_flags;
 	randomized_struct_fields_end
 };
 
@@ -116,7 +115,6 @@ struct inode {
 	struct address_space *i_mapping;
 	unsigned long i_ino;
 	union {
-		const unsigned int i_nlink;
 		unsigned int __i_nlink;
 	};
 	dev_t i_rdev;
@@ -244,7 +242,6 @@ struct super_block {
 	time64_t s_time_max;
 	char s_id[32];
 	struct user_namespace *s_user_ns;
-	struct rcu_head rcu;
 } __randomize_layout;
 
 static inline struct user_namespace *i_user_ns(const struct inode *inode)
@@ -372,13 +369,10 @@ static inline bool HAS_UNMAPPED_ID(struct user_namespace *mnt_userns,
 	       !gid_valid(i_gid_into_mnt(mnt_userns, inode));
 }
 
-static inline int iocb_flags(struct file *file);
-
 static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 {
 	*kiocb = (struct kiocb){
 		.ki_filp = filp,
-		.ki_flags = iocb_flags(filp),
 	};
 }
 
@@ -505,12 +499,6 @@ extern const struct address_space_operations ram_aops;
 
 extern struct dentry *simple_lookup(struct inode *, struct dentry *,
 				    unsigned int flags);
-
-static inline int iocb_flags(struct file *file)
-{
-	int res = 0;
-	return res;
-}
 
 #define __FMODE_EXEC ((__force int)FMODE_EXEC)
 #define __FMODE_NONOTIFY ((__force int)FMODE_NONOTIFY)

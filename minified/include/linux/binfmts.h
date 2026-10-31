@@ -28,7 +28,6 @@ struct linux_binprm {
 
 struct linux_binfmt {
 	struct list_head lh;
-	struct module *module;
 	int (*load_binary)(struct linux_binprm *);
 } __randomize_layout;
 

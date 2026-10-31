@@ -35,7 +35,7 @@ static inline void static_key_enable(struct static_key *key) {
 
 #define STATIC_KEY_INIT_FALSE	{ .enabled = ATOMIC_INIT(0) }
 
-struct static_key_true { struct static_key key; };
+struct static_key_true {                        };
 
 struct static_key_false { struct static_key key; };
 

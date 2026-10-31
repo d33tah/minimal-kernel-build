@@ -205,7 +205,6 @@ struct vm_fault {
 	pud_t *pud;
 	union {
 		pte_t orig_pte;
-		pmd_t orig_pmd;
 	};
 	struct page *cow_page, *page;
 	pte_t *pte;
@@ -587,8 +586,6 @@ static inline spinlock_t *pmd_lockptr(struct mm_struct *mm, pmd_t *pmd)
 {
 	return &mm->page_table_lock;
 }
-
-#define pmd_huge_pte(mm, pmd) ((mm)->pmd_huge_pte)
 
 static inline spinlock_t *pmd_lock(struct mm_struct *mm, pmd_t *pmd)
 {

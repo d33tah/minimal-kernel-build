@@ -161,7 +161,6 @@ struct nameidata {
 	unsigned depth;
 	int total_link_count;
 	struct saved {
-		struct path link;
 		const char *name;
 	} *stack, internal[EMBEDDED_LEVELS];
 	struct filename *name;
@@ -507,26 +506,6 @@ static inline const char *lookup_last(struct nameidata *nd)
 		nd->flags |= LOOKUP_FOLLOW | LOOKUP_DIRECTORY;
 
 	return walk_component(nd, WALK_TRAILING);
-}
-
-static int path_lookupat(struct nameidata *nd, unsigned flags,
-			 struct path *path)
-{
-	const char *s = path_init(nd, flags);
-	int err;
-
-	while (!(err = link_path_walk(s, nd)) && (s = lookup_last(nd)) != NULL)
-		;
-	if (!err && nd->flags & LOOKUP_DIRECTORY)
-		if (!d_can_lookup(nd->path.dentry))
-			err = -ENOTDIR;
-	if (!err) {
-		*path = nd->path;
-		nd->path.mnt = NULL;
-		nd->path.dentry = NULL;
-	}
-	terminate_walk(nd);
-	return err;
 }
 
 static int path_parentat(struct nameidata *nd, unsigned flags,

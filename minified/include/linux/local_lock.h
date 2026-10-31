@@ -8,10 +8,6 @@
 typedef struct {
 } local_lock_t;
 
-#define INIT_LOCAL_LOCK(lockname) \
-	{                         \
-	}
-
 #define __local_lock(lock)         \
 	do {                       \
 		preempt_disable(); \

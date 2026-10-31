@@ -42,7 +42,6 @@ struct cpuinfo_x86 {
 	__u8 x86;
 	union {
 		__u32 x86_capability[NCAPINTS + NBUGINTS];
-		unsigned long x86_capability_alignment;
 	};
 	int x86_cache_alignment;
 } __randomize_layout;

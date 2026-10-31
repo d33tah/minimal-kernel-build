@@ -10,7 +10,6 @@ union thread_union;
 struct kernel_clone_args {
 	u64 flags;
 	int exit_signal;
-	unsigned long stack;
 	int (*fn)(void *);
 	void *fn_arg;
 };

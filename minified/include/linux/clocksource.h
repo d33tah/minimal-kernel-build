@@ -19,11 +19,9 @@ struct clocksource {
 	struct list_head list;
 	int rating;
 	enum clocksource_ids id;
-	unsigned long flags;
 	int (*enable)(struct clocksource *cs);
 };
 
-#define CLOCK_SOURCE_IS_CONTINUOUS 0x01
 #define CLOCKSOURCE_MASK(bits) GENMASK_ULL((bits) - 1, 0)
 
 extern struct clocksource *__init clocksource_default_clock(void);

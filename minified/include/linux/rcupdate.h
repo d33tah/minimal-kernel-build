@@ -14,11 +14,6 @@ static inline void __rcu_read_unlock(void)
 	preempt_enable();
 }
 
-static inline void rcu_all_qs(void)
-{
-	barrier();
-}
-
 static inline int rcu_read_lock_held(void)
 {
 	return 1;

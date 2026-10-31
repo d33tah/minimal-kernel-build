@@ -5,8 +5,6 @@
 
 void __noreturn do_exit(long code)
 {
-	current->flags |= PF_EXITING;
-
 	/*
 	 * init (PID 1) is the only user task (callers: exit(2), fatal user page
 	 * faults and user-mode CPU exceptions), so every exit is init exiting,

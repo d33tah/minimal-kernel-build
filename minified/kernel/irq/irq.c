@@ -35,6 +35,13 @@ void __init early_irq_init(void)
 	}
 }
 
+/*
+ * Upstream prints the descriptor, counts the IRQ in kstat and calls
+ * ack_bad_irq(), which prints and acks the local APIC. None of printk, kstat
+ * or the APIC exist here, so the deletion leaves an empty body. It is the
+ * handler of every line no driver requested; those lines stay masked in the
+ * 8259, so only a spurious IRQ 7/15 can reach it.
+ */
 void handle_bad_irq(struct irq_desc *desc)
 {
 }

@@ -68,7 +68,6 @@ static inline struct pid *task_pid(struct task_struct *task)
 }
 
 #define PF_IDLE 0x00000002
-#define PF_EXITING 0x00000004
 #define PF_MEMALLOC_NOFS 0x00040000
 #define PF_MEMALLOC_NOIO 0x00080000
 #define PF_KTHREAD 0x00200000

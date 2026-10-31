@@ -23,8 +23,6 @@ static noinline void kernelmode_fixup_or_oops(struct pt_regs *regs,
 					      unsigned long error_code,
 					      unsigned long address)
 {
-	WARN_ON_ONCE(user_mode(regs));
-
 	if (fixup_exception(regs, X86_TRAP_PF, error_code, address)) {
 		if (in_interrupt())
 			return;
@@ -107,8 +105,6 @@ static noinline int spurious_kernel_fault(unsigned long error_code,
 		return 0;
 
 	ret = spurious_kernel_fault_check(error_code, (pte_t *)pmd);
-	WARN_ONCE(!ret, "PMD has incorrect permission bits\n");
-
 	return ret;
 }
 
@@ -145,8 +141,6 @@ static void do_kern_addr_fault(struct pt_regs *regs,
 			       unsigned long hw_error_code,
 			       unsigned long address)
 {
-	WARN_ON_ONCE(hw_error_code & X86_PF_PK);
-
 	if (spurious_kernel_fault(hw_error_code, address))
 		return;
 

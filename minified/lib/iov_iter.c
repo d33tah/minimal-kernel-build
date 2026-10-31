@@ -66,7 +66,6 @@ static int copyin(void *to, const void __user *from, size_t n)
 void iov_iter_init(struct iov_iter *i, unsigned int direction,
 		   const struct iovec *iov, unsigned long nr_segs, size_t count)
 {
-	WARN_ON(direction & ~(READ | WRITE));
 	*i = (struct iov_iter){ .iter_type = ITER_IOVEC,
 				.iov = iov,
 				.iov_offset = 0,
@@ -104,7 +103,6 @@ static inline bool page_copy_sane(struct page *page, size_t offset, size_t n)
 
 	if (likely(n <= v && v <= (page_size(head))))
 		return true;
-	WARN_ON(1);
 	return false;
 }
 
@@ -117,7 +115,6 @@ static size_t __copy_page_to_iter(struct page *page, size_t offset,
 		size_t wanted = _copy_to_iter(kaddr + offset, bytes, i);
 		return wanted;
 	}
-	WARN_ON(1);
 	return 0;
 }
 
@@ -163,7 +160,6 @@ size_t copy_page_from_iter_atomic(struct page *page, unsigned offset,
 void iov_iter_kvec(struct iov_iter *i, unsigned int direction,
 		   const struct kvec *kvec, unsigned long nr_segs, size_t count)
 {
-	WARN_ON(direction & ~(READ | WRITE));
 	*i = (struct iov_iter){ .iter_type = ITER_KVEC,
 				.kvec = kvec,
 				.iov_offset = 0,

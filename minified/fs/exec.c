@@ -227,7 +227,6 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top)
 	 * keep valid PTEs and need no change_protection().
 	 */
 	vm_flags = VM_STACK_FLAGS | mm->def_flags;
-	WARN_ON_ONCE(vma->vm_flags & ~vm_flags & (VM_READ | VM_WRITE));
 	vma->vm_flags = vm_flags;
 	vma->vm_page_prot = vm_get_page_prot(vm_flags);
 

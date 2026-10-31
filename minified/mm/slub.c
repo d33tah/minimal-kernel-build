@@ -139,8 +139,6 @@ static struct slab *new_slab(struct kmem_cache *s, gfp_t flags, int node)
 	if (unlikely(flags & GFP_SLAB_BUG_MASK))
 		flags = kmalloc_fix_flags(flags);
 
-	WARN_ON_ONCE(s->ctor && (flags & __GFP_ZERO));
-
 	return allocate_slab(
 		s, flags & (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK), node);
 }
@@ -244,8 +242,6 @@ void kmem_cache_free(struct kmem_cache *s, void *x)
 static inline void free_large_kmalloc(struct folio *folio, void *object)
 {
 	unsigned int order = folio_order(folio);
-
-	WARN_ON_ONCE(order == 0);
 
 	__free_pages(folio_page(folio, 0), order);
 }

@@ -174,8 +174,6 @@ static __always_inline void exc_debug_kernel(struct pt_regs *regs,
 	unsigned long dr7 = local_db_save();
 	irqentry_state_t irq_state = irqentry_nmi_enter(regs);
 
-	WARN_ON_ONCE(user_mode(regs));
-
 	/* TIF_BLOCKSTEP is never set in this build -> branch was always false. */
 
 	if (!dr6)
@@ -192,8 +190,6 @@ out:
 static __always_inline void exc_debug_user(struct pt_regs *regs,
 					   unsigned long dr6)
 {
-	WARN_ON_ONCE(!user_mode(regs));
-
 	/* TIF_BLOCKSTEP never set in this build -> clear was a no-op. */
 
 	/* Single-step or icebp from user mode: SIGTRAP, i.e. kill the task. */

@@ -72,9 +72,6 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 void initialize_tlbstate_and_flush(void)
 {
 	struct mm_struct *mm = this_cpu_read(cpu_tlbstate.loaded_mm);
-	unsigned long cr3 = __read_cr3();
-
-	WARN_ON((cr3 & CR3_ADDR_MASK) != __pa(mm->pgd));
 
 	write_cr3(build_cr3(mm->pgd, 0));
 }
@@ -139,8 +136,6 @@ STATIC_NOPV void native_flush_tlb_global(void)
 
 STATIC_NOPV void native_flush_tlb_local(void)
 {
-	WARN_ON_ONCE(preemptible());
-
 	native_write_cr3(__native_read_cr3());
 }
 

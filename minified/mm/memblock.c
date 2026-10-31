@@ -176,7 +176,6 @@ repeat:
 			continue;
 
 		if (rbase > base) {
-			WARN_ON(flags != rgn->flags);
 			nr_new++;
 			if (insert)
 				memblock_insert_region(type, idx++, base,

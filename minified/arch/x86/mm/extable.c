@@ -91,9 +91,6 @@ static bool ex_handler_default(const struct exception_table_entry *e,
 static bool ex_handler_uaccess(const struct exception_table_entry *fixup,
 			       struct pt_regs *regs, int trapnr)
 {
-	WARN_ONCE(
-		trapnr == X86_TRAP_GP,
-		"General protection fault in user access. Non-canonical address?");
 	return ex_handler_default(fixup, regs);
 }
 

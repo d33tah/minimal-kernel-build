@@ -103,8 +103,6 @@ static unsigned long native_calibrate_cpu_early(void)
 
 static bool __init determine_cpu_tsc_frequencies(bool early)
 {
-	WARN_ON(cpu_khz || tsc_khz);
-
 	/* Only the early CPUID-based calibration path survives on this build. */
 	cpu_khz = native_calibrate_cpu_early();
 	tsc_khz = cpu_khz;

@@ -15,16 +15,10 @@
 
 #define GFP_SLAB_BUG_MASK (__GFP_DMA32 | __GFP_HIGHMEM | ~__GFP_BITS_MASK)
 
-#define WARN_ON_ONCE_GFP(cond, gfp)                                      \
-	({                                                               \
-		static bool __section(".data.once") __warned;            \
-		int __ret_warn_once = !!(cond);                          \
-		if (unlikely(!(gfp & __GFP_NOWARN) && __ret_warn_once && \
-			     !__warned)) {                               \
-			__warned = true;                                 \
-			WARN_ON(1);                                      \
-		}                                                        \
-		unlikely(__ret_warn_once);                               \
+#define WARN_ON_ONCE_GFP(cond, gfp)             \
+	({                                      \
+		int __ret_warn_once = !!(cond); \
+		unlikely(__ret_warn_once);      \
 	})
 
 /* force_page_cache_readahead removed - unused */

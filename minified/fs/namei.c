@@ -635,7 +635,6 @@ static struct file *path_openat(struct nameidata *nd,
 	if (likely(!error)) {
 		if (likely(file->f_mode & FMODE_OPENED))
 			return file;
-		WARN_ON(1);
 		error = -EINVAL;
 	}
 	fput(file);

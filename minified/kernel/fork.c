@@ -77,8 +77,6 @@ static inline void mm_free_pgd(struct mm_struct *mm)
 void __mmdrop(struct mm_struct *mm)
 {
 	BUG_ON(mm == &init_mm);
-	WARN_ON_ONCE(mm == current->mm);
-	WARN_ON_ONCE(mm == current->active_mm);
 	mm_free_pgd(mm);
 	free_mm(mm);
 }

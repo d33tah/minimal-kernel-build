@@ -106,12 +106,17 @@ static void dentry_free(struct dentry *dentry)
 	if (unlikely(dname_external(dentry))) {
 		struct external_name *p = external_name(dentry);
 		if (likely(atomic_dec_and_test(&p->u.count))) {
-			call_rcu(&dentry->d_u.d_rcu, __d_free_external);
+			__d_free_external(&dentry->d_u.d_rcu);
 			return;
 		}
 	}
-
-	call_rcu(&dentry->d_u.d_rcu, __d_free);
+	/*
+	 * Upstream's DCACHE_NORCU arm: free at once. Every dentry qualifies
+	 * here: one CPU, no preemption, and d_lookup() (the only lockless
+	 * reader) never runs while a dentry is being killed, so no reader
+	 * can hold a dentry that dput() has unhashed and is freeing.
+	 */
+	__d_free(&dentry->d_u.d_rcu);
 }
 
 static void dentry_unlink_inode(struct dentry *dentry)

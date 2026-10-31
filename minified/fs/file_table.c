@@ -14,7 +14,8 @@ static void file_free_rcu(struct rcu_head *head)
 
 static inline void file_free(struct file *f)
 {
-	call_rcu(&f->f_u.fu_rcuhead, file_free_rcu);
+	/* One CPU, no preemption, no lockless fd lookup: free at once. */
+	file_free_rcu(&f->f_u.fu_rcuhead);
 }
 
 static struct file *__alloc_file(int flags, const struct cred *cred)

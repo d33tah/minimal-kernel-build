@@ -11,7 +11,6 @@ struct filename;
 
 struct linux_binprm {
 	struct vm_area_struct *vma;
-	unsigned long vma_pages;
 	struct mm_struct *mm;
 	unsigned long p, argmin;
 	unsigned int point_of_no_return : 1;

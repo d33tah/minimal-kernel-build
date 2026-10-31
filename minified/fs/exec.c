@@ -21,17 +21,6 @@ void __register_binfmt(struct linux_binfmt *fmt, int insert)
 	write_unlock(&binfmt_lock);
 }
 
-static void acct_arg_size(struct linux_binprm *bprm, unsigned long pages)
-{
-	struct mm_struct *mm = current->mm;
-	long diff = (long)(pages - bprm->vma_pages);
-
-	if (!mm || !diff)
-		return;
-
-	bprm->vma_pages = pages;
-}
-
 static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
 				 int write)
 {
@@ -47,9 +36,6 @@ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
 	mmap_read_unlock(bprm->mm);
 	if (ret <= 0)
 		return NULL;
-
-	if (write)
-		acct_arg_size(bprm, vma_pages(bprm->vma));
 
 	return page;
 }
@@ -352,7 +338,6 @@ int begin_new_exec(struct linux_binprm *bprm)
 	 */
 	bprm->point_of_no_return = true;
 
-	acct_arg_size(bprm, 0);
 	retval = exec_mmap(bprm->mm);
 	if (retval)
 		goto out;
@@ -406,10 +391,8 @@ static int prepare_bprm_creds(struct linux_binprm *bprm)
 
 static void free_bprm(struct linux_binprm *bprm)
 {
-	if (bprm->mm) {
-		acct_arg_size(bprm, 0);
+	if (bprm->mm)
 		mmput(bprm->mm);
-	}
 	if (bprm->cred) {
 		mutex_unlock(&current->signal->cred_guard_mutex);
 		abort_creds(bprm->cred);

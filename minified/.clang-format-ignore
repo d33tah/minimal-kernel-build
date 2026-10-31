@@ -1,2 +1,0 @@
-# Headers included from .S/.lds.S sources or defining inline-asm string macros.
-# clang-format mangles assembler syntax and % operand escapes in them, so they keep their layout.

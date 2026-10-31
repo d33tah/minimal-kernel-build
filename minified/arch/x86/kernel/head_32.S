@@ -21,18 +21,6 @@
 /* Physical address */
 #define pa(X) ((X) - __PAGE_OFFSET)
 
-/*
- * References to members of the new_cpu_data structure.
- */
-
-#define X86		new_cpu_data+CPUINFO_x86
-#define X86_MODEL	new_cpu_data+CPUINFO_x86_model
-#define X86_STEPPING	new_cpu_data+CPUINFO_x86_stepping
-#define X86_CPUID	new_cpu_data+CPUINFO_cpuid_level
-#define X86_CAPABILITY	new_cpu_data+CPUINFO_x86_capability
-#define X86_VENDOR_ID	new_cpu_data+CPUINFO_x86_vendor_id
-
-
 #define SIZEOF_PTREGS 17*4
 
 /*
@@ -126,7 +114,6 @@ SYM_CODE_START(startup_32)
  * NOTE! If we are on a 486 we may have no cr4 at all! Specifically, cr4 exists
  * if and only if CPUID exists and has flags other than the FPU flag set.
  */
-	movl $-1,pa(X86_CPUID)		# preset CPUID level
 	movl $X86_EFLAGS_ID,%ecx
 	pushl %ecx
 	popfl				# set EFLAGS=ID
@@ -136,10 +123,6 @@ SYM_CODE_START(startup_32)
 	jz .Lenable_paging		# hw disallowed setting of ID bit
 					# which means no CPUID and no CR4
 
-	xorl %eax,%eax
-	cpuid
-	movl %eax,pa(X86_CPUID)		# save largest std CPUID function
-
 	movl $1,%eax
 	cpuid
 	andl $~1,%edx			# Ignore CPUID.FPU
@@ -147,34 +130,6 @@ SYM_CODE_START(startup_32)
 
 	movl pa(mmu_cr4_features),%eax
 	movl %eax,%cr4
-
-	testb $X86_CR4_PAE, %al		# check if PAE is enabled
-	jz .Lenable_paging
-
-	/* Check if extended functions are implemented */
-	movl $0x80000000, %eax
-	cpuid
-	/* Value must be in the range 0x80000001 to 0x8000ffff */
-	subl $0x80000001, %eax
-	cmpl $(0x8000ffff-0x80000001), %eax
-	ja .Lenable_paging
-
-	/* Clear bogus XD_DISABLE bits */
-	call verify_cpu
-
-	mov $0x80000001, %eax
-	cpuid
-	/* Execute Disable bit supported? */
-	btl $(X86_FEATURE_NX & 31), %edx
-	jnc .Lenable_paging
-
-	/* Setup EFER (Extended Feature Enable Register) */
-	movl $MSR_EFER, %ecx
-	rdmsr
-
-	btsl $_EFER_NX, %eax
-	/* Make changes effective */
-	wrmsr
 
 .Lenable_paging:
 
@@ -190,37 +145,6 @@ SYM_CODE_START(startup_32)
 	/* Shift the stack pointer to a virtual address */
 	addl $__PAGE_OFFSET, %esp
 
-/*
- * Check if it is 486
- */
-	movb $4,X86			# at least 486
-	cmpl $-1,X86_CPUID
-	je .Lis486
-
-	/* get vendor info */
-	xorl %eax,%eax			# call CPUID with 0 -> return vendor ID
-	cpuid
-	movl %eax,X86_CPUID		# save CPUID level
-	movl %ebx,X86_VENDOR_ID		# lo 4 chars
-	movl %edx,X86_VENDOR_ID+4	# next 4 chars
-	movl %ecx,X86_VENDOR_ID+8	# last 4 chars
-
-	orl %eax,%eax			# do we have processor info as well?
-	je .Lis486
-
-	movl $1,%eax		# Use the CPUID instruction to get CPU type
-	cpuid
-	movb %al,%cl		# save reg for future use
-	andb $0x0f,%ah		# mask processor family
-	movb %ah,X86
-	andb $0xf0,%al		# mask model
-	shrb $4,%al
-	movb %al,X86_MODEL
-	andb $0x0f,%cl		# mask mask revision
-	movb %cl,X86_STEPPING
-	movl %edx,X86_CAPABILITY
-
-.Lis486:
 	movl $0x50022,%ecx	# set AM, WP, NE and MP
 	movl %cr0,%eax
 	andl $0x80000011,%eax	# Save PG,PE,ET
@@ -249,7 +173,6 @@ SYM_CODE_START(startup_32)
 1:	jmp 1b
 SYM_CODE_END(startup_32)
 
-#include "verify_cpu.S"
 
 __INIT
 

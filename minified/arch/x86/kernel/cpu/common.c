@@ -13,8 +13,6 @@ extern void doublefault_init_cpu_tss(void);
 #include <asm/hwcap2.h>
 #include <asm/cpu.h>
 
-#include "cpu.h"
-
 u32 elf_hwcap2 __read_mostly;
 
 DEFINE_PER_CPU_PAGE_ALIGNED(
@@ -146,284 +144,46 @@ static void __init setup_cr_pinning(void)
 	static_key_enable(&cr_pinning.key);
 }
 
-struct cpuid_dependent_feature {
-	u32 feature, level;
-};
-
-static const struct cpuid_dependent_feature cpuid_dependent_features[] = {
-	{ X86_FEATURE_MWAIT, 0x00000005 },
-	{ X86_FEATURE_DCA, 0x00000009 },
-	{ X86_FEATURE_XSAVE, 0x0000000d },
-	{ 0, 0 }
-};
-
-static void filter_cpuid_features(struct cpuinfo_x86 *c, bool warn)
-{
-	const struct cpuid_dependent_feature *df;
-
-	for (df = cpuid_dependent_features; df->feature; df++) {
-		if (!cpu_has(c, df->feature))
-			continue;
-
-		if (!((s32)df->level<0 ? (u32)df->level >
-						     (u32)c->extended_cpuid_level :
-					 (s32)df->level>(s32) c->cpuid_level))
-			continue;
-
-		clear_cpu_cap(c, df->feature);
-		if (!warn)
-			continue;
-
-		pr_warn("CPU: CPU feature " X86_CAP_FMT
-			" disabled, no CPUID level 0x%x\n",
-			x86_cap_flag(df->feature), df->level);
-	}
-}
-
-__u32 cpu_caps_cleared[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
-__u32 cpu_caps_set[NCAPINTS + NBUGINTS] __aligned(sizeof(unsigned long));
-
 DEFINE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);
 
-static void get_cpu_vendor(struct cpuinfo_x86 *c)
+/*
+ * Only CPUID leaves 1 and 7 feed bits that something reads: the
+ * boot_cpu_has() users (TSC, PSE, PGE, SEP, SMEP, SMAP, FSGSBASE, INVPCID,
+ * HYPERVISOR, WAITPKG, CX8) and ELF_HWCAP (the leaf 1 EDX word). The family
+ * is checked by check_bugs(); the CLFLUSH line size is cache_line_size().
+ */
+static void __init identify_cpu(struct cpuinfo_x86 *c)
 {
-	/*
-	 * No vendor cpu_dev is registered on this build (cpu_dev_register
-	 * has zero invocations -> the .x86_cpu_dev.init section is empty ->
-	 * the vendor-string match loop never finds an entry). Always generic.
-	 */
-	c->x86_vendor = X86_VENDOR_UNKNOWN;
-}
+	u32 level, eax, ebx, ecx, edx;
 
-void cpu_detect(struct cpuinfo_x86 *c)
-{
-	cpuid(0x00000000, (unsigned int *)&c->cpuid_level,
-	      (unsigned int *)&c->x86_vendor_id[0],
-	      (unsigned int *)&c->x86_vendor_id[8],
-	      (unsigned int *)&c->x86_vendor_id[4]);
-
+	memset(c->x86_capability, 0, sizeof(c->x86_capability));
 	c->x86 = 4;
+	c->x86_cache_alignment = 32;
 
-	if (c->cpuid_level >= 0x00000001) {
-		u32 junk, tfms, cap0, misc;
+	cpuid(0x00000000, &level, &ebx, &ecx, &edx);
 
-		cpuid(0x00000001, &tfms, &misc, &junk, &cap0);
-		c->x86 = x86_family(tfms);
-		c->x86_model = x86_model(tfms);
-		c->x86_stepping = x86_stepping(tfms);
-
-		if (cap0 & (1 << 19)) {
-			c->x86_clflush_size = ((misc >> 8) & 0xff) * 8;
-			c->x86_cache_alignment = c->x86_clflush_size;
-		}
-	}
-}
-
-static void apply_forced_caps(struct cpuinfo_x86 *c)
-{
-	int i;
-
-	for (i = 0; i < NCAPINTS + NBUGINTS; i++) {
-		c->x86_capability[i] &= ~cpu_caps_cleared[i];
-		c->x86_capability[i] |= cpu_caps_set[i];
-	}
-}
-
-void get_cpu_cap(struct cpuinfo_x86 *c)
-{
-	u32 eax, ebx, ecx, edx;
-
-	if (c->cpuid_level >= 0x00000001) {
+	if (level >= 0x00000001) {
 		cpuid(0x00000001, &eax, &ebx, &ecx, &edx);
-
-		c->x86_capability[CPUID_1_ECX] = ecx;
+		c->x86 = x86_family(eax);
+		if (edx & (1 << 19))
+			c->x86_cache_alignment = ((ebx >> 8) & 0xff) * 8;
 		c->x86_capability[CPUID_1_EDX] = edx;
+		c->x86_capability[CPUID_1_ECX] = ecx;
 	}
 
-	if (c->cpuid_level >= 0x00000006)
-		c->x86_capability[CPUID_6_EAX] = cpuid_eax(0x00000006);
-
-	if (c->cpuid_level >= 0x00000007) {
+	if (level >= 0x00000007) {
 		cpuid_count(0x00000007, 0, &eax, &ebx, &ecx, &edx);
 		c->x86_capability[CPUID_7_0_EBX] = ebx;
 		c->x86_capability[CPUID_7_ECX] = ecx;
-		c->x86_capability[CPUID_7_EDX] = edx;
-
-		if (eax >= 1) {
-			cpuid_count(0x00000007, 1, &eax, &ebx, &ecx, &edx);
-			c->x86_capability[CPUID_7_1_EAX] = eax;
-		}
 	}
 
-	if (c->cpuid_level >= 0x0000000d) {
-		cpuid_count(0x0000000d, 1, &eax, &ebx, &ecx, &edx);
-
-		c->x86_capability[CPUID_D_1_EAX] = eax;
-	}
-
-	eax = cpuid_eax(0x80000000);
-	c->extended_cpuid_level = eax;
-
-	if ((eax & 0xffff0000) == 0x80000000) {
-		if (eax >= 0x80000001) {
-			cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
-
-			c->x86_capability[CPUID_8000_0001_ECX] = ecx;
-			c->x86_capability[CPUID_8000_0001_EDX] = edx;
-		}
-	}
-
-	if (c->extended_cpuid_level >= 0x80000007) {
-		cpuid(0x80000007, &eax, &ebx, &ecx, &edx);
-
-		c->x86_capability[CPUID_8000_0007_EBX] = ebx;
-	}
-
-	if (c->extended_cpuid_level >= 0x80000008) {
-		cpuid(0x80000008, &eax, &ebx, &ecx, &edx);
-		c->x86_capability[CPUID_8000_0008_EBX] = ebx;
-	}
-
-	if (c->extended_cpuid_level >= 0x8000000a)
-		c->x86_capability[CPUID_8000_000A_EDX] = cpuid_edx(0x8000000a);
-
-	if (c->extended_cpuid_level >= 0x8000001f)
-		c->x86_capability[CPUID_8000_001F_EAX] = cpuid_eax(0x8000001f);
-
-	apply_forced_caps(c);
-}
-
-void get_cpu_address_sizes(struct cpuinfo_x86 *c)
-{
-	u32 eax, ebx, ecx, edx;
-
-	if (c->extended_cpuid_level >= 0x80000008) {
-		cpuid(0x80000008, &eax, &ebx, &ecx, &edx);
-
-		c->x86_phys_bits = eax & 0xff;
-	} else if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
-		c->x86_phys_bits = 36;
-}
-
-static void __init cpu_set_bug_bits(struct cpuinfo_x86 *c)
-{
-	/* Stub: CPU bug detection not needed for minimal kernel */
-}
-
-static void detect_nopl(void)
-{
-	setup_clear_cpu_cap(X86_FEATURE_NOPL);
-}
-
-static void __init cpu_parse_early_param(void)
-{
-	/* Stub: CPU early param parsing not needed for minimal kernel */
-}
-
-static void __init early_identify_cpu(struct cpuinfo_x86 *c)
-{
-	c->x86_clflush_size = 32;
-	c->x86_phys_bits = 32;
-	c->x86_cache_alignment = c->x86_clflush_size;
-
-	memset(&c->x86_capability, 0, sizeof(c->x86_capability));
-	c->extended_cpuid_level = 0;
-
-	/*
-	 * CPUID is always present on this build's CPU: have_cpuid_p() flips
-	 * the EFLAGS ID bit and always succeeds under QEMU, so the no-CPUID
-	 * else arm (setup_clear_cpu_cap(X86_FEATURE_CPUID)) was runtime-dead
-	 * and is folded away.
-	 */
-	cpu_detect(c);
-	get_cpu_vendor(c);
-	get_cpu_cap(c);
-	get_cpu_address_sizes(c);
-	setup_force_cpu_cap(X86_FEATURE_CPUID);
-	cpu_parse_early_param();
-
-	/*
-	 * this_cpu is always &default_cpu here (empty cpu_devs[]),
-	 * which sets neither ->c_early_init nor ->c_bsp_init.
-	 */
-	filter_cpuid_features(c, false);
-
-	setup_force_cpu_cap(X86_FEATURE_ALWAYS);
-
-	cpu_set_bug_bits(c);
-
-	setup_clear_cpu_cap(X86_FEATURE_PCID);
-
-	setup_clear_cpu_cap(X86_FEATURE_LA57);
-
-	detect_nopl();
+	/* Process-context identifiers are never used by this kernel. */
+	clear_bit(X86_FEATURE_PCID, (unsigned long *)c->x86_capability);
 }
 
 void __init early_cpu_init(void)
 {
-	/*
-	 * The .x86_cpu_dev.init section is empty on this build (no
-	 * cpu_dev_register), so __x86_cpu_dev_start == __x86_cpu_dev_end:
-	 * the per-vendor population loop never iterated and cpu_devs[]
-	 * stays all-NULL (its initializer).  Folded away.
-	 */
-	early_identify_cpu(&boot_cpu_data);
-}
-
-static void generic_identify(struct cpuinfo_x86 *c)
-{
-	c->extended_cpuid_level = 0;
-
-	cpu_detect(c);
-
-	get_cpu_vendor(c);
-
-	get_cpu_cap(c);
-
-	get_cpu_address_sizes(c);
-
-	set_cpu_bug(c, X86_BUG_ESPFIX);
-}
-
-static void identify_cpu(struct cpuinfo_x86 *c)
-{
-	c->loops_per_jiffy = loops_per_jiffy;
-	c->x86_vendor = X86_VENDOR_UNKNOWN;
-	c->x86_model = c->x86_stepping = 0;
-	c->x86_vendor_id[0] = '\0';
-	c->cpuid_level = -1;
-	c->x86_clflush_size = 32;
-	c->x86_phys_bits = 32;
-	c->x86_cache_alignment = c->x86_clflush_size;
-	memset(&c->x86_capability, 0, sizeof(c->x86_capability));
-
-	generic_identify(c);
-
-	/* this_cpu is always &default_cpu, which sets no ->c_identify. */
-
-	apply_forced_caps(c);
-
-	setup_smep(c);
-	setup_smap(c);
-	setup_umip(c);
-
-	if (cpu_has(c, X86_FEATURE_FSGSBASE)) {
-		cr4_set_bits(X86_CR4_FSGSBASE);
-		elf_hwcap2 |= HWCAP2_FSGSBASE;
-	}
-
-	filter_cpuid_features(c, true);
-
-	apply_forced_caps(c);
-
-	/*
-	 * identify_cpu() runs only for the boot CPU on this UP build
-	 * (identify_boot_cpu -> identify_cpu(&boot_cpu_data)); SMP=n means
-	 * there is no secondary-CPU caller, so the c != &boot_cpu_data
-	 * capability-intersection path was statically unreachable.
-	 */
-
-	select_idle_routine(c);
+	identify_cpu(&boot_cpu_data);
 }
 
 void enable_sep_cpu(void)
@@ -448,10 +208,18 @@ void enable_sep_cpu(void)
 
 void __init identify_boot_cpu(void)
 {
-	identify_cpu(&boot_cpu_data);
-	/* HAS_KERNEL_IBT==0 -> CET/IBT pr_info branch was const-dead; removed */
+	struct cpuinfo_x86 *c = &boot_cpu_data;
+
+	setup_smep(c);
+	setup_smap(c);
+	setup_umip(c);
+
+	if (cpu_has(c, X86_FEATURE_FSGSBASE)) {
+		cr4_set_bits(X86_CR4_FSGSBASE);
+		elf_hwcap2 |= HWCAP2_FSGSBASE;
+	}
+
 	enable_sep_cpu();
-	/* cpu_detect_tlb removed - TLB info never used */
 	setup_cr_pinning();
 }
 

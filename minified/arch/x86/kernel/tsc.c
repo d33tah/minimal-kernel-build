@@ -181,23 +181,12 @@ success:
 
 unsigned long native_calibrate_tsc(void)
 {
-	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
-		return 0;
-
-	/* Intel CPUID.0x15/0x16 crystal-clock derivation elided: unreachable
-	 * on this build (x86_vendor is always X86_VENDOR_UNKNOWN, so the guard
-	 * above always returns). It was the sole setter of the TSC_KNOWN_FREQ /
-	 * TSC_RELIABLE feature caps, which therefore stay clear. */
+	/* No vendor-specific CPUID 0x15/0x16 TSC frequency enumeration. */
 	return 0;
 }
 
 static unsigned long cpu_khz_from_cpuid(void)
 {
-	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
-		return 0;
-
-	/* Intel CPUID.0x16 base-frequency path elided: unreachable (vendor
-	 * always UNKNOWN); native_calibrate_cpu_early falls to quick_pit. */
 	return 0;
 }
 
@@ -317,16 +306,12 @@ void __init tsc_early_init(void)
 
 void __init tsc_init(void)
 {
-	if (!boot_cpu_has(X86_FEATURE_TSC)) {
-		setup_clear_cpu_cap(X86_FEATURE_TSC_DEADLINE_TIMER);
+	if (!boot_cpu_has(X86_FEATURE_TSC))
 		return;
-	}
 
 	/* PIT calibration can fail under host load, leaving tsc_khz == 0. */
-	if (!tsc_khz) {
-		setup_clear_cpu_cap(X86_FEATURE_TSC_DEADLINE_TIMER);
+	if (!tsc_khz)
 		return;
-	}
 
 	clocksource_register_khz(&clocksource_tsc_early, tsc_khz);
 }

@@ -14,7 +14,6 @@ CFLAGS_common.o		:= -fno-stack-protector
 obj-y			:= common.o
 obj-y			+= bugs.o
 # aperfmperf.o removed - inlined in topology.h
-obj-y			+= cpuid-deps.o
 
 
 # feat_ctl.o removed - empty file

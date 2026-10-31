@@ -72,24 +72,7 @@ void arch_setup_new_exec(void)
  * switch_to_extra()'s extra-work test was always false (its TIF mask bits are
  * never set in this build), so __switch_to_xtra was never called. */
 
-static void (*x86_idle)(void);
-
-/* arch_cpu_idle_enter/arch_cpu_idle_dead (+ play_dead) removed - unused
- * (idle-loop body never runs; weak stubs in kernel/sched/idle.c suffice) */
-
 void arch_cpu_idle(void)
 {
-	x86_idle();
-}
-
-void __cpuidle default_idle(void)
-{
 	raw_safe_halt();
-}
-
-/* Simplified: just use default_idle for minimal kernel */
-void select_idle_routine(const struct cpuinfo_x86 *c)
-{
-	if (!x86_idle)
-		x86_idle = default_idle;
 }

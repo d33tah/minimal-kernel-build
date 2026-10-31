@@ -40,38 +40,19 @@ static __always_inline void cpu_relax(void)
 
 struct cpuinfo_x86 {
 	__u8 x86;
-	__u8 x86_vendor;
-	__u8 x86_model;
-	__u8 x86_stepping;
-	__u8 x86_phys_bits;
-	__u32 extended_cpuid_level;
-	int cpuid_level;
 	union {
 		__u32 x86_capability[NCAPINTS + NBUGINTS];
 		unsigned long x86_capability_alignment;
 	};
-	char x86_vendor_id[16];
 	int x86_cache_alignment;
-	unsigned long loops_per_jiffy;
-	u16 x86_clflush_size;
 } __randomize_layout;
 
-#define X86_VENDOR_INTEL 0
-/* X86_VENDOR_CYRIX, UMC, CENTAUR, TRANSMETA, NSC, HYGON, ZHAOXIN, VORTEX, AMD removed - unused */
-#define X86_VENDOR_UNKNOWN 0xff
-
 extern struct cpuinfo_x86 boot_cpu_data;
-extern struct cpuinfo_x86 new_cpu_data;
-
-extern __u32 cpu_caps_cleared[NCAPINTS + NBUGINTS];
-extern __u32 cpu_caps_set[NCAPINTS + NBUGINTS];
 
 #define cpu_info boot_cpu_data
 /* cpuinfo_op declaration removed - no implementation */
 
 #define cache_line_size() (boot_cpu_data.x86_cache_alignment)
-
-extern void cpu_detect(struct cpuinfo_x86 *c);
 
 extern void early_cpu_init(void);
 extern void identify_boot_cpu(void);
@@ -203,7 +184,6 @@ static inline unsigned int cpuid_edx(unsigned int op)
 	return edx;
 }
 
-extern void select_idle_routine(const struct cpuinfo_x86 *c);
 /* amd_e400_c1e_apic_setup declaration removed - implementation was removed */
 
 extern void enable_sep_cpu(void);
@@ -253,7 +233,5 @@ extern void start_thread(struct pt_regs *regs, unsigned long new_ip,
 
 #define __TASK_UNMAPPED_BASE(task_size) (PAGE_ALIGN(task_size / 3))
 #define TASK_UNMAPPED_BASE __TASK_UNMAPPED_BASE(TASK_SIZE_LOW)
-
-void default_idle(void);
 
 #endif

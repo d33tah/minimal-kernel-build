@@ -17,8 +17,6 @@ unsigned long _brk_end = (unsigned long)__brk_base;
 
 struct boot_params boot_params;
 
-struct cpuinfo_x86 new_cpu_data;
-
 struct cpuinfo_x86 boot_cpu_data __read_mostly;
 
 __visible unsigned long mmu_cr4_features __ro_after_init;
@@ -126,8 +124,6 @@ static void __init early_reserve_memory(void)
 
 void __init setup_arch(char **cmdline_p)
 {
-	memcpy(&boot_cpu_data, &new_cpu_data, sizeof(new_cpu_data));
-
 	clone_pgd_range(swapper_pg_dir + KERNEL_PGD_BOUNDARY,
 			initial_page_table + KERNEL_PGD_BOUNDARY,
 			KERNEL_PGD_PTRS);

@@ -103,17 +103,6 @@ enum cpuid_leafs {
 
 #define boot_cpu_has(bit) cpu_has(&boot_cpu_data, bit)
 
-#define set_cpu_cap(c, bit) set_bit(bit, (unsigned long *)((c)->x86_capability))
-
-extern void setup_clear_cpu_cap(unsigned int bit);
-extern void clear_cpu_cap(struct cpuinfo_x86 *c, unsigned int bit);
-
-#define setup_force_cpu_cap(bit)                             \
-	do {                                                 \
-		set_cpu_cap(&boot_cpu_data, bit);            \
-		set_bit(bit, (unsigned long *)cpu_caps_set); \
-	} while (0)
-
 static __always_inline bool _static_cpu_has(u16 bit)
 {
 	/* clang-format off */
@@ -139,8 +128,6 @@ t_no:
 #define static_cpu_has(bit)                                            \
 	(__builtin_constant_p(boot_cpu_has(bit)) ? boot_cpu_has(bit) : \
 						   _static_cpu_has(bit))
-
-#define set_cpu_bug(c, bit) set_cpu_cap(c, (bit))
 
 #endif
 #endif

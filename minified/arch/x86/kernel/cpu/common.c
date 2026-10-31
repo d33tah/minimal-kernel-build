@@ -57,16 +57,6 @@ static __always_inline void setup_smep(struct cpuinfo_x86 *c)
 		cr4_set_bits(X86_CR4_SMEP);
 }
 
-static __always_inline void setup_smap(struct cpuinfo_x86 *c)
-{
-	unsigned long eflags = native_save_fl();
-
-	BUG_ON(eflags & X86_EFLAGS_AC);
-
-	if (cpu_has(c, X86_FEATURE_SMAP))
-		cr4_set_bits(X86_CR4_SMAP);
-}
-
 static __always_inline void setup_umip(struct cpuinfo_x86 *c)
 {
 	/*
@@ -148,7 +138,7 @@ DEFINE_PER_CPU(struct cpu_entry_area *, cpu_entry_area);
 
 /*
  * Only CPUID leaves 1 and 7 feed bits that something reads: the
- * boot_cpu_has() users (TSC, PSE, PGE, SEP, SMEP, SMAP, FSGSBASE, INVPCID,
+ * boot_cpu_has() users (TSC, PSE, PGE, SEP, SMEP, FSGSBASE, INVPCID,
  * HYPERVISOR, WAITPKG, CX8) and ELF_HWCAP (the leaf 1 EDX word). The family
  * is checked by check_bugs(); the CLFLUSH line size is cache_line_size().
  */
@@ -179,6 +169,13 @@ static void __init identify_cpu(struct cpuinfo_x86 *c)
 
 	/* Process-context identifiers are never used by this kernel. */
 	clear_bit(X86_FEATURE_PCID, (unsigned long *)c->x86_capability);
+	/*
+	 * Alternatives are never applied, so the STAC/CLAC around user
+	 * accesses are never patched in: CR4.SMAP must stay off and the
+	 * feature must read as absent (the page-fault path would otherwise
+	 * treat every kernel fault on a user address as an SMAP violation).
+	 */
+	clear_bit(X86_FEATURE_SMAP, (unsigned long *)c->x86_capability);
 }
 
 void __init early_cpu_init(void)
@@ -211,7 +208,6 @@ void __init identify_boot_cpu(void)
 	struct cpuinfo_x86 *c = &boot_cpu_data;
 
 	setup_smep(c);
-	setup_smap(c);
 	setup_umip(c);
 
 	if (cpu_has(c, X86_FEATURE_FSGSBASE)) {

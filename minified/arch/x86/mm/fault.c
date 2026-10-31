@@ -185,13 +185,6 @@ static inline void do_user_addr_fault(struct pt_regs *regs,
 	if (WARN_ON_ONCE(kprobe_page_fault(regs, X86_TRAP_PF)))
 		return;
 
-	if (unlikely(cpu_feature_enabled(X86_FEATURE_SMAP) &&
-		     !(error_code & X86_PF_USER) &&
-		     !(regs->flags & X86_EFLAGS_AC))) {
-		page_fault_oops(regs, error_code, address);
-		return;
-	}
-
 	if (unlikely(faulthandler_disabled() || !mm)) {
 		bad_area_nosemaphore(regs, error_code, address);
 		return;

@@ -46,19 +46,9 @@ static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
 struct folio *__filemap_get_folio(struct address_space *mapping, pgoff_t index,
 				  int fgp_flags, gfp_t gfp);
 
-static inline pgoff_t folio_index(struct folio *folio)
-{
-	return folio->index;
-}
-
 static inline struct page *folio_file_page(struct folio *folio, pgoff_t index)
 {
 	return folio_page(folio, index & (folio_nr_pages(folio) - 1));
-}
-
-static inline bool folio_contains(struct folio *folio, pgoff_t index)
-{
-	return index - folio_index(folio) < folio_nr_pages(folio);
 }
 
 struct page *grab_cache_page_write_begin(struct address_space *mapping,
@@ -94,7 +84,6 @@ static inline bool folio_trylock(struct folio *folio)
 
 static inline void folio_lock(struct folio *folio)
 {
-	might_sleep();
 	if (!folio_trylock(folio))
 		__folio_lock(folio);
 }
@@ -102,7 +91,6 @@ static inline void folio_lock(struct folio *folio)
 static inline void lock_page(struct page *page)
 {
 	struct folio *folio;
-	might_sleep();
 
 	folio = page_folio(page);
 	if (!folio_trylock(folio))

@@ -36,18 +36,10 @@ enum node_states {
 	N_NORMAL_MEMORY,
 };
 
-/* MAX_NUMNODES=1, simplified node state functions */
-static inline int node_state(int node, enum node_states state)
-{
-	return node == 0;
-}
-
 #define for_each_node_state(node, __state) \
 	for ((node) = 0; (node) == 0; (node) = 1)
 
 #define nr_node_ids 1U
-
-#define node_online(node) node_state((node), N_ONLINE)
 
 #define for_each_node(node) for_each_node_state(node, N_POSSIBLE)
 

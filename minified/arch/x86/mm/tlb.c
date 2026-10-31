@@ -1,5 +1,4 @@
 
-
 #include <asm/mmu_context.h>
 
 #define STATIC_NOPV static
@@ -12,7 +11,6 @@ static inline unsigned long build_cr3(pgd_t *pgd, u16 asid)
 	/* PCID is unconditionally cleared at boot (setup_clear_cpu_cap in
 	 * arch/x86/kernel/cpu/common.c), so the kernel never runs with PCIDs
 	 * and asid is always 0. */
-	VM_WARN_ON_ONCE(asid != 0);
 	return __sme_pa(pgd);
 }
 
@@ -71,9 +69,6 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 		this_cpu_write(cpu_tlbstate_shared.is_lazy, false);
 
 	if (real_prev == next) {
-		VM_WARN_ON(this_cpu_read(cpu_tlbstate.ctxs[prev_asid].ctx_id) !=
-			   next->context.ctx_id);
-
 		if (WARN_ON_ONCE(real_prev != &init_mm &&
 				 !cpumask_test_cpu(cpu, mm_cpumask(next))))
 			cpumask_set_cpu(cpu, mm_cpumask(next));
@@ -90,8 +85,6 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 		new_asid = prev_asid;
 	} else {
 		if (real_prev != &init_mm) {
-			VM_WARN_ON_ONCE(
-				!cpumask_test_cpu(cpu, mm_cpumask(real_prev)));
 			cpumask_clear_cpu(cpu, mm_cpumask(real_prev));
 		}
 
@@ -231,8 +224,6 @@ void flush_tlb_local(void)
 
 void __flush_tlb_all(void)
 {
-	VM_WARN_ON_ONCE(preemptible());
-
 	if (boot_cpu_has(X86_FEATURE_PGE)) {
 		__flush_tlb_global();
 	} else {

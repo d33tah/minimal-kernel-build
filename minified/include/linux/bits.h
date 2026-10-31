@@ -1,8 +1,6 @@
 #ifndef __LINUX_BITS_H
 #define __LINUX_BITS_H
 
-
-#define BIT_WORD(nr)		((nr) / BITS_PER_LONG)
 #define BITS_PER_BYTE		8
 
 #if !defined(__ASSEMBLY__)

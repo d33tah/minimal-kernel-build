@@ -31,20 +31,6 @@ __here:                                  \
 
 #define lower_32_bits(n) ((u32)((n) & 0xffffffff))
 
-#define might_resched() \
-	do {            \
-	} while (0)
-#define might_sleep()            \
-	do {                     \
-		might_resched(); \
-	} while (0)
-
-#define might_sleep_if(cond)           \
-	do {                           \
-		if (cond)              \
-			might_sleep(); \
-	} while (0)
-
 void do_exit(long error_code) __noreturn;
 
 /* Removed: hex_to_bin, hex2bin, bin2hex, mac_pton - never called */

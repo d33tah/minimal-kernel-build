@@ -6,16 +6,7 @@
 
 /* lockdep_softirqs_on/off + lockdep_hardirqs_on/off/_prepare removed - unused (empty no-op stubs) */
 
-#define trace_hardirqs_off() \
-	do {                 \
-	} while (0)
 #define lockdep_hardirqs_enabled() 0
-#define lockdep_hardirq_enter() \
-	do {                    \
-	} while (0)
-#define lockdep_hardirq_exit() \
-	do {                   \
-	} while (0)
 
 #define raw_check_bogus_irq_restore() \
 	do {                          \

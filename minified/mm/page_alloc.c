@@ -212,7 +212,6 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid)
 
 	gfp &= gfp_allowed_mask;
 	gfp = current_gfp_context(gfp);
-	might_sleep_if(gfp & __GFP_DIRECT_RECLAIM);
 
 	highest_zoneidx = gfp_zone(gfp);
 	zonelist = node_zonelist(preferred_nid, gfp);
@@ -270,7 +269,6 @@ void __put_page(struct page *page)
 void free_pages(unsigned long addr, unsigned int order)
 {
 	if (addr != 0) {
-		VM_BUG_ON(!virt_addr_valid((void *)addr));
 		__free_pages(virt_to_page((void *)addr), order);
 	}
 }

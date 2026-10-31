@@ -136,8 +136,6 @@ static int faultin_page(struct vm_area_struct *vma, unsigned long address,
 		fault_flags |= FAULT_FLAG_WRITE;
 	if (unshare) {
 		fault_flags |= FAULT_FLAG_UNSHARE;
-
-		VM_BUG_ON(fault_flags & FAULT_FLAG_WRITE);
 	}
 
 	ret = handle_mm_fault(vma, address, fault_flags, NULL);

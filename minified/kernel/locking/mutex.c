@@ -23,7 +23,6 @@ static int __sched mutex_trylock(struct mutex *lock)
 
 void __sched mutex_lock(struct mutex *lock)
 {
-	might_sleep();
 	mutex_trylock(lock);
 }
 

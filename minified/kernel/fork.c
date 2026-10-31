@@ -379,7 +379,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 
 	rt_mutex_init_task(p);
 
-	lockdep_assert_irqs_enabled();
 	retval = copy_creds(p, clone_flags);
 	if (retval < 0)
 		goto bad_fork_free;

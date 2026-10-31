@@ -4,7 +4,6 @@
 
 #include <linux/types.h>
 
-
 #include <asm/page_types.h>
 
 /* --- 2025-12-08 00:22 --- Inlined from page_32.h */
@@ -50,8 +49,6 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr, str
 /* __boot_va, __boot_pa removed - unused */
 
 #define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
-extern bool __virt_addr_valid(unsigned long kaddr);
-#define virt_addr_valid(kaddr)	__virt_addr_valid((unsigned long) (kaddr))
 
 #endif
 
@@ -66,6 +63,5 @@ extern bool __virt_addr_valid(unsigned long kaddr);
 #define pfn_to_page __pfn_to_page
 
 #include <asm-generic/getorder.h>
-
 
 #endif  

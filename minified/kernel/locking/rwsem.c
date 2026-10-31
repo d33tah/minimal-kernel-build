@@ -31,7 +31,6 @@ void __init_rwsem(struct rw_semaphore *sem, const char *name,
 
 void __sched down_read(struct rw_semaphore *sem)
 {
-	might_sleep();
 	atomic_long_add_return_acquire(RWSEM_READER_BIAS, &sem->count);
 	rwsem_set_reader_owned(sem);
 }
@@ -60,7 +59,6 @@ void __sched down_write(struct rw_semaphore *sem)
 {
 	long tmp = RWSEM_UNLOCKED_VALUE;
 
-	might_sleep();
 	if (atomic_long_try_cmpxchg_acquire(&sem->count, &tmp,
 					    RWSEM_WRITER_LOCKED))
 		atomic_long_set(&sem->owner, (long)current);

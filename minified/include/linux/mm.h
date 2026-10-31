@@ -247,7 +247,6 @@ static inline unsigned int folio_order(struct folio *folio)
 
 static inline int put_page_testzero(struct page *page)
 {
-	VM_BUG_ON_PAGE(page_ref_count(page) == 0, page);
 	return page_ref_dec_and_test(page);
 }
 
@@ -279,7 +278,6 @@ enum compound_dtor_id {
 static inline void set_compound_page_dtor(struct page *page,
 					  enum compound_dtor_id compound_dtor)
 {
-	VM_BUG_ON_PAGE(compound_dtor >= NR_COMPOUND_DTORS, page);
 	page[1].compound_dtor = compound_dtor;
 }
 
@@ -323,12 +321,8 @@ static inline enum zone_type page_zonenum(const struct page *page)
 	return (page->flags >> ZONES_PGSHIFT) & ZONES_MASK;
 }
 
-#define folio_ref_zero_or_close_to_overflow(folio) \
-	((unsigned int)folio_ref_count(folio) + 127u <= 127u)
-
 static inline void folio_get(struct folio *folio)
 {
-	VM_BUG_ON_FOLIO(folio_ref_zero_or_close_to_overflow(folio), folio);
 	folio_ref_inc(folio);
 }
 

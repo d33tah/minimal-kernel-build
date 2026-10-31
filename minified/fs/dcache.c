@@ -195,8 +195,6 @@ static struct dentry *dentry_kill(struct dentry *dentry)
 void dput(struct dentry *dentry)
 {
 	while (dentry) {
-		might_sleep();
-
 		spin_lock(&dentry->d_lock);
 		if (dentry->d_lockref.count > 1) {
 			dentry->d_lockref.count--;

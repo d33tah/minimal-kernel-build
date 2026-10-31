@@ -7,7 +7,6 @@
 #define __irq_enter_raw()                          \
 	do {                                       \
 		preempt_count_add(HARDIRQ_OFFSET); \
-		lockdep_hardirq_enter();           \
 	} while (0)
 
 void irq_enter_rcu(void);

@@ -1,5 +1,4 @@
 
-
 #include <linux/jiffies.h>
 #include <linux/interrupt.h>
 
@@ -17,15 +16,12 @@ static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp
 
 static void __local_bh_enable(unsigned int cnt)
 {
-	lockdep_assert_irqs_disabled();
-
 	__preempt_count_sub(cnt);
 }
 
 void __local_bh_enable_ip(unsigned long ip, unsigned int cnt)
 {
 	WARN_ON_ONCE(in_hardirq());
-	lockdep_assert_irqs_enabled();
 
 	__preempt_count_sub(cnt - 1);
 
@@ -134,14 +130,10 @@ static inline void __irq_exit_rcu(void)
 void irq_exit_rcu(void)
 {
 	__irq_exit_rcu();
-
-	lockdep_hardirq_exit();
 }
 
 inline void raise_softirq_irqoff(unsigned int nr)
 {
-	lockdep_assert_irqs_disabled();
-
 	or_softirq_pending(1UL << nr);
 }
 

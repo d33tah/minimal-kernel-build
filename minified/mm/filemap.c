@@ -10,11 +10,7 @@ static noinline int __filemap_add_folio(struct address_space *mapping,
 	XA_STATE(xas, &mapping->i_pages, index);
 	long nr = 1;
 
-	VM_BUG_ON_FOLIO(!folio_test_locked(folio), folio);
-	VM_BUG_ON_FOLIO(folio_test_swapbacked(folio), folio);
-
 	{
-		VM_BUG_ON_FOLIO(index & (folio_nr_pages(folio) - 1), folio);
 		xas_set_order(&xas, index, folio_order(folio));
 		nr = folio_nr_pages(folio);
 	}
@@ -66,7 +62,6 @@ static int filemap_add_folio(struct address_space *mapping, struct folio *folio,
  */
 void folio_unlock(struct folio *folio)
 {
-	VM_BUG_ON_FOLIO(!folio_test_locked(folio), folio);
 	clear_bit_unlock_is_negative_byte(PG_locked, folio_flags(folio, 0));
 }
 
@@ -130,7 +125,6 @@ repeat:
 			folio_put(folio);
 			goto repeat;
 		}
-		VM_BUG_ON_FOLIO(!folio_contains(folio, index), folio);
 	}
 
 no_page:

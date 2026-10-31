@@ -48,7 +48,6 @@ static inline gfp_t current_gfp_context(gfp_t flags)
 
 static inline void might_alloc(gfp_t gfp_mask)
 {
-	might_sleep_if(gfpflags_allow_blocking(gfp_mask));
 }
 
 #endif

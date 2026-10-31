@@ -103,9 +103,6 @@ static inline void wp_page_reuse(struct vm_fault *vmf) __releases(vmf->ptl)
 	struct page *page = vmf->page;
 	pte_t entry;
 
-	VM_BUG_ON(!(vmf->flags & FAULT_FLAG_WRITE));
-	VM_BUG_ON(PageAnon(page) && !PageAnonExclusive(page));
-
 	if (page)
 		page_cpupid_xchg_last(page, (1 << LAST_CPUPID_SHIFT) - 1);
 
@@ -234,8 +231,6 @@ static vm_fault_t __do_fault(struct vm_fault *vmf)
 
 	if (unlikely(!(ret & VM_FAULT_LOCKED)))
 		lock_page(vmf->page);
-	else
-		VM_BUG_ON_PAGE(!PageLocked(vmf->page), vmf->page);
 
 	return ret;
 }

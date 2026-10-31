@@ -92,33 +92,15 @@ static unsigned long *folio_flags(struct folio *folio, unsigned n)
 {
 	struct page *page = &folio->page;
 
-	VM_BUG_ON_PGFLAGS(PageTail(page), page);
-	VM_BUG_ON_PGFLAGS(n > 0 && !test_bit(PG_head, &page->flags), page);
 	return &page[n].flags;
 }
 
-#define PF_POISONED_CHECK(page)                              \
-	({                                                   \
-		VM_BUG_ON_PGFLAGS(PagePoisoned(page), page); \
-		page;                                        \
-	})
+#define PF_POISONED_CHECK(page) ({ page; })
 #define PF_ANY(page, enforce) PF_POISONED_CHECK(page)
 #define PF_HEAD(page, enforce) PF_POISONED_CHECK(compound_head(page))
-#define PF_ONLY_HEAD(page, enforce)                      \
-	({                                               \
-		VM_BUG_ON_PGFLAGS(PageTail(page), page); \
-		PF_POISONED_CHECK(page);                 \
-	})
-#define PF_NO_TAIL(page, enforce)                                  \
-	({                                                         \
-		VM_BUG_ON_PGFLAGS(enforce &&PageTail(page), page); \
-		PF_POISONED_CHECK(compound_head(page));            \
-	})
-#define PF_NO_COMPOUND(page, enforce)                                  \
-	({                                                             \
-		VM_BUG_ON_PGFLAGS(enforce &&PageCompound(page), page); \
-		PF_POISONED_CHECK(page);                               \
-	})
+#define PF_ONLY_HEAD(page, enforce) ({ PF_POISONED_CHECK(page); })
+#define PF_NO_TAIL(page, enforce) ({ PF_POISONED_CHECK(compound_head(page)); })
+#define PF_NO_COMPOUND(page, enforce) ({ PF_POISONED_CHECK(page); })
 
 #define FOLIO_PF_ANY 0
 #define FOLIO_PF_HEAD 0
@@ -340,12 +322,10 @@ TESTPAGEFLAG_FALSE(Huge, hugetlb)
 	}                                                                 \
 	static __always_inline void __SetPage##uname(struct page *page)   \
 	{                                                                 \
-		VM_BUG_ON_PAGE(!PageType(page, 0), page);                 \
 		page->page_type &= ~PG_##lname;                           \
 	}                                                                 \
 	static __always_inline void __ClearPage##uname(struct page *page) \
 	{                                                                 \
-		VM_BUG_ON_PAGE(!Page##uname(page), page);                 \
 		page->page_type |= PG_##lname;                            \
 	}
 
@@ -355,15 +335,11 @@ PAGE_TYPE_OPS(Table, table)
 
 static __always_inline int PageAnonExclusive(struct page *page)
 {
-	VM_BUG_ON_PGFLAGS(!PageAnon(page), page);
-	VM_BUG_ON_PGFLAGS(PageHuge(page) && !PageHead(page), page);
 	return test_bit(PG_anon_exclusive, &PF_ANY(page, 1)->flags);
 }
 
 static __always_inline void SetPageAnonExclusive(struct page *page)
 {
-	VM_BUG_ON_PGFLAGS(!PageAnon(page), page);
-	VM_BUG_ON_PGFLAGS(PageHuge(page) && !PageHead(page), page);
 	set_bit(PG_anon_exclusive, &PF_ANY(page, 1)->flags);
 }
 

@@ -1,5 +1,4 @@
 
-
 #ifndef __MM_INTERNAL_H
 #define __MM_INTERNAL_H
 
@@ -34,8 +33,6 @@
 
 static inline void set_page_refcounted(struct page *page)
 {
-	VM_BUG_ON_PAGE(PageTail(page), page);
-	VM_BUG_ON_PAGE(page_ref_count(page), page);
 	set_page_count(page, 1);
 }
 

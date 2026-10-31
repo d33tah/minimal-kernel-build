@@ -74,11 +74,6 @@ struct vm_area_struct;
 #define GFP_HIGHUSER_MOVABLE \
 	(GFP_HIGHUSER | __GFP_MOVABLE | __GFP_SKIP_KASAN_POISON)
 
-static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
-{
-	return !!(gfp_flags & __GFP_DIRECT_RECLAIM);
-}
-
 #define OPT_ZONE_HIGHMEM ZONE_NORMAL
 
 #define OPT_ZONE_DMA ZONE_NORMAL
@@ -99,16 +94,6 @@ static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
 	 (OPT_ZONE_DMA32                                                     \
 	  << (___GFP_MOVABLE | ___GFP_DMA32) * GFP_ZONES_SHIFT))
 
-#define GFP_ZONE_BAD                                             \
-	(1 << (___GFP_DMA | ___GFP_HIGHMEM) |                    \
-	 1 << (___GFP_DMA | ___GFP_DMA32) |                      \
-	 1 << (___GFP_DMA32 | ___GFP_HIGHMEM) |                  \
-	 1 << (___GFP_DMA | ___GFP_DMA32 | ___GFP_HIGHMEM) |     \
-	 1 << (___GFP_MOVABLE | ___GFP_HIGHMEM | ___GFP_DMA) |   \
-	 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_DMA) |     \
-	 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_HIGHMEM) | \
-	 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_DMA | ___GFP_HIGHMEM))
-
 static inline enum zone_type gfp_zone(gfp_t flags)
 {
 	enum zone_type z;
@@ -116,7 +101,6 @@ static inline enum zone_type gfp_zone(gfp_t flags)
 
 	z = (GFP_ZONE_TABLE >> (bit * GFP_ZONES_SHIFT)) &
 	    ((1 << GFP_ZONES_SHIFT) - 1);
-	VM_BUG_ON((GFP_ZONE_BAD >> bit) & 1);
 	return z;
 }
 
@@ -136,18 +120,12 @@ struct folio *__folio_alloc(gfp_t gfp, unsigned int order, int preferred_nid);
 static inline struct page *__alloc_pages_node(int nid, gfp_t gfp_mask,
 					      unsigned int order)
 {
-	VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES);
-	VM_WARN_ON((gfp_mask & __GFP_THISNODE) && !node_online(nid));
-
 	return __alloc_pages(gfp_mask, order, nid);
 }
 
 static inline struct folio *__folio_alloc_node(gfp_t gfp, unsigned int order,
 					       int nid)
 {
-	VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES);
-	VM_WARN_ON((gfp & __GFP_THISNODE) && !node_online(nid));
-
 	return __folio_alloc(gfp, order, nid);
 }
 

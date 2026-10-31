@@ -32,8 +32,6 @@ asmlinkage noinstr void __noreturn doublefault_shim(void)
 
 	set_df_gdt_entry(smp_processor_id());
 
-	trace_hardirqs_off();
-
 	regs.ss = TSS(ss);
 	regs.__ssh = 0;
 	regs.sp = TSS(sp);

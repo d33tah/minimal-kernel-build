@@ -12,7 +12,6 @@ static struct console *console_drivers;
 
 void console_lock(void)
 {
-	might_sleep();
 	down(&console_sem);
 }
 

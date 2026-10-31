@@ -12,7 +12,6 @@ void page_add_new_anon_rmap(struct page *page, struct vm_area_struct *vma,
 {
 	const bool compound = PageCompound(page);
 
-	VM_BUG_ON_VMA(address < vma->vm_start || address >= vma->vm_end, vma);
 	__SetPageSwapBacked(page);
 	if (compound) {
 		atomic_set(compound_mapcount_ptr(page), 0);

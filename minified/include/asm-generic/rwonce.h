@@ -3,7 +3,8 @@
 
 #ifndef __ASSEMBLY__
 
-#include <linux/kasan-checks.h>
+#include <linux/types.h>
+#include <linux/stddef.h>
 
 #define compiletime_assert_rwonce_type(t)						compiletime_assert(__native_word(t) || sizeof(t) == sizeof(long long),			"Unsupported access size for {READ,WRITE}_ONCE().")
 
@@ -19,7 +20,6 @@
 
 static __no_kasan_or_inline
 unsigned long read_word_at_a_time(const void *addr) {
-	kasan_check_read(addr, 1);
 	return *(unsigned long *)addr; }
 
 #endif

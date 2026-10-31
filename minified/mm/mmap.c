@@ -1,5 +1,4 @@
 
-
 #include <linux/mman.h>
 #include <linux/file.h>
 #include <linux/security.h>
@@ -44,7 +43,6 @@ static int find_vma_links(struct mm_struct *mm, unsigned long addr,
 {
 	struct vm_area_struct *vma, *prev = NULL;
 
-	mmap_assert_locked(mm);
 	for (vma = mm->mmap; vma; prev = vma, vma = vma->vm_next) {
 		if (vma->vm_end > addr) {
 			if (vma->vm_start < end)
@@ -242,7 +240,6 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 {
 	struct vm_area_struct *vma;
 
-	mmap_assert_locked(mm);
 	for (vma = mm->mmap; vma; vma = vma->vm_next)
 		if (vma->vm_end > addr)
 			return vma;

@@ -6,7 +6,6 @@
 #include <linux/kdev_t.h>
 #include <linux/dcache.h>
 #include <linux/path.h>
-#include <linux/llist.h>
 #include <linux/gfp.h>
 #include <linux/xarray.h>
 #include <linux/capability.h>
@@ -97,7 +96,6 @@ struct address_space {
 	} while (0)
 
 #define IOP_LOOKUP 0x0002
-#define IOP_NOFOLLOW 0x0004
 
 struct inode {
 	umode_t i_mode;
@@ -107,22 +105,14 @@ struct inode {
 	const struct inode_operations *i_op;
 	struct super_block *i_sb;
 	struct address_space *i_mapping;
-	unsigned long i_ino;
-	union {
-		unsigned int __i_nlink;
-	};
 	dev_t i_rdev;
 	loff_t i_size;
 	spinlock_t i_lock;
-	u8 i_blkbits;
 	struct rw_semaphore i_rwsem;
-	struct hlist_node i_hash;
-	struct list_head i_lru;
 	union {
 		struct hlist_head i_dentry;
 		struct rcu_head i_rcu;
 	};
-	atomic_t i_count;
 	atomic_t i_writecount;
 	const struct file_operations *i_fop;
 	struct address_space i_data;
@@ -150,11 +140,6 @@ static inline void inode_lock_shared(struct inode *inode)
 static inline void inode_unlock_shared(struct inode *inode)
 {
 	up_read(&inode->i_rwsem);
-}
-
-static inline int inode_is_locked(struct inode *inode)
-{
-	return rwsem_is_locked(&inode->i_rwsem);
 }
 
 static inline void inode_lock_nested(struct inode *inode, unsigned subclass)
@@ -188,17 +173,14 @@ static inline void i_size_write(struct inode *inode, loff_t i_size)
 
 struct file {
 	union {
-		struct llist_node fu_llist;
 		struct rcu_head fu_rcuhead;
 	} f_u;
 	struct path f_path;
 	struct inode *f_inode;
 	const struct file_operations *f_op;
 	atomic_long_t f_count;
-	unsigned int f_flags;
 	fmode_t f_mode;
 	loff_t f_pos;
-	const struct cred *f_cred;
 	void *private_data;
 	struct address_space *f_mapping;
 } __randomize_layout __attribute__((aligned(4)));
@@ -223,12 +205,9 @@ static inline struct inode *file_inode(const struct file *f)
 }
 
 struct super_block {
-	unsigned char s_blocksize_bits;
 	loff_t s_maxbytes;
-	struct file_system_type *s_type;
 	struct dentry *s_root;
 	struct hlist_bl_head s_roots;
-	char s_id[32];
 	struct user_namespace *s_user_ns;
 } __randomize_layout;
 
@@ -360,8 +339,6 @@ static inline void init_sync_kiocb(struct kiocb *kiocb, struct file *filp)
 	};
 }
 
-extern void inc_nlink(struct inode *inode);
-
 struct file_system_type {
 	const char *name;
 	int (*init_fs_context)(struct fs_context *);
@@ -440,7 +417,6 @@ static inline void allow_write_access(struct file *file)
 }
 extern ssize_t kernel_read(struct file *, void *, size_t, loff_t *);
 extern ssize_t kernel_write(struct file *, const void *, size_t, loff_t *);
-extern unsigned int get_next_ino(void);
 extern struct inode *new_inode(struct super_block *sb);
 
 extern int generic_file_mmap(struct file *, struct vm_area_struct *);

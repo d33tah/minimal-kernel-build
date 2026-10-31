@@ -15,7 +15,6 @@ struct fs_context;
 
 struct vfsmount {
 	struct dentry *mnt_root;
-	struct super_block *mnt_sb;
 	struct user_namespace *mnt_userns;
 } __randomize_layout;
 

@@ -27,12 +27,8 @@ static int inode_init_always(struct super_block *sb, struct inode *inode)
 	struct address_space *const mapping = &inode->i_data;
 
 	inode->i_sb = sb;
-	inode->i_blkbits = sb->s_blocksize_bits;
-	atomic_set(&inode->i_count, 1);
 	inode->i_op = &empty_iops;
 	inode->i_fop = &no_open_fops;
-	inode->i_ino = 0;
-	inode->__i_nlink = 1;
 	inode->i_opflags = 0;
 	i_uid_write(inode, 0);
 	i_gid_write(inode, 0);
@@ -82,11 +78,6 @@ static struct inode *alloc_inode(struct super_block *sb)
 	return inode;
 }
 
-void inc_nlink(struct inode *inode)
-{
-	inode->__i_nlink++;
-}
-
 static void __address_space_init_once(struct address_space *mapping)
 {
 	xa_init_flags(&mapping->i_pages, XA_FLAGS_LOCK_IRQ | XA_FLAGS_ACCOUNT);
@@ -97,26 +88,8 @@ static void init_once(void *foo)
 	struct inode *inode = (struct inode *)foo;
 
 	memset(inode, 0, sizeof(*inode));
-	INIT_HLIST_NODE(&inode->i_hash);
-	INIT_LIST_HEAD(&inode->i_lru);
 	__address_space_init_once(&inode->i_data);
 	i_size_ordered_init(inode);
-}
-
-static DEFINE_PER_CPU(unsigned int, last_ino);
-
-unsigned int get_next_ino(void)
-{
-	unsigned int *p = &get_cpu_var(last_ino);
-	unsigned int res = *p;
-
-	res++;
-
-	if (unlikely(!res))
-		res++;
-	*p = res;
-	put_cpu_var(last_ino);
-	return res;
 }
 
 static struct inode *new_inode_pseudo(struct super_block *sb)

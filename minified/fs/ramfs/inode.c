@@ -15,7 +15,6 @@ static struct inode *ramfs_get_inode(struct super_block *sb,
 	struct inode *inode = new_inode(sb);
 
 	if (inode) {
-		inode->i_ino = get_next_ino();
 		inode_init_owner(&init_user_ns, inode, dir, mode);
 		inode->i_mapping->a_ops = &ram_aops;
 		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
@@ -29,8 +28,6 @@ static struct inode *ramfs_get_inode(struct super_block *sb,
 			break;
 		case S_IFDIR:
 			inode->i_op = &ramfs_dir_inode_operations;
-
-			inc_nlink(inode);
 		}
 	}
 	return inode;
@@ -53,10 +50,7 @@ static int ramfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 static int ramfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
 		       struct dentry *dentry, umode_t mode)
 {
-	int retval = ramfs_mknod(&init_user_ns, dir, dentry, mode | S_IFDIR, 0);
-	if (!retval)
-		inc_nlink(dir);
-	return retval;
+	return ramfs_mknod(&init_user_ns, dir, dentry, mode | S_IFDIR, 0);
 }
 
 static int ramfs_create(struct user_namespace *mnt_userns, struct inode *dir,
@@ -77,7 +71,6 @@ static int ramfs_fill_super(struct super_block *sb, struct fs_context *fc)
 	struct inode *inode;
 
 	sb->s_maxbytes = MAX_LFS_FILESIZE;
-	sb->s_blocksize_bits = PAGE_SHIFT;
 
 	inode = ramfs_get_inode(sb, NULL, S_IFDIR | RAMFS_DEFAULT_MODE, 0);
 	sb->s_root = d_make_root(inode);

@@ -31,10 +31,7 @@ static struct vfsmount *vfs_kern_mount(struct file_system_type *type)
 		put_fs_context(fc);
 		return ERR_PTR(err ?: -ENOMEM);
 	}
-	mnt->mnt_sb = fc->root->d_sb;
 	mnt->mnt_root = dget(fc->root);
-	if (!initial_idmapping(mnt->mnt_sb->s_user_ns))
-		mnt->mnt_userns = get_user_ns(mnt->mnt_sb->s_user_ns);
 
 	put_fs_context(fc);
 	return mnt;

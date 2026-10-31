@@ -1,102 +1,22 @@
 #ifndef _VT_KERN_H
 #define _VT_KERN_H
 
-#include <linux/vt.h>
-#include <linux/kd.h>
 #include <linux/tty.h>
 #include <linux/mm.h>
-#include <linux/consolemap.h>
 
-struct uni_pagedir;
-
-enum vc_intensity {
-	VCI_HALF_BRIGHT,
-	VCI_NORMAL,
-};
-
-struct vc_state {
-	unsigned int x, y;
-	unsigned char color;
-};
-
+/* The one virtual console: a text buffer of vc_rows x vc_cols cells. */
 struct vc_data {
-	struct vc_state state;
-
-	unsigned short vc_num;
+	const struct consw *vc_sw;
 	unsigned int vc_cols;
 	unsigned int vc_rows;
 	unsigned int vc_size_row;
-	unsigned int vc_cell_height;
+	unsigned int vc_x, vc_y;
 	unsigned long vc_origin;
-	unsigned long vc_scr_end;
-	unsigned long vc_visible_origin;
-	unsigned int vc_top, vc_bottom;
-	const struct consw *vc_sw;
-	unsigned short *vc_screenbuf;
-	unsigned int vc_screenbuf_size;
-	unsigned char vc_mode;
-	unsigned char vc_attr;
-	unsigned char vc_def_color;
-	unsigned int vc_cursor_type;
-	unsigned short vc_complement_mask;
-	unsigned short vc_s_complement_mask;
 	unsigned long vc_pos;
-	unsigned short vc_hi_font_mask;
-	unsigned short vc_video_erase_char;
-	unsigned int vc_npar;
-	unsigned int vc_disp_ctrl : 1;
-	unsigned int vc_decawm : 1;
-	unsigned int vc_deccm : 1;
+	unsigned short vc_erase_char;
 	unsigned int vc_need_wrap : 1;
-	unsigned int vc_can_do_color : 1;
-	unsigned char vc_utf : 1;
-	unsigned char vc_utf_count;
-	int vc_utf_char;
-	struct vc_data **vc_display_fg;
-	struct uni_pagedir *vc_uni_pagedir;
-	struct uni_pagedir **vc_uni_pagedir_loc;
 };
-
-struct vc {
-	struct vc_data *d;
-};
-
-extern struct vc vc_cons[MAX_NR_CONSOLES];
-
-#define CUR_SIZE(c) ((c) & 0x00000f)
-#define CUR_NONE 1
-#define CUR_UNDERLINE 2
-#define CUR_LOWER_THIRD 3
-#define CUR_LOWER_HALF 4
-#define CUR_TWO_THIRDS 5
-#define CUR_SW 0x000010
-#define CUR_ALWAYS_BG 0x000020
-#define CUR_INVERT_FG_BG 0x000040
-#define CUR_FG 0x000700
-#define CUR_BG 0x007000
-#define CUR_CHANGE(c) ((c) & 0x00ff00)
-#define CUR_SET(c) (((c) & 0xff0000) >> 8)
-
-bool con_is_visible(const struct vc_data *vc);
-
-extern int fg_console;
-
-int vc_allocate(unsigned int console);
-int vc_cons_allocated(unsigned int console);
-int vc_resize(struct vc_data *vc, unsigned int cols, unsigned int lines);
-void reset_palette(struct vc_data *vc);
-void unblank_screen(void);
-
-int con_set_default_unimap(struct vc_data *vc);
-void con_free_unimap(struct vc_data *vc);
 
 int vty_init(const struct file_operations *console_fops);
-
-extern int global_cursor_default;
-
-/* hide_boot_cursor, vt_do_diacrit, vt_do_kdskbmode, vt_do_kdskbmeta,
-   vt_do_kbkeycode_ioctl, vt_do_kdsk_ioctl, vt_do_kdgkb_ioctl, vt_do_kdskled,
-   vt_do_kdgkbmode, vt_do_kdgkbmeta, vt_get_shift_state, vt_get_leds,
-   vt_set_led_state removed - never called */
 
 #endif

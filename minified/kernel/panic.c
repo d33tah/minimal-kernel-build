@@ -2,7 +2,6 @@
 #include <linux/debug_locks.h>
 #include <linux/printk.h>
 #include <linux/kmsg_dump.h>
-#include <linux/vt_kern.h>
 #include <linux/delay.h>
 #include <linux/console.h>
 
@@ -48,7 +47,6 @@ void panic(const char *fmt, ...)
 	 */
 	kmsg_dump(KMSG_DUMP_PANIC);
 
-	unblank_screen();
 	console_unblank();
 
 	debug_locks_off();

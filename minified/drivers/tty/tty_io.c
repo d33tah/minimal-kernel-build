@@ -145,7 +145,7 @@ static struct tty_driver *tty_lookup_driver(dev_t device, int *index)
 	case MKDEV(TTY_MAJOR, 0): {
 		extern struct tty_driver *console_driver;
 
-		*index = fg_console;
+		*index = 0;
 		return console_driver;
 	}
 	case MKDEV(TTYAUX_MAJOR, 1):

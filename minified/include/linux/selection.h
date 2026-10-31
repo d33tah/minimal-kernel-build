@@ -19,29 +19,11 @@ static inline void scr_memsetw(u16 *s, u16 c, unsigned int count)
 }
 #endif
 
-#ifndef VT_BUF_HAVE_MEMCPYW
-static inline void scr_memcpyw(u16 *d, const u16 *s, unsigned int count)
-{
-	memcpy(d, s, count);
-}
-#endif
-
 #ifndef VT_BUF_HAVE_MEMMOVEW
 static inline void scr_memmovew(u16 *d, const u16 *s, unsigned int count)
 {
 	memmove(d, s, count);
 }
 #endif
-
-/* set_selection_user, set_selection_kernel, paste_selection, sel_loadlut,
- * mouse_reporting, mouse_report, clear_selection, vc_is_sel removed - never called */
-
-extern const unsigned char color_table[];
-extern unsigned char default_red[];
-extern unsigned char default_grn[];
-extern unsigned char default_blu[];
-
-/* complement_pos, invert_screen, screen_pos, screen_glyph, screen_glyph_unicode,
- * getconsxy, putconsxy, vcs_scr_readw, vcs_scr_writew, vcs_scr_updated removed - never called */
 
 #endif

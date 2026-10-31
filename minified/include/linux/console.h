@@ -7,25 +7,10 @@
 struct vc_data;
 struct module;
 
-enum con_scroll {
-	SM_UP,
-};
-
 struct consw {
 	const char *(*con_startup)(void);
-	void (*con_init)(struct vc_data *vc, int init);
-	void (*con_deinit)(struct vc_data *vc);
-	void (*con_putc)(struct vc_data *vc, int c, int ypos, int xpos);
-	void (*con_putcs)(struct vc_data *vc, const unsigned short *s,
-			  int count, int ypos, int xpos);
-	void (*con_cursor)(struct vc_data *vc, int mode);
-	bool (*con_scroll)(struct vc_data *vc, unsigned int top,
-			   unsigned int bottom, enum con_scroll dir,
-			   unsigned int lines);
-	int (*con_switch)(struct vc_data *vc);
-	int (*con_set_origin)(struct vc_data *vc);
-	void (*con_save_screen)(struct vc_data *vc);
-	u8 (*con_build_attr)(struct vc_data *vc, u8 color);
+	void (*con_init)(struct vc_data *vc);
+	void (*con_cursor)(struct vc_data *vc);
 };
 
 extern const struct consw *conswitchp;
@@ -33,10 +18,6 @@ extern const struct consw *conswitchp;
 /* dummy_con removed: the dummy console driver was structurally dead on this
  * build (conswitchp is always &vga_con; no fallback path reaches it). */
 extern const struct consw vga_con;
-
-#define CM_DRAW (1)
-#define CM_ERASE (2)
-#define CM_MOVE (3)
 
 #define CON_PRINTBUFFER (1)
 #define CON_CONSDEV (2)

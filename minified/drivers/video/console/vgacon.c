@@ -1,363 +1,86 @@
-
-#include <linux/module.h>
 #include <linux/console.h>
 #include <linux/vt_kern.h>
 #include <linux/selection.h>
+#include <linux/screen_info.h>
 #include <video/vga.h>
 
-static DEFINE_RAW_SPINLOCK(vga_lock);
-static int cursor_size_lastfrom;
-static int cursor_size_lastto;
-static struct vgastate vgastate;
+/*
+ * VGA text-mode console: finds the text buffer the BIOS left on screen and
+ * moves the hardware cursor. The vt layer writes characters, and scrolls,
+ * directly in this buffer (vc_origin is its first cell). The font, palette,
+ * cursor shape and video mode are left as the BIOS set them.
+ */
+static unsigned long vga_vram_base;
+static u16 vga_video_port_reg;
 
-static struct uni_pagedir *vgacon_uni_pagedir;
-static int vgacon_refcount;
-
-static unsigned long vga_vram_base __read_mostly;
-static unsigned int vga_vram_size __read_mostly;
-static u16 vga_video_port_reg __read_mostly;
-static u16 vga_video_port_val __read_mostly;
-static unsigned int vga_video_num_columns;
-static unsigned int vga_video_num_lines;
-static bool vga_can_do_color;
-static unsigned char vga_video_type __read_mostly;
-static int vga_video_font_height;
-
-static bool vga_hardscroll_enabled;
-
-static inline void write_vga(unsigned char reg, unsigned int val)
+static void write_vga(unsigned char reg, unsigned int val)
 {
-	unsigned int v1, v2;
-	unsigned long flags;
-
-	raw_spin_lock_irqsave(&vga_lock, flags);
-	v1 = reg + (val & 0xff00);
-	v2 = reg + 1 + ((val << 8) & 0xff00);
-	outw(v1, vga_video_port_reg);
-	outw(v2, vga_video_port_reg);
-	raw_spin_unlock_irqrestore(&vga_lock, flags);
+	outw(reg + (val & 0xff00), vga_video_port_reg);
+	outw(reg + 1 + ((val << 8) & 0xff00), vga_video_port_reg);
 }
 
-static inline void vga_set_mem_top(struct vc_data *c)
+static bool vgacon_probe_vram(volatile u16 *p)
 {
-	write_vga(12, (c->vc_visible_origin - vga_vram_base) / 2);
+	u16 saved1 = scr_readw(p), saved2 = scr_readw(p + 1);
+	bool ok;
+
+	scr_writew(0xAA55, p);
+	scr_writew(0x55AA, p + 1);
+	ok = scr_readw(p) == 0xAA55 && scr_readw(p + 1) == 0x55AA;
+	scr_writew(0x55AA, p);
+	scr_writew(0xAA55, p + 1);
+	ok = ok && scr_readw(p) == 0x55AA && scr_readw(p + 1) == 0xAA55;
+	scr_writew(saved1, p);
+	scr_writew(saved2, p + 1);
+	return ok;
 }
 
 static const char *vgacon_startup(void)
 {
-	const char *display_desc = NULL;
-	u16 saved1, saved2;
-	volatile u16 *p;
+	u8 mode = screen_info.orig_video_mode;
 
 	if (screen_info.orig_video_isVGA == VIDEO_TYPE_VLFB ||
-	    screen_info.orig_video_isVGA == VIDEO_TYPE_EFI) {
-no_vga:
-		/* No usable VGA: return NULL so vt's con_init bails out
-		 * (fg_console = 0). The dummy_con fallback was removed -- it
-		 * was structurally dead on this build (conswitchp is set to
-		 * &vga_con in setup_arch before con_init runs). */
+	    screen_info.orig_video_isVGA == VIDEO_TYPE_EFI ||
+	    !screen_info.orig_video_lines || !screen_info.orig_video_cols)
 		return NULL;
-	}
 
-	if ((screen_info.orig_video_lines == 0) ||
-	    (screen_info.orig_video_cols == 0))
-		goto no_vga;
+	/* Graphics modes have no text buffer. */
+	if (mode == 0x0D || mode == 0x0E || mode == 0x10 || mode == 0x12 ||
+	    mode == 0x6A)
+		return NULL;
 
-	if ((screen_info.orig_video_mode == 0x0D) ||
-	    (screen_info.orig_video_mode == 0x0E) ||
-	    (screen_info.orig_video_mode == 0x10) ||
-	    (screen_info.orig_video_mode == 0x12) ||
-	    (screen_info.orig_video_mode == 0x6A))
-		goto no_vga;
-
-	vga_video_num_lines = screen_info.orig_video_lines;
-	vga_video_num_columns = screen_info.orig_video_cols;
-	vgastate.vgabase = NULL;
-
-	if (screen_info.orig_video_mode == 7) {
-		vga_vram_base = 0xb0000;
+	if (mode == 7) {
+		vga_vram_base = VGA_MAP_MEM(0xb0000, 0x8000);
 		vga_video_port_reg = VGA_CRT_IM;
-		vga_video_port_val = VGA_CRT_DM;
-		if ((screen_info.orig_video_ega_bx & 0xff) != 0x10) {
-			vga_video_type = VIDEO_TYPE_EGAM;
-			vga_vram_size = 0x8000;
-			display_desc = "EGA+";
-		} else {
-			vga_video_type = VIDEO_TYPE_MDA;
-			vga_vram_size = 0x2000;
-			display_desc = "*MDA";
-			vga_video_font_height = 14;
-		}
 	} else {
-		vga_can_do_color = true;
-		vga_vram_base = 0xb8000;
+		vga_vram_base = VGA_MAP_MEM(0xb8000, 0x8000);
 		vga_video_port_reg = VGA_CRT_IC;
-		vga_video_port_val = VGA_CRT_DC;
-		if ((screen_info.orig_video_ega_bx & 0xff) != 0x10) {
-			int i;
-
-			vga_vram_size = 0x8000;
-
-			if (!screen_info.orig_video_isVGA) {
-				vga_video_type = VIDEO_TYPE_EGAC;
-				display_desc = "EGA";
-			} else {
-				vga_video_type = VIDEO_TYPE_VGAC;
-				display_desc = "VGA+";
-
-				for (i = 0; i < 16; i++) {
-					inb_p(VGA_IS1_RC);
-					outb_p(i, VGA_ATT_W);
-					outb_p(i, VGA_ATT_W);
-				}
-				outb_p(0x20, VGA_ATT_W);
-
-				for (i = 0; i < 16; i++) {
-					outb_p(color_table[i], VGA_PEL_IW);
-					outb_p(default_red[i], VGA_PEL_D);
-					outb_p(default_grn[i], VGA_PEL_D);
-					outb_p(default_blu[i], VGA_PEL_D);
-				}
-			}
-		} else {
-			vga_video_type = VIDEO_TYPE_CGA;
-			vga_vram_size = 0x2000;
-			display_desc = "*CGA";
-			vga_video_font_height = 8;
-		}
 	}
 
-	vga_vram_base = VGA_MAP_MEM(vga_vram_base, vga_vram_size);
+	if (!vgacon_probe_vram((volatile u16 *)vga_vram_base))
+		return NULL;
 
-	p = (volatile u16 *)vga_vram_base;
-	saved1 = scr_readw(p);
-	saved2 = scr_readw(p + 1);
-	scr_writew(0xAA55, p);
-	scr_writew(0x55AA, p + 1);
-	if (scr_readw(p) != 0xAA55 || scr_readw(p + 1) != 0x55AA) {
-		scr_writew(saved1, p);
-		scr_writew(saved2, p + 1);
-		goto no_vga;
-	}
-	scr_writew(0x55AA, p);
-	scr_writew(0xAA55, p + 1);
-	if (scr_readw(p) != 0x55AA || scr_readw(p + 1) != 0xAA55) {
-		scr_writew(saved1, p);
-		scr_writew(saved2, p + 1);
-		goto no_vga;
-	}
-	scr_writew(saved1, p);
-	scr_writew(saved2, p + 1);
-
-	if (vga_video_type == VIDEO_TYPE_EGAC ||
-	    vga_video_type == VIDEO_TYPE_VGAC ||
-	    vga_video_type == VIDEO_TYPE_EGAM) {
-		vga_hardscroll_enabled = true;
-		vga_video_font_height = screen_info.orig_video_points;
-	}
-
-	return display_desc;
+	/* Show the buffer from its first cell. */
+	write_vga(12, 0);
+	return mode == 7 ? "MDA/EGA mono" : "VGA+";
 }
 
-static void vgacon_init(struct vc_data *c, int init)
+static void vgacon_init(struct vc_data *c)
 {
-	struct uni_pagedir *p;
-
-	c->vc_can_do_color = vga_can_do_color;
-	c->vc_cell_height = vga_video_font_height;
-
-	if (init) {
-		c->vc_cols = vga_video_num_columns;
-		c->vc_rows = vga_video_num_lines;
-	} else
-		vc_resize(c, vga_video_num_columns, vga_video_num_lines);
-
-	c->vc_complement_mask = 0x7700;
-	p = *c->vc_uni_pagedir_loc;
-	if (c->vc_uni_pagedir_loc != &vgacon_uni_pagedir) {
-		con_free_unimap(c);
-		c->vc_uni_pagedir_loc = &vgacon_uni_pagedir;
-		vgacon_refcount++;
-	}
-	if (!vgacon_uni_pagedir && p)
-		con_set_default_unimap(c);
-
-	if (global_cursor_default == -1)
-		global_cursor_default =
-			!(screen_info.flags & VIDEO_FLAGS_NOCURSOR);
+	c->vc_cols = screen_info.orig_video_cols;
+	c->vc_rows = screen_info.orig_video_lines;
+	c->vc_origin = vga_vram_base;
+	c->vc_x = screen_info.orig_x;
+	c->vc_y = screen_info.orig_y;
 }
 
-static void vgacon_deinit(struct vc_data *c)
+static void vgacon_cursor(struct vc_data *c)
 {
-	/*
-	 * .con_deinit teardown callback (console unbind). On a boot-once
-	 * artifact the VGA console is never unbound, so this never fires
-	 * (HIT=False). Stubbed empty: the symbol is kept for the
-	 * vga_con.con_deinit fn-ptr; the unmap/refcount teardown is dead.
-	 */
-}
-
-static u8 vgacon_build_attr(struct vc_data *c, u8 color)
-{
-	return color;
-}
-
-static void vgacon_set_cursor_size(int xpos, int from, int to)
-{
-	unsigned long flags;
-	int curs, cure;
-
-	if ((from == cursor_size_lastfrom) && (to == cursor_size_lastto))
-		return;
-	cursor_size_lastfrom = from;
-	cursor_size_lastto = to;
-
-	raw_spin_lock_irqsave(&vga_lock, flags);
-	if (vga_video_type >= VIDEO_TYPE_VGAC) {
-		outb_p(VGA_CRTC_CURSOR_START, vga_video_port_reg);
-		curs = inb_p(vga_video_port_val);
-		outb_p(VGA_CRTC_CURSOR_END, vga_video_port_reg);
-		cure = inb_p(vga_video_port_val);
-	} else {
-		curs = 0;
-		cure = 0;
-	}
-
-	curs = (curs & 0xc0) | from;
-	cure = (cure & 0xe0) | to;
-
-	outb_p(VGA_CRTC_CURSOR_START, vga_video_port_reg);
-	outb_p(curs, vga_video_port_val);
-	outb_p(VGA_CRTC_CURSOR_END, vga_video_port_reg);
-	outb_p(cure, vga_video_port_val);
-	raw_spin_unlock_irqrestore(&vga_lock, flags);
-}
-
-static void vgacon_cursor(struct vc_data *c, int mode)
-{
-	if (c->vc_mode != KD_TEXT)
-		return;
-
-	switch (mode) {
-	case CM_ERASE:
-		write_vga(14, (c->vc_pos - vga_vram_base) / 2);
-		if (vga_video_type >= VIDEO_TYPE_VGAC)
-			vgacon_set_cursor_size(c->state.x, 31, 30);
-		else
-			vgacon_set_cursor_size(c->state.x, 31, 31);
-		break;
-
-	case CM_MOVE:
-	case CM_DRAW:
-		write_vga(14, (c->vc_pos - vga_vram_base) / 2);
-		switch (CUR_SIZE(c->vc_cursor_type)) {
-		case CUR_UNDERLINE:
-			vgacon_set_cursor_size(
-				c->state.x,
-				c->vc_cell_height -
-					(c->vc_cell_height < 10 ? 2 : 3),
-				c->vc_cell_height -
-					(c->vc_cell_height < 10 ? 1 : 2));
-			break;
-		case CUR_TWO_THIRDS:
-			vgacon_set_cursor_size(
-				c->state.x, c->vc_cell_height / 3,
-				c->vc_cell_height -
-					(c->vc_cell_height < 10 ? 1 : 2));
-			break;
-		case CUR_LOWER_THIRD:
-			vgacon_set_cursor_size(
-				c->state.x, (c->vc_cell_height * 2) / 3,
-				c->vc_cell_height -
-					(c->vc_cell_height < 10 ? 1 : 2));
-			break;
-		case CUR_LOWER_HALF:
-			vgacon_set_cursor_size(
-				c->state.x, c->vc_cell_height / 2,
-				c->vc_cell_height -
-					(c->vc_cell_height < 10 ? 1 : 2));
-			break;
-		case CUR_NONE:
-			if (vga_video_type >= VIDEO_TYPE_VGAC)
-				vgacon_set_cursor_size(c->state.x, 31, 30);
-			else
-				vgacon_set_cursor_size(c->state.x, 31, 31);
-			break;
-		default:
-			vgacon_set_cursor_size(c->state.x, 1,
-					       c->vc_cell_height);
-		}
-	}
-}
-
-static int vgacon_switch(struct vc_data *c)
-{
-	vga_video_num_columns = c->vc_cols;
-	vga_video_num_lines = c->vc_rows;
-
-	scr_memcpyw((u16 *)c->vc_origin, (u16 *)c->vc_screenbuf,
-		    c->vc_screenbuf_size > vga_vram_size ?
-			    vga_vram_size :
-			    c->vc_screenbuf_size);
-
-	return 0;
-}
-
-static int vgacon_set_origin(struct vc_data *c)
-{
-	c->vc_origin = c->vc_visible_origin = vga_vram_base;
-	vga_set_mem_top(c);
-	return 1;
-}
-
-static void vgacon_save_screen(struct vc_data *c)
-{
-	static int vga_bootup_console = 0;
-
-	if (!vga_bootup_console) {
-		vga_bootup_console = 1;
-		c->state.x = screen_info.orig_x;
-		c->state.y = screen_info.orig_y;
-	}
-
-	scr_memcpyw((u16 *)c->vc_screenbuf, (u16 *)c->vc_origin,
-		    c->vc_screenbuf_size > vga_vram_size ?
-			    vga_vram_size :
-			    c->vc_screenbuf_size);
-}
-
-static bool vgacon_scroll(struct vc_data *c, unsigned int t, unsigned int b,
-			  enum con_scroll dir, unsigned int lines)
-{
-	/*
-	 * Runtime-dead anchor-stub: the VGA hardware-scroll optimization never
-	 * fires on a 1-shot boot that prints two short strings and never wraps
-	 * the screen (HIT=False). Returning false makes the vt layer fall back
-	 * to its software scroll (scr_memmovew/scr_memsetw in con_scroll),
-	 * which is behavior-preserving. Symbol kept for the .con_scroll fn-ptr
-	 * in vga_con.
-	 */
-	return false;
-}
-
-static void vgacon_putc(struct vc_data *vc, int c, int ypos, int xpos)
-{
-}
-static void vgacon_putcs(struct vc_data *vc, const unsigned short *s, int count,
-			 int ypos, int xpos)
-{
+	write_vga(14, (c->vc_pos - vga_vram_base) / 2);
 }
 
 const struct consw vga_con = {
 	.con_startup = vgacon_startup,
 	.con_init = vgacon_init,
-	.con_deinit = vgacon_deinit,
-	.con_putc = vgacon_putc,
-	.con_putcs = vgacon_putcs,
 	.con_cursor = vgacon_cursor,
-	.con_scroll = vgacon_scroll,
-	.con_switch = vgacon_switch,
-	.con_set_origin = vgacon_set_origin,
-	.con_save_screen = vgacon_save_screen,
-	.con_build_attr = vgacon_build_attr,
 };

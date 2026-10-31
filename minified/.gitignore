@@ -51,8 +51,6 @@ scripts/sorttable
 usr/.gen_init_cpio.cmd
 usr/.initramfs_data.cpio.cmd
 usr/.initramfs_data.cpio.d
-usr/.initramfs_inc_data.cmd
 usr/gen_init_cpio
 usr/initramfs_data.cpio
-usr/initramfs_inc_data
 vmlinux

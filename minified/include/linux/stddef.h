@@ -2,9 +2,6 @@
 #define _LINUX_STDDEF_H
 
 /* Inlined from uapi/linux/stddef.h */
-#ifndef __always_inline
-#define __always_inline inline
-#endif
 
 /* Removed: __struct_group / __DECLARE_FLEX_ARRAY - 0 invocation sites tree-wide */
 

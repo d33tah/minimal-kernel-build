@@ -22,19 +22,13 @@ typedef unsigned long		uintptr_t;
 
 typedef __kernel_loff_t		loff_t;
 
-#ifndef _SIZE_T
 #define _SIZE_T
 typedef __kernel_size_t		size_t;
-#endif
 
-#ifndef _SSIZE_T
 #define _SSIZE_T
 typedef __kernel_ssize_t	ssize_t;
-#endif
 
-#ifndef _PTRDIFF_T
 #define _PTRDIFF_T
-#endif
 
 typedef u8			uint8_t;
 typedef u16			uint16_t;

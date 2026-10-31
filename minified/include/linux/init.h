@@ -33,10 +33,8 @@ extern initcall_entry_t __con_initcall_start[], __con_initcall_end[];
 void setup_arch(void);
 extern struct file_system_type rootfs_fs_type;
 
-
 #endif
   
-#ifndef MODULE
 
 #ifndef __ASSEMBLY__
 
@@ -63,8 +61,6 @@ extern struct file_system_type rootfs_fs_type;
 #define rootfs_initcall(fn)		__define_initcall(fn, rootfs)
 
 #define console_initcall(fn)	___define_initcall(fn, con, .con_initcall)
-#endif
-
 #endif
 
 #endif

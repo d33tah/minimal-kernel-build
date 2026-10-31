@@ -3,16 +3,8 @@
 
 #include <asm/asm.h>
 
-#ifdef __ASSEMBLY__
-
 .macro ENCODE_FRAME_POINTER ptregs_offset=0
 .endm
-
-#else
-
-#define ENCODE_FRAME_POINTER
-
-#endif
 
 #define FRAME_BEGIN
 #define FRAME_END

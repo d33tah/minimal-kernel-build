@@ -1,37 +1,26 @@
 #ifndef __LINUX_COMPILER_H
 #define __LINUX_COMPILER_H
 
-
 #ifndef __ASSEMBLY__
 
 # define likely(x)	__builtin_expect(!!(x), 1)
 # define unlikely(x)	__builtin_expect(!!(x), 0)
 
-#ifndef barrier
 # define barrier() __asm__ __volatile__("": : :"memory")
-#endif
 
 #define annotate_unreachable()
 
-#ifndef unreachable
 # define unreachable() do {		\
 	annotate_unreachable();		\
 	__builtin_unreachable();	\
 } while (0)
-#endif
 
-#ifndef RELOC_HIDE
 # define RELOC_HIDE(ptr, off)					\
   ({ unsigned long __ptr;					\
      __ptr = (unsigned long) (ptr);				\
     (typeof(ptr)) (__ptr + (off)); })
-#endif
 
 #define absolute_pointer(val)	RELOC_HIDE((void *)(val), 0)
-
-#ifndef __UNIQUE_ID
-# define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __LINE__)
-#endif
 
 #define ASSERT_EXCLUSIVE_BITS(var, mask) do { } while (0)
 

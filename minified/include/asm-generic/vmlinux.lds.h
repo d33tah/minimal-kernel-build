@@ -86,12 +86,9 @@
 
 #define STATIC_CALL_DATA
 
-#ifndef RO_AFTER_INIT_DATA
 #define RO_AFTER_INIT_DATA							. = ALIGN(8);								__start_ro_after_init = .;						*(.data..ro_after_init)							STATIC_CALL_DATA							__end_ro_after_init = .;
-#endif
 
 #define RO_DATA(align)								. = ALIGN((align));							.rodata           : AT(ADDR(.rodata) - LOAD_OFFSET) {				__start_rodata = .;							*(.rodata) *(.rodata.*)				RO_AFTER_INIT_DATA	 			. = ALIGN(8);								__start___tracepoints_ptrs = .;						KEEP(*(__tracepoints_ptrs))   		__stop___tracepoints_ptrs = .;						*(__tracepoints_strings) 		}																		.rodata1          : AT(ADDR(.rodata1) - LOAD_OFFSET) {				*(.rodata1)							}																		 							.pci_fixup        : AT(ADDR(.pci_fixup) - LOAD_OFFSET) {			__start_pci_fixups_early = .;						KEEP(*(.pci_fixup_early))						__end_pci_fixups_early = .;						__start_pci_fixups_header = .;						KEEP(*(.pci_fixup_header))						__end_pci_fixups_header = .;						__start_pci_fixups_final = .;						KEEP(*(.pci_fixup_final))						__end_pci_fixups_final = .;						__start_pci_fixups_enable = .;						KEEP(*(.pci_fixup_enable))						__end_pci_fixups_enable = .;						__start_pci_fixups_resume = .;						KEEP(*(.pci_fixup_resume))						__end_pci_fixups_resume = .;						__start_pci_fixups_resume_early = .;					KEEP(*(.pci_fixup_resume_early))					__end_pci_fixups_resume_early = .;					__start_pci_fixups_suspend = .;						KEEP(*(.pci_fixup_suspend))						__end_pci_fixups_suspend = .;						__start_pci_fixups_suspend_late = .;					KEEP(*(.pci_fixup_suspend_late))					__end_pci_fixups_suspend_late = .;				}																		FW_LOADER_BUILT_IN_DATA							TRACEDATA																	PRINTK_INDEX																	 				__ksymtab         : AT(ADDR(__ksymtab) - LOAD_OFFSET) {				__start___ksymtab = .;							KEEP(*(SORT(___ksymtab+*)))						__stop___ksymtab = .;						}																		 				__ksymtab_gpl     : AT(ADDR(__ksymtab_gpl) - LOAD_OFFSET) {			__start___ksymtab_gpl = .;						KEEP(*(SORT(___ksymtab_gpl+*)))						__stop___ksymtab_gpl = .;					}																		 				__kcrctab         : AT(ADDR(__kcrctab) - LOAD_OFFSET) {				__start___kcrctab = .;							KEEP(*(SORT(___kcrctab+*)))						__stop___kcrctab = .;						}																		 				__kcrctab_gpl     : AT(ADDR(__kcrctab_gpl) - LOAD_OFFSET) {			__start___kcrctab_gpl = .;						KEEP(*(SORT(___kcrctab_gpl+*)))						__stop___kcrctab_gpl = .;					}																		 				        __ksymtab_strings : AT(ADDR(__ksymtab_strings) - LOAD_OFFSET) {			*(__ksymtab_strings)						}																		 							__init_rodata : AT(ADDR(__init_rodata) - LOAD_OFFSET) {				*(.ref.rodata)								MEM_KEEP(init.rodata)							MEM_KEEP(exit.rodata)						}																		 					__param : AT(ADDR(__param) - LOAD_OFFSET) {					__start___param = .;							KEEP(*(__param))							__stop___param = .;						}																		 						__modver : AT(ADDR(__modver) - LOAD_OFFSET) {					__start___modver = .;							KEEP(*(__modver))							__stop___modver = .;						}																		RO_EXCEPTION_TABLE							NOTES									BTF																		. = ALIGN((align));							__end_rodata = .;
-
 
 #define TEXT_CFI_JT
 
@@ -108,7 +105,6 @@
 #define KPROBES_TEXT									ALIGN_FUNCTION();							__kprobes_text_start = .;						*(.kprobes.text)							__kprobes_text_end = .;
 
 #define ENTRY_TEXT									ALIGN_FUNCTION();							__entry_text_start = .;							*(.entry.text)								__entry_text_end = .;
-
 
 #define STATIC_CALL_TEXT								ALIGN_FUNCTION();							__static_call_text_start = .;						*(.static_call.text)							__static_call_text_end = .;
 
@@ -161,7 +157,6 @@
 
 #define PERCPU_DECRYPTED_SECTION
 
-
 #ifdef RUNTIME_DISCARD_EXIT
 #define EXIT_DISCARDS
 #else
@@ -176,9 +171,6 @@
 #define PERCPU_INPUT(cacheline)							__per_cpu_start = .;							*(.data..percpu..first)							. = ALIGN(PAGE_SIZE);							*(.data..percpu..page_aligned)						. = ALIGN(cacheline);							*(.data..percpu..read_mostly)						. = ALIGN(cacheline);							*(.data..percpu)							*(.data..percpu..shared_aligned)					PERCPU_DECRYPTED_SECTION						__per_cpu_end = .;
 
 #define PERCPU_SECTION(cacheline)						. = ALIGN(PAGE_SIZE);							.data..percpu	: AT(ADDR(.data..percpu) - LOAD_OFFSET) {			__per_cpu_load = .;							PERCPU_INPUT(cacheline)						}
-
-
-
 
 #define INIT_TEXT_SECTION(inittext_align)					. = ALIGN(inittext_align);						.init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {				_sinittext = .;								INIT_TEXT								_einittext = .;							}
 

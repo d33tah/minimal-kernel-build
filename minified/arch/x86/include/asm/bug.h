@@ -14,8 +14,6 @@
 
 /* --- 2025-12-07 10:25 --- Inlined asm-generic/bug.h content */
 
-#ifndef __ASSEMBLY__
-
 #define BUG_ON(condition)                \
 	do {                             \
 		if (unlikely(condition)) \
@@ -28,17 +26,13 @@
 		unlikely(__ret_warn_on);           \
 	})
 
-#ifndef WARN
 #define WARN(condition, format...)                 \
 	({                                         \
 		int __ret_warn_on = !!(condition); \
 		unlikely(__ret_warn_on);           \
 	})
-#endif
 
 #define WARN_ON_ONCE(condition) WARN_ON(condition)
 #define WARN_ONCE(condition, format...) WARN(condition, format)
-
-#endif /* __ASSEMBLY__ */
 
 #endif

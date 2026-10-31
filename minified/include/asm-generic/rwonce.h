@@ -8,9 +8,7 @@
 
 #define compiletime_assert_rwonce_type(t)						compiletime_assert(__native_word(t) || sizeof(t) == sizeof(long long),			"Unsupported access size for {READ,WRITE}_ONCE().")
 
-#ifndef __READ_ONCE
 #define __READ_ONCE(x)	(*(const volatile __unqual_scalar_typeof(x) *)&(x))
-#endif
 
 #define READ_ONCE(x)							({										compiletime_assert_rwonce_type(x);					__READ_ONCE(x);							})
 

@@ -1,8 +1,6 @@
 #ifndef __LINUX_COMPILER_TYPES_H
 #define __LINUX_COMPILER_TYPES_H
 
-#ifndef __ASSEMBLY__
-
 # define BTF_TYPE_TAG(value)
 
 # define __kernel
@@ -79,17 +77,11 @@
  */
 # define __no_kcsan
 
-#ifndef __no_sanitize_or_inline
 #define __no_sanitize_or_inline __always_inline
-#endif
 
 #define noinstr									noinline notrace __attribute((__section__(".noinstr.text")))		__no_kcsan __no_sanitize_address __no_profile __no_sanitize_coverage
 
-#endif  
-
-#ifndef __latent_entropy
 # define __latent_entropy
-#endif
 
 /* RANDSTRUCT gcc-plugin is unconfigured in this build (CONFIG_RANDSTRUCT unset;
  * scripts/Makefile.randstruct absent, so RANDSTRUCT is never -D'd) => the
@@ -98,19 +90,9 @@
 # define randomized_struct_fields_start
 # define randomized_struct_fields_end
 
-#ifndef __nocfi
-# define __nocfi
-#endif
-
-#ifdef __alloc_size__
 # define __alloc_size(x, ...)	__alloc_size__(x, ## __VA_ARGS__) __malloc
-#else
-# define __alloc_size(x, ...)	__malloc
-#endif
 
-#ifndef asm_volatile_goto
 #define asm_volatile_goto(x...) asm goto(x)
-#endif
 
 #define asm_inline asm __inline
 
@@ -141,16 +123,6 @@
 
 #define compiletime_assert_atomic_type(t)					compiletime_assert(__native_word(t),						"Need native word sized stores/loads for atomicity.")
 
-#ifndef __diag
-#define __diag(string)
-#endif
-
-#ifndef __diag_GCC
 #define __diag_GCC(version, severity, string)
-#endif
-
-#ifndef __diag_ignore_all
-#define __diag_ignore_all(option, comment)
-#endif
 
 #endif  

@@ -1,8 +1,6 @@
 #ifndef __LINUX_BITMAP_H
 #define __LINUX_BITMAP_H
 
-#ifndef __ASSEMBLY__
-
 #include <linux/kernel.h>
 
 /*
@@ -41,7 +39,5 @@ static inline bool bitmap_empty(const unsigned long *src, unsigned nbits)
 {
 	return !(*src & BITMAP_LAST_WORD_MASK(nbits));
 }
-
-#endif
 
 #endif

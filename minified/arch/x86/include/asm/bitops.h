@@ -180,11 +180,6 @@ static __always_inline void __clear_bit(long nr, volatile unsigned long *addr)
 	arch___clear_bit(nr, addr);
 }
 
-static __always_inline void
-__instrument_read_write_bitop(long nr, volatile unsigned long *addr)
-{
-}
-
 static __always_inline bool test_bit(long nr,
 				     const volatile unsigned long *addr)
 {

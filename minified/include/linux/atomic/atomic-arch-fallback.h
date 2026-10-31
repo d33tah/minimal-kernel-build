@@ -34,12 +34,6 @@ static __always_inline bool arch_atomic_add_unless(atomic_t *v, int a, int u)
 }
 #define arch_atomic_add_unless arch_atomic_add_unless
 
-static __always_inline bool arch_atomic_inc_not_zero(atomic_t *v)
-{
-	return arch_atomic_add_unless(v, 1, 0);
-}
-#define arch_atomic_inc_not_zero arch_atomic_inc_not_zero
-
 static __always_inline bool arch_atomic_inc_unless_negative(atomic_t *v)
 {
 	int c = arch_atomic_read(v);
@@ -65,19 +59,5 @@ static __always_inline bool arch_atomic_dec_unless_positive(atomic_t *v)
 	return true;
 }
 #define arch_atomic_dec_unless_positive arch_atomic_dec_unless_positive
-
-static __always_inline int arch_atomic_dec_if_positive(atomic_t *v)
-{
-	int dec, c = arch_atomic_read(v);
-
-	do {
-		dec = c - 1;
-		if (unlikely(dec < 0))
-			break;
-	} while (!arch_atomic_try_cmpxchg(v, &c, dec));
-
-	return dec;
-}
-#define arch_atomic_dec_if_positive arch_atomic_dec_if_positive
 
 #endif

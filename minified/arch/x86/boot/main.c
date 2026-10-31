@@ -33,34 +33,13 @@ static void copy_boot_params(void)
 	}
 }
 
-static void keyboard_init(void)
-{
-	struct biosregs ireg, oreg;
-	initregs(&ireg);
-
-	ireg.ah = 0x02;
-	intcall(0x16, &ireg, &oreg);
-	boot_params.kbd_status = oreg.al;
-
-	ireg.ax = 0x0305;
-	intcall(0x16, &ireg, NULL);
-}
-
-static void set_bios_mode(void)
-{
-}
-
 void main(void)
 {
 	init_default_io_ops();
 
 	copy_boot_params();
 
-	set_bios_mode();
-
 	detect_memory();
-
-	keyboard_init();
 
 	set_video();
 

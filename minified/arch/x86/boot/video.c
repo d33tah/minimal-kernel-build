@@ -16,12 +16,6 @@ static void store_cursor_position(void)
 
 	boot_params.screen_info.orig_x = oreg.dl;
 	boot_params.screen_info.orig_y = oreg.dh;
-
-	if (oreg.ch & 0x20)
-		boot_params.screen_info.flags |= VIDEO_FLAGS_NOCURSOR;
-
-	if ((oreg.ch & 0x1f) > (oreg.cl & 0x1f))
-		boot_params.screen_info.flags |= VIDEO_FLAGS_NOCURSOR;
 }
 
 static void store_video_mode(void)
@@ -33,21 +27,16 @@ static void store_video_mode(void)
 	intcall(0x10, &ireg, &oreg);
 
 	boot_params.screen_info.orig_video_mode = oreg.al & 0x7f;
-	boot_params.screen_info.orig_video_page = oreg.bh;
 }
 
 static void store_mode_params(void)
 {
-	u16 font_size;
 	int x, y;
 
 	store_cursor_position();
 	store_video_mode();
 
 	set_fs(0);
-	font_size = rdfs16(0x485);
-	boot_params.screen_info.orig_video_points = font_size;
-
 	x = rdfs16(0x44a);
 	y = (adapter == ADAPTER_CGA) ? 25 : rdfs8(0x484) + 1;
 
@@ -55,7 +44,10 @@ static void store_mode_params(void)
 	boot_params.screen_info.orig_video_lines = y;
 }
 
-/* Fills orig_video_ega_bx/orig_video_isVGA for vgacon; no mode switch. */
+/*
+ * vgacon reads orig_video_mode/isVGA/cols/lines/orig_x/orig_y; the CGA
+ * check decides how many lines there are. No mode switch.
+ */
 static void detect_adapter(void)
 {
 	struct biosregs ireg, oreg;
@@ -64,8 +56,6 @@ static void detect_adapter(void)
 	ireg.ax = 0x1200;
 	ireg.bl = 0x10;
 	intcall(0x10, &ireg, &oreg);
-
-	boot_params.screen_info.orig_video_ega_bx = oreg.bx;
 
 	if (oreg.bl != 0x10) {
 		ireg.ax = 0x1a00;

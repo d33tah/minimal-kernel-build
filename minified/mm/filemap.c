@@ -102,23 +102,11 @@ struct folio *__filemap_get_folio(struct address_space *mapping, pgoff_t index,
 
 repeat:
 	folio = mapping_get_entry(mapping, index);
-	if (xa_is_value(folio)) {
-		if (fgp_flags & FGP_ENTRY)
-			return folio;
-		folio = NULL;
-	}
 	if (!folio)
 		goto no_page;
 
 	if (fgp_flags & FGP_LOCK) {
-		if (fgp_flags & FGP_NOWAIT) {
-			if (!folio_trylock(folio)) {
-				folio_put(folio);
-				return NULL;
-			}
-		} else {
-			folio_lock(folio);
-		}
+		folio_lock(folio);
 
 		if (unlikely(folio->mapping != mapping)) {
 			folio_unlock(folio);
@@ -130,15 +118,10 @@ repeat:
 no_page:
 	if (!folio && (fgp_flags & FGP_CREAT)) {
 		int err;
-		if (fgp_flags & FGP_NOFS)
-			gfp &= ~__GFP_FS;
 
 		folio = filemap_alloc_folio(gfp, 0);
 		if (!folio)
 			return NULL;
-
-		if (WARN_ON_ONCE(!(fgp_flags & (FGP_LOCK | FGP_FOR_MMAP))))
-			fgp_flags |= FGP_LOCK;
 
 		err = filemap_add_folio(mapping, folio, index, gfp);
 		if (unlikely(err)) {
@@ -175,8 +158,6 @@ static void filemap_get_read_batch(struct address_space *mapping, pgoff_t index,
 		if (!folio_batch_add(fbatch, folio))
 			break;
 		if (!folio_test_uptodate(folio))
-			break;
-		if (folio_test_readahead(folio))
 			break;
 		xas_advance(&xas, folio->index + folio_nr_pages(folio) - 1);
 		continue;

@@ -36,11 +36,8 @@ static inline struct folio *filemap_alloc_folio(gfp_t gfp, unsigned int order)
 #define FGP_LOCK 0x00000002
 #define FGP_CREAT 0x00000004
 #define FGP_WRITE 0x00000008
-#define FGP_NOFS 0x00000010
-#define FGP_NOWAIT 0x00000020
 #define FGP_FOR_MMAP 0x00000040
 #define FGP_HEAD 0x00000080
-#define FGP_ENTRY 0x00000100
 #define FGP_STABLE 0x00000200
 
 struct folio *__filemap_get_folio(struct address_space *mapping, pgoff_t index,

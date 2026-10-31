@@ -32,8 +32,6 @@ enum pageflags {
 	PG_mlocked,
 	__NR_PAGEFLAGS,
 
-	PG_readahead = PG_reclaim,
-
 	PG_anon_exclusive = PG_mappedtodisk,
 
 	/* PG_checked, PG_swapcache, PG_fscache, PG_double_map, PG_isolated, PG_reported, PG_pinned, PG_savepinned, PG_foreign, PG_xen_remapped, PG_slob_free removed - unused */
@@ -226,8 +224,6 @@ PAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 	__CLEARPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 	__SETPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 /* PAGEFLAG(Private)/TESTPAGEFLAG+TESTSCFLAG(Writeback)/PAGEFLAG(Reclaim) removed - 0 callers */
-PAGEFLAG(Readahead, readahead, PF_NO_COMPOUND)
-/* TESTCLEARFLAG(Readahead, ...) removed - never used */
 /* clang-format on */
 
 #define __PG_HWPOISON 0
@@ -236,7 +232,8 @@ PAGEFLAG(Readahead, readahead, PF_NO_COMPOUND)
 #define PAGE_MAPPING_MOVABLE 0x2
 #define PAGE_MAPPING_FLAGS (PAGE_MAPPING_ANON | PAGE_MAPPING_MOVABLE)
 
-		static __always_inline int PageMappingFlags(struct page *page)
+							static __always_inline
+	int PageMappingFlags(struct page *page)
 {
 	return ((unsigned long)page->mapping & PAGE_MAPPING_FLAGS) != 0;
 }

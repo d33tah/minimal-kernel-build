@@ -101,9 +101,14 @@ static unsigned long native_calibrate_cpu_early(void)
 	return fast_calibrate;
 }
 
-static bool __init determine_cpu_tsc_frequencies(bool early)
+static bool __init determine_cpu_tsc_frequencies(void)
 {
-	/* Only the early CPUID-based calibration path survives on this build. */
+	/*
+	 * Only the early quick-PIT calibration (native_calibrate_cpu_early())
+	 * survives on this build; the late re-calibration is gone. When it
+	 * fails, tsc_early_init() and tsc_init() return early and the
+	 * jiffies-calibrated delay loop stays in use.
+	 */
 	cpu_khz = native_calibrate_cpu_early();
 	tsc_khz = cpu_khz;
 
@@ -132,7 +137,7 @@ void __init tsc_early_init(void)
 	if (!boot_cpu_has(X86_FEATURE_TSC))
 		return;
 
-	if (!determine_cpu_tsc_frequencies(true))
+	if (!determine_cpu_tsc_frequencies())
 		return;
 	tsc_enable_sched_clock();
 }

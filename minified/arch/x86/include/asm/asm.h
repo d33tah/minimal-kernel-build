@@ -1,36 +1,37 @@
- 
+
 #ifndef _ASM_X86_ASM_H
 #define _ASM_X86_ASM_H
 
 #ifdef __ASSEMBLY__
-# define __ASM_FORM(x, ...)		x,## __VA_ARGS__
-# define __ASM_FORM_RAW(x, ...)		x,## __VA_ARGS__
+#define __ASM_FORM(x, ...) x, ##__VA_ARGS__
+#define __ASM_FORM_RAW(x, ...) x, ##__VA_ARGS__
 #else
 #include <linux/stringify.h>
-# define __ASM_FORM(x, ...)		" " __stringify(x,##__VA_ARGS__) " "
-# define __ASM_FORM_RAW(x, ...)		    __stringify(x,##__VA_ARGS__)
+#define __ASM_FORM(x, ...) " " __stringify(x, ##__VA_ARGS__) " "
+#define __ASM_FORM_RAW(x, ...) __stringify(x, ##__VA_ARGS__)
 #endif
 
 /* 32-bit only kernel */
-#define __ASM_SEL(a,b)		__ASM_FORM(a)
-#define __ASM_SEL_RAW(a,b)	__ASM_FORM_RAW(a)
+#define __ASM_SEL(a, b) __ASM_FORM(a)
+#define __ASM_SEL_RAW(a, b) __ASM_FORM_RAW(a)
 
-#define __ASM_SIZE(inst, ...)	__ASM_SEL(inst##l##__VA_ARGS__, 					  inst##q##__VA_ARGS__)
-#define __ASM_REG(reg)         __ASM_SEL_RAW(e##reg, r##reg)
+#define __ASM_SIZE(inst, ...) \
+	__ASM_SEL(inst##l##__VA_ARGS__, inst##q##__VA_ARGS__)
+#define __ASM_REG(reg) __ASM_SEL_RAW(e##reg, r##reg)
 
-#define _ASM_AX		__ASM_REG(ax)
-#define _ASM_BX		__ASM_REG(bx)
-#define _ASM_CX		__ASM_REG(cx)
-#define _ASM_SP		__ASM_REG(sp)
+#define _ASM_AX __ASM_REG(ax)
+#define _ASM_BX __ASM_REG(bx)
+#define _ASM_CX __ASM_REG(cx)
+#define _ASM_SP __ASM_REG(sp)
 
-# define CC_SET(c) "\n\t/* output condition code " #c "*/\n"
-# define CC_OUT(c) "=@cc" #c
+#define CC_SET(c) "\n\t/* output condition code " #c "*/\n"
+#define CC_OUT(c) "=@cc" #c
 
-# include <asm/extable_fixup_types.h>
+#include <asm/extable_fixup_types.h>
 
- 
 #ifdef __ASSEMBLY__
 
+/* clang-format off */
 # define _ASM_EXTABLE_TYPE(from, to, type)			\
 	.pushsection "__ex_table","a" ;				\
 	.balign 4 ;						\
@@ -38,9 +39,11 @@
 	.long (to) - . ;					\
 	.long type ;						\
 	.popsection
+/* clang-format on */
 
 #else
 
+/* clang-format off */
 # define DEFINE_EXTABLE_TYPE_REG \
 	".macro extable_type_reg type:req reg:req\n"						\
 	".set .Lfound, 0\n"									\
@@ -85,16 +88,14 @@
 	"extable_type_reg reg=" __stringify(reg) ", type=" __stringify(type) " \n"\
 	UNDEFINE_EXTABLE_TYPE_REG						\
 	" .popsection\n"
+/* clang-format on */
 
- 
-
- 
 register unsigned long current_stack_pointer asm(_ASM_SP);
-#define ASM_CALL_CONSTRAINT "+r" (current_stack_pointer)
-#endif  
+#define ASM_CALL_CONSTRAINT "+r"(current_stack_pointer)
+#endif
 
-#define _ASM_EXTABLE(from, to)						_ASM_EXTABLE_TYPE(from, to, EX_TYPE_DEFAULT)
+#define _ASM_EXTABLE(from, to) _ASM_EXTABLE_TYPE(from, to, EX_TYPE_DEFAULT)
 
-#define _ASM_EXTABLE_UA(from, to)					_ASM_EXTABLE_TYPE(from, to, EX_TYPE_UACCESS)
+#define _ASM_EXTABLE_UA(from, to) _ASM_EXTABLE_TYPE(from, to, EX_TYPE_UACCESS)
 
-#endif  
+#endif

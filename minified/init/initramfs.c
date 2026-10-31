@@ -7,9 +7,9 @@
 
 /*
  * Unpacks the built-in uncompressed newc ("070701") cpio archive that
- * usr/gen_init_cpio writes: regular files, directories and device nodes,
- * each created once (no hard links, no chown, no mtime). Any other entry
- * type or a malformed archive panics instead of being skipped.
+ * usr/gen_init_cpio writes: regular files, directories and character device
+ * nodes, each created once (no hard links, no chown, no mtime). Any other
+ * entry type or a malformed archive panics instead of being skipped.
  */
 
 #define CPIO_HDR_LEN 110
@@ -51,7 +51,7 @@ static void __init create_entry(const char *name, umode_t mode,
 		fput(file);
 	} else if (S_ISDIR(mode)) {
 		err = init_mkdir(name, mode);
-	} else if (S_ISCHR(mode) || S_ISBLK(mode)) {
+	} else if (S_ISCHR(mode)) {
 		err = init_mknod(name, mode, rdev);
 	} else {
 		panic("initramfs: unsupported cpio entry type");

@@ -7,7 +7,7 @@ int __init init_mknod(const char *filename, umode_t mode, unsigned int dev)
 	struct path path;
 	int error;
 
-	if (!(S_ISBLK(mode) || S_ISCHR(mode)))
+	if (!S_ISCHR(mode))
 		return -EINVAL;
 
 	dentry = kern_path_create(filename, &path, 0);

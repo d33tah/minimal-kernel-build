@@ -5,7 +5,7 @@
  *
  *   file <name> <location> <octal mode> <uid> <gid>
  *   dir <name> <octal mode> <uid> <gid>
- *   nod <name> <octal mode> <uid> <gid> <c|b> <major> <minor>
+ *   nod <name> <octal mode> <uid> <gid> c <major> <minor>
  *
  * Every mtime is 0, so the archive depends only on the description and the
  * files' contents. init/initramfs.c accepts exactly this format.
@@ -75,8 +75,6 @@ int main(void)
 	unsigned int mode, uid, gid, maj, min;
 
 	while (fgets(line, sizeof(line), stdin)) {
-		if (line[0] == '#' || line[0] == '\n')
-			continue;
 		if (sscanf(line, "file %4095s %4095s %o %u %u", name, location,
 			   &mode, &uid, &gid) == 5)
 			file(name, location, mode, uid, gid);
@@ -86,9 +84,9 @@ int main(void)
 			       name);
 		else if (sscanf(line, "nod %4095s %o %u %u %c %u %u", name,
 				&mode, &uid, &gid, &dev, &maj, &min) == 7 &&
-			 (dev == 'c' || dev == 'b'))
-			header(ino++, (dev == 'b' ? S_IFBLK : S_IFCHR) | mode,
-			       uid, gid, 1, 0, maj, min, name);
+			 dev == 'c')
+			header(ino++, S_IFCHR | mode, uid, gid, 1, 0, maj, min,
+			       name);
 		else
 			fail("unsupported line", line);
 	}

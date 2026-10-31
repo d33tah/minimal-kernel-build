@@ -499,11 +499,7 @@ static int may_open(struct user_namespace *mnt_userns, const struct path *path,
 		if (acc_mode & MAY_EXEC)
 			return -EACCES;
 		break;
-	case S_IFBLK:
 	case S_IFCHR:
-		fallthrough;
-	case S_IFIFO:
-	case S_IFSOCK:
 		if (acc_mode & MAY_EXEC)
 			return -EACCES;
 		flag &= ~O_TRUNC;

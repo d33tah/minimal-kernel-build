@@ -154,8 +154,3 @@ int __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq)
 	mutex_unlock(&clocksource_mutex);
 	return 0;
 }
-
-int clocksource_unregister(struct clocksource *cs)
-{
-	return 0;
-}

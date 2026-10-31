@@ -26,7 +26,6 @@ struct clocksource {
 #define CLOCK_SOURCE_IS_CONTINUOUS 0x01
 #define CLOCKSOURCE_MASK(bits) GENMASK_ULL((bits) - 1, 0)
 
-extern int clocksource_unregister(struct clocksource *);
 extern struct clocksource *__init clocksource_default_clock(void);
 
 extern void clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to,

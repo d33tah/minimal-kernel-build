@@ -179,26 +179,17 @@ success:
 	return delta;
 }
 
-unsigned long native_calibrate_tsc(void)
-{
-	/* No vendor-specific CPUID 0x15/0x16 TSC frequency enumeration. */
-	return 0;
-}
-
-static unsigned long cpu_khz_from_cpuid(void)
-{
-	return 0;
-}
-
+/*
+ * The CPU (and TSC) frequency is measured against the PIT; there is no
+ * vendor-specific CPUID 0x15/0x16 frequency enumeration.
+ */
 unsigned long native_calibrate_cpu_early(void)
 {
-	unsigned long flags, fast_calibrate = cpu_khz_from_cpuid();
+	unsigned long flags, fast_calibrate;
 
-	if (!fast_calibrate) {
-		local_irq_save(flags);
-		fast_calibrate = quick_pit_calibrate();
-		local_irq_restore(flags);
-	}
+	local_irq_save(flags);
+	fast_calibrate = quick_pit_calibrate();
+	local_irq_restore(flags);
 	return fast_calibrate;
 }
 
@@ -207,51 +198,14 @@ static u64 read_tsc(struct clocksource *cs)
 	return (u64)rdtsc_ordered();
 }
 
-static int tsc_cs_enable(struct clocksource *cs)
-{
-	/* clocksource .enable callback: HIT=False this boot.
-	 * Safe-fallback return 0 = enabled. */
-	return 0;
-}
-
-static struct clocksource clocksource_tsc_early = {
-	.name = "tsc-early",
-	.rating = 299,
-	.read = read_tsc,
-	.mask = CLOCKSOURCE_MASK(64),
-	.flags = CLOCK_SOURCE_IS_CONTINUOUS,
-	.enable = tsc_cs_enable,
-	.list = LIST_HEAD_INIT(clocksource_tsc_early.list),
-};
-
 static struct clocksource clocksource_tsc = {
 	.name = "tsc",
 	.rating = 300,
 	.read = read_tsc,
 	.mask = CLOCKSOURCE_MASK(64),
 	.flags = CLOCK_SOURCE_IS_CONTINUOUS,
-	.enable = tsc_cs_enable,
 	.list = LIST_HEAD_INIT(clocksource_tsc.list),
 };
-
-static void tsc_refine_calibration_work(struct work_struct *work);
-static DECLARE_DELAYED_WORK(tsc_irqwork, tsc_refine_calibration_work);
-static void tsc_refine_calibration_work(struct work_struct *work)
-{
-	/* Stub: TSC refinement not needed for minimal kernel */
-	clocksource_register_khz(&clocksource_tsc, tsc_khz);
-	clocksource_unregister(&clocksource_tsc_early);
-}
-
-static int __init init_tsc_clocksource(void)
-{
-	if (!boot_cpu_has(X86_FEATURE_TSC) || !tsc_khz)
-		return 0;
-
-	schedule_delayed_work(&tsc_irqwork, 0);
-	return 0;
-}
-device_initcall(init_tsc_clocksource);
 
 static bool __init determine_cpu_tsc_frequencies(bool early)
 {
@@ -259,24 +213,13 @@ static bool __init determine_cpu_tsc_frequencies(bool early)
 
 	/* Only the early CPUID-based calibration path survives on this build. */
 	cpu_khz = native_calibrate_cpu_early();
-	tsc_khz = native_calibrate_tsc();
-
-	if (tsc_khz == 0)
-		tsc_khz = cpu_khz;
-	else if (abs(cpu_khz - tsc_khz) * 10 > tsc_khz)
-		cpu_khz = tsc_khz;
+	tsc_khz = cpu_khz;
 
 	if (tsc_khz == 0)
 		return false;
 
 	pr_info("Detected %lu.%03lu MHz processor\n",
 		(unsigned long)cpu_khz / KHZ, (unsigned long)cpu_khz % KHZ);
-
-	if (cpu_khz != tsc_khz) {
-		pr_info("Detected %lu.%03lu MHz TSC",
-			(unsigned long)tsc_khz / KHZ,
-			(unsigned long)tsc_khz % KHZ);
-	}
 	return true;
 }
 
@@ -287,7 +230,6 @@ static void __init tsc_enable_sched_clock(void)
 
 	do_div(lpj, HZ);
 	loops_per_jiffy = lpj;
-	use_tsc_delay();
 
 	seqcount_latch_init(&c2n->seq);
 	__set_cyc2ns_scale(tsc_khz, smp_processor_id(), rdtsc());
@@ -313,5 +255,9 @@ void __init tsc_init(void)
 	if (!tsc_khz)
 		return;
 
-	clocksource_register_khz(&clocksource_tsc_early, tsc_khz);
+	/*
+	 * Registered here, synchronously. The old two-stage scheme registered
+	 * "tsc-early" here and "tsc" from a delayed work item that never ran.
+	 */
+	clocksource_register_khz(&clocksource_tsc, tsc_khz);
 }

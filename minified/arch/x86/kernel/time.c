@@ -31,9 +31,6 @@ static __init void x86_late_time_init(void)
 	hpet_time_init();
 
 	tsc_init();
-
-	if (static_cpu_has(X86_FEATURE_WAITPKG))
-		use_tpause_delay();
 }
 
 void __init time_init(void)

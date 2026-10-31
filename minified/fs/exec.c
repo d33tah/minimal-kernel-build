@@ -254,7 +254,6 @@ static struct file *do_open_execat(struct filename *name)
 	struct open_flags open_exec_flags = {
 		.open_flag = O_LARGEFILE | O_RDONLY | __FMODE_EXEC,
 		.acc_mode = MAY_EXEC,
-		.intent = LOOKUP_OPEN,
 	};
 
 	file = do_filp_open(name, &open_exec_flags);

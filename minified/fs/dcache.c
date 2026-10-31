@@ -285,12 +285,6 @@ static unsigned d_flags_for_inode(struct inode *inode)
 
 	if (S_ISDIR(inode->i_mode)) {
 		add_flags = DCACHE_DIRECTORY_TYPE;
-		if (unlikely(!(inode->i_opflags & IOP_LOOKUP))) {
-			if (unlikely(!inode->i_op->lookup))
-				add_flags = DCACHE_AUTODIR_TYPE;
-			else
-				inode->i_opflags |= IOP_LOOKUP;
-		}
 		goto type_determined;
 	}
 

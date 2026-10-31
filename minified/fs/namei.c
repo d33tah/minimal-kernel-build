@@ -555,9 +555,6 @@ static const char *open_last_lookups(struct nameidata *nd, struct file *file,
 	struct dentry *dir = nd->path.dentry;
 	int open_flag = op->open_flag;
 	struct dentry *dentry;
-	const char *res;
-
-	nd->flags |= op->intent;
 
 	if (nd->last_type != LAST_NORM)
 		return handle_dots(nd, nd->last_type);
@@ -594,10 +591,7 @@ static const char *open_last_lookups(struct nameidata *nd, struct file *file,
 	}
 
 finish_lookup:
-	res = step_into(nd, WALK_TRAILING, dentry);
-	if (unlikely(res))
-		nd->flags &= ~(LOOKUP_OPEN | LOOKUP_CREATE | LOOKUP_EXCL);
-	return res;
+	return step_into(nd, WALK_TRAILING, dentry);
 }
 
 static int do_open(struct nameidata *nd, struct file *file,

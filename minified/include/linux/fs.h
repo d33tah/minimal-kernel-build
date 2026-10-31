@@ -95,11 +95,8 @@ struct address_space {
 	do {                       \
 	} while (0)
 
-#define IOP_LOOKUP 0x0002
-
 struct inode {
 	umode_t i_mode;
-	unsigned short i_opflags;
 	kuid_t i_uid;
 	kgid_t i_gid;
 	const struct inode_operations *i_op;
@@ -111,7 +108,6 @@ struct inode {
 	struct rw_semaphore i_rwsem;
 	union {
 		struct hlist_head i_dentry;
-		struct rcu_head i_rcu;
 	};
 	atomic_t i_writecount;
 	const struct file_operations *i_fop;

@@ -142,6 +142,5 @@ SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf, size_t,
 
 ssize_t generic_write_checks(struct kiocb *iocb, struct iov_iter *from)
 {
-	iov_iter_truncate(from, iov_iter_count(from));
 	return iov_iter_count(from);
 }

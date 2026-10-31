@@ -72,16 +72,13 @@ struct file *filp_open(const char *filename, int flags, umode_t mode)
 	struct open_flags op = {
 		.open_flag = flags,
 		.acc_mode = ACC_MODE(flags),
-		.intent = LOOKUP_OPEN,
 	};
 	struct file *file;
 
 	if (IS_ERR(name))
 		return ERR_CAST(name);
-	if (flags & O_CREAT) {
+	if (flags & O_CREAT)
 		op.mode = (mode & S_IALLUGO) | S_IFREG;
-		op.intent |= LOOKUP_CREATE;
-	}
 	file = do_filp_open(name, &op);
 	putname(name);
 	return file;

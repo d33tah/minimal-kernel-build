@@ -29,7 +29,6 @@ static int inode_init_always(struct super_block *sb, struct inode *inode)
 	inode->i_sb = sb;
 	inode->i_op = &empty_iops;
 	inode->i_fop = &no_open_fops;
-	inode->i_opflags = 0;
 	i_uid_write(inode, 0);
 	i_gid_write(inode, 0);
 	atomic_set(&inode->i_writecount, 0);
@@ -50,17 +49,6 @@ static int inode_init_always(struct super_block *sb, struct inode *inode)
 	return 0;
 }
 
-static void free_inode_nonrcu(struct inode *inode)
-{
-	kmem_cache_free(inode_cachep, inode);
-}
-
-static void i_callback(struct rcu_head *head)
-{
-	struct inode *inode = container_of(head, struct inode, i_rcu);
-	free_inode_nonrcu(inode);
-}
-
 static struct inode *alloc_inode(struct super_block *sb)
 {
 	struct inode *inode;
@@ -70,10 +58,7 @@ static struct inode *alloc_inode(struct super_block *sb)
 	if (!inode)
 		return NULL;
 
-	if (unlikely(inode_init_always(sb, inode))) {
-		i_callback(&inode->i_rcu);
-		return NULL;
-	}
+	inode_init_always(sb, inode);
 
 	return inode;
 }
@@ -96,10 +81,6 @@ static struct inode *new_inode_pseudo(struct super_block *sb)
 {
 	struct inode *inode = alloc_inode(sb);
 
-	if (inode) {
-		spin_lock(&inode->i_lock);
-		spin_unlock(&inode->i_lock);
-	}
 	return inode;
 }
 

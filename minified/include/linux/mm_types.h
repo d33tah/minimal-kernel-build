@@ -28,7 +28,7 @@
 #include <linux/mutex.h>
 #include <linux/spinlock.h>
 
-#include <asm/mmu.h>
+#include <linux/rwsem.h>
 
 #define AT_VECTOR_SIZE (2 * (AT_VECTOR_SIZE_ARCH + AT_VECTOR_SIZE_BASE + 1))
 

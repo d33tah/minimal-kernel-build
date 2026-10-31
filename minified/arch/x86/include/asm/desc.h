@@ -2,7 +2,7 @@
 #ifndef _ASM_X86_DESC_H
 #define _ASM_X86_DESC_H
 
-#include <asm/mmu.h>
+#include <linux/mutex.h>
 #include <asm/fixmap.h>
 #include <asm/irq_vectors.h>
 

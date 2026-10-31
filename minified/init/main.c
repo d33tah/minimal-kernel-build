@@ -378,6 +378,5 @@ static noinline void __init kernel_init_freeable(void)
 
 	do_basic_setup();
 
-	wait_for_initramfs();
 	console_on_rootfs();
 }

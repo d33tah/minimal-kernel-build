@@ -115,8 +115,6 @@ static int tty_open(struct inode *inode, struct file *filp)
 	struct tty_struct *tty;
 	int index = -1;
 
-	nonseekable_open(inode, filp);
-
 	mutex_lock(&tty_mutex);
 	driver = console_device(&index);
 	if (!driver) {

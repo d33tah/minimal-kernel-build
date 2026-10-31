@@ -81,9 +81,4 @@ struct file *filp_open(const char *filename, int flags, umode_t mode)
 	return file;
 }
 
-int nonseekable_open(struct inode *inode, struct file *filp)
-{
-	return 0;
-}
-
 /* Removed: stream_open - never called */

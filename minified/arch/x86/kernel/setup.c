@@ -1,6 +1,5 @@
 #include <linux/console.h>
 
-#include <linux/initrd.h>
 #include <linux/memblock.h>
 
 #include <asm/e820/api.h>
@@ -53,60 +52,6 @@ static void __init reserve_brk(void)
 	_brk_start = 0;
 }
 
-static u64 __init get_ramdisk_image(void)
-{
-	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
-
-	ramdisk_image |= (u64)boot_params.ext_ramdisk_image << 32;
-
-	if (ramdisk_image == 0)
-		ramdisk_image = phys_initrd_start;
-
-	return ramdisk_image;
-}
-static u64 __init get_ramdisk_size(void)
-{
-	u64 ramdisk_size = boot_params.hdr.ramdisk_size;
-
-	ramdisk_size |= (u64)boot_params.ext_ramdisk_size << 32;
-
-	return ramdisk_size;
-}
-
-static void __init early_reserve_initrd(void)
-{
-	u64 ramdisk_image = get_ramdisk_image();
-	u64 ramdisk_size = get_ramdisk_size();
-	u64 ramdisk_end = PAGE_ALIGN(ramdisk_image + ramdisk_size);
-
-	if (!boot_params.hdr.type_of_loader || !ramdisk_image || !ramdisk_size)
-		return;
-
-	memblock_reserve(ramdisk_image, ramdisk_end - ramdisk_image);
-}
-
-static void __init reserve_initrd(void)
-{
-	u64 ramdisk_image = get_ramdisk_image();
-	u64 ramdisk_size = get_ramdisk_size();
-	u64 ramdisk_end = PAGE_ALIGN(ramdisk_image + ramdisk_size);
-
-	if (!boot_params.hdr.type_of_loader || !ramdisk_image || !ramdisk_size)
-		return;
-
-	/*
-	 * All RAM is low memory on this build (no highmem) and is mapped by
-	 * init_mem_mapping(), so an initrd the boot loader put in RAM is always
-	 * directly addressable; one outside the mapping cannot be used.
-	 */
-	if (!pfn_range_is_mapped(PFN_DOWN(ramdisk_image),
-				 PFN_DOWN(ramdisk_end)))
-		panic("initrd is not in mapped low memory");
-
-	initrd_start = ramdisk_image + PAGE_OFFSET;
-	initrd_end = initrd_start + ramdisk_size;
-}
-
 static void __init early_reserve_memory(void)
 {
 	memblock_reserve(__pa_symbol(_text),
@@ -118,8 +63,6 @@ static void __init early_reserve_memory(void)
 	 * BIOS ROM windows) is never handed to the allocator.
 	 */
 	memblock_reserve(0, SZ_1M);
-
-	early_reserve_initrd();
 }
 
 void __init setup_arch(char **cmdline_p)
@@ -175,8 +118,6 @@ void __init setup_arch(char **cmdline_p)
 	memblock_set_current_limit(get_max_mapped());
 
 	setup_log_buf(1);
-
-	reserve_initrd();
 
 	initmem_init();
 

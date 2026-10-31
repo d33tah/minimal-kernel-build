@@ -6,7 +6,7 @@
 #include <linux/initrd.h>
 
 /*
- * Unpacks the uncompressed newc ("070701") cpio archives that
+ * Unpacks the built-in uncompressed newc ("070701") cpio archive that
  * usr/gen_init_cpio writes: regular files, directories and device nodes,
  * each created once (no hard links, no chown, no mtime). Any other entry
  * type or a malformed archive panics instead of being skipped.
@@ -95,16 +95,6 @@ static void __init unpack_to_rootfs(const char *buf, unsigned long len)
 static int __init populate_rootfs(void)
 {
 	unpack_to_rootfs(__initramfs_start, __initramfs_size);
-
-	if (initrd_start) {
-		unpack_to_rootfs((char *)initrd_start,
-				 initrd_end - initrd_start);
-		free_reserved_area((void *)initrd_start, (void *)initrd_end,
-				   POISON_FREE_INITMEM, "initrd");
-		initrd_start = 0;
-		initrd_end = 0;
-	}
-
 	flush_delayed_fput();
 	return 0;
 }

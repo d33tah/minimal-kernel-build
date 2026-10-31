@@ -30,10 +30,6 @@ static inline void copy_page(void *to, void *from) {
 
 struct page;
 
-#include <linux/range.h>
-extern struct range pfn_mapped[];
-extern int nr_pfn_mapped;
-
 static inline void copy_user_page(void *to, void *from, unsigned long vaddr, struct page *topage) {
 	copy_page(to, from); }
 

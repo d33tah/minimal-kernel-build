@@ -8,7 +8,6 @@
 #include <linux/rbtree.h>
 #include <linux/mm_types.h>
 #include <linux/mmap_lock.h>
-#include <linux/range.h>
 #include <linux/bit_spinlock.h>
 #include <linux/resource.h>
 #include <linux/page-flags.h>
@@ -623,9 +622,6 @@ static inline spinlock_t *pmd_lock(struct mm_struct *mm, pmd_t *pmd)
 	spin_lock(ptl);
 	return ptl;
 }
-
-extern unsigned long free_reserved_area(void *start, void *end, int poison,
-					const char *s);
 
 extern void reserve_bootmem_region(phys_addr_t start, phys_addr_t end);
 

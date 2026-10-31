@@ -678,17 +678,6 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 	memmap_init();
 }
 
-unsigned long free_reserved_area(void *start, void *end, int poison,
-				 const char *s)
-{
-	/*
-	 * SAFE-FALLBACK stub (runtime-dead): the only caller is the __init
-	 * initramfs path (no initrd on this boot), which ignores the page
-	 * count -> returning 0 is behavior-preserving.
-	 */
-	return 0;
-}
-
 void *__init alloc_large_system_hash(const char *tablename,
 				     unsigned long bucketsize,
 				     unsigned long numentries, int scale,

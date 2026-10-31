@@ -588,8 +588,6 @@ extern void mem_init(void);
 extern int __vm_enough_memory(struct mm_struct *mm, long pages,
 			      int cap_sys_admin);
 extern int insert_vm_struct(struct mm_struct *, struct vm_area_struct *);
-extern void __vma_link_rb(struct mm_struct *, struct vm_area_struct *,
-			  struct rb_node **, struct rb_node *);
 
 extern int set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file);
 

@@ -13,7 +13,7 @@
 CFLAGS_string.o := -ffreestanding
 
 lib-y := string.o \
-	 rbtree.o xarray.o \
+	 xarray.o \
 	 irq_regs.o \
 	 ratelimit.o
 	 # argv_split.o - Removed: not used

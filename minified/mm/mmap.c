@@ -31,88 +31,47 @@ pgprot_t protection_map[16] __ro_after_init = {
 
 /* Removed: vm_pgprot_modify, vma_set_page_prot - never called */
 
-#define validate_mm_rb(root, ignore) \
-	do {                         \
-	} while (0)
 #define validate_mm(mm) \
 	do {            \
 	} while (0)
 
-static inline void vma_rb_insert(struct vm_area_struct *vma,
-				 struct rb_root *root)
-{
-	validate_mm_rb(root, NULL);
-
-	rb_insert_color(&vma->vm_rb, root);
-}
-
+/*
+ * The VMAs of an mm are kept only as the address-sorted mm->mmap list (no
+ * rbtree): a process here has a handful of VMAs (the ELF segments, bss and
+ * the stack), so lookups walk the list.
+ */
 static int find_vma_links(struct mm_struct *mm, unsigned long addr,
-			  unsigned long end, struct vm_area_struct **pprev,
-			  struct rb_node ***rb_link, struct rb_node **rb_parent)
+			  unsigned long end, struct vm_area_struct **pprev)
 {
-	struct rb_node **__rb_link, *__rb_parent, *rb_prev;
+	struct vm_area_struct *vma, *prev = NULL;
 
 	mmap_assert_locked(mm);
-	__rb_link = &mm->mm_rb.rb_node;
-	rb_prev = __rb_parent = NULL;
-
-	while (*__rb_link) {
-		struct vm_area_struct *vma_tmp;
-
-		__rb_parent = *__rb_link;
-		vma_tmp = rb_entry(__rb_parent, struct vm_area_struct, vm_rb);
-
-		if (vma_tmp->vm_end > addr) {
-			if (vma_tmp->vm_start < end)
+	for (vma = mm->mmap; vma; prev = vma, vma = vma->vm_next) {
+		if (vma->vm_end > addr) {
+			if (vma->vm_start < end)
 				return -ENOMEM;
-			__rb_link = &__rb_parent->rb_left;
-		} else {
-			rb_prev = __rb_parent;
-			__rb_link = &__rb_parent->rb_right;
+			break;
 		}
 	}
-
-	*pprev = NULL;
-	if (rb_prev)
-		*pprev = rb_entry(rb_prev, struct vm_area_struct, vm_rb);
-	*rb_link = __rb_link;
-	*rb_parent = __rb_parent;
+	*pprev = prev;
 	return 0;
 }
 
 static inline int munmap_vma_range(struct mm_struct *mm, unsigned long start,
 				   unsigned long len,
-				   struct vm_area_struct **pprev,
-				   struct rb_node ***link,
-				   struct rb_node **parent)
+				   struct vm_area_struct **pprev)
 {
-	while (find_vma_links(mm, start, start + len, pprev, link, parent))
+	while (find_vma_links(mm, start, start + len, pprev))
 		if (__do_munmap(mm, start, len))
 			return -ENOMEM;
 
 	return 0;
 }
 
-void __vma_link_rb(struct mm_struct *mm, struct vm_area_struct *vma,
-		   struct rb_node **rb_link, struct rb_node *rb_parent)
-{
-	rb_link_node(&vma->vm_rb, rb_parent, rb_link);
-	vma_rb_insert(vma, &mm->mm_rb);
-}
-
-static void __vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
-		       struct vm_area_struct *prev, struct rb_node **rb_link,
-		       struct rb_node *rb_parent)
+static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
+		     struct vm_area_struct *prev)
 {
 	__vma_link_list(mm, vma, prev);
-	__vma_link_rb(mm, vma, rb_link, rb_parent);
-}
-
-static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
-		     struct vm_area_struct *prev, struct rb_node **rb_link,
-		     struct rb_node *rb_parent)
-{
-	__vma_link(mm, vma, prev, rb_link, rb_parent);
 	mm->map_count++;
 	validate_mm(mm);
 }
@@ -225,10 +184,9 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 	/* Minimal stub: simplified mmap without complex VMA merging/splitting */
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma;
-	struct rb_node **rb_link, *rb_parent;
 	struct vm_area_struct *prev = NULL;
 
-	if (munmap_vma_range(mm, addr, len, &prev, &rb_link, &rb_parent))
+	if (munmap_vma_range(mm, addr, len, &prev))
 		return -ENOMEM;
 
 	vma = vm_area_alloc(mm);
@@ -252,7 +210,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 		vma_set_anonymous(vma);
 	}
 
-	vma_link(mm, vma, prev, rb_link, rb_parent);
+	vma_link(mm, vma, prev);
 	return addr;
 }
 
@@ -283,28 +241,13 @@ unsigned long get_unmapped_area(struct file *file, unsigned long addr,
 
 struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 {
-	struct rb_node *rb_node;
-	struct vm_area_struct *vma = NULL;
+	struct vm_area_struct *vma;
 
 	mmap_assert_locked(mm);
-
-	rb_node = mm->mm_rb.rb_node;
-
-	while (rb_node) {
-		struct vm_area_struct *tmp;
-
-		tmp = rb_entry(rb_node, struct vm_area_struct, vm_rb);
-
-		if (tmp->vm_end > addr) {
-			vma = tmp;
-			if (tmp->vm_start <= addr)
-				break;
-			rb_node = rb_node->rb_left;
-		} else
-			rb_node = rb_node->rb_right;
-	}
-
-	return vma;
+	for (vma = mm->mmap; vma; vma = vma->vm_next)
+		if (vma->vm_end > addr)
+			return vma;
+	return NULL;
 }
 
 static int acct_stack_growth(struct vm_area_struct *vma, unsigned long size,
@@ -476,7 +419,6 @@ int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 			vma->vm_pgoff += (end - vma->vm_start) >> PAGE_SHIFT;
 			vma->vm_start = end;
 		} else {
-			rb_erase(&vma->vm_rb, &mm->mm_rb);
 			if (vma->vm_prev)
 				vma->vm_prev->vm_next = next;
 			else
@@ -518,10 +460,8 @@ int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 {
 	struct vm_area_struct *prev;
-	struct rb_node **rb_link, *rb_parent;
 
-	if (find_vma_links(mm, vma->vm_start, vma->vm_end, &prev, &rb_link,
-			   &rb_parent))
+	if (find_vma_links(mm, vma->vm_start, vma->vm_end, &prev))
 		return -ENOMEM;
 	if ((vma->vm_flags & VM_ACCOUNT) &&
 	    security_vm_enough_memory_mm(mm, vma_pages(vma)))
@@ -530,6 +470,6 @@ int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 	if (vma_is_anonymous(vma))
 		vma->vm_pgoff = vma->vm_start >> PAGE_SHIFT;
 
-	vma_link(mm, vma, prev, rb_link, rb_parent);
+	vma_link(mm, vma, prev);
 	return 0;
 }

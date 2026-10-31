@@ -198,7 +198,6 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 				 struct user_namespace *user_ns)
 {
 	mm->mmap = NULL;
-	mm->mm_rb = RB_ROOT;
 	atomic_set(&mm->mm_users, 1);
 	atomic_set(&mm->mm_count, 1);
 	mmap_init_lock(mm);

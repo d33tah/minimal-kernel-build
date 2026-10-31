@@ -1,7 +1,6 @@
 #include <linux/mman.h>
 
-struct mm_struct init_mm = { .mm_rb = RB_ROOT,
-			     .pgd = swapper_pg_dir,
+struct mm_struct init_mm = { .pgd = swapper_pg_dir,
 			     .mm_users = ATOMIC_INIT(2),
 			     .mm_count = ATOMIC_INIT(1),
 			     MMAP_LOCK_INITIALIZER(init_mm).page_table_lock =

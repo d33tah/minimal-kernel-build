@@ -24,7 +24,6 @@
 #define AT_MINSIGSTKSZ 51
 #endif
 #define AT_VECTOR_SIZE_BASE 20
-#include <linux/rbtree.h>
 #include <linux/workqueue.h>
 #include <linux/seqlock.h>
 
@@ -115,7 +114,6 @@ typedef unsigned long vm_flags_t;
 struct vm_area_struct {
 	unsigned long vm_start, vm_end;
 	struct vm_area_struct *vm_next, *vm_prev;
-	struct rb_node vm_rb;
 	struct mm_struct *vm_mm;
 	pgprot_t vm_page_prot;
 	unsigned long vm_flags;
@@ -127,7 +125,6 @@ struct vm_area_struct {
 struct mm_struct {
 	struct {
 		struct vm_area_struct *mmap;
-		struct rb_root mm_rb;
 		pgd_t *pgd;
 		atomic_t mm_users;
 		atomic_t mm_count;

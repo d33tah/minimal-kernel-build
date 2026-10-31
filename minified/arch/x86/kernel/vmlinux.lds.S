@@ -103,10 +103,6 @@ SECTIONS
 		_edata = .;
 	} :data
 
-	BUG_TABLE
-
-	ORC_UNWIND_TABLE
-
 	/* Init code and data - will be freed after init */
 	. = ALIGN(PAGE_SIZE);
 	.init.begin : AT(ADDR(.init.begin) - LOAD_OFFSET) {

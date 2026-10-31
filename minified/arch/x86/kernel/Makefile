@@ -28,7 +28,6 @@ obj-y			+= e820.o
 obj-y			+= i8253.o
 obj-y			+= tsc.o io_delay.o
 # resource.o removed - arch_remove_reservations never called
-obj-y			+= irqflags.o
 
 obj-y				+= process.o
 # i8237.o removed - empty stub

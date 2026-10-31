@@ -76,8 +76,6 @@ ForEachMacros:
   - 'for_each_node_mask'
   - 'for_each_node_state'
   - 'for_each_node_with_cpus'
-  - 'for_each_online_pgdat'
-  - 'for_each_possible_cpu'
   - 'for_each_reserved_mem_range'
   - 'hlist_bl_for_each_entry_rcu'
   - 'list_for_each_entry'

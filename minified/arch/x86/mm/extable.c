@@ -47,9 +47,6 @@
 #include <asm/insn-eval.h>
 #include <asm/kdebug.h>
 
-/* Inlined from asm/sgx.h */
-#define SGX_ENCLS_FAULT_FLAG 0x40000000
-
 static inline unsigned long *pt_regs_nr(struct pt_regs *regs, int nr)
 {
 	int reg_offset = pt_regs_offset(regs, nr);
@@ -78,58 +75,12 @@ static bool ex_handler_default(const struct exception_table_entry *e,
 	return true;
 }
 
-static bool ex_handler_fault(const struct exception_table_entry *fixup,
-			     struct pt_regs *regs, int trapnr)
-{
-	regs->ax = trapnr;
-	return ex_handler_default(fixup, regs);
-}
-
-static bool ex_handler_sgx(const struct exception_table_entry *fixup,
-			   struct pt_regs *regs, int trapnr)
-{
-	regs->ax = trapnr | SGX_ENCLS_FAULT_FLAG;
-	return ex_handler_default(fixup, regs);
-}
-
 static bool ex_handler_uaccess(const struct exception_table_entry *fixup,
 			       struct pt_regs *regs, int trapnr)
 {
 	WARN_ONCE(
 		trapnr == X86_TRAP_GP,
 		"General protection fault in user access. Non-canonical address?");
-	return ex_handler_default(fixup, regs);
-}
-
-static bool ex_handler_copy(const struct exception_table_entry *fixup,
-			    struct pt_regs *regs, int trapnr)
-{
-	WARN_ONCE(
-		trapnr == X86_TRAP_GP,
-		"General protection fault in user access. Non-canonical address?");
-	return ex_handler_fault(fixup, regs, trapnr);
-}
-
-static bool ex_handler_msr(const struct exception_table_entry *fixup,
-			   struct pt_regs *regs, bool wrmsr, bool safe, int reg)
-{
-	if (!wrmsr) {
-		regs->ax = 0;
-		regs->dx = 0;
-	}
-
-	if (safe)
-		*pt_regs_nr(regs, reg) = -EIO;
-
-	return ex_handler_default(fixup, regs);
-}
-
-static bool ex_handler_clear_fs(const struct exception_table_entry *fixup,
-				struct pt_regs *regs)
-{
-	if (static_cpu_has(X86_BUG_NULL_SEG))
-		asm volatile("mov %0, %%fs" : : "rm"(__USER_DS));
-	asm volatile("mov %0, %%fs" : : "rm"(0));
 	return ex_handler_default(fixup, regs);
 }
 
@@ -164,38 +115,14 @@ int fixup_exception(struct pt_regs *regs, int trapnr, unsigned long error_code,
 
 	switch (type) {
 	case EX_TYPE_DEFAULT:
-	case EX_TYPE_DEFAULT_MCE_SAFE:
 		return ex_handler_default(e, regs);
-	case EX_TYPE_FAULT:
-	case EX_TYPE_FAULT_MCE_SAFE:
-		return ex_handler_fault(e, regs, trapnr);
 	case EX_TYPE_UACCESS:
 		return ex_handler_uaccess(e, regs, trapnr);
-	case EX_TYPE_COPY:
-		return ex_handler_copy(e, regs, trapnr);
-	case EX_TYPE_CLEAR_FS:
-		return ex_handler_clear_fs(e, regs);
-	case EX_TYPE_BPF:
-		return ex_handler_bpf(e, regs);
-	case EX_TYPE_WRMSR:
-		return ex_handler_msr(e, regs, true, false, reg);
-	case EX_TYPE_RDMSR:
-		return ex_handler_msr(e, regs, false, false, reg);
-	case EX_TYPE_WRMSR_SAFE:
-		return ex_handler_msr(e, regs, true, true, reg);
-	case EX_TYPE_RDMSR_SAFE:
-		return ex_handler_msr(e, regs, false, true, reg);
-	case EX_TYPE_WRMSR_IN_MCE:
-		ex_handler_msr_mce(regs, true);
-	case EX_TYPE_RDMSR_IN_MCE:
-		ex_handler_msr_mce(regs, false);
 	case EX_TYPE_POP_REG:
 		regs->sp += sizeof(long);
 		fallthrough;
 	case EX_TYPE_IMM_REG:
 		return ex_handler_imm_reg(e, regs, reg, imm);
-	case EX_TYPE_FAULT_SGX:
-		return ex_handler_sgx(e, regs, trapnr);
 	case EX_TYPE_UCOPY_LEN:
 		return ex_handler_ucopy_len(e, regs, trapnr, reg, imm);
 	}
@@ -229,8 +156,6 @@ fail:
 		"PANIC: early exception 0x%02x IP %lx:%lx error %lx cr2 0x%lx\n",
 		(unsigned)trapnr, (unsigned long)regs->cs, regs->ip,
 		regs->orig_ax, read_cr2());
-
-	show_regs(regs);
 
 halt_loop:
 	while (true)

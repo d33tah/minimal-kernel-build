@@ -25,13 +25,6 @@
  
 /* __rdmsr / native_read_msr / rdmsr() removed - unused (no MSR reads in this build) */
 
-static __always_inline void __wrmsr(unsigned int msr, u32 low, u32 high) {
-	asm volatile("1: wrmsr\n" "2:\n" _ASM_EXTABLE_TYPE(1b, 2b, EX_TYPE_WRMSR) : : "c" (msr), "a"(low), "d" (high) : "memory"); }
-
-static inline void notrace
-native_write_msr(unsigned int msr, u32 low, u32 high) {
-	__wrmsr(msr, low, high); }
-
 static __always_inline unsigned long long rdtsc(void) {
 	DECLARE_ARGS(val, low, high);
 
@@ -51,8 +44,6 @@ static __always_inline unsigned long long rdtsc_ordered(void) {
 #include <linux/errno.h>
  
 
-static inline void wrmsr(unsigned int msr, u32 low, u32 high) {
-	native_write_msr(msr, low, high); }
 
 #endif
 #endif

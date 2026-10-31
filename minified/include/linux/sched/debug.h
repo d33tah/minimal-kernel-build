@@ -3,8 +3,6 @@
 
 struct pt_regs;
 
-extern void show_regs(struct pt_regs *);
-
 #define __sched __section(".sched.text")
 
 #endif

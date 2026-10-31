@@ -14,9 +14,3 @@ void die(const char *str, struct pt_regs *regs, long err)
 void die_addr(const char *str, struct pt_regs *regs, long err, long gp_addr)
 {
 }
-
-void show_regs(struct pt_regs *regs)
-{
-	/* Stub: minimal register display for crash */
-	__show_regs(regs, SHOW_REGS_ALL, KERN_DEFAULT);
-}

@@ -229,7 +229,9 @@ static void __init tsc_enable_sched_clock(void)
 	u64 lpj = (u64)tsc_khz * KHZ;
 
 	do_div(lpj, HZ);
-	loops_per_jiffy = lpj;
+	/* udelay() counts TSC cycles from here on; calibrate_delay() keeps it. */
+	lpj_fine = loops_per_jiffy = lpj;
+	use_tsc_delay();
 
 	seqcount_latch_init(&c2n->seq);
 	__set_cyc2ns_scale(tsc_khz, smp_processor_id(), rdtsc());

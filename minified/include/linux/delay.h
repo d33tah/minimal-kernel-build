@@ -5,6 +5,7 @@
 #include <linux/sched.h>
 
 extern unsigned long loops_per_jiffy;
+extern unsigned long lpj_fine;
 
 #include <asm/delay.h>
 

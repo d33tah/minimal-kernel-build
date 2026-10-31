@@ -18,9 +18,25 @@ static void delay_loop(u64 __loops)
 		     :);
 }
 
+/* Busy-wait for a number of TSC cycles (loops_per_jiffy is then in cycles). */
+static void delay_tsc(u64 cycles)
+{
+	u64 start = rdtsc_ordered();
+
+	while (rdtsc_ordered() - start < cycles)
+		cpu_relax();
+}
+
+static void (*delay_fn)(u64) __ro_after_init = delay_loop;
+
+void __init use_tsc_delay(void)
+{
+	delay_fn = delay_tsc;
+}
+
 void __delay(unsigned long loops)
 {
-	delay_loop(loops);
+	delay_fn(loops);
 }
 
 noinline void __const_udelay(unsigned long xloops)

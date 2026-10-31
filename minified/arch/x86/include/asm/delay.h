@@ -5,6 +5,7 @@
 extern void __bad_udelay(void);
 extern void __const_udelay(unsigned long xloops);
 extern void __delay(unsigned long loops);
+void use_tsc_delay(void);
 
 /*
  * Every udelay() callsite in this kernel passes a compile-time constant, so

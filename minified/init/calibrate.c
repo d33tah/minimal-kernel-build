@@ -1,24 +1,45 @@
 /* Delay loop calibration */
 #include <linux/delay.h>
+#include <linux/jiffies.h>
 
-static DEFINE_PER_CPU(unsigned long, cpu_loops_per_jiffy) = { 0 };
+/* Set by tsc.c when the TSC frequency was measured: TSC cycles per jiffy. */
+unsigned long lpj_fine;
 
-/* calibrate_delay_is_known removed - weak stub, no caller (stripped calibrate_delay) */
-
-void __attribute__((weak)) calibration_delay_done(void)
+/*
+ * Classic BogoMIPS search for __delay()'s loop: find the largest power of two
+ * that still fits in one tick, then refine the lower bits by binary search.
+ */
+static unsigned long calibrate_delay_converge(void)
 {
+	unsigned long lpj = 1 << 12, bit, ticks;
+
+	for (;;) {
+		lpj <<= 1;
+		if (!lpj)
+			panic("delay calibration: timer tick does not advance");
+		ticks = jiffies;
+		while (ticks == jiffies)
+			cpu_relax();
+		ticks = jiffies;
+		__delay(lpj);
+		if (jiffies != ticks)
+			break;
+	}
+	lpj >>= 1;
+	for (bit = lpj >> 1; bit > lpj >> 8; bit >>= 1) {
+		lpj |= bit;
+		ticks = jiffies;
+		while (ticks == jiffies)
+			cpu_relax();
+		ticks = jiffies;
+		__delay(lpj);
+		if (jiffies != ticks)
+			lpj &= ~bit;
+	}
+	return lpj;
 }
 
 void calibrate_delay(void)
 {
-	unsigned long lpj = 12500000;
-	int this_cpu = smp_processor_id();
-
-	if (per_cpu(cpu_loops_per_jiffy, this_cpu)) {
-		lpj = per_cpu(cpu_loops_per_jiffy, this_cpu);
-	}
-
-	per_cpu(cpu_loops_per_jiffy, this_cpu) = lpj;
-	loops_per_jiffy = lpj;
-	calibration_delay_done();
+	loops_per_jiffy = lpj_fine ? lpj_fine : calibrate_delay_converge();
 }

@@ -91,7 +91,6 @@
 
 #define __native_word(t) 	(sizeof(t) == sizeof(char) || sizeof(t) == sizeof(short) || 	 sizeof(t) == sizeof(int) || sizeof(t) == sizeof(long))
 
-#ifdef __OPTIMIZE__
 # define __compiletime_assert(condition, msg, prefix, suffix)		\
 	do {								\
 		 							\
@@ -100,9 +99,6 @@
 		if (!(condition))					\
 			prefix ## suffix();				\
 	} while (0)
-#else
-# define __compiletime_assert(condition, msg, prefix, suffix) do { } while (0)
-#endif
 
 #define _compiletime_assert(condition, msg, prefix, suffix) 	__compiletime_assert(condition, msg, prefix, suffix)
 

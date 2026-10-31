@@ -3,11 +3,6 @@
 
 #include <linux/rcupdate.h>
 
-static inline bool xa_is_value(const void *entry)
-{
-	return (unsigned long)entry & 1;
-}
-
 static inline void *xa_mk_internal(unsigned long v)
 {
 	return (void *)((v << 2) | 2);

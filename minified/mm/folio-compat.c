@@ -13,7 +13,7 @@ static noinline struct page *pagecache_get_page(struct address_space *mapping,
 	struct folio *folio;
 
 	folio = __filemap_get_folio(mapping, index, fgp_flags, gfp);
-	if ((fgp_flags & FGP_HEAD) || !folio || xa_is_value(folio))
+	if ((fgp_flags & FGP_HEAD) || !folio)
 		return &folio->page;
 	return folio_file_page(folio, index);
 }

@@ -28,12 +28,7 @@ struct iov_iter {
 		const struct iovec *iov;
 		const struct kvec *kvec;
 	};
-	union {
-		unsigned long nr_segs;
-		struct {
-			unsigned int head, start_head;
-		};
-	};
+	unsigned long nr_segs;
 };
 
 static inline enum iter_type iov_iter_type(const struct iov_iter *i)
@@ -86,12 +81,6 @@ void iov_iter_kvec(struct iov_iter *i, unsigned int direction,
 static inline size_t iov_iter_count(const struct iov_iter *i)
 {
 	return i->count;
-}
-
-static inline void iov_iter_truncate(struct iov_iter *i, u64 count)
-{
-	if (i->count > count)
-		i->count = count;
 }
 
 /* iov_iter_npages_cap, csum_and_copy_*, hash_and_copy_to_iter,

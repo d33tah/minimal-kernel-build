@@ -79,7 +79,7 @@ repeat:
 	xas_reset(&xas);
 	folio = xas_load(&xas);
 
-	if (!folio || xa_is_value(folio))
+	if (!folio)
 		goto out;
 
 	if (!folio_try_get_rcu(folio))
@@ -146,7 +146,7 @@ static void filemap_get_read_batch(struct address_space *mapping, pgoff_t index,
 
 	rcu_read_lock();
 	for (folio = xas_load(&xas); folio; folio = xas_next(&xas)) {
-		if (xas.xa_index > max || xa_is_value(folio))
+		if (xas.xa_index > max)
 			break;
 		/* CONFIG_XARRAY_MULTI off: xa_is_sibling(folio) compile-time false */
 		if (!folio_try_get_rcu(folio))
@@ -267,7 +267,6 @@ static ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 	if (unlikely(!iov_iter_count(iter)))
 		return 0;
 
-	iov_iter_truncate(iter, inode->i_sb->s_maxbytes);
 	folio_batch_init(&fbatch);
 
 	do {

@@ -5,8 +5,6 @@
 
 #ifndef __ASSEMBLY__
 
-#include <linux/types.h>
-
 struct desc_struct {
 	u16 limit0, base0;
 	u16 base1 : 8, type : 4, s : 1, dpl : 2, p : 1;

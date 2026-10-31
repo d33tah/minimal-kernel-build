@@ -161,8 +161,6 @@ static inline cpumask_t *mm_cpumask(struct mm_struct *mm)
 	return (struct cpumask *)&mm->cpu_bitmap;
 }
 
-struct mmu_gather;
-
 typedef __bitwise unsigned int vm_fault_t;
 
 enum vm_fault_reason {

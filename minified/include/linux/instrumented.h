@@ -2,8 +2,6 @@
 #ifndef _LINUX_INSTRUMENTED_H
 #define _LINUX_INSTRUMENTED_H
 
-#include <linux/compiler.h>
-
 static __always_inline void instrument_write(const volatile void *v,
 					     size_t size)
 {

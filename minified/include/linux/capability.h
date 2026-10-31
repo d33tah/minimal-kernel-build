@@ -1,8 +1,6 @@
 #ifndef _LINUX_CAPABILITY_H
 #define _LINUX_CAPABILITY_H
 
-#include <linux/types.h>
-
 #define CAP_DAC_OVERRIDE 1
 #define CAP_DAC_READ_SEARCH 2
 /* End uapi/linux/capability.h */

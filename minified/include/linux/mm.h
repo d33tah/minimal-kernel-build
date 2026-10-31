@@ -227,7 +227,6 @@ static inline bool vma_is_accessible(struct vm_area_struct *vma)
 	return vma->vm_flags & VM_ACCESS_FLAGS;
 }
 
-struct mmu_gather;
 struct inode;
 
 static inline unsigned int compound_order(struct page *page)

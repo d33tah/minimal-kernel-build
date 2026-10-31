@@ -6,7 +6,6 @@
 #error only <linux/bitops.h> can be included directly
 #endif
 
-#include <linux/compiler.h>
 #include <asm/asm.h>
 #include <asm/rmwcc.h>
 #include <asm/barrier.h>

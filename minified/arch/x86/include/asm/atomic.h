@@ -2,7 +2,6 @@
 #ifndef _ASM_X86_ATOMIC_H
 #define _ASM_X86_ATOMIC_H
 
-#include <linux/compiler.h>
 #include <asm/asm.h>
 #include <asm/cmpxchg.h>
 #include <asm/rmwcc.h>

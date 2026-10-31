@@ -220,7 +220,6 @@ void cpu_init(void)
 	cur->active_mm = &init_mm;
 	BUG_ON(cur->mm);
 	initialize_tlbstate_and_flush();
-	enter_lazy_tlb(&init_mm, cur);
 
 	load_sp0(cur->thread.sp0);
 

@@ -5,14 +5,4 @@
 #include <linux/rwsem.h>
 #include <linux/mutex.h>
 
-typedef struct {
-	u64 ctx_id;
-	atomic64_t tlb_gen;
-} mm_context_t;
-
-#define INIT_MM_CONTEXT(mm)  \
-	.context = {         \
-		.ctx_id = 1, \
-	}
-
 #endif

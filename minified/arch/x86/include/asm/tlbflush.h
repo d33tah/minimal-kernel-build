@@ -4,24 +4,6 @@
 
 #include <linux/mm.h>
 
-/* Inlined from asm/invpcid.h */
-static inline void __invpcid(unsigned long pcid, unsigned long addr,
-			     unsigned long type)
-{
-	struct {
-		u64 d[2];
-	} desc = { { pcid, addr } };
-	asm volatile(
-		"invpcid %[desc], %[type]" ::[desc] "m"(desc), [type] "r"(type)
-		: "memory");
-}
-#define INVPCID_TYPE_ALL_INCL_GLOBAL 2
-static inline void invpcid_flush_all(void)
-{
-	__invpcid(0, 0, INVPCID_TYPE_ALL_INCL_GLOBAL);
-}
-/* End of invpcid.h */
-
 void __flush_tlb_all(void);
 
 void cr4_update_irqsoff(unsigned long set, unsigned long clear);
@@ -57,29 +39,12 @@ static inline void cr4_clear_bits(unsigned long mask)
 
 #ifndef MODULE
 
-#define TLB_NR_DYN_ASIDS 6
-
-struct tlb_context {
-	u64 ctx_id, tlb_gen;
-};
-
 struct tlb_state {
 	struct mm_struct *loaded_mm;
 
-#define LOADED_MM_SWITCHING ((struct mm_struct *)1UL)
-
-	u16 loaded_mm_asid;
-
 	unsigned long cr4;
-
-	struct tlb_context ctxs[TLB_NR_DYN_ASIDS];
 };
 DECLARE_PER_CPU_ALIGNED(struct tlb_state, cpu_tlbstate);
-
-struct tlb_state_shared {
-	bool is_lazy;
-};
-DECLARE_PER_CPU_SHARED_ALIGNED(struct tlb_state_shared, cpu_tlbstate_shared);
 
 static inline void cr4_init_shadow(void)
 {
@@ -96,11 +61,6 @@ void flush_tlb_one_kernel(unsigned long addr);
 extern void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 			       unsigned long end, unsigned int stride_shift,
 			       bool freed_tables);
-
-static inline u64 inc_mm_tlb_gen(struct mm_struct *mm)
-{
-	return atomic64_inc_return(&mm->context.tlb_gen);
-}
 
 /* arch_tlbbatch_flush declaration removed - no implementation */
 /* pte_flags_need_flush / pte_needs_flush / huge_pmd_needs_flush removed - zero callers tree-wide */

@@ -97,8 +97,6 @@ static __always_inline void context_switch(struct task_struct *prev,
 					   struct task_struct *next)
 {
 	if (!next->mm) {
-		enter_lazy_tlb(prev->active_mm, next);
-
 		next->active_mm = prev->active_mm;
 		if (prev->mm)
 			mmgrab(prev->active_mm);
@@ -221,7 +219,6 @@ void __init sched_init(void)
 	struct task_struct *idle = current;
 
 	mmgrab(&init_mm);
-	enter_lazy_tlb(&init_mm, idle);
 
 	idle->__state = TASK_RUNNING;
 	idle->flags |= PF_IDLE | PF_KTHREAD;

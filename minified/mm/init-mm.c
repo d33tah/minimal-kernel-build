@@ -6,9 +6,7 @@ struct mm_struct init_mm = { .pgd = swapper_pg_dir,
 			     MMAP_LOCK_INITIALIZER(init_mm).page_table_lock =
 				     __SPIN_LOCK_UNLOCKED(
 					     init_mm.page_table_lock),
-			     .user_ns = &init_user_ns,
-			     .cpu_bitmap = CPU_BITS_NONE,
-			     INIT_MM_CONTEXT(init_mm) };
+			     .user_ns = &init_user_ns };
 
 void setup_initial_init_mm(void *start_code, void *end_code, void *end_data,
 			   void *brk)

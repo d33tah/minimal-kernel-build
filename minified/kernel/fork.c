@@ -142,7 +142,6 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	mmap_init_lock(mm);
 	mm->map_count = 0;
 	spin_lock_init(&mm->page_table_lock);
-	mm_init_cpumask(mm);
 	init_tlb_flush_pending(mm);
 
 	if (current->mm) {
@@ -156,14 +155,9 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
 	if (mm_alloc_pgd(mm))
 		goto fail_nopgd;
 
-	if (init_new_context(p, mm))
-		goto fail_nocontext;
-
 	mm->user_ns = get_user_ns(user_ns);
 	return mm;
 
-fail_nocontext:
-	mm_free_pgd(mm);
 fail_nopgd:
 	free_mm(mm);
 	return NULL;
@@ -435,7 +429,7 @@ void __init proc_caches_init(void)
 		"files_cache", sizeof(struct files_struct), 0,
 		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
 
-	mm_size = sizeof(struct mm_struct) + cpumask_size();
+	mm_size = sizeof(struct mm_struct);
 
 	mm_cachep = kmem_cache_create_usercopy(
 		"mm_struct", mm_size, ARCH_MIN_MMSTRUCT_ALIGN,

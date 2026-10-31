@@ -137,28 +137,13 @@ struct mm_struct {
 		unsigned long def_flags;
 		unsigned long brk, arg_start;
 		unsigned long saved_auxv[AT_VECTOR_SIZE];
-		mm_context_t context;
 		unsigned long flags;
 		struct user_namespace *user_ns;
 		atomic_t tlb_flush_pending;
 	} __randomize_layout;
-	unsigned long cpu_bitmap[];
 };
 
 extern struct mm_struct init_mm;
-
-static inline void mm_init_cpumask(struct mm_struct *mm)
-{
-	unsigned long cpu_bitmap = (unsigned long)mm;
-
-	cpu_bitmap += offsetof(struct mm_struct, cpu_bitmap);
-	cpumask_clear((struct cpumask *)cpu_bitmap);
-}
-
-static inline cpumask_t *mm_cpumask(struct mm_struct *mm)
-{
-	return (struct cpumask *)&mm->cpu_bitmap;
-}
 
 typedef __bitwise unsigned int vm_fault_t;
 

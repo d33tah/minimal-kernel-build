@@ -14,13 +14,10 @@
 
 #include <linux/linkage.h>
 #include <linux/screen_info.h>
-#include <linux/elf.h>
 #include <asm/page.h>
 #include <asm/boot.h>
 #include <asm/bootparam.h>
 #include <asm/desc_defs.h>
-
-#include "tdx.h"
 
 #define BOOT_BOOT_H
 #include "../io.h"
@@ -29,37 +26,5 @@ extern char _head[], _end[];
 
 extern struct boot_params *boot_params;
 void __putstr(const char *s);
-void __puthex(unsigned long value);
-#define error_putstr(__x) __putstr(__x)
-
-static inline void debug_putstr(const char *s)
-{
-}
-#define debug_putaddr(x)
-
-static inline void choose_random_location(unsigned long input,
-					  unsigned long input_size,
-					  unsigned long *output,
-					  unsigned long output_size,
-					  unsigned long *virt_addr)
-{
-}
-
-static const int early_serial_base;
-static inline void console_init(void)
-{
-}
-
-typedef u64 acpi_physical_address;
-static inline acpi_physical_address get_rsdp_addr(void)
-{
-	return 0;
-}
-
-extern pteval_t __default_kernel_pte_mask;
-
-static inline void cleanup_exception_handling(void)
-{
-}
 
 #endif

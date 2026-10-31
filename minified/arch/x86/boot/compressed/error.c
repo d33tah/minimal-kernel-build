@@ -3,15 +3,15 @@
 
 void warn(char *m)
 {
-	error_putstr("\n\n");
-	error_putstr(m);
-	error_putstr("\n\n");
+	__putstr("\n\n");
+	__putstr(m);
+	__putstr("\n\n");
 }
 
 void error(char *m)
 {
 	warn(m);
-	error_putstr(" -- System halted");
+	__putstr(" -- System halted");
 
 	while (1)
 		asm("hlt");

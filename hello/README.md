@@ -30,8 +30,12 @@ Two images are built from the same sources:
 
 | image | 32-bit part at | loadflags | minimum RAM, qemu | minimum RAM, v86 |
 |---|---|---|---|---|
-| `bzImage` | 0x100000 | LOADED_HIGH | 1028K | 1028 KiB |
-| `bzImage.low` | 0x10000 | 0 (zImage layout, setup at 0x90000) | 1M | does not run |
+| `bzImage` | 0x100000 | LOADED_HIGH | 1028K (1M fails) | 1028 KiB (1 MiB fails) |
+| `bzImage.low` | 0x10000 | 0 (zImage layout, setup at 0x90000) | 1020K (960K fails) | does not run |
+
+The page's RAM menu has 640 KB, 1, 2, 4, 18 and 32 MB; it picks the
+smallest size the header says fits, which is 2 MB for `bzImage` (1028 KiB
+can be requested with `index.html?mem=1052672`).
 
 qemu honours `LOADED_HIGH` being clear and loads the low image at 0x10000.
 v86 ignores loadflags and always copies the 32-bit part to 1 MiB, so v86 and

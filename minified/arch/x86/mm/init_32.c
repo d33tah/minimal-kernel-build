@@ -176,18 +176,18 @@ void __init native_pagetable_init(void)
 
 		pte_clear(NULL, va, pte);
 	}
-
-	__flush_tlb_all();
-
-	zone_sizes_init();
+	paging_init();
 }
 
-/* Page tables for the fixmap (FIX_WP_TEST) range. */
-void __init fixmap_page_table_init(void)
+void __init early_ioremap_page_table_range_init(void)
 {
 	pgd_t *pgd_base = swapper_pg_dir;
 	unsigned long vaddr, end;
 
+	/*
+	 * Fixed mappings, only the page table structure has to be
+	 * created - mappings will be set by set_fixmap():
+	 */
 	vaddr = __fix_to_virt(__end_of_fixed_addresses - 1) & PMD_MASK;
 	end = (FIXADDR_TOP + PMD_SIZE - 1) & PMD_MASK;
 	page_table_range_init(vaddr, end, pgd_base);
@@ -229,6 +229,16 @@ void __init initmem_init(void)
 	high_memory = (void *)__va(max_low_pfn * PAGE_SIZE - 1) + 1;
 
 	max_mapnr = max_low_pfn;
+}
+
+void __init paging_init(void)
+{
+	__flush_tlb_all();
+
+	/*
+	 * NOTE: at this point the bootmem allocator is fully available.
+	 */
+	zone_sizes_init();
 }
 
 static void __init test_wp_bit(void)

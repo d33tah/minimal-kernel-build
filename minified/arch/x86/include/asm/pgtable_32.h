@@ -10,6 +10,8 @@ struct mm_struct;
 extern pgd_t swapper_pg_dir[1024];
 extern pgd_t initial_page_table[1024];
 
+void paging_init(void);
+
 static inline void native_set_pte(pte_t *ptep, pte_t pte)
 {
 	*ptep = pte;

@@ -7,7 +7,7 @@ static inline void *alloc_low_page(void)
 	return alloc_low_pages(1);
 }
 
-void fixmap_page_table_init(void);
+void early_ioremap_page_table_range_init(void);
 
 unsigned long kernel_physical_mapping_init(unsigned long start,
 					   unsigned long end,

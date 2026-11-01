@@ -47,11 +47,13 @@ class QuietHandler(http.server.SimpleHTTPRequestHandler):
 
 class CachingHandler(QuietHandler):
     """Assets may be cached for 10 minutes (GitHub Pages sends max-age=600);
-    index.html is revalidated, so a reload always gets the newest one and a
+    index.html is never cached, so a reload always gets the newest one and a
     cached older app.js would be mixed with it unless the URLs differ."""
     def end_headers(self):
         html = self.path.split("?")[0].endswith((".html", "/"))
-        self.send_header("Cache-Control", "no-cache" if html else "max-age=600")
+        # no-store, not no-cache: http.server answers If-Modified-Since with
+        # one-second resolution, so two deploys within a second would 304.
+        self.send_header("Cache-Control", "no-store" if html else "max-age=600")
         super().end_headers()
 
 

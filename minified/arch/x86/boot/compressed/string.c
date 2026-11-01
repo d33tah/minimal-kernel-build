@@ -1,17 +1,23 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * This provides an optimized implementation of memcpy, and a simplified
+ * implementation of memset and memmove. These are used here because the
+ * standard kernel runtime versions are not yet available and we don't
+ * trust the gcc built-in implementations as they may do unexpected things
+ * (e.g. FPU ops) in the minimal decompression stub execution environment.
+ */
 #include "error.h"
-
-#include "../string.c"
+#include <linux/types.h>
 
 static void *____memcpy(void *dest, const void *src, size_t n)
 {
 	int d0, d1, d2;
-	asm volatile(
-		"rep ; movsl\n\t"
-		"movl %4,%%ecx\n\t"
-		"rep ; movsb\n\t"
-		: "=&c" (d0), "=&D" (d1), "=&S" (d2)
-		: "0" (n >> 2), "g" (n & 3), "1" (dest), "2" (src)
-		: "memory");
+	asm volatile("rep ; movsl\n\t"
+		     "movl %4,%%ecx\n\t"
+		     "rep ; movsb\n\t"
+		     : "=&c"(d0), "=&D"(d1), "=&S"(d2)
+		     : "0"(n >> 2), "g"(n & 3), "1"(dest), "2"(src)
+		     : "memory");
 
 	return dest;
 }
@@ -40,6 +46,7 @@ void *memmove(void *dest, const void *src, size_t n)
 	return dest;
 }
 
+/* Detect and warn about potential overlaps, but handle them with memmove. */
 void *memcpy(void *dest, const void *src, size_t n)
 {
 	if (dest > src && dest - src < n) {
@@ -48,4 +55,3 @@ void *memcpy(void *dest, const void *src, size_t n)
 	}
 	return ____memcpy(dest, src, n);
 }
-

@@ -1,256 +1,71 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ *  Copyright (C) 1991, 1992  Linus Torvalds
+ *  Copyright (C) 2000, 2001, 2002 Andi Kleen, SuSE Labs
+ *  Copyright (C) 2011	Don Zickus Red Hat, Inc.
+ *
+ *  Pentium III FXSR, SSE support
+ *	Gareth Hughes <gareth@valinux.com>, May 2000
+ */
 
-#include <linux/spinlock.h>
-#include <linux/kprobes.h>
-#include <linux/kdebug.h>
-#include <linux/sched/debug.h>
-#include <linux/nmi.h>
-#include <linux/debugfs.h>
-#include <linux/delay.h>
-#include <linux/hardirq.h>
-#include <linux/ratelimit.h>
-#include <linux/slab.h>
-#include <linux/export.h>
-#include <linux/atomic.h>
-#include <linux/sched/clock.h>
-
-#include <asm/cpu_entry_area.h>
+/*
+ * Handle hardware traps and faults.
+ */
 #include <asm/traps.h>
+#include <asm/io.h>
 #include <asm/mach_traps.h>
-#include <asm/nmi.h>
-#include <asm/x86_init.h>
-#include <asm/reboot.h>
-#include <asm/cache.h>
-#include <asm/nospec-branch.h>
-#include <asm/sev.h>
 
-
-struct nmi_desc {
-	raw_spinlock_t lock;
-	struct list_head head;
-};
-
-static struct nmi_desc nmi_desc[NMI_MAX] = 
-{
-	{
-		.lock = __RAW_SPIN_LOCK_UNLOCKED(&nmi_desc[0].lock),
-		.head = LIST_HEAD_INIT(nmi_desc[0].head),
-	},
-	{
-		.lock = __RAW_SPIN_LOCK_UNLOCKED(&nmi_desc[1].lock),
-		.head = LIST_HEAD_INIT(nmi_desc[1].head),
-	},
-	{
-		.lock = __RAW_SPIN_LOCK_UNLOCKED(&nmi_desc[2].lock),
-		.head = LIST_HEAD_INIT(nmi_desc[2].head),
-	},
-	{
-		.lock = __RAW_SPIN_LOCK_UNLOCKED(&nmi_desc[3].lock),
-		.head = LIST_HEAD_INIT(nmi_desc[3].head),
-	},
-
-};
-
-struct nmi_stats {
-	unsigned int normal;
-	unsigned int unknown;
-	unsigned int external;
-	unsigned int swallow;
-};
-
-static DEFINE_PER_CPU(struct nmi_stats, nmi_stats);
-
-static int ignore_nmis __read_mostly;
-
-int unknown_nmi_panic;
+/*
+ * Prevent NMI reason port (0x61) being accessed simultaneously, can
+ * only be used in NMI handler.
+ */
 static DEFINE_RAW_SPINLOCK(nmi_reason_lock);
 
-
-#define nmi_to_desc(type) (&nmi_desc[type])
-
-/* Stub: nmi_warning_debugfs and nmi_check_duration not needed for minimal kernel */
-
-static int nmi_handle(unsigned int type, struct pt_regs *regs)
-{
-	struct nmi_desc *desc = nmi_to_desc(type);
-	struct nmiaction *a;
-	int handled=0;
-
-	rcu_read_lock();
-
-	/* Simplified: no timing check for minimal kernel */
-	list_for_each_entry_rcu(a, &desc->head, list)
-		handled += a->handler(type, regs);
-
-	rcu_read_unlock();
-
-	return handled;
-}
-NOKPROBE_SYMBOL(nmi_handle);
-
-int __register_nmi_handler(unsigned int type, struct nmiaction *action)
-{
-	struct nmi_desc *desc = nmi_to_desc(type);
-	unsigned long flags;
-
-	if (WARN_ON_ONCE(!action->handler || !list_empty(&action->list)))
-		return -EINVAL;
-
-	raw_spin_lock_irqsave(&desc->lock, flags);
-
-	 
-	WARN_ON_ONCE(type == NMI_SERR && !list_empty(&desc->head));
-	WARN_ON_ONCE(type == NMI_IO_CHECK && !list_empty(&desc->head));
-
-	 
-	if (action->flags & NMI_FLAG_FIRST)
-		list_add_rcu(&action->list, &desc->head);
-	else
-		list_add_tail_rcu(&action->list, &desc->head);
-
-	raw_spin_unlock_irqrestore(&desc->lock, flags);
-	return 0;
-}
-
-static void
-pci_serr_error(unsigned char reason, struct pt_regs *regs)
-{
-	 
-	if (nmi_handle(NMI_SERR, regs))
-		return;
-
-	pr_emerg("NMI: PCI system error (SERR) for reason %02x on CPU %d.\n",
-		 reason, smp_processor_id());
-
-	if (panic_on_unrecovered_nmi)
-		nmi_panic(regs, "NMI: Not continuing");
-
-	pr_emerg("Dazed and confused, but trying to continue\n");
-
-	 
-	reason = (reason & NMI_REASON_CLEAR_MASK) | NMI_REASON_CLEAR_SERR;
-	outb(reason, NMI_REASON_PORT);
-}
-NOKPROBE_SYMBOL(pci_serr_error);
-
-static void
-io_check_error(unsigned char reason, struct pt_regs *regs)
-{
-	unsigned long i;
-
-	 
-	if (nmi_handle(NMI_IO_CHECK, regs))
-		return;
-
-	pr_emerg(
-	"NMI: IOCK error (debug interrupt?) for reason %02x on CPU %d.\n",
-		 reason, smp_processor_id());
-	show_regs(regs);
-
-	if (panic_on_io_nmi) {
-		nmi_panic(regs, "NMI IOCK error: Not continuing");
-
-		 
-		return;
-	}
-
-	 
-	reason = (reason & NMI_REASON_CLEAR_MASK) | NMI_REASON_CLEAR_IOCHK;
-	outb(reason, NMI_REASON_PORT);
-
-	i = 20000;
-	while (--i) {
-		touch_nmi_watchdog();
-		udelay(100);
-	}
-
-	reason &= ~NMI_REASON_CLEAR_IOCHK;
-	outb(reason, NMI_REASON_PORT);
-}
-NOKPROBE_SYMBOL(io_check_error);
-
-static void
-unknown_nmi_error(unsigned char reason, struct pt_regs *regs)
-{
-	int handled;
-
-	 
-	handled = nmi_handle(NMI_UNKNOWN, regs);
-	if (handled) {
-		__this_cpu_add(nmi_stats.unknown, handled);
-		return;
-	}
-
-	__this_cpu_add(nmi_stats.unknown, 1);
-
-	pr_emerg("Uhhuh. NMI received for unknown reason %02x on CPU %d.\n",
-		 reason, smp_processor_id());
-
-	if (unknown_nmi_panic || panic_on_unrecovered_nmi)
-		nmi_panic(regs, "NMI: Not continuing");
-
-	pr_emerg("Dazed and confused, but trying to continue\n");
-}
-NOKPROBE_SYMBOL(unknown_nmi_error);
-
-static DEFINE_PER_CPU(bool, swallow_nmi);
-static DEFINE_PER_CPU(unsigned long, last_nmi_rip);
-
-static noinstr void default_do_nmi(struct pt_regs *regs)
-{
-	unsigned char reason = 0;
-	int handled;
-	bool b2b = false;
-
-	 
-
-	 
-	if (regs->ip == __this_cpu_read(last_nmi_rip))
-		b2b = true;
-	else
-		__this_cpu_write(swallow_nmi, false);
-
-	__this_cpu_write(last_nmi_rip, regs->ip);
-
-
-	handled = nmi_handle(NMI_LOCAL, regs);
-	__this_cpu_add(nmi_stats.normal, handled);
-	if (handled) {
-		 
-		if (handled > 1)
-			__this_cpu_write(swallow_nmi, true);
-		goto out;
-	}
-
-	 
-	while (!raw_spin_trylock(&nmi_reason_lock)) {
-		run_crash_ipi_callback(regs);
-		cpu_relax();
-	}
-
-	reason = x86_platform.get_nmi_reason();
-
-	if (reason & NMI_REASON_MASK) {
-		if (reason & NMI_REASON_SERR)
-			pci_serr_error(reason, regs);
-		else if (reason & NMI_REASON_IOCHK)
-			io_check_error(reason, regs);
-		 
-		reassert_nmi();
-		__this_cpu_add(nmi_stats.external, 1);
-		raw_spin_unlock(&nmi_reason_lock);
-		goto out;
-	}
-	raw_spin_unlock(&nmi_reason_lock);
-
-	 
-	if (b2b && __this_cpu_read(swallow_nmi))
-		__this_cpu_add(nmi_stats.swallow, 1);
-	else
-		unknown_nmi_error(reason, regs);
-
-out:
-}
-
+/*
+ * NMIs can page fault or hit breakpoints which will cause it to lose
+ * its NMI context with the CPU when the breakpoint or page fault does an IRET.
+ *
+ * As a result, NMIs can nest if NMIs get unmasked due an IRET during
+ * NMI processing.  On x86_64, the asm glue protects us from nested NMIs
+ * if the outer NMI came from kernel mode, but we can still nest if the
+ * outer NMI came from user mode.
+ *
+ * To handle these nested NMIs, we have three states:
+ *
+ *  1) not running
+ *  2) executing
+ *  3) latched
+ *
+ * When no NMI is in progress, it is in the "not running" state.
+ * When an NMI comes in, it goes into the "executing" state.
+ * Normally, if another NMI is triggered, it does not interrupt
+ * the running NMI and the HW will simply latch it so that when
+ * the first NMI finishes, it will restart the second NMI.
+ * (Note, the latch is binary, thus multiple NMIs triggering,
+ *  when one is running, are ignored. Only one NMI is restarted.)
+ *
+ * If an NMI executes an iret, another NMI can preempt it. We do not
+ * want to allow this new NMI to run, but we want to execute it when the
+ * first one finishes.  We set the state to "latched", and the exit of
+ * the first NMI will perform a dec_return, if the result is zero
+ * (NOT_RUNNING), then it will simply exit the NMI handler. If not, the
+ * dec_return would have set the state to NMI_EXECUTING (what we want it
+ * to be when we are running). In this case, we simply jump back to
+ * rerun the NMI handler again, and restart the 'latched' NMI.
+ *
+ * No trap (breakpoint or page fault) should be hit before nmi_restart,
+ * thus there is no race between the first check of state for NOT_RUNNING
+ * and setting it to NMI_EXECUTING. The HW will prevent nested NMIs
+ * at this point.
+ *
+ * In case the NMI takes a page fault, we need to save off the CR2
+ * because the NMI could have preempted another page fault and corrupt
+ * the CR2 that is about to be read. As nested NMIs must be restarted
+ * and they can not take breakpoints or page faults, the update of the
+ * CR2 must be done before converting the nmi state back to NOT_RUNNING.
+ * Otherwise, there would be a race of another nested NMI coming in
+ * after setting state to NOT_RUNNING but before updating the nmi_cr2.
+ */
 enum nmi_states {
 	NMI_NOT_RUNNING = 0,
 	NMI_EXECUTING,
@@ -260,15 +75,56 @@ static DEFINE_PER_CPU(enum nmi_states, nmi_state);
 static DEFINE_PER_CPU(unsigned long, nmi_cr2);
 static DEFINE_PER_CPU(unsigned long, nmi_dr7);
 
+static void pci_serr_error(unsigned char reason, struct pt_regs *regs)
+{
+	/* Clear and disable the PCI SERR error line. */
+	reason = (reason & NMI_REASON_CLEAR_MASK) | NMI_REASON_CLEAR_SERR;
+	outb(reason, NMI_REASON_PORT);
+}
+
+static void io_check_error(unsigned char reason, struct pt_regs *regs)
+{
+	/*
+	 * MKB_NO_CALIBRATE: only upstream's panic_on_io_nmi arm is left (upstream
+	 * nmi_panic() calls panic() with this message; there is no nmi_panic()
+	 * here). The default arm re-enabled the IOCK line after a 2 s udelay()
+	 * wait, and udelay() is not calibrated on a CPU without a usable TSC.
+	 */
+	panic("NMI IOCK error: Not continuing");
+}
+
+static noinstr void default_do_nmi(struct pt_regs *regs)
+{
+	unsigned char reason = 0;
+
+	/*
+	 * Non-CPU-specific NMI: NMI sources can be processed on any CPU.
+	 */
+	while (!raw_spin_trylock(&nmi_reason_lock)) {
+		cpu_relax();
+	}
+
+	reason = default_get_nmi_reason();
+
+	if (reason & NMI_REASON_MASK) {
+		if (reason & NMI_REASON_SERR)
+			pci_serr_error(reason, regs);
+		else if (reason & NMI_REASON_IOCHK)
+			io_check_error(reason, regs);
+		/*
+		 * Reassert NMI in case it became active
+		 * meanwhile as it's edge-triggered:
+		 */
+		reassert_nmi();
+		raw_spin_unlock(&nmi_reason_lock);
+		return;
+	}
+	raw_spin_unlock(&nmi_reason_lock);
+}
+
 DEFINE_IDTENTRY_RAW(exc_nmi)
 {
 	irqentry_state_t irq_state;
-
-	 
-	sev_es_nmi_complete();
-
-	if (IS_ENABLED(CONFIG_SMP) && arch_cpu_is_offline(smp_processor_id()))
-		return;
 
 	if (this_cpu_read(nmi_state) != NMI_NOT_RUNNING) {
 		this_cpu_write(nmi_state, NMI_LATCHED);
@@ -278,37 +134,20 @@ DEFINE_IDTENTRY_RAW(exc_nmi)
 	this_cpu_write(nmi_cr2, read_cr2());
 nmi_restart:
 
-	 
-	sev_es_ist_enter(regs);
-
 	this_cpu_write(nmi_dr7, local_db_save());
 
 	irq_state = irqentry_nmi_enter(regs);
 
 	inc_irq_stat(__nmi_count);
 
-	if (!ignore_nmis)
-		default_do_nmi(regs);
+	default_do_nmi(regs);
 
 	irqentry_nmi_exit(regs, irq_state);
 
 	local_db_restore(this_cpu_read(nmi_dr7));
 
-	sev_es_ist_exit();
-
 	if (unlikely(this_cpu_read(nmi_cr2) != read_cr2()))
 		write_cr2(this_cpu_read(nmi_cr2));
 	if (this_cpu_dec_return(nmi_state))
 		goto nmi_restart;
-
-	if (user_mode(regs))
-		mds_user_clear_cpu_buffers();
-}
-
-#if IS_MODULE(CONFIG_KVM_INTEL)
-#endif
-
-void local_touch_nmi(void)
-{
-	__this_cpu_write(last_nmi_rip, 0);
 }

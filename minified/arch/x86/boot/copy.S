@@ -45,21 +45,3 @@ SYM_FUNC_START_NOALIGN(memset)
 	popw	%di
 	retl
 SYM_FUNC_END(memset)
-
-SYM_FUNC_START_NOALIGN(copy_from_fs)
-	pushw	%ds
-	pushw	%fs
-	popw	%ds
-	calll	memcpy
-	popw	%ds
-	retl
-SYM_FUNC_END(copy_from_fs)
-
-SYM_FUNC_START_NOALIGN(copy_to_fs)
-	pushw	%es
-	pushw	%fs
-	popw	%es
-	calll	memcpy
-	popw	%es
-	retl
-SYM_FUNC_END(copy_to_fs)

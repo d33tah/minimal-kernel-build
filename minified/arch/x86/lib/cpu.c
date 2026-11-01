@@ -1,5 +1,4 @@
-#include <linux/types.h>
-#include <linux/export.h>
+// SPDX-License-Identifier: GPL-2.0-only
 #include <asm/cpu.h>
 
 unsigned int x86_family(unsigned int sig)
@@ -12,23 +11,4 @@ unsigned int x86_family(unsigned int sig)
 		x86 += (sig >> 20) & 0xff;
 
 	return x86;
-}
-
-unsigned int x86_model(unsigned int sig)
-{
-	unsigned int fam, model;
-
-	fam = x86_family(sig);
-
-	model = (sig >> 4) & 0xf;
-
-	if (fam >= 0x6)
-		model += ((sig >> 16) & 0xf) << 4;
-
-	return model;
-}
-
-unsigned int x86_stepping(unsigned int sig)
-{
-	return sig & 0xf;
 }

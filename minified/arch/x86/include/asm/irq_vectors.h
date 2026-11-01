@@ -1,77 +1,40 @@
- 
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_IRQ_VECTORS_H
 #define _ASM_X86_IRQ_VECTORS_H
 
-#include <linux/threads.h>
- 
+/*
+ * IDT vectors usable for external interrupt sources start at 0x20.
+ * (0x80 is the syscall vector, 0x30-0x3f are for ISA)
+ */
+#define FIRST_EXTERNAL_VECTOR 0x20
 
- 
-#define NMI_VECTOR			0x02
+#define IA32_SYSCALL_VECTOR 0x80
 
- 
-#define FIRST_EXTERNAL_VECTOR		0x20
+/*
+ * Vectors 0x30-0x3f are used for ISA interrupts.
+ *   round up to the next 16-vector boundary
+ */
+#define ISA_IRQ_VECTOR(irq) (((FIRST_EXTERNAL_VECTOR + 16) & ~15) + irq)
 
- 
-#define IRQ_MOVE_CLEANUP_VECTOR		FIRST_EXTERNAL_VECTOR
+#define NR_VECTORS 256
 
-#define IA32_SYSCALL_VECTOR		0x80
+#define FIRST_SYSTEM_VECTOR NR_VECTORS
 
- 
-#define ISA_IRQ_VECTOR(irq)		(((FIRST_EXTERNAL_VECTOR + 16) & ~15) + irq)
+#define NR_EXTERNAL_VECTORS (FIRST_SYSTEM_VECTOR - FIRST_EXTERNAL_VECTOR)
 
- 
+/*
+ * Size the maximum number of interrupts.
+ *
+ * If the irq_desc[] array has a sparse layout, we can size things
+ * generously - it scales up linearly with the maximum number of CPUs,
+ * and the maximum number of IO-APICs, whichever is higher.
+ *
+ * In other cases we size more conservatively, to not create too large
+ * static arrays.
+ */
 
-#define SPURIOUS_APIC_VECTOR		0xff
- 
-#if ((SPURIOUS_APIC_VECTOR & 0x0F) != 0x0F)
-# error SPURIOUS_APIC_VECTOR definition error
+#define NR_IRQS_LEGACY 16
+
+#define NR_IRQS NR_IRQS_LEGACY
+
 #endif
-
-#define ERROR_APIC_VECTOR		0xfe
-#define RESCHEDULE_VECTOR		0xfd
-#define CALL_FUNCTION_VECTOR		0xfc
-#define CALL_FUNCTION_SINGLE_VECTOR	0xfb
-#define THERMAL_APIC_VECTOR		0xfa
-#define THRESHOLD_APIC_VECTOR		0xf9
-#define REBOOT_VECTOR			0xf8
-
- 
-#define X86_PLATFORM_IPI_VECTOR		0xf7
-
- 
-#define IRQ_WORK_VECTOR			0xf6
-
- 
-#define DEFERRED_ERROR_VECTOR		0xf4
-
- 
-#define HYPERVISOR_CALLBACK_VECTOR	0xf3
-
- 
-
-#define MANAGED_IRQ_SHUTDOWN_VECTOR	0xef
-
-#if IS_ENABLED(CONFIG_HYPERV)
-#define HYPERV_REENLIGHTENMENT_VECTOR	0xee
-#define HYPERV_STIMER0_VECTOR		0xed
-#endif
-
-#define LOCAL_TIMER_VECTOR		0xec
-
-#define NR_VECTORS			 256
-
-#define FIRST_SYSTEM_VECTOR		NR_VECTORS
-
-#define NR_EXTERNAL_VECTORS		(FIRST_SYSTEM_VECTOR - FIRST_EXTERNAL_VECTOR)
-#define NR_SYSTEM_VECTORS		(NR_VECTORS - FIRST_SYSTEM_VECTOR)
-
- 
-
-#define NR_IRQS_LEGACY			16
-
-#define CPU_VECTOR_LIMIT		(64 * NR_CPUS)
-#define IO_APIC_VECTOR_LIMIT		(32 * MAX_IO_APICS)
-
-#define NR_IRQS				NR_IRQS_LEGACY
-
-#endif  

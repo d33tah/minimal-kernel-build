@@ -1,366 +1,142 @@
- 
- 
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/* internal.h: mm/ internal definitions
+ *
+ * Copyright (C) 2004 Red Hat, Inc. All Rights Reserved.
+ * Written by David Howells (dhowells@redhat.com)
+ */
 #ifndef __MM_INTERNAL_H
 #define __MM_INTERNAL_H
 
-#include <linux/fs.h>
-#include <linux/mm.h>
-#include <linux/pagemap.h>
 #include <linux/rmap.h>
-#include <linux/tracepoint-defs.h>
 
-struct folio_batch;
+#define GFP_RECLAIM_MASK                                                       \
+	(__GFP_RECLAIM | __GFP_HIGH | __GFP_IO | __GFP_FS | __GFP_NOWARN |     \
+	 __GFP_RETRY_MAYFAIL | __GFP_NOFAIL | __GFP_NORETRY | __GFP_MEMALLOC | \
+	 __GFP_NOMEMALLOC | __GFP_ATOMIC | __GFP_NOLOCKDEP)
 
- 
-#define GFP_RECLAIM_MASK (__GFP_RECLAIM|__GFP_HIGH|__GFP_IO|__GFP_FS|\
-			__GFP_NOWARN|__GFP_RETRY_MAYFAIL|__GFP_NOFAIL|\
-			__GFP_NORETRY|__GFP_MEMALLOC|__GFP_NOMEMALLOC|\
-			__GFP_ATOMIC|__GFP_NOLOCKDEP)
+/* The GFP flags allowed during early boot */
+#define GFP_BOOT_MASK (__GFP_BITS_MASK & ~(__GFP_RECLAIM | __GFP_IO | __GFP_FS))
 
- 
-#define GFP_BOOT_MASK (__GFP_BITS_MASK & ~(__GFP_RECLAIM|__GFP_IO|__GFP_FS))
+/* Control allocation cpuset and node placement constraints */
+#define GFP_CONSTRAINT_MASK (__GFP_HARDWALL | __GFP_THISNODE)
 
- 
-#define GFP_CONSTRAINT_MASK (__GFP_HARDWALL|__GFP_THISNODE)
+/* Do not use these with a slab allocator */
+#define GFP_SLAB_BUG_MASK (__GFP_DMA32 | __GFP_HIGHMEM | ~__GFP_BITS_MASK)
 
- 
-#define GFP_SLAB_BUG_MASK (__GFP_DMA32|__GFP_HIGHMEM|~__GFP_BITS_MASK)
+#define WARN_ON_ONCE_GFP(cond, gfp)             \
+	({                                      \
+		int __ret_warn_once = !!(cond); \
+		unlikely(__ret_warn_once);      \
+	})
 
- 
-#define WARN_ON_ONCE_GFP(cond, gfp)	({				\
-	static bool __section(".data.once") __warned;			\
-	int __ret_warn_once = !!(cond);					\
-									\
-	if (unlikely(!(gfp & __GFP_NOWARN) && __ret_warn_once && !__warned)) { \
-		__warned = true;					\
-		WARN_ON(1);						\
-	}								\
-	unlikely(__ret_warn_once);					\
-})
-
-void page_writeback_init(void);
-
-static inline void *folio_raw_mapping(struct folio *folio)
-{
-	unsigned long mapping = (unsigned long)folio->mapping;
-
-	return (void *)(mapping & ~PAGE_MAPPING_FLAGS);
-}
-
-void __acct_reclaim_writeback(pg_data_t *pgdat, struct folio *folio,
-						int nr_throttled);
-static inline void acct_reclaim_writeback(struct folio *folio)
-{
-	pg_data_t *pgdat = folio_pgdat(folio);
-	int nr_throttled = atomic_read(&pgdat->nr_writeback_throttled);
-
-	if (nr_throttled)
-		__acct_reclaim_writeback(pgdat, folio, nr_throttled);
-}
-
-/* wake_throttle_isolated removed - unused */
-
-vm_fault_t do_swap_page(struct vm_fault *vmf);
-void folio_rotate_reclaimable(struct folio *folio);
-bool __folio_end_writeback(struct folio *folio);
-void deactivate_file_folio(struct folio *folio);
-
-void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *start_vma,
-		unsigned long floor, unsigned long ceiling);
-void pmd_install(struct mm_struct *mm, pmd_t *pmd, pgtable_t *pte);
-
-struct zap_details;
-void unmap_page_range(struct mmu_gather *tlb,
-			     struct vm_area_struct *vma,
-			     unsigned long addr, unsigned long end,
-			     struct zap_details *details);
-
-void page_cache_ra_order(struct readahead_control *, struct file_ra_state *,
-		unsigned int order);
-void force_page_cache_ra(struct readahead_control *, unsigned long nr);
-/* force_page_cache_readahead removed - unused */
-
-unsigned find_lock_entries(struct address_space *mapping, pgoff_t start,
-		pgoff_t end, struct folio_batch *fbatch, pgoff_t *indices);
-unsigned find_get_entries(struct address_space *mapping, pgoff_t start,
-		pgoff_t end, struct folio_batch *fbatch, pgoff_t *indices);
-void filemap_free_folio(struct address_space *mapping, struct folio *folio);
-int truncate_inode_folio(struct address_space *mapping, struct folio *folio);
-bool truncate_inode_partial_folio(struct folio *folio, loff_t start,
-		loff_t end);
-long invalidate_inode_page(struct page *page);
-unsigned long invalidate_mapping_pagevec(struct address_space *mapping,
-		pgoff_t start, pgoff_t end, unsigned long *nr_pagevec);
-
- 
-static inline bool folio_evictable(struct folio *folio)
-{
-	bool ret;
-
-	 
-	rcu_read_lock();
-	ret = !mapping_unevictable(folio_mapping(folio)) &&
-			!folio_test_mlocked(folio);
-	rcu_read_unlock();
-	return ret;
-}
-
-/* page_evictable removed - unused */
-
+/*
+ * Turn a non-refcounted page (->_refcount == 0) into refcounted with
+ * a count of one.
+ */
 static inline void set_page_refcounted(struct page *page)
 {
-	VM_BUG_ON_PAGE(PageTail(page), page);
-	VM_BUG_ON_PAGE(page_ref_count(page), page);
 	set_page_count(page, 1);
 }
 
 extern unsigned long highest_memmap_pfn;
 
- 
-#define MAX_RECLAIM_RETRIES 16
-
- 
-pgprot_t __init early_memremap_pgprot_adjust(resource_size_t phys_addr,
-					unsigned long size, pgprot_t prot);
-
-
-/* isolate_lru_page, putback_lru_page removed - never called */
-
- 
-
- 
-struct alloc_context {
-	struct zonelist *zonelist;
-	nodemask_t *nodemask;
-	struct zoneref *preferred_zoneref;
-	int migratetype;
-
-	 
-	enum zone_type highest_zoneidx;
-	bool spread_dirty_pages;
-};
-
- 
+/*
+ * This function returns the order of a free page in the buddy system. In
+ * general, page_zone(page)->lock must be held by the caller to prevent the
+ * page from being allocated in parallel and returning garbage as the order.
+ * If a caller does not hold page_zone(page)->lock, it must guarantee that the
+ * page cannot be allocated or merged in parallel.
+ */
 static inline unsigned int buddy_order(struct page *page)
 {
-	 
+	/* PageBuddy() must be checked by the caller */
 	return page_private(page);
 }
 
- 
-#define buddy_order_unsafe(page)	READ_ONCE(page_private(page))
+/*
+ * This function checks whether a page is free && is the buddy
+ * we can coalesce a page and its buddy if
+ * (a) the buddy is not in a hole (check before calling!) &&
+ * (b) the buddy is in the buddy system &&
+ * (c) a page and its buddy have the same order &&
+ * (d) a page and its buddy are in the same zone.
+ *
+ * For recording whether a page is in the buddy system, we set PageBuddy.
+ * Setting, clearing, and testing PageBuddy is serialized by zone->lock.
+ *
+ * For recording page's order, we use page_private(page).
+ */
+static inline bool page_is_buddy(struct page *page, struct page *buddy,
+				 unsigned int order)
+{
+	if (!PageBuddy(buddy))
+		return false;
 
-/* page_is_buddy removed - unused */
-/* __find_buddy_pfn, find_buddy_page_pfn removed - unused */
+	if (buddy_order(buddy) != order)
+		return false;
 
-/* __pageblock_pfn_to_page, pageblock_pfn_to_page removed - unused */
+	return true;
+}
 
-/* __isolate_free_page, __putback_isolated_page removed - unused */
+/*
+ * Locate the struct page for both the matching buddy in our
+ * pair (buddy1) and the combined O(n+1) page they form (page).
+ *
+ * 1) Any buddy B1 will have an order O twin B2 which satisfies
+ * the following equation:
+ *     B2 = B1 ^ (1 << O)
+ * For example, if the starting buddy (buddy2) is #8 its order
+ * 1 buddy is #10:
+ *     B2 = 8 ^ (1 << 1) = 8 ^ 2 = 10
+ *
+ * 2) Any buddy B will have an order O+1 parent P which
+ * satisfies the following equation:
+ *     P = B & ~(1 << O)
+ *
+ * Assumption: *_mem_map is contiguous at least up to MAX_ORDER
+ */
+static inline unsigned long __find_buddy_pfn(unsigned long page_pfn,
+					     unsigned int order)
+{
+	return page_pfn ^ (1 << order);
+}
+
+/*
+ * Find the buddy of @page and validate it.
+ * @page: The input page
+ * @pfn: The pfn of the page, it saves a call to page_to_pfn() when the
+ *       function is used in the performance-critical __free_one_page().
+ * @order: The order of the page
+ * @buddy_pfn: The output pointer to the buddy pfn, it also saves a call to
+ *             page_to_pfn().
+ *
+ * The found buddy can be a non PageBuddy, out of @page's zone, or its order is
+ * not the same as @page. The validation is necessary before use it.
+ *
+ * Return: the found buddy page or NULL if not found.
+ */
+static inline struct page *find_buddy_page_pfn(struct page *page,
+					       unsigned long pfn,
+					       unsigned int order,
+					       unsigned long *buddy_pfn)
+{
+	unsigned long __buddy_pfn = __find_buddy_pfn(pfn, order);
+	struct page *buddy;
+
+	buddy = page + (__buddy_pfn - pfn);
+	if (buddy_pfn)
+		*buddy_pfn = __buddy_pfn;
+
+	if (page_is_buddy(page, buddy, order))
+		return buddy;
+	return NULL;
+}
+
 extern void memblock_free_pages(struct page *page, unsigned long pfn,
-					unsigned int order);
-extern void __free_pages_core(struct page *page, unsigned int order);
-extern void prep_compound_page(struct page *page, unsigned int order);
-extern void post_alloc_hook(struct page *page, unsigned int order,
-					gfp_t gfp_flags);
-extern int user_min_free_kbytes;
+				unsigned int order);
 
-extern void free_unref_page(struct page *page, unsigned int order);
-extern void free_unref_page_list(struct list_head *list);
-
-
-extern void *memmap_alloc(phys_addr_t size, phys_addr_t align,
-			  phys_addr_t min_addr,
-			  int nid, bool exact_nid);
-
-/* split_free_page, find_suitable_fallback declaration removed - unused */
-/* is_exec_mapping, is_stack_mapping, is_data_mapping removed - unused */
-
+/* mm/util.c */
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
-		struct vm_area_struct *prev);
-void __vma_unlink_list(struct mm_struct *mm, struct vm_area_struct *vma);
-struct anon_vma *folio_anon_vma(struct folio *folio);
+		     struct vm_area_struct *prev);
 
-void unmap_mapping_folio(struct folio *folio);
-extern long populate_vma_page_range(struct vm_area_struct *vma,
-		unsigned long start, unsigned long end, int *locked);
-/* faultin_vma_page_range removed - unused */
-extern int mlock_future_check(struct mm_struct *mm, unsigned long flags,
-			      unsigned long len);
- 
-void mlock_folio(struct folio *folio);
-static inline void mlock_vma_folio(struct folio *folio,
-			struct vm_area_struct *vma, bool compound)
-{
-	 
-	if (unlikely((vma->vm_flags & (VM_LOCKED|VM_SPECIAL)) == VM_LOCKED) &&
-	    (compound || !folio_test_large(folio)))
-		mlock_folio(folio);
-}
-
-static inline void mlock_vma_page(struct page *page,
-			struct vm_area_struct *vma, bool compound)
-{
-	mlock_vma_folio(page_folio(page), vma, compound);
-}
-
-void munlock_page(struct page *page);
-static inline void munlock_vma_page(struct page *page,
-			struct vm_area_struct *vma, bool compound)
-{
-	if (unlikely(vma->vm_flags & VM_LOCKED) &&
-	    (compound || !PageTransCompound(page)))
-		munlock_page(page);
-}
-void mlock_new_page(struct page *page);
-bool need_mlock_page_drain(int cpu);
-void mlock_page_drain_local(void);
-void mlock_page_drain_remote(int cpu);
-
-/* maybe_pmd_mkwrite removed - unused */
-
-
-static inline unsigned long
-vma_pgoff_address(pgoff_t pgoff, unsigned long nr_pages,
-		  struct vm_area_struct *vma)
-{
-	unsigned long address;
-
-	if (pgoff >= vma->vm_pgoff) {
-		address = vma->vm_start +
-			((pgoff - vma->vm_pgoff) << PAGE_SHIFT);
-		 
-		if (address < vma->vm_start || address >= vma->vm_end)
-			address = -EFAULT;
-	} else if (pgoff + nr_pages - 1 >= vma->vm_pgoff) {
-		 
-		address = vma->vm_start;
-	} else {
-		address = -EFAULT;
-	}
-	return address;
-}
-
- 
-static inline unsigned long
-vma_address(struct page *page, struct vm_area_struct *vma)
-{
-	VM_BUG_ON_PAGE(PageKsm(page), page);	 
-	return vma_pgoff_address(page_to_pgoff(page), compound_nr(page), vma);
-}
-
- 
-static inline unsigned long vma_address_end(struct page_vma_mapped_walk *pvmw)
-{
-	struct vm_area_struct *vma = pvmw->vma;
-	pgoff_t pgoff;
-	unsigned long address;
-
-	 
-	if (pvmw->nr_pages == 1)
-		return pvmw->address + PAGE_SIZE;
-
-	pgoff = pvmw->pgoff + pvmw->nr_pages;
-	address = vma->vm_start + ((pgoff - vma->vm_pgoff) << PAGE_SHIFT);
-	 
-	if (address < vma->vm_start || address > vma->vm_end)
-		address = vma->vm_end;
-	return address;
-}
-
-static inline struct file *maybe_unlock_mmap_for_io(struct vm_fault *vmf,
-						    struct file *fpin)
-{
-	int flags = vmf->flags;
-
-	if (fpin)
-		return fpin;
-
-	 
-	if (fault_flag_allow_retry_first(flags) &&
-	    !(flags & FAULT_FLAG_RETRY_NOWAIT)) {
-		fpin = get_file(vmf->vma->vm_file);
-		mmap_read_unlock(vmf->vma->vm_mm);
-	}
-	return fpin;
-}
-
-enum mminit_level {
-	MMINIT_WARNING,
-	MMINIT_VERIFY,
-	MMINIT_TRACE
-};
-
-
-static inline void mminit_dprintk(enum mminit_level level,
-				const char *prefix, const char *fmt, ...)
-{
-}
-
-static inline void mminit_verify_zonelist(void)
-{
-}
-
-extern int hwpoison_filter(struct page *p);
-
-extern unsigned long  __must_check vm_mmap_pgoff(struct file *, unsigned long,
-        unsigned long, unsigned long,
-        unsigned long, unsigned long);
-
-extern void set_pageblock_order(void);
-unsigned int reclaim_clean_pages_from_list(struct zone *zone,
-					    struct list_head *page_list);
- 
-#define ALLOC_WMARK_MIN		WMARK_MIN
-#define ALLOC_WMARK_LOW		WMARK_LOW
-#define ALLOC_WMARK_HIGH	WMARK_HIGH
-#define ALLOC_NO_WATERMARKS	0x04  
-
- 
-#define ALLOC_WMARK_MASK	(ALLOC_NO_WATERMARKS-1)
-
- 
-#define ALLOC_OOM		0x08
-
-#define ALLOC_HARDER		 0x10  
-#define ALLOC_HIGH		 0x20
-#define ALLOC_CPUSET		 0x40
-#define ALLOC_CMA		 0x80
-#define ALLOC_KSWAPD		0x800  
-
-enum ttu_flags;
-struct tlbflush_unmap_batch;
-
-
- 
-extern struct workqueue_struct *mm_percpu_wq;
-
-void flush_tlb_batched_pending(struct mm_struct *mm);
-
-extern const struct trace_print_flags pageflag_names[];
-extern const struct trace_print_flags vmaflag_names[];
-extern const struct trace_print_flags gfpflag_names[];
-
-/* is_migrate_highatomic, is_migrate_highatomic_page removed - unused */
-
-void setup_zone_pageset(struct zone *zone);
-
-struct migration_target_control {
-	int nid;		 
-	nodemask_t *nmask;
-	gfp_t gfp_mask;
-};
-
- 
-int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
-                pgprot_t prot, struct page **pages, unsigned int page_shift);
-
-void vunmap_range_noflush(unsigned long start, unsigned long end);
-
-void free_zone_device_page(struct page *page);
-
- 
-struct folio *try_grab_folio(struct page *page, int refs, unsigned int flags);
-
-DECLARE_PER_CPU(struct per_cpu_nodestat, boot_nodestats);
-
-#endif	 
+#endif

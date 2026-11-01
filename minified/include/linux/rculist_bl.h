@@ -1,15 +1,11 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_RCULIST_BL_H
 #define _LINUX_RCULIST_BL_H
 
-#include <linux/list.h>
 #include <linux/bit_spinlock.h>
 #include <linux/rcupdate.h>
 
-/* Inlined from list_bl.h */
-#define LIST_BL_LOCKMASK	0UL
-
-#define LIST_BL_BUG_ON(x)
-
+#define LIST_BL_LOCKMASK 0UL
 
 struct hlist_bl_head {
 	struct hlist_bl_node *first;
@@ -18,8 +14,7 @@ struct hlist_bl_head {
 struct hlist_bl_node {
 	struct hlist_bl_node *next, **pprev;
 };
-#define INIT_HLIST_BL_HEAD(ptr) \
-	((ptr)->first = NULL)
+#define INIT_HLIST_BL_HEAD(ptr) ((ptr)->first = NULL)
 
 static inline void INIT_HLIST_BL_NODE(struct hlist_bl_node *h)
 {
@@ -27,75 +22,29 @@ static inline void INIT_HLIST_BL_NODE(struct hlist_bl_node *h)
 	h->pprev = NULL;
 }
 
-#define hlist_bl_entry(ptr, type, member) container_of(ptr,type,member)
+#define hlist_bl_entry(ptr, type, member) container_of(ptr, type, member)
 
-static inline bool  hlist_bl_unhashed(const struct hlist_bl_node *h)
+static inline bool hlist_bl_unhashed(const struct hlist_bl_node *h)
 {
 	return !h->pprev;
 }
 
 static inline struct hlist_bl_node *hlist_bl_first(struct hlist_bl_head *h)
 {
-	return (struct hlist_bl_node *)
-		((unsigned long)h->first & ~LIST_BL_LOCKMASK);
+	return (struct hlist_bl_node *)((unsigned long)h->first &
+					~LIST_BL_LOCKMASK);
 }
-
-static inline void hlist_bl_set_first(struct hlist_bl_head *h,
-					struct hlist_bl_node *n)
-{
-	LIST_BL_BUG_ON((unsigned long)n & LIST_BL_LOCKMASK);
-	LIST_BL_BUG_ON(((unsigned long)h->first & LIST_BL_LOCKMASK) !=
-							LIST_BL_LOCKMASK);
-	h->first = (struct hlist_bl_node *)((unsigned long)n | LIST_BL_LOCKMASK);
-}
-
-static inline bool hlist_bl_empty(const struct hlist_bl_head *h)
-{
-	return !((unsigned long)READ_ONCE(h->first) & ~LIST_BL_LOCKMASK);
-}
-
-static inline void hlist_bl_add_head(struct hlist_bl_node *n,
-					struct hlist_bl_head *h)
-{
-	struct hlist_bl_node *first = hlist_bl_first(h);
-
-	n->next = first;
-	if (first)
-		first->pprev = &n->next;
-	n->pprev = &h->first;
-	hlist_bl_set_first(h, n);
-}
-
 
 static inline void __hlist_bl_del(struct hlist_bl_node *n)
 {
 	struct hlist_bl_node *next = n->next;
 	struct hlist_bl_node **pprev = n->pprev;
 
-	LIST_BL_BUG_ON((unsigned long)n & LIST_BL_LOCKMASK);
-
-
-	WRITE_ONCE(*pprev,
-		   (struct hlist_bl_node *)
-			((unsigned long)next |
-			 ((unsigned long)*pprev & LIST_BL_LOCKMASK)));
+	WRITE_ONCE(*pprev, (struct hlist_bl_node *)((unsigned long)next |
+						    ((unsigned long)*pprev &
+						     LIST_BL_LOCKMASK)));
 	if (next)
 		next->pprev = pprev;
-}
-
-static inline void hlist_bl_del(struct hlist_bl_node *n)
-{
-	__hlist_bl_del(n);
-	n->next = LIST_POISON1;
-	n->pprev = LIST_POISON2;
-}
-
-static inline void hlist_bl_del_init(struct hlist_bl_node *n)
-{
-	if (!hlist_bl_unhashed(n)) {
-		__hlist_bl_del(n);
-		INIT_HLIST_BL_NODE(n);
-	}
 }
 
 static inline void hlist_bl_lock(struct hlist_bl_head *b)
@@ -113,48 +62,48 @@ static inline bool hlist_bl_is_locked(struct hlist_bl_head *b)
 	return bit_spin_is_locked(0, (unsigned long *)b);
 }
 
-#define hlist_bl_for_each_entry(tpos, pos, head, member)		\
-	for (pos = hlist_bl_first(head);				\
-	     pos &&							\
-		({ tpos = hlist_bl_entry(pos, typeof(*tpos), member); 1;}); \
-	     pos = pos->next)
-
-#define hlist_bl_for_each_entry_safe(tpos, pos, n, head, member)	 \
-	for (pos = hlist_bl_first(head);				 \
-	     pos && ({ n = pos->next; 1; }) && 				 \
-		({ tpos = hlist_bl_entry(pos, typeof(*tpos), member); 1;}); \
-	     pos = n)
-
-
 /* RCU-specific functions */
 static inline void hlist_bl_set_first_rcu(struct hlist_bl_head *h,
-					struct hlist_bl_node *n)
+					  struct hlist_bl_node *n)
 {
-	LIST_BL_BUG_ON((unsigned long)n & LIST_BL_LOCKMASK);
-	LIST_BL_BUG_ON(((unsigned long)h->first & LIST_BL_LOCKMASK) !=
-							LIST_BL_LOCKMASK);
 	rcu_assign_pointer(h->first,
-		(struct hlist_bl_node *)((unsigned long)n | LIST_BL_LOCKMASK));
+			   (struct hlist_bl_node *)((unsigned long)n |
+						    LIST_BL_LOCKMASK));
 }
 
 static inline struct hlist_bl_node *hlist_bl_first_rcu(struct hlist_bl_head *h)
 {
-	return (struct hlist_bl_node *)
-		((unsigned long)rcu_dereference_check(h->first, hlist_bl_is_locked(h)) & ~LIST_BL_LOCKMASK);
+	return (struct hlist_bl_node *)((unsigned long)rcu_dereference_check(
+						h->first,
+						hlist_bl_is_locked(h)) &
+					~LIST_BL_LOCKMASK);
 }
 
-static inline void hlist_bl_del_rcu(struct hlist_bl_node *n)
-{
-	__hlist_bl_del(n);
-	n->pprev = LIST_POISON2;
-}
-
+/**
+ * hlist_bl_add_head_rcu
+ * @n: the element to add to the hash list.
+ * @h: the list to add to.
+ *
+ * Description:
+ * Adds the specified element to the specified hlist_bl,
+ * while permitting racing traversals.
+ *
+ * The caller must take whatever precautions are necessary
+ * (such as holding appropriate locks) to avoid racing
+ * with another list-mutation primitive, such as hlist_bl_add_head_rcu()
+ * or hlist_bl_del_rcu(), running on this same list.
+ * However, it is perfectly legal to run concurrently with
+ * the _rcu list-traversal primitives, such as
+ * hlist_bl_for_each_entry_rcu(), used to prevent memory-consistency
+ * problems on Alpha CPUs.  Regardless of the type of CPU, the
+ * list-traversal primitive must be guarded by rcu_read_lock().
+ */
 static inline void hlist_bl_add_head_rcu(struct hlist_bl_node *n,
-					struct hlist_bl_head *h)
+					 struct hlist_bl_head *h)
 {
 	struct hlist_bl_node *first;
 
-
+	/* don't need hlist_bl_first_rcu because we're under lock */
 	first = hlist_bl_first(h);
 
 	n->next = first;
@@ -162,13 +111,23 @@ static inline void hlist_bl_add_head_rcu(struct hlist_bl_node *n,
 		first->pprev = &n->next;
 	n->pprev = &h->first;
 
-
+	/* need _rcu because we can have concurrent lock free readers */
 	hlist_bl_set_first_rcu(h, n);
 }
-#define hlist_bl_for_each_entry_rcu(tpos, pos, head, member)		\
-	for (pos = hlist_bl_first_rcu(head);				\
-		pos &&							\
-		({ tpos = hlist_bl_entry(pos, typeof(*tpos), member); 1; }); \
-		pos = rcu_dereference_raw(pos->next))
+/**
+ * hlist_bl_for_each_entry_rcu - iterate over rcu list of given type
+ * @tpos:	the type * to use as a loop cursor.
+ * @pos:	the &struct hlist_bl_node to use as a loop cursor.
+ * @head:	the head for your list.
+ * @member:	the name of the hlist_bl_node within the struct.
+ *
+ */
+#define hlist_bl_for_each_entry_rcu(tpos, pos, head, member)            \
+	for (pos = hlist_bl_first_rcu(head);                            \
+	     pos && ({                                                  \
+		     tpos = hlist_bl_entry(pos, typeof(*tpos), member); \
+		     1;                                                 \
+	     });                                                        \
+	     pos = rcu_dereference_raw(pos->next))
 
 #endif

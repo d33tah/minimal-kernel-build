@@ -16,10 +16,6 @@ pound := \#
 dot-target = $(dir $@).$(notdir $@)
 
 ###
-# Name of target with a '.tmp_' as filename prefix. foo/bar.o => foo/.tmp_bar.o
-tmp-target = $(dir $@).tmp_$(notdir $@)
-
-###
 # The temporary file to save gcc -MMD generated dependencies must not
 # contain a comma
 depfile = $(subst $(comma),_,$(dot-target).d)
@@ -79,12 +75,6 @@ endef
 build := -f $(srctree)/scripts/Makefile.build obj
 
 ###
-# Shorthand for $(Q)$(MAKE) -f scripts/Makefile.dtbinst obj=
-# Usage:
-# $(Q)$(MAKE) $(dtbinst)=dir
-dtbinst := -f $(srctree)/scripts/Makefile.dtbinst obj
-
-###
 # Shorthand for $(Q)$(MAKE) -f scripts/Makefile.clean obj=
 # Usage:
 # $(Q)$(MAKE) $(clean)=dir
@@ -106,8 +96,8 @@ cmd = @set -e; $(echo-cmd) $($(quiet)redirect) $(cmd_$(1))
 ###
 # if_changed      - execute command if any prerequisite is newer than
 #                   target, or command line has changed
-# if_changed_dep  - as if_changed, but uses fixdep to reveal dependencies
-#                   including used config symbols
+# if_changed_dep  - as if_changed, but also records the compiler's -MMD
+#                   dependencies
 # if_changed_rule - as if_changed but execute rule instead
 # See Documentation/kbuild/makefiles.rst for more info
 
@@ -148,12 +138,18 @@ cmd_and_savecmd =                                                            \
 	$(cmd);                                                              \
 	printf '%s\n' 'cmd_$@ := $(make-cmd)' > $(dot-target).cmd
 
-# Execute the command and also postprocess generated .d dependencies file.
-if_changed_dep = $(if $(if-changed-cond),$(cmd_and_fixdep),@:)
+# Execute the command and save it together with the dependencies the compiler
+# wrote to $(depfile) (-MMD): "x.o: a.c b.h" becomes "deps_x.o := a.c b.h",
+# plus "x.o: $(deps_x.o)" and an empty rule for each dependency, so a deleted
+# header makes the target stale instead of stopping make. The configuration
+# needs no tracking of its own: autoconf.h is a dependency like any header.
+if_changed_dep = $(if $(if-changed-cond),$(cmd_and_savedep),@:)
 
-cmd_and_fixdep =                                                             \
+cmd_and_savedep =                                                            \
 	$(cmd);                                                              \
-	scripts/basic/fixdep $(depfile) $@ '$(make-cmd)' > $(dot-target).cmd;\
+	{ printf '%s\n' 'cmd_$@ := $(make-cmd)';                             \
+	  sed '1s|^[^:]*:|deps_$@ :=|' $(depfile);                           \
+	  printf '\n$@: $$(deps_$@)\n$$(deps_$@):\n'; } > $(dot-target).cmd;   \
 	rm -f $(depfile)
 
 # Usage: $(call if_changed_rule,foo)

@@ -1,53 +1,20 @@
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 #ifndef _ASM_GENERIC_ERRNO_H
 #define _ASM_GENERIC_ERRNO_H
 
-/* Inlined from asm-generic/errno-base.h */
-#define	EPERM		 1
-#define	ENOENT		 2
-#define	ESRCH		 3
-#define	EINTR		 4
-#define	EIO		 5
-#define	ENXIO		 6
-#define	E2BIG		 7
-#define	ENOEXEC		 8
-#define	EBADF		 9
-#define	ECHILD		10
-#define	EAGAIN		11
-#define	ENOMEM		12
-#define	EACCES		13
-#define	EFAULT		14
-#define	ENOTBLK		15
-#define	EBUSY		16
-#define	EEXIST		17
-#define	EXDEV		18
-#define	ENODEV		19
-#define	ENOTDIR		20
-#define	EISDIR		21
-#define	EINVAL		22
-#define	ENFILE		23
-#define	EMFILE		24
-#define	ENOTTY		25
-#define	ETXTBSY		26
-#define	ENOSPC		28
-#define	ESPIPE		29
-#define	EROFS		30
-#define	EMLINK		31
-#define	EPIPE		32
-#define	ERANGE		34
-/* end errno-base.h */
+#include <asm-generic/errno-base.h>
 
-#define	ENAMETOOLONG	36
-#define	ENOSYS		38
-#define	ENOTEMPTY	39
-#define	ELOOP		40
-#define	EWOULDBLOCK	EAGAIN
-#define	ETIME		62
-#define	EOVERFLOW	75
-#define	ELIBBAD		80
-#define	EOPNOTSUPP	95
-#define	ENOTCONN	107
-#define	ESTALE		116
-#define	ENOTRECOVERABLE	131
-#define EHWPOISON	133	 
+#define ENAMETOOLONG 36 /* File name too long */
+
+/*
+ * This error code is special: arch syscall entry code will return
+ * -ENOSYS if users try to call a syscall that doesn't exist.  To keep
+ * failures of syscalls that really do exist distinguishable from
+ * failures due to attempts to use a nonexistent syscall, syscall
+ * implementations should refrain from returning -ENOSYS.
+ */
+#define ENOSYS 38 /* Invalid system call number */
+#define ELOOP 40 /* Too many symbolic links encountered */
+#define EOVERFLOW 75 /* Value too large for defined data type */
 
 #endif

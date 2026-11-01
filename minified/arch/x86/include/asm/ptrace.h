@@ -3,12 +3,23 @@
 #define _ASM_X86_PTRACE_H
 
 #include <asm/segment.h>
-#include <asm/page_types.h>
-#include <uapi/asm/ptrace.h>
+#include <asm/processor-flags.h>
 
-#ifndef __ASSEMBLY__
-/* 32-bit only kernel - removed x86_64 pt_regs */
 struct pt_regs {
+	/*
+	 * NB: 32-bit x86 CPUs are inconsistent as what happens in the
+	 * following cases (where %seg represents a segment register):
+	 *
+	 * - pushl %seg: some do a 16-bit write and leave the high
+	 *   bits alone
+	 * - movl %seg, [mem]: some do a 16-bit write despite the movl
+	 * - IDT entry: some (e.g. 486) will leave the high bits of CS
+	 *   and (if applicable) SS undefined.
+	 *
+	 * Fortunately, x86-32 doesn't read the high bits on POP or IRET,
+	 * so we can just treat all of the segment registers as 16-bit
+	 * values.
+	 */
 	unsigned long bx;
 	unsigned long cx;
 	unsigned long dx;
@@ -22,8 +33,13 @@ struct pt_regs {
 	unsigned short __esh;
 	unsigned short fs;
 	unsigned short __fsh;
+	/*
+	 * On interrupt, gs and __gsh store the vector number.  They never
+	 * store gs any more.
+	 */
 	unsigned short gs;
 	unsigned short __gsh;
+	/* On interrupt, this is the error code. */
 	unsigned long orig_ax;
 	unsigned long ip;
 	unsigned short cs;
@@ -36,91 +52,19 @@ struct pt_regs {
 
 #include <asm/proto.h>
 
-struct cpuinfo_x86;
-struct task_struct;
-
-extern unsigned long profile_pc(struct pt_regs *regs);
-extern unsigned long convert_ip_to_linear(struct task_struct *child, struct pt_regs *regs);
-extern void send_sigtrap(struct pt_regs *regs, int error_code, int si_code);
-
-static inline unsigned long regs_return_value(struct pt_regs *regs)
-{
-	return regs->ax;
-}
-
-static inline void regs_set_return_value(struct pt_regs *regs, unsigned long rc)
-{
-	regs->ax = rc;
-}
-
+/*
+ * user_mode(regs) determines whether a register set came from user
+ * mode.  On x86_32, this is true if V8086 mode was enabled OR if the
+ * register set was from protected mode with RPL-3 CS value.  This
+ * tricky test checks that with one comparison.
+ *
+ * On x86_64, vm86 mode is mercifully nonexistent, and we don't need
+ * the extra check.
+ */
 static __always_inline int user_mode(struct pt_regs *regs)
 {
-	return ((regs->cs & SEGMENT_RPL_MASK) | (regs->flags & X86_VM_MASK)) >= USER_RPL;
+	return ((regs->cs & SEGMENT_RPL_MASK) | (regs->flags & X86_VM_MASK)) >=
+	       USER_RPL;
 }
 
-static __always_inline int v8086_mode(struct pt_regs *regs)
-{
-	return (regs->flags & X86_VM_MASK);
-}
-
-static inline bool user_64bit_mode(struct pt_regs *regs)
-{
-	return false;
-}
-
-static inline bool any_64bit_mode(struct pt_regs *regs)
-{
-	return false;
-}
-
-static inline unsigned long kernel_stack_pointer(struct pt_regs *regs)
-{
-	return regs->sp;
-}
-
-static inline unsigned long instruction_pointer(struct pt_regs *regs)
-{
-	return regs->ip;
-}
-
-static inline void instruction_pointer_set(struct pt_regs *regs, unsigned long val)
-{
-	regs->ip = val;
-}
-
-static inline unsigned long frame_pointer(struct pt_regs *regs)
-{
-	return regs->bp;
-}
-
-static inline unsigned long user_stack_pointer(struct pt_regs *regs)
-{
-	return regs->sp;
-}
-
-static inline void user_stack_pointer_set(struct pt_regs *regs, unsigned long val)
-{
-	regs->sp = val;
-}
-
-static __always_inline bool regs_irqs_disabled(struct pt_regs *regs)
-{
-	return !(regs->flags & X86_EFLAGS_IF);
-}
-
-#define MAX_REG_OFFSET (offsetof(struct pt_regs, ss))
-
-#define arch_has_single_step()	(1)
-#define arch_has_block_step()	(1)
-#define ARCH_HAS_USER_SINGLE_STEP_REPORT
-
-struct user_desc;
-extern int do_get_thread_area(struct task_struct *p, int idx,
-			      struct user_desc __user *info);
-extern int do_set_thread_area(struct task_struct *p, int idx,
-			      struct user_desc __user *info, int can_allocate);
-
-#define do_set_thread_area_64(p, s, t)	(0)
-
-#endif /* !__ASSEMBLY__ */
 #endif /* _ASM_X86_PTRACE_H */

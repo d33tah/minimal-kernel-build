@@ -1,6 +1,17 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_UIDGID_H
 #define _LINUX_UIDGID_H
 
+/*
+ * A set of types for the internal kernel types representing uids and gids.
+ *
+ * The types defined in this header allow distinguishing which uids and gids in
+ * the kernel are values used by userspace and which uid and gid values are
+ * the internal kernel values.  With the addition of user namespaces the values
+ * can be different.  Using the type system makes it possible for the compiler
+ * to detect when we overlook these differences.
+ *
+ */
 #include <linux/types.h>
 #include <linux/highuid.h>
 
@@ -11,13 +22,20 @@ typedef struct {
 	uid_t val;
 } kuid_t;
 
-
 typedef struct {
 	gid_t val;
 } kgid_t;
 
-#define KUIDT_INIT(value) (kuid_t){ value }
-#define KGIDT_INIT(value) (kgid_t){ value }
+#define KUIDT_INIT(value) \
+	(kuid_t)          \
+	{                 \
+		value     \
+	}
+#define KGIDT_INIT(value) \
+	(kgid_t)          \
+	{                 \
+		value     \
+	}
 
 static inline uid_t __kuid_val(kuid_t uid)
 {
@@ -35,27 +53,15 @@ static inline gid_t __kgid_val(kgid_t gid)
 #define INVALID_UID KUIDT_INIT(-1)
 #define INVALID_GID KGIDT_INIT(-1)
 
-static inline bool uid_eq(kuid_t left, kuid_t right)
-{
-	return __kuid_val(left) == __kuid_val(right);
-}
-
-static inline bool gid_eq(kgid_t left, kgid_t right)
-{
-	return __kgid_val(left) == __kgid_val(right);
-}
-
-
 static inline bool uid_valid(kuid_t uid)
 {
-	return __kuid_val(uid) != (uid_t) -1;
+	return __kuid_val(uid) != (uid_t)-1;
 }
 
 static inline bool gid_valid(kgid_t gid)
 {
-	return __kgid_val(gid) != (gid_t) -1;
+	return __kgid_val(gid) != (gid_t)-1;
 }
-
 
 static inline kuid_t make_kuid(struct user_namespace *from, uid_t uid)
 {
@@ -103,5 +109,4 @@ static inline bool kgid_has_mapping(struct user_namespace *ns, kgid_t gid)
 	return gid_valid(gid);
 }
 
-
-#endif  
+#endif

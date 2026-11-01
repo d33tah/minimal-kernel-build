@@ -10,7 +10,6 @@
  * The actual transition into protected mode
  */
 
-#include <asm/boot.h>
 #include <asm/processor-flags.h>
 #include <asm/segment.h>
 #include <linux/linkage.h>

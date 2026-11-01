@@ -1,24 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/* -*- linux-c -*- ------------------------------------------------------- *
+ *
+ *   Copyright (C) 1991, 1992 Linus Torvalds
+ *   Copyright 2007 rPath, Inc. - All Rights Reserved
+ *   Copyright 2009 Intel Corporation; author H. Peter Anvin
+ *
+ * ----------------------------------------------------------------------- */
 
+/*
+ * Very simple screen and serial I/O
+ */
 
 #include "boot.h"
-
-int early_serial_base;
-
-#define XMTRDY          0x20
-
-#define TXR             0        
-#define LSR             5        
-
-
-static void __section(".inittext") serial_putchar(int ch)
-{
-	unsigned timeout = 0xffff;
-
-	while ((inb(early_serial_base + LSR) & XMTRDY) == 0 && --timeout)
-		cpu_relax();
-
-	outb(ch, early_serial_base + TXR);
-}
 
 static void __section(".inittext") bios_putchar(int ch)
 {
@@ -35,12 +28,9 @@ static void __section(".inittext") bios_putchar(int ch)
 void __section(".inittext") putchar(int ch)
 {
 	if (ch == '\n')
-		putchar('\r');	 
+		putchar('\r'); /* \n -> \r\n */
 
 	bios_putchar(ch);
-
-	if (early_serial_base != 0)
-		serial_putchar(ch);
 }
 
 void __section(".inittext") puts(const char *str)
@@ -48,68 +38,3 @@ void __section(".inittext") puts(const char *str)
 	while (*str)
 		putchar(*str++);
 }
-
-
-static u8 gettime(void)
-{
-	struct biosregs ireg, oreg;
-
-	initregs(&ireg);
-	ireg.ah = 0x02;
-	intcall(0x1a, &ireg, &oreg);
-
-	return oreg.dh;
-}
-
-int getchar(void)
-{
-	struct biosregs ireg, oreg;
-
-	initregs(&ireg);
-	 
-	intcall(0x16, &ireg, &oreg);
-
-	return oreg.al;
-}
-
-static int kbd_pending(void)
-{
-	struct biosregs ireg, oreg;
-
-	initregs(&ireg);
-	ireg.ah = 0x01;
-	intcall(0x16, &ireg, &oreg);
-
-	return !(oreg.eflags & X86_EFLAGS_ZF);
-}
-
-void kbd_flush(void)
-{
-	for (;;) {
-		if (!kbd_pending())
-			break;
-		getchar();
-	}
-}
-
-int getchar_timeout(void)
-{
-	int cnt = 30;
-	int t0, t1;
-
-	t0 = gettime();
-
-	while (cnt) {
-		if (kbd_pending())
-			return getchar();
-
-		t1 = gettime();
-		if (t0 != t1) {
-			cnt--;
-			t0 = t1;
-		}
-	}
-
-	return 0;		 
-}
-

@@ -1,39 +1,39 @@
+/*
+ * include/linux/topology.h
+ *
+ * Written by: Matthew Dobson, IBM Corporation
+ *
+ * Copyright (C) 2002, IBM Corp.
+ *
+ * All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
+ * NON INFRINGEMENT.  See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ * Send feedback to <colpatch@us.ibm.com>
+ */
 #ifndef _LINUX_TOPOLOGY_H
 #define _LINUX_TOPOLOGY_H
 
-#include <linux/cpumask.h>
-#include <linux/bitops.h>
 #include <linux/mmzone.h>
-#include <linux/smp.h>
-#include <linux/percpu.h>
 #include <asm/topology.h>
 
-
-int arch_update_cpu_topology(void);
-
-#ifndef numa_node_id
-static inline int numa_node_id(void)
-{
-	return cpu_to_node(raw_smp_processor_id());
-}
-#endif
-
-#ifndef numa_mem_id
+/* Returns the number of the nearest Node with memory */
 static inline int numa_mem_id(void)
 {
 	return numa_node_id();
 }
+
 #endif
-
-/* Removed as unused:
- * - nr_cpus_node, for_each_node_with_cpus
- * - LOCAL_DISTANCE, REMOTE_DISTANCE, DISTANCE_BITS, node_distance, RECLAIM_DISTANCE
- * - PENALTY_FOR_NODE_WITH_CPUS
- * - cpu_to_mem
- * - TOPOLOGY_*_SYSFS defines
- * - topology_*_id macros (physical_package, die, cluster, core, book, drawer, ppin)
- * - topology_*_cpumask macros (sibling, core, cluster, die, book, drawer)
- * - cpu_cpu_mask
- */
-
-#endif  

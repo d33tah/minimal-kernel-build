@@ -32,7 +32,7 @@ static void __init __e820__range_add(struct e820_table *table, u64 start,
 	table->nr_entries++;
 }
 
-void __init e820__range_add(u64 start, u64 size, enum e820_type type)
+static void __init e820__range_add(u64 start, u64 size, enum e820_type type)
 {
 	__e820__range_add(e820_table, start, size, type);
 }
@@ -122,7 +122,7 @@ unsigned long __init e820__end_of_ram_pfn(void)
 /*
  * Pass the firmware (bootloader) E820 map to the kernel and process it:
  */
-void __init e820__memory_setup_default(void)
+static void __init e820__memory_setup_default(void)
 {
 	/*
 	 * Try to copy the BIOS-supplied E820-map. There is no E801/88

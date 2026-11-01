@@ -35,7 +35,6 @@ SYSSEG		= 0x1000		/* historical load address >> 4 */
 	.code16
 	.section ".bstext", "ax"
 
-	.global bootsect_start
 bootsect_start:
 	# Normalize the start address
 	ljmp	$BOOTSEG, $start2

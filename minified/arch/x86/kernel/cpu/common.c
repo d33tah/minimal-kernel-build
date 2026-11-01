@@ -55,7 +55,7 @@ void cr4_update_irqsoff(unsigned long set, unsigned long clear)
 	}
 }
 
-void cpu_detect(struct cpuinfo_x86 *c)
+static void cpu_detect(struct cpuinfo_x86 *c)
 {
 	/* Get vendor name */
 	cpuid(0x00000000, (unsigned int *)&c->cpuid_level,
@@ -138,12 +138,12 @@ DEFINE_PER_CPU(unsigned long,
 	       cpu_current_top_of_stack) = (unsigned long)&init_thread_union
 					   + THREAD_SIZE;
 
-void load_percpu_segment(int cpu)
+static void load_percpu_segment(int cpu)
 {
 	loadsegment(fs, __KERNEL_PERCPU);
 }
 
-void load_direct_gdt(int cpu)
+static void load_direct_gdt(int cpu)
 {
 	struct desc_ptr gdt_descr;
 
@@ -152,7 +152,7 @@ void load_direct_gdt(int cpu)
 	load_gdt(&gdt_descr);
 }
 
-void switch_to_new_gdt(int cpu)
+static void switch_to_new_gdt(int cpu)
 {
 	/* Load the original GDT */
 	load_direct_gdt(cpu);

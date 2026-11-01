@@ -3,6 +3,8 @@
 #include <asm/desc.h>
 #include <asm/i8259.h>
 
+static void native_init_IRQ(void);
+
 DEFINE_PER_CPU(vector_irq_t, vector_irq) = {
 	[0 ... NR_VECTORS - 1] = VECTOR_UNUSED,
 };
@@ -30,7 +32,7 @@ void __init init_IRQ(void)
 	native_init_IRQ();
 }
 
-void __init native_init_IRQ(void)
+static void __init native_init_IRQ(void)
 {
 	init_ISA_irqs();
 

@@ -293,7 +293,7 @@ SYM_DATA_END(boot_gdt_descr)
 
 # boot GDT descriptor (later on used by CPU#0):
 	.word 0				# 32 bit align gdt_desc.address
-SYM_DATA_START(early_gdt_descr)
+SYM_DATA_START_LOCAL(early_gdt_descr)
 	.word GDT_ENTRIES*8-1
 	.long gdt_page			/* Overwritten for secondary CPUs */
 SYM_DATA_END(early_gdt_descr)

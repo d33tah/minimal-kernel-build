@@ -5,6 +5,8 @@
 #define __flush_tlb_global native_flush_tlb_global
 #define __flush_tlb_one_user(addr) native_flush_tlb_one_user(addr)
 
+static void flush_tlb_local(void);
+
 static inline unsigned long build_cr3(pgd_t *pgd, u16 asid)
 {
 	/* PCID is unconditionally cleared at boot (setup_clear_cpu_cap in
@@ -121,7 +123,7 @@ STATIC_NOPV void native_flush_tlb_local(void)
 	native_write_cr3(__native_read_cr3());
 }
 
-void flush_tlb_local(void)
+static void flush_tlb_local(void)
 {
 	__flush_tlb_local();
 }

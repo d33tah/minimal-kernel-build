@@ -50,7 +50,6 @@ static inline void cr4_init_shadow(void)
 extern unsigned long mmu_cr4_features;
 
 extern void initialize_tlbstate_and_flush(void);
-void flush_tlb_local(void);
 void flush_tlb_one_user(unsigned long addr);
 void flush_tlb_one_kernel(unsigned long addr);
 

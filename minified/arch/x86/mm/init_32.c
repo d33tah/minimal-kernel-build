@@ -9,6 +9,8 @@
 
 #include "mm_internal.h"
 
+static void paging_init(void);
+
 static pmd_t *__init one_md_table_init(pgd_t *pgd)
 {
 	return pmd_offset(pud_offset(p4d_offset(pgd, 0), 0), 0);
@@ -231,7 +233,7 @@ void __init initmem_init(void)
 	max_mapnr = max_low_pfn;
 }
 
-void __init paging_init(void)
+static void __init paging_init(void)
 {
 	__flush_tlb_all();
 

@@ -11,7 +11,7 @@
 
 unsigned long max_pfn_mapped;
 
-unsigned long _brk_start = (unsigned long)__brk_base;
+static unsigned long _brk_start = (unsigned long)__brk_base;
 unsigned long _brk_end = (unsigned long)__brk_base;
 
 struct boot_params boot_params;

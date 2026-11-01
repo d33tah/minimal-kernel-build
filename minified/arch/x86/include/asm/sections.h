@@ -15,6 +15,4 @@ extern char __end_rodata_aligned[];
 
 extern char __end_of_kernel_reserve[];
 
-extern unsigned long _brk_start, _brk_end;
-
 #endif

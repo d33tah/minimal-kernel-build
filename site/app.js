@@ -1056,8 +1056,9 @@ function resetCounters() {
 	$("pages").dataset.flashes = 0;
 }
 
+// Counting ends at the kernel's end: panic, or hlt with interrupts off.
 function countDone() {
-	return !stepper || stepper.milestones.every((m) => m.found);
+	return !stepper || !!stepper.end;
 }
 
 function wantStepped() {
@@ -1153,11 +1154,16 @@ function driverTick() {
 		pause("Stopped at " + hex(stepper.nextPhys()) + " (Run to).");
 		return;
 	}
-	if (counting && (countDone() || (fastStepping() && countMs > COUNT_LIMIT_MS) || stepper.dead())) {
+	if (reason === "hlt" && stepper.dead())
+		stepper.markHalt();
+	if (reason === "end" || (reason === "hlt" && stepper.dead())) {
 		counting = false;
-		if (!countDone())
-			countNote = stepper.dead() ? "The CPU halted with interrupts off before every line appeared." :
-				"Gave up after " + Math.round(countMs / 1000) + " s of stepping.";
+		pause(endText());
+		return;
+	}
+	if (counting && fastStepping() && countMs > COUNT_LIMIT_MS) {
+		counting = false;
+		countNote = "Gave up after " + Math.round(countMs / 1000) + " s of stepping.";
 		if (speed() === "full" && runTo < 0) {
 			updateDebugUi();
 			resume();
@@ -1444,11 +1450,13 @@ function renderCounters() {
 		$("count_text").textContent = !emulator ? "" : "Not counted: " + (wasmPatchError || "no debugger") + ".";
 		return;
 	}
-	const rows = stepper.milestones.map((m) => [m.text, m.found]);
-	rows.push(["now", stepper.snapshot()]);
-	for (const [label, c] of rows) {
+	const rows = stepper.milestones.map((m) => [m.text, m.found, m.text]);
+	rows.push([stepper.exit ? "exit(" + stepper.exit.code + ")" : "exit()", stepper.exit, "exit"]);
+	rows.push([stepper.end ? (stepper.end.kind === "panic" ? "panic" : "halted") : "panic / halt", stepper.end, "end"]);
+	rows.push(["now", stepper.snapshot(), "now"]);
+	for (const [label, c, key] of rows) {
 		const tr = tbody.insertRow();
-		tr.dataset.milestone = label;
+		tr.dataset.milestone = key;
 		const cells = c ? [label, num(c.sinceEntry), num(c.uniqueKernel) + "/" + num(c.unique - c.uniqueKernel), num(c.steps)] :
 			[label, counting ? "counting..." : "not reached", "", ""];
 		for (const v of cells)
@@ -1518,7 +1526,29 @@ function eta() {
 		"~" + num(ref) + " instructions from the entry). ";
 }
 
+// What the end of the kernel looked like, for the banner and the status.
+function endText() {
+	const e = stepper && stepper.end;
+	if (!e)
+		return "";
+	const after = " after " + num(e.sinceEntry !== null ? e.sinceEntry : e.steps) + " instructions from the kernel entry";
+	if (e.kind === "panic")
+		return "Kernel panic" + (stepper.exit ? " (init exited with code " + stepper.exit.code + ")" : "") + after +
+			". Machine stopped here.";
+	return "Halted: hlt with interrupts off" + after + ". The machine has stopped.";
+}
+
+function renderEnd() {
+	const b = $("end_banner");
+	const e = stepper && stepper.end;
+	b.hidden = !e;
+	b.textContent = e ? endText() : "";
+	b.dataset.kind = e ? e.kind : "";
+	b.dataset.code = stepper && stepper.exit ? stepper.exit.code : "";
+}
+
 function updateDebugUi() {
+	renderEnd();
 	const st = $("dbg_state");
 	const where = stepper && stepper.curSym >= 0 ? ", in " + stepper.symName[stepper.curSym] : "";
 	st.textContent = { off: "", jit: "running (full speed, JIT)",
@@ -1550,7 +1580,7 @@ async function doStep(n) {
 	const reason = stepper.run(n, -1, 5000);
 	$("dbg_status").textContent = "Stepped " + num(stepper.steps - before) + " instruction" +
 		(stepper.steps - before === 1 ? "" : "s") + (reason === "hlt" ? " (halted)" :
-			reason === "milestone" ? " (a line appeared on the screen)" : reason === "time" ? " (5 s limit)" : "") + ".";
+			reason === "milestone" ? " (a line appeared on the screen)" : reason === "end" ? " (" + endText() + ")" : reason === "time" ? " (5 s limit)" : "") + ".";
 	scan(false);
 	afterStop();
 }

@@ -58,7 +58,7 @@
       <div class="table-wrap">
         <table id="counters" class="mono">
           <thead><tr>
-            <th>until<span class="tip" tabindex="0" role="button" title="Instructions executed until the line first appears in VGA text memory at 0xb8000, counted from the reset vector and from the kernel entry at 1 MiB">?</span></th>
+            <th>until<span class="tip" tabindex="0" role="button" title="Instructions executed until each line first appears in VGA text memory at 0xb8000, until the first exit or exit_group system call (int 0x80, EAX 1 or 252; the code is EBX), and until the end: the CPU enters panic() (symbols.json) or halts with interrupts off. Counted from the kernel entry at 1 MiB and from the reset vector. Stepping and slow motion stop at the end.">?</span></th>
             <th>from 1 MiB<span class="tip" tabindex="0" role="button" title="Instructions executed from the first one at physical 0x100000, where v86 puts the 32-bit kernel.">?</span></th>
             <th>unique EIPs k/o<span class="tip" tabindex="0" role="button" title="Distinct physical addresses executed from reset: in the kernel range (1 MiB to 1 MiB + init_size) / elsewhere (BIOS, option ROM, real-mode setup).">?</span></th>
             <th>from reset<span class="tip" tabindex="0" role="button" title="Instructions executed from the reset vector (SeaBIOS, the kernel's real-mode setup, the kernel).">?</span></th>
@@ -67,6 +67,7 @@
         </table>
       </div>
       <p class="note mono" id="entry_info"></p>
+      <p id="end_banner" class="banner" role="status" hidden></p>
       <p class="note" id="count_info"><span id="count_text"></span> <span class="tip" tabindex="0" role="button" title="Exact for the run shown: each instruction is one call of v86's interpreter. A rep-prefixed string instruction counts once per v86 entry, and v86 runs at most a page of iterations per entry, so a long rep movs counts several times (qemu counts it once). The minified Linux calibrates its delay loop against the timer, so its count from 1 MiB depends on how fast the page steps. SeaBIOS waits on real time, so the part before the kernel differs between runs; the kernel part is stable. See the About tab for the qemu cross-check.">?</span></p>
     </div>
   </div>

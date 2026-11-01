@@ -100,6 +100,7 @@ const MMAP_BLOCK_BITS = 17; // v86 src/const.js
 // Byte offsets of CPU globals in wasm memory (v86 src/cpu.js), as indices.
 const IP = 556 >> 2, PREV_IP = 560 >> 2, EIP_PHYS = 624 >> 2, COUNTER = 664 >> 2;
 const IN_HLT = 616, IS_32 = 804;
+const EAX = 64 >> 2, EBX = (64 + 12) >> 2;
 
 // Drives a stopped v86 instance one instruction at a time and counts.
 class Stepper {
@@ -122,6 +123,9 @@ class Stepper {
 		this.text = new Uint8Array(VGA_TEXT_BYTES);
 		this.vgaDirty = false;
 		this.milestones = [];    // { text, found: null | {...} }
+		this.exit = null;        // first exit/exit_group syscall: { code, ...snapshot }
+		this.end = null;         // { kind: "panic" | "halt", ...snapshot }
+		this.endHit = false;
 		this.lastTimers = 0;
 		this.setSymbols([]);
 		this.hookVga();
@@ -137,6 +141,7 @@ class Stepper {
 		this.curLo = 1;        // [curLo, curHi): addresses that stay in curSym
 		this.curHi = 0;
 		this.history = [];     // most recent last: { sym, last } (last = final EIP in it)
+		this.panicSym = this.symName.indexOf("panic");
 	}
 
 	symbolOf(phys) {
@@ -165,6 +170,10 @@ class Stepper {
 			if (phys < this.kernelLo)
 				this.curHi = Math.min(this.curHi, this.kernelLo);
 		}
+		if (i === this.panicSym && i >= 0 && !this.end) {
+			this.end = { kind: "panic", ...this.snapshot(phys) };
+			this.endHit = true;
+		}
 		if (i !== this.curSym) {
 			if (this.curSym !== -2) {
 				this.history.push({ sym: this.curSym, last: from });
@@ -173,6 +182,12 @@ class Stepper {
 			}
 			this.curSym = i;
 		}
+	}
+
+	// The CPU is halted with interrupts off: the machine has stopped.
+	markHalt() {
+		if (!this.end)
+			this.end = { kind: "halt", ...this.snapshot() };
 	}
 
 	// Called when v86's JIT ran in between: the history has a gap.
@@ -271,7 +286,12 @@ class Stepper {
 				i32[IP] = eip;
 				return "addr";
 			}
-			exec(i32[res + 1] | u8[IS_32] << 8);
+			const op = i32[res + 1];
+			// int 0x80 with EAX = 1 (exit) or 252 (exit_group): note EBX.
+			let exitCode = null;
+			if (op === 0xcd && !this.exit && cpu.mem8[phys + 1] === 0x80 && (i32[EAX] === 1 || i32[EAX] === 252))
+				exitCode = i32[EBX];
+			exec(op | u8[IS_32] << 8);
 			if (i32.length === 0) {
 				i32 = new Int32Array(mem.buffer);
 				u8 = new Uint8Array(mem.buffer);
@@ -281,6 +301,12 @@ class Stepper {
 			if (phys < this.curLo || phys >= this.curHi)
 				this.enterSymbol(phys, this.lastPhys);
 			this.lastPhys = phys;
+			if (exitCode !== null)
+				this.exit = { code: exitCode, ...this.snapshot(phys) };
+			if (this.endHit) {
+				this.endHit = false;
+				return "end";
+			}
 			if (phys === lo && this.sinceEntry < 0)
 				this.sinceEntry = this.steps - 1;
 			if (phys < seen.length * 8) {

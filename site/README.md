@@ -102,8 +102,19 @@ JavaScript drives the CPU:
   stops before executing the instruction there. `?paused=1` starts paused
   at the reset vector.
 
+The end of the kernel: both kernels' init ends; hello runs `cli; hlt`,
+the minified Linux's init calls exit(0) and the kernel then panics
+("Attempted to kill init!", not printed without printk). The stepper
+notes the first `int 0x80` with EAX 1 (exit) or 252 (exit_group) and its
+EBX, and stops when EIP enters `panic` (from symbols.json) or the CPU
+halts with interrupts off. The top bar then shows "Kernel panic (init
+exited with code 0) after N instructions from the kernel entry. Machine
+stopped here." or "Halted: hlt with interrupts off ...", and stepping
+stops there (Continue runs on, e.g. into panic's delay loop).
+
 The counters: instructions from the first instruction at physical
-0x100000 (the main column) and from reset until each line appears, and distinct physical addresses
+0x100000 (the main column) and from reset until each line appears, until
+exit() and until the end (panic or halt), and distinct physical addresses
 executed, split into the kernel range (0x100000 to 0x100000 + `init_size`)
 and the rest (SeaBIOS, VGA BIOS, the linuxboot option ROM, the real-mode
 setup at 0x80000).
@@ -129,6 +140,9 @@ full stepping speed; ranges over four runs):
 | hello | Still alive | +68 | 6,150 | 24 / same |
 | minified Linux | Hello, World! | 2,065,933-2,210,066 | 671,562-792,921 | 10,633-10,638 / 8,171 |
 | minified Linux | Still alive | +928 | +928 | 10,723 / 8,171 |
+| minified Linux | exit(0) | +152 | +152 | 10,725 / 8,171 |
+| minified Linux | panic | +52 | +52 | 10,733 / 8,171 |
+| hello | halted | +5 | 6,155 | 26 / same |
 
 ### Cross-check with qemu
 
@@ -175,8 +189,9 @@ qemu runs used `timeout 120` and a FIFO, so no trace touched the disk.
     python3 site/test_browser.py
 
 Cases: hello at 2 MB with the default boot (the entry marker, the switch
-to 1k/s, 6,082 instructions from the entry to "Hello, World!"), Linux at
-2 MB, 18 MB and 2180 KiB with `?speed=full`, and Linux with the default
+to 1k/s, 6,082 instructions from the entry to "Hello, World!", the
+"Halted" banner), Linux at 2 MB, 18 MB and 2180 KiB with `?speed=full`
+(the panic banner with "init exited with code 0"), and Linux with the default
 boot for a few seconds (entry marker, 1k/s, the counter grows by about
 3,000 in 3 s, ETA and current symbol in the top bar, the speed choice
 remembered across a reload). For every kernel case it checks the gate lines on the screen, the boot counters (both lines

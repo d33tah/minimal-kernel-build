@@ -587,8 +587,18 @@ def run_case(browser, base, name, mem, timeout, shots, has_symbols, speed=None):
                 lab_problems.append("no 'entered the kernel' marker: " + page.inner_text("#entry_info"))
             if count["speed"] != "1000":
                 lab_problems.append("speed did not switch to 1k/s at the entry: " + count["speed"])
-            if name == "hello" and (count.get(HELLO) or {}).get("entry") != 6082:
-                lab_problems.append(f"hello: {count.get(HELLO)} instructions from the entry to Hello, not 6,082")
+        # The end of the kernel: Linux panics after init exits (exit(0)),
+        # hello halts with interrupts off.
+        count["end"] = page.get_attribute("#end_banner", "data-kind")
+        count["exit_code"] = page.get_attribute("#end_banner", "data-code")
+        count["end_text"] = page.inner_text("#end_banner") if count["end"] else ""
+        want = "halt" if name == "hello" else "panic"
+        if count["end"] != want:
+            lab_problems.append(f"end banner {count['end']!r}, want {want!r}")
+        if want == "panic" and (count["exit_code"] != "0" or "exited with code 0" not in count["end_text"]):
+            lab_problems.append("panic banner does not say init exited with code 0: " + count["end_text"])
+        if speed is None and name == "hello" and (count.get(HELLO) or {}).get("entry") != 6082:
+            lab_problems.append(f"hello: {count.get(HELLO)} instructions from the entry to Hello, not 6,082")
         page.screenshot(path=str(shots / f"top-{tag}-1100.png"))
     if not page.is_disabled("#scan"):
         page.click("#scan")

@@ -231,3 +231,6 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 #context .ins { cursor: pointer; }
 #context mark { background: var(--mark-bg); color: var(--mark-fg); }
 #context .bad { background: var(--mark-bg); color: var(--mark-fg); }
+.banner { margin: 0.2rem 0; padding: 0.2rem 0.5rem; border-radius: 3px; font-weight: 600; font-size: 0.85rem; background: var(--err-bg); color: var(--err-fg); }
+.banner[data-kind="halt"] { background: var(--warn-bg); color: var(--warn-fg); }
+.banner[hidden] { display: none; }

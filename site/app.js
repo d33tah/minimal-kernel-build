@@ -975,6 +975,11 @@ async function boot() {
 			cmdline: "",
 			autostart: false,
 			disable_mouse: true,
+			// The kernels make no sound on purpose: the minified Linux only touches
+			// port 0x61 to gate PIT channel 2 for TSC calibration (speaker data
+			// bit cleared), but v86's speaker emulation still clicks while that
+			// channel runs. ?sound=1 turns the emulated PC speaker back on.
+			disable_speaker: new URLSearchParams(location.search).get("sound") !== "1",
 		});
 	} catch (e) {
 		setStatus("v86 refused to start: " + e);

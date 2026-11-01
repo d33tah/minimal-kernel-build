@@ -1,13 +1,27 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+/* -*- linux-c -*- ------------------------------------------------------- *
+ *
+ *   Copyright (C) 1991, 1992 Linus Torvalds
+ *   Copyright 2007 rPath, Inc. - All Rights Reserved
+ *   Copyright 2009 Intel Corporation; author H. Peter Anvin
+ *
+ * ----------------------------------------------------------------------- */
+
+/*
+ * Header file for the real-mode kernel code
+ */
+
 #ifndef BOOT_BOOT_H
 #define BOOT_BOOT_H
 
-#define STACK_SIZE 1024
+#define STACK_SIZE 1024 /* Minimum number of bytes for stack */
 
 #ifndef __ASSEMBLY__
 
 #include <asm/processor-flags.h>
 #include "io.h"
 
+/* Useful macros */
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
 
 extern struct setup_header hdr;
@@ -20,6 +34,8 @@ static inline void io_delay(void)
 	const u16 DELAY_PORT = 0x80;
 	outb(0, DELAY_PORT);
 }
+
+/* These functions are used to reference data in other segments. */
 
 static inline u16 ds(void)
 {
@@ -88,8 +104,10 @@ static inline u32 rdgs32(addr_t addr)
 	return v;
 }
 
+/* a20.c */
 int enable_a20(void);
 
+/* bioscall.c */
 struct biosregs {
 	union {
 		struct {
@@ -132,22 +150,28 @@ struct biosregs {
 };
 void intcall(u8 int_no, const struct biosregs *ireg, struct biosregs *oreg);
 
+/* header.S */
 void __attribute__((noreturn)) die(void);
 
+/* memory.c */
 void detect_memory(void);
 
+/* pm.c */
 void __attribute__((noreturn)) go_to_protected_mode(void);
 
 void __attribute__((noreturn)) protected_mode_jump(u32 entrypoint,
 						   u32 bootparams);
 
+/* regs.c */
 void initregs(struct biosregs *regs);
 
+/* tty.c */
 void puts(const char *);
 void putchar(int);
 
+/* video.c */
 void set_video(void);
 
-#endif
+#endif /* __ASSEMBLY__ */
 
-#endif
+#endif /* BOOT_BOOT_H */

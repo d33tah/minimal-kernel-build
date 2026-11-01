@@ -1,10 +1,28 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * misc.c
+ *
+ * This is a collection of several routines used to extract the kernel
+ * which includes KASLR relocation, decompression, ELF parsing, and
+ * relocation processing. Additionally included are the screen and serial
+ * output functions and related debugging support functions.
+ *
+ * malloc by Hannu Savolainen 1993 and Matthias Urlichs 1994
+ * puts by Nick Holloway 1993, better puts by Martin Mares 1995
+ * High loaded stuff by Hans Lermen & Werner Almesberger, Feb. 1996
+ */
+
 #include "misc.h"
 #include "error.h"
 #include <linux/kernel.h>
 #include <asm/bootparam_utils.h>
 
+/* Functions used by the included decompressor code below. */
 void *memmove(void *dest, const void *src, size_t n);
 
+/*
+ * This is set up by the setup-routine at boot-time
+ */
 struct boot_params *boot_params;
 
 struct port_io_ops pio_ops;
@@ -12,8 +30,14 @@ struct port_io_ops pio_ops;
 static char *vidmem;
 static int vidport;
 
+/* These might be accessed before .bss is cleared, so use .data instead. */
 static int lines __section(".data");
 static int cols __section(".data");
+
+/*
+ * NOTE: When adding a new decompressor, please update the analysis in
+ * ../header.S.
+ */
 
 static void scroll(void)
 {
@@ -57,7 +81,7 @@ void __putstr(const char *s)
 	boot_params->screen_info.orig_x = x;
 	boot_params->screen_info.orig_y = y;
 
-	pos = (x + cols * y) * 2;
+	pos = (x + cols * y) * 2; /* Update cursor position */
 	outb(14, vidport);
 	outb(0xff & (pos >> 9), vidport + 1);
 	outb(15, vidport);
@@ -74,6 +98,7 @@ asmlinkage __visible void *
 extract_kernel(void *rmode, unsigned char *input_data, unsigned long input_len,
 	       unsigned char *output, unsigned long output_len)
 {
+	/* Retain x86 boot parameters pointer passed from startup_32/64. */
 	boot_params = rmode;
 
 	sanitize_boot_params(boot_params);
@@ -91,6 +116,7 @@ extract_kernel(void *rmode, unsigned char *input_data, unsigned long input_len,
 
 	init_default_io_ops();
 
+	/* Validate memory location choices. */
 	if ((unsigned long)output & (MIN_KERNEL_ALIGN - 1))
 		error("Destination physical address inappropriately aligned");
 

@@ -1,3 +1,16 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/* -*- linux-c -*- ------------------------------------------------------- *
+ *
+ *   Copyright (C) 1991, 1992 Linus Torvalds
+ *   Copyright 2007 rPath, Inc. - All Rights Reserved
+ *   Copyright 2009 Intel Corporation; author H. Peter Anvin
+ *
+ * ----------------------------------------------------------------------- */
+
+/*
+ * Select video mode
+ */
+
 #include "boot.h"
 #include "video.h"
 
@@ -17,13 +30,22 @@ static void store_video_mode(void)
 {
 	struct biosregs ireg, oreg;
 
+	/* N.B.: the saving of the video page here is a bit silly,
+	   since we pretty much assume page 0 everywhere. */
 	initregs(&ireg);
 	ireg.ah = 0x0f;
 	intcall(0x10, &ireg, &oreg);
 
+	/* Not all BIOSes are clean with respect to the top bit */
 	boot_params.screen_info.orig_video_mode = oreg.al & 0x7f;
 }
 
+/*
+ * Store the video mode parameters for later usage by the kernel.
+ * This is done by asking the BIOS except for the rows/columns
+ * parameters in the default 80x25 mode -- these are set directly,
+ * because some very obscure BIOSes supply insane values.
+ */
 static void store_mode_params(void)
 {
 	int x, y;

@@ -1,3 +1,16 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/* -*- linux-c -*- ------------------------------------------------------- *
+ *
+ *   Copyright (C) 1991, 1992 Linus Torvalds
+ *   Copyright 2007 rPath, Inc. - All Rights Reserved
+ *   Copyright 2009 Intel Corporation; author H. Peter Anvin
+ *
+ * ----------------------------------------------------------------------- */
+
+/*
+ * Very simple screen and serial I/O
+ */
+
 #include "boot.h"
 
 static void __section(".inittext") bios_putchar(int ch)
@@ -15,7 +28,7 @@ static void __section(".inittext") bios_putchar(int ch)
 void __section(".inittext") putchar(int ch)
 {
 	if (ch == '\n')
-		putchar('\r');
+		putchar('\r'); /* \n -> \r\n */
 
 	bios_putchar(ch);
 }

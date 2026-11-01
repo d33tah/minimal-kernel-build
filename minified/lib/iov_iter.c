@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-only
 #include <linux/uio.h>
 #include <linux/highmem.h>
 
@@ -95,6 +96,13 @@ static inline bool page_copy_sane(struct page *page, size_t offset, size_t n)
 	struct page *head;
 	size_t v = n + offset;
 
+	/*
+	 * The general case needs to access the page order in order
+	 * to compute the page size.
+	 * However, we mostly deal with order-0 pages and thus can
+	 * avoid a possible cache line miss for requests that fit all
+	 * page orders.
+	 */
 	if (n <= v && v <= PAGE_SIZE)
 		return true;
 
@@ -124,7 +132,7 @@ size_t copy_page_to_iter(struct page *page, size_t offset, size_t bytes,
 	size_t res = 0;
 	if (unlikely(!page_copy_sane(page, offset, bytes)))
 		return 0;
-	page += offset / PAGE_SIZE;
+	page += offset / PAGE_SIZE; // first subpage
 	offset %= PAGE_SIZE;
 	while (1) {
 		size_t n = __copy_page_to_iter(

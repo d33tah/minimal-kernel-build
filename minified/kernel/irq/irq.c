@@ -10,6 +10,8 @@
  */
 static struct irq_desc irq_descs[NR_IRQS];
 
+static void handle_bad_irq(struct irq_desc *desc);
+
 static struct irq_chip no_irq_chip = {
 	.name = "none",
 };
@@ -42,7 +44,7 @@ void __init early_irq_init(void)
  * handler of every line no driver requested; those lines stay masked in the
  * 8259, so only a spurious IRQ 7/15 can reach it.
  */
-void handle_bad_irq(struct irq_desc *desc)
+static void handle_bad_irq(struct irq_desc *desc)
 {
 }
 

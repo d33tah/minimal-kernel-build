@@ -1,6 +1,8 @@
 #include <linux/pid_namespace.h>
 #include <linux/sched/signal.h>
 
+static struct pid_namespace *task_active_pid_ns(struct task_struct *tsk);
+
 struct pid init_struct_pid = {
 	.count = REFCOUNT_INIT(1),
 	.level = 0,
@@ -96,7 +98,7 @@ pid_t pid_vnr(struct pid *pid)
 	return pid_nr_ns(pid, task_active_pid_ns(current));
 }
 
-struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
+static struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
 {
 	return ns_of_pid(task_pid(tsk));
 }

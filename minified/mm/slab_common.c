@@ -3,7 +3,6 @@
 #include "slab.h"
 
 enum slab_state slab_state;
-static DEFINE_MUTEX(slab_mutex);
 struct kmem_cache *kmem_cache;
 
 static unsigned int calculate_alignment(slab_flags_t flags, unsigned int align,
@@ -21,83 +20,6 @@ static unsigned int calculate_alignment(slab_flags_t flags, unsigned int align,
 	align = max(align, arch_slab_minalign());
 
 	return ALIGN(align, sizeof(void *));
-}
-
-static struct kmem_cache *create_cache(unsigned int object_size,
-				       unsigned int align, slab_flags_t flags,
-				       unsigned int useroffset,
-				       unsigned int usersize,
-				       void (*ctor)(void *))
-{
-	struct kmem_cache *s;
-	int err;
-
-	err = -ENOMEM;
-	s = kmem_cache_zalloc(kmem_cache, GFP_KERNEL);
-	if (!s)
-		goto out;
-
-	s->size = s->object_size = object_size;
-	s->align = align;
-	s->ctor = ctor;
-
-	err = __kmem_cache_create(s, flags);
-	if (err)
-		goto out_free_cache;
-
-out:
-	if (err)
-		return ERR_PTR(err);
-	return s;
-
-out_free_cache:
-	kmem_cache_free(kmem_cache, s);
-	goto out;
-}
-
-struct kmem_cache *
-kmem_cache_create_usercopy(const char *name, unsigned int size,
-			   unsigned int align, slab_flags_t flags,
-			   unsigned int useroffset, unsigned int usersize,
-			   void (*ctor)(void *))
-{
-	struct kmem_cache *s = NULL;
-	int err;
-
-	mutex_lock(&slab_mutex);
-
-	err = 0;
-
-	if (flags & ~SLAB_FLAGS_PERMITTED) {
-		err = -EINVAL;
-		goto out_unlock;
-	}
-
-	flags &= CACHE_CREATE_MASK;
-
-	s = create_cache(size, calculate_alignment(flags, align, size), flags,
-			 useroffset, usersize, ctor);
-	if (IS_ERR(s)) {
-		err = PTR_ERR(s);
-	}
-
-out_unlock:
-	mutex_unlock(&slab_mutex);
-
-	if (err) {
-		if (flags & SLAB_PANIC)
-			panic("%s: Failed to create slab '%s'. Error %d\n",
-			      __func__, name, err);
-		return NULL;
-	}
-	return s;
-}
-
-struct kmem_cache *kmem_cache_create(const char *name, unsigned int size,
-				     unsigned int align, slab_flags_t flags,
-				     void (*ctor)(void *))
-{
-	return kmem_cache_create_usercopy(name, size, align, flags, 0, 0, ctor);
 }
 
 bool slab_is_available(void)

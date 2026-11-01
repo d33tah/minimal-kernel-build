@@ -44,16 +44,6 @@ static inline int slab_nid(const struct slab *slab)
 	return folio_nid(slab_folio(slab));
 }
 
-static inline struct slab *virt_to_slab(const void *addr)
-{
-	struct folio *folio = virt_to_folio(addr);
-
-	if (!folio_test_slab(folio))
-		return NULL;
-
-	return folio_slab(folio);
-}
-
 enum slab_deactivate_mode { DEACTIVATE_TO_HEAD, DEACTIVATE_TO_TAIL };
 
 struct kmem_cache_order_objects {
@@ -61,11 +51,9 @@ struct kmem_cache_order_objects {
 };
 
 struct kmem_cache {
-	slab_flags_t flags;
 	unsigned int size, object_size, offset;
 	struct kmem_cache_order_objects oo, min;
 	gfp_t allocflags;
-	void (*ctor)(void *);
 	unsigned int align;
 	struct kmem_cache_node *node[MAX_NUMNODES];
 };
@@ -100,30 +88,6 @@ int __kmem_cache_create(struct kmem_cache *, slab_flags_t flags);
 extern void create_boot_cache(struct kmem_cache *, const char *name,
 			      unsigned int size, slab_flags_t flags,
 			      unsigned int useroffset, unsigned int usersize);
-
-#define SLAB_CORE_FLAGS                                                        \
-	(SLAB_HWCACHE_ALIGN | SLAB_CACHE_DMA | SLAB_CACHE_DMA32 | SLAB_PANIC | \
-	 SLAB_TYPESAFE_BY_RCU | SLAB_DEBUG_OBJECTS)
-
-#define SLAB_DEBUG_FLAGS (0)
-
-#define SLAB_CACHE_FLAGS                                            \
-	(SLAB_NOLEAKTRACE | SLAB_RECLAIM_ACCOUNT | SLAB_TEMPORARY | \
-	 SLAB_ACCOUNT | SLAB_NO_USER_FLAGS)
-
-#define CACHE_CREATE_MASK \
-	(SLAB_CORE_FLAGS | SLAB_DEBUG_FLAGS | SLAB_CACHE_FLAGS)
-
-#define SLAB_FLAGS_PERMITTED                                               \
-	(SLAB_CORE_FLAGS | SLAB_RED_ZONE | SLAB_POISON | SLAB_STORE_USER | \
-	 SLAB_TRACE | SLAB_CONSISTENCY_CHECKS | SLAB_NOLEAKTRACE |         \
-	 SLAB_RECLAIM_ACCOUNT | SLAB_TEMPORARY | SLAB_ACCOUNT |            \
-	 SLAB_NO_USER_FLAGS)
-
-static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
-{
-	return s;
-}
 
 static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
 						     struct obj_cgroup **objcgp,

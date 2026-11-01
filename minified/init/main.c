@@ -1,3 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ *  linux/init/main.c
+ *
+ *  Copyright (C) 1991, 1992  Linus Torvalds
+ *
+ *  GK 2/5/95  -  Changed to support mounting root fs via NFS
+ *  Added initrd & change_root: Werner Almesberger & Hans Lermen, Feb '96
+ *  Moan early if gcc is old, avoiding bogus kernels - Paul Gortmaker, May '96
+ *  Simplified starting of init:  Michael A. Griffith <grif@acm.org>
+ */
+
 #include <linux/binfmts.h>
 #include <linux/delay.h>
 
@@ -30,8 +42,13 @@ static noinline void __ref rest_init(void)
 {
 	user_mode_thread(kernel_init, NULL, CLONE_FS);
 
+	/*
+	 * The boot idle thread must execute schedule()
+	 * at least once to get things moving:
+	 */
 	schedule_preempt_disabled();
 
+	/* Call into cpu_idle with preempt disabled */
 	cpu_startup_entry(CPUHP_ONLINE);
 }
 
@@ -48,12 +65,18 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	mem_init();
 	kmem_cache_init();
 
+	/*
+	 * Set up the scheduler prior starting any interrupts (such as the
+	 * timer interrupt). Full topology setup happens at smp_init()
+	 * time - but meanwhile we still have a functioning scheduler.
+	 */
 	sched_init();
 
 	if (WARN(!irqs_disabled(),
 		 "Interrupts were enabled *very* early, fixing it\n"))
 		local_irq_disable();
 
+	/* init some links before init_ISA_irqs() */
 	early_irq_init();
 	init_IRQ();
 
@@ -128,6 +151,7 @@ static void __init console_on_rootfs(void)
 
 static noinline void __init kernel_init_freeable(void)
 {
+	/* Now the scheduler is fully set up and can do blocking allocations */
 	gfp_allowed_mask = __GFP_BITS_MASK;
 
 	do_initcalls();

@@ -37,8 +37,8 @@ pgprot_t protection_map[16] __ro_after_init = {
 
 /*
  * The VMAs of an mm are kept only as the address-sorted mm->mmap list (no
- * rbtree): a process here has a handful of VMAs (the ELF segments, bss and
- * the stack), so lookups walk the list.
+ * rbtree): a process here has a handful of VMAs (the ELF segments and the
+ * stack), so lookups walk the list.
  */
 static int find_vma_links(struct mm_struct *mm, unsigned long addr,
 			  unsigned long end, struct vm_area_struct **pprev)
@@ -154,21 +154,10 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 
 		if (!file->f_op->mmap)
 			return -ENODEV;
-	} else {
-		pgoff = addr >> PAGE_SHIFT;
 	}
 
 	addr = mmap_region(file, addr, len, vm_flags, pgoff);
 	return addr;
-}
-
-/*
- * We account for memory if it's a private writeable mapping,
- * not hugepages and VM_NORESERVE wasn't set.
- */
-static inline int accountable_mapping(struct file *file, vm_flags_t vm_flags)
-{
-	return (vm_flags & (VM_SHARED | VM_WRITE)) == VM_WRITE;
 }
 
 static unsigned long mmap_region(struct file *file, unsigned long addr,
@@ -178,19 +167,9 @@ static unsigned long mmap_region(struct file *file, unsigned long addr,
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma;
 	struct vm_area_struct *prev = NULL;
-	unsigned long charged = 0;
 
 	if (munmap_vma_range(mm, addr, len, &prev))
 		return -ENOMEM;
-	/*
-	 * Private writable mapping: check memory availability
-	 */
-	if (accountable_mapping(file, vm_flags)) {
-		charged = len >> PAGE_SHIFT;
-		if (security_vm_enough_memory_mm(mm, charged))
-			return -ENOMEM;
-		vm_flags |= VM_ACCOUNT;
-	}
 
 	vma = vm_area_alloc(mm);
 	if (!vma)
@@ -209,8 +188,6 @@ static unsigned long mmap_region(struct file *file, unsigned long addr,
 			vm_area_free(vma);
 			return -EINVAL;
 		}
-	} else {
-		vma_set_anonymous(vma);
 	}
 
 	vma_link(mm, vma, prev);
@@ -439,28 +416,6 @@ static int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 	}
 	free_unused_pgtables(mm, start, end);
 	return 0;
-}
-
-/*
- * Map the zero-filled part of an ELF segment (p_memsz > p_filesz) as a
- * private anonymous region; do_anonymous_page supplies zeroed pages on
- * first touch. MAP_FIXED_NOREPLACE: an overlap with an existing mapping
- * (e.g. the stack) fails with -EEXIST instead of unmapping it.
- */
-int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
-{
-	unsigned long prot = PROT_READ | PROT_WRITE;
-	unsigned long ret;
-
-	if (flags & ~VM_EXEC)
-		return -EINVAL;
-	if (flags & VM_EXEC)
-		prot |= PROT_EXEC;
-
-	/* No file: do_mmap/mmap_region make it an anonymous mapping. */
-	ret = vm_mmap(NULL, addr, request, prot,
-		      MAP_PRIVATE | MAP_FIXED_NOREPLACE, 0);
-	return IS_ERR_VALUE(ret) ? (int)ret : 0;
 }
 
 /*

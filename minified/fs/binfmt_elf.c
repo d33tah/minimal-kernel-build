@@ -31,33 +31,6 @@ static struct linux_binfmt elf_format = {
 
 #define BAD_ADDR(x) (unlikely((unsigned long)(x) >= TASK_SIZE))
 
-static int set_brk(unsigned long start, unsigned long end, int prot)
-{
-	start = ELF_PAGEALIGN(start);
-	end = ELF_PAGEALIGN(end);
-	if (end > start) {
-		int error = vm_brk_flags(start, end - start,
-					 prot & PROT_EXEC ? VM_EXEC : 0);
-		if (error)
-			return error;
-	}
-	current->mm->brk = end;
-	return 0;
-}
-
-static int padzero(unsigned long elf_bss)
-{
-	unsigned long nbyte;
-
-	nbyte = ELF_PAGEOFFSET(elf_bss);
-	if (nbyte) {
-		nbyte = ELF_MIN_ALIGN - nbyte;
-		if (clear_user((void __user *)elf_bss, nbyte))
-			return -EFAULT;
-	}
-	return 0;
-}
-
 #define STACK_ADD(sp, items) ((elf_addr_t __user *)(sp) - (items))
 #define STACK_ROUND(sp, items) (((unsigned long)(sp - items)) & ~15UL)
 #define STACK_ALLOC(sp, len) (sp -= len)
@@ -246,8 +219,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	int first_pt_load = 1;
 	unsigned long error;
 	struct elf_phdr *elf_ppnt, *elf_phdata;
-	unsigned long elf_bss, elf_brk;
-	int bss_prot = 0;
 	int retval, i;
 	unsigned long elf_entry;
 	unsigned long e_entry;
@@ -291,9 +262,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	if (retval < 0)
 		goto out_free_dentry;
 
-	elf_bss = 0;
-	elf_brk = 0;
-
 	for (i = 0, elf_ppnt = elf_phdata; i < elf_ex->e_phnum;
 	     i++, elf_ppnt++) {
 		int elf_prot, elf_flags;
@@ -301,12 +269,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 		if (elf_ppnt->p_type != PT_LOAD)
 			continue;
-
-		/* Only the last PT_LOAD may carry bss (p_memsz > p_filesz). */
-		if (unlikely(elf_brk > elf_bss)) {
-			retval = -EINVAL;
-			goto out_free_dentry;
-		}
 
 		elf_prot = 0;
 		if (elf_ppnt->p_flags & PF_R)
@@ -351,27 +313,9 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			retval = -EINVAL;
 			goto out_free_dentry;
 		}
-
-		k = elf_ppnt->p_vaddr + elf_ppnt->p_filesz;
-
-		if (k > elf_bss)
-			elf_bss = k;
-		k = elf_ppnt->p_vaddr + elf_ppnt->p_memsz;
-		if (k > elf_brk) {
-			bss_prot = elf_prot;
-			elf_brk = k;
-		}
 	}
 
 	e_entry = elf_ex->e_entry;
-
-	retval = set_brk(elf_bss, elf_brk, bss_prot);
-	if (retval)
-		goto out_free_dentry;
-	if (likely(elf_bss != elf_brk) && unlikely(padzero(elf_bss))) {
-		retval = -EFAULT;
-		goto out_free_dentry;
-	}
 
 	elf_entry = e_entry;
 	if (BAD_ADDR(elf_entry)) {

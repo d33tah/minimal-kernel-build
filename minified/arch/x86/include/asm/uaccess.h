@@ -145,8 +145,6 @@ struct __large_struct {
 
 extern __must_check long strnlen_user(const char __user *str, long n);
 
-unsigned long __must_check clear_user(void __user *mem, unsigned long len);
-
 unsigned long __must_check __copy_user_ll(void *to, const void *from,
 					  unsigned long n);
 

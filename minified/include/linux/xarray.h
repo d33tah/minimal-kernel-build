@@ -43,20 +43,6 @@ static inline void xa_init_flags(struct xarray *xa, gfp_t flags)
 #define xa_lock_irq(xa) spin_lock_irq(&(xa)->xa_lock)
 #define xa_unlock_irq(xa) spin_unlock_irq(&(xa)->xa_lock)
 
-#define XA_CHUNK_SHIFT (CONFIG_BASE_SMALL ? 4 : 6)
-#define XA_CHUNK_SIZE (1UL << XA_CHUNK_SHIFT)
-#define XA_CHUNK_MASK (XA_CHUNK_SIZE - 1)
-
-struct xa_node {
-	unsigned char shift;
-	unsigned char offset;
-	unsigned char count;
-	struct xa_node __rcu *parent;
-	void __rcu *slots[XA_CHUNK_SIZE];
-};
-
-void radix_tree_init(void);
-
 static inline void *xa_head(const struct xarray *xa)
 {
 	return rcu_dereference_check(xa->xa_head,
@@ -69,50 +55,10 @@ static inline void *xa_head_locked(const struct xarray *xa)
 					 lockdep_is_held(&xa->xa_lock));
 }
 
-static inline void *xa_entry(const struct xarray *xa,
-			     const struct xa_node *node, unsigned int offset)
-{
-	return rcu_dereference_check(node->slots[offset],
-				     lockdep_is_held(&xa->xa_lock));
-}
-
-static inline void *xa_entry_locked(const struct xarray *xa,
-				    const struct xa_node *node,
-				    unsigned int offset)
-{
-	return rcu_dereference_protected(node->slots[offset],
-					 lockdep_is_held(&xa->xa_lock));
-}
-
-static inline struct xa_node *xa_parent(const struct xarray *xa,
-					const struct xa_node *node)
-{
-	return rcu_dereference_check(node->parent,
-				     lockdep_is_held(&xa->xa_lock));
-}
-
-static inline void *xa_mk_node(const struct xa_node *node)
-{
-	return (void *)((unsigned long)node | 2);
-}
-
-static inline struct xa_node *xa_to_node(const void *entry)
-{
-	return (struct xa_node *)((unsigned long)entry - 2);
-}
-
-static inline bool xa_is_node(const void *entry)
-{
-	return xa_is_internal(entry) && (unsigned long)entry > 4096;
-}
-
 struct xa_state {
 	struct xarray *xa;
 	unsigned long xa_index;
-	unsigned char xa_shift;
-	unsigned char xa_offset;
 	struct xa_node *xa_node;
-	struct xa_node *xa_alloc;
 };
 
 #define XA_ERROR(errno) ((struct xa_node *)(((unsigned long)errno << 2) | 2UL))
@@ -123,10 +69,7 @@ struct xa_state {
 	{                                     \
 		.xa = array,                  \
 		.xa_index = index,            \
-		.xa_shift = shift,            \
-		.xa_offset = 0,               \
 		.xa_node = XAS_RESTART,       \
-		.xa_alloc = NULL,             \
 	}
 
 #define XA_STATE(name, array, index) \
@@ -155,16 +98,6 @@ static inline bool xas_valid(const struct xa_state *xas)
 	return !xas_invalid(xas);
 }
 
-static inline bool xas_is_node(const struct xa_state *xas)
-{
-	return xas_valid(xas) && xas->xa_node;
-}
-
-static inline bool xas_not_node(struct xa_node *node)
-{
-	return ((unsigned long)node & 3) || !node;
-}
-
 static inline bool xas_frozen(struct xa_node *node)
 {
 	return (unsigned long)node & 2;
@@ -183,17 +116,9 @@ static inline void xas_reset(struct xa_state *xas)
 void *xas_load(struct xa_state *);
 void *xas_store(struct xa_state *, void *entry);
 
-bool xas_nomem(struct xa_state *, gfp_t);
-
 static inline void *xas_reload(struct xa_state *xas)
 {
-	struct xa_node *node = xas->xa_node;
-	char offset;
-
-	if (!node)
-		return xa_head(xas->xa);
-	offset = xas->xa_offset;
-	return xa_entry(xas->xa, node, offset);
+	return xa_head(xas->xa);
 }
 
 static inline void xas_set(struct xa_state *xas, unsigned long index)
@@ -204,10 +129,7 @@ static inline void xas_set(struct xa_state *xas, unsigned long index)
 
 static inline void xas_advance(struct xa_state *xas, unsigned long index)
 {
-	unsigned char shift = xas_is_node(xas) ? xas->xa_node->shift : 0;
-
 	xas->xa_index = index;
-	xas->xa_offset = (index >> shift) & XA_CHUNK_MASK;
 }
 
 static inline void xas_set_order(struct xa_state *xas, unsigned long index,
@@ -221,15 +143,7 @@ void *__xas_next(struct xa_state *);
 
 static inline void *xas_next(struct xa_state *xas)
 {
-	struct xa_node *node = xas->xa_node;
-
-	if (unlikely(xas_not_node(node) || node->shift ||
-		     xas->xa_offset == XA_CHUNK_MASK))
-		return __xas_next(xas);
-
-	xas->xa_index++;
-	xas->xa_offset++;
-	return xa_entry(xas->xa, node, xas->xa_offset);
+	return __xas_next(xas);
 }
 
 #endif

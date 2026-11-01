@@ -14,21 +14,18 @@ static noinline int __filemap_add_folio(struct address_space *mapping,
 		nr = folio_nr_pages(folio);
 	}
 
-	gfp &= GFP_RECLAIM_MASK;
 	folio_ref_add(folio, nr);
 	folio->mapping = mapping;
 	folio->index = xas.xa_index;
 
-	do {
-		xas_lock_irq(&xas);
+	xas_lock_irq(&xas);
 
-		xas_store(&xas, folio);
-		if (xas_error(&xas))
-			goto unlock;
+	xas_store(&xas, folio);
+	if (xas_error(&xas))
+		goto unlock;
 
 unlock:
-		xas_unlock_irq(&xas);
-	} while (xas_nomem(&xas, gfp));
+	xas_unlock_irq(&xas);
 
 	if (xas_error(&xas))
 		goto error;

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-only
 #include <asm/cpu.h>
 
 unsigned int x86_family(unsigned int sig)

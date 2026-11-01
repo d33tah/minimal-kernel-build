@@ -48,12 +48,48 @@
  * frame so that regs->sp/ss are valid (marked with CS_FROM_KERNEL).
  */
 .macro FIXUP_FRAME
+	/*
+	 * The high bits of the CS dword (__csh) are used for CS_FROM_*.
+	 * Clear them in case hardware didn't do this for us.
+	 */
 	andl	$0x0000ffff, 4*4(%esp)
 
 	testl	$USER_SEGMENT_RPL_MASK, 4*4(%esp)
 	jnz	.Lfrom_usermode_no_fixup_\@
 
 	orl	$CS_FROM_KERNEL, 4*4(%esp)
+
+	/*
+	 * When we're here from kernel mode; the (exception) stack looks like:
+	 *
+	 *  6*4(%esp) - <previous context>
+	 *  5*4(%esp) - flags
+	 *  4*4(%esp) - cs
+	 *  3*4(%esp) - ip
+	 *  2*4(%esp) - orig_eax
+	 *  1*4(%esp) - gs / function
+	 *  0*4(%esp) - fs
+	 *
+	 * Lets build a 5 entry IRET frame after that, such that struct pt_regs
+	 * is complete and in particular regs->sp is correct. This gives us
+	 * the original 6 entries as gap:
+	 *
+	 * 14*4(%esp) - <previous context>
+	 * 13*4(%esp) - gap / flags
+	 * 12*4(%esp) - gap / cs
+	 * 11*4(%esp) - gap / ip
+	 * 10*4(%esp) - gap / orig_eax
+	 *  9*4(%esp) - gap / gs / function
+	 *  8*4(%esp) - gap / fs
+	 *  7*4(%esp) - ss
+	 *  6*4(%esp) - sp
+	 *  5*4(%esp) - flags
+	 *  4*4(%esp) - cs
+	 *  3*4(%esp) - ip
+	 *  2*4(%esp) - orig_eax
+	 *  1*4(%esp) - gs / function
+	 *  0*4(%esp) - fs
+	 */
 
 	pushl	%ss		# ss
 	pushl	%esp		# sp (points at ss)
@@ -69,9 +105,21 @@
 
 /* Undo FIXUP_FRAME: rebuild the 3-word iret frame below regs->sp. */
 .macro IRET_FRAME
+	/*
+	 * We're called with %ds, %es, %fs, and %gs from the interrupted
+	 * frame, so we shouldn't use them.  Also, we may be in ESPFIX
+	 * mode and therefore have a nonzero SS base and an offset ESP,
+	 * so any attempt to access the stack needs to use SS.  (except for
+	 * accesses through %esp, which automatically use SS.)
+	 */
 	testl $CS_FROM_KERNEL, 1*4(%esp)
 	jz .Lfinished_frame_\@
 
+	/*
+	 * Reconstruct the 3 entry IRET frame right after the (modified)
+	 * regs->sp without lowering %esp in between, such that an NMI in the
+	 * middle doesn't scribble our stack.
+	 */
 	pushl	%eax
 	pushl	%ecx
 	movl	5*4(%esp), %eax		# (modified) regs->sp
@@ -309,6 +357,8 @@ SYM_FUNC_START(entry_INT80_32)
 	movl	%esp, %eax
 	call	do_int80_syscall_32
 .Lsyscall_32_done:
+
+	/* Restore user state */
 	RESTORE_REGS pop=4			# skip orig_eax/error_code
 .Lirq_return:
 	/*
@@ -382,6 +432,13 @@ SYM_CODE_START(asm_exc_double_fault)
 	jmp 1b
 SYM_CODE_END(asm_exc_double_fault)
 
+/*
+ * NMI is doubly nasty.  It can happen on the first instruction of
+ * entry_SYSENTER_32 (just like #DB), but it can also interrupt the beginning
+ * of the #DB handler even if that #DB in turn hit before entry_SYSENTER_32
+ * switched stacks.  We handle both conditions by simply checking whether we
+ * interrupted kernel code running on the SYSENTER stack.
+ */
 SYM_CODE_START(asm_exc_nmi)
 
 	pushl	%eax				# pt_regs->orig_ax

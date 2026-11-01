@@ -1,3 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * User address space access functions.
+ * The non inlined parts of asm-i386/uaccess.h are here.
+ *
+ * Copyright 1997 Andi Kleen <ak@muc.de>
+ * Copyright 1997 Linus Torvalds
+ */
 #include <linux/uaccess.h>
 
 /* clang-format off */

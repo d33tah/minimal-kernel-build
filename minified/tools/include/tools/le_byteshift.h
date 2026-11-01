@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _TOOLS_LE_BYTESHIFT_H
 #define _TOOLS_LE_BYTESHIFT_H
 
@@ -45,4 +46,4 @@ static inline void put_unaligned_le32(uint32_t val, void *p)
 	__put_unaligned_le32(val, p);
 }
 
-#endif
+#endif /* _TOOLS_LE_BYTESHIFT_H */

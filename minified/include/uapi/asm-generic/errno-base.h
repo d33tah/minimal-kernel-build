@@ -2,28 +2,28 @@
 #ifndef _ASM_GENERIC_ERRNO_BASE_H
 #define _ASM_GENERIC_ERRNO_BASE_H
 
-#define EPERM 1
-#define ENOENT 2
-#define EINTR 4
-#define EIO 5
-#define ENXIO 6
-#define E2BIG 7
-#define ENOEXEC 8
-#define EBADF 9
-#define EAGAIN 11
-#define ENOMEM 12
-#define EACCES 13
-#define EFAULT 14
-#define EBUSY 16
-#define EEXIST 17
-#define ENODEV 19
-#define ENOTDIR 20
-#define EISDIR 21
-#define EINVAL 22
-#define EMFILE 24
-#define ETXTBSY 26
-#define EFBIG 27
-#define ENOSPC 28
-#define EMLINK 31
+#define EPERM 1 /* Operation not permitted */
+#define ENOENT 2 /* No such file or directory */
+#define EINTR 4 /* Interrupted system call */
+#define EIO 5 /* I/O error */
+#define ENXIO 6 /* No such device or address */
+#define E2BIG 7 /* Argument list too long */
+#define ENOEXEC 8 /* Exec format error */
+#define EBADF 9 /* Bad file number */
+#define EAGAIN 11 /* Try again */
+#define ENOMEM 12 /* Out of memory */
+#define EACCES 13 /* Permission denied */
+#define EFAULT 14 /* Bad address */
+#define EBUSY 16 /* Device or resource busy */
+#define EEXIST 17 /* File exists */
+#define ENODEV 19 /* No such device */
+#define ENOTDIR 20 /* Not a directory */
+#define EISDIR 21 /* Is a directory */
+#define EINVAL 22 /* Invalid argument */
+#define EMFILE 24 /* Too many open files */
+#define ETXTBSY 26 /* Text file busy */
+#define EFBIG 27 /* File too large */
+#define ENOSPC 28 /* No space left on device */
+#define EMLINK 31 /* Too many links */
 
 #endif

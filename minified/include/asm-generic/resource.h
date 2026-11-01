@@ -4,6 +4,9 @@
 
 #include <uapi/asm-generic/resource.h>
 
+/*
+ * boot-time rlimit defaults for the init task:
+ */
 #define INIT_RLIMITS                                                \
 	{                                                           \
 		[RLIMIT_CPU] = { RLIM_INFINITY, RLIM_INFINITY },    \

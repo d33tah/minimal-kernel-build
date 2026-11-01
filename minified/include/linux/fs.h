@@ -7,7 +7,6 @@
 #include <linux/path.h>
 #include <linux/gfp.h>
 #include <linux/xarray.h>
-#include <linux/capability.h>
 #include <linux/semaphore.h>
 #include <linux/stat.h>
 #include <asm/fcntl.h>

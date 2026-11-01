@@ -5,7 +5,7 @@
 
 obj-y     = fork.o panic.o \
 	    exit.o softirq.o \
-	    capability.o user.o \
+	    user.o \
 	    pid.o \
 	    extable.o \
 	    nsproxy.o \

@@ -32,6 +32,10 @@ static inline u64 protnone_mask(u64 val)
 
 #define PAGE_TABLE_SIZE(pages) ((pages) / PTRS_PER_PGD)
 
-#define LOWMEM_PAGES ((((_ULL(2) << 31) - __PAGE_OFFSET) >> PAGE_SHIFT))
+/*
+ * MKB_FOOTPRINT: map at most 64 MiB of RAM (upstream: the whole 1 GiB above
+ * PAGE_OFFSET); sizes the brk page tables (1 MiB -> 64 KiB) and MAXMEM.
+ */
+#define LOWMEM_PAGES ((_ULL(64) << 20) >> PAGE_SHIFT)
 
 #endif

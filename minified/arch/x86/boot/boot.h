@@ -88,9 +88,6 @@ static inline u32 rdgs32(addr_t addr)
 	return v;
 }
 
-void copy_to_fs(addr_t dst, void *src, size_t len);
-void *copy_from_fs(void *dst, addr_t src, size_t len);
-
 int enable_a20(void);
 
 struct biosregs {

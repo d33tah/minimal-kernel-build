@@ -1,7 +1,5 @@
 #include <asm/tlbflush.h>
 
-unsigned int __VMALLOC_RESERVE = 128 << 20;
-
 void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
 {
 	pgd_t *pgd;

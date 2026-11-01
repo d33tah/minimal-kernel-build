@@ -244,10 +244,17 @@ static void __init memory_map_top_down(unsigned long map_start,
 	unsigned long step_size, addr;
 	unsigned long mapped_ram_size = 0;
 
-	addr = memblock_phys_alloc_range(PMD_SIZE, PMD_SIZE, map_start,
-					 map_end);
-	memblock_phys_free(addr, PMD_SIZE);
-	real_end = addr + PMD_SIZE;
+	/*
+	 * MKB_FOOTPRINT: probe for the page tables the LOWMEM_PAGES cap can
+	 * need, page-aligned (upstream: a free PMD_SIZE block aligned at
+	 * PMD_SIZE, 4 MiB here, so -m 8M and less failed the probe and
+	 * memblock_phys_free(0, PMD_SIZE) un-reserved the kernel image).
+	 */
+	addr = memblock_phys_alloc_range(PAGE_TABLE_SIZE(LOWMEM_PAGES)
+						 << PAGE_SHIFT,
+					 PAGE_SIZE, map_start, map_end);
+	memblock_phys_free(addr, PAGE_TABLE_SIZE(LOWMEM_PAGES) << PAGE_SHIFT);
+	real_end = addr + (PAGE_TABLE_SIZE(LOWMEM_PAGES) << PAGE_SHIFT);
 
 	step_size = PMD_SIZE;
 	max_pfn_mapped = 0;

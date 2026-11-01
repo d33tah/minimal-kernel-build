@@ -20,12 +20,6 @@
 
 #ifndef __ASSEMBLY__
 
-/*
- * This much address space is reserved for vmalloc() and iomap()
- * as well as fixmap mappings.
- */
-extern unsigned int __VMALLOC_RESERVE;
-
 extern void find_low_pfn_range(void);
 
 #endif

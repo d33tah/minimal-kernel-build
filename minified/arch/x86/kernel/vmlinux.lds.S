@@ -156,7 +156,9 @@ SECTIONS
 	. = ALIGN(PAGE_SIZE);
 	.brk : AT(ADDR(.brk) - LOAD_OFFSET) {
 		__brk_base = .;
-		. += 64 * 1024;		/* 64k alignment slop space */
+		/* MKB_FOOTPRINT: one page of alignment slop (upstream: 64k); every brk
+		 * user (early page tables, early_pgt_alloc) is page-aligned. */
+		. += PAGE_SIZE;
 		*(.bss..brk)		/* areas brk users have reserved */
 		__brk_limit = .;
 	}

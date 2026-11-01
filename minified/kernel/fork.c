@@ -9,8 +9,6 @@
 #include <asm/pgalloc.h>
 #include <asm/mmu_context.h>
 
-static struct kmem_cache *task_struct_cachep;
-
 static inline struct task_struct *alloc_task_struct_node(int node)
 {
 	return kmalloc_node(sizeof(struct task_struct), GFP_KERNEL, node);
@@ -32,14 +30,6 @@ static int alloc_thread_stack_node(struct task_struct *tsk, int node)
 	}
 	return -ENOMEM;
 }
-
-static struct kmem_cache *signal_cachep;
-
-struct kmem_cache *files_cachep;
-
-static struct kmem_cache *vm_area_cachep;
-
-static struct kmem_cache *mm_cachep;
 
 struct vm_area_struct *vm_area_alloc(struct mm_struct *mm)
 {
@@ -77,14 +67,6 @@ void __mmdrop(struct mm_struct *mm)
 	BUG_ON(mm == &init_mm);
 	mm_free_pgd(mm);
 	free_mm(mm);
-}
-
-void __init fork_init(void)
-{
-	task_struct_cachep = kmem_cache_create("task_struct",
-					       sizeof(struct task_struct),
-					       L1_CACHE_BYTES,
-					       SLAB_PANIC | SLAB_ACCOUNT, NULL);
 }
 
 void set_task_stack_end_magic(struct task_struct *tsk)
@@ -370,25 +352,4 @@ pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 	};
 
 	return kernel_clone(&args);
-}
-
-void __init proc_caches_init(void)
-{
-	unsigned int mm_size;
-
-	signal_cachep = kmem_cache_create(
-		"signal_cache", sizeof(struct signal_struct), 0,
-		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
-	files_cachep = kmem_cache_create(
-		"files_cache", sizeof(struct files_struct), 0,
-		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
-
-	mm_size = sizeof(struct mm_struct);
-
-	mm_cachep = kmem_cache_create_usercopy(
-		"mm_struct", mm_size, ARCH_MIN_MMSTRUCT_ALIGN,
-		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT,
-		offsetof(struct mm_struct, saved_auxv),
-		sizeof_field(struct mm_struct, saved_auxv), NULL);
-	vm_area_cachep = KMEM_CACHE(vm_area_struct, SLAB_PANIC | SLAB_ACCOUNT);
 }

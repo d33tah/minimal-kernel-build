@@ -2,8 +2,6 @@
 
 static const struct address_space_operations empty_aops = {};
 
-static struct kmem_cache *inode_cachep __read_mostly;
-
 static int no_open(struct inode *inode, struct file *file)
 {
 	return -ENXIO;
@@ -78,13 +76,6 @@ struct inode *new_inode(struct super_block *sb)
 
 	inode = new_inode_pseudo(sb);
 	return inode;
-}
-
-void __init inode_init(void)
-{
-	inode_cachep = kmem_cache_create(
-		"inode_cache", sizeof(struct inode), 0,
-		(SLAB_RECLAIM_ACCOUNT | SLAB_PANIC | SLAB_ACCOUNT), init_once);
 }
 
 void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)

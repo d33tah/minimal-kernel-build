@@ -1,8 +1,6 @@
 #include <linux/memblock.h>
 #include "internal.h"
 
-static struct kmem_cache *dentry_cache __read_mostly;
-
 static const struct qstr slash_name = QSTR_INIT("/", 1);
 
 static unsigned int d_hash_shift __read_mostly;
@@ -414,15 +412,6 @@ static void __init dcache_init_early(void)
 	d_hash_shift = 32 - d_hash_shift;
 }
 
-static void __init dcache_init(void)
-{
-	dentry_cache = KMEM_CACHE_USERCOPY(
-		dentry, SLAB_RECLAIM_ACCOUNT | SLAB_PANIC | SLAB_ACCOUNT,
-		d_iname);
-}
-
-struct kmem_cache *names_cachep __read_mostly;
-
 void __init vfs_caches_init_early(void)
 {
 	dcache_init_early();
@@ -430,12 +419,5 @@ void __init vfs_caches_init_early(void)
 
 void __init vfs_caches_init(void)
 {
-	names_cachep = kmem_cache_create_usercopy(
-		"names_cache", PATH_MAX, 0, SLAB_HWCACHE_ALIGN | SLAB_PANIC, 0,
-		PATH_MAX, NULL);
-
-	dcache_init();
-	inode_init();
-	files_init();
 	mnt_init();
 }

@@ -2,8 +2,6 @@
 #include <linux/file.h>
 #include "internal.h"
 
-static struct kmem_cache *filp_cachep __read_mostly;
-
 static void file_free_rcu(struct rcu_head *head)
 {
 	struct file *f = container_of(head, struct file, f_u.fu_rcuhead);
@@ -60,11 +58,4 @@ void fput(struct file *file)
 {
 	if (atomic_long_dec_and_test(&file->f_count))
 		__fput(file);
-}
-
-void __init files_init(void)
-{
-	filp_cachep = kmem_cache_create(
-		"filp", sizeof(struct file), 0,
-		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
 }

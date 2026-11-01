@@ -20,8 +20,6 @@ static __always_inline void cpu_relax(void)
 #include <linux/err.h>
 #include <linux/irqflags.h>
 
-#define ARCH_MIN_MMSTRUCT_ALIGN 0
-
 struct cpuinfo_x86 {
 	__u8 x86; /* CPU family */
 	/* Maximum supported CPUID level, -1=no CPUID: */

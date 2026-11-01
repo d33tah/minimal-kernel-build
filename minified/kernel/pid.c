@@ -105,7 +105,4 @@ void __init pid_idr_init(void)
 	pid_max = min_t(int, PID_MAX_LIMIT,
 			max_t(int, pid_max,
 			      PIDS_PER_CPU_DEFAULT *num_possible_cpus()));
-
-	init_pid_ns.pid_cachep =
-		KMEM_CACHE(pid, SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT);
 }

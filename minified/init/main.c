@@ -64,9 +64,6 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	time_init();
 	calibrate_delay();
 	pid_idr_init();
-	cred_init();
-	fork_init();
-	proc_caches_init();
 	vfs_caches_init();
 
 	check_bugs();

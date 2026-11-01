@@ -1,7 +1,5 @@
 #include <linux/init_task.h>
 
-static struct kmem_cache *cred_jar;
-
 static struct group_info init_groups = { .usage = ATOMIC_INIT(2) };
 
 struct cred init_cred = {
@@ -91,11 +89,4 @@ void abort_creds(struct cred *new)
 {
 	BUG_ON(atomic_read(&new->usage) < 1);
 	put_cred(new);
-}
-
-void __init cred_init(void)
-{
-	cred_jar = kmem_cache_create(
-		"cred_jar", sizeof(struct cred), 0,
-		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
 }

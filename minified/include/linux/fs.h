@@ -25,9 +25,6 @@ struct vm_area_struct;
 struct iov_iter;
 struct fs_context;
 
-extern void __init inode_init(void);
-extern void __init files_init(void);
-
 #define MAY_EXEC 0x00000001
 #define MAY_WRITE 0x00000002
 #define MAY_READ 0x00000004
@@ -318,8 +315,6 @@ extern void putname(struct filename *name);
 
 extern void __init vfs_caches_init_early(void);
 extern void __init vfs_caches_init(void);
-
-extern struct kmem_cache *names_cachep;
 
 #define __getname() kmalloc(PATH_MAX, GFP_KERNEL)
 #define __putname(name) kfree(name)

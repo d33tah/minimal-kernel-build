@@ -21,10 +21,6 @@ extern int sched_fork(unsigned long clone_flags, struct task_struct *p);
 
 void __noreturn make_task_dead(int signr);
 
-extern void proc_caches_init(void);
-
-extern void fork_init(void);
-
 extern int copy_thread(struct task_struct *, const struct kernel_clone_args *);
 extern pid_t user_mode_thread(int (*fn)(void *), void *arg,
 			      unsigned long flags);

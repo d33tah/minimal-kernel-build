@@ -160,19 +160,3 @@ gfp_t kmalloc_fix_flags(gfp_t flags)
 
 	return flags;
 }
-
-void *kmalloc_order(size_t size, gfp_t flags, unsigned int order)
-{
-	void *ret = NULL;
-	struct page *page;
-
-	if (unlikely(flags & GFP_SLAB_BUG_MASK))
-		flags = kmalloc_fix_flags(flags);
-
-	flags |= __GFP_COMP;
-	page = alloc_pages(flags, order);
-	if (likely(page)) {
-		ret = page_address(page);
-	}
-	return ret;
-}

@@ -26,7 +26,6 @@ static inline unsigned int arch_slab_minalign(void)
 
 #define __assume_kmalloc_alignment __assume_aligned(ARCH_KMALLOC_MINALIGN)
 #define __assume_slab_alignment __assume_aligned(ARCH_SLAB_MINALIGN)
-#define __assume_page_alignment __assume_aligned(PAGE_SIZE)
 
 #define KMALLOC_SHIFT_HIGH (PAGE_SHIFT + 1)
 #define KMALLOC_SHIFT_LOW 3
@@ -123,24 +122,6 @@ static __always_inline void *kmem_cache_alloc_node_trace(struct kmem_cache *s,
 	void *ret = kmem_cache_alloc_node(s, gfpflags, node);
 
 	return ret;
-}
-
-extern void *kmalloc_order(size_t size, gfp_t flags,
-			   unsigned int order) __assume_page_alignment
-	__alloc_size(1);
-
-static __always_inline
-	__alloc_size(1) void *kmalloc_order_trace(size_t size, gfp_t flags,
-						  unsigned int order)
-{
-	return kmalloc_order(size, flags, order);
-}
-
-static __always_inline __alloc_size(1) void *kmalloc_large(size_t size,
-							   gfp_t flags)
-{
-	unsigned int order = get_order(size);
-	return kmalloc_order_trace(size, flags, order);
 }
 
 static __always_inline __alloc_size(1) void *kmalloc(size_t size, gfp_t flags)

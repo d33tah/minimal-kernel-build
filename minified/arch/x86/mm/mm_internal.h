@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef __X86_MM_INTERNAL_H
 #define __X86_MM_INTERNAL_H
 
@@ -15,4 +16,4 @@ unsigned long kernel_physical_mapping_init(unsigned long start,
 					   pgprot_t prot);
 void zone_sizes_init(void);
 
-#endif
+#endif /* __X86_MM_INTERNAL_H */

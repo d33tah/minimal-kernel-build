@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-only
 #include <asm/mmu_context.h>
 
 #define STATIC_NOPV static
@@ -55,6 +56,7 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 	/* need_flush is always true: no PCID, so every switch reloads CR3. */
 	load_new_mm_cr3(next->pgd, 0);
 
+	/* Make sure we write CR3 before loaded_mm. */
 	barrier();
 
 	this_cpu_write(cpu_tlbstate.loaded_mm, next);
@@ -62,10 +64,24 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
 	cr4_update_pce_mm(next);
 }
 
+/*
+ * Call this when reinitializing a CPU.  It fixes the following potential
+ * problems:
+ *
+ * - The ASID changed from what cpu_tlbstate thinks it is (most likely
+ *   because the CPU was taken down and came back up with CR3's PCID
+ *   bits clear.  CPU hotplug can do this.
+ *
+ * - The TLB contains junk in slots corresponding to inactive ASIDs.
+ *
+ * - The CPU went so far out to lunch that it may have missed a TLB
+ *   flush.
+ */
 void initialize_tlbstate_and_flush(void)
 {
 	struct mm_struct *mm = this_cpu_read(cpu_tlbstate.loaded_mm);
 
+	/* Force ASID 0 and force a TLB flush. */
 	write_cr3(build_cr3(mm->pgd, 0));
 }
 
@@ -92,11 +108,17 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 	preempt_enable();
 }
 
+/*
+ * Flush one page in the kernel mapping
+ */
 void flush_tlb_one_kernel(unsigned long addr)
 {
 	flush_tlb_one_user(addr);
 }
 
+/*
+ * Flush one page in the user mapping
+ */
 STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr)
 {
 	asm volatile("invlpg (%0)" ::"r"(addr) : "memory");
@@ -107,10 +129,18 @@ void flush_tlb_one_user(unsigned long addr)
 	__flush_tlb_one_user(addr);
 }
 
+/*
+ * Flush everything
+ */
 STATIC_NOPV void native_flush_tlb_global(void)
 {
 	unsigned long flags;
 
+	/*
+	 * Read-modify-write to CR4 - protect it from preemption and
+	 * from interrupts. (Use the raw variant because this code can
+	 * be called from deep inside debugging code.)
+	 */
 	raw_local_irq_save(flags);
 
 	__native_tlb_flush_global(this_cpu_read(cpu_tlbstate.cr4));
@@ -118,8 +148,12 @@ STATIC_NOPV void native_flush_tlb_global(void)
 	raw_local_irq_restore(flags);
 }
 
+/*
+ * Flush the entire current user mapping
+ */
 STATIC_NOPV void native_flush_tlb_local(void)
 {
+	/* If current->mm == NULL then the read_cr3() "borrows" an mm */
 	native_write_cr3(__native_read_cr3());
 }
 
@@ -128,11 +162,17 @@ static void flush_tlb_local(void)
 	__flush_tlb_local();
 }
 
+/*
+ * Flush everything
+ */
 void __flush_tlb_all(void)
 {
 	if (boot_cpu_has(X86_FEATURE_PGE)) {
 		__flush_tlb_global();
 	} else {
+		/*
+		 * !PGE -> !PCID (setup_pcid()), thus every flush is total.
+		 */
 		flush_tlb_local();
 	}
 }

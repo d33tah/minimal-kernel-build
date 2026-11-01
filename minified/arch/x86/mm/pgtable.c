@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 #include <asm/pgalloc.h>
 
 #define PGTABLE_HIGHMEM 0

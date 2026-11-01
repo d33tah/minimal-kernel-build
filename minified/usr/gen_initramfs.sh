@@ -23,6 +23,6 @@ for f in $(find "$dir" -mindepth 1 | LC_ALL=C sort); do
 	echo "$f \\" >> "$dep_list"
 	echo "file /${f#$dir/} $f $(stat -c '%a %u %g' "$f")"
 done > "$out.list"
-echo "dir /dev 755 1000 1000" >> "$out.list"
-echo "nod /dev/console 600 1000 1000 c 5 1" >> "$out.list"
+echo "dir /dev 755 0 0" >> "$out.list"
+echo "nod /dev/console 600 0 0 c 5 1" >> "$out.list"
 usr/gen_init_cpio < "$out.list" > "$out"

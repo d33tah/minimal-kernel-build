@@ -125,8 +125,15 @@ function parseSystemMap(buf, name) {
 		}
 		raw.push({ vaddr: parseInt(m[1], 16) >>> 0, type: m[2], name: m[3] });
 	}
-	if (raw.length < 2)
+	if (raw.length < 2) {
+		// Debian and Ubuntu ship a one-line placeholder in /boot:
+		// "ffffffffffffffff B The real System.map is in the linux-image-<version>-dbg package"
+		if (/real System\.map is in the linux-image-.*-dbg package/i.test(text))
+			throw new Error("this is Debian's placeholder System.map, not a symbol table. Install " +
+				"linux-image-<version>-dbg and use /usr/lib/debug/boot/System.map-<version>, or the unstripped " +
+				"/usr/lib/debug/boot/vmlinux-<version> from the same package");
 		throw new Error("no symbols found");
+	}
 	raw.sort((x, y) => x.vaddr - y.vaddr);
 	const at = (n) => { const s = raw.find((x) => x.name === n); return s ? s.vaddr : null; };
 	// Section ranges from the usual markers, else from the symbols' extent.

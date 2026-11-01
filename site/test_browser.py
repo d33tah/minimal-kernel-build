@@ -727,6 +727,14 @@ def import_case(browser, base, shots):
     if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
         problems.append("the error message makes the page scroll horizontally at 390 px")
     page.screenshot(path=str(shots / "import-malformed-390.png"))
+    # Debian's /boot/System.map-<version> placeholder: say where the real map is.
+    deb = bad.parent / "System.map-5.10.0-30-686"
+    deb.write_text("ffffffffffffffff B The real System.map is in the linux-image-<version>-dbg package\n")
+    page.set_input_files("#symfile", str(deb))
+    wait_for(lambda: "placeholder" in page.inner_text("#sym_status"), 5)
+    r["debian_placeholder"] = page.inner_text("#sym_status")
+    if "-dbg" not in r["debian_placeholder"] or page.evaluate("!!symbols.imported"):
+        problems.append("Debian placeholder System.map: no pointer to the -dbg package: " + r["debian_placeholder"])
     page.close()
     return problems, r
 

@@ -243,3 +243,6 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 #count_info { min-height: 3.9em; }
 .syminfo #cur_sym, .syminfo #prev_sym { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .syminfo .crumbs { min-height: 2.6em; }
+#graph_canvas { display: block; width: 100%; height: 62vh; min-height: 18rem; border: 1px solid var(--line); border-radius: 4px; touch-action: none; cursor: grab; background: var(--bg); }
+#graph_info .glist { margin: 0.2rem 0; overflow-wrap: anywhere; }
+#graph_info button { margin: 0.1rem 0; }

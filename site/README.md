@@ -47,6 +47,22 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   relocation stub), it says so and shows the raw bytes at EIP. The symbol
   history is recorded by the stepper only (stepping, slow motion, count,
   Run to), not at full JIT speed. Symbols and lines open in the Page tab.
+- **Graph.** Every change of symbol the stepper sees (stepping, slow
+  motion, Run to, and the background count with `?speed=full`) is an edge
+  old symbol -> new symbol with a count, the number of transitions that
+  landed on the symbol's first byte (call-like, drawn solid; the others,
+  returns and jumps into the middle, are dashed) and the step it was first
+  taken. Nodes are symbols sized by the instructions executed inside and
+  coloured by name prefix (symbols.json has no source paths); two grey
+  pseudo-nodes stand for BIOS/setup and for kernel-range code with no
+  symbol (the relocation stub). The layout is incremental: a node is placed
+  once, when first seen, one column right of the node it was entered from,
+  so nothing moves. Canvas, redrawn at most 10 times a second; drag, wheel
+  and pinch to pan and zoom, tap a node for its callers and callees (with
+  counts) and a link to the Page tab; JSON and DOT downloads. Nothing is
+  recorded at full JIT speed. After a counted `?speed=full` boot the graph
+  has 3 nodes and 2 edges for hello and about 264 nodes and 725 edges for
+  the minified Linux (start_kernel entered from i386_start_kernel).
 - **Snapshots.** "Save snapshot" calls `emulator.save_state()`, gzips the
   result in the browser with `CompressionStream("gzip")` (kept raw, and the
   page says so, when the browser lacks it) and keeps the last 8 in memory.

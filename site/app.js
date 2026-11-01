@@ -708,7 +708,7 @@ function setLive() {
 
 // ---- tabs -----------------------------------------------------------------
 
-const TABS = ["memory", "page", "debugger", "snapshots", "about"];
+const TABS = ["memory", "page", "debugger", "graph", "snapshots", "about"];
 let tab = "memory";
 
 // Hash: #memory, #page/0x100000, #debugger, ...
@@ -731,6 +731,7 @@ function showTab(name) {
 		drawGrid();
 	if (tab === "debugger")
 		renderContext();
+	graphShow(tab === "graph");
 }
 
 function readHash() {
@@ -1005,6 +1006,7 @@ async function boot() {
 			stepper = null;
 			$("dbg_status").textContent = "No debugger: " + (wasmPatchError || e);
 		}
+		graphReset(stepper);
 		// Default: step BIOS and setup at full stepping speed to the kernel
 		// entry, then continue at prefSpeed (1k/s) and count live. With
 		// "full", count the whole boot in the background, then run the JIT.
@@ -1826,6 +1828,7 @@ async function init() {
 	initTips();
 	drawMaps();
 	initDebugger();
+	initGraph();
 	updateDebugUi();
 	for (const t of TABS)
 		$("tab_" + t).addEventListener("click", () => showTab(t));

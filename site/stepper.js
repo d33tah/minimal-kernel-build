@@ -142,6 +142,56 @@ class Stepper {
 		this.curHi = 0;
 		this.history = [];     // most recent last: { sym, last } (last = final EIP in it)
 		this.panicSym = this.symName.indexOf("panic");
+		this.resetGraph();
+	}
+
+	// Symbol graph: nodes are symbol indices, plus N = BIOS/setup (below
+	// the kernel) and N + 1 = kernel-range code that is no symbol (e.g. the
+	// relocation stub). Edges count transitions from -> to; "calls" are
+	// the ones that land on the first byte of a symbol.
+	resetGraph() {
+		const n = this.symName.length + 2;
+		this.nodeSteps = new Float64Array(n);   // instructions executed inside
+		this.nodeFirst = new Float64Array(n).fill(-1); // step when first entered
+		this.nodeOrder = [];                      // node ids in first-seen order
+		this.nodeParent = new Int32Array(n).fill(-1); // node it was first entered from
+		this.edges = new Map();                   // from * n + to -> { from, to, count, calls, first }
+		this.recent = [];                         // last edge keys, newest last
+		this.curNode = -1;
+		this.graphVersion = 0;
+	}
+
+	nodeName(id) {
+		const n = this.symName.length;
+		return id < n ? this.symName[id] : id === n ? "(BIOS, option ROM, setup)" : "(kernel range, no symbol)";
+	}
+
+	graphEnter(i, phys) {
+		const n = this.symName.length;
+		const node = i >= 0 ? i : phys < this.kernelLo ? n : n + 1;
+		if (node === this.curNode)
+			return;
+		if (this.nodeFirst[node] < 0) {
+			this.nodeFirst[node] = this.steps;
+			this.nodeParent[node] = this.curNode;
+			this.nodeOrder.push(node);
+		}
+		if (this.curNode >= 0) {
+			const key = this.curNode * (n + 2) + node;
+			let e = this.edges.get(key);
+			if (!e) {
+				e = { from: this.curNode, to: node, count: 0, calls: 0, first: this.steps };
+				this.edges.set(key, e);
+			}
+			e.count++;
+			if (i >= 0 && phys === this.symStart[i])
+				e.calls++;
+			this.recent.push(key);
+			if (this.recent.length > 10)
+				this.recent.shift();
+		}
+		this.curNode = node;
+		this.graphVersion++;
 	}
 
 	symbolOf(phys) {
@@ -170,6 +220,7 @@ class Stepper {
 			if (phys < this.kernelLo)
 				this.curHi = Math.min(this.curHi, this.kernelLo);
 		}
+		this.graphEnter(i, phys);
 		if (i === this.panicSym && i >= 0 && !this.end) {
 			this.end = { kind: "panic", ...this.snapshot(phys) };
 			this.endHit = true;
@@ -199,6 +250,7 @@ class Stepper {
 		this.curSym = -2;
 		this.curLo = 1;
 		this.curHi = 0;
+		this.curNode = -1; // no edge across a stretch the JIT ran
 	}
 
 	symLabel(i) {
@@ -300,6 +352,8 @@ class Stepper {
 			this.steps++;
 			if (phys < this.curLo || phys >= this.curHi)
 				this.enterSymbol(phys, this.lastPhys);
+			if (this.curNode >= 0)
+				this.nodeSteps[this.curNode]++;
 			this.lastPhys = phys;
 			if (exitCode !== null)
 				this.exit = { code: exitCode, ...this.snapshot(phys) };

@@ -251,7 +251,7 @@ def memory_lab(page, name, has_symbols, problems, shots, tag):
     for w in (390, 800, 1000, 1280):
         page.set_viewport_size({"width": w, "height": 900})
         time.sleep(0.4)
-        for t in ("page", "memory", "debugger", "snapshots", "about"):
+        for t in ("page", "memory", "debugger", "graph", "snapshots", "about"):
             show_tab(page, t)
             if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
                 problems.append(f"page scrolls horizontally at {w} px on the {t} tab")
@@ -451,6 +451,46 @@ def linux_slow_case(browser, base, shots):
     return problems, r
 
 
+def graph_check(page, name, problems, shots, tag):
+    """Graph tab after the counted boot: nodes, edges, start_kernel, JSON export, tap."""
+    show_tab(page, "graph")
+    time.sleep(0.4)
+    r = {"nodes": int(page.get_attribute("#graph_status", "data-nodes") or 0),
+         "edges": int(page.get_attribute("#graph_status", "data-edges") or 0)}
+    want_nodes = 2 if name == "hello" else 101
+    if r["nodes"] < want_nodes or r["edges"] < 1:
+        problems.append(f"graph has {r['nodes']} nodes and {r['edges']} edges")
+    with page.expect_download() as dl:
+        page.click("#graph_json")
+    data = json.loads(pathlib.Path(dl.value.path()).read_text())
+    if len(data["nodes"]) != r["nodes"] or len(data["edges"]) != r["edges"]:
+        problems.append("JSON export does not match the graph status")
+    with page.expect_download() as dl:
+        page.click("#graph_dot")
+    dot = pathlib.Path(dl.value.path()).read_text()
+    if not dot.startswith("digraph") or "->" not in dot:
+        problems.append("DOT export is not a graph")
+    target = "hello_main" if name == "hello" else "start_kernel"
+    node = next((n for n in data["nodes"] if n["name"] == target), None)
+    if not node:
+        problems.append(f"no {target} node in the graph")
+        return r
+    r["into_" + target] = [e["from_name"] for e in data["edges"] if e["to"] == node["id"]]
+    if not r["into_" + target]:
+        problems.append(f"no edge into {target}")
+    if target == "start_kernel" and not any(e["to"] == node["id"] and e["from_name"] == "i386_start_kernel" and e["calls"]
+                                            for e in data["edges"]):
+        problems.append("no call edge i386_start_kernel -> start_kernel")
+    # Tap the node: its callers and callees are listed.
+    xy = page.evaluate("""id => { const p = G.pos.get(id), v = G.view, c = document.getElementById('graph_canvas').getBoundingClientRect();
+        return [c.left + (p.x - v.x) * v.scale, c.top + (p.y - v.y) * v.scale]; }""", node["id"])
+    page.mouse.click(*xy)
+    if not wait_for(lambda: page.get_attribute("#graph_info", "data-node") == target, 3):
+        problems.append(f"tapping the {target} node did not select it: {page.get_attribute('#graph_info', 'data-node')}")
+    page.screenshot(path=str(shots / f"graph-{tag}.png"))
+    return r
+
+
 def touch_case(browser, base, shots):
     """390 px phone with touch: tapping a "?" shows its text, tapping elsewhere hides it."""
     problems = []
@@ -503,7 +543,7 @@ def touch_case(browser, base, shots):
     return problems
 
 
-STAMPED = ("style.css", "app.js", "stepper.js", "v86/libv86.js")
+STAMPED = ("style.css", "app.js", "stepper.js", "graph.js", "v86/libv86.js")
 
 
 def stamp(html, v):
@@ -597,9 +637,11 @@ def run_case(browser, base, name, mem, timeout, shots, has_symbols, speed=None):
             lab_problems.append(f"end banner {count['end']!r}, want {want!r}")
         if want == "panic" and (count["exit_code"] != "0" or "exited with code 0" not in count["end_text"]):
             lab_problems.append("panic banner does not say init exited with code 0: " + count["end_text"])
+        count["graph"] = graph_check(page, name, lab_problems, shots, tag)
         if speed is None and name == "hello" and (count.get(HELLO) or {}).get("entry") != 6082:
             lab_problems.append(f"hello: {count.get(HELLO)} instructions from the entry to Hello, not 6,082")
         page.screenshot(path=str(shots / f"top-{tag}-1100.png"))
+    show_tab(page, "memory")
     if not page.is_disabled("#scan"):
         page.click("#scan")
         nonzero = int(page.get_attribute("#footprint", "data-nonzero"))

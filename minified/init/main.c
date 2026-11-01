@@ -53,7 +53,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 	if (WARN(!irqs_disabled(),
 		 "Interrupts were enabled *very* early, fixing it\n"))
 		local_irq_disable();
-	xarray_init();
+	radix_tree_init();
 
 	early_irq_init();
 	init_IRQ();
@@ -64,7 +64,7 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
 
 	time_init();
 	calibrate_delay();
-	pid_init();
+	pid_idr_init();
 	cred_init();
 	fork_init();
 	proc_caches_init();

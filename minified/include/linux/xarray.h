@@ -55,7 +55,7 @@ struct xa_node {
 	void __rcu *slots[XA_CHUNK_SIZE];
 };
 
-void xarray_init(void);
+void radix_tree_init(void);
 
 static inline void *xa_head(const struct xarray *xa)
 {

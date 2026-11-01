@@ -101,7 +101,7 @@ struct pid_namespace *task_active_pid_ns(struct task_struct *tsk)
 	return ns_of_pid(task_pid(tsk));
 }
 
-void __init pid_init(void)
+void __init pid_idr_init(void)
 {
 	pid_max = min_t(int, PID_MAX_LIMIT,
 			max_t(int, pid_max,

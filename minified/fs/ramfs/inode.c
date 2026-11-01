@@ -68,7 +68,7 @@ static int ramfs_fill_super(struct super_block *sb, struct fs_context *fc)
 {
 	struct inode *inode;
 
-	sb->s_maxbytes = MAX_LFS_FILESIZE;
+	sb->s_maxbytes = PAGE_SIZE;
 
 	inode = ramfs_get_inode(sb, NULL, S_IFDIR | RAMFS_DEFAULT_MODE, 0);
 	sb->s_root = d_make_root(inode);

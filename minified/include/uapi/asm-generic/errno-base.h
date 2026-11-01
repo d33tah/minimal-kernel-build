@@ -22,6 +22,7 @@
 #define EINVAL 22
 #define EMFILE 24
 #define ETXTBSY 26
+#define EFBIG 27
 #define ENOSPC 28
 #define EMLINK 31
 

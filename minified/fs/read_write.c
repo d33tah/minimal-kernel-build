@@ -139,7 +139,50 @@ SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf, size_t,
 	return ret;
 }
 
+/*
+ * Don't operate on ranges the page cache doesn't support, and don't exceed the
+ * LFS limits.  If pos is under the limit it becomes a short access.  If it
+ * exceeds the limit we return -EFBIG.
+ */
+static int generic_write_check_limits(struct file *file, loff_t pos,
+				      loff_t *count)
+{
+	struct inode *inode = file->f_mapping->host;
+	loff_t max_size = inode->i_sb->s_maxbytes;
+
+	if (unlikely(pos >= max_size))
+		return -EFBIG;
+
+	*count = min(*count, max_size - pos);
+
+	return 0;
+}
+
+/* Like generic_write_checks(), but takes size of write instead of iter. */
+static int generic_write_checks_count(struct kiocb *iocb, loff_t *count)
+{
+	if (!*count)
+		return 0;
+
+	return generic_write_check_limits(iocb->ki_filp, iocb->ki_pos, count);
+}
+
+/*
+ * Performs necessary checks before doing a write
+ *
+ * Can adjust writing position or amount of bytes to write.
+ * Returns appropriate error code that caller should return or
+ * zero in case that write should be allowed.
+ */
 ssize_t generic_write_checks(struct kiocb *iocb, struct iov_iter *from)
 {
+	loff_t count = iov_iter_count(from);
+	int ret;
+
+	ret = generic_write_checks_count(iocb, &count);
+	if (ret)
+		return ret;
+
+	iov_iter_truncate(from, count);
 	return iov_iter_count(from);
 }

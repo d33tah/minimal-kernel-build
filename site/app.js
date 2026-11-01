@@ -1577,6 +1577,7 @@ function updateDebugUi() {
 			"slow motion " + $("dbg_speed").selectedOptions[0].text) + where,
 		paused: "paused" + where }[runState];
 	st.dataset.state = runState;
+	st.title = st.textContent;
 	const can = !!stepper;
 	$("dbg_pause").disabled = !can || runState === "paused" || runState === "off";
 	$("dbg_continue").disabled = !can || runState !== "paused";

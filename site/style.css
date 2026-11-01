@@ -234,3 +234,12 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 .banner { margin: 0.2rem 0; padding: 0.2rem 0.5rem; border-radius: 3px; font-weight: 600; font-size: 0.85rem; background: var(--err-bg); color: var(--err-fg); }
 .banner[data-kind="halt"] { background: var(--warn-bg); color: var(--warn-fg); }
 .banner[hidden] { display: none; }
+
+/* Live status lines change many times a second: keep their size fixed so the
+   layout under them does not jump (long symbol names are cut with an ellipsis,
+   the full text is in the title). */
+#dbg_state { display: inline-block; flex: 1 1 0; min-width: 0; max-width: 100%;
+	white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+#count_info { min-height: 3.9em; }
+.syminfo #cur_sym, .syminfo #prev_sym { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.syminfo .crumbs { min-height: 2.6em; }

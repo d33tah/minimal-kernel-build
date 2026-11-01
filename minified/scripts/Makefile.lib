@@ -132,9 +132,6 @@ printf "%08x\n" $$dec_size |						\
 	}								\
 )
 
-quiet_cmd_file_size = GEN     $@
-      cmd_file_size = $(size_append) > $@
-
 # ASM offsets
 # ---------------------------------------------------------------------------
 

@@ -1,3 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ *  kernel/sched/core.c
+ *
+ *  Core kernel scheduler code and related syscalls
+ *
+ *  Copyright (C) 1991-2002  Linus Torvalds
+ */
 #include <linux/sched/debug.h>
 #include <linux/sched/mm.h>
 #include <linux/cpu.h>
@@ -40,12 +48,27 @@ static void resched_curr(void)
 	set_preempt_need_resched();
 }
 
+/*
+ * fork()/clone()-time setup:
+ */
 int sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
+	/*
+	 * We mark the process as NEW here. This guarantees that
+	 * nobody will actually run it, and a signal or other external
+	 * event cannot wake it up and insert it on the runqueue either.
+	 */
 	p->__state = TASK_NEW;
 	return 0;
 }
 
+/*
+ * wake_up_new_task - wake up a newly created task for the first time.
+ *
+ * This function will do some initial scheduler statistics housekeeping
+ * that must be done for every newly created context, then puts the task
+ * on the runqueue and wakes it.
+ */
 void wake_up_new_task(struct task_struct *p)
 {
 	unsigned long flags;
@@ -84,21 +107,37 @@ asmlinkage __visible void schedule_tail(struct task_struct *prev)
 static __always_inline void context_switch(struct task_struct *prev,
 					   struct task_struct *next)
 {
-	if (!next->mm) {
+	/*
+	 * kernel -> kernel   lazy + transfer active
+	 *   user -> kernel   lazy + mmgrab() active
+	 *
+	 * kernel ->   user   switch + mmdrop() active
+	 *   user ->   user   switch
+	 */
+	if (!next->mm) { // to kernel
 		next->active_mm = prev->active_mm;
-		if (prev->mm)
+		if (prev->mm) // from user
 			mmgrab(prev->active_mm);
 		else
 			prev->active_mm = NULL;
-	} else {
+	} else { // to user
+		/*
+		 * sys_membarrier() requires an smp_mb() between setting
+		 * rq->curr / membarrier_switch_mm() and returning to userspace.
+		 *
+		 * The below provides this either through switch_mm(), or in
+		 * case 'prev->active_mm == next->mm' through
+		 * finish_task_switch()'s mmdrop().
+		 */
 		switch_mm_irqs_off(prev->active_mm, next->mm, next);
 
-		if (!prev->mm) {
+		if (!prev->mm) { // from kernel
 			runqueues.prev_mm = prev->active_mm;
 			prev->active_mm = NULL;
 		}
 	}
 
+	/* Here we just switch the register state and the stack. */
 	switch_to(prev, next, prev);
 	barrier();
 
@@ -145,6 +184,11 @@ asmlinkage __visible void __sched schedule(void)
 	} while (need_resched());
 }
 
+/**
+ * schedule_preempt_disabled - called with preemption disabled
+ *
+ * Returns with preemption disabled. Note: preempt_count must be 1
+ */
 void __sched schedule_preempt_disabled(void)
 {
 	sched_preempt_enable_no_resched();

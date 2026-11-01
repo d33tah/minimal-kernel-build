@@ -1,3 +1,32 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Generic pidhash and scalable, time-bounded PID allocator
+ *
+ * (C) 2002-2003 Nadia Yvette Chambers, IBM
+ * (C) 2004 Nadia Yvette Chambers, Oracle
+ * (C) 2002-2004 Ingo Molnar, Red Hat
+ *
+ * pid-structures are backing objects for tasks sharing a given ID to chain
+ * against. There is very little to them aside from hashing them and
+ * parking tasks using given ID's on a list.
+ *
+ * The hash is always changed with the tasklist_lock write-acquired,
+ * and the hash is only accessed with the tasklist_lock at least
+ * read-acquired, so there's no additional SMP locking needed here.
+ *
+ * We have a list of bitmap pages, which bitmaps represent the PID space.
+ * Allocating and freeing PIDs is completely lockless. The worst-case
+ * allocation scenario when all but one out of 1 million PIDs possible are
+ * allocated already: the scanning of 32 list entries and at most PAGE_SIZE
+ * bytes. The typical fastpath is a single successful setbit. Freeing is O(1).
+ *
+ * Pid namespaces:
+ *    (C) 2007 Pavel Emelyanov <xemul@openvz.org>, OpenVZ, SWsoft Inc.
+ *    (C) 2007 Sukadev Bhattiprolu <sukadev@us.ibm.com>, IBM
+ *     Many thanks to Oleg Nesterov for comments and help
+ *
+ */
+
 #include <linux/pid_namespace.h>
 #include <linux/sched/signal.h>
 
@@ -14,9 +43,29 @@ struct pid init_struct_pid = {
 
 static int pid_max = PID_MAX_DEFAULT;
 
+/*
+ * PID-map pages start out as NULL, they get allocated upon
+ * first use and are never deallocated. This way a low pid_max
+ * value does not cause lots of bitmaps to be allocated, but
+ * the scheme scales to up to 4 million PIDs, runtime.
+ */
 struct pid_namespace init_pid_ns = {
 	.level = 0,
 };
+
+/*
+ * Note: disable interrupts while the pidmap_lock is held as an
+ * interrupt might come in and do read_lock(&tasklist_lock).
+ *
+ * If we don't disable interrupts there is a nasty deadlock between
+ * detach_pid()->free_pid() and another cpu that does
+ * spin_lock(&pidmap_lock) followed by an interrupt routine that does
+ * read_lock(&tasklist_lock);
+ *
+ * After we clean up the tasklist_lock and know there are no
+ * irq handlers that take it we can leave the interrupts enabled.
+ * For now it is easier to be safe than to prove it can't happen.
+ */
 
 static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pidmap_lock);
 

@@ -1,5 +1,6 @@
 #include <linux/namei.h>
 #include <linux/file.h>
+#include <linux/init_syscalls.h>
 
 int __init init_mknod(const char *filename, umode_t mode, unsigned int dev)
 {

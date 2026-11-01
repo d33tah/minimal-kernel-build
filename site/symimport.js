@@ -200,6 +200,14 @@ function placeSymbols(map, offsetText) {
 		how = "set by hand";
 	} else if (map.source === "ELF") {
 		return map;
+	} else if (map.textStart !== null && map.textStart >= PAGE_OFFSET_I386) {
+		// An i386 kernel linked at PAGE_OFFSET runs at vaddr - 0xC0000000: true
+		// for the minified kernel (_text 0xc0100000 at 1 MiB) and for distro
+		// kernels (_text 0xc1000000 at 16 MiB, where their decompressor puts
+		// it), unless KASLR moved it: boot those with "nokaslr" or set the
+		// offset by hand.
+		off = PAGE_OFFSET_I386;
+		how = "auto: vaddr - 0xC0000000 (i386 PAGE_OFFSET; boot with nokaslr if the kernel has KASLR)";
 	} else if (map.textStart !== null && map.textStart >= V86_KERNEL_ADDR) {
 		off = map.textStart - V86_KERNEL_ADDR;
 		how = "auto: _text at " + hex(V86_KERNEL_ADDR) + ", where v86 puts the 32-bit kernel";

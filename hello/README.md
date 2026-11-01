@@ -33,9 +33,9 @@ Two images are built from the same sources:
 | `bzImage` | 0x100000 | LOADED_HIGH | 1028K (1M fails) | 1028 KiB (1 MiB fails) |
 | `bzImage.low` | 0x10000 | 0 (zImage layout, setup at 0x90000) | 1020K (960K fails) | does not run |
 
-The page's RAM menu has 640 KB, 1, 2, 4, 18 and 32 MB; it picks the
-smallest size the header says fits, which is 2 MB for `bzImage` (1028 KiB
-can be requested with `index.html?mem=1052672`).
+The page's RAM menu has 2, 4, 18 and 32 MB and starts every kernel with
+2 MB; 1028 KiB can be requested with `index.html?mem=1052672`. The header
+check warns when the kernel's `pref_address + init_size` does not fit.
 
 qemu honours `LOADED_HIGH` being clear and loads the low image at 0x10000.
 v86 ignores loadflags and always copies the 32-bit part to 1 MiB, so v86 and
@@ -74,6 +74,10 @@ The page also takes any bzImage from disk through its file input. Locally:
     site/fetch-v86.sh                       # pinned v86 runtime and BIOS
     python3 -m http.server -d site 8000     # then open http://localhost:8000/
     python3 site/test_browser.py            # headless Chromium check
+
+The page also has a small memory lab (page inspector with symbols, and
+compressed snapshots); see `../site/README.md` for what it does and the
+snapshot sizes measured for this kernel and the minified Linux.
 
 The GitHub Pages workflow (`.github/workflows/pages.yml`) builds both
 kernels, runs both qemu gates and the browser test, and deploys `site/`.

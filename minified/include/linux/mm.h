@@ -462,17 +462,10 @@ extern int __vm_enough_memory(struct mm_struct *mm, long pages,
 			      int cap_sys_admin);
 extern int insert_vm_struct(struct mm_struct *, struct vm_area_struct *);
 
-extern unsigned long get_unmapped_area(struct file *, unsigned long,
-				       unsigned long, unsigned long,
-				       unsigned long);
-extern unsigned long mmap_region(struct file *file, unsigned long addr,
-				 unsigned long len, vm_flags_t vm_flags,
-				 unsigned long pgoff);
 extern unsigned long do_mmap(struct file *file, unsigned long addr,
 			     unsigned long len, unsigned long prot,
 			     unsigned long flags, unsigned long pgoff,
 			     unsigned long *populate);
-extern int __do_munmap(struct mm_struct *, unsigned long, size_t);
 extern void exit_mmap(struct mm_struct *);
 
 extern int __must_check vm_brk_flags(unsigned long, unsigned long,
@@ -481,7 +474,6 @@ extern unsigned long __must_check vm_mmap(struct file *, unsigned long,
 					  unsigned long, unsigned long,
 					  unsigned long, unsigned long);
 
-extern unsigned long stack_guard_gap;
 extern int expand_stack(struct vm_area_struct *vma, unsigned long address);
 extern struct vm_area_struct *find_vma(struct mm_struct *mm,
 				       unsigned long addr);

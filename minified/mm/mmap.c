@@ -7,6 +7,15 @@
 
 #include "internal.h"
 
+static unsigned long get_unmapped_area(struct file *file, unsigned long addr,
+				       unsigned long len, unsigned long pgoff,
+				       unsigned long flags);
+static unsigned long mmap_region(struct file *file, unsigned long addr,
+				 unsigned long len, vm_flags_t vm_flags,
+				 unsigned long pgoff);
+static int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len);
+static unsigned long stack_guard_gap;
+
 pgprot_t protection_map[16] __ro_after_init = {
 	[VM_NONE] = __P000,
 	[VM_READ] = __P001,
@@ -154,9 +163,9 @@ static inline int accountable_mapping(struct file *file, vm_flags_t vm_flags)
 	return (vm_flags & (VM_SHARED | VM_WRITE)) == VM_WRITE;
 }
 
-unsigned long mmap_region(struct file *file, unsigned long addr,
-			  unsigned long len, vm_flags_t vm_flags,
-			  unsigned long pgoff)
+static unsigned long mmap_region(struct file *file, unsigned long addr,
+				 unsigned long len, vm_flags_t vm_flags,
+				 unsigned long pgoff)
 {
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma;
@@ -207,9 +216,9 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
  * is no free-area search, no mmap_base and no layout randomization; a
  * request without MAP_FIXED fails.
  */
-unsigned long get_unmapped_area(struct file *file, unsigned long addr,
-				unsigned long len, unsigned long pgoff,
-				unsigned long flags)
+static unsigned long get_unmapped_area(struct file *file, unsigned long addr,
+				       unsigned long len, unsigned long pgoff,
+				       unsigned long flags)
 {
 	if (!(flags & MAP_FIXED))
 		return -ENOMEM;
@@ -287,7 +296,7 @@ static int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 	return error;
 }
 
-unsigned long stack_guard_gap = 256UL << PAGE_SHIFT;
+static unsigned long stack_guard_gap = 256UL << PAGE_SHIFT;
 
 int expand_stack(struct vm_area_struct *vma, unsigned long address)
 {
@@ -376,7 +385,7 @@ static void free_unused_pgtables(struct mm_struct *mm, unsigned long start,
  * VMAs straddling an end are trimmed, and a VMA covering the whole range is
  * split in two first.
  */
-int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
+static int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 {
 	unsigned long end = start + PAGE_ALIGN(len);
 	struct vm_area_struct *vma, *next;

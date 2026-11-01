@@ -981,11 +981,19 @@ async function boot() {
 		try {
 			stepper = new Stepper(em, V86_KERNEL_ADDR, kernelEnd(image.hdr));
 			stepper.milestones = MILESTONES.map((text) => ({ text, found: null }));
+			stepper.setSymbols(codeSymbols());
 		} catch (e) {
 			stepper = null;
 			$("dbg_status").textContent = "No debugger: " + (wasmPatchError || e);
 		}
-		counting = !!stepper && $("count").checked;
+		// Default: step BIOS and setup at full stepping speed to the kernel
+		// entry, then continue at prefSpeed (1k/s) and count live. With
+		// "full", count the whole boot in the background, then run the JIT.
+		$("dbg_speed").value = prefSpeed;
+		entryPhase = !!stepper && prefSpeed !== "full";
+		counting = !!stepper && (entryPhase || $("count").checked);
+		$("entry_info").textContent = entryPhase ? "Stepping BIOS and setup to the kernel entry..." : "";
+		delete $("entry_info").dataset.steps;
 		countStart = performance.now();
 		countMs = 0;
 		setAutoscan();
@@ -1018,6 +1026,13 @@ let countMs = 0;         // stepping time spent counting
 let countNote = "";
 let startPaused = false; // ?paused=1: stop at the reset vector
 let runTo = -1;          // physical address "Run to" stops at, or -1
+let entryPhase = false;  // stepping at full stepping speed to the kernel entry, then slow
+let prefSpeed = "1000";  // speed after the entry: ?speed=, else the remembered choice, else 1k/s
+const SPEED_KEY = "mkb-speed";
+const REF_KEY = "mkb-ref-";
+// Instructions from the entry to "Still alive" when no run on this browser
+// measured it yet (for the ETA only; Linux varies with calibrate_delay).
+const REF_STEPS = { hello: 6150, "minified-linux": 900000 };
 let driverTimer = null;
 let driverChannel = null;
 let lastUi = 0;
@@ -1027,6 +1042,9 @@ let prevRegs = null;
 let flashes = 0;
 
 const speed = () => $("dbg_speed").value;  // "full" or instructions per second
+// Fast stepping (no animation): full speed while counting, Run to, or the
+// way from reset to the kernel entry.
+const fastStepping = () => speed() === "full" || runTo >= 0 || entryPhase;
 
 function resetCounters() {
 	counting = false;
@@ -1043,7 +1061,7 @@ function countDone() {
 }
 
 function wantStepped() {
-	return !!stepper && (speed() !== "full" || counting || runTo >= 0);
+	return !!stepper && (speed() !== "full" || counting || runTo >= 0 || entryPhase);
 }
 
 function stopDriver() {
@@ -1069,6 +1087,8 @@ async function resume() {
 		stepCredit = 0;
 		scheduleDriver();
 	} else {
+		if (stepper && runState !== "off")
+			stepper.markGap();
 		runState = "jit";
 		emulator.run();
 	}
@@ -1089,7 +1109,7 @@ async function pause(note) {
 }
 
 function scheduleDriver() {
-	if (speed() === "full" || runTo >= 0) {
+	if (fastStepping()) {
 		// As fast as possible: zero-delay message loop, works in background tabs.
 		if (!driverChannel) {
 			driverChannel = new MessageChannel();
@@ -1108,7 +1128,15 @@ function driverTick() {
 	const now = performance.now();
 	let reason;
 	const t0 = now;
-	if (speed() === "full" || runTo >= 0) {
+	if (entryPhase && runTo < 0) {
+		const at = stepper.sinceEntry >= 0 || stepper.nextPhys() === V86_KERNEL_ADDR;
+		reason = at ? "addr" : stepper.run(Infinity, V86_KERNEL_ADDR, SLICE_MS);
+		if (reason === "addr") {
+			finishEntry();
+			scheduleDriver();
+			return;
+		}
+	} else if (speed() === "full" || runTo >= 0) {
 		reason = stepper.run(Infinity, runTo, SLICE_MS);
 	} else {
 		const rate = Number(speed());
@@ -1125,7 +1153,7 @@ function driverTick() {
 		pause("Stopped at " + hex(stepper.nextPhys()) + " (Run to).");
 		return;
 	}
-	if (counting && (countDone() || countMs > COUNT_LIMIT_MS || stepper.dead())) {
+	if (counting && (countDone() || (fastStepping() && countMs > COUNT_LIMIT_MS) || stepper.dead())) {
 		counting = false;
 		if (!countDone())
 			countNote = stepper.dead() ? "The CPU halted with interrupts off before every line appeared." :
@@ -1140,7 +1168,7 @@ function driverTick() {
 		pause("The CPU executed hlt with interrupts off: nothing more to run.");
 		return;
 	}
-	const slow = speed() !== "full" && runTo < 0;
+	const slow = !fastStepping();
 	if (slow || now - lastUi > 200) {
 		lastUi = now;
 		updateDebugUi();
@@ -1194,11 +1222,109 @@ function followEip() {
 	renderContext();
 }
 
-// Debugger tab: the next instructions from disasm.json, or raw bytes.
+// Code symbols for the stepper's symbol history: sized, in .text*, one per
+// start address, sorted.
+function codeSymbols() {
+	if (!symbols)
+		return [];
+	const seen = new Set();
+	return symbols.symbols.filter((s) => s.size > 0 && /^\.text|^\.init\.text|^\.head\.text/.test(s.section) &&
+		!seen.has(s.paddr) && seen.add(s.paddr));
+}
+
+// Open the Page tab at physical address a and scroll its line into view.
+function jumpTo(a) {
+	if (a < 0 || a >= emuRam)
+		return;
+	selectedPage = Math.floor(a / PAGE);
+	drawGrid();
+	showTab("page");
+	const box = $("listing");
+	let best = null;
+	for (const line of box.querySelectorAll("[data-addr]"))
+		if (Number(line.dataset.addr) <= a)
+			best = line;
+	if (best)
+		scrollListingTo(best);
+}
+
+const symDesc = (st, i, a) => {
+	if (i < 0)
+		return a >= 0 && a < V86_KERNEL_ADDR ? "(outside the kernel: BIOS, option ROM or setup)" : st.symLabel(i);
+	return st.symName[i];
+};
+
+function symButton(text, addr, title) {
+	const b = document.createElement("button");
+	b.type = "button";
+	b.className = "symlink";
+	b.textContent = text;
+	if (title)
+		b.title = title;
+	if (addr >= 0)
+		b.addEventListener("click", () => jumpTo(addr));
+	else
+		b.disabled = true;
+	return b;
+}
+
+// Debugger tab: current and previous symbol, the last few symbols, and
+// the disassembly around EIP.
+function renderSymbols(phys) {
+	const box = $("sym_info");
+	box.textContent = "";
+	const st = stepper;
+	const cur = phys >= 0 ? st.symbolOf(phys) : -1;
+	const row = (label, ...nodes) => {
+		const d = document.createElement("div");
+		const b = document.createElement("b");
+		b.textContent = label;
+		d.append(b, " ", ...nodes);
+		box.append(d);
+		return d;
+	};
+	const c = row("current");
+	c.id = "cur_sym";
+	if (cur >= 0) {
+		const lo = st.symStart[cur], hi = st.symEnd[cur];
+		c.append(symButton(st.symName[cur], lo), " " + hex(lo) + "–" + hex(hi - 1) + ", " + (hi - lo) +
+			" bytes, EIP at +0x" + (phys - lo).toString(16));
+		Object.assign(c.dataset, { name: st.symName[cur], lo, hi });
+	} else {
+		c.append(symDesc(st, -1, phys));
+		Object.assign(c.dataset, { name: "", lo: "", hi: "" });
+	}
+	// History entries are symbols the CPU left; the newest one that is not
+	// the current symbol is "previous".
+	const hist = st.history.filter((h) => !(h.sym === cur && h.sym >= 0));
+	const prev = hist.length ? hist[hist.length - 1] : null;
+	const p = row("previous");
+	p.id = "prev_sym";
+	if (prev && prev.sym >= 0) {
+		p.append(symButton(st.symName[prev.sym], prev.last, "Jump to the last instruction it ran"),
+			" left at " + hex(prev.last));
+		p.dataset.name = st.symName[prev.sym];
+	} else {
+		p.append(prev ? symDesc(st, prev.sym, prev.last) : "none recorded yet");
+		p.dataset.name = "";
+	}
+	const crumbs = row("path");
+	crumbs.className = "crumbs";
+	const names = [cur >= 0 ? st.symName[cur] : symDesc(st, -1, phys)];
+	const items = [symButton(names[0], cur >= 0 ? st.symStart[cur] : -1)];
+	for (let k = hist.length - 1; k >= 0 && items.length < 6; k--) {
+		const h = hist[k];
+		items.push(symButton(symDesc(st, h.sym, h.last), h.sym >= 0 ? h.last : -1));
+	}
+	items.forEach((it, k) => crumbs.append(k ? " ← " : "", it));
+	crumbs.dataset.count = items.length;
+}
+
 function renderContext() {
 	const el = $("context");
 	if (!stepper || tab !== "debugger" || runState === "jit" || runState === "off") {
-		el.textContent = runState === "jit" ? "Running at full speed. Pause to see the next instructions." : "";
+		el.textContent = runState === "jit" ? "Running at full speed (JIT). Pause to see the code at EIP; the symbol history is not recorded at full speed." : "";
+		$("sym_info").textContent = "";
 		return;
 	}
 	const phys = stepper.nextPhys();
@@ -1206,27 +1332,54 @@ function renderContext() {
 		el.textContent = "EIP is not mapped.";
 		return;
 	}
+	renderSymbols(phys);
 	const lines = [];
-	const i = disasm ? insnIndex(phys) : -1;
-	if (i >= 0 && i < disasm.insns.length && disasm.insns[i][0] === phys) {
-		const sized = symbols ? symbols.symbols.filter((s) => s.size > 0 && s.paddr <= phys + 64 && s.paddr + s.size > phys - 64) : [];
-		for (let k = Math.max(0, i - 3); k < Math.min(disasm.insns.length, i + 12); k++) {
-			const [pa, raw, text] = disasm.insns[k];
-			const sym = symbolAt(sized, pa);
-			const line = (k === i ? "\u25b6 " : "  ") + pa.toString(16).padStart(8, "0") + " " +
-				escHtml(text) + (sym ? ' <span class="dim">' + escHtml(sym.name) + "+0x" + (pa - sym.paddr).toString(16) + "</span>" : "");
-			lines.push(k === i ? '<span class="cur">' + line + "</span>" : line);
-		}
-		el.dataset.source = "disasm";
-	} else {
-		const n = Math.min(16, emuRam - phys);
+	const ins = disasm ? disasm.insns : [];
+	const i = disasm ? insnIndex(phys) : 0;
+	const exact = i < ins.length && ins[i][0] === phys;
+	const inKernel = image && phys >= V86_KERNEL_ADDR && phys < kernelEnd(image.hdr);
+	if (!exact) {
+		const n = Math.max(0, Math.min(16, emuRam - phys));
 		const b = n > 0 ? emulator.read_memory(phys, n) : [];
-		lines.push('<span class="cur">\u25b6 ' + phys.toString(16).padStart(8, "0") + " " +
+		lines.push('<span class="cur" data-addr="' + phys + '">' + phys.toString(16).padStart(8, "0") + " " +
 			Array.from(b, (v) => v.toString(16).padStart(2, "0")).join(" ") + "</span>");
-		lines.push('<span class="dim">Not kernel code in disasm.json (BIOS, option ROM or real-mode setup): raw bytes at EIP.</span>');
-		el.dataset.source = "bytes";
+		lines.push('<span class="dim">' + (!inKernel ?
+			"EIP is outside the kernel image (BIOS, option ROM or real-mode setup): disasm.json has no code here, raw bytes at EIP." :
+			"EIP is not an instruction start in the build's disassembly (the code here is not vmlinux's yet, e.g. the bzImage's relocation stub): raw bytes at EIP." +
+			(disasm && i < ins.length && ins[i][0] < phys + 64 ? " Nearest instructions from the build:" : "")) + "</span>");
+	}
+	el.dataset.source = exact ? "disasm" : "bytes";
+	if (disasm && inKernel) {
+		const from = Math.max(0, exact ? i - 6 : i - 3), to = Math.min(ins.length, i + 10);
+		if (to > from) {
+			const lo = ins[from][0], hi = ins[to - 1][0] + ins[to - 1][1].length / 2;
+			const mem = hi <= emuRam ? emulator.read_memory(lo, hi - lo) : null;
+			const sized = symbols ? symbols.symbols.filter((s) => s.size > 0 && s.paddr < hi && s.paddr + s.size > lo) : [];
+			for (let k = from; k < to; k++) {
+				const [pa, raw, text] = ins[k];
+				let bytes = "", ok = true;
+				for (let j = 0; j < raw.length / 2; j++) {
+					const want = raw.substr(j * 2, 2);
+					const got = mem ? mem[pa - lo + j].toString(16).padStart(2, "0") : want;
+					if (got !== want)
+						ok = false;
+					if (j < 7)
+						bytes += got !== want ? "<mark>" + got + "</mark>" : got;
+				}
+				bytes += raw.length / 2 > 7 ? "…" : "  ".repeat(7 - raw.length / 2);
+				const sym = symbolAt(sized, pa);
+				const cls = "ins" + (pa === phys ? " cur" : "") + (ok ? "" : " bad");
+				lines.push('<span class="' + cls + '" data-addr="' + pa + '">' + (pa === phys ? "▶" : " ") +
+					pa.toString(16).padStart(8, "0") + " " + bytes + " " + text.replace(/[<>&]/g, esc) +
+					(sym ? ' <span class="dim">' + escHtml(sym.name) + "+0x" + (pa - sym.paddr).toString(16) + "</span>" : "") +
+					"</span>");
+			}
+		}
 	}
 	el.innerHTML = lines.join("\n");
+	el.dataset.phys = phys;
+	const cur = el.querySelector(".ins.cur");
+	el.dataset.cur = cur ? cur.dataset.addr : "";
 }
 
 // EIP to highlight in the inspector, or -1.
@@ -1296,7 +1449,7 @@ function renderCounters() {
 	for (const [label, c] of rows) {
 		const tr = tbody.insertRow();
 		tr.dataset.milestone = label;
-		const cells = c ? [label, num(c.steps), num(c.sinceEntry), num(c.uniqueKernel) + "/" + num(c.unique - c.uniqueKernel)] :
+		const cells = c ? [label, num(c.sinceEntry), num(c.uniqueKernel) + "/" + num(c.unique - c.uniqueKernel), num(c.steps)] :
 			[label, counting ? "counting..." : "not reached", "", ""];
 		for (const v of cells)
 			tr.insertCell().textContent = v;
@@ -1308,21 +1461,70 @@ function renderCounters() {
 			tr.cells[0].title = "Reached by the instruction at physical " + hex(c.phys);
 		}
 	}
+	const alive = stepper.milestones.find((m) => m.text === "Still alive");
+	if (alive && alive.found && alive.found.sinceEntry && image)
+		try {
+			localStorage.setItem(REF_KEY + image.name, alive.found.sinceEntry);
+		} catch (e) {
+			// no storage: the built-in estimate stays
+		}
 	const rate = countMs > 0 ? stepper.steps / countMs / 1000 : 0;
 	const info = $("count_text");
 	$("count_info").dataset.ms = Math.round(countMs);
+	if (runState === "stepped" && !fastStepping() && !countDone()) {
+		info.textContent = "Counting from the kernel entry: " + num(stepper.steps - Math.max(0, stepper.sinceEntry)) +
+			" instructions so far. " + eta() + countNote;
+		return;
+	}
 	info.textContent = (counting ? (runState === "paused" ? "Counting (paused): " : "Counting: ") : stepper.steps ? "Counted " : "") +
 		(stepper.steps ? num(stepper.steps) + " instructions stepped" +
-			(countMs ? " in " + (countMs / 1000).toFixed(2) + " s (" + rate.toFixed(1) + " M/s)" : "") + ". " : "") +
+			(countMs ? ", " + (countMs / 1000).toFixed(2) + " s of JavaScript stepping time (" + rate.toFixed(1) + " M/s)" : "") + ". " : "") +
 		(!$("count").checked && !stepper.steps ? "Counting is off: the boot ran at full speed. " : "") +
 		(runState === "jit" && !countDone() && stepper.steps ? "Running at full speed now: not counting. " : "") +
 		countNote;
 }
 
+// At the kernel's 32-bit entry (or past it): from here on at the chosen speed.
+function finishEntry() {
+	entryPhase = false;
+	const n = stepper.sinceEntry >= 0 ? stepper.sinceEntry : stepper.steps;
+	$("entry_info").textContent = "Entered the kernel at " + hex(V86_KERNEL_ADDR) + " after " +
+		num(n) + " instructions from reset; now " + $("dbg_speed").selectedOptions[0].text + ".";
+	$("entry_info").dataset.steps = n;
+	updateDebugUi();
+}
+
+// Time to "Still alive" at the current speed, from the count this browser
+// last measured for this kernel or a built-in estimate.
+function eta() {
+	if (!image || !stepper || stepper.sinceEntry < 0)
+		return "";
+	let ref = null, measured = false;
+	try {
+		ref = Number(localStorage.getItem(REF_KEY + image.name)) || null;
+		measured = !!ref;
+	} catch (e) {
+		ref = null;
+	}
+	ref = ref || REF_STEPS[image.name];
+	if (!ref)
+		return "No estimate of how long this kernel needs. ";
+	const left = Math.max(0, ref - (stepper.steps - stepper.sinceEntry));
+	const sec = Math.round(left / Number(speed()));
+	const t = sec >= 3600 ? Math.floor(sec / 3600) + " h " + Math.floor(sec % 3600 / 60) + " min" :
+		sec >= 60 ? Math.floor(sec / 60) + " min " + (sec % 60) + " s" : sec + " s";
+	$("count_info").dataset.eta = sec;
+	return "\"Still alive\" in about " + t + " at this speed (" + (measured ? "this browser measured " : "estimate: ") +
+		"~" + num(ref) + " instructions from the entry). ";
+}
+
 function updateDebugUi() {
 	const st = $("dbg_state");
-	st.textContent = { off: "", jit: "running (full speed, JIT)", stepped: counting ? "stepping (counting)" : "stepping",
-		paused: "paused" }[runState];
+	const where = stepper && stepper.curSym >= 0 ? ", in " + stepper.symName[stepper.curSym] : "";
+	st.textContent = { off: "", jit: "running (full speed, JIT)",
+		stepped: (entryPhase ? "stepping to the kernel entry" : fastStepping() ? (counting ? "stepping (counting)" : "stepping") :
+			"slow motion " + $("dbg_speed").selectedOptions[0].text) + where,
+		paused: "paused" + where }[runState];
 	st.dataset.state = runState;
 	const can = !!stepper;
 	$("dbg_pause").disabled = !can || runState === "paused" || runState === "off";
@@ -1387,9 +1589,20 @@ function initDebugger() {
 		doStep(n);
 	});
 	$("dbg_runto").addEventListener("click", doRunTo);
+	$("context").addEventListener("click", (ev) => {
+		const line = ev.target.closest("[data-addr]");
+		if (line)
+			jumpTo(Number(line.dataset.addr));
+	});
 	$("dbg_addr").addEventListener("keydown", (e) => { if (e.key === "Enter") doRunTo(); });
 	$("dbg_n").addEventListener("keydown", (e) => { if (e.key === "Enter") $("dbg_stepn").click(); });
 	$("dbg_speed").addEventListener("change", () => {
+		prefSpeed = speed();
+		try {
+			localStorage.setItem(SPEED_KEY, prefSpeed);
+		} catch (e) {
+			// storage unavailable: the choice lasts until reload
+		}
 		if (runState === "stepped" || runState === "jit")
 			resume();
 	});
@@ -1550,6 +1763,14 @@ async function init() {
 			$("memory").add(new Option(kib(m), memParam));
 	}
 	startPaused = params.get("paused") === "1";
+	const options = [...$("dbg_speed").options].map((o) => o.value);
+	let stored = null;
+	try {
+		stored = localStorage.getItem(SPEED_KEY);
+	} catch (e) {
+		stored = null;
+	}
+	prefSpeed = [params.get("speed"), stored, "1000"].find((v) => options.includes(v));
 	initTips();
 	drawMaps();
 	initDebugger();

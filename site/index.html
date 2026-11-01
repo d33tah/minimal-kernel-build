@@ -40,7 +40,7 @@
         <button id="dbg_pause" type="button" disabled title="Stop the CPU">Pause</button>
         <button id="dbg_continue" type="button" disabled title="Run again at the selected speed">Continue</button>
         <button id="dbg_step" type="button" disabled title="Execute one instruction">Step</button>
-        <label><span>speed<span class="tip" tabindex="0" role="button" title="Instructions per second. Full speed is v86's JIT and cannot count; every other speed steps one instruction at a time from JavaScript, so the screen, registers, grid and listing follow the boot.">?</span></span>
+        <label><span>speed<span class="tip" tabindex="0" role="button" title="Instructions per second from the kernel entry on. By default BIOS and setup are stepped as fast as possible up to the kernel's 32-bit entry at 0x100000, then the kernel runs at 1k/s so you can watch it. Full speed is v86's JIT (not counted, except in the background with count on). The choice is remembered in this browser; ?speed=full (or 1000000, 100000, ..., 1) in the URL overrides it.">?</span></span>
           <select id="dbg_speed">
             <option value="full">full (JIT)</option>
             <option value="1000000">1M/s</option>
@@ -52,20 +52,21 @@
             <option value="1">1/s</option>
           </select>
         </label>
-        <label><input type="checkbox" id="count" checked> count<span class="tip" tabindex="0" role="button" title="Step the boot from the reset vector until both lines are on the screen and count instructions, then run at the selected speed.">?</span></label>
+        <label><input type="checkbox" id="count" checked> count<span class="tip" tabindex="0" role="button" title="At full speed: first step the whole boot from the reset vector in the background until both lines are on the screen, counting, then run the JIT. At the other speeds the boot is always counted live.">?</span></label>
         <span id="dbg_state" class="note"></span>
       </div>
       <div class="table-wrap">
         <table id="counters" class="mono">
           <thead><tr>
             <th>until<span class="tip" tabindex="0" role="button" title="Instructions executed until the line first appears in VGA text memory at 0xb8000, counted from the reset vector and from the kernel entry at 1 MiB">?</span></th>
-            <th>reset<span class="tip" tabindex="0" role="button" title="Instructions executed from the reset vector (SeaBIOS, the kernel's real-mode setup, the kernel).">?</span></th>
-            <th>1 MiB<span class="tip" tabindex="0" role="button" title="Instructions executed from the first one at physical 0x100000, where v86 puts the 32-bit kernel.">?</span></th>
+            <th>from 1 MiB<span class="tip" tabindex="0" role="button" title="Instructions executed from the first one at physical 0x100000, where v86 puts the 32-bit kernel.">?</span></th>
             <th>unique EIPs k/o<span class="tip" tabindex="0" role="button" title="Distinct physical addresses executed from reset: in the kernel range (1 MiB to 1 MiB + init_size) / elsewhere (BIOS, option ROM, real-mode setup).">?</span></th>
+            <th>from reset<span class="tip" tabindex="0" role="button" title="Instructions executed from the reset vector (SeaBIOS, the kernel's real-mode setup, the kernel).">?</span></th>
           </tr></thead>
           <tbody></tbody>
         </table>
       </div>
+      <p class="note mono" id="entry_info"></p>
       <p class="note" id="count_info"><span id="count_text"></span> <span class="tip" tabindex="0" role="button" title="Exact for the run shown: each instruction is one call of v86's interpreter. A rep-prefixed string instruction counts once per v86 entry, and v86 runs at most a page of iterations per entry, so a long rep movs counts several times (qemu counts it once). The minified Linux calibrates its delay loop against the timer, so its count from 1 MiB depends on how fast the page steps. SeaBIOS waits on real time, so the part before the kernel differs between runs; the kernel part is stable. See the About tab for the qemu cross-check.">?</span></p>
     </div>
   </div>
@@ -121,7 +122,8 @@
   </div>
   <p id="dbg_status" class="note mono" role="status"></p>
   <div id="regs" class="regs mono"></div>
-  <h3>Next instructions</h3>
+  <div id="sym_info" class="syminfo"></div>
+  <h3>Code at EIP <span class="tip" tabindex="0" role="button" title="About 6 instructions before and 10 after the next one (boxed), from the build's disassembly, with symbol+offset. Marked bytes differ in guest memory from the build. Tap a line or a symbol to open it in the Page tab. The previous symbol and the path are recorded while stepping or in slow motion, not at full JIT speed.">?</span></h3>
   <pre id="context" class="listing-small"></pre>
 </section>
 
@@ -149,7 +151,7 @@
     <li><b>Snapshots</b>: save, restore and download the whole machine state.</li>
   </ul>
   <h3>Counting and stepping</h3>
-  <p>v86 normally runs guest code through a JIT, at least 100,003 instructions per call, and has no single-step API. The page adds two exports to v86's own <code>v86.wasm</code> at load time (the functions are already in it and named in its name section, the code is unchanged): <code>read_imm8</code>, which fetches the byte at EIP, and the interpreter's <code>run</code>, which executes one instruction. Stepping calls them from JavaScript the way v86's interpreter loop does. With <i>count</i> on, every boot is stepped from the reset vector until "Hello, World!" and "Still alive" are both in VGA text memory at 0xb8000, then runs at the selected speed.</p>
+  <p>v86 normally runs guest code through a JIT, at least 100,003 instructions per call, and has no single-step API. The page adds two exports to v86's own <code>v86.wasm</code> at load time (the functions are already in it and named in its name section, the code is unchanged): <code>read_imm8</code>, which fetches the byte at EIP, and the interpreter's <code>run</code>, which executes one instruction. Stepping calls them from JavaScript the way v86's interpreter loop does. By default every boot steps BIOS and setup as fast as possible to the kernel entry at 0x100000, then the kernel runs at 1k instructions per second, counted live, until "Hello, World!" and "Still alive" are both in VGA text memory at 0xb8000 (hello: about 6 s; the minified Linux: about 15 minutes, with an ETA). With speed set to full (remembered, or <code>?speed=full</code>) and <i>count</i> on, the whole boot is stepped in the background first and then runs on v86's JIT.</p>
   <p>The counts are exact for the run shown, with two caveats: a <code>rep</code> string instruction counts once per v86 entry, and v86 runs at most a page of iterations per entry; SeaBIOS waits on real time, so the part before the kernel varies between runs; and the minified Linux's <code>calibrate_delay()</code> loops until a timer tick, so its count from 1 MiB depends on how fast the page steps. hello's kernel count is the same every run and matches qemu instruction for instruction. site/README.md has the cross-check against qemu.</p>
   <p>Source: <a href="https://github.com/d33tah/minimal-kernel-build/tree/hello-kernel/site">site/</a> on the hello-kernel branch. Third-party files: site/THIRD_PARTY.md.</p>
 </section>

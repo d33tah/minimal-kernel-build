@@ -123,7 +123,71 @@ class Stepper {
 		this.vgaDirty = false;
 		this.milestones = [];    // { text, found: null | {...} }
 		this.lastTimers = 0;
+		this.setSymbols([]);
 		this.hookVga();
+	}
+
+	// Code symbols ({paddr, size, name}, sorted by paddr) for the symbol
+	// history: which function the CPU is in and which ones it was in before.
+	setSymbols(list) {
+		this.symStart = list.map((s) => s.paddr);
+		this.symEnd = list.map((s) => s.paddr + s.size);
+		this.symName = list.map((s) => s.name);
+		this.curSym = -2;      // index into the lists, -1 = no symbol, -2 = unknown
+		this.curLo = 1;        // [curLo, curHi): addresses that stay in curSym
+		this.curHi = 0;
+		this.history = [];     // most recent last: { sym, last } (last = final EIP in it)
+	}
+
+	symbolOf(phys) {
+		const st = this.symStart;
+		let a = 0, b = st.length;
+		while (a < b) { const m = (a + b) >> 1; if (st[m] <= phys) a = m + 1; else b = m; }
+		for (let i = a - 1; i >= 0 && i >= a - 8; i--)
+			if (phys < this.symEnd[i])
+				return i;
+		return -1;
+	}
+
+	// The instruction at phys runs; `from` ran before it.
+	enterSymbol(phys, from) {
+		const i = this.symbolOf(phys);
+		if (i >= 0) {
+			this.curLo = this.symStart[i];
+			this.curHi = this.symEnd[i];
+		} else {
+			// A gap between symbols, or outside the kernel: stay until a symbol starts.
+			const st = this.symStart;
+			let a = 0, b = st.length;
+			while (a < b) { const m = (a + b) >> 1; if (st[m] <= phys) a = m + 1; else b = m; }
+			this.curLo = phys;
+			this.curHi = a < st.length ? st[a] : 2 ** 32;
+			if (phys < this.kernelLo)
+				this.curHi = Math.min(this.curHi, this.kernelLo);
+		}
+		if (i !== this.curSym) {
+			if (this.curSym !== -2) {
+				this.history.push({ sym: this.curSym, last: from });
+				if (this.history.length > 16)
+					this.history.shift();
+			}
+			this.curSym = i;
+		}
+	}
+
+	// Called when v86's JIT ran in between: the history has a gap.
+	markGap() {
+		if (this.curSym !== -2) {
+			this.history.push({ sym: this.curSym, last: this.lastPhys });
+			this.history.push({ sym: -3, last: -1 });
+		}
+		this.curSym = -2;
+		this.curLo = 1;
+		this.curHi = 0;
+	}
+
+	symLabel(i) {
+		return i >= 0 ? this.symName[i] : i === -3 ? "(full speed: not recorded)" : "(no symbol)";
 	}
 
 	hookVga() {
@@ -214,6 +278,8 @@ class Stepper {
 			}
 			i32[COUNTER] = i32[COUNTER] + 1;
 			this.steps++;
+			if (phys < this.curLo || phys >= this.curHi)
+				this.enterSymbol(phys, this.lastPhys);
 			this.lastPhys = phys;
 			if (phys === lo && this.sinceEntry < 0)
 				this.sinceEntry = this.steps - 1;

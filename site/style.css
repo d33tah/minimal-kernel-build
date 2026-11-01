@@ -224,3 +224,10 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 	#counters { font-size: 0.7rem; }
 	#listing { height: 70vh; }
 }
+.syminfo { font-size: 0.8rem; margin: 0.3rem 0; }
+.syminfo div { overflow-wrap: anywhere; }
+.syminfo b { color: var(--muted); font-weight: 600; display: inline-block; min-width: 4.6em; }
+.symlink { font: 0.78rem ui-monospace, monospace; padding: 0 0.3rem; color: var(--accent); }
+#context .ins { cursor: pointer; }
+#context mark { background: var(--mark-bg); color: var(--mark-fg); }
+#context .bad { background: var(--mark-bg); color: var(--mark-fg); }

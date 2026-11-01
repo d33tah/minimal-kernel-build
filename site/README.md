@@ -37,7 +37,16 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   "live" re-reads the page every 500 ms.
 - **Debugger.** Step N, Run to address, the registers (EIP, ESP, EBP,
   EAX..EDI, EFLAGS decoded, CS/DS/SS/ES, CR0, CR3, CPL, mode, physical EIP;
-  changed ones marked) and the next instructions.
+  changed ones marked), the current symbol (range, size, offset of EIP),
+  the previous symbol (the one the CPU ran before entering the current
+  one, and where it left it), a path of the last few symbols
+  (`idt_setup_from_table <- setup_arch <- ...`), and the code around EIP:
+  about 6 instructions before and 10 after from `disasm.json`, with
+  `symbol+offset` and bytes that differ in guest memory marked. Outside
+  the kernel image, or where the code is not vmlinux's yet (the bzImage
+  relocation stub), it says so and shows the raw bytes at EIP. The symbol
+  history is recorded by the stepper only (stepping, slow motion, count,
+  Run to), not at full JIT speed. Symbols and lines open in the Page tab.
 - **Snapshots.** "Save snapshot" calls `emulator.save_state()`, gzips the
   result in the browser with `CompressionStream("gzip")` (kept raw, and the
   page says so, when the browser lacks it) and keeps the last 8 in memory.
@@ -64,12 +73,24 @@ Timers and interrupts run every 1024 instructions and whenever the CPU
 halts, as `main_loop` does. With the v86 loop stopped (`emulator.stop()`),
 JavaScript drives the CPU:
 
-- **count** (on by default): every boot is stepped from the reset vector,
-  as fast as JavaScript can (about 4-7 million instructions per second in
-  headless Chromium; the page shows the time), until "Hello, World!" and
-  "Still alive" are both in VGA text memory at 0xb8000 (the page wraps
-  v86's MMIO write handlers for 0xa0000-0xbffff and keeps a copy of the
-  text page), then runs at the selected speed.
+- **Default boot.** BIOS, option ROM and the real-mode setup are stepped
+  as fast as JavaScript can (about 1.4 million instructions, 0.3 s) up to
+  the kernel's 32-bit entry at 0x100000 (where v86 puts the 32-bit part,
+  whatever `code32_start` says; it is 0x100000 for both kernels). The top
+  bar then says "Entered the kernel at 0x100000 after N instructions from
+  reset", the speed switches to 1k instructions per second and the
+  counters count live from there: hello reaches "Still alive" after 6,150
+  instructions, about 6 s; the minified Linux needs about 0.7-1 million,
+  about 15 minutes, so the top bar shows an ETA (from the count this
+  browser last measured, else a built-in estimate) and the symbol the CPU
+  is in.
+- **Full speed.** `?speed=full`, or picking "full (JIT)" (the choice is
+  kept in `localStorage`; `?speed=` overrides it): with **count** on, the
+  whole boot is stepped in the background from the reset vector until
+  "Hello, World!" and "Still alive" are both in VGA text memory at 0xb8000
+  (the page wraps v86's MMIO write handlers for 0xa0000-0xbffff and keeps
+  a copy of the text page), at about 4-7 million instructions per second
+  in headless Chromium, then v86's JIT runs.
 - **speed**: full (v86's JIT, not counted) or 1M, 100k, 10k, 1k, 100, 10
   or 1 instructions per second. Stepped speeds update the screen, the
   registers and counters every frame, re-scan RAM every frame (every
@@ -81,8 +102,8 @@ JavaScript drives the CPU:
   stops before executing the instruction there. `?paused=1` starts paused
   at the reset vector.
 
-The counters: instructions from reset and from the first instruction at
-physical 0x100000 until each line appears, and distinct physical addresses
+The counters: instructions from the first instruction at physical
+0x100000 (the main column) and from reset until each line appears, and distinct physical addresses
 executed, split into the kernel range (0x100000 to 0x100000 + `init_size`)
 and the rest (SeaBIOS, VGA BIOS, the linuxboot option ROM, the real-mode
 setup at 0x80000).
@@ -99,8 +120,8 @@ how fast the emulator steps against real time, so the Linux count from
 speed, 274k when single-stepping from a script); without `delay_loop` and
 `calibrate_delay` it is stable. hello's count is the same every run.
 
-Measured in headless Chromium (2 MB, count on, full stepping speed; ranges
-over four runs):
+Measured in headless Chromium (2 MB, `?speed=full` with count on, i.e.
+full stepping speed; ranges over four runs):
 
 | kernel | until | from reset | from 1 MiB | unique EIPs kernel / other |
 |---|---|---|---|---|
@@ -153,8 +174,12 @@ qemu runs used `timeout 120` and a FIFO, so no trace touched the disk.
     site/gen-kernels.sh
     python3 site/test_browser.py
 
-For every kernel case (hello at 2 MB, Linux at 2 MB, 18 MB and 2180 KiB)
-it checks the gate lines on the screen, the boot counters (both lines
+Cases: hello at 2 MB with the default boot (the entry marker, the switch
+to 1k/s, 6,082 instructions from the entry to "Hello, World!"), Linux at
+2 MB, 18 MB and 2180 KiB with `?speed=full`, and Linux with the default
+boot for a few seconds (entry marker, 1k/s, the counter grows by about
+3,000 in 3 s, ETA and current symbol in the top bar, the speed choice
+remembered across a reload). For every kernel case it checks the gate lines on the screen, the boot counters (both lines
 counted, Linux from 1 MiB larger than hello), the page scan, the Page tab
 (opened from the grid, in the URL hash, kept on reload; instruction lines
 in the 1 MiB page; instruction lines and hex rows in the page where .text
@@ -162,7 +187,10 @@ ends; one symbol index and `name:` headers, no second symbol table;
 instructions still there after scans and auto-scan; an all-zero page
 collapsed to `*`), no horizontal scroll on any tab at 390, 800, 1000 and
 1280 px, and a snapshot round trip (save, gzip smaller, blank the screen,
-restore, both lines back). For each kernel it then starts paused
+restore, both lines back). For Linux it runs to `start_kernel`, steps
+50 at a time and checks the code window's boxed line is EIP, the current
+symbol contains EIP and a previous symbol differs from it. For each
+kernel it then starts paused
 (`?paused=1`): Step 10 changes EIP and marks changed registers and counts
 exactly 10, Run to 0x100000 stops there, and 1k/s slow motion advances
 the counter over 2 s and flashes at least one written page in the grid.

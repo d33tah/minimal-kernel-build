@@ -1,4 +1,3 @@
-
 #include <linux/delay.h>
 #include <linux/i8253.h>
 #include <linux/jiffies.h>

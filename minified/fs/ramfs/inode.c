@@ -1,5 +1,3 @@
-
-
 #include <linux/pagemap.h>
 #include <linux/ramfs.h>
 #include "internal.h"

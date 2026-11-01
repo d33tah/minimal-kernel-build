@@ -1,4 +1,3 @@
-
 #include "internal.h"
 
 #include "slab.h"

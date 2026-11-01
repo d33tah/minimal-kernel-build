@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_RMWcc
 #define _ASM_X86_RMWcc
 

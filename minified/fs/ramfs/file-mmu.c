@@ -1,5 +1,3 @@
-
-
 #include <linux/fs.h>
 
 const struct file_operations ramfs_file_operations = {

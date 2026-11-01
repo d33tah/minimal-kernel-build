@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_PROCESSOR_FLAGS_H
 #define _ASM_X86_PROCESSOR_FLAGS_H
 

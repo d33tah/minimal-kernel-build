@@ -1,4 +1,3 @@
-
 #include <linux/string.h>
 
 int strcmp(const char *cs, const char *ct)

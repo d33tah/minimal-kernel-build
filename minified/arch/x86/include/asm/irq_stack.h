@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_IRQ_STACK_H
 #define _ASM_X86_IRQ_STACK_H
 

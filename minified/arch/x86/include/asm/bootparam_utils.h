@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_BOOTPARAM_UTILS_H
 #define _ASM_X86_BOOTPARAM_UTILS_H
 

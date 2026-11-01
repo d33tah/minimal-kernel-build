@@ -1,4 +1,3 @@
-
 #include <linux/utsname.h>
 
 struct nsproxy init_nsproxy = {

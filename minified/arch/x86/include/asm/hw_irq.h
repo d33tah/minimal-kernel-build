@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_HW_IRQ_H
 #define _ASM_X86_HW_IRQ_H
 

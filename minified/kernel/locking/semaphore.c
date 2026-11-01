@@ -1,4 +1,3 @@
-
 #include <linux/semaphore.h>
 
 void down(struct semaphore *sem)

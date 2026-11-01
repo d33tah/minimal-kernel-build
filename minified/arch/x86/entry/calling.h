@@ -1,4 +1,3 @@
-
 #include <asm/asm-offsets.h>
 #include <asm/processor-flags.h>
 #include <asm/nospec-branch.h>

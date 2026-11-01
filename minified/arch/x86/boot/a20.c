@@ -1,5 +1,3 @@
-
-
 #include "boot.h"
 
 #define MAX_8042_LOOPS 100000

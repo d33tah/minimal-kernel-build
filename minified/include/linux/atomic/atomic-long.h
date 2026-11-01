@@ -1,5 +1,3 @@
-
-
 #ifndef _LINUX_ATOMIC_LONG_H
 #define _LINUX_ATOMIC_LONG_H
 

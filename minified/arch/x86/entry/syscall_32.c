@@ -1,4 +1,3 @@
-
 #include <asm/syscall.h>
 
 #define __SYSCALL(nr, sym) extern long __ia32_##sym(const struct pt_regs *);

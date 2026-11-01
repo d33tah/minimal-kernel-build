@@ -1,4 +1,3 @@
-
 #ifndef _LINUX_REFCOUNT_H
 #define _LINUX_REFCOUNT_H
 

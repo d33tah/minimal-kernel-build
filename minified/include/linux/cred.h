@@ -1,4 +1,3 @@
-
 #ifndef _LINUX_CRED_H
 #define _LINUX_CRED_H
 

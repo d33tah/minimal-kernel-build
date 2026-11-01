@@ -1,4 +1,3 @@
-
 #ifndef BOOT_IO_H
 #define BOOT_IO_H
 

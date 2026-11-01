@@ -1,5 +1,3 @@
-
-
 #include "boot.h"
 #include <asm/segment.h>
 

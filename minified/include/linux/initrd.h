@@ -1,4 +1,3 @@
-
 #ifndef __LINUX_INITRD_H
 #define __LINUX_INITRD_H
 

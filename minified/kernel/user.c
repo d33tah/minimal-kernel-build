@@ -1,4 +1,3 @@
-
 #include <linux/sched/user.h>
 #include <linux/user_namespace.h>
 

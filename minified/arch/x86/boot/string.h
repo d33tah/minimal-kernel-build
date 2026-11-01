@@ -1,4 +1,3 @@
-
 #ifndef BOOT_STRING_H
 #define BOOT_STRING_H
 

@@ -1,4 +1,3 @@
-
 #ifndef _LINUX_PERCPU_DEFS_H
 #define _LINUX_PERCPU_DEFS_H
 

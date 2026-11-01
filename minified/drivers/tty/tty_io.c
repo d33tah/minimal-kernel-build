@@ -1,4 +1,3 @@
-
 #include <linux/tty.h>
 #include <linux/console.h>
 #include <linux/uio.h>

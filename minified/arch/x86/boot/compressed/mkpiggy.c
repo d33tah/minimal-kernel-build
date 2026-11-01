@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <tools/le_byteshift.h>
 

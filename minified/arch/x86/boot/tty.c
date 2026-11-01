@@ -1,5 +1,3 @@
-
-
 #include "boot.h"
 
 static void __section(".inittext") bios_putchar(int ch)

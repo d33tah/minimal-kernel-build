@@ -1,4 +1,3 @@
-
 #include <asm/traps.h>
 
 #define TSS(x) this_cpu_read(cpu_tss_rw.x86_tss.x)

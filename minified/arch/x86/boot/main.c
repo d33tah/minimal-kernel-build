@@ -1,4 +1,3 @@
-
 #include <linux/build_bug.h>
 
 #include "boot.h"

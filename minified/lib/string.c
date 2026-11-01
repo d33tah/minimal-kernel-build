@@ -1,5 +1,3 @@
-
-
 #include <linux/string.h>
 #include <linux/kernel.h>
 #include <asm/bug.h>

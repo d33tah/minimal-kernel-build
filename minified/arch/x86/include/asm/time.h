@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_TIME_H
 #define _ASM_X86_TIME_H
 extern void time_init(void);

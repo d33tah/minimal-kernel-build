@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_STRING_32_H
 #define _ASM_X86_STRING_32_H
 

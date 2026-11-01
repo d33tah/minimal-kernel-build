@@ -1,4 +1,3 @@
-
 #ifndef _LINUX_RWSEM_H
 #define _LINUX_RWSEM_H
 

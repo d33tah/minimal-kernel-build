@@ -1,4 +1,3 @@
-
 #include <linux/entry-common.h>
 #include <linux/nospec.h>
 

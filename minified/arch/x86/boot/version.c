@@ -1,5 +1,3 @@
-
-
 #include <generated/utsrelease.h>
 #include <generated/compile.h>
 

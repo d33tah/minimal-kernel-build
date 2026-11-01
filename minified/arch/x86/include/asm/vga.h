@@ -1,5 +1,3 @@
-
-
 #ifndef _ASM_X86_VGA_H
 #define _ASM_X86_VGA_H
 

@@ -1,4 +1,3 @@
-
 #ifndef _LINUX_NOSPEC_H
 #define _LINUX_NOSPEC_H
 

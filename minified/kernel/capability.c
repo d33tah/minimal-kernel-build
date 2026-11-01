@@ -1,5 +1,3 @@
-
-
 #include <linux/security.h>
 
 static bool privileged_wrt_inode_uidgid(struct user_namespace *ns,

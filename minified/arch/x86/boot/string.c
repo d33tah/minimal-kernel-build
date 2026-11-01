@@ -1,5 +1,3 @@
-
-
 #include <linux/types.h>
 #include <asm/asm.h>
 

@@ -1,4 +1,3 @@
-
 #ifndef BOOT_COMPRESSED_MISC_H
 #define BOOT_COMPRESSED_MISC_H
 

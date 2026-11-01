@@ -229,17 +229,17 @@ static inline int handle_mounts(struct nameidata *nd, struct dentry *dentry,
  * valid. A single task never races another lookup, so a dcache miss can
  * allocate and look up directly (no in-lookup hash / d_alloc_parallel).
  */
-static struct dentry *lookup_real(const struct qstr *name, struct dentry *base,
-				  unsigned int flags)
+static struct dentry *__lookup_slow(const struct qstr *name, struct dentry *dir,
+				    unsigned int flags)
 {
-	struct inode *dir = base->d_inode;
-	struct dentry *dentry = d_alloc(base, name);
+	struct inode *inode = dir->d_inode;
+	struct dentry *dentry = d_alloc(dir, name);
 	struct dentry *old;
 
 	if (unlikely(!dentry))
 		return ERR_PTR(-ENOMEM);
 
-	old = dir->i_op->lookup(dir, dentry, flags);
+	old = inode->i_op->lookup(inode, dentry, flags);
 	if (unlikely(old)) {
 		dput(dentry);
 		dentry = old;
@@ -254,7 +254,7 @@ static struct dentry *__lookup_hash(const struct qstr *name,
 
 	if (dentry)
 		return dentry;
-	return lookup_real(name, base, flags);
+	return __lookup_slow(name, base, flags);
 }
 
 static struct dentry *lookup_slow(const struct qstr *name, struct dentry *dir,
@@ -263,7 +263,7 @@ static struct dentry *lookup_slow(const struct qstr *name, struct dentry *dir,
 	struct inode *inode = dir->d_inode;
 	struct dentry *res;
 	inode_lock_shared(inode);
-	res = lookup_real(name, dir, flags);
+	res = __lookup_slow(name, dir, flags);
 	inode_unlock_shared(inode);
 	return res;
 }

@@ -4,6 +4,8 @@
 #define VGA_COLS 80
 #define VGA_ROWS 25
 #define ATTR 0x07 /* light grey on black */
+/* BIOS data area: cursor row of video page 0 (what the BIOS printed last). */
+#define BDA_CURSOR_ROW (*(volatile unsigned char *)0x451)
 
 void hello_main(void);
 
@@ -17,12 +19,17 @@ static void put_line(int row, const char *s)
 
 void hello_main(void)
 {
-	int i;
+	/*
+	 * No screen clear: like Linux's vgacon, continue below what the BIOS
+	 * printed, at the BIOS cursor row (clearing 2,000 cells was most of
+	 * the instructions this kernel ran).
+	 */
+	int row = BDA_CURSOR_ROW;
 
-	for (i = 0; i < VGA_COLS * VGA_ROWS; i++)
-		VGA_TEXT[i] = ATTR << 8 | ' ';
-	put_line(0, "Hello, World!");
-	put_line(1, "Still alive");
+	if (row > VGA_ROWS - 2)
+		row = VGA_ROWS - 2;
+	put_line(row, "Hello, World!");
+	put_line(row + 1, "Still alive");
 	for (;;)
 		__asm__ volatile("cli; hlt");
 }

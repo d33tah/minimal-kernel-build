@@ -49,7 +49,7 @@ struct files_struct *dup_fd(struct files_struct *oldf, int *errorp)
 	struct fdtable *old_fdt, *new_fdt;
 
 	*errorp = -ENOMEM;
-	newf = kmem_cache_alloc(files_cachep, GFP_KERNEL);
+	newf = kmalloc(sizeof(*newf), GFP_KERNEL);
 	if (!newf)
 		goto out;
 

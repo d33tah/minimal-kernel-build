@@ -37,20 +37,6 @@ static int inode_init_always(struct super_block *sb, struct inode *inode)
 	return 0;
 }
 
-static struct inode *alloc_inode(struct super_block *sb)
-{
-	struct inode *inode;
-
-	inode = kmem_cache_alloc(inode_cachep, GFP_KERNEL);
-
-	if (!inode)
-		return NULL;
-
-	inode_init_always(sb, inode);
-
-	return inode;
-}
-
 static void __address_space_init_once(struct address_space *mapping)
 {
 	xa_init_flags(&mapping->i_pages, XA_FLAGS_LOCK_IRQ | XA_FLAGS_ACCOUNT);
@@ -62,6 +48,21 @@ static void init_once(void *foo)
 
 	memset(inode, 0, sizeof(*inode));
 	__address_space_init_once(&inode->i_data);
+}
+
+static struct inode *alloc_inode(struct super_block *sb)
+{
+	struct inode *inode;
+
+	inode = kmalloc(sizeof(*inode), GFP_KERNEL);
+
+	if (!inode)
+		return NULL;
+	init_once(inode);
+
+	inode_init_always(sb, inode);
+
+	return inode;
 }
 
 static struct inode *new_inode_pseudo(struct super_block *sb)

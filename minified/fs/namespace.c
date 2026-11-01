@@ -8,7 +8,7 @@ static struct kmem_cache *mnt_cache __read_mostly;
 
 static struct vfsmount *alloc_vfsmnt(void)
 {
-	struct vfsmount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
+	struct vfsmount *mnt = kzalloc(sizeof(*mnt), GFP_KERNEL);
 	if (mnt)
 		mnt->mnt_userns = &init_user_ns;
 	return mnt;

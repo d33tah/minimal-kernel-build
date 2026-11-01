@@ -62,14 +62,14 @@ static void __d_free(struct rcu_head *head)
 {
 	struct dentry *dentry = container_of(head, struct dentry, d_u.d_rcu);
 
-	kmem_cache_free(dentry_cache, dentry);
+	kfree(dentry);
 }
 
 static void __d_free_external(struct rcu_head *head)
 {
 	struct dentry *dentry = container_of(head, struct dentry, d_u.d_rcu);
 	kfree(external_name(dentry));
-	kmem_cache_free(dentry_cache, dentry);
+	kfree(dentry);
 }
 
 static inline int dname_external(const struct dentry *dentry)
@@ -229,7 +229,7 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	struct dentry *dentry;
 	char *dname;
 
-	dentry = kmem_cache_alloc(dentry_cache, GFP_KERNEL);
+	dentry = kmalloc(sizeof(*dentry), GFP_KERNEL);
 	if (!dentry)
 		return NULL;
 
@@ -243,7 +243,7 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 			kmalloc(size + name->len,
 				GFP_KERNEL_ACCOUNT | __GFP_RECLAIMABLE);
 		if (!p) {
-			kmem_cache_free(dentry_cache, dentry);
+			kfree(dentry);
 			return NULL;
 		}
 		atomic_set(&p->u.count, 1);

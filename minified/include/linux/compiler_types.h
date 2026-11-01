@@ -24,7 +24,6 @@
 
 #define __nocfi __attribute__((__no_sanitize__("cfi")))
 
-/* end compiler-clang.h */
 #else
 #error "Unknown compiler"
 #endif

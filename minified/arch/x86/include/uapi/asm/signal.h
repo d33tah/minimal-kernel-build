@@ -8,6 +8,4 @@
 #define SIGKILL 9
 #define SIGSEGV 11
 
-/* end signal-defs.h inlining */
-
 #endif

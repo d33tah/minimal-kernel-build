@@ -34,6 +34,4 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 
 #define smp_acquire__after_ctrl_dep() smp_rmb()
 
-/* end asm-generic/barrier.h */
-
 #endif

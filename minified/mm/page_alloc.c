@@ -1,3 +1,20 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ *  linux/mm/page_alloc.c
+ *
+ *  Manages the free list, the system allocates free pages here.
+ *  Note that kmalloc() lives in slab.c
+ *
+ *  Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
+ *  Swap reorganised 29.12.95, Stephen Tweedie
+ *  Support of BIGMEM added by Gerhard Wichert, Siemens AG, July 1999
+ *  Reshaped it to be a zoned allocator, Ingo Molnar, Red Hat, 1999
+ *  Discontiguous memory support, Kanoj Sarcar, SGI, Nov 1999
+ *  Zone balancing, Kanoj Sarcar, SGI, Jan 2000
+ *  Per cpu hot/cold page lists, bulk allocation, Martin J. Bligh, Sept 2002
+ *          (lots of bits borrowed from Ingo Molnar & Andrew Morton)
+ */
+
 #include <linux/memblock.h>
 
 #include <linux/sched/mm.h>
@@ -46,6 +63,7 @@ static inline void set_buddy_order(struct page *page, unsigned int order)
 	__SetPageBuddy(page);
 }
 
+/* Used for pages not on another list */
 static inline void add_to_free_list(struct page *page, struct zone *zone,
 				    unsigned int order, bool tail)
 {
@@ -267,10 +285,21 @@ struct page *__alloc_pages(gfp_t gfp, unsigned int order, int preferred_nid)
 	struct zone *zone = &NODE_DATA(preferred_nid)->node_zones[ZONE_NORMAL];
 	struct page *page;
 
+	/*
+	 * There are several places where we assume that the order value is sane
+	 * so bail out early if the request is out of bound.
+	 */
 	if (WARN_ON_ONCE_GFP(order >= MAX_ORDER, gfp))
 		return NULL;
 
 	gfp &= gfp_allowed_mask;
+	/*
+	 * Apply scoped allocation constraints. This is mainly about GFP_NOFS
+	 * resp. GFP_NOIO which has to be inherited for all allocation requests
+	 * from a particular context which has been marked by
+	 * memalloc_no{fs,io}_{save,restore}. And PF_MEMALLOC_PIN which ensures
+	 * movable zones are not used during allocation.
+	 */
 	gfp = current_gfp_context(gfp);
 
 	page = rmqueue(zone, order);
@@ -287,6 +316,11 @@ struct folio *__folio_alloc(gfp_t gfp, unsigned int order, int preferred_nid)
 	return (struct folio *)page;
 }
 
+/*
+ * Common helper functions. Never use with __GFP_HIGHMEM because the returned
+ * address cannot represent highmem pages. Use alloc_pages and then kmap if
+ * you need to access high mem.
+ */
 unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
 {
 	struct page *page;
@@ -297,6 +331,26 @@ unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
 	return (unsigned long)page_address(page);
 }
 
+/**
+ * __free_pages - Free pages allocated with alloc_pages().
+ * @page: The page pointer returned from alloc_pages().
+ * @order: The order of the allocation.
+ *
+ * This function can free multi-page allocations that are not compound
+ * pages.  It does not check that the @order passed in matches that of
+ * the allocation, so it is easy to leak memory.  Freeing more memory
+ * than was allocated will probably emit a warning.
+ *
+ * If the last reference to this page is speculative, it will be released
+ * by put_page() which only frees the first page of a non-compound
+ * allocation.  To prevent the remaining pages from being leaked, we free
+ * the subsequent pages here.  If you want to use the page's reference
+ * count to decide when to free the allocation, you should allocate a
+ * compound page, and use put_page() instead of __free_pages().
+ *
+ * Context: May be called in interrupt context or while holding a normal
+ * spinlock, but not in NMI context or while holding a raw spinlock.
+ */
 void __free_pages(struct page *page, unsigned int order)
 {
 	if (put_page_testzero(page))
@@ -350,6 +404,28 @@ static void __meminit zone_init_free_lists(struct zone *zone)
 	}
 }
 
+/*
+ * Only struct pages that correspond to ranges defined by memblock.memory
+ * are zeroed and initialized by going through __init_single_page() during
+ * memmap_init_zone_range().
+ *
+ * But, there could be struct pages that correspond to holes in
+ * memblock.memory. This can happen because of the following reasons:
+ * - physical memory bank size is not necessarily the exact multiple of the
+ *   arbitrary section size
+ * - early reserved memory may not be listed in memblock.memory
+ * - memory layouts defined with memmap= kernel parameter may not align
+ *   nicely with memmap sections
+ *
+ * Explicitly initialize those struct pages so that:
+ * - PG_Reserved is set
+ * - zone and node links point to zone and node that span the page if the
+ *   hole is in the middle of a zone
+ * - zone and node links point to adjacent zone/node if the hole falls on
+ *   the zone boundary; the pages in such holes will be prepended to the
+ *   zone/node above the hole except for the trailing pages in the last
+ *   section that will be appended to the zone/node below.
+ */
 static void __init init_unavailable_range(unsigned long spfn,
 					  unsigned long epfn, int zone,
 					  int node)
@@ -456,18 +532,23 @@ static unsigned long __init zone_spanned_pages_in_node(
 	unsigned long zone_low = arch_zone_lowest_possible_pfn[zone_type];
 	unsigned long zone_high = arch_zone_highest_possible_pfn[zone_type];
 
+	/* When hotadd a new node from cpu_up(), the node should be empty */
 	if (!node_start_pfn && !node_end_pfn)
 		return 0;
 
+	/* Get the start and end of the zone */
 	*zone_start_pfn = clamp(node_start_pfn, zone_low, zone_high);
 	*zone_end_pfn = clamp(node_end_pfn, zone_low, zone_high);
 
+	/* Check that this node has pages within the zone's required range */
 	if (*zone_end_pfn < node_start_pfn || *zone_start_pfn > node_end_pfn)
 		return 0;
 
+	/* Move the zone boundaries inside the node if necessary */
 	*zone_end_pfn = min(*zone_end_pfn, node_end_pfn);
 	*zone_start_pfn = max(*zone_start_pfn, node_start_pfn);
 
+	/* Return the spanned pages */
 	return *zone_end_pfn - *zone_start_pfn;
 }
 
@@ -495,6 +576,7 @@ static unsigned long __init zone_absent_pages_in_node(
 	unsigned long zone_start_pfn, zone_end_pfn;
 	unsigned long nr_absent;
 
+	/* When hotadd a new node from cpu_up(), the node should be empty */
 	if (!node_start_pfn && !node_end_pfn)
 		return 0;
 
@@ -561,6 +643,15 @@ static unsigned long __init calc_memmap_size(unsigned long spanned_pages,
 	return PAGE_ALIGN(pages * sizeof(struct page)) >> PAGE_SHIFT;
 }
 
+/*
+ * Set up the zone data structures:
+ *   - mark all pages reserved
+ *   - mark all memory queues empty
+ *   - clear the memory bitmaps
+ *
+ * NOTE: pgdat should get zeroed by caller.
+ * NOTE: this function is only called during early init.
+ */
 static void __init free_area_init_core(struct pglist_data *pgdat)
 {
 	enum zone_type j;
@@ -600,16 +691,23 @@ static void __init alloc_node_mem_map(struct pglist_data *pgdat)
 	unsigned long __maybe_unused start = 0;
 	unsigned long __maybe_unused offset = 0;
 
+	/* Skip empty nodes */
 	if (!pgdat->node_spanned_pages)
 		return;
 
 	start = pgdat->node_start_pfn & ~(MAX_ORDER_NR_PAGES - 1);
 	offset = pgdat->node_start_pfn - start;
 
+	/* ia64 gets its own node_mem_map, before this, without bootmem */
 	if (!pgdat->node_mem_map) {
 		unsigned long size, end;
 		struct page *map;
 
+		/*
+		 * The zone's endpoints aren't required to be MAX_ORDER
+		 * aligned but the node_mem_map endpoints must be in order
+		 * for the buddy allocator to function correctly.
+		 */
 		end = pgdat_end_pfn(pgdat);
 		end = ALIGN(end, MAX_ORDER_NR_PAGES);
 		size = (end - start) * sizeof(struct page);
@@ -623,6 +721,9 @@ static void __init alloc_node_mem_map(struct pglist_data *pgdat)
 		pgdat->node_mem_map = map + offset;
 	}
 
+	/*
+	 * With no DISCONTIG, the global mem_map is just set as node 0's
+	 */
 	if (pgdat == NODE_DATA(0)) {
 		mem_map = NODE_DATA(0)->node_mem_map;
 		if (page_to_pfn(mem_map) != pgdat->node_start_pfn)
@@ -653,11 +754,25 @@ static unsigned long __init find_min_pfn_with_active_regions(void)
 	return PHYS_PFN(memblock_start_of_DRAM());
 }
 
+/**
+ * free_area_init - Initialise all pg_data_t and zone data
+ * @max_zone_pfn: an array of max PFNs for each zone
+ *
+ * This will call free_area_init_node() for each active node in the system.
+ * Using the page ranges provided by memblock_set_node(), the size of each
+ * zone in each node and their holes is calculated. If the maximum PFN
+ * between two adjacent zones match, it is assumed that the zone is empty.
+ * For example, if arch_max_dma_pfn == arch_max_dma32_pfn, it is assumed
+ * that arch_max_dma32_pfn has no pages. It is also assumed that a zone
+ * starts where the previous one ended. For example, ZONE_DMA32 starts
+ * at arch_max_dma_pfn.
+ */
 void __init free_area_init(unsigned long *max_zone_pfn)
 {
 	unsigned long start_pfn, end_pfn;
 	int i;
 
+	/* Record where the zone boundaries are */
 	memset(arch_zone_lowest_possible_pfn, 0,
 	       sizeof(arch_zone_lowest_possible_pfn));
 	memset(arch_zone_highest_possible_pfn, 0,
@@ -679,6 +794,12 @@ void __init free_area_init(unsigned long *max_zone_pfn)
 	memmap_init();
 }
 
+/*
+ * allocate a large system hash table from bootmem
+ * - it is assumed that the hash table must contain an exact power-of-2
+ *   quantity of entries
+ * - limit is the number of hash buckets, not the total allocation size
+ */
 void *__init alloc_large_system_hash(const char *tablename,
 				     unsigned long bucketsize,
 				     unsigned long numentries, int scale,

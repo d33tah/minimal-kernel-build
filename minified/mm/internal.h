@@ -1,3 +1,9 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/* internal.h: mm/ internal definitions
+ *
+ * Copyright (C) 2004 Red Hat, Inc. All Rights Reserved.
+ * Written by David Howells (dhowells@redhat.com)
+ */
 #ifndef __MM_INTERNAL_H
 #define __MM_INTERNAL_H
 
@@ -8,10 +14,13 @@
 	 __GFP_RETRY_MAYFAIL | __GFP_NOFAIL | __GFP_NORETRY | __GFP_MEMALLOC | \
 	 __GFP_NOMEMALLOC | __GFP_ATOMIC | __GFP_NOLOCKDEP)
 
+/* The GFP flags allowed during early boot */
 #define GFP_BOOT_MASK (__GFP_BITS_MASK & ~(__GFP_RECLAIM | __GFP_IO | __GFP_FS))
 
+/* Control allocation cpuset and node placement constraints */
 #define GFP_CONSTRAINT_MASK (__GFP_HARDWALL | __GFP_THISNODE)
 
+/* Do not use these with a slab allocator */
 #define GFP_SLAB_BUG_MASK (__GFP_DMA32 | __GFP_HIGHMEM | ~__GFP_BITS_MASK)
 
 #define WARN_ON_ONCE_GFP(cond, gfp)             \
@@ -20,6 +29,10 @@
 		unlikely(__ret_warn_once);      \
 	})
 
+/*
+ * Turn a non-refcounted page (->_refcount == 0) into refcounted with
+ * a count of one.
+ */
 static inline void set_page_refcounted(struct page *page)
 {
 	set_page_count(page, 1);
@@ -122,6 +135,7 @@ static inline struct page *find_buddy_page_pfn(struct page *page,
 extern void memblock_free_pages(struct page *page, unsigned long pfn,
 				unsigned int order);
 
+/* mm/util.c */
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		     struct vm_area_struct *prev);
 

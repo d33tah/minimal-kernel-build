@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-only
 #include <linux/swap.h>
 
 static struct page *no_page_table(void)
@@ -20,9 +21,14 @@ static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address,
 		}
 	}
 
+	/* Proper page table entry exists, but no corresponding struct page */
 	return -EEXIST;
 }
 
+/*
+ * FOLL_FORCE can write to even unwritable pte's, but only
+ * after we've gone through a COW cycle and they are dirty.
+ */
 static inline bool can_follow_write_pte(pte_t pte, unsigned int flags)
 {
 	return pte_write(pte);
@@ -99,6 +105,10 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 	pmd = pmd_offset(pud_offset(p4d_offset(pgd, address), address),
 			 address);
 
+	/*
+	 * The READ_ONCE() will stabilize the pmdval in a register or
+	 * on the stack so that it will stop changing under the code.
+	 */
 	pmdval = READ_ONCE(*pmd);
 	if (pmd_none(pmdval))
 		return no_page_table();
@@ -166,6 +176,7 @@ long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
 		struct page *page;
 		unsigned int foll_flags = gup_flags;
 
+		/* first iteration or cross vma bound */
 		if (!vma || start >= vma->vm_end) {
 			vma = find_extend_vma(mm, start);
 			if (!vma) {

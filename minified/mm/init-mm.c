@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 #include <linux/mman.h>
 
 struct mm_struct init_mm = { .pgd = swapper_pg_dir,

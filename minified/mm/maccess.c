@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Access kernel or user memory without faulting.
+ */
 #include <linux/uaccess.h>
 
 #define copy_to_kernel_nofault_loop(dst, src, len, type, err_label) \

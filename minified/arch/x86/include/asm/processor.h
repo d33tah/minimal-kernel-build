@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_PROCESSOR_H
 #define _ASM_X86_PROCESSOR_H
 
@@ -20,10 +21,21 @@ static __always_inline void cpu_relax(void)
 #include <linux/err.h>
 #include <linux/irqflags.h>
 
+/*
+ *  CPU type and hardware bug flags. Kept separately for each CPU.
+ *  Members of this structure are referenced in head_32.S, so think twice
+ *  before touching them. [mj]
+ */
+
 struct cpuinfo_x86 {
 	__u8 x86; /* CPU family */
 	/* Maximum supported CPUID level, -1=no CPUID: */
 	int cpuid_level;
+	/*
+	 * Align to size of unsigned long because the x86_capability array
+	 * is passed to bitops which require the alignment. Use unnamed
+	 * union to enforce the array is aligned to size of unsigned long.
+	 */
 	union {
 		__u32 x86_capability[NCAPINTS + NBUGINTS];
 	};
@@ -32,6 +44,9 @@ struct cpuinfo_x86 {
 	u16 x86_clflush_size;
 } __randomize_layout;
 
+/*
+ * capabilities of CPUs
+ */
 extern struct cpuinfo_x86 boot_cpu_data;
 
 #define cache_line_size() (boot_cpu_data.x86_cache_alignment)
@@ -42,6 +57,7 @@ extern void identify_boot_cpu(void);
 static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
 				unsigned int *ecx, unsigned int *edx)
 {
+	/* ecx is often an input as well as an output. */
 	asm volatile("cpuid"
 		     : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
 		     : "0"(*eax), "2"(*ecx)
@@ -53,12 +69,27 @@ static inline void load_cr3(pgd_t *pgdir)
 	write_cr3(__sme_pa(pgdir));
 }
 
+/* This is the TSS defined by the hardware. */
 struct x86_hw_tss {
 	unsigned short back_link, __blh;
 	unsigned long sp0;
 	unsigned short ss0, __ss0h;
 	unsigned long sp1;
-	unsigned short ss1;
+
+	/*
+	 * We don't use ring 1, so ss1 is a convenient scratch space in
+	 * the same cacheline as sp0.  We use ss1 to cache the value in
+	 * MSR_IA32_SYSENTER_CS.  When we context switch
+	 * MSR_IA32_SYSENTER_CS, we first check if the new value being
+	 * written matches ss1, and, if it's not, then we wrmsr the new
+	 * value and update ss1.
+	 *
+	 * The only reason we context switch MSR_IA32_SYSENTER_CS is
+	 * that we set it to zero in vm86 tasks to avoid corrupting the
+	 * stack if we were to go through the sysenter path from vm86
+	 * mode.
+	 */
+	unsigned short ss1; /* MSR_IA32_SYSENTER_CS */
 	unsigned short __ss1h;
 	unsigned long sp2;
 	unsigned short ss2, __ss2h;
@@ -87,14 +118,21 @@ struct x86_hw_tss {
 #define __KERNEL_TSS_LIMIT \
 	(offsetof(struct tss_struct, x86_tss) + sizeof(struct x86_hw_tss) - 1)
 
+/* Base offset outside of TSS_LIMIT so unpriviledged IO causes #GP */
 #define IO_BITMAP_OFFSET_INVALID (__KERNEL_TSS_LIMIT + 1)
 
 struct tss_struct {
+	/*
+	 * The fixed hardware portion.  This must not cross a page boundary
+	 * at risk of violating the SDM's advice and potentially triggering
+	 * errata.
+	 */
 	struct x86_hw_tss x86_tss;
 } __aligned(PAGE_SIZE);
 
 DECLARE_PER_CPU_PAGE_ALIGNED(struct tss_struct, cpu_tss_rw);
 
+/* Per CPU interrupt stacks */
 struct irq_stack {
 	char stack[IRQ_STACK_SIZE];
 } __aligned(IRQ_STACK_SIZE);

@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_STRING_32_H
 #define _ASM_X86_STRING_32_H
 
@@ -40,6 +41,7 @@ static inline void *__memset_generic(void *s, char c, size_t count)
 	return s;
 }
 
+/* we might want to write optimized versions of these later */
 #define __constant_count_memset(s, c, count) __memset_generic((s), (c), (count))
 
 extern size_t strnlen(const char *s, size_t count);

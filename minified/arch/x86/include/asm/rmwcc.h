@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_RMWcc
 #define _ASM_X86_RMWcc
 
@@ -11,6 +12,8 @@
 #define RMWcc_CONCAT(a, b) __RMWcc_CONCAT(a, b)
 
 #define __CLOBBERS_MEM(clb...) "memory", ##clb
+
+/* Use flags output or a set instruction */
 
 #define __GEN_RMWcc(fullop, _var, cc, clobbers, ...)           \
 	({                                                     \
@@ -38,4 +41,4 @@
 
 #define GEN_BINARY_RMWcc(X...) RMWcc_CONCAT(GEN_BINARY_RMWcc_, RMWcc_ARGS(X))(X)
 
-#endif
+#endif /* _ASM_X86_RMWcc */

@@ -1,7 +1,8 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_PGALLOC_H
 #define _ASM_X86_PGALLOC_H
 
-#include <linux/mm.h>
+#include <linux/mm.h> /* for struct page */
 
 #define GFP_PGTABLE_KERNEL (GFP_KERNEL | __GFP_ZERO)
 #define GFP_PGTABLE_USER (GFP_PGTABLE_KERNEL | __GFP_ACCOUNT)
@@ -29,6 +30,9 @@ static inline void pte_free(struct mm_struct *mm, struct page *pte_page)
 
 #define PGD_ALLOCATION_ORDER 0
 
+/*
+ * Allocate and free page tables.
+ */
 extern pgd_t *pgd_alloc(struct mm_struct *);
 extern void pgd_free(struct mm_struct *mm, pgd_t *pgd);
 

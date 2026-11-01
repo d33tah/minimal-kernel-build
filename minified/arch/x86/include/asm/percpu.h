@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_PERCPU_H
 #define _ASM_X86_PERCPU_H
 
@@ -12,6 +13,9 @@
 #define __percpu_prefix ""
 
 #define __percpu_arg(x) __percpu_prefix "%" #x
+
+/* For arch-specific code, we can use direct single-insn ops (they
+ * don't give an lvalue though). */
 
 #define __pcpu_type_1 u8
 #define __pcpu_type_2 u16
@@ -62,6 +66,10 @@
 			 : [var] "+m"(_var));                       \
 	})
 
+/*
+ * Generate a percpu add to memory instruction and optimize code
+ * if one is added or subtracted.
+ */
 #define percpu_add_op(size, qual, var, val)                          \
 	do {                                                         \
 		const int pao_ID__ = (__builtin_constant_p(val) &&   \
@@ -99,6 +107,9 @@
 		(typeof(_var))(unsigned long)pfo_val__;                   \
 	})
 
+/*
+ * Add return operation
+ */
 #define percpu_add_return_op(size, qual, _var, _val)                      \
 	({                                                                \
 		__pcpu_type_##size paro_tmp__ = __pcpu_cast_##size(_val); \
@@ -111,6 +122,10 @@
 		(typeof(_var))(unsigned long)(paro_tmp__ + _val);         \
 	})
 
+/*
+ * cmpxchg has no such implied lock semantics as a result it is much
+ * more efficient for cpu local operations.
+ */
 #define percpu_cmpxchg_op(size, qual, _var, _oval, _nval)                 \
 	({                                                                \
 		__pcpu_type_##size pco_old__ = __pcpu_cast_##size(_oval); \
@@ -123,6 +138,15 @@
 		(typeof(_var))(unsigned long)pco_old__;                   \
 	})
 
+/*
+ * this_cpu_read() makes gcc load the percpu variable every time it is
+ * accessed while this_cpu_read_stable() allows the value to be cached.
+ * this_cpu_read_stable() is more efficient and can be used if its value
+ * is guaranteed to be valid across cpus.  The current users include
+ * get_current() and get_thread_info() both of which are actually
+ * per-thread variables implemented as per-cpu variables and thus
+ * stable for the duration of the respective task.
+ */
 #define this_cpu_read_stable_1(pcp) percpu_stable_op(1, "mov", pcp)
 #define this_cpu_read_stable_2(pcp) percpu_stable_op(2, "mov", pcp)
 #define this_cpu_read_stable_4(pcp) percpu_stable_op(4, "mov", pcp)
@@ -165,4 +189,4 @@
 
 #endif /* !__ASSEMBLY__ */
 
-#endif
+#endif /* _ASM_X86_PERCPU_H */

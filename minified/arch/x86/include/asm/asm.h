@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_ASM_H
 #define _ASM_X86_ASM_H
 
@@ -28,6 +29,7 @@
 
 #include <asm/extable_fixup_types.h>
 
+/* Exception table entry */
 #ifdef __ASSEMBLY__
 
 /* clang-format off */
@@ -40,7 +42,7 @@
 	.popsection
 /* clang-format on */
 
-#else
+#else /* ! __ASSEMBLY__ */
 
 /* clang-format off */
 # define DEFINE_EXTABLE_TYPE_REG \
@@ -91,7 +93,7 @@
 
 register unsigned long current_stack_pointer asm(_ASM_SP);
 #define ASM_CALL_CONSTRAINT "+r"(current_stack_pointer)
-#endif
+#endif /* __ASSEMBLY__ */
 
 #define _ASM_EXTABLE(from, to) _ASM_EXTABLE_TYPE(from, to, EX_TYPE_DEFAULT)
 

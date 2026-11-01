@@ -1,3 +1,8 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * syscall_wrapper.h - x86 specific wrappers to syscall definitions
+ */
+
 #ifndef _ASM_X86_SYSCALL_WRAPPER_H
 #define _ASM_X86_SYSCALL_WRAPPER_H
 
@@ -5,6 +10,7 @@ struct pt_regs;
 
 extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 
+/* Mapping of registers to parameters for syscalls on i386 */
 #define SC_IA32_REGS_TO_ARGS(x, ...)                              \
 	__MAP(x, __SC_ARGS, , (unsigned int)regs->bx, ,           \
 	      (unsigned int)regs->cx, , (unsigned int)regs->dx, , \
@@ -44,6 +50,13 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 	}                                                                    \
 	static inline long __do_sys##name(__MAP(x, __SC_DECL, __VA_ARGS__))
 
+/*
+ * As the generic SYSCALL_DEFINE0() macro does not decode any parameters for
+ * obvious reasons, and passing struct pt_regs *regs to it in %rdi does not
+ * hurt, we only need to re-define it here to keep the naming congruent to
+ * SYSCALL_DEFINEx() -- which is essential for the COND_SYSCALL() and SYS_NI()
+ * macros to work correctly.
+ */
 #define SYSCALL_DEFINE0(sname)                                        \
 	SYSCALL_METADATA(_##sname, 0);                                \
 	static long __do_sys_##sname(const struct pt_regs *__unused); \
@@ -51,4 +64,4 @@ extern long __ia32_sys_ni_syscall(const struct pt_regs *regs);
 	__IA32_SYS_STUB0(sname)                                       \
 	static long __do_sys_##sname(const struct pt_regs *__unused)
 
-#endif
+#endif /* _ASM_X86_SYSCALL_WRAPPER_H */

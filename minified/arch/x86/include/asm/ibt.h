@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_IBT_H
 #define _ASM_X86_IBT_H
 
@@ -11,4 +12,4 @@
 
 #define ENDBR_INSN_SIZE (4 * HAS_KERNEL_IBT)
 
-#endif
+#endif /* _ASM_X86_IBT_H */

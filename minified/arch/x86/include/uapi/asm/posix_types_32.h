@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 #ifndef _ASM_X86_POSIX_TYPES_32_H
 #define _ASM_X86_POSIX_TYPES_32_H
 
@@ -16,4 +17,4 @@ typedef int __kernel_ssize_t;
 
 typedef long long __kernel_loff_t;
 
-#endif
+#endif /* _ASM_X86_POSIX_TYPES_32_H */

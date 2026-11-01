@@ -1,3 +1,12 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+/*
+ * Access to user system call parameters and results
+ *
+ * Copyright (C) 2008-2009 Red Hat, Inc.  All rights reserved.
+ *
+ * See asm-generic/syscall.h for descriptions of what we must do here.
+ */
+
 #ifndef _ASM_X86_SYSCALL_H
 #define _ASM_X86_SYSCALL_H
 

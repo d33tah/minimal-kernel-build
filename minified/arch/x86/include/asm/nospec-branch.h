@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
 #ifndef _ASM_X86_NOSPEC_BRANCH_H_
 #define _ASM_X86_NOSPEC_BRANCH_H_
 
@@ -13,12 +15,12 @@
 .endm
 /* clang-format on */
 
-#else
+#else /* __ASSEMBLY__ */
 
 typedef u8 retpoline_thunk_t[RETPOLINE_THUNK_SIZE];
 
 #define CALL_NOSPEC "call *%[thunk_target]\n"
 
-#endif
+#endif /* __ASSEMBLY__ */
 
-#endif
+#endif /* _ASM_X86_NOSPEC_BRANCH_H_ */

@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_UACCESS_H
 #define _ASM_X86_UACCESS_H
 
@@ -182,4 +183,4 @@ user_access_begin(const void __user *ptr, size_t len)
 	__put_user_size(*((type *)(src)), (__force type __user *)(dst), \
 			sizeof(type), err_label)
 
-#endif
+#endif /* _ASM_X86_UACCESS_H */

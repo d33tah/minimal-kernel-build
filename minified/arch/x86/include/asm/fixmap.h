@@ -1,6 +1,23 @@
+/*
+ * fixmap.h: compile-time virtual memory allocation
+ *
+ * This file is subject to the terms and conditions of the GNU General Public
+ * License.  See the file "COPYING" in the main directory of this archive
+ * for more details.
+ *
+ * Copyright (C) 1998 Ingo Molnar
+ *
+ * Support of BIGMEM added by Gerhard Wichert, Siemens AG, July 1999
+ * x86_32 and x86_64 integration by Gustavo F. Padovan, February 2009
+ */
+
 #ifndef _ASM_X86_FIXMAP_H
 #define _ASM_X86_FIXMAP_H
 
+/*
+ * Leave one empty page between vmalloc'ed areas and
+ * the start of the fixmap.
+ */
 extern unsigned long __FIXADDR_TOP;
 #define FIXADDR_TOP ((unsigned long)__FIXADDR_TOP)
 

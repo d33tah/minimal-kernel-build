@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef ASM_X86_CMPXCHG_H
 #define ASM_X86_CMPXCHG_H
 
@@ -6,11 +7,22 @@ extern void __cmpxchg_wrong_size(void)
 extern void __xadd_wrong_size(void)
 	__compiletime_error("Bad argument size for xadd");
 
+/*
+ * Constants for operation sizes. On 32-bit, the 64-bit size it set to
+ * -1 because sizeof will never return -1, thereby making those switch
+ * case statements guaranteed dead code which the compiler will
+ * eliminate, and allowing the "missing symbol in the default case" to
+ * indicate a usage error.
+ */
 #define __X86_CASE_B 1
 #define __X86_CASE_W 2
 #define __X86_CASE_L 4
-#define __X86_CASE_Q -1
+#define __X86_CASE_Q -1 /* sizeof will never return -1 */
 
+/* 
+ * An exchange-type operation, which takes a value and a pointer, and
+ * returns the old value.
+ */
 #define __xchg_op(ptr, arg, op, lock)                            \
 	({                                                       \
 		__typeof__(*(ptr)) __ret = (arg);                \
@@ -45,8 +57,19 @@ extern void __xadd_wrong_size(void)
 		__ret;                                           \
 	})
 
+/*
+ * Note: no "lock" prefix even on SMP: xchg always implies lock anyway.
+ * Since this is generally used to protect other memory information, we
+ * use "asm volatile" and "memory" clobbers to prevent gcc from moving
+ * information around.
+ */
 #define arch_xchg(ptr, v) __xchg_op((ptr), (v), xchg, "")
 
+/*
+ * Atomic compare and exchange.  Compare OLD with MEM, if identical,
+ * store NEW in MEM.  Return the initial value in MEM.  Success is
+ * indicated by comparing RETURN with OLD.
+ */
 #define __raw_cmpxchg(ptr, old, new, size, lock)                     \
 	({                                                           \
 		__typeof__(*(ptr)) __ret;                            \
@@ -153,7 +176,13 @@ extern void __xadd_wrong_size(void)
 #define arch_try_cmpxchg(ptr, pold, new) \
 	__try_cmpxchg((ptr), (pold), (new), sizeof(*(ptr)))
 
+/*
+ * xadd() adds "inc" to "*ptr" and atomically returns the previous
+ * value of "*ptr".
+ *
+ * xadd() is locked when multiple CPUs are online
+ */
 #define __xadd(ptr, inc, lock) __xchg_op((ptr), (inc), xadd, lock)
 #define xadd(ptr, inc) __xadd((ptr), (inc), "")
 
-#endif
+#endif /* ASM_X86_CMPXCHG_H */

@@ -1,6 +1,16 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_BARRIER_H
 #define _ASM_X86_BARRIER_H
 
+/**
+ * array_index_mask_nospec() - generate a mask that is ~0UL when the
+ * 	bounds check succeeds and 0 otherwise
+ * @index: array element index
+ * @size: number of elements in array
+ *
+ * Returns:
+ *     0 - (index < size)
+ */
 static inline unsigned long array_index_mask_nospec(unsigned long index,
 						    unsigned long size)
 {
@@ -34,4 +44,4 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 
 #define smp_acquire__after_ctrl_dep() smp_rmb()
 
-#endif
+#endif /* _ASM_X86_BARRIER_H */

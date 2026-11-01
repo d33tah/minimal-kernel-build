@@ -23,7 +23,7 @@ jobs:
     - name: Install toolchain
       run: |
         apt-get update
-        apt-get install -y build-essential llvm clang lld nasm qemu-system-x86 expect
+        apt-get install -y build-essential llvm clang lld nasm qemu-system-x86 expect python3
 
     - uses: actions/checkout@v4
 
@@ -41,7 +41,9 @@ jobs:
         mkdir -p out/hello out/minified-linux
         cp hello/bzImage out/hello/bzImage
         cp minified/arch/x86/boot/bzImage out/minified-linux/bzImage
-        ls -l out/*/bzImage
+        site/gen-symbols.py hello/boot/high/kernel.elf out/hello/symbols.json hello
+        site/gen-symbols.py minified/vmlinux out/minified-linux/symbols.json minified-linux
+        ls -l out/*/
 
     - uses: actions/upload-artifact@v4
       with:
@@ -70,7 +72,7 @@ jobs:
         "$RUNNER_TEMP/venv/bin/pip" install playwright
         "$RUNNER_TEMP/venv/bin/playwright" install --with-deps chromium
 
-    - name: Browser test (both kernels)
+    - name: Browser test (both kernels, memory lab, snapshots)
       run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py'
 
     - uses: actions/upload-artifact@v4

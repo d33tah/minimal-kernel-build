@@ -130,9 +130,11 @@ static __always_inline int ffs(int x)
 	int r;
 
 	asm("bsfl %1,%0\n\t"
-	    "cmovzl %2,%0"
-	    : "=&r"(r)
-	    : "rm"(x), "r"(-1));
+	    "jnz 1f\n\t"
+	    "movl $-1,%0\n"
+	    "1:"
+	    : "=r"(r)
+	    : "rm"(x));
 	return r + 1;
 }
 
@@ -141,9 +143,11 @@ static __always_inline int fls(unsigned int x)
 	int r;
 
 	asm("bsrl %1,%0\n\t"
-	    "cmovzl %2,%0"
-	    : "=&r"(r)
-	    : "rm"(x), "rm"(-1));
+	    "jnz 1f\n\t"
+	    "movl $-1,%0\n"
+	    "1:"
+	    : "=r"(r)
+	    : "rm"(x));
 	return r + 1;
 }
 

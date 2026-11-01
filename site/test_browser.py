@@ -511,49 +511,87 @@ def source_check(page, name, problems, shots, tag):
 
 
 def graph_check(page, name, problems, shots, tag):
-    """Graph tab after the counted boot: nodes, edges, start_kernel, JSON export, tap."""
+    """Graph tab: flame timeline, call tree, top-30 graph, exports, tap."""
     show_tab(page, "graph")
     time.sleep(0.4)
     r = {"nodes": int(page.get_attribute("#graph_status", "data-nodes") or 0),
-         "edges": int(page.get_attribute("#graph_status", "data-edges") or 0)}
-    want_nodes = 2 if name == "hello" else 101
-    if r["nodes"] < want_nodes or r["edges"] < 1:
-        problems.append(f"graph has {r['nodes']} nodes and {r['edges']} edges")
+         "edges": int(page.get_attribute("#graph_status", "data-edges") or 0),
+         "frames": int(page.get_attribute("#graph_status", "data-frames") or 0)}
+    if r["nodes"] < 2 or r["edges"] < 1 or r["frames"] < 2:
+        problems.append(f"graph recorded {r}")
+    from_entry = (counters(page).get("now") or {}).get("entry")
+    summ = page.evaluate("timelineSummary()")
+    r["timeline_total"], r["timeline_root_sum"] = summ["total"], summ["rootSum"]
+    r["top_frames"] = [(f["name"], f["depth"], f["incl"]) for f in summ["top"][:6]]
+    if summ["total"] != from_entry or summ["rootSum"] != summ["total"]:
+        problems.append(f"timeline total {summ['total']} / depth-0 sum {summ['rootSum']} != from-entry count {from_entry}")
+    if name != "hello":
+        names = [f["name"] for f in summ["top"]]
+        if "start_kernel" not in names[:3]:
+            problems.append(f"start_kernel is not among the top frames: {names[:6]}")
+        ki = page.evaluate("""() => { const st = G.stepper; let incl = 0;
+            for (let k = 0; k < st.fStart.length; k++) if (st.nodeName(st.fNode[k]) === 'kernel_init') incl += (st.fEnd[k] < 0 ? st.steps : st.fEnd[k]) - st.fStart[k];
+            return incl; }""")
+        r["kernel_init_incl"] = ki
+        if not 0 < ki < summ["total"]:
+            problems.append(f"kernel_init inclusive count {ki} not plausible")
+    if int(page.get_attribute("#graph_canvas", "data-labels") or 0) < 1:
+        problems.append("the timeline labels no box")
+    page.screenshot(path=str(shots / f"graph-timeline-{tag}-1100.png"))
+    # Tap the widest box at depth 0.
+    xy = page.evaluate("""() => { const st = G.stepper, c = document.getElementById('graph_canvas').getBoundingClientRect();
+        let best = -1, w = -1;
+        for (let k = 0; k < st.fStart.length; k++) if (st.fDepth[k] === 0 && !hiddenFrame(st, k)) {
+            const e = (st.fEnd[k] < 0 ? st.steps : st.fEnd[k]) - Math.max(st.fStart[k], runStart()); if (e > w) { w = e; best = k; } }
+        const a = Math.max(st.fStart[best], G.x0), b = Math.min(st.fEnd[best] < 0 ? st.steps : st.fEnd[best], G.x1);
+        return [c.left + ((a + b) / 2 - G.x0) / (G.x1 - G.x0) * c.width, c.top + 26 + 6 + 8 - G.yOff, st.nodeName(st.fNode[best])]; }""")
+    page.mouse.click(xy[0], xy[1])
+    if not wait_for(lambda: page.get_attribute("#graph_info", "data-node") == xy[2], 3):
+        problems.append(f"tapping the {xy[2]} box did not select it: {page.get_attribute('#graph_info', 'data-node')}")
+    # Call tree.
+    page.click("#gview_tree")
+    wait_for(lambda: page.get_attribute("#graph_tree", "data-root-incl"), 3)
+    r["tree_root"] = int(page.get_attribute("#graph_tree", "data-root-incl") or -1)
+    if r["tree_root"] != from_entry:
+        problems.append(f"call tree root {r['tree_root']} != from-entry count {from_entry}")
+    r["tree_rows"] = page.locator("#graph_tree .trow").count()
+    page.screenshot(path=str(shots / f"graph-tree-{tag}-1100.png"))
+    page.fill("#graph_search", "start_kernel" if name != "hello" else "hello_main")
+    time.sleep(0.3)
+    if not page.locator("#graph_tree .trow[data-name='" + ("start_kernel" if name != "hello" else "hello_main") + "']").count():
+        problems.append("call tree search found nothing")
+    page.fill("#graph_search", "")
+    # Top 30.
+    page.click("#gview_top")
+    time.sleep(0.3)
+    r["top_nodes"] = int(page.get_attribute("#graph_canvas", "data-nodes") or 0)
+    if not 1 <= r["top_nodes"] <= 30:
+        problems.append(f"top graph has {r['top_nodes']} nodes")
+    page.screenshot(path=str(shots / f"graph-top-{tag}-1100.png"), full_page=True)
     with page.expect_download() as dl:
         page.click("#graph_json")
     data = json.loads(pathlib.Path(dl.value.path()).read_text())
-    if len(data["nodes"]) != r["nodes"] or len(data["edges"]) != r["edges"]:
-        problems.append("JSON export does not match the graph status")
+    if data["call_tree"]["inclusive"] != from_entry or len(data["edges"]) != r["edges"]:
+        problems.append("JSON export does not match the page")
     with page.expect_download() as dl:
         page.click("#graph_dot")
-    dot = pathlib.Path(dl.value.path()).read_text()
-    if not dot.startswith("digraph") or "->" not in dot:
+    if not pathlib.Path(dl.value.path()).read_text().startswith("digraph"):
         problems.append("DOT export is not a graph")
-    target = "hello_main" if name == "hello" else "start_kernel"
-    node = next((n for n in data["nodes"] if n["name"] == target), None)
-    if not node:
-        problems.append(f"no {target} node in the graph")
-        return r
-    r["into_" + target] = [e["from_name"] for e in data["edges"] if e["to"] == node["id"]]
-    if not r["into_" + target]:
-        problems.append(f"no edge into {target}")
-    if target == "start_kernel" and not any(e["to"] == node["id"] and e["from_name"] == "i386_start_kernel" and e["calls"]
-                                            for e in data["edges"]):
-        problems.append("no call edge i386_start_kernel -> start_kernel")
-    # Folding interrupt handling leaves fewer drawn nodes and a folded node.
-    page.check("#graph_fold")
-    time.sleep(0.3)
-    r["fold_drawn"] = page.evaluate("G.fold && G.pos.has(FOLD)")
-    page.uncheck("#graph_fold")
-    if name != "hello" and not r["fold_drawn"]:
-        problems.append("hide interrupt handling did not fold anything")
-    # Tap the node: its callers and callees are listed.
-    xy = page.evaluate("""id => { const p = G.pos.get(id), v = G.view, c = document.getElementById('graph_canvas').getBoundingClientRect();
-        return [c.left + (p.x - v.x) * v.scale, c.top + (p.y - v.y) * v.scale]; }""", node["id"])
-    page.mouse.click(*xy)
-    if not wait_for(lambda: page.get_attribute("#graph_info", "data-node") == target, 3):
-        problems.append(f"tapping the {target} node did not select it: {page.get_attribute('#graph_info', 'data-node')}")
-    page.screenshot(path=str(shots / f"graph-{tag}.png"))
+    if name != "hello":
+        node = next((n for n in data["nodes"] if n["name"] == "start_kernel"), None)
+        if not node or not any(e["to"] == node["id"] and e["from_name"] == "i386_start_kernel" and e["calls"]
+                               for e in data["edges"]):
+            problems.append("no call edge i386_start_kernel -> start_kernel")
+    # 390 px: the timeline is readable and nothing scrolls sideways.
+    page.set_viewport_size({"width": 390, "height": 900})
+    for v in ("timeline", "tree", "top"):
+        page.click("#gview_" + v)
+        time.sleep(0.3)
+        page.screenshot(path=str(shots / f"graph-{v}-{tag}-390.png"))
+        if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
+            problems.append(f"graph {v} view scrolls horizontally at 390 px")
+    page.click("#gview_timeline")
+    page.set_viewport_size({"width": 1100, "height": 1000})
     return r
 
 

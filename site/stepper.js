@@ -167,6 +167,73 @@ class Stepper {
 		this.recent = [];                         // last edge keys, newest last
 		this.curNode = -1;
 		this.graphVersion = 0;
+		// Call stack reconstructed from the transitions (see stackEnter).
+		this.entryKind = new Uint8Array(n); // 1: interrupt/exception entry stub
+		for (let k = 0; k < this.symName.length; k++)
+			if (/^(irq_entries_start|asm_|entry_INT80|nmi_stub)/.test(this.symName[k]))
+				this.entryKind[k] = 1;
+		this.fStart = [];   // per frame: first instruction (step index)
+		this.fEnd = [];     // step index after its last instruction, -1 while open
+		this.fNode = [];
+		this.fDepth = [];
+		this.fParent = [];
+		this.fIrq = [];     // 1 inside an interrupt or exception
+		this.fChild = [];   // instructions spent in its children (closed ones)
+		this.stack = [];    // open frames, outermost first
+	}
+
+	pushFrame(node, t, irq) {
+		const k = this.fStart.length;
+		const parent = this.stack.length ? this.stack[this.stack.length - 1] : -1;
+		this.fStart.push(t);
+		this.fEnd.push(-1);
+		this.fNode.push(node);
+		this.fDepth.push(this.stack.length);
+		this.fParent.push(parent);
+		this.fIrq.push(irq || (parent >= 0 ? this.fIrq[parent] : 0));
+		this.fChild.push(0);
+		this.stack.push(k);
+	}
+
+	popFrame(t) {
+		const k = this.stack.pop();
+		this.fEnd[k] = t;
+		const parent = this.fParent[k];
+		if (parent >= 0)
+			this.fChild[parent] += t - this.fStart[k];
+	}
+
+	// A transition into `node` at step index t: a call when it lands on the
+	// first byte of a symbol, an interrupt or exception when the target is an
+	// entry stub; otherwise a return into a frame on the stack (pop to it),
+	// or, when the symbol is not on the stack (a tail jump, a task switch),
+	// a replacement of the top frame.
+	stackEnter(node, isCall, t) {
+		if (this.fStart.length >= 2000000)
+			return; // keep memory bounded
+		const irq = this.entryKind[node];
+		if (isCall || irq) {
+			this.pushFrame(node, t, irq);
+			return;
+		}
+		const st = this.stack;
+		let k = st.length - 1;
+		while (k >= 0 && this.fNode[st[k]] !== node)
+			k--;
+		if (k >= 0) {
+			while (st.length - 1 > k)
+				this.popFrame(t);
+			return;
+		}
+		if (st.length)
+			this.popFrame(t);
+		this.pushFrame(node, t, 0);
+	}
+
+	// Close every open frame (before a stretch the JIT runs unrecorded).
+	closeStack(t) {
+		while (this.stack.length)
+			this.popFrame(t);
 	}
 
 	nodeName(id) {
@@ -198,6 +265,7 @@ class Stepper {
 			if (this.recent.length > 10)
 				this.recent.shift();
 		}
+		this.stackEnter(node, i >= 0 && phys === this.symStart[i], this.steps - 1);
 		this.curNode = node;
 		this.graphVersion++;
 	}
@@ -259,6 +327,7 @@ class Stepper {
 		this.curLo = 1;
 		this.curHi = 0;
 		this.curNode = -1; // no edge across a stretch the JIT ran
+		this.closeStack(this.steps);
 	}
 
 	symLabel(i) {

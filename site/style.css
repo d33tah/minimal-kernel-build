@@ -243,7 +243,8 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 #count_info { min-height: 3.9em; }
 .syminfo #cur_sym, .syminfo #prev_sym { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .syminfo .crumbs { min-height: 2.6em; }
-#graph_canvas { display: block; width: 100%; height: 62vh; min-height: 18rem; border: 1px solid var(--line); border-radius: 4px; touch-action: none; cursor: grab; background: var(--bg); }
+#graph_canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: 4px; touch-action: none; cursor: grab; background: var(--bg); }
+#graph_canvas[hidden] { display: none; }
 #graph_info .glist { margin: 0.2rem 0; overflow-wrap: anywhere; }
 #graph_info button { margin: 0.1rem 0; }
 #vclock { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.2em; margin: 0.1rem 0; }
@@ -259,3 +260,12 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 @media (max-width: 640px) {
 	.srcpanel { left: 0; top: auto; width: auto; height: 65vh; border-left: none; border-top: 1px solid var(--line); }
 }
+.ctree { font-size: 0.8rem; max-height: 70vh; overflow: auto; border: 1px solid var(--line); border-radius: 4px; }
+.ctree[hidden] { display: none; }
+.trow { display: flex; align-items: baseline; gap: 0.4rem; padding: 0.05rem 0.3rem; border-bottom: 1px solid var(--line); }
+.trow .ttog { border: none; padding: 0 0.2rem; min-width: 1.6rem; }
+.tnum { white-space: pre; color: var(--muted); flex: 0 0 auto; }
+.tname { overflow-wrap: anywhere; cursor: pointer; }
+#graph_search { width: 9rem; }
+#graph_search[hidden] { display: none; }
+.trow.thead { position: sticky; top: 0; background: var(--bg); color: var(--muted); font-weight: 600; }

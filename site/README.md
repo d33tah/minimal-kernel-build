@@ -67,25 +67,34 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   relocation stub), it says so and shows the raw bytes at EIP. The symbol
   history is recorded by the stepper only (stepping, slow motion, count,
   Run to), not at full JIT speed. Symbols and lines open in the Page tab.
-- **Graph.** Every change of symbol the stepper sees (stepping, slow
-  motion, Run to, and the background count with `?speed=full`) is an edge
-  old symbol -> new symbol with a count, the number of transitions that
-  landed on the symbol's first byte (call-like, drawn solid; the others,
-  returns and jumps into the middle, are dashed) and the step it was first
-  taken. Nodes are symbols sized by the instructions executed inside and
-  coloured by name prefix (symbols.json has no source paths); two grey
-  pseudo-nodes stand for BIOS/setup and for kernel-range code with no
-  symbol (the relocation stub). The layout is incremental: a node is placed
-  once, when first seen, one column right of the node it was entered from,
-  so nothing moves. Canvas, redrawn at most 10 times a second; drag, wheel
-  and pinch to pan and zoom, tap a node for its callers and callees (with
-  counts) and a link to the Page tab; JSON and DOT downloads. Nothing is
-  recorded at full JIT speed. After a counted `?speed=full` boot the graph
-  has 3 nodes and 2 edges for hello and about 264 nodes and 725 edges for
-  the minified Linux (start_kernel entered from i386_start_kernel).
-  "hide interrupt handling" folds the interrupt and timer symbols (names
-  with irq, interrupt, timer, tick, softirq, rcu, apic, 8259, ...) into
-  one node.
+- **Graph.** The call structure of the boot, reconstructed from the
+  symbol transitions the stepper records (stepping, slow motion, Run to,
+  the background count with `?speed=full`; not at full JIT speed): a jump
+  to the first byte of a symbol is a call, a jump into the middle of a
+  symbol on the stack a return to it, a jump into an entry stub
+  (`irq_entries_start`, `asm_*`) an interrupt or exception; a jump into the
+  middle of a symbol not on the stack (a tail jump, a task switch)
+  replaces the top frame. Three views:
+  - *Timeline* (default): a flame chart, x = instructions from the kernel
+    entry, y = call depth, one box per call, labelled when at least 40 px
+    wide, coloured by the top directory of its source file (sources.json)
+    or a name guess, interrupts grey; a strip with the whole run on top
+    (drag in it to move the window), drag to pan, wheel or pinch to zoom,
+    "follow" keeps the current step in view in slow motion, tap a box for
+    its inclusive/self counts, steps, callers and a link to the Page tab.
+  - *Call tree*: like `perf report --children` (inclusive %, self %,
+    calls), sorted by inclusive count, collapsible, with a search box; the
+    root is the whole run from the kernel entry.
+  - *Top 30*: the 30 symbols with the largest inclusive count (recursion
+    counted once), call edges between them (calls through hidden symbols
+    are attributed to the nearest shown caller), layered by how many shown
+    symbols are above them; edges pointing up are dashed.
+  "hide interrupts" (on by default) hides interrupt and exception frames
+  (in the call tree: one "(interrupt and exception handling)" entry).
+  JSON has the transitions and the call tree, DOT the transitions. For the
+  minified Linux at `?speed=full`: 2,024 calls, 264 symbols, 723
+  transitions; start_kernel holds 90.2% of the instructions from the
+  entry, calibrate_delay 79.7% (delay_loop 51.3%), kernel_init 3.2%.
 - **Snapshots.** "Save snapshot" calls `emulator.save_state()`, gzips the
   result in the browser with `CompressionStream("gzip")` (kept raw, and the
   page says so, when the browser lacks it) and keeps the last 8 in memory.

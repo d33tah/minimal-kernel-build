@@ -141,14 +141,20 @@
 
 <section class="panel" id="panel_graph" role="tabpanel" aria-labelledby="tab_graph" hidden>
   <div class="scan">
+    <span class="tabs"><button id="gview_timeline" type="button" aria-pressed="true">Timeline</button>
+      <button id="gview_tree" type="button" aria-pressed="false">Call tree</button>
+      <button id="gview_top" type="button" aria-pressed="false">Top 30</button></span>
+    <label><input type="checkbox" id="graph_fold" checked> hide interrupts<span class="tip" tabindex="0" role="button" title="Hide the frames of interrupts and exceptions: everything entered through an entry stub (irq_entries_start, asm_*) and what it calls, such as the PIT's IRQ0 timer path. In the call tree they become one (interrupt and exception handling) entry.">?</span></label>
+    <label id="graph_follow_l"><input type="checkbox" id="graph_follow" checked> follow</label>
     <button id="graph_fit" type="button">Fit</button>
     <button id="graph_json" type="button">JSON</button>
     <button id="graph_dot" type="button">DOT</button>
-    <label><input type="checkbox" id="graph_fold"> hide interrupt handling<span class="tip" tabindex="0" role="button" title="Fold the symbols of interrupt and timer handling (names with irq, interrupt, timer, tick, softirq, rcu, sched_clock, apic, 8259, ...: the paths the PIT's IRQ0 takes) into one node, so the boot's own call graph stands out.">?</span></label>
-    <span id="graph_status" class="note"></span>
-    <span class="tip" tabindex="0" role="button" title="Every change of symbol the stepper sees (stepping, slow motion, the background count, Run to) becomes an edge from the old symbol to the new one, with a count. Nodes are symbols, sized by the instructions executed inside and coloured by name prefix; grey nodes are BIOS/setup and kernel-range code with no symbol (the relocation stub). Solid edges include a call-like transition (to the first byte of a symbol); dashed ones only went into the middle (returns, jumps). The current symbol has a red ring, the last 10 transitions are red. A node is placed once, when first seen, one column right of the symbol it was entered from. Drag to pan, wheel or pinch to zoom, tap a node for its callers and callees. At full JIT speed nothing is recorded; with speed full and count on, the background count records the whole boot. JSON and DOT download the graph.">?</span>
+    <input id="graph_search" type="search" placeholder="search" aria-label="search the call tree" hidden>
+    <span class="tip" tabindex="0" role="button" title="Calls reconstructed from the symbol transitions the stepper records (stepping, slow motion, Run to, and the background count with ?speed=full; not at full JIT speed): a jump to the first byte of a symbol is a call, a jump into the middle of a symbol on the stack is a return to it, an entry stub starts an interrupt; a jump into the middle of a symbol not on the stack (a tail jump, a task switch) replaces the top frame. Timeline: x = instructions from the kernel entry, y = call depth, colour = source directory (init, mm, fs, kernel, arch, lib, include), grey = interrupts; the strip on top is the whole run (drag in it to move); drag to pan, wheel or pinch to zoom; tap a box for its counts. Call tree: inclusive %, self %, calls, like perf report --children. Top 30: the symbols with the largest inclusive count, call edges between them, layered by depth. JSON has the transitions and the call tree; DOT the transitions.">?</span>
   </div>
+  <p id="graph_status" class="note"></p>
   <canvas id="graph_canvas"></canvas>
+  <div id="graph_tree" class="ctree" hidden></div>
   <div id="graph_info" class="syminfo"></div>
 </section>
 

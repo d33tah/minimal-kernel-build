@@ -1,123 +1,144 @@
 "use strict";
 
-// Graph tab: the symbol transitions the stepper recorded (stepper.js,
-// resetGraph/graphEnter) drawn live on a canvas. Layout is incremental and
-// deterministic: a node gets its place once, when it is first seen, one
-// column right of the node it was first entered from, in the next free row
-// of that column. Nothing is re-laid-out, so the picture only grows.
+// Graph tab: the call structure the stepper reconstructed (stepper.js:
+// graphEnter records symbol transitions, stackEnter turns them into call
+// frames). Three views:
+//   timeline  flame chart, x = instruction number, y = stack depth
+//   tree      call tree like `perf report --children`
+//   top       node-link graph of the 30 symbols with the largest inclusive
+//             count, call edges only, layered by depth
+// Interrupt and exception frames (entered through an entry stub, and
+// everything they call) are muted and hidden by "hide interrupt handling".
 
 const G = {
-	pos: new Map(),     // node id -> { x, y, depth }
-	rows: [],           // per depth: next free row
-	laid: 0,            // nodes of stepper.nodeOrder placed so far
-	view: { x: -40, y: -40, scale: 1 },
-	userMoved: false,   // after a pan or zoom, stop auto-fitting
-	selected: -1,
+	stepper: null,
+	view: "timeline",
+	fold: true,
+	follow: true,
+	x0: 0, x1: 1,         // timeline window in steps
+	yOff: 0,              // timeline vertical scroll in px
+	userMoved: false,
+	selected: -1,         // frame index (timeline) or symbol node (top N)
 	version: -1,
+	dirty: true,
 	timer: null,
 	pointers: new Map(),
 	press: null,
-	stepper: null,
+	boxes: [],            // hit boxes of the last top-N drawing
+	treeOpen: new Set(),  // expanded call-tree paths
 };
-const COL_W = 170, ROW_H = 24;
-// Interrupt and timer handling: folded into one node by "hide interrupt handling".
-const IRQ_RE = /irq|interrupt|timer|tick|softirq|rcu|sched_clock|apic|8259|jiffies|clockevent|hrtimer|account_|update_process_times|update_wall|do_timer|calc_global_load|irqentry|idtentry|ret_from_intr|entry_INT80|preempt_schedule_irq/i;
-const FOLD = -10; // id of the folded node
-
-function folded(st, id) {
-	return G.fold && id < st.symName.length && IRQ_RE.test(st.symName[id]);
-}
-
-// Nodes and edges as drawn: with folding, interrupt symbols become FOLD.
-function viewGraph(st) {
-	const map = (id) => (folded(st, id) ? FOLD : id);
-	const edges = new Map();
-	for (const [key, e] of st.edges) {
-		const f = map(e.from), t = map(e.to);
-		if (f === t)
-			continue;
-		const k = f + "," + t;
-		const v = edges.get(k) || { from: f, to: t, count: 0, calls: 0, recent: false };
-		v.count += e.count;
-		v.calls += e.calls;
-		edges.set(k, v);
-	}
-	for (const key of st.recent) {
-		const e = st.edges.get(key);
-		const v = e && edges.get(map(e.from) + "," + map(e.to));
-		if (v)
-			v.recent = true;
-	}
-	let foldSteps = 0;
-	if (G.fold)
-		for (const id of st.nodeOrder)
-			if (folded(st, id))
-				foldSteps += st.nodeSteps[id];
-	G.foldSteps = foldSteps;
-	return { map, edges };
-}
-const PALETTE = ["#1f77b4", "#d62728", "#2ca02c", "#9467bd", "#ff7f0e", "#17becf", "#8c564b", "#e377c2", "#bcbd22", "#7f7f7f",
-	"#3949ab", "#00897b"];
+const ROW = 17, MINI = 26;
+const PALETTE = { init: "#2ca02c", mm: "#1f77b4", fs: "#ff7f0e", kernel: "#d62728", arch: "#9467bd", lib: "#8c564b",
+	drivers: "#17becf", include: "#bcbd22", other: "#7f7f7f" };
 
 function graphReset(st) {
-	G.pos = new Map();
-	G.rows = [];
-	G.laid = 0;
+	G.stepper = st;
 	G.selected = -1;
 	G.version = -1;
 	G.userMoved = false;
-	G.stepper = st;
+	G.yOff = 0;
+	G.treeOpen = new Set(["0"]);
+	G.treeAuto = false;
+	G.subsys = null;
 	renderGraphInfo();
 }
 
-function graphLayout() {
-	const st = G.stepper;
-	for (; G.laid < st.nodeOrder.length; G.laid++) {
-		const id = st.nodeOrder[G.laid];
-		const parent = G.pos.get(st.nodeParent[id]);
-		const depth = parent ? parent.depth + 1 : 0;
-		const row = G.rows[depth] || 0;
-		G.rows[depth] = row + 1;
-		G.pos.set(id, { x: depth * COL_W, y: row * ROW_H, depth });
+// ---- data -------------------------------------------------------------------
+
+const nowStep = () => (G.stepper ? G.stepper.steps : 0);
+// The run starts at the kernel entry once it has been reached.
+const runStart = () => (G.stepper && G.stepper.sinceEntry >= 0 ? G.stepper.sinceEntry : 0);
+const fEnd = (st, k) => (st.fEnd[k] < 0 ? st.steps : st.fEnd[k]);
+const hiddenFrame = (st, k) => G.fold && st.fIrq[k];
+
+// Subsystem of a symbol: the top directory of its source file (sources.json),
+// else a guess from the name.
+function subsystem(st, node) {
+	if (!G.subsys) {
+		G.subsys = new Map();
+		if (typeof sources === "object" && sources)
+			for (const [fn, f] of sources.ranges) {
+				const name = sources.funcs[fn];
+				if (!G.subsys.has(name))
+					G.subsys.set(name, sources.files[f].split("/")[0]);
+			}
 	}
+	const name = st.nodeName(node);
+	const dir = G.subsys.get(name);
+	if (dir)
+		return PALETTE[dir] ? dir : "other";
+	if (/^(kmem|kmalloc|alloc|free|page|slab|memblock|mm_|vm|pgd|pte|pmd)/.test(name))
+		return "mm";
+	if (/^(vfs|do_sys|path|dentry|inode|file|mount|d_)/.test(name))
+		return "fs";
+	if (/^(native|x86|cpu|apic|idt|tsc|setup_)/.test(name))
+		return "arch";
+	return "kernel";
 }
 
-function nodeColour(st, id) {
-	if (id === FOLD)
-		return "#e0245e";
-	const n = st.symName.length;
-	if (id >= n)
-		return "#9e9e9e";
-	const prefix = st.symName[id].replace(/^_+/, "").split("_")[0];
-	let h = 0;
-	for (let i = 0; i < prefix.length; i++)
-		h = (h * 31 + prefix.charCodeAt(i)) >>> 0;
-	return PALETTE[h % PALETTE.length];
+function frameColour(st, k) {
+	return st.fIrq[k] ? "#b0b0b0" : PALETTE[subsystem(st, st.fNode[k])];
 }
 
-const gSteps = (st, id) => (id === FOLD ? G.foldSteps : st.nodeSteps[id]);
-const gName = (st, id) => (id === FOLD ? "(interrupt handling)" : st.nodeName(id));
-const nodeRadius = (st, id) => 3 + 2.2 * Math.log10(1 + gSteps(st, id));
+// Inclusive / self counts of a frame (open frames up to now).
+function frameCounts(st, k) {
+	const incl = fEnd(st, k) - st.fStart[k];
+	let child = st.fChild[k];
+	// Open children are not in fChild yet.
+	for (const o of st.stack)
+		if (st.fParent[o] === k)
+			child += st.steps - st.fStart[o];
+	return { incl, self: incl - child };
+}
 
-function graphFit() {
-	const c = $("graph_canvas");
-	if (!G.pos.size)
-		return;
-	let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-	for (const p of G.pos.values()) {
-		x0 = Math.min(x0, p.x); y0 = Math.min(y0, p.y);
-		x1 = Math.max(x1, p.x); y1 = Math.max(y1, p.y);
+// Call tree aggregated by call path (perf report --children), from the
+// frames that start at or after the kernel entry.
+function buildTree(st) {
+	const start = runStart();
+	const root = { key: "0", name: "(kernel, from the entry at 0x100000)", incl: st.steps - start, self: 0, calls: 1, kids: new Map() };
+	const nodeOf = new Map(); // frame -> tree node
+	for (let k = 0; k < st.fStart.length; k++) {
+		if (st.fStart[k] < start)
+			continue;
+		const p = st.fParent[k];
+		let parent = p >= 0 && nodeOf.has(p) ? nodeOf.get(p) : root;
+		let name = st.nodeName(st.fNode[k]);
+		if (G.fold && st.fIrq[k]) {
+			if (p >= 0 && st.fIrq[p] && nodeOf.has(p)) { // inside a folded interrupt: count in it
+				nodeOf.set(k, nodeOf.get(p));
+				continue;
+			}
+			name = "(interrupt and exception handling)";
+		}
+		let t = parent.kids.get(name);
+		if (!t) {
+			t = { key: parent.key + "/" + name, name, node: st.fNode[k], incl: 0, self: 0, calls: 0, kids: new Map() };
+			parent.kids.set(name, t);
+		}
+		const c = frameCounts(st, k);
+		t.incl += c.incl;
+		t.calls++;
+		nodeOf.set(k, t);
 	}
-	const w = c.clientWidth, h = c.clientHeight;
-	const scale = Math.min(2, Math.max(0.05, Math.min((w - 40) / (x1 - x0 + COL_W), (h - 40) / (y1 - y0 + ROW_H))));
-	G.view = { x: x0 - 20 / scale, y: y0 - 20 / scale, scale };
+	// self = incl - sum of children's incl
+	const fix = (t) => {
+		let kids = 0;
+		for (const c of t.kids.values()) {
+			fix(c);
+			kids += c.incl;
+		}
+		t.self = Math.max(0, t.incl - kids);
+	};
+	fix(root);
+	return root;
 }
 
-function drawGraph() {
-	const st = G.stepper;
-	const c = $("graph_canvas");
+// ---- timeline -------------------------------------------------------------
+
+function canvasSize(c, h) {
 	const dpr = window.devicePixelRatio || 1;
-	const w = c.clientWidth, h = c.clientHeight;
+	const w = c.clientWidth;
+	c.style.height = h + "px";
 	if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) {
 		c.width = Math.round(w * dpr);
 		c.height = Math.round(h * dpr);
@@ -125,82 +146,343 @@ function drawGraph() {
 	const ctx = c.getContext("2d");
 	ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 	ctx.clearRect(0, 0, w, h);
+	return { ctx, w, h };
+}
+
+function fitLabel(ctx, text, w) {
+	if (ctx.measureText(text).width <= w)
+		return text;
+	let lo = 0, hi = text.length;
+	while (lo < hi) {
+		const m = (lo + hi + 1) >> 1;
+		if (ctx.measureText(text.slice(0, m) + "\u2026").width <= w) lo = m; else hi = m - 1;
+	}
+	return lo >= 3 ? text.slice(0, lo) + "\u2026" : "";
+}
+
+function drawTimeline() {
+	const st = G.stepper;
+	const c = $("graph_canvas");
+	const h = Math.max(260, Math.min(window.innerHeight * 0.62, 640));
+	const { ctx, w } = canvasSize(c, h);
 	if (!st)
 		return;
-	graphLayout();
-	if (!G.userMoved)
-		graphFit();
 	const css = getComputedStyle(document.documentElement);
 	const fg = css.getPropertyValue("--fg").trim(), muted = css.getPropertyValue("--muted").trim();
-	const accent = css.getPropertyValue("--accent").trim(), hot = css.getPropertyValue("--changed").trim();
-	const { x: vx, y: vy, scale } = G.view;
-	const sx = (x) => (x - vx) * scale, sy = (y) => (y - vy) * scale;
-	const vg = viewGraph(st);
-	if (G.fold && !G.pos.has(FOLD))
-		G.pos.set(FOLD, { x: 0, y: -2 * ROW_H, depth: -1 });
-	// Edges: solid when some transition landed on the symbol's first byte
-	// (call-like), dashed when all went into the middle (returns, jumps).
-	for (const e of vg.edges.values()) {
-		const a = G.pos.get(e.from), b = G.pos.get(e.to);
-		if (!a || !b)
-			continue;
-		const isRecent = e.recent;
-		ctx.strokeStyle = isRecent ? hot : muted;
-		ctx.globalAlpha = isRecent ? 1 : 0.45;
-		ctx.lineWidth = (isRecent ? 1.5 : 0.6) + 0.5 * Math.log2(e.count);
-		ctx.setLineDash(e.calls ? [] : [4, 3]);
-		const x0 = sx(a.x), y0 = sy(a.y), x1 = sx(b.x), y1 = sy(b.y);
-		ctx.beginPath();
-		ctx.moveTo(x0, y0);
-		if (b.depth <= a.depth) // back or sideways: bend it
-			ctx.quadraticCurveTo((x0 + x1) / 2 - 30 * scale, (y0 + y1) / 2 - 20 * scale, x1, y1);
-		else
-			ctx.lineTo(x1, y1);
-		ctx.stroke();
-		if (b.depth > a.depth && scale > 0.3) { // arrow head
-			const ang = Math.atan2(y1 - y0, x1 - x0), r = nodeRadius(st, e.to) * Math.min(scale, 1.5) + 2;
-			ctx.setLineDash([]);
-			ctx.beginPath();
-			ctx.moveTo(x1 - r * Math.cos(ang), y1 - r * Math.sin(ang));
-			ctx.lineTo(x1 - (r + 6) * Math.cos(ang - 0.4), y1 - (r + 6) * Math.sin(ang - 0.4));
-			ctx.lineTo(x1 - (r + 6) * Math.cos(ang + 0.4), y1 - (r + 6) * Math.sin(ang + 0.4));
-			ctx.closePath();
-			ctx.fillStyle = ctx.strokeStyle;
-			ctx.fill();
-		}
+	const hot = css.getPropertyValue("--changed").trim(), line = css.getPropertyValue("--line").trim();
+	const t0 = runStart(), t1 = Math.max(t0 + 1, st.steps);
+	if (!G.userMoved) {
+		G.x0 = t0;
+		G.x1 = t1;
+	} else if (G.follow && runState === "stepped" && st.steps > G.x1) {
+		const span = G.x1 - G.x0;
+		G.x1 = st.steps + span * 0.1;
+		G.x0 = G.x1 - span;
 	}
-	ctx.setLineDash([]);
-	ctx.globalAlpha = 1;
-	const labels = scale >= 0.6;
-	ctx.font = "11px ui-monospace, monospace";
+	const span = Math.max(1, G.x1 - G.x0);
+	const sx = (t) => (t - G.x0) / span * w;
+	// Minimap: the whole run, frames of depth < 6, and the window.
+	const msx = (t) => (t - t0) / (t1 - t0) * w;
+	ctx.font = "11px system-ui, sans-serif";
 	ctx.textBaseline = "middle";
-	for (const [id, p] of G.pos) {
-		if (id === FOLD && !G.fold)
+	const n = st.fStart.length;
+	// Depths shown: with folding, interrupt frames are skipped.
+	for (let k = 0; k < n; k++) {
+		if (hiddenFrame(st, k) || st.fDepth[k] > 5)
 			continue;
-		if (folded(st, id))
+		const a = Math.max(st.fStart[k], t0), b = fEnd(st, k);
+		if (b <= t0)
 			continue;
-		const x = sx(p.x), y = sy(p.y);
-		if (x < -50 || y < -20 || x > w + 200 || y > h + 20)
+		const x = msx(a), ww = msx(b) - x;
+		if (ww < 0.5)
 			continue;
-		const r = nodeRadius(st, id) * Math.min(Math.max(scale, 0.4), 1.5);
-		ctx.beginPath();
-		ctx.arc(x, y, r, 0, 2 * Math.PI);
-		ctx.fillStyle = nodeColour(st, id);
-		ctx.fill();
-		const cur = id === vg.map(st.curNode), sel = id === G.selected;
-		if (cur || sel) {
-			ctx.lineWidth = cur ? 3 : 2;
-			ctx.strokeStyle = cur ? hot : fg;
-			ctx.beginPath();
-			ctx.arc(x, y, r + 3, 0, 2 * Math.PI);
-			ctx.stroke();
+		ctx.fillStyle = frameColour(st, k);
+		ctx.fillRect(x, 2 + st.fDepth[k] * 3.5, Math.max(ww, 0.5), 3);
+	}
+	ctx.strokeStyle = fg;
+	ctx.lineWidth = 1;
+	ctx.strokeRect(msx(G.x0) + 0.5, 0.5, Math.max(2, msx(G.x1) - msx(G.x0)), MINI - 2);
+	ctx.fillStyle = line;
+	ctx.fillRect(0, MINI, w, 1);
+	// Main chart.
+	const top = MINI + 6 - G.yOff;
+	let drawn = 0, labelled = 0;
+	const labels = [];
+	for (let k = 0; k < n; k++) {
+		if (hiddenFrame(st, k))
+			continue;
+		const a = st.fStart[k], b = fEnd(st, k);
+		if (b < G.x0 || a > G.x1 || b <= t0)
+			continue;
+		const x = Math.max(0, sx(a)), x2 = Math.min(w, sx(b));
+		const ww = x2 - x;
+		if (ww < 1)
+			continue;
+		const y = top + st.fDepth[k] * ROW;
+		if (y < MINI || y > h)
+			continue;
+		ctx.fillStyle = frameColour(st, k);
+		ctx.globalAlpha = st.fIrq[k] ? 0.6 : 0.9;
+		ctx.fillRect(x, y, Math.max(ww - 0.5, 0.5), ROW - 1);
+		ctx.globalAlpha = 1;
+		if (k === G.selected) {
+			ctx.strokeStyle = fg;
+			ctx.lineWidth = 2;
+			ctx.strokeRect(x + 1, y + 1, ww - 2, ROW - 3);
 		}
-		if (labels || cur || sel) {
-			ctx.fillStyle = fg;
-			ctx.fillText(gName(st, id), x + r + 3, y);
+		drawn++;
+		if (ww >= 40)
+			labels.push([k, x, y, ww]);
+	}
+	ctx.fillStyle = "#fff";
+	for (const [k, x, y, ww] of labels) {
+		const text = fitLabel(ctx, st.nodeName(st.fNode[k]), ww - 6);
+		if (text) {
+			ctx.fillText(text, x + 3, y + ROW / 2);
+			labelled++;
 		}
 	}
+	// Now.
+	if (st.steps >= G.x0 && st.steps <= G.x1) {
+		ctx.fillStyle = hot;
+		ctx.fillRect(sx(st.steps) - 1, MINI, 2, h - MINI);
+	}
+	ctx.fillStyle = muted;
+	ctx.fillText((G.x0 - t0).toLocaleString("en") + " \u2013 " + (G.x1 - t0).toLocaleString("en") +
+		" instructions from the entry", 4, h - 8);
+	const c2 = $("graph_canvas");
+	c2.dataset.drawn = drawn;
+	c2.dataset.labels = labelled;
 }
+
+function timelineFrameAt(px, py) {
+	const st = G.stepper;
+	if (!st || py < MINI)
+		return -1;
+	const w = $("graph_canvas").clientWidth;
+	const t = G.x0 + px / w * (G.x1 - G.x0);
+	const depth = Math.floor((py - (MINI + 6 - G.yOff)) / ROW);
+	let best = -1;
+	for (let k = 0; k < st.fStart.length; k++)
+		if (st.fDepth[k] === depth && !hiddenFrame(st, k) && st.fStart[k] <= t && fEnd(st, k) > t)
+			best = k;
+	return best;
+}
+
+// Summary for tests and the status line: frames at depth <= 3 by
+// inclusive count, and the depth-0 total from the entry.
+function timelineSummary() {
+	const st = G.stepper;
+	if (!st)
+		return null;
+	const start = runStart();
+	let rootSum = 0;
+	const big = [];
+	for (let k = 0; k < st.fStart.length; k++) {
+		if (st.fStart[k] < start && fEnd(st, k) <= start)
+			continue;
+		const incl = fEnd(st, k) - Math.max(st.fStart[k], start);
+		if (st.fDepth[k] === 0)
+			rootSum += incl;
+		if (st.fDepth[k] <= 3)
+			big.push({ name: st.nodeName(st.fNode[k]), depth: st.fDepth[k], incl, irq: !!st.fIrq[k] });
+	}
+	big.sort((a, b) => b.incl - a.incl);
+	return { total: st.steps - start, rootSum, frames: st.fStart.length, top: big.slice(0, 25) };
+}
+
+// ---- call tree ------------------------------------------------------------
+
+function drawTree() {
+	const st = G.stepper;
+	const box = $("graph_tree");
+	box.textContent = "";
+	if (!st)
+		return;
+	const root = buildTree(st);
+	box.dataset.rootIncl = root.incl;
+	const total = Math.max(1, root.incl);
+	if (!G.treeAuto) { // first look: open the paths that hold >= 5% of the run
+		G.treeAuto = true;
+		const open = (t, d) => {
+			if (d > 8 || t.incl < total * 0.05)
+				return;
+			G.treeOpen.add(t.key);
+			for (const c of t.kids.values())
+				open(c, d + 1);
+		};
+		open(root, 0);
+	}
+	const q = $("graph_search").value.trim().toLowerCase();
+	// With a search, show matches and their ancestors, all expanded.
+	const matches = (t) => !q || t.name.toLowerCase().includes(q) || [...t.kids.values()].some(matches);
+	const pct = (v) => (100 * v / total).toFixed(v / total < 0.001 ? 3 : 1) + "%";
+	let rows = 0;
+	const head = document.createElement("div");
+	head.className = "trow thead";
+	head.innerHTML = '<span class="ttog"></span><span class="tnum mono">  incl   self calls</span><span class="tname">symbol (call path)</span>';
+	box.append(head);
+	const add = (t, depth) => {
+		if (!matches(t) || rows > 2000)
+			return;
+		rows++;
+		const row = document.createElement("div");
+		row.className = "trow";
+		row.dataset.name = t.name;
+		row.dataset.incl = t.incl;
+		const kids = [...t.kids.values()].sort((a, b) => b.incl - a.incl);
+		const open = q ? true : G.treeOpen.has(t.key);
+		const tog = document.createElement("button");
+		tog.type = "button";
+		tog.className = "ttog";
+		tog.textContent = kids.length ? (open ? "\u25be" : "\u25b8") : "\u00b7";
+		tog.disabled = !kids.length;
+		tog.addEventListener("click", () => {
+			if (G.treeOpen.has(t.key)) G.treeOpen.delete(t.key); else G.treeOpen.add(t.key);
+			drawTree();
+		});
+		const nums = document.createElement("span");
+		nums.className = "tnum mono";
+		nums.textContent = pct(t.incl).padStart(6) + " " + pct(t.self).padStart(6) + " " + String(t.calls).padStart(5);
+		nums.title = "inclusive " + t.incl.toLocaleString("en") + ", self " + t.self.toLocaleString("en") + " instructions, " + t.calls + " calls";
+		const name = document.createElement("span");
+		name.className = "tname mono";
+		name.style.paddingLeft = Math.min(depth, 30) * 0.7 + "em";
+		name.textContent = t.name;
+		if (t.node !== undefined && t.node < st.symName.length)
+			name.addEventListener("click", () => jumpTo(st.symStart[t.node]));
+		row.append(tog, nums, name);
+		box.append(row);
+		if (open)
+			for (const c of kids)
+				add(c, depth + 1);
+	};
+	add(root, 0);
+	if (rows > 2000)
+		box.append("(more rows not shown: search to narrow)");
+}
+
+// ---- top N graph ----------------------------------------------------------
+
+function drawTop() {
+	const st = G.stepper;
+	const c = $("graph_canvas");
+	if (!st) {
+		canvasSize(c, 200);
+		return;
+	}
+	const start = runStart();
+	// Inclusive count per symbol, counting only the outermost frame of each
+	// symbol on a path (recursion is not counted twice).
+	const incl = new Map();
+	const n = st.fStart.length;
+	for (let k = 0; k < n; k++) {
+		if (st.fStart[k] < start || hiddenFrame(st, k))
+			continue;
+		let p = st.fParent[k], rec = false;
+		while (p >= 0) {
+			if (st.fNode[p] === st.fNode[k]) { rec = true; break; }
+			p = st.fParent[p];
+		}
+		if (!rec)
+			incl.set(st.fNode[k], (incl.get(st.fNode[k]) || 0) + fEnd(st, k) - st.fStart[k]);
+	}
+	const shown = new Set([...incl].sort((a, b) => b[1] - a[1]).slice(0, 30).map(([id]) => id));
+	// Edges between shown symbols: from each shown frame to its nearest shown ancestor.
+	const edges = new Map(), depth = new Map(), first = new Map();
+	for (let k = 0; k < n; k++) {
+		if (st.fStart[k] < start || hiddenFrame(st, k) || !shown.has(st.fNode[k]))
+			continue;
+		const id = st.fNode[k];
+		if (!first.has(id))
+			first.set(id, st.fStart[k]);
+		let p = st.fParent[k];
+		while (p >= 0 && !(shown.has(st.fNode[p]) && !hiddenFrame(st, p)))
+			p = st.fParent[p];
+		if (p >= 0 && st.fNode[p] !== id) {
+			const key = st.fNode[p] + "," + id;
+			edges.set(key, (edges.get(key) || 0) + 1);
+		}
+	}
+	// Layer of a symbol: the fewest shown symbols above any of its frames.
+	for (let k = 0; k < n; k++) {
+		if (st.fStart[k] < start || hiddenFrame(st, k) || !shown.has(st.fNode[k]))
+			continue;
+		let d = 0;
+		for (let q = st.fParent[k]; q >= 0; q = st.fParent[q])
+			if (shown.has(st.fNode[q]) && !hiddenFrame(st, q))
+				d++;
+		const id = st.fNode[k];
+		depth.set(id, Math.min(depth.has(id) ? depth.get(id) : 1e9, d));
+	}
+	// Layout: rows by depth, ordered by first call, wrapped to the width.
+	const w = c.clientWidth;
+	const ctxm = c.getContext("2d");
+	ctxm.font = "12px system-ui, sans-serif";
+	const byDepth = new Map();
+	for (const id of shown) {
+		const d = depth.has(id) ? depth.get(id) : 0;
+		if (!byDepth.has(d)) byDepth.set(d, []);
+		byDepth.get(d).push(id);
+	}
+	const pos = new Map();
+	let y = 10;
+	for (const d of [...byDepth.keys()].sort((a, b) => a - b)) {
+		const ids = byDepth.get(d).sort((a, b) => first.get(a) - first.get(b));
+		let x = 8;
+		for (const id of ids) {
+			const label = st.nodeName(id) + " " + pct0(incl.get(id), st.steps - start);
+			const bw = Math.min(w - 16, ctxm.measureText(label).width + 12);
+			if (x + bw > w - 8 && x > 8) {
+				x = 8;
+				y += 34;
+			}
+			pos.set(id, { x, y, w: bw, label });
+			x += bw + 10;
+		}
+		y += 52;
+	}
+	const { ctx } = canvasSize(c, Math.max(200, y));
+	const css = getComputedStyle(document.documentElement);
+	const fg = css.getPropertyValue("--fg").trim(), muted = css.getPropertyValue("--muted").trim();
+	ctx.font = "12px system-ui, sans-serif";
+	ctx.textBaseline = "middle";
+	ctx.strokeStyle = muted;
+	for (const [key, count] of edges) {
+		const [a, b] = key.split(",").map(Number);
+		const pa = pos.get(a), pb = pos.get(b);
+		if (!pa || !pb)
+			continue;
+		ctx.lineWidth = 0.8 + Math.log2(count) * 0.5;
+		ctx.globalAlpha = pb.y > pa.y ? 0.6 : 0.25; // upward: a symbol also called from deeper down
+		ctx.setLineDash(pb.y > pa.y ? [] : [4, 3]);
+		ctx.beginPath();
+		ctx.moveTo(pa.x + pa.w / 2, pa.y + 22);
+		ctx.lineTo(pb.x + pb.w / 2, pb.y);
+		ctx.stroke();
+	}
+	ctx.globalAlpha = 1;
+	ctx.setLineDash([]);
+	G.boxes = [];
+	for (const [id, p] of pos) {
+		ctx.fillStyle = PALETTE[subsystem(st, id)];
+		ctx.fillRect(p.x, p.y, p.w, 22);
+		if (id === G.selected) {
+			ctx.strokeStyle = fg;
+			ctx.lineWidth = 2;
+			ctx.strokeRect(p.x - 1, p.y - 1, p.w + 2, 24);
+		}
+		ctx.fillStyle = "#fff";
+		ctx.fillText(fitLabel(ctx, p.label, p.w - 10), p.x + 6, p.y + 11);
+		G.boxes.push([id, p.x, p.y, p.w, 22]);
+	}
+	c.dataset.nodes = pos.size;
+	c.dataset.edges = edges.size;
+}
+
+const pct0 = (v, total) => (100 * v / Math.max(1, total)).toFixed(1) + "%";
+
+// ---- shared -----------------------------------------------------------------
 
 function graphStatus() {
 	const st = G.stepper;
@@ -208,19 +490,39 @@ function graphStatus() {
 	const nodes = st ? st.nodeOrder.length : 0, edges = st ? st.edges.size : 0;
 	el.dataset.nodes = nodes;
 	el.dataset.edges = edges;
+	el.dataset.frames = st ? st.fStart.length : 0;
 	el.textContent = !st ? "No stepper for this kernel." :
-		nodes + " symbols, " + edges + " distinct transitions" +
-		(st.curNode >= 0 ? "; now in " + st.nodeName(st.curNode) : "") + ".";
+		num(st.fStart.length) + " calls, " + nodes + " symbols, " + edges + " transitions recorded" +
+		(runState === "jit" ? "; running at full JIT speed: not recorded" : "") + ".";
+}
+
+function drawGraph() {
+	$("graph_canvas").hidden = G.view === "tree";
+	$("graph_tree").hidden = G.view !== "tree";
+	$("graph_search").hidden = G.view !== "tree";
+	$("graph_follow_l").hidden = G.view !== "timeline";
+	for (const v of ["timeline", "tree", "top"])
+		$("gview_" + v).setAttribute("aria-pressed", v === G.view);
+	if (G.view === "timeline")
+		drawTimeline();
+	else if (G.view === "tree")
+		drawTree();
+	else
+		drawTop();
+	graphStatus();
 }
 
 function graphTick() {
 	if (!G.stepper || tab !== "graph")
 		return;
 	if (G.stepper.graphVersion !== G.version || G.dirty) {
+		// The call tree is DOM: rebuild it at most every 2 s while running.
+		if (G.view === "tree" && !G.dirty && realNow() - (G.treeAt || 0) < 2000)
+			return;
+		G.treeAt = realNow();
 		G.version = G.stepper.graphVersion;
 		G.dirty = false;
 		drawGraph();
-		graphStatus();
 		if (G.selected >= 0)
 			renderGraphInfo();
 	}
@@ -236,87 +538,58 @@ function graphShow(visible) {
 	}
 }
 
-function graphNodeAt(px, py) {
-	const st = G.stepper;
-	if (!st)
-		return -1;
-	const { x: vx, y: vy, scale } = G.view;
-	let best = -1, bestD = 18 * 18;
-	for (const [id, p] of G.pos) {
-		if (folded(st, id) || (id === FOLD && !G.fold))
-			continue;
-		const dx = (p.x - vx) * scale - px, dy = (p.y - vy) * scale - py;
-		const d = dx * dx + dy * dy;
-		if (d < bestD) {
-			bestD = d;
-			best = id;
-		}
-	}
-	return best;
-}
-
 function renderGraphInfo() {
 	const el = $("graph_info");
 	el.textContent = "";
 	const st = G.stepper;
-	const id = G.selected;
-	if (!st || (id < 0 && id !== FOLD)) {
-		el.textContent = "Tap a symbol for its callers and callees.";
+	if (!st || G.selected < 0) {
+		el.textContent = G.view === "tree" ? "" : "Tap a box for its counts and callers.";
+		delete el.dataset.node;
 		return;
 	}
-	const n = st.symName.length;
 	const head = document.createElement("div");
 	const b = document.createElement("b");
-	b.textContent = gName(st, id);
-	head.append(b, " " + num(gSteps(st, id)) + " instructions inside" +
-		(id === FOLD ? "" : ", first entered at step " + num(st.nodeFirst[id])) + " ");
-	if (id >= 0 && id < n) {
+	let node;
+	if (G.view === "timeline") {
+		const k = G.selected;
+		node = st.fNode[k];
+		const c = frameCounts(st, k);
+		b.textContent = st.nodeName(node);
+		const path = [];
+		for (let p = st.fParent[k]; p >= 0 && path.length < 8; p = st.fParent[p])
+			path.push(st.nodeName(st.fNode[p]));
+		head.append(b, " inclusive " + num(c.incl) + ", self " + num(c.self) + " instructions; steps " +
+			num(st.fStart[k] - runStart()) + "\u2013" + num(fEnd(st, k) - runStart()) + " from the entry" +
+			(st.fIrq[k] ? "; in an interrupt" : "") + ". Called from: " + (path.join(" \u2190 ") || "(top)") + " ");
+	} else {
+		node = G.selected;
+		b.textContent = st.nodeName(node);
+		head.append(b, " ");
+	}
+	if (node < st.symName.length) {
 		const open = document.createElement("button");
 		open.type = "button";
 		open.textContent = "Page tab";
-		open.addEventListener("click", () => jumpTo(st.symStart[id]));
+		open.addEventListener("click", () => jumpTo(st.symStart[node]));
 		head.append(open);
 	}
 	el.append(head);
-	const list = (title, edges, other) => {
-		const d = document.createElement("div");
-		d.className = "glist";
-		const t = document.createElement("b");
-		t.textContent = title + " (" + edges.length + ")";
-		d.append(t, " ");
-		edges.sort((x, y) => y.count - x.count);
-		for (const e of edges.slice(0, 15)) {
-			const btn = document.createElement("button");
-			btn.type = "button";
-			btn.className = "symlink";
-			btn.textContent = gName(st, e[other]) + " \u00d7" + e.count + (e.calls ? "" : " (jump/return)");
-			btn.addEventListener("click", () => { G.selected = e[other]; G.dirty = true; renderGraphInfo(); });
-			d.append(btn, " ");
-		}
-		if (edges.length > 15)
-			d.append("and " + (edges.length - 15) + " more");
-		el.append(d);
-	};
-	const inc = [], out = [];
-	for (const e of viewGraph(st).edges.values()) {
-		if (e.to === id)
-			inc.push(e);
-		if (e.from === id)
-			out.push(e);
-	}
-	list("from", inc, "from");
-	list("to", out, "to");
-	el.dataset.node = gName(st, id);
-	el.dataset.callers = inc.length;
+	el.dataset.node = st.nodeName(node);
 }
 
 function graphData() {
 	const st = G.stepper;
 	const n = st.symName.length;
+	const tree = buildTree(st);
+	const plain = (t) => ({ name: t.name, inclusive: t.incl, self: t.self, calls: t.calls,
+		children: [...t.kids.values()].sort((a, b) => b.incl - a.incl).map(plain) });
 	return {
 		kernel: image ? image.name : null,
-		note: "Symbol transitions recorded while stepping (v86 interpreter); runs at full JIT speed are not recorded.",
+		note: "Recorded while stepping (v86 interpreter); runs at full JIT speed are not recorded. Calls are " +
+			"reconstructed from symbol transitions: a jump to the first byte of a symbol is a call, a jump into " +
+			"the middle of a symbol on the stack a return, an entry stub an interrupt.",
 		steps: st.steps,
+		entry_step: runStart(),
 		nodes: st.nodeOrder.map((id) => ({
 			id, name: st.nodeName(id), paddr: id < n ? st.symStart[id] : null,
 			size: id < n ? st.symEnd[id] - st.symStart[id] : null,
@@ -326,6 +599,7 @@ function graphData() {
 			from: e.from, to: e.to, from_name: st.nodeName(e.from), to_name: st.nodeName(e.to),
 			count: e.count, calls: e.calls, first_step: e.first,
 		})),
+		call_tree: plain(tree),
 	};
 }
 
@@ -356,44 +630,62 @@ function initGraph() {
 		const r = c.getBoundingClientRect();
 		return [ev.clientX - r.left, ev.clientY - r.top];
 	};
-	const zoomAt = (px, py, f) => {
-		const v = G.view;
-		const s = Math.min(4, Math.max(0.03, v.scale * f));
-		v.x += px / v.scale - px / s;
-		v.y += py / v.scale - py / s;
-		v.scale = s;
+	const zoomAt = (px, f) => {
+		if (G.view !== "timeline")
+			return;
+		const w = c.clientWidth;
+		const t = G.x0 + px / w * (G.x1 - G.x0);
+		const span = Math.max(20, Math.min((G.x1 - G.x0) / f, 1e12));
+		G.x0 = t - (px / w) * span;
+		G.x1 = G.x0 + span;
 		G.userMoved = true;
 		G.dirty = true;
 	};
 	c.addEventListener("pointerdown", (ev) => {
 		c.setPointerCapture(ev.pointerId);
 		G.pointers.set(ev.pointerId, local(ev));
-		G.press = G.pointers.size === 1 ? { at: local(ev), t: realNow(), moved: false } : null;
+		G.press = G.pointers.size === 1 ? { at: local(ev), moved: false } : null;
 	});
 	c.addEventListener("pointermove", (ev) => {
 		if (!G.pointers.has(ev.pointerId))
 			return;
 		const [x, y] = local(ev);
 		const [px, py] = G.pointers.get(ev.pointerId);
-		if (G.pointers.size === 1) {
-			G.view.x -= (x - px) / G.view.scale;
-			G.view.y -= (y - py) / G.view.scale;
+		if (G.pointers.size === 1 && G.view === "timeline") {
+			if (G.press && G.press.at[1] < MINI) { // drag in the minimap: move the window there
+				const st = G.stepper, t0 = runStart(), t1 = Math.max(t0 + 1, st.steps);
+				const span = G.x1 - G.x0, t = t0 + x / c.clientWidth * (t1 - t0);
+				G.x0 = t - span / 2;
+				G.x1 = t + span / 2;
+			} else {
+				const dt = (x - px) / c.clientWidth * (G.x1 - G.x0);
+				G.x0 -= dt;
+				G.x1 -= dt;
+				G.yOff = Math.max(0, G.yOff - (y - py));
+			}
 			if (G.press && Math.hypot(x - G.press.at[0], y - G.press.at[1]) > 5)
 				G.press.moved = true;
 			G.userMoved = true;
 			G.dirty = true;
 		} else if (G.pointers.size === 2) {
 			const [other] = [...G.pointers].filter(([k]) => k !== ev.pointerId).map(([, v]) => v);
-			const d0 = Math.hypot(px - other[0], py - other[1]), d1 = Math.hypot(x - other[0], y - other[1]);
-			if (d0 > 0)
-				zoomAt((x + other[0]) / 2, (y + other[1]) / 2, d1 / d0);
+			const d0 = Math.abs(px - other[0]), d1 = Math.abs(x - other[0]);
+			if (d0 > 10)
+				zoomAt((x + other[0]) / 2, d1 / d0);
+			if (G.press)
+				G.press.moved = true;
 		}
 		G.pointers.set(ev.pointerId, [x, y]);
 	});
 	const up = (ev) => {
 		if (G.press && !G.press.moved && G.pointers.size === 1) {
 			const [x, y] = local(ev);
-			G.selected = graphNodeAt(x, y);
+			if (G.view === "timeline")
+				G.selected = timelineFrameAt(x, y);
+			else if (G.view === "top") {
+				const hit = G.boxes.find(([, bx, by, bw, bh]) => x >= bx && x <= bx + bw && y >= by && y <= by + bh);
+				G.selected = hit ? hit[0] : -1;
+			}
 			G.dirty = true;
 			renderGraphInfo();
 		}
@@ -403,24 +695,35 @@ function initGraph() {
 	c.addEventListener("pointerup", up);
 	c.addEventListener("pointercancel", (ev) => { G.pointers.delete(ev.pointerId); G.press = null; });
 	c.addEventListener("wheel", (ev) => {
+		if (G.view !== "timeline")
+			return;
 		ev.preventDefault();
-		const [x, y] = local(ev);
-		zoomAt(x, y, Math.exp(-ev.deltaY * 0.0015));
+		zoomAt(local(ev)[0], Math.exp(-ev.deltaY * 0.002));
 	}, { passive: false });
-	$("graph_fit").addEventListener("click", () => { G.userMoved = false; G.dirty = true; graphTick(); });
+	for (const v of ["timeline", "tree", "top"])
+		$("gview_" + v).addEventListener("click", () => {
+			G.view = v;
+			G.selected = -1;
+			G.dirty = true;
+			renderGraphInfo();
+			graphTick();
+		});
+	$("graph_fit").addEventListener("click", () => { G.userMoved = false; G.yOff = 0; G.dirty = true; graphTick(); });
+	$("graph_follow").addEventListener("change", () => { G.follow = $("graph_follow").checked; });
+	$("graph_search").addEventListener("input", () => { G.dirty = true; graphTick(); });
 	$("graph_json").addEventListener("click", () => {
 		if (G.stepper)
-			download((image ? image.name : "kernel") + "-symbol-graph.json", JSON.stringify(graphData(), null, 1), "application/json");
+			download((image ? image.name : "kernel") + "-calls.json", JSON.stringify(graphData()), "application/json");
 	});
 	$("graph_dot").addEventListener("click", () => {
 		if (G.stepper)
 			download((image ? image.name : "kernel") + "-symbol-graph.dot", graphDot(), "text/vnd.graphviz");
 	});
 	window.addEventListener("resize", () => { G.dirty = true; });
+	$("graph_fold").checked = G.fold;
 	$("graph_fold").addEventListener("change", () => {
 		G.fold = $("graph_fold").checked;
-		if (G.selected >= 0 && folded(G.stepper, G.selected))
-			G.selected = FOLD;
+		G.selected = -1;
 		G.dirty = true;
 		graphTick();
 		renderGraphInfo();

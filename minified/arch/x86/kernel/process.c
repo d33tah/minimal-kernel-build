@@ -1,5 +1,3 @@
-
-/* end stackprotector.h */
 #include <linux/ptrace.h>
 
 #include <asm/switch_to.h>
@@ -55,10 +53,6 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
 
 	return ret;
 }
-
-/* __switch_to_xtra + __speculation_ctrl_update (+ amd_set_*_ssb_state) removed -
- * switch_to_extra()'s extra-work test was always false (its TIF mask bits are
- * never set in this build), so __switch_to_xtra was never called. */
 
 void arch_cpu_idle(void)
 {

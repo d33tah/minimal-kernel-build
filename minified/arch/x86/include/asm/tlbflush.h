@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_TLBFLUSH_H
 #define _ASM_X86_TLBFLUSH_H
 
@@ -58,9 +57,6 @@ void flush_tlb_one_kernel(unsigned long addr);
 extern void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 			       unsigned long end, unsigned int stride_shift,
 			       bool freed_tables);
-
-/* arch_tlbbatch_flush declaration removed - no implementation */
-/* pte_flags_need_flush / pte_needs_flush / huge_pmd_needs_flush removed - zero callers tree-wide */
 
 static inline void __native_tlb_flush_global(unsigned long cr4)
 {

@@ -1,4 +1,3 @@
-
 #include <linux/slab.h>
 #include <linux/xarray.h>
 
@@ -291,5 +290,3 @@ void *__xas_next(struct xa_state *xas)
 		xas_set_offset(xas);
 	}
 }
-
-/* Removed: xa_load, __xa_store, xa_store, __xa_cmpxchg, __xa_insert, __xa_alloc - no callers */

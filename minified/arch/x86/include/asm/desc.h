@@ -1,12 +1,9 @@
-
 #ifndef _ASM_X86_DESC_H
 #define _ASM_X86_DESC_H
 
 #include <linux/mutex.h>
 #include <asm/fixmap.h>
 #include <asm/irq_vectors.h>
-
-/* fill_ldt removed - never called */
 
 struct gdt_page {
 	struct desc_struct gdt[GDT_ENTRIES];
@@ -23,10 +20,6 @@ static inline struct desc_struct *get_current_gdt_rw(void)
 {
 	return this_cpu_ptr(&gdt_page)->gdt;
 }
-
-/* pack_gate removed - unused */
-
-/* desc_empty removed - unused */
 
 #define load_TR_desc() native_load_tr_desc()
 #define load_gdt(dtr) native_load_gdt(dtr)
@@ -97,8 +90,6 @@ static __always_inline void native_load_idt(const struct desc_ptr *dtr)
 	asm volatile("lidt %0" ::"m"(*dtr));
 }
 
-/* native_store_gdt, store_idt, native_store_tr removed - unused */
-
 static inline void native_load_tr_desc(void)
 {
 	asm volatile("ltr %w0" ::"q"(GDT_ENTRY_TSS * 8));
@@ -120,9 +111,6 @@ static inline void force_reload_TR(void)
 
 	load_TR_desc();
 }
-
-/* refresh_tss_limit, invalidate_tss_limit removed - unused */
-/* get_desc_base, set_desc_base, get_desc_limit, set_desc_limit removed - unused */
 
 static inline void init_idt_data(struct idt_data *data, unsigned int n,
 				 const void *addr)
@@ -154,8 +142,5 @@ extern void idt_setup_early_handler(void);
 extern void idt_setup_early_traps(void);
 extern void idt_setup_traps(void);
 extern void idt_setup_apic_and_irq_gates(void);
-/* idt_is_f00f_address declaration removed - no implementation */
-
-/* idt_invalidate removed - unused */
 
 #endif

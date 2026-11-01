@@ -1,7 +1,6 @@
 #ifndef _SCREEN_INFO_H
 #define _SCREEN_INFO_H
 
-/* Inlined from uapi/linux/screen_info.h */
 struct screen_info {
 	__u8 orig_x;
 	__u8 orig_y;

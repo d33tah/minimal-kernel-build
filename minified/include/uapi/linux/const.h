@@ -1,4 +1,3 @@
-
 #ifndef _UAPI_LINUX_CONST_H
 #define _UAPI_LINUX_CONST_H
 
@@ -15,7 +14,6 @@
 #define _ULL(x) (_AC(x, ULL))
 
 #define _BITUL(x) (_UL(1) << (x))
-/* _BITULL removed - 0-ref */
 
 #define __ALIGN_KERNEL(x, a) __ALIGN_KERNEL_MASK(x, (typeof(x))(a) - 1)
 #define __ALIGN_KERNEL_MASK(x, mask) (((x) + (mask)) & ~(mask))

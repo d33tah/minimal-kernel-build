@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_SPECIAL_INSNS_H
 #define _ASM_X86_SPECIAL_INSNS_H
 
@@ -50,10 +49,6 @@ static inline unsigned long native_read_cr4(void)
 
 void native_write_cr4(unsigned long val);
 
-/* native_wbinvd / wbinvd removed - unused */
-
-/* native_load_gs_index, asm_load_gs_index removed - unused */
-
 static inline unsigned long __read_cr4(void)
 {
 	return native_read_cr4();
@@ -88,13 +83,5 @@ static inline void __write_cr4(unsigned long x)
 {
 	native_write_cr4(x);
 }
-
-/* load_gs_index removed - unused */
-
-/* nop() removed - never invoked (all "rep; nop" uses are inline-asm string literals) */
-
-/* serialize removed - unused (only sync_core.h called it, now removed) */
-
-/* movdir64b removed - unused */
 
 #endif

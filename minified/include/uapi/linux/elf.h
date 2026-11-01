@@ -13,7 +13,6 @@ typedef __u32 Elf32_Word;
 #define PT_NOTE 4
 
 #define ET_EXEC 2
-/* ET_CORE, ET_LOPROC, ET_HIPROC - unused */
 
 /* Dynamic section tags - only keep those used */
 
@@ -55,15 +54,7 @@ typedef struct elf32_phdr {
 	Elf32_Word p_align;
 } Elf32_Phdr;
 
-/* SHT_PROGBITS(1), SHT_NOBITS(8) removed - 0-caller section types */
-
-/* SHF_EXECINSTR(0x4) removed - 0-caller section flag */
-
-/* SHN_LORESERVE, SHN_HIRESERVE, SHN_LOPROC, SHN_HIPROC - unused, removed */
-
 #define ELFMAG "\177ELF"
 #define SELFMAG 4
-
-/* ELFDATA2MSB(2) removed - 0-caller (this tree is little-endian, uses ELFDATA2LSB) */
 
 #endif

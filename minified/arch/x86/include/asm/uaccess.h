@@ -1,10 +1,7 @@
-
 #ifndef _ASM_X86_UACCESS_H
 #define _ASM_X86_UACCESS_H
 
 #include <asm/extable.h>
-
-/* Inlined from asm-generic/access_ok.h */
 
 static inline int __access_ok(const void __user *ptr, unsigned long size)
 {
@@ -150,7 +147,6 @@ extern __must_check long strnlen_user(const char __user *str, long n);
 
 unsigned long __must_check clear_user(void __user *mem, unsigned long len);
 
-/* --- 2025-12-07 20:27 --- Inlined uaccess_32.h */
 unsigned long __must_check __copy_user_ll(void *to, const void *from,
 					  unsigned long n);
 

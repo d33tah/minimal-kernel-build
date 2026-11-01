@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_DEBUGREG_H
 #define _ASM_X86_DEBUGREG_H
 
@@ -64,9 +63,6 @@ static __always_inline void native_set_debugreg(int regno, unsigned long value)
 	}
 }
 
-/* hw_breakpoint_active() folded out: cpu_dr7 was never written (write-only,
- * always 0) so it always returned false. hw_breakpoint_restore removed - unused */
-
 static __always_inline unsigned long local_db_save(void)
 {
 	unsigned long dr7;
@@ -90,7 +86,5 @@ static __always_inline void local_db_restore(unsigned long dr7)
 	if (dr7)
 		set_debugreg(dr7, 7);
 }
-
-/* set_dr_addr_mask removed - never defined/used */
 
 #endif

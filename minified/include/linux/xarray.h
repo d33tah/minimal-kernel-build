@@ -8,8 +8,6 @@ static inline void *xa_mk_internal(unsigned long v)
 	return (void *)((v << 2) | 2);
 }
 
-/* xa_to_internal removed: 0-caller static-inline orphan */
-
 static inline bool xa_is_internal(const void *entry)
 {
 	return ((unsigned long)entry & 3) == 2;
@@ -24,7 +22,6 @@ static inline int xa_err(void *entry)
 
 enum xa_lock_type {
 	XA_LOCK_IRQ = 1,
-	/* XA_LOCK_BH removed - unused */
 };
 
 #define XA_FLAGS_LOCK_IRQ ((__force gfp_t)XA_LOCK_IRQ)

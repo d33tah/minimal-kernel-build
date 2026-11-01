@@ -1,4 +1,3 @@
-
 #include <linux/namei.h>
 #include <linux/file.h>
 #include <linux/fs_struct.h>
@@ -202,12 +201,6 @@ static inline int traverse_mounts(struct path *path, bool *jumped)
 {
 	unsigned flags = smp_load_acquire(&path->dentry->d_flags);
 
-	/*
-	 * DCACHE_MANAGED_DENTRY (DCACHE_MOUNTED|DCACHE_NEED_AUTOMOUNT|
-	 * DCACHE_MANAGE_TRANSIT) is never set on this build -- no mount is
-	 * ever attached to a dentry -- so the managed-dentry traversal is
-	 * unreachable and this always takes the fast path.
-	 */
 	*jumped = false;
 	if (unlikely(d_flags_negative(flags)))
 		return -ENOENT;
@@ -286,12 +279,6 @@ static const char *step_into(struct nameidata *nd, int flags,
 
 	if (err < 0)
 		return ERR_PTR(err);
-	/*
-	 * No symlink inode can ever exist on this build (there is no
-	 * symlink creation and no i_op->get_link is set anywhere), so
-	 * d_is_symlink() is always false: the symlink-follow arm (pick_link)
-	 * is unreachable and has been removed.
-	 */
 	dput(nd->path.dentry);
 	nd->path = path;
 	nd->inode = inode;

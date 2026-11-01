@@ -1,4 +1,3 @@
-
 #include <linux/mman.h>
 #include <linux/file.h>
 #include <linux/security.h>
@@ -26,8 +25,6 @@ pgprot_t protection_map[16] __ro_after_init = {
 	[VM_SHARED | VM_EXEC | VM_WRITE] = __S110,
 	[VM_SHARED | VM_EXEC | VM_WRITE | VM_READ] = __S111
 };
-
-/* Removed: vm_pgprot_modify, vma_set_page_prot - never called */
 
 /*
  * The VMAs of an mm are kept only as the address-sorted mm->mmap list (no
@@ -129,14 +126,6 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 	vm_flags = calc_vm_prot_bits(prot) | calc_vm_flag_bits(flags) |
 		   mm->def_flags | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC;
 
-	/*
-	 * MAP_TYPE is always MAP_PRIVATE on this build: there is no mmap(2)
-	 * syscall (removed from syscall_32.tbl) and the only in-kernel callers
-	 * (binfmt_elf via vm_mmap) pass MAP_PRIVATE[|MAP_FIXED]. So the
-	 * MAP_SHARED / MAP_SHARED_VALIDATE arms are dead, and so is the
-	 * MAP_LOCKED check (MAP_LOCKED is never set, and can_do_mlock() is a
-	 * permanent false stub). Fold to the MAP_PRIVATE path.
-	 */
 	if (file) {
 		struct inode *inode = file_inode(file);
 
@@ -153,15 +142,8 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 	}
 
 	addr = mmap_region(file, addr, len, vm_flags, pgoff);
-	/*
-	 * VM_LOCKED is never set (no mmap syscall, ELF loader passes only
-	 * MAP_PRIVATE/MAP_FIXED) and MAP_POPULATE is never passed, so *populate
-	 * stays 0 (initialised above); the populate path is dead.
-	 */
 	return addr;
 }
-
-/* Removed: vma_wants_writenotify - was used only by vma_set_page_prot (~4 LOC) */
 
 /*
  * We account for memory if it's a private writeable mapping,

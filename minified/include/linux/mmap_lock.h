@@ -9,8 +9,6 @@ static inline void mmap_init_lock(struct mm_struct *mm)
 	init_rwsem(&mm->mmap_lock);
 }
 
-/* mmap_write_lock removed - 0-caller static inline orphan */
-
 static inline int mmap_write_lock_killable(struct mm_struct *mm)
 {
 	int ret;
@@ -49,8 +47,5 @@ static inline void mmap_read_unlock(struct mm_struct *mm)
 {
 	up_read(&mm->mmap_lock);
 }
-
-/* mmap_read_unlock_non_owner, mmap_assert_write_locked,
- * mmap_lock_is_contended removed - unused */
 
 #endif

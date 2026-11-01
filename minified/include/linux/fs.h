@@ -1,4 +1,3 @@
-
 #ifndef _LINUX_FS_H
 #define _LINUX_FS_H
 
@@ -21,7 +20,6 @@
 #define INR_OPEN_CUR 1024
 #define INR_OPEN_MAX 4096
 #define SEEK_END 2
-/* end uapi/linux/fs.h */
 
 struct vm_area_struct;
 struct iov_iter;
@@ -29,8 +27,6 @@ struct fs_context;
 
 extern void __init inode_init(void);
 extern void __init files_init(void);
-
-/* dead DIO/get_block callback typedefs + struct buffer_head fwd-decl removed (0-ref) */
 
 #define MAY_EXEC 0x00000001
 #define MAY_WRITE 0x00000002
@@ -75,11 +71,6 @@ struct address_space_operations {
 	int (*write_end)(struct file *, struct address_space *mapping,
 			 loff_t pos, unsigned len, unsigned copied,
 			 struct page *page, void *fsdata);
-
-	/* writepage, writepages, dirty_folio, readahead, bmap, launder_folio,
-	 * migratepage, isolate_page, putback_page, is_dirty_writeback,
-	 * error_remove_page, swap_*, release_folio, free_folio, direct_IO,
-	 * is_partially_uptodate removed - unused */
 };
 
 struct address_space {
@@ -107,7 +98,6 @@ struct inode {
 	struct cdev *i_cdev;
 } __randomize_layout;
 
-/* Reduced inode_i_mutex_lock_class - only I_MUTEX_PARENT used (lockdep off: value unused) */
 enum inode_i_mutex_lock_class { I_MUTEX_PARENT };
 
 static inline void inode_lock(struct inode *inode)
@@ -156,9 +146,6 @@ static inline void i_size_write(struct inode *inode, loff_t i_size)
 	inode->i_size = i_size;
 }
 
-/* struct fown_struct removed - f_owner field was write-only (lock never
-   acquired, pid never assigned -> put_pid(NULL) no-op) */
-
 struct file {
 	union {
 		struct rcu_head fu_rcuhead;
@@ -183,9 +170,6 @@ static inline struct file *get_file(struct file *f)
 
 /* 32-bit only kernel */
 #define MAX_LFS_FILESIZE ((loff_t)ULONG_MAX << PAGE_SHIFT)
-
-/* struct file_lock removed - file_operations.lock (its sole user) was never
- * assigned or dispatched in this build (no locking syscalls reach it) */
 
 static inline struct inode *file_inode(const struct file *f)
 {
@@ -268,13 +252,6 @@ struct file_operations {
 	ssize_t (*write_iter)(struct kiocb *, struct iov_iter *);
 	int (*mmap)(struct file *, struct vm_area_struct *);
 	int (*open)(struct inode *, struct file *);
-	/* iopoll/iterate/iterate_shared/poll/unlocked_ioctl/compat_ioctl/
-	 * mmap_supported_flags/flush/fsync/sendpage/check_flags/flock/
-	 * splice_write/splice_read/setlease/remap_file_range/fadvise/uring_cmd/
-	 * fallocate/show_fdinfo/copy_file_range/llseek/lock removed - zero ->field
-	 * dispatch, bare-deref and assignment tree-wide; read/write/release
-	 * removed - tested or called but never assigned (only read_iter/
-	 * write_iter/mmap/open are live) */
 } __randomize_layout;
 
 struct inode_operations {
@@ -285,10 +262,6 @@ struct inode_operations {
 		     umode_t);
 	int (*mknod)(struct user_namespace *, struct inode *, struct dentry *,
 		     umode_t, dev_t);
-	/* permission/readlink/link/unlink/symlink/rmdir/rename/getattr/
-	 * listxattr/update_time/get_link removed - zero ->field deref or
-	 * dispatched-but-never-assigned (only lookup/create/mkdir/mknod/setattr
-	 * are live). get_acl/fiemap/set_acl/fileattr_set/fileattr_get - unused */
 } ____cacheline_aligned;
 
 static inline ssize_t call_write_iter(struct file *file, struct kiocb *kio,
@@ -301,14 +274,6 @@ static inline int call_mmap(struct file *file, struct vm_area_struct *vma)
 {
 	return file->f_op->mmap(file, vma);
 }
-
-/* S_NOSEC, S_DAX, S_NOATIME, S_APPEND, S_IMMUTABLE, S_DEAD, S_NOCMTIME,
- * S_SWAPFILE, S_AUTOMOUNT, S_VERITY, S_KERNEL_FILE removed - never set on
- * any inode (S_NOSEC depended on SB_NOSEC which is never set), so the whole
- * i_flags field + all IS_NOSEC/IS_DAX/etc tests were statically dead. */
-
-/* IS_APPEND, IS_IMMUTABLE, IS_DEADDIR, IS_NOCMTIME, IS_SWAPFILE,
- * IS_AUTOMOUNT, IS_NOSEC, IS_DAX removed - underlying S_* flags never set */
 
 static inline bool HAS_UNMAPPED_ID(struct user_namespace *mnt_userns,
 				   struct inode *inode)
@@ -328,8 +293,6 @@ struct file_system_type {
 	int (*init_fs_context)(struct fs_context *);
 };
 
-/* Removed: mount_nodev, kill_block_super - never called */
-
 #define fops_get(fops) ((fops) ? (fops) : NULL)
 #define replace_fops(f, fops)                     \
 	do {                                      \
@@ -348,8 +311,6 @@ struct filename {
 };
 static_assert(offsetof(struct filename, iname) % sizeof(long) == 0);
 
-/* vfs_fallocate, do_sys_open, file_open_name, file_open_root, dentry_open,
-   dentry_create, open_with_fake_path removed - unused/internal only */
 extern struct file *filp_open(const char *, int, umode_t);
 
 extern struct filename *getname_kernel(const char *);
@@ -399,12 +360,7 @@ extern ssize_t generic_write_checks(struct kiocb *, struct iov_iter *);
 extern ssize_t generic_file_read_iter(struct kiocb *, struct iov_iter *);
 extern ssize_t generic_file_write_iter(struct kiocb *, struct iov_iter *);
 
-/* Removed: stream_open - never called */
-
 #define special_file(m) (S_ISCHR(m) || S_ISBLK(m) || S_ISFIFO(m) || S_ISSOCK(m))
-
-/* Removed: get_super, get_active_super, drop_super, drop_super_exclusive,
-   iterate_supers, iterate_supers_type - never called */
 
 extern const struct address_space_operations ram_aops;
 

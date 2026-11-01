@@ -1,16 +1,5 @@
-
 #include <linux/swap.h>
 
-/* iversion machinery removed: SB_I_VERSION is never set on any superblock in
- * this build (ramfs/devtmpfs/proc/sysfs), so IS_I_VERSION() is always false and
- * the S_VERSION sync_it branch never fires. i_version was never written. */
-
-/*
- * Inode hashing removed: this build has no __insert_inode_hash, so every inode's
- * i_hash stays INIT_HLIST_NODE (inode_unhashed() always true). The hash table was
- * write-only (inode_hashtable never read), so the alloc + __remove_inode_hash were
- * pure dead work.
- */
 static const struct address_space_operations empty_aops = {};
 
 static struct kmem_cache *inode_cachep __read_mostly;
@@ -99,10 +88,6 @@ void __init inode_init(void)
 
 void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 {
-	/* This minimal kernel's initramfs creates exactly one special node,
-	 * /dev/console (char 5:1), so only the S_ISCHR branch ever fires at
-	 * runtime; the block/fifo/sock branches are runtime-dead -> dropped
-	 * (def_blk_fops/no_blkdev_open/pipefifo_fops cascade-deleted). */
 	inode->i_mode = mode;
 	if (S_ISCHR(mode)) {
 		inode->i_fop = &def_chr_fops;

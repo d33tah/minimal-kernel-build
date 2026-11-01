@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_I8259_H
 #define _ASM_X86_I8259_H
 
@@ -28,7 +27,6 @@ struct legacy_pic {
 	int nr_legacy_irqs;
 	struct irq_chip *chip;
 	void (*init)(int auto_eoi);
-	/* mask, unmask, mask_all, restore_mask, probe, irq_pending, make_irq removed - unused */
 };
 
 extern struct legacy_pic *legacy_pic;

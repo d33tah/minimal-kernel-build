@@ -2,7 +2,6 @@
 #ifndef __ASM_X86_BITSPERLONG_H
 #define __ASM_X86_BITSPERLONG_H
 
-/* Inlined from asm-generic/bitsperlong.h */
 #define BITS_PER_LONG 32
 
 #define BITS_PER_LONG_LONG 64

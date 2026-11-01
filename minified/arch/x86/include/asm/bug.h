@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_BUG_H
 #define _ASM_X86_BUG_H
 
@@ -11,8 +10,6 @@
 		_BUG_FLAGS(ASM_UD2, 0, ""); \
 		__builtin_unreachable();    \
 	} while (0)
-
-/* --- 2025-12-07 10:25 --- Inlined asm-generic/bug.h content */
 
 #define BUG_ON(condition)                \
 	do {                             \

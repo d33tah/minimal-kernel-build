@@ -1,12 +1,10 @@
 #ifndef _LINUX_LIMITS_H
 #define _LINUX_LIMITS_H
 
-/* Inlined from uapi/linux/limits.h */
 #define ARG_MAX 131072
 #define NAME_MAX 255
 #define PATH_MAX 4096
 
-/* Inlined from vdso/limits.h */
 #define USHRT_MAX ((unsigned short)~0U)
 #define INT_MAX ((int)(~0U >> 1))
 #define ULONG_MAX (~0UL)

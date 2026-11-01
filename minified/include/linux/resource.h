@@ -1,7 +1,6 @@
 #ifndef _LINUX_RESOURCE_H
 #define _LINUX_RESOURCE_H
 
-/* Inlined from uapi/linux/resource.h */
 struct rlimit {
 	__kernel_ulong_t rlim_cur;
 	__kernel_ulong_t rlim_max;
@@ -10,7 +9,6 @@ struct rlimit {
 #define _STK_LIM (8 * 1024 * 1024)
 #define MLOCK_LIMIT (8 * 1024 * 1024)
 
-/* Inlined from asm-generic/resource.h */
 #define RLIMIT_CPU 0
 #define RLIMIT_FSIZE 1
 #define RLIMIT_DATA 2

@@ -1,4 +1,3 @@
-
 #include <linux/mm.h>
 #include <linux/rmap.h>
 #include <linux/file.h>
@@ -46,11 +45,6 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 {
 	unsigned long pfn = pte_pfn(pte);
 
-	/*
-	 * x86 selects CONFIG_ARCH_HAS_PTE_SPECIAL unconditionally
-	 * (arch/x86/Kconfig), so the IS_ENABLED() arm is always taken at compile
-	 * time and the legacy !ARCH_HAS_PTE_SPECIAL fallback is dead.
-	 */
 	if (likely(!pte_special(pte)))
 		goto check_pfn;
 	/*
@@ -66,10 +60,6 @@ check_pfn:
 
 	return pfn_to_page(pfn);
 }
-
-/* All copy_*_range functions removed - copy_page_range is stubbed
- * since simplified dup_mmap doesn't use them (~230 LOC removed)
- */
 
 static gfp_t __get_fault_gfp_mask(struct vm_area_struct *vma)
 {
@@ -233,7 +223,6 @@ static void do_set_pte(struct vm_fault *vmf, struct page *page,
 
 static bool vmf_pte_changed(struct vm_fault *vmf)
 {
-	/* FAULT_FLAG_ORIG_PTE_VALID is never set on this build => always false. */
 	return !pte_none(*vmf->pte);
 }
 
@@ -360,11 +349,6 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 		return vma_is_anonymous(vmf->vma) ? do_anonymous_page(vmf) :
 						    do_fault(vmf);
 
-	/*
-	 * A mapped PTE is always present on this build: there is no swap,
-	 * migration, NUMA-hinting or PTE-marker source of !present entries, so
-	 * the legacy do_swap_page() path is unreachable and has been removed.
-	 */
 	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
 	spin_lock(vmf->ptl);
 	if ((vmf->flags & (FAULT_FLAG_WRITE | FAULT_FLAG_UNSHARE)) &&
@@ -404,17 +388,7 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 
 	__set_current_state(TASK_RUNNING);
 
-	/* arch_vma_access_permitted() is constant-true (no PKU) => guard dropped. */
 	ret = __handle_mm_fault(vma, address, flags);
 
 	return ret;
 }
-
-/*
- * __p4d_alloc / __pud_alloc / __pmd_alloc were here. On this build all three
- * page-table levels are folded (CONFIG_PGTABLE_LEVELS=2, no PAE), so
- * __PAGETABLE_{P4D,PUD,PMD}_FOLDED are all defined and mm.h supplies the
- * inline `return 0` stubs that p4d_alloc/pud_alloc/pmd_alloc actually use.
- * The out-of-line versions were guarded by #ifndef __PAGETABLE_*_FOLDED and
- * thus never compiled or linked -- removed as dead code.
- */

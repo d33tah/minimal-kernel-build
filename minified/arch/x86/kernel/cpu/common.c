@@ -1,10 +1,8 @@
-
 #include <linux/sched/mm.h>
 #include <linux/sched/task.h>
 
 #include <asm/mmu_context.h>
 
-/* Inlined from asm/doublefault.h */
 extern void doublefault_init_cpu_tss(void);
 #include <asm/hwcap2.h>
 #include <asm/cpu.h>

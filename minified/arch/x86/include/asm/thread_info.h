@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_THREAD_INFO_H
 #define _ASM_X86_THREAD_INFO_H
 
@@ -27,17 +26,6 @@ struct thread_info {
 #define TIF_NEED_RESCHED 3
 
 #define _TIF_NEED_RESCHED (1 << TIF_NEED_RESCHED)
-
-/*
- * _TIF_WORK_CTXSW_{BASE,PREV,NEXT} + the SSBD/NOTSC/USER_RETURN_NOTIFY/UPROBE/
- * PATCH_PENDING/MEMDIE/SPEC_FORCE_UPDATE bit defs removed - those bits are never
- * set in this build, so the context-switch extra-work path was always a no-op.
- * TIF_NOCPUID/TIF_BLOCKSTEP also removed - never set, their test/clear sites in
- * process.c/traps.c were always-false / no-ops and have been folded away.
- * TIF_POLLING_NRFLAG removed - set/cleared in sched/idle.h but never tested, so
- * the writes were no-ops. TIF_ADDR32 removed - tested in elf.h mmap_is_ia32 but
- * never set, so the COMPAT term was always false.
- */
 
 #ifndef __ASSEMBLY__
 

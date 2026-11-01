@@ -1,4 +1,3 @@
-
 #include <linux/fs.h>
 #include <linux/user_namespace.h>
 #include <linux/fs_struct.h>
@@ -52,7 +51,6 @@ __latent_entropy static void __init init_mount_tree(void)
 
 	root.mnt = mnt;
 	root.dentry = mnt->mnt_root;
-	/* MNT_LOCKED flag dropped: mnt_flags was write-only. */
 
 	set_fs_pwd(current->fs, &root);
 	set_fs_root(current->fs, &root);

@@ -1,4 +1,3 @@
-
 #include <linux/pagemap.h>
 
 struct dentry *simple_lookup(struct inode *dir, struct dentry *dentry,
@@ -71,6 +70,3 @@ const struct address_space_operations ram_aops = {
 	.write_begin = simple_write_begin,
 	.write_end = simple_write_end,
 };
-
-/* simple_read_from_buffer, __generic_file_fsync, generic_file_fsync,
- * generic_check_addressable, noop_fsync removed - unused */

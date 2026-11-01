@@ -1,4 +1,3 @@
-
 #ifndef __X86_MM_INTERNAL_H
 #define __X86_MM_INTERNAL_H
 
@@ -14,9 +13,6 @@ unsigned long kernel_physical_mapping_init(unsigned long start,
 					   unsigned long end,
 					   unsigned long page_size_mask,
 					   pgprot_t prot);
-/* kernel_physical_mapping_change removed - unused */
 void zone_sizes_init(void);
-
-/* update_cache_mode_entry removed - unused */
 
 #endif

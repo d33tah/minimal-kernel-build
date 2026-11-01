@@ -1,5 +1,3 @@
-
-/* end sched/stat.h */
 #include <linux/sched/task.h>
 #include <linux/syscalls.h>
 
@@ -33,10 +31,3 @@ SYSCALL_DEFINE1(exit, int, error_code)
 {
 	do_exit((error_code & 0xff) << 8);
 }
-
-/*
- * Removed: do_group_exit + SYSCALL_DEFINE1(exit_group) - unreachable. The init
- * ELF exits via exit(2) (__NR_exit), never exit_group(2); the syscall_32.tbl
- * entry 252 is gone (routes to sys_ni). Cascade-orphaned zap_other_threads /
- * signal_wake_up / signal_wake_up_state were removed from signal.c too.
- */

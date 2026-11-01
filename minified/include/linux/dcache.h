@@ -10,8 +10,6 @@
 
 #define IS_ROOT(x) ((x) == (x)->d_parent)
 
-/* x86 is unconditionally little-endian (__LITTLE_ENDIAN defined in kconfig.h,
- * force-included every TU; __BIG_ENDIAN never defined) -> big-endian #else dead */
 #define HASH_LEN_DECLARE \
 	u32 hash;        \
 	u32 len
@@ -46,12 +44,6 @@ struct dentry {
 		struct rcu_head d_rcu;
 	} d_u;
 } __randomize_layout;
-
-/*
- * DCACHE_SHRINK_LIST / DCACHE_MOUNTED / DCACHE_NEED_AUTOMOUNT /
- * DCACHE_MANAGE_TRANSIT / DCACHE_MANAGED_DENTRY are never set on this
- * build -- removed; their branches were folded out.
- */
 
 #define DCACHE_ENTRY_TYPE 0x00700000
 #define DCACHE_MISS_TYPE 0x00000000
@@ -101,7 +93,6 @@ static inline bool d_can_lookup(const struct dentry *dentry)
 
 static inline bool d_is_dir(const struct dentry *dentry)
 {
-	/* Simplified: only check d_can_lookup since d_is_autodir was unused */
 	return d_can_lookup(dentry);
 }
 

@@ -165,10 +165,3 @@ void iov_iter_kvec(struct iov_iter *i, unsigned int direction,
 				.iov_offset = 0,
 				.count = count };
 }
-
-/* iov_iter_pipe, iov_iter_xarray, iov_iter_discard, iov_iter_alignment,
-   iov_iter_gap_alignment, iov_iter_get_pages, iov_iter_get_pages_alloc,
-   csum_and_copy_*, hash_and_copy_*, iov_iter_npages removed - unused */
-
-/* dup_iter, iovec_from_user, __import_iovec, import_iovec,
-   import_single_range, iov_iter_restore removed - unused */

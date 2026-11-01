@@ -5,7 +5,6 @@
 #include <asm/segment.h>
 #include <asm/processor-flags.h>
 
-/* 32-bit only kernel - removed x86_64 pt_regs */
 struct pt_regs {
 	unsigned long bx;
 	unsigned long cx;

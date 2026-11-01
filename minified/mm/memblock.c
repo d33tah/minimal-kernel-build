@@ -1,4 +1,3 @@
-
 #include <linux/memblock.h>
 
 #include <asm/io.h>
@@ -43,12 +42,6 @@ static inline phys_addr_t memblock_cap_size(phys_addr_t base, phys_addr_t *size)
 	return *size = min(*size, PHYS_ADDR_MAX - base);
 }
 
-/*
- * The bottom-up allocator (__memblock_find_range_bottom_up) was removed: this
- * build never sets memblock.bottom_up (initialised to false, no setter
- * tree-wide), so memblock_bottom_up() is always false and only the top-down
- * search below is ever reached.
- */
 static phys_addr_t __init_memblock __memblock_find_range_top_down(
 	phys_addr_t start, phys_addr_t end, phys_addr_t size, phys_addr_t align,
 	int nid, enum memblock_flags flags)

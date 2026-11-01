@@ -1,4 +1,3 @@
-
 #include <linux/delay.h>
 
 #define PANIC_TIMER_STEP 100
@@ -17,5 +16,3 @@ void panic(const char *fmt, ...)
 	for (;;)
 		mdelay(PANIC_TIMER_STEP);
 }
-
-/* Removed: oops_may_print - never called */

@@ -1,4 +1,3 @@
-
 #ifndef ASM_X86_CMPXCHG_H
 #define ASM_X86_CMPXCHG_H
 
@@ -94,9 +93,6 @@ extern void __xadd_wrong_size(void)
 
 #define __cmpxchg(ptr, old, new, size) \
 	__raw_cmpxchg((ptr), (old), (new), (size), "")
-
-/* --- 2025-12-07 20:12 --- Inlined cmpxchg_32.h */
-/* set_64bit removed - unused */
 
 #define arch_cmpxchg(ptr, old, new) __cmpxchg(ptr, old, new, sizeof(*(ptr)))
 

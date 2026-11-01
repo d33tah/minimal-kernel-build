@@ -1,4 +1,3 @@
-
 #include <linux/sched/signal.h>
 #include <linux/fdtable.h>
 #include <linux/file.h>
@@ -39,11 +38,6 @@ static unsigned int count_open_files(struct fdtable *fdt)
 
 static unsigned int sane_fdtable_size(struct fdtable *fdt)
 {
-	/*
-	 * The sole caller (dup_fd) always passed max_fds == NR_OPEN_MAX
-	 * (~0U), so the upstream min(count, max_fds) clamp and the
-	 * "max_fds < NR_OPEN_DEFAULT" fixup were both no-ops.
-	 */
 	return ALIGN(count_open_files(fdt), BITS_PER_LONG);
 }
 
@@ -71,14 +65,6 @@ struct files_struct *dup_fd(struct files_struct *oldf, int *errorp)
 	spin_lock(&oldf->file_lock);
 	old_fdt = files_fdtable(oldf);
 	open_files = sane_fdtable_size(old_fdt);
-
-	/*
-	 * On this single-shot boot no fd table ever exceeds NR_OPEN_DEFAULT:
-	 * init_files starts at that size and the only growth path
-	 * (alloc_fd) refuses fds beyond max_fds. So open_files (= ALIGN(count, 32),
-	 * count <= old_fdt->max_fds == NR_OPEN_DEFAULT) is always
-	 * <= new_fdt->max_fds and the resize loop is statically dead.
-	 */
 
 	copy_fd_bitmaps(new_fdt, old_fdt, open_files);
 

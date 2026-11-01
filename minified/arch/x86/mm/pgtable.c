@@ -37,12 +37,6 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 	return pgd;
 }
 
-/*
- * Called from __mmdrop() (mm_free_pgd) when an mm's last reference goes.
- * In this kernel that is the bprm_mm_init() error path of exec; init's own
- * mm is never torn down (mmput() is an empty stub). Non-PAE: the pgd is a
- * single page with no separately allocated PMDs.
- */
 void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 {
 	free_pages((unsigned long)pgd, PGD_ALLOCATION_ORDER);
@@ -58,11 +52,6 @@ int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
 
 	return changed;
 }
-
-/*
- * ptep_test_and_clear_young / ptep_clear_flush_young removed - no callers
- * (the generic rmap/aging paths that referenced them are minified out).
- */
 
 void native_set_fixmap(unsigned idx, phys_addr_t phys, pgprot_t flags)
 {

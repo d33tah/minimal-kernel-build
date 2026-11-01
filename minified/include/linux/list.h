@@ -56,12 +56,6 @@ static inline int list_empty(const struct list_head *head)
 	return READ_ONCE(head->next) == head;
 }
 
-/* list_del_init_careful removed: 0-caller orphan */
-
-/* list_empty_careful removed: 0-caller orphan */
-
-/* list_is_singular removed: 0-caller orphan */
-
 #define list_entry(ptr, type, member) container_of(ptr, type, member)
 
 #define list_first_entry(ptr, type, member) \
@@ -89,13 +83,5 @@ static inline void INIT_HLIST_NODE(struct hlist_node *h)
 	h->next = NULL;
 	h->pprev = NULL;
 }
-
-/* hlist_unhashed_lockless removed: 0-caller orphan (was only used by timer_pending) */
-
-/* hlist_empty removed: 0-caller orphan */
-
-/* hlist_is_singular_node removed: 0-caller orphan */
-
-/* hlist_move_list removed - 0 callers tree-wide */
 
 #endif

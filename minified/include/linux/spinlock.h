@@ -6,8 +6,6 @@
 
 #include <linux/spinlock_types.h>
 
-/* end spinlock_up.h */
-
 #define raw_spin_lock_init(lock)                          \
 	do {                                              \
 		*(lock) = __RAW_SPIN_LOCK_UNLOCKED(lock); \
@@ -33,16 +31,12 @@
 		_raw_spin_unlock_irqrestore(lock, flags); \
 	} while (0)
 
-/* do_raw_read_lock, do_raw_read_trylock, do_raw_read_unlock,
-   do_raw_write_lock, do_raw_write_trylock, do_raw_write_unlock removed - unused */
-
 #define write_lock(lock) _raw_write_lock(lock)
 #define read_lock(lock) _raw_read_lock(lock)
 
 #define read_unlock(lock) _raw_read_unlock(lock)
 #define write_unlock(lock) _raw_write_unlock(lock)
 
-/* Inlined from spinlock_api_up.h */
 #define ___LOCK(lock)         \
 	do {                  \
 		(void)(lock); \

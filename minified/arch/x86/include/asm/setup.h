@@ -1,4 +1,3 @@
-/* --- 2025-12-06 13:40 --- uapi/asm/setup.h removed (empty file) */
 #ifndef _ASM_X86_SETUP_H
 #define _ASM_X86_SETUP_H
 
@@ -15,8 +14,6 @@
 #define PARAM_SIZE 4096
 
 #ifndef __ASSEMBLY__
-
-/* __startup_64, startup_64_setup_env removed - 64-bit only, unused in 32-bit build */
 
 extern struct boot_params boot_params;
 extern char _text[];

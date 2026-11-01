@@ -29,10 +29,6 @@ static inline void __kunmap_atomic(void *addr)
 		__kunmap_atomic(__addr);                            \
 	} while (0)
 
-/* clear_user_highpage + generic alloc_zeroed_user_highpage_movable removed: x86 defines
- * __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE_MOVABLE (asm/page.h), so the generic inline never
- * compiled and clear_user_highpage (its sole consumer) was dead. */
-
 static inline void zero_user_segments(struct page *page, unsigned start1,
 				      unsigned end1, unsigned start2,
 				      unsigned end2)

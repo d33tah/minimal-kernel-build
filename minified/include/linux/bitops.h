@@ -3,9 +3,6 @@
 
 #include <linux/bits.h>
 
-/* x86 is little-endian (__LITTLE_ENDIAN unconditionally #defined in
- * kconfig.h, force-included every TU; __BIG_ENDIAN never defined)
- * -> big-endian aligned_byte_mask #else arm is statically dead */
 #define aligned_byte_mask(n) ((1UL << 8 * (n)) - 1)
 
 #define BITS_PER_TYPE(type) (sizeof(type) * BITS_PER_BYTE)
@@ -18,17 +15,11 @@ static inline __u32 rol32(__u32 word, unsigned int shift)
 	return (word << (shift & 31)) | (word >> ((-shift) & 31));
 }
 
-/* sign_extend32, sign_extend64 - unused */
-
 static inline unsigned fls_long(unsigned long l)
 {
 	if (sizeof(l) == 4)
 		return fls(l);
 	return fls64(l);
 }
-
-/* get_count_order, get_count_order_long - unused */
-
-/* __ffs64 - unused */
 
 #endif

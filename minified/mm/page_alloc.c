@@ -1,4 +1,3 @@
-
 #include <linux/memblock.h>
 
 #include <linux/sched/mm.h>
@@ -25,13 +24,6 @@ static unsigned long nr_all_pages __initdata;
 
 static unsigned long arch_zone_lowest_possible_pfn[MAX_NR_ZONES] __initdata;
 static unsigned long arch_zone_highest_possible_pfn[MAX_NR_ZONES] __initdata;
-
-/*
- * NODES_SHIFT is a hardcoded 0 in this tree (include/linux/numa.h), so
- * MAX_NUMNODES == (1 << 0) == 1 and the `#if MAX_NUMNODES > 1` out-of-line
- * `nr_node_ids` definition was statically dead in every TU. nr_node_ids is
- * served unconditionally by `#define nr_node_ids 1U` (include/linux/nodemask.h).
- */
 
 static void prep_compound_head(struct page *page, unsigned int order)
 {

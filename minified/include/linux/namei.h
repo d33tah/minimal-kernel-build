@@ -14,7 +14,4 @@ extern struct dentry *kern_path_create(const char *, struct path *,
 				       unsigned int);
 extern void done_path_create(struct path *, struct dentry *);
 
-/* try_lookup_one_len, lookup_one_len, lookup_one_len_unlocked, lookup_positive_unlocked,
-   lookup_one, lookup_one_unlocked, lookup_one_positive_unlocked removed - no callers */
-
 #endif

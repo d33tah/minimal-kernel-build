@@ -77,7 +77,6 @@ void __init setup_arch(void)
 	early_cpu_init();
 
 	screen_info = boot_params.screen_info;
-	/* edid_info/apm_info/ist_info/saved_video_mode copies removed - never read */
 
 	early_reserve_memory();
 
@@ -88,8 +87,6 @@ void __init setup_arch(void)
 	tsc_early_init();
 
 	max_pfn = e820__end_of_ram_pfn();
-
-	/* max_possible_pfn assignment removed - never read */
 
 	find_low_pfn_range();
 
@@ -107,8 +104,6 @@ void __init setup_arch(void)
 	memblock_set_current_limit(get_max_mapped());
 
 	initmem_init();
-
-	/* dma_contiguous_reserve, hugetlb_cma_reserve, reserve_crashkernel - stubs */
 
 	native_pagetable_init();
 

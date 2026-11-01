@@ -1,4 +1,3 @@
-
 #ifndef MM_SLAB_H
 #define MM_SLAB_H
 
@@ -71,8 +70,6 @@ struct kmem_cache {
 	struct kmem_cache_node *node[MAX_NUMNODES];
 };
 
-/* sysfs_slab_unlink/release removed - unused */
-
 #include <linux/memcontrol.h>
 #include <linux/sched/mm.h>
 
@@ -123,13 +120,6 @@ extern void create_boot_cache(struct kmem_cache *, const char *name,
 	 SLAB_RECLAIM_ACCOUNT | SLAB_TEMPORARY | SLAB_ACCOUNT |            \
 	 SLAB_NO_USER_FLAGS)
 
-/* __kmem_cache_release, __kmem_cache_free_bulk, __kmem_cache_alloc_bulk
- * removed - error-path/bulk cleanup never reached on this workload */
-
-/* slab_objcgs, memcg_from_slab_obj removed - unused */
-
-/* unaccount_slab removed - only caller was __free_slab (dead slab-free path) */
-
 static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 {
 	return s;
@@ -170,8 +160,6 @@ static inline struct kmem_cache_node *get_node(struct kmem_cache *s, int node)
 #define for_each_kmem_cache_node(__s, __node, __n)       \
 	for (__node = 0; __node < nr_node_ids; __node++) \
 		if ((__n = get_node(__s, __node)))
-
-/* dump_unreclaimable_slab / cache_random_seq_destroy removed - unused */
 
 static inline bool slab_want_init_on_alloc(gfp_t flags, struct kmem_cache *c)
 {

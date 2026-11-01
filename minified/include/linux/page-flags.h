@@ -1,4 +1,3 @@
-
 #ifndef PAGE_FLAGS_H
 #define PAGE_FLAGS_H
 
@@ -18,7 +17,6 @@ enum pageflags {
 
 	PG_anon_exclusive = PG_mappedtodisk,
 
-	/* PG_checked, PG_swapcache, PG_fscache, PG_double_map, PG_isolated, PG_reported, PG_pinned, PG_savepinned, PG_foreign, PG_xen_remapped, PG_slob_free removed - unused */
 };
 
 #define PAGEFLAGS_MASK ((1UL << NR_PAGEFLAGS) - 1)
@@ -141,7 +139,6 @@ __PAGEFLAG(Slab, slab, PF_NO_TAIL)
 PAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
 	__CLEARPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
 	__SETPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
-/* PAGEFLAG(Private)/TESTPAGEFLAG+TESTSCFLAG(Writeback)/PAGEFLAG(Reclaim) removed - 0 callers */
 /* clang-format on */
 
 #define __PG_HWPOISON 0

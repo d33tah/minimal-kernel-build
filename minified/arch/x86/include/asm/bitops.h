@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_BITOPS_H
 #define _ASM_X86_BITOPS_H
 
@@ -148,7 +147,6 @@ static __always_inline int fls(unsigned int x)
 	return r + 1;
 }
 
-/* Inlined from asm-generic/bitops/fls64.h - BITS_PER_LONG == 32 */
 static __always_inline int fls64(__u64 x)
 {
 	__u32 h = x >> 32;
@@ -156,8 +154,6 @@ static __always_inline int fls64(__u64 x)
 		return fls(h) + 32;
 	return fls(x);
 }
-
-/* Inlined from asm-generic/bitops/instrumented-atomic.h */
 
 static __always_inline void set_bit(long nr, volatile unsigned long *addr)
 {
@@ -169,7 +165,6 @@ static __always_inline void clear_bit(long nr, volatile unsigned long *addr)
 	arch_clear_bit(nr, addr);
 }
 
-/* Inlined from asm-generic/bitops/instrumented-non-atomic.h */
 static __always_inline void __set_bit(long nr, volatile unsigned long *addr)
 {
 	arch___set_bit(nr, addr);
@@ -186,10 +181,6 @@ static __always_inline bool test_bit(long nr,
 	return arch_test_bit(nr, addr);
 }
 
-/*
- * Inlined from asm-generic/bitops/instrumented-lock.h.
- * clear_bit_unlock() dropped: unreferenced tree-wide in this minified tree.
- */
 static inline bool test_and_set_bit_lock(long nr, volatile unsigned long *addr)
 {
 	return arch_test_and_set_bit_lock(nr, addr);

@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_PROCESSOR_H
 #define _ASM_X86_PROCESSOR_H
 
@@ -10,7 +9,6 @@
 #include <asm/msr.h>
 #include <asm/desc_defs.h>
 #include <asm/special_insns.h>
-/* Removed: #include <asm/vmxfeatures.h> - not needed for minimal kernel */
 
 static __always_inline void cpu_relax(void)
 {
@@ -22,11 +20,7 @@ static __always_inline void cpu_relax(void)
 #include <linux/err.h>
 #include <linux/irqflags.h>
 
-/* NET_IP_ALIGN removed - unused */
-
 #define ARCH_MIN_MMSTRUCT_ALIGN 0
-
-/* TLB arrays removed - never used in minimal kernel */
 
 struct cpuinfo_x86 {
 	__u8 x86; /* CPU family */
@@ -42,15 +36,12 @@ struct cpuinfo_x86 {
 
 extern struct cpuinfo_x86 boot_cpu_data;
 
-/* cpuinfo_op declaration removed - no implementation */
-
 #define cache_line_size() (boot_cpu_data.x86_cache_alignment)
 
 extern void cpu_detect(struct cpuinfo_x86 *c);
 
 extern void early_cpu_init(void);
 extern void identify_boot_cpu(void);
-/* identify_secondary_cpu, print_cpu_info, print_cpu_msr removed - never called */
 
 static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
 				unsigned int *ecx, unsigned int *edx)
@@ -60,10 +51,6 @@ static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
 		     : "0"(*eax), "2"(*ecx)
 		     : "memory");
 }
-
-/* native_cpuid_reg + native_cpuid_{eax,ebx,ecx,edx} removed - unused */
-
-/* native_read_cr3_pa removed - unused */
 
 static inline void load_cr3(pgd_t *pgdir)
 {
@@ -129,8 +116,6 @@ static inline void native_load_sp0(unsigned long sp0)
 	this_cpu_write(cpu_tss_rw.x86_tss.sp0, sp0);
 }
 
-/* current_top_of_stack removed - unused */
-
 #define __cpuid native_cpuid
 
 static inline void load_sp0(unsigned long sp0)
@@ -155,8 +140,6 @@ static inline void cpuid_count(unsigned int op, int count, unsigned int *eax,
 	__cpuid(eax, ebx, ecx, edx);
 }
 
-/* amd_e400_c1e_apic_setup declaration removed - implementation was removed */
-
 extern struct desc_ptr early_gdt_descr;
 
 extern void switch_to_new_gdt(int);
@@ -164,11 +147,7 @@ extern void load_direct_gdt(int);
 extern void load_percpu_segment(int);
 
 extern void cpu_init(void);
-/* cpu_init_secondary declaration removed - no implementation */
 extern void cpu_init_exception_handling(void);
-/* set_task_blockstep, bootloader_type, bootloader_version removed - unused */
-
-/* ARCH_HAS_PREFETCHW, ARCH_HAS_SPINLOCK_PREFETCH, ARCH_HAS_PREFETCH removed - unused */
 
 #define TOP_OF_INIT_STACK                                  \
 	((unsigned long)&init_stack + sizeof(init_stack) - \

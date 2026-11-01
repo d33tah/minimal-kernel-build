@@ -1,4 +1,3 @@
-
 #include <linux/file.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/signal.h>
@@ -342,12 +341,6 @@ int begin_new_exec(struct linux_binprm *bprm)
 
 	bprm->mm = NULL;
 
-	/*
-	 * unshare_sighand() removed: the only execve() callers (init via
-	 * user_mode_thread, kernel_execve) never pass CLONE_SIGHAND, so
-	 * sighand->count is always 1 and the unshare branch was dead.
-	 */
-
 	__set_task_comm(me, kbasename(bprm->filename), true);
 
 	commit_creds(bprm->cred);
@@ -410,7 +403,6 @@ static struct linux_binprm *alloc_bprm(struct filename *filename)
 	if (!bprm)
 		goto out;
 
-	/* AT_FDCWD-only exec: filename used directly, /dev/fd/N branch dead. */
 	bprm->filename = filename->name;
 
 	retval = bprm_mm_init(bprm);
@@ -423,8 +415,6 @@ out_free:
 out:
 	return ERR_PTR(retval);
 }
-
-/* Removed: bprm_change_interp - never called */
 
 static int prepare_binprm(struct linux_binprm *bprm)
 {

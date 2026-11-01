@@ -1,8 +1,6 @@
-
 #ifndef _ASM_X86_POSIX_TYPES_32_H
 #define _ASM_X86_POSIX_TYPES_32_H
 
-/* Inlined from asm-generic/posix_types.h */
 #include <asm/bitsperlong.h>
 
 typedef unsigned long __kernel_ulong_t;

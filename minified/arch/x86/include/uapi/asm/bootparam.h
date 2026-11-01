@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_BOOTPARAM_H
 #define _ASM_X86_BOOTPARAM_H
 
@@ -34,7 +33,6 @@ struct ist_info {
 	__u32 perf_level;
 };
 
-/* Inlined from video/edid.h */
 struct edid_info {
 	unsigned char dummy[128];
 };

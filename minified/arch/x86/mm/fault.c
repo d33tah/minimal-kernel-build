@@ -2,15 +2,6 @@
 #include <linux/extable.h>
 
 #include <asm/traps.h>
-/* Removed: #include <asm/kvm_para.h> - stub below */
-
-/*
- * arch_sync_kernel_mappings + its private helper vmalloc_sync_one were
- * runtime-dead (anchor-stub): the vmalloc page-table sync machinery in
- * mm/vmalloc.c that called this was already stripped, leaving zero callers
- * tree-wide.  Removed whole (along with pgd_page_get_mm in pgtable.c, whose
- * sole caller was vmalloc_sync_one's loop).
- */
 
 static noinline void page_fault_oops(struct pt_regs *regs,
 				     unsigned long error_code,
@@ -37,8 +28,6 @@ static noinline void kernelmode_fixup_or_oops(struct pt_regs *regs,
 	if (fixup_exception(regs, X86_TRAP_PF, error_code, address)) {
 		if (in_interrupt())
 			return;
-
-		/* sig_on_uaccess_err branch removed - field was never set (always 0) */
 
 		return;
 	}
@@ -93,12 +82,6 @@ static noinline int spurious_kernel_fault(unsigned long error_code,
 
 	pgd = init_mm.pgd + pgd_index(address);
 
-	/*
-	 * 2-level x86_32 (P4D/PUD/PMD folded): pgd_present/p4d_present/
-	 * pud_present are constant 1 and p4d_large/pud_large are constant 0,
-	 * so every upper-level check and leaf branch above the PMD was dead.
-	 * Descend straight to the (real) PMD entry.
-	 */
 	pmd = pmd_offset(pud_offset(p4d_offset(pgd, address), address),
 			 address);
 	if (!pmd_present(*pmd))
@@ -122,12 +105,6 @@ static noinline int spurious_kernel_fault(unsigned long error_code,
 static inline int access_error(unsigned long error_code,
 			       struct vm_area_struct *vma)
 {
-	/*
-	 * X86_PF_PK (protection-key violation) error-code bit is never set on
-	 * this build: PKU/OSPKE are compile-disabled (CR4.PKE never set, no
-	 * setup_pku). That guard was statically dead.
-	 */
-
 	if (error_code & X86_PF_WRITE) {
 		if (unlikely(!(vma->vm_flags & VM_WRITE)))
 			return 1;

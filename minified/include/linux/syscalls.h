@@ -1,8 +1,5 @@
-
 #ifndef _LINUX_SYSCALLS_H
 #define _LINUX_SYSCALLS_H
-
-/* Minimal forward declarations for syscalls.h */
 
 #include <asm/syscall_wrapper.h>
 #include <asm/syscall.h>

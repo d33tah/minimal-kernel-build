@@ -1,8 +1,5 @@
-
 #ifndef _ASM_X86_SECTIONS_H
 #define _ASM_X86_SECTIONS_H
-
-/* Inlined from asm-generic/sections.h */
 
 extern char _text[], _stext[], _etext[];
 extern char _data[], _sdata[], _edata[];

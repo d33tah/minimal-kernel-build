@@ -6,7 +6,6 @@ typedef struct {
 #define __ARCH_RW_LOCK_UNLOCKED \
 	{                       \
 	}
-/* end spinlock_types_up.h */
 
 #include <linux/lockdep_types.h>
 

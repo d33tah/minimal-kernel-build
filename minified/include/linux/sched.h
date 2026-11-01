@@ -1,13 +1,11 @@
 #ifndef _LINUX_SCHED_H
 #define _LINUX_SCHED_H
 
-/* Inlined from uapi/linux/sched.h */
 #define CSIGNAL 0x000000ff
 #define CLONE_VM 0x00000100
 #define CLONE_FS 0x00000200
 #define CLONE_FILES 0x00000400
 #define CLONE_UNTRACED 0x00800000
-/* End uapi/linux/sched.h */
 
 #include <linux/pid.h>
 #include <linux/smp.h>
@@ -91,8 +89,6 @@ static inline void clear_tsk_thread_flag(struct task_struct *tsk, int flag)
 {
 	clear_ti_thread_flag(task_thread_info(tsk), flag);
 }
-
-/* test_and_set_tsk_thread_flag: orphaned with set_notify_resume, removed (LOC reduction) */
 
 static inline int test_tsk_thread_flag(struct task_struct *tsk, int flag)
 {

@@ -1,4 +1,3 @@
-
 #include <asm/kdebug.h>
 
 #include <asm/traps.h>
@@ -53,11 +52,6 @@ DEFINE_IDTENTRY_RAW(exc_invalid_op)
 {
 	irqentry_state_t state;
 
-	/*
-	 * report_bug() is an unconditional stub returning BUG_TRAP_TYPE_BUG
-	 * on this !CONFIG_GENERIC_BUG build, so the old handle_bug() WARN
-	 * fixup never recovered (always returned false). Drop it.
-	 */
 	state = irqentry_enter(regs);
 	do_error_trap(regs, 0, "invalid opcode", X86_TRAP_UD, SIGILL);
 	irqentry_exit(regs, state);
@@ -123,11 +117,6 @@ DEFINE_IDTENTRY_ERRORCODE(exc_general_protection)
 {
 	cond_local_irq_enable(regs);
 
-	/*
-	 * UMIP is in DISABLED_MASK16 (never enabled) and fixup_umip_exception
-	 * was a return-false stub, so the UMIP GP fixup was dead -- dropped.
-	 */
-
 	if (user_mode(regs))
 		do_exit(SIGSEGV); /* no signal delivery */
 
@@ -174,8 +163,6 @@ static __always_inline void exc_debug_kernel(struct pt_regs *regs,
 	unsigned long dr7 = local_db_save();
 	irqentry_state_t irq_state = irqentry_nmi_enter(regs);
 
-	/* TIF_BLOCKSTEP is never set in this build -> branch was always false. */
-
 	if (!dr6)
 		goto out;
 
@@ -190,8 +177,6 @@ out:
 static __always_inline void exc_debug_user(struct pt_regs *regs,
 					   unsigned long dr6)
 {
-	/* TIF_BLOCKSTEP never set in this build -> clear was a no-op. */
-
 	/* Single-step or icebp from user mode: SIGTRAP, i.e. kill the task. */
 	do_exit(SIGTRAP);
 }

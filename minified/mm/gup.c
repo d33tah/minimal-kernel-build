@@ -1,9 +1,7 @@
-
 #include <linux/swap.h>
 
 static struct page *no_page_table(void)
 {
-	/* FOLL_DUMP never set -> always returns NULL */
 	return NULL;
 }
 
@@ -67,7 +65,6 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 			page = ERR_PTR(-ENOMEM);
 			goto out;
 		}
-		/* FOLL_PIN never set on this build (no pin_user_pages callers) */
 		if (flags & FOLL_GET)
 			folio_ref_inc(folio);
 	}
@@ -117,7 +114,6 @@ static int faultin_page(struct vm_area_struct *vma, unsigned long address,
 	unsigned int fault_flags = 0;
 	vm_fault_t ret;
 
-	/* FOLL_NOFAULT / FOLL_NOWAIT never set */
 	if (*flags & FOLL_WRITE)
 		fault_flags |= FAULT_FLAG_WRITE;
 	if (unshare) {
@@ -145,8 +141,6 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 	vm_flags_t vm_flags = vma->vm_flags;
 	int write = (gup_flags & FOLL_WRITE);
 
-	/* FOLL_ANON never set */
-
 	if (write) {
 		if (!(vm_flags & VM_WRITE)) {
 			if (!(gup_flags & FOLL_FORCE))
@@ -163,7 +157,6 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 			return -EFAULT;
 	}
 
-	/* arch_vma_access_permitted() is constant-true (no PKU) => guard dropped. */
 	return 0;
 }
 

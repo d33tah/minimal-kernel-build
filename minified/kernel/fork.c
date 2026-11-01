@@ -1,4 +1,3 @@
-
 #include <linux/sched/mm.h>
 #include <linux/sched/task_stack.h>
 #include <linux/file.h>
@@ -6,7 +5,6 @@
 #include <linux/swap.h>
 #include <linux/ptrace.h>
 #include <linux/fs_struct.h>
-/* end scs.h */
 
 #include <asm/pgalloc.h>
 #include <asm/mmu_context.h>
@@ -203,11 +201,6 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 	if (!oldmm)
 		return 0;
 
-	/*
-	 * The only spawner (user_mode_thread) always sets
-	 * CLONE_VM, so the address space is always shared -- the dup_mm()
-	 * (else) arm is statically dead.
-	 */
 	mmget(oldmm);
 	mm = oldmm;
 
@@ -244,7 +237,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct signal_struct *sig;
 
-	/* CLONE_THREAD is never set on this build: always a fresh signal. */
 	sig = kmem_cache_zalloc(signal_cachep, GFP_KERNEL);
 	tsk->signal = sig;
 	if (!sig)
@@ -253,8 +245,6 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	task_lock(current->group_leader);
 	memcpy(sig->rlim, current->signal->rlim, sizeof sig->rlim);
 	task_unlock(current->group_leader);
-
-	/* sched_autogroup_fork - stubbed */
 
 	mutex_init(&sig->cred_guard_mutex);
 	init_rwsem(&sig->exec_update_lock);
@@ -280,14 +270,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	int retval;
 	struct task_struct *p;
 	const u64 clone_flags = args->flags;
-
-	/*
-	 * The CLONE_NEWNS/NEWUSER/THREAD/SIGHAND/PARENT/NEWPID validation
-	 * checks here are dead on this build: none of those flags is ever
-	 * set (the only spawns pass CLONE_FS|CLONE_FILES|CLONE_VM|
-	 * CLONE_UNTRACED|SIGCHLD), so all the early -EINVAL returns are
-	 * unreachable.
-	 */
 
 	retval = -ENOMEM;
 	p = dup_task_struct(current, node);
@@ -335,7 +317,6 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	}
 
 	p->pid = pid_nr(pid);
-	/* CLONE_THREAD never set -> always a new thread-group leader */
 	p->group_leader = p;
 
 	if (likely(p->pid))
@@ -349,7 +330,6 @@ bad_fork_cleanup_mm:
 		mmput(p->mm);
 	}
 bad_fork_cleanup_signal:
-	/* CLONE_THREAD never set -> signal_struct is always private here */
 	kmem_cache_free(signal_cachep, p->signal);
 bad_fork_cleanup_fs:
 bad_fork_cleanup_semundo:
@@ -366,11 +346,6 @@ static pid_t kernel_clone(struct kernel_clone_args *args)
 	struct task_struct *p;
 	pid_t nr;
 
-	/*
-	 * The only spawner (user_mode_thread) always sets
-	 * CLONE_UNTRACED and there is no fork/clone/vfork syscall, so the
-	 * ptrace-event clone notification (PTRACE_EVENT_CLONE/FORK) is dead.
-	 */
 	p = copy_process(NULL, NUMA_NO_NODE, args);
 
 	if (IS_ERR(p))
@@ -417,9 +392,3 @@ void __init proc_caches_init(void)
 		sizeof_field(struct mm_struct, saved_auxv), NULL);
 	vm_area_cachep = KMEM_CACHE(vm_area_struct, SLAB_PANIC | SLAB_ACCOUNT);
 }
-
-/*
- * Removed: SYSCALL_DEFINE1(unshare) - unreachable. The init ELF issues only
- * write(2)+exit(2) via int 0x80; unshare(2) is never invoked and nothing in the
- * boot/exec path calls it internally. syscall_32.tbl entry 310 routes to sys_ni.
- */

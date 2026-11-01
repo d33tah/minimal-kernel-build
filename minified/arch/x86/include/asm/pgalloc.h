@@ -1,14 +1,10 @@
-
 #ifndef _ASM_X86_PGALLOC_H
 #define _ASM_X86_PGALLOC_H
 
 #include <linux/mm.h>
 
-/* Inlined from asm-generic/pgalloc.h */
 #define GFP_PGTABLE_KERNEL (GFP_KERNEL | __GFP_ZERO)
 #define GFP_PGTABLE_USER (GFP_PGTABLE_KERNEL | __GFP_ACCOUNT)
-
-/* pte_alloc_one_kernel + its sole callee __pte_alloc_one_kernel + pte_free_kernel removed - 0-caller kernel pte-table alloc/free wrappers (cascade cluster) */
 
 static inline pgtable_t __pte_alloc_one(struct mm_struct *mm, gfp_t gfp)
 {
@@ -30,14 +26,6 @@ static inline void pte_free(struct mm_struct *mm, struct page *pte_page)
 	pgtable_pte_page_dtor(pte_page);
 	__free_page(pte_page);
 }
-
-/*
- * PGTABLE_LEVELS == 2 (x86_32, no PAE): the PMD/PUD/P4D allocation and
- * freeing helpers guarded by CONFIG_PGTABLE_LEVELS > 2/3/4 are all folded
- * away and were removed wholesale.
- */
-
-/* paravirt_alloc_pte/paravirt_alloc_pmd/paravirt_release_pte no-op stubs + their discarded calls removed - PARAVIRT off */
 
 #define PGD_ALLOCATION_ORDER 0
 

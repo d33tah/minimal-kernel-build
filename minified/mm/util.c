@@ -31,7 +31,6 @@ static unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 		return -EINTR;
 	ret = do_mmap(file, addr, len, prot, flag, pgoff, &populate);
 	mmap_write_unlock(mm);
-	/* populate is always 0 here (VM_LOCKED/MAP_POPULATE never set). */
 	return ret;
 }
 

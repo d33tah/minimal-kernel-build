@@ -1,4 +1,3 @@
-/* --- 2025-12-06 13:10 --- elf-em.h replaced with elf.h */
 #ifndef _ASM_X86_SYSCALL_H
 #define _ASM_X86_SYSCALL_H
 

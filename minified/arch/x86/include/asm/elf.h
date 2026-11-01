@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_ELF_H
 #define _ASM_X86_ELF_H
 
@@ -37,7 +36,6 @@ extern u32 elf_hwcap2;
 
 static inline int mmap_is_ia32(void)
 {
-	/* TIF_ADDR32 never set in this build -> COMPAT term always false */
 	return IS_ENABLED(CONFIG_X86_32);
 }
 

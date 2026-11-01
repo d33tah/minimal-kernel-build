@@ -1,5 +1,3 @@
-/* Minimal memcontrol.h - stub for CONFIG_MEMCG disabled */
-
 #ifndef _LINUX_MEMCONTROL_H
 #define _LINUX_MEMCONTROL_H
 

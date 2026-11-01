@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_BARRIER_H
 #define _ASM_X86_BARRIER_H
 
@@ -13,12 +12,6 @@ static inline unsigned long array_index_mask_nospec(unsigned long index,
 		     : "cc");
 	return mask;
 }
-
-/* --- 2025-12-07 10:25 --- Inlined asm-generic/barrier.h content */
-
-/* nop() fallback removed - nop() never invoked anywhere (statically dead) */
-
-/* #ifdef __mb/__rmb/__wmb fallback blocks removed - __mb/__rmb/__wmb never #defined (statically dead) */
 
 #define smp_rmb() barrier()
 

@@ -69,13 +69,6 @@ void __init early_alloc_pgt_buf(void)
 	pgt_buf_top = pgt_buf_start + (tables >> PAGE_SHIFT);
 }
 
-/*
- * GB-page direct mapping is gone: CONFIG_X86_DIRECT_GBPAGES is unset on
- * x86_32, so direct_gbpages was a compile-time constant 0.  The variable,
- * its PG_LEVEL_1G page_size_mask arm in probe_page_size_mask(), and the
- * matching 1G fold in adjust_range_page_size_mask() were all statically
- * dead and have been removed.
- */
 struct map_range {
 	unsigned long start, end;
 	unsigned page_size_mask;
@@ -291,10 +284,6 @@ void __init init_mem_mapping(void)
 
 	init_memory_mapping(0, ISA_END_ADDRESS, PAGE_KERNEL);
 
-	/*
-	 * memblock_bottom_up() is always false on this build (no setter), so the
-	 * bottom-up mapping branch is dead; only the top-down path runs.
-	 */
 	memory_map_top_down(ISA_END_ADDRESS, end);
 
 	fixmap_page_table_init();

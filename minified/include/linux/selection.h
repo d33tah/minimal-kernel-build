@@ -1,8 +1,5 @@
-
 #ifndef _LINUX_SELECTION_H_
 #define _LINUX_SELECTION_H_
-
-/* Inlined from vt_buffer.h */
 
 #define scr_writew(val, addr) (*(addr) = (val))
 #define scr_readw(addr) (*(addr))

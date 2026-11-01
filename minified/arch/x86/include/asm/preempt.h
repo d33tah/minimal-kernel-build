@@ -1,4 +1,3 @@
-
 #ifndef __ASM_PREEMPT_H
 #define __ASM_PREEMPT_H
 
@@ -50,8 +49,6 @@ static __always_inline void __preempt_count_sub(int val)
 {
 	raw_cpu_add_4(__preempt_count, -val);
 }
-
-/* __preempt_count_dec_and_test removed - unused */
 
 static __always_inline bool should_resched(int preempt_offset)
 {

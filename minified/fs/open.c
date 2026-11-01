@@ -1,4 +1,3 @@
-
 #include <linux/namei.h>
 
 #include "internal.h"
@@ -80,5 +79,3 @@ struct file *filp_open(const char *filename, int flags, umode_t mode)
 	putname(name);
 	return file;
 }
-
-/* Removed: stream_open - never called */

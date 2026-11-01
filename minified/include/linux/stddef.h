@@ -1,10 +1,6 @@
 #ifndef _LINUX_STDDEF_H
 #define _LINUX_STDDEF_H
 
-/* Inlined from uapi/linux/stddef.h */
-
-/* Removed: __struct_group / __DECLARE_FLEX_ARRAY - 0 invocation sites tree-wide */
-
 #undef NULL
 #define NULL ((void *)0)
 
@@ -14,7 +10,5 @@ enum { false = 0, true = 1 };
 #define offsetof(TYPE, MEMBER) __builtin_offsetof(TYPE, MEMBER)
 
 #define sizeof_field(TYPE, MEMBER) sizeof((((TYPE *)0)->MEMBER))
-
-/* Removed: struct_group* / DECLARE_FLEX_ARRAY - 0 invocation sites tree-wide */
 
 #endif

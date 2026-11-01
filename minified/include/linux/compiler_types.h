@@ -18,10 +18,8 @@
 #include <linux/compiler_attributes.h>
 
 #ifdef __clang__
-/* --- 2025-12-08 00:18 --- Inlined from compiler-clang.h */
 #define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)
 #define __no_sanitize_address
-/* __no_sanitize_thread dropped: KCSAN unset, zero expanders tree-wide (tick #404) */
 #define __no_sanitize_coverage
 
 #define __nocfi __attribute__((__no_sanitize__("cfi")))
@@ -31,41 +29,14 @@
 #error "Unknown compiler"
 #endif
 
-/*
- * notrace selector: the CC_USING_HOTPATCH and CC_USING_PATCHABLE_FUNCTION_ENTRY
- * arms are statically dead in this build. Neither token is ever -D'd here:
- * CC_USING_HOTPATCH is only defined by arch/s390's Makefile (absent), and
- * CC_USING_PATCHABLE_FUNCTION_ENTRY by a CONFIG-gated top-Makefile rule that is
- * likewise absent. The ftrace block in the top Makefile only ever -D's
- * CC_USING_NOP_MCOUNT / CC_USING_FENTRY. So only the __no_instrument_function__
- * arm was ever live; keep it unconditionally.
- */
 #define notrace __attribute__((__no_instrument_function__))
 
 #define inline inline __gnu_inline __inline_maybe_unused notrace
 
-/* KBUILD_EXTRA_WARN1 is defined only under `make W=1` (scripts/Makefile.extrawarn,
- * -D-gated by KBUILD_EXTRA_WARN); the plain gate build passes no W=, so the then-arm
- * is statically dead. Keep only the live __maybe_unused arm. */
 #define __inline_maybe_unused __maybe_unused
 
-/*
- * __SANITIZE_ADDRESS__ is #defined at exactly one site (the
- * __has_feature(address_sanitizer) bridge above). This is a clang-only build
- * (CONFIG_CC_IS_CLANG=y; clang does NOT predefine __SANITIZE_ADDRESS__) with no
- * KASAN: CONFIG_KASAN is unset, scripts/Makefile.kasan is absent, and nothing
- * ever passes -fsanitize=address/hwaddress. So that bridge never fires, the
- * token is never defined, and the KASAN then-arm is statically dead. Keep only
- * the live plain-inline arm.
- */
 #define __no_kasan_or_inline __always_inline
 
-/*
- * Likewise __SANITIZE_THREAD__: defined only at the __has_feature(thread_sanitizer)
- * bridge above; this build never passes -fsanitize=thread (CONFIG_KCSAN unset,
- * scripts/Makefile.kcsan absent), so the token is never defined and the KCSAN
- * then-arm is statically dead. Keep only the live empty arm.
- */
 #define __no_kcsan
 
 #define noinstr                                                      \
@@ -74,9 +45,6 @@
 
 #define __latent_entropy
 
-/* RANDSTRUCT gcc-plugin is unconfigured in this build (CONFIG_RANDSTRUCT unset;
- * scripts/Makefile.randstruct absent, so RANDSTRUCT is never -D'd) => the
- * defined(RANDSTRUCT) arm is statically dead; only the plain arm is live. */
 #define __randomize_layout __designated_init
 #define randomized_struct_fields_start
 #define randomized_struct_fields_end

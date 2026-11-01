@@ -1,4 +1,3 @@
-
 #include <asm/tlbflush.h>
 
 unsigned int __VMALLOC_RESERVE = 128 << 20;
@@ -13,11 +12,6 @@ void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
 	if (pgd_none(*pgd)) {
 		BUG();
 	}
-	/*
-	 * P4D/PUD are folded onto the PGD on this 2-level (X86_32, no PAE)
-	 * build, so p4d_offset()/pud_offset() are identity casts and
-	 * p4d_none()/pud_none() are constant 0 -- descend straight to the PMD.
-	 */
 	pmd = pmd_offset(pud_offset(p4d_offset(pgd, vaddr), vaddr), vaddr);
 	if (pmd_none(*pmd)) {
 		BUG();

@@ -1,4 +1,3 @@
-
 #ifndef _LINUX_MM_H
 #define _LINUX_MM_H
 
@@ -14,8 +13,6 @@ static inline int folio_ref_count(const struct folio *folio)
 {
 	return page_ref_count(&folio->page);
 }
-
-/* Removed: page_count, update_hiwater_rss - 0-caller orphans */
 
 static inline void set_page_count(struct page *page, int v)
 {
@@ -135,7 +132,6 @@ void vm_area_free(struct vm_area_struct *);
 #define VM_MAYEXEC 0x00000040
 
 #define VM_GROWSDOWN 0x00000100
-/* VM_UFFD_WP (0x1000) removed - unused */
 
 #define VM_LOCKED 0x00002000
 
@@ -322,12 +318,6 @@ static inline bool is_cow_mapping(vm_flags_t flags)
 	return (flags & (VM_SHARED | VM_MAYWRITE)) == VM_MAYWRITE;
 }
 
-/*
- * NODES_SHIFT is unconditionally 0 in this tree (linux/numa.h), so
- * NODE_NOT_IN_PAGE_FLAGS is never defined (page-flags-layout.h) and the
- * out-of-line extern arm was statically dead; the node id always lives in
- * page->flags, so page_to_nid() is always this inline.
- */
 static inline int page_to_nid(const struct page *page)
 {
 	struct page *p = (struct page *)page;
@@ -399,10 +389,6 @@ extern vm_fault_t handle_mm_fault(struct vm_area_struct *vma,
 long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
 			   unsigned long nr_pages, unsigned int gup_flags,
 			   struct page **pages);
-/* pin_user_pages_remote, get_user_pages, pin_user_pages, get_user_pages_unlocked,
-   pin_user_pages_unlocked, get_user_pages_fast, pin_user_pages_fast removed - unused */
-
-/* dec_mm_counter removed - 0 callers (dec_mm_counter_fast macro never invoked) */
 
 static inline p4d_t *p4d_alloc(struct mm_struct *mm, pgd_t *pgd,
 			       unsigned long address)
@@ -517,7 +503,6 @@ static inline unsigned long vma_pages(struct vm_area_struct *vma)
 }
 
 pgprot_t vm_get_page_prot(unsigned long vm_flags);
-/* Removed: vma_set_page_prot - never called */
 
 struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 
@@ -527,19 +512,16 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 #define FOLL_FORCE 0x10
 #define FOLL_REMOTE 0x2000
 #define FOLL_COW 0x4000
-/* Removed never-set FOLL bits: DUMP/NOWAIT/NOFAULT/HWPOISON/ANON/LONGTERM */
 
 static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags)
 {
 	if (vm_fault & VM_FAULT_OOM)
 		return -ENOMEM;
 	if (vm_fault & (VM_FAULT_HWPOISON | VM_FAULT_HWPOISON_LARGE))
-		return -EFAULT; /* FOLL_HWPOISON never set */
+		return -EFAULT;
 	if (vm_fault & (VM_FAULT_SIGBUS | VM_FAULT_SIGSEGV))
 		return -EFAULT;
 	return 0;
 }
-
-/* Inlined from elf-randomize.h */
 
 #endif

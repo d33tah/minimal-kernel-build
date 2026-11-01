@@ -1,4 +1,3 @@
-
 #include <linux/delay.h>
 
 #include <asm/traps.h>
@@ -6,14 +5,6 @@
 #include <asm/mach_traps.h>
 
 static DEFINE_RAW_SPINLOCK(nmi_reason_lock);
-
-/*
- * No NMI handlers are ever registered in this minimal kernel (the only
- * registrar, arch/x86/kernel/apic/hw_nmi.c, is compiled out because
- * arch_trigger_cpumask_backtrace is undefined), so the per-type handler
- * lists are permanently empty and would-be nmi_handle() always reports 0
- * handled -- the dispatch call and its 0-result branches are folded out.
- */
 
 enum nmi_states {
 	NMI_NOT_RUNNING = 0,

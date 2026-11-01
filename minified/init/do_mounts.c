@@ -1,14 +1,5 @@
-
 #include <linux/fs.h>
 #include <linux/ramfs.h>
-
-/*
- * The root=/rootwait/rootflags=/rootfstype=/rootdelay= command-line options
- * are irrelevant for this initramfs-only kernel (it never mounts a real root
- * device) and the boot command line is empty. The __setup handlers were empty
- * `return 1;` stubs that merely swallowed those args, and the boot cmdline is
- * empty so no such arg is ever present.
- */
 
 struct file_system_type rootfs_fs_type = {
 	.init_fs_context = ramfs_init_fs_context,

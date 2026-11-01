@@ -1,14 +1,7 @@
-
 #ifndef _ASM_X86_IO_H
 #define _ASM_X86_IO_H
 
-/* ARCH_HAS_IOREMAP_WC, ARCH_HAS_IOREMAP_WT removed - unused */
-
 #include <asm/shared/io.h>
-
-/* build_mmio_write/writeb + readb/readw/readl/writew/writel removed - 0 callers */
-/* __read, __write, _relaxed and __raw_ accessors removed - unused */
-/* ARCH_HAS_VALID_PHYS_ADDR_RANGE, valid_*_range removed - unused */
 
 static inline void *phys_to_virt(phys_addr_t address)
 {
@@ -51,15 +44,6 @@ static inline void slow_down_io(void)
 	}
 
 BUILDIO(b, b, u8)
-/* BUILDIO(w)/BUILDIO(l) removed - only generate 0-caller _p/outs/ins wrappers */
 #undef BUILDIO
-
-/* ioremap_change_attr, ioremap_wc, ioremap_wt removed - no callers */
-
-/* ioport_map/unmap removed - declared but never defined/used */
-
-/* ioremap_np removed - no callers */
-
-/* phys_mem_access_encrypted removed - unused */
 
 #endif

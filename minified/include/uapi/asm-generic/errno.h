@@ -1,7 +1,6 @@
 #ifndef _ASM_GENERIC_ERRNO_H
 #define _ASM_GENERIC_ERRNO_H
 
-/* Inlined from asm-generic/errno-base.h */
 #define EPERM 1
 #define ENOENT 2
 #define EINTR 4
@@ -24,7 +23,6 @@
 #define ETXTBSY 26
 #define ENOSPC 28
 #define EMLINK 31
-/* ENOTTY(25), ESPIPE(29), ERANGE(34) removed - 0-caller errno constants */
 /* end errno-base.h */
 
 #define ENAMETOOLONG 36

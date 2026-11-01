@@ -4,12 +4,6 @@
 struct dentry;
 struct user_namespace;
 
-/*
- * MNT_* flag bits removed: mnt_flags was only ever written with MNT_INTERNAL
- * / MNT_LOCKED (both never tested) so every read of any other bit was an
- * always-false branch.  Branches folded, field dropped.
- */
-
 struct vfsmount {
 	struct dentry *mnt_root;
 	struct user_namespace *mnt_userns;

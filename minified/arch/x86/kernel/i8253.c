@@ -1,4 +1,3 @@
-/* Minimal includes for PIT timer */
 #include <linux/i8253.h>
 
 struct clock_event_device *global_clock_event;

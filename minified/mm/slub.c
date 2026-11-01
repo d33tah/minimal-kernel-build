@@ -1,14 +1,7 @@
-
 #include <linux/mm.h>
 #include "slab.h"
 
 #include "internal.h"
-
-/* SLAB_NO_CMPXCHG removed - its bits (CONSISTENCY_CHECKS/STORE_USER/TRACE) are
- * never set on any cache, so the kmem_cache_open mask test folded to always-true */
-
-/* DEBUG_METADATA_FLAGS removed - only consumer was the dead
- * disable_higher_order_debug (const 0) branch in kmem_cache_open */
 
 #define OO_SHIFT 16
 #define OO_MASK ((1 << OO_SHIFT) - 1)
@@ -388,9 +381,6 @@ static int calculate_sizes(struct kmem_cache *s)
 	if (order)
 		s->allocflags |= __GFP_COMP;
 
-	/* SLAB_CACHE_DMA/DMA32 never set (KMALLOC_DMA == KMALLOC_NORMAL, no DMA
-	 * cache, no callsite passes them) -> both arms dead. */
-
 	s->oo = oo_make(order, size);
 	s->min = oo_make(get_order(size), size);
 
@@ -409,10 +399,6 @@ static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 
 	return 0;
 }
-
-/* setup_slub_min_order, setup_slub_max_order, setup_slub_min_objects and __setup
- * handlers removed - not needed for minimal kernel. slub_min_order/min_objects
- * folded to 0 and slub_max_order to PAGE_ALLOC_COSTLY_ORDER (write-never). */
 
 void *__kmalloc(size_t size, gfp_t flags)
 {
@@ -450,9 +436,6 @@ void kfree(const void *x)
 	slab_free(slab->slab_cache, slab, object);
 }
 
-/* Memory hotplug callbacks removed - not needed for minimal kernel
- * (register_hotmemory_notifier is already a no-op) */
-
 static struct kmem_cache *__init bootstrap(struct kmem_cache *static_cache)
 {
 	int node;
@@ -486,8 +469,6 @@ void __init kmem_cache_init(void)
 	create_boot_cache(kmem_cache_node, "kmem_cache_node",
 			  sizeof(struct kmem_cache_node), SLAB_HWCACHE_ALIGN, 0,
 			  0);
-
-	/* Memory hotplug notifier removed - not needed for minimal kernel */
 
 	slab_state = PARTIAL;
 

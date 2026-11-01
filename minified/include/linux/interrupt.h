@@ -1,7 +1,6 @@
 #ifndef _LINUX_INTERRUPT_H
 #define _LINUX_INTERRUPT_H
 
-/* Inlined from irqreturn.h */
 enum irqreturn {
 	IRQ_NONE = (0 << 0),
 	IRQ_HANDLED = (1 << 0),

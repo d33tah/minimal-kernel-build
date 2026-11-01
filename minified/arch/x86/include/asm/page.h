@@ -1,12 +1,9 @@
-
 #ifndef _ASM_X86_PAGE_H
 #define _ASM_X86_PAGE_H
 
 #include <linux/types.h>
 
 #include <asm/page_types.h>
-
-/* --- 2025-12-08 00:22 --- Inlined from page_32.h */
 
 #ifndef __ASSEMBLY__
 
@@ -49,13 +46,10 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
 
 #define __va(x) ((void *)((unsigned long)(x) + PAGE_OFFSET))
 
-/* __boot_va, __boot_pa removed - unused */
-
 #define virt_to_page(kaddr) pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
 
 #endif
 
-/* Inlined from asm-generic/memory_model.h */
 #include <linux/pfn.h>
 #define ARCH_PFN_OFFSET (0UL)
 #define __pfn_to_page(pfn) (mem_map + ((pfn) - ARCH_PFN_OFFSET))

@@ -1,5 +1,3 @@
-
-
 #ifndef _ASM_X86_TSC_H
 #define _ASM_X86_TSC_H
 
@@ -7,19 +5,12 @@
 
 typedef unsigned long long cycles_t;
 
-/* disable_TSC removed - unused */
-
 static inline cycles_t get_cycles(void)
 {
 	return rdtsc();
 }
 
-/* convert_art_to_tsc, convert_art_ns_to_tsc removed - unused */
-
 extern void tsc_early_init(void);
 extern void tsc_init(void);
-/* mark_tsc_unstable folded into tsc_init; check_tsc_unstable, mark_tsc_async_resets removed - unused */
-
-/* check_tsc_sync_source, check_tsc_sync_target removed - unused (SMP) */
 
 #endif

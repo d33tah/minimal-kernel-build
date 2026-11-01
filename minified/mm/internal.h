@@ -1,4 +1,3 @@
-
 #ifndef __MM_INTERNAL_H
 #define __MM_INTERNAL_H
 
@@ -21,20 +20,12 @@
 		unlikely(__ret_warn_once);      \
 	})
 
-/* force_page_cache_readahead removed - unused */
-
-/* page_evictable removed - unused */
-
 static inline void set_page_refcounted(struct page *page)
 {
 	set_page_count(page, 1);
 }
 
 extern unsigned long highest_memmap_pfn;
-
-/* MAX_RECLAIM_RETRIES removed - never referenced */
-
-/* isolate_lru_page, putback_lru_page removed - never called */
 
 /*
  * This function returns the order of a free page in the buddy system. In
@@ -128,20 +119,10 @@ static inline struct page *find_buddy_page_pfn(struct page *page,
 	return NULL;
 }
 
-/* __pageblock_pfn_to_page, pageblock_pfn_to_page removed - unused */
-
-/* __isolate_free_page, __putback_isolated_page removed - unused */
 extern void memblock_free_pages(struct page *page, unsigned long pfn,
 				unsigned int order);
 
-/* split_free_page, find_suitable_fallback declaration removed - unused */
-/* is_exec_mapping, is_stack_mapping, is_data_mapping removed - unused */
-
 void __vma_link_list(struct mm_struct *mm, struct vm_area_struct *vma,
 		     struct vm_area_struct *prev);
-
-/* populate_vma_page_range / faultin_vma_page_range removed - unused */
-
-/* maybe_pmd_mkwrite removed - unused */
 
 #endif

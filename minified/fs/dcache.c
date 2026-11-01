@@ -1,4 +1,3 @@
-
 #include <linux/memblock.h>
 #include "internal.h"
 
@@ -153,8 +152,6 @@ static void __dentry_kill(struct dentry *dentry)
 		parent = dentry->d_parent;
 
 	lockref_mark_dead(&dentry->d_lockref);
-
-	/* DCACHE_OP_PRUNE is never set (no ops object sets ->d_prune) */
 
 	if (!d_unhashed(dentry)) {
 		___d_drop(dentry);
@@ -339,11 +336,6 @@ struct dentry *d_make_root(struct inode *root_inode)
 static inline bool d_same_name(const struct dentry *dentry,
 			       const struct qstr *name)
 {
-	/*
-	 * DCACHE_OP_COMPARE is never set on this build (no ->d_compare
-	 * ops object exists), so the per-dentry custom compare is
-	 * unreachable -- always do a plain name compare.
-	 */
 	if (dentry->d_name.len != name->len)
 		return false;
 	return dentry_cmp(dentry, name->name, name->len) == 0;

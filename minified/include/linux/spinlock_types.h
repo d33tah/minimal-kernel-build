@@ -25,7 +25,6 @@ typedef struct spinlock {
 
 #define DEFINE_SPINLOCK(x) spinlock_t x = __SPIN_LOCK_UNLOCKED(x)
 
-/* Inlined from rwlock_types.h */
 typedef struct {
 	arch_rwlock_t raw_lock;
 } rwlock_t;

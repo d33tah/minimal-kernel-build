@@ -1,4 +1,3 @@
-
 #include <asm/mmu_context.h>
 
 #define STATIC_NOPV static
@@ -29,14 +28,6 @@ void switch_mm(struct mm_struct *prev, struct mm_struct *next,
 	switch_mm_irqs_off(prev, next, tsk);
 	local_irq_restore(flags);
 }
-
-/* Speculation-mitigation switch_mm path removed: CONFIG_SPECULATION_MITIGATIONS
- * is unset, so switch_mm_cond_ibpb / switch_mm_always_ibpb /
- * switch_mm_cond_l1d_flush are DEFINE_STATIC_KEY_FALSE and never enabled. With
- * all three keys off, cond_mitigation's only observable effect was writing the
- * never-read last_user_mm_spec field, so the whole helper chain
- * (cond_mitigation / mm_mangle_tif_spec_bits / l1d_flush_evaluate /
- * l1d_flush_force_sigbus) was dead. */
 
 static inline void cr4_update_pce_mm(struct mm_struct *mm)
 {
@@ -101,21 +92,12 @@ void flush_tlb_mm_range(struct mm_struct *mm, unsigned long start,
 
 void flush_tlb_one_kernel(unsigned long addr)
 {
-	/*
-	 * PAGE_TABLE_ISOLATION is unset on this build, so X86_FEATURE_PTI is
-	 * never set and the user-mapping invalidation below is dead.
-	 */
 	flush_tlb_one_user(addr);
 }
 
 STATIC_NOPV void native_flush_tlb_one_user(unsigned long addr)
 {
 	asm volatile("invlpg (%0)" ::"r"(addr) : "memory");
-
-	/*
-	 * PAGE_TABLE_ISOLATION is unset, so X86_FEATURE_PTI is never set and the
-	 * user-PCID invalidation that would otherwise follow here is dead.
-	 */
 }
 
 void flush_tlb_one_user(unsigned long addr)
@@ -152,5 +134,3 @@ void __flush_tlb_all(void)
 		flush_tlb_local();
 	}
 }
-
-/* Stub: TLB flush debugfs tuning not needed for minimal kernel */

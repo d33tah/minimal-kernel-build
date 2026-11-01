@@ -1,4 +1,3 @@
-/* Minimal VGA header - only what vgacon.c needs */
 #ifndef __linux_video_vga_h__
 #define __linux_video_vga_h__
 

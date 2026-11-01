@@ -4,7 +4,6 @@
 #include <linux/bit_spinlock.h>
 #include <linux/rcupdate.h>
 
-/* Inlined from list_bl.h */
 #define LIST_BL_LOCKMASK 0UL
 
 struct hlist_bl_head {

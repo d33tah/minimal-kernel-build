@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_PAGE_DEFS_H
 #define _ASM_X86_PAGE_DEFS_H
 
@@ -10,8 +9,6 @@
 
 #define PMD_PAGE_SIZE (_AC(1, UL) << PMD_SHIFT)
 #define PMD_PAGE_MASK (~(PMD_PAGE_SIZE - 1))
-
-/* PUD_PAGE_SIZE/PUD_PAGE_MASK removed: 0-caller cascade (mask was PUD_PAGE_SIZE's only user) */
 
 #define PHYSICAL_PAGE_MASK (((signed long)PAGE_MASK) & __PHYSICAL_MASK)
 #define PHYSICAL_PMD_PAGE_MASK (((signed long)PMD_PAGE_MASK) & __PHYSICAL_MASK)

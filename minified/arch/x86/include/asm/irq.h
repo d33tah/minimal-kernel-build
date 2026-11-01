@@ -1,8 +1,5 @@
-
 #ifndef _ASM_X86_IRQ_H
 #define _ASM_X86_IRQ_H
-
-/* irq_canonicalize removed - unused */
 
 extern int irq_init_percpu_irqstack(unsigned int cpu);
 

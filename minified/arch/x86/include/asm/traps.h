@@ -1,4 +1,3 @@
-
 #ifndef _ASM_X86_TRAPS_H
 #define _ASM_X86_TRAPS_H
 
@@ -6,7 +5,6 @@
 #include <asm/debugreg.h>
 #include <asm/idtentry.h>
 
-/* Inlined from asm/trap_pf.h */
 enum x86_pf_error_code {
 	X86_PF_PROT = 1 << 0,
 	X86_PF_WRITE = 1 << 1,

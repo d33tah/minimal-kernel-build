@@ -3,7 +3,6 @@
 
 #include <uapi/linux/const.h>
 
-/* Inlined from vdso/const.h */
 #define UL(x) (_UL(x))
 #define ULL(x) (_ULL(x))
 

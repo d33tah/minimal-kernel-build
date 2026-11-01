@@ -4,7 +4,6 @@
 #include <linux/limits.h>
 #include <linux/const.h>
 
-/* Inlined from align.h */
 #define ALIGN(x, a) __ALIGN_KERNEL((x), (a))
 #define ALIGN_DOWN(x, a) __ALIGN_KERNEL((x) - ((a) - 1), (a))
 #include <linux/linkage.h>
@@ -25,8 +24,5 @@
 #define lower_32_bits(n) ((u32)((n) & 0xffffffff))
 
 void do_exit(long error_code) __noreturn;
-
-/* Removed: hex_to_bin, hex2bin, bin2hex, mac_pton - never called */
-/* Removed: tracing_off - empty stub, callers removed (TRACING off) */
 
 #endif

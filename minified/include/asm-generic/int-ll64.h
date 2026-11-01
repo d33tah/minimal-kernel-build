@@ -1,8 +1,6 @@
 #ifndef _ASM_GENERIC_INT_LL64_H
 #define _ASM_GENERIC_INT_LL64_H
 
-/* Inlined from uapi/asm-generic/int-ll64.h */
-
 #ifndef __ASSEMBLY__
 
 typedef unsigned char __u8;

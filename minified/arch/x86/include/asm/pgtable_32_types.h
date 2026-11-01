@@ -1,8 +1,6 @@
-
 #ifndef _ASM_X86_PGTABLE_32_TYPES_H
 #define _ASM_X86_PGTABLE_32_TYPES_H
 
-/* --- 2025-12-07 20:20 --- Inlined pgtable-2level_types.h */
 #ifndef __ASSEMBLY__
 
 typedef unsigned long pteval_t;

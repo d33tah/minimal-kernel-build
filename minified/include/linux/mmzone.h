@@ -8,8 +8,6 @@
 
 #include <linux/page-flags.h>
 
-/* CONFIG_FORCE_MAX_ZONEORDER is unset in this config, so the #else branch was
- * statically dead; MAX_ORDER is unconditionally 11. */
 #define MAX_ORDER 11
 #define MAX_ORDER_NR_PAGES (1 << (MAX_ORDER - 1))
 

@@ -1,7 +1,5 @@
 #include <linux/extable.h>
 
-/* Inlined from bitfield.h */
-
 #define __bf_shf(x) (__builtin_ffsll(x) - 1)
 
 #define __scalar_type_to_unsigned_cases(type) \
@@ -154,12 +152,6 @@ void __init early_fixup_exception(struct pt_regs *regs, int trapnr)
 
 	if (fixup_exception(regs, trapnr, regs->orig_ax, 0))
 		return;
-
-	/*
-	 * report_bug() is a stub returning BUG_TRAP_TYPE_BUG (no
-	 * CONFIG_GENERIC_BUG), so the X86_TRAP_UD WARN-recovery branch was
-	 * always dead; fall straight through to the panic path.
-	 */
 
 fail:
 

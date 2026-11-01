@@ -24,6 +24,7 @@ import argparse
 import functools
 import http.server
 import json
+import os
 import pathlib
 import re
 import shutil
@@ -730,6 +731,87 @@ def import_case(browser, base, shots):
     return problems, r
 
 
+def initrd_case(browser, base, shots):
+    """An initrd reaches guest RAM at 64 MiB; RAM is raised; the map shows it."""
+    problems, r = [], {}
+    tmp = pathlib.Path(tempfile.mkdtemp())
+    cpio = tmp / "scratch.cpio"
+    # A newc cpio with one file and the trailer, built here.
+    def entry(name, data, mode):
+        n = name.encode() + b"\0"
+        hdr = "070701" + "".join(f"{v:08x}" for v in (1, mode, 0, 0, 1, 0, len(data), 0, 0, 0, 0, len(n), 0))
+        out = hdr.encode() + n
+        out += b"\0" * (-len(out) % 4) + data
+        return out + b"\0" * (-len(out) % 4)
+    body = entry("init", b"#!/bin/sh\necho initrd-marker-1234\n", 0o100755) + entry("TRAILER!!!", b"", 0)
+    cpio.write_bytes(body + b"\0" * (-len(body) % 512))
+    page = browser.new_page(viewport={"width": 1100, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel=minified-linux&paused=1")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    page.evaluate("window.oldStepper = stepper")
+    page.set_input_files("#initrd_file", str(cpio))
+    # boot() resumes at the default speed; wait for the new machine.
+    wait_for(lambda: page.evaluate("!!stepper && stepper !== window.oldStepper"), 60)
+    page.click("#dbg_pause") if page.is_enabled("#dbg_pause") else None
+    r["ram"] = int(page.eval_on_selector("#memory", "e => e.value"))
+    if r["ram"] <= 64 << 20:
+        problems.append(f"RAM not raised for the initrd: {r['ram']}")
+    head = page.evaluate("Array.from(emulator.read_memory(64 << 20, 16))")
+    if bytes(head) != cpio.read_bytes()[:16]:
+        problems.append(f"initrd bytes not at 64 MiB in guest RAM: {bytes(head)!r}")
+    r["note"] = page.inner_text("#initrd_status")
+    if "ignore a bootloader initrd" not in r["note"]:
+        problems.append("no note that our kernels ignore a bootloader initrd: " + r["note"])
+    show_tab(page, "memory")
+    if "initrd" not in page.inner_text("#map_all"):
+        problems.append("the memory map does not show the initrd")
+    if not page.evaluate("pageClass.includes('r-initrd')"):
+        problems.append("no grid page is classed as initrd")
+    # Too little RAM: the header check says so.
+    page.select_option("#memory", str(32 << 20))
+    r["problem"] = page.inner_text("#problems")
+    if "64 MiB" not in r["problem"]:
+        problems.append("no RAM error for the initrd at 32 MB: " + r["problem"])
+    page.select_option("#memory", str(r["ram"]))
+    page.set_viewport_size({"width": 390, "height": 900})
+    if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
+        problems.append("initrd controls make the page scroll horizontally at 390 px")
+    page.screenshot(path=str(shots / "initrd-390.png"))
+    page.click("#initrd_clear")
+    if page.is_visible("#initrd_clear") or page.inner_text("#initrd_status"):
+        problems.append("no initrd did not clear it")
+    page.close()
+    if errors:
+        problems.append("page errors: " + "; ".join(errors))
+    return problems, r
+
+
+def third_party_case(browser, base, shots, folder):
+    """Optional (MKB_THIRD_PARTY=dir with vmlinuz + initramfs): a distro
+    kernel with its initrd prints its boot log on the VGA console."""
+    folder = pathlib.Path(folder)
+    kernel = next(iter(sorted(folder.glob("vmlinuz*"))), None)
+    rd = next(iter(sorted(folder.glob("initramfs*"))), None)
+    if not kernel or not rd:
+        return [f"no vmlinuz*/initramfs* in {folder}"], {}
+    page = browser.new_page(viewport={"width": 1100, "height": 1000})
+    page.goto(f"{base}/index.html?kernel=hello&speed=full&count=0&cmdline=console%3Dtty0")
+    wait_for(lambda: gate_on_screen(page), 60)
+    page.set_input_files("#initrd_file", str(rd))
+    page.set_input_files("#file", str(kernel))
+    t0 = time.monotonic()
+    ok = wait_for(lambda: "] " in page.inner_text("#screen_container") and "Linux" in page.inner_text("#screen_container")
+                  or "[    " in page.inner_text("#screen_container"), 180, 1)
+    r = {"kernel": kernel.name, "initrd": rd.name, "seconds": round(time.monotonic() - t0),
+         "ram": page.eval_on_selector("#memory", "e => e.value"),
+         "screen": page.inner_text("#screen_container").splitlines()[:3]}
+    page.screenshot(path=str(shots / "third-party.png"))
+    page.close()
+    return ([] if ok else ["no kernel log on the screen"]), r
+
+
 def touch_case(browser, base, shots):
     """390 px phone with touch: tapping a "?" shows its text, tapping elsewhere hides it."""
     problems = []
@@ -981,6 +1063,15 @@ def main():
             print(json.dumps({"import": ip or "ok", **{k: str(v) for k, v in ir.items()}}))
             if ip:
                 failed = True
+            np_, nr = initrd_case(browser, base, shots)
+            print(json.dumps({"initrd": np_ or "ok", **{k: str(v) for k, v in nr.items()}}))
+            if np_:
+                failed = True
+            if os.environ.get("MKB_THIRD_PARTY"):
+                tp, tr = third_party_case(browser, base, shots, os.environ["MKB_THIRD_PARTY"])
+                print(json.dumps({"third_party": tp or "ok", **{k: str(v) for k, v in tr.items()}}))
+                if tp:
+                    failed = True
             dp, dr = determinism_case(browser, base)
             print(json.dumps({"determinism": dp or "ok", **{k: str(v) for k, v in dr.items()}}))
             if dp:

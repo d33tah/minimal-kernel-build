@@ -310,6 +310,90 @@ async function forgetImported() {
 	}
 }
 
+// ---- initrd and command line ----------------------------------------------
+
+const CMDLINE_KEY = "mkb-cmdline-";
+let cmdlineFromUrl = null;
+
+async function restoreCmdline() {
+	if (cmdlineFromUrl !== null) {
+		$("cmdline").value = cmdlineFromUrl;
+		return;
+	}
+	let v = "";
+	try {
+		const key = await imageKey();
+		v = (key && localStorage.getItem(key.replace(MAP_KEY, CMDLINE_KEY))) || "";
+	} catch (e) {
+		v = "";
+	}
+	$("cmdline").value = v;
+}
+
+async function saveCmdline() {
+	try {
+		const key = await imageKey();
+		if (key)
+			localStorage.setItem(key.replace(MAP_KEY, CMDLINE_KEY), $("cmdline").value);
+	} catch (e) {
+		// not remembered
+	}
+}
+
+function initrdNote() {
+	const el = $("initrd_status");
+	$("initrd_clear").hidden = !initrd;
+	if (!initrd) {
+		el.textContent = "";
+		return;
+	}
+	const ours = image && kernels.some((k) => k.name === image.name);
+	el.textContent = initrd.name + ": " + kib(initrd.bytes.length) + ", v86 puts it at " + hex(V86_INITRD_ADDR) + "." +
+		(ours ? " The kernels on this page ignore a bootloader initrd (the minified Linux only unpacks its built-in initramfs)." : "");
+}
+
+// RAM for the initrd: v86 puts it at 64 MiB, so pick the smallest menu
+// size above 64 MiB + its size.
+function ramForInitrd() {
+	if (!initrd)
+		return;
+	const need = V86_INITRD_ADDR + initrd.bytes.length;
+	if (ram() > need)
+		return;
+	const opt = [...$("memory").options].map((o) => Number(o.value)).filter((v) => v > need).sort((a, b) => a - b)[0];
+	if (opt)
+		$("memory").value = String(opt);
+}
+
+function initInitrd() {
+	$("initrd_file").addEventListener("change", async () => {
+		const f = $("initrd_file").files[0];
+		if (!f)
+			return;
+		initrd = { name: f.name, bytes: new Uint8Array(await f.arrayBuffer()) };
+		$("initrd_file").value = "";
+		ramForInitrd();
+		initrdNote();
+		showHeader();
+		drawMaps();
+		await boot();
+	});
+	$("initrd_clear").addEventListener("click", async () => {
+		initrd = null;
+		initrdNote();
+		showHeader();
+		drawMaps();
+		await boot();
+	});
+	$("cmdline").addEventListener("change", saveCmdline);
+	$("cmdline").addEventListener("keydown", (ev) => {
+		if (ev.key === "Enter") {
+			saveCmdline();
+			boot();
+		}
+	});
+}
+
 function looksLikeBzImage(buf) {
 	return buf.byteLength > 0x206 && new DataView(buf).getUint32(0x202, true) === 0x53726448;
 }

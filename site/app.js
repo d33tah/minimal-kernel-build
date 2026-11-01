@@ -11,6 +11,10 @@ const PAGE = 4096;
 const DEFAULT_RAM = 2 * 1024 * 1024;
 const LIVE_MS = 500;
 const MAX_SNAPSHOTS = 8;
+// v86 0.5.471 src/kernel.js load_kernel: "Put the initrd at the 64 MB
+// boundary" (INITRD_ADDRESS = 64 << 20), whatever the RAM size, and sets
+// ramdisk_image/ramdisk_size in the header to it.
+const V86_INITRD_ADDR = 64 << 20;
 
 // The workflow stamps the script tags with ?v=<commit>; data fetched by the
 // page gets the same stamp, so a cached older deploy is never mixed in.
@@ -30,6 +34,7 @@ const kib = (n) => (n < 1024 ? n + " bytes" :
 
 let kernels = [];
 let image = null;      // { name, bytes: Uint8Array, hdr }
+let initrd = null;     // { name, bytes: Uint8Array } passed to v86, or null
 let emulator = null;
 let emuRam = 0;          // RAM size the running emulator was started with
 let emuReady = false;    // v86 finished loading (emulator-loaded)
@@ -112,6 +117,20 @@ function checkImage(h, ram) {
 			"). init_size covers bss and brk in full; a kernel that does not touch all of them " +
 			"can still boot, otherwise it fails early, typically with no output. " +
 			kib(kernelEnd(h)) + " is enough."]);
+	if (initrd) {
+		const end = V86_INITRD_ADDR + initrd.bytes.length;
+		if (end > ram)
+			problems.push(["error", "v86 puts the initrd (" + kib(initrd.bytes.length) + ") at 64 MiB, so RAM must be " +
+				"larger than " + kib(end) + "; it is " + kib(ram) + ". Pick more RAM."]);
+		if (h.version >= 0x203) {
+			const max = new DataView(image.bytes.buffer, image.bytes.byteOffset).getUint32(0x22c, true);
+			if (max && end - 1 > max)
+				problems.push(["warn", "The kernel accepts an initrd only below " + hex(max) + " (initrd_addr_max), but v86 " +
+					"puts it at " + hex(V86_INITRD_ADDR) + "\u2013" + hex(end - 1) + "."]);
+		}
+		if (V86_KERNEL_ADDR + h.payload > V86_INITRD_ADDR || kernelEnd(h) > V86_INITRD_ADDR)
+			problems.push(["warn", "The kernel's memory (up to " + hex(kernelEnd(h)) + ") reaches the initrd at 64 MiB."]);
+	}
 	return problems;
 }
 
@@ -150,6 +169,7 @@ const REGION_NAMES = {
 	"r-kernel": "32-bit kernel image",
 	"r-init": "kernel init_size (runtime footprint)",
 	"r-ext": "free extended RAM",
+	"r-initrd": "initrd",
 	"r-hole": "beyond RAM",
 };
 
@@ -259,8 +279,16 @@ function drawMaps() {
 		const need = kernelEnd(h);
 		all.push([V86_KERNEL_ADDR, kEnd, "r-kernel", "kernel"]);
 		all.push([kEnd, need, "r-init", "init_size"]);
-		all.push([need, r, "r-ext", "free"]);
-		end = Math.max(r, need);
+		if (initrd) {
+			const ia = V86_INITRD_ADDR, ib = V86_INITRD_ADDR + initrd.bytes.length;
+			all.push([need, Math.min(r, ia), "r-ext", "free"]);
+			all.push([ia, ib, "r-initrd", "initrd"]);
+			all.push([ib, r, "r-ext", "free"]);
+			end = Math.max(r, need, ib);
+		} else {
+			all.push([need, r, "r-ext", "free"]);
+			end = Math.max(r, need);
+		}
 		all.push([r, end, "r-hole", "beyond RAM"]);
 	} else {
 		all.push([0x100000, r, "r-ext", "free"]);
@@ -308,6 +336,8 @@ function computePageClasses() {
 			c = "r-kernel";
 		else if (image && a < need)
 			c = "r-init";
+		else if (initrd && a + PAGE > V86_INITRD_ADDR && a < V86_INITRD_ADDR + initrd.bytes.length)
+			c = "r-initrd";
 		else
 			c = "r-ext";
 		cls[p] = c;
@@ -973,7 +1003,8 @@ async function boot() {
 			bios: { url: withV("v86/seabios.bin") },
 			vga_bios: { url: withV("v86/vgabios.bin") },
 			bzimage: { buffer: image.bytes.buffer.slice(0) },
-			cmdline: "",
+			cmdline: $("cmdline").value,
+			initrd: initrd ? { buffer: initrd.bytes.buffer.slice(initrd.bytes.byteOffset, initrd.bytes.byteOffset + initrd.bytes.length) } : undefined,
 			autostart: false,
 			disable_mouse: true,
 			// The kernels make no sound on purpose: the minified Linux only touches
@@ -1031,6 +1062,7 @@ async function boot() {
 		$("dbg_speed").value = prefSpeed;
 		entryPhase = !!stepper && prefSpeed !== "full";
 		counting = !!stepper && (entryPhase || $("count").checked);
+		initrdNote();
 		$("entry_info").textContent = entryPhase ? "Stepping BIOS and setup to the kernel entry..." : "";
 		delete $("entry_info").dataset.steps;
 		countStart = realNow();
@@ -1235,7 +1267,7 @@ function driverTick() {
 let lastFrameScan = 0;
 function frameUpdate() {
 	const now = realNow();
-	if (now - lastFrameScan >= (emuRam > 4 * 1024 * 1024 ? 250 : 0)) {
+	if (now - lastFrameScan >= (emuRam > 32 * 1024 * 1024 ? 2000 : emuRam > 4 * 1024 * 1024 ? 250 : 0)) {
 		lastFrameScan = now;
 		scan(false);
 		const n = Number($("footprint").dataset.changed || 0);
@@ -1766,6 +1798,8 @@ function useImage(name, buffer, memFromUrl, syms) {
 	image = { name, bytes, hdr: parseHeader(bytes) };
 	symbols = syms || null;
 	$("memory").value = memFromUrl || String(DEFAULT_RAM);
+	ramForInitrd(); // keeps a loaded initrd: v86 needs RAM above 64 MiB + its size
+	initrdNote();
 	showHeader();
 	drawMaps();
 }
@@ -1810,6 +1844,7 @@ async function loadKernel(entry, memFromUrl) {
 	useImage(entry.name, await resp.arrayBuffer(), memFromUrl, await loadSymbols(entry));
 	showImported();
 	await restoreImported();
+	await restoreCmdline();
 	await boot();
 }
 
@@ -1921,6 +1956,11 @@ async function init() {
 	initDebugger();
 	initGraph();
 	initImport();
+	initInitrd();
+	if (params.has("cmdline"))
+		cmdlineFromUrl = params.get("cmdline");
+	if (params.get("count") === "0")
+		$("count").checked = false;
 	initSource();
 	updateDebugUi();
 	for (const t of TABS)
@@ -1973,6 +2013,7 @@ async function init() {
 		useImage(f.name, await f.arrayBuffer());
 		showImported();
 		await restoreImported();
+		await restoreCmdline();
 		await boot();
 	});
 

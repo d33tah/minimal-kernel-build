@@ -60,6 +60,34 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   runs at the addresses vmlinux code will occupy, is named after those
   vmlinux symbols (there is no build to compare its bytes with), so the
   call stacks in the Graph tab are one or two levels deeper at the start.
+- **initrd and cmdline.** "initrd" passes a file to v86 as
+  `initrd: {buffer}`, "cmdline" as `cmdline` (empty for the kernels on
+  this page; remembered per bzImage SHA-256; `?cmdline=` sets it). v86
+  0.5.471 always puts the initrd at 64 MiB (`INITRD_ADDRESS = 64 << 20` in
+  src/kernel.js) and writes ramdisk_image/ramdisk_size into the header, so
+  RAM must be larger than 64 MiB plus its size: loading one selects the
+  smallest RAM size that fits (the menu now goes to 64, 96 and 128 MB),
+  the header check reports an error when it does not fit and a warning
+  when it lies above the kernel's initrd_addr_max, and the memory map and
+  grid show the initrd as its own region. The kernels on this page ignore
+  a bootloader initrd (the minified Linux only unpacks its built-in
+  initramfs); the page says so. `?count=0` turns off the background count,
+  for distro kernels at full speed.
+
+  Tested with Alpine Linux 3.20 x86 netboot (not committed):
+  `https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/x86/netboot/vmlinuz-lts`
+  (SHA-256 `ce1f6dad86646efaa980fed238c7ed7e4189fd90c30f99a3788df9c9429cc5c9`,
+  7,729,664 bytes, Linux 6.6.134) and `initramfs-lts` (SHA-256
+  `894bb68e7e9148149d2f729bec893ce9279b6e653198c62a6361107c2c5c798b`,
+  21,751,929 bytes) at 96 MB with `console=tty0`: the kernel log is on
+  the VGA console after about 5 s at full speed, then the kernel stops
+  in `apic_intr_mode_init` / `setup_IO_APIC` (v86's APIC); with
+  `nolapic noapic` it gets to the NMI self-test (`test_nmi_ipi`) and
+  hangs there after about 25 s of kernel time. `MKB_THIRD_PARTY=dir`
+  runs this case in `test_browser.py`. The same directory has
+  `System.map-6.6.134-0-lts` (SHA-256
+  `525d25b83b31cf71d6ea5b22fdaf815bbe34009a0e5d71ee9bfbeffdb2a23867`) for
+  the symbol import.
 - **C source.** With `kernels/<name>/sources.json` the Page listing and
   the Debugger's code window print the C line above the instructions it
   compiled to, like `objdump -S` (dim, `file.c:123`, printed again when
@@ -326,6 +354,9 @@ The import case boots the minified Linux with its own System.map
 start_kernel names start_kernel in the Debugger as with symbols.json, a
 counted boot has a start_kernel frame holding most of the run and detects
 the panic, the listing says hex only, a malformed file gives an error and
-keeps the symbols, nothing scrolls sideways at 390 px. A last case serves two "deploys" with `Cache-Control: max-age=600` (as
+keeps the symbols, nothing scrolls sideways at 390 px. The initrd case loads a 512-byte newc cpio built in the test with the
+minified Linux and checks RAM was raised, its bytes are at 64 MiB in
+guest RAM, the note about our kernels, the initrd region in the map and
+grid, the RAM error at 32 MB and "no initrd". A last case serves two "deploys" with `Cache-Control: max-age=600` (as
 GitHub Pages does) and checks a reload runs the new `app.js`. Screenshots
 (desktop and 390 px) go to `site/test-screenshots/`.

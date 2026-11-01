@@ -19,6 +19,9 @@
         <option value="4194304">4 MB</option>
         <option value="18874368">18 MB</option>
         <option value="33554432">32 MB</option>
+        <option value="67108864">64 MB</option>
+        <option value="100663296">96 MB</option>
+        <option value="134217728">128 MB</option>
       </select>
     </label>
     <label><span>From disk<span class="tip" tabindex="0" role="button" title="Load any bzImage from your disk instead of the list">?</span></span>
@@ -27,6 +30,12 @@
     <label><span>Symbols<span class="tip" tabindex="0" role="button" title="Import symbols for the current kernel: a System.map (the text llvm-nm -n or nm -n prints: hex address, type letter, name) or an unstripped vmlinux (ELF32: .symtab and section headers are read in the browser). They replace the kernel's symbols.json everywhere (memory grid, Page symbol index, Debugger, Graph, panic detection) and the kernel reboots. A System.map has no sizes: each symbol runs to the next one, capped at the end of its section (_etext, _edata, __bss_stop, ...). Physical address = virtual - offset: auto takes PT_LOAD from an ELF, and for a System.map puts _text at 0x100000 where v86 loads the 32-bit kernel (else vaddr - 0xC0000000, the i386 PAGE_OFFSET, or identity); or type a hex offset. There is no disassembly or C source for imported symbols. The map is remembered in this browser for this bzImage (by SHA-256). You can also drop a bzImage and a System.map on the page together.">?</span></span>
       <input type="file" id="symfile">
     </label>
+    <label><span>initrd<span class="tip" tabindex="0" role="button" title="An initrd/initramfs for the kernel, passed to v86 (initrd: {buffer}). v86 0.5.471 always puts it at 64 MiB (src/kernel.js), so RAM must be larger than 64 MiB plus its size: picking one selects enough RAM. The kernel finds it through ramdisk_image/ramdisk_size in the boot header. The minified Linux does not use an external initrd yet.">?</span></span>
+      <input type="file" id="initrd_file">
+    </label>
+    <label><span>cmdline<span class="tip" tabindex="0" role="button" title="Kernel command line, passed to v86 (cmdline). Empty for the kernels on this page; e.g. console=tty0 for a distro kernel. Remembered in this browser for this bzImage (by SHA-256); ?cmdline= in the URL sets it.">?</span></span>
+      <input id="cmdline" size="18" aria-label="kernel command line">
+    </label>
     <label><span>offset</span>
       <input id="sym_offset" value="auto" size="10" aria-label="symbol offset, auto or hex">
     </label>
@@ -34,6 +43,8 @@
     <span id="status" role="status">Loading kernel list...</span>
     <span id="kinfo" class="note mono"></span>
     <span id="sym_status" class="note" role="status"></span>
+    <span id="initrd_status" class="note"></span>
+    <button id="initrd_clear" type="button" hidden>no initrd</button>
     <button id="sym_forget" type="button" hidden title="Forget the imported symbols and use the kernel's own">forget symbols</button>
   </section>
   <div id="problems"></div>
@@ -189,6 +200,7 @@
     <li><b>Debugger</b>: registers, stepping and run-to-address.</li>
     <li><b>C source</b>: the Page listing and the Debugger interleave the C lines (from the DWARF of a -g build with byte-identical code) with the instructions; tap one for the function with its executed lines.</li>
     <li><b>Symbols</b>: import a System.map or an unstripped vmlinux for the current kernel (next to From disk, or drop it on the page with a bzImage); it replaces the kernel's symbols everywhere.</li>
+    <li><b>initrd, cmdline</b>: pass an initrd and a command line to v86 for third-party 32-bit kernels (v86 puts the initrd at 64 MiB, so RAM is raised to fit). Our kernels ignore a bootloader initrd.</li>
     <li><b>Graph</b>: the symbols the CPU went through while stepping and the transitions between them, live.</li>
     <li><b>Snapshots</b>: save, restore and download the whole machine state.</li>
   </ul>

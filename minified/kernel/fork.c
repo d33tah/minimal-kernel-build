@@ -13,12 +13,12 @@ static struct kmem_cache *task_struct_cachep;
 
 static inline struct task_struct *alloc_task_struct_node(int node)
 {
-	return kmem_cache_alloc_node(task_struct_cachep, GFP_KERNEL, node);
+	return kmalloc_node(sizeof(struct task_struct), GFP_KERNEL, node);
 }
 
 static inline void free_task_struct(struct task_struct *tsk)
 {
-	kmem_cache_free(task_struct_cachep, tsk);
+	kfree(tsk);
 }
 
 static int alloc_thread_stack_node(struct task_struct *tsk, int node)
@@ -45,7 +45,7 @@ struct vm_area_struct *vm_area_alloc(struct mm_struct *mm)
 {
 	struct vm_area_struct *vma;
 
-	vma = kmem_cache_alloc(vm_area_cachep, GFP_KERNEL);
+	vma = kmalloc(sizeof(*vma), GFP_KERNEL);
 	if (vma)
 		vma_init(vma, mm);
 	return vma;
@@ -53,7 +53,7 @@ struct vm_area_struct *vm_area_alloc(struct mm_struct *mm)
 
 void vm_area_free(struct vm_area_struct *vma)
 {
-	kmem_cache_free(vm_area_cachep, vma);
+	kfree(vma);
 }
 
 static inline int mm_alloc_pgd(struct mm_struct *mm)
@@ -69,8 +69,8 @@ static inline void mm_free_pgd(struct mm_struct *mm)
 	pgd_free(mm, mm->pgd);
 }
 
-#define allocate_mm() (kmem_cache_alloc(mm_cachep, GFP_KERNEL))
-#define free_mm(mm) (kmem_cache_free(mm_cachep, (mm)))
+#define allocate_mm() (kmalloc(sizeof(struct mm_struct), GFP_KERNEL))
+#define free_mm(mm) (kfree(mm))
 
 void __mmdrop(struct mm_struct *mm)
 {
@@ -237,7 +237,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct signal_struct *sig;
 
-	sig = kmem_cache_zalloc(signal_cachep, GFP_KERNEL);
+	sig = kzalloc(sizeof(*sig), GFP_KERNEL);
 	tsk->signal = sig;
 	if (!sig)
 		return -ENOMEM;
@@ -330,7 +330,7 @@ bad_fork_cleanup_mm:
 		mmput(p->mm);
 	}
 bad_fork_cleanup_signal:
-	kmem_cache_free(signal_cachep, p->signal);
+	kfree(p->signal);
 bad_fork_cleanup_fs:
 bad_fork_cleanup_semundo:
 bad_fork_cleanup_policy:

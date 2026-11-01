@@ -23,7 +23,7 @@ static struct cred *prepare_creds(void)
 	const struct cred *old;
 	struct cred *new;
 
-	new = kmem_cache_alloc(cred_jar, GFP_KERNEL);
+	new = kmalloc(sizeof(*new), GFP_KERNEL);
 	if (!new)
 		return NULL;
 

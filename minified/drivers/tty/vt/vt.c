@@ -26,7 +26,7 @@ static struct vc_data vc0;
 
 #define VC_DEFAULT_ATTR 0x07
 
-static void vc_scroll_up(struct vc_data *vc)
+static void con_scroll(struct vc_data *vc)
 {
 	u16 *top = (u16 *)vc->vc_origin;
 	unsigned int moved = (vc->vc_rows - 1) * vc->vc_size_row;
@@ -38,7 +38,7 @@ static void vc_scroll_up(struct vc_data *vc)
 static void lf(struct vc_data *vc)
 {
 	if (vc->vc_y + 1 == vc->vc_rows) {
-		vc_scroll_up(vc);
+		con_scroll(vc);
 	} else {
 		vc->vc_y++;
 		vc->vc_pos += vc->vc_size_row;

@@ -1,5 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0
 #include <asm/tlbflush.h>
 
+/*
+ * Associate a virtual page frame with a given physical page frame 
+ * and protection flags for that frame.
+ */
 void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
 {
 	pgd_t *pgd;
@@ -20,6 +25,10 @@ void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
 	else
 		pte_clear(&init_mm, vaddr, pte);
 
+	/*
+	 * It's enough to flush this one mapping.
+	 * (PGE mappings get flushed as well)
+	 */
 	flush_tlb_one_kernel(vaddr);
 }
 

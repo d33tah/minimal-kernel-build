@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_HIGHMEM_H
 #define _LINUX_HIGHMEM_H
 
@@ -49,17 +50,6 @@ static inline void zero_user(struct page *page, unsigned start, unsigned size)
 	zero_user_segments(page, start, start + size, 0, 0);
 }
 
-static inline void copy_user_highpage(struct page *to, struct page *from,
-				      unsigned long vaddr,
-				      struct vm_area_struct *vma)
-{
-	char *vfrom, *vto;
-
-	vfrom = kmap_local_page(from);
-	vto = kmap_local_page(to);
-	copy_user_page(vto, vfrom, vaddr, to);
-}
-
 /**
  * folio_zero_range() - Zero a byte range in a folio.
  * @folio: The folio to write to.
@@ -72,4 +62,4 @@ static inline void folio_zero_range(struct folio *folio, size_t start,
 	zero_user_segments(&folio->page, start, start + length, 0, 0);
 }
 
-#endif
+#endif /* _LINUX_HIGHMEM_H */

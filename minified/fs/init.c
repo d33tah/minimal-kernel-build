@@ -1,3 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Routines that mimic syscalls, but don't use the user address space or file
+ * descriptors.  Only for init/ and related early init code.
+ */
 #include <linux/namei.h>
 #include <linux/file.h>
 #include <linux/init_syscalls.h>

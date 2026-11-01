@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_DEBUGREG_H
 #define _ASM_X86_DEBUGREG_H
 
@@ -10,7 +11,7 @@
 
 static __always_inline unsigned long native_get_debugreg(int regno)
 {
-	unsigned long val = 0;
+	unsigned long val = 0; /* Damn you, gcc! */
 
 	switch (regno) {
 	case 0:
@@ -71,10 +72,15 @@ static __always_inline unsigned long local_db_save(void)
 		return 0;
 
 	get_debugreg(dr7, 7);
-	dr7 &= ~0x400;
+	dr7 &= ~0x400; /* architecturally set bit */
 	if (dr7)
 		set_debugreg(0, 7);
 
+	/*
+	 * Ensure the compiler doesn't lower the above statements into
+	 * the critical section; disabling breakpoints late would not
+	 * be good.
+	 */
 	barrier();
 
 	return dr7;
@@ -82,6 +88,11 @@ static __always_inline unsigned long local_db_save(void)
 
 static __always_inline void local_db_restore(unsigned long dr7)
 {
+	/*
+	 * Ensure the compiler doesn't raise this statement into
+	 * the critical section; enabling breakpoints early would
+	 * not be good.
+	 */
 	barrier();
 	if (dr7)
 		set_debugreg(dr7, 7);

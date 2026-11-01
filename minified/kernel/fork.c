@@ -1,3 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ *  linux/kernel/fork.c
+ *
+ *  Copyright (C) 1991, 1992  Linus Torvalds
+ */
+
+/*
+ *  'fork.c' contains the help-routines for the 'fork' system call
+ * (see also entry.S and others).
+ * Fork is rather simple, once you get the hang of it, but the memory
+ * management can be a bitch. See 'mm/memory.c': 'copy_page_range()'
+ */
+
 #include <linux/sched/mm.h>
 #include <linux/sched/task_stack.h>
 #include <linux/file.h>
@@ -8,6 +22,15 @@
 
 #include <asm/pgalloc.h>
 #include <asm/mmu_context.h>
+
+int nr_threads; /* The idle threads do not count.. */
+
+/*
+ * MKB_ONE_TASK: upstream sizes this from RAM in set_max_threads(); here the
+ * one task this kernel runs (init) is the limit, so every later fork fails
+ * with -EAGAIN.
+ */
+static int max_threads = 1; /* tunable limit on nr_threads */
 
 static inline struct task_struct *alloc_task_struct_node(int node)
 {
@@ -62,6 +85,11 @@ static inline void mm_free_pgd(struct mm_struct *mm)
 #define allocate_mm() (kmalloc(sizeof(struct mm_struct), GFP_KERNEL))
 #define free_mm(mm) (kfree(mm))
 
+/*
+ * Called when the last reference to the mm
+ * is dropped: either by a lazy thread or by
+ * mmput. Free the page directory and the mm.
+ */
 void __mmdrop(struct mm_struct *mm)
 {
 	BUG_ON(mm == &init_mm);
@@ -74,7 +102,7 @@ void set_task_stack_end_magic(struct task_struct *tsk)
 	unsigned long *stackend;
 
 	stackend = end_of_stack(tsk);
-	*stackend = STACK_END_MAGIC;
+	*stackend = STACK_END_MAGIC; /* for overflow detection */
 }
 
 static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
@@ -97,6 +125,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	clear_tsk_need_resched(tsk);
 	set_task_stack_end_magic(tsk);
 
+	/* One for the rcu users */
 	refcount_set(&tsk->usage, 1);
 
 	return tsk;
@@ -135,6 +164,9 @@ fail_nopgd:
 	return NULL;
 }
 
+/*
+ * Allocate and initialize an mm_struct.
+ */
 struct mm_struct *mm_alloc(void)
 {
 	struct mm_struct *mm;
@@ -162,8 +194,22 @@ void mmput(struct mm_struct *mm)
 		__mmput(mm);
 }
 
+/* Please note the differences between mmput and mm_release.
+ * mmput is called whenever we stop holding onto a mm_struct,
+ * error success whatever.
+ *
+ * mm_release is called after a mm_struct has been removed
+ * from the current process.
+ *
+ * This difference is important for error handling, when we
+ * only half set up a mm_struct for a new process and need to restore
+ * the old one.  Because we mmput the new mm_struct before
+ * restoring the old one. . .
+ * Eric Biederman 10 January 1998
+ */
 static void mm_release(struct task_struct *tsk, struct mm_struct *mm)
 {
+	/* Get rid of any cached register state */
 	deactivate_mm(tsk, mm);
 }
 
@@ -174,20 +220,9 @@ void exec_mm_release(struct task_struct *tsk, struct mm_struct *mm)
 
 static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 {
-	struct mm_struct *mm, *oldmm;
-
 	tsk->mm = NULL;
 	tsk->active_mm = NULL;
 
-	oldmm = current->mm;
-	if (!oldmm)
-		return 0;
-
-	mmget(oldmm);
-	mm = oldmm;
-
-	tsk->mm = mm;
-	tsk->active_mm = mm;
 	return 0;
 }
 
@@ -196,14 +231,12 @@ static int copy_files(unsigned long clone_flags, struct task_struct *tsk)
 	struct files_struct *oldf, *newf;
 	int error = 0;
 
+	/*
+	 * A background process may not have any files ...
+	 */
 	oldf = current->files;
 	if (!oldf)
 		goto out;
-
-	if (clone_flags & CLONE_FILES) {
-		atomic_inc(&oldf->count);
-		goto out;
-	}
 
 	newf = dup_fd(oldf, &error);
 	if (!newf)
@@ -265,11 +298,16 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	if (retval < 0)
 		goto bad_fork_free;
 
+	retval = -EAGAIN;
+	if (data_race(nr_threads >= max_threads))
+		goto bad_fork_cleanup_count;
+
 	p->flags &= ~PF_IDLE;
 	spin_lock_init(&p->alloc_lock);
 
 	p->pagefault_disabled = 0;
 
+	/* Perform scheduler related setup. Assign this task to a CPU. */
 	retval = sched_fork(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_policy;
@@ -290,19 +328,20 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	if (retval)
 		goto bad_fork_cleanup_io;
 
-	if (pid != &init_struct_pid) {
-		pid = alloc_pid(p->nsproxy->pid_ns_for_children);
-		if (IS_ERR(pid)) {
-			retval = PTR_ERR(pid);
-			goto bad_fork_cleanup_io;
-		}
+	pid = alloc_pid(p->nsproxy->pid_ns_for_children);
+	if (IS_ERR(pid)) {
+		retval = PTR_ERR(pid);
+		goto bad_fork_cleanup_io;
 	}
 
+	/* ok, now we should be set up.. */
 	p->pid = pid_nr(pid);
 	p->group_leader = p;
 
-	if (likely(p->pid))
+	if (likely(p->pid)) {
 		init_task_pid(p, PIDTYPE_PID, pid);
+		nr_threads++;
+	}
 
 	return p;
 
@@ -316,6 +355,7 @@ bad_fork_cleanup_signal:
 bad_fork_cleanup_fs:
 bad_fork_cleanup_semundo:
 bad_fork_cleanup_policy:
+bad_fork_cleanup_count:
 bad_fork_free:
 	WRITE_ONCE(p->__state, TASK_DEAD);
 fork_out:
@@ -342,6 +382,9 @@ static pid_t kernel_clone(struct kernel_clone_args *args)
 	return nr;
 }
 
+/*
+ * Create a user mode thread.
+ */
 pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 {
 	struct kernel_clone_args args = {

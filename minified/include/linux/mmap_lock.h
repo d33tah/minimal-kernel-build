@@ -48,4 +48,4 @@ static inline void mmap_read_unlock(struct mm_struct *mm)
 	up_read(&mm->mmap_lock);
 }
 
-#endif
+#endif /* _LINUX_MMAP_LOCK_H */

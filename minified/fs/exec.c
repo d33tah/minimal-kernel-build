@@ -1,3 +1,28 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ *  linux/fs/exec.c
+ *
+ *  Copyright (C) 1991, 1992  Linus Torvalds
+ */
+
+/*
+ * #!-checking implemented by tytso.
+ */
+/*
+ * Demand-loading implemented 01.12.91 - no need to read anything but
+ * the header into memory. The inode of the executable is put into
+ * "current->executable", and page faults do the actual loading. Clean.
+ *
+ * Once more I can proudly say that linux stood up to being changed: it
+ * was less than 2 hours work to get demand-loading completely implemented.
+ *
+ * Demand loading changed July 1993 by Eric Youngdale.   Use mmap instead,
+ * current->executable is only used by the procfs.  This allows a dispatch
+ * table to check for several different types  of binary formats.  We keep
+ * trying until we recognize the file or we run out of supported binary
+ * formats.
+ */
+
 #include <linux/file.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/signal.h>
@@ -25,11 +50,15 @@ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
 {
 	struct page *page;
 	int ret;
-	unsigned int gup_flags = FOLL_FORCE;
+	unsigned int gup_flags = 0;
 
 	if (write)
 		gup_flags |= FOLL_WRITE;
 
+	/*
+	 * We are doing an exec().  'current' is the process
+	 * doing the exec and bprm->mm is the new process's mm.
+	 */
 	mmap_read_lock(bprm->mm);
 	ret = get_user_pages_remote(bprm->mm, pos, 1, gup_flags, &page);
 	mmap_read_unlock(bprm->mm);
@@ -85,6 +114,12 @@ static bool valid_arg_len(struct linux_binprm *bprm, long len)
 	return len <= MAX_ARG_STRLEN;
 }
 
+/*
+ * Create a new mm_struct and populate it with a temporary stack
+ * vm_area_struct.  We don't have enough context at this point to set the stack
+ * flags, permissions, and offset, so we use temporary values.  We'll update
+ * them later in setup_arg_pages().
+ */
 static int bprm_mm_init(struct linux_binprm *bprm)
 {
 	int err;
@@ -95,6 +130,7 @@ static int bprm_mm_init(struct linux_binprm *bprm)
 	if (!mm)
 		goto err;
 
+	/* Save current stack limit for all calculations made during exec. */
 	task_lock(current->group_leader);
 	bprm->rlim_stack = current->signal->rlim[RLIMIT_STACK];
 	task_unlock(current->group_leader);
@@ -124,7 +160,6 @@ static int count_strings_kernel(const char *const *argv)
 	for (i = 0; argv[i]; ++i) {
 		if (i >= MAX_ARG_STRINGS)
 			return -E2BIG;
-		cond_resched();
 	}
 	return i;
 }
@@ -133,11 +168,36 @@ static int bprm_stack_limits(struct linux_binprm *bprm)
 {
 	unsigned long limit, ptr_size;
 
+	/*
+	 * Limit to 1/4 of the max stack size or 3/4 of _STK_LIM
+	 * (whichever is smaller) for the argv+env strings.
+	 * This ensures that:
+	 *  - the remaining binfmt code will not run out of stack space,
+	 *  - the program will have a reasonable amount of stack left
+	 *    to work from.
+	 */
 	limit = _STK_LIM / 4 * 3;
 	limit = min(limit, bprm->rlim_stack.rlim_cur / 4);
 
+	/*
+	 * We've historically supported up to 32 pages (ARG_MAX)
+	 * of argument strings even with small stacks
+	 */
 	limit = max_t(unsigned long, limit, ARG_MAX);
 
+	/*
+	 * We must account for the size of all the argv and envp pointers to
+	 * the argv and envp strings, since they will also take up space in
+	 * the stack. They aren't stored until much later when we can't
+	 * signal to the parent that the child has run out of stack space.
+	 * Instead, calculate it here so it's possible to fail gracefully.
+	 *
+	 * In the case of argc = 0, make sure there is space for adding a
+	 * empty string (which will bump argc to 1), to ensure confused
+	 * userspace programs don't start processing from argv[1], thinking
+	 * argc can never be 0, to keep them from walking envp by accident.
+	 * See do_execveat_common().
+	 */
 	ptr_size = (max(bprm->argc, 1) + bprm->envc) * sizeof(void *);
 	if (limit <= ptr_size)
 		return -E2BIG;
@@ -149,7 +209,7 @@ static int bprm_stack_limits(struct linux_binprm *bprm)
 
 static int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 {
-	int len = strnlen(arg, MAX_ARG_STRLEN) + 1;
+	int len = strnlen(arg, MAX_ARG_STRLEN) + 1 /* terminating NUL */;
 	unsigned long pos = bprm->p;
 
 	if (len == 0)
@@ -157,6 +217,7 @@ static int copy_string_kernel(const char *arg, struct linux_binprm *bprm)
 	if (!valid_arg_len(bprm, len))
 		return -E2BIG;
 
+	/* We're going to work our way backwards. */
 	arg += len;
 	bprm->p -= len;
 	if (IS_ENABLED(CONFIG_MMU) && bprm->p < bprm->argmin)
@@ -192,7 +253,6 @@ static int copy_strings_kernel(int argc, const char *const *argv,
 		int ret = copy_string_kernel(argv[argc], bprm);
 		if (ret < 0)
 			return ret;
-		cond_resched();
 	}
 	return 0;
 }
@@ -229,9 +289,13 @@ int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top)
 	vma->vm_flags = vm_flags;
 	vma->vm_page_prot = vm_get_page_prot(vm_flags);
 
-	stack_expand = 131072UL;
+	stack_expand = 131072UL; /* randomly 32*4k (or 2*64k) pages */
 	stack_size = vma->vm_end - vma->vm_start;
 
+	/*
+	 * Align this down to a page boundary as expand_stack
+	 * will align it up.
+	 */
 	rlim_stack = bprm->rlim_stack.rlim_cur & PAGE_MASK;
 	if (stack_size + stack_expand > rlim_stack)
 		stack_base = vma->vm_end - rlim_stack;
@@ -258,6 +322,11 @@ static struct file *do_open_execat(struct filename *name)
 	if (IS_ERR(file))
 		goto out;
 
+	/*
+	 * may_open() has already checked for this, so it should be
+	 * impossible to trip now. But we need to be extra cautious
+	 * and check again at the very end too.
+	 */
 	err = -EACCES;
 	if (WARN_ON_ONCE(!S_ISREG(file_inode(file)->i_mode)))
 		goto exit;
@@ -274,12 +343,18 @@ exit:
 	return ERR_PTR(err);
 }
 
+/*
+ * Maps the mm_struct mm into the current task struct.
+ * On success, this function returns with exec_update_lock
+ * held for writing.
+ */
 static int exec_mmap(struct mm_struct *mm)
 {
 	struct task_struct *tsk;
 	struct mm_struct *old_mm, *active_mm;
 	int ret;
 
+	/* Notify parent that we're no longer interested in the old VM */
 	tsk = current;
 	old_mm = current->mm;
 	exec_mm_release(tsk, old_mm);
@@ -288,6 +363,11 @@ static int exec_mmap(struct mm_struct *mm)
 		return ret;
 
 	if (old_mm) {
+		/*
+		 * If there is a pending fatal signal perhaps a signal
+		 * whose default action is to create a coredump get
+		 * out and die instead of going through with the exec.
+		 */
 		ret = mmap_read_lock_killable(old_mm);
 		if (ret) {
 			up_write(&tsk->signal->exec_update_lock);
@@ -323,6 +403,12 @@ static void __set_task_comm(struct task_struct *tsk, const char *buf, bool exec)
 	task_unlock(tsk);
 }
 
+/*
+ * Calling this is the point of no return. None of the failures will be
+ * seen by userspace since either the process is already taking a fatal
+ * signal (via de_thread() or coredump), or will have SEGV raised
+ * (after exec_mmap()) by search_binary_handler (see below).
+ */
 int begin_new_exec(struct linux_binprm *bprm)
 {
 	struct task_struct *me = current;
@@ -354,19 +440,28 @@ out:
 
 void setup_new_exec(struct linux_binprm *bprm)
 {
+	/* Setup things that can depend upon the personality */
 	struct task_struct *me = current;
 
 	up_write(&me->signal->exec_update_lock);
 	mutex_unlock(&me->signal->cred_guard_mutex);
 }
 
+/* Runs immediately before start_thread() takes over. */
 void finalize_exec(struct linux_binprm *bprm)
 {
+	/* Store any stack rlimit changes before starting thread. */
 	task_lock(current->group_leader);
 	current->signal->rlim[RLIMIT_STACK] = bprm->rlim_stack;
 	task_unlock(current->group_leader);
 }
 
+/*
+ * Prepare credentials and lock ->cred_guard_mutex.
+ * setup_new_exec() commits the new creds and drops the lock.
+ * Or, if exec fails before, free_bprm() should release ->cred
+ * and unlock.
+ */
 static int prepare_bprm_creds(struct linux_binprm *bprm)
 {
 	if (mutex_lock_interruptible(&current->signal->cred_guard_mutex))
@@ -416,6 +511,12 @@ out:
 	return ERR_PTR(retval);
 }
 
+/*
+ * Fill the binprm structure from the inode.
+ * Read the first BINPRM_BUF_SIZE bytes
+ *
+ * This may be called multiple times for binary chains (scripts for example).
+ */
 static int prepare_binprm(struct linux_binprm *bprm)
 {
 	loff_t pos = 0;
@@ -424,6 +525,9 @@ static int prepare_binprm(struct linux_binprm *bprm)
 	return kernel_read(bprm->file, bprm->buf, BINPRM_BUF_SIZE, &pos);
 }
 
+/*
+ * cycle the list of binary formats handler, until one recognizes the image
+ */
 static int search_binary_handler(struct linux_binprm *bprm)
 {
 	struct linux_binfmt *fmt;
@@ -482,6 +586,7 @@ int kernel_execve(const char *kernel_filename, const char *const *argv,
 	struct linux_binprm *bprm;
 	int retval;
 
+	/* It is non-sense for kernel threads to call execve */
 	if (WARN_ON_ONCE(current->flags & PF_KTHREAD))
 		return -EINVAL;
 

@@ -1,6 +1,8 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef BOOT_STRING_H
 #define BOOT_STRING_H
 
+/* Undef any of these macros coming from string_32.h. */
 #undef memcpy
 #undef memset
 #undef memcmp
@@ -10,8 +12,9 @@ void *memmove(void *dst, const void *src, size_t len);
 void *memset(void *dst, int c, size_t len);
 int memcmp(const void *s1, const void *s2, size_t len);
 
+/* Access builtin version by default. */
 #define memcpy(d, s, l) __builtin_memcpy(d, s, l)
 #define memset(d, c, l) __builtin_memset(d, c, l)
 #define memcmp __builtin_memcmp
 
-#endif
+#endif /* BOOT_STRING_H */

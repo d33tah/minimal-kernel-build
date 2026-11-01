@@ -1,14 +1,31 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/* thread_info.h: common low-level thread information accessors
+ *
+ * Copyright (C) 2002  David Howells (dhowells@redhat.com)
+ * - Incorporating suggestions made by Linus Torvalds
+ */
+
 #ifndef _LINUX_THREAD_INFO_H
 #define _LINUX_THREAD_INFO_H
 
 #include <asm/bug.h>
 
+/*
+ * For CONFIG_THREAD_INFO_IN_TASK kernels we need <asm/current.h> for the
+ * definition of current, but for !CONFIG_THREAD_INFO_IN_TASK kernels,
+ * including <asm/current.h> can cause a circular dependency on some platforms.
+ */
 #include <asm/current.h>
 #define current_thread_info() ((struct thread_info *)current)
 
 #include <asm/thread_info.h>
 
 #define THREADINFO_GFP (GFP_KERNEL_ACCOUNT | __GFP_ZERO)
+
+/*
+ * flag set/clear/test wrappers
+ * - pass TIF_xxxx constants to these functions
+ */
 
 static inline void set_ti_thread_flag(struct thread_info *ti, int flag)
 {

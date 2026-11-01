@@ -1,3 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ *  kernel/sched/core.c
+ *
+ *  Core kernel scheduler code and related syscalls
+ *
+ *  Copyright (C) 1991-2002  Linus Torvalds
+ */
 #include <linux/sched/debug.h>
 #include <linux/sched/mm.h>
 #include <linux/cpu.h>
@@ -8,17 +16,16 @@
 #include <linux/sched/task.h>
 
 /*
- * One CPU, one run queue, round robin. Runnable tasks wait in FIFO order on
+ * One CPU, one run queue. Runnable tasks wait in FIFO order on
  * runqueues.queue; the task on the CPU is not queued. The idle task runs when
- * the queue is empty and is never queued itself. The tick ends a task's slice
- * after RR_TIMESLICE ticks when another task is waiting; the switch happens
- * at the next schedule() point (return to user mode, cond_resched()).
+ * the queue is empty and is never queued itself. There is no time slicing:
+ * fork allows one task besides idle (max_threads in kernel/fork.c), so the
+ * only switch is idle -> init, when rest_init() schedules after creating it.
  *
  * Nothing in this kernel puts a task to sleep (there are no wait queues and
- * no code sets a sleeping task state), so a task only leaves the CPU when it
- * is preempted, and then goes straight back to the tail of the queue.
+ * no code sets a sleeping task state), and init's exit panics, so init keeps
+ * the CPU from then on.
  */
-#define RR_TIMESLICE (100 * HZ / 1000)
 
 static struct rq {
 	raw_spinlock_t __lock;
@@ -41,13 +48,27 @@ static void resched_curr(void)
 	set_preempt_need_resched();
 }
 
+/*
+ * fork()/clone()-time setup:
+ */
 int sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
+	/*
+	 * We mark the process as NEW here. This guarantees that
+	 * nobody will actually run it, and a signal or other external
+	 * event cannot wake it up and insert it on the runqueue either.
+	 */
 	p->__state = TASK_NEW;
-	p->slice_ticks = 0;
 	return 0;
 }
 
+/*
+ * wake_up_new_task - wake up a newly created task for the first time.
+ *
+ * This function will do some initial scheduler statistics housekeeping
+ * that must be done for every newly created context, then puts the task
+ * on the runqueue and wakes it.
+ */
 void wake_up_new_task(struct task_struct *p)
 {
 	unsigned long flags;
@@ -86,37 +107,41 @@ asmlinkage __visible void schedule_tail(struct task_struct *prev)
 static __always_inline void context_switch(struct task_struct *prev,
 					   struct task_struct *next)
 {
-	if (!next->mm) {
+	/*
+	 * kernel -> kernel   lazy + transfer active
+	 *   user -> kernel   lazy + mmgrab() active
+	 *
+	 * kernel ->   user   switch + mmdrop() active
+	 *   user ->   user   switch
+	 */
+	if (!next->mm) { // to kernel
 		next->active_mm = prev->active_mm;
-		if (prev->mm)
+		if (prev->mm) // from user
 			mmgrab(prev->active_mm);
 		else
 			prev->active_mm = NULL;
-	} else {
+	} else { // to user
+		/*
+		 * sys_membarrier() requires an smp_mb() between setting
+		 * rq->curr / membarrier_switch_mm() and returning to userspace.
+		 *
+		 * The below provides this either through switch_mm(), or in
+		 * case 'prev->active_mm == next->mm' through
+		 * finish_task_switch()'s mmdrop().
+		 */
 		switch_mm_irqs_off(prev->active_mm, next->mm, next);
 
-		if (!prev->mm) {
+		if (!prev->mm) { // from kernel
 			runqueues.prev_mm = prev->active_mm;
 			prev->active_mm = NULL;
 		}
 	}
 
+	/* Here we just switch the register state and the stack. */
 	switch_to(prev, next, prev);
 	barrier();
 
 	finish_task_switch();
-}
-
-void scheduler_tick(void)
-{
-	struct task_struct *curr;
-
-	raw_spin_lock(&runqueues.__lock);
-	curr = runqueues.curr;
-	if (curr != runqueues.idle && ++curr->slice_ticks >= RR_TIMESLICE &&
-	    !list_empty(&runqueues.queue))
-		resched_curr();
-	raw_spin_unlock(&runqueues.__lock);
 }
 
 static void __sched notrace __schedule(bool preempt)
@@ -138,7 +163,6 @@ static void __sched notrace __schedule(bool preempt)
 		next = list_first_entry(&runqueues.queue, struct task_struct,
 					run_list);
 		list_del(&next->run_list);
-		next->slice_ticks = 0;
 	}
 	clear_tsk_need_resched(prev);
 	clear_preempt_need_resched();
@@ -160,30 +184,16 @@ asmlinkage __visible void __sched schedule(void)
 	} while (need_resched());
 }
 
+/**
+ * schedule_preempt_disabled - called with preemption disabled
+ *
+ * Returns with preemption disabled. Note: preempt_count must be 1
+ */
 void __sched schedule_preempt_disabled(void)
 {
 	sched_preempt_enable_no_resched();
 	schedule();
 	preempt_disable();
-}
-
-static void __sched notrace preempt_schedule_common(void)
-{
-	do {
-		preempt_disable_notrace();
-		__schedule(true);
-		preempt_enable_no_resched_notrace();
-
-	} while (need_resched());
-}
-
-int __sched __cond_resched(void)
-{
-	if (should_resched(0)) {
-		preempt_schedule_common();
-		return 1;
-	}
-	return 0;
 }
 
 /* The idle task: halt until an interrupt makes another task runnable. */

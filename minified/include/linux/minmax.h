@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_MINMAX_H
 #define _LINUX_MINMAX_H
 
@@ -21,8 +22,18 @@
 			      __cmp_once(x, y, __UNIQUE_ID(__x), \
 					 __UNIQUE_ID(__y), op))
 
+/**
+ * min - return minimum of two values of the same or compatible types
+ * @x: first value
+ * @y: second value
+ */
 #define min(x, y) __careful_cmp(x, y, <)
 
+/**
+ * max - return maximum of two values of the same or compatible types
+ * @x: first value
+ * @y: second value
+ */
 #define max(x, y) __careful_cmp(x, y, >)
 
 #define min_not_zero(x, y)                                           \
@@ -32,16 +43,70 @@
 		__x == 0 ? __y : ((__y == 0) ? __x : min(__x, __y)); \
 	})
 
+/**
+ * clamp - return a value clamped to a given range with strict typechecking
+ * @val: current value
+ * @lo: lowest allowable value
+ * @hi: highest allowable value
+ *
+ * This macro does strict typechecking of @lo/@hi to make sure they are of the
+ * same type as @val.  See the unnecessary pointer comparisons.
+ */
 #define clamp(val, lo, hi) min((typeof(val))max(val, lo), hi)
 
+/*
+ * ..and if you can't take the strict
+ * types, you can specify one yourself.
+ *
+ * Or not use min/max/clamp at all, of course.
+ */
+
+/**
+ * min_t - return minimum of two values, using the specified type
+ * @type: data type to use
+ * @x: first value
+ * @y: second value
+ */
 #define min_t(type, x, y) __careful_cmp((type)(x), (type)(y), <)
 
+/**
+ * max_t - return maximum of two values, using the specified type
+ * @type: data type to use
+ * @x: first value
+ * @y: second value
+ */
 #define max_t(type, x, y) __careful_cmp((type)(x), (type)(y), >)
 
+/**
+ * clamp_t - return a value clamped to a given range using a given type
+ * @type: the type of variable to use
+ * @val: current value
+ * @lo: minimum allowable value
+ * @hi: maximum allowable value
+ *
+ * This macro does no typechecking and uses temporary variables of type
+ * @type to make all the comparisons.
+ */
 #define clamp_t(type, val, lo, hi) min_t(type, max_t(type, val, lo), hi)
 
+/**
+ * clamp_val - return a value clamped to a given range using val's type
+ * @val: current value
+ * @lo: minimum allowable value
+ * @hi: maximum allowable value
+ *
+ * This macro does no typechecking and uses temporary variables of whatever
+ * type the input argument @val is.  This is useful when @val is an unsigned
+ * type and @lo and @hi are literals that will otherwise be assigned a signed
+ * integer type.
+ */
 #define clamp_val(val, lo, hi) clamp_t(typeof(val), val, lo, hi)
 
+/**
+ * swap - swap values of @a and @b
+ * @a: first value
+ * @b: second value
+ */
 #define swap(a, b)                     \
 	do {                           \
 		typeof(a) __tmp = (a); \
@@ -49,4 +114,4 @@
 		(b) = __tmp;           \
 	} while (0)
 
-#endif
+#endif /* _LINUX_MINMAX_H */

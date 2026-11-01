@@ -3,6 +3,14 @@
 #define LOAD_OFFSET 0
 #endif
 
+/*
+ * Only some architectures want to have the .notes segment visible in
+ * a separate PT_NOTE ELF Program Header. When this happens, it needs
+ * to be visible in both the kernel text's PT_LOAD and the PT_NOTE
+ * Program Headers. In this case, though, the PT_LOAD needs to be made
+ * the default again so that all the following sections don't also end
+ * up in the PT_NOTE Program Header.
+ */
 #ifdef EMITS_PT_NOTE
 #define NOTES_HEADERS		:text :note
 #define NOTES_HEADERS_RESTORE	__restore_ph : { *(.__restore_ph) } :text
@@ -11,18 +19,28 @@
 #define NOTES_HEADERS_RESTORE
 #endif
 
+/*
+ * Some architectures have non-executable read-only exception tables.
+ * They can be added to the RO_DATA segment by specifying their desired
+ * alignment.
+ */
 #ifdef RO_EXCEPTION_TABLE_ALIGN
 #define RO_EXCEPTION_TABLE	EXCEPTION_TABLE(RO_EXCEPTION_TABLE_ALIGN)
 #else
 #define RO_EXCEPTION_TABLE
 #endif
 
+/* Align . to a 8 byte boundary equals to maximum function alignment. */
 #define ALIGN_FUNCTION()  . = ALIGN(8)
 
 #define TEXT_MAIN .text .text.[0-9a-zA-Z_]*
 #define DATA_MAIN .data .data.[0-9a-zA-Z_]* .data..L* .data..compoundliteral* .data.$__unnamed_* .data.$L*
 #define BSS_MAIN .bss .bss.[0-9a-zA-Z_]* .bss..compoundliteral*
 
+/*
+ * GCC 4.5 and later have a 32 bytes section alignment for structures.
+ * Except GCC 4.9, that feels the need to align on 64 bytes.
+ */
 #define STRUCT_ALIGNMENT 32
 #define STRUCT_ALIGN() . = ALIGN(STRUCT_ALIGNMENT)
 
@@ -34,6 +52,9 @@
 	KEEP(*(.dtb.init.rodata))					\
 	__dtb_end = .;
 
+/*
+ * .data section
+ */
 #define DATA_DATA							\
 	*(.xiptext)							\
 	*(DATA_MAIN)							\
@@ -50,6 +71,9 @@
 	KEEP(*(__dyndbg))						\
 	__stop___dyndbg = .;
 
+/*
+ * Data section helpers
+ */
 #define NOSAVE_DATA							\
 	. = ALIGN(PAGE_SIZE);						\
 	__nosave_begin = .;						\
@@ -87,6 +111,9 @@
 	*(.data..ro_after_init)						\
 	__end_ro_after_init = .;
 
+/*
+ * Read only Data
+ */
 #define RO_DATA(align)							\
 	. = ALIGN((align));						\
 	.rodata           : AT(ADDR(.rodata) - LOAD_OFFSET) {		\
@@ -169,12 +196,23 @@
 	. = ALIGN((align));						\
 	__end_rodata = .;
 
+/*
+ * Non-instrumentable text section
+ */
 #define NOINSTR_TEXT							\
 		ALIGN_FUNCTION();					\
 		__noinstr_text_start = .;				\
 		*(.noinstr.text)					\
 		__noinstr_text_end = .;
 
+/*
+ * .text section. Map to function alignment to avoid address changes
+ * during second ld run in second ld pass when generating System.map
+ *
+ * TEXT_MAIN here will match .text.fixup and .text.unlikely if dead
+ * code elimination is enabled, so these sections should be converted
+ * to use ".." first.
+ */
 #define TEXT_TEXT							\
 		ALIGN_FUNCTION();					\
 		*(.text.hot .text.hot.*)				\
@@ -186,12 +224,16 @@
 		*(.ref.text)						\
 		*(.text.asan.* .text.tsan.*)
 
+/* sched.text is aling to function alignment to secure we have same
+ * address even at second ld pass when generating System.map */
 #define SCHED_TEXT							\
 		ALIGN_FUNCTION();					\
 		__sched_text_start = .;					\
 		*(.sched.text)						\
 		__sched_text_end = .;
 
+/* spinlock.text is aling to function alignment to secure we have same
+ * address even at second ld pass when generating System.map */
 #define LOCK_TEXT							\
 		ALIGN_FUNCTION();					\
 		__lock_text_start = .;					\
@@ -222,8 +264,12 @@
 		*(.static_call.text)					\
 		__static_call_text_end = .;
 
+/* Section used for early init (in .S files) */
 #define HEAD_TEXT  KEEP(*(.head.text))
 
+/*
+ * Exception table
+ */
 #define EXCEPTION_TABLE(align)						\
 	. = ALIGN(align);						\
 	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {		\
@@ -232,6 +278,7 @@
 		__stop___ex_table = .;					\
 	}
 
+/* init and exit section handling */
 #define INIT_DATA							\
 	KEEP(*(SORT(___kentry+*)))					\
 	*(.init.data init.data.*)					\
@@ -261,6 +308,11 @@
 #define EXIT_CALL							\
 	*(.exitcall.exit)
 
+/*
+ * DWARF debug sections.
+ * Symbols in the DWARF debugging sections are relative to
+ * the beginning of the section so we begin them at 0.
+ */
 #define DWARF_DEBUG							\
 		.debug          0 : { *(.debug) }			\
 		.line           0 : { *(.line) }			\
@@ -293,6 +345,7 @@
 		.debug_rnglists	0 : { *(.debug_rnglists) }		\
 		.debug_str_offsets	0 : { *(.debug_str_offsets) }
 
+/* Stabs debugging sections. */
 #define STABS_DEBUG							\
 		.stab 0 : { *(.stab) }					\
 		.stabstr 0 : { *(.stabstr) }				\
@@ -301,6 +354,7 @@
 		.stab.index 0 : { *(.stab.index) }			\
 		.stab.indexstr 0 : { *(.stab.indexstr) }
 
+/* Required sections not related to debugging. */
 #define ELF_DETAILS							\
 		.comment 0 : { *(.comment) }				\
 		.symtab 0 : { *(.symtab) }				\
@@ -336,6 +390,7 @@
 		KEEP(*(.con_initcall.init))				\
 		__con_initcall_end = .;
 
+/* Alignment must be consistent with (kunit_suite *) in include/kunit/test.h */
 #define KUNIT_TABLE()							\
 		. = ALIGN(8);						\
 		__kunit_suites_start = .;				\
@@ -349,6 +404,15 @@
 	. = ALIGN(8);							\
 	KEEP(*(.init.ramfs.info))
 
+/*
+ * Default discarded sections.
+ *
+ * Some archs want to discard exit text/data at runtime rather than
+ * link time due to cross-section references such as alt instructions,
+ * bug table, eh_frame, etc.  DISCARDS must be the last of output
+ * section definitions so that such archs put those in earlier section
+ * definitions.
+ */
 #ifdef RUNTIME_DISCARD_EXIT
 #define EXIT_DISCARDS
 #else
@@ -369,6 +433,16 @@
 	COMMON_DISCARDS							\
 	}
 
+/**
+ * PERCPU_INPUT - the percpu input sections
+ * @cacheline: cacheline size
+ *
+ * The core percpu section names and core symbols which do not rely
+ * directly upon load addresses.
+ *
+ * @cacheline is used to align subsections to avoid false cacheline
+ * sharing between subsections for different purposes.
+ */
 #define PERCPU_INPUT(cacheline)						\
 	__per_cpu_start = .;						\
 	*(.data..percpu..first)						\
@@ -381,6 +455,18 @@
 	*(.data..percpu..shared_aligned)				\
 	__per_cpu_end = .;
 
+/**
+ * PERCPU_SECTION - define output section for percpu area, simple version
+ * @cacheline: cacheline size
+ *
+ * Align to PAGE_SIZE and outputs output section for percpu area.  This
+ * macro doesn't manipulate @vaddr or @phdr and __per_cpu_load and
+ * __per_cpu_start will be identical.
+ *
+ * This macro is equivalent to ALIGN(PAGE_SIZE); PERCPU_VADDR(@cacheline,,)
+ * except that __per_cpu_load is defined as a relative symbol against
+ * .data..percpu which is required for relocatable x86_32 configuration.
+ */
 #define PERCPU_SECTION(cacheline)					\
 	. = ALIGN(PAGE_SIZE);						\
 	.data..percpu	: AT(ADDR(.data..percpu) - LOAD_OFFSET) {	\

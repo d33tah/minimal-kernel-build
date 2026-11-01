@@ -1,3 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ *	linux/mm/filemap.c
+ *
+ * Copyright (C) 1994-1999  Linus Torvalds
+ */
+
+/*
+ * This file handles the generic file mmap semantics used by
+ * most "normal" filesystems (but you don't /have/ to use this:
+ * the NFS filesystem used to do this differently, for example)
+ */
 #include <linux/uio.h>
 #include <linux/pagevec.h>
 #include "internal.h"
@@ -61,6 +73,38 @@ void __folio_lock(struct folio *folio)
 	BUG();
 }
 
+/*
+ * Lockless page cache protocol:
+ * On the lookup side:
+ * 1. Load the folio from i_pages
+ * 2. Increment the refcount if it's not zero
+ * 3. If the folio is not found by xas_reload(), put the refcount and retry
+ *
+ * On the removal side:
+ * A. Freeze the page (by zeroing the refcount if nobody else has a reference)
+ * B. Remove the page from i_pages
+ * C. Return the page to the page allocator
+ *
+ * This means that any page may have its reference count temporarily
+ * increased by a speculative page cache (or fast GUP) lookup as it can
+ * be allocated by another user before the RCU grace period expires.
+ * Because the refcount temporarily acquired here may end up being the
+ * last refcount on the page, any page allocation must be freeable by
+ * folio_put().
+ */
+
+/*
+ * mapping_get_entry - Get a page cache entry.
+ * @mapping: the address_space to search
+ * @index: The page cache index.
+ *
+ * Looks up the page cache entry at @mapping & @index.  If it is a folio,
+ * it is returned with an increased refcount.  If it is a shadow entry
+ * of a previously evicted folio, or a swap entry from shmem/tmpfs,
+ * it is returned without further action.
+ *
+ * Return: The folio, swap or shadow entry, %NULL if nothing is found.
+ */
 static void *mapping_get_entry(struct address_space *mapping, pgoff_t index)
 {
 	XA_STATE(xas, &mapping->i_pages, index);
@@ -87,6 +131,39 @@ out:
 	return folio;
 }
 
+/**
+ * __filemap_get_folio - Find and get a reference to a folio.
+ * @mapping: The address_space to search.
+ * @index: The page index.
+ * @fgp_flags: %FGP flags modify how the folio is returned.
+ * @gfp: Memory allocation flags to use if %FGP_CREAT is specified.
+ *
+ * Looks up the page cache entry at @mapping & @index.
+ *
+ * @fgp_flags can be zero or more of these flags:
+ *
+ * * %FGP_ACCESSED - The folio will be marked accessed.
+ * * %FGP_LOCK - The folio is returned locked.
+ * * %FGP_ENTRY - If there is a shadow / swap / DAX entry, return it
+ *   instead of allocating a new folio to replace it.
+ * * %FGP_CREAT - If no page is present then a new page is allocated using
+ *   @gfp and added to the page cache and the VM's LRU list.
+ *   The page is returned locked and with an increased refcount.
+ * * %FGP_FOR_MMAP - The caller wants to do its own locking dance if the
+ *   page is already in cache.  If the page was allocated, unlock it before
+ *   returning so the caller can do the same dance.
+ * * %FGP_WRITE - The page will be written to by the caller.
+ * * %FGP_NOFS - __GFP_FS will get cleared in gfp.
+ * * %FGP_NOWAIT - Don't get blocked by page lock.
+ * * %FGP_STABLE - Wait for the folio to be stable (finished writeback)
+ *
+ * If %FGP_LOCK or %FGP_CREAT are specified then the function may sleep even
+ * if the %GFP flags specified for %FGP_CREAT are atomic.
+ *
+ * If there is a page cache page, it is returned with an increased refcount.
+ *
+ * Return: The found folio or %NULL otherwise.
+ */
 struct folio *__filemap_get_folio(struct address_space *mapping, pgoff_t index,
 				  int fgp_flags, gfp_t gfp)
 {
@@ -100,6 +177,7 @@ repeat:
 	if (fgp_flags & FGP_LOCK) {
 		folio_lock(folio);
 
+		/* Has the page been truncated? */
 		if (unlikely(folio->mapping != mapping)) {
 			folio_unlock(folio);
 			folio_put(folio);
@@ -123,6 +201,10 @@ no_page:
 				goto repeat;
 		}
 
+		/*
+		 * filemap_add_folio locks the page, and for mmap
+		 * we expect an unlocked page.
+		 */
 		if (folio && (fgp_flags & FGP_FOR_MMAP))
 			folio_unlock(folio);
 	}
@@ -166,6 +248,7 @@ static int filemap_read_folio(struct file *file, struct address_space *mapping,
 {
 	int error;
 
+	/* Start the actual read. The read will unlock the page. */
 	error = mapping->a_ops->read_folio(file, folio);
 	if (error)
 		return error;
@@ -186,6 +269,19 @@ static int filemap_create_folio(struct file *file,
 	if (!folio)
 		return -ENOMEM;
 
+	/*
+	 * Protect against truncate / hole punch. Grabbing invalidate_lock
+	 * here assures we cannot instantiate and bring uptodate new
+	 * pagecache folios after evicting page cache during truncate
+	 * and before actually freeing blocks.	Note that we could
+	 * release invalidate_lock after inserting the folio into
+	 * the page cache as the locked folio would then be enough to
+	 * synchronize with hole punching. But there are code paths
+	 * such as filemap_update_page() filling in partially uptodate
+	 * pages or ->readahead() that need to hold invalidate_lock
+	 * while mapping blocks for IO so let's hold the lock here as
+	 * well to keep locking rules simple.
+	 */
 	filemap_invalidate_lock_shared(mapping);
 	error = filemap_add_folio(mapping, folio, index,
 				  mapping_gfp_constraint(mapping, GFP_KERNEL));
@@ -262,8 +358,6 @@ static ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 	folio_batch_init(&fbatch);
 
 	do {
-		cond_resched();
-
 		if (unlikely(iocb->ki_pos >= i_size_read(inode)))
 			break;
 
@@ -271,6 +365,14 @@ static ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 		if (error < 0)
 			break;
 
+		/*
+		 * i_size must be checked after we know the pages are Uptodate.
+		 *
+		 * Checking i_size after the check allows us to calculate
+		 * the correct value for "nr", which means the zero-filled
+		 * part of the page is not copied back to userspace (unless
+		 * another truncate extends the file - this is desired though).
+		 */
 		isize = i_size_read(inode);
 		if (unlikely(iocb->ki_pos >= isize))
 			goto put_folios;
@@ -312,7 +414,7 @@ ssize_t generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 	ssize_t retval = 0;
 
 	if (!count)
-		return 0;
+		return 0; /* skip atime */
 
 	return filemap_read(iocb, iter, retval);
 }
@@ -369,6 +471,8 @@ static const struct vm_operations_struct generic_file_vm_ops = {
 	.fault = filemap_fault,
 };
 
+/* This is used for a general mmap of a disk file */
+
 int generic_file_mmap(struct file *file, struct vm_area_struct *vma)
 {
 	struct address_space *mapping = file->f_mapping;
@@ -422,6 +526,19 @@ static ssize_t __generic_file_write_iter(struct kiocb *iocb,
 	return written;
 }
 
+/**
+ * generic_file_write_iter - write data to a file
+ * @iocb:	IO state structure
+ * @from:	iov_iter with data to write
+ *
+ * This is a wrapper around __generic_file_write_iter() to be used by most
+ * filesystems. It takes care of syncing the file in case of O_SYNC file
+ * and acquires i_rwsem as needed.
+ * Return:
+ * * negative error code if no data has been written at all of
+ *   vfs_fsync_range() failed for a synchronous write
+ * * number of bytes written, even for truncated writes
+ */
 ssize_t generic_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 {
 	struct file *file = iocb->ki_filp;

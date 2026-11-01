@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0
+
 #include <linux/entry-common.h>
 #include <linux/hardirq.h>
 
@@ -11,6 +13,10 @@ noinstr long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall)
 static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
 					    unsigned long ti_work)
 {
+	/*
+	 * Before returning to user space ensure that all pending work
+	 * items have been completed.
+	 */
 	while (ti_work & EXIT_TO_USER_MODE_WORK) {
 		local_irq_enable_exit_to_user(ti_work);
 
@@ -22,6 +28,7 @@ static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
 		ti_work = read_thread_flags();
 	}
 
+	/* Return the latest work state for arch_exit_to_user_mode() */
 	return ti_work;
 }
 
@@ -53,6 +60,7 @@ noinstr irqentry_state_t irqentry_enter(struct pt_regs *regs)
 
 noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 {
+	/* Check whether this returns to user mode */
 	if (user_mode(regs)) {
 		irqentry_exit_to_user_mode(regs);
 	}

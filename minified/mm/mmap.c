@@ -1,3 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * mm/mmap.c
+ *
+ * Written by obz.
+ *
+ * Address space accounting code	<alan@lxorguk.ukuu.org.uk>
+ */
+
 #include <linux/mman.h>
 #include <linux/file.h>
 #include <linux/security.h>
@@ -16,6 +25,26 @@ static unsigned long mmap_region(struct file *file, unsigned long addr,
 static int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len);
 static unsigned long stack_guard_gap;
 
+/* description of effects of mapping type and prot in current implementation.
+ * this is due to the limited x86 page protection hardware.  The expected
+ * behavior is in parens:
+ *
+ * map_type	prot
+ *		PROT_NONE	PROT_READ	PROT_WRITE	PROT_EXEC
+ * MAP_SHARED	r: (no) no	r: (yes) yes	r: (no) yes	r: (no) yes
+ *		w: (no) no	w: (no) no	w: (yes) yes	w: (no) no
+ *		x: (no) no	x: (no) yes	x: (no) yes	x: (yes) yes
+ *
+ * MAP_PRIVATE	r: (no) no	r: (yes) yes	r: (no) yes	r: (no) yes
+ *		w: (no) no	w: (no) no	w: (copy) copy	w: (no) no
+ *		x: (no) no	x: (no) yes	x: (no) yes	x: (yes) yes
+ *
+ * On arm64, PROT_EXEC has the following behaviour for both MAP_SHARED and
+ * MAP_PRIVATE (with Enhanced PAN supported):
+ *								r: (no) no
+ *								w: (no) no
+ *								x: (yes) yes
+ */
 pgprot_t protection_map[16] __ro_after_init = {
 	[VM_NONE] = __P000,
 	[VM_READ] = __P001,
@@ -37,8 +66,8 @@ pgprot_t protection_map[16] __ro_after_init = {
 
 /*
  * The VMAs of an mm are kept only as the address-sorted mm->mmap list (no
- * rbtree): a process here has a handful of VMAs (the ELF segments, bss and
- * the stack), so lookups walk the list.
+ * rbtree): a process here has a handful of VMAs (the ELF segments and the
+ * stack), so lookups walk the list.
  */
 static int find_vma_links(struct mm_struct *mm, unsigned long addr,
 			  unsigned long end, struct vm_area_struct **pprev)
@@ -107,22 +136,35 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 	if (!len)
 		return -EINVAL;
 
+	/*
+	 * Does the application expect PROT_READ to imply PROT_EXEC?
+	 *
+	 * (the exception is when the underlying filesystem is noexec
+	 *  mounted, in which case we dont add PROT_EXEC.)
+	 */
 	if ((prot & PROT_READ) && (current->personality & READ_IMPLIES_EXEC))
 		prot |= PROT_EXEC;
 
+	/* force arch specific MAP_FIXED handling in get_unmapped_area */
 	if (flags & MAP_FIXED_NOREPLACE)
 		flags |= MAP_FIXED;
 
+	/* Careful about overflows.. */
 	len = PAGE_ALIGN(len);
 	if (!len)
 		return -ENOMEM;
 
+	/* offset overflow? */
 	if ((pgoff + (len >> PAGE_SHIFT)) < pgoff)
 		return -EOVERFLOW;
 
+	/* Too many mappings? */
 	if (mm->map_count > sysctl_max_map_count)
 		return -ENOMEM;
 
+	/* Obtain the address to map to. we verify (or select) it and ensure
+	 * that it represents a valid section of the address space.
+	 */
 	addr = get_unmapped_area(file, addr, len, pgoff, flags);
 	if (IS_ERR_VALUE(addr))
 		return addr;
@@ -141,26 +183,23 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 		if (!file_mmap_ok(file, inode, pgoff, len))
 			return -EOVERFLOW;
 
+		if (prot & PROT_WRITE) {
+			if (!(file->f_mode & FMODE_WRITE))
+				return -EACCES;
+		}
+
+		if (!(file->f_mode & FMODE_WRITE))
+			vm_flags &= ~(VM_MAYWRITE | VM_SHARED);
+
 		if (!(file->f_mode & FMODE_READ))
 			return -EACCES;
 
 		if (!file->f_op->mmap)
 			return -ENODEV;
-	} else {
-		pgoff = addr >> PAGE_SHIFT;
 	}
 
 	addr = mmap_region(file, addr, len, vm_flags, pgoff);
 	return addr;
-}
-
-/*
- * We account for memory if it's a private writeable mapping,
- * not hugepages and VM_NORESERVE wasn't set.
- */
-static inline int accountable_mapping(struct file *file, vm_flags_t vm_flags)
-{
-	return (vm_flags & (VM_SHARED | VM_WRITE)) == VM_WRITE;
 }
 
 static unsigned long mmap_region(struct file *file, unsigned long addr,
@@ -170,19 +209,9 @@ static unsigned long mmap_region(struct file *file, unsigned long addr,
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma;
 	struct vm_area_struct *prev = NULL;
-	unsigned long charged = 0;
 
 	if (munmap_vma_range(mm, addr, len, &prev))
 		return -ENOMEM;
-	/*
-	 * Private writable mapping: check memory availability
-	 */
-	if (accountable_mapping(file, vm_flags)) {
-		charged = len >> PAGE_SHIFT;
-		if (security_vm_enough_memory_mm(mm, charged))
-			return -ENOMEM;
-		vm_flags |= VM_ACCOUNT;
-	}
 
 	vma = vm_area_alloc(mm);
 	if (!vma)
@@ -197,12 +226,14 @@ static unsigned long mmap_region(struct file *file, unsigned long addr,
 	if (file) {
 		vma->vm_file = get_file(file);
 		if (call_mmap(file, vma)) {
+			/* ->mmap() can change vma->vm_file and fput the original file. So
+				 * fput the vma->vm_file here or we would add an extra fput for file
+				 * and cause general protection fault ultimately.
+				 */
 			fput(vma->vm_file);
 			vm_area_free(vma);
 			return -EINVAL;
 		}
-	} else {
-		vma_set_anonymous(vma);
 	}
 
 	vma_link(mm, vma, prev);
@@ -234,6 +265,7 @@ static unsigned long get_unmapped_area(struct file *file, unsigned long addr,
 	return addr;
 }
 
+/* Look up the first VMA which satisfies  addr < vm_end,  NULL if none. */
 struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 {
 	struct vm_area_struct *vma;
@@ -249,9 +281,14 @@ static int acct_stack_growth(struct vm_area_struct *vma, unsigned long size,
 {
 	struct mm_struct *mm = vma->vm_mm;
 
+	/* Stack limit test */
 	if (size > rlimit(RLIMIT_STACK))
 		return -ENOMEM;
 
+	/*
+	 * Overcommit..  This must be the final test, as it will
+	 * update security statistics.
+	 */
 	if (security_vm_enough_memory_mm(mm, grow))
 		return -ENOMEM;
 
@@ -270,12 +307,14 @@ static int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 
 	/* Enforce stack_guard_gap */
 	prev = vma->vm_prev;
+	/* Check that both stack segments have the same anon_vma? */
 	if (prev && !(prev->vm_flags & VM_GROWSDOWN) &&
 	    vma_is_accessible(prev)) {
 		if (address - prev->vm_end < stack_guard_gap)
 			return -ENOMEM;
 	}
 
+	/* Somebody else might have raced and expanded it already */
 	if (address < vma->vm_start) {
 		unsigned long size, grow;
 
@@ -286,6 +325,17 @@ static int expand_downwards(struct vm_area_struct *vma, unsigned long address)
 		if (grow <= vma->vm_pgoff) {
 			error = acct_stack_growth(vma, size, grow);
 			if (!error) {
+				/*
+				 * vma_gap_update() doesn't support concurrent
+				 * updates, but we only hold a shared mmap_lock
+				 * lock here, so we need to protect against
+				 * concurrent vma expansions.
+				 * anon_vma_lock_write() doesn't help here, as
+				 * we don't guarantee that all growable vmas
+				 * in a mm share the same root anon vma.
+				 * So, we reuse mm->page_table_lock to guard
+				 * against concurrent vma expansions.
+				 */
 				spin_lock(&mm->page_table_lock);
 				vma->vm_start = address;
 				vma->vm_pgoff -= grow;
@@ -434,28 +484,6 @@ static int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 }
 
 /*
- * Map the zero-filled part of an ELF segment (p_memsz > p_filesz) as a
- * private anonymous region; do_anonymous_page supplies zeroed pages on
- * first touch. MAP_FIXED_NOREPLACE: an overlap with an existing mapping
- * (e.g. the stack) fails with -EEXIST instead of unmapping it.
- */
-int vm_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
-{
-	unsigned long prot = PROT_READ | PROT_WRITE;
-	unsigned long ret;
-
-	if (flags & ~VM_EXEC)
-		return -EINVAL;
-	if (flags & VM_EXEC)
-		prot |= PROT_EXEC;
-
-	/* No file: do_mmap/mmap_region make it an anonymous mapping. */
-	ret = vm_mmap(NULL, addr, request, prot,
-		      MAP_PRIVATE | MAP_FIXED_NOREPLACE, 0);
-	return IS_ERR_VALUE(ret) ? (int)ret : 0;
-}
-
-/*
  * Release all mmaps. Upstream unmaps every VMA with unmap_vmas(), frees the
  * page tables with free_pgtables() and the VMAs with remove_vma(); this tree
  * has none of those, and __do_munmap() over the whole user range does the
@@ -467,6 +495,10 @@ void exit_mmap(struct mm_struct *mm)
 	__do_munmap(mm, 0, TASK_SIZE);
 }
 
+/* Insert vm structure into process list sorted by address
+ * and into the inode's i_mmap tree.  If vm_file is non-NULL
+ * then i_mmap_rwsem is taken here.
+ */
 int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 {
 	struct vm_area_struct *prev;

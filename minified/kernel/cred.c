@@ -1,7 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/* Task credentials management - see Documentation/security/credentials.rst
+ *
+ * Copyright (C) 2008 Red Hat, Inc. All Rights Reserved.
+ * Written by David Howells (dhowells@redhat.com)
+ */
 #include <linux/init_task.h>
 
+/* init to 2 - one for init_task, one to ensure it is never freed */
 static struct group_info init_groups = { .usage = ATOMIC_INIT(2) };
 
+/*
+ * The initial credentials for the initial task
+ */
 struct cred init_cred = {
 	.usage = ATOMIC_INIT(4),
 	.uid = GLOBAL_ROOT_UID,
@@ -36,6 +46,10 @@ static struct cred *prepare_creds(void)
 	return new;
 }
 
+/*
+ * Prepare credentials for current to perform an execve()
+ * - The caller must hold ->cred_guard_mutex
+ */
 struct cred *prepare_exec_creds(void)
 {
 	struct cred *new;
@@ -50,6 +64,15 @@ struct cred *prepare_exec_creds(void)
 	return new;
 }
 
+/*
+ * Copy credentials for the new process created by fork()
+ *
+ * We share if we can, but under some circumstances we have to generate a new
+ * set.
+ *
+ * The new process gets the current process's subjective credentials as its
+ * objective and subjective credentials
+ */
 int copy_creds(struct task_struct *p, unsigned long clone_flags)
 {
 	struct cred *new;
@@ -67,6 +90,20 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
 	return 0;
 }
 
+/**
+ * commit_creds - Install new credentials upon the current task
+ * @new: The credentials to be assigned
+ *
+ * Install a new set of credentials to the current task, using RCU to replace
+ * the old set.  Both the objective and the subjective credentials pointers are
+ * updated.  This function may not be called if the subjective credentials are
+ * in an overridden state.
+ *
+ * This function eats the caller's reference to the new credentials.
+ *
+ * Always returns 0 thus allowing this function to be tail-called at the end
+ * of, say, sys_setgid().
+ */
 int commit_creds(struct cred *new)
 {
 	struct task_struct *task = current;
@@ -75,16 +112,24 @@ int commit_creds(struct cred *new)
 	BUG_ON(task->cred != old);
 	BUG_ON(atomic_read(&new->usage) < 1);
 
-	get_cred(new);
+	get_cred(new); /* we will require a ref for the subj creds too */
 
 	rcu_assign_pointer(task->real_cred, new);
 	rcu_assign_pointer(task->cred, new);
 
+	/* release the old obj and subj refs both */
 	put_cred(old);
 	put_cred(old);
 	return 0;
 }
 
+/**
+ * abort_creds - Discard a set of credentials and unlock the current task
+ * @new: The credentials that were going to be applied
+ *
+ * Discard a set of credentials that were under construction and unlock the
+ * current task.
+ */
 void abort_creds(struct cred *new)
 {
 	BUG_ON(atomic_read(&new->usage) < 1);

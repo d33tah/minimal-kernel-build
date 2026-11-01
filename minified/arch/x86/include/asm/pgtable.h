@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_PGTABLE_H
 #define _ASM_X86_PGTABLE_H
 
@@ -18,11 +19,6 @@ extern unsigned long
 #define pte_val(x) native_pte_val(x)
 #define __pte(x) native_make_pte(x)
 
-static inline int pte_dirty(pte_t pte)
-{
-	return pte_flags(pte) & _PAGE_DIRTY;
-}
-
 static inline int pte_write(pte_t pte)
 {
 	return pte_flags(pte) & _PAGE_RW;
@@ -37,6 +33,8 @@ static inline int pte_special(pte_t pte)
 {
 	return pte_flags(pte) & _PAGE_SPECIAL;
 }
+
+/* Entries that were set to PROT_NONE are inverted */
 
 static inline u64 protnone_mask(u64 val);
 
@@ -76,6 +74,10 @@ static inline pte_t pte_mkwrite(pte_t pte)
 	return pte_set_flags(pte, _PAGE_RW);
 }
 
+/*
+ * Mask out unsupported bits in a present pgprot.  Non-present pgprots
+ * can use those bits for other purposes, so leave them be.
+ */
 static inline pgprotval_t massage_pgprot(pgprot_t pgprot)
 {
 	pgprotval_t protval = pgprot_val(pgprot);
@@ -130,11 +132,19 @@ static inline int pte_present(pte_t a)
 
 static inline int pmd_present(pmd_t pmd)
 {
+	/*
+	 * Checking for _PAGE_PSE is needed too because
+	 * split_huge_page will temporarily clear the present bit (but
+	 * the _PAGE_PSE flag will remain set at all times while the
+	 * _PAGE_PRESENT bit is clear).
+	 */
 	return pmd_flags(pmd) & (_PAGE_PRESENT | _PAGE_PROTNONE | _PAGE_PSE);
 }
 
 static inline int pmd_none(pmd_t pmd)
 {
+	/* Only check low word on 32-bit platforms, since it might be
+	   out of sync with upper half. */
 	unsigned long val = native_pmd_val(pmd);
 	return (val & ~_PAGE_KNL_ERRATUM_MASK) == 0;
 }
@@ -144,6 +154,13 @@ static inline unsigned long pmd_page_vaddr(pmd_t pmd)
 	return (unsigned long)__va(pmd_val(pmd) & pmd_pfn_mask(pmd));
 }
 
+/*
+ * Conversion functions: convert a page and protection to a page entry,
+ * and a page entry and page directory to the page they refer to.
+ *
+ * (Currently stuck as a macro because of indirect forward reference
+ * to linux/mm.h:page_to_nid())
+ */
 #define mk_pte(page, pgprot) pfn_pte(page_to_pfn(page), (pgprot))
 
 static inline int pmd_bad(pmd_t pmd)
@@ -163,12 +180,25 @@ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 	set_pte(ptep, pte);
 }
 
+/*
+ * We only update the dirty/accessed state if we set
+ * the dirty bit by hand in the kernel, since the hardware
+ * will do the accessed bit for us, and we don't want to
+ * race with other CPU's that might be updating the dirty
+ * bit at the same time.
+ */
 struct vm_area_struct;
 
-extern int ptep_set_access_flags(struct vm_area_struct *vma,
-				 unsigned long address, pte_t *ptep,
-				 pte_t entry, int dirty);
-
+/*
+ * clone_pgd_range(pgd_t *dst, pgd_t *src, int count);
+ *
+ *  dst - pointer to pgd range anywhere on a pgd page
+ *  src - ""
+ *  count - the number of pgds to copy.
+ *
+ * dst and src can be on the same page, but the range must not overlap,
+ * and must not cross a page boundary.
+ */
 static inline void clone_pgd_range(pgd_t *dst, pgd_t *src, int count)
 {
 	memcpy(dst, src, count * sizeof(pgd_t));

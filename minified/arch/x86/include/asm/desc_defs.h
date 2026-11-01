@@ -1,6 +1,9 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/* Written 2000 by Andi Kleen */
 #ifndef _ASM_X86_DESC_DEFS_H
 #define _ASM_X86_DESC_DEFS_H
 
+/* 8 byte segment descriptor */
 struct desc_struct {
 	u16 limit0;
 	u16 base0;
@@ -34,6 +37,7 @@ enum {
 	DESC_TSS = 0x9,
 };
 
+/* LDT or TSS descriptor in the GDT. */
 struct ldttss_desc {
 	u16 limit0;
 	u16 base0;

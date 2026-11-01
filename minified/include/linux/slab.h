@@ -1,15 +1,38 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * Written by Mark Hemment, 1996 (markhe@nextd.demon.co.uk).
+ *
+ * (C) SGI 2006, Christoph Lameter
+ * 	Cleaned up and restructured to ease the addition of alternative
+ * 	implementations of SLAB allocators.
+ * (C) Linux Foundation 2008-2013
+ *      Unified interface for all slab allocators
+ */
+
 #ifndef _LINUX_SLAB_H
 #define _LINUX_SLAB_H
 
 #include <linux/gfp.h>
 #include <linux/overflow.h>
 
+/* Align objs on cache lines */
 #define SLAB_HWCACHE_ALIGN ((slab_flags_t __force)0x00002000U)
 
+/*
+ * ZERO_SIZE_PTR will be returned for zero sized kmalloc requests.
+ *
+ * Dereferencing ZERO_SIZE_PTR will lead to a distinct access fault.
+ *
+ * ZERO_SIZE_PTR can be passed to kfree though in the same way that NULL can.
+ * Both make kfree a no-op.
+ */
 #define ZERO_SIZE_PTR ((void *)16)
 
 #define ZERO_OR_NULL_PTR(x) ((unsigned long)(x) <= (unsigned long)ZERO_SIZE_PTR)
 
+/*
+ * struct kmem_cache related prototypes
+ */
 void __init kmem_cache_init(void);
 bool slab_is_available(void);
 
@@ -24,13 +47,22 @@ static inline unsigned int arch_slab_minalign(void)
 	return ARCH_SLAB_MINALIGN;
 }
 
+/*
+ * kmem_cache_alloc and friends return pointers aligned to ARCH_SLAB_MINALIGN.
+ * kmalloc and friends return pointers aligned to both ARCH_KMALLOC_MINALIGN
+ * and ARCH_SLAB_MINALIGN, but here we only assume the former alignment.
+ */
 #define __assume_kmalloc_alignment __assume_aligned(ARCH_KMALLOC_MINALIGN)
 #define __assume_slab_alignment __assume_aligned(ARCH_SLAB_MINALIGN)
-#define __assume_page_alignment __assume_aligned(PAGE_SIZE)
 
+/*
+ * SLUB directly allocates requests fitting in to an order-1 page
+ * (PAGE_SIZE*2).  Larger requests are passed to the page allocator.
+ */
 #define KMALLOC_SHIFT_HIGH (PAGE_SHIFT + 1)
 #define KMALLOC_SHIFT_LOW 3
 
+/* Maximum size for which we actually use a slab cache */
 #define KMALLOC_MAX_CACHE_SIZE (1UL << KMALLOC_SHIFT_HIGH)
 
 #define KMALLOC_MIN_SIZE (1 << KMALLOC_SHIFT_LOW)
@@ -45,6 +77,19 @@ static __always_inline enum kmalloc_cache_type kmalloc_type(gfp_t flags)
 	return KMALLOC_NORMAL;
 }
 
+/*
+ * Figure out which kmalloc slab an allocation of a certain size
+ * belongs to.
+ * 0 = zero alloc
+ * 1 =  65 .. 96 bytes
+ * 2 = 129 .. 192 bytes
+ * n = 2^(n-1)+1 .. 2^n
+ *
+ * Note: __kmalloc_index() is compile-time optimized, and not runtime optimized;
+ * typical usage is via kmalloc_index() and therefore evaluated at compile-time.
+ * Callers where !size_is_constant should only be test modules, where runtime
+ * overheads of __kmalloc_index() can be tolerated.  Also see kmalloc_slab().
+ */
 static __always_inline unsigned int __kmalloc_index(size_t size,
 						    bool size_is_constant)
 {
@@ -86,6 +131,7 @@ static __always_inline unsigned int __kmalloc_index(size_t size,
 	else
 		BUG();
 
+	/* Will never be reached. Needed because the compiler may complain */
 	return -1;
 }
 #define kmalloc_index(s) __kmalloc_index(s, true)
@@ -125,30 +171,64 @@ static __always_inline void *kmem_cache_alloc_node_trace(struct kmem_cache *s,
 	return ret;
 }
 
-extern void *kmalloc_order(size_t size, gfp_t flags,
-			   unsigned int order) __assume_page_alignment
-	__alloc_size(1);
-
-static __always_inline
-	__alloc_size(1) void *kmalloc_order_trace(size_t size, gfp_t flags,
-						  unsigned int order)
-{
-	return kmalloc_order(size, flags, order);
-}
-
-static __always_inline __alloc_size(1) void *kmalloc_large(size_t size,
-							   gfp_t flags)
-{
-	unsigned int order = get_order(size);
-	return kmalloc_order_trace(size, flags, order);
-}
-
+/**
+ * kmalloc - allocate memory
+ * @size: how many bytes of memory are required.
+ * @flags: the type of memory to allocate.
+ *
+ * kmalloc is the normal method of allocating memory
+ * for objects smaller than page size in the kernel.
+ *
+ * The allocated object address is aligned to at least ARCH_KMALLOC_MINALIGN
+ * bytes. For @size of power of two bytes, the alignment is also guaranteed
+ * to be at least to the size.
+ *
+ * The @flags argument may be one of the GFP flags defined at
+ * include/linux/gfp.h and described at
+ * :ref:`Documentation/core-api/mm-api.rst <mm-api-gfp-flags>`
+ *
+ * The recommended usage of the @flags is described at
+ * :ref:`Documentation/core-api/memory-allocation.rst <memory_allocation>`
+ *
+ * Below is a brief outline of the most useful GFP flags
+ *
+ * %GFP_KERNEL
+ *	Allocate normal kernel ram. May sleep.
+ *
+ * %GFP_NOWAIT
+ *	Allocation will not sleep.
+ *
+ * %GFP_ATOMIC
+ *	Allocation will not sleep.  May use emergency pools.
+ *
+ * %GFP_HIGHUSER
+ *	Allocate memory from high memory on behalf of user.
+ *
+ * Also it is possible to set different flags by OR'ing
+ * in one or more of the following additional @flags:
+ *
+ * %__GFP_HIGH
+ *	This allocation has high priority and may use emergency pools.
+ *
+ * %__GFP_NOFAIL
+ *	Indicate that this allocation is in no way allowed to fail
+ *	(think twice before using).
+ *
+ * %__GFP_NORETRY
+ *	If memory is not immediately available,
+ *	then give up at once.
+ *
+ * %__GFP_NOWARN
+ *	If allocation fails, don't issue any warnings.
+ *
+ * %__GFP_RETRY_MAYFAIL
+ *	Try really hard to succeed the allocation but fail
+ *	eventually.
+ */
 static __always_inline __alloc_size(1) void *kmalloc(size_t size, gfp_t flags)
 {
 	if (__builtin_constant_p(size)) {
 		unsigned int index;
-		if (size > KMALLOC_MAX_CACHE_SIZE)
-			return kmalloc_large(size, flags);
 		index = kmalloc_index(size);
 
 		if (!index)
@@ -195,11 +275,19 @@ static inline __alloc_size(1, 2) void *kcalloc(size_t n, size_t size,
 	return kmalloc_array(n, size, flags | __GFP_ZERO);
 }
 
+/*
+ * Shortcuts
+ */
 static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
 {
 	return kmem_cache_alloc(k, flags | __GFP_ZERO);
 }
 
+/**
+ * kzalloc - allocate memory. The memory is set to zero.
+ * @size: how many bytes of memory are required.
+ * @flags: the type of memory to allocate (see kmalloc).
+ */
 static inline __alloc_size(1) void *kzalloc(size_t size, gfp_t flags)
 {
 	return kmalloc(size, flags | __GFP_ZERO);

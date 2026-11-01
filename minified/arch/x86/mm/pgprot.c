@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0
+
 #include <linux/mm.h>
 
 pgprot_t vm_get_page_prot(unsigned long vm_flags)

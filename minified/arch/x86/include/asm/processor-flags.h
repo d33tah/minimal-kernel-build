@@ -1,9 +1,10 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_PROCESSOR_FLAGS_H
 #define _ASM_X86_PROCESSOR_FLAGS_H
 
 #include <uapi/asm/processor-flags.h>
 #include <linux/mem_encrypt.h>
 
-#define X86_VM_MASK 0
+#define X86_VM_MASK 0 /* No VM86 support */
 
 #endif

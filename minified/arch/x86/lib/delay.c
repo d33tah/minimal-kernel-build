@@ -1,6 +1,21 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ *	Precise Delay Loops for i386
+ *
+ *	Copyright (C) 1993 Linus Torvalds
+ *	Copyright (C) 1997 Martin Mares <mj@atrey.karlin.mff.cuni.cz>
+ *	Copyright (C) 2008 Jiri Hladky <hladky _dot_ jiri _at_ gmail _dot_ com>
+ *
+ *	The __delay function must _NOT_ be inlined as its execution time
+ *	depends wildly on alignment on many x86 processors. The additional
+ *	jump magic is needed to get the timing stable on all the CPU's
+ *	we have to worry about.
+ */
+
 #include <asm/param.h>
 #include <linux/delay.h>
 
+/* simple loop based delay: */
 static void delay_loop(u64 __loops)
 {
 	unsigned long loops = (unsigned long)__loops;

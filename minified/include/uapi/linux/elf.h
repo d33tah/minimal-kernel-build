@@ -1,9 +1,11 @@
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 #ifndef _UAPI_LINUX_ELF_H
 #define _UAPI_LINUX_ELF_H
 
 #define EM_386 3
 #define EM_486 6
 
+/* 32-bit ELF base types. */
 typedef __u32 Elf32_Addr;
 typedef __u16 Elf32_Half;
 typedef __u32 Elf32_Off;
@@ -27,7 +29,7 @@ typedef struct elf32_hdr {
 	Elf32_Half e_type;
 	Elf32_Half e_machine;
 	Elf32_Word e_version;
-	Elf32_Addr e_entry;
+	Elf32_Addr e_entry; /* Entry point */
 	Elf32_Off e_phoff;
 	Elf32_Off e_shoff;
 	Elf32_Word e_flags;
@@ -39,6 +41,8 @@ typedef struct elf32_hdr {
 	Elf32_Half e_shstrndx;
 } Elf32_Ehdr;
 
+/* These constants define the permissions on sections in the program
+   header, p_flags. */
 #define PF_R 0x4
 #define PF_W 0x2
 #define PF_X 0x1

@@ -1,3 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * linux/fs/binfmt_elf.c
+ *
+ * These are the functions used to load ELF format executables as used
+ * on SVr4 machines.  Information on the format may be found in the book
+ * "UNIX SYSTEM V RELEASE 4 Programmers Guide: Ansi C and Programming Support
+ * Tools".
+ *
+ * Copyright 1993, 1994: Eric Youngdale (ericy@cais.com).
+ */
+
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/mman.h>
@@ -31,33 +43,6 @@ static struct linux_binfmt elf_format = {
 
 #define BAD_ADDR(x) (unlikely((unsigned long)(x) >= TASK_SIZE))
 
-static int set_brk(unsigned long start, unsigned long end, int prot)
-{
-	start = ELF_PAGEALIGN(start);
-	end = ELF_PAGEALIGN(end);
-	if (end > start) {
-		int error = vm_brk_flags(start, end - start,
-					 prot & PROT_EXEC ? VM_EXEC : 0);
-		if (error)
-			return error;
-	}
-	current->mm->brk = end;
-	return 0;
-}
-
-static int padzero(unsigned long elf_bss)
-{
-	unsigned long nbyte;
-
-	nbyte = ELF_PAGEOFFSET(elf_bss);
-	if (nbyte) {
-		nbyte = ELF_MIN_ALIGN - nbyte;
-		if (clear_user((void __user *)elf_bss, nbyte))
-			return -EFAULT;
-	}
-	return 0;
-}
-
 #define STACK_ADD(sp, items) ((elf_addr_t __user *)(sp) - (items))
 #define STACK_ROUND(sp, items) (((unsigned long)(sp - items)) & ~15UL)
 #define STACK_ALLOC(sp, len) (sp -= len)
@@ -84,6 +69,12 @@ static int create_elf_tables(struct linux_binprm *bprm,
 
 	p &= ~0xfUL; /* 16-byte stack alignment; no randomization */
 
+	/*
+	 * If this architecture has a platform capability string, copy it
+	 * to userspace.  In some cases (Sparc), this info is impossible
+	 * for userspace to get any other way, in others (i386) it is
+	 * merely difficult.
+	 */
 	u_platform = NULL;
 	if (k_platform) {
 		size_t len = strlen(k_platform) + 1;
@@ -93,14 +84,19 @@ static int create_elf_tables(struct linux_binprm *bprm,
 			return -EFAULT;
 	}
 
+	/*
+	 * Generate 16 random bytes for userspace PRNG seeding.
+	 */
 	get_random_bytes(k_rand_bytes, sizeof(k_rand_bytes));
 	u_rand_bytes =
 		(elf_addr_t __user *)STACK_ALLOC(p, sizeof(k_rand_bytes));
 	if (copy_to_user(u_rand_bytes, k_rand_bytes, sizeof(k_rand_bytes)))
 		return -EFAULT;
 
+	/* Create the ELF interpreter info */
 	elf_info = (elf_addr_t *)mm->saved_auxv;
 
+	/* update AT_VECTOR_SIZE_BASE if the number of NEW_AUX_ENT() changes */
 #define NEW_AUX_ENT(id, val)       \
 	do {                       \
 		*elf_info++ = id;  \
@@ -133,6 +129,7 @@ static int create_elf_tables(struct linux_binprm *bprm,
 	       (char *)mm->saved_auxv + sizeof(mm->saved_auxv) -
 		       (char *)elf_info);
 
+	/* And advance past the AT_NULL entry.  */
 	elf_info += 2;
 
 	ei_index = elf_info - (elf_addr_t *)mm->saved_auxv;
@@ -143,6 +140,10 @@ static int create_elf_tables(struct linux_binprm *bprm,
 
 	sp = (elf_addr_t __user *)bprm->p;
 
+	/*
+	 * Grow the stack manually; some architectures have a limit on how
+	 * far ahead a user-space access may be in order to grow the stack.
+	 */
 	if (mmap_read_lock_killable(mm))
 		return -EINTR;
 	vma = find_extend_vma(mm, bprm->p);
@@ -150,6 +151,7 @@ static int create_elf_tables(struct linux_binprm *bprm,
 	if (!vma)
 		return -EFAULT;
 
+	/* Now, let's put argc (and argv, envp if appropriate) on the stack */
 	if (put_user(argc, sp++))
 		return -EFAULT;
 
@@ -192,6 +194,8 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
 	addr = ELF_PAGESTART(addr);
 	size = ELF_PAGEALIGN(size);
 
+	/* mmap() will return -EINVAL if given a zero size, but a
+	 * segment with zero filesize is perfectly valid */
 	if (!size)
 		return addr;
 
@@ -207,6 +211,15 @@ static int elf_read(struct file *file, void *buf, size_t len, loff_t pos)
 	return unlikely(rv != len) ? ((rv < 0) ? rv : -EIO) : 0;
 }
 
+/**
+ * load_elf_phdrs() - load ELF program headers
+ * @elf_ex:   ELF header of the binary whose program headers should be loaded
+ * @elf_file: the opened ELF binary file
+ *
+ * Loads ELF program headers from the binary file elf_file, which has the ELF
+ * header pointed to by elf_ex, into a newly allocated array. The caller is
+ * responsible for freeing the allocated data. Returns an ERR_PTR upon failure.
+ */
 static struct elf_phdr *load_elf_phdrs(const struct elfhdr *elf_ex,
 				       struct file *elf_file)
 {
@@ -214,9 +227,15 @@ static struct elf_phdr *load_elf_phdrs(const struct elfhdr *elf_ex,
 	int retval, err = -1;
 	unsigned int size;
 
+	/*
+	 * If the size of this structure has changed, then punt, since
+	 * we will be doing the wrong thing.
+	 */
 	if (elf_ex->e_phentsize != sizeof(struct elf_phdr))
 		goto out;
 
+	/* Sanity check the number of program headers... */
+	/* ...and their total size. */
 	size = sizeof(struct elf_phdr) * elf_ex->e_phnum;
 	if (size == 0 || size > 65536 || size > ELF_MIN_ALIGN)
 		goto out;
@@ -225,12 +244,14 @@ static struct elf_phdr *load_elf_phdrs(const struct elfhdr *elf_ex,
 	if (!elf_phdata)
 		goto out;
 
+	/* Read in the program headers */
 	retval = elf_read(elf_file, elf_phdata, size, elf_ex->e_phoff);
 	if (retval < 0) {
 		err = retval;
 		goto out;
 	}
 
+	/* Success! */
 	err = 0;
 out:
 	if (err) {
@@ -246,8 +267,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	int first_pt_load = 1;
 	unsigned long error;
 	struct elf_phdr *elf_ppnt, *elf_phdata;
-	unsigned long elf_bss, elf_brk;
-	int bss_prot = 0;
 	int retval, i;
 	unsigned long elf_entry;
 	unsigned long e_entry;
@@ -257,6 +276,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 	retval = -ENOEXEC;
 
+	/* First of all, some simple consistency checks */
 	if (memcmp(elf_ex->e_ident, ELFMAG, SELFMAG) != 0)
 		goto out;
 
@@ -291,9 +311,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	if (retval < 0)
 		goto out_free_dentry;
 
-	elf_bss = 0;
-	elf_brk = 0;
-
 	for (i = 0, elf_ppnt = elf_phdata; i < elf_ex->e_phnum;
 	     i++, elf_ppnt++) {
 		int elf_prot, elf_flags;
@@ -301,12 +318,6 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 		if (elf_ppnt->p_type != PT_LOAD)
 			continue;
-
-		/* Only the last PT_LOAD may carry bss (p_memsz > p_filesz). */
-		if (unlikely(elf_brk > elf_bss)) {
-			retval = -EINVAL;
-			goto out_free_dentry;
-		}
 
 		elf_prot = 0;
 		if (elf_ppnt->p_flags & PF_R)
@@ -337,6 +348,10 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		if (first_pt_load)
 			first_pt_load = 0;
 
+		/*
+		 * Figure out which segment in the file contains the Program
+		 * Header table, and map to the associated memory address.
+		 */
 		if (elf_ppnt->p_offset <= elf_ex->e_phoff &&
 		    elf_ex->e_phoff < elf_ppnt->p_offset + elf_ppnt->p_filesz) {
 			phdr_addr = elf_ex->e_phoff - elf_ppnt->p_offset +
@@ -345,33 +360,16 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 		k = elf_ppnt->p_vaddr;
 
-		if (BAD_ADDR(k) || elf_ppnt->p_filesz > elf_ppnt->p_memsz ||
+		if (BAD_ADDR(k) || elf_ppnt->p_filesz != elf_ppnt->p_memsz ||
 		    elf_ppnt->p_memsz > TASK_SIZE ||
 		    TASK_SIZE - elf_ppnt->p_memsz < k) {
+			/* set_brk can never work. Avoid overflows. */
 			retval = -EINVAL;
 			goto out_free_dentry;
-		}
-
-		k = elf_ppnt->p_vaddr + elf_ppnt->p_filesz;
-
-		if (k > elf_bss)
-			elf_bss = k;
-		k = elf_ppnt->p_vaddr + elf_ppnt->p_memsz;
-		if (k > elf_brk) {
-			bss_prot = elf_prot;
-			elf_brk = k;
 		}
 	}
 
 	e_entry = elf_ex->e_entry;
-
-	retval = set_brk(elf_bss, elf_brk, bss_prot);
-	if (retval)
-		goto out_free_dentry;
-	if (likely(elf_bss != elf_brk) && unlikely(padzero(elf_bss))) {
-		retval = -EFAULT;
-		goto out_free_dentry;
-	}
 
 	elf_entry = e_entry;
 	if (BAD_ADDR(elf_entry)) {
@@ -386,6 +384,16 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		goto out;
 
 	regs = current_pt_regs();
+	/*
+	 * The ABI may specify that certain registers be set up in special
+	 * ways (on i386 %edx is the address of a DT_FINI function, for
+	 * example.  In addition, it may also specify (eg, PowerPC64 ELF)
+	 * that the e_entry field is the address of the function descriptor
+	 * for the startup routine, rather than the address of the startup
+	 * routine itself.  This macro performs whatever initialization to
+	 * the regs structure is required as well as any relocations to the
+	 * function descriptor entries when executing dynamically links apps.
+	 */
 	ELF_PLAT_INIT(regs, reloc_func_desc);
 
 	finalize_exec(bprm);
@@ -394,6 +402,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 out:
 	return retval;
 
+	/* error cleanup */
 out_free_dentry:
 	kfree(elf_phdata);
 	goto out;

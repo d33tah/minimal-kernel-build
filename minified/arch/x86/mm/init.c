@@ -15,6 +15,15 @@ static unsigned long min_pfn_mapped;
 
 static bool __initdata can_use_brk_pgt = true;
 
+/*
+ * Pages returned are already directly mapped.
+ *
+ * Changing that is likely to break Xen, see commit:
+ *
+ *    279b706 x86,xen: introduce x86_init.mapping.pagetable_reserve
+ *
+ * for detailed information.
+ */
 __ref void *alloc_low_pages(unsigned int num)
 {
 	unsigned long pfn;
@@ -76,6 +85,11 @@ struct map_range {
 
 static int page_size_mask;
 
+/*
+ * Save some of cr4 feature set we're using (e.g.  Pentium 4MB
+ * enable and PPro Global page enable), so that any CPU's that boot
+ * up after us can get the correct flags. Invoked on the boot CPU.
+ */
 static inline void cr4_set_bits_and_update_boot(unsigned long mask)
 {
 	mmu_cr4_features |= mask;
@@ -87,15 +101,18 @@ static void __init probe_page_size_mask(void)
 	if (boot_cpu_has(X86_FEATURE_PSE))
 		page_size_mask |= 1 << PG_LEVEL_2M;
 
+	/* Enable PSE if available */
 	if (boot_cpu_has(X86_FEATURE_PSE))
 		cr4_set_bits_and_update_boot(X86_CR4_PSE);
 
+	/* Enable PGE if available */
 	__supported_pte_mask &= ~_PAGE_GLOBAL;
 	if (boot_cpu_has(X86_FEATURE_PGE)) {
 		cr4_set_bits_and_update_boot(X86_CR4_PGE);
 		__supported_pte_mask |= _PAGE_GLOBAL;
 	}
 
+	/* By the default is everything supported: */
 	__default_kernel_pte_mask = __supported_pte_mask;
 }
 
@@ -117,6 +134,10 @@ static int __meminit save_mr(struct map_range *mr, int nr_range,
 	return nr_range;
 }
 
+/*
+ * adjust the page_size_mask for small range to go with
+ *	big page size instead small one if nearby are ram too.
+ */
 static void __ref adjust_range_page_size_mask(struct map_range *mr,
 					      int nr_range)
 {
@@ -146,8 +167,15 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 
 	limit_pfn = PFN_DOWN(end);
 
+	/* head if not big page alignment ? */
 	pfn = start_pfn = PFN_DOWN(start);
 
+	/*
+	 * Don't use a large page for the first 2/4MB of memory
+	 * because there are often fixed size MTRRs in there
+	 * and overlapping MTRRs into large pages can cause
+	 * slowdowns.
+	 */
 	if (pfn == 0)
 		end_pfn = PFN_DOWN(PMD_SIZE);
 	else
@@ -159,6 +187,7 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 		pfn = end_pfn;
 	}
 
+	/* tail is not big page (1G) alignment */
 	start_pfn = round_up(pfn, PFN_DOWN(PMD_SIZE));
 	end_pfn = round_down(limit_pfn, PFN_DOWN(PMD_SIZE));
 
@@ -168,18 +197,21 @@ static int __meminit split_mem_range(struct map_range *mr, int nr_range,
 		pfn = end_pfn;
 	}
 
+	/* tail is not big page (2M) alignment */
 	start_pfn = pfn;
 	end_pfn = limit_pfn;
 	nr_range = save_mr(mr, nr_range, start_pfn, end_pfn, 0);
 
 	adjust_range_page_size_mask(mr, nr_range);
 
+	/* try to merge same page size and continuous */
 	for (i = 0; nr_range > 1 && i < nr_range - 1; i++) {
 		unsigned long old_start;
 		if (mr[i].end != mr[i + 1].start ||
 		    mr[i].page_size_mask != mr[i + 1].page_size_mask)
 			continue;
 
+		/* move it */
 		old_start = mr[i].start;
 		memmove(&mr[i], &mr[i + 1],
 			(nr_range - 1 - i) * sizeof(struct map_range));
@@ -222,6 +254,10 @@ static unsigned long __init init_range_memory_mapping(unsigned long r_start,
 		if (start >= end)
 			continue;
 
+		/*
+		 * if it is overlapping with brk pgt, we need to
+		 * alloc pgt buf from memblock instead.
+		 */
 		can_use_brk_pgt = max(start, (u64)pgt_buf_end << PAGE_SHIFT) >=
 				  min(end, (u64)pgt_buf_top << PAGE_SHIFT);
 		init_memory_mapping(start, end, PAGE_KERNEL);
@@ -234,9 +270,33 @@ static unsigned long __init init_range_memory_mapping(unsigned long r_start,
 
 static unsigned long __init get_new_step_size(unsigned long step_size)
 {
+	/*
+	 * Initial mapped size is PMD_SIZE (2M).
+	 * We can not set step_size to be PUD_SIZE (1G) yet.
+	 * In worse case, when we cross the 1G boundary, and
+	 * PG_LEVEL_2M is not set, we will need 1+1+512 pages (2M + 8k)
+	 * to map 1G range with PTE. Hence we use one less than the
+	 * difference of page table level shifts.
+	 *
+	 * Don't need to worry about overflow in the top-down case, on 32bit,
+	 * when step_size is 0, round_down() returns 0 for start, and that
+	 * turns it into 0x100000000ULL.
+	 * In the bottom-up case, round_up(x, 0) returns 0 though too, which
+	 * needs to be taken into consideration by the code below.
+	 */
 	return step_size << (PMD_SHIFT - PAGE_SHIFT - 1);
 }
 
+/**
+ * memory_map_top_down - Map [map_start, map_end) top down
+ * @map_start: start address of the target memory range
+ * @map_end: end address of the target memory range
+ *
+ * This function will setup direct mapping for memory range
+ * [map_start, map_end) in top-down. That said, the page tables
+ * will be allocated at the end of the memory, and we map the
+ * memory in top-down.
+ */
 static void __init memory_map_top_down(unsigned long map_start,
 				       unsigned long map_end)
 {
@@ -256,11 +316,18 @@ static void __init memory_map_top_down(unsigned long map_start,
 	memblock_phys_free(addr, PAGE_TABLE_SIZE(LOWMEM_PAGES) << PAGE_SHIFT);
 	real_end = addr + (PAGE_TABLE_SIZE(LOWMEM_PAGES) << PAGE_SHIFT);
 
+	/* step_size need to be small so pgt_buf from BRK could cover it */
 	step_size = PMD_SIZE;
-	max_pfn_mapped = 0;
+	max_pfn_mapped = 0; /* will get exact value next */
 	min_pfn_mapped = real_end >> PAGE_SHIFT;
 	last_start = real_end;
 
+	/*
+	 * We start from the top (end of memory) and go to the bottom.
+	 * The memblock_find_in_range() gets us a block of RAM from the
+	 * end of RAM in [min_pfn_mapped, max_pfn_mapped) used as new pages
+	 * for page table.
+	 */
 	while (last_start > map_start) {
 		unsigned long start;
 
@@ -289,6 +356,7 @@ void __init init_mem_mapping(void)
 
 	end = max_low_pfn << PAGE_SHIFT;
 
+	/* the ISA range is always mapped regardless of memory holes */
 	init_memory_mapping(0, ISA_END_ADDRESS, PAGE_KERNEL);
 
 	memory_map_top_down(ISA_END_ADDRESS, end);
@@ -312,5 +380,5 @@ void __init zone_sizes_init(void)
 
 __visible DEFINE_PER_CPU_ALIGNED(struct tlb_state, cpu_tlbstate) = {
 	.loaded_mm = &init_mm,
-	.cr4 = ~0UL,
+	.cr4 = ~0UL, /* fail hard if we screw up cr4 shadow initialization */
 };

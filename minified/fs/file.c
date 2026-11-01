@@ -1,7 +1,21 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ *  linux/fs/file.c
+ *
+ *  Copyright (C) 1998-1999, Stephen Tweedie and Bill Hawes
+ *
+ *  Manage the dynamic fd arrays in the process files_struct.
+ */
+
 #include <linux/sched/signal.h>
 #include <linux/fdtable.h>
 #include <linux/file.h>
 
+/*
+ * Copy 'count' fd bits from the old table to the new table and clear the extra
+ * space if any.  This does not copy the file pointers.  Called with the files
+ * spinlock held for write.
+ */
 static void copy_fd_bitmaps(struct fdtable *nfdt, struct fdtable *ofdt,
 			    unsigned int count)
 {
@@ -28,6 +42,7 @@ static unsigned int count_open_files(struct fdtable *fdt)
 	unsigned int size = fdt->max_fds;
 	unsigned int i;
 
+	/* Find the last open fd */
 	for (i = size / BITS_PER_LONG; i > 0;) {
 		if (fdt->open_fds[--i])
 			break;
@@ -76,6 +91,12 @@ struct files_struct *dup_fd(struct files_struct *oldf, int *errorp)
 		if (f) {
 			get_file(f);
 		} else {
+			/*
+			 * The fd may be claimed in the fd bitmap but not yet
+			 * instantiated in the files array if a sibling thread
+			 * is partway through open().  So make sure that this
+			 * fd is available to the new process.
+			 */
 			__clear_open_fd(open_files - i, new_fdt);
 		}
 		rcu_assign_pointer(*new_fds++, f);
@@ -139,6 +160,7 @@ static int alloc_fd(unsigned start, unsigned end)
 
 	__set_open_fd(fd, fdt);
 	error = fd;
+	/* Sanity check */
 	if (rcu_access_pointer(fdt->fd[fd]) != NULL) {
 		rcu_assign_pointer(fdt->fd[fd], NULL);
 	}
@@ -157,6 +179,22 @@ int get_unused_fd_flags(unsigned flags)
 {
 	return __get_unused_fd_flags(flags, rlimit(RLIMIT_NOFILE));
 }
+
+/*
+ * Install a file pointer in the fd array.
+ *
+ * The VFS is full of places where we drop the files lock between
+ * setting the open_fds bitmap and installing the file in the file
+ * array.  At any such point, we are vulnerable to a dup2() race
+ * installing a file in the array before us.  We need to detect this and
+ * fput() the struct file we are about to overwrite in this case.
+ *
+ * It should never happen - if we allow dup2() do it, _really_ bad things
+ * will follow.
+ *
+ * This consumes the "file" refcount, so callers should treat it
+ * as if they had called fput(file).
+ */
 
 void fd_install(unsigned int fd, struct file *file)
 {

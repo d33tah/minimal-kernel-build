@@ -1,3 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Low level x86 E820 memory map handling functions.
+ *
+ * The firmware and bootloader passes us the "E820 table", which is the primary
+ * physical memory layout description available about x86 systems.
+ *
+ * The kernel takes the E820 memory layout and optionally modifies it with
+ * quirks and other tweaks, and feeds that into the generic Linux memory
+ * allocation code routines via a platform independent interface (memblock, etc.).
+ */
 #include <linux/memblock.h>
 
 #include <asm/e820/api.h>
@@ -133,6 +144,11 @@ static void __init e820__memory_setup_default(void)
 		panic("no BIOS E820 memory map");
 }
 
+/*
+ * Calls e820__memory_setup_default() in essence to pick up the firmware/bootloader
+ * E820 map - with an optional platform quirk available for virtual platforms
+ * to override this method of boot environment processing:
+ */
 void __init e820__memory_setup(void)
 {
 	/* This is a firmware interface ABI - make sure we don't break it: */

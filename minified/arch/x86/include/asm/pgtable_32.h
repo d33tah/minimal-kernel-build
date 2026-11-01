@@ -1,8 +1,18 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_PGTABLE_32_H
 #define _ASM_X86_PGTABLE_32_H
 
 #include <asm/pgtable_32_types.h>
 
+/*
+ * The Linux memory management assumes a three-level page table setup. On
+ * the i386, we use that, but "fold" the mid level into the top-level page
+ * table, so that we physically have the same two-level page table as the
+ * i386 mmu expects.
+ *
+ * This file contains the functions and defines necessary to modify and use
+ * the i386 page table tree.
+ */
 #ifndef __ASSEMBLY__
 
 struct mm_struct;

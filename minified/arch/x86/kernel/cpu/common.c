@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/* cpu_feature_enabled() cannot be used this early */
 #include <linux/sched/mm.h>
 #include <linux/sched/task.h>
 
@@ -144,6 +146,15 @@ static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
 		c->x86 = 3;
 }
 
+/*
+ * Do minimum CPU detection early.
+ * Fields really needed: vendor, cpuid_level, family, model, mask,
+ * cache alignment.
+ * The others are not touched to avoid unwanted side effects.
+ *
+ * WARNING: this function is only called on the boot CPU.  Don't add code
+ * here that is supposed to run on all CPUs.
+ */
 static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 {
 	c->x86_clflush_size = 32;
@@ -154,6 +165,7 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 	if (!have_cpuid_p())
 		identify_cpu_without_cpuid(c);
 
+	/* cyrix could have cpuid enabled via c_identify()*/
 	if (have_cpuid_p()) {
 		cpu_detect(c);
 		get_cpu_cap(c);
@@ -165,6 +177,9 @@ void __init early_cpu_init(void)
 	early_identify_cpu(&boot_cpu_data);
 }
 
+/*
+ * This does the hard work of actually picking apart the CPU stuff...
+ */
 static void identify_cpu(struct cpuinfo_x86 *c)
 {
 	/* Set up SMEP/SMAP/UMIP */
@@ -212,11 +227,15 @@ static void switch_to_new_gdt(int cpu)
 	load_percpu_segment(cpu);
 }
 
+/*
+ * Clear all 6 debug registers:
+ */
 static void clear_all_debug_regs(void)
 {
 	int i;
 
 	for (i = 0; i < 8; i++) {
+		/* Ignore db4, db5 */
 		if ((i == 4) || (i == 5))
 			continue;
 
@@ -224,6 +243,10 @@ static void clear_all_debug_regs(void)
 	}
 }
 
+/*
+ * Setup everything needed to handle exceptions from the IDT, including the IST
+ * exceptions which use paranoid_entry().
+ */
 void cpu_init_exception_handling(void)
 {
 	struct tss_struct *tss = this_cpu_ptr(&cpu_tss_rw);
@@ -233,9 +256,16 @@ void cpu_init_exception_handling(void)
 
 	load_TR_desc();
 
+	/* Finally load the IDT */
 	load_current_idt();
 }
 
+/*
+ * cpu_init() initializes state that is per-CPU. Some data is already
+ * initialized (naturally) in the bootstrap process, such as the GDT.  We
+ * reload it nevertheless, this function acts as a 'CPU state barrier',
+ * nothing should get across.
+ */
 void cpu_init(void)
 {
 	struct task_struct *cur = current;

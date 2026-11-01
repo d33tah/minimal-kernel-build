@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-only
 #include <linux/swap.h>
 
 static struct page *no_page_table(void)
@@ -20,13 +21,17 @@ static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address,
 		}
 	}
 
+	/* Proper page table entry exists, but no corresponding struct page */
 	return -EEXIST;
 }
 
+/*
+ * FOLL_FORCE can write to even unwritable pte's, but only
+ * after we've gone through a COW cycle and they are dirty.
+ */
 static inline bool can_follow_write_pte(pte_t pte, unsigned int flags)
 {
-	return pte_write(pte) ||
-	       ((flags & FOLL_FORCE) && (flags & FOLL_COW) && pte_dirty(pte));
+	return pte_write(pte);
 }
 
 static struct page *follow_page_pte(struct vm_area_struct *vma,
@@ -100,6 +105,10 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 	pmd = pmd_offset(pud_offset(p4d_offset(pgd, address), address),
 			 address);
 
+	/*
+	 * The READ_ONCE() will stabilize the pmdval in a register or
+	 * on the stack so that it will stop changing under the code.
+	 */
 	pmdval = READ_ONCE(*pmd);
 	if (pmd_none(pmdval))
 		return no_page_table();
@@ -109,16 +118,13 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 }
 
 static int faultin_page(struct vm_area_struct *vma, unsigned long address,
-			unsigned int *flags, bool unshare)
+			unsigned int *flags)
 {
 	unsigned int fault_flags = 0;
 	vm_fault_t ret;
 
 	if (*flags & FOLL_WRITE)
 		fault_flags |= FAULT_FLAG_WRITE;
-	if (unshare) {
-		fault_flags |= FAULT_FLAG_UNSHARE;
-	}
 
 	ret = handle_mm_fault(vma, address, fault_flags, NULL);
 	if (ret & VM_FAULT_ERROR) {
@@ -131,8 +137,6 @@ static int faultin_page(struct vm_area_struct *vma, unsigned long address,
 
 	/* no FAULT_FLAG_ALLOW_RETRY, so the fault is never retried */
 
-	if ((ret & VM_FAULT_WRITE) && !(vma->vm_flags & VM_WRITE))
-		*flags |= FOLL_COW;
 	return 0;
 }
 
@@ -142,19 +146,10 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 	int write = (gup_flags & FOLL_WRITE);
 
 	if (write) {
-		if (!(vm_flags & VM_WRITE)) {
-			if (!(gup_flags & FOLL_FORCE))
-				return -EFAULT;
-
-			if (!is_cow_mapping(vm_flags))
-				return -EFAULT;
-		}
+		if (!(vm_flags & VM_WRITE))
+			return -EFAULT;
 	} else if (!(vm_flags & VM_READ)) {
-		if (!(gup_flags & FOLL_FORCE))
-			return -EFAULT;
-
-		if (!(vm_flags & VM_MAYREAD))
-			return -EFAULT;
+		return -EFAULT;
 	}
 
 	return 0;
@@ -181,6 +176,7 @@ long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
 		struct page *page;
 		unsigned int foll_flags = gup_flags;
 
+		/* first iteration or cross vma bound */
 		if (!vma || start >= vma->vm_end) {
 			vma = find_extend_vma(mm, start);
 			if (!vma) {
@@ -192,12 +188,9 @@ long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
 				goto out;
 		}
 retry:
-		cond_resched();
-
 		page = follow_page_mask(vma, start, foll_flags);
-		if (!page || PTR_ERR(page) == -EMLINK) {
-			ret = faultin_page(vma, start, &foll_flags,
-					   PTR_ERR(page) == -EMLINK);
+		if (!page) {
+			ret = faultin_page(vma, start, &foll_flags);
 			if (!ret)
 				goto retry;
 			goto out;

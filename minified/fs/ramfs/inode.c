@@ -1,3 +1,28 @@
+/*
+ * Resizable simple ram filesystem for Linux.
+ *
+ * Copyright (C) 2000 Linus Torvalds.
+ *               2000 Transmeta Corp.
+ *
+ * Usage limits added by David Gibson, Linuxcare Australia.
+ * This file is released under the GPL.
+ */
+
+/*
+ * NOTE! This filesystem is probably most useful
+ * not as a real filesystem, but as an example of
+ * how virtual filesystems can be written.
+ *
+ * It doesn't get much simpler than this. Consider
+ * that this file implements the full semantics of
+ * a POSIX-compliant read-write filesystem.
+ *
+ * Note in particular how the filesystem does not
+ * need to implement any data structures of its own
+ * to keep track of the virtual data: using the VFS
+ * caches is sufficient.
+ */
+
 #include <linux/pagemap.h>
 #include <linux/ramfs.h>
 #include "internal.h"
@@ -39,7 +64,7 @@ static int ramfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 
 	if (inode) {
 		d_instantiate(dentry, inode);
-		dget(dentry);
+		dget(dentry); /* Extra count - pin the dentry in core */
 		error = 0;
 	}
 	return error;

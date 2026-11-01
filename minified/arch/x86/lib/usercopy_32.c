@@ -1,27 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * User address space access functions.
+ * The non inlined parts of asm-i386/uaccess.h are here.
+ *
+ * Copyright 1997 Andi Kleen <ak@muc.de>
+ * Copyright 1997 Linus Torvalds
+ */
 #include <linux/uaccess.h>
-
-/* clang-format off */
-#define __do_clear_user(addr,size)					\
-do {									\
-	int __d0;							\
-	__asm__ __volatile__(						\
-		"0:	rep; stosl\n"					\
-		"	movl %2,%0\n"					\
-		"1:	rep; stosb\n"					\
-		"2:\n"							\
-		_ASM_EXTABLE_TYPE_REG(0b, 2b, EX_TYPE_UCOPY_LEN4, %2)	\
-		_ASM_EXTABLE_UA(1b, 2b)					\
-		: "=&c"(size), "=&D" (__d0)				\
-		: "r"(size & 3), "0"(size / 4), "1"(addr), "a"(0));	\
-} while (0)
-/* clang-format on */
-
-unsigned long clear_user(void __user *to, unsigned long n)
-{
-	if (access_ok(to, n))
-		__do_clear_user(to, n);
-	return n;
-}
 
 /* clang-format off */
 #define __copy_user(to, from, size)					\

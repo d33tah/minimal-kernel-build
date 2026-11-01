@@ -1,3 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ *  linux/fs/char_dev.c
+ *
+ *  Copyright (C) 1991, 1992  Linus Torvalds
+ */
+
 #include <linux/fs.h>
 #include <linux/cdev.h>
 
@@ -20,6 +27,9 @@ static struct cdev *cdev_lookup(dev_t dev)
 	return NULL;
 }
 
+/*
+ * Called every time a character special file is opened
+ */
 static int chrdev_open(struct inode *inode, struct file *filp)
 {
 	struct cdev *p;
@@ -38,10 +48,23 @@ static int chrdev_open(struct inode *inode, struct file *filp)
 	return 0;
 }
 
+/*
+ * Dummy default file-operations: the only thing this does
+ * is contain the open that then fills in the correct operations
+ * depending on the special file...
+ */
 const struct file_operations def_chr_fops = {
 	.open = chrdev_open,
 };
 
+/**
+ * cdev_init() - initialize a cdev structure
+ * @cdev: the structure to initialize
+ * @fops: the file_operations for this device
+ *
+ * Initializes @cdev, remembering @fops, making it ready to add to the
+ * system with cdev_add().
+ */
 void cdev_init(struct cdev *cdev, const struct file_operations *fops)
 {
 	memset(cdev, 0, sizeof *cdev);

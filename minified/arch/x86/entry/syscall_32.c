@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0
+/* System call table for i386. */
+
 #include <asm/syscall.h>
 
 #define __SYSCALL(nr, sym) extern long __ia32_##sym(const struct pt_regs *);

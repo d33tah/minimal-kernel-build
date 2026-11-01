@@ -21,4 +21,4 @@ typedef struct raw_spinlock {
 
 #define DEFINE_RAW_SPINLOCK(x) raw_spinlock_t x = __RAW_SPIN_LOCK_UNLOCKED(x)
 
-#endif
+#endif /* __LINUX_SPINLOCK_TYPES_RAW_H */

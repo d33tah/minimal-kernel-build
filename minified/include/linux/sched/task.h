@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_SCHED_TASK_H
 #define _LINUX_SCHED_TASK_H
 
@@ -36,4 +37,4 @@ static inline void task_unlock(struct task_struct *p)
 	spin_unlock(&p->alloc_lock);
 }
 
-#endif
+#endif /* _LINUX_SCHED_TASK_H */

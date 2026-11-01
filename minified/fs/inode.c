@@ -1,3 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * (C) 1997 Linus Torvalds
+ * (C) 1999 Andrea Arcangeli <andrea@suse.de> (dynamic inode allocation)
+ */
 #include <linux/swap.h>
 
 static const struct address_space_operations empty_aops = {};
@@ -70,6 +75,18 @@ static struct inode *new_inode_pseudo(struct super_block *sb)
 	return inode;
 }
 
+/**
+ *	new_inode 	- obtain an inode
+ *	@sb: superblock
+ *
+ *	Allocates a new inode for given superblock. The default gfp_mask
+ *	for allocations related to inode->i_mapping is GFP_HIGHUSER_MOVABLE.
+ *	If HIGHMEM pages are unsuitable or it is known that pages allocated
+ *	for the page cache are not reclaimable or migratable,
+ *	mapping_set_gfp_mask() must be called with suitable flags on the
+ *	newly created inode's mapping
+ *
+ */
 struct inode *new_inode(struct super_block *sb)
 {
 	struct inode *inode;
@@ -87,6 +104,19 @@ void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 	}
 }
 
+/**
+ * inode_init_owner - Init uid,gid,mode for new inode according to posix standards
+ * @mnt_userns:	User namespace of the mount the inode was created from
+ * @inode: New inode
+ * @dir: Directory inode
+ * @mode: mode of the new inode
+ *
+ * If the inode has been created through an idmapped mount the user namespace of
+ * the vfsmount must be passed through @mnt_userns. This function will then take
+ * care to map the inode according to @mnt_userns before checking permissions
+ * and initializing i_uid and i_gid. On non-idmapped mounts or if permission
+ * checking is to be performed on the raw inode simply passs init_user_ns.
+ */
 void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 		      const struct inode *dir, umode_t mode)
 {
@@ -94,6 +124,7 @@ void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 	if (dir && dir->i_mode & S_ISGID) {
 		inode->i_gid = dir->i_gid;
 
+		/* Directories are special, and always inherit S_ISGID */
 		if (S_ISDIR(mode))
 			mode |= S_ISGID;
 	} else

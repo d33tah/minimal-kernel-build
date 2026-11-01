@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_LIMITS_H
 #define _LINUX_LIMITS_H
 
@@ -12,4 +13,4 @@
 
 #define PHYS_ADDR_MAX (~(phys_addr_t)0)
 
-#endif
+#endif /* _LINUX_LIMITS_H */

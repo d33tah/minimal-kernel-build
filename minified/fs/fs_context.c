@@ -1,3 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/* Provide a way to create a superblock configuration context within the kernel
+ * that allows a superblock to be set up prior to mounting.
+ *
+ * Copyright (C) 2017 Red Hat, Inc. All Rights Reserved.
+ * Written by David Howells (dhowells@redhat.com)
+ */
+
 #include <linux/fs.h>
 #include <linux/fs_context.h>
 #include <linux/user_namespace.h>
@@ -23,6 +31,10 @@ struct fs_context *fs_context_for_mount(struct file_system_type *fs_type)
 	return fc;
 }
 
+/**
+ * put_fs_context - Dispose of a superblock configuration context.
+ * @fc: The context to dispose of.
+ */
 void put_fs_context(struct fs_context *fc)
 {
 	dput(fc->root);

@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_DESC_H
 #define _ASM_X86_DESC_H
 
@@ -11,11 +12,13 @@ struct gdt_page {
 
 DECLARE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page);
 
+/* Provide the original GDT */
 static inline struct desc_struct *get_cpu_gdt_rw(unsigned int cpu)
 {
 	return per_cpu(gdt_page, cpu).gdt;
 }
 
+/* Provide the current original GDT */
 static inline struct desc_struct *get_current_gdt_rw(void)
 {
 	return this_cpu_ptr(&gdt_page)->gdt;

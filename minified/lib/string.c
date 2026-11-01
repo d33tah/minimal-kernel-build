@@ -1,3 +1,19 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ *  linux/lib/string.c
+ *
+ *  Copyright (C) 1991, 1992  Linus Torvalds
+ */
+
+/*
+ * This file should be used only for "library" routines that may have
+ * alternative implementations on specific architectures (generally
+ * found in <asm-xx/string.h>), or get overloaded by FORTIFY_SOURCE.
+ * (Specifically, this file is built with __NO_FORTIFY.)
+ *
+ * Other helper functions should live in string_helpers.c.
+ */
+
 #include <linux/string.h>
 #include <linux/kernel.h>
 #include <asm/bug.h>
@@ -53,6 +69,11 @@ ssize_t strscpy(char *dest, const char *src, size_t count)
 	return -E2BIG;
 }
 
+/**
+ * strrchr - Find the last occurrence of a character in a string
+ * @s: The string to be searched
+ * @c: The character to search for
+ */
 char *strrchr(const char *s, int c)
 {
 	const char *last = NULL;
@@ -63,6 +84,12 @@ char *strrchr(const char *s, int c)
 	return (char *)last;
 }
 
+/**
+ * memcmp - Compare two areas of memory
+ * @cs: One area of memory
+ * @ct: Another area of memory
+ * @count: The size of the area.
+ */
 #undef memcmp
 __visible int memcmp(const void *cs, const void *ct, size_t count)
 {

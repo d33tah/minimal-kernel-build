@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_PGTABLE_DEFS_H
 #define _ASM_X86_PGTABLE_DEFS_H
 
@@ -5,15 +6,18 @@
 
 #include <asm/page_types.h>
 
-#define _PAGE_BIT_PRESENT 0
-#define _PAGE_BIT_RW 1
-#define _PAGE_BIT_USER 2
-#define _PAGE_BIT_ACCESSED 5
-#define _PAGE_BIT_DIRTY 6
-#define _PAGE_BIT_PSE 7
-#define _PAGE_BIT_GLOBAL 8
-#define _PAGE_BIT_SOFTW1 9
+#define _PAGE_BIT_PRESENT 0 /* is present */
+#define _PAGE_BIT_RW 1 /* writeable */
+#define _PAGE_BIT_USER 2 /* userspace addressable */
+#define _PAGE_BIT_ACCESSED 5 /* was accessed (raised by CPU) */
+#define _PAGE_BIT_DIRTY 6 /* was written to (raised by CPU) */
+#define _PAGE_BIT_PSE 7 /* 4 MB (or 2MB) page */
+#define _PAGE_BIT_GLOBAL 8 /* Global TLB entry PPro+ */
+#define _PAGE_BIT_SOFTW1 9 /* available for programmer */
 #define _PAGE_BIT_SPECIAL _PAGE_BIT_SOFTW1
+
+/* If _PAGE_BIT_PRESENT is clear, we use these: */
+/* - if the user mapped it with PROT_NONE; pte_present gives true */
 #define _PAGE_BIT_PROTNONE _PAGE_BIT_GLOBAL
 
 #define _PAGE_PRESENT (_AT(pteval_t, 1) << _PAGE_BIT_PRESENT)
@@ -77,8 +81,9 @@
 #define PAGE_KERNEL_LARGE __pgprot_mask(__PAGE_KERNEL_LARGE | _ENC)
 #define PAGE_KERNEL_LARGE_EXEC __pgprot_mask(__PAGE_KERNEL_LARGE_EXEC | _ENC)
 
-#endif
+#endif /* __ASSEMBLY__ */
 
+/*         xwr */
 #define __P000 PAGE_NONE
 #define __P001 PAGE_READONLY
 #define __P010 PAGE_COPY
@@ -97,15 +102,20 @@
 #define __S110 PAGE_SHARED_EXEC
 #define __S111 PAGE_SHARED_EXEC
 
-#define PTE_IDENT_ATTR 0x003
-#define PDE_IDENT_ATTR 0x063
+#define PTE_IDENT_ATTR 0x003 /* PRESENT+RW */
+#define PDE_IDENT_ATTR 0x063 /* PRESENT+RW+DIRTY+ACCESSED */
 
 #include <asm/pgtable_32_types.h>
 
 #ifndef __ASSEMBLY__
 
+/* Extracts the PFN from a (pte|pmd|pud|pgd)val_t of a 4KB page */
 #define PTE_PFN_MASK ((pteval_t)PHYSICAL_PAGE_MASK)
 
+/*
+ *  Extracts the flags from a (pte|pmd|pud|pgd)val_t
+ *  This includes the protection key value.
+ */
 #define PTE_FLAGS_MASK (~PTE_PFN_MASK)
 
 typedef struct pgprot {
@@ -116,6 +126,7 @@ typedef struct {
 	pgdval_t pgd;
 } pgd_t;
 
+/* No need to mask any bits for !PAE */
 #define PGD_ALLOWED_BITS (~0ULL)
 
 static inline pgd_t native_make_pgd(pgdval_t val)
@@ -177,12 +188,13 @@ typedef struct page *pgtable_t;
 extern pteval_t __supported_pte_mask;
 extern pteval_t __default_kernel_pte_mask;
 
+/* Install a pte for a particular vaddr in kernel space. */
 void set_pte_vaddr(unsigned long vaddr, pte_t pte);
 
 extern void native_pagetable_init(void);
 
 enum pg_level { PG_LEVEL_NONE, PG_LEVEL_4K, PG_LEVEL_2M, PG_LEVEL_1G };
 
-#endif
+#endif /* !__ASSEMBLY__ */
 
-#endif
+#endif /* _ASM_X86_PGTABLE_DEFS_H */

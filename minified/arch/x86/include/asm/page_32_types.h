@@ -1,6 +1,17 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_PAGE_32_DEFS_H
 #define _ASM_X86_PAGE_32_DEFS_H
 
+/*
+ * This handles the memory map.
+ *
+ * A __PAGE_OFFSET of 0xC0000000 means that the kernel has
+ * a virtual address space of one gigabyte, which limits the
+ * amount of physical memory you can use to about 950MB.
+ *
+ * If you want more physical memory than this then see the CONFIG_HIGHMEM4G
+ * and CONFIG_HIGHMEM64G options in the kernel configuration.
+ */
 #define __PAGE_OFFSET_BASE _AC(CONFIG_PAGE_OFFSET, UL)
 #define __PAGE_OFFSET __PAGE_OFFSET_BASE
 
@@ -16,12 +27,21 @@
 #define STACK_TOP TASK_SIZE
 #define STACK_TOP_MAX STACK_TOP
 
+/*
+ * In spite of the name, KERNEL_IMAGE_SIZE is a limit on the maximum virtual
+ * address for the kernel image, rather than the limit on the size itself. On
+ * 32-bit, this is not a strict limit, but this value is used to limit the
+ * link-time virtual address range of the kernel, and by KASLR to limit the
+ * randomized address from which the kernel is executed. A relocatable kernel
+ * can be loaded somewhat higher than KERNEL_IMAGE_SIZE as long as enough space
+ * remains for the vmalloc area.
+ */
 #define KERNEL_IMAGE_SIZE (512 * 1024 * 1024)
 
 #ifndef __ASSEMBLY__
 
 extern void find_low_pfn_range(void);
 
-#endif
+#endif /* !__ASSEMBLY__ */
 
-#endif
+#endif /* _ASM_X86_PAGE_32_DEFS_H */

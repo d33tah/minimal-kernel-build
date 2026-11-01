@@ -1,3 +1,8 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * Wrapper functions for accessing the file_struct fd array.
+ */
+
 #ifndef __LINUX_FILE_H
 #define __LINUX_FILE_H
 
@@ -10,4 +15,4 @@ extern int get_unused_fd_flags(unsigned flags);
 
 extern void fd_install(unsigned int fd, struct file *file);
 
-#endif
+#endif /* __LINUX_FILE_H */

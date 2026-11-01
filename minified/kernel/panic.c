@@ -1,3 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ *  linux/kernel/panic.c
+ *
+ *  Copyright (C) 1991, 1992  Linus Torvalds
+ */
+
+/*
+ * This function is used through-out the kernel (including mm and fs)
+ * to indicate a major problem.
+ */
 #include <linux/sched.h>
 
 /*
@@ -7,6 +18,12 @@
  */
 noinline void panic(const char *fmt, ...)
 {
+	/*
+	 * Disable local interrupts. This will prevent panic_smp_self_stop
+	 * from deadlocking the first cpu that invokes the panic, since
+	 * there is nothing to prevent an interrupt handler (that runs
+	 * after setting panic_cpu) from invoking panic() again.
+	 */
 	local_irq_disable();
 	preempt_disable_notrace();
 

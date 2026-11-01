@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Common interrupt code for 32 and 64 bit
+ */
 #include <linux/irq.h>
 
 #include <asm/traps.h>
@@ -10,6 +14,10 @@ static __always_inline void handle_irq(struct irq_desc *desc,
 	__handle_irq(desc, regs);
 }
 
+/*
+ * common_interrupt() handles all normal device IRQ's (the special SMP
+ * cross-CPU interrupts have their own entry points).
+ */
 DEFINE_IDTENTRY_IRQ(common_interrupt)
 {
 	struct irq_desc *desc;

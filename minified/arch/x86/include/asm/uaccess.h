@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_UACCESS_H
 #define _ASM_X86_UACCESS_H
 
@@ -145,8 +146,6 @@ struct __large_struct {
 
 extern __must_check long strnlen_user(const char __user *str, long n);
 
-unsigned long __must_check clear_user(void __user *mem, unsigned long len);
-
 unsigned long __must_check __copy_user_ll(void *to, const void *from,
 					  unsigned long n);
 
@@ -184,4 +183,4 @@ user_access_begin(const void __user *ptr, size_t len)
 	__put_user_size(*((type *)(src)), (__force type __user *)(dst), \
 			sizeof(type), err_label)
 
-#endif
+#endif /* _ASM_X86_UACCESS_H */

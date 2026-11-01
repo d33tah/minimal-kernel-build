@@ -1,8 +1,9 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_STRING_H_
 #define _LINUX_STRING_H_
 
-#include <linux/compiler.h>
-#include <linux/errno.h>
+#include <linux/compiler.h> /* for inline */
+#include <linux/errno.h> /* for E2BIG */
 
 #include <asm/string_32.h>
 
@@ -15,6 +16,11 @@ extern char *strrchr(const char *, int);
 
 extern int memcmp(const void *, const void *, __kernel_size_t);
 
+/**
+ * kbasename - return the last part of a pathname.
+ *
+ * @path: path to extract the filename from.
+ */
 static inline const char *kbasename(const char *path)
 {
 	const char *tail = strrchr(path, '/');

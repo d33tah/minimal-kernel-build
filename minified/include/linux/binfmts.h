@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_BINFMTS_H
 #define _LINUX_BINFMTS_H
 
@@ -7,21 +8,28 @@
 #define MAX_ARG_STRINGS 0x7FFFFFFF
 #define BINPRM_BUF_SIZE 256
 
+/*
+ * This structure is used to hold the arguments that are used when loading binaries.
+ */
 struct linux_binprm {
 	struct vm_area_struct *vma;
 	struct mm_struct *mm;
-	unsigned long p;
-	unsigned long argmin;
+	unsigned long p; /* current top of mem */
+	unsigned long argmin; /* rlimit marker for copy_strings() */
 	unsigned int point_of_no_return : 1;
 	struct file *file;
-	struct cred *cred;
+	struct cred *cred; /* new credentials */
 	int argc, envc;
-	const char *filename;
+	const char *filename; /* Name of binary as seen by procps */
 	unsigned long exec;
-	struct rlimit rlim_stack;
+	struct rlimit rlim_stack; /* Saved RLIMIT_STACK used during exec. */
 	char buf[BINPRM_BUF_SIZE];
 } __randomize_layout;
 
+/*
+ * This structure defines the functions that are used to load the binary formats that
+ * linux accepts.
+ */
 struct linux_binfmt {
 	struct list_head lh;
 	int (*load_binary)(struct linux_binprm *);
@@ -29,6 +37,7 @@ struct linux_binfmt {
 
 extern void __register_binfmt(struct linux_binfmt *fmt, int insert);
 
+/* Registration of default binfmt handlers */
 static inline void register_binfmt(struct linux_binfmt *fmt)
 {
 	__register_binfmt(fmt, 0);
@@ -38,11 +47,12 @@ extern int begin_new_exec(struct linux_binprm *bprm);
 extern void setup_new_exec(struct linux_binprm *bprm);
 extern void finalize_exec(struct linux_binprm *bprm);
 
-#define EXSTACK_DEFAULT 0
+/* Stack area protections */
+#define EXSTACK_DEFAULT 0 /* Whatever the arch defaults to */
 
 extern int setup_arg_pages(struct linux_binprm *bprm, unsigned long stack_top);
 
 int kernel_execve(const char *filename, const char *const *argv,
 		  const char *const *envp);
 
-#endif
+#endif /* _LINUX_BINFMTS_H */

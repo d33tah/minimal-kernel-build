@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_MMAN_H
 #define _LINUX_MMAN_H
 
@@ -10,6 +11,12 @@
 
 #define arch_calc_vm_flag_bits(flags) 0
 
+/*
+ * Optimisation macro.  It is equivalent to:
+ *      (x & bit1) ? bit2 : 0
+ * but this version is faster.
+ * ("bit1" and "bit2" must be single bits)
+ */
 #define _calc_vm_trans(x, bit1, bit2)                                     \
 	((!(bit1) || !(bit2)) ?                                           \
 		 0 :                                                      \
@@ -30,4 +37,4 @@ static inline unsigned long calc_vm_flag_bits(unsigned long flags)
 	       arch_calc_vm_flag_bits(flags);
 }
 
-#endif
+#endif /* _LINUX_MMAN_H */

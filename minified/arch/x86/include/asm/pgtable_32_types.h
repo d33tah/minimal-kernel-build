@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_PGTABLE_32_TYPES_H
 #define _ASM_X86_PGTABLE_32_TYPES_H
 
@@ -17,4 +18,4 @@ typedef union {
 #define PTRS_PER_PGD 1024
 #define PTRS_PER_PTE 1024
 
-#endif
+#endif /* _ASM_X86_PGTABLE_32_TYPES_H */

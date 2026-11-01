@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_CONTAINER_OF_H
 #define _LINUX_CONTAINER_OF_H
 
@@ -12,4 +13,4 @@
 		((type *)(__mptr - offsetof(type, member)));              \
 	})
 
-#endif
+#endif /* _LINUX_CONTAINER_OF_H */

@@ -116,6 +116,10 @@ SECTIONS
 	INIT_DATA_SECTION(16)
 
 	. = ALIGN(8);
+	/*
+	 * .exit.text is discarded at runtime, not link time, to deal with
+	 *  references from .altinstructions
+	 */
 	.exit.text : AT(ADDR(.exit.text) - LOAD_OFFSET) {
 		EXIT_TEXT
 	}

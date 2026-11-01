@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _ASM_X86_PAGE_H
 #define _ASM_X86_PAGE_H
 
@@ -19,19 +20,6 @@
 static inline void clear_page(void *page)
 {
 	memset(page, 0, PAGE_SIZE);
-}
-
-static inline void copy_page(void *to, void *from)
-{
-	memcpy(to, from, PAGE_SIZE);
-}
-
-struct page;
-
-static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
-				  struct page *topage)
-{
-	copy_page(to, from);
 }
 
 #define alloc_zeroed_user_highpage_movable(vma, vaddr) \

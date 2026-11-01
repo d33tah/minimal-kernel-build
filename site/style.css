@@ -19,6 +19,15 @@
 	--r-rom: #b98d50;
 	--r-ext: #e2e7da;
 	--r-hole: #9a9890;
+	--s-text: #1d4790;
+	--s-rodata: #2f8a74;
+	--s-data: #c2611f;
+	--s-bss: #7e5bb8;
+	--s-brk: #b7a6dc;
+	--s-other: #77756e;
+	--changed: #e0245e;
+	--mark-bg: #ffd84d;
+	--mark-fg: #1d1d1b;
 }
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme="light"]) {
@@ -36,6 +45,10 @@
 		--r-conv: #4b5a42;
 		--r-ext: #343a30;
 		--r-init: #3f5f92;
+		--s-text: #6f9be8;
+		--s-rodata: #5cc4a8;
+		--s-brk: #5d4d86;
+		--changed: #ff5c8a;
 	}
 }
 :root[data-theme="dark"] {
@@ -53,6 +66,10 @@
 	--r-conv: #4b5a42;
 	--r-ext: #343a30;
 	--r-init: #3f5f92;
+	--s-text: #6f9be8;
+	--s-rodata: #5cc4a8;
+	--s-brk: #5d4d86;
+	--changed: #ff5c8a;
 }
 
 * { box-sizing: border-box; }
@@ -119,3 +136,24 @@ td:last-child { font-family: ui-monospace, monospace; }
 .scan { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: center; margin-top: 1rem; }
 #footprint { font-weight: 600; }
 #pages { max-width: 100%; image-rendering: pixelated; border: 1px solid var(--line); }
+#pages { cursor: crosshair; }
+#hover_info { min-height: 1.5em; font-family: ui-monospace, monospace; overflow-wrap: anywhere; }
+th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0.8rem 0.15rem 0; border-bottom: 1px solid var(--line); }
+.table-wrap { max-width: 100%; overflow-x: auto; }
+#hexdump {
+	font: 12px/1.35 ui-monospace, monospace;
+	background: var(--page-free);
+	padding: 0.5rem 0.75rem;
+	border-radius: 4px;
+	max-height: 26rem;
+	max-width: 100%;
+	overflow: auto;
+	margin: 0.4rem 0;
+}
+#hexdump mark { background: var(--mark-bg); color: var(--mark-fg); }
+#page_symbols td:last-child, #snapshots td:last-child { font-family: inherit; }
+#page_symbols td:nth-child(2), #page_symbols td:nth-child(3), #page_symbols td:nth-child(4),
+#snapshots td:nth-child(4), #snapshots td:nth-child(5) { font-family: ui-monospace, monospace; }
+#page_symbols td:first-child { color: var(--fg); font-family: ui-monospace, monospace; }
+#snapshots button { padding: 0.1rem 0.45rem; }
+#inspector .table-wrap { max-height: 22rem; overflow-y: auto; }

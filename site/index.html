@@ -20,8 +20,6 @@
   </label>
   <label>RAM
     <select id="memory">
-      <option value="655360">640 KB</option>
-      <option value="1048576">1 MB</option>
       <option value="2097152">2 MB</option>
       <option value="4194304">4 MB</option>
       <option value="18874368">18 MB</option>
@@ -66,9 +64,47 @@
     <label><input type="checkbox" id="autoscan"> rescan every second</label>
     <span id="footprint"></span>
   </div>
-  <p class="note">Each square is a 4 KiB page of guest RAM; filled means the page holds at least one
-    non-zero byte. This includes what SeaBIOS left behind and the BIOS copies at 0xc0000&ndash;0xfffff.</p>
-  <canvas id="pages" width="512" height="16"></canvas>
+  <p class="note">Each square is a 4 KiB page of guest RAM, coloured by the region the boot header
+    implies and, when the site has a <code>symbols.json</code> for the kernel, by ELF section.
+    Pale squares were all zero at the last scan; a dot marks pages that changed between the last
+    two scans. Non-zero pages below 1 MiB include what SeaBIOS left behind and the BIOS copies at
+    0xc0000&ndash;0xfffff. Hover over a page to see its symbols, click it to inspect it.</p>
+  <canvas id="pages" width="448" height="14"></canvas>
+  <ul class="legend" id="grid_legend"></ul>
+  <p class="note" id="hover_info" aria-live="polite"></p>
+
+  <div id="inspector">
+    <h3 id="page_title">No page selected</h3>
+    <div class="scan">
+      <label><input type="checkbox" id="live"> live: re-read the page every 500 ms</label>
+      <span id="dump_info"></span>
+    </div>
+    <p class="note">Marked bytes differ from the last scan (or, right after a scan, from the scan before it).</p>
+    <pre id="hexdump">Click a page in the grid above.</pre>
+    <p class="note" id="symbols_note"></p>
+    <div class="table-wrap">
+      <table id="page_symbols">
+        <thead><tr><th>symbol</th><th>address</th><th>physical</th><th>size</th><th>section</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section aria-label="Snapshots">
+  <h2>Snapshots</h2>
+  <p class="note">A snapshot is v86's <code>save_state()</code>: CPU, devices, VGA memory and all of
+    guest RAM. The page keeps the last 8 in memory. <span id="snap_note"></span></p>
+  <div class="scan">
+    <button id="snap_save" type="button" disabled>Save snapshot</button>
+    <span id="snap_status" role="status"></span>
+  </div>
+  <div class="table-wrap">
+    <table id="snapshots" hidden>
+      <thead><tr><th>#</th><th>taken</th><th>kernel, RAM</th><th>raw bytes</th><th>gzip bytes</th><th>ratio</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </section>
 </main>
 

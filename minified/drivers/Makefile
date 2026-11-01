@@ -6,12 +6,9 @@
 # Rewritten to use lists instead of if-statements.
 #
 
-
 obj-y				+= video/
 
 obj-y				+= tty/
 obj-y				+= char/
 
-# obj-$(CONFIG_SERIO)		+= input/serio/
-# obj-$(CONFIG_INPUT)		+= input/
 obj-y				+= clocksource/

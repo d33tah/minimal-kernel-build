@@ -4,6 +4,3 @@
 #
 
 obj-$(CONFIG_MMU)			+= min_addr.o
-
-# Object file lists
-

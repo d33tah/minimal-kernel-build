@@ -2,5 +2,3 @@
 obj-$(CONFIG_TTY)		+= tty_io.o
 
 obj-y				+= vt/
-
-# tty drivers

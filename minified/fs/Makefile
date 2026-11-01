@@ -6,7 +6,6 @@
 # Rewritten to use lists instead of if-statements.
 # 
 
-
 obj-y :=	open.o read_write.o file_table.o super.o \
 		char_dev.o exec.o namei.o \
 		dcache.o inode.o \
@@ -15,9 +14,6 @@ obj-y :=	open.o read_write.o file_table.o super.o \
 		fs_struct.o \
 		fs_context.o init.o
 
-
 obj-$(CONFIG_BINFMT_ELF)	+= binfmt_elf.o
-
-
 
 obj-y                          += ramfs/

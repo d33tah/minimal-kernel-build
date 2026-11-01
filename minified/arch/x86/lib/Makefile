@@ -3,15 +3,9 @@
 # Makefile for x86 specific library files.
 #
 
-# Produces uninteresting flaky coverage.
-
-# KCSAN uses udelay for introducing watchpoint delay; avoid recursion.
-
-
 lib-y := delay.o cpu.o
 lib-y += usercopy_$(BITS).o putuser.o
 lib-y += memcpy_$(BITS).o
-
 
 ifeq ($(CONFIG_X86_32),y)
         lib-y += string_32.o

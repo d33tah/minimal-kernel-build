@@ -32,15 +32,15 @@ static void con_scroll(struct vc_data *vc)
 	unsigned int moved = (vc->vc_rows - 1) * vc->vc_size_row;
 
 	scr_memmovew(top, top + vc->vc_cols, moved);
-	scr_memsetw(top + moved / 2, vc->vc_erase_char, vc->vc_size_row);
+	scr_memsetw(top + moved / 2, vc->vc_video_erase_char, vc->vc_size_row);
 }
 
 static void lf(struct vc_data *vc)
 {
-	if (vc->vc_y + 1 == vc->vc_rows) {
+	if (vc->state.y + 1 == vc->vc_rows) {
 		con_scroll(vc);
 	} else {
-		vc->vc_y++;
+		vc->state.y++;
 		vc->vc_pos += vc->vc_size_row;
 	}
 	vc->vc_need_wrap = 0;
@@ -48,15 +48,15 @@ static void lf(struct vc_data *vc)
 
 static void cr(struct vc_data *vc)
 {
-	vc->vc_pos -= vc->vc_x << 1;
-	vc->vc_need_wrap = vc->vc_x = 0;
+	vc->vc_pos -= vc->state.x << 1;
+	vc->vc_need_wrap = vc->state.x = 0;
 }
 
 static void bs(struct vc_data *vc)
 {
-	if (vc->vc_x) {
+	if (vc->state.x) {
 		vc->vc_pos -= 2;
-		vc->vc_x--;
+		vc->state.x--;
 		vc->vc_need_wrap = 0;
 	}
 }
@@ -70,10 +70,10 @@ static void vc_putc(struct vc_data *vc, unsigned char c)
 
 	scr_writew(c | (VC_DEFAULT_ATTR << 8), (u16 *)vc->vc_pos);
 
-	if (vc->vc_x == vc->vc_cols - 1) {
+	if (vc->state.x == vc->vc_cols - 1) {
 		vc->vc_need_wrap = 1;
 	} else {
-		vc->vc_x++;
+		vc->state.x++;
 		vc->vc_pos += 2;
 	}
 }
@@ -140,15 +140,15 @@ static int __init con_init(void)
 	conswitchp->con_init(vc);
 	vc->vc_sw = conswitchp;
 	vc->vc_size_row = vc->vc_cols << 1;
-	vc->vc_erase_char = ' ' | (VC_DEFAULT_ATTR << 8);
-	if (vc->vc_x >= vc->vc_cols)
-		vc->vc_x = vc->vc_cols - 1;
-	if (vc->vc_y >= vc->vc_rows)
-		vc->vc_y = vc->vc_rows - 1;
-	vc->vc_pos =
-		vc->vc_origin + vc->vc_y * vc->vc_size_row + (vc->vc_x << 1);
+	vc->vc_video_erase_char = ' ' | (VC_DEFAULT_ATTR << 8);
+	if (vc->state.x >= vc->vc_cols)
+		vc->state.x = vc->vc_cols - 1;
+	if (vc->state.y >= vc->vc_rows)
+		vc->state.y = vc->vc_rows - 1;
+	vc->vc_pos = vc->vc_origin + vc->state.y * vc->vc_size_row +
+		     (vc->state.x << 1);
 	end = (u16 *)(vc->vc_origin + vc->vc_rows * vc->vc_size_row);
-	scr_memsetw((u16 *)vc->vc_pos, vc->vc_erase_char,
+	scr_memsetw((u16 *)vc->vc_pos, vc->vc_video_erase_char,
 		    (unsigned long)end - vc->vc_pos);
 	vc->vc_sw->con_cursor(vc);
 	console_unlock();

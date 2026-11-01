@@ -69,8 +69,8 @@ static void vgacon_init(struct vc_data *c)
 	c->vc_cols = screen_info.orig_video_cols;
 	c->vc_rows = screen_info.orig_video_lines;
 	c->vc_origin = vga_vram_base;
-	c->vc_x = screen_info.orig_x;
-	c->vc_y = screen_info.orig_y;
+	c->state.x = screen_info.orig_x;
+	c->state.y = screen_info.orig_y;
 }
 
 static void vgacon_cursor(struct vc_data *c)

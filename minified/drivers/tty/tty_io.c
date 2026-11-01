@@ -1,3 +1,70 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ *  Copyright (C) 1991, 1992  Linus Torvalds
+ */
+
+/*
+ * 'tty_io.c' gives an orthogonal feeling to tty's, be they consoles
+ * or rs-channels. It also implements echoing, cooked mode etc.
+ *
+ * Kill-line thanks to John T Kohl, who also corrected VMIN = VTIME = 0.
+ *
+ * Modified by Theodore Ts'o, 9/14/92, to dynamically allocate the
+ * tty_struct and tty_queue structures.  Previously there was an array
+ * of 256 tty_struct's which was statically allocated, and the
+ * tty_queue structures were allocated at boot time.  Both are now
+ * dynamically allocated only when the tty is open.
+ *
+ * Also restructured routines so that there is more of a separation
+ * between the high-level tty routines (tty_io.c and tty_ioctl.c) and
+ * the low-level tty routines (serial.c, pty.c, console.c).  This
+ * makes for cleaner and more compact code.  -TYT, 9/17/92
+ *
+ * Modified by Fred N. van Kempen, 01/29/93, to add line disciplines
+ * which can be dynamically activated and de-activated by the line
+ * discipline handling modules (like SLIP).
+ *
+ * NOTE: pay no attention to the line discipline code (yet); its
+ * interface is still subject to change in this version...
+ * -- TYT, 1/31/92
+ *
+ * Added functionality to the OPOST tty handling.  No delays, but all
+ * other bits should be there.
+ *	-- Nick Holloway <alfie@dcs.warwick.ac.uk>, 27th May 1993.
+ *
+ * Rewrote canonical mode and added more termios flags.
+ *	-- julian@uhunix.uhcc.hawaii.edu (J. Cowley), 13Jan94
+ *
+ * Reorganized FASYNC support so mouse code can share it.
+ *	-- ctm@ardi.com, 9Sep95
+ *
+ * New TIOCLINUX variants added.
+ *	-- mj@k332.feld.cvut.cz, 19-Nov-95
+ *
+ * Restrict vt switching via ioctl()
+ *      -- grif@cs.ucr.edu, 5-Dec-95
+ *
+ * Move console and virtual terminal code to more appropriate files,
+ * implement CONFIG_VT and generalize console device interface.
+ *	-- Marko Kohtala <Marko.Kohtala@hut.fi>, March 97
+ *
+ * Rewrote tty_init_dev and tty_release_dev to eliminate races.
+ *	-- Bill Hawes <whawes@star.net>, June 97
+ *
+ * Added devfs support.
+ *      -- C. Scott Ananian <cananian@alumni.princeton.edu>, 13-Jan-1998
+ *
+ * Added support for a Unix98-style ptmx device.
+ *      -- C. Scott Ananian <cananian@alumni.princeton.edu>, 14-Jan-1998
+ *
+ * Reduced memory usage for older ARM systems
+ *      -- Russell King <rmk@arm.linux.org.uk>
+ *
+ * Move do_SAK() into process context.  Less stack use in devfs functions.
+ * alloc_tty_struct() always uses kmalloc()
+ *			 -- Andrew Morton <andrewm@uow.edu.eu> 17Mar01
+ */
+
 #include <linux/tty.h>
 #include <linux/console.h>
 #include <linux/uio.h>
@@ -32,6 +99,7 @@ static ssize_t tty_write(struct kiocb *iocb, struct iov_iter *from)
 	if (count < chunk)
 		chunk = count;
 
+	/* write_buf/write_cnt is protected by the atomic_write_lock mutex */
 	if (tty->write_cnt < chunk) {
 		unsigned char *buf_chunk;
 
@@ -75,6 +143,14 @@ out:
 	return ret;
 }
 
+/**
+ * tty_standard_install - usual tty->ops->install
+ * @driver: the driver for the tty
+ * @tty: the tty
+ *
+ * If the @driver overrides @tty->ops->install, it still can call this function
+ * to perform the standard install operations.
+ */
 int tty_standard_install(struct tty_driver *driver, struct tty_struct *tty)
 {
 	driver->ttys[tty->index] = tty;

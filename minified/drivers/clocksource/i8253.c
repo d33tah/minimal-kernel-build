@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * i8253 PIT clocksource
+ */
 #include <linux/clockchips.h>
 #include <linux/i8253.h>
 #include <linux/jiffies.h>
@@ -11,9 +15,10 @@ static int pit_set_periodic(struct clock_event_device *evt)
 {
 	raw_spin_lock(&i8253_lock);
 
+	/* binary, mode 2, LSB/MSB, ch 0 */
 	outb_p(0x34, PIT_MODE);
-	outb_p(PIT_LATCH & 0xff, PIT_CH0);
-	outb_p(PIT_LATCH >> 8, PIT_CH0);
+	outb_p(PIT_LATCH & 0xff, PIT_CH0); /* LSB */
+	outb_p(PIT_LATCH >> 8, PIT_CH0); /* MSB */
 
 	raw_spin_unlock(&i8253_lock);
 	return 0;

@@ -1,3 +1,38 @@
+/*
+ *  linux/drivers/video/vgacon.c -- Low level VGA based console driver
+ *
+ *	Created 28 Sep 1997 by Geert Uytterhoeven
+ *
+ *	Rewritten by Martin Mares <mj@ucw.cz>, July 1998
+ *
+ *  This file is based on the old console.c, vga.c and vesa_blank.c drivers.
+ *
+ *	Copyright (C) 1991, 1992  Linus Torvalds
+ *			    1995  Jay Estabrook
+ *
+ *	User definable mapping table and font loading by Eugene G. Crosser,
+ *	<crosser@average.org>
+ *
+ *	Improved loadable font/UTF-8 support by H. Peter Anvin
+ *	Feb-Sep 1995 <peter.anvin@linux.org>
+ *
+ *	Colour palette handling, by Simon Tatham
+ *	17-Jun-95 <sgt20@cam.ac.uk>
+ *
+ *	if 512 char mode is already enabled don't re-enable it,
+ *	because it causes screen to flicker, by Mitja Horvat
+ *	5-May-96 <mitja.horvat@guest.arnes.si>
+ *
+ *	Use 2 outw instead of 4 outb_p to reduce erroneous text
+ *	flashing on RHS of screen during heavy console scrolling .
+ *	Oct 1996, Paul Gortmaker.
+ *
+ *
+ *  This file is subject to the terms and conditions of the GNU General Public
+ *  License.  See the file COPYING in the main directory of this archive for
+ *  more details.
+ */
+
 #include <linux/console.h>
 #include <linux/vt_kern.h>
 #include <linux/selection.h>

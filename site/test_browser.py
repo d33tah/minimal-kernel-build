@@ -407,7 +407,8 @@ STAMPED = ("style.css", "app.js", "stepper.js", "v86/libv86.js")
 def stamp(html, v):
     """What the workflow's sed does to index.html: asset?v=<commit>."""
     for f in STAMPED:
-        html = re.sub(r'(href|src)="%s"' % re.escape(f), r'\1="%s?v=%s"' % (f, v), html)
+        # The workflow has stamped index.html already when this runs in CI.
+        html = re.sub(r'(href|src)="%s(\?v=[^"]*)?"' % re.escape(f), r'\1="%s?v=%s"' % (f, v), html)
     return html
 
 

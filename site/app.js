@@ -32,6 +32,7 @@ let kernels = [];
 let image = null;      // { name, bytes: Uint8Array, hdr }
 let emulator = null;
 let emuRam = 0;          // RAM size the running emulator was started with
+let emuReady = false;    // v86 finished loading (emulator-loaded)
 let scanTimer = null;
 let symbols = null;      // symbols.json of the current kernel, or null
 let disasm = null;       // disasm.json of the current kernel, or null
@@ -677,8 +678,8 @@ function inspect() {
 		$("symbol_index").dataset.page = p;
 		$("symbol_index").dataset.kernel = image && image.name;
 	}
-	if (!emulator) {
-		$("listing").textContent = "Boot a kernel to read this page.";
+	if (!emulator || !emuReady) {
+		$("listing").textContent = emulator ? "Booting..." : "Boot a kernel to read this page.";
 		return;
 	}
 	renderPage(p, readPage(p), scanNow ? scanNow.subarray(p * PAGE, p * PAGE + PAGE) : null, "since the last scan");
@@ -746,7 +747,7 @@ function readHash() {
 
 // render: also redraw the page listing.
 function scan(render = true) {
-	if (!emulator)
+	if (!emulator || !emuReady)
 		return;
 	const r = emuRam;
 	const mem = emulator.read_memory(0, r).slice();
@@ -812,7 +813,7 @@ async function pipe(buffer, stream) {
 }
 
 async function saveSnapshot() {
-	if (!emulator)
+	if (!emulator || !emuReady)
 		return;
 	const em = emulator;
 	$("snap_save").disabled = true;
@@ -939,6 +940,7 @@ async function boot() {
 		}
 	}
 	stepper = null;
+	emuReady = false;
 	runState = "off";
 	$("scan").disabled = true;
 	$("snap_save").disabled = true;
@@ -971,6 +973,7 @@ async function boot() {
 	em.add_listener("emulator-loaded", () => {
 		if (em !== emulator)
 			return;
+		emuReady = true;
 		setStatus("Running " + image.name + " with " + kib(ram()) +
 			(fatal ? ". The header check predicts this will not work." : "."));
 		$("scan").disabled = false;
@@ -1056,7 +1059,7 @@ function stopDriver() {
 
 // Run the VM in whichever way the controls ask for.
 async function resume() {
-	if (!emulator)
+	if (!emulator || !emuReady)
 		return;
 	stopDriver();
 	if (wantStepped()) {
@@ -1073,7 +1076,7 @@ async function resume() {
 }
 
 async function pause(note) {
-	if (!emulator)
+	if (!emulator || !emuReady)
 		return;
 	stopDriver();
 	if (emulator.is_running())

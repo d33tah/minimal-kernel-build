@@ -1,0 +1,11 @@
+# The root .gitignore drops *.md and *.lds; these are sources here.
+!README.md
+!*.lds
+
+# Build outputs
+/bzImage
+/bzImage.low
+/boot/*.o
+/boot/high/
+/boot/low/
+/tools/build

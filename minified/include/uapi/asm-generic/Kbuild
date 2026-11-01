@@ -10,5 +10,6 @@ mandatory-y += errno.h
 mandatory-y += fcntl.h
 mandatory-y += mman.h
 mandatory-y += param.h
+mandatory-y += resource.h
 mandatory-y += signal.h
 mandatory-y += types.h

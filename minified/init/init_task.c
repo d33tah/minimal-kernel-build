@@ -1,4 +1,5 @@
 #include <linux/init_task.h>
+#include <linux/mqueue.h>
 #include <linux/sched/signal.h>
 
 static struct signal_struct init_signals = {

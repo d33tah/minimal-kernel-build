@@ -147,8 +147,6 @@ static __always_inline __alloc_size(1) void *kmalloc(size_t size, gfp_t flags)
 {
 	if (__builtin_constant_p(size)) {
 		unsigned int index;
-		if (size > KMALLOC_MAX_CACHE_SIZE)
-			return kmalloc_large(size, flags);
 		index = kmalloc_index(size);
 
 		if (!index)

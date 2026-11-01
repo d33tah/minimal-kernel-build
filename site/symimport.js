@@ -335,14 +335,17 @@ async function restoreCmdline() {
 		$("cmdline").value = cmdlineFromUrl;
 		return;
 	}
-	let v = "";
+	// A remembered cmdline for this image wins; otherwise keep what the user
+	// typed before choosing the file (e.g. "nokaslr") instead of clearing it.
+	let v = null;
 	try {
 		const key = await imageKey();
-		v = (key && localStorage.getItem(key.replace(MAP_KEY, CMDLINE_KEY))) || "";
+		v = key ? localStorage.getItem(key.replace(MAP_KEY, CMDLINE_KEY)) : null;
 	} catch (e) {
-		v = "";
+		v = null;
 	}
-	$("cmdline").value = v;
+	if (v !== null)
+		$("cmdline").value = v;
 }
 
 async function saveCmdline() {

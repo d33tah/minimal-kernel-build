@@ -1309,9 +1309,14 @@ function followEip() {
 function codeSymbols() {
 	if (!symbols)
 		return [];
+	// Several names often share an address (irq_entries_start and the section
+	// marker __irqentry_text_start): name the code by its function, not by a
+	// linker marker, so markers sort after real symbols at the same address.
+	const marker = (n) => /^__\w*_(start|end)$|^_(s|e)?(text|data|inittext)$/.test(n) ? 1 : 0;
+	const list = symbols.symbols.filter((s) => s.size > 0 && /^\.text|^\.init\.text|^\.head\.text/.test(s.section))
+		.slice().sort((x, y) => x.paddr - y.paddr || marker(x.name) - marker(y.name));
 	const seen = new Set();
-	return symbols.symbols.filter((s) => s.size > 0 && /^\.text|^\.init\.text|^\.head\.text/.test(s.section) &&
-		!seen.has(s.paddr) && seen.add(s.paddr));
+	return list.filter((s) => !seen.has(s.paddr) && seen.add(s.paddr));
 }
 
 // Open the Page tab at physical address a and scroll its line into view.
@@ -1798,6 +1803,15 @@ function useImage(name, buffer, memFromUrl, syms) {
 	image = { name, bytes, hdr: parseHeader(bytes) };
 	symbols = syms || null;
 	$("memory").value = memFromUrl || String(DEFAULT_RAM);
+	// A kernel that needs more than the default (a distro kernel decompresses
+	// to 16 MiB and beyond) gets the smallest listed size that fits it.
+	if (!memFromUrl) {
+		const need = kernelEnd(image.hdr);
+		const opts = Array.from($("memory").options, (o) => Number(o.value)).sort((a, b) => a - b);
+		const fit = opts.find((v) => v >= need);
+		if (need > DEFAULT_RAM)
+			$("memory").value = String(fit || opts[opts.length - 1]);
+	}
 	ramForInitrd(); // keeps a loaded initrd: v86 needs RAM above 64 MiB + its size
 	initrdNote();
 	showHeader();

@@ -197,7 +197,7 @@ static bool __init determine_cpu_tsc_frequencies(void)
 	 * Only the early quick-PIT calibration (native_calibrate_cpu_early())
 	 * survives on this build; the late re-calibration is gone. When it
 	 * fails, tsc_early_init() and tsc_init() return early and the
-	 * jiffies-calibrated delay loop stays in use.
+	 * uncalibrated delay loop stays in use (MKB_NO_CALIBRATE).
 	 */
 	cpu_khz = native_calibrate_cpu_early();
 	tsc_khz = cpu_khz;

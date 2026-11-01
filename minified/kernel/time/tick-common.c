@@ -17,7 +17,6 @@ static struct clock_event_device *tick_dev;
 static void tick_handle_periodic(struct clock_event_device *dev)
 {
 	do_timer(1);
-	scheduler_tick();
 }
 
 static void clockevents_switch_state(struct clock_event_device *dev,

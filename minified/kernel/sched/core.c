@@ -8,17 +8,16 @@
 #include <linux/sched/task.h>
 
 /*
- * One CPU, one run queue, round robin. Runnable tasks wait in FIFO order on
+ * One CPU, one run queue. Runnable tasks wait in FIFO order on
  * runqueues.queue; the task on the CPU is not queued. The idle task runs when
- * the queue is empty and is never queued itself. The tick ends a task's slice
- * after RR_TIMESLICE ticks when another task is waiting; the switch happens
- * at the next schedule() point (return to user mode, cond_resched()).
+ * the queue is empty and is never queued itself. There is no time slicing:
+ * fork allows one task besides idle (max_threads in kernel/fork.c), so the
+ * only switch is idle -> init, when rest_init() schedules after creating it.
  *
  * Nothing in this kernel puts a task to sleep (there are no wait queues and
- * no code sets a sleeping task state), so a task only leaves the CPU when it
- * is preempted, and then goes straight back to the tail of the queue.
+ * no code sets a sleeping task state), and init's exit panics, so init keeps
+ * the CPU from then on.
  */
-#define RR_TIMESLICE (100 * HZ / 1000)
 
 static struct rq {
 	raw_spinlock_t __lock;
@@ -44,7 +43,6 @@ static void resched_curr(void)
 int sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
 	p->__state = TASK_NEW;
-	p->slice_ticks = 0;
 	return 0;
 }
 
@@ -107,18 +105,6 @@ static __always_inline void context_switch(struct task_struct *prev,
 	finish_task_switch();
 }
 
-void scheduler_tick(void)
-{
-	struct task_struct *curr;
-
-	raw_spin_lock(&runqueues.__lock);
-	curr = runqueues.curr;
-	if (curr != runqueues.idle && ++curr->slice_ticks >= RR_TIMESLICE &&
-	    !list_empty(&runqueues.queue))
-		resched_curr();
-	raw_spin_unlock(&runqueues.__lock);
-}
-
 static void __sched notrace __schedule(bool preempt)
 {
 	struct task_struct *prev = runqueues.curr, *next;
@@ -138,7 +124,6 @@ static void __sched notrace __schedule(bool preempt)
 		next = list_first_entry(&runqueues.queue, struct task_struct,
 					run_list);
 		list_del(&next->run_list);
-		next->slice_ticks = 0;
 	}
 	clear_tsk_need_resched(prev);
 	clear_preempt_need_resched();
@@ -165,25 +150,6 @@ void __sched schedule_preempt_disabled(void)
 	sched_preempt_enable_no_resched();
 	schedule();
 	preempt_disable();
-}
-
-static void __sched notrace preempt_schedule_common(void)
-{
-	do {
-		preempt_disable_notrace();
-		__schedule(true);
-		preempt_enable_no_resched_notrace();
-
-	} while (need_resched());
-}
-
-int __sched __cond_resched(void)
-{
-	if (should_resched(0)) {
-		preempt_schedule_common();
-		return 1;
-	}
-	return 0;
 }
 
 /* The idle task: halt until an interrupt makes another task runnable. */

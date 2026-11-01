@@ -124,7 +124,6 @@ static int count_strings_kernel(const char *const *argv)
 	for (i = 0; argv[i]; ++i) {
 		if (i >= MAX_ARG_STRINGS)
 			return -E2BIG;
-		cond_resched();
 	}
 	return i;
 }
@@ -192,7 +191,6 @@ static int copy_strings_kernel(int argc, const char *const *argv,
 		int ret = copy_string_kernel(argv[argc], bprm);
 		if (ret < 0)
 			return ret;
-		cond_resched();
 	}
 	return 0;
 }

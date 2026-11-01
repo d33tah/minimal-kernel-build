@@ -165,7 +165,6 @@ static void __dentry_kill(struct dentry *dentry)
 	/* no ops object sets ->d_release */
 
 	dentry_free(dentry);
-	cond_resched();
 }
 
 /*

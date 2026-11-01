@@ -29,8 +29,6 @@ enum {
 	TASK_COMM_LEN = 16,
 };
 
-extern void scheduler_tick(void);
-
 asmlinkage void schedule(void);
 extern void schedule_preempt_disabled(void);
 
@@ -41,7 +39,6 @@ struct task_struct {
 	refcount_t usage;
 	unsigned int flags;
 	struct list_head run_list;
-	unsigned int slice_ticks;
 	struct mm_struct *mm, *active_mm;
 	unsigned int personality;
 	pid_t pid;
@@ -109,15 +106,6 @@ static inline int test_tsk_need_resched(struct task_struct *tsk)
 {
 	return unlikely(test_tsk_thread_flag(tsk, TIF_NEED_RESCHED));
 }
-
-extern int __cond_resched(void);
-
-static inline int _cond_resched(void)
-{
-	return __cond_resched();
-}
-
-#define cond_resched() ({ _cond_resched(); })
 
 static __always_inline bool need_resched(void)
 {

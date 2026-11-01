@@ -262,8 +262,6 @@ static ssize_t filemap_read(struct kiocb *iocb, struct iov_iter *iter,
 	folio_batch_init(&fbatch);
 
 	do {
-		cond_resched();
-
 		if (unlikely(iocb->ki_pos >= i_size_read(inode)))
 			break;
 

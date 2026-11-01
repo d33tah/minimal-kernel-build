@@ -192,8 +192,6 @@ long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
 				goto out;
 		}
 retry:
-		cond_resched();
-
 		page = follow_page_mask(vma, start, foll_flags);
 		if (!page || PTR_ERR(page) == -EMLINK) {
 			ret = faultin_page(vma, start, &foll_flags,

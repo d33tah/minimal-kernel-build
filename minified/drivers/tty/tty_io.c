@@ -67,7 +67,6 @@ static ssize_t tty_write(struct kiocb *iocb, struct iov_iter *from)
 			break;
 
 		count -= ret;
-		cond_resched();
 	}
 	if (written)
 		ret = written;

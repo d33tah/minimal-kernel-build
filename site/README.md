@@ -360,3 +360,15 @@ guest RAM, the note about our kernels, the initrd region in the map and
 grid, the RAM error at 32 MB and "no initrd". A last case serves two "deploys" with `Cache-Control: max-age=600` (as
 GitHub Pages does) and checks a reload runs the new `app.js`. Screenshots
 (desktop and 390 px) go to `site/test-screenshots/`.
+
+## End-to-end check with a real distro kernel
+
+`site/test_distro_symbols.py` downloads Debian bullseye's
+`linux-image-5.10.0-30-686` and its `-dbg` package (SHA-256 checked, cached in
+`$MKB_DISTRO_CACHE`, ~770 MB), boots the kernel on the page with
+`nokaslr console=tty0`, imports the real `System.map` and then the unstripped
+`vmlinux`, pauses the CPU four times and requires that every pause inside the
+kernel shows the same function as `llvm-symbolizer` on the `-dbg` vmlinux.
+Pauses that land in the bzImage's decompressor (below 0xC0000000) are reported
+but not counted. Pass `--url https://d33.pl/minimal-kernel-build/` to check a
+deploy. It is not in CI because of the download size.

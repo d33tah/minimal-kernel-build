@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kernel in the browser</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Kernel in the browser</h1>
+  <p>Boots a bzImage in <a href="https://github.com/copy/v86">v86</a>, an x86 emulator compiled to WebAssembly.
+     Pick a kernel from this site or load any bzImage from disk.</p>
+</header>
+
+<main>
+<section class="controls" aria-label="Machine">
+  <label>Kernel
+    <select id="kernel"></select>
+  </label>
+  <label>RAM
+    <select id="memory">
+      <option value="655360">640 KB</option>
+      <option value="1048576">1 MB</option>
+      <option value="2097152">2 MB</option>
+      <option value="4194304">4 MB</option>
+      <option value="18874368">18 MB</option>
+      <option value="33554432">32 MB</option>
+    </select>
+  </label>
+  <label>Or a bzImage from disk
+    <input type="file" id="file">
+  </label>
+  <button id="boot" type="button">Boot</button>
+  <span id="status" role="status">Loading kernel list...</span>
+</section>
+
+<section aria-label="Kernel header">
+  <h2>Boot header</h2>
+  <div id="problems"></div>
+  <table id="header"><tbody></tbody></table>
+</section>
+
+<section aria-label="Screen">
+  <h2>Screen</h2>
+  <div id="screen_container">
+    <div id="screen_text"></div>
+    <canvas id="screen_canvas" style="display: none"></canvas>
+  </div>
+</section>
+
+<section aria-label="Memory">
+  <h2>Physical memory</h2>
+  <p class="note">Regions follow from the boot header and from where v86 puts things: setup at 0x80000,
+    command line at 0x8e000, the 32-bit part always at 1 MiB. v86 does not expose the e820 map;
+    SeaBIOS builds it from the RAM size, so it matches the bars below (usable RAM, with the
+    0x9fc00&ndash;0x100000 hole reserved).</p>
+  <h3>First MiB</h3>
+  <div class="bar" id="map_low"></div>
+  <h3>All RAM (<span id="ram_label"></span>)</h3>
+  <div class="bar" id="map_all"></div>
+  <ul class="legend" id="legend"></ul>
+
+  <div class="scan">
+    <button id="scan" type="button" disabled>Scan memory</button>
+    <label><input type="checkbox" id="autoscan"> rescan every second</label>
+    <span id="footprint"></span>
+  </div>
+  <p class="note">Each square is a 4 KiB page of guest RAM; filled means the page holds at least one
+    non-zero byte. This includes what SeaBIOS left behind and the BIOS copies at 0xc0000&ndash;0xfffff.</p>
+  <canvas id="pages" width="512" height="16"></canvas>
+</section>
+</main>
+
+<script src="v86/libv86.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

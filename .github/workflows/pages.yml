@@ -103,6 +103,13 @@ jobs:
     - name: Assemble the site
       run: |
         site/check-ids.py
+        # Which commit is deployed: shown in the page header.
+        python3 -c 'import json, os, subprocess
+        g = lambda f: subprocess.run(["git", "log", "-1", "--format=" + f], capture_output=True, text=True).stdout.strip()
+        json.dump({"sha": os.environ["GITHUB_SHA"], "date": g("%cI"), "subject": g("%s"),
+                   "run_id": os.environ["GITHUB_RUN_ID"], "run_number": os.environ["GITHUB_RUN_NUMBER"],
+                   "repo": os.environ["GITHUB_REPOSITORY"]}, open("site/version.json", "w"))'
+        cat site/version.json
         site/gen-kernels.sh
         site/fetch-v86.sh
         # Cache busting: Pages serves with max-age=600, and a browser that

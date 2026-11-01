@@ -214,6 +214,20 @@ exited with code 0) after N instructions from the kernel entry. Machine
 stopped here." or "Halted: hlt with interrupts off ...", and stepping
 stops there (Continue runs on, e.g. into panic's delay loop).
 
+Distro kernels end with `---[ end Kernel panic - not syncing: ... ]---`
+and then spin. The stepper's copy of VGA text memory covers the whole
+32 KiB window at 0xb8000 (vgacon scrolls by moving the display start),
+and the page looks for that line 4 times a second at any speed, also
+under the JIT; when it appears it pauses the machine, stops counting and
+shows "Kernel panic: <message> (stopped by the page)". Debian's
+5.10.0-30-686 without an initrd stops this way about 25 s after it is
+loaded ("VFS: Unable to mount root fs on unknown-block(0,0)").
+
+The header shows which build is deployed: the workflow writes
+`version.json` (commit SHA, commit date, subject, run id and number),
+fetched with the same `?v=` stamp; without it the page says "local
+build". The About tab shows the commit subject.
+
 The counters: instructions from the first instruction at physical
 0x100000 (the main column) and from reset until each line appears, until
 exit() and until the end (panic or halt), and distinct physical addresses
@@ -357,7 +371,10 @@ the panic, the listing says hex only, a malformed file gives an error and
 keeps the symbols, nothing scrolls sideways at 390 px. The initrd case loads a 512-byte newc cpio built in the test with the
 minified Linux and checks RAM was raised, its bytes are at 64 MiB in
 guest RAM, the note about our kernels, the initrd region in the map and
-grid, the RAM error at 32 MB and "no initrd". A last case serves two "deploys" with `Cache-Control: max-age=600` (as
+grid, the RAM error at 32 MB and "no initrd". The panic-text case writes the panic line through the VGA MMIO handlers
+of a running page and checks the machine pauses with the banner; with
+`MKB_DISTRO_CACHE` (the cache of `test_distro_symbols.py`) the Debian
+kernel is booted without an initrd and must stop itself. A last case serves two "deploys" with `Cache-Control: max-age=600` (as
 GitHub Pages does) and checks a reload runs the new `app.js`. Screenshots
 (desktop and 390 px) go to `site/test-screenshots/`.
 

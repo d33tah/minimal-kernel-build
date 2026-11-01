@@ -1651,11 +1651,61 @@ function endText() {
 	const e = stepper && stepper.end;
 	if (!e)
 		return "";
-	const after = " after " + num(e.sinceEntry !== null ? e.sinceEntry : e.steps) + " instructions from the kernel entry";
+	// Nothing was stepped (full JIT speed, count off): no count to report.
+	const after = !e.steps ? "" : " after " + num(e.sinceEntry !== null ? e.sinceEntry : e.steps) + " instructions from the kernel entry";
+	if (e.kind === "panic-text")
+		return "Kernel panic: " + e.message + " (stopped by the page)" + after + ".";
 	if (e.kind === "panic")
 		return "Kernel panic" + (stepper.exit ? " (init exited with code " + stepper.exit.code + ")" : "") + after +
 			". Machine stopped here.";
 	return "Halted: hlt with interrupts off" + after + ". The machine has stopped.";
+}
+
+// version.json, written by the Pages workflow: which commit is deployed.
+async function loadVersion() {
+	const el = $("build_info");
+	let v = null;
+	try {
+		const resp = await fetch(withV("version.json"));
+		v = resp.ok ? await resp.json() : null;
+	} catch (e) {
+		v = null;
+	}
+	if (!v || !v.sha) {
+		el.textContent = "local build";
+		return;
+	}
+	const repo = "https://github.com/" + (v.repo || "d33tah/minimal-kernel-build");
+	const a = document.createElement("a");
+	a.href = repo + "/commit/" + v.sha;
+	a.textContent = "build " + v.sha.slice(0, 12);
+	const date = new Date(v.date);
+	const when = isNaN(date) ? v.date : date.toISOString().slice(0, 16).replace("T", " ") + " UTC";
+	const run = document.createElement("a");
+	run.href = repo + "/actions/runs/" + v.run_id;
+	run.textContent = "run #" + v.run_number;
+	el.textContent = "";
+	el.append(a, " \u00b7 " + when + " \u00b7 ", run);
+	el.dataset.sha = v.sha;
+	$("build_subject").textContent = "Deployed: " + v.subject + " (" + v.sha.slice(0, 12) + ", " + when + ").";
+}
+
+// Distro kernels end with "---[ end Kernel panic - not syncing: ... ]---"
+// and then spin; check the VGA text window 4 times a second (at any speed)
+// and stop the machine there.
+let panicVersion = -1;
+function watchPanicText() {
+	if (!stepper || stepper.end || runState === "off" || runState === "paused")
+		return;
+	if (stepper.textVersion === panicVersion)
+		return;
+	panicVersion = stepper.textVersion;
+	const msg = stepper.panicText();
+	if (msg === null)
+		return;
+	stepper.end = { kind: "panic-text", message: msg, ...stepper.snapshot() };
+	counting = false;
+	pause(endText());
 }
 
 function renderEnd() {
@@ -1971,6 +2021,8 @@ async function init() {
 	initGraph();
 	initImport();
 	initInitrd();
+	setInterval(watchPanicText, 250);
+	loadVersion();
 	if (params.has("cmdline"))
 		cmdlineFromUrl = params.get("cmdline");
 	if (params.get("count") === "0")

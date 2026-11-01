@@ -96,6 +96,9 @@ function patchV86Wasm(buffer) {
 
 const VGA_TEXT = 0xb8000;
 const VGA_TEXT_BYTES = 80 * 25 * 2;
+// The whole 32 KiB text window: Linux's vgacon scrolls by moving the
+// display start, so its text lands anywhere in 0xb8000-0xbffff.
+const VGA_WINDOW_BYTES = 0x8000;
 const MMAP_BLOCK_BITS = 17; // v86 src/const.js
 // Byte offsets of CPU globals in wasm memory (v86 src/cpu.js), as indices.
 const IP = 556 >> 2, PREV_IP = 560 >> 2, EIP_PHYS = 624 >> 2, COUNTER = 664 >> 2;
@@ -120,7 +123,8 @@ class Stepper {
 		this.lastPhys = -1;
 		this.seen = new Uint8Array((cpu.mem8.length + 7) >> 3);
 		this.seenHigh = new Set();
-		this.text = new Uint8Array(VGA_TEXT_BYTES);
+		this.text = new Uint8Array(VGA_WINDOW_BYTES);
+		this.textVersion = 0;    // bumped on every write into the window
 		this.vgaDirty = false;
 		this.milestones = [];    // { text, found: null | {...} }
 		this.exit = null;        // first exit/exit_group syscall: { code, ...snapshot }
@@ -341,22 +345,31 @@ class Stepper {
 		const text = this.text;
 		cpu.memory_map_write8[blk] = (a, v) => {
 			const o = a - VGA_TEXT;
-			if (o >= 0 && o < VGA_TEXT_BYTES) { text[o] = v; this.vgaDirty = true; }
+			if (o >= 0 && o < VGA_WINDOW_BYTES) { text[o] = v; this.vgaDirty = true; this.textVersion++; }
 			w8(a, v);
 		};
 		cpu.memory_map_write32[blk] = (a, v) => {
 			const o = a - VGA_TEXT;
 			for (let i = 0; i < 4; i++)
-				if (o + i >= 0 && o + i < VGA_TEXT_BYTES) { text[o + i] = v >>> (8 * i) & 0xff; this.vgaDirty = true; }
+				if (o + i >= 0 && o + i < VGA_WINDOW_BYTES) { text[o + i] = v >>> (8 * i) & 0xff; this.vgaDirty = true; this.textVersion++; }
 			w32(a, v);
 		};
 	}
 
-	screenText() {
+	// Characters of the first screen (bytes = VGA_TEXT_BYTES) or of the
+	// whole text window.
+	screenText(bytes = VGA_TEXT_BYTES) {
 		let s = "";
-		for (let i = 0; i < VGA_TEXT_BYTES; i += 2)
+		for (let i = 0; i < bytes; i += 2)
 			s += String.fromCharCode(this.text[i]);
 		return s;
+	}
+
+	// "---[ end Kernel panic - not syncing: MSG ]---" anywhere in the text
+	// window (distro kernels print it and then spin): the message, or null.
+	panicText() {
+		const m = /end Kernel panic - not syncing: (.*?) *\]---/.exec(this.screenText(VGA_WINDOW_BYTES));
+		return m ? m[1].replace(/ {2,}/g, " ").trim() : null;
 	}
 
 	timers() {

@@ -42,6 +42,7 @@
     <button id="boot" type="button">Boot</button>
     <span id="status" role="status">Loading kernel list...</span>
     <span id="kinfo" class="note mono"></span>
+    <span id="build_info" class="note mono"></span>
     <span id="sym_status" class="note" role="status"></span>
     <span id="initrd_status" class="note"></span>
     <button id="initrd_clear" type="button" hidden>no initrd</button>
@@ -207,6 +208,7 @@
   <h3>Counting and stepping</h3>
   <p>v86 normally runs guest code through a JIT, at least 100,003 instructions per call, and has no single-step API. The page adds two exports to v86's own <code>v86.wasm</code> at load time (the functions are already in it and named in its name section, the code is unchanged): <code>read_imm8</code>, which fetches the byte at EIP, and the interpreter's <code>run</code>, which executes one instruction. Stepping calls them from JavaScript the way v86's interpreter loop does. By default every boot steps BIOS and setup as fast as possible to the kernel entry at 0x100000, then the kernel runs at 1k instructions per second, counted live, until "Hello, World!" and "Still alive" are both in VGA text memory at 0xb8000 (hello: 154 instructions, a fraction of a second; the minified Linux: about 15 minutes, with an ETA). With speed set to full (remembered, or <code>?speed=full</code>) and <i>count</i> on, the whole boot is stepped in the background first and then runs on v86's JIT.</p>
   <p>The counts are exact for the run shown, with two caveats: a <code>rep</code> string instruction counts once per v86 entry, and v86 runs at most a page of iterations per entry; SeaBIOS waits on real time, so the part before the kernel varies between runs; and the minified Linux's <code>calibrate_delay()</code> loops until a timer tick, so its count from 1 MiB depends on how fast the page steps. hello's kernel count is the same every run and matches qemu instruction for instruction. site/README.md has the cross-check against qemu.</p>
+  <p id="build_subject" class="note"></p>
   <p>Source: <a href="https://github.com/d33tah/minimal-kernel-build/tree/hello-kernel/site">site/</a> on the hello-kernel branch. Third-party files: site/THIRD_PARTY.md.</p>
 </section>
 </main>

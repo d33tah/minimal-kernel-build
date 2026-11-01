@@ -820,6 +820,55 @@ def third_party_case(browser, base, shots, folder):
     return ([] if ok else ["no kernel log on the screen"]), r
 
 
+def panic_text_case(browser, base, shots):
+    """'---[ end Kernel panic - not syncing: ... ]---' on the screen stops the machine."""
+    problems, r = [], {}
+    page = browser.new_page(viewport={"width": 1100, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel=minified-linux")
+    if not wait_for(lambda: page.get_attribute("#entry_info", "data-steps"), 60):
+        return ["no kernel entry"], r
+    r["build_info"] = page.inner_text("#build_info")
+    if not r["build_info"]:
+        problems.append("no build line in the header")
+    # Write the line through the VGA MMIO handlers, as the guest would, on a
+    # row past the first screen (vgacon scrolls through the 32 KiB window).
+    page.evaluate("""() => { const cpu = emulator.v86.cpu;
+        const t = "---[ end Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(0,0) ]---";
+        for (let i = 0; i < t.length; i++) { cpu.mmap_write8(0xb8000 + 160 * 40 + 2 * i, t.charCodeAt(i)); cpu.mmap_write8(0xb8000 + 160 * 40 + 2 * i + 1, 7); } }""")
+    ok = wait_for(lambda: page.get_attribute("#end_banner", "data-kind") == "panic-text"
+                  and page.get_attribute("#dbg_state", "data-state") == "paused", 3, 0.1)
+    r["banner"] = page.inner_text("#end_banner")
+    if not ok or "VFS: Unable to mount root fs on unknown-block(0,0)" not in r["banner"]:
+        problems.append("panic text did not stop the machine: " + r["banner"] + " / " + page.get_attribute("#dbg_state", "data-state"))
+    page.screenshot(path=str(shots / "panic-text.png"))
+    page.close()
+    if errors:
+        problems.append("page errors: " + "; ".join(errors))
+    return problems, r
+
+
+def distro_panic_case(browser, base, cache):
+    """Optional ($MKB_DISTRO_CACHE from test_distro_symbols.py): Debian's 686
+    kernel without an initrd panics; the page stops itself."""
+    kernel = next(iter(sorted(pathlib.Path(cache).glob("boot/vmlinuz-*"))), None)
+    if not kernel:
+        return [f"no boot/vmlinuz-* in {cache}"], {}
+    page = browser.new_page(viewport={"width": 1100, "height": 1000})
+    page.goto(f"{base}/index.html?kernel=hello&speed=full&count=0")
+    wait_for(lambda: gate_on_screen(page), 60)
+    page.fill("#cmdline", "console=tty0")
+    t0 = time.monotonic()
+    page.set_input_files("#file", str(kernel))
+    ok = wait_for(lambda: page.get_attribute("#end_banner", "data-kind") == "panic-text", 300, 1)
+    r = {"seconds": round(time.monotonic() - t0), "banner": page.inner_text("#end_banner"),
+         "state": page.get_attribute("#dbg_state", "data-state")}
+    page.close()
+    bad = [] if ok and r["state"] == "paused" and "Unable to mount root fs" in r["banner"] else [f"distro panic not caught: {r}"]
+    return bad, r
+
+
 def touch_case(browser, base, shots):
     """390 px phone with touch: tapping a "?" shows its text, tapping elsewhere hides it."""
     problems = []
@@ -1079,6 +1128,15 @@ def main():
                 tp, tr = third_party_case(browser, base, shots, os.environ["MKB_THIRD_PARTY"])
                 print(json.dumps({"third_party": tp or "ok", **{k: str(v) for k, v in tr.items()}}))
                 if tp:
+                    failed = True
+            pp, pr = panic_text_case(browser, base, shots)
+            print(json.dumps({"panic_text": pp or "ok", **pr}))
+            if pp:
+                failed = True
+            if os.environ.get("MKB_DISTRO_CACHE"):
+                xp, xr = distro_panic_case(browser, base, os.environ["MKB_DISTRO_CACHE"])
+                print(json.dumps({"distro_panic": xp or "ok", **xr}))
+                if xp:
                     failed = True
             dp, dr = determinism_case(browser, base)
             print(json.dumps({"determinism": dp or "ok", **{k: str(v) for k, v in dr.items()}}))

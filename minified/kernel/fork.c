@@ -9,6 +9,15 @@
 #include <asm/pgalloc.h>
 #include <asm/mmu_context.h>
 
+int nr_threads; /* The idle threads do not count.. */
+
+/*
+ * MKB_ONE_TASK: upstream sizes this from RAM in set_max_threads(); here the
+ * one task this kernel runs (init) is the limit, so every later fork fails
+ * with -EAGAIN.
+ */
+static int max_threads = 1; /* tunable limit on nr_threads */
+
 static inline struct task_struct *alloc_task_struct_node(int node)
 {
 	return kmalloc_node(sizeof(struct task_struct), GFP_KERNEL, node);
@@ -174,20 +183,9 @@ void exec_mm_release(struct task_struct *tsk, struct mm_struct *mm)
 
 static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 {
-	struct mm_struct *mm, *oldmm;
-
 	tsk->mm = NULL;
 	tsk->active_mm = NULL;
 
-	oldmm = current->mm;
-	if (!oldmm)
-		return 0;
-
-	mmget(oldmm);
-	mm = oldmm;
-
-	tsk->mm = mm;
-	tsk->active_mm = mm;
 	return 0;
 }
 
@@ -199,11 +197,6 @@ static int copy_files(unsigned long clone_flags, struct task_struct *tsk)
 	oldf = current->files;
 	if (!oldf)
 		goto out;
-
-	if (clone_flags & CLONE_FILES) {
-		atomic_inc(&oldf->count);
-		goto out;
-	}
 
 	newf = dup_fd(oldf, &error);
 	if (!newf)
@@ -265,6 +258,10 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	if (retval < 0)
 		goto bad_fork_free;
 
+	retval = -EAGAIN;
+	if (data_race(nr_threads >= max_threads))
+		goto bad_fork_cleanup_count;
+
 	p->flags &= ~PF_IDLE;
 	spin_lock_init(&p->alloc_lock);
 
@@ -290,19 +287,19 @@ copy_process(struct pid *pid, int node, struct kernel_clone_args *args)
 	if (retval)
 		goto bad_fork_cleanup_io;
 
-	if (pid != &init_struct_pid) {
-		pid = alloc_pid(p->nsproxy->pid_ns_for_children);
-		if (IS_ERR(pid)) {
-			retval = PTR_ERR(pid);
-			goto bad_fork_cleanup_io;
-		}
+	pid = alloc_pid(p->nsproxy->pid_ns_for_children);
+	if (IS_ERR(pid)) {
+		retval = PTR_ERR(pid);
+		goto bad_fork_cleanup_io;
 	}
 
 	p->pid = pid_nr(pid);
 	p->group_leader = p;
 
-	if (likely(p->pid))
+	if (likely(p->pid)) {
 		init_task_pid(p, PIDTYPE_PID, pid);
+		nr_threads++;
+	}
 
 	return p;
 
@@ -316,6 +313,7 @@ bad_fork_cleanup_signal:
 bad_fork_cleanup_fs:
 bad_fork_cleanup_semundo:
 bad_fork_cleanup_policy:
+bad_fork_cleanup_count:
 bad_fork_free:
 	WRITE_ONCE(p->__state, TASK_DEAD);
 fork_out:

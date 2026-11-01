@@ -22,6 +22,12 @@
 
 #define absolute_pointer(val) RELOC_HIDE((void *)(val), 0)
 
+#define data_race(expr)                                                \
+	({                                                             \
+		__unqual_scalar_typeof(({ expr; })) __v = ({ expr; }); \
+		__v;                                                   \
+	})
+
 #define __ADDRESSABLE(sym)                                         \
 	static void *__section(".discard.addressable")             \
 		__used __UNIQUE_ID(__PASTE(__addressable_, sym)) = \

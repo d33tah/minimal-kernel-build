@@ -141,6 +141,14 @@ unsigned long do_mmap(struct file *file, unsigned long addr, unsigned long len,
 		if (!file_mmap_ok(file, inode, pgoff, len))
 			return -EOVERFLOW;
 
+		if (prot & PROT_WRITE) {
+			if (!(file->f_mode & FMODE_WRITE))
+				return -EACCES;
+		}
+
+		if (!(file->f_mode & FMODE_WRITE))
+			vm_flags &= ~(VM_MAYWRITE | VM_SHARED);
+
 		if (!(file->f_mode & FMODE_READ))
 			return -EACCES;
 

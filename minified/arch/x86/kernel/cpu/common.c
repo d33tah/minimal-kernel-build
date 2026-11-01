@@ -55,6 +55,41 @@ void cr4_update_irqsoff(unsigned long set, unsigned long clear)
 	}
 }
 
+/* Standard macro to see if a specific flag is changeable */
+static inline int flag_is_changeable_p(u32 flag)
+{
+	u32 f1, f2;
+
+	/*
+	 * Cyrix and IDT cpus allow disabling of CPUID
+	 * so the code below may return different results
+	 * when it is executed before and after enabling
+	 * the CPUID. Add "volatile" to not allow gcc to
+	 * optimize the subsequent calls to this function.
+	 */
+	asm volatile("pushfl		\n\t"
+		     "pushfl		\n\t"
+		     "popl %0		\n\t"
+		     "movl %0, %1	\n\t"
+		     "xorl %2, %0	\n\t"
+		     "pushl %0		\n\t"
+		     "popfl		\n\t"
+		     "pushfl		\n\t"
+		     "popl %0		\n\t"
+		     "popfl		\n\t"
+
+		     : "=&r"(f1), "=&r"(f2)
+		     : "ir"(flag));
+
+	return ((f1 ^ f2) & flag) != 0;
+}
+
+/* Probe for the CPUID instruction */
+static int have_cpuid_p(void)
+{
+	return flag_is_changeable_p(X86_EFLAGS_ID);
+}
+
 static void cpu_detect(struct cpuinfo_x86 *c)
 {
 	/* Get vendor name */
@@ -97,6 +132,18 @@ static void get_cpu_cap(struct cpuinfo_x86 *c)
 	}
 }
 
+static void identify_cpu_without_cpuid(struct cpuinfo_x86 *c)
+{
+	/*
+	 * First of all, decide if this is a 486 or higher
+	 * It's a 486 if we can modify the AC flag
+	 */
+	if (flag_is_changeable_p(X86_EFLAGS_AC))
+		c->x86 = 4;
+	else
+		c->x86 = 3;
+}
+
 static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 {
 	c->x86_clflush_size = 32;
@@ -104,8 +151,13 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
 
 	memset(&c->x86_capability, 0, sizeof(c->x86_capability));
 
-	cpu_detect(c);
-	get_cpu_cap(c);
+	if (!have_cpuid_p())
+		identify_cpu_without_cpuid(c);
+
+	if (have_cpuid_p()) {
+		cpu_detect(c);
+		get_cpu_cap(c);
+	}
 }
 
 void __init early_cpu_init(void)

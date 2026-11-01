@@ -12,6 +12,17 @@ const DEFAULT_RAM = 2 * 1024 * 1024;
 const LIVE_MS = 500;
 const MAX_SNAPSHOTS = 8;
 
+// The workflow stamps the script tags with ?v=<commit>; data fetched by the
+// page gets the same stamp, so a cached older deploy is never mixed in.
+const VERSION = (() => {
+	try {
+		return new URL(document.currentScript.src).searchParams.get("v");
+	} catch (e) {
+		return null;
+	}
+})();
+const withV = (url) => (VERSION ? url + (url.includes("?") ? "&" : "?") + "v=" + encodeURIComponent(VERSION) : url);
+
 const $ = (id) => document.getElementById(id);
 const hex = (n) => "0x" + n.toString(16);
 const kib = (n) => (n < 1024 ? n + " bytes" :
@@ -343,11 +354,18 @@ function drawGrid() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	for (let p = 0; p < pages; p++) {
 		const x = (p % cols) * cell, y = Math.floor(p / cols) * cell;
-		ctx.globalAlpha = used ? (used[p] ? 1 : 0.22) : 0.6;
+		ctx.globalAlpha = used ? 1 : 0.6;
 		if (focusClass && pageClass[p] !== focusClass)
-			ctx.globalAlpha = 0.07;
-		ctx.fillStyle = col(pageClass[p]);
-		ctx.fillRect(x, y, cell - 1, cell - 1);
+			ctx.globalAlpha = 0.12;
+		// Pages with data are filled, all-zero pages are hollow.
+		if (used && !used[p]) {
+			ctx.strokeStyle = col(pageClass[p]);
+			ctx.lineWidth = 1;
+			ctx.strokeRect(x + 0.5, y + 0.5, cell - 2, cell - 2);
+		} else {
+			ctx.fillStyle = col(pageClass[p]);
+			ctx.fillRect(x, y, cell - 1, cell - 1);
+		}
 		ctx.globalAlpha = 1;
 		if (changed && changed[p]) {
 			const d = Math.max(2, Math.floor(cell / 3));
@@ -382,7 +400,8 @@ function drawGridLegend() {
 	for (const [cls, name] of Object.entries(SECTION_NAMES))
 		if (present.has(cls))
 			add(cls, "kernel " + name);
-	add("", "all-zero page (pale)", { background: "var(--r-kernel)", opacity: 0.22 });
+	add("", "page with data (filled)", { background: "var(--r-kernel)" });
+	add("", "all-zero page (hollow)", { border: "1px solid var(--r-kernel)", boxSizing: "border-box" });
 	add("", "changed since the previous scan", { background: "var(--changed)", transform: "scale(0.5)" });
 	add("", "selected", { outline: "2px solid var(--fg)", outlineOffset: "-2px" });
 }
@@ -406,12 +425,28 @@ function pageLabel(p) {
 	return REGION_NAMES[cls] || (SECTION_NAMES[cls] ? "kernel " + SECTION_NAMES[cls] : cls);
 }
 
-// Symbols whose [paddr, paddr+size) overlaps page p (size 0 counts as 1 byte).
+// Symbols whose [paddr, paddr+size) overlaps page p (size 0 counts as 1
+// byte), ordered by address.
 function symbolsInPage(p) {
 	if (!symbols)
 		return [];
 	const lo = p * PAGE, hi = lo + PAGE;
 	return symbols.symbols.filter((s) => s.paddr < hi && s.paddr + Math.max(s.size, 1) > lo);
+}
+
+const symRange = (s) => hex(s.paddr) + (s.size > 1 ? "\u2013" + hex(s.paddr + s.size - 1) : "");
+
+// Symbol (with a size) containing physical address a, from a list ordered
+// by address; the innermost (latest-starting) one wins.
+function symbolAt(list, a) {
+	let best = null;
+	for (const s of list) {
+		if (s.paddr > a)
+			break;
+		if (s.size > 0 && a < s.paddr + s.size)
+			best = s;
+	}
+	return best;
 }
 
 function showHover(p) {
@@ -425,7 +460,7 @@ function showHover(p) {
 	if (usedPages && usedPages.length === grid.pages)
 		text += usedPages[p] ? ", non-zero" : ", all zero";
 	if (syms.length) {
-		const names = syms.slice(0, 6).map((s) => s.name).join(", ");
+		const names = syms.slice(0, 6).map((s) => s.name + " " + symRange(s)).join(", ");
 		text += ": " + names + (syms.length > 6 ? " and " + (syms.length - 6) + " more" : "");
 	} else if (symbols) {
 		text += ": no symbols";
@@ -442,33 +477,107 @@ function readPage(p) {
 const asciiOf = (b) => (b >= 0x20 && b < 0x7f ? String.fromCharCode(b) : ".");
 const esc = (c) => (c === "<" ? "&lt;" : c === ">" ? "&gt;" : c === "&" ? "&amp;" : c);
 
-// Hex dump of one page; bytes that differ from `base` (if given) are marked.
 const narrow = () => window.matchMedia("(max-width: 640px)").matches;
 
+// Characters of the inspector's monospace font that fit in one line.
+let charWidth = 0, charFont = "";
+function lineChars() {
+	const dump = $("hexdump");
+	const cs = getComputedStyle(dump);
+	const font = cs.fontSize + " " + cs.fontFamily;
+	if (!charWidth || charFont !== font) {
+		const ctx = document.createElement("canvas").getContext("2d");
+		ctx.font = font;
+		charFont = font;
+		charWidth = ctx.measureText("0123456789abcdef").width / 16 || 7;
+	}
+	const w = dump.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+	return Math.max(20, Math.floor(w / charWidth) - 1);
+}
+
+// Bytes per hex dump row: the most of 16, 8, 4 whose line fits.
+function hexLayout() {
+	const chars = lineChars();
+	for (const per of [16, 8, 4]) {
+		const addr = per === 16 ? 8 : 6;
+		const len = addr + 1 + per * 3 - 1 + (per === 16 ? 1 : 0) + 2 + per + 1;
+		if (len <= chars || per === 4)
+			return { per, addr, spare: chars - len };
+	}
+}
+
+const esc2 = (t) => t.replace(/[<>&"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" })[c]);
+
+// Hex dump of one page in the style of hexdump -C: runs of identical rows
+// collapse into "*". Bytes that differ from `base` (if given) are marked and
+// such rows never collapse; byte ranges of symbols are tinted, alternating,
+// and the symbols that start in a row are named at its end.
 function renderDump(p, bytes, base, how) {
 	const lines = [];
-	const per = narrow() ? 8 : 16;
-	let nonzero = 0, changed = 0;
+	const { per, addr, spare } = hexLayout();
+	const syms = symbolsInPage(p);
+	const sized = syms.filter((s) => s.size > 0);
+	const tint = new Int8Array(PAGE).fill(-1);
+	sized.forEach((s, k) => {
+		const a = Math.max(s.paddr, p * PAGE) - p * PAGE, b = Math.min(s.paddr + s.size, p * PAGE + PAGE) - p * PAGE;
+		tint.fill(k % 2, a, b);
+	});
+	let nonzero = 0, changed = 0, collapsed = false, prevRow = null;
 	for (let row = 0; row < PAGE; row += per) {
-		let hx = "", asc = "";
+		const lo = p * PAGE + row;
+		const starts = syms.filter((s) => s.paddr >= lo && s.paddr < lo + per);
+		let hx = "", asc = "", anyDiff = false, open = -1;
+		const cur = bytes.subarray(row, row + per);
 		for (let i = 0; i < per; i++) {
 			const b = bytes[row + i];
 			if (b)
 				nonzero++;
 			const diff = base && base[row + i] !== b;
-			if (diff)
+			if (diff) {
 				changed++;
+				anyDiff = true;
+			}
+			const t = tint[row + i];
+			const sep = i === 8 && per === 16 ? "  " : i ? " " : "";
+			if (t !== open) {
+				if (open >= 0) { hx += "</span>"; asc += "</span>"; }
+				hx += sep;
+				if (t >= 0) { hx += '<span class="sym' + t + '">'; asc += '<span class="sym' + t + '">'; }
+				open = t;
+			} else {
+				hx += sep;
+			}
 			const h = b.toString(16).padStart(2, "0");
 			const a = esc(asciiOf(b));
-			hx += (i === 8 && per === 16 ? "  " : i ? " " : "") + (diff ? "<mark>" + h + "</mark>" : h);
+			hx += diff ? "<mark>" + h + "</mark>" : h;
 			asc += diff ? "<mark>" + a + "</mark>" : a;
 		}
-		lines.push((p * PAGE + row).toString(16).padStart(narrow() ? 6 : 8, "0") + " " + hx + " |" + asc + "|");
+		if (open >= 0) { hx += "</span>"; asc += "</span>"; }
+		const same = prevRow && !anyDiff && !starts.length && cur.every((v, i) => v === prevRow[i]);
+		prevRow = cur;
+		if (same) {
+			if (!collapsed)
+				lines.push("*");
+			collapsed = true;
+			continue;
+		}
+		collapsed = false;
+		let line = lo.toString(16).padStart(addr, "0") + " " + hx + " |" + asc + "|";
+		if (starts.length) {
+			const all = starts.map((s) => s.name).join(" <");
+			const room = Math.max(4, spare - 2);
+			const shown = all.length > room ? all.slice(0, room - 1) + "…" : all;
+			line += ' <span class="sname" title="' + esc2(starts.map((s) => s.name + " " + symRange(s)).join(", ")) +
+				'">&lt;' + esc2(shown) + "</span>";
+		}
+		lines.push(line);
 	}
 	const dump = $("hexdump");
 	dump.classList.remove("asm");
 	dump.innerHTML = lines.join("\n");
 	dump.dataset.page = p;
+	dump.dataset.view = "hex";
+	dump.dataset.per = per;
 	dump.dataset.nonzero = nonzero;
 	dump.dataset.changed = changed;
 	dump.dataset.reads = Number(dump.dataset.reads || 0) + 1;
@@ -484,8 +593,10 @@ function renderAsm(p, bytes) {
 	const dump = $("hexdump");
 	dump.classList.add("asm");
 	dump.dataset.page = p;
+	dump.dataset.view = "asm";
 	if (!disasm) {
 		dump.textContent = "No disasm.json for this kernel.";
+		dump.dataset.insns = 0;
 		$("dump_info").textContent = "";
 		return;
 	}
@@ -494,6 +605,20 @@ function renderAsm(p, bytes) {
 	let a = 0, b = ins.length;
 	while (a < b) { const m = (a + b) >> 1; if (ins[m][0] < lo) a = m + 1; else b = m; }
 	const labels = new Map(disasm.labels.filter(([pa]) => pa >= lo && pa < hi));
+	const sized = symbolsInPage(p).filter((s) => s.size > 0);
+	const where = (pa) => {
+		const s = symbolAt(sized, pa);
+		return s ? s.name + "+0x" + (pa - s.paddr).toString(16) : "";
+	};
+	let symW = 0;
+	for (let i = a; i < ins.length && ins[i][0] < hi; i++)
+		symW = Math.max(symW, where(ins[i][0]).length);
+	symW = Math.min(symW, 28);
+	// Columns that fit next to ~40 characters of instruction text; the text
+	// itself wraps (pre-wrap), so there is never a horizontal scroll bar.
+	const chars = lineChars();
+	const showSym = symW > 0 && !narrow() && chars >= 9 + symW + 1 + 40;
+	const showRaw = chars >= 9 + (showSym ? symW + 1 : 0) + 17 + 40;
 	const out = [];
 	let n = 0, bad = 0;
 	for (let i = a; i < ins.length && ins[i][0] < hi; i++) {
@@ -507,8 +632,13 @@ function renderAsm(p, bytes) {
 		n++;
 		if (!ok)
 			bad++;
-		const line = pa.toString(16).padStart(narrow() ? 6 : 8, "0") + ' <span class="raw">' +
-			raw.padEnd(16, " ") + "</span> " + text.replace(/[<>&]/g, esc);
+		let w = showSym ? where(pa) : "";
+		if (w.length > symW)
+			w = w.slice(0, symW - 1) + "…";
+		const line = pa.toString(16).padStart(8, "0") +
+			(showSym ? ' <span class="off">' + esc2(w.padEnd(symW, " ")) + "</span>" : "") +
+			(showRaw ? ' <span class="raw">' + raw.padEnd(16, " ") + "</span>" : "") +
+			" " + text.replace(/[<>&]/g, esc);
 		out.push(ok ? line : '<span class="bad">' + line + "</span>");
 	}
 	dump.innerHTML = out.length ? out.join("\n") : "No kernel instructions in this page.";
@@ -529,7 +659,7 @@ function renderPageSymbols(p) {
 		"No symbols in this page.";
 	for (const s of syms) {
 		const tr = tbody.insertRow();
-		for (const v of [s.name, hex(s.vaddr), hex(s.paddr), String(s.size), s.section + " (" + s.type + ")"])
+		for (const v of [s.name, hex(s.vaddr), symRange(s), String(s.size), s.section + " (" + s.type + ")"])
 			tr.insertCell().textContent = v;
 	}
 }
@@ -549,10 +679,22 @@ function inspect() {
 		$("hexdump").textContent = "Boot a kernel to read this page.";
 		return;
 	}
+	renderView(p, readPage(p), scanNow ? scanNow.subarray(p * PAGE, p * PAGE + PAGE) : null, "since the last scan");
+}
+
+// The one place the inspector is drawn: hex or asm, whichever is chosen.
+function renderView(p, bytes, base, how) {
 	if (view === "asm")
-		return renderAsm(p, readPage(p));
-	const base = scanNow ? scanNow.subarray(p * PAGE, p * PAGE + PAGE) : null;
-	renderDump(p, readPage(p), base, "since the last scan");
+		renderAsm(p, bytes);
+	else
+		renderDump(p, bytes, base, how);
+}
+
+function setView(v) {
+	view = v;
+	$("view_hex").setAttribute("aria-pressed", v === "hex");
+	$("view_asm").setAttribute("aria-pressed", v === "asm");
+	inspect();
 }
 
 function selectPage(p) {
@@ -619,7 +761,7 @@ function scan() {
 		(prev ? "; " + changed + " changed since the previous scan" : "");
 	if (selectedPage >= 0) {
 		const p = selectedPage;
-		renderDump(p, scanNow.subarray(p * PAGE, p * PAGE + PAGE),
+		renderView(p, scanNow.subarray(p * PAGE, p * PAGE + PAGE),
 			scanPrev ? scanPrev.subarray(p * PAGE, p * PAGE + PAGE) : null,
 			"since the previous scan");
 	}
@@ -753,12 +895,12 @@ async function boot() {
 	setStatus("Booting " + image.name + " with " + kib(ram()) + "...");
 	try {
 		emulator = new V86({
-			wasm_path: "v86/v86.wasm",
+			wasm_path: withV("v86/v86.wasm"),
 			memory_size: emuRam,
 			vga_memory_size: 256 * 1024,
 			screen_container: $("screen_container"),
-			bios: { url: "v86/seabios.bin" },
-			vga_bios: { url: "v86/vgabios.bin" },
+			bios: { url: withV("v86/seabios.bin") },
+			vga_bios: { url: withV("v86/vgabios.bin") },
 			bzimage: { buffer: image.bytes.buffer.slice(0) },
 			cmdline: "",
 			autostart: true,
@@ -787,7 +929,11 @@ async function boot() {
 function reportError(err) {
 	setStatus("Emulator error: " + err + (image ? " (" + image.name + ", " + kib(ram()) + " RAM)" : ""));
 }
-window.addEventListener("error", (e) => reportError(e.message));
+window.addEventListener("error", (e) => {
+	// Benign: a resize re-render changed the layout within the same frame.
+	if (!/ResizeObserver loop/.test(e.message))
+		reportError(e.message);
+});
 window.addEventListener("unhandledrejection", (e) => reportError(e.reason));
 
 // Every kernel starts with 2 MB; the header check says when that is too little.
@@ -805,11 +951,11 @@ async function loadSymbols(entry) {
 	if (!entry.symbols)
 		return null;
 	try {
-		const resp = await fetch(entry.symbols);
+		const resp = await fetch(withV(entry.symbols));
 		if (!resp.ok)
 			return null;
 		const s = await resp.json();
-		s.symbols.sort((a, b) => a.paddr - b.paddr);
+		s.symbols.sort((a, b) => a.paddr - b.paddr || a.name.localeCompare(b.name));
 		return s;
 	} catch (e) {
 		console.warn("symbols:", e);
@@ -821,7 +967,7 @@ async function loadDisasm(entry) {
 	if (!entry.disasm)
 		return null;
 	try {
-		const resp = await fetch(entry.disasm);
+		const resp = await fetch(withV(entry.disasm));
 		return resp.ok ? await resp.json() : null;
 	} catch (e) {
 		console.warn("disasm:", e);
@@ -831,7 +977,7 @@ async function loadDisasm(entry) {
 
 async function loadKernel(entry, memFromUrl) {
 	setStatus("Fetching " + entry.path + "...");
-	const resp = await fetch(entry.path);
+	const resp = await fetch(withV(entry.path));
 	if (!resp.ok)
 		throw new Error(entry.path + ": HTTP " + resp.status);
 	disasm = await loadDisasm(entry);
@@ -856,13 +1002,16 @@ async function init() {
 	$("autoscan").addEventListener("change", setAutoscan);
 	$("live").addEventListener("change", setLive);
 	for (const v of ["hex", "asm"])
-		$("view_" + v).addEventListener("click", () => {
-			view = v;
-			$("view_hex").setAttribute("aria-pressed", v === "hex");
-			$("view_asm").setAttribute("aria-pressed", v === "asm");
-			inspect();
-		});
-	window.matchMedia("(max-width: 640px)").addEventListener("change", inspect);
+		$("view_" + v).addEventListener("click", () => setView(v));
+	// Bytes per row and asm columns follow the inspector's width.
+	let dumpWidth = 0;
+	new ResizeObserver(() => {
+		const w = $("hexdump").clientWidth;
+		if (w !== dumpWidth) {
+			dumpWidth = w;
+			requestAnimationFrame(inspect);
+		}
+	}).observe($("hexdump"));
 	$("snap_save").addEventListener("click", saveSnapshot);
 	$("snap_save").title = HAVE_GZIP ?
 		"Compressed in the browser with CompressionStream(\"gzip\")." :
@@ -891,7 +1040,7 @@ async function init() {
 	});
 
 	try {
-		const resp = await fetch("kernels.json");
+		const resp = await fetch(withV("kernels.json"));
 		kernels = (await resp.json()).kernels;
 	} catch (e) {
 		setStatus("No kernels.json (" + e + "). Load a bzImage from disk.");

@@ -28,6 +28,8 @@
 	--changed: #e0245e;
 	--mark-bg: #ffd84d;
 	--mark-fg: #1d1d1b;
+	--sym0: rgba(36, 86, 166, 0.10);
+	--sym1: rgba(214, 39, 40, 0.10);
 }
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme="light"]) {
@@ -46,6 +48,8 @@
 		--r-ext: #3a3a3a;
 		--r-init: #4f8fbf;
 		--changed: #ff5c8a;
+		--sym0: rgba(139, 177, 240, 0.16);
+		--sym1: rgba(255, 120, 120, 0.14);
 	}
 }
 :root[data-theme="dark"] {
@@ -64,6 +68,8 @@
 	--r-ext: #3a3a3a;
 	--r-init: #4f8fbf;
 	--changed: #ff5c8a;
+	--sym0: rgba(139, 177, 240, 0.16);
+	--sym1: rgba(255, 120, 120, 0.14);
 }
 
 * { box-sizing: border-box; }
@@ -144,6 +150,7 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 	max-height: 18rem;
 	max-width: 100%;
 	overflow: auto;
+	scrollbar-gutter: stable;
 	margin: 0.4rem 0;
 }
 #hexdump mark { background: var(--mark-bg); color: var(--mark-fg); }
@@ -154,7 +161,7 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 #snapshots button { padding: 0.1rem 0.45rem; }
 #inspector .table-wrap { max-height: 12rem; overflow-y: auto; }
 
-.cols { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 0 1.2rem; margin-top: 0.5rem; }
+.cols { display: grid; grid-template-columns: minmax(0, 460px) minmax(0, 1fr); gap: 0 1.2rem; margin-top: 0.5rem; }
 .col-left { min-width: 0; }
 .col-right { min-width: 0; }
 .col-right > section > h2:first-child { margin-top: 0; }
@@ -171,11 +178,13 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 #hexdump .bad { background: var(--mark-bg); color: var(--mark-fg); }
 .tabs button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
 @media (max-width: 640px) {
-	#hexdump .raw { display: none; }
 	#screen_text { font-size: 7px; line-height: 8px; }
 }
 .legend .pick { cursor: pointer; padding: 0 0.3rem; border-radius: 3px; border: 1px solid transparent; }
 .legend .pick:hover, .legend .pick:focus { border-color: var(--line); outline: none; }
 .legend .pick[aria-pressed="true"] { border-color: var(--fg); font-weight: 600; }
 .bar div { cursor: pointer; }
-@media (max-width: 640px) { #hexdump.asm { white-space: pre-wrap; overflow-wrap: anywhere; } }
+#hexdump.asm { white-space: pre-wrap; overflow-wrap: anywhere; }
+#hexdump .off, #hexdump .sname { color: var(--muted); }
+#hexdump .sym0 { background: var(--sym0); }
+#hexdump .sym1 { background: var(--sym1); }

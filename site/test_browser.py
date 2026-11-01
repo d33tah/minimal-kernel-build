@@ -31,8 +31,11 @@ import functools
 import http.server
 import json
 import pathlib
+import re
+import shutil
 import socketserver
 import sys
+import tempfile
 import threading
 import time
 
@@ -48,8 +51,15 @@ class QuietHandler(http.server.SimpleHTTPRequestHandler):
         pass
 
 
-def serve():
-    handler = functools.partial(QuietHandler, directory=str(SITE))
+class CachingHandler(QuietHandler):
+    """Like GitHub Pages: every response may be cached for 10 minutes."""
+    def end_headers(self):
+        self.send_header("Cache-Control", "max-age=600")
+        super().end_headers()
+
+
+def serve(directory=SITE, handler_class=QuietHandler):
+    handler = functools.partial(handler_class, directory=str(directory))
     httpd = socketserver.TCPServer(("127.0.0.1", 0), handler)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     return httpd
@@ -155,7 +165,128 @@ def memory_lab(page, has_symbols, problems):
     r["restored_gate"] = wait_for(lambda: gate_on_screen(page), 15)
     if not r["restored_gate"]:
         problems.append("gate lines not on the screen after restoring the snapshot")
+
+    inspector_views(page, kpage, has_symbols, r, problems)
     return r
+
+
+def no_hscroll(page, sel):
+    return page.eval_on_selector(sel, "e => e.scrollWidth <= e.clientWidth + 1")
+
+
+def inspector_views(page, kpage, has_symbols, r, problems):
+    """asm survives scans; hex rows collapse; no horizontal scroll at any width."""
+    x, y = page_center(page, kpage)
+    page.mouse.click(x, y)
+    page.click("#view_asm")
+    page.click("#scan")
+    insns = page.get_attribute("#hexdump", "data-insns")
+    if page.get_attribute("#hexdump", "data-view") != "asm" or not int(insns or 0) > 0:
+        problems.append("Scan replaced the asm view (data-insns=%s)" % insns)
+    page.check("#autoscan")
+    time.sleep(2.2)
+    page.uncheck("#autoscan")
+    insns = page.get_attribute("#hexdump", "data-insns")
+    if page.get_attribute("#hexdump", "data-view") != "asm" or not int(insns or 0) > 0:
+        problems.append("auto-scan replaced the asm view (data-insns=%s)" % insns)
+    r["asm_insns"] = int(insns or 0)
+    if "+0x" not in page.inner_text("#hexdump") and page.viewport_size["width"] > 640:
+        problems.append("asm view shows no symbol+offset column")
+
+    # The last page of RAM is all zero: hexdump -C style it is one row and "*".
+    last = int(page.get_attribute("#pages", "data-pages")) - 1
+    page.click("#view_hex")
+    x, y = page_center(page, last)
+    page.mouse.click(x, y)
+    lines = page.inner_text("#hexdump").splitlines()
+    r["zero_page_lines"] = len(lines)
+    if len(lines) > 3 or "*" not in lines:
+        problems.append("all-zero page not collapsed: %d lines" % len(lines))
+
+    x, y = page_center(page, kpage)
+    page.mouse.click(x, y)
+    widths = {}
+    for w in (390, 800, 1000, 1280):
+        page.set_viewport_size({"width": w, "height": 1400})
+        time.sleep(0.4)
+        for v in ("hex", "asm"):
+            page.click("#view_" + v)
+            per = page.get_attribute("#hexdump", "data-per")
+            ok = no_hscroll(page, "#hexdump")
+            widths[f"{w}-{v}"] = per if v == "hex" else ok
+            if not ok:
+                problems.append(f"{v} view scrolls horizontally at {w} px")
+        if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
+            problems.append(f"page scrolls horizontally at {w} px")
+    r["dump_widths"] = widths
+    page.set_viewport_size({"width": 1100, "height": 1400})
+    if not has_symbols:
+        return
+    if has_symbol_marks(page):
+        r["symbol_marks"] = True
+    else:
+        problems.append("hex view of the 1 MiB page names no symbol at a row end")
+
+
+def has_symbol_marks(page):
+    page.click("#view_hex")
+    return page.locator("#hexdump .sname").count() > 0
+
+
+STAMPED = ("style.css", "app.js", "v86/libv86.js")
+
+
+def stamp(html, v):
+    """What the workflow's sed does to index.html: asset?v=<commit>."""
+    for f in STAMPED:
+        html = re.sub(r'(href|src)="%s"' % re.escape(f), r'\1="%s?v=%s"' % (f, v), html)
+    return html
+
+
+def stale_cache_case(browser, timeout):
+    """Deploy A, load it, deploy B over it, reload with A in the HTTP cache.
+
+    The server sends max-age=600 like GitHub Pages. Deploy B's app.js sets a
+    marker; after the reload the page must run B's app.js (not A's from the
+    cache), boot, and raise no errors.
+    """
+    problems = []
+    with tempfile.TemporaryDirectory() as tmp:
+        root = pathlib.Path(tmp)
+        for d in ("kernels", "v86"):
+            (root / d).symlink_to(SITE / d)
+        for f in ("kernels.json", "style.css") + tuple(SITE.glob("*.js")):
+            f = pathlib.Path(f)
+            shutil.copy(SITE / f.name, root / f.name)
+        html = (SITE / "index.html").read_text()
+        app = (SITE / "app.js").read_text()
+
+        def deploy(v):
+            (root / "index.html").write_text(stamp(html, v))
+            (root / "app.js").write_text(app + f'\nwindow.deployMarker = "{v}";\n')
+
+        deploy("A")
+        httpd = serve(root, CachingHandler)
+        base = f"http://127.0.0.1:{httpd.server_address[1]}"
+        ctx = browser.new_context()
+        page = ctx.new_page()
+        errors = []
+        page.on("pageerror", lambda e: errors.append(str(e)))
+        page.goto(base + "/index.html?kernel=hello")
+        if not wait_for(lambda: gate_on_screen(page), timeout):
+            problems.append("deploy A did not boot")
+        deploy("B")
+        page.reload()
+        marker = page.evaluate("window.deployMarker")
+        if marker != "B":
+            problems.append(f"after the reload the page ran app.js of deploy {marker}")
+        if not wait_for(lambda: gate_on_screen(page), timeout):
+            problems.append("deploy B did not boot after the reload")
+        if errors:
+            problems.append("page errors: " + "; ".join(errors))
+        ctx.close()
+        httpd.shutdown()
+    return problems
 
 
 def run_case(browser, base, name, mem, timeout, shots, has_symbols):
@@ -229,6 +360,11 @@ def main():
             good = (r["ok"] and r["nonzero_pages"] and 0 < r["nonzero_pages"] < r["total_pages"]
                     and not r["lab_problems"] and not r["page_errors"])
             if not good:
+                failed = True
+        if not args.cases:
+            stale = stale_cache_case(browser, args.timeout)
+            print(json.dumps({"stale_cache": stale or "ok"}))
+            if stale:
                 failed = True
         browser.close()
     httpd.shutdown()

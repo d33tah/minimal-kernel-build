@@ -21,10 +21,16 @@ What it does now:
   `emulator.read_memory()`: pale squares are all-zero pages, a dot marks the
   pages that changed between the last two scans.
 - **Inspector.** Hovering over a page names its region and the symbols in
-  it; clicking it shows a hex dump (16 bytes per row: address, hex, ASCII)
-  and a table of its symbols (name, virtual and physical address, size,
-  section). Bytes that differ from the last scan are marked. "live" re-reads
-  the page every 500 ms while the VM runs.
+  it with their ranges, in address order; clicking it shows a hex dump and a
+  table of its symbols (name, virtual address, physical range, size,
+  section). The dump is laid out like `hexdump -C` (runs of identical rows
+  become `*`) with 16, 8 or 4 bytes per row, whichever fits the inspector's
+  width; symbol byte ranges are tinted in two alternating colours and the
+  symbols starting in a row are named at its end. Bytes that differ from the
+  last scan are marked. The asm view shows each instruction's
+  `symbol+offset` when there is room. Scans and "live" (re-read every
+  500 ms) redraw whichever view is selected. Grid squares with data are
+  filled, all-zero pages are hollow.
 - **Snapshots.** "Save snapshot" calls `emulator.save_state()`, gzips the
   result in the browser with `CompressionStream("gzip")` (kept raw, and the
   page says so, when the browser lacks it) and keeps the last 8 in memory.
@@ -76,6 +82,10 @@ header asks for 2264 KiB, but the kernel does not touch all of its brk).
     python3 site/test_browser.py
 
 For every kernel case it checks the gate lines on the screen, the page scan,
-the hex dump and symbol list of the page at 1 MiB, live re-reads, and a
-snapshot round trip: save, check gzip is smaller and the ratio is shown,
-blank the screen, restore, check both lines are back.
+the hex dump and symbol list of the page at 1 MiB, live re-reads, a
+snapshot round trip (save, check gzip is smaller and the ratio is shown,
+blank the screen, restore, check both lines are back), that the asm view
+survives a scan and auto-scan, that an all-zero page collapses to `*`, and
+that neither view nor the page scrolls horizontally at 390, 800, 1000 and
+1280 px. A last case serves two "deploys" with `Cache-Control: max-age=600`
+(as GitHub Pages does) and checks a reload runs the new `app.js`.

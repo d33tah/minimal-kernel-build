@@ -46,9 +46,12 @@ class QuietHandler(http.server.SimpleHTTPRequestHandler):
 
 
 class CachingHandler(QuietHandler):
-    """Like GitHub Pages: every response may be cached for 10 minutes."""
+    """Assets may be cached for 10 minutes (GitHub Pages sends max-age=600);
+    index.html is revalidated, so a reload always gets the newest one and a
+    cached older app.js would be mixed with it unless the URLs differ."""
     def end_headers(self):
-        self.send_header("Cache-Control", "max-age=600")
+        html = self.path.split("?")[0].endswith((".html", "/"))
+        self.send_header("Cache-Control", "no-cache" if html else "max-age=600")
         super().end_headers()
 
 
@@ -447,8 +450,9 @@ def stale_cache_case(browser, timeout):
         deploy("B")
         page.reload()
         marker = page.evaluate("window.deployMarker")
-        if marker != "B":
-            problems.append(f"after the reload the page ran app.js of deploy {marker}")
+        stamp_v = page.evaluate("new URL(document.querySelector('script[src*=\"app.js\"]').src).searchParams.get('v')")
+        if marker != "B" or stamp_v != "B":
+            problems.append(f"after the reload index.html is deploy {stamp_v} but app.js is deploy {marker}")
         if not wait_for(lambda: gate_on_screen(page), timeout):
             problems.append("deploy B did not boot after the reload")
         if errors:

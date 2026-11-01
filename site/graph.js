@@ -493,7 +493,9 @@ function graphStatus() {
 	el.dataset.frames = st ? st.fStart.length : 0;
 	el.textContent = !st ? "No stepper for this kernel." :
 		num(st.fStart.length) + " calls, " + nodes + " symbols, " + edges + " transitions recorded" +
-		(runState === "jit" ? "; running at full JIT speed: not recorded" : "") + ".";
+		(runState === "jit" ? "; running at full JIT speed: not recorded" : "") +
+		(st.framesFull ? "; the timeline stopped at " + num(st.framesFull) +
+			" calls because the tab's JavaScript heap was 80% full (the counters keep counting)" : "") + ".";
 }
 
 function drawGraph() {

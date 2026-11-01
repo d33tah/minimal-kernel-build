@@ -213,8 +213,17 @@ class Stepper {
 	// or, when the symbol is not on the stack (a tail jump, a task switch),
 	// a replacement of the top frame.
 	stackEnter(node, isCall, t) {
-		if (this.fStart.length >= 20000000)
-			return; // keep memory bounded
+		const nf = this.fStart.length;
+		if (nf >= 2000000000 || this.framesFull)
+			return;
+		// No fixed cap below 2 billion frames, but stop recording before the
+		// tab runs out of JavaScript heap (Chrome's performance.memory): the
+		// counters keep counting, only the flame timeline stops growing.
+		if ((nf & 0xffff) === 0 && nf && typeof performance !== "undefined" && performance.memory &&
+		    performance.memory.usedJSHeapSize > 0.8 * performance.memory.jsHeapSizeLimit) {
+			this.framesFull = nf;
+			return;
+		}
 		const irq = this.entryKind[node];
 		if (isCall || irq) {
 			this.pushFrame(node, t, irq);

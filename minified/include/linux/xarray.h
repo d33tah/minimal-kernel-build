@@ -3,21 +3,9 @@
 
 #include <linux/rcupdate.h>
 
-static inline void *xa_mk_internal(unsigned long v)
-{
-	return (void *)((v << 2) | 2);
-}
-
 static inline bool xa_is_internal(const void *entry)
 {
 	return ((unsigned long)entry & 3) == 2;
-}
-
-static inline int xa_err(void *entry)
-{
-	if (xa_is_internal(entry) && entry >= xa_mk_internal(-MAX_ERRNO))
-		return (long)entry >> 2;
-	return 0;
 }
 
 enum xa_lock_type {
@@ -61,7 +49,6 @@ struct xa_state {
 	struct xa_node *xa_node;
 };
 
-#define XA_ERROR(errno) ((struct xa_node *)(((unsigned long)errno << 2) | 2UL))
 #define XAS_BOUNDS ((struct xa_node *)1UL)
 #define XAS_RESTART ((struct xa_node *)3UL)
 
@@ -77,16 +64,6 @@ struct xa_state {
 
 #define xas_lock_irq(xas) xa_lock_irq((xas)->xa)
 #define xas_unlock_irq(xas) xa_unlock_irq((xas)->xa)
-
-static inline int xas_error(const struct xa_state *xas)
-{
-	return xa_err(xas->xa_node);
-}
-
-static inline void xas_set_err(struct xa_state *xas, long err)
-{
-	xas->xa_node = XA_ERROR(err);
-}
 
 static inline bool xas_invalid(const struct xa_state *xas)
 {

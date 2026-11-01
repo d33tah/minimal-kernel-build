@@ -21,21 +21,10 @@ static noinline int __filemap_add_folio(struct address_space *mapping,
 	xas_lock_irq(&xas);
 
 	xas_store(&xas, folio);
-	if (xas_error(&xas))
-		goto unlock;
 
-unlock:
 	xas_unlock_irq(&xas);
 
-	if (xas_error(&xas))
-		goto error;
-
 	return 0;
-error:
-	folio->mapping = NULL;
-
-	folio_put_refs(folio, nr);
-	return xas_error(&xas);
 }
 
 static int filemap_add_folio(struct address_space *mapping, struct folio *folio,

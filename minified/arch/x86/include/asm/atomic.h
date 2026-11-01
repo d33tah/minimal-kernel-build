@@ -18,11 +18,6 @@ static __always_inline void arch_atomic_add(int i, atomic_t *v)
 	asm volatile("addl %1,%0" : "+m"(v->counter) : "ir"(i) : "memory");
 }
 
-static __always_inline bool arch_atomic_sub_and_test(int i, atomic_t *v)
-{
-	return GEN_BINARY_RMWcc("subl", v->counter, e, "er", i);
-}
-
 static __always_inline void arch_atomic_inc(atomic_t *v)
 {
 	asm volatile("incl %0" : "+m"(v->counter)::"memory");

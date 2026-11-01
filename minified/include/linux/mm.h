@@ -44,16 +44,6 @@ static inline void folio_ref_inc(struct folio *folio)
 	page_ref_inc(&folio->page);
 }
 
-static inline int page_ref_sub_and_test(struct page *page, int nr)
-{
-	return atomic_sub_and_test(nr, &page->_refcount);
-}
-
-static inline int folio_ref_sub_and_test(struct folio *folio, int nr)
-{
-	return page_ref_sub_and_test(&folio->page, nr);
-}
-
 static inline int page_ref_dec_and_test(struct page *page)
 {
 	return atomic_dec_and_test(&page->_refcount);
@@ -297,12 +287,6 @@ static inline void get_page(struct page *page)
 static inline void folio_put(struct folio *folio)
 {
 	if (folio_put_testzero(folio))
-		__put_page(&folio->page);
-}
-
-static inline void folio_put_refs(struct folio *folio, int refs)
-{
-	if (folio_ref_sub_and_test(folio, refs))
 		__put_page(&folio->page);
 }
 

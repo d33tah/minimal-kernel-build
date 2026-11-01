@@ -13,8 +13,6 @@ static void *xas_start(struct xa_state *xas)
 
 	if (xas_valid(xas))
 		return xas_reload(xas);
-	if (xas_error(xas))
-		return NULL;
 
 	entry = xa_head(xas->xa);
 	if (xas->xa_index)
@@ -47,8 +45,6 @@ static void *xas_create(struct xa_state *xas)
 		entry = xa_head_locked(xa);
 		xas->xa_node = NULL;
 		BUG_ON(xas->xa_index);
-	} else if (xas_error(xas)) {
-		return NULL;
 	} else {
 		entry = xa_head_locked(xa);
 	}

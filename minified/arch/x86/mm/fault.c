@@ -176,7 +176,6 @@ static inline void do_user_addr_fault(struct pt_regs *regs,
 		}
 retry:
 		mmap_read_lock(mm);
-	} else {
 	}
 
 	vma = find_vma(mm, address);

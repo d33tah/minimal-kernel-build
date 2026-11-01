@@ -8,9 +8,7 @@
 </head>
 <body>
 <header>
-  <h1>Kernel in the browser</h1>
-  <p>Boots a bzImage in <a href="https://github.com/copy/v86">v86</a>, an x86 emulator compiled to WebAssembly.
-     Pick a kernel from this site or load any bzImage from disk.</p>
+  <h1>Kernel in the browser<span class="tip" tabindex="0" title="Boots a bzImage in v86, an x86 emulator compiled to WebAssembly (github.com/copy/v86). Pick a kernel from the list or load any bzImage from disk.">?</span></h1>
 </header>
 
 <main>
@@ -26,75 +24,27 @@
       <option value="33554432">32 MB</option>
     </select>
   </label>
-  <label>Or a bzImage from disk
+  <label title="Load any bzImage from your disk instead of the list">From disk
     <input type="file" id="file">
   </label>
   <button id="boot" type="button">Boot</button>
   <span id="status" role="status">Loading kernel list...</span>
+  <span id="kinfo" class="note mono"></span>
 </section>
+<div id="problems"></div>
 
-<section aria-label="Kernel header">
-  <h2>Boot header</h2>
-  <div id="problems"></div>
-  <table id="header"><tbody></tbody></table>
-</section>
-
+<div class="cols">
+<div class="col-left">
 <section aria-label="Screen">
-  <h2>Screen</h2>
   <div id="screen_container">
     <div id="screen_text"></div>
     <canvas id="screen_canvas" style="display: none"></canvas>
   </div>
 </section>
 
-<section aria-label="Memory">
-  <h2>Physical memory</h2>
-  <p class="note">Regions follow from the boot header and from where v86 puts things: setup at 0x80000,
-    command line at 0x8e000, the 32-bit part always at 1 MiB. v86 does not expose the e820 map;
-    SeaBIOS builds it from the RAM size, so it matches the bars below (usable RAM, with the
-    0x9fc00&ndash;0x100000 hole reserved).</p>
-  <h3>First MiB</h3>
-  <div class="bar" id="map_low"></div>
-  <h3>All RAM (<span id="ram_label"></span>)</h3>
-  <div class="bar" id="map_all"></div>
-  <ul class="legend" id="legend"></ul>
-
-  <div class="scan">
-    <button id="scan" type="button" disabled>Scan memory</button>
-    <label><input type="checkbox" id="autoscan"> rescan every second</label>
-    <span id="footprint"></span>
-  </div>
-  <p class="note">Each square is a 4 KiB page of guest RAM, coloured by the region the boot header
-    implies and, when the site has a <code>symbols.json</code> for the kernel, by ELF section.
-    Pale squares were all zero at the last scan; a dot marks pages that changed between the last
-    two scans. Non-zero pages below 1 MiB include what SeaBIOS left behind and the BIOS copies at
-    0xc0000&ndash;0xfffff. Hover over a page to see its symbols, click it to inspect it.</p>
-  <canvas id="pages" width="448" height="14"></canvas>
-  <ul class="legend" id="grid_legend"></ul>
-  <p class="note" id="hover_info" aria-live="polite"></p>
-
-  <div id="inspector">
-    <h3 id="page_title">No page selected</h3>
-    <div class="scan">
-      <label><input type="checkbox" id="live"> live: re-read the page every 500 ms</label>
-      <span id="dump_info"></span>
-    </div>
-    <p class="note">Marked bytes differ from the last scan (or, right after a scan, from the scan before it).</p>
-    <pre id="hexdump">Click a page in the grid above.</pre>
-    <p class="note" id="symbols_note"></p>
-    <div class="table-wrap">
-      <table id="page_symbols">
-        <thead><tr><th>symbol</th><th>address</th><th>physical</th><th>size</th><th>section</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
 <section aria-label="Snapshots">
-  <h2>Snapshots</h2>
-  <p class="note">A snapshot is v86's <code>save_state()</code>: CPU, devices, VGA memory and all of
-    guest RAM. The page keeps the last 8 in memory. <span id="snap_note"></span></p>
+  <h2>Snapshots <span class="tip" tabindex="0" title="A snapshot is v86 save_state(): CPU, devices, VGA memory and all guest RAM, gzip-compressed in the browser (CompressionStream). The last 8 are kept in memory; Restore puts the VM back, Download saves the file.">?</span></h2>
+  <span id="snap_note" class="note"></span>
   <div class="scan">
     <button id="snap_save" type="button" disabled>Save snapshot</button>
     <span id="snap_status" role="status"></span>
@@ -106,6 +56,48 @@
     </table>
   </div>
 </section>
+</div>
+<div class="col-right">
+<section aria-label="Memory">
+  <h2>Physical memory <span class="tip" tabindex="0" title="Regions follow from the boot header and from where v86 puts things: real-mode setup at 0x80000, command line at 0x8e000, the 32-bit part always at 1 MiB. SeaBIOS builds the e820 map from the RAM size: usable RAM with the 0x9fc00-0x100000 hole reserved.">?</span></h2>
+  <h3>First MiB</h3>
+  <div class="bar" id="map_low"></div>
+  <h3>All RAM (<span id="ram_label"></span>)</h3>
+  <div class="bar" id="map_all"></div>
+  <ul class="legend" id="legend"></ul>
+
+  <div class="scan">
+    <button id="scan" type="button" disabled>Scan memory</button>
+    <label title="Rescan all pages every second"><input type="checkbox" id="autoscan"> auto</label>
+    <span id="footprint"></span> <span class="tip" tabindex="0" title="Each square is a 4 KiB page of guest RAM, coloured by region (boot header) and, when the kernel has a symbols.json, by ELF section. Pale squares were all zero at the last scan; a dot marks pages that changed between the last two scans. Non-zero pages below 1 MiB include SeaBIOS leftovers and the BIOS copies at 0xc0000-0xfffff. Hover a page for its symbols, click to inspect it.">?</span>
+  </div>
+  <canvas id="pages" width="448" height="14"></canvas>
+  <ul class="legend" id="grid_legend"></ul>
+  <p class="note mono" id="focus_info" aria-live="polite"></p>
+  <p class="note" id="hover_info" aria-live="polite"></p>
+
+  <div id="inspector">
+    <h3 id="page_title">No page selected</h3>
+    <div class="scan">
+      <span class="tabs"><button id="view_hex" type="button" aria-pressed="true">hex</button>
+        <button id="view_asm" type="button" aria-pressed="false" title="Disassembly from llvm-objdump of the kernel ELF at build time. Highlighted lines: the bytes in guest memory differ from the build (not loaded yet, overwritten or freed).">asm</button></span>
+      <label title="Re-read the selected page every 500 ms. Marked bytes differ from the last scan (or, right after a scan, from the scan before it)."><input type="checkbox" id="live"> live</label>
+      <span id="dump_info"></span>
+    </div>
+    <pre id="hexdump">Click a page in the grid above.</pre>
+    <p class="note" id="symbols_note"></p>
+    <div class="table-wrap">
+      <table id="page_symbols">
+        <thead><tr><th>symbol</th><th>address</th><th>physical</th><th>size</th><th>section</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
 </main>
 
 <script src="v86/libv86.js"></script>

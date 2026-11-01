@@ -43,6 +43,8 @@ jobs:
         cp minified/arch/x86/boot/bzImage out/minified-linux/bzImage
         site/gen-symbols.py hello/boot/high/kernel.elf out/hello/symbols.json hello
         site/gen-symbols.py minified/vmlinux out/minified-linux/symbols.json minified-linux
+        site/gen-disasm.py hello/boot/high/kernel.elf out/hello/disasm.json
+        site/gen-disasm.py minified/vmlinux out/minified-linux/disasm.json
         ls -l out/*/
 
     - uses: actions/upload-artifact@v4

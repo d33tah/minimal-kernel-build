@@ -1,6 +1,6 @@
 #!/bin/sh
 # Write site/kernels.json listing every site/kernels/<name>/bzImage, with
-# kernels/<name>/symbols.json (from gen-symbols.py) when it exists.
+# kernels/<name>/symbols.json and disasm.json (gen-symbols.py, gen-disasm.py) when present.
 # The page offers them in its kernel dropdown; the first one boots first.
 set -eu
 cd "$(dirname "$0")"
@@ -15,12 +15,12 @@ cd "$(dirname "$0")"
 		[ -f "$f" ] || continue
 		name=${f#kernels/}
 		name=${name%/bzImage}
+		extra=
 		sym=kernels/$name/symbols.json
-		if [ -f "$sym" ]; then
-			printf '%s\n  {"name": "%s", "path": "%s", "symbols": "%s"}' "$sep" "$name" "$f" "$sym"
-		else
-			printf '%s\n  {"name": "%s", "path": "%s"}' "$sep" "$name" "$f"
-		fi
+		dis=kernels/$name/disasm.json
+		[ -f "$sym" ] && extra="$extra, \"symbols\": \"$sym\""
+		[ -f "$dis" ] && extra="$extra, \"disasm\": \"$dis\""
+		printf '%s\n  {"name": "%s", "path": "%s"%s}' "$sep" "$name" "$f" "$extra"
 		sep=,
 	done
 	printf '\n]}\n'

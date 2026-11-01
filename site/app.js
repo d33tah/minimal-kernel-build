@@ -23,6 +23,9 @@ let emulator = null;
 let emuRam = 0;          // RAM size the running emulator was started with
 let scanTimer = null;
 let symbols = null;      // symbols.json of the current kernel, or null
+let disasm = null;       // disasm.json of the current kernel, or null
+let view = "hex";        // inspector view: "hex" or "asm"
+let focusClass = null;   // page class picked from a legend or bar: highlight those pages
 let scanNow = null;      // Uint8Array copy of guest RAM from the latest scan
 let scanPrev = null;     // ... and from the scan before it
 let usedPages = null;    // per page: 1 when the latest scan saw a non-zero byte
@@ -106,29 +109,17 @@ function verStr(v) {
 }
 
 function showHeader() {
-	const tbody = $("header").tBodies[0];
-	tbody.textContent = "";
 	$("problems").textContent = "";
+	$("kinfo").textContent = "";
 	if (!image)
 		return;
 	const h = image.hdr;
-	const rows = [
-		["image", image.name + ", " + h.size.toLocaleString("en") + " bytes"],
-		["protocol", verStr(h.version)],
-		["setup_sects", h.setup_sects + " (" + h.setup_size + " bytes of real-mode setup)"],
-		["syssize", hex(h.syssize) + " (" + (h.syssize * 16).toLocaleString("en") + " bytes)"],
-		["loadflags", hex(h.loadflags) + (h.loaded_high ? " (LOADED_HIGH)" : " (low kernel)")],
-		["code32_start", hex(h.code32_start)],
-	];
-	if (h.has_init_size) {
-		rows.push(["pref_address", hex(h.pref_address)]);
-		rows.push(["init_size", hex(h.init_size) + " (" + kib(h.init_size) + ")"]);
-	}
-	for (const [k, v] of rows) {
-		const tr = tbody.insertRow();
-		tr.insertCell().textContent = k;
-		tr.insertCell().textContent = v;
-	}
+	const parts = [h.size.toLocaleString("en") + " B", "proto " + verStr(h.version),
+		"setup " + h.setup_size + " B", "32-bit " + (h.syssize * 16).toLocaleString("en") + " B @ " + hex(h.code32_start),
+		h.loaded_high ? "LOADED_HIGH" : "low"];
+	if (h.has_init_size)
+		parts.push("init_size " + kib(h.init_size));
+	$("kinfo").textContent = parts.join(" \u00b7 ");
 	for (const [level, text] of checkImage(h, ram())) {
 		const div = document.createElement("div");
 		div.className = level;
@@ -164,6 +155,52 @@ function ram() {
 	return Number($("memory").value);
 }
 
+// Tapping a legend entry or a bar segment highlights every page of that class.
+function setFocus(cls) {
+	focusClass = focusClass === cls ? null : cls;
+	drawGrid();
+	const legend = $("legend");
+	for (const li of legend.children)
+		li.setAttribute("aria-pressed", li.dataset.cls === focusClass);
+	const info = $("focus_info");
+	if (!focusClass) {
+		info.textContent = "";
+		return;
+	}
+	let n = 0, used = 0, first = -1, last = -1;
+	for (let p = 0; p < pageClass.length; p++)
+		if (pageClass[p] === focusClass) {
+			n++;
+			if (usedPages && usedPages[p])
+				used++;
+			if (first < 0)
+				first = p;
+			last = p;
+		}
+	const name = REGION_NAMES[focusClass] || ("kernel " + (SECTION_NAMES[focusClass] || focusClass));
+	info.textContent = n ? name + ": " + n + " pages (" + kib(n * PAGE) + "), " +
+		(usedPages ? used + " non-zero, " : "") + hex(first * PAGE) + "–" + hex(last * PAGE + PAGE - 1) +
+		". Tap again to clear." : name + ": no pages in RAM.";
+}
+
+function legendItem(cls, label, style) {
+	const li = document.createElement("li");
+	const sw = document.createElement("span");
+	Object.assign(sw.style, style || { background: "var(--" + cls + ")" });
+	li.append(sw, label);
+	if (cls) {
+		li.dataset.cls = cls;
+		li.className = "pick";
+		li.tabIndex = 0;
+		li.setAttribute("role", "button");
+		li.setAttribute("aria-pressed", cls === focusClass);
+		li.title = "Highlight every page of this type";
+		li.addEventListener("click", () => setFocus(cls));
+		li.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setFocus(cls); } });
+	}
+	return li;
+}
+
 function drawBar(el, regions, start, end) {
 	el.textContent = "";
 	for (const [a, b, cls, label] of regions) {
@@ -175,6 +212,8 @@ function drawBar(el, regions, start, end) {
 		div.style.background = "var(--" + cls + ")";
 		div.title = label + ": " + hex(lo) + "–" + hex(hi) + " (" + kib(hi - lo) + ")";
 		div.textContent = label;
+		if (label !== "first MiB")
+			div.addEventListener("click", () => setFocus(cls));
 		el.append(div);
 	}
 }
@@ -221,13 +260,8 @@ function drawMaps() {
 
 	const legend = $("legend");
 	legend.textContent = "";
-	for (const [cls, name] of Object.entries(REGION_NAMES)) {
-		const li = document.createElement("li");
-		const sw = document.createElement("span");
-		sw.style.background = "var(--" + cls + ")";
-		li.append(sw, name);
-		legend.append(li);
-	}
+	for (const [cls, name] of Object.entries(REGION_NAMES))
+		legend.append(legendItem(cls, name));
 }
 
 // ---- page grid ------------------------------------------------------------
@@ -310,6 +344,8 @@ function drawGrid() {
 	for (let p = 0; p < pages; p++) {
 		const x = (p % cols) * cell, y = Math.floor(p / cols) * cell;
 		ctx.globalAlpha = used ? (used[p] ? 1 : 0.22) : 0.6;
+		if (focusClass && pageClass[p] !== focusClass)
+			ctx.globalAlpha = 0.07;
 		ctx.fillStyle = col(pageClass[p]);
 		ctx.fillRect(x, y, cell - 1, cell - 1);
 		ctx.globalAlpha = 1;
@@ -318,6 +354,13 @@ function drawGrid() {
 			ctx.fillStyle = col("changed");
 			ctx.fillRect(x + (cell - 1 - d) / 2, y + (cell - 1 - d) / 2, d, d);
 		}
+	}
+	if (focusClass) {
+		ctx.strokeStyle = col("fg");
+		ctx.lineWidth = 1;
+		for (let p = 0; p < pages; p++)
+			if (pageClass[p] === focusClass)
+				ctx.strokeRect((p % cols) * cell + 0.5, Math.floor(p / cols) * cell + 0.5, cell - 2, cell - 2);
 	}
 	if (selectedPage >= 0 && selectedPage < pages) {
 		ctx.strokeStyle = col("fg");
@@ -332,13 +375,7 @@ function drawGridLegend() {
 	const legend = $("grid_legend");
 	legend.textContent = "";
 	const present = new Set(pageClass);
-	const add = (cls, label, style) => {
-		const li = document.createElement("li");
-		const sw = document.createElement("span");
-		Object.assign(sw.style, style || { background: "var(--" + cls + ")" });
-		li.append(sw, label);
-		legend.append(li);
-	};
+	const add = (cls, label, style) => legend.append(legendItem(cls, label, style));
 	for (const [cls, name] of Object.entries(REGION_NAMES))
 		if (present.has(cls))
 			add(cls, name);
@@ -406,12 +443,15 @@ const asciiOf = (b) => (b >= 0x20 && b < 0x7f ? String.fromCharCode(b) : ".");
 const esc = (c) => (c === "<" ? "&lt;" : c === ">" ? "&gt;" : c === "&" ? "&amp;" : c);
 
 // Hex dump of one page; bytes that differ from `base` (if given) are marked.
+const narrow = () => window.matchMedia("(max-width: 640px)").matches;
+
 function renderDump(p, bytes, base, how) {
 	const lines = [];
+	const per = narrow() ? 8 : 16;
 	let nonzero = 0, changed = 0;
-	for (let row = 0; row < PAGE; row += 16) {
+	for (let row = 0; row < PAGE; row += per) {
 		let hx = "", asc = "";
-		for (let i = 0; i < 16; i++) {
+		for (let i = 0; i < per; i++) {
 			const b = bytes[row + i];
 			if (b)
 				nonzero++;
@@ -420,12 +460,13 @@ function renderDump(p, bytes, base, how) {
 				changed++;
 			const h = b.toString(16).padStart(2, "0");
 			const a = esc(asciiOf(b));
-			hx += (i === 8 ? "  " : i ? " " : "") + (diff ? "<mark>" + h + "</mark>" : h);
+			hx += (i === 8 && per === 16 ? "  " : i ? " " : "") + (diff ? "<mark>" + h + "</mark>" : h);
 			asc += diff ? "<mark>" + a + "</mark>" : a;
 		}
-		lines.push((p * PAGE + row).toString(16).padStart(8, "0") + "  " + hx + "  |" + asc + "|");
+		lines.push((p * PAGE + row).toString(16).padStart(narrow() ? 6 : 8, "0") + " " + hx + " |" + asc + "|");
 	}
 	const dump = $("hexdump");
+	dump.classList.remove("asm");
 	dump.innerHTML = lines.join("\n");
 	dump.dataset.page = p;
 	dump.dataset.nonzero = nonzero;
@@ -433,6 +474,47 @@ function renderDump(p, bytes, base, how) {
 	dump.dataset.reads = Number(dump.dataset.reads || 0) + 1;
 	$("dump_info").textContent = nonzero + " non-zero bytes" +
 		(base ? ", " + changed + " changed " + how : "") +
+		", read " + new Date().toLocaleTimeString("en-GB");
+}
+
+// Instructions whose first byte lies in page p, from disasm.json (llvm-objdump
+// of the kernel ELF at build time). Bytes in guest memory that differ from
+// what the linker produced are marked (not loaded yet, overwritten, freed).
+function renderAsm(p, bytes) {
+	const dump = $("hexdump");
+	dump.classList.add("asm");
+	dump.dataset.page = p;
+	if (!disasm) {
+		dump.textContent = "No disasm.json for this kernel.";
+		$("dump_info").textContent = "";
+		return;
+	}
+	const lo = p * PAGE, hi = lo + PAGE;
+	const ins = disasm.insns;
+	let a = 0, b = ins.length;
+	while (a < b) { const m = (a + b) >> 1; if (ins[m][0] < lo) a = m + 1; else b = m; }
+	const labels = new Map(disasm.labels.filter(([pa]) => pa >= lo && pa < hi));
+	const out = [];
+	let n = 0, bad = 0;
+	for (let i = a; i < ins.length && ins[i][0] < hi; i++) {
+		const [pa, raw, text] = ins[i];
+		if (labels.has(pa))
+			out.push('<span class="lbl">' + labels.get(pa) + ":</span>");
+		let ok = true;
+		for (let k = 0; k < raw.length / 2 && pa + k < hi; k++)
+			if (bytes[pa - lo + k] !== parseInt(raw.substr(k * 2, 2), 16))
+				ok = false;
+		n++;
+		if (!ok)
+			bad++;
+		const line = pa.toString(16).padStart(narrow() ? 6 : 8, "0") + ' <span class="raw">' +
+			raw.padEnd(16, " ") + "</span> " + text.replace(/[<>&]/g, esc);
+		out.push(ok ? line : '<span class="bad">' + line + "</span>");
+	}
+	dump.innerHTML = out.length ? out.join("\n") : "No kernel instructions in this page.";
+	dump.dataset.insns = n;
+	dump.dataset.reads = Number(dump.dataset.reads || 0) + 1;
+	$("dump_info").textContent = n + " instructions" + (bad ? ", " + bad + " differ from the build" : "") +
 		", read " + new Date().toLocaleTimeString("en-GB");
 }
 
@@ -467,6 +549,8 @@ function inspect() {
 		$("hexdump").textContent = "Boot a kernel to read this page.";
 		return;
 	}
+	if (view === "asm")
+		return renderAsm(p, readPage(p));
 	const base = scanNow ? scanNow.subarray(p * PAGE, p * PAGE + PAGE) : null;
 	renderDump(p, readPage(p), base, "since the last scan");
 }
@@ -689,7 +773,7 @@ async function boot() {
 		if (em !== emulator)
 			return;
 		setStatus("Running " + image.name + " with " + kib(ram()) +
-			(fatal ? ". The header check above predicts this will not work." : "."));
+			(fatal ? ". The header check predicts this will not work." : "."));
 		$("scan").disabled = false;
 		$("snap_save").disabled = false;
 		setAutoscan();
@@ -733,11 +817,24 @@ async function loadSymbols(entry) {
 	}
 }
 
+async function loadDisasm(entry) {
+	if (!entry.disasm)
+		return null;
+	try {
+		const resp = await fetch(entry.disasm);
+		return resp.ok ? await resp.json() : null;
+	} catch (e) {
+		console.warn("disasm:", e);
+		return null;
+	}
+}
+
 async function loadKernel(entry, memFromUrl) {
 	setStatus("Fetching " + entry.path + "...");
 	const resp = await fetch(entry.path);
 	if (!resp.ok)
 		throw new Error(entry.path + ": HTTP " + resp.status);
+	disasm = await loadDisasm(entry);
 	useImage(entry.name, await resp.arrayBuffer(), memFromUrl, await loadSymbols(entry));
 	await boot();
 }
@@ -758,10 +855,20 @@ async function init() {
 	$("scan").addEventListener("click", scan);
 	$("autoscan").addEventListener("change", setAutoscan);
 	$("live").addEventListener("change", setLive);
+	for (const v of ["hex", "asm"])
+		$("view_" + v).addEventListener("click", () => {
+			view = v;
+			$("view_hex").setAttribute("aria-pressed", v === "hex");
+			$("view_asm").setAttribute("aria-pressed", v === "asm");
+			inspect();
+		});
+	window.matchMedia("(max-width: 640px)").addEventListener("change", inspect);
 	$("snap_save").addEventListener("click", saveSnapshot);
-	$("snap_note").textContent = HAVE_GZIP ?
-		"Snapshots are compressed in the browser with CompressionStream(\"gzip\")." :
+	$("snap_save").title = HAVE_GZIP ?
+		"Compressed in the browser with CompressionStream(\"gzip\")." :
 		"This browser has no CompressionStream: snapshots are kept uncompressed.";
+	if (!HAVE_GZIP)
+		$("snap_note").textContent = "no gzip in this browser: snapshots uncompressed";
 	const canvas = $("pages");
 	canvas.addEventListener("click", (ev) => {
 		const p = pageAt(ev);

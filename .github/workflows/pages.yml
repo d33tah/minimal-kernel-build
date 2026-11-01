@@ -1,0 +1,102 @@
+name: Kernel in the browser (Pages)
+
+on:
+  push:
+    branches: [ "hello-kernel", "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  kernels:
+    # Same base image and packages as Dockerfile-build-and-run.
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    env:
+      TERM: xterm
+    steps:
+    - name: Install toolchain
+      run: |
+        apt-get update
+        apt-get install -y build-essential llvm clang lld nasm qemu-system-x86 expect
+
+    - uses: actions/checkout@v4
+
+    - name: Build the hello kernel
+      run: make -C hello LLVM=1
+
+    - name: Boot the hello kernel in qemu (vmtest)
+      run: make -C hello test
+
+    - name: Build the minified Linux and run the make vm gate
+      run: make vm
+
+    - name: Collect kernels
+      run: |
+        mkdir -p out/hello out/minified-linux
+        cp hello/bzImage out/hello/bzImage
+        cp minified/arch/x86/boot/bzImage out/minified-linux/bzImage
+        ls -l out/*/bzImage
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: kernels
+        path: out/
+
+  site:
+    needs: kernels
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: kernels
+        path: site/kernels
+
+    - name: Assemble the site
+      run: |
+        site/gen-kernels.sh
+        site/fetch-v86.sh
+
+    - name: Install Playwright and Chromium
+      run: |
+        python3 -m venv "$RUNNER_TEMP/venv"
+        "$RUNNER_TEMP/venv/bin/pip" install playwright
+        "$RUNNER_TEMP/venv/bin/playwright" install --with-deps chromium
+
+    - name: Browser test (both kernels)
+      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py'
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: browser-screenshots
+        path: site/test-screenshots/
+
+    - name: Drop test output from the site
+      run: rm -rf site/test-screenshots site/__pycache__
+
+    - uses: actions/configure-pages@v5
+
+    - uses: actions/upload-pages-artifact@v3
+      with:
+        path: site
+
+  deploy:
+    needs: site
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+    - id: deployment
+      uses: actions/deploy-pages@v4

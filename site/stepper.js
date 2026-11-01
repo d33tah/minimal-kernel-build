@@ -209,7 +209,7 @@ class Stepper {
 	// or, when the symbol is not on the stack (a tail jump, a task switch),
 	// a replacement of the top frame.
 	stackEnter(node, isCall, t) {
-		if (this.fStart.length >= 2000000)
+		if (this.fStart.length >= 20000000)
 			return; // keep memory bounded
 		const irq = this.entryKind[node];
 		if (isCall || irq) {

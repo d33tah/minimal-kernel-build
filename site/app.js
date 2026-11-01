@@ -1086,7 +1086,7 @@ async function boot() {
 // ---- debugger -------------------------------------------------------------
 
 const MILESTONES = ["Hello, World!", "Still alive"];
-const COUNT_LIMIT_MS = 120000;  // give up counting after this much stepping
+const COUNT_LIMIT_MS = 1200000; // give up counting after this much stepping (20 min)
 const SLICE_MS = 25;            // fast stepping: JS time per slice
 
 let stepper = null;

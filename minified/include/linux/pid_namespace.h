@@ -5,7 +5,6 @@
 
 struct pid_namespace {
 	int last_pid;
-	struct kmem_cache *pid_cachep;
 	unsigned int level;
 } __randomize_layout;
 

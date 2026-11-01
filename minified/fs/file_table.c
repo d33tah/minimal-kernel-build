@@ -2,13 +2,11 @@
 #include <linux/file.h>
 #include "internal.h"
 
-static struct kmem_cache *filp_cachep __read_mostly;
-
 static void file_free_rcu(struct rcu_head *head)
 {
 	struct file *f = container_of(head, struct file, f_u.fu_rcuhead);
 
-	kmem_cache_free(filp_cachep, f);
+	kfree(f);
 }
 
 static inline void file_free(struct file *f)
@@ -21,7 +19,7 @@ static struct file *__alloc_file(int flags, const struct cred *cred)
 {
 	struct file *f;
 
-	f = kmem_cache_zalloc(filp_cachep, GFP_KERNEL);
+	f = kzalloc(sizeof(*f), GFP_KERNEL);
 	if (unlikely(!f))
 		return ERR_PTR(-ENOMEM);
 
@@ -60,11 +58,4 @@ void fput(struct file *file)
 {
 	if (atomic_long_dec_and_test(&file->f_count))
 		__fput(file);
-}
-
-void __init files_init(void)
-{
-	filp_cachep = kmem_cache_create(
-		"filp", sizeof(struct file), 0,
-		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
 }

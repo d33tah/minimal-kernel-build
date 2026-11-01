@@ -7,7 +7,6 @@
 #include <linux/path.h>
 #include <linux/gfp.h>
 #include <linux/xarray.h>
-#include <linux/capability.h>
 #include <linux/semaphore.h>
 #include <linux/stat.h>
 #include <asm/fcntl.h>
@@ -24,9 +23,6 @@
 struct vm_area_struct;
 struct iov_iter;
 struct fs_context;
-
-extern void __init inode_init(void);
-extern void __init files_init(void);
 
 #define MAY_EXEC 0x00000001
 #define MAY_WRITE 0x00000002
@@ -319,10 +315,8 @@ extern void putname(struct filename *name);
 extern void __init vfs_caches_init_early(void);
 extern void __init vfs_caches_init(void);
 
-extern struct kmem_cache *names_cachep;
-
-#define __getname() kmem_cache_alloc(names_cachep, GFP_KERNEL)
-#define __putname(name) kmem_cache_free(names_cachep, (void *)(name))
+#define __getname() kmalloc(PATH_MAX, GFP_KERNEL)
+#define __putname(name) kfree(name)
 
 extern const struct file_operations def_chr_fops;
 

@@ -1,8 +1,6 @@
 #include <linux/memblock.h>
 #include "internal.h"
 
-static struct kmem_cache *dentry_cache __read_mostly;
-
 static const struct qstr slash_name = QSTR_INIT("/", 1);
 
 static unsigned int d_hash_shift __read_mostly;
@@ -62,14 +60,14 @@ static void __d_free(struct rcu_head *head)
 {
 	struct dentry *dentry = container_of(head, struct dentry, d_u.d_rcu);
 
-	kmem_cache_free(dentry_cache, dentry);
+	kfree(dentry);
 }
 
 static void __d_free_external(struct rcu_head *head)
 {
 	struct dentry *dentry = container_of(head, struct dentry, d_u.d_rcu);
 	kfree(external_name(dentry));
-	kmem_cache_free(dentry_cache, dentry);
+	kfree(dentry);
 }
 
 static inline int dname_external(const struct dentry *dentry)
@@ -229,7 +227,7 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	struct dentry *dentry;
 	char *dname;
 
-	dentry = kmem_cache_alloc(dentry_cache, GFP_KERNEL);
+	dentry = kmalloc(sizeof(*dentry), GFP_KERNEL);
 	if (!dentry)
 		return NULL;
 
@@ -243,7 +241,7 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 			kmalloc(size + name->len,
 				GFP_KERNEL_ACCOUNT | __GFP_RECLAIMABLE);
 		if (!p) {
-			kmem_cache_free(dentry_cache, dentry);
+			kfree(dentry);
 			return NULL;
 		}
 		atomic_set(&p->u.count, 1);
@@ -414,15 +412,6 @@ static void __init dcache_init_early(void)
 	d_hash_shift = 32 - d_hash_shift;
 }
 
-static void __init dcache_init(void)
-{
-	dentry_cache = KMEM_CACHE_USERCOPY(
-		dentry, SLAB_RECLAIM_ACCOUNT | SLAB_PANIC | SLAB_ACCOUNT,
-		d_iname);
-}
-
-struct kmem_cache *names_cachep __read_mostly;
-
 void __init vfs_caches_init_early(void)
 {
 	dcache_init_early();
@@ -430,12 +419,5 @@ void __init vfs_caches_init_early(void)
 
 void __init vfs_caches_init(void)
 {
-	names_cachep = kmem_cache_create_usercopy(
-		"names_cache", PATH_MAX, 0, SLAB_HWCACHE_ALIGN | SLAB_PANIC, 0,
-		PATH_MAX, NULL);
-
-	dcache_init();
-	inode_init();
-	files_init();
 	mnt_init();
 }

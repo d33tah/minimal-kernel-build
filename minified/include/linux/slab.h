@@ -4,27 +4,7 @@
 #include <linux/gfp.h>
 #include <linux/overflow.h>
 
-#define SLAB_CONSISTENCY_CHECKS ((slab_flags_t __force)0x00000100U)
-#define SLAB_RED_ZONE ((slab_flags_t __force)0x00000400U)
-#define SLAB_POISON ((slab_flags_t __force)0x00000800U)
 #define SLAB_HWCACHE_ALIGN ((slab_flags_t __force)0x00002000U)
-#define SLAB_CACHE_DMA ((slab_flags_t __force)0x00004000U)
-#define SLAB_CACHE_DMA32 ((slab_flags_t __force)0x00008000U)
-#define SLAB_STORE_USER ((slab_flags_t __force)0x00010000U)
-#define SLAB_PANIC ((slab_flags_t __force)0x00040000U)
-#define SLAB_TYPESAFE_BY_RCU ((slab_flags_t __force)0x00080000U)
-#define SLAB_TRACE ((slab_flags_t __force)0x00200000U)
-
-#define SLAB_DEBUG_OBJECTS 0
-
-#define SLAB_NOLEAKTRACE ((slab_flags_t __force)0x00800000U)
-
-#define SLAB_ACCOUNT 0
-
-#define SLAB_NO_USER_FLAGS ((slab_flags_t __force)0x10000000U)
-
-#define SLAB_RECLAIM_ACCOUNT ((slab_flags_t __force)0x00020000U)
-#define SLAB_TEMPORARY SLAB_RECLAIM_ACCOUNT
 
 #define ZERO_SIZE_PTR ((void *)16)
 
@@ -32,25 +12,6 @@
 
 void __init kmem_cache_init(void);
 bool slab_is_available(void);
-
-struct kmem_cache *kmem_cache_create(const char *name, unsigned int size,
-				     unsigned int align, slab_flags_t flags,
-				     void (*ctor)(void *));
-struct kmem_cache *
-kmem_cache_create_usercopy(const char *name, unsigned int size,
-			   unsigned int align, slab_flags_t flags,
-			   unsigned int useroffset, unsigned int usersize,
-			   void (*ctor)(void *));
-#define KMEM_CACHE(__struct, __flags)                         \
-	kmem_cache_create(#__struct, sizeof(struct __struct), \
-			  __alignof__(struct __struct), (__flags), NULL)
-
-#define KMEM_CACHE_USERCOPY(__struct, __flags, __field)                     \
-	kmem_cache_create_usercopy(#__struct, sizeof(struct __struct),      \
-				   __alignof__(struct __struct), (__flags), \
-				   offsetof(struct __struct, __field),      \
-				   sizeof_field(struct __struct, __field),  \
-				   NULL)
 
 void kfree(const void *objp);
 
@@ -133,7 +94,6 @@ void *__kmalloc(size_t size, gfp_t flags) __assume_kmalloc_alignment
 	__alloc_size(1);
 void *kmem_cache_alloc(struct kmem_cache *s,
 		       gfp_t flags) __assume_slab_alignment __malloc;
-void kmem_cache_free(struct kmem_cache *s, void *objp);
 
 static __always_inline
 	__alloc_size(1) void *__kmalloc_node(size_t size, gfp_t flags, int node)

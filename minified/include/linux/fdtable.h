@@ -42,6 +42,4 @@ static inline struct file *files_lookup_fd_raw(struct files_struct *files,
 
 struct files_struct *dup_fd(struct files_struct *, int *) __latent_entropy;
 
-extern struct kmem_cache *files_cachep;
-
 #endif

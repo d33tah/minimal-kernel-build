@@ -44,14 +44,6 @@ static inline unsigned int oo_objects(struct kmem_cache_order_objects x)
 	return x.x & OO_MASK;
 }
 
-static void *setup_object(struct kmem_cache *s, void *object)
-{
-	if (unlikely(s->ctor)) {
-		s->ctor(object);
-	}
-	return object;
-}
-
 static inline struct slab *alloc_slab_page(gfp_t flags, int node,
 					   struct kmem_cache_order_objects oo)
 {
@@ -107,11 +99,9 @@ static struct slab *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
 	start = slab_address(slab);
 
 	{
-		start = setup_object(s, start);
 		slab->freelist = start;
 		for (idx = 0, p = start; idx < slab->objects - 1; idx++) {
 			next = p + s->size;
-			next = setup_object(s, next);
 			set_freepointer(s, p, next);
 			p = next;
 		}
@@ -222,14 +212,6 @@ static void slab_free(struct kmem_cache *s, struct slab *slab, void *object)
 	if (!prior)
 		__add_partial(n, slab, DEACTIVATE_TO_TAIL);
 	spin_unlock_irqrestore(&n->list_lock, flags);
-}
-
-void kmem_cache_free(struct kmem_cache *s, void *x)
-{
-	s = cache_from_obj(s, x);
-	if (!s)
-		return;
-	slab_free(s, virt_to_slab(x), x);
 }
 
 static inline void free_large_kmalloc(struct folio *folio, void *object)
@@ -355,20 +337,12 @@ static int init_kmem_cache_nodes(struct kmem_cache *s)
 
 static int calculate_sizes(struct kmem_cache *s)
 {
-	slab_flags_t flags = s->flags;
 	unsigned int size = s->object_size;
 	unsigned int order;
 
 	size = ALIGN(size, sizeof(void *));
 
-	/* SLAB_POISON/SLAB_RED_ZONE never reach any cache on this build (not in
-	 * CACHE_CREATE_MASK, never passed) -> only the RCU/ctor arms survive. */
-	if ((flags & SLAB_TYPESAFE_BY_RCU) || s->ctor) {
-		s->offset = size;
-		size += sizeof(void *);
-	} else {
-		s->offset = ALIGN_DOWN(s->object_size / 2, sizeof(void *));
-	}
+	s->offset = ALIGN_DOWN(s->object_size / 2, sizeof(void *));
 
 	size = ALIGN(size, s->align);
 	s->size = size;
@@ -389,8 +363,6 @@ static int calculate_sizes(struct kmem_cache *s)
 
 static int kmem_cache_open(struct kmem_cache *s, slab_flags_t flags)
 {
-	s->flags = flags;
-
 	if (!calculate_sizes(s))
 		return -EINVAL;
 

@@ -2,8 +2,6 @@
 
 static const struct address_space_operations empty_aops = {};
 
-static struct kmem_cache *inode_cachep __read_mostly;
-
 static int no_open(struct inode *inode, struct file *file)
 {
 	return -ENXIO;
@@ -37,20 +35,6 @@ static int inode_init_always(struct super_block *sb, struct inode *inode)
 	return 0;
 }
 
-static struct inode *alloc_inode(struct super_block *sb)
-{
-	struct inode *inode;
-
-	inode = kmem_cache_alloc(inode_cachep, GFP_KERNEL);
-
-	if (!inode)
-		return NULL;
-
-	inode_init_always(sb, inode);
-
-	return inode;
-}
-
 static void __address_space_init_once(struct address_space *mapping)
 {
 	xa_init_flags(&mapping->i_pages, XA_FLAGS_LOCK_IRQ | XA_FLAGS_ACCOUNT);
@@ -62,6 +46,21 @@ static void init_once(void *foo)
 
 	memset(inode, 0, sizeof(*inode));
 	__address_space_init_once(&inode->i_data);
+}
+
+static struct inode *alloc_inode(struct super_block *sb)
+{
+	struct inode *inode;
+
+	inode = kmalloc(sizeof(*inode), GFP_KERNEL);
+
+	if (!inode)
+		return NULL;
+	init_once(inode);
+
+	inode_init_always(sb, inode);
+
+	return inode;
 }
 
 static struct inode *new_inode_pseudo(struct super_block *sb)
@@ -77,13 +76,6 @@ struct inode *new_inode(struct super_block *sb)
 
 	inode = new_inode_pseudo(sb);
 	return inode;
-}
-
-void __init inode_init(void)
-{
-	inode_cachep = kmem_cache_create(
-		"inode_cache", sizeof(struct inode), 0,
-		(SLAB_RECLAIM_ACCOUNT | SLAB_PANIC | SLAB_ACCOUNT), init_once);
 }
 
 void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)

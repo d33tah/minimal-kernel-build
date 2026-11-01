@@ -22,14 +22,11 @@ static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pidmap_lock);
 
 void put_pid(struct pid *pid)
 {
-	struct pid_namespace *ns;
-
 	if (!pid)
 		return;
 
-	ns = pid->numbers[pid->level].ns;
 	if (refcount_dec_and_test(&pid->count)) {
-		kmem_cache_free(ns->pid_cachep, pid);
+		kfree(pid);
 	}
 }
 
@@ -45,7 +42,7 @@ struct pid *alloc_pid(struct pid_namespace *ns)
 	struct pid *pid;
 	int nr;
 
-	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
+	pid = kmalloc(sizeof(*pid), GFP_KERNEL);
 	if (!pid)
 		return ERR_PTR(-ENOMEM);
 
@@ -53,7 +50,7 @@ struct pid *alloc_pid(struct pid_namespace *ns)
 	nr = ns->last_pid + 1 < pid_max ? ++ns->last_pid : -EAGAIN;
 	spin_unlock_irq(&pidmap_lock);
 	if (nr < 0) {
-		kmem_cache_free(ns->pid_cachep, pid);
+		kfree(pid);
 		return ERR_PTR(nr);
 	}
 
@@ -108,7 +105,4 @@ void __init pid_idr_init(void)
 	pid_max = min_t(int, PID_MAX_LIMIT,
 			max_t(int, pid_max,
 			      PIDS_PER_CPU_DEFAULT *num_possible_cpus()));
-
-	init_pid_ns.pid_cachep =
-		KMEM_CACHE(pid, SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT);
 }

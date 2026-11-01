@@ -4,11 +4,9 @@
 #include <linux/fs_context.h>
 #include "internal.h"
 
-static struct kmem_cache *mnt_cache __read_mostly;
-
 static struct vfsmount *alloc_vfsmnt(void)
 {
-	struct vfsmount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
+	struct vfsmount *mnt = kzalloc(sizeof(*mnt), GFP_KERNEL);
 	if (mnt)
 		mnt->mnt_userns = &init_user_ns;
 	return mnt;
@@ -58,9 +56,5 @@ __latent_entropy static void __init init_mount_tree(void)
 
 void __init mnt_init(void)
 {
-	mnt_cache = kmem_cache_create(
-		"mnt_cache", sizeof(struct vfsmount), 0,
-		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
-
 	init_mount_tree();
 }

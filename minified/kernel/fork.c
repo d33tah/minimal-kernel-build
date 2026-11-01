@@ -9,16 +9,14 @@
 #include <asm/pgalloc.h>
 #include <asm/mmu_context.h>
 
-static struct kmem_cache *task_struct_cachep;
-
 static inline struct task_struct *alloc_task_struct_node(int node)
 {
-	return kmem_cache_alloc_node(task_struct_cachep, GFP_KERNEL, node);
+	return kmalloc_node(sizeof(struct task_struct), GFP_KERNEL, node);
 }
 
 static inline void free_task_struct(struct task_struct *tsk)
 {
-	kmem_cache_free(task_struct_cachep, tsk);
+	kfree(tsk);
 }
 
 static int alloc_thread_stack_node(struct task_struct *tsk, int node)
@@ -33,19 +31,11 @@ static int alloc_thread_stack_node(struct task_struct *tsk, int node)
 	return -ENOMEM;
 }
 
-static struct kmem_cache *signal_cachep;
-
-struct kmem_cache *files_cachep;
-
-static struct kmem_cache *vm_area_cachep;
-
-static struct kmem_cache *mm_cachep;
-
 struct vm_area_struct *vm_area_alloc(struct mm_struct *mm)
 {
 	struct vm_area_struct *vma;
 
-	vma = kmem_cache_alloc(vm_area_cachep, GFP_KERNEL);
+	vma = kmalloc(sizeof(*vma), GFP_KERNEL);
 	if (vma)
 		vma_init(vma, mm);
 	return vma;
@@ -53,7 +43,7 @@ struct vm_area_struct *vm_area_alloc(struct mm_struct *mm)
 
 void vm_area_free(struct vm_area_struct *vma)
 {
-	kmem_cache_free(vm_area_cachep, vma);
+	kfree(vma);
 }
 
 static inline int mm_alloc_pgd(struct mm_struct *mm)
@@ -69,22 +59,14 @@ static inline void mm_free_pgd(struct mm_struct *mm)
 	pgd_free(mm, mm->pgd);
 }
 
-#define allocate_mm() (kmem_cache_alloc(mm_cachep, GFP_KERNEL))
-#define free_mm(mm) (kmem_cache_free(mm_cachep, (mm)))
+#define allocate_mm() (kmalloc(sizeof(struct mm_struct), GFP_KERNEL))
+#define free_mm(mm) (kfree(mm))
 
 void __mmdrop(struct mm_struct *mm)
 {
 	BUG_ON(mm == &init_mm);
 	mm_free_pgd(mm);
 	free_mm(mm);
-}
-
-void __init fork_init(void)
-{
-	task_struct_cachep = kmem_cache_create("task_struct",
-					       sizeof(struct task_struct),
-					       L1_CACHE_BYTES,
-					       SLAB_PANIC | SLAB_ACCOUNT, NULL);
 }
 
 void set_task_stack_end_magic(struct task_struct *tsk)
@@ -237,7 +219,7 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct signal_struct *sig;
 
-	sig = kmem_cache_zalloc(signal_cachep, GFP_KERNEL);
+	sig = kzalloc(sizeof(*sig), GFP_KERNEL);
 	tsk->signal = sig;
 	if (!sig)
 		return -ENOMEM;
@@ -330,7 +312,7 @@ bad_fork_cleanup_mm:
 		mmput(p->mm);
 	}
 bad_fork_cleanup_signal:
-	kmem_cache_free(signal_cachep, p->signal);
+	kfree(p->signal);
 bad_fork_cleanup_fs:
 bad_fork_cleanup_semundo:
 bad_fork_cleanup_policy:
@@ -370,25 +352,4 @@ pid_t user_mode_thread(int (*fn)(void *), void *arg, unsigned long flags)
 	};
 
 	return kernel_clone(&args);
-}
-
-void __init proc_caches_init(void)
-{
-	unsigned int mm_size;
-
-	signal_cachep = kmem_cache_create(
-		"signal_cache", sizeof(struct signal_struct), 0,
-		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
-	files_cachep = kmem_cache_create(
-		"files_cache", sizeof(struct files_struct), 0,
-		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT, NULL);
-
-	mm_size = sizeof(struct mm_struct);
-
-	mm_cachep = kmem_cache_create_usercopy(
-		"mm_struct", mm_size, ARCH_MIN_MMSTRUCT_ALIGN,
-		SLAB_HWCACHE_ALIGN | SLAB_PANIC | SLAB_ACCOUNT,
-		offsetof(struct mm_struct, saved_auxv),
-		sizeof_field(struct mm_struct, saved_auxv), NULL);
-	vm_area_cachep = KMEM_CACHE(vm_area_struct, SLAB_PANIC | SLAB_ACCOUNT);
 }

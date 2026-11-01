@@ -55,57 +55,14 @@ void putname(struct filename *name)
 		__putname(name);
 }
 
-static int acl_permission_check(struct user_namespace *mnt_userns,
-				struct inode *inode, int mask)
-{
-	unsigned int mode = inode->i_mode;
-	kuid_t i_uid;
-
-	i_uid = i_uid_into_mnt(mnt_userns, inode);
-	if (likely(uid_eq(current_fsuid(), i_uid))) {
-		mask &= 7;
-		mode >>= 6;
-		return (mask & ~mode) ? -EACCES : 0;
-	}
-
-	mask &= 7;
-
-	if (mask & (mode ^ (mode >> 3)))
-		mode >>= 3;
-
-	return (mask & ~mode) ? -EACCES : 0;
-}
-
 static int generic_permission(struct user_namespace *mnt_userns,
 			      struct inode *inode, int mask)
 {
-	int ret;
-
-	ret = acl_permission_check(mnt_userns, inode, mask);
-	if (ret != -EACCES)
-		return ret;
-
-	if (S_ISDIR(inode->i_mode)) {
-		if (!(mask & MAY_WRITE))
-			if (capable_wrt_inode_uidgid(mnt_userns, inode,
-						     CAP_DAC_READ_SEARCH))
-				return 0;
-		if (capable_wrt_inode_uidgid(mnt_userns, inode,
-					     CAP_DAC_OVERRIDE))
-			return 0;
-		return -EACCES;
-	}
-
-	mask &= MAY_READ | MAY_WRITE | MAY_EXEC;
-	if (mask == MAY_READ)
-		if (capable_wrt_inode_uidgid(mnt_userns, inode,
-					     CAP_DAC_READ_SEARCH))
-			return 0;
+	if (S_ISDIR(inode->i_mode))
+		return 0;
 
 	if (!(mask & MAY_EXEC) || (inode->i_mode & S_IXUGO))
-		if (capable_wrt_inode_uidgid(mnt_userns, inode,
-					     CAP_DAC_OVERRIDE))
-			return 0;
+		return 0;
 
 	return -EACCES;
 }

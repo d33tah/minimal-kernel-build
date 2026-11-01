@@ -820,11 +820,11 @@ async function saveSnapshot() {
 	$("snap_save").disabled = true;
 	$("snap_status").textContent = "Saving...";
 	try {
-		const t0 = performance.now();
+		const t0 = realNow();
 		const raw = await em.save_state();
-		const t1 = performance.now();
+		const t1 = realNow();
 		const data = HAVE_GZIP ? await pipe(raw, new CompressionStream("gzip")) : raw;
-		const t2 = performance.now();
+		const t2 = realNow();
 		snapshots.push({
 			id: ++snapCounter, time: new Date(), kernel: image.name, ram: emuRam,
 			raw: raw.byteLength, data, gzip: HAVE_GZIP,
@@ -954,6 +954,10 @@ async function boot() {
 	const fatal = checkImage(image.hdr, ram()).some(([level]) => level === "error");
 	setStatus("Booting " + image.name + " with " + kib(ram()) + "...");
 	try {
+		// A new machine starts at virtual time 0 (or real time).
+		CLOCK.reset(clockMips() || 10);
+		if (!clockMips())
+			CLOCK.set(false, null);
 		emulator = new V86({
 			memory_size: emuRam,
 			vga_memory_size: 256 * 1024,
@@ -1007,6 +1011,8 @@ async function boot() {
 			$("dbg_status").textContent = "No debugger: " + (wasmPatchError || e);
 		}
 		graphReset(stepper);
+		if (stepper)
+			CLOCK.set(!!clockMips(), stepper);
 		// Default: step BIOS and setup at full stepping speed to the kernel
 		// entry, then continue at prefSpeed (1k/s) and count live. With
 		// "full", count the whole boot in the background, then run the JIT.
@@ -1015,7 +1021,7 @@ async function boot() {
 		counting = !!stepper && (entryPhase || $("count").checked);
 		$("entry_info").textContent = entryPhase ? "Stepping BIOS and setup to the kernel entry..." : "";
 		delete $("entry_info").dataset.steps;
-		countStart = performance.now();
+		countStart = realNow();
 		countMs = 0;
 		setAutoscan();
 		setLive();
@@ -1042,7 +1048,7 @@ const SLICE_MS = 25;            // fast stepping: JS time per slice
 let stepper = null;
 let runState = "off";    // "off", "jit" (v86's own loop), "stepped" (our loop), "paused"
 let counting = false;    // stepping from reset until every milestone is on screen
-let countStart = 0;      // performance.now() when the count began
+let countStart = 0;      // realNow() when the count began
 let countMs = 0;         // stepping time spent counting
 let countNote = "";
 let startPaused = false; // ?paused=1: stop at the reset vector
@@ -1053,7 +1059,10 @@ const SPEED_KEY = "mkb-speed";
 const REF_KEY = "mkb-ref-";
 // Instructions from the entry to "Still alive" when no run on this browser
 // measured it yet (for the ETA only; Linux varies with calibrate_delay).
-const REF_STEPS = { hello: 6150, "minified-linux": 900000 };
+// Measured with the virtual clock at 10, 100 and 1000 instructions per µs
+// (the count depends on it through calibrate_delay); "real": a rough guess.
+const REF_STEPS = { hello: { any: 6150 },
+	"minified-linux": { 10: 653080, 100: 4133184, 1000: 24141260, real: 700000 } };
 let driverTimer = null;
 let driverChannel = null;
 let lastUi = 0;
@@ -1107,10 +1116,12 @@ async function resume() {
 			await emulator.stop();
 		runState = "stepped";
 		stepCredit = 0;
+		CLOCK.set(!!clockMips());
 		scheduleDriver();
 	} else {
 		if (stepper && runState !== "off")
 			stepper.markGap();
+		CLOCK.set(false); // the JIT runs on real time
 		runState = "jit";
 		emulator.run();
 	}
@@ -1147,7 +1158,7 @@ let prevTick = 0;
 function driverTick() {
 	if (runState !== "stepped" || !stepper)
 		return;
-	const now = performance.now();
+	const now = realNow();
 	let reason;
 	const t0 = now;
 	if (entryPhase && runTo < 0) {
@@ -1170,7 +1181,7 @@ function driverTick() {
 	}
 	prevTick = now;
 	if (counting)
-		countMs += performance.now() - t0;
+		countMs += realNow() - t0;
 	if (reason === "addr") {
 		pause("Stopped at " + hex(stepper.nextPhys()) + " (Run to).");
 		return;
@@ -1211,7 +1222,7 @@ function driverTick() {
 // Live view while slow-stepping: grid flashes, asm view follows EIP.
 let lastFrameScan = 0;
 function frameUpdate() {
-	const now = performance.now();
+	const now = realNow();
 	if (now - lastFrameScan >= (emuRam > 4 * 1024 * 1024 ? 250 : 0)) {
 		lastFrameScan = now;
 		scan(false);
@@ -1495,7 +1506,7 @@ function renderCounters() {
 	const alive = stepper.milestones.find((m) => m.text === "Still alive");
 	if (alive && alive.found && alive.found.sinceEntry && image)
 		try {
-			localStorage.setItem(REF_KEY + image.name, alive.found.sinceEntry);
+			localStorage.setItem(REF_KEY + image.name + "-" + (clockMips() || "real"), alive.found.sinceEntry);
 		} catch (e) {
 			// no storage: the built-in estimate stays
 		}
@@ -1515,6 +1526,24 @@ function renderCounters() {
 		countNote;
 }
 
+// Virtual clock rate in instructions per microsecond, or 0 for real time.
+const MIPS_KEY = "mkb-mips";
+const clockMips = () => ($("clock_mips").value === "real" ? 0 : Number($("clock_mips").value));
+
+function renderClock() {
+	const el = $("vclock");
+	if (!stepper) {
+		el.textContent = "";
+		return;
+	}
+	const t = CLOCK.now();
+	el.textContent = (CLOCK.virtual ? "virtual " : "real ") + "time " + (t / 1000).toFixed(4) + " s \u00b7 IRQ0 \u00d7" +
+		num(stepper.irq0) + (stepper.idleMs ? " \u00b7 idle " + (stepper.idleMs / 1000).toFixed(3) + " s" : "");
+	el.dataset.irq0 = stepper.irq0;
+	el.dataset.ms = t;
+	el.dataset.virtual = CLOCK.virtual;
+}
+
 // At the kernel's 32-bit entry (or past it): from here on at the chosen speed.
 function finishEntry() {
 	entryPhase = false;
@@ -1532,12 +1561,13 @@ function eta() {
 		return "";
 	let ref = null, measured = false;
 	try {
-		ref = Number(localStorage.getItem(REF_KEY + image.name)) || null;
+		ref = Number(localStorage.getItem(REF_KEY + image.name + "-" + (clockMips() || "real"))) || null;
 		measured = !!ref;
 	} catch (e) {
 		ref = null;
 	}
-	ref = ref || REF_STEPS[image.name];
+	const known = REF_STEPS[image.name];
+	ref = ref || (known && (known.any || known[clockMips() || "real"]));
 	if (!ref)
 		return "No estimate of how long this kernel needs. ";
 	const left = Math.max(0, ref - (stepper.steps - stepper.sinceEntry));
@@ -1572,6 +1602,7 @@ function renderEnd() {
 
 function updateDebugUi() {
 	renderEnd();
+	renderClock();
 	const st = $("dbg_state");
 	const where = stepper && stepper.curSym >= 0 ? ", in " + stepper.symName[stepper.curSym] : "";
 	st.textContent = { off: "", jit: "running (full speed, JIT)",
@@ -1659,6 +1690,19 @@ function initDebugger() {
 		}
 		if (runState === "stepped" || runState === "jit")
 			resume();
+	});
+	$("clock_mips").addEventListener("change", () => {
+		try {
+			localStorage.setItem(MIPS_KEY, $("clock_mips").value);
+		} catch (e) {
+			// no storage: until reload
+		}
+		if (runState !== "jit") {
+			CLOCK.set(!!clockMips());
+			if (clockMips())
+				CLOCK.mips = clockMips();
+		}
+		renderClock();
 	});
 	$("count").addEventListener("change", () => {
 		if (!$("count").checked && counting) {
@@ -1825,6 +1869,14 @@ async function init() {
 		stored = null;
 	}
 	prefSpeed = [params.get("speed"), stored, "1000"].find((v) => options.includes(v));
+	const clocks = [...$("clock_mips").options].map((o) => o.value);
+	let storedMips = null;
+	try {
+		storedMips = localStorage.getItem(MIPS_KEY);
+	} catch (e) {
+		storedMips = null;
+	}
+	$("clock_mips").value = [params.get("mips"), storedMips, "10"].find((v) => clocks.includes(v));
 	initTips();
 	drawMaps();
 	initDebugger();

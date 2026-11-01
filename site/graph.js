@@ -20,6 +20,42 @@ const G = {
 	stepper: null,
 };
 const COL_W = 170, ROW_H = 24;
+// Interrupt and timer handling: folded into one node by "hide interrupt handling".
+const IRQ_RE = /irq|interrupt|timer|tick|softirq|rcu|sched_clock|apic|8259|jiffies|clockevent|hrtimer|account_|update_process_times|update_wall|do_timer|calc_global_load|irqentry|idtentry|ret_from_intr|entry_INT80|preempt_schedule_irq/i;
+const FOLD = -10; // id of the folded node
+
+function folded(st, id) {
+	return G.fold && id < st.symName.length && IRQ_RE.test(st.symName[id]);
+}
+
+// Nodes and edges as drawn: with folding, interrupt symbols become FOLD.
+function viewGraph(st) {
+	const map = (id) => (folded(st, id) ? FOLD : id);
+	const edges = new Map();
+	for (const [key, e] of st.edges) {
+		const f = map(e.from), t = map(e.to);
+		if (f === t)
+			continue;
+		const k = f + "," + t;
+		const v = edges.get(k) || { from: f, to: t, count: 0, calls: 0, recent: false };
+		v.count += e.count;
+		v.calls += e.calls;
+		edges.set(k, v);
+	}
+	for (const key of st.recent) {
+		const e = st.edges.get(key);
+		const v = e && edges.get(map(e.from) + "," + map(e.to));
+		if (v)
+			v.recent = true;
+	}
+	let foldSteps = 0;
+	if (G.fold)
+		for (const id of st.nodeOrder)
+			if (folded(st, id))
+				foldSteps += st.nodeSteps[id];
+	G.foldSteps = foldSteps;
+	return { map, edges };
+}
 const PALETTE = ["#1f77b4", "#d62728", "#2ca02c", "#9467bd", "#ff7f0e", "#17becf", "#8c564b", "#e377c2", "#bcbd22", "#7f7f7f",
 	"#3949ab", "#00897b"];
 
@@ -47,6 +83,8 @@ function graphLayout() {
 }
 
 function nodeColour(st, id) {
+	if (id === FOLD)
+		return "#e0245e";
 	const n = st.symName.length;
 	if (id >= n)
 		return "#9e9e9e";
@@ -57,7 +95,9 @@ function nodeColour(st, id) {
 	return PALETTE[h % PALETTE.length];
 }
 
-const nodeRadius = (st, id) => 3 + 2.2 * Math.log10(1 + st.nodeSteps[id]);
+const gSteps = (st, id) => (id === FOLD ? G.foldSteps : st.nodeSteps[id]);
+const gName = (st, id) => (id === FOLD ? "(interrupt handling)" : st.nodeName(id));
+const nodeRadius = (st, id) => 3 + 2.2 * Math.log10(1 + gSteps(st, id));
 
 function graphFit() {
 	const c = $("graph_canvas");
@@ -95,14 +135,16 @@ function drawGraph() {
 	const accent = css.getPropertyValue("--accent").trim(), hot = css.getPropertyValue("--changed").trim();
 	const { x: vx, y: vy, scale } = G.view;
 	const sx = (x) => (x - vx) * scale, sy = (y) => (y - vy) * scale;
-	const recent = new Set(st.recent);
+	const vg = viewGraph(st);
+	if (G.fold && !G.pos.has(FOLD))
+		G.pos.set(FOLD, { x: 0, y: -2 * ROW_H, depth: -1 });
 	// Edges: solid when some transition landed on the symbol's first byte
 	// (call-like), dashed when all went into the middle (returns, jumps).
-	for (const [key, e] of st.edges) {
+	for (const e of vg.edges.values()) {
 		const a = G.pos.get(e.from), b = G.pos.get(e.to);
 		if (!a || !b)
 			continue;
-		const isRecent = recent.has(key);
+		const isRecent = e.recent;
 		ctx.strokeStyle = isRecent ? hot : muted;
 		ctx.globalAlpha = isRecent ? 1 : 0.45;
 		ctx.lineWidth = (isRecent ? 1.5 : 0.6) + 0.5 * Math.log2(e.count);
@@ -133,6 +175,10 @@ function drawGraph() {
 	ctx.font = "11px ui-monospace, monospace";
 	ctx.textBaseline = "middle";
 	for (const [id, p] of G.pos) {
+		if (id === FOLD && !G.fold)
+			continue;
+		if (folded(st, id))
+			continue;
 		const x = sx(p.x), y = sy(p.y);
 		if (x < -50 || y < -20 || x > w + 200 || y > h + 20)
 			continue;
@@ -141,7 +187,7 @@ function drawGraph() {
 		ctx.arc(x, y, r, 0, 2 * Math.PI);
 		ctx.fillStyle = nodeColour(st, id);
 		ctx.fill();
-		const cur = id === st.curNode, sel = id === G.selected;
+		const cur = id === vg.map(st.curNode), sel = id === G.selected;
 		if (cur || sel) {
 			ctx.lineWidth = cur ? 3 : 2;
 			ctx.strokeStyle = cur ? hot : fg;
@@ -151,7 +197,7 @@ function drawGraph() {
 		}
 		if (labels || cur || sel) {
 			ctx.fillStyle = fg;
-			ctx.fillText(st.nodeName(id), x + r + 3, y);
+			ctx.fillText(gName(st, id), x + r + 3, y);
 		}
 	}
 }
@@ -197,6 +243,8 @@ function graphNodeAt(px, py) {
 	const { x: vx, y: vy, scale } = G.view;
 	let best = -1, bestD = 18 * 18;
 	for (const [id, p] of G.pos) {
+		if (folded(st, id) || (id === FOLD && !G.fold))
+			continue;
 		const dx = (p.x - vx) * scale - px, dy = (p.y - vy) * scale - py;
 		const d = dx * dx + dy * dy;
 		if (d < bestD) {
@@ -212,16 +260,17 @@ function renderGraphInfo() {
 	el.textContent = "";
 	const st = G.stepper;
 	const id = G.selected;
-	if (!st || id < 0) {
+	if (!st || (id < 0 && id !== FOLD)) {
 		el.textContent = "Tap a symbol for its callers and callees.";
 		return;
 	}
 	const n = st.symName.length;
 	const head = document.createElement("div");
 	const b = document.createElement("b");
-	b.textContent = st.nodeName(id);
-	head.append(b, " " + num(st.nodeSteps[id]) + " instructions inside, first entered at step " + num(st.nodeFirst[id]) + " ");
-	if (id < n) {
+	b.textContent = gName(st, id);
+	head.append(b, " " + num(gSteps(st, id)) + " instructions inside" +
+		(id === FOLD ? "" : ", first entered at step " + num(st.nodeFirst[id])) + " ");
+	if (id >= 0 && id < n) {
 		const open = document.createElement("button");
 		open.type = "button";
 		open.textContent = "Page tab";
@@ -240,7 +289,7 @@ function renderGraphInfo() {
 			const btn = document.createElement("button");
 			btn.type = "button";
 			btn.className = "symlink";
-			btn.textContent = st.nodeName(e[other]) + " \u00d7" + e.count + (e.calls ? "" : " (jump/return)");
+			btn.textContent = gName(st, e[other]) + " \u00d7" + e.count + (e.calls ? "" : " (jump/return)");
 			btn.addEventListener("click", () => { G.selected = e[other]; G.dirty = true; renderGraphInfo(); });
 			d.append(btn, " ");
 		}
@@ -249,7 +298,7 @@ function renderGraphInfo() {
 		el.append(d);
 	};
 	const inc = [], out = [];
-	for (const e of st.edges.values()) {
+	for (const e of viewGraph(st).edges.values()) {
 		if (e.to === id)
 			inc.push(e);
 		if (e.from === id)
@@ -257,7 +306,7 @@ function renderGraphInfo() {
 	}
 	list("from", inc, "from");
 	list("to", out, "to");
-	el.dataset.node = st.nodeName(id);
+	el.dataset.node = gName(st, id);
 	el.dataset.callers = inc.length;
 }
 
@@ -319,7 +368,7 @@ function initGraph() {
 	c.addEventListener("pointerdown", (ev) => {
 		c.setPointerCapture(ev.pointerId);
 		G.pointers.set(ev.pointerId, local(ev));
-		G.press = G.pointers.size === 1 ? { at: local(ev), t: performance.now(), moved: false } : null;
+		G.press = G.pointers.size === 1 ? { at: local(ev), t: realNow(), moved: false } : null;
 	});
 	c.addEventListener("pointermove", (ev) => {
 		if (!G.pointers.has(ev.pointerId))
@@ -368,4 +417,12 @@ function initGraph() {
 			download((image ? image.name : "kernel") + "-symbol-graph.dot", graphDot(), "text/vnd.graphviz");
 	});
 	window.addEventListener("resize", () => { G.dirty = true; });
+	$("graph_fold").addEventListener("change", () => {
+		G.fold = $("graph_fold").checked;
+		if (G.selected >= 0 && folded(G.stepper, G.selected))
+			G.selected = FOLD;
+		G.dirty = true;
+		graphTick();
+		renderGraphInfo();
+	});
 }

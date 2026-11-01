@@ -63,6 +63,9 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   recorded at full JIT speed. After a counted `?speed=full` boot the graph
   has 3 nodes and 2 edges for hello and about 264 nodes and 725 edges for
   the minified Linux (start_kernel entered from i386_start_kernel).
+  "hide interrupt handling" folds the interrupt and timer symbols (names
+  with irq, interrupt, timer, tick, softirq, rcu, apic, 8259, ...) into
+  one node.
 - **Snapshots.** "Save snapshot" calls `emulator.save_state()`, gzips the
   result in the browser with `CompressionStream("gzip")` (kept raw, and the
   page says so, when the browser lacks it) and keeps the last 8 in memory.
@@ -138,29 +141,60 @@ setup at 0x80000).
 What "exact" means here: each count is the number of interpreter calls in
 the run on screen. A `rep` string instruction counts once per v86 entry,
 and v86 runs at most a page of iterations per entry (qemu's trace below
-counts it once). SeaBIOS busy-waits on real time, so the count
-before the kernel differs between runs by a few thousand. The minified
-Linux runs `calibrate_delay()`, which runs `delay_loop` until the timer
-interrupt advances jiffies: how many instructions that takes depends on
-how fast the emulator steps against real time, so the Linux count from
-1 MiB varies between runs (about 0.6 to 1.1 million at full stepping
-speed, 274k when single-stepping from a script); without `delay_loop` and
-`calibrate_delay` it is stable. hello's count is the same every run.
+counts it once).
 
-Measured in headless Chromium (2 MB, `?speed=full` with count on, i.e.
-full stepping speed; ranges over four runs):
+### Virtual time
 
-| kernel | until | from reset | from 1 MiB | unique EIPs kernel / other |
-|---|---|---|---|---|
-| hello | Hello, World! | 1,380,660-1,484,527 | 6,082 | 16 / 7,768-7,770 |
-| hello | Still alive | +68 | 6,150 | 24 / same |
-| minified Linux | Hello, World! | 2,065,933-2,210,066 | 671,562-792,921 | 10,633-10,638 / 8,171 |
-| minified Linux | Still alive | +928 | +928 | 10,723 / 8,171 |
-| minified Linux | exit(0) | +152 | +152 | 10,725 / 8,171 |
-| minified Linux | panic | +52 | +52 | 10,733 / 8,171 |
-| hello | halted | +5 | 6,155 | 26 / same |
+v86 takes all device time (PIT, RTC, ACPI and APIC timers, TSC) from one
+function, `v86.microtick`, which libv86.js sets at load time to
+`performance.now.bind(performance)`. `clock.js`, loaded before libv86.js,
+replaces `performance.now` with its own clock (the page times itself with
+the saved original). While the stepper drives the CPU the clock is
+virtual, like qemu's `-icount`: now = steps / (rate x 1000) ms, with the
+rate set by the **clock** menu (10, 100 or 1000 instructions per
+microsecond, default 10; `?mips=`; remembered). When the CPU halts with
+interrupts on, the stepper moves the clock to the next timer event. A new
+machine starts at virtual time 0, so device setup sees the same
+timestamps every run. At full JIT speed the clock follows real time,
+continuing from the virtual time. "real time" in the menu restores v86's
+wall clock while stepping. The top bar shows the time and how many times
+the PIT raised IRQ0.
+
+Before (real time): the minified Linux unmasks only IRQ0 (PIT, HZ=250),
+so at 1k instructions/s the guest got a timer interrupt every few
+instructions, and `calibrate_delay()` (which loops until jiffies advance)
+made every count depend on the stepping speed: from the entry to "Hello,
+World!" 454,040 and 607,884 in two full-speed runs, 274k single-stepped,
+558k-1.18M in earlier runs; SeaBIOS (which waits on time) varied the
+from-reset count by thousands. After (virtual, 10/us): the same numbers
+at every stepping speed (full background count, 1M/s, 100k/s, 1k/s) and
+on every reload; `test_browser.py` checks this. The count depends on the
+rate through `calibrate_delay()`: from the entry to "Hello, World!"
+652,351 at 10/us, 4,132,455 at 100/us, 24,140,531 at 1000/us. At 1k/s
+the Linux boot takes about 11 minutes at 10/us and 69 minutes at 100/us.
+
+Measured in headless Chromium (2 MB, virtual clock 10/us; identical in
+every run):
+
+| kernel | until | from 1 MiB | unique EIPs kernel / other | from reset | IRQ0 |
+|---|---|---|---|---|---|
+| hello | Hello, World! | 6,082 | 16 / 7,770 | 1,411,832 | |
+| hello | Still alive | 6,150 | 24 / 7,770 | 1,411,900 | |
+| hello | halted | 6,155 | 26 / 7,770 | 1,411,905 | 2 |
+| minified Linux | Hello, World! | 652,351 | 10,392 / 8,171 | 2,059,822 | |
+| minified Linux | Still alive | 653,080 | 10,477 / 8,171 | 2,060,551 | |
+| minified Linux | exit(0) | 653,231 | 10,479 / 8,171 | 2,060,702 | |
+| minified Linux | panic | 653,283 | 10,487 / 8,171 | 2,060,754 | 15 |
+
+(The kernel was rebuilt since the qemu cross-check below: 486 build,
+panic halts.)
 
 ### Cross-check with qemu
+
+The runs below used real time on both sides. The comparable mode to the
+page's virtual clock is qemu's `-icount shift=N` (2^N ns per
+instruction; shift=7 is 7.8 instructions per microsecond, close to the
+page's 10/us), not repeated here.
 
 `qemu-system-i386 -m 2M -kernel bzImage -d exec,nochain -accel
 tcg,one-insn-per-tb=on -D fifo` (QEMU 10.0.13) logs one line per executed
@@ -203,6 +237,12 @@ qemu runs used `timeout 120` and a FIFO, so no trace touched the disk.
     site/gen-symbols.py hello/boot/high/kernel.elf site/kernels/hello/symbols.json hello
     site/gen-kernels.sh
     python3 site/test_browser.py
+
+The tab bar wraps on narrow screens (every tab a 32 px target); the touch
+case checks every tab is inside a 390 px viewport, the last one opens,
+and a touch swipe outside the graph scrolls the page. A determinism case
+boots hello at 1k/s and at full speed and Linux at full speed twice and
+at 1M/s, and checks the counts are identical.
 
 Cases: hello at 2 MB with the default boot (the entry marker, the switch
 to 1k/s, 6,082 instructions from the entry to "Hello, World!", the

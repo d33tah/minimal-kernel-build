@@ -127,6 +127,14 @@ class Stepper {
 		this.end = null;         // { kind: "panic" | "halt", ...snapshot }
 		this.endHit = false;
 		this.lastTimers = 0;
+		this.idleMs = 0;         // virtual time skipped while halted
+		this.irq0 = 0;           // timer interrupts (IRQ0) raised by the PIT
+		const raise = cpu.device_raise_irq;
+		cpu.device_raise_irq = (irq) => {
+			if (irq === 0)
+				this.irq0++;
+			raise(irq);
+		};
 		this.setSymbols([]);
 		this.hookVga();
 	}
@@ -306,21 +314,31 @@ class Stepper {
 		let i32 = new Int32Array(mem.buffer), u8 = new Uint8Array(mem.buffer);
 		const res = this.res >> 2;
 		const seen = this.seen, lo = this.kernelLo, hi = this.kernelHi;
-		const t0 = performance.now();
+		const t0 = realNow();
 		for (let i = 0; i < n; i++) {
 			if (i32.length === 0) { // the buffer was detached by a memory.grow
 				i32 = new Int32Array(mem.buffer);
 				u8 = new Uint8Array(mem.buffer);
 			}
 			if (u8[IN_HLT]) {
-				this.timers();
+				let t = this.timers();
+				// Virtual time: a halted CPU waits for the next timer event,
+				// so let the clock jump there (as qemu -icount does).
+				for (let k = 0; k < 64 && u8[IN_HLT] && typeof CLOCK === "object" && CLOCK.virtual &&
+					(cpu.get_eflags() & 0x200); k++) {
+					CLOCK.advance(Math.max(t, 0.001));
+					this.idleMs += Math.max(t, 0.001);
+					t = this.timers();
+					i32 = new Int32Array(mem.buffer);
+					u8 = new Uint8Array(mem.buffer);
+				}
 				i32 = new Int32Array(mem.buffer);
 				u8 = new Uint8Array(mem.buffer);
 				if (u8[IN_HLT])
 					return "hlt";
 			}
 			if ((this.steps & 1023) === 0) {
-				if (performance.now() - t0 > budgetMs)
+				if (realNow() - t0 > budgetMs)
 					return "time";
 				this.timers();
 			}

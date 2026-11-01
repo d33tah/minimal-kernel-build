@@ -52,6 +52,14 @@
             <option value="1">1/s</option>
           </select>
         </label>
+        <label><span>clock<span class="tip" tabindex="0" role="button" title="Guest time while the page steps the CPU. Virtual (default 10 instructions per microsecond, like a 10 MHz CPU; qemu -icount does the same): time advances with the instruction count, so the timer interrupt (IRQ0, 250 Hz in the minified Linux: one every 40,000 instructions at 10/us) arrives at the same instruction whatever the stepping speed, and the counts are the same every run. The minified Linux's calibrate_delay() runs for a few timer ticks, so its count grows with this rate: about 0.65 million instructions from the entry to Hello at 10/us, 4.1 million at 100/us, 24 million at 1000/us. When the CPU halts the clock jumps to the next timer event. Real: v86's wall clock; at 1k/s the guest then sees a timer interrupt every few instructions. At full JIT speed the clock is always real time. ?mips=10, 100, 1000 or real in the URL; the choice is remembered.">?</span></span>
+          <select id="clock_mips">
+            <option value="10" selected>10/&micro;s</option>
+            <option value="100">100/&micro;s</option>
+            <option value="1000">1000/&micro;s</option>
+            <option value="real">real time</option>
+          </select>
+        </label>
         <label><input type="checkbox" id="count" checked> count<span class="tip" tabindex="0" role="button" title="At full speed: first step the whole boot from the reset vector in the background until both lines are on the screen, counting, then run the JIT. At the other speeds the boot is always counted live.">?</span></label>
         <span id="dbg_state" class="note"></span>
       </div>
@@ -66,6 +74,7 @@
           <tbody></tbody>
         </table>
       </div>
+      <p class="note mono" id="vclock"></p>
       <p class="note mono" id="entry_info"></p>
       <p id="end_banner" class="banner" role="status" hidden></p>
       <p class="note" id="count_info"><span id="count_text"></span> <span class="tip" tabindex="0" role="button" title="Exact for the run shown: each instruction is one call of v86's interpreter. A rep-prefixed string instruction counts once per v86 entry, and v86 runs at most a page of iterations per entry, so a long rep movs counts several times (qemu counts it once). The minified Linux calibrates its delay loop against the timer, so its count from 1 MiB depends on how fast the page steps. SeaBIOS waits on real time, so the part before the kernel differs between runs; the kernel part is stable. See the About tab for the qemu cross-check.">?</span></p>
@@ -134,6 +143,7 @@
     <button id="graph_fit" type="button">Fit</button>
     <button id="graph_json" type="button">JSON</button>
     <button id="graph_dot" type="button">DOT</button>
+    <label><input type="checkbox" id="graph_fold"> hide interrupt handling<span class="tip" tabindex="0" role="button" title="Fold the symbols of interrupt and timer handling (names with irq, interrupt, timer, tick, softirq, rcu, sched_clock, apic, 8259, ...: the paths the PIT's IRQ0 takes) into one node, so the boot's own call graph stands out.">?</span></label>
     <span id="graph_status" class="note"></span>
     <span class="tip" tabindex="0" role="button" title="Every change of symbol the stepper sees (stepping, slow motion, the background count, Run to) becomes an edge from the old symbol to the new one, with a count. Nodes are symbols, sized by the instructions executed inside and coloured by name prefix; grey nodes are BIOS/setup and kernel-range code with no symbol (the relocation stub). Solid edges include a call-like transition (to the first byte of a symbol); dashed ones only went into the middle (returns, jumps). The current symbol has a red ring, the last 10 transitions are red. A node is placed once, when first seen, one column right of the symbol it was entered from. Drag to pan, wheel or pinch to zoom, tap a node for its callers and callees. At full JIT speed nothing is recorded; with speed full and count on, the background count records the whole boot. JSON and DOT download the graph.">?</span>
   </div>
@@ -174,6 +184,7 @@
 
 <div id="tip_pop" class="tip-pop" role="tooltip" hidden></div>
 
+<script src="clock.js"></script>
 <script src="v86/libv86.js"></script>
 <script src="stepper.js"></script>
 <script src="graph.js"></script>

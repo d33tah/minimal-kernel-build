@@ -104,10 +104,17 @@ def page_center(page, p):
     cell = int(page.get_attribute("#pages", "data-cell"))
     width = int(page.eval_on_selector("#pages", "e => e.width"))
     page.locator("#pages").scroll_into_view_if_needed()
-    box = page.locator("#pages").bounding_box()
-    scale = box["width"] / width
-    return (box["x"] + ((p % cols) * cell + cell / 2) * scale,
-            box["y"] + ((p // cols) * cell + cell / 2) * scale)
+    for _ in range(2):
+        box = page.locator("#pages").bounding_box()
+        scale = box["width"] / width
+        x = box["x"] + ((p % cols) * cell + cell / 2) * scale
+        y = box["y"] + ((p // cols) * cell + cell / 2) * scale
+        # The sticky top bar covers the top of the viewport: keep the cell below it.
+        top = page.evaluate("document.querySelector('.top').getBoundingClientRect().bottom")
+        if top + 10 < y < page.viewport_size["height"] - 10:
+            break
+        page.evaluate(f"window.scrollBy(0, {y - top - 80})")
+    return x, y
 
 
 def show_tab(page, name):
@@ -118,6 +125,15 @@ def show_tab(page, name):
 def open_page(page, p):
     """Click page p in the grid; the Page tab must open with its listing."""
     x, y = page_center(page, p)
+    page.mouse.move(x, y)
+    # The sticky top bar can change height between measuring and clicking:
+    # re-measure until the hover line names the page.
+    for _ in range(5):
+        if f"page {p * 4096:#x}," in page.inner_text("#hover_info"):
+            break
+        time.sleep(0.2)
+        x, y = page_center(page, p)
+        page.mouse.move(x, y)
     page.mouse.click(x, y)
     return wait_for(lambda: page.get_attribute("#listing", "data-page") == str(p)
                     and page.get_attribute("#tab_page", "aria-selected") == "true", 5)
@@ -172,9 +188,13 @@ def memory_lab(page, name, has_symbols, problems, shots, tag):
     """Grid, Page tab listing, tabs in the URL, widths, snapshots."""
     r = {}
     kpage = 0x100000 // 4096
-    x, y = page_center(page, kpage)
-    page.mouse.move(x, y)
-    r["hover"] = page.inner_text("#hover_info")
+    for _ in range(5):
+        x, y = page_center(page, kpage)
+        page.mouse.move(x, y)
+        r["hover"] = page.inner_text("#hover_info")
+        if "page 0x100000," in r["hover"]:
+            break
+        time.sleep(0.2)
     if "page 0x100000" not in r["hover"]:
         problems.append("hover line does not name the page: " + r["hover"])
     if has_symbols and "more symbols" not in r["hover"] and "startup_32" not in r["hover"]:
@@ -481,6 +501,13 @@ def graph_check(page, name, problems, shots, tag):
     if target == "start_kernel" and not any(e["to"] == node["id"] and e["from_name"] == "i386_start_kernel" and e["calls"]
                                             for e in data["edges"]):
         problems.append("no call edge i386_start_kernel -> start_kernel")
+    # Folding interrupt handling leaves fewer drawn nodes and a folded node.
+    page.check("#graph_fold")
+    time.sleep(0.3)
+    r["fold_drawn"] = page.evaluate("G.fold && G.pos.has(FOLD)")
+    page.uncheck("#graph_fold")
+    if name != "hello" and not r["fold_drawn"]:
+        problems.append("hide interrupt handling did not fold anything")
     # Tap the node: its callers and callees are listed.
     xy = page.evaluate("""id => { const p = G.pos.get(id), v = G.view, c = document.getElementById('graph_canvas').getBoundingClientRect();
         return [c.left + (p.x - v.x) * v.scale, c.top + (p.y - v.y) * v.scale]; }""", node["id"])
@@ -489,6 +516,35 @@ def graph_check(page, name, problems, shots, tag):
         problems.append(f"tapping the {target} node did not select it: {page.get_attribute('#graph_info', 'data-node')}")
     page.screenshot(path=str(shots / f"graph-{tag}.png"))
     return r
+
+
+def determinism_case(browser, base):
+    """Virtual clock: the same counts at different stepping speeds and on reload."""
+    problems, runs = [], {}
+
+    def run(q, timeout):
+        page = browser.new_page()
+        page.goto(f"{base}/index.html?{q}")
+        wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), timeout, 0.5)
+        c = counters(page)
+        out = {k: (v.get("entry"), v.get("steps")) for k, v in c.items() if k != "now"}
+        out["irq0"] = page.get_attribute("#vclock", "data-irq0")
+        out["virtual"] = page.get_attribute("#vclock", "data-virtual")
+        page.close()
+        return out
+
+    for q, t in (("kernel=hello", 60), ("kernel=hello&speed=full", 60),
+                 ("kernel=minified-linux&speed=full", 120), ("kernel=minified-linux&speed=full", 120),
+                 ("kernel=minified-linux&speed=1000000", 180)):
+        runs.setdefault(q.split("&")[0], []).append((q, run(q, t)))
+    for k, rs in runs.items():
+        first = rs[0][1]
+        if first.get("virtual") != "true":
+            problems.append(f"{rs[0][0]}: clock not virtual")
+        for q, r in rs[1:]:
+            if r != first:
+                problems.append(f"{k}: {rs[0][0]} {first} but {q} {r}")
+    return problems, {k: rs[0][1] for k, rs in runs.items()}
 
 
 def touch_case(browser, base, shots):
@@ -537,13 +593,34 @@ def touch_case(browser, base, shots):
     page.keyboard.press("Escape")
     if page.is_visible("#tip_pop"):
         problems.append("Esc did not close the popover")
+    # Every tab fits on screen (the bar wraps) and is a 32 px target.
+    show_tab(page, "memory")
+    for b in page.locator(".tabbar button").all():
+        box = b.bounding_box()
+        if box["x"] < 0 or box["x"] + box["width"] > 390 + 0.5 or box["height"] < 32:
+            problems.append(f"tab {b.inner_text()!r} at {box}")
+    page.locator(".tabbar button").last.tap()
+    if not page.is_visible("#panel_about"):
+        problems.append("tapping the last tab did not show its panel")
+    # A touch swipe outside the graph scrolls the page.
+    show_tab(page, "memory")
+    page.evaluate("window.scrollTo(0, 0)")
+    cdp = ctx.new_cdp_session(page)
+    cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [{"x": 200, "y": 700}]})
+    for i in range(1, 13):
+        cdp.send("Input.dispatchTouchEvent", {"type": "touchMove", "touchPoints": [{"x": 200, "y": 700 - 400 * i / 12}]})
+        time.sleep(0.016)
+    cdp.send("Input.dispatchTouchEvent", {"type": "touchEnd", "touchPoints": []})
+    time.sleep(0.5)
+    if page.evaluate("window.scrollY") < 100:
+        problems.append(f"a swipe scrolled the page by {page.evaluate('window.scrollY')} px")
     if errors:
         problems.append("page errors: " + "; ".join(errors))
     ctx.close()
     return problems
 
 
-STAMPED = ("style.css", "app.js", "stepper.js", "graph.js", "v86/libv86.js")
+STAMPED = ("style.css", "clock.js", "app.js", "stepper.js", "graph.js", "v86/libv86.js")
 
 
 def stamp(html, v):
@@ -714,6 +791,11 @@ def main():
                 print(json.dumps({"debugger": name, "problems": dp, **dr}))
                 if dp:
                     failed = True
+        if not args.cases and "minified-linux" in entries:
+            dp, dr = determinism_case(browser, base)
+            print(json.dumps({"determinism": dp or "ok", **{k: str(v) for k, v in dr.items()}}))
+            if dp:
+                failed = True
         if not args.cases:
             touch = touch_case(browser, base, shots)
             print(json.dumps({"touch": touch or "ok"}))

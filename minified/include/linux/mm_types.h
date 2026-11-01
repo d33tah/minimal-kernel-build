@@ -123,7 +123,6 @@ typedef __bitwise unsigned int vm_fault_t;
 enum vm_fault_reason {
 	VM_FAULT_OOM = (__force vm_fault_t)0x000001,
 	VM_FAULT_SIGBUS = (__force vm_fault_t)0x000002,
-	VM_FAULT_WRITE = (__force vm_fault_t)0x000008,
 	VM_FAULT_HWPOISON = (__force vm_fault_t)0x000010,
 	VM_FAULT_HWPOISON_LARGE = (__force vm_fault_t)0x000020,
 	VM_FAULT_SIGSEGV = (__force vm_fault_t)0x000040,
@@ -141,7 +140,6 @@ enum fault_flag {
 	FAULT_FLAG_WRITE = 1 << 0,
 	FAULT_FLAG_ALLOW_RETRY = 1 << 2,
 	FAULT_FLAG_TRIED = 1 << 5,
-	FAULT_FLAG_UNSHARE = 1 << 10,
 };
 
 #endif

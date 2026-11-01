@@ -25,8 +25,7 @@ static int follow_pfn_pte(struct vm_area_struct *vma, unsigned long address,
 
 static inline bool can_follow_write_pte(pte_t pte, unsigned int flags)
 {
-	return pte_write(pte) ||
-	       ((flags & FOLL_FORCE) && (flags & FOLL_COW) && pte_dirty(pte));
+	return pte_write(pte);
 }
 
 static struct page *follow_page_pte(struct vm_area_struct *vma,
@@ -109,16 +108,13 @@ static struct page *follow_page_mask(struct vm_area_struct *vma,
 }
 
 static int faultin_page(struct vm_area_struct *vma, unsigned long address,
-			unsigned int *flags, bool unshare)
+			unsigned int *flags)
 {
 	unsigned int fault_flags = 0;
 	vm_fault_t ret;
 
 	if (*flags & FOLL_WRITE)
 		fault_flags |= FAULT_FLAG_WRITE;
-	if (unshare) {
-		fault_flags |= FAULT_FLAG_UNSHARE;
-	}
 
 	ret = handle_mm_fault(vma, address, fault_flags, NULL);
 	if (ret & VM_FAULT_ERROR) {
@@ -131,8 +127,6 @@ static int faultin_page(struct vm_area_struct *vma, unsigned long address,
 
 	/* no FAULT_FLAG_ALLOW_RETRY, so the fault is never retried */
 
-	if ((ret & VM_FAULT_WRITE) && !(vma->vm_flags & VM_WRITE))
-		*flags |= FOLL_COW;
 	return 0;
 }
 
@@ -142,19 +136,10 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
 	int write = (gup_flags & FOLL_WRITE);
 
 	if (write) {
-		if (!(vm_flags & VM_WRITE)) {
-			if (!(gup_flags & FOLL_FORCE))
-				return -EFAULT;
-
-			if (!is_cow_mapping(vm_flags))
-				return -EFAULT;
-		}
+		if (!(vm_flags & VM_WRITE))
+			return -EFAULT;
 	} else if (!(vm_flags & VM_READ)) {
-		if (!(gup_flags & FOLL_FORCE))
-			return -EFAULT;
-
-		if (!(vm_flags & VM_MAYREAD))
-			return -EFAULT;
+		return -EFAULT;
 	}
 
 	return 0;
@@ -193,9 +178,8 @@ long get_user_pages_remote(struct mm_struct *mm, unsigned long start,
 		}
 retry:
 		page = follow_page_mask(vma, start, foll_flags);
-		if (!page || PTR_ERR(page) == -EMLINK) {
-			ret = faultin_page(vma, start, &foll_flags,
-					   PTR_ERR(page) == -EMLINK);
+		if (!page) {
+			ret = faultin_page(vma, start, &foll_flags);
 			if (!ret)
 				goto retry;
 			goto out;

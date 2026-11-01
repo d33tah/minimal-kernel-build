@@ -12,11 +12,7 @@ enum pageflags {
 	PG_slab,
 	PG_reserved,
 	PG_head,
-	PG_mappedtodisk,
 	__NR_PAGEFLAGS,
-
-	PG_anon_exclusive = PG_mappedtodisk,
-
 };
 
 #define PAGEFLAGS_MASK ((1UL << NR_PAGEFLAGS) - 1)
@@ -152,16 +148,6 @@ static __always_inline int PageMappingFlags(struct page *page)
 	return ((unsigned long)page->mapping & PAGE_MAPPING_FLAGS) != 0;
 }
 
-static __always_inline bool folio_test_anon(struct folio *folio)
-{
-	return ((unsigned long)folio->mapping & PAGE_MAPPING_ANON) != 0;
-}
-
-static __always_inline bool PageAnon(struct page *page)
-{
-	return folio_test_anon(page_folio(page));
-}
-
 static inline bool folio_test_uptodate(struct folio *folio)
 {
 	bool ret = test_bit(PG_uptodate, folio_flags(folio, 0));
@@ -246,16 +232,6 @@ static __always_inline void clear_compound_head(struct page *page)
 PAGE_TYPE_OPS(Buddy, buddy)
 
 PAGE_TYPE_OPS(Table, table)
-
-static __always_inline int PageAnonExclusive(struct page *page)
-{
-	return test_bit(PG_anon_exclusive, &PF_ANY(page, 1)->flags);
-}
-
-static __always_inline void SetPageAnonExclusive(struct page *page)
-{
-	set_bit(PG_anon_exclusive, &PF_ANY(page, 1)->flags);
-}
 
 #define PAGE_FLAGS_CHECK_AT_PREP (PAGEFLAGS_MASK & ~__PG_HWPOISON)
 

@@ -72,84 +72,6 @@ static gfp_t __get_fault_gfp_mask(struct vm_area_struct *vma)
 	return GFP_KERNEL;
 }
 
-static inline void wp_page_reuse(struct vm_fault *vmf) __releases(vmf->ptl)
-{
-	struct vm_area_struct *vma = vmf->vma;
-	pte_t entry;
-
-	entry = pte_mkyoung(vmf->orig_pte);
-	entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-	ptep_set_access_flags(vma, vmf->address, vmf->pte, entry, 1);
-	pte_unmap_unlock(vmf->pte, vmf->ptl);
-}
-
-/*
- * Write fault on a present read-only PTE of a private mapping whose page is
- * not an exclusive anonymous page (e.g. a page-cache page mapped by a read
- * fault): copy it into a new anonymous page and map that writable. The caller
- * holds a reference on vmf->page (NULL for a special PTE: zero-fill).
- */
-static vm_fault_t wp_page_copy(struct vm_fault *vmf)
-{
-	struct vm_area_struct *vma = vmf->vma;
-	struct page *old_page = vmf->page;
-	struct page *new_page;
-	pte_t entry;
-
-	if (old_page)
-		new_page =
-			alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, vmf->address);
-	else
-		new_page =
-			alloc_zeroed_user_highpage_movable(vma, vmf->address);
-	if (!new_page) {
-		if (old_page)
-			put_page(old_page);
-		return VM_FAULT_OOM;
-	}
-	if (old_page)
-		copy_user_highpage(new_page, old_page, vmf->address, vma);
-	__SetPageUptodate(new_page);
-
-	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
-				       &vmf->ptl);
-	if (pte_same(*vmf->pte, vmf->orig_pte)) {
-		entry = mk_pte(new_page, vma->vm_page_prot);
-		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-		page_add_new_anon_rmap(new_page, vma, vmf->address);
-		set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
-		flush_tlb_one_user(vmf->address);
-		if (old_page)
-			page_remove_rmap(old_page);
-		/* Drop the old PTE's reference below instead of the new page. */
-		new_page = old_page;
-	}
-	pte_unmap_unlock(vmf->pte, vmf->ptl);
-	if (new_page)
-		put_page(new_page);
-	if (old_page)
-		put_page(old_page);
-	return VM_FAULT_WRITE;
-}
-
-static vm_fault_t do_wp_page(struct vm_fault *vmf) __releases(vmf->ptl)
-{
-	vmf->page = vm_normal_page(vmf->vma, vmf->address, vmf->orig_pte);
-	if (!vmf->page) {
-		pte_unmap_unlock(vmf->pte, vmf->ptl);
-		return wp_page_copy(vmf);
-	}
-
-	if (PageAnon(vmf->page) && PageAnonExclusive(vmf->page)) {
-		wp_page_reuse(vmf);
-		return VM_FAULT_WRITE;
-	}
-
-	get_page(vmf->page);
-	pte_unmap_unlock(vmf->pte, vmf->ptl);
-	return wp_page_copy(vmf);
-}
-
 static vm_fault_t do_anonymous_page(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
@@ -203,21 +125,13 @@ static void do_set_pte(struct vm_fault *vmf, struct page *page,
 		       unsigned long addr)
 {
 	struct vm_area_struct *vma = vmf->vma;
-	bool write = vmf->flags & FAULT_FLAG_WRITE;
 	pte_t entry;
 
 	entry = mk_pte(page, vma->vm_page_prot);
 
 	entry = pte_sw_mkyoung(entry);
 
-	if (write)
-		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-
-	if (write) {
-		page_add_new_anon_rmap(page, vma, addr);
-	} else {
-		page_add_file_rmap(page, vma, false);
-	}
+	page_add_file_rmap(page, vma, false);
 	set_pte_at(vma->vm_mm, addr, vmf->pte, entry);
 }
 
@@ -232,10 +146,7 @@ static vm_fault_t finish_fault(struct vm_fault *vmf)
 	struct page *page;
 	vm_fault_t ret;
 
-	if (vmf->flags & FAULT_FLAG_WRITE)
-		page = vmf->cow_page;
-	else
-		page = vmf->page;
+	page = vmf->page;
 
 	if (pmd_none(*vmf->pmd)) {
 		if (vmf->prealloc_pte)
@@ -272,33 +183,6 @@ static vm_fault_t do_read_fault(struct vm_fault *vmf)
 	return ret;
 }
 
-static vm_fault_t do_cow_fault(struct vm_fault *vmf)
-{
-	struct vm_area_struct *vma = vmf->vma;
-	vm_fault_t ret;
-
-	vmf->cow_page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, vmf->address);
-	if (!vmf->cow_page)
-		return VM_FAULT_OOM;
-
-	ret = __do_fault(vmf);
-	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
-		goto uncharge_out;
-
-	copy_user_highpage(vmf->cow_page, vmf->page, vmf->address, vma);
-	__SetPageUptodate(vmf->cow_page);
-
-	ret |= finish_fault(vmf);
-	unlock_page(vmf->page);
-	put_page(vmf->page);
-	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY)))
-		goto uncharge_out;
-	return ret;
-uncharge_out:
-	put_page(vmf->cow_page);
-	return ret;
-}
-
 static vm_fault_t do_fault(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
@@ -323,7 +207,7 @@ static vm_fault_t do_fault(struct vm_fault *vmf)
 	} else if (!(vmf->flags & FAULT_FLAG_WRITE))
 		ret = do_read_fault(vmf);
 	else
-		ret = do_cow_fault(vmf);
+		ret = VM_FAULT_SIGBUS;
 
 	if (vmf->prealloc_pte) {
 		pte_free(vm_mm, vmf->prealloc_pte);
@@ -351,11 +235,10 @@ static vm_fault_t handle_pte_fault(struct vm_fault *vmf)
 
 	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
 	spin_lock(vmf->ptl);
-	if ((vmf->flags & (FAULT_FLAG_WRITE | FAULT_FLAG_UNSHARE)) &&
-	    !pte_write(vmf->orig_pte))
-		return do_wp_page(vmf);
-
 	pte_unmap_unlock(vmf->pte, vmf->ptl);
+	/* No copy-on-write: a write to a read-only PTE is a broken invariant. */
+	if ((vmf->flags & FAULT_FLAG_WRITE) && !pte_write(vmf->orig_pte))
+		return VM_FAULT_SIGBUS;
 	return 0;
 }
 

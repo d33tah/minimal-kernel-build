@@ -4,7 +4,7 @@
  * No reverse mapping: nothing in this kernel walks from a page back to the
  * page tables that map it (no reclaim, migration or truncation of mapped
  * pages), so there is no anon_vma and no i_mmap tree. A new anonymous page
- * only records that it is anonymous, exclusive to its mm, and its mapcount.
+ * only records that it is anonymous and its mapcount.
  */
 void page_add_new_anon_rmap(struct page *page, struct vm_area_struct *vma,
 			    unsigned long address)
@@ -19,7 +19,6 @@ void page_add_new_anon_rmap(struct page *page, struct vm_area_struct *vma,
 	}
 	WRITE_ONCE(page->mapping, (struct address_space *)PAGE_MAPPING_ANON);
 	page->index = linear_page_index(vma, address);
-	SetPageAnonExclusive(page);
 }
 
 void page_add_file_rmap(struct page *page, struct vm_area_struct *vma,
@@ -28,7 +27,7 @@ void page_add_file_rmap(struct page *page, struct vm_area_struct *vma,
 	atomic_inc(&page->_mapcount);
 }
 
-/* The page lost one of its PTEs (munmap, COW replacement). */
+/* The page lost one of its PTEs (munmap). */
 void page_remove_rmap(struct page *page)
 {
 	atomic_dec(&page->_mapcount);

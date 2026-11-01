@@ -161,7 +161,7 @@ struct vm_fault {
 	union {
 		pte_t orig_pte;
 	};
-	struct page *cow_page, *page;
+	struct page *page;
 	pte_t *pte;
 	spinlock_t *ptl;
 	pgtable_t prealloc_pte;
@@ -252,13 +252,6 @@ static inline unsigned long page_size(struct page *page)
 	return PAGE_SIZE << compound_order(page);
 }
 
-static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
-{
-	if (likely(vma->vm_flags & VM_WRITE))
-		pte = pte_mkwrite(pte);
-	return pte;
-}
-
 #define SECTIONS_PGOFF ((sizeof(unsigned long) * 8) - SECTIONS_WIDTH)
 #define NODES_PGOFF (SECTIONS_PGOFF - NODES_WIDTH)
 #define ZONES_PGOFF (NODES_PGOFF - ZONES_WIDTH)
@@ -295,11 +288,6 @@ static inline void put_page(struct page *page)
 	struct folio *folio = page_folio(page);
 
 	folio_put(folio);
-}
-
-static inline bool is_cow_mapping(vm_flags_t flags)
-{
-	return (flags & (VM_SHARED | VM_MAYWRITE)) == VM_MAYWRITE;
 }
 
 static inline int page_to_nid(const struct page *page)
@@ -483,9 +471,7 @@ struct vm_area_struct *find_extend_vma(struct mm_struct *, unsigned long addr);
 #define FOLL_WRITE 0x01
 #define FOLL_TOUCH 0x02
 #define FOLL_GET 0x04
-#define FOLL_FORCE 0x10
 #define FOLL_REMOTE 0x2000
-#define FOLL_COW 0x4000
 
 static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags)
 {

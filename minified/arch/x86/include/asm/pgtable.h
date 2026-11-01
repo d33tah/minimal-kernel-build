@@ -18,11 +18,6 @@ extern unsigned long
 #define pte_val(x) native_pte_val(x)
 #define __pte(x) native_make_pte(x)
 
-static inline int pte_dirty(pte_t pte)
-{
-	return pte_flags(pte) & _PAGE_DIRTY;
-}
-
 static inline int pte_write(pte_t pte)
 {
 	return pte_flags(pte) & _PAGE_RW;
@@ -164,10 +159,6 @@ static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 }
 
 struct vm_area_struct;
-
-extern int ptep_set_access_flags(struct vm_area_struct *vma,
-				 unsigned long address, pte_t *ptep,
-				 pte_t entry, int dirty);
 
 static inline void clone_pgd_range(pgd_t *dst, pgd_t *src, int count)
 {

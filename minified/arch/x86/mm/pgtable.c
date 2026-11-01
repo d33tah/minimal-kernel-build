@@ -42,17 +42,6 @@ void pgd_free(struct mm_struct *mm, pgd_t *pgd)
 	free_pages((unsigned long)pgd, PGD_ALLOCATION_ORDER);
 }
 
-int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
-			  pte_t *ptep, pte_t entry, int dirty)
-{
-	int changed = !pte_same(*ptep, entry);
-
-	if (changed && dirty)
-		set_pte(ptep, entry);
-
-	return changed;
-}
-
 void native_set_fixmap(unsigned idx, phys_addr_t phys, pgprot_t flags)
 {
 	unsigned long address = __fix_to_virt(idx);

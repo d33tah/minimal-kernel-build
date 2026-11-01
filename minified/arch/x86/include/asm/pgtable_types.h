@@ -128,65 +128,11 @@ static inline pgdval_t native_pgd_val(pgd_t pgd)
 	return pgd.pgd & PGD_ALLOWED_BITS;
 }
 
-#define __PAGETABLE_P4D_FOLDED 1
+#include <asm-generic/pgtable-nop4d.h>
 
-typedef struct {
-	pgd_t pgd;
-} p4d_t;
+#include <asm-generic/pgtable-nopud.h>
 
-#define P4D_SHIFT PGDIR_SHIFT
-
-static inline int pgd_none(pgd_t pgd)
-{
-	return 0;
-}
-static inline int pgd_bad(pgd_t pgd)
-{
-	return 0;
-}
-
-static inline p4d_t *p4d_offset(pgd_t *pgd, unsigned long address)
-{
-	return (p4d_t *)pgd;
-}
-
-#define p4d_val(x) (pgd_val((x).pgd))
-#define __p4d(x) ((p4d_t){ __pgd(x) })
-
-#define __PAGETABLE_PUD_FOLDED 1
-
-typedef struct {
-	p4d_t p4d;
-} pud_t;
-
-#define PUD_SHIFT P4D_SHIFT
-
-static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
-{
-	return (pud_t *)p4d;
-}
-
-#define pud_val(x) (p4d_val((x).p4d))
-#define __pud(x) ((pud_t){ __p4d(x) })
-
-#define __PAGETABLE_PMD_FOLDED 1
-
-typedef struct {
-	pud_t pud;
-} pmd_t;
-
-#define PMD_SHIFT PUD_SHIFT
-#define PTRS_PER_PMD 1
-#define PMD_SIZE (1UL << PMD_SHIFT)
-#define PMD_MASK (~(PMD_SIZE - 1))
-
-static inline pmd_t *pmd_offset(pud_t *pud, unsigned long address)
-{
-	return (pmd_t *)pud;
-}
-
-#define pmd_val(x) (pud_val((x).pud))
-#define __pmd(x) ((pmd_t){ __pud(x) })
+#include <asm-generic/pgtable-nopmd.h>
 
 static inline pmdval_t native_pmd_val(pmd_t pmd)
 {

@@ -71,7 +71,7 @@ jobs:
         # Cache busting: Pages serves with max-age=600, and a browser that
         # keeps an older app.js next to a newer index.html breaks.
         v=$(echo "$GITHUB_SHA" | cut -c1-12)
-        sed -i -E "s/(href|src)=\"(style\.css|app\.js|v86\/libv86\.js)\"/\1=\"\2?v=$v\"/g" site/index.html
+        sed -i -E "s/(href|src)=\"(style\.css|app\.js|stepper\.js|v86\/libv86\.js)\"/\1=\"\2?v=$v\"/g" site/index.html
         grep -E "\?v=$v" site/index.html
 
     - name: Install Playwright and Chromium
@@ -80,7 +80,7 @@ jobs:
         "$RUNNER_TEMP/venv/bin/pip" install playwright
         "$RUNNER_TEMP/venv/bin/playwright" install --with-deps chromium
 
-    - name: Browser test (both kernels, memory lab, snapshots)
+    - name: Browser test (both kernels, counters, debugger, tabs, snapshots, touch, stale cache)
       run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py'
 
     - uses: actions/upload-artifact@v4

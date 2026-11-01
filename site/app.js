@@ -35,7 +35,6 @@ let emuRam = 0;          // RAM size the running emulator was started with
 let scanTimer = null;
 let symbols = null;      // symbols.json of the current kernel, or null
 let disasm = null;       // disasm.json of the current kernel, or null
-let view = "hex";        // inspector view: "hex" or "asm"
 let focusClass = null;   // page class picked from a legend or bar: highlight those pages
 let scanNow = null;      // Uint8Array copy of guest RAM from the latest scan
 let scanPrev = null;     // ... and from the scan before it
@@ -458,17 +457,13 @@ function showHover(p) {
 	const syms = symbolsInPage(p);
 	let text = "page " + hex(p * PAGE) + ", " + pageLabel(p);
 	if (usedPages && usedPages.length === grid.pages)
-		text += usedPages[p] ? ", non-zero" : ", all zero";
-	if (syms.length) {
-		const names = syms.slice(0, 6).map((s) => s.name + " " + symRange(s)).join(", ");
-		text += ": " + names + (syms.length > 6 ? " and " + (syms.length - 6) + " more" : "");
-	} else if (symbols) {
-		text += ": no symbols";
-	}
+		text += usedPages[p] ? ", data" : ", all zero";
+	if (syms.length)
+		text += ": " + syms[0].name + (syms.length > 1 ? " and " + (syms.length - 1) + " more symbols" : "");
 	el.textContent = text;
 }
 
-// ---- page inspector -------------------------------------------------------
+// ---- page listing ---------------------------------------------------------
 
 function readPage(p) {
 	return emulator.read_memory(p * PAGE, PAGE).slice();
@@ -476,14 +471,12 @@ function readPage(p) {
 
 const asciiOf = (b) => (b >= 0x20 && b < 0x7f ? String.fromCharCode(b) : ".");
 const esc = (c) => (c === "<" ? "&lt;" : c === ">" ? "&gt;" : c === "&" ? "&amp;" : c);
+const escHtml = (t) => t.replace(/[<>&"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" })[c]);
 
-const narrow = () => window.matchMedia("(max-width: 640px)").matches;
-
-// Characters of the inspector's monospace font that fit in one line.
+// Characters of the listing's monospace font that fit in one line.
 let charWidth = 0, charFont = "";
-function lineChars() {
-	const dump = $("hexdump");
-	const cs = getComputedStyle(dump);
+function lineChars(el) {
+	const cs = getComputedStyle(el);
 	const font = cs.fontSize + " " + cs.fontFamily;
 	if (!charWidth || charFont !== font) {
 		const ctx = document.createElement("canvas").getContext("2d");
@@ -491,177 +484,182 @@ function lineChars() {
 		charFont = font;
 		charWidth = ctx.measureText("0123456789abcdef").width / 16 || 7;
 	}
-	const w = dump.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+	const w = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
 	return Math.max(20, Math.floor(w / charWidth) - 1);
 }
 
-// Bytes per hex dump row: the most of 16, 8, 4 whose line fits.
-function hexLayout() {
-	const chars = lineChars();
-	for (const per of [16, 8, 4]) {
-		const addr = per === 16 ? 8 : 6;
-		const len = addr + 1 + per * 3 - 1 + (per === 16 ? 1 : 0) + 2 + per + 1;
-		if (len <= chars || per === 4)
-			return { per, addr, spare: chars - len };
-	}
+// Bytes per hex row: the most of 16, 8, 4 whose row fits.
+function hexPer(chars) {
+	for (const per of [16, 8, 4])
+		if (8 + 1 + per * 3 + (per === 16 ? 1 : 0) + 2 + per + 1 <= chars)
+			return per;
+	return 4;
 }
 
-const esc2 = (t) => t.replace(/[<>&"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" })[c]);
+// Index of the first instruction at or after physical address a.
+function insnIndex(a) {
+	const ins = disasm.insns;
+	let lo = 0, hi = ins.length;
+	while (lo < hi) { const m = (lo + hi) >> 1; if (ins[m][0] < a) lo = m + 1; else hi = m; }
+	return lo;
+}
 
-// Hex dump of one page in the style of hexdump -C: runs of identical rows
-// collapse into "*". Bytes that differ from `base` (if given) are marked and
-// such rows never collapse; byte ranges of symbols are tinted, alternating,
-// and the symbols that start in a row are named at its end.
-function renderDump(p, bytes, base, how) {
-	const lines = [];
-	const { per, addr, spare } = hexLayout();
-	const syms = symbolsInPage(p);
-	const sized = syms.filter((s) => s.size > 0);
-	const tint = new Int8Array(PAGE).fill(-1);
-	sized.forEach((s, k) => {
-		const a = Math.max(s.paddr, p * PAGE) - p * PAGE, b = Math.min(s.paddr + s.size, p * PAGE + PAGE) - p * PAGE;
-		tint.fill(k % 2, a, b);
-	});
-	let nonzero = 0, changed = 0, collapsed = false, prevRow = null;
-	for (let row = 0; row < PAGE; row += per) {
-		const lo = p * PAGE + row;
-		const starts = syms.filter((s) => s.paddr >= lo && s.paddr < lo + per);
-		let hx = "", asc = "", anyDiff = false, open = -1;
-		const cur = bytes.subarray(row, row + per);
-		for (let i = 0; i < per; i++) {
-			const b = bytes[row + i];
-			if (b)
-				nonzero++;
-			const diff = base && base[row + i] !== b;
-			if (diff) {
-				changed++;
-				anyDiff = true;
-			}
-			const t = tint[row + i];
-			const sep = i === 8 && per === 16 ? "  " : i ? " " : "";
-			if (t !== open) {
-				if (open >= 0) { hx += "</span>"; asc += "</span>"; }
-				hx += sep;
-				if (t >= 0) { hx += '<span class="sym' + t + '">'; asc += '<span class="sym' + t + '">'; }
-				open = t;
-			} else {
-				hx += sep;
-			}
-			const h = b.toString(16).padStart(2, "0");
-			const a = esc(asciiOf(b));
-			hx += diff ? "<mark>" + h + "</mark>" : h;
-			asc += diff ? "<mark>" + a + "</mark>" : a;
+// One listing of page p in address order: instructions (disasm.json) as
+// "addr bytes insn symbol+off", everything else as hexdump -C rows, symbol
+// starts as "name:" headers. base: bytes from the last scan (changed bytes
+// are marked); cur: physical address of the next instruction, or -1.
+function listPage(p, bytes, base, cur, chars) {
+	const lo = p * PAGE, hi = lo + PAGE;
+	const per = hexPer(chars);
+	const wide = chars >= 100;
+	const syms = symbolsInPage(p).filter((s) => s.paddr >= lo);
+	const sized = symbolsInPage(p).filter((s) => s.size > 0);
+	const insns = new Map();
+	if (disasm)
+		for (let i = insnIndex(lo); i < disasm.insns.length && disasm.insns[i][0] < hi; i++)
+			insns.set(disasm.insns[i][0], disasm.insns[i]);
+	const out = [];
+	let si = 0, nIns = 0, nBad = 0, nRows = 0, nonzero = 0, changed = 0, curLine = -1;
+	let prevRow = null, starred = false;
+	const mark = (off, text) => (base && base[off] !== bytes[off] ? "<mark>" + text + "</mark>" : text);
+	for (let off = 0; off < PAGE; off++)
+		if (bytes[off]) nonzero++;
+	if (base)
+		for (let off = 0; off < PAGE; off++)
+			if (base[off] !== bytes[off]) changed++;
+	let a = lo;
+	while (a < hi) {
+		while (si < syms.length && syms[si].paddr <= a) {
+			const s = syms[si++];
+			if (s.paddr === a || !insns.has(s.paddr))
+				out.push('<span class="lbl" data-sym="' + escHtml(s.name) + '" data-addr="' + s.paddr + '">' +
+					escHtml(s.name) + ":" + (s.size ? ' <span class="dim">' + s.size + " bytes, " + s.section + "</span>" : "") + "</span>");
+			prevRow = null;
 		}
-		if (open >= 0) { hx += "</span>"; asc += "</span>"; }
-		const same = prevRow && !anyDiff && !starts.length && cur.every((v, i) => v === prevRow[i]);
-		prevRow = cur;
-		if (same) {
-			if (!collapsed)
-				lines.push("*");
-			collapsed = true;
+		const nextSym = si < syms.length ? syms[si].paddr : hi;
+		const ins = insns.get(a);
+		if (ins) {
+			const [pa, raw, text] = ins;
+			const n = raw.length / 2;
+			let ok = true, rawHtml = "";
+			for (let k = 0; k < n && pa + k < hi; k++) {
+				const want = parseInt(raw.substr(k * 2, 2), 16);
+				if (bytes[pa - lo + k] !== want)
+					ok = false;
+				if (k < 7)
+					rawHtml += mark(pa - lo + k, bytes[pa - lo + k].toString(16).padStart(2, "0"));
+			}
+			rawHtml += n > 7 ? "…" : "  ".repeat(7 - n) + " ";
+			const s = symbolAt(sized, pa);
+			const where = s ? s.name + "+0x" + (pa - s.paddr).toString(16) : "";
+			let cls = ok ? "ins" : "ins bad";
+			if (pa === cur) {
+				cls += " cur";
+				curLine = out.length;
+			}
+			out.push('<span class="' + cls + '" data-addr="' + pa + '">' + pa.toString(16).padStart(8, "0") +
+				" " + rawHtml + " " + text.replace(/[<>&]/g, esc) +
+				(wide && where ? ' <span class="dim">' + escHtml(where) + "</span>" : "") + "</span>");
+			nIns++;
+			if (!ok)
+				nBad++;
+			a += Math.max(1, n);
+			prevRow = null;
 			continue;
 		}
-		collapsed = false;
-		let line = lo.toString(16).padStart(addr, "0") + " " + hx + " |" + asc + "|";
-		if (starts.length) {
-			const all = starts.map((s) => s.name).join(" <");
-			const room = Math.max(4, spare - 2);
-			const shown = all.length > room ? all.slice(0, room - 1) + "…" : all;
-			line += ' <span class="sname" title="' + esc2(starts.map((s) => s.name + " " + symRange(s)).join(", ")) +
-				'">&lt;' + esc2(shown) + "</span>";
+		// Hex row up to the row boundary, the next instruction or symbol.
+		let end = Math.min(hi, (Math.floor((a - lo) / per) + 1) * per + lo, nextSym);
+		for (let b = a + 1; b < end; b++)
+			if (insns.has(b)) { end = b; break; }
+		const full = end - a === per && (a - lo) % per === 0;
+		const row = bytes.subarray(a - lo, end - lo);
+		const dirty = base && row.some((v, i) => base[a - lo + i] !== v);
+		const hasCur = cur >= a && cur < end;
+		if (full && !dirty && !hasCur && prevRow && row.every((v, i) => v === prevRow[i])) {
+			if (!starred)
+				out.push("*");
+			starred = true;
+			a = end;
+			continue;
 		}
-		lines.push(line);
+		starred = false;
+		prevRow = full ? row : null;
+		const pad = (a - lo) % per;
+		let hx = "", asc = "";
+		for (let i = 0; i < per; i++) {
+			const sep = i === 8 && per === 16 ? "  " : i ? " " : "";
+			const b = a - pad + i;
+			if (b < a || b >= end) {
+				hx += sep + "  ";
+				asc += " ";
+				continue;
+			}
+			const v = bytes[b - lo];
+			hx += sep + mark(b - lo, v.toString(16).padStart(2, "0"));
+			asc += mark(b - lo, esc(asciiOf(v)));
+		}
+		let cls = "hex";
+		if (hasCur) {
+			cls += " cur";
+			curLine = out.length;
+		}
+		out.push('<span class="' + cls + '" data-addr="' + a + '">' + (a - pad).toString(16).padStart(8, "0") +
+			" " + hx + " |" + asc + "|</span>");
+		nRows++;
+		a = end;
 	}
-	const dump = $("hexdump");
-	dump.classList.remove("asm");
-	dump.innerHTML = lines.join("\n");
-	dump.dataset.page = p;
-	dump.dataset.view = "hex";
-	dump.dataset.per = per;
-	dump.dataset.nonzero = nonzero;
-	dump.dataset.changed = changed;
-	dump.dataset.reads = Number(dump.dataset.reads || 0) + 1;
-	$("dump_info").textContent = nonzero + " non-zero bytes" +
-		(base ? ", " + changed + " changed " + how : "") +
-		", read " + new Date().toLocaleTimeString("en-GB");
+	return { html: out.join("\n"), nIns, nBad, nRows, nonzero, changed, curLine };
 }
 
-// Instructions whose first byte lies in page p, from disasm.json (llvm-objdump
-// of the kernel ELF at build time). Bytes in guest memory that differ from
-// what the linker produced are marked (not loaded yet, overwritten, freed).
-function renderAsm(p, bytes) {
-	const dump = $("hexdump");
-	dump.classList.add("asm");
-	dump.dataset.page = p;
-	dump.dataset.view = "asm";
-	if (!disasm) {
-		dump.textContent = "No disasm.json for this kernel.";
-		dump.dataset.insns = 0;
-		$("dump_info").textContent = "";
+function renderSymbolIndex(p) {
+	const el = $("symbol_index");
+	el.textContent = "";
+	const syms = symbolsInPage(p);
+	el.dataset.count = syms.length;
+	if (!symbols) {
+		el.textContent = "No symbols.json for this kernel.";
 		return;
 	}
-	const lo = p * PAGE, hi = lo + PAGE;
-	const ins = disasm.insns;
-	let a = 0, b = ins.length;
-	while (a < b) { const m = (a + b) >> 1; if (ins[m][0] < lo) a = m + 1; else b = m; }
-	const labels = new Map(disasm.labels.filter(([pa]) => pa >= lo && pa < hi));
-	const sized = symbolsInPage(p).filter((s) => s.size > 0);
-	const where = (pa) => {
-		const s = symbolAt(sized, pa);
-		return s ? s.name + "+0x" + (pa - s.paddr).toString(16) : "";
-	};
-	let symW = 0;
-	for (let i = a; i < ins.length && ins[i][0] < hi; i++)
-		symW = Math.max(symW, where(ins[i][0]).length);
-	symW = Math.min(symW, 28);
-	// Columns that fit next to ~40 characters of instruction text; the text
-	// itself wraps (pre-wrap), so there is never a horizontal scroll bar.
-	const chars = lineChars();
-	const showSym = symW > 0 && !narrow() && chars >= 9 + symW + 1 + 40;
-	const showRaw = chars >= 9 + (showSym ? symW + 1 : 0) + 17 + 40;
-	const out = [];
-	let n = 0, bad = 0;
-	for (let i = a; i < ins.length && ins[i][0] < hi; i++) {
-		const [pa, raw, text] = ins[i];
-		if (labels.has(pa))
-			out.push('<span class="lbl">' + labels.get(pa) + ":</span>");
-		let ok = true;
-		for (let k = 0; k < raw.length / 2 && pa + k < hi; k++)
-			if (bytes[pa - lo + k] !== parseInt(raw.substr(k * 2, 2), 16))
-				ok = false;
-		n++;
-		if (!ok)
-			bad++;
-		let w = showSym ? where(pa) : "";
-		if (w.length > symW)
-			w = w.slice(0, symW - 1) + "…";
-		const line = pa.toString(16).padStart(8, "0") +
-			(showSym ? ' <span class="off">' + esc2(w.padEnd(symW, " ")) + "</span>" : "") +
-			(showRaw ? ' <span class="raw">' + raw.padEnd(16, " ") + "</span>" : "") +
-			" " + text.replace(/[<>&]/g, esc);
-		out.push(ok ? line : '<span class="bad">' + line + "</span>");
+	if (!syms.length) {
+		el.textContent = "No symbols in this page.";
+		return;
 	}
-	dump.innerHTML = out.length ? out.join("\n") : "No kernel instructions in this page.";
-	dump.dataset.insns = n;
-	dump.dataset.reads = Number(dump.dataset.reads || 0) + 1;
-	$("dump_info").textContent = n + " instructions" + (bad ? ", " + bad + " differ from the build" : "") +
-		", read " + new Date().toLocaleTimeString("en-GB");
+	for (const s of syms) {
+		const b = document.createElement("button");
+		b.type = "button";
+		b.textContent = s.name;
+		b.title = symRange(s) + (s.size ? ", " + s.size + " bytes" : "") + ", " + s.section +
+			" (" + s.type + "), virtual " + hex(s.vaddr) + (s.paddr < p * PAGE ? ", starts in an earlier page" : "");
+		b.addEventListener("click", () => {
+			const target = $("listing").querySelector('[data-addr="' + Math.max(s.paddr, p * PAGE) + '"]');
+			if (target)
+				scrollListingTo(target);
+		});
+		el.append(b);
+	}
 }
 
-function renderPageSymbols(p) {
-	const tbody = $("page_symbols").tBodies[0];
-	tbody.textContent = "";
-	const syms = symbolsInPage(p);
-	$("page_symbols").dataset.count = syms.length;
-	$("page_symbols").hidden = syms.length === 0;
-	$("symbols_note").textContent = !symbols ? "No symbols.json for this kernel: no symbol names." :
-		syms.length ? syms.length + " symbol" + (syms.length > 1 ? "s" : "") + " in this page" :
-		"No symbols in this page.";
-	for (const s of syms) {
-		const tr = tbody.insertRow();
-		for (const v of [s.name, hex(s.vaddr), symRange(s), String(s.size), s.section + " (" + s.type + ")"])
-			tr.insertCell().textContent = v;
+function scrollListingTo(line) {
+	const box = $("listing");
+	box.scrollTop = line.offsetTop - box.offsetTop - box.clientHeight / 3;
+}
+
+// Draw the selected page; base: bytes of the last scan (changes are marked).
+function renderPage(p, bytes, base, how) {
+	const box = $("listing");
+	const cur = currentPhys();
+	const r = listPage(p, bytes, base, cur >= p * PAGE && cur < p * PAGE + PAGE ? cur : -1, lineChars(box));
+	box.innerHTML = r.html;
+	Object.assign(box.dataset, { page: p, insns: r.nIns, hexrows: r.nRows, nonzero: r.nonzero,
+		changed: r.changed, reads: Number(box.dataset.reads || 0) + 1 });
+	if (r.curLine >= 0) {
+		const line = box.querySelector(".cur");
+		if (line)
+			scrollListingTo(line);
 	}
+	$("dump_info").textContent = r.nIns + " instructions" + (r.nBad ? " (" + r.nBad + " differ from the build)" : "") +
+		", " + r.nonzero + " non-zero bytes" + (base ? ", " + r.changed + " changed " + how : "") +
+		", read " + new Date().toLocaleTimeString("en-GB");
 }
 
 function inspect() {
@@ -674,34 +672,27 @@ function inspect() {
 	}
 	$("page_title").textContent = "Page " + hex(p * PAGE) + "–" + hex(p * PAGE + PAGE - 1) +
 		" (" + pageLabel(p) + ")";
-	renderPageSymbols(p);
+	if ($("symbol_index").dataset.page !== String(p) || $("symbol_index").dataset.kernel !== (image && image.name)) {
+		renderSymbolIndex(p);
+		$("symbol_index").dataset.page = p;
+		$("symbol_index").dataset.kernel = image && image.name;
+	}
 	if (!emulator) {
-		$("hexdump").textContent = "Boot a kernel to read this page.";
+		$("listing").textContent = "Boot a kernel to read this page.";
 		return;
 	}
-	renderView(p, readPage(p), scanNow ? scanNow.subarray(p * PAGE, p * PAGE + PAGE) : null, "since the last scan");
+	renderPage(p, readPage(p), scanNow ? scanNow.subarray(p * PAGE, p * PAGE + PAGE) : null, "since the last scan");
 }
 
-// The one place the inspector is drawn: hex or asm, whichever is chosen.
-function renderView(p, bytes, base, how) {
-	if (view === "asm")
-		renderAsm(p, bytes);
-	else
-		renderDump(p, bytes, base, how);
-}
-
-function setView(v) {
-	view = v;
-	$("view_hex").setAttribute("aria-pressed", v === "hex");
-	$("view_asm").setAttribute("aria-pressed", v === "asm");
-	inspect();
-}
-
-function selectPage(p) {
+function selectPage(p, show = true) {
 	selectedPage = p;
 	drawGrid();
 	inspect();
 	setLive();
+	if (show)
+		showTab("page");
+	else
+		writeHash();
 }
 
 function setLive() {
@@ -709,14 +700,52 @@ function setLive() {
 	liveTimer = null;
 	if ($("live").checked && emulator && selectedPage >= 0)
 		liveTimer = setInterval(() => {
-			if (emulator && emulator.is_running())
+			if (emulator && (runState === "jit" || runState === "stepped"))
 				inspect();
 		}, LIVE_MS);
 }
 
+// ---- tabs -----------------------------------------------------------------
+
+const TABS = ["memory", "page", "debugger", "snapshots", "about"];
+let tab = "memory";
+
+// Hash: #memory, #page/0x100000, #debugger, ...
+function writeHash() {
+	const h = "#" + tab + (tab === "page" && selectedPage >= 0 ? "/" + hex(selectedPage * PAGE) : "");
+	if (location.hash !== h)
+		history.replaceState(null, "", h);
+}
+
+function showTab(name) {
+	tab = TABS.includes(name) ? name : "memory";
+	for (const t of TABS) {
+		$("panel_" + t).hidden = t !== tab;
+		$("tab_" + t).setAttribute("aria-selected", t === tab);
+	}
+	writeHash();
+	if (tab === "page")
+		inspect();
+	if (tab === "memory")
+		drawGrid();
+	if (tab === "debugger")
+		renderContext();
+}
+
+function readHash() {
+	const [name, addr] = location.hash.slice(1).split("/");
+	if (addr) {
+		const a = parseInt(addr, 16);
+		if (Number.isFinite(a))
+			selectedPage = Math.floor(a / PAGE);
+	}
+	showTab(name || "memory");
+}
+
 // ---- page scan ------------------------------------------------------------
 
-function scan() {
+// render: also redraw the page listing.
+function scan(render = true) {
 	if (!emulator)
 		return;
 	const r = emuRam;
@@ -759,9 +788,9 @@ function scan() {
 	fp.textContent = count + " of " + pages + " pages non-zero = " + kib(count * PAGE) +
 		" (" + low + " below 1 MiB, " + (count - low) + " above)" +
 		(prev ? "; " + changed + " changed since the previous scan" : "");
-	if (selectedPage >= 0) {
+	if (render && selectedPage >= 0 && tab === "page") {
 		const p = selectedPage;
-		renderView(p, scanNow.subarray(p * PAGE, p * PAGE + PAGE),
+		renderPage(p, scanNow.subarray(p * PAGE, p * PAGE + PAGE),
 			scanPrev ? scanPrev.subarray(p * PAGE, p * PAGE + PAGE) : null,
 			"since the previous scan");
 	}
@@ -771,7 +800,7 @@ function setAutoscan() {
 	clearInterval(scanTimer);
 	scanTimer = null;
 	if ($("autoscan").checked && emulator)
-		scanTimer = setInterval(scan, 1000);
+		scanTimer = setInterval(() => scan(), 1000);
 }
 
 // ---- snapshots ------------------------------------------------------------
@@ -820,6 +849,12 @@ async function restoreSnapshot(s) {
 	try {
 		const raw = s.gzip ? await pipe(s.data, new DecompressionStream("gzip")) : s.data;
 		await emulator.restore_state(raw);
+		if (counting || (stepper && stepper.steps)) {
+			counting = false;
+			countNote = "A snapshot was restored: the counters stopped there.";
+		}
+		if (runState === "paused" || runState === "stepped")
+			afterStop();
 		$("snap_status").textContent = "Restored #" + s.id + " (" + s.kernel + ").";
 		$("snap_status").dataset.restored = s.id;
 		if (selectedPage >= 0)
@@ -873,9 +908,27 @@ function renderSnapshots() {
 
 // ---- boot -----------------------------------------------------------------
 
+// v86.wasm with two internal functions exported for stepping (stepper.js).
+// If the patch fails the page still boots, without the debugger.
+let wasmPatchError = null;
+async function loadWasm(env) {
+	const resp = await fetch(withV("v86/v86.wasm"));
+	const bytes = await resp.arrayBuffer();
+	let code = bytes;
+	try {
+		code = patchV86Wasm(bytes).bytes;
+		wasmPatchError = null;
+	} catch (e) {
+		wasmPatchError = String(e);
+	}
+	const { instance } = await WebAssembly.instantiate(code, env);
+	return instance.exports;
+}
+
 async function boot() {
 	if (!image)
 		return;
+	stopDriver();
 	if (emulator) {
 		const old = emulator;
 		emulator = null;
@@ -885,25 +938,29 @@ async function boot() {
 			console.warn("destroy:", e);
 		}
 	}
+	stepper = null;
+	runState = "off";
 	$("scan").disabled = true;
 	$("snap_save").disabled = true;
 	$("footprint").textContent = "";
 	scanNow = scanPrev = usedPages = changedPages = null;
 	emuRam = ram();
 	$("screen_text").textContent = "";
+	resetCounters();
+	updateDebugUi();
 	const fatal = checkImage(image.hdr, ram()).some(([level]) => level === "error");
 	setStatus("Booting " + image.name + " with " + kib(ram()) + "...");
 	try {
 		emulator = new V86({
-			wasm_path: withV("v86/v86.wasm"),
 			memory_size: emuRam,
 			vga_memory_size: 256 * 1024,
 			screen_container: $("screen_container"),
+			wasm_fn: loadWasm,
 			bios: { url: withV("v86/seabios.bin") },
 			vga_bios: { url: withV("v86/vgabios.bin") },
 			bzimage: { buffer: image.bytes.buffer.slice(0) },
 			cmdline: "",
-			autostart: true,
+			autostart: false,
 			disable_mouse: true,
 		});
 	} catch (e) {
@@ -911,18 +968,436 @@ async function boot() {
 		return;
 	}
 	const em = emulator;
-	em.add_listener("emulator-started", () => {
+	em.add_listener("emulator-loaded", () => {
 		if (em !== emulator)
 			return;
 		setStatus("Running " + image.name + " with " + kib(ram()) +
 			(fatal ? ". The header check predicts this will not work." : "."));
 		$("scan").disabled = false;
 		$("snap_save").disabled = false;
+		try {
+			stepper = new Stepper(em, V86_KERNEL_ADDR, kernelEnd(image.hdr));
+			stepper.milestones = MILESTONES.map((text) => ({ text, found: null }));
+		} catch (e) {
+			stepper = null;
+			$("dbg_status").textContent = "No debugger: " + (wasmPatchError || e);
+		}
+		counting = !!stepper && $("count").checked;
+		countStart = performance.now();
+		countMs = 0;
 		setAutoscan();
 		setLive();
 		computePageClasses();
 		drawGrid();
 		inspect();
+		if (startPaused && stepper) {
+			startPaused = false;
+			runState = "paused";
+			$("dbg_status").textContent = "Paused at the reset vector.";
+			afterStop();
+		} else {
+			resume();
+		}
+	});
+}
+
+// ---- debugger -------------------------------------------------------------
+
+const MILESTONES = ["Hello, World!", "Still alive"];
+const COUNT_LIMIT_MS = 120000;  // give up counting after this much stepping
+const SLICE_MS = 25;            // fast stepping: JS time per slice
+
+let stepper = null;
+let runState = "off";    // "off", "jit" (v86's own loop), "stepped" (our loop), "paused"
+let counting = false;    // stepping from reset until every milestone is on screen
+let countStart = 0;      // performance.now() when the count began
+let countMs = 0;         // stepping time spent counting
+let countNote = "";
+let startPaused = false; // ?paused=1: stop at the reset vector
+let runTo = -1;          // physical address "Run to" stops at, or -1
+let driverTimer = null;
+let driverChannel = null;
+let lastUi = 0;
+let lastFrame = 0;
+let stepCredit = 0;
+let prevRegs = null;
+let flashes = 0;
+
+const speed = () => $("dbg_speed").value;  // "full" or instructions per second
+
+function resetCounters() {
+	counting = false;
+	countMs = 0;
+	countNote = "";
+	runTo = -1;
+	prevRegs = null;
+	flashes = 0;
+	$("pages").dataset.flashes = 0;
+}
+
+function countDone() {
+	return !stepper || stepper.milestones.every((m) => m.found);
+}
+
+function wantStepped() {
+	return !!stepper && (speed() !== "full" || counting || runTo >= 0);
+}
+
+function stopDriver() {
+	clearTimeout(driverTimer);
+	driverTimer = null;
+	if (driverChannel)
+		driverChannel.port1.onmessage = null;
+	driverChannel = null;
+	if (lastFrame)
+		cancelAnimationFrame(lastFrame);
+	lastFrame = 0;
+}
+
+// Run the VM in whichever way the controls ask for.
+async function resume() {
+	if (!emulator)
+		return;
+	stopDriver();
+	if (wantStepped()) {
+		if (emulator.is_running())
+			await emulator.stop();
+		runState = "stepped";
+		stepCredit = 0;
+		scheduleDriver();
+	} else {
+		runState = "jit";
+		emulator.run();
+	}
+	updateDebugUi();
+}
+
+async function pause(note) {
+	if (!emulator)
+		return;
+	stopDriver();
+	if (emulator.is_running())
+		await emulator.stop();
+	runState = "paused";
+	runTo = -1;
+	if (note !== undefined)
+		$("dbg_status").textContent = note;
+	afterStop();
+}
+
+function scheduleDriver() {
+	if (speed() === "full" || runTo >= 0) {
+		// As fast as possible: zero-delay message loop, works in background tabs.
+		if (!driverChannel) {
+			driverChannel = new MessageChannel();
+			driverChannel.port1.onmessage = driverTick;
+		}
+		driverChannel.port2.postMessage(0);
+	} else {
+		lastFrame = requestAnimationFrame((t) => { lastFrame = 0; driverTick(t); });
+	}
+}
+
+let prevTick = 0;
+function driverTick() {
+	if (runState !== "stepped" || !stepper)
+		return;
+	const now = performance.now();
+	let reason;
+	const t0 = now;
+	if (speed() === "full" || runTo >= 0) {
+		reason = stepper.run(Infinity, runTo, SLICE_MS);
+	} else {
+		const rate = Number(speed());
+		const dt = Math.min(250, prevTick ? now - prevTick : 16);
+		stepCredit = Math.min(stepCredit + rate * dt / 1000, rate + 1);
+		const n = Math.floor(stepCredit);
+		stepCredit -= n;
+		reason = n ? stepper.run(n, -1, SLICE_MS) : "count";
+	}
+	prevTick = now;
+	if (counting)
+		countMs += performance.now() - t0;
+	if (reason === "addr") {
+		pause("Stopped at " + hex(stepper.nextPhys()) + " (Run to).");
+		return;
+	}
+	if (counting && (countDone() || countMs > COUNT_LIMIT_MS || stepper.dead())) {
+		counting = false;
+		if (!countDone())
+			countNote = stepper.dead() ? "The CPU halted with interrupts off before every line appeared." :
+				"Gave up after " + Math.round(countMs / 1000) + " s of stepping.";
+		if (speed() === "full" && runTo < 0) {
+			updateDebugUi();
+			resume();
+			return;
+		}
+	}
+	if (reason === "hlt" && stepper.dead()) {
+		pause("The CPU executed hlt with interrupts off: nothing more to run.");
+		return;
+	}
+	const slow = speed() !== "full" && runTo < 0;
+	if (slow || now - lastUi > 200) {
+		lastUi = now;
+		updateDebugUi();
+		if (slow)
+			frameUpdate();
+	}
+	if (reason === "hlt")
+		driverTimer = setTimeout(scheduleDriver, slow ? 16 : 1);
+	else
+		scheduleDriver();
+}
+
+// Live view while slow-stepping: grid flashes, asm view follows EIP.
+let lastFrameScan = 0;
+function frameUpdate() {
+	const now = performance.now();
+	if (now - lastFrameScan >= (emuRam > 4 * 1024 * 1024 ? 250 : 0)) {
+		lastFrameScan = now;
+		scan(false);
+		const n = Number($("footprint").dataset.changed || 0);
+		$("pages").dataset.flashed = n;
+		if (n)
+			$("pages").dataset.flashes = ++flashes;
+	}
+	followEip();
+}
+
+function afterStop() {
+	// Baseline for the grid: pages written after this flash.
+	scan(false);
+	updateDebugUi();
+	followEip();
+}
+
+// While paused or stepping, the Page tab shows the page holding EIP.
+function followEip() {
+	if (!stepper || runState === "jit")
+		return;
+	const phys = stepper.nextPhys();
+	if (phys >= 0 && phys < emuRam) {
+		const p = Math.floor(phys / PAGE);
+		if (p !== selectedPage) {
+			selectedPage = p;
+			writeHash();
+			if (tab === "memory")
+				drawGrid();
+		}
+		if (tab === "page")
+			inspect();
+	}
+	renderContext();
+}
+
+// Debugger tab: the next instructions from disasm.json, or raw bytes.
+function renderContext() {
+	const el = $("context");
+	if (!stepper || tab !== "debugger" || runState === "jit" || runState === "off") {
+		el.textContent = runState === "jit" ? "Running at full speed. Pause to see the next instructions." : "";
+		return;
+	}
+	const phys = stepper.nextPhys();
+	if (phys < 0) {
+		el.textContent = "EIP is not mapped.";
+		return;
+	}
+	const lines = [];
+	const i = disasm ? insnIndex(phys) : -1;
+	if (i >= 0 && i < disasm.insns.length && disasm.insns[i][0] === phys) {
+		const sized = symbols ? symbols.symbols.filter((s) => s.size > 0 && s.paddr <= phys + 64 && s.paddr + s.size > phys - 64) : [];
+		for (let k = Math.max(0, i - 3); k < Math.min(disasm.insns.length, i + 12); k++) {
+			const [pa, raw, text] = disasm.insns[k];
+			const sym = symbolAt(sized, pa);
+			const line = (k === i ? "\u25b6 " : "  ") + pa.toString(16).padStart(8, "0") + " " +
+				escHtml(text) + (sym ? ' <span class="dim">' + escHtml(sym.name) + "+0x" + (pa - sym.paddr).toString(16) + "</span>" : "");
+			lines.push(k === i ? '<span class="cur">' + line + "</span>" : line);
+		}
+		el.dataset.source = "disasm";
+	} else {
+		const n = Math.min(16, emuRam - phys);
+		const b = n > 0 ? emulator.read_memory(phys, n) : [];
+		lines.push('<span class="cur">\u25b6 ' + phys.toString(16).padStart(8, "0") + " " +
+			Array.from(b, (v) => v.toString(16).padStart(2, "0")).join(" ") + "</span>");
+		lines.push('<span class="dim">Not kernel code in disasm.json (BIOS, option ROM or real-mode setup): raw bytes at EIP.</span>');
+		el.dataset.source = "bytes";
+	}
+	el.innerHTML = lines.join("\n");
+}
+
+// EIP to highlight in the inspector, or -1.
+function currentPhys() {
+	return stepper && runState !== "jit" && runState !== "off" ? stepper.nextPhys() : -1;
+}
+
+const h8 = (n) => (n >>> 0).toString(16).padStart(8, "0");
+const h4 = (n) => n.toString(16).padStart(4, "0");
+const FLAG_BITS = [[0, "CF"], [2, "PF"], [4, "AF"], [6, "ZF"], [7, "SF"], [8, "TF"], [9, "IF"], [10, "DF"], [11, "OF"], [14, "NT"], [16, "RF"], [17, "VM"]];
+
+function renderRegs() {
+	const el = $("regs");
+	if (!stepper) {
+		el.textContent = "";
+		return;
+	}
+	const r = stepper.regs();
+	const flags = FLAG_BITS.filter(([b]) => r.eflags & (1 << b)).map(([, n]) => n);
+	flags.push("IOPL" + ((r.eflags >> 12) & 3));
+	const mode = !(r.cr0 & 1) ? "real mode" : (r.eflags & 0x20000 ? "vm86" : "protected") +
+		(r.cr0 & 0x80000000 ? ", paging" : "");
+	const phys = stepper.nextPhys();
+	const cells = [
+		["EIP", h8(r.eip), "Instruction pointer (offset in CS). Linear " + hex(r.linear) + ", physical " + (phys < 0 ? "unmapped" : hex(phys))],
+		["ESP", h8(r.esp)], ["EBP", h8(r.ebp)],
+		["EAX", h8(r.eax)], ["EBX", h8(r.ebx)], ["ECX", h8(r.ecx)], ["EDX", h8(r.edx)],
+		["ESI", h8(r.esi)], ["EDI", h8(r.edi)],
+		["EFLAGS", h8(r.eflags) + " " + flags.join(" "), "Set flags of EFLAGS"],
+		["CS", h4(r.cs)], ["DS", h4(r.ds)], ["SS", h4(r.ss)], ["ES", h4(r.es)],
+		["CR0", h8(r.cr0), "PE=" + (r.cr0 & 1) + " PG=" + (r.cr0 >>> 31)], ["CR3", h8(r.cr3), "Page directory base"],
+		["CPL", String(r.cpl), "Current privilege level"],
+		["mode", mode + ", " + (r.is32 ? "32" : "16") + "-bit" + (r.hlt ? ", hlt" : "")],
+		["phys", phys < 0 ? "unmapped" : h8(phys), "Physical address of the next instruction"],
+	];
+	el.textContent = "";
+	for (const [name, value, title] of cells) {
+		const d = document.createElement("div");
+		d.dataset.reg = name;
+		if (prevRegs && prevRegs[name] !== undefined && prevRegs[name] !== value)
+			d.className = "chg";
+		const b = document.createElement("b");
+		b.textContent = name;
+		d.append(b, " " + value);
+		if (title)
+			d.title = title;
+		if (name === "EFLAGS" || name === "mode")
+			d.classList.add("wide");
+		el.append(d);
+	}
+	prevRegs = Object.fromEntries(cells.map(([n, v]) => [n, v]));
+	el.dataset.eip = r.eip;
+	el.dataset.phys = phys;
+}
+
+const num = (n) => (n === null || n === undefined ? "-" : n.toLocaleString("en"));
+
+function renderCounters() {
+	const tbody = $("counters").tBodies[0];
+	tbody.textContent = "";
+	if (!stepper) {
+		$("count_text").textContent = !emulator ? "" : "Not counted: " + (wasmPatchError || "no debugger") + ".";
+		return;
+	}
+	const rows = stepper.milestones.map((m) => [m.text, m.found]);
+	rows.push(["now", stepper.snapshot()]);
+	for (const [label, c] of rows) {
+		const tr = tbody.insertRow();
+		tr.dataset.milestone = label;
+		const cells = c ? [label, num(c.steps), num(c.sinceEntry), num(c.uniqueKernel) + "/" + num(c.unique - c.uniqueKernel)] :
+			[label, counting ? "counting..." : "not reached", "", ""];
+		for (const v of cells)
+			tr.insertCell().textContent = v;
+		if (c) {
+			tr.dataset.steps = c.steps;
+			tr.dataset.entry = c.sinceEntry === null ? "" : c.sinceEntry;
+			tr.dataset.unique = c.unique;
+			tr.dataset.kernel = c.uniqueKernel;
+			tr.cells[0].title = "Reached by the instruction at physical " + hex(c.phys);
+		}
+	}
+	const rate = countMs > 0 ? stepper.steps / countMs / 1000 : 0;
+	const info = $("count_text");
+	$("count_info").dataset.ms = Math.round(countMs);
+	info.textContent = (counting ? (runState === "paused" ? "Counting (paused): " : "Counting: ") : stepper.steps ? "Counted " : "") +
+		(stepper.steps ? num(stepper.steps) + " instructions stepped" +
+			(countMs ? " in " + (countMs / 1000).toFixed(2) + " s (" + rate.toFixed(1) + " M/s)" : "") + ". " : "") +
+		(!$("count").checked && !stepper.steps ? "Counting is off: the boot ran at full speed. " : "") +
+		(runState === "jit" && !countDone() && stepper.steps ? "Running at full speed now: not counting. " : "") +
+		countNote;
+}
+
+function updateDebugUi() {
+	const st = $("dbg_state");
+	st.textContent = { off: "", jit: "running (full speed, JIT)", stepped: counting ? "stepping (counting)" : "stepping",
+		paused: "paused" }[runState];
+	st.dataset.state = runState;
+	const can = !!stepper;
+	$("dbg_pause").disabled = !can || runState === "paused" || runState === "off";
+	$("dbg_continue").disabled = !can || runState !== "paused";
+	for (const id of ["dbg_step", "dbg_stepn", "dbg_runto"])
+		$(id).disabled = !can || runState === "off";
+	renderRegs();
+	renderCounters();
+	if (runState !== "stepped")
+		renderContext();
+}
+
+async function doStep(n) {
+	if (!stepper)
+		return;
+	if (runState !== "paused")
+		await pause();
+	if (stepper.dead()) {
+		$("dbg_status").textContent = "The CPU executed hlt with interrupts off: nothing to step.";
+		return;
+	}
+	const before = stepper.steps;
+	const reason = stepper.run(n, -1, 5000);
+	$("dbg_status").textContent = "Stepped " + num(stepper.steps - before) + " instruction" +
+		(stepper.steps - before === 1 ? "" : "s") + (reason === "hlt" ? " (halted)" :
+			reason === "milestone" ? " (a line appeared on the screen)" : reason === "time" ? " (5 s limit)" : "") + ".";
+	scan(false);
+	afterStop();
+}
+
+// Hex address: physical, or a kernel virtual address (above the kernel's
+// virtual-physical offset from symbols.json, 0xC0000000 for Linux).
+function parseAddr(text) {
+	const v = parseInt(String(text).trim().replace(/^0x/i, ""), 16);
+	if (!Number.isFinite(v) || v < 0 || v > 0xffffffff)
+		return -1;
+	const off = symbols && symbols.symbols.length ? symbols.symbols[0].vaddr - symbols.symbols[0].paddr : 0;
+	return off > 0 && v >= off ? v - off : v;
+}
+
+async function doRunTo() {
+	if (!stepper)
+		return;
+	const phys = parseAddr($("dbg_addr").value);
+	if (phys < 0) {
+		$("dbg_status").textContent = "Not a hex address: " + $("dbg_addr").value;
+		return;
+	}
+	if (runState !== "paused")
+		await pause();
+	runTo = phys;
+	$("dbg_status").textContent = "Running to physical " + hex(phys) + "...";
+	resume();
+}
+
+function initDebugger() {
+	$("dbg_pause").addEventListener("click", () => pause("Paused."));
+	$("dbg_continue").addEventListener("click", () => { $("dbg_status").textContent = ""; resume(); });
+	$("dbg_step").addEventListener("click", () => doStep(1));
+	$("dbg_stepn").addEventListener("click", () => {
+		const n = Math.max(1, Math.floor(Number($("dbg_n").value) || 100));
+		doStep(n);
+	});
+	$("dbg_runto").addEventListener("click", doRunTo);
+	$("dbg_addr").addEventListener("keydown", (e) => { if (e.key === "Enter") doRunTo(); });
+	$("dbg_n").addEventListener("keydown", (e) => { if (e.key === "Enter") $("dbg_stepn").click(); });
+	$("dbg_speed").addEventListener("change", () => {
+		if (runState === "stepped" || runState === "jit")
+			resume();
+	});
+	$("count").addEventListener("change", () => {
+		if (!$("count").checked && counting) {
+			counting = false;
+			countNote = "Counting switched off.";
+			if (runState === "stepped")
+				resume();
+		}
+		renderCounters();
 	});
 }
 
@@ -985,6 +1460,82 @@ async function loadKernel(entry, memFromUrl) {
 	await boot();
 }
 
+// ---- popovers --------------------------------------------------------------
+
+// Every "?" marker: title attributes never show on touch screens, so the
+// text moves into data-tip and a popover shows it. Click, tap, Enter or
+// Space toggles it, hover shows it on devices that hover; a tap elsewhere
+// or Esc closes it. One popover at a time.
+let tipOpen = null;    // marker whose popover is shown
+let tipPinned = false; // opened by click/key (stays until closed)
+
+function placeTip(el) {
+	const pop = $("tip_pop");
+	pop.textContent = el.dataset.tip;
+	pop.hidden = false;
+	const r = el.getBoundingClientRect();
+	const w = Math.min(320, window.innerWidth - 16);
+	pop.style.width = w + "px";
+	let x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), window.innerWidth - w - 8);
+	let y = r.bottom + 6;
+	pop.style.left = x + "px";
+	pop.style.top = y + "px";
+	const h = pop.offsetHeight;
+	if (y + h > window.innerHeight - 8 && r.top - h - 6 > 8)
+		pop.style.top = (r.top - h - 6) + "px";
+}
+
+function showTip(el, pinned) {
+	if (tipOpen && tipOpen !== el)
+		tipOpen.setAttribute("aria-expanded", "false");
+	tipOpen = el;
+	tipPinned = pinned;
+	el.setAttribute("aria-expanded", "true");
+	placeTip(el);
+}
+
+function hideTip() {
+	if (tipOpen)
+		tipOpen.setAttribute("aria-expanded", "false");
+	tipOpen = null;
+	tipPinned = false;
+	$("tip_pop").hidden = true;
+}
+
+function initTips() {
+	const hover = window.matchMedia("(hover: hover)").matches;
+	for (const el of document.querySelectorAll(".tip")) {
+		if (el.title) {
+			el.dataset.tip = el.title;
+			el.removeAttribute("title");
+		}
+		el.setAttribute("aria-expanded", "false");
+		el.setAttribute("aria-label", "Explain");
+		el.setAttribute("aria-controls", "tip_pop");
+		const toggle = (ev) => {
+			ev.preventDefault(); // inside a label: do not activate its control
+			ev.stopPropagation();
+			if (tipOpen === el && tipPinned)
+				hideTip();
+			else
+				showTip(el, true);
+		};
+		el.addEventListener("click", toggle);
+		el.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") toggle(ev); });
+		if (hover) {
+			el.addEventListener("mouseenter", () => { if (!tipPinned) showTip(el, false); });
+			el.addEventListener("mouseleave", () => { if (!tipPinned && tipOpen === el) hideTip(); });
+		}
+	}
+	document.addEventListener("click", (ev) => {
+		if (tipOpen && !$("tip_pop").contains(ev.target))
+			hideTip();
+	});
+	document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") hideTip(); });
+	window.addEventListener("scroll", () => { if (tipOpen) placeTip(tipOpen); }, { passive: true });
+	window.addEventListener("resize", () => { if (tipOpen) placeTip(tipOpen); });
+}
+
 async function init() {
 	const params = new URLSearchParams(location.search);
 	// ?mem=BYTES may name any multiple of 4 KiB, for probing the minimum.
@@ -995,23 +1546,32 @@ async function init() {
 		if (![...$("memory").options].some((o) => o.value === memParam))
 			$("memory").add(new Option(kib(m), memParam));
 	}
+	startPaused = params.get("paused") === "1";
+	initTips();
 	drawMaps();
+	initDebugger();
+	updateDebugUi();
+	for (const t of TABS)
+		$("tab_" + t).addEventListener("click", () => showTab(t));
+	window.addEventListener("hashchange", readHash);
+	readHash();
+	$("page_prev").addEventListener("click", () => selectedPage > 0 && selectPage(selectedPage - 1));
+	$("page_next").addEventListener("click", () => selectedPage >= 0 && selectedPage + 1 < gridRam() / PAGE && selectPage(selectedPage + 1));
+	$("reread").addEventListener("click", inspect);
 	$("memory").addEventListener("change", () => { showHeader(); drawMaps(); });
 	$("boot").addEventListener("click", boot);
-	$("scan").addEventListener("click", scan);
+	$("scan").addEventListener("click", () => scan());
 	$("autoscan").addEventListener("change", setAutoscan);
 	$("live").addEventListener("change", setLive);
-	for (const v of ["hex", "asm"])
-		$("view_" + v).addEventListener("click", () => setView(v));
-	// Bytes per row and asm columns follow the inspector's width.
+	// Bytes per row and columns follow the listing's width.
 	let dumpWidth = 0;
 	new ResizeObserver(() => {
-		const w = $("hexdump").clientWidth;
+		const w = $("listing").clientWidth;
 		if (w !== dumpWidth) {
 			dumpWidth = w;
 			requestAnimationFrame(inspect);
 		}
-	}).observe($("hexdump"));
+	}).observe($("listing"));
 	$("snap_save").addEventListener("click", saveSnapshot);
 	$("snap_save").title = HAVE_GZIP ?
 		"Compressed in the browser with CompressionStream(\"gzip\")." :

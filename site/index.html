@@ -7,44 +7,126 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-  <h1>Kernel in the browser<span class="tip" tabindex="0" title="Boots a bzImage in v86, an x86 emulator compiled to WebAssembly (github.com/copy/v86). Pick a kernel from the list or load any bzImage from disk.">?</span></h1>
+<header class="top">
+  <section class="controls" aria-label="Machine">
+    <h1>Kernel in the browser<span class="tip" tabindex="0" role="button" title="Boots a bzImage in v86, an x86 emulator compiled to WebAssembly (github.com/copy/v86). See the About tab.">?</span></h1>
+    <label>Kernel
+      <select id="kernel"></select>
+    </label>
+    <label>RAM
+      <select id="memory">
+        <option value="2097152">2 MB</option>
+        <option value="4194304">4 MB</option>
+        <option value="18874368">18 MB</option>
+        <option value="33554432">32 MB</option>
+      </select>
+    </label>
+    <label><span>From disk<span class="tip" tabindex="0" role="button" title="Load any bzImage from your disk instead of the list">?</span></span>
+      <input type="file" id="file">
+    </label>
+    <button id="boot" type="button">Boot</button>
+    <span id="status" role="status">Loading kernel list...</span>
+    <span id="kinfo" class="note mono"></span>
+  </section>
+  <div id="problems"></div>
+
+  <div class="machine">
+    <div id="screen_container" title="The VGA text screen">
+      <div id="screen_text"></div>
+      <canvas id="screen_canvas" style="display: none"></canvas>
+    </div>
+    <div class="run">
+      <div class="runbar">
+        <button id="dbg_pause" type="button" disabled title="Stop the CPU">Pause</button>
+        <button id="dbg_continue" type="button" disabled title="Run again at the selected speed">Continue</button>
+        <button id="dbg_step" type="button" disabled title="Execute one instruction">Step</button>
+        <label><span>speed<span class="tip" tabindex="0" role="button" title="Instructions per second. Full speed is v86's JIT and cannot count; every other speed steps one instruction at a time from JavaScript, so the screen, registers, grid and listing follow the boot.">?</span></span>
+          <select id="dbg_speed">
+            <option value="full">full (JIT)</option>
+            <option value="1000000">1M/s</option>
+            <option value="100000">100k/s</option>
+            <option value="10000">10k/s</option>
+            <option value="1000">1k/s</option>
+            <option value="100">100/s</option>
+            <option value="10">10/s</option>
+            <option value="1">1/s</option>
+          </select>
+        </label>
+        <label><input type="checkbox" id="count" checked> count<span class="tip" tabindex="0" role="button" title="Step the boot from the reset vector until both lines are on the screen and count instructions, then run at the selected speed.">?</span></label>
+        <span id="dbg_state" class="note"></span>
+      </div>
+      <div class="table-wrap">
+        <table id="counters" class="mono">
+          <thead><tr>
+            <th>until<span class="tip" tabindex="0" role="button" title="Instructions executed until the line first appears in VGA text memory at 0xb8000, counted from the reset vector and from the kernel entry at 1 MiB">?</span></th>
+            <th>reset<span class="tip" tabindex="0" role="button" title="Instructions executed from the reset vector (SeaBIOS, the kernel's real-mode setup, the kernel).">?</span></th>
+            <th>1 MiB<span class="tip" tabindex="0" role="button" title="Instructions executed from the first one at physical 0x100000, where v86 puts the 32-bit kernel.">?</span></th>
+            <th>unique EIPs k/o<span class="tip" tabindex="0" role="button" title="Distinct physical addresses executed from reset: in the kernel range (1 MiB to 1 MiB + init_size) / elsewhere (BIOS, option ROM, real-mode setup).">?</span></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="note" id="count_info"><span id="count_text"></span> <span class="tip" tabindex="0" role="button" title="Exact for the run shown: each instruction is one call of v86's interpreter. A rep-prefixed string instruction counts once per v86 entry, and v86 runs at most a page of iterations per entry, so a long rep movs counts several times (qemu counts it once). The minified Linux calibrates its delay loop against the timer, so its count from 1 MiB depends on how fast the page steps. SeaBIOS waits on real time, so the part before the kernel differs between runs; the kernel part is stable. See the About tab for the qemu cross-check.">?</span></p>
+    </div>
+  </div>
+
+  <nav class="tabbar" role="tablist" aria-label="Views">
+    <button role="tab" type="button" id="tab_memory" data-tab="memory">Memory</button>
+    <button role="tab" type="button" id="tab_page" data-tab="page">Page</button>
+    <button role="tab" type="button" id="tab_debugger" data-tab="debugger">Debugger</button>
+    <button role="tab" type="button" id="tab_snapshots" data-tab="snapshots">Snapshots</button>
+    <button role="tab" type="button" id="tab_about" data-tab="about">About</button>
+  </nav>
 </header>
 
 <main>
-<section class="controls" aria-label="Machine">
-  <label>Kernel
-    <select id="kernel"></select>
-  </label>
-  <label>RAM
-    <select id="memory">
-      <option value="2097152">2 MB</option>
-      <option value="4194304">4 MB</option>
-      <option value="18874368">18 MB</option>
-      <option value="33554432">32 MB</option>
-    </select>
-  </label>
-  <label title="Load any bzImage from your disk instead of the list">From disk
-    <input type="file" id="file">
-  </label>
-  <button id="boot" type="button">Boot</button>
-  <span id="status" role="status">Loading kernel list...</span>
-  <span id="kinfo" class="note mono"></span>
-</section>
-<div id="problems"></div>
+<section class="panel" id="panel_memory" role="tabpanel" aria-labelledby="tab_memory">
+  <h3>First MiB <span class="tip" tabindex="0" role="button" title="Regions follow from the boot header and from where v86 puts things: real-mode setup at 0x80000, command line at 0x8e000, the 32-bit part always at 1 MiB. SeaBIOS builds the e820 map from the RAM size: usable RAM with the 0x9fc00-0x100000 hole reserved.">?</span></h3>
+  <div class="bar" id="map_low"></div>
+  <h3>All RAM (<span id="ram_label"></span>)</h3>
+  <div class="bar" id="map_all"></div>
+  <ul class="legend" id="legend"></ul>
 
-<div class="cols">
-<div class="col-left">
-<section aria-label="Screen">
-  <div id="screen_container">
-    <div id="screen_text"></div>
-    <canvas id="screen_canvas" style="display: none"></canvas>
+  <div class="scan">
+    <button id="scan" type="button" disabled>Scan memory</button>
+    <label><input type="checkbox" id="autoscan"> auto<span class="tip" tabindex="0" role="button" title="Rescan all pages every second">?</span></label>
+    <span id="footprint"></span> <span class="tip" tabindex="0" role="button" title="Each square is a 4 KiB page of guest RAM, coloured by region (boot header) and, when the kernel has a symbols.json, by ELF section. Filled squares hold data, hollow ones were all zero at the last scan; a dot marks pages that changed between the last two scans (while slow-stepping: since the previous frame). Click a page to open it in the Page tab.">?</span>
   </div>
+  <canvas id="pages" width="448" height="14"></canvas>
+  <ul class="legend" id="grid_legend"></ul>
+  <p class="note mono" id="focus_info" aria-live="polite"></p>
+  <p class="note" id="hover_info" aria-live="polite"></p>
 </section>
 
-<section aria-label="Snapshots">
-  <h2>Snapshots <span class="tip" tabindex="0" title="A snapshot is v86 save_state(): CPU, devices, VGA memory and all guest RAM, gzip-compressed in the browser (CompressionStream). The last 8 are kept in memory; Restore puts the VM back, Download saves the file.">?</span></h2>
-  <span id="snap_note" class="note"></span>
+<section class="panel" id="panel_page" role="tabpanel" aria-labelledby="tab_page" hidden>
+  <h2 id="page_title">No page selected</h2>
+  <div class="scan">
+    <button id="page_prev" type="button" title="Previous page">&lsaquo;</button>
+    <button id="page_next" type="button" title="Next page">&rsaquo;</button>
+    <button id="reread" type="button">Re-read</button><span class="tip" tabindex="0" role="button" title="Read the page again; bytes that changed since the last memory scan are marked">?</span>
+    <label><input type="checkbox" id="live"> live<span class="tip" tabindex="0" role="button" title="Re-read the page every 500 ms while the VM runs">?</span></label>
+    <span id="dump_info" class="note"></span>
+    <span class="tip" tabindex="0" role="button" title="One listing of the page in address order, like objdump -d mixed with hexdump -C: instructions from the kernel's disassembly (llvm-objdump at build time) as address, bytes, instruction and symbol+offset; everything else as hex rows, with repeated rows collapsed to *. Symbol starts are header lines. Marked bytes changed since the last scan; highlighted instructions differ from the build (not loaded yet, overwritten or freed); the boxed line is the next instruction when the CPU is paused.">?</span>
+  </div>
+  <div id="symbol_index" class="symindex"></div>
+  <pre id="listing">Click a page in the Memory tab.</pre>
+</section>
+
+<section class="panel" id="panel_debugger" role="tabpanel" aria-labelledby="tab_debugger" hidden>
+  <div class="scan">
+    <span class="group"><button id="dbg_stepn" type="button" disabled title="Execute this many instructions">Step</button>
+      <input id="dbg_n" value="100" size="7" inputmode="numeric" aria-label="instructions to step"></span>
+    <span class="group"><button id="dbg_runto" type="button" disabled>Run to</button>
+      <input id="dbg_addr" value="0x100000" size="11" aria-label="address to run to"></span><span class="tip" tabindex="0" role="button" title="Step until the next instruction is at this address. Hex, physical, or a kernel virtual address (minus the kernel's virtual offset from symbols.json, 0xC0000000 for Linux).">?</span>
+  </div>
+  <p id="dbg_status" class="note mono" role="status"></p>
+  <div id="regs" class="regs mono"></div>
+  <h3>Next instructions</h3>
+  <pre id="context" class="listing-small"></pre>
+</section>
+
+<section class="panel" id="panel_snapshots" role="tabpanel" aria-labelledby="tab_snapshots" hidden>
+  <p class="note">A snapshot is v86 <code>save_state()</code>: CPU, devices, VGA memory and all guest RAM, gzip-compressed in the browser. The last 8 are kept in memory. <span id="snap_note"></span></p>
   <div class="scan">
     <button id="snap_save" type="button" disabled>Save snapshot</button>
     <span id="snap_status" role="status"></span>
@@ -56,51 +138,27 @@
     </table>
   </div>
 </section>
-</div>
-<div class="col-right">
-<section aria-label="Memory">
-  <h2>Physical memory <span class="tip" tabindex="0" title="Regions follow from the boot header and from where v86 puts things: real-mode setup at 0x80000, command line at 0x8e000, the 32-bit part always at 1 MiB. SeaBIOS builds the e820 map from the RAM size: usable RAM with the 0x9fc00-0x100000 hole reserved.">?</span></h2>
-  <h3>First MiB</h3>
-  <div class="bar" id="map_low"></div>
-  <h3>All RAM (<span id="ram_label"></span>)</h3>
-  <div class="bar" id="map_all"></div>
-  <ul class="legend" id="legend"></ul>
 
-  <div class="scan">
-    <button id="scan" type="button" disabled>Scan memory</button>
-    <label title="Rescan all pages every second"><input type="checkbox" id="autoscan"> auto</label>
-    <span id="footprint"></span> <span class="tip" tabindex="0" title="Each square is a 4 KiB page of guest RAM, coloured by region (boot header) and, when the kernel has a symbols.json, by ELF section. Pale squares were all zero at the last scan; a dot marks pages that changed between the last two scans. Non-zero pages below 1 MiB include SeaBIOS leftovers and the BIOS copies at 0xc0000-0xfffff. Hover a page for its symbols, click to inspect it.">?</span>
-  </div>
-  <canvas id="pages" width="448" height="14"></canvas>
-  <ul class="legend" id="grid_legend"></ul>
-  <p class="note mono" id="focus_info" aria-live="polite"></p>
-  <p class="note" id="hover_info" aria-live="polite"></p>
-
-  <div id="inspector">
-    <h3 id="page_title">No page selected</h3>
-    <div class="scan">
-      <span class="tabs"><button id="view_hex" type="button" aria-pressed="true">hex</button>
-        <button id="view_asm" type="button" aria-pressed="false" title="Disassembly from llvm-objdump of the kernel ELF at build time. Highlighted lines: the bytes in guest memory differ from the build (not loaded yet, overwritten or freed).">asm</button></span>
-      <label title="Re-read the selected page every 500 ms. Marked bytes differ from the last scan (or, right after a scan, from the scan before it)."><input type="checkbox" id="live"> live</label>
-      <span id="dump_info"></span>
-    </div>
-    <pre id="hexdump">Click a page in the grid above.</pre>
-    <p class="note" id="symbols_note"></p>
-    <div class="table-wrap">
-      <table id="page_symbols">
-        <thead><tr><th>symbol</th><th>address</th><th>physical</th><th>size</th><th>section</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
+<section class="panel about" id="panel_about" role="tabpanel" aria-labelledby="tab_about" hidden>
+  <p>This page boots a Linux-style bzImage in <a href="https://github.com/copy/v86">v86</a>, an x86 emulator compiled to WebAssembly, and lets you look inside the machine while it runs. Two kernels come with it: <b>hello</b>, a toy kernel that prints two lines and halts, and <b>minified-linux</b>, the reduced Linux kernel of <a href="https://github.com/d33tah/minimal-kernel-build">minimal-kernel-build</a>. Any bzImage can be loaded from disk.</p>
+  <h3>Tabs</h3>
+  <ul>
+    <li><b>Memory</b>: the physical memory map from the boot header and one square per 4 KiB page, coloured by region and ELF section.</li>
+    <li><b>Page</b>: one page as a single listing, instructions where the kernel has code and hex rows elsewhere, with symbol headers.</li>
+    <li><b>Debugger</b>: registers, stepping and run-to-address.</li>
+    <li><b>Snapshots</b>: save, restore and download the whole machine state.</li>
+  </ul>
+  <h3>Counting and stepping</h3>
+  <p>v86 normally runs guest code through a JIT, at least 100,003 instructions per call, and has no single-step API. The page adds two exports to v86's own <code>v86.wasm</code> at load time (the functions are already in it and named in its name section, the code is unchanged): <code>read_imm8</code>, which fetches the byte at EIP, and the interpreter's <code>run</code>, which executes one instruction. Stepping calls them from JavaScript the way v86's interpreter loop does. With <i>count</i> on, every boot is stepped from the reset vector until "Hello, World!" and "Still alive" are both in VGA text memory at 0xb8000, then runs at the selected speed.</p>
+  <p>The counts are exact for the run shown, with two caveats: a <code>rep</code> string instruction counts once per v86 entry, and v86 runs at most a page of iterations per entry; SeaBIOS waits on real time, so the part before the kernel varies between runs; and the minified Linux's <code>calibrate_delay()</code> loops until a timer tick, so its count from 1 MiB depends on how fast the page steps. hello's kernel count is the same every run and matches qemu instruction for instruction. site/README.md has the cross-check against qemu.</p>
+  <p>Source: <a href="https://github.com/d33tah/minimal-kernel-build/tree/hello-kernel/site">site/</a> on the hello-kernel branch. Third-party files: site/THIRD_PARTY.md.</p>
 </section>
-
-</div>
-</div>
-
 </main>
 
+<div id="tip_pop" class="tip-pop" role="tooltip" hidden></div>
+
 <script src="v86/libv86.js"></script>
+<script src="stepper.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

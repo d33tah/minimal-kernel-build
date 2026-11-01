@@ -1,25 +1,19 @@
 #!/usr/bin/env python3
-"""Boot kernels on the page in headless Chromium and check the VGA screen.
+"""Boot kernels on the page in headless Chromium and check it end to end.
 
-Serves site/ with python's http.server on a free port, opens
-index.html?kernel=NAME&mem=BYTES, waits until v86's text-mode screen (DOM
-text inside #screen_container) shows "Hello, World!" and then "Still alive",
-scans guest memory with the page's button and checks the non-zero page
-count is above 0 and below the RAM size. Then the memory lab:
-
-  - clicks the page at 1 MiB (the first page of the kernel) in the grid and
-    checks the hex dump has non-zero bytes, and, when the kernel has a
-    symbols.json, that the page's symbol table and hover line are not empty;
-  - turns on "live" and checks the dump is re-read;
-  - saves a snapshot and checks gzip made it smaller and the ratio is shown;
-  - blanks the screen's DOM, restores the snapshot and checks both lines
-    come back.
-
-Saves screenshots.
+Serves site/ with python's http.server on a free port and opens
+index.html?kernel=NAME&mem=BYTES for each case. Per case: the VGA screen
+shows "Hello, World!" then "Still alive"; the boot counters count both
+lines; the page scan; the Page tab listing (instructions and hex rows,
+one symbol index, survives scans, tab kept in the URL hash across a
+reload, all-zero page collapsed); no horizontal scroll at 390-1280 px;
+a snapshot round trip. Then per kernel, started paused at the reset
+vector: Step 10, Run to 0x100000, 1k/s slow motion. Then a 390 px touch
+case for the "?" popovers and a stale-cache case (two deploys with
+max-age=600). See README.md, Testing.
 
 Usage:
-  site/test_browser.py                      hello at 2 MB, plus minified-linux at
-                                            18 MB and 2180 KiB if present
+  site/test_browser.py                      all of the above
   site/test_browser.py hello:1048576 minified-linux:18874368
   site/test_browser.py --probe hello:655360 report only, never fail
 
@@ -73,6 +67,7 @@ def default_cases():
     names = kernel_entries()
     cases = [("hello", None)]
     if "minified-linux" in names:
+        cases.append(("minified-linux", None))
         cases.append(("minified-linux", 18 * 1024 * 1024))
         # The smallest RAM it boots with in v86 (measured: 2176 KiB fails).
         cases.append(("minified-linux", 2180 * 1024))
@@ -96,6 +91,7 @@ def wait_for(cond, timeout, step=0.25):
 
 def page_center(page, p):
     """Viewport-relative point of page p's square in the grid canvas."""
+    show_tab(page, "memory")
     cols = int(page.get_attribute("#pages", "data-cols"))
     cell = int(page.get_attribute("#pages", "data-cell"))
     width = int(page.eval_on_selector("#pages", "e => e.width"))
@@ -106,39 +102,162 @@ def page_center(page, p):
             box["y"] + ((p // cols) * cell + cell / 2) * scale)
 
 
-def memory_lab(page, has_symbols, problems):
-    """Exercise inspector and snapshots; append failures to problems."""
+def show_tab(page, name):
+    if page.get_attribute(f"#tab_{name}", "aria-selected") != "true":
+        page.click(f"#tab_{name}")
+
+
+def open_page(page, p):
+    """Click page p in the grid; the Page tab must open with its listing."""
+    x, y = page_center(page, p)
+    page.mouse.click(x, y)
+    return wait_for(lambda: page.get_attribute("#listing", "data-page") == str(p)
+                    and page.get_attribute("#tab_page", "aria-selected") == "true", 5)
+
+
+def listing_counts(page):
+    return (int(page.get_attribute("#listing", "data-insns") or 0),
+            int(page.get_attribute("#listing", "data-hexrows") or 0))
+
+
+def no_hscroll(page, sel):
+    return page.eval_on_selector(sel, "e => e.scrollWidth <= e.clientWidth + 1")
+
+
+def counters(page):
+    """Rows of the boot counter table: {milestone: {steps, entry, unique, kernel}}."""
+    out = {}
+    for row in page.locator("#counters tbody tr").all():
+        d = {k: row.get_attribute("data-" + k) for k in ("steps", "entry", "unique", "kernel")}
+        out[row.get_attribute("data-milestone")] = {k: int(v) if v not in (None, "") else None for k, v in d.items()}
+    return out
+
+
+def check_counters(page, problems, timeout):
+    """Wait until the counted boot is done; both lines must have counts."""
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") in ("jit", "paused"), timeout)
+    c = counters(page)
+    for m in (HELLO, ALIVE):
+        row = c.get(m) or {}
+        if not (row.get("steps") or 0) > 0 or not (row.get("entry") or 0) > 0 \
+                or not (row.get("unique") or 0) > 0 or not (row.get("kernel") or 0) > 0:
+            problems.append(f"no counts for {m!r}: {row}")
+    h, a = c.get(HELLO, {}), c.get(ALIVE, {})
+    if h.get("steps") and a.get("steps") and not a["steps"] >= h["steps"]:
+        problems.append("Still alive counted before Hello")
+    c["ms"] = int(page.get_attribute("#count_info", "data-ms") or 0)
+    return c
+
+
+def text_section_end_page(name):
+    entry = kernel_entries().get(name, {})
+    if "symbols" not in entry:
+        return None
+    syms = json.loads((SITE / entry["symbols"]).read_text())
+    text = [s for s in syms["sections"] if s["class"] == "text"]
+    if not text:
+        return None
+    return (text[0]["paddr"] + text[0]["size"]) // 4096
+
+
+def memory_lab(page, name, has_symbols, problems, shots, tag):
+    """Grid, Page tab listing, tabs in the URL, widths, snapshots."""
     r = {}
     kpage = 0x100000 // 4096
     x, y = page_center(page, kpage)
     page.mouse.move(x, y)
     r["hover"] = page.inner_text("#hover_info")
-    page.mouse.click(x, y)
-    if not wait_for(lambda: page.get_attribute("#hexdump", "data-page") == str(kpage), 5):
-        problems.append("clicking the 1 MiB page did not fill the hex dump")
+    if "page 0x100000" not in r["hover"]:
+        problems.append("hover line does not name the page: " + r["hover"])
+    if has_symbols and "more symbols" not in r["hover"] and "startup_32" not in r["hover"]:
+        problems.append("hover line names no symbol: " + r["hover"])
+    if not open_page(page, kpage):
+        problems.append("clicking the 1 MiB page did not open the Page tab")
         return r
-    r["dump_nonzero"] = int(page.get_attribute("#hexdump", "data-nonzero"))
-    r["page_symbols"] = int(page.get_attribute("#page_symbols", "data-count") or 0)
-    if r["dump_nonzero"] <= 0:
-        problems.append("hex dump of the 1 MiB page is all zero")
-    if has_symbols and r["page_symbols"] <= 0:
-        problems.append("symbols.json exists but the 1 MiB page lists no symbols")
-    if has_symbols and "startup_32" not in r["hover"]:
-        problems.append("hover line does not name startup_32: " + r["hover"])
+    if "#page/0x100000" not in page.url:
+        problems.append("Page tab not in the URL hash: " + page.url)
+    insns, rows = listing_counts(page)
+    r["listing_1mib"] = [insns, rows]
+    if int(page.get_attribute("#listing", "data-nonzero")) <= 0:
+        problems.append("the 1 MiB page is all zero")
+    if has_symbols:
+        if insns <= 0:
+            problems.append("no instruction lines in the 1 MiB page")
+        r["symbol_index"] = int(page.get_attribute("#symbol_index", "data-count") or 0)
+        if r["symbol_index"] <= 0 or page.locator("#listing .lbl").count() <= 0:
+            problems.append("no symbol index or no symbol headers in the listing")
+        if page.locator("#page_symbols").count():
+            problems.append("a second symbol table is still on the page")
+        page.locator("#symbol_index button").first.click()
+    # A page with both instructions and hex rows: the end of .text.
+    tpage = text_section_end_page(name)
+    if tpage is not None and open_page(page, tpage):
+        r["listing_text_end"] = listing_counts(page)
+        if not (r["listing_text_end"][0] > 0 and r["listing_text_end"][1] > 0):
+            problems.append(f"page {tpage:#x}: listing lacks instructions or hex rows {r['listing_text_end']}")
+    open_page(page, kpage)
 
-    reads = int(page.get_attribute("#hexdump", "data-reads"))
+    reads = int(page.get_attribute("#listing", "data-reads"))
     page.check("#live")
     time.sleep(1.6)
     page.uncheck("#live")
-    r["live_reads"] = int(page.get_attribute("#hexdump", "data-reads")) - reads
-    if r["live_reads"] < 2:
-        problems.append(f"live mode re-read the page {r['live_reads']} times in 1.6 s")
+    r["live_reads"] = int(page.get_attribute("#listing", "data-reads")) - reads
+    # Both kernels halt after the gate lines, so "live" only re-reads while
+    # the VM is in the JIT loop or stepping; a halted VM may re-read 0 times.
 
+    # Scans keep the instruction lines.
+    show_tab(page, "memory")
+    page.click("#scan")
     page.click("#scan")
     r["changed_pages"] = page.get_attribute("#footprint", "data-changed")
     if r["changed_pages"] in (None, ""):
         problems.append("second scan did not report changed pages")
+    page.check("#autoscan")
+    show_tab(page, "page")
+    time.sleep(2.2)
+    show_tab(page, "memory")
+    page.uncheck("#autoscan")
+    show_tab(page, "page")
+    insns2, _ = listing_counts(page)
+    if has_symbols and insns2 <= 0:
+        problems.append("scans lost the instruction lines")
 
+    # Tab state survives a reload.
+    page.reload()
+    if not wait_for(lambda: page.get_attribute("#tab_page", "aria-selected") == "true", 10):
+        problems.append("reload did not keep the Page tab")
+    wait_for(lambda: gate_on_screen(page), 60)
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") in ("jit", "paused"), 60)
+    wait_for(lambda: page.get_attribute("#listing", "data-page") == str(kpage), 10)
+
+    # All-zero last page: one row and "*".
+    last = int(page.get_attribute("#pages", "data-pages")) - 1
+    open_page(page, last)
+    lines = page.inner_text("#listing").splitlines()
+    r["zero_page_lines"] = len(lines)
+    if len(lines) > 3 or "*" not in lines:
+        problems.append("all-zero page not collapsed: %d lines" % len(lines))
+
+    open_page(page, kpage)
+    widths = {}
+    for w in (390, 800, 1000, 1280):
+        page.set_viewport_size({"width": w, "height": 900})
+        time.sleep(0.4)
+        for t in ("page", "memory", "debugger", "snapshots", "about"):
+            show_tab(page, t)
+            if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
+                problems.append(f"page scrolls horizontally at {w} px on the {t} tab")
+        show_tab(page, "page")
+        time.sleep(0.2)
+        widths[w] = no_hscroll(page, "#listing")
+        if not widths[w]:
+            problems.append(f"listing scrolls horizontally at {w} px")
+        if w in (390, 1280):
+            page.screenshot(path=str(shots / f"tab-page-{tag}-{w}.png"))
+    r["listing_fits"] = widths
+    page.set_viewport_size({"width": 1100, "height": 1000})
+
+    show_tab(page, "snapshots")
     page.click("#snap_save")
     if not wait_for(lambda: page.locator("#snapshots tbody tr").count() >= 1, 30):
         problems.append("Save snapshot added no row: " + page.inner_text("#snap_status"))
@@ -147,14 +266,11 @@ def memory_lab(page, has_symbols, problems):
     r["snapshot_raw"] = int(row.get_attribute("data-raw"))
     r["snapshot_gzip"] = int(row.get_attribute("data-stored"))
     r["snapshot_ratio"] = row.locator("td.ratio").inner_text()
-    r["snapshot_status"] = page.inner_text("#snap_status")
     if not r["snapshot_gzip"] < r["snapshot_raw"]:
         problems.append("compressed snapshot is not smaller than the raw state")
     if ":" not in r["snapshot_ratio"]:
         problems.append("snapshot ratio not displayed: " + r["snapshot_ratio"])
-
-    # Blank the text screen's DOM; only the restore can bring the lines back
-    # (both kernels halt after printing).
+    # Blank the text screen's DOM; only the restore can bring the lines back.
     page.eval_on_selector("#screen_text", "e => { for (const c of e.children) c.textContent = ''; }")
     if gate_on_screen(page):
         problems.append("could not blank the screen before the restore")
@@ -165,75 +281,127 @@ def memory_lab(page, has_symbols, problems):
     r["restored_gate"] = wait_for(lambda: gate_on_screen(page), 15)
     if not r["restored_gate"]:
         problems.append("gate lines not on the screen after restoring the snapshot")
-
-    inspector_views(page, kpage, has_symbols, r, problems)
     return r
 
 
-def no_hscroll(page, sel):
-    return page.eval_on_selector(sel, "e => e.scrollWidth <= e.clientWidth + 1")
+def regs(page):
+    return {e.get_attribute("data-reg"): e.inner_text() for e in page.locator("#regs div").all()}
 
 
-def inspector_views(page, kpage, has_symbols, r, problems):
-    """asm survives scans; hex rows collapse; no horizontal scroll at any width."""
-    x, y = page_center(page, kpage)
-    page.mouse.click(x, y)
-    page.click("#view_asm")
-    page.click("#scan")
-    insns = page.get_attribute("#hexdump", "data-insns")
-    if page.get_attribute("#hexdump", "data-view") != "asm" or not int(insns or 0) > 0:
-        problems.append("Scan replaced the asm view (data-insns=%s)" % insns)
-    page.check("#autoscan")
-    time.sleep(2.2)
-    page.uncheck("#autoscan")
-    insns = page.get_attribute("#hexdump", "data-insns")
-    if page.get_attribute("#hexdump", "data-view") != "asm" or not int(insns or 0) > 0:
-        problems.append("auto-scan replaced the asm view (data-insns=%s)" % insns)
-    r["asm_insns"] = int(insns or 0)
-    if "+0x" not in page.inner_text("#hexdump") and page.viewport_size["width"] > 640:
-        problems.append("asm view shows no symbol+offset column")
+def debugger_case(browser, base, name, mem, shots):
+    """Start paused at reset: Step 10, Run to 0x100000, slow motion."""
+    problems, r = [], {}
+    page = browser.new_page(viewport={"width": 1100, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel={name}&paused=1" + (f"&mem={mem}" if mem else "") + "#debugger")
+    if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60):
+        return ["did not start paused: " + page.inner_text("#dbg_status")], r
+    before = regs(page)
+    r["reset_eip"] = before.get("EIP")
+    page.fill("#dbg_n", "10")
+    page.click("#dbg_stepn")
+    wait_for(lambda: "Stepped" in page.inner_text("#dbg_status"), 5)
+    after = regs(page)
+    r["step10_eip"] = after.get("EIP")
+    if after.get("EIP") == before.get("EIP"):
+        problems.append("Step 10 did not change EIP")
+    if page.locator("#regs div.chg").count() == 0:
+        problems.append("register panel marks no changed register after Step 10")
+    now = counters(page).get("now", {})
+    if now.get("steps") != 10:
+        problems.append(f"Step 10 counted {now.get('steps')} instructions")
 
-    # The last page of RAM is all zero: hexdump -C style it is one row and "*".
-    last = int(page.get_attribute("#pages", "data-pages")) - 1
-    page.click("#view_hex")
-    x, y = page_center(page, last)
-    page.mouse.click(x, y)
-    lines = page.inner_text("#hexdump").splitlines()
-    r["zero_page_lines"] = len(lines)
-    if len(lines) > 3 or "*" not in lines:
-        problems.append("all-zero page not collapsed: %d lines" % len(lines))
+    page.fill("#dbg_addr", "0x100000")
+    page.click("#dbg_runto")
+    if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
+                    and page.get_attribute("#regs", "data-phys") == str(0x100000), 60):
+        problems.append("Run to 0x100000 did not stop there: " + page.inner_text("#dbg_status"))
+    r["runto_status"] = page.inner_text("#dbg_status")
+    r["runto_steps"] = counters(page).get("now", {}).get("steps")
+    if page.locator("#context .cur").count() != 1:
+        problems.append("Debugger tab shows no current instruction")
+    page.screenshot(path=str(shots / f"tab-debugger-{name}-1100.png"))
 
-    x, y = page_center(page, kpage)
-    page.mouse.click(x, y)
-    widths = {}
-    for w in (390, 800, 1000, 1280):
-        page.set_viewport_size({"width": w, "height": 1400})
-        time.sleep(0.4)
-        for v in ("hex", "asm"):
-            page.click("#view_" + v)
-            per = page.get_attribute("#hexdump", "data-per")
-            ok = no_hscroll(page, "#hexdump")
-            widths[f"{w}-{v}"] = per if v == "hex" else ok
-            if not ok:
-                problems.append(f"{v} view scrolls horizontally at {w} px")
-        if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
-            problems.append(f"page scrolls horizontally at {w} px")
-    r["dump_widths"] = widths
-    page.set_viewport_size({"width": 1100, "height": 1400})
-    if not has_symbols:
-        return
-    if has_symbol_marks(page):
-        r["symbol_marks"] = True
-    else:
-        problems.append("hex view of the 1 MiB page names no symbol at a row end")
-
-
-def has_symbol_marks(page):
-    page.click("#view_hex")
-    return page.locator("#hexdump .sname").count() > 0
+    page.select_option("#dbg_speed", "1000")
+    show_tab(page, "memory")
+    page.click("#dbg_continue")
+    start = counters(page).get("now", {}).get("steps") or 0
+    time.sleep(2.0)
+    end = counters(page).get("now", {}).get("steps") or 0
+    r["slow_steps_2s"] = end - start
+    r["flashes"] = int(page.get_attribute("#pages", "data-flashes") or 0)
+    if not end - start > 200:
+        problems.append(f"1k/s slow motion advanced only {end - start} instructions in 2 s")
+    if r["flashes"] < 1:
+        problems.append("the grid flashed no written page during slow motion")
+    page.screenshot(path=str(shots / f"slow-{name}-1100.png"))
+    page.set_viewport_size({"width": 390, "height": 900})
+    show_tab(page, "debugger")
+    time.sleep(0.3)
+    page.screenshot(path=str(shots / f"tab-debugger-{name}-390.png"))
+    if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
+        problems.append("debugger tab scrolls horizontally at 390 px")
+    page.click("#dbg_pause")
+    page.close()
+    if errors:
+        problems.append("page errors: " + "; ".join(errors))
+    return problems, r
 
 
-STAMPED = ("style.css", "app.js", "v86/libv86.js")
+def touch_case(browser, base, shots):
+    """390 px phone with touch: tapping a "?" shows its text, tapping elsewhere hides it."""
+    problems = []
+    ctx = browser.new_context(viewport={"width": 390, "height": 844}, has_touch=True, is_mobile=True)
+    page = ctx.new_page()
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel=hello#memory")
+    wait_for(lambda: gate_on_screen(page), 60)
+    if not page.evaluate("matchMedia('(pointer: coarse)').matches"):
+        problems.append("touch emulation does not report pointer: coarse")
+    tips = page.locator(".tip")
+    if tips.count() < 10:
+        problems.append(f"only {tips.count()} ? markers")
+    if page.locator(".tip[title]").count():
+        problems.append("a ? marker still relies on a title attribute")
+    size = page.evaluate("""() => { const s = getComputedStyle(document.querySelector('.tip'), '::after');
+        return [parseFloat(s.width), parseFloat(s.height)]; }""")
+    if min(size) < 32:
+        problems.append(f"? tap target is {size} px")
+    for sel in ("#panel_memory .tip", "#count_info .tip"):
+        tip = page.locator(sel).first
+        tip.scroll_into_view_if_needed()
+        tip.tap()
+        if not wait_for(lambda: page.is_visible("#tip_pop"), 2):
+            problems.append(f"tapping {sel} showed no popover")
+            continue
+        text = page.inner_text("#tip_pop")
+        if len(text) < 20:
+            problems.append(f"popover of {sel} is empty: {text!r}")
+        page.screenshot(path=str(shots / "touch-tip-390.png"))
+        page.tap("h1")
+        if not wait_for(lambda: not page.is_visible("#tip_pop"), 2):
+            problems.append(f"tapping elsewhere did not close the popover of {sel}")
+    # Inside a label the ? must not open the control (file chooser).
+    choosers = []
+    page.on("filechooser", lambda fc: choosers.append(fc))
+    page.locator("label:has(#file) .tip").tap()
+    time.sleep(1)
+    if choosers:
+        problems.append("tapping the From disk ? opened the file chooser")
+    if not page.is_visible("#tip_pop"):
+        problems.append("the From disk ? showed no popover")
+    page.keyboard.press("Escape")
+    if page.is_visible("#tip_pop"):
+        problems.append("Esc did not close the popover")
+    if errors:
+        problems.append("page errors: " + "; ".join(errors))
+    ctx.close()
+    return problems
+
+
+STAMPED = ("style.css", "app.js", "stepper.js", "v86/libv86.js")
 
 
 def stamp(html, v):
@@ -290,34 +458,30 @@ def stale_cache_case(browser, timeout):
 
 
 def run_case(browser, base, name, mem, timeout, shots, has_symbols):
-    page = browser.new_page(viewport={"width": 1100, "height": 1400})
+    page = browser.new_page(viewport={"width": 1100, "height": 1000})
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)))
     url = f"{base}/index.html?kernel={name}" + (f"&mem={mem}" if mem else "")
     page.goto(url)
     start = time.monotonic()
-    text = ""
-    ok = False
-    while time.monotonic() - start < timeout:
-        text = page.inner_text("#screen_container")
-        h = text.find(HELLO)
-        if h >= 0 and text.find(ALIVE, h + len(HELLO)) >= 0:
-            ok = True
-            break
-        time.sleep(0.5)
+    ok = wait_for(lambda: gate_on_screen(page), timeout, 0.5)
+    text = page.inner_text("#screen_container")
     elapsed = time.monotonic() - start
     ram = int(page.eval_on_selector("#memory", "e => e.value"))
     status = page.inner_text("#status")
     problems = page.inner_text("#problems")
     nonzero = total = None
-    lab, lab_problems = {}, []
+    lab, lab_problems, count = {}, [], {}
+    tag = f"{name}-{ram // 1024}k"
+    if ok:
+        count = check_counters(page, lab_problems, timeout)
+        page.screenshot(path=str(shots / f"top-{tag}-1100.png"))
     if not page.is_disabled("#scan"):
         page.click("#scan")
         nonzero = int(page.get_attribute("#footprint", "data-nonzero"))
         total = int(page.get_attribute("#footprint", "data-total"))
         if ok:
-            lab = memory_lab(page, has_symbols, lab_problems)
-    tag = f"{name}-{ram // 1024}k"
+            lab = memory_lab(page, name, has_symbols, lab_problems, shots, tag)
     page.locator("#screen_container").screenshot(path=str(shots / f"screen-{tag}.png"))
     page.screenshot(path=str(shots / f"page-{tag}.png"), full_page=True)
     page.close()
@@ -325,7 +489,7 @@ def run_case(browser, base, name, mem, timeout, shots, has_symbols):
         "kernel": name, "ram_kib": ram // 1024, "ok": ok,
         "seconds": round(elapsed, 1), "nonzero_pages": nonzero,
         "total_pages": total, "status": status, "problems": problems,
-        "page_errors": errors,
+        "page_errors": errors, "counters": count,
         "screen_head": "\n".join(text.splitlines()[:4]) if not ok else "",
         "lab": lab, "lab_problems": lab_problems,
     }
@@ -353,6 +517,7 @@ def main():
     entries = kernel_entries()
     with sync_playwright() as p:
         browser = p.chromium.launch()
+        at2mb = {}
         for name, mem in cases:
             has_symbols = "symbols" in entries.get(name, {})
             r = run_case(browser, base, name, mem, args.timeout, shots, has_symbols)
@@ -361,7 +526,24 @@ def main():
                     and not r["lab_problems"] and not r["page_errors"])
             if not good:
                 failed = True
+            if mem is None:
+                at2mb[name] = r["counters"]
         if not args.cases:
+            h = (at2mb.get("hello") or {}).get(HELLO) or {}
+            k = (at2mb.get("minified-linux") or {}).get(HELLO) or {}
+            if k and not (k.get("entry") or 0) > (h.get("entry") or 0):
+                print("FAIL: Linux needs no more instructions than hello", h, k)
+                failed = True
+            for name in at2mb:
+                dp, dr = debugger_case(browser, base, name, None, shots)
+                print(json.dumps({"debugger": name, "problems": dp, **dr}))
+                if dp:
+                    failed = True
+        if not args.cases:
+            touch = touch_case(browser, base, shots)
+            print(json.dumps({"touch": touch or "ok"}))
+            if touch:
+                failed = True
             stale = stale_cache_case(browser, args.timeout)
             print(json.dumps({"stale_cache": stale or "ok"}))
             if stale:

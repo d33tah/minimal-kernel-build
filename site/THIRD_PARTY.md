@@ -11,5 +11,8 @@ at build time and checks each against a SHA-256 recorded in the script.
 To move the pin, change `V86_NPM_VERSION`, `V86_COMMIT` and the checksums in
 `fetch-v86.sh` together, and the table above.
 
-The page itself (`index.html`, `app.js`, `style.css`) uses no other
-libraries.
+The page itself (`index.html`, `app.js`, `stepper.js`, `style.css`) uses
+no other libraries. `stepper.js` adds two exports to `v86.wasm` in the
+browser after the checksum-verified file is fetched (`read_imm8` and the
+interpreter's `run`, found by name in the module's name section); the
+code itself is not modified.

@@ -17,17 +17,6 @@ struct filename *getname_kernel(const char *filename)
 
 	if (len <= EMBEDDED_NAME_MAX) {
 		result->name = (char *)result->iname;
-	} else if (len <= PATH_MAX) {
-		const size_t size = offsetof(struct filename, iname[1]);
-		struct filename *tmp;
-
-		tmp = kmalloc(size, GFP_KERNEL);
-		if (unlikely(!tmp)) {
-			__putname(result);
-			return ERR_PTR(-ENOMEM);
-		}
-		tmp->name = (char *)result;
-		result = tmp;
 	} else {
 		__putname(result);
 		return ERR_PTR(-ENAMETOOLONG);
@@ -48,11 +37,7 @@ void putname(struct filename *name)
 	if (--name->refcnt > 0)
 		return;
 
-	if (name->name != name->iname) {
-		__putname(name->name);
-		kfree(name);
-	} else
-		__putname(name);
+	__putname(name);
 }
 
 static int generic_permission(struct user_namespace *mnt_userns,

@@ -35,6 +35,31 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   boxed while the CPU is paused or stepping. Above the listing, a compact
   index of the page's symbols (the only symbol list) scrolls to each one.
   "live" re-reads the page every 500 ms.
+- **Imported symbols.** "Symbols" next to "From disk" takes a
+  `System.map` (`nm -n` text: hex address, type letter, name) or an
+  unstripped `vmlinux` (ELF32: section headers, `.symtab`/`.strtab` and
+  the PT_LOAD program headers are parsed in the browser, as
+  `gen-symbols.py` does). They replace the kernel's `symbols.json` for
+  everything that uses symbols (grid colours, Page symbol index, Debugger
+  current/previous symbol, Graph, panic detection) and the kernel reboots.
+  A System.map has no sizes: a symbol runs to the next one, capped at the
+  end of its section; sections come from the type letters (T/t text, R/r
+  rodata, D/d data, B/b bss) and the markers `_text`/`_etext`,
+  `__start_rodata`, `_sdata`/`_edata`, `__bss_start`/`__bss_stop`,
+  `__brk_base`/`__brk_limit`. Physical = virtual - offset; "auto" takes the
+  ELF's PT_LOAD, or for a System.map puts `_text` at 0x100000 (where v86
+  loads the 32-bit kernel; this is the detected offset shown, as a
+  System.map has no bytes to match), else vaddr - 0xC0000000 for addresses
+  above the i386 PAGE_OFFSET, else identity; a hex offset can be typed.
+  There is no disasm.json or sources.json for imported symbols: the
+  listing is hex only and says so. The map is remembered in localStorage
+  per bzImage (SHA-256 of the image) when it fits; "forget symbols" drops
+  it. A bzImage and a System.map dropped on the page together are loaded
+  and booted. A file that is neither gives an error and the previous
+  symbols stay. With imported symbols the bzImage's relocation stub, which
+  runs at the addresses vmlinux code will occupy, is named after those
+  vmlinux symbols (there is no build to compare its bytes with), so the
+  call stacks in the Graph tab are one or two levels deeper at the start.
 - **C source.** With `kernels/<name>/sources.json` the Page listing and
   the Debugger's code window print the C line above the instructions it
   compiled to, like `objdump -S` (dim, `file.c:123`, printed again when
@@ -296,6 +321,11 @@ kernel it then starts paused
 (`?paused=1`): Step 10 changes EIP and marks changed registers and counts
 exactly 10, Run to 0x100000 stops there, and 1k/s slow motion advances
 the counter over 2 s and flashes at least one written page in the grid.
-A last case serves two "deploys" with `Cache-Control: max-age=600` (as
+The import case boots the minified Linux with its own System.map
+(`llvm-nm -n`) and with the vmlinux ELF instead of symbols.json: Run to
+start_kernel names start_kernel in the Debugger as with symbols.json, a
+counted boot has a start_kernel frame holding most of the run and detects
+the panic, the listing says hex only, a malformed file gives an error and
+keeps the symbols, nothing scrolls sideways at 390 px. A last case serves two "deploys" with `Cache-Control: max-age=600` (as
 GitHub Pages does) and checks a reload runs the new `app.js`. Screenshots
 (desktop and 390 px) go to `site/test-screenshots/`.

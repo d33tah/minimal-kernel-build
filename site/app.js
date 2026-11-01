@@ -664,7 +664,8 @@ function renderPage(p, bytes, base, how) {
 		if (line)
 			scrollListingTo(line);
 	}
-	$("dump_info").textContent = r.nIns + " instructions" + (r.nBad ? " (" + r.nBad + " differ from the build)" : "") +
+	$("dump_info").textContent = (disasm ? r.nIns + " instructions" : "hex only: no disassembly (disasm.json) for this kernel") +
+		(r.nBad ? " (" + r.nBad + " differ from the build)" : "") +
 		", " + r.nonzero + " non-zero bytes" + (base ? ", " + r.changed + " changed " + how : "") +
 		", read " + new Date().toLocaleTimeString("en-GB");
 }
@@ -1807,6 +1808,8 @@ async function loadKernel(entry, memFromUrl) {
 	await loadSources(entry);
 	$("src_toggle").hidden = !sources;
 	useImage(entry.name, await resp.arrayBuffer(), memFromUrl, await loadSymbols(entry));
+	showImported();
+	await restoreImported();
 	await boot();
 }
 
@@ -1917,6 +1920,7 @@ async function init() {
 	drawMaps();
 	initDebugger();
 	initGraph();
+	initImport();
 	initSource();
 	updateDebugUi();
 	for (const t of TABS)
@@ -1967,6 +1971,8 @@ async function init() {
 		sources = null;
 		$("src_toggle").hidden = true;
 		useImage(f.name, await f.arrayBuffer());
+		showImported();
+		await restoreImported();
 		await boot();
 	});
 

@@ -27,6 +27,7 @@ import json
 import pathlib
 import re
 import shutil
+import subprocess
 import socketserver
 import sys
 import tempfile
@@ -624,6 +625,111 @@ def determinism_case(browser, base):
     return problems, {k: rs[0][1] for k, rs in runs.items()}
 
 
+def import_inputs():
+    """System.map and vmlinux of the minified Linux: from the workflow's
+    kernels artifact (kernels/import-test/), else made from ../minified."""
+    d = SITE / "kernels" / "import-test"
+    if (d / "System.map").exists() and (d / "vmlinux").exists():
+        return d / "System.map", d / "vmlinux"
+    elf = SITE.parent / "minified" / "vmlinux"
+    if not elf.exists():
+        return None
+    tmp = pathlib.Path(tempfile.mkdtemp())
+    (tmp / "System.map").write_text(subprocess.run(["llvm-nm", "-n", str(elf)], capture_output=True, text=True,
+                                                   check=True).stdout)
+    return tmp / "System.map", elf
+
+
+def import_case(browser, base, shots):
+    """Imported System.map / vmlinux give the same symbols as symbols.json."""
+    problems, r = [], {}
+    files = import_inputs()
+    if not files:
+        return ["no System.map/vmlinux to import"], r
+    syms = json.loads((SITE / kernel_entries()["minified-linux"]["symbols"]).read_text())["symbols"]
+    sk = next(s for s in syms if s["name"] == "start_kernel")
+
+    def at_start_kernel(path):
+        page = browser.new_page(viewport={"width": 1100, "height": 1000})
+        errors = []
+        page.on("pageerror", lambda e: errors.append(str(e)))
+        page.goto(f"{base}/index.html?kernel=minified-linux&paused=1#debugger")
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+        if path:
+            page.set_input_files("#symfile", str(path))
+            wait_for(lambda: page.get_attribute("#sym_status", "data-state") in ("imported", "error"), 10)
+            r[path.name + "_status"] = page.inner_text("#sym_status")
+            if page.get_attribute("#sym_status", "data-state") != "imported":
+                problems.append(f"{path.name} not imported: {page.inner_text('#sym_status')}")
+            wait_for(lambda: page.get_attribute("#dbg_state", "data-state") in ("stepped", "paused", "jit"), 30)
+        page.fill("#dbg_addr", hex(sk["vaddr"]))
+        page.click("#dbg_runto")
+        ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
+                      and page.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 60)
+        cur = page.get_attribute("#cur_sym", "data-name") if ok else None
+        listing_note = None
+        if path:
+            show_tab(page, "page")
+            listing_note = page.inner_text("#dump_info")
+            page.set_viewport_size({"width": 390, "height": 900})
+            for t in ("memory", "page", "debugger"):
+                show_tab(page, t)
+                if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
+                    problems.append(f"{path.name}: page scrolls horizontally at 390 px on the {t} tab")
+            page.screenshot(path=str(shots / f"import-{path.name}-390.png"))
+        page.close()
+        if errors:
+            problems.append("page errors: " + "; ".join(errors))
+        return cur, listing_note
+
+    base_cur, _ = at_start_kernel(None)
+    r["symbols.json"] = base_cur
+    for path in files:
+        cur, note = at_start_kernel(path)
+        r[path.name] = cur
+        if cur != base_cur or cur != "start_kernel":
+            problems.append(f"{path.name}: current symbol at start_kernel is {cur!r}, symbols.json gives {base_cur!r}")
+        if not note or "hex only" not in note:
+            problems.append(f"{path.name}: the listing does not say it is hex only: {note!r}")
+        # A counted full-speed boot with the imported symbols: the timeline has start_kernel, panic is found.
+        page = browser.new_page(viewport={"width": 1100, "height": 1000})
+        page.goto(f"{base}/index.html?kernel=minified-linux&speed=full")
+        wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 60)
+        page.evaluate("window.oldStepper = stepper")
+        page.set_input_files("#symfile", str(path))
+        wait_for(lambda: page.evaluate("stepper && stepper !== window.oldStepper && !!stepper.end"), 60)
+        sk_frame = page.evaluate("""() => { const st = G.stepper; let best = null;
+            for (let k = 0; k < st.fStart.length; k++) if (st.nodeName(st.fNode[k]) === 'start_kernel') {
+                const incl = (st.fEnd[k] < 0 ? st.steps : st.fEnd[k]) - st.fStart[k];
+                if (!best || incl > best.incl) best = { incl, depth: st.fDepth[k] }; }
+            return best && { ...best, total: st.steps - runStart() }; }""")
+        r[path.name + "_start_kernel"] = sk_frame
+        if not sk_frame or sk_frame["incl"] < sk_frame["total"] / 2:
+            problems.append(f"{path.name}: start_kernel missing or small in the timeline: {sk_frame}")
+        if page.get_attribute("#end_banner", "data-kind") != "panic":
+            problems.append(f"{path.name}: panic not detected with imported symbols")
+        page.close()
+    # A malformed file: a clear error, the previous symbols stay.
+    page = browser.new_page(viewport={"width": 390, "height": 900})
+    page.goto(f"{base}/index.html?kernel=minified-linux&paused=1")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    before = page.evaluate("symbols.symbols.length")
+    bad = pathlib.Path(tempfile.mkdtemp()) / "notes.txt"
+    bad.write_text("this is not a symbol map\nat all\nreally\n")
+    page.set_input_files("#symfile", str(bad))
+    wait_for(lambda: page.get_attribute("#sym_status", "data-state") == "error", 5)
+    r["malformed"] = page.inner_text("#sym_status")
+    if page.get_attribute("#sym_status", "data-state") != "error" or "previous symbols stay" not in r["malformed"]:
+        problems.append("malformed file: no clear error: " + r["malformed"])
+    if page.evaluate("symbols.symbols.length") != before or page.evaluate("!!symbols.imported"):
+        problems.append("malformed file replaced the symbols")
+    if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
+        problems.append("the error message makes the page scroll horizontally at 390 px")
+    page.screenshot(path=str(shots / "import-malformed-390.png"))
+    page.close()
+    return problems, r
+
+
 def touch_case(browser, base, shots):
     """390 px phone with touch: tapping a "?" shows its text, tapping elsewhere hides it."""
     problems = []
@@ -697,7 +803,7 @@ def touch_case(browser, base, shots):
     return problems
 
 
-STAMPED = ("style.css", "clock.js", "app.js", "stepper.js", "graph.js", "source.js", "v86/libv86.js")
+STAMPED = ("style.css", "clock.js", "app.js", "stepper.js", "graph.js", "source.js", "symimport.js", "v86/libv86.js")
 
 
 def stamp(html, v):
@@ -871,6 +977,10 @@ def main():
                 if dp:
                     failed = True
         if not args.cases and "minified-linux" in entries:
+            ip, ir = import_case(browser, base, shots)
+            print(json.dumps({"import": ip or "ok", **{k: str(v) for k, v in ir.items()}}))
+            if ip:
+                failed = True
             dp, dr = determinism_case(browser, base)
             print(json.dumps({"determinism": dp or "ok", **{k: str(v) for k, v in dr.items()}}))
             if dp:

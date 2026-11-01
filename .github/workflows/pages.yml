@@ -45,6 +45,10 @@ jobs:
         site/gen-symbols.py minified/vmlinux out/minified-linux/symbols.json minified-linux
         site/gen-disasm.py hello/boot/high/kernel.elf out/hello/disasm.json
         site/gen-disasm.py minified/vmlinux out/minified-linux/disasm.json
+        # Inputs for the browser test's symbol import (not deployed).
+        mkdir -p out/import-test
+        cp minified/vmlinux out/import-test/vmlinux
+        llvm-nm -n minified/vmlinux > out/import-test/System.map
         ls -l out/*/
 
     # C source annotations for the site only: a -g copy of each tree. The
@@ -104,7 +108,7 @@ jobs:
         # Cache busting: Pages serves with max-age=600, and a browser that
         # keeps an older app.js next to a newer index.html breaks.
         v=$(echo "$GITHUB_SHA" | cut -c1-12)
-        sed -i -E "s/(href|src)=\"(style\.css|clock\.js|app\.js|stepper\.js|graph\.js|source\.js|v86\/libv86\.js)\"/\1=\"\2?v=$v\"/g" site/index.html
+        sed -i -E "s/(href|src)=\"(style\.css|clock\.js|app\.js|stepper\.js|graph\.js|source\.js|symimport\.js|v86\/libv86\.js)\"/\1=\"\2?v=$v\"/g" site/index.html
         grep -E "\?v=$v" site/index.html
 
     - name: Install Playwright and Chromium
@@ -123,7 +127,7 @@ jobs:
         path: site/test-screenshots/
 
     - name: Drop test output from the site
-      run: rm -rf site/test-screenshots site/__pycache__
+      run: rm -rf site/test-screenshots site/__pycache__ site/kernels/import-test
 
     - uses: actions/configure-pages@v5
 

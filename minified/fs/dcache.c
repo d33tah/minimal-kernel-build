@@ -1,7 +1,33 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * fs/dcache.c
+ *
+ * Complete reimplementation
+ * (C) 1997 Thomas Schoebel-Theuer,
+ * with heavy changes by Linus Torvalds
+ */
+
+/*
+ * Notes on the allocation strategy:
+ *
+ * The dcache is a master of the icache - whenever a dcache entry
+ * exists, the inode will always exist. "iput()" is done either when
+ * the dcache entry is deleted or garbage collected.
+ */
+
 #include <linux/memblock.h>
 #include "internal.h"
 
 static const struct qstr slash_name = QSTR_INIT("/", 1);
+
+/*
+ * This is the single most critical data structure when it comes
+ * to the dcache: the hashtable for lookups. Somebody should try
+ * to make this good - I've just made it work.
+ *
+ * This hash-function tries to avoid losing too many bits of hash
+ * information, yet avoid using a prime hash-size or similar.
+ */
 
 static unsigned int d_hash_shift __read_mostly;
 
@@ -39,6 +65,22 @@ static inline int dentry_string_cmp(const unsigned char *cs,
 static inline int dentry_cmp(const struct dentry *dentry,
 			     const unsigned char *ct, unsigned tcount)
 {
+	/*
+	 * Be careful about RCU walk racing with rename:
+	 * use 'READ_ONCE' to fetch the name pointer.
+	 *
+	 * NOTE! Even if a rename will mean that the length
+	 * was not loaded atomically, we don't care. The
+	 * RCU walk will check the sequence count eventually,
+	 * and catch it. And we won't overrun the buffer,
+	 * because we're reading the name pointer atomically,
+	 * and a dentry name is guaranteed to be properly
+	 * terminated with a NUL byte.
+	 *
+	 * End result: even if 'len' is wrong, we'll exit
+	 * early because the data cannot match (there can
+	 * be no NUL in the ct/tcount data)
+	 */
 	const unsigned char *cs = READ_ONCE(dentry->d_name.name);
 
 	return dentry_string_cmp(cs, ct, tcount);
@@ -115,6 +157,10 @@ static void dentry_free(struct dentry *dentry)
 	__d_free(&dentry->d_u.d_rcu);
 }
 
+/*
+ * Release the dentry's inode, using the filesystem
+ * d_iput() operation if defined.
+ */
 static void dentry_unlink_inode(struct dentry *dentry)
 	__releases(dentry->d_lock) __releases(dentry->d_inode->i_lock)
 {
@@ -133,6 +179,11 @@ static void ___d_drop(struct dentry *dentry)
 {
 	struct hlist_bl_head *b;
 
+	/*
+	 * Hashed dentries are normally on the dentry hashtable,
+	 * with the exception of those newly allocated by
+	 * d_obtain_root, which are always IS_ROOT:
+	 */
 	if (unlikely(IS_ROOT(dentry)))
 		b = &dentry->d_sb->s_roots;
 	else
@@ -204,6 +255,7 @@ void dput(struct dentry *dentry)
 	}
 }
 
+/* This must be called with d_lock held */
 static inline void __dget_dlock(struct dentry *dentry)
 {
 	dentry->d_lockref.count++;
@@ -221,6 +273,16 @@ struct dentry *dget_parent(struct dentry *dentry)
 	return ret;
 }
 
+/**
+ * __d_alloc	-	allocate a dcache entry
+ * @sb: filesystem it will belong to
+ * @name: qstr of the name
+ *
+ * Allocates a dentry. It returns %NULL if there is insufficient memory
+ * available. On a success the dentry is returned. The name passed in is
+ * copied and the copy passed in may be reused after this call.
+ */
+
 static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 {
 	struct dentry *dentry;
@@ -230,6 +292,12 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	if (!dentry)
 		return NULL;
 
+	/*
+	 * We guarantee that the inline name is always NUL-terminated.
+	 * This way the memcpy() done by the name switching in rename
+	 * will still always have a NUL at the end, even if we might
+	 * be overwriting an internal NUL character
+	 */
 	dentry->d_iname[DNAME_INLINE_LEN - 1] = 0;
 	if (unlikely(!name)) {
 		name = &slash_name;
@@ -254,7 +322,8 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	memcpy(dname, name->name, name->len);
 	dname[name->len] = 0;
 
-	smp_store_release(&dentry->d_name.name, dname);
+	/* Make sure we always see the terminating NUL character */
+	smp_store_release(&dentry->d_name.name, dname); /* ^^^ */
 
 	dentry->d_lockref.count = 1;
 	dentry->d_flags = 0;
@@ -267,6 +336,15 @@ static struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 	return dentry;
 }
 
+/**
+ * d_alloc	-	allocate a dcache entry
+ * @parent: parent of entry to allocate
+ * @name: qstr of the name
+ *
+ * Allocates a dentry. It returns %NULL if there is insufficient memory
+ * available. On a success the dentry is returned. The name passed in is
+ * copied and the copy passed in may be reused after this call.
+ */
 struct dentry *d_alloc(struct dentry *parent, const struct qstr *name)
 {
 	struct dentry *dentry = __d_alloc(parent->d_sb, name);
@@ -274,6 +352,10 @@ struct dentry *d_alloc(struct dentry *parent, const struct qstr *name)
 		return NULL;
 	spin_lock(&parent->d_lock);
 
+	/*
+	 * don't need child lock because it is not subject
+	 * to concurrency here
+	 */
 	__dget_dlock(parent);
 	dentry->d_parent = parent;
 	spin_unlock(&parent->d_lock);
@@ -309,6 +391,21 @@ static void __d_instantiate(struct dentry *dentry, struct inode *inode)
 	spin_unlock(&dentry->d_lock);
 }
 
+/**
+ * d_instantiate - fill in inode information for a dentry
+ * @entry: dentry to complete
+ * @inode: inode to attach to this dentry
+ *
+ * Fill in inode information in the entry.
+ *
+ * This turns negative dentries into productive full members
+ * of society.
+ *
+ * NOTE! This assumes that the inode count has been incremented
+ * (or otherwise set) by the caller to indicate that it is now
+ * in use by the dcache.
+ */
+
 void d_instantiate(struct dentry *entry, struct inode *inode)
 {
 	if (inode) {
@@ -338,6 +435,17 @@ static inline bool d_same_name(const struct dentry *dentry,
 	return dentry_cmp(dentry, name->name, name->len) == 0;
 }
 
+/**
+ * d_lookup - search for a dentry
+ * @parent: parent dentry
+ * @name: qstr of name we wish to find
+ * Returns: dentry, or NULL
+ *
+ * d_lookup searches the children of the parent dentry for the name in
+ * question. If the dentry is found its reference count is incremented and the
+ * dentry is returned. The caller must use dput to free the entry when it has
+ * finished using it. %NULL is returned if the dentry does not exist.
+ */
 struct dentry *d_lookup(const struct dentry *parent, const struct qstr *name)
 {
 	unsigned int hash = name->hash;
@@ -346,6 +454,26 @@ struct dentry *d_lookup(const struct dentry *parent, const struct qstr *name)
 	struct dentry *found = NULL;
 	struct dentry *dentry;
 
+	/*
+	 * Note: There is significant duplication with __d_lookup_rcu which is
+	 * required to prevent single threaded performance regressions
+	 * especially on architectures where smp_rmb (in seqcounts) are costly.
+	 * Keep the two functions in sync.
+	 */
+
+	/*
+	 * The hash list is protected using RCU.
+	 *
+	 * Take d_lock when comparing a candidate dentry, to avoid races
+	 * with d_move().
+	 *
+	 * It is possible that concurrent renames can mess up our list
+	 * walk here and result in missing our dentry, resulting in the
+	 * false-negative result. d_lookup() protects against concurrent
+	 * renames using rename_lock seqlock.
+	 *
+	 * See Documentation/filesystems/path-lookup.txt for more details.
+	 */
 	rcu_read_lock();
 
 	hlist_bl_for_each_entry_rcu(dentry, node, b, d_hash) {
@@ -382,6 +510,8 @@ static void __d_rehash(struct dentry *entry)
 	hlist_bl_unlock(b);
 }
 
+/* inode->i_lock held if inode is non-NULL */
+
 static inline void __d_add(struct dentry *dentry, struct inode *inode)
 {
 	spin_lock(&dentry->d_lock);
@@ -394,6 +524,15 @@ static inline void __d_add(struct dentry *dentry, struct inode *inode)
 	if (inode)
 		spin_unlock(&inode->i_lock);
 }
+
+/**
+ * d_add - add dentry to hash queues
+ * @entry: dentry to add
+ * @inode: The inode to attach to this dentry
+ *
+ * This adds the entry to the hash queues and initializes @inode.
+ * The entry was actually filled in earlier during d_alloc().
+ */
 
 void d_add(struct dentry *entry, struct inode *inode)
 {

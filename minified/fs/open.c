@@ -1,3 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ *  linux/fs/open.c
+ *
+ *  Copyright (C) 1991, 1992  Linus Torvalds
+ */
+
 #include <linux/namei.h>
 
 #include "internal.h"
@@ -51,6 +58,12 @@ cleanup_file:
 	return error;
 }
 
+/**
+ * vfs_open - open the file at the given path
+ * @path: path to open
+ * @file: newly allocated file with f_flag initialized
+ * @cred: credentials to use
+ */
 int vfs_open(const struct path *path, struct file *file)
 {
 	file->f_path = *path;

@@ -1,3 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ *  linux/fs/file_table.c
+ *
+ *  Copyright (C) 1991, 1992  Linus Torvalds
+ *  Copyright (C) 1997 David S. Miller (davem@caip.rutgers.edu)
+ */
+
 #include <linux/fs.h>
 #include <linux/file.h>
 #include "internal.h"
@@ -26,9 +34,21 @@ static struct file *__alloc_file(int flags, const struct cred *cred)
 	atomic_long_set(&f->f_count, 1);
 	f->f_mode = OPEN_FMODE(flags);
 
+	/* f->f_version: 0 */
+
 	return f;
 }
 
+/* Find an unused file structure and return a pointer to it.
+ * Returns an error pointer if some error happend e.g. we over file
+ * structures limit, run out of memory or operation is not permitted.
+ *
+ * Be very careful using this.  You are responsible for
+ * getting write access to any mount that you might assign
+ * to this filp, if it is opened for write.  If this is not
+ * done, you will imbalance int the mount's writer count
+ * and a warning at __fput() time.
+ */
 struct file *alloc_empty_file(int flags, const struct cred *cred)
 {
 	struct file *f;
@@ -38,6 +58,8 @@ struct file *alloc_empty_file(int flags, const struct cred *cred)
 	return f;
 }
 
+/* the real guts of fput() - releasing the last reference to file
+ */
 static void __fput(struct file *file)
 {
 	struct dentry *dentry = file->f_path.dentry;

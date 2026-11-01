@@ -1,3 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ *  linux/fs/read_write.c
+ *
+ *  Copyright (C) 1991, 1992  Linus Torvalds
+ */
+
 #include <linux/file.h>
 #include <linux/uio.h>
 #include <linux/syscalls.h>

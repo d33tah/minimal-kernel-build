@@ -1,8 +1,104 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ *  linux/fs/namei.c
+ *
+ *  Copyright (C) 1991, 1992  Linus Torvalds
+ */
+
+/*
+ * Some corrections by tytso.
+ */
+
+/* [Feb 1997 T. Schoebel-Theuer] Complete rewrite of the pathname
+ * lookup logic.
+ */
+/* [Feb-Apr 2000, AV] Rewrite to the new namespace architecture.
+ */
+
 #include <linux/namei.h>
 #include <linux/file.h>
 #include <linux/fs_struct.h>
 
 #include "internal.h"
+
+/* [Feb-1997 T. Schoebel-Theuer]
+ * Fundamental changes in the pathname lookup mechanisms (namei)
+ * were necessary because of omirr.  The reason is that omirr needs
+ * to know the _real_ pathname, not the user-supplied one, in case
+ * of symlinks (and also when transname replacements occur).
+ *
+ * The new code replaces the old recursive symlink resolution with
+ * an iterative one (in case of non-nested symlink chains).  It does
+ * this with calls to <fs>_follow_link().
+ * As a side effect, dir_namei(), _namei() and follow_link() are now 
+ * replaced with a single function lookup_dentry() that can handle all 
+ * the special cases of the former code.
+ *
+ * With the new dcache, the pathname is stored at each inode, at least as
+ * long as the refcount of the inode is positive.  As a side effect, the
+ * size of the dcache depends on the inode cache and thus is dynamic.
+ *
+ * [29-Apr-1998 C. Scott Ananian] Updated above description of symlink
+ * resolution to correspond with current state of the code.
+ *
+ * Note that the symlink resolution is not *completely* iterative.
+ * There is still a significant amount of tail- and mid- recursion in
+ * the algorithm.  Also, note that <fs>_readlink() is not used in
+ * lookup_dentry(): lookup_dentry() on the result of <fs>_readlink()
+ * may return different results than <fs>_follow_link().  Many virtual
+ * filesystems (including /proc) exhibit this behavior.
+ */
+
+/* [24-Feb-97 T. Schoebel-Theuer] Side effects caused by new implementation:
+ * New symlink semantics: when open() is called with flags O_CREAT | O_EXCL
+ * and the name already exists in form of a symlink, try to create the new
+ * name indicated by the symlink. The old code always complained that the
+ * name already exists, due to not following the symlink even if its target
+ * is nonexistent.  The new semantics affects also mknod() and link() when
+ * the name is a symlink pointing to a non-existent name.
+ *
+ * I don't know which semantics is the right one, since I have no access
+ * to standards. But I found by trial that HP-UX 9.0 has the full "new"
+ * semantics implemented, while SunOS 4.1.1 and Solaris (SunOS 5.4) have the
+ * "old" one. Personally, I think the new semantics is much more logical.
+ * Note that "ln old new" where "new" is a symlink pointing to a non-existing
+ * file does succeed in both HP-UX and SunOs, but not in Solaris
+ * and in the old Linux semantics.
+ */
+
+/* [16-Dec-97 Kevin Buhr] For security reasons, we change some symlink
+ * semantics.  See the comments in "open_namei" and "do_link" below.
+ *
+ * [10-Sep-98 Alan Modra] Another symlink change.
+ */
+
+/* [Feb-Apr 2000 AV] Complete rewrite. Rules for symlinks:
+ *	inside the path - always follow.
+ *	in the last component in creation/removal/renaming - never follow.
+ *	if LOOKUP_FOLLOW passed - follow.
+ *	if the pathname has trailing slashes - follow.
+ *	otherwise - don't follow.
+ * (applied in that order).
+ *
+ * [Jun 2000 AV] Inconsistent behaviour of open() in case if flags==O_CREAT
+ * restored for 2.4. This is the last surviving part of old 4.2BSD bug.
+ * During the 2.4 we need to fix the userland stuff depending on it -
+ * hopefully we will be able to get rid of that wart in 2.5. So far only
+ * XEmacs seems to be relying on it...
+ */
+/*
+ * [Sep 2001 AV] Single-semaphore locking scheme (kudos to David Holland)
+ * implemented.  Let's see if raised priority of ->s_vfs_rename_mutex gives
+ * any extra contention...
+ */
+
+/* In order to reduce some races, while at the same time doing additional
+ * checking and hopefully speeding things up, we copy filenames to the
+ * kernel data space before using them..
+ *
+ * POSIX.1 2.4: an empty pathname is invalid (ENOENT).
+ * PATH_MAX includes the nul terminator --RR.
+ */
 
 #define EMBEDDED_NAME_MAX (PATH_MAX - offsetof(struct filename, iname))
 
@@ -52,6 +148,17 @@ static int generic_permission(struct user_namespace *mnt_userns,
 	return -EACCES;
 }
 
+/**
+ * do_inode_permission - UNIX permission checking
+ * @mnt_userns:	user namespace of the mount the inode was found from
+ * @inode:	inode to check permissions on
+ * @mask:	right to check for (%MAY_READ, %MAY_WRITE, %MAY_EXEC ...)
+ *
+ * We _really_ want to just do "generic_permission()" without
+ * even looking at the inode->i_op values. So we keep a cache
+ * flag in inode->i_opflags, that says "this has not special
+ * permission function, use the fast case".
+ */
 static inline int do_inode_permission(struct user_namespace *mnt_userns,
 				      struct inode *inode, int mask)
 {
@@ -66,6 +173,11 @@ static int inode_permission(struct user_namespace *mnt_userns,
 
 	/* No superblock is ever read-only: there is no MAY_WRITE/-EROFS check. */
 	if (unlikely(mask & MAY_WRITE)) {
+		/*
+		 * Updating mtime will likely cause i_uid and i_gid to be
+		 * written back improperly if their true value is unknown
+		 * to the vfs.
+		 */
 		if (HAS_UNMAPPED_ID(mnt_userns, inode))
 			return -EACCES;
 	}
@@ -77,11 +189,23 @@ static int inode_permission(struct user_namespace *mnt_userns,
 	return 0;
 }
 
+/**
+ * path_get - get a reference to a path
+ * @path: path to get the reference to
+ *
+ * Given a path increment the reference count to the dentry and the vfsmount.
+ */
 void path_get(const struct path *path)
 {
 	dget(path->dentry);
 }
 
+/**
+ * path_put - put a reference to a path
+ * @path: path to put the reference to
+ *
+ * Given a path decrement the reference count to the dentry and the vfsmount.
+ */
 void path_put(const struct path *path)
 {
 	dput(path->dentry);
@@ -91,7 +215,7 @@ struct nameidata {
 	struct path path;
 	struct qstr last;
 	struct path root;
-	struct inode *inode;
+	struct inode *inode; /* path.dentry.d_inode */
 	unsigned int flags, state;
 	int last_type;
 	struct filename *name;
@@ -189,6 +313,13 @@ static struct dentry *__lookup_slow(const struct qstr *name, struct dentry *dir,
 	return dentry;
 }
 
+/*
+ * Parent directory has inode locked exclusive.  This is one
+ * and only case when ->lookup() gets called on non in-lookup
+ * dentries - as the matter of fact, this only gets called
+ * when directory is guaranteed to have no in-lookup children
+ * at all.
+ */
 static struct dentry *__lookup_hash(const struct qstr *name,
 				    struct dentry *base, unsigned int flags)
 {
@@ -281,9 +412,14 @@ static const char *walk_component(struct nameidata *nd, int flags)
 
 static inline unsigned int fold_hash(unsigned long x, unsigned long y)
 {
+	/* Use arch-optimized multiply if one exists */
 	return __hash_32(y ^ __hash_32(x));
 }
 
+/*
+ * Calculate the length and hash of the path component, and
+ * return the "hash_len" as the result.
+ */
 static inline u64 hash_name(const void *salt, const char *name)
 {
 	unsigned long a = 0, b, x = 0, y = (unsigned long)salt;
@@ -310,6 +446,14 @@ inside:
 	return hashlen_create(fold_hash(x, y), len + find_zero(mask));
 }
 
+/*
+ * Name resolution.
+ * This is the basic name resolution function, turning a pathname into
+ * the final dentry. We expect 'base' to be positive and a directory.
+ *
+ * Returns 0 and nd will have valid dentry and mnt on success.
+ * Returns error and drops reference to input namei data on failure.
+ */
 static int link_path_walk(const char *name, struct nameidata *nd)
 {
 	int err;
@@ -323,6 +467,7 @@ static int link_path_walk(const char *name, struct nameidata *nd)
 		return 0;
 	}
 
+	/* At this point we know we have a real path component. */
 	for (;;) {
 		struct user_namespace *mnt_userns;
 		const char *link;
@@ -355,6 +500,10 @@ static int link_path_walk(const char *name, struct nameidata *nd)
 		if (!*name)
 			goto OK;
 
+		/*
+		 * If it wasn't NUL, we know it was '/'. Skip that
+		 * slash, and continue until no more slashes.
+		 */
 		do {
 			name++;
 		} while (unlikely(*name == '/'));
@@ -362,6 +511,7 @@ static int link_path_walk(const char *name, struct nameidata *nd)
 OK:
 			return 0;
 		}
+		/* not the last component */
 		link = walk_component(nd, WALK_MORE);
 		if (unlikely(link))
 			return PTR_ERR(link);
@@ -370,6 +520,7 @@ OK:
 	}
 }
 
+/* must be paired with terminate_walk() */
 static const char *path_init(struct nameidata *nd, unsigned flags)
 {
 	const char *s = nd->name->name;
@@ -387,6 +538,7 @@ static const char *path_init(struct nameidata *nd, unsigned flags)
 	return s;
 }
 
+/* Returns 0 and nd will be valid on success; Retuns error, otherwise. */
 static int path_parentat(struct nameidata *nd, unsigned flags,
 			 struct path *parent)
 {
@@ -418,6 +570,15 @@ static int filename_parentat(struct filename *name, unsigned int flags,
 	return retval;
 }
 
+/*	Check whether we can create an object with dentry child in directory
+ *  dir.
+ *  1. We can't do it if child already exists (open has special treatment for
+ *     this case, but since we are inlined it's OK)
+ *  2. We can't do it if dir is read-only (done in permission())
+ *  3. We can't do it if the fs can't represent the fsuid or fsgid.
+ *  4. We should have write and exec permissions on dir
+ *  5. We can't do it if dir is immutable (done in permission())
+ */
 static inline int may_create(struct user_namespace *mnt_userns,
 			     struct inode *dir, struct dentry *child)
 {
@@ -462,6 +623,21 @@ static int may_open(struct user_namespace *mnt_userns, const struct path *path,
 	return 0;
 }
 
+/*
+ * Look up and maybe create and open the last component.
+ *
+ * Must be called with parent locked (exclusive in O_CREAT case).
+ *
+ * Returns 0 on success, that is, if
+ *  the file was successfully atomically created (if necessary) and opened, or
+ *  the file was not completely opened at this time, though lookups and
+ *  creations were performed.
+ * These case are distinguished by presence of FMODE_OPENED on file->f_mode.
+ * In the latter case dentry returned in @path might be negative if O_CREAT
+ * hadn't been specified.
+ *
+ * An error code is returned on failure.
+ */
 static struct dentry *lookup_open(struct nameidata *nd, struct file *file,
 				  const struct open_flags *op)
 {
@@ -511,8 +687,14 @@ static const char *open_last_lookups(struct nameidata *nd, struct file *file,
 		if (likely(dentry))
 			goto finish_lookup;
 	} else {
+		/* trailing slashes? */
 		if (unlikely(nd->last.name[nd->last.len]))
 			return ERR_PTR(-EISDIR);
+		/*
+		 * do _not_ fail yet - we might not need that or fail with
+		 * a different error; let lookup_open() decide; we'll be
+		 * dropping this one anyway.
+		 */
 	}
 
 	if (open_flag & O_CREAT)
@@ -615,9 +797,17 @@ static struct dentry *filename_create(struct filename *name, struct path *path,
 	if (error)
 		return ERR_PTR(error);
 
+	/*
+	 * Yucky last component or no last component at all?
+	 * (foo/., foo/.., /////)
+	 */
 	if (unlikely(type != LAST_NORM))
 		goto out;
 
+	/*
+	 * Do the final lookup.  Suppress 'create' if there is a trailing
+	 * '/', and a directory wasn't requested.
+	 */
 	if (last.name[last.len] && !want_dir)
 		create_flags = 0;
 	inode_lock_nested(path->dentry->d_inode, I_MUTEX_PARENT);
@@ -629,6 +819,12 @@ static struct dentry *filename_create(struct filename *name, struct path *path,
 	if (d_is_positive(dentry))
 		goto fail;
 
+	/*
+	 * Special case - lookup gave negative, but... we had foo/bar/
+	 * From the vfs_mknod() POV we just have a negative dentry -
+	 * all is fine. Let's be bastards - you had / on the end, you've
+	 * been asking for (non-existent) directory. -ENOENT for you.
+	 */
 	if (unlikely(!create_flags)) {
 		error = -ENOENT;
 		goto fail;
@@ -661,6 +857,22 @@ void done_path_create(struct path *path, struct dentry *dentry)
 	path_put(path);
 }
 
+/**
+ * vfs_mknod - create device node or file
+ * @mnt_userns:	user namespace of the mount the inode was found from
+ * @dir:	inode of @dentry
+ * @dentry:	pointer to dentry of the base directory
+ * @mode:	mode of the new device node or file
+ * @dev:	device number of device to create
+ *
+ * Create a device node or file.
+ *
+ * If the inode has been found through an idmapped mount the user namespace of
+ * the vfsmount must be passed through @mnt_userns. This function will then take
+ * care to map the inode according to @mnt_userns before checking permissions.
+ * On non-idmapped mounts or if permission checking is to be performed on the
+ * raw inode simply passs init_user_ns.
+ */
 int vfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 	      struct dentry *dentry, umode_t mode, dev_t dev)
 {
@@ -676,6 +888,21 @@ int vfs_mknod(struct user_namespace *mnt_userns, struct inode *dir,
 	return error;
 }
 
+/**
+ * vfs_mkdir - create directory
+ * @mnt_userns:	user namespace of the mount the inode was found from
+ * @dir:	inode of @dentry
+ * @dentry:	pointer to dentry of the base directory
+ * @mode:	mode of the new directory
+ *
+ * Create a directory.
+ *
+ * If the inode has been found through an idmapped mount the user namespace of
+ * the vfsmount must be passed through @mnt_userns. This function will then take
+ * care to map the inode according to @mnt_userns before checking permissions.
+ * On non-idmapped mounts or if permission checking is to be performed on the
+ * raw inode simply passs init_user_ns.
+ */
 int vfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
 	      struct dentry *dentry, umode_t mode)
 {

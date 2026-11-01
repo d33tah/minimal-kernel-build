@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_LINKAGE_H
 #define _LINUX_LINKAGE_H
 
@@ -22,11 +23,13 @@
 
 #define SYM_T_NONE STT_NOTYPE
 
+/* SYM_A_* -- align the symbol? */
 #define SYM_A_ALIGN ALIGN
-#define SYM_A_NONE
+#define SYM_A_NONE /* nothing */
 
+/* SYM_L_* -- linkage of symbols */
 #define SYM_L_GLOBAL(name) .globl name
-#define SYM_L_LOCAL(name)
+#define SYM_L_LOCAL(name) /* nothing */
 
 #ifndef LINKER_SCRIPT
 #define ALIGN __ALIGN

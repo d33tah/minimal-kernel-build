@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_UTSNAME_H
 #define _LINUX_UTSNAME_H
 
@@ -26,4 +27,4 @@ static inline struct new_utsname *init_utsname(void)
 	return &init_uts_ns.name;
 }
 
-#endif
+#endif /* _LINUX_UTSNAME_H */

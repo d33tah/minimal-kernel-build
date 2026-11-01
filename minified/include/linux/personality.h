@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_PERSONALITY_H
 #define _LINUX_PERSONALITY_H
 
@@ -5,4 +6,4 @@ enum {
 	READ_IMPLIES_EXEC = 0x0400000,
 };
 
-#endif
+#endif /* _LINUX_PERSONALITY_H */

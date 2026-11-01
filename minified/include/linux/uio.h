@@ -1,3 +1,7 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
+/*
+ *	Berkeley style UIO structures	-	Alan Cox 1994.
+ */
 #ifndef __LINUX_UIO_H
 #define __LINUX_UIO_H
 
@@ -11,11 +15,12 @@ struct iovec {
 struct page;
 
 struct kvec {
-	void *iov_base;
+	void *iov_base; /* and that should *never* hold a userland pointer */
 	size_t iov_len;
 };
 
 enum iter_type {
+	/* iter types */
 	ITER_IOVEC,
 	ITER_KVEC,
 };

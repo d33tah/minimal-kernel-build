@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_FS_STRUCT_H
 #define _LINUX_FS_STRUCT_H
 
@@ -28,4 +29,4 @@ static inline void get_fs_pwd(struct fs_struct *fs, struct path *pwd)
 	spin_unlock(&fs->lock);
 }
 
-#endif
+#endif /* _LINUX_FS_STRUCT_H */

@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/* Atomic operations usable in machine independent code */
 #ifndef _LINUX_ATOMIC_H
 #define _LINUX_ATOMIC_H
 
@@ -7,4 +9,4 @@
 #include <linux/atomic/atomic-long.h>
 #include <linux/atomic/atomic-instrumented.h>
 
-#endif
+#endif /* _LINUX_ATOMIC_H */

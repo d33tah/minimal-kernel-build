@@ -1,9 +1,14 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_SCHED_COREDUMP_H
 #define _LINUX_SCHED_COREDUMP_H
 
+/* mm flags */
+
+/* for SUID_DUMP_* above */
 #define MMF_DUMPABLE_BITS 2
 #define MMF_DUMPABLE_MASK ((1 << MMF_DUMPABLE_BITS) - 1)
 
+/* coredump filter bits */
 #define MMF_DUMP_ANON_PRIVATE 2
 #define MMF_DUMP_ANON_SHARED 3
 #define MMF_DUMP_HUGETLB_PRIVATE 7

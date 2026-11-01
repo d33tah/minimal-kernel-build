@@ -1,13 +1,42 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
+/*
+ * linux/percpu-defs.h - basic definitions for percpu areas
+ *
+ * DO NOT INCLUDE DIRECTLY OUTSIDE PERCPU IMPLEMENTATION PROPER.
+ *
+ * This file is separate from linux/percpu.h to avoid cyclic inclusion
+ * dependency from arch header files.  Only to be included from
+ * asm/percpu.h.
+ *
+ * This file includes macros necessary to declare percpu sections and
+ * variables, and definitions of percpu accessors and operations.  It
+ * should provide enough percpu features to arch header files even when
+ * they can only include asm/percpu.h to avoid cyclic inclusion dependency.
+ */
+
 #ifndef _LINUX_PERCPU_DEFS_H
 #define _LINUX_PERCPU_DEFS_H
 
 #define PER_CPU_SHARED_ALIGNED_SECTION ""
 #define PER_CPU_ALIGNED_SECTION "..shared_aligned"
 
+/*
+ * Base implementations of per-CPU variable declarations and definitions, where
+ * the section in which the variable is to be placed is provided by the
+ * 'sec' argument.  This may be used to affect the parameters governing the
+ * variable's storage.
+ *
+ * NOTE!  The sections for the DECLARE and for the DEFINE must match, lest
+ * linkage errors occur due the compiler generating the wrong code to access
+ * that section.
+ */
 #define __PCPU_ATTRS(sec)        \
 	__percpu __attribute__(( \
 		section(PER_CPU_BASE_SECTION sec))) PER_CPU_ATTRIBUTES
 
+/*
+ * Normal declaration and definition macros.
+ */
 #define DECLARE_PER_CPU_SECTION(type, name, sec) \
 	extern __PCPU_ATTRS(sec) __typeof__(type) name
 
@@ -18,6 +47,17 @@
 
 #define DEFINE_PER_CPU(type, name) DEFINE_PER_CPU_SECTION(type, name, "")
 
+/*
+ * Declaration/definition used for per-CPU variables that must be cacheline
+ * aligned under SMP conditions so that, whilst a particular instance of the
+ * data corresponds to a particular CPU, inefficiencies due to direct access by
+ * other CPUs are reduced by preventing the data from unnecessarily spanning
+ * cachelines.
+ *
+ * An example of this would be statistical data, where each CPU's set of data
+ * is updated by that CPU alone, but the data from across all CPUs is collated
+ * by a CPU processing a read from a proc file.
+ */
 #define DECLARE_PER_CPU_SHARED_ALIGNED(type, name)                          \
 	DECLARE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION) \
 	____cacheline_aligned_in_smp
@@ -34,6 +74,9 @@
 	DEFINE_PER_CPU_SECTION(type, name, PER_CPU_ALIGNED_SECTION) \
 	____cacheline_aligned
 
+/*
+ * Declaration/definition used for per-CPU variables that must be page aligned.
+ */
 #define DECLARE_PER_CPU_PAGE_ALIGNED(type, name)              \
 	DECLARE_PER_CPU_SECTION(type, name, "..page_aligned") \
 	__aligned(PAGE_SIZE)
@@ -42,6 +85,17 @@
 	DEFINE_PER_CPU_SECTION(type, name, "..page_aligned") \
 	__aligned(PAGE_SIZE)
 
+/*
+ * __verify_pcpu_ptr() verifies @ptr is a percpu pointer without evaluating
+ * @ptr and is invoked once before a percpu area is accessed by all
+ * accessors and operations.  This is performed in the generic part of
+ * percpu and arch overrides don't need to worry about it; however, if an
+ * arch wants to implement an arch-specific percpu accessor or operation,
+ * it may use __verify_pcpu_ptr() to verify the parameters.
+ *
+ * + 0 is required in order to convert the pointer type from a
+ * potential array type to a pointer to a single item of the array.
+ */
 #define __verify_pcpu_ptr(ptr)                                               \
 	do {                                                                 \
 		const void __percpu *__vpp_verify = (typeof((ptr) + 0))NULL; \
@@ -63,6 +117,11 @@
 #define this_cpu_ptr(ptr) raw_cpu_ptr(ptr)
 
 #define per_cpu(var, cpu) (*per_cpu_ptr(&(var), cpu))
+
+/*
+ * Branching function to split up a function into a set of functions that
+ * are called for different scalar sizes of the objects handled.
+ */
 
 extern void __bad_size_call_parameter(void);
 
@@ -136,6 +195,40 @@ extern void __bad_size_call_parameter(void);
 		}                                       \
 	} while (0)
 
+/*
+ * this_cpu operations (C) 2008-2013 Christoph Lameter <cl@linux.com>
+ *
+ * Optimized manipulation for memory allocated through the per cpu
+ * allocator or for addresses of per cpu variables.
+ *
+ * These operation guarantee exclusivity of access for other operations
+ * on the *same* processor. The assumption is that per cpu data is only
+ * accessed by a single processor instance (the current one).
+ *
+ * The arch code can provide optimized implementation by defining macros
+ * for certain scalar sizes. F.e. provide this_cpu_add_2() to provide per
+ * cpu atomic operations for 2 byte sized RMW actions. If arch code does
+ * not provide operations for a scalar size then the fallback in the
+ * generic code will be used.
+ *
+ * cmpxchg_double replaces two adjacent scalars at once.  The first two
+ * parameters are per cpu variables which have to be of the same size.  A
+ * truth value is returned to indicate success or failure (since a double
+ * register result is difficult to handle).  There is very limited hardware
+ * support for these operations, so only certain sizes may work.
+ */
+
+/*
+ * Operations for contexts where we do not want to do any checks for
+ * preemptions.  Unless strictly necessary, always use [__]this_cpu_*()
+ * instead.
+ *
+ * If there is no other protection through preempt disable and/or disabling
+ * interrupts then one of these RMW operations can show unexpected behavior
+ * because the execution thread was rescheduled on another processor or an
+ * interrupt occurred and the same percpu variable was modified from the
+ * interrupt context.
+ */
 #define raw_cpu_read(pcp) __pcpu_size_call_return(raw_cpu_read_, pcp)
 #define raw_cpu_write(pcp, val) __pcpu_size_call(raw_cpu_write_, pcp, val)
 
@@ -143,6 +236,10 @@ extern void __bad_size_call_parameter(void);
 
 #define __this_cpu_write(pcp, val) ({ raw_cpu_write(pcp, val); })
 
+/*
+ * Operations with implied preemption/interrupt protection.  These
+ * operations can be used without worrying about preemption or interrupt.
+ */
 #define this_cpu_read(pcp) __pcpu_size_call_return(this_cpu_read_, pcp)
 #define this_cpu_write(pcp, val) __pcpu_size_call(this_cpu_write_, pcp, val)
 #define this_cpu_add(pcp, val) __pcpu_size_call(this_cpu_add_, pcp, val)

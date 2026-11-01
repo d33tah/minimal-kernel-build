@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_FS_H
 #define _LINUX_FS_H
 
@@ -29,26 +30,41 @@ struct fs_context;
 #define MAY_READ 0x00000004
 #define MAY_OPEN 0x00000020
 
+/*
+ * flags in file.f_mode.  Note that FMODE_READ and FMODE_WRITE must correspond
+ * to O_WRONLY and O_RDWR via the strange trick in do_dentry_open()
+ */
+
+/* file is open for reading */
 #define FMODE_READ ((__force fmode_t)0x1)
 
+/* file is open for writing */
 #define FMODE_WRITE ((__force fmode_t)0x2)
 
+/* File is opened for execution with sys_execve / sys_uselib */
 #define FMODE_EXEC ((__force fmode_t)0x20)
 
+/* Write access to underlying fs */
 #define FMODE_WRITER ((__force fmode_t)0x10000)
 
+/* Has read method(s) */
 #define FMODE_CAN_READ ((__force fmode_t)0x20000)
 
+/* Has write method(s) */
 #define FMODE_CAN_WRITE ((__force fmode_t)0x40000)
 
 #define FMODE_OPENED ((__force fmode_t)0x80000)
 #define FMODE_CREATED ((__force fmode_t)0x100000)
 
+/* File was opened by fanotify and shouldn't generate fanotify events */
 #define FMODE_NONOTIFY ((__force fmode_t)0x4000000)
 
 /* Reduced positive_aop_returns - only AOP_TRUNCATED_PAGE used */
 enum positive_aop_returns { AOP_TRUNCATED_PAGE = 0x80001 };
 
+/*
+ * oh the beauties of C type declarations.
+ */
 struct page;
 struct address_space;
 
@@ -69,6 +85,28 @@ struct address_space_operations {
 			 struct page *page, void *fsdata);
 };
 
+/**
+ * struct address_space - Contents of a cacheable, mappable object.
+ * @host: Owner, either the inode or the block_device.
+ * @i_pages: Cached pages.
+ * @invalidate_lock: Guards coherency between page cache contents and
+ *   file offset->disk block mappings in the filesystem during invalidates.
+ *   It is also used to block modification of page cache contents through
+ *   memory mappings.
+ * @gfp_mask: Memory allocation flags to use for allocating pages.
+ * @i_mmap_writable: Number of VM_SHARED mappings.
+ * @nr_thps: Number of THPs in the pagecache (non-shmem only).
+ * @i_mmap: Tree of private and shared mappings.
+ * @i_mmap_rwsem: Protects @i_mmap and @i_mmap_writable.
+ * @nrpages: Number of page entries, protected by the i_pages lock.
+ * @writeback_index: Writeback starts here.
+ * @a_ops: Methods.
+ * @flags: Error bits and flags (AS_*).
+ * @wb_err: The most recent error which has occurred.
+ * @private_lock: For use by the owner of the address_space.
+ * @private_list: For use by the owner of the address_space.
+ * @private_data: For use by the owner of the address_space.
+ */
 struct address_space {
 	struct inode *host;
 	struct xarray i_pages;
@@ -77,6 +115,11 @@ struct address_space {
 	const struct address_space_operations *a_ops;
 } __attribute__((aligned(sizeof(long)))) __randomize_layout;
 
+/*
+ * Keep mostly read-only and often accessed (especially for
+ * the RCU path lookup and 'stat' data) fields at the beginning
+ * of the 'struct inode'
+ */
 struct inode {
 	umode_t i_mode;
 	kuid_t i_uid;
@@ -86,10 +129,10 @@ struct inode {
 	struct address_space *i_mapping;
 	dev_t i_rdev;
 	loff_t i_size;
-	spinlock_t i_lock;
+	spinlock_t i_lock; /* i_blocks, i_bytes, maybe i_size */
 	struct rw_semaphore i_rwsem;
 	atomic_t i_writecount;
-	const struct file_operations *i_fop;
+	const struct file_operations *i_fop; /* former ->i_op->default_file_ops */
 	struct address_space i_data;
 	struct cdev *i_cdev;
 } __randomize_layout;
@@ -132,11 +175,26 @@ filemap_invalidate_unlock_shared(struct address_space *mapping)
 	up_read(&mapping->invalidate_lock);
 }
 
+/*
+ * NOTE: in a 32bit arch with a preemptable kernel and
+ * an UP compile the i_size_read/write must be atomic
+ * with respect to the local cpu (unlike with preempt disabled),
+ * but they don't need to be atomic with respect to other cpus like in
+ * true SMP (so they need either to either locally disable irq around
+ * the read or for example on x86 they can be still implemented as a
+ * cmpxchg8b without the need of the lock prefix). For SMP compiles
+ * and 64bit archs it makes no difference if preempt is enabled or not.
+ */
 static inline loff_t i_size_read(const struct inode *inode)
 {
 	return inode->i_size;
 }
 
+/*
+ * NOTE: unlike i_size_read(), i_size_write() does need locking around it
+ * (normally i_mutex), otherwise on 32bit/SMP an update of i_size_seqcount
+ * can be lost, resulting in subsequent i_size_read() calls spinning forever.
+ */
 static inline void i_size_write(struct inode *inode, loff_t i_size)
 {
 	inode->i_size = i_size;
@@ -147,7 +205,7 @@ struct file {
 		struct rcu_head fu_rcuhead;
 	} f_u;
 	struct path f_path;
-	struct inode *f_inode;
+	struct inode *f_inode; /* cached value */
 	const struct file_operations *f_op;
 	atomic_long_t f_count;
 	fmode_t f_mode;
@@ -173,9 +231,15 @@ static inline struct inode *file_inode(const struct file *f)
 }
 
 struct super_block {
-	loff_t s_maxbytes;
+	loff_t s_maxbytes; /* Max file size */
 	struct dentry *s_root;
-	struct hlist_bl_head s_roots;
+	struct hlist_bl_head s_roots; /* alternate root dentries for NFS */
+
+	/*
+	 * Owning user namespace and default context in which to
+	 * interpret filesystem uids, gids, quotas, device nodes,
+	 * xattrs and security labels.
+	 */
 	struct user_namespace *s_user_ns;
 } __randomize_layout;
 
@@ -194,30 +258,73 @@ static inline void i_gid_write(struct inode *inode, gid_t gid)
 	inode->i_gid = make_kgid(i_user_ns(inode), gid);
 }
 
+/**
+ * i_uid_into_mnt - map an inode's i_uid down into a mnt_userns
+ * @mnt_userns: user namespace of the mount the inode was found from
+ * @inode: inode to map
+ *
+ * Return: the inode's i_uid mapped down according to @mnt_userns.
+ * If the inode's i_uid has no mapping INVALID_UID is returned.
+ */
 static inline kuid_t i_uid_into_mnt(struct user_namespace *mnt_userns,
 				    const struct inode *inode)
 {
 	return mapped_kuid_fs(mnt_userns, i_user_ns(inode), inode->i_uid);
 }
 
+/**
+ * i_gid_into_mnt - map an inode's i_gid down into a mnt_userns
+ * @mnt_userns: user namespace of the mount the inode was found from
+ * @inode: inode to map
+ *
+ * Return: the inode's i_gid mapped down according to @mnt_userns.
+ * If the inode's i_gid has no mapping INVALID_GID is returned.
+ */
 static inline kgid_t i_gid_into_mnt(struct user_namespace *mnt_userns,
 				    const struct inode *inode)
 {
 	return mapped_kgid_fs(mnt_userns, i_user_ns(inode), inode->i_gid);
 }
 
+/**
+ * inode_fsuid_set - initialize inode's i_uid field with callers fsuid
+ * @inode: inode to initialize
+ * @mnt_userns: user namespace of the mount the inode was found from
+ *
+ * Initialize the i_uid field of @inode. If the inode was found/created via
+ * an idmapped mount map the caller's fsuid according to @mnt_users.
+ */
 static inline void inode_fsuid_set(struct inode *inode,
 				   struct user_namespace *mnt_userns)
 {
 	inode->i_uid = mapped_fsuid(mnt_userns, i_user_ns(inode));
 }
 
+/**
+ * inode_fsgid_set - initialize inode's i_gid field with callers fsgid
+ * @inode: inode to initialize
+ * @mnt_userns: user namespace of the mount the inode was found from
+ *
+ * Initialize the i_gid field of @inode. If the inode was found/created via
+ * an idmapped mount map the caller's fsgid according to @mnt_users.
+ */
 static inline void inode_fsgid_set(struct inode *inode,
 				   struct user_namespace *mnt_userns)
 {
 	inode->i_gid = mapped_fsgid(mnt_userns, i_user_ns(inode));
 }
 
+/**
+ * fsuidgid_has_mapping() - check whether caller's fsuid/fsgid is mapped
+ * @sb: the superblock we want a mapping in
+ * @mnt_userns: user namespace of the relevant mount
+ *
+ * Check whether the caller's fsuid and fsgid have a valid mapping in the
+ * s_user_ns of the superblock @sb. If the caller is on an idmapped mount map
+ * the caller's fsuid and fsgid according to the @mnt_userns first.
+ *
+ * Return: true if fsuid and fsgid is mapped, false if not.
+ */
 static inline bool fsuidgid_has_mapping(struct super_block *sb,
 					struct user_namespace *mnt_userns)
 {
@@ -240,6 +347,9 @@ int vfs_mkdir(struct user_namespace *, struct inode *, struct dentry *,
 int vfs_mknod(struct user_namespace *, struct inode *, struct dentry *, umode_t,
 	      dev_t);
 
+/*
+ * VFS file helper functions.
+ */
 void inode_init_owner(struct user_namespace *mnt_userns, struct inode *inode,
 		      const struct inode *dir, umode_t mode);
 
@@ -290,6 +400,11 @@ struct file_system_type {
 };
 
 #define fops_get(fops) ((fops) ? (fops) : NULL)
+/*
+ * This one is to be used *ONLY* from ->open() instances.
+ * fops must be non-NULL, pinned down *and* module dependencies
+ * should be sufficient to pin the caller down as well.
+ */
 #define replace_fops(f, fops)                     \
 	do {                                      \
 		struct file *__file = (f);        \
@@ -301,7 +416,7 @@ extern int current_umask(void);
 #define MAX_RW_COUNT (INT_MAX & PAGE_MASK)
 
 struct filename {
-	const char *name;
+	const char *name; /* pointer to actual string */
 	int refcnt;
 	const char iname[];
 };
@@ -312,6 +427,7 @@ extern struct file *filp_open(const char *, int, umode_t);
 extern struct filename *getname_kernel(const char *);
 extern void putname(struct filename *name);
 
+/* fs/dcache.c */
 extern void __init vfs_caches_init_early(void);
 extern void __init vfs_caches_init(void);
 
@@ -322,11 +438,37 @@ extern const struct file_operations def_chr_fops;
 
 extern void init_special_inode(struct inode *, umode_t, dev_t);
 
+/*
+ * Sync the bytes written if this was a synchronous write.  Expect ki_pos
+ * to already be updated for the write, and will return either the amount
+ * of bytes passed in, or an error if syncing the file failed.
+ */
 static inline ssize_t generic_write_sync(struct kiocb *iocb, ssize_t count)
 {
 	return count;
 }
 
+/*
+ * This is used for regular files where some users -- especially the
+ * currently executed binary in a process, previously handled via
+ * VM_DENYWRITE -- cannot handle concurrent write (and maybe mmap
+ * read-write shared) accesses.
+ *
+ * get_write_access() gets write permission for a file.
+ * put_write_access() releases this write permission.
+ * deny_write_access() denies write access to a file.
+ * allow_write_access() re-enables write access to a file.
+ *
+ * The i_writecount field of an inode can have the following values:
+ * 0: no write access, no denied write access
+ * < 0: (-i_writecount) users that denied write access to the file.
+ * > 0: (i_writecount) users that have write access to the file.
+ *
+ * Normally we operate on that counter with atomic_{inc,dec} and it's safe
+ * except for the cases where we don't hold i_writecount yet. Then we need to
+ * use {get,deny}_write_access() - these functions check the sign and refuse
+ * to do the change if sign is wrong.
+ */
 static inline int get_write_access(struct inode *inode)
 {
 	return atomic_inc_unless_negative(&inode->i_writecount) ? 0 : -ETXTBSY;
@@ -369,4 +511,4 @@ extern struct dentry *simple_lookup(struct inode *, struct dentry *,
 	((__force fmode_t)(((flag + 1) & O_ACCMODE) | \
 			   (flag & __FMODE_NONOTIFY)))
 
-#endif
+#endif /* _LINUX_FS_H */

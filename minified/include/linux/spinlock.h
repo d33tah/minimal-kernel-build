@@ -1,9 +1,13 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef __LINUX_SPINLOCK_H
 #define __LINUX_SPINLOCK_H
 
 #include <linux/preempt.h>
 #include <linux/irqflags.h>
 
+/*
+ * Pull the arch_spinlock_t and arch_rwlock_t definitions:
+ */
 #include <linux/spinlock_types.h>
 
 #define raw_spin_lock_init(lock)                          \
@@ -11,6 +15,12 @@
 		*(lock) = __RAW_SPIN_LOCK_UNLOCKED(lock); \
 	} while (0)
 
+/*
+ * Define the various spin_lock methods.  Note we define these
+ * regardless of whether CONFIG_SMP or CONFIG_PREEMPTION are set. The
+ * various methods are defined as nops in the case they are not
+ * required.
+ */
 #define raw_spin_trylock(lock) __cond_lock(lock, _raw_spin_trylock(lock))
 
 #define raw_spin_lock(lock) _raw_spin_lock(lock)

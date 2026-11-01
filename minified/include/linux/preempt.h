@@ -1,6 +1,26 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef __LINUX_PREEMPT_H
 #define __LINUX_PREEMPT_H
 
+/*
+ * We put the hardirq and softirq counter into the preemption
+ * counter. The bitmask has the following meaning:
+ *
+ * - bits 0-7 are the preemption count (max preemption depth: 256)
+ * - bits 8-15 are the softirq count (max # of softirqs: 256)
+ *
+ * The hardirq count could in theory be the same as the number of
+ * interrupts in the system, but we run all interrupt handlers with
+ * interrupts disabled, so we cannot have nesting interrupts. Though
+ * there are a few palaeontologic drivers which reenable interrupts in
+ * the handler, so we need more than one bit here.
+ *
+ *         PREEMPT_MASK:	0x000000ff
+ *         SOFTIRQ_MASK:	0x0000ff00
+ *         HARDIRQ_MASK:	0x000f0000
+ *             NMI_MASK:	0x00f00000
+ * PREEMPT_NEED_RESCHED:	0x80000000
+ */
 #define PREEMPT_BITS 8
 #define SOFTIRQ_BITS 8
 #define HARDIRQ_BITS 4
@@ -23,10 +43,26 @@
 
 #define PREEMPT_DISABLED (PREEMPT_DISABLE_OFFSET + PREEMPT_ENABLED)
 
+/*
+ * Disable preemption until the scheduler is running -- use an unconditional
+ * value so that it also works on !PREEMPT_COUNT kernels.
+ *
+ * Reset by start_kernel()->sched_init()->init_idle()->init_idle_preempt_count().
+ */
 #define INIT_PREEMPT_COUNT PREEMPT_OFFSET
 
+/*
+ * Initial preempt_count value; reflects the preempt_count schedule invariant
+ * which states that during context switches:
+ *
+ *    preempt_count() == 2*PREEMPT_DISABLE_OFFSET
+ *
+ * Note: PREEMPT_DISABLE_OFFSET is 0 for !PREEMPT_COUNT kernels.
+ * Note: See finish_task_switch().
+ */
 #define FORK_PREEMPT_COUNT (2 * PREEMPT_DISABLE_OFFSET + PREEMPT_ENABLED)
 
+/* preempt_count() and related functions, depends on PREEMPT_NEED_RESCHED */
 #include <asm/preempt.h>
 
 #define nmi_count() (preempt_count() & NMI_MASK)
@@ -34,19 +70,44 @@
 #define softirq_count() (preempt_count() & SOFTIRQ_MASK)
 #define irq_count() (nmi_count() | hardirq_count() | softirq_count())
 
+/*
+ * Macros to retrieve the current execution context:
+ *
+ * in_nmi()		- We're in NMI context
+ * in_hardirq()		- We're in hard IRQ context
+ * in_serving_softirq()	- We're in softirq context
+ * in_task()		- We're in task context
+ */
 #define in_nmi() (nmi_count())
 
 #define in_interrupt() (irq_count())
 
 #define PREEMPT_DISABLE_OFFSET 0
 
+/*
+ * Are we running in atomic context?  WARNING: this macro cannot
+ * always detect atomic context; in particular, it cannot know about
+ * held spinlocks in non-preemptible kernels.  Thus it should not be
+ * used in the general case to determine whether sleeping is possible.
+ * Do not use in_atomic() in driver code.
+ */
 #define in_atomic() (preempt_count() != 0)
 
+/*
+ * Check whether we were atomic before we did preempt_disable():
+ * (used by the scheduler)
+ */
 #define in_atomic_preempt_off() (preempt_count() != PREEMPT_DISABLE_OFFSET)
 
 #define preempt_count_add(val) __preempt_count_add(val)
 #define preempt_count_sub(val) __preempt_count_sub(val)
 
+/*
+ * Even if we don't have any preemption, we need preempt disable/enable
+ * to be barriers, so that we don't have things like get_user/put_user
+ * that can cause faults and scheduling migrate into our preempt-protected
+ * region.
+ */
 #define preempt_disable() barrier()
 #define sched_preempt_enable_no_resched() barrier()
 #define preempt_enable() barrier()

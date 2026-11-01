@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_HIGHMEM_H
 #define _LINUX_HIGHMEM_H
 
@@ -61,4 +62,4 @@ static inline void folio_zero_range(struct folio *folio, size_t start,
 	zero_user_segments(&folio->page, start, start + length, 0, 0);
 }
 
-#endif
+#endif /* _LINUX_HIGHMEM_H */

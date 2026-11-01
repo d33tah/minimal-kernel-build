@@ -982,6 +982,25 @@ async function boot() {
 			stepper = new Stepper(em, V86_KERNEL_ADDR, kernelEnd(image.hdr));
 			stepper.milestones = MILESTONES.map((text) => ({ text, found: null }));
 			stepper.setSymbols(codeSymbols());
+			// Before vmlinux is in place (the bzImage's relocation stub also runs
+			// at 1 MiB) the address of EIP belongs to a vmlinux symbol only by
+			// coincidence: name a symbol only when the bytes at EIP are the
+			// build's instruction bytes.
+			const symbolOf = stepper.symbolOf.bind(stepper);
+			const mem = em.v86.cpu.mem8;
+			stepper.symbolOf = (phys) => {
+				const i = symbolOf(phys);
+				if (i < 0 || !disasm)
+					return i;
+				const k = insnIndex(phys), ins = disasm.insns;
+				if (k >= ins.length || ins[k][0] !== phys)
+					return -1;
+				const raw = ins[k][1];
+				for (let b = 0; b < raw.length / 2; b++)
+					if (mem[phys + b] !== parseInt(raw.substr(b * 2, 2), 16))
+						return -1;
+				return i;
+			};
 		} catch (e) {
 			stepper = null;
 			$("dbg_status").textContent = "No debugger: " + (wasmPatchError || e);
@@ -1256,7 +1275,9 @@ function jumpTo(a) {
 
 const symDesc = (st, i, a) => {
 	if (i < 0)
-		return a >= 0 && a < V86_KERNEL_ADDR ? "(outside the kernel: BIOS, option ROM or setup)" : st.symLabel(i);
+		return a >= 0 && a < V86_KERNEL_ADDR ? "(outside the kernel: BIOS, option ROM or setup)" :
+			a >= V86_KERNEL_ADDR && image && a < kernelEnd(image.hdr) && i === -1 ?
+				"(not vmlinux code: relocation stub or not loaded yet)" : st.symLabel(i);
 	return st.symName[i];
 };
 

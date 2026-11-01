@@ -4,7 +4,12 @@
 
 #include "internal.h"
 
-#define INIT_MEMBLOCK_REGIONS 128
+/*
+ * MKB_FOOTPRINT: 32 regions per type (upstream: 128); a boot here uses 2
+ * memory and 2 reserved regions; a full table makes memblock_add_range
+ * return -ENOMEM and memblock_alloc fail (callers panic).
+ */
+#define INIT_MEMBLOCK_REGIONS 32
 
 #define INIT_MEMBLOCK_RESERVED_REGIONS INIT_MEMBLOCK_REGIONS
 

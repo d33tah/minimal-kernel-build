@@ -33,7 +33,11 @@ struct e820_entry {
 
 #include <linux/numa.h>
 
-#define E820_MAX_ENTRIES (E820_MAX_ENTRIES_ZEROPAGE + 3 * MAX_NUMNODES)
+/*
+ * MKB_FOOTPRINT: 32 entries (upstream: E820_MAX_ENTRIES_ZEROPAGE + 3 *
+ * MAX_NUMNODES = 131); qemu passes 6, __e820__range_add ignores the rest.
+ */
+#define E820_MAX_ENTRIES 32
 
 /*
  * The whole array of E820 entries:

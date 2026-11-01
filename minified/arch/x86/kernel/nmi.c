@@ -11,8 +11,6 @@
 /*
  * Handle hardware traps and faults.
  */
-#include <linux/delay.h>
-
 #include <asm/traps.h>
 #include <asm/io.h>
 #include <asm/mach_traps.h>
@@ -86,19 +84,13 @@ static void pci_serr_error(unsigned char reason, struct pt_regs *regs)
 
 static void io_check_error(unsigned char reason, struct pt_regs *regs)
 {
-	unsigned long i;
-
-	/* Re-enable the IOCK line, wait for a few seconds */
-	reason = (reason & NMI_REASON_CLEAR_MASK) | NMI_REASON_CLEAR_IOCHK;
-	outb(reason, NMI_REASON_PORT);
-
-	i = 20000;
-	while (--i) {
-		udelay(100);
-	}
-
-	reason &= ~NMI_REASON_CLEAR_IOCHK;
-	outb(reason, NMI_REASON_PORT);
+	/*
+	 * MKB_NO_CALIBRATE: only upstream's panic_on_io_nmi arm is left (upstream
+	 * nmi_panic() calls panic() with this message; there is no nmi_panic()
+	 * here). The default arm re-enabled the IOCK line after a 2 s udelay()
+	 * wait, and udelay() is not calibrated on a CPU without a usable TSC.
+	 */
+	panic("NMI IOCK error: Not continuing");
 }
 
 static noinstr void default_do_nmi(struct pt_regs *regs)

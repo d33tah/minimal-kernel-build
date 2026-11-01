@@ -522,6 +522,7 @@ function listPage(p, bytes, base, cur, chars) {
 	const out = [];
 	let si = 0, nIns = 0, nBad = 0, nRows = 0, nonzero = 0, changed = 0, curLine = -1;
 	let prevRow = null, starred = false;
+	const srcState = { key: null };
 	const mark = (off, text) => (base && base[off] !== bytes[off] ? "<mark>" + text + "</mark>" : text);
 	for (let off = 0; off < PAGE; off++)
 		if (bytes[off]) nonzero++;
@@ -558,6 +559,11 @@ function listPage(p, bytes, base, cur, chars) {
 				cls += " cur";
 				curLine = out.length;
 			}
+			const srcLine = srcLineHtml(pa, srcState);
+			if (srcLine)
+				out.push(srcLine);
+			if (pa === cur)
+				curLine = out.length;
 			out.push('<span class="' + cls + '" data-addr="' + pa + '">' + pa.toString(16).padStart(8, "0") +
 				" " + rawHtml + " " + text.replace(/[<>&]/g, esc) +
 				(wide && where ? ' <span class="dim">' + escHtml(where) + "</span>" : "") + "</span>");
@@ -1061,7 +1067,7 @@ const REF_KEY = "mkb-ref-";
 // measured it yet (for the ETA only; Linux varies with calibrate_delay).
 // Measured with the virtual clock at 10, 100 and 1000 instructions per µs
 // (the count depends on it through calibrate_delay); "real": a rough guess.
-const REF_STEPS = { hello: { any: 6150 },
+const REF_STEPS = { hello: { any: 154 },
 	"minified-linux": { 10: 653080, 100: 4133184, 1000: 24141260, real: 700000 } };
 let driverTimer = null;
 let driverChannel = null;
@@ -1338,6 +1344,20 @@ function renderSymbols(phys) {
 	// the current symbol is "previous".
 	const hist = st.history.filter((h) => !(h.sym === cur && h.sym >= 0));
 	const prev = hist.length ? hist[hist.length - 1] : null;
+	if (sources) {
+		const here = cur >= 0 ? srcHere(phys) : "";
+		const srow = row("source");
+		srow.id = "cur_src";
+		srow.dataset.src = here;
+		if (here) {
+			const b = symButton(here, -1, "Show the whole function with its executed lines");
+			b.disabled = false;
+			b.addEventListener("click", () => openSource(phys));
+			srow.append(b);
+		} else {
+			srow.append("no C line here");
+		}
+	}
 	const p = row("previous");
 	p.id = "prev_sym";
 	if (prev && prev.sym >= 0) {
@@ -1395,8 +1415,12 @@ function renderContext() {
 			const lo = ins[from][0], hi = ins[to - 1][0] + ins[to - 1][1].length / 2;
 			const mem = hi <= emuRam ? emulator.read_memory(lo, hi - lo) : null;
 			const sized = symbols ? symbols.symbols.filter((s) => s.size > 0 && s.paddr < hi && s.paddr + s.size > lo) : [];
+			const srcState = { key: null };
 			for (let k = from; k < to; k++) {
 				const [pa, raw, text] = ins[k];
+				const srcLine = srcLineHtml(pa, srcState);
+				if (srcLine)
+					lines.push(srcLine);
 				let bytes = "", ok = true;
 				for (let j = 0; j < raw.length / 2; j++) {
 					const want = raw.substr(j * 2, 2);
@@ -1604,7 +1628,12 @@ function updateDebugUi() {
 	renderEnd();
 	renderClock();
 	const st = $("dbg_state");
-	const where = stepper && stepper.curSym >= 0 ? ", in " + stepper.symName[stepper.curSym] : "";
+	let where = stepper && stepper.curSym >= 0 ? ", in " + stepper.symName[stepper.curSym] : "";
+	if (where && sources && runState !== "jit") {
+		const loc = srcLoc(stepper.lastPhys);
+		if (loc && loc[1] >= 0)
+			where += " (" + srcName(loc[1], loc[2]) + ")";
+	}
 	st.textContent = { off: "", jit: "running (full speed, JIT)",
 		stepped: (entryPhase ? "stepping to the kernel entry" : fastStepping() ? (counting ? "stepping (counting)" : "stepping") :
 			"slow motion " + $("dbg_speed").selectedOptions[0].text) + where,
@@ -1770,6 +1799,8 @@ async function loadKernel(entry, memFromUrl) {
 	if (!resp.ok)
 		throw new Error(entry.path + ": HTTP " + resp.status);
 	disasm = await loadDisasm(entry);
+	await loadSources(entry);
+	$("src_toggle").hidden = !sources;
 	useImage(entry.name, await resp.arrayBuffer(), memFromUrl, await loadSymbols(entry));
 	await boot();
 }
@@ -1881,6 +1912,7 @@ async function init() {
 	drawMaps();
 	initDebugger();
 	initGraph();
+	initSource();
 	updateDebugUi();
 	for (const t of TABS)
 		$("tab_" + t).addEventListener("click", () => showTab(t));
@@ -1926,6 +1958,9 @@ async function init() {
 		const f = $("file").files[0];
 		if (!f)
 			return;
+		disasm = null; // a file from disk comes without disasm.json or sources.json
+		sources = null;
+		$("src_toggle").hidden = true;
 		useImage(f.name, await f.arrayBuffer());
 		await boot();
 	});

@@ -116,6 +116,7 @@
     <button id="page_prev" type="button" title="Previous page">&lsaquo;</button>
     <button id="page_next" type="button" title="Next page">&rsaquo;</button>
     <button id="reread" type="button">Re-read</button><span class="tip" tabindex="0" role="button" title="Read the page again; bytes that changed since the last memory scan are marked">?</span>
+    <label id="src_toggle" hidden><input type="checkbox" id="show_src" checked> C source<span class="tip" tabindex="0" role="button" title="C lines above the instructions they compiled to, like objdump -S: from the DWARF line table of a -g build of the same tree whose code is byte-identical to the kernel that boots (checked in CI). A line is printed again when the code goes back to it. Lines of inlined code name the function they were inlined into. Tap a C line for the whole function with the lines that have executed so far.">?</span></label>
     <label><input type="checkbox" id="live"> live<span class="tip" tabindex="0" role="button" title="Re-read the page every 500 ms while the VM runs">?</span></label>
     <span id="dump_info" class="note"></span>
     <span class="tip" tabindex="0" role="button" title="One listing of the page in address order, like objdump -d mixed with hexdump -C: instructions from the kernel's disassembly (llvm-objdump at build time) as address, bytes, instruction and symbol+offset; everything else as hex rows, with repeated rows collapsed to *. Symbol starts are header lines. Marked bytes changed since the last scan; highlighted instructions differ from the build (not loaded yet, overwritten or freed); the boxed line is the next instruction when the CPU is paused.">?</span>
@@ -172,15 +173,22 @@
     <li><b>Memory</b>: the physical memory map from the boot header and one square per 4 KiB page, coloured by region and ELF section.</li>
     <li><b>Page</b>: one page as a single listing, instructions where the kernel has code and hex rows elsewhere, with symbol headers.</li>
     <li><b>Debugger</b>: registers, stepping and run-to-address.</li>
+    <li><b>C source</b>: the Page listing and the Debugger interleave the C lines (from the DWARF of a -g build with byte-identical code) with the instructions; tap one for the function with its executed lines.</li>
     <li><b>Graph</b>: the symbols the CPU went through while stepping and the transitions between them, live.</li>
     <li><b>Snapshots</b>: save, restore and download the whole machine state.</li>
   </ul>
   <h3>Counting and stepping</h3>
-  <p>v86 normally runs guest code through a JIT, at least 100,003 instructions per call, and has no single-step API. The page adds two exports to v86's own <code>v86.wasm</code> at load time (the functions are already in it and named in its name section, the code is unchanged): <code>read_imm8</code>, which fetches the byte at EIP, and the interpreter's <code>run</code>, which executes one instruction. Stepping calls them from JavaScript the way v86's interpreter loop does. By default every boot steps BIOS and setup as fast as possible to the kernel entry at 0x100000, then the kernel runs at 1k instructions per second, counted live, until "Hello, World!" and "Still alive" are both in VGA text memory at 0xb8000 (hello: about 6 s; the minified Linux: about 15 minutes, with an ETA). With speed set to full (remembered, or <code>?speed=full</code>) and <i>count</i> on, the whole boot is stepped in the background first and then runs on v86's JIT.</p>
+  <p>v86 normally runs guest code through a JIT, at least 100,003 instructions per call, and has no single-step API. The page adds two exports to v86's own <code>v86.wasm</code> at load time (the functions are already in it and named in its name section, the code is unchanged): <code>read_imm8</code>, which fetches the byte at EIP, and the interpreter's <code>run</code>, which executes one instruction. Stepping calls them from JavaScript the way v86's interpreter loop does. By default every boot steps BIOS and setup as fast as possible to the kernel entry at 0x100000, then the kernel runs at 1k instructions per second, counted live, until "Hello, World!" and "Still alive" are both in VGA text memory at 0xb8000 (hello: 154 instructions, a fraction of a second; the minified Linux: about 15 minutes, with an ETA). With speed set to full (remembered, or <code>?speed=full</code>) and <i>count</i> on, the whole boot is stepped in the background first and then runs on v86's JIT.</p>
   <p>The counts are exact for the run shown, with two caveats: a <code>rep</code> string instruction counts once per v86 entry, and v86 runs at most a page of iterations per entry; SeaBIOS waits on real time, so the part before the kernel varies between runs; and the minified Linux's <code>calibrate_delay()</code> loops until a timer tick, so its count from 1 MiB depends on how fast the page steps. hello's kernel count is the same every run and matches qemu instruction for instruction. site/README.md has the cross-check against qemu.</p>
   <p>Source: <a href="https://github.com/d33tah/minimal-kernel-build/tree/hello-kernel/site">site/</a> on the hello-kernel branch. Third-party files: site/THIRD_PARTY.md.</p>
 </section>
 </main>
+
+<aside id="src_panel" class="srcpanel" hidden aria-label="Source">
+  <div class="scan"><b id="src_title"></b> <button id="src_close" type="button">Close</button></div>
+  <p id="src_info" class="note"></p>
+  <pre id="src_body"></pre>
+</aside>
 
 <div id="tip_pop" class="tip-pop" role="tooltip" hidden></div>
 
@@ -188,6 +196,7 @@
 <script src="v86/libv86.js"></script>
 <script src="stepper.js"></script>
 <script src="graph.js"></script>
+<script src="source.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

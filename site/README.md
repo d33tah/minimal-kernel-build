@@ -35,6 +35,26 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   boxed while the CPU is paused or stepping. Above the listing, a compact
   index of the page's symbols (the only symbol list) scrolls to each one.
   "live" re-reads the page every 500 ms.
+- **C source.** With `kernels/<name>/sources.json` the Page listing and
+  the Debugger's code window print the C line above the instructions it
+  compiled to, like `objdump -S` (dim, `file.c:123`, printed again when
+  the code returns to a line; inlined code names the function it was
+  inlined into); "C source" toggles it. The Debugger and the top bar show
+  the current C line. Tapping a C line opens the whole function in a side
+  panel with live line coverage: a line is marked executed when any
+  instruction compiled from it (or inlined from it) has run, from the
+  stepper's unique-EIP bitmap. `sources.json` comes from `gen-source.py`:
+  `llvm-symbolizer --inlining` over every instruction of `disasm.json`,
+  using a `-g` build of the same tree; it keeps the file:line, function and
+  inlined-at chain where the location changes, plus only the source lines
+  of the functions involved. The workflow builds `-g` copies
+  (`KCFLAGS=-g` for the minified Linux, `CC="clang -g"` for hello) next to
+  the gate kernels and fails unless their code is byte-identical
+  (`llvm-objcopy -O binary --remove-section=.notes`: only the 20-byte GNU
+  build-id differs, as it hashes the debug info too). Sizes: minified
+  Linux 698,272 bytes (156 KB gzipped; 7,325 locations, 188 files, 1,222
+  functions, 14,319 source lines), hello 1,104 bytes. The -g build takes
+  about 11 s locally (9 s without -g).
 - **Debugger.** Step N, Run to address, the registers (EIP, ESP, EBP,
   EAX..EDI, EFLAGS decoded, CS/DS/SS/ES, CR0, CR3, CPL, mode, physical EIP;
   changed ones marked), the current symbol (range, size, offset of EIP),
@@ -98,8 +118,9 @@ JavaScript drives the CPU:
   whatever `code32_start` says; it is 0x100000 for both kernels). The top
   bar then says "Entered the kernel at 0x100000 after N instructions from
   reset", the speed switches to 1k instructions per second and the
-  counters count live from there: hello reaches "Still alive" after 6,150
-  instructions, about 6 s; the minified Linux needs about 0.7-1 million,
+  counters count live from there: hello reaches "Still alive" after 154
+  instructions (it prints below the BIOS text instead of clearing the
+  screen, see hello/README.md), a fraction of a second; the minified Linux needs about 0.7-1 million,
   about 15 minutes, so the top bar shows an ETA (from the count this
   browser last measured, else a built-in estimate) and the symbol the CPU
   is in.
@@ -178,9 +199,9 @@ every run):
 
 | kernel | until | from 1 MiB | unique EIPs kernel / other | from reset | IRQ0 |
 |---|---|---|---|---|---|
-| hello | Hello, World! | 6,082 | 16 / 7,770 | 1,411,832 | |
-| hello | Still alive | 6,150 | 24 / 7,770 | 1,411,900 | |
-| hello | halted | 6,155 | 26 / 7,770 | 1,411,905 | 2 |
+| hello | Hello, World! | 86 | 17 / 7,770 | 1,405,836 | |
+| hello | Still alive | 154 | 25 / 7,770 | 1,405,904 | |
+| hello | halted | 159 | 27 / 7,770 | 1,405,909 | 2 |
 | minified Linux | Hello, World! | 652,351 | 10,392 / 8,171 | 2,059,822 | |
 | minified Linux | Still alive | 653,080 | 10,477 / 8,171 | 2,060,551 | |
 | minified Linux | exit(0) | 653,231 | 10,479 / 8,171 | 2,060,702 | |
@@ -206,12 +227,12 @@ build (Debian's) and v86 its own, so only the kernel part is comparable.
 
 | kernel | until | qemu from reset | qemu from 1 MiB | v86 from 1 MiB | unique kernel EIPs qemu / v86 |
 |---|---|---|---|---|---|
-| hello | Hello, World! | 5,818,976 | 6,082 | 6,082 | 16 / 16 |
-| hello | Still alive | 5,819,044 | 6,150 | 6,150 | 24 / 24 |
+| hello | Hello, World! | 5,812,951 | 86 | 86 | 17 / 17 |
+| hello | Still alive | 5,813,019 | 154 | 154 | 25 / 25 |
 | minified Linux | Hello, World! | 6,039,379-6,041,101 | 224,766-227,330 | 273,966 (single steps) | 10,666 / 10,638 |
 | minified Linux | Still alive | 6,040,512-6,042,036 | 225,899-228,265 | 274,894 (single steps) | 10,752 / 10,723 |
 
-hello: the 6,150 kernel instructions are the same sequence in both. Linux:
+hello (re-measured after it stopped clearing the screen): the 154 kernel instructions are the same sequence in both. Linux:
 the first instructions at 1 MiB are the bzImage's relocation stub, not
 vmlinux; its `std; rep movsl` copies about 97 KB, which v86 enters once
 per page (12 entries) and qemu logs once, so the raw sequences part at
@@ -235,6 +256,7 @@ qemu runs used `timeout 120` and a FIFO, so no trace touched the disk.
     site/fetch-v86.sh
     site/gen-symbols.py minified/vmlinux site/kernels/minified-linux/symbols.json minified-linux
     site/gen-symbols.py hello/boot/high/kernel.elf site/kernels/hello/symbols.json hello
+    (sources.json: see the workflow's "Debug-info builds" step)
     site/gen-kernels.sh
     python3 site/test_browser.py
 
@@ -245,7 +267,7 @@ boots hello at 1k/s and at full speed and Linux at full speed twice and
 at 1M/s, and checks the counts are identical.
 
 Cases: hello at 2 MB with the default boot (the entry marker, the switch
-to 1k/s, 6,082 instructions from the entry to "Hello, World!", the
+to 1k/s, 86 instructions from the entry to "Hello, World!", the
 "Halted" banner), Linux at 2 MB, 18 MB and 2180 KiB with `?speed=full`
 (the panic banner with "init exited with code 0"), and Linux with the default
 boot for a few seconds (entry marker, 1k/s, the counter grows by about

@@ -47,6 +47,39 @@ jobs:
         site/gen-disasm.py minified/vmlinux out/minified-linux/disasm.json
         ls -l out/*/
 
+    # C source annotations for the site only: a -g copy of each tree. The
+    # kernels that boot are untouched; the job fails if the -g build's code
+    # differs from them (only the GNU build-id note, a hash over the whole
+    # ELF including the debug info, may differ).
+    - name: Debug-info builds and sources.json
+      run: |
+        g="$RUNNER_TEMP/g"
+        rm -rf "$g" && mkdir -p "$g"
+        cp -a minified hello "$g/"
+        start=$(date +%s)
+        make -C "$g/minified" clean
+        make -C "$g/minified" LLVM=1 -j6 KCFLAGS=-g
+        echo "minified Linux -g build: $(( $(date +%s) - start )) s"
+        llvm-objcopy -O binary --remove-section=.notes minified/vmlinux "$g/plain.bin"
+        llvm-objcopy -O binary --remove-section=.notes "$g/minified/vmlinux" "$g/debug.bin"
+        if ! cmp "$g/plain.bin" "$g/debug.bin"; then
+          echo "::error::the -g build of minified/ is not byte-identical to the kernel that boots"
+          exit 1
+        fi
+        start=$(date +%s)
+        make -C "$g/hello" clean
+        make -C "$g/hello" LLVM=1 CC="clang -g"
+        echo "hello -g build: $(( $(date +%s) - start )) s"
+        if ! cmp hello/boot/high/kernel.bin "$g/hello/boot/high/kernel.bin"; then
+          echo "::error::the -g build of hello/ is not byte-identical to the kernel that boots"
+          exit 1
+        fi
+        echo "-g builds: code byte-identical to the booting kernels"
+        site/gen-source.py "$g/minified/vmlinux" "$g/minified" out/minified-linux/disasm.json out/minified-linux/sources.json
+        site/gen-source.py "$g/hello/boot/high/kernel.elf" "$g/hello" out/hello/disasm.json out/hello/sources.json
+        gzip -9 -c out/minified-linux/sources.json | wc -c | sed 's/^/minified-linux sources.json gzip: /'
+        ls -l out/*/
+
     - uses: actions/upload-artifact@v4
       with:
         name: kernels
@@ -71,7 +104,7 @@ jobs:
         # Cache busting: Pages serves with max-age=600, and a browser that
         # keeps an older app.js next to a newer index.html breaks.
         v=$(echo "$GITHUB_SHA" | cut -c1-12)
-        sed -i -E "s/(href|src)=\"(style\.css|clock\.js|app\.js|stepper\.js|graph\.js|v86\/libv86\.js)\"/\1=\"\2?v=$v\"/g" site/index.html
+        sed -i -E "s/(href|src)=\"(style\.css|clock\.js|app\.js|stepper\.js|graph\.js|source\.js|v86\/libv86\.js)\"/\1=\"\2?v=$v\"/g" site/index.html
         grep -E "\?v=$v" site/index.html
 
     - name: Install Playwright and Chromium

@@ -71,7 +71,7 @@ def kernel_entries():
 def default_cases():
     names = kernel_entries()
     # hello boots with the page's default (1k/s from the kernel entry, about
-    # 6 s); Linux would take ~15 minutes that way, so it runs with
+    # 0.2 s); Linux would take ~15 minutes that way, so it runs with
     # ?speed=full (whole boot counted in the background, then the JIT).
     cases = [("hello", None, None)]
     if "minified-linux" in names:
@@ -351,7 +351,9 @@ def debugger_case(browser, base, name, mem, shots):
         problems.append("Debugger tab shows no current instruction")
     page.screenshot(path=str(shots / f"tab-debugger-{name}-1100.png"))
 
-    page.select_option("#dbg_speed", "1000")
+    # hello is done 159 instructions after the entry: watch it at 10/s.
+    rate, least = ("10", 10) if name == "hello" else ("1000", 200)
+    page.select_option("#dbg_speed", rate)
     show_tab(page, "memory")
     page.click("#dbg_continue")
     start = counters(page).get("now", {}).get("steps") or 0
@@ -359,8 +361,8 @@ def debugger_case(browser, base, name, mem, shots):
     end = counters(page).get("now", {}).get("steps") or 0
     r["slow_steps_2s"] = end - start
     r["flashes"] = int(page.get_attribute("#pages", "data-flashes") or 0)
-    if not end - start > 200:
-        problems.append(f"1k/s slow motion advanced only {end - start} instructions in 2 s")
+    if not end - start >= least:
+        problems.append(f"{rate}/s slow motion advanced only {end - start} instructions in 2 s")
     if r["flashes"] < 1:
         problems.append("the grid flashed no written page during slow motion")
     page.screenshot(path=str(shots / f"slow-{name}-1100.png"))
@@ -370,7 +372,8 @@ def debugger_case(browser, base, name, mem, shots):
     page.screenshot(path=str(shots / f"tab-debugger-{name}-390.png"))
     if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
         problems.append("debugger tab scrolls horizontally at 390 px")
-    page.click("#dbg_pause")
+    if page.is_enabled("#dbg_pause"):
+        page.click("#dbg_pause")
     page.close()
     if errors:
         problems.append("page errors: " + "; ".join(errors))
@@ -469,6 +472,42 @@ def linux_slow_case(browser, base, shots):
     if errors:
         problems.append("page errors: " + "; ".join(errors))
     return problems, r
+
+
+def source_check(page, name, problems, shots, tag):
+    """C lines in the listing of the page with the kernel's main function; coverage panel."""
+    syms = json.loads((SITE / kernel_entries()[name]["symbols"]).read_text())["symbols"]
+    fn = "start_kernel" if name != "hello" else "hello_main"
+    sym = next(s for s in syms if s["name"] == fn)
+    r = {}
+    if not open_page(page, sym["paddr"] // 4096):
+        problems.append(f"could not open the page of {fn}")
+        return r
+    r["c_lines"] = page.locator("#listing .src").count()
+    if r["c_lines"] <= 0:
+        problems.append(f"no C lines in the listing of the page of {fn}")
+        return r
+    want = "main.c" if name != "hello" else "hello.c"
+    line = page.locator("#listing .src", has_text=want).first
+    if not line.count():
+        problems.append(f"no {want} line on the page of {fn}")
+        return r
+    line.click()
+    if not wait_for(lambda: page.is_visible("#src_panel"), 3):
+        problems.append("tapping a C line opened no source panel")
+        return r
+    r["panel"] = page.inner_text("#src_title")
+    r["executed"] = int(page.get_attribute("#src_body", "data-executed") or 0)
+    r["code"] = int(page.get_attribute("#src_body", "data-code") or 0)
+    if r["executed"] < 1:
+        problems.append(f"coverage panel marks no executed line: {r}")
+    page.screenshot(path=str(shots / f"source-{tag}.png"))
+    page.click("#src_close")
+    page.uncheck("#show_src")
+    if page.locator("#listing .src").count():
+        problems.append("C source toggle did not hide the C lines")
+    page.check("#show_src")
+    return r
 
 
 def graph_check(page, name, problems, shots, tag):
@@ -620,7 +659,7 @@ def touch_case(browser, base, shots):
     return problems
 
 
-STAMPED = ("style.css", "clock.js", "app.js", "stepper.js", "graph.js", "v86/libv86.js")
+STAMPED = ("style.css", "clock.js", "app.js", "stepper.js", "graph.js", "source.js", "v86/libv86.js")
 
 
 def stamp(html, v):
@@ -715,8 +754,10 @@ def run_case(browser, base, name, mem, timeout, shots, has_symbols, speed=None):
         if want == "panic" and (count["exit_code"] != "0" or "exited with code 0" not in count["end_text"]):
             lab_problems.append("panic banner does not say init exited with code 0: " + count["end_text"])
         count["graph"] = graph_check(page, name, lab_problems, shots, tag)
-        if speed is None and name == "hello" and (count.get(HELLO) or {}).get("entry") != 6082:
-            lab_problems.append(f"hello: {count.get(HELLO)} instructions from the entry to Hello, not 6,082")
+        if "sources" in kernel_entries().get(name, {}):
+            count["source"] = source_check(page, name, lab_problems, shots, tag)
+        if speed is None and name == "hello" and (count.get(HELLO) or {}).get("entry") != 86:
+            lab_problems.append(f"hello: {count.get(HELLO)} instructions from the entry to Hello, not 86")
         page.screenshot(path=str(shots / f"top-{tag}-1100.png"))
     show_tab(page, "memory")
     if not page.is_disabled("#scan"):

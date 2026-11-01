@@ -247,3 +247,15 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 #graph_info .glist { margin: 0.2rem 0; overflow-wrap: anywhere; }
 #graph_info button { margin: 0.1rem 0; }
 #vclock { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.2em; margin: 0.1rem 0; }
+#listing .src, #context .src { color: var(--muted); font-style: italic; cursor: pointer; }
+.srcpanel { position: fixed; z-index: 5; right: 0; top: 0; bottom: 0; width: min(46rem, 50vw); background: var(--bg);
+	border-left: 1px solid var(--line); box-shadow: -2px 0 12px rgba(0, 0, 0, 0.2); padding: 0.4rem 0.6rem; display: flex; flex-direction: column; }
+.srcpanel[hidden] { display: none; }
+#src_body { flex: 1; overflow: auto; margin: 0; font: 11px/1.35 ui-monospace, monospace; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--page-free); padding: 0.4rem; border-radius: 4px; }
+#src_body .exec { background: rgba(44, 160, 44, 0.18); }
+#src_body .code { color: var(--fg); }
+#src_body span:not(.exec):not(.code) { color: var(--muted); }
+#src_body .here { outline: 2px solid var(--accent); outline-offset: -1px; }
+@media (max-width: 640px) {
+	.srcpanel { left: 0; top: auto; width: auto; height: 65vh; border-left: none; border-top: 1px solid var(--line); }
+}

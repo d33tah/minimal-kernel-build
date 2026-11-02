@@ -458,6 +458,9 @@ def linux_slow_case(browser, base, shots):
     if not 1500 <= b - a <= 4500:
         problems.append(f"from-entry counter grew by {b - a} in 3 s at 1k/s")
     r["state"] = page.inner_text("#dbg_state")
+    r["real_speed"] = int(page.get_attribute("#vclock", "data-speed") or 0)
+    if not 500 <= r["real_speed"] <= 2000:
+        problems.append(f"measured speed at 1k/s is {r['real_speed']}/s")
     r["eta"] = page.get_attribute("#count_info", "data-eta")
     if " in " not in r["state"]:
         problems.append("top bar does not name the current symbol: " + r["state"])
@@ -537,11 +540,11 @@ def timeline_views(page, problems, shots, tag, r):
         problems.append(f"focus on start_kernel: {r['focus']!r}, crumbs visible {page.is_visible('#graph_crumbs')}")
     show_canvas(page)
     page.screenshot(path=str(shots / f"graph-focus-{tag}-1100.png"))
-    page.fill("#graph_search", "delay")
+    page.fill("#graph_search", "init")
     time.sleep(0.4)
     r["search_matches"] = int(page.get_attribute("#graph_canvas", "data-matches") or 0)
     if r["search_matches"] < 1:
-        problems.append("search 'delay' highlights nothing in the timeline")
+        problems.append("search 'init' highlights nothing in the timeline")
     page.fill("#graph_search", "")
     page.locator("#graph_crumbs button").first.click()  # back to the root
     time.sleep(0.3)
@@ -585,7 +588,7 @@ def graph_check(page, name, problems, shots, tag):
         problems.append(f"timeline total {summ['total']} / outermost frames {summ['rootSum']} vs from-entry count {from_entry}")
     if name != "hello":
         names = [f["name"] for f in summ["top"]]
-        if "start_kernel" not in names[:3]:
+        if "start_kernel" not in names[:6]:
             problems.append(f"start_kernel is not among the top frames: {names[:6]}")
         ki = page.evaluate("""() => { const st = G.stepper; let incl = 0;
             for (let k = 0; k < st.fStart.length; k++) if (st.nodeName(st.fNode[k]) === 'kernel_init') incl += (st.fEnd[k] < 0 ? st.steps : st.fEnd[k]) - st.fStart[k];

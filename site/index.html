@@ -60,9 +60,10 @@
         <button id="dbg_pause" type="button" disabled title="Stop the CPU">Pause</button>
         <button id="dbg_continue" type="button" disabled title="Run again at the selected speed">Continue</button>
         <button id="dbg_step" type="button" disabled title="Execute one instruction">Step</button>
-        <label><span>speed<span class="tip" tabindex="0" role="button" title="Instructions per second from the kernel entry on. By default BIOS and setup are stepped as fast as possible up to the kernel's 32-bit entry at 0x100000, then the kernel runs at 1k/s so you can watch it. Full speed is v86's JIT (not counted, except in the background with count on). The choice is remembered in this browser; ?speed=full (or 1000000, 100000, ..., 1) in the URL overrides it.">?</span></span>
+        <label><span>speed<span class="tip" tabindex="0" role="button" title="Instructions per second from the kernel entry on. By default BIOS and setup are stepped as fast as possible up to the kernel's 32-bit entry at 0x100000, then the kernel runs at 1k/s so you can watch it. Full speed is v86's JIT (not counted, except in the background with count on). 10M/s is more than JavaScript stepping reaches on most machines (about 5M/s on a fast desktop); the speed actually reached is shown next to the clock. The choice is remembered in this browser; ?speed=full (or 1000000, 100000, ..., 1) in the URL overrides it.">?</span></span>
           <select id="dbg_speed">
             <option value="full">full (JIT)</option>
+            <option value="10000000">10M/s</option>
             <option value="1000000">1M/s</option>
             <option value="100000">100k/s</option>
             <option value="10000">10k/s</option>

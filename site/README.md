@@ -200,12 +200,17 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   lies below the current ESP has returned, and everything above it with
   it; a call arriving at the ESP of an open frame replaces it (a sibling
   that returned elsewhere, or a tail call). Frames are kept per stack
-  region (ESP >> 13, Linux's 8 KiB task and IRQ stacks): a stack entered
-  from interrupt code or through `call_on_stack` hangs below the code that
-  switched, any other stack change (a task switch through
-  `__switch_to_asm`, or the early switch to the kernel's virtual stack)
-  closes the calls of the stack it leaves and starts the new task at the
-  root. Symbol transitions alone missed returns (tail calls, returns into
+  region (ESP >> 13, Linux's 8 KiB task and IRQ stacks): a stack change
+  inside a task (IRQ stacks, the early switch from the boot stack to the
+  kernel's own) hangs the new stack's calls below the code that switched;
+  a task switch (through `__switch_to_asm`) closes the calls of the stack
+  it leaves and starts the new task at the root. A jump into the middle of
+  a symbol that is not on the stack (a cold path, a function falling
+  through into the next symbol) goes below the running call when that call
+  lives above ESP, and replaces it otherwise: replacing it always split
+  start_kernel into pieces at its first such jump (in
+  `determine_cpu_tsc_frequencies` -> `tsc_early_init`) and left holes in
+  the timeline. Symbol transitions alone missed returns (tail calls, returns into
   functions not on the stack, task switches, interrupts returning on
   another stack) and left frames open. Call depth (max / p99 over all
   calls) on the minified Linux went from 27 / 21 to 13 / 12; on Debian
@@ -292,8 +297,12 @@ JavaScript drives the CPU:
   (the page wraps v86's MMIO write handlers for 0xa0000-0xbffff and keeps
   a copy of the text page), at about 4-7 million instructions per second
   in headless Chromium, then v86's JIT runs.
-- **speed**: full (v86's JIT, not counted) or 1M, 100k, 10k, 1k, 100, 10
-  or 1 instructions per second. Stepped speeds update the screen, the
+- **speed**: full (v86's JIT, not counted) or 10M, 1M, 100k, 10k, 1k,
+  100, 10 or 1 instructions per second. The top bar shows the speed
+  actually reached, sampled once a second from v86's instruction counter
+  (JIT and stepping alike): JavaScript stepping tops out around 5M/s on a
+  fast desktop, so 10M/s shows about that; 1M/s and up run in the message
+  loop and redraw 10 times a second. Stepped speeds update the screen, the
   registers and counters every frame, re-scan RAM every frame (every
   250 ms above 4 MB) so the pages written since the previous frame flash
   in the grid, and keep the Page tab on the page holding EIP.

@@ -1229,8 +1229,12 @@ async function pause(note) {
 	afterStop();
 }
 
+// High stepped speeds (1M/s and up) run in the message loop like full
+// stepping, limited by the step credit, and redraw at most 10 times a second.
+const highRate = () => !fastStepping() && Number(speed()) >= 1e6;
+
 function scheduleDriver() {
-	if (fastStepping()) {
+	if (fastStepping() || highRate()) {
 		// As fast as possible: zero-delay message loop, works in background tabs.
 		if (!driverChannel) {
 			driverChannel = new MessageChannel();
@@ -1295,7 +1299,7 @@ function driverTick() {
 		return;
 	}
 	const slow = !fastStepping();
-	if (slow || now - lastUi > 200) {
+	if ((slow && !highRate()) || now - lastUi > (highRate() ? 100 : 200)) {
 		lastUi = now;
 		updateDebugUi();
 		if (slow)
@@ -1666,6 +1670,27 @@ function renderCounters() {
 const MIPS_KEY = "mkb-mips";
 const clockMips = () => ($("clock_mips").value === "real" ? 0 : Number($("clock_mips").value));
 
+// Real speed: v86's instruction counter (wasm memory, offset 664) counts
+// what the JIT runs and what the stepper steps; sampled once a second.
+let speedSample = null;  // { counter, at }
+let realSpeed = 0;       // instructions per second over the last sample
+function sampleSpeed() {
+	if (!stepper || !emuReady) {
+		speedSample = null;
+		realSpeed = 0;
+		return;
+	}
+	const c = new Uint32Array(stepper.cpu.wasm_memory.buffer, 664, 1)[0];
+	const now = realNow();
+	if (speedSample && now > speedSample.at)
+		realSpeed = ((c - speedSample.counter) >>> 0) / ((now - speedSample.at) / 1000);
+	speedSample = { counter: c, at: now };
+	renderClock();
+}
+
+const fmtRate = (r) => (r >= 1e6 ? (r / 1e6).toFixed(r >= 1e7 ? 0 : 1) + "M" : r >= 1e3 ? (r / 1e3).toFixed(r >= 1e4 ? 0 : 1) + "k" :
+	Math.round(r)) + "/s";
+
 function renderClock() {
 	const el = $("vclock");
 	if (!stepper) {
@@ -1673,8 +1698,11 @@ function renderClock() {
 		return;
 	}
 	const t = CLOCK.now();
-	el.textContent = (CLOCK.virtual ? "virtual " : "real ") + "time " + (t / 1000).toFixed(4) + " s \u00b7 IRQ0 \u00d7" +
-		num(stepper.irq0) + (stepper.idleMs ? " \u00b7 idle " + (stepper.idleMs / 1000).toFixed(3) + " s" : "");
+	el.textContent = "speed " + fmtRate(realSpeed) + " \u00b7 " + (CLOCK.virtual ? "virtual " : "real ") + "time " + (t / 1000).toFixed(4) +
+		" s \u00b7 IRQ0 \u00d7" + num(stepper.irq0) + (stepper.idleMs ? " \u00b7 idle " + (stepper.idleMs / 1000).toFixed(3) + " s" : "");
+	el.dataset.speed = Math.round(realSpeed);
+	el.title = "Instructions per second actually executed over the last second (v86's instruction counter: JIT and stepping); " +
+		"the speed menu sets the target, which JavaScript stepping may not reach.";
 	el.dataset.irq0 = stepper.irq0;
 	el.dataset.ms = t;
 	el.dataset.virtual = CLOCK.virtual;
@@ -2126,6 +2154,7 @@ async function init() {
 	$("live_decode").addEventListener("change", () => { if (liveDecode()) loadIced(); inspect(); renderContext(); });
 	initInitrd();
 	setInterval(watchPanicText, 250);
+	setInterval(sampleSpeed, 1000);
 	loadVersion();
 	if (params.has("cmdline"))
 		cmdlineFromUrl = params.get("cmdline");

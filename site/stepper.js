@@ -249,19 +249,18 @@ class Stepper {
 			// Switch lanes when ESP is in another stack region.
 			const region = esp >>> 13;
 			if (region !== this.lane) {
-				// IRQ/softirq stacks are entered through call_on_stack: their
-				// frames hang below the code that switched. Any other stack
-				// change is a task switch: a new task's frames start at the root.
+				// A stack change inside a task (IRQ/softirq stacks through
+				// call_on_stack, the early switch from the boot stack to the
+				// kernel's own) keeps the frames: the new stack's frames hang
+				// below the code that switched. A task switch (through
+				// __switch_to_asm and friends) starts the new task at the root.
 				const prev = this.curNode >= 0 && this.curNode < this.symName.length ? this.symName[this.curNode] : "";
 				const top = this.stack.length ? this.stack[this.stack.length - 1] : -1;
-				// (__switch_to_asm and friends always switch tasks, even when
-				// the scheduler runs on the way out of an interrupt.)
-				const nested = !/switch_to/.test(prev) &&
-					(/call_on_stack|own_stack/.test(prev) || (top >= 0 && this.fIrq[top]) || this.entryKind[node]);
+				const nested = !/switch_to/.test(prev);
 				this.lastTop = nested ? top : -1;
-				// A task switch (or the switch to the kernel's virtual stack)
-				// ends the calls of the stack we leave: they would otherwise
-				// stay open next to the new task's and overlap in the timeline.
+				// A task switch ends the calls of the stack we leave: they
+				// would otherwise stay open next to the new task's and overlap
+				// in the timeline.
 				if (!nested)
 					while (this.stack.length)
 						this.popFrame(t);
@@ -309,7 +308,12 @@ class Stepper {
 				this.popFrame(t);
 			return;
 		}
-		if (st.length)
+		// Into the middle of a symbol that is not on the stack. With ESP
+		// unwinding, a top frame that lives above ESP is still running: this
+		// is code it reached by a jump (a cold path, a function that falls
+		// through into the next symbol), so the new frame goes below it.
+		// Otherwise (no ESP, or the top is at our level) it replaces the top.
+		if (st.length && !(this.espUnwind && this.fEsp[st[st.length - 1]] > esp))
 			this.popFrame(t);
 		this.pushFrame(node, t, 0, esp);
 	}

@@ -53,9 +53,12 @@
   <div id="problems"></div>
 
   <div class="machine">
-    <div id="screen_container" title="The VGA text screen">
-      <div id="screen_text"></div>
-      <canvas id="screen_canvas" style="display: none"></canvas>
+    <div class="screenwrap">
+      <div id="screen_container" title="The VGA text screen (click it and type: the keys go to the VM)">
+        <div id="screen_text"></div>
+        <canvas id="screen_canvas" style="display: none"></canvas>
+      </div>
+      <div id="vm_overlay" hidden><b>VM paused</b><span id="vm_reason"></span><button id="vm_continue" type="button">&#9654; Continue</button></div>
     </div>
     <div class="run">
       <div class="runbar">

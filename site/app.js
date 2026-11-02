@@ -1633,6 +1633,8 @@ function renderCounters() {
 	rows.push([stepper.exit ? "exit(" + stepper.exit.code + ")" : "exit()", stepper.exit, "exit"]);
 	if (stepper.panicSym >= 0)
 		rows.push(["panic() entered", stepper.panicEntered, "panic_entry"]);
+	if (stepper.prompt)
+		rows.push(["(initramfs) prompt", stepper.prompt, "prompt"]);
 	rows.push([stepper.end ? (/panic/.test(stepper.end.kind) ? "panic, stopped" : "halted") : "end", stepper.end, "end"]);
 	rows.push(["now", stepper.snapshot(), "now"]);
 	for (const [label, c, key] of rows) {
@@ -1804,7 +1806,7 @@ async function loadVersion() {
 
 // Distro kernels end with "---[ end Kernel panic - not syncing: ... ]---"
 // and then spin; check the VGA text window 4 times a second (at any speed)
-// and stop the machine there.
+// and stop the machine there. Debian's initramfs shell prompt pauses it.
 let panicVersion = -1;
 function watchPanicText() {
 	if (!stepper || stepper.end || runState === "off" || runState === "paused")
@@ -1812,6 +1814,13 @@ function watchPanicText() {
 	if (stepper.textVersion === panicVersion)
 		return;
 	panicVersion = stepper.textVersion;
+	// The (initramfs) prompt: pause there once (Continue goes on).
+	if (!stepper.prompt && stepper.promptText()) {
+		stepper.prompt = stepper.snapshot();
+		counting = false;
+		pause("at the (initramfs) prompt");
+		return;
+	}
 	const msg = stepper.panicText();
 	if (msg === null)
 		return;
@@ -1853,6 +1862,15 @@ function updateDebugUi() {
 	const can = !!stepper;
 	$("dbg_pause").disabled = !can || (!ffActive && (runState === "paused" || runState === "off"));
 	$("dbg_continue").disabled = !can || ffActive || runState !== "paused";
+	// "VM paused" over the screen, with why (the debugger's last note, or
+	// the end of the run) and Continue unless the run has ended.
+	const paused = can && !ffActive && runState === "paused";
+	$("vm_overlay").hidden = !paused;
+	if (paused) {
+		const end = stepper.end ? "end: " + endText() : "";
+		$("vm_reason").textContent = end || $("dbg_status").textContent || "";
+		$("vm_continue").hidden = !!stepper.end;
+	}
 	for (const id of ["dbg_step", "dbg_stepn", "dbg_runto"])
 		$(id).disabled = !can || runState === "off";
 	renderRegs();
@@ -1928,6 +1946,7 @@ async function doRunTo() {
 function initDebugger() {
 	$("dbg_pause").addEventListener("click", () => pause("Paused."));
 	$("dbg_continue").addEventListener("click", () => { $("dbg_status").textContent = ""; resume(); });
+	$("vm_continue").addEventListener("click", () => $("dbg_continue").click());
 	$("dbg_step").addEventListener("click", () => doStep(1));
 	$("dbg_stepn").addEventListener("click", () => {
 		const n = Math.max(1, Math.floor(Number($("dbg_n").value) || 100));

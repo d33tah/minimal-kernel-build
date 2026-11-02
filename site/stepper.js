@@ -550,6 +550,16 @@ class Stepper {
 		return m ? m[1].replace(/ {2,}/g, " ").trim() : null;
 	}
 
+	// Debian's initramfs shell prompt, "(initramfs) " at the start of a
+	// row of the text window.
+	promptText() {
+		const t = this.screenText(VGA_WINDOW_BYTES);
+		for (let o = 0; o < t.length; o += 80)
+			if (t.startsWith("(initramfs) ", o))
+				return true;
+		return false;
+	}
+
 	timers() {
 		const cpu = this.cpu;
 		const t = cpu.run_hardware_timers(cpu.acpi_enabled[0], performance.now());

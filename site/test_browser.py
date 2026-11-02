@@ -1082,13 +1082,32 @@ def initramfs_case(browser, base, shots, name):
     elif "matches the kernel" not in r["note"]:
         problems.append("the initrd note does not say it matches: " + r["note"])
     if ok:
+        # The prompt pauses the VM: overlay with the reason, a counter row.
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 10)
+        r["state"] = page.get_attribute("#dbg_state", "data-state")
+        r["overlay"] = page.inner_text("#vm_overlay") if page.is_visible("#vm_overlay") else None
+        r["prompt_row"] = page.get_attribute("#counters tr[data-milestone='prompt']", "data-steps") \
+            if page.locator("#counters tr[data-milestone='prompt']").count() else None
+        if r["state"] != "paused" or not r["overlay"] or "VM paused" not in r["overlay"] or \
+                "(initramfs) prompt" not in r["overlay"] or not page.is_visible("#vm_continue"):
+            problems.append(f"no pause with the overlay at the prompt: {r['state']} {r['overlay']!r}")
+        if not r["prompt_row"]:
+            problems.append("no (initramfs) prompt row in the counters")
+        page.set_viewport_size({"width": 390, "height": 900})
+        page.eval_on_selector("#screen_container", "e => e.scrollIntoView()")
+        time.sleep(0.5)
+        page.screenshot(path=str(shots / f"initramfs-paused-{name}-390.png"))
+        page.set_viewport_size({"width": 1100, "height": 1000})
+        page.click("#vm_continue")
+        if not wait_for(lambda: not page.is_visible("#vm_overlay"), 10):
+            problems.append("the overlay stays after Continue")
         page.click("#screen_container")
         time.sleep(0.5)
         # Unshifted characters only: Playwright's type() sends no Shift.
-        page.keyboard.type("uname -m; expr 50 - 8")
+        page.keyboard.type("uname -m; echo hi")
         page.keyboard.press("Enter")
         lines = lambda: [l.strip() for l in page.inner_text("#screen_container").splitlines()]
-        if not wait_for(lambda: "42" in lines(), 60):
+        if not wait_for(lambda: "hi" in lines(), 60):
             problems.append("the shell did not run a typed command")
         r["uname"] = [l for l in lines() if l in ("i686", "i586", "i386")]
     page.screenshot(path=str(shots / f"initramfs-{name}.png"))

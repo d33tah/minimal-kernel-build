@@ -165,23 +165,13 @@ jobs:
         sed -i -E "s/(href|src)=\"(style\.css|clock\.js|app\.js|stepper\.js|graph\.js|source\.js|symimport\.js|livedis\.js|fastforward\.js|v86\/libv86\.js)\"/\1=\"\2?v=$v\"/g" site/index.html
         grep -E "\?v=$v" site/index.html
 
-    - name: Install Playwright and Chromium
-      run: |
-        python3 -m venv "$RUNNER_TEMP/venv"
-        "$RUNNER_TEMP/venv/bin/pip" install playwright
-        "$RUNNER_TEMP/venv/bin/playwright" install --with-deps chromium
-
-    - name: Browser test (both kernels, counters, debugger, tabs, snapshots, touch, stale cache)
-      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py'
-
+    # The browser test runs in its own job (browser-test below) so the
+    # deploy does not wait ~11 minutes for it; a failing test still fails
+    # the workflow run.
     - uses: actions/upload-artifact@v4
-      if: always()
       with:
-        name: browser-screenshots
-        path: site/test-screenshots/
-
-    - name: Drop test output from the site
-      run: rm -rf site/test-screenshots site/__pycache__ site/kernels/import-test
+        name: site
+        path: site/
 
     - uses: actions/configure-pages@v5
 
@@ -201,3 +191,34 @@ jobs:
     steps:
     - id: deployment
       uses: actions/deploy-pages@v4
+
+  browser-test:
+    needs: site
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: site
+        path: site
+
+    - uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-chromium-${{ runner.os }}-v1
+
+    - name: Install Playwright and Chromium
+      run: |
+        python3 -m venv "$RUNNER_TEMP/venv"
+        "$RUNNER_TEMP/venv/bin/pip" install playwright
+        "$RUNNER_TEMP/venv/bin/playwright" install --with-deps chromium
+
+    - name: Browser test (both kernels, counters, debugger, tabs, snapshots, touch, stale cache)
+      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py'
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: browser-screenshots
+        path: site/test-screenshots/

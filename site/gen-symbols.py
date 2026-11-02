@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 """Write symbols.json for the page's memory lab from a kernel ELF.
 
-  site/gen-symbols.py ELF OUT.json [NAME]
+  site/gen-symbols.py [--trim] ELF OUT.json [NAME]
+
+--trim (for big distro kernels): keep only symbols with a size, all code
+symbols (t/T) and global data (D/B/R); drop local data objects and the
+export/tracing bookkeeping (__ksymtab_*, __kstrtab*, __crc_*,
+__UNIQUE_ID_*, __initcall*, __setup_*, __param_*, __func__*, ...), which
+the page never shows usefully.
 
 Symbols come from `llvm-nm -nS ELF` (override with $NM). Section headers
 and program headers are read from the ELF itself (32-bit little-endian
@@ -78,11 +84,26 @@ def read_elf(path):
     return sections, paddr
 
 
+DROP_PREFIXES = ("__ksymtab_", "__kstrtab_", "__kstrtabns_", "__crc_", "__UNIQUE_ID_", "__initcall",
+                 "__setup_", "__param_", "__func__", "__already_done", "__print_once", "__warned",
+                 "__key.", "__compound_literal", "__tpstrtab_", "__bpf_trace_", "__event_", "event_class_",
+                 "trace_event_fields_", "print_fmt_", "__SCT__", "__SCK__")
+
+
+def keep_trimmed(sym):
+    if not sym["size"] or sym["name"].startswith(DROP_PREFIXES):
+        return False
+    return sym["type"] in "tTDBR"
+
+
 def main():
-    if len(sys.argv) not in (3, 4):
+    args = sys.argv[1:]
+    trim = "--trim" in args
+    args = [a for a in args if a != "--trim"]
+    if len(args) not in (2, 3):
         sys.exit(__doc__)
-    elf, out = sys.argv[1], sys.argv[2]
-    name = sys.argv[3] if len(sys.argv) == 4 else os.path.basename(elf)
+    elf, out = args[0], args[1]
+    name = args[2] if len(args) == 3 else os.path.basename(elf)
     sections, paddr = read_elf(elf)
     nm = os.environ.get("NM", "llvm-nm")
     lines = subprocess.run([nm, "-nS", elf], check=True, capture_output=True,
@@ -105,6 +126,8 @@ def main():
                     if s["vaddr"] <= va < s["vaddr"] + s["size"]), "")
         symbols.append({"name": sym, "vaddr": va, "paddr": pa, "size": size,
                         "type": typ, "section": sec})
+    if trim:
+        symbols = [s for s in symbols if keep_trimmed(s)]
     with open(out, "w") as f:
         json.dump({"name": name, "sections": sections, "symbols": symbols},
                   f, separators=(",", ":"))

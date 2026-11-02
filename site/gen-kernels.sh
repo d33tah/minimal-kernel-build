@@ -1,7 +1,8 @@
 #!/bin/sh
 # Write site/kernels.json listing every site/kernels/<name>/bzImage, with
 # kernels/<name>/symbols.json, disasm.json and sources.json (gen-symbols.py,
-# gen-disasm.py, gen-source.py) when present.
+# gen-disasm.py, gen-source.py) and the members of kernels/<name>/meta.json
+# (label, cmdline, ram) when present.
 # The page offers them in its kernel dropdown; the first one boots first.
 set -eu
 cd "$(dirname "$0")"
@@ -23,6 +24,13 @@ cd "$(dirname "$0")"
 		[ -f "$dis" ] && extra="$extra, \"disasm\": \"$dis\""
 		src=kernels/$name/sources.json
 		[ -f "$src" ] && extra="$extra, \"sources\": \"$src\""
+		# Per-kernel defaults (label, cmdline, ram): kernels/<name>/meta.json,
+		# a flat JSON object whose members are copied into the entry.
+		meta=kernels/$name/meta.json
+		if [ -f "$meta" ]; then
+			members=$(tr -d '\n' < "$meta" | sed 's/^[[:space:]]*{//; s/}[[:space:]]*$//')
+			[ -n "$members" ] && extra="$extra, $members"
+		fi
 		printf '%s\n  {"name": "%s", "path": "%s"%s}' "$sep" "$name" "$f" "$extra"
 		sep=,
 	done

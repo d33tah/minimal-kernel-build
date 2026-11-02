@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """End-to-end check of symbol import with a real distro kernel.
 
-Downloads (once, SHA-256 checked) Debian bullseye's linux-image-5.10.0-30-686
-and its -dbg package, boots the kernel on the page with "nokaslr", imports
+Downloads (once, SHA-256 checked) a Debian 686 kernel (--version: bullseye's 5.10.0-30-686,
+the default, or bookworm's 6.1.0-50-686, the page's sample) and its -dbg package, boots it with "nokaslr", imports
 the real System.map (and, in a second run, the unstripped vmlinux), pauses
 the CPU several times and checks that the symbol the Debugger shows for EIP
 is the function llvm-symbolizer finds at that address in the -dbg vmlinux.
 
-  site/test_distro_symbols.py [--url URL] [--cache DIR] [--pauses N]
+  site/test_distro_symbols.py [--url URL] [--cache DIR] [--pauses N] [--version 5.10.0-30-686|6.1.0-50-686]
 
 URL defaults to a local http.server over site/; pass the live site to check
 a deploy. The -dbg package is ~720 MB, so this test runs on demand, not in
@@ -30,18 +30,39 @@ from playwright.sync_api import sync_playwright
 
 SITE = pathlib.Path(__file__).resolve().parent
 MIRROR = "https://deb.debian.org/debian/"
-PKGS = {
-    "pool/main/l/linux-signed-i386/linux-image-5.10.0-30-686_5.10.218-1_i386.deb":
-        "29be9d7ebf1f79048298218f3dc5c746657df07538bf5b7d322c85d80576858d",
-    "pool/main/l/linux/linux-image-5.10.0-30-686-dbg_5.10.218-1_i386.deb":
-        "b3fc416db5d8f4441860d95a4c6e06d3c0b2be67e259ee20cedabc7b79dc45c6",
+# --version: the kernel ABI name and its two packages (pool path: SHA-256).
+VERSIONS = {
+    "5.10.0-30-686": {
+        "pool/main/l/linux-signed-i386/linux-image-5.10.0-30-686_5.10.218-1_i386.deb":
+            "29be9d7ebf1f79048298218f3dc5c746657df07538bf5b7d322c85d80576858d",
+        "pool/main/l/linux/linux-image-5.10.0-30-686-dbg_5.10.218-1_i386.deb":
+            "b3fc416db5d8f4441860d95a4c6e06d3c0b2be67e259ee20cedabc7b79dc45c6",
+    },
+    # The page's sample kernel (the Pages workflow pins the same hashes).
+    "6.1.0-50-686": {
+        "pool/main/l/linux-signed-i386/linux-image-6.1.0-50-686_6.1.176-1_i386.deb":
+            "526c469c5148a2b61c4241c3f6575427096575e0ffef9541b6729351c600b3e4",
+        "pool/main/l/linux/linux-image-6.1.0-50-686-dbg_6.1.176-1_i386.deb":
+            "4625e3cd446ff2ade7776492bfdecd60b2fb6a72b8b99a97e04f0e472dfeeb84",
+    },
 }
 VER = "5.10.0-30-686"
-FILES = {
-    "bz": "boot/vmlinuz-" + VER,
-    "map": "usr/lib/debug/boot/System.map-" + VER,
-    "elf": "usr/lib/debug/boot/vmlinux-" + VER,
-}
+PKGS = VERSIONS[VER]
+FILES = {}
+
+
+def select(ver):
+    global VER, PKGS, FILES
+    VER = ver
+    PKGS = VERSIONS[ver]
+    FILES = {
+        "bz": "boot/vmlinuz-" + VER,
+        "map": "usr/lib/debug/boot/System.map-" + VER,
+        "elf": "usr/lib/debug/boot/vmlinux-" + VER,
+    }
+
+
+select(VER)
 
 
 def fetch(cache):
@@ -123,7 +144,10 @@ def main():
     ap.add_argument("--url")
     ap.add_argument("--cache", default=os.environ.get("MKB_DISTRO_CACHE", "/tmp/mkb-distro"))
     ap.add_argument("--pauses", type=int, default=4)
+    ap.add_argument("--version", default="5.10.0-30-686", choices=sorted(VERSIONS),
+                    help="Debian kernel ABI name (default %(default)s)")
     a = ap.parse_args()
+    select(a.version)
     files = fetch(pathlib.Path(a.cache))
     url = a.url or serve()
     ok = True

@@ -35,6 +35,22 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   boxed while the CPU is paused or stepping. Above the listing, a compact
   index of the page's symbols (the only symbol list) scrolls to each one.
   "live" re-reads the page every 500 ms.
+- **Debian sample kernel.** The third kernel in the menu is Debian
+  bookworm's `linux-image-6.1.0-50-686` 6.1.176-1 (non-PAE 686; packages,
+  hashes and licence in THIRD_PARTY.md), with symbols from its -dbg
+  package. The workflow downloads both packages from snapshot.debian.org
+  (deb.debian.org as fallback), keeps them in the Actions cache, and runs
+  `gen-symbols.py --trim` on the -dbg vmlinux: 46,937 symbols (code and
+  global data with a size; local data objects and export/tracing
+  bookkeeping dropped), 5,059,585 bytes, 765,158 gzipped (117,357
+  symbols, 13 MB, 1.6 MB gzipped untrimmed). No disasm.json or
+  sources.json: the listing is hex only. Its `meta.json` gives the label
+  "Debian 6.1 686 (no initrd: ends in a root-fs panic)", the command line
+  `nokaslr console=tty0 cryptomgr.notests` and 64 MB of RAM (32 MB does
+  not boot: it stays at the SeaBIOS banner). At full speed it prints its
+  boot log and stops itself at "VFS: Unable to mount root fs on
+  unknown-block(0,0)" after about 13 s. bullseye's 5.10.0-30-686 also
+  works; `test_distro_symbols.py --version` checks either.
 - **Imported symbols.** "Symbols" next to "From disk" takes a
   `System.map` (`nm -n` text: hex address, type letter, name) or an
   unstripped `vmlinux` (ELF32: section headers, `.symtab`/`.strtab` and
@@ -415,7 +431,11 @@ guest RAM, the note about our kernels, the initrd region in the map and
 grid, the RAM error at 32 MB and "no initrd". The panic-text case writes the panic line through the VGA MMIO handlers
 of a running page and checks the machine pauses with the banner; with
 `MKB_DISTRO_CACHE` (the cache of `test_distro_symbols.py`) the Debian
-kernel is booted without an initrd and must stop itself. A last case serves two "deploys" with `Cache-Control: max-age=600` (as
+kernel is booted without an initrd and must stop itself. When a `debian*` kernel is in kernels.json (CI, or locally after
+copying it there) the Debian case checks its defaults, waits for the
+end-of-panic stop with "end Kernel panic" on the screen, and, on a fresh
+paused boot, runs to start_kernel (about 3.5 minutes of stepping) and
+checks the Debugger names it. A last case serves two "deploys" with `Cache-Control: max-age=600` (as
 GitHub Pages does) and checks a reload runs the new `app.js`. Screenshots
 (desktop and 390 px) go to `site/test-screenshots/`.
 

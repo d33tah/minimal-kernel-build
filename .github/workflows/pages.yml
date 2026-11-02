@@ -23,7 +23,7 @@ jobs:
     - name: Install toolchain
       run: |
         apt-get update
-        apt-get install -y build-essential llvm clang lld nasm qemu-system-x86 expect python3
+        apt-get install -y build-essential llvm clang lld nasm qemu-system-x86 expect python3 curl
 
     - uses: actions/checkout@v4
 
@@ -50,6 +50,53 @@ jobs:
         cp minified/vmlinux out/import-test/vmlinux
         llvm-nm -n minified/vmlinux > out/import-test/System.map
         ls -l out/*/
+
+    # Third sample kernel: Debian bookworm's linux-image-6.1.0-50-686
+    # (non-PAE 686) with symbols from its -dbg package (~760 MB, cached by
+    # hash). snapshot.debian.org URLs stay valid; deb.debian.org is the
+    # fallback. Both checked against the SHA-256 below (also pinned in
+    # site/test_distro_symbols.py).
+    - uses: actions/cache@v4
+      with:
+        path: debian-debs
+        key: debian-686-6.1.176-1-526c469c5148-4625e3cd446f
+
+    - name: Debian 6.1 686 kernel and symbols
+      run: |
+        mkdir -p debian-debs
+        get() { # file, snapshot path, pool path, sha256
+          f="debian-debs/$1"
+          if [ ! -f "$f" ] || ! echo "$4  $f" | sha256sum -c --quiet; then
+            curl -sSfL --retry 3 -o "$f" "https://snapshot.debian.org/archive/debian/20260704T211317Z/$2" ||
+              curl -sSfL --retry 3 -o "$f" "https://deb.debian.org/debian/$3"
+          fi
+          echo "$4  $f" | sha256sum -c
+        }
+        start=$(date +%s)
+        get linux-image-6.1.0-50-686_6.1.176-1_i386.deb \
+          pool/main/l/linux-signed-i386/linux-image-6.1.0-50-686_6.1.176-1_i386.deb \
+          pool/main/l/linux-signed-i386/linux-image-6.1.0-50-686_6.1.176-1_i386.deb \
+          526c469c5148a2b61c4241c3f6575427096575e0ffef9541b6729351c600b3e4
+        get linux-image-6.1.0-50-686-dbg_6.1.176-1_i386.deb \
+          pool/main/l/linux/linux-image-6.1.0-50-686-dbg_6.1.176-1_i386.deb \
+          pool/main/l/linux/linux-image-6.1.0-50-686-dbg_6.1.176-1_i386.deb \
+          4625e3cd446ff2ade7776492bfdecd60b2fb6a72b8b99a97e04f0e472dfeeb84
+        echo "Debian downloads: $(( $(date +%s) - start )) s"
+        x="$RUNNER_TEMP/deb"
+        mkdir -p "$x"
+        dpkg-deb --fsys-tarfile debian-debs/linux-image-6.1.0-50-686_6.1.176-1_i386.deb |
+          tar -x -C "$x" ./boot/vmlinuz-6.1.0-50-686
+        dpkg-deb --fsys-tarfile debian-debs/linux-image-6.1.0-50-686-dbg_6.1.176-1_i386.deb |
+          tar -x -C "$x" ./usr/lib/debug/boot/vmlinux-6.1.0-50-686
+        d=out/debian-6.1-686
+        mkdir -p "$d"
+        cp "$x/boot/vmlinuz-6.1.0-50-686" "$d/bzImage"
+        site/gen-symbols.py --trim "$x/usr/lib/debug/boot/vmlinux-6.1.0-50-686" "$d/symbols.json" debian-6.1-686
+        printf '%s\n' '{"label": "Debian 6.1 686 (no initrd: ends in a root-fs panic)", "cmdline": "nokaslr console=tty0 cryptomgr.notests", "ram": 67108864}' > "$d/meta.json"
+        rm -rf "$x"
+        gzip -9 -c "$d/symbols.json" | wc -c | sed 's/^/debian symbols.json gzip: /'
+        echo "Debian step: $(( $(date +%s) - start )) s"
+        ls -l "$d"
 
     # C source annotations for the site only: a -g copy of each tree. The
     # kernels that boot are untouched; the job fails if the -g build's code

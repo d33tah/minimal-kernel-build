@@ -292,3 +292,10 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 #graph_crumbs[hidden] { display: none; }
 #graph_transpose[aria-pressed="true"], #graph_flame[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
 #listing .maybe { opacity: 0.6; font-style: italic; }
+
+/* Debugger: machine state sections (cpustate.js). */
+.cpu_state details { border-top: 1px solid var(--line); padding: 0.15rem 0; }
+.cpu_state summary { cursor: pointer; font-size: 0.85rem; font-weight: 600; padding: 0.2rem 0; min-height: 28px; }
+.cpu_state .wide { grid-column: 1 / -1; overflow-wrap: anywhere; white-space: normal; }
+.cpu_tool { margin: 0.3rem 0; font-size: 0.8rem; }
+.cpu_tool pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.72rem; max-height: 22rem; overflow-y: auto; margin: 0.3rem 0; }

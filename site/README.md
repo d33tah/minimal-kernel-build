@@ -211,6 +211,31 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   relocation stub), it says so and shows the raw bytes at EIP. The symbol
   history is recorded by the stepper only (stepping, slow motion, count,
   Run to), not at full JIT speed. Symbols and lines open in the Page tab.
+- **Machine state (Debugger tab, cpustate.js).** Collapsible sections
+  read from the pinned v86's CPU object and devices: segment registers
+  with v86's hidden descriptor cache (base, limit in bytes, access byte;
+  D/B only for CS and SS; v86 keeps no granularity bit, and no access byte
+  for TR and LDTR); GDTR, IDTR, LDTR, TR with "view GDT" and "view IDT"
+  (descriptors decoded from guest memory through the page tables; IDT
+  gates with the handler's symbol, e.g. gate 0x80 -> entry_INT80_32);
+  CR0, CR2, CR3, CR4 decoded, EFER; DR0-DR7 decoded (v86 stores them but
+  raises no debug exceptions from them); the MSRs v86 implements
+  (SYSENTER_CS/ESP/EIP, APIC_BASE, PAT, EFER; MISC_ENABLE is a fixed 1;
+  MTRRs are not emulated; the TSC is computed on each rdtsc, so it is
+  shown only when a state save stored it); x87 control/status/tag words,
+  ST0-ST7, FIP/FDP, MM0-MM7, XMM0-XMM7, MXCSR ("not used yet" while
+  empty); interrupts and timers: IF, both 8259 PICs (IMR, IRR, ISR, vector
+  base, ELCR; v86 keeps the enabled mask, the IMR is its inverse), the
+  8254 channels (mode, reload with its rate, the count it last started
+  from: v86 computes the running count from the elapsed time), the local
+  APIC and IOAPIC (only when v86 runs with ACPI, which the page does not
+  enable), the RTC; paging: the mode, a translate box (hex address or
+  symbol name -> each level's entry and flags -> physical address and
+  symbol) and a page-directory viewer (present PDEs as runs). At the end
+  of the minified Linux's boot: CR4 PSE PGE, the GDT's 0x60 is the flat
+  32-bit kernel code segment, the master PIC's IMR 0xfa equals the
+  kernel's cached_irq_mask, PIT channel 0 reloads 4773 (HZ=250).
+
 - **Graph.** The call structure of the boot, reconstructed from the
   symbol transitions the stepper records (stepping, slow motion, Run to,
   the background count with `?speed=full`; not at full JIT speed): a jump

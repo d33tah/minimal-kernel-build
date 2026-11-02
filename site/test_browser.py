@@ -1134,6 +1134,73 @@ def initramfs_case(browser, base, shots, name):
     return problems, r
 
 
+def cpu_state_case(browser, base, shots, name):
+    """The Debugger's machine-state sections at the end of a boot: CR4,
+    GDTR, IDTR and TR set by the kernel, the GDT's kernel code segment
+    (base 0, limit 4 GiB), IDT gate 0x80 at entry_INT80_32, the master
+    PIC's IMR equal to the kernel's cached_irq_mask, PIT channel 0 at
+    HZ=250 (reload 4773), and the translate box mapping start_kernel's
+    virtual address to its physical one; no horizontal scroll at 390 px."""
+    problems, r = [], {}
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel={name}&speed=full#debugger")
+    if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 300, 1):
+        return ["no end of the boot"], r
+    page.evaluate("document.querySelectorAll('#cpu_state details').forEach((d) => d.open = true)")
+    time.sleep(0.5)
+    row = lambda sec, reg: page.inner_text(f"#cpu_{sec} [data-reg='{reg}']") \
+        if page.locator(f"#cpu_{sec} [data-reg='{reg}']").count() else ""
+    for sec, reg in (("control", "CR4"), ("tables", "GDTR"), ("tables", "IDTR"), ("tables", "TR")):
+        r[reg] = row(sec, reg)
+    if r["CR4"].split()[1:2] == ["0x00000000"]:
+        problems.append("CR4 is 0: " + r["CR4"])
+    for reg in ("GDTR", "IDTR", "TR"):
+        if "base 0x00000000" in r[reg] or not r[reg]:
+            problems.append(f"{reg} not set: {r[reg]!r}")
+    page.click("#view_gdt")
+    gdt = page.inner_text("#cpu_table")
+    r["gdt_0x60"] = next((l for l in gdt.splitlines() if l.startswith("0x0060")), "")
+    if not all(w in r["gdt_0x60"] for w in ("code", "base 0x00000000", "limit 0xffffffff", "32-bit")):
+        problems.append("GDT entry 0x60 is not the flat 32-bit kernel code segment: " + r["gdt_0x60"])
+    page.click("#view_idt")
+    r["idt_0x80"] = next((l for l in page.inner_text("#cpu_table").splitlines() if l.startswith("0x80")), "")
+    if "entry_INT80_32" not in r["idt_0x80"]:
+        problems.append("IDT gate 0x80 does not point at entry_INT80_32: " + r["idt_0x80"])
+    syms = json.loads((SITE / kernel_entries()[name]["symbols"]).read_text())["symbols"]
+    cim = next((x for x in syms if x["name"] == "cached_irq_mask"), None)
+    r["pic"] = row("irq", "PIC master")
+    m = re.search(r"IMR 0x([0-9a-f]{2})", r["pic"])
+    if cim and m:
+        cached = page.evaluate(f"stepper.cpu.mem8[{cim['paddr']}]")
+        r["imr"], r["cached_master_mask"] = m.group(1), f"{cached:02x}"
+        if int(m.group(1), 16) != cached:
+            problems.append(f"PIC IMR 0x{m.group(1)} != the kernel's cached_irq_mask 0x{cached:02x}")
+    else:
+        problems.append(f"no PIC IMR or cached_irq_mask: {r['pic']!r}")
+    r["pit"] = row("irq", "PIT ch0")
+    if "reload 4773 " not in r["pit"]:
+        problems.append("PIT channel 0 is not at HZ=250: " + r["pit"])
+    sk = next(x for x in syms if x["name"] == "start_kernel")
+    page.fill("#xlate_in", hex(sk["vaddr"]))
+    page.click("#xlate_go")
+    r["translate"] = page.inner_text("#xlate_out").splitlines()[-2:]
+    if f"physical 0x{sk['paddr']:08x}" not in page.inner_text("#xlate_out"):
+        problems.append(f"translate {hex(sk['vaddr'])} did not give {hex(sk['paddr'])}: {r['translate']}")
+    page.screenshot(path=str(shots / f"cpu-state-{name}-1280.png"), full_page=True)
+    page.set_viewport_size({"width": 390, "height": 900})
+    time.sleep(0.5)
+    if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
+        problems.append("horizontal scroll at 390 px with the machine state open")
+    page.eval_on_selector("#cpu_state", "e => e.scrollIntoView()")
+    page.screenshot(path=str(shots / f"cpu-state-{name}-390.png"))
+    if errors:
+        problems.append(f"page errors: {errors}")
+    page.close()
+    return problems, r
+
+
 def debian_case(browser, base, shots, name):
     """The Debian sample: its defaults, the end-of-panic auto-stop with the
     message on the screen, and Run to start_kernel naming start_kernel."""
@@ -1343,7 +1410,7 @@ def touch_case(browser, base, shots):
     return problems
 
 
-STAMPED = ("style.css", "clock.js", "app.js", "stepper.js", "graph.js", "source.js", "symimport.js", "livedis.js", "fastforward.js", "v86/libv86.js")
+STAMPED = ("style.css", "clock.js", "app.js", "stepper.js", "graph.js", "source.js", "symimport.js", "livedis.js", "fastforward.js", "cpustate.js", "v86/libv86.js")
 
 
 def stamp(html, v):
@@ -1559,6 +1626,11 @@ def main():
             bp, br = debian_case(browser, base, shots, name)
             print(json.dumps({"debian": bp or "ok", **{k: str(v) for k, v in br.items()}}))
             if bp:
+                failed = True
+        if not args.cases and "minified-linux" in entries:
+            cp, cr = cpu_state_case(browser, base, shots, "minified-linux")
+            print(json.dumps({"cpu_state": cp or "ok", **{k: str(v) for k, v in cr.items()}}))
+            if cp:
                 failed = True
         for name in [n for n in entries if "initrd" in entries[n]] if not args.cases else []:
             ip, ir = initramfs_case(browser, base, shots, name)

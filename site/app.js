@@ -1618,6 +1618,7 @@ function renderRegs() {
 	prevRegs = Object.fromEntries(cells.map(([n, v]) => [n, v]));
 	el.dataset.eip = r.eip;
 	el.dataset.phys = phys;
+	renderCpuState();
 }
 
 const num = (n) => (n === null || n === undefined ? "-" : n.toLocaleString("en"));

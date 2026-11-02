@@ -161,6 +161,7 @@
   </div>
   <p id="dbg_status" class="note mono" role="status"></p>
   <div id="regs" class="regs mono"></div>
+  <div id="cpu_state" class="cpu_state"></div>
   <div id="sym_info" class="syminfo"></div>
   <h3>Code at EIP <span class="tip" tabindex="0" role="button" title="About 6 instructions before and 10 after the next one (boxed), from the build's disassembly, with symbol+offset. Marked bytes differ in guest memory from the build. Tap a line or a symbol to open it in the Page tab. The previous symbol and the path are recorded while stepping or in slow motion, not at full JIT speed.">?</span></h3>
   <pre id="context" class="listing-small"></pre>
@@ -243,6 +244,7 @@
 <script src="symimport.js"></script>
 <script src="livedis.js"></script>
 <script src="fastforward.js"></script>
+<script src="cpustate.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

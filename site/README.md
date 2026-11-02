@@ -62,7 +62,16 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   them). Run to in the Debugger uses the same machinery for kernel code:
   fast-forward to the entry when the kernel has not run yet, then a
   software breakpoint (a HLT byte at the target, put back when the CPU
-  stops on it; a guest that reads its own code there would see it).
+  stops on it; a guest that reads its own code there would see it). The
+  HLT goes in only once the target holds the build's instruction bytes
+  (disasm.json); until then the page steps, stopping at the target. The
+  minified Linux's vmlinux runs at 0x100000, where v86 loads its bzImage,
+  and its boot code copies the payload into place (a `rep movs` 155
+  instructions after the entry): a HLT written at the entry landed in the
+  payload, and Run to rest_init ended halted in exc_page_fault after
+  72,644 instructions (test_wp_bit's expected fault was no longer fixed
+  up). Kernels without disasm.json (the Debian sample, whose vmlinux runs
+  at 0x1000000) get the breakpoint right away.
   `?fastforward=0` turns all of it off.
 - **Debian sample kernel.** The third kernel in the menu is Debian
   bookworm's `linux-image-6.1.0-50-686` 6.1.176-1 (non-PAE 686; packages,

@@ -1201,6 +1201,35 @@ def cpu_state_case(browser, base, shots, name):
     return problems, r
 
 
+def runto_case(browser, base, shots):
+    """Run to rest_init on the minified Linux stops there with no fault,
+    with and without fast-forward. The fast Run to used to write its HLT
+    breakpoint into the bzImage payload still lying at rest_init's
+    physical address (the minified Linux's vmlinux runs where its bzImage
+    is loaded), which ended halted in exc_page_fault after 72,644
+    instructions."""
+    problems, r = [], {}
+    syms = json.loads((SITE / kernel_entries()["minified-linux"]["symbols"]).read_text())["symbols"]
+    ri = next(x for x in syms if x["name"] == "rest_init")
+    for ff in ("", "&fastforward=0"):
+        page = browser.new_page(viewport={"width": 1100, "height": 1000})
+        page.goto(f"{base}/index.html?kernel=minified-linux&paused=1{ff}#debugger")
+        if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60):
+            problems.append(f"did not start paused ({ff or 'fast'})")
+            page.close()
+            continue
+        page.fill("#dbg_addr", hex(ri["vaddr"]))
+        page.click("#dbg_runto")
+        ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
+                      and page.get_attribute("#regs", "data-phys") == str(ri["paddr"]), 180)
+        status = page.inner_text("#dbg_status")
+        r[ff or "fast"] = status
+        if not ok or "Halted" in status:
+            problems.append(f"Run to rest_init ({ff or 'fast'}): {status}")
+        page.close()
+    return problems, r
+
+
 def debian_case(browser, base, shots, name):
     """The Debian sample: its defaults, the end-of-panic auto-stop with the
     message on the screen, and Run to start_kernel naming start_kernel."""
@@ -1626,6 +1655,11 @@ def main():
             bp, br = debian_case(browser, base, shots, name)
             print(json.dumps({"debian": bp or "ok", **{k: str(v) for k, v in br.items()}}))
             if bp:
+                failed = True
+        if not args.cases and "minified-linux" in entries:
+            rp, rr = runto_case(browser, base, shots)
+            print(json.dumps({"runto": rp or "ok", **{k: str(v) for k, v in rr.items()}}))
+            if rp:
                 failed = True
         if not args.cases and "minified-linux" in entries:
             cp, cr = cpu_state_case(browser, base, shots, "minified-linux")

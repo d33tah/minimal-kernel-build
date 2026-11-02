@@ -158,6 +158,20 @@ async function fastForward(target, name) {
 // Run to `phys` with a software breakpoint: a HLT byte at the target, the
 // JIT runs, and when the CPU halts right after it the byte is put back and
 // EIP set to the target. The kernel's code must already be in memory.
+// The build's bytes of the instruction at phys (disasm.json), or null.
+function expectedBytes(phys) {
+	if (!disasm || !disasm.insns || typeof insnIndex !== "function")
+		return null;
+	const i = insnIndex(phys), ins = disasm.insns[i];
+	if (!ins || ins[0] !== phys)
+		return null;
+	const hexs = ins[1];
+	const out = new Uint8Array(hexs.length / 2);
+	for (let k = 0; k < out.length; k++)
+		out[k] = parseInt(hexs.substr(k * 2, 2), 16);
+	return out;
+}
+
 async function fastRunTo(phys) {
 	const st = stepper, cpu = st.cpu;
 	if (st.nextPhys() === phys)
@@ -165,6 +179,30 @@ async function fastRunTo(phys) {
 	const t0 = realNow();
 	ffActive = true;
 	ffAbort = false;
+	// The breakpoint goes in only once the target holds the build's code.
+	// Before that the bytes there can be something else that the kernel
+	// moves into place later: the minified Linux's bzImage is loaded at
+	// 0x100000, where its vmlinux also runs, so a HLT written there at the
+	// entry corrupted the payload being copied (Run to rest_init then
+	// ended halted in exc_page_fault after 72,644 instructions). With
+	// disasm.json, step (stopping at the target) until the instruction at
+	// the target matches the build; without it (vmlinux elsewhere, as for
+	// the Debian sample) arm right away as before.
+	const want = expectedBytes(phys);
+	if (want) {
+		const same = () => emulator.read_memory(phys, want.length).every((b, i) => b === want[i]);
+		while (!same() && !ffAbort && !st.dead()) {
+			const r = st.run(10000, phys, 100);
+			if (r === "addr" || st.nextPhys() === phys)
+				break;
+			await ffYield();
+		}
+		if (st.nextPhys() === phys) {
+			ffActive = false;
+			ffInfo = Object.assign(ffInfo || {}, { runTo: phys, runToMs: realNow() - t0 });
+			return true;
+		}
+	}
 	let orig = emulator.read_memory(phys, 1)[0];
 	const arm = () => {
 		const b = emulator.read_memory(phys, 1)[0];

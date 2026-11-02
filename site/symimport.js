@@ -264,7 +264,7 @@ function showImported() {
 	const im = symbols && symbols.imported;
 	el.dataset.state = im ? "imported" : "";
 	el.textContent = im ? im.file + (im.file === im.source ? "" : " (" + im.source + ")") + ": " + symbols.symbols.length + " symbols, offset " +
-		hex(im.offset) + ", " + im.how + ". No disassembly or C source for imported symbols." : "";
+		hex(im.offset) + ", " + im.how + ". No disasm.json or C source for imported symbols: code is disassembled live." : "";
 	$("sym_forget").hidden = !im;
 }
 

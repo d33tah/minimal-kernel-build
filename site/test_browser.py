@@ -748,8 +748,9 @@ def import_case(browser, base, shots):
         r[path.name] = cur
         if cur != base_cur or cur != "start_kernel":
             problems.append(f"{path.name}: current symbol at start_kernel is {cur!r}, symbols.json gives {base_cur!r}")
-        if not note or "hex only" not in note:
-            problems.append(f"{path.name}: the listing does not say it is hex only: {note!r}")
+        # No disasm.json for imported symbols: the listing decodes guest memory.
+        if not note or "decoded live" not in note:
+            problems.append(f"{path.name}: the listing is not decoded live: {note!r}")
         # A counted full-speed boot with the imported symbols: the timeline has start_kernel, panic is found.
         page = browser.new_page(viewport={"width": 1100, "height": 1000})
         page.goto(f"{base}/index.html?kernel=minified-linux&speed=full")
@@ -989,6 +990,28 @@ def debian_case(browser, base, shots, name):
     if not ok or "Unable to mount root fs" not in r["banner"] or "end Kernel panic" not in screen:
         problems.append(f"no end-of-panic stop: {r['banner']!r}")
     page.screenshot(path=str(shots / "debian-panic.png"))
+    # No disasm.json: the listing at start_kernel is decoded live.
+    syms0 = json.loads((SITE / entry["symbols"]).read_text())["symbols"]
+    sk0 = next(x for x in syms0 if x["name"] == "start_kernel")
+    open_page(page, sk0["paddr"] // 4096)
+    wait_for(lambda: page.get_attribute("#listing", "data-source") == "live", 15)
+    open_page(page, sk0["paddr"] // 4096)
+    got = listing_insns(page, sk0["paddr"], sk0["paddr"] + 64)
+    r["listing_source"] = page.get_attribute("#listing", "data-source")
+    r["start_kernel_insns"] = list(got.values())[:3]
+    if r["listing_source"] != "live" or not got:
+        problems.append(f"no live instructions at start_kernel: {r['listing_source']}")
+    vmlinux = os.environ.get("MKB_DEBIAN_VMLINUX")
+    if vmlinux and got:
+        # The first 5 bytes are the ftrace call the kernel patches to a NOP
+        # at boot, so compare from the second instruction on.
+        dump = subprocess.run(["llvm-objdump", "-d", "--no-show-raw-insn", f"--start-address={sk0['vaddr']:#x}",
+                               f"--stop-address={sk0['vaddr'] + 32:#x}", vmlinux], capture_output=True, text=True).stdout
+        want = [norm_insn(l.split(":", 1)[1]) for l in dump.splitlines() if re.match(r"^\s*[0-9a-f]+:", l)]
+        live = [got[a] for a in sorted(got)]
+        r["objdump"], r["live"] = want[1:3], live[1:3]
+        if want[1:3] != live[1:3]:
+            problems.append(f"live decode {live[1:3]} != llvm-objdump {want[1:3]}")
     page.close()
     syms = json.loads((SITE / entry["symbols"]).read_text())["symbols"]
     sk = next(s for s in syms if s["name"] == "start_kernel")
@@ -1002,11 +1025,59 @@ def debian_case(browser, base, shots, name):
                   and page.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 900, 2)
     r["runto_seconds"] = round(time.monotonic() - t0)
     r["runto_symbol"] = page.get_attribute("#cur_sym", "data-name")
+    r["context_source"] = page.get_attribute("#context", "data-source")
+    if r["context_source"] != "live" or page.locator("#context .ins.cur").count() != 1:
+        problems.append(f"Debugger code window at EIP: source {r['context_source']!r}, boxed lines {page.locator('#context .ins.cur').count()}")
     if not ok or r["runto_symbol"] != "start_kernel":
         problems.append(f"Run to start_kernel: {r['runto_symbol']!r} ({page.inner_text('#dbg_status')})")
     page.close()
     if errors:
         problems.append("page errors: " + "; ".join(errors))
+    return problems, r
+
+
+def norm_insn(text):
+    """Instruction text without addresses' symbol names, comments and spacing."""
+    text = re.sub(r"<[^>]*>|#.*$", "", text.lower())
+    text = re.sub(r"\s+", " ", text).strip().replace(", ", ",")
+    # Numbers modulo formatting: -0x3fef0834 and 0xc010f7cc, 9 and 0x9 are equal.
+    return re.sub(r"-?(?:0x[0-9a-f]+|\b\d+\b)", lambda m: hex(int(m.group(0), 0) & 0xffffffff), text)
+
+
+def listing_insns(page, lo, hi):
+    """{paddr: normalized instruction} of the Page listing's lines in [lo, hi)."""
+    out = {}
+    for addr, text in page.evaluate("""() => [...document.querySelectorAll('#listing .ins')].map(e =>
+            [Number(e.dataset.addr), e.textContent])"""):
+        if lo <= addr < hi:
+            # "addr bytes... insn [symbol+off]": drop the address, bytes and symbol+offset
+            body = re.sub(r"^[0-9a-f]{8} +(?:[0-9a-f]{2})+\u2026? *", "", text.strip())
+            body = re.sub(r" [A-Za-z_][\w.]*\+0x[0-9a-f]+$", "", body)
+            out[addr] = norm_insn(body)
+    return out
+
+
+def livedecode_case(browser, base, shots):
+    """Live decoding (iced-x86) agrees with disasm.json on start_kernel."""
+    problems, r = [], {}
+    syms = json.loads((SITE / kernel_entries()["minified-linux"]["symbols"]).read_text())["symbols"]
+    sk = next(s for s in syms if s["name"] == "start_kernel")
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    page.goto(f"{base}/index.html?kernel=minified-linux&speed=full")
+    wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 60)
+    open_page(page, sk["paddr"] // 4096)
+    hi = min(sk["paddr"] + sk["size"], (sk["paddr"] // 4096 + 1) * 4096)
+    built = listing_insns(page, sk["paddr"], hi)
+    page.check("#live_decode")
+    wait_for(lambda: page.get_attribute("#listing", "data-source") == "live", 10)
+    live = listing_insns(page, sk["paddr"], hi)
+    same = [a for a in built if live.get(a) == built[a]]
+    r["build"], r["live"], r["same"] = len(built), len(live), len(same)
+    r["differ"] = [(hex(a), built[a], live.get(a)) for a in built if live.get(a) != built[a]][:5]
+    if not built or len(same) < 0.95 * len(built):
+        problems.append(f"live decode disagrees with disasm.json on start_kernel: {r}")
+    page.screenshot(path=str(shots / "live-decode.png"))
+    page.close()
     return problems, r
 
 
@@ -1083,7 +1154,7 @@ def touch_case(browser, base, shots):
     return problems
 
 
-STAMPED = ("style.css", "clock.js", "app.js", "stepper.js", "graph.js", "source.js", "symimport.js", "v86/libv86.js")
+STAMPED = ("style.css", "clock.js", "app.js", "stepper.js", "graph.js", "source.js", "symimport.js", "livedis.js", "v86/libv86.js")
 
 
 def stamp(html, v):
@@ -1299,6 +1370,11 @@ def main():
             bp, br = debian_case(browser, base, shots, name)
             print(json.dumps({"debian": bp or "ok", **{k: str(v) for k, v in br.items()}}))
             if bp:
+                failed = True
+        if not args.cases and "minified-linux" in entries:
+            lp, lr = livedecode_case(browser, base, shots)
+            print(json.dumps({"live_decode": lp or "ok", **{k: str(v) for k, v in lr.items()}}))
+            if lp:
                 failed = True
         if not args.cases:
             touch = touch_case(browser, base, shots)

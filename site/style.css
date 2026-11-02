@@ -279,3 +279,4 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 #graph_crumbs { margin: 0.2rem 0; overflow-wrap: anywhere; }
 #graph_crumbs[hidden] { display: none; }
 #graph_transpose[aria-pressed="true"], #graph_flame[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+#listing .maybe { opacity: 0.6; font-style: italic; }

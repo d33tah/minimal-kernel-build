@@ -545,10 +545,24 @@ function listPage(p, bytes, base, cur, chars) {
 	const wide = chars >= 100;
 	const syms = symbolsInPage(p).filter((s) => s.paddr >= lo);
 	const sized = symbolsInPage(p).filter((s) => s.size > 0);
-	const insns = new Map();
-	if (disasm)
+	let insns = new Map();
+	let source = "none", misaligned = new Set(), bits = 32;
+	if (disasm && !liveDecode())
 		for (let i = insnIndex(lo); i < disasm.insns.length && disasm.insns[i][0] < hi; i++)
 			insns.set(disasm.insns[i][0], disasm.insns[i]);
+	if (insns.size)
+		source = "build";
+	else {
+		// No disasm.json (or "live decode"): decode guest memory with iced-x86.
+		const live = liveInsnsForPage(p);
+		if (live) {
+			insns = live.insns;
+			misaligned = live.misaligned;
+			bits = live.bits;
+			source = "live";
+		} else if (!icedError)
+			loadIced();
+	}
 	const out = [];
 	let si = 0, nIns = 0, nBad = 0, nRows = 0, nonzero = 0, changed = 0, curLine = -1;
 	let prevRow = null, starred = false;
@@ -585,6 +599,8 @@ function listPage(p, bytes, base, cur, chars) {
 			const s = symbolAt(sized, pa);
 			const where = s ? s.name + "+0x" + (pa - s.paddr).toString(16) : "";
 			let cls = ok ? "ins" : "ins bad";
+			if (misaligned.has(pa))
+				cls += " maybe";
 			if (pa === cur) {
 				cls += " cur";
 				curLine = out.length;
@@ -645,7 +661,7 @@ function listPage(p, bytes, base, cur, chars) {
 		nRows++;
 		a = end;
 	}
-	return { html: out.join("\n"), nIns, nBad, nRows, nonzero, changed, curLine };
+	return { html: out.join("\n"), nIns, nBad, nRows, nonzero, changed, curLine, source, bits, misaligned: misaligned.size };
 }
 
 function renderSymbolIndex(p) {
@@ -694,7 +710,11 @@ function renderPage(p, bytes, base, how) {
 		if (line)
 			scrollListingTo(line);
 	}
-	$("dump_info").textContent = (disasm ? r.nIns + " instructions" : "hex only: no disassembly (disasm.json) for this kernel") +
+	box.dataset.source = r.source;
+	$("dump_info").textContent = (r.source === "build" ? r.nIns + " instructions (disasm.json)" :
+		r.source === "live" ? r.nIns + " instructions decoded live from guest memory (iced-x86, " + r.bits + "-bit" +
+			(r.misaligned ? "; the first lines outside a symbol may be misaligned" : "") + ")" :
+		icedError ? "hex only: no disassembler (" + icedError + ")" : !iced ? "loading the disassembler..." : "no code in this page") +
 		(r.nBad ? " (" + r.nBad + " differ from the build)" : "") +
 		", " + r.nonzero + " non-zero bytes" + (base ? ", " + r.changed + " changed " + how : "") +
 		", read " + new Date().toLocaleTimeString("en-GB");
@@ -1441,10 +1461,31 @@ function renderContext() {
 	}
 	renderSymbols(phys);
 	const lines = [];
-	const ins = disasm ? disasm.insns : [];
-	const i = disasm ? insnIndex(phys) : 0;
-	const exact = i < ins.length && ins[i][0] === phys;
+	let ins = disasm ? disasm.insns : [];
+	let i = disasm ? insnIndex(phys) : 0;
+	let exact = i < ins.length && ins[i][0] === phys;
 	const inKernel = image && phys >= V86_KERNEL_ADDR && phys < kernelEnd(image.hdr);
+	let live = false;
+	if ((!exact || liveDecode()) && iced) {
+		// Decode guest memory from the containing symbol's start (aligned)
+		// through EIP and ~10 instructions after it; without a symbol, from EIP.
+		const sym = symbols ? symbols.symbols.find((x) => x.size > 0 && x.paddr <= phys && phys < x.paddr + x.size &&
+			phys - x.paddr < 0x10000) : null;
+		const start = sym ? sym.paddr : phys;
+		const stop = Math.min(emuRam, phys + 160);
+		if (stop > start) {
+			const list = decodeLive(emulator.read_memory(start, stop - start), start, (start + virtOffset(start)) >>> 0, bitnessAt(phys));
+			const k = list.findIndex((e) => e[0] === phys);
+			if (k >= 0) {
+				ins = list;
+				i = k;
+				exact = true;
+				live = true;
+				el.dataset.bits = bitnessAt(phys);
+			}
+		}
+	} else if (!exact && !iced && !icedError)
+		loadIced();
 	if (!exact) {
 		const n = Math.max(0, Math.min(16, emuRam - phys));
 		const b = n > 0 ? emulator.read_memory(phys, n) : [];
@@ -1455,8 +1496,10 @@ function renderContext() {
 			"EIP is not an instruction start in the build's disassembly (the code here is not vmlinux's yet, e.g. the bzImage's relocation stub): raw bytes at EIP." +
 			(disasm && i < ins.length && ins[i][0] < phys + 64 ? " Nearest instructions from the build:" : "")) + "</span>");
 	}
-	el.dataset.source = exact ? "disasm" : "bytes";
-	if (disasm && inKernel) {
+	el.dataset.source = live ? "live" : exact ? "disasm" : "bytes";
+	if (live)
+		lines.push('<span class="dim">decoded live from guest memory (iced-x86, ' + bitnessAt(phys) + "-bit)</span>");
+	if ((disasm && inKernel) || live) {
 		const from = Math.max(0, exact ? i - 6 : i - 3), to = Math.min(ins.length, i + 10);
 		if (to > from) {
 			const lo = ins[from][0], hi = ins[to - 1][0] + ins[to - 1][1].length / 2;
@@ -2030,6 +2073,7 @@ async function init() {
 	initDebugger();
 	initGraph();
 	initImport();
+	$("live_decode").addEventListener("change", () => { if (liveDecode()) loadIced(); inspect(); renderContext(); });
 	initInitrd();
 	setInterval(watchPanicText, 250);
 	loadVersion();

@@ -12,7 +12,7 @@ from pathlib import Path
 
 site = Path(__file__).resolve().parent
 # every page script that looks up elements
-js = "\n".join((site / f).read_text() for f in ("app.js", "graph.js", "source.js", "symimport.js"))
+js = "\n".join((site / f).read_text() for f in ("app.js", "graph.js", "source.js", "symimport.js", "livedis.js"))
 html = (site / "index.html").read_text()
 ids = set(re.findall(r'\bid="([^"]+)"', html))
 # ids created at runtime by app.js itself

@@ -6,12 +6,13 @@ at build time and checks each against a SHA-256 recorded in the script.
 | file | source | pin | licence |
 |---|---|---|---|
 | `libv86.js`, `v86.wasm` | npm package [`v86`](https://www.npmjs.com/package/v86), `build/` | version 0.5.471 (published 2026-10-09) | BSD-2-Clause, copied to `v86/LICENSE.v86` |
+| `iced/iced_x86.js`, `iced/iced_x86_bg.wasm` | npm package [`iced-x86`](https://www.npmjs.com/package/iced-x86) (github.com/icedland/iced), loaded only when a listing needs live disassembly | version 1.21.0 (published 2024-01-20) | MIT, copied to `iced/LICENSE.iced` |
 | `seabios.bin`, `vgabios.bin` | [copy/v86](https://github.com/copy/v86) `bios/` | commit `94faf3d6b19ecabc53a4010aaa24252fa6a162e2` (the commit npm 0.5.471 was built from) | SeaBIOS and its VGA BIOS: LGPL-3.0, copied to `v86/COPYING.LESSER` |
 
 To move the pin, change `V86_NPM_VERSION`, `V86_COMMIT` and the checksums in
 `fetch-v86.sh` together, and the table above.
 
-The page itself (`index.html`, `app.js`, `stepper.js`, `style.css`) uses
+The page itself (`index.html`, `app.js`, `stepper.js`, `livedis.js`, `style.css`, ...) uses
 no other libraries. `stepper.js` adds two exports to `v86.wasm` in the
 browser after the checksum-verified file is fetched (`read_imm8` and the
 interpreter's `run`, found by name in the module's name section); the

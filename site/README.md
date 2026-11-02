@@ -44,7 +44,7 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   global data with a size; local data objects and export/tracing
   bookkeeping dropped), 5,059,585 bytes, 765,158 gzipped (117,357
   symbols, 13 MB, 1.6 MB gzipped untrimmed). No disasm.json or
-  sources.json: the listing is hex only. Its `meta.json` gives the label
+  sources.json: the listing is disassembled live (below). Its `meta.json` gives the label
   "Debian 6.1 686 (no initrd: ends in a root-fs panic)", the command line
   `nokaslr console=tty0 cryptomgr.notests` and 64 MB of RAM (32 MB does
   not boot: it stays at the SeaBIOS banner). At full speed it prints its
@@ -68,7 +68,7 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   System.map has no bytes to match), else vaddr - 0xC0000000 for addresses
   above the i386 PAGE_OFFSET, else identity; a hex offset can be typed.
   There is no disasm.json or sources.json for imported symbols: the
-  listing is hex only and says so. The map is remembered in localStorage
+  listing is disassembled live from guest memory (below). The map is remembered in localStorage
   per bzImage (SHA-256 of the image) when it fits; "forget symbols" drops
   it. A bzImage and a System.map dropped on the page together are loaded
   and booted. A file that is neither gives an error and the previous
@@ -104,6 +104,24 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   `System.map-6.6.134-0-lts` (SHA-256
   `525d25b83b31cf71d6ea5b22fdaf815bbe34009a0e5d71ee9bfbeffdb2a23867`) for
   the symbol import.
+- **Live disassembly.** Where there is no disasm.json (imported symbols,
+  kernels from disk, the Debian sample, BIOS and setup code) the Page
+  listing and the Debugger's code window disassemble guest memory in the
+  browser with iced-x86 1.21.0 (MIT; fetched by `fetch-v86.sh` into
+  `iced/`, SHA-256 checked, loaded only when needed; its npm build is
+  for Node, so `livedis.js` runs it with a small `require()` shim and
+  instantiates the wasm asynchronously). AT&T syntax with size suffixes,
+  like llvm-objdump. Decoding starts at the containing code symbol's first
+  byte so instruction boundaries are right; text outside any symbol
+  starts at the page start and its first lines are marked as maybe
+  misaligned. Code below the kernel entry, or while the CPU is in real
+  mode, decodes as 16-bit; the listing says which. "live decode" in the
+  Page tab uses it for our kernels too (it shows what runs, including
+  code that differs from the build); on the minified Linux's start_kernel
+  all 29 instructions agree with disasm.json up to number formatting. On
+  Debian the first instruction of a function is the ftrace call the
+  kernel patched into a 5-byte NOP at boot; the live listing shows the
+  NOP, llvm-objdump on the -dbg vmlinux the call.
 - **C source.** With `kernels/<name>/sources.json` the Page listing and
   the Debugger's code window print the C line above the instructions it
   compiled to, like `objdump -S` (dim, `file.c:123`, printed again when
@@ -424,7 +442,7 @@ The import case boots the minified Linux with its own System.map
 (`llvm-nm -n`) and with the vmlinux ELF instead of symbols.json: Run to
 start_kernel names start_kernel in the Debugger as with symbols.json, a
 counted boot has a start_kernel frame holding most of the run and detects
-the panic, the listing says hex only, a malformed file gives an error and
+the panic, the listing is decoded live, a malformed file gives an error and
 keeps the symbols, nothing scrolls sideways at 390 px. The initrd case loads a 512-byte newc cpio built in the test with the
 minified Linux and checks RAM was raised, its bytes are at 64 MiB in
 guest RAM, the note about our kernels, the initrd region in the map and

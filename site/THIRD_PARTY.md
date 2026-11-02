@@ -36,3 +36,36 @@ terms). Corresponding source: the Debian source package `linux` version
 `linux-signed-i386` 6.1.176+1):
 <https://snapshot.debian.org/package/linux/6.1.176-1/> and
 <https://sources.debian.org/src/linux/6.1.176-1/>.
+
+## Debian initramfs for the Debian sample
+
+`gen-debian-initrd.sh` (run by the workflow, never committed) builds
+`kernels/debian-6.1-686-initrd/initrd.img` with Debian's initramfs-tools
+in an i386 `debian:bookworm-slim` container, from the kernel package
+above and Debian bookworm packages of the same snapshot.debian.org date
+(20260704T211317Z). It writes `packages.txt` next to it: every binary
+package whose files are in the initramfs, with its version and source
+package. For the current build:
+
+| binary package | version | source package | licence |
+|---|---|---|---|
+| busybox | 1:1.35.0-4+deb12u1+b1 | [busybox](https://snapshot.debian.org/package/busybox/1%3A1.35.0-4%2Bdeb12u1/) | GPL-2.0 |
+| klibc-utils, libklibc | 2.0.12-1 | [klibc](https://snapshot.debian.org/package/klibc/2.0.12-1/) | BSD-3-Clause and GPL-2.0 |
+| initramfs-tools-core | 0.142+deb12u3 | [initramfs-tools](https://snapshot.debian.org/package/initramfs-tools/0.142%2Bdeb12u3/) | GPL-2.0+ |
+| udev | 252.39-1~deb12u2 | [systemd](https://snapshot.debian.org/package/systemd/252.39-1~deb12u2/) | GPL-2.0+ (udev), LGPL-2.1+ |
+| kmod, libkmod2 | 30+20221128-1 | [kmod](https://snapshot.debian.org/package/kmod/30%2B20221128-1/) | GPL-2.0+ (tools), LGPL-2.1+ (library) |
+| libc6, libc-bin | 2.36-9+deb12u14 | [glibc](https://snapshot.debian.org/package/glibc/2.36-9%2Bdeb12u14/) | LGPL-2.1+ |
+| util-linux, libblkid1 | 2.38.1-5+deb12u3 | [util-linux](https://snapshot.debian.org/package/util-linux/2.38.1-5%2Bdeb12u3/) | GPL-2.0+, LGPL-2.1+ (libblkid) |
+| libacl1 | 2.3.1-3 | [acl](https://snapshot.debian.org/package/acl/2.3.1-3/) | LGPL-2.1+ |
+| libcap2 | 1:2.66-4+deb12u3+b1 | [libcap2](https://snapshot.debian.org/package/libcap2/1%3A2.66-4%2Bdeb12u3/) | BSD-3-Clause or GPL-2.0 |
+| liblzma5 | 5.4.1-1+deb12u2 | [xz-utils](https://snapshot.debian.org/package/xz-utils/5.4.1-1%2Bdeb12u2/) | public domain (liblzma) |
+| libpcre2-8-0 | 10.42-1+deb12u2 | [pcre2](https://snapshot.debian.org/package/pcre2/10.42-1%2Bdeb12u2/) | BSD-3-Clause |
+| libselinux1 | 3.4-1+b6 | [libselinux](https://snapshot.debian.org/package/libselinux/3.4-1/) | public domain |
+| libssl3 | 3.0.20-1~deb12u1 | [openssl](https://snapshot.debian.org/package/openssl/3.0.20-1~deb12u1/) | Apache-2.0 |
+| libzstd1 | 1.5.4+dfsg2-5 | [libzstd](https://snapshot.debian.org/package/libzstd/1.5.4%2Bdfsg2-5/) | BSD-3-Clause or GPL-2.0 |
+| linux-image-6.1.0-50-686 | 6.1.176-1 | linux (see above) | GPL-2.0 (only modules.* index files, no modules) |
+
+Each package's full copyright file is `/usr/share/doc/<package>/copyright`
+in the package; the source packages are linked above (also on
+<https://sources.debian.org/>).
+

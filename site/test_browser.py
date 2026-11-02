@@ -22,6 +22,7 @@ Needs: pip install playwright && playwright install chromium
 
 import argparse
 import functools
+import gzip
 import http.server
 import json
 import os
@@ -833,7 +834,7 @@ def initrd_case(browser, base, shots):
     if bytes(head) != cpio.read_bytes()[:16]:
         problems.append(f"initrd bytes not at 64 MiB in guest RAM: {bytes(head)!r}")
     r["note"] = page.inner_text("#initrd_status")
-    if "ignore a bootloader initrd" not in r["note"]:
+    if "ignores a bootloader initrd" not in r["note"]:
         problems.append("no note that our kernels ignore a bootloader initrd: " + r["note"])
     show_tab(page, "memory")
     if "initrd" not in page.inner_text("#map_all"):
@@ -1059,6 +1060,58 @@ def tasks_case(browser, base, shots, name):
         problems.append(f"a task has {r['maxRootsPerTask']} roots")
     if r["traceEarlyOrphans"]:
         problems.append(f"{r['traceEarlyOrphans']} of {r['traceEarly']} __trace_early_add_event_dirs calls not under event_trace_init")
+    return problems, r
+
+
+def initramfs_case(browser, base, shots, name):
+    """A kernel shipped with its initrd (the Debian sample with Debian's
+    initramfs) boots to the "(initramfs)" BusyBox shell, which takes
+    keyboard input; an initrd for another kernel gets a warning."""
+    problems, r = [], {}
+    page = browser.new_page(viewport={"width": 1100, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    t0 = time.monotonic()
+    page.goto(f"{base}/index.html?kernel={name}&speed=full&count=0")
+    ok = wait_for(lambda: "(initramfs)" in page.inner_text("#screen_container"), 300, 1)
+    r["seconds_to_shell"] = round(time.monotonic() - t0)
+    r["note"] = page.inner_text("#initrd_status")
+    r["ram"] = page.eval_on_selector("#memory", "e => e.value")
+    if not ok:
+        problems.append("no (initramfs) shell: " + page.inner_text("#screen_container")[-300:])
+    elif "matches the kernel" not in r["note"]:
+        problems.append("the initrd note does not say it matches: " + r["note"])
+    if ok:
+        page.click("#screen_container")
+        time.sleep(0.5)
+        # Unshifted characters only: Playwright's type() sends no Shift.
+        page.keyboard.type("uname -m; expr 50 - 8")
+        page.keyboard.press("Enter")
+        lines = lambda: [l.strip() for l in page.inner_text("#screen_container").splitlines()]
+        if not wait_for(lambda: "42" in lines(), 60):
+            problems.append("the shell did not run a typed command")
+        r["uname"] = [l for l in lines() if l in ("i686", "i586", "i386")]
+    page.screenshot(path=str(shots / f"initramfs-{name}.png"))
+    # An initrd for another kernel: gzip'd newc cpio with lib/modules of
+    # 6.12 amd64 and a 64-bit ELF /bin/busybox, named like Debian's.
+    def entry(fname, data, mode):
+        n = fname.encode() + b"\0"
+        hdr = "070701" + "".join(f"{v:08x}" for v in (1, mode, 0, 0, 1, 0, len(data), 0, 0, 0, 0, len(n), 0))
+        out = hdr.encode() + n
+        out += b"\0" * (-len(out) % 4) + data
+        return out + b"\0" * (-len(out) % 4)
+    body = (entry("lib/modules/6.12.111+deb13-amd64", b"", 0o40755) +
+            entry("bin/busybox", b"\x7fELF\x02\x01\x01" + b"\0" * 57, 0o100755) + entry("TRAILER!!!", b"", 0))
+    tmp = pathlib.Path(tempfile.mkdtemp()) / "initrd.img-6.12.111+deb13-amd64"
+    tmp.write_bytes(gzip.compress(body))
+    page.set_input_files("#initrd_file", str(tmp))
+    wait_for(lambda: "Warning" in page.inner_text("#initrd_status"), 20)
+    r["mismatch_note"] = page.inner_text("#initrd_status")
+    if not all(w in r["mismatch_note"] for w in ("Warning", "6.12.111+deb13-amd64", "64-bit", "6.1.0-50-686", "cannot run")):
+        problems.append("no mismatch warning: " + r["mismatch_note"])
+    if errors:
+        problems.append(f"page errors: {errors}")
+    page.close()
     return problems, r
 
 
@@ -1483,12 +1536,17 @@ def main():
             print(json.dumps({"follow": fp or "ok", **{k: str(v) for k, v in fr.items()}}))
             if fp:
                 failed = True
-        for name in [n for n in entries if n.startswith("debian")] if not args.cases else []:
+        for name in [n for n in entries if (n.startswith("debian") and "initrd" not in entries[n])] if not args.cases else []:
             bp, br = debian_case(browser, base, shots, name)
             print(json.dumps({"debian": bp or "ok", **{k: str(v) for k, v in br.items()}}))
             if bp:
                 failed = True
-        for name in [n for n in entries if n.startswith("debian") or n == "minified-linux"] if not args.cases else []:
+        for name in [n for n in entries if "initrd" in entries[n]] if not args.cases else []:
+            ip, ir = initramfs_case(browser, base, shots, name)
+            print(json.dumps({"initramfs": ip or "ok", "kernel": name, **{k: str(v) for k, v in ir.items()}}))
+            if ip:
+                failed = True
+        for name in [n for n in entries if (n.startswith("debian") and "initrd" not in entries[n]) or n == "minified-linux"] if not args.cases else []:
             tp, tr = tasks_case(browser, base, shots, name)
             print(json.dumps({"tasks_case": tp or "ok", "kernel": name, **{k: str(v) for k, v in tr.items()}}))
             if tp:

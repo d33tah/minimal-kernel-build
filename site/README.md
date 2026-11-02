@@ -80,6 +80,23 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   boot log and stops itself at "VFS: Unable to mount root fs on
   unknown-block(0,0)" after about 13 s. bullseye's 5.10.0-30-686 also
   works; `test_distro_symbols.py --version` checks either.
+- **Debian sample with its initramfs.** The fourth entry, "Debian 6.1 686
+  with its initramfs (BusyBox shell)", is the same bzImage and symbols
+  with Debian's own initramfs: `gen-debian-initrd.sh` runs initramfs-tools'
+  `mkinitramfs` in an i386 `debian:bookworm-slim` container (a workflow
+  job of its own, cached by the script's hash and the kernel package's
+  hash) with the kernel package and initramfs-tools, busybox, klibc,
+  kmod and udev from the same snapshot.debian.org date, gzip and no
+  kernel modules (MODULES=list; v86 has no disk here). The result is
+  5.4 MB (Debian's default MODULES=most gives 25.7 MB, which the kernel
+  cannot unpack in 128 MB: "No working init found"). The command line
+  `nokaslr console=tty0 cryptomgr.notests break` stops Debian's init at
+  the premount break, so it drops to the `(initramfs)` BusyBox prompt,
+  which takes keyboard input in the screen. At full JIT speed (no count)
+  that takes about 40 s from the page load on this machine; 96 and 128 MB
+  of RAM both work (the entry uses 128 MB). The packages its files come
+  from are listed in `kernels/debian-6.1-686-initrd/packages.txt` and
+  THIRD_PARTY.md.
 - **Imported symbols.** "Symbols" next to "From disk" takes a
   `System.map` (`nm -n` text: hex address, type letter, name) or an
   unstripped `vmlinux` (ELF32: section headers, `.symtab`/`.strtab` and
@@ -114,9 +131,20 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   smallest RAM size that fits (the menu goes to 64, 96, 128, 256 and 512 MB),
   the header check reports an error when it does not fit and a warning
   when it lies above the kernel's initrd_addr_max, and the memory map and
-  grid show the initrd as its own region. The kernels on this page ignore
-  a bootloader initrd (the minified Linux only unpacks its built-in
-  initramfs); the page says so. `?count=0` turns off the background count,
+  grid show the initrd as its own region. hello and the minified Linux
+  ignore a bootloader initrd (the minified Linux only unpacks its
+  built-in initramfs); the page says so for those two. For other kernels
+  it says which kernel the initrd is for and warns when that is not the
+  loaded one: it skips the uncompressed early cpio (CPU microcode) Debian
+  puts first, recognises gzip, zstd, xz, lz4, lzma and bzip2 by their
+  magic, and for plain or gzip cpio (DecompressionStream) reads the
+  releases under `lib/modules/` and the ELF class of `bin/busybox` or
+  `sbin/udevadm`; otherwise it takes the release from the file name
+  (`initrd.img-6.12.111+deb13-amd64`: 64-bit). It compares that with the
+  release in the bzImage header's kernel_version string, e.g. "Warning:
+  this initrd is for 6.12.111+deb13-amd64 (64-bit) (from its file name;
+  zstd is not decoded here); the kernel is 6.1.0-50-686 (32-bit): it
+  cannot run its programs." `?count=0` turns off the background count,
   for distro kernels at full speed.
 
   Tested with Alpine Linux 3.20 x86 netboot (not committed):

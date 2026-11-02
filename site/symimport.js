@@ -378,9 +378,133 @@ function initrdNote() {
 		el.textContent = "";
 		return;
 	}
-	const ours = image && kernels.some((k) => k.name === image.name);
+	// hello and the minified Linux have no bootloader-initrd support; the
+	// Debian sample and kernels from disk use it.
+	const ignores = image && /^(hello|minified-linux)$/.test(image.name);
 	el.textContent = initrd.name + ": " + kib(initrd.bytes.length) + ", v86 puts it at " + hex(V86_INITRD_ADDR) + "." +
-		(ours ? " The kernels on this page ignore a bootloader initrd (the minified Linux only unpacks its built-in initramfs)." : "");
+		(ignores ? " This kernel ignores a bootloader initrd (the minified Linux only unpacks its built-in initramfs)." : "") +
+		(initrd.info && !ignores ? initrdMatch(initrd.info) : "");
+	el.dataset.mismatch = initrd.info && !ignores && initrdMismatch(initrd.info) ? "1" : "";
+}
+
+// ---- what an initrd is for ---------------------------------------------------
+
+// Kernel release and bitness of the loaded bzImage, from its header's
+// kernel_version string ("6.1.0-50-686 (...) #1 SMP ..."). x86 bzImages
+// on this page are 32-bit unless the release says amd64 / x86_64.
+function kernelRelease() {
+	const v = image && image.hdr && image.hdr.kernel_version;
+	if (!v)
+		return null;
+	const release = v.split(" ")[0];
+	return { release, bits: /amd64|x86_64|x86-64/.test(release) ? 64 : 32 };
+}
+
+const INITRD_MAGIC = [
+	["gzip", [0x1f, 0x8b]], ["zstd", [0x28, 0xb5, 0x2f, 0xfd]], ["xz", [0xfd, 0x37, 0x7a, 0x58, 0x5a, 0x00]],
+	["lz4", [0x02, 0x21, 0x4c, 0x18]], ["lzma", [0x5d, 0x00, 0x00]], ["bzip2", [0x42, 0x5a, 0x68]],
+	["cpio", [0x30, 0x37, 0x30, 0x37, 0x30]],
+];
+
+function magicAt(b, o) {
+	for (const [name, m] of INITRD_MAGIC)
+		if (m.every((x, i) => b[o + i] === x))
+			return name;
+	return null;
+}
+
+// Walks newc cpio entries from offset o; calls fn(name, dataStart, size)
+// for each, returns the offset after the TRAILER (4-byte aligned).
+function cpioWalk(b, o, fn) {
+	const txt = new TextDecoder();
+	while (o + 110 <= b.length && magicAt(b, o) === "cpio") {
+		const hx = (i) => parseInt(txt.decode(b.subarray(o + 6 + i * 8, o + 14 + i * 8)), 16);
+		const size = hx(6), nameSize = hx(11);
+		const name = txt.decode(b.subarray(o + 110, o + 110 + nameSize - 1));
+		const data = (o + 110 + nameSize + 3) & ~3;
+		o = (data + size + 3) & ~3;
+		if (name === "TRAILER!!!")
+			return o;
+		if (fn(name, data, size) === false)
+			return -1;
+	}
+	return o;
+}
+
+async function gunzip(bytes) {
+	const ds = new DecompressionStream("gzip");
+	const out = await new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer();
+	return new Uint8Array(out);
+}
+
+// What the initrd is for: its compression, and (when it can be decoded
+// here: plain or gzip cpio) the kernel releases under lib/modules and
+// the ELF class of /init's programs. Debian initrds start with an
+// uncompressed early cpio (CPU microcode) before the compressed main one.
+async function analyzeInitrd(bytes, name) {
+	const info = { compression: null, releases: [], bits: 0, fromName: null };
+	const m = /(\d+\.\d+[0-9A-Za-z.+~_-]*)/.exec(name || "");
+	if (m)
+		info.fromName = m[1].replace(/\.(img|gz|cpio|zst|xz|lz4)$/, "");
+	let o = 0;
+	while (magicAt(bytes, o) === "cpio") {
+		const next = cpioWalk(bytes, o, () => true);
+		if (next <= o)
+			break;
+		o = next;
+		while (o < bytes.length && bytes[o] === 0)
+			o++;
+	}
+	info.compression = o < bytes.length ? magicAt(bytes, o) || "unknown" : "cpio";
+	let main = null;
+	try {
+		if (info.compression === "gzip" && typeof DecompressionStream === "function")
+			main = await gunzip(bytes.subarray(o));
+		else if (info.compression === "cpio")
+			main = bytes;
+	} catch (e) {
+		main = null; // truncated or concatenated streams: keep what the name says
+	}
+	if (main) {
+		const rel = new Set();
+		cpioWalk(main, 0, (n, data, size) => {
+			const r = /^(?:usr\/)?lib\/modules\/([^/]+)/.exec(n);
+			if (r)
+				rel.add(r[1]);
+			if (!info.bits && size > 4 && /^(?:usr\/)?(?:bin\/busybox|sbin\/udevadm|bin\/sh|init)$/.test(n) &&
+			    main[data] === 0x7f && main[data + 1] === 0x45 && main[data + 2] === 0x4c && main[data + 3] === 0x46)
+				info.bits = main[data + 4] === 2 ? 64 : 32;
+			return true;
+		});
+		info.releases = [...rel];
+		info.decoded = true;
+	}
+	if (!info.bits && info.fromName)
+		info.bits = /amd64|x86_64/.test(info.fromName) ? 64 : /686|i386|486/.test(info.fromName) ? 32 : 0;
+	return info;
+}
+
+function initrdMismatch(info) {
+	const k = kernelRelease();
+	if (!k)
+		return false;
+	const rel = info.releases.length ? info.releases : info.fromName ? [info.fromName] : [];
+	return (rel.length && !rel.includes(k.release)) || (info.bits && info.bits !== k.bits);
+}
+
+function initrdMatch(info) {
+	const k = kernelRelease();
+	const rel = info.releases.length ? info.releases.join(", ") : info.fromName;
+	if (!rel && !info.bits)
+		return ""; // nothing says which kernel it is for
+	const what = (rel ? rel : "an unknown kernel") + (info.bits ? " (" + info.bits + "-bit)" : "");
+	const how = info.decoded ? "" : " (from its file name; " + info.compression + " is not decoded here)";
+	if (!k)
+		return " It is for " + what + how + ".";
+	if (initrdMismatch(info))
+		return " Warning: this initrd is for " + what + how + "; the kernel is " + k.release + " (" + k.bits + "-bit)" +
+			(info.bits && info.bits !== k.bits ? ": it cannot run its programs." : ": its modules will not load.");
+	return " It matches the kernel (" + k.release + ")" + how + ".";
 }
 
 // RAM for the initrd: v86 puts it at 64 MiB, so pick the smallest menu
@@ -402,6 +526,7 @@ function initInitrd() {
 		if (!f)
 			return;
 		initrd = { name: f.name, bytes: new Uint8Array(await f.arrayBuffer()) };
+		initrd.info = await analyzeInitrd(initrd.bytes, f.name);
 		$("initrd_file").value = "";
 		ramForInitrd();
 		initrdNote();

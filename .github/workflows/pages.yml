@@ -136,8 +136,44 @@ jobs:
         name: kernels
         path: out/
 
+  # Debian's initramfs for the Debian 6.1 686 sample, built by Debian's
+  # own initramfs-tools (mkinitramfs) in an i386 bookworm container from
+  # the same pinned kernel package and snapshot date; cached by the
+  # script's hash and the package hash.
+  debian-initrd:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/cache@v4
+      id: cache
+      with:
+        path: initrd-out
+        key: debian-initrd-${{ hashFiles('site/gen-debian-initrd.sh') }}-526c469c5148
+
+    - name: Debian 6.1 686 initramfs
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        mkdir -p debian-debs initrd-out
+        f=debian-debs/linux-image-6.1.0-50-686_6.1.176-1_i386.deb
+        p=pool/main/l/linux-signed-i386/linux-image-6.1.0-50-686_6.1.176-1_i386.deb
+        curl -sSfL --retry 3 -o "$f" "https://snapshot.debian.org/archive/debian/20260704T211317Z/$p" ||
+          curl -sSfL --retry 3 -o "$f" "https://deb.debian.org/debian/$p"
+        echo "526c469c5148a2b61c4241c3f6575427096575e0ffef9541b6729351c600b3e4  $f" | sha256sum -c
+        start=$(date +%s)
+        docker run --rm --platform linux/386 -v "$PWD:/w" -w /w debian:bookworm-slim \
+          sh site/gen-debian-initrd.sh "$f" initrd-out/initrd.img
+        echo "initramfs build: $(( $(date +%s) - start )) s"
+
+    - run: ls -l initrd-out
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: debian-initrd
+        path: initrd-out/
+
   site:
-    needs: kernels
+    needs: [kernels, debian-initrd]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -146,6 +182,20 @@ jobs:
       with:
         name: kernels
         path: site/kernels
+
+    # A variant of the Debian sample: same bzImage and symbols, with its
+    # initramfs; "break" stops Debian's init at the (initramfs) shell.
+    - uses: actions/download-artifact@v4
+      with:
+        name: debian-initrd
+        path: site/kernels/debian-6.1-686-initrd
+
+    - name: Debian 6.1 686 with its initramfs
+      run: |
+        d=site/kernels/debian-6.1-686-initrd
+        echo debian-6.1-686 > "$d/base"
+        printf '%s\n' '{"label": "Debian 6.1 686 with its initramfs (BusyBox shell)", "cmdline": "nokaslr console=tty0 cryptomgr.notests break", "ram": 134217728}' > "$d/meta.json"
+        ls -l "$d"
 
     - name: Assemble the site
       run: |

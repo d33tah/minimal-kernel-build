@@ -81,6 +81,13 @@ function parseHeader(bytes) {
 	h.payload = Math.max(0, h.size - h.setup_size);
 	h.loaded_high = (h.loadflags & 1) !== 0;
 	h.has_init_size = h.version >= 0x20a;
+	// kernel_version (boot protocol 2.00+): offset from 0x200 of a
+	// NUL-terminated string such as "6.1.0-50-686 (debian-kernel@...) #1 SMP ...".
+	const kv = u16(0x20e);
+	h.kernel_version = "";
+	if (kv && kv + 0x200 < Math.min(bytes.length, h.setup_size))
+		for (let o = kv + 0x200; o < Math.min(bytes.length, kv + 0x400) && u8(o); o++)
+			h.kernel_version += String.fromCharCode(u8(o));
 	return h;
 }
 
@@ -2038,6 +2045,18 @@ async function loadKernel(entry, memFromUrl) {
 	$("src_toggle").hidden = !sources;
 	// kernels.json may give a kernel its own RAM size (meta.json "ram").
 	const ramDefault = entry.ram && [...$("memory").options].some((o) => o.value === String(entry.ram)) ? String(entry.ram) : null;
+	// kernels.json "initrd": the initrd that comes with this entry. One the
+	// user loaded stays; one from another entry goes.
+	if (entry.initrd && (!initrd || initrd.entry)) {
+		setStatus("Fetching " + entry.initrd + "...");
+		const r = await fetch(withV(entry.initrd));
+		if (!r.ok)
+			throw new Error(entry.initrd + ": HTTP " + r.status);
+		const name = entry.initrd.split("/").pop();
+		initrd = { name, bytes: new Uint8Array(await r.arrayBuffer()), entry: entry.name };
+		initrd.info = await analyzeInitrd(initrd.bytes, name);
+	} else if (!entry.initrd && initrd && initrd.entry)
+		initrd = null;
 	useImage(entry.name, await resp.arrayBuffer(), memFromUrl || ramDefault, await loadSymbols(entry));
 	showImported();
 	await restoreImported();

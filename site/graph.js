@@ -29,6 +29,7 @@ const G = {
 	transpose: false,     // timeline: time downwards, depth across
 	flame: false,         // timeline: root at the bottom (flame) or top (icicle)
 	chains: true,         // timeline: single-child chains as one box
+	tasks: true,          // timeline: one band of rows per task
 	maxDepth: 0,          // timeline: rows shown below the root, 0 = all
 	focus: -1,            // timeline: frame the view is re-rooted at
 	xOff: 0,              // transposed: horizontal scroll in px
@@ -128,7 +129,8 @@ function buildTree(st) {
 		}
 		const c = frameCounts(st, k);
 		t.incl += c.incl;
-		t.calls++;
+		if (!st.fCont[k]) // a continuation is the same call, resumed
+			t.calls++;
 		nodeOf.set(k, t);
 	}
 	// self = incl - sum of children's incl
@@ -176,7 +178,7 @@ function fitLabel(ctx, text, w) {
 // box "a > b > c" (when compressing). Cached until frames or settings change.
 function timelineLayout(st) {
 	const n = st.fStart.length;
-	const key = n + "," + G.fold + "," + G.chains + "," + st.steps;
+	const key = n + "," + G.fold + "," + G.chains + "," + G.tasks + "," + st.steps;
 	if (G.layout && G.layout.key === key)
 		return G.layout;
 	const kids = new Int32Array(n), row = new Int32Array(n).fill(-1), head = new Int32Array(n);
@@ -208,13 +210,41 @@ function timelineLayout(st) {
 			head[k] = k;
 		}
 	}
+	// Task bands: each task's rows below a header row with its name, in
+	// the order the tasks first ran. base = the band's first frame row.
+	const base = new Int32Array(n), bands = [];
+	if (G.tasks && st.taskCount > 1) {
+		const nt = st.taskCount, maxRow = new Int32Array(nt).fill(-1), name = new Array(nt).fill("");
+		const skip = /^(ret_from_fork.*|kthread|__x86_indirect_thunk.*|__x86_return_thunk|__switch_to.*|schedule_tail.*|finish_task_switch.*|startup_32.*|i386_start_kernel|start_kernel)$/;
+		for (let k = 0; k < n; k++) {
+			const t = st.fTask[k];
+			if (row[k] > maxRow[t])
+				maxRow[t] = row[k];
+			if (!name[t] && t > 0 && st.fDepth[k] <= 3 && !st.fCont[k] && !st.fIrq[k] && !skip.test(st.nodeName(st.fNode[k])))
+				name[t] = st.nodeName(st.fNode[k]);
+		}
+		const off = new Int32Array(nt);
+		let o = 0;
+		for (let t = 0; t < nt; t++) {
+			if (maxRow[t] < 0)
+				continue;
+			bands.push({ task: t, row: o, name: t === 0 ? "boot task (swapper: init_task, later idle)" : "task " + t + ": " + (name[t] || "?") });
+			off[t] = o + 1;
+			o += maxRow[t] + 2;
+		}
+		for (let k = 0; k < n; k++)
+			if (row[k] >= 0) {
+				base[k] = off[st.fTask[k]];
+				row[k] += base[k];
+			}
+	}
 	const deepest = Int32Array.from(row);
 	for (let k = n - 1; k >= 0; k--) {
 		const p = st.fParent[k];
 		if (p >= 0 && row[k] >= 0 && deepest[k] > deepest[p])
 			deepest[p] = deepest[k];
 	}
-	G.layout = { key, row, head, chain, deepest };
+	G.layout = { key, row, head, chain, deepest, base, bands };
 	return G.layout;
 }
 
@@ -320,7 +350,8 @@ function drawTimeline() {
 		if (L.head[k] !== k || L.row[k] < 0)
 			continue;
 		const r = L.row[k] - rowOff;
-		if (r < 0 || r > cap)
+		const d = L.row[k] - Math.max(L.base[k], rowOff);
+		if (r < 0 || d > cap)
 			continue;
 		const a = st.fStart[k], b = fEnd(st, k);
 		if (b < G.x0 || a > G.x1)
@@ -349,8 +380,8 @@ function drawTimeline() {
 		drawn++;
 		if (G.transpose ? rh >= 13 : rw >= 40)
 			labels.push([k, x, y, rw, rh, label]);
-		if (r === cap && L.deepest[k] - rowOff > cap)
-			more.push([x, y, rw, rh, L.deepest[k] - rowOff - cap]);
+		if (d === cap && L.deepest[k] > L.row[k])
+			more.push([x, y, rw, rh, L.deepest[k] - L.row[k]]);
 	}
 	ctx.fillStyle = "#fff";
 	const pinned = new Set(); // transposed: one label pinned at the top per column
@@ -369,6 +400,22 @@ function drawTimeline() {
 		if (text) {
 			ctx.fillText(text, Math.max(x, 0) + 3, ly);
 			labelled++;
+		}
+	}
+	// Task band headers.
+	ctx.fillStyle = muted;
+	c.dataset.bands = L.bands.length;
+	for (const band of L.bands) {
+		const r = band.row - rowOff;
+		if (r < 0 || focus >= 0)
+			continue;
+		const [x, y, rw, rh] = rect(G.x0, G.x1, r);
+		if (G.transpose) {
+			if (x + COL >= 0 && x <= w)
+				ctx.fillText(fitLabel(ctx, band.name, COL - 6), x + 3, areaTop + 7);
+		} else if (y + rh >= areaTop && y <= areaTop + areaH) {
+			ctx.fillRect(0, y + rh - 1, w, 1);
+			ctx.fillText(fitLabel(ctx, band.name, w - 8), 4, y + rh / 2);
 		}
 	}
 	ctx.fillStyle = fg;
@@ -503,9 +550,10 @@ function timelineSummary() {
 // all its frames (the "sandwich").
 function sandwich(st, node) {
 	const callers = new Map(), callees = new Map();
+	let cont = 0;
 	const add = (m, id, incl) => {
 		const v = m.get(id) || { count: 0, incl: 0 };
-		v.count++;
+		v.count += cont ? 0 : 1;
 		v.incl += incl;
 		m.set(id, v);
 	};
@@ -514,6 +562,7 @@ function sandwich(st, node) {
 		if (p < 0)
 			continue;
 		const incl = fEnd(st, k) - st.fStart[k];
+		cont = st.fCont[k];
 		if (st.fNode[k] === node && st.fNode[p] !== node)
 			add(callers, st.fNode[p], incl);
 		if (st.fNode[p] === node && st.fNode[k] !== node)
@@ -631,7 +680,7 @@ function drawTop() {
 		let p = st.fParent[k];
 		while (p >= 0 && !(shown.has(st.fNode[p]) && !hiddenFrame(st, p)))
 			p = st.fParent[p];
-		if (p >= 0 && st.fNode[p] !== id) {
+		if (p >= 0 && st.fNode[p] !== id && !st.fCont[k]) {
 			const key = st.fNode[p] + "," + id;
 			edges.set(key, (edges.get(key) || 0) + 1);
 		}
@@ -747,7 +796,9 @@ function graphStatus() {
 	el.dataset.frames = st ? st.fStart.length : 0;
 	const depth = st ? timelineDepth(st) : null;
 	el.textContent = !st ? "No stepper for this kernel." :
-		num(st.fStart.length) + " calls, " + nodes + " symbols, " + edges + " transitions recorded" +
+		num(st.fStart.length - st.contFrames) + " calls" +
+		(st.contFrames ? " (plus " + num(st.contFrames) + " continuations of calls resumed after a task switch, in " + st.taskCount + " tasks)" : "") +
+		", " + nodes + " symbols, " + edges + " transitions recorded" +
 		(depth ? "; call depth max " + depth.max + ", p99 " + depth.p99 + (st.espUnwind ? " (ESP unwinding)" : "") : "") +
 		(runState === "jit" ? "; running at full JIT speed: not recorded" : "") +
 		(st.framesFull ? "; the timeline stopped at " + num(st.framesFull) +
@@ -822,7 +873,9 @@ function renderGraphInfo() {
 			path.push(st.nodeName(st.fNode[p]));
 		head.append(b, " inclusive " + num(c.incl) + ", self " + num(c.self) + " instructions; steps " +
 			num(st.fStart[k] - runStart()) + "\u2013" + num(fEnd(st, k) - runStart()) + " from the entry" +
-			(st.fIrq[k] ? "; in an interrupt" : "") + ". Called from: " + (path.join(" \u2190 ") || "(top)") + " ");
+			(st.fIrq[k] ? "; in an interrupt" : "") +
+			(st.fCont[k] ? "; continues a call suspended by a task switch" : "") +
+			(st.taskCount > 1 ? "; task " + st.fTask[k] : "") + ". Called from: " + (path.join(" \u2190 ") || "(top)") + " ");
 		const fb = document.createElement("button");
 		fb.type = "button";
 		fb.id = "graph_focus";
@@ -1035,6 +1088,7 @@ function initGraph() {
 	toggle("graph_transpose", "transpose");
 	toggle("graph_flame", "flame");
 	$("graph_chains").addEventListener("change", () => { G.chains = $("graph_chains").checked; G.dirty = true; graphTick(); });
+	$("graph_tasks").addEventListener("change", () => { G.tasks = $("graph_tasks").checked; G.dirty = true; graphTick(); });
 	$("graph_depth").addEventListener("input", () => {
 		G.maxDepth = Number($("graph_depth").value);
 		$("graph_depth_v").textContent = G.maxDepth ? String(G.maxDepth) : "all";

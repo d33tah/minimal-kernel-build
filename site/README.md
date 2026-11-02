@@ -203,11 +203,26 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   region (ESP >> 13, Linux's 8 KiB task and IRQ stacks): a stack change
   inside a task (IRQ stacks, the early switch from the boot stack to the
   kernel's own) hangs the new stack's calls below the code that switched;
-  a task switch (through `__switch_to_asm`) closes every open call, on
-  all stacks, and starts the new task at the root. Closing only the stack
-  it leaves kept Debian 6.1's boot-stack `startup_32` open to the end of
-  the run, overlapping every task after it (185 million instructions of
-  overlapping roots; none now). A jump into the middle of
+  a task switch (through `__switch_to_asm`) suspends the task it leaves.
+  A task is identified by the kernel stack it switches away on (ESP >>
+  13; the boot task keeps its boot-stack calls). Its open calls end at
+  the switch and their chain is saved; when the task runs again, the
+  chain is reopened as continuation frames (same symbols, ESPs and
+  stacks), so what it runs next hangs under its real callers. A
+  continuation counts its instructions like the call it continues but is
+  not another call in the call tree, Top 30 or the sandwich. A new task
+  starts at the root (ret_from_fork); a task that switches away from
+  `do_task_dead` is gone, and a new task may reuse its stack. Every other
+  open frame also ends at a switch, so tasks never overlap. Before, a
+  task switch closed the calls of the task it left and the task resumed
+  without callers: on Debian 6.1 (to its root-fs panic, 265 million
+  instructions from the entry) 8,242 root frames, among them 1,150
+  `__switch_to`, 1,071 `__schedule` and 430 `__cond_resched`, and 18 of
+  the 19 `__trace_early_add_event_dirs` calls detached from
+  `event_trace_init`; now 80 tasks with one root each (79 `ret_from_fork`
+  and `startup_32`) plus about 1,080 continuation roots (the exact count varies a little between runs), no scheduler code as a
+  root, all 19 calls under `event_trace_init`, and the roots cover all
+  but 5,216 of the 265.3 million instructions (no overlap). A jump into the middle of
   a symbol that is not on the stack (a cold path, a function falling
   through into the next symbol) goes below the running call when that call
   lives above ESP, and replaces it otherwise: replacing it always split
@@ -230,7 +245,11 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
     whole run on top (drag in it to move the window), drag to pan, wheel
     or pinch to zoom. "Transpose" puts time downwards and depth across
     (for deep stacks on wide screens), "Flame" puts the root at the
-    bottom. "chains" (on) draws a call whose caller has a single call and
+    bottom. "tasks" (on) gives each task a band of rows under its name
+    (the boot task, then each kernel thread in the order it first ran,
+    named after its thread function); off, all tasks share the rows,
+    and a resumed task's continuations line up under the same callers.
+    "chains" (on) draws a call whose caller has a single call and
     almost no own instructions in the caller's box as "a › b › c". The
     depth slider caps the rows shown and marks deeper calls "+N". The
     search box highlights matching boxes and dims the rest. Tap a box for

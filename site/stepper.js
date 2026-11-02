@@ -185,6 +185,17 @@ class Stepper {
 		this.fIrq = [];     // 1 inside an interrupt or exception
 		this.fChild = [];   // instructions spent in its children (closed ones)
 		this.fEsp = [];     // ESP on arrival at the frame's first instruction
+		this.fCont = [];    // 1: continuation of a call suspended by a task switch
+		this.fTask = [];    // task (see taskOf) the frame runs in
+		// Tasks: a task is identified by the kernel stack it switches away
+		// on (ESP >> 13, THREAD_SIZE is 8 KiB on i386). Task 0 is the boot
+		// task (swapper: the boot stack, then init_task's own stack).
+		this.task = 0;
+		this.taskOf = new Map();   // stack region -> task
+		this.taskCount = 1;
+		this.contFrames = 0;
+		this.freshTask = false;
+		this.suspended = new Map(); // task -> its open call chain, root first
 		// Open frames per stack region (ESP >> 13: Linux's 8 KiB task and
 		// IRQ stacks). `stack` is the lane of the current ESP; a lane's first
 		// frame hangs below the frame that was running when ESP moved there.
@@ -224,7 +235,36 @@ class Stepper {
 		this.fParent.push(parent);
 		this.fIrq.push(irq || (parent >= 0 ? this.fIrq[parent] : 0));
 		this.fChild.push(0);
+		this.fCont.push(0);
+		this.fTask.push(this.task);
 		this.stack.push(k);
+	}
+
+	// Resume a task: reopen its suspended call chain as continuation frames
+	// (same symbols, ESPs and stack lanes as the calls they continue), so
+	// what it runs next gets its real callers.
+	resumeTask(chain, t) {
+		let parent = -1;
+		for (const f of chain) {
+			const k = this.fStart.length;
+			const region = this.fEsp[f] >>> 13;
+			if (!this.lanes.has(region))
+				this.lanes.set(region, []);
+			this.fEsp.push(this.fEsp[f]);
+			this.fStart.push(t);
+			this.fEnd.push(-1);
+			this.fNode.push(this.fNode[f]);
+			this.fDepth.push(parent >= 0 ? this.fDepth[parent] + 1 : 0);
+			this.fParent.push(parent);
+			this.fIrq.push(this.fIrq[f]);
+			this.fChild.push(0);
+			this.fCont.push(1);
+			this.contFrames++;
+			this.fTask.push(this.task);
+			this.lanes.get(region).push(k);
+			parent = k;
+		}
+		return parent;
 	}
 
 	popFrame(t) {
@@ -258,16 +298,44 @@ class Stepper {
 				const top = this.stack.length ? this.stack[this.stack.length - 1] : -1;
 				const nested = !/switch_to/.test(prev);
 				this.lastTop = nested ? top : -1;
-				// A task switch ends every open call (of the task we leave,
-				// including those it made on the boot stack before it had its
-				// own): they would otherwise stay open next to the new task's
-				// and overlap in the timeline.
-				if (!nested)
+				// A task switch suspends the task we leave: its open calls
+				// (including those it made on the boot stack before it had its
+				// own) end here and their chain is saved; it is reopened as
+				// continuation frames when the task runs again. A task that
+				// switches away from do_task_dead never runs again (its stack
+				// may be reused by a new task). Every other open frame ends
+				// too, so nothing overlaps the next task in the timeline.
+				if (!nested) {
+					const chain = [];
+					for (let p = top; p >= 0; p = this.fParent[p])
+						chain.push(p);
+					chain.reverse();
+					const dead = chain.some((f) => /^do_task_dead$/.test(this.symName[this.fNode[f]]));
+					if (this.lane >= 0) {
+						if (dead) {
+							this.taskOf.delete(this.lane);
+							this.suspended.delete(this.task);
+						} else {
+							this.taskOf.set(this.lane, this.task);
+							this.suspended.set(this.task, chain);
+						}
+					}
 					for (const l of this.lanes.values()) {
 						this.stack = l;
 						while (l.length)
 							this.popFrame(t);
 					}
+					let task = this.taskOf.get(region);
+					this.freshTask = task === undefined;
+					if (task === undefined)
+						task = this.taskCount++;
+					this.task = task;
+					const saved = this.suspended.get(task);
+					if (saved) {
+						this.suspended.delete(task);
+						this.lastTop = this.resumeTask(saved, t);
+					}
+				}
 				if (!this.lanes.has(region))
 					this.lanes.set(region, []);
 				this.stack = this.lanes.get(region);
@@ -286,6 +354,13 @@ class Stepper {
 				i++;
 			while (st.length > i)
 				this.popFrame(t);
+		}
+		// A new task starts in the tail of the switch (__switch_to, which
+		// returns into ret_from_fork): no root frame for it.
+		if (this.freshTask) {
+			if (!this.stack.length && /switch_to/.test(this.symName[node]))
+				return;
+			this.freshTask = false;
 		}
 		const nf = this.fStart.length;
 		if (nf >= 2000000000 || this.framesFull)

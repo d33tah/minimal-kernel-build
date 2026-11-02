@@ -552,7 +552,7 @@ def timeline_views(page, problems, shots, tag, r):
         problems.append("the root crumb did not leave the focus")
     page.evaluate("document.getElementById('graph_depth').value = 3; document.getElementById('graph_depth').dispatchEvent(new Event('input'))")
     time.sleep(0.3)
-    if page.evaluate("G.rects.some(([k]) => G.layout.row[k] > 3)"):
+    if page.evaluate("G.rects.some(([k]) => G.layout.row[k] - G.layout.base[k] > 3)"):
         problems.append("the depth cap draws deeper rows")
     page.evaluate("document.getElementById('graph_depth').value = 0; document.getElementById('graph_depth').dispatchEvent(new Event('input'))")
     for b in ("graph_transpose", "graph_flame"):
@@ -605,7 +605,7 @@ def graph_check(page, name, problems, shots, tag):
         for (let k = 0; k < st.fStart.length; k++) if (st.fDepth[k] === 0 && !hiddenFrame(st, k)) {
             const e = (st.fEnd[k] < 0 ? st.steps : st.fEnd[k]) - Math.max(st.fStart[k], runStart()); if (e > w) { w = e; best = k; } }
         const a = Math.max(st.fStart[best], G.x0), b = Math.min(st.fEnd[best] < 0 ? st.steps : st.fEnd[best], G.x1);
-        return [c.left + ((a + b) / 2 - G.x0) / (G.x1 - G.x0) * c.width, c.top + 26 + 6 + 8 - G.yOff, st.nodeName(st.fNode[best])]; }""")
+        return [c.left + ((a + b) / 2 - G.x0) / (G.x1 - G.x0) * c.width, c.top + 26 + 6 + timelineLayout(st).row[best] * 17 + 8 - G.yOff, st.nodeName(st.fNode[best])]; }""")
     page.mouse.click(xy[0], xy[1])
     if not wait_for(lambda: page.get_attribute("#graph_info", "data-node") == xy[2], 3):
         problems.append(f"tapping the {xy[2]} box did not select it: {page.get_attribute('#graph_info', 'data-node')}")
@@ -971,6 +971,52 @@ def follow_case(browser, base, shots):
     if r["disk_cmdline"] != "nokaslr cryptomgr.notests":
         problems.append(f"disk bzImage cmdline is {r['disk_cmdline']!r}")
     page.close()
+    return problems, r
+
+
+TASKS_JS = """() => { const st = stepper, s0 = st.sinceEntry, n = st.fStart.length, name = (k) => st.nodeName(st.fNode[k]);
+    const iv = [], bySym = {}, perTask = {}; let roots = 0, cont = 0;
+    for (let k = 0; k < n; k++) if (st.fParent[k] < 0 && st.fStart[k] >= s0) {
+        iv.push([st.fStart[k], st.fEnd[k] < 0 ? st.steps : st.fEnd[k]]);
+        if (st.fCont[k]) { cont++; continue; }
+        if (st.fIrq[k]) continue;
+        roots++; bySym[name(k)] = (bySym[name(k)] || 0) + 1; perTask[st.fTask[k]] = (perTask[st.fTask[k]] || 0) + 1; }
+    iv.sort((a, b) => a[0] - b[0]); let last = s0, overlap = 0;
+    for (const [a, b] of iv) { if (a < last) overlap += Math.min(b, last) - a; if (b > last) last = b; }
+    const te = []; for (let k = 0; k < n; k++) if (name(k) === '__trace_early_add_event_dirs') {
+        let under = false; for (let p = st.fParent[k]; p >= 0; p = st.fParent[p]) if (name(p) === 'event_trace_init') under = true;
+        te.push(under); }
+    return { tasks: st.taskCount, roots, contRoots: cont, overlap, maxRootsPerTask: Math.max(0, ...Object.values(perTask)),
+        sched: ['__schedule', '__switch_to', '__switch_to_asm', '__cond_resched', 'schedule'].filter((x) => bySym[x]),
+        traceEarly: te.length, traceEarlyOrphans: te.filter((u) => !u).length,
+        bands: G.layout ? G.layout.bands.length : -1 }; }"""
+
+
+def tasks_case(browser, base, shots, name):
+    """Task switches on a full counted run: a resumed task continues its
+    suspended calls (no scheduler code as a root, no orphaned calls), one
+    root per task, and the roots never overlap."""
+    problems = []
+    page = browser.new_page(viewport={"width": 1100, "height": 1000})
+    page.goto(f"{base}/index.html?kernel={name}&speed=full#graph")
+    if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 900, 2):
+        return ["no end of the run"], {}
+    time.sleep(2)
+    show_canvas(page)
+    time.sleep(1)
+    r = page.evaluate(TASKS_JS)
+    page.screenshot(path=str(shots / f"graph-tasks-{name}.png"))
+    page.close()
+    if r["tasks"] < 2 or r["bands"] < 2:
+        problems.append(f"fewer than 2 tasks / task bands: {r}")
+    if r["sched"]:
+        problems.append(f"scheduler code as a root: {r['sched']}")
+    if r["overlap"]:
+        problems.append(f"roots overlap by {r['overlap']} instructions")
+    if r["maxRootsPerTask"] > 1:
+        problems.append(f"a task has {r['maxRootsPerTask']} roots")
+    if r["traceEarlyOrphans"]:
+        problems.append(f"{r['traceEarlyOrphans']} of {r['traceEarly']} __trace_early_add_event_dirs calls not under event_trace_init")
     return problems, r
 
 
@@ -1399,6 +1445,11 @@ def main():
             bp, br = debian_case(browser, base, shots, name)
             print(json.dumps({"debian": bp or "ok", **{k: str(v) for k, v in br.items()}}))
             if bp:
+                failed = True
+        for name in [n for n in entries if n.startswith("debian") or n == "minified-linux"] if not args.cases else []:
+            tp, tr = tasks_case(browser, base, shots, name)
+            print(json.dumps({"tasks_case": tp or "ok", "kernel": name, **{k: str(v) for k, v in tr.items()}}))
+            if tp:
                 failed = True
         if not args.cases and "minified-linux" in entries:
             lp, lr = livedecode_case(browser, base, shots)

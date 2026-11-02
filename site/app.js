@@ -1126,11 +1126,10 @@ let prefSpeed = "1000";  // speed after the entry: ?speed=, else the remembered 
 const SPEED_KEY = "mkb-speed";
 const REF_KEY = "mkb-ref-";
 // Instructions from the entry to "Still alive" when no run on this browser
-// measured it yet (for the ETA only; Linux varies with calibrate_delay).
-// Measured with the virtual clock at 10, 100 and 1000 instructions per µs
-// (the count depends on it through calibrate_delay); "real": a rough guess.
+// measured it yet (for the ETA only).
+// Instructions from the entry to "Still alive" (the same at every clock rate).
 const REF_STEPS = { hello: { any: 154 },
-	"minified-linux": { 10: 653080, 100: 4133184, 1000: 24141260, real: 700000 } };
+	"minified-linux": { any: 132006 } };
 let driverTimer = null;
 let driverChannel = null;
 let lastUi = 0;

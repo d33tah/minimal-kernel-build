@@ -215,9 +215,9 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   "hide interrupts" (on by default) hides interrupt and exception frames
   (in the call tree: one "(interrupt and exception handling)" entry).
   JSON has the transitions and the call tree, DOT the transitions. For the
-  minified Linux at `?speed=full`: 2,024 calls, 264 symbols, 723
-  transitions; start_kernel holds 90.2% of the instructions from the
-  entry, calibrate_delay 79.7% (delay_loop 51.3%), kernel_init 3.2%.
+  minified Linux at `?speed=full` (before it dropped calibrate_delay):
+  2,024 calls, 264 symbols, 723 transitions; now 1,751 calls, 245
+  symbols, 665 transitions.
 - **Snapshots.** "Save snapshot" calls `emulator.save_state()`, gzips the
   result in the browser with `CompressionStream("gzip")` (kept raw, and the
   page says so, when the browser lacks it) and keeps the last 8 in memory.
@@ -252,8 +252,8 @@ JavaScript drives the CPU:
   reset", the speed switches to 1k instructions per second and the
   counters count live from there: hello reaches "Still alive" after 154
   instructions (it prints below the BIOS text instead of clearing the
-  screen, see hello/README.md), a fraction of a second; the minified Linux needs about 0.7-1 million,
-  about 15 minutes, so the top bar shows an ETA (from the count this
+  screen, see hello/README.md), a fraction of a second; the minified Linux needs about 132,000,
+  about 2 minutes 12 s, so the top bar shows an ETA (from the count this
   browser last measured, else a built-in estimate) and the symbol the CPU
   is in.
 - **Full speed.** `?speed=full`, or picking "full (JIT)" (the choice is
@@ -340,10 +340,14 @@ World!" 454,040 and 607,884 in two full-speed runs, 274k single-stepped,
 558k-1.18M in earlier runs; SeaBIOS (which waits on time) varied the
 from-reset count by thousands. After (virtual, 10/us): the same numbers
 at every stepping speed (full background count, 1M/s, 100k/s, 1k/s) and
-on every reload; `test_browser.py` checks this. The count depends on the
-rate through `calibrate_delay()`: from the entry to "Hello, World!"
-652,351 at 10/us, 4,132,455 at 100/us, 24,140,531 at 1000/us. At 1k/s
-the Linux boot takes about 11 minutes at 10/us and 69 minutes at 100/us.
+on every reload; `test_browser.py` checks this. The kernel then still ran
+`calibrate_delay()`, so its count depended on the rate (652,351 to
+"Hello, World!" at 10/us, 4.1 million at 100/us, 24.1 million at
+1000/us). The current minified Linux no longer does: 131,287 from the
+entry to "Hello, World!" at 10, 100 and 1000 instructions per
+microsecond alike (only the from-reset count, SeaBIOS's waits, changes:
+1,538,758 / 1,873,311 / 5,228,820). At 1k/s its boot takes about 2
+minutes 12 s from the entry.
 
 Measured in headless Chromium (2 MB, virtual clock 10/us; identical in
 every run):
@@ -353,10 +357,11 @@ every run):
 | hello | Hello, World! | 86 | 17 / 7,770 | 1,405,836 | |
 | hello | Still alive | 154 | 25 / 7,770 | 1,405,904 | |
 | hello | halted | 159 | 27 / 7,770 | 1,405,909 | 2 |
-| minified Linux | Hello, World! | 652,351 | 10,392 / 8,171 | 2,059,822 | |
-| minified Linux | Still alive | 653,080 | 10,477 / 8,171 | 2,060,551 | |
-| minified Linux | exit(0) | 653,231 | 10,479 / 8,171 | 2,060,702 | |
-| minified Linux | panic | 653,283 | 10,487 / 8,171 | 2,060,754 | 15 |
+| minified Linux | Hello, World! | 131,287 | 10,026 / 8,171 | 1,538,758 | |
+| minified Linux | Still alive | 132,006 | 10,111 / 8,171 | 1,539,477 | |
+| minified Linux | exit(0) | 132,146 | 10,113 / 8,171 | 1,539,617 | |
+| minified Linux | panic() entered | 132,198 | 10,121 / 8,171 | 1,539,669 | |
+| minified Linux | panic, stopped (hlt) | 132,199 | 10,123 / 8,171 | 1,539,670 | 2 |
 
 (The kernel was rebuilt since the qemu cross-check below: 486 build,
 panic halts.)

@@ -127,14 +127,50 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   symbol on the stack a return to it, a jump into an entry stub
   (`irq_entries_start`, `asm_*`) an interrupt or exception; a jump into the
   middle of a symbol not on the stack (a tail jump, a task switch)
-  replaces the top frame. Three views:
-  - *Timeline* (default): a flame chart, x = instructions from the kernel
-    entry, y = call depth, one box per call, labelled when at least 40 px
-    wide, coloured by the top directory of its source file (sources.json)
-    or a name guess, interrupts grey; a strip with the whole run on top
-    (drag in it to move the window), drag to pan, wheel or pinch to zoom,
-    "follow" keeps the current step in view in slow motion, tap a box for
-    its inclusive/self counts, steps, callers and a link to the Page tab.
+  replaces the top frame. Code without a symbol (BIOS, setup, the
+  relocation stub) gets no frame; its instructions count to the caller's
+  self time.
+
+  ESP unwinding (default; `?unwind=0` turns it off): every frame records
+  the ESP it arrived with (just below its return address for a call).
+  At each transition, the outermost frame of the current stack whose ESP
+  lies below the current ESP has returned, and everything above it with
+  it; a call arriving at the ESP of an open frame replaces it (a sibling
+  that returned elsewhere, or a tail call). Frames are kept per stack
+  region (ESP >> 13, Linux's 8 KiB task and IRQ stacks): a stack entered
+  from interrupt code or through `call_on_stack` hangs below the code that
+  switched, any other stack change (a task switch through
+  `__switch_to_asm`, or the early switch to the kernel's virtual stack)
+  closes the calls of the stack it leaves and starts the new task at the
+  root. Symbol transitions alone missed returns (tail calls, returns into
+  functions not on the stack, task switches, interrupts returning on
+  another stack) and left frames open. Call depth (max / p99 over all
+  calls) on the minified Linux went from 27 / 21 to 13 / 12; on Debian
+  5.10.0-30-686 (System.map, `cryptomgr.notests nokaslr`, 2.2 billion
+  instructions to its root-fs panic, about 6 million calls) from 216 /
+  179 to 63 / 32. start_kernel's inclusive count on the minified Linux
+  is 565,589 instructions instead of 588,949: the 23,360 instructions the
+  init task's kernel_init thread runs after the first task switch no
+  longer count as start_kernel's. Three views:
+  - *Timeline* (default): an icicle chart, x = instructions from the
+    kernel entry, y = call depth, one box per call, labelled when at least
+    40 px wide, coloured by the top directory of its source file
+    (sources.json) or a name guess, interrupts grey; a strip with the
+    whole run on top (drag in it to move the window), drag to pan, wheel
+    or pinch to zoom. "Transpose" puts time downwards and depth across
+    (for deep stacks on wide screens), "Flame" puts the root at the
+    bottom. "chains" (on) draws a call whose caller has a single call and
+    almost no own instructions in the caller's box as "a › b › c". The
+    depth slider caps the rows shown and marks deeper calls "+N". The
+    search box highlights matching boxes and dims the rest. Tap a box for
+    its inclusive/self counts, steps, callers, the callers and callees of
+    its function aggregated over all its calls (sandwich), and "Focus",
+    which re-roots the view at that call with a breadcrumb back to the
+    root (double-click does the same). Rows scrolled out of view keep the
+    names of the calls above the window's middle in a strip at the top.
+    "follow" keeps the current step and the running call's row in view in
+    slow motion, scrolling only when it leaves the visible band; a manual
+    pan turns it off.
   - *Call tree*: like `perf report --children` (inclusive %, self %,
     calls), sorted by inclusive count, collapsible, with a search box; the
     root is the whole run from the kernel entry.
@@ -208,11 +244,16 @@ The end of the kernel: both kernels' init ends; hello runs `cli; hlt`,
 the minified Linux's init calls exit(0) and the kernel then panics
 ("Attempted to kill init!", not printed without printk). The stepper
 notes the first `int 0x80` with EAX 1 (exit) or 252 (exit_group) and its
-EBX, and stops when EIP enters `panic` (from symbols.json) or the CPU
-halts with interrupts off. The top bar then shows "Kernel panic (init
+EBX, and records when EIP first enters `panic` (from the symbols) as the
+"panic() entered" milestone, without stopping: a printk kernel still
+prints its panic message. The run ends when the CPU halts with
+interrupts off (the minified Linux's panic() halts: "Kernel panic (init
 exited with code 0) after N instructions from the kernel entry. Machine
-stopped here." or "Halted: hlt with interrupts off ...", and stepping
-stops there (Continue runs on, e.g. into panic's delay loop).
+stopped here.", one instruction after the panic() entry; hello: "Halted:
+hlt with interrupts off ..."), when "---[ end Kernel panic" appears on
+the screen (below), or 50 million instructions after the panic() entry
+with neither ("panic() entered, no end-of-panic text ...";
+`?panicbudget=` changes the budget).
 
 Distro kernels end with `---[ end Kernel panic - not syncing: ... ]---`
 and then spin. The stepper's copy of VGA text memory covers the whole

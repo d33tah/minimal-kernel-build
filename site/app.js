@@ -1030,6 +1030,10 @@ async function boot() {
 			stepper = new Stepper(em, V86_KERNEL_ADDR, kernelEnd(image.hdr));
 			stepper.milestones = MILESTONES.map((text) => ({ text, found: null }));
 			stepper.setSymbols(codeSymbols());
+			// ?unwind=0: the old reconstruction from symbol transitions only.
+			stepper.espUnwind = new URLSearchParams(location.search).get("unwind") !== "0";
+			// ?panicbudget=N: instructions after panic() entry before giving up.
+			stepper.panicBudget = Number(new URLSearchParams(location.search).get("panicbudget")) || 50e6;
 			// Before vmlinux is in place (the bzImage's relocation stub also runs
 			// at 1 MiB) the address of EIP belongs to a vmlinux symbol only by
 			// coincidence: name a symbol only when the bytes at EIP are the
@@ -1553,7 +1557,9 @@ function renderCounters() {
 	}
 	const rows = stepper.milestones.map((m) => [m.text, m.found, m.text]);
 	rows.push([stepper.exit ? "exit(" + stepper.exit.code + ")" : "exit()", stepper.exit, "exit"]);
-	rows.push([stepper.end ? (stepper.end.kind === "panic" ? "panic" : "halted") : "panic / halt", stepper.end, "end"]);
+	if (stepper.panicSym >= 0)
+		rows.push(["panic() entered", stepper.panicEntered, "panic_entry"]);
+	rows.push([stepper.end ? (/panic/.test(stepper.end.kind) ? "panic, stopped" : "halted") : "end", stepper.end, "end"]);
 	rows.push(["now", stepper.snapshot(), "now"]);
 	for (const [label, c, key] of rows) {
 		const tr = tbody.insertRow();
@@ -1653,6 +1659,8 @@ function endText() {
 		return "";
 	// Nothing was stepped (full JIT speed, count off): no count to report.
 	const after = !e.steps ? "" : " after " + num(e.sinceEntry !== null ? e.sinceEntry : e.steps) + " instructions from the kernel entry";
+	if (e.kind === "panic-budget")
+		return "panic() entered, no end-of-panic text after " + num(stepper.panicBudget) + " instructions" + after + ". Stopped.";
 	if (e.kind === "panic-text")
 		return "Kernel panic: " + e.message + " (stopped by the page)" + after + ".";
 	if (e.kind === "panic")
@@ -1905,7 +1913,9 @@ async function loadKernel(entry, memFromUrl) {
 	disasm = await loadDisasm(entry);
 	await loadSources(entry);
 	$("src_toggle").hidden = !sources;
-	useImage(entry.name, await resp.arrayBuffer(), memFromUrl, await loadSymbols(entry));
+	// kernels.json may give a kernel its own RAM size (meta.json "ram").
+	const ramDefault = entry.ram && [...$("memory").options].some((o) => o.value === String(entry.ram)) ? String(entry.ram) : null;
+	useImage(entry.name, await resp.arrayBuffer(), memFromUrl || ramDefault, await loadSymbols(entry));
 	showImported();
 	await restoreImported();
 	await restoreCmdline();
@@ -2091,7 +2101,7 @@ async function init() {
 		return;
 	}
 	for (const k of kernels)
-		$("kernel").add(new Option(k.name, k.name));
+		$("kernel").add(new Option(k.label || k.name, k.name));
 	const wanted = kernels.find((k) => k.name === params.get("kernel")) || kernels[0];
 	if (!wanted) {
 		setStatus("kernels.json lists no kernels. Load a bzImage from disk.");

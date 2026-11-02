@@ -512,6 +512,59 @@ def source_check(page, name, problems, shots, tag):
     return r
 
 
+def show_canvas(page):
+    """Scroll so the top of the graph canvas sits just below the sticky top bar."""
+    page.evaluate("""() => { const top = document.querySelector('.top').getBoundingClientRect().bottom;
+        const c = document.getElementById('graph_status').getBoundingClientRect().top;
+        window.scrollBy(0, c - top - 4); }""")
+    time.sleep(0.2)
+
+
+def timeline_views(page, problems, shots, tag, r):
+    """Focus, sandwich, search, depth cap, transposed and flame views."""
+    k = page.evaluate("""() => { const st = G.stepper; let best = -1, w = -1;
+        for (let k = 0; k < st.fStart.length; k++) if (st.nodeName(st.fNode[k]) === 'start_kernel') {
+            const e = (st.fEnd[k] < 0 ? st.steps : st.fEnd[k]) - st.fStart[k]; if (e > w) { w = e; best = k; } }
+        return best; }""")
+    page.evaluate(f"G.selected = {k}; renderGraphInfo()")
+    r["sandwich"] = [page.get_attribute("#graph_info", "data-callers"), page.get_attribute("#graph_info", "data-callees")]
+    if not int(r["sandwich"][1] or 0) > 0:
+        problems.append(f"sandwich of start_kernel lists no callees: {r['sandwich']}")
+    page.click("#graph_focus")
+    time.sleep(0.4)
+    r["focus"] = page.get_attribute("#graph_canvas", "data-focus")
+    if r["focus"] != "start_kernel" or not page.is_visible("#graph_crumbs"):
+        problems.append(f"focus on start_kernel: {r['focus']!r}, crumbs visible {page.is_visible('#graph_crumbs')}")
+    show_canvas(page)
+    page.screenshot(path=str(shots / f"graph-focus-{tag}-1100.png"))
+    page.fill("#graph_search", "delay")
+    time.sleep(0.4)
+    r["search_matches"] = int(page.get_attribute("#graph_canvas", "data-matches") or 0)
+    if r["search_matches"] < 1:
+        problems.append("search 'delay' highlights nothing in the timeline")
+    page.fill("#graph_search", "")
+    page.locator("#graph_crumbs button").first.click()  # back to the root
+    time.sleep(0.3)
+    if page.get_attribute("#graph_canvas", "data-focus"):
+        problems.append("the root crumb did not leave the focus")
+    page.evaluate("document.getElementById('graph_depth').value = 3; document.getElementById('graph_depth').dispatchEvent(new Event('input'))")
+    time.sleep(0.3)
+    if page.evaluate("G.rects.some(([k]) => G.layout.row[k] > 3)"):
+        problems.append("the depth cap draws deeper rows")
+    page.evaluate("document.getElementById('graph_depth').value = 0; document.getElementById('graph_depth').dispatchEvent(new Event('input'))")
+    for b in ("graph_transpose", "graph_flame"):
+        page.click("#" + b)
+        time.sleep(0.4)
+        drawn = int(page.get_attribute("#graph_canvas", "data-drawn") or 0)
+        labels = int(page.get_attribute("#graph_canvas", "data-labels") or 0)
+        r[b] = [drawn, labels]
+        if drawn < 10 or labels < 1:
+            problems.append(f"{b}: {drawn} boxes, {labels} labels")
+        show_canvas(page)
+        page.screenshot(path=str(shots / f"{b}-{tag}-1100.png"))
+        page.click("#" + b)
+
+
 def graph_check(page, name, problems, shots, tag):
     """Graph tab: flame timeline, call tree, top-30 graph, exports, tap."""
     show_tab(page, "graph")
@@ -519,14 +572,17 @@ def graph_check(page, name, problems, shots, tag):
     r = {"nodes": int(page.get_attribute("#graph_status", "data-nodes") or 0),
          "edges": int(page.get_attribute("#graph_status", "data-edges") or 0),
          "frames": int(page.get_attribute("#graph_status", "data-frames") or 0)}
-    if r["nodes"] < 2 or r["edges"] < 1 or r["frames"] < 2:
+    if r["nodes"] < 2 or r["edges"] < 1 or r["frames"] < 1:
         problems.append(f"graph recorded {r}")
     from_entry = (counters(page).get("now") or {}).get("entry")
     summ = page.evaluate("timelineSummary()")
     r["timeline_total"], r["timeline_root_sum"] = summ["total"], summ["rootSum"]
     r["top_frames"] = [(f["name"], f["depth"], f["incl"]) for f in summ["top"][:6]]
-    if summ["total"] != from_entry or summ["rootSum"] != summ["total"]:
-        problems.append(f"timeline total {summ['total']} / depth-0 sum {summ['rootSum']} != from-entry count {from_entry}")
+    # Code without a symbol (the relocation stub) has no frame, so the
+    # outermost frames cover at most the run; the call tree root is the run.
+    r["max_depth"], r["p99_depth"] = summ["maxDepth"], summ["p99Depth"]
+    if summ["total"] != from_entry or not 0 < summ["rootSum"]:
+        problems.append(f"timeline total {summ['total']} / outermost frames {summ['rootSum']} vs from-entry count {from_entry}")
     if name != "hello":
         names = [f["name"] for f in summ["top"]]
         if "start_kernel" not in names[:3]:
@@ -550,6 +606,8 @@ def graph_check(page, name, problems, shots, tag):
     page.mouse.click(xy[0], xy[1])
     if not wait_for(lambda: page.get_attribute("#graph_info", "data-node") == xy[2], 3):
         problems.append(f"tapping the {xy[2]} box did not select it: {page.get_attribute('#graph_info', 'data-node')}")
+    if name != "hello":
+        timeline_views(page, problems, shots, tag, r)
     # Call tree.
     page.click("#gview_tree")
     wait_for(lambda: page.get_attribute("#graph_tree", "data-root-incl"), 3)
@@ -869,6 +927,89 @@ def distro_panic_case(browser, base, cache):
     return bad, r
 
 
+def follow_case(browser, base, shots):
+    """Slow motion, transposed timeline on a phone: "follow" keeps the
+    running frame's column on screen; the cmdline default is shown."""
+    problems, r = [], {}
+    page = browser.new_page(viewport={"width": 390, "height": 900})
+    page.goto(f"{base}/index.html?kernel=minified-linux&speed=100000#graph")
+    if not wait_for(lambda: page.get_attribute("#entry_info", "data-steps"), 60):
+        return ["no kernel entry"], r
+    r["cmdline"] = page.input_value("#cmdline")
+    if r["cmdline"] != "nokaslr cryptomgr.notests":
+        problems.append(f"cmdline default is {r['cmdline']!r}")
+    page.click("#graph_transpose")
+    seen, rows = [], []
+    for _ in range(12):
+        time.sleep(0.5)
+        v = page.get_attribute("#graph_canvas", "data-cur-visible")
+        if v is not None:
+            seen.append(v)
+            rows.append(int(page.get_attribute("#graph_canvas", "data-cur-row") or 0))
+    r["visible"], r["rows"] = seen, rows
+    if not seen or any(v != "true" for v in seen):
+        problems.append(f"the running frame left the view while following: {seen} rows {rows}")
+    if not rows or max(rows) < 3:
+        problems.append(f"stack never deep enough to need scrolling: rows {rows}")
+    page.screenshot(path=str(shots / "follow-transposed-390.png"))
+    page.close()
+    # A bzImage from disk starts with the default command line too.
+    page = browser.new_page(viewport={"width": 1100, "height": 900})
+    page.goto(f"{base}/index.html?kernel=hello")
+    wait_for(lambda: gate_on_screen(page), 60)
+    page.set_input_files("#file", str(SITE / "kernels" / "hello" / "bzImage"))
+    time.sleep(1)
+    r["disk_cmdline"] = page.input_value("#cmdline")
+    if r["disk_cmdline"] != "nokaslr cryptomgr.notests":
+        problems.append(f"disk bzImage cmdline is {r['disk_cmdline']!r}")
+    page.close()
+    return problems, r
+
+
+def debian_case(browser, base, shots, name):
+    """The Debian sample: its defaults, the end-of-panic auto-stop with the
+    message on the screen, and Run to start_kernel naming start_kernel."""
+    problems, r = [], {}
+    entry = kernel_entries()[name]
+    page = browser.new_page(viewport={"width": 1100, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    t0 = time.monotonic()
+    page.goto(f"{base}/index.html?kernel={name}&speed=full&count=0")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") in ("jit", "stepped"), 60)
+    r["cmdline"] = page.input_value("#cmdline")
+    r["ram"] = page.eval_on_selector("#memory", "e => e.value")
+    r["label"] = page.eval_on_selector("#kernel", "e => e.selectedOptions[0].text")
+    if r["cmdline"] != entry.get("cmdline") or str(entry.get("ram")) != r["ram"]:
+        problems.append(f"Debian defaults not applied: {r}")
+    ok = wait_for(lambda: page.get_attribute("#end_banner", "data-kind") == "panic-text", 300, 1)
+    r["seconds_to_panic"] = round(time.monotonic() - t0)
+    r["banner"] = page.inner_text("#end_banner")
+    screen = page.inner_text("#screen_container")
+    if not ok or "Unable to mount root fs" not in r["banner"] or "end Kernel panic" not in screen:
+        problems.append(f"no end-of-panic stop: {r['banner']!r}")
+    page.screenshot(path=str(shots / "debian-panic.png"))
+    page.close()
+    syms = json.loads((SITE / entry["symbols"]).read_text())["symbols"]
+    sk = next(s for s in syms if s["name"] == "start_kernel")
+    page = browser.new_page(viewport={"width": 1100, "height": 1000})
+    page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    page.fill("#dbg_addr", hex(sk["vaddr"]))
+    page.click("#dbg_runto")
+    t0 = time.monotonic()
+    ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
+                  and page.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 900, 2)
+    r["runto_seconds"] = round(time.monotonic() - t0)
+    r["runto_symbol"] = page.get_attribute("#cur_sym", "data-name")
+    if not ok or r["runto_symbol"] != "start_kernel":
+        problems.append(f"Run to start_kernel: {r['runto_symbol']!r} ({page.inner_text('#dbg_status')})")
+    page.close()
+    if errors:
+        problems.append("page errors: " + "; ".join(errors))
+    return problems, r
+
+
 def touch_case(browser, base, shots):
     """390 px phone with touch: tapping a "?" shows its text, tapping elsewhere hides it."""
     problems = []
@@ -1032,6 +1173,13 @@ def run_case(browser, base, name, mem, timeout, shots, has_symbols, speed=None):
         count["exit_code"] = page.get_attribute("#end_banner", "data-code")
         count["end_text"] = page.inner_text("#end_banner") if count["end"] else ""
         want = "halt" if name == "hello" else "panic"
+        if want == "panic":
+            rows = counters(page)
+            pe = (rows.get("panic_entry") or {}).get("entry")
+            ee = (rows.get("end") or {}).get("entry")
+            count["panic_entry_vs_end"] = [pe, ee]
+            if not pe or not ee or not pe <= ee:
+                lab_problems.append(f"panic() entry milestone missing or after the end: {pe} / {ee}")
         if count["end"] != want:
             lab_problems.append(f"end banner {count['end']!r}, want {want!r}")
         if want == "panic" and (count["exit_code"] != "0" or "exited with code 0" not in count["end_text"]):
@@ -1141,6 +1289,16 @@ def main():
             dp, dr = determinism_case(browser, base)
             print(json.dumps({"determinism": dp or "ok", **{k: str(v) for k, v in dr.items()}}))
             if dp:
+                failed = True
+        if not args.cases and "minified-linux" in entries:
+            fp, fr = follow_case(browser, base, shots)
+            print(json.dumps({"follow": fp or "ok", **{k: str(v) for k, v in fr.items()}}))
+            if fp:
+                failed = True
+        for name in [n for n in entries if n.startswith("debian")] if not args.cases else []:
+            bp, br = debian_case(browser, base, shots, name)
+            print(json.dumps({"debian": bp or "ok", **{k: str(v) for k, v in br.items()}}))
+            if bp:
                 failed = True
         if not args.cases:
             touch = touch_case(browser, base, shots)

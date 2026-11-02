@@ -273,3 +273,9 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 #sym_status[data-state="error"] { color: var(--err-fg); background: var(--err-bg); padding: 0 0.3rem; border-radius: 3px; }
 #sym_offset { width: 6.5em; }
 #cmdline { width: 12em; max-width: 100%; }
+#graph_tl_opts[hidden] { display: none; }
+#graph_tl_opts { flex-wrap: wrap; align-items: center; }
+#graph_depth { width: 6rem; vertical-align: middle; }
+#graph_crumbs { margin: 0.2rem 0; overflow-wrap: anywhere; }
+#graph_crumbs[hidden] { display: none; }
+#graph_transpose[aria-pressed="true"], #graph_flame[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }

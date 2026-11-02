@@ -103,7 +103,7 @@ const MMAP_BLOCK_BITS = 17; // v86 src/const.js
 // Byte offsets of CPU globals in wasm memory (v86 src/cpu.js), as indices.
 const IP = 556 >> 2, PREV_IP = 560 >> 2, EIP_PHYS = 624 >> 2, COUNTER = 664 >> 2;
 const IN_HLT = 616, IS_32 = 804;
-const EAX = 64 >> 2, EBX = (64 + 12) >> 2;
+const EAX = 64 >> 2, EBX = (64 + 12) >> 2, ESP = (64 + 16) >> 2;
 
 // Drives a stopped v86 instance one instruction at a time and counts.
 class Stepper {
@@ -129,7 +129,8 @@ class Stepper {
 		this.milestones = [];    // { text, found: null | {...} }
 		this.exit = null;        // first exit/exit_group syscall: { code, ...snapshot }
 		this.end = null;         // { kind: "panic" | "halt", ...snapshot }
-		this.endHit = false;
+		this.panicEntered = null; // snapshot when EIP first entered panic()
+		this.panicBudget = 50e6;  // instructions after that without an end
 		this.lastTimers = 0;
 		this.idleMs = 0;         // virtual time skipped while halted
 		this.irq0 = 0;           // timer interrupts (IRQ0) raised by the PIT
@@ -183,16 +184,43 @@ class Stepper {
 		this.fParent = [];
 		this.fIrq = [];     // 1 inside an interrupt or exception
 		this.fChild = [];   // instructions spent in its children (closed ones)
-		this.stack = [];    // open frames, outermost first
+		this.fEsp = [];     // ESP on arrival at the frame's first instruction
+		// Open frames per stack region (ESP >> 13: Linux's 8 KiB task and
+		// IRQ stacks). `stack` is the lane of the current ESP; a lane's first
+		// frame hangs below the frame that was running when ESP moved there.
+		this.lanes = new Map();
+		this.stack = [];
+		this.lane = -1;
+		this.lastTop = -1;  // top frame of the lane we came from
+		if (this.espUnwind === undefined)
+			this.espUnwind = true;
 	}
 
-	pushFrame(node, t, irq) {
+	allOpen() {
+		if (!this.lanes.size)
+			return this.stack.slice();
+		const out = [];
+		for (const l of this.lanes.values())
+			out.push(...l);
+		return out;
+	}
+
+	maxDepth() {
+		let m = 0;
+		const d = this.fDepth;
+		for (let k = 0; k < d.length; k++)
+			if (d[k] > m) m = d[k];
+		return m;
+	}
+
+	pushFrame(node, t, irq, esp) {
 		const k = this.fStart.length;
-		const parent = this.stack.length ? this.stack[this.stack.length - 1] : -1;
+		const parent = this.stack.length ? this.stack[this.stack.length - 1] : this.lastTop;
+		this.fEsp.push(esp);
 		this.fStart.push(t);
 		this.fEnd.push(-1);
 		this.fNode.push(node);
-		this.fDepth.push(this.stack.length);
+		this.fDepth.push(parent >= 0 ? this.fDepth[parent] + 1 : 0);
 		this.fParent.push(parent);
 		this.fIrq.push(irq || (parent >= 0 ? this.fIrq[parent] : 0));
 		this.fChild.push(0);
@@ -212,7 +240,50 @@ class Stepper {
 	// entry stub; otherwise a return into a frame on the stack (pop to it),
 	// or, when the symbol is not on the stack (a tail jump, a task switch),
 	// a replacement of the top frame.
-	stackEnter(node, isCall, t) {
+	stackEnter(node, isCall, t, esp) {
+		// No frames for code without a symbol (BIOS, setup, the relocation
+		// stub): its instructions count to the caller's self time.
+		if (node >= this.symName.length)
+			return;
+		if (this.espUnwind) {
+			// Switch lanes when ESP is in another stack region.
+			const region = esp >>> 13;
+			if (region !== this.lane) {
+				// IRQ/softirq stacks are entered through call_on_stack: their
+				// frames hang below the code that switched. Any other stack
+				// change is a task switch: a new task's frames start at the root.
+				const prev = this.curNode >= 0 && this.curNode < this.symName.length ? this.symName[this.curNode] : "";
+				const top = this.stack.length ? this.stack[this.stack.length - 1] : -1;
+				// (__switch_to_asm and friends always switch tasks, even when
+				// the scheduler runs on the way out of an interrupt.)
+				const nested = !/switch_to/.test(prev) &&
+					(/call_on_stack|own_stack/.test(prev) || (top >= 0 && this.fIrq[top]) || this.entryKind[node]);
+				this.lastTop = nested ? top : -1;
+				// A task switch (or the switch to the kernel's virtual stack)
+				// ends the calls of the stack we leave: they would otherwise
+				// stay open next to the new task's and overlap in the timeline.
+				if (!nested)
+					while (this.stack.length)
+						this.popFrame(t);
+				if (!this.lanes.has(region))
+					this.lanes.set(region, []);
+				this.stack = this.lanes.get(region);
+				this.lane = region;
+			}
+			// A return (ret, iret, longjmp-like stack resets) unwinds every
+			// frame of this lane that lives below the current ESP.
+			// The outermost frame of the lane that lives below ESP returned,
+			// and with it everything above it. A call arriving at the same
+			// ESP as an open frame replaces it: that frame was a sibling that
+			// returned elsewhere (e.g. on another stack) or tail-called us.
+			const st = this.stack;
+			const call = isCall || this.entryKind[node];
+			let i = 0;
+			while (i < st.length && (this.fEsp[st[i]] > esp || (!call && this.fEsp[st[i]] === esp)))
+				i++;
+			while (st.length > i)
+				this.popFrame(t);
+		}
 		const nf = this.fStart.length;
 		if (nf >= 2000000000 || this.framesFull)
 			return;
@@ -226,7 +297,7 @@ class Stepper {
 		}
 		const irq = this.entryKind[node];
 		if (isCall || irq) {
-			this.pushFrame(node, t, irq);
+			this.pushFrame(node, t, irq, esp);
 			return;
 		}
 		const st = this.stack;
@@ -240,11 +311,16 @@ class Stepper {
 		}
 		if (st.length)
 			this.popFrame(t);
-		this.pushFrame(node, t, 0);
+		this.pushFrame(node, t, 0, esp);
 	}
 
 	// Close every open frame (before a stretch the JIT runs unrecorded).
 	closeStack(t) {
+		for (const l of this.lanes.values()) {
+			this.stack = l;
+			while (l.length)
+				this.popFrame(t);
+		}
 		while (this.stack.length)
 			this.popFrame(t);
 	}
@@ -278,7 +354,7 @@ class Stepper {
 			if (this.recent.length > 10)
 				this.recent.shift();
 		}
-		this.stackEnter(node, i >= 0 && phys === this.symStart[i], this.steps - 1);
+		this.stackEnter(node, i >= 0 && phys === this.symStart[i], this.steps - 1, this.espBefore >>> 0);
 		this.curNode = node;
 		this.graphVersion++;
 	}
@@ -310,10 +386,12 @@ class Stepper {
 				this.curHi = Math.min(this.curHi, this.kernelLo);
 		}
 		this.graphEnter(i, phys);
-		if (i === this.panicSym && i >= 0 && !this.end) {
-			this.end = { kind: "panic", ...this.snapshot(phys) };
-			this.endHit = true;
-		}
+		// Entering panic() is a milestone, not the end: a printk kernel
+		// still prints "---[ end Kernel panic ...", which ends the run
+		// (app.js), as does a halt with interrupts off or panicBudget more
+		// instructions without either.
+		if (i === this.panicSym && i >= 0 && !this.panicEntered)
+			this.panicEntered = this.snapshot(phys);
 		if (i !== this.curSym) {
 			if (this.curSym !== -2) {
 				this.history.push({ sym: this.curSym, last: from });
@@ -327,7 +405,7 @@ class Stepper {
 	// The CPU is halted with interrupts off: the machine has stopped.
 	markHalt() {
 		if (!this.end)
-			this.end = { kind: "halt", ...this.snapshot() };
+			this.end = { kind: this.panicEntered ? "panic" : "halt", ...this.snapshot() };
 	}
 
 	// Called when v86's JIT ran in between: the history has a gap.
@@ -452,6 +530,10 @@ class Stepper {
 			let exitCode = null;
 			if (op === 0xcd && !this.exit && cpu.mem8[phys + 1] === 0x80 && (i32[EAX] === 1 || i32[EAX] === 252))
 				exitCode = i32[EBX];
+			// ESP when the instruction starts: at a symbol transition this is
+			// the ESP the new code arrives with (call: just below the return
+			// address; ret/iret: the caller's), used to unwind returns.
+			this.espBefore = i32[ESP];
 			exec(op | u8[IS_32] << 8);
 			if (i32.length === 0) {
 				i32 = new Int32Array(mem.buffer);
@@ -466,8 +548,8 @@ class Stepper {
 			this.lastPhys = phys;
 			if (exitCode !== null)
 				this.exit = { code: exitCode, ...this.snapshot(phys) };
-			if (this.endHit) {
-				this.endHit = false;
+			if (this.panicEntered && !this.end && this.steps - this.panicEntered.steps >= this.panicBudget) {
+				this.end = { kind: "panic-budget", ...this.snapshot(phys) };
 				return "end";
 			}
 			if (phys === lo && this.sinceEntry < 0)

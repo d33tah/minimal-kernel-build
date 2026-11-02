@@ -346,6 +346,19 @@ async function restoreCmdline() {
 	}
 	if (v !== null)
 		$("cmdline").value = v;
+	else if (!$("cmdline").dataset.typed)
+		$("cmdline").value = defaultCmdline();
+}
+
+// The command line a kernel starts with when nothing is remembered and
+// nothing was typed: its kernels.json "cmdline", else nokaslr (imported
+// System.maps only line up without KASLR) and cryptomgr.notests (skips
+// the crypto self-tests, which take long when stepped). Kernels that do
+// not know them ignore them; the minified Linux ignores the command line.
+const DEFAULT_CMDLINE = "nokaslr cryptomgr.notests";
+function defaultCmdline() {
+	const k = image && kernels.find((x) => x.name === image.name);
+	return k && typeof k.cmdline === "string" ? k.cmdline : DEFAULT_CMDLINE;
 }
 
 async function saveCmdline() {
@@ -403,6 +416,7 @@ function initInitrd() {
 		drawMaps();
 		await boot();
 	});
+	$("cmdline").addEventListener("input", () => { $("cmdline").dataset.typed = "1"; });
 	$("cmdline").addEventListener("change", saveCmdline);
 	$("cmdline").addEventListener("keydown", (ev) => {
 		if (ev.key === "Enter") {

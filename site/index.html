@@ -33,8 +33,8 @@
     <label><span>initrd<span class="tip" tabindex="0" role="button" title="An initrd/initramfs for the kernel, passed to v86 (initrd: {buffer}). v86 0.5.471 always puts it at 64 MiB (src/kernel.js), so RAM must be larger than 64 MiB plus its size: picking one selects enough RAM. The kernel finds it through ramdisk_image/ramdisk_size in the boot header. The minified Linux does not use an external initrd yet.">?</span></span>
       <input type="file" id="initrd_file">
     </label>
-    <label><span>cmdline<span class="tip" tabindex="0" role="button" title="Kernel command line, passed to v86 (cmdline). Empty for the kernels on this page; e.g. console=tty0 for a distro kernel. Remembered in this browser for this bzImage (by SHA-256); ?cmdline= in the URL sets it.">?</span></span>
-      <input id="cmdline" size="18" aria-label="kernel command line">
+    <label><span>cmdline<span class="tip" tabindex="0" role="button" title="Kernel command line, passed to v86 (cmdline). Default: nokaslr cryptomgr.notests (imported System.maps only line up without KASLR; the crypto self-tests take long when stepped), or a kernel's own default; kernels that do not know an option ignore it, and the minified Linux ignores the command line. Add e.g. console=tty0 for a distro kernel. Remembered in this browser for this bzImage (by SHA-256); ?cmdline= in the URL sets it.">?</span></span>
+      <input id="cmdline" size="18" value="nokaslr cryptomgr.notests" aria-label="kernel command line">
     </label>
     <label><span>offset</span>
       <input id="sym_offset" value="auto" size="10" aria-label="symbol offset, auto or hex">
@@ -169,10 +169,17 @@
     <button id="graph_fit" type="button">Fit</button>
     <button id="graph_json" type="button">JSON</button>
     <button id="graph_dot" type="button">DOT</button>
-    <input id="graph_search" type="search" placeholder="search" aria-label="search the call tree" hidden>
+    <input id="graph_search" type="search" placeholder="search" aria-label="search the timeline or the call tree">
+    <span id="graph_tl_opts" class="group">
+      <button id="graph_transpose" type="button" aria-pressed="false" title="Time downwards, call depth across: better for deep stacks on wide screens">Transpose</button>
+      <button id="graph_flame" type="button" aria-pressed="false" title="Root at the bottom (flame graph) instead of the top (icicle)">Flame</button>
+      <label><input type="checkbox" id="graph_chains" checked> chains<span class="tip" tabindex="0" role="button" title="Draw a call whose caller has a single call and almost no own instructions in the caller's box: a \u203a b \u203a c.">?</span></label>
+      <label>depth <input type="range" id="graph_depth" min="0" max="64" value="0" aria-label="maximum depth shown, 0 = all"> <span id="graph_depth_v">all</span></label>
+    </span>
     <span class="tip" tabindex="0" role="button" title="Calls reconstructed from the symbol transitions the stepper records (stepping, slow motion, Run to, and the background count with ?speed=full; not at full JIT speed): a jump to the first byte of a symbol is a call, a jump into the middle of a symbol on the stack is a return to it, an entry stub starts an interrupt; a jump into the middle of a symbol not on the stack (a tail jump, a task switch) replaces the top frame. Timeline: x = instructions from the kernel entry, y = call depth, colour = source directory (init, mm, fs, kernel, arch, lib, include), grey = interrupts; the strip on top is the whole run (drag in it to move); drag to pan, wheel or pinch to zoom; tap a box for its counts. Call tree: inclusive %, self %, calls, like perf report --children. Top 30: the symbols with the largest inclusive count, call edges between them, layered by depth. JSON has the transitions and the call tree; DOT the transitions.">?</span>
   </div>
   <p id="graph_status" class="note"></p>
+  <div id="graph_crumbs" class="crumbs note" hidden></div>
   <canvas id="graph_canvas"></canvas>
   <div id="graph_tree" class="ctree" hidden></div>
   <div id="graph_info" class="syminfo"></div>

@@ -203,8 +203,11 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   region (ESP >> 13, Linux's 8 KiB task and IRQ stacks): a stack change
   inside a task (IRQ stacks, the early switch from the boot stack to the
   kernel's own) hangs the new stack's calls below the code that switched;
-  a task switch (through `__switch_to_asm`) closes the calls of the stack
-  it leaves and starts the new task at the root. A jump into the middle of
+  a task switch (through `__switch_to_asm`) closes every open call, on
+  all stacks, and starts the new task at the root. Closing only the stack
+  it leaves kept Debian 6.1's boot-stack `startup_32` open to the end of
+  the run, overlapping every task after it (185 million instructions of
+  overlapping roots; none now). A jump into the middle of
   a symbol that is not on the stack (a cold path, a function falling
   through into the next symbol) goes below the running call when that call
   lives above ESP, and replaces it otherwise: replacing it always split

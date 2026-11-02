@@ -258,12 +258,16 @@ class Stepper {
 				const top = this.stack.length ? this.stack[this.stack.length - 1] : -1;
 				const nested = !/switch_to/.test(prev);
 				this.lastTop = nested ? top : -1;
-				// A task switch ends the calls of the stack we leave: they
-				// would otherwise stay open next to the new task's and overlap
-				// in the timeline.
+				// A task switch ends every open call (of the task we leave,
+				// including those it made on the boot stack before it had its
+				// own): they would otherwise stay open next to the new task's
+				// and overlap in the timeline.
 				if (!nested)
-					while (this.stack.length)
-						this.popFrame(t);
+					for (const l of this.lanes.values()) {
+						this.stack = l;
+						while (l.length)
+							this.popFrame(t);
+					}
 				if (!this.lanes.has(region))
 					this.lanes.set(region, []);
 				this.stack = this.lanes.get(region);

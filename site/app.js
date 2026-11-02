@@ -1818,7 +1818,13 @@ function watchPanicText() {
 	if (!stepper.prompt && stepper.promptText()) {
 		stepper.prompt = stepper.snapshot();
 		counting = false;
-		pause("at the (initramfs) prompt");
+		// v86 redraws the screen only while the VM runs: let it show the
+		// prompt before pausing.
+		const st = stepper;
+		setTimeout(() => {
+			if (stepper === st && (runState === "jit" || runState === "stepped"))
+				pause("at the (initramfs) prompt");
+		}, 300);
 		return;
 	}
 	const msg = stepper.panicText();

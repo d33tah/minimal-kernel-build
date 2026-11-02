@@ -194,6 +194,11 @@ class Stepper {
 		this.taskOf = new Map();   // stack region -> task
 		this.taskCount = 1;
 		this.contFrames = 0;
+		// Task switches: step, incoming task, 1 when it left from inside
+		// interrupt handling (preemption on an interrupt's return).
+		this.swStep = [];
+		this.swTask = [];
+		this.swIrq = [];
 		this.freshTask = false;
 		this.suspended = new Map(); // task -> its open call chain, root first
 		// Open frames per stack region (ESP >> 13: Linux's 8 KiB task and
@@ -330,6 +335,9 @@ class Stepper {
 					if (task === undefined)
 						task = this.taskCount++;
 					this.task = task;
+					this.swStep.push(t);
+					this.swTask.push(task);
+					this.swIrq.push(top >= 0 ? this.fIrq[top] : 0);
 					const saved = this.suspended.get(task);
 					if (saved) {
 						this.suspended.delete(task);

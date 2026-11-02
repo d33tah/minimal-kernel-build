@@ -29,7 +29,6 @@ const G = {
 	transpose: false,     // timeline: time downwards, depth across
 	flame: false,         // timeline: root at the bottom (flame) or top (icicle)
 	chains: true,         // timeline: single-child chains as one box
-	tasks: true,          // timeline: one band of rows per task
 	maxDepth: 0,          // timeline: rows shown below the root, 0 = all
 	focus: -1,            // timeline: frame the view is re-rooted at
 	xOff: 0,              // transposed: horizontal scroll in px
@@ -37,12 +36,15 @@ const G = {
 	layout: null,
 };
 const ROW = 17, MINI = 26;
+const SWITCH = "#6a5acd"; // task switch lines: quiet slate blue
 const PALETTE = { init: "#2ca02c", mm: "#1f77b4", fs: "#ff7f0e", kernel: "#d62728", arch: "#9467bd", lib: "#8c564b",
 	drivers: "#17becf", include: "#bcbd22", other: "#7f7f7f" };
 
 function graphReset(st) {
 	G.stepper = st;
 	G.selected = -1;
+	G.selSwitch = -1;
+	G.taskNames = null;
 	G.version = -1;
 	G.userMoved = false;
 	G.yOff = 0;
@@ -178,7 +180,7 @@ function fitLabel(ctx, text, w) {
 // box "a > b > c" (when compressing). Cached until frames or settings change.
 function timelineLayout(st) {
 	const n = st.fStart.length;
-	const key = n + "," + G.fold + "," + G.chains + "," + G.tasks + "," + st.steps;
+	const key = n + "," + G.fold + "," + G.chains + "," + st.steps;
 	if (G.layout && G.layout.key === key)
 		return G.layout;
 	const kids = new Int32Array(n), row = new Int32Array(n).fill(-1), head = new Int32Array(n);
@@ -210,42 +212,47 @@ function timelineLayout(st) {
 			head[k] = k;
 		}
 	}
-	// Task bands: each task's rows below a header row with its name, in
-	// the order the tasks first ran. base = the band's first frame row.
-	const base = new Int32Array(n), bands = [];
-	if (G.tasks && st.taskCount > 1) {
-		const nt = st.taskCount, maxRow = new Int32Array(nt).fill(-1), name = new Array(nt).fill("");
-		const skip = /^(ret_from_fork.*|kthread|__x86_indirect_thunk.*|__x86_return_thunk|__switch_to.*|schedule_tail.*|finish_task_switch.*|startup_32.*|i386_start_kernel|start_kernel)$/;
-		for (let k = 0; k < n; k++) {
-			const t = st.fTask[k];
-			if (row[k] > maxRow[t])
-				maxRow[t] = row[k];
-			if (!name[t] && t > 0 && st.fDepth[k] <= 3 && !st.fCont[k] && !st.fIrq[k] && !skip.test(st.nodeName(st.fNode[k])))
-				name[t] = st.nodeName(st.fNode[k]);
-		}
-		const off = new Int32Array(nt);
-		let o = 0;
-		for (let t = 0; t < nt; t++) {
-			if (maxRow[t] < 0)
-				continue;
-			bands.push({ task: t, row: o, name: t === 0 ? "boot task (swapper: init_task, later idle)" : "task " + t + ": " + (name[t] || "?") });
-			off[t] = o + 1;
-			o += maxRow[t] + 2;
-		}
-		for (let k = 0; k < n; k++)
-			if (row[k] >= 0) {
-				base[k] = off[st.fTask[k]];
-				row[k] += base[k];
-			}
-	}
 	const deepest = Int32Array.from(row);
 	for (let k = n - 1; k >= 0; k--) {
 		const p = st.fParent[k];
 		if (p >= 0 && row[k] >= 0 && deepest[k] > deepest[p])
 			deepest[p] = deepest[k];
 	}
-	G.layout = { key, row, head, chain, deepest, base, bands };
+	G.layout = { key, row, head, chain, deepest };
 	return G.layout;
+}
+
+// Task names: the boot task, then each task's thread function.
+function taskNames(st) {
+	const n = st.fStart.length;
+	if (G.taskNames && G.taskNames.n === n)
+		return G.taskNames.names;
+	const names = new Array(st.taskCount).fill("");
+	names[0] = "swapper (boot task)";
+	const skip = /^(ret_from_fork.*|kthread|__x86_indirect_thunk.*|__x86_return_thunk|__switch_to.*|schedule_tail.*|finish_task_switch.*|startup_32.*|i386_start_kernel|start_kernel)$/;
+	// The thread function: called (maybe through a retpoline thunk) by
+	// kthread or ret_from_fork, with only fork/kthread code above it.
+	const thunk = /^__x86_indirect_thunk/;
+	const setup = /^(sched_setscheduler.*|complete|schedule.*|preempt_.*|__kthread_parkme|_raw_spin.*|kthread_.*|__set_current.*)$/;
+	for (let k = 0; k < n; k++) {
+		const t = st.fTask[k];
+		if (names[t] || st.fDepth[k] > 3 || st.fCont[k] || st.fIrq[k] || skip.test(st.nodeName(st.fNode[k])))
+			continue;
+		let p = st.fParent[k], viaThunk = false;
+		while (p >= 0 && thunk.test(st.nodeName(st.fNode[p]))) {
+			p = st.fParent[p];
+			viaThunk = true;
+		}
+		// kthread calls the thread function through a function pointer
+		// (a retpoline thunk on Debian), after setup calls of its own.
+		const pn = p >= 0 ? st.nodeName(st.fNode[p]) : "";
+		if (/^ret_from_fork/.test(pn) || (pn === "kthread" && (viaThunk || !setup.test(st.nodeName(st.fNode[k])))))
+			names[t] = st.nodeName(st.fNode[k]);
+	}
+	for (let t = 1; t < names.length; t++)
+		names[t] = names[t] || "task " + t;
+	G.taskNames = { n, names };
+	return names;
 }
 
 function frameLabel(st, L, k) {
@@ -272,7 +279,7 @@ function drawTimeline() {
 		return;
 	const css = getComputedStyle(document.documentElement);
 	const fg = css.getPropertyValue("--fg").trim(), muted = css.getPropertyValue("--muted").trim();
-	const hot = css.getPropertyValue("--changed").trim(), line = css.getPropertyValue("--line").trim();
+	const line = css.getPropertyValue("--line").trim();
 	const bg = css.getPropertyValue("--bg").trim();
 	const L = timelineLayout(st);
 	const focus = G.focus >= 0 && G.focus < st.fStart.length ? G.focus : -1;
@@ -315,7 +322,10 @@ function drawTimeline() {
 	ctx.fillRect(0, MINI, w, 1);
 	// Geometry: time runs along `along` pixels; rows across.
 	const COL = 120;
-	const areaTop = MINI + 6, areaH = h - areaTop - 18;
+	// A strip above the rows for the task-switch labels (not transposed).
+	const swStrip = st.swStep && st.swStep.length && !G.transpose ? 13 : 0;
+	const areaTop = MINI + 6 + swStrip, areaH = h - areaTop - 18;
+	G.areaTop = areaTop;
 	const along = G.transpose ? areaH : w;
 	const tp = (t) => (t - G.x0) / span * along;
 	const rect = (a, b, r) => {
@@ -350,8 +360,7 @@ function drawTimeline() {
 		if (L.head[k] !== k || L.row[k] < 0)
 			continue;
 		const r = L.row[k] - rowOff;
-		const d = L.row[k] - Math.max(L.base[k], rowOff);
-		if (r < 0 || d > cap)
+		if (r < 0 || r > cap)
 			continue;
 		const a = st.fStart[k], b = fEnd(st, k);
 		if (b < G.x0 || a > G.x1)
@@ -380,7 +389,7 @@ function drawTimeline() {
 		drawn++;
 		if (G.transpose ? rh >= 13 : rw >= 40)
 			labels.push([k, x, y, rw, rh, label]);
-		if (d === cap && L.deepest[k] > L.row[k])
+		if (r === cap && L.deepest[k] > L.row[k])
 			more.push([x, y, rw, rh, L.deepest[k] - L.row[k]]);
 	}
 	ctx.fillStyle = "#fff";
@@ -402,22 +411,54 @@ function drawTimeline() {
 			labelled++;
 		}
 	}
-	// Task band headers.
-	ctx.fillStyle = muted;
-	c.dataset.bands = L.bands.length;
-	for (const band of L.bands) {
-		const r = band.row - rowOff;
-		if (r < 0 || focus >= 0)
-			continue;
-		const [x, y, rw, rh] = rect(G.x0, G.x1, r);
-		if (G.transpose) {
-			if (x + COL >= 0 && x <= w)
-				ctx.fillText(fitLabel(ctx, band.name, COL - 6), x + 3, areaTop + 7);
-		} else if (y + rh >= areaTop && y <= areaTop + areaH) {
-			ctx.fillRect(0, y + rh - 1, w, 1);
-			ctx.fillText(fitLabel(ctx, band.name, w - 8), 4, y + rh / 2);
+	// Task switches: a thin line across all rows at each switch, with the
+	// incoming task's name on top where it does not overlap the previous.
+	G.switchHits = [];
+	let markers = 0, swLabels = 0;
+	if (st.swStep && focus < 0) {
+		const names = taskNames(st);
+		ctx.font = "10px system-ui, sans-serif";
+		let lastEnd = -Infinity;
+		const vis = [];
+		for (let i = 0; i < st.swStep.length; i++)
+			if (st.swStep[i] >= G.x0 && st.swStep[i] <= G.x1 && !(G.fold && st.swIrq[i]))
+				vis.push(i);
+		for (let j = 0; j < vis.length; j++) {
+			const i = vis[j];
+			const p = tp(st.swStep[i]);
+			markers++;
+			// Switches closer than 4 px to a neighbour get a tick only, so
+			// a busy stretch does not hide the calls under a wall of lines.
+			const dense = (j > 0 && p - tp(st.swStep[vis[j - 1]]) < 4) ||
+				(j + 1 < vis.length && tp(st.swStep[vis[j + 1]]) - p < 4);
+			ctx.fillStyle = SWITCH;
+			ctx.globalAlpha = dense ? 0.8 : 0.55;
+			if (G.transpose)
+				ctx.fillRect(dense ? w - 6 : 0, areaTop + p, dense ? 6 : w, 1);
+			else
+				ctx.fillRect(p, areaTop - swStrip, 1, dense ? 4 : areaH + swStrip);
+			ctx.globalAlpha = 1;
+			const name = names[st.swTask[i]];
+			const tw = ctx.measureText(name).width + 4;
+			if (G.transpose ? p - lastEnd < 12 : p - lastEnd < 8)
+				continue;
+			const lx = G.transpose ? w - tw - 2 : p + 1, ly = G.transpose ? areaTop + p + 6 : areaTop - 7;
+			if (!G.transpose && lx + tw > w)
+				continue;
+			ctx.fillStyle = bg;
+			ctx.globalAlpha = 0.8;
+			ctx.fillRect(lx, ly - 6, tw, 12);
+			ctx.globalAlpha = 1;
+			ctx.fillStyle = SWITCH;
+			ctx.fillText(name, lx + 2, ly);
+			G.switchHits.push([i, lx, ly - 6, tw, 12]);
+			lastEnd = G.transpose ? p + 12 : p + tw;
+			swLabels++;
 		}
+		ctx.font = "11px system-ui, sans-serif";
 	}
+	c.dataset.switchMarkers = markers;
+	c.dataset.switchLabels = swLabels;
 	ctx.fillStyle = fg;
 	for (const [x, y, rw, rh, d] of more) // "+N deeper" past the depth cap
 		if (G.transpose)
@@ -444,15 +485,34 @@ function drawTimeline() {
 			ctx.fillText(fitLabel(ctx, "↑ " + hidden.map((x) => x[1]).join(" › "), w - 8), 4, yb + ROW / 2);
 		}
 	}
-	// Now.
+	// Now (or the end of the run): a dashed line in the text colour with a
+	// label, so it does not read as a call.
 	if (st.steps >= G.x0 && st.steps <= G.x1) {
-		ctx.fillStyle = hot;
 		const p = tp(st.steps);
-		if (G.transpose)
-			ctx.fillRect(0, areaTop + p - 1, w, 2);
-		else
-			ctx.fillRect(p - 1, MINI, 2, h - MINI);
+		const end = $("end_banner") && $("end_banner").dataset.kind ? "end" : "now";
+		ctx.strokeStyle = fg;
+		ctx.lineWidth = 1;
+		ctx.setLineDash([4, 3]);
+		ctx.beginPath();
+		if (G.transpose) {
+			ctx.moveTo(0, areaTop + p + 0.5);
+			ctx.lineTo(w, areaTop + p + 0.5);
+		} else {
+			ctx.moveTo(p + 0.5, MINI);
+			ctx.lineTo(p + 0.5, h);
+		}
+		ctx.stroke();
+		ctx.setLineDash([]);
+		ctx.font = "bold 10px system-ui, sans-serif";
+		const tw = ctx.measureText(end).width + 4;
+		const lx = G.transpose ? 2 : Math.min(p + 2, w - tw), ly = G.transpose ? areaTop + p - 7 : h - 22;
+		ctx.fillStyle = bg;
+		ctx.fillRect(lx, ly - 6, tw, 12);
+		ctx.fillStyle = fg;
+		ctx.fillText(end, lx + 2, ly);
+		ctx.font = "11px system-ui, sans-serif";
 	}
+	c.dataset.nowMarker = st.steps >= G.x0 && st.steps <= G.x1 ? "1" : "0";
 	ctx.fillStyle = muted;
 	ctx.fillText((G.x0 - runStart()).toLocaleString("en") + " – " + (G.x1 - runStart()).toLocaleString("en") +
 		" instructions from the entry" + (G.transpose ? " (top to bottom)" : ""), 4, h - 8);
@@ -855,6 +915,15 @@ function renderGraphInfo() {
 	const el = $("graph_info");
 	el.textContent = "";
 	const st = G.stepper;
+	if (st && G.selected < 0 && G.selSwitch >= 0 && G.view === "timeline") {
+		const i = G.selSwitch, names = taskNames(st);
+		el.textContent = "Task switch " + num(st.swStep[i] - runStart()) + " instructions from the entry, to task " +
+			st.swTask[i] + ": " + names[st.swTask[i]] + (st.swIrq[i] ? " (preempted on an interrupt's return)" : "") + ".";
+		el.dataset.switch = names[st.swTask[i]];
+		delete el.dataset.node;
+		return;
+	}
+	delete el.dataset.switch;
 	if (!st || G.selected < 0) {
 		el.textContent = G.view === "tree" ? "" : "Tap a box for its counts and callers.";
 		delete el.dataset.node;
@@ -875,7 +944,7 @@ function renderGraphInfo() {
 			num(st.fStart[k] - runStart()) + "\u2013" + num(fEnd(st, k) - runStart()) + " from the entry" +
 			(st.fIrq[k] ? "; in an interrupt" : "") +
 			(st.fCont[k] ? "; continues a call suspended by a task switch" : "") +
-			(st.taskCount > 1 ? "; task " + st.fTask[k] : "") + ". Called from: " + (path.join(" \u2190 ") || "(top)") + " ");
+			(st.taskCount > 1 ? "; task " + st.fTask[k] + " (" + taskNames(st)[st.fTask[k]] + ")" : "") + ". Called from: " + (path.join(" \u2190 ") || "(top)") + " ");
 		const fb = document.createElement("button");
 		fb.type = "button";
 		fb.id = "graph_focus";
@@ -1040,7 +1109,11 @@ function initGraph() {
 	const up = (ev) => {
 		if (G.press && !G.press.moved && G.pointers.size === 1) {
 			const [x, y] = local(ev);
-			if (G.view === "timeline")
+			const sw = G.view === "timeline" ? (G.switchHits || []).find(([, bx, by, bw, bh]) => x >= bx && x <= bx + bw && y >= by && y <= by + bh) : null;
+			G.selSwitch = sw ? sw[0] : -1;
+			if (sw)
+				G.selected = -1;
+			else if (G.view === "timeline")
 				G.selected = timelineFrameAt(x, y);
 			else if (G.view === "top") {
 				const hit = G.boxes.find(([, bx, by, bw, bh]) => x >= bx && x <= bx + bw && y >= by && y <= by + bh);
@@ -1053,6 +1126,14 @@ function initGraph() {
 		G.press = null;
 	};
 	c.addEventListener("pointerup", up);
+	c.addEventListener("mousemove", (ev) => {
+		const st = G.stepper;
+		if (!st || G.view !== "timeline" || !G.switchHits)
+			return;
+		const [x, y] = local(ev);
+		const sw = G.switchHits.find(([, bx, by, bw, bh]) => x >= bx && x <= bx + bw && y >= by && y <= by + bh);
+		c.title = sw ? "Task switch to task " + st.swTask[sw[0]] + ": " + taskNames(st)[st.swTask[sw[0]]] : "";
+	});
 	c.addEventListener("pointercancel", (ev) => { G.pointers.delete(ev.pointerId); G.press = null; });
 	c.addEventListener("wheel", (ev) => {
 		if (G.view !== "timeline")
@@ -1088,7 +1169,6 @@ function initGraph() {
 	toggle("graph_transpose", "transpose");
 	toggle("graph_flame", "flame");
 	$("graph_chains").addEventListener("change", () => { G.chains = $("graph_chains").checked; G.dirty = true; graphTick(); });
-	$("graph_tasks").addEventListener("change", () => { G.tasks = $("graph_tasks").checked; G.dirty = true; graphTick(); });
 	$("graph_depth").addEventListener("input", () => {
 		G.maxDepth = Number($("graph_depth").value);
 		$("graph_depth_v").textContent = G.maxDepth ? String(G.maxDepth) : "all";

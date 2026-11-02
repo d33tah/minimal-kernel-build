@@ -245,10 +245,12 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
     whole run on top (drag in it to move the window), drag to pan, wheel
     or pinch to zoom. "Transpose" puts time downwards and depth across
     (for deep stacks on wide screens), "Flame" puts the root at the
-    bottom. "tasks" (on) gives each task a band of rows under its name
-    (the boot task, then each kernel thread in the order it first ran,
-    named after its thread function); off, all tasks share the rows,
-    and a resumed task's continuations line up under the same callers.
+    bottom. All tasks share the rows (one CPU: they never overlap), and a
+    resumed task's continuations line up under the same callers. A thin
+    slate-blue line marks each task switch, with the incoming task's
+    thread function on a strip above the rows (labels that would overlap
+    are left out; hover or tap one for the task); switches from inside
+    interrupt handling are hidden with "hide interrupts".
     "chains" (on) draws a call whose caller has a single call and
     almost no own instructions in the caller's box as "a › b › c". The
     depth slider caps the rows shown and marks deeper calls "+N". The

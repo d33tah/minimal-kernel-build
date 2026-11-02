@@ -552,7 +552,7 @@ def timeline_views(page, problems, shots, tag, r):
         problems.append("the root crumb did not leave the focus")
     page.evaluate("document.getElementById('graph_depth').value = 3; document.getElementById('graph_depth').dispatchEvent(new Event('input'))")
     time.sleep(0.3)
-    if page.evaluate("G.rects.some(([k]) => G.layout.row[k] - G.layout.base[k] > 3)"):
+    if page.evaluate("G.rects.some(([k]) => G.layout.row[k] > 3)"):
         problems.append("the depth cap draws deeper rows")
     page.evaluate("document.getElementById('graph_depth').value = 0; document.getElementById('graph_depth').dispatchEvent(new Event('input'))")
     for b in ("graph_transpose", "graph_flame"):
@@ -605,7 +605,7 @@ def graph_check(page, name, problems, shots, tag):
         for (let k = 0; k < st.fStart.length; k++) if (st.fDepth[k] === 0 && !hiddenFrame(st, k)) {
             const e = (st.fEnd[k] < 0 ? st.steps : st.fEnd[k]) - Math.max(st.fStart[k], runStart()); if (e > w) { w = e; best = k; } }
         const a = Math.max(st.fStart[best], G.x0), b = Math.min(st.fEnd[best] < 0 ? st.steps : st.fEnd[best], G.x1);
-        return [c.left + ((a + b) / 2 - G.x0) / (G.x1 - G.x0) * c.width, c.top + 26 + 6 + timelineLayout(st).row[best] * 17 + 8 - G.yOff, st.nodeName(st.fNode[best])]; }""")
+        return [c.left + ((a + b) / 2 - G.x0) / (G.x1 - G.x0) * c.width, c.top + G.areaTop + timelineLayout(st).row[best] * 17 + 8 - G.yOff, st.nodeName(st.fNode[best])]; }""")
     page.mouse.click(xy[0], xy[1])
     if not wait_for(lambda: page.get_attribute("#graph_info", "data-node") == xy[2], 3):
         problems.append(f"tapping the {xy[2]} box did not select it: {page.get_attribute('#graph_info', 'data-node')}")
@@ -989,7 +989,10 @@ TASKS_JS = """() => { const st = stepper, s0 = st.sinceEntry, n = st.fStart.leng
     return { tasks: st.taskCount, roots, contRoots: cont, overlap, maxRootsPerTask: Math.max(0, ...Object.values(perTask)),
         sched: ['__schedule', '__switch_to', '__switch_to_asm', '__cond_resched', 'schedule'].filter((x) => bySym[x]),
         traceEarly: te.length, traceEarlyOrphans: te.filter((u) => !u).length,
-        bands: G.layout ? G.layout.bands.length : -1 }; }"""
+        switches: st.swStep.length, visibleSwitches: st.swStep.filter((t, i) => !(G.fold && st.swIrq[i])).length,
+        markers: Number(document.getElementById('graph_canvas').dataset.switchMarkers),
+        labels: Number(document.getElementById('graph_canvas').dataset.switchLabels),
+        rows: G.layout.row.reduce((a, b) => Math.max(a, b), 0) + 1, maxDepth: st.fDepth.reduce((a, b) => Math.max(a, b), 0) }; }"""
 
 
 def tasks_case(browser, base, shots, name):
@@ -1007,8 +1010,13 @@ def tasks_case(browser, base, shots, name):
     r = page.evaluate(TASKS_JS)
     page.screenshot(path=str(shots / f"graph-tasks-{name}.png"))
     page.close()
-    if r["tasks"] < 2 or r["bands"] < 2:
-        problems.append(f"fewer than 2 tasks / task bands: {r}")
+    if r["tasks"] < 2:
+        problems.append(f"fewer than 2 tasks: {r}")
+    # One set of rows for all tasks (no per-task bands).
+    if r["rows"] > r["maxDepth"] + 1:
+        problems.append(f"{r['rows']} timeline rows for call depth {r['maxDepth']}")
+    if r["markers"] != r["visibleSwitches"] or r["switches"] < r["tasks"] - 1 or r["labels"] < 1:
+        problems.append(f"switch markers {r['markers']} / labels {r['labels']} for {r['visibleSwitches']} visible of {r['switches']} switches")
     if r["sched"]:
         problems.append(f"scheduler code as a root: {r['sched']}")
     if r["overlap"]:

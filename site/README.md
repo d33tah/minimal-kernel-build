@@ -35,6 +35,35 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   boxed while the CPU is paused or stepping. Above the listing, a compact
   index of the page's symbols (the only symbol list) scrolls to each one.
   "live" re-reads the page every 500 ms.
+- **Fast-forward.** With a symbol map (built-in or imported), every boot
+  first runs to the kernel's real link entry (`startup_32`, else `_text`:
+  0x100000 for the minified Linux, 0x1000000 for Debian) and stops exactly
+  there, then continues at the selected speed. The first 2 million
+  instructions (SeaBIOS, about 1.4 M) are stepped as before: v86 0.5.471
+  cannot restore a snapshot taken while SeaBIOS is setting up PCI
+  (pci.js set_state). After that v86's own `main_loop()` (the JIT) runs in
+  slices of 20 million instructions, measured with v86's instruction
+  counter (wasm memory offset 664; the JIT adds each block's instruction
+  count when it leaves the block, the interpreter counts single
+  instructions); each slice starts with an in-memory `save_state()`.
+  After every `main_loop()` call (about 100,000 instructions) the page
+  checks whether EIP is inside the target's code section; when it is, the
+  slice's snapshot is restored and the stepper steps exactly to the
+  target. The virtual clock follows the instruction counter during JIT
+  slices, so timers fire at the same instruction counts. Debian 6.1:
+  2,320,848,980 instructions to `startup_32` in about 16 s instead of
+  214 s stepped, and stepping all of it gives exactly the same count, so
+  v86's counter is exact over this span; from there `start_kernel`
+  is 62,512 instructions, the same whether stepped or run with the JIT
+  and a breakpoint. The minified Linux reaches its entry within the
+  stepped part, so its counts do not change. Counts of fast-forwarded
+  instructions come from v86's counter; unique EIPs and the timeline
+  cover only stepped code (the decompressor run by the JIT is not in
+  them). Run to in the Debugger uses the same machinery for kernel code:
+  fast-forward to the entry when the kernel has not run yet, then a
+  software breakpoint (a HLT byte at the target, put back when the CPU
+  stops on it; a guest that reads its own code there would see it).
+  `?fastforward=0` turns all of it off.
 - **Debian sample kernel.** The third kernel in the menu is Debian
   bookworm's `linux-image-6.1.0-50-686` 6.1.176-1 (non-PAE 686; packages,
   hashes and licence in THIRD_PARTY.md), with symbols from its -dbg

@@ -26,7 +26,9 @@ const CLOCK = {
 	now() {
 		if (!this.virtual)
 			return realNow() + this.off;
-		const steps = this.stepper ? this.stepper.steps : 0;
+		// extraSteps: instructions the JIT ran in the current fast-forward
+		// slice, not yet added to the stepper (fastforward.js).
+		const steps = (this.stepper ? this.stepper.steps : 0) + (this.extraSteps ? this.extraSteps() : 0);
 		return this.base + (steps - this.baseSteps) / (this.mips * 1000);
 	},
 	// Switch modes or attach a stepper, keeping time continuous.

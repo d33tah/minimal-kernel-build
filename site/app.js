@@ -1101,6 +1101,25 @@ async function boot() {
 			runState = "paused";
 			$("dbg_status").textContent = "Paused at the reset vector.";
 			afterStop();
+		} else if (stepper && ffEnabled() && ffTarget()) {
+			// BIOS, setup and the decompressor at JIT speed, then exactly to
+			// the kernel's link entry; from there as before.
+			const t = ffTarget();
+			runState = "paused";
+			fastForward(t.phys, t.name).then((ok) => {
+				if (em !== emulator)
+					return;
+				if (ffAbort) {
+					afterStop();
+					return;
+				}
+				if (!ok)
+					$("dbg_status").textContent = "Fast-forward did not reach " + t.name + "; stepping from here." +
+						(ffInfo && ffInfo.error ? " " + ffInfo.error : "");
+				else
+					finishEntry();
+				resume();
+			});
 		} else {
 			resume();
 		}
@@ -1198,6 +1217,8 @@ async function resume() {
 async function pause(note) {
 	if (!emulator || !emuReady)
 		return;
+	if (ffActive)
+		ffAbort = true;
 	stopDriver();
 	if (emulator.is_running())
 		await emulator.stop();
@@ -1663,8 +1684,14 @@ function renderClock() {
 function finishEntry() {
 	entryPhase = false;
 	const n = stepper.sinceEntry >= 0 ? stepper.sinceEntry : stepper.steps;
-	$("entry_info").textContent = "Entered the kernel at " + hex(V86_KERNEL_ADDR) + " after " +
-		num(n) + " instructions from reset; now " + $("dbg_speed").selectedOptions[0].text + ".";
+	const ff = ffInfo && ffInfo.stopPhys !== undefined && !ffInfo.runTo;
+	const at = ff ? ffInfo.target : V86_KERNEL_ADDR;
+	$("entry_info").textContent = "Entered the kernel at " + hex(at) + (ff ? " (" + ffInfo.name + ")" : "") + " after " +
+		num(n) + " instructions from reset" +
+		(ff ? " (fast-forwarded with the JIT in " + (ffInfo.ms / 1000).toFixed(1) + " s: BIOS, setup, decompressor; counted from here)" : "") +
+		"; now " + $("dbg_speed").selectedOptions[0].text + ".";
+	$("entry_info").dataset.ffMs = ff ? Math.round(ffInfo.ms) : "";
+	$("entry_info").dataset.ffTarget = ff ? ffInfo.target : "";
 	$("entry_info").dataset.steps = n;
 	updateDebugUi();
 }
@@ -1781,11 +1808,14 @@ function updateDebugUi() {
 		stepped: (entryPhase ? "stepping to the kernel entry" : fastStepping() ? (counting ? "stepping (counting)" : "stepping") :
 			"slow motion " + $("dbg_speed").selectedOptions[0].text) + where,
 		paused: "paused" + where }[runState];
-	st.dataset.state = runState;
+	if (ffActive && ffInfo)
+		st.textContent = (ffInfo.runTo !== undefined ? "running to " + hex(ffInfo.runTo) : "fast-forwarding to " + ffInfo.name) +
+			" with the JIT: " + num(stepper.steps - (ffInfo.start || 0)) + " instructions";
+	st.dataset.state = ffActive ? "ff" : runState;
 	st.title = st.textContent;
 	const can = !!stepper;
-	$("dbg_pause").disabled = !can || runState === "paused" || runState === "off";
-	$("dbg_continue").disabled = !can || runState !== "paused";
+	$("dbg_pause").disabled = !can || (!ffActive && (runState === "paused" || runState === "off"));
+	$("dbg_continue").disabled = !can || ffActive || runState !== "paused";
 	for (const id of ["dbg_step", "dbg_stepn", "dbg_runto"])
 		$(id).disabled = !can || runState === "off";
 	renderRegs();
@@ -1832,6 +1862,27 @@ async function doRunTo() {
 	}
 	if (runState !== "paused")
 		await pause();
+	// Fast run-to (JIT + a breakpoint) for kernel code: first to the
+	// kernel's entry when it has not run yet (its code is not in memory
+	// before the decompressor), then to the target.
+	const t = ffEnabled() && ffTarget();
+	if (t && codeRange(t.phys)[0] <= phys && phys < codeRange(t.phys)[1]) {
+		ffInfo = null;
+		$("dbg_status").textContent = "Running to " + hex(phys) + " with the JIT...";
+		let ok = true;
+		if (stepper.sinceEntry < 0 || stepper.nextPhys() < V86_KERNEL_ADDR)
+			ok = await fastForward(t.phys, t.name);
+		if (ok && !ffAbort && phys !== t.phys)
+			ok = await fastRunTo(phys);
+		if (ok && stepper.nextPhys() === phys) {
+			pause("Stopped at " + hex(phys) + " (Run to, JIT and a breakpoint).");
+			return;
+		}
+		if (ffAbort) {
+			afterStop();
+			return;
+		}
+	}
 	runTo = phys;
 	$("dbg_status").textContent = "Running to physical " + hex(phys) + "...";
 	resume();

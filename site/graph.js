@@ -751,7 +751,9 @@ function graphStatus() {
 		(depth ? "; call depth max " + depth.max + ", p99 " + depth.p99 + (st.espUnwind ? " (ESP unwinding)" : "") : "") +
 		(runState === "jit" ? "; running at full JIT speed: not recorded" : "") +
 		(st.framesFull ? "; the timeline stopped at " + num(st.framesFull) +
-			" calls because the tab's JavaScript heap was 80% full (the counters keep counting)" : "") + ".";
+			" calls because the tab's JavaScript heap was 80% full (the counters keep counting)" : "") +
+		(typeof ffInfo === "object" && ffInfo && ffInfo.reached && !ffInfo.runTo ?
+			"; the first " + num(ffInfo.steps) + " instructions (BIOS, setup, decompressor) were fast-forwarded with the JIT, the timeline starts at " + ffInfo.name : "") + ".";
 }
 
 function drawGraph() {

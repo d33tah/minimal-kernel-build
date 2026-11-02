@@ -672,6 +672,7 @@ def determinism_case(browser, base):
 
     for q, t in (("kernel=hello", 60), ("kernel=hello&speed=full", 60),
                  ("kernel=minified-linux&speed=full", 120), ("kernel=minified-linux&speed=full", 120),
+                 ("kernel=minified-linux&speed=full&fastforward=0", 120),
                  ("kernel=minified-linux&speed=1000000", 180)):
         runs.setdefault(q.split("&")[0], []).append((q, run(q, t)))
     for k, rs in runs.items():
@@ -1018,6 +1019,28 @@ def debian_case(browser, base, shots, name):
     page.close()
     syms = json.loads((SITE / entry["symbols"]).read_text())["symbols"]
     sk = next(s for s in syms if s["name"] == "start_kernel")
+    st32 = next(s for s in syms if s["name"] == "startup_32")
+    # Default boot: fast-forward (JIT) through BIOS, setup and the XZ
+    # decompressor, stop exactly at startup_32, then 1/s.
+    page = browser.new_page(viewport={"width": 1100, "height": 1000})
+    t0 = time.monotonic()
+    page.goto(f"{base}/index.html?kernel={name}&speed=1#debugger")
+    ok = wait_for(lambda: page.get_attribute("#entry_info", "data-steps"), 300, 0.5)
+    r["ff_seconds"] = round(time.monotonic() - t0, 1)
+    page.click("#dbg_pause")
+    info = page.evaluate("ffInfo && { stop: ffInfo.stopPhys, steps: ffInfo.steps, ms: Math.round(ffInfo.ms) }")
+    r["ff"] = info
+    if not ok or not info or info["stop"] != st32["paddr"] or r["ff_seconds"] > 120:
+        problems.append(f"fast-forward to startup_32 {st32['paddr']:#x}: {info}, {r['ff_seconds']} s")
+    s0 = page.evaluate("stepper.steps")
+    page.fill("#dbg_addr", hex(sk["vaddr"]))
+    page.click("#dbg_runto")
+    ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
+                  and page.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 300, 0.5)
+    r["entry_to_start_kernel"] = page.evaluate("stepper.steps") - s0
+    if not ok or r["entry_to_start_kernel"] != 62512:
+        problems.append(f"startup_32 -> start_kernel took {r['entry_to_start_kernel']} instructions, not 62,512")
+    page.close()
     page = browser.new_page(viewport={"width": 1100, "height": 1000})
     page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
@@ -1025,7 +1048,7 @@ def debian_case(browser, base, shots, name):
     page.click("#dbg_runto")
     t0 = time.monotonic()
     ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
-                  and page.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 900, 2)
+                  and page.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 300, 1)
     r["runto_seconds"] = round(time.monotonic() - t0)
     r["runto_symbol"] = page.get_attribute("#cur_sym", "data-name")
     r["context_source"] = page.get_attribute("#context", "data-source")
@@ -1157,7 +1180,7 @@ def touch_case(browser, base, shots):
     return problems
 
 
-STAMPED = ("style.css", "clock.js", "app.js", "stepper.js", "graph.js", "source.js", "symimport.js", "livedis.js", "v86/libv86.js")
+STAMPED = ("style.css", "clock.js", "app.js", "stepper.js", "graph.js", "source.js", "symimport.js", "livedis.js", "fastforward.js", "v86/libv86.js")
 
 
 def stamp(html, v):

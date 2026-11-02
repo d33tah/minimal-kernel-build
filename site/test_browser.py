@@ -995,6 +995,36 @@ TASKS_JS = """() => { const st = stepper, s0 = st.sinceEntry, n = st.fStart.leng
         rows: G.layout.row.reduce((a, b) => Math.max(a, b), 0) + 1, maxDepth: st.fDepth.reduce((a, b) => Math.max(a, b), 0) }; }"""
 
 
+# Covered pixel columns per timeline row: the whole run at once vs the
+# same run as 8 windows at 8x zoom, folded back to the coarse columns.
+COVER_JS = """() => { const st = G.stepper, s0 = runStart(), s1 = st.steps, span = s1 - s0;
+    const saved = [G.x0, G.x1, G.userMoved, G.follow]; G.follow = false; G.userMoved = true;
+    G.x0 = s0; G.x1 = s1; drawTimeline();
+    const one = new Map(); let W = 0;
+    for (const [r, c] of G.cover) { W = c.length; one.set(r, c.reduce((a, b) => a + b, 0)); }
+    const coarse = new Map();
+    for (let i = 0; i < 8; i++) {
+        G.x0 = s0 + span * i / 8; G.x1 = s0 + span * (i + 1) / 8; drawTimeline();
+        for (const [r, c] of G.cover) {
+            if (!coarse.has(r)) coarse.set(r, new Uint8Array(W));
+            const m = coarse.get(r);
+            for (let col = 0; col < c.length - 1; col++) if (c[col]) m[Math.min(W - 1, Math.floor((i * (c.length - 1) + col) / 8))] = 1; } }
+    [G.x0, G.x1, G.userMoved, G.follow] = saved; G.dirty = true; drawTimeline();
+    const rows = [];
+    for (const r of new Set([...one.keys(), ...coarse.keys()])) {
+        const a = one.get(r) || 0, b = coarse.has(r) ? coarse.get(r).reduce((x, y) => x + y, 0) : 0;
+        rows.push([r, a, b]); }
+    rows.sort((x, y) => x[0] - y[0]);
+    return { width: W, rows }; }"""
+
+
+def coverage_problems(page, name):
+    """No timeline row loses covered pixels when zoomed out."""
+    cov = page.evaluate(COVER_JS)
+    bad = [(r, a, b) for r, a, b in cov["rows"] if abs(a - b) > max(3, 0.03 * max(a, b))]
+    return ([f"{name}: rows whose zoomed-out coverage differs from 8x zoom (row, 1x, 8x): {bad[:8]}"] if bad else []), cov
+
+
 def tasks_case(browser, base, shots, name):
     """Task switches on a full counted run: a resumed task continues its
     suspended calls (no scheduler code as a root, no orphaned calls), one
@@ -1009,6 +1039,10 @@ def tasks_case(browser, base, shots, name):
     time.sleep(1)
     r = page.evaluate(TASKS_JS)
     page.screenshot(path=str(shots / f"graph-tasks-{name}.png"))
+    cp, cov = coverage_problems(page, name)
+    problems += cp
+    r["coverage_rows"] = len(cov["rows"])
+    r["coverage_1x_8x"] = [row[1:] for row in cov["rows"][:6]]
     page.close()
     if r["tasks"] < 2:
         problems.append(f"fewer than 2 tasks: {r}")

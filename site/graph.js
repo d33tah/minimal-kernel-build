@@ -233,7 +233,8 @@ function taskNames(st) {
 	// The thread function: called (maybe through a retpoline thunk) by
 	// kthread or ret_from_fork, with only fork/kthread code above it.
 	const thunk = /^__x86_indirect_thunk/;
-	const setup = /^(sched_setscheduler.*|complete|schedule.*|preempt_.*|__kthread_parkme|_raw_spin.*|kthread_.*|__set_current.*)$/;
+	const fallback = new Array(st.taskCount).fill("");
+	const setup = /^(sched_setscheduler.*|housekeeping_.*|set_cpus_allowed.*|complete|schedule.*|preempt_.*|__kthread_parkme|_raw_spin.*|kthread_.*|__set_current.*)$/;
 	for (let k = 0; k < n; k++) {
 		const t = st.fTask[k];
 		if (names[t] || st.fDepth[k] > 3 || st.fCont[k] || st.fIrq[k] || skip.test(st.nodeName(st.fNode[k])))
@@ -246,9 +247,13 @@ function taskNames(st) {
 		// kthread calls the thread function through a function pointer
 		// (a retpoline thunk on Debian), after setup calls of its own.
 		const pn = p >= 0 ? st.nodeName(st.fNode[p]) : "";
-		if (/^ret_from_fork/.test(pn) || (pn === "kthread" && (viaThunk || !setup.test(st.nodeName(st.fNode[k])))))
+		if (/^ret_from_fork/.test(pn) || (pn === "kthread" && viaThunk))
 			names[t] = st.nodeName(st.fNode[k]);
+		else if (pn === "kthread" && !setup.test(st.nodeName(st.fNode[k])))
+			fallback[t] = st.nodeName(st.fNode[k]); // without retpolines: kthread's last other call
 	}
+	for (let t = 1; t < names.length; t++)
+		names[t] = names[t] || fallback[t];
 	for (let t = 1; t < names.length; t++)
 		names[t] = names[t] || "task " + t;
 	G.taskNames = { n, names };
@@ -302,6 +307,11 @@ function drawTimeline() {
 	const n = st.fStart.length;
 	// Minimap strip: the whole run (or the focused frame), shallow rows.
 	const msx = (t) => (t - t0) / (t1 - t0) * w;
+	// Calls narrower than a pixel mark their pixel column instead of being
+	// dropped, so dense stretches of tiny calls do not look empty.
+	const miniCol = [];
+	for (let r = 0; r <= 5; r++)
+		miniCol.push(new Int32Array(Math.ceil(w) + 1).fill(-1));
 	for (let k = 0; k < n; k++) {
 		const r = L.row[k] - rowOff;
 		if (r < 0 || r > 5 || L.head[k] !== k || (focus >= 0 && !isUnder(st, k, focus)))
@@ -310,11 +320,21 @@ function drawTimeline() {
 		if (b <= a)
 			continue;
 		const x = msx(a), ww = msx(b) - x;
-		if (ww < 0.5)
+		if (ww < 1) {
+			const col = Math.min(Math.floor(x + ww / 2), miniCol[r].length - 1);
+			if (col >= 0)
+				miniCol[r][col] = k;
 			continue;
+		}
 		ctx.fillStyle = frameColour(st, k);
-		ctx.fillRect(x, 2 + r * 3.5, Math.max(ww, 0.5), 3);
+		ctx.fillRect(x, 2 + r * 3.5, ww, 3);
 	}
+	for (let r = 0; r <= 5; r++)
+		for (let col = 0; col < miniCol[r].length; col++)
+			if (miniCol[r][col] >= 0) {
+				ctx.fillStyle = frameColour(st, miniCol[r][col]);
+				ctx.fillRect(col, 2 + r * 3.5, 1, 3);
+			}
 	ctx.strokeStyle = fg;
 	ctx.lineWidth = 1;
 	ctx.strokeRect(msx(G.x0) + 0.5, 0.5, Math.max(2, msx(G.x1) - msx(G.x0)), MINI - 2);
@@ -356,6 +376,21 @@ function drawTimeline() {
 	}
 	let drawn = 0, labelled = 0, matches = 0;
 	const labels = [], more = [];
+	// Per visible row: pixel columns (along the time axis) covered by calls.
+	// Calls narrower than a pixel are merged per column: the column is drawn
+	// in the colour of the call covering most of it, more opaque the more
+	// of it is covered, so the outline is the same at every zoom level.
+	const AL = Math.ceil(along) + 1;
+	const rowsCov = new Map(); // r -> { cov, best, frame, n, t0, t1, full }
+	const rowCov = (r) => {
+		let o = rowsCov.get(r);
+		if (!o) {
+			o = { cov: new Float32Array(AL), best: new Float32Array(AL), frame: new Int32Array(AL).fill(-1),
+				n: new Uint32Array(AL), t0: new Float64Array(AL).fill(Infinity), t1: new Float64Array(AL), full: new Uint8Array(AL) };
+			rowsCov.set(r, o);
+		}
+		return o;
+	};
 	for (let k = 0; k < n; k++) {
 		if (L.head[k] !== k || L.row[k] < 0)
 			continue;
@@ -368,10 +403,32 @@ function drawTimeline() {
 		if (focus >= 0 && !isUnder(st, k, focus))
 			continue;
 		const [x, y, rw, rh] = rect(a, b, r);
-		if ((G.transpose ? rh : rw) < 1)
-			continue;
 		if (y + rh < areaTop || y > areaTop + areaH || x + rw < 0 || x > w)
 			continue;
+		const p0 = Math.max(0, tp(a)), p1 = Math.min(along, tp(b));
+		if (p1 - p0 < 1) {
+			// Every column it touches (one or two), counted once.
+			const o = rowCov(r), mid = Math.min(AL - 1, Math.max(0, Math.floor((p0 + p1) / 2)));
+			const c0 = Math.min(AL - 1, Math.max(0, Math.floor(p0))), c1 = Math.min(AL - 1, Math.max(c0, Math.ceil(p1) - 1));
+			for (let col = c0; col <= c1; col++) {
+				const ov = Math.max(0, Math.min(p1, col + 1) - Math.max(p0, col));
+				o.cov[col] += ov;
+				if (col === mid)
+					o.n[col]++;
+				if (ov >= o.best[col] || o.frame[col] < 0) {
+					o.best[col] = ov;
+					o.frame[col] = k;
+				}
+				if (a < o.t0[col]) o.t0[col] = a;
+				if (b > o.t1[col]) o.t1[col] = b;
+			}
+			continue;
+		}
+		{
+			const o = rowCov(r);
+			for (let col = Math.floor(p0); col < Math.min(AL, Math.ceil(p1)); col++)
+				o.full[col] = 1;
+		}
 		const label = frameLabel(st, L, k);
 		const hit = q && label.toLowerCase().includes(q);
 		if (hit)
@@ -391,6 +448,46 @@ function drawTimeline() {
 			labels.push([k, x, y, rw, rh, label]);
 		if (r === cap && L.deepest[k] > L.row[k])
 			more.push([x, y, rw, rh, L.deepest[k] - L.row[k]]);
+	}
+	// The merged sub-pixel columns, as runs of covered columns per row.
+	G.mergedHits = [];
+	G.cover = new Map();
+	for (const [r, o] of rowsCov) {
+		const covered = new Uint8Array(AL);
+		let run = null;
+		const flush = () => {
+			if (!run)
+				return;
+			const [x, y, rw, rh] = rect(run.t0, run.t1, r);
+			const [px, py, pw, ph] = G.transpose ? [x, areaTop + run.c0, rw, run.c1 - run.c0] : [run.c0, y, run.c1 - run.c0, rh];
+			G.mergedHits.push([px, py, pw, ph, run.n, run.t0, run.t1]);
+			run = null;
+		};
+		for (let col = 0; col < AL; col++) {
+			covered[col] = o.full[col];
+			if (o.frame[col] < 0) {
+				flush();
+				continue;
+			}
+			covered[col] = 1;
+			const k = o.frame[col];
+			const [x, y, rw, rh] = rect(o.t0[col], o.t1[col], r);
+			ctx.fillStyle = frameColour(st, k);
+			ctx.globalAlpha = q ? 0.18 : 0.35 + 0.6 * Math.min(1, o.cov[col]);
+			if (G.transpose)
+				ctx.fillRect(x, areaTop + col, Math.max(rw - 0.5, 0.5), 1);
+			else
+				ctx.fillRect(col, y, 1, Math.max(rh - 0.5, 0.5));
+			ctx.globalAlpha = 1;
+			if (!run)
+				run = { c0: col, c1: col + 1, n: 0, t0: o.t0[col], t1: o.t1[col] };
+			run.c1 = col + 1;
+			run.n += o.n[col];
+			run.t0 = Math.min(run.t0, o.t0[col]);
+			run.t1 = Math.max(run.t1, o.t1[col]);
+		}
+		flush();
+		G.cover.set(r, covered);
 	}
 	ctx.fillStyle = "#fff";
 	const pinned = new Set(); // transposed: one label pinned at the top per column
@@ -924,6 +1021,12 @@ function renderGraphInfo() {
 		return;
 	}
 	delete el.dataset.switch;
+	if (st && G.selected < 0 && G.mergedInfo && G.view === "timeline") {
+		el.textContent = G.mergedInfo + ".";
+		G.mergedInfo = "";
+		delete el.dataset.node;
+		return;
+	}
 	if (!st || G.selected < 0) {
 		el.textContent = G.view === "tree" ? "" : "Tap a box for its counts and callers.";
 		delete el.dataset.node;
@@ -1113,8 +1216,18 @@ function initGraph() {
 			G.selSwitch = sw ? sw[0] : -1;
 			if (sw)
 				G.selected = -1;
-			else if (G.view === "timeline")
+			else if (G.view === "timeline") {
 				G.selected = timelineFrameAt(x, y);
+				const m = G.selected < 0 ? (G.mergedHits || []).find(([bx, by, bw, bh]) => x >= bx - 1 && x <= bx + bw + 1 && y >= by && y <= by + bh) : null;
+				if (m) {
+					// N calls narrower than a pixel: zoom into their range.
+					const pad = (m[6] - m[5]) * 0.05;
+					G.x0 = m[5] - pad;
+					G.x1 = m[6] + pad;
+					G.userMoved = true;
+					G.mergedInfo = num(m[4]) + " calls in this range (" + num(m[5] - runStart()) + "\u2013" + num(m[6] - runStart()) + " from the entry), zoomed in";
+				}
+			}
 			else if (G.view === "top") {
 				const hit = G.boxes.find(([, bx, by, bw, bh]) => x >= bx && x <= bx + bw && y >= by && y <= by + bh);
 				G.selected = hit ? hit[0] : -1;
@@ -1132,7 +1245,9 @@ function initGraph() {
 			return;
 		const [x, y] = local(ev);
 		const sw = G.switchHits.find(([, bx, by, bw, bh]) => x >= bx && x <= bx + bw && y >= by && y <= by + bh);
-		c.title = sw ? "Task switch to task " + st.swTask[sw[0]] + ": " + taskNames(st)[st.swTask[sw[0]]] : "";
+		const m = sw ? null : (G.mergedHits || []).find(([bx, by, bw, bh]) => x >= bx - 1 && x <= bx + bw + 1 && y >= by && y <= by + bh);
+		c.title = sw ? "Task switch to task " + st.swTask[sw[0]] + ": " + taskNames(st)[st.swTask[sw[0]]] :
+			m && timelineFrameAt(x, y) < 0 ? num(m[4]) + " calls in this range (tap to zoom in)" : "";
 	});
 	c.addEventListener("pointercancel", (ev) => { G.pointers.delete(ev.pointerId); G.press = null; });
 	c.addEventListener("wheel", (ev) => {

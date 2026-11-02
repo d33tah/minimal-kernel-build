@@ -241,7 +241,13 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   - *Timeline* (default): an icicle chart, x = instructions from the
     kernel entry, y = call depth, one box per call, labelled when at least
     40 px wide, coloured by the top directory of its source file
-    (sources.json) or a name guess, interrupts grey; a strip with the
+    (sources.json) or a name guess, interrupts grey. Calls narrower than
+    a pixel are merged per pixel column (in the colour of the call that
+    covers most of it, more opaque the more of it is covered) instead of
+    being dropped, which made dense stretches of tiny calls look empty
+    until zoomed in; the covered columns of every row are the same as at
+    8x zoom (a test checks this). Hovering a merged block shows how many
+    calls it holds, and tapping it zooms into them; a strip with the
     whole run on top (drag in it to move the window), drag to pan, wheel
     or pinch to zoom. "Transpose" puts time downwards and depth across
     (for deep stacks on wide screens), "Flame" puts the root at the

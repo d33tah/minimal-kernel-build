@@ -586,7 +586,7 @@ function drawTimeline() {
 	// label, so it does not read as a call.
 	if (st.steps >= G.x0 && st.steps <= G.x1) {
 		const p = tp(st.steps);
-		const end = $("end_banner") && $("end_banner").dataset.kind ? "end" : "now";
+		const end = st.end ? "end" : "now";
 		ctx.strokeStyle = fg;
 		ctx.lineWidth = 1;
 		ctx.setLineDash([4, 3]);

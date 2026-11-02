@@ -1818,6 +1818,8 @@ function renderEnd() {
 	const e = stepper && stepper.end;
 	b.hidden = !e;
 	b.textContent = e ? endText() : "";
+	if (b.dataset.kind !== (e ? e.kind : "") && typeof G === "object")
+		G.dirty = true; // the timeline's "now" marker becomes "end"
 	b.dataset.kind = e ? e.kind : "";
 	b.dataset.code = stepper && stepper.exit ? stepper.exit.code : "";
 }

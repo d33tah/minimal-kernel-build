@@ -111,7 +111,7 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   0.5.471 always puts the initrd at 64 MiB (`INITRD_ADDRESS = 64 << 20` in
   src/kernel.js) and writes ramdisk_image/ramdisk_size into the header, so
   RAM must be larger than 64 MiB plus its size: loading one selects the
-  smallest RAM size that fits (the menu now goes to 64, 96 and 128 MB),
+  smallest RAM size that fits (the menu goes to 64, 96, 128, 256 and 512 MB),
   the header check reports an error when it does not fit and a warning
   when it lies above the kernel's initrd_addr_max, and the memory map and
   grid show the initrd as its own region. The kernels on this page ignore

@@ -940,18 +940,21 @@ def follow_case(browser, base, shots):
     if r["cmdline"] != "nokaslr cryptomgr.notests":
         problems.append(f"cmdline default is {r['cmdline']!r}")
     page.click("#graph_transpose")
-    seen, rows = [], []
+    seen, rows, scrolled = [], [], 0
     for _ in range(12):
         time.sleep(0.5)
         v = page.get_attribute("#graph_canvas", "data-cur-visible")
         if v is not None:
             seen.append(v)
             rows.append(int(page.get_attribute("#graph_canvas", "data-cur-row") or 0))
-    r["visible"], r["rows"] = seen, rows
+            scrolled = max(scrolled, page.evaluate("G.xOff"))
+    r["visible"], r["rows"], r["scrolled_px"] = seen, rows, scrolled
     if not seen or any(v != "true" for v in seen):
         problems.append(f"the running frame left the view while following: {seen} rows {rows}")
-    if not rows or max(rows) < 3:
-        problems.append(f"stack never deep enough to need scrolling: rows {rows}")
+    # At 390 px, three 120 px columns fit; a call in column 2 or deeper is
+    # outside the band and must have scrolled the view.
+    if not rows or max(rows) < 2 or scrolled <= 0:
+        problems.append(f"following never had to scroll: rows {rows}, scrolled {scrolled}px")
     page.screenshot(path=str(shots / "follow-transposed-390.png"))
     page.close()
     # A bzImage from disk starts with the default command line too.

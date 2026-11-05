@@ -542,12 +542,25 @@ function insnIndex(a) {
 	return lo;
 }
 
+// Whether the listing of the page at lo can tint the instructions that
+// have not executed: only what the stepper stepped is recorded (Stepper.seen,
+// by physical address), not what v86's JIT ran.
+function coverageFor(lo) {
+	if (!stepper || !stepper.unique)
+		return { tint: false, why: "nothing has been stepped yet" };
+	if (stepper.jitBeforeEntry && (stepper.sinceEntry < 0 || lo < stepper.kernelLo))
+		return { tint: false, why: "the code before the kernel entry ran on v86's JIT (fast-forward), which records nothing" };
+	return { tint: true, partial: stepper.jitAfterEntry };
+}
+
 // One listing of page p in address order: instructions (disasm.json) as
 // "addr bytes insn symbol+off", everything else as hexdump -C rows, symbol
 // starts as "name:" headers. base: bytes from the last scan (changed bytes
 // are marked); cur: physical address of the next instruction, or -1.
+// Instructions that have not executed in this boot are tinted (coverageFor).
 function listPage(p, bytes, base, cur, chars) {
 	const lo = p * PAGE, hi = lo + PAGE;
+	const cov = coverageFor(lo);
 	const per = hexPer(chars);
 	const wide = chars >= 100;
 	const syms = symbolsInPage(p).filter((s) => s.paddr >= lo);
@@ -571,7 +584,7 @@ function listPage(p, bytes, base, cur, chars) {
 			loadIced();
 	}
 	const out = [];
-	let si = 0, nIns = 0, nBad = 0, nRows = 0, nonzero = 0, changed = 0, curLine = -1;
+	let si = 0, nIns = 0, nBad = 0, nNx = 0, nRows = 0, nonzero = 0, changed = 0, curLine = -1;
 	let prevRow = null, starred = false;
 	const srcState = { key: null };
 	const mark = (off, text) => (base && base[off] !== bytes[off] ? "<mark>" + text + "</mark>" : text);
@@ -608,6 +621,10 @@ function listPage(p, bytes, base, cur, chars) {
 			let cls = ok ? "ins" : "ins bad";
 			if (misaligned.has(pa))
 				cls += " maybe";
+			if (cov.tint && !stepper.executed(pa)) {
+				cls += " nx";
+				nNx++;
+			}
 			if (pa === cur) {
 				cls += " cur";
 				curLine = out.length;
@@ -668,7 +685,7 @@ function listPage(p, bytes, base, cur, chars) {
 		nRows++;
 		a = end;
 	}
-	return { html: out.join("\n"), nIns, nBad, nRows, nonzero, changed, curLine, source, bits, misaligned: misaligned.size };
+	return { html: out.join("\n"), nIns, nBad, nNx, cov, nRows, nonzero, changed, curLine, source, bits, misaligned: misaligned.size };
 }
 
 function renderSymbolIndex(p) {
@@ -718,6 +735,18 @@ function renderPage(p, bytes, base, how) {
 			scrollListingTo(line);
 	}
 	box.dataset.source = r.source;
+	box.dataset.coverage = !r.nIns ? "" : r.cov.tint ? (r.cov.partial ? "partial" : "stepped") : "none";
+	box.dataset.unexecuted = r.cov.tint ? r.nNx : "";
+	const key = $("cov_info");
+	key.textContent = "";
+	if (r.nIns && r.cov.tint) {
+		const sw = document.createElement("span");
+		sw.className = "nxkey";
+		sw.textContent = "tinted";
+		key.append(sw, ": " + r.nNx + " of " + r.nIns + " instructions have not executed in this boot (recorded while stepping)" +
+			(r.cov.partial ? "; v86's JIT has run since the kernel entry and records nothing, so tinted code may have run" : ""));
+	} else if (r.nIns)
+		key.textContent = "No execution coverage: " + r.cov.why + ".";
 	$("dump_info").textContent = (r.source === "build" ? r.nIns + " instructions (disasm.json)" :
 		r.source === "live" ? r.nIns + " instructions decoded live from guest memory (iced-x86, " + r.bits + "-bit" +
 			(r.misaligned ? "; the first lines outside a symbol may be misaligned" : "") + ")" :
@@ -1214,6 +1243,8 @@ async function resume() {
 	} else {
 		if (stepper && runState !== "off")
 			stepper.markGap();
+		if (stepper)
+			stepper.noteJit(false);
 		CLOCK.set(false); // the JIT runs on real time
 		runState = "jit";
 		emulator.run();

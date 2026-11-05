@@ -208,6 +208,18 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   Linux 698,272 bytes (156 KB gzipped; 7,325 locations, 188 files, 1,222
   functions, 14,319 source lines), hello 1,104 bytes. The -g build takes
   about 11 s locally (9 s without -g).
+- **Executed code.** The Page listing tints the instructions that have
+  not executed in this boot (a lavender background, the "tinted" key next
+  to the listing's counts gives how many). An instruction counts as
+  executed when the stepper stepped one starting at its physical address
+  (the same unique-EIP bitmap as the C source coverage, an O(1) bit test
+  per instruction). Only stepped code is recorded: before anything is
+  stepped nothing is tinted; pages below the kernel entry are not tinted
+  after a fast-forward (BIOS, setup and the decompressor ran on v86's
+  JIT); once the JIT has run after the kernel entry (full speed) the key
+  says tinted code may have run. Code that ran at the same address before
+  the kernel was in place (the bzImage's own code at 1 MiB) counts as
+  executed.
 - **Debugger.** Step N, Run to address, the registers (EIP, ESP, EBP,
   EAX..EDI, EFLAGS decoded, CS/DS/SS/ES, CR0, CR3, CPL, mode, physical EIP;
   changed ones marked), the current symbol (range, size, offset of EIP),
@@ -551,6 +563,11 @@ case checks every tab is inside a 390 px viewport, the last one opens,
 and a touch swipe outside the graph scrolls the page. A determinism case
 boots hello at 1k/s and at full speed and Linux at full speed twice and
 at 1M/s, and checks the counts are identical.
+A coverage case opens start_kernel's page paused at the reset vector
+(nothing tinted, the key says nothing was stepped), then after a counted
+boot (`?speed=full`) in both colour schemes at 1280 and 390 px: the first
+instruction of start_kernel is not tinted, die() is, no hex row is, and
+the page has no horizontal scroll.
 
 Cases: hello at 2 MB with the default boot (the entry marker, the switch
 to 1k/s, 86 instructions from the entry to "Hello, World!", the

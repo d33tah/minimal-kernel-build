@@ -43,7 +43,8 @@ const ffCounter = () => new Uint32Array(stepper.cpu.wasm_memory.buffer, 664, 1)[
 
 // Run one v86 main_loop() (JIT, ~100,000 instructions or until hlt) and
 // add what it ran to the stepper's count. Returns the instructions run.
-function jitChunk() {
+// beforeEntry: the fast-forward to the kernel entry (for the coverage note).
+function jitChunk(beforeEntry = false) {
 	const st = stepper, cpu = st.cpu;
 	if (cpu.in_hlt[0]) { // let the stepper's idle handling move the clock
 		st.run(1, -1, 50);
@@ -57,6 +58,8 @@ function jitChunk() {
 		CLOCK.extraSteps = null;
 	}
 	const ran = (ffCounter() - c0) >>> 0;
+	if (ran)
+		st.noteJit(beforeEntry);
 	// The CLOCK keeps its value: steps take over from extraSteps.
 	st.steps += ran;
 	return ran;
@@ -98,7 +101,7 @@ async function fastForward(target, name) {
 				try {
 					snap = await emulator.save_state();
 				} catch (e) {
-					jitChunk();
+					jitChunk(true);
 				}
 			}
 			if (!snap)
@@ -107,7 +110,7 @@ async function fastForward(target, name) {
 			ffInfo.slices++;
 			let ran = 0;
 			while (ran < FF_SLICE && !ffAbort && !st.dead()) {
-				ran += jitChunk();
+				ran += jitChunk(true);
 				if (inside()) {
 					reached = true;
 					break;

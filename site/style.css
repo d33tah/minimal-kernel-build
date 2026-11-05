@@ -31,6 +31,7 @@
 	--mark-fg: #1d1d1b;
 	--sym0: rgba(36, 86, 166, 0.10);
 	--sym1: rgba(214, 39, 40, 0.10);
+	--nx-bg: rgba(148, 103, 189, 0.28);
 }
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme="light"]) {
@@ -51,6 +52,7 @@
 		--changed: #ff5c8a;
 		--sym0: rgba(139, 177, 240, 0.16);
 		--sym1: rgba(255, 120, 120, 0.14);
+		--nx-bg: rgba(190, 150, 240, 0.22);
 	}
 }
 :root[data-theme="dark"] {
@@ -71,6 +73,7 @@
 	--changed: #ff5c8a;
 	--sym0: rgba(139, 177, 240, 0.16);
 	--sym1: rgba(255, 120, 120, 0.14);
+	--nx-bg: rgba(190, 150, 240, 0.22);
 }
 
 * { box-sizing: border-box; }
@@ -200,6 +203,9 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 #listing mark { background: var(--mark-bg); color: var(--mark-fg); }
 #listing .lbl { color: var(--accent); font-weight: 600; }
 #listing .lbl .dim { font-weight: 400; }
+/* Instructions that have not executed in this boot (coverageFor in app.js). */
+#listing .nx, .nxkey { background: var(--nx-bg); color: var(--muted); }
+.nxkey { padding: 0 0.25em; border-radius: 2px; }
 #listing .bad { background: var(--mark-bg); color: var(--mark-fg); }
 #listing .hex { color: var(--fg); }
 .cur { outline: 2px solid var(--accent); outline-offset: -1px; background: var(--bg); }

@@ -123,6 +123,10 @@ class Stepper {
 		this.lastPhys = -1;
 		this.seen = new Uint8Array((cpu.mem8.length + 7) >> 3);
 		this.seenHigh = new Set();
+		// v86's JIT ran code, which seen does not record: in the fast-forward
+		// to the kernel entry, or at full speed.
+		this.jitBeforeEntry = false;
+		this.jitAfterEntry = false;
 		this.text = new Uint8Array(VGA_WINDOW_BYTES);
 		this.textVersion = 0;    // bumped on every write into the window
 		this.vgaDirty = false;
@@ -497,6 +501,21 @@ class Stepper {
 	markHalt() {
 		if (!this.end)
 			this.end = { kind: this.panicEntered ? "panic" : "halt", ...this.snapshot() };
+	}
+
+	// v86's JIT runs (or ran) code the stepper does not see: seen misses it.
+	// beforeEntry: the fast-forward to the kernel entry.
+	noteJit(beforeEntry) {
+		if (beforeEntry)
+			this.jitBeforeEntry = true;
+		else
+			this.jitAfterEntry = true;
+	}
+
+	// Whether an instruction started at physical address phys while stepping.
+	executed(phys) {
+		const seen = this.seen;
+		return phys < seen.length * 8 ? !!(seen[phys >> 3] & (1 << (phys & 7))) : this.seenHigh.has(phys);
 	}
 
 	// Called when v86's JIT ran in between: the history has a gap.

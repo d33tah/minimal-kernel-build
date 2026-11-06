@@ -148,8 +148,8 @@ jobs:
         echo "-g builds: code byte-identical to the booting kernels"
         site/gen-dwarf.js "$g/minified/vmlinux" out/minified-linux/dwarf
         site/gen-dwarf.js "$g/hello/boot/high/kernel.elf" out/hello/dwarf
-        site/gen-src.js out/minified-linux/dwarf "$g/minified" out/minified-linux/src --origin "the minified/ tree of commit ${GITHUB_SHA:0:12}"
-        site/gen-src.js out/hello/dwarf "$g/hello" out/hello/src --origin "the hello/ tree of commit ${GITHUB_SHA:0:12}"
+        site/gen-src.js out/minified-linux/dwarf "$g/minified" out/minified-linux/src --origin "the minified/ tree of commit $(echo "$GITHUB_SHA" | cut -c1-12)"
+        site/gen-src.js out/hello/dwarf "$g/hello" out/hello/src --origin "the hello/ tree of commit $(echo "$GITHUB_SHA" | cut -c1-12)"
         site/test_dwarf.py "$g/minified/vmlinux" out/minified-linux/dwarf --samples 5000 --strip "$(realpath "$g/minified")/"
         site/test_dwarf.py "$g/hello/boot/high/kernel.elf" out/hello/dwarf --samples 500 --strip "$(realpath "$g/hello")/"
         # The -g ELFs for the browser test's llvm-symbolizer checks (not deployed).

@@ -438,9 +438,12 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   stepper's unique-EIP bitmap). The workflow builds `-g` copies
   (`KCFLAGS=-g` for the minified Linux, `CC="clang -g"` for hello) next to
   the gate kernels and fails unless their code is byte-identical
-  (`llvm-objcopy -O binary --remove-section=.notes`: only the 20-byte GNU
-  build-id differs, as it hashes the debug info too); `gen-dwarf.js` and
-  `gen-src.js` read those. The -g build takes about 11 s locally (9 s
+  (`check-code-identity.py`: the `llvm-objcopy -O binary` images and the
+  bzImages are equal except inside note sections, i.e. the 20-byte GNU
+  build-id, which hashes the debug info too; the plain image must be the
+  one inside the shipped bzImage; `--self-test` checks that a flipped code
+  byte fails); `gen-dwarf.js` and `gen-src.js` read those, for the minified
+  Linux and hello alike. The -g build takes about 11 s locally (9 s
   without -g).
 - **Executed code.** The Page listing tints the instructions that have
   not executed in this boot (a lavender background, the "tinted" key next
@@ -821,10 +824,20 @@ qemu runs used `timeout 120` and a FIFO, so no trace touched the disk.
     site/gen-symbols.py hello/boot/high/kernel.elf site/kernels/hello/symbols.json hello
     (dwarf/ and src/: see the workflow's "Debug-info builds" step)
     site/gen-kernels.sh
+    site/test_kernel_data.py
     python3 site/test_browser.py
     python3 site/test_browser.py --suites debian,dwarf,dwarf_import,types
 
-The suites (`SUITES` in test_browser.py) run in three parallel CI jobs
+`test_kernel_data.py` (also in the workflow's site job) fails when a
+kernel in kernels.json lacks a file one of the debug features fetches:
+symbols, line and inline shards, C source, types, the coverage tree's
+files.json, CFI and locals shards, and the task_struct layout (hello,
+which has no tasks, must have none). The hello suite checks the hello
+kernel's features in the page: backtrace to startup_32, parameter and
+local values from the DWARF location lists, Coverage tree, and the
+honest "no variables" and "no current_task" lines.
+
+The suites (`SUITES` in test_browser.py) run in four parallel CI jobs
 (the workflow's browser-test matrix), grouped by their measured times;
 each prints `suite NAME: N s`.
 

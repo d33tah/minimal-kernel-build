@@ -5,12 +5,15 @@
 
 	bits	32
 	section	.text.head
-	global	startup_32
+	; Sized, so debuggers (the page's symbol history and backtraces) know
+	; which code is startup_32.
+	global	startup_32:function (startup_32_size)
 	extern	hello_main
 startup_32:
 	cli
 	mov	esp, stack_top
 	call	hello_main		; does not return
+startup_32_size equ $ - startup_32
 
 	section	.bss
 	align	16

@@ -1544,9 +1544,12 @@ function unwindHere() {
 		}
 		return v;
 	};
+	// Code of a symbol, or just past one: the return address of a call
+	// that does not return can be the end of its function (startup_32's
+	// call of hello_main in the hello kernel).
 	const toPhys = (va) => {
 		const pa = pageWalk(cpu, va).phys;
-		return pa !== null && st.symbolOf(insnStart(pa)) >= 0 ? pa : null;
+		return pa !== null && (st.symbolOf(insnStart(pa)) >= 0 || st.symbolOf(insnStart(pa - 1)) >= 0) ? pa : null;
 	};
 	const symAt = (pa) => {
 		const i = st.symbolOf(insnStart(pa));

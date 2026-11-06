@@ -18,6 +18,12 @@
 //       one JSON line per physical address (hex or decimal) on stdin:
 //       the frames the page shows there (test_dwarf.py compares them with
 //       llvm-symbolizer --inlines)
+//   site/gen-dwarf.js --lines OUTDIR < file:line lines
+//       one JSON line per "path:line" on stdin: its code as the page's
+//       Source panel lists it and the addresses its "Run to" stops at
+//       (dwarf.js dwarfFileCode over the shards files.json names for the
+//       file; test_dwarf.py --lines checks them with llvm-dwarfdump and
+//       llvm-symbolizer)
 //   site/gen-dwarf.js --cfi OUTDIR < addresses
 //       one JSON line per physical address: the call frame information
 //       row there (unwind.js cfiRow) as llvm-dwarfdump --debug-frame
@@ -44,7 +50,7 @@ const fs = require("fs");
 const zlib = require("zlib");
 const path = require("path");
 const { spawn } = require("child_process");
-const { DwarfReader, DwarfTypes, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfEachLine, dwarfEncode, dwarfDecode,
+const { DwarfReader, DwarfTypes, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfEachLine, dwarfFileCode, dwarfEncode, dwarfDecode,
 	dwWhere, dwTypeName, dwTypeSize, dwarfScopesAt, dwarfLocalFrames, dwLocAt } = require("./dwarf.js");
 
 const { cfiFromElf, cfiSlice, cfiEncode, cfiDecode, cfiRow, cfiRowText } = require("./unwind.js");
@@ -124,7 +130,7 @@ async function generate(elf, outDir) {
 	const cfi = cfiShards(e, read, outDir);
 	console.log(`${outDir}: ${cfi.why || `call frame information from ${cfi.source}: ${cfi.fdes} FDEs, ${cfi.cies} CIEs, ` +
 		`${cfi.shards.length} shards, ${cfi.bytes} bytes`}; ${Date.now() - t4} ms`);
-	const index = { format: 1, cfi, locals, shardBits: SHARD_BITS, shards: list, units: us.length,
+	const index = { format: 2, cfi, locals, breakpoints: table.lk.reduce((n, x) => n + x, 0) + table.sx.length, shardBits: SHARD_BITS, shards: list, units: us.length,
 		version: [...new Set(us.map((u) => u.ver))], lineRows: table.la.length, ranges: table.ra.length,
 		source: path.basename(elf), files: "files.json", types: "types.json", variables: ty.vars.length, typeCount: ty.types.length, typeBytes: tj.length };
 	fs.writeFileSync(path.join(outDir, "index.json"), JSON.stringify(index));
@@ -365,6 +371,35 @@ function lookup(dir) {
 	process.stdout.write(out.join("\n") + "\n");
 }
 
+// One JSON line per "path:line": dwarfFileCode over the shards that
+// files.json lists for the file, like the page's dbgLineCode.
+function linesLookup(dir) {
+	const index = JSON.parse(fs.readFileSync(path.join(dir, "index.json"), "utf8"));
+	const F = JSON.parse(fs.readFileSync(path.join(dir, "files.json"), "utf8"));
+	const fileIx = new Map(F.files.map((f, k) => [f[0], k]));
+	const size = 2 ** index.shardBits;
+	const cache = new Map();
+	const shard = (s) => {
+		if (!cache.has(s))
+			cache.set(s, dwarfDecode(new Uint8Array(fs.readFileSync(path.join(dir, s.toString(16) + ".bin")))));
+		return cache.get(s);
+	};
+	const out = [], files = new Map();
+	for (const w of fs.readFileSync(0, "utf8").split("\n").filter(Boolean)) {
+		const m = /^(.*):(\d+)$/.exec(w.trim());
+		const fi = m ? fileIx.get(m[1]) : undefined;
+		if (fi === undefined) {
+			out.push(JSON.stringify({ q: w, none: true }));
+			continue;
+		}
+		if (!files.has(m[1]))
+			files.set(m[1], dwarfFileCode(F.files[fi][2].map((s) => [s * size, (s + 1) * size, shard(s)]), m[1]));
+		const r = files.get(m[1]).get(Number(m[2])) || { rows: [], calls: [], bps: [], noStmt: false };
+		out.push(JSON.stringify({ q: w, ...r }));
+	}
+	process.stdout.write(out.join("\n") + "\n");
+}
+
 // One JSON line per physical address: the CFI row there (unwind.js
 // cfiRow) in llvm-dwarfdump's notation, read back from the shards.
 function cfiLookup(dir) {
@@ -469,6 +504,8 @@ function operandsLookup(dir) {
 const args = process.argv.slice(2);
 if (args[0] === "--lookup" && args.length === 2)
 	lookup(args[1]);
+else if (args[0] === "--lines" && args.length === 2)
+	linesLookup(args[1]);
 else if (args[0] === "--cfi" && args.length === 2)
 	cfiLookup(args[1]);
 else if (args[0] === "--locals" && args.length === 2)
@@ -480,6 +517,6 @@ else if (args[0] === "--where" && args.length === 2)
 else if (args.length === 2)
 	generate(args[0], args[1]).catch((err) => { console.error(err); process.exit(1); });
 else {
-	console.error("usage: gen-dwarf.js ELF OUTDIR | gen-dwarf.js --lookup|--where|--cfi|--locals|--operands OUTDIR < addresses");
+	console.error("usage: gen-dwarf.js ELF OUTDIR | gen-dwarf.js --lookup|--lines|--where|--cfi|--locals|--operands OUTDIR < addresses");
 	process.exit(2);
 }

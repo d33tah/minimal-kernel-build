@@ -306,6 +306,11 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 #src_body .exec { background: rgba(44, 160, 44, 0.18); }
 #src_body .exec.cont { background: rgba(44, 160, 44, 0.1); }
 #src_body .here { outline: 2px solid var(--accent); outline-offset: -1px; }
+#src_body [data-line] { cursor: pointer; }
+#src_body .pick { box-shadow: inset 4px 0 0 var(--src-loc); }
+.srcaddrs { max-height: 28vh; overflow: auto; margin: 0 0 0.4rem; overflow-wrap: anywhere; }
+.srcaddrs ul { margin: 0.2rem 0 0; padding-left: 1.1rem; font: 0.78rem/1.4 ui-monospace, monospace; }
+.srcaddrs[hidden] { display: none; }
 @media (max-width: 640px) {
 	.srcpanel { left: 0; top: auto; width: auto; height: 65vh; border-left: none; border-top: 1px solid var(--line); }
 }

@@ -472,7 +472,9 @@ class DwarfReader {
 	}
 
 	// The line program at .debug_line+off: { files: [display path], rows:
-	// [addr, file, line, end] flat }. File numbers index `files` (0-based).
+	// [addr, file, line, kind] flat } with kind 0 a row, 2 a row with
+	// is_stmt (a recommended breakpoint address), 1 the end of a sequence.
+	// File numbers index `files` (0-based).
 	lineProgram(off, comp, filesOnly) {
 		const h = this.sec.readLine(off, 4);
 		const len = u32le(h, 0);
@@ -487,7 +489,7 @@ class DwarfReader {
 		const prog = p + hlen;
 		const minInst = b[p++];
 		if (ver >= 4) p++;
-		p++; // default_is_stmt
+		const defStmt = b[p++] ? 2 : 0;
 		const lineBase = (b[p++] << 24) >> 24, lineRange = b[p++], opBase = b[p++];
 		const stdLen = b.subarray(p, p + opBase - 1); p += opBase - 1;
 		const dirs = [], files = [];
@@ -543,7 +545,7 @@ class DwarfReader {
 		p = prog;
 		const end = 4 + len;
 		while (p < end) {
-			let addr = 0, file = 1, line = 1;
+			let addr = 0, file = 1, line = 1, stmt = defStmt;
 			for (;;) {
 				if (p >= end)
 					break;
@@ -552,7 +554,7 @@ class DwarfReader {
 					const a = op - opBase;
 					addr += Math.floor(a / lineRange) * minInst;
 					line += lineBase + (a % lineRange);
-					rows.push(addr, file, line, 0);
+					rows.push(addr, file, line, stmt);
 				} else if (op === 0) {
 					const l = uleb(), e = b[p];
 					if (e === 1) {
@@ -564,14 +566,15 @@ class DwarfReader {
 						addr = addrSize === 4 ? u32le(b, p + 1) : u32le(b, p + 1) + u32le(b, p + 5) * 2 ** 32;
 					p += l;
 				} else switch (op) {
-				case 1: rows.push(addr, file, line, 0); break;
+				case 1: rows.push(addr, file, line, stmt); break;
 				case 2: addr += uleb() * minInst; break;
 				case 3: line += sleb(); break;
 				case 4: file = uleb(); break;
 				case 5: uleb(); break;
 				case 8: addr += Math.floor((255 - opBase) / lineRange) * minInst; break;
 				case 9: addr += u16le(b, p); p += 2; break;
-				case 6: case 7: case 10: case 11: break;
+				case 6: stmt ^= 2; break;
+				case 7: case 10: case 11: break;
 				case 12: uleb(); break;
 				default: for (let i = 0; i < stdLen[op - 1]; i++) uleb();
 				}
@@ -1705,8 +1708,9 @@ function dwarfTable(units, toPhys, strings = [], strIdx = new Map()) {
 	for (const u of units)
 		n += u.rows.length / 4 + (u.cover ? u.cover.length : 0);
 	// Rows: addr, file, line, kind (0 end of sequence first at equal
-	// addresses, then the rows in program order: the last one wins).
-	let ra = new Float64Array(n), rf = new Int32Array(n), rl = new Uint32Array(n), rk = new Float64Array(n);
+	// addresses, then the rows in program order: the last one wins),
+	// is_stmt.
+	let ra = new Float64Array(n), rf = new Int32Array(n), rl = new Uint32Array(n), rk = new Float64Array(n), rs = new Uint8Array(n);
 	let m = 0, order = 0;
 	for (const u of units) {
 		const fid = u.files.map(sid);
@@ -1732,19 +1736,20 @@ function dwarfTable(units, toPhys, strings = [], strIdx = new Map()) {
 			rows.push(e, 0, 0, 1);
 		let start = true, ok = true;
 		for (let k = 0; k < rows.length; k += 4) {
+			const end = rows[k + 3] === 1;
 			if (start)
 				ok = toPhys(rows[k]) !== null;
-			start = !!rows[k + 3];
-			if (!rows[k + 3] && !inCover(rows[k]))
+			start = end;
+			if (!end && !inCover(rows[k]))
 				continue;
-			const pa = !ok ? null : rows[k + 3] ? (toPhys(rows[k] - 1) ?? -1) + 1 : toPhys(rows[k]);
+			const pa = !ok ? null : end ? (toPhys(rows[k] - 1) ?? -1) + 1 : toPhys(rows[k]);
 			if (!pa)
 				continue;
-			const end = rows[k + 3];
 			ra[m] = pa;
 			rf[m] = end ? -2 : fid[rows[k + 1]] ?? -1;
 			rl[m] = end ? 0 : rows[k + 2];
 			rk[m] = end ? 0 : 1 + order++;
+			rs[m] = rows[k + 3] === 2 ? 1 : 0;
 			m++;
 		}
 	}
@@ -1752,24 +1757,35 @@ function dwarfTable(units, toPhys, strings = [], strIdx = new Map()) {
 	for (let k = 0; k < m; k++)
 		idx[k] = k;
 	idx.sort((x, y) => ra[x] - ra[y] || rk[x] - rk[y]);
-	const la = [], lf = [], ll = [];
+	// One row per address (the last one there wins), then one per run of
+	// the same file:line. Breakpoint addresses of a line: each is_stmt row
+	// that does not continue an is_stmt row of the same line in the same
+	// sequence (one more statement on that line is not a new place to
+	// stop); lk marks a run whose first address is one, sx holds the others.
+	const ua = [], uf = [], ul = [], us = [], ue = [];
 	for (let q = 0; q < m; q++) {
 		const k = idx[q];
 		const a = ra[k], f = rf[k] === -2 ? -1 : rf[k], l = rf[k] === -2 ? 0 : rl[k];
-		const last = la.length - 1;
-		if (last >= 0 && la[last] === a) {
-			lf[last] = f;
-			ll[last] = l;
-			if (last > 0 && lf[last - 1] === f && ll[last - 1] === l) {
-				la.pop(); lf.pop(); ll.pop();
-			}
+		const last = ua.length - 1;
+		if (last >= 0 && ua[last] === a) {
+			uf[last] = f; ul[last] = l; us[last] = rs[k];
 			continue;
 		}
-		if (last >= 0 && lf[last] === f && ll[last] === l)
-			continue;
-		la.push(a); lf.push(f); ll.push(l);
+		ua.push(a); uf.push(f); ul.push(l); us.push(rs[k]); ue.push(rf[k] === -2 ? 1 : 0); // ue: a sequence ends here
 	}
-	ra = rf = rl = rk = null;
+	ra = rf = rl = rk = rs = null;
+	const la = [], lf = [], ll = [], lk = [], sx = [];
+	for (let q = 0; q < ua.length; q++) {
+		const f = uf[q], l = ul[q];
+		const stmt = us[q] && f >= 0 && l > 0 && !(q > 0 && !ue[q] && us[q - 1] && uf[q - 1] === f && ul[q - 1] === l);
+		const last = la.length - 1;
+		if (last >= 0 && lf[last] === f && ll[last] === l) {
+			if (stmt)
+				sx.push(ua[q]);
+			continue;
+		}
+		la.push(ua[q]); lf.push(f); ll.push(l); lk.push(stmt ? 1 : 0);
+	}
 	const rg = [];
 	for (const u of units) {
 		const fid = u.files;
@@ -1782,11 +1798,16 @@ function dwarfTable(units, toPhys, strings = [], strIdx = new Map()) {
 		}
 	}
 	rg.sort((x, y) => x[0] - y[0] || x[2] - y[2]);
-	return dwarfPack(strings, la, lf, ll, rg);
+	return dwarfPack(strings, la, lf, ll, rg, lk, sx);
 }
 
-function dwarfPack(strings, la, lf, ll, rg) {
+// lk: 1 where a line row's address is a breakpoint address (is_stmt), sx:
+// the breakpoint addresses inside rows (sorted). Tables decoded from a
+// version 1 shard or remembered from before have neither: every row start
+// counts then.
+function dwarfPack(strings, la, lf, ll, rg, lk, sx) {
 	const t = { strings, la: Float64Array.from(la), lf: Int32Array.from(lf), ll: Uint32Array.from(ll),
+		lk: Uint8Array.from(lk), sx: Float64Array.from(sx),
 		ra: new Float64Array(rg.length), rh: new Float64Array(rg.length), rd: new Uint8Array(rg.length),
 		rn: new Int32Array(rg.length), rf: new Int32Array(rg.length), rl: new Uint32Array(rg.length), maxLen: 0 };
 	rg.forEach((x, k) => {
@@ -1811,7 +1832,7 @@ function dwarfSlice(t, lo, hi) {
 		}
 		return v;
 	};
-	const la = [], lf = [], ll = [];
+	const la = [], lf = [], ll = [], lk = [];
 	let a = dwarfRow(t, lo);
 	if (a < 0)
 		a = 0;
@@ -1819,12 +1840,14 @@ function dwarfSlice(t, lo, hi) {
 		la.push(Math.max(lo, t.la[k]));
 		lf.push(sid(t.lf[k]));
 		ll.push(t.ll[k]);
+		lk.push(t.la[k] >= lo && t.lk && t.lk[k] ? 1 : 0); // the row in force at lo starts before it
 	}
+	const sx = Array.from(t.sx || []).filter((x) => x >= lo && x < hi);
 	const rg = [];
 	for (let k = 0; k < t.ra.length; k++)
 		if (t.ra[k] < hi && t.rh[k] > lo)
 			rg.push([t.ra[k], t.rh[k], t.rd[k], sid(t.rn[k]), sid(t.rf[k]), t.rl[k]]);
-	return dwarfPack(strings, la, lf, ll, rg);
+	return dwarfPack(strings, la, lf, ll, rg, lk, sx);
 }
 
 // Index of the line row in force at pa, or -1.
@@ -1883,6 +1906,98 @@ function dwarfEachLine(t, lo, hi, fn) {
 	}
 }
 
+// The code of file `path` in table t within [lo, hi), per line: Map line
+// -> { rows: [[a, b, breakpoint addresses (is_stmt) in [a, b)], ...], the
+// line rows naming it, calls: [[a, b, name, depth], ...], the ranges of
+// functions inlined by a call on it }. A table without is_stmt data (an
+// older shard, a unit kept from before) gives each row's start as its
+// breakpoint address and says so (noStmt).
+function dwarfFileAddrs(t, path, lo = 0, hi = Infinity, out = new Map()) {
+	const fi = new Set();
+	t.strings.forEach((s, k) => { if (s === path) fi.add(k); });
+	if (!fi.size)
+		return out;
+	const noStmt = !t.lk || !!t.noStmt;
+	const at = (l) => {
+		if (!out.has(l))
+			out.set(l, { rows: [], calls: [], noStmt: false });
+		return out.get(l);
+	};
+	for (let k = Math.max(0, dwarfRow(t, lo)); k < t.la.length && t.la[k] < hi; k++) {
+		if (!fi.has(t.lf[k]) || !t.ll[k])
+			continue;
+		const a = Math.max(lo, t.la[k]), b = Math.min(hi, k + 1 < t.la.length ? t.la[k + 1] : hi);
+		if (!(b > a))
+			continue;
+		const bp = [];
+		if (noStmt) {
+			if (t.la[k] >= lo)
+				bp.push(a);
+		} else {
+			if (t.lk[k] && t.la[k] >= lo)
+				bp.push(a);
+			let x = 0, y = t.sx.length;
+			while (x < y) { const q = (x + y) >> 1; if (t.sx[q] < a) x = q + 1; else y = q; }
+			for (; x < t.sx.length && t.sx[x] < b; x++)
+				if (t.sx[x] > a || !bp.length)
+					bp.push(t.sx[x]);
+		}
+		const e = at(t.ll[k]);
+		e.rows.push([a, b, bp]);
+		e.noStmt = e.noStmt || noStmt;
+	}
+	for (let q = 0; q < t.ra.length; q++)
+		if (fi.has(t.rf[q]) && t.rl[q] && t.ra[q] < hi && t.rh[q] > lo)
+			at(t.rl[q]).calls.push([t.ra[q], t.rh[q], t.strings[t.rn[q]] || null, t.rd[q]]);
+	return out;
+}
+
+// The code of file `path` over several tables (address shards, or compile
+// units with lo 0 and hi Infinity), any iterable of [lo, hi, t], per line:
+// Map line -> { rows, calls, bps, noStmt }. Rows are merged where one goes
+// on in the next shard, each inlined call is listed once, and bps are the
+// addresses a "Run to path:line" stops at: every breakpoint address of
+// its rows plus the start of every inlined call's range (code inlined by
+// a call on the line runs that line, and its first row usually names the
+// inlined function's line, not this one).
+function dwarfFileCode(tables, path) {
+	const acc = new Map();
+	for (const [lo, hi, t] of tables)
+		dwarfFileAddrs(t, path, lo, hi, acc);
+	const out = new Map();
+	for (const [line, e] of acc) {
+		e.rows.sort((x, y) => x[0] - y[0]);
+		const rows = [];
+		for (const r of e.rows) {
+			const last = rows[rows.length - 1];
+			if (last && last[1] === r[0])
+				last[1] = r[1], last[2] = last[2].concat(r[2]);
+			else
+				rows.push([r[0], r[1], r[2].slice()]);
+		}
+		const seen = new Map();
+		for (const c of e.calls)
+			seen.set(c.join("\0"), c);
+		const calls = [...seen.values()].sort((x, y) => x[0] - y[0] || x[3] - y[3]);
+		const bps = [...new Set([...rows.flatMap((r) => r[2]), ...calls.map((c) => c[0])])].sort((x, y) => x - y);
+		out.set(line, { rows, calls, bps, noStmt: e.noStmt });
+	}
+	return out;
+}
+
+// The file a user typed ("init/main.c", "main.c") among `paths`: { path }
+// for an exact name or a single one ending in "/" + it, else { why }.
+function dwarfResolvePath(paths, q) {
+	q = q.replace(/^\.?\//, "");
+	if (paths.includes(q))
+		return { path: q };
+	const hits = paths.filter((p) => p.endsWith("/" + q));
+	if (hits.length === 1)
+		return { path: hits[0] };
+	return { why: hits.length ? q + " is ambiguous: " + hits.slice(0, 5).join(", ") + (hits.length > 5 ? ", …" : "") :
+		"no source file " + q + " with code in this kernel's line table" };
+}
+
 // [lo, hi) of the outermost function (depth 0) covering pa, or null.
 function dwarfFunction(t, pa) {
 	let a = 0, b = t.ra.length;
@@ -1894,10 +2009,11 @@ function dwarfFunction(t, pa) {
 }
 
 // ---- shard files ----------------------------------------------------------
-// "MKBD" 1, strings (count, then NUL-terminated UTF-8), line rows (count,
-// then address delta, file+1 zigzag delta, line zigzag delta), ranges
-// (count, then start delta, length, depth, name+1, call file+1, call line),
-// all unsigned LEB128.
+// "MKBD" 2, strings (count, then NUL-terminated UTF-8), line rows (count,
+// then address delta, file+1 zigzag delta * 2 + lk, line zigzag delta),
+// ranges (count, then start delta, length, depth, name+1, call file+1,
+// call line), breakpoint addresses inside rows (count, then address
+// deltas), all unsigned LEB128. Version 1 had no lk bit and no sx.
 
 function dwarfEncode(t) {
 	const out = [];
@@ -1909,8 +2025,9 @@ function dwarfEncode(t) {
 			else { out.push(c); return; }
 		}
 	};
-	const zz = (v) => uv(v < 0 ? -2 * v - 1 : 2 * v);
-	out.push(0x4d, 0x4b, 0x42, 0x44, 1);
+	const zv = (v) => v < 0 ? -2 * v - 1 : 2 * v;
+	const zz = (v) => uv(zv(v));
+	out.push(0x4d, 0x4b, 0x42, 0x44, 2);
 	uv(t.strings.length);
 	const enc = new TextEncoder();
 	for (const s of t.strings) {
@@ -1922,7 +2039,7 @@ function dwarfEncode(t) {
 	let pa = 0, pf = 0, pl = 0;
 	for (let k = 0; k < t.la.length; k++) {
 		uv(t.la[k] - pa); pa = t.la[k];
-		zz(t.lf[k] + 1 - pf); pf = t.lf[k] + 1;
+		uv(zv(t.lf[k] + 1 - pf) * 2 + (t.lk[k] ? 1 : 0)); pf = t.lf[k] + 1;
 		zz(t.ll[k] - pl); pl = t.ll[k];
 	}
 	uv(t.ra.length);
@@ -1931,15 +2048,22 @@ function dwarfEncode(t) {
 		uv(t.ra[k] - pa); pa = t.ra[k];
 		uv(t.rh[k] - t.ra[k]); uv(t.rd[k]); uv(t.rn[k] + 1); uv(t.rf[k] + 1); uv(t.rl[k]);
 	}
+	uv(t.sx.length);
+	pa = 0;
+	for (const x of t.sx) {
+		uv(x - pa); pa = x;
+	}
 	return Uint8Array.from(out);
 }
 
 function dwarfDecode(b) {
-	if (b[0] !== 0x4d || b[1] !== 0x4b || b[2] !== 0x42 || b[3] !== 0x44 || b[4] !== 1)
-		throw new Error("not a DWARF shard (MKBD 1)");
+	const ver = b[4];
+	if (b[0] !== 0x4d || b[1] !== 0x4b || b[2] !== 0x42 || b[3] !== 0x44 || (ver !== 1 && ver !== 2))
+		throw new Error("not a DWARF shard (MKBD 1 or 2)");
 	let p = 5;
 	const uv = () => { let r = 0, s = 0, x; do { x = b[p++]; r += (x & 0x7f) * 2 ** s; s += 7; } while (x & 0x80); return r; };
-	const zz = () => { const v = uv(); return v % 2 ? -(v + 1) / 2 : v / 2; };
+	const unzig = (v) => v % 2 ? -(v + 1) / 2 : v / 2;
+	const zz = () => unzig(uv());
 	const strings = [];
 	for (let n = uv(); n > 0; n--) {
 		let e = p;
@@ -1948,15 +2072,22 @@ function dwarfDecode(b) {
 		p = e + 1;
 	}
 	const nl = uv();
-	const la = new Float64Array(nl), lf = new Int32Array(nl), ll = new Uint32Array(nl);
+	const la = new Float64Array(nl), lf = new Int32Array(nl), ll = new Uint32Array(nl), lk = new Uint8Array(nl);
 	let pa = 0, pf = 0, pl = 0;
 	for (let k = 0; k < nl; k++) {
 		pa += uv(); la[k] = pa;
-		pf += zz(); lf[k] = pf - 1;
+		if (ver === 1)
+			pf += zz();
+		else {
+			const v = uv();
+			lk[k] = v % 2;
+			pf += unzig(Math.floor(v / 2));
+		}
+		lf[k] = pf - 1;
 		pl += zz(); ll[k] = pl;
 	}
 	const nr = uv();
-	const t = { strings, la, lf, ll, ra: new Float64Array(nr), rh: new Float64Array(nr), rd: new Uint8Array(nr),
+	const t = { strings, la, lf, ll, lk, sx: null, ra: new Float64Array(nr), rh: new Float64Array(nr), rd: new Uint8Array(nr),
 		rn: new Int32Array(nr), rf: new Int32Array(nr), rl: new Uint32Array(nr), maxLen: 0 };
 	pa = 0;
 	for (let k = 0; k < nr; k++) {
@@ -1964,8 +2095,16 @@ function dwarfDecode(b) {
 		t.rh[k] = pa + uv(); t.rd[k] = uv(); t.rn[k] = uv() - 1; t.rf[k] = uv() - 1; t.rl[k] = uv();
 		t.maxLen = Math.max(t.maxLen, t.rh[k] - pa);
 	}
+	const ns = ver === 1 ? 0 : uv();
+	t.sx = new Float64Array(ns);
+	pa = 0;
+	for (let k = 0; k < ns; k++) {
+		pa += uv(); t.sx[k] = pa;
+	}
+	if (ver === 1)
+		t.noStmt = true;
 	return t;
 }
 
 if (typeof module !== "undefined")
-	module.exports = { dwarfScopeGroups, dwarfScopesAt, dwLocAt, dwarfLocalFrames, DwarfTypes, DWT, dwStrip, dwTypeSize, dwTypeName, dwWhere, dwPathIn, dwVarIndex, DwarfReader, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfFunction, dwarfRow, dwarfEachLine, dwarfEncode, dwarfDecode, dwDisplayPath };
+	module.exports = { dwarfScopeGroups, dwarfScopesAt, dwLocAt, dwarfLocalFrames, DwarfTypes, DWT, dwStrip, dwTypeSize, dwTypeName, dwWhere, dwPathIn, dwVarIndex, DwarfReader, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfFunction, dwarfRow, dwarfEachLine, dwarfFileAddrs, dwarfFileCode, dwarfResolvePath, dwarfEncode, dwarfDecode, dwDisplayPath };

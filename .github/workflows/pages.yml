@@ -104,7 +104,7 @@ jobs:
         cp "$x/boot/vmlinuz-6.1.0-50-686" "$d/bzImage"
         site/gen-symbols.py --trim "$x/usr/lib/debug/boot/vmlinux-6.1.0-50-686" "$d/symbols.json" debian-6.1-686
         site/gen-dwarf.js "$x/usr/lib/debug/boot/vmlinux-6.1.0-50-686" "$d/dwarf"
-        site/test_dwarf.py "$x/usr/lib/debug/boot/vmlinux-6.1.0-50-686" "$d/dwarf" --samples 5000 --types 2000 --cfi 5000 --locals 2000 --operands 2000 \
+        site/test_dwarf.py "$x/usr/lib/debug/boot/vmlinux-6.1.0-50-686" "$d/dwarf" --samples 5000 --types 2000 --cfi 5000 --locals 2000 --operands 2000 --lines 2000 \
           --strip debian/build/build_i386_none_686/ --strip /build/reproducible-path/linux-6.1.176/
         cat "$d"/dwarf/[0-9a-f]*.bin | gzip -9 | wc -c | sed 's/^/debian dwarf shards gzip: /'
         cat "$d"/dwarf/cfi-*.bin | gzip -9 | wc -c | sed 's/^/debian cfi shards gzip: /'
@@ -147,8 +147,8 @@ jobs:
         site/gen-dwarf.js "$g/hello/boot/high/kernel.elf" out/hello/dwarf
         site/gen-src.js out/minified-linux/dwarf "$g/minified" out/minified-linux/src --origin "the minified/ tree of commit $(echo "$GITHUB_SHA" | cut -c1-12)"
         site/gen-src.js out/hello/dwarf "$g/hello" out/hello/src --origin "the hello/ tree of commit $(echo "$GITHUB_SHA" | cut -c1-12)"
-        site/test_dwarf.py "$g/minified/vmlinux" out/minified-linux/dwarf --samples 5000 --types 2000 --cfi 5000 --locals 3000 --operands 2000 --strip "$(realpath "$g/minified")/"
-        site/test_dwarf.py "$g/hello/boot/high/kernel.elf" out/hello/dwarf --samples 500 --cfi 200 --locals 200 --operands 200 --strip "$(realpath "$g/hello")/"
+        site/test_dwarf.py "$g/minified/vmlinux" out/minified-linux/dwarf --samples 5000 --types 2000 --cfi 5000 --locals 3000 --operands 2000 --lines 3000 --strip "$(realpath "$g/minified")/"
+        site/test_dwarf.py "$g/hello/boot/high/kernel.elf" out/hello/dwarf --samples 500 --cfi 200 --locals 200 --operands 200 --lines 200 --strip "$(realpath "$g/hello")/"
         site/test_dwarf.py --eh-frame 2000
         # The -g ELFs for the browser test's llvm-symbolizer checks (not deployed).
         mkdir -p debug-elfs
@@ -285,7 +285,7 @@ jobs:
         suites:
         - boot,symbols,debugger,misc,touch,tasks_minified,hello,firstlook
         - debian,dwarf,dwarf_import,runto,initramfs,coverage
-        - tasks,operands
+        - tasks,operands,lineaddr
         - types,covtree,unwind
     name: browser-test (${{ matrix.suites }})
     steps:

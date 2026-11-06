@@ -1185,7 +1185,8 @@ let countStart = 0;      // realNow() when the count began
 let countMs = 0;         // stepping time spent counting
 let countNote = "";
 let startPaused = false; // ?paused=1: stop at the reset vector
-let runTo = -1;          // physical address "Run to" stops at, or -1
+let runTo = null;        // Set of physical addresses "Run to" stops at, or null
+let runToLabel = "";     // what they are ("0x1234", "init/main.c:1000")
 let entryPhase = false;  // stepping at full stepping speed to the kernel entry, then slow
 let prefSpeed = "1000";  // speed after the entry: ?speed=, else the remembered choice, else 1k/s
 const SPEED_KEY = "mkb-speed";
@@ -1206,13 +1207,13 @@ let flashes = 0;
 const speed = () => $("dbg_speed").value;  // "full" or instructions per second
 // Fast stepping (no animation): full speed while counting, Run to, or the
 // way from reset to the kernel entry.
-const fastStepping = () => speed() === "full" || runTo >= 0 || entryPhase;
+const fastStepping = () => speed() === "full" || runTo !== null || entryPhase;
 
 function resetCounters() {
 	counting = false;
 	countMs = 0;
 	countNote = "";
-	runTo = -1;
+	runTo = null;
 	prevRegs = null;
 	flashes = 0;
 	$("pages").dataset.flashes = 0;
@@ -1224,7 +1225,7 @@ function countDone() {
 }
 
 function wantStepped() {
-	return !!stepper && (speed() !== "full" || counting || runTo >= 0 || entryPhase);
+	return !!stepper && (speed() !== "full" || counting || runTo !== null || entryPhase);
 }
 
 function stopDriver() {
@@ -1271,7 +1272,7 @@ async function pause(note) {
 	if (emulator.is_running())
 		await emulator.stop();
 	runState = "paused";
-	runTo = -1;
+	runTo = null;
 	if (entryPhase && stepper && stepper.sinceEntry >= 0)
 		finishEntry(); // a Run to (stepped) went past the kernel entry
 	if (note !== undefined)
@@ -1303,7 +1304,7 @@ function driverTick() {
 	const now = realNow();
 	let reason;
 	const t0 = now;
-	if (entryPhase && runTo < 0) {
+	if (entryPhase && runTo === null) {
 		const at = stepper.sinceEntry >= 0 || stepper.nextPhys() === V86_KERNEL_ADDR;
 		reason = at ? "addr" : stepper.run(Infinity, V86_KERNEL_ADDR, SLICE_MS);
 		if (reason === "addr") {
@@ -1311,8 +1312,8 @@ function driverTick() {
 			scheduleDriver();
 			return;
 		}
-	} else if (speed() === "full" || runTo >= 0) {
-		reason = stepper.run(Infinity, runTo, SLICE_MS);
+	} else if (speed() === "full" || runTo !== null) {
+		reason = stepper.run(Infinity, runTo || -1, SLICE_MS);
 	} else {
 		const rate = Number(speed());
 		const dt = Math.min(250, prevTick ? now - prevTick : 16);
@@ -1325,7 +1326,7 @@ function driverTick() {
 	if (counting)
 		countMs += realNow() - t0;
 	if (reason === "addr") {
-		pause("Stopped at " + hex(stepper.nextPhys()) + " (Run to).");
+		pause(runToStopped(runToLabel, runTo.size, "stepped"));
 		return;
 	}
 	if (reason === "hlt" && stepper.dead())
@@ -1338,7 +1339,7 @@ function driverTick() {
 	if (counting && fastStepping() && countMs > COUNT_LIMIT_MS) {
 		counting = false;
 		countNote = "Gave up after " + Math.round(countMs / 1000) + " s of stepping.";
-		if (speed() === "full" && runTo < 0) {
+		if (speed() === "full" && runTo === null) {
 			updateDebugUi();
 			resume();
 			return;
@@ -2071,7 +2072,7 @@ function updateDebugUi() {
 			"slow motion " + $("dbg_speed").selectedOptions[0].text) + where,
 		paused: "paused" + where }[runState];
 	if (ffActive && ffInfo)
-		st.textContent = (ffInfo.runTo !== undefined ? "running to " + hex(ffInfo.runTo) : "fast-forwarding to " + ffInfo.name) +
+		st.textContent = (ffInfo.runTo !== undefined ? "running to " + ffInfo.runTo : "fast-forwarding to " + ffInfo.name) +
 			" with the JIT: " + num(stepper.steps - (ffInfo.start || 0)) + " instructions";
 	st.dataset.state = ffActive ? "ff" : runState;
 	st.title = st.textContent;
@@ -2123,38 +2124,71 @@ function parseAddr(text) {
 	return off > 0 && v >= off ? v - off : v;
 }
 
+// "Stopped at 0x… (Run to …)" for a stop at one of n targets.
+function runToStopped(label, n, how) {
+	const pa = stepper.nextPhys(), w = srcHere(pa);
+	return "Stopped at " + hex(pa) + (w ? " " + w.split("  ")[0] : "") + " (Run to " + label +
+		(n > 1 ? ", the first of its " + n + " breakpoint addresses reached" : "") + ": " + how + ").";
+}
+
+// What the Run to field names: { targets: [physical], label } or { why }.
+// A hex address (physical or kernel virtual), or file:line (the
+// breakpoint addresses of that line's code: dbgLineCode).
+async function runToTargets(text) {
+	const m = /^(.*\D.*):(\d+)$/.exec(text);
+	if (m) {
+		$("dbg_status").textContent = "Finding the code of " + text + "…";
+		const r = await dbgLineCodeWait(m[1], Number(m[2]));
+		if (r.state !== "ok")
+			return { why: "Run to " + text + ": " + r.why };
+		return r.bps.length ? { targets: r.bps, label: r.path + ":" + r.line } : { why: "Run to " + text + ": no breakpoint address" };
+	}
+	const phys = parseAddr(text);
+	return phys < 0 ? { why: "Not a hex address or file:line: " + text } : { targets: [phys], label: hex(phys) };
+}
+
+// "Run to file:line" from the Source panel: the Debugger's own Run to.
+function runToLine(where) {
+	$("dbg_addr").value = where;
+	showTab("debugger");
+	doRunTo();
+}
+
 async function doRunTo() {
 	if (!stepper)
 		return;
-	const phys = parseAddr($("dbg_addr").value);
-	if (phys < 0) {
-		$("dbg_status").textContent = "Not a hex address: " + $("dbg_addr").value;
+	const want = await runToTargets($("dbg_addr").value.trim());
+	if (!want.targets) {
+		$("dbg_status").textContent = want.why;
 		return;
 	}
+	const { targets, label } = want;
+	const at = new Set(targets);
 	if (runState !== "paused")
 		await pause();
-	// Fast run-to (JIT + a breakpoint) for kernel code: first to the
+	// Fast run-to (JIT + breakpoints) for kernel code: first to the
 	// kernel's entry when it has not run yet (its code is not in memory
-	// before the decompressor), then to the target.
+	// before the decompressor), then to the targets.
 	const t = ffEnabled() && ffTarget();
 	// Kernel code in another section than the entry's (.init.text: e.g.
 	// start_kernel) gets no breakpoint (that memory is freed and reused
 	// after boot), but BIOS, setup and the decompressor still run on the
 	// JIT: stepping them took minutes for the Debian sample.
 	const inText = (a) => !!(symbols && symbols.sections.some((s) => s.class === "text" && a >= s.paddr && a < s.paddr + s.size));
-	const sameSec = t && codeRange(t.phys)[0] <= phys && phys < codeRange(t.phys)[1];
-	if (t && (sameSec || inText(phys) && phys >= V86_KERNEL_ADDR)) {
+	const sameSec = t && targets.every((a) => codeRange(t.phys)[0] <= a && a < codeRange(t.phys)[1]);
+	if (t && (sameSec || targets.every((a) => inText(a) && a >= V86_KERNEL_ADDR))) {
 		ffInfo = null;
-		$("dbg_status").textContent = "Running to " + hex(phys) + " with the JIT...";
+		$("dbg_status").textContent = "Running to " + label + " with the JIT...";
 		let ok = true;
 		if (stepper.sinceEntry < 0 || stepper.nextPhys() < V86_KERNEL_ADDR)
 			ok = await fastForward(t.phys, t.name);
 		if (ok && entryPhase && stepper.sinceEntry >= 0)
 			finishEntry(); // the entry phase ends here, not in driverTick
-		if (ok && sameSec && !ffAbort && phys !== t.phys)
-			ok = await fastRunTo(phys);
-		if (ok && stepper.nextPhys() === phys) {
-			pause("Stopped at " + hex(phys) + (sameSec ? " (Run to, JIT and a breakpoint)." : " (Run to: JIT to the kernel entry, then stepped)."));
+		if (ok && sameSec && !ffAbort && !at.has(stepper.nextPhys()))
+			ok = await fastRunTo(targets, label);
+		if (ok && at.has(stepper.nextPhys())) {
+			pause(runToStopped(label, targets.length, sameSec ? "JIT and " + (targets.length > 1 ? "breakpoints" : "a breakpoint") :
+				"JIT to the kernel entry, then stepped"));
 			return;
 		}
 		if (ffAbort) {
@@ -2162,8 +2196,9 @@ async function doRunTo() {
 			return;
 		}
 	}
-	runTo = phys;
-	$("dbg_status").textContent = "Running to physical " + hex(phys) + "...";
+	runTo = at;
+	runToLabel = label;
+	$("dbg_status").textContent = "Running to " + (targets.length > 1 ? label + " (" + targets.length + " addresses)" : "physical " + hex(targets[0])) + "...";
 	resume();
 }
 

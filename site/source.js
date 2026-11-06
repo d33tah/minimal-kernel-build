@@ -469,7 +469,7 @@ function openSource(pa) {
 	const loc = r.frames[0];
 	if (!loc.file || !loc.line || srcFile(loc.file).state === "none")
 		return;
-	srcPanel = { pa, fn: loc.func, path: loc.file, line: loc.line };
+	srcPanel = { pa, fn: loc.func, path: loc.file, line: loc.line, pick: loc.line };
 	renderSourcePanel();
 	$("src_panel").hidden = false;
 	const cur = $("src_body").querySelector(".here");
@@ -576,6 +576,7 @@ function renderSourcePanel() {
 	const file = srcFile(path);
 	$("src_title").textContent = srcPanel.whole ? path + " (whole file)" : (fn || "?") + " — " + path + (pl.state === "ok" ? ":" + pl.first + "–" + pl.last : "");
 	if (pl.state !== "ok" || file.state !== "ok") {
+		$("src_addrs").hidden = true;
 		body.textContent = pl.state === "loading" || file.state === "loading" ? "reading " + (pl.state === "loading" ? "DWARF" : path) + "…" :
 			pl.state === "none" ? pl.why : file.why;
 		body.dataset.code = body.dataset.executed = 0;
@@ -595,10 +596,12 @@ function renderSourcePanel() {
 		const mark = c ? "┆" : run.has(l) ? "●" : code.has(l) ? "○" : " ";
 		const title = c ? ' title="' + escHtml("Line " + l + " is part of the statement at lines " + c.start + "–" + c.end + ", which " +
 			(c.ran ? "ran" : "has not run") + ". Not counted: only lines with code of their own in the line table are counted, here, in the Coverage tab and in the lcov export.") + '"' : "";
-		out.push('<span class="' + cls + (l === line ? " here" : "") + '"' + title + ">" + srcLocHtml(String(l).padStart(5, " ")) + " " + mark + " " +
+		out.push('<span class="' + cls + (l === line ? " here" : "") + (l === srcPanel.pick ? " pick" : "") + '" data-line="' + l + '"' + title + ">" + srcLocHtml(String(l).padStart(5, " ")) + " " + mark + " " +
 			'<span class="srctext">' + escHtml(file.lines[l - 1]) + "</span></span>");
 	}
 	body.innerHTML = out.join("\n");
+	srcPanel.cont = sv.cont;
+	renderLineAddrs();
 	body.dataset.state = "ok";
 	body.dataset.code = code.size;
 	body.dataset.executed = run.size;
@@ -608,6 +611,90 @@ function renderSourcePanel() {
 	$("src_info").textContent = run.size + " of " + code.size + " lines with code have executed (● ran, ○ not yet, ┆ more lines of the statement above or below, not counted)" +
 		(!stepper ? "; boot a kernel to see coverage" : !cov.tint ? "; " + cov.why : cov.partial ? "; v86's JIT has run since the kernel entry and records nothing, so ○ lines may have run" : "") +
 		". Recorded while stepping" + (srcPanel.whole ? ", every function of the file" : "") + ". Source: " + (SRC.info || SRC.mode) + "." + note;
+}
+
+// The panel's picked line (a click on a line, or the line a listing's C
+// line opened): every address of its code (each inlined copy and each
+// inlined call made on it, dbgLineCode) with a jump to it, and "Run to
+// file:line". A line that continues a statement shows its first line's.
+const SRC_ADDRS_SHOWN = 40;
+
+function renderLineAddrs() {
+	const box = $("src_addrs");
+	const pick = srcPanel && srcPanel.pick;
+	box.hidden = !pick;
+	if (!pick)
+		return;
+	const c = srcPanel.cont && srcPanel.cont.get(pick);
+	const line = c ? c.start : pick;
+	const r = dbgLineCode(srcPanel.path, line);
+	const key = [srcPanel.path, pick, r.state, DBG.version, !!stepper].join("\0");
+	if (box.dataset.key === key)
+		return;
+	box.dataset.key = key;
+	box.textContent = "";
+	box.dataset.state = r.state;
+	box.dataset.line = line;
+	box.dataset.path = r.path || srcPanel.path;
+	const where = (r.path || srcPanel.path) + ":" + line;
+	const head = document.createElement("div");
+	head.append(srcLocEl(where), c ? " (line " + pick + " continues this statement): " : ": ");
+	box.append(head);
+	if (r.state !== "ok") {
+		head.append(r.state === "loading" ? r.why || "reading DWARF…" : r.why);
+		box.dataset.bps = box.dataset.rows = box.dataset.calls = "[]";
+		return;
+	}
+	box.dataset.bps = JSON.stringify(r.bps);
+	box.dataset.rows = JSON.stringify(r.rows.map(([a, b]) => [a, b]));
+	box.dataset.calls = JSON.stringify(r.calls.map(([a, b, name]) => [a, b, name]));
+	const outer = (pa) => {
+		const f = dbgFrames(pa, true);
+		return f.state === "ok" ? f.frames : null;
+	};
+	const fns = new Set(r.rows.map(([a]) => { const f = outer(a); return f ? f[f.length - 1].func : "?"; }));
+	head.append(r.rows.length + " range" + (r.rows.length === 1 ? "" : "s") + " of its own code" +
+		(fns.size > 1 ? " in " + fns.size + " functions (inlined copies)" : "") +
+		(r.calls.length ? ", " + r.calls.length + " range" + (r.calls.length === 1 ? "" : "s") + " of code inlined by a call on it" : "") + ". ");
+	const run = document.createElement("button");
+	run.type = "button";
+	run.id = "src_runto";
+	run.textContent = "Run to " + where;
+	run.disabled = !stepper;
+	run.title = !stepper ? "Boot a kernel first" : "Run until the kernel reaches the first of this line's " + r.bps.length +
+		" breakpoint address" + (r.bps.length === 1 ? "" : "es") + " (the is_stmt rows of the line table, and where each inlined call starts)" +
+		(r.noStmt ? ". This line table has no is_stmt flags: every range's start counts" : "");
+	run.addEventListener("click", () => runToLine(where));
+	head.append(run);
+	const list = document.createElement("ul");
+	const item = (a, b, text, title) => {
+		const li = document.createElement("li");
+		const btn = symButton(hex(a), a, "Show this code in the Page tab");
+		btn.dataset.addr = a;
+		const s = symbols && symbolAt(symbols.symbols, a);
+		li.append(btn, " " + (s ? s.name + (a > s.paddr ? "+0x" + (a - s.paddr).toString(16) : "") : "") + " (" + (b - a) + " byte" + (b - a === 1 ? "" : "s") + ")" + text);
+		li.title = title;
+		list.append(li);
+	};
+	const all = [...r.rows.map((x) => ["row", x]), ...r.calls.map((x) => ["call", x])].sort((x, y) => x[1][0] - y[1][0]);
+	for (const [kind, x] of all.slice(0, SRC_ADDRS_SHOWN)) {
+		if (kind === "row") {
+			const [a, b, bp] = x;
+			const f = outer(a);
+			const into = f && f.length > 1 ? "; inlined into " + (f[f.length - 1].func || "?") : "";
+			item(a, b, into + (bp.length ? "; breakpoint" + (bp.length > 1 ? "s at " + bp.map(hex).join(", ") : bp[0] === a ? " here" : " at " + hex(bp[0])) :
+				"; no is_stmt row here"), "Code of " + where + (f ? "\n" + dbgChainText(f) : ""));
+		} else {
+			const [a, b, name] = x;
+			item(a, b, "; " + (name || "?") + "() inlined by the call on this line; breakpoint at its start", "Code of " + (name || "?") + ", inlined at " + where);
+		}
+	}
+	if (all.length > SRC_ADDRS_SHOWN) {
+		const li = document.createElement("li");
+		li.textContent = "… and " + (all.length - SRC_ADDRS_SHOWN) + " more (Run to sets all " + r.bps.length + " breakpoints)";
+		list.append(li);
+	}
+	box.append(list);
 }
 
 // The Debugger's "source" rows: the C line at EIP and, for inlined code,
@@ -658,6 +745,17 @@ function renderSourceRows(box, phys, sym) {
 
 function initSource() {
 	$("src_close").addEventListener("click", () => { $("src_panel").hidden = true; srcPanel = null; });
+	$("src_body").addEventListener("click", (ev) => {
+		const row = ev.target.closest("[data-line]");
+		if (!row || !srcPanel || window.getSelection().toString())
+			return;
+		srcPanel.pick = Number(row.dataset.line);
+		for (const x of $("src_body").querySelectorAll(".pick"))
+			x.classList.remove("pick");
+		row.classList.add("pick");
+		renderLineAddrs();
+		row.scrollIntoView({ block: "nearest" }); // the address list above can push it out of view
+	});
 	for (const id of ["listing", "context"])
 		$(id).addEventListener("click", (ev) => {
 			const line = ev.target.closest(".src");

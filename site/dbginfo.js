@@ -24,7 +24,7 @@ function dbgFresh(mode, why) {
 	if (DBG.typesWorker)
 		DBG.typesWorker.terminate();
 	DBG = { mode, why, listeners: DBG.listeners, version: (DBG.version || 0) + 1, tables: new Map(), pending: new Set(),
-		index: null, info: "", cfiTables: new Map(), cfiPending: new Set(), localTables: new Map() };
+		index: null, info: "", cfiTables: new Map(), cfiPending: new Set(), localTables: new Map(), lineCode: new Map(), linesAsked: new Set() };
 }
 
 function dbgChanged() {
@@ -153,8 +153,14 @@ async function dbgImport(file, offset, key) {
 			if (key)
 				dbgIdbOp("readwrite", (s) => s.put(m.table, key + ":unit:" + m.i));
 			dbgChanged();
+		} else if (m.type === "lines") {
+			DBG.lineCode.set(m.q, m.why ? { state: "none", why: m.why } : { state: "ok", path: m.path, code: m.code,
+				how: m.units + " compile unit" + (m.units === 1 ? "" : "s") + " of the imported vmlinux name " + m.path });
+			dbgChanged();
 		} else if (m.type === "error") {
-			if (m.i !== undefined) {
+			if (m.q !== undefined) {
+				DBG.lineCode.set(m.q, { state: "none", why: "could not read the line tables: " + m.message });
+			} else if (m.i !== undefined) {
 				DBG.tables.set(m.i, { failed: m.message });
 				DBG.pending.delete(m.i);
 			} else {
@@ -628,6 +634,78 @@ function dbgFunction(pa) {
 		a = b;
 	}
 	return { state: "ok", lo, hi, rows };
+}
+
+// ---- line -> address ----------------------------------------------------------
+
+// The code of a source file per line (dwarf.js dwarfFileCode), for the
+// Source panel's address list and "Run to file:line": { state: "ok", path,
+// code: Map line -> { rows, calls, bps, noStmt }, how } or the state of the
+// load. q: the file as shown or as typed ("main.c" if only one file is
+// called that). Shipped kernels: the shards files.json lists for the file;
+// an import: the Worker decodes every unit whose line program names it.
+function dbgFileCode(q) {
+	if (!dbgHas())
+		return { state: "none", why: DBG.why };
+	const hit = DBG.lineCode.get(q);
+	if (hit)
+		return hit;
+	if (DBG.mode === "shards") {
+		const fl = dbgFiles();
+		if (fl.state !== "ok")
+			return fl;
+		const F = fl.F;
+		if (!F.paths)
+			F.paths = F.files.map((f) => f[0]);
+		const p = dwarfResolvePath(F.paths, q);
+		if (!p.path) {
+			DBG.lineCode.set(q, { state: "none", why: p.why });
+			return DBG.lineCode.get(q);
+		}
+		const size = 2 ** F.shardBits;
+		const shards = F.files[F.fileIx.get(p.path)][2];
+		const tables = shards.map((s) => [s * size, (s + 1) * size, dbgTableAt(s * size)]);
+		const bad = tables.find((x) => x[2].state === "none");
+		if (bad)
+			return bad[2];
+		const wait = tables.filter((x) => x[2].state !== "ok").length;
+		if (wait)
+			return { state: "loading", why: "reading the line tables of " + p.path + " (" + wait + " of " + shards.length + " shards to go)…" };
+		const res = { state: "ok", path: p.path, code: dwarfFileCode(tables.map(([lo, hi, r]) => [lo, hi, r.t]), p.path),
+			how: "the line table shards that hold code of " + p.path + " (" + shards.length + ")" };
+		DBG.lineCode.set(q, res);
+		return res;
+	}
+	if (!DBG.worker)
+		return { state: "none", why: "the imported vmlinux is not open since the reload: import it again to find the code of a line" };
+	if (!DBG.linesAsked.has(q)) {
+		DBG.linesAsked.add(q);
+		DBG.worker.postMessage({ type: "lines", q });
+	}
+	return { state: "loading", why: "reading the line tables of the compile units that name " + q + "…" };
+}
+
+// The code of path:line: { state: "ok", path, line, rows, calls, bps,
+// noStmt, how } (see dwarf.js dwarfFileCode) or loading / none.
+function dbgLineCode(q, line) {
+	const r = dbgFileCode(q);
+	if (r.state !== "ok")
+		return r;
+	const e = r.code.get(line);
+	if (!e)
+		return { state: "none", path: r.path, line, why: r.path + ":" + line + " has no code in the line table (a comment, a declaration, or code the compiler left out or merged into another line)" };
+	return { state: "ok", path: r.path, line, how: r.how, ...e };
+}
+
+// dbgLineCode once loaded (or timeoutMs passed).
+async function dbgLineCodeWait(q, line, timeoutMs = 120000) {
+	const t0 = Date.now();
+	for (;;) {
+		const r = dbgLineCode(q, line);
+		if (r.state !== "loading" || Date.now() - t0 > timeoutMs)
+			return r.state === "loading" ? { state: "none", why: "gave up " + r.why } : r;
+		await new Promise((res) => setTimeout(res, 50));
+	}
 }
 
 // "init/main.c:73" or "no line information" (line 0 is code the compiler

@@ -623,8 +623,9 @@ class Stepper {
 	// hlt with IF clear: only an NMI or reset wakes it.
 	dead() { return this.halted() && !(this.cpu.get_eflags() & 0x200); }
 
-	// Run up to n instructions. Stops early at stopPhys (before executing
-	// the instruction there, unless it is the first one), when the CPU
+	// Run up to n instructions. Stops early at stopPhys, an address or a
+	// Set of them (before executing the instruction there, unless it is
+	// the first one), when the CPU
 	// halts, when a milestone is reached, or after budgetMs. Returns a
 	// reason: "count", "addr", "hlt", "milestone", "time".
 	run(n, stopPhys = -1, budgetMs = Infinity) {
@@ -637,6 +638,7 @@ class Stepper {
 		const res = this.res >> 2;
 		const seen = this.seen, lo = this.kernelLo, hi = this.kernelHi;
 		const t0 = realNow();
+		const stopSet = stopPhys instanceof Set ? stopPhys : null;
 		for (let i = 0; i < n; i++) {
 			if (i32.length === 0) { // the buffer was detached by a memory.grow
 				i32 = new Int32Array(mem.buffer);
@@ -674,7 +676,7 @@ class Stepper {
 			if (i32[res] !== 0)
 				continue; // fetch faulted: #PF delivered, nothing executed
 			const phys = (i32[EIP_PHYS] ^ eip) >>> 0;
-			if (phys === stopPhys && i > 0) {
+			if ((stopSet ? stopSet.has(phys) : phys === stopPhys) && i > 0) {
 				i32[IP] = eip;
 				return "addr";
 			}

@@ -166,7 +166,7 @@
     <span class="group"><button id="dbg_stepn" type="button" disabled title="Execute this many instructions">Step</button>
       <input id="dbg_n" value="100" size="7" inputmode="numeric" aria-label="instructions to step"></span>
     <span class="group"><button id="dbg_runto" type="button" disabled>Run to</button>
-      <input id="dbg_addr" value="0x100000" size="11" aria-label="address to run to"></span><span class="tip" tabindex="0" role="button" title="Step until the next instruction is at this address. Hex, physical, or a kernel virtual address (minus the kernel's virtual offset from symbols.json, 0xC0000000 for Linux).">?</span>
+      <input id="dbg_addr" value="0x100000" size="11" aria-label="address or file:line to run to"></span><span class="tip" tabindex="0" role="button" title="Step until the next instruction is at this address. Hex, physical, or a kernel virtual address (minus the kernel's virtual offset from symbols.json, 0xC0000000 for Linux). Or a source line, file:line (init/main.c:1000, or main.c:1000 when one file has that name): stops at the first of the line's breakpoint addresses the kernel reaches (the line table's is_stmt rows of that line, in every inlined copy, and the start of each call inlined on it). Clicking a line in the Source panel lists them.">?</span>
   </div>
   <p id="dbg_status" class="note mono" role="status"></p>
   <div id="regs" class="regs mono"></div>
@@ -272,6 +272,7 @@
 <aside id="src_panel" class="srcpanel" hidden aria-label="Source">
   <div class="scan"><b id="src_title"></b> <button id="src_close" type="button">Close</button></div>
   <p id="src_info" class="note"></p>
+  <div id="src_addrs" class="note srcaddrs" hidden></div>
   <pre id="src_body"></pre>
 </aside>
 

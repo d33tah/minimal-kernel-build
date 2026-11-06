@@ -399,6 +399,40 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   against gdb on a core of the pause, and that both listings name the
   same lines alike. No new data files: it uses the types, CFI and locals
   shards the other features fetch.
+- **Line to address.** Clicking a line in the Source panel (or a C line
+  of a listing, which opens the panel at that line) lists the addresses
+  of its code above the source: every range whose line table row is that
+  line, in every function it was inlined into ("inlined into X"), and
+  every range of a function inlined by a call on that line, each a
+  button that opens the Page tab there, with its symbol+offset, size and
+  which addresses are breakpoint addresses. A line that continues a
+  multi-line statement shows its first line's code; a line without code
+  says so. "Run to file:line" (the panel's button, or `init/main.c:973`
+  or `main.c:973` typed in the Debugger's Run to field) stops at the
+  first of the line's breakpoint addresses the kernel reaches: the
+  line table's is_stmt rows of that line (one per run of rows of the
+  same line, as debuggers do; a row that only continues an is_stmt row
+  of the same line in the same sequence is not a new stop) and the start
+  of each range of code inlined by a call on it (its first row names
+  the inlined function's line). Run to uses the same JIT and breakpoint
+  rules as an address (HLT bytes at all of them when they are in the
+  entry's code section, only once the build's code is there; otherwise
+  the JIT to the entry, then stepping until any of them). Data: the line
+  shards (format MKBD 2) carry the is_stmt flag per row and the breakpoint
+  addresses inside rows (`dwarf.js dwarfTable`, `dwarfFileCode`); the page
+  reads the shards files.json lists for the file. An imported vmlinux:
+  the Worker finds the compile units whose line program names the file
+  and decodes them one at a time (the result is kept per file until the
+  next import). `test_dwarf.py --lines N` (`gen-dwarf.js --lines`) checks
+  the lines llvm-symbolizer names at N random addresses: each address is
+  in a listed range, the first and last byte of listed ranges and the
+  start of listed inlined calls are that line for llvm-symbolizer, every
+  breakpoint address is an is_stmt row of the line in llvm-dwarfdump
+  --debug-line, and every is_stmt row of the line is a breakpoint address
+  unless it continues one (local runs: minified 1,458/1,458 lines,
+  Debian 1,878/1,878). Shard sizes grew by 490 B for the minified Linux
+  (+459 B gzip) and 99,957 B for Debian (+120,363 B gzip, about 0.8 KB per
+  64 KiB shard).
 - **Coverage tab.** All the kernel's code as a tree of directories, files
   and functions, each with lines run / lines with code and instructions
   run / instructions, a bar, sortable (name, lines run %, lines not run,
@@ -723,7 +757,9 @@ JavaScript drives the CPU:
 - **Pause / Continue / Step / Step N / Run to.** Run to takes a hex
   address, physical or kernel-virtual (minus the virtual-physical offset
   of `symbols.json`, 0xC0000000 for the minified Linux, 0 for hello), and
-  stops before executing the instruction there. `?paused=1` starts paused
+  stops before executing the instruction there; or a source line,
+  file:line, and stops at the first of its breakpoint addresses (see
+  "Line to address"). `?paused=1` starts paused
   at the reset vector.
 
 The end of the kernel: both kernels' init ends; hello runs `cli; hlt`,
@@ -958,6 +994,7 @@ browser-test matrix job named by its suites):
 | D6 task names | suites tasks (Debian, every task vs task_struct read with gdb's offsets), tasks_minified | tasks; boot,... |
 | D7 minified and hello parity | `check-code-identity.py --self-test` (-g build's code equals the shipped kernel), `test_kernel_data.py` (every kernel has every feature's files); suite hello | kernels; site; boot,... |
 | A1 memory operands named | `test_dwarf.py --operands` (absolute vs gdb info symbol, stack slots vs gdb on a core at the instruction); suite operands (minified and Debian pauses: names with an address vs gdb on a core of the pause, Debugger and Page tab alike, tooltips, 390 px) | kernels; tasks,operands |
+| A2 line to address | `test_dwarf.py --lines` (listed ranges and inlined calls vs llvm-symbolizer, breakpoint addresses vs llvm-dwarfdump is_stmt rows; Debian 2,000, minified 3,000, hello 200 sampled addresses), `test_kernel_data.py` (shards in MKBD 2, breakpoint count); suite lineaddr (minified and Debian: Source panel list, its Run to and a typed main.c:LINE stop where llvm-symbolizer names the line, incl. a line whose code is all inlined; list jumps to the Page tab; the listing's C line lists the same; import of the minified -g vmlinux gives the same breakpoints and Run to works; 390 px light and dark) | kernels; site; tasks,operands,lineaddr |
 | D8 help and first look | `check-ids.py` (no duplicate ids); suite firstlook (every kernel incl. Debian with its initramfs and an imported vmlinux: explanations present, entry line, JIT gap, Coverage notes, no sideways scroll at 390 px light and dark) | site; boot,...,firstlook |
 
 ## Testing

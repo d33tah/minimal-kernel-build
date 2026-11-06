@@ -160,9 +160,9 @@ async function fastForward(target, name) {
 	return ok;
 }
 
-// Run to `phys` with a software breakpoint: a HLT byte at the target, the
-// JIT runs, and when the CPU halts right after it the byte is put back and
-// EIP set to the target. The kernel's code must already be in memory.
+// Run to with software breakpoints: a HLT byte at each target, the JIT
+// runs, and when the CPU halts right after one the bytes are put back and
+// EIP set to that target. The kernel's code must already be in memory.
 // The build's bytes of the instruction at phys (disasm.json), or null.
 function expectedBytes(phys) {
 	if (!disasm || !disasm.insns || typeof insnIndex !== "function")
@@ -177,57 +177,64 @@ function expectedBytes(phys) {
 	return out;
 }
 
-async function fastRunTo(phys) {
+// targets: the physical addresses to stop at (the first one reached
+// wins: "Run to file:line" sets one per breakpoint address of the line);
+// label names them in the status line.
+async function fastRunTo(targets, label) {
 	const st = stepper, cpu = st.cpu;
-	if (st.nextPhys() === phys)
+	const set = new Set(targets);
+	if (set.has(st.nextPhys()))
 		return true;
 	const t0 = realNow();
 	ffActive = true;
 	ffAbort = false;
-	// The breakpoint goes in only once the target holds the build's code.
+	ffInfo = Object.assign(ffInfo || {}, { runTo: label });
+	// The breakpoints go in only once the targets hold the build's code.
 	// Before that the bytes there can be something else that the kernel
 	// moves into place later: the minified Linux's bzImage is loaded at
 	// 0x100000, where its vmlinux also runs, so a HLT written there at the
 	// entry corrupted the payload being copied (Run to rest_init then
 	// ended halted in exc_page_fault after 72,644 instructions). With
-	// disasm.json, step (stopping at the target) until the instruction at
-	// the target matches the build; without it (vmlinux elsewhere, as for
-	// the Debian sample) arm right away as before.
-	const want = expectedBytes(phys);
-	if (want) {
-		const same = () => emulator.read_memory(phys, want.length).every((b, i) => b === want[i]);
+	// disasm.json, step (stopping at a target) until the instruction at
+	// every target matches the build; without it (vmlinux elsewhere, as
+	// for the Debian sample) arm right away as before.
+	const want = targets.map((pa) => [pa, expectedBytes(pa)]).filter(([, b]) => b);
+	if (want.length) {
+		const same = () => want.every(([pa, b]) => emulator.read_memory(pa, b.length).every((x, i) => x === b[i]));
 		while (!same() && !ffAbort && !st.dead()) {
-			const r = st.run(10000, phys, 100);
-			if (r === "addr" || st.nextPhys() === phys)
+			const r = st.run(10000, set, 100);
+			if (r === "addr" || set.has(st.nextPhys()))
 				break;
 			await ffYield();
 		}
-		if (st.nextPhys() === phys) {
+		if (set.has(st.nextPhys())) {
 			ffActive = false;
-			ffInfo = Object.assign(ffInfo || {}, { runTo: phys, runToMs: realNow() - t0 });
+			ffInfo = Object.assign(ffInfo || {}, { runTo: label, runToMs: realNow() - t0 });
 			return true;
 		}
 	}
-	let orig = emulator.read_memory(phys, 1)[0];
+	const orig = new Map(targets.map((pa) => [pa, emulator.read_memory(pa, 1)[0]]));
 	const arm = () => {
-		const b = emulator.read_memory(phys, 1)[0];
-		if (b !== 0xf4) { // (re)written by the guest since: remember the new byte
-			orig = b;
-			emulator.write_memory(new Uint8Array([0xf4]), phys);
+		for (const pa of targets) {
+			const b = emulator.read_memory(pa, 1)[0];
+			if (b !== 0xf4) { // (re)written by the guest since: remember the new byte
+				orig.set(pa, b);
+				emulator.write_memory(new Uint8Array([0xf4]), pa);
+			}
 		}
 	};
-	let hit = false;
+	let hit = -1;
 	try {
 		arm();
 		let n = 0;
 		while (!ffAbort && !st.dead()) {
 			jitChunk();
-			if (cpu.in_hlt[0] && st.nextPhys() === phys + 1 && emulator.read_memory(phys, 1)[0] === 0xf4) {
-				emulator.write_memory(new Uint8Array([orig]), phys);
+			const at = st.nextPhys() - 1;
+			if (cpu.in_hlt[0] && set.has(at) && emulator.read_memory(at, 1)[0] === 0xf4) {
 				cpu.instruction_pointer[0] = cpu.instruction_pointer[0] - 1;
 				cpu.in_hlt[0] = 0;
 				st.steps -= 1; // the HLT was not the kernel's instruction
-				hit = true;
+				hit = at;
 				break;
 			}
 			arm();
@@ -237,10 +244,11 @@ async function fastRunTo(phys) {
 			}
 		}
 	} finally {
-		if (!hit && emulator.read_memory(phys, 1)[0] === 0xf4)
-			emulator.write_memory(new Uint8Array([orig]), phys);
+		for (const pa of targets)
+			if (emulator.read_memory(pa, 1)[0] === 0xf4)
+				emulator.write_memory(new Uint8Array([orig.get(pa)]), pa);
 		ffActive = false;
 	}
-	ffInfo = Object.assign(ffInfo || {}, { runTo: phys, runToMs: realNow() - t0 });
-	return hit;
+	ffInfo = Object.assign(ffInfo || {}, { runTo: label, runToMs: realNow() - t0 });
+	return hit >= 0;
 }

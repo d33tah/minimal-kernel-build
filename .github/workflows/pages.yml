@@ -283,9 +283,9 @@ jobs:
       fail-fast: false
       matrix:
         suites:
-        - boot,symbols,debugger,misc,touch
-        - debian,dwarf,dwarf_import
-        - runto,initramfs,tasks,coverage
+        - boot,symbols,debugger,misc,touch,tasks_minified
+        - debian,dwarf,dwarf_import,runto,initramfs,coverage
+        - tasks
     name: browser-test (${{ matrix.suites }})
     steps:
     - uses: actions/checkout@v4

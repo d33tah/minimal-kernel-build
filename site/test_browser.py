@@ -1675,7 +1675,7 @@ def debian_case(browser, base, shots, name):
             problems.append("Debian: no init/main.c line in the listing of start_kernel")
         page.screenshot(path=str(shots / "dwarf-listing-debian-1280.png"))
         if "src" in entry:
-            debian_source_panel(page, main, src_files, problems, r, shots)
+            debian_source_panel(page, page.locator(f'#listing .src[data-addr="{sk["paddr"]}"]'), src_files, problems, r, shots)
     page.close()
     if errors:
         problems.append("page errors: " + "; ".join(errors))
@@ -1683,8 +1683,8 @@ def debian_case(browser, base, shots, name):
 
 
 def debian_source_panel(page, line, src_files, problems, r, shots):
-    """Debian's C source: the listing shows init/main.c's text, tapping it
-    opens start_kernel with lines that ran; only the files of lines shown
+    """Debian's C source: the listing's C line at start_kernel's entry shows
+    init/main.c's text, tapping it opens start_kernel with lines that ran; only the files of lines shown
     were fetched; screenshots light/dark at 1100 and 390 px."""
     wait_for(lambda: line.count() and not line.locator(".dim").count(), 20)
     r["listing_main_c_text"] = line.inner_text() if line.count() else None
@@ -2120,9 +2120,13 @@ def suite_initramfs(ctx):
 
 def suite_tasks(ctx):
     failed = False
-    for name in debian_names(ctx) + [n for n in ("minified-linux",) if n in ctx.entries]:
+    for name in debian_names(ctx):
         failed |= report("tasks_case", *tasks_case(ctx.browser, ctx.base, ctx.shots, name), kernel=name)
     return failed
+
+
+def suite_tasks_minified(ctx):
+    return report("tasks_case", *tasks_case(ctx.browser, ctx.base, ctx.shots, "minified-linux"), kernel="minified-linux")
 
 
 def suite_coverage(ctx):
@@ -2148,6 +2152,7 @@ SUITES = {
     "runto": (suite_runto, True),
     "initramfs": (suite_initramfs, False),
     "tasks": (suite_tasks, False),
+    "tasks_minified": (suite_tasks_minified, True),
     "coverage": (suite_coverage, True),
     "touch": (suite_touch, False),
 }

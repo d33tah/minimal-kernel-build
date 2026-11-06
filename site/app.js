@@ -597,9 +597,12 @@ function listPage(p, bytes, base, cur, chars) {
 	while (a < hi) {
 		while (si < syms.length && syms[si].paddr <= a) {
 			const s = syms[si++];
-			if (s.paddr === a || !insns.has(s.paddr))
-				out.push('<span class="lbl" data-sym="' + escHtml(s.name) + '" data-addr="' + s.paddr + '">' +
-					escHtml(s.name) + ":" + (s.size ? ' <span class="dim">' + s.size + " bytes, " + s.section + "</span>" : "") + "</span>");
+			if (s.paddr === a || !insns.has(s.paddr)) {
+				const ty = varTypeOf(s);
+				out.push('<span class="lbl" data-sym="' + escHtml(s.name) + '" data-addr="' + s.paddr + '"' + (ty ? ' data-type="' + escHtml(ty) + '"' : "") + ">" +
+					escHtml(s.name) + ":" + (s.size || ty ? ' <span class="dim">' + (ty ? escHtml(ty) + (s.size ? ", " : "") : "") +
+						(s.size ? s.size + " bytes, " + s.section : "") + "</span>" : "") + "</span>");
+			}
 			prevRow = null;
 		}
 		const nextSym = si < syms.length ? syms[si].paddr : hi;
@@ -680,7 +683,8 @@ function listPage(p, bytes, base, cur, chars) {
 			cls += " cur";
 			curLine = out.length;
 		}
-		out.push('<span class="' + cls + '" data-addr="' + a + '">' + (a - pad).toString(16).padStart(8, "0") +
+		out.push('<span class="' + cls + '" data-addr="' + a + '" data-row="' + (a - pad) + '" data-per="' + per + '" data-end="' + end + '">' +
+			(a - pad).toString(16).padStart(8, "0") +
 			" " + hx + " |" + asc + "|</span>");
 		nRows++;
 		a = end;
@@ -1549,6 +1553,7 @@ function syncSrcToggle() {
 }
 
 function renderContext() {
+	renderWatches();
 	const el = $("context");
 	if (!stepper || tab !== "debugger" || runState === "jit" || runState === "off") {
 		el.textContent = runState === "jit" ? "Running at full speed (JIT). Pause to see the code at EIP; the symbol history is not recorded at full speed." : "";
@@ -2280,6 +2285,7 @@ async function init() {
 	if (params.get("count") === "0")
 		$("count").checked = false;
 	initSource();
+	setupVars();
 	dbgOnChange(() => {
 		syncSrcToggle();
 		showImported();

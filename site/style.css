@@ -313,3 +313,18 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 .cpu_state .wide { grid-column: 1 / -1; overflow-wrap: anywhere; white-space: normal; }
 .cpu_tool { margin: 0.3rem 0; font-size: 0.8rem; }
 .cpu_tool pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.72rem; max-height: 22rem; overflow-y: auto; margin: 0.3rem 0; }
+
+.varinfo { min-height: 1.3em; overflow-wrap: anywhere; margin: 0.2rem 0; }
+#listing .hex { cursor: crosshair; }
+.watches { font-size: 0.78rem; }
+.watches .watch { border-top: 1px solid var(--line); padding: 0.2rem 0; overflow-wrap: anywhere; }
+.watches .wdel { float: right; padding: 0 0.4rem; }
+.watches summary { cursor: pointer; }
+.watches .wkids { margin-left: 1.1rem; border-left: 1px solid var(--line); padding-left: 0.4rem; }
+.watches .wleaf { margin-left: 1.1rem; }
+.watches .wname { color: var(--accent); }
+.watches .wtype { color: var(--muted); }
+.watches .werr { color: var(--err-fg); }
+.watches .wptr { white-space: normal; text-align: left; overflow-wrap: anywhere; }
+.watches .note { font-family: system-ui, sans-serif; }
+#watch_quick button { font-size: 0.75rem; }

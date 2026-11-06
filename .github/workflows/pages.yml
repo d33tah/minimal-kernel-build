@@ -23,7 +23,7 @@ jobs:
     - name: Install toolchain
       run: |
         apt-get update
-        apt-get install -y build-essential llvm clang lld nasm qemu-system-x86 expect python3 curl nodejs
+        apt-get install -y build-essential llvm clang lld nasm qemu-system-x86 expect python3 curl nodejs gdb
 
     - uses: actions/checkout@v4
 
@@ -104,9 +104,10 @@ jobs:
         cp "$x/boot/vmlinuz-6.1.0-50-686" "$d/bzImage"
         site/gen-symbols.py --trim "$x/usr/lib/debug/boot/vmlinux-6.1.0-50-686" "$d/symbols.json" debian-6.1-686
         site/gen-dwarf.js "$x/usr/lib/debug/boot/vmlinux-6.1.0-50-686" "$d/dwarf"
-        site/test_dwarf.py "$x/usr/lib/debug/boot/vmlinux-6.1.0-50-686" "$d/dwarf" --samples 5000 \
+        site/test_dwarf.py "$x/usr/lib/debug/boot/vmlinux-6.1.0-50-686" "$d/dwarf" --samples 5000 --types 2000 \
           --strip debian/build/build_i386_none_686/ --strip /build/reproducible-path/linux-6.1.176/
         cat "$d"/dwarf/*.bin | gzip -9 | wc -c | sed 's/^/debian dwarf shards gzip: /'
+        gzip -9 -c "$d/dwarf/types.json" | wc -c | sed 's/^/debian types.json gzip: /'
         site/gen-debian-source.sh debian-src/linux_6.1.176.orig.tar.xz debian-src/linux_6.1.176-1.debian.tar.xz "$x/src"
         site/gen-src.js "$d/dwarf" "$x/src" "$d/src" \
           --origin "Debian's source package linux 6.1.176-1 (linux_6.1.176.orig.tar.xz with the patches of debian/patches/series from linux_6.1.176-1.debian.tar.xz)" \
@@ -150,7 +151,7 @@ jobs:
         site/gen-dwarf.js "$g/hello/boot/high/kernel.elf" out/hello/dwarf
         site/gen-src.js out/minified-linux/dwarf "$g/minified" out/minified-linux/src --origin "the minified/ tree of commit $(echo "$GITHUB_SHA" | cut -c1-12)"
         site/gen-src.js out/hello/dwarf "$g/hello" out/hello/src --origin "the hello/ tree of commit $(echo "$GITHUB_SHA" | cut -c1-12)"
-        site/test_dwarf.py "$g/minified/vmlinux" out/minified-linux/dwarf --samples 5000 --strip "$(realpath "$g/minified")/"
+        site/test_dwarf.py "$g/minified/vmlinux" out/minified-linux/dwarf --samples 5000 --types 2000 --strip "$(realpath "$g/minified")/"
         site/test_dwarf.py "$g/hello/boot/high/kernel.elf" out/hello/dwarf --samples 500 --strip "$(realpath "$g/hello")/"
         # The -g ELFs for the browser test's llvm-symbolizer checks (not deployed).
         mkdir -p debug-elfs
@@ -244,7 +245,7 @@ jobs:
         # Cache busting: Pages serves with max-age=600, and a browser that
         # keeps an older app.js next to a newer index.html breaks.
         v=$(echo "$GITHUB_SHA" | cut -c1-12)
-        sed -i -E "s/(href|src)=\"(style\.css|clock\.js|app\.js|stepper\.js|graph\.js|dwarf\.js|dbginfo\.js|source\.js|symimport\.js|livedis\.js|fastforward\.js|cpustate\.js|v86\/libv86\.js)\"/\1=\"\2?v=$v\"/g" site/index.html
+        sed -i -E "s/(href|src)=\"(style\.css|clock\.js|app\.js|stepper\.js|graph\.js|dwarf\.js|dbginfo\.js|source\.js|vars\.js|symimport\.js|livedis\.js|fastforward\.js|cpustate\.js|v86\/libv86\.js)\"/\1=\"\2?v=$v\"/g" site/index.html
         grep -E "\?v=$v" site/index.html
 
     # The browser test runs in its own job (browser-test below) so the
@@ -286,6 +287,7 @@ jobs:
         - boot,symbols,debugger,misc,touch,tasks_minified
         - debian,dwarf,dwarf_import,runto,initramfs,coverage
         - tasks
+        - types
     name: browser-test (${{ matrix.suites }})
     steps:
     - uses: actions/checkout@v4
@@ -300,7 +302,7 @@ jobs:
         path: ~/.cache/ms-playwright
         key: playwright-chromium-${{ runner.os }}-v1
 
-    # -g ELFs for the DWARF checks: the minified Linux's and hello's from
+    # -g ELFs for the DWARF checks (llvm-symbolizer, gdb): the minified Linux's and hello's from
     # the kernels job, Debian's -dbg vmlinux from the cached package.
     - uses: actions/download-artifact@v4
       with:
@@ -327,7 +329,7 @@ jobs:
         echo "$sum  $f" | sha256sum -c
         dpkg-deb --fsys-tarfile "$f" | tar -x -O ./usr/lib/debug/boot/vmlinux-6.1.0-50-686 > debug-elfs/debian-6.1-686.elf
         sudo apt-get update
-        sudo apt-get install -y llvm
+        sudo apt-get install -y llvm gdb
         ls -l debug-elfs
 
     - name: Install Playwright and Chromium

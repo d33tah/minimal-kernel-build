@@ -1575,6 +1575,255 @@ def dwarf_import_case(browser, base, shots):
     return problems, r
 
 
+def watch(page, expr):
+    """Add a watch; its row's text once the types have loaded ("" if not shown)."""
+    wait_for(lambda: page.get_attribute("#watches", "data-state") == "ok", 120)
+    page.fill("#watch_expr", expr)
+    page.click("#watch_add")
+    sel = f'#watches .watch[data-expr="{expr}"]'
+    wait_for(lambda: page.locator(sel).count() > 0, 10)
+    return page.inner_text(sel).replace("×", "").strip() if page.locator(sel).count() else ""
+
+
+def gdb_values(elf, exprs):
+    """gdb's print of each expression from the ELF's own data (the values at
+    boot, before the kernel changes them), or None without gdb."""
+    if not elf or not shutil.which("gdb"):
+        return None
+    args = ["gdb", "-nx", "-batch"]
+    for e in exprs:
+        args += ["-ex", f"print {e}"]
+    out = subprocess.run(args + [str(elf)], capture_output=True, text=True).stdout
+    return [re.sub(r"^\$\d+ = ", "", l) for l in out.splitlines() if re.match(r"^\$\d+ = ", l)]
+
+
+def hover_byte(page, pa, click=False):
+    """Point at (or tap) byte pa of the Page listing's hex rows; #var_info's path."""
+    # The listing may be redrawn (and scrolled) between finding the row and
+    # the pointer event: try again until #var_info names this byte.
+    for _ in range(4):
+        path = hover_once(page, pa, click)
+        if page.get_attribute("#var_info", "data-addr") == str(pa):
+            return path
+    return None
+
+
+def hover_once(page, pa, click):
+    xy = page.evaluate("""(pa) => { for (const l of document.querySelectorAll('#listing .hex')) {
+        if (pa < +l.dataset.addr || pa >= +l.dataset.end) continue;
+        l.scrollIntoView({ block: 'center' });
+        const r = l.getBoundingClientRect(), cw = r.width / l.textContent.length, i = pa - +l.dataset.row, per = +l.dataset.per;
+        return [r.left + (9 + i * 3 + (per === 16 && i >= 8 ? 1 : 0) + 0.5) * cw, r.top + r.height / 2]; }
+        return null; }""", pa)
+    if not xy:
+        return None
+    (page.mouse.click if click else page.mouse.move)(*xy)
+    wait_for(lambda: page.get_attribute("#var_info", "data-addr") == str(pa) and
+             page.get_attribute("#var_info", "data-state") != "loading", 3)
+    return page.get_attribute("#var_info", "data-path")
+
+
+# Watches whose values at start_kernel are the ELF's own data (gdb prints them from the file).
+TYPES_WATCHES = {
+    "minified-linux": ["init_task.comm", "jiffies_64", "init_task.pid", "current_task"],
+    "debian-6.1-686": ["init_task.comm", "jiffies_64", "init_uts_ns.name.release", "linux_banner", "system_state"],
+}
+
+
+def types_case(browser, base, shots, name):
+    """Variables of the shipped DWARF (types.json): at start_kernel the
+    Variables panel prints watches equal to gdb's print of the ELF's data,
+    opens structs, follows a pointer to the Page tab; in the Page listing
+    a pointed-at byte names variable + member path, which gdb evaluates to
+    an lvalue holding that byte; data symbols' label lines carry the type."""
+    problems, r = [], {}
+    entry = kernel_entries()[name]
+    syms = json.loads((SITE / entry["symbols"]).read_text())["symbols"]
+    sk = next(s for s in syms if s["name"] == "start_kernel")
+    T = json.loads((SITE / entry["dwarf"] / "types.json").read_text())
+    off = sk["vaddr"] - sk["paddr"]
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    page.fill("#dbg_addr", hex(sk["vaddr"]))
+    page.click("#dbg_runto")
+    if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
+                    and page.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 300, 1):
+        page.close()
+        return [f"{name}: Run to start_kernel did not stop there"], r
+    r["status"] = page.inner_text("#watch_status") if wait_for(
+        lambda: page.get_attribute("#watches", "data-state") == "ok", 120) else page.inner_text("#watch_status")
+    if f"{len(T['vars'])} variables" not in r["status"]:
+        problems.append(f"{name}: Variables status {r['status']!r}")
+    exprs = TYPES_WATCHES[name]
+    rows = {e: watch(page, e) for e in exprs}
+    r["watches"] = rows
+    elf = debug_elf(name)
+    want = gdb_values(elf, exprs)
+    if want is None and os.environ.get("CI"):
+        problems.append(f"{name}: no gdb or -g ELF to check the watches against")
+    for e, w in zip(exprs, want or []):
+        got = rows[e]
+        # gdb: "swapper\000..." / 4294892296 / SYSTEM_BOOTING / (struct task_struct *) 0xc... <init_task>
+        g = re.sub(r"(\\000)+(\"?)$", r"\2", re.sub(r", '\\000' <repeats \d+ times>$", "", w))
+        g = re.sub(r"^\([^)]*\) ", "", g)
+        # A string: its first characters; else the first word (number, enumerator, pointer).
+        key = g[g.index('"'):][:30] if '"' in g else g.split(" ")[0]
+        if key not in got:
+            problems.append(f"{name}: watch {e} shows {got!r}, gdb prints {w!r}")
+    # A struct opens with its members; a pointer opens the Page tab at its target.
+    page.locator('#watches .watch[data-expr="init_task.comm"] .wdel').click()
+    watch(page, "init_task")
+    page.locator('#watches .watch[data-expr="init_task"] summary').first.click()
+    wait_for(lambda: page.locator('#watches .watch[data-expr="init_task"] .wkids').count() > 0, 10)
+    r["init_task_members"] = page.locator('#watches .watch[data-expr="init_task"] .wkids > * .wname').count()
+    kids = page.inner_text('#watches .watch[data-expr="init_task"] .wkids')
+    if ".comm" not in kids or '"swapper"' not in kids:
+        problems.append(f"{name}: init_task opened without .comm = \"swapper\": {kids[:300]!r}")
+    page.screenshot(path=str(shots / f"vars-debugger-{name}-1280-light.png"), full_page=True)
+    page.emulate_media(color_scheme="dark")
+    page.screenshot(path=str(shots / f"vars-debugger-{name}-1280-dark.png"), full_page=True)
+    for scheme in ("dark", "light"):
+        page.emulate_media(color_scheme=scheme)
+        page.set_viewport_size({"width": 390, "height": 900})
+        time.sleep(0.3)
+        if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
+            problems.append(f"{name}: the Debugger with variables scrolls horizontally at 390 px ({scheme})")
+        page.locator("#watches").scroll_into_view_if_needed()
+        page.screenshot(path=str(shots / f"vars-debugger-{name}-390-{scheme}.png"))
+    page.set_viewport_size({"width": 1280, "height": 1000})
+    it = next(v for v in T["vars"] if v[0] == "init_task")
+    ptr = page.locator('#watches .watch[data-expr="init_task"] .wptr').first
+    r["pointer"] = ptr.inner_text() if ptr.count() else None
+    if ptr.count():
+        target = int(ptr.inner_text().split()[0], 16) - off
+        ptr.click()
+        wait_for(lambda: page.get_attribute("#listing", "data-page") == str(target // 4096), 15)
+        if page.get_attribute("#listing", "data-page") != str(target // 4096):
+            problems.append(f"{name}: tapping pointer {r['pointer']!r} did not open page {target // 4096:#x}")
+    else:
+        problems.append(f"{name}: init_task has no pointer member to follow")
+    # The Page listing: the label line of init_task and bytes inside variables.
+    show_tab(page, "memory")
+    open_page(page, it[1] // 4096)
+    wait_for(lambda: page.locator('#listing .lbl[data-sym="init_task"][data-type]').count() > 0, 30)
+    r["label_type"] = page.get_attribute('#listing .lbl[data-sym="init_task"]', "data-type")
+    if r["label_type"] != "struct task_struct":
+        problems.append(f"{name}: init_task's label line has type {r['label_type']!r}")
+    rnd = __import__("random").Random(7)
+    near = [v for v in T["vars"] if v[3] > 0 and abs(v[1] - it[1]) < 3 * 4096 and not v[5] & 4]
+    picks = [it[1] + 16 + it[3] // 3] + [v[1] + rnd.randrange(v[3]) for v in rnd.sample(near, min(24, len(near)))]
+    got = []
+    for pa in picks:
+        if pa // 4096 != int(page.get_attribute("#listing", "data-page")):
+            open_page(page, pa // 4096)
+        # Repeated rows are collapsed to "*": their bytes have no line to point at.
+        if page.evaluate("(pa) => [...document.querySelectorAll('#listing .hex')].some((l) => pa >= +l.dataset.addr && pa < +l.dataset.end)", pa):
+            got.append((pa, hover_byte(page, pa), page.inner_text("#var_info")))
+    r["hover_first"] = got[0][2] if got else None
+    r["hovered"] = f"{len(got)} of {len(picks)} (the others in collapsed rows)"
+    if len(got) < 10:
+        problems.append(f"{name}: only {len(got)} bytes to point at in the listing")
+    named = [(pa, p) for pa, p, _ in got if p]
+    if len(named) < len(got):
+        problems.append(f"{name}: bytes inside variables named no variable: {[(hex(a), t) for a, p, t in got if not p][:3]}")
+    if elf and shutil.which("gdb"):
+        from test_dwarf import gdb_eval
+        def start(pa, var):
+            return next(v[1] for v in T["vars"] if v[0] == var and v[1] <= pa < v[1] + max(v[3], 1))
+        res = gdb_eval(str(elf), [[re.match(r"\w+", p)[0], "", p, start(pa, re.match(r"\w+", p)[0]) + off] for pa, p in named])
+        bad = [(hex(pa), p, g) for (pa, p), g in zip(named, res) if g[0] in ("error", None) or not g[0] <= pa + off < g[0] + max(g[1], 1)]
+        r["hover_vs_gdb"] = f"{len(named) - len(bad)}/{len(named)} paths hold the byte in gdb"
+        if bad:
+            problems.append(f"{name}: hovered paths gdb places elsewhere: {bad[:3]}")
+    # A tap pins the description and offers to watch the path.
+    if named and named[0][0] // 4096 != int(page.get_attribute("#listing", "data-page")):
+        open_page(page, named[0][0] // 4096)
+    path = hover_byte(page, named[0][0], click=True) if named else None
+    # Just below the sticky header and tabs.
+    page.evaluate("""() => { const tabs = document.querySelector('[role=tablist]').getBoundingClientRect().bottom;
+        window.scrollBy(0, document.getElementById('var_info').getBoundingClientRect().top - tabs - 40); }""")
+    page.screenshot(path=str(shots / f"vars-page-{name}-1280-light.png"))
+    page.emulate_media(color_scheme="dark")
+    page.screenshot(path=str(shots / f"vars-page-{name}-1280-dark.png"))
+    page.emulate_media(color_scheme="light")
+    if page.locator("#var_watch").count():
+        page.click("#var_watch")
+        wait_for(lambda: page.locator(f'#watches .watch[data-expr="{path}"]').count() > 0, 10)
+    r["tap_watch"] = page.inner_text(f'#watches .watch[data-expr="{path}"]') if page.locator(f'#watches .watch[data-expr="{path}"]').count() else None
+    if not r["tap_watch"] or page.get_attribute(f'#watches .watch[data-expr="{path}"]', "data-state") != "ok":
+        problems.append(f"{name}: tapping a byte did not offer a working watch of {path!r}")
+    page.close()
+    if errors:
+        problems.append("page errors: " + "; ".join(errors))
+    return problems, r
+
+
+def types_import_case(browser, base, shots):
+    """Variables of an imported unstripped vmlinux, read by a second Worker in
+    one pass over every compile unit: the same data as the shipped types.json
+    (clang forms: the minified Linux; GCC forms: Debian's -dbg vmlinux), kept
+    in IndexedDB across a reload."""
+    problems, r = [], {}
+    same_js = """async (url) => { const t = await (await fetch(url)).text();
+        const T = DBG.types; return t === JSON.stringify({ format: T.format, types: T.types.slice(0, T.types.length - (T.sub ? T.sub.size : 0)),
+            vars: T.vars, sections: T.sections }); }"""
+    for name, size in (("minified-linux", None), ("debian-6.1-686", None)):
+        elf = debug_elf(name)
+        if not elf:
+            if os.environ.get("CI"):
+                problems.append(f"no {name}.elf in $MKB_DEBUG_ELF_DIR")
+            continue
+        entry = kernel_entries()[name]
+        page = browser.new_page(viewport={"width": 1280, "height": 1000})
+        errors = []
+        page.on("pageerror", lambda e: errors.append(str(e)))
+        url = f"{base}/index.html?kernel={name}&paused=1#debugger"
+        page.goto(url)
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+        page.evaluate("startPaused = true")
+        page.set_input_files("#symfile", str(elf))
+        wait_for(lambda: "compile units" in page.inner_text("#sym_status"), 120)
+        t0 = time.monotonic()
+        show_tab(page, "debugger")
+        wait_for(lambda: page.get_attribute("#watches", "data-state") in ("ok", "none"), 300, 0.5)
+        r[f"{name}_seconds"] = round(time.monotonic() - t0, 1)
+        r[f"{name}_status"] = page.inner_text("#watch_status")
+        if page.get_attribute("#watches", "data-state") != "ok":
+            problems.append(f"{name} import: variables not read: {r[f'{name}_status']!r}")
+            page.close()
+            continue
+        if not page.evaluate(same_js, entry["dwarf"] + "types.json"):
+            problems.append(f"{name} import: the Worker's variables differ from the shipped types.json")
+        # Paused at the reset vector: the values are not the kernel's yet, and the panel says so.
+        if page.get_attribute("#watches", "data-started") != "no" or "has not run yet" not in r[f"{name}_status"]:
+            problems.append(f"{name} import: before the kernel runs the Variables do not say so: {r[f'{name}_status']!r}")
+        if name == "minified-linux":
+            sk = next(s for s in json.loads((SITE / entry["symbols"]).read_text())["symbols"] if s["name"] == "start_kernel")
+            page.fill("#dbg_addr", hex(sk["vaddr"]))
+            page.click("#dbg_runto")
+            wait_for(lambda: page.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 120)
+            r[f"{name}_comm"] = watch(page, "init_task.comm")
+            if '"swapper"' not in r[f"{name}_comm"] or page.get_attribute("#watches", "data-started") == "no":
+                problems.append(f"{name} import: init_task.comm at start_kernel shows {r[f'{name}_comm']!r}")
+            page.screenshot(path=str(shots / "vars-import-1280.png"), full_page=True)
+            page.goto("about:blank")
+            page.goto(url)
+            wait_for(lambda: page.get_attribute("#sym_status", "data-dwarf") == "cached", 60)
+            show_tab(page, "debugger")
+            wait_for(lambda: page.get_attribute("#watches", "data-state") == "ok", 30)
+            r["reload_status"] = page.inner_text("#watch_status")
+            if page.get_attribute("#watches", "data-state") != "ok" or not page.evaluate(same_js, entry["dwarf"] + "types.json"):
+                problems.append(f"after a reload the imported variables are gone: {r['reload_status']!r}")
+        page.click("#sym_forget")
+        page.close()
+        if errors:
+            problems.append(f"{name} import page errors: " + "; ".join(errors))
+    return problems, r
+
+
 def debian_case(browser, base, shots, name):
     """The Debian sample: its defaults, the end-of-panic auto-stop with the
     message on the screen, and Run to start_kernel naming start_kernel."""
@@ -2106,6 +2355,13 @@ def suite_dwarf_import(ctx):
     return report("dwarf_import", *dwarf_import_case(ctx.browser, ctx.base, ctx.shots))
 
 
+def suite_types(ctx):
+    failed = False
+    for name in [n for n in ("minified-linux", "debian-6.1-686") if n in ctx.entries and "dwarf" in ctx.entries[n]]:
+        failed |= report("types", *types_case(ctx.browser, ctx.base, ctx.shots, name), kernel=name)
+    return failed | report("types_import", *types_import_case(ctx.browser, ctx.base, ctx.shots))
+
+
 def suite_runto(ctx):
     failed = report("runto", *runto_case(ctx.browser, ctx.base, ctx.shots))
     return failed | report("cpu_state", *cpu_state_case(ctx.browser, ctx.base, ctx.shots, "minified-linux"))
@@ -2149,6 +2405,7 @@ SUITES = {
     "debian": (suite_debian, False),
     "dwarf": (suite_dwarf, False),
     "dwarf_import": (suite_dwarf_import, True),
+    "types": (suite_types, True),
     "runto": (suite_runto, True),
     "initramfs": (suite_initramfs, False),
     "tasks": (suite_tasks, False),

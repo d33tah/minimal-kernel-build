@@ -156,6 +156,7 @@
     <span id="cov_info" class="note"></span>
   </div>
   <div id="symbol_index" class="symindex"></div>
+  <p id="var_info" class="note mono varinfo" role="status"></p>
   <pre id="listing">Click a page in the Memory tab.</pre>
 </section>
 
@@ -172,6 +173,16 @@
   <div id="sym_info" class="syminfo"></div>
   <h3>Code at EIP <span class="tip" tabindex="0" role="button" title="About 6 instructions before and 10 after the next one (boxed), from the build's disassembly, with symbol+offset. Marked bytes differ in guest memory from the build. Tap a line or a symbol to open it in the Page tab. The previous symbol, the path and the call stack are recorded while stepping or in slow motion, not at full JIT speed. The source rows give the C line at EIP from the kernel's DWARF and, in inlined code, each function it was inlined into with the line of the call; every frame of the call stack and of the path has its file:line and inlined-at chain in its tooltip.">?</span></h3>
   <pre id="context" class="listing-small"></pre>
+  <h3>Variables <span class="tip" tabindex="0" role="button" title="Global and static variables from the kernel's DWARF (for the kernels built here a -g build of the same tree whose code is byte-identical to the kernel that boots, for Debian its -dbg package, for an imported unstripped vmlinux its own DWARF, read once in a Worker), pretty-printed from guest RAM: structs and arrays open on a tap, enums by name, char arrays and char pointers as strings, pointers name what they point at and open the Page tab there. Type a name, Function::name for a static local, then .member, ->member or [index]; a leading * dereferences. A per-CPU variable shows CPU 0's copy once the per-CPU areas exist. Values are read when drawn: while the kernel runs at full speed tap Refresh. In the Page tab, point at or tap a byte of a hex row to see which variable and member it belongs to. Local variables and parameters are not here (they need the call frames).">?</span></h3>
+  <div class="scan">
+    <span class="group"><input id="watch_expr" list="watch_names" size="24" placeholder="init_task.comm" aria-label="variable to watch" autocomplete="off" spellcheck="false">
+      <button id="watch_add" type="button">Watch</button></span>
+    <button id="watch_refresh" type="button">Refresh</button>
+    <span id="watch_quick" class="group"></span>
+  </div>
+  <datalist id="watch_names"></datalist>
+  <p id="watch_status" class="note" role="status"></p>
+  <div id="watches" class="watches mono"></div>
 </section>
 
 <section class="panel" id="panel_graph" role="tabpanel" aria-labelledby="tab_graph" hidden>
@@ -220,7 +231,7 @@
   <ul>
     <li><b>Memory</b>: the physical memory map from the boot header and one square per 4 KiB page, coloured by region and ELF section.</li>
     <li><b>Page</b>: one page as a single listing, instructions where the kernel has code and hex rows elsewhere, with symbol headers.</li>
-    <li><b>Debugger</b>: registers, stepping and run-to-address.</li>
+    <li><b>Debugger</b>: registers, stepping and run-to-address, and the kernel's global variables from its DWARF, pretty-printed from guest RAM.</li>
     <li><b>C source</b>: the Page listing and the Debugger interleave the C lines (from the DWARF of a -g build with byte-identical code) with the instructions; tap one for the function with its executed lines. The text is shipped for every sample kernel (Debian: its source package); for an imported vmlinux pick its source folder or .tar.</li>
     <li><b>Symbols</b>: import a System.map or an unstripped vmlinux for the current kernel (next to From disk, or drop it on the page with a bzImage); it replaces the kernel's symbols everywhere.</li>
     <li><b>initrd, cmdline</b>: pass an initrd and a command line to v86 for third-party 32-bit kernels (v86 puts the initrd at 64 MiB, so RAM is raised to fit). Our kernels ignore a bootloader initrd.</li>
@@ -254,6 +265,7 @@
 <script src="livedis.js"></script>
 <script src="fastforward.js"></script>
 <script src="cpustate.js"></script>
+<script src="vars.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

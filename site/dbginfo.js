@@ -19,6 +19,8 @@ let DBG = { mode: null, why: "no debug info", listeners: [], version: 0 };
 function dbgFresh(mode, why) {
 	if (DBG.worker)
 		DBG.worker.terminate();
+	if (DBG.typesWorker)
+		DBG.typesWorker.terminate();
 	DBG = { mode, why, listeners: DBG.listeners, version: (DBG.version || 0) + 1, tables: new Map(), pending: new Set(),
 		index: null, info: "" };
 }
@@ -117,6 +119,8 @@ async function dbgIdbOp(mode, fn) {
 async function dbgImport(file, offset, key) {
 	dbgFresh("import", "");
 	DBG.key = key;
+	DBG.file = file;
+	DBG.offset = offset;
 	DBG.info = "reading the DWARF of " + file.name + "…";
 	if (key)
 		await dbgForget(key); // a new file for this bzImage: the old one's units go
@@ -212,7 +216,76 @@ async function dbgRestore(key) {
 		return;
 	for (const [i, t] of units || [])
 		DBG.tables.set(i, t);
+	const types = await dbgIdbOp("readonly", (s) => s.get(key + ":types"));
+	if (mine !== DBG)
+		return;
+	if (types)
+		DBG.types = types;
 	dbgChanged();
+}
+
+// ---- variables and types --------------------------------------------------
+
+// A second Worker for the variables of an import: its pass over every
+// unit does not hold up the file:line lookups of the first.
+function dbgTypesWorker() {
+	const mine = DBG, key = DBG.key;
+	const w = new Worker(withV("dwarfworker.js"));
+	DBG.typesWorker = w;
+	const done = (types) => {
+		w.terminate();
+		if (mine !== DBG)
+			return;
+		DBG.types = types;
+		if (key && !types.failed)
+			dbgIdbOp("readwrite", (s) => s.put(types, key + ":types"));
+		dbgChanged();
+	};
+	w.onmessage = (ev) => {
+		const m = ev.data;
+		if (m.type === "open")
+			m.ok ? w.postMessage({ type: "types" }) : done({ failed: m.why });
+		else if (m.type === "types-progress" && mine === DBG) {
+			DBG.typesProgress = [m.done, m.total];
+			dbgChanged();
+		} else if (m.type === "types")
+			done(m.types);
+		else if (m.type === "error")
+			done({ failed: m.message });
+	};
+	w.onerror = (e) => done({ failed: e.message || "worker error" });
+	w.postMessage({ type: "open", file: DBG.file, offset: DBG.offset });
+}
+
+// { state: "ok", T } (dwarf.js DwarfTypes data), { state: "loading", why }
+// or { state: "none", why }. Starts the load: the shipped types.json, or
+// for an import one pass of the Worker over every compile unit.
+function dbgTypes() {
+	if (!dbgHas())
+		return { state: "none", why: DBG.why };
+	if (DBG.types)
+		return DBG.types.failed ? { state: "none", why: "the variables did not load: " + DBG.types.failed } : { state: "ok", T: DBG.types };
+	if (DBG.mode === "shards") {
+		if (!DBG.index)
+			return { state: "loading", why: "reading the debug info index…" };
+		if (!DBG.index.types)
+			return { state: "none", why: "this kernel's debug info has no variables (types.json)" };
+		if (!DBG.typesLoad) {
+			const mine = DBG;
+			DBG.typesLoad = fetch(withV(DBG.base + DBG.index.types)).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+				.then((T) => { if (mine === DBG) { DBG.types = T; dbgChanged(); } })
+				.catch((e) => { if (mine === DBG) { DBG.types = { failed: e.message }; dbgChanged(); } });
+		}
+		return { state: "loading", why: "reading the types of " + DBG.index.variables + " variables (" +
+			Math.round(DBG.index.typeBytes / 1024) + " KiB before compression)…" };
+	}
+	if (!DBG.file)
+		return { state: "none", why: "the variables were not read before the reload: import the vmlinux again" };
+	if (!DBG.typesWorker)
+		dbgTypesWorker();
+	const p = DBG.typesProgress;
+	return { state: "loading", why: "reading the variables of the imported vmlinux: every compile unit once" +
+		(p ? " (" + p[0] + " of " + p[1] + ")" : "") + "…" };
 }
 
 // Unit of the import covering pa, or -1.

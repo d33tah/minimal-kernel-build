@@ -233,6 +233,46 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   at random code addresses (half inside functions, half anywhere): the
   workflow fails on any difference (local runs: minified 19,696/19,696,
   Debian 49,999/49,999).
+- **Variables.** Global and static variables (static locals too) with
+  their DWARF types: `gen-dwarf.js` also writes `dwarf/types.json` (dwarf.js
+  `DwarfTypes`). Every variable whose location is a fixed address
+  (DW_OP_addr or DW_OP_addrx, optionally + DW_OP_plus_uconst) inside the
+  loaded image, with its physical address, size, section and whether it is
+  external, per-CPU (in `.data..percpu`) or a static local (with its
+  function where DWARF names it); and only the types those variables reach,
+  each kept once: GCC repeats every type in every compile unit, so named
+  structs, unions and enums are keyed by name, size and declaring
+  file:line, the rest by structure. A declaration points to the definition
+  of the same name. GCC's `long unsigned int` and friends print the way C
+  and gdb write them. Debian: 28,757 variables, 16,026 types, 2,411,771
+  bytes (592,275 gzipped), 29 s in `gen-dwarf.js`; minified Linux: 134
+  variables, 421 types, 29,033 bytes; hello has no C variables. The page
+  fetches `types.json` the first time it is needed (the Variables panel,
+  a hover in a hex row, the listing of a page with data symbols). For an
+  imported vmlinux a second Worker reads every compile unit once (a
+  vmlinux has no name index; the first Worker keeps answering file:line
+  meanwhile) and builds the same data, kept in IndexedDB per bzImage.
+  Where it shows: the Debugger's Variables section (watch expressions:
+  `name`, `Function::name`, then `.member`, `->member`, `[index]`, a
+  leading `*`; structs and arrays open on a tap, at most 64 elements at a
+  time; enums by name, char arrays and `char *` as strings, bit fields,
+  pointers with what they point at and a tap opens the Page tab there; a
+  per-CPU variable shows CPU 0's copy once `__per_cpu_offset[0]` is set,
+  else says it shows the template; variables in `.init.*` say they are
+  freed after boot; the list is remembered per kernel in this browser),
+  the Page listing (pointing at or tapping a byte of a hex row names the
+  variable and member path, e.g. `init_task.comm[3]`, its type and value,
+  other members of a union at the same bytes, padding and bit fields; a
+  tap offers "Watch" for the path) and the label line of each data
+  symbol, which carries its type. Values are read from guest RAM when
+  drawn. `test_dwarf.py --types N` checks N random bytes inside variables:
+  gdb on the -g ELF must evaluate the path the page names to an lvalue
+  holding the byte, with the same type (as `whatis` prints it) and size,
+  and the variable's type and size must match too; variables gdb cannot
+  find by name (statics of inner blocks or of functions that only exist
+  inlined, several statics of one name) are checked by the ELF symbol at
+  their address instead (local runs: minified 3,000/3,000, Debian
+  8,263/8,263 plus 1,737 by ELF symbol).
 - **C source.** "C source" prints the C line above the instructions it
   compiled to in the Page listing and the Debugger's code window, like
   `objdump -S` (dim `file.c:123`, printed again when the code returns to
@@ -633,7 +673,7 @@ qemu runs used `timeout 120` and a FIFO, so no trace touched the disk.
     (dwarf/ and src/: see the workflow's "Debug-info builds" step)
     site/gen-kernels.sh
     python3 site/test_browser.py
-    python3 site/test_browser.py --suites debian,dwarf,dwarf_import
+    python3 site/test_browser.py --suites debian,dwarf,dwarf_import,types
 
 The suites (`SUITES` in test_browser.py) run in three parallel CI jobs
 (the workflow's browser-test matrix), grouped by their measured times;
@@ -705,7 +745,17 @@ IndexedDB, checks a vmlinux without DWARF says so, shows file:line only
 and the C source picker until a source is picked, refuses a .tar.gz with
 the reason and gets the lines' text (equal to the files') from a pax
 .tar, a GNU .tar and a folder that hold the tree one level down, and imports Debian's
-300 MB -dbg vmlinux and compares 40 random addresses. A last case serves two "deploys" with `Cache-Control: max-age=600` (as
+300 MB -dbg vmlinux and compares 40 random addresses. The types case
+(minified Linux, Debian) runs to start_kernel and checks the Variables
+section: watches of init_task.comm, jiffies_64 and others equal gdb's
+print of the ELF's own data, init_task opens with `.comm = "swapper"`, a
+pointer member opens the Page tab at its target; in the Page listing
+init_task's label line says `struct task_struct` and 25 bytes near it,
+pointed at with the mouse, name a variable path that gdb evaluates to an
+lvalue holding the byte; a tap offers a working watch; screenshots light
+and dark at 1280 and 390 px. The types import case imports the minified
+Linux's and Debian's -g vmlinux and checks the Worker's variables equal
+the shipped `types.json`, also after a reload (IndexedDB). A last case serves two "deploys" with `Cache-Control: max-age=600` (as
 GitHub Pages does) and checks a reload runs the new `app.js`. Screenshots
 (desktop and 390 px) go to `site/test-screenshots/`.
 

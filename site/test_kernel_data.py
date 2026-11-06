@@ -9,6 +9,8 @@ the files the page loads for:
   symbols         symbols.json (gen-symbols.py)
   line info and   dwarf/index.json and every <hex>.bin shard it lists
   inline chains   (gen-dwarf.js; dbginfo.js)
+  line -> address the shards in format MKBD 2 (with the is_stmt breakpoint
+                  addresses) and a nonzero breakpoint count in index.json
   C source        src/index.json and src/<path>.gz for every file
                   files.json names, unless index.json says why it is
                   missing (gen-src.js; source.js)
@@ -49,6 +51,10 @@ def check_dwarf(site, d, problems):
     for s in idx["shards"]:
         if not nonempty(d / f"{s:x}.bin"):
             problems.append(f"{d}/{s:x}.bin: missing (line info and inline chains)")
+        elif (d / f"{s:x}.bin").read_bytes()[:5] != b"MKBD\x02":
+            problems.append(f"{d}/{s:x}.bin: not format MKBD 2 (no breakpoint addresses for line -> address)")
+    if not idx.get("breakpoints"):
+        problems.append(f"{idx_path}: no breakpoint addresses (line -> address, Run to file:line)")
     cfi = idx.get("cfi") or {}
     if not cfi.get("shards"):
         problems.append(f"{idx_path}: no call frame information ({cfi.get('why', 'no cfi member')})")

@@ -2,7 +2,7 @@
 """Check the DWARF shards of gen-dwarf.js against llvm-symbolizer --inlines,
 and its types.json against gdb.
 
-  site/test_dwarf.py ELF SHARD_DIR [--samples N] [--strip PREFIX ...] [--seed S] [--types N] [--cfi N] [--locals N] [--operands N]
+  site/test_dwarf.py ELF SHARD_DIR [--samples N] [--strip PREFIX ...] [--seed S] [--types N] [--cfi N] [--locals N] [--operands N] [--lines N]
 
 Picks N random addresses in the ELF's code (half inside function
 symbols, half anywhere between the first and the last one), asks
@@ -31,6 +31,18 @@ them (`gen-dwarf.js --operands`, asmnames.js) must be gdb's: `info
 symbol` for absolute addresses, the address gdb computes for each
 parameter and local on a core with EIP at the instruction for stack
 slots (see check_operands).
+
+--lines N: the code of source lines (the Source panel's address list and
+its "Run to file:line", `gen-dwarf.js --lines`, dwarf.js dwarfFileCode):
+the lines llvm-symbolizer names at N random addresses inside functions.
+Every sampled address lies in a row the page lists for its line; the
+first and last byte of every row listed (up to 20 per line) and the
+start of every inlined call listed are that line for llvm-symbolizer
+(innermost frame; for a call the frame that called the inlined function);
+every breakpoint address is an is_stmt row of that line in
+llvm-dwarfdump --debug-line, and every is_stmt row of the line inside the
+listed rows is a breakpoint address unless the row before it is an
+is_stmt row of the same line.
 
 --cfi N: N random addresses; the call frame information row there
 (`gen-dwarf.js --cfi`, the page's unwind.js cfiRow on the cfi-*.bin
@@ -647,6 +659,131 @@ def eh_frame_selftest(n, rnd):
     return bad
 
 
+def page_lines(shards, queries):
+    out = subprocess.run(["node", str(SITE / "gen-dwarf.js"), "--lines", shards], input="".join(q + "\n" for q in queries),
+                         capture_output=True, text=True, check=True).stdout
+    return [json.loads(line) for line in out.splitlines()]
+
+
+def dwarfdump_stmt_rows(elf, files):
+    """{(file, line): [(vaddr, is_stmt, previous row (vaddr, file, line, is_stmt) or None)]} for the files
+    asked for (tree-relative; matched as a path suffix), from llvm-dwarfdump --debug-line. Only the last
+    row at an address counts (as for the page and llvm-symbolizer)."""
+    res = {}
+    dirs, names, want, rows = {}, {}, {}, []
+
+    def flush():
+        # rows of one sequence: keep the last row per address
+        eff = []
+        for r in rows:
+            if eff and eff[-1][0] == r[0]:
+                eff[-1] = r
+            else:
+                eff.append(r)
+        for k, (va, fi, ln, st, end) in enumerate(eff):
+            if end or fi not in want:
+                continue
+            prev = eff[k - 1] if k else None
+            res.setdefault((want[fi], ln), []).append(
+                (va, st, (prev[0], want.get(prev[1]), prev[2], prev[3]) if prev and not prev[4] else None))
+        rows.clear()
+
+    p = subprocess.Popen(["llvm-dwarfdump", "--debug-line", elf], stdout=subprocess.PIPE, text=True, bufsize=1 << 20)
+    cur = None
+    for line in p.stdout:
+        if line.startswith("0x"):
+            if want:
+                f = line.split()
+                end = "end_sequence" in f
+                rows.append((int(f[0], 16), int(f[3]), int(f[1]), "is_stmt" in f, end))
+                if end:
+                    flush()
+        elif line.startswith("debug_line["):
+            dirs, names, want, cur = {}, {}, {}, None
+        elif line.startswith("include_directories["):
+            k = int(line[line.index("[") + 1:line.index("]")])
+            dirs[k] = line.split("= ", 1)[1].strip().strip('"')
+        elif line.startswith("file_names["):
+            cur = int(line[line.index("[") + 1:line.index("]")])
+        elif cur is not None and line.strip().startswith("name:"):
+            names[cur] = [line.split('"')[1], 0]
+        elif cur is not None and line.strip().startswith("dir_index:"):
+            names[cur][1] = int(line.split()[1])
+            name, d = names[cur]
+            full = name if name.startswith("/") else os.path.join(dirs.get(d, ""), name)
+            if not full.startswith("/") and d:
+                full = os.path.join(dirs.get(0, ""), full)
+            full = os.path.normpath(full)
+            hit = next((f for f in files if full == f or full.endswith("/" + f)), None)
+            if hit:
+                want[cur] = hit
+    p.wait()
+    return res
+
+
+def check_lines(elf, shards, n, rnd, lds, fns, strip):
+    def phys(va):
+        return next(va - lo + pa for lo, hi, pa in lds if lo <= va < hi)
+
+    def virt(pa):
+        return next(pa - p0 + lo for lo, hi, p0 in lds if p0 <= pa < p0 + hi - lo)
+    vaddrs = []
+    for _ in range(n):
+        a, sz = rnd.choice(fns)
+        vaddrs.append(a + rnd.randrange(sz))
+    want = symbolize(elf, vaddrs, strip)
+    samples = [(va, w[0][1], w[0][2]) for va, w in zip(vaddrs, want) if w and w[0][2]]
+    targets = sorted({(f, ln) for _, f, ln in samples})
+    got = dict(zip(targets, page_lines(shards, [f"{f}:{ln}" for f, ln in targets])))
+    bad = []
+    # Every sampled address is in a row of its line.
+    for va, f, ln in samples:
+        g, pa = got[(f, ln)], phys(va)
+        if g.get("none") or not any(a <= pa < b for a, b, _ in g["rows"]):
+            bad.append(f"{f}:{ln}: {va:#x} (llvm-symbolizer) is not in the rows the page lists: {str(g)[:300]}")
+    # Every row and inlined call listed is that line.
+    probes = []
+    for (f, ln), g in got.items():
+        rows = g.get("rows", [])
+        for a, b, _ in rnd.sample(rows, min(20, len(rows))):
+            probes += [(f, ln, "row", virt(a)), (f, ln, "row", virt(b - 1))]
+        calls = g.get("calls", [])
+        for a, _, name, _ in rnd.sample(calls, min(10, len(calls))):
+            probes.append((f, ln, "call " + str(name), virt(a)))
+    for (f, ln, kind, va), w in zip(probes, symbolize(elf, [p[3] for p in probes], strip)):
+        if kind == "row":
+            ok = bool(w) and (w[0][1], w[0][2]) == (f, ln)
+        else:
+            name = kind[5:]
+            ok = any((w[k][1], w[k][2]) == (f, ln) and w[k - 1][0] == name for k in range(1, len(w)))
+        if not ok:
+            bad.append(f"{f}:{ln}: {kind} at {va:#x} is {w} for llvm-symbolizer")
+    # Breakpoint addresses are the line's is_stmt rows.
+    dd = dwarfdump_stmt_rows(elf, sorted({f for f, _ in targets}))
+    nbp = nstmt = 0
+    for (f, ln), g in got.items():
+        rows = g.get("rows", [])
+        rowbp = {x for _, _, bp in rows for x in bp}
+        stmts = {phys(va): prev for va, st, prev in dd.get((f, ln), []) if st}
+        nbp += len(rowbp)
+        for x in rowbp:
+            if x not in stmts:
+                bad.append(f"{f}:{ln}: breakpoint {x:#x} is not an is_stmt row of the line in llvm-dwarfdump")
+        for x, prev in stmts.items():
+            if not any(a <= x < b for a, b, _ in rows):
+                continue
+            nstmt += 1
+            same = prev is not None and prev[3] and prev[1] == f and prev[2] == ln
+            if x not in rowbp and not same:
+                bad.append(f"{f}:{ln}: is_stmt row {x:#x} (after {prev}) is not a breakpoint address")
+    for b in bad[:10]:
+        print("LINES " + b)
+    print(f"{elf}: lines {len(targets) - len({b.split(': ')[0] for b in bad})}/{len(targets)} agree "
+          f"({len(samples)} sampled addresses, {len(probes)} rows/calls checked with llvm-symbolizer, "
+          f"{nbp} breakpoint addresses, {nstmt} is_stmt rows in listed rows checked with llvm-dwarfdump)")
+    return bad
+
+
 def main():
     if sys.argv[1:2] == ["--eh-frame"]:
         sys.exit(1 if eh_frame_selftest(int(sys.argv[2]) if len(sys.argv) > 2 else 2000, random.Random(1)) else 0)
@@ -660,6 +797,7 @@ def main():
     ap.add_argument("--cfi", type=int, default=0, help="also check the CFI rows at N addresses against llvm-dwarfdump")
     ap.add_argument("--locals", type=int, default=0, help="also check the parameters and locals at N addresses against gdb")
     ap.add_argument("--operands", type=int, default=0, help="also check the names of N instructions' memory operands against gdb")
+    ap.add_argument("--lines", type=int, default=0, help="also check the code of the source lines at N addresses (line -> address)")
     args = ap.parse_args()
     rnd = random.Random(args.seed)
     lds = loads(args.elf)
@@ -698,7 +836,8 @@ def main():
     cbad = check_cfi(args.elf, args.shards, args.cfi, rnd, lds) if args.cfi else []
     lbad = check_locals(args.elf, args.shards, args.locals, rnd, lds, fns) if args.locals else []
     obad = check_operands(args.elf, args.shards, args.operands, rnd, lds) if args.operands else []
-    sys.exit(1 if bad or tbad or cbad or lbad or obad else 0)
+    nbad = check_lines(args.elf, args.shards, args.lines, rnd, lds, fns, args.strip) if args.lines else []
+    sys.exit(1 if bad or tbad or cbad or lbad or obad or nbad else 0)
 
 
 if __name__ == "__main__":

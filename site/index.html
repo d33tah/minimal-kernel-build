@@ -118,6 +118,7 @@
     <button role="tab" type="button" id="tab_page" data-tab="page">Page</button>
     <button role="tab" type="button" id="tab_debugger" data-tab="debugger">Debugger</button>
     <button role="tab" type="button" id="tab_graph" data-tab="graph">Graph</button>
+    <button role="tab" type="button" id="tab_coverage" data-tab="coverage">Coverage</button>
     <button role="tab" type="button" id="tab_snapshots" data-tab="snapshots">Snapshots</button>
     <button role="tab" type="button" id="tab_about" data-tab="about">About</button>
   </nav>
@@ -211,6 +212,25 @@
   <div id="graph_info" class="syminfo"></div>
 </section>
 
+<section class="panel" id="panel_coverage" role="tabpanel" aria-labelledby="tab_coverage" hidden>
+  <div class="scan">
+    <input id="cov_filter" type="search" placeholder="filter" aria-label="filter files and functions">
+    <label>sort <select id="cov_sort">
+      <option value="path">by name</option>
+      <option value="run">lines run (%)</option>
+      <option value="notrun">lines not run</option>
+      <option value="lines">lines with code</option>
+      <option value="ins">instructions run (%)</option>
+    </select></label>
+    <button id="cov_export" type="button">lcov</button><span class="tip" tabindex="0" role="button" title="Download an lcov tracefile (genhtml, IDE coverage plugins): every file's lines with code, DA:line,1 for a line that has executed, 0 for one that has not (ran or not, not how often). For a big kernel this first reads every shard of its line table (Debian: about 5 MB).">?</span>
+    <span id="cov_export_status" class="note"></span>
+    <span class="tip" tabindex="0" role="button" title="All the kernel's code, by directory, file and function, from its DWARF: for the kernels built here a -g build of the same tree whose code is byte-identical to the kernel that boots, for Debian its -dbg package. Lines run: of the lines with code (the line table's rows; a line of inlined code and the line of its call both count), those where an instruction started while the page stepped the CPU. Instructions run: of the function's instructions (llvm-objdump of the same ELF, in CI), the addresses where an instruction started while stepping. Only what the page steps is recorded, the same record as the tint in the Page listing: code v86's JIT ran (the fast-forward to the kernel entry, full speed) is not. Tap a directory to open it, a file for the whole file in the Source panel with its executed lines, a function to open it in the Page tab. The totals come with the kernel; which lines ran is read from the line tables of the code that ran, fetched when needed. An imported vmlinux has no tree: its DWARF is only read around the addresses shown.">?</span>
+  </div>
+  <p id="cov_status" class="note"></p>
+  <div id="cov_tree" class="ctree covtree"></div>
+  <p id="cov_info" class="note"></p>
+</section>
+
 <section class="panel" id="panel_snapshots" role="tabpanel" aria-labelledby="tab_snapshots" hidden>
   <p class="note">A snapshot is v86 <code>save_state()</code>: CPU, devices, VGA memory and all guest RAM, gzip-compressed in the browser. The last 8 are kept in memory. <span id="snap_note"></span></p>
   <div class="scan">
@@ -261,6 +281,7 @@
 <script src="dwarf.js"></script>
 <script src="dbginfo.js"></script>
 <script src="source.js"></script>
+<script src="coverage.js"></script>
 <script src="symimport.js"></script>
 <script src="livedis.js"></script>
 <script src="fastforward.js"></script>

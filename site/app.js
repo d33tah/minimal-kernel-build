@@ -805,7 +805,7 @@ function setLive() {
 
 // ---- tabs -----------------------------------------------------------------
 
-const TABS = ["memory", "page", "debugger", "graph", "snapshots", "about"];
+const TABS = ["memory", "page", "debugger", "graph", "coverage", "snapshots", "about"];
 let tab = "memory";
 
 // Hash: #memory, #page/0x100000, #debugger, ...
@@ -829,6 +829,7 @@ function showTab(name) {
 	if (tab === "debugger")
 		renderContext();
 	graphShow(tab === "graph");
+	covShow(tab === "coverage");
 }
 
 function readHash() {
@@ -2288,6 +2289,7 @@ async function init() {
 	if (params.get("count") === "0")
 		$("count").checked = false;
 	initSource();
+	initCoverage();
 	setupVars();
 	dbgOnChange(() => {
 		syncSrcToggle();

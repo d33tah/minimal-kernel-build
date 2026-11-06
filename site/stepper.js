@@ -106,6 +106,8 @@ const IN_HLT = 616, IS_32 = 804;
 const EAX = 64 >> 2, EBX = (64 + 12) >> 2, ESP = (64 + 16) >> 2;
 
 // Drives a stopped v86 instance one instruction at a time and counts.
+const POPCOUNT8 = Uint8Array.from({ length: 256 }, (_, b) => { let n = 0; for (; b; b &= b - 1) n++; return n; });
+
 class Stepper {
 	constructor(emulator, kernelLo, kernelHi) {
 		const cpu = emulator.v86.cpu;
@@ -519,6 +521,23 @@ class Stepper {
 	executed(phys) {
 		const seen = this.seen;
 		return phys < seen.length * 8 ? !!(seen[phys >> 3] & (1 << (phys & 7))) : this.seenHigh.has(phys);
+	}
+
+	// How many addresses in [lo, hi) an instruction started at while stepping.
+	countIn(lo, hi) {
+		const seen = this.seen, end = Math.min(hi, seen.length * 8);
+		let n = 0, a = lo;
+		for (; a < end && (a & 7); a++)
+			n += seen[a >> 3] >> (a & 7) & 1;
+		for (; a + 8 <= end; a += 8)
+			n += POPCOUNT8[seen[a >> 3]];
+		for (; a < end; a++)
+			n += seen[a >> 3] >> (a & 7) & 1;
+		if (hi > seen.length * 8)
+			for (const x of this.seenHigh)
+				if (x >= lo && x < hi)
+					n++;
+		return n;
 	}
 
 	// Called when v86's JIT ran in between: the history has a gap.

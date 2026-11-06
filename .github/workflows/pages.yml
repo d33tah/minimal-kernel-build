@@ -108,6 +108,7 @@ jobs:
           --strip debian/build/build_i386_none_686/ --strip /build/reproducible-path/linux-6.1.176/
         cat "$d"/dwarf/*.bin | gzip -9 | wc -c | sed 's/^/debian dwarf shards gzip: /'
         gzip -9 -c "$d/dwarf/types.json" | wc -c | sed 's/^/debian types.json gzip: /'
+        gzip -9 -c "$d/dwarf/files.json" | wc -c | sed 's/^/debian files.json gzip: /'
         site/gen-debian-source.sh debian-src/linux_6.1.176.orig.tar.xz debian-src/linux_6.1.176-1.debian.tar.xz "$x/src"
         site/gen-src.js "$d/dwarf" "$x/src" "$d/src" \
           --origin "Debian's source package linux 6.1.176-1 (linux_6.1.176.orig.tar.xz with the patches of debian/patches/series from linux_6.1.176-1.debian.tar.xz)" \
@@ -245,7 +246,7 @@ jobs:
         # Cache busting: Pages serves with max-age=600, and a browser that
         # keeps an older app.js next to a newer index.html breaks.
         v=$(echo "$GITHUB_SHA" | cut -c1-12)
-        sed -i -E "s/(href|src)=\"(style\.css|clock\.js|app\.js|stepper\.js|graph\.js|dwarf\.js|dbginfo\.js|source\.js|vars\.js|symimport\.js|livedis\.js|fastforward\.js|cpustate\.js|v86\/libv86\.js)\"/\1=\"\2?v=$v\"/g" site/index.html
+        sed -i -E "s/(href|src)=\"(style\.css|clock\.js|app\.js|stepper\.js|graph\.js|dwarf\.js|dbginfo\.js|source\.js|coverage\.js|vars\.js|symimport\.js|livedis\.js|fastforward\.js|cpustate\.js|v86\/libv86\.js)\"/\1=\"\2?v=$v\"/g" site/index.html
         grep -E "\?v=$v" site/index.html
 
     # The browser test runs in its own job (browser-test below) so the
@@ -287,7 +288,7 @@ jobs:
         - boot,symbols,debugger,misc,touch,tasks_minified
         - debian,dwarf,dwarf_import,runto,initramfs,coverage
         - tasks
-        - types
+        - types,covtree
     name: browser-test (${{ matrix.suites }})
     steps:
     - uses: actions/checkout@v4

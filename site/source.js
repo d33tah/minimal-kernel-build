@@ -316,6 +316,44 @@ function openSource(pa) {
 		$("src_body").scrollTop = cur.offsetTop - $("src_body").clientHeight / 3;
 }
 
+// Open the side panel with a whole file (the Coverage tab): every line of
+// it with code, in any function, and which of them have executed.
+function openSourceFile(path) {
+	srcPanel = { pa: -1, fn: null, path, line: 0, whole: true };
+	renderSourcePanel();
+	$("src_panel").hidden = false;
+	const first = $("src_body").querySelector(".exec") || $("src_body").querySelector(".code");
+	$("src_body").scrollTop = first ? first.offsetTop - $("src_body").clientHeight / 3 : 0;
+}
+
+// A whole file's lines with code: the line rows of every shard that has
+// code of it (files.json), each frame naming the file, like the Coverage
+// tab counts them.
+function fileLines(path) {
+	const fl = dbgFiles();
+	if (fl.state !== "ok")
+		return fl;
+	const F = fl.F, fi = F.fileIx.get(path);
+	if (fi === undefined)
+		return { state: "none", why: path + " has no code in this kernel's line table" };
+	const size = 2 ** F.shardBits;
+	const tables = F.files[fi][2].map((s) => [s, dbgTableAt(s * size)]);
+	const wait = tables.find(([, r]) => r.state !== "ok");
+	if (wait)
+		return wait[1];
+	const code = new Map();
+	for (const [s, r] of tables)
+		dwarfEachLine(r.t, s * size, (s + 1) * size, (a, b, frames) => {
+			for (const f of frames)
+				if (f.file === path && f.line) {
+					if (!code.has(f.line))
+						code.set(f.line, []);
+					code.get(f.line).push([a, b]);
+				}
+		});
+	return { state: "ok", first: 1, last: Infinity, code };
+}
+
 // The panel's lines from the DWARF of the function around srcPanel.pa:
 // first/last are the lines of srcPanel.fn in its file (directly, not
 // through code inlined into it), widened by two lines; code has every
@@ -324,6 +362,14 @@ function openSource(pa) {
 function panelLines() {
 	if (srcPanel.lines && srcPanel.dbgVersion === DBG.version)
 		return srcPanel.lines;
+	if (srcPanel.whole) {
+		const fl = fileLines(srcPanel.path);
+		if (fl.state === "ok") {
+			srcPanel.lines = fl;
+			srcPanel.dbgVersion = DBG.version;
+		}
+		return fl;
+	}
 	const fn = dbgFunction(srcPanel.pa);
 	if (fn.state !== "ok")
 		return fn;
@@ -355,7 +401,7 @@ function lineCoverage(pl) {
 	const run = new Set();
 	if (stepper)
 		for (const [l, spans] of pl.code)
-			if (spans.some(([a, b]) => { for (let x = a; x < b; x++) if (stepper.executed(x)) return true; return false; }))
+			if (spans.some(([a, b]) => stepper.countIn(a, b) > 0))
 				run.add(l);
 	return { code: new Set(pl.code.keys()), run };
 }
@@ -367,7 +413,7 @@ function renderSourcePanel() {
 	const body = $("src_body");
 	const pl = panelLines();
 	const file = srcFile(path);
-	$("src_title").textContent = (fn || "?") + " — " + path + (pl.state === "ok" ? ":" + pl.first + "–" + pl.last : "");
+	$("src_title").textContent = srcPanel.whole ? path + " (whole file)" : (fn || "?") + " — " + path + (pl.state === "ok" ? ":" + pl.first + "–" + pl.last : "");
 	if (pl.state !== "ok" || file.state !== "ok") {
 		body.textContent = pl.state === "loading" || file.state === "loading" ? "reading " + (pl.state === "loading" ? "DWARF" : path) + "…" :
 			pl.state === "none" ? pl.why : file.why;
@@ -390,8 +436,10 @@ function renderSourcePanel() {
 	body.dataset.executed = run.size;
 	body.dataset.file = path;
 	const note = SRC.notes && SRC.notes[path] ? " " + path + ": " + SRC.notes[path] + "." : "";
+	const cov = stepper ? coverageFor(stepper.kernelLo) : null;
 	$("src_info").textContent = run.size + " of " + code.size + " lines with code have executed (● ran, ○ not yet)" +
-		(stepper ? "" : "; boot a kernel to see coverage") + ". Recorded while stepping. Source: " + (SRC.info || SRC.mode) + "." + note;
+		(!stepper ? "; boot a kernel to see coverage" : !cov.tint ? "; " + cov.why : cov.partial ? "; v86's JIT has run since the kernel entry and records nothing, so ○ lines may have run" : "") +
+		". Recorded while stepping" + (srcPanel.whole ? ", every function of the file" : "") + ". Source: " + (SRC.info || SRC.mode) + "." + note;
 }
 
 // The Debugger's "source" rows: the C line at EIP and, for inlined code,

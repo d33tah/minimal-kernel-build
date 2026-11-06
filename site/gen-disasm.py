@@ -23,7 +23,7 @@ import subprocess
 import sys
 
 LABEL = re.compile(r"^([0-9a-f]+) <(.+)>:$")
-INSN = re.compile(r"^\s*([0-9a-f]+):\s((?:[0-9a-f]{2} )+)\s*(?:\t(.*))?$")
+INSN = re.compile(r"^\s*([0-9a-f]+):\s((?:[0-9a-f]{2} ?)+)\s*(?:\t(.*))?$")
 
 
 def load_offsets(path):

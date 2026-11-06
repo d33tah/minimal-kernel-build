@@ -279,6 +279,29 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   inlined, several statics of one name) are checked by the ELF symbol at
   their address instead (local runs: minified 3,000/3,000, Debian
   8,263/8,263 plus 1,737 by ELF symbol).
+- **Coverage tab.** All the kernel's code as a tree of directories, files
+  and functions, each with lines run / lines with code and instructions
+  run / instructions, a bar, sortable (name, lines run %, lines not run,
+  lines with code, instructions run %) and filterable; a file opens in the
+  Source panel whole, every line with code marked ran or not; a function
+  opens the Page tab; "lcov" downloads an lcov tracefile (DA:line,1 or 0,
+  ran or not, no counts). The totals come with the kernel:
+  `gen-dwarf.js` writes `dwarf/files.json` (every file with its number of
+  lines with code and the shards holding them; every DWARF function, i.e.
+  outermost range, with its file, its lines in that file, its instruction
+  count and its address ranges; instruction starts from `llvm-objdump -d`
+  of the same ELF, `$OBJDUMP` overrides). Lines are counted per line row
+  of the shards (dwarf.js `dwarfEachLine`), every frame with a line, so a
+  line of inlined code and the line of its call both count; the page counts
+  what ran the same way, so a file's numbers in the tree and in the Source
+  panel are equal. What ran is the stepper's record (`Stepper.seen`, the
+  same as the listing tint, with the same rule about code v86's JIT ran);
+  the line rows are read only from the shards holding a recorded address.
+  Debian: 3,183 files, 41,389 functions, 583,569 lines with code,
+  3,030,508 instructions (2,941,867 in functions), `files.json` 2,159,580
+  bytes (649,441 gzipped), fetched when the tab opens; minified Linux: 188
+  files, 439 functions, 4,465 lines, 17,449 instructions, 23,810 bytes. An
+  imported vmlinux has no tree (it would need every unit's line table).
 - **C source.** "C source" prints the C line above the instructions it
   compiled to in the Page listing and the Debugger's code window, like
   `objdump -S` (dim `file.c:123`, printed again when the code returns to
@@ -764,7 +787,15 @@ pointed at with the mouse, name a variable path that gdb evaluates to an
 lvalue holding the byte; a tap offers a working watch; screenshots light
 and dark at 1280 and 390 px. The types import case imports the minified
 Linux's and Debian's -g vmlinux and checks the Worker's variables equal
-the shipped `types.json`, also after a reload (IndexedDB). A last case serves two "deploys" with `Cache-Control: max-age=600` (as
+the shipped `types.json`, also after a reload (IndexedDB). The coverage tree case boots the minified Linux counted and checks the
+Coverage tab: the root and every directory are the sums of their files and
+equal `files.json`, init/main.c has lines that ran, die() has none,
+start_kernel's instructions run equal the untinted instructions of its
+listing, sorting and the filter work, the Source panel's whole-file view of
+init/main.c has the tree's numbers, the lcov export has the same totals,
+a function opens the Page tab; screenshots light and dark at 1280 and 390
+px. The Debian case also opens the tree at start_kernel and checks it came
+without fetching most shards. A last case serves two "deploys" with `Cache-Control: max-age=600` (as
 GitHub Pages does) and checks a reload runs the new `app.js`. Screenshots
 (desktop and 390 px) go to `site/test-screenshots/`.
 

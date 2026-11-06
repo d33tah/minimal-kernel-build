@@ -288,6 +288,51 @@ function dbgTypes() {
 		(p ? " (" + p[0] + " of " + p[1] + ")" : "") + "…" };
 }
 
+// ---- files and functions (the Coverage tab) ----------------------------------
+
+// { state: "ok", F } with F the shipped files.json (gen-dwarf.js Coverage)
+// plus lookups: fileIx (path -> index), fnAt (outermost ranges sorted by
+// start: [lo, hi, function index]), fnLen (the longest), or the state of
+// the load. Only shipped kernels have it: an imported vmlinux would need
+// every line row of every unit decoded first.
+function dbgFiles() {
+	if (!dbgHas())
+		return { state: "none", why: DBG.why };
+	if (DBG.mode !== "shards")
+		return { state: "none", why: "the coverage tree needs the list of every file's lines with code that CI precomputes for the kernels shipped here; an imported vmlinux is only read around the addresses shown" };
+	if (!DBG.index)
+		return { state: "loading", why: "reading the debug info index…" };
+	if (!DBG.index.files)
+		return { state: "none", why: "this kernel's debug info has no file list (files.json)" };
+	if (DBG.files)
+		return DBG.files.failed ? { state: "none", why: "the file list did not load: " + DBG.files.failed } : { state: "ok", F: DBG.files };
+	if (!DBG.filesLoad) {
+		const mine = DBG;
+		DBG.filesLoad = fetch(withV(DBG.base + DBG.index.files)).then((r) => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+			.then((F) => {
+				F.fileIx = new Map(F.files.map((f, k) => [f[0], k]));
+				F.fnAt = [];
+				F.funcs.forEach((fn, i) => { for (let k = 4; k < fn.length; k += 2) F.fnAt.push([fn[k], fn[k] + fn[k + 1], i]); });
+				F.fnAt.sort((x, y) => x[0] - y[0]);
+				F.fnLen = F.fnAt.reduce((m, r) => Math.max(m, r[1] - r[0]), 0);
+				if (mine === DBG) { DBG.files = F; dbgChanged(); }
+			})
+			.catch((e) => { if (mine === DBG) { DBG.files = { failed: e.message }; dbgChanged(); } });
+	}
+	return { state: "loading", why: "reading the list of source files and functions…" };
+}
+
+// Index of the function (files.json funcs) whose code holds pa, or -1.
+function dbgFuncAt(F, pa) {
+	const r = F.fnAt;
+	let a = 0, b = r.length;
+	while (a < b) { const m = (a + b) >> 1; if (r[m][0] <= pa) a = m + 1; else b = m; }
+	for (let q = a - 1; q >= 0 && r[q][0] >= pa - F.fnLen; q--)
+		if (r[q][1] > pa)
+			return r[q][2];
+	return -1;
+}
+
 // Unit of the import covering pa, or -1.
 function dbgUnitAt(pa) {
 	const ix = DBG.index;

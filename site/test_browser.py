@@ -1480,6 +1480,9 @@ def dwarf_case(browser, base, shots, name):
     page = browser.new_page(viewport={"width": 1280, "height": 1000})
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)))
+    bins = set()  # DWARF shards fetched
+    page.on("response", lambda resp: "/dwarf/" in resp.url and resp.url.split("?")[0].endswith(".bin") and
+            bins.add(resp.url.split("/dwarf/", 1)[1].split("?")[0]))
     page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
     page.fill("#dbg_addr", hex(sk["vaddr"]))
@@ -1760,6 +1763,9 @@ def types_case(browser, base, shots, name):
     page = browser.new_page(viewport={"width": 1280, "height": 1000})
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)))
+    bins = set()  # DWARF shards fetched
+    page.on("response", lambda resp: "/dwarf/" in resp.url and resp.url.split("?")[0].endswith(".bin") and
+            bins.add(resp.url.split("/dwarf/", 1)[1].split("?")[0]))
     page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
     page.fill("#dbg_addr", hex(sk["vaddr"]))
@@ -2013,6 +2019,9 @@ def debian_case(browser, base, shots, name):
     src_files = {}  # source files fetched: path -> bytes
     page.on("response", lambda resp: "/src/" in resp.url and resp.url.split("?")[0].endswith(".gz") and
             src_files.__setitem__(resp.url.split("/src/", 1)[1].split("?")[0], int(resp.headers.get("content-length") or 0)))
+    bins = set()  # DWARF shards fetched
+    page.on("response", lambda resp: "/dwarf/" in resp.url and resp.url.split("?")[0].endswith(".bin") and
+            bins.add(resp.url.split("/dwarf/", 1)[1].split("?")[0]))
     page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
     page.fill("#dbg_addr", hex(sk["vaddr"]))
@@ -2040,6 +2049,7 @@ def debian_case(browser, base, shots, name):
         page.screenshot(path=str(shots / "dwarf-listing-debian-1280.png"))
         if "src" in entry:
             debian_source_panel(page, page.locator(f'#listing .src[data-addr="{sk["paddr"]}"]'), src_files, problems, r, shots)
+        debian_covtree(page, entry, bins, problems, r, shots)
     page.close()
     if errors:
         problems.append("page errors: " + "; ".join(errors))
@@ -2079,6 +2089,32 @@ def debian_source_panel(page, line, src_files, problems, r, shots):
             problems.append(f"Debian source panel: the page scrolls horizontally at 390 px ({scheme})")
         page.screenshot(path=str(shots / f"source-debian-390-{scheme}.png"))
     page.set_viewport_size({"width": 1100, "height": 1000})
+
+
+def debian_covtree(page, entry, bins, problems, r, shots):
+    """Debian's Coverage tab at start_kernel: the whole tree from files.json
+    without reading every shard (only those with code that ran), totals
+    equal files.json, init/main.c has lines that ran."""
+    F = json.loads((SITE / entry["dwarf"] / "files.json").read_text())
+    shards = json.loads((SITE / entry["dwarf"] / "index.json").read_text())["shards"]
+    page.click("#src_close")
+    show_tab(page, "coverage")
+    wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok" and not page.inner_text("#cov_status").startswith("Reading"), 60)
+    page.fill("#cov_filter", "init/main.c")
+    rows = cov_rows(page)
+    root = next((x for x in rows if x["kind"] == "root"), None)
+    main = next((x for x in rows if x["kind"] == "file" and x["path"] == "init/main.c"), None)
+    r["covtree_root"], r["covtree_main"], r["covtree_status"] = root, main, page.inner_text("#cov_status")
+    r["covtree_shards_fetched"] = [len(bins), len(shards)]
+    if not root or root["lines"] != sum(f[1] for f in F["files"]) or root["linesRun"] is None:
+        problems.append(f"Debian coverage tree root {root} (files.json: {sum(f[1] for f in F['files'])} lines)")
+    if not main or not main["linesRun"] or main["lines"] != F["files"][[f[0] for f in F["files"]].index("init/main.c")][1]:
+        problems.append(f"Debian coverage tree init/main.c: {main}")
+    if len(bins) >= len(shards) / 2:
+        problems.append(f"Debian coverage tree fetched {len(bins)} of {len(shards)} shards")
+    page.evaluate("document.getElementById('panel_coverage').scrollIntoView()")
+    page.screenshot(path=str(shots / "covtree-debian-1100.png"))
+    page.fill("#cov_filter", "")
 
 
 def norm_insn(text):
@@ -2189,6 +2225,146 @@ def coverage_case(browser, base, shots):
         show_listing_line(page, die["paddr"])
         page.screenshot(path=str(shots / f"coverage-die-{scheme}-{width}.png"))
         page.close()
+    return problems, r
+
+
+def cov_rows(page, kind=None):
+    """The Coverage tree's rows: [{kind, path, lines, linesRun, ins, insRun}] (run None when unknown)."""
+    rows = page.eval_on_selector_all("#cov_tree .covrow[data-kind]", "es => es.map(e => ({...e.dataset}))")
+    out = []
+    for x in rows:
+        if kind and x["kind"] != kind:
+            continue
+        out.append({"kind": x["kind"], "path": x["path"], "lines": int(x["lines"]), "ins": int(x["ins"]),
+                    "linesRun": int(x["linesRun"]) if x["linesRun"] != "" else None,
+                    "insRun": int(x["insRun"]) if x["insRun"] != "" else None})
+    return out
+
+
+def cov_open_all(page):
+    """Open every directory and file of the Coverage tree."""
+    page.evaluate("""() => {
+        const T = covTree(DBG.files);
+        const walk = (d) => { COV.open.add(d.path); d.dirs.forEach(walk); };
+        walk(T.root);
+        DBG.files.files.forEach(([p]) => COV.open.add(p));
+        covRender(); }""")
+
+
+def covtree_case(browser, base, shots):
+    """The Coverage tab after a counted minified boot: init/main.c has lines
+    that ran, die() (never called in a good boot) has none, the root and every
+    directory are the sums of their files, the tree's numbers agree with
+    files.json and with the Source panel's whole-file view, a function opens
+    the Page tab, the lcov export has the same totals; screenshots light/dark
+    at 1280 and 390 px with no horizontal scroll."""
+    problems, r = [], {}
+    entry = kernel_entries()["minified-linux"]
+    F = json.loads((SITE / entry["dwarf"] / "files.json").read_text())
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel=minified-linux&speed=full")
+    if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 120):
+        problems.append("the counted boot did not end")
+    show_tab(page, "coverage")
+    wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok"
+             and page.get_attribute("#cov_tree", "data-coverage") in ("stepped", "partial"), 30)
+    r["coverage"] = page.get_attribute("#cov_tree", "data-coverage")
+    cov_open_all(page)
+    rows = cov_rows(page)
+    files = {x["path"]: x for x in rows if x["kind"] == "file"}
+    root = next((x for x in rows if x["kind"] == "root"), None)
+    r["root"] = root
+    r["rows"] = len(rows)
+    want_lines = sum(f[1] for f in F["files"])
+    want_ins = sum(f[3] for f in F["funcs"] if f[1] >= 0)
+    if not root or root["lines"] != want_lines or root["ins"] != want_ins or len(files) != len(F["files"]):
+        problems.append(f"root {root} != files.json: {want_lines} lines, {want_ins} instructions, {len(F['files'])} files ({len(files)} rows)")
+    for key in ("lines", "linesRun", "ins", "insRun"):
+        total = sum(x[key] or 0 for x in files.values())
+        if root and root[key] != total:
+            problems.append(f"root {key} {root[key]} != sum of the files {total}")
+    # Every directory is the sum of the files below it.
+    for d in (x for x in rows if x["kind"] == "dir"):
+        below = [f for p, f in files.items() if p.startswith(d["path"] + "/")]
+        for key in ("lines", "linesRun"):
+            if d[key] != sum(f[key] or 0 for f in below):
+                problems.append(f"directory {d['path']}: {key} {d[key]} != sum of its files")
+                break
+    main = files.get("init/main.c")
+    r["init/main.c"] = main
+    if not main or not main["linesRun"] or not main["insRun"] or main["linesRun"] >= main["lines"]:
+        problems.append(f"init/main.c: {main}")
+    die = next((x for x in rows if x["kind"] == "func" and x["path"].endswith(":die")), None)
+    r["die"] = die
+    if not die or die["linesRun"] != 0 or die["insRun"] != 0 or not die["lines"] or not die["ins"]:
+        problems.append(f"die() should be in the tree with nothing run: {die}")
+    sk = next((x for x in rows if x["kind"] == "func" and x["path"].endswith(":start_kernel")), None)
+    r["start_kernel"] = sk
+    if not sk or not sk["insRun"] or sk["path"].split(":")[0] != "init/main.c":
+        problems.append(f"start_kernel: {sk}")
+
+    # Sorting by lines not run: the top directories, most first.
+    page.select_option("#cov_sort", "notrun")
+    top = page.eval_on_selector_all('#cov_tree .covrow[data-kind="dir"][data-depth="1"]',
+                                    "es => es.map(e => [e.dataset.path, e.dataset.lines - e.dataset.linesRun])")
+    r["most_not_run"] = top[:3]
+    if len(top) < 2 or any(a[1] < b[1] for a, b in zip(top, top[1:])):
+        problems.append(f"sort by lines not run: top directories {top}")
+    page.select_option("#cov_sort", "path")
+    # The filter keeps matching functions and their file.
+    page.fill("#cov_filter", "start_kernel")
+    fr = cov_rows(page)
+    r["filter_rows"] = len(fr)
+    if not any(x["path"].endswith(":start_kernel") for x in fr) or any(x["kind"] == "func" and "start_kernel" not in x["path"] for x in fr):
+        problems.append(f"filter start_kernel: {[x['path'] for x in fr][:8]}")
+    page.fill("#cov_filter", "")
+
+    # The whole file in the Source panel: same lines with code and run.
+    page.locator('#cov_tree .covrow[data-path="init/main.c"] .covname').click()
+    wait_for(lambda: page.is_visible("#src_panel") and page.get_attribute("#src_body", "data-state") == "ok", 20)
+    r["panel"] = [page.inner_text("#src_title"), page.get_attribute("#src_body", "data-code"), page.get_attribute("#src_body", "data-executed")]
+    if main and (r["panel"][0] != "init/main.c (whole file)" or int(r["panel"][1] or -1) != main["lines"] or int(r["panel"][2] or -1) != main["linesRun"]):
+        problems.append(f"Source panel of init/main.c {r['panel']} != tree {main}")
+    page.screenshot(path=str(shots / "covtree-panel-1280-light.png"))
+    page.click("#src_close")
+
+    with page.expect_download() as dl:
+        page.click("#cov_export")
+    lcov = pathlib.Path(dl.value.path()).read_text()
+    lf = sum(int(l[3:]) for l in lcov.splitlines() if l.startswith("LF:"))
+    lh = sum(int(l[3:]) for l in lcov.splitlines() if l.startswith("LH:"))
+    r["lcov"] = [lf, lh, lcov.count("SF:")]
+    if root and (lf != root["lines"] or lh != root["linesRun"] or lcov.count("SF:") != len(F["files"])):
+        problems.append(f"lcov LF/LH/files {r['lcov']} != tree {root}")
+
+    for scheme, width in (("light", 1280), ("dark", 1280), ("dark", 390), ("light", 390)):
+        page.emulate_media(color_scheme=scheme)
+        page.set_viewport_size({"width": width, "height": 1000})
+        page.fill("#cov_filter", "init")
+        time.sleep(0.3)
+        if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1") or not no_hscroll(page, "#cov_tree"):
+            problems.append(f"{scheme}/{width}: horizontal scroll")
+        page.evaluate("document.getElementById('panel_coverage').scrollIntoView()")
+        page.screenshot(path=str(shots / f"covtree-{scheme}-{width}.png"))
+    page.fill("#cov_filter", "")
+    page.set_viewport_size({"width": 1280, "height": 1000})
+    page.locator('#cov_tree .covrow[data-kind="func"][data-path$=":start_kernel"] .covname').click()
+    syms = {x["name"]: x for x in json.loads((SITE / entry["symbols"]).read_text())["symbols"]}
+    if not wait_for(lambda: page.get_attribute("#listing", "data-page") == str(syms["start_kernel"]["paddr"] // 4096), 5):
+        problems.append("tapping start_kernel in the tree did not open its page")
+    # Its instructions run = the listing's instructions in it that are not tinted.
+    fn = next(f for f in F["funcs"] if f[0] == "start_kernel")
+    lo, hi = fn[4], fn[4] + fn[5]
+    marks = page.eval_on_selector_all("#listing .ins[data-addr]", "es => es.map(e => [Number(e.dataset.addr), e.classList.contains('nx')])")
+    inside = [nx for a, nx in marks if lo <= a < hi]
+    r["start_kernel_listing"] = [len(inside), inside.count(False)]
+    if sk and (len(inside) != sk["ins"] or inside.count(False) != sk["insRun"]):
+        problems.append(f"start_kernel: listing {len(inside)} instructions, {inside.count(False)} not tinted; tree {sk}")
+    page.close()
+    if errors:
+        problems.append("page errors: " + "; ".join(errors))
     return problems, r
 
 
@@ -2505,6 +2681,10 @@ def suite_coverage(ctx):
     return failed | report("coverage", *coverage_case(ctx.browser, ctx.base, ctx.shots))
 
 
+def suite_covtree(ctx):
+    return report("covtree", *covtree_case(ctx.browser, ctx.base, ctx.shots))
+
+
 def suite_touch(ctx):
     failed = report("touch", touch_case(ctx.browser, ctx.base, ctx.shots))
     return failed | report("stale_cache", stale_cache_case(ctx.browser, ctx.args.timeout))
@@ -2526,6 +2706,7 @@ SUITES = {
     "tasks": (suite_tasks, False),
     "tasks_minified": (suite_tasks_minified, True),
     "coverage": (suite_coverage, True),
+    "covtree": (suite_covtree, True),
     "touch": (suite_touch, False),
 }
 

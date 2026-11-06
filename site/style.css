@@ -34,6 +34,7 @@
 	--nx-bg: rgba(148, 103, 189, 0.28);
 	--src-loc: #8a4500;
 	--src-text: #5e3a92;
+	--cov-run: #2e7d32;
 }
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme="light"]) {
@@ -57,6 +58,7 @@
 		--nx-bg: rgba(190, 150, 240, 0.22);
 		--src-loc: #e8a860;
 		--src-text: #c4a8f0;
+		--cov-run: #66bb6a;
 	}
 }
 :root[data-theme="dark"] {
@@ -80,6 +82,7 @@
 	--nx-bg: rgba(190, 150, 240, 0.22);
 	--src-loc: #e8a860;
 	--src-text: #c4a8f0;
+	--cov-run: #66bb6a;
 }
 
 * { box-sizing: border-box; }
@@ -305,6 +308,19 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 .tname { overflow-wrap: anywhere; cursor: pointer; }
 #graph_search { width: 9rem; }
 #graph_search[hidden] { display: none; }
+.covtree { max-height: 75vh; }
+.covrow { display: grid; grid-template-columns: 1.6rem minmax(0, 1fr) 11rem 11rem; align-items: center; gap: 0.5rem; }
+.covname { border: none; background: none; padding: 0.15rem 0; text-align: left; color: inherit; font: inherit; min-height: 24px; }
+.covrow[data-kind="func"] .covname { color: var(--accent); }
+.covrow[data-kind="root"] .covname { font-weight: 600; }
+.covcell { display: flex; flex-direction: column; gap: 1px; font-size: 0.72rem; color: var(--muted); }
+.covbar { display: block; height: 5px; background: var(--page-free); border-radius: 2px; overflow: hidden; }
+.covbar span { display: block; height: 100%; background: var(--cov-run); }
+#cov_filter { width: 11rem; }
+@media (max-width: 640px) {
+	.covrow { grid-template-columns: 1.6rem minmax(0, 1fr) 5.6rem 5.6rem; gap: 0.3rem; }
+	.covcell { font-size: 0.66rem; }
+}
 .trow.thead { position: sticky; top: 0; background: var(--bg); color: var(--muted); font-weight: 600; }
 #sym_status[data-state="error"] { color: var(--err-fg); background: var(--err-bg); padding: 0 0.3rem; border-radius: 3px; }
 #sym_offset { width: 6.5em; }

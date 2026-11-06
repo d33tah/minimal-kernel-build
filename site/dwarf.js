@@ -1393,6 +1393,22 @@ function dwarfFrames(t, pa) {
 	return frames;
 }
 
+// fn(a, b, frames) for each line row of table t in [lo, hi) that has a
+// file:line, clipped to [lo, hi); frames as dwarfFrames at a. What has
+// code and what ran (the page's coverage, gen-dwarf.js's totals) is
+// counted per row like this: every frame with a line, so the call line of
+// inlined code counts as well as the inlined line.
+function dwarfEachLine(t, lo, hi, fn) {
+	for (let k = Math.max(0, dwarfRow(t, lo)); k < t.la.length && t.la[k] < hi; k++) {
+		if (t.lf[k] < 0)
+			continue;
+		const a = Math.max(lo, t.la[k]), b = Math.min(hi, k + 1 < t.la.length ? t.la[k + 1] : hi);
+		const frames = b > a ? dwarfFrames(t, a) : null;
+		if (frames)
+			fn(a, b, frames);
+	}
+}
+
 // [lo, hi) of the outermost function (depth 0) covering pa, or null.
 function dwarfFunction(t, pa) {
 	let a = 0, b = t.ra.length;
@@ -1478,4 +1494,4 @@ function dwarfDecode(b) {
 }
 
 if (typeof module !== "undefined")
-	module.exports = { DwarfTypes, DWT, dwStrip, dwTypeSize, dwTypeName, dwWhere, dwVarIndex, DwarfReader, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfFunction, dwarfRow, dwarfEncode, dwarfDecode, dwDisplayPath };
+	module.exports = { DwarfTypes, DWT, dwStrip, dwTypeSize, dwTypeName, dwWhere, dwVarIndex, DwarfReader, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfFunction, dwarfRow, dwarfEachLine, dwarfEncode, dwarfDecode, dwDisplayPath };

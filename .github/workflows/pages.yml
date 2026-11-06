@@ -283,7 +283,7 @@ jobs:
       fail-fast: false
       matrix:
         suites:
-        - boot,symbols,debugger,misc,touch,tasks_minified,hello
+        - boot,symbols,debugger,misc,touch,tasks_minified,hello,firstlook
         - debian,dwarf,dwarf_import,runto,initramfs,coverage
         - tasks
         - types,covtree,unwind

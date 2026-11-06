@@ -359,6 +359,42 @@ function cfiRow(t, pa) {
 
 const DW_OP_NAMES = { 0x06: "DW_OP_deref", 0x23: "DW_OP_plus_uconst", 0x22: "DW_OP_plus", 0x1c: "DW_OP_minus",
 	0x9c: "DW_OP_call_frame_cfa", 0x9f: "DW_OP_stack_value", 0x12: "DW_OP_dup", 0x13: "DW_OP_drop", 0x1a: "DW_OP_and" };
+// Names of the other operations, for location tooltips (operands as "…").
+const DW_OP_MORE = { 0x08: "DW_OP_const1u", 0x09: "DW_OP_const1s", 0x0a: "DW_OP_const2u", 0x0b: "DW_OP_const2s", 0x0c: "DW_OP_const4u",
+	0x0d: "DW_OP_const4s", 0x14: "DW_OP_over", 0x15: "DW_OP_pick", 0x16: "DW_OP_swap", 0x17: "DW_OP_rot", 0x19: "DW_OP_abs",
+	0x1b: "DW_OP_div", 0x1d: "DW_OP_mod", 0x1e: "DW_OP_mul", 0x1f: "DW_OP_neg", 0x20: "DW_OP_not", 0x21: "DW_OP_or",
+	0x24: "DW_OP_shl", 0x25: "DW_OP_shr", 0x26: "DW_OP_shra", 0x27: "DW_OP_xor", 0x28: "DW_OP_bra", 0x29: "DW_OP_eq",
+	0x2a: "DW_OP_ge", 0x2b: "DW_OP_gt", 0x2c: "DW_OP_le", 0x2d: "DW_OP_lt", 0x2e: "DW_OP_ne", 0x2f: "DW_OP_skip",
+	0x92: "DW_OP_bregx", 0x94: "DW_OP_deref_size", 0x96: "DW_OP_nop", 0x9d: "DW_OP_bit_piece", 0x9e: "DW_OP_implicit_value",
+	0xa0: "DW_OP_implicit_pointer", 0xa1: "DW_OP_addrx", 0xa4: "DW_OP_const_type", 0xa5: "DW_OP_regval_type",
+	0xa6: "DW_OP_deref_type", 0xa8: "DW_OP_convert", 0xa9: "DW_OP_reinterpret", 0xf2: "DW_OP_GNU_implicit_pointer",
+	0xf4: "DW_OP_GNU_const_type", 0xf5: "DW_OP_GNU_regval_type", 0xf6: "DW_OP_GNU_deref_type", 0xf7: "DW_OP_GNU_convert",
+	0xf9: "DW_OP_GNU_reinterpret", 0xfa: "DW_OP_GNU_parameter_ref", 0xfd: "DW_OP_GNU_variable_value" };
+
+// Where the DWARF operation at b[p] ends (operands included); -1 for an
+// operation this reader does not know.
+function dwOpEnd(b, p) {
+	const op = b[p++];
+	const leb = () => { while (b[p++] & 0x80); };
+	if (op >= 0x30 && op <= 0x6f || op >= 0x12 && op <= 0x14 || op >= 0x16 && op <= 0x22 || op >= 0x24 && op <= 0x27 ||
+	    op >= 0x29 && op <= 0x2e || op === 0x06 || op === 0x96 || op === 0x97 || op === 0x9b || op === 0x9c || op === 0x9f || op === 0xe0 || op === 0xf0)
+		return p;
+	if (op >= 0x70 && op <= 0x8f) { leb(); return p; }
+	switch (op) {
+	case 0x03: case 0x0c: case 0x0d: case 0x99: case 0x9a: case 0xfa: case 0xfd: return p + 4;
+	case 0x08: case 0x09: case 0x15: case 0x94: case 0x95: return p + 1;
+	case 0x0a: case 0x0b: case 0x28: case 0x2f: case 0x98: return p + 2;
+	case 0x0e: case 0x0f: return p + 8;
+	case 0x10: case 0x11: case 0x23: case 0x90: case 0x91: case 0x93: case 0xa1: case 0xa2: case 0xa8: case 0xa9:
+	case 0xf7: case 0xf9: case 0xfb: case 0xfc: leb(); return p;
+	case 0x92: case 0x9d: case 0xa5: case 0xf5: leb(); leb(); return p;
+	case 0x9e: case 0xa3: case 0xf3: { let n = 0, s = 0, x; do { x = b[p++]; n += (x & 0x7f) * 2 ** s; s += 7; } while (x & 0x80); return p + n; }
+	case 0xa0: case 0xf2: p += 4; leb(); return p;
+	case 0xa4: case 0xf4: leb(); return p + 1 + b[p];
+	case 0xa6: case 0xf6: p++; leb(); return p;
+	default: return -1;
+	}
+}
 
 // Text of an expression the way llvm-dwarfdump prints CFI expressions
 // ("DW_OP_breg5 EBP-4, DW_OP_deref"), for tooltips and the tests.
@@ -383,13 +419,30 @@ function dwExprText(b) {
 			out.push("DW_OP_fbreg " + sleb());
 		else if (op === 0x11)
 			out.push("DW_OP_consts " + sleb());
-		else if (op === 0x10)
-			out.push("DW_OP_constu 0x" + uleb().toString(16));
+		else if (op === 0x10) {
+			let r = 0n, sh = 0n, x;
+			do { x = b[p++]; r |= BigInt(x & 0x7f) << sh; sh += 7n; } while (x & 0x80);
+			out.push("DW_OP_constu 0x" + r.toString(16));
+		}
 		else if (DW_OP_NAMES[op])
 			out.push(DW_OP_NAMES[op]);
-		else {
-			out.push("DW_OP_0x" + op.toString(16));
-			break;
+		else if (op === 0x03) {
+			out.push("DW_OP_addr 0x" + ((b[p] | b[p + 1] << 8 | b[p + 2] << 16 | b[p + 3] << 24) >>> 0).toString(16));
+			p += 4;
+		} else if (op === 0x93)
+			out.push("DW_OP_piece 0x" + uleb().toString(16));
+		else if (op === 0x90)
+			out.push("DW_OP_regx " + (CFI_REGS[uleb()] || "?"));
+		else if (op === 0xa3 || op === 0xf3) {
+			const n = uleb();
+			out.push("DW_OP_entry_value(" + dwExprText(b.subarray(p, p + n)) + ")");
+			p += n;
+		} else {
+			const e = dwOpEnd(b, p - 1);
+			out.push((DW_OP_MORE[op] || "DW_OP_0x" + op.toString(16)) + (e > p ? " …" : ""));
+			if (e < 0)
+				break;
+			p = e;
 		}
 	}
 	return out.join(", ");
@@ -403,8 +456,16 @@ function dwExprText(b) {
 function dwExpr(b, ctx, stack = []) {
 	const st = stack.slice();
 	let p = 0, stackValue = false;
-	const uleb = () => { let r = 0, s = 0, x; do { x = b[p++]; r += (x & 0x7f) * 2 ** s; s += 7; } while (x & 0x80); return r; };
-	const sleb = () => { let r = 0, s = 0, x; do { x = b[p++]; r += (x & 0x7f) * 2 ** s; s += 7; } while (x & 0x80); return x & 0x40 ? r - 2 ** s : r; };
+	// Values are 32-bit (the address size): LEB128 operands are taken modulo
+	// 2^32, so clang's 64-bit encodings of negative constants stay exact.
+	const uleb = () => { let r = 0, s = 0, x; do { x = b[p++]; if (s < 32) r = (r + (x & 0x7f) * 2 ** s) % 2 ** 32; s += 7; } while (x & 0x80); return r; };
+	const sleb = () => {
+		let r = 0, s = 0, x;
+		do { x = b[p++]; if (s < 32) r = (r + (x & 0x7f) * 2 ** s) % 2 ** 32; s += 7; } while (x & 0x80);
+		if (x & 0x40 && s < 32)
+			r = (r - 2 ** s + 2 ** 32) % 2 ** 32;
+		return r >= 2 ** 31 ? r - 2 ** 32 : r;
+	};
 	const u = (v) => v >>> 0;
 	const pop = () => {
 		if (!st.length)
@@ -485,6 +546,22 @@ function dwExpr(b, ctx, stack = []) {
 				st.push(ctx.cfa);
 				break;
 			case 0x9f: stackValue = true; break;
+			case 0xa8: case 0xf7: case 0xa9: case 0xf9: uleb(); break; // convert / reinterpret: 32-bit values stay as they are
+			case 0xa5: case 0xf5: { const r = uleb(); uleb(); st.push(reg(r)); break; } // regval_type
+			case 0xa4: case 0xf4: { // const_type
+				uleb();
+				const n = b[p++];
+				if (n > 4)
+					throw new Error("a " + n + "-byte typed constant is not supported");
+				let v = 0;
+				for (let k = n - 1; k >= 0; k--) v = v * 256 + b[p + k];
+				p += n;
+				st.push(v);
+				break;
+			}
+			case 0xa6: case 0xf6: { const n = b[p++]; uleb(); if (n > 4) throw new Error("a " + n + "-byte typed read is not supported"); st.push(read(pop(), n)); break; }
+			case 0xa0: case 0xf2: throw new Error("an implicit pointer: it points to a variable the compiler optimized out");
+			case 0xfa: throw new Error("optimized out (DW_OP_GNU_parameter_ref: the value its caller passed, not kept)");
 			case 0xa3: case 0xf3: return { why: "optimized out (only its value at the function's entry is described)" };
 			default: throw new Error("DWARF expression op 0x" + op.toString(16) + " is not supported");
 			}
@@ -495,6 +572,111 @@ function dwExpr(b, ctx, stack = []) {
 	if (!st.length)
 		return { why: "empty DWARF expression" };
 	return { value: u(st[st.length - 1]), stackValue };
+}
+
+// Where a variable is, from its DWARF location description b (an
+// expression, maybe in pieces) for an object of size bytes:
+//   { mem, how }                  the object is in memory at virtual mem
+//   { bytes, known, how, whys }   its bytes (known[k] 1 where byte k is
+//                                 known): a register, a computed value
+//                                 (DW_OP_stack_value), a constant
+//                                 (DW_OP_implicit_value) or pieces of these
+//   { why }                       no value (optimized out, unreadable)
+// ctx: as dwExpr's, plus readBytes(va, n) -> Uint8Array or null.
+const DW_REGPARM = { 0: "the 1st", 2: "the 2nd", 1: "the 3rd" };
+function dwLocation(b, ctx, size) {
+	const segs = [];
+	let p = 0, start = 0, pieces = false;
+	while (p < b.length) {
+		const e = dwOpEnd(b, p);
+		if (e < 0 || e > b.length)
+			return { why: "DWARF operation 0x" + b[p].toString(16) + " is not supported" };
+		if (b[p] === 0x93 || b[p] === 0x9d) {
+			const q = { v: p + 1 };
+			const uleb = () => { let r = 0, s = 0, x; do { x = b[q.v++]; r += (x & 0x7f) * 2 ** s; s += 7; } while (x & 0x80); return r; };
+			const n = uleb(), off = b[p] === 0x9d ? uleb() : 0;
+			segs.push({ e: b.subarray(start, p), n: b[p] === 0x93 ? n : n / 8, bits: b[p] === 0x9d && (n % 8 || off) ? [n, off] : null });
+			pieces = true;
+			start = e;
+		}
+		p = e;
+	}
+	if (!pieces)
+		segs.push({ e: b, n: size, bits: null });
+	const regName = (r) => CFI_REGS[r] || "register " + r;
+	const one = (e) => {
+		if (!e.length)
+			return { why: "optimized out" };
+		if (e[0] >= 0x50 && e[0] <= 0x6f || e[0] === 0x90) {
+			let r = e[0] - 0x50;
+			if (e[0] === 0x90) { // regx: the operand
+				r = 0;
+				for (let k = 1, s = 0; k < e.length; k++, s += 7) {
+					r += (e[k] & 0x7f) * 2 ** s;
+					if (!(e[k] & 0x80))
+						break;
+				}
+			}
+			const v = ctx.reg ? ctx.reg(r) : undefined;
+			return v === undefined ? { why: "in " + regName(r) + ", which is not known in this frame" +
+				(r <= 2 ? " (" + regName(r) + " is not saved across calls)" : "") } : { val: v >>> 0, how: "in " + regName(r) };
+		}
+		if (e[0] === 0x9e) {
+			const q = { v: 1 };
+			let n = 0, s = 0, x;
+			do { x = e[q.v++]; n += (x & 0x7f) * 2 ** s; s += 7; } while (x & 0x80);
+			return { bytes: e.subarray(q.v, q.v + n), how: "a constant (DW_OP_implicit_value)" };
+		}
+		for (let k = 0; k < e.length;) {
+			if (e[k] === 0xa3 || e[k] === 0xf3) {
+				const inner = e.subarray(k + 2, k + 2 + e[k + 1]);
+				const r = inner.length === 1 && inner[0] >= 0x50 && inner[0] <= 0x6f ? inner[0] - 0x50 : -1;
+				return { why: "optimized out: only its value at the function's entry is described" + (r >= 0 ? " (it arrived in " + regName(r) +
+					(DW_REGPARM[r] ? ", " + DW_REGPARM[r] + " argument with -mregparm=3" : "") + "; the register has been reused since)" : "") };
+			}
+			k = dwOpEnd(e, k);
+		}
+		const v = dwExpr(e, ctx);
+		if (v.why)
+			return { why: v.why };
+		return v.stackValue ? { val: v.value, how: "computed (" + dwExprText(e) + ")" } : { mem: v.value, how: "at 0x" + v.value.toString(16) + " (" + dwExprText(e) + ")" };
+	};
+	if (!pieces) {
+		const r = one(b);
+		if (r.why || r.mem !== undefined)
+			return r;
+		segs[0].r = r;
+	} else
+		for (const sg of segs)
+			sg.r = one(sg.e);
+	const total = segs.reduce((n, sg) => n + Math.ceil(sg.n), 0);
+	const bytes = new Uint8Array(Math.max(total, size)), known = new Uint8Array(bytes.length);
+	const hows = [], whys = [];
+	let at = 0;
+	for (const sg of segs) {
+		const n = Math.ceil(sg.n), r = sg.r;
+		let src = null;
+		if (sg.bits)
+			r.why = "a bit piece (" + sg.bits[0] + " bits at bit " + sg.bits[1] + ") is not supported";
+		if (r.why)
+			whys.push(r.why);
+		else if (r.mem !== undefined) {
+			src = ctx.readBytes ? ctx.readBytes(r.mem, n) : null;
+			if (!src)
+				whys.push("memory at 0x" + r.mem.toString(16) + " cannot be read");
+		} else if (r.bytes)
+			src = r.bytes;
+		else
+			src = Uint8Array.of(r.val & 255, r.val >>> 8 & 255, r.val >>> 16 & 255, r.val >>> 24);
+		if (src)
+			for (let k = 0; k < n && k < src.length; k++) {
+				bytes[at + k] = src[k];
+				known[at + k] = 1;
+			}
+		hows.push((pieces ? n + " bytes " : "") + (r.why ? "not available" : r.how));
+		at += n;
+	}
+	return { bytes, known, how: hows.join("; "), whys };
 }
 
 // ---- unwinding --------------------------------------------------------------------
@@ -690,4 +872,4 @@ function cfiRowText(row) {
 }
 
 if (typeof module !== "undefined")
-	module.exports = { CFI_REGS, cfiFromElf, cfiParse, cfiSlice, cfiFind, cfiEncode, cfiDecode, cfiRow, cfiRowText, cfiStep, dwExpr, dwExprText, unwind };
+	module.exports = { dwOpEnd, dwLocation, CFI_REGS, cfiFromElf, cfiParse, cfiSlice, cfiFind, cfiEncode, cfiDecode, cfiRow, cfiRowText, cfiStep, dwExpr, dwExprText, unwind };

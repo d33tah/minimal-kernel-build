@@ -2,7 +2,7 @@
 """Check the DWARF shards of gen-dwarf.js against llvm-symbolizer --inlines,
 and its types.json against gdb.
 
-  site/test_dwarf.py ELF SHARD_DIR [--samples N] [--strip PREFIX ...] [--seed S] [--types N] [--cfi N]
+  site/test_dwarf.py ELF SHARD_DIR [--samples N] [--strip PREFIX ...] [--seed S] [--types N] [--cfi N] [--locals N]
 
 Picks N random addresses in the ELF's code (half inside function
 symbols, half anywhere between the first and the last one), asks
@@ -19,6 +19,11 @@ page shows the DWARF name there and the ELF symbol in its own row. Paths from ll
 gdb on the ELF must agree: the path is an expression whose address range
 holds the byte, its type prints the same (whatis) with the same size, and
 so does the variable's.
+
+--locals N: N random addresses inside functions; the parameters and
+local variables the page lists for the innermost frame there (inlined
+call or function, `gen-dwarf.js --locals`) must be the ones gdb's `info
+scope` lists, each with the same kind of location there.
 
 --cfi N: N random addresses; the call frame information row there
 (`gen-dwarf.js --cfi`, the page's unwind.js cfiRow on the cfi-*.bin
@@ -279,6 +284,126 @@ def check_cfi(elf, shards, n, rnd, lds):
     return bad
 
 
+# Runs inside gdb: info scope at each address, after a line "@@ADDR
+# KEEP" with one 0/1 per symbol of the blocks info scope walks, in its
+# order: 1 for a parameter or variable (a constant one too), 0 for the
+# function itself, a label (one without an address is listed as
+# "optimized out"), a type or an enumerator.
+GDB_SCOPE = r"""
+import gdb
+def enumerator(s):
+    t = s.type.strip_typedefs() if s.type is not None else None
+    return t is not None and t.code == gdb.TYPE_CODE_ENUM and any(f.name == s.name for f in t.fields())
+for va in VAS:
+    keep = []
+    try:
+        b = gdb.block_for_pc(va)
+        while b is not None:
+            keep += [int((s.is_argument or s.is_variable or (s.is_constant and not enumerator(s))) and
+                         s.addr_class != gdb.SYMBOL_LOC_LABEL and not (s.type is not None and str(s.type) == "__CORE_ADDR")) for s in b]
+            if b.function is not None:
+                break
+            b = b.superblock
+        text = gdb.execute("info scope *%#x" % va, to_string=True)
+    except Exception as e:
+        text = "gdb error: %s" % e
+    print("@@%#x %s" % (va, "".join(map(str, keep))))
+    print(text)
+"""
+
+
+def gdb_scopes(elf, vaddrs):
+    """gdb's `info scope *ADDR` for each address: [(name, class)] of the
+    innermost function or inlined call's block and the blocks around
+    ADDR inside it, classes as gen-dwarf.js --locals names them; None
+    where gdb fails."""
+    with tempfile.TemporaryDirectory() as tmp:
+        py = os.path.join(tmp, "scope.py")
+        pathlib.Path(py).write_text(f"VAS = {list(vaddrs)!r}\n" + GDB_SCOPE)
+        out = subprocess.run(["gdb", "-nx", "-batch", "-ex", "set width 0", "-ex", "set pagination off", "-x", py, elf],
+                             capture_output=True, text=True).stdout
+
+    def cls(desc, at):
+        desc = desc.strip()
+        if desc.startswith("multi-location:"):
+            for m in re.finditer(r"Range (0x[0-9a-f]+)-(0x[0-9a-f]+): (.*?)(?=\n *(?:Base address 0x[0-9a-f]+ +)?Range |\Z)", desc, re.S):
+                if int(m.group(1), 16) <= at < int(m.group(2), 16):
+                    return cls(m.group(3), at)
+            return "out"
+        if desc.startswith("optimized out"):
+            return "out"
+        if "piece" in desc:
+            return "pieces"
+        m = re.match(r"a variable in \$(\w+)", desc)
+        if m:
+            return "reg:" + m.group(1).upper()
+        if desc.startswith("a constant") or desc.startswith("constant"):
+            return "const"
+        return "expr"
+
+    res = {}
+    for part in out.split("\n@@")[0:]:
+        part = part[2:] if part.startswith("@@") else part
+        head, _, body = part.partition("\n")
+        f = head.split()
+        if not f:
+            continue
+        va, keep = int(f[0], 16), f[1] if len(f) > 1 else ""
+        if body.startswith("gdb error: "):
+            # gdb's own info scope fails at some addresses (e.g. "Corrupted
+            # DWARF2 expression"): nothing to compare there.
+            res[va] = None
+            continue
+        syms = re.findall(r"^Symbol (\S+) is (.*?)(?=^Symbol |\Z)", body, re.S | re.M)
+        if len(syms) != len(keep):
+            res[va] = None
+            continue
+        res[va] = [(n, cls(d, va)) for (n, d), k in zip(syms, keep) if k == "1"]
+    return res
+
+
+def check_locals(elf, shards, n, rnd, lds, fns):
+    """N random addresses inside functions: the variables the page lists
+    for the innermost frame there (gen-dwarf.js --locals: dwarf.js
+    dwarfScopesAt / dwarfLocalFrames / dwLocAt on the locals-*.json.gz
+    shards) must be the ones gdb's info scope lists, each with the same
+    kind of location there (none, which register, constant, other)."""
+    def phys(va):
+        return next((va - lo + pa for lo, hi, pa in lds if lo <= va < hi), None)
+    picks = []
+    for _ in range(n):
+        a, size = rnd.choice(fns)
+        va = a + rnd.randrange(size)
+        if phys(va) is not None:
+            picks.append(va)
+    out = subprocess.run(["node", str(SITE / "gen-dwarf.js"), "--locals", shards], input="\n".join(str(phys(a)) for a in picks),
+                         capture_output=True, text=True, check=True).stdout
+    got = [json.loads(l) for l in out.splitlines()]
+    want = gdb_scopes(elf, picks)
+    bad, nvars, located, failed, nofn = [], 0, 0, 0, 0
+    for va, g in zip(picks, got):
+        if want.get(va, []) is None:
+            failed += 1
+            continue
+        if not g["frames"]:
+            # No DWARF function there (assembly): gdb lists the file's
+            # static block instead, the page has no frame to show.
+            nofn += 1
+            continue
+        mine = sorted((v[0], v[1]) for v in g["frames"][0]["vars"]) if g["frames"] else []
+        theirs = sorted(want.get(va, []))
+        nvars += len(theirs)
+        located += sum(1 for _, c in theirs if c != "out")
+        if mine != theirs:
+            bad.append((va, theirs, mine, g["frames"][0]["func"] if g["frames"] else None))
+    for va, w, g, fn in bad[:10]:
+        print(f"LOCALS MISMATCH {va:#x} in {fn}\n  gdb  {w}\n  page {g}")
+    print(f"{elf}: {len(picks) - len(bad) - failed - nofn}/{len(picks) - failed - nofn} addresses list the same parameters and locals "
+          f"as gdb's info scope ({nvars} variables, {located} with a location there; {nofn} more outside DWARF functions, "
+          f"gdb's info scope failed at {failed})")
+    return bad
+
+
 # For --eh-frame: functions whose CFI uses the usual rules, a realigned
 # stack (GCC: DW_CFA_def_cfa_expression and DW_CFA_expression) and varargs.
 EH_FRAME_C = r"""
@@ -324,6 +449,7 @@ def main():
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--types", type=int, default=0, help="also check N bytes of types.json against gdb")
     ap.add_argument("--cfi", type=int, default=0, help="also check the CFI rows at N addresses against llvm-dwarfdump")
+    ap.add_argument("--locals", type=int, default=0, help="also check the parameters and locals at N addresses against gdb")
     args = ap.parse_args()
     rnd = random.Random(args.seed)
     lds = loads(args.elf)
@@ -360,7 +486,8 @@ def main():
           f"({inlined} inside inlined code)")
     tbad = check_types(args.elf, args.shards, args.types, rnd, lds) if args.types else []
     cbad = check_cfi(args.elf, args.shards, args.cfi, rnd, lds) if args.cfi else []
-    sys.exit(1 if bad or tbad or cbad else 0)
+    lbad = check_locals(args.elf, args.shards, args.locals, rnd, lds, fns) if args.locals else []
+    sys.exit(1 if bad or tbad or cbad or lbad else 0)
 
 
 if __name__ == "__main__":

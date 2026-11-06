@@ -11,7 +11,9 @@
 //       file with its lines that have code and every function with its
 //       lines and instructions, for the page's Coverage tab (see coverage());
 //       OUTDIR/cfi-<hex>.bin, the call frame information (.debug_frame or
-//       .eh_frame) per 64 KiB, for backtraces (unwind.js)
+//       .eh_frame) per 64 KiB, for backtraces (unwind.js);
+//       OUTDIR/locals-<hex>.json.gz, the parameters and local variables of
+//       the functions with code in each 64 KiB (dwarf.js dwarfScopeGroups)
 //   site/gen-dwarf.js --lookup OUTDIR < addresses
 //       one JSON line per physical address (hex or decimal) on stdin:
 //       the frames the page shows there (test_dwarf.py compares them with
@@ -20,6 +22,10 @@
 //       one JSON line per physical address: the call frame information
 //       row there (unwind.js cfiRow) as llvm-dwarfdump --debug-frame
 //       prints it (test_dwarf.py --cfi compares them)
+//   site/gen-dwarf.js --locals OUTDIR < addresses
+//       one JSON line per physical address: the frames there with their
+//       parameters and locals and the kind of location each has there
+//       (test_dwarf.py --locals compares them with gdb's info scope)
 //   site/gen-dwarf.js --where OUTDIR < addresses
 //       one JSON line per physical address: the variable and member path
 //       there (dwarf.js dwWhere) with the leaf's type (test_dwarf.py --types
@@ -29,10 +35,11 @@
 // vmlinux is ~300 MB).
 
 const fs = require("fs");
+const zlib = require("zlib");
 const path = require("path");
 const { spawn } = require("child_process");
 const { DwarfReader, DwarfTypes, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfEachLine, dwarfEncode, dwarfDecode,
-	dwWhere, dwTypeName, dwTypeSize } = require("./dwarf.js");
+	dwWhere, dwTypeName, dwTypeSize, dwarfScopesAt, dwarfLocalFrames, dwLocAt } = require("./dwarf.js");
 
 const { cfiFromElf, cfiSlice, cfiEncode, cfiDecode, cfiRow, cfiRowText } = require("./unwind.js");
 
@@ -73,7 +80,7 @@ async function generate(elf, outDir) {
 	const t2 = Date.now();
 	fs.mkdirSync(outDir, { recursive: true });
 	for (const f of fs.readdirSync(outDir))
-		if (/^(cfi-)?[0-9a-f]+\.bin$|^index\.json$/.test(f))
+		if (/^(cfi-)?[0-9a-f]+\.bin$|^locals-[0-9a-f]+\.json\.gz$|^index\.json$/.test(f))
 			fs.unlinkSync(path.join(outDir, f));
 	const shards = new Set();
 	for (let k = 0; k < table.la.length; k++)
@@ -99,7 +106,11 @@ async function generate(elf, outDir) {
 		`${fj.files.reduce((n, f) => n + f[1], 0)} lines with code, ${fj.insns ? fj.insns.total + " instructions (" + fj.insns.inFunctions +
 		" in functions)" : "no instruction counts (" + fj.insnsWhy + ")"}; ${Date.now() - t2} ms with the shards`);
 	const t3 = Date.now();
-	const ty = types(dw, e);
+	const ty = types(dw, e, outDir);
+	const locals = ty.locals;
+	delete ty.locals;
+	console.log(`${outDir}: parameters and locals of ${locals.functions} functions (${locals.vars} variables), ` +
+		`${locals.shards.length} shards, ${locals.bytes} bytes (${locals.gzBytes} gzipped)`);
 	const tj = JSON.stringify(ty);
 	fs.writeFileSync(path.join(outDir, "types.json"), tj);
 	console.log(`${outDir}/types.json: ${ty.vars.length} variables, ${ty.types.length} types, ${tj.length} bytes; ${Date.now() - t3} ms`);
@@ -107,7 +118,7 @@ async function generate(elf, outDir) {
 	const cfi = cfiShards(e, read, outDir);
 	console.log(`${outDir}: ${cfi.why || `call frame information from ${cfi.source}: ${cfi.fdes} FDEs, ${cfi.cies} CIEs, ` +
 		`${cfi.shards.length} shards, ${cfi.bytes} bytes`}; ${Date.now() - t4} ms`);
-	const index = { format: 1, cfi, shardBits: SHARD_BITS, shards: list, units: us.length,
+	const index = { format: 1, cfi, locals, shardBits: SHARD_BITS, shards: list, units: us.length,
 		version: [...new Set(us.map((u) => u.ver))], lineRows: table.la.length, ranges: table.ra.length,
 		source: path.basename(elf), files: "files.json", types: "types.json", variables: ty.vars.length, typeCount: ty.types.length, typeBytes: tj.length };
 	fs.writeFileSync(path.join(outDir, "index.json"), JSON.stringify(index));
@@ -273,16 +284,50 @@ class Coverage {
 	}
 }
 
-// Variables and their types, every unit (dwarf.js DwarfTypes).
-function types(dw, e) {
+// Variables and their types, every unit (dwarf.js DwarfTypes), and the
+// parameters and locals of every function (dwarf.js dwarfScopeGroups):
+// locals-<hex>.json.gz per 64 KiB of code, { format, fns: [group, ...] }
+// gzipped (88 MB of JSON for a distro kernel, 16 MB gzipped), with each
+// function in every shard its code touches.
+function types(dw, e, outDir) {
 	const acc = new DwarfTypes(dw);
 	const sections = [];
 	const secOf = dwarfSectionOf(e, sections);
 	const us = dw.units();
-	for (let i = 0; i < us.length; i++)
-		if (us[i].unitType === 1 || us[i].unitType === 3)
-			acc.addUnit(dw.decodeData(i), e.toPhys, secOf);
-	return acc.finish(sections);
+	const shards = new Map();
+	let fns = 0, vars = 0, gzBytes = 0;
+	for (let i = 0; i < us.length; i++) {
+		if (us[i].unitType !== 1 && us[i].unitType !== 3)
+			continue;
+		for (const g of acc.addUnit(dw.decodeData(i, true), e.toPhys, secOf)) {
+			const js = JSON.stringify(g);
+			fns++;
+			for (const s of g)
+				vars += s[5].length;
+			const set = new Set();
+			const r = g[0][2];
+			for (let k = 0; k < r.length; k += 2)
+				for (let s = Math.floor(r[k] / 2 ** SHARD_BITS); s <= Math.floor((r[k] + r[k + 1] - 1) / 2 ** SHARD_BITS); s++)
+					set.add(s);
+			for (const s of set) {
+				if (!shards.has(s))
+					shards.set(s, []);
+				shards.get(s).push(js);
+			}
+		}
+	}
+	const list = [...shards.keys()].sort((a, b) => a - b);
+	let bytes = 0;
+	for (const s of list) {
+		const js = '{"format":1,"fns":[' + shards.get(s).join(",") + "]}";
+		const gz = zlib.gzipSync(js, { level: 9 });
+		fs.writeFileSync(path.join(outDir, "locals-" + s.toString(16) + ".json.gz"), gz);
+		bytes += js.length;
+		gzBytes += gz.length;
+	}
+	const T = acc.finish(sections);
+	T.locals = { shards: list, functions: fns, vars, bytes, gzBytes };
+	return T;
 }
 
 function where(dir) {
@@ -335,16 +380,62 @@ function cfiLookup(dir) {
 	process.stdout.write(out.join("\n") + "\n");
 }
 
+// One JSON line per physical address: the frames there (innermost first)
+// with their parameters and locals as the page lists them (dwarf.js
+// dwarfLocalFrames) and each one's location class there: "out" (none),
+// "reg:EAX" (a register), "const", "pieces" (DW_OP_piece) or "expr"
+// (anything else); for test_dwarf.py --locals (gdb's `info scope`).
+function localsLookup(dir) {
+	const index = JSON.parse(fs.readFileSync(path.join(dir, "index.json"), "utf8"));
+	const { CFI_REGS, dwOpEnd } = require("./unwind.js");
+	const pieces = (e) => {
+		for (let p = 0; p >= 0 && p < e.length; p = dwOpEnd(e, p))
+			if (e[p] === 0x93 || e[p] === 0x9d)
+				return true;
+		return false;
+	};
+	const cache = new Map();
+	const shard = (s) => {
+		if (!cache.has(s))
+			cache.set(s, index.locals && index.locals.shards.includes(s) ?
+				JSON.parse(zlib.gunzipSync(fs.readFileSync(path.join(dir, "locals-" + s.toString(16) + ".json.gz")))).fns : []);
+		return cache.get(s);
+	};
+	const cls = (loc, pa) => {
+		const l = dwLocAt(loc, pa);
+		if (l.why)
+			return "out";
+		if (l.c !== undefined || l.cb)
+			return "const";
+		const e = l.expr;
+		if (pieces(e))
+			return "pieces";
+		if (e.length === 1 && e[0] >= 0x50 && e[0] <= 0x6f)
+			return "reg:" + (CFI_REGS[e[0] - 0x50] || e[0] - 0x50);
+		return e.length ? "expr" : "out";
+	};
+	const out = [];
+	for (const w of fs.readFileSync(0, "utf8").split(/\s+/).filter(Boolean)) {
+		const pa = Number(w);
+		const frames = dwarfLocalFrames(dwarfScopesAt(shard(Math.floor(pa / 2 ** index.shardBits)), pa));
+		out.push(JSON.stringify({ pa, frames: frames.map((f) => ({ func: f.func, inlined: f.inlined,
+			vars: [...f.params, ...f.locals].map((v) => [v[0], cls(v[3], pa), v[2]]) })) }));
+	}
+	process.stdout.write(out.join("\n") + "\n");
+}
+
 const args = process.argv.slice(2);
 if (args[0] === "--lookup" && args.length === 2)
 	lookup(args[1]);
 else if (args[0] === "--cfi" && args.length === 2)
 	cfiLookup(args[1]);
+else if (args[0] === "--locals" && args.length === 2)
+	localsLookup(args[1]);
 else if (args[0] === "--where" && args.length === 2)
 	where(args[1]);
 else if (args.length === 2)
 	generate(args[0], args[1]).catch((err) => { console.error(err); process.exit(1); });
 else {
-	console.error("usage: gen-dwarf.js ELF OUTDIR | gen-dwarf.js --lookup|--where|--cfi OUTDIR < addresses");
+	console.error("usage: gen-dwarf.js ELF OUTDIR | gen-dwarf.js --lookup|--where|--cfi|--locals OUTDIR < addresses");
 	process.exit(2);
 }

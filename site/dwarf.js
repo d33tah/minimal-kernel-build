@@ -24,7 +24,8 @@ const AT = { sibling: 0x01, name: 0x03, stmt_list: 0x10, low_pc: 0x11, high_pc: 
 	linkage_name: 0x6e, str_offsets_base: 0x72, addr_base: 0x73, rnglists_base: 0x74, mips_linkage_name: 0x2007,
 	location: 0x02, byte_size: 0x0b, bit_offset: 0x0c, bit_size: 0x0d, const_value: 0x1c, lower_bound: 0x22,
 	upper_bound: 0x2f, count: 0x37, data_member_location: 0x38, decl_file: 0x3a, decl_line: 0x3b, declaration: 0x3c,
-	encoding: 0x3e, external: 0x3f, type: 0x49, data_bit_offset: 0x6b };
+	encoding: 0x3e, external: 0x3f, type: 0x49, data_bit_offset: 0x6b, frame_base: 0x40, loclists_base: 0x8c };
+const DW_TAG_LEXICAL_BLOCK = 0x0b;
 // Type DIEs DwarfReader.decodeData keeps, by the kind DwarfTypes uses.
 const DW_TYPE_TAGS = { 0x24: "base", 0x0f: "ptr", 0x10: "ptr", 0x42: "ptr", 0x26: "const", 0x35: "volatile", 0x37: "restrict",
 	0x47: "atomic", 0x16: "typedef", 0x13: "struct", 0x02: "struct", 0x17: "union", 0x04: "enum", 0x01: "array",
@@ -200,7 +201,7 @@ class DwarfReader {
 	cursor(i) {
 		const u = this.units()[i];
 		const b = this.unitCache.get(i) || this.sec.readInfo(u.off, Math.min(u.end - u.off, 16384));
-		return { u, b, base: u.off, p: 0, strOff: 8, addrBase: 8, rngBase: 12, lowPc: 0, comp: "" };
+		return { u, b, base: u.off, p: 0, strOff: 8, addrBase: 8, rngBase: 12, locBase: 12, lowPc: 0, comp: "" };
 	}
 
 	// Read (or skip, when want is false) one attribute value at c.p.
@@ -301,6 +302,62 @@ class DwarfReader {
 		return out.filter(([s, e]) => e > s);
 	}
 
+	// A location list (DW_AT_location in sec_offset / loclistx form) ->
+	// [[lo, hi, expression bytes], ...] (virtual addresses; a default
+	// location, DW_LLE_default_location, has lo 0 and hi 2^32), or null
+	// when the section is missing.
+	locList(c, form, v) {
+		const out = [];
+		if (c.u.ver >= 5) {
+			if (this.sec.loclists && typeof this.sec.loclists === "function")
+				this.sec.loclists = this.sec.loclists();
+			const b = this.sec.loclists;
+			if (!b)
+				return null;
+			let p = form === 0x22 ? c.locBase + u32le(b, c.locBase + v * 4) : v;
+			const uleb = () => { let r = 0, s = 0, x; do { x = b[p++]; r += (x & 0x7f) * 2 ** s; s += 7; } while (x & 0x80); return r; };
+			const ad = () => { const x = u32le(b, p); p += c.u.addrSize; return x; };
+			const expr = () => { const n = uleb(); const e = b.slice(p, p + n); p += n; return e; };
+			let base = c.lowPc;
+			for (let guard = 0; guard < 100000; guard++) {
+				const k = b[p++];
+				if (k === 0 || k === undefined)
+					break;
+				if (k === 1) base = this.addr(c, 0x1b, uleb());
+				else if (k === 2) { const s = this.addr(c, 0x1b, uleb()), e = this.addr(c, 0x1b, uleb()); out.push([s, e, expr()]); }
+				else if (k === 3) { const s = this.addr(c, 0x1b, uleb()), n = uleb(); out.push([s, s + n, expr()]); }
+				else if (k === 4) { const s = uleb(), e = uleb(); out.push([base + s, base + e, expr()]); }
+				else if (k === 5) out.push([0, 2 ** 32, expr()]);
+				else if (k === 6) base = ad();
+				else if (k === 7) { const s = ad(), e = ad(); out.push([s, e, expr()]); }
+				else if (k === 8) { const s = ad(), n = uleb(); out.push([s, s + n, expr()]); }
+				else if (k === 9) { uleb(); uleb(); } // DW_LLE_GNU_view_pair: views only
+				else throw new Error("unknown DW_LLE 0x" + k.toString(16));
+			}
+		} else {
+			if (this.sec.loc && typeof this.sec.loc === "function")
+				this.sec.loc = this.sec.loc();
+			const b = this.sec.loc;
+			if (!b)
+				return null;
+			let base = c.lowPc;
+			for (let p = v; p + 8 <= b.length;) {
+				const s = u32le(b, p), e = u32le(b, p + 4);
+				p += 8;
+				if (!s && !e)
+					break;
+				if (s === 0xffffffff) {
+					base = e;
+					continue;
+				}
+				const n = u16le(b, p);
+				out.push([base + s, base + e, b.slice(p + 2, p + 2 + n)]);
+				p += 2 + n;
+			}
+		}
+		return out.filter(([s, e]) => e > s);
+	}
+
 	// Attributes of the DIE at c.p as { attr: [form, value] } (all of them);
 	// a block (exprloc, blockN) is [form, offset in c.b, length].
 	readDie(c, ab) {
@@ -352,6 +409,7 @@ class DwarfReader {
 		if (a[AT.str_offsets_base]) c.strOff = a[AT.str_offsets_base][1];
 		if (a[AT.addr_base]) c.addrBase = a[AT.addr_base][1];
 		if (a[AT.rnglists_base]) c.rngBase = a[AT.rnglists_base][1];
+		if (a[AT.loclists_base]) c.locBase = a[AT.loclists_base][1];
 		const lo = a[AT.low_pc] ? this.addr(c, ...a[AT.low_pc]) : 0;
 		c.lowPc = lo || 0;
 		let ranges = [];
@@ -367,7 +425,8 @@ class DwarfReader {
 		const name = a[AT.name] ? this.str(c, ...a[AT.name]) : null;
 		c.p = dieEnd;
 		const info = { tag: ab.tag, children: ab.children, ranges, name, stmt: a[AT.stmt_list] ? a[AT.stmt_list][1] : -1 };
-		this.rootCache.set(i, { info, bases: { p: dieEnd, strOff: c.strOff, addrBase: c.addrBase, rngBase: c.rngBase, lowPc: c.lowPc, comp: c.comp } });
+		this.rootCache.set(i, { info, bases: { p: dieEnd, strOff: c.strOff, addrBase: c.addrBase, rngBase: c.rngBase, locBase: c.locBase,
+			lowPc: c.lowPc, comp: c.comp } });
 		return { ...info, c };
 	}
 
@@ -626,8 +685,9 @@ class DwarfReader {
 	// (DW_OP_addr / DW_OP_addrx, optionally + DW_OP_plus_uconst; static
 	// locals included) and the raw type DIEs, for DwarfTypes.addUnit.
 	// Types are { kind, name, size, type (absolute DIE offset or -1 for
-	// void), ... } keyed by absolute DIE offset.
-	decodeData(i) {
+	// void), ... } keyed by absolute DIE offset. With locals, also the
+	// scopes of the code (dwarfLocals reads them): see collectScopes().
+	decodeData(i, locals = false) {
 		const r = this.root(i);
 		const c = r.c;
 		c.b = this.unitBytes(i);
@@ -648,7 +708,8 @@ class DwarfReader {
 			return x[1];
 		};
 		const declared = new Map(); // declaration DIEs of variables, for DW_AT_specification
-		const stack = [{ tag: r.tag, raw: null, fn: -1 }];
+		const L = locals ? { scopes: [], info: new Map(), kids: new Map(), lastKid: null } : null;
+		const stack = [{ tag: r.tag, raw: null, fn: -1, scope: -1, die: -1 }];
 		while (c.p < end && stack.length) {
 			const dieOff = c.base + c.p;
 			const code = this.uleb(c);
@@ -662,8 +723,21 @@ class DwarfReader {
 			const tag = ab.tag;
 			const parent = stack[stack.length - 1];
 			const kind = DW_TYPE_TAGS[tag];
-			let raw = null;
-			if (kind) {
+			let raw = null, scope = parent.scope;
+			if (L) {
+				L.lastKid = null;
+				if (parent.die >= 0) {
+					L.lastKid = [dieOff, tag, -1];
+					const k = L.kids.get(parent.die);
+					if (k)
+						k.push(L.lastKid);
+					else
+						L.kids.set(parent.die, [L.lastKid]);
+				}
+			}
+			if (L && (tag === DW_TAG_SUBPROGRAM || tag === DW_TAG_INLINED || tag === DW_TAG_LEXICAL_BLOCK)) {
+				scope = this.scopeDie(c, ab, tag, dieOff, parent, L, ref);
+			} else if (kind) {
 				const a = this.readDie(c, ab);
 				raw = { kind, name: name(a), size: a[AT.byte_size] ? a[AT.byte_size][1] : -1, type: tref(a) };
 				if (a[AT.declaration])
@@ -733,8 +807,12 @@ class DwarfReader {
 					this.skipDie(c, ab);
 					parent.raw.varargs = true;
 				}
+			} else if (L && tag === DW_TAG_PARAM && (parent.tag === DW_TAG_SUBPROGRAM || parent.tag === DW_TAG_INLINED)) {
+				this.localDie(c, this.readDie(c, ab), true, dieOff, parent, L, ref);
 			} else if (tag === DW_TAG_VARIABLE) {
 				const a = this.readDie(c, ab);
+				if (L && parent.die >= 0)
+					this.localDie(c, a, false, dieOff, parent, L, ref);
 				if (a[AT.declaration])
 					declared.set(dieOff, { name: name(a), type: tref(a), external: !!a[AT.external] });
 				const loc = a[AT.location];
@@ -745,7 +823,15 @@ class DwarfReader {
 			} else
 				this.skipDie(c, ab);
 			if (ab.children)
-				stack.push({ tag, raw, fn: tag === DW_TAG_SUBPROGRAM ? dieOff : parent.fn });
+				stack.push({ tag, raw, fn: tag === DW_TAG_SUBPROGRAM ? dieOff : parent.fn, scope,
+					die: tag === DW_TAG_SUBPROGRAM || tag === DW_TAG_INLINED || tag === DW_TAG_LEXICAL_BLOCK ? dieOff : -1 });
+		}
+		if (L) {
+			L.origins = new Map();
+			for (const list of L.kids.values())
+				for (const [d, , o] of list)
+					L.origins.set(d, o);
+			out.scopes = this.finishScopes(L);
 		}
 		// A definition through DW_AT_specification / abstract_origin takes the
 		// declaration's name and type; static locals name their function.
@@ -762,6 +848,221 @@ class DwarfReader {
 			if (v.type < 0 && v.origin >= 0)
 				v.type = this.typeAt(v.origin);
 			v.scope = v.fn >= 0 ? this.nameAt(v.fn) : null;
+		}
+		return out;
+	}
+
+	// ---- scopes, parameters and local variables (decodeData with locals) ----
+	// A scope is a concrete function (kind 0: a DW_TAG_subprogram with code),
+	// a lexical block with code (1) or an inlined call (2), with its address
+	// ranges, its parent scope and its variables. The rules are gdb's
+	// (dwarf2/read.c read_lexical_block_scope, inherit_abstract_dies): a
+	// lexical block without code holds its variables for the scope around
+	// it; a function, inlined call or block with an abstract origin also
+	// gets the origin's children that none of its own children refers to
+	// (their parameters and variables are optimized out here), where a
+	// clang block without DW_AT_abstract_origin stands for the origin's
+	// child at the same place when both have children of the same tags.
+
+	// The scope a DW_TAG_subprogram / inlined_subroutine / lexical_block
+	// opens for its children: a new one, the parent's, or -1 (no code).
+	scopeDie(c, ab, tag, dieOff, parent, L, ref) {
+		const a = this.readDie(c, ab);
+		const origin = a[AT.abstract_origin] ? ref(a[AT.abstract_origin]) : -1;
+		if (L.lastKid)
+			L.lastKid[2] = origin;
+		if (tag !== DW_TAG_SUBPROGRAM && parent.scope < 0)
+			return -1;
+		let rs = [];
+		if (a[AT.ranges])
+			rs = this.ranges(c, ...a[AT.ranges]);
+		else if (a[AT.low_pc] && a[AT.high_pc]) {
+			const lo = this.addr(c, ...a[AT.low_pc]);
+			const [f, v] = a[AT.high_pc];
+			const hi = dwAddrForm(f) ? this.addr(c, f, v) : lo + v;
+			if (hi > lo)
+				rs = [[lo, hi]];
+		}
+		if (!rs.length)
+			return tag === DW_TAG_LEXICAL_BLOCK && !a[AT.low_pc] && !a[AT.ranges] ? parent.scope : -1;
+		let name = null;
+		if (tag !== DW_TAG_LEXICAL_BLOCK) {
+			const n = a[AT.name] || a[AT.linkage_name] || a[AT.mips_linkage_name];
+			if (n)
+				name = this.str(c, ...n);
+			else if (origin >= 0)
+				name = this.nameAt(origin);
+			else if (a[AT.specification])
+				name = this.nameAt(ref(a[AT.specification]));
+		}
+		L.scopes.push({ kind: tag === DW_TAG_SUBPROGRAM ? 0 : tag === DW_TAG_LEXICAL_BLOCK ? 1 : 2,
+			parent: tag === DW_TAG_SUBPROGRAM ? -1 : parent.scope, ranges: rs, name, origin, die: dieOff, vars: [],
+			fb: tag === DW_TAG_SUBPROGRAM ? this.locAttr(c, a[AT.frame_base]) : null });
+		return L.scopes.length - 1;
+	}
+
+	// A DW_TAG_formal_parameter or DW_TAG_variable inside code: remembered
+	// (abstract origins and inheritance need it) and added to its scope.
+	localDie(c, a, param, dieOff, parent, L, ref) {
+		const origin = a[AT.abstract_origin] ? ref(a[AT.abstract_origin]) : -1;
+		if (L.lastKid)
+			L.lastKid[2] = origin;
+		if (a[AT.declaration])
+			return;
+		const v = { die: dieOff, name: a[AT.name] ? this.str(c, ...a[AT.name]) : null, type: a[AT.type] ? ref(a[AT.type]) : -1, origin, param,
+			loc: this.locAttr(c, a[AT.location]), cv: a[AT.const_value] ? (a[AT.const_value].length === 3 ?
+				c.b.slice(a[AT.const_value][1], a[AT.const_value][1] + a[AT.const_value][2]) : a[AT.const_value][1]) : null };
+		L.info.set(dieOff, v);
+		if (parent.scope >= 0)
+			L.scopes[parent.scope].vars.push(v);
+	}
+
+	// A location attribute: { expr: bytes }, { list: [[lo, hi, bytes], ...] }
+	// (virtual addresses), { why } or null (none: optimized out).
+	locAttr(c, x) {
+		if (!x)
+			return null;
+		if (x.length === 3)
+			return { expr: this.ownExpr(c, c.b.slice(x[1], x[1] + x[2])) };
+		const l = this.locList(c, x[0], x[1]);
+		return l ? { list: l.map(([lo, hi, e]) => [lo, hi, this.ownExpr(c, e)]) } : { why: "its location list is in a section this file does not have" };
+	}
+
+	// An expression that needs nothing but itself: DW_OP_addrx and
+	// DW_OP_GNU_addr_index (an index into .debug_addr, clang) become
+	// DW_OP_addr with the address.
+	ownExpr(c, e) {
+		const opEnd = typeof dwOpEnd === "function" ? dwOpEnd : require("./unwind.js").dwOpEnd;
+		if (!e.includes(0xa1) && !e.includes(0xfb))
+			return e;
+		const out = [];
+		for (let p = 0; p < e.length;) {
+			const q = opEnd(e, p);
+			if (q < 0)
+				return e;
+			if (e[p] === 0xa1 || e[p] === 0xfb) {
+				const cur = { b: e, p: p + 1 };
+				const va = this.addr(c, 0x1b, this.uleb(cur));
+				if (va === null)
+					return e;
+				out.push(0x03, va & 255, va >>> 8 & 255, va >>> 16 & 255, va >>> 24 & 255);
+			} else
+				out.push(...e.subarray(p, q));
+			p = q;
+		}
+		return Uint8Array.from(out);
+	}
+
+	// Names and types through abstract origins, then the inherited ones.
+	finishScopes(L) {
+		const resolve = (v, depth = 0) => {
+			if ((v.name !== null && v.type >= 0 && (v.cv !== null || v.loc)) || v.origin < 0 || depth > 8)
+				return v;
+			const o = L.info.get(v.origin);
+			if (o) {
+				resolve(o, depth + 1);
+				if (v.name === null) v.name = o.name;
+				if (v.type < 0) v.type = o.type;
+				// gdb reads an attribute a DIE lacks from its abstract origin
+				// (a static local has its DW_OP_addr there).
+				if (v.cv === null && !v.loc) {
+					v.cv = o.cv;
+					v.loc = o.loc;
+				}
+			} else {
+				if (v.name === null) v.name = this.nameAt(v.origin);
+				if (v.type < 0) v.type = this.typeAt(v.origin);
+			}
+			return v;
+		};
+		const kids = (die) => L.kids.get(die) || this.foreignKids(die, L);
+		// An abstract DIE gdb processes: a parameter or variable becomes
+		// one of s's (optimized out), a block (no code) passes its own on.
+		const take = (s, k, tag, depth) => {
+			if (tag === DW_TAG_LEXICAL_BLOCK) {
+				if (depth < 16)
+					for (const [kk, kt] of kids(k))
+						take(s, kk, kt, depth + 1);
+			} else if (tag === DW_TAG_PARAM || tag === DW_TAG_VARIABLE) {
+				const o = L.info.get(k);
+				if (o)
+					s.vars.push(resolve({ die: k, name: o.name, type: o.type, origin: o.origin, param: o.param, loc: o.loc, cv: o.cv,
+						inherited: !o.loc && o.cv === null }));
+			}
+		};
+		for (const s of L.scopes) {
+			s.vars.forEach((v) => resolve(v));
+			if (s.origin < 0)
+				continue;
+			const mine = L.kids.get(s.die) || [], theirs = kids(s.origin);
+			const iso = mine.length === theirs.length && mine.every((x, k) => x[1] === theirs[k][1]);
+			const parentOf = new Set(theirs.map((x) => x[0]));
+			const used = new Set();
+			mine.forEach(([, tag, origin], k) => {
+				if (tag === 0x48 || tag === 0x4109) // call sites
+					return;
+				let o = origin;
+				for (let n = 0; o >= 0 && n < 8; n++) {
+					const up = L.origins.get(o);
+					if (up === undefined || up < 0 || up === o)
+						break;
+					o = up;
+				}
+				if (o < 0 && iso && tag === DW_TAG_LEXICAL_BLOCK)
+					o = theirs[k][0];
+				if (o >= 0 && parentOf.has(o))
+					used.add(o);
+			});
+			for (const [k, tag] of theirs)
+				if (!used.has(k))
+					take(s, k, tag, 0);
+		}
+		return L.scopes;
+	}
+
+	// The children of a DIE in another unit (an abstract origin clang
+	// refers to with DW_FORM_ref_addr) as [[offset, tag, origin], ...],
+	// like L.kids for this unit; their parameters and variables go into
+	// L.info, the blocks' children are read when asked for.
+	foreignKids(off, L) {
+		const out = [];
+		L.kids.set(off, out);
+		const i = this.unitOf(off);
+		if (i < 0)
+			return out;
+		const c = this.root(i).c;
+		c.b = this.unitBytes(i);
+		c.p = off - c.base;
+		const abbrevs = this.abbrevs(c.u.abbrevOff);
+		const ab = abbrevs[this.uleb(c)];
+		if (!ab || !ab.children)
+			return out;
+		this.skipDie(c, ab);
+		const ref = (x) => x[0] === 0x10 || x[0] === 0x1f20 ? x[1] : c.base + x[1];
+		for (let depth = 0; c.p < c.b.length;) {
+			const die = c.base + c.p;
+			const code = this.uleb(c);
+			if (!code) {
+				if (--depth < 0)
+					break;
+				continue;
+			}
+			const k = abbrevs[code];
+			if (!k)
+				break;
+			if (depth === 0) {
+				const a = this.readDie(c, k);
+				const origin = a[AT.abstract_origin] ? ref(a[AT.abstract_origin]) : -1;
+				out.push([die, k.tag, origin]);
+				if ((k.tag === DW_TAG_PARAM || k.tag === DW_TAG_VARIABLE) && !a[AT.declaration])
+					L.info.set(die, { die, name: a[AT.name] ? this.str(c, ...a[AT.name]) : null, type: a[AT.type] ? ref(a[AT.type]) : -1,
+						origin, param: k.tag === DW_TAG_PARAM, loc: this.locAttr(c, a[AT.location]),
+						cv: a[AT.const_value] ? (a[AT.const_value].length === 3 ?
+							c.b.slice(a[AT.const_value][1], a[AT.const_value][1] + a[AT.const_value][2]) : a[AT.const_value][1]) : null });
+			} else
+				this.skipDie(c, k);
+			if (k.children)
+				depth++;
 		}
 		return out;
 	}
@@ -851,9 +1152,9 @@ class DwarfTypes {
 		this.other = new Map(); // unit index -> its decodeData types
 	}
 
-	// d: DwarfReader.decodeData of one unit. toPhys: virtual -> physical or
-	// null (outside the loaded image); secOf: virtual -> section index.
-	addUnit(d, toPhys, secOf) {
+	// The type id of a DIE offset of unit d (DwarfReader.decodeData): an
+	// existing entry of this table, or a new one appended.
+	idFor(d) {
 		const memoKey = new Map(), memoId = new Map();
 		const T = { get: (off) => d.types.get(off) || this.foreign(off) };
 		const key = (off) => {
@@ -904,6 +1205,26 @@ class DwarfTypes {
 				memoId.set(off, v);
 			return v;
 		};
+		return id;
+	}
+
+	// The scopes of unit d (decodeData with locals) with this table's type
+	// ids (dwarfScopeGroups), for an import's Worker after the table is
+	// done: types that are new to the table (none when the table was made
+	// with locals) are appended, added says how many.
+	scopesOf(d, toPhys) {
+		const n = this.types.length;
+		const groups = dwarfScopeGroups(d.scopes || [], this.idFor(d), toPhys);
+		return { groups, added: this.types.slice(n) };
+	}
+
+	// d: DwarfReader.decodeData of one unit. toPhys: virtual -> physical or
+	// null (outside the loaded image); secOf: virtual -> section index.
+	// With d.scopes (decodeData with locals): returns its functions with
+	// their scopes and variables, types as ids of this table
+	// (dwarfScopeGroups), else [].
+	addUnit(d, toPhys, secOf) {
+		const id = this.idFor(d);
 		for (const x of d.vars) {
 			const pa = toPhys(x.va);
 			if (pa === null || !x.name)
@@ -926,6 +1247,7 @@ class DwarfTypes {
 			this.seen.set(k, v);
 			this.vars.push(v);
 		}
+		return d.scopes ? dwarfScopeGroups(d.scopes, id, toPhys) : [];
 	}
 
 	foreign(off) {
@@ -982,6 +1304,147 @@ class DwarfTypes {
 		this.vars.sort((x, y) => x[1] - y[1] || y[3] - x[3]);
 		return out;
 	}
+}
+
+// ---- parameters and local variables -------------------------------------------
+//
+// The scopes of a unit's code as the page reads them (gen-dwarf.js ships
+// them in locals-<hex>.json shards per 64 KiB, the Worker sends a unit's
+// for an import): one group per concrete function, its scopes in DIE
+// order, the function first:
+//   [kind, parent, ranges, name, frame base, vars]
+//     kind    0 function, 1 lexical block, 2 inlined call
+//     parent  index of the enclosing scope in the group (-1: the function)
+//     ranges  [lo, length, lo2, length2, ...] physical
+//     name    the function's (kinds 0 and 2), null for a block
+//     frame base  location (below) of DW_AT_frame_base, functions only
+//     vars    [[name, type id (DwarfTypes), flags, location], ...] in DIE
+//             order; flags 1: a parameter, 2: only in the abstract origin
+//             (the compiler said nothing about it here: optimized out)
+// A location is null (none: optimized out), "hex" (one DWARF expression),
+// [[lo, length, "hex"], ...] (a location list, physical; length 0: the
+// default location), { c: number } or { cb: "hex" } (DW_AT_const_value),
+// or { why } (unreadable).
+function dwarfScopeGroups(scopes, id, toPhys) {
+	const hx = (b) => Array.from(b, (x) => (x < 16 ? "0" : "") + x.toString(16)).join("");
+	const loc = (l, cv) => {
+		if (cv !== null && cv !== undefined)
+			return typeof cv === "number" ? { c: cv } : { cb: hx(cv) };
+		if (!l)
+			return null;
+		if (l.why)
+			return { why: l.why };
+		if (l.expr)
+			return hx(l.expr);
+		const out = [];
+		for (const [lo, hi, e] of l.list) {
+			if (lo === 0 && hi === 2 ** 32) {
+				out.push([0, 0, hx(e)]);
+				continue;
+			}
+			const pa = toPhys(lo);
+			if (pa !== null)
+				out.push([pa, hi - lo, hx(e)]);
+		}
+		return out;
+	};
+	const groups = [];
+	let g = null, map = null;
+	scopes.forEach((s, k) => {
+		const rs = [];
+		for (const [lo, hi] of s.ranges) {
+			const pa = toPhys(lo);
+			if (pa !== null)
+				rs.push(pa, hi - lo);
+		}
+		if (s.kind === 0) {
+			g = rs.length ? [] : null;
+			map = new Map();
+			if (g)
+				groups.push(g);
+		}
+		if (!g || !rs.length || (s.kind !== 0 && !map.has(s.parent)))
+			return;
+		map.set(k, g.length);
+		g.push([s.kind, s.kind === 0 ? -1 : map.get(s.parent), rs, s.name, s.kind === 0 ? loc(s.fb, null) : null,
+			s.vars.filter((v) => v.name).map((v) => [v.name, id(v.type), (v.param ? 1 : 0) | (v.inherited ? 2 : 0), loc(v.loc, v.cv)])]);
+	});
+	return groups;
+}
+
+// The scopes of group list G containing physical address pa, innermost
+// first: [[group, scope index], ...]; [] when no function there.
+function dwarfScopesAt(G, pa) {
+	const inside = (r) => {
+		for (let k = 0; k < r.length; k += 2)
+			if (pa >= r[k] && pa < r[k] + r[k + 1])
+				return true;
+		return false;
+	};
+	for (const g of G) {
+		if (!inside(g[0][2]))
+			continue;
+		const out = [];
+		for (let k = g.length - 1; k >= 0; k--)
+			if (inside(g[k][2]) && (!out.length || dwScopeIn(g, out[out.length - 1][1], k)))
+				out.push([g, k]);
+		return out;
+	}
+	return [];
+}
+
+// A variable's location (dwarfScopeGroups) in force at physical address
+// pa: { expr: Uint8Array }, { c } / { cb } (a constant), or { why } (none
+// here: optimized out, or unreadable).
+function dwLocAt(loc, pa) {
+	const bytes = (h) => Uint8Array.from(h.match(/../g) || [], (x) => parseInt(x, 16));
+	if (loc === null)
+		return { why: "optimized out (the compiler kept no location for it)" };
+	if (typeof loc === "string")
+		return { expr: bytes(loc) };
+	if (!Array.isArray(loc))
+		return loc.cb !== undefined ? { cb: bytes(loc.cb) } : loc;
+	let dflt = null;
+	for (const [lo, len, e] of loc) {
+		if (!len)
+			dflt = e;
+		else if (pa >= lo && pa < lo + len)
+			return { expr: bytes(e) };
+	}
+	return dflt !== null ? { expr: bytes(dflt) } : { why: "optimized out here (its location list has no entry for this address)" };
+}
+
+// The frames at pa with their variables, innermost first, from the
+// scopes dwarfScopesAt found: [{ func, inlined, scopes: [group, index],
+// params: [var], locals: [var] }], one per inlined call and one for the
+// function; a frame's locals are those of its lexical blocks around pa,
+// innermost block first (gdb's order), its parameters in DIE order.
+function dwarfLocalFrames(chain) {
+	const out = [];
+	let cur = null;
+	for (const [g, k] of chain) {
+		const s = g[k];
+		if (!cur) {
+			cur = { func: null, inlined: false, fb: g[0][4], params: [], locals: [] };
+			out.push(cur);
+		}
+		for (const v of s[5])
+			(v[2] & 1 ? cur.params : cur.locals).push(v);
+		if (s[0] !== 1) {
+			cur.func = s[3];
+			cur.inlined = s[0] === 2;
+			cur = null;
+		}
+	}
+	return out.filter((f) => f.func !== null || f.params.length || f.locals.length);
+}
+
+// Whether scope a of group g lies inside scope b.
+function dwScopeIn(g, a, b) {
+	for (let s = a, n = 0; s >= 0 && n < 64; s = g[s][1], n++)
+		if (s === b)
+			return true;
+	return false;
 }
 
 // The type behind typedefs and qualifiers (and a declaration's definition).
@@ -1200,6 +1663,9 @@ function dwarfSections(elf, read) {
 		abbrev: whole(".debug_abbrev"), str: whole(".debug_str"), line_str: whole(".debug_line_str"),
 		str_offsets: whole(".debug_str_offsets"), addr: whole(".debug_addr"), rnglists: whole(".debug_rnglists"),
 		ranges: whole(".debug_ranges"), aranges: whole(".debug_aranges"),
+		// Location lists (18.6 MB for a distro kernel): read when a
+		// variable's location is first asked for.
+		loclists: () => whole(".debug_loclists"), loc: () => whole(".debug_loc"),
 	};
 }
 
@@ -1494,4 +1960,4 @@ function dwarfDecode(b) {
 }
 
 if (typeof module !== "undefined")
-	module.exports = { DwarfTypes, DWT, dwStrip, dwTypeSize, dwTypeName, dwWhere, dwVarIndex, DwarfReader, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfFunction, dwarfRow, dwarfEachLine, dwarfEncode, dwarfDecode, dwDisplayPath };
+	module.exports = { dwarfScopeGroups, dwarfScopesAt, dwLocAt, dwarfLocalFrames, DwarfTypes, DWT, dwStrip, dwTypeSize, dwTypeName, dwWhere, dwVarIndex, DwarfReader, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfFunction, dwarfRow, dwarfEachLine, dwarfEncode, dwarfDecode, dwDisplayPath };

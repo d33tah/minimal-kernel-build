@@ -1534,10 +1534,13 @@ function renderCallStack(box, phys) {
 	frames.forEach(([k, pc, node], n) => {
 		const name = st.nodeName(node);
 		const r = pc >= 0 ? dbgFrames(pc) : { state: "none" };
-		const where = r.state === "ok" && r.frames[0].file && r.frames[0].line ? " " + srcName(r.frames[0]) : "";
+		const where = r.state === "ok" && r.frames[0].file && r.frames[0].line ? srcName(r.frames[0]) : "";
 		const inl = r.state === "ok" && r.frames.length > 1 ? " [" + r.frames.length + " inlined]" : "";
-		const btn = symButton(name + where + inl, pc, (n ? "calls from " : "at ") + hex(pc) + (k >= 0 && st.fIrq[k] ? ", in an interrupt" : "") +
+		const btn = symButton(name, pc, (n ? "calls from " : "at ") + hex(pc) + (k >= 0 && st.fIrq[k] ? ", in an interrupt" : "") +
 			"\n" + dbgTitle(pc, name));
+		if (where)
+			btn.append(" ", srcLocEl(where));
+		btn.append(inl);
 		btn.dataset.pc = pc;
 		list.push(btn);
 	});

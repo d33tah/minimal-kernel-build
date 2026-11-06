@@ -224,7 +224,13 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   detail of a timeline frame ("called from" and "entry", each with its
   chain) and the title of a call-tree name. "no line information" is
   said where the line table has no line (padding, assembly without -g,
-  line 0); "reading DWARF…" while a shard or unit loads. Sizes: minified
+  line 0); "reading DWARF…" while a shard or unit loads. Wherever a C
+  location or line is shown on the page (both listings, the Debugger's
+  source rows, the source panel, the call stack, the Graph detail), the
+  file:line or line number has one colour and the C text another: one
+  class pair, `.srcloc` and `.srctext` (tokens `--src-loc` and
+  `--src-text`, light and dark). Hover titles are plain text drawn by the
+  browser and cannot be coloured. Sizes: minified
   Linux 79,141 bytes in 2 shards (42,859 gzipped), hello 105 bytes, Debian
   9,618,203 bytes in 153 shards (4.8 MB gzipped, about 32 KB per shard;
   1,081,481 line rows, 465,287 function and inlined-call ranges;
@@ -739,7 +745,10 @@ compares the Debugger's source rows with `llvm-symbolizer --inlines` on
 the -g ELF (`$MKB_DEBUG_ELF_DIR/<kernel>.elf`, required in CI), needs at
 least one EIP in inlined code, call stack and timeline frame titles with
 file:line, C lines in the listing, and takes screenshots light and dark
-at 1280 and 390 px. The DWARF import case imports the minified Linux's -g
+at 1280 and 390 px; then, light and dark, in every view with C lines the
+computed colours of `.srcloc` and `.srctext` differ, are the same in all
+views, change with the theme and are at least 4.5:1 against the
+background behind them. The DWARF import case imports the minified Linux's -g
 vmlinux, compares at 6 EIPs, reloads and gets the same answers from
 IndexedDB, checks a vmlinux without DWARF says so, shows file:line only
 and the C source picker until a source is picked, refuses a .tar.gz with

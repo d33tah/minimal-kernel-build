@@ -218,6 +218,31 @@ const showSource = () => dbgHas() && $("show_src").checked;
 
 const srcName = (f) => f.file && f.line ? f.file.replace(/^.*\//, "") + ":" + f.line : "no line information";
 
+// Every view showing C lines colours the location (file:line, line number)
+// with .srcloc and the C text with .srctext (style.css).
+const srcLocHtml = (s) => '<span class="srcloc">' + escHtml(s) + "</span>";
+
+function srcLocEl(s) {
+	const e = document.createElement("span");
+	e.className = "srcloc";
+	e.textContent = s;
+	return e;
+}
+
+// "func at file:line; inlined into ..." for pa as nodes, file:line in .srcloc.
+function srcChainNodes(pa, sym) {
+	const r = pa >= 0 ? dbgFrames(pa) : { state: "none", why: "" };
+	if (r.state !== "ok")
+		return [r.state === "loading" ? "reading DWARF…" : r.why];
+	const out = [];
+	r.frames.forEach((f, k) => {
+		out.push((k ? "; inlined into " : "") + (f.func || sym || "?") + (f.file && f.line ? " at " : " (no line information)"));
+		if (f.file && f.line)
+			out.push(srcLocEl(dbgWhere(f)));
+	});
+	return out;
+}
+
 // Why the text of frame f's line is not shown (title text), or "".
 function srcWhyNot(f) {
 	const s = srcFile(f.file);
@@ -261,7 +286,7 @@ function srcLineHtml(pa, state) {
 	const why = text === null ? srcWhyNot(f) : "";
 	const inl = fr.length > 1 ? " [" + escHtml(f.func || "?") + " inlined into " + escHtml(fr[fr.length - 1].func || "?") + "]" : "";
 	return '<span class="src" data-addr="' + pa + '" title="' + escHtml(dbgChainText(fr) + (why ? "\n" + why : "")) + '">' +
-		escHtml(srcName(f)) + "  " + (text === null ? '<span class="dim">' + escHtml(f.file) + "</span>" : escHtml(text.trim())) +
+		srcLocHtml(srcName(f)) + "  " + (text === null ? '<span class="dim">' + escHtml(f.file) + "</span>" : '<span class="srctext">' + escHtml(text.trim()) + "</span>") +
 		inl + "</span>";
 }
 
@@ -356,8 +381,8 @@ function renderSourcePanel() {
 	for (let l = pl.first; l <= Math.min(pl.last, file.lines.length); l++) {
 		const cls = run.has(l) ? "exec" : code.has(l) ? "code" : "";
 		const mark = run.has(l) ? "●" : code.has(l) ? "○" : " ";
-		out.push('<span class="' + cls + (l === line ? " here" : "") + '">' + String(l).padStart(5, " ") + " " + mark + " " +
-			escHtml(file.lines[l - 1]) + "</span>");
+		out.push('<span class="' + cls + (l === line ? " here" : "") + '">' + srcLocHtml(String(l).padStart(5, " ")) + " " + mark + " " +
+			'<span class="srctext">' + escHtml(file.lines[l - 1]) + "</span></span>");
 	}
 	body.innerHTML = out.join("\n");
 	body.dataset.state = "ok";
@@ -392,8 +417,12 @@ function renderSourceRows(box, phys, sym) {
 			const where = dbgWhere(f);
 			const t = f.file && f.line ? srcText(f.file, f.line) : null;
 			const fn = f.func || sym || "?";
-			const btn = symButton(k ? "inlined into " + fn + (f.file && f.line ? " at " + where : " (no line information)") : where + " in " + fn + (r.frames.length > 1 ? " (inlined)" : ""), -1,
-				t !== null ? "Show the whole function with its executed lines" : f.file ? srcWhyNot(f) : "");
+			const btn = symButton("", -1, t !== null ? "Show the whole function with its executed lines" : f.file ? srcWhyNot(f) : "");
+			const loc = f.file && f.line ? srcLocEl(where) : where;
+			if (k)
+				btn.append("inlined into " + fn, ...(f.file && f.line ? [" at ", loc] : [" (no line information)"]));
+			else
+				btn.append(loc, " in " + fn + (r.frames.length > 1 ? " (inlined)" : ""));
 			if (k === 0 && t !== null) {
 				btn.disabled = false;
 				btn.addEventListener("click", () => openSource(phys));

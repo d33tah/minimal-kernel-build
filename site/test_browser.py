@@ -1357,6 +1357,104 @@ def dwarf_check(page, name, offset, problems, r, steps=DWARF_STEPS, entry_fn=Non
     return samples
 
 
+# Per view: [selector of the element holding a C location, needs C text too].
+SRC_COLOUR_VIEWS = {
+    "Page listing": ("#listing .src:not(.nol)", True),
+    "Debugger listing": ("#context .src:not(.nol)", True),
+    "Debugger source row": ("#cur_src .frame", True),
+    "Source panel": ("#src_body > span", True),
+    "call stack": ("#call_stack", False),
+    "Graph detail": ("#graph_src", False),
+}
+
+# The colours of a view's first .srcloc and .srctext, and the opaque
+# background behind each (semi-transparent ancestors composited over it).
+SRC_COLOURS_JS = """([sel, text]) => {
+    const rgba = (c) => { const m = c.match(/[\\d.]+/g).map(Number); return [m[0], m[1], m[2], m.length > 3 ? m[3] : 1]; };
+    const bg = (el) => { const layers = [];
+        for (let e = el; e; e = e.parentElement) { const c = rgba(getComputedStyle(e).backgroundColor);
+            if (c[3] > 0) { layers.push(c); if (c[3] >= 1) break; } }
+        if (!layers.length || layers[layers.length - 1][3] < 1) layers.push(rgba(getComputedStyle(document.body).backgroundColor));
+        let out = layers.pop().slice(0, 3);
+        while (layers.length) { const [r, g, b, a] = layers.pop(); out = [r * a + out[0] * (1 - a), g * a + out[1] * (1 - a), b * a + out[2] * (1 - a)]; }
+        return out; };
+    const box = [...document.querySelectorAll(sel)].find((e) => e.querySelector('.srcloc') && (!text || e.querySelector('.srctext')));
+    if (!box) return null;
+    const one = (cls) => { const e = box.querySelector(cls); if (!e) return null; const c = rgba(getComputedStyle(e).color);
+        const o = Number(getComputedStyle(box).opacity) * Number(getComputedStyle(e).opacity);
+        return { colour: c.slice(0, 3), alpha: c[3] * o, bg: bg(e), text: e.textContent.trim().slice(0, 40) }; };
+    return { loc: one('.srcloc'), text: one('.srctext') };
+}"""
+
+
+def contrast(fg, bg, alpha=1):
+    """WCAG contrast ratio of fg (alpha over bg) against bg, both [r, g, b] 0-255."""
+    fg = [f * alpha + b * (1 - alpha) for f, b in zip(fg, bg)]
+
+    def lum(c):
+        c = [x / 255 for x in c]
+        c = [x / 12.92 if x <= 0.03928 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
+        return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+    hi, lo = sorted((lum(fg), lum(bg)), reverse=True)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+def src_colour_check(page, name, phys, problems, r, shots):
+    """Every view showing C lines colours the location (.srcloc) and the C
+    text (.srctext) differently, with the same pair everywhere, each at
+    least 4.5:1 against its background, in light and dark."""
+    seen = {}
+    for scheme in ("light", "dark"):
+        page.emulate_media(color_scheme=scheme)
+        page.set_viewport_size({"width": 1280, "height": 1000})
+        got = {}
+        show_tab(page, "memory")
+        open_page(page, phys // 4096)
+        wait_for(lambda: page.locator("#listing .srcloc").count() > 0, 15)
+        got["Page listing"] = page.evaluate(SRC_COLOURS_JS, list(SRC_COLOUR_VIEWS["Page listing"]))
+        show_tab(page, "debugger")
+        wait_for(lambda: page.locator("#cur_src .srctext").count() > 0, 15)
+        for view in ("Debugger listing", "Debugger source row", "call stack"):
+            got[view] = page.evaluate(SRC_COLOURS_JS, list(SRC_COLOUR_VIEWS[view]))
+        page.evaluate("(pa) => openSource(pa)", phys)
+        wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 20)
+        got["Source panel"] = page.evaluate(SRC_COLOURS_JS, list(SRC_COLOUR_VIEWS["Source panel"]))
+        page.screenshot(path=str(shots / f"srccolour-{name}-1280-{scheme}.png"))
+        page.set_viewport_size({"width": 390, "height": 900})
+        time.sleep(0.3)
+        page.screenshot(path=str(shots / f"srccolour-{name}-390-{scheme}.png"))
+        page.set_viewport_size({"width": 1280, "height": 1000})
+        page.click("#src_close")
+        show_tab(page, "graph")
+        page.evaluate("""() => { const st = G.stepper; G.view = 'timeline';
+            G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fStart.length - 1; renderGraphInfo(); }""")
+        got["Graph detail"] = page.evaluate(SRC_COLOURS_JS, list(SRC_COLOUR_VIEWS["Graph detail"]))
+        show_tab(page, "debugger")
+        for view, (_, text) in SRC_COLOUR_VIEWS.items():
+            g = got.get(view)
+            if not g or not g["loc"] or (text and not g["text"]):
+                problems.append(f"{name} {scheme}: {view} has no .srcloc/.srctext pair: {g}")
+                continue
+            seen.setdefault((scheme, "loc"), set()).add(tuple(g["loc"]["colour"]))
+            for part in ("loc", "text") if text else ("loc",):
+                c = g[part]
+                ratio = contrast(c["colour"], c["bg"], c["alpha"])
+                r[f"contrast {scheme} {view} {part}"] = round(ratio, 2)
+                if ratio < 4.5:
+                    problems.append(f"{name} {scheme}: {view} {part} contrast {ratio:.2f} < 4.5: {c}")
+            if text:
+                seen.setdefault((scheme, "text"), set()).add(tuple(g["text"]["colour"]))
+                if g["loc"]["colour"] == g["text"]["colour"]:
+                    problems.append(f"{name} {scheme}: {view} location and C text have the same colour {g['loc']['colour']}")
+    page.emulate_media(color_scheme="light")
+    for key, colours in seen.items():
+        r[f"colour {key[0]} {key[1]}"] = sorted(colours)
+        if len(colours) != 1:
+            problems.append(f"{name} {key[0]}: .src{key[1]} differs between views: {sorted(colours)}")
+    if seen.get(("light", "loc")) == seen.get(("dark", "loc")) or seen.get(("light", "text")) == seen.get(("dark", "text")):
+        problems.append(f"{name}: the C line colours do not change with the theme: {seen}")
+
+
 def dwarf_case(browser, base, shots, name):
     """file:line and inline chains from the shipped DWARF shards: Debugger
     source rows and call stack against llvm-symbolizer, C lines and "no
@@ -1414,6 +1512,9 @@ def dwarf_case(browser, base, shots, name):
         if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
             problems.append(f"{name}: the Debugger scrolls horizontally at 390 px ({scheme})")
         page.screenshot(path=str(shots / f"dwarf-debugger-{name}-390-{scheme}.png"), full_page=True)
+    page.emulate_media(color_scheme="light")
+    page.set_viewport_size({"width": 1280, "height": 1000})
+    src_colour_check(page, name, phys, problems, r, shots)
     page.close()
     if errors:
         problems.append("page errors: " + "; ".join(errors))

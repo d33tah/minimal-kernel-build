@@ -1099,7 +1099,10 @@ function renderGraphInfo() {
 			t.textContent = label;
 			const s = document.createElement("span");
 			s.className = "mono";
-			s.textContent = pa >= 0 ? hex(pa) + " " + dbgTitle(pa, sym).replace(/\n/g, "; ") : "unknown";
+			if (pa >= 0)
+				s.append(hex(pa) + " ", ...srcChainNodes(pa, sym));
+			else
+				s.textContent = "unknown";
 			src.append(t, " ", s, " ");
 		};
 		const parent = st.fParent[k];

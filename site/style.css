@@ -32,6 +32,8 @@
 	--sym0: rgba(36, 86, 166, 0.10);
 	--sym1: rgba(214, 39, 40, 0.10);
 	--nx-bg: rgba(148, 103, 189, 0.28);
+	--src-loc: #8a4500;
+	--src-text: #5e3a92;
 }
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme="light"]) {
@@ -53,6 +55,8 @@
 		--sym0: rgba(139, 177, 240, 0.16);
 		--sym1: rgba(255, 120, 120, 0.14);
 		--nx-bg: rgba(190, 150, 240, 0.22);
+		--src-loc: #e8a860;
+		--src-text: #c4a8f0;
 	}
 }
 :root[data-theme="dark"] {
@@ -74,6 +78,8 @@
 	--sym0: rgba(139, 177, 240, 0.16);
 	--sym1: rgba(255, 120, 120, 0.14);
 	--nx-bg: rgba(190, 150, 240, 0.22);
+	--src-loc: #e8a860;
+	--src-text: #c4a8f0;
 }
 
 * { box-sizing: border-box; }
@@ -268,7 +274,7 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 .syminfo #cur_src .frame { margin-left: 4.6em; }
 .syminfo #cur_src .frame:first-of-type { display: inline; margin-left: 0; }
 .syminfo #cur_src .inl { color: var(--muted); }
-.syminfo .srctext { color: var(--muted); font-size: 0.75rem; white-space: pre-wrap; }
+.syminfo .srctext { font-size: 0.75rem; white-space: pre-wrap; }
 #graph_canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: 4px; touch-action: none; cursor: grab; background: var(--bg); }
 #graph_canvas[hidden] { display: none; }
 #graph_info .glist { margin: 0.2rem 0; overflow-wrap: anywhere; }
@@ -276,13 +282,15 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 #vclock { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.2em; margin: 0.1rem 0; }
 #listing .src, #context .src { color: var(--muted); font-style: italic; cursor: pointer; }
 #listing .src.nol, #context .src.nol { cursor: default; opacity: 0.8; }
+/* C lines everywhere (listings, Debugger source rows, Source panel, call
+   stack, Graph detail): location and text in two colours. */
+.srcloc { color: var(--src-loc); }
+.srctext { color: var(--src-text); }
 .srcpanel { position: fixed; z-index: 5; right: 0; top: 0; bottom: 0; width: min(46rem, 50vw); background: var(--bg);
 	border-left: 1px solid var(--line); box-shadow: -2px 0 12px rgba(0, 0, 0, 0.2); padding: 0.4rem 0.6rem; display: flex; flex-direction: column; }
 .srcpanel[hidden] { display: none; }
 #src_body { flex: 1; overflow: auto; margin: 0; font: 11px/1.35 ui-monospace, monospace; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--page-free); padding: 0.4rem; border-radius: 4px; }
 #src_body .exec { background: rgba(44, 160, 44, 0.18); }
-#src_body .code { color: var(--fg); }
-#src_body span:not(.exec):not(.code) { color: var(--muted); }
 #src_body .here { outline: 2px solid var(--accent); outline-offset: -1px; }
 @media (max-width: 640px) {
 	.srcpanel { left: 0; top: auto; width: auto; height: 65vh; border-left: none; border-top: 1px solid var(--line); }

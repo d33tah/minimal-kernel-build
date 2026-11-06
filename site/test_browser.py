@@ -2633,6 +2633,174 @@ def covtree_case(browser, base, shots):
     return problems, r
 
 
+# Multi-line C statements: the line rows name only the first line of
+# `asm volatile("..."\n "..." : ...);`, the rest of it must show as part of
+# the statement (V3).
+MULTILINE_POINTS = (
+    # (file, function whose statement it is, or None: inlined everywhere)
+    ("arch/x86/lib/string_32.c", "strlen"),
+    ("arch/x86/include/asm/irqflags.h", "native_save_fl"),
+)
+
+
+def multiline_statement(text, func):
+    """1-based (first, last) line of the first asm statement in func's body."""
+    lines = text.split("\n")
+    start = next(i for i, l in enumerate(lines) if re.search(r"\b" + func + r"\(void\)|\b" + func + r"\(const", l))
+    first = next(i for i in range(start, len(lines)) if "asm volatile(" in lines[i])
+    last = next(i for i in range(first, len(lines)) if lines[i].rstrip().endswith(");"))
+    return first + 1, last + 1
+
+
+def panel_line_marks(page):
+    """{line: (classes, mark, title)} of the Source panel's lines."""
+    title = page.inner_text("#src_title")
+    m = re.search(r":(\d+)–\d+$", title)
+    first = int(m.group(1)) if m else 1
+    spans = page.eval_on_selector_all("#src_body > span", "es => es.map(e => [e.className, e.textContent, e.title])")
+    return {first + i: (c.split(), t[6:7], ti) for i, (c, t, ti) in enumerate(spans)}
+
+
+def multiline_case(browser, base, shots):
+    """After a counted minified boot, every line of a multi-line asm statement
+    that ran shows as run in the Source panel (whole file and the function
+    view), the lines after the first marked as its continuation; the panel's
+    counts (lines with their own code only) equal the Coverage tree's and
+    the lcov export's for that file."""
+    problems, r = [], {}
+    entry = kernel_entries()["minified-linux"]
+    src = SITE / entry["src"]
+    syms = {x["name"]: x for x in json.loads((SITE / entry["symbols"]).read_text())["symbols"]}
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel=minified-linux&speed=full")
+    if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 120):
+        problems.append("the counted boot did not end")
+    show_tab(page, "coverage")
+    wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok"
+             and page.get_attribute("#cov_tree", "data-coverage") in ("stepped", "partial"), 30)
+    cov_open_all(page)
+    files = {x["path"]: x for x in cov_rows(page, "file")}
+    with page.expect_download() as dl:
+        page.click("#cov_export")
+    lcov, cur = {}, None
+    for l in pathlib.Path(dl.value.path()).read_text().splitlines():
+        if l.startswith("SF:"):
+            cur = lcov.setdefault(l[3:], {})
+        elif l.startswith(("LF:", "LH:")):
+            cur[l[:2]] = int(l[3:])
+
+    def check(label, lo, hi, ran=True):
+        """Lines lo..hi of the panel: the first ran (or has code that did not
+        run), every other one shows the same as its continuation."""
+        marks = panel_line_marks(page)
+        got = {l: marks.get(l, ([], "", ""))[:2] for l in range(lo, hi + 1)}
+        r[label] = {l: " ".join(c) + " " + m for l, (c, m) in got.items()}
+        want = "exec" if ran else "code"
+        if want not in got[lo][0]:
+            problems.append(f"{label}: line {lo}, the statement's first line, is not {want}: {got[lo]}")
+        for l in range(lo + 1, hi + 1):
+            c, mark = got[l]
+            if want not in c or "cont" not in c:
+                problems.append(f"{label}: line {l} of the statement {lo}-{hi} is not shown as its continuation ({want}): {c} {mark!r}")
+            elif "statement" not in marks[l][2] or "not counted" not in marks[l][2].lower():
+                problems.append(f"{label}: line {l}: tooltip {marks[l][2]!r}")
+        own = [c for c, _, _ in marks.values() if ("exec" in c or "code" in c) and "cont" not in c]
+        code, ran = int(page.get_attribute("#src_body", "data-code")), int(page.get_attribute("#src_body", "data-executed"))
+        if code != len(own) or ran != sum("exec" in c for c in own):
+            problems.append(f"{label}: panel counts {code}/{ran} != its lines with their own code {len(own)}/{sum('exec' in c for c in own)}")
+        return code, ran
+
+    # The statement finder on C that trips naive scanners: `;` and parens
+    # in strings, characters and comments, a #define with continuations
+    # inside a call, if headers, a label, else, an initializer, a statement
+    # expression, macro calls without `;` outside functions. Expected: {first line: last line} of each multi-line one.
+    snippet = [
+        'int f(int a,',                        # 1  header, ends at the { of 2
+        '      int b)',                         # 2
+        '{',                                    # 3
+        '\tstruct s x = {',                    # 4  initializer 4-7
+        '\t\t.a = ";(",',                     # 5
+        '\t\t.b = \')\',',                  # 6
+        '\t};',                                # 7
+        '\tif (a &&',                          # 8  header 8-9
+        '\t    b)',                            # 9
+        '\t\tfoo(a, /* ); */',                # 10 call 10-14, a directive inside
+        '#define X(y) \\',                    # 11
+        '\t(y);',                              # 12
+        '\t\t    b,',                         # 13
+        '\t\t    c);',                        # 14
+        'out:',                                 # 15 label alone
+        '\telse',                              # 16 else alone
+        '\t\tx = ({ int t = a;',              # 17 statement expression 17-18
+        '\t\t\tt; });',                      # 18
+        '\treturn a; // ;(',                   # 19 one line
+        '}',                                    # 20
+        'DEFINE_A(x)',                          # 21 file scope macro calls
+        '\tDEFINE_B(y)',                       # 22 without `;`: one line each
+        'static int g(void)',                   # 23 a definition after them
+        '{ return 0; }',                        # 24
+    ]
+    got = page.evaluate("""lines => { const s = srcStatements({ lines });
+        return [Object.fromEntries(s.end), Array.from(s.of).slice(1, lines.length + 1)]; }""", snippet)
+    r["statements"] = got[0]
+    want = {"1": 3, "4": 7, "8": 9, "10": 14, "17": 18, "23": 24}
+    if got[0] != want or got[1][10] or got[1][11]:
+        problems.append(f"srcStatements: {got} != {want}, lines 11-12 (a #define) in no statement")
+
+    def panel_open(js, arg):
+        page.evaluate(js, arg)
+        wait_for(lambda: page.is_visible("#src_panel") and page.get_attribute("#src_body", "data-state") == "ok", 20)
+
+    for path, func in MULTILINE_POINTS:
+        text = gzip.decompress((src / (path + ".gz")).read_bytes()).decode()
+        lo, hi = multiline_statement(text, func)
+        r[path + " statement"] = [lo, hi]
+        if hi <= lo:
+            problems.append(f"{path}: {func}'s asm statement {lo}-{hi} is one line")
+            continue
+        # The whole file (the Coverage tab's view).
+        panel_open("p => openSourceFile(p)", path)
+        code, ran = check(path + " whole file", lo, hi)
+        tree, lc = files.get(path), lcov.get(path, {})
+        r[path + " counts"] = {"panel": [code, ran], "tree": tree and [tree["lines"], tree["linesRun"]], "lcov": [lc.get("LF"), lc.get("LH")]}
+        if not tree or [code, ran] != [tree["lines"], tree["linesRun"]] or [code, ran] != [lc.get("LF"), lc.get("LH")]:
+            problems.append(f"{path}: panel, tree and lcov disagree: {r[path + ' counts']}")
+        if path.endswith("string_32.c"):
+            page.screenshot(path=str(shots / "multiline-whole-1280-light.png"))
+        page.click("#src_close")
+        # The function view at a copy of the statement that ran (inlined
+        # into a caller: the view must reach the statement's last line).
+        at = page.evaluate("""([p, l]) => { const s = fileLines(p).code.get(l) || [];
+            const x = s.find(([a, b]) => stepper.countIn(a, b) > 0); return x ? x[0] : -1; }""", [path, lo])
+        r[path + " ran at"] = hex(at) if at >= 0 else at
+        if at < 0:
+            problems.append(f"{path}:{lo} has no address that ran")
+        else:
+            panel_open("pa => openSource(pa)", at)
+            check(path + " at " + hex(at), lo, hi)
+            for scheme, width in (("light", 1280), ("dark", 1280), ("dark", 390), ("light", 390)):
+                page.emulate_media(color_scheme=scheme)
+                page.set_viewport_size({"width": width, "height": 1000})
+                time.sleep(0.3)
+                if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
+                    problems.append(f"{path} {scheme}/{width}: horizontal scroll")
+                page.screenshot(path=str(shots / f"multiline-{path.split('/')[-1]}-{scheme}-{width}.png"))
+            page.emulate_media(color_scheme="light")
+            page.set_viewport_size({"width": 1280, "height": 1000})
+            page.click("#src_close")
+        # The out-of-line function, whose own copy did not run in this boot.
+        if func in syms and path.endswith("string_32.c"):
+            panel_open("pa => openSource(pa)", syms[func]["paddr"])
+            check(path + " " + func + "()", lo, hi, ran=False)
+            page.click("#src_close")
+    page.close()
+    if errors:
+        problems.append("page errors: " + "; ".join(errors))
+    return problems, r
+
+
 def touch_case(browser, base, shots):
     """390 px phone with touch: tapping a "?" shows its text, tapping elsewhere hides it."""
     problems = []
@@ -2947,7 +3115,8 @@ def suite_coverage(ctx):
 
 
 def suite_covtree(ctx):
-    return report("covtree", *covtree_case(ctx.browser, ctx.base, ctx.shots))
+    failed = report("covtree", *covtree_case(ctx.browser, ctx.base, ctx.shots))
+    return failed | report("multiline", *multiline_case(ctx.browser, ctx.base, ctx.shots))
 
 
 def suite_unwind(ctx):

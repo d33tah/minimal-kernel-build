@@ -1479,7 +1479,7 @@ function renderSymbols(phys) {
 	const hist = st.history.filter((h) => !(h.sym === cur && h.sym >= 0));
 	const prev = hist.length ? hist[hist.length - 1] : null;
 	renderSourceRows(box, phys, cur >= 0 ? st.symName[cur] : null);
-	renderCallStack(box, phys);
+	const uw = renderCallStack(box, phys);
 	const p = row("previous");
 	p.id = "prev_sym";
 	if (prev && prev.sym >= 0) {
@@ -1500,6 +1500,7 @@ function renderSymbols(phys) {
 	}
 	items.forEach((it, k) => crumbs.append(k ? " ← " : "", it));
 	crumbs.dataset.count = items.length;
+	return uw;
 }
 
 // The call stack, innermost first. With DWARF the backtrace is unwound
@@ -1658,6 +1659,7 @@ function renderCallStack(box, phys) {
 	d.dataset.frames = JSON.stringify(frames.map(([pc, node, method, , cfa, regs, va, label]) =>
 		({ name: label || (node >= 0 ? st.nodeName(node) : ""), pc, method, cfa: cfa === undefined ? null : cfa, regs, va, user: !!label })));
 	box.append(d);
+	return uw;
 }
 
 // The "C source" toggle is there when the kernel has DWARF.
@@ -1671,14 +1673,17 @@ function renderContext() {
 	if (!stepper || tab !== "debugger" || runState === "jit" || runState === "off") {
 		el.textContent = runState === "jit" ? "Running at full speed (JIT). Pause to see the code at EIP; the symbol history is not recorded at full speed." : "";
 		$("sym_info").textContent = "";
+		if (tab === "debugger")
+			renderLocals(null);
 		return;
 	}
 	const phys = stepper.nextPhys();
 	if (phys < 0) {
 		el.textContent = "EIP is not mapped.";
+		renderLocals(null);
 		return;
 	}
-	renderSymbols(phys);
+	renderLocals(renderSymbols(phys));
 	const lines = [];
 	let ins = disasm ? disasm.insns : [];
 	let i = disasm ? insnIndex(phys) : 0;

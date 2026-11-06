@@ -2146,6 +2146,174 @@ UNWIND_DUMP_JS = """() => {
 }"""
 
 
+# The Debugger's "Parameters and locals" with every frame open: per frame
+# its inlined calls and function, each variable's state ("ok", "partial",
+# "out"), the unsigned value of a scalar (raw) and the text shown.
+LOCALS_DUMP_JS = """() => [...document.querySelectorAll('#locals details.lframe')].map((d) => ({
+    n: +d.dataset.n, pc: +d.dataset.pc, state: d.dataset.state || '',
+    scopes: [...d.querySelectorAll('.lscope')].map((s) => ({ func: s.dataset.func, inlined: !!s.dataset.inlined,
+        vars: [...s.querySelectorAll(':scope > .lvar')].map((v) => ({ name: v.dataset.name, kind: v.dataset.kind,
+            state: v.dataset.state, raw: v.dataset.raw === undefined ? null : v.dataset.raw, value: v.dataset.value,
+            loc: (v.querySelector('.lloc') || {}).textContent || '' })) })) }))"""
+
+
+def locals_open_all(page, timeout=30):
+    """Open every frame of the Parameters and locals section and wait until
+    each one has its variables (or says why not)."""
+    page.evaluate("document.querySelectorAll('#locals details.lframe').forEach((d) => { d.open = true; })")
+    wait_for(lambda: page.evaluate("[...document.querySelectorAll('#locals details.lframe')].every((d) => "
+                                   "d.dataset.filled || (d.dataset.state && d.dataset.state !== 'loading'))"), timeout)
+    return page.evaluate(LOCALS_DUMP_JS)
+
+
+# Runs inside gdb on a core: for each frame (inlined calls are frames of
+# their own) its function and the value of every parameter and local of the
+# blocks around its pc: the unsigned integer of a scalar, "out" (optimized
+# out), "agg" (no scalar) or "err:..." (memory not in the core).
+GDB_LOCALS = r"""
+import gdb, json
+def scalar(v):
+    if v.is_optimized_out:
+        return "out"
+    t = v.type.strip_typedefs()
+    if t.code not in (gdb.TYPE_CODE_INT, gdb.TYPE_CODE_PTR, gdb.TYPE_CODE_ENUM, gdb.TYPE_CODE_BOOL, gdb.TYPE_CODE_CHAR):
+        return "agg"
+    return str(int(v) & ((1 << (8 * t.sizeof)) - 1))
+def enumerator(s):
+    t = s.type.strip_typedefs() if s.type is not None else None
+    return t is not None and t.code == gdb.TYPE_CODE_ENUM and any(x.name == s.name for x in t.fields())
+out, f = [], gdb.newest_frame()
+while f is not None and len(out) < NFRAMES:
+    fn = f.function()
+    fr = {"func": fn.name if fn else None, "inlined": f.type() == gdb.INLINE_FRAME, "pc": int(f.pc()), "vars": []}
+    try:
+        b = f.block()
+    except RuntimeError:
+        b = None
+    while b is not None:
+        for s in b:
+            if not (s.is_argument or s.is_variable or (s.is_constant and not enumerator(s))) or s.addr_class == gdb.SYMBOL_LOC_LABEL:
+                continue
+            if s.type is not None and str(s.type) == "__CORE_ADDR":
+                continue
+            try:
+                val = scalar(s.value(f))
+            except gdb.error as e:
+                val = "out" if "optimized out" in str(e) else "err:" + str(e)
+            fr["vars"].append([s.name, val])
+        if b.function is not None:
+            break
+        b = b.superblock
+    out.append(fr)
+    try:
+        f = f.older()
+    except gdb.error:
+        break
+json.dump(out, open(DST, "w"))
+"""
+
+
+def gdb_locals(elf, regs, pages, nframes):
+    """gdb's frames (inlined ones included) with their variables' values,
+    from a core of the registers and stack pages; None without gdb."""
+    if not elf or not shutil.which("gdb"):
+        return None
+    with tempfile.TemporaryDirectory() as tmp:
+        core, py, dst = (os.path.join(tmp, n) for n in ("core", "locals.py", "locals.json"))
+        write_core(core, regs, pages)
+        pathlib.Path(py).write_text(f"DST, NFRAMES = {dst!r}, {nframes}\n" + GDB_LOCALS)
+        subprocess.run(["gdb", "-nx", "-batch", "-ex", "set pagination off", "-ex", f"source {py}", str(elf), core],
+                       capture_output=True, text=True, timeout=300)
+        return json.loads(pathlib.Path(dst).read_text()) if os.path.exists(dst) else []
+
+
+def locals_compare(elf, locs, udump):
+    """The page's parameters and locals (locs: LOCALS_DUMP_JS) against
+    gdb's on a core of the same registers and stack pages (udump:
+    UNWIND_DUMP_JS), over the frames from the CPU's registers down to the
+    first one not found by CFI (gdb unwinds those the same way, see
+    unwind_compare). Each inlined call and function must have the same
+    variables; a scalar both read must be equal, and one gdb finds
+    optimized out the page must not show. Returns (values compared, values
+    only gdb has, problems) or None without gdb."""
+    fr = udump["frames"]
+    n = 1
+    while n < len(fr) and fr[n]["method"] == "cfi":
+        n += 1
+    # A frame without a DWARF function (assembly) is one gdb frame without variables.
+    page = [sc for d in locs[:n] for sc in (d["scopes"] or [{"func": None, "vars": []}])]
+    regs = {**udump["regs"], "cs": 0x60, "eflags": 0x202, "ss": 0x68, "ds": 0x7b, "es": 0x7b}
+    want = gdb_locals(elf, regs, udump["pages"], len(page))
+    if want is None:
+        return None
+    same, more, bad = 0, 0, []
+    for i, sc in enumerate(page):
+        if i >= len(want):
+            bad.append(f"frame {i} ({sc['func']}): gdb has no such frame")
+            break
+        g = want[i]
+        if g["func"] != sc["func"]:
+            bad.append(f"frame {i}: page {sc['func']}, gdb {g['func']}")
+            continue
+        if sorted(v["name"] for v in sc["vars"]) != sorted(x[0] for x in g["vars"]):
+            bad.append(f"frame {i} ({sc['func']}): variables page {sorted(v['name'] for v in sc['vars'])} gdb {sorted(x[0] for x in g['vars'])}")
+            continue
+        gv = {}
+        for name, val in g["vars"]:
+            gv.setdefault(name, []).append(val)
+        pv = {}
+        for v in sc["vars"]:
+            pv.setdefault(v["name"], []).append(v)
+        for name, mine in pv.items():
+            # Same-named variables of nested blocks: compare as sets of values.
+            theirs = gv[name]
+            for v in mine:
+                nums = [x for x in theirs if x not in ("out", "agg") and not x.startswith("err:")]
+                if v["raw"] is not None:
+                    if v["raw"] in nums:
+                        same += 1
+                    elif any(x.startswith("err:") or x == "agg" for x in theirs) and not nums:
+                        pass  # gdb could not read it from the core (memory outside the stack pages)
+                    elif all(x == "out" for x in theirs):
+                        bad.append(f"frame {i} ({sc['func']}): {name} = {v['raw']} on the page, optimized out for gdb")
+                    else:
+                        bad.append(f"frame {i} ({sc['func']}): {name} = {v['raw']} ({v['loc']}) on the page, gdb {theirs}")
+                elif v["state"] == "out" and nums and len(mine) == 1:
+                    more += 1
+    return same, more, bad
+
+
+def locals_check(page, elf, dump, r, tag):
+    """The Parameters and locals section at a pause: one frame per unwound
+    frame, the innermost with variables, every variable either with a
+    value and its location or saying why not, and with the -g ELF the
+    values equal gdb's on a core of the same registers and stack."""
+    problems = []
+    locs = locals_open_all(page)
+    unwound = [f for f in dump["frames"] if not f.get("user") and f["method"] != "recorded"]
+    if len(locs) != len(unwound):
+        problems.append(f"{len(locs)} frames in Parameters and locals for {len(unwound)} unwound frames")
+    nv = sum(len(sc["vars"]) for d in locs for sc in d["scopes"])
+    shown = sum(1 for d in locs for sc in d["scopes"] for v in sc["vars"] if v["state"] != "out")
+    r[tag + " locals"] = f"{len(locs)} frames, {nv} variables, {shown} with a value; frame 0: " + "; ".join(
+        f"{sc['func']}: " + ", ".join(f"{v['name']}={v['value']}" for v in sc["vars"]) for sc in (locs[0]["scopes"] if locs else []))
+    if not locs or locs[0]["state"] != "ok" or not any(d["scopes"] for d in locs):
+        problems.append(f"no parameters and locals in any frame: {locs[:2]}")
+    for d in locs:
+        for sc in d["scopes"]:
+            for v in sc["vars"]:
+                if not v["loc"].strip() or (v["state"] == "out" and v["value"]):
+                    problems.append(f"{sc['func']}.{v['name']}: no location or reason shown ({v})")
+    if elf:
+        res = locals_compare(elf, locs, dump)
+        if res is not None:
+            same, more, bad = res
+            r[tag + " locals vs gdb"] = f"{same} values equal, {more} only gdb has (entry values it resolves), {len(bad)} differ"
+            r["locals_equal"] = r.get("locals_equal", 0) + same
+            problems += bad
+    return problems
+
+
 def write_core(path, regs, pages):
     """An i386 ELF core file: one NT_PRSTATUS with the registers (elf_prstatus,
     pr_reg = ebx ecx edx esi edi ebp eax ds es fs gs orig_eax eip cs eflags esp ss)
@@ -2242,7 +2410,8 @@ def unwind_case(browser, base, shots, name, fn, steps):
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)))
     cfi = set()
-    page.on("response", lambda resp: "/dwarf/cfi-" in resp.url and cfi.add(resp.url.split("/dwarf/", 1)[1].split("?")[0]))
+    page.on("response", lambda resp: ("/dwarf/cfi-" in resp.url or "/dwarf/locals-" in resp.url) and
+            cfi.add(resp.url.split("/dwarf/", 1)[1].split("?")[0]))
     page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
     t0 = time.monotonic()
@@ -2295,10 +2464,17 @@ def unwind_case(browser, base, shots, name, fn, steps):
             k, bad = unwind_compare(elf, dump, offset)
             r[tag + " vs gdb"] = f"{k} frames, {len(bad)} segments differ"
             problems += [f"{name} {tag}: {b}" for b in bad]
+        problems += [f"{name} {tag}: {x}" for x in locals_check(page, elf, dump, r, tag)]
+        r["locals"] = page.evaluate(LOCALS_DUMP_JS)
+    if elf and shutil.which("gdb") and not r.get("locals_equal"):
+        problems.append(f"{name}: no parameter or local value compared with gdb")
     r["frames"] = fr
-    r["cfi_shards"] = sorted(cfi)
-    if not cfi:
+    r["cfi_shards"] = sorted(x for x in cfi if x.startswith("cfi-"))
+    r["locals_shards"] = sorted(x for x in cfi if x.startswith("locals-"))
+    if not r["cfi_shards"]:
         problems.append(f"{name}: no CFI shard was fetched")
+    if not r["locals_shards"]:
+        problems.append(f"{name}: no locals shard was fetched")
     page.screenshot(path=str(shots / f"unwind-{name}-{fn}-1280-light.png"))
     for scheme in ("dark", "light"):
         page.emulate_media(color_scheme=scheme)
@@ -2310,6 +2486,10 @@ def unwind_case(browser, base, shots, name, fn, steps):
     page.emulate_media(color_scheme="dark")
     page.set_viewport_size({"width": 1280, "height": 1000})
     page.screenshot(path=str(shots / f"unwind-{name}-{fn}-1280-dark.png"))
+    for scheme in ("dark", "light"):
+        page.emulate_media(color_scheme=scheme)
+        time.sleep(0.2)
+        page.locator("#locals").screenshot(path=str(shots / f"locals-{name}-{fn}-1280-{scheme}.png"))
     page.close()
     if errors:
         problems.append("page errors: " + "; ".join(errors))
@@ -2319,9 +2499,12 @@ def unwind_case(browser, base, shots, name, fn, steps):
 def unwind_import_case(browser, base, shots, want):
     """An imported -g vmlinux: the Worker parses its .debug_frame and the
     call stack at the same pause equals the one from the shipped shards
-    (want: frames of unwind_case at memblock_add_range+9); after a reload
-    the call frame information comes back from IndexedDB."""
+    (want: frames and Parameters and locals of unwind_case at
+    memblock_add_range+9), and so do the parameters and locals the
+    Worker reads per compile unit; after a reload the call frame
+    information and the units' locals come back from IndexedDB."""
     problems, r = [], {}
+    want, want_locals = want if want else (None, None)
     elf = debug_elf("minified-linux")
     if not elf or not want:
         return ([] if not os.environ.get("CI") else ["no minified-linux.elf or no shipped frames"]), {"skipped": "no -g ELF"}
@@ -2359,6 +2542,16 @@ def unwind_import_case(browser, base, shots, want):
     if "imported vmlinux" not in (r["title"] or ""):
         problems.append(f"imported vmlinux: the call stack does not say where its CFI is from: {r['title']!r}")
     page.screenshot(path=str(shots / "unwind-import-1280.png"))
+    # The variables pass of the Worker first (dbgTypes), then each frame's unit.
+    wait_for(lambda: page.evaluate("dbgTypes().state") != "loading", 120)
+    locs = locals_open_all(page, 60)
+    r["locals"] = sum(len(sc["vars"]) for d in locs for sc in d["scopes"])
+    if locs != want_locals:
+        problems.append(f"imported vmlinux: Parameters and locals differ from the shipped shards': {locs} vs {want_locals}")
+    if not page.evaluate("document.getElementById('locals').textContent.length > 0") or not r["locals"]:
+        problems.append("imported vmlinux: no parameters and locals")
+    names_js = """(pas) => pas.map((pa) => { const x = dbgLocals(pa);
+        return x.state === 'ok' ? x.frames.map((f) => [f.func, f.params.map((v) => v[0]), f.locals.map((v) => v[0])]) : x.state; })"""
     rows_js = """async (pas) => { const out = [];
         for (const pa of pas) { let x = dbgCfiRow(pa);
             for (let i = 0; i < 50 && x === 'loading'; i++) { await new Promise((ok) => setTimeout(ok, 100)); x = dbgCfiRow(pa); }
@@ -2366,12 +2559,17 @@ def unwind_import_case(browser, base, shots, want):
         return out; }"""
     pas = [f["pc"] for f in got]
     before = page.evaluate(rows_js, pas)
+    lbefore = page.evaluate(names_js, pas)
     # Reload: rows from IndexedDB, without the file.
     page.goto("about:blank")
     page.goto(url)
     wait_for(lambda: page.get_attribute("#sym_status", "data-dwarf") == "cached", 60)
     rows = page.evaluate(rows_js, pas)
     r["after_reload"] = rows
+    wait_for(lambda: page.evaluate("dbgTypes().state") == "ok", 30)
+    lafter = page.evaluate(names_js, pas)
+    if lafter != lbefore:
+        problems.append(f"after a reload: parameters and locals {lafter}, before {lbefore}")
     if rows != before or sum(1 for x in rows if isinstance(x, str) and x.startswith("CFA=")) < len(rows) - 1:
         problems.append(f"after a reload: CFI rows {rows}, before {before}")
     page.click("#sym_forget")
@@ -3126,8 +3324,9 @@ def suite_unwind(ctx):
             t0 = time.monotonic()
             p, r = unwind_case(ctx.browser, ctx.base, ctx.shots, name, fn, steps)
             frames = r.pop("frames", None)
+            locs = r.pop("locals", None)
             if fn == "memblock_add_range":
-                want = frames
+                want = (frames, locs)
             failed |= report("unwind", p, r, kernel=name, at=fn, seconds=round(time.monotonic() - t0))
     t0 = time.monotonic()
     p, r = unwind_import_case(ctx.browser, ctx.base, ctx.shots, want)

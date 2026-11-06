@@ -310,6 +310,53 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   inlined, several statics of one name) are checked by the ELF symbol at
   their address instead (local runs: minified 3,000/3,000, Debian
   8,263/8,263 plus 1,737 by ELF symbol).
+- **Parameters and locals.** At a pause, every frame the call stack
+  unwound gets the parameters and local variables the DWARF has at its
+  address (EIP, or a caller's call instruction), in the Debugger's
+  "Parameters and locals" section: per frame its inlined calls (innermost
+  first) and then the function, like gdb's backtrace, each with the
+  variables of the lexical blocks around that address. `gen-dwarf.js`
+  writes `dwarf/locals-<hex>.json.gz` per 64 KiB of code (dwarf.js
+  `dwarfScopeGroups`): one group per function with its scopes (function,
+  lexical blocks, inlined calls; address ranges), each variable's name,
+  type (an id of `types.json`, which now also holds the types of
+  parameters and locals) and location (a DWARF expression, a location
+  list, a constant, or none). The scope rules are gdb's: a lexical block
+  without code gives its variables to the block around it, and a
+  function, inlined call or block with an abstract origin also has the
+  origin's parameters and variables none of its own children refers to
+  (optimized out there; clang's blocks without DW_AT_abstract_origin
+  match the origin's by position, as gdb does). Values are read from that
+  frame's registers and stack (unwind.js `dwLocation`, sharing the DWARF
+  expression evaluator with the unwinder): a register, memory at an
+  offset of the frame base (DW_OP_call_frame_cfa is the CFA from the call
+  frame information; clang's DW_OP_reg4 ESP is ESP's value), a computed
+  value (DW_OP_stack_value), a constant (DW_AT_const_value,
+  DW_OP_implicit_value) or pieces of these, shown with the Variables
+  panel's rows (structs, arrays, pointers); the location follows each
+  value. Not shown as values, each with the reason: no location
+  (optimized out), no entry in the location list at that address, a
+  caller's EAX/ECX/EDX (not saved across calls), a value only described
+  at the function's entry (DW_OP_entry_value; with -mregparm=3 the first
+  three arguments arrive in EAX, EDX and ECX: gdb finds some of these
+  through the caller's call-site information, the page does not),
+  implicit pointers, frames below where unwinding stopped. Sizes: Debian
+  41,582 functions, 1,029,770 variables, 87,534,189 bytes of JSON in 153
+  shards, 16,006,242 gzipped (largest 669,648), only the shards of the
+  frames shown are fetched; minified Linux 439 functions, 8,022
+  variables, 84,344 bytes in 2 shards; hello 208 bytes. `types.json`
+  grew with the local types: Debian 2,411,771 -> 3,415,202 bytes
+  (592,275 -> 869,215 gzipped, 30,992 types), minified 29,033 -> 34,443.
+  An imported vmlinux: the Worker that reads the variables (every unit,
+  now with their locals' types) stays and decodes a compile unit's
+  scopes when a frame is in it; they are kept in IndexedDB like the
+  units. `test_dwarf.py --locals N` checks N random addresses inside
+  functions against gdb's `info scope` on the -g ELF: the same parameters
+  and locals for the innermost frame, each with the same kind of
+  location there (none, which register, a constant, pieces, other;
+  local runs: minified 4,669/4,669 and 4,692/4,692, Debian 4,810/4,810;
+  labels, types and enumerators gdb also lists are left out, and
+  addresses where gdb's own `info scope` fails).
 - **Coverage tab.** All the kernel's code as a tree of directories, files
   and functions, each with lines run / lines with code and instructions
   run / instructions, a bar, sortable (name, lines run %, lines not run,
@@ -858,7 +905,14 @@ registers, as it does not cross entry code); only the CFI shards of the
 frames are fetched; screenshots light and dark at 1280 and 390 px. The
 unwind import case imports the minified Linux's -g vmlinux and gets the
 same frames as the shipped shards, and after a reload the same CFI rows
-from IndexedDB. `test_dwarf.py --cfi N` compares the row at N random
+from IndexedDB. At each of those pauses the Parameters and locals section
+has one entry per unwound frame, every variable shows a value with its
+location or the reason it has none, and over the frames CFI found the
+values equal gdb's on the same core file (each inlined call and function
+with the same variables; a scalar both read is equal; one gdb finds
+optimized out the page does not show; gdb's own extra, entry values it
+resolves through call sites, are counted); the import gives the same
+section as the shipped shards, and the same variables after a reload. `test_dwarf.py --cfi N` compares the row at N random
 addresses (half inside FDEs) with the rows `llvm-dwarfdump --debug-frame`
 evaluates (local: minified 4,918/4,918, Debian 20,000/20,000 of which 211
 with DWARF expressions), and `test_dwarf.py --eh-frame` does the same on

@@ -25,12 +25,44 @@ const varsReady = () => typeof emulator !== "undefined" && emulator && emuReady;
 // Virtual - physical of the kernel's data (0 for hello).
 const varsOffset = () => virtOffset(V86_KERNEL_ADDR);
 
-// Guest bytes at physical pa, or null when there is no RAM there yet.
+// Values that are not in RAM (a local in a register, a computed or
+// constant value, pieces of these) live in cells at made-up "physical"
+// addresses from VARS_CELLS on, so the one render path (varsRow and what
+// it calls) shows them like memory. Remade at every Debugger render.
+const VARS_CELLS = 2 ** 40, VARS_CELL_SIZE = 2 ** 20;
+let varsCells = [];
+
+// A cell for bytes (known[k] 0: byte k unknown); how says where they
+// are, why why some are not known. Returns its address.
+function varsCell(bytes, known, how, why) {
+	varsCells.push({ bytes, known, how, why });
+	return VARS_CELLS + (varsCells.length - 1) * VARS_CELL_SIZE;
+}
+
+function varsCellAt(pa) {
+	return pa >= VARS_CELLS ? varsCells[Math.floor((pa - VARS_CELLS) / VARS_CELL_SIZE)] || null : null;
+}
+
+// Guest bytes at physical pa, or null when there is no RAM there yet (or
+// a cell's bytes are not all known).
 function varsRead(pa, n) {
+	const c = varsCellAt(pa);
+	if (c) {
+		const o = pa - VARS_CELLS - varsCells.indexOf(c) * VARS_CELL_SIZE;
+		if (o < 0 || o + n > c.bytes.length)
+			return null;
+		for (let k = 0; k < n; k++)
+			if (!c.known[o + k])
+				return null;
+		return c.bytes.subarray(o, o + n);
+	}
 	if (!varsReady() || pa < 0 || n < 0 || pa + n > emuRam)
 		return null;
 	return emulator.read_memory(pa, n);
 }
+
+// The text for a value varsRead could not read at pa.
+const varsMissing = (pa) => varsCellAt(pa) ? "<optimized out>" : "(not in RAM)";
 
 // Whether the kernel's own code has surely not run yet: paused with EIP
 // outside its symbols (BIOS, setup, decompressor) and its C entry never
@@ -234,7 +266,7 @@ function varsScalar(T, type, pa, bits) {
 	const size = t[2] > 0 ? t[2] : 4;
 	const b = varsRead(pa, bits ? Math.ceil((bits[1] + bits[0]) / 8) : size);
 	if (!b)
-		return { text: "(not in RAM)" };
+		return { text: varsMissing(pa) };
 	let raw = bits ? (le(b, b.length) >> BigInt(bits[1])) & ((1n << BigInt(bits[0])) - 1n) : le(b, size);
 	const width = bits ? bits[0] : size * 8;
 	const signed = t[0] === DWT.base && (t[3] === 5 || t[3] === 6) || (t[0] === DWT.enum && t[4] >= 0 &&
@@ -303,7 +335,7 @@ function varsSummary(T, type, pa) {
 		if (et && et[0] === DWT.base && et[2] === 1 && t[2].length === 1 && t[2][0] > 0) {
 			const b = varsRead(pa, t[2][0]);
 			if (!b)
-				return "(not in RAM)";
+				return varsMissing(pa);
 			const e = b.indexOf(0);
 			return JSON.stringify(String.fromCharCode(...b.subarray(0, e < 0 ? b.length : e)));
 		}
@@ -324,9 +356,9 @@ function varsRow(T, label, type, pa, bits, key, depth) {
 	const ty = document.createElement("span");
 	ty.className = "wtype";
 	ty.textContent = dwTypeName(T, type) + (bits ? " : " + bits[0] : "");
-	const at = pa + varsOffset();
-	ty.title = "at " + hex(at) + (bits ? " bits " + bits[1] + "–" + (bits[1] + bits[0] - 1) : "") + ", physical " + hex(pa) +
-		", " + dwTypeSize(T, type) + " bytes";
+	const at = pa + varsOffset(), cell = varsCellAt(pa);
+	ty.title = (cell ? cell.how + (cell.why ? "; " + cell.why : "") : "at " + hex(at) + (bits ? " bits " + bits[1] + "–" + (bits[1] + bits[0] - 1) : "") +
+		", physical " + hex(pa)) + ", " + dwTypeSize(T, type) + " bytes";
 	head.append(name, " = ", val, " ", ty);
 	const sc = varsScalar(T, type, pa, bits);
 	if (sc) {
@@ -507,6 +539,257 @@ function watchSuggest() {
 			if (++n >= 40)
 				break;
 		}
+}
+
+// ---- parameters and locals of the call frames -------------------------------
+//
+// At a pause, every frame the call stack unwound (app.js unwindHere: EIP
+// for the innermost, the call instruction for the others) gets the
+// parameters and locals the DWARF has there (dbginfo.js dbgLocals: the
+// scopes around that address, inlined calls as frames of their own, like
+// gdb's backtrace), each read through its location (unwind.js dwLocation:
+// a register of that frame, memory at an offset of the frame base, the
+// CFA from the call frame information, a computed value, pieces) and
+// shown with the Variables panel's rows. What the DWARF or the frame does
+// not have says so: optimized out, a register a callee may have changed,
+// a value only described at the function's entry.
+
+// "frame index:function" -> whether the user left that frame open (the
+// innermost one is open unless closed).
+const localsOpen = new Map();
+
+// Bytes at virtual va through the page tables, or null.
+function localsReadBytes(va, n) {
+	const cpu = stepper && stepper.cpu;
+	if (!cpu || n > 4096)
+		return null;
+	const out = new Uint8Array(n);
+	for (let k = 0; k < n;) {
+		const w = pageWalk(cpu, (va + k) >>> 0);
+		if (w.phys === null)
+			return null;
+		const run = Math.min(n - k, 4096 - ((va + k) & 0xfff));
+		if (w.phys + run > cpu.mem8.length)
+			return null;
+		out.set(cpu.mem8.subarray(w.phys, w.phys + run), k);
+		k += run;
+	}
+	return out;
+}
+
+// The physical address of n bytes at virtual va when they are one run of
+// RAM (what varsRow reads), else -1.
+function localsPhys(va, n) {
+	const cpu = stepper && stepper.cpu;
+	const a = cpu ? pageWalk(cpu, va >>> 0).phys : null, b = cpu ? pageWalk(cpu, (va + Math.max(n, 1) - 1) >>> 0).phys : null;
+	return a !== null && b !== null && b - a === Math.max(n, 1) - 1 && a + n <= emuRam ? a : -1;
+}
+
+// The DWARF expression context of an unwound frame f.
+function localsCtx(f, fb) {
+	const ctx = {
+		reg: (r) => f.regs && f.regs[r] !== undefined && f.regs[r] !== null ? f.regs[r] >>> 0 : undefined,
+		readBytes: localsReadBytes,
+		read: (a, n) => {
+			const b = localsReadBytes(a, n);
+			return b ? b.reduceRight((v, x) => v * 256 + x, 0) : undefined;
+		},
+		cfa: f.cfa === undefined || f.cfa === null ? undefined : f.cfa >>> 0,
+	};
+	const l = fb ? dwLocAt(fb, f.lookup) : null;
+	if (l && l.expr) {
+		// A register as the frame base (clang: DW_OP_reg4 ESP) is its value.
+		const e = l.expr;
+		const v = e.length === 1 && e[0] >= 0x50 && e[0] <= 0x6f ?
+			(ctx.reg(e[0] - 0x50) === undefined ? { why: CFI_REGS[e[0] - 0x50] + " is not known in this frame" } : { value: ctx.reg(e[0] - 0x50) }) :
+			dwExpr(e, ctx);
+		if (!v.why)
+			ctx.frameBase = v.value;
+		ctx.fbWhy = v.why ? "frame base (" + dwExprText(e) + "): " + v.why : "";
+	}
+	return ctx;
+}
+
+// One variable of a frame: { pa, how, why, state } for varsRow (pa < 0:
+// nothing to show), state "ok", "partial" (some bytes known) or "out".
+function localsValue(T, v, f, ctx) {
+	const size = dwTypeSize(T, v[1]) || 4;
+	const l = dwLocAt(v[3], f.lookup);
+	if (l.why)
+		return { pa: -1, state: "out", why: v[2] & 2 ? "optimized out (nothing about it is left in this copy of the function)" : l.why };
+	if (l.c !== undefined || l.cb) {
+		const b = new Uint8Array(size);
+		if (l.cb)
+			b.set(l.cb.subarray(0, size));
+		else
+			for (let k = 0, x = BigInt(l.c); k < size; k++, x >>= 8n)
+				b[k] = Number(BigInt.asUintN(8, x));
+		return { pa: varsCell(b, new Uint8Array(size).fill(1), "a constant (DW_AT_const_value)", ""), state: "ok", how: "a constant" };
+	}
+	const r = dwLocation(l.expr, ctx, size);
+	if (r.why)
+		return { pa: -1, state: "out", why: r.why + (ctx.fbWhy && /frame base/.test(r.why) ? " (" + ctx.fbWhy + ")" : "") };
+	if (r.mem !== undefined) {
+		const pa = localsPhys(r.mem, size);
+		if (pa >= 0)
+			return { pa, state: "ok", how: r.how };
+		const b = localsReadBytes(r.mem, size);
+		if (!b)
+			return { pa: -1, state: "out", why: r.how + ": not mapped" };
+		return { pa: varsCell(b, new Uint8Array(size).fill(1), r.how, ""), state: "ok", how: r.how };
+	}
+	const known = r.known.subarray(0, size).every(Boolean);
+	return { pa: varsCell(r.bytes, r.known, r.how, r.whys.join("; ")), state: known ? "ok" : "partial", how: r.how,
+		why: r.whys.join("; ") };
+}
+
+// The unsigned value of a scalar (integer, pointer, enum) at pa as a
+// decimal string, null for anything else or bytes not known: what the
+// tests compare with gdb.
+function localsRaw(T, type, pa) {
+	const s = dwStrip(T, type);
+	const t = s >= 0 ? T.types[s] : null;
+	if (!t || ![DWT.base, DWT.ptr, DWT.enum].includes(t[0]) || !(t[2] > 0 && t[2] <= 8))
+		return null;
+	const b = varsRead(pa, t[2]);
+	return b ? le(b, t[2]).toString() : null;
+}
+
+// The variables of one local frame (an inlined call or the function).
+function localsGroup(T, lf, k, f, ctx, key, where) {
+	const box = document.createElement("div");
+	box.className = "lscope";
+	box.dataset.func = lf.func || "";
+	box.dataset.inlined = lf.inlined ? "1" : "";
+	const head = document.createElement("div");
+	head.className = "lhead";
+	head.append((lf.func || "?") + "()" + (lf.inlined ? " inlined" : ""));
+	if (where)
+		head.append(" ", srcLocEl(where));
+	box.append(head);
+	const list = [...lf.params.map((v) => [v, "param"]), ...lf.locals.map((v) => [v, "local"])];
+	for (const [v, kind] of list) {
+		const d = document.createElement("div");
+		d.className = "lvar";
+		d.dataset.name = v[0];
+		d.dataset.kind = kind;
+		const x = localsValue(T, v, f, ctx);
+		d.dataset.state = x.state;
+		if (x.pa < 0) {
+			const r = document.createElement("span");
+			r.className = "wrow";
+			const n = document.createElement("span");
+			n.className = "wname";
+			n.textContent = v[0];
+			const ty = document.createElement("span");
+			ty.className = "wtype";
+			ty.textContent = dwTypeName(T, v[1]);
+			const val = document.createElement("span");
+			val.className = "wval lout";
+			val.textContent = "<optimized out>";
+			r.append(n, " = ", val, " ", ty);
+			const leaf = document.createElement("div");
+			leaf.className = "wleaf";
+			leaf.append(r);
+			d.append(leaf);
+			d.dataset.value = "";
+		} else {
+			d.append(varsRow(T, v[0], v[1], x.pa, null, key + "/" + k + "/" + v[0], 0));
+			const val = d.querySelector(".wval");
+			d.dataset.value = val ? val.textContent : "";
+			const raw = localsRaw(T, v[1], x.pa);
+			if (raw !== null)
+				d.dataset.raw = raw;
+		}
+		const loc = document.createElement("span");
+		loc.className = "lloc";
+		loc.textContent = (kind === "param" ? "parameter, " : "") + (x.state === "out" ? x.why : x.how + (x.why ? "; " + x.why : ""));
+		(d.querySelector(".wrow") || d).append(" ", loc);
+		box.append(d);
+	}
+	if (!list.length) {
+		const n = document.createElement("div");
+		n.className = "note";
+		n.textContent = "no parameters or locals here";
+		box.append(n);
+	}
+	return box;
+}
+
+// The Debugger's "Parameters and locals" section for the unwound frames
+// uw (unwindHere), or the reason there are none.
+function renderLocals(uw) {
+	const box = $("locals"), st = $("locals_status");
+	if (!box)
+		return;
+	varsCells = [];
+	box.textContent = "";
+	if (!uw) {
+		st.textContent = runState === "jit" ? "Pause to see the parameters and locals of the call frames." : "";
+		return;
+	}
+	if (!dbgHas()) {
+		st.textContent = "No parameters or locals: " + DBG.why + ".";
+		return;
+	}
+	const frames = uw.frames.filter((f) => !f.user);
+	st.textContent = frames.length ? "From the DWARF at each frame's EIP (the call instruction for callers), read from its registers and stack" +
+		(uw.state !== "ok" ? "; frames below the last unwound one have no registers, so their variables cannot be read" : "") + "." :
+		"No call frames unwound here" + (uw.why ? " (" + uw.why + ")" : "") + ".";
+	frames.forEach((f, n) => {
+		const det = document.createElement("details");
+		det.className = "lframe";
+		det.dataset.n = n;
+		det.dataset.pc = f.lookup;
+		const name = stepper ? stepper.symName[stepper.symbolOf(insnStart(f.lookup))] || "" : "";
+		const k = String(n);
+		const sum = document.createElement("summary");
+		const m = FRAME_METHODS[f.method] || ["?"];
+		sum.append("#" + n + " " + (name || hex(f.lookup)) + " ");
+		const tag = document.createElement("span");
+		tag.className = "fmeth";
+		tag.textContent = m[0];
+		sum.append(tag);
+		det.append(sum);
+		const fill = () => {
+			if (det.dataset.filled)
+				return;
+			const r = dbgLocals(f.lookup);
+			det.dataset.state = r.state;
+			if (r.state !== "ok") {
+				const d = document.createElement("div");
+				d.className = "note";
+				d.textContent = r.why;
+				det.append(d);
+				return; // filled again when the data arrives (dbgOnChange re-renders)
+			}
+			det.dataset.filled = "1";
+			if (!r.frames.length) {
+				const d = document.createElement("div");
+				d.className = "note";
+				d.textContent = "no DWARF function here (assembly, or code without debug info)";
+				det.append(d);
+				return;
+			}
+			const lines = dbgFrames(f.lookup);
+			const ctx = localsCtx(f, r.frames[r.frames.length - 1].fb);
+			r.frames.forEach((lf, i) => {
+				const fr = lines.state === "ok" ? lines.frames[i] : null;
+				const where = fr && fr.func === lf.func && fr.file && fr.line ? srcName(fr) : "";
+				det.append(localsGroup(r.T, lf, i, f, ctx, "L" + n + (name || f.lookup), where));
+			});
+		};
+		const ok = k + ":" + name;
+		det.open = localsOpen.has(ok) ? localsOpen.get(ok) : n === 0;
+		if (det.open)
+			fill();
+		det.addEventListener("toggle", () => {
+			localsOpen.set(ok, det.open);
+			if (det.open)
+				fill();
+		});
+		box.append(det);
+	});
 }
 
 // ---- the Page listing: which variable a byte belongs to ---------------------

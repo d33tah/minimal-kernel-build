@@ -357,5 +357,11 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 .watches .werr { color: var(--err-fg); }
 .watches .wptr { white-space: normal; text-align: left; overflow-wrap: anywhere; }
 .watches .note { font-family: system-ui, sans-serif; }
+.watches .lframe { border-top: 1px solid var(--line); padding: 0.2rem 0; overflow-wrap: anywhere; }
+.watches .lframe > summary { font-weight: 600; }
+.watches .lscope { margin-left: 1.1rem; }
+.watches .lhead { color: var(--muted); margin-top: 0.2rem; }
+.watches .lout { color: var(--muted); font-style: italic; }
+.watches .lloc { color: var(--muted); font-family: system-ui, sans-serif; font-size: 0.72rem; }
 #watch_quick { flex-wrap: wrap; }
 #watch_quick button { font-size: 0.75rem; }

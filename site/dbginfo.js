@@ -24,7 +24,7 @@ function dbgFresh(mode, why) {
 	if (DBG.typesWorker)
 		DBG.typesWorker.terminate();
 	DBG = { mode, why, listeners: DBG.listeners, version: (DBG.version || 0) + 1, tables: new Map(), pending: new Set(),
-		index: null, info: "", cfiTables: new Map(), cfiPending: new Set() };
+		index: null, info: "", cfiTables: new Map(), cfiPending: new Set(), localTables: new Map() };
 }
 
 function dbgChanged() {
@@ -230,6 +230,21 @@ async function dbgRestore(key) {
 		return;
 	if (cfi)
 		DBG.cfi = { t: cfi.table, source: cfi.source };
+	const locals = await dbgIdbOp("readonly", (s) => {
+		const out = [];
+		const c = s.openCursor(IDBKeyRange.bound(key + ":locals:", key + ":locals:\uffff"));
+		c.onsuccess = () => {
+			if (c.result) {
+				out.push([Number(String(c.result.key).split(":").pop()), c.result.value]);
+				c.result.continue();
+			}
+		};
+		return { result: out };
+	});
+	if (mine !== DBG)
+		return;
+	for (const [i, g] of locals || [])
+		DBG.localTables.set("u" + i, g);
 	dbgChanged();
 }
 
@@ -241,8 +256,11 @@ function dbgTypesWorker() {
 	const mine = DBG, key = DBG.key;
 	const w = new Worker(withV("dwarfworker.js"));
 	DBG.typesWorker = w;
+	// It stays for the parameters and locals of a unit (dbgLocals): it
+	// holds the type table their type ids refer to.
 	const done = (types) => {
-		w.terminate();
+		if (types.failed)
+			w.terminate();
 		if (mine !== DBG)
 			return;
 		DBG.types = types;
@@ -259,7 +277,12 @@ function dbgTypesWorker() {
 			dbgChanged();
 		} else if (m.type === "types")
 			done(m.types);
-		else if (m.type === "error")
+		else if (m.type === "locals" && mine === DBG)
+			dbgSetLocals(m.i, m.groups, m.base, m.added);
+		else if (m.type === "error" && m.i !== undefined && mine === DBG) {
+			DBG.localTables.set("u" + m.i, { failed: m.message });
+			dbgChanged();
+		} else if (m.type === "error")
 			done({ failed: m.message });
 	};
 	w.onerror = (e) => done({ failed: e.message || "worker error" });
@@ -295,6 +318,89 @@ function dbgTypes() {
 	const p = DBG.typesProgress;
 	return { state: "loading", why: "reading the variables of the imported vmlinux: every compile unit once" +
 		(p ? " (" + p[0] + " of " + p[1] + ")" : "") + "…" };
+}
+
+// ---- parameters and locals ----------------------------------------------------
+
+// Bytes of a .gz file as fetched: gunzipped, unless the server already
+// decoded it (Content-Encoding: gzip).
+async function dbgGunzip(buf) {
+	const b = new Uint8Array(buf);
+	if (b.length > 2 && b[0] === 0x1f && b[1] === 0x8b)
+		return new Uint8Array(await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer());
+	return b;
+}
+
+function dbgSetLocals(i, groups, base, added) {
+	// The Worker's table got types the one here lacks (only when the types
+	// pass and this unit disagree): append them where the ids fit.
+	if (added && added.length && DBG.types && !DBG.types.failed) {
+		if (DBG.types.types.length === base)
+			DBG.types.types.push(...added);
+		else
+			for (const g of groups)
+				for (const sc of g)
+					for (const v of sc[5])
+						if (v[1] >= base)
+							v[1] = -1;
+	}
+	DBG.localTables.set("u" + i, groups);
+	if (DBG.key)
+		dbgIdbOp("readwrite", (s) => s.put(groups, DBG.key + ":locals:" + i));
+	dbgChanged();
+}
+
+// The frames at pa (a frame's EIP, or a caller's call instruction) with
+// their parameters and locals (dwarf.js dwarfLocalFrames, innermost
+// first): { state: "ok", frames, T } with T the type table their type ids
+// are in, or { state: "loading" | "none", why }. Shipped kernels: the
+// locals-<hex>.json.gz shard of pa; an import: the unit of pa, from the
+// Worker that read the variables (after it has), kept in IndexedDB.
+function dbgLocals(pa) {
+	if (!dbgHas())
+		return { state: "none", why: DBG.why };
+	const ty = dbgTypes();
+	if (ty.state !== "ok")
+		return ty;
+	let key;
+	if (DBG.mode === "shards") {
+		const L = DBG.index.locals;
+		if (!L)
+			return { state: "none", why: "this kernel's debug info has no parameters and locals (locals-*.json.gz)" };
+		const s = Math.floor(pa / 2 ** DBG.index.shardBits);
+		if (!DBG.localSet)
+			DBG.localSet = new Set(L.shards);
+		if (!DBG.localSet.has(s))
+			return { state: "ok", frames: [], T: ty.T };
+		key = "s" + s;
+		if (!DBG.localTables.has(key) && !DBG.localTables.has("pending" + key)) {
+			DBG.localTables.set("pending" + key, true);
+			const mine = DBG;
+			fetch(withV(DBG.base + "locals-" + s.toString(16) + ".json.gz")).then((r) => r.ok ? r.arrayBuffer() : Promise.reject(new Error("HTTP " + r.status)))
+				.then(dbgGunzip)
+				.then((b) => { if (mine === DBG) { DBG.localTables.set(key, JSON.parse(new TextDecoder().decode(b)).fns); dbgChanged(); } })
+				.catch((e) => { if (mine === DBG) { DBG.localTables.set(key, { failed: e.message }); dbgChanged(); } });
+		}
+	} else {
+		const i = dbgUnitAt(pa);
+		if (i < 0)
+			return { state: "ok", frames: [], T: ty.T };
+		key = "u" + i;
+		if (!DBG.localTables.has(key)) {
+			if (!DBG.typesWorker || DBG.mode !== "import")
+				return { state: "none", why: "the parameters and locals of this compile unit were not read before the reload: import the vmlinux again" };
+			if (!DBG.localTables.has("pending" + key)) {
+				DBG.localTables.set("pending" + key, true);
+				DBG.typesWorker.postMessage({ type: "locals", i });
+			}
+		}
+	}
+	const g = DBG.localTables.get(key);
+	if (!g)
+		return { state: "loading", why: "reading the parameters and locals here…" };
+	if (g.failed)
+		return { state: "none", why: "the parameters and locals did not load: " + g.failed };
+	return { state: "ok", frames: dwarfLocalFrames(dwarfScopesAt(g, pa)), T: ty.T };
 }
 
 // ---- files and functions (the Coverage tab) ----------------------------------

@@ -57,12 +57,7 @@ function srcChanged() {
 const isGzip = (b) => b.length > 2 && b[0] === 0x1f && b[1] === 0x8b;
 
 async function srcDecode(buf) {
-	let b = new Uint8Array(buf);
-	// The .gz may arrive already decoded (a server that sends it with
-	// Content-Encoding: gzip): only gunzip what still is gzip.
-	if (isGzip(b))
-		b = new Uint8Array(await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer());
-	return new TextDecoder().decode(b).split("\n");
+	return new TextDecoder().decode(await dbgGunzip(buf)).split("\n");
 }
 
 // { state: "ok", lines } (lines[0] is line 1), { state: "loading" } or

@@ -1029,10 +1029,143 @@ def coverage_problems(page, name):
     return ([f"{name}: rows whose zoomed-out coverage differs from 8x zoom (row, 1x, 8x): {bad[:8]}"] if bad else []), cov
 
 
+# Task names from task_struct (D6): the page's names against gdb's member
+# offsets of struct task_struct applied to guest RAM by the test itself.
+TASK_PAGE_JS = """() => { const st = stepper, info = taskInfo(st);
+    return { cur: st.task, region: st.taskRegion.slice(), alive: info.map((x, t) => t === st.task || st.taskOf.get(st.taskRegion[t]) === t),
+             tasks: info.map((x) => ({ name: x.name, how: x.how, guess: !!x.guess, comm: x.comm === undefined ? null : x.comm,
+                                       pid: x.pid === undefined ? null : x.pid, va: x.va === undefined ? null : x.va })),
+             off: varsOffset(), types: dbgTypes().state }; }"""
+
+
+def gdb_task_layout(elf):
+    """gdb's offsets of task_struct's comm, pid, stack, tasks (None if it has
+    no such member) and the addresses of current_task, __per_cpu_offset
+    (None on a UP kernel) and init_task; None without gdb."""
+    keys = ["comm", "pid", "stack", "tasks", "current_task", "per_cpu_offset", "init_task"]
+    exprs = ["(int)&((struct task_struct *)0)->" + m for m in keys[:4]] + \
+        ["(unsigned)&current_task", "(unsigned)&__per_cpu_offset", "(unsigned)&init_task"]
+    if not elf or not shutil.which("gdb"):
+        return None
+    args = ["gdb", "-nx", "-batch"]
+    for k, e in zip(keys, exprs):
+        # A failed expression prints only its tag on stdout (the error goes to stderr).
+        args += ["-ex", f"echo @{k}=", "-ex", f"output {e}", "-ex", "echo \\n"]
+    out = subprocess.run(args + [str(elf)], capture_output=True, text=True).stdout
+    res = dict.fromkeys(keys)
+    for m in re.finditer(r"@(\w+)=(-?\d+)?", out):
+        res[m.group(1)] = int(m.group(2)) if m.group(2) else None
+    return res
+
+
+def guest_bytes(page, pa, n):
+    return bytes(page.evaluate("([pa, n]) => Array.from(emulator.read_memory(pa, n))", [pa, n]))
+
+
+def guest_task(page, lay, off, va):
+    """comm, pid, stack region of the task_struct at va, read with gdb's offsets."""
+    pa = va - off
+    comm = guest_bytes(page, pa + lay["comm"], 16).split(b"\0")[0].decode("latin-1")
+    pid = int.from_bytes(guest_bytes(page, pa + lay["pid"], 4), "little", signed=True)
+    reg = int.from_bytes(guest_bytes(page, pa + lay["stack"], 4), "little") >> 13 if lay["stack"] is not None else -1
+    return {"comm": comm, "pid": pid, "region": reg, "va": va}
+
+
+def task_names_check(page, name, shots, r):
+    """Each task the stepper saw is named "comm (pid N)" from its
+    task_struct where the page can read it; the running one, every live
+    one and the task list (when the kernel has one) read with gdb's
+    offsets agree; the Debugger's task row and the call tree's task rows
+    show the same names."""
+    problems = []
+    if not wait_for(lambda: page.evaluate("dbgTypes().state") == "ok", 60):
+        return [f"{name}: the types did not load"]
+    p = page.evaluate(TASK_PAGE_JS)
+    tasks = p["tasks"]
+    r["task_names"] = [t["name"] for t in tasks]
+    named = [t for t in tasks if not t["guess"]]
+    r["tasks_named"] = f"{len(named)}/{len(tasks)}"
+    if len(named) < 2:
+        problems.append(f"{name}: only {len(named)} of {len(tasks)} tasks named from task_struct: {tasks[:4]}")
+    for t in tasks:
+        if t["guess"] and "not read: " not in t["how"]:
+            problems.append(f"{name}: a guessed name does not say why: {t}")
+    lay = gdb_task_layout(debug_elf(name))
+    if lay is None:
+        if os.environ.get("CI"):
+            problems.append(f"{name}: no gdb or -g ELF to check the task names against")
+        return problems
+    off = p["off"]
+    cur_addr = lay["current_task"]
+    if lay["per_cpu_offset"] is not None:
+        cur_addr += int.from_bytes(guest_bytes(page, lay["per_cpu_offset"] - off, 4), "little")
+    cur = guest_task(page, lay, off, int.from_bytes(guest_bytes(page, cur_addr - off, 4), "little"))
+    r["current"] = f"{cur['comm']} (pid {cur['pid']})"
+    truth = {}
+    if lay["tasks"] is not None:
+        head = lay["init_task"] + lay["tasks"]
+        at = head
+        t0 = guest_task(page, lay, off, lay["init_task"])
+        truth[t0["region"]] = t0
+        for _ in range(4096):
+            at = int.from_bytes(guest_bytes(page, at - off, 4), "little")
+            if at == head:
+                break
+            t = guest_task(page, lay, off, at - lay["tasks"])
+            truth[t["region"]] = t
+        r["task_list"] = len(truth)
+    checked = 0
+    for i, t in enumerate(tasks):
+        if t["guess"] or not p["alive"][i]:
+            continue
+        want = cur if i == p["cur"] and (cur["region"] == p["region"][i] or p["region"][i] < 0) else \
+            truth.get(p["region"][i]) or guest_task(page, lay, off, t["va"])
+        if (t["comm"], t["pid"]) != (want["comm"], want["pid"]):
+            problems.append(f"{name}: task {i} is {t['name']} on the page, {want['comm']} (pid {want['pid']}) in RAM by gdb's offsets ({t['how']})")
+        else:
+            checked += 1
+    for reg, w in truth.items():
+        i = next((i for i in range(len(tasks)) if p["alive"][i] and p["region"][i] == reg), None)
+        if i is not None and tasks[i]["guess"]:
+            problems.append(f"{name}: task {i} ({tasks[i]['name']}) is in the task list as {w['comm']} (pid {w['pid']}) but the page guessed")
+    r["tasks_checked"] = checked
+    if not checked:
+        problems.append(f"{name}: no live named task to check")
+    # The Debugger's task row is the running task.
+    page.click("#tab_debugger")
+    wait_for(lambda: page.get_attribute("#cur_task", "data-state") == "ok", 10)
+    row = page.evaluate("(() => { const d = document.getElementById('cur_task'); return d ? { ...d.dataset, text: d.textContent } : null; })()")
+    if not row or row.get("state") != "ok" or (row.get("comm"), int(row.get("pid", -99))) != (cur["comm"], cur["pid"]):
+        problems.append(f"{name}: Debugger task row {row}, current_task by gdb's offsets {cur}")
+    for scheme, width in (("light", 1100), ("dark", 1100), ("dark", 390)):
+        page.emulate_media(color_scheme=scheme)
+        page.set_viewport_size({"width": width, "height": 1000})
+        time.sleep(0.5)
+        page.locator("#sym_info").screenshot(path=str(shots / f"tasks-debugger-{name}-{scheme}-{width}.png"))
+        if width == 390 and page.evaluate("document.documentElement.scrollWidth > innerWidth"):
+            problems.append(f"{name}: horizontal scroll at 390 px in the Debugger")
+    page.emulate_media(color_scheme="light")
+    page.set_viewport_size({"width": 1100, "height": 1000})
+    # Call tree: one row per task under the root, named like the timeline.
+    page.click("#tab_graph")
+    page.click("#gview_tree")
+    wait_for(lambda: page.locator("#graph_tree .trow[data-task]").count() > 0, 5)
+    rows = page.evaluate("[...document.querySelectorAll('#graph_tree .trow[data-task]')].map((r) => [+r.dataset.task, r.dataset.name])")
+    r["tree_tasks"] = len(rows)
+    if len(rows) < 2 or any(n != f"task {t}: {tasks[t]['name']}" for t, n in rows):
+        problems.append(f"{name}: call tree task rows {rows[:6]}")
+    for scheme in ("light", "dark"):
+        page.emulate_media(color_scheme=scheme)
+        page.screenshot(path=str(shots / f"tasks-tree-{name}-{scheme}.png"))
+    page.emulate_media(color_scheme="light")
+    return problems
+
+
 def tasks_case(browser, base, shots, name):
     """Task switches on a full counted run: a resumed task continues its
     suspended calls (no scheduler code as a root, no orphaned calls), one
-    root per task, and the roots never overlap."""
+    root per task, and the roots never overlap; tasks are named from their
+    task_struct (task_names_check)."""
     problems = []
     page = browser.new_page(viewport={"width": 1100, "height": 1000})
     page.goto(f"{base}/index.html?kernel={name}&speed=full#graph")
@@ -1047,6 +1180,7 @@ def tasks_case(browser, base, shots, name):
     problems += cp
     r["coverage_rows"] = len(cov["rows"])
     r["coverage_1x_8x"] = [row[1:] for row in cov["rows"][:6]]
+    problems += task_names_check(page, name, shots, r)
     page.close()
     if r["tasks"] < 2:
         problems.append(f"fewer than 2 tasks: {r}")

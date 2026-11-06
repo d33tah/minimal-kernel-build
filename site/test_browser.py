@@ -2735,6 +2735,97 @@ def listing_insns(page, lo, hi):
     return out
 
 
+def hello_case(browser, base, shots):
+    """The hello kernel has the minified Linux's debug features where it
+    has the code for them (D7): at a pause in hello_main the call stack is
+    unwound to startup_32, the stack's start, through its CFI and the
+    stepper's recorded call; hello_main's local row and the inlined
+    put_line's parameter row have the values the DWARF location lists
+    give (EAX & 0xff = the BIOS cursor row byte, then EAX); Variables says
+    there are no global variables, the task row that the DWARF has no
+    current_task (no tasks); the Coverage tab's tree has boot/hello.c with
+    lines run and totals equal to files.json; light/dark at 1280 and 390 px."""
+    problems, r = [], {}
+    entry = kernel_entries()["hello"]
+    F = json.loads((SITE / entry["dwarf"] / "files.json").read_text())
+    syms = json.loads((SITE / entry["symbols"]).read_text())["symbols"]
+    hm = next(s for s in syms if s["name"] == "hello_main")
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel=hello&paused=1#debugger")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    page.fill("#dbg_addr", hex(hm["vaddr"]))
+    page.click("#dbg_runto")
+    if not wait_for(lambda: page.get_attribute("#regs", "data-phys") == str(hm["paddr"]), 120):
+        page.close()
+        return ["hello: Run to hello_main did not stop there: " + page.inner_text("#dbg_status")], r
+    cursor = guest_bytes(page, 0x451, 1)[0]
+
+    def step(n, pc):
+        before = page.evaluate("stepper.steps")
+        page.fill("#dbg_n", str(n))
+        page.click("#dbg_stepn")
+        wait_for(lambda: page.evaluate("stepper.steps") - before >= n and
+                 page.get_attribute("#dbg_state", "data-state") == "paused", 30)
+        wait_for(lambda: page.get_attribute("#call_stack", "data-unwind") not in (None, "loading"), 20)
+        got = int(page.get_attribute("#regs", "data-phys"))
+        if got != pc:
+            problems.append(f"hello: stepped to {got:#x}, not {pc:#x}")
+        return {(sc["func"], v["name"]): v for fr in locals_open_all(page) for sc in fr["scopes"] for v in sc["vars"]}
+
+    # movb 0x451,%al; cmpb: row lives in AL (DW_OP_breg0 EAX, 0xff, and, convert, stack_value).
+    v = step(2, hm["paddr"] + 7)
+    dump = page.evaluate(UNWIND_DUMP_JS)
+    r["stack"] = " <- ".join(f"{f['name']}[{f['method']}]" for f in dump["frames"]) + f" ({dump['unwind']}: {dump['why']})"
+    if [f["name"] for f in dump["frames"]] != ["hello_main", "startup_32"] or dump["unwind"] != "ok":
+        problems.append(f"hello: the call stack is not hello_main <- startup_32, unwound to the stack's start: {r['stack']}")
+    row = v.get(("hello_main", "row"), {})
+    r["row"] = row.get("raw"), row.get("value")
+    if row.get("state") != "ok" or row.get("raw") is None or int(row["raw"]) != cursor:
+        problems.append(f"hello: hello_main's row is {row} at {hm['paddr'] + 7:#x}, the BIOS cursor row byte is {cursor}")
+    # jb over the clamp (taken when the row is below 23), movzbl: at the shll
+    # put_line's row parameter is EAX (DW_OP_reg0).
+    v = step(2 if cursor < 23 else 3, hm["paddr"] + 14)
+    eax = page.evaluate("stepper.regs().eax")
+    prow = v.get(("put_line", "row"), {})
+    r["put_line.row"] = prow.get("raw"), eax
+    if prow.get("state") != "ok" or prow.get("raw") is None or int(prow["raw"]) != eax:
+        problems.append(f"hello: put_line's row parameter is {prow}, EAX is {eax}")
+    if v.get(("put_line", "s"), {}).get("state") != "out":
+        problems.append(f"hello: put_line's s is not shown as optimized out: {v.get(('put_line', 's'))}")
+    r["watch_status"] = page.inner_text("#watch_status")
+    if not r["watch_status"].startswith("0 variables"):
+        problems.append(f"hello: Variables does not say there are no global variables: {r['watch_status']}")
+    r["task"] = page.inner_text("#cur_task")
+    if "no current_task" not in r["task"]:
+        problems.append(f"hello: the task row does not say the DWARF has no current_task: {r['task']}")
+    page.screenshot(path=str(shots / "hello-debugger-1280-light.png"), full_page=True)
+    show_tab(page, "coverage")
+    wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok", 30)
+    cov_open_all(page)
+    rows = {x["path"]: x for x in cov_rows(page)}
+    f = rows.get("boot/hello.c")
+    r["coverage"] = f
+    want = next((x for x in F["files"] if x[0] == "boot/hello.c"), None)
+    if not f or not want or f["lines"] != want[1] or not f["linesRun"] or f["ins"] != F["insns"]["inFunctions"]:
+        problems.append(f"hello: the Coverage tree's boot/hello.c is {f}, files.json has {want}, {F['insns']}")
+    for scheme in ("light", "dark"):
+        page.emulate_media(color_scheme=scheme)
+        for w in (1280, 390):
+            page.set_viewport_size({"width": w, "height": 900})
+            time.sleep(0.3)
+            if w == 390 and not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
+                problems.append(f"hello: the page scrolls horizontally at 390 px ({scheme})")
+            page.screenshot(path=str(shots / f"hello-coverage-{w}-{scheme}.png"), full_page=w == 390)
+    show_tab(page, "debugger")
+    page.screenshot(path=str(shots / "hello-debugger-390-dark.png"), full_page=True)
+    page.close()
+    if errors:
+        problems.append("page errors: " + "; ".join(errors))
+    return problems, r
+
+
 def livedecode_case(browser, base, shots):
     """Live decoding (iced-x86) agrees with disasm.json on start_kernel."""
     problems, r = [], {}
@@ -3467,6 +3558,10 @@ def suite_unwind(ctx):
     return failed | report("unwind_import", p, r, seconds=round(time.monotonic() - t0))
 
 
+def suite_hello(ctx):
+    return report("hello", *hello_case(ctx.browser, ctx.base, ctx.shots))
+
+
 def suite_touch(ctx):
     failed = report("touch", touch_case(ctx.browser, ctx.base, ctx.shots))
     return failed | report("stale_cache", stale_cache_case(ctx.browser, ctx.args.timeout))
@@ -3491,6 +3586,7 @@ SUITES = {
     "covtree": (suite_covtree, True),
     "unwind": (suite_unwind, True),
     "touch": (suite_touch, False),
+    "hello": (suite_hello, False),
 }
 
 

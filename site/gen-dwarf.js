@@ -9,11 +9,17 @@
 //       OUTDIR/types.json, the variables at fixed addresses and the types
 //       they reach (dwarf.js: DwarfTypes); OUTDIR/files.json, every source
 //       file with its lines that have code and every function with its
-//       lines and instructions, for the page's Coverage tab (see coverage())
+//       lines and instructions, for the page's Coverage tab (see coverage());
+//       OUTDIR/cfi-<hex>.bin, the call frame information (.debug_frame or
+//       .eh_frame) per 64 KiB, for backtraces (unwind.js)
 //   site/gen-dwarf.js --lookup OUTDIR < addresses
 //       one JSON line per physical address (hex or decimal) on stdin:
 //       the frames the page shows there (test_dwarf.py compares them with
 //       llvm-symbolizer --inlines)
+//   site/gen-dwarf.js --cfi OUTDIR < addresses
+//       one JSON line per physical address: the call frame information
+//       row there (unwind.js cfiRow) as llvm-dwarfdump --debug-frame
+//       prints it (test_dwarf.py --cfi compares them)
 //   site/gen-dwarf.js --where OUTDIR < addresses
 //       one JSON line per physical address: the variable and member path
 //       there (dwarf.js dwWhere) with the leaf's type (test_dwarf.py --types
@@ -27,6 +33,8 @@ const path = require("path");
 const { spawn } = require("child_process");
 const { DwarfReader, DwarfTypes, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfEachLine, dwarfEncode, dwarfDecode,
 	dwWhere, dwTypeName, dwTypeSize } = require("./dwarf.js");
+
+const { cfiFromElf, cfiSlice, cfiEncode, cfiDecode, cfiRow, cfiRowText } = require("./unwind.js");
 
 const SHARD_BITS = 16;
 
@@ -65,7 +73,7 @@ async function generate(elf, outDir) {
 	const t2 = Date.now();
 	fs.mkdirSync(outDir, { recursive: true });
 	for (const f of fs.readdirSync(outDir))
-		if (/^[0-9a-f]+\.bin$|^index\.json$/.test(f))
+		if (/^(cfi-)?[0-9a-f]+\.bin$|^index\.json$/.test(f))
 			fs.unlinkSync(path.join(outDir, f));
 	const shards = new Set();
 	for (let k = 0; k < table.la.length; k++)
@@ -95,12 +103,37 @@ async function generate(elf, outDir) {
 	const tj = JSON.stringify(ty);
 	fs.writeFileSync(path.join(outDir, "types.json"), tj);
 	console.log(`${outDir}/types.json: ${ty.vars.length} variables, ${ty.types.length} types, ${tj.length} bytes; ${Date.now() - t3} ms`);
-	const index = { format: 1, shardBits: SHARD_BITS, shards: list, units: us.length,
+	const t4 = Date.now();
+	const cfi = cfiShards(e, read, outDir);
+	console.log(`${outDir}: ${cfi.why || `call frame information from ${cfi.source}: ${cfi.fdes} FDEs, ${cfi.cies} CIEs, ` +
+		`${cfi.shards.length} shards, ${cfi.bytes} bytes`}; ${Date.now() - t4} ms`);
+	const index = { format: 1, cfi, shardBits: SHARD_BITS, shards: list, units: us.length,
 		version: [...new Set(us.map((u) => u.ver))], lineRows: table.la.length, ranges: table.ra.length,
 		source: path.basename(elf), files: "files.json", types: "types.json", variables: ty.vars.length, typeCount: ty.types.length, typeBytes: tj.length };
 	fs.writeFileSync(path.join(outDir, "index.json"), JSON.stringify(index));
 	console.log(`${outDir}: ${us.length} units, ${nrows} line rows -> ${table.la.length}, ${nranges} function/inline ranges, ` +
 		`${list.length} shards, ${bytes} bytes; decode ${t1 - t0} ms, table ${t2 - t1} ms, write ${Date.now() - t2} ms`);
+}
+
+// cfi-<hex>.bin: the FDEs (with their CIEs) of each 64 KiB of physical
+// address space that has code with CFI (unwind.js cfiEncode); the page
+// reads the shard of an address when a backtrace passes there.
+function cfiShards(e, read, outDir) {
+	const c = cfiFromElf(e, read, e.toPhys);
+	if (c.why)
+		return { why: c.why };
+	const t = c.t, set = new Set();
+	for (let i = 0; i < t.lo.length; i++)
+		for (let s = Math.floor(t.lo[i] / 2 ** SHARD_BITS); s <= Math.floor((t.lo[i] + t.len[i] - 1) / 2 ** SHARD_BITS); s++)
+			set.add(s);
+	const shards = [...set].sort((a, b) => a - b);
+	let bytes = 0;
+	for (const s of shards) {
+		const b = cfiEncode(cfiSlice(t, s * 2 ** SHARD_BITS, (s + 1) * 2 ** SHARD_BITS));
+		fs.writeFileSync(path.join(outDir, "cfi-" + s.toString(16) + ".bin"), b);
+		bytes += b.length;
+	}
+	return { source: c.source, fdes: t.lo.length, cies: t.cies.length, shards, bytes };
 }
 
 // The physical address of every instruction start of the ELF's code, from
@@ -281,14 +314,37 @@ function lookup(dir) {
 	process.stdout.write(out.join("\n") + "\n");
 }
 
+// One JSON line per physical address: the CFI row there (unwind.js
+// cfiRow) in llvm-dwarfdump's notation, read back from the shards.
+function cfiLookup(dir) {
+	const index = JSON.parse(fs.readFileSync(path.join(dir, "index.json"), "utf8"));
+	const cache = new Map();
+	const shard = (s) => {
+		if (!cache.has(s))
+			cache.set(s, index.cfi && index.cfi.shards && index.cfi.shards.includes(s) ?
+				cfiDecode(new Uint8Array(fs.readFileSync(path.join(dir, "cfi-" + s.toString(16) + ".bin")))) : null);
+		return cache.get(s);
+	};
+	const out = [];
+	for (const w of fs.readFileSync(0, "utf8").split(/\s+/).filter(Boolean)) {
+		const pa = Number(w);
+		const t = shard(Math.floor(pa / 2 ** index.shardBits));
+		const row = t ? cfiRow(t, pa) : null;
+		out.push(JSON.stringify(row ? (row.why ? { pa, why: row.why } : { pa, lo: row.lo, row: cfiRowText(row) }) : { pa }));
+	}
+	process.stdout.write(out.join("\n") + "\n");
+}
+
 const args = process.argv.slice(2);
 if (args[0] === "--lookup" && args.length === 2)
 	lookup(args[1]);
+else if (args[0] === "--cfi" && args.length === 2)
+	cfiLookup(args[1]);
 else if (args[0] === "--where" && args.length === 2)
 	where(args[1]);
 else if (args.length === 2)
 	generate(args[0], args[1]).catch((err) => { console.error(err); process.exit(1); });
 else {
-	console.error("usage: gen-dwarf.js ELF OUTDIR | gen-dwarf.js --lookup|--where OUTDIR < addresses");
+	console.error("usage: gen-dwarf.js ELF OUTDIR | gen-dwarf.js --lookup|--where|--cfi OUTDIR < addresses");
 	process.exit(2);
 }

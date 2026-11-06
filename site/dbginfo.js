@@ -12,6 +12,8 @@
 //                    (the file itself does not: other units need it again)
 // dbgFrames() answers synchronously from what is loaded and starts the
 // load of the rest; dbgOnChange listeners re-render when it arrives.
+// Backtraces (dbgUnwind) read the call frame information the same way:
+// cfi-<hex>.bin shards, or the import's .debug_frame through the Worker.
 
 const DBG_DB = "mkb-dwarf";
 let DBG = { mode: null, why: "no debug info", listeners: [], version: 0 };
@@ -22,7 +24,7 @@ function dbgFresh(mode, why) {
 	if (DBG.typesWorker)
 		DBG.typesWorker.terminate();
 	DBG = { mode, why, listeners: DBG.listeners, version: (DBG.version || 0) + 1, tables: new Map(), pending: new Set(),
-		index: null, info: "" };
+		index: null, info: "", cfiTables: new Map(), cfiPending: new Set() };
 }
 
 function dbgChanged() {
@@ -143,6 +145,8 @@ async function dbgImport(file, offset, key) {
 					dbgIdbOp("readwrite", (s) => s.put({ index: m.index, units: m.units, versions: m.versions, file: file.name }, key + ":index"));
 			}
 			dbgChanged();
+		} else if (m.type === "cfi") {
+			dbgSetCfi(m);
 		} else if (m.type === "unit") {
 			DBG.tables.set(m.i, m.table);
 			DBG.pending.delete(m.i);
@@ -221,6 +225,11 @@ async function dbgRestore(key) {
 		return;
 	if (types)
 		DBG.types = types;
+	const cfi = await dbgIdbOp("readonly", (s) => s.get(key + ":cfi"));
+	if (mine !== DBG)
+		return;
+	if (cfi)
+		DBG.cfi = { t: cfi.table, source: cfi.source };
 	dbgChanged();
 }
 
@@ -342,6 +351,88 @@ function dbgUnitAt(pa) {
 		if (pa < ix[k][1])
 			return ix[k][2];
 	return -1;
+}
+
+// ---- call frame information and backtraces -----------------------------------
+
+// The CFI row (unwind.js cfiRow) at pa: a row, null (no FDE covers pa),
+// { why } (no CFI at all, or it did not load) or "loading". Shipped
+// kernels: the cfi-<hex>.bin shard of pa, fetched the first time; an
+// import: the Worker parses .debug_frame (or .eh_frame) once, kept in
+// IndexedDB like the units.
+function dbgCfiRow(pa) {
+	if (!dbgHas())
+		return { why: DBG.why };
+	if (DBG.mode === "shards") {
+		if (!DBG.index)
+			return "loading";
+		const c = DBG.index.cfi;
+		if (!c || c.why)
+			return { why: c ? c.why : "this kernel's debug info has no call frame information" };
+		const s = Math.floor(pa / 2 ** DBG.index.shardBits);
+		if (!DBG.cfiSet)
+			DBG.cfiSet = new Set(c.shards);
+		if (!DBG.cfiSet.has(s))
+			return null;
+		const t = DBG.cfiTables.get(s);
+		if (t)
+			return t.failed ? { why: "the call frame information did not load: " + t.failed } : cfiRow(t, pa);
+		if (!DBG.cfiPending.has(s)) {
+			DBG.cfiPending.add(s);
+			const mine = DBG;
+			fetch(withV(DBG.base + "cfi-" + s.toString(16) + ".bin")).then((r) => r.ok ? r.arrayBuffer() : Promise.reject(new Error("HTTP " + r.status)))
+				.then((buf) => { if (mine === DBG) { DBG.cfiTables.set(s, cfiDecode(new Uint8Array(buf))); dbgChanged(); } })
+				.catch((e) => { if (mine === DBG) { DBG.cfiTables.set(s, { failed: e.message }); dbgChanged(); } });
+		}
+		return "loading";
+	}
+	if (DBG.cfi)
+		return DBG.cfi.why ? { why: DBG.cfi.why } : cfiRow(DBG.cfi.t, pa);
+	if (!DBG.worker)
+		return { why: "the call frame information was not read before the reload: import the vmlinux again" };
+	if (!DBG.cfiAsked) {
+		DBG.cfiAsked = true;
+		DBG.worker.postMessage({ type: "cfi" });
+	}
+	return "loading";
+}
+
+function dbgSetCfi(m) {
+	DBG.cfi = m.why ? { why: m.why } : { t: m.table, source: m.source };
+	if (DBG.key && !m.why)
+		dbgIdbOp("readwrite", (s) => s.put({ table: m.table, source: m.source }, DBG.key + ":cfi"));
+	dbgChanged();
+}
+
+// Where the CFI comes from, for the call stack's title.
+function dbgCfiInfo() {
+	if (DBG.mode === "shards" && DBG.index && DBG.index.cfi && !DBG.index.cfi.why)
+		return DBG.index.cfi.source + " of " + DBG.index.source + " (" + DBG.index.cfi.fdes + " FDEs), precomputed in CI";
+	if (DBG.cfi && DBG.cfi.t)
+		return DBG.cfi.source + " of the imported vmlinux (" + DBG.cfi.t.lo.length + " FDEs)";
+	return "";
+}
+
+// Backtrace at a pause (unwind.js unwind) from the registers r
+// (stepper.regs()), reading guest memory through read32(va) and code
+// through toPhys(va); symAt(pa) -> [name, start] or null; entryEsp(pa,
+// esp) -> the ESP the recorded call into pa's function arrived with. Assembly entry
+// code that calls C with pt_regs (interrupts, exceptions, int $0x80) is
+// crossed through the saved registers; ret_from_fork and startup_32 are
+// where a stack starts.
+function dbgUnwind(r, read32, toPhys, symAt, entryEsp) {
+	if (!dbgHas())
+		return { frames: [], state: "none", why: DBG.why };
+	const res = unwind(r, {
+		rowAt: dbgCfiRow, read32, toPhys, symAt, entryEsp, framePointer: true,
+		isEntry: (n) => /^(irq_entries_start|asm_|entry_INT80|entry_SYSENTER|nmi_stub|handle_exception$)/.test(n),
+	});
+	// The outermost code of a stack: no CFI, nothing calls it.
+	const last = res.frames[res.frames.length - 1];
+	const s = last ? symAt(last.lookup) : null;
+	if (res.state === "stopped" && s && /^(ret_from_fork|ret_from_fork_asm|startup_32|startup_32_smp|start_cpu0)$/.test(s[0]))
+		return { ...res, state: "ok", why: s[0] + " starts this stack" };
+	return res;
 }
 
 // ---- lookup ------------------------------------------------------------------

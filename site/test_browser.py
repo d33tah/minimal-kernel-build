@@ -2117,6 +2117,266 @@ def debian_covtree(page, entry, bins, problems, r, shots):
     page.fill("#cov_filter", "")
 
 
+# Where the unwind suite pauses: (kernel, function to Run to, Steps after it).
+# Deep boot code (CFI only for the minified Linux, CFI + EBP chain for
+# Debian's GCC build) and timer interrupts (entry code's pt_regs).
+UNWIND_POINTS = [
+    ("minified-linux", "memblock_add_range", (0, 9)),
+    ("minified-linux", "tty_write", (0, 5)),
+    ("debian-6.1-686", "timer_interrupt", (0, 7)),
+]
+
+# The stack pages of a pause (8 KiB stacks around ESP and every frame's CFA)
+# read through the page tables, with the registers: what gdb needs to unwind.
+UNWIND_DUMP_JS = """() => {
+    const cpu = stepper.cpu, r = stepper.regs(), fr = JSON.parse(document.getElementById('call_stack').dataset.frames);
+    const want = new Set();
+    for (const a of [r.esp, ...fr.map((f) => f.cfa).filter((x) => x !== undefined && x !== null)])
+        for (let p = ((a >>> 13) << 13) - 8192; p < ((a >>> 13) << 13) + 16384; p += 4096) want.add(p >>> 0);
+    const pages = [];
+    for (const va of [...want].sort((a, b) => a - b)) {
+        const w = pageWalk(cpu, va);
+        if (w.phys === null || w.phys + 4096 > cpu.mem8.length) continue;
+        let s = '';
+        for (const b of cpu.mem8.subarray(w.phys, w.phys + 4096)) s += String.fromCharCode(b);
+        pages.push([va, btoa(s)]);
+    }
+    return { regs: r, pages, frames: fr, unwind: document.getElementById('call_stack').dataset.unwind,
+             why: document.getElementById('call_stack').dataset.why };
+}"""
+
+
+def write_core(path, regs, pages):
+    """An i386 ELF core file: one NT_PRSTATUS with the registers (elf_prstatus,
+    pr_reg = ebx ecx edx esi edi ebp eax ds es fs gs orig_eax eip cs eflags esp ss)
+    and a PT_LOAD per 4 KiB page of memory, at its virtual address."""
+    import base64
+    import struct
+    order = ["ebx", "ecx", "edx", "esi", "edi", "ebp", "eax", "ds", "es", "fs", "gs", None, "eip", "cs", "eflags", "esp", "ss"]
+    prreg = struct.pack("<17I", *[(regs.get(k, 0) if k else 0xffffffff) & 0xffffffff for k in order])
+    prstatus = bytes(72) + prreg + bytes(4)
+    note = struct.pack("<III", 5, len(prstatus), 1) + b"CORE\0\0\0\0" + prstatus
+    data = [base64.b64decode(b) for _, b in pages]
+    phnum = 1 + len(pages)
+    off = 52 + 32 * phnum
+    ph = [struct.pack("<8I", 4, off, 0, 0, len(note), 0, 0, 4)]
+    off += len(note)
+    for (va, _), d in zip(pages, data):
+        ph.append(struct.pack("<8I", 1, off, va, 0, len(d), len(d), 6, 4096))
+        off += len(d)
+    eh = struct.pack("<16sHHIIIIIHHHHHH", b"\x7fELF\x01\x01\x01" + bytes(9), 4, 3, 1, 0, 52, 0, 0, 52, 32, phnum, 40, 0, 0)
+    pathlib.Path(path).write_bytes(eh + b"".join(ph) + note + b"".join(data))
+
+
+# Runs inside gdb: the physical frames (inlined ones folded into the
+# function they are in) from the core's registers: [pc, CFA or None].
+GDB_BT = r"""
+import gdb, json
+out, f = [], gdb.newest_frame()
+while f is not None and len(out) < 64:
+    if f.type() != gdb.INLINE_FRAME:
+        out.append(int(f.pc()))
+    try:
+        f = f.older()
+    except gdb.error:
+        break
+json.dump(out, open(DST, "w"))
+"""
+
+
+def gdb_backtrace(elf, regs, pages):
+    """gdb's backtrace (return addresses, innermost first) of a core made of
+    the registers and stack pages, or None without gdb."""
+    if not elf or not shutil.which("gdb"):
+        return None
+    with tempfile.TemporaryDirectory() as tmp:
+        core, py, dst = (os.path.join(tmp, n) for n in ("core", "bt.py", "bt.json"))
+        write_core(core, regs, pages)
+        pathlib.Path(py).write_text(f"DST = {dst!r}\n" + GDB_BT)
+        subprocess.run(["gdb", "-nx", "-batch", "-ex", "set pagination off", "-ex", f"source {py}", str(elf), core],
+                       capture_output=True, text=True, timeout=120)
+        return json.loads(pathlib.Path(dst).read_text()) if os.path.exists(dst) else []
+
+
+def unwind_compare(elf, dump, offset):
+    """The page's unwound frames against gdb, segment by segment: from the
+    CPU's registers, and from the registers of each frame found another
+    way (pt_regs: gdb does not cross entry code; entry ESP, EBP chain).
+    Returns (frames compared, problems)."""
+    fr, n, bad = dump["frames"], 0, []
+    # gdb starts again at each frame not found by CFI (its registers as the page has them).
+    seg = [i for i, f in enumerate(fr) if f["method"] in ("regs", "pt_regs", "entry", "fp") and not f.get("user")]
+    for k, i in enumerate(seg):
+        end = seg[k + 1] if k + 1 < len(seg) else len(fr)
+        # Only the frames CFI found: gdb's own fallbacks (prologue analysis) are not the page's.
+        part = [fr[i]]
+        for f in fr[i + 1:end]:
+            if f["method"] != "cfi":
+                break
+            part.append(f)
+        names = {0: "eax", 1: "ecx", 2: "edx", 3: "ebx", 4: "esp", 5: "ebp", 6: "esi", 7: "edi"}
+        regs = {names[int(q)]: v for q, v in (fr[i]["regs"] or {}).items() if v is not None}
+        regs.update({"eip": fr[i]["va"], "cs": 0x60, "eflags": 0x202, "ss": 0x68, "ds": 0x7b, "es": 0x7b})
+        want = gdb_backtrace(elf, regs, dump["pages"])
+        if want is None:
+            return 0, []
+        # va: EIP, or a caller's return address (gdb's pc of that frame).
+        got = [f["va"] for f in part]
+        if want[:len(got)] != got:
+            bad.append(f"from frame {i} ({fr[i]['name']}): page {[hex(x) for x in got]} gdb {[hex(x) for x in want[:len(got) + 2]]}")
+        n += len(got)
+    return n, bad
+
+
+def unwind_case(browser, base, shots, name, fn, steps):
+    """The Debugger's call stack is unwound with the DWARF call frame
+    information at each pause: every frame names its method, the frames
+    CFI and pt_regs found equal gdb's backtrace of a core made of the same
+    registers and stack, the unwind reaches the stack's start (or says why
+    not), and the CFI shards fetched are only the ones the frames are in."""
+    problems, r = [], {}
+    syms = json.loads((SITE / kernel_entries()[name]["symbols"]).read_text())["symbols"]
+    sk = next(s for s in syms if s["name"] == fn)
+    offset = sk["vaddr"] - sk["paddr"]
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    cfi = set()
+    page.on("response", lambda resp: "/dwarf/cfi-" in resp.url and cfi.add(resp.url.split("/dwarf/", 1)[1].split("?")[0]))
+    page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    t0 = time.monotonic()
+    page.fill("#dbg_addr", hex(sk["vaddr"]))
+    page.click("#dbg_runto")
+    if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
+                    and page.get_attribute("#regs", "data-phys") == str(sk["paddr"]) or "Halted" in page.inner_text("#dbg_status"), 240) \
+            or page.get_attribute("#regs", "data-phys") != str(sk["paddr"]):
+        status = page.inner_text("#dbg_status")
+        page.close()
+        return [f"{name}: Run to {fn} did not stop there: {status}"], r
+    r["runto_s"] = round(time.monotonic() - t0)
+    elf = debug_elf(name)
+    for n in steps:
+        if n:
+            before = page.evaluate("stepper.steps")
+            page.fill("#dbg_n", str(n))
+            page.click("#dbg_stepn")
+            wait_for(lambda: page.evaluate("stepper.steps") - before >= n and
+                     page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+        wait_for(lambda: page.get_attribute("#call_stack", "data-unwind") not in (None, "loading"), 20)
+        dump = page.evaluate(UNWIND_DUMP_JS)
+        fr = dump["frames"]
+        tag = f"{fn}+{n}"
+        r[tag] = " <- ".join(f"{f['name']}[{f['method']}]" for f in fr) + f" ({dump['unwind']}: {dump['why']})"
+        if dump["unwind"] not in ("ok", "stopped"):
+            problems.append(f"{name} {tag}: unwind state {dump['unwind']}: {dump['why']}")
+        methods = [f["method"] for f in fr]
+        if not fr or methods[0] != "regs" or any(m not in ("regs", "cfi", "pt_regs", "entry", "fp", "recorded") for m in methods):
+            problems.append(f"{name} {tag}: frames without a known method: {methods}")
+        if sum(1 for m in methods if m == "cfi") < 2:
+            problems.append(f"{name} {tag}: fewer than 2 frames from CFI: {r[tag]}")
+        if fn in ("timer_interrupt", "tty_write"):
+            # Kernel code an interrupt interrupted, or user space that made the system call.
+            if "pt_regs" not in methods or (fn == "tty_write") != bool(fr[-1].get("user")):
+                problems.append(f"{name} {tag}: no frame from the entry code's pt_regs (or the wrong kind): {r[tag]}")
+            if dump["unwind"] != "ok":
+                problems.append(f"{name} {tag}: the unwind did not reach the start of the stack: {r[tag]}")
+        if dump["unwind"] == "stopped" and not dump["why"]:
+            problems.append(f"{name} {tag}: the unwind stopped without saying why")
+        labels = page.eval_on_selector_all("#call_stack .fmeth", "els => els.map(e => e.textContent)")
+        if len(labels) != len(fr):
+            problems.append(f"{name} {tag}: {len(labels)} method labels for {len(fr)} frames")
+        if elf:
+            k, bad = unwind_compare(elf, dump, offset)
+            r[tag + " vs gdb"] = f"{k} frames, {len(bad)} segments differ"
+            problems += [f"{name} {tag}: {b}" for b in bad]
+    r["frames"] = fr
+    r["cfi_shards"] = sorted(cfi)
+    if not cfi:
+        problems.append(f"{name}: no CFI shard was fetched")
+    page.screenshot(path=str(shots / f"unwind-{name}-{fn}-1280-light.png"))
+    for scheme in ("dark", "light"):
+        page.emulate_media(color_scheme=scheme)
+        page.set_viewport_size({"width": 390, "height": 900})
+        time.sleep(0.3)
+        if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
+            problems.append(f"{name}: the Debugger scrolls horizontally at 390 px ({scheme})")
+        page.screenshot(path=str(shots / f"unwind-{name}-{fn}-390-{scheme}.png"), full_page=True)
+    page.emulate_media(color_scheme="dark")
+    page.set_viewport_size({"width": 1280, "height": 1000})
+    page.screenshot(path=str(shots / f"unwind-{name}-{fn}-1280-dark.png"))
+    page.close()
+    if errors:
+        problems.append("page errors: " + "; ".join(errors))
+    return problems, r
+
+
+def unwind_import_case(browser, base, shots, want):
+    """An imported -g vmlinux: the Worker parses its .debug_frame and the
+    call stack at the same pause equals the one from the shipped shards
+    (want: frames of unwind_case at memblock_add_range+9); after a reload
+    the call frame information comes back from IndexedDB."""
+    problems, r = [], {}
+    elf = debug_elf("minified-linux")
+    if not elf or not want:
+        return ([] if not os.environ.get("CI") else ["no minified-linux.elf or no shipped frames"]), {"skipped": "no -g ELF"}
+    syms = json.loads((SITE / kernel_entries()["minified-linux"]["symbols"]).read_text())["symbols"]
+    sk = next(s for s in syms if s["name"] == "memblock_add_range")
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    url = f"{base}/index.html?kernel=minified-linux&paused=1#debugger"
+    page.goto(url)
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    page.evaluate("startPaused = true")
+    page.set_input_files("#symfile", str(elf))
+    wait_for(lambda: page.get_attribute("#sym_status", "data-state") == "imported" and
+             "compile units" in page.inner_text("#sym_status"), 30)
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    page.fill("#dbg_addr", hex(sk["vaddr"]))
+    page.click("#dbg_runto")
+    if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
+                    and page.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 120):
+        page.close()
+        return ["imported -g vmlinux: Run to memblock_add_range did not stop there"], r
+    before = page.evaluate("stepper.steps")
+    page.fill("#dbg_n", "9")
+    page.click("#dbg_stepn")
+    wait_for(lambda: page.evaluate("stepper.steps") - before >= 9 and page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    wait_for(lambda: page.get_attribute("#call_stack", "data-unwind") not in (None, "loading"), 30)
+    got = json.loads(page.get_attribute("#call_stack", "data-frames"))
+    # pc: the call instruction with the build's disassembly, return address - 1 without (an import has none).
+    key = lambda fr: [(f["name"], f["va"], f["method"], f.get("cfa")) for f in fr]
+    r["import"] = " <- ".join(f"{f['name']}[{f['method']}]" for f in got)
+    if key(got) != key(want):
+        problems.append(f"imported vmlinux: call stack {key(got)} differs from the shipped CFI's {key(want)}")
+    r["title"] = page.get_attribute("#call_stack", "title")
+    if "imported vmlinux" not in (r["title"] or ""):
+        problems.append(f"imported vmlinux: the call stack does not say where its CFI is from: {r['title']!r}")
+    page.screenshot(path=str(shots / "unwind-import-1280.png"))
+    rows_js = """async (pas) => { const out = [];
+        for (const pa of pas) { let x = dbgCfiRow(pa);
+            for (let i = 0; i < 50 && x === 'loading'; i++) { await new Promise((ok) => setTimeout(ok, 100)); x = dbgCfiRow(pa); }
+            out.push(x && x.cfa ? cfiRowText(x) : x); }
+        return out; }"""
+    pas = [f["pc"] for f in got]
+    before = page.evaluate(rows_js, pas)
+    # Reload: rows from IndexedDB, without the file.
+    page.goto("about:blank")
+    page.goto(url)
+    wait_for(lambda: page.get_attribute("#sym_status", "data-dwarf") == "cached", 60)
+    rows = page.evaluate(rows_js, pas)
+    r["after_reload"] = rows
+    if rows != before or sum(1 for x in rows if isinstance(x, str) and x.startswith("CFA=")) < len(rows) - 1:
+        problems.append(f"after a reload: CFI rows {rows}, before {before}")
+    page.click("#sym_forget")
+    wait_for(lambda: page.get_attribute("#sym_status", "data-state") != "imported", 30)
+    page.close()
+    if errors:
+        problems.append("page errors: " + "; ".join(errors))
+    return problems, r
+
+
 def norm_insn(text):
     """Instruction text without addresses' symbol names, comments and spacing."""
     text = re.sub(r"<[^>]*>|#.*$", "", text.lower())
@@ -2685,6 +2945,21 @@ def suite_covtree(ctx):
     return report("covtree", *covtree_case(ctx.browser, ctx.base, ctx.shots))
 
 
+def suite_unwind(ctx):
+    failed, want = False, None
+    for name, fn, steps in UNWIND_POINTS:
+        if name in ctx.entries and "dwarf" in ctx.entries[name]:
+            t0 = time.monotonic()
+            p, r = unwind_case(ctx.browser, ctx.base, ctx.shots, name, fn, steps)
+            frames = r.pop("frames", None)
+            if fn == "memblock_add_range":
+                want = frames
+            failed |= report("unwind", p, r, kernel=name, at=fn, seconds=round(time.monotonic() - t0))
+    t0 = time.monotonic()
+    p, r = unwind_import_case(ctx.browser, ctx.base, ctx.shots, want)
+    return failed | report("unwind_import", p, r, seconds=round(time.monotonic() - t0))
+
+
 def suite_touch(ctx):
     failed = report("touch", touch_case(ctx.browser, ctx.base, ctx.shots))
     return failed | report("stale_cache", stale_cache_case(ctx.browser, ctx.args.timeout))
@@ -2707,6 +2982,7 @@ SUITES = {
     "tasks_minified": (suite_tasks_minified, True),
     "coverage": (suite_coverage, True),
     "covtree": (suite_covtree, True),
+    "unwind": (suite_unwind, True),
     "touch": (suite_touch, False),
 }
 

@@ -1502,11 +1502,80 @@ function renderSymbols(phys) {
 	crumbs.dataset.count = items.length;
 }
 
-// The call stack the stepper reconstructed (stepper.js stackEnter), the
-// innermost call first: each frame at the instruction it is at (EIP for
-// the top one, for the others the instruction that entered the frame
-// above: a call, or the instruction an interrupt arrived at), with the
-// DWARF file:line and inlined-at chain of that instruction in its title.
+// The call stack, innermost first. With DWARF the backtrace is unwound
+// from the registers and the stack (dbginfo.js dbgUnwind: the CFI of each
+// function, entry code's saved pt_regs, else the EBP chain); where that
+// stops, the frames below come from the call stack the stepper
+// reconstructed while stepping (stepper.js stackEnter, the ESP
+// heuristic), and without DWARF all of them do. Each frame names the
+// method that found it, and carries the DWARF file:line and inlined-at
+// chain of its instruction (EIP for the top one, the call for the others)
+// in its title.
+const FRAME_METHODS = {
+	regs: ["EIP", "the CPU's registers: where it is now"],
+	cfi: ["CFI", "unwound through the call frame information (.debug_frame) of the function it called: exact"],
+	pt_regs: ["pt_regs", "the context an interrupt, exception or system call interrupted, from the registers its entry code saved: exact"],
+	entry: ["entry ESP", "the return address at the ESP the stepper saw this function's caller call it with, where the function inside had no call frame information: exact when the function (assembly) keeps EBX, ESI, EDI and EBP"],
+	fp: ["EBP chain", "frame-pointer chain ([EBP] and [EBP+4]) where the function inside had no call frame information: a function without a frame of its own may be missing"],
+	recorded: ["recorded", "the call stack recorded while stepping (calls and returns seen, ESP heuristic): only as complete as the recording"],
+};
+
+// Registers and memory for dbgUnwind: guest memory through the page tables
+// (cpustate.js pageWalk: read only, no TLB or accessed-bit side effects).
+function unwindHere() {
+	const st = stepper, cpu = st.cpu;
+	const read32 = (va) => {
+		const w = pageWalk(cpu, va), w2 = (va & 0xfff) > 0xffc ? pageWalk(cpu, va + 3) : w;
+		if (w.phys === null || w2.phys === null)
+			return undefined;
+		if (w2 === w) {
+			const v = phys32(cpu, w.phys);
+			return v === null ? undefined : v;
+		}
+		let v = 0;
+		for (let k = 3; k >= 0; k--) {
+			const q = pageWalk(cpu, va + k).phys;
+			if (q === null || q >= cpu.mem8.length)
+				return undefined;
+			v = v * 256 + cpu.mem8[q];
+		}
+		return v;
+	};
+	const toPhys = (va) => {
+		const pa = pageWalk(cpu, va).phys;
+		return pa !== null && st.symbolOf(insnStart(pa)) >= 0 ? pa : null;
+	};
+	const symAt = (pa) => {
+		const i = st.symbolOf(insnStart(pa));
+		return i >= 0 ? [st.symName[i], st.symStart[i]] : null;
+	};
+	// An open frame the stepper recorded for this function, entered at or
+	// above esp on the same stack.
+	const entryEsp = (pa, esp) => {
+		// The instruction that ran last was a call to here (EIP has not
+		// entered the function yet): the return address is at ESP.
+		const m = cpu.mem8, lp = st.lastPhys;
+		if (esp === st.regs().esp && lp >= 0 && lp + 2 < m.length && ((st.espBefore - 4) >>> 0) === esp &&
+		    (m[lp] === 0xe8 || (m[lp] === 0xff && (m[lp + 1] >> 3 & 7) === 2)))
+			return esp;
+		const i = st.symbolOf(insnStart(pa));
+		for (const k of st.allOpen())
+			if (st.fNode[k] === i && st.fEsp[k] >= esp && st.fEsp[k] >>> 13 === esp >>> 13 && !st.fCont[k])
+				return st.fEsp[k];
+		return undefined;
+	};
+	return dbgUnwind(st.regs(), read32, toPhys, symAt, entryEsp);
+}
+
+// The instruction holding pa (a caller's frame is at its return address - 1:
+// inside the call), from the build's disassembly; pa without one.
+function insnStart(pa) {
+	if (!disasm)
+		return pa;
+	const k = insnIndex(pa), ins = disasm.insns;
+	return k < ins.length && ins[k][0] === pa ? pa : k > 0 && ins[k - 1][0] < pa && pa - ins[k - 1][0] < 16 ? ins[k - 1][0] : pa;
+}
+
 function renderCallStack(box, phys) {
 	const st = stepper;
 	const d = document.createElement("div");
@@ -1515,39 +1584,79 @@ function renderCallStack(box, phys) {
 	b.textContent = "call stack";
 	d.append(b, " ");
 	const top = st.stack.length ? st.stack[st.stack.length - 1] : -1;
-	const frames = [];
+	const rec = [];
 	let at = phys;
 	// EIP on the first byte of a symbol the stack has not entered yet (a
 	// call about to run, e.g. after Run to): that symbol on top, its caller
 	// at the instruction that ran last.
 	const cur = phys >= 0 ? st.symbolOf(phys) : -1;
 	if (cur >= 0 && phys === st.symStart[cur] && (top < 0 || st.fNode[top] !== cur)) {
-		frames.push([-1, phys, cur]);
+		rec.push([-1, phys, cur]);
 		at = st.lastPhys;
 	}
-	for (let k = top; k >= 0 && frames.length < 24; k = st.fParent[k]) {
-		frames.push([k, at, st.fNode[k]]);
+	for (let k = top; k >= 0 && rec.length < 24; k = st.fParent[k]) {
+		rec.push([k, at, st.fNode[k]]);
 		at = st.fFrom[k];
+	}
+	// [pc, node, method, extra title, cfa, registers known in the frame,
+	// virtual EIP or return address, label of a frame that is no code here]
+	let frames = rec.map(([k, pc, node]) => [pc, node, "recorded", k >= 0 && st.fIrq[k] ? ", in an interrupt" : "", undefined]);
+	const uw = runState === "paused" || runState === "stepped" ? unwindHere() : { frames: [], state: "none", why: "" };
+	if (uw.frames.length) {
+		frames = uw.frames.map((f) => f.user ? [-1, -1, f.method, "user space: EIP 0x" + (f.pc >>> 0).toString(16) +
+			", ESP 0x" + (f.regs[4] >>> 0).toString(16), undefined, f.regs, f.pc, "user space"] :
+			[insnStart(f.lookup), st.symbolOf(insnStart(f.lookup)), f.method,
+			(f.cfa !== undefined ? ", CFA 0x" + (f.cfa >>> 0).toString(16) : "") + (f.row ? "\nCFI row: " + cfiRowText(f.row) : "") +
+			(f.fallbackWhy ? "\nno CFI step here: " + f.fallbackWhy : "") + (f.ptRegs !== undefined ? "\npt_regs at 0x" + f.ptRegs.toString(16) : ""), f.cfa, f.regs, f.pc]);
+		if (uw.state !== "ok") {
+			// The recorded frames below the last unwound one: those that
+			// entered at or above its ESP on the same stack, minus itself.
+			const last = uw.frames[uw.frames.length - 1];
+			const esp = last.regs[4];
+			let j = esp === undefined ? -1 : rec.findIndex(([k]) => k >= 0 && st.fEsp[k] >>> 13 === esp >>> 13 && st.fEsp[k] >= esp);
+			if (j >= 0 && rec[j][2] === st.symbolOf(last.lookup))
+				j++;
+			if (j >= 0)
+				for (const [k, pc, node] of rec.slice(j))
+					frames.push([pc, node, "recorded", st.fIrq[k] ? ", in an interrupt" : "", undefined]);
+		}
 	}
 	if (!frames.length)
 		d.append(runState === "jit" ? "not recorded at full speed" : "none recorded yet (calls are seen while stepping)");
 	const list = [];
-	frames.forEach(([k, pc, node], n) => {
-		const name = st.nodeName(node);
+	frames.forEach(([pc, node, method, extra, , , , label], n) => {
+		const name = label || (node >= 0 ? st.nodeName(node) : "0x" + pc.toString(16));
 		const r = pc >= 0 ? dbgFrames(pc) : { state: "none" };
 		const where = r.state === "ok" && r.frames[0].file && r.frames[0].line ? srcName(r.frames[0]) : "";
 		const inl = r.state === "ok" && r.frames.length > 1 ? " [" + r.frames.length + " inlined]" : "";
-		const btn = symButton(name, pc, (n ? "calls from " : "at ") + hex(pc) + (k >= 0 && st.fIrq[k] ? ", in an interrupt" : "") +
-			"\n" + dbgTitle(pc, name));
+		const m = FRAME_METHODS[method];
+		const btn = symButton(name, pc, label ? extra + "\n" + m[0] + ": " + m[1] :
+			(n ? "calls from " : "at ") + hex(pc) + extra + "\n" + m[0] + ": " + m[1] + "\n" + dbgTitle(pc, name));
 		if (where)
 			btn.append(" ", srcLocEl(where));
 		btn.append(inl);
+		const tag = document.createElement("span");
+		tag.className = "fmeth";
+		tag.textContent = m[0];
+		btn.append(" ", tag);
 		btn.dataset.pc = pc;
+		btn.dataset.method = method;
 		list.push(btn);
 	});
 	list.forEach((it, n) => d.append(n ? " ← " : "", it));
+	if (uw.state === "ok" && uw.why || uw.state === "stopped" || uw.state === "loading") {
+		const note = document.createElement("span");
+		note.className = "dim";
+		note.textContent = uw.state === "ok" ? " (" + uw.why + ")" : uw.state === "loading" ? " (" + uw.why + ")" :
+			" (unwinding stopped: " + uw.why + (frames.length > uw.frames.length ? "; the frames below were recorded while stepping" : "") + ")";
+		d.append(note);
+	}
+	d.title = dbgCfiInfo() ? "Unwound with the call frame information: " + dbgCfiInfo() : "";
 	d.dataset.count = frames.length;
-	d.dataset.frames = JSON.stringify(frames.map(([, pc, node]) => ({ name: st.nodeName(node), pc })));
+	d.dataset.unwind = uw.state;
+	d.dataset.why = uw.why || "";
+	d.dataset.frames = JSON.stringify(frames.map(([pc, node, method, , cfa, regs, va, label]) =>
+		({ name: label || (node >= 0 ? st.nodeName(node) : ""), pc, method, cfa: cfa === undefined ? null : cfa, regs, va, user: !!label })));
 	box.append(d);
 }
 

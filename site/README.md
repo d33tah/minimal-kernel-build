@@ -78,9 +78,9 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   hashes and licence in THIRD_PARTY.md), with symbols from its -dbg
   package. The workflow downloads both packages from snapshot.debian.org
   (deb.debian.org as fallback), keeps them in the Actions cache, and runs
-  `gen-symbols.py --trim` on the -dbg vmlinux: 46,937 symbols (code and
-  global data with a size; local data objects and export/tracing
-  bookkeeping dropped), 5,059,585 bytes, 765,158 gzipped (117,357
+  `gen-symbols.py --trim` on the -dbg vmlinux: 47,963 symbols (all code
+  and global data with a size; local data objects and export/tracing
+  bookkeeping dropped), 5,179,791 bytes, 778,527 gzipped (117,357
   symbols, 13 MB, 1.6 MB gzipped untrimmed). `gen-dwarf.js` turns the
   same vmlinux's DWARF into `dwarf/` (see Debug info below), and
   `gen-src.js` ships the C source files that DWARF names (`src/`, see C
@@ -216,10 +216,10 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   file again. Paths are shown relative to the kernel tree (without
   DW_AT_comp_dir, or Debian's prefix-mapped build directory).
   Where it shows: the Debugger's "source" rows (the C line at EIP, then
-  "inlined into F at file:line" per level), the "call stack" row (the
-  frames the stepper reconstructed, each at its instruction: EIP for the
-  top, the instruction that entered the next frame for the others; the
-  title has the whole chain), the titles of "previous" and "path", the
+  "inlined into F at file:line" per level), the "call stack" row (unwound
+  at a pause, see Backtraces below, with the frames the stepper
+  reconstructed as the fallback; each at its instruction: EIP for the
+  top, the call for the others; the title has the whole chain), the titles of "previous" and "path", the
   C lines of both listings, and in the Graph tab the hover text and the
   detail of a timeline frame ("called from" and "entry", each with its
   chain) and the title of a call-tree name. "no line information" is
@@ -239,6 +239,37 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   at random code addresses (half inside functions, half anywhere): the
   workflow fails on any difference (local runs: minified 19,696/19,696,
   Debian 49,999/49,999).
+- **Backtraces (call frame information).** At a pause the Debugger's
+  "call stack" is unwound from the registers and the stack (unwind.js,
+  one evaluator for every kernel). `gen-dwarf.js` writes the -g ELF's
+  `.debug_frame` (or `.eh_frame`) as `dwarf/cfi-<hex>.bin`, the FDEs of
+  each 64 KiB with their CIEs and their CFA programs as bytes, fetched
+  when a backtrace passes there; an imported vmlinux's is parsed whole by
+  the Worker (2 MB for Debian) and kept in IndexedDB. Each frame is found
+  by one method and labelled with it: EIP (the registers), CFI (the CFA
+  rule and saved registers of the function inside it: DW_CFA_def_cfa*,
+  offset, restore, remember/restore_state, register, val_offset,
+  expression rules through a DWARF expression evaluator, e.g. GCC's
+  realigned-stack `DW_OP_breg5 EBP-4, DW_OP_deref`), pt_regs (where the
+  return address is in assembly entry code that called C with ESP at its
+  saved registers, i.e. interrupts, exceptions and `int $0x80`: the
+  interrupted EIP, ESP and registers come from pt_regs and unwinding goes
+  on there; from user mode the last frame is "user space"), entry ESP
+  (assembly without CFI whose call the stepper recorded: the return
+  address at that ESP), EBP chain (the frame-pointer chain, Debian is
+  built with frame pointers; a function without a frame of its own may be
+  missing) and recorded (where unwinding stops, the frames below come
+  from the stack the stepper recorded, the ESP heuristic). A
+  stack switch (IRQ stacks) is allowed, a CFA that goes down on the same
+  8 KiB stack stops the unwind; `ret_from_fork` and `startup_32` end it.
+  The row's text (as `llvm-dwarfdump` prints it), the CFA and the reason
+  for a fallback are in each frame's title; the note after the frames
+  says where and why unwinding ended. Caller frames are at their call
+  instruction (return address - 1 without a disassembly). Callee-saved
+  registers without a rule keep their value, EAX/ECX/EDX are unknown in
+  callers. Sizes: minified Linux 9,429 bytes in 2 shards (3,438
+  gzipped), hello 23 bytes, Debian 1,511,034 bytes in 153 shards (389,638
+  gzipped, 44,711 FDEs, 2,138 CIEs).
 - **Variables.** Global and static variables (static locals too) with
   their DWARF types: `gen-dwarf.js` also writes `dwarf/types.json` (dwarf.js
   `DwarfTypes`). Every variable whose location is a fixed address
@@ -795,7 +826,23 @@ listing, sorting and the filter work, the Source panel's whole-file view of
 init/main.c has the tree's numbers, the lcov export has the same totals,
 a function opens the Page tab; screenshots light and dark at 1280 and 390
 px. The Debian case also opens the tree at start_kernel and checks it came
-without fetching most shards. A last case serves two "deploys" with `Cache-Control: max-age=600` (as
+without fetching most shards. The unwind case pauses the minified Linux
+in memblock_add_range (start_kernel's call chain) and in tty_write (a
+system call from user space), and Debian in timer_interrupt (an interrupt
+arriving in kernel code), each at the entry and a few steps in: every
+frame has a method label, timer_interrupt and tty_write have a pt_regs
+frame, the unwind reaches the start of the stack, and the frames CFI
+found equal gdb's backtrace of an ELF core file made of the same
+registers and stack pages (gdb starting again from each pt_regs frame's
+registers, as it does not cross entry code); only the CFI shards of the
+frames are fetched; screenshots light and dark at 1280 and 390 px. The
+unwind import case imports the minified Linux's -g vmlinux and gets the
+same frames as the shipped shards, and after a reload the same CFI rows
+from IndexedDB. `test_dwarf.py --cfi N` compares the row at N random
+addresses (half inside FDEs) with the rows `llvm-dwarfdump --debug-frame`
+evaluates (local: minified 4,918/4,918, Debian 20,000/20,000 of which 211
+with DWARF expressions), and `test_dwarf.py --eh-frame` does the same on
+the `.eh_frame` of a small program built with GCC and clang. A last case serves two "deploys" with `Cache-Control: max-age=600` (as
 GitHub Pages does) and checks a reload runs the new `app.js`. Screenshots
 (desktop and 390 px) go to `site/test-screenshots/`.
 

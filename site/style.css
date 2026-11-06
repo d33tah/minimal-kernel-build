@@ -252,13 +252,15 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 @media (max-width: 640px) {
 	.top { position: static; }
 	#screen_text { font: 5px/6px ui-monospace, monospace; }
-	#counters { font-size: 0.7rem; }
+	/* Long counts (a distro boot's 9-digit instruction numbers) scroll inside the table, not the page. */
+	#counters { font-size: 0.7rem; display: block; max-width: 100%; overflow-x: auto; }
 	#listing { height: 70vh; }
 }
 .syminfo { font-size: 0.8rem; margin: 0.3rem 0; }
 .syminfo div { overflow-wrap: anywhere; }
 .syminfo b { color: var(--muted); font-weight: 600; display: inline-block; min-width: 4.6em; }
 .symlink { font: 0.78rem ui-monospace, monospace; padding: 0 0.3rem; color: var(--accent); }
+.fmeth { font-size: 0.68rem; color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 0 0.2rem; white-space: nowrap; }
 #context .ins { cursor: pointer; }
 #context mark { background: var(--mark-bg); color: var(--mark-fg); }
 #context .bad { background: var(--mark-bg); color: var(--mark-fg); }
@@ -353,4 +355,5 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 .watches .werr { color: var(--err-fg); }
 .watches .wptr { white-space: normal; text-align: left; overflow-wrap: anywhere; }
 .watches .note { font-family: system-ui, sans-serif; }
+#watch_quick { flex-wrap: wrap; }
 #watch_quick button { font-size: 0.75rem; }

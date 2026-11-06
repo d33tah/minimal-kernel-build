@@ -8,15 +8,18 @@
 //   { type: "unit", i }             -> { type: "unit", i, table }       (dwarf.js table, physical addresses)
 //   { type: "types" }               -> { type: "types-progress", done, total } now and then, then
 //                                      { type: "types", types }  (dwarf.js DwarfTypes: every unit read once)
+//   { type: "cfi" }                 -> { type: "cfi", table, source } (unwind.js: .debug_frame or .eh_frame
+//                                      parsed whole, ~2 MB for a distro kernel) or { type: "cfi", why }
 //   any failure                     -> { type: "error", i?, message }
 
-importScripts("dwarf.js" + self.location.search);
+importScripts("dwarf.js" + self.location.search, "unwind.js" + self.location.search);
 
-let dw = null, toPa = null, elf = null;
+let dw = null, toPa = null, elf = null, readFile = null;
 
 function open(file, offset) {
 	const rd = new FileReaderSync();
 	const read = (off, len) => new Uint8Array(rd.readAsArrayBuffer(file.slice(off, off + len)));
+	readFile = read;
 	elf = dwarfElf(read);
 	const sec = dwarfSections(elf, read);
 	if (!sec)
@@ -59,7 +62,10 @@ self.onmessage = (ev) => {
 	try {
 		if (m.type === "open")
 			self.postMessage(open(m.file, m.offset));
-		else if (m.type === "types")
+		else if (m.type === "cfi") {
+			const c = cfiFromElf(elf, readFile, toPa);
+			self.postMessage(c.why ? { type: "cfi", why: c.why } : { type: "cfi", table: c.t, source: c.source });
+		} else if (m.type === "types")
 			self.postMessage({ type: "types", types: types() });
 		else if (m.type === "unit") {
 			const table = dwarfTable([dw.decodeUnit(m.i)], toPa);

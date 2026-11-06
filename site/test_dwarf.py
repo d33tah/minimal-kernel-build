@@ -2,7 +2,7 @@
 """Check the DWARF shards of gen-dwarf.js against llvm-symbolizer --inlines,
 and its types.json against gdb.
 
-  site/test_dwarf.py ELF SHARD_DIR [--samples N] [--strip PREFIX ...] [--seed S] [--types N]
+  site/test_dwarf.py ELF SHARD_DIR [--samples N] [--strip PREFIX ...] [--seed S] [--types N] [--cfi N]
 
 Picks N random addresses in the ELF's code (half inside function
 symbols, half anywhere between the first and the last one), asks
@@ -19,6 +19,16 @@ page shows the DWARF name there and the ELF symbol in its own row. Paths from ll
 gdb on the ELF must agree: the path is an expression whose address range
 holds the byte, its type prints the same (whatis) with the same size, and
 so does the variable's.
+
+--cfi N: N random addresses; the call frame information row there
+(`gen-dwarf.js --cfi`, the page's unwind.js cfiRow on the cfi-*.bin
+shards) must read the same as the row llvm-dwarfdump --debug-frame (or
+--eh-frame) evaluates for that FDE, and outside every FDE there is none.
+
+  site/test_dwarf.py --eh-frame [N]
+
+the same check on the .eh_frame of a small program built here with GCC
+and clang (the kernels have .debug_frame only).
 """
 
 import argparse
@@ -203,7 +213,109 @@ def check_types(elf, shards, n, rnd, lds):
     return bad
 
 
+def dwarfdump_cfi(elf):
+    """Every FDE of the ELF as llvm-dwarfdump evaluates it: [(lo, hi, [(row
+    start, row text), ...]), ...] by virtual address (.debug_frame, else .eh_frame)."""
+    fdes = []
+    for flag in ("--debug-frame", "--eh-frame"):
+        out = subprocess.run(["llvm-dwarfdump", flag, elf], capture_output=True, text=True, check=True).stdout
+        for line in out.splitlines():
+            m = re.search(r" FDE cie=\w+ pc=([0-9a-f]+)\.\.\.([0-9a-f]+)$", line)
+            if m:
+                fdes.append((int(m.group(1), 16), int(m.group(2), 16), []))
+                continue
+            m = re.match(r"^  0x([0-9a-f]+): (CFA=.*)$", line)
+            if m and fdes:
+                fdes[-1][2].append((int(m.group(1), 16), m.group(2)))
+        if fdes:
+            break
+    return [f for f in fdes if f[0] and f[1] > f[0]]
+
+
+def check_cfi(elf, shards, n, rnd, lds):
+    """N random addresses: half inside FDEs (the row llvm-dwarfdump evaluates
+    there must equal the page's, unwind.js cfiRow), half anywhere in the
+    code (no FDE there: the page must have no row either)."""
+    fdes = dwarfdump_cfi(elf)
+    if not fdes:
+        print(f"{elf}: no call frame information")
+        return []
+
+    def phys(va):
+        return next((va - lo + pa for lo, hi, pa in lds if lo <= va < hi), None)
+    lo_all, hi_all = min(f[0] for f in fdes), max(f[1] for f in fdes)
+    starts = sorted(fdes)
+    picks = []
+    for k in range(n):
+        if k % 2:
+            f = rnd.choice(fdes)
+            picks.append(f[0] + rnd.randrange(f[1] - f[0]))
+        else:
+            picks.append(rnd.randrange(lo_all, hi_all))
+    picks = [va for va in picks if phys(va) is not None]
+    out = subprocess.run(["node", str(SITE / "gen-dwarf.js"), "--cfi", shards], input="\n".join(str(phys(a)) for a in picks),
+                         capture_output=True, text=True, check=True).stdout
+    got = [json.loads(l) for l in out.splitlines()]
+    import bisect
+    keys = [f[0] for f in starts]
+    bad, inside, exprs = [], 0, 0
+    for va, g in zip(picks, got):
+        i = bisect.bisect_right(keys, va) - 1
+        f = starts[i] if i >= 0 and starts[i][0] <= va < starts[i][1] else None
+        want = None
+        if f:
+            inside += 1
+            rows = [r for r in f[2] if r[0] <= va]
+            want = rows[-1][1] if rows else None
+        have = g.get("row") or g.get("why")
+        if want and "DW_OP" in want:
+            exprs += 1
+        if want != have:
+            bad.append((va, want, have))
+    for va, w, g in bad[:10]:
+        print(f"CFI MISMATCH {va:#x}\n  llvm-dwarfdump {w}\n  page           {g}")
+    print(f"{elf}: {len(picks) - len(bad)}/{len(picks)} addresses agree with llvm-dwarfdump's CFI rows "
+          f"({inside} inside {len(fdes)} FDEs, {exprs} with DWARF expressions)")
+    return bad
+
+
+# For --eh-frame: functions whose CFI uses the usual rules, a realigned
+# stack (GCC: DW_CFA_def_cfa_expression and DW_CFA_expression) and varargs.
+EH_FRAME_C = r"""
+#include <stdarg.h>
+int g[64];
+__attribute__((noinline)) int leaf(int a) { return g[a & 63] + a; }
+__attribute__((noinline)) int mid(int a, int b) { int x[8]; for (int i = 0; i < 8; i++) x[i] = leaf(a + i) * b; return x[a & 7] + leaf(b); }
+__attribute__((noinline, force_align_arg_pointer)) int aligned(int a) { volatile double d __attribute__((aligned(32))) = a; return mid(a, (int)d) + 1; }
+int vsum(int n, ...) { va_list ap; va_start(ap, n); int s = 0; while (n--) s += va_arg(ap, int) + mid(s, n); va_end(ap); return s; }
+void _start(void) { g[0] = aligned(3) + vsum(3, 1, 2, 3); for (;;); }
+"""
+
+
+def eh_frame_selftest(n, rnd):
+    """The kernels here have .debug_frame only; the .eh_frame path (CIE
+    augmentation "zR", pc-relative pointers) is checked on a small i386
+    program built with GCC and with clang -fasynchronous-unwind-tables."""
+    bad = []
+    with tempfile.TemporaryDirectory() as tmp:
+        src = os.path.join(tmp, "t.c")
+        pathlib.Path(src).write_text(EH_FRAME_C)
+        for cc in (["gcc", "-fno-stack-protector"], ["clang", "-fuse-ld=lld"]):
+            elf, out = os.path.join(tmp, cc[0] + ".elf"), os.path.join(tmp, cc[0])
+            subprocess.run(cc + ["-m32", "-g", "-O2", "-fasynchronous-unwind-tables", "-fno-pie", "-nostdlib", "-static",
+                                 "-Wl,-Ttext=0xc0100000", "-o", elf, src], check=True)
+            sections = subprocess.run(["llvm-readelf", "-S", elf], capture_output=True, text=True, check=True).stdout
+            if ".eh_frame " not in sections or ".debug_frame" in sections:
+                bad.append(f"{cc[0]}: expected .eh_frame only")
+                continue
+            subprocess.run(["node", str(SITE / "gen-dwarf.js"), elf, out], check=True, capture_output=True)
+            bad += check_cfi(elf, out, n, rnd, loads(elf))
+    return bad
+
+
 def main():
+    if sys.argv[1:2] == ["--eh-frame"]:
+        sys.exit(1 if eh_frame_selftest(int(sys.argv[2]) if len(sys.argv) > 2 else 2000, random.Random(1)) else 0)
     ap = argparse.ArgumentParser()
     ap.add_argument("elf")
     ap.add_argument("shards")
@@ -211,6 +323,7 @@ def main():
     ap.add_argument("--strip", action="append", default=[])
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--types", type=int, default=0, help="also check N bytes of types.json against gdb")
+    ap.add_argument("--cfi", type=int, default=0, help="also check the CFI rows at N addresses against llvm-dwarfdump")
     args = ap.parse_args()
     rnd = random.Random(args.seed)
     lds = loads(args.elf)
@@ -246,7 +359,8 @@ def main():
     print(f"{args.elf}: {len(vaddrs) - len(bad)}/{len(vaddrs)} addresses agree with llvm-symbolizer --inlines "
           f"({inlined} inside inlined code)")
     tbad = check_types(args.elf, args.shards, args.types, rnd, lds) if args.types else []
-    sys.exit(1 if bad or tbad else 0)
+    cbad = check_cfi(args.elf, args.shards, args.cfi, rnd, lds) if args.cfi else []
+    sys.exit(1 if bad or tbad or cbad else 0)
 
 
 if __name__ == "__main__":

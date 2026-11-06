@@ -172,7 +172,7 @@
   <div id="regs" class="regs mono"></div>
   <div id="cpu_state" class="cpu_state"></div>
   <div id="sym_info" class="syminfo"></div>
-  <h3>Code at EIP <span class="tip" tabindex="0" role="button" title="About 6 instructions before and 10 after the next one (boxed), from the build's disassembly, with symbol+offset. Marked bytes differ in guest memory from the build. Tap a line or a symbol to open it in the Page tab. The previous symbol, the path and the call stack are recorded while stepping or in slow motion, not at full JIT speed. The source rows give the C line at EIP from the kernel's DWARF and, in inlined code, each function it was inlined into with the line of the call; every frame of the call stack and of the path has its file:line and inlined-at chain in its tooltip.">?</span></h3>
+  <h3>Code at EIP <span class="tip" tabindex="0" role="button" title="About 6 instructions before and 10 after the next one (boxed), from the build's disassembly, with symbol+offset. Marked bytes differ in guest memory from the build. Tap a line or a symbol to open it in the Page tab. The previous symbol and the path are recorded while stepping or in slow motion, not at full JIT speed. With DWARF the call stack is unwound from the registers and the stack at the pause: each function's call frame information (.debug_frame), entry code's saved registers (pt_regs) at interrupts, exceptions and system calls, else the EBP chain; where that stops, the frames below are the ones recorded while stepping. Each frame is labelled with the method that found it (EIP, CFI, pt_regs, EBP chain, recorded). The source rows give the C line at EIP from the kernel's DWARF and, in inlined code, each function it was inlined into with the line of the call; every frame of the call stack and of the path has its file:line and inlined-at chain in its tooltip.">?</span></h3>
   <pre id="context" class="listing-small"></pre>
   <h3>Variables <span class="tip" tabindex="0" role="button" title="Global and static variables from the kernel's DWARF (for the kernels built here a -g build of the same tree whose code is byte-identical to the kernel that boots, for Debian its -dbg package, for an imported unstripped vmlinux its own DWARF, read once in a Worker), pretty-printed from guest RAM: structs and arrays open on a tap, enums by name, char arrays and char pointers as strings, pointers name what they point at and open the Page tab there. Type a name, Function::name for a static local, then .member, ->member or [index]; a leading * dereferences. A per-CPU variable shows CPU 0's copy once the per-CPU areas exist. Values are read when drawn: while the kernel runs at full speed tap Refresh. In the Page tab, point at or tap a byte of a hex row to see which variable and member it belongs to. Local variables and parameters are not here (they need the call frames).">?</span></h3>
   <div class="scan">
@@ -279,6 +279,7 @@
 <script src="stepper.js"></script>
 <script src="graph.js"></script>
 <script src="dwarf.js"></script>
+<script src="unwind.js"></script>
 <script src="dbginfo.js"></script>
 <script src="source.js"></script>
 <script src="coverage.js"></script>

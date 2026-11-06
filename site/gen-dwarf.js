@@ -26,6 +26,12 @@
 //       one JSON line per physical address: the frames there with their
 //       parameters and locals and the kind of location each has there
 //       (test_dwarf.py --locals compares them with gdb's info scope)
+//   site/gen-dwarf.js --operands OUTDIR < instructions
+//       one JSON line per input line "PADDR VADDR INSTRUCTION" (AT&T, as
+//       llvm-objdump prints it): the names the page's listings give its
+//       memory operands (asmnames.js asmOperandNames without a pause:
+//       globals and CFA-relative stack slots; test_dwarf.py --operands
+//       checks them with gdb and llvm-dwarfdump)
 //   site/gen-dwarf.js --where OUTDIR < addresses
 //       one JSON line per physical address: the variable and member path
 //       there (dwarf.js dwWhere) with the leaf's type (test_dwarf.py --types
@@ -424,6 +430,42 @@ function localsLookup(dir) {
 	process.stdout.write(out.join("\n") + "\n");
 }
 
+// One JSON line per instruction: the names of its memory operands, from
+// the shards (types.json, cfi-*, locals-*) and ../symbols.json if there.
+function operandsLookup(dir) {
+	const { asmOperandNames, asmSymLookup } = require("./asmnames.js");
+	const index = JSON.parse(fs.readFileSync(path.join(dir, "index.json"), "utf8"));
+	const T = index.types ? JSON.parse(fs.readFileSync(path.join(dir, index.types), "utf8")) : null;
+	const symFile = path.join(dir, "..", "symbols.json");
+	const sym = fs.existsSync(symFile) ? asmSymLookup(JSON.parse(fs.readFileSync(symFile, "utf8")).symbols) : null;
+	const cfi = new Map(), loc = new Map();
+	const shardOf = (pa) => Math.floor(pa / 2 ** index.shardBits);
+	const row = (pa) => {
+		const s = shardOf(pa);
+		if (!cfi.has(s))
+			cfi.set(s, index.cfi && index.cfi.shards && index.cfi.shards.includes(s) ?
+				cfiDecode(new Uint8Array(fs.readFileSync(path.join(dir, "cfi-" + s.toString(16) + ".bin")))) : null);
+		return cfi.get(s) ? cfiRow(cfi.get(s), pa) : null;
+	};
+	const scopes = (pa) => {
+		const s = shardOf(pa);
+		if (!loc.has(s))
+			loc.set(s, index.locals && index.locals.shards.includes(s) ?
+				JSON.parse(zlib.gunzipSync(fs.readFileSync(path.join(dir, "locals-" + s.toString(16) + ".json.gz")))).fns : []);
+		return dwarfScopesAt(loc.get(s), pa);
+	};
+	const out = [];
+	for (const line of fs.readFileSync(0, "utf8").split("\n")) {
+		const m = /^\s*(\S+)\s+(\S+)\s+(.*)$/.exec(line);
+		if (!m)
+			continue;
+		const pa = Number(m[1]), va = Number(m[2]);
+		const names = asmOperandNames(m[3], pa, { off: va - pa, T, sym, scopes, row, cur: null });
+		out.push(JSON.stringify({ pa, text: m[3], names: names.map((n) => ({ op: n.op, name: n.name, kind: n.kind, var: n.var, varOff: n.varOff, va: n.va, rel: n.rel })) }));
+	}
+	process.stdout.write(out.join("\n") + "\n");
+}
+
 const args = process.argv.slice(2);
 if (args[0] === "--lookup" && args.length === 2)
 	lookup(args[1]);
@@ -431,11 +473,13 @@ else if (args[0] === "--cfi" && args.length === 2)
 	cfiLookup(args[1]);
 else if (args[0] === "--locals" && args.length === 2)
 	localsLookup(args[1]);
+else if (args[0] === "--operands" && args.length === 2)
+	operandsLookup(args[1]);
 else if (args[0] === "--where" && args.length === 2)
 	where(args[1]);
 else if (args.length === 2)
 	generate(args[0], args[1]).catch((err) => { console.error(err); process.exit(1); });
 else {
-	console.error("usage: gen-dwarf.js ELF OUTDIR | gen-dwarf.js --lookup|--where|--cfi|--locals OUTDIR < addresses");
+	console.error("usage: gen-dwarf.js ELF OUTDIR | gen-dwarf.js --lookup|--where|--cfi|--locals|--operands OUTDIR < addresses");
 	process.exit(2);
 }

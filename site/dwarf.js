@@ -1538,7 +1538,15 @@ function dwWhere(T, pa) {
 	}
 	if (!best)
 		return null;
-	let path = best[0], id = best[2], off = pa - best[1], note = "";
+	const r = dwPathIn(T, best[2], pa - best[1], best[0]);
+	return { var: best, ...r, leafAddr: pa - r.offset };
+}
+
+// The member or element path to byte off of an object of type id named
+// name: { path, note, type (of the leaf), offset (of the byte in the leaf),
+// unions }, as dwWhere describes them.
+function dwPathIn(T, id, off, name) {
+	let path = name, note = "";
 	const unions = [];
 	for (let n = 0; n < 32; n++) {
 		const s = dwStrip(T, id);
@@ -1583,7 +1591,7 @@ function dwWhere(T, pa) {
 		} else
 			break;
 	}
-	return { var: best, path, note, type: id, offset: off, leafAddr: pa - off, unions };
+	return { path, note, type: id, offset: off, unions };
 }
 
 // ---- ELF -----------------------------------------------------------------
@@ -1960,4 +1968,4 @@ function dwarfDecode(b) {
 }
 
 if (typeof module !== "undefined")
-	module.exports = { dwarfScopeGroups, dwarfScopesAt, dwLocAt, dwarfLocalFrames, DwarfTypes, DWT, dwStrip, dwTypeSize, dwTypeName, dwWhere, dwVarIndex, DwarfReader, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfFunction, dwarfRow, dwarfEachLine, dwarfEncode, dwarfDecode, dwDisplayPath };
+	module.exports = { dwarfScopeGroups, dwarfScopesAt, dwLocAt, dwarfLocalFrames, DwarfTypes, DWT, dwStrip, dwTypeSize, dwTypeName, dwWhere, dwPathIn, dwVarIndex, DwarfReader, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfFunction, dwarfRow, dwarfEachLine, dwarfEncode, dwarfDecode, dwDisplayPath };

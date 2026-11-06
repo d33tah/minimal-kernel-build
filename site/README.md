@@ -32,7 +32,8 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   `*`; each symbol start is a `name:` header with its size and section.
   Bytes that changed since the last scan are marked, instructions whose
   bytes differ from the build are highlighted, and the next instruction is
-  boxed while the CPU is paused or stepping. Above the listing, a compact
+  boxed while the CPU is paused or stepping. Memory operands are named
+  from the DWARF (see "Memory operands"). Above the listing, a compact
   index of the page's symbols (the only symbol list) scrolls to each one.
   "live" re-reads the page every 500 ms.
 - **Fast-forward.** With a symbol map (built-in or imported), every boot
@@ -357,6 +358,47 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   local runs: minified 4,669/4,669 and 4,692/4,692, Debian 4,810/4,810;
   labels, types and enumerators gdb also lists are left out, and
   addresses where gdb's own `info scope` fails).
+- **Memory operands.** Every listing (the Page tab's merged hex and asm,
+  the Debugger) names the memory operands it can after the instruction,
+  in one colour, with a tooltip saying what the name is (asmnames.js
+  `asmOperandNames`, one helper for both listings and for
+  `gen-dwarf.js --operands`): `movl 0xc011c028, %eax <lpj_fine>`,
+  `movw $0x720, -0x3fee3e00 <vc0.vc_video_erase_char>`,
+  `movl %fs:0xC1E5E6E0, %eax <__stack_chk_guard>` (a per-CPU variable:
+  %fs selects this CPU's copy, the name is the template's),
+  `movl (%esp), %eax <type>`, `leal -0x1C(%ebp), %eax <&command_line>`.
+  Absolute addresses get the variable and member path there (the
+  Variables panel's `dwWhere`), else the ELF symbol (`<sym+0x10>`). A
+  stack slot (`disp(%esp)`, `disp(%ebp)`) is named without registers:
+  the base register gets a made-up value, the CFA follows from it where
+  the CFI row there defines the CFA with that register, and a parameter
+  or local whose location there is memory at that address
+  (DW_OP_fbreg through the frame base, DW_OP_breg4/5) is named, with the
+  member path inside it. At a pause the instruction at EIP is computed
+  from the registers (any base and index), and stack slots of EIP's
+  function get their real address in the tooltip. A variable's address
+  plus registers (`-0x3fef0fa0(,%edx,4)`) is named after the variable at
+  the displacement with the registers after it (`<vector_irq[0]+%edx*4>`); a
+  `lea` names the address (`<&x>`). Not named: an offset through a
+  pointer register (the register's type is not known), callers' stack
+  slots, real-mode code (segment-relative), and anything with no
+  variable or symbol there (spill slots, outgoing arguments, heap). The
+  listing's info line counts the named operands. `test_dwarf.py
+  --operands N` checks N random instructions with a memory operand
+  against gdb: absolute ones against `info symbol` (variable or symbol
+  and offset), stack slots against the address gdb computes for each
+  parameter and local on a core with EIP at that instruction (gdb's own
+  CFI unwinder, frame base and location lists; ESP and EBP made up far
+  apart), and the page's member path at that byte (local runs: minified
+  1,948/1,948, 631 absolute and 1,317 on the stack, 494 of those named;
+  Debian 2,000/2,000, 370 of 1,000 stack operands named; gdb names none
+  the page does not). The operands suite does the same at real pauses:
+  minified memblock_add_range+0x2b (`(%esp)` is `type`) and Debian
+  start_kernel+0x20 (`-0x1c(%ebp)` is `command_line`), checking every
+  name with an address in the Debugger and in the whole Page listing
+  against gdb on a core of the pause, and that both listings name the
+  same lines alike. No new data files: it uses the types, CFI and locals
+  shards the other features fetch.
 - **Coverage tab.** All the kernel's code as a tree of directories, files
   and functions, each with lines run / lines with code and instructions
   run / instructions, a bar, sortable (name, lines run %, lines not run,
@@ -915,6 +957,7 @@ browser-test matrix job named by its suites):
 | D4 parameters and locals | `test_dwarf.py --locals` (vs gdb info scope); suites unwind (values vs gdb on a core, import), hello | kernels; types,covtree,unwind; boot,... |
 | D6 task names | suites tasks (Debian, every task vs task_struct read with gdb's offsets), tasks_minified | tasks; boot,... |
 | D7 minified and hello parity | `check-code-identity.py --self-test` (-g build's code equals the shipped kernel), `test_kernel_data.py` (every kernel has every feature's files); suite hello | kernels; site; boot,... |
+| A1 memory operands named | `test_dwarf.py --operands` (absolute vs gdb info symbol, stack slots vs gdb on a core at the instruction); suite operands (minified and Debian pauses: names with an address vs gdb on a core of the pause, Debugger and Page tab alike, tooltips, 390 px) | kernels; tasks,operands |
 | D8 help and first look | `check-ids.py` (no duplicate ids); suite firstlook (every kernel incl. Debian with its initramfs and an imported vmlinux: explanations present, entry line, JIT gap, Coverage notes, no sideways scroll at 390 px light and dark) | site; boot,...,firstlook |
 
 ## Testing

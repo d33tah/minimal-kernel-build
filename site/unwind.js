@@ -367,7 +367,7 @@ const DW_OP_MORE = { 0x08: "DW_OP_const1u", 0x09: "DW_OP_const1s", 0x0a: "DW_OP_
 	0x2a: "DW_OP_ge", 0x2b: "DW_OP_gt", 0x2c: "DW_OP_le", 0x2d: "DW_OP_lt", 0x2e: "DW_OP_ne", 0x2f: "DW_OP_skip",
 	0x92: "DW_OP_bregx", 0x94: "DW_OP_deref_size", 0x96: "DW_OP_nop", 0x9d: "DW_OP_bit_piece", 0x9e: "DW_OP_implicit_value",
 	0xa0: "DW_OP_implicit_pointer", 0xa1: "DW_OP_addrx", 0xa4: "DW_OP_const_type", 0xa5: "DW_OP_regval_type",
-	0xa6: "DW_OP_deref_type", 0xa8: "DW_OP_convert", 0xa9: "DW_OP_reinterpret", 0xf2: "DW_OP_GNU_implicit_pointer",
+	0xa6: "DW_OP_deref_type", 0xa8: "DW_OP_convert", 0xa9: "DW_OP_reinterpret", 0xf0: "DW_OP_GNU_uninit", 0xf2: "DW_OP_GNU_implicit_pointer",
 	0xf4: "DW_OP_GNU_const_type", 0xf5: "DW_OP_GNU_regval_type", 0xf6: "DW_OP_GNU_deref_type", 0xf7: "DW_OP_GNU_convert",
 	0xf9: "DW_OP_GNU_reinterpret", 0xfa: "DW_OP_GNU_parameter_ref", 0xfd: "DW_OP_GNU_variable_value" };
 
@@ -539,7 +539,7 @@ function dwExpr(b, ctx, stack = []) {
 			}
 			case 0x92: { const r = uleb(); st.push(u(reg(r) + sleb())); break; } // bregx
 			case 0x94: { const n = b[p++]; st.push(read(pop(), n)); break; } // deref_size
-			case 0x96: break; // nop
+			case 0x96: case 0xf0: break; // nop; DW_OP_GNU_uninit (only a hint that the value may not be set yet)
 			case 0x9c: // call_frame_cfa
 				if (ctx.cfa === undefined)
 					throw new Error("the CFA is not known");
@@ -677,6 +677,24 @@ function dwLocation(b, ctx, size) {
 		at += n;
 	}
 	return { bytes, known, how: hows.join("; "), whys };
+}
+
+// The frame base (DW_AT_frame_base) of a function from its location l
+// at the pc (dwarf.js dwLocAt), for DW_OP_fbreg: sets ctx.frameBase, or
+// ctx.fbWhy when it cannot be had. GCC's is DW_OP_call_frame_cfa (the
+// CFA), clang's a register (DW_OP_reg4 ESP: its value).
+function dwSetFrameBase(ctx, l) {
+	delete ctx.frameBase;
+	ctx.fbWhy = "";
+	if (!l || !l.expr)
+		return;
+	const e = l.expr;
+	const v = e.length === 1 && e[0] >= 0x50 && e[0] <= 0x6f ?
+		(ctx.reg(e[0] - 0x50) === undefined ? { why: CFI_REGS[e[0] - 0x50] + " is not known in this frame" } : { value: ctx.reg(e[0] - 0x50) }) :
+		dwExpr(e, ctx);
+	if (!v.why)
+		ctx.frameBase = v.value;
+	ctx.fbWhy = v.why ? "frame base (" + dwExprText(e) + "): " + v.why : "";
 }
 
 // ---- unwinding --------------------------------------------------------------------
@@ -872,4 +890,4 @@ function cfiRowText(row) {
 }
 
 if (typeof module !== "undefined")
-	module.exports = { dwOpEnd, dwLocation, CFI_REGS, cfiFromElf, cfiParse, cfiSlice, cfiFind, cfiEncode, cfiDecode, cfiRow, cfiRowText, cfiStep, dwExpr, dwExprText, unwind };
+	module.exports = { dwOpEnd, dwLocation, dwSetFrameBase, CFI_REGS, cfiFromElf, cfiParse, cfiSlice, cfiFind, cfiEncode, cfiDecode, cfiRow, cfiRowText, cfiStep, dwExpr, dwExprText, unwind };

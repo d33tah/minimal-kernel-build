@@ -587,6 +587,7 @@ function listPage(p, bytes, base, cur, chars) {
 	let si = 0, nIns = 0, nBad = 0, nNx = 0, nRows = 0, nonzero = 0, changed = 0, curLine = -1;
 	let prevRow = null, starred = false;
 	const srcState = { key: null };
+	const ops = insns.size && bits !== 16 ? opEnv() : null, opStat = {}; // real-mode addresses are segment-relative
 	const mark = (off, text) => (base && base[off] !== bytes[off] ? "<mark>" + text + "</mark>" : text);
 	for (let off = 0; off < PAGE; off++)
 		if (bytes[off]) nonzero++;
@@ -638,7 +639,7 @@ function listPage(p, bytes, base, cur, chars) {
 			if (pa === cur)
 				curLine = out.length;
 			out.push('<span class="' + cls + '" data-addr="' + pa + '">' + pa.toString(16).padStart(8, "0") +
-				" " + rawHtml + " " + text.replace(/[<>&]/g, esc) +
+				" " + rawHtml + " " + text.replace(/[<>&]/g, esc) + opNamesHtml(pa, text, ops, opStat) +
 				(wide && where ? ' <span class="dim">' + escHtml(where) + "</span>" : "") + "</span>");
 			nIns++;
 			if (!ok)
@@ -689,7 +690,8 @@ function listPage(p, bytes, base, cur, chars) {
 		nRows++;
 		a = end;
 	}
-	return { html: out.join("\n"), nIns, nBad, nNx, cov, nRows, nonzero, changed, curLine, source, bits, misaligned: misaligned.size };
+	return { html: out.join("\n"), nIns, nBad, nNx, cov, nRows, nonzero, changed, curLine, source, bits, misaligned: misaligned.size,
+		opsNamed: opStat.named || 0, opsWhy: !ops ? "" : ops.loading ? "operand names: " + ops.loading : !ops.T ? "operands named from ELF symbols only (no DWARF variables)" : "" };
 }
 
 function renderSymbolIndex(p) {
@@ -739,6 +741,7 @@ function renderPage(p, bytes, base, how) {
 			scrollListingTo(line);
 	}
 	box.dataset.source = r.source;
+	box.dataset.opsNamed = r.opsNamed;
 	box.dataset.coverage = !r.nIns ? "" : r.cov.tint ? (r.cov.partial ? "partial" : "stepped") : "none";
 	box.dataset.unexecuted = r.cov.tint ? r.nNx : "";
 	const key = $("cov_info");
@@ -756,6 +759,7 @@ function renderPage(p, bytes, base, how) {
 			(r.misaligned ? "; the first lines outside a symbol may be misaligned" : "") + ")" :
 		icedError ? "hex only: no disassembler (" + icedError + ")" : !iced ? "loading the disassembler..." : "no code in this page") +
 		(r.nBad ? " (" + r.nBad + " differ from the build)" : "") +
+		(r.nIns ? ", " + r.opsNamed + " memory operands named" + (r.opsWhy ? " (" + r.opsWhy + ")" : "") : "") +
 		", " + r.nonzero + " non-zero bytes" + (base ? ", " + r.changed + " changed " + how : "") +
 		", read " + new Date().toLocaleTimeString("en-GB");
 }
@@ -1739,6 +1743,7 @@ function renderContext() {
 			const mem = hi <= emuRam ? emulator.read_memory(lo, hi - lo) : null;
 			const sized = symbols ? symbols.symbols.filter((s) => s.size > 0 && s.paddr < hi && s.paddr + s.size > lo) : [];
 			const srcState = { key: null };
+			const ops = live && bitnessAt(phys) === 16 ? null : opEnv(), opStat = {};
 			for (let k = from; k < to; k++) {
 				const [pa, raw, text] = ins[k];
 				const srcLine = srcLineHtml(pa, srcState);
@@ -1757,7 +1762,7 @@ function renderContext() {
 				const sym = symbolAt(sized, pa);
 				const cls = "ins" + (pa === phys ? " cur" : "") + (ok ? "" : " bad");
 				lines.push('<span class="' + cls + '" data-addr="' + pa + '">' + (pa === phys ? "▶" : " ") +
-					pa.toString(16).padStart(8, "0") + " " + bytes + " " + text.replace(/[<>&]/g, esc) +
+					pa.toString(16).padStart(8, "0") + " " + bytes + " " + text.replace(/[<>&]/g, esc) + opNamesHtml(pa, text, ops, opStat) +
 					(sym ? ' <span class="dim">' + escHtml(sym.name) + "+0x" + (pa - sym.paddr).toString(16) + "</span>" : "") +
 					"</span>");
 			}
@@ -1765,6 +1770,7 @@ function renderContext() {
 	}
 	el.innerHTML = lines.join("\n");
 	el.dataset.phys = phys;
+	el.dataset.opsNamed = el.querySelectorAll(".opn").length;
 	const cur = el.querySelector(".ins.cur");
 	el.dataset.cur = cur ? cur.dataset.addr : "";
 }

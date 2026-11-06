@@ -596,17 +596,7 @@ function localsCtx(f, fb) {
 		},
 		cfa: f.cfa === undefined || f.cfa === null ? undefined : f.cfa >>> 0,
 	};
-	const l = fb ? dwLocAt(fb, f.lookup) : null;
-	if (l && l.expr) {
-		// A register as the frame base (clang: DW_OP_reg4 ESP) is its value.
-		const e = l.expr;
-		const v = e.length === 1 && e[0] >= 0x50 && e[0] <= 0x6f ?
-			(ctx.reg(e[0] - 0x50) === undefined ? { why: CFI_REGS[e[0] - 0x50] + " is not known in this frame" } : { value: ctx.reg(e[0] - 0x50) }) :
-			dwExpr(e, ctx);
-		if (!v.why)
-			ctx.frameBase = v.value;
-		ctx.fbWhy = v.why ? "frame base (" + dwExprText(e) + "): " + v.why : "";
-	}
+	dwSetFrameBase(ctx, fb ? dwLocAt(fb, f.lookup) : null);
 	return ctx;
 }
 
@@ -792,6 +782,63 @@ function renderLocals(uw) {
 		});
 		box.append(det);
 	});
+}
+
+// ---- memory operands in the listings (asmnames.js) -------------------------------
+
+let opSyms = null; // [symbols.json it was made from, asmSymLookup of it]
+
+// The names asmOperandNames needs, made once per listing render: the
+// types (starting their load), symbols, locals and CFI shards (fetched
+// as asked for), and at a pause the registers and CFA at EIP. null when
+// there is nothing to name with.
+function opEnv() {
+	const ty = dbgHas() ? dbgTypes() : null;
+	const T = ty && ty.state === "ok" ? ty.T : null;
+	if (!symbols && !T)
+		return null;
+	if (!opSyms || opSyms[0] !== symbols)
+		opSyms = [symbols, symbols ? asmSymLookup(symbols.symbols) : null];
+	const row = (pa) => {
+		const r = dbgHas() ? dbgCfiRow(pa) : null;
+		return r && r !== "loading" && !r.why ? r : null;
+	};
+	const scopes = (pa) => {
+		const r = T ? dbgLocalGroups(pa) : null;
+		return r && r.state === "ok" ? dwarfScopesAt(r.G, pa) : null;
+	};
+	const env = { off: varsOffset(), T, sym: opSyms[1], row, scopes, cur: null, sameFrame: null,
+		loading: ty && ty.state === "loading" ? ty.why : "" };
+	const eip = currentPhys();
+	if (eip >= 0 && stepper) {
+		const r = stepper.regs();
+		const v = [r.eax, r.ecx, r.edx, r.ebx, r.esp, r.ebp, r.esi, r.edi];
+		const reg = (n) => (v[n] === undefined ? undefined : v[n] >>> 0);
+		const rw = row(eip);
+		const cfa = rw && rw.cfa && rw.cfa.reg !== undefined && reg(rw.cfa.reg) !== undefined ? (reg(rw.cfa.reg) + rw.cfa.off) >>> 0 : undefined;
+		env.cur = { pa: eip, reg, cfa };
+		// The same function (one invocation: EIP's frame) as EIP.
+		const fn = (pa) => { const c = scopes(pa); return c && c.length ? c[c.length - 1][0][0][2][0] : -1; };
+		const mine = fn(eip);
+		env.sameFrame = (pa) => mine >= 0 && fn(pa) === mine;
+	}
+	return env;
+}
+
+// The names of the memory operands of the instruction `text` at physical
+// pa as HTML for a listing line (after the instruction), "" if none;
+// counts them in stat.named.
+function opNamesHtml(pa, text, env, stat) {
+	if (!env)
+		return "";
+	const names = asmOperandNames(text, pa, env);
+	if (!names.length)
+		return "";
+	if (stat)
+		stat.named = (stat.named || 0) + names.length;
+	return " " + names.map((n) => '<span class="opn" data-op="' + escHtml(n.op) + '" data-name="' + escHtml(n.name) + '" data-kind="' + n.kind + '"' +
+		(n.va !== undefined ? ' data-va="' + n.va + '"' : "") + (n.rel !== undefined ? ' data-rel="' + n.rel + '"' : "") +
+		' title="' + escHtml(n.op + " = " + n.detail) + '">&lt;' + escHtml(n.name) + "&gt;</span>").join(" ");
 }
 
 // ---- tasks: names and pids from task_struct ------------------------------------

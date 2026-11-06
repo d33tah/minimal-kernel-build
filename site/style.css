@@ -33,6 +33,7 @@
 	--sym1: rgba(214, 39, 40, 0.10);
 	--nx-bg: rgba(148, 103, 189, 0.28);
 	--src-loc: #8a4500;
+	--op-name: #00695c;
 	--src-text: #5e3a92;
 	--cov-run: #2e7d32;
 }
@@ -57,6 +58,7 @@
 		--sym1: rgba(255, 120, 120, 0.14);
 		--nx-bg: rgba(190, 150, 240, 0.22);
 		--src-loc: #e8a860;
+		--op-name: #6fd3c4;
 		--src-text: #c4a8f0;
 		--cov-run: #66bb6a;
 	}
@@ -81,6 +83,7 @@
 	--sym1: rgba(255, 120, 120, 0.14);
 	--nx-bg: rgba(190, 150, 240, 0.22);
 	--src-loc: #e8a860;
+	--op-name: #6fd3c4;
 	--src-text: #c4a8f0;
 	--cov-run: #66bb6a;
 }
@@ -293,6 +296,8 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 /* C lines everywhere (listings, Debugger source rows, Source panel, call
    stack, Graph detail): location and text in two colours. */
 .srcloc { color: var(--src-loc); }
+/* A memory operand named from the DWARF (asmnames.js) in a listing. */
+.opn { color: var(--op-name); }
 .srctext { color: var(--src-text); }
 .srcpanel { position: fixed; z-index: 5; right: 0; top: 0; bottom: 0; width: min(46rem, 50vw); background: var(--bg);
 	border-left: 1px solid var(--line); box-shadow: -2px 0 12px rgba(0, 0, 0, 0.2); padding: 0.4rem 0.6rem; display: flex; flex-direction: column; }

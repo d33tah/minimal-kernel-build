@@ -353,10 +353,18 @@ function dbgSetLocals(i, groups, base, added) {
 // The frames at pa (a frame's EIP, or a caller's call instruction) with
 // their parameters and locals (dwarf.js dwarfLocalFrames, innermost
 // first): { state: "ok", frames, T } with T the type table their type ids
-// are in, or { state: "loading" | "none", why }. Shipped kernels: the
-// locals-<hex>.json.gz shard of pa; an import: the unit of pa, from the
-// Worker that read the variables (after it has), kept in IndexedDB.
+// are in, or { state: "loading" | "none", why }.
 function dbgLocals(pa) {
+	const r = dbgLocalGroups(pa);
+	return r.state === "ok" ? { state: "ok", frames: dwarfLocalFrames(dwarfScopesAt(r.G, pa)), T: r.T } : r;
+}
+
+// The scope groups (dwarf.js dwarfScopeGroups) with the code at pa:
+// { state: "ok", G, T } or { state: "loading" | "none", why }. Shipped
+// kernels: the locals-<hex>.json.gz shard of pa; an import: the unit of
+// pa, from the Worker that read the variables (after it has), kept in
+// IndexedDB.
+function dbgLocalGroups(pa) {
 	if (!dbgHas())
 		return { state: "none", why: DBG.why };
 	const ty = dbgTypes();
@@ -371,7 +379,7 @@ function dbgLocals(pa) {
 		if (!DBG.localSet)
 			DBG.localSet = new Set(L.shards);
 		if (!DBG.localSet.has(s))
-			return { state: "ok", frames: [], T: ty.T };
+			return { state: "ok", G: [], T: ty.T };
 		key = "s" + s;
 		if (!DBG.localTables.has(key) && !DBG.localTables.has("pending" + key)) {
 			DBG.localTables.set("pending" + key, true);
@@ -384,7 +392,7 @@ function dbgLocals(pa) {
 	} else {
 		const i = dbgUnitAt(pa);
 		if (i < 0)
-			return { state: "ok", frames: [], T: ty.T };
+			return { state: "ok", G: [], T: ty.T };
 		key = "u" + i;
 		if (!DBG.localTables.has(key)) {
 			if (!DBG.typesWorker || DBG.mode !== "import")
@@ -400,7 +408,7 @@ function dbgLocals(pa) {
 		return { state: "loading", why: "reading the parameters and locals here…" };
 	if (g.failed)
 		return { state: "none", why: "the parameters and locals did not load: " + g.failed };
-	return { state: "ok", frames: dwarfLocalFrames(dwarfScopesAt(g, pa)), T: ty.T };
+	return { state: "ok", G: g, T: ty.T };
 }
 
 // ---- files and functions (the Coverage tab) ----------------------------------

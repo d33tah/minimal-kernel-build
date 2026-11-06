@@ -1006,7 +1006,8 @@ def check_funcs(elf, shards, n, rnd, lds, strip):
         if len(f) == 3:
             syms.setdefault(int(f[0], 16), set()).add(f[2])
     bad, probes, gprobes, nframes, ncopies, nasm = [], [], [], 0, 0, 0
-    sp = lambda t: re.sub(r"\s+", " ", t or "").strip()
+    # gdb versions space "char *const *" differently: compare without spaces.
+    sp = lambda t: re.sub(r"\s+", "", t or "")
     for e, file in pick:
         g = next((x for x in page.get(e[0], []) if x["file"] == file and x["line"] == e[2]), None)
         if g is None:

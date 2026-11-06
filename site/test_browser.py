@@ -3060,7 +3060,7 @@ def fnfacts_vs_refs(elf, name, va, facts, frame, entry, problems, r, tag):
     from test_dwarf import gdb_funcs, dwarfdump_cfi, frame_of_rows
     g = gdb_funcs(str(elf), [[name, va, True]])[0]
     r[f"{tag} gdb"] = g
-    if g[0] == "error" or re.sub(r"\s+", " ", g[0]) != facts["type"] or not same_path(g[1], facts["file"]) or \
+    if g[0] == "error" or re.sub(r"\s+", "", g[0]) != re.sub(r"\s+", "", facts["type"]) or not same_path(g[1], facts["file"]) or \
             g[2] != int(facts["line"]) or g[3] != (facts["external"] == "1"):
         problems.append(f"{tag}: page {facts['type']!r} at {facts['file']}:{facts['line']} external={facts['external']}, gdb {g}")
     il = gdb_info_line(elf, name)

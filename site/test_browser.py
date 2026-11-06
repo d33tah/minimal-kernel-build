@@ -2283,6 +2283,11 @@ def unwind_case(browser, base, shots, name, fn, steps):
                 problems.append(f"{name} {tag}: the unwind did not reach the start of the stack: {r[tag]}")
         if dump["unwind"] == "stopped" and not dump["why"]:
             problems.append(f"{name} {tag}: the unwind stopped without saying why")
+        if fr and fr[-1].get("user"):
+            # The "user space" frame opens nothing (a disabled button): it must not be faded.
+            op = page.evaluate("getComputedStyle([...document.querySelectorAll('#call_stack button')].pop()).opacity")
+            if op != "1":
+                problems.append(f"{name} {tag}: the user space frame is faded (opacity {op})")
         labels = page.eval_on_selector_all("#call_stack .fmeth", "els => els.map(e => e.textContent)")
         if len(labels) != len(fr):
             problems.append(f"{name} {tag}: {len(labels)} method labels for {len(fr)} frames")

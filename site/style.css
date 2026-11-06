@@ -279,8 +279,9 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 .syminfo #cur_src .frame { margin-left: 4.6em; }
 .syminfo #cur_src .frame:first-of-type { display: inline; margin-left: 0; }
 .syminfo #cur_src .inl { color: var(--muted); }
-/* Rows without a panel to open are disabled buttons: keep their file:line readable. */
-.syminfo #cur_src button:disabled { opacity: 1; color: var(--muted); }
+/* Rows without a panel to open and frames that are no code here (user space)
+   are disabled buttons: keep them readable. */
+.syminfo #cur_src button:disabled, .syminfo #call_stack button:disabled { opacity: 1; color: var(--muted); }
 .syminfo .srctext { font-size: 0.75rem; white-space: pre-wrap; }
 #graph_canvas { display: block; width: 100%; border: 1px solid var(--line); border-radius: 4px; touch-action: none; cursor: grab; background: var(--bg); }
 #graph_canvas[hidden] { display: none; }

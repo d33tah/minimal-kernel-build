@@ -249,9 +249,19 @@ function covRender() {
 			(i) => covSum(T, run, { kind: "func", i }), (i) => COV.sort === "path" ? String(F.funcs[i][4]).padStart(12, "0") : F.funcs[i][0]);
 		for (const i of fns) {
 			const fn = F.funcs[i];
-			row("func", F.files[k][0] + ":" + fn[0], depth, fn[0] + "()", covSum(T, run, { kind: "func", i }), false, false,
+			const path = F.files[k][0] + ":" + fn[0];
+			const open = COV.open.has(path);
+			row("func", path, depth, fn[0] + "()", covSum(T, run, { kind: "func", i }), open, true,
 				() => jumpTo(fn[4]), fn[0] + " at " + hex(fn[4]) + " (" + (fn.length - 4) / 2 + (fn.length > 6 ? " parts" : " part") +
-				"): the lines in " + F.files[k][0] + " and the instructions of its own code; where it was inlined into a caller, that code counts in the file's lines but not here. Tap to open it in the Page tab.");
+				"): the lines in " + F.files[k][0] + " and the instructions of its own code; where it was inlined into a caller, that code counts in the file's lines but not here. Tap to open it in the Page tab; the arrow shows its prototype, declaration, linkage, inlined copies and frame.");
+			// Its facts from DW_TAG_subprogram under the row.
+			if (open && rows <= COV_MAX_ROWS) {
+				const d = fnDetailEl(fn[0], fn[4], "cov");
+				d.classList.add("covfacts");
+				d.style.paddingLeft = Math.min(depth + 1, 20) * 0.6 + 2 + "em";
+				d.dataset.path = path;
+				box.append(d);
+			}
 		}
 	};
 	const dirRows = (d, depth) => {

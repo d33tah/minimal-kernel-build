@@ -18,6 +18,9 @@ the files the page loads for:
   coverage tree   dwarf/files.json with instruction counts (coverage.js)
   CFI unwind      every cfi-<hex>.bin the index lists (unwind.js)
   params, locals  every locals-<hex>.json.gz the index lists
+  function facts  every funcs-<k>.json.gz the index counts, each with
+                  functions, together as many as index.json says
+                  (fnfacts.js)
   task names      current_task and struct task_struct with comm and pid
                   in types.json (vars.js varsTaskLayout); a kernel
                   listed in NO_TASKS must have neither, so the page's
@@ -70,6 +73,18 @@ def check_dwarf(site, d, problems):
             problems.append(f"{p}: missing (parameters and locals)")
         elif not json.loads(gzip.decompress(p.read_bytes())).get("fns"):
             problems.append(f"{p}: no functions")
+    funcs = idx.get("funcs") or {}
+    if not funcs.get("shards"):
+        problems.append(f"{idx_path}: no function facts (funcs-*.json.gz)")
+    nfns = 0
+    for k in range(funcs.get("shards", 0)):
+        p = d / f"funcs-{k:x}.json.gz"
+        if not nonempty(p):
+            problems.append(f"{p}: missing (function facts)")
+            continue
+        nfns += len(json.loads(gzip.decompress(p.read_bytes())).get("fns") or [])
+    if funcs.get("shards") and nfns != funcs.get("functions"):
+        problems.append(f"{d}: {nfns} functions in funcs-*.json.gz, index.json says {funcs.get('functions')}")
     files = types = None
     fp = d / idx.get("files", "files.json")
     if nonempty(fp):
@@ -142,7 +157,8 @@ def main():
         if idx:
             rows.append(f"{name}: {len(idx['shards'])} line shards, {len(idx['cfi'].get('shards', []))} CFI shards "
                         f"({idx['cfi'].get('fdes')} FDEs), {len(idx['locals'].get('shards', []))} locals shards "
-                        f"({idx['locals'].get('functions')} functions), {len(files['files']) if files else 0} files, "
+                        f"({idx['locals'].get('functions')} functions), {(idx.get('funcs') or {}).get('shards')} function facts shards "
+                        f"({(idx.get('funcs') or {}).get('functions')} functions), {len(files['files']) if files else 0} files, "
                         f"{idx.get('variables')} variables, {idx.get('typeCount')} types")
     print("\n".join(rows))
     if problems:

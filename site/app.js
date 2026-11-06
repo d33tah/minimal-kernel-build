@@ -600,9 +600,12 @@ function listPage(p, bytes, base, cur, chars) {
 			const s = syms[si++];
 			if (s.paddr === a || !insns.has(s.paddr)) {
 				const ty = varTypeOf(s);
-				out.push('<span class="lbl" data-sym="' + escHtml(s.name) + '" data-addr="' + s.paddr + '"' + (ty ? ' data-type="' + escHtml(ty) + '"' : "") + ">" +
+				// A function's label line: its prototype, and its facts in the title.
+				const fl = ty ? null : fnLabelOf(s);
+				out.push('<span class="lbl" data-sym="' + escHtml(s.name) + '" data-addr="' + s.paddr + '"' + (ty ? ' data-type="' + escHtml(ty) + '"' : "") +
+					(fl ? ' data-proto="' + escHtml(fl.proto) + '" title="' + escHtml(fl.title) + '"' : "") + ">" +
 					escHtml(s.name) + ":" + (s.size || ty ? ' <span class="dim">' + (ty ? escHtml(ty) + (s.size ? ", " : "") : "") +
-						(s.size ? s.size + " bytes, " + s.section : "") + "</span>" : "") + "</span>");
+						(s.size ? s.size + " bytes, " + s.section : "") + "</span>" : "") + (fl ? ' <span class="srctext">' + escHtml(fl.proto) + "</span>" : "") + "</span>");
 			}
 			prevRow = null;
 		}
@@ -1488,6 +1491,8 @@ function renderSymbols(phys) {
 	const hist = st.history.filter((h) => !(h.sym === cur && h.sym >= 0));
 	const prev = hist.length ? hist[hist.length - 1] : null;
 	renderSourceRows(box, phys, cur >= 0 ? st.symName[cur] : null);
+	if (dbgHas())
+		renderFnRows(box, phys);
 	renderTaskRow(box);
 	const uw = renderCallStack(box, phys);
 	const p = row("previous");

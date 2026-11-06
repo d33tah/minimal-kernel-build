@@ -1126,6 +1126,9 @@ function renderGraphInfo() {
 	}
 	el.append(head);
 	el.dataset.node = st.nodeName(node);
+	// What DW_TAG_subprogram says about the function of this symbol.
+	if (node < st.symName.length && dbgHas())
+		el.append(fnDetailEl(st.symName[node], st.symStart[node], "graph", "graph_fn"));
 	if (G.view === "timeline") {
 		// Where the call came from and where it starts, from the DWARF.
 		const k = G.selected;

@@ -258,8 +258,9 @@ function cfiDecode(b) {
 //         "reg" (register v), "expr" ([expr], v the bytes), "valexpr",
 //         "undef", "same"
 // lo: where the row starts. null when no FDE covers pa; { why } when the
-// program cannot be run.
-function cfiRow(t, pa) {
+// program cannot be run. With each(lo, row): every row of the FDE is
+// passed to it in turn (the row object is reused: read it there).
+function cfiRow(t, pa, each = null) {
 	const i = cfiFind(t, pa);
 	if (i < 0)
 		return null;
@@ -278,8 +279,18 @@ function cfiRow(t, pa) {
 			else
 				delete row.regs[r];
 		};
+		// Whether the row at loc is the one asked for (the program stops there).
+		const stop = (to) => {
+			if (isInit)
+				return false;
+			if (each) {
+				each(loc, row);
+				return false;
+			}
+			return to > pa;
+		};
 		const advance = (d) => {
-			if (!isInit && loc + d > pa)
+			if (stop(loc + d))
 				return false;
 			loc += d;
 			return true;
@@ -307,7 +318,7 @@ function cfiRow(t, pa) {
 				if (t.bias === null)
 					throw new Error("DW_CFA_set_loc in a table with mixed address offsets");
 				const to = va - t.bias;
-				if (!isInit && to > pa) return false;
+				if (stop(to)) return false;
 				loc = to;
 				break;
 			}
@@ -349,10 +360,66 @@ function cfiRow(t, pa) {
 		initial = copy(row);
 		loc = t.lo[i];
 		run(t.prog, t.off[i], t.off[i] + t.plen[i], false);
+		if (each)
+			each(loc, row);
 	} catch (e) {
 		return { why: e.message };
 	}
 	return { lo: loc, fde: [t.lo[i], t.lo[i] + t.len[i]], ra: c.ra, cfa: row.cfa, regs: row.regs };
+}
+
+// What the call frame information says about the frame of the function
+// whose FDE covers pa: { fde: [lo, hi], max, fp, fpOff, saved, expr, rows }
+//   max    the largest CFA - ESP while the CFA is ESP-based: the bytes the
+//          frame takes on the stack (return address, saved registers,
+//          locals, outgoing arguments)
+//   fp     offset from lo of the first row whose CFA is EBP-based (a frame
+//          pointer: what lies below EBP is not described), -1 if none;
+//          fpOff that row's CFA - EBP
+//   saved  { register number: CFA offset } of every register the
+//          function saves (the return address excluded)
+//   expr   a CFA computed by a DWARF expression somewhere in it
+// null when no FDE covers pa, { why } when its program cannot be run.
+function cfiFrameInfo(t, pa) {
+	const i = cfiFind(t, pa);
+	if (i < 0)
+		return null;
+	const lo = t.lo[i], hi = lo + t.len[i], ra = t.cies[t.cie[i]].ra;
+	const out = { fde: [lo, hi], max: 0, fp: -1, fpOff: 0, saved: {}, expr: false, rows: 0 };
+	const r = cfiRow(t, lo, (at, row) => {
+		if (at >= hi)
+			return;
+		out.rows++;
+		const c = row.cfa;
+		if (c.expr)
+			out.expr = true;
+		else if (c.reg === CFI_ESP)
+			out.max = Math.max(out.max, c.off);
+		else if (c.reg === CFI_EBP && out.fp < 0) {
+			out.fp = at - lo;
+			out.fpOff = c.off;
+		}
+		for (const n in row.regs)
+			if (row.regs[n].k === "off" && Number(n) !== ra && !(n in out.saved))
+				out.saved[n] = row.regs[n].v;
+	});
+	return r && r.why ? { why: r.why } : out;
+}
+
+// One line about a frame (cfiFrameInfo) for the page and the tests.
+function cfiFrameText(f) {
+	if (!f)
+		return "no call frame information";
+	if (f.why)
+		return "call frame information unreadable: " + f.why;
+	const saved = Object.keys(f.saved).map(Number).sort((a, b) => f.saved[b] - f.saved[a])
+		.map((n) => (CFI_REGS[n] || "r" + n) + " at CFA" + f.saved[n]);
+	const regs = saved.length ? "; saves " + saved.join(", ") : "; saves no registers";
+	if (f.fp >= 0)
+		return "frame pointer: CFA = EBP+" + f.fpOff + " from +0x" + f.fp.toString(16) + " (before that at most ESP+" + f.max +
+			"); the call frame information does not say how far below EBP the frame goes" + regs + (f.expr ? "; a CFA expression somewhere" : "");
+	return f.max + " bytes of stack at its deepest (CFA = ESP+" + f.max + ": return address, saved registers, locals)" + regs +
+		(f.expr ? "; a CFA expression somewhere" : "");
 }
 
 // ---- DWARF expressions (shared with locations of variables) ------------------
@@ -890,4 +957,4 @@ function cfiRowText(row) {
 }
 
 if (typeof module !== "undefined")
-	module.exports = { dwOpEnd, dwLocation, dwSetFrameBase, CFI_REGS, cfiFromElf, cfiParse, cfiSlice, cfiFind, cfiEncode, cfiDecode, cfiRow, cfiRowText, cfiStep, dwExpr, dwExprText, unwind };
+	module.exports = { dwOpEnd, dwLocation, dwSetFrameBase, CFI_REGS, cfiFromElf, cfiParse, cfiSlice, cfiFind, cfiEncode, cfiDecode, cfiRow, cfiRowText, cfiFrameInfo, cfiFrameText, cfiStep, dwExpr, dwExprText, unwind };

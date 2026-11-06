@@ -433,6 +433,49 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   Debian 1,878/1,878). Shard sizes grew by 490 B for the minified Linux
   (+459 B gzip) and 99,957 B for Debian (+120,363 B gzip, about 0.8 KB per
   64 KiB shard).
+- **Function facts.** What DW_TAG_subprogram says about a function: its
+  prototype (return type, parameters with names and types, `...`; `(void)`
+  for a prototyped function without parameters), where it is declared
+  (DW_AT_decl_file:decl_line, a button that opens the Source panel
+  there), external or static (DW_AT_external), whether it was declared
+  inline and whether the compiler inlined it (DW_AT_inline; DWARF does not
+  record `noinline` or `__always_inline` themselves), whether it returns
+  (DW_AT_noreturn), its out-of-line code (one entry per DW_TAG_subprogram
+  with code: a static inline helper can have one per compile unit, GCC's
+  .isra/.constprop clones are listed with the function they come from, a
+  .cold part as a second range) with the line its first instruction
+  belongs to (what gdb's `info line NAME` gives) and the frame the call
+  frame information gives it (how far below the CFA ESP goes, which
+  registers it saves at which CFA offset; for a frame-pointer function,
+  where the CFA becomes EBP+8, since the CFI does not say how far below
+  EBP its frame goes), and every inlined copy (a DW_TAG_inlined_subroutine
+  with code), counted and listed on demand as buttons to the Page tab with
+  the function each one is in. Assembly the DWARF only names (GNU as -g)
+  says that it has no prototype or declaration. Shown in the Debugger's
+  "function" row for every function of the inline chain at EIP (the
+  innermost first, the last one the function whose code it is), in the
+  Coverage tab under a function row's arrow, in the Graph tab's detail of
+  a tapped box, on the Page listing's label line of a function (its
+  prototype, the rest in the title) and in every symbol tooltip that names
+  the code at an address (call stack, path, previous, call tree, Graph
+  boxes). Data: `dwarf.js DwarfFuncs` collects them with the types (one
+  entry per name and declaration, the parameters of the DIE that declares
+  them, type ids of types.json); `gen-dwarf.js` writes
+  `funcs-<k>.json.gz` shards by a hash of the name (~100 KB of JSON each),
+  the page fetches the one a name hashes to; an imported vmlinux gets them
+  from the Worker's pass over every unit with the variables (kept in
+  IndexedDB with them). The frame is computed on the page from the CFI
+  shards (`unwind.js cfiFrameInfo`). `test_dwarf.py --funcs N`
+  (`gen-dwarf.js --funcs`) checks N functions, half with code of their own,
+  half only inlined: prototypes, declarations and the counts of inlined and
+  out-of-line copies against llvm-dwarfdump --name; for the ones with code
+  gdb's ptype, its symbol's file:line and whether gdb's global symbol of
+  that name is this one; their frames against llvm-dwarfdump
+  --debug-frame; up to 20 listed inlined copies each against
+  llvm-symbolizer --inlines; and, for the kernels built here, every
+  function's inlined copy count against a full llvm-dwarfdump (local runs:
+  minified all 1,159 functions, Debian 1,000 sampled, hello 2, no
+  problems).
 - **Coverage tab.** All the kernel's code as a tree of directories, files
   and functions, each with lines run / lines with code and instructions
   run / instructions, a bar, sortable (name, lines run %, lines not run,
@@ -935,6 +978,7 @@ it is shown.
 | hello | types.json (D3) | 1 | 128 | 119 | Variables, hover, data page |
 | hello | files.json (V2) | 1 | 167 | 153 | Coverage tab |
 | hello | CFI (D5) / locals (D4) shards | 1 / 1 | 23 / 210 | 41 / 210 | a pause |
+| hello | function facts (A3) | 1 | 160 | 137 | a function's facts shown (Debugger, Coverage, Graph, tooltips) |
 | minified Linux | bzImage | 1 | 91,568 | 36,993 | boot |
 | minified Linux | symbols.json + disasm.json | 2 | 813,399 | 172,920 | boot |
 | minified Linux | line and inline shards | 3 | 79,521 | 42,914 | first address shown |
@@ -943,6 +987,7 @@ it is shown.
 | minified Linux | files.json | 1 | 24,152 | 8,478 | Coverage tab |
 | minified Linux | CFI shards | 2 | 9,429 | 3,674 | a pause |
 | minified Linux | locals shards | 2 | 84,605 | 84,605 | a pause |
+| minified Linux | function facts shards | 1 | 107,313 | 28,960 | a function's facts shown |
 | Debian 6.1 686 | bzImage | 1 | 5,707,712 | 5,681,498 | boot |
 | Debian 6.1 686 | symbols.json | 1 | 5,179,791 | 804,023 | boot |
 | Debian 6.1 686 | line and inline shards | 154 | 9,620,444 | 4,885,707 | per 64 KiB of code shown |
@@ -951,6 +996,7 @@ it is shown.
 | Debian 6.1 686 | files.json | 1 | 2,159,580 | 651,741 | Coverage tab |
 | Debian 6.1 686 | CFI shards | 153 | 1,511,034 | 455,261 | per frame of a pause |
 | Debian 6.1 686 | locals shards | 153 | 16,069,116 | 16,069,116 | per frame of a pause |
+| Debian 6.1 686 | function facts shards | 83 | 9,305,209 | 3,442,705 | per function name shown (32 to 61 KB each) |
 | Debian with its initramfs | initrd.img (the rest is the Debian entry's) | 1 | 5,435,993 | 5,402,522 | boot |
 
 What a typical first session fetches (local measurement: open the page
@@ -985,7 +1031,7 @@ browser-test matrix job named by its suites):
 |---|---|---|
 | D1 file:line and inline chains | `test_dwarf.py` (Debian 5,000, minified 5,000, hello 500 random addresses vs llvm-symbolizer --inlines); suites dwarf (minified, hello: Debugger, listing, call stack, Graph vs llvm-symbolizer), debian (start_kernel 12 EIPs), dwarf_import (imported minified -g and Debian -dbg vmlinux, after a reload from IndexedDB) | kernels; debian,dwarf,dwarf_import,... |
 | D2 C source | `gen-src.js` (fails on a line past EOF), `test_kernel_data.py` (every src/ file listed); suites dwarf (line texts), debian (Source panel, files fetched), dwarf_import (folder, ustar, GNU tar, .tar.gz refused) | kernels; site; debian,dwarf,dwarf_import,... |
-| D3 types and globals | `test_dwarf.py --types` (vs gdb); suite types (watches vs gdb, hover byte paths, pointer to page, Debian import JSON-identical) | kernels; types,covtree,unwind |
+| D3 types and globals | `test_dwarf.py --types` (vs gdb; on hello too, whose only variables are unnamed string literals: it says there is nothing to check); suite types (watches vs gdb, hover byte paths, pointer to page, Debian import JSON-identical) | kernels; types,covtree,unwind |
 | V1 C line colours | suite dwarf (`src_colour_check`: loc and text colours differ, contrast at least 4.5, light and dark, every view) | debian,dwarf,dwarf_import,... |
 | V2 coverage browser | suites covtree (tree sums, files.json, Source panel whole file, lcov), debian (Debian tree, shards fetched) | types,covtree,unwind; debian,... |
 | V3 multi-line statements | suite covtree (`multiline_case`: asm statements in string_32.c and irqflags.h, counts equal in panel, tree, lcov) | types,covtree,unwind |
@@ -995,6 +1041,7 @@ browser-test matrix job named by its suites):
 | D7 minified and hello parity | `check-code-identity.py --self-test` (-g build's code equals the shipped kernel), `test_kernel_data.py` (every kernel has every feature's files); suite hello | kernels; site; boot,... |
 | A1 memory operands named | `test_dwarf.py --operands` (absolute vs gdb info symbol, stack slots vs gdb on a core at the instruction); suite operands (minified and Debian pauses: names with an address vs gdb on a core of the pause, Debugger and Page tab alike, tooltips, 390 px) | kernels; tasks,operands |
 | A2 line to address | `test_dwarf.py --lines` (listed ranges and inlined calls vs llvm-symbolizer, breakpoint addresses vs llvm-dwarfdump is_stmt rows; Debian 2,000, minified 3,000, hello 200 sampled addresses), `test_kernel_data.py` (shards in MKBD 2, breakpoint count); suite lineaddr (minified and Debian: Source panel list, its Run to and a typed main.c:LINE stop where llvm-symbolizer names the line, incl. a line whose code is all inlined; list jumps to the Page tab; the listing's C line lists the same; import of the minified -g vmlinux gives the same breakpoints and Run to works; 390 px light and dark) | kernels; site; types,covtree,unwind,lineaddr |
+| A3 function facts | `test_dwarf.py --funcs` (prototypes, declarations, copy counts vs llvm-dwarfdump --name; ptype, file:line, external vs gdb; frames vs llvm-dwarfdump --debug-frame; inlined copies vs llvm-symbolizer; all copy counts vs a full llvm-dwarfdump for the kernels built here; Debian 1,000, minified 2,000, hello 200 functions), `test_kernel_data.py` (every funcs shard, function count); suite fnfacts (minified and Debian: start_kernel's row vs gdb ptype, symbol, global symbol, info line and llvm-dwarfdump's frame; an inlined copy in it: every function of the chain as llvm-symbolizer names it, the inlined one's prototype and copy count vs llvm-dwarfdump, its copy listed; defined-at opens the Source panel; call stack tooltip, Page label line, Coverage detail and Graph detail say the same; import of the minified -g vmlinux gives identical facts; 390 px light and dark) | kernels; site; types,covtree,unwind,lineaddr,fnfacts |
 | D8 help and first look | `check-ids.py` (no duplicate ids); suite firstlook (every kernel incl. Debian with its initramfs and an imported vmlinux: explanations present, entry line, JIT gap, Coverage notes, no sideways scroll at 390 px light and dark) | site; boot,...,firstlook |
 
 ## Testing

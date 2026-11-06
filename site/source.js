@@ -487,6 +487,14 @@ function openSourceFile(path) {
 	$("src_body").scrollTop = first ? first.offsetTop - $("src_body").clientHeight / 3 : 0;
 }
 
+// Open the side panel with a whole file at one line, picked (a function's
+// declaration): its addresses are listed as for a tapped line.
+function openSourceLine(path, line) {
+	srcPanel = { pa: -1, fn: null, path, line: 0, whole: true, pick: line, scrollTo: line };
+	$("src_panel").hidden = false;
+	renderSourcePanel();
+}
+
 // A whole file's lines with code: the line rows of every shard that has
 // code of it (files.json), each frame naming the file, like the Coverage
 // tab counts them.
@@ -601,6 +609,13 @@ function renderSourcePanel() {
 	}
 	body.innerHTML = out.join("\n");
 	srcPanel.cont = sv.cont;
+	// Opened at a line (openSourceLine): scroll there once the file is drawn.
+	if (srcPanel.scrollTo) {
+		const row = body.querySelector('[data-line="' + srcPanel.scrollTo + '"]');
+		if (row)
+			body.scrollTop = row.offsetTop - body.clientHeight / 3;
+		delete srcPanel.scrollTo;
+	}
 	renderLineAddrs();
 	body.dataset.state = "ok";
 	body.dataset.code = code.size;

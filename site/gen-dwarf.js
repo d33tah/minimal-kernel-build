@@ -13,7 +13,11 @@
 //       OUTDIR/cfi-<hex>.bin, the call frame information (.debug_frame or
 //       .eh_frame) per 64 KiB, for backtraces (unwind.js);
 //       OUTDIR/locals-<hex>.json.gz, the parameters and local variables of
-//       the functions with code in each 64 KiB (dwarf.js dwarfScopeGroups)
+//       the functions with code in each 64 KiB (dwarf.js dwarfScopeGroups);
+//       OUTDIR/funcs-<k>.json.gz, every function's facts from
+//       DW_TAG_subprogram (prototype, where declared, linkage, inlining,
+//       its out-of-line code and inlined copies; dwarf.js DwarfFuncs),
+//       sharded by name (dwFuncShard)
 //   site/gen-dwarf.js --lookup OUTDIR < addresses
 //       one JSON line per physical address (hex or decimal) on stdin:
 //       the frames the page shows there (test_dwarf.py compares them with
@@ -38,6 +42,13 @@
 //       memory operands (asmnames.js asmOperandNames without a pause:
 //       globals and CFA-relative stack slots; test_dwarf.py --operands
 //       checks them with gdb and llvm-dwarfdump)
+//   site/gen-dwarf.js --funcs OUTDIR < names
+//       one JSON line per function name on stdin: every function of that
+//       name with its facts as the page shows them (prototype, ptype-like
+//       type, file:line, flags, out-of-line code with the call frame
+//       information's frame of each (unwind.js cfiFrameInfo), inlined
+//       copies; test_dwarf.py --funcs checks them with gdb, llvm-dwarfdump
+//       and llvm-symbolizer)
 //   site/gen-dwarf.js --where OUTDIR < addresses
 //       one JSON line per physical address: the variable and member path
 //       there (dwarf.js dwWhere) with the leaf's type (test_dwarf.py --types
@@ -50,10 +61,10 @@ const fs = require("fs");
 const zlib = require("zlib");
 const path = require("path");
 const { spawn } = require("child_process");
-const { DwarfReader, DwarfTypes, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfEachLine, dwarfFileCode, dwarfEncode, dwarfDecode,
+const { dwFuncShard, dwFuncProto, DwarfReader, DwarfTypes, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfEachLine, dwarfFileCode, dwarfEncode, dwarfDecode,
 	dwWhere, dwTypeName, dwTypeSize, dwarfScopesAt, dwarfLocalFrames, dwLocAt } = require("./dwarf.js");
 
-const { cfiFromElf, cfiSlice, cfiEncode, cfiDecode, cfiRow, cfiRowText } = require("./unwind.js");
+const { cfiFromElf, cfiSlice, cfiEncode, cfiDecode, cfiRow, cfiRowText, cfiFrameInfo } = require("./unwind.js");
 
 const SHARD_BITS = 16;
 
@@ -92,7 +103,7 @@ async function generate(elf, outDir) {
 	const t2 = Date.now();
 	fs.mkdirSync(outDir, { recursive: true });
 	for (const f of fs.readdirSync(outDir))
-		if (/^(cfi-)?[0-9a-f]+\.bin$|^locals-[0-9a-f]+\.json\.gz$|^index\.json$/.test(f))
+		if (/^(cfi-)?[0-9a-f]+\.bin$|^(locals|funcs)-[0-9a-f]+\.json\.gz$|^index\.json$/.test(f))
 			fs.unlinkSync(path.join(outDir, f));
 	const shards = new Set();
 	for (let k = 0; k < table.la.length; k++)
@@ -123,6 +134,10 @@ async function generate(elf, outDir) {
 	delete ty.locals;
 	console.log(`${outDir}: parameters and locals of ${locals.functions} functions (${locals.vars} variables), ` +
 		`${locals.shards.length} shards, ${locals.bytes} bytes (${locals.gzBytes} gzipped)`);
+	const funcs = funcShards(ty.funcs, outDir);
+	delete ty.funcs;
+	console.log(`${outDir}: facts of ${funcs.functions} functions (${funcs.outOfLine} with code of their own, ${funcs.copies} inlined copies), ` +
+		`${funcs.shards} shards, ${funcs.bytes} bytes (${funcs.gzBytes} gzipped)`);
 	const tj = JSON.stringify(ty);
 	fs.writeFileSync(path.join(outDir, "types.json"), tj);
 	console.log(`${outDir}/types.json: ${ty.vars.length} variables, ${ty.types.length} types, ${tj.length} bytes; ${Date.now() - t3} ms`);
@@ -130,7 +145,7 @@ async function generate(elf, outDir) {
 	const cfi = cfiShards(e, read, outDir);
 	console.log(`${outDir}: ${cfi.why || `call frame information from ${cfi.source}: ${cfi.fdes} FDEs, ${cfi.cies} CIEs, ` +
 		`${cfi.shards.length} shards, ${cfi.bytes} bytes`}; ${Date.now() - t4} ms`);
-	const index = { format: 2, cfi, locals, breakpoints: table.lk.reduce((n, x) => n + x, 0) + table.sx.length, shardBits: SHARD_BITS, shards: list, units: us.length,
+	const index = { format: 2, cfi, locals, funcs, breakpoints: table.lk.reduce((n, x) => n + x, 0) + table.sx.length, shardBits: SHARD_BITS, shards: list, units: us.length,
 		version: [...new Set(us.map((u) => u.ver))], lineRows: table.la.length, ranges: table.ra.length,
 		source: path.basename(elf), files: "files.json", types: "types.json", variables: ty.vars.length, typeCount: ty.types.length, typeBytes: tj.length };
 	fs.writeFileSync(path.join(outDir, "index.json"), JSON.stringify(index));
@@ -342,6 +357,67 @@ function types(dw, e, outDir) {
 	return T;
 }
 
+// funcs-<k>.json.gz: the function facts (dwarf.js DwarfFuncs) split by
+// name into shards of ~100 KB of JSON (gzipped ~35 KB), each with its own
+// file list: the page fetches the one shard a name hashes to.
+const FUNC_SHARD_BYTES = 100000;
+function funcShards(F, outDir) {
+	const total = JSON.stringify(F).length;
+	const n = Math.max(1, Math.round(total / FUNC_SHARD_BYTES));
+	const parts = Array.from({ length: n }, () => ({ format: 1, files: [], fns: [], ix: new Map() }));
+	for (const e of F.fns) {
+		const p = parts[dwFuncShard(e[0], n)];
+		const f = e[1] >= 0 ? F.files[e[1]] : null;
+		if (f !== null && !p.ix.has(f)) {
+			p.ix.set(f, p.files.length);
+			p.files.push(f);
+		}
+		p.fns.push([e[0], f === null ? -1 : p.ix.get(f), ...e.slice(2)]);
+	}
+	let bytes = 0, gzBytes = 0;
+	parts.forEach((p, k) => {
+		delete p.ix;
+		const js = JSON.stringify(p);
+		const gz = zlib.gzipSync(js, { level: 9 });
+		fs.writeFileSync(path.join(outDir, "funcs-" + k.toString(16) + ".json.gz"), gz);
+		bytes += js.length;
+		gzBytes += gz.length;
+	});
+	return { shards: n, functions: F.fns.length, outOfLine: F.fns.filter((e) => e[7].length).length,
+		copies: F.fns.reduce((x, e) => x + e[8].length, 0), bytes, gzBytes };
+}
+
+// One JSON line per name on stdin: its functions' facts as the page
+// renders them (the shard dwFuncShard names, types.json for the types,
+// cfi-*.bin for the frame of each out-of-line copy).
+function funcsLookup(dir) {
+	const index = JSON.parse(fs.readFileSync(path.join(dir, "index.json"), "utf8"));
+	const T = JSON.parse(fs.readFileSync(path.join(dir, index.types), "utf8"));
+	const shards = new Map(), cfi = new Map();
+	const shard = (k) => {
+		if (!shards.has(k))
+			shards.set(k, JSON.parse(zlib.gunzipSync(fs.readFileSync(path.join(dir, "funcs-" + k.toString(16) + ".json.gz")))));
+		return shards.get(k);
+	};
+	const frame = (pa) => {
+		const s = Math.floor(pa / 2 ** index.shardBits);
+		if (!cfi.has(s))
+			cfi.set(s, index.cfi && index.cfi.shards && index.cfi.shards.includes(s) ?
+				cfiDecode(new Uint8Array(fs.readFileSync(path.join(dir, "cfi-" + s.toString(16) + ".bin")))) : null);
+		return cfi.get(s) ? cfiFrameInfo(cfi.get(s), pa) : null;
+	};
+	const out = [];
+	for (const name of fs.readFileSync(0, "utf8").split(/\s+/).filter(Boolean)) {
+		const F = shard(dwFuncShard(name, index.funcs.shards));
+		out.push(JSON.stringify({ name, fns: F.fns.filter((e) => e[0] === name).map((e) => ({
+			proto: dwFuncProto(T, e), type: dwFuncProto(T, e, false), file: e[1] >= 0 ? F.files[e[1]] : null, line: e[2],
+			external: !!(e[3] & 1), varargs: !!(e[3] & 2), noreturn: !!(e[3] & 4), prototyped: !!(e[3] & 8), inline: e[4],
+			ool: e[7].map((r) => r.reduce((a, x, k) => (k % 2 ? a[a.length - 1].push(x) : a.push([x]), a), []).map(([lo, len]) => ({ lo, len, frame: frame(lo) }))),
+			copies: e[8] })) }));
+	}
+	process.stdout.write(out.join("\n") + "\n");
+}
+
 function where(dir) {
 	const T = JSON.parse(fs.readFileSync(path.join(dir, "types.json"), "utf8"));
 	const out = [];
@@ -512,11 +588,13 @@ else if (args[0] === "--locals" && args.length === 2)
 	localsLookup(args[1]);
 else if (args[0] === "--operands" && args.length === 2)
 	operandsLookup(args[1]);
+else if (args[0] === "--funcs" && args.length === 2)
+	funcsLookup(args[1]);
 else if (args[0] === "--where" && args.length === 2)
 	where(args[1]);
 else if (args.length === 2)
 	generate(args[0], args[1]).catch((err) => { console.error(err); process.exit(1); });
 else {
-	console.error("usage: gen-dwarf.js ELF OUTDIR | gen-dwarf.js --lookup|--lines|--where|--cfi|--locals|--operands OUTDIR < addresses");
+	console.error("usage: gen-dwarf.js ELF OUTDIR | gen-dwarf.js --lookup|--lines|--where|--cfi|--locals|--operands|--funcs OUTDIR < addresses");
 	process.exit(2);
 }

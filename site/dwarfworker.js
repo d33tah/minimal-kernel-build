@@ -7,7 +7,8 @@
 //   { type: "open", file, offset }  -> { type: "open", ok, why?, units, versions, index: [[lo, hi, unit], ...] }
 //   { type: "unit", i }             -> { type: "unit", i, table }       (dwarf.js table, physical addresses)
 //   { type: "types" }               -> { type: "types-progress", done, total } now and then, then
-//                                      { type: "types", types }  (dwarf.js DwarfTypes: every unit read once)
+//                                      { type: "types", types }  (dwarf.js DwarfTypes: every unit read once;
+//                                      types.funcs: the function facts, DwarfFuncs)
 //   { type: "cfi" }                 -> { type: "cfi", table, source } (unwind.js: .debug_frame or .eh_frame
 //                                      parsed whole, ~2 MB for a distro kernel) or { type: "cfi", why }
 //   { type: "locals", i }           -> { type: "locals", i, groups, base, added } (after "types", in the

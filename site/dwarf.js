@@ -24,7 +24,8 @@ const AT = { sibling: 0x01, name: 0x03, stmt_list: 0x10, low_pc: 0x11, high_pc: 
 	linkage_name: 0x6e, str_offsets_base: 0x72, addr_base: 0x73, rnglists_base: 0x74, mips_linkage_name: 0x2007,
 	location: 0x02, byte_size: 0x0b, bit_offset: 0x0c, bit_size: 0x0d, const_value: 0x1c, lower_bound: 0x22,
 	upper_bound: 0x2f, count: 0x37, data_member_location: 0x38, decl_file: 0x3a, decl_line: 0x3b, declaration: 0x3c,
-	encoding: 0x3e, external: 0x3f, type: 0x49, data_bit_offset: 0x6b, frame_base: 0x40, loclists_base: 0x8c };
+	encoding: 0x3e, external: 0x3f, type: 0x49, data_bit_offset: 0x6b, frame_base: 0x40, loclists_base: 0x8c,
+	inline: 0x20, prototyped: 0x27, noreturn: 0x87 };
 const DW_TAG_LEXICAL_BLOCK = 0x0b;
 // Type DIEs DwarfReader.decodeData keeps, by the kind DwarfTypes uses.
 const DW_TYPE_TAGS = { 0x24: "base", 0x0f: "ptr", 0x10: "ptr", 0x42: "ptr", 0x26: "const", 0x35: "volatile", 0x37: "restrict",
@@ -611,6 +612,84 @@ class DwarfReader {
 		return name;
 	}
 
+	// ---- function facts (DwarfFuncs) ----------------------------------------
+	// What a DW_TAG_subprogram DIE says about its function, as it says it
+	// (a concrete DIE with an abstract origin says almost nothing itself):
+	// { name, file (display path), line, ext, inl (DW_AT_inline or null),
+	// decl, noret, proto, ret (type DIE offset, null: none given), origin,
+	// spec (DIE offsets, -1: none), params: [[name, type offset or null]],
+	// varargs, rs: [[lo, hi], ...] virtual (set by the caller) }.
+	subRecord(c, a, ref, files) {
+		const n = a[AT.name] || a[AT.linkage_name] || a[AT.mips_linkage_name];
+		const fi = a[AT.decl_file] ? a[AT.decl_file][1] : -1;
+		return { name: n ? this.str(c, ...n) : null, file: fi >= 0 && files[fi] ? files[fi] : null,
+			line: a[AT.decl_line] ? a[AT.decl_line][1] : 0, ext: !!a[AT.external], inl: a[AT.inline] ? a[AT.inline][1] : null,
+			decl: !!a[AT.declaration], noret: !!a[AT.noreturn], proto: !!a[AT.prototyped], ret: a[AT.type] ? ref(a[AT.type]) : null,
+			origin: a[AT.abstract_origin] ? ref(a[AT.abstract_origin]) : -1, spec: a[AT.specification] ? ref(a[AT.specification]) : -1,
+			params: [], varargs: false, rs: [] };
+	}
+
+	// The display paths of unit i's line program (what DW_AT_decl_file indexes).
+	unitFiles(i) {
+		if (!this.filesCache)
+			this.filesCache = new Map();
+		let f = this.filesCache.get(i);
+		if (!f) {
+			const r = this.root(i);
+			f = r.stmt >= 0 && this.sec.readLine ? this.lineProgram(r.stmt, r.c.comp, true).files : [];
+			this.filesCache.set(i, f);
+		}
+		return f;
+	}
+
+	// subRecord of the DW_TAG_subprogram DIE at absolute offset off in any
+	// unit, with its parameters (an abstract origin or declaration that
+	// clang puts in another unit, DW_FORM_ref_addr); null if it is none.
+	subprogramAt(off) {
+		if (!this.subCache)
+			this.subCache = new Map();
+		if (this.subCache.has(off))
+			return this.subCache.get(off);
+		let rec = null;
+		const i = this.unitOf(off);
+		if (i >= 0) {
+			const c = this.root(i).c;
+			c.b = this.unitBytes(i);
+			c.p = off - c.base;
+			const abbrevs = this.abbrevs(c.u.abbrevOff);
+			const ab = abbrevs[this.uleb(c)];
+			if (ab && ab.tag === DW_TAG_SUBPROGRAM) {
+				const ref = (x) => x[0] === 0x10 || x[0] === 0x1f20 ? x[1] : c.base + x[1];
+				rec = this.subRecord(c, this.readDie(c, ab), ref, this.unitFiles(i));
+				for (let depth = 0; ab.children && c.p < c.b.length;) {
+					const code = this.uleb(c);
+					if (!code) {
+						if (--depth < 0)
+							break;
+						continue;
+					}
+					const k = abbrevs[code];
+					if (!k)
+						break;
+					if (depth === 0 && k.tag === DW_TAG_PARAM) {
+						const a = this.readDie(c, k);
+						rec.params.push([a[AT.name] ? this.str(c, ...a[AT.name]) : null, a[AT.type] ? ref(a[AT.type]) : null]);
+					} else {
+						this.skipDie(c, k);
+						if (depth === 0 && k.tag === DW_TAG_UNSPEC_PARAMS)
+							rec.varargs = true;
+					}
+					if (k.children)
+						depth++;
+				}
+			}
+		}
+		if (this.subCache.size > 50000)
+			this.subCache.clear();
+		this.subCache.set(off, rec);
+		return rec;
+	}
+
 	// One compile unit: its line rows and the address ranges of its
 	// functions (depth 0) and inlined calls (depth 1 + inlined ancestors),
 	// with the call site of each inlined call.
@@ -711,7 +790,7 @@ class DwarfReader {
 			return x[1];
 		};
 		const declared = new Map(); // declaration DIEs of variables, for DW_AT_specification
-		const L = locals ? { scopes: [], info: new Map(), kids: new Map(), lastKid: null } : null;
+		const L = locals ? { scopes: [], info: new Map(), kids: new Map(), lastKid: null, subs: new Map(), copies: [], files } : null;
 		const stack = [{ tag: r.tag, raw: null, fn: -1, scope: -1, die: -1 }];
 		while (c.p < end && stack.length) {
 			const dieOff = c.base + c.p;
@@ -811,7 +890,16 @@ class DwarfReader {
 					parent.raw.varargs = true;
 				}
 			} else if (L && tag === DW_TAG_PARAM && (parent.tag === DW_TAG_SUBPROGRAM || parent.tag === DW_TAG_INLINED)) {
-				this.localDie(c, this.readDie(c, ab), true, dieOff, parent, L, ref);
+				const a = this.readDie(c, ab);
+				this.localDie(c, a, true, dieOff, parent, L, ref);
+				const sub = parent.tag === DW_TAG_SUBPROGRAM ? L.subs.get(parent.die) : null;
+				if (sub)
+					sub.params.push([name(a), a[AT.type] ? ref(a[AT.type]) : null]);
+			} else if (L && tag === DW_TAG_UNSPEC_PARAMS && parent.tag === DW_TAG_SUBPROGRAM) {
+				this.skipDie(c, ab);
+				const sub = L.subs.get(parent.die);
+				if (sub)
+					sub.varargs = true;
 			} else if (tag === DW_TAG_VARIABLE) {
 				const a = this.readDie(c, ab);
 				if (L && parent.die >= 0)
@@ -835,6 +923,8 @@ class DwarfReader {
 				for (const [d, , o] of list)
 					L.origins.set(d, o);
 			out.scopes = this.finishScopes(L);
+			out.subs = L.subs;
+			out.copies = L.copies;
 		}
 		// A definition through DW_AT_specification / abstract_origin takes the
 		// declaration's name and type; static locals name their function.
@@ -874,6 +964,9 @@ class DwarfReader {
 		const origin = a[AT.abstract_origin] ? ref(a[AT.abstract_origin]) : -1;
 		if (L.lastKid)
 			L.lastKid[2] = origin;
+		const sub = tag === DW_TAG_SUBPROGRAM ? this.subRecord(c, a, ref, L.files) : null;
+		if (sub)
+			L.subs.set(dieOff, sub);
 		if (tag !== DW_TAG_SUBPROGRAM && parent.scope < 0)
 			return -1;
 		let rs = [];
@@ -886,6 +979,10 @@ class DwarfReader {
 			if (hi > lo)
 				rs = [[lo, hi]];
 		}
+		if (sub)
+			sub.rs = rs;
+		else if (tag === DW_TAG_INLINED && rs.length && origin >= 0)
+			L.copies.push([origin, rs.reduce((m, r) => Math.min(m, r[0]), Infinity)]);
 		if (!rs.length)
 			return tag === DW_TAG_LEXICAL_BLOCK && !a[AT.low_pc] && !a[AT.ranges] ? parent.scope : -1;
 		let name = null;
@@ -1153,6 +1250,7 @@ class DwarfTypes {
 		this.vars = [];
 		this.seen = new Map(); // name@address -> variable
 		this.other = new Map(); // unit index -> its decodeData types
+		this.funcs = new DwarfFuncs(dw);
 	}
 
 	// The type id of a DIE offset of unit d (DwarfReader.decodeData): an
@@ -1250,6 +1348,8 @@ class DwarfTypes {
 			this.seen.set(k, v);
 			this.vars.push(v);
 		}
+		if (d.subs)
+			this.funcs.add(d, id, toPhys);
 		return d.scopes ? dwarfScopeGroups(d.scopes, id, toPhys) : [];
 	}
 
@@ -1298,7 +1398,7 @@ class DwarfTypes {
 		for (const t of this.types)
 			if ((t[0] === DWT.struct || t[0] === DWT.union || t[0] === DWT.enum) && !t[3] && defs.has(t[0] + t[1]))
 				t[t[0] === DWT.enum ? 6 : 5] = defs.get(t[0] + t[1]);
-		const out = { format: 1, types: this.types, vars: this.vars, sections };
+		const out = { format: 1, types: this.types, vars: this.vars, sections, funcs: this.funcs.finish() };
 		for (const v of this.vars) {
 			v[3] = dwTypeSize(out, v[2]);
 			if (!v[6])
@@ -1308,6 +1408,130 @@ class DwarfTypes {
 		return out;
 	}
 }
+
+// ---- function facts -------------------------------------------------------------
+//
+// One entry per source function (name and where it is declared): what
+// DW_TAG_subprogram says about it and where its code is, out of line and
+// inlined. Built unit by unit next to the types (DwarfTypes.addUnit), so
+// its type ids are the table's. gen-dwarf.js ships it in name-hashed
+// shards (funcs-<k>.json.gz, dwFuncShard); for an import it comes with
+// the types from the Worker.
+//   { format, files: [path], fns: [[name, file index (-1: unknown), line,
+//     flags, inline, return type id (-1: void), [[param name, type id],
+//     ...], [[lo, length, lo2, length2, ...], ...] its out-of-line code,
+//     one list of ranges per DW_TAG_subprogram with code (a copy per unit
+//     for a static inline function, GCC's .isra/.constprop clones; a
+//     second range is GCC's .cold part), [entry, ...] its inlined copies
+//     (DW_TAG_inlined_subroutine with code: the lowest address of each,
+//     sorted)], ...] }
+//   addresses physical; flags 1 external (DW_AT_external), 2 varargs,
+//   4 noreturn, 8 prototyped; inline: DW_AT_inline (0 not inlined, 1
+//   inlined, 2 declared inline but not inlined, 3 declared inline and
+//   inlined) or -1 when the DIE has none.
+class DwarfFuncs {
+	constructor(dw) {
+		this.dw = dw;
+		this.byKey = new Map();
+		this.list = [];
+	}
+
+	// d: decodeData with locals; id: the type table's id function for d.
+	add(d, id, toPhys) {
+		const local = (off) => d.subs.get(off) || (this.dw ? this.dw.subprogramAt(off) : null);
+		// A function's facts through DW_AT_abstract_origin / specification:
+		// each field from the first DIE of the chain that has it; the
+		// parameters (names, types) of the DIE that declares them.
+		const resolve = (rec) => {
+			const chain = [rec];
+			for (let r = rec, n = 0; n < 8; n++) {
+				const next = r.origin >= 0 ? r.origin : r.spec;
+				const q = next >= 0 ? local(next) : null;
+				if (!q)
+					break;
+				chain.push(q);
+				r = q;
+			}
+			const first = (f) => { for (const r of chain) { const v = f(r); if (v !== null && v !== undefined) return v; } return null; };
+			const name = first((r) => r.name);
+			if (!name)
+				return null;
+			const at = first((r) => r.file ? r : null) || rec;
+			const pr = chain.slice().reverse().find((r) => r.params.length) || chain[chain.length - 1];
+			const params = pr.params.map((p, k) => [p[0] || first((r) => r.params[k] && r.params[k][0]) || "", p[1] !== null ? p[1] :
+				first((r) => r.params[k] && r.params[k][1])]);
+			const ret = first((r) => r.ret);
+			return { name, file: at.file, line: at.line, ext: chain.some((r) => r.ext), varargs: chain.some((r) => r.varargs),
+				noret: chain.some((r) => r.noret), proto: chain.some((r) => r.proto), inl: first((r) => r.inl), ret, params };
+		};
+		const entry = (f) => {
+			const key = f.name + "\0" + (f.file || "") + "\0" + f.line;
+			let e = this.byKey.get(key);
+			if (!e) {
+				e = [f.name, f.file, f.line, (f.ext ? 1 : 0) | (f.varargs ? 2 : 0) | (f.noret ? 4 : 0) | (f.proto ? 8 : 0),
+					f.inl === null ? -1 : f.inl, f.ret === null ? -1 : id(f.ret), f.params.map(([n, t]) => [n, t === null ? -1 : id(t)]), [], []];
+				this.byKey.set(key, e);
+				this.list.push(e);
+			} else {
+				// Another unit's DIE of the same function adds what this one lacked.
+				e[3] |= (f.ext ? 1 : 0) | (f.varargs ? 2 : 0) | (f.noret ? 4 : 0) | (f.proto ? 8 : 0);
+				if (e[4] < 0 && f.inl !== null)
+					e[4] = f.inl;
+			}
+			return e;
+		};
+		for (const rec of d.subs.values()) {
+			const rs = rec.rs.map(([lo, hi]) => [toPhys(lo), hi - lo]).filter(([pa]) => pa !== null);
+			if (!rs.length || rec.decl)
+				continue;
+			const f = resolve(rec);
+			if (!f)
+				continue;
+			const e = entry(f);
+			if (!e[7].some((r) => r[0] === rs[0][0]))
+				e[7].push(rs.flat());
+		}
+		for (const [origin, lo] of d.copies) {
+			const pa = toPhys(lo);
+			const rec = pa === null ? null : local(origin);
+			const f = rec ? resolve(rec) : null;
+			if (f)
+				entry(f)[8].push(pa);
+		}
+	}
+
+	finish() {
+		const files = [], fileIx = new Map();
+		for (const e of this.list) {
+			const p = e[1];
+			if (p === null) {
+				e[1] = -1;
+				continue;
+			}
+			if (!fileIx.has(p)) {
+				fileIx.set(p, files.length);
+				files.push(p);
+			}
+			e[1] = fileIx.get(p);
+			e[8].sort((x, y) => x - y);
+		}
+		return { format: 1, files, fns: this.list };
+	}
+}
+
+// The shard of a function's facts by name (FNV-1a), for gen-dwarf.js and
+// the page alike.
+function dwFuncShard(name, n) {
+	let h = 0x811c9dc5;
+	for (let k = 0; k < name.length; k++)
+		h = Math.imul(h ^ name.charCodeAt(k), 0x01000193) >>> 0;
+	return h % n;
+}
+
+// The name DWARF gives the function of an ELF symbol: GCC's clones and
+// split parts (start_kernel.cold, foo.isra.0, foo.constprop.0, foo.part.0)
+// are the function before the first dot.
+const dwFuncBase = (sym) => sym.replace(/\..*$/, "");
 
 // ---- parameters and local variables -------------------------------------------
 //
@@ -1514,6 +1738,16 @@ function dwTypeName(T, id, inner = "") {
 	}
 	default: return "?" + sp(inner);
 	}
+}
+
+// A function (DwarfFuncs entry e) in C: "int printk(const char *fmt,
+// ...)", or without names its type as gdb's ptype prints it, "int (const
+// char *, ...)". A prototyped function without parameters takes (void).
+function dwFuncProto(T, e, named = true) {
+	const ps = e[6].map(([n, t]) => dwTypeName(T, t, named ? n : ""));
+	if (e[3] & 2)
+		ps.push("...");
+	return dwTypeName(T, e[5], (named ? e[0] : "") + "(" + (ps.length ? ps.join(", ") : e[3] & 8 ? "void" : "") + ")");
 }
 
 // Index of the last variable starting at or below pa, -1 if none.
@@ -2107,4 +2341,4 @@ function dwarfDecode(b) {
 }
 
 if (typeof module !== "undefined")
-	module.exports = { dwarfScopeGroups, dwarfScopesAt, dwLocAt, dwarfLocalFrames, DwarfTypes, DWT, dwStrip, dwTypeSize, dwTypeName, dwWhere, dwPathIn, dwVarIndex, DwarfReader, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfFunction, dwarfRow, dwarfEachLine, dwarfFileAddrs, dwarfFileCode, dwarfResolvePath, dwarfEncode, dwarfDecode, dwDisplayPath };
+	module.exports = { DwarfFuncs, dwFuncShard, dwFuncBase, dwFuncProto, dwarfScopeGroups, dwarfScopesAt, dwLocAt, dwarfLocalFrames, DwarfTypes, DWT, dwStrip, dwTypeSize, dwTypeName, dwWhere, dwPathIn, dwVarIndex, DwarfReader, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfFunction, dwarfRow, dwarfEachLine, dwarfFileAddrs, dwarfFileCode, dwarfResolvePath, dwarfEncode, dwarfDecode, dwDisplayPath };

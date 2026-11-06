@@ -1363,6 +1363,7 @@ SRC_COLOUR_VIEWS = {
     "Debugger listing": ("#context .src:not(.nol)", True),
     "Debugger source row": ("#cur_src .frame", True),
     "Source panel": ("#src_body > span", True),
+    "Debugger inlined-into row": ("#src_colour_probe .frame.inl", False),
     "call stack": ("#call_stack", False),
     "Graph detail": ("#graph_src", False),
 }
@@ -1381,7 +1382,7 @@ SRC_COLOURS_JS = """([sel, text]) => {
     const box = [...document.querySelectorAll(sel)].find((e) => e.querySelector('.srcloc') && (!text || e.querySelector('.srctext')));
     if (!box) return null;
     const one = (cls) => { const e = box.querySelector(cls); if (!e) return null; const c = rgba(getComputedStyle(e).color);
-        const o = Number(getComputedStyle(box).opacity) * Number(getComputedStyle(e).opacity);
+        let o = 1; for (let x = e; x; x = x.parentElement) o *= Number(getComputedStyle(x).opacity);
         return { colour: c.slice(0, 3), alpha: c[3] * o, bg: bg(e), text: e.textContent.trim().slice(0, 40) }; };
     return { loc: one('.srcloc'), text: one('.srctext') };
 }"""
@@ -1399,10 +1400,12 @@ def contrast(fg, bg, alpha=1):
     return (hi + 0.05) / (lo + 0.05)
 
 
-def src_colour_check(page, name, phys, problems, r, shots):
+def src_colour_check(page, name, phys, inl_phys, problems, r, shots):
     """Every view showing C lines colours the location (.srcloc) and the C
     text (.srctext) differently, with the same pair everywhere, each at
-    least 4.5:1 against its background, in light and dark."""
+    least 4.5:1 against its background, in light and dark. inl_phys: an
+    address in inlined code, whose Debugger source rows are rendered into
+    a probe box to check the "inlined into" rows too."""
     seen = {}
     for scheme in ("light", "dark"):
         page.emulate_media(color_scheme=scheme)
@@ -1416,6 +1419,15 @@ def src_colour_check(page, name, phys, problems, r, shots):
         wait_for(lambda: page.locator("#cur_src .srctext").count() > 0, 15)
         for view in ("Debugger listing", "Debugger source row", "call stack"):
             got[view] = page.evaluate(SRC_COLOURS_JS, list(SRC_COLOUR_VIEWS[view]))
+        if inl_phys is not None:
+            page.evaluate("""(pa) => { const box = document.createElement('div'); box.id = 'src_colour_probe';
+                document.getElementById('sym_info').append(box); renderSourceRows(box, pa, null); }""", inl_phys)
+            wait_for(lambda: page.evaluate("srcText(...JSON.parse(document.querySelector('#src_colour_probe #cur_src').dataset.frames)"
+                                           ".slice(-1).map(f => [f.file, f.line])[0]) !== null"), 15)
+            page.evaluate("""(pa) => { const box = document.getElementById('src_colour_probe'); box.textContent = '';
+                renderSourceRows(box, pa, null); }""", inl_phys)
+            got["Debugger inlined-into row"] = page.evaluate(SRC_COLOURS_JS, list(SRC_COLOUR_VIEWS["Debugger inlined-into row"]))
+            page.evaluate("document.getElementById('src_colour_probe').remove()")
         page.evaluate("(pa) => openSource(pa)", phys)
         wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 20)
         got["Source panel"] = page.evaluate(SRC_COLOURS_JS, list(SRC_COLOUR_VIEWS["Source panel"]))
@@ -1431,6 +1443,8 @@ def src_colour_check(page, name, phys, problems, r, shots):
         got["Graph detail"] = page.evaluate(SRC_COLOURS_JS, list(SRC_COLOUR_VIEWS["Graph detail"]))
         show_tab(page, "debugger")
         for view, (_, text) in SRC_COLOUR_VIEWS.items():
+            if view == "Debugger inlined-into row" and inl_phys is None:
+                continue
             g = got.get(view)
             if not g or not g["loc"] or (text and not g["text"]):
                 problems.append(f"{name} {scheme}: {view} has no .srcloc/.srctext pair: {g}")
@@ -1514,7 +1528,7 @@ def dwarf_case(browser, base, shots, name):
         page.screenshot(path=str(shots / f"dwarf-debugger-{name}-390-{scheme}.png"), full_page=True)
     page.emulate_media(color_scheme="light")
     page.set_viewport_size({"width": 1280, "height": 1000})
-    src_colour_check(page, name, phys, problems, r, shots)
+    src_colour_check(page, name, phys, next((p for p, _, fr in samples if len(fr) > 1), None), problems, r, shots)
     page.close()
     if errors:
         problems.append("page errors: " + "; ".join(errors))

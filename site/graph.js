@@ -65,20 +65,25 @@ const runStart = () => (G.stepper && G.stepper.sinceEntry >= 0 ? G.stepper.since
 const fEnd = (st, k) => (st.fEnd[k] < 0 ? st.steps : st.fEnd[k]);
 const hiddenFrame = (st, k) => G.fold && st.fIrq[k];
 
-// Subsystem of a symbol: the top directory of its source file (sources.json),
-// else a guess from the name.
+// Subsystem of a symbol: the top directory of the source file its first
+// instruction comes from (DWARF, only where already loaded: colouring
+// never fetches; a small kernel's shards all load up front), else a guess
+// from the name.
 function subsystem(st, node) {
-	if (!G.subsys) {
+	if (!G.subsys || G.subsysVersion !== DBG.version) {
 		G.subsys = new Map();
-		if (typeof sources === "object" && sources)
-			for (const [fn, f] of sources.ranges) {
-				const name = sources.funcs[fn];
-				if (!G.subsys.has(name))
-					G.subsys.set(name, sources.files[f].split("/")[0]);
-			}
+		G.subsysVersion = DBG.version;
+	}
+	let dir = G.subsys.get(node);
+	if (dir === undefined) {
+		dir = null;
+		const r = node < st.symStart.length ? dbgFrames(st.symStart[node], true) : null;
+		const f = r && r.state === "ok" ? r.frames[r.frames.length - 1] : null;
+		if (f && f.file && !f.file.startsWith("/"))
+			dir = f.file.split("/")[0];
+		G.subsys.set(node, dir);
 	}
 	const name = st.nodeName(node);
-	const dir = G.subsys.get(name);
 	if (dir)
 		return PALETTE[dir] ? dir : "other";
 	if (/^(kmem|kmalloc|alloc|free|page|slab|memblock|mm_|vm|pgd|pte|pmd)/.test(name))

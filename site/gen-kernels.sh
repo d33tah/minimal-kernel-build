@@ -1,7 +1,7 @@
 #!/bin/sh
 # Write site/kernels.json listing every site/kernels/<name>/bzImage, with
-# kernels/<name>/symbols.json, disasm.json and sources.json (gen-symbols.py,
-# gen-disasm.py, gen-source.py), kernels/<name>/initrd.img (the initrd the
+# kernels/<name>/symbols.json, disasm.json, dwarf/ and src/ (gen-symbols.py,
+# gen-disasm.py, gen-dwarf.js, gen-src.js), kernels/<name>/initrd.img (the initrd the
 # page loads with that kernel) and the members of kernels/<name>/meta.json
 # (label, cmdline, ram) when present. A directory with a file "base"
 # (holding another kernel's name) and no bzImage is a variant of that
@@ -25,7 +25,7 @@ cd "$(dirname "$0")"
 		extra=
 		[ -f "$src/symbols.json" ] && extra="$extra, \"symbols\": \"$src/symbols.json\""
 		[ -f "$src/disasm.json" ] && extra="$extra, \"disasm\": \"$src/disasm.json\""
-		[ -f "$src/sources.json" ] && extra="$extra, \"sources\": \"$src/sources.json\""
+		[ -f "$src/src/index.json" ] && extra="$extra, \"src\": \"$src/src/\""
 		[ -f "$src/dwarf/index.json" ] && extra="$extra, \"dwarf\": \"$src/dwarf/\""
 		[ -f "$d/initrd.img" ] && extra="$extra, \"initrd\": \"$d/initrd.img\""
 		# Per-kernel defaults (label, cmdline, ram): kernels/<name>/meta.json,

@@ -53,6 +53,10 @@ function dbgUseShards(entry) {
 		.then((ix) => {
 			DBG.index = ix;
 			DBG.shardSet = new Set(ix.shards);
+			// A small kernel's few shards all load now: the Graph colours
+			// its functions by their source directory from the start.
+			if (ix.shards.length <= 4)
+				ix.shards.forEach(dbgLoadShard);
 			DBG.info = "DWARF " + ix.version.join("/") + " of " + ix.source + ", precomputed in CI: " + ix.shards.length +
 				" shards of " + 2 ** ix.shardBits / 1024 + " KiB, loaded when needed";
 			dbgChanged();
@@ -224,21 +228,24 @@ function dbgUnitAt(pa) {
 
 // ---- lookup ------------------------------------------------------------------
 
-// { state: "ok", frames } (dwarf.js dwarfFrames: innermost first),
-// { state: "loading" } or { state: "none", why }.
-function dbgFrames(pa) {
+// The table that holds pa: { state: "ok", t, end } (end: where the table's
+// { state: "none", why }. Starts the load of a missing one unless peek.
+// { state: "none", why }. Starts the load of a missing one.
+function dbgTableAt(pa, peek) {
 	if (!dbgHas())
 		return { state: "none", why: DBG.why };
 	if (!DBG.index)
 		return { state: "loading" };
-	let t, key;
+	let t, key, end = Infinity;
 	if (DBG.mode === "shards") {
 		key = Math.floor(pa / 2 ** DBG.index.shardBits);
 		if (!DBG.shardSet.has(key))
 			return { state: "none", why: "no DWARF here: not code of this kernel's vmlinux" };
+		end = (key + 1) * 2 ** DBG.index.shardBits;
 		t = DBG.tables.get(key);
 		if (!t) {
-			dbgLoadShard(key);
+			if (!peek)
+				dbgLoadShard(key);
 			return { state: "loading" };
 		}
 	} else {
@@ -249,7 +256,7 @@ function dbgFrames(pa) {
 		if (!t) {
 			if (!DBG.worker)
 				return { state: "none", why: "not decoded before the reload: import the vmlinux again to read its DWARF here" };
-			if (!DBG.pending.has(key)) {
+			if (!peek && !DBG.pending.has(key)) {
 				DBG.pending.add(key);
 				DBG.worker.postMessage({ type: "unit", i: key });
 			}
@@ -258,10 +265,46 @@ function dbgFrames(pa) {
 	}
 	if (t.failed)
 		return { state: "none", why: "debug info did not load: " + t.failed };
-	const frames = dwarfFrames(t, pa);
+	return { state: "ok", t, end };
+}
+
+// { state: "ok", frames } (dwarf.js dwarfFrames: innermost first),
+// { state: "loading" } or { state: "none", why }. peek: only look in what
+// is loaded.
+function dbgFrames(pa, peek) {
+	const r = dbgTableAt(pa, peek);
+	if (r.state !== "ok")
+		return r;
+	const frames = dwarfFrames(r.t, pa);
 	if (!frames)
 		return { state: "none", why: "no line information here (padding or code without debug info)" };
 	return { state: "ok", frames };
+}
+
+// The outermost function around pa and its line rows:
+// { state: "ok", lo, hi, rows: [[a, b, frames], ...] } covering [lo, hi),
+// or the state of what is missing (a function may span two shards).
+function dbgFunction(pa) {
+	const r = dbgTableAt(pa);
+	if (r.state !== "ok")
+		return r;
+	const fn = dwarfFunction(r.t, pa);
+	if (!fn)
+		return { state: "none", why: "no DWARF function here (assembly or code without debug info)" };
+	const [lo, hi] = fn;
+	const rows = [];
+	for (let a = lo; a < hi;) {
+		const q = dbgTableAt(a);
+		if (q.state !== "ok")
+			return q;
+		const k = dwarfRow(q.t, a);
+		const b = Math.min(hi, q.end, k + 1 < q.t.la.length ? q.t.la[k + 1] : Infinity);
+		if (!(b > a))
+			break;
+		rows.push([a, b, dwarfFrames(q.t, a) || []]);
+		a = b;
+	}
+	return { state: "ok", lo, hi, rows };
 }
 
 // "init/main.c:73" or "no line information" (line 0 is code the compiler

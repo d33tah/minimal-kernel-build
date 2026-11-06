@@ -97,6 +97,9 @@ code { font-family: ui-monospace, monospace; }
 .top { position: sticky; top: 0; z-index: 2; background: var(--bg); padding-top: 0.4rem; border-bottom: 1px solid var(--line); }
 .controls { display: flex; flex-wrap: wrap; gap: 0.3rem 0.7rem; align-items: end; }
 .controls label, .runbar label { display: flex; flex-direction: column; font-size: 0.72rem; color: var(--muted); }
+.srcpick { display: flex; flex-direction: column; font-size: 0.72rem; color: var(--muted); }
+.srcpick .row { display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap; }
+.srcpick[hidden] { display: none; }
 .runbar label:has(input[type=checkbox]) { flex-direction: row; align-items: center; gap: 0.2rem; font-size: 0.8rem; }
 select, input, button { font: inherit; color: var(--fg); background: var(--bg); }
 select, button, input[type=text], input:not([type]) { border: 1px solid var(--line); border-radius: 4px; padding: 0.2rem 0.45rem; }

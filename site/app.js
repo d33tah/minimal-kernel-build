@@ -1923,9 +1923,10 @@ function updateDebugUi() {
 	const st = $("dbg_state");
 	let where = stepper && stepper.curSym >= 0 ? ", in " + stepper.symName[stepper.curSym] : "";
 	if (where && dbgHas() && runState !== "jit") {
-		const here = srcHere(stepper.lastPhys);
-		if (here)
-			where += " (" + here.split("  ")[0] + ")";
+		// file:line only: the text would fetch every file stepped through.
+		const r = dbgFrames(stepper.lastPhys);
+		if (r.state === "ok" && r.frames[0].file && r.frames[0].line)
+			where += " (" + srcName(r.frames[0]) + ")";
 	}
 	st.textContent = { off: "", jit: "running (full speed, JIT)",
 		stepped: (entryPhase ? "stepping to the kernel entry" : fastStepping() ? (counting ? "stepping (counting)" : "stepping") :
@@ -2137,7 +2138,7 @@ async function loadKernel(entry, memFromUrl) {
 	if (!resp.ok)
 		throw new Error(entry.path + ": HTTP " + resp.status);
 	disasm = await loadDisasm(entry);
-	await loadSources(entry);
+	await srcUseShipped(entry);
 	dbgUseShards(entry);
 	syncSrcToggle();
 	// kernels.json may give a kernel its own RAM size (meta.json "ram").
@@ -2334,8 +2335,8 @@ async function init() {
 		const f = $("file").files[0];
 		if (!f)
 			return;
-		disasm = null; // a file from disk comes without disasm.json, sources.json or DWARF
-		sources = null;
+		disasm = null; // a file from disk comes without disasm.json, C source or DWARF
+		srcFresh(null, "no C source for a bzImage from disk");
 		dbgFresh(null, "no debug info for a bzImage from disk: import its unstripped vmlinux for file:line");
 		syncSrcToggle();
 		useImage(f.name, await f.arrayBuffer());

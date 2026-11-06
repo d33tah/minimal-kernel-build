@@ -1,45 +1,232 @@
 "use strict";
 
 // C source in the listings (objdump -S style), the Debugger's source rows
-// and live line coverage. Which file:line (and inlined-at chain) an
-// address belongs to comes from the kernel's DWARF (dbginfo.js); the text
-// of those lines from kernels/<name>/sources.json (site/gen-source.py,
-// shipped for the kernels built here: minified Linux and hello).
+// and the source panel with live line coverage. Which file:line (and
+// inlined-at chain) an address belongs to comes from the kernel's DWARF
+// (dbginfo.js); the text of those lines from one of:
+//   shipped  kernels/<name>/src/ (site/gen-src.js in CI): index.json and
+//            <path>.gz per file the DWARF names, fetched the first time a
+//            line of it is shown
+//   picked   a source folder or .tar the user picked (an imported vmlinux,
+//            or a kernel without shipped source): read from the File the
+//            first time a line of it is shown
+// srcFile() answers synchronously from what is loaded and starts the load
+// of the rest; dbgChanged() re-renders when it arrives.
 
-let sources = null;       // sources.json of the current kernel, or null
-let srcFiles = null;      // path -> index in sources.files
-let srcPanel = null;      // { fn, file, first, last, line } shown in the side panel
+let SRC = { mode: null, why: "no C source for this kernel", files: new Map() };
+let srcPanel = null;      // { pa, fn, path, line } shown in the side panel
 
-async function loadSources(entry) {
-	sources = null;
-	srcFiles = null;
-	if (!entry || !entry.sources)
-		return;
-	try {
-		const resp = await fetch(withV(entry.sources));
-		sources = resp.ok ? await resp.json() : null;
-	} catch (e) {
-		console.warn("sources:", e);
-	}
-	if (sources)
-		srcFiles = new Map(sources.files.map((f, i) => [f, i]));
+function srcFresh(mode, why) {
+	SRC = { mode, why, files: new Map(), missing: {}, notes: {} };
 }
+
+// A shipped kernel: kernels.json "src" (a directory with index.json).
+async function srcUseShipped(entry) {
+	if (!entry || !entry.src) {
+		srcFresh(null, "the C source is not shipped for this kernel");
+		return;
+	}
+	srcFresh("shipped", "");
+	const mine = SRC;
+	SRC.base = entry.src.replace(/\/?$/, "/");
+	try {
+		const r = await fetch(withV(SRC.base + "index.json"));
+		if (!r.ok)
+			throw new Error("HTTP " + r.status);
+		const ix = await r.json();
+		if (mine !== SRC)
+			return;
+		SRC.have = new Set(ix.files);
+		SRC.missing = ix.missing || {};
+		SRC.notes = ix.notes || {};
+		SRC.info = ix.origin;
+	} catch (e) {
+		if (mine !== SRC)
+			return;
+		srcFresh(null, "the C source did not load (" + e.message + ")");
+	}
+	srcChanged();
+}
+
+function srcChanged() {
+	if (typeof dbgChanged === "function")
+		dbgChanged();
+	srcStatus();
+}
+
+const isGzip = (b) => b.length > 2 && b[0] === 0x1f && b[1] === 0x8b;
+
+async function srcDecode(buf) {
+	let b = new Uint8Array(buf);
+	// The .gz may arrive already decoded (a server that sends it with
+	// Content-Encoding: gzip): only gunzip what still is gzip.
+	if (isGzip(b))
+		b = new Uint8Array(await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer());
+	return new TextDecoder().decode(b).split("\n");
+}
+
+// { state: "ok", lines } (lines[0] is line 1), { state: "loading" } or
+// { state: "none", why }.
+function srcFile(path) {
+	if (!path)
+		return { state: "none", why: "no line information" };
+	const got = SRC.files.get(path);
+	if (got)
+		return got;
+	let load = null;
+	if (SRC.mode === "shipped") {
+		if (!SRC.have)
+			return { state: "loading" };
+		if (!SRC.have.has(path))
+			return { state: "none", why: path + ": " + (SRC.missing[path] || "not shipped") };
+		load = () => fetch(withV(SRC.base + path.split("/").map(encodeURIComponent).join("/") + ".gz"))
+			.then((r) => r.ok ? r.arrayBuffer() : Promise.reject(new Error("HTTP " + r.status)));
+	} else if (SRC.mode === "picked") {
+		if (!SRC.entries)
+			return { state: "loading" };
+		const f = srcPickedFile(path);
+		if (!f)
+			return { state: "none", why: path + " is not in " + SRC.name };
+		load = () => f.arrayBuffer();
+	} else
+		return { state: "none", why: SRC.why };
+	const mine = SRC;
+	SRC.files.set(path, { state: "loading" });
+	load().then(srcDecode).then((lines) => {
+		if (mine === SRC)
+			SRC.files.set(path, { state: "ok", lines });
+	}, (e) => {
+		if (mine === SRC)
+			SRC.files.set(path, { state: "none", why: path + " did not load: " + e.message });
+	}).then(() => mine === SRC && srcChanged());
+	return { state: "loading" };
+}
+
+// Text of line l of a file (a DWARF path), or null when not (yet) there.
+function srcText(path, l) {
+	const f = srcFile(path);
+	return f.state === "ok" && l >= 1 && l <= f.lines.length ? f.lines[l - 1] : null;
+}
+
+// ---- a source folder or .tar picked by the user ------------------------------
+
+// The DWARF paths are relative to the kernel tree; the picked folder or
+// tarball may hold the tree one level down (linux-6.1.176/...) or more: the
+// prefix is found from the first path that matches and kept.
+function srcPickedFile(path) {
+	const all = SRC.entries;
+	if (SRC.prefix === undefined) {
+		for (const name of all.keys())
+			if (name === path || name.endsWith("/" + path)) {
+				SRC.prefix = name.slice(0, name.length - path.length);
+				break;
+			}
+		if (SRC.prefix === undefined)
+			return null;
+	}
+	return all.get(SRC.prefix + path) || null;
+}
+
+function srcPickFolder(files) {
+	srcFresh("picked", "");
+	SRC.name = "the folder " + (files[0] ? files[0].webkitRelativePath.split("/")[0] : "");
+	SRC.entries = new Map([...files].map((f) => [f.webkitRelativePath || f.name, f]));
+	SRC.info = SRC.name + " (" + SRC.entries.size.toLocaleString("en") + " files)";
+	srcChanged();
+}
+
+// An uncompressed .tar: only the 512-byte headers are read (ustar, GNU long
+// names, pax path records), each file is a slice of the File read when
+// first shown. A compressed tarball would have to be decompressed whole.
+async function srcPickTar(file) {
+	srcFresh("picked", "");
+	const mine = SRC;
+	SRC.name = file.name;
+	SRC.info = "indexing " + file.name + "…";
+	srcStatus();
+	const head = new Uint8Array(await file.slice(0, 512).arrayBuffer());
+	if (isGzip(head) || (head[0] === 0xfd && head[1] === 0x37) || (head[0] === 0x42 && head[1] === 0x5a) || (head[0] === 0x28 && head[1] === 0xb5)) {
+		srcFresh(null, file.name + " is compressed: unpack it and pick the folder, or pick the .tar (only the files shown are read from a .tar)");
+		srcChanged();
+		return;
+	}
+	const entries = new Map();
+	const CHUNK = 1 << 20;
+	let buf = new Uint8Array(0), bufAt = 0, off = 0, longName = null;
+	const td = new TextDecoder();
+	const str = (b, p, n) => { let e = p; while (e < p + n && b[e]) e++; return td.decode(b.subarray(p, e)); };
+	try {
+		while (off + 512 <= file.size) {
+			if (off < bufAt || off + 512 > bufAt + buf.length) {
+				bufAt = off;
+				buf = new Uint8Array(await file.slice(off, Math.min(file.size, off + CHUNK)).arrayBuffer());
+				if (mine !== SRC)
+					return;
+			}
+			const p = off - bufAt;
+			if (buf[p] === 0)
+				break; // end of archive
+			if (str(buf, p + 257, 5) !== "ustar" && !/^[0-7 ]+\0?$/.test(str(buf, p + 148, 8)))
+				throw new Error("not a tar archive (no header at byte " + off + ")");
+			const size = parseInt(str(buf, p + 124, 12).trim() || "0", 8);
+			const type = String.fromCharCode(buf[p + 156] || 0x30);
+			const data = off + 512;
+			let name = str(buf, p, 100);
+			const prefix = str(buf, p + 345, 155);
+			if (prefix && str(buf, p + 257, 5) === "ustar")
+				name = prefix + "/" + name;
+			if (type === "L" || type === "x") {
+				const meta = td.decode(new Uint8Array(await file.slice(data, data + size).arrayBuffer()));
+				longName = type === "L" ? meta.replace(/\0.*$/s, "") : (/(?:^|\n)\d+ path=([^\n]*)\n/.exec(meta) || [])[1] || null;
+			} else {
+				if (longName)
+					name = longName;
+				longName = null;
+				if (type === "0" || type === "\0" || type === "7")
+					entries.set(name.replace(/^\.\//, ""), file.slice(data, data + size));
+			}
+			off = data + Math.ceil(size / 512) * 512;
+		}
+	} catch (e) {
+		if (mine === SRC) {
+			srcFresh(null, "could not read " + file.name + ": " + e.message);
+			srcChanged();
+		}
+		return;
+	}
+	if (mine !== SRC)
+		return;
+	SRC.entries = entries;
+	SRC.info = file.name + " (" + entries.size.toLocaleString("en") + " files)";
+	srcChanged();
+}
+
+// The picker shows where there is DWARF but no shipped source (an imported
+// vmlinux, a bzImage from disk with one).
+function srcStatus() {
+	const show = dbgHas() && SRC.mode !== "shipped";
+	$("src_pick").hidden = !show;
+	const el = $("src_status");
+	el.dataset.state = SRC.mode === "picked" && SRC.entries ? "picked" : SRC.mode === "picked" ? "indexing" : "";
+	el.textContent = !show ? "" : SRC.mode === "picked" ? "C source: " + SRC.info :
+		"file:line only: pick the kernel's source folder or .tar for the text of the lines (" + SRC.why + ")";
+}
+
+// ---- rendering --------------------------------------------------------------
 
 const showSource = () => dbgHas() && $("show_src").checked;
 
-// Text of line l of a file (a DWARF path), or null when not shipped.
-function srcText(path, l) {
-	const f = sources && srcFiles ? srcFiles.get(path) : undefined;
-	const rs = f !== undefined && sources.text[f];
-	if (!rs)
-		return null;
-	for (const [first, lines] of rs)
-		if (l >= first && l < first + lines.length)
-			return lines[l - first];
-	return null;
-}
-
 const srcName = (f) => f.file && f.line ? f.file.replace(/^.*\//, "") + ":" + f.line : "no line information";
+
+// Why the text of frame f's line is not shown (title text), or "".
+function srcWhyNot(f) {
+	const s = srcFile(f.file);
+	if (s.state === "loading")
+		return "reading " + f.file + "…";
+	if (s.state === "none")
+		return s.why;
+	return f.line > s.lines.length ? f.file + " has only " + s.lines.length + " lines" : "";
+}
 
 // A C line for the listing when pa starts a new source location; `state`
 // keeps the last one printed in this listing.
@@ -71,8 +258,9 @@ function srcLineHtml(pa, state) {
 		return '<span class="src nol" data-addr="' + pa + '" title="' + escHtml(dbgChainText(fr)) + '">(no line information' +
 			(f.func ? " in " + escHtml(f.func) : "") + ")</span>";
 	const text = srcText(f.file, f.line);
+	const why = text === null ? srcWhyNot(f) : "";
 	const inl = fr.length > 1 ? " [" + escHtml(f.func || "?") + " inlined into " + escHtml(fr[fr.length - 1].func || "?") + "]" : "";
-	return '<span class="src" data-addr="' + pa + '" title="' + escHtml(dbgChainText(fr)) + '">' +
+	return '<span class="src" data-addr="' + pa + '" title="' + escHtml(dbgChainText(fr) + (why ? "\n" + why : "")) + '">' +
 		escHtml(srcName(f)) + "  " + (text === null ? '<span class="dim">' + escHtml(f.file) + "</span>" : escHtml(text.trim())) +
 		inl + "</span>";
 }
@@ -90,16 +278,12 @@ function srcHere(pa) {
 // Open the side panel with the whole function around the C line of pa.
 function openSource(pa) {
 	const r = dbgFrames(pa);
-	if (!sources || r.state !== "ok")
+	if (r.state !== "ok")
 		return;
 	const loc = r.frames[0];
-	const file = srcFiles.get(loc.file);
-	if (file === undefined || !loc.line)
+	if (!loc.file || !loc.line || srcFile(loc.file).state === "none")
 		return;
-	const fn = sources.funcs.indexOf(loc.func);
-	const rg = sources.ranges.find(([f, fl, a, b]) => f === fn && fl === file && loc.line >= a - 2 && loc.line <= b) ||
-		[fn, file, Math.max(1, loc.line - 5), loc.line + 5];
-	srcPanel = { fn: loc.func || "?", file, path: loc.file, first: Math.max(1, rg[2] - 2), last: rg[3], line: loc.line };
+	srcPanel = { pa, fn: loc.func, path: loc.file, line: loc.line };
 	renderSourcePanel();
 	$("src_panel").hidden = false;
 	const cur = $("src_body").querySelector(".here");
@@ -107,67 +291,82 @@ function openSource(pa) {
 		$("src_body").scrollTop = cur.offsetTop - $("src_body").clientHeight / 3;
 }
 
-// Instructions of the build with a line of the panel (directly or through
-// code inlined from it): [[pa, [line, ...]], ...]. Kept per panel.
-function panelInsns() {
-	if (srcPanel.insns && srcPanel.dbgVersion === DBG.version)
-		return srcPanel.insns;
-	const out = [];
-	const { path, first, last } = srcPanel;
-	for (const [pa] of disasm ? disasm.insns : []) {
-		const r = dbgFrames(pa);
-		if (r.state !== "ok")
-			continue;
-		const ls = [];
-		for (const f of r.frames)
-			if (f.file === path && f.line >= first && f.line <= last)
-				ls.push(f.line);
-		if (ls.length)
-			out.push([pa, ls]);
-	}
-	srcPanel.insns = out;
+// The panel's lines from the DWARF of the function around srcPanel.pa:
+// first/last are the lines of srcPanel.fn in its file (directly, not
+// through code inlined into it), widened by two lines; code has every
+// line of that span with code (also as the call site of inlined code) and
+// the address ranges of each. Kept per DWARF version.
+function panelLines() {
+	if (srcPanel.lines && srcPanel.dbgVersion === DBG.version)
+		return srcPanel.lines;
+	const fn = dbgFunction(srcPanel.pa);
+	if (fn.state !== "ok")
+		return fn;
+	const { path } = srcPanel;
+	let lo = srcPanel.line, hi = srcPanel.line;
+	for (const [, , frames] of fn.rows)
+		for (const f of frames)
+			if (f.func === srcPanel.fn && f.file === path && f.line) {
+				lo = Math.min(lo, f.line);
+				hi = Math.max(hi, f.line);
+			}
+	const first = Math.max(1, lo - 2), last = hi;
+	const code = new Map(); // line -> [[a, b], ...]
+	for (const [a, b, frames] of fn.rows)
+		for (const f of frames)
+			if (f.file === path && f.line >= first && f.line <= last) {
+				if (!code.has(f.line))
+					code.set(f.line, []);
+				code.get(f.line).push([a, b]);
+			}
+	srcPanel.lines = { state: "ok", first, last, code, lo: fn.lo, hi: fn.hi };
 	srcPanel.dbgVersion = DBG.version;
-	return out;
+	return srcPanel.lines;
 }
 
-// Lines of the panel's file that have code, and those whose code has run
-// (any instruction of that line, or of code inlined from it, executed).
-function lineCoverage() {
-	const code = new Set(), run = new Set();
-	for (const [pa, ls] of panelInsns()) {
-		const done = stepper && stepper.executed(pa);
-		for (const l of ls) {
-			code.add(l);
-			if (done)
+// Lines that have code, and those whose code has run (an instruction
+// started in one of its address ranges while stepping).
+function lineCoverage(pl) {
+	const run = new Set();
+	if (stepper)
+		for (const [l, spans] of pl.code)
+			if (spans.some(([a, b]) => { for (let x = a; x < b; x++) if (stepper.executed(x)) return true; return false; }))
 				run.add(l);
-		}
-	}
-	return { code, run };
+	return { code: new Set(pl.code.keys()), run };
 }
 
 function renderSourcePanel() {
-	if (!srcPanel || !sources)
+	if (!srcPanel)
 		return;
-	const { fn, file, path, first, last, line } = srcPanel;
-	const { code, run } = lineCoverage();
-	$("src_title").textContent = fn + " — " + path + ":" + first + "–" + last;
+	const { fn, path, line } = srcPanel;
+	const body = $("src_body");
+	const pl = panelLines();
+	const file = srcFile(path);
+	$("src_title").textContent = (fn || "?") + " — " + path + (pl.state === "ok" ? ":" + pl.first + "–" + pl.last : "");
+	if (pl.state !== "ok" || file.state !== "ok") {
+		body.textContent = pl.state === "loading" || file.state === "loading" ? "reading " + (pl.state === "loading" ? "DWARF" : path) + "…" :
+			pl.state === "none" ? pl.why : file.why;
+		body.dataset.code = body.dataset.executed = 0;
+		body.dataset.state = pl.state === "none" || file.state === "none" ? "none" : "loading";
+		$("src_info").textContent = "";
+		return;
+	}
+	const { code, run } = lineCoverage(pl);
 	const out = [];
-	for (let l = first; l <= last; l++) {
-		const t = srcText(path, l);
-		if (t === null)
-			continue;
+	for (let l = pl.first; l <= Math.min(pl.last, file.lines.length); l++) {
 		const cls = run.has(l) ? "exec" : code.has(l) ? "code" : "";
 		const mark = run.has(l) ? "●" : code.has(l) ? "○" : " ";
 		out.push('<span class="' + cls + (l === line ? " here" : "") + '">' + String(l).padStart(5, " ") + " " + mark + " " +
-			escHtml(t) + "</span>");
+			escHtml(file.lines[l - 1]) + "</span>");
 	}
-	const body = $("src_body");
 	body.innerHTML = out.join("\n");
+	body.dataset.state = "ok";
 	body.dataset.code = code.size;
 	body.dataset.executed = run.size;
-	body.dataset.file = file;
+	body.dataset.file = path;
+	const note = SRC.notes && SRC.notes[path] ? " " + path + ": " + SRC.notes[path] + "." : "";
 	$("src_info").textContent = run.size + " of " + code.size + " lines with code have executed (● ran, ○ not yet)" +
-		(stepper ? "" : "; boot a kernel to see coverage") + ". Recorded while stepping.";
+		(stepper ? "" : "; boot a kernel to see coverage") + ". Recorded while stepping. Source: " + (SRC.info || SRC.mode) + "." + note;
 }
 
 // The Debugger's "source" rows: the C line at EIP and, for inlined code,
@@ -194,7 +393,7 @@ function renderSourceRows(box, phys, sym) {
 			const t = f.file && f.line ? srcText(f.file, f.line) : null;
 			const fn = f.func || sym || "?";
 			const btn = symButton(k ? "inlined into " + fn + (f.file && f.line ? " at " + where : " (no line information)") : where + " in " + fn + (r.frames.length > 1 ? " (inlined)" : ""), -1,
-				t !== null ? "Show the whole function with its executed lines" : f.file ? "The text of " + f.file + " is not shipped for this kernel" : "");
+				t !== null ? "Show the whole function with its executed lines" : f.file ? srcWhyNot(f) : "");
 			if (k === 0 && t !== null) {
 				btn.disabled = false;
 				btn.addEventListener("click", () => openSource(phys));
@@ -217,7 +416,7 @@ function initSource() {
 	for (const id of ["listing", "context"])
 		$(id).addEventListener("click", (ev) => {
 			const line = ev.target.closest(".src");
-			if (line && sources) {
+			if (line && !line.classList.contains("nol")) {
 				ev.stopPropagation();
 				openSource(Number(line.dataset.addr));
 			}
@@ -225,6 +424,21 @@ function initSource() {
 	$("show_src").addEventListener("change", () => {
 		inspect();
 		renderContext();
+	});
+	$("src_tar").addEventListener("change", () => {
+		const f = $("src_tar").files[0];
+		if (f)
+			srcPickTar(f);
+	});
+	$("src_dir_btn").addEventListener("click", () => $("src_dir").click());
+	$("src_dir").addEventListener("change", () => {
+		if ($("src_dir").files.length)
+			srcPickFolder($("src_dir").files);
+	});
+	dbgOnChange(() => {
+		srcStatus();
+		if (srcPanel && !$("src_panel").hidden)
+			renderSourcePanel();
 	});
 	setInterval(() => {
 		if (srcPanel && !$("src_panel").hidden && (runState === "stepped"))

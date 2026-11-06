@@ -61,11 +61,18 @@ jobs:
         path: debian-debs
         key: debian-686-6.1.176-1-526c469c5148-4625e3cd446f
 
+    # Its source package (upstream tarball + Debian's patches) for the C
+    # source view, also pinned (the SHA-256 of linux_6.1.176-1.dsc).
+    - uses: actions/cache@v4
+      with:
+        path: debian-src
+        key: debian-src-6.1.176-1-9aad4025973f-10477b04dc15
+
     - name: Debian 6.1 686 kernel and symbols
       run: |
-        mkdir -p debian-debs
+        mkdir -p debian-debs debian-src
         get() { # file, snapshot path, pool path, sha256
-          f="debian-debs/$1"
+          f=$1
           if [ ! -f "$f" ] || ! echo "$4  $f" | sha256sum -c --quiet; then
             curl -sSfL --retry 3 -o "$f" "https://snapshot.debian.org/archive/debian/20260704T211317Z/$2" ||
               curl -sSfL --retry 3 -o "$f" "https://deb.debian.org/debian/$3"
@@ -73,14 +80,18 @@ jobs:
           echo "$4  $f" | sha256sum -c
         }
         start=$(date +%s)
-        get linux-image-6.1.0-50-686_6.1.176-1_i386.deb \
+        get debian-debs/linux-image-6.1.0-50-686_6.1.176-1_i386.deb \
           pool/main/l/linux-signed-i386/linux-image-6.1.0-50-686_6.1.176-1_i386.deb \
           pool/main/l/linux-signed-i386/linux-image-6.1.0-50-686_6.1.176-1_i386.deb \
           526c469c5148a2b61c4241c3f6575427096575e0ffef9541b6729351c600b3e4
-        get linux-image-6.1.0-50-686-dbg_6.1.176-1_i386.deb \
+        get debian-debs/linux-image-6.1.0-50-686-dbg_6.1.176-1_i386.deb \
           pool/main/l/linux/linux-image-6.1.0-50-686-dbg_6.1.176-1_i386.deb \
           pool/main/l/linux/linux-image-6.1.0-50-686-dbg_6.1.176-1_i386.deb \
           4625e3cd446ff2ade7776492bfdecd60b2fb6a72b8b99a97e04f0e472dfeeb84
+        get debian-src/linux_6.1.176.orig.tar.xz pool/main/l/linux/linux_6.1.176.orig.tar.xz \
+          pool/main/l/linux/linux_6.1.176.orig.tar.xz 9aad4025973feea3f0d978e82ab7db97d8d5ce3f59fcc6b1f316153d66e3a504
+        get debian-src/linux_6.1.176-1.debian.tar.xz pool/main/l/linux/linux_6.1.176-1.debian.tar.xz \
+          pool/main/l/linux/linux_6.1.176-1.debian.tar.xz 10477b04dc15f7c1c52d8c812c889be5fd37aa178163e352755cd137c73ade6b
         echo "Debian downloads: $(( $(date +%s) - start )) s"
         x="$RUNNER_TEMP/deb"
         mkdir -p "$x"
@@ -96,6 +107,11 @@ jobs:
         site/test_dwarf.py "$x/usr/lib/debug/boot/vmlinux-6.1.0-50-686" "$d/dwarf" --samples 5000 \
           --strip debian/build/build_i386_none_686/ --strip /build/reproducible-path/linux-6.1.176/
         cat "$d"/dwarf/*.bin | gzip -9 | wc -c | sed 's/^/debian dwarf shards gzip: /'
+        site/gen-debian-source.sh debian-src/linux_6.1.176.orig.tar.xz debian-src/linux_6.1.176-1.debian.tar.xz "$x/src"
+        site/gen-src.js "$d/dwarf" "$x/src" "$d/src" \
+          --origin "Debian's source package linux 6.1.176-1 (linux_6.1.176.orig.tar.xz with the patches of debian/patches/series from linux_6.1.176-1.debian.tar.xz)" \
+          --note "arch/x86/include/generated/asm/syscalls_32.h=made by the build: regenerated with scripts/syscalltbl.sh --abis i386 from arch/x86/entry/syscalls/syscall_32.tbl" \
+          --note "security/selinux/flask.h=made by the build: regenerated with scripts/selinux/genheaders"
         printf '%s\n' '{"label": "Debian 6.1 686 (no initrd: ends in a root-fs panic)", "cmdline": "nokaslr console=tty0 cryptomgr.notests", "ram": 67108864}' > "$d/meta.json"
         rm -rf "$x"
         gzip -9 -c "$d/symbols.json" | wc -c | sed 's/^/debian symbols.json gzip: /'
@@ -106,7 +122,7 @@ jobs:
     # kernels that boot are untouched; the job fails if the -g build's code
     # differs from them (only the GNU build-id note, a hash over the whole
     # ELF including the debug info, may differ).
-    - name: Debug-info builds and sources.json
+    - name: Debug-info builds, DWARF shards and C source
       run: |
         g="$RUNNER_TEMP/g"
         rm -rf "$g" && mkdir -p "$g"
@@ -130,11 +146,10 @@ jobs:
           exit 1
         fi
         echo "-g builds: code byte-identical to the booting kernels"
-        site/gen-source.py "$g/minified/vmlinux" "$g/minified" out/minified-linux/disasm.json out/minified-linux/sources.json
-        site/gen-source.py "$g/hello/boot/high/kernel.elf" "$g/hello" out/hello/disasm.json out/hello/sources.json
-        gzip -9 -c out/minified-linux/sources.json | wc -c | sed 's/^/minified-linux sources.json gzip: /'
         site/gen-dwarf.js "$g/minified/vmlinux" out/minified-linux/dwarf
         site/gen-dwarf.js "$g/hello/boot/high/kernel.elf" out/hello/dwarf
+        site/gen-src.js out/minified-linux/dwarf "$g/minified" out/minified-linux/src --origin "the minified/ tree of commit ${GITHUB_SHA:0:12}"
+        site/gen-src.js out/hello/dwarf "$g/hello" out/hello/src --origin "the hello/ tree of commit ${GITHUB_SHA:0:12}"
         site/test_dwarf.py "$g/minified/vmlinux" out/minified-linux/dwarf --samples 5000 --strip "$(realpath "$g/minified")/"
         site/test_dwarf.py "$g/hello/boot/high/kernel.elf" out/hello/dwarf --samples 500 --strip "$(realpath "$g/hello")/"
         # The -g ELFs for the browser test's llvm-symbolizer checks (not deployed).
@@ -259,9 +274,19 @@ jobs:
     - id: deployment
       uses: actions/deploy-pages@v4
 
+  # The browser test's suites in parallel jobs (test_browser.py --suites),
+  # grouped so each job takes about the same time.
   browser-test:
     needs: site
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suites:
+        - boot,symbols,debugger,misc,touch
+        - debian,dwarf,dwarf_import
+        - runto,initramfs,tasks,coverage
+    name: browser-test (${{ matrix.suites }})
     steps:
     - uses: actions/checkout@v4
 
@@ -311,13 +336,13 @@ jobs:
         "$RUNNER_TEMP/venv/bin/pip" install playwright
         "$RUNNER_TEMP/venv/bin/playwright" install --with-deps chromium
 
-    - name: Browser test (both kernels, counters, debugger, tabs, snapshots, touch, stale cache)
+    - name: Browser test (${{ matrix.suites }})
       env:
         MKB_DEBUG_ELF_DIR: ${{ github.workspace }}/debug-elfs
-      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py'
+      run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py --suites "${{ matrix.suites }}"'
 
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: browser-screenshots
+        name: browser-screenshots-${{ strategy.job-index }}
         path: site/test-screenshots/

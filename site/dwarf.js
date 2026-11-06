@@ -857,6 +857,16 @@ function dwarfFrames(t, pa) {
 	return frames;
 }
 
+// [lo, hi) of the outermost function (depth 0) covering pa, or null.
+function dwarfFunction(t, pa) {
+	let a = 0, b = t.ra.length;
+	while (a < b) { const m = (a + b) >> 1; if (t.ra[m] <= pa) a = m + 1; else b = m; }
+	for (let q = a - 1; q >= 0 && t.ra[q] >= pa - t.maxLen; q--)
+		if (t.rd[q] === 0 && t.rh[q] > pa)
+			return [t.ra[q], t.rh[q]];
+	return null;
+}
+
 // ---- shard files ----------------------------------------------------------
 // "MKBD" 1, strings (count, then NUL-terminated UTF-8), line rows (count,
 // then address delta, file+1 zigzag delta, line zigzag delta), ranges
@@ -932,4 +942,4 @@ function dwarfDecode(b) {
 }
 
 if (typeof module !== "undefined")
-	module.exports = { DwarfReader, dwarfElf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfEncode, dwarfDecode, dwDisplayPath };
+	module.exports = { DwarfReader, dwarfElf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfFunction, dwarfRow, dwarfEncode, dwarfDecode, dwDisplayPath };

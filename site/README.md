@@ -82,8 +82,9 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   global data with a size; local data objects and export/tracing
   bookkeeping dropped), 5,059,585 bytes, 765,158 gzipped (117,357
   symbols, 13 MB, 1.6 MB gzipped untrimmed). `gen-dwarf.js` turns the
-  same vmlinux's DWARF into `dwarf/` (see Debug info below). No disasm.json or
-  sources.json: the listing is disassembled live (below). Its `meta.json` gives the label
+  same vmlinux's DWARF into `dwarf/` (see Debug info below), and
+  `gen-src.js` ships the C source files that DWARF names (`src/`, see C
+  source below). No disasm.json: the listing is disassembled live (below). Its `meta.json` gives the label
   "Debian 6.1 686 (no initrd: ends in a root-fs panic)", the command line
   `nokaslr console=tty0 cryptomgr.notests` and 64 MB of RAM (32 MB does
   not boot: it stays at the SeaBIOS banner). At full speed it prints its
@@ -123,7 +124,7 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   loads the 32-bit kernel; this is the detected offset shown, as a
   System.map has no bytes to match), else vaddr - 0xC0000000 for addresses
   above the i386 PAGE_OFFSET, else identity; a hex offset can be typed.
-  There is no disasm.json or sources.json for imported symbols: the
+  There is no disasm.json or shipped C source for imported symbols: the
   listing is disassembled live from guest memory (below). An ELF is read
   in File slices (headers, `.symtab`, `.strtab`), never whole; its DWARF,
   if any, gives file:line (Debug info below). A System.map or a vmlinux
@@ -236,21 +237,51 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   compiled to in the Page listing and the Debugger's code window, like
   `objdump -S` (dim `file.c:123`, printed again when the code returns to
   a line, "[f inlined into g]" for inlined code, the chain in its title).
-  The text of the lines comes from `kernels/<name>/sources.json`, shipped
-  for the minified Linux and hello; other kernels show file:line. Tapping
-  a C line opens the whole function in a side panel with live line
-  coverage: a line is marked executed when any instruction compiled from
-  it (or inlined from it) has run, from the stepper's unique-EIP bitmap.
-  `sources.json` comes from `gen-source.py`: `llvm-symbolizer --inlining`
-  over every instruction of `disasm.json` finds the functions and lines
-  with code and keeps only those source lines. The workflow builds `-g` copies
+  The text of the lines comes from `kernels/<name>/src/`, written by
+  `gen-src.js` for every sample kernel: each file the DWARF shards name
+  (line rows and inlined-call sites), gzipped (`<path>.gz`), and
+  `index.json` with the list, where the tree comes from, why a file is
+  missing (a compiler header outside the tree, a file made by the build)
+  and how a regenerated one was made. The page fetches a file the first
+  time a line of it is shown and gunzips it with DecompressionStream (or
+  takes it as is when the server already decoded it); "reading file…"
+  until then. `gen-src.js` fails when a line the DWARF names is past the
+  end of its file (not the tree the kernel was built from) and prints how
+  many inlined calls have a call line naming the inlined function.
+  Trees: the minified Linux and hello from the `-g` copies below (minified
+  188 files, 748,753 bytes, 279,917 gzipped; hello 1 file); Debian from its
+  source package: `gen-debian-source.sh` unpacks `linux_6.1.176.orig.tar.xz`
+  (137,945,728 bytes), applies the 165 patches of `debian/patches/series`
+  from `linux_6.1.176-1.debian.tar.xz` (the 686 flavour builds featureset
+  "none", that series alone; one of them adds
+  `drivers/firmware/efi/secureboot.c`) and regenerates the two headers
+  the build makes and the DWARF names, with the kernel's own tools:
+  `arch/x86/include/generated/asm/syscalls_32.h` (`scripts/syscalltbl.sh
+  --abis i386`) and `security/selinux/flask.h` (`genheaders`); both
+  tarballs are SHA-256 pinned (from the `.dsc`) and cached. Debian: 3,183
+  files, 57,548,912 bytes, 15,548,524 gzipped (about 4.9 KB a file); 85%
+  of its 421,041 inlined calls (minified: 84%) have a call line naming
+  the function (macros and multi-line calls are the rest); about 10 s in
+  CI. For an imported vmlinux (or a bzImage from disk with one) the page
+  shows file:line and a "C source" picker: a folder (webkitdirectory) or
+  an uncompressed .tar (ustar, pax path records, GNU long names: only the
+  512-byte headers are read when it is picked, each file is a File slice
+  read when a line of it is shown); the tree may sit one level down
+  (`linux-6.1.176/...`). A .tar.gz/.xz is refused with the reason (it
+  would have to be decompressed whole). Nothing picked is remembered.
+  Tapping a C line opens the whole function in a side panel with live line
+  coverage: the panel's lines are those of the function in that file
+  (from its DWARF line rows, two lines before the first), a line has
+  code when a line row of the function maps to it (directly or as the
+  call site of inlined code) and is marked executed when an instruction
+  started in one of those rows' address ranges while stepping (the
+  stepper's unique-EIP bitmap). The workflow builds `-g` copies
   (`KCFLAGS=-g` for the minified Linux, `CC="clang -g"` for hello) next to
   the gate kernels and fails unless their code is byte-identical
   (`llvm-objcopy -O binary --remove-section=.notes`: only the 20-byte GNU
   build-id differs, as it hashes the debug info too); `gen-dwarf.js` and
-  `gen-source.py` read those. sources.json: minified Linux 459,200 bytes
-  (188 files, 1,192 functions, 15,208 source lines), hello 792 bytes. The
-  -g build takes about 11 s locally (9 s without -g).
+  `gen-src.js` read those. The -g build takes about 11 s locally (9 s
+  without -g).
 - **Executed code.** The Page listing tints the instructions that have
   not executed in this boot (a lavender background, the "tinted" key next
   to the listing's counts gives how many). An instruction counts as
@@ -357,8 +388,10 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   longer count as start_kernel's. Three views:
   - *Timeline* (default): an icicle chart, x = instructions from the
     kernel entry, y = call depth, one box per call, labelled when at least
-    40 px wide, coloured by the top directory of its source file
-    (sources.json) or a name guess, interrupts grey. Calls narrower than
+    40 px wide, coloured by the top directory of the source file of its
+    first instruction (DWARF, where its shard is loaded already: colouring
+    never fetches, and the minified Linux and hello load their few shards
+    up front) or a name guess, interrupts grey. Calls narrower than
     a pixel are merged per pixel column (in the colour of the call that
     covers most of it, more opaque the more of it is covered) instead of
     being dropped, which made dense stretches of tiny calls look empty
@@ -597,9 +630,14 @@ qemu runs used `timeout 120` and a FIFO, so no trace touched the disk.
     site/fetch-v86.sh
     site/gen-symbols.py minified/vmlinux site/kernels/minified-linux/symbols.json minified-linux
     site/gen-symbols.py hello/boot/high/kernel.elf site/kernels/hello/symbols.json hello
-    (sources.json and dwarf/: see the workflow's "Debug-info builds" step)
+    (dwarf/ and src/: see the workflow's "Debug-info builds" step)
     site/gen-kernels.sh
     python3 site/test_browser.py
+    python3 site/test_browser.py --suites debian,dwarf,dwarf_import
+
+The suites (`SUITES` in test_browser.py) run in three parallel CI jobs
+(the workflow's browser-test matrix), grouped by their measured times;
+each prints `suite NAME: N s`.
 
 The tab bar wraps on narrow screens (every tab a 32 px target); the touch
 case checks every tab is inside a 390 px viewport, the last one opens,
@@ -650,7 +688,12 @@ end-of-panic stop with "end Kernel panic" on the screen, and, on a fresh
 paused boot, runs to start_kernel (about 3.5 minutes of stepping) and
 checks the Debugger names it, then steps 11 times and checks the
 source rows against llvm-symbolizer on the -dbg vmlinux and that the
-start_kernel listing has init/main.c lines. The DWARF case (minified
+start_kernel listing has init/main.c lines with their text; tapping one
+opens start_kernel in the source panel with some but not all lines
+executed, and at most 100 of its 3,183 source files were fetched. With the C source
+(every kernel built here, and Debian) the DWARF cases also check the
+text: the line at the entry of start_kernel / hello_main names it, and
+at least half the call lines of inlined code name the inlined function. The DWARF case (minified
 Linux, hello) runs to start_kernel / hello_main, steps to 12 (5) EIPs and
 compares the Debugger's source rows with `llvm-symbolizer --inlines` on
 the -g ELF (`$MKB_DEBUG_ELF_DIR/<kernel>.elf`, required in CI), needs at
@@ -658,7 +701,10 @@ least one EIP in inlined code, call stack and timeline frame titles with
 file:line, C lines in the listing, and takes screenshots light and dark
 at 1280 and 390 px. The DWARF import case imports the minified Linux's -g
 vmlinux, compares at 6 EIPs, reloads and gets the same answers from
-IndexedDB, checks a vmlinux without DWARF says so, and imports Debian's
+IndexedDB, checks a vmlinux without DWARF says so, shows file:line only
+and the C source picker until a source is picked, refuses a .tar.gz with
+the reason and gets the lines' text (equal to the files') from a pax
+.tar, a GNU .tar and a folder that hold the tree one level down, and imports Debian's
 300 MB -dbg vmlinux and compares 40 random addresses. A last case serves two "deploys" with `Cache-Control: max-age=600` (as
 GitHub Pages does) and checks a reload runs the new `app.js`. Screenshots
 (desktop and 390 px) go to `site/test-screenshots/`.

@@ -294,13 +294,13 @@ async function imageKey() {
 }
 
 // Make imported symbols the current kernel's: everything that reads
-// `symbols` uses them after the reboot. No disasm.json / sources.json; the
+// `symbols` uses them after the reboot. No disasm.json or shipped C source; the
 // DWARF is the imported vmlinux's (dbgImport), or none for a System.map.
 function applySymbols(map) {
 	symbols = { name: map.name, sections: map.sections, symbols: map.symbols };
 	symbols.imported = { file: map.name, source: map.source, offset: map.offset, how: map.offsetHow };
 	disasm = null;
-	sources = null;
+	srcFresh(null, "no C source shipped for imported symbols");
 	if (map.source !== "ELF")
 		dbgFresh(null, "a System.map has no debug info: import the unstripped vmlinux for file:line");
 	syncSrcToggle();
@@ -633,7 +633,7 @@ function initImport() {
 		const k = heads.findIndex(looksLikeBzImage);
 		if (k >= 0) {
 			disasm = null;
-			sources = null;
+			srcFresh(null, "no C source for a bzImage from disk");
 			dbgFresh(null, "no debug info for a bzImage from disk: import its unstripped vmlinux for file:line");
 			syncSrcToggle();
 			useImage(files[k].name, await files[k].arrayBuffer());

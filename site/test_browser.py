@@ -15,6 +15,7 @@ max-age=600). See README.md, Testing.
 
 Usage:
   site/test_browser.py                      all of the above
+  site/test_browser.py --suites debian,dwarf  some suites (SUITES below; CI runs them in parallel jobs)
   site/test_browser.py hello:1048576 minified-linux:18874368
   site/test_browser.py --probe hello:655360 report only, never fail
 
@@ -33,6 +34,7 @@ import shutil
 import subprocess
 import socketserver
 import sys
+import tarfile
 import tempfile
 import threading
 import time
@@ -1273,11 +1275,41 @@ def source_rows(page):
 DWARF_STEPS = (0, 37, 101, 263, 541, 1009, 2003, 3001, 4007, 5003, 7001, 9001)
 
 
-def dwarf_check(page, name, offset, problems, r, steps=DWARF_STEPS):
+def source_texts(page):
+    """The C text of each source row (frame) of the Debugger, "" where none, once the files loaded."""
+    get = lambda: page.evaluate("""() => [...document.querySelectorAll('#cur_src .frame')].map(f => {
+        const t = f.querySelector('.srctext'); return t ? t.textContent.trim() : ''; })""")
+    wait_for(lambda: "reading " not in (page.inner_text("#cur_src") if page.locator("#cur_src").count() else "") and
+             not any("reading " in (b or "") for b in page.eval_on_selector_all("#cur_src button", "els => els.map(e => e.title)")), 20)
+    return get()
+
+
+def text_check(page, name, samples, texts, entry_fn, problems, r):
+    """The C text shown with the source rows is the kernel's: the entry line
+    of entry_fn or one of the ten before it (the first row can be the "{" or
+    the first statement after a comment) names it, and the call line of an inlined function mostly names that
+    function (macros and multi-line calls do not)."""
+    rows = sum(1 for t in texts for x in t if x)
+    calls = [(t[k], fr[k - 1]["func"]) for (_, st, fr), t in zip(samples, texts) if st == "ok"
+             for k in range(1, min(len(fr), len(t))) if fr[k]["line"]]
+    named = sum(1 for text, fn in calls if fn and fn in text)
+    r["text_rows"] = rows
+    r["call_lines_naming_callee"] = f"{named}/{len(calls)}"
+    f0 = samples[0][2][0] if samples and samples[0][2] else None
+    r["entry_text"] = page.evaluate("(f) => [...Array(11).keys()].map((k) => srcText(f.file, f.line - 10 + k))", f0) if f0 else None
+    if not r["entry_text"] or not texts[0] or texts[0][0] != (r["entry_text"][-1] or "").strip() or \
+            not any(entry_fn + "(" in (t or "") for t in r["entry_text"]):
+        problems.append(f"{name}: the C line at the entry of {entry_fn} is {r['entry_text']!r}")
+    if calls and named * 2 < len(calls):
+        problems.append(f"{name}: call lines name the inlined function in only {named} of {len(calls)}")
+
+
+def dwarf_check(page, name, offset, problems, r, steps=DWARF_STEPS, entry_fn=None):
     """At EIP and after each Step: the Debugger's source rows (file:line,
     inlined-at chain) equal llvm-symbolizer --inlines on the kernel's -g ELF;
-    the call stack names frames with file:line in their tooltips."""
-    samples = []
+    the call stack names frames with file:line in their tooltips. With
+    entry_fn (the C source is there): text_check on the rows' C text."""
+    samples, texts = [], []
     for n in steps:
         if n:
             before = page.evaluate("stepper.steps")
@@ -1286,6 +1318,10 @@ def dwarf_check(page, name, offset, problems, r, steps=DWARF_STEPS):
             wait_for(lambda: page.evaluate("stepper.steps") - before >= n and
                      page.get_attribute("#dbg_state", "data-state") == "paused", 60)
         samples.append(source_rows(page))
+        if entry_fn:
+            texts.append(source_texts(page))
+    if entry_fn:
+        text_check(page, name, samples, texts, entry_fn, problems, r)
     ok = [x for x in samples if x[1] == "ok"]
     r["dwarf_samples"] = len(samples)
     r["dwarf_ok"] = len(ok)
@@ -1341,7 +1377,7 @@ def dwarf_case(browser, base, shots, name):
         page.close()
         return [f"Run to {fn} did not stop there"], r
     steps = DWARF_STEPS if name != "hello" else (0, 3, 7, 11, 19)
-    samples = dwarf_check(page, name, sk["vaddr"] - sk["paddr"], problems, r, steps)
+    samples = dwarf_check(page, name, sk["vaddr"] - sk["paddr"], problems, r, steps, fn)
     if name != "hello" and not r.get("dwarf_inlined"):
         problems.append(f"{name}: no sample EIP was in inlined code: {r}")
     page.screenshot(path=str(shots / f"dwarf-debugger-{name}-1280-light.png"))
@@ -1384,6 +1420,59 @@ def dwarf_case(browser, base, shots, name):
     return problems, r
 
 
+def import_source_check(page, problems, r, shots):
+    """At start_kernel of an imported vmlinux: file:line only until its source is picked; a
+    .tar.gz is refused with a reason; a pax .tar, a GNU .tar and a folder
+    (each holding the tree one level down) give the text of the lines,
+    equal to the files' own; the panel opens."""
+    src = SITE / kernel_entries()["minified-linux"]["src"]
+    r["src_status_before"] = page.inner_text("#src_status")
+    if not page.is_visible("#src_pick") or "file:line only" not in r["src_status_before"] or any(source_texts(page)):
+        problems.append(f"import without source: picker hidden or text shown: {r['src_status_before']!r}")
+    with tempfile.TemporaryDirectory() as tmp:
+        tree = pathlib.Path(tmp) / "linux-min"
+        for gz in src.rglob("*.gz"):
+            out = tree / gz.relative_to(src).with_suffix("")
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_bytes(gzip.decompress(gz.read_bytes()))
+        # A path over 100 bytes: a pax "path" record, a GNU "L" entry.
+        (tree / ("long-" * 25)).mkdir()
+        (tree / ("long-" * 25) / "name.c").write_text("int x;\n")
+        tars = {}
+        for fmt, name in ((tarfile.PAX_FORMAT, "pax.tar"), (tarfile.GNU_FORMAT, "gnu.tar")):
+            tars[name] = pathlib.Path(tmp) / name
+            with tarfile.open(tars[name], "w", format=fmt) as t:
+                t.add(tree, arcname="linux-min")
+        tgz = pathlib.Path(tmp) / "src.tar.gz"
+        tgz.write_bytes(gzip.compress(tars["pax.tar"].read_bytes()))
+        page.set_input_files("#src_tar", str(tgz))
+        wait_for(lambda: "compressed" in page.inner_text("#src_status"), 10)
+        r["src_status_tgz"] = page.inner_text("#src_status")
+        if "compressed" not in r["src_status_tgz"]:
+            problems.append(f"a .tar.gz source was not refused with a reason: {r['src_status_tgz']!r}")
+        picks = [("pax.tar", "#src_tar", tars["pax.tar"]), ("gnu.tar", "#src_tar", tars["gnu.tar"]), ("folder", "#src_dir", tree)]
+        for label, sel, path in picks:
+            page.set_input_files(sel, str(path))
+            wait_for(lambda: page.get_attribute("#src_status", "data-state") == "picked", 30)
+            _, state, frames = source_rows(page)
+            texts = source_texts(page)
+            want = []
+            for f in frames:
+                p = tree / f["file"] if f["file"] else None
+                lines = p.read_text(errors="replace").split("\n") if p and p.is_file() else []
+                want.append(lines[f["line"] - 1].strip() if 0 < f["line"] <= len(lines) else "")
+            r[f"src_{label}"] = f"{page.inner_text('#src_status')}: {sum(1 for t in texts if t)} rows with text"
+            if state != "ok" or not any(texts) or texts != want:
+                problems.append(f"source picked as {label}: rows {texts} != files {want}")
+        page.locator("#cur_src .frame button").first.click()
+        wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 10)
+        r["src_panel"] = page.inner_text("#src_title")
+        if page.get_attribute("#src_body", "data-state") != "ok" or "the folder linux-min" not in page.inner_text("#src_info"):
+            problems.append(f"source panel of a picked folder: {r['src_panel']!r} {page.inner_text('#src_info')!r}")
+        page.screenshot(path=str(shots / "source-import-1280.png"))
+        page.click("#src_close")
+
+
 def dwarf_import_case(browser, base, shots):
     """An imported unstripped vmlinux: its DWARF is read in a Worker one
     compile unit at a time (clang forms: the minified Linux's -g vmlinux;
@@ -1415,6 +1504,7 @@ def dwarf_import_case(browser, base, shots):
     if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
                     and page.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 120):
         problems.append("imported -g vmlinux: Run to start_kernel did not stop there")
+    import_source_check(page, problems, r, shots)
     samples = dwarf_check(page, "minified-linux", sk["vaddr"] - sk["paddr"], problems, r, DWARF_STEPS[:6])
     r["imported_first"] = r.get("dwarf_first")
     page.screenshot(path=str(shots / "dwarf-import-1280.png"))
@@ -1556,6 +1646,9 @@ def debian_case(browser, base, shots, name):
         problems.append(f"startup_32 -> start_kernel took {r['entry_to_start_kernel']} instructions, not 62,512")
     page.close()
     page = browser.new_page(viewport={"width": 1100, "height": 1000})
+    src_files = {}  # source files fetched: path -> bytes
+    page.on("response", lambda resp: "/src/" in resp.url and resp.url.split("?")[0].endswith(".gz") and
+            src_files.__setitem__(resp.url.split("/src/", 1)[1].split("?")[0], int(resp.headers.get("content-length") or 0)))
     page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
     page.fill("#dbg_addr", hex(sk["vaddr"]))
@@ -1571,7 +1664,7 @@ def debian_case(browser, base, shots, name):
     if not ok or r["runto_symbol"] != "start_kernel":
         problems.append(f"Run to start_kernel: {r['runto_symbol']!r} ({page.inner_text('#dbg_status')})")
     elif "dwarf" in entry:
-        dwarf_check(page, name, sk["vaddr"] - sk["paddr"], problems, r)
+        dwarf_check(page, name, sk["vaddr"] - sk["paddr"], problems, r, entry_fn="start_kernel" if "src" in entry else None)
         page.screenshot(path=str(shots / "dwarf-debugger-debian-1280.png"))
         open_page(page, sk["paddr"] // 4096)
         wait_for(lambda: page.locator("#listing .src:not(.dim)").count() > 0, 15)
@@ -1581,10 +1674,47 @@ def debian_case(browser, base, shots, name):
         if not r["listing_main_c"]:
             problems.append("Debian: no init/main.c line in the listing of start_kernel")
         page.screenshot(path=str(shots / "dwarf-listing-debian-1280.png"))
+        if "src" in entry:
+            debian_source_panel(page, main, src_files, problems, r, shots)
     page.close()
     if errors:
         problems.append("page errors: " + "; ".join(errors))
     return problems, r
+
+
+def debian_source_panel(page, line, src_files, problems, r, shots):
+    """Debian's C source: the listing shows init/main.c's text, tapping it
+    opens start_kernel with lines that ran; only the files of lines shown
+    were fetched; screenshots light/dark at 1100 and 390 px."""
+    wait_for(lambda: line.count() and not line.locator(".dim").count(), 20)
+    r["listing_main_c_text"] = line.inner_text() if line.count() else None
+    if not r["listing_main_c_text"] or "main.c:" not in r["listing_main_c_text"] or line.locator(".dim").count():
+        problems.append(f"Debian: the init/main.c line of the listing has no text: {r['listing_main_c_text']!r}")
+    line.click()
+    wait_for(lambda: page.is_visible("#src_panel") and page.get_attribute("#src_body", "data-state") == "ok", 30)
+    r["panel"] = page.inner_text("#src_title")
+    r["panel_code"] = int(page.get_attribute("#src_body", "data-code") or 0)
+    r["panel_executed"] = int(page.get_attribute("#src_body", "data-executed") or 0)
+    r["panel_info"] = page.inner_text("#src_info")
+    if not r["panel"].startswith("start_kernel — init/main.c:") or not 0 < r["panel_executed"] < r["panel_code"]:
+        problems.append(f"Debian source panel: {r['panel']!r}, {r['panel_executed']} of {r['panel_code']} lines executed")
+    if "Debian's source package" not in r["panel_info"]:
+        problems.append(f"Debian source panel does not say where the source comes from: {r['panel_info']!r}")
+    r["src_files_fetched"] = len(src_files)
+    r["src_bytes_fetched"] = sum(src_files.values())
+    if not src_files or len(src_files) > 100:
+        problems.append(f"Debian: {len(src_files)} source files fetched: {sorted(src_files)[:10]}")
+    page.screenshot(path=str(shots / "source-debian-1100-light.png"))
+    page.emulate_media(color_scheme="dark")
+    page.screenshot(path=str(shots / "source-debian-1100-dark.png"))
+    for scheme in ("dark", "light"):
+        page.emulate_media(color_scheme=scheme)
+        page.set_viewport_size({"width": 390, "height": 900})
+        time.sleep(0.3)
+        if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
+            problems.append(f"Debian source panel: the page scrolls horizontally at 390 px ({scheme})")
+        page.screenshot(path=str(shots / f"source-debian-390-{scheme}.png"))
+    page.set_viewport_size({"width": 1100, "height": 1000})
 
 
 def norm_insn(text):
@@ -1873,7 +2003,7 @@ def run_case(browser, base, name, mem, timeout, shots, has_symbols, speed=None):
         if want == "panic" and (count["exit_code"] != "0" or "exited with code 0" not in count["end_text"]):
             lab_problems.append("panic banner does not say init exited with code 0: " + count["end_text"])
         count["graph"] = graph_check(page, name, lab_problems, shots, tag)
-        if "sources" in kernel_entries().get(name, {}):
+        if "src" in kernel_entries().get(name, {}):
             count["source"] = source_check(page, name, lab_problems, shots, tag)
         if speed is None and name == "hello" and (count.get(HELLO) or {}).get("entry") != 86:
             lab_problems.append(f"hello: {count.get(HELLO)} instructions from the entry to Hello, not 86")
@@ -1898,9 +2028,135 @@ def run_case(browser, base, name, mem, timeout, shots, has_symbols, speed=None):
     }
 
 
+def report(label, problems, r=None, **extra):
+    """One JSON line per check (flushed: the CI log shows when each ran); True if it failed."""
+    print(json.dumps({label: problems or "ok", **extra, **{k: str(v) for k, v in (r or {}).items()}}), flush=True)
+    return bool(problems)
+
+
+def suite_boot(ctx):
+    """The boot cases (default_cases or the command line's), then Linux vs hello."""
+    failed = False
+    at2mb = {}
+    for name, mem, speed in ctx.cases:
+        has_symbols = "symbols" in ctx.entries.get(name, {})
+        r = run_case(ctx.browser, ctx.base, name, mem, ctx.args.timeout, ctx.shots, has_symbols, speed)
+        print(json.dumps(r), flush=True)
+        good = (r["ok"] and r["nonzero_pages"] and 0 < r["nonzero_pages"] < r["total_pages"]
+                and not r["lab_problems"] and not r["page_errors"])
+        if not good:
+            failed = True
+        if mem is None:
+            at2mb[name] = r["counters"]
+    h = (at2mb.get("hello") or {}).get(HELLO) or {}
+    k = (at2mb.get("minified-linux") or {}).get(HELLO) or {}
+    if k and not (k.get("entry") or 0) > (h.get("entry") or 0):
+        print("FAIL: Linux needs no more instructions than hello", h, k)
+        failed = True
+    return failed
+
+
+def suite_symbols(ctx):
+    lp, lr = linux_slow_case(ctx.browser, ctx.base, ctx.shots)
+    sp, sr = symbol_case(ctx.browser, ctx.base, "minified-linux", ctx.shots)
+    return report("linux_slow", lp, lr) | report("symbols", sp, sr)
+
+
+def suite_debugger(ctx):
+    failed = False
+    for name in [n for n in ("hello", "minified-linux") if n in ctx.entries]:
+        dp, dr = debugger_case(ctx.browser, ctx.base, name, None, ctx.shots)
+        failed |= report("debugger", dp, dr, kernel=name)
+    return failed
+
+
+def suite_misc(ctx):
+    """Symbol import, initrds, panic text, determinism, follow mode."""
+    failed = report("import", *import_case(ctx.browser, ctx.base, ctx.shots))
+    failed |= report("initrd", *initrd_case(ctx.browser, ctx.base, ctx.shots))
+    if os.environ.get("MKB_THIRD_PARTY"):
+        failed |= report("third_party", *third_party_case(ctx.browser, ctx.base, ctx.shots, os.environ["MKB_THIRD_PARTY"]))
+    failed |= report("panic_text", *panic_text_case(ctx.browser, ctx.base, ctx.shots))
+    if os.environ.get("MKB_DISTRO_CACHE"):
+        failed |= report("distro_panic", *distro_panic_case(ctx.browser, ctx.base, os.environ["MKB_DISTRO_CACHE"]))
+    failed |= report("determinism", *determinism_case(ctx.browser, ctx.base))
+    failed |= report("follow", *follow_case(ctx.browser, ctx.base, ctx.shots))
+    return failed
+
+
+def debian_names(ctx):
+    return [n for n in ctx.entries if n.startswith("debian") and "initrd" not in ctx.entries[n]]
+
+
+def suite_debian(ctx):
+    failed = False
+    for name in debian_names(ctx):
+        failed |= report("debian", *debian_case(ctx.browser, ctx.base, ctx.shots, name), kernel=name)
+    return failed
+
+
+def suite_dwarf(ctx):
+    failed = False
+    for name in [n for n in ("minified-linux", "hello") if n in ctx.entries and "dwarf" in ctx.entries[n]]:
+        failed |= report("dwarf", *dwarf_case(ctx.browser, ctx.base, ctx.shots, name), kernel=name)
+    return failed
+
+
+def suite_dwarf_import(ctx):
+    return report("dwarf_import", *dwarf_import_case(ctx.browser, ctx.base, ctx.shots))
+
+
+def suite_runto(ctx):
+    failed = report("runto", *runto_case(ctx.browser, ctx.base, ctx.shots))
+    return failed | report("cpu_state", *cpu_state_case(ctx.browser, ctx.base, ctx.shots, "minified-linux"))
+
+
+def suite_initramfs(ctx):
+    failed = False
+    for name in [n for n in ctx.entries if "initrd" in ctx.entries[n]]:
+        failed |= report("initramfs", *initramfs_case(ctx.browser, ctx.base, ctx.shots, name), kernel=name)
+    return failed
+
+
+def suite_tasks(ctx):
+    failed = False
+    for name in debian_names(ctx) + [n for n in ("minified-linux",) if n in ctx.entries]:
+        failed |= report("tasks_case", *tasks_case(ctx.browser, ctx.base, ctx.shots, name), kernel=name)
+    return failed
+
+
+def suite_coverage(ctx):
+    failed = report("live_decode", *livedecode_case(ctx.browser, ctx.base, ctx.shots))
+    return failed | report("coverage", *coverage_case(ctx.browser, ctx.base, ctx.shots))
+
+
+def suite_touch(ctx):
+    failed = report("touch", touch_case(ctx.browser, ctx.base, ctx.shots))
+    return failed | report("stale_cache", stale_cache_case(ctx.browser, ctx.args.timeout))
+
+
+# name -> (run, needs the minified Linux). The workflow runs them in
+# parallel jobs (--suites); without --suites all run, in this order.
+SUITES = {
+    "boot": (suite_boot, False),
+    "symbols": (suite_symbols, True),
+    "debugger": (suite_debugger, False),
+    "misc": (suite_misc, True),
+    "debian": (suite_debian, False),
+    "dwarf": (suite_dwarf, False),
+    "dwarf_import": (suite_dwarf_import, True),
+    "runto": (suite_runto, True),
+    "initramfs": (suite_initramfs, False),
+    "tasks": (suite_tasks, False),
+    "coverage": (suite_coverage, True),
+    "touch": (suite_touch, False),
+}
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("cases", nargs="*", help="NAME or NAME:MEMBYTES")
+    ap.add_argument("cases", nargs="*", help="NAME or NAME:MEMBYTES (only the boot suite then runs)")
+    ap.add_argument("--suites", help="comma-separated, of: " + ", ".join(SUITES))
     ap.add_argument("--timeout", type=float, default=120)
     ap.add_argument("--probe", action="store_true", help="report, do not assert")
     ap.add_argument("--shots", default=str(SITE / "test-screenshots"))
@@ -1910,134 +2166,28 @@ def main():
     for c in args.cases:
         name, mem, speed = (c.split(":") + ["", ""])[:3]
         cases.append((name, int(mem) if mem else None, speed or None))
-    cases = cases or default_cases()
+    names = args.suites.split(",") if args.suites else ["boot"] if args.cases else list(SUITES)
+    unknown = [n for n in names if n not in SUITES]
+    if unknown:
+        ap.error("unknown suites: " + ", ".join(unknown))
     shots = pathlib.Path(args.shots)
     shots.mkdir(parents=True, exist_ok=True)
 
     httpd = serve()
-    base = f"http://127.0.0.1:{httpd.server_address[1]}"
-    failed = False
     entries = kernel_entries()
+    ctx = argparse.Namespace(args=args, cases=cases or default_cases(), shots=shots, entries=entries,
+                             base=f"http://127.0.0.1:{httpd.server_address[1]}")
+    failed = False
     with sync_playwright() as p:
-        browser = p.chromium.launch()
-        at2mb = {}
-        for name, mem, speed in cases:
-            has_symbols = "symbols" in entries.get(name, {})
-            r = run_case(browser, base, name, mem, args.timeout, shots, has_symbols, speed)
-            print(json.dumps(r))
-            good = (r["ok"] and r["nonzero_pages"] and 0 < r["nonzero_pages"] < r["total_pages"]
-                    and not r["lab_problems"] and not r["page_errors"])
-            if not good:
-                failed = True
-            if mem is None:
-                at2mb[name] = r["counters"]
-        if not args.cases:
-            h = (at2mb.get("hello") or {}).get(HELLO) or {}
-            k = (at2mb.get("minified-linux") or {}).get(HELLO) or {}
-            if k and not (k.get("entry") or 0) > (h.get("entry") or 0):
-                print("FAIL: Linux needs no more instructions than hello", h, k)
-                failed = True
-            if "minified-linux" in at2mb:
-                lp, lr = linux_slow_case(browser, base, shots)
-                print(json.dumps({"linux_slow": lp or "ok", **lr}))
-                if lp:
-                    failed = True
-                sp, sr = symbol_case(browser, base, "minified-linux", shots)
-                print(json.dumps({"symbols": sp or "ok", **sr}))
-                if sp:
-                    failed = True
-            for name in at2mb:
-                dp, dr = debugger_case(browser, base, name, None, shots)
-                print(json.dumps({"debugger": name, "problems": dp, **dr}))
-                if dp:
-                    failed = True
-        if not args.cases and "minified-linux" in entries:
-            ip, ir = import_case(browser, base, shots)
-            print(json.dumps({"import": ip or "ok", **{k: str(v) for k, v in ir.items()}}))
-            if ip:
-                failed = True
-            np_, nr = initrd_case(browser, base, shots)
-            print(json.dumps({"initrd": np_ or "ok", **{k: str(v) for k, v in nr.items()}}))
-            if np_:
-                failed = True
-            if os.environ.get("MKB_THIRD_PARTY"):
-                tp, tr = third_party_case(browser, base, shots, os.environ["MKB_THIRD_PARTY"])
-                print(json.dumps({"third_party": tp or "ok", **{k: str(v) for k, v in tr.items()}}))
-                if tp:
-                    failed = True
-            pp, pr = panic_text_case(browser, base, shots)
-            print(json.dumps({"panic_text": pp or "ok", **pr}))
-            if pp:
-                failed = True
-            if os.environ.get("MKB_DISTRO_CACHE"):
-                xp, xr = distro_panic_case(browser, base, os.environ["MKB_DISTRO_CACHE"])
-                print(json.dumps({"distro_panic": xp or "ok", **xr}))
-                if xp:
-                    failed = True
-            dp, dr = determinism_case(browser, base)
-            print(json.dumps({"determinism": dp or "ok", **{k: str(v) for k, v in dr.items()}}))
-            if dp:
-                failed = True
-        if not args.cases and "minified-linux" in entries:
-            fp, fr = follow_case(browser, base, shots)
-            print(json.dumps({"follow": fp or "ok", **{k: str(v) for k, v in fr.items()}}))
-            if fp:
-                failed = True
-        for name in [n for n in entries if (n.startswith("debian") and "initrd" not in entries[n])] if not args.cases else []:
-            bp, br = debian_case(browser, base, shots, name)
-            print(json.dumps({"debian": bp or "ok", **{k: str(v) for k, v in br.items()}}))
-            if bp:
-                failed = True
-        for name in [n for n in ("minified-linux", "hello") if n in entries and "dwarf" in entries[n]] if not args.cases else []:
-            wp, wr = dwarf_case(browser, base, shots, name)
-            print(json.dumps({"dwarf": wp or "ok", "kernel": name, **{k: str(v) for k, v in wr.items()}}))
-            if wp:
-                failed = True
-        if not args.cases and "minified-linux" in entries:
-            wp, wr = dwarf_import_case(browser, base, shots)
-            print(json.dumps({"dwarf_import": wp or "ok", **{k: str(v) for k, v in wr.items()}}))
-            if wp:
-                failed = True
-        if not args.cases and "minified-linux" in entries:
-            rp, rr = runto_case(browser, base, shots)
-            print(json.dumps({"runto": rp or "ok", **{k: str(v) for k, v in rr.items()}}))
-            if rp:
-                failed = True
-        if not args.cases and "minified-linux" in entries:
-            cp, cr = cpu_state_case(browser, base, shots, "minified-linux")
-            print(json.dumps({"cpu_state": cp or "ok", **{k: str(v) for k, v in cr.items()}}))
-            if cp:
-                failed = True
-        for name in [n for n in entries if "initrd" in entries[n]] if not args.cases else []:
-            ip, ir = initramfs_case(browser, base, shots, name)
-            print(json.dumps({"initramfs": ip or "ok", "kernel": name, **{k: str(v) for k, v in ir.items()}}))
-            if ip:
-                failed = True
-        for name in [n for n in entries if (n.startswith("debian") and "initrd" not in entries[n]) or n == "minified-linux"] if not args.cases else []:
-            tp, tr = tasks_case(browser, base, shots, name)
-            print(json.dumps({"tasks_case": tp or "ok", "kernel": name, **{k: str(v) for k, v in tr.items()}}))
-            if tp:
-                failed = True
-        if not args.cases and "minified-linux" in entries:
-            lp, lr = livedecode_case(browser, base, shots)
-            print(json.dumps({"live_decode": lp or "ok", **{k: str(v) for k, v in lr.items()}}))
-            if lp:
-                failed = True
-        if not args.cases and "minified-linux" in entries:
-            vp, vr = coverage_case(browser, base, shots)
-            print(json.dumps({"coverage": vp or "ok", **{k: str(v) for k, v in vr.items()}}))
-            if vp:
-                failed = True
-        if not args.cases:
-            touch = touch_case(browser, base, shots)
-            print(json.dumps({"touch": touch or "ok"}))
-            if touch:
-                failed = True
-            stale = stale_cache_case(browser, args.timeout)
-            print(json.dumps({"stale_cache": stale or "ok"}))
-            if stale:
-                failed = True
-        browser.close()
+        ctx.browser = p.chromium.launch()
+        for name in names:
+            run, needs_linux = SUITES[name]
+            if needs_linux and "minified-linux" not in entries:
+                continue
+            t0 = time.monotonic()
+            failed |= bool(run(ctx))
+            print(f"suite {name}: {time.monotonic() - t0:.0f} s", flush=True)
+        ctx.browser.close()
     httpd.shutdown()
     if failed and not args.probe:
         print("FAIL", file=sys.stderr)

@@ -285,8 +285,8 @@ jobs:
         suites:
         - boot,symbols,debugger,misc,touch,tasks_minified,hello,firstlook
         - debian,dwarf,dwarf_import,runto,initramfs,coverage
-        - tasks,operands,lineaddr
-        - types,covtree,unwind
+        - tasks,operands
+        - types,covtree,unwind,lineaddr
     name: browser-test (${{ matrix.suites }})
     steps:
     - uses: actions/checkout@v4

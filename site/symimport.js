@@ -25,37 +25,81 @@ function elfSectionClass(name, flags, type) {
 	return "other";
 }
 
-function parseElf(buf, name) {
-	const b = new Uint8Array(buf);
-	const dv = new DataView(buf);
-	if (b.length < 52 || dv.getUint32(0) !== 0x7f454c46)
+// The parts of an ELF file parseElf reads (headers, section names,
+// .symtab, .strtab), fetched as File slices: a distro vmlinux is ~300 MB
+// and only a few MB of it are symbols. Returns read(off, len) over them.
+async function elfSlices(file) {
+	const chunks = [];
+	const get = async (off, len) => {
+		if (off + len > file.size)
+			throw new Error("truncated ELF file");
+		const b = new Uint8Array(await file.slice(off, off + len).arrayBuffer());
+		chunks.push([off, b]);
+		return b;
+	};
+	const read = (off, len) => {
+		for (const [o, b] of chunks)
+			if (off >= o && off + len <= o + b.length)
+				return b.subarray(off - o, off - o + len);
+		throw new Error("ELF: bytes " + off + "+" + len + " were not read");
+	};
+	const h = await get(0, 52);
+	const dv = new DataView(h.buffer);
+	if (h.length < 52 || dv.getUint32(0) !== 0x7f454c46)
 		throw new Error("not an ELF file");
-	if (b[4] !== 1 || b[5] !== 1)
+	if (h[4] !== 1 || h[5] !== 1)
 		throw new Error("not a 32-bit little-endian ELF (only i386 kernels boot here)");
 	const u16 = (o) => dv.getUint16(o, true), u32 = (o) => dv.getUint32(o, true);
 	const phoff = u32(0x1c), shoff = u32(0x20);
 	const phentsize = u16(0x2a), phnum = u16(0x2c), shentsize = u16(0x2e), shnum = u16(0x30), shstrndx = u16(0x32);
-	if (!shoff || shoff + shnum * shentsize > b.length)
+	if (!shoff || shoff + shnum * shentsize > file.size)
 		throw new Error("ELF without section headers");
+	await get(phoff, phentsize * phnum);
+	const sh = await get(shoff, shentsize * shnum);
+	const sdv = new DataView(sh.buffer);
+	const sec = (i) => ({ type: sdv.getUint32(i * shentsize + 4, true), offset: sdv.getUint32(i * shentsize + 16, true),
+		size: sdv.getUint32(i * shentsize + 20, true), link: sdv.getUint32(i * shentsize + 24, true) });
+	if (shstrndx < shnum)
+		await get(sec(shstrndx).offset, sec(shstrndx).size);
+	for (let i = 0; i < shnum; i++)
+		if (sec(i).type === 2) { // SHT_SYMTAB and its string table
+			await get(sec(i).offset, sec(i).size);
+			if (sec(i).link < shnum)
+				await get(sec(sec(i).link).offset, sec(sec(i).link).size);
+		}
+	return read;
+}
+
+// read(off, len): bytes of the file (elfSlices).
+function parseElf(read, name) {
+	const h = read(0, 52);
+	const dvOf = (b) => new DataView(b.buffer, b.byteOffset, b.byteLength);
+	const hv = dvOf(h);
+	const phoff = hv.getUint32(0x1c, true), shoff = hv.getUint32(0x20, true);
+	const phentsize = hv.getUint16(0x2a, true), phnum = hv.getUint16(0x2c, true), shentsize = hv.getUint16(0x2e, true);
+	const shnum = hv.getUint16(0x30, true), shstrndx = hv.getUint16(0x32, true);
+	const ph = dvOf(read(phoff, phentsize * phnum));
 	const loads = [];
 	for (let i = 0; i < phnum; i++) {
-		const o = phoff + i * phentsize;
-		if (u32(o) === 1 && u32(o + 20))
-			loads.push([u32(o + 8), u32(o + 8) + u32(o + 20), u32(o + 8) - u32(o + 12)]);
+		const o = i * phentsize;
+		if (ph.getUint32(o, true) === 1 && ph.getUint32(o + 20, true))
+			loads.push([ph.getUint32(o + 8, true), ph.getUint32(o + 8, true) + ph.getUint32(o + 20, true),
+				ph.getUint32(o + 8, true) - ph.getUint32(o + 12, true)]);
 	}
+	const shv = dvOf(read(shoff, shentsize * shnum));
 	const sh = [];
 	for (let i = 0; i < shnum; i++) {
-		const o = shoff + i * shentsize;
-		sh.push({ name: u32(o), type: u32(o + 4), flags: u32(o + 8), addr: u32(o + 12), offset: u32(o + 16),
-			size: u32(o + 20), link: u32(o + 24), entsize: u32(o + 36) });
+		const o = i * shentsize, u32 = (x) => shv.getUint32(o + x, true);
+		sh.push({ name: u32(0), type: u32(4), flags: u32(8), addr: u32(12), offset: u32(16), size: u32(20), link: u32(24), entsize: u32(36) });
 	}
+	const strOf = (s) => read(s.offset, s.size);
 	const str = (tab, off) => {
-		let end = tab + off;
-		while (end < b.length && b[end])
+		let end = off;
+		while (end < tab.length && tab[end])
 			end++;
-		return new TextDecoder().decode(b.subarray(tab + off, end));
+		return new TextDecoder().decode(tab.subarray(off, end));
 	};
-	const shstr = sh[shstrndx] ? sh[shstrndx].offset : 0;
+	const shstr = sh[shstrndx] ? strOf(sh[shstrndx]) : new Uint8Array(0);
 	for (const s of sh)
 		s.sname = str(shstr, s.name);
 	const delta = (va) => {
@@ -78,10 +122,11 @@ function parseElf(buf, name) {
 	const symtab = sh.find((s) => s.type === 2); // SHT_SYMTAB
 	if (!symtab)
 		throw new Error("this ELF has no .symtab (stripped?)");
-	const strtab = sh[symtab.link].offset;
+	const strtab = strOf(sh[symtab.link]);
+	const tab = read(symtab.offset, symtab.size), tv = dvOf(tab);
 	const symbols = [];
-	for (let o = symtab.offset + 16; o + 16 <= symtab.offset + symtab.size; o += 16) {
-		const value = u32(o + 4), size = u32(o + 8), info = b[o + 12], shndx = u16(o + 14);
+	for (let o = 16; o + 16 <= tab.length; o += 16) {
+		const value = tv.getUint32(o + 4, true), size = tv.getUint32(o + 8, true), info = tab[o + 12], shndx = tv.getUint16(o + 14, true);
 		const stype = info & 0xf, bind = info >> 4;
 		if (!shndx || shndx >= 0xff00 || stype === 3 || stype === 4) // undefined, abs/common, SECTION, FILE
 			continue;
@@ -95,7 +140,7 @@ function parseElf(buf, name) {
 		let t = { text: "t", rodata: "r", data: "d", bss: "b", brk: "b" }[cls] || "d";
 		if (bind !== 0)
 			t = t.toUpperCase();
-		symbols.push({ name: str(strtab, u32(o)), vaddr: value, paddr: value - d, size, type: t, section: sec.sname });
+		symbols.push({ name: str(strtab, tv.getUint32(o, true)), vaddr: value, paddr: value - d, size, type: t, section: sec.sname });
 	}
 	symbols.sort((x, y) => x.paddr - y.paddr || x.name.localeCompare(y.name));
 	const d0 = loads.length ? loads[0][2] : 0;
@@ -226,10 +271,11 @@ function placeSymbols(map, offsetText) {
 	return map;
 }
 
-function parseSymbolFile(buf, name, offsetText) {
-	const head = new Uint8Array(buf, 0, Math.min(4, buf.byteLength));
+// A System.map (text, read whole) or an ELF (only its symbol parts).
+async function parseSymbolFile(file, offsetText) {
+	const head = new Uint8Array(await file.slice(0, 4).arrayBuffer());
 	const elf = head[0] === 0x7f && head[1] === 0x45 && head[2] === 0x4c && head[3] === 0x46;
-	const map = elf ? parseElf(buf, name) : parseSystemMap(buf, name);
+	const map = elf ? parseElf(await elfSlices(file), file.name) : parseSystemMap(await file.arrayBuffer(), file.name);
 	if (elf && String(offsetText || "auto").trim().toLowerCase() !== "auto")
 		map.textStart = null;
 	const placed = placeSymbols(map, offsetText);
@@ -248,13 +294,16 @@ async function imageKey() {
 }
 
 // Make imported symbols the current kernel's: everything that reads
-// `symbols` uses them after the reboot. No disasm.json / sources.json.
+// `symbols` uses them after the reboot. No disasm.json / sources.json; the
+// DWARF is the imported vmlinux's (dbgImport), or none for a System.map.
 function applySymbols(map) {
 	symbols = { name: map.name, sections: map.sections, symbols: map.symbols };
 	symbols.imported = { file: map.name, source: map.source, offset: map.offset, how: map.offsetHow };
 	disasm = null;
 	sources = null;
-	$("src_toggle").hidden = true;
+	if (map.source !== "ELF")
+		dbgFresh(null, "a System.map has no debug info: import the unstripped vmlinux for file:line");
+	syncSrcToggle();
 	$("symbol_index").dataset.page = "";
 	showImported();
 }
@@ -264,7 +313,9 @@ function showImported() {
 	const im = symbols && symbols.imported;
 	el.dataset.state = im ? "imported" : "";
 	el.textContent = im ? im.file + (im.file === im.source ? "" : " (" + im.source + ")") + ": " + symbols.symbols.length + " symbols, offset " +
-		hex(im.offset) + ", " + im.how + ". No disasm.json or C source for imported symbols: code is disassembled live." : "";
+		hex(im.offset) + ", " + im.how + ". No disasm.json for imported symbols: code is disassembled live. " +
+		(dbgHas() ? DBG.info : "No file:line: " + DBG.why) + "." : "";
+	el.dataset.dwarf = im ? DBG.mode || "" : "";
 	$("sym_forget").hidden = !im;
 }
 
@@ -272,20 +323,23 @@ async function importSymbols(file) {
 	const el = $("sym_status");
 	let map;
 	try {
-		map = parseSymbolFile(await file.arrayBuffer(), file.name, $("sym_offset").value);
+		map = await parseSymbolFile(file, $("sym_offset").value);
 	} catch (e) {
 		el.dataset.state = "error";
 		el.textContent = "Could not use " + file.name + ": " + e.message + ". The previous symbols stay.";
 		return false;
 	}
 	applySymbols(map);
+	let key = null;
 	try {
-		const key = await imageKey();
+		key = await imageKey();
 		if (key)
 			localStorage.setItem(key, JSON.stringify(map));
 	} catch (e) {
 		// too big for localStorage, or no storage: not remembered
 	}
+	if (map.source === "ELF")
+		dbgImport(file, map.offset, key);
 	if (image)
 		await boot();
 	return true;
@@ -297,7 +351,10 @@ async function restoreImported() {
 		const key = await imageKey();
 		const saved = key && localStorage.getItem(key);
 		if (saved) {
-			applySymbols(JSON.parse(saved));
+			const map = JSON.parse(saved);
+			applySymbols(map);
+			if (map.source === "ELF")
+				await dbgRestore(key);
 			$("sym_status").textContent += " (remembered for this bzImage)";
 			return true;
 		}
@@ -310,8 +367,10 @@ async function restoreImported() {
 async function forgetImported() {
 	try {
 		const key = await imageKey();
-		if (key)
+		if (key) {
 			localStorage.removeItem(key);
+			await dbgForget(key);
+		}
 	} catch (e) {
 		// ignore
 	}
@@ -568,13 +627,16 @@ function initImport() {
 	document.addEventListener("drop", async (ev) => {
 		ev.preventDefault();
 		const files = [...(ev.dataTransfer ? ev.dataTransfer.files : [])];
-		const bufs = await Promise.all(files.map((f) => f.arrayBuffer()));
-		const k = bufs.findIndex(looksLikeBzImage);
+		// Only the setup header decides what a file is: a dropped vmlinux
+		// can be hundreds of MB.
+		const heads = await Promise.all(files.map((f) => f.slice(0, 0x210).arrayBuffer()));
+		const k = heads.findIndex(looksLikeBzImage);
 		if (k >= 0) {
 			disasm = null;
 			sources = null;
-			$("src_toggle").hidden = true;
-			useImage(files[k].name, bufs[k]);
+			dbgFresh(null, "no debug info for a bzImage from disk: import its unstripped vmlinux for file:line");
+			syncSrcToggle();
+			useImage(files[k].name, await files[k].arrayBuffer());
 		}
 		const m = files.findIndex((_, i) => i !== k);
 		if (m >= 0)

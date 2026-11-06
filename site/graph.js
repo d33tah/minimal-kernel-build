@@ -787,8 +787,10 @@ function drawTree() {
 		name.className = "tname mono";
 		name.style.paddingLeft = Math.min(depth, 30) * 0.7 + "em";
 		name.textContent = t.name;
-		if (t.node !== undefined && t.node < st.symName.length)
+		if (t.node !== undefined && t.node < st.symName.length) {
 			name.addEventListener("click", () => jumpTo(st.symStart[t.node]));
+			name.addEventListener("mouseenter", () => { name.title = "entry " + hex(st.symStart[t.node]) + ": " + dbgTitle(st.symStart[t.node], t.name); });
+		}
 		row.append(tog, nums, name);
 		box.append(row);
 		if (open)
@@ -1008,6 +1010,17 @@ function graphShow(visible) {
 	}
 }
 
+// Hover text of a timeline frame: its name, where it was called from and
+// its entry, with DWARF file:line and inlined-at chains.
+function frameTitle(st, k) {
+	const node = st.fNode[k];
+	const name = st.nodeName(node);
+	const p = st.fParent[k];
+	const from = st.fFrom[k];
+	return name + "\ncalled from " + (from >= 0 ? hex(from) + ": " + dbgTitle(from, p >= 0 ? st.nodeName(st.fNode[p]) : null).replace(/\n/g, "\n  ") : "unknown") +
+		(node < st.symName.length ? "\nentry " + hex(st.symStart[node]) + ": " + dbgTitle(st.symStart[node], name).replace(/\n/g, "\n  ") : "");
+}
+
 function renderGraphInfo() {
 	const el = $("graph_info");
 	el.textContent = "";
@@ -1055,6 +1068,7 @@ function renderGraphInfo() {
 		fb.title = "Re-root the timeline at this call";
 		fb.addEventListener("click", () => focusFrame(k));
 		head.append(fb, " ");
+		el.dataset.from = st.fFrom[k];
 	} else {
 		node = G.selected;
 		b.textContent = st.nodeName(node);
@@ -1069,6 +1083,27 @@ function renderGraphInfo() {
 	}
 	el.append(head);
 	el.dataset.node = st.nodeName(node);
+	if (G.view === "timeline") {
+		// Where the call came from and where it starts, from the DWARF.
+		const k = G.selected;
+		const src = document.createElement("div");
+		src.className = "glist";
+		src.id = "graph_src";
+		const add = (label, pa, sym) => {
+			const t = document.createElement("b");
+			t.textContent = label;
+			const s = document.createElement("span");
+			s.className = "mono";
+			s.textContent = pa >= 0 ? hex(pa) + " " + dbgTitle(pa, sym).replace(/\n/g, "; ") : "unknown";
+			src.append(t, " ", s, " ");
+		};
+		const parent = st.fParent[k];
+		add(st.fIrq[k] && st.entryKind[node] ? "interrupted at" : "called from", st.fFrom[k],
+			parent >= 0 ? st.nodeName(st.fNode[parent]) : null);
+		if (node < st.symName.length)
+			add("entry", st.symStart[node], st.symName[node]);
+		el.append(src);
+	}
 	if (G.view === "timeline") {
 		const sw = sandwich(st, node);
 		const list = (title, items) => {
@@ -1246,8 +1281,10 @@ function initGraph() {
 		const [x, y] = local(ev);
 		const sw = G.switchHits.find(([, bx, by, bw, bh]) => x >= bx && x <= bx + bw && y >= by && y <= by + bh);
 		const m = sw ? null : (G.mergedHits || []).find(([bx, by, bw, bh]) => x >= bx - 1 && x <= bx + bw + 1 && y >= by && y <= by + bh);
+		const f = sw || m ? -1 : timelineFrameAt(x, y);
 		c.title = sw ? "Task switch to task " + st.swTask[sw[0]] + ": " + taskNames(st)[st.swTask[sw[0]]] :
-			m && timelineFrameAt(x, y) < 0 ? num(m[4]) + " calls in this range (tap to zoom in)" : "";
+			m && timelineFrameAt(x, y) < 0 ? num(m[4]) + " calls in this range (tap to zoom in)" :
+			f >= 0 ? frameTitle(st, f) : "";
 	});
 	c.addEventListener("pointercancel", (ev) => { G.pointers.delete(ev.pointerId); G.press = null; });
 	c.addEventListener("wheel", (ev) => {

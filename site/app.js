@@ -1473,24 +1473,12 @@ function renderSymbols(phys) {
 	// the current symbol is "previous".
 	const hist = st.history.filter((h) => !(h.sym === cur && h.sym >= 0));
 	const prev = hist.length ? hist[hist.length - 1] : null;
-	if (sources) {
-		const here = cur >= 0 ? srcHere(phys) : "";
-		const srow = row("source");
-		srow.id = "cur_src";
-		srow.dataset.src = here;
-		if (here) {
-			const b = symButton(here, -1, "Show the whole function with its executed lines");
-			b.disabled = false;
-			b.addEventListener("click", () => openSource(phys));
-			srow.append(b);
-		} else {
-			srow.append("no C line here");
-		}
-	}
+	renderSourceRows(box, phys, cur >= 0 ? st.symName[cur] : null);
+	renderCallStack(box, phys);
 	const p = row("previous");
 	p.id = "prev_sym";
 	if (prev && prev.sym >= 0) {
-		p.append(symButton(st.symName[prev.sym], prev.last, "Jump to the last instruction it ran"),
+		p.append(symButton(st.symName[prev.sym], prev.last, "Jump to the last instruction it ran\n" + dbgTitle(prev.last, st.symName[prev.sym])),
 			" left at " + hex(prev.last));
 		p.dataset.name = st.symName[prev.sym];
 	} else {
@@ -1500,13 +1488,64 @@ function renderSymbols(phys) {
 	const crumbs = row("path");
 	crumbs.className = "crumbs";
 	const names = [cur >= 0 ? st.symName[cur] : symDesc(st, -1, phys)];
-	const items = [symButton(names[0], cur >= 0 ? st.symStart[cur] : -1)];
+	const items = [symButton(names[0], cur >= 0 ? st.symStart[cur] : -1, cur >= 0 ? dbgTitle(phys, names[0]) : "")];
 	for (let k = hist.length - 1; k >= 0 && items.length < 6; k--) {
 		const h = hist[k];
-		items.push(symButton(symDesc(st, h.sym, h.last), h.sym >= 0 ? h.last : -1));
+		items.push(symButton(symDesc(st, h.sym, h.last), h.sym >= 0 ? h.last : -1, h.sym >= 0 ? "left at " + hex(h.last) + "\n" + dbgTitle(h.last, st.symName[h.sym]) : ""));
 	}
 	items.forEach((it, k) => crumbs.append(k ? " ← " : "", it));
 	crumbs.dataset.count = items.length;
+}
+
+// The call stack the stepper reconstructed (stepper.js stackEnter), the
+// innermost call first: each frame at the instruction it is at (EIP for
+// the top one, for the others the instruction that entered the frame
+// above: a call, or the instruction an interrupt arrived at), with the
+// DWARF file:line and inlined-at chain of that instruction in its title.
+function renderCallStack(box, phys) {
+	const st = stepper;
+	const d = document.createElement("div");
+	d.id = "call_stack";
+	const b = document.createElement("b");
+	b.textContent = "call stack";
+	d.append(b, " ");
+	const top = st.stack.length ? st.stack[st.stack.length - 1] : -1;
+	const frames = [];
+	let at = phys;
+	// EIP on the first byte of a symbol the stack has not entered yet (a
+	// call about to run, e.g. after Run to): that symbol on top, its caller
+	// at the instruction that ran last.
+	const cur = phys >= 0 ? st.symbolOf(phys) : -1;
+	if (cur >= 0 && phys === st.symStart[cur] && (top < 0 || st.fNode[top] !== cur)) {
+		frames.push([-1, phys, cur]);
+		at = st.lastPhys;
+	}
+	for (let k = top; k >= 0 && frames.length < 24; k = st.fParent[k]) {
+		frames.push([k, at, st.fNode[k]]);
+		at = st.fFrom[k];
+	}
+	if (!frames.length)
+		d.append(runState === "jit" ? "not recorded at full speed" : "none recorded yet (calls are seen while stepping)");
+	const list = [];
+	frames.forEach(([k, pc, node], n) => {
+		const name = st.nodeName(node);
+		const r = pc >= 0 ? dbgFrames(pc) : { state: "none" };
+		const where = r.state === "ok" && r.frames[0].file && r.frames[0].line ? " " + srcName(r.frames[0]) : "";
+		const inl = r.state === "ok" && r.frames.length > 1 ? " [" + r.frames.length + " inlined]" : "";
+		const btn = symButton(name + where + inl, pc, (n ? "calls from " : "at ") + hex(pc) + (k >= 0 && st.fIrq[k] ? ", in an interrupt" : "") +
+			"\n" + dbgTitle(pc, name));
+		btn.dataset.pc = pc;
+		list.push(btn);
+	});
+	list.forEach((it, n) => d.append(n ? " ← " : "", it));
+	d.dataset.count = frames.length;
+	d.dataset.frames = JSON.stringify(frames.map(([, pc, node]) => ({ name: st.nodeName(node), pc })));
+	box.append(d);
+}
+
+// The "C source" toggle is there when the kernel has DWARF.
+function syncSrcToggle() {
+	$("src_toggle").hidden = !dbgHas();
 }
 
 function renderContext() {
@@ -1883,10 +1922,10 @@ function updateDebugUi() {
 	renderClock();
 	const st = $("dbg_state");
 	let where = stepper && stepper.curSym >= 0 ? ", in " + stepper.symName[stepper.curSym] : "";
-	if (where && sources && runState !== "jit") {
-		const loc = srcLoc(stepper.lastPhys);
-		if (loc && loc[1] >= 0)
-			where += " (" + srcName(loc[1], loc[2]) + ")";
+	if (where && dbgHas() && runState !== "jit") {
+		const here = srcHere(stepper.lastPhys);
+		if (here)
+			where += " (" + here.split("  ")[0] + ")";
 	}
 	st.textContent = { off: "", jit: "running (full speed, JIT)",
 		stepped: (entryPhase ? "stepping to the kernel entry" : fastStepping() ? (counting ? "stepping (counting)" : "stepping") :
@@ -2099,7 +2138,8 @@ async function loadKernel(entry, memFromUrl) {
 		throw new Error(entry.path + ": HTTP " + resp.status);
 	disasm = await loadDisasm(entry);
 	await loadSources(entry);
-	$("src_toggle").hidden = !sources;
+	dbgUseShards(entry);
+	syncSrcToggle();
 	// kernels.json may give a kernel its own RAM size (meta.json "ram").
 	const ramDefault = entry.ram && [...$("memory").options].some((o) => o.value === String(entry.ram)) ? String(entry.ram) : null;
 	// kernels.json "initrd": the initrd that comes with this entry. One the
@@ -2239,6 +2279,16 @@ async function init() {
 	if (params.get("count") === "0")
 		$("count").checked = false;
 	initSource();
+	dbgOnChange(() => {
+		syncSrcToggle();
+		showImported();
+		if (tab === "debugger")
+			renderContext();
+		if (tab === "page")
+			inspect();
+		if (typeof renderGraphInfo === "function")
+			renderGraphInfo();
+	});
 	updateDebugUi();
 	for (const t of TABS)
 		$("tab_" + t).addEventListener("click", () => showTab(t));
@@ -2284,9 +2334,10 @@ async function init() {
 		const f = $("file").files[0];
 		if (!f)
 			return;
-		disasm = null; // a file from disk comes without disasm.json or sources.json
+		disasm = null; // a file from disk comes without disasm.json, sources.json or DWARF
 		sources = null;
-		$("src_toggle").hidden = true;
+		dbgFresh(null, "no debug info for a bzImage from disk: import its unstripped vmlinux for file:line");
+		syncSrcToggle();
 		useImage(f.name, await f.arrayBuffer());
 		showImported();
 		await restoreImported();

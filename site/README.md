@@ -81,7 +81,8 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   `gen-symbols.py --trim` on the -dbg vmlinux: 46,937 symbols (code and
   global data with a size; local data objects and export/tracing
   bookkeeping dropped), 5,059,585 bytes, 765,158 gzipped (117,357
-  symbols, 13 MB, 1.6 MB gzipped untrimmed). No disasm.json or
+  symbols, 13 MB, 1.6 MB gzipped untrimmed). `gen-dwarf.js` turns the
+  same vmlinux's DWARF into `dwarf/` (see Debug info below). No disasm.json or
   sources.json: the listing is disassembled live (below). Its `meta.json` gives the label
   "Debian 6.1 686 (no initrd: ends in a root-fs panic)", the command line
   `nokaslr console=tty0 cryptomgr.notests` and 64 MB of RAM (32 MB does
@@ -123,7 +124,10 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   System.map has no bytes to match), else vaddr - 0xC0000000 for addresses
   above the i386 PAGE_OFFSET, else identity; a hex offset can be typed.
   There is no disasm.json or sources.json for imported symbols: the
-  listing is disassembled live from guest memory (below). The map is remembered in localStorage
+  listing is disassembled live from guest memory (below). An ELF is read
+  in File slices (headers, `.symtab`, `.strtab`), never whole; its DWARF,
+  if any, gives file:line (Debug info below). A System.map or a vmlinux
+  without `.debug_info` says that it has no line information. The map is remembered in localStorage
   per bzImage (SHA-256 of the image) when it fits; "forget symbols" drops
   it. A bzImage and a System.map dropped on the page together are loaded
   and booted. A file that is neither gives an error and the previous
@@ -188,26 +192,65 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   Debian the first instruction of a function is the ftrace call the
   kernel patched into a 5-byte NOP at boot; the live listing shows the
   NOP, llvm-objdump on the -dbg vmlinux the call.
-- **C source.** With `kernels/<name>/sources.json` the Page listing and
-  the Debugger's code window print the C line above the instructions it
-  compiled to, like `objdump -S` (dim, `file.c:123`, printed again when
-  the code returns to a line; inlined code names the function it was
-  inlined into); "C source" toggles it. The Debugger and the top bar show
-  the current C line. Tapping a C line opens the whole function in a side
-  panel with live line coverage: a line is marked executed when any
-  instruction compiled from it (or inlined from it) has run, from the
-  stepper's unique-EIP bitmap. `sources.json` comes from `gen-source.py`:
-  `llvm-symbolizer --inlining` over every instruction of `disasm.json`,
-  using a `-g` build of the same tree; it keeps the file:line, function and
-  inlined-at chain where the location changes, plus only the source lines
-  of the functions involved. The workflow builds `-g` copies
+- **Debug info.** file:line and the inlined-at chain of any address come
+  from the kernel's DWARF (`dwarf.js`, one decoder and one lookup for
+  everything below). Shipped kernels have `kernels/<name>/dwarf/`, made in
+  CI by `gen-dwarf.js` from a -g ELF: every compile unit's line program
+  and its function and inlined-call address ranges (with the call
+  site's file:line), merged into one table, cut into shards of 64 KiB of
+  physical address space (`<hex>.bin`, LEB128, its own string table) plus
+  `index.json`. The page fetches a shard the first time it needs an
+  address in it. Line rows count only inside their compile unit's address
+  ranges, as in llvm-symbolizer, so padding between objects has no line.
+  An imported unstripped vmlinux is read by `dwarfworker.js` (a Worker,
+  File slices only): the ELF headers and the small `.debug_*` sections
+  first, then the one compile unit covering an address (found through
+  `.debug_aranges`, or each unit's root DIE where there is none, as with
+  clang) and its line program. DWARF 2 to 5 with GCC's forms (strp,
+  line_strp, ref4, implicit_const, sec_offset, `.debug_ranges`) and
+  clang's (strx1-4, addrx, rnglistx, loclistx, ref_addr and the
+  str_offsets/addr/rnglists bases); `.rel.debug_*` is ignored (a vmlinux is
+  ET_EXEC). Decoded units are kept in IndexedDB per bzImage, so after a
+  reload the addresses decoded before still answer; others ask for the
+  file again. Paths are shown relative to the kernel tree (without
+  DW_AT_comp_dir, or Debian's prefix-mapped build directory).
+  Where it shows: the Debugger's "source" rows (the C line at EIP, then
+  "inlined into F at file:line" per level), the "call stack" row (the
+  frames the stepper reconstructed, each at its instruction: EIP for the
+  top, the instruction that entered the next frame for the others; the
+  title has the whole chain), the titles of "previous" and "path", the
+  C lines of both listings, and in the Graph tab the hover text and the
+  detail of a timeline frame ("called from" and "entry", each with its
+  chain) and the title of a call-tree name. "no line information" is
+  said where the line table has no line (padding, assembly without -g,
+  line 0); "reading DWARF…" while a shard or unit loads. Sizes: minified
+  Linux 79,141 bytes in 2 shards (42,859 gzipped), hello 105 bytes, Debian
+  9,618,203 bytes in 153 shards (4.8 MB gzipped, about 32 KB per shard;
+  1,081,481 line rows, 465,287 function and inlined-call ranges;
+  `gen-dwarf.js` takes about 11 s and 0.8 GB). `test_dwarf.py` compares a
+  generated directory with `llvm-symbolizer --inlines --functions=short`
+  at random code addresses (half inside functions, half anywhere): the
+  workflow fails on any difference (local runs: minified 19,696/19,696,
+  Debian 49,999/49,999).
+- **C source.** "C source" prints the C line above the instructions it
+  compiled to in the Page listing and the Debugger's code window, like
+  `objdump -S` (dim `file.c:123`, printed again when the code returns to
+  a line, "[f inlined into g]" for inlined code, the chain in its title).
+  The text of the lines comes from `kernels/<name>/sources.json`, shipped
+  for the minified Linux and hello; other kernels show file:line. Tapping
+  a C line opens the whole function in a side panel with live line
+  coverage: a line is marked executed when any instruction compiled from
+  it (or inlined from it) has run, from the stepper's unique-EIP bitmap.
+  `sources.json` comes from `gen-source.py`: `llvm-symbolizer --inlining`
+  over every instruction of `disasm.json` finds the functions and lines
+  with code and keeps only those source lines. The workflow builds `-g` copies
   (`KCFLAGS=-g` for the minified Linux, `CC="clang -g"` for hello) next to
   the gate kernels and fails unless their code is byte-identical
   (`llvm-objcopy -O binary --remove-section=.notes`: only the 20-byte GNU
-  build-id differs, as it hashes the debug info too). Sizes: minified
-  Linux 698,272 bytes (156 KB gzipped; 7,325 locations, 188 files, 1,222
-  functions, 14,319 source lines), hello 1,104 bytes. The -g build takes
-  about 11 s locally (9 s without -g).
+  build-id differs, as it hashes the debug info too); `gen-dwarf.js` and
+  `gen-source.py` read those. sources.json: minified Linux 459,200 bytes
+  (188 files, 1,192 functions, 15,208 source lines), hello 792 bytes. The
+  -g build takes about 11 s locally (9 s without -g).
 - **Executed code.** The Page listing tints the instructions that have
   not executed in this boot (a lavender background, the "tinted" key next
   to the listing's counts gives how many). An instruction counts as
@@ -554,7 +597,7 @@ qemu runs used `timeout 120` and a FIFO, so no trace touched the disk.
     site/fetch-v86.sh
     site/gen-symbols.py minified/vmlinux site/kernels/minified-linux/symbols.json minified-linux
     site/gen-symbols.py hello/boot/high/kernel.elf site/kernels/hello/symbols.json hello
-    (sources.json: see the workflow's "Debug-info builds" step)
+    (sources.json and dwarf/: see the workflow's "Debug-info builds" step)
     site/gen-kernels.sh
     python3 site/test_browser.py
 
@@ -605,7 +648,18 @@ kernel is booted without an initrd and must stop itself. When a `debian*` kernel
 copying it there) the Debian case checks its defaults, waits for the
 end-of-panic stop with "end Kernel panic" on the screen, and, on a fresh
 paused boot, runs to start_kernel (about 3.5 minutes of stepping) and
-checks the Debugger names it. A last case serves two "deploys" with `Cache-Control: max-age=600` (as
+checks the Debugger names it, then steps 11 times and checks the
+source rows against llvm-symbolizer on the -dbg vmlinux and that the
+start_kernel listing has init/main.c lines. The DWARF case (minified
+Linux, hello) runs to start_kernel / hello_main, steps to 12 (5) EIPs and
+compares the Debugger's source rows with `llvm-symbolizer --inlines` on
+the -g ELF (`$MKB_DEBUG_ELF_DIR/<kernel>.elf`, required in CI), needs at
+least one EIP in inlined code, call stack and timeline frame titles with
+file:line, C lines in the listing, and takes screenshots light and dark
+at 1280 and 390 px. The DWARF import case imports the minified Linux's -g
+vmlinux, compares at 6 EIPs, reloads and gets the same answers from
+IndexedDB, checks a vmlinux without DWARF says so, and imports Debian's
+300 MB -dbg vmlinux and compares 40 random addresses. A last case serves two "deploys" with `Cache-Control: max-age=600` (as
 GitHub Pages does) and checks a reload runs the new `app.js`. Screenshots
 (desktop and 390 px) go to `site/test-screenshots/`.
 

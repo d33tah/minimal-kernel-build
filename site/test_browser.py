@@ -1231,6 +1231,260 @@ def runto_case(browser, base, shots):
     return problems, r
 
 
+def debug_elf(name):
+    """The -g ELF of a kernel for llvm-symbolizer: $MKB_DEBUG_ELF_DIR/<name>.elf
+    (the workflow puts the minified Linux, hello and Debian's -dbg vmlinux there)."""
+    d = os.environ.get("MKB_DEBUG_ELF_DIR")
+    p = pathlib.Path(d) / f"{name}.elf" if d else None
+    return p if p and p.exists() else None
+
+
+def frames_agree(got, want):
+    """Frames from the page ({func, file, line}, innermost first) against
+    llvm-symbolizer's (func, file, line); its paths may carry the build
+    directory in front of the page's tree-relative ones."""
+    g = [(f["func"], f["file"] if f["line"] else "", f["line"]) for f in got]
+    w = list(want)
+    if len(w) == 1 and len(g) <= 1 and (not g or g[0][0] is None):
+        # No DWARF function (assembly): the page names the ELF symbol instead.
+        w = [(None, w[0][1], w[0][2])]
+        g = g or [(None, "", 0)]
+    return len(g) == len(w) and all(gf == wf and gl == wl and (wp == gp or wp.endswith("/" + gp))
+                                    for (gf, gp, gl), (wf, wp, wl) in zip(g, w))
+
+
+def symbolize_frames(elf, vaddrs):
+    from test_dwarf import symbolize
+    return symbolize(str(elf), vaddrs, [])
+
+
+def source_rows(page):
+    """EIP, state and frames of the Debugger's source rows, once loaded."""
+    def get():
+        return page.evaluate("""() => { const e = document.getElementById('cur_src');
+            return e ? [e.dataset.state, e.dataset.frames] : [null, '[]']; }""")
+    wait_for(lambda: get()[0] not in (None, "loading"), 30)
+    state, frames = get()
+    return int(page.get_attribute("#regs", "data-phys") or -1), state, json.loads(frames or "[]")
+
+
+# Instructions stepped between the samples of dwarf_check: uneven, so the
+# samples land in different functions and inlined code.
+DWARF_STEPS = (0, 37, 101, 263, 541, 1009, 2003, 3001, 4007, 5003, 7001, 9001)
+
+
+def dwarf_check(page, name, offset, problems, r, steps=DWARF_STEPS):
+    """At EIP and after each Step: the Debugger's source rows (file:line,
+    inlined-at chain) equal llvm-symbolizer --inlines on the kernel's -g ELF;
+    the call stack names frames with file:line in their tooltips."""
+    samples = []
+    for n in steps:
+        if n:
+            before = page.evaluate("stepper.steps")
+            page.fill("#dbg_n", str(n))
+            page.click("#dbg_stepn")
+            wait_for(lambda: page.evaluate("stepper.steps") - before >= n and
+                     page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+        samples.append(source_rows(page))
+    ok = [x for x in samples if x[1] == "ok"]
+    r["dwarf_samples"] = len(samples)
+    r["dwarf_ok"] = len(ok)
+    r["dwarf_inlined"] = sum(1 for x in ok if len(x[2]) > 1)
+    r["dwarf_first"] = [f"{f['func']} {f['file']}:{f['line']}" for f in samples[0][2]]
+    if len(ok) < len(samples) // 2:
+        problems.append(f"{name}: source rows answered at only {len(ok)} of {len(samples)} EIPs: "
+                        f"{[(hex(p), s) for p, s, _ in samples]}")
+    elf = debug_elf(name)
+    if elf:
+        want = symbolize_frames(elf, [p + offset for p, _, _ in samples])
+        bad = [(hex(p), fr, w) for (p, st, fr), w in zip(samples, want) if st == "ok" and not frames_agree(fr, w)]
+        # "none" must mean llvm-symbolizer knows no line either.
+        bad += [(hex(p), st, w) for (p, st, fr), w in zip(samples, want)
+                if st == "none" and any(x[2] for x in w)]
+        r["dwarf_vs_llvm"] = f"{len(samples) - len(bad)}/{len(samples)} agree"
+        if bad:
+            problems.append(f"{name}: source rows differ from llvm-symbolizer --inlines: {bad[:3]}")
+    elif os.environ.get("CI"):
+        problems.append(f"{name}: no -g ELF in $MKB_DEBUG_ELF_DIR to check the source rows against")
+    cs = int(page.get_attribute("#call_stack", "data-count") or 0)
+    r["call_stack"] = cs
+    first = page.locator("#call_stack button").first
+    r["call_stack_title"] = first.get_attribute("title") if cs else None
+    if cs < 1 or not re.search(r"\.[chS]:\d+|no line information", r["call_stack_title"] or ""):
+        problems.append(f"{name}: call stack without file:line tooltips: {cs} frames, {r['call_stack_title']!r}")
+    # Graph tab: a frame's hover text has where it was called from.
+    t = page.evaluate("""() => { const st = G.stepper; const k = st.stack.length ? st.stack[st.stack.length - 1] : -1;
+        return k >= 0 ? frameTitle(st, k) : null; }""")
+    r["frame_title"] = t
+    if not t or "called from 0x" not in t or not re.search(r"\.[chS]:\d+", t):
+        problems.append(f"{name}: flame frame tooltip without DWARF locations: {t!r}")
+    return samples
+
+
+def dwarf_case(browser, base, shots, name):
+    """file:line and inline chains from the shipped DWARF shards: Debugger
+    source rows and call stack against llvm-symbolizer, C lines and "no
+    line information" in the listings, screenshots light/dark at 1280/390."""
+    problems, r = [], {}
+    syms = json.loads((SITE / kernel_entries()[name]["symbols"]).read_text())["symbols"]
+    fn = "start_kernel" if name != "hello" else "hello_main"
+    sk = next(s for s in syms if s["name"] == fn)
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    page.fill("#dbg_addr", hex(sk["vaddr"]))
+    page.click("#dbg_runto")
+    if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
+                    and page.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 120):
+        page.close()
+        return [f"Run to {fn} did not stop there"], r
+    steps = DWARF_STEPS if name != "hello" else (0, 3, 7, 11, 19)
+    samples = dwarf_check(page, name, sk["vaddr"] - sk["paddr"], problems, r, steps)
+    if name != "hello" and not r.get("dwarf_inlined"):
+        problems.append(f"{name}: no sample EIP was in inlined code: {r}")
+    page.screenshot(path=str(shots / f"dwarf-debugger-{name}-1280-light.png"))
+    # Graph tab: the detail of the innermost open frame names its call site and entry with file:line.
+    show_tab(page, "graph")
+    page.evaluate("""() => { const st = G.stepper; G.view = 'timeline';
+        G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fStart.length - 1; renderGraphInfo(); }""")
+    wait_for(lambda: "reading DWARF" not in (page.evaluate("(document.getElementById('graph_src') || {}).innerText") or ""), 15)
+    r["graph_detail"] = page.evaluate("(document.getElementById('graph_src') || {}).innerText")
+    if not r["graph_detail"] or not ("called from 0x" in r["graph_detail"] and re.search(r"\.[chS]:\d+", r["graph_detail"])):
+        problems.append(f"{name}: Graph frame detail without DWARF locations: {r['graph_detail']!r}")
+    page.screenshot(path=str(shots / f"dwarf-graph-{name}-1280-light.png"), full_page=True)
+    # The listing of the page holding the last EIP: C lines with titles.
+    phys = samples[-1][0]
+    show_tab(page, "memory")
+    open_page(page, phys // 4096)
+    wait_for(lambda: page.locator("#listing .src:not(.dim)").count() > 0, 15)
+    r["listing_c_lines"] = page.locator("#listing .src:not(.nol):not(.dim)").count()
+    r["listing_no_line"] = page.locator("#listing .src.nol").count()
+    titles = page.eval_on_selector_all("#listing .src", "els => els.map(e => e.title)")
+    r["listing_inlined_titles"] = sum(1 for t in titles if "inlined into" in t)
+    if r["listing_c_lines"] < 1:
+        problems.append(f"{name}: no C lines in the listing of page {phys // 4096:#x}")
+    page.screenshot(path=str(shots / f"dwarf-listing-{name}-1280-light.png"))
+    page.emulate_media(color_scheme="dark")
+    page.screenshot(path=str(shots / f"dwarf-listing-{name}-1280-dark.png"))
+    show_tab(page, "debugger")
+    page.screenshot(path=str(shots / f"dwarf-debugger-{name}-1280-dark.png"))
+    for scheme in ("dark", "light"):
+        page.emulate_media(color_scheme=scheme)
+        page.set_viewport_size({"width": 390, "height": 900})
+        show_tab(page, "debugger")
+        time.sleep(0.3)
+        if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
+            problems.append(f"{name}: the Debugger scrolls horizontally at 390 px ({scheme})")
+        page.screenshot(path=str(shots / f"dwarf-debugger-{name}-390-{scheme}.png"), full_page=True)
+    page.close()
+    if errors:
+        problems.append("page errors: " + "; ".join(errors))
+    return problems, r
+
+
+def dwarf_import_case(browser, base, shots):
+    """An imported unstripped vmlinux: its DWARF is read in a Worker one
+    compile unit at a time (clang forms: the minified Linux's -g vmlinux;
+    GCC forms: Debian's -dbg vmlinux), matches llvm-symbolizer, survives a
+    reload from IndexedDB; a vmlinux without DWARF says so."""
+    problems, r = [], {}
+    syms = json.loads((SITE / kernel_entries()["minified-linux"]["symbols"]).read_text())["symbols"]
+    sk = next(s for s in syms if s["name"] == "start_kernel")
+    elf = debug_elf("minified-linux")
+    if not elf:
+        return ([] if not os.environ.get("CI") else ["no minified-linux.elf in $MKB_DEBUG_ELF_DIR"]), {"skipped": "no -g ELF"}
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    url = f"{base}/index.html?kernel=minified-linux&paused=1#debugger"
+    page.goto(url)
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    # The import reboots the kernel: start that boot paused too (?paused=1 holds for the first boot only).
+    page.evaluate("startPaused = true")
+    page.set_input_files("#symfile", str(elf))
+    wait_for(lambda: page.get_attribute("#sym_status", "data-state") == "imported" and
+             "compile units" in page.inner_text("#sym_status"), 30)
+    r["status"] = page.inner_text("#sym_status")
+    if page.get_attribute("#sym_status", "data-dwarf") != "import" or "compile units" not in r["status"]:
+        problems.append(f"imported -g vmlinux: DWARF not read: {r['status']!r}")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    page.fill("#dbg_addr", hex(sk["vaddr"]))
+    page.click("#dbg_runto")
+    if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
+                    and page.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 120):
+        problems.append("imported -g vmlinux: Run to start_kernel did not stop there")
+    samples = dwarf_check(page, "minified-linux", sk["vaddr"] - sk["paddr"], problems, r, DWARF_STEPS[:6])
+    r["imported_first"] = r.get("dwarf_first")
+    page.screenshot(path=str(shots / "dwarf-import-1280.png"))
+    # Reload: the symbols come back from localStorage, the decoded units from IndexedDB.
+    page.goto("about:blank")
+    page.goto(url)
+    wait_for(lambda: page.get_attribute("#sym_status", "data-dwarf") == "cached", 60)
+    r["reload_status"] = page.inner_text("#sym_status")
+    got = page.evaluate("""async (pas) => { const out = [];
+        for (const pa of pas) { let f = dbgFrames(pa);
+            for (let i = 0; i < 50 && f.state === 'loading'; i++) { await new Promise((ok) => setTimeout(ok, 100)); f = dbgFrames(pa); }
+            out.push(f); }
+        return out; }""", [p for p, _, _ in samples])
+    same = sum(1 for (p, st, fr), g in zip(samples, got) if g["state"] == st and (g.get("frames") or []) == fr)
+    r["after_reload"] = f"{same}/{len(samples)} EIPs answer as before the reload"
+    if page.get_attribute("#sym_status", "data-dwarf") != "cached" or same != len(samples):
+        problems.append(f"after a reload: {r['after_reload']}, status {r['reload_status']!r}")
+    page.click("#sym_forget")
+    wait_for(lambda: page.get_attribute("#sym_status", "data-state") != "imported", 30)
+    page.close()
+    # A vmlinux without DWARF (the plain build): said so, symbols still work.
+    plain = (import_inputs() or [None, None])[1]
+    if plain:
+        page = browser.new_page(viewport={"width": 1280, "height": 1000})
+        page.on("pageerror", lambda e: errors.append(str(e)))
+        page.goto(url)
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+        page.set_input_files("#symfile", str(plain))
+        wait_for(lambda: "no DWARF" in page.inner_text("#sym_status") or "compile units" in page.inner_text("#sym_status"), 30)
+        r["plain_status"] = page.inner_text("#sym_status")
+        if "no DWARF" not in r["plain_status"]:
+            problems.append(f"vmlinux without DWARF: not said so: {r['plain_status']!r}")
+        page.click("#sym_forget")
+        page.close()
+    # Debian's -dbg vmlinux (GCC forms, 300 MB): only the parts needed are read.
+    deb = debug_elf("debian-6.1-686")
+    if deb:
+        dsyms = json.loads((SITE / kernel_entries()["debian-6.1-686"]["symbols"]).read_text())["symbols"]
+        rnd = __import__("random").Random(5)
+        fns = [s for s in dsyms if s["type"] in "tT" and s["size"] > 16]
+        pas = sorted(s["paddr"] + rnd.randrange(s["size"]) for s in rnd.sample(fns, 40))
+        page = browser.new_page(viewport={"width": 1280, "height": 1000})
+        page.on("pageerror", lambda e: errors.append(str(e)))
+        page.goto(f"{base}/index.html?kernel=debian-6.1-686&paused=1#debugger")
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+        t0 = time.monotonic()
+        page.set_input_files("#symfile", str(deb))
+        wait_for(lambda: "compile units" in page.inner_text("#sym_status") or
+                 page.get_attribute("#sym_status", "data-state") == "error", 120)
+        r["debian_import_seconds"] = round(time.monotonic() - t0, 1)
+        r["debian_status"] = page.inner_text("#sym_status")
+        got = page.evaluate("""async (pas) => { const out = [];
+            for (const pa of pas) { let f = dbgFrames(pa);
+                for (let i = 0; i < 300 && f.state === 'loading'; i++) { await new Promise((ok) => setTimeout(ok, 100)); f = dbgFrames(pa); }
+                out.push(f); }
+            return out; }""", pas)
+        want = symbolize_frames(deb, [p + 0xC0000000 for p in pas])
+        bad = [(hex(p), g, w) for p, g, w in zip(pas, got, want) if g["state"] != "ok" or not frames_agree(g["frames"], w)]
+        r["debian_import"] = f"{len(pas) - len(bad)}/{len(pas)} agree with llvm-symbolizer"
+        if bad:
+            problems.append(f"Debian vmlinux import: {bad[:3]}")
+        page.click("#sym_forget")
+        page.close()
+    elif os.environ.get("CI"):
+        problems.append("no debian-6.1-686.elf in $MKB_DEBUG_ELF_DIR")
+    if errors:
+        problems.append("page errors: " + "; ".join(errors))
+    return problems, r
+
+
 def debian_case(browser, base, shots, name):
     """The Debian sample: its defaults, the end-of-panic auto-stop with the
     message on the screen, and Run to start_kernel naming start_kernel."""
@@ -1316,6 +1570,17 @@ def debian_case(browser, base, shots, name):
         problems.append(f"Debugger code window at EIP: source {r['context_source']!r}, boxed lines {page.locator('#context .ins.cur').count()}")
     if not ok or r["runto_symbol"] != "start_kernel":
         problems.append(f"Run to start_kernel: {r['runto_symbol']!r} ({page.inner_text('#dbg_status')})")
+    elif "dwarf" in entry:
+        dwarf_check(page, name, sk["vaddr"] - sk["paddr"], problems, r)
+        page.screenshot(path=str(shots / "dwarf-debugger-debian-1280.png"))
+        open_page(page, sk["paddr"] // 4096)
+        wait_for(lambda: page.locator("#listing .src:not(.dim)").count() > 0, 15)
+        r["listing_c_lines"] = page.locator("#listing .src:not(.nol):not(.dim)").count()
+        main = page.locator("#listing .src", has_text="main.c").first
+        r["listing_main_c"] = main.inner_text() if main.count() else None
+        if not r["listing_main_c"]:
+            problems.append("Debian: no init/main.c line in the listing of start_kernel")
+        page.screenshot(path=str(shots / "dwarf-listing-debian-1280.png"))
     page.close()
     if errors:
         problems.append("page errors: " + "; ".join(errors))
@@ -1722,6 +1987,16 @@ def main():
             bp, br = debian_case(browser, base, shots, name)
             print(json.dumps({"debian": bp or "ok", **{k: str(v) for k, v in br.items()}}))
             if bp:
+                failed = True
+        for name in [n for n in ("minified-linux", "hello") if n in entries and "dwarf" in entries[n]] if not args.cases else []:
+            wp, wr = dwarf_case(browser, base, shots, name)
+            print(json.dumps({"dwarf": wp or "ok", "kernel": name, **{k: str(v) for k, v in wr.items()}}))
+            if wp:
+                failed = True
+        if not args.cases and "minified-linux" in entries:
+            wp, wr = dwarf_import_case(browser, base, shots)
+            print(json.dumps({"dwarf_import": wp or "ok", **{k: str(v) for k, v in wr.items()}}))
+            if wp:
                 failed = True
         if not args.cases and "minified-linux" in entries:
             rp, rr = runto_case(browser, base, shots)

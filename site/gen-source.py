@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
-"""Write sources.json: the C source line of every instruction in disasm.json.
+"""Write sources.json: the text of the C lines the code of disasm.json came from.
 
   site/gen-source.py ELF_WITH_DEBUG_INFO SRC_ROOT DISASM_JSON OUT.json
 
 ELF_WITH_DEBUG_INFO is a -g build of the same tree whose code is byte-
 identical to the kernel the page boots (the workflow checks that). Each
 instruction address of DISASM_JSON goes through `llvm-symbolizer
---inlining` (override with $SYMBOLIZER): innermost file:line and function,
-plus the chain of callers it was inlined into. Paths are made relative to
-SRC_ROOT.
+--inlining` (override with $SYMBOLIZER) to find the functions and lines
+that have code. Which line an address belongs to is not stored here: the
+page reads that from the DWARF shards of gen-dwarf.js, whose paths are
+relative to the build directory (DW_AT_comp_dir), like these.
 
 Output (JSON, compact):
   files   [path, ...]                 relative to SRC_ROOT
   funcs   [name, ...]
-  loc     [[paddr, file, line, func, [[file, line, func], ...]], ...]
-          one entry where the location changes; it holds until the next
-          entry; file -1 = no line information; the last item (inlined-at
-          chain, outermost last) is left out when empty
   ranges  [[func, file, first, last], ...]  the lines of each function
   text    {file: [[first, [line text, ...]], ...]}  only those lines
 """
@@ -72,7 +69,6 @@ def main():
     def fnid(name):
         return funcs.setdefault(name or "?", len(funcs))
 
-    loc, prev = [], None
     span = {}  # (func, file) -> [first, last]
     for pa, line in zip(paddrs, res):
         frames = json.loads(line).get("Symbol", [])
@@ -86,14 +82,6 @@ def main():
                 s = span.setdefault(key, [lo, fr["Line"]])
                 s[0] = min(s[0], lo)
                 s[1] = max(s[1], fr["Line"])
-        inner = chain[0] if chain else [-1, 0, fnid("?")]
-        key = (inner[0], inner[1], inner[2], tuple(map(tuple, chain[1:])))
-        if key != prev:
-            entry = [pa, inner[0], inner[1], inner[2]]
-            if chain[1:]:
-                entry.append(chain[1:])
-            loc.append(entry)
-            prev = key
     names = {v: k for k, v in files.items()}
     text, ranges = {}, []
     by_file = {}
@@ -116,11 +104,11 @@ def main():
                 merged.append([lo, hi])
         text[f] = [[lo, lines[lo - 1:hi]] for lo, hi in merged]
     data = {"files": [names[i] for i in range(len(names))], "funcs": [k for k, _ in sorted(funcs.items(), key=lambda kv: kv[1])],
-            "loc": loc, "ranges": sorted(ranges), "text": text}
+            "ranges": sorted(ranges), "text": text}
     with open(out, "w") as fh:
         json.dump(data, fh, separators=(",", ":"))
     nlines = sum(len(t) for rs in text.values() for _, t in rs)
-    print(f"{out}: {len(loc)} locations, {len(files)} files, {len(funcs)} functions, {nlines} source lines, "
+    print(f"{out}: {len(files)} files, {len(funcs)} functions, {nlines} source lines, "
           f"{os.path.getsize(out)} bytes")
 
 

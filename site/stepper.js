@@ -191,6 +191,7 @@ class Stepper {
 		this.fEsp = [];     // ESP on arrival at the frame's first instruction
 		this.fCont = [];    // 1: continuation of a call suspended by a task switch
 		this.fTask = [];    // task (see taskOf) the frame runs in
+		this.fFrom = [];    // physical address of the instruction that entered it (in the caller)
 		// Tasks: a task is identified by the kernel stack it switches away
 		// on (ESP >> 13, THREAD_SIZE is 8 KiB on i386). Task 0 is the boot
 		// task (swapper: the boot stack, then init_task's own stack).
@@ -246,6 +247,7 @@ class Stepper {
 		this.fChild.push(0);
 		this.fCont.push(0);
 		this.fTask.push(this.task);
+		this.fFrom.push(this.lastPhys);
 		this.stack.push(k);
 	}
 
@@ -270,6 +272,7 @@ class Stepper {
 			this.fCont.push(1);
 			this.contFrames++;
 			this.fTask.push(this.task);
+			this.fFrom.push(this.fFrom[f]);
 			this.lanes.get(region).push(k);
 			parent = k;
 		}

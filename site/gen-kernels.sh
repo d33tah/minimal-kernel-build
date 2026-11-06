@@ -26,6 +26,7 @@ cd "$(dirname "$0")"
 		[ -f "$src/symbols.json" ] && extra="$extra, \"symbols\": \"$src/symbols.json\""
 		[ -f "$src/disasm.json" ] && extra="$extra, \"disasm\": \"$src/disasm.json\""
 		[ -f "$src/sources.json" ] && extra="$extra, \"sources\": \"$src/sources.json\""
+		[ -f "$src/dwarf/index.json" ] && extra="$extra, \"dwarf\": \"$src/dwarf/\""
 		[ -f "$d/initrd.img" ] && extra="$extra, \"initrd\": \"$d/initrd.img\""
 		# Per-kernel defaults (label, cmdline, ram): kernels/<name>/meta.json,
 		# a flat JSON object whose members are copied into the entry.

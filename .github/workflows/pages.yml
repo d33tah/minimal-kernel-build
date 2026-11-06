@@ -23,7 +23,7 @@ jobs:
     - name: Install toolchain
       run: |
         apt-get update
-        apt-get install -y build-essential llvm clang lld nasm qemu-system-x86 expect python3 curl
+        apt-get install -y build-essential llvm clang lld nasm qemu-system-x86 expect python3 curl nodejs
 
     - uses: actions/checkout@v4
 
@@ -92,6 +92,10 @@ jobs:
         mkdir -p "$d"
         cp "$x/boot/vmlinuz-6.1.0-50-686" "$d/bzImage"
         site/gen-symbols.py --trim "$x/usr/lib/debug/boot/vmlinux-6.1.0-50-686" "$d/symbols.json" debian-6.1-686
+        site/gen-dwarf.js "$x/usr/lib/debug/boot/vmlinux-6.1.0-50-686" "$d/dwarf"
+        site/test_dwarf.py "$x/usr/lib/debug/boot/vmlinux-6.1.0-50-686" "$d/dwarf" --samples 5000 \
+          --strip debian/build/build_i386_none_686/ --strip /build/reproducible-path/linux-6.1.176/
+        cat "$d"/dwarf/*.bin | gzip -9 | wc -c | sed 's/^/debian dwarf shards gzip: /'
         printf '%s\n' '{"label": "Debian 6.1 686 (no initrd: ends in a root-fs panic)", "cmdline": "nokaslr console=tty0 cryptomgr.notests", "ram": 67108864}' > "$d/meta.json"
         rm -rf "$x"
         gzip -9 -c "$d/symbols.json" | wc -c | sed 's/^/debian symbols.json gzip: /'
@@ -129,12 +133,25 @@ jobs:
         site/gen-source.py "$g/minified/vmlinux" "$g/minified" out/minified-linux/disasm.json out/minified-linux/sources.json
         site/gen-source.py "$g/hello/boot/high/kernel.elf" "$g/hello" out/hello/disasm.json out/hello/sources.json
         gzip -9 -c out/minified-linux/sources.json | wc -c | sed 's/^/minified-linux sources.json gzip: /'
+        site/gen-dwarf.js "$g/minified/vmlinux" out/minified-linux/dwarf
+        site/gen-dwarf.js "$g/hello/boot/high/kernel.elf" out/hello/dwarf
+        site/test_dwarf.py "$g/minified/vmlinux" out/minified-linux/dwarf --samples 5000 --strip "$(realpath "$g/minified")/"
+        site/test_dwarf.py "$g/hello/boot/high/kernel.elf" out/hello/dwarf --samples 500 --strip "$(realpath "$g/hello")/"
+        # The -g ELFs for the browser test's llvm-symbolizer checks (not deployed).
+        mkdir -p debug-elfs
+        cp "$g/minified/vmlinux" debug-elfs/minified-linux.elf
+        cp "$g/hello/boot/high/kernel.elf" debug-elfs/hello.elf
         ls -l out/*/
 
     - uses: actions/upload-artifact@v4
       with:
         name: kernels
         path: out/
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: debug-elfs
+        path: debug-elfs/
 
   # Debian's initramfs for the Debian 6.1 686 sample, built by Debian's
   # own initramfs-tools (mkinitramfs) in an i386 bookworm container from
@@ -212,7 +229,7 @@ jobs:
         # Cache busting: Pages serves with max-age=600, and a browser that
         # keeps an older app.js next to a newer index.html breaks.
         v=$(echo "$GITHUB_SHA" | cut -c1-12)
-        sed -i -E "s/(href|src)=\"(style\.css|clock\.js|app\.js|stepper\.js|graph\.js|source\.js|symimport\.js|livedis\.js|fastforward\.js|cpustate\.js|v86\/libv86\.js)\"/\1=\"\2?v=$v\"/g" site/index.html
+        sed -i -E "s/(href|src)=\"(style\.css|clock\.js|app\.js|stepper\.js|graph\.js|dwarf\.js|dbginfo\.js|source\.js|symimport\.js|livedis\.js|fastforward\.js|cpustate\.js|v86\/libv86\.js)\"/\1=\"\2?v=$v\"/g" site/index.html
         grep -E "\?v=$v" site/index.html
 
     # The browser test runs in its own job (browser-test below) so the
@@ -258,6 +275,36 @@ jobs:
         path: ~/.cache/ms-playwright
         key: playwright-chromium-${{ runner.os }}-v1
 
+    # -g ELFs for the DWARF checks: the minified Linux's and hello's from
+    # the kernels job, Debian's -dbg vmlinux from the cached package.
+    - uses: actions/download-artifact@v4
+      with:
+        name: debug-elfs
+        path: debug-elfs
+
+    # Its own cache: the kernels job's is written from a container (other
+    # compression, so another cache version on this runner).
+    - uses: actions/cache@v4
+      with:
+        path: debian-dbg
+        key: browser-debian-686-dbg-6.1.176-1-4625e3cd446f
+
+    - name: Debian vmlinux and llvm-symbolizer
+      run: |
+        f=debian-dbg/linux-image-6.1.0-50-686-dbg_6.1.176-1_i386.deb
+        p=pool/main/l/linux/linux-image-6.1.0-50-686-dbg_6.1.176-1_i386.deb
+        sum=4625e3cd446ff2ade7776492bfdecd60b2fb6a72b8b99a97e04f0e472dfeeb84
+        mkdir -p debian-dbg
+        if ! echo "$sum  $f" | sha256sum -c --quiet; then
+          curl -sSfL --retry 3 -o "$f" "https://snapshot.debian.org/archive/debian/20260704T211317Z/$p" ||
+            curl -sSfL --retry 3 -o "$f" "https://deb.debian.org/debian/$p"
+        fi
+        echo "$sum  $f" | sha256sum -c
+        dpkg-deb --fsys-tarfile "$f" | tar -x -O ./usr/lib/debug/boot/vmlinux-6.1.0-50-686 > debug-elfs/debian-6.1-686.elf
+        sudo apt-get update
+        sudo apt-get install -y llvm
+        ls -l debug-elfs
+
     - name: Install Playwright and Chromium
       run: |
         python3 -m venv "$RUNNER_TEMP/venv"
@@ -265,6 +312,8 @@ jobs:
         "$RUNNER_TEMP/venv/bin/playwright" install --with-deps chromium
 
     - name: Browser test (both kernels, counters, debugger, tabs, snapshots, touch, stale cache)
+      env:
+        MKB_DEBUG_ELF_DIR: ${{ github.workspace }}/debug-elfs
       run: '"$RUNNER_TEMP/venv/bin/python" site/test_browser.py'
 
     - uses: actions/upload-artifact@v4

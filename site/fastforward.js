@@ -58,8 +58,10 @@ function jitChunk(beforeEntry = false) {
 		CLOCK.extraSteps = null;
 	}
 	const ran = (ffCounter() - c0) >>> 0;
-	if (ran)
+	if (ran) {
 		st.noteJit(beforeEntry);
+		st.markGap(); // the symbol history and the recorded call stack have a gap here
+	}
 	// The CLOCK keeps its value: steps take over from extraSteps.
 	st.steps += ran;
 	return ran;

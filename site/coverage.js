@@ -185,9 +185,10 @@ const COV_SORTS = {
 };
 
 function covRender() {
-	const box = $("cov_tree"), info = $("cov_info");
+	const box = $("cov_tree"), info = $("covtree_info");
 	const fl = dbgFiles();
 	box.dataset.state = fl.state;
+	$("cov_export").disabled = fl.state !== "ok";
 	if (fl.state !== "ok") {
 		box.textContent = "";
 		$("cov_status").textContent = fl.why;
@@ -291,7 +292,9 @@ function covRender() {
 
 	$("cov_status").textContent = !run.tint ? "No execution coverage: " + run.why + ". Totals only." :
 		run.waiting ? "Reading the line tables of " + run.waiting + " of the " + run.need + " shards (64 KiB of code each) with executed code…" :
-		run.failed.length ? "Lines run unknown: " + run.failed[0] : "";
+		run.failed.length ? "Lines run unknown: " + run.failed[0] :
+		run.partial ? "Incomplete: v86's JIT has run kernel code since the entry (full speed, or a Run to with the JIT) and records nothing, " +
+			"so code shown as not run may have run. Step, or run at a stepped speed (1k/s ... 10M/s), to record." : "";
 	const ins = F.insns;
 	info.textContent = "Lines: lines with code in the DWARF line table (a line inlined somewhere and the line of that call both count), " +
 		"run when an instruction started in one of their address ranges while stepping. Instructions: " +

@@ -817,6 +817,106 @@ wait on real time.
 The scripts (`v86ref.py`, `qtrace.py`) are not in the repository; the
 qemu runs used `timeout 120` and a FIFO, so no trace touched the disk.
 
+## Debug info: help, sizes, times and tests
+
+Every element the debug features put on the page has an explanation a
+first-time user can reach: a "?" next to it (tap or hover; the same text
+for keyboard users) or a title on the row or item. The Debugger's
+"source", "task", "call stack", "previous" and "path" rows, the method tag
+of each call stack frame and of each "Parameters and locals" frame (EIP,
+CFI, pt_regs, entry ESP, EBP chain, recorded), the C source toggle and
+picker, the Variables watch field, the Coverage filter and lcov export,
+the Source panel's legend (its first line), and the symbol offset field.
+The firstlook suite checks this for every kernel (see below).
+
+Things a first-time user runs into, and what the page says:
+- Run to while paused at the reset vector runs BIOS, setup and the
+  decompressor on v86's JIT, then sets a breakpoint (code in the entry's
+  section) or steps from the kernel entry (other sections such as
+  .init.text: start_kernel; a breakpoint there could hit memory that is
+  freed and reused after boot). Debian's Run to start_kernel took 18 to
+  30 s here instead of about 4 minutes of stepping.
+- Code the JIT ran is not recorded: the symbol history marks the gap
+  ("(v86's JIT ran here: not recorded)") and the Coverage tab says its
+  counts are incomplete when the JIT ran kernel code.
+- An imported vmlinux has no Coverage tree (the tab says why; lcov is
+  disabled) and no C text until its source folder or .tar is picked.
+
+Download sizes per kernel and feature (CI run 42270272424; bytes on disk,
+"gzip" is `gzip -6` of the file, about what Pages sends; `.json.gz` and
+`src/*.gz` are already compressed). Everything under `dwarf/` and `src/`
+is fetched lazily, a shard or file the first time an address or line in
+it is shown.
+
+| kernel | file | files | bytes | gzip | fetched when |
+|---|---|---:|---:|---:|---|
+| hello | bzImage | 1 | 2,688 | 354 | boot |
+| hello | symbols.json + disasm.json | 2 | 1,873 | 733 | boot |
+| hello | line and inline shards (D1) | 2 | 452 | 334 | first address shown |
+| hello | C source (D2) | 2 | 675 | 669 | first line shown |
+| hello | types.json (D3) | 1 | 128 | 119 | Variables, hover, data page |
+| hello | files.json (V2) | 1 | 167 | 153 | Coverage tab |
+| hello | CFI (D5) / locals (D4) shards | 1 / 1 | 23 / 210 | 41 / 210 | a pause |
+| minified Linux | bzImage | 1 | 91,568 | 36,993 | boot |
+| minified Linux | symbols.json + disasm.json | 2 | 813,399 | 172,920 | boot |
+| minified Linux | line and inline shards | 3 | 79,521 | 42,914 | first address shown |
+| minified Linux | C source | 189 | 285,126 | 281,564 | per file shown |
+| minified Linux | types.json | 1 | 34,443 | 11,562 | Variables, hover, data page |
+| minified Linux | files.json | 1 | 24,152 | 8,478 | Coverage tab |
+| minified Linux | CFI shards | 2 | 9,429 | 3,674 | a pause |
+| minified Linux | locals shards | 2 | 84,605 | 84,605 | a pause |
+| Debian 6.1 686 | bzImage | 1 | 5,707,712 | 5,681,498 | boot |
+| Debian 6.1 686 | symbols.json | 1 | 5,179,791 | 804,023 | boot |
+| Debian 6.1 686 | line and inline shards | 154 | 9,620,444 | 4,885,707 | per 64 KiB of code shown |
+| Debian 6.1 686 | C source | 3,184 | 15,611,597 | 15,542,088 | per file shown |
+| Debian 6.1 686 | types.json | 1 | 3,415,202 | 879,672 | Variables, hover, data page |
+| Debian 6.1 686 | files.json | 1 | 2,159,580 | 651,741 | Coverage tab |
+| Debian 6.1 686 | CFI shards | 153 | 1,511,034 | 455,261 | per frame of a pause |
+| Debian 6.1 686 | locals shards | 153 | 16,069,116 | 16,069,116 | per frame of a pause |
+| Debian with its initramfs | initrd.img (the rest is the Debian entry's) | 1 | 5,435,993 | 5,402,522 | boot |
+
+What a typical first session fetches (local measurement: open the page
+paused, Run to a function, Watch the first quick variable, open the Page
+tab and the Source panel at EIP, then the Coverage tab; files and gzip
+bytes of the debug data, then the total with bzImage, symbols and
+disassembly):
+
+| kernel, Run to | line shards | C source | types.json | CFI | locals | files.json | total gzip |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| hello, hello_main | 2: 334 | 2: 669 | 119 | 1: 41 | 1: 210 | 153 | 2.6 KB |
+| minified Linux, tty_write | 3: 42,914 | 44: 68,607 | 11,562 | 1: 2,480 | 1: 65,364 | 8,478 | 409 KB |
+| Debian 6.1 686, start_kernel | 5: 113,038 | 24: 112,153 | 879,672 | 2: 5,276 | 2: 108,505 | 651,741 | 8.4 MB (5.7 MB of it the bzImage) |
+
+Times. CI (same run): the kernels job 2.6 min, of which the Debian step
+70 s (gen-dwarf.js: decode 2.2 s, table 1.0 s, writing 153 line shards
+25 s, files.json 7.3 s, types.json and locals 17.6 s, CFI 0.1 s;
+gen-debian-source.sh and gen-src.js the rest) and the -g builds 4 s
+(minified) and under 1 s (hello); the site job 22 s; the four
+browser-test jobs 4.4, 4.8, 4.5 and 6.2 min wall (suites: debian 160 s,
+tasks 312 s, types 167 s, boot 99 s, the others under 45 s each).
+Imports (CI, Chromium): an unstripped minified -g vmlinux (676 KB) gives
+file:line at once and its Variables types pass takes 1.0 s; Debian's
+-dbg vmlinux (313 MB) gives file:line after 3.3 s (only the ELF headers,
+the small sections and one compile unit are read) and the Variables
+types pass takes 20.1 s in its own Worker; both are kept in IndexedDB.
+
+Which test covers which feature (CI job: `kernels`, `site`, or the
+browser-test matrix job named by its suites):
+
+| feature | tests | CI job |
+|---|---|---|
+| D1 file:line and inline chains | `test_dwarf.py` (Debian 5,000, minified 5,000, hello 500 random addresses vs llvm-symbolizer --inlines); suites dwarf (minified, hello: Debugger, listing, call stack, Graph vs llvm-symbolizer), debian (start_kernel 12 EIPs), dwarf_import (imported minified -g and Debian -dbg vmlinux, after a reload from IndexedDB) | kernels; debian,dwarf,dwarf_import,... |
+| D2 C source | `gen-src.js` (fails on a line past EOF), `test_kernel_data.py` (every src/ file listed); suites dwarf (line texts), debian (Source panel, files fetched), dwarf_import (folder, ustar, GNU tar, .tar.gz refused) | kernels; site; debian,dwarf,dwarf_import,... |
+| D3 types and globals | `test_dwarf.py --types` (vs gdb); suite types (watches vs gdb, hover byte paths, pointer to page, Debian import JSON-identical) | kernels; types,covtree,unwind |
+| V1 C line colours | suite dwarf (`src_colour_check`: loc and text colours differ, contrast at least 4.5, light and dark, every view) | debian,dwarf,dwarf_import,... |
+| V2 coverage browser | suites covtree (tree sums, files.json, Source panel whole file, lcov), debian (Debian tree, shards fetched) | types,covtree,unwind; debian,... |
+| V3 multi-line statements | suite covtree (`multiline_case`: asm statements in string_32.c and irqflags.h, counts equal in panel, tree, lcov) | types,covtree,unwind |
+| D5 CFI unwinding | `test_dwarf.py --cfi` (vs llvm-dwarfdump rows), `--eh-frame`; suite unwind (frames vs gdb backtrace of a core, import) | kernels; types,covtree,unwind |
+| D4 parameters and locals | `test_dwarf.py --locals` (vs gdb info scope); suites unwind (values vs gdb on a core, import), hello | kernels; types,covtree,unwind; boot,... |
+| D6 task names | suites tasks (Debian, every task vs task_struct read with gdb's offsets), tasks_minified | tasks; boot,... |
+| D7 minified and hello parity | `check-code-identity.py --self-test` (-g build's code equals the shipped kernel), `test_kernel_data.py` (every kernel has every feature's files); suite hello | kernels; site; boot,... |
+| D8 help and first look | `check-ids.py` (no duplicate ids); suite firstlook (every kernel incl. Debian with its initramfs and an imported vmlinux: explanations present, entry line, JIT gap, Coverage notes, no sideways scroll at 390 px light and dark) | site; boot,...,firstlook |
+
 ## Testing
 
     site/fetch-v86.sh

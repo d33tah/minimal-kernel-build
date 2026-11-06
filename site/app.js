@@ -1268,6 +1268,8 @@ async function pause(note) {
 		await emulator.stop();
 	runState = "paused";
 	runTo = -1;
+	if (entryPhase && stepper && stepper.sinceEntry >= 0)
+		finishEntry(); // a Run to (stepped) went past the kernel entry
 	if (note !== undefined)
 		$("dbg_status").textContent = note;
 	afterStop();
@@ -1466,6 +1468,7 @@ function renderSymbols(phys) {
 	};
 	const c = row("current");
 	c.id = "cur_sym";
+	c.title = "The symbol (symbols.json or the imported map) that holds EIP: its address range and EIP's offset in it";
 	if (cur >= 0) {
 		const lo = st.symStart[cur], hi = st.symEnd[cur];
 		c.append(symButton(st.symName[cur], lo), " " + hex(lo) + "–" + hex(hi - 1) + ", " + (hi - lo) +
@@ -1484,6 +1487,7 @@ function renderSymbols(phys) {
 	const uw = renderCallStack(box, phys);
 	const p = row("previous");
 	p.id = "prev_sym";
+	p.title = "The symbol the CPU was in before the current one, recorded while stepping (not while v86's JIT runs)";
 	if (prev && prev.sym >= 0) {
 		p.append(symButton(st.symName[prev.sym], prev.last, "Jump to the last instruction it ran\n" + dbgTitle(prev.last, st.symName[prev.sym])),
 			" left at " + hex(prev.last));
@@ -2127,16 +2131,24 @@ async function doRunTo() {
 	// kernel's entry when it has not run yet (its code is not in memory
 	// before the decompressor), then to the target.
 	const t = ffEnabled() && ffTarget();
-	if (t && codeRange(t.phys)[0] <= phys && phys < codeRange(t.phys)[1]) {
+	// Kernel code in another section than the entry's (.init.text: e.g.
+	// start_kernel) gets no breakpoint (that memory is freed and reused
+	// after boot), but BIOS, setup and the decompressor still run on the
+	// JIT: stepping them took minutes for the Debian sample.
+	const inText = (a) => !!(symbols && symbols.sections.some((s) => s.class === "text" && a >= s.paddr && a < s.paddr + s.size));
+	const sameSec = t && codeRange(t.phys)[0] <= phys && phys < codeRange(t.phys)[1];
+	if (t && (sameSec || inText(phys) && phys >= V86_KERNEL_ADDR)) {
 		ffInfo = null;
 		$("dbg_status").textContent = "Running to " + hex(phys) + " with the JIT...";
 		let ok = true;
 		if (stepper.sinceEntry < 0 || stepper.nextPhys() < V86_KERNEL_ADDR)
 			ok = await fastForward(t.phys, t.name);
-		if (ok && !ffAbort && phys !== t.phys)
+		if (ok && entryPhase && stepper.sinceEntry >= 0)
+			finishEntry(); // the entry phase ends here, not in driverTick
+		if (ok && sameSec && !ffAbort && phys !== t.phys)
 			ok = await fastRunTo(phys);
 		if (ok && stepper.nextPhys() === phys) {
-			pause("Stopped at " + hex(phys) + " (Run to, JIT and a breakpoint).");
+			pause("Stopped at " + hex(phys) + (sameSec ? " (Run to, JIT and a breakpoint)." : " (Run to: JIT to the kernel entry, then stepped)."));
 			return;
 		}
 		if (ffAbort) {

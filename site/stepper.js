@@ -565,7 +565,7 @@ class Stepper {
 	}
 
 	symLabel(i) {
-		return i >= 0 ? this.symName[i] : i === -3 ? "(full speed: not recorded)" : "(no symbol)";
+		return i >= 0 ? this.symName[i] : i === -3 ? "(v86's JIT ran here: not recorded)" : "(no symbol)";
 	}
 
 	hookVga() {

@@ -749,6 +749,8 @@ function renderLocals(uw) {
 		const tag = document.createElement("span");
 		tag.className = "fmeth";
 		tag.textContent = m[0];
+		if (m[1])
+			tag.title = "How this frame was found: " + m[1];
 		sum.append(tag);
 		det.append(sum);
 		const fill = () => {
@@ -953,6 +955,8 @@ function renderTaskRow(box) {
 		s.className = "dim";
 		s.textContent = "not known: " + c.why;
 		d.append(s);
+		d.title = "The running task (comm and pid of the task_struct current_task points at, with the member offsets from the DWARF) " +
+			"is shown here when the kernel has tasks and its DWARF describes current_task and task_struct.";
 	} else {
 		const n = document.createElement("span");
 		n.className = "mono";

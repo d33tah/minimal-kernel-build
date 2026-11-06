@@ -43,7 +43,7 @@
     <label><span>cmdline<span class="tip" tabindex="0" role="button" title="Kernel command line, passed to v86 (cmdline). Default: nokaslr cryptomgr.notests (imported System.maps only line up without KASLR; the crypto self-tests take long when stepped), or a kernel's own default; kernels that do not know an option ignore it, and the minified Linux ignores the command line. Add e.g. console=tty0 for a distro kernel. Remembered in this browser for this bzImage (by SHA-256); ?cmdline= in the URL sets it.">?</span></span>
       <input id="cmdline" size="18" value="nokaslr cryptomgr.notests" aria-label="kernel command line">
     </label>
-    <label><span>offset</span>
+    <label><span>offset<span class="tip" tabindex="0" role="button" title="Physical address = virtual address - offset, for imported symbols. auto: from the ELF program headers (PT_LOAD) of a vmlinux; for a System.map _text is put at 0x100000, where v86 loads the 32-bit kernel. Or type the offset in hex (e.g. 0xc0000000, the i386 PAGE_OFFSET). Read when a symbol file is imported.">?</span></span>
       <input id="sym_offset" value="auto" size="10" aria-label="symbol offset, auto or hex">
     </label>
     <button id="boot" type="button">Boot</button>
@@ -181,7 +181,7 @@
   <div class="scan">
     <span class="group"><input id="watch_expr" list="watch_names" size="24" placeholder="init_task.comm" aria-label="variable to watch" autocomplete="off" spellcheck="false">
       <button id="watch_add" type="button">Watch</button></span>
-    <button id="watch_refresh" type="button">Refresh</button>
+    <button id="watch_refresh" type="button">Refresh</button><span class="tip" tabindex="0" role="button" title="Watch adds a variable: a global or static name (Function::name for a static local), then .member, ->member or [index]; a leading * dereferences. Names complete from the DWARF as you type. The + buttons add common ones. Values are read from guest RAM when drawn; Refresh reads them again (needed while the kernel runs at full speed). A watch list is remembered per kernel in this browser.">?</span>
     <span id="watch_quick" class="group"></span>
   </div>
   <datalist id="watch_names"></datalist>
@@ -217,7 +217,7 @@
 
 <section class="panel" id="panel_coverage" role="tabpanel" aria-labelledby="tab_coverage" hidden>
   <div class="scan">
-    <input id="cov_filter" type="search" placeholder="filter" aria-label="filter files and functions">
+    <input id="cov_filter" type="search" placeholder="filter" aria-label="filter files and functions"><span class="tip" tabindex="0" role="button" title="All the kernel's code, by directory, file and function, from its DWARF: for the kernels built here a -g build of the same tree whose code is byte-identical to the kernel that boots, for Debian its -dbg package. Lines run: of the lines with code (the line table's rows; a line of inlined code and the line of its call both count), those where an instruction started while the page stepped the CPU. Instructions run: of the function's instructions (llvm-objdump of the same ELF, in CI), the addresses where an instruction started while stepping. Only what the page steps is recorded, the same record as the tint in the Page listing: code v86's JIT ran (the fast-forward to the kernel entry, full speed) is not. Tap a directory to open it, a file for the whole file in the Source panel with its executed lines (the other lines of a statement written over several lines, e.g. an asm statement, are marked ┆ with the statement's status and are not counted), a function to open it in the Page tab. The totals come with the kernel; which lines ran is read from the line tables of the code that ran, fetched when needed. An imported vmlinux has no tree: its DWARF is only read around the addresses shown.">?</span>
     <label>sort <select id="cov_sort">
       <option value="path">by name</option>
       <option value="run">lines run (%)</option>
@@ -227,11 +227,10 @@
     </select></label>
     <button id="cov_export" type="button">lcov</button><span class="tip" tabindex="0" role="button" title="Download an lcov tracefile (genhtml, IDE coverage plugins): every file's lines with code, DA:line,1 for a line that has executed, 0 for one that has not (ran or not, not how often). For a big kernel this first reads every shard of its line table (Debian: about 5 MB).">?</span>
     <span id="cov_export_status" class="note"></span>
-    <span class="tip" tabindex="0" role="button" title="All the kernel's code, by directory, file and function, from its DWARF: for the kernels built here a -g build of the same tree whose code is byte-identical to the kernel that boots, for Debian its -dbg package. Lines run: of the lines with code (the line table's rows; a line of inlined code and the line of its call both count), those where an instruction started while the page stepped the CPU. Instructions run: of the function's instructions (llvm-objdump of the same ELF, in CI), the addresses where an instruction started while stepping. Only what the page steps is recorded, the same record as the tint in the Page listing: code v86's JIT ran (the fast-forward to the kernel entry, full speed) is not. Tap a directory to open it, a file for the whole file in the Source panel with its executed lines (the other lines of a statement written over several lines, e.g. an asm statement, are marked ┆ with the statement's status and are not counted), a function to open it in the Page tab. The totals come with the kernel; which lines ran is read from the line tables of the code that ran, fetched when needed. An imported vmlinux has no tree: its DWARF is only read around the addresses shown.">?</span>
   </div>
   <p id="cov_status" class="note"></p>
   <div id="cov_tree" class="ctree covtree"></div>
-  <p id="cov_info" class="note"></p>
+  <p id="covtree_info" class="note"></p>
 </section>
 
 <section class="panel" id="panel_snapshots" role="tabpanel" aria-labelledby="tab_snapshots" hidden>
@@ -249,16 +248,17 @@
 </section>
 
 <section class="panel about" id="panel_about" role="tabpanel" aria-labelledby="tab_about" hidden>
-  <p>This page boots a Linux-style bzImage in <a href="https://github.com/copy/v86">v86</a>, an x86 emulator compiled to WebAssembly, and lets you look inside the machine while it runs. Two kernels come with it: <b>hello</b>, a toy kernel that prints two lines and halts, and <b>minified-linux</b>, the reduced Linux kernel of <a href="https://github.com/d33tah/minimal-kernel-build">minimal-kernel-build</a>. Any bzImage can be loaded from disk.</p>
+  <p>This page boots a Linux-style bzImage in <a href="https://github.com/copy/v86">v86</a>, an x86 emulator compiled to WebAssembly, and lets you look inside the machine while it runs. Four kernels come with it: <b>hello</b>, a toy kernel that prints two lines and halts; <b>minified-linux</b>, the reduced Linux kernel of <a href="https://github.com/d33tah/minimal-kernel-build">minimal-kernel-build</a>; and Debian 6.1 686 (bookworm's linux-image-6.1.0-50-686), once without an initrd (it ends in a root-fs panic) and once with its initramfs (it stops at the BusyBox shell). All four come with their debug info (DWARF): file:line, C source, variables, backtraces, parameters and locals, task names and a coverage tree. Any bzImage can be loaded from disk.</p>
   <h3>Tabs</h3>
   <ul>
     <li><b>Memory</b>: the physical memory map from the boot header and one square per 4 KiB page, coloured by region and ELF section.</li>
     <li><b>Page</b>: one page as a single listing, instructions where the kernel has code and hex rows elsewhere, with symbol headers.</li>
-    <li><b>Debugger</b>: registers, stepping and run-to-address, and the kernel's global variables from its DWARF, pretty-printed from guest RAM.</li>
+    <li><b>Debugger</b>: registers, stepping and run-to-address; at a pause the C line and inlined-at chain of EIP, the running task (comm, pid), the call stack unwound with the DWARF call frame information, each frame's parameters and locals, and the kernel's global variables, pretty-printed from guest RAM.</li>
     <li><b>C source</b>: the Page listing and the Debugger interleave the C lines (from the DWARF of a -g build with byte-identical code) with the instructions; tap one for the function with its executed lines. The text is shipped for every sample kernel (Debian: its source package); for an imported vmlinux pick its source folder or .tar.</li>
     <li><b>Symbols</b>: import a System.map or an unstripped vmlinux for the current kernel (next to From disk, or drop it on the page with a bzImage); it replaces the kernel's symbols everywhere.</li>
     <li><b>initrd, cmdline</b>: pass an initrd and a command line to v86 for third-party 32-bit kernels (v86 puts the initrd at 64 MiB, so RAM is raised to fit). Our kernels ignore a bootloader initrd.</li>
-    <li><b>Graph</b>: the symbols the CPU went through while stepping and the transitions between them, live.</li>
+    <li><b>Graph</b>: the symbols the CPU went through while stepping and the transitions between them, live, with task switches named by task.</li>
+    <li><b>Coverage</b>: all the kernel's code as a tree of directories, files and functions with the lines and instructions that ran while stepping; a file opens with its executed lines, lcov export.</li>
     <li><b>Snapshots</b>: save, restore and download the whole machine state.</li>
   </ul>
   <h3>Counting and stepping</h3>

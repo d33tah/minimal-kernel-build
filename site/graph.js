@@ -45,6 +45,7 @@ function graphReset(st) {
 	G.selected = -1;
 	G.selSwitch = -1;
 	G.taskNames = null;
+	G.taskInfo = null;
 	G.version = -1;
 	G.userMoved = false;
 	G.yOff = 0;
@@ -111,16 +112,27 @@ function frameCounts(st, k) {
 }
 
 // Call tree aggregated by call path (perf report --children), from the
-// frames that start at or after the kernel entry.
+// frames that start at or after the kernel entry. With more than one task
+// the outermost calls sit under a node per task (like perf's --sort comm).
 function buildTree(st) {
 	const start = runStart();
 	const root = { key: "0", name: "(kernel, from the entry at 0x100000)", incl: st.steps - start, self: 0, calls: 1, kids: new Map() };
 	const nodeOf = new Map(); // frame -> tree node
+	const tasks = st.taskCount > 1 ? taskInfo(st) : null;
+	const taskNode = (t) => {
+		let x = root.kids.get("@" + t);
+		if (!x) {
+			x = { key: "0/@" + t, name: "task " + t + ": " + tasks[t].name, task: t, how: tasks[t].how, incl: 0, self: 0, calls: 1, kids: new Map() };
+			root.kids.set("@" + t, x);
+		}
+		return x;
+	};
 	for (let k = 0; k < st.fStart.length; k++) {
 		if (st.fStart[k] < start)
 			continue;
 		const p = st.fParent[k];
-		let parent = p >= 0 && nodeOf.has(p) ? nodeOf.get(p) : root;
+		const top = !(p >= 0 && nodeOf.has(p));
+		let parent = top ? (tasks ? taskNode(st.fTask[k]) : root) : nodeOf.get(p);
 		let name = st.nodeName(st.fNode[k]);
 		if (G.fold && st.fIrq[k]) {
 			if (p >= 0 && st.fIrq[p] && nodeOf.has(p)) { // inside a folded interrupt: count in it
@@ -136,6 +148,8 @@ function buildTree(st) {
 		}
 		const c = frameCounts(st, k);
 		t.incl += c.incl;
+		if (top && tasks)
+			parent.incl += c.incl;
 		if (!st.fCont[k]) // a continuation is the same call, resumed
 			t.calls++;
 		nodeOf.set(k, t);
@@ -227,8 +241,28 @@ function timelineLayout(st) {
 	return G.layout;
 }
 
-// Task names: the boot task, then each task's thread function.
+// Per task { name, how, comm?, pid?, va? }: "comm (pid N)" from its
+// task_struct where vars.js varsTasks can read it, else a guess (taskGuesses).
+function taskInfo(st) {
+	const types = dbgHas() ? dbgTypes().state : "none";
+	const key = st.fStart.length + ":" + st.steps + ":" + st.taskCount + ":" + types + ":" + runState;
+	if (G.taskInfo && G.taskInfo.key === key)
+		return G.taskInfo.list;
+	const guess = taskGuesses(st);
+	const list = varsTasks(st).map((k, t) => k.why ? { name: guess[t], guess: true,
+		how: (t ? "named after its thread function (the first function it ran)" : "the boot task") +
+			"; its task_struct was not read: " + k.why } :
+		{ name: k.comm + " (pid " + k.pid + ")", how: "comm and pid from " + k.how, comm: k.comm, pid: k.pid, va: k.va });
+	G.taskInfo = { key, list };
+	return list;
+}
+
 function taskNames(st) {
+	return taskInfo(st).map((x) => x.name);
+}
+
+// Task names without task_struct: the boot task, then each task's thread function.
+function taskGuesses(st) {
 	const n = st.fStart.length;
 	if (G.taskNames && G.taskNames.n === n)
 		return G.taskNames.names;
@@ -792,6 +826,10 @@ function drawTree() {
 		name.className = "tname mono";
 		name.style.paddingLeft = Math.min(depth, 30) * 0.7 + "em";
 		name.textContent = t.name;
+		if (t.task !== undefined) {
+			row.dataset.task = t.task;
+			name.title = "Task " + t.task + ": " + t.name.replace(/^task \d+: /, "") + "\n" + t.how;
+		}
 		if (t.node !== undefined && t.node < st.symName.length) {
 			name.addEventListener("click", () => jumpTo(st.symStart[t.node]));
 			name.addEventListener("mouseenter", () => { name.title = "entry " + hex(st.symStart[t.node]) + ": " + dbgTitle(st.symStart[t.node], t.name); });
@@ -1031,10 +1069,10 @@ function renderGraphInfo() {
 	el.textContent = "";
 	const st = G.stepper;
 	if (st && G.selected < 0 && G.selSwitch >= 0 && G.view === "timeline") {
-		const i = G.selSwitch, names = taskNames(st);
+		const i = G.selSwitch, info = taskInfo(st)[st.swTask[i]];
 		el.textContent = "Task switch " + num(st.swStep[i] - runStart()) + " instructions from the entry, to task " +
-			st.swTask[i] + ": " + names[st.swTask[i]] + (st.swIrq[i] ? " (preempted on an interrupt's return)" : "") + ".";
-		el.dataset.switch = names[st.swTask[i]];
+			st.swTask[i] + ": " + info.name + (st.swIrq[i] ? " (preempted on an interrupt's return)" : "") + ". Name: " + info.how + ".";
+		el.dataset.switch = info.name;
 		delete el.dataset.node;
 		return;
 	}
@@ -1143,7 +1181,7 @@ function graphData() {
 	const st = G.stepper;
 	const n = st.symName.length;
 	const tree = buildTree(st);
-	const plain = (t) => ({ name: t.name, inclusive: t.incl, self: t.self, calls: t.calls,
+	const plain = (t) => ({ name: t.name, ...(t.task !== undefined ? { task: t.task } : {}), inclusive: t.incl, self: t.self, calls: t.calls,
 		children: [...t.kids.values()].sort((a, b) => b.incl - a.incl).map(plain) });
 	return {
 		kernel: image ? image.name : null,
@@ -1290,7 +1328,7 @@ function initGraph() {
 		const sw = G.switchHits.find(([, bx, by, bw, bh]) => x >= bx && x <= bx + bw && y >= by && y <= by + bh);
 		const m = sw ? null : (G.mergedHits || []).find(([bx, by, bw, bh]) => x >= bx - 1 && x <= bx + bw + 1 && y >= by && y <= by + bh);
 		const f = sw || m ? -1 : timelineFrameAt(x, y);
-		c.title = sw ? "Task switch to task " + st.swTask[sw[0]] + ": " + taskNames(st)[st.swTask[sw[0]]] :
+		c.title = sw ? "Task switch to task " + st.swTask[sw[0]] + ": " + taskNames(st)[st.swTask[sw[0]]] + "\n" + taskInfo(st)[st.swTask[sw[0]]].how :
 			m && timelineFrameAt(x, y) < 0 ? num(m[4]) + " calls in this range (tap to zoom in)" :
 			f >= 0 ? frameTitle(st, f) : "";
 	});

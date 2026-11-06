@@ -564,9 +564,10 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
     bottom. All tasks share the rows (one CPU: they never overlap), and a
     resumed task's continuations line up under the same callers. A thin
     slate-blue line marks each task switch, with the incoming task's
-    thread function on a strip above the rows (labels that would overlap
-    are left out; hover or tap one for the task); switches from inside
-    interrupt handling are hidden with "hide interrupts".
+    name on a strip above the rows (see *Task names* below; labels that
+    would overlap are left out; hover or tap one for the task and where
+    its name comes from); switches from inside interrupt handling are
+    hidden with "hide interrupts".
     "chains" (on) draws a call whose caller has a single call and
     almost no own instructions in the caller's box as "a › b › c". The
     depth slider caps the rows shown and marks deeper calls "+N". The
@@ -581,11 +582,39 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
     pan turns it off.
   - *Call tree*: like `perf report --children` (inclusive %, self %,
     calls), sorted by inclusive count, collapsible, with a search box; the
-    root is the whole run from the kernel entry.
+    root is the whole run from the kernel entry. With more than one task
+    the outermost calls sit under one row per task ("task 1: init (pid
+    1)", like perf's `--sort comm`); the JSON export carries the task
+    number on those nodes.
   - *Top 30*: the 30 symbols with the largest inclusive count (recursion
     counted once), call edges between them (calls through hidden symbols
     are attributed to the nearest shown caller), layered by how many shown
     symbols are above them; edges pointing up are dashed.
+  *Task names*: a task is named "comm (pid N)" from its `task_struct`,
+  read from guest RAM with the member offsets from the kernel's DWARF
+  (the types of D3: `current_task`'s type, so a kernel whose
+  `task_struct` was cut down still works). The running task is read
+  through the per-CPU `current_task` (CPU 0's copy). When a task switches
+  away the stepper notes the `task_struct` that `current_task` still
+  names at that moment (`__switch_to` sets the next task after the stack
+  switch the stepper sees); while the task lives (its stack region still
+  belongs to it) that `task_struct` is read again at every look, so a
+  name changed by exec shows (the minified Linux's pid 1 starts with its
+  parent's name "swapper" and is "init" once it has run /init). Tasks
+  that switched away before the types were loaded are found in the task
+  list (`init_task.tasks`, by `task_struct.stack`) when the kernel has
+  that list (Debian yes; the minified Linux's `task_struct` has no
+  `tasks` member, but its two tasks are the boot task, which is
+  `init_task`, and the running one). A task that exited keeps the name
+  it had when it last switched away. Without DWARF types (hello, an
+  imported System.map) or before the kernel's own code runs, the old
+  guess is shown and the tooltip says why: the boot task, else the
+  task's thread function. The Debugger shows the running task on a
+  "task" row above the call stack (comm, pid, `task_struct` address,
+  "Watch" puts `*current_task` in Variables). The browser test reads the
+  same fields with gdb's offsets (`ptype` of the -g ELF) from guest RAM
+  itself and compares: the running task, every live task, and for
+  Debian every task on the task list.
   "hide interrupts" (on by default) hides interrupt and exception frames
   (in the call tree: one "(interrupt and exception handling)" entry).
   JSON has the transitions and the call tree, DOT the transitions. For the

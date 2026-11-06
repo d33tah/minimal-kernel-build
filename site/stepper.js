@@ -200,6 +200,11 @@ class Stepper {
 		this.task = 0;
 		this.taskOf = new Map();   // stack region -> task
 		this.taskCount = 1;
+		this.taskRegion = [-1]; // task -> the stack region it switched away on (or started on)
+		// task -> what onTaskLeave(task, step, dead) said as it last switched
+		// away (the page sets it: vars.js varsTaskNow reads the leaving task's
+		// task_struct, its name and pid, through current_task).
+		this.taskSeen = [];
 		this.contFrames = 0;
 		// Task switches: step, incoming task, 1 when it left from inside
 		// interrupt handling (preemption on an interrupt's return).
@@ -326,6 +331,10 @@ class Stepper {
 					chain.reverse();
 					const dead = chain.some((f) => /^do_task_dead$/.test(this.symName[this.fNode[f]]));
 					if (this.lane >= 0) {
+						this.taskRegion[this.task] = this.lane;
+						const seen = this.onTaskLeave ? this.onTaskLeave(this.task, t, dead) : null;
+						if (seen)
+							this.taskSeen[this.task] = seen;
 						if (dead) {
 							this.taskOf.delete(this.lane);
 							this.suspended.delete(this.task);
@@ -341,8 +350,10 @@ class Stepper {
 					}
 					let task = this.taskOf.get(region);
 					this.freshTask = task === undefined;
-					if (task === undefined)
+					if (task === undefined) {
 						task = this.taskCount++;
+						this.taskRegion[task] = region;
+					}
 					this.task = task;
 					this.swStep.push(t);
 					this.swTask.push(task);

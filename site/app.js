@@ -1091,6 +1091,7 @@ async function boot() {
 			stepper = new Stepper(em, V86_KERNEL_ADDR, kernelEnd(image.hdr));
 			stepper.milestones = MILESTONES.map((text) => ({ text, found: null }));
 			stepper.setSymbols(codeSymbols());
+			stepper.onTaskLeave = varsTaskNow;
 			// ?unwind=0: the old reconstruction from symbol transitions only.
 			stepper.espUnwind = new URLSearchParams(location.search).get("unwind") !== "0";
 			// ?panicbudget=N: instructions after panic() entry before giving up.
@@ -1479,6 +1480,7 @@ function renderSymbols(phys) {
 	const hist = st.history.filter((h) => !(h.sym === cur && h.sym >= 0));
 	const prev = hist.length ? hist[hist.length - 1] : null;
 	renderSourceRows(box, phys, cur >= 0 ? st.symName[cur] : null);
+	renderTaskRow(box);
 	const uw = renderCallStack(box, phys);
 	const p = row("previous");
 	p.id = "prev_sym";

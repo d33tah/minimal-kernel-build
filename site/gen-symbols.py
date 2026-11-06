@@ -91,9 +91,13 @@ DROP_PREFIXES = ("__ksymtab_", "__kstrtab_", "__kstrtabns_", "__crc_", "__UNIQUE
 
 
 def keep_trimmed(sym):
-    if not sym["size"] or sym["name"].startswith(DROP_PREFIXES):
+    # Code always stays (a backtrace can pass through __setup_irq or a
+    # __SCT__ static-call trampoline); the prefixes drop data only.
+    if not sym["size"]:
         return False
-    return sym["type"] in "tTDBR"
+    if sym["type"] in "tT":
+        return True
+    return sym["type"] in "DBR" and not sym["name"].startswith(DROP_PREFIXES)
 
 
 def main():

@@ -328,6 +328,19 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   panel are equal. What ran is the stepper's record (`Stepper.seen`, the
   same as the listing tint, with the same rule about code v86's JIT ran);
   the line rows are read only from the shards holding a recorded address.
+  A statement written over several lines (`asm volatile("..."` with its
+  strings, outputs and clobbers on the next lines, a call with its
+  arguments below it) has line rows on some of its lines only, usually the
+  first. The Source panel shows its other lines with ┆ and the status of
+  the statement (ran when any of its lines with code ran); the function
+  view is widened to whole statements. These continuation lines are not
+  counted anywhere: the panel, the tree and the lcov export count lines
+  with code of their own in the line table, so their numbers stay equal.
+  The statements come from the C text (source.js `srcStatements`: ends at
+  `;`, `{` or `}` outside parentheses, after an if/for/while/switch
+  header, a label, else/do; strings, characters, comments and preprocessor
+  lines with backslash continuations skipped; a `{` after `=`, `,` or
+  inside parentheses is an initializer or statement expression).
   Debian: 3,183 files, 41,389 functions, 583,569 lines with code,
   3,030,508 instructions (2,941,867 in functions), `files.json` 2,159,580
   bytes (649,441 gzipped), fetched when the tab opens; minified Linux: 188
@@ -825,7 +838,14 @@ start_kernel's instructions run equal the untinted instructions of its
 listing, sorting and the filter work, the Source panel's whole-file view of
 init/main.c has the tree's numbers, the lcov export has the same totals,
 a function opens the Page tab; screenshots light and dark at 1280 and 390
-px. The Debian case also opens the tree at start_kernel and checks it came
+px. The multi-line case (same suite) opens the asm statements of strlen
+(arch/x86/lib/string_32.c) and native_save_fl (irqflags.h, inlined) in the
+Source panel, whole file and function view at a copy that ran: every line
+of the statement shows as run, the lines after the first as continuation
+lines that are not counted; strlen's own copy, which does not run, shows
+the whole statement as not run; the file's counts in the panel, the tree
+and the lcov export are equal; `srcStatements` is checked on a snippet
+with strings, comments, a #define, headers, a label and initializers. The Debian case also opens the tree at start_kernel and checks it came
 without fetching most shards. The unwind case pauses the minified Linux
 in memblock_add_range (start_kernel's call chain) and in tty_write (a
 system call from user space), and Debian in timer_interrupt (an interrupt

@@ -212,6 +212,172 @@ function srcStatus() {
 		"file:line only: pick the kernel's source folder or .tar for the text of the lines (" + SRC.why + ")";
 }
 
+// ---- statements spanning several lines --------------------------------------
+
+// The line rows of a C statement written over several lines name only some
+// of its lines, usually the first (`asm volatile("..."\n "..." : ...);`,
+// a call with its arguments on the next lines): the others are parts of
+// that statement, not lines without code. srcStatements(file) finds every
+// statement of more than one line from the C text, once per loaded file:
+// { of: Int32Array (line -> first line of its statement, 0 when the line
+// holds no token of a multi-line statement), end: Map(first -> last line) }.
+// A statement ends at `;`, `{` or `}` outside parentheses and brackets, after
+// the `)` of an if/for/while/switch header, after a label's `:`, and after
+// else/do, and outside functions before a line starting with a name after a
+// `)` (macro calls without `;`); a `{` after `=` or `,`, or inside
+// parentheses, is an initializer or a statement expression and part of it. Strings, characters, comments
+// and preprocessor lines (with backslash continuations) are skipped.
+function srcStatements(file) {
+	if (file.stmts)
+		return file.stmts;
+	const text = file.lines.join("\n"), n = text.length;
+	const of = new Int32Array(file.lines.length + 2), end = new Map();
+	let line = 1, bol = true;           // at the start of a line (only blanks so far)
+	let start = 0, last = 0, toks = 0, first = "", prev = "";
+	let depth = 0, init = 0, header = false, seen = [], blocks = 0;
+	const finish = () => {
+		if (start && last > start) {
+			for (const l of seen)
+				of[l] = start;
+			end.set(start, last);
+		}
+		start = last = toks = depth = init = 0;
+		first = prev = "";
+		header = false;
+		seen = [];
+	};
+	const token = (t) => {
+		if (!start)
+			start = line;
+		if (last !== line)
+			seen.push(line);
+		last = line;
+		if (!toks++)
+			first = t;
+		prev = t;
+	};
+	const skipTo = (i, close) => {     // past the closing quote of a string or char
+		for (i++; i < n && text[i] !== close; i++)
+			if (text[i] === "\\")
+				i++;
+			else if (text[i] === "\n")
+				break;
+		return i;
+	};
+	for (let i = 0; i < n; i++) {
+		const c = text[i];
+		if (c === "\n") {
+			line++;
+			bol = true;
+			continue;
+		}
+		if (c === " " || c === "\t" || c === "\r" || c === "\f" || c === "\v")
+			continue;
+		if (c === "/" && text[i + 1] === "/") {
+			while (i + 1 < n && text[i + 1] !== "\n")
+				i++;
+			continue;
+		}
+		if (c === "/" && text[i + 1] === "*") {
+			const e = text.indexOf("*/", i + 2), stop = e < 0 ? n : e + 2;
+			for (let k = i; k < stop; k++)
+				if (text[k] === "\n")
+					line++;
+			i = stop - 1;
+			continue;
+		}
+		if (c === "#" && bol) {          // a preprocessor line and its continuations
+			while (i + 1 < n && !(text[i + 1] === "\n" && text[i] !== "\\"))
+				if (text[++i] === "\n")
+					line++;
+			continue;
+		}
+		bol = false;
+		if (c === '"' || c === "'") {
+			token(c);
+			i = skipTo(i, c);
+			continue;
+		}
+		if (/[A-Za-z0-9_]/.test(c)) {
+			let j = i;
+			while (j + 1 < n && /[A-Za-z0-9_]/.test(text[j + 1]))
+				j++;
+			const w = text.slice(i, j + 1);
+			i = j;
+			// Outside functions, macro calls without a `;` (DEFINE_X(a) on
+			// one line, the next on the following one) are statements each.
+			if (start && !blocks && !depth && !init && prev === ")" && last !== line)
+				finish();
+			token(w);
+			if (toks === 1 && (w === "else" || w === "do"))
+				finish();
+			else if (toks === 1 && /^(if|for|while|switch)$/.test(w))
+				header = true;
+			continue;
+		}
+		const p = prev;
+		token(c);
+		if (c === "(" || c === "[")
+			depth++;
+		else if (c === ")" || c === "]") {
+			depth = Math.max(0, depth - 1);
+			if (c === ")" && header && !depth && !init)
+				finish();
+		} else if (c === "{") {
+			if (depth || init || p === "=" || p === ",")
+				init++;
+			else {
+				finish();
+				blocks++;
+			}
+		} else if (c === "}") {
+			if (init)
+				init--;
+			else {
+				finish();
+				blocks = Math.max(0, blocks - 1);
+			}
+		} else if (c === ";" && !depth && !init)
+			finish();
+		else if (c === ":" && !depth && !init && text[i + 1] !== ":" &&
+			(first === "case" || first === "default" || (toks === 2 && /^[A-Za-z_]\w*$/.test(first))))
+			finish();
+	}
+	finish();
+	file.stmts = { of, end };
+	return file.stmts;
+}
+
+// The panel's lines first..last widened to whole statements, and the
+// continuation lines: those of a multi-line statement without code of
+// their own, shown as the statement (ran when any of its lines ran). They
+// are not counted: the counts here, in the Coverage tab and in the lcov
+// export are lines with code of their own in the line table.
+function srcStatementView(file, first, last, code, run) {
+	const { of, end } = srcStatements(file);
+	const max = file.lines.length;
+	let lo = first, hi = Math.min(last, max);
+	for (const l of code.keys())
+		if (l >= first && l <= hi && of[l]) {
+			lo = Math.min(lo, of[l]);
+			hi = Math.max(hi, end.get(of[l]));
+		}
+	const cont = new Map(); // line -> { start, end, ran }
+	const status = new Map(); // first line -> ran (true/false), only statements with code
+	for (let l = lo; l <= hi; l++) {
+		const st = of[l];
+		if (!st || !code.has(l))
+			continue;
+		status.set(st, status.get(st) || run.has(l));
+	}
+	for (let l = lo; l <= hi; l++) {
+		const st = of[l];
+		if (st && !code.has(l) && status.has(st))
+			cont.set(l, { start: st, end: end.get(st), ran: status.get(st) });
+	}
+	return { first: lo, last: hi, cont };
+}
+
 // ---- rendering --------------------------------------------------------------
 
 const showSource = () => dbgHas() && $("show_src").checked;
@@ -423,11 +589,18 @@ function renderSourcePanel() {
 		return;
 	}
 	const { code, run } = lineCoverage(pl);
+	const sv = srcStatementView(file, pl.first, pl.last, code, run);
+	if (!srcPanel.whole)
+		$("src_title").textContent = (fn || "?") + " — " + path + ":" + sv.first + "–" + sv.last;
 	const out = [];
-	for (let l = pl.first; l <= Math.min(pl.last, file.lines.length); l++) {
-		const cls = run.has(l) ? "exec" : code.has(l) ? "code" : "";
-		const mark = run.has(l) ? "●" : code.has(l) ? "○" : " ";
-		out.push('<span class="' + cls + (l === line ? " here" : "") + '">' + srcLocHtml(String(l).padStart(5, " ")) + " " + mark + " " +
+	for (let l = sv.first; l <= sv.last; l++) {
+		const c = sv.cont.get(l);
+		const ran = run.has(l) || (c && c.ran);
+		const cls = (ran ? "exec" : code.has(l) || c ? "code" : "") + (c ? " cont" : "");
+		const mark = c ? "┆" : run.has(l) ? "●" : code.has(l) ? "○" : " ";
+		const title = c ? ' title="' + escHtml("Line " + l + " is part of the statement at lines " + c.start + "–" + c.end + ", which " +
+			(c.ran ? "ran" : "has not run") + ". Not counted: only lines with code of their own in the line table are counted, here, in the Coverage tab and in the lcov export.") + '"' : "";
+		out.push('<span class="' + cls + (l === line ? " here" : "") + '"' + title + ">" + srcLocHtml(String(l).padStart(5, " ")) + " " + mark + " " +
 			'<span class="srctext">' + escHtml(file.lines[l - 1]) + "</span></span>");
 	}
 	body.innerHTML = out.join("\n");
@@ -437,7 +610,7 @@ function renderSourcePanel() {
 	body.dataset.file = path;
 	const note = SRC.notes && SRC.notes[path] ? " " + path + ": " + SRC.notes[path] + "." : "";
 	const cov = stepper ? coverageFor(stepper.kernelLo) : null;
-	$("src_info").textContent = run.size + " of " + code.size + " lines with code have executed (● ran, ○ not yet)" +
+	$("src_info").textContent = run.size + " of " + code.size + " lines with code have executed (● ran, ○ not yet, ┆ more lines of the statement above or below, not counted)" +
 		(!stepper ? "; boot a kernel to see coverage" : !cov.tint ? "; " + cov.why : cov.partial ? "; v86's JIT has run since the kernel entry and records nothing, so ○ lines may have run" : "") +
 		". Recorded while stepping" + (srcPanel.whole ? ", every function of the file" : "") + ". Source: " + (SRC.info || SRC.mode) + "." + note;
 }

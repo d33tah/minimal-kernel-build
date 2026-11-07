@@ -23,6 +23,7 @@ Needs: pip install playwright && playwright install chromium
 """
 
 import argparse
+import base64
 import functools
 import gzip
 import http.server
@@ -39,7 +40,7 @@ import tempfile
 import threading
 import time
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import Error as PlaywrightError, sync_playwright
 
 from test_dwarf import write_core
 
@@ -1884,6 +1885,260 @@ TYPES_WATCHES = {
 }
 
 
+def boxed_line_ink(page, sel):
+    """Whether the underscores of the boxed line sel (the EIP line: .cur, an
+    outline drawn 1 px inside its box) are drawn: for every `_` of its
+    text, some pixel row between the box's outline rows has ink (pixels
+    far from both the background and the outline colour) across at
+    least a third of the character cell. The screenshot is decoded in
+    the page (canvas): no imaging module needed. [(char index, ok)] or
+    None when there is no such line."""
+    geo = page.evaluate("""(sel) => { const el = document.querySelector(sel); if (!el) return null;
+        el.scrollIntoView({ block: 'center' });
+        const cs = getComputedStyle(el), box = el.getBoundingClientRect(), cells = [];
+        const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        let k = 0;
+        for (let n; (n = w.nextNode());)
+            for (let i = 0; i < n.data.length; i++, k++)
+                if (n.data[i] === '_') {
+                    const rg = document.createRange(); rg.setStart(n, i); rg.setEnd(n, i + 1);
+                    const r = rg.getBoundingClientRect(); cells.push([k, r.left, r.right]);
+                }
+        const rgb = (c) => (c.match(/[\\d.]+/g) || []).slice(0, 3).map(Number);
+        let bg = cs.backgroundColor, e = el;
+        while (e && /^rgba\\(.*, 0\\)$/.test(bg)) { e = e.parentElement; bg = getComputedStyle(e || document.body).backgroundColor; }
+        return { top: box.top, bottom: box.bottom, cells, bg: rgb(bg), ol: rgb(cs.outlineColor) }; }""", sel)
+    if not geo:
+        return None
+    out = []
+    for k, left, right in geo["cells"]:
+        clip = {"x": left, "y": geo["top"] - 2, "width": max(1, right - left), "height": geo["bottom"] - geo["top"] + 4}
+        png = base64.b64encode(page.screenshot(clip=clip)).decode()
+        ok = page.evaluate("""async ([b64, bg, ol]) => {
+            const img = new Image(); img.src = 'data:image/png;base64,' + b64; await img.decode();
+            const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+            const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+            const d = x.getImageData(0, 0, c.width, c.height).data;
+            const dist = (i, q) => Math.abs(d[i] - q[0]) + Math.abs(d[i + 1] - q[1]) + Math.abs(d[i + 2] - q[2]);
+            const rows = [];
+            for (let y = 0; y < c.height; y++) {
+                let ink = 0, line = 0;
+                for (let x0 = 0; x0 < c.width; x0++) {
+                    const i = (y * c.width + x0) * 4;
+                    if (dist(i, ol) < 60) line++;
+                    else if (dist(i, bg) > 90) ink++;
+                }
+                rows.push([ink / c.width, line / c.width]);
+            }
+            // The outline's rows: the first and last mostly in its colour.
+            const lines = rows.map((r, y) => r[1] > 0.6 ? y : -1).filter((y) => y >= 0);
+            if (lines.length < 2) return false;
+            const a = lines.find((y, j) => j + 1 < lines.length && lines[j + 1] > y + 1), b = lines[lines.length - 1];
+            if (a === undefined) return false;
+            for (let y = a + 1; y < b; y++) if (rows[y][0] >= 0.34) return true;
+            return false; }""", [png, geo["bg"], geo["ol"]])
+        out.append((k, ok))
+    return out
+
+
+def eip_box_check(page, name, problems, r, shots):
+    """The Debugger's boxed EIP line draws the underscores of its names
+    (`start_kernel+0x0`, `<__fentry__>`), light and dark."""
+    for scheme in ("light", "dark"):
+        page.emulate_media(color_scheme=scheme)
+        time.sleep(0.2)
+        got = boxed_line_ink(page, "#context .ins.cur")
+        text = page.inner_text("#context .ins.cur") if page.locator("#context .ins.cur").count() else ""
+        r[f"eip_box_{scheme}"] = f"{text!r}: {got}"
+        if not got:
+            problems.append(f"{name}: no underscore in the boxed EIP line to check ({text!r})")
+        elif not all(ok for _, ok in got):
+            problems.append(f"{name}: the boxed EIP line hides underscores ({scheme}): {text!r} {got}")
+        page.locator("#context").screenshot(path=str(shots / f"eip-box-{name}-{scheme}.png"))
+    page.emulate_media(color_scheme="light")
+
+
+def var_decl(T, v):
+    """Where types.json says variable v is defined: (file, line) or (None, None)."""
+    return (T["files"][v[7]], v[8]) if "files" in T and len(v) > 7 and v[7] >= 0 else (None, None)
+
+
+def vardecl_checks(page, name, T, off, elf, shots, problems, r):
+    """Variables say where they are defined (DW_AT_decl_file/decl_line):
+    the watch row's "defined at" (gdb's symbol's file:line) opens the
+    Source panel there; for a name several variables share, the note lists
+    the other definitions, and `file.c::name` (path or unique suffix)
+    picks the one gdb's &'file.c'::name is; an unknown or ambiguous file
+    is refused with the definitions; the hex-hover text and the memory
+    operands' tooltips say it too. Screenshots light/dark, 1280/390 px."""
+    from test_dwarf import gdb_vars
+    use_gdb = bool(elf and shutil.which("gdb"))
+    if not use_gdb and os.environ.get("CI"):
+        problems.append(f"{name}: no gdb or -g ELF to check where variables are defined")
+    if "files" not in T:
+        problems.append(f"{name}: types.json has no files: variables do not say where they are defined")
+        return
+    show_tab(page, "debugger")
+    it = next(v for v in T["vars"] if v[0] == "init_task")
+    sel = '#watches .watch[data-expr="init_task"]'
+    if not page.locator(sel).count():
+        watch(page, "init_task")
+    loc = page.locator(sel + " .wdecl .varloc")
+    want = var_decl(T, it)
+    have = (loc.get_attribute("data-file"), int(loc.get_attribute("data-line") or 0)) if loc.count() else None
+    r["init_task defined at"] = have
+    if have != want or want[0] is None:
+        problems.append(f"{name}: init_task's watch says defined at {have}, types.json {want}")
+    if use_gdb:
+        g = gdb_vars(str(elf), [["init_task", "", it[1] + off, "", True]])[0]
+        r["init_task gdb"] = g
+        if g["why"] or not same_path(g["file"], want[0]) or g["line"] != want[1]:
+            problems.append(f"{name}: init_task defined at {want}, gdb {g}")
+    if loc.count():
+        loc.click()
+        if not wait_for(lambda: page.is_visible("#src_panel") and page.get_attribute("#src_body", "data-file") == want[0]
+                        and page.locator(f'#src_body [data-line="{want[1]}"].pick').count() > 0, 60):
+            problems.append(f"{name}: init_task's 'defined at' did not open {want[0]}:{want[1]} in the Source panel "
+                            f"({page.inner_text('#src_body')[:200]!r})")
+        else:
+            r["init_task decl line"] = page.inner_text(f'#src_body [data-line="{want[1]}"]').strip()[:90]
+            if "init_task" not in r["init_task decl line"]:
+                problems.append(f"{name}: the Source panel's line {want[1]} does not define init_task: {r['init_task decl line']!r}")
+        page.click("#src_close")
+    # A qualifier no definition matches is refused.
+    bad_q = watch(page, "nosuch/file.c::init_task")
+    r["unknown file"] = bad_q
+    if "not defined in" not in bad_q:
+        problems.append(f"{name}: nosuch/file.c::init_task is not refused: {bad_q!r}")
+    page.locator('#watches .watch[data-expr="nosuch/file.c::init_task"] .wdel').click()
+    # A name several file statics share (Debian): the note lists the others; file::name picks by file.
+    count, files = {}, {}
+    for v in T["vars"]:
+        count[v[0]] = count.get(v[0], 0) + 1
+        f = var_decl(T, v)[0]
+        if f and not v[5] & 4:
+            files.setdefault(v[0], {}).setdefault(f, []).append(v)
+    shared = sorted(n for n, fs in files.items() if len(fs) >= 3 and all(len(x) == 1 for x in fs.values()))
+    if name == "debian-6.1-686" and not shared:
+        problems.append(f"{name}: no name of several file statics to pick from")
+    if shared:
+        nm = "_acpi_module_name" if "_acpi_module_name" in shared else shared[0]
+        text = watch(page, nm)
+        wsel = f'#watches .watch[data-expr="{nm}"]'
+        others = page.locator(wsel + " .wothers .varloc")
+        r["shared"] = f"{nm}: {count[nm]} variables, note: " + (page.inner_text(wsel + " .wothers")[:160] if others.count() else "none")
+        if f"{count[nm]} variables have this name" not in text or others.count() != min(count[nm] - 1, 20):
+            problems.append(f"{name}: watch {nm} does not list the other {count[nm] - 1} definitions: {text[:300]!r}")
+        chosen = int(page.get_attribute(wsel, "data-addr") or -1)
+        # Each listed definition: its file:line is types.json's for the variable at that address.
+        for k in range(others.count()):
+            o = others.nth(k)
+            v = next((x for x in T["vars"] if x[0] == nm and x[1] == int(o.get_attribute("data-pa"))), None)
+            if v is None or v[1] == chosen or var_decl(T, v) != (o.get_attribute("data-file"), int(o.get_attribute("data-line"))):
+                problems.append(f"{name}: {nm}'s note lists {o.inner_text()!r} at {o.get_attribute('data-pa')}, types.json {v}")
+                break
+        rnd = __import__("random").Random(5)
+        fs = files[nm]
+        picks = rnd.sample(sorted(f for f, vs in fs.items() if vs[0][1] != chosen), 2)
+        probes, exprs = [], []
+        for f in picks:
+            v = fs[f][0]
+            base = f.rsplit("/", 1)[-1]
+            short = base if sum(1 for g in fs if g == base or g.endswith("/" + base)) == 1 else f
+            for q in sorted({f, short}):
+                exprs.append((q + "::" + nm, v))
+            probes.append([nm, "", v[1] + off, f])
+        for e, v in exprs:
+            watch(page, e)
+            got = page.get_attribute(f'#watches .watch[data-expr="{e}"]', "data-addr")
+            r[e] = got
+            if got != str(v[1]):
+                problems.append(f"{name}: {e} picks {got}, the variable defined in that file is at {v[1]}")
+        if use_gdb:
+            for p, g in zip(probes, gdb_vars(str(elf), probes)):
+                r[f"gdb &'{p[3]}'::{nm}"] = g["qual"]
+                if g["qual"] != p[2]:
+                    problems.append(f"{name}: gdb &'{p[3]}'::{nm} = {g['qual']}, the page's is {p[2]:#x}")
+    # Several files end with the qualifier: refused, listing them.
+    amb = None
+    for n, fs in sorted(files.items()):
+        base = {}
+        for f in fs:
+            base.setdefault(f.rsplit("/", 1)[-1], set()).add(f)
+        b = next((b for b, x in sorted(base.items()) if len(x) > 1), None)
+        if b:
+            amb = (b, n)
+            break
+    if amb:
+        e = amb[0] + "::" + amb[1]
+        t = watch(page, e)
+        r["ambiguous"] = t[:200]
+        if "ambiguous" not in t:
+            problems.append(f"{name}: {e} is not refused as ambiguous: {t[:200]!r}")
+        page.locator(f'#watches .watch[data-expr="{e}"] .wdel').click()
+    page.locator("#watches").scroll_into_view_if_needed()
+    for scheme in ("light", "dark"):
+        page.emulate_media(color_scheme=scheme)
+        time.sleep(0.2)
+        page.locator("#watches").screenshot(path=str(shots / f"vardecl-watches-{name}-1280-{scheme}.png"))
+    for scheme in ("dark", "light"):
+        page.emulate_media(color_scheme=scheme)
+        page.set_viewport_size({"width": 390, "height": 900})
+        time.sleep(0.3)
+        if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
+            problems.append(f"{name}: the Variables with 'defined at' scroll horizontally at 390 px ({scheme})")
+        page.locator("#watches .wothers, #watches .wdecl").first.scroll_into_view_if_needed()
+        page.screenshot(path=str(shots / f"vardecl-watches-{name}-390-{scheme}.png"))
+    page.set_viewport_size({"width": 1280, "height": 1000})
+    # The Page listing: the hovered byte's text, and the memory operands' tooltips.
+    show_tab(page, "memory")
+    open_page(page, it[1] // 4096)
+    pa = it[1] + 16 + it[3] // 3
+    hover_byte(page, pa, click=True)
+    vl = page.locator("#var_info .varloc")
+    r["hover"] = page.inner_text("#var_info")[-160:]
+    if not vl.count() or (vl.first.get_attribute("data-file"), int(vl.first.get_attribute("data-line") or 0)) != want or \
+            f"defined at {want[0]}:{want[1]}" not in page.inner_text("#var_info"):
+        problems.append(f"{name}: the hovered byte of init_task does not say defined at {want}: {r['hover']!r}")
+    for scheme in ("light", "dark"):
+        page.emulate_media(color_scheme=scheme)
+        time.sleep(0.2)
+        # Just below the sticky header and tabs (an element screenshot would show the header over it).
+        page.evaluate("""() => { const tabs = document.querySelector('[role=tablist]').getBoundingClientRect().bottom;
+            window.scrollBy(0, document.getElementById('var_info').getBoundingClientRect().top - tabs - 40); }""")
+        page.screenshot(path=str(shots / f"vardecl-hover-{name}-1280-{scheme}.png"))
+    page.emulate_media(color_scheme="light")
+    sk = next(s for s in json.loads((SITE / kernel_entries()[name]["symbols"]).read_text())["symbols"] if s["name"] == "start_kernel")
+    open_page(page, sk["paddr"] // 4096)
+    wait_for(lambda: page.locator('#listing .opn[data-kind="var"]').count() > 0, 60)
+    ops = page.evaluate("""() => [...document.querySelectorAll('#listing .opn[data-kind="var"], #listing .opn[data-kind="percpu"]')]
+        .map((e) => [e.dataset.name, +e.dataset.va, e.title])""")
+    checked, probes = 0, []
+    for nm, va, title in ops:
+        root = re.match(r"\w+", nm)[0]
+        v = next((x for x in T["vars"] if x[0] == root and x[1] <= va - off < x[1] + max(x[3], 1)), None)
+        if v is None:
+            continue
+        f, ln = var_decl(T, v)
+        checked += 1
+        if f and f"defined at {f}:{ln}" not in title or not f and "defined at" in title:
+            problems.append(f"{name}: operand <{nm}> tooltip {title!r} does not say defined at {f}:{ln}")
+        if f and len(probes) < 8 and root not in [p[0] for p in probes]:
+            probes.append([root, v[6] if v[5] & 4 and len(v) > 6 else "", v[1] + off, "", True, f, ln])
+    r["operands with defined at"] = f"{checked} of {len(ops)}"
+    if not checked:
+        problems.append(f"{name}: no global operand on start_kernel's page to check")
+    if use_gdb and probes:
+        g = gdb_vars(str(elf), [p[:5] for p in probes])
+        diff = [(p[0], p[5], p[6], x) for p, x in zip(probes, g) if not x["why"] and (not same_path(x["file"], p[5]) or x["line"] != p[6])]
+        r["operand vars vs gdb"] = f"{sum(1 for x in g if not x['why']) - len(diff)}/{len(g)} = gdb"
+        if diff:
+            problems.append(f"{name}: operand variables defined elsewhere for gdb: {diff[:3]}")
+        if sum(1 for x in g if x["why"]) > len(g) // 2:
+            problems.append(f"{name}: gdb confirms only {sum(1 for x in g if not x['why'])} of {len(g)} operand variables: {g[:3]}")
+    show_tab(page, "debugger")
+
+
 def types_case(browser, base, shots, name):
     """Variables of the shipped DWARF (types.json): at start_kernel the
     Variables panel prints watches equal to gdb's print of the ELF's data,
@@ -1910,6 +2165,7 @@ def types_case(browser, base, shots, name):
                     and page.get_attribute("#regs", "data-phys") == str(sk["paddr"]), 300, 1):
         page.close()
         return [f"{name}: Run to start_kernel did not stop there"], r
+    eip_box_check(page, name, problems, r, shots)
     r["status"] = page.inner_text("#watch_status") if wait_for(
         lambda: page.get_attribute("#watches", "data-state") == "ok", 120) else page.inner_text("#watch_status")
     if f"{len(T['vars'])} variables" not in r["status"]:
@@ -2012,6 +2268,7 @@ def types_case(browser, base, shots, name):
     r["tap_watch"] = page.inner_text(f'#watches .watch[data-expr="{path}"]') if page.locator(f'#watches .watch[data-expr="{path}"]').count() else None
     if not r["tap_watch"] or page.get_attribute(f'#watches .watch[data-expr="{path}"]', "data-state") != "ok":
         problems.append(f"{name}: tapping a byte did not offer a working watch of {path!r}")
+    vardecl_checks(page, name, T, off, elf, shots, problems, r)
     page.close()
     if errors:
         problems.append("page errors: " + "; ".join(errors))
@@ -2026,7 +2283,7 @@ def types_import_case(browser, base, shots):
     problems, r = [], {}
     same_js = """async (url) => { const t = await (await fetch(url)).text();
         const T = DBG.types; return t === JSON.stringify({ format: T.format, types: T.types.slice(0, T.types.length - (T.sub ? T.sub.size : 0)),
-            vars: T.vars, sections: T.sections }); }"""
+            vars: T.vars, sections: T.sections, files: T.files }); }"""
     for name, size in (("minified-linux", None), ("debian-6.1-686", None)):
         elf = debug_elf(name)
         if not elf:
@@ -3569,11 +3826,21 @@ def callee_tooltips(page, sel, elf, problems, r, tag, n=4):
     checked = []
     for name, pt in picks:
         el = loc.nth(names.index(name))
-        el.scroll_into_view_if_needed()
+        # The listing is redrawn when debug info it uses arrives (a locals or
+        # facts shard): the locator finds the new line on the next try.
+        for _ in range(5):
+            try:
+                el.scroll_into_view_if_needed(timeout=5000)
+                break
+            except PlaywrightError:
+                time.sleep(0.5)
         title = ""
         for _ in range(60):
-            el.hover()
-            title = el.get_attribute("title") or ""
+            try:
+                el.hover(timeout=5000)
+                title = el.get_attribute("title") or ""
+            except PlaywrightError:
+                title = ""
             if "reading" not in title and "defined at" in title:
                 break
             page.mouse.move(0, 0)

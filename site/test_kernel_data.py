@@ -15,6 +15,9 @@ the files the page loads for:
                   files.json names, unless index.json says why it is
                   missing (gen-src.js; source.js)
   types, globals  dwarf/types.json (dbginfo.js; vars.js)
+  defined at      types.json format 2: files, every variable's file index
+                  in it; each of those files shipped in src/ or said to
+                  be missing (vars.js "defined at" opens it)
   coverage tree   dwarf/files.json with instruction counts (coverage.js)
   CFI unwind      every cfi-<hex>.bin the index lists (unwind.js)
   params, locals  every locals-<hex>.json.gz the index lists
@@ -100,12 +103,18 @@ def check_dwarf(site, d, problems):
         types = json.loads(tp.read_text())
         if not types["types"]:
             problems.append(f"{tp}: no types")
+        if types.get("format") != 2 or "files" not in types:
+            problems.append(f"{tp}: not format 2 with files (variables do not say where they are defined)")
+        else:
+            bad = [v[0] for v in types["vars"] if len(v) > 7 and not 0 <= v[7] < len(types["files"])]
+            if bad:
+                problems.append(f"{tp}: file index out of range for {bad[:5]}")
     else:
         problems.append(f"{tp}: missing (types and globals)")
     return idx, files, types
 
 
-def check_src(d, files, problems):
+def check_src(d, files, types, problems):
     ip = d / "index.json"
     if not nonempty(ip):
         problems.append(f"{ip}: missing (C source)")
@@ -118,6 +127,9 @@ def check_src(d, files, problems):
     for f in [x[0] for x in files["files"]] if files else []:
         if f not in have and f not in missing:
             problems.append(f"{ip}: {f} (has code lines) is neither shipped nor said to be missing")
+    for f in types.get("files", []) if types else []:
+        if f not in have and f not in missing:
+            problems.append(f"{ip}: {f} (a variable is defined there) is neither shipped nor said to be missing")
 
 
 def check_tasks(name, types, problems):
@@ -152,7 +164,7 @@ def main():
         if "dwarf" in e:
             idx, files, types = check_dwarf(site, site / e["dwarf"], problems)
         if "src" in e:
-            check_src(site / e["src"], files, problems)
+            check_src(site / e["src"], files, types, problems)
         check_tasks(name, types, problems)
         if idx:
             rows.append(f"{name}: {len(idx['shards'])} line shards, {len(idx['cfi'].get('shards', []))} CFI shards "

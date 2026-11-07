@@ -1190,6 +1190,8 @@ let countNote = "";
 let startPaused = false; // ?paused=1: stop at the reset vector
 let runTo = null;        // Set of physical addresses "Run to" stops at, or null
 let runToLabel = "";     // what they are ("0x1234", "init/main.c:1000")
+let runToFrom = -1;      // where the Run to started (it steps past a target there once)
+let runToMoved = false;  // an instruction has run since
 let entryPhase = false;  // stepping at full stepping speed to the kernel entry, then slow
 let prefSpeed = "1000";  // speed after the entry: ?speed=, else the remembered choice, else 1k/s
 const SPEED_KEY = "mkb-speed";
@@ -1315,8 +1317,15 @@ function driverTick() {
 			scheduleDriver();
 			return;
 		}
-	} else if (speed() === "full" || runTo !== null) {
-		reason = stepper.run(Infinity, runTo || -1, SLICE_MS);
+	} else if (runTo !== null) {
+		// Each slice checks its first instruction too, except at the
+		// start of the Run to (a slice ended by the time budget or a new
+		// line on the screen can stop right before a target).
+		const before = stepper.steps;
+		reason = stepper.run(Infinity, runTo, SLICE_MS, runToMoved ? -1 : runToFrom);
+		runToMoved = runToMoved || stepper.steps !== before;
+	} else if (speed() === "full") {
+		reason = stepper.run(Infinity, -1, SLICE_MS);
 	} else {
 		const rate = Number(speed());
 		const dt = Math.min(250, prevTick ? now - prevTick : 16);
@@ -1336,7 +1345,7 @@ function driverTick() {
 		stepper.markHalt();
 	if (reason === "end" || (reason === "hlt" && stepper.dead())) {
 		counting = false;
-		pause(endText());
+		pause((runTo !== null ? "Run to " + runToLabel + ": not reached before the end. " : "") + endText());
 		return;
 	}
 	if (counting && fastStepping() && countMs > COUNT_LIMIT_MS) {
@@ -2089,8 +2098,8 @@ function updateDebugUi() {
 	const paused = can && !ffActive && runState === "paused";
 	$("vm_overlay").hidden = !paused;
 	if (paused) {
-		const end = stepper.end ? "end: " + endText() : "";
-		$("vm_reason").textContent = end || $("dbg_status").textContent || "";
+		const end = stepper.end ? "end: " + endText() : "", note = $("dbg_status").textContent;
+		$("vm_reason").textContent = (end && !note.startsWith("Run to ") ? end : note || end) || "";
 		$("vm_continue").hidden = !!stepper.end;
 	}
 	for (const id of ["dbg_step", "dbg_stepn", "dbg_runto"])
@@ -2136,9 +2145,55 @@ function runToStopped(label, n, how) {
 		(n > 1 ? ", the first of its " + n + " breakpoint addresses reached" : "") + ": " + how + ").";
 }
 
+// The kernel section holding phys (symbols.json), or null.
+const sectionAt = (phys) => (symbols && symbols.sections.find((s) => phys >= s.paddr && phys < s.paddr + s.size)) || null;
+
+// Why the CPU can never stop at phys, or "": a target the kernel never
+// executes makes Run to run on to the end. Kernel data, and the middle
+// of an instruction of the build's disassembly.
+function notCode(phys) {
+	const sec = sectionAt(phys);
+	if (sec && sec.class !== "text")
+		return hex(phys) + " is in " + sec.name + " (" + (sec.class === "rodata" ? "read-only data" : sec.class) +
+			"), not code: the CPU never executes it, so Run to would not stop";
+	if (!sec || !disasm || !disasm.insns || !disasm.insns.length)
+		return "";
+	const i = insnIndex(phys), ins = disasm.insns[i];
+	if (ins && ins[0] === phys)
+		return "";
+	const prev = disasm.insns[i - 1];
+	if (prev && phys < prev[0] + prev[1].length / 2) {
+		const name = fnSymAt(prev[0]);
+		return hex(phys) + " is inside the instruction at " + hex(prev[0]) + (name ? " (" + name + ")" : "") +
+			", not at its start: the CPU never fetches an instruction there";
+	}
+	return "";
+}
+
+// A symbol name: the addresses of the code symbols with that name (a
+// static function can have several), or { why } naming similar ones.
+function symbolTargets(text) {
+	const list = symbols ? symbols.symbols : [];
+	const exact = list.filter((s) => s.name === text);
+	if (!exact.length) {
+		const low = text.toLowerCase();
+		const like = [...new Set(list.filter((s) => s.name.toLowerCase().includes(low)).map((s) => s.name))]
+			.sort((a, b) => (b.toLowerCase().startsWith(low) - a.toLowerCase().startsWith(low)) || a.length - b.length);
+		return { why: "Run to " + text + ": no symbol of that name" + (!symbols ? " (this kernel has no symbols)" : "") +
+			(like.length ? "; similar: " + like.slice(0, 5).join(", ") + (like.length > 5 ? " and " + (like.length - 5) + " more" : "") : "") +
+			". Run to takes a function name, a hex address or file:line." };
+	}
+	const code = exact.filter((s) => !notCode(s.paddr));
+	if (!code.length)
+		return { why: "Run to " + text + ": " + notCode(exact[0].paddr) };
+	return { targets: [...new Set(code.map((s) => s.paddr))], label: text };
+}
+
 // What the Run to field names: { targets: [physical], label } or { why }.
-// A hex address (physical or kernel virtual), or file:line (the
-// breakpoint addresses of that line's code: dbgLineCode).
+// file:line (the breakpoint addresses of that line's code: dbgLineCode),
+// a symbol name (a word that is not hex, or any exact symbol name not
+// starting with 0x), or a hex address (physical or kernel virtual). A
+// target that is not code is refused: Run to would run to the end.
 async function runToTargets(text) {
 	const m = /^(.*\D.*):(\d+)$/.exec(text);
 	if (m) {
@@ -2148,8 +2203,14 @@ async function runToTargets(text) {
 			return { why: "Run to " + text + ": " + r.why };
 		return r.bps.length ? { targets: r.bps, label: r.path + ":" + r.line } : { why: "Run to " + text + ": no breakpoint address" };
 	}
-	const phys = parseAddr(text);
-	return phys < 0 ? { why: "Not a hex address or file:line: " + text } : { targets: [phys], label: hex(phys) };
+	const isHex = /^(0x)?[0-9a-f]+$/i.test(text);
+	if (/^[A-Za-z_.$][\w.$]*$/.test(text) && (!isHex || (symbols && symbols.symbols.some((s) => s.name === text))))
+		return symbolTargets(text);
+	const phys = isHex ? parseAddr(text) : -1;
+	if (phys < 0)
+		return { why: "Run to " + text + ": not a function name, hex address or file:line" };
+	const why = notCode(phys);
+	return why ? { why: "Run to " + why + "." } : { targets: [phys], label: hex(phys) };
 }
 
 // "Run to file:line" from the Source panel: the Debugger's own Run to.
@@ -2165,12 +2226,16 @@ async function doRunTo() {
 	const want = await runToTargets($("dbg_addr").value.trim());
 	if (!want.targets) {
 		$("dbg_status").textContent = want.why;
+		updateDebugUi(); // the paused screen's overlay says it too
 		return;
 	}
 	const { targets, label } = want;
 	const at = new Set(targets);
 	if (runState !== "paused")
 		await pause();
+	// Run to from a target goes on to its next hit, stepped or with the JIT.
+	runToFrom = stepper.nextPhys();
+	runToMoved = false;
 	// Fast run-to (JIT + breakpoints) for kernel code: first to the
 	// kernel's entry when it has not run yet (its code is not in memory
 	// before the decompressor), then to the targets.
@@ -2189,6 +2254,8 @@ async function doRunTo() {
 			ok = await fastForward(t.phys, t.name);
 		if (ok && entryPhase && stepper.sinceEntry >= 0)
 			finishEntry(); // the entry phase ends here, not in driverTick
+		if (ok && at.has(runToFrom) && stepper.nextPhys() === runToFrom)
+			stepper.run(1, -1, 100);
 		if (ok && sameSec && !ffAbort && !at.has(stepper.nextPhys()))
 			ok = await fastRunTo(targets, label);
 		if (ok && at.has(stepper.nextPhys())) {

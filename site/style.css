@@ -145,7 +145,7 @@ input[type=file] { max-width: 100%; font-size: 0.75rem; }
 	pointer-events: none; text-align: center; padding: 0.4rem; font-size: 0.85rem;
 }
 #vm_overlay[hidden] { display: none; }
-#vm_reason { font-size: 0.75rem; max-width: 95%; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+#vm_reason { font-size: 0.75rem; max-width: 95%; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
 #vm_continue { pointer-events: auto; min-height: 32px; padding: 0.2rem 0.8rem; }
 #screen_text { white-space: pre; font: 6px/7px ui-monospace, monospace; color: #aaa; }
 #counters { font-size: 0.75rem; margin-top: 0.3rem; }

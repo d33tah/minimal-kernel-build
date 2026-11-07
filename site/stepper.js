@@ -625,10 +625,11 @@ class Stepper {
 
 	// Run up to n instructions. Stops early at stopPhys, an address or a
 	// Set of them (before executing the instruction there, unless it is
-	// the first one), when the CPU
-	// halts, when a milestone is reached, or after budgetMs. Returns a
-	// reason: "count", "addr", "hlt", "milestone", "time".
-	run(n, stopPhys = -1, budgetMs = Infinity) {
+	// the first one: with leave given, only unless it is the first one
+	// and at leave, -1 for none), when the CPU halts, when a milestone is
+	// reached, or after budgetMs. Returns a reason: "count", "addr",
+	// "hlt", "milestone", "time".
+	run(n, stopPhys = -1, budgetMs = Infinity, leave = undefined) {
 		// v86's cpu.reg32 etc. are Proxies that build a typed array on
 		// every access; the loop reads wasm memory directly instead (byte
 		// offsets of the globals as in v86 src/cpu.js).
@@ -676,7 +677,7 @@ class Stepper {
 			if (i32[res] !== 0)
 				continue; // fetch faulted: #PF delivered, nothing executed
 			const phys = (i32[EIP_PHYS] ^ eip) >>> 0;
-			if ((stopSet ? stopSet.has(phys) : phys === stopPhys) && i > 0) {
+			if ((stopSet ? stopSet.has(phys) : phys === stopPhys) && (i > 0 || (leave !== undefined && phys !== leave))) {
 				i32[IP] = eip;
 				return "addr";
 			}

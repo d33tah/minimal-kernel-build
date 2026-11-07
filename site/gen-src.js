@@ -3,8 +3,9 @@
 // The C source files a kernel's DWARF names, for the page's source view.
 //
 //   site/gen-src.js DWARF_DIR SRC_ROOT OUTDIR --origin TEXT [--note PATH=TEXT ...]
-//       DWARF_DIR is gen-dwarf.js's output; every path its line rows and
-//       inlined-call sites name is looked up under SRC_ROOT (the tree the
+//       DWARF_DIR is gen-dwarf.js's output; every path its line rows,
+//       inlined-call sites and variables (types.json: where each is
+//       defined) name is looked up under SRC_ROOT (the tree the
 //       kernel was built from) and written gzipped to OUTDIR/<path>.gz.
 //       OUTDIR/index.json lists them, says why the others are missing and
 //       carries --origin (where the tree comes from) and --note (how a file
@@ -60,6 +61,18 @@ for (const s of index.shards) {
 		if (t.rf[k] >= 0 && t.rl[k] && Math.floor(t.ra[k] / 2 ** index.shardBits) === s)
 			calls.push([t.strings[t.rf[k]], t.rl[k], t.strings[t.rn[k]]]);
 	}
+}
+// Where the variables are defined ("defined at" opens the file), also
+// files without code (data only).
+if (index.types) {
+	const T = JSON.parse(fs.readFileSync(path.join(dwarfDir, index.types), "utf8"));
+	const note = (f, l) => maxLine.set(T.files[f], Math.max(maxLine.get(T.files[f]) || 0, l));
+	for (const v of T.vars)
+		if (T.files && v.length > 7 && v[7] >= 0) {
+			note(v[7], v[8]);
+			for (const [f, l] of v[9] || [])
+				note(f, l);
+		}
 }
 
 for (const f of fs.existsSync(outDir) ? fs.readdirSync(outDir) : [])

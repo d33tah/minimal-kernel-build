@@ -6,7 +6,8 @@
 //   site/gen-dwarf.js ELF OUTDIR
 //       OUTDIR/index.json and OUTDIR/<hex>.bin, one shard per 64 KiB of
 //       physical address space that has code (dwarf.js: dwarfEncode);
-//       OUTDIR/types.json, the variables at fixed addresses and the types
+//       OUTDIR/types.json, the variables at fixed addresses (each with where
+//       it is defined: DW_AT_decl_file, decl_line) and the types
 //       they reach (dwarf.js: DwarfTypes); OUTDIR/files.json, every source
 //       file with its lines that have code and every function with its
 //       lines and instructions, for the page's Coverage tab (see coverage());
@@ -49,6 +50,11 @@
 //       information's frame of each (unwind.js cfiFrameInfo), inlined
 //       copies; test_dwarf.py --funcs checks them with gdb, llvm-dwarfdump
 //       and llvm-symbolizer)
+//   site/gen-dwarf.js --vars OUTDIR < watch expressions
+//       one JSON line per "[file.c::|Function::]name" on stdin: every
+//       variable of that name with where it is defined (dwarf.js dwVarDecl)
+//       and the one the page's Variables panel picks for it (dwVarsPick)
+//       or why none (test_dwarf.py --vars checks them with gdb)
 //   site/gen-dwarf.js --where OUTDIR < addresses
 //       one JSON line per physical address: the variable and member path
 //       there (dwarf.js dwWhere) with the leaf's type (test_dwarf.py --types
@@ -62,7 +68,7 @@ const zlib = require("zlib");
 const path = require("path");
 const { spawn } = require("child_process");
 const { dwFuncShard, dwFuncProto, DwarfReader, DwarfTypes, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfEachLine, dwarfFileCode, dwarfEncode, dwarfDecode,
-	dwWhere, dwTypeName, dwTypeSize, dwarfScopesAt, dwarfLocalFrames, dwLocAt } = require("./dwarf.js");
+	dwWhere, dwTypeName, dwTypeSize, dwVarDecls, dwVarsPick, dwarfScopesAt, dwarfLocalFrames, dwLocAt } = require("./dwarf.js");
 
 const { cfiFromElf, cfiSlice, cfiEncode, cfiDecode, cfiRow, cfiRowText, cfiFrameInfo } = require("./unwind.js");
 
@@ -541,6 +547,28 @@ function localsLookup(dir) {
 	process.stdout.write(out.join("\n") + "\n");
 }
 
+// One JSON line per watch expression's name: its definitions and the pick.
+function varsLookup(dir) {
+	const index = JSON.parse(fs.readFileSync(path.join(dir, "index.json"), "utf8"));
+	const T = JSON.parse(fs.readFileSync(path.join(dir, index.types), "utf8"));
+	const byName = new Map();
+	for (const v of T.vars)
+		byName.set(v[0], [...byName.get(v[0]) || [], v]);
+	const def = (v) => {
+		const [d, ...also] = dwVarDecls(T, v);
+		return { pa: v[1], file: d ? d.file : null, line: d ? d.line : null, also: also.map((x) => [x.file, x.line]), scope: v[6] || "", external: !!(v[5] & 1) };
+	};
+	const out = [];
+	for (const line of fs.readFileSync(0, "utf8").split("\n")) {
+		const m = /^\s*(?:(.+)::)?([A-Za-z_]\w*)\s*$/.exec(line);
+		if (!m)
+			continue;
+		const r = dwVarsPick(T, byName.get(m[2]) || [], m[1] || "", m[2]);
+		out.push(JSON.stringify({ expr: line.trim(), defs: r.all.map(def), pick: r.v ? def(r.v) : null, matches: r.list ? r.list.length : 0, why: r.why || null }));
+	}
+	process.stdout.write(out.join("\n") + "\n");
+}
+
 // One JSON line per instruction: the names of its memory operands, from
 // the shards (types.json, cfi-*, locals-*) and ../symbols.json if there.
 function operandsLookup(dir) {
@@ -592,9 +620,11 @@ else if (args[0] === "--funcs" && args.length === 2)
 	funcsLookup(args[1]);
 else if (args[0] === "--where" && args.length === 2)
 	where(args[1]);
+else if (args[0] === "--vars" && args.length === 2)
+	varsLookup(args[1]);
 else if (args.length === 2)
 	generate(args[0], args[1]).catch((err) => { console.error(err); process.exit(1); });
 else {
-	console.error("usage: gen-dwarf.js ELF OUTDIR | gen-dwarf.js --lookup|--lines|--where|--cfi|--locals|--operands|--funcs OUTDIR < addresses");
+	console.error("usage: gen-dwarf.js ELF OUTDIR | gen-dwarf.js --lookup|--lines|--where|--vars|--cfi|--locals|--operands|--funcs OUTDIR < addresses");
 	process.exit(2);
 }

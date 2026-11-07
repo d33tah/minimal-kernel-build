@@ -904,13 +904,15 @@ class DwarfReader {
 				const a = this.readDie(c, ab);
 				if (L && parent.die >= 0)
 					this.localDie(c, a, false, dieOff, parent, L, ref);
+				const file = a[AT.decl_file] ? files[a[AT.decl_file][1]] || null : null;
+				const line = a[AT.decl_line] ? a[AT.decl_line][1] : 0;
 				if (a[AT.declaration])
-					declared.set(dieOff, { name: name(a), type: tref(a), external: !!a[AT.external] });
+					declared.set(dieOff, { name: name(a), type: tref(a), external: !!a[AT.external], file, line });
 				const loc = a[AT.location];
 				const va = loc && loc.length === 3 ? this.fixedAddr(c, loc[1], loc[2]) : null;
 				if (va !== null)
 					out.vars.push({ name: name(a), type: tref(a), va, spec: a[AT.specification] ? ref(a[AT.specification]) : -1,
-						origin: a[AT.abstract_origin] ? ref(a[AT.abstract_origin]) : -1, external: !!a[AT.external], fn: parent.fn });
+						origin: a[AT.abstract_origin] ? ref(a[AT.abstract_origin]) : -1, external: !!a[AT.external], fn: parent.fn, file, line });
 			} else
 				this.skipDie(c, ab);
 			if (ab.children)
@@ -927,7 +929,8 @@ class DwarfReader {
 			out.copies = L.copies;
 		}
 		// A definition through DW_AT_specification / abstract_origin takes the
-		// declaration's name and type; static locals name their function.
+		// declaration's name, type and (when it has none) place, as gdb
+		// reads the attributes; static locals name their function.
 		for (const v of out.vars) {
 			const d = declared.get(v.spec) || declared.get(v.origin);
 			if (d) {
@@ -935,6 +938,13 @@ class DwarfReader {
 				if (v.type < 0)
 					v.type = d.type;
 				v.external = v.external || d.external;
+				v.file = v.file || d.file;
+				v.line = v.line || d.line;
+			}
+			if ((!v.file || !v.line) && (v.spec >= 0 || v.origin >= 0)) {
+				const [f, l] = this.declAt(v.origin >= 0 ? v.origin : v.spec);
+				v.file = v.file || f;
+				v.line = v.line || l;
 			}
 			if (!v.name && v.origin >= 0)
 				v.name = this.nameAt(v.origin);
@@ -1183,6 +1193,36 @@ class DwarfReader {
 		return a[AT.type] ? (a[AT.type][0] === 0x10 ? a[AT.type][1] : c.base + a[AT.type][1]) : -1;
 	}
 
+	// [file, line] of DW_AT_decl_file / decl_line of the DIE at absolute
+	// offset off in any unit, each through its abstract origin or
+	// specification when the DIE has none (as gdb reads them; GCC leaves
+	// out of a definition what its declaration already says); null / 0 if
+	// unknown.
+	declAt(off) {
+		let file = null, line = 0;
+		for (let depth = 0; depth < 8 && (!file || !line); depth++) {
+			const i = this.unitOf(off);
+			if (i < 0)
+				break;
+			const c = this.root(i).c;
+			c.b = this.unitBytes(i);
+			c.p = off - c.base;
+			const ab = this.abbrevs(c.u.abbrevOff)[this.uleb(c)];
+			if (!ab)
+				break;
+			const a = this.readDie(c, ab);
+			if (!file && a[AT.decl_file])
+				file = this.unitFiles(i)[a[AT.decl_file][1]] || null;
+			if (!line && a[AT.decl_line])
+				line = a[AT.decl_line][1];
+			const next = a[AT.abstract_origin] || a[AT.specification];
+			if (!next)
+				break;
+			off = next[0] === 0x10 ? next[1] : c.base + next[1];
+		}
+		return [file, line];
+	}
+
 	// The address a location expression names when it is a fixed one:
 	// DW_OP_addr / DW_OP_addrx / DW_OP_GNU_addr_index, optionally followed by
 	// DW_OP_plus_uconst; null for anything else (registers, stack values, ...).
@@ -1248,6 +1288,8 @@ class DwarfTypes {
 		this.types = [];
 		this.keys = new Map();
 		this.vars = [];
+		this.files = []; // where variables are defined (vars[k][7])
+		this.fileIx = new Map();
 		this.seen = new Map(); // name@address -> variable
 		this.other = new Map(); // unit index -> its decodeData types
 		this.funcs = new DwarfFuncs(dw);
@@ -1332,6 +1374,15 @@ class DwarfTypes {
 				continue;
 			const k = x.name + "@" + pa;
 			const had = this.seen.get(k);
+			if (had && x.file) {
+				// Another definition at the same address (a __weak one and the
+				// one the linker kept: DWARF does not say which is which).
+				const f = this.fileId(x.file), line = x.line || 0;
+				if (had[7] < 0)
+					[had[7], had[8]] = [f, line];
+				else if ((had[7] !== f || had[8] !== line) && !(had[9] || []).some((d) => d[0] === f && d[1] === line))
+					(had[9] = had[9] || []).push([f, line]);
+			}
 			if (had) {
 				// Another unit's DIE for it: keep a complete type over an
 				// incomplete one (an array without a size: extern const char x[]).
@@ -1344,13 +1395,25 @@ class DwarfTypes {
 				continue;
 			}
 			const sec = secOf(x.va);
-			const v = [x.name, pa, id(x.type), 0, sec[0], (x.external ? 1 : 0) | (sec[1] ? 2 : 0) | (x.fn >= 0 ? 4 : 0), x.scope || ""];
+			const v = [x.name, pa, id(x.type), 0, sec[0], (x.external ? 1 : 0) | (sec[1] ? 2 : 0) | (x.fn >= 0 ? 4 : 0), x.scope || "",
+				x.file ? this.fileId(x.file) : -1, x.line || 0];
 			this.seen.set(k, v);
 			this.vars.push(v);
 		}
 		if (d.subs)
 			this.funcs.add(d, id, toPhys);
 		return d.scopes ? dwarfScopeGroups(d.scopes, id, toPhys) : [];
+	}
+
+	// Index of path in files (vars[k][7]), added when new.
+	fileId(path) {
+		let f = this.fileIx.get(path);
+		if (f === undefined) {
+			f = this.files.length;
+			this.files.push(path);
+			this.fileIx.set(path, f);
+		}
+		return f;
 	}
 
 	foreign(off) {
@@ -1387,8 +1450,14 @@ class DwarfTypes {
 		}
 	}
 
-	// { format, types, vars, sections }: declarations point to the
+	// { format, types, vars, sections, files }: declarations point to the
 	// definition of the same name, vars get their sizes and are sorted.
+	// A variable: [name, physical address, type id, size, section index,
+	// flags (1 external, 2 per-CPU, 4 static local), function of a static
+	// local, index in files of DW_AT_decl_file, DW_AT_decl_line, and only
+	// when other units define a variable of that name at that address
+	// too: [[file index, line], ...] of those]; the trailing fields are
+	// left out when unknown ("", -1).
 	finish(sections) {
 		const defs = new Map();
 		this.types.forEach((t, k) => {
@@ -1398,11 +1467,11 @@ class DwarfTypes {
 		for (const t of this.types)
 			if ((t[0] === DWT.struct || t[0] === DWT.union || t[0] === DWT.enum) && !t[3] && defs.has(t[0] + t[1]))
 				t[t[0] === DWT.enum ? 6 : 5] = defs.get(t[0] + t[1]);
-		const out = { format: 1, types: this.types, vars: this.vars, sections, funcs: this.funcs.finish() };
+		const out = { format: 2, types: this.types, vars: this.vars, sections, files: this.files, funcs: this.funcs.finish() };
 		for (const v of this.vars) {
 			v[3] = dwTypeSize(out, v[2]);
-			if (!v[6])
-				v.length = 6;
+			if (v[7] < 0)
+				v.length = v[6] ? 7 : 6;
 		}
 		this.vars.sort((x, y) => x[1] - y[1] || y[3] - x[3]);
 		return out;
@@ -1756,6 +1825,52 @@ function dwVarIndex(T, pa) {
 	let a = 0, b = v.length;
 	while (a < b) { const m = (a + b) >> 1; if (v[m][1] <= pa) a = m + 1; else b = m; }
 	return a - 1;
+}
+
+// Where variable v (types.json) is defined: { file, line } (DW_AT_decl_file
+// and decl_line, through the declaration or abstract origin when the
+// definition has none) or null.
+function dwVarDecl(T, v) {
+	return T.files && v.length > 7 && v[7] >= 0 && T.files[v[7]] ? { file: T.files[v[7]], line: v[8] } : null;
+}
+
+// Every place a definition of v at its address says it is defined:
+// dwVarDecl's first, then those of other units (a __weak definition and
+// the one the linker kept); [] when unknown.
+function dwVarDecls(T, v) {
+	const d = dwVarDecl(T, v);
+	return d ? [d, ...(v[9] || []).map(([f, line]) => ({ file: T.files[f], line }))] : [];
+}
+
+// "file:line" of dwVarDecls (", also at file:line ..."), or "" when unknown.
+function dwVarDeclText(T, v) {
+	const ds = dwVarDecls(T, v);
+	return ds.map((d, k) => (k === 1 ? ", also at " : k ? ", " : "") + d.file + ":" + d.line).join("") +
+		(ds.length > 1 ? " (definitions at one address: e.g. a __weak one and the one the linker kept)" : "");
+}
+
+// The variable a watch expression's name picks out of all those with that
+// name (list): qualifier q ("" none; a function: Function::name, its static
+// locals; a source file, any q with a "." or "/": file.c::name, the file
+// the variable is defined in, by path or unique suffix as dwarfResolvePath
+// takes them); among several, the external one, else the first.
+// { v, list (the variables q leaves), all: list } or { why, all }.
+function dwVarsPick(T, all, q, name) {
+	let list = all;
+	if (q && /[./]/.test(q)) {
+		if (!T.files)
+			return { why: "this kernel's variables were read without their DW_AT_decl_file: they cannot be picked by file", all };
+		const paths = [...new Set(all.flatMap((v) => dwVarDecls(T, v)).map((d) => d.file))];
+		const r = dwarfResolvePath(paths, q, name + " is not defined in " + q.replace(/^\.?\//, "") + (paths.length ? "; it is defined in " +
+			paths.slice(0, 5).join(", ") + (paths.length > 5 ? ", … (" + paths.length + " files)" : "") : "; no definition of it says where it is"));
+		if (r.why)
+			return { why: r.why, all };
+		list = all.filter((v) => dwVarDecls(T, v).some((d) => d.file === r.path));
+	} else if (q)
+		list = all.filter((v) => v[6] === q);
+	if (!list.length)
+		return { why: "no variable " + (q ? q + "::" : "") + name + " in this kernel's DWARF", all };
+	return { v: list.find((x) => x[5] & 1) || list[0], list, all };
 }
 
 // The variable holding byte pa and the path to it, innermost member or
@@ -2221,7 +2336,7 @@ function dwarfFileCode(tables, path) {
 
 // The file a user typed ("init/main.c", "main.c") among `paths`: { path }
 // for an exact name or a single one ending in "/" + it, else { why }.
-function dwarfResolvePath(paths, q) {
+function dwarfResolvePath(paths, q, none) {
 	q = q.replace(/^\.?\//, "");
 	if (paths.includes(q))
 		return { path: q };
@@ -2229,7 +2344,7 @@ function dwarfResolvePath(paths, q) {
 	if (hits.length === 1)
 		return { path: hits[0] };
 	return { why: hits.length ? q + " is ambiguous: " + hits.slice(0, 5).join(", ") + (hits.length > 5 ? ", …" : "") :
-		"no source file " + q + " with code in this kernel's line table" };
+		none || "no source file " + q + " with code in this kernel's line table" };
 }
 
 // [lo, hi) of the outermost function (depth 0) covering pa, or null.
@@ -2341,4 +2456,4 @@ function dwarfDecode(b) {
 }
 
 if (typeof module !== "undefined")
-	module.exports = { DwarfFuncs, dwFuncShard, dwFuncBase, dwFuncProto, dwarfScopeGroups, dwarfScopesAt, dwLocAt, dwarfLocalFrames, DwarfTypes, DWT, dwStrip, dwTypeSize, dwTypeName, dwWhere, dwPathIn, dwVarIndex, DwarfReader, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfFunction, dwarfRow, dwarfEachLine, dwarfFileAddrs, dwarfFileCode, dwarfResolvePath, dwarfEncode, dwarfDecode, dwDisplayPath };
+	module.exports = { DwarfFuncs, dwFuncShard, dwFuncBase, dwFuncProto, dwarfScopeGroups, dwarfScopesAt, dwLocAt, dwarfLocalFrames, DwarfTypes, DWT, dwStrip, dwTypeSize, dwTypeName, dwWhere, dwPathIn, dwVarIndex, dwVarDecl, dwVarDecls, dwVarDeclText, dwVarsPick, DwarfReader, dwarfElf, dwarfSectionOf, dwarfSections, dwarfTable, dwarfSlice, dwarfFrames, dwarfFunction, dwarfRow, dwarfEachLine, dwarfFileAddrs, dwarfFileCode, dwarfResolvePath, dwarfEncode, dwarfDecode, dwDisplayPath };

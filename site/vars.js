@@ -134,22 +134,19 @@ function varsPerCpu(T, pa) {
 		{ pa, how: "the template in .data..percpu: the per-CPU copies are not set up yet (__per_cpu_offset[0] is 0)" };
 }
 
-// A watch expression: name, Function::name, then .member, ->member, [index];
-// a leading * dereferences the result. { pa, type, bits?, notes } or { error }.
+// A watch expression: name, Function::name or file.c::name (also gdb's
+// 'file.c'::name; dwarf.js dwVarsPick), then .member, ->member, [index]; a
+// leading * dereferences the result. { pa, type, bits?, notes, v (the
+// variable), all (every variable of that name) } or { error }.
 function varsEval(T, expr) {
-	const m = /^\s*(\*?)\s*(?:([A-Za-z_]\w*)::)?([A-Za-z_]\w*)\s*(.*)$/.exec(expr);
+	const m = /^\s*(\*?)\s*(?:(?:'([^']+)'|([\w.\/+-]+))::)?([A-Za-z_]\w*)\s*(.*)$/.exec(expr);
 	if (!m)
 		return { error: "not a variable name: " + expr };
-	let list = varsByName(T).get(m[3]) || [];
-	if (m[2])
-		list = list.filter((v) => v[6] === m[2]);
-	if (!list.length)
-		return { error: "no variable " + (m[2] ? m[2] + "::" : "") + m[3] + " in this kernel's DWARF" };
-	const v = list.find((x) => x[5] & 1) || list[0];
+	const pick = dwVarsPick(T, varsByName(T).get(m[4]) || [], m[2] || m[3] || "", m[4]);
+	if (pick.why)
+		return { error: pick.why };
+	const v = pick.v;
 	const notes = varsNote(T, v);
-	if (list.length > 1)
-		notes.push(list.length + " variables have this name: this is the one in " + varsSection(T, v) + " at " +
-			hex(v[1] + varsOffset()) + "; Function::name picks a static local");
 	let pa = v[1], type = v[2], bits = null;
 	if (v[5] & 2) {
 		const c = varsPerCpu(T, pa);
@@ -171,7 +168,7 @@ function varsEval(T, expr) {
 		type = T.types[s][1];
 	};
 	const re = /\s*(?:\.(\w+)|->(\w+)|\[(\d+)\])/y;
-	let rest = m[4], p = 0;
+	let rest = m[5], p = 0;
 	try {
 		while (p < rest.length) {
 			re.lastIndex = p;
@@ -213,7 +210,62 @@ function varsEval(T, expr) {
 	} catch (e) {
 		return { error: e.message };
 	}
-	return { pa, type, bits, notes, v };
+	return { pa, type, bits, notes, v, all: pick.all };
+}
+
+// "defined at" of variable v: a button opening the Source panel at its
+// DW_AT_decl_file:decl_line (data-file, data-line, data-pa; more than one
+// when several units define it at its address, dwVarDecls), or why not
+// known. The one render path for the Variables panel's rows and notes and
+// the Page listing's hex-hover text.
+function varDeclEl(T, v) {
+	const ds = dwVarDecls(T, v);
+	if (!ds.length)
+		return document.createTextNode(T.files ? "an unknown place (its DIE has no DW_AT_decl_file)" :
+			"an unknown place (these variables were read by an older version of this page: import the vmlinux again)");
+	const el = document.createElement("span");
+	ds.forEach((d, k) => {
+		const b = symButton("", -1, v[0] + " is defined at " + d.file + ":" + d.line + " (DW_AT_decl_file, DW_AT_decl_line): open it in the Source panel");
+		b.className = "symlink varloc";
+		b.disabled = false;
+		Object.assign(b.dataset, { file: d.file, line: d.line, pa: v[1] });
+		b.append(srcLocEl(d.file + ":" + d.line));
+		b.addEventListener("click", (ev) => {
+			ev.stopPropagation();
+			openSourceLine(d.file, d.line);
+		});
+		el.append(k === 1 ? ", also at " : k ? ", " : "", b);
+	});
+	if (ds.length > 1)
+		el.append(" (definitions at one address: e.g. a __weak one and the one the linker kept; DWARF does not say which)");
+	return el;
+}
+
+// The most other definitions of a watched name its note lists.
+const VARS_OTHERS_SHOWN = 20;
+
+// The notes under a watch of variable v: where it is defined and, when
+// other variables have its name, theirs with their addresses.
+function varsDeclNotes(T, v, all) {
+	const out = [];
+	const d = document.createElement("div");
+	d.className = "note wdecl";
+	d.append("defined at ", varDeclEl(T, v));
+	out.push(d);
+	if (all.length > 1) {
+		const o = document.createElement("div");
+		o.className = "note wothers";
+		o.append(all.length + " variables have this name: this is the one in " + varsSection(T, v) + " at " + hex(v[1] + varsOffset()) + ". The others: ");
+		const rest = all.filter((x) => x !== v);
+		rest.slice(0, VARS_OTHERS_SHOWN).forEach((x, k) => {
+			o.append(k ? ", " : "", varDeclEl(T, x), " (" + hex(x[1] + varsOffset()) + (x[5] & 4 && x[6] ? ", static local of " + x[6] + "()" : "") + ")");
+		});
+		if (rest.length > VARS_OTHERS_SHOWN)
+			o.append(", and " + (rest.length - VARS_OTHERS_SHOWN) + " more");
+		o.append(". file.c::" + v[0] + " picks one by the file it is defined in (path or unique suffix), Function::" + v[0] + " a static local.");
+		out.push(o);
+	}
+	return out;
 }
 
 // The type id of "elem [dims]" (a row of a multi-dimensional array),
@@ -515,6 +567,7 @@ function renderWatches() {
 				d.textContent = n;
 				w.append(d);
 			}
+			w.append(...varsDeclNotes(T, e.v, e.all));
 		}
 		box.append(w);
 	});
@@ -1085,9 +1138,8 @@ function varInfoAt(pa) {
 		varsNote(T, v).map((n) => "; " + n).join("");
 	if (v[5] & 2)
 		text += " (this is the template; the Variables panel shows CPU 0's copy)";
-	if (varsNotStarted())
-		text += ". " + VARS_NOT_STARTED;
-	return { state: "ok", text, path: w.path, note: w.note };
+	const after = varsNotStarted() ? ". " + VARS_NOT_STARTED : "";
+	return { state: "ok", text: text + "; defined at ", after, v, T, path: w.path, note: w.note };
 }
 
 let varPinned = -1;
@@ -1103,6 +1155,8 @@ function showVarInfo(pa, pinned) {
 	el.dataset.path = r.path || "";
 	el.dataset.addr = pa;
 	el.append(r.text);
+	if (r.v)
+		el.append(varDeclEl(r.T, r.v), r.after);
 	if (pinned && r.state === "ok") {
 		const b = document.createElement("button");
 		b.type = "button";

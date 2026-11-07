@@ -306,7 +306,7 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   vmlinux has no name index; the first Worker keeps answering file:line
   meanwhile) and builds the same data, kept in IndexedDB per bzImage.
   Where it shows: the Debugger's Variables section (watch expressions:
-  `name`, `Function::name`, then `.member`, `->member`, `[index]`, a
+  `name`, `Function::name`, `file.c::name`, then `.member`, `->member`, `[index]`, a
   leading `*`; structs and arrays open on a tap, at most 64 elements at a
   time; enums by name, char arrays and `char *` as strings, bit fields,
   pointers with what they point at and a tap opens the Page tab there; a
@@ -318,7 +318,41 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   other members of a union at the same bytes, padding and bit fields; a
   tap offers "Watch" for the path) and the label line of each data
   symbol, which carries its type. Values are read from guest RAM when
-  drawn. `test_dwarf.py --types N` checks N random bytes inside variables:
+  drawn. Where each variable is defined: `types.json` (format 2) also
+  carries DW_AT_decl_file and DW_AT_decl_line of every variable, each
+  attribute through the declaration or abstract origin when the
+  definition leaves it out (as gdb reads them; GCC leaves out of a
+  definition what its declaration already says); the paths are listed
+  once (`files`), each variable adds a file index and a line. The import
+  Worker builds the same. A watch says "defined at file:line", a button
+  that opens the Source panel at that line (`gen-src.js` also ships the
+  files that only hold data, such as init/init_task.c; generated ones
+  say they were made during the build); the hovered or tapped byte's text
+  in the Page listing and the tooltip of every memory operand the
+  listings name (A1) say it too. When several units define a variable at
+  its address (a `__weak` definition and the one the linker kept; DWARF
+  does not say which is which) all of them are listed. For a name
+  several variables share (Debian: 580 names, `__func__` 1,360 times,
+  `_acpi_module_name` 107) the watch's note lists the other definitions
+  with their file:line and address (20 at most, then how many more), and
+  `file.c::name` (also gdb's `'file.c'::name`) picks the one defined in
+  that file, by path or unique suffix (`acpica/utglobal.c::name`); a file
+  no definition names, or a suffix several files end with, is refused
+  with the list, like the Source panel's file:line. `test_dwarf.py --vars
+  N` (`gen-dwarf.js --vars`, the page's `dwVarDecls`/`dwVarsPick`) checks
+  N variables, half of them sharing their name: gdb's symbol at the
+  variable's address (global, file static, or a static local in its
+  function's block) is declared at a file:line the page lists, else
+  llvm-dwarfdump --name's DIEs at that address name the same places;
+  gdb's `&'file.c'::name` is the address the page picks for the path and
+  for its shortest unique suffix; an unknown and an ambiguous file are
+  refused (Debian 2,000 sampled in CI, minified all 134). Sizes:
+  Debian's `types.json` grows by 348,832 bytes (98,169 gzipped; 152
+  variables have more than one definition at their address), the
+  minified Linux's by 2,478 (817 gzipped); the C source adds the files
+  only variables name: 49 for Debian (484,295 bytes gzipped; 17 more are
+  made by the build and say so), 7 for the minified Linux (1,811).
+  `test_dwarf.py --types N` checks N random bytes inside variables:
   gdb on the -g ELF must evaluate the path the page names to an lvalue
   holding the byte, with the same type (as `whatis` prints it) and size,
   and the variable's type and size must match too; variables gdb cannot
@@ -990,15 +1024,15 @@ it is shown.
 | hello | symbols.json + disasm.json | 2 | 1,873 | 733 | boot |
 | hello | line and inline shards (D1) | 2 | 452 | 334 | first address shown |
 | hello | C source (D2) | 2 | 675 | 669 | first line shown |
-| hello | types.json (D3) | 1 | 128 | 119 | Variables, hover, data page |
+| hello | types.json (D3) | 1 | 139 | 138 | Variables, hover, data page |
 | hello | files.json (V2) | 1 | 167 | 153 | Coverage tab |
 | hello | CFI (D5) / locals (D4) shards | 1 / 1 | 23 / 210 | 41 / 210 | a pause |
 | hello | function facts (A3) | 1 | 160 | 137 | a function's facts shown (Debugger, Coverage, Graph, tooltips) |
 | minified Linux | bzImage | 1 | 91,568 | 36,993 | boot |
 | minified Linux | symbols.json + disasm.json | 2 | 813,399 | 172,920 | boot |
 | minified Linux | line and inline shards | 3 | 79,521 | 42,914 | first address shown |
-| minified Linux | C source | 189 | 285,126 | 281,564 | per file shown |
-| minified Linux | types.json | 1 | 34,443 | 11,562 | Variables, hover, data page |
+| minified Linux | C source | 196 | 287,038 | 283,377 | per file shown |
+| minified Linux | types.json | 1 | 37,048 | 12,379 | Variables, hover, data page |
 | minified Linux | files.json | 1 | 24,152 | 8,478 | Coverage tab |
 | minified Linux | CFI shards | 2 | 9,429 | 3,674 | a pause |
 | minified Linux | locals shards | 2 | 84,605 | 84,605 | a pause |
@@ -1006,8 +1040,8 @@ it is shown.
 | Debian 6.1 686 | bzImage | 1 | 5,707,712 | 5,681,498 | boot |
 | Debian 6.1 686 | symbols.json | 1 | 5,179,791 | 804,023 | boot |
 | Debian 6.1 686 | line and inline shards | 154 | 9,620,444 | 4,885,707 | per 64 KiB of code shown |
-| Debian 6.1 686 | C source | 3,184 | 15,611,597 | 15,542,088 | per file shown |
-| Debian 6.1 686 | types.json | 1 | 3,415,202 | 879,672 | Variables, hover, data page |
+| Debian 6.1 686 | C source | 3,233 | 16,098,216 | 16,026,134 | per file shown |
+| Debian 6.1 686 | types.json | 1 | 3,766,465 | 978,361 | Variables, hover, data page |
 | Debian 6.1 686 | files.json | 1 | 2,159,580 | 651,741 | Coverage tab |
 | Debian 6.1 686 | CFI shards | 153 | 1,511,034 | 455,261 | per frame of a pause |
 | Debian 6.1 686 | locals shards | 153 | 16,069,116 | 16,069,116 | per frame of a pause |
@@ -1057,6 +1091,7 @@ browser-test matrix job named by its suites):
 | A1 memory operands named | `test_dwarf.py --operands` (absolute vs gdb info symbol, stack slots vs gdb on a core at the instruction); suite operands (minified and Debian pauses: names with an address vs gdb on a core of the pause, Debugger and Page tab alike, tooltips, 390 px) | kernels; tasks,operands |
 | A2 line to address | `test_dwarf.py --lines` (listed ranges and inlined calls vs llvm-symbolizer, breakpoint addresses vs llvm-dwarfdump is_stmt rows; Debian 2,000, minified 3,000, hello 200 sampled addresses), `test_kernel_data.py` (shards in MKBD 2, breakpoint count); suite lineaddr (minified and Debian: Source panel list, its Run to and a typed main.c:LINE stop where llvm-symbolizer names the line, incl. a line whose code is all inlined; list jumps to the Page tab; the listing's C line lists the same; import of the minified -g vmlinux gives the same breakpoints and Run to works; 390 px light and dark) | kernels; site; types,covtree,unwind,lineaddr |
 | A3 function facts | `test_dwarf.py --funcs` (prototypes, declarations, copy counts vs llvm-dwarfdump --name; ptype, file:line, external vs gdb; frames vs llvm-dwarfdump --debug-frame; inlined copies vs llvm-symbolizer; all copy counts vs a full llvm-dwarfdump for the kernels built here; Debian 1,000, minified 2,000, hello 200 functions), `test_kernel_data.py` (every funcs shard, function count); suite fnfacts (minified and Debian: start_kernel's row vs gdb ptype, symbol, global symbol, info line and llvm-dwarfdump's frame; an inlined copy in it: every function of the chain as llvm-symbolizer names it, the inlined one's prototype and copy count vs llvm-dwarfdump, its copy listed; defined-at opens the Source panel; call stack tooltip, Page label line, Coverage detail and Graph detail say the same; import of the minified -g vmlinux gives identical facts; 390 px light and dark) | kernels; site; types,covtree,unwind,lineaddr,fnfacts |
+| A5 variables defined at | `test_dwarf.py --vars` (defined-at vs gdb's symbol at the address, static locals gdb cannot find by name vs llvm-dwarfdump --name; `&'file'::name` vs the page's pick by path and shortest suffix; unknown and ambiguous files refused; Debian 2,000, minified 134, hello: nothing to check), `test_kernel_data.py` (types.json format 2, every file index valid, every file a variable is defined in shipped in src/ or said to be missing); suite types (watch "defined at" vs gdb and the Source panel line, other definitions listed, file::name vs gdb, refusals, hover text, operand tooltips, Worker's import JSON-identical incl. files; boxed EIP line's underscores drawn, light and dark; 390 px) | kernels; site; types,covtree,unwind,lineaddr,fnfacts,branches |
 | A4 branch targets named | suite branches (Debian start_kernel and setup_arch pages, minified with live decode on, imported minified -g vmlinux: every direct branch to a symbol's code named, equal to gdb info symbol; live names equal disasm.json's llvm-objdump names line for line; Debugger and Page tab alike; callee tooltip prototype vs gdb ptype; click opens the target; BIOS page unnamed; 390 px light and dark) | types,covtree,unwind,lineaddr,fnfacts,branches |
 | D8 help and first look | `check-ids.py` (no duplicate ids); suite firstlook (every kernel incl. Debian with its initramfs and an imported vmlinux: explanations present, entry line, JIT gap, Coverage notes, no sideways scroll at 390 px light and dark) | site; boot,...,firstlook |
 
@@ -1161,7 +1196,18 @@ pointer member opens the Page tab at its target; in the Page listing
 init_task's label line says `struct task_struct` and 25 bytes near it,
 pointed at with the mouse, name a variable path that gdb evaluates to an
 lvalue holding the byte; a tap offers a working watch; screenshots light
-and dark at 1280 and 390 px. The types import case imports the minified
+and dark at 1280 and 390 px. The same case checks where variables are
+defined: init_task's watch says the file:line of gdb's symbol and opens
+it in the Source panel on the line that defines init_task; Debian's
+`_acpi_module_name` (107 file statics) lists the other definitions, and
+two of them picked by path and by unique suffix give the address gdb's
+`&'file'::name` gives; `nosuch/file.c::init_task` and a basename two
+files share are refused; the hovered byte of init_task and every global
+operand on start_kernel's page say "defined at" with types.json's place
+(gdb's for up to 8 of them). It also checks the Debugger's boxed EIP line
+draws the underscores of its names (`start_kernel+0x0`): in a screenshot
+decoded in the page, some pixel row between the box's outline rows has
+ink across the cell of every `_`, light and dark. The types import case imports the minified
 Linux's and Debian's -g vmlinux and checks the Worker's variables equal
 the shipped `types.json`, also after a reload (IndexedDB). The coverage tree case boots the minified Linux counted and checks the
 Coverage tab: the root and every directory are the sums of their files and

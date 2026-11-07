@@ -137,7 +137,8 @@ function asmGlobal(va, env) {
 		return { name, kind: v[5] & 2 ? "percpu" : "var", var: v[0], varOff: pa - v[1],
 			detail: name + (w.note ? " (" + w.note + ")" : "") + ": " + asmLib.dwTypeName(env.T, w.type) + ", in " + v[0] + " (" +
 				asmLib.dwTypeName(env.T, v[2]) + ", " + v[3] + " bytes" + (env.T.sections && env.T.sections[v[4]] ? ", " + env.T.sections[v[4]] : "") + ")" +
-				(v[5] & 4 ? ", a static local" + (v[6] ? " of " + v[6] + "()" : "") : "") + (v[5] & 2 ? ", per-CPU" : "") };
+				(v[5] & 4 ? ", a static local" + (v[6] ? " of " + v[6] + "()" : "") : "") + (v[5] & 2 ? ", per-CPU" : "") +
+				(asmLib.dwVarDeclText(env.T, v) ? "; defined at " + asmLib.dwVarDeclText(env.T, v) : "") };
 	}
 	const s = env.sym ? env.sym(pa) : null;
 	if (s)

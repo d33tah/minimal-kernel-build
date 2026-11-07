@@ -503,8 +503,9 @@ function fileLines(path) {
 	if (fl.state !== "ok")
 		return fl;
 	const F = fl.F, fi = F.fileIx.get(path);
+	// A file without code (data only: "defined at" of a variable) is shown with none marked.
 	if (fi === undefined)
-		return { state: "none", why: path + " has no code in this kernel's line table" };
+		return { state: "ok", first: 1, last: Infinity, code: new Map() };
 	const size = 2 ** F.shardBits;
 	const tables = F.files[fi][2].map((s) => [s, dbgTableAt(s * size)]);
 	const wait = tables.find(([, r]) => r.state !== "ok");

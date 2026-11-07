@@ -224,6 +224,10 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 #listing .bad { background: var(--mark-bg); color: var(--mark-fg); }
 #listing .hex { color: var(--fg); }
 .cur { outline: 2px solid var(--accent); outline-offset: -1px; background: var(--bg); }
+/* An instruction line at EIP: a box of its own with 2 px above and below, so
+   the outline lies outside its glyphs (an underscore reaches the bottom of
+   the line) and outside the lines next to it. */
+.ins.cur, #context .cur { display: inline-block; margin: 2px 0; outline-offset: 0; }
 
 .regs { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); gap: 0.1rem 0.6rem; font-size: 0.8rem; margin: 0.3rem 0; }
 .regs div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

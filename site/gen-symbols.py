@@ -121,13 +121,17 @@ def main():
             va, size, typ, sym = int(parts[0], 16), 0, parts[1], parts[2]
         else:
             continue                        # undefined symbols have no address
-        if typ in "aAuUvVwW":               # absolute or not a location
+        if typ in "aAuUvw":                 # absolute, undefined, weak undefined
             continue
         pa = paddr(va)
         if pa is None:
             continue
-        sec = next((s["name"] for s in sections
-                    if s["vaddr"] <= va < s["vaddr"] + s["size"]), "")
+        sec = next((s for s in sections if s["vaddr"] <= va < s["vaddr"] + s["size"]), None)
+        if typ in "VW":
+            # A weak definition (Debian's pgtable_cache_init, ...): its
+            # section's global letter, as an ELF import writes it.
+            typ = {"text": "T", "rodata": "R", "bss": "B", "brk": "B"}.get(sec["class"] if sec else "", "D")
+        sec = sec["name"] if sec else ""
         symbols.append({"name": sym, "vaddr": va, "paddr": pa, "size": size,
                         "type": typ, "section": sec})
     if trim:

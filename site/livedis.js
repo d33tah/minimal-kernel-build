@@ -56,13 +56,27 @@ function loadIced() {
 	return icedLoading;
 }
 
+// The kernel's symbols for naming addresses (asmnames.js asmSymLookup),
+// made once per symbols.json or import.
+let symLookupOf = null; // [symbols it was made from, lookup]
+function kernelSymLookup() {
+	if (!symLookupOf || symLookupOf[0] !== symbols)
+		symLookupOf = [symbols, symbols ? asmSymLookup(symbols.symbols) : null];
+	return symLookupOf[1];
+}
+
 // Decode `bytes` (guest memory starting at physical `pa`, linked at
 // virtual `va`) until `end` bytes or `max` instructions. Entries have the
-// shape of disasm.json's: [paddr, "hex bytes", "instruction"].
+// shape of disasm.json's: [paddr, "hex bytes", "instruction"]; a direct
+// branch whose target is a symbol's code gets ` <name+0xoff>` as in
+// llvm-objdump's text (32-bit code only: a real-mode target is
+// segment-relative).
 function decodeLive(bytes, pa, va, bitness, end = bytes.length, max = Infinity) {
 	if (!iced)
 		return null;
 	const out = [];
+	const lookup = bitness === 32 ? kernelSymLookup() : null;
+	const link = (va - pa) >>> 0; // virtual minus physical
 	const dec = new iced.Decoder(bitness, bytes.subarray(0, end), iced.DecoderOptions.None);
 	dec.ip = BigInt(va >>> 0);
 	try {
@@ -73,8 +87,12 @@ function decodeLive(bytes, pa, va, bitness, end = bytes.length, max = Infinity) 
 			let raw = "";
 			for (let i = 0; i < len; i++)
 				raw += bytes[off + i].toString(16).padStart(2, "0");
-			const text = ins.code === 0 ? "(bad)" : iced.fmt.format(ins); // Code.INVALID
+			let text = ins.code === 0 ? "(bad)" : iced.fmt.format(ins); // Code.INVALID
 			ins.free();
+			const t = lookup ? asmBranchTarget(text) : -1;
+			const name = t >= 0 ? asmTargetName((t - link) >>> 0, lookup) : "";
+			if (name)
+				text += " <" + name + ">";
 			out.push([pa + off, raw, text]);
 			off += len;
 		}

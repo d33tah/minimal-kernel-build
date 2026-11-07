@@ -214,12 +214,16 @@ function parseSystemMap(buf, name) {
 	const symbols = [];
 	for (let i = 0; i < raw.length; i++) {
 		const s = raw[i];
-		const cls = MAP_CLASS[s.type.toLowerCase()];
+		// A weak definition takes the class of the section it is in, else
+		// code (W, a function: .init.text is past _etext) or data (V).
+		const weak = s.type === "W" || s.type === "V";
+		const wsec = weak ? sections.find((x) => s.vaddr >= x.vaddr && s.vaddr < x.vaddr + x.size) : null;
+		const cls = MAP_CLASS[s.type.toLowerCase()] || (weak ? (wsec ? wsec.class : s.type === "W" ? "text" : "data") : null);
 		if (!cls)
 			continue; // absolute (A/a), weak-undefined, debug ...
 		let next = null;
 		for (let j = i + 1; j < raw.length; j++)
-			if (raw[j].vaddr > s.vaddr && MAP_CLASS[raw[j].type.toLowerCase()]) {
+			if (raw[j].vaddr > s.vaddr && (MAP_CLASS[raw[j].type.toLowerCase()] || raw[j].type === "W" || raw[j].type === "V")) {
 				next = raw[j].vaddr;
 				break;
 			}

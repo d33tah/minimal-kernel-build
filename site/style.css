@@ -313,6 +313,8 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 .srcloc { color: var(--src-loc); }
 /* A memory operand named from the DWARF (asmnames.js) in a listing. */
 .opn { color: var(--op-name); }
+.brt { color: var(--accent); cursor: pointer; }
+.brt:hover { text-decoration: underline; }
 .srctext { color: var(--src-text); }
 .srcpanel { position: fixed; z-index: 5; right: 0; top: 0; bottom: 0; width: min(46rem, 50vw); background: var(--bg);
 	border-left: 1px solid var(--line); box-shadow: -2px 0 12px rgba(0, 0, 0, 0.2); padding: 0.4rem 0.6rem; display: flex; flex-direction: column; }

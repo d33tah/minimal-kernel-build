@@ -79,9 +79,10 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   hashes and licence in THIRD_PARTY.md), with symbols from its -dbg
   package. The workflow downloads both packages from snapshot.debian.org
   (deb.debian.org as fallback), keeps them in the Actions cache, and runs
-  `gen-symbols.py --trim` on the -dbg vmlinux: 47,963 symbols (all code
-  and global data with a size; local data objects and export/tracing
-  bookkeeping dropped), 5,179,791 bytes, 778,527 gzipped (117,357
+  `gen-symbols.py --trim` on the -dbg vmlinux: 48,165 symbols (all code
+  and global data with a size, weak definitions such as
+  `pgtable_cache_init` included; local data objects and export/tracing
+  bookkeeping dropped), 5,201,697 bytes, 781,424 gzipped (117,560
   symbols, 13 MB, 1.6 MB gzipped untrimmed). `gen-dwarf.js` turns the
   same vmlinux's DWARF into `dwarf/` (see Debug info below), and
   `gen-src.js` ships the C source files that DWARF names (`src/`, see C
@@ -118,7 +119,8 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   current/previous symbol, Graph, panic detection) and the kernel reboots.
   A System.map has no sizes: a symbol runs to the next one, capped at the
   end of its section; sections come from the type letters (T/t text, R/r
-  rodata, D/d data, B/b bss) and the markers `_text`/`_etext`,
+  rodata, D/d data, B/b bss; a weak definition W/V takes the section its
+  address is in, else text for W and data for V) and the markers `_text`/`_etext`,
   `__start_rodata`, `_sdata`/`_edata`, `__bss_start`/`__bss_stop`,
   `__brk_base`/`__brk_limit`. Physical = virtual - offset; "auto" takes the
   ELF's PT_LOAD, or for a System.map puts `_text` at 0x100000 (where v86
@@ -194,6 +196,19 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   Debian the first instruction of a function is the ftrace call the
   kernel patched into a 5-byte NOP at boot; the live listing shows the
   NOP, llvm-objdump on the -dbg vmlinux the call.
+- **Branch targets.** A direct call, jmp or jcc names its target as
+  llvm-objdump does (`calll 0xC10596E0 <__fentry__>`,
+  `jae 0xC1D8D012 <hyperv_init+0x304>`) in every listing: disasm.json
+  has llvm-objdump's names, and the live decoder adds them from the
+  symbols (the smallest sized symbol holding the target, or a sizeless
+  one exactly there: asmnames.js `asmTargetName`), so the Debian sample
+  and every import get them too. Targets outside every symbol (the
+  BIOS, setup code) and real-mode code (segment-relative) get none.
+  The name opens the target in the Page tab when clicked; its tooltip,
+  made when hovered, is the target's address, inline chain and the
+  callee's function facts (prototype, defined at, frame), the same text
+  as every other symbol tooltip (`dbgTitle`). One render path
+  (vars.js `insnHtml`) for both listings and both text sources.
 - **Debug info.** file:line and the inlined-at chain of any address come
   from the kernel's DWARF (`dwarf.js`, one decoder and one lookup for
   everything below). Shipped kernels have `kernels/<name>/dwarf/`, made in
@@ -1042,6 +1057,7 @@ browser-test matrix job named by its suites):
 | A1 memory operands named | `test_dwarf.py --operands` (absolute vs gdb info symbol, stack slots vs gdb on a core at the instruction); suite operands (minified and Debian pauses: names with an address vs gdb on a core of the pause, Debugger and Page tab alike, tooltips, 390 px) | kernels; tasks,operands |
 | A2 line to address | `test_dwarf.py --lines` (listed ranges and inlined calls vs llvm-symbolizer, breakpoint addresses vs llvm-dwarfdump is_stmt rows; Debian 2,000, minified 3,000, hello 200 sampled addresses), `test_kernel_data.py` (shards in MKBD 2, breakpoint count); suite lineaddr (minified and Debian: Source panel list, its Run to and a typed main.c:LINE stop where llvm-symbolizer names the line, incl. a line whose code is all inlined; list jumps to the Page tab; the listing's C line lists the same; import of the minified -g vmlinux gives the same breakpoints and Run to works; 390 px light and dark) | kernels; site; types,covtree,unwind,lineaddr |
 | A3 function facts | `test_dwarf.py --funcs` (prototypes, declarations, copy counts vs llvm-dwarfdump --name; ptype, file:line, external vs gdb; frames vs llvm-dwarfdump --debug-frame; inlined copies vs llvm-symbolizer; all copy counts vs a full llvm-dwarfdump for the kernels built here; Debian 1,000, minified 2,000, hello 200 functions), `test_kernel_data.py` (every funcs shard, function count); suite fnfacts (minified and Debian: start_kernel's row vs gdb ptype, symbol, global symbol, info line and llvm-dwarfdump's frame; an inlined copy in it: every function of the chain as llvm-symbolizer names it, the inlined one's prototype and copy count vs llvm-dwarfdump, its copy listed; defined-at opens the Source panel; call stack tooltip, Page label line, Coverage detail and Graph detail say the same; import of the minified -g vmlinux gives identical facts; 390 px light and dark) | kernels; site; types,covtree,unwind,lineaddr,fnfacts |
+| A4 branch targets named | suite branches (Debian start_kernel and setup_arch pages, minified with live decode on, imported minified -g vmlinux: every direct branch to a symbol's code named, equal to gdb info symbol; live names equal disasm.json's llvm-objdump names line for line; Debugger and Page tab alike; callee tooltip prototype vs gdb ptype; click opens the target; BIOS page unnamed; 390 px light and dark) | types,covtree,unwind,lineaddr,fnfacts,branches |
 | D8 help and first look | `check-ids.py` (no duplicate ids); suite firstlook (every kernel incl. Debian with its initramfs and an imported vmlinux: explanations present, entry line, JIT gap, Coverage notes, no sideways scroll at 390 px light and dark) | site; boot,...,firstlook |
 
 ## Testing

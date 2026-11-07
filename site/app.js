@@ -642,7 +642,7 @@ function listPage(p, bytes, base, cur, chars) {
 			if (pa === cur)
 				curLine = out.length;
 			out.push('<span class="' + cls + '" data-addr="' + pa + '">' + pa.toString(16).padStart(8, "0") +
-				" " + rawHtml + " " + text.replace(/[<>&]/g, esc) + opNamesHtml(pa, text, ops, opStat) +
+				" " + rawHtml + " " + insnHtml(pa, text, ops, opStat) +
 				(wide && where ? ' <span class="dim">' + escHtml(where) + "</span>" : "") + "</span>");
 			nIns++;
 			if (!ok)
@@ -1768,7 +1768,7 @@ function renderContext() {
 				const sym = symbolAt(sized, pa);
 				const cls = "ins" + (pa === phys ? " cur" : "") + (ok ? "" : " bad");
 				lines.push('<span class="' + cls + '" data-addr="' + pa + '">' + (pa === phys ? "▶" : " ") +
-					pa.toString(16).padStart(8, "0") + " " + bytes + " " + text.replace(/[<>&]/g, esc) + opNamesHtml(pa, text, ops, opStat) +
+					pa.toString(16).padStart(8, "0") + " " + bytes + " " + insnHtml(pa, text, ops, opStat) +
 					(sym ? ' <span class="dim">' + escHtml(sym.name) + "+0x" + (pa - sym.paddr).toString(16) + "</span>" : "") +
 					"</span>");
 			}

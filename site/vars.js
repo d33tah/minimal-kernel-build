@@ -786,7 +786,6 @@ function renderLocals(uw) {
 
 // ---- memory operands in the listings (asmnames.js) -------------------------------
 
-let opSyms = null; // [symbols.json it was made from, asmSymLookup of it]
 
 // The names asmOperandNames needs, made once per listing render: the
 // types (starting their load), symbols, locals and CFI shards (fetched
@@ -797,8 +796,6 @@ function opEnv() {
 	const T = ty && ty.state === "ok" ? ty.T : null;
 	if (!symbols && !T)
 		return null;
-	if (!opSyms || opSyms[0] !== symbols)
-		opSyms = [symbols, symbols ? asmSymLookup(symbols.symbols) : null];
 	const row = (pa) => {
 		const r = dbgHas() ? dbgCfiRow(pa) : null;
 		return r && r !== "loading" && !r.why ? r : null;
@@ -807,7 +804,7 @@ function opEnv() {
 		const r = T ? dbgLocalGroups(pa) : null;
 		return r && r.state === "ok" ? dwarfScopesAt(r.G, pa) : null;
 	};
-	const env = { off: varsOffset(), T, sym: opSyms[1], row, scopes, cur: null, sameFrame: null,
+	const env = { off: varsOffset(), T, sym: kernelSymLookup(), row, scopes, cur: null, sameFrame: null,
 		loading: ty && ty.state === "loading" ? ty.why : "" };
 	const eip = currentPhys();
 	if (eip >= 0 && stepper) {
@@ -839,6 +836,28 @@ function opNamesHtml(pa, text, env, stat) {
 	return " " + names.map((n) => '<span class="opn" data-op="' + escHtml(n.op) + '" data-name="' + escHtml(n.name) + '" data-kind="' + n.kind + '"' +
 		(n.va !== undefined ? ' data-va="' + n.va + '"' : "") + (n.rel !== undefined ? ' data-rel="' + n.rel + '"' : "") +
 		' title="' + escHtml(n.op + " = " + n.detail) + '">&lt;' + escHtml(n.name) + "&gt;</span>").join(" ");
+}
+
+// An instruction's text as HTML for a listing line (the Page tab's and the
+// Debugger's, whether the text is disasm.json's or decoded live): a
+// direct branch's `<name+0xoff>` (llvm-objdump's, or decodeLive's) is a
+// .brt span that opens the target when clicked and whose tooltip, made
+// when hovered (brtTitle), is the target's source and function facts;
+// then the names of the memory operands (opNamesHtml).
+function insnHtml(pa, text, env, stat) {
+	const t = asmBranchTarget(text);
+	const m = t >= 0 ? /^(.*\S)\s+<([^<>]+)>$/.exec(text) : null;
+	const head = m ? escHtml(m[1]) + ' <span class="brt" data-name="' + escHtml(m[2]) + '" data-va="' + t + '" data-pa="' +
+		((t - varsOffset()) >>> 0) + '">&lt;' + escHtml(m[2]) + "&gt;</span>" : escHtml(text);
+	return head + opNamesHtml(pa, text, env, stat);
+}
+
+// The tooltip of a branch target's name (.brt): its address and what the
+// debug info says of the code there (dbgTitle: the inline chain and each
+// function's facts), or why there is none.
+function brtTitle(b) {
+	const pa = Number(b.dataset.pa);
+	return b.dataset.name + " at " + hex(Number(b.dataset.va)) + " (click: open it)\n" + dbgTitle(pa, b.dataset.name.replace(/\+0x[0-9a-f]+$/, ""));
 }
 
 // ---- tasks: names and pids from task_struct ------------------------------------
@@ -1110,6 +1129,27 @@ function varTypeOf(sym) {
 }
 
 function setupVars() {
+	// Branch target names: the tooltip when hovered (again once the DWARF
+	// it needs is in), the target when clicked (before the line's own
+	// click handler).
+	let brtHover = null;
+	document.addEventListener("mouseover", (ev) => {
+		const b = ev.target.closest ? ev.target.closest(".brt") : null;
+		brtHover = b;
+		if (b)
+			b.title = brtTitle(b);
+	});
+	dbgOnChange(() => {
+		if (brtHover && brtHover.isConnected)
+			brtHover.title = brtTitle(brtHover);
+	});
+	document.addEventListener("click", (ev) => {
+		const b = ev.target.closest ? ev.target.closest(".brt") : null;
+		if (b) {
+			ev.stopPropagation();
+			jumpTo(Number(b.dataset.pa));
+		}
+	}, true);
 	const listing = $("listing");
 	listing.addEventListener("mousemove", (ev) => {
 		if (varPinned >= 0)

@@ -100,6 +100,28 @@ function asmSymLookup(list) {
 	};
 }
 
+// The target of a direct branch as llvm-objdump and iced-x86 print it
+// (`calll 0xc01101d0`, `jne 0xC1D86A1E`, after prefixes; a name in <>
+// may follow), -1 for anything else (indirect, far, not a branch).
+function asmBranchTarget(text) {
+	const words = text.trim().split(/\s+/);
+	let k = 0;
+	while (k < words.length - 1 && ASM_PREFIXES.has(words[k].toLowerCase()))
+		k++;
+	if (!/^(?:j[a-z]+|call[lwq]?|loop[a-z]*|xbegin[lwq]?)$/i.test(words[k] || "") || !/^0x[0-9a-f]+$/i.test(words[k + 1] || "") ||
+		(words.length > k + 2 && !words[k + 2].startsWith("<")))
+		return -1;
+	return parseInt(words[k + 1], 16);
+}
+
+// The name of code at physical pa as llvm-objdump writes a branch target
+// (`name`, `name+0x1f`): the smallest sized symbol holding it, or a
+// sizeless one exactly there (lookup from asmSymLookup); "" if none.
+function asmTargetName(pa, lookup) {
+	const s = lookup ? lookup(pa) : null;
+	return s ? s.name + (pa > s.paddr ? "+0x" + (pa - s.paddr).toString(16) : "") : "";
+}
+
 const asmHex = (n) => (n < 0 ? "-0x" + (-n).toString(16) : "0x" + n.toString(16));
 
 // The global at virtual va: the DWARF variable and member path, else the
@@ -228,4 +250,4 @@ function asmOperandNames(text, pa, env) {
 }
 
 if (typeof module !== "undefined")
-	module.exports = { asmMemOps, asmOperandNames, asmSymLookup, ASM_REGS };
+	module.exports = { asmMemOps, asmOperandNames, asmSymLookup, asmBranchTarget, asmTargetName, ASM_REGS };

@@ -37,8 +37,9 @@ import sys
 
 SITE = pathlib.Path(__file__).resolve().parent
 
-# Kernels without tasks: the hello kernel is one function, no scheduler.
-NO_TASKS = {"hello"}
+# Kernels without tasks: the hello kernel (-O0 and -Os builds) is one
+# function, no scheduler.
+NO_TASKS = {"hello", "hello-os"}
 
 
 def nonempty(p):

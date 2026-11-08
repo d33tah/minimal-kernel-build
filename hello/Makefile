@@ -3,6 +3,9 @@
 #   make LLVM=1    build bzImage and bzImage.low with clang/ld.lld (as CI)
 #   make test      boot both in qemu and check the VGA screen (vmtest.tcl)
 #   make clean
+#   make OPT=-O0   optimization level (default -Os). The site's workflow
+#                  builds the browser page's hello with -O0 so the debugger
+#                  has a location for every parameter and local
 #
 # bzImage      32-bit part at 1 MiB (LOADED_HIGH). Loads everywhere,
 #              including v86, which always puts the 32-bit part at 1 MiB.
@@ -24,8 +27,9 @@ NM      := nm
 HOSTCC  := cc
 endif
 NASM    := nasm
+OPT     ?= -Os
 
-CFLAGS  := -m32 -march=i386 -std=gnu11 -Os -Wall -Wextra -Werror \
+CFLAGS  := -m32 -march=i386 -std=gnu11 $(OPT) -Wall -Wextra -Werror \
            -ffreestanding -nostdlib -fno-pic -fno-stack-protector \
            -fno-asynchronous-unwind-tables -mno-sse -mno-mmx
 LDFLAGS := -m elf_i386 -nostdlib --no-dynamic-linker -static

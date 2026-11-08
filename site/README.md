@@ -619,7 +619,7 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   call site of inlined code) and is marked executed when an instruction
   started in one of those rows' address ranges while stepping (the
   stepper's unique-EIP bitmap). The workflow builds `-g` copies
-  (`KCFLAGS=-g` for the minified Linux, `CC="clang -g"` for hello) next to
+  (`KCFLAGS=-g` for the minified Linux, `OPT=-O0 CC="clang -g"` for hello) next to
   the gate kernels and fails unless their code is byte-identical
   (`check-code-identity.py`: the `llvm-objcopy -O binary` images and the
   bzImages are equal except inside note sections, i.e. the 20-byte GNU
@@ -628,6 +628,17 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   byte fails); `gen-dwarf.js` and `gen-src.js` read those, for the minified
   Linux and hello alike. The -g build takes about 11 s locally (9 s
   without -g).
+- **Unoptimized hello.** The page's "hello" entry is built with `-O0`
+  (`make -C hello LLVM=1 OPT=-O0`; `OPT` is a make variable of
+  hello/Makefile, default `-Os`). At `-O0` every parameter and local
+  lives in its stack slot for its whole scope, so the Debugger shows a
+  value for each of them at every instruction (the hello suite steps
+  through all of hello_main and put_line and finds no "optimized out").
+  The `-Os` build that hello/Makefile makes by default is the "hello-os"
+  entry (labelled as such in the kernel menu): there put_line is inlined
+  twice and its `s` has no location, which the page says ("optimized
+  out"). Sizes: bzImage 2,784 bytes at `-O0` (`kernel.bin` 215 bytes),
+  2,688 at `-Os` (128 bytes).
 - **Executed code.** The Page listing tints the instructions that have
   not executed in this boot (a lavender background, the "tinted" key next
   to the listing's counts gives how many). An instruction counts as
@@ -839,8 +850,8 @@ JavaScript drives the CPU:
   whatever `code32_start` says; it is 0x100000 for both kernels). The top
   bar then says "Entered the kernel at 0x100000 after N instructions from
   reset", the speed switches to 1k instructions per second and the
-  counters count live from there: hello reaches "Still alive" after 154
-  instructions (it prints below the BIOS text instead of clearing the
+  counters count live from there: hello reaches "Still alive" after 432
+  instructions (154 for the -Os hello-os; it prints below the BIOS text instead of clearing the
   screen, see hello/README.md), a fraction of a second; the minified Linux needs about 132,000,
   about 2 minutes 12 s, so the top bar shows an ETA (from the count this
   browser last measured, else a built-in estimate) and the symbol the CPU
@@ -964,9 +975,12 @@ every run):
 
 | kernel | until | from 1 MiB | unique EIPs kernel / other | from reset | IRQ0 |
 |---|---|---|---|---|---|
-| hello | Hello, World! | 86 | 17 / 7,770 | 1,405,836 | |
-| hello | Still alive | 154 | 25 / 7,770 | 1,405,904 | |
-| hello | halted | 159 | 27 / 7,770 | 1,405,909 | 2 |
+| hello (-O0) | Hello, World! | 234 | 43 / 7,770 | 1,405,984 | |
+| hello (-O0) | Still alive | 432 | 52 / 7,770 | 1,406,182 | |
+| hello (-O0) | halted | 441 | not measured | 1,406,191 | 2 |
+| hello-os (-Os) | Hello, World! | 86 | 17 / 7,770 | 1,405,836 | |
+| hello-os (-Os) | Still alive | 154 | 25 / 7,770 | 1,405,904 | |
+| hello-os (-Os) | halted | 159 | 27 / 7,770 | 1,405,909 | 2 |
 | minified Linux | Hello, World! | 131,287 | 10,026 / 8,171 | 1,538,758 | |
 | minified Linux | Still alive | 132,006 | 10,111 / 8,171 | 1,539,477 | |
 | minified Linux | exit(0) | 132,146 | 10,113 / 8,171 | 1,539,617 | |
@@ -993,12 +1007,12 @@ build (Debian's) and v86 its own, so only the kernel part is comparable.
 
 | kernel | until | qemu from reset | qemu from 1 MiB | v86 from 1 MiB | unique kernel EIPs qemu / v86 |
 |---|---|---|---|---|---|
-| hello | Hello, World! | 5,812,951 | 86 | 86 | 17 / 17 |
-| hello | Still alive | 5,813,019 | 154 | 154 | 25 / 25 |
+| hello-os (-Os) | Hello, World! | 5,812,951 | 86 | 86 | 17 / 17 |
+| hello-os (-Os) | Still alive | 5,813,019 | 154 | 154 | 25 / 25 |
 | minified Linux | Hello, World! | 6,039,379-6,041,101 | 224,766-227,330 | 273,966 (single steps) | 10,666 / 10,638 |
 | minified Linux | Still alive | 6,040,512-6,042,036 | 225,899-228,265 | 274,894 (single steps) | 10,752 / 10,723 |
 
-hello (re-measured after it stopped clearing the screen): the 154 kernel instructions are the same sequence in both. Linux:
+hello (re-measured after it stopped clearing the screen; the -Os build, now hello-os): the 154 kernel instructions are the same sequence in both. Linux:
 the first instructions at 1 MiB are the bzImage's relocation stub, not
 vmlinux; its `std; rep movsl` copies about 97 KB, which v86 enters once
 per page (12 entries) and qemu logs once, so the raw sequences part at
@@ -1048,15 +1062,17 @@ Download sizes per kernel and feature (CI run 42270272424; bytes on disk,
 is fetched lazily, a shard or file the first time an address or line in
 it is shown.
 
+hello rows: the -O0 build (the -Os hello-os: bzImage 2,688 bytes, symbols.json + disasm.json 1,876, CFI / locals shards 23 / 208).
+
 | kernel | file | files | bytes | gzip | fetched when |
 |---|---|---:|---:|---:|---|
-| hello | bzImage | 1 | 2,688 | 354 | boot |
-| hello | symbols.json + disasm.json | 2 | 1,873 | 733 | boot |
-| hello | line and inline shards (D1) | 2 | 452 | 334 | first address shown |
+| hello | bzImage | 1 | 2,784 | 438 | boot |
+| hello | symbols.json + disasm.json | 2 | 3,376 | 1,107 | boot |
+| hello | line and inline shards (D1) | 2 | 553 | 394 | first address shown |
 | hello | C source (D2) | 2 | 675 | 669 | first line shown |
 | hello | types.json (D3) | 1 | 139 | 138 | Variables, hover, data page |
-| hello | files.json (V2) | 1 | 167 | 153 | Coverage tab |
-| hello | CFI (D5) / locals (D4) shards | 1 / 1 | 23 / 210 | 41 / 210 | a pause |
+| hello | files.json (V2) | 1 | 199 | 184 | Coverage tab |
+| hello | CFI (D5) / locals (D4) shards | 1 / 1 | 51 / 134 | 73 / 134 | a pause |
 | hello | function facts (A3) | 1 | 160 | 137 | a function's facts shown (Debugger, Coverage, Graph, tooltips) |
 | minified Linux | bzImage | 1 | 91,568 | 36,993 | boot |
 | minified Linux | symbols.json + disasm.json | 2 | 813,399 | 172,920 | boot |
@@ -1141,11 +1157,16 @@ browser-test matrix job named by its suites):
 `test_kernel_data.py` (also in the workflow's site job) fails when a
 kernel in kernels.json lacks a file one of the debug features fetches:
 symbols, line and inline shards, C source, types, the coverage tree's
-files.json, CFI and locals shards, and the task_struct layout (hello,
-which has no tasks, must have none). The hello suite checks the hello
-kernel's features in the page: backtrace to startup_32, parameter and
-local values from the DWARF location lists, Coverage tree, and the
-honest "no variables" and "no current_task" lines.
+files.json, CFI and locals shards, and the task_struct layout (hello and
+hello-os, which have no tasks, must have none). The hello suite checks the
+hello kernels' features in the page. hello (-O0): Run to hello_main, then
+one step at a time to its hlt; at each of the addresses no parameter or
+local of any frame is optimized out, and at the statement boundaries row,
+s and p are the guest's values (the BIOS cursor row, the addresses of the
+two strings, the VGA cell) with the call stack put_line <- hello_main <-
+startup_32. hello-os (-Os): the values from the DWARF location lists
+(registers) and put_line's s shown as optimized out. Both: Coverage tree
+and the honest "no variables" and "no current_task" lines.
 
 The suites (`SUITES` in test_browser.py) run in four parallel CI jobs
 (the workflow's browser-test matrix), grouped by their measured times;
@@ -1162,9 +1183,9 @@ boot (`?speed=full`) in both colour schemes at 1280 and 390 px: the first
 instruction of start_kernel is not tinted, die() is, no hex row is, and
 the page has no horizontal scroll.
 
-Cases: hello at 2 MB with the default boot (the entry marker, the switch
-to 1k/s, 86 instructions from the entry to "Hello, World!", the
-"Halted" banner), Linux at 2 MB, 18 MB and 2180 KiB with `?speed=full`
+Cases: hello and hello-os at 2 MB with the default boot (the entry marker,
+the switch to 1k/s, 234 (-O0) and 86 (-Os) instructions from the entry to
+"Hello, World!", the "Halted" banner), Linux at 2 MB, 18 MB and 2180 KiB with `?speed=full`
 (the panic banner with "init exited with code 0"), and Linux with the default
 boot for a few seconds (entry marker, 1k/s, the counter grows by about
 3,000 in 3 s, ETA and current symbol in the top bar, the speed choice

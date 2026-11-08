@@ -649,7 +649,10 @@ function localsCtx(f, fb) {
 }
 
 // One variable of a frame: { pa, how, why, state } for varsRow (pa < 0:
-// nothing to show), state "ok", "partial" (some bytes known) or "out".
+// nothing to show), state "ok", "partial" (some bytes known), "out" (the
+// DWARF has no location here) or "unmapped" (it has one, a memory address
+// the page tables do not map: e.g. EBP-based slots in a function's
+// prologue, before it has set EBP).
 function localsValue(T, v, f, ctx) {
 	const size = dwTypeSize(T, v[1]) || 4;
 	const l = dwLocAt(v[3], f.lookup);
@@ -673,7 +676,7 @@ function localsValue(T, v, f, ctx) {
 			return { pa, state: "ok", how: r.how };
 		const b = localsReadBytes(r.mem, size);
 		if (!b)
-			return { pa: -1, state: "out", why: r.how + ": not mapped" };
+			return { pa: -1, state: "unmapped", why: r.how + ": not mapped" };
 		return { pa: varsCell(b, new Uint8Array(size).fill(1), r.how, ""), state: "ok", how: r.how };
 	}
 	const known = r.known.subarray(0, size).every(Boolean);
@@ -724,7 +727,7 @@ function localsGroup(T, lf, k, f, ctx, key, fr) {
 			ty.textContent = dwTypeName(T, v[1]);
 			const val = document.createElement("span");
 			val.className = "wval lout";
-			val.textContent = "<optimized out>";
+			val.textContent = x.state === "unmapped" ? "<not mapped>" : "<optimized out>";
 			r.append(n, " = ", val, " ", ty);
 			const leaf = document.createElement("div");
 			leaf.className = "wleaf";
@@ -741,7 +744,7 @@ function localsGroup(T, lf, k, f, ctx, key, fr) {
 		}
 		const loc = document.createElement("span");
 		loc.className = "lloc";
-		loc.textContent = (kind === "param" ? "parameter, " : "") + (x.state === "out" ? x.why : x.how + (x.why ? "; " + x.why : ""));
+		loc.textContent = (kind === "param" ? "parameter, " : "") + (x.pa < 0 ? x.why : x.how + (x.why ? "; " + x.why : ""));
 		(d.querySelector(".wrow") || d).append(" ", loc);
 		box.append(d);
 	}

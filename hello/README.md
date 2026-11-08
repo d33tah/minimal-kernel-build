@@ -53,6 +53,13 @@ clang, lld, nasm, qemu-system-x86, expect.
     make test          # qemu + vmtest.tcl for both (bzImage.low with -m 1M)
     make clean
 
+`OPT` sets the optimization level (default `-Os`). The browser page's
+"hello" entry is built with `make LLVM=1 OPT=-O0` (and `make test
+OPT=-O0`), so its debugger shows a value for every parameter and local; at
+`-Os` put_line is inlined and its `s` is optimized out. The page offers the
+`-Os` build too, as "hello-os". `kernel.bin` (the 32-bit code): 215 bytes at `-O0`, 128 at
+`-Os`.
+
 Run it by hand:
 
     qemu-system-i386 -kernel hello/bzImage

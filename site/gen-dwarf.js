@@ -600,7 +600,8 @@ function operandsLookup(dir) {
 			continue;
 		const pa = Number(m[1]), va = Number(m[2]);
 		const names = asmOperandNames(m[3], pa, { off: va - pa, T, sym, scopes, row, cur: null });
-		out.push(JSON.stringify({ pa, text: m[3], names: names.map((n) => ({ op: n.op, name: n.name, kind: n.kind, var: n.var, varOff: n.varOff, va: n.va, rel: n.rel })) }));
+		out.push(JSON.stringify({ pa, text: m[3], names: names.map((n) => ({ op: n.op, name: n.name, kind: n.kind, var: n.var, varOff: n.varOff, va: n.va, rel: n.rel,
+			aliases: n.aliases, scope: n.scope })) }));
 	}
 	process.stdout.write(out.join("\n") + "\n");
 }

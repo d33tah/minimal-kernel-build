@@ -62,8 +62,13 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   cover only stepped code (the decompressor run by the JIT is not in
   them). Run to in the Debugger uses the same machinery for kernel code:
   fast-forward to the entry when the kernel has not run yet, then a
-  software breakpoint (a HLT byte at the target, put back when the CPU
-  stops on it; a guest that reads its own code there would see it). The
+  software breakpoint (HLT bytes over the target's first instruction,
+  put back when the CPU stops on one; a guest that reads its own code
+  there would see them. v86's HLT with interrupts enabled handles a due
+  interrupt at once and the handler returns to the next byte, so with a
+  single HLT the CPU ran on in the middle of the instruction: Run to
+  kernel_execve in the -O0 minified Linux oopsed. The CPU now halts on
+  the next HLT and EIP is set back to the target). The
   HLT goes in only once the target holds the build's instruction bytes
   (disasm.json); until then the page steps, stopping at the target. The
   minified Linux's vmlinux runs at 0x100000, where v86 loads its bzImage,
@@ -619,7 +624,8 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   call site of inlined code) and is marked executed when an instruction
   started in one of those rows' address ranges while stepping (the
   stepper's unique-EIP bitmap). The workflow builds `-g` copies
-  (`KCFLAGS=-g` for the minified Linux, `OPT=-O0 CC="clang -g"` for hello) next to
+  (`KCFLAGS="-g -O0"` and `KCFLAGS=-g` for the two minified Linux builds,
+  `OPT=-O0 CC="clang -g"` and `CC="clang -g"` for the two hello builds) next to
   the gate kernels and fails unless their code is byte-identical
   (`check-code-identity.py`: the `llvm-objcopy -O binary` images and the
   bzImages are equal except inside note sections, i.e. the 20-byte GNU
@@ -639,6 +645,35 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   twice and its `s` has no location, which the page says ("optimized
   out"). Sizes: bzImage 2,784 bytes at `-O0` (`kernel.bin` 215 bytes),
   2,688 at `-Os` (128 bytes).
+- **Unoptimized minified Linux.** The page's "minified-linux" entry is
+  built by the workflow from the same minified/ sources with `-O0`: a
+  copy of the tree gets `site/unoptimized.patch` and `make LLVM=1
+  KCFLAGS=-O0` (LTO kept); its own vmtest boot must print both gate
+  lines. The product build is not touched: `make vm` still builds and
+  gates the `-Os` kernel, which the page offers as "minified-linux-os"
+  ("minified Linux, -Os (product build; optimized out)"). The patch adds
+  two things `-Os` gets from the optimizer: upstream's `#ifdef
+  __OPTIMIZE__` guard around `__compiletime_assert` (at `-O0` a
+  BUILD_BUG_ON that folds to true still calls the undefined error
+  function and the link fails), and definitions of `overflowuid` /
+  `overflowgid` (65534) in fs/binfmt_elf.c (their definitions went with
+  kernel/sys.c; `-Os` folds the reads away). The C source the page shows
+  for this entry is the patched copy. `-O1`, `-Og`, clang 21's
+  `-fextend-variable-liveness` and `-fno-inline` variants were measured
+  first (ai/plans/site-unoptimized-debug.md, U0): they leave 40 to 53%
+  of (variable, statement address) pairs without a location, `-O0`
+  none. At `-O0` the parameters and locals of the minified Linux all
+  have a location for their whole scope (llvm-dwarfdump --statistics:
+  100% of parameter and local bytes covered, 74% / 44% at `-Os`); the
+  unoptimized suite runs to start_kernel, setup_arch, kmem_cache_init,
+  kmem_cache_alloc, rest_init, kernel_init, kernel_execve and vfs_write,
+  single-steps into their calls and finds no "optimized out" at any
+  address it reads (the `-Os` entry, walked the same way, shows them).
+  Sizes (`-O0` / `-Os`): bzImage 190,256 / 91,568 bytes; vmlinux text
+  146,686 / 50,007, data 35,764 / 29,808; symbols.json + disasm.json
+  2,169,952 / 813,402 (375,291 / 169,853 gzipped: static inline helpers
+  are out of line at `-O0`); locals shards 48,384 / 83,814 gzipped (the
+  `-Os` ones carry location lists). The build takes about 8 s locally.
 - **Executed code.** The Page listing tints the instructions that have
   not executed in this boot (a lavender background, the "tinted" key next
   to the listing's counts gives how many). An instruction counts as
@@ -852,8 +887,9 @@ JavaScript drives the CPU:
   reset", the speed switches to 1k instructions per second and the
   counters count live from there: hello reaches "Still alive" after 432
   instructions (154 for the -Os hello-os; it prints below the BIOS text instead of clearing the
-  screen, see hello/README.md), a fraction of a second; the minified Linux needs about 132,000,
-  about 2 minutes 12 s, so the top bar shows an ETA (from the count this
+  screen, see hello/README.md), a fraction of a second; the minified Linux needs about 723,000
+  at -O0 (about 12 minutes; the -Os minified-linux-os about 132,000, 2 minutes 12 s),
+  so the top bar shows an ETA (from the count this
   browser last measured, else a built-in estimate) and the symbol the CPU
   is in.
 - **Full speed.** `?speed=full`, or picking "full (JIT)" (the choice is
@@ -981,14 +1017,19 @@ every run):
 | hello-os (-Os) | Hello, World! | 86 | 17 / 7,770 | 1,405,836 | |
 | hello-os (-Os) | Still alive | 154 | 25 / 7,770 | 1,405,904 | |
 | hello-os (-Os) | halted | 159 | 27 / 7,770 | 1,405,909 | 2 |
+| minified Linux (-O0) | Hello, World! | 721,292 | 29,236 / 8,176 | 2,128,763 | |
+| minified Linux (-O0) | Still alive | 723,158 | 29,377 / 8,181 | 2,130,629 | |
+| minified Linux (-O0) | exit(0) | 723,554 | 29,377 / 8,183 | 2,131,025 | |
+| minified Linux (-O0) | panic, stopped (hlt) | 723,660 | 29,403 / 8,184 | 2,131,131 | |
 | minified Linux | Hello, World! | 131,287 | 10,026 / 8,171 | 1,538,758 | |
 | minified Linux | Still alive | 132,006 | 10,111 / 8,171 | 1,539,477 | |
 | minified Linux | exit(0) | 132,146 | 10,113 / 8,171 | 1,539,617 | |
 | minified Linux | panic() entered | 132,198 | 10,121 / 8,171 | 1,539,669 | |
 | minified Linux | panic, stopped (hlt) | 132,199 | 10,123 / 8,171 | 1,539,670 | 2 |
 
-(The kernel was rebuilt since the qemu cross-check below: 486 build,
-panic halts.)
+(The "minified Linux" rows without -O0 are the -Os product build, now
+the minified-linux-os entry. The kernel was rebuilt since the qemu
+cross-check below: 486 build, panic halts.)
 
 ### Cross-check with qemu
 
@@ -1131,7 +1172,7 @@ browser-test matrix job named by its suites):
 | V2 coverage browser | suites covtree (tree sums, files.json, Source panel whole file, lcov), debian (Debian tree, shards fetched) | types,covtree,unwind; debian,... |
 | V3 multi-line statements | suite covtree (`multiline_case`: asm statements in string_32.c and irqflags.h, counts equal in panel, tree, lcov) | types,covtree,unwind |
 | D5 CFI unwinding | `test_dwarf.py --cfi` (vs llvm-dwarfdump rows), `--eh-frame`; suite unwind (frames vs gdb backtrace of a core, import) | kernels; types,covtree,unwind |
-| D4 parameters and locals | `test_dwarf.py --locals` (vs gdb info scope); suites unwind (values vs gdb on a core, import), hello | kernels; types,covtree,unwind; boot,... |
+| D4 parameters and locals | `test_dwarf.py --locals` (vs gdb info scope; where gdb also lists, as optimized out, the variables of a block whose concrete copy clang emits without DW_AT_abstract_origin, out of scope or twice, llvm-dwarfdump decides), `--inline-blocks` (a block's variables listed exactly inside the block, at every instruction of an inlined call built here); suites unwind (values vs gdb on a core, import), hello | kernels; types,covtree,unwind; boot,... |
 | D6 task names | suites tasks (Debian, every task vs task_struct read with gdb's offsets), tasks_minified | tasks; boot,... |
 | D7 minified and hello parity | `check-code-identity.py --self-test` (-g build's code equals the shipped kernel), `test_kernel_data.py` (every kernel has every feature's files); suite hello | kernels; site; boot,... |
 | A1 memory operands named | `test_dwarf.py --operands` (absolute vs gdb info symbol, stack slots vs gdb on a core at the instruction); suite operands (minified and Debian pauses: names with an address vs gdb on a core of the pause, Debugger and Page tab alike, tooltips, 390 px) | kernels; tasks,operands |
@@ -1142,6 +1183,7 @@ browser-test matrix job named by its suites):
 | D8 help and first look | `check-ids.py` (no duplicate ids); suite firstlook (every kernel incl. Debian with its initramfs and an imported vmlinux: explanations present, entry line, JIT gap, Coverage notes, no sideways scroll at 390 px light and dark) | site; boot,...,firstlook |
 | Run to on a phone | suite runto_phone (hello at 390 px touch, 1/s, 10/s and desktop: Boot, Pause, Run to a function stops at its first instruction; `hello`, `.rodata` and mid-instruction targets refused in the status and the paused overlay with the CPU still paused; a Run to right after the slice that printed "Hello, World!" stops there, stepped and with the JIT; light and dark screenshots); `--base https://d33.pl/minimal-kernel-build` for the live site | tasks,operands,runto_phone,srclinks |
 | C1 file:line links | suite srclinks (minified Linux paused in code inlined into setup_arch: each kind of link in the Debugger, Page listing, hovered byte, Graph detail and Coverage facts opens its file with its line picked and in view; no plain file:line left in the Debugger; Enter opens one and moves the focus, Escape gives it back; a tap on a 390 px phone; light and dark at 1280 and 390 px) | tasks,operands,runto_phone,srclinks |
+| U1/U2 unoptimized builds | vmtest boot of the -O0 hello and minified Linux; `check-code-identity.py` for each -O0 and -Os pair; `test_dwarf.py` on both builds of each; suite hello (every instruction of hello_main and put_line), suite unoptimized (minified Linux: eight Run to stops, single steps into calls, no "optimized out" at any address read, values vs gdb at each stop; the -Os entry must show some) | kernels; tasks,operands,runto_phone,srclinks,unoptimized; boot,... |
 
 ## Testing
 

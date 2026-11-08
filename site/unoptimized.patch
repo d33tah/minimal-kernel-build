@@ -1,0 +1,49 @@
+Applied by the Pages workflow to a copy of minified/ before the site's -O0
+build (KCFLAGS=-O0); the product build (-Os, make vm) never sees it.
+The -Os build relies on the optimizer for two things that -O0 does not do:
+
+1. compiler_types.h: __compiletime_assert calls an undefined __noreturn
+   function when the condition does not fold to true; -Os removes the call,
+   -O0 keeps it and the link fails (BUILD_BUG_ON in mm/slab_common.c and
+   fix_to_virt in asm/fixmap.h). Upstream Linux guards the same definition
+   with #ifdef __OPTIMIZE__; this restores that guard.
+2. fs/binfmt_elf.c: from_kuid_munged()/from_kgid_munged() read overflowuid /
+   overflowgid, whose definitions went with kernel/sys.c; -Os folds the
+   reads away, -O0 keeps them. Defined here with upstream's default 65534.
+
+diff -ru a/minified/fs/binfmt_elf.c b/minified/fs/binfmt_elf.c
+--- a/minified/fs/binfmt_elf.c
++++ b/minified/fs/binfmt_elf.c
+@@ -29,6 +29,9 @@
+ #include <asm/param.h>
+ #include <asm/page.h>
+ 
++int overflowuid = 65534; /* DEFAULT_OVERFLOWUID */
++int overflowgid = 65534; /* DEFAULT_OVERFLOWGID */
++
+ static int load_elf_binary(struct linux_binprm *bprm);
+ 
+ #define ELF_MIN_ALIGN PAGE_SIZE
+diff -ru a/minified/include/linux/compiler_types.h b/minified/include/linux/compiler_types.h
+--- a/minified/include/linux/compiler_types.h
++++ b/minified/include/linux/compiler_types.h
+@@ -95,6 +95,7 @@
+ 	(sizeof(t) == sizeof(char) || sizeof(t) == sizeof(short) || \
+ 	 sizeof(t) == sizeof(int) || sizeof(t) == sizeof(long))
+ 
++#ifdef __OPTIMIZE__
+ #define __compiletime_assert(condition, msg, prefix, suffix) \
+ 	do {                                                 \
+ 		__noreturn extern void prefix##suffix(void)  \
+@@ -102,6 +103,11 @@
+ 		if (!(condition))                            \
+ 			prefix##suffix();                    \
+ 	} while (0)
++#else
++#define __compiletime_assert(condition, msg, prefix, suffix) \
++	do {                                                 \
++	} while (0)
++#endif
+ 
+ #define _compiletime_assert(condition, msg, prefix, suffix) \
+ 	__compiletime_assert(condition, msg, prefix, suffix)

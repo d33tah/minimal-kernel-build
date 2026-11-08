@@ -83,10 +83,20 @@ function asmMemOps(text) {
 
 // sym(pa) for asmOperandNames from symbols.json's list: the smallest
 // symbol with a size holding pa, else one without a size at pa (a linker
-// mark such as __irf_end), or null.
+// mark such as __irf_end), or null. Several marks at one address (the end
+// of one section and the start of the next, e.g. __stop___tracepoints_ptrs
+// and __start___ex_table) are equal: the first by name, with all of their
+// names in aliases.
 function asmSymLookup(list) {
 	const sized = list.filter((x) => x.size > 0).sort((a, b) => a.paddr - b.paddr);
-	const marks = new Map(list.filter((x) => !x.size).map((x) => [x.paddr, x]));
+	const marks = new Map();
+	for (const x of list.filter((y) => !y.size).sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))) {
+		const m = marks.get(x.paddr);
+		if (!m)
+			marks.set(x.paddr, x);
+		else
+			marks.set(x.paddr, { ...m, aliases: [...m.aliases || [m.name], x.name] });
+	}
 	return (pa) => {
 		let a = 0, b = sized.length;
 		while (a < b) { const m = (a + b) >> 1; if (sized[m].paddr <= pa) a = m + 1; else b = m; }
@@ -134,13 +144,17 @@ function asmGlobal(va, env) {
 	if (w) {
 		const v = w.var;
 		const name = w.path + (w.offset ? "+" + w.offset : "");
-		return { name, kind: v[5] & 2 ? "percpu" : "var", var: v[0], varOff: pa - v[1],
+		return { name, kind: v[5] & 2 ? "percpu" : "var", var: v[0], varOff: pa - v[1], scope: v[5] & 4 && v[6] ? v[6] : undefined,
 			detail: name + (w.note ? " (" + w.note + ")" : "") + ": " + asmLib.dwTypeName(env.T, w.type) + ", in " + v[0] + " (" +
 				asmLib.dwTypeName(env.T, v[2]) + ", " + v[3] + " bytes" + (env.T.sections && env.T.sections[v[4]] ? ", " + env.T.sections[v[4]] : "") + ")" +
 				(v[5] & 4 ? ", a static local" + (v[6] ? " of " + v[6] + "()" : "") : "") + (v[5] & 2 ? ", per-CPU" : "") +
 				(asmLib.dwVarDeclText(env.T, v) ? "; defined at " + asmLib.dwVarDeclText(env.T, v) : "") };
 	}
 	const s = env.sym ? env.sym(pa) : null;
+	if (s && s.aliases)
+		return { name: s.aliases.join("="), kind: "sym", var: s.name, varOff: 0, aliases: s.aliases,
+			detail: "ELF symbols " + s.aliases.join(", ") + ": linker marks without a size at the same address (" +
+				s.aliases.length + " names for it; the build does not record which one the code uses); no DWARF variable there" };
 	if (s)
 		return { name: s.name + (pa > s.paddr ? "+0x" + (pa - s.paddr).toString(16) : ""), kind: "sym", var: s.name, varOff: pa - s.paddr,
 			detail: "ELF symbol " + s.name + (s.section ? " in " + s.section : "") + (s.size ? ", " + s.size + " bytes" : "") +
@@ -242,8 +256,10 @@ function asmOperandNames(text, pa, env) {
 			// A variable's address plus registers.
 			r = { name: r.name + "+" + regs, kind: "base", detail: "address of " + r.detail + ", plus " + regs + seg };
 		}
-		if (r && o.lea)
-			r.name = "&" + r.name; // lea: the address, not the contents
+		if (r && o.lea) { // lea: the address, not the contents
+			r.detail = "&" + r.name + ": the address of " + r.detail;
+			r.name = "&" + r.name;
+		}
 		if (r)
 			out.push({ op: o.text, ...r });
 	}

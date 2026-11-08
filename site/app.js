@@ -1199,8 +1199,8 @@ const REF_KEY = "mkb-ref-";
 // Instructions from the entry to "Still alive" when no run on this browser
 // measured it yet (for the ETA only).
 // Instructions from the entry to "Still alive" (the same at every clock rate).
-const REF_STEPS = { hello: { any: 154 },
-	"minified-linux": { any: 132006 } };
+const REF_STEPS = { hello: { any: 432 }, "hello-os": { any: 154 },
+	"minified-linux": { any: 723158 }, "minified-linux-os": { any: 132006 } };
 let driverTimer = null;
 let driverChannel = null;
 let lastUi = 0;
@@ -1763,7 +1763,14 @@ function drawContext() {
 	if ((disasm && inKernel) || live) {
 		const from = Math.max(0, exact ? i - 6 : i - 3), to = Math.min(ins.length, i + 10);
 		if (to > from) {
-			const lo = ins[from][0], hi = ins[to - 1][0] + ins[to - 1][1].length / 2;
+			// The end of the furthest instruction: llvm-objdump decodes the
+			// zero padding before an aligned function as instructions that
+			// can run into the function (-O0: "0050c7" at 0x100d4f over
+			// 0x100d50), so the last one listed need not end last.
+			const lo = ins[from][0];
+			let hi = lo;
+			for (let k = from; k < to; k++)
+				hi = Math.max(hi, ins[k][0] + ins[k][1].length / 2);
 			const mem = hi <= emuRam ? emulator.read_memory(lo, hi - lo) : null;
 			const sized = symbols ? symbols.symbols.filter((s) => s.size > 0 && s.paddr < hi && s.paddr + s.size > lo) : [];
 			const srcState = { key: null };

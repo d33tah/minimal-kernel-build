@@ -212,6 +212,7 @@ class Stepper {
 		this.swTask = [];
 		this.swIrq = [];
 		this.freshTask = false;
+		this.tailEsp = -1;   // ESP __switch_to arrived with in a new task's switch tail
 		this.suspended = new Map(); // task -> its open call chain, root first
 		// Open frames per stack region (ESP >> 13: Linux's 8 KiB task and
 		// IRQ stacks). `stack` is the lane of the current ESP; a lane's first
@@ -350,6 +351,7 @@ class Stepper {
 					}
 					let task = this.taskOf.get(region);
 					this.freshTask = task === undefined;
+					this.tailEsp = -1;
 					if (task === undefined) {
 						task = this.taskCount++;
 						this.taskRegion[task] = region;
@@ -384,11 +386,19 @@ class Stepper {
 				this.popFrame(t);
 		}
 		// A new task starts in the tail of the switch (__switch_to, which
-		// returns into ret_from_fork): no root frame for it.
+		// returns into ret_from_fork): no root frame for it, nor for what it
+		// calls (at -O0 its static inline helpers are out-of-line calls,
+		// below the ESP __switch_to arrived with).
 		if (this.freshTask) {
-			if (!this.stack.length && /switch_to/.test(this.symName[node]))
+			if (!this.stack.length && /switch_to/.test(this.symName[node])) {
+				if (this.tailEsp < 0)
+					this.tailEsp = esp;
+				return;
+			}
+			if (!this.stack.length && this.tailEsp >= 0 && esp < this.tailEsp)
 				return;
 			this.freshTask = false;
+			this.tailEsp = -1;
 		}
 		const nf = this.fStart.length;
 		if (nf >= 2000000000 || this.framesFull)

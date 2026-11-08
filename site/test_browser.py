@@ -90,6 +90,10 @@ def default_cases():
         cases.append(("minified-linux", 18 * 1024 * 1024, "full"))
         # The smallest RAM it boots with in v86 (measured: 2176 KiB fails).
         cases.append(("minified-linux", 2180 * 1024, "full"))
+    if "minified-linux-os" in names:
+        # The -Os product build: the same boot at its default and smallest RAM.
+        cases.append(("minified-linux-os", None, "full"))
+        cases.append(("minified-linux-os", 2180 * 1024, "full"))
     return cases
 
 
@@ -2240,7 +2244,8 @@ def vardecl_checks(page, name, T, off, elf, shots, problems, r):
         .map((e) => [e.dataset.name, +e.dataset.va, e.title])""")
     checked, probes = 0, []
     for nm, va, title in ops:
-        root = re.match(r"\w+", nm)[0]
+        # "&name" for a lea (-O0 takes addresses of globals with lea).
+        root = re.match(r"&?(\w+)", nm)[1]
         v = next((x for x in T["vars"] if x[0] == root and x[1] <= va - off < x[1] + max(x[3], 1)), None)
         if v is None:
             continue
@@ -2774,8 +2779,17 @@ def locals_compare(elf, locs, udump):
             bad.append(f"frame {i}: page {sc['func']}, gdb {g['func']}")
             continue
         if sorted(v["name"] for v in sc["vars"]) != sorted(x[0] for x in g["vars"]):
-            bad.append(f"frame {i} ({sc['func']}): variables page {sorted(v['name'] for v in sc['vars'])} gdb {sorted(x[0] for x in g['vars'])}")
-            continue
+            # gdb also lists, as optimized out, the variables of a block whose
+            # concrete copy has no DW_AT_abstract_origin, out of scope or
+            # twice (test_dwarf.py gdb_extra_explained, with llvm-dwarfdump).
+            from test_dwarf import gdb_extra_explained
+            at = g["pc"] - (1 if g["pc"] != want[0]["pc"] else 0)  # a caller's block: the call, before the return address
+            mine = [(v["name"], "out" if v["state"] == "out" else "x") for v in sc["vars"]]
+            theirs = [(n, "out" if val == "out" else "x") for n, val in g["vars"]]
+            if not gdb_extra_explained(str(elf), at, theirs, mine, sc["func"]):
+                bad.append(f"frame {i} ({sc['func']}) at {at:#x}: variables page {sorted(mine)} gdb {sorted(theirs)}")
+                continue
+            g = {**g, "vars": [x for x in g["vars"] if x[0] in {v["name"] for v in sc["vars"]}]}
         gv = {}
         for name, val in g["vars"]:
             gv.setdefault(name, []).append(val)
@@ -2995,7 +3009,8 @@ def unwind_case(browser, base, shots, name, fn, steps):
 # Pauses where the instruction at EIP reads or writes a parameter or local
 # on the stack: (kernel, function, offset, the variable the operand is).
 OPERAND_POINTS = [
-    ("minified-linux", "memblock_add_range", 0x2b, "type"),  # movl (%esp), %eax: clang spills type at ESP+0
+    ("minified-linux", "memblock_add_range", 0xa, "type"),  # -O0: movl %ecx, 0x18(%esp): type into its slot
+    ("minified-linux-os", "memblock_add_range", 0x2b, "type"),  # -Os: movl (%esp), %eax: clang spills type at ESP+0
     ("debian-6.1-686", "start_kernel", 0x20, "command_line"),  # mov %ebx, -0x1c(%ebp): GCC, DW_OP_fbreg -36
 ]
 
@@ -3067,19 +3082,28 @@ def opnames_vs_gdb(elf, dump, lines, problems, r, tag):
     syms = dict(zip(sorted({o["va"] for o in glob}), got[0]))
     at = dict(zip(paths, got[1]))
     n = 0
+    # ELF symbols by address (llvm-nm): clang names a static local
+    # function.name, which gdb prints demangled in odd ways.
+    nm_at = {}
+    for f in (l.split() for l in subprocess.run(["llvm-nm", "--defined-only", str(elf)], capture_output=True, text=True).stdout.splitlines()):
+        if len(f) == 3:
+            nm_at.setdefault(int(f[0], 16), set()).add(f[2])
     for o in glob:
         s = syms[o["va"]]
         m = re.match(r"^(\S+)(?: \+ (\d+))? in section", s)
-        root = re.match(r"[A-Za-z_][\w.]*", o["name"]).group(0)
+        # "&name" for a lea; "a=b" for linker marks sharing an address.
+        root = re.match(r"&?([A-Za-z_][\w.]*)", o["name"]).group(1)
         off = int(re.search(r"\+(\d+)$", o["name"]).group(1)) if o["kind"] != "sym" and re.search(r"\+(\d+)$", o["name"]) else 0
         if not m:
             problems.append(f"{tag}: {o['op']} <{o['name']}> but gdb: {s}")
             continue
         # The variable (or symbol) gdb names must start the page's path; a
-        # static local is name.N in the ELF.
-        gname = m.group(1)
-        if not (root.split(".")[0] == gname or re.fullmatch(re.escape(root.split(".")[0]) + r"\.\d+", gname) or
-                o["kind"] == "sym" and root == gname):
+        # static local is name.N (GCC) or function.name (clang) in the ELF.
+        gname, var = m.group(1), root.split(".")[0]
+        gaddr = o["va"] - int(m.group(2) or 0)
+        if not (var == gname or re.fullmatch(re.escape(var) + r"\.\d+", gname) or
+                o["kind"] == "sym" and gname in o["name"].lstrip("&").split("=") or
+                o["kind"] != "sym" and any(x.endswith("." + var) and gname.startswith(x[:-len(var) - 1]) for x in nm_at.get(gaddr, ()))):
             problems.append(f"{tag}: {o['op']} <{o['name']}> but gdb: {s}")
             continue
         n += 1
@@ -4152,7 +4176,14 @@ def norm_insn(text):
     text = re.sub(r"<[^>]*>|#.*$", "", text.lower())
     text = re.sub(r"\s+", " ", text).strip().replace(", ", ",")
     # Numbers modulo formatting: -0x3fef0834 and 0xc010f7cc, 9 and 0x9 are equal.
-    return re.sub(r"-?(?:0x[0-9a-f]+|\b\d+\b)", lambda m: hex(int(m.group(0), 0) & 0xffffffff), text)
+    text = re.sub(r"-?(?:0x[0-9a-f]+|\b\d+\b)", lambda m: hex(int(m.group(0), 0) & 0xffffffff), text)
+    # Spellings of the same byte instruction (-O0 code has many): iced-x86's
+    # setneb is llvm-objdump's setne, and a byte operation's immediate is
+    # one byte ($0xff, llvm-objdump's $-0x1).
+    text = re.sub(r"^(set[a-z]+?)b ", r"\1 ", text)
+    if re.match(r"^[a-z]+b \$", text):
+        text = re.sub(r"^([a-z]+b \$)(0x[0-9a-f]+)", lambda m: m.group(1) + hex(int(m.group(2), 16) & 0xff), text)
+    return text
 
 
 def listing_insns(page, lo, hi):
@@ -4799,17 +4830,27 @@ def multiline_case(browser, base, shots):
         elif l.startswith(("LF:", "LH:")):
             cur[l[:2]] = int(l[3:])
 
-    def check(label, lo, hi, ran=True):
+    def check(label, path, lo, hi, ran=True):
         """Lines lo..hi of the panel: the first ran (or has code that did not
-        run), every other one shows the same as its continuation."""
+        run), every other one shows the same as its continuation, except a
+        line with line rows of its own (-O0: line 43 of strlen's asm, the
+        "1"(s) input, loads s into EDI), which shows as code of its own."""
         marks = panel_line_marks(page)
         got = {l: marks.get(l, ([], "", ""))[:2] for l in range(lo, hi + 1)}
         r[label] = {l: " ".join(c) + " " + m for l, (c, m) in got.items()}
         want = "exec" if ran else "code"
+        own_rows = set(page.evaluate("([p, lo, hi]) => { const c = fileLines(p).code; const o = [];"
+                                     " for (let l = lo; l <= hi; l++) if (c.has(l)) o.push(l); return o; }", [path, lo + 1, hi]))
+        if own_rows:
+            r[label + " lines with rows of their own"] = sorted(own_rows)
         if want not in got[lo][0]:
             problems.append(f"{label}: line {lo}, the statement's first line, is not {want}: {got[lo]}")
         for l in range(lo + 1, hi + 1):
             c, mark = got[l]
+            if l in own_rows:
+                if "cont" in c or not ("exec" in c or "code" in c):
+                    problems.append(f"{label}: line {l} has code of its own but shows {c} {mark!r}")
+                continue
             if want not in c or "cont" not in c:
                 problems.append(f"{label}: line {l} of the statement {lo}-{hi} is not shown as its continuation ({want}): {c} {mark!r}")
             elif "statement" not in marks[l][2] or "not counted" not in marks[l][2].lower():
@@ -4870,7 +4911,7 @@ def multiline_case(browser, base, shots):
             continue
         # The whole file (the Coverage tab's view).
         panel_open("p => openSourceFile(p)", path)
-        code, ran = check(path + " whole file", lo, hi)
+        code, ran = check(path + " whole file", path, lo, hi)
         tree, lc = files.get(path), lcov.get(path, {})
         r[path + " counts"] = {"panel": [code, ran], "tree": tree and [tree["lines"], tree["linesRun"]], "lcov": [lc.get("LF"), lc.get("LH")]}
         if not tree or [code, ran] != [tree["lines"], tree["linesRun"]] or [code, ran] != [lc.get("LF"), lc.get("LH")]:
@@ -4887,7 +4928,7 @@ def multiline_case(browser, base, shots):
             problems.append(f"{path}:{lo} has no address that ran")
         else:
             panel_open("pa => openSource(pa)", at)
-            check(path + " at " + hex(at), lo, hi)
+            check(path + " at " + hex(at), path, lo, hi)
             for scheme, width in (("light", 1280), ("dark", 1280), ("dark", 390), ("light", 390)):
                 page.emulate_media(color_scheme=scheme)
                 page.set_viewport_size({"width": width, "height": 1000})
@@ -4898,10 +4939,14 @@ def multiline_case(browser, base, shots):
             page.emulate_media(color_scheme="light")
             page.set_viewport_size({"width": 1280, "height": 1000})
             page.click("#src_close")
-        # The out-of-line function, whose own copy did not run in this boot.
+        # The out-of-line function: at -Os its own copy does not run in this
+        # boot (strlen is inlined where it is called), at -O0 it does.
         if func in syms and path.endswith("string_32.c"):
-            panel_open("pa => openSource(pa)", syms[func]["paddr"])
-            check(path + " " + func + "()", lo, hi, ran=False)
+            f = syms[func]
+            own_ran = page.evaluate("([a, n]) => stepper.countIn(a, a + n) > 0", [f["paddr"], f["size"]])
+            r[func + "() ran"] = own_ran
+            panel_open("pa => openSource(pa)", f["paddr"])
+            check(path + " " + func + "()", path, lo, hi, ran=own_ran)
             page.click("#src_close")
     page.close()
     if errors:
@@ -5549,6 +5594,120 @@ def suite_branches(ctx):
     p, r = branches_import_case(ctx.browser, ctx.base, ctx.shots)
     return failed | report("branches_import", p, r, seconds=round(time.monotonic() - t0))
 
+# Pauses for the unoptimized suite, in boot order: Run to each function,
+# then single-step that many instructions (into calls), reading the
+# Variables panel at every address not seen before. kmem_cache_alloc's
+# walk crosses its inlined slab_alloc_node, whose list_first_entry_or_null
+# block (head__, pos__, __mptr) covers only part of it.
+UNOPT_PAUSES = [("start_kernel", 30), ("setup_arch", 30), ("kmem_cache_init", 30), ("kmem_cache_alloc", 260),
+                ("rest_init", 20), ("kernel_init", 30), ("kernel_execve", 30), ("vfs_write", 40)]
+
+
+def unoptimized_case(browser, base, shots, name):
+    """minified-linux is built with -O0 (U2): for each of UNOPT_PAUSES, a
+    fresh boot runs to the function and single-steps from there; at every
+    address of the walk no parameter or local of any frame is optimized out
+    (state "out", or the text "optimized out" anywhere in the Debugger),
+    and at the first stop the values equal gdb's on a core of the same
+    registers and stack (locals_check). minified-linux-os (the -Os product
+    build) walks the same functions it has as symbols and must show some
+    optimized-out variables (the check sees them); its count is reported.
+    No page errors. Screenshots of the Variables panel light/dark, 1280 px."""
+    problems, r = [], {}
+    entry = kernel_entries()[name]
+    syms = {s["name"]: s for s in json.loads((SITE / entry["symbols"]).read_text())["symbols"]}
+    elf = debug_elf(name)
+    if not elf and os.environ.get("CI"):
+        problems.append(f"{name}: no -g ELF in $MKB_DEBUG_ELF_DIR to compare the values with gdb")
+    errors = []
+    seen, outs, nvars, shown, walks, unmapped = set(), [], 0, 0, {}, 0
+    for fn, steps in UNOPT_PAUSES:
+        s = syms.get(fn)
+        if not s:
+            if name == "minified-linux":
+                problems.append(f"{name}: no symbol {fn} (inlined: not an -O0 build?)")
+            continue
+        page = browser.new_page(viewport={"width": 1280, "height": 1000})
+        page.on("pageerror", lambda e, fn=fn: errors.append(f"{fn}: {e}"))
+        page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+
+        def pc():
+            return int(page.get_attribute("#regs", "data-phys") or -1)
+
+        def step1():
+            before = page.evaluate("stepper.steps")
+            page.fill("#dbg_n", "1")
+            page.click("#dbg_stepn")
+            wait_for(lambda: page.evaluate("stepper.steps") - before >= 1 and
+                     page.get_attribute("#dbg_state", "data-state") == "paused", 30, 0.05)
+
+        page.fill("#dbg_addr", hex(s["vaddr"]))
+        page.click("#dbg_runto")
+        ok, at, status = run_to_wait(page, {s["paddr"]}, 300)
+        if not ok:
+            problems.append(f"{name}: Run to {fn} did not stop there: {status}")
+            page.close()
+            continue
+        n0, here = len(seen), set()
+        for k in range(steps + 1):
+            a = pc()
+            if a not in here:
+                here.add(a)
+                seen.add(a)
+                wait_for(lambda: page.get_attribute("#call_stack", "data-unwind") not in (None, "loading"), 20)
+                for fr in locals_open_all(page):
+                    for sc in fr["scopes"]:
+                        for v in sc["vars"]:
+                            nvars += 1
+                            if v["state"] == "out" or "optimized out" in (v.get("value") or "") + v.get("loc", ""):
+                                outs.append(f"{a:#x} {sc['func']}.{v['name']}: {v['loc']}")
+                            elif v["state"] == "unmapped":
+                                unmapped += 1
+                            else:
+                                shown += 1
+                text = page.inner_text("#panel_debugger")
+                if "optimized out" in text and not any(o.startswith(f"{a:#x} ") for o in outs):
+                    outs.append(f"{a:#x}: the Debugger says 'optimized out': " +
+                                text[max(0, text.find("optimized out") - 80):text.find("optimized out") + 40])
+                if k == 0:
+                    dump = page.evaluate(UNWIND_DUMP_JS)
+                    problems += [f"{name} at {fn}: {p}" for p in locals_check(page, elf, dump, r, fn)]
+                    if fn == "kmem_cache_alloc":
+                        for scheme in ("light", "dark"):
+                            page.emulate_media(color_scheme=scheme)
+                            time.sleep(0.2)
+                            page.locator("#locals").screenshot(path=str(shots / f"unoptimized-{name}-{fn}-{scheme}.png"))
+                        page.emulate_media(color_scheme="light")
+            if k < steps:
+                step1()
+        walks[fn] = len(seen) - n0
+        page.close()
+    r["walks (new addresses)"] = walks
+    r["addresses"], r["variables read"], r["with a value"], r["not mapped"] = len(seen), nvars, shown, unmapped
+    r["optimized_out"] = len(outs)
+    r["optimized out, first"] = outs[:6]
+    if name == "minified-linux":
+        if outs:
+            problems.append(f"{name}: {len(outs)} optimized out at {len(seen)} addresses: " + "; ".join(outs[:8]))
+        if len(seen) < 300:
+            problems.append(f"{name}: only {len(seen)} addresses walked")
+    elif not outs:
+        problems.append(f"{name}: no optimized-out variable seen in the -Os build: the check does not see them")
+    if errors:
+        problems.append(f"{name}: page errors: {errors[:3]}")
+    return problems, r
+
+
+def suite_unoptimized(ctx):
+    failed = False
+    for name in [n for n in ("minified-linux", "minified-linux-os") if n in ctx.entries]:
+        t0 = time.monotonic()
+        p, r = unoptimized_case(ctx.browser, ctx.base, ctx.shots, name)
+        failed |= report("unoptimized", p, r, kernel=name, seconds=round(time.monotonic() - t0))
+    return failed
+
+
 def suite_hello(ctx):
     failed = False
     for name in [n for n in ("hello", "hello-os") if n in ctx.entries]:
@@ -5603,6 +5762,7 @@ SUITES = {
     "hello": (suite_hello, False),
     "firstlook": (suite_firstlook, False),
     "srclinks": (suite_srclinks, True),
+    "unoptimized": (suite_unoptimized, True),
 }
 
 

@@ -160,9 +160,16 @@ async function fastForward(target, name) {
 	return ok;
 }
 
-// Run to with software breakpoints: a HLT byte at each target, the JIT
-// runs, and when the CPU halts right after one the bytes are put back and
-// EIP set to that target. The kernel's code must already be in memory.
+// Run to with software breakpoints: HLT bytes over the first instruction
+// at each target, the JIT runs, and when the CPU halts right after one the
+// bytes are put back and EIP set to that target. The kernel's code must
+// already be in memory. Every byte of the instruction gets a HLT because
+// v86's HLT with interrupts enabled handles an interrupt that is due at
+// once instead of halting: the handler returns to the byte after the HLT
+// (with one HLT, the middle of the target instruction: Run to
+// kernel_execve in the -O0 minified Linux ran into garbage and oopsed).
+// With the next byte a HLT too the CPU halts there; nothing of the target
+// instruction has run, the interrupt came just before it.
 // The build's bytes of the instruction at phys (disasm.json), or null.
 function expectedBytes(phys) {
 	if (!disasm || !disasm.insns || typeof insnIndex !== "function")
@@ -213,13 +220,21 @@ async function fastRunTo(targets, label) {
 			return true;
 		}
 	}
-	const orig = new Map(targets.map((pa) => [pa, emulator.read_memory(pa, 1)[0]]));
+	// Byte -> [target, original byte] over each target's first instruction.
+	const bp = new Map();
+	for (const pa of targets) {
+		const n = (expectedBytes(pa) || [0]).length;
+		const now = emulator.read_memory(pa, n);
+		for (let k = 0; k < n; k++)
+			if (!bp.has(pa + k))
+				bp.set(pa + k, [pa, now[k]]);
+	}
 	const arm = () => {
-		for (const pa of targets) {
-			const b = emulator.read_memory(pa, 1)[0];
+		for (const [a, x] of bp) {
+			const b = emulator.read_memory(a, 1)[0];
 			if (b !== 0xf4) { // (re)written by the guest since: remember the new byte
-				orig.set(pa, b);
-				emulator.write_memory(new Uint8Array([0xf4]), pa);
+				x[1] = b;
+				emulator.write_memory(new Uint8Array([0xf4]), a);
 			}
 		}
 	};
@@ -230,11 +245,13 @@ async function fastRunTo(targets, label) {
 		while (!ffAbort && !st.dead()) {
 			jitChunk();
 			const at = st.nextPhys() - 1;
-			if (cpu.in_hlt[0] && set.has(at) && emulator.read_memory(at, 1)[0] === 0xf4) {
-				cpu.instruction_pointer[0] = cpu.instruction_pointer[0] - 1;
+			if (cpu.in_hlt[0] && bp.has(at) && emulator.read_memory(at, 1)[0] === 0xf4) {
+				const t = bp.get(at)[0];
+				cpu.instruction_pointer[0] = cpu.instruction_pointer[0] - (at + 1 - t);
 				cpu.in_hlt[0] = 0;
-				st.steps -= 1; // the HLT was not the kernel's instruction
-				hit = at;
+				st.steps -= at + 1 - t; // the HLTs were not the kernel's instructions
+				ffInfo = Object.assign(ffInfo || {}, { runToWakeups: at - t });
+				hit = t;
 				break;
 			}
 			arm();
@@ -244,9 +261,9 @@ async function fastRunTo(targets, label) {
 			}
 		}
 	} finally {
-		for (const pa of targets)
-			if (emulator.read_memory(pa, 1)[0] === 0xf4)
-				emulator.write_memory(new Uint8Array([orig.get(pa)]), pa);
+		for (const [a, [, b]] of bp)
+			if (emulator.read_memory(a, 1)[0] === 0xf4)
+				emulator.write_memory(new Uint8Array([b]), a);
 		ffActive = false;
 	}
 	ffInfo = Object.assign(ffInfo || {}, { runTo: label, runToMs: realNow() - t0 });

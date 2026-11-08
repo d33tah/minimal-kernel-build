@@ -45,24 +45,50 @@ jobs:
     - name: Build the minified Linux and run the make vm gate
       run: make vm
 
+    # The page's minified Linux is built with -O0 from the same sources so
+    # the debugger has a location for every parameter and local: a copy of
+    # minified/ with site/unoptimized.patch (two things -O0 needs that the
+    # -Os build gets from the optimizer) and KCFLAGS=-O0. The product build
+    # above (-Os, make vm) is the page's "minified-linux-os" entry.
+    - name: Build the minified Linux with -O0 for the site and boot it in qemu (vmtest)
+      run: |
+        o="$RUNNER_TEMP/o0"
+        w=$PWD
+        rm -rf "$o" && mkdir -p "$o"
+        cp -a minified "$o/minified"
+        make -C "$o/minified" clean
+        patch -d "$o" -p1 < site/unoptimized.patch
+        start=$(date +%s)
+        make -C "$o/minified" LLVM=1 -j6 KCFLAGS=-O0
+        echo "minified Linux -O0 build: $(( $(date +%s) - start )) s"
+        (cd "$o" && "$w/vmtest.tcl")
+        ls -l "$o/minified/vmlinux" "$o/minified/arch/x86/boot/bzImage" minified/arch/x86/boot/bzImage
+
     - name: Collect kernels
       run: |
-        mkdir -p out/hello out/hello-os out/minified-linux
+        o="$RUNNER_TEMP/o0"
+        mkdir -p out/hello out/hello-os out/minified-linux out/minified-linux-os
         cp hello/bzImage out/hello/bzImage
         cp "$RUNNER_TEMP/hello-os/bzImage" out/hello-os/bzImage
         printf '%s\n' '{"label": "hello (-O0: every variable has a location)"}' > out/hello/meta.json
         printf '%s\n' '{"label": "hello, -Os (hello/Makefile default; variables optimized out)"}' > out/hello-os/meta.json
-        cp minified/arch/x86/boot/bzImage out/minified-linux/bzImage
+        cp "$o/minified/arch/x86/boot/bzImage" out/minified-linux/bzImage
+        cp minified/arch/x86/boot/bzImage out/minified-linux-os/bzImage
+        printf '%s\n' '{"label": "minified Linux (-O0: every variable has a location)"}' > out/minified-linux/meta.json
+        printf '%s\n' '{"label": "minified Linux, -Os (product build; optimized out)"}' > out/minified-linux-os/meta.json
         site/gen-symbols.py hello/boot/high/kernel.elf out/hello/symbols.json hello
         site/gen-symbols.py "$RUNNER_TEMP/hello-os/boot/high/kernel.elf" out/hello-os/symbols.json hello-os
-        site/gen-symbols.py minified/vmlinux out/minified-linux/symbols.json minified-linux
+        site/gen-symbols.py "$o/minified/vmlinux" out/minified-linux/symbols.json minified-linux
+        site/gen-symbols.py minified/vmlinux out/minified-linux-os/symbols.json minified-linux-os
         site/gen-disasm.py hello/boot/high/kernel.elf out/hello/disasm.json
         site/gen-disasm.py "$RUNNER_TEMP/hello-os/boot/high/kernel.elf" out/hello-os/disasm.json
-        site/gen-disasm.py minified/vmlinux out/minified-linux/disasm.json
-        # Inputs for the browser test's symbol import (not deployed).
+        site/gen-disasm.py "$o/minified/vmlinux" out/minified-linux/disasm.json
+        site/gen-disasm.py minified/vmlinux out/minified-linux-os/disasm.json
+        # Inputs for the browser test's symbol import into the page's
+        # minified-linux (not deployed).
         mkdir -p out/import-test
-        cp minified/vmlinux out/import-test/vmlinux
-        llvm-nm -n minified/vmlinux > out/import-test/System.map
+        cp "$o/minified/vmlinux" out/import-test/vmlinux
+        llvm-nm -n "$o/minified/vmlinux" > out/import-test/System.map
         ls -l out/*/
 
     # Third sample kernel: Debian bookworm's linux-image-6.1.0-50-686
@@ -144,15 +170,22 @@ jobs:
     - name: Debug-info builds, DWARF shards and C source
       run: |
         g="$RUNNER_TEMP/g"
+        o="$RUNNER_TEMP/o0"
         rm -rf "$g" && mkdir -p "$g"
-        cp -a minified hello "$g/"
+        cp -a hello "$g/"
+        cp -a "$o/minified" "$g/minified"
+        cp -a minified "$g/minified-os"
         cp -a "$RUNNER_TEMP/hello-os" "$g/hello-os"
         start=$(date +%s)
         make -C "$g/minified" clean
-        make -C "$g/minified" LLVM=1 -j6 KCFLAGS=-g
-        echo "minified Linux -g build: $(( $(date +%s) - start )) s"
-        site/check-code-identity.py minified/vmlinux minified/arch/x86/boot/bzImage \
+        make -C "$g/minified" LLVM=1 -j6 KCFLAGS="-g -O0"
+        make -C "$g/minified-os" clean
+        make -C "$g/minified-os" LLVM=1 -j6 KCFLAGS=-g
+        echo "minified Linux -g builds: $(( $(date +%s) - start )) s"
+        site/check-code-identity.py "$o/minified/vmlinux" "$o/minified/arch/x86/boot/bzImage" \
           "$g/minified/vmlinux" "$g/minified/arch/x86/boot/bzImage" --self-test
+        site/check-code-identity.py minified/vmlinux minified/arch/x86/boot/bzImage \
+          "$g/minified-os/vmlinux" "$g/minified-os/arch/x86/boot/bzImage" --self-test
         start=$(date +%s)
         make -C "$g/hello" clean
         make -C "$g/hello" LLVM=1 OPT=-O0 CC="clang -g"
@@ -164,18 +197,23 @@ jobs:
         site/check-code-identity.py "$RUNNER_TEMP/hello-os/boot/high/kernel.elf" "$RUNNER_TEMP/hello-os/bzImage" \
           "$g/hello-os/boot/high/kernel.elf" "$g/hello-os/bzImage" --self-test
         site/gen-dwarf.js "$g/minified/vmlinux" out/minified-linux/dwarf
+        site/gen-dwarf.js "$g/minified-os/vmlinux" out/minified-linux-os/dwarf
         site/gen-dwarf.js "$g/hello/boot/high/kernel.elf" out/hello/dwarf
         site/gen-dwarf.js "$g/hello-os/boot/high/kernel.elf" out/hello-os/dwarf
-        site/gen-src.js out/minified-linux/dwarf "$g/minified" out/minified-linux/src --origin "the minified/ tree of commit $(echo "$GITHUB_SHA" | cut -c1-12)"
+        site/gen-src.js out/minified-linux/dwarf "$g/minified" out/minified-linux/src --origin "the minified/ tree of commit $(echo "$GITHUB_SHA" | cut -c1-12) with site/unoptimized.patch (built with -O0)"
+        site/gen-src.js out/minified-linux-os/dwarf "$g/minified-os" out/minified-linux-os/src --origin "the minified/ tree of commit $(echo "$GITHUB_SHA" | cut -c1-12)"
         site/gen-src.js out/hello/dwarf "$g/hello" out/hello/src --origin "the hello/ tree of commit $(echo "$GITHUB_SHA" | cut -c1-12)"
         site/gen-src.js out/hello-os/dwarf "$g/hello-os" out/hello-os/src --origin "the hello/ tree of commit $(echo "$GITHUB_SHA" | cut -c1-12)"
         site/test_dwarf.py "$g/minified/vmlinux" out/minified-linux/dwarf --samples 5000 --types 2000 --cfi 5000 --locals 3000 --operands 2000 --lines 3000 --funcs 2000 --vars 2000 --strip "$(realpath "$g/minified")/"
+        site/test_dwarf.py "$g/minified-os/vmlinux" out/minified-linux-os/dwarf --samples 5000 --types 2000 --cfi 5000 --locals 3000 --operands 2000 --lines 3000 --funcs 2000 --vars 2000 --strip "$(realpath "$g/minified-os")/"
         site/test_dwarf.py "$g/hello/boot/high/kernel.elf" out/hello/dwarf --samples 500 --types 200 --cfi 200 --locals 200 --operands 200 --lines 200 --funcs 200 --vars 200 --strip "$(realpath "$g/hello")/"
         site/test_dwarf.py "$g/hello-os/boot/high/kernel.elf" out/hello-os/dwarf --samples 500 --types 200 --cfi 200 --locals 200 --operands 200 --lines 200 --funcs 200 --vars 200 --strip "$(realpath "$g/hello-os")/"
         site/test_dwarf.py --eh-frame 2000
+        site/test_dwarf.py --inline-blocks
         # The -g ELFs for the browser test's llvm-symbolizer checks (not deployed).
         mkdir -p debug-elfs
         cp "$g/minified/vmlinux" debug-elfs/minified-linux.elf
+        cp "$g/minified-os/vmlinux" debug-elfs/minified-linux-os.elf
         cp "$g/hello/boot/high/kernel.elf" debug-elfs/hello.elf
         cp "$g/hello-os/boot/high/kernel.elf" debug-elfs/hello-os.elf
         ls -l out/*/
@@ -309,7 +347,7 @@ jobs:
         suites:
         - boot,symbols,debugger,misc,touch,tasks_minified,hello,firstlook
         - debian,dwarf,dwarf_import,runto,initramfs,coverage
-        - tasks,operands,runto_phone,srclinks
+        - tasks,operands,runto_phone,srclinks,unoptimized
         - types,covtree,unwind,lineaddr,fnfacts,branches
     name: browser-test (${{ matrix.suites }})
     steps:

@@ -23,14 +23,26 @@ so does the variable's.
 --locals N: N random addresses inside functions; the parameters and
 local variables the page lists for the innermost frame there (inlined
 call or function, `gen-dwarf.js --locals`) must be the ones gdb's `info
-scope` lists, each with the same kind of location there.
+scope` lists, each with the same kind of location there. Except: gdb
+also lists, as optimized out, the variables of an abstract lexical block
+whose concrete copy clang emits without DW_AT_abstract_origin (gdb
+matches blocks only by that attribute), at addresses outside that block
+and as a second entry inside it; the page matches the block by its
+variables' abstract origins (see --inline-blocks). Such an address passes
+when llvm-dwarfdump shows each extra variable in such a concrete block
+that does not cover the address, or covers it and the page lists the
+variable with its location.
 
 --operands N: N random instructions with a memory operand, half on the
 stack, half at an absolute address; the names the page's listings give
 them (`gen-dwarf.js --operands`, asmnames.js) must be gdb's: `info
 symbol` for absolute addresses, the address gdb computes for each
 parameter and local on a core with EIP at the instruction for stack
-slots (see check_operands).
+slots (see check_operands). Where gdb prints another name for the same
+object, llvm-nm decides: several linker marks without a size at one
+address (the page names all of them, gdb one), a static local (clang's
+ELF symbol function.name, which gdb prints demangled oddly), and a mark
+between two sections (gdb's info symbol finds nothing outside sections).
 
 --lines N: the code of source lines (the Source panel's address list and
 its "Run to file:line", `gen-dwarf.js --lines`, dwarf.js dwarfFileCode):
@@ -81,6 +93,16 @@ shards) must read the same as the row llvm-dwarfdump --debug-frame (or
 
 the same check on the .eh_frame of a small program built here with GCC
 and clang (the kernels have .debug_frame only).
+
+  site/test_dwarf.py --inline-blocks
+
+the parameters and locals (`gen-dwarf.js --locals`) at every instruction
+of an always_inline function built here with clang -O0 -g: a block's
+variables are listed only inside the concrete block, with a location,
+and no name twice. clang gives the concrete copy of a block no
+DW_AT_abstract_origin (only its variables refer to the abstract ones),
+and the inlined call has more children than its abstract function (a
+nested inlined call), so the block is matched by its variables.
 """
 
 import argparse
@@ -416,6 +438,104 @@ def gdb_scopes(elf, vaddrs):
     return res
 
 
+def dwarfdump_tree(elf, off):
+    """llvm-dwarfdump's subtree at DIE off: [(offset, depth, tag, text)]."""
+    tree = subprocess.run(["llvm-dwarfdump", f"--debug-info={off:#x}", "-c", elf], capture_output=True, text=True).stdout
+    return [(int(m.group(1), 16), len(m.group(2)), m.group(3), m.group(4))
+            for m in re.finditer(r"^(0x[0-9a-f]+):( +)DW_TAG_(\w+)(.*?)(?=^0x[0-9a-f]+: |\Z)", tree, re.M | re.S)]
+
+
+def dwarfdump_blocks_without_origin(elf, va, func=None):
+    """The lexical blocks without DW_AT_abstract_origin in the innermost
+    function or inlined call at va (named func, when given: a caller's
+    frame) (llvm-dwarfdump --lookup, then its
+    subtree; blocks of nested inlined calls left out): [(ranges, names)],
+    names being the variables and parameters of the abstract block the
+    block's own variables refer to (DW_AT_abstract_origin), nested blocks
+    included."""
+    look = subprocess.run(["llvm-dwarfdump", f"--lookup={va:#x}", elf], capture_output=True, text=True).stdout
+    deepest = re.findall(r"^(0x[0-9a-f]+): +DW_TAG_(?!compile_unit)", look, re.M)
+    if not deepest:
+        return []
+    # --lookup shows the innermost DIEs only; -p gives the chain around them.
+    chain = subprocess.run(["llvm-dwarfdump", f"--debug-info={deepest[-1]}", "-p", elf], capture_output=True, text=True).stdout
+    fn = [(m.group(1), m.group(2)) for m in re.finditer(
+        r"^(0x[0-9a-f]+): +DW_TAG_(?:subprogram|inlined_subroutine)(.*?)(?=^0x[0-9a-f]+: |\Z)", chain, re.M | re.S)]
+    if func is not None:
+        fn = [(o, t) for o, t in fn if re.search(r'DW_AT_(?:name|abstract_origin|specification)\s+\((?:0x[0-9a-f]+ )?"' + re.escape(func) + '"', t)]
+    if not fn:
+        return []
+    dies = dwarfdump_tree(elf, int(fn[-1][0], 16))
+    if not dies:
+        return []
+    m = re.search(r"DW_AT_abstract_origin\s+\((0x[0-9a-f]+)", dies[0][3])
+    ab = dwarfdump_tree(elf, int(m.group(1), 16)) if m else []
+    at = {o: k for k, (o, *_) in enumerate(ab)}
+
+    def under(ds, k):
+        d = ds[k][1]
+        for x in ds[k + 1:]:
+            if x[1] <= d:
+                break
+            yield x
+    out = []
+    for k, (off, d, tag, text) in enumerate(dies):
+        if tag != "lexical_block" or "DW_AT_abstract_origin" in text:
+            continue
+        up, nested = d, False
+        for _, dd, t, _ in reversed(dies[:k]):
+            if dd < up:
+                up = dd
+                if t == "inlined_subroutine" and dd > dies[0][1]:
+                    nested = True
+        if nested:
+            continue
+        ranges = [(int(x, 16), int(y, 16)) for x, y in re.findall(r"\[(0x[0-9a-f]+), (0x[0-9a-f]+)\)", text.split("DW_AT_ranges", 1)[1])] \
+            if "DW_AT_ranges" in text else []
+        lo = re.search(r"DW_AT_low_pc\s+\((0x[0-9a-f]+)\)", text)
+        hi = re.search(r"DW_AT_high_pc\s+\((0x[0-9a-f]+)\)", text)
+        if lo and hi:
+            ranges.append((int(lo.group(1), 16), int(hi.group(1), 16)))
+        names = set()
+        for _, _, t, tx in under(dies, k):
+            m = re.search(r"DW_AT_abstract_origin\s+\((0x[0-9a-f]+)", tx)
+            if t not in ("variable", "formal_parameter") or not m or int(m.group(1), 16) not in at:
+                continue
+            j = at[int(m.group(1), 16)]
+            # The abstract block holding the origin, and everything under it.
+            p = next((i for i in range(j - 1, -1, -1) if ab[i][1] < ab[j][1]), None)
+            if p is not None and ab[p][2] == "lexical_block":
+                for _, _, t2, tx2 in under(ab, p):
+                    n = re.search(r'DW_AT_name\s+\("([^"]+)"\)', tx2)
+                    if t2 in ("variable", "formal_parameter") and n:
+                        names.add(n.group(1))
+        out.append((ranges, names))
+    return out
+
+
+def gdb_extra_explained(elf, va, theirs, mine, func=None):
+    """Whether gdb's list at va is the page's plus variables gdb lists as
+    optimized out from an abstract lexical block that a concrete block
+    without DW_AT_abstract_origin stands for (gdb's inherit_abstract_dies
+    only follows the block's own DW_AT_abstract_origin, which clang does
+    not emit): each extra one is a variable of such a block that does not
+    cover va (out of scope there), or that covers va and the page lists
+    (gdb lists it twice)."""
+    extra = list(theirs)
+    for x in mine:
+        if x not in extra:
+            return False
+        extra.remove(x)
+    if not extra or any(c != "out" for _, c in extra):
+        return False
+    blocks = dwarfdump_blocks_without_origin(elf, va, func)
+    for name, _ in extra:
+        if not any(name in names and (not any(a <= va < b for a, b in ranges) or any(nm == name for nm, _ in mine))
+                   for ranges, names in blocks):
+            return False
+    return True
+
+
 def check_locals(elf, shards, n, rnd, lds, fns):
     """N random addresses inside functions: the variables the page lists
     for the innermost frame there (gen-dwarf.js --locals: dwarf.js
@@ -434,7 +554,7 @@ def check_locals(elf, shards, n, rnd, lds, fns):
                          capture_output=True, text=True, check=True).stdout
     got = [json.loads(l) for l in out.splitlines()]
     want = gdb_scopes(elf, picks)
-    bad, nvars, located, failed, nofn = [], 0, 0, 0, 0
+    bad, nvars, located, failed, nofn, blockvars = [], 0, 0, 0, 0, 0
     for va, g in zip(picks, got):
         if want.get(va, []) is None:
             failed += 1
@@ -449,12 +569,17 @@ def check_locals(elf, shards, n, rnd, lds, fns):
         nvars += len(theirs)
         located += sum(1 for _, c in theirs if c != "out")
         if mine != theirs:
+            if gdb_extra_explained(elf, va, theirs, mine):
+                blockvars += 1
+                nvars -= len(theirs) - len(mine)
+                continue
             bad.append((va, theirs, mine, g["frames"][0]["func"] if g["frames"] else None))
     for va, w, g, fn in bad[:10]:
         print(f"LOCALS MISMATCH {va:#x} in {fn}\n  gdb  {w}\n  page {g}")
     print(f"{elf}: {len(picks) - len(bad) - failed - nofn}/{len(picks) - failed - nofn} addresses list the same parameters and locals "
           f"as gdb's info scope ({nvars} variables, {located} with a location there; {nofn} more outside DWARF functions, "
-          f"gdb's info scope failed at {failed})")
+          f"gdb's info scope failed at {failed}; at {blockvars} of them gdb also lists, as optimized out, variables of a block "
+          f"whose concrete copy has no DW_AT_abstract_origin: out of scope there or listed twice, checked with llvm-dwarfdump)")
     return bad
 
 
@@ -604,6 +729,17 @@ def check_operands(elf, shards, n, rnd, lds):
     bad, named, nstack, nabs, gdbonly, failed, errors, nearest = [], {"stack": 0, "abs": 0}, 0, 0, 0, 0, [], 0
     nm = subprocess.run(["llvm-nm", "-S", "--defined-only", elf], capture_output=True, text=True, check=True).stdout
     sized = {f[3] for f in (line.split() for line in nm.splitlines()) if len(f) == 4 and int(f[1], 16) > 0}
+    # name -> addresses, and the marks without a size (linker symbols) per address.
+    nm_at, marks = {}, {}
+    for f in (line.split() for line in nm.splitlines()):
+        if len(f) >= 3:
+            nm_at.setdefault(f[-1], set()).add(int(f[0], 16))
+            if len(f) == 3 or int(f[1], 16) == 0:
+                marks.setdefault(int(f[0], 16), set()).add(f[-1])
+    secs = [(int(m.group(1), 16), int(m.group(2), 16)) for m in re.finditer(
+        r"^\s*\[\s*\d+\]\s+\S+\s+\S+\s+([0-9a-f]{8})\s+[0-9a-f]+\s+([0-9a-f]+)\s+\S+\s+\S*A", subprocess.run(
+            ["llvm-readelf", "-SW", elf], capture_output=True, text=True, check=True).stdout, re.M)]
+    aliased = static = nosec = 0
     ia = istack = 0
     for kind, va, text, ea, mine in which:
         if kind == "abs":
@@ -612,6 +748,13 @@ def check_operands(elf, shards, n, rnd, lds):
             nabs += 1
             m = re.match(r"^(\S+)(?: \+ (\d+))? in section", s)
             if not m:
+                # gdb's info symbol looks only inside sections; a linker mark
+                # between two sections (_etext, _edata) is the page's name there.
+                if mine and s.startswith("No symbol matches") and mine["kind"] == "sym" and mine["varOff"] == 0 and \
+                        set(mine.get("aliases") or [mine["var"]]) == marks.get(ea, set()) and \
+                        not any(lo <= ea < lo + size for lo, size in secs if size):
+                    nosec += 1
+                    continue
                 if mine:
                     bad.append((hex(va), text, "page", mine["name"], "gdb", s))
                 continue
@@ -623,6 +766,20 @@ def check_operands(elf, shards, n, rnd, lds):
                 continue
             named["abs"] += 1
             off = int(m.group(2) or 0)
+            if mine["varOff"] == off and mine.get("aliases") and m.group(1) in mine["aliases"] and \
+                    set(mine["aliases"]) == marks.get(ea, set()):
+                # Linker marks at one address: the page names all of them,
+                # gdb picks one.
+                aliased += 1
+                continue
+            if mine["varOff"] == off and mine.get("scope") and m.group(1).startswith(mine["scope"]) and \
+                    (ea - off) in nm_at.get(mine["scope"] + "." + mine["var"], ()):
+                # A static local: clang's ELF symbol is function.name, which
+                # gdb prints demangled in odd ways (pt_regs_nr..dummy for
+                # pt_regs_nr.__dummy, sanitize_boot_params[scratch]); the
+                # page names the C variable.
+                static += 1
+                continue
             if not (mine["var"] == m.group(1) or re.fullmatch(re.escape(mine["var"]) + r"\.\d+", m.group(1))) or mine["varOff"] != off:
                 bad.append((hex(va), text, "page", mine["name"], mine["var"], mine["varOff"], "gdb", s))
             continue
@@ -654,7 +811,9 @@ def check_operands(elf, shards, n, rnd, lds):
         print("gdb failed:", e)
     print(f"{elf}: {len(pick) - len(bad) - failed}/{len(pick) - failed} memory operands agree with gdb ({nabs} absolute, "
           f"{named['abs']} named, {nearest} named by gdb from a symbol without a size; {nstack} on the stack, {named['stack']} named as a parameter or local; "
-          f"{gdbonly} gdb names and the page does not; gdb failed on {failed} cores)")
+          f"{gdbonly} gdb names and the page does not; gdb failed on {failed} cores; {aliased} linker marks sharing an address that the page "
+          f"names all of and gdb one of, {static} static locals gdb names by clang's function.name ELF symbol, {nosec} linker marks between "
+          f"sections where gdb has no symbol, each checked with llvm-nm)")
     return bad
 
 
@@ -1340,7 +1499,75 @@ def check_funcs(elf, shards, n, rnd, lds, strip):
     return bad
 
 
+# For --inline-blocks: an inlined call (sum in _start) whose lexical block
+# has no DW_AT_abstract_origin and whose own children differ from its
+# abstract function's (the inlined call of twice).
+INLINE_BLOCKS_C = r"""
+static inline __attribute__((always_inline)) int twice(int x) { return x * 2; }
+struct node { struct node *next; int v; };
+static inline __attribute__((always_inline)) int sum(struct node *n)
+{
+	int a = twice(n->v);
+	{
+		struct node *head = n->next;
+		int inner = head ? head->v : 0;
+		a += inner;
+	}
+	return a + 1;
+}
+int sink;
+void _start(void) { struct node y = { 0, 2 }, x = { &y, 1 }; sink = sum(&x); for (;;); }
+"""
+
+
+def inline_blocks_selftest():
+    """Every instruction of the inlined sum: n and a with a location; head
+    and inner listed exactly inside the concrete block (llvm-dwarfdump's
+    DW_AT_low_pc/high_pc), with a location; no name listed twice."""
+    bad = []
+    with tempfile.TemporaryDirectory() as tmp:
+        src, elf, out = os.path.join(tmp, "t.c"), os.path.join(tmp, "t.elf"), os.path.join(tmp, "t")
+        pathlib.Path(src).write_text(INLINE_BLOCKS_C)
+        subprocess.run(["clang", "-fuse-ld=lld", "-m32", "-g", "-O0", "-fno-pie", "-nostdlib", "-static",
+                        "-Wl,-Ttext=0xc0100000", "-o", elf, src], check=True)
+        subprocess.run(["node", str(SITE / "gen-dwarf.js"), elf, out], check=True, capture_output=True)
+        dump = subprocess.run(["llvm-dwarfdump", "--debug-info", elf], capture_output=True, text=True, check=True).stdout
+        pcs = lambda chunk: [int(x, 16) for x in re.findall(r"DW_AT_(?:low|high)_pc\s+\((0x[0-9a-f]+)\)", chunk)[:2]]
+        inl = re.search(r"DW_TAG_inlined_subroutine\s+DW_AT_abstract_origin\s+\(0x[0-9a-f]+ \"sum\"\)(.*?)(?=\n0x[0-9a-f]+: {6}\S|\Z)", dump, re.S)
+        blk = re.search(r"DW_TAG_lexical_block\s+DW_AT_low_pc.*?\n\s*DW_AT_high_pc[^\n]*", inl.group(1), re.S) if inl else None
+        if not inl or not blk or "DW_AT_abstract_origin" in blk.group(0):
+            return [f"clang's DWARF is not the shape this test needs: {dump}"]
+        lo, hi = pcs(inl.group(0))
+        blo, bhi = pcs(blk.group(0))
+        if re.search(r"DW_TAG_inlined_subroutine", inl.group(1)) is None:
+            return ["clang inlined no call inside sum: the test needs one"]
+        insns = [int(m.group(1), 16) for m in re.finditer(r"^\s*([0-9a-f]+):", subprocess.run(
+            ["llvm-objdump", "-d", "--no-show-raw-insn", f"--start-address={lo}", f"--stop-address={hi}", elf],
+            capture_output=True, text=True, check=True).stdout, re.M)]
+        got = subprocess.run(["node", str(SITE / "gen-dwarf.js"), "--locals", out], input="\n".join(map(str, insns)),
+                             capture_output=True, text=True, check=True).stdout
+        for a, line in zip(insns, got.splitlines()):
+            f = json.loads(line)["frames"]
+            f = f[0] if f and f[0]["func"] == "sum" else next((x for x in f if x["func"] == "sum"), None)
+            if f is None:
+                bad.append(f"{a:#x}: no frame of sum")
+                continue
+            names = [v[0] for v in f["vars"]]
+            want = ["n", "a"] + (["head", "inner"] if blo <= a < bhi else [])
+            if sorted(names) != sorted(want):
+                bad.append(f"{a:#x} ({'inside' if blo <= a < bhi else 'outside'} the block {blo:#x}-{bhi:#x}): page lists {f['vars']}, want {want}")
+            elif any(v[1] == "out" for v in f["vars"]):
+                bad.append(f"{a:#x}: optimized out in {f['vars']}")
+        for b in bad[:10]:
+            print("INLINE BLOCK", b)
+        print(f"inline blocks: {len(insns) - len(bad)}/{len(insns)} instructions of the inlined sum list n, a and the block's head, inner "
+              f"exactly inside {blo:#x}-{bhi:#x}")
+    return bad
+
+
 def main():
+    if sys.argv[1:2] == ["--inline-blocks"]:
+        sys.exit(1 if inline_blocks_selftest() else 0)
     if sys.argv[1:2] == ["--eh-frame"]:
         sys.exit(1 if eh_frame_selftest(int(sys.argv[2]) if len(sys.argv) > 2 else 2000, random.Random(1)) else 0)
     ap = argparse.ArgumentParser()

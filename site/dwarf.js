@@ -1100,6 +1100,28 @@ class DwarfReader {
 						inherited: !o.loc && o.cv === null }));
 			}
 		};
+		const final = (o) => {
+			for (let n = 0; o >= 0 && n < 8; n++) {
+				const up = L.origins.get(o);
+				if (up === undefined || up < 0 || up === o)
+					break;
+				o = up;
+			}
+			return o;
+		};
+		// The DIEs under a block, through nested blocks: their abstract
+		// origins (concrete side) or their offsets (abstract side).
+		const under = (die, abstract, out = new Set(), depth = 0) => {
+			for (const [k, tag, origin] of abstract ? kids(die) : L.kids.get(die) || []) {
+				const o = abstract ? k : final(origin);
+				if (o >= 0)
+					out.add(o);
+				if (tag === DW_TAG_LEXICAL_BLOCK && depth < 16)
+					under(k, abstract, out, depth + 1);
+			}
+			return out;
+		};
+		const scopeOf = new Map(L.scopes.map((x, k) => [x.die, k]));
 		for (const s of L.scopes) {
 			s.vars.forEach((v) => resolve(v));
 			if (s.origin < 0)
@@ -1108,18 +1130,30 @@ class DwarfReader {
 			const iso = mine.length === theirs.length && mine.every((x, k) => x[1] === theirs[k][1]);
 			const parentOf = new Set(theirs.map((x) => x[0]));
 			const used = new Set();
-			mine.forEach(([, tag, origin], k) => {
+			mine.forEach(([die, tag, origin], k) => {
 				if (tag === 0x48 || tag === 0x4109) // call sites
 					return;
-				let o = origin;
-				for (let n = 0; o >= 0 && n < 8; n++) {
-					const up = L.origins.get(o);
-					if (up === undefined || up < 0 || up === o)
-						break;
-					o = up;
-				}
+				let o = final(origin);
 				if (o < 0 && iso && tag === DW_TAG_LEXICAL_BLOCK)
 					o = theirs[k][0];
+				if (o < 0 && tag === DW_TAG_LEXICAL_BLOCK) {
+					// A clang block without DW_AT_abstract_origin in a copy whose
+					// children differ from the origin's (e.g. an extra inlined
+					// call): the origin's block holding what its DIEs refer to.
+					const refs = under(die, false);
+					const b = refs.size ? theirs.find(([t, tt]) => tt === DW_TAG_LEXICAL_BLOCK && !used.has(t) &&
+						[...under(t, true)].some((x) => refs.has(x))) : null;
+					if (b) {
+						o = b[0];
+						const own = scopeOf.get(die);
+						if (own !== undefined && L.scopes[own].origin < 0)
+							L.scopes[own].origin = o; // its missing DIEs are inherited there
+						else if (own === undefined) // no code: its variables went to s
+							for (const [kk, kt] of kids(o))
+								if (!refs.has(kk))
+									take(s, kk, kt, 1);
+					}
+				}
 				if (o >= 0 && parentOf.has(o))
 					used.add(o);
 			});

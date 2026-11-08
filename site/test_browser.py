@@ -6047,6 +6047,9 @@ def jumps_case(browser, base, shots, name):
             problems.append(f"{name}: the list's button for {src:#x} hides underscores ({scheme}): {ink}")
         r[f"underscores {scheme}"] = ink
     page.emulate_media(color_scheme="light")
+    # The listing is redrawn while the list is open (a scan does that; CI
+    # once lost the focus this way): Escape still returns it to the badge.
+    page.evaluate("inspect()")
     page.keyboard.press("Escape")
     if not wait_for(lambda: page.is_hidden("#jump_pop"), 5):
         problems.append(f"{name}: Escape did not close the list")

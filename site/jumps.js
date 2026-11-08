@@ -335,8 +335,15 @@ function jumpPopClose(refocus) {
 	if (pop.hidden)
 		return;
 	pop.hidden = true;
-	if (refocus && pop._from && pop._from.isConnected)
-		pop._from.focus();
+	if (!refocus || !pop._from)
+		return;
+	// The listing may have been drawn again meanwhile: its new button for
+	// the same instruction and direction.
+	let b = pop._from;
+	if (!b.isConnected && pop._box)
+		b = pop._box.querySelector('button.jc[data-pa="' + pop.dataset.pa + '"][data-dir="' + pop.dataset.dir + '"]');
+	if (b)
+		b.focus();
 }
 
 // The list of paths into or out of an instruction, next to the button.
@@ -348,6 +355,7 @@ function jumpPopShow(btn) {
 	const P = jumpPaths(S, stepper, pa);
 	const list = dir === "in" ? P.into : P.out;
 	pop._from = btn;
+	pop._box = box;
 	pop.dataset.pa = pa;
 	pop.dataset.dir = dir;
 	pop.replaceChildren();

@@ -4832,10 +4832,31 @@ def srclink_opens(page, sel, how="click"):
     if page.get_attribute("#src_body", "data-state") == "none":
         why = page.inner_text("#src_body").strip()
         return want, None if why else f"{sel}: {want} opened without text and without saying why"
-    seen = page.evaluate("""(sel) => { const r = document.querySelector(sel).getBoundingClientRect(),
-        b = document.getElementById('src_body').getBoundingClientRect();
-        return r.top >= b.top - 1 && r.bottom <= b.bottom + 1; }""", row)
-    return want, None if seen else f"{sel}: {want} is open but its line is not scrolled into view"
+    p = srclink_line_shown(page, line)
+    return want, p and f"{sel}: {want}: {p}"
+
+
+def srclink_line_shown(page, line):
+    """None when line's row in the Source panel is picked and lies inside
+    #src_body's visible rect and the viewport, a second after the panel
+    drew (the address list above it and late DWARF or text change the
+    layout); else what is wrong."""
+    time.sleep(1)
+    got = page.evaluate("""(line) => { const e = document.querySelector('#src_body [data-line="' + line + '"]');
+        if (!e) return null;
+        const r = e.getBoundingClientRect(), b = document.getElementById('src_body').getBoundingClientRect();
+        return { pick: e.classList.contains('pick'), top: r.top, bottom: r.bottom, boxTop: b.top, boxBottom: b.bottom,
+                 vh: window.innerHeight, first: document.querySelector('#src_body [data-line]').dataset.line,
+                 scroll: document.getElementById('src_body').scrollTop }; }""", line)
+    if not got:
+        return f"no row for line {line} in the Source panel"
+    if not got["pick"]:
+        return f"line {line} is not picked"
+    if not (got["top"] >= got["boxTop"] - 1 and got["bottom"] <= got["boxBottom"] + 1):
+        return f"line {line} is outside the Source panel's visible rows: {got}"
+    if not (got["top"] >= 0 and got["bottom"] <= got["vh"]):
+        return f"line {line} is outside the viewport: {got}"
+    return None
 
 
 def srclinks_case(browser, base, shots):
@@ -4931,6 +4952,10 @@ def srclinks_case(browser, base, shots):
         if inl.count():
             inl.first.click()
         wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 20)
+        if inl.count():
+            p = srclink_line_shown(page, int(inl.first.get_attribute("data-line")))
+            if p:
+                problems.append(f"{name} 1280 {scheme}: inline chain link: {p}")
         time.sleep(0.3)
         page.screenshot(path=str(shots / f"srclinks-{name}-panel-1280-{scheme}.png"))
     page.emulate_media(color_scheme="light")
@@ -4997,7 +5022,10 @@ def srclinks_case(browser, base, shots):
         problems.append(f"{name} phone: {p}")
     for scheme in ("light", "dark"):
         ph.emulate_media(color_scheme=scheme)
-        time.sleep(0.3)
+        if ph.is_visible("#src_panel"):
+            p = srclink_line_shown(ph, int(ph.locator("#cur_src .srclink").first.get_attribute("data-line")))
+            if p:
+                problems.append(f"{name} 390 {scheme}: source row link: {p}")
         ph.screenshot(path=str(shots / f"srclinks-{name}-panel-390-{scheme}.png"))
         if ph.is_visible("#src_panel"):
             ph.click("#src_close")

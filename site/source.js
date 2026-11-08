@@ -678,14 +678,16 @@ function renderSourcePanel() {
 	}
 	body.innerHTML = out.join("\n");
 	srcPanel.cont = sv.cont;
-	// Opened at a line (openSourceLine): scroll there once the file is drawn.
+	renderLineAddrs();
+	// Opened at a line: scroll there once the file and the address list
+	// above it are drawn (the list changes the body's height). The row's
+	// offsetParent is the fixed panel, not the body: measure against the body.
 	if (srcPanel.scrollTo) {
 		const row = body.querySelector('[data-line="' + srcPanel.scrollTo + '"]');
 		if (row)
-			body.scrollTop = row.offsetTop - body.clientHeight / 3;
+			body.scrollTop += row.getBoundingClientRect().top - body.getBoundingClientRect().top - body.clientHeight / 3;
 		delete srcPanel.scrollTo;
 	}
-	renderLineAddrs();
 	body.dataset.state = "ok";
 	body.dataset.code = code.size;
 	body.dataset.executed = run.size;

@@ -246,7 +246,22 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   file:line or line number has one colour and the C text another: one
   class pair, `.srcloc` and `.srctext` (tokens `--src-loc` and
   `--src-text`, light and dark). Hover titles are plain text drawn by the
-  browser and cannot be coloured. Sizes: minified
+  browser and cannot be coloured. Every file:line shown outside the Source panel
+  is a link to it (one helper, `source.js` srcLinkEl and srcLinkHtml):
+  the state line, the Run to status, the source row and its inline
+  chain, the call stack, the Code at EIP and Page listing C lines, the
+  locals' frame headers, the function facts (defined at, starts at) in
+  the Debugger, Coverage and Graph tabs, a watch's or hovered byte's
+  "defined at", and the Graph detail. It opens the panel at that line,
+  picked, outlined and scrolled into view: in the function around the
+  link's address when that line is in its inline chain (the call site of
+  an inlined call opens the caller), else the whole file; an imported
+  vmlinux has no file list, so a declaration opens in its function. A
+  file without text opens too and says why. Links are buttons: Tab,
+  Enter or Space (handled before v86, which takes every key on the page
+  for the VM), Escape closes the panel and gives the focus back, and the
+  focus stays on a link when its view is drawn again. Hover titles are
+  browser text and hold no links. Sizes: minified
   Linux 79,141 bytes in 2 shards (42,859 gzipped), hello 105 bytes, Debian
   9,618,203 bytes in 153 shards (4.8 MB gzipped, about 32 KB per shard;
   1,081,481 line rows, 465,287 function and inlined-call ranges;
@@ -1109,7 +1124,8 @@ browser-test matrix job named by its suites):
 | A5 variables defined at | `test_dwarf.py --vars` (defined-at vs gdb's symbol at the address, static locals gdb cannot find by name vs llvm-dwarfdump --name; `&'file'::name` vs the page's pick by path and shortest suffix; unknown and ambiguous files refused; Debian 2,000, minified 134, hello: nothing to check), `test_kernel_data.py` (types.json format 2, every file index valid, every file a variable is defined in shipped in src/ or said to be missing); suite types (watch "defined at" vs gdb and the Source panel line, other definitions listed, file::name vs gdb, refusals, hover text, operand tooltips, Worker's import JSON-identical incl. files; boxed EIP line's underscores drawn, light and dark; 390 px) | kernels; site; types,covtree,unwind,lineaddr,fnfacts,branches |
 | A4 branch targets named | suite branches (Debian start_kernel and setup_arch pages, minified with live decode on, imported minified -g vmlinux: every direct branch to a symbol's code named, equal to gdb info symbol; live names equal disasm.json's llvm-objdump names line for line; Debugger and Page tab alike; callee tooltip prototype vs gdb ptype; click opens the target; BIOS page unnamed; 390 px light and dark) | types,covtree,unwind,lineaddr,fnfacts,branches |
 | D8 help and first look | `check-ids.py` (no duplicate ids); suite firstlook (every kernel incl. Debian with its initramfs and an imported vmlinux: explanations present, entry line, JIT gap, Coverage notes, no sideways scroll at 390 px light and dark) | site; boot,...,firstlook |
-| Run to on a phone | suite runto_phone (hello at 390 px touch, 1/s, 10/s and desktop: Boot, Pause, Run to a function stops at its first instruction; `hello`, `.rodata` and mid-instruction targets refused in the status and the paused overlay with the CPU still paused; a Run to right after the slice that printed "Hello, World!" stops there, stepped and with the JIT; light and dark screenshots); `--base https://d33.pl/minimal-kernel-build` for the live site | tasks,operands,runto_phone |
+| Run to on a phone | suite runto_phone (hello at 390 px touch, 1/s, 10/s and desktop: Boot, Pause, Run to a function stops at its first instruction; `hello`, `.rodata` and mid-instruction targets refused in the status and the paused overlay with the CPU still paused; a Run to right after the slice that printed "Hello, World!" stops there, stepped and with the JIT; light and dark screenshots); `--base https://d33.pl/minimal-kernel-build` for the live site | tasks,operands,runto_phone,srclinks |
+| C1 file:line links | suite srclinks (minified Linux paused in code inlined into setup_arch: each kind of link in the Debugger, Page listing, hovered byte, Graph detail and Coverage facts opens its file with its line picked and in view; no plain file:line left in the Debugger; Enter opens one and moves the focus, Escape gives it back; a tap on a 390 px phone; light and dark at 1280 and 390 px) | tasks,operands,runto_phone,srclinks |
 
 ## Testing
 

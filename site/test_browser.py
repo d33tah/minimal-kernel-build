@@ -2151,9 +2151,9 @@ def vardecl_checks(page, name, T, off, elf, shots, problems, r):
         # Each listed definition: its file:line is types.json's for the variable at that address.
         for k in range(others.count()):
             o = others.nth(k)
-            v = next((x for x in T["vars"] if x[0] == nm and x[1] == int(o.get_attribute("data-pa"))), None)
+            v = next((x for x in T["vars"] if x[0] == nm and x[1] == int(o.get_attribute("data-var"))), None)
             if v is None or v[1] == chosen or var_decl(T, v) != (o.get_attribute("data-file"), int(o.get_attribute("data-line"))):
-                problems.append(f"{name}: {nm}'s note lists {o.inner_text()!r} at {o.get_attribute('data-pa')}, types.json {v}")
+                problems.append(f"{name}: {nm}'s note lists {o.inner_text()!r} at {o.get_attribute('data-var')}, types.json {v}")
                 break
         rnd = __import__("random").Random(5)
         fs = files[nm]
@@ -4788,6 +4788,224 @@ def multiline_case(browser, base, shots):
     return problems, r
 
 
+# Where the srclinks suite pauses: Run to this function, then step until
+# EIP is in code inlined into it (the source row has an "inlined into" line).
+SRCLINK_POINT = ("minified-linux", "start_kernel")
+
+
+def srclink_opens(page, sel, how="click"):
+    """Activate the first visible .srclink under sel (click, Enter or tap)
+    with the Source panel closed; the panel must show the link's file with
+    its line picked (.pick) inside the visible part of #src_body. Returns
+    (link's file:line, None) or (that, problem)."""
+    if page.is_visible("#src_panel"):
+        page.click("#src_close")
+    link = page.locator(sel).locator(".srclink").first
+    if not link.count():
+        return None, f"no .srclink in {sel}"
+    link.scroll_into_view_if_needed()
+    path, line = link.get_attribute("data-file"), int(link.get_attribute("data-line"))
+    want = f"{path}:{line}"
+    if how == "enter":
+        link.focus()
+        page.keyboard.press("Enter")
+    elif how == "tap":
+        link.tap()
+    else:
+        link.click()
+    row = f'#src_body [data-line="{line}"].pick'
+    ok = wait_for(lambda: page.is_visible("#src_panel") and page.get_attribute("#src_body", "data-file") == path
+                  and page.get_attribute("#src_body", "data-state") in ("ok", "none")
+                  and (page.get_attribute("#src_body", "data-state") == "none" or page.locator(row).count() > 0), 60)
+    if not ok:
+        return want, f"{sel}: {how} on {want} did not open it in the Source panel ({page.get_attribute('#src_body', 'data-file')}, " \
+                     f"{page.get_attribute('#src_body', 'data-state')}, {page.inner_text('#src_title')!r})"
+    if page.get_attribute("#src_body", "data-state") == "none":
+        why = page.inner_text("#src_body").strip()
+        return want, None if why else f"{sel}: {want} opened without text and without saying why"
+    seen = page.evaluate("""(sel) => { const r = document.querySelector(sel).getBoundingClientRect(),
+        b = document.getElementById('src_body').getBoundingClientRect();
+        return r.top >= b.top - 1 && r.bottom <= b.bottom + 1; }""", row)
+    return want, None if seen else f"{sel}: {want} is open but its line is not scrolled into view"
+
+
+def srclinks_case(browser, base, shots):
+    """Every file:line the Debugger shows is a link to the Source panel at
+    that line, through one helper (source.js srcLinkEl/srcLinkHtml): the
+    state line, the Run to status, the source row and its inline chain,
+    the call stack, the Code at EIP C lines, the locals' frame headers, the
+    function facts (defined at, starts at), a watch's "defined at"; the
+    other tabs too (Page listing, hovered byte, Graph detail, Coverage
+    facts). Each opens its file with the line picked and in view; Enter
+    opens one from the keyboard and moves the focus into the panel, Escape
+    gives it back; a tap opens one on a 390 px phone. Light/dark at 1280
+    and 390 px."""
+    problems, r = [], {}
+    name, fn = SRCLINK_POINT
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    page.fill("#dbg_addr", fn)
+    page.click("#dbg_runto")
+    if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
+                    and page.inner_text("#dbg_status").startswith("Stopped at"), 240):
+        page.close()
+        return [f"{name}: Run to {fn} did not stop: {page.inner_text('#dbg_status')}"], r
+    wait_for(lambda: page.locator("#dbg_status .srclink").count() > 0, 30)
+    want, p = srclink_opens(page, "#dbg_status")
+    r["Run to status"] = want
+    if p:
+        problems.append(p)
+    # Step into inlined code: the source row then has an "inlined into" line.
+    for _ in range(60):
+        if page.locator("#cur_src .frame.inl .srclink").count():
+            break
+        before = page.evaluate("stepper.steps")
+        page.fill("#dbg_n", "5")
+        page.click("#dbg_stepn")
+        wait_for(lambda: page.evaluate("stepper.steps") > before and page.get_attribute("#dbg_state", "data-state") == "paused", 30)
+        wait_for(lambda: page.get_attribute("#cur_src", "data-state") not in (None, "loading"), 20)
+    r["steps"] = page.evaluate("stepper.steps")
+    wait_for(lambda: page.get_attribute("#call_stack", "data-unwind") not in (None, "loading"), 30)
+    wait_for(lambda: page.locator("#context .src .srclink").count() > 0, 20)
+    wait_for(lambda: page.locator("#locals .lhead .srclink").count() > 0, 30)
+    wait_for(lambda: page.locator("#cur_fn .fnloc").count() > 0, 30)
+    views = {
+        "state line": "#dbg_state",
+        "source row": "#cur_src .frame:not(.inl)",
+        "inline chain": "#cur_src .frame.inl",
+        "call stack (top)": "#call_stack .cframe >> nth=0",
+        "call stack (caller)": "#call_stack .cframe >> nth=1",
+        "Code at EIP": "#context .src",
+        "locals frame header": "#locals .lhead",
+        "function defined at": "#cur_fn .fnfacts >> nth=0",
+        "function starts at": "#cur_fn [data-entry]",
+    }
+    for view, sel in views.items():
+        want, p = srclink_opens(page, sel)
+        r[view] = want
+        if p:
+            problems.append(f"{name} {view}: {p}")
+    # Every file:line in the Debugger tab outside the Source panel is a link.
+    plain = page.evaluate("""() => [...document.querySelectorAll('#panel_debugger .srcloc, #dbg_state .srcloc, #dbg_status .srcloc')]
+        .filter((e) => !e.classList.contains('srclink')).map((e) => e.textContent)""")
+    if plain:
+        problems.append(f"{name}: file:line shown as plain text in the Debugger: {plain[:5]}")
+    r["links in the Debugger"] = page.locator("#panel_debugger .srclink").count()
+    # A watch's "defined at".
+    watch(page, "init_task")
+    want, p = srclink_opens(page, '#watches .watch[data-expr="init_task"] .wdecl')
+    r["watch defined at"] = want
+    if p:
+        problems.append(f"{name} watch: {p}")
+    # Keyboard: Enter on a focused link opens it and moves the focus into the panel; Escape gives it back.
+    want, p = srclink_opens(page, "#cur_src .frame:not(.inl)", "enter")
+    r["keyboard"] = want
+    if p:
+        problems.append(f"{name} keyboard: {p}")
+    elif page.evaluate("document.activeElement.id") != "src_body":
+        problems.append(f"{name} keyboard: the focus did not move into the Source panel: {page.evaluate('document.activeElement.outerHTML.slice(0, 80)')}")
+    else:
+        page.keyboard.press("Escape")
+        if page.is_visible("#src_panel") or not page.evaluate("document.activeElement.classList.contains('srclink')"):
+            problems.append(f"{name} keyboard: Escape did not close the panel and give the focus back to the link")
+    for scheme in ("light", "dark"):
+        page.emulate_media(color_scheme=scheme)
+        if page.is_visible("#src_panel"):
+            page.click("#src_close")
+        page.locator("#sym_info").scroll_into_view_if_needed()
+        time.sleep(0.2)
+        page.screenshot(path=str(shots / f"srclinks-{name}-debugger-1280-{scheme}.png"))
+        inl = page.locator("#cur_src .frame.inl .srclink")
+        if inl.count():
+            inl.first.click()
+        wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 20)
+        time.sleep(0.3)
+        page.screenshot(path=str(shots / f"srclinks-{name}-panel-1280-{scheme}.png"))
+    page.emulate_media(color_scheme="light")
+    # Other tabs: the Page listing's C lines and a hovered byte's "defined at".
+    T = json.loads((SITE / kernel_entries()[name]["dwarf"] / "types.json").read_text())
+    if page.is_visible("#src_panel"):
+        page.click("#src_close")
+    show_tab(page, "page")
+    wait_for(lambda: page.locator("#listing .src .srclink").count() > 0, 20)
+    want, p = srclink_opens(page, "#listing .src")
+    r["Page listing"] = want
+    if p:
+        problems.append(f"{name} Page listing: {p}")
+    it = next(v for v in T["vars"] if v[0] == "init_task")
+    if page.is_visible("#src_panel"):
+        page.click("#src_close")
+    show_tab(page, "memory")
+    open_page(page, it[1] // 4096)
+    hover_byte(page, it[1] + 16, click=True)
+    want, p = srclink_opens(page, "#var_info")
+    r["hovered byte"] = want
+    if p:
+        problems.append(f"{name} hovered byte: {p}")
+    # Graph detail: where the selected call came from and its entry.
+    if page.is_visible("#src_panel"):
+        page.click("#src_close")
+    show_tab(page, "graph")
+    page.evaluate("""() => { const st = G.stepper; G.view = 'timeline';
+        G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fStart.length - 1; renderGraphInfo(); }""")
+    wait_for(lambda: page.locator("#graph_src .srclink").count() > 0, 20)
+    want, p = srclink_opens(page, "#graph_src")
+    r["Graph detail"] = want
+    if p:
+        problems.append(f"{name} Graph detail: {p}")
+    # Coverage: a function's facts (open its row's arrow).
+    if page.is_visible("#src_panel"):
+        page.click("#src_close")
+    show_tab(page, "coverage")
+    page.fill("#cov_filter", fn)
+    frow = page.locator(f'#cov_tree .covrow[data-kind="func"][data-path$=":{fn}"]').first
+    if wait_for(lambda: frow.count() > 0, 30):
+        frow.locator(".ttog").click()
+        wait_for(lambda: page.locator("#cov_tree .covfacts .fnloc").count() > 0, 20)
+        want, p = srclink_opens(page, "#cov_tree .covfacts")
+        r["Coverage facts"] = want
+        if p:
+            problems.append(f"{name} Coverage facts: {p}")
+    else:
+        problems.append(f"{name}: no Coverage row for {fn}")
+    page.close()
+    # A 390 px phone: tap the source row's link.
+    ctx = browser.new_context(**PHONE)
+    ph = ctx.new_page()
+    ph.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
+    wait_for(lambda: ph.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    ph.fill("#dbg_addr", fn)
+    ph.tap("#dbg_runto")
+    wait_for(lambda: ph.get_attribute("#dbg_state", "data-state") == "paused"
+             and ph.inner_text("#dbg_status").startswith("Stopped at"), 240)
+    wait_for(lambda: ph.locator("#cur_src .srclink").count() > 0, 30)
+    want, p = srclink_opens(ph, "#cur_src .frame:not(.inl)", "tap")
+    r["phone tap"] = want
+    if p:
+        problems.append(f"{name} phone: {p}")
+    for scheme in ("light", "dark"):
+        ph.emulate_media(color_scheme=scheme)
+        time.sleep(0.3)
+        ph.screenshot(path=str(shots / f"srclinks-{name}-panel-390-{scheme}.png"))
+        if ph.is_visible("#src_panel"):
+            ph.click("#src_close")
+        ph.locator("#sym_info").scroll_into_view_if_needed()
+        time.sleep(0.2)
+        ph.screenshot(path=str(shots / f"srclinks-{name}-debugger-390-{scheme}.png"))
+        if ph.locator("#cur_src .srclink").count():
+            ph.locator("#cur_src .srclink").first.tap()
+        wait_for(lambda: ph.is_visible("#src_panel"), 10)
+    if not no_hscroll(ph, "body"):
+        problems.append(f"{name} phone: horizontal scroll with the links")
+    ctx.close()
+    if errors:
+        problems.append(f"{name}: page errors: {errors[:3]}")
+    return problems, r
+
+
 def touch_case(browser, base, shots):
     """390 px phone with touch: tapping a "?" shows its text, tapping elsewhere hides it."""
     problems = []
@@ -5181,6 +5399,10 @@ def suite_firstlook(ctx):
     return failed | report("firstlook_import", *firstlook_import_case(ctx.browser, ctx.base, ctx.shots))
 
 
+def suite_srclinks(ctx):
+    return report("srclinks", *srclinks_case(ctx.browser, ctx.base, ctx.shots))
+
+
 def suite_touch(ctx):
     failed = report("touch", touch_case(ctx.browser, ctx.base, ctx.shots))
     return failed | report("stale_cache", stale_cache_case(ctx.browser, ctx.args.timeout))
@@ -5212,6 +5434,7 @@ SUITES = {
     "touch": (suite_touch, False),
     "hello": (suite_hello, False),
     "firstlook": (suite_firstlook, False),
+    "srclinks": (suite_srclinks, True),
 }
 
 

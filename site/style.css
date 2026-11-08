@@ -315,6 +315,13 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 /* C lines everywhere (listings, Debugger source rows, Source panel, call
    stack, Graph detail): location and text in two colours. */
 .srcloc { color: var(--src-loc); }
+/* A file:line that opens the Source panel (source.js srcLinkEl): text with
+   a dotted underline, inside any line of text or listing. */
+button.srclink { font: inherit; border: none; border-radius: 2px; padding: 0; margin: 0; background: none; color: var(--src-loc);
+	text-decoration: underline dotted; text-underline-offset: 2px; cursor: pointer; overflow-wrap: anywhere; text-align: left; }
+button.srclink:hover { text-decoration-style: solid; }
+button.srclink:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+#src_body:focus-visible { outline: 2px solid var(--accent); }
 /* A memory operand named from the DWARF (asmnames.js) in a listing. */
 .opn { color: var(--op-name); }
 .brt { color: var(--accent); cursor: pointer; }

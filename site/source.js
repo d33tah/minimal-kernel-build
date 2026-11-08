@@ -390,7 +390,74 @@ function srcLocEl(s) {
 	return e;
 }
 
-// "func at file:line; inlined into ..." for pa as nodes, file:line in .srcloc.
+// A file:line that opens the Source panel at that line (srcOpenAt), as an
+// element or as HTML for the listings built as strings. Every view showing
+// a C location outside the Source panel makes it with one of these two;
+// initSource handles a click, Enter, Space or tap on any .srclink once for
+// all of them. pa (-1: none) is an address whose code belongs to that line
+// or to the function declared there. text defaults to the short name.
+const srcLinkTitle = (path, line) => "Open " + path + ":" + line + " in the Source panel";
+
+function srcLinkEl(path, line, text, pa = -1) {
+	const b = document.createElement("button");
+	b.type = "button";
+	b.className = "srcloc srclink";
+	b.textContent = text || srcName({ file: path, line });
+	b.title = srcLinkTitle(path, line);
+	Object.assign(b.dataset, { file: path, line, pa });
+	return b;
+}
+
+const srcLinkHtml = (path, line, text, pa = -1) => '<button type="button" class="srcloc srclink" data-file="' + escHtml(path) +
+	'" data-line="' + line + '" data-pa="' + pa + '" title="' + escHtml(srcLinkTitle(path, line)) + '">' + escHtml(text || srcName({ file: path, line })) + "</button>";
+
+// Views are drawn again when DWARF or source text arrives and at every
+// stop, which replaces their links. srcFocusKeep(draw) keeps the keyboard
+// focus on the same file:line link (by its place among equal ones), and
+// srcLinkAgain finds the drawn-again copy of a link marked by srcLinkMark.
+const srcLinksLike = (a) => [...document.querySelectorAll(".srclink")].filter((e) =>
+	e.dataset.file === a.dataset.file && e.dataset.line === a.dataset.line && e.dataset.pa === a.dataset.pa);
+
+function srcLinkMark(a) {
+	a.srcNth = srcLinksLike(a).indexOf(a);
+}
+
+function srcLinkAgain(a) {
+	return !a || a.isConnected ? a : srcLinksLike(a)[a.srcNth] || null;
+}
+
+function srcFocusKeep(draw) {
+	const a = document.activeElement;
+	if (!a || !a.classList || !a.classList.contains("srclink"))
+		return draw();
+	srcLinkMark(a);
+	const out = draw();
+	const b = srcLinkAgain(a);
+	if (b && b !== a)
+		b.focus({ preventScroll: true });
+	return out;
+}
+
+// Open the Source panel at path:line, highlighted and scrolled into view.
+// Where pa's inline chain has that line (pa's own line, or the call site
+// in a function it was inlined into), the panel shows that function with
+// its executed lines; else the whole file (its lines with code from
+// files.json); an imported vmlinux has no file list, so a function's
+// declaration then opens in the function around pa.
+function srcOpenAt(path, line, pa) {
+	const r = pa >= 0 ? dbgFrames(pa) : { state: "none" };
+	const k = r.state === "ok" ? r.frames.findIndex((f) => f.file === path && f.line === line) : -1;
+	if (k >= 0)
+		openSource(pa, k);
+	else if (pa >= 0 && r.state === "ok" && dbgFiles().state === "none") {
+		openSource(pa);
+		srcPanel.pick = srcPanel.scrollTo = line;
+		renderSourcePanel();
+	} else
+		openSourceLine(path, line);
+}
+
+// "func at file:line; inlined into ..." for pa as nodes, file:line a link.
 function srcChainNodes(pa, sym) {
 	const r = pa >= 0 ? dbgFrames(pa) : { state: "none", why: "" };
 	if (r.state !== "ok")
@@ -399,7 +466,7 @@ function srcChainNodes(pa, sym) {
 	r.frames.forEach((f, k) => {
 		out.push((k ? "; inlined into " : "") + (f.func || sym || "?") + (f.file && f.line ? " at " : " (no line information)"));
 		if (f.file && f.line)
-			out.push(srcLocEl(dbgWhere(f)));
+			out.push(srcLinkEl(f.file, f.line, dbgWhere(f), pa));
 	});
 	return out;
 }
@@ -447,7 +514,7 @@ function srcLineHtml(pa, state) {
 	const why = text === null ? srcWhyNot(f) : "";
 	const inl = fr.length > 1 ? " [" + escHtml(f.func || "?") + " inlined into " + escHtml(fr[fr.length - 1].func || "?") + "]" : "";
 	return '<span class="src" data-addr="' + pa + '" title="' + escHtml(dbgChainText(fr) + (why ? "\n" + why : "")) + '">' +
-		srcLocHtml(srcName(f)) + "  " + (text === null ? '<span class="dim">' + escHtml(f.file) + "</span>" : '<span class="srctext">' + escHtml(text.trim()) + "</span>") +
+		srcLinkHtml(f.file, f.line, srcName(f), pa) + "  " + (text === null ? '<span class="dim">' + escHtml(f.file) + "</span>" : '<span class="srctext">' + escHtml(text.trim()) + "</span>") +
 		inl + "</span>";
 }
 
@@ -461,20 +528,20 @@ function srcHere(pa) {
 	return srcName(f) + (t ? "  " + t.trim() : "");
 }
 
-// Open the side panel with the whole function around the C line of pa.
-function openSource(pa) {
+// Open the side panel with the whole function around the C line of pa:
+// frame k of its inline chain (0: the innermost, the line of pa itself;
+// above: the call site in the function it was inlined into). A file
+// without text opens too: the panel says why.
+function openSource(pa, k = 0) {
 	const r = dbgFrames(pa);
 	if (r.state !== "ok")
 		return;
-	const loc = r.frames[0];
-	if (!loc.file || !loc.line || srcFile(loc.file).state === "none")
+	const loc = r.frames[k];
+	if (!loc || !loc.file || !loc.line)
 		return;
-	srcPanel = { pa, fn: loc.func, path: loc.file, line: loc.line, pick: loc.line };
-	renderSourcePanel();
+	srcPanel = { pa, fn: loc.func, path: loc.file, line: loc.line, pick: loc.line, scrollTo: loc.line };
 	$("src_panel").hidden = false;
-	const cur = $("src_body").querySelector(".here");
-	if (cur)
-		$("src_body").scrollTop = cur.offsetTop - $("src_body").clientHeight / 3;
+	renderSourcePanel();
 }
 
 // Open the side panel with a whole file (the Coverage tab): every line of
@@ -490,7 +557,7 @@ function openSourceFile(path) {
 // Open the side panel with a whole file at one line, picked (a function's
 // declaration): its addresses are listed as for a tapped line.
 function openSourceLine(path, line) {
-	srcPanel = { pa: -1, fn: null, path, line: 0, whole: true, pick: line, scrollTo: line };
+	srcPanel = { pa: -1, fn: null, path, line, whole: true, pick: line, scrollTo: line };
 	$("src_panel").hidden = false;
 	renderSourcePanel();
 }
@@ -583,6 +650,7 @@ function renderSourcePanel() {
 	const body = $("src_body");
 	const pl = panelLines();
 	const file = srcFile(path);
+	body.dataset.file = path;
 	$("src_title").textContent = srcPanel.whole ? path + " (whole file)" : (fn || "?") + " — " + path + (pl.state === "ok" ? ":" + pl.first + "–" + pl.last : "");
 	if (pl.state !== "ok" || file.state !== "ok") {
 		$("src_addrs").hidden = true;
@@ -621,7 +689,6 @@ function renderSourcePanel() {
 	body.dataset.state = "ok";
 	body.dataset.code = code.size;
 	body.dataset.executed = run.size;
-	body.dataset.file = path;
 	const note = SRC.notes && SRC.notes[path] ? " " + path + ": " + SRC.notes[path] + "." : "";
 	const cov = stepper ? coverageFor(stepper.kernelLo) : null;
 	$("src_info").textContent = run.size + " of " + code.size + " lines with code have executed (● ran, ○ not yet, ┆ more lines of the statement above or below, not counted)" +
@@ -733,20 +800,15 @@ function renderSourceRows(box, phys, sym) {
 		r.frames.forEach((f, k) => {
 			const line = document.createElement("div");
 			line.className = "frame" + (k ? " inl" : "");
-			const where = dbgWhere(f);
 			const t = f.file && f.line ? srcText(f.file, f.line) : null;
 			const fn = f.func || sym || "?";
-			const btn = symButton("", -1, t !== null ? "Show the whole function with its executed lines" : f.file ? srcWhyNot(f) : "");
-			const loc = f.file && f.line ? srcLocEl(where) : where;
+			const loc = f.file && f.line ? srcLinkEl(f.file, f.line, dbgWhere(f), phys) : null;
+			if (loc && t === null)
+				loc.title += "\n" + srcWhyNot(f);
 			if (k)
-				btn.append("inlined into " + fn, ...(f.file && f.line ? [" at ", loc] : [" (no line information)"]));
+				line.append("inlined into " + fn, ...(loc ? [" at ", loc] : [" (no line information)"]));
 			else
-				btn.append(loc, " in " + fn + (r.frames.length > 1 ? " (inlined)" : ""));
-			if (k === 0 && t !== null) {
-				btn.disabled = false;
-				btn.addEventListener("click", () => openSource(phys));
-			}
-			line.append(btn);
+				line.append(loc || "no line information", " in " + fn + (r.frames.length > 1 ? " (inlined)" : ""));
 			if (t !== null) {
 				const s = document.createElement("span");
 				s.className = "srctext mono";
@@ -759,8 +821,51 @@ function renderSourceRows(box, phys, sym) {
 	box.append(row);
 }
 
+// The .srclink that opened the panel from the keyboard: Escape or Close
+// gives it the focus back.
+let srcOpener = null;
+
+function closeSource() {
+	$("src_panel").hidden = true;
+	srcPanel = null;
+	const a = srcLinkAgain(srcOpener);
+	if (a)
+		a.focus();
+	srcOpener = null;
+}
+
 function initSource() {
-	$("src_close").addEventListener("click", () => { $("src_panel").hidden = true; srcPanel = null; });
+	// Every .srclink (srcLinkEl, srcLinkHtml) in any view; before the
+	// listings' own handlers. A keyboard click (detail 0) moves the focus
+	// into the panel.
+	document.addEventListener("click", (ev) => {
+		const a = ev.target.closest ? ev.target.closest(".srclink") : null;
+		if (!a)
+			return;
+		ev.stopPropagation();
+		ev.preventDefault();
+		srcOpenAt(a.dataset.file, Number(a.dataset.line), Number(a.dataset.pa));
+		srcOpener = ev.detail === 0 ? a : null;
+		if (srcOpener) {
+			srcLinkMark(a);
+			$("src_body").focus({ preventScroll: true });
+		}
+	}, true);
+	// v86 takes every key on the window for the VM (preventDefault), which
+	// stops a button's own Enter and Space: click the link here first.
+	document.addEventListener("keydown", (ev) => {
+		const a = ev.target.closest ? ev.target.closest(".srclink") : null;
+		if (a && (ev.key === "Enter" || ev.key === " ")) {
+			ev.preventDefault();
+			ev.stopPropagation();
+			a.click();
+		}
+	}, true);
+	$("src_panel").addEventListener("keydown", (ev) => {
+		if (ev.key === "Escape")
+			closeSource();
+	});
+	$("src_close").addEventListener("click", closeSource);
 	$("src_body").addEventListener("click", (ev) => {
 		const row = ev.target.closest("[data-line]");
 		if (!row || !srcPanel || window.getSelection().toString())

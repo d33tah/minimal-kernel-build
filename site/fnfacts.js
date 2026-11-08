@@ -70,16 +70,6 @@ function fnFactsText(x, T) {
 		(parts.length ? "; frame: " + fnFrameText(parts[0][0][0]) : "");
 }
 
-// Open the declaration: the whole file at that line (a shipped kernel:
-// its file list says which lines have code), else (an import) the
-// function around its code.
-function fnShowDecl(x) {
-	if (x.file && dbgFiles().state !== "none")
-		openSourceLine(x.file, x.e[2]);
-	else if (x.e[7].length)
-		openSource(x.e[7][0][0]);
-}
-
 // The facts of x ({ e, file } from dbgFnFacts) as an element; key names
 // the place (its copy list stays open across re-renders).
 function fnFactsEl(x, T, key) {
@@ -98,14 +88,14 @@ function fnFactsEl(x, T, key) {
 	proto.title = "The prototype from DW_TAG_subprogram: return type (DW_AT_type), parameters (DW_TAG_formal_parameter), ... for DW_TAG_unspecified_parameters";
 	d.append(proto);
 	const at = document.createElement("div");
-	const loc = symButton("", -1, "Where DW_AT_decl_file and DW_AT_decl_line put the function: open it in the Source panel");
-	loc.className = "symlink fnloc";
+	// The declaration opens as the whole file at that line (srcOpenAt), or,
+	// for an import without a file list, in the function around its code.
+	let loc = "an unknown place (no DW_AT_decl_file)";
 	if (x.file) {
-		loc.append(srcLocEl(x.file + ":" + e[2]));
-		loc.disabled = false;
-		loc.addEventListener("click", () => fnShowDecl(x));
-	} else
-		loc.textContent = "an unknown place (no DW_AT_decl_file)";
+		loc = srcLinkEl(x.file, e[2], x.file + ":" + e[2], e[7].length ? e[7][0][0] : -1);
+		loc.classList.add("fnloc");
+		loc.title = "Where DW_AT_decl_file and DW_AT_decl_line put the function: open it in the Source panel";
+	}
 	at.append("defined at ", loc, "; " + fnLinkage(e) + "; " + FN_INLINE[e[4]] + (e[3] & 4 ? "; does not return (DW_AT_noreturn)" : ""));
 	d.append(at);
 	const code = document.createElement("div");
@@ -127,7 +117,7 @@ function fnFactsEl(x, T, key) {
 		en.title = "The line table's line at its first instruction (what gdb's info line gives for the function)";
 		if (fr0.state === "ok" && fr0.frames[0].file && fr0.frames[0].line) {
 			en.dataset.entry = fr0.frames[0].file + ":" + fr0.frames[0].line;
-			en.append("; starts at ", srcLocEl(en.dataset.entry));
+			en.append("; starts at ", srcLinkEl(fr0.frames[0].file, fr0.frames[0].line, en.dataset.entry, p[0][0]));
 		} else
 			en.append(fr0.state === "loading" ? "; reading its line…" : "; its first instruction has no line information");
 		line.append(en);

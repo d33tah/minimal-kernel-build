@@ -1280,8 +1280,9 @@ async function pause(note) {
 	runTo = null;
 	if (entryPhase && stepper && stepper.sinceEntry >= 0)
 		finishEntry(); // a Run to (stepped) went past the kernel entry
+	// note: text, or nodes (runToStopped's file:line link).
 	if (note !== undefined)
-		$("dbg_status").textContent = note;
+		$("dbg_status").replaceChildren(...[].concat(note));
 	afterStop();
 }
 
@@ -1656,21 +1657,24 @@ function renderCallStack(box, phys) {
 	frames.forEach(([pc, node, method, extra, , , , label], n) => {
 		const name = label || (node >= 0 ? st.nodeName(node) : "0x" + pc.toString(16));
 		const r = pc >= 0 ? dbgFrames(pc) : { state: "none" };
-		const where = r.state === "ok" && r.frames[0].file && r.frames[0].line ? srcName(r.frames[0]) : "";
+		const f0 = r.state === "ok" && r.frames[0].file && r.frames[0].line ? r.frames[0] : null;
 		const inl = r.state === "ok" && r.frames.length > 1 ? " [" + r.frames.length + " inlined]" : "";
 		const m = FRAME_METHODS[method];
 		const btn = symButton(name, pc, label ? extra + "\n" + m[0] + ": " + m[1] :
 			(n ? "calls from " : "at ") + hex(pc) + extra + "\n" + m[0] + ": " + m[1] + "\n" + dbgTitle(pc, name));
-		if (where)
-			btn.append(" ", srcLocEl(where));
-		btn.append(inl);
 		const tag = document.createElement("span");
 		tag.className = "fmeth";
 		tag.textContent = m[0];
-		btn.append(" ", tag);
+		btn.append(inl, " ", tag);
 		btn.dataset.pc = pc;
 		btn.dataset.method = method;
-		list.push(btn);
+		// The frame's name opens its code in the Page tab, its file:line the Source panel.
+		const item = document.createElement("span");
+		item.className = "cframe";
+		item.append(btn);
+		if (f0)
+			item.append(" ", srcLinkEl(f0.file, f0.line, "", pc));
+		list.push(item);
 	});
 	list.forEach((it, n) => d.append(n ? " ← " : "", it));
 	if (uw.state === "ok" && uw.why || uw.state === "stopped" || uw.state === "loading") {
@@ -1695,7 +1699,12 @@ function syncSrcToggle() {
 	$("src_toggle").hidden = !dbgHas();
 }
 
+// The Debugger tab drawn again (its file:line links keep the keyboard focus).
 function renderContext() {
+	srcFocusKeep(drawContext);
+}
+
+function drawContext() {
 	renderWatches();
 	const el = $("context");
 	if (!stepper || tab !== "debugger" || runState === "jit" || runState === "off") {
@@ -2071,20 +2080,27 @@ function renderEnd() {
 }
 
 function updateDebugUi() {
+	srcFocusKeep(drawDebugUi);
+}
+
+function drawDebugUi() {
 	renderEnd();
 	renderClock();
 	const st = $("dbg_state");
-	let where = stepper && stepper.curSym >= 0 ? ", in " + stepper.symName[stepper.curSym] : "";
+	const where = stepper && stepper.curSym >= 0 ? ", in " + stepper.symName[stepper.curSym] : "";
+	let loc = null;
 	if (where && dbgHas() && runState !== "jit") {
 		// file:line only: the text would fetch every file stepped through.
 		const r = dbgFrames(stepper.lastPhys);
 		if (r.state === "ok" && r.frames[0].file && r.frames[0].line)
-			where += " (" + srcName(r.frames[0]) + ")";
+			loc = r.frames[0];
 	}
 	st.textContent = { off: "", jit: "running (full speed, JIT)",
 		stepped: (entryPhase ? "stepping to the kernel entry" : fastStepping() ? (counting ? "stepping (counting)" : "stepping") :
 			"slow motion " + $("dbg_speed").selectedOptions[0].text) + where,
 		paused: "paused" + where }[runState];
+	if (loc && (runState === "stepped" || runState === "paused"))
+		st.append(" (", srcLinkEl(loc.file, loc.line, "", stepper.lastPhys), ")");
 	if (ffActive && ffInfo)
 		st.textContent = (ffInfo.runTo !== undefined ? "running to " + ffInfo.runTo : "fast-forwarding to " + ffInfo.name) +
 			" with the JIT: " + num(stepper.steps - (ffInfo.start || 0)) + " instructions";
@@ -2140,9 +2156,10 @@ function parseAddr(text) {
 
 // "Stopped at 0x… (Run to …)" for a stop at one of n targets.
 function runToStopped(label, n, how) {
-	const pa = stepper.nextPhys(), w = srcHere(pa);
-	return "Stopped at " + hex(pa) + (w ? " " + w.split("  ")[0] : "") + " (Run to " + label +
-		(n > 1 ? ", the first of its " + n + " breakpoint addresses reached" : "") + ": " + how + ").";
+	const pa = stepper.nextPhys(), r = dbgFrames(pa);
+	const f = r.state === "ok" && r.frames[0].file && r.frames[0].line ? r.frames[0] : null;
+	return ["Stopped at " + hex(pa), ...(f ? [" ", srcLinkEl(f.file, f.line, "", pa)] : []), " (Run to " + label +
+		(n > 1 ? ", the first of its " + n + " breakpoint addresses reached" : "") + ": " + how + ")."];
 }
 
 // The kernel section holding phys (symbols.json), or null.

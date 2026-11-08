@@ -213,9 +213,9 @@ function varsEval(T, expr) {
 	return { pa, type, bits, notes, v, all: pick.all };
 }
 
-// "defined at" of variable v: a button opening the Source panel at its
-// DW_AT_decl_file:decl_line (data-file, data-line, data-pa; more than one
-// when several units define it at its address, dwVarDecls), or why not
+// "defined at" of variable v: a link (srcLinkEl) to its
+// DW_AT_decl_file:decl_line (data-file, data-line, data-var: its address;
+// more than one when several units define it at its address, dwVarDecls), or why not
 // known. The one render path for the Variables panel's rows and notes and
 // the Page listing's hex-hover text.
 function varDeclEl(T, v) {
@@ -225,15 +225,10 @@ function varDeclEl(T, v) {
 			"an unknown place (these variables were read by an older version of this page: import the vmlinux again)");
 	const el = document.createElement("span");
 	ds.forEach((d, k) => {
-		const b = symButton("", -1, v[0] + " is defined at " + d.file + ":" + d.line + " (DW_AT_decl_file, DW_AT_decl_line): open it in the Source panel");
-		b.className = "symlink varloc";
-		b.disabled = false;
-		Object.assign(b.dataset, { file: d.file, line: d.line, pa: v[1] });
-		b.append(srcLocEl(d.file + ":" + d.line));
-		b.addEventListener("click", (ev) => {
-			ev.stopPropagation();
-			openSourceLine(d.file, d.line);
-		});
+		const b = srcLinkEl(d.file, d.line, d.file + ":" + d.line);
+		b.classList.add("varloc");
+		b.dataset.var = v[1];
+		b.title = v[0] + " is defined at " + d.file + ":" + d.line + " (DW_AT_decl_file, DW_AT_decl_line): open it in the Source panel";
 		el.append(k === 1 ? ", also at " : k ? ", " : "", b);
 	});
 	if (ds.length > 1)
@@ -699,7 +694,7 @@ function localsRaw(T, type, pa) {
 }
 
 // The variables of one local frame (an inlined call or the function).
-function localsGroup(T, lf, k, f, ctx, key, where) {
+function localsGroup(T, lf, k, f, ctx, key, fr) {
 	const box = document.createElement("div");
 	box.className = "lscope";
 	box.dataset.func = lf.func || "";
@@ -707,8 +702,8 @@ function localsGroup(T, lf, k, f, ctx, key, where) {
 	const head = document.createElement("div");
 	head.className = "lhead";
 	head.append((lf.func || "?") + "()" + (lf.inlined ? " inlined" : ""));
-	if (where)
-		head.append(" ", srcLocEl(where));
+	if (fr)
+		head.append(" ", srcLinkEl(fr.file, fr.line, "", f.lookup));
 	box.append(head);
 	const list = [...lf.params.map((v) => [v, "param"]), ...lf.locals.map((v) => [v, "local"])];
 	for (const [v, kind] of list) {
@@ -820,8 +815,7 @@ function renderLocals(uw) {
 			const ctx = localsCtx(f, r.frames[r.frames.length - 1].fb);
 			r.frames.forEach((lf, i) => {
 				const fr = lines.state === "ok" ? lines.frames[i] : null;
-				const where = fr && fr.func === lf.func && fr.file && fr.line ? srcName(fr) : "";
-				det.append(localsGroup(r.T, lf, i, f, ctx, "L" + n + (name || f.lookup), where));
+				det.append(localsGroup(r.T, lf, i, f, ctx, "L" + n + (name || f.lookup), fr && fr.func === lf.func && fr.file && fr.line ? fr : null));
 			});
 		};
 		const ok = k + ":" + name;

@@ -5553,11 +5553,55 @@ def suite_symbols(ctx):
     return report("linux_slow", lp, lr) | report("symbols", sp, sr)
 
 
+def screen_flush_case(browser, base):
+    """v86 draws the screen's changed rows in a requestAnimationFrame loop
+    and stops drawing when the VM stops, so rows written in the last frame
+    before a pause stayed blank (CI: the Debian panic stop without its
+    "end Kernel panic" line). With the frames starved (no
+    requestAnimationFrame at all) the screen must still show what the
+    kernel wrote: after single steps while paused (hello) and after the
+    run's own end stop at full speed (minified Linux)."""
+    problems, r = [], {}
+    page = browser.new_page()
+    page.add_init_script("window.requestAnimationFrame = () => 0;")
+    page.goto(f"{base}/index.html?kernel=hello&paused=1#debugger")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    page.fill("#dbg_addr", "hello_main")
+    page.click("#dbg_runto")
+    wait_for(lambda: page.inner_text("#dbg_status").startswith("Stopped at"), 120)
+    page.fill("#dbg_n", "1000")
+    page.click("#dbg_stepn")
+    wait_for(lambda: page.inner_text("#dbg_status").startswith("Stepped"), 60)
+    wait_for(lambda: page.evaluate("stepper.screenText().includes('Still alive')") or page.inner_text("#dbg_status").startswith("Stepped 1,000"), 5)
+    if not page.evaluate("stepper.screenText().includes('Hello, World!')"):
+        page.fill("#dbg_n", "1000")
+        page.click("#dbg_stepn")
+        time.sleep(2)
+    r["hello status"] = page.inner_text("#dbg_status")
+    screen = page.inner_text("#screen_text")
+    if "Hello, World!" not in screen:
+        problems.append(f"hello: stepped past Hello, World! while paused, the screen does not show it ({r['hello status']!r})")
+    page.close()
+    if "minified-linux" in kernel_entries():
+        page = browser.new_page()
+        page.add_init_script("window.requestAnimationFrame = () => 0;")
+        page.goto(f"{base}/index.html?kernel=minified-linux&speed=full")
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused"
+                 and page.evaluate("!!(stepper && stepper.end)"), 120)
+        r["minified end"] = page.inner_text("#end_banner")
+        screen = page.inner_text("#screen_text")
+        if "Still alive" not in screen:
+            problems.append(f"minified-linux: the run ended ({r['minified end']!r}), the screen does not show Still alive")
+        page.close()
+    return problems, r
+
+
 def suite_debugger(ctx):
     failed = False
     for name in [n for n in ("hello", "minified-linux") if n in ctx.entries]:
         dp, dr = debugger_case(ctx.browser, ctx.base, name, None, ctx.shots)
         failed |= report("debugger", dp, dr, kernel=name)
+    failed |= report("screen after a pause", *screen_flush_case(ctx.browser, ctx.base))
     return failed
 
 

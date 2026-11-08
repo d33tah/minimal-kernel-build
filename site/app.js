@@ -583,6 +583,9 @@ function listPage(p, bytes, base, cur, chars) {
 		} else if (!icedError)
 			loadIced();
 	}
+	// Jump paths: the build's (whole kernel) or, decoded live, this page's.
+	const jS = !insns.size ? null : source === "build" ? jumpsFor(disasm.insns) : jumpsFor([...insns.values()].sort((x, y) => x[0] - y[0]));
+	const paths = new Map();
 	const out = [];
 	let si = 0, nIns = 0, nBad = 0, nNx = 0, nRows = 0, nonzero = 0, changed = 0, curLine = -1;
 	let prevRow = null, starred = false;
@@ -641,9 +644,13 @@ function listPage(p, bytes, base, cur, chars) {
 				out.push(srcLine);
 			if (pa === cur)
 				curLine = out.length;
+			if (pa === jumpHit)
+				cls += " jhit";
+			const P = jumpPaths(jS, stepper, pa);
+			paths.set(pa, P);
 			out.push('<span class="' + cls + '" data-addr="' + pa + '">' + pa.toString(16).padStart(8, "0") +
 				" " + rawHtml + " " + insnHtml(pa, text, ops, opStat) +
-				(wide && where ? ' <span class="dim">' + escHtml(where) + "</span>" : "") + "</span>");
+				(wide && where ? ' <span class="dim">' + escHtml(where) + "</span>" : "") + "</span>" + jumpBadgesHtml(P, pa));
 			nIns++;
 			if (!ok)
 				nBad++;
@@ -693,7 +700,7 @@ function listPage(p, bytes, base, cur, chars) {
 		nRows++;
 		a = end;
 	}
-	return { html: out.join("\n"), nIns, nBad, nNx, cov, nRows, nonzero, changed, curLine, source, bits, misaligned: misaligned.size,
+	return { html: out.join("\n"), nIns, nBad, nNx, cov, nRows, nonzero, changed, curLine, source, bits, misaligned: misaligned.size, jS, paths,
 		opsNamed: opStat.named || 0, opsWhy: !ops ? "" : ops.loading ? "operand names: " + ops.loading : !ops.T ? "operands named from ELF symbols only (no DWARF variables)" : "" };
 }
 
@@ -727,7 +734,35 @@ function renderSymbolIndex(p) {
 
 function scrollListingTo(line) {
 	const box = $("listing");
-	box.scrollTop = line.offsetTop - box.offsetTop - box.clientHeight / 3;
+	// Measured, not offsetTop: the listing is the lines' offsetParent (it
+	// holds the jump arcs, position: relative).
+	box.scrollTop += line.getBoundingClientRect().top - box.getBoundingClientRect().top - box.clientHeight / 3;
+}
+
+// The Page tab's line on the jump paths of the listing.
+function renderJumpInfo(r, dropped) {
+	const el = $("jump_info");
+	if (!r.nIns) {
+		el.textContent = "";
+		return;
+	}
+	let arcs = 0, none = 0, into = 0, outs = 0, seen = 0;
+	for (const P of r.paths.values()) {
+		if (P.noDirect)
+			none++;
+		if (P.into.length)
+			into++;
+		if (P.out.length)
+			outs++;
+		for (const e of P.out)
+			seen += e.count;
+	}
+	arcs = Number($("listing").dataset.arcs || 0);
+	const jit = jumpsJitNote();
+	el.textContent = "Jump paths: " + arcs + " jumps inside the page drawn as arcs" + (dropped ? " (" + dropped + " more not drawn: the gutter is full)" : "") +
+		"; " + into + " instructions with paths in (\u2190), " + outs + " with paths out (\u2192), " + seen.toLocaleString("en") +
+		" transfers from here observed while stepping; " + none + " without a direct path in (\u2298)" +
+		(r.source === "live" ? "; static paths only from this page's live decode" : "") + (jit ? "; " + jit : "") + ".";
 }
 
 // Draw the selected page; base: bytes of the last scan (changes are marked).
@@ -736,9 +771,16 @@ function renderPage(p, bytes, base, how) {
 	const cur = currentPhys();
 	const r = listPage(p, bytes, base, cur >= p * PAGE && cur < p * PAGE + PAGE ? cur : -1, lineChars(box));
 	box.innerHTML = r.html;
+	box.dataset.jlocal = r.source === "live" ? "page's live decode" : "";
+	const dropped = jumpsDrawn(box, r.jS, r.paths);
+	renderJumpInfo(r, dropped);
 	Object.assign(box.dataset, { page: p, insns: r.nIns, hexrows: r.nRows, nonzero: r.nonzero,
 		changed: r.changed, reads: Number(box.dataset.reads || 0) + 1 });
-	if (r.curLine >= 0) {
+	const hit = jumpHitScroll ? box.querySelector(".jhit") : null;
+	if (hit) {
+		jumpHitScroll = false;
+		scrollListingTo(hit);
+	} else if (r.curLine >= 0) {
 		const line = box.querySelector(".cur");
 		if (line)
 			scrollListingTo(line);
@@ -956,6 +998,8 @@ async function restoreSnapshot(s) {
 	try {
 		const raw = s.gzip ? await pipe(s.data, new DecompressionStream("gzip")) : s.data;
 		await emulator.restore_state(raw);
+		if (stepper)
+			stepper.jumpForget();
 		if (counting || (stepper && stepper.steps)) {
 			counting = false;
 			countNote = "A snapshot was restored: the counters stopped there.";
@@ -1710,6 +1754,7 @@ function drawContext() {
 	if (!stepper || tab !== "debugger" || runState === "jit" || runState === "off") {
 		el.textContent = runState === "jit" ? "Running at full speed (JIT). Pause to see the code at EIP; the symbol history is not recorded at full speed." : "";
 		$("sym_info").textContent = "";
+		$("eip_jumps").textContent = "";
 		if (tab === "debugger")
 			renderLocals(null);
 		return;
@@ -1718,6 +1763,7 @@ function drawContext() {
 	if (phys < 0) {
 		el.textContent = "EIP is not mapped.";
 		renderLocals(null);
+		$("eip_jumps").textContent = "";
 		return;
 	}
 	renderLocals(renderSymbols(phys));
@@ -1758,6 +1804,8 @@ function drawContext() {
 			(disasm && i < ins.length && ins[i][0] < phys + 64 ? " Nearest instructions from the build:" : "")) + "</span>");
 	}
 	el.dataset.source = live ? "live" : exact ? "disasm" : "bytes";
+	let jS = null;
+	const paths = new Map();
 	if (live)
 		lines.push('<span class="dim">decoded live from guest memory (iced-x86, ' + bitnessAt(phys) + "-bit)</span>");
 	if ((disasm && inKernel) || live) {
@@ -1775,6 +1823,7 @@ function drawContext() {
 			const sized = symbols ? symbols.symbols.filter((s) => s.size > 0 && s.paddr < hi && s.paddr + s.size > lo) : [];
 			const srcState = { key: null };
 			const ops = live && bitnessAt(phys) === 16 ? null : opEnv(), opStat = {};
+			jS = jumpsFor(ins);
 			for (let k = from; k < to; k++) {
 				const [pa, raw, text] = ins[k];
 				const srcLine = srcLineHtml(pa, srcState);
@@ -1792,14 +1841,19 @@ function drawContext() {
 				bytes += raw.length / 2 > 7 ? "…" : "  ".repeat(7 - raw.length / 2);
 				const sym = symbolAt(sized, pa);
 				const cls = "ins" + (pa === phys ? " cur" : "") + (ok ? "" : " bad");
+				const P = jumpPaths(jS, stepper, pa);
+				paths.set(pa, P);
 				lines.push('<span class="' + cls + '" data-addr="' + pa + '">' + (pa === phys ? "▶" : " ") +
 					pa.toString(16).padStart(8, "0") + " " + bytes + " " + insnHtml(pa, text, ops, opStat) +
 					(sym ? ' <span class="dim">' + escHtml(sym.name) + "+0x" + (pa - sym.paddr).toString(16) + "</span>" : "") +
-					"</span>");
+					"</span>" + jumpBadgesHtml(P, pa));
 			}
 		}
 	}
 	el.innerHTML = lines.join("\n");
+	el.dataset.jlocal = live ? "instructions decoded live around EIP" : "";
+	jumpsDrawn(el, jS, paths);
+	renderEipJumps(exact ? jS : null, phys);
 	el.dataset.phys = phys;
 	el.dataset.opsNamed = el.querySelectorAll(".opn").length;
 	const cur = el.querySelector(".ins.cur");
@@ -2585,6 +2639,7 @@ async function init() {
 	if (params.get("count") === "0")
 		$("count").checked = false;
 	initSource();
+	initJumps();
 	initCoverage();
 	setupVars();
 	dbgOnChange(() => {

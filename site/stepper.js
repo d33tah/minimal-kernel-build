@@ -105,6 +105,33 @@ const IP = 556 >> 2, PREV_IP = 560 >> 2, EIP_PHYS = 624 >> 2, COUNTER = 664 >> 2
 const IN_HLT = 616, IS_32 = 804;
 const EAX = 64 >> 2, EBX = (64 + 12) >> 2, ESP = (64 + 16) >> 2;
 
+// Observed jump paths (jumps.js has the kinds, JK): the first opcode byte
+// after prefixes -> kind, for the one-byte opcodes that transfer control.
+// 0x0f and 0xff are looked at further (Stepper.jumpAfter); prefixes are
+// skipped there. Conditional ones (jcc, loop/jecxz, into) record a path
+// only when taken.
+const JOP_PREFIX = new Uint8Array(256), JOP = new Uint8Array(256);
+for (const b of [0x26, 0x2e, 0x36, 0x3e, 0x64, 0x65, 0x66, 0x67, 0xf0, 0xf2, 0xf3])
+	JOP_PREFIX[b] = 1;
+{
+	const k = JK; // jumps.js, loaded first
+	for (let b = 0x70; b <= 0x7f; b++)
+		JOP[b] = k.jcc;
+	for (let b = 0xe0; b <= 0xe3; b++)
+		JOP[b] = k.loop;
+	JOP[0xe8] = k.call;
+	JOP[0xe9] = JOP[0xeb] = k.jmp;
+	JOP[0xea] = k.ljmp;
+	JOP[0x9a] = k.lcall;
+	JOP[0xc2] = JOP[0xc3] = k.ret;
+	JOP[0xca] = JOP[0xcb] = k.lret;
+	JOP[0xcf] = k.iret;
+	JOP[0xcc] = JOP[0xcd] = JOP[0xce] = JOP[0xf1] = k.int;
+}
+// An instruction is at most 15 bytes: a non-transfer whose next EIP is
+// further away than that (or before it) raised an exception.
+const INSN_MAX = 15;
+
 // Drives a stopped v86 instance one instruction at a time and counts.
 const POPCOUNT8 = Uint8Array.from({ length: 256 }, (_, b) => { let n = 0; for (; b; b &= b - 1) n++; return n; });
 
@@ -125,6 +152,15 @@ class Stepper {
 		this.lastPhys = -1;
 		this.seen = new Uint8Array((cpu.mem8.length + 7) >> 3);
 		this.seenHigh = new Set();
+		// Observed jump paths: from * 2^32 + to -> [from, to, kind mask, count],
+		// also listed per source and per target (the same arrays).
+		this.jumps = new Map();
+		this.jumpOut = new Map();
+		this.jumpIn = new Map();
+		this.jumpCount = 0;  // transfers recorded
+		this.jPend = -1;     // the instruction whose transfer lands at the next fetch
+		this.jPendKind = 0;
+		this.jLast = -1;     // the last instruction stepped (since a gap)
 		// v86's JIT ran code, which seen does not record: in the fast-forward
 		// to the kernel entry, or at full speed.
 		this.jitBeforeEntry = false;
@@ -572,7 +608,79 @@ class Stepper {
 		this.curHi = 0;
 		this.curNode = -1; // no edge across a stretch the JIT ran
 		this.closeStack(this.steps);
+		this.jumpForget();
 	}
+
+	// No observed path across what the stepper did not run (the JIT, a
+	// restored snapshot): the next instruction starts a new record.
+	jumpForget() {
+		this.jPend = -1;
+		this.jLast = -1;
+	}
+
+	jumpRecord(from, to, kind) {
+		const key = from * 4294967296 + to;
+		let e = this.jumps.get(key);
+		if (!e) {
+			e = [from, to, 0, 0];
+			this.jumps.set(key, e);
+			const o = this.jumpOut.get(from), i = this.jumpIn.get(to);
+			if (o) o.push(e); else this.jumpOut.set(from, [e]);
+			if (i) i.push(e); else this.jumpIn.set(to, [e]);
+		}
+		e[2] |= 1 << kind;
+		e[3]++;
+		this.jumpCount++;
+	}
+
+	// After the instruction at phys (linear eip, first byte op) ran and
+	// the next one is at linear next: whether it transferred control, and
+	// how (recorded at the next fetch, where the target's physical address
+	// is known). Bytes after the first are read at phys + k: an instruction
+	// crossing into a page that is not physically next is misread.
+	// far: the kind when an instruction that transfers nothing ends up far
+	// away (an exception, or an interrupt v86 took within the step).
+	jumpAfter(phys, eip, op, next, far) {
+		const m = this.cpu.mem8;
+		let n = 0, b = op, op16 = false;
+		while (JOP_PREFIX[b] && n < INSN_MAX - 1) {
+			if (b === 0x66)
+				op16 = true;
+			b = m[phys + ++n];
+		}
+		let kind = 0, len = 0;
+		if (b === 0x0f) {
+			const b2 = m[phys + n + 1];
+			if (b2 >= 0x80 && b2 <= 0x8f) {
+				kind = JK.jcc;
+				len = n + 2 + (op16 ? 2 : 4);
+			} else if (b2 === 0x0b || b2 === 0xb9 || b2 === 0xff)
+				kind = JK.ud2;
+			else if (b2 === 0x05 || b2 === 0x07 || b2 === 0x34 || b2 === 0x35)
+				kind = JK.sys;
+		} else if (b === 0xff) {
+			const r = m[phys + n + 1] >> 3 & 7;
+			kind = r === 2 ? JK.icall : r === 3 ? JK.lcall : r === 4 ? JK.ijmp : r === 5 ? JK.ljmp : 0;
+		} else {
+			kind = JOP[b];
+			if (kind === JK.jcc || kind === JK.loop)
+				len = n + 2;
+			else if (b === 0xce) // into
+				len = n + 1;
+		}
+		if (!kind) {
+			if (((next - eip) >>> 0) > INSN_MAX) {
+				this.jPend = phys;
+				this.jPendKind = b === 0xf4 ? JK.irq : far;
+			}
+			return;
+		}
+		if (len && next === ((eip + len) | 0))
+			return; // not taken
+		this.jPend = phys;
+		this.jPendKind = kind;
+	}
+
 
 	symLabel(i) {
 		return i >= 0 ? this.symName[i] : i === -3 ? "(v86's JIT ran here: not recorded)" : "(no symbol)";
@@ -656,6 +764,7 @@ class Stepper {
 				u8 = new Uint8Array(mem.buffer);
 			}
 			if (u8[IN_HLT]) {
+				const ip0 = i32[IP];
 				let t = this.timers();
 				// Virtual time: a halted CPU waits for the next timer event,
 				// so let the clock jump there (as qemu -icount does).
@@ -669,13 +778,24 @@ class Stepper {
 				}
 				i32 = new Int32Array(mem.buffer);
 				u8 = new Uint8Array(mem.buffer);
+				if (i32[IP] !== ip0 && this.jLast >= 0) {
+					this.jPend = this.jLast;
+					this.jPendKind = JK.irq;
+				}
 				if (u8[IN_HLT])
 					return "hlt";
 			}
 			if ((this.steps & 1023) === 0) {
 				if (realNow() - t0 > budgetMs)
 					return "time";
+				const ip0 = i32[IP];
 				this.timers();
+				i32 = new Int32Array(mem.buffer);
+				u8 = new Uint8Array(mem.buffer);
+				if (i32[IP] !== ip0 && this.jLast >= 0) {
+					this.jPend = this.jLast;
+					this.jPendKind = JK.irq;
+				}
 			}
 			const eip = i32[IP];
 			i32[PREV_IP] = eip;
@@ -684,14 +804,25 @@ class Stepper {
 				i32 = new Int32Array(mem.buffer);
 				u8 = new Uint8Array(mem.buffer);
 			}
-			if (i32[res] !== 0)
-				continue; // fetch faulted: #PF delivered, nothing executed
+			if (i32[res] !== 0) { // fetch faulted: #PF delivered, nothing executed
+				if (this.jPend < 0)
+					this.jPend = this.jLast;
+				this.jPendKind = JK.exc;
+				continue;
+			}
 			const phys = (i32[EIP_PHYS] ^ eip) >>> 0;
 			if ((stopSet ? stopSet.has(phys) : phys === stopPhys) && (i > 0 || (leave !== undefined && phys !== leave))) {
 				i32[IP] = eip;
 				return "addr";
 			}
+			if (this.jPend >= 0) {
+				this.jumpRecord(this.jPend, phys, this.jPendKind);
+				this.jPend = -1;
+			}
 			const op = i32[res + 1];
+			// v86's sti with interrupts off runs the next instruction too
+			// (the interrupt shadow), then takes a due interrupt.
+			const sti = op === 0xfb && !(cpu.get_eflags() & 0x200);
 			// int 0x80 with EAX = 1 (exit) or 252 (exit_group): note EBX.
 			let exitCode = null;
 			if (op === 0xcd && !this.exit && cpu.mem8[phys + 1] === 0x80 && (i32[EAX] === 1 || i32[EAX] === 252))
@@ -707,6 +838,19 @@ class Stepper {
 			}
 			i32[COUNTER] = i32[COUNTER] + 1;
 			this.steps++;
+			if (sti) {
+				this.jumpAfter(phys + 1, eip + 1, cpu.mem8[phys + 1], i32[IP], JK.irq);
+				this.jLast = phys + 1;
+			} else {
+				if (JOP[op] || op === 0x0f || op === 0xff || JOP_PREFIX[op])
+					this.jumpAfter(phys, eip, op, i32[IP], JK.exc);
+				else if (((i32[IP] - eip) >>> 0) > INSN_MAX) {
+					// v86's hlt takes a due interrupt itself.
+					this.jPend = phys;
+					this.jPendKind = op === 0xf4 ? JK.irq : JK.exc;
+				}
+				this.jLast = phys;
+			}
 			if (phys < this.curLo || phys >= this.curHi)
 				this.enterSymbol(phys, this.lastPhys);
 			if (this.curNode >= 0)

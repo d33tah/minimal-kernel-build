@@ -127,6 +127,7 @@ async function fastForward(target, name) {
 					break;
 				}
 				st.steps = at.steps;
+				st.jumpForget();
 				CLOCK.base = at.base;
 				CLOCK.baseSteps = at.baseSteps;
 				ffInfo.restores++;

@@ -688,6 +688,41 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   says tinted code may have run. Code that ran at the same address before
   the kernel was in place (the bzImage's own code at 1 MiB) counts as
   executed.
+- **Jump paths.** Every asm listing (the Page listing and the Debugger's
+  code at EIP) shows, after each instruction, its control transfers that
+  are not a fall-through to the next instruction: `←n` paths into it,
+  `→n` paths out of it, `·k×` the transfers observed along them while
+  stepping. A tap lists them (kind, source or target as symbol+offset
+  with a button that opens it in the Page tab, its file:line link, static
+  or observed with the count). Kinds: jmp, the taken side of a jcc, call,
+  ret, loop/jecxz, int, iret, far jumps, calls and returns,
+  sysenter/sysexit, indirect jumps and calls, ud2, and the exceptions and
+  interrupts that enter a handler. Static paths come from the
+  disassembly (`jumps.js` reads each instruction's text: one reader for
+  `disasm.json` and for code decoded live, where it knows only the paths
+  inside the decoded range and says so); it runs once per kernel when a
+  listing first needs it (about 20 to 40 ms for the `-O0` minified Linux's
+  48,069 instructions). ret, iret, indirect jumps and calls and interrupts
+  have no static target (`→?` until one is observed). Observed paths are
+  recorded by the stepper (`Stepper.jumpRecord`): after each instruction
+  it looks at the opcode (prefixes skipped; ModRM.reg for 0xff) and where
+  EIP went; a transfer is recorded with its kind at the next fetch, a
+  plain instruction whose next EIP is more than 15 bytes away raised an
+  exception, an EIP that changed while the timers ran is an interrupt
+  (from the last instruction), and an sti with interrupts off counts for
+  the instruction after it, which v86 runs in the same step. Code v86's
+  JIT runs records nothing; the Page tab's note, each list and the
+  Debugger say when the JIT has run. An instruction no direct path
+  reaches (no jump or call goes there and the instruction before does not
+  fall through: padding after a ret, or a function only called through a
+  pointer) is marked `⊘`. Jumps (jmp, jcc, loop, indirect jmp) between two
+  instructions of the same listing are drawn as arcs left of the
+  addresses, like `objdump --visualize-jumps`: shorter arcs nearer the
+  code, grey when not taken while stepping, in the accent colour when
+  taken, dashed when observed only; up to 10 columns (4 on a phone), and
+  the note says how many did not fit. Under the code at EIP the Debugger
+  lists EIP's own paths in and out. The Graph tab lists no instructions,
+  so it has no arcs.
 - **Debugger.** Step N, Run to address, the registers (EIP, ESP, EBP,
   EAX..EDI, EFLAGS decoded, CS/DS/SS/ES, CR0, CR3, CPL, mode, physical EIP;
   changed ones marked), the current symbol (range, size, offset of EIP),
@@ -1186,6 +1221,7 @@ browser-test matrix job named by its suites):
 | Run to on a phone | suite runto_phone (hello at 390 px touch, 1/s, 10/s and desktop: Boot, Pause, Run to a function stops at its first instruction; `hello`, `.rodata` and mid-instruction targets refused in the status and the paused overlay with the CPU still paused; a Run to right after the slice that printed "Hello, World!" stops there, stepped and with the JIT; light and dark screenshots); `--base https://d33.pl/minimal-kernel-build` for the live site | tasks,operands,runto_phone,srclinks |
 | C1 file:line links | suite srclinks (minified Linux paused in code inlined into setup_arch: each kind of link in the Debugger, Page listing, hovered byte, Graph detail and Coverage facts opens its file with its line picked and in view; no plain file:line text anywhere on the page after a Run to and on the Page, Graph and Coverage tabs (the overlay's copy of the status opens too); after a Run to the state line names the function at EIP with the source row's line; Enter opens one and moves the focus, Escape gives it back; a tap on a 390 px phone, and on the state line's link at a stop in a function with a long name (the link inside the viewport and the state line's box); light and dark at 1280 and 390 px) | tasks,operands,runto_phone,srclinks |
 | Screen after a pause | suite debugger, check "screen after a pause" (requestAnimationFrame starved: hello stepped past Hello, World! while paused and minified Linux after its end stop at full speed still show the text on the screen; CI once caught the Debian panic stop without its last line) | boot,symbols,debugger,... |
+| J1 jump paths | `test_jumps.py` (every instruction of hello, hello-os and both minified Linux builds: kind, target and fall-through from jumps.js over disasm.json equal a decode of the ELF's bytes from a fresh llvm-objdump run, the decoder agrees with objdump's mnemonics, and every target's static sources are the same); suite jumps (hello: 300 single steps from hello_main; minified Linux: from rest_init to the end of the boot, about 95,000 single steps with timer interrupts, iret and an exception: the recorded paths equal the non-fall-through pairs of the stepper's own EIP sequence, count for count, with a fitting kind; a taken jcc's target shows `←n·k×` and its list (source, count, file:line), go there opens the Page tab at the source, Enter and Escape, the taken arc drawn, underscores of the list's names drawn; EIP's paths at a function entry name the static call; the JIT note; 390 px light and dark) | kernels; tasks,operands,runto_phone,srclinks,unoptimized,jumps |
 | U1/U2 unoptimized builds | vmtest boot of the -O0 hello and minified Linux; `check-code-identity.py` for each -O0 and -Os pair; `test_dwarf.py` on both builds of each; suite hello (every instruction of hello_main and put_line), suite unoptimized (minified Linux: eight Run to stops, single steps into calls, no "optimized out" at any address read, values vs gdb at each stop; the -Os entry must show some) | kernels; tasks,operands,runto_phone,srclinks,unoptimized; boot,... |
 
 ## Testing

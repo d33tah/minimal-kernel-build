@@ -84,6 +84,11 @@ jobs:
         site/gen-disasm.py "$RUNNER_TEMP/hello-os/boot/high/kernel.elf" out/hello-os/disasm.json
         site/gen-disasm.py "$o/minified/vmlinux" out/minified-linux/disasm.json
         site/gen-disasm.py minified/vmlinux out/minified-linux-os/disasm.json
+        # The page's static jump paths (jumps.js over disasm.json) against the ELF's bytes.
+        site/test_jumps.py hello/boot/high/kernel.elf out/hello/disasm.json out/hello/symbols.json
+        site/test_jumps.py "$RUNNER_TEMP/hello-os/boot/high/kernel.elf" out/hello-os/disasm.json out/hello-os/symbols.json
+        site/test_jumps.py "$o/minified/vmlinux" out/minified-linux/disasm.json out/minified-linux/symbols.json
+        site/test_jumps.py minified/vmlinux out/minified-linux-os/disasm.json out/minified-linux-os/symbols.json
         # Inputs for the browser test's symbol import into the page's
         # minified-linux (not deployed).
         mkdir -p out/import-test
@@ -306,7 +311,7 @@ jobs:
         # Cache busting: Pages serves with max-age=600, and a browser that
         # keeps an older app.js next to a newer index.html breaks.
         v=$(echo "$GITHUB_SHA" | cut -c1-12)
-        sed -i -E "s/(href|src)=\"(style\.css|clock\.js|app\.js|stepper\.js|graph\.js|dwarf\.js|unwind\.js|asmnames\.js|dbginfo\.js|source\.js|coverage\.js|vars\.js|fnfacts\.js|symimport\.js|livedis\.js|fastforward\.js|cpustate\.js|v86\/libv86\.js)\"/\1=\"\2?v=$v\"/g" site/index.html
+        sed -i -E "s/(href|src)=\"(style\.css|clock\.js|app\.js|jumps\.js|stepper\.js|graph\.js|dwarf\.js|unwind\.js|asmnames\.js|dbginfo\.js|source\.js|coverage\.js|vars\.js|fnfacts\.js|symimport\.js|livedis\.js|fastforward\.js|cpustate\.js|v86\/libv86\.js)\"/\1=\"\2?v=$v\"/g" site/index.html
         grep -E "\?v=$v" site/index.html
 
     # The browser test runs in its own job (browser-test below) so the
@@ -347,7 +352,7 @@ jobs:
         suites:
         - boot,symbols,debugger,misc,touch,tasks_minified,hello,firstlook
         - debian,dwarf,dwarf_import,runto,initramfs,coverage
-        - tasks,operands,runto_phone,srclinks,unoptimized
+        - tasks,operands,runto_phone,srclinks,unoptimized,jumps
         - types,covtree,unwind,lineaddr,fnfacts,branches
     name: browser-test (${{ matrix.suites }})
     steps:

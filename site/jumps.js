@@ -132,7 +132,9 @@ const jumpKindsText = (mask) => JK_TEXT.filter((_, k) => k && mask & 1 << k).joi
 //   { into: [{ at, mask, stat, count }], out: [...same], late (kinds whose
 //     targets are known only at run time, for an out path list),
 //     noDirect (no static path in and the instruction before does not fall
-//     through into it, or there is none), inS (whether S has pa) }
+//     through into it, or there is none), inS (whether S has pa),
+//     local (S.local: S holds only that many instructions decoded live, so
+//     paths from code outside them are not known; 0 for disasm.json) }
 // at: the other end's physical address (-2: a direct target outside the
 // image, va in .va).
 function jumpPaths(S, st, pa) {
@@ -168,7 +170,7 @@ function jumpPaths(S, st, pa) {
 			add(out, e[1], e[2], false, e[3]);
 	}
 	const sort = (m) => [...m.values()].sort((a, b) => b.count - a.count || a.at - b.at);
-	return { into: sort(into), out: sort(out), late, noDirect, inS: i >= 0 };
+	return { into: sort(into), out: sort(out), late, noDirect, inS: i >= 0, local: S && S.local || 0 };
 }
 
 // ---- the page: counts per instruction, arcs, the list of paths ----------
@@ -194,8 +196,18 @@ function jumpsFor(list) {
 			jumpsKernel = [disasm, symbols, jumpsStatic(disasm.insns, toPhys())];
 		return jumpsKernel[2];
 	}
-	return jumpsStatic(list, toPhys());
+	const S = jumpsStatic(list, toPhys());
+	S.local = list.length;
+	return S;
 }
+
+// What "no direct path" rests on: the whole disassembly, or only the
+// instructions decoded live (then jumps from other code are not known).
+function jumpNoneScope(P) {
+	return P.local ? "from the " + P.local.toLocaleString("en") + " instruction" + (P.local > 1 ? "s" : "") + " decoded live" : "";
+}
+
+const JUMP_NONE_OTHER = "jumps and calls from other code are not known";
 
 const jumpSeen = (list) => list.reduce((n, e) => n + e.count, 0);
 
@@ -225,7 +237,9 @@ function jumpCountText(e) {
 function jumpBadgesHtml(P, pa) {
 	let h = "";
 	if (P.noDirect)
-		h += ' <span class="jnone" title="No direct path into this instruction: no jump or call in the disassembly goes here and the instruction before it does not fall through (a jmp, ret or iret, or none)' +
+		h += ' <span class="jnone" title="' + (P.local ? "No direct path into this instruction " + jumpNoneScope(P) +
+			" (" + JUMP_NONE_OTHER + "): none of them jumps or calls here and the one before it does not fall through (a jmp, ret or iret, or none decoded)" :
+			"No direct path into this instruction: no jump or call in the disassembly goes here and the instruction before it does not fall through (a jmp, ret or iret, or none)") +
 			(P.into.length ? "; reached at run time through " + P.into.length + " path" + (P.into.length > 1 ? "s" : "") + " (indirect, interrupt or exception)" : "") +
 			'">⊘</span>';
 	const btn = (dir, n, seen, title) => ' <button type="button" class="jc" data-pa="' + pa + '" data-dir="' + dir + '" title="' + escHtml(title) + '">' +
@@ -401,7 +415,8 @@ function jumpPopShow(btn) {
 	else if (dir === "out" && JK_LATE.has(P.late))
 		notes.push("A " + JK_TEXT[P.late] + ": the targets listed are the ones observed while stepping.");
 	if (dir === "in" && P.noDirect)
-		notes.push("No direct path: no jump or call in the disassembly goes here and the instruction before does not fall through.");
+		notes.push(P.local ? "No direct path " + jumpNoneScope(P) + " (" + JUMP_NONE_OTHER + "): none of them jumps or calls here and the one before does not fall through." :
+			"No direct path: no jump or call in the disassembly goes here and the instruction before does not fall through.");
 	if (S && box && box.dataset.jlocal)
 		notes.push("Static paths only from the " + box.dataset.jlocal + " (no disasm.json): jumps from other code are not known.");
 	const jit = jumpsJitNote();
@@ -465,7 +480,8 @@ function renderEipJumps(S, pa) {
 		else if (dir === "out" && JK_LATE.has(P.late))
 			span.append(" (a " + JK_TEXT[P.late] + ": known at run time)");
 		if (dir === "in" && P.noDirect)
-			span.append(" (no direct path: nothing jumps or calls here and the instruction before does not fall through)");
+			span.append(P.local ? " (no direct path " + jumpNoneScope(P) + "; " + JUMP_NONE_OTHER + ")" :
+				" (no direct path: nothing jumps or calls here and the instruction before does not fall through)");
 		return span;
 	};
 	el.append(part("in", P.into), document.createElement("br"), part("out", P.out));

@@ -715,7 +715,11 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   Debugger say when the JIT has run. An instruction no direct path
   reaches (no jump or call goes there and the instruction before does not
   fall through: padding after a ret, or a function only called through a
-  pointer) is marked `⊘`. Jumps (jmp, jcc, loop, indirect jmp) between two
+  pointer) is marked `⊘`. Without disasm.json (Debian, an imported
+  vmlinux, code outside the build) the static paths come only from the
+  instructions decoded live, so `⊘`, the lists and the Debugger then say
+  that jumps and calls from other code are not known. Jumps (jmp, jcc,
+  loop, indirect jmp) between two
   instructions of the same listing are drawn as arcs left of the
   addresses, like `objdump --visualize-jumps`: shorter arcs nearer the
   code, grey when not taken while stepping, in the accent colour when
@@ -1222,6 +1226,7 @@ browser-test matrix job named by its suites):
 | C1 file:line links | suite srclinks (minified Linux paused in code inlined into setup_arch: each kind of link in the Debugger, Page listing, hovered byte, Graph detail and Coverage facts opens its file with its line picked and in view; no plain file:line text anywhere on the page after a Run to and on the Page, Graph and Coverage tabs (the overlay's copy of the status opens too); after a Run to the state line names the function at EIP with the source row's line; Enter opens one and moves the focus, Escape gives it back; a tap on a 390 px phone, and on the state line's link at a stop in a function with a long name (the link inside the viewport and the state line's box); light and dark at 1280 and 390 px) | tasks,operands,runto_phone,srclinks |
 | Screen after a pause | suite debugger, check "screen after a pause" (requestAnimationFrame starved: hello stepped past Hello, World! while paused and minified Linux after its end stop at full speed still show the text on the screen; CI once caught the Debian panic stop without its last line) | boot,symbols,debugger,... |
 | J1 jump paths | `test_jumps.py` (every instruction of hello, hello-os and both minified Linux builds: kind, target and fall-through from jumps.js over disasm.json equal a decode of the ELF's bytes from a fresh llvm-objdump run, the decoder agrees with objdump's mnemonics, and every target's static sources are the same); suite jumps (hello: 300 single steps from hello_main; minified Linux: from rest_init to the end of the boot, about 95,000 single steps with timer interrupts, iret and an exception: the recorded paths equal the non-fall-through pairs of the stepper's own EIP sequence, count for count, with a fitting kind; a taken jcc's target shows `←n·k×` and its list (source, count, file:line), go there opens the Page tab at the source, Enter and Escape, the taken arc drawn, underscores of the list's names drawn; EIP's paths at a function entry name the static call; the JIT note; 390 px light and dark) | kernels; tasks,operands,runto_phone,srclinks,unoptimized,jumps |
+| J2 live-decode scope | suite jumps, case jumps_live (Debian 6.1 686 and an imported vmlinux on the minified Linux, Run to start_kernel: the ⊘ titles of Code at EIP and the Page listing, the Page note, the list notes and the Debugger's paths at EIP say "no direct path" only with the scope of the instructions decoded live, never "nothing jumps or calls here"; hello with disasm.json keeps the whole-disassembly wording) | tasks,operands,runto_phone,srclinks,unoptimized,jumps |
 | U1/U2 unoptimized builds | vmtest boot of the -O0 hello and minified Linux; `check-code-identity.py` for each -O0 and -Os pair; `test_dwarf.py` on both builds of each; suite hello (every instruction of hello_main and put_line), suite unoptimized (minified Linux: eight Run to stops, single steps into calls, no "optimized out" at any address read, values vs gdb at each stop; the -Os entry must show some) | kernels; tasks,operands,runto_phone,srclinks,unoptimized; boot,... |
 
 ## Testing

@@ -6091,13 +6091,138 @@ def jumps_case(browser, base, shots, name):
     return problems, r
 
 
+# The jump path texts of a listing (selector): its ⊘ titles and, for
+# #eip_jumps / #jump_info, their text.
+JUMP_CLAIMS_JS = """(sel) => { const out = [];
+  for (const box of document.querySelectorAll(sel)) {
+    if (box.id === 'eip_jumps' || box.id === 'jump_info') out.push([box.id, box.textContent]);
+    for (const s of box.querySelectorAll('.jnone')) out.push(['title', s.title]); }
+  return out; }"""
+
+
+def jump_claims_live(claims, where):
+    """Claims of "no direct path" made from instructions decoded live must
+    say so: jumps from code outside the decoded range are not known."""
+    bad = {}
+    for kind, t in claims:
+        low = t.lower()
+        if "no jump or call in the disassembly" in low or "nothing jumps or calls here" in low:
+            why = "claims what only the whole disassembly could tell"
+        elif ("no direct path" in low or "without a direct path" in low) and not ("decoded live" in low or "live decode" in low):
+            why = "says 'no direct path' without the live-decode scope"
+        else:
+            continue
+        bad.setdefault((kind, why), []).append(t)
+    return [f"{where}: {len(ts)} {kind} {why}, e.g. {ts[0][:220]!r}" for (kind, why), ts in bad.items()]
+
+
+def jumps_live_case(browser, base, shots):
+    """J2: with no disasm.json (the Debian sample, an imported vmlinux)
+    static paths come only from the instructions decoded live (a page, or
+    a few around EIP); the ⊘ tooltip, the list notes, the Page note and
+    the Debugger's paths at EIP must say so instead of claiming nothing
+    jumps or calls here. With disasm.json the wording names the whole
+    disassembly (hello's padding after a ret)."""
+    problems, r = [], {}
+    cases = []
+    deb = next((n for n in kernel_entries() if n.startswith("debian") and "initrd" not in kernel_entries()[n]), None)
+    if deb:
+        cases.append((deb, None))
+    elf = import_inputs()
+    if elf and "minified-linux" in kernel_entries():
+        cases.append(("minified-linux", elf[1]))
+    elif os.environ.get("CI"):
+        problems.append("no vmlinux to import (kernels/import-test)")
+    for name, imp in cases:
+        where = name + (" + imported " + imp.name if imp else "")
+        errors = []
+        page = browser.new_page(viewport={"width": 1280, "height": 1000})
+        page.on("pageerror", lambda e: errors.append(str(e)))
+        page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+        if imp:
+            page.evaluate("startPaused = true")
+            page.set_input_files("#symfile", str(imp))
+            wait_for(lambda: page.get_attribute("#sym_status", "data-state") in ("imported", "error"), 60)
+            if page.get_attribute("#sym_status", "data-state") != "imported":
+                problems.append(f"{where}: import failed: {page.inner_text('#sym_status')[:200]!r}")
+                page.close()
+                continue
+            wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+        wait_for(lambda: page.evaluate("typeof symbols !== 'undefined' && !!symbols && symbols.symbols.length > 0"), 120)
+        sk = page.evaluate("symbols.symbols.find((s) => s.name === 'start_kernel')")
+        page.fill("#dbg_addr", "start_kernel")
+        page.click("#dbg_runto")
+        ok, at, status = run_to_wait(page, {sk["paddr"]}, 400)
+        if not ok:
+            problems.append(f"{where}: Run to start_kernel did not stop there: {status!r}")
+            page.close()
+            continue
+        if page.evaluate("!!disasm"):
+            problems.append(f"{where}: has disasm.json, the case needs a live decode")
+        wait_for(lambda: page.get_attribute("#eip_jumps", "data-pa") == str(sk["paddr"]), 20)
+        wait_for(lambda: page.get_attribute("#context", "data-source") == "live", 20)
+        r[where + " eip"] = page.inner_text("#eip_jumps")[:300]
+        claims = page.evaluate(JUMP_CLAIMS_JS, "#context, #eip_jumps")
+        # start_kernel's first instruction: callers are outside the
+        # decoded range, so it must not be claimed unreachable.
+        if not any("no direct path" in t.lower() for _, t in claims):
+            r[where + " note"] = "no 'no direct path' claim at the start_kernel entry"
+        problems += jump_claims_live(claims, where + " Code at EIP")
+        show_tab(page, "page")
+        wait_for(lambda: page.get_attribute("#listing", "data-source") == "live" and
+                 int(page.get_attribute("#listing", "data-insns") or 0) > 0, 30)
+        time.sleep(1)
+        claims = page.evaluate(JUMP_CLAIMS_JS, "#listing, #jump_info")
+        r[where + " page ⊘"] = sum(1 for k, _ in claims if k == "title")
+        r[where + " page note"] = page.inner_text("#jump_info")[:300]
+        problems += jump_claims_live(claims, where + " Page listing")
+        # A list opened at an instruction with paths in shows the scope note.
+        if page.locator("#listing .jc[data-dir=in]").count():
+            page.click("#listing .jc[data-dir=in] >> nth=0")
+            wait_for(lambda: page.is_visible("#jump_pop"), 5)
+            notes = page.eval_on_selector_all("#jump_pop p.note", "ps => ps.map((p) => p.textContent)")
+            problems += jump_claims_live([("list note", t) for t in notes], where + " list")
+            if not any("decoded live" in t or "live decode" in t for t in notes):
+                problems.append(f"{where}: the list does not say static paths are only from the live decode: {notes}")
+            page.keyboard.press("Escape")
+        page.screenshot(path=str(shots / f"jumps-live-{name}{'-import' if imp else ''}-page.png"))
+        if errors:
+            problems.append(f"{where}: page errors: {errors[:3]}")
+        page.close()
+    # With disasm.json the claim is about the whole disassembly.
+    if "hello" in kernel_entries():
+        page = browser.new_page(viewport={"width": 1280, "height": 1000})
+        page.goto(f"{base}/index.html?kernel=hello&paused=1#debugger")
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+        wait_for(lambda: page.evaluate("!!disasm && !!symbols"), 30)
+        got = page.evaluate("""() => { const S = jumpsFor(disasm.insns);
+          const pa = disasm.insns.map((x) => x[0]).find((a) => jumpPaths(S, null, a).noDirect);
+          if (pa === undefined) return null;
+          renderEipJumps(S, pa); const t = document.getElementById('eip_jumps').textContent;
+          const d = document.createElement('div'); d.innerHTML = jumpBadgesHtml(jumpPaths(S, null, pa), pa);
+          const n = d.querySelector('.jnone'); return { pa, eip: t, title: n ? n.title : null }; }""")
+        r["hello build"] = got
+        if not got:
+            problems.append("hello: no instruction without a direct path in disasm.json")
+        else:
+            if "nothing jumps or calls here" not in got["eip"] or "decoded live" in got["eip"]:
+                problems.append(f"hello: the build's wording at EIP changed: {got['eip']!r}")
+            if not got["title"] or "no jump or call in the disassembly goes here" not in got["title"] or "decoded live" in got["title"]:
+                problems.append(f"hello: the build's ⊘ title changed: {got['title']!r}")
+        page.close()
+    return problems, r
+
+
 def suite_jumps(ctx):
     failed = False
     for name in [n for n in JUMP_WALKS if n in ctx.entries]:
         t0 = time.monotonic()
         p, r = jumps_case(ctx.browser, ctx.base, ctx.shots, name)
         failed |= report("jumps", p, r, kernel=name, seconds=round(time.monotonic() - t0))
-    return failed
+    t0 = time.monotonic()
+    p, r = jumps_live_case(ctx.browser, ctx.base, ctx.shots)
+    return failed | report("jumps_live", p, r, seconds=round(time.monotonic() - t0))
 
 
 def suite_unoptimized(ctx):

@@ -762,7 +762,8 @@ function renderJumpInfo(r, dropped) {
 	el.textContent = "Jump paths: " + arcs + " jumps inside the page drawn as arcs" + (dropped ? " (" + dropped + " more not drawn: the gutter is full)" : "") +
 		"; " + into + " instructions with paths in (\u2190), " + outs + " with paths out (\u2192), " + seen.toLocaleString("en") +
 		" transfers from here observed while stepping; " + none + " without a direct path in (\u2298)" +
-		(r.source === "live" ? "; static paths only from this page's live decode" : "") + (jit ? "; " + jit : "") + ".";
+		(r.source === "live" ? " from this page's live decode (static paths only from the " + r.jS.local.toLocaleString("en") +
+			" instructions decoded here: jumps and calls from other code are not known)" : "") + (jit ? "; " + jit : "") + ".";
 }
 
 // Draw the selected page; base: bytes of the last scan (changes are marked).

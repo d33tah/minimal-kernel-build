@@ -297,6 +297,7 @@ jobs:
     - name: Assemble the site
       run: |
         site/check-ids.py
+        site/check-text.py
         # Which commit is deployed: shown in the page header.
         python3 -c 'import json, os, subprocess
         g = lambda f: subprocess.run(["git", "log", "-1", "--format=" + f], capture_output=True, text=True).stdout.strip()

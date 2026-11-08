@@ -2593,7 +2593,7 @@ def debian_source_panel(page, line, src_files, problems, r, shots):
     r["panel_code"] = int(page.get_attribute("#src_body", "data-code") or 0)
     r["panel_executed"] = int(page.get_attribute("#src_body", "data-executed") or 0)
     r["panel_info"] = page.inner_text("#src_info")
-    if not r["panel"].startswith("start_kernel — init/main.c:") or not 0 < r["panel_executed"] < r["panel_code"]:
+    if not r["panel"].startswith("start_kernel, init/main.c:") or not 0 < r["panel_executed"] < r["panel_code"]:
         problems.append(f"Debian source panel: {r['panel']!r}, {r['panel_executed']} of {r['panel_code']} lines executed")
     if "Debian's source package" not in r["panel_info"]:
         problems.append(f"Debian source panel does not say where the source comes from: {r['panel_info']!r}")
@@ -4794,7 +4794,7 @@ def multiline_statement(text, func):
 def panel_line_marks(page):
     """{line: (classes, mark, title)} of the Source panel's lines."""
     title = page.inner_text("#src_title")
-    m = re.search(r":(\d+)–\d+$", title)
+    m = re.search(r":(\d+)-\d+$", title)
     first = int(m.group(1)) if m else 1
     spans = page.eval_on_selector_all("#src_body > span", "es => es.map(e => [e.className, e.textContent, e.title])")
     return {first + i: (c.split(), t[6:7], ti) for i, (c, t, ti) in enumerate(spans)}
@@ -5022,6 +5022,10 @@ def srclink_line_shown(page, line):
         return f"line {line} is outside the Source panel's visible rows: {got}"
     if not (got["top"] >= 0 and got["bottom"] <= got["vh"]):
         return f"line {line} is outside the viewport: {got}"
+    # The texts use plain separators (the operator's rule: no em-dashes).
+    title = page.inner_text("#src_title")
+    if "\u2014" in title:
+        return f"the Source panel's title has an em-dash: {title!r}"
     return None
 
 

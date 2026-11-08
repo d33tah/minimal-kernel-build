@@ -1131,7 +1131,7 @@ function varInfoAt(pa) {
 		(w.note ? " (" + w.note + ")" : "") + ": " + dwTypeName(T, w.type) + (sc && sc.text ? " = " + sc.text : "");
 	if (w.unions.length)
 		text += "; the same bytes are also " + w.unions.join(", ") + " (union)";
-	text += " — in " + v[0] + ": " + dwTypeName(T, v[2]) + ", " + v[3] + " bytes, " + varsSection(T, v) +
+	text += ", in " + v[0] + ": " + dwTypeName(T, v[2]) + ", " + v[3] + " bytes, " + varsSection(T, v) +
 		varsNote(T, v).map((n) => "; " + n).join("");
 	if (v[5] & 2)
 		text += " (this is the template; the Variables panel shows CPU 0's copy)";

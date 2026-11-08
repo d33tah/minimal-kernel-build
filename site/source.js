@@ -651,7 +651,7 @@ function renderSourcePanel() {
 	const pl = panelLines();
 	const file = srcFile(path);
 	body.dataset.file = path;
-	$("src_title").textContent = srcPanel.whole ? path + " (whole file)" : (fn || "?") + " — " + path + (pl.state === "ok" ? ":" + pl.first + "–" + pl.last : "");
+	$("src_title").textContent = srcPanel.whole ? path + " (whole file)" : (fn || "?") + ", " + path + (pl.state === "ok" ? ":" + pl.first + "-" + pl.last : "");
 	if (pl.state !== "ok" || file.state !== "ok") {
 		$("src_addrs").hidden = true;
 		body.textContent = pl.state === "loading" || file.state === "loading" ? "reading " + (pl.state === "loading" ? "DWARF" : path) + "…" :
@@ -664,7 +664,7 @@ function renderSourcePanel() {
 	const { code, run } = lineCoverage(pl);
 	const sv = srcStatementView(file, pl.first, pl.last, code, run);
 	if (!srcPanel.whole)
-		$("src_title").textContent = (fn || "?") + " — " + path + ":" + sv.first + "–" + sv.last;
+		$("src_title").textContent = (fn || "?") + ", " + path + ":" + sv.first + "-" + sv.last;
 	const out = [];
 	for (let l = sv.first; l <= sv.last; l++) {
 		const c = sv.cont.get(l);

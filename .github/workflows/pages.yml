@@ -355,6 +355,7 @@ jobs:
         - debian,dwarf,dwarf_import,runto,initramfs,coverage
         - tasks,operands,runto_phone,srclinks,unoptimized,jumps
         - types,covtree,unwind,lineaddr,fnfacts,branches
+        - runstate
     name: browser-test (${{ matrix.suites }})
     steps:
     - uses: actions/checkout@v4

@@ -1077,22 +1077,31 @@ async function loadWasm(env) {
 	return instance.exports;
 }
 
+// Boot can be pressed again before the last one is done: each call waits
+// for every older machine to be destroyed, and only the newest call goes
+// on (two at once left two machines and a fast-forward of the old one
+// running on the new one's state: "fast-forwarding", nothing running).
+let bootGen = 0;
+let destroying = Promise.resolve();
 async function boot() {
 	if (!image)
 		return;
+	const gen = ++bootGen;
 	stopDriver();
-	if (emulator) {
-		const old = emulator;
-		emulator = null;
-		try {
-			await old.destroy();
-		} catch (e) {
-			console.warn("destroy:", e);
-		}
-	}
+	// A fast-forward of the old machine stops at its next check (st !== stepper).
 	stepper = null;
 	emuReady = false;
 	runState = "off";
+	ffActive = false;
+	if (emulator) {
+		const old = emulator;
+		emulator = null;
+		destroying = destroying.then(() => old.destroy()).catch((e) => console.warn("destroy:", e));
+	}
+	updateDebugUi();
+	await destroying;
+	if (gen !== bootGen)
+		return;
 	$("scan").disabled = true;
 	$("snap_save").disabled = true;
 	$("footprint").textContent = "";
@@ -2216,11 +2225,23 @@ function drawDebugUi() {
 		renderContext();
 }
 
+// Pause, and wait for a fast-forward or a fast Run to that is still running
+// (they are paused too) to return: a second one started next to it ran two
+// loops on one machine (Run to start_kernel during the boot's
+// fast-forward went on to the end of the run).
+async function pauseAll() {
+	if (runState !== "paused" || ffActive)
+		await pause();
+	while (ffActive)
+		await ffYield();
+}
+
 async function doStep(n) {
 	if (!stepper)
 		return;
-	if (runState !== "paused")
-		await pause();
+	await pauseAll();
+	if (!stepper)
+		return;
 	if (stepper.dead()) {
 		$("dbg_status").textContent = "The CPU executed hlt with interrupts off: nothing to step.";
 		return;
@@ -2338,8 +2359,9 @@ async function doRunTo() {
 	}
 	const { targets, label } = want;
 	const at = new Set(targets);
-	if (runState !== "paused")
-		await pause();
+	await pauseAll();
+	if (!stepper)
+		return;
 	// Run to from a target goes on to its next hit, stepped or with the JIT.
 	runToFrom = stepper.nextPhys();
 	runToMoved = false;

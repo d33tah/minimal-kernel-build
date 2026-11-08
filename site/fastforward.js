@@ -39,25 +39,26 @@ function codeRange(phys) {
 	return sec ? [sec.paddr, sec.paddr + sec.size] : [phys, phys + PAGE];
 }
 
-const ffCounter = () => new Uint32Array(stepper.cpu.wasm_memory.buffer, 664, 1)[0];
+const ffCounter = (st) => new Uint32Array(st.cpu.wasm_memory.buffer, 664, 1)[0];
 
 // Run one v86 main_loop() (JIT, ~100,000 instructions or until hlt) and
 // add what it ran to the stepper's count. Returns the instructions run.
 // beforeEntry: the fast-forward to the kernel entry (for the coverage note).
-function jitChunk(beforeEntry = false) {
-	const st = stepper, cpu = st.cpu;
+// st: the stepper of the machine the loop started on.
+function jitChunk(st, beforeEntry = false) {
+	const cpu = st.cpu;
 	if (cpu.in_hlt[0]) { // let the stepper's idle handling move the clock
 		st.run(1, -1, 50);
 		return 0;
 	}
-	const c0 = ffCounter();
-	CLOCK.extraSteps = () => (ffCounter() - c0) >>> 0;
+	const c0 = ffCounter(st);
+	CLOCK.extraSteps = () => (ffCounter(st) - c0) >>> 0;
 	try {
 		cpu.main_loop();
 	} finally {
 		CLOCK.extraSteps = null;
 	}
-	const ran = (ffCounter() - c0) >>> 0;
+	const ran = (ffCounter(st) - c0) >>> 0;
 	if (ran) {
 		st.noteJit(beforeEntry);
 		st.markGap(); // the symbol history and the recorded call stack have a gap here
@@ -70,7 +71,10 @@ function jitChunk(beforeEntry = false) {
 const ffYield = () => new Promise((r) => setTimeout(r, 0));
 
 async function fastForward(target, name) {
-	const st = stepper;
+	// Boot replaces the machine while this runs (each await lets it in):
+	// the loop then stops at its next check; it uses only st and em.
+	const st = stepper, em = emulator;
+	const gone = () => st !== stepper;
 	const [lo, hi] = codeRange(target);
 	const inside = () => { const p = st.nextPhys(); return p >= lo && p < hi; };
 	const t0 = realNow();
@@ -84,7 +88,7 @@ async function fastForward(target, name) {
 		// second): v86 0.5.471 cannot restore a snapshot taken while SeaBIOS
 		// is still setting up PCI (pci.js set_state reads a BAR that does not
 		// exist yet). A target reached on the way is stopped at exactly.
-		while (!reached && !ffAbort && st.steps < FF_STEP_FIRST && !st.dead()) {
+		while (!reached && !ffAbort && !gone() && st.steps < FF_STEP_FIRST && !st.dead()) {
 			const r = st.run(FF_STEP_FIRST - st.steps, target, 100);
 			if (r === "addr" || st.nextPhys() === target) {
 				reached = true;
@@ -95,24 +99,26 @@ async function fastForward(target, name) {
 			await ffYield();
 		}
 		ffInfo.stepped = st.steps - ffInfo.start;
-		while (!reached && !ffAbort && !st.dead()) {
+		while (!reached && !ffAbort && !gone() && !st.dead()) {
 			// save_state() fails before the BIOS has set up PCI (a device
 			// without its BARs yet): run on until it works.
 			let snap = null;
 			for (let tries = 0; !snap && tries < 200 && !inside(); tries++) {
 				try {
-					snap = await emulator.save_state();
+					snap = await em.save_state();
 				} catch (e) {
-					jitChunk(true);
+					jitChunk(st, true);
 				}
+				if (gone())
+					break;
 			}
-			if (!snap)
+			if (!snap || gone())
 				break;
 			const at = { steps: st.steps, base: CLOCK.base, baseSteps: CLOCK.baseSteps };
 			ffInfo.slices++;
 			let ran = 0;
 			while (ran < FF_SLICE && !ffAbort && !st.dead()) {
-				ran += jitChunk(true);
+				ran += jitChunk(st, true);
 				if (inside()) {
 					reached = true;
 					break;
@@ -121,7 +127,7 @@ async function fastForward(target, name) {
 			if (reached) {
 				// Back to the slice start and step exactly to the target.
 				try {
-					await emulator.restore_state(snap);
+					await em.restore_state(snap);
 				} catch (e) {
 					ffInfo.error = "restore_state failed (" + e + "): stopped past the target";
 					break;
@@ -133,7 +139,7 @@ async function fastForward(target, name) {
 				ffInfo.restores++;
 				ffInfo.jitSteps = st.steps - ffInfo.start;
 				let r = "count";
-				while (r !== "addr" && !ffAbort) {
+				while (r !== "addr" && !ffAbort && !gone()) {
 					r = st.run(5e6, target, 200);
 					if (st.nextPhys() === target)
 						r = "addr";
@@ -148,8 +154,11 @@ async function fastForward(target, name) {
 			await ffYield();
 		}
 	} finally {
-		ffActive = false;
+		if (!gone())
+			ffActive = false;
 	}
+	if (gone())
+		return false;
 	ffInfo.steps = st.steps - ffInfo.start;
 	ffInfo.ms = realNow() - t0;
 	ffInfo.stopPhys = st.nextPhys();
@@ -189,7 +198,8 @@ function expectedBytes(phys) {
 // wins: "Run to file:line" sets one per breakpoint address of the line);
 // label names them in the status line.
 async function fastRunTo(targets, label) {
-	const st = stepper, cpu = st.cpu;
+	const st = stepper, cpu = st.cpu, em = emulator;
+	const gone = () => st !== stepper;
 	const set = new Set(targets);
 	if (set.has(st.nextPhys()))
 		return true;
@@ -208,13 +218,15 @@ async function fastRunTo(targets, label) {
 	// for the Debian sample) arm right away as before.
 	const want = targets.map((pa) => [pa, expectedBytes(pa)]).filter(([, b]) => b);
 	if (want.length) {
-		const same = () => want.every(([pa, b]) => emulator.read_memory(pa, b.length).every((x, i) => x === b[i]));
-		while (!same() && !ffAbort && !st.dead()) {
+		const same = () => want.every(([pa, b]) => em.read_memory(pa, b.length).every((x, i) => x === b[i]));
+		while (!same() && !ffAbort && !gone() && !st.dead()) {
 			const r = st.run(10000, set, 100);
 			if (r === "addr" || set.has(st.nextPhys()))
 				break;
 			await ffYield();
 		}
+		if (gone())
+			return false;
 		if (set.has(st.nextPhys())) {
 			ffActive = false;
 			ffInfo = Object.assign(ffInfo || {}, { runTo: label, runToMs: realNow() - t0 });
@@ -225,17 +237,17 @@ async function fastRunTo(targets, label) {
 	const bp = new Map();
 	for (const pa of targets) {
 		const n = (expectedBytes(pa) || [0]).length;
-		const now = emulator.read_memory(pa, n);
+		const now = em.read_memory(pa, n);
 		for (let k = 0; k < n; k++)
 			if (!bp.has(pa + k))
 				bp.set(pa + k, [pa, now[k]]);
 	}
 	const arm = () => {
 		for (const [a, x] of bp) {
-			const b = emulator.read_memory(a, 1)[0];
+			const b = em.read_memory(a, 1)[0];
 			if (b !== 0xf4) { // (re)written by the guest since: remember the new byte
 				x[1] = b;
-				emulator.write_memory(new Uint8Array([0xf4]), a);
+				em.write_memory(new Uint8Array([0xf4]), a);
 			}
 		}
 	};
@@ -243,10 +255,10 @@ async function fastRunTo(targets, label) {
 	try {
 		arm();
 		let n = 0;
-		while (!ffAbort && !st.dead()) {
-			jitChunk();
+		while (!ffAbort && !gone() && !st.dead()) {
+			jitChunk(st);
 			const at = st.nextPhys() - 1;
-			if (cpu.in_hlt[0] && bp.has(at) && emulator.read_memory(at, 1)[0] === 0xf4) {
+			if (cpu.in_hlt[0] && bp.has(at) && em.read_memory(at, 1)[0] === 0xf4) {
 				const t = bp.get(at)[0];
 				cpu.instruction_pointer[0] = cpu.instruction_pointer[0] - (at + 1 - t);
 				cpu.in_hlt[0] = 0;
@@ -263,10 +275,13 @@ async function fastRunTo(targets, label) {
 		}
 	} finally {
 		for (const [a, [, b]] of bp)
-			if (emulator.read_memory(a, 1)[0] === 0xf4)
-				emulator.write_memory(new Uint8Array([b]), a);
-		ffActive = false;
+			if (em.read_memory(a, 1)[0] === 0xf4)
+				em.write_memory(new Uint8Array([b]), a);
+		if (!gone())
+			ffActive = false;
 	}
+	if (gone())
+		return false;
 	ffInfo = Object.assign(ffInfo || {}, { runTo: label, runToMs: realNow() - t0 });
 	return hit >= 0;
 }

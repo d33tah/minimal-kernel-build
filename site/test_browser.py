@@ -4803,16 +4803,25 @@ def srclink_opens(page, sel, how="click"):
     link = page.locator(sel).locator(".srclink").first
     if not link.count():
         return None, f"no .srclink in {sel}"
-    link.scroll_into_view_if_needed()
-    path, line = link.get_attribute("data-file"), int(link.get_attribute("data-line"))
+    # A listing can be drawn again (a scan, new DWARF) between finding the
+    # link and acting on it: try again on the new copy.
+    for attempt in range(5):
+        try:
+            link.scroll_into_view_if_needed()
+            path, line = link.get_attribute("data-file"), int(link.get_attribute("data-line"))
+            if how == "enter":
+                link.focus()
+                page.keyboard.press("Enter")
+            elif how == "tap":
+                link.tap()
+            else:
+                link.click()
+            break
+        except PlaywrightError:
+            if attempt == 4:
+                raise
+            time.sleep(0.5)
     want = f"{path}:{line}"
-    if how == "enter":
-        link.focus()
-        page.keyboard.press("Enter")
-    elif how == "tap":
-        link.tap()
-    else:
-        link.click()
     row = f'#src_body [data-line="{line}"].pick'
     ok = wait_for(lambda: page.is_visible("#src_panel") and page.get_attribute("#src_body", "data-file") == path
                   and page.get_attribute("#src_body", "data-state") in ("ok", "none")

@@ -1444,12 +1444,17 @@ def runto_phone_case(browser, base, shots):
                 problems.append(f"{tag}: {w!r} missing from the status or the paused overlay: {s}")
 
     lines = json.loads((SITE / entry["disasm"]).read_text())["insns"]
-    stores = [a for a, _, ins, *rest in lines if ins.startswith("movw") and a > main]
+    # The stores of a character to the VGA cell (movw to memory): -Os has
+    # one per inlined put_line, -O0 one in put_line.
+    stores = [a for a, _, ins, *rest in lines if ins.startswith("movw") and "(" in ins.split(",")[-1] and a > main]
+    # The first instruction of hello_main longer than one byte.
+    multi = next(a for a, b, *rest in lines if a >= main and len(b) > 2)
     for phone, speed in ((True, "1"), (True, "10"), (False, "1")):
         tag = ("phone" if phone else "desktop") + "@" + speed
         # At 10/s the Pause comes a few instructions into hello_main: Run
-        # to the store of "Still alive"'s first character instead.
-        target, want = ("hello_main", main) if speed == "1" else (hex(stores[1]), stores[1])
+        # to the last character store instead (-Os: of "Still alive", -O0:
+        # put_line's only one, first reached for "Hello, World!").
+        target, want = ("hello_main", main) if speed == "1" else (hex(stores[-1]), stores[-1])
         page, ctx = phone_flow(browser, base, target, speed, phone)
         stopped_at(f"{tag} {target}", page, want)
         ctx.close()
@@ -1463,8 +1468,8 @@ def runto_phone_case(browser, base, shots):
         refused(f"phone data {scheme}", page, [hex(rodata["paddr"]), ".rodata"])
         page.screenshot(path=str(shots / f"runto-phone-data-390-{scheme}.png"), full_page=True)
         ctx.close()
-    page, ctx = phone_flow(browser, base, hex(main + 1))
-    refused("phone mid-instruction", page, [hex(main + 1), hex(main)])
+    page, ctx = phone_flow(browser, base, hex(multi + 1))
+    refused("phone mid-instruction", page, [hex(multi + 1), hex(multi)])
     ctx.close()
 
     # The last character of "Hello, World!": Run to its store, 12 more

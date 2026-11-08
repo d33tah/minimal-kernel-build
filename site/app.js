@@ -2094,23 +2094,35 @@ function drawDebugUi() {
 	renderEnd();
 	renderClock();
 	const st = $("dbg_state");
-	const where = stepper && stepper.curSym >= 0 ? ", in " + stepper.symName[stepper.curSym] : "";
+	// Running: the instruction just executed. Paused: the one at EIP, which
+	// the rest of the Debugger shows (at a function's first instruction the
+	// last one executed is the caller's call).
+	const phys = !stepper ? -1 : runState === "paused" ? stepper.nextPhys() : stepper.lastPhys;
+	const sym = !stepper ? -1 : runState === "paused" ? (phys >= 0 ? stepper.symbolOf(phys) : -1) : stepper.curSym;
+	const where = sym >= 0 ? ", in " + stepper.symName[sym] : "";
 	let loc = null;
 	if (where && dbgHas() && runState !== "jit") {
 		// file:line only: the text would fetch every file stepped through.
-		const r = dbgFrames(stepper.lastPhys);
+		const r = dbgFrames(phys);
 		if (r.state === "ok" && r.frames[0].file && r.frames[0].line)
 			loc = r.frames[0];
 	}
-	st.textContent = { off: "", jit: "running (full speed, JIT)",
+	// The text is cut with an ellipsis, the file:line link after it stays
+	// whole (style.css #dbg_state).
+	const text = document.createElement("span");
+	text.className = "sttext";
+	text.textContent = ffActive && ffInfo ? (ffInfo.runTo !== undefined ? "running to " + ffInfo.runTo : "fast-forwarding to " + ffInfo.name) +
+		" with the JIT: " + num(stepper.steps - (ffInfo.start || 0)) + " instructions" : { off: "", jit: "running (full speed, JIT)",
 		stepped: (entryPhase ? "stepping to the kernel entry" : fastStepping() ? (counting ? "stepping (counting)" : "stepping") :
 			"slow motion " + $("dbg_speed").selectedOptions[0].text) + where,
 		paused: "paused" + where }[runState];
-	if (loc && (runState === "stepped" || runState === "paused"))
-		st.append(" (", srcLinkEl(loc.file, loc.line, "", stepper.lastPhys), ")");
-	if (ffActive && ffInfo)
-		st.textContent = (ffInfo.runTo !== undefined ? "running to " + ffInfo.runTo : "fast-forwarding to " + ffInfo.name) +
-			" with the JIT: " + num(stepper.steps - (ffInfo.start || 0)) + " instructions";
+	st.replaceChildren(text);
+	if (loc && !ffActive && (runState === "stepped" || runState === "paused")) {
+		const at = document.createElement("span");
+		at.className = "stloc";
+		at.append("\u00a0(", srcLinkEl(loc.file, loc.line, "", phys), ")");
+		st.append(at);
+	}
 	st.dataset.state = ffActive ? "ff" : runState;
 	st.title = st.textContent;
 	const can = !!stepper;
@@ -2121,8 +2133,12 @@ function drawDebugUi() {
 	const paused = can && !ffActive && runState === "paused";
 	$("vm_overlay").hidden = !paused;
 	if (paused) {
-		const end = stepper.end ? "end: " + endText() : "", note = $("dbg_status").textContent;
-		$("vm_reason").textContent = (end && !note.startsWith("Run to ") ? end : note || end) || "";
+		// The note keeps its file:line links (a copy of #dbg_status).
+		const end = stepper.end ? "end: " + endText() : "", status = $("dbg_status"), note = status.textContent;
+		if (end && !note.startsWith("Run to ") || !note)
+			$("vm_reason").textContent = end;
+		else
+			$("vm_reason").replaceChildren(...[...status.childNodes].map((n) => n.cloneNode(true)));
 		$("vm_continue").hidden = !!stepper.end;
 	}
 	for (const id of ["dbg_step", "dbg_stepn", "dbg_runto"])

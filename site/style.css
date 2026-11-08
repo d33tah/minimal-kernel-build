@@ -146,6 +146,8 @@ input[type=file] { max-width: 100%; font-size: 0.75rem; }
 }
 #vm_overlay[hidden] { display: none; }
 #vm_reason { font-size: 0.75rem; max-width: 95%; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+/* The overlay lets clicks through to the screen; its file:line links take them. */
+#vm_reason button.srclink { pointer-events: auto; color: inherit; }
 #vm_continue { pointer-events: auto; min-height: 32px; padding: 0.2rem 0.8rem; }
 #screen_text { white-space: pre; font: 6px/7px ui-monospace, monospace; color: #aaa; }
 #counters { font-size: 0.75rem; margin-top: 0.3rem; }
@@ -278,8 +280,9 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 /* Live status lines change many times a second: keep their size fixed so the
    layout under them does not jump (long symbol names are cut with an ellipsis,
    the full text is in the title). */
-#dbg_state { display: inline-block; flex: 1 1 0; min-width: 0; max-width: 100%;
-	white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+#dbg_state { display: flex; flex: 1 1 0; min-width: 0; max-width: 100%; white-space: nowrap; overflow: hidden; }
+#dbg_state .sttext { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+#dbg_state .stloc { flex: none; }
 #count_info { min-height: 3.9em; }
 .syminfo #cur_sym, .syminfo #prev_sym { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .syminfo .crumbs { min-height: 2.6em; }

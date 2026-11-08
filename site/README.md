@@ -253,7 +253,9 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   `--src-text`, light and dark). Hover titles are plain text drawn by the
   browser and cannot be coloured. Every file:line shown outside the Source panel
   is a link to it (one helper, `source.js` srcLinkEl and srcLinkHtml):
-  the state line, the Run to status, the source row and its inline
+  the state line (paused: the function and line at EIP; its text is cut
+  with an ellipsis on a narrow screen, the link stays whole), the Run to
+  status and its copy in the "VM paused" overlay on the screen, the source row and its inline
   chain, the call stack, the Code at EIP and Page listing C lines, the
   locals' frame headers, the function facts (defined at, starts at) in
   the Debugger, Coverage and Graph tabs, a watch's or hovered byte's
@@ -1182,7 +1184,7 @@ browser-test matrix job named by its suites):
 | A4 branch targets named | suite branches (Debian start_kernel and setup_arch pages, minified with live decode on, imported minified -g vmlinux: every direct branch to a symbol's code named, equal to gdb info symbol; live names equal disasm.json's llvm-objdump names line for line; Debugger and Page tab alike; callee tooltip prototype vs gdb ptype; click opens the target; BIOS page unnamed; 390 px light and dark) | types,covtree,unwind,lineaddr,fnfacts,branches |
 | D8 help and first look | `check-ids.py` (no duplicate ids); suite firstlook (every kernel incl. Debian with its initramfs and an imported vmlinux: explanations present, entry line, JIT gap, Coverage notes, no sideways scroll at 390 px light and dark) | site; boot,...,firstlook |
 | Run to on a phone | suite runto_phone (hello at 390 px touch, 1/s, 10/s and desktop: Boot, Pause, Run to a function stops at its first instruction; `hello`, `.rodata` and mid-instruction targets refused in the status and the paused overlay with the CPU still paused; a Run to right after the slice that printed "Hello, World!" stops there, stepped and with the JIT; light and dark screenshots); `--base https://d33.pl/minimal-kernel-build` for the live site | tasks,operands,runto_phone,srclinks |
-| C1 file:line links | suite srclinks (minified Linux paused in code inlined into setup_arch: each kind of link in the Debugger, Page listing, hovered byte, Graph detail and Coverage facts opens its file with its line picked and in view; no plain file:line left in the Debugger; Enter opens one and moves the focus, Escape gives it back; a tap on a 390 px phone; light and dark at 1280 and 390 px) | tasks,operands,runto_phone,srclinks |
+| C1 file:line links | suite srclinks (minified Linux paused in code inlined into setup_arch: each kind of link in the Debugger, Page listing, hovered byte, Graph detail and Coverage facts opens its file with its line picked and in view; no plain file:line text anywhere on the page after a Run to and on the Page, Graph and Coverage tabs (the overlay's copy of the status opens too); after a Run to the state line names the function at EIP with the source row's line; Enter opens one and moves the focus, Escape gives it back; a tap on a 390 px phone, and on the state line's link at a stop in a function with a long name (the link inside the viewport and the state line's box); light and dark at 1280 and 390 px) | tasks,operands,runto_phone,srclinks |
 | U1/U2 unoptimized builds | vmtest boot of the -O0 hello and minified Linux; `check-code-identity.py` for each -O0 and -Os pair; `test_dwarf.py` on both builds of each; suite hello (every instruction of hello_main and put_line), suite unoptimized (minified Linux: eight Run to stops, single steps into calls, no "optimized out" at any address read, values vs gdb at each stop; the -Os entry must show some) | kernels; tasks,operands,runto_phone,srclinks,unoptimized; boot,... |
 
 ## Testing

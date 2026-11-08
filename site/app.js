@@ -2090,7 +2090,19 @@ function updateDebugUi() {
 	srcFocusKeep(drawDebugUi);
 }
 
+// v86 draws the screen's changed text rows in a requestAnimationFrame loop
+// that draws nothing once the VM has stopped, so rows written in the last
+// frame before a stop (the panic's last line) and rows the stepper writes
+// while paused stayed blank: draw them whenever the Debugger is drawn.
+function flushScreen() {
+	const sa = emulator && emulator.screen_adapter, vga = emulator && emulator.v86 && emulator.v86.cpu.devices.vga;
+	if (sa && typeof sa.update_text === "function" && vga && !vga.graphical_mode)
+		sa.update_text();
+}
+
 function drawDebugUi() {
+	if (runState !== "jit")
+		flushScreen();
 	renderEnd();
 	renderClock();
 	const st = $("dbg_state");

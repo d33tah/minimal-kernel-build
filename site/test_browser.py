@@ -5025,6 +5025,55 @@ def srclink_line_shown(page, line):
     return None
 
 
+# Visible text outside a .srclink that reads like file:line, anywhere in
+# the document (the Source panel shows source text: close it first).
+PLAIN_SRCLOC_JS = r"""() => {
+  const re = /[\w./-]+\.(?:c|h|S|lds|tbl):\d+\b/;
+  const out = [];
+  const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let n; (n = w.nextNode());) {
+    const el = n.parentElement;
+    if (!re.test(n.nodeValue) || !el || el.closest('script,style,.srclink') || !el.checkVisibility()) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width === 0 && r.height === 0) continue;
+    const anc = el.closest('[id]');
+    out.push((anc ? '#' + anc.id : el.tagName) + ': ' + n.nodeValue.trim().slice(0, 100));
+  }
+  return out;
+}"""
+
+
+def srclink_plain_text(page, where):
+    """A problem when a visible file:line anywhere on the page is plain
+    text instead of a link; else None."""
+    if page.is_visible("#src_panel"):
+        page.click("#src_close")
+    plain = page.evaluate(PLAIN_SRCLOC_JS)
+    return plain and f"{where}: file:line shown as plain text: {plain[:5]}"
+
+
+def state_link_shown(page):
+    """None when the state line's file:line link lies fully inside the
+    viewport and inside the state line's own box (not cut off by its
+    ellipsis) and is what a tap at its centre hits; else what is wrong."""
+    got = page.evaluate("""() => { const st = document.getElementById('dbg_state'), e = st.querySelector('.srclink');
+        if (!e) return null;
+        const r = e.getBoundingClientRect(), b = st.getBoundingClientRect();
+        const h = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return { text: st.textContent, rect: [r.left, r.right, r.top, r.bottom], box: [b.left, b.right], vw: window.innerWidth,
+                 vh: window.innerHeight, hit: !!h && (h === e || e.contains(h)) }; }""")
+    if not got:
+        return "no link in the state line"
+    left, right, top, bottom = got["rect"]
+    if not (left >= -0.5 and right <= got["vw"] + 0.5 and top >= 0 and bottom <= got["vh"]):
+        return f"state line link outside the viewport: {got}"
+    if not (left >= got["box"][0] - 0.5 and right <= got["box"][1] + 0.5):
+        return f"state line link cut off by the state line's box: {got}"
+    if not got["hit"]:
+        return f"a tap at the state line link's centre does not hit it: {got}"
+    return None
+
+
 def srclinks_case(browser, base, shots):
     """Every file:line the Debugger shows is a link to the Source panel at
     that line, through one helper (source.js srcLinkEl/srcLinkHtml): the
@@ -5054,6 +5103,23 @@ def srclinks_case(browser, base, shots):
     r["Run to status"] = want
     if p:
         problems.append(p)
+    # The "VM paused" overlay on the screen repeats the Run to status.
+    want, p = srclink_opens(page, "#vm_reason")
+    r["VM paused overlay"] = want
+    if p:
+        problems.append(f"{name} VM paused overlay: {p}")
+    p = srclink_plain_text(page, f"{name} after Run to {fn}")
+    if p:
+        problems.append(p)
+    # Paused at fn's first instruction, the state line names fn and links
+    # the line at EIP, as the source row does (not the caller's call).
+    wait_for(lambda: page.locator("#cur_src .srclink").count() > 0, 30)
+    st = page.inner_text("#dbg_state")
+    st_link = page.locator("#dbg_state .srclink")
+    src_link = page.locator("#cur_src .frame:not(.inl) .srclink").first
+    got = [(e.get_attribute("data-file"), e.get_attribute("data-line")) if e.count() else None for e in (st_link, src_link)]
+    if f"in {fn}" not in st.replace("\n", " ") or got[0] != got[1]:
+        problems.append(f"{name}: after Run to {fn} the state line {st!r} ({got[0]}) does not match the source row ({got[1]})")
     # Step into inlined code: the source row then has an "inlined into" line.
     for _ in range(60):
         if page.locator("#cur_src .frame.inl .srclink").count():
@@ -5135,6 +5201,9 @@ def srclinks_case(browser, base, shots):
     r["Page listing"] = want
     if p:
         problems.append(f"{name} Page listing: {p}")
+    p = srclink_plain_text(page, f"{name} Page tab")
+    if p:
+        problems.append(p)
     it = next(v for v in T["vars"] if v[0] == "init_task")
     if page.is_visible("#src_panel"):
         page.click("#src_close")
@@ -5156,6 +5225,9 @@ def srclinks_case(browser, base, shots):
     r["Graph detail"] = want
     if p:
         problems.append(f"{name} Graph detail: {p}")
+    p = srclink_plain_text(page, f"{name} Graph tab")
+    if p:
+        problems.append(p)
     # Coverage: a function's facts (open its row's arrow).
     if page.is_visible("#src_panel"):
         page.click("#src_close")
@@ -5169,6 +5241,9 @@ def srclinks_case(browser, base, shots):
         r["Coverage facts"] = want
         if p:
             problems.append(f"{name} Coverage facts: {p}")
+        p = srclink_plain_text(page, f"{name} Coverage tab")
+        if p:
+            problems.append(p)
     else:
         problems.append(f"{name}: no Coverage row for {fn}")
     page.close()
@@ -5186,6 +5261,36 @@ def srclinks_case(browser, base, shots):
     r["phone tap"] = want
     if p:
         problems.append(f"{name} phone: {p}")
+    # The state line ("paused, in <function> (file:line)") keeps its link
+    # on the screen when the function name is long: step until a stop in a
+    # function with a long name, checking every stop on the way.
+    longest = ""
+    for k in range(40):
+        if ph.is_visible("#src_panel"):
+            ph.click("#src_close")
+        ph.locator("#dbg_state").scroll_into_view_if_needed()
+        fname = ph.evaluate("stepper.curSym >= 0 ? stepper.symName[stepper.curSym] : ''")
+        p = state_link_shown(ph)
+        if p:
+            problems.append(f"{name} phone, in {fname} after {ph.evaluate('stepper.steps')} steps: {p}")
+            break
+        if len(fname) > len(longest):
+            longest = fname
+        if len(fname) >= 20:
+            want, p = srclink_opens(ph, "#dbg_state", "tap")
+            r["phone state line"] = f"{fname}: {want}"
+            if p:
+                problems.append(f"{name} phone state line in {fname}: {p}")
+            break
+        before = ph.evaluate("stepper.steps")
+        ph.fill("#dbg_n", "5")
+        ph.tap("#dbg_stepn")
+        wait_for(lambda: ph.evaluate("stepper.steps") > before and ph.get_attribute("#dbg_state", "data-state") == "paused", 30)
+        wait_for(lambda: ph.locator("#dbg_state .srclink").count() > 0, 20)
+    else:
+        problems.append(f"{name} phone: no stop in a function with a name of 20 or more characters (longest {longest!r})")
+    if ph.is_visible("#src_panel"):
+        ph.click("#src_close")
     for scheme in ("light", "dark"):
         ph.emulate_media(color_scheme=scheme)
         if ph.is_visible("#src_panel"):

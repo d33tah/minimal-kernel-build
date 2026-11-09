@@ -85,7 +85,10 @@ function jumpsToPhys(sections) {
 // through; and per target address the instructions that go there.
 // A jcc or loop to the very next instruction is no path (its two sides
 // are the same); an unconditional jmp or call there is one.
-function jumpsStatic(insns, toPhys) {
+// taken: [[paddr, how], ...] (disasm.json's "taken": "data", "code",
+// "extable", "array"; "entry" for a function's first instruction) - instructions
+// an indirect jump or call, or an exception fixup, can reach.
+function jumpsStatic(insns, toPhys, taken) {
 	const n = insns.length;
 	const kind = new Uint8Array(n), fall = new Uint8Array(n).fill(1);
 	const target = new Float64Array(n).fill(-1), va = new Float64Array(n).fill(-1);
@@ -112,7 +115,7 @@ function jumpsStatic(insns, toPhys) {
 				inc.set(pa, [i]);
 		}
 	}
-	return { insns, kind, fall, target, va, inc };
+	return { insns, kind, fall, target, va, inc, taken: new Map(taken || []) };
 }
 
 // Index of the instruction starting at pa in S.insns, or -1.
@@ -131,10 +134,16 @@ const jumpKindsText = (mask) => JK_TEXT.filter((_, k) => k && mask & 1 << k).joi
 // or null), merged per other end:
 //   { into: [{ at, mask, stat, count }], out: [...same], late (kinds whose
 //     targets are known only at run time, for an out path list),
-//     noDirect (no static path in and the instruction before does not fall
-//     through into it, or there is none), inS (whether S has pa),
+//     noDirect (the ⊘ mark: nothing can be shown to reach pa - no static
+//     path in, its address is not taken (S.taken), an instruction ends
+//     right before pa and does not fall through, and the stepper has
+//     neither run pa, nor seen a path into it, nor stopped at it),
+//     taken (how its address is taken, or ""), inS (whether S has pa),
 //     local (S.local: S holds only that many instructions decoded live, so
 //     paths from code outside them are not known; 0 for disasm.json) }
+// Without an instruction ending right at pa (the first one of a section or
+// of a live decode, or one llvm-objdump decoded over pa from padding) what
+// comes before is not known, so there is no ⊘.
 // at: the other end's physical address (-2: a direct target outside the
 // image, va in .va).
 function jumpPaths(S, st, pa) {
@@ -151,7 +160,7 @@ function jumpPaths(S, st, pa) {
 		e.stat = e.stat || stat;
 		e.count += count;
 	};
-	let late = 0, noDirect = false;
+	let late = 0, noDirect = false, taken = "";
 	if (i >= 0) {
 		for (const k of S.inc.get(pa) || [])
 			add(into, S.insns[k][0], 1 << S.kind[k], true, 0);
@@ -160,8 +169,9 @@ function jumpPaths(S, st, pa) {
 		else if (S.kind[i])
 			late = S.kind[i];
 		const prev = i > 0 ? S.insns[i - 1] : null;
-		const fallsIn = prev && prev[0] + prev[1].length / 2 === pa && S.fall[i - 1];
-		noDirect = !into.size && !fallsIn;
+		const endsHere = prev && prev[0] + prev[1].length / 2 === pa;
+		taken = S.taken ? S.taken.get(pa) || "" : "";
+		noDirect = !into.size && endsHere && !S.fall[i - 1] && !taken;
 	}
 	if (st && st.jumpIn) {
 		for (const e of st.jumpIn.get(pa) || [])
@@ -169,8 +179,10 @@ function jumpPaths(S, st, pa) {
 		for (const e of st.jumpOut.get(pa) || [])
 			add(out, e[1], e[2], false, e[3]);
 	}
+	if (noDirect && st && (into.size || st.executed && st.executed(pa) || st.nextPhys && st.nextPhys() === pa))
+		noDirect = false;
 	const sort = (m) => [...m.values()].sort((a, b) => b.count - a.count || a.at - b.at);
-	return { into: sort(into), out: sort(out), late, noDirect, inS: i >= 0, local: S && S.local || 0 };
+	return { into: sort(into), out: sort(out), late, noDirect, taken, inS: i >= 0, local: S && S.local || 0 };
 }
 
 // ---- the page: counts per instruction, arcs, the list of paths ----------
@@ -189,14 +201,23 @@ let jumpHitScroll = false; // the Page listing's next drawing scrolls to it
 // Static paths of the build's disassembly (made once per kernel, ~20-40 ms
 // for the -O0 minified Linux's 48,000 instructions), or of another list
 // (instructions decoded live: only the paths inside that list).
+// A live decode does not know who calls a function: the first instruction
+// of each function symbol in it counts as reached ("entry").
 function jumpsFor(list) {
 	const toPhys = () => jumpsToPhys(symbols && symbols.sections);
 	if (disasm && list === disasm.insns) {
 		if (!jumpsKernel || jumpsKernel[0] !== disasm || jumpsKernel[1] !== symbols)
-			jumpsKernel = [disasm, symbols, jumpsStatic(disasm.insns, toPhys())];
+			jumpsKernel = [disasm, symbols, jumpsStatic(disasm.insns, toPhys(), disasm.taken)];
 		return jumpsKernel[2];
 	}
-	const S = jumpsStatic(list, toPhys());
+	const entries = [], look = symbols ? kernelSymLookup() : null;
+	if (look)
+		for (const [pa] of list) {
+			const s = look(pa);
+			if (s && s.paddr === pa && /^[Tt]$/.test(s.type || "T"))
+				entries.push([pa, "entry"]);
+		}
+	const S = jumpsStatic(list, toPhys(), entries);
 	S.local = list.length;
 	return S;
 }
@@ -208,6 +229,15 @@ function jumpNoneScope(P) {
 }
 
 const JUMP_NONE_OTHER = "jumps and calls from other code are not known";
+
+// How an instruction without a direct path in can still be reached (P.taken).
+const JUMP_TAKEN_TEXT = {
+	data: "Reached indirectly: its address is in the kernel's data (a function pointer, a switch's jump table or a table of handlers)",
+	code: "Reached indirectly: its address is in the code (an immediate such as movl $fn or pushl $fn, used as a pointer)",
+	extable: "Reached from the exception table: a fault at the instruction it covers continues here",
+	array: "Reached indirectly: one of an array of entry stubs whose start is in the kernel's data or code, reached as start + n × stride",
+	entry: "A function's entry: its callers are outside the instructions decoded live",
+};
 
 const jumpSeen = (list) => list.reduce((n, e) => n + e.count, 0);
 
@@ -232,16 +262,24 @@ function jumpCountText(e) {
 		"observed " + e.count.toLocaleString("en") + "×";
 }
 
+// What ⊘ means at an instruction (P.noDirect): the tooltip, the list's
+// note and the Debugger's paths at EIP.
+function jumpNoneText(P) {
+	const jit = jumpsJitNote();
+	return (P.local ? "No direct path into this instruction " + jumpNoneScope(P) + " (" + JUMP_NONE_OTHER +
+		"): none of them jumps or calls here, the one before it does not fall through (a jmp, ret or iret), it is no function's entry" :
+		"No path leads here: no jump or call in the disassembly goes here, its address is nowhere in the kernel " +
+		"(no function pointer, jump table or exception fixup), the instruction before it does not fall through (a jmp, ret or iret)") +
+		" and it has not run while stepping. Typically alignment padding, or a function nothing calls" +
+		(jit && jit.startsWith("v86") ? "; " + jit.replace("paths taken there are missing", "code run there is not known") : "") + ".";
+}
+
 // The count buttons after an instruction line (and the mark of an
-// instruction no direct path reaches); P from jumpPaths.
+// instruction no path is known to reach); P from jumpPaths.
 function jumpBadgesHtml(P, pa) {
 	let h = "";
 	if (P.noDirect)
-		h += ' <span class="jnone" title="' + (P.local ? "No direct path into this instruction " + jumpNoneScope(P) +
-			" (" + JUMP_NONE_OTHER + "): none of them jumps or calls here and the one before it does not fall through (a jmp, ret or iret, or none decoded)" :
-			"No direct path into this instruction: no jump or call in the disassembly goes here and the instruction before it does not fall through (a jmp, ret or iret, or none)") +
-			(P.into.length ? "; reached at run time through " + P.into.length + " path" + (P.into.length > 1 ? "s" : "") + " (indirect, interrupt or exception)" : "") +
-			'">⊘</span>';
+		h += ' <span class="jnone" title="' + escHtml(jumpNoneText(P)) + '">⊘</span>';
 	const btn = (dir, n, seen, title) => ' <button type="button" class="jc" data-pa="' + pa + '" data-dir="' + dir + '" title="' + escHtml(title) + '">' +
 		(dir === "in" ? "←" : "→") + n + (seen ? "·" + seen.toLocaleString("en") + "×" : "") + "</button>";
 	const summary = (list, dir) => {
@@ -573,8 +611,9 @@ function jumpPopShow(btn) {
 	else if (dir === "out" && JK_LATE.has(P.late))
 		notes.push("A " + JK_TEXT[P.late] + ": the targets listed are the ones observed while stepping.");
 	if (dir === "in" && P.noDirect)
-		notes.push(P.local ? "No direct path " + jumpNoneScope(P) + " (" + JUMP_NONE_OTHER + "): none of them jumps or calls here and the one before does not fall through." :
-			"No direct path: no jump or call in the disassembly goes here and the instruction before does not fall through.");
+		notes.push(jumpNoneText(P));
+	else if (dir === "in" && P.taken)
+		notes.push(JUMP_TAKEN_TEXT[P.taken] + ".");
 	if (S && box && box.dataset.jlocal)
 		notes.push("Static paths only from the " + box.dataset.jlocal + " (no disasm.json): jumps from other code are not known.");
 	const jit = jumpsJitNote();
@@ -641,7 +680,9 @@ function renderEipJumps(S, pa) {
 			span.append(" (a " + JK_TEXT[P.late] + ": known at run time)");
 		if (dir === "in" && P.noDirect)
 			span.append(P.local ? " (no direct path " + jumpNoneScope(P) + "; " + JUMP_NONE_OTHER + ")" :
-				" (no direct path: nothing jumps or calls here and the instruction before does not fall through)");
+				" (no path leads here: nothing jumps or calls here, its address is nowhere in the kernel and the instruction before does not fall through)");
+		else if (dir === "in" && P.taken)
+			span.append(" (" + JUMP_TAKEN_TEXT[P.taken].toLowerCase() + ")");
 		return span;
 	};
 	el.append(part("in", P.into), document.createElement("br"), part("out", P.out));

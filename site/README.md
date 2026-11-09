@@ -723,13 +723,27 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   (from the last instruction), and an sti with interrupts off counts for
   the instruction after it, which v86 runs in the same step. Code v86's
   JIT runs records nothing; the Page tab's note, each list and the
-  Debugger say when the JIT has run. An instruction no direct path
-  reaches (no jump or call goes there and the instruction before does not
-  fall through: padding after a ret, or a function only called through a
-  pointer) is marked `⊘`. Without disasm.json (Debian, an imported
-  vmlinux, code outside the build) the static paths come only from the
-  instructions decoded live, so `⊘`, the lists and the Debugger then say
-  that jumps and calls from other code are not known. Jumps (jmp, jcc,
+  Debugger say when the JIT has run. `⊘` marks an instruction no path is
+  known to reach: no jump or call goes there, its address is nowhere in
+  the kernel, an instruction ends right before it and does not fall
+  through (jmp, ret, iret; ud2, int and every call fall through, a call
+  to a noreturn function too), and the stepper has not run it, seen a path into it or
+  stopped at it. gen-disasm.py lists the addresses the image holds in
+  disasm.json's `taken`: aligned 32-bit words of the data sections
+  (function pointers, switch jump tables), 32 bits inside another
+  instruction (`movl $fn`, `pushl $fn`, `leal fn`), `__ex_table` fixups,
+  and the stubs of an array whose start is taken, at a common stride
+  after each jmp (early_idt_handler_array + i * 9). Their lists and the
+  Debugger say how they are reached. Nothing known before an instruction
+  (the first of a section or of a live decode, padding llvm-objdump
+  decoded over it) means no `⊘`. What is left is alignment padding after
+  a ret or jmp and, in the -Os minified Linux, functions nothing calls or
+  points to (107: start_thread, oops_begin, put_pid, ...). Without
+  disasm.json (Debian, an imported vmlinux, code outside the build) the
+  static paths come only from the instructions decoded live, so `⊘`, the
+  lists and the Debugger then say that jumps and calls from other code
+  are not known, and the first instruction of each function symbol counts
+  as reached (its callers are outside the decode). Jumps (jmp, jcc,
   loop, indirect jmp) between two
   instructions of the same listing are drawn as arcs left of the
   addresses, like `objdump --visualize-jumps`: shorter arcs nearer the
@@ -1297,6 +1311,7 @@ browser-test matrix job named by its suites):
 | B2 jump sources inline | suite jumps (hello and minified Linux, after the walk, at 1280 and 390 px with no click: a taken jcc's target, a loop head, the function with the most callers in other pages (minified Linux: panic, 32 paths in), a return site and its ret, a timer interrupt's entry (minified Linux) and Code at EIP at the Run to's function entry: the line above reads `← n paths in` with n from jumps.js, whose static sources equal the decoded bytes' (test_jumps.decode); the sources shown are jumps.js's first ones, each with llvm-objdump's symbol+offset, the source's mnemonic (static) or kind (observed) and its count, marked in view, up, down or another function, with a gutter stub for each way out of view, and `+k more` for the rest; the ret names `retl to` its observed return site; a call to a function out of view has its stub; `+k more` lists all paths and a named source opens the Page tab there; no horizontal scroll; screenshots light and dark) | tasks,operands,runto_phone,srclinks,unoptimized,jumps |
 | J1 jump paths | `test_jumps.py` (every instruction of hello, hello-os and both minified Linux builds: kind, target and fall-through from jumps.js over disasm.json equal a decode of the ELF's bytes from a fresh llvm-objdump run, the decoder agrees with objdump's mnemonics, and every target's static sources are the same); suite jumps (hello: 300 single steps from hello_main; minified Linux: from rest_init to the end of the boot, about 95,000 single steps with timer interrupts, iret and an exception: the recorded paths equal the non-fall-through pairs of the stepper's own EIP sequence, count for count, with a fitting kind; a taken jcc's target shows `←n·k×` and its list (source, count, file:line), go there opens the Page tab at the source, Enter and Escape, the taken arc drawn, underscores of the list's names drawn; EIP's paths at a function entry name the static call; the JIT note; 390 px light and dark) | kernels; tasks,operands,runto_phone,srclinks,unoptimized,jumps |
 | J2 live-decode scope | suite jumps, case jumps_live (Debian 6.1 686 and an imported vmlinux on the minified Linux, Run to start_kernel: the ⊘ titles of Code at EIP and the Page listing, the Page note, the list notes and the Debugger's paths at EIP say "no direct path" only with the scope of the instructions decoded live, never "nothing jumps or calls here"; hello with disasm.json keeps the whole-disassembly wording) | tasks,operands,runto_phone,srclinks,unoptimized,jumps |
+| Z1 ⊘ only where no path leads | `test_jumps.py` (every instruction of the four built kernels: the page's ⊘ set, jumpPaths over disasm.json, equals one computed from the ELF alone: no direct jump or call target, an instruction ends before it and does not fall through, not an aligned data word, not a number in llvm-objdump's operand text, not an `__ex_table` fixup, not a stub of Linux's early_idt_handler_array, irq_entries_start or spurious_entries_start; prints what the marks left are: -O0 minified Linux 1,637, all padding; -Os 440: 333 padding, 107 functions nothing calls); suite nopath (hello, hello-os and both minified Linux builds: paused at the start the EIP line has no ⊘; Run to start_kernel or hello_main, then up to 2,000,000 single steps: no instruction that ran or has an observed path in carries ⊘, Code at EIP at the first stop on an instruction reached only indirectly (minified -O0: the jump table of clear_all_debug_regs, -Os: cpu_init+0xc2) has no ⊘, nor the Page listings of those, and the ⊘ title says what it rests on; screenshots 1280 and 390 px, light and dark); suite jumps, case jumps_live (no ⊘ on the first instruction decoded live nor on function entries). On 7f4ebd019 all of these fail: 87 (-O0) and 55 (-Os) wrong marks, startup_32 and EIP marked | kernels; nopath; jumps |
 | J3 no em-dashes | `check-text.py` (no U+2014 in the page's .js, .html, .css and README); suite srclinks (the Source panel's title after every file:line click has none) | site; tasks,operands,runto_phone,srclinks,unoptimized,jumps |
 | B1 run state under random clicks | suite runstate (minified Linux at 1/s: Boot pressed twice while the boot fast-forwards to the entry, on a desktop in one task and as two taps at 390 px, must end with the new machine running at 1/s and no page error; Run to start_kernel pressed twice at once during that fast-forward must stop at start_kernel; then a seeded random-click fuzzer with fixed seeds, desktop and 390 px touch, hello and minified Linux, speeds 1/s to full, clock, kernel, Boot, Pause, Continue, Step, Run to targets, tabs, the overlay, listing lines, jump lists, file:line links, the Source panel, Memory pages, Snapshots and keys: after every action, paused means Pause disabled, Continue enabled unless the run ended and the overlay shown; running means the opposite and, at 1/s and 10/s, an instruction within 3.5 s; a fast-forward moves within 10 s; "off" lasts under 30 s; no page error. `--fuzz-seeds N --fuzz-from S --fuzz-actions A` runs more seeds locally) | runstate |
 | B1 speed line at slow speeds | suite speedline (minified Linux at 1/s on a desktop, at 1/s and 10/s at 390 px touch with the CPU 5x slower: the speed line sampled every 100 ms for about 60 s through Pause and Continue, a speed change, the tab hidden 6 s with the run going on, frozen 8 s and shown again; while running it shows the set rate within a factor of two or "measuring", never 0/s, and the count moves at a third of the set rate or more) | speedline |

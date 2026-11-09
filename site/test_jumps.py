@@ -15,9 +15,23 @@ page's list of static sources must equal the instructions that jump or
 call there; the paths into one of N sampled functions are printed as an
 example. Also checks
 the decoder against the mnemonic llvm-objdump prints, so the two
-readings do not share a mistake. Exit status 1 on any difference.
+readings do not share a mistake.
+
+The ⊘ mark (jumpPaths noDirect, without a run): the instructions the
+page marks must be exactly the ones this check finds unreachable from the
+ELF on its own: no direct jump or call goes there, an instruction ends
+right before it and does not fall through (jmp, ret, iret, ...; nothing
+known before: no mark), and its address is nowhere in the image: no
+aligned 32-bit word of a data section, no number in another instruction's
+operands as llvm-objdump prints them (movl $fn, pushl $fn), no fixup of
+__ex_table, and no entry of a Linux stub array whose start is taken
+(STUB_ARRAYS: early_idt_handler_array + i * 9, irq_entries_start and
+spurious_entries_start + i * 8). The marks left are counted by what they
+are and sampled.
+Exit status 1 on any difference.
 """
 import argparse
+import bisect
 import json
 import os
 import random
@@ -120,12 +134,102 @@ const J = require(process.argv[1]); const fs = require("fs");
 const d = JSON.parse(fs.readFileSync(process.argv[2])), s = JSON.parse(fs.readFileSync(process.argv[3]));
 const S = J.jumpsStatic(d.insns, J.jumpsToPhys(s.sections));
 const inc = {}; for (const [pa, l] of S.inc) inc[pa] = l.map((i) => d.insns[i][0]);
+const Sx = J.jumpsStatic(d.insns, J.jumpsToPhys(s.sections), d.taken);
+const none = d.insns.map((x) => x[0]).filter((pa) => J.jumpPaths(Sx, null, pa).noDirect);
 process.stdout.write(JSON.stringify({ pa: d.insns.map((x) => x[0]), kind: [...S.kind], fall: [...S.fall],
-  target: [...S.target], inc }));
+  target: [...S.target], inc, none }));
 """
     r = subprocess.run(["node", "-e", js, str(SITE / "jumps.js"), disasm, symbols],
                        capture_output=True, text=True, check=True)
     return json.loads(r.stdout)
+
+
+def sections(elf):
+    """{name: (vaddr, bytes, executable)} of the ELF's allocated PROGBITS sections."""
+    b = Path(elf).read_bytes()
+    shoff, = struct.unpack_from("<I", b, 32)
+    shentsize, shnum, shstrndx = struct.unpack_from("<HHH", b, 46)
+    sh = [struct.unpack_from("<10I", b, shoff + k * shentsize) for k in range(shnum)]
+    names = sh[shstrndx][4]
+    out = {}
+    for h in sh:
+        if h[1] == 1 and h[2] & 2 and h[5]:
+            name = b[names + h[0]:].split(b"\0", 1)[0].decode()
+            out[name] = (h[3], b[h[4]:h[4] + h[5]], bool(h[2] & 4))
+    return out
+
+
+# Linux x86-32's arrays of entry stubs, reached as start + i * stride
+# (EARLY_IDT_HANDLER_SIZE, IDT_ALIGN).
+STUB_ARRAYS = {"early_idt_handler_array": 9, "irq_entries_start": 8, "spurious_entries_start": 8}
+
+
+def elf_symbols(elf):
+    """{name: (vaddr, size)} of the ELF's .symtab."""
+    b = Path(elf).read_bytes()
+    shoff, = struct.unpack_from("<I", b, 32)
+    shentsize, shnum = struct.unpack_from("<HH", b, 46)
+    sh = [struct.unpack_from("<10I", b, shoff + k * shentsize) for k in range(shnum)]
+    out = {}
+    for h in sh:
+        if h[1] == 2:
+            strs = sh[h[6]][4]
+            for k in range(h[4], h[4] + h[5], 16):
+                name, value, size = struct.unpack_from("<III", b, k)
+                out.setdefault(b[strs + name:].split(b"\0", 1)[0].decode(), (value, size))
+    return out
+
+
+NUMBER = re.compile(r"(?<![\w%])\$?(-?0x[0-9a-f]+)")
+
+
+def unreached(elf, insns):
+    """{vaddr: (previous instruction's text, this one's, its bytes)} of the
+    instructions no path can reach (see the docstring), from the ELF."""
+    taken, targets = set(), set()
+    for name, (addr, data, exe) in sections(elf).items():
+        if name == "__ex_table":
+            for k in range(0, len(data) // 12 * 12, 12):
+                taken.add((addr + k + 4 + s32(data[k + 4:], 4)) & 0xFFFFFFFF)
+        elif not exe:
+            for k in range((4 - addr % 4) % 4, len(data) - 3, 4):
+                taken.add(int.from_bytes(data[k:k + 4], "little"))
+    end = {}
+    for va, raw, text in insns:
+        d = decode(raw, va) if raw else None
+        if d and d[1] >= 0:
+            if not (d[0] in (JCC, LOOP) and d[1] == va + len(raw)):
+                targets.add(d[1])
+        else:
+            ops = re.sub(r"\s+#.*$|<[^>]*>", "", text).split(None, 1)
+            for n in NUMBER.findall(ops[1] if len(ops) > 1 else ""):
+                taken.add(int(n, 16) & 0xFFFFFFFF)
+        end[va + len(raw)] = (text, not d or d[2])
+    syms = elf_symbols(elf)
+    for name, stride in STUB_ARRAYS.items():
+        if name in syms and syms[name][0] in taken:
+            start, size = syms[name]
+            taken.update(range(start, start + max(size, stride), stride))
+    out = {}
+    for va, raw, text in insns:
+        prev = end.get(va)
+        if prev and not prev[1] and va not in targets and va not in taken:
+            out[va] = (prev[0], text, raw)
+    return out
+
+
+def none_kind(text, prev, at, raw):
+    """What a ⊘ instruction is, for the count: "padding" (nop, int3, zero
+    bytes llvm-objdump decodes as addb), "function entry" (nothing calls
+    it), or code after a jump."""
+    mn = text.split(" ", 1)[0]
+    if mn in ("nop", "nopl", "nopw", "int3") or raw[:1] == b"\0":
+        what = "padding"
+    elif at.endswith("+0x0"):
+        what = "function entry nothing calls"
+    else:
+        what = "code inside a function"
+    return f"{what} after {prev.split(' ', 1)[0]}"
 
 
 def main():
@@ -200,8 +304,33 @@ def main():
         s = max(sample, key=lambda x: sum(1 for pa in want_inc if x["paddr"] <= pa < x["paddr"] + x["size"]))
         ex = [(hex(t), [hex(f) for f in want_inc[t]]) for t in sorted(want_inc) if s["paddr"] <= t < s["paddr"] + s["size"]][:5]
         print(f"  e.g. {s['name']}: paths into {ex}")
+    # The ⊘ marks.
+    want = {}
+    for va, why in unreached(args.elf, insns).items():
+        pa = gen_disasm.to_phys(loads, va)
+        if pa is not None:
+            want[pa] = why
+    got = set(page["none"])
+    funcs = sorted((s["paddr"], s["name"]) for s in json.loads(Path(args.symbols).read_text())["symbols"] if s["size"] > 0)
+
+    def where(pa):
+        k = bisect.bisect_right(funcs, (pa, "\uffff")) - 1
+        return f"{funcs[k][1]}+{pa - funcs[k][0]:#x}" if k >= 0 else hex(pa)
+    for pa in sorted(got - set(want))[:20]:
+        problems.append(f"⊘ at {pa:#x} {where(pa)}: the ELF has a path in (a direct jump or call, fall-through or its address taken)")
+    for pa in sorted(set(want) - got)[:20]:
+        problems.append(f"no ⊘ at {pa:#x} {where(pa)} {want[pa]}: nothing in the ELF reaches it")
+    if got != set(want):
+        problems.append(f"⊘: page {len(got)}, ELF {len(want)}, {len(got ^ set(want))} differ")
+    kinds = {}
+    for pa in sorted(want):
+        kinds.setdefault(none_kind(want[pa][1], want[pa][0], where(pa), want[pa][2]), []).append(pa)
+    print(f"  ⊘ left: {len(want)} of {len(page['pa'])} instructions")
+    for k, l in sorted(kinds.items(), key=lambda x: -len(x[1])):
+        print(f"    {len(l)} {k}, e.g. " + "; ".join(f"{pa:#x} {where(pa)} {want[pa][1]!r}" for pa in l[:3]))
     for p in problems[:30]:
         print("  " + p)
+    print(f"test_jumps: {len(problems)} problems in all")
     return 1 if problems else 0
 
 

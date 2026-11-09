@@ -6443,6 +6443,17 @@ def jumps_live_case(browser, base, shots):
         r[where + " page ⊘"] = sum(1 for k, _ in claims if k == "title")
         r[where + " page note"] = page.inner_text("#jump_info")[:300]
         problems += jump_claims_live(claims, where + " Page listing")
+        # Z1: the live decode does not know what comes before its first
+        # instruction, nor who calls a function: neither gets ⊘.
+        for sel in ("#listing", "#context"):
+            marked = [a for a, _, _ in page.evaluate(NOPATH_MARKS_JS, sel)]
+            first = page.evaluate(f"(() => {{ const e = document.querySelector('{sel} .ins'); return e ? +e.dataset.addr : -1; }})()")
+            entries = page.evaluate("(l) => l.filter((a) => symbols.symbols.some((s) => s.paddr === a && /^[Tt]$/.test(s.type || 'T')))", marked)
+            r[f"{where} {sel} ⊘"] = len(marked)
+            if first in marked:
+                problems.append(f"{where} {sel}: ⊘ on the first instruction decoded ({first:#x}): nothing before it is known")
+            if entries:
+                problems.append(f"{where} {sel}: ⊘ on {len(entries)} function entries (their callers are not decoded), e.g. {[hex(a) for a in entries[:4]]}")
         # A list opened at an instruction with paths in shows the scope note.
         if page.locator("#listing .jc[data-dir=in]").count():
             page.click("#listing .jc[data-dir=in] >> nth=0")
@@ -6478,6 +6489,169 @@ def jumps_live_case(browser, base, shots):
                 problems.append(f"hello: the build's ⊘ title changed: {got['title']!r}")
         page.close()
     return problems, r
+
+
+# Instructions of a box (selector) that carry the ⊘ mark: the .ins line
+# before each .jnone (the marks follow their line's span).
+NOPATH_MARKS_JS = """(sel) => { const out = [];
+  for (const box of document.querySelectorAll(sel))
+    for (const n of box.querySelectorAll('.jnone')) {
+      let e = n.previousElementSibling;
+      while (e && !e.matches('.ins')) e = e.previousElementSibling;
+      if (e) out.push([+e.dataset.addr, e.classList.contains('cur'), n.title]); }
+  return out; }"""
+
+# The ⊘ oracle while stepping (Z1). In the build's disassembly, "reached
+# only indirectly" = the instructions without a direct path in whose
+# predecessor does not fall through (jumpPaths over the bare static paths,
+# no taken addresses, no stepper: the old meaning of ⊘). Steps n
+# instructions with the stepper; the first time EIP stops on one of them
+# that has not run yet, Code at EIP is drawn there and its marks returned.
+# Then: every instruction that has run, or has an observed path in, must
+# not carry ⊘ (jumpPaths with the stepper, as the listings draw it).
+NOPATH_WALK_JS = """(n) => {
+  const st = stepper, S0 = jumpsStatic(disasm.insns, jumpsToPhys(symbols && symbols.sections));
+  const only = new Set(disasm.insns.map((x) => x[0]).filter((pa) => jumpPaths(S0, null, pa).noDirect));
+  let atEip = null, steps = st.steps;
+  for (let i = 0; i < n; i++) {
+    st.run(1, -1, 100);
+    if (st.steps === steps) continue;
+    steps = st.steps;
+    const pc = st.nextPhys();
+    if (!atEip && only.has(pc) && !st.executed(pc)) {
+      renderContext();
+      const marks = [];
+      for (const x of document.querySelectorAll('#context .jnone')) {
+        let e = x.previousElementSibling; while (e && !e.matches('.ins')) e = e.previousElementSibling;
+        if (e) marks.push(+e.dataset.addr); }
+      const sym = kernelSymLookup()(pc);
+      atEip = { pc, at: i, sym: sym ? sym.name + '+0x' + (pc - sym.paddr).toString(16) : '', marks };
+    }
+  }
+  updateDebugUi();
+  const S = jumpsFor(disasm.insns);
+  const ran = [], seenIn = [], bad = [];
+  for (const [pa] of disasm.insns) {
+    const r = st.executed(pa), o = st.jumpIn.has(pa);
+    if (r && only.has(pa)) ran.push(pa);
+    if (o && only.has(pa)) seenIn.push(pa);
+    if ((r || o) && jumpPaths(S, st, pa).noDirect) bad.push([pa, r, o]);
+  }
+  let none = 0;
+  for (const [pa] of disasm.insns) if (jumpPaths(S, st, pa).noDirect) none++;
+  return { atEip, ran, seenIn, bad: bad.slice(0, 40), nbad: bad.length, only: only.size, none,
+    executed: st.countIn(0, st.seen.length * 8), steps: st.steps };
+}"""
+
+NOPATH_WALKS = {"hello": ("hello_main", 400), "hello-os": ("hello_main", 400),
+                "minified-linux": ("start_kernel", 2000000), "minified-linux-os": ("start_kernel", 1000000)}
+
+
+def nopath_case(browser, base, shots, name):
+    """Z1, oracle 1: no instruction the stepper has run, or has seen a path
+    into, carries ⊘ ("no path leads here"), in the build's disassembly
+    (jumpPaths, as the listings draw it) nor in the drawn Code at EIP and
+    Page listing. Paused at the start, the EIP line has no ⊘ (nothing
+    is known to come before the kernel's first instruction). Runs to
+    NOPATH_WALKS[name] and walks its count of single steps; the first time EIP is on an instruction reached only
+    indirectly (a function called through a pointer, a switch's jump
+    table, an exception fixup: no direct path in, the instruction before
+    does not fall through) Code at EIP must not mark that line. On the
+    minified kernels the walk must meet such instructions (else the check
+    proves nothing). Screenshots of such a line in the Page tab."""
+    problems, r = [], {}
+    errors = []
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+    wait_for(lambda: page.evaluate("!!disasm && !!symbols && !!stepper"), 60)
+    page.evaluate("renderContext()")
+    if any(cur for _, cur, _ in page.evaluate(NOPATH_MARKS_JS, "#context")):
+        problems.append(f"{name}: paused at the start, Code at EIP marks the EIP line with ⊘")
+    fn, n = NOPATH_WALKS[name]
+    s = page.evaluate(f"symbols.symbols.find((s) => s.name === '{fn}')")
+    page.fill("#dbg_addr", hex(s["vaddr"]))
+    page.click("#dbg_runto")
+    ok, at, status = run_to_wait(page, {s["paddr"]}, 300)
+    if not ok:
+        page.close()
+        return problems + [f"{name}: Run to {fn} did not stop there: {status}"], r
+    t0 = time.monotonic()
+    w = page.evaluate(NOPATH_WALK_JS, n)
+    r["walk"] = f"{w['steps']} steps in {time.monotonic() - t0:.0f} s, {w['executed']} instructions run"
+    r["reached only indirectly (static)"] = w["only"]
+    r["of them run"] = len(w["ran"])
+    r["of them with an observed path in"] = len(w["seenIn"])
+    r["⊘ left after the walk"] = w["none"]
+    r["first stop on one"] = w["atEip"] and {k: (hex(v) if k == "pc" else v) for k, v in w["atEip"].items() if k != "marks"}
+    if name.startswith("minified") and not w["ran"]:
+        problems.append(f"{name}: the walk ran no instruction reached only indirectly: the check proves nothing")
+    if w["nbad"]:
+        problems.append(f"{name}: {w['nbad']} instructions that ran or have an observed path in carry ⊘, e.g. "
+                        f"{[(hex(a), 'ran' if x else '', 'path in' if o else '') for a, x, o in w['bad'][:8]]}")
+    if name.startswith("minified") and not w["atEip"]:
+        problems.append(f"{name}: EIP never stopped on an instruction reached only indirectly")
+    elif w["atEip"] and w["atEip"]["pc"] in w["atEip"]["marks"]:
+        problems.append(f"{name}: Code at EIP marks EIP {w['atEip']['pc']:#x} ({w['atEip']['sym']}) with ⊘")
+    # The drawn listings: Code at EIP now, and the Page tab at a few of the
+    # instructions that ran.
+    marks = page.evaluate(NOPATH_MARKS_JS, "#context")
+    if any(cur for _, cur, _ in marks):
+        problems.append(f"{name}: Code at EIP marks the EIP line with ⊘")
+    for pa in w["ran"][:4]:
+        page.evaluate(f"jumpTo({pa})")
+        wait_for(lambda: page.get_attribute("#listing", "data-page") == str(pa // 4096), 20)
+        time.sleep(0.3)
+        drawn = [a for a, _, _ in page.evaluate(NOPATH_MARKS_JS, "#listing")]
+        ran = set(page.evaluate("(l) => l.filter((a) => stepper.executed(a))", drawn))
+        if ran:
+            problems.append(f"{name}: the Page listing of {pa:#x} marks {len(ran)} instructions that ran with ⊘, e.g. {sorted(ran)[:4]}")
+        if pa in drawn:
+            problems.append(f"{name}: the Page listing marks {pa:#x} (it ran) with ⊘")
+    if w["ran"]:
+        pa = w["ran"][0]
+        page.evaluate(f"jumpTo({pa})")
+        wait_for(lambda: page.get_attribute("#listing", "data-page") == str(pa // 4096), 20)
+        page.evaluate(f"document.querySelector('#listing .ins[data-addr=\"{pa}\"]').scrollIntoView({{block: 'center'}})")
+        for width in (1280, 390):
+            page.set_viewport_size({"width": width, "height": 1000 if width > 400 else 844})
+            time.sleep(0.3)
+            page.evaluate(f"document.querySelector('#listing .ins[data-addr=\"{pa}\"]').scrollIntoView({{block: 'center'}})")
+            for scheme in ("light", "dark"):
+                page.emulate_media(color_scheme=scheme)
+                time.sleep(0.3)
+                page.screenshot(path=str(shots / f"nopath-{name}-ran-{width}-{scheme}.png"))
+            if page.evaluate("document.documentElement.scrollWidth > window.innerWidth + 1"):
+                problems.append(f"{name}: horizontal scroll at {width} px")
+        page.emulate_media(color_scheme="light")
+        page.set_viewport_size({"width": 1280, "height": 1000})
+    # The tooltip of a mark left (padding after a ret or jmp, a function
+    # nothing calls) says what it rests on, the run included.
+    titles = [t for _, _, t in page.evaluate(NOPATH_MARKS_JS, "#listing")]
+    if page.get_attribute("#listing", "data-source") != "build":
+        titles = []
+    r["a ⊘ title"] = titles[0] if titles else None
+    r["jit note"] = page.evaluate("jumpsJitNote()")
+    jit = r["jit note"].startswith("v86")
+    for t in titles[:1]:
+        for want in ("No path leads here", "no jump or call in the disassembly goes here", "its address is nowhere in the kernel",
+                     "does not fall through", "has not run while stepping") + (("JIT",) if jit else ()):
+            if want not in t:
+                problems.append(f"{name}: the ⊘ title lacks {want!r}: {t!r}")
+    if errors:
+        problems.append(f"{name}: page errors: {errors[:3]}")
+    page.close()
+    return problems, r
+
+
+def suite_nopath(ctx):
+    failed = False
+    for name in [n for n in NOPATH_WALKS if n in ctx.entries and "disasm" in ctx.entries[n]]:
+        t0 = time.monotonic()
+        p, r = nopath_case(ctx.browser, ctx.base, ctx.shots, name)
+        failed |= report("nopath", p, r, kernel=name, seconds=round(time.monotonic() - t0))
+    return failed
 
 
 def suite_jumps(ctx):
@@ -7713,6 +7887,7 @@ SUITES = {
     "navhist": (suite_navhist, False),
     "followeip": (suite_followeip, False),
     "followfuzz": (suite_followfuzz, False),
+    "nopath": (suite_nopath, False),
 }
 
 

@@ -955,7 +955,7 @@ JavaScript drives the CPU:
   100, 10 or 1 instructions per second. The top bar shows the speed
   actually reached, from v86's instruction counter (JIT and stepping
   alike) sampled 4 times a second, over a window that holds several
-  instructions at the set speed (4 s at 1/s, 1 s from 4/s up) and starts
+  instructions at the set speed (4 s at 1/s, 2 s from 2/s up) and starts
   at the last Boot, Pause, Continue, speed change, kernel entry or the
   tab being shown again; for the first half of the window it says
   "measuring" (a one-second window showed "0/s" at 1/s while running,
@@ -966,10 +966,25 @@ JavaScript drives the CPU:
   frames) the slow stepping runs on a timer with the step credit of the
   time that passed, so it keeps the set rate where the browser runs the
   timer at least once a second; when a phone freezes the tab it stops
-  and goes on when shown again. Stepped speeds update the screen, the
-  registers and counters every frame, re-scan RAM every frame (every
-  250 ms above 4 MB) so the pages written since the previous frame flash
-  in the grid, and keep the Page tab on the page holding EIP.
+  and goes on when shown again. The step credit counts the real time
+  since the last frame, however long drawing took (at most a second's
+  worth at once). Stepped speeds update the screen, the registers and
+  counters when an instruction has executed (and 4 times a second for
+  the clock); the views that follow EIP (the grid's flashes, the Page
+  tab on the page holding EIP, Code at EIP) are drawn when an
+  instruction has executed since their last drawing, at most 5 times a
+  second and after a pause as long as the last drawing took, so drawing
+  takes at most half of the main thread. RAM is re-scanned then (every
+  250 ms above 4 MB) so the pages written since flash in the grid.
+  Inside one page the Page tab moves its EIP mark and untints what has
+  executed; it draws the whole listing again (observed counts) every
+  4 s or six times as long as a drawing took, and when the page or its
+  bytes change. When the run still falls below half the set speed the
+  state line says so: "slow motion 1/s (reaching 0.4/s: too fast for
+  this device)". At full speed (the JIT) the kernel's end, hlt with
+  interrupts off, pauses the page with the end as stepping does (it
+  showed "running (full speed, JIT)" at 0/s), and a fast-forward shows
+  "speed: measuring" until it has a rate.
 - **Pause / Continue / Step / Step N / Run to.** Run to takes a hex
   address, physical or kernel-virtual (minus the virtual-physical offset
   of `symbols.json`, 0xC0000000 for the minified Linux, 0 for hello), and
@@ -1252,6 +1267,7 @@ browser-test matrix job named by its suites):
 | J3 no em-dashes | `check-text.py` (no U+2014 in the page's .js, .html, .css and README); suite srclinks (the Source panel's title after every file:line click has none) | site; tasks,operands,runto_phone,srclinks,unoptimized,jumps |
 | B1 run state under random clicks | suite runstate (minified Linux at 1/s: Boot pressed twice while the boot fast-forwards to the entry, on a desktop in one task and as two taps at 390 px, must end with the new machine running at 1/s and no page error; Run to start_kernel pressed twice at once during that fast-forward must stop at start_kernel; then a seeded random-click fuzzer with fixed seeds, desktop and 390 px touch, hello and minified Linux, speeds 1/s to full, clock, kernel, Boot, Pause, Continue, Step, Run to targets, tabs, the overlay, listing lines, jump lists, file:line links, the Source panel, Memory pages, Snapshots and keys: after every action, paused means Pause disabled, Continue enabled unless the run ended and the overlay shown; running means the opposite and, at 1/s and 10/s, an instruction within 3.5 s; a fast-forward moves within 10 s; "off" lasts under 30 s; no page error. `--fuzz-seeds N --fuzz-from S --fuzz-actions A` runs more seeds locally) | runstate |
 | B1 speed line at slow speeds | suite speedline (minified Linux at 1/s on a desktop, at 1/s and 10/s at 390 px touch with the CPU 5x slower: the speed line sampled every 100 ms for about 60 s through Pause and Continue, a speed change, the tab hidden 6 s with the run going on, frozen 8 s and shown again; while running it shows the set rate within a factor of two or "measuring", never 0/s, and the count moves at a third of the set rate or more) | speedline |
+| B3 slow motion with an asm listing open | suite speedasm (390 px touch with CDP CPU throttling, the tab opened after the kernel entry and watched for 25 s: the minified Linux's Page tab on the kernel-text page holding EIP, about 1,400 instructions, at 4x and 6x, 1/s and 10/s; its Debugger tab (Code at EIP) at 6x, 1/s and 10/s; hello's Page tab at 4x and 1/s. The speed line never shows 0/s and, once measured, the set rate within a factor of two; the count moves at a third of the set rate or more; the listing or Code at EIP is drawn at most once per executed instruction plus a full refresh every few seconds; long tasks take under 70 % of the wall time. On 900b6cc2e the Page tab at 4x made 5 instructions in 25 s at 1/s with "speed 0/s") and suite runstate (its phone runs under 4x CPU throttling, with the Page and Debugger tabs watched 3 to 8 s among the actions, and "speed 0/s" while running is a broken invariant: its seeds 2 and 5 found the JIT left running at 0/s after the kernel's end) | speedasm, runstate |
 | K1 boot check reads the screen | `test_qemu_screen_check.py` (the kernels job's -O0 boot output of run 42539920959, where curses drew "H", a backspace, escapes, a cursor-right and "ello, World!": the bytes lack "Hello, World!" and an expect pattern on them ends without a match, while the replayed 80x25 screen shows "Hello, World!" and "Still alive" on rows 9 and 10 for every read size from 1 byte up; output cut before "Still alive", the strings in the wrong order, overwritten or cleared text fail); `qemu_screen_check.py` boots hello and hello-os (18M and the low image at 1M) and the -O0 minified Linux in the workflow | kernels |
 | U1/U2 unoptimized builds | qemu boot of the -O0 hello and minified Linux with both gate lines on the screen (`qemu_screen_check.py`); `check-code-identity.py` for each -O0 and -Os pair; `test_dwarf.py` on both builds of each; suite hello (every instruction of hello_main and put_line), suite unoptimized (minified Linux: eight Run to stops, single steps into calls, no "optimized out" at any address read, values vs gdb at each stop; the -Os entry must show some) | kernels; tasks,operands,runto_phone,srclinks,unoptimized; boot,... |
 

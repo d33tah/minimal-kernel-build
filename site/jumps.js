@@ -458,9 +458,18 @@ function drawJumpArcs(box, arcs) {
 	const pad = parseFloat(getComputedStyle(box).paddingLeft) || gutter;
 	const br = box.getBoundingClientRect();
 	const yOf = new Map();
+	// The lines by address, found once (a querySelector per end was
+	// quadratic in a page's ~1400 lines).
+	let lines = null;
 	const y = (pa) => {
 		if (!yOf.has(pa)) {
-			const el = box.querySelector('.ins[data-addr="' + pa + '"]');
+			if (!lines) {
+				lines = new Map();
+				for (const el of box.querySelectorAll(".ins[data-addr]"))
+					if (!lines.has(Number(el.dataset.addr)))
+						lines.set(Number(el.dataset.addr), el);
+			}
+			const el = lines.get(pa);
 			const r = el ? el.getClientRects()[0] : null;
 			yOf.set(pa, r ? r.top - br.top + box.scrollTop + r.height / 2 : null);
 		}

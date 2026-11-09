@@ -774,6 +774,7 @@ function renderJumpInfo(r, dropped) {
 
 // Draw the selected page; base: bytes of the last scan (changes are marked).
 function renderPage(p, bytes, base, how) {
+	const t0 = realNow();
 	const box = $("listing");
 	const cur = currentPhys();
 	const r = listPage(p, bytes, base, cur >= p * PAGE && cur < p * PAGE + PAGE ? cur : -1, lineChars(box));
@@ -782,7 +783,7 @@ function renderPage(p, bytes, base, how) {
 	const dropped = jumpsDrawn(box, r.jS, r.paths);
 	renderJumpInfo(r, dropped);
 	Object.assign(box.dataset, { page: p, insns: r.nIns, hexrows: r.nRows, nonzero: r.nonzero,
-		changed: r.changed, reads: Number(box.dataset.reads || 0) + 1 });
+		changed: r.changed, reads: Number(box.dataset.reads || 0) + 1, draws: Number(box.dataset.draws || 0) + 1 });
 	const hit = jumpHitScroll ? box.querySelector(".jhit") : null;
 	if (hit) {
 		jumpHitScroll = false;
@@ -795,7 +796,22 @@ function renderPage(p, bytes, base, how) {
 	box.dataset.source = r.source;
 	box.dataset.opsNamed = r.opsNamed;
 	box.dataset.coverage = !r.nIns ? "" : r.cov.tint ? (r.cov.partial ? "partial" : "stepped") : "none";
-	box.dataset.unexecuted = r.cov.tint ? r.nNx : "";
+	renderCovInfo(r);
+	$("dump_info").textContent = (r.source === "build" ? r.nIns + " instructions (disasm.json)" :
+		r.source === "live" ? r.nIns + " instructions decoded live from guest memory (iced-x86, " + r.bits + "-bit" +
+			(r.misaligned ? "; the first lines outside a symbol may be misaligned" : "") + ")" :
+		icedError ? "hex only: no disassembler (" + icedError + ")" : !iced ? "loading the disassembler..." : "no code in this page") +
+		(r.nBad ? " (" + r.nBad + " differ from the build)" : "") +
+		(r.nIns ? ", " + r.opsNamed + " memory operands named" + (r.opsWhy ? " (" + r.opsWhy + ")" : "") : "") +
+		", " + r.nonzero + " non-zero bytes" + (base ? ", " + r.changed + " changed " + how : "") +
+		", read " + new Date().toLocaleTimeString("en-GB");
+	box._drawn = { page: p, stepper, bytes: bytes.slice(), base: base ? base.slice() : null, r, lines: null,
+		at: realNow(), cost: realNow() - t0 };
+}
+
+// The listing's coverage key: how many of its instructions are tinted.
+function renderCovInfo(r) {
+	$("listing").dataset.unexecuted = r.cov.tint ? r.nNx : "";
 	const key = $("cov_info");
 	key.textContent = "";
 	if (r.nIns && r.cov.tint) {
@@ -806,14 +822,48 @@ function renderPage(p, bytes, base, how) {
 			(r.cov.partial ? "; v86's JIT has run since the kernel entry and records nothing, so tinted code may have run" : ""));
 	} else if (r.nIns)
 		key.textContent = "No execution coverage: " + r.cov.why + ".";
-	$("dump_info").textContent = (r.source === "build" ? r.nIns + " instructions (disasm.json)" :
-		r.source === "live" ? r.nIns + " instructions decoded live from guest memory (iced-x86, " + r.bits + "-bit" +
-			(r.misaligned ? "; the first lines outside a symbol may be misaligned" : "") + ")" :
-		icedError ? "hex only: no disassembler (" + icedError + ")" : !iced ? "loading the disassembler..." : "no code in this page") +
-		(r.nBad ? " (" + r.nBad + " differ from the build)" : "") +
-		(r.nIns ? ", " + r.opsNamed + " memory operands named" + (r.opsWhy ? " (" + r.opsWhy + ")" : "") : "") +
-		", " + r.nonzero + " non-zero bytes" + (base ? ", " + r.changed + " changed " + how : "") +
-		", read " + new Date().toLocaleTimeString("en-GB");
+}
+
+// Slow motion inside one page: move the EIP mark and untint what has
+// executed instead of drawing the page's ~1,400 lines again (150 ms on a
+// desktop, 0.6-1 s on a phone-class CPU). The whole listing, with the
+// observed counts, is drawn again every LISTING_REFRESH_MS (or six times
+// as long as its drawing took), and whenever the page or its bytes change.
+const LISTING_REFRESH_MS = 4000;
+function listingFollow() {
+	const box = $("listing"), d = box._drawn, p = selectedPage, cur = currentPhys();
+	if (!d || d.page !== p || d.stepper !== stepper || !emuReady || jumpHitScroll || cur < p * PAGE || cur >= p * PAGE + PAGE ||
+		realNow() - d.at >= Math.max(LISTING_REFRESH_MS, 6 * d.cost))
+		return false;
+	const same = (x, y) => x === y || (!!x && !!y && x.length === y.length && x.every((v, i) => v === y[i]));
+	const base = scanNow ? scanNow.subarray(p * PAGE, p * PAGE + PAGE) : null;
+	if (!same(d.bytes, readPage(p)) || !same(d.base, base))
+		return false;
+	if (!d.lines) {
+		d.lines = new Map();
+		for (const el of box.querySelectorAll(".ins[data-addr]"))
+			d.lines.set(Number(el.dataset.addr), el);
+	}
+	const line = d.lines.get(cur);
+	if (!line || !line.isConnected)
+		return false;
+	for (const el of box.querySelectorAll(".cur"))
+		el.classList.remove("cur");
+	line.classList.add("cur");
+	if (d.r.cov.tint) {
+		for (const el of box.querySelectorAll(".ins.nx"))
+			if (stepper.executed(Number(el.dataset.addr))) {
+				el.classList.remove("nx");
+				d.r.nNx--;
+			}
+		renderCovInfo(d.r);
+	}
+	// .ins.cur is a little taller: the arcs are measured again.
+	drawJumpArcs(box, box._jarcs || []);
+	scrollListingTo(line);
+	box.dataset.draws = Number(box.dataset.draws || 0) + 1;
+	box.dataset.moves = Number(box.dataset.moves || 0) + 1;
+	return true;
 }
 
 function inspect() {
@@ -1264,6 +1314,7 @@ const REF_STEPS = { hello: { any: 432 }, "hello-os": { any: 154 },
 let driverTimer = null;
 let driverChannel = null;
 let lastUi = 0;
+let uiSteps = -1;        // stepper.steps when the driver last drew the Debugger's state
 let lastFrame = 0;
 let stepCredit = 0;
 let prevRegs = null;
@@ -1411,8 +1462,12 @@ function driverTick() {
 	} else if (speed() === "full") {
 		reason = stepper.run(Infinity, -1, SLICE_MS);
 	} else {
+		// Credit for the real time since the last tick, however long a
+		// drawing took (a cap on the time made a 1 s drawing of the listing
+		// cost 0.75 s of credit: 1 instruction in 4 s at 1/s); the burst
+		// after a long tick is capped at a second's worth.
 		const rate = Number(speed());
-		const dt = Math.min(document.hidden ? 1000 : 250, prevTick ? now - prevTick : 16);
+		const dt = prevTick ? now - prevTick : 16;
 		stepCredit = Math.min(stepCredit + rate * dt / 1000, rate + 1);
 		const n = Math.floor(stepCredit);
 		stepCredit -= n;
@@ -1445,23 +1500,59 @@ function driverTick() {
 		pause("The CPU executed hlt with interrupts off: nothing more to run.");
 		return;
 	}
+	// Slow motion: the Debugger's state when an instruction has executed
+	// (or every 250 ms for the clock), the views that follow EIP when
+	// frameUpdate says so; not on every animation frame.
 	const slow = !fastStepping();
-	if ((slow && !highRate()) || now - lastUi > (highRate() ? 100 : 200)) {
+	const ran = stepper.steps !== uiSteps;
+	if (slow && !highRate() ? ran || now - lastUi > 250 : now - lastUi > (highRate() ? 100 : 200)) {
 		lastUi = now;
+		uiSteps = stepper.steps;
 		updateDebugUi();
-		if (slow)
-			frameUpdate();
 	}
+	if (slow)
+		frameUpdate();
 	if (reason === "hlt")
 		driverTimer = setTimeout(scheduleDriver, slow ? 16 : 1);
 	else
 		scheduleDriver();
 }
 
-// Live view while slow-stepping: grid flashes, asm view follows EIP.
+// Live view while slow-stepping: grid flashes, asm view follows EIP. Drawn
+// only when an instruction has executed since the last drawing, and after
+// a pause at least as long as that drawing took (VIEW_GAP_MS or more): a
+// listing drawn on every animation frame kept a phone's main thread busy
+// all the time. The step credit counts real time, so a slow drawing
+// shows fewer of the instructions, never slows the run.
+const VIEW_GAP_MS = 200;
+let viewStepper = null, viewSteps = -1, viewAt = 0, viewCost = 0;
 let lastFrameScan = 0;
 function frameUpdate() {
-	const now = realNow();
+	if (stepper === viewStepper && stepper.steps === viewSteps)
+		return;
+	const t0 = realNow();
+	if (stepper === viewStepper && t0 - viewAt < Math.max(VIEW_GAP_MS, viewCost))
+		return;
+	viewStepper = stepper;
+	viewSteps = stepper.steps;
+	frameDraw(t0);
+	viewAt = realNow();
+	viewCost = viewAt - t0;
+}
+
+// The listing is out of date (DWARF arrived): in slow motion it is drawn
+// whole at the next frameUpdate (several changes in a row, one drawing),
+// otherwise now.
+function listingStale() {
+	if (runState !== "stepped" || fastStepping()) {
+		inspect();
+		return;
+	}
+	$("listing")._drawn = null;
+	viewSteps = -1;
+}
+
+function frameDraw(now) {
 	if (now - lastFrameScan >= (emuRam > 32 * 1024 * 1024 ? 2000 : emuRam > 4 * 1024 * 1024 ? 250 : 0)) {
 		lastFrameScan = now;
 		scan(false);
@@ -1470,7 +1561,7 @@ function frameUpdate() {
 		if (n)
 			$("pages").dataset.flashes = ++flashes;
 	}
-	followEip();
+	followEip(true);
 }
 
 function afterStop() {
@@ -1481,7 +1572,8 @@ function afterStop() {
 }
 
 // While paused or stepping, the Page tab shows the page holding EIP.
-function followEip() {
+// moving: in slow motion (listingFollow may only move the mark).
+function followEip(moving = false) {
 	if (!stepper || runState === "jit")
 		return;
 	const phys = stepper.nextPhys();
@@ -1493,7 +1585,7 @@ function followEip() {
 			if (tab === "memory")
 				drawGrid();
 		}
-		if (tab === "page")
+		if (tab === "page" && !(moving && listingFollow()))
 			inspect();
 	}
 	renderContext();
@@ -1893,6 +1985,7 @@ function drawContext() {
 		}
 	}
 	el.innerHTML = lines.join("\n");
+	el.dataset.draws = Number(el.dataset.draws || 0) + 1;
 	el.dataset.jlocal = live ? "instructions decoded live around EIP" : "";
 	jumpsDrawn(el, jS, paths);
 	renderEipJumps(exact ? jS : null, phys);
@@ -2018,29 +2111,35 @@ const clockMips = () => ($("clock_mips").value === "real" ? 0 : Number($("clock_
 // Real speed: v86's instruction counter (wasm memory, offset 664) counts
 // what the JIT runs and what the stepper steps; sampled 4 times a second.
 // The rate is taken over a window that holds several instructions at the
-// set speed (4 s at 1/s, 1 s from 4/s up), counted from the last change
+// set speed (4 s at 1/s, 2 s from 2/s up), counted from the last change
 // (Boot, Pause, Continue, a speed, the entry, the tab shown again): a
 // one-second window at 1/s read 0/s whenever it held no instruction, and
 // a window reaching back into a pause or another speed showed that one.
-// Until half the window has passed it says "measuring".
+// In slow motion the window is 2 s or more: a one-second one at 10/s read
+// 1/s after a listing's drawing held a phone's main thread for 1.7 s,
+// which the step credit makes up right after. Until half the window has
+// passed it says "measuring".
 const SPEED_SAMPLE_MS = 250;
 let speedHist = [];      // [{ counter, at }] since the last change, oldest first
 let realSpeed = null;    // instructions per second, null while measuring
 function speedWindowMs() {
 	if (runState !== "stepped" || fastStepping() || highRate())
 		return 1000;
-	return Math.min(10000, Math.max(1000, 4000 / Number(speed())));
+	return Math.min(10000, Math.max(2000, 4000 / Number(speed())));
 }
+// Paused or off, unless a fast-forward runs (the boot's to the entry sets
+// "paused" under it): that one says "measuring" until it has a rate.
+const speedStopped = () => !ffActive && (runState === "paused" || runState === "off");
 function speedReset() {
 	speedHist = [];
-	realSpeed = runState === "paused" || runState === "off" ? 0 : null;
+	realSpeed = speedStopped() ? 0 : null;
 	if (stepper)
 		renderClock();
 }
 function sampleSpeed() {
 	if (!stepper || !emuReady) {
 		speedHist = [];
-		realSpeed = 0;
+		realSpeed = null;
 		return;
 	}
 	const c = new Uint32Array(stepper.cpu.wasm_memory.buffer, 664, 1)[0];
@@ -2050,7 +2149,7 @@ function sampleSpeed() {
 	while (speedHist.length > 2 && now - speedHist[1].at >= w)
 		speedHist.shift();
 	const first = speedHist[0];
-	if (runState === "paused" || runState === "off")
+	if (speedStopped())
 		realSpeed = 0;
 	else if (now - first.at >= w / 2)
 		realSpeed = ((c - first.counter) >>> 0) / ((now - first.at) / 1000);
@@ -2069,7 +2168,9 @@ function renderClock() {
 		return;
 	}
 	const t = CLOCK.now();
-	el.textContent = (realSpeed === null ? "speed: measuring" : "speed " + fmtRate(realSpeed)) + " \u00b7 " + (CLOCK.virtual ? "virtual " : "real ") + "time " + (t / 1000).toFixed(4) +
+	const behind = behindRate();
+	el.textContent = (realSpeed === null ? "speed: measuring" : behind !== null ? "speed " + behind + " (set " +
+		$("dbg_speed").selectedOptions[0].text + ": too fast for this device)" : "speed " + fmtRate(realSpeed)) + " \u00b7 " + (CLOCK.virtual ? "virtual " : "real ") + "time " + (t / 1000).toFixed(4) +
 		" s \u00b7 IRQ0 \u00d7" + num(stepper.irq0) + (stepper.idleMs ? " \u00b7 idle " + (stepper.idleMs / 1000).toFixed(3) + " s" : "");
 	el.dataset.speed = realSpeed === null ? "" : Math.round(realSpeed);
 	el.title = "Instructions per second actually executed (v86's instruction counter: JIT and stepping), over the last " +
@@ -2199,6 +2300,17 @@ function watchPanicText() {
 	pause(endText());
 }
 
+// At full speed (v86's JIT) the kernel's end, hlt with interrupts off,
+// left the page "running (full speed, JIT)" at 0 instructions per second
+// (also Continue after the end): pause there with the end, as stepping does.
+function watchJitEnd() {
+	if (!stepper || runState !== "jit" || ffActive || !stepper.dead())
+		return;
+	stepper.markHalt();
+	counting = false;
+	pause(endText());
+}
+
 function renderEnd() {
 	const b = $("end_banner");
 	const e = stepper && stepper.end;
@@ -2208,6 +2320,21 @@ function renderEnd() {
 		G.dirty = true; // the timeline's "now" marker becomes "end"
 	b.dataset.kind = e ? e.kind : "";
 	b.dataset.code = stepper && stepper.exit ? stepper.exit.code : "";
+}
+
+// Slow motion measured below half the set speed: the rate reached (one
+// decimal under 10/s, where "0/s" read as a stall), else null.
+function behindRate() {
+	const set = Number(speed());
+	if (runState !== "stepped" || entryPhase || fastStepping() || realSpeed === null || !(set > 0) || realSpeed >= set / 2)
+		return null;
+	return realSpeed < 10 ? realSpeed.toFixed(1) + "/s" : fmtRate(realSpeed);
+}
+
+// The state line's " (reaching 0.3/s: too fast for this device)".
+function behindText() {
+	const r = behindRate();
+	return r === null ? "" : " (reaching " + r + ": too fast for this device)";
 }
 
 function updateDebugUi() {
@@ -2250,7 +2377,7 @@ function drawDebugUi() {
 	text.textContent = ffActive && ffInfo ? (ffInfo.runTo !== undefined ? "running to " + ffInfo.runTo : "fast-forwarding to " + ffInfo.name) +
 		" with the JIT: " + num(stepper.steps - (ffInfo.start || 0)) + " instructions" : { off: "", jit: "running (full speed, JIT)",
 		stepped: (entryPhase ? "stepping to the kernel entry" : fastStepping() ? (counting ? "stepping (counting)" : "stepping") :
-			"slow motion " + $("dbg_speed").selectedOptions[0].text) + where,
+			"slow motion " + $("dbg_speed").selectedOptions[0].text + behindText()) + where,
 		paused: "paused" + where }[runState];
 	st.replaceChildren(text);
 	if (loc && !ffActive && (runState === "stepped" || runState === "paused")) {
@@ -2715,6 +2842,7 @@ async function init() {
 	$("live_decode").addEventListener("change", () => { if (liveDecode()) loadIced(); inspect(); renderContext(); });
 	initInitrd();
 	setInterval(watchPanicText, 250);
+	setInterval(watchJitEnd, 250);
 	setInterval(sampleSpeed, SPEED_SAMPLE_MS);
 	document.addEventListener("visibilitychange", onVisibility);
 	document.addEventListener("resume", onVisibility);
@@ -2733,7 +2861,7 @@ async function init() {
 		if (tab === "debugger")
 			renderContext();
 		if (tab === "page")
-			inspect();
+			listingStale();
 		if (typeof renderGraphInfo === "function")
 			renderGraphInfo();
 	});

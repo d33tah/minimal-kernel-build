@@ -81,6 +81,7 @@ async function fastForward(target, name) {
 	ffActive = true;
 	ffAbort = false;
 	ffInfo = { target, name, steps: 0, ms: 0, slices: 0, restores: 0, start: st.steps };
+	speedReset();
 	updateDebugUi();
 	let reached = inside();
 	try {
@@ -96,6 +97,7 @@ async function fastForward(target, name) {
 			}
 			if (inside())
 				break;
+			updateDebugUi(); // the count of the stepped BIOS part, live
 			await ffYield();
 		}
 		ffInfo.stepped = st.steps - ffInfo.start;
@@ -207,6 +209,7 @@ async function fastRunTo(targets, label) {
 	ffActive = true;
 	ffAbort = false;
 	ffInfo = Object.assign(ffInfo || {}, { runTo: label });
+	speedReset();
 	// The breakpoints go in only once the targets hold the build's code.
 	// Before that the bytes there can be something else that the kernel
 	// moves into place later: the minified Linux's bzImage is loaded at

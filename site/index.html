@@ -56,7 +56,7 @@
     <button id="initrd_clear" type="button" hidden>no initrd</button>
     <button id="sym_forget" type="button" hidden title="Forget the imported symbols and use the kernel's own">forget symbols</button>
   </section>
-  <div id="problems"></div>
+  <div id="problems" class="problems"></div>
 
   <div class="machine">
     <div class="screenwrap">
@@ -153,14 +153,15 @@
     <label><input type="checkbox" id="live_decode"> live decode<span class="tip" tabindex="0" role="button" title="Disassemble guest memory in the browser (iced-x86) instead of showing the build's disassembly (disasm.json): shows what actually runs, including code that differs from the build. Kernels without disasm.json (imported symbols, disks, the Debian sample, BIOS and setup code) always use it. Decoding starts at the containing symbol's first byte so instruction boundaries are right; code outside any symbol starts at the page start and its first lines are marked as maybe misaligned. Code below the kernel entry, or while the CPU is in real mode, decodes as 16-bit.">?</span></label>
     <label><input type="checkbox" id="live"> live<span class="tip" tabindex="0" role="button" title="Re-read the page every 500 ms while the VM runs">?</span></label>
     <span id="dump_info" class="note"></span>
-    <span class="tip" tabindex="0" role="button" title="One listing of the page in address order, like objdump -d mixed with hexdump -C: instructions from the kernel's disassembly (llvm-objdump at build time) as address, bytes, instruction and symbol+offset; everything else as hex rows, with repeated rows collapsed to *. Symbol starts are header lines. Marked bytes changed since the last scan; highlighted instructions differ from the build (not loaded yet, overwritten or freed); tinted instructions have not executed in this boot: the page records the address of every instruction it steps, so code that ran at the same address before the kernel was in place counts as executed, and code v86's JIT ran (the fast-forward to the kernel entry, full speed) is not recorded; the boxed line is the next instruction when the CPU is paused.">?</span>
+    <span class="tip" tabindex="0" role="button" title="One listing of the page in address order, like objdump -d mixed with hexdump -C: instructions from the kernel's disassembly (llvm-objdump at build time) as address, bytes, instruction and symbol+offset; everything else as hex rows, with repeated rows collapsed to *. Symbol starts are header lines. Yellow bytes changed since the last scan; yellow instructions differ from the build (their bytes say why: vmlinux not moved into place yet, a Run to breakpoint, zero memory, a change at run time); tinted instructions have not executed in this boot: the page records the address of every instruction it steps, so code that ran at the same address before the kernel was in place counts as executed, and code v86's JIT ran (the fast-forward to the kernel entry, full speed) is not recorded; the boxed line is the next instruction when the CPU is paused.">?</span>
     <span id="cov_info" class="note"></span>
     <span id="jump_info" class="note"></span>
     <span class="tip" tabindex="0" role="button" title="Jump paths: every control transfer that does not fall through to the next instruction (jmp, the taken side of a jcc, call, ret, loop and jecxz, int, iret, far and indirect jumps and calls, sysenter and sysexit, and the exceptions and interrupts that enter a handler). Static paths come from the disassembly: a direct jump or call has its target there; ret, iret, indirect jumps and calls and interrupts get theirs only at run time. Observed paths are recorded while the page steps the CPU, with how often each was taken; code v86's JIT runs (the fast-forward to the kernel entry, full speed, Run to) records none. After each instruction: ←n paths into it, →n paths out of it, ·k× the transfers observed along them; tap one for the list, each with its file:line and a button to go there. Above each instruction a path reaches, &quot;← n paths in:&quot; names the first sources without a tap (two on a narrow screen): the source's mnemonic (or the kind: interrupt, exception), its symbol+offset as llvm-objdump writes a target, its file:line and how often it was taken, then &quot;+k more&quot; for the whole list. ↑ and ↓ mark a source earlier or later in the same function outside the listing, ↗ one in another function; those also get a stub at the edge of the arc gutter, and sources without a mark are in the listing (their arcs). After a jump or call whose target is outside the listing, ↑, ↓ or ↗ goes there; targets known only at run time (returns, indirect jumps and calls, exceptions) are named after the instruction, &quot;→ retl to ...&quot;. Tap a name to go there. ⊘ marks an instruction no path is known to reach: no jump or call goes there, its address is nowhere in the kernel (no function pointer, jump table or exception fixup), the instruction before does not fall through into it, and it has not run while stepping (alignment padding after a ret or jmp, or a function nothing calls). An instruction reached only through a pointer, a jump table or the exception table has no ⊘, and its list of paths in says how it is reached. Without disasm.json the static paths come only from the instructions decoded live (this page, or the lines around EIP), so ⊘ and the texts then say that jumps and calls from other code are not known. Jumps inside the listing are drawn as arcs left of the addresses, like objdump --visualize-jumps: the arrow points at the target, thin grey arcs have not been taken while stepping, solid ones have, dashed ones were observed only (an indirect jump). Point at or tap ⊘, a gutter stub or the tint key for what it means; a long press on a button (↑ ↓ ↗, a name, ←n, file:line) shows what it does without doing it, and so does pointing at it or reaching it with Tab.">?</span>
+    <button type="button" class="legendlink" aria-label="Legend: what the colours and marks mean">Legend</button>
   </div>
   <div id="symbol_index" class="symindex"></div>
   <p id="var_info" class="note mono varinfo" role="status"></p>
-  <pre id="listing" data-jbox>Click a page in the Memory tab.</pre>
+  <pre id="listing" class="asm" data-jbox>Click a page in the Memory tab.</pre>
 </section>
 
 <section class="panel" id="panel_debugger" role="tabpanel" aria-labelledby="tab_debugger" hidden>
@@ -174,8 +175,8 @@
   <div id="regs" class="regs mono"></div>
   <div id="cpu_state" class="cpu_state"></div>
   <div id="sym_info" class="syminfo"></div>
-  <h3>Code at EIP <span class="tip" tabindex="0" role="button" title="About 6 instructions before and 10 after the next one (boxed), from the build's disassembly, with symbol+offset. Marked bytes differ in guest memory from the build. Tap a line or a symbol to open it in the Page tab. After each instruction its jump paths: ←n into it, →n out of it, ·k× transfers observed while stepping (tap for the list), ⊘ no path known to lead here; above each instruction its sources by name, after it the targets out of view or known only at run time; jumps between the lines shown are arcs left of the addresses; under the listing, the paths into and out of EIP itself (the Page tab's ? has the details). The task row names the running task: comm and pid of the task_struct current_task points at, read from guest RAM with the member offsets from the DWARF (Watch shows the whole task_struct). The previous symbol and the path are recorded while stepping or in slow motion, not at full JIT speed. With DWARF the call stack is unwound from the registers and the stack at the pause: each function's call frame information (.debug_frame), entry code's saved registers (pt_regs) at interrupts, exceptions and system calls, else the EBP chain; where that stops, the frames below are the ones recorded while stepping. Each frame is labelled with the method that found it (EIP, CFI, pt_regs, EBP chain, recorded). The source rows give the C line at EIP from the kernel's DWARF and, in inlined code, each function it was inlined into with the line of the call; every frame of the call stack and of the path has its file:line and inlined-at chain in its tooltip.">?</span></h3>
-  <pre id="context" class="listing-small" data-jbox></pre>
+  <h3>Code at EIP <span class="tip" tabindex="0" role="button" title="About 6 instructions before and 10 after the next one (boxed), from the build's disassembly, with symbol+offset. Yellow lines: guest memory differs from the build there (their bytes say why). Tap a line or a symbol to open it in the Page tab. After each instruction its jump paths: ←n into it, →n out of it, ·k× transfers observed while stepping (tap for the list), ⊘ no path known to lead here; above each instruction its sources by name, after it the targets out of view or known only at run time; jumps between the lines shown are arcs left of the addresses; under the listing, the paths into and out of EIP itself (the Page tab's ? has the details). The task row names the running task: comm and pid of the task_struct current_task points at, read from guest RAM with the member offsets from the DWARF (Watch shows the whole task_struct). The previous symbol and the path are recorded while stepping or in slow motion, not at full JIT speed. With DWARF the call stack is unwound from the registers and the stack at the pause: each function's call frame information (.debug_frame), entry code's saved registers (pt_regs) at interrupts, exceptions and system calls, else the EBP chain; where that stops, the frames below are the ones recorded while stepping. Each frame is labelled with the method that found it (EIP, CFI, pt_regs, EBP chain, recorded). The source rows give the C line at EIP from the kernel's DWARF and, in inlined code, each function it was inlined into with the line of the call; every frame of the call stack and of the path has its file:line and inlined-at chain in its tooltip.">?</span> <button type="button" class="legendlink" aria-label="Legend: what the colours and marks mean">Legend</button></h3>
+  <pre id="context" class="listing-small asm" data-jbox></pre>
   <p id="eip_jumps" class="note mono" data-jbox></p>
   <h3>Parameters and locals <span class="tip" tabindex="0" role="button" title="The parameters and local variables of every call frame the call stack unwound, from the kernel's DWARF (shipped kernels: precomputed in CI per 64 KiB of code and fetched for the frames shown; an imported vmlinux: read per compile unit by the Worker that read its variables). Each frame lists, innermost first, the inlined calls at its address and then the function, like gdb's backtrace; a frame's variables are those whose lexical block holds its EIP (a caller's: its call instruction). Values come from that frame's registers and stack through the DWARF location: a register, memory at an offset of the frame base (the CFA from the call frame information), a value computed from registers, a constant, or pieces of these; the location is given after each value. Without a location the variable is optimized out. A caller's EAX, ECX and EDX are not known (a callee may have changed them), and a value only described at the function's entry (DW_OP_entry_value: with -mregparm=3 the first three arguments arrive in EAX, EDX and ECX) is not kept. Frames below where unwinding stopped have no registers. Tap a frame to open it; structs, arrays and pointers work as in Variables.">?</span></h3>
   <p id="locals_status" class="note" role="status"></p>
@@ -267,6 +268,91 @@
   <h3>Counting and stepping</h3>
   <p>v86 normally runs guest code through a JIT, at least 100,003 instructions per call, and has no single-step API. The page adds two exports to v86's own <code>v86.wasm</code> at load time (the functions are already in it and named in its name section, the code is unchanged): <code>read_imm8</code>, which fetches the byte at EIP, and the interpreter's <code>run</code>, which executes one instruction. Stepping calls them from JavaScript the way v86's interpreter loop does. By default every boot steps BIOS and setup as fast as possible to the kernel entry at 0x100000, then the kernel runs at 1k instructions per second, counted live, until "Hello, World!" and "Still alive" are both in VGA text memory at 0xb8000 (hello: 154 instructions, a fraction of a second; the minified Linux: about 132,000 instructions, 2 minutes 12 s, with an ETA). With speed set to full (remembered, or <code>?speed=full</code>) and <i>count</i> on, the whole boot is stepped in the background first and then runs on v86's JIT.</p>
   <p>The counts are exact for the run shown, with two caveats: a <code>rep</code> string instruction counts once per v86 entry, and v86 runs at most a page of iterations per entry; SeaBIOS waits on real time, so the part before the kernel varies between runs; and with the real-time clock a kernel that calibrates delay loops against the timer counts differently at each speed (the virtual clock, on by default, avoids that). hello's kernel count is the same every run and matches qemu instruction for instruction. site/README.md has the cross-check against qemu.</p>
+  <section id="about_legend" aria-labelledby="about_legend_h">
+  <h3 id="about_legend_h">Legend</h3>
+  <p>Every colour and mark of the page, each drawn here with the same styles as where it appears (light and dark follow). Most marks also explain themselves: hover, tap or focus them.</p>
+  <h4>Instruction listings: Code at EIP (Debugger tab) and the Page listing</h4>
+  <ul class="lgnd">
+    <li><span class="lgs asm" inert><span class="ins bad">00100000 <span class="difb tipmark">8d 4d 03</span>     lea 0x3(%ebp),%ecx</span></span>
+      <span><b>Yellow line</b>: guest memory holds other bytes than the build's disassembly at this instruction. Its bytes say why (hover, tap or focus them): vmlinux is not in place yet (the minified Linux's bzImage loads it 121 bytes higher, behind a relocation stub at 0x100000 that moves it down right after the kernel entry), Run to has put HLT breakpoint bytes there while the JIT runs to it, the memory is zero, or the code changed at run time. Where: Code at EIP, Page listing.</span></li>
+    <li><span class="lgs asm" inert><span class="hex">00121ec0 00 00 <mark>3c</mark> 12 10 00 <mark>01</mark> 00 |..&lt;.....|</span></span>
+      <span><b>Yellow bytes</b> in a hex row or an instruction: changed since the last memory scan (the page scans at every stop, every few frames while the CPU runs and on Scan), or between the last two scans right after a Scan. Where: Page listing.</span></li>
+    <li><span class="lgs asm" inert><span class="ins nx">001001a8 89 c3     mov %eax,%ebx</span>
+<span class="ins">001001aa 85 db     test %ebx,%ebx</span>  <span class="nxkey tipmark">tinted</span></span>
+      <span><b>Tinted line</b>: the instruction has not executed in this boot; untinted lines have. Recorded while stepping; code v86's JIT ran (fast-forward, full speed) is not recorded, and the key above the listing says when the tint may be incomplete. Where: Page listing.</span></li>
+    <li><span class="lgs asm" inert><span class="ins cur"><span class="eipmark tipmark">▶</span>00126280 55        push %ebp</span></span>
+      <span><b>Boxed line</b>: EIP, the next instruction the CPU runs (▶ in Code at EIP). Where: Code at EIP, Page listing, while the CPU is paused or stepping.</span></li>
+    <li><span class="lgs asm" inert><span class="ins cur mid tipmark">00100000 8d 4d 03   lea 0x3(%ebp),%ecx</span></span>
+      <span><b>Dashed box</b>: EIP is inside this instruction of the build's disassembly, so the CPU runs other bytes here (the relocation stub at 0x100000 right after the entry). Where: Page listing.</span></li>
+    <li><span class="lgs asm" inert><span class="ins jhit">00104a10 e8 3b 02 00 00  call 0x104c50</span></span>
+      <span><b>Dashed blue outline</b>: the instruction a jump, link or Back took you to. Where: Page listing.</span></li>
+    <li><span class="lgs asm" inert><span class="lbl">start_kernel: <span class="dim">1290 bytes, .init.text</span> <span class="srctext">void start_kernel(void)</span></span></span>
+      <span><b>Symbol header</b> (blue, bold): a symbol starts here, with its size and section or its type, and a function's prototype. Where: Page listing.</span></li>
+    <li><span class="lgs asm" inert><span class="hex">000b8000 48 07 65 07 6c 07 6c 07 |H.e.l.l.|</span></span>
+      <span><b>Hex row</b>: bytes outside the disassembly, like hexdump -C; a * stands for repeated rows. Where: Page listing.</span></li>
+    <li><span class="lgs asm" inert><span class="ins maybe">0009f000 00 00     add %al,(%eax)</span></span>
+      <span><b>Faded italics</b>: a line decoded live before the first symbol of the page; it may start in the middle of an instruction. Where: Page listing with live decode.</span></li>
+  </ul>
+  <h4>Jump paths</h4>
+  <ul class="lgnd">
+    <li><span class="lgs asm" inert><span class="ins">00101091 c3        ret</span>
+<span class="ins">00101092 90        nop</span> <span class="jnone tipmark">⊘</span></span>
+      <span><b>⊘</b>: no path leads here. Nothing jumps or calls to this instruction, its address is stored nowhere, the one before it does not fall through and it has not run while stepping: usually alignment padding, or a function nothing calls. Where: Code at EIP, Page listing.</span></li>
+    <li><span class="lgs asm" inert><span class="ins">00104a10 e8 3b 02 00 00  call 0x104c50</span> <span class="jc">←2·5×</span> <span class="jc">→1·5×</span></span>
+      <span><b>←n·k× and →n·k×</b>: n paths into and out of the instruction (static ones from the disassembly and ones seen while stepping), taken k times while stepping. Tap for the list. Where: Code at EIP, Page listing.</span></li>
+    <li><span class="lgs asm" inert><span class="jsrc"><span class="je"><button type="button" class="jto">↑ do_one_initcall</button></span> <span class="je"><button type="button" class="jto">↓ L1</button></span> <span class="je"><button type="button" class="jto">↗ kernel_init</button></span> <span class="jmore">+3 more</span></span><span class="ins">00104c50 55        push %ebp</span> <span class="jdst">→ <button type="button" class="jto">↗ memcpy</button></span></span>
+      <span><b>Sources and targets</b>: the line above an instruction names where paths into it come from, the text after it where it goes when that is out of view or known only at run time: ↑ earlier in the function, ↓ later in it, ↗ another function; names are links. Where: Code at EIP, Page listing.</span></li>
+    <li><span class="lgs" inert><svg width="150" height="44" viewBox="0 0 150 44" aria-hidden="true">
+      <path class="jarc" d="M30 4 H12 V16 H30"/><path class="jarrow" d="M30 16 l-5 -3 v6 z"/>
+      <path class="jarc taken" d="M80 4 H62 V28 H80"/><path class="jarrow taken" d="M80 28 l-5 -3 v6 z"/>
+      <path class="jarc dyn" d="M130 4 H112 V16 H130"/><path class="jarrow" d="M130 16 l-5 -3 v6 z"/>
+      <path class="jstub" d="M30 40 H16 V34"/><path class="jstubend" d="M13 34 h6"/></svg></span>
+      <span><b>Arcs</b> left of the addresses: a jump between two lines in view, grey for a path from the disassembly, blue for one taken while stepping, dashed for one seen only at run time (indirect). <b>Dotted stubs</b>: a path in from a line out of view (the line above the instruction names it). Where: Code at EIP, Page listing.</span></li>
+    <li><span class="lgs asm" inert><span class="ins">00104a10 e8 3b 02 00 00  call <span class="brt">memcpy</span> mov <span class="opn">jiffies</span>,%eax</span></span>
+      <span><b>Blue name</b> in an instruction: a branch target (tap to go there). <b>Teal name</b>: a memory operand named from the debug info (a variable or member). Where: Code at EIP, Page listing.</span></li>
+  </ul>
+  <h4>C source</h4>
+  <ul class="lgnd">
+    <li><span class="lgs asm" inert><span class="src"><span class="srcloc">init/main.c:960</span> <span class="srctext">set_task_stack_end_magic(&amp;init_task);</span></span>
+<span class="src nol"><span class="srcloc">include/linux/sched.h:12</span> <span class="srctext">return p;</span></span></span>
+      <span><b>C line</b> (italics) above the instructions it compiled to: location in brown, text in purple; tap it for the function in the Source panel. Faded when there is no panel to open. Where: Page listing, Code at EIP (C source on).</span></li>
+    <li><span class="lgs plain" inert><button type="button" class="srcloc srclink">init/main.c:960</button> <span class="srctext">set_task_stack_end_magic(&amp;init_task);</span></span>
+      <span><b>file:line</b> with a dotted underline: opens the Source panel at that line. Brown file:line and purple C text are the same everywhere: listings, Debugger, call stack, Source panel, Graph. Where: everywhere C appears.</span></li>
+  </ul>
+  <h4>Debugger</h4>
+  <ul class="lgnd">
+    <li><span class="lgs plain" inert><span class="regs mono"><div class="chg"><b>EAX</b> 00000003</div><div><b>EBX</b> 00000000</div></span></span>
+      <span><b>Yellow register</b>: changed since the registers were last shown. Where: Debugger, registers.</span></li>
+    <li><span class="lgs plain" inert><span class="watches"><span class="wname">nr_cpu_ids</span> <span class="wtype">unsigned int</span> = 1; <span class="wname">err</span> = <span class="lout">&lt;optimized out&gt;</span>; <span class="wname">p</span> = <span class="lout">&lt;not mapped&gt;</span>; <span class="werr">cannot read 0xc1000000</span></span></span>
+      <span><b>Variables</b>: names in blue, types muted; in italics a value that is not there: optimized out (the compiler kept no location for it here) or not mapped (the address is not in RAM or not paged in); red, an error reading it. Where: Parameters and locals, Watch.</span></li>
+    <li><span class="lgs plain" inert><span class="banner">Kernel panic: Attempted to kill init!</span><span class="banner" data-kind="halt">Halted: hlt with interrupts off</span></span>
+      <span><b>End of the run</b>: red when the kernel panicked or ran out of its panic budget, amber when the CPU halted for good. Where: under the screen.</span></li>
+  </ul>
+  <h4>Source panel and Coverage tab</h4>
+  <ul class="lgnd">
+    <li><span class="lgs srcview" inert><span class="exec">  958 ● <span class="srctext">local_irq_disable();</span></span>
+<span class="exec cont">  959 ┆ <span class="srctext">  early_boot_irqs_disabled = true;</span></span>
+<span class="code">  961 ○ <span class="srctext">boot_cpu_init();</span></span>
+<span class="exec here">  960 ● <span class="srctext">set_task_stack_end_magic(&amp;init_task);</span></span>
+<span class="code pick">  962 ○ <span class="srctext">page_address_init();</span></span></span>
+      <span><b>Green</b> (●): a line whose code has executed; ○ not yet; ┆ and a lighter green: more lines of the statement above or below (not counted). <b>Blue box</b>: the line at EIP or the line opened. <b>Brown bar</b> on the left: the picked line, whose addresses are listed above the text. Recorded while stepping. Where: Source panel.</span></li>
+    <li><span class="lgs plain" inert><span class="covbar" style="width: 8rem"><span style="width: 62%"></span></span></span>
+      <span><b>Coverage bar</b>: the share of lines (or instructions) that ran while stepping. Where: Coverage tab.</span></li>
+  </ul>
+  <h4>Memory tab</h4>
+  <p class="note">One square per 4 KiB page, coloured by region of the boot memory map or by the kernel's ELF section:</p>
+  <ul class="legend" id="legend_mem"></ul>
+  <h4>Graph tab</h4>
+  <p class="note">Symbols are coloured by the top directory of their source file:</p>
+  <ul class="legend" id="legend_graph"></ul>
+  <h4>Warnings and links</h4>
+  <ul class="lgnd">
+    <li><span class="lgs plain problems" inert><div class="warn">Boot protocol 2.15: newer than v86 knows</div><div class="error">No "HdrS" signature at 0x202: this is not a bzImage.</div></span>
+      <span><b>Amber</b>: a warning about the loaded bzImage; <b>red</b>: an error that stops it from booting. Where: under the kernel picker.</span></li>
+    <li><span class="lgs plain" inert><a href="#about_legend">a link</a> <button type="button" class="symlink">start_kernel</button></span>
+      <span><b>Blue text</b> goes somewhere: a link, a symbol, a jump target.</span></li>
+  </ul>
+  </section>
   <p id="build_subject" class="note"></p>
   <p>Source: <a href="https://github.com/d33tah/minimal-kernel-build/tree/hello-kernel/site">site/</a> on the hello-kernel branch. Third-party files: site/THIRD_PARTY.md.</p>
 </section>
@@ -276,7 +362,7 @@
   <div class="scan"><b id="src_title"></b> <button id="src_close" type="button">Close</button></div>
   <p id="src_info" class="note"></p>
   <div id="src_addrs" class="note srcaddrs" hidden></div>
-  <pre id="src_body" tabindex="0"></pre>
+  <pre id="src_body" class="srcview" tabindex="0"></pre>
 </aside>
 
 <nav id="nav_hist" class="navhist" aria-label="Jump history" hidden>

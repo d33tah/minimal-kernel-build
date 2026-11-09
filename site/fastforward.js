@@ -21,6 +21,7 @@ const FF_STEP_FIRST = 2e6;
 let ffActive = false;    // a fast-forward or fast run-to is running
 let ffAbort = false;     // Pause pressed during it
 let ffInfo = null;       // last fast-forward: { target, name, steps, ms, slices, restores }
+let ffBreaks = null;     // while a fast Run to runs: byte address -> [target, original byte] of its HLTs
 
 const ffEnabled = () => new URLSearchParams(location.search).get("fastforward") !== "0";
 
@@ -256,6 +257,7 @@ async function fastRunTo(targets, label) {
 	};
 	let hit = -1;
 	try {
+		ffBreaks = bp; // a listing drawn meanwhile says why these bytes differ
 		arm();
 		let n = 0;
 		while (!ffAbort && !gone() && !st.dead()) {
@@ -280,6 +282,8 @@ async function fastRunTo(targets, label) {
 		for (const [a, [, b]] of bp)
 			if (em.read_memory(a, 1)[0] === 0xf4)
 				em.write_memory(new Uint8Array([b]), a);
+		if (ffBreaks === bp)
+			ffBreaks = null;
 		if (!gone())
 			ffActive = false;
 	}

@@ -30,8 +30,10 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   `address bytes instruction symbol+offset`; everywhere else hex rows of
   16, 8 or 4 bytes (whichever fits the width), repeated rows collapsed to
   `*`; each symbol start is a `name:` header with its size and section.
-  Bytes that changed since the last scan are marked, instructions whose
-  bytes differ from the build are highlighted, and the next instruction is
+  Bytes that changed since the last memory scan are yellow (the page
+  scans at every stop, every few frames while the CPU runs and on Scan,
+  so they show while it runs), instructions whose bytes differ from the
+  build are yellow lines that say why (below), and the next instruction is
   boxed while the CPU is paused or stepping. Memory operands are named
   from the DWARF (see "Memory operands"). Above the listing, a compact
   index of the page's symbols (the only symbol list) scrolls to each one.
@@ -934,7 +936,43 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   page says so, when the browser lacks it) and keeps the last 8 in memory.
   Each row shows raw and compressed size and the ratio, and has "Restore"
   (`DecompressionStream`, then `emulator.restore_state()`) and "Download".
-- **About.** What the page is and how the counting works.
+- **About.** What the page is, how the counting works, and the legend:
+  a sample of every colour and mark of the page drawn with the classes
+  the page itself uses (so light and dark and later style changes stay
+  in step), with what it means and where it appears. The memory region
+  and section swatches and the Graph's subsystem colours are drawn from
+  the same tables as the Memory tab and the Graph. Code at EIP and the
+  Page listing link to it ("Legend"); the link is a jump, so Back returns.
+  `check-legend.py` (run with the site build) fails when style.css gives
+  a class a colour, background, outline, stroke, dash, decoration,
+  opacity or italics and the legend has no sample of it, unless the
+  script names it page furniture with a reason, or when a colour token
+  is defined and unused.
+
+**Yellow lines.** An instruction line in Code at EIP or the Page listing
+is yellow when guest memory holds other bytes there than the build's
+disassembly (disasm.json). Its bytes are a mark with a popover (hover,
+tap, Enter) that names the case, decided in `diffTip` (app.js):
+vmlinux is not in place yet: the minified Linux's bzImage loads a
+121-byte relocation stub at 0x100000 with vmlinux right after it, and
+the stub moves vmlinux down over itself right after the kernel entry,
+so until then every instruction of the kernel is yellow (the build's
+bytes are found 0x79 bytes higher; the shift is read once from the
+bzImage and disasm.json, 0 for hello); a Run to breakpoint: the fast Run
+to writes HLT bytes over the target instruction while the JIT runs to
+it (fastforward.js `ffBreaks`) and puts them back when it stops; zero
+memory; anything else is a change at run time (patched code, freed
+`.init` memory reused, a stray write). The probe behind this: on hello
+nothing ever differs; on both minified builds 47,521 of 48,069
+instructions differ at the reset vector and at the entry, none at
+start_kernel or at the end of the boot (nothing is patched and
+`.init.text` is not overwritten). Yellow bytes on a line that is otherwise the
+build's (or in a hex row) changed since the last memory scan and say
+so; while stepping the Page tab follows EIP, so they show for example
+in slow motion over the relocation stub, right after it moved vmlinux. Live decode compares nothing (it
+shows what is in memory), and a kernel without disasm.json (Debian, an
+imported vmlinux) has no yellow lines. Yellow registers in the Debugger
+changed since they were last shown.
 
 **Back and Forward.** Every jump you make is an entry of the browser's
 history: a symbol, address or branch target link, a jump source's "go
@@ -1322,6 +1360,7 @@ browser-test matrix job named by its suites):
 | J1 jump paths | `test_jumps.py` (every instruction of hello, hello-os and both minified Linux builds: kind, target and fall-through from jumps.js over disasm.json equal a decode of the ELF's bytes from a fresh llvm-objdump run, the decoder agrees with objdump's mnemonics, and every target's static sources are the same); suite jumps (hello: 300 single steps from hello_main; minified Linux: from rest_init to the end of the boot, about 95,000 single steps with timer interrupts, iret and an exception: the recorded paths equal the non-fall-through pairs of the stepper's own EIP sequence, count for count, with a fitting kind; a taken jcc's target shows `←n·k×` and its list (source, count, file:line), go there opens the Page tab at the source, Enter and Escape, the taken arc drawn, underscores of the list's names drawn; EIP's paths at a function entry name the static call; the JIT note; 390 px light and dark) | kernels; tasks,operands,runto_phone,srclinks,unoptimized,jumps |
 | J2 live-decode scope | suite jumps, case jumps_live (Debian 6.1 686 and an imported vmlinux on the minified Linux, Run to start_kernel: the ⊘ titles of Code at EIP and the Page listing, the Page note, the list notes and the Debugger's paths at EIP say "no direct path" only with the scope of the instructions decoded live, never "nothing jumps or calls here"; hello with disasm.json keeps the whole-disassembly wording) | tasks,operands,runto_phone,srclinks,unoptimized,jumps |
 | Z1 ⊘ only where no path leads | `test_jumps.py` (every instruction of the four built kernels: the page's ⊘ set, jumpPaths over disasm.json, equals one computed from the ELF alone: no direct jump or call target, an instruction ends before it and does not fall through, not an aligned data word, not a number in llvm-objdump's operand text, not an `__ex_table` fixup, not a stub of Linux's early_idt_handler_array, irq_entries_start or spurious_entries_start; prints what the marks left are: -O0 minified Linux 1,637, all padding; -Os 440: 333 padding, 107 functions nothing calls); suite nopath (hello, hello-os and both minified Linux builds: paused at the start the EIP line has no ⊘; Run to start_kernel or hello_main, then up to 2,000,000 single steps: no instruction that ran or has an observed path in carries ⊘, Code at EIP at the first stop on an instruction reached only indirectly (minified -O0: the jump table of clear_all_debug_regs, -Os: cpu_init+0xc2) has no ⊘, nor the Page listings of those, and the ⊘ title says what it rests on; screenshots 1280 and 390 px, light and dark); suite jumps, case jumps_live (no ⊘ on the first instruction decoded live nor on function entries). On 7f4ebd019 all of these fail: 87 (-O0) and 55 (-Os) wrong marks, startup_32 and EIP marked | kernels; nopath; jumps |
+| L1 legend and yellow lines | `check-legend.py` (every class style.css colours has a sample in the About tab's legend or a page-furniture reason, every colour token is used); suite legend, case legend (minified Linux: entry, Scan, Run to start_kernel, 300 steps, Page listing, Source panel, Coverage, Memory: every coloured class drawn is in the legend, 17 samples compared with the drawn element's computed colour, background, outline, italics, opacity, stroke and dash in light and dark, the memory and Graph swatches equal the page's tables, the Legend links of Code at EIP and the Page tab show it and Back returns; screenshots 1280 and 390 px, light and dark, no horizontal scroll); case yellow (both minified builds, 64 MiB: at the entry every yellow line of Code at EIP and the Page listing names the relocation stub and the 0x79 shift, checked against the shift found in the bzImage file by the test and the build's bytes read from guest memory there; hover, Enter and a 390 px tap show it without moving lines; nothing is yellow after start_kernel; during a fast Run to its HLT breakpoint line is yellow and says so, after it ends it is plain; in slow motion over the relocation stub the Page listing marks the bytes it moved since the last memory scan, and those lines say so). On 6525404db they fail: no legend, no explanation on any yellow line | debian,dwarf,dwarf_import,runto,initramfs,coverage,navhist,tipmarks,legend |
 | T1 popovers on the listing marks | suite tipmarks (hello and minified Linux, Run to hello_main / start_kernel and 30 steps: no ⊘, ←n, ↑ ↓ ↗, name, file:line, C line, EIP-inside line or tint key in the Page listing or Code at EIP relies on a title; at 1280 px hover on ⊘ shows the popover, its first line says what ⊘ means, then the whole disassembly and what ran; it fits on screen and moves no line; Enter, Space and Esc on a focused ⊘; a click pins it and it stays on the mark when the listing is drawn again; tint key, ←n (a click still opens its list), EIP mark, Tab focus and hover on a jump end, hover on a gutter stub; at 390 px touch a tap on ⊘, a long press on a jump end shows its popover without going there, a plain tap still goes there, taps on the EIP mark and a stub; screenshots light and dark); case tipmarks_live (Debian at 390 px, Run to start_kernel, a tap on a live-decode ⊘ says only the instructions decoded live are known). On b9cc4387d it fails: no popover on any mark | debian,dwarf,dwarf_import,runto,initramfs,coverage,navhist,tipmarks |
 | J3 no em-dashes | `check-text.py` (no U+2014 in the page's .js, .html, .css and README); suite srclinks (the Source panel's title after every file:line click has none) | site; tasks,operands,runto_phone,srclinks,unoptimized,jumps |
 | B1 run state under random clicks | suite runstate (minified Linux at 1/s: Boot pressed twice while the boot fast-forwards to the entry, on a desktop in one task and as two taps at 390 px, must end with the new machine running at 1/s and no page error; Run to start_kernel pressed twice at once during that fast-forward must stop at start_kernel; then a seeded random-click fuzzer with fixed seeds, desktop and 390 px touch, hello and minified Linux, speeds 1/s to full, clock, kernel, Boot, Pause, Continue, Step, Run to targets, tabs, the overlay, listing lines, jump lists, file:line links, the Source panel, Memory pages, Snapshots and keys: after every action, paused means Pause disabled, Continue enabled unless the run ended and the overlay shown; running means the opposite and, at 1/s and 10/s, an instruction within 3.5 s; a fast-forward moves within 10 s; "off" lasts under 30 s; no page error. `--fuzz-seeds N --fuzz-from S --fuzz-actions A` runs more seeds locally) | runstate |

@@ -8,7 +8,6 @@
 	--warn-fg: #6b4300;
 	--err-bg: #fde3e1;
 	--err-fg: #8a1c12;
-	--page-used: #2456a6;
 	--page-free: #e6e4dc;
 	--r-bios: #8c564b;
 	--r-conv: #a1d99b;
@@ -29,8 +28,6 @@
 	--changed: #e0245e;
 	--mark-bg: #ffd84d;
 	--mark-fg: #1d1d1b;
-	--sym0: rgba(36, 86, 166, 0.10);
-	--sym1: rgba(214, 39, 40, 0.10);
 	--nx-bg: rgba(148, 103, 189, 0.28);
 	--src-loc: #8a4500;
 	--op-name: #00695c;
@@ -49,14 +46,11 @@
 		--warn-fg: #f3d394;
 		--err-bg: #44201c;
 		--err-fg: #f5b3aa;
-		--page-used: #8bb1f0;
 		--page-free: #2b2c2f;
 		--r-conv: #4f7d47;
 		--r-ext: #3a3a3a;
 		--r-init: #4f8fbf;
 		--changed: #ff5c8a;
-		--sym0: rgba(139, 177, 240, 0.16);
-		--sym1: rgba(255, 120, 120, 0.14);
 		--nx-bg: rgba(190, 150, 240, 0.22);
 		--src-loc: #e8a860;
 		--op-name: #6fd3c4;
@@ -75,14 +69,11 @@
 	--warn-fg: #f3d394;
 	--err-bg: #44201c;
 	--err-fg: #f5b3aa;
-	--page-used: #8bb1f0;
 	--page-free: #2b2c2f;
 	--r-conv: #4f7d47;
 	--r-ext: #3a3a3a;
 	--r-init: #4f8fbf;
 	--changed: #ff5c8a;
-	--sym0: rgba(139, 177, 240, 0.16);
-	--sym1: rgba(255, 120, 120, 0.14);
 	--nx-bg: rgba(190, 150, 240, 0.22);
 	--src-loc: #e8a860;
 	--op-name: #6fd3c4;
@@ -123,9 +114,9 @@ button:disabled { opacity: 0.45; cursor: default; }
 input[type=file] { max-width: 100%; font-size: 0.75rem; }
 #status { font-size: 0.85rem; }
 
-#problems div { padding: 0.2rem 0.5rem; border-radius: 3px; margin-top: 0.3rem; font-size: 0.8rem; }
-#problems .warn { background: var(--warn-bg); color: var(--warn-fg); }
-#problems .error { background: var(--err-bg); color: var(--err-fg); }
+.problems div { padding: 0.2rem 0.5rem; border-radius: 3px; margin-top: 0.3rem; font-size: 0.8rem; }
+.problems .warn { background: var(--warn-bg); color: var(--warn-fg); }
+.problems .error { background: var(--err-bg); color: var(--err-fg); }
 
 .machine { display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; margin-top: 0.4rem; align-items: flex-start; }
 .run { flex: 1 1 300px; min-width: 0; }
@@ -269,14 +260,15 @@ svg.jarcs { position: absolute; left: 0; top: 0; pointer-events: none; overflow:
 .jump-pop .jgo { padding: 0.1rem 0.3rem 0.15rem; line-height: 1.4; }
 .jump-pop .note { margin: 0.2rem 0; }
 #eip_jumps { font-size: 0.75rem; overflow-wrap: anywhere; margin: 0.2rem 0 0.5rem; }
-#listing mark { background: var(--mark-bg); color: var(--mark-fg); }
-#listing .lbl { color: var(--accent); font-weight: 600; }
-#listing .lbl .dim { font-weight: 400; }
+.asm mark { background: var(--mark-bg); color: var(--mark-fg); }
+.asm .lbl { color: var(--accent); font-weight: 600; }
+.asm .lbl .dim { font-weight: 400; }
 /* Instructions that have not executed in this boot (coverageFor in app.js). */
-#listing .nx, .nxkey { background: var(--nx-bg); color: var(--muted); }
+.asm .nx, .nxkey { background: var(--nx-bg); color: var(--muted); }
 .nxkey { padding: 0 0.25em; border-radius: 2px; }
-#listing .bad { background: var(--mark-bg); color: var(--mark-fg); }
-#listing .hex { color: var(--fg); }
+/* Guest memory differs from the build here (app.js diffTip says why). */
+.asm .bad { background: var(--mark-bg); color: var(--mark-fg); }
+.asm .hex { color: var(--fg); }
 .cur { outline: 2px solid var(--accent); outline-offset: -1px; background: var(--bg); }
 /* An instruction line at EIP: a box of its own with 2 px above and below, so
    the outline lies outside its glyphs (an underscore reaches the bottom of
@@ -325,8 +317,6 @@ svg.jarcs { position: absolute; left: 0; top: 0; pointer-events: none; overflow:
 .symlink { font: 0.78rem ui-monospace, monospace; padding: 0 0.3rem; color: var(--accent); }
 .fmeth { font-size: 0.68rem; color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 0 0.2rem; white-space: nowrap; }
 #context .ins { cursor: pointer; }
-#context mark { background: var(--mark-bg); color: var(--mark-fg); }
-#context .bad { background: var(--mark-bg); color: var(--mark-fg); }
 .banner { margin: 0.2rem 0; padding: 0.2rem 0.5rem; border-radius: 3px; font-weight: 600; font-size: 0.85rem; background: var(--err-bg); color: var(--err-fg); }
 .banner[data-kind="halt"] { background: var(--warn-bg); color: var(--warn-fg); }
 .banner[hidden] { display: none; }
@@ -367,8 +357,8 @@ svg.jarcs { position: absolute; left: 0; top: 0; pointer-events: none; overflow:
 }
 #graph_info button { margin: 0.1rem 0; }
 #vclock { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.2em; margin: 0.1rem 0; }
-#listing .src, #context .src { color: var(--muted); font-style: italic; cursor: pointer; }
-#listing .src.nol, #context .src.nol { cursor: default; opacity: 0.8; }
+.asm .src { color: var(--muted); font-style: italic; cursor: pointer; }
+.asm .src.nol { cursor: default; opacity: 0.8; }
 /* C lines everywhere (listings, Debugger source rows, Source panel, call
    stack, Graph detail): location and text in two colours. */
 .srcloc { color: var(--src-loc); }
@@ -388,11 +378,11 @@ button.srclink:focus-visible { outline: 2px solid var(--accent); outline-offset:
 	border-left: 1px solid var(--line); box-shadow: -2px 0 12px rgba(0, 0, 0, 0.2); padding: 0.4rem 0.6rem; display: flex; flex-direction: column; }
 .srcpanel[hidden] { display: none; }
 #src_body { flex: 1; overflow: auto; margin: 0; font: 11px/1.35 ui-monospace, monospace; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--page-free); padding: 0.4rem; border-radius: 4px; }
-#src_body .exec { background: rgba(44, 160, 44, 0.18); }
-#src_body .exec.cont { background: rgba(44, 160, 44, 0.1); }
-#src_body .here { outline: 2px solid var(--accent); outline-offset: -1px; }
+.srcview .exec { background: rgba(44, 160, 44, 0.18); }
+.srcview .exec.cont { background: rgba(44, 160, 44, 0.1); }
+.srcview .here { outline: 2px solid var(--accent); outline-offset: -1px; }
 #src_body [data-line] { cursor: pointer; }
-#src_body .pick { box-shadow: inset 4px 0 0 var(--src-loc); }
+.srcview .pick { box-shadow: inset 4px 0 0 var(--src-loc); }
 .srcaddrs { max-height: 28vh; overflow: auto; margin: 0 0 0.4rem; overflow-wrap: anywhere; }
 .srcaddrs ul { margin: 0.2rem 0 0; padding-left: 1.1rem; font: 0.78rem/1.4 ui-monospace, monospace; }
 .srcaddrs[hidden] { display: none; }
@@ -448,7 +438,7 @@ body.navhist-on { padding-bottom: 56px; }
 #graph_crumbs { margin: 0.2rem 0; overflow-wrap: anywhere; }
 #graph_crumbs[hidden] { display: none; }
 #graph_transpose[aria-pressed="true"], #graph_flame[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
-#listing .maybe { opacity: 0.6; font-style: italic; }
+.asm .maybe { opacity: 0.6; font-style: italic; }
 
 /* Debugger: machine state sections (cpustate.js). */
 .cpu_state details { border-top: 1px solid var(--line); padding: 0.15rem 0; }
@@ -478,3 +468,19 @@ body.navhist-on { padding-bottom: 56px; }
 .watches .lloc { color: var(--muted); font-family: system-ui, sans-serif; font-size: 0.72rem; }
 #watch_quick { flex-wrap: wrap; }
 #watch_quick button { font-size: 0.75rem; }
+
+/* The About tab's legend: a sample of every colour and mark, drawn with
+   the classes the page uses (check-legend.py keeps it complete). */
+.lgnd { list-style: none; padding: 0; margin: 0.3rem 0 0.6rem; }
+.lgnd li { display: grid; grid-template-columns: minmax(0, 19rem) minmax(0, 1fr); gap: 0.2rem 0.8rem; align-items: start; padding: 0.25rem 0; border-bottom: 1px solid var(--line); }
+.lgs { font: 11px/1.3 ui-monospace, monospace; background: var(--page-free); border-radius: 3px; padding: 0.15rem 0.35rem; overflow-wrap: anywhere; white-space: pre-wrap; }
+.lgs.plain { background: none; padding: 0; font: inherit; white-space: normal; }
+.lgs svg { display: block; overflow: visible; }
+.lgs .regs, .lgs .watches { display: block; margin: 0; }
+.about .legend { margin: 0.2rem 0 0.6rem; }
+.about h4 { font-size: 0.8rem; margin: 0.6rem 0 0.1rem; }
+/* "Legend" next to the headers of Code at EIP and the Page listing. */
+button.legendlink { font: inherit; font-size: 0.75rem; font-weight: 400; border: none; padding: 0 0.2rem; background: none; color: var(--accent); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+@media (max-width: 640px) {
+	.lgnd li { grid-template-columns: minmax(0, 1fr); }
+}

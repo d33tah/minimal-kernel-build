@@ -37,6 +37,7 @@ const G = {
 };
 const ROW = 17, MINI = 26;
 const SWITCH = "#6a5acd"; // task switch lines: quiet slate blue
+const IRQ_COLOUR = "#b0b0b0"; // frames of interrupt and exception handlers
 const PALETTE = { init: "#2ca02c", mm: "#1f77b4", fs: "#ff7f0e", kernel: "#d62728", arch: "#9467bd", lib: "#8c564b",
 	drivers: "#17becf", include: "#bcbd22", other: "#7f7f7f" };
 
@@ -97,7 +98,7 @@ function subsystem(st, node) {
 }
 
 function frameColour(st, k) {
-	return st.fIrq[k] ? "#b0b0b0" : PALETTE[subsystem(st, st.fNode[k])];
+	return st.fIrq[k] ? IRQ_COLOUR : PALETTE[subsystem(st, st.fNode[k])];
 }
 
 // Inclusive / self counts of a frame (open frames up to now).

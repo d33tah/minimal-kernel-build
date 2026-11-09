@@ -443,6 +443,42 @@ function drawGridLegend() {
 	add("", "selected", { outline: "2px solid var(--fg)", outlineOffset: "-2px" });
 }
 
+// The About tab's legend: the swatches drawn from the page's own tables
+// (memory regions and sections as in the Memory tab, the Graph's
+// subsystems), and the Legend links of Code at EIP and the Page listing.
+function initLegend() {
+	const item = (key, label, style) => {
+		const li = document.createElement("li");
+		const sw = document.createElement("span");
+		Object.assign(sw.style, style);
+		li.dataset.key = key;
+		li.append(sw, label);
+		return li;
+	};
+	const mem = $("legend_mem");
+	for (const [cls, name] of Object.entries(REGION_NAMES))
+		mem.append(item(cls, name, { background: "var(--" + cls + ")" }));
+	for (const [cls, name] of Object.entries(SECTION_NAMES))
+		mem.append(item(cls, "kernel " + name, { background: "var(--" + cls + ")" }));
+	mem.append(item("", "page with data (filled)", { background: "var(--r-kernel)" }),
+		item("", "all-zero page (hollow)", { border: "1px solid var(--r-kernel)", boxSizing: "border-box" }),
+		item("changed", "changed since the previous scan", { background: "var(--changed)", transform: "scale(0.5)" }),
+		item("", "selected page", { outline: "2px solid var(--fg)", outlineOffset: "-2px" }));
+	const graph = $("legend_graph");
+	for (const [dir, colour] of Object.entries(PALETTE))
+		graph.append(item(dir, dir === "other" ? "other or unknown" : dir + "/", { background: colour }));
+	graph.append(item("irq", "interrupt and exception handlers (timeline)", { background: IRQ_COLOUR }),
+		item("switch", "task switch (timeline line)", { background: SWITCH, height: "2px" }));
+	for (const b of document.querySelectorAll(".legendlink"))
+		b.addEventListener("click", () => navJump(() => {
+			showTab("about");
+			// Below the header, which stays on top on a wide screen.
+			const top = document.querySelector("header.top");
+			const over = getComputedStyle(top).position === "sticky" ? top.getBoundingClientRect().height : 0;
+			window.scrollTo(0, window.scrollY + $("about_legend").getBoundingClientRect().top - over - 8);
+		}));
+}
+
 function pageAt(ev) {
 	const canvas = $("pages");
 	const rect = canvas.getBoundingClientRect();
@@ -556,9 +592,11 @@ function coverageFor(lo) {
 // One listing of page p in address order: instructions (disasm.json) as
 // "addr bytes insn symbol+off", everything else as hexdump -C rows, symbol
 // starts as "name:" headers. base: bytes from the last scan (changed bytes
-// are marked); cur: physical address of the next instruction, or -1.
-// Instructions that have not executed in this boot are tinted (coverageFor).
-function listPage(p, bytes, base, cur, chars) {
+// are marked; how: since when, for their popover); cur: physical address of
+// the next instruction, or -1. Instructions that have not executed in this
+// boot are tinted (coverageFor); instructions whose bytes differ from the
+// build are yellow and say why (diffTip).
+function listPage(p, bytes, base, cur, chars, how) {
 	const lo = p * PAGE, hi = lo + PAGE;
 	const cov = coverageFor(lo);
 	const per = hexPer(chars);
@@ -593,6 +631,9 @@ function listPage(p, bytes, base, cur, chars) {
 	const srcState = { key: null };
 	const ops = insns.size && bits !== 16 ? opEnv() : null, opStat = {}; // real-mode addresses are segment-relative
 	const mark = (off, text) => (base && base[off] !== bytes[off] ? "<mark>" + text + "</mark>" : text);
+	const scanTip = "Yellow: the marked bytes changed " + (how === "since the previous scan" ?
+		"between the previous memory scan and the last one (Memory tab, Scan)." :
+		"since the last memory scan. The page scans memory at every stop, every few frames while the CPU runs, and on Scan.");
 	for (let off = 0; off < PAGE; off++)
 		if (bytes[off]) nonzero++;
 	if (base)
@@ -618,14 +659,20 @@ function listPage(p, bytes, base, cur, chars) {
 		if (ins) {
 			const [pa, raw, text] = ins;
 			const n = raw.length / 2;
-			let ok = true, rawHtml = "";
+			let ok = true, rawHtml = "", scanned = false;
 			for (let k = 0; k < n && pa + k < hi; k++) {
 				const want = parseInt(raw.substr(k * 2, 2), 16);
 				if (bytes[pa - lo + k] !== want)
 					ok = false;
+				if (base && base[pa - lo + k] !== bytes[pa - lo + k])
+					scanned = true;
 				if (k < 7)
 					rawHtml += mark(pa - lo + k, bytes[pa - lo + k].toString(16).padStart(2, "0"));
 			}
+			const m = Math.min(n, hi - pa);
+			const tip = !ok ? diffTip(pa, raw.substr(0, m * 2), bytes.subarray(pa - lo, pa - lo + m)) : scanned ? scanTip : "";
+			if (tip)
+				rawHtml = diffBytesHtml(rawHtml, tip);
 			rawHtml += n > 7 ? "…" : "  ".repeat(7 - n) + " ";
 			const s = symbolAt(sized, pa);
 			const where = s ? s.name + "+0x" + (pa - s.paddr).toString(16) : "";
@@ -654,7 +701,8 @@ function listPage(p, bytes, base, cur, chars) {
 			const P = jumpPaths(jS, stepper, pa);
 			paths.set(pa, P);
 			const J = jumpInlineHtml(jS, P, pa, inView, imax);
-			out.push(J.src + '<span class="' + cls + '" data-addr="' + pa + '"' + (inside ? ' data-eip="' + cur + '" data-tip="' + midTitle(cur) + '"' : "") +
+			out.push(J.src + '<span class="' + cls + '" data-addr="' + pa + '"' + (inside ? ' data-eip="' + cur + '"' : "") +
+				(inside || tip ? ' data-tip="' + escHtml((tip ? tip + (inside ? "\n\n" : "") : "") + (inside ? midTitle(cur) : "")) + '"' : "") +
 				jumpStubAttrs(J) + ">" + pa.toString(16).padStart(8, "0") +
 				" " + rawHtml + " " + insnHtml(pa, text, ops, opStat) +
 				(wide && where ? ' <span class="dim">' + escHtml(where) + "</span>" : "") + "</span>" + J.dst + jumpBadgesHtml(P, pa));
@@ -701,7 +749,8 @@ function listPage(p, bytes, base, cur, chars) {
 			cls += " cur";
 			curLine = out.length;
 		}
-		out.push('<span class="' + cls + '" data-addr="' + a + '" data-row="' + (a - pad) + '" data-per="' + per + '" data-end="' + end + '">' +
+		out.push('<span class="' + cls + '" data-addr="' + a + '" data-row="' + (a - pad) + '" data-per="' + per + '" data-end="' + end + '"' +
+			(dirty ? ' data-tip="' + escHtml(scanTip) + '"' : "") + ">" +
 			(a - pad).toString(16).padStart(8, "0") +
 			" " + hx + " |" + asc + "|</span>");
 		nRows++;
@@ -782,7 +831,7 @@ function renderPage(p, bytes, base, how) {
 	const t0 = realNow();
 	const box = $("listing");
 	const cur = currentPhys();
-	const r = listPage(p, bytes, base, cur >= p * PAGE && cur < p * PAGE + PAGE ? cur : -1, lineChars(box));
+	const r = listPage(p, bytes, base, cur >= p * PAGE && cur < p * PAGE + PAGE ? cur : -1, lineChars(box), how);
 	box.innerHTML = r.html;
 	box.dataset.jlocal = r.source === "live" ? "page's live decode" : "";
 	const dropped = jumpsDrawn(box, r.jS, r.paths);
@@ -837,6 +886,76 @@ function renderCovInfo(r) {
 		key.textContent = "No execution coverage: " + r.cov.why + ".";
 }
 
+// ---- yellow lines: guest memory that differs from the build ---------------
+
+// How far above its link address the bzImage loads vmlinux's first bytes:
+// the minified Linux's bzImage carries a relocation stub of this many bytes
+// at 0x100000 with vmlinux after it, and the stub moves vmlinux down right
+// after the kernel entry. 0 when the payload is vmlinux itself (hello) or
+// not found. From the image file and disasm.json, once per pair.
+let stubShiftOf = { image: null, disasm: null, shift: 0 };
+function stubShift() {
+	if (!image || !disasm || !disasm.insns.length)
+		return 0;
+	const c = stubShiftOf;
+	if (c.image === image && c.disasm === disasm)
+		return c.shift;
+	const ins = disasm.insns, lo = ins[0][0], want = [];
+	for (const [pa, raw] of ins) {
+		if (pa !== lo + want.length || want.length >= 48)
+			break;
+		for (let k = 0; k < raw.length; k += 2)
+			want.push(parseInt(raw.substr(k, 2), 16));
+	}
+	const pay = image.bytes.subarray(image.hdr.setup_size, image.hdr.setup_size + 0x10000 + want.length);
+	let shift = 0;
+	for (let i = 0; i + want.length <= pay.length && want.length; i++)
+		if (want.every((b, k) => pay[i + k] === b)) {
+			shift = i - (lo - V86_KERNEL_ADDR);
+			break;
+		}
+	stubShiftOf = { image, disasm, shift };
+	return shift;
+}
+
+// The popover text of a yellow line: the instruction at pa (build bytes
+// raw, hex) holds got in guest memory. Says which case it is: a Run to
+// breakpoint, vmlinux not moved into place yet (the relocation stub), zero
+// memory, or a change at run time.
+function diffTip(pa, raw, got) {
+	const n = raw.length / 2;
+	let k = 0;
+	for (let i = 0; i < n; i++)
+		if (got[i] !== parseInt(raw.substr(i * 2, 2), 16))
+			k++;
+	const head = "Yellow: these bytes in guest memory differ from the build's disassembly (" + k + " of " + n + " bytes).\n";
+	const sameAt = (a) => {
+		if (a < 0 || a + n > emuRam)
+			return false;
+		const m = emulator.read_memory(a, n);
+		return m.every((b, i) => b === parseInt(raw.substr(i * 2, 2), 16));
+	};
+	if (typeof ffBreaks !== "undefined" && ffBreaks && got.some((b, i) => b === 0xf4 && ffBreaks.has(pa + i)))
+		return head + "Run to has put HLT bytes (f4) over this instruction as breakpoints while the JIT runs to it; " +
+			"they are put back when it stops.";
+	const d = stubShift();
+	if (d > 0 && sameAt(pa + d))
+		return head + "vmlinux is not in place yet. The bzImage put a " + d + "-byte relocation stub at " + hex(V86_KERNEL_ADDR) +
+			" and vmlinux right after it, so the build's bytes for this address are still " + hex(d) + " bytes higher, at " + hex(pa + d) + ". " +
+			(pa < V86_KERNEL_ADDR + d ? "The bytes here are the relocation stub's own code, which runs first. " : "") +
+			"The stub moves vmlinux down over itself right after the kernel entry; from then on these lines are plain.";
+	if (got.every((b) => b === 0))
+		return head + "The memory here is zero: nothing has been loaded here yet, or it was cleared.";
+	const sec = symbols && symbols.sections.find((x) => pa >= x.paddr && pa < x.paddr + x.size);
+	return head + "The code here changed at run time: the kernel patched it (alternatives, jump labels, static calls) or reused the memory" +
+		(sec && /^\.init/.test(sec.name) ? " (" + sec.name + " is freed once the kernel has booted)" : "") + ", or something wrote here.";
+}
+
+// The marked bytes of a line that differ from the build: a mark with the
+// line's popover (tap, Enter, hover).
+const diffBytesHtml = (bytes, tip) => '<span class="difb tipmark" tabindex="0" role="button" aria-label="Why yellow" data-tip="' +
+	escHtml(tip) + '">' + bytes + "</span>";
+
 // The title of a listing line with EIP inside it (not at its start).
 const midTitle = (cur) => "EIP " + hex(cur) + " is inside this instruction of the build's disassembly: the bytes here differ from the build " +
 	"(the bzImage's relocation stub at 0x100000 right after the entry, or code changed at run time), so the CPU runs other code. " +
@@ -874,14 +993,19 @@ function listingFollow() {
 		el.classList.remove("cur", "mid", "tipmark");
 		if (el.dataset.eip !== undefined) {
 			delete el.dataset.eip;
-			delete el.dataset.tip;
+			const b = el.querySelector(".difb"); // a yellow line keeps its own text
+			if (b)
+				el.dataset.tip = b.dataset.tip;
+			else
+				delete el.dataset.tip;
 		}
 	}
 	line.classList.add("cur");
 	if (mid) {
+		const b = line.querySelector(".difb");
 		line.classList.add("mid", "tipmark");
 		line.dataset.eip = cur;
-		line.dataset.tip = midTitle(cur);
+		line.dataset.tip = (b ? b.dataset.tip + "\n\n" : "") + midTitle(cur);
 	}
 	if (d.r.cov.tint) {
 		for (const el of box.querySelectorAll(".ins.nx"))
@@ -2217,13 +2341,17 @@ function drawContext() {
 					if (j < 7)
 						bytes += got !== want ? "<mark>" + got + "</mark>" : got;
 				}
+				const tip = ok || !mem ? "" : diffTip(pa, raw, mem.subarray(pa - lo, pa - lo + raw.length / 2));
+				if (tip)
+					bytes = diffBytesHtml(bytes, tip);
 				bytes += raw.length / 2 > 7 ? "…" : "  ".repeat(7 - raw.length / 2);
 				const sym = symbolAt(sized, pa);
 				const cls = "ins" + (pa === phys ? " cur" : "") + (ok ? "" : " bad");
 				const P = jumpPaths(jS, stepper, pa);
 				paths.set(pa, P);
 				const J = jumpInlineHtml(jS, P, pa, inView, imax);
-				lines.push(J.src + '<span class="' + cls + '" data-addr="' + pa + '"' + jumpStubAttrs(J) + ">" + (pa === phys ? EIP_MARK : " ") +
+				lines.push(J.src + '<span class="' + cls + '" data-addr="' + pa + '"' + (tip ? ' data-tip="' + escHtml(tip) + '"' : "") +
+					jumpStubAttrs(J) + ">" + (pa === phys ? EIP_MARK : " ") +
 					pa.toString(16).padStart(8, "0") + " " + bytes + " " + insnHtml(pa, text, ops, opStat) +
 					(sym ? ' <span class="dim">' + escHtml(sym.name) + "+0x" + (pa - sym.paddr).toString(16) + "</span>" : "") +
 					"</span>" + J.dst + jumpBadgesHtml(P, pa));
@@ -2278,13 +2406,14 @@ function renderRegs() {
 	for (const [name, value, title] of cells) {
 		const d = document.createElement("div");
 		d.dataset.reg = name;
-		if (prevRegs && prevRegs[name] !== undefined && prevRegs[name] !== value)
+		const chg = !!prevRegs && prevRegs[name] !== undefined && prevRegs[name] !== value;
+		if (chg)
 			d.className = "chg";
 		const b = document.createElement("b");
 		b.textContent = name;
 		d.append(b, " " + value);
-		if (title)
-			d.title = title;
+		if (title || chg)
+			d.title = (title ? title + ". " : "") + (chg ? "Yellow: changed since the registers were last shown" : "");
 		if (name === "EFLAGS" || name === "mode")
 			d.classList.add("wide");
 		el.append(d);
@@ -3232,6 +3361,7 @@ async function init() {
 	}
 	$("clock_mips").value = [params.get("mips"), storedMips, "10"].find((v) => clocks.includes(v));
 	initTips();
+	initLegend();
 	drawMaps();
 	initDebugger();
 	initGraph();

@@ -305,6 +305,7 @@ jobs:
       run: |
         site/check-ids.py
         site/check-text.py
+        site/check-legend.py
         # Which commit is deployed: shown in the page header.
         python3 -c 'import json, os, subprocess
         g = lambda f: subprocess.run(["git", "log", "-1", "--format=" + f], capture_output=True, text=True).stdout.strip()
@@ -359,7 +360,7 @@ jobs:
       matrix:
         suites:
         - boot,symbols,debugger,misc,touch,tasks_minified,hello,firstlook
-        - debian,dwarf,dwarf_import,runto,initramfs,coverage,navhist,tipmarks
+        - debian,dwarf,dwarf_import,runto,initramfs,coverage,navhist,tipmarks,legend
         - tasks,operands,runto_phone,srclinks,unoptimized,jumps
         - types,covtree,unwind,lineaddr,fnfacts,branches,nopath
         - runstate

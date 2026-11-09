@@ -1307,7 +1307,10 @@ async function resume() {
 		if (emulator.is_running())
 			await emulator.stop();
 		runState = "stepped";
-		stepCredit = 0;
+		// The first instruction at once (at 1/s it came a second after
+		// Continue, which looked like a stall), then at the set rate.
+		stepCredit = 1;
+		prevTick = 0;
 		CLOCK.set(!!clockMips());
 		scheduleDriver();
 	} else {
@@ -1319,6 +1322,7 @@ async function resume() {
 		runState = "jit";
 		emulator.run();
 	}
+	speedReset();
 	updateDebugUi();
 }
 
@@ -1332,6 +1336,7 @@ async function pause(note) {
 		await emulator.stop();
 	runState = "paused";
 	runTo = null;
+	speedReset();
 	if (entryPhase && stepper && stepper.sinceEntry >= 0)
 		finishEntry(); // a Run to (stepped) went past the kernel entry
 	// note: text, or nodes (runToStopped's file:line link).
@@ -1352,8 +1357,25 @@ function scheduleDriver() {
 			driverChannel.port1.onmessage = driverTick;
 		}
 		driverChannel.port2.postMessage(0);
+	} else if (document.hidden) {
+		// No animation frames in a hidden tab: a timer (the browser runs it
+		// at most once a second there), with the step credit of the time
+		// that passed.
+		driverTimer = setTimeout(driverTick, 100);
 	} else {
 		lastFrame = requestAnimationFrame((t) => { lastFrame = 0; driverTick(t); });
+	}
+}
+
+// The tab hidden or shown, or the page frozen and resumed (phones freeze
+// background tabs): the pending frame or timer may never come, so schedule
+// anew; measure the speed from here.
+function onVisibility() {
+	prevTick = 0;
+	speedReset();
+	if (runState === "stepped") {
+		stopDriver();
+		scheduleDriver();
 	}
 }
 
@@ -1383,7 +1405,7 @@ function driverTick() {
 		reason = stepper.run(Infinity, -1, SLICE_MS);
 	} else {
 		const rate = Number(speed());
-		const dt = Math.min(250, prevTick ? now - prevTick : 16);
+		const dt = Math.min(document.hidden ? 1000 : 250, prevTick ? now - prevTick : 16);
 		stepCredit = Math.min(stepCredit + rate * dt / 1000, rate + 1);
 		const n = Math.floor(stepCredit);
 		stepCredit -= n;
@@ -1984,20 +2006,46 @@ const MIPS_KEY = "mkb-mips";
 const clockMips = () => ($("clock_mips").value === "real" ? 0 : Number($("clock_mips").value));
 
 // Real speed: v86's instruction counter (wasm memory, offset 664) counts
-// what the JIT runs and what the stepper steps; sampled once a second.
-let speedSample = null;  // { counter, at }
-let realSpeed = 0;       // instructions per second over the last sample
+// what the JIT runs and what the stepper steps; sampled 4 times a second.
+// The rate is taken over a window that holds several instructions at the
+// set speed (4 s at 1/s, 1 s from 4/s up), counted from the last change
+// (Boot, Pause, Continue, a speed, the entry, the tab shown again): a
+// one-second window at 1/s read 0/s whenever it held no instruction, and
+// a window reaching back into a pause or another speed showed that one.
+// Until half the window has passed it says "measuring".
+const SPEED_SAMPLE_MS = 250;
+let speedHist = [];      // [{ counter, at }] since the last change, oldest first
+let realSpeed = null;    // instructions per second, null while measuring
+function speedWindowMs() {
+	if (runState !== "stepped" || fastStepping() || highRate())
+		return 1000;
+	return Math.min(10000, Math.max(1000, 4000 / Number(speed())));
+}
+function speedReset() {
+	speedHist = [];
+	realSpeed = runState === "paused" || runState === "off" ? 0 : null;
+	if (stepper)
+		renderClock();
+}
 function sampleSpeed() {
 	if (!stepper || !emuReady) {
-		speedSample = null;
+		speedHist = [];
 		realSpeed = 0;
 		return;
 	}
 	const c = new Uint32Array(stepper.cpu.wasm_memory.buffer, 664, 1)[0];
 	const now = realNow();
-	if (speedSample && now > speedSample.at)
-		realSpeed = ((c - speedSample.counter) >>> 0) / ((now - speedSample.at) / 1000);
-	speedSample = { counter: c, at: now };
+	speedHist.push({ counter: c, at: now });
+	const w = speedWindowMs();
+	while (speedHist.length > 2 && now - speedHist[1].at >= w)
+		speedHist.shift();
+	const first = speedHist[0];
+	if (runState === "paused" || runState === "off")
+		realSpeed = 0;
+	else if (now - first.at >= w / 2)
+		realSpeed = ((c - first.counter) >>> 0) / ((now - first.at) / 1000);
+	else
+		realSpeed = null;
 	renderClock();
 }
 
@@ -2011,10 +2059,11 @@ function renderClock() {
 		return;
 	}
 	const t = CLOCK.now();
-	el.textContent = "speed " + fmtRate(realSpeed) + " \u00b7 " + (CLOCK.virtual ? "virtual " : "real ") + "time " + (t / 1000).toFixed(4) +
+	el.textContent = (realSpeed === null ? "speed: measuring" : "speed " + fmtRate(realSpeed)) + " \u00b7 " + (CLOCK.virtual ? "virtual " : "real ") + "time " + (t / 1000).toFixed(4) +
 		" s \u00b7 IRQ0 \u00d7" + num(stepper.irq0) + (stepper.idleMs ? " \u00b7 idle " + (stepper.idleMs / 1000).toFixed(3) + " s" : "");
-	el.dataset.speed = Math.round(realSpeed);
-	el.title = "Instructions per second actually executed over the last second (v86's instruction counter: JIT and stepping); " +
+	el.dataset.speed = realSpeed === null ? "" : Math.round(realSpeed);
+	el.title = "Instructions per second actually executed (v86's instruction counter: JIT and stepping), over the last " +
+		(speedWindowMs() / 1000) + " s since the last Boot, Pause, Continue or speed change (\"measuring\" for the first half of that); " +
 		"the speed menu sets the target, which JavaScript stepping may not reach.";
 	el.dataset.irq0 = stepper.irq0;
 	el.dataset.ms = t;
@@ -2024,6 +2073,7 @@ function renderClock() {
 // At the kernel's 32-bit entry (or past it): from here on at the chosen speed.
 function finishEntry() {
 	entryPhase = false;
+	speedReset(); // the fast part before the entry is not this speed
 	const n = stepper.sinceEntry >= 0 ? stepper.sinceEntry : stepper.steps;
 	const ff = ffInfo && ffInfo.stopPhys !== undefined && !ffInfo.runTo;
 	const at = ff ? ffInfo.target : V86_KERNEL_ADDR;
@@ -2655,7 +2705,9 @@ async function init() {
 	$("live_decode").addEventListener("change", () => { if (liveDecode()) loadIced(); inspect(); renderContext(); });
 	initInitrd();
 	setInterval(watchPanicText, 250);
-	setInterval(sampleSpeed, 1000);
+	setInterval(sampleSpeed, SPEED_SAMPLE_MS);
+	document.addEventListener("visibilitychange", onVisibility);
+	document.addEventListener("resume", onVisibility);
 	loadVersion();
 	if (params.has("cmdline"))
 		cmdlineFromUrl = params.get("cmdline");

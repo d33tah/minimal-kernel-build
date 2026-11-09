@@ -942,10 +942,20 @@ JavaScript drives the CPU:
   in headless Chromium, then v86's JIT runs.
 - **speed**: full (v86's JIT, not counted) or 10M, 1M, 100k, 10k, 1k,
   100, 10 or 1 instructions per second. The top bar shows the speed
-  actually reached, sampled once a second from v86's instruction counter
-  (JIT and stepping alike): JavaScript stepping tops out around 5M/s on a
+  actually reached, from v86's instruction counter (JIT and stepping
+  alike) sampled 4 times a second, over a window that holds several
+  instructions at the set speed (4 s at 1/s, 1 s from 4/s up) and starts
+  at the last Boot, Pause, Continue, speed change, kernel entry or the
+  tab being shown again; for the first half of the window it says
+  "measuring" (a one-second window showed "0/s" at 1/s while running,
+  and the fast-forward's rate right after the entry). Continue runs the
+  first instruction at once. JavaScript stepping tops out around 5M/s on a
   fast desktop, so 10M/s shows about that; 1M/s and up run in the message
-  loop and redraw 10 times a second. Stepped speeds update the screen, the
+  loop and redraw 10 times a second. In a hidden tab (no animation
+  frames) the slow stepping runs on a timer with the step credit of the
+  time that passed, so it keeps the set rate where the browser runs the
+  timer at least once a second; when a phone freezes the tab it stops
+  and goes on when shown again. Stepped speeds update the screen, the
   registers and counters every frame, re-scan RAM every frame (every
   250 ms above 4 MB) so the pages written since the previous frame flash
   in the grid, and keep the Page tab on the page holding EIP.
@@ -1229,6 +1239,7 @@ browser-test matrix job named by its suites):
 | J2 live-decode scope | suite jumps, case jumps_live (Debian 6.1 686 and an imported vmlinux on the minified Linux, Run to start_kernel: the ⊘ titles of Code at EIP and the Page listing, the Page note, the list notes and the Debugger's paths at EIP say "no direct path" only with the scope of the instructions decoded live, never "nothing jumps or calls here"; hello with disasm.json keeps the whole-disassembly wording) | tasks,operands,runto_phone,srclinks,unoptimized,jumps |
 | J3 no em-dashes | `check-text.py` (no U+2014 in the page's .js, .html, .css and README); suite srclinks (the Source panel's title after every file:line click has none) | site; tasks,operands,runto_phone,srclinks,unoptimized,jumps |
 | B1 run state under random clicks | suite runstate (minified Linux at 1/s: Boot pressed twice while the boot fast-forwards to the entry, on a desktop in one task and as two taps at 390 px, must end with the new machine running at 1/s and no page error; Run to start_kernel pressed twice at once during that fast-forward must stop at start_kernel; then a seeded random-click fuzzer with fixed seeds, desktop and 390 px touch, hello and minified Linux, speeds 1/s to full, clock, kernel, Boot, Pause, Continue, Step, Run to targets, tabs, the overlay, listing lines, jump lists, file:line links, the Source panel, Memory pages, Snapshots and keys: after every action, paused means Pause disabled, Continue enabled unless the run ended and the overlay shown; running means the opposite and, at 1/s and 10/s, an instruction within 3.5 s; a fast-forward moves within 10 s; "off" lasts under 30 s; no page error. `--fuzz-seeds N --fuzz-from S --fuzz-actions A` runs more seeds locally) | runstate |
+| B1 speed line at slow speeds | suite speedline (minified Linux at 1/s on a desktop, at 1/s and 10/s at 390 px touch with the CPU 5x slower: the speed line sampled every 100 ms for about 60 s through Pause and Continue, a speed change, the tab hidden 6 s with the run going on, frozen 8 s and shown again; while running it shows the set rate within a factor of two or "measuring", never 0/s, and the count moves at a third of the set rate or more) | speedline |
 | U1/U2 unoptimized builds | vmtest boot of the -O0 hello and minified Linux; `check-code-identity.py` for each -O0 and -Os pair; `test_dwarf.py` on both builds of each; suite hello (every instruction of hello_main and put_line), suite unoptimized (minified Linux: eight Run to stops, single steps into calls, no "optimized out" at any address read, values vs gdb at each stop; the -Os entry must show some) | kernels; tasks,operands,runto_phone,srclinks,unoptimized; boot,... |
 
 ## Testing

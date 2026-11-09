@@ -356,6 +356,7 @@ jobs:
         - tasks,operands,runto_phone,srclinks,unoptimized,jumps
         - types,covtree,unwind,lineaddr,fnfacts,branches
         - runstate
+        - speedline
     name: browser-test (${{ matrix.suites }})
     steps:
     - uses: actions/checkout@v4

@@ -948,8 +948,8 @@ JavaScript drives the CPU:
   at the last Boot, Pause, Continue, speed change, kernel entry or the
   tab being shown again; for the first half of the window it says
   "measuring" (a one-second window showed "0/s" at 1/s while running,
-  and the fast-forward's rate right after the entry). Continue runs the
-  first instruction at once. JavaScript stepping tops out around 5M/s on a
+  and the fast-forward's rate right after the entry). Continue and a speed
+  picked while running run the first instruction at once. JavaScript stepping tops out around 5M/s on a
   fast desktop, so 10M/s shows about that; 1M/s and up run in the message
   loop and redraw 10 times a second. In a hidden tab (no animation
   frames) the slow stepping runs on a timer with the step credit of the

@@ -1298,8 +1298,11 @@ function stopDriver() {
 	lastFrame = 0;
 }
 
-// Run the VM in whichever way the controls ask for.
-async function resume() {
+// Run the VM in whichever way the controls ask for. now: run the first
+// instruction at once (Continue, a speed picked: at 1/s it came a second
+// later, which looked like a stall); not when the page itself goes on (the
+// kernel entry, where the counts from the entry start).
+async function resume(now = false) {
 	if (!emulator || !emuReady)
 		return;
 	stopDriver();
@@ -1307,9 +1310,7 @@ async function resume() {
 		if (emulator.is_running())
 			await emulator.stop();
 		runState = "stepped";
-		// The first instruction at once (at 1/s it came a second after
-		// Continue, which looked like a stall), then at the set rate.
-		stepCredit = 1;
+		stepCredit = now ? 1 : 0;
 		prevTick = 0;
 		CLOCK.set(!!clockMips());
 		scheduleDriver();
@@ -2455,7 +2456,7 @@ async function doRunTo() {
 
 function initDebugger() {
 	$("dbg_pause").addEventListener("click", () => pause("Paused."));
-	$("dbg_continue").addEventListener("click", () => { $("dbg_status").textContent = ""; resume(); });
+	$("dbg_continue").addEventListener("click", () => { $("dbg_status").textContent = ""; resume(true); });
 	$("vm_continue").addEventListener("click", () => $("dbg_continue").click());
 	$("dbg_step").addEventListener("click", () => doStep(1));
 	$("dbg_stepn").addEventListener("click", () => {
@@ -2478,7 +2479,7 @@ function initDebugger() {
 			// storage unavailable: the choice lasts until reload
 		}
 		if (runState === "stepped" || runState === "jit")
-			resume();
+			resume(true);
 	});
 	$("clock_mips").addEventListener("change", () => {
 		try {

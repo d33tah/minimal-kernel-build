@@ -6464,6 +6464,7 @@ def jumps_live_case(browser, base, shots):
                 problems.append(f"{where}: the list does not say static paths are only from the live decode: {notes}")
             page.keyboard.press("Escape")
         page.screenshot(path=str(shots / f"jumps-live-{name}{'-import' if imp else ''}-page.png"))
+        problems += stub_arrays_live(page, where, r, shots, name + ("-import" if imp else ""))
         if errors:
             problems.append(f"{where}: page errors: {errors[:3]}")
         page.close()
@@ -6489,6 +6490,78 @@ def jumps_live_case(browser, base, shots):
                 problems.append(f"hello: the build's ⊘ title changed: {got['title']!r}")
         page.close()
     return problems, r
+
+
+# Linux's arrays of entry stubs (Z2) and the function that puts
+# start + i * stride into the IDT. Nothing jumps to a stub after the first
+# and the stub before it ends in a jmp, so without the rule each one would
+# carry ⊘.
+STUB_ARRAYS = {"early_idt_handler_array": "idt_setup_early_handler",
+               "irq_entries_start": "idt_setup_apic_and_irq_gates",
+               "spurious_entries_start": "idt_setup_apic_and_irq_gates"}
+
+# The live-decoded instructions of the Page listing in [lo, hi) after a
+# jump (padding int3/nop is not a stub), the ⊘ marks among them and, per
+# stub, what Paths at EIP says about how it is reached.
+STUB_LIVE_JS = """([lo, hi]) => { const box = document.getElementById('listing'), S = box._jS;
+  const marks = new Set();
+  for (const n of box.querySelectorAll('.jnone')) {
+    let e = n.previousElementSibling; while (e && !e.matches('.ins')) e = e.previousElementSibling;
+    if (e) marks.add(+e.dataset.addr); }
+  const out = [];
+  for (const e of box.querySelectorAll('.ins')) {
+    const a = +e.dataset.addr; if (a < lo || a >= hi) continue;
+    const i = S ? jumpsIndex(S, a) : -1, text = i >= 0 ? S.insns[i][2] : '';
+    let eip = '';
+    if (S && i >= 0) { renderEipJumps(S, a); eip = document.getElementById('eip_jumps').textContent; }
+    out.push([a, text, marks.has(a), eip]); }
+  renderContext();
+  return out; }"""
+
+
+def stub_arrays_live(page, where, r, shots, tag):
+    """Z2: in a live decode (no disasm.json) the stubs of Linux's entry
+    stub arrays have no ⊘ and say how they are reached (start + i *
+    stride, from the function that fills the IDT); padding after a stub's
+    jmp may keep ⊘."""
+    problems = []
+    for name, setter in STUB_ARRAYS.items():
+        sym = page.evaluate("(n) => symbols.symbols.find((s) => s.name === n) || null", name)
+        if not sym:
+            r[f"{where} {name}"] = "not in the symbol table"
+            if name == "early_idt_handler_array":
+                problems.append(f"{where}: no early_idt_handler_array symbol")
+            continue
+        lo, hi = sym["paddr"], sym["paddr"] + sym["size"]
+        page.evaluate("(a) => jumpTo(a)", lo)
+        wait_for(lambda: page.get_attribute("#listing", "data-source") == "live" and
+                 page.locator(f"#listing .ins[data-addr='{lo}']").count() > 0, 30)
+        time.sleep(0.5)
+        lines = page.evaluate(STUB_LIVE_JS, [lo, hi])
+        pad = re.compile(r"^(nop|int3)")
+        stubs = [x for x in lines if not pad.match(x[1])]
+        bad = [f"{a:#x} {t}" for a, t, m, _ in stubs if m]
+        r[f"{where} {name}"] = (f"{len(lines)} instructions, {len(stubs)} not padding, {len(bad)} with ⊘, "
+                                f"{sum(1 for x in lines if x[2])} ⊘ on padding" if not bad else bad[:4])
+        if not stubs:
+            problems.append(f"{where}: {name}: no instructions decoded in the Page listing")
+            continue
+        if bad:
+            problems.append(f"{where}: {name}: ⊘ on {len(bad)} stubs, e.g. {bad[:4]}")
+        # The stubs after the first (the first instruction after a jmp, past
+        # any padding): Paths at EIP names the array, the stride and the setter.
+        later = [b for a, b in zip(stubs, stubs[1:]) if a[1].startswith("jmp")]
+        if len(later) < 3:
+            problems.append(f"{where}: {name}: expected at least 3 stubs after the first, got {len(later)}")
+        for a, t, _, eip in later:
+            if not (f"{name} + " in eip and setter in eip):
+                problems.append(f"{where}: {name}+{a - lo:#x}: Paths at EIP does not say how the stub is reached: {eip[:300]!r}")
+                break
+        if later:
+            r[f"{where} {name} text"] = later[0][3][:300]
+        if name == "early_idt_handler_array":
+            page.screenshot(path=str(shots / f"jumps-live-{tag}-stubs.png"))
+    return problems
 
 
 # Instructions of a box (selector) that carry the ⊘ mark: the .ins line

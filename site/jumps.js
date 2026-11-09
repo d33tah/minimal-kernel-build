@@ -118,6 +118,56 @@ function jumpsStatic(insns, toPhys, taken) {
 	return { insns, kind, fall, target, va, inc, taken: new Map(taken || []) };
 }
 
+// Linux's arrays of entry stubs and the function that puts start + i ×
+// stride into the IDT (arch/x86/kernel/idt.c, head_32.S, entry_32.S).
+// Nothing jumps or calls to a stub after the first one and the stub
+// before it ends in a jmp, so these are known by name; gen-disasm.py finds
+// them in disasm.json by their stride, a live decode has only the names.
+const JUMP_STUB_ARRAYS = {
+	early_idt_handler_array: "idt_setup_early_handler",
+	irq_entries_start: "idt_setup_apic_and_irq_gates",
+	spurious_entries_start: "idt_setup_apic_and_irq_gates",
+};
+const JUMP_PADDING = /^(?:nop|int3)/;
+const jumpGcd = (a, b) => b ? jumpGcd(b, a % b) : a;
+
+// Marks the stubs of the arrays in syms ([{ name, paddr, size }], the
+// symbols named in JUMP_STUB_ARRAYS) that S holds: inside an array, the
+// first instruction after each one that does not fall through (past nop,
+// int3 and zero-byte padding) is "array" in S.taken, and S.takenNote says
+// which stub it is and who enters it. The stride is the gcd of the stubs'
+// offsets from the array's start (with at least 3 of them).
+function jumpsStubArrays(S, syms) {
+	const ins = S.insns;
+	S.takenNote = S.takenNote || new Map();
+	for (const sym of syms) {
+		const by = JUMP_STUB_ARRAYS[sym.name];
+		if (!by || !(sym.size > 0))
+			continue;
+		let lo = 0, hi = ins.length;
+		while (lo < hi) { const m = (lo + hi) >> 1; if (ins[m][0] < sym.paddr) lo = m + 1; else hi = m; }
+		const starts = [];
+		let after = false;
+		for (let i = lo; i < ins.length && ins[i][0] < sym.paddr + sym.size; i++) {
+			if (JUMP_PADDING.test(ins[i][2]) || ins[i][1].startsWith("00"))
+				continue;
+			if (after)
+				starts.push(ins[i][0]);
+			after = !S.fall[i];
+		}
+		const offs = starts.map((pa) => pa - sym.paddr);
+		const stride = offs.length >= 3 ? offs.reduce(jumpGcd) : 0;
+		for (const pa of starts) {
+			if (!S.taken.has(pa))
+				S.taken.set(pa, "array");
+			const k = stride >= 4 ? (pa - sym.paddr) / stride : -1;
+			S.takenNote.set(pa, "Reached indirectly: " + (k >= 0 ? "stub " + k + " of " + sym.name + ", entered as " + sym.name + " + " + k + " × " + stride :
+				"a stub of " + sym.name + ", entered as " + sym.name + " + i × the stub size") + "; " + by + " puts these addresses in the IDT");
+		}
+	}
+	return S;
+}
+
 // Index of the instruction starting at pa in S.insns, or -1.
 function jumpsIndex(S, pa) {
 	const ins = S.insns;
@@ -138,7 +188,8 @@ const jumpKindsText = (mask) => JK_TEXT.filter((_, k) => k && mask & 1 << k).joi
 //     path in, its address is not taken (S.taken), an instruction ends
 //     right before pa and does not fall through, and the stepper has
 //     neither run pa, nor seen a path into it, nor stopped at it),
-//     taken (how its address is taken, or ""), inS (whether S has pa),
+//     taken (how its address is taken, or ""), takenNote (S.takenNote:
+//     how a stub of a known array is entered, or ""), inS (whether S has pa),
 //     local (S.local: S holds only that many instructions decoded live, so
 //     paths from code outside them are not known; 0 for disasm.json) }
 // Without an instruction ending right at pa (the first one of a section or
@@ -160,7 +211,7 @@ function jumpPaths(S, st, pa) {
 		e.stat = e.stat || stat;
 		e.count += count;
 	};
-	let late = 0, noDirect = false, taken = "";
+	let late = 0, noDirect = false, taken = "", takenNote = "";
 	if (i >= 0) {
 		for (const k of S.inc.get(pa) || [])
 			add(into, S.insns[k][0], 1 << S.kind[k], true, 0);
@@ -171,6 +222,7 @@ function jumpPaths(S, st, pa) {
 		const prev = i > 0 ? S.insns[i - 1] : null;
 		const endsHere = prev && prev[0] + prev[1].length / 2 === pa;
 		taken = S.taken ? S.taken.get(pa) || "" : "";
+		takenNote = taken && S.takenNote ? S.takenNote.get(pa) || "" : "";
 		noDirect = !into.size && endsHere && !S.fall[i - 1] && !taken;
 	}
 	if (st && st.jumpIn) {
@@ -182,7 +234,7 @@ function jumpPaths(S, st, pa) {
 	if (noDirect && st && (into.size || st.executed && st.executed(pa) || st.nextPhys && st.nextPhys() === pa))
 		noDirect = false;
 	const sort = (m) => [...m.values()].sort((a, b) => b.count - a.count || a.at - b.at);
-	return { into: sort(into), out: sort(out), late, noDirect, taken, inS: i >= 0, local: S && S.local || 0 };
+	return { into: sort(into), out: sort(out), late, noDirect, taken, takenNote, inS: i >= 0, local: S && S.local || 0 };
 }
 
 // ---- the page: counts per instruction, arcs, the list of paths ----------
@@ -207,7 +259,7 @@ function jumpsFor(list) {
 	const toPhys = () => jumpsToPhys(symbols && symbols.sections);
 	if (disasm && list === disasm.insns) {
 		if (!jumpsKernel || jumpsKernel[0] !== disasm || jumpsKernel[1] !== symbols)
-			jumpsKernel = [disasm, symbols, jumpsStatic(disasm.insns, toPhys(), disasm.taken)];
+			jumpsKernel = [disasm, symbols, jumpsStubArrays(jumpsStatic(disasm.insns, toPhys(), disasm.taken), jumpStubSyms())];
 		return jumpsKernel[2];
 	}
 	const entries = [], look = symbols ? kernelSymLookup() : null;
@@ -217,9 +269,17 @@ function jumpsFor(list) {
 			if (s && s.paddr === pa && /^[Tt]$/.test(s.type || "T"))
 				entries.push([pa, "entry"]);
 		}
-	const S = jumpsStatic(list, toPhys(), entries);
+	const S = jumpsStubArrays(jumpsStatic(list, toPhys(), entries), jumpStubSyms());
 	S.local = list.length;
 	return S;
+}
+
+// The symbols of the kernel's stub arrays (JUMP_STUB_ARRAYS), found once per symbol table.
+let jumpStubSymsOf = [null, []];
+function jumpStubSyms() {
+	if (jumpStubSymsOf[0] !== symbols)
+		jumpStubSymsOf = [symbols, symbols ? symbols.symbols.filter((s) => Object.hasOwn(JUMP_STUB_ARRAYS, s.name)) : []];
+	return jumpStubSymsOf[1];
 }
 
 // What "no direct path" rests on: the whole disassembly, or only the
@@ -238,6 +298,9 @@ const JUMP_TAKEN_TEXT = {
 	array: "Reached indirectly: one of an array of entry stubs whose start is in the kernel's data or code, reached as start + n × stride",
 	entry: "A function's entry: its callers are outside the instructions decoded live",
 };
+
+// The text of P.taken: the stub of a known array, or how its address is taken.
+const jumpTakenText = (P) => P.takenNote || JUMP_TAKEN_TEXT[P.taken];
 
 const jumpSeen = (list) => list.reduce((n, e) => n + e.count, 0);
 
@@ -639,7 +702,7 @@ function jumpPopShow(btn) {
 	if (dir === "in" && P.noDirect)
 		notes.push(jumpNoneText(P));
 	else if (dir === "in" && P.taken)
-		notes.push(JUMP_TAKEN_TEXT[P.taken] + ".");
+		notes.push(jumpTakenText(P) + ".");
 	if (S && box && box.dataset.jlocal)
 		notes.push("Static paths only from the " + box.dataset.jlocal + " (no disasm.json): jumps from other code are not known.");
 	const jit = jumpsJitNote();
@@ -708,7 +771,7 @@ function renderEipJumps(S, pa) {
 			span.append(P.local ? " (no direct path " + jumpNoneScope(P) + "; " + JUMP_NONE_OTHER + ")" :
 				" (no path leads here: nothing jumps or calls here, its address is nowhere in the kernel and the instruction before does not fall through)");
 		else if (dir === "in" && P.taken)
-			span.append(" (" + JUMP_TAKEN_TEXT[P.taken].toLowerCase() + ")");
+			span.append(" (" + jumpTakenText(P).replace(/^./, (c) => c.toLowerCase()) + ")");
 		return span;
 	};
 	el.append(part("in", P.into), document.createElement("br"), part("out", P.out));
@@ -772,4 +835,4 @@ function initJumps() {
 }
 
 if (typeof module !== "undefined")
-	module.exports = { JK, JK_TEXT, JK_ARC, jumpOf, jumpsToPhys, jumpsStatic, jumpsIndex, jumpPaths, jumpKindsText };
+	module.exports = { JK, JK_TEXT, JK_ARC, jumpOf, jumpsToPhys, jumpsStatic, jumpsStubArrays, jumpsIndex, jumpPaths, jumpKindsText };

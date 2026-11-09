@@ -7699,6 +7699,71 @@ def nav_jumps(page, name, problems, r):
     return views, kinds
 
 
+# The text of the listing lines visible on screen (inside their scroll box
+# and the window, not under the Source panel) that the Back and Forward
+# box covers, and the Source panel's own header and text under it.
+NAV_COVER_JS = """() => {
+    const nav = document.getElementById('nav_hist');
+    if (nav.hidden) return { hidden: true, hits: [] };
+    const b = nav.getBoundingClientRect(), sp = document.getElementById('src_panel');
+    const p = sp.hidden ? null : sp.getBoundingClientRect();
+    const cut = (r, c) => ({ left: Math.max(r.left, c.left), top: Math.max(r.top, c.top),
+                            right: Math.min(r.right, c.right), bottom: Math.min(r.bottom, c.bottom) });
+    const meets = (r) => r.right - r.left > 0.5 && r.bottom - r.top > 0.5
+        && Math.min(r.right, b.right) - Math.max(r.left, b.left) > 0.5
+        && Math.min(r.bottom, b.bottom) - Math.max(r.top, b.top) > 0.5;
+    const hits = [], view = { left: 0, top: 0, right: innerWidth, bottom: innerHeight };
+    let seen = 0;
+    for (const id of ['listing', 'context']) {
+        const box = document.getElementById(id);
+        if (!box || !box.offsetParent) continue;
+        const br = box.getBoundingClientRect();
+        let clip = cut({ left: br.left + box.clientLeft, top: br.top + box.clientTop,
+                         right: br.left + box.clientLeft + box.clientWidth, bottom: br.top + box.clientTop + box.clientHeight }, view);
+        if (p) clip = cut(clip, { left: -1e9, top: -1e9, right: p.left > 1 ? p.left : 1e9, bottom: p.left > 1 ? 1e9 : p.top });
+        for (const el of box.querySelectorAll('.ins, .src')) {
+            const rg = document.createRange();
+            rg.selectNodeContents(el);
+            for (const r of rg.getClientRects()) {
+                const v = cut(r, clip);
+                if (v.right - v.left > 0.5 && v.bottom - v.top > 0.5) seen++;
+                if (meets(v)) {
+                    hits.push(id + ': ' + el.textContent.trim().slice(0, 50));
+                    break;
+                }
+            }
+        }
+    }
+    if (p) {
+        for (const id of ['src_title', 'src_close', 'src_info', 'src_body']) {
+            const el = document.getElementById(id);
+            if (!el || !el.offsetParent) continue;
+            const rg = document.createRange();
+            rg.selectNodeContents(el);
+            const rs = id === 'src_close' ? [el.getBoundingClientRect()] : Array.from(rg.getClientRects());
+            const br = el.getBoundingClientRect();
+            if (rs.some(r => meets(cut(r, cut(br, view))))) hits.push('Source panel #' + id);
+        }
+    }
+    return { nav: [b.left, b.top, b.right, b.bottom], panel: p && [p.left, p.top, p.right, p.bottom], seen, hits: hits.slice(0, 6) };
+}"""
+
+
+def nav_cover(page, where, problems, r, need_lines=False):
+    """Light and dark: the Back and Forward box covers no listing text
+    on screen (N2); need_lines: some listing line must be on screen."""
+    for scheme in ("light", "dark"):
+        page.emulate_media(color_scheme=scheme)
+        time.sleep(0.2)
+        got = page.evaluate(NAV_COVER_JS)
+        r.setdefault("covers", {})[f"{where} {scheme}"] = got
+        if need_lines and not got.get("seen"):
+            problems.append(f"{where} {scheme}: no listing line on screen to check")
+        if got["hits"]:
+            problems.append(f"{where} {scheme}: the Back and Forward box covers {got['hits']} (box {got.get('nav')}, panel {got.get('panel')})")
+    page.emulate_media(color_scheme="light")
+
+
 def navhist_case(browser, base, shots, name="hello"):
     """Jump history (N1). Paused in hello_main, one jump of each kind
     (a Debugger symbol, a jump source's "go there", file:line links in the
@@ -7712,7 +7777,8 @@ def navhist_case(browser, base, shots, name="hello"):
     click on the VM screen is the VM's; back past the first view stays on
     the page; the VM keeps running through browser back and forward; the
     buttons stay on screen while scrolling. Then a 390 px phone: tap, the
-    buttons above the Source panel. Screenshots light/dark at 1280 and
+    buttons above the Source panel, covering no listing text on screen
+    with the panel open or closed (N2). Screenshots light/dark at 1280 and
     390 px."""
     problems, r = [], {}
     entry = kernel_entries()[name]
@@ -7880,9 +7946,21 @@ def navhist_case(browser, base, shots, name="hello"):
     nav_watch(page)
     views, kinds, probs = [nav_view(page)], [], []
     nav_jump(page, views, kinds, "Debugger symbol", lambda: nav_first(page, "#sym_info button.symlink"), probs, "tap")
+    nav_cover(page, f"{name} 390 px after a jump, Source panel closed", probs, r, need_lines=True)
     nav_jump(page, views, kinds, "listing file:line", lambda: nav_first(page, "#listing .src .srclink"), probs, "tap")
     problems.extend(f"{name} 390 px {p}" for p in probs)
     wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 30)
+    time.sleep(0.5)
+    nav_cover(page, f"{name} 390 px after a jump, Source panel open", problems, r)
+    # The audit's case: the window scrolled so the listing fills the strip
+    # above the panel.
+    y0 = page.evaluate("window.scrollY")
+    page.evaluate("window.scrollBy(0, document.getElementById('listing').getBoundingClientRect().top - 8)")
+    time.sleep(0.4)
+    nav_cover(page, f"{name} 390 px, the listing in the strip above the Source panel", problems, r, need_lines=True)
+    page.screenshot(path=str(shots / f"navhist-{name}-390-strip.png"))
+    page.evaluate(f"window.scrollTo(0, {y0})")
+    time.sleep(0.4)
     geo = page.evaluate("""() => { const b = document.getElementById('nav_hist').getBoundingClientRect(),
         p = document.getElementById('src_panel').getBoundingClientRect();
         return { nav: [b.left, b.top, b.right, b.bottom], panel: [p.left, p.top, p.right, p.bottom], vw: innerWidth, vh: innerHeight,
@@ -7905,6 +7983,7 @@ def navhist_case(browser, base, shots, name="hello"):
         d = nav_diff(nav_view(page), want)
         if d:
             problems.append(f"{name} 390 px: tap Back to {k}: {d}")
+        nav_cover(page, f"{name} 390 px after Back to {k}", problems, r)
     page.screenshot(path=str(shots / f"navhist-{name}-390-back.png"))
     if errors:
         problems.append(f"{name}: page errors: {errors[:3]}")

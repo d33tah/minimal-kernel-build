@@ -984,7 +984,9 @@ tab, the page, the listing's scroll and marked instruction, the Source
 panel (open or closed, file, picked line, scroll) and the window's
 scroll; it is captured again when you leave it, so Forward returns to it
 as you left it. Fixed Back and Forward buttons (bottom right, left of the
-Source panel; on a phone above it, arrows only) appear after the first
+Source panel; on a phone arrows only, one above the other at the right
+edge, above the panel when it is open, and the listings keep that column
+free so no line is under them) appear after the first
 jump, and their tooltips name the view they go to (`Back to
 hello_main+0x1e`). Alt+Left and Alt+Right do the same unless the VM
 screen was clicked last (then the keys are the VM's), and so do the
@@ -996,7 +998,10 @@ leaves. Following EIP while stepping only replaces the hash and adds no
 entry. The navhist suite (test_browser.py) makes one jump of each kind in
 hello, goes back through all of them by every means and forward again,
 compares each view, and checks stepping, the VM screen's keys, back past
-the start with the VM running, and a 390 px phone.
+the start with the VM running, and a 390 px phone: after each jump and
+each Back, and with the listing scrolled into the strip above the open
+Source panel, the buttons cover no text of a listing line on screen (light
+and dark). On 7967b0fc8 they covered the right end of the lines there.
 
 ## Stepping and boot counters
 

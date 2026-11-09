@@ -393,7 +393,9 @@ button.srclink:focus-visible { outline: 2px solid var(--accent); outline-offset:
    listings' lines end (their addresses and the symbol index are on the
    left), left of the Source panel (right half; on a phone the bottom 65vh,
    so above it). The page gets room below its end so nothing stays under
-   the buttons. */
+   the buttons. On a phone they stand one above the other at the right edge
+   and the listings keep that column free, so the lines a jump lands on are
+   never under them, with the Source panel open or closed. */
 .navhist { position: fixed; z-index: 6; right: max(8px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom));
 	display: flex; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); box-shadow: 0 1px 8px rgba(0, 0, 0, 0.25); }
 .navhist[hidden] { display: none; }
@@ -404,8 +406,11 @@ button.srclink:focus-visible { outline: 2px solid var(--accent); outline-offset:
 body.navhist-on { padding-bottom: 56px; }
 @media (max-width: 640px) {
 	.srcpanel:not([hidden]) ~ .navhist { right: max(8px, env(safe-area-inset-right)); bottom: calc(65vh + 8px); }
+	.navhist { flex-direction: column; }
 	.navhist .navword { display: none; }
 	.navhist button { padding: 0 0.7rem; font-size: 1.1rem; }
+	.navhist button + button { border-left: none; border-top: 1px solid var(--line); }
+	body.navhist-on #listing, body.navhist-on #context { padding-right: 3rem; }
 }
 .ctree { font-size: 0.8rem; max-height: 70vh; overflow: auto; border: 1px solid var(--line); border-radius: 4px; }
 .ctree[hidden] { display: none; }

@@ -8193,6 +8193,10 @@ def tabs_settings(page, problems, r, shots):
     if not page.locator("#tab_settings").count():
         problems.append("no Settings tab")
         return
+    # IndexedDB can be slow (CI run 42704392268: the list was still empty
+    # when read): the localStorage rows must not wait for it.
+    page.evaluate("""() => { const orig = dbgIdbOp;
+      dbgIdbOp = async (...a) => { await new Promise((r) => setTimeout(r, 1500)); return orig(...a); }; }""")
     show_tab(page, "settings")
     stored = page.evaluate(TABS_STORED_JS)
     r["stored_keys"] = stored
@@ -8207,6 +8211,7 @@ def tabs_settings(page, problems, r, shots):
             problems.append(f"Settings does not show the remembered {k}")
         elif len(row["text"]) < 25:
             problems.append(f"Settings row of {k} has no explanation: {row['text']!r}")
+    wait_for(lambda: page.evaluate(TABS_ROW_JS, "idb:mkb-dwarf"), 10)
     row = page.evaluate(TABS_ROW_JS, "idb:mkb-dwarf")
     if not row or "1" not in row["text"]:
         problems.append(f"Settings does not show the imported DWARF kept in IndexedDB: {row}")
@@ -8437,6 +8442,10 @@ def tabs_case(browser, base, shots):
                 r["compact_width_1280"] = page.evaluate("Math.round(document.querySelector('.tabbar').scrollWidth)")
                 page.reload()
                 wait_for(lambda: page.locator("#compact_tabs").count() and page.is_checked("#compact_tabs"), 10)
+        # The header grows while hello boots and moves the tab bar under a
+        # resting mouse (pointerout closes the popover): hover after the boot.
+        booted(page)
+        time.sleep(0.5)
         page.hover("#tab_calls")
         if not wait_for(lambda: page.is_visible("#tip_pop") and page.text_content("#tip_pop") == "Calls", 3):
             problems.append(f"hovering the compact Calls tab shows {page.text_content('#tip_pop')!r}")

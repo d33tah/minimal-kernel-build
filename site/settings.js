@@ -117,49 +117,59 @@ async function setIdbCount() {
 }
 
 // The controls show the current values; the list shows what is remembered.
-async function renderSettings() {
+// The localStorage rows are drawn at once; the IndexedDB row joins when its
+// count arrives (that can take a while), unless a newer drawing started.
+let setDrawing = 0;
+function renderSettings() {
+	const mine = ++setDrawing;
 	$("set_speed").value = prefSpeed;
 	$("set_mips").value = $("clock_mips").value;
 	$("set_count").checked = $("count").checked;
 	const prefs = new Set([...document.querySelectorAll("#panel_settings [data-key]")]
 		.filter((e) => !e.closest("#settings_stored")).map((e) => e.dataset.key));
-	const rows = setStoredKeys().filter((k) => !prefs.has(k)).map((k) => [k, setDescribe(k)]);
-	const n = await setIdbCount();
-	if (n)
-		rows.push([SET_IDB_ROW, "Decoded DWARF of imported vmlinux files: " + num(n) + (n === 1 ? " entry" : " entries") +
-			" in IndexedDB, so file:line works after a reload without the file."]);
 	const box = $("settings_stored");
 	box.textContent = "";
-	if (!rows.length) {
-		const p = document.createElement("p");
-		p.className = "note";
-		p.textContent = "Nothing remembered for any kernel yet.";
-		box.append(p);
-	}
-	for (const [k, text] of rows) {
-		const row = document.createElement("div");
-		row.className = "setrow";
-		const key = document.createElement("code");
-		key.className = "setkey";
-		key.dataset.key = k;
-		key.textContent = k.length > 30 ? k.slice(0, 28) + "…" : k;
-		key.title = k;
-		const what = document.createElement("span");
-		what.className = "note";
-		what.textContent = text;
-		const b = document.createElement("button");
-		b.type = "button";
-		b.className = "forget";
-		b.textContent = "Forget";
-		b.setAttribute("aria-label", "Forget " + k);
-		b.addEventListener("click", async () => {
-			await setForget(k);
-			$("settings_status").textContent = "Forgot " + k + ".";
-			renderSettings();
-		});
-		row.append(key, " ", what, " ", b);
-		box.append(row);
-	}
+	const none = document.createElement("p");
+	none.className = "note";
+	none.textContent = "Nothing remembered for any kernel yet.";
+	box.append(none);
+	const add = (k, text) => {
+		none.remove();
+		box.append(setRow(k, text));
+	};
+	for (const k of setStoredKeys())
+		if (!prefs.has(k))
+			add(k, setDescribe(k));
+	setIdbCount().then((n) => {
+		if (n && mine === setDrawing)
+			add(SET_IDB_ROW, "Decoded DWARF of imported vmlinux files: " + num(n) + (n === 1 ? " entry" : " entries") +
+				" in IndexedDB, so file:line works after a reload without the file.");
+	});
+}
+
+function setRow(k, text) {
+	const row = document.createElement("div");
+	row.className = "setrow";
+	const key = document.createElement("code");
+	key.className = "setkey";
+	key.dataset.key = k;
+	key.textContent = k.length > 30 ? k.slice(0, 28) + "…" : k;
+	key.title = k;
+	const what = document.createElement("span");
+	what.className = "note";
+	what.textContent = text;
+	const b = document.createElement("button");
+	b.type = "button";
+	b.className = "forget";
+	b.textContent = "Forget";
+	b.setAttribute("aria-label", "Forget " + k);
+	b.addEventListener("click", async () => {
+		await setForget(k);
+		$("settings_status").textContent = "Forgot " + k + ".";
+		renderSettings();
+	});
+	row.append(key, " ", what, " ", b);
+	return row;
 }
 
 // A change here is the same as a change above the tabs: that control's own

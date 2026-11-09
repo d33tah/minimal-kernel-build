@@ -2110,22 +2110,21 @@ const clockMips = () => ($("clock_mips").value === "real" ? 0 : Number($("clock_
 
 // Real speed: v86's instruction counter (wasm memory, offset 664) counts
 // what the JIT runs and what the stepper steps; sampled 4 times a second.
-// The rate is taken over a window that holds several instructions at the
-// set speed (4 s at 1/s, 2 s from 2/s up), counted from the last change
-// (Boot, Pause, Continue, a speed, the entry, the tab shown again): a
-// one-second window at 1/s read 0/s whenever it held no instruction, and
-// a window reaching back into a pause or another speed showed that one.
-// In slow motion the window is 2 s or more: a one-second one at 10/s read
-// 1/s after a listing's drawing held a phone's main thread for 1.7 s,
-// which the step credit makes up right after. Until half the window has
-// passed it says "measuring".
+// The rate is taken over a window (4 s in slow motion, 1 s otherwise),
+// counted from the last change (Boot, Pause, Continue, a speed, the entry,
+// the tab shown again): a one-second window at 1/s read 0/s whenever it
+// held no instruction, and a window reaching back into a pause or another
+// speed showed that one. At 10/s a one- or two-second window read 1/s to
+// 4/s after one drawing of a new page's listing held a phone's main
+// thread for 1.5 to 2.2 s, which the step credit makes up right after.
+// Until half the window has passed it says "measuring".
 const SPEED_SAMPLE_MS = 250;
 let speedHist = [];      // [{ counter, at }] since the last change, oldest first
 let realSpeed = null;    // instructions per second, null while measuring
 function speedWindowMs() {
 	if (runState !== "stepped" || fastStepping() || highRate())
 		return 1000;
-	return Math.min(10000, Math.max(2000, 4000 / Number(speed())));
+	return 4000;
 }
 // Paused or off, unless a fast-forward runs (the boot's to the entry sets
 // "paused" under it): that one says "measuring" until it has a rate.

@@ -6866,8 +6866,9 @@ def speed_line_asm_case(browser, base, shots, kernel, tab, throttle, rate, secs=
     drawn again on every animation frame and the step credit grew by at most
     250 ms per frame, so at 4x the run made 6 instructions in 30 s while the
     page said "slow motion 1/s" and "speed 0/s". Checks over secs seconds
-    after the tab is opened: the speed line as speed_line_bad (never 0/s,
-    the set rate within a factor of two once measured), the count moves at a
+    after the tab is opened: the speed line as speed_line_bad (never 0/s;
+    the set rate within a factor of two once the speed window has passed
+    since the tab was opened), the count moves at a
     third of the set rate or more, the listing (Page) or Code at EIP
     (Debugger) is drawn at most once per executed instruction (plus a
     full refresh every few seconds), and the main
@@ -6891,7 +6892,9 @@ def speed_line_asm_case(browser, base, shots, kernel, tab, throttle, rate, secs=
         s = page.evaluate(SPEED_LINE_JS)
         samples += 1
         why = speed_line_bad(s)
-        if why:
+        # Opening the tab draws the listing once (up to 2 s at 6x): the
+        # 4 s speed window shows that dip until it has passed; 0/s never.
+        if why and (time.monotonic() - t0 >= SPEED_WINDOW_SLOW_S or why.startswith("shows 0/s")):
             zero += why.startswith("shows 0/s")
             if len(problems) < 6:
                 problems.append({"at_s": round(time.monotonic() - t0, 1), "why": why, "line": s["text"]})
@@ -6916,6 +6919,8 @@ def speed_line_asm_case(browser, base, shots, kernel, tab, throttle, rate, secs=
                       "long_tasks_s": round(d["long"] / 1000, 1), "longest_ms": round(d["longMax"]), "line": s["text"]}
 
 
+# app.js speedWindowMs() in slow motion.
+SPEED_WINDOW_SLOW_S = 4
 # (kernel, tab, CPU throttling, rate): the asm listings open in slow motion.
 SPEED_LINE_ASM = [("minified-linux-os", "page", 4, "1"), ("minified-linux-os", "page", 4, "10"),
                   ("minified-linux-os", "page", 6, "1"), ("minified-linux-os", "page", 6, "10"),

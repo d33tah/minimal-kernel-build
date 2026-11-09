@@ -67,9 +67,19 @@ class CachingHandler(QuietHandler):
         super().end_headers()
 
 
+class Server(socketserver.ThreadingTCPServer):
+    """Concurrent like a real host. One thread with the default listen
+    backlog of 5 dropped connections when the service worker's precache
+    opened many at once; Linux retries a dropped SYN after 1, 3, 7, 15 s,
+    so the page's own v86.wasm fetch waited ~25 s and stale_cache timed
+    out in CI run 42689108273."""
+    daemon_threads = True
+    request_queue_size = 128
+
+
 def serve(directory=SITE, handler_class=QuietHandler):
     handler = functools.partial(handler_class, directory=str(directory))
-    httpd = socketserver.TCPServer(("127.0.0.1", 0), handler)
+    httpd = Server(("127.0.0.1", 0), handler)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     return httpd
 

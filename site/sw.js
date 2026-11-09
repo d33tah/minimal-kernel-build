@@ -37,15 +37,32 @@ const scopeUrl = (path) => new URL(path, self.registration.scope).href;
 
 self.addEventListener("install", (event) => {
 	event.waitUntil((async () => {
-		const shell = await caches.open(SHELL);
 		// The shell must be complete or this worker does not install (the
-		// old one, if any, stays).
-		await shell.addAll([...PRECACHE_PLAIN, ...PRECACHE_STAMPED.map(stamped)].map((p) => new Request(scopeUrl(p), { cache: "no-cache" })));
-		// Kernels: best effort (a local checkout may lack some).
-		const data = await caches.open(DATA);
-		await Promise.all(PRECACHE_KERNELS.map((p) => data.add(new Request(scopeUrl(stamped(p)), { cache: "no-cache" })).catch(() => null)));
+		// old one, if any, stays). Kernels: best effort (a local checkout
+		// may lack some).
+		await precache(SHELL, [...PRECACHE_PLAIN, ...PRECACHE_STAMPED.map(stamped)], true);
+		await precache(DATA, PRECACHE_KERNELS.map(stamped), false);
 	})());
 });
+
+// Four requests at a time: the page is loading too (a burst of 40 used up
+// a small server's connection queue; test_browser.py, Server).
+async function precache(name, paths, required) {
+	const cache = await caches.open(name);
+	const queue = paths.slice();
+	const one = async () => {
+		while (queue.length) {
+			const p = queue.shift();
+			try {
+				await cache.add(new Request(scopeUrl(p), { cache: "no-cache" }));
+			} catch (e) {
+				if (required)
+					throw e;
+			}
+		}
+	};
+	await Promise.all([one(), one(), one(), one()]);
+}
 
 // A new deploy's worker drops the caches of every other deploy.
 self.addEventListener("activate", (event) => {

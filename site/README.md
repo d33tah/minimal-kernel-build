@@ -1044,7 +1044,8 @@ works without a network.
   style.css, kernels.json, v86 with its wasm and BIOSes, the manifest and
   icons) and the bzImage, symbols.json and disasm.json of hello, hello-os
   and both minified Linux builds, about 6.6 MB: those kernels boot offline
-  even if only one of them was opened. Everything else (DWARF shards, C
+  even if only one of them was opened. Four requests at a time, so the
+  precache does not crowd out the page's own loads. Everything else (DWARF shards, C
   source, Debian's bzImage and initrd, the iced disassembler) is kept when
   the page first fetches it, unless the origin's storage is 80 % full
   (then the file is not kept and nothing else changes).

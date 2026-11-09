@@ -636,21 +636,26 @@ function listPage(p, bytes, base, cur, chars) {
 				cls += " nx";
 				nNx++;
 			}
-			if (pa === cur) {
-				cls += " cur";
+			// EIP inside this instruction: the bytes there are not the
+			// build's (the relocation stub at 0x100000 runs over vmlinux's
+			// startup_32); the line holding EIP gets the mark.
+			const inside = cur > pa && cur < pa + n;
+			if (pa === cur || inside) {
+				cls += inside ? " cur mid" : " cur";
 				curLine = out.length;
 			}
 			const srcLine = srcLineHtml(pa, srcState);
 			if (srcLine)
 				out.push(srcLine);
-			if (pa === cur)
+			if (pa === cur || inside)
 				curLine = out.length;
 			if (pa === jumpHit)
 				cls += " jhit";
 			const P = jumpPaths(jS, stepper, pa);
 			paths.set(pa, P);
 			const J = jumpInlineHtml(jS, P, pa, inView, imax);
-			out.push(J.src + '<span class="' + cls + '" data-addr="' + pa + '"' + jumpStubAttrs(J) + ">" + pa.toString(16).padStart(8, "0") +
+			out.push(J.src + '<span class="' + cls + '" data-addr="' + pa + '"' + (inside ? ' data-eip="' + cur + '" title="' + midTitle(cur) + '"' : "") +
+				jumpStubAttrs(J) + ">" + pa.toString(16).padStart(8, "0") +
 				" " + rawHtml + " " + insnHtml(pa, text, ops, opStat) +
 				(wide && where ? ' <span class="dim">' + escHtml(where) + "</span>" : "") + "</span>" + J.dst + jumpBadgesHtml(P, pa));
 			nIns++;
@@ -827,6 +832,11 @@ function renderCovInfo(r) {
 		key.textContent = "No execution coverage: " + r.cov.why + ".";
 }
 
+// The title of a listing line with EIP inside it (not at its start).
+const midTitle = (cur) => "EIP " + hex(cur) + " is inside this instruction of the build's disassembly: the bytes here differ from the build " +
+	"(the bzImage's relocation stub at 0x100000 right after the entry, or code changed at run time), so the CPU runs other code. " +
+	"Code at EIP in the Debugger tab decodes it live.";
+
 // Slow motion inside one page: move the EIP mark and untint what has
 // executed instead of drawing the page's ~1,400 lines again (150 ms on a
 // desktop, 0.6-1 s on a phone-class CPU). The whole listing, with the
@@ -847,12 +857,27 @@ function listingFollow() {
 		for (const el of box.querySelectorAll(".ins[data-addr]"))
 			d.lines.set(Number(el.dataset.addr), el);
 	}
-	const line = d.lines.get(cur);
+	let line = d.lines.get(cur), mid = false;
+	if (!line && d.r.source === "build") {
+		const prev = disasm.insns[insnIndex(cur) - 1];
+		mid = !!prev && cur < prev[0] + prev[1].length / 2;
+		line = mid ? d.lines.get(prev[0]) : null;
+	}
 	if (!line || !line.isConnected)
 		return false;
-	for (const el of box.querySelectorAll(".cur"))
-		el.classList.remove("cur");
+	for (const el of box.querySelectorAll(".cur")) {
+		el.classList.remove("cur", "mid");
+		if (el.dataset.eip !== undefined) {
+			delete el.dataset.eip;
+			el.removeAttribute("title");
+		}
+	}
 	line.classList.add("cur");
+	if (mid) {
+		line.classList.add("mid");
+		line.dataset.eip = cur;
+		line.title = midTitle(cur);
+	}
 	if (d.r.cov.tint) {
 		for (const el of box.querySelectorAll(".ins.nx"))
 			if (stepper.executed(Number(el.dataset.addr))) {
@@ -1709,28 +1734,33 @@ function driverTick() {
 		uiSteps = stepper.steps;
 		updateDebugUi();
 	}
-	if (slow)
-		frameUpdate();
+	// Fast stepping (Run to, counting, the way to the entry) follows EIP
+	// too, a few times a second: otherwise Code at EIP and the listing
+	// box the instruction where the run started while the count goes on.
+	frameUpdate(!slow);
 	if (reason === "hlt")
 		driverTimer = setTimeout(scheduleDriver, slow ? 16 : 1);
 	else
 		scheduleDriver();
 }
 
-// Live view while slow-stepping: grid flashes, asm view follows EIP. Drawn
+// Live view while stepping: grid flashes, asm view follows EIP. Drawn
 // only when an instruction has executed since the last drawing, and after
 // a pause at least as long as that drawing took (VIEW_GAP_MS or more): a
 // listing drawn on every animation frame kept a phone's main thread busy
 // all the time. The step credit counts real time, so a slow drawing
-// shows fewer of the instructions, never slows the run.
-const VIEW_GAP_MS = 200;
+// shows fewer of the instructions, never slows the run. fast: stepping as
+// fast as possible (Run to, counting): every FAST_VIEW_GAP_MS, or after
+// twice the drawing's time, so the drawing takes a third of the time at
+// most.
+const VIEW_GAP_MS = 200, FAST_VIEW_GAP_MS = 300;
 let viewStepper = null, viewSteps = -1, viewAt = 0, viewCost = 0;
 let lastFrameScan = 0;
-function frameUpdate() {
+function frameUpdate(fast = false) {
 	if (stepper === viewStepper && stepper.steps === viewSteps)
 		return;
 	const t0 = realNow();
-	if (stepper === viewStepper && t0 - viewAt < Math.max(VIEW_GAP_MS, viewCost))
+	if (stepper === viewStepper && t0 - viewAt < (fast ? Math.max(FAST_VIEW_GAP_MS, 2 * viewCost) : Math.max(VIEW_GAP_MS, viewCost)))
 		return;
 	viewStepper = stepper;
 	viewSteps = stepper.steps;

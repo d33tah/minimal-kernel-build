@@ -6916,6 +6916,291 @@ def suite_navhist(ctx):
     return report("navhist", *navhist_case(ctx.browser, ctx.base, ctx.shots))
 
 
+# ---- follow EIP: the asm views show the stepper's EIP --------------------
+# The operator's report: on the minified Linux, in the Debugger tab, the
+# instructions went on but Code at EIP no longer moved. FOLLOW_EIP_JS is the
+# invariant, watched in the page: each drawing of Code at EIP (Debugger) and
+# of the Page listing (data-draws) must box the line holding EIP, and once an
+# instruction has executed a view on screen must show the new EIP within
+# max(1 s, twice the last drawing plus 400 ms) of its last drawing. It
+# holds while stepping at any speed (slow motion, Run to, counting) and
+# paused; not while the JIT runs (the views say so) or the tab is hidden.
+# The Page listing need only show EIP while stepping, or paused on EIP's
+# page.
+
+FOLLOW_EIP_JS = """() => {
+    if (window.mkbFollow)
+        return;
+    const M = window.mkbFollow = { viol: [], draws: { context: 0, listing: 0 }, good: {}, pend: {}, samples: 0 };
+    const sel = { context: '#context .cur[data-addr]', listing: '#listing .cur[data-addr]' };
+    const tabOf = { context: 'debugger', listing: 'page' };
+    const now = () => realNow(); // performance.now is the guest's clock (clock.js)
+    const boxed = (v) => { const e = document.querySelector(sel[v]); return e ? Number(e.dataset.eip ?? e.dataset.addr) : -1; };
+    // The boxed line holds EIP: an instruction at EIP (or with EIP inside
+    // it, data-eip), or the hex row around it.
+    const shows = (v, eip) => { const e = document.querySelector(sel[v]);
+        return !!e && (Number(e.dataset.eip ?? e.dataset.addr) === eip ||
+            (e.dataset.end !== undefined && eip >= Number(e.dataset.addr) && eip < Number(e.dataset.end))); };
+    const due = (v) => stepper && emuReady && !document.hidden && !ffActive && tab === tabOf[v] && stepper.nextPhys() >= 0 &&
+        stepper.nextPhys() < emuRam && (runState === 'paused' || runState === 'stepped') &&
+        (v === 'context' || runState === 'stepped' || selectedPage === Math.floor(stepper.nextPhys() / PAGE));
+    const state = (v) => ({ view: v, boxed: boxed(v), eip: stepper.nextPhys(), steps: stepper.steps, state: runState,
+        speed: speed(), fast: fastStepping(), runTo: runTo !== null, kernel: image && image.name,
+        source: !document.getElementById('src_panel').hidden, page: Number(document.getElementById('listing').dataset.page) });
+    const seen = (v) => {
+        if (!stepper)
+            return;
+        M.draws[v]++;
+        if (shows(v, stepper.nextPhys())) {
+            M.good[v] = { t: now(), steps: stepper.steps, st: stepper };
+            M.pend[v] = null;
+        } else if (due(v) && M.viol.length < 20 && (v === 'context' ||
+                Number(document.getElementById('listing').dataset.page) === Math.floor(stepper.nextPhys() / PAGE)))
+            // The listing drawn at another page (the page EIP has just
+            // left, before it is followed) is caught by the time limit.
+            M.viol.push({ kind: 'drawn without EIP boxed', ...state(v) });
+    };
+    for (const v of ['context', 'listing'])
+        new MutationObserver(() => seen(v)).observe(document.getElementById(v), { attributes: true, attributeFilter: ['data-draws'] });
+    const limit = () => Math.max(1000, 2 * (viewCost || 0) + 400);
+    M.timer = setInterval(() => {
+        M.samples++;
+        for (const v of ['context', 'listing']) {
+            if (!due(v)) {
+                M.pend[v] = null;
+                continue;
+            }
+            // Fresh: drawn at this instruction, or showing EIP anyway (an
+            // instruction repeated in place: rep movs, a jump to itself).
+            const g = M.good[v];
+            if ((g && g.st === stepper && g.steps === stepper.steps) || shows(v, stepper.nextPhys())) {
+                M.pend[v] = null;
+                continue;
+            }
+            const t = now();
+            if (M.pend[v] == null)
+                M.pend[v] = t;
+            else if (t - M.pend[v] > limit()) {
+                if (M.viol.length < 20)
+                    M.viol.push({ kind: 'stale', for_ms: Math.round(t - M.pend[v]), limit_ms: Math.round(limit()),
+                        drawn_steps: g && g.st === stepper ? g.steps : null, ...state(v) });
+                M.pend[v] = t;
+            }
+        }
+    }, 50);
+}"""
+
+
+def follow_install(page):
+    wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!document.getElementById('listing')"), 60)
+    page.evaluate(FOLLOW_EIP_JS)
+
+
+def follow_eip_case(browser, base, shots, kernel, tab, throttle):
+    """The invariant through a fixed sequence on one kernel and tab: from the
+    kernel entry at 1/s, then 10/s, 1k/s, Pause, Step and Step 100,
+    Continue at 1/s, a Run to that steps (as fast as it can) to the end of
+    the run, then Boot at full speed (stepped and counted to the gate
+    lines, then the JIT) to the end. Regression for two holes: Code at EIP and the Page
+    listing kept the box where a Run to (or counting) had started while the
+    count went on, and the listing marked nothing while EIP ran the
+    relocation stub inside vmlinux's startup_32 (the instructions at
+    0x100000 right after the entry)."""
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+    page = ctx.new_page()
+    if throttle > 1:
+        ctx.new_cdp_session(page).send("Emulation.setCPUThrottlingRate", {"rate": throttle})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel={kernel}&speed=1#{tab}")
+    if not wait_for(lambda: page.evaluate("typeof entryPhase !== 'undefined' && runState === 'stepped' && !entryPhase && !ffActive"), 180):
+        ctx.close()
+        return [{"no slow motion after the entry": page.evaluate(RUN_STATE_JS)}], {}
+    follow_install(page)
+    phases = []
+
+    def phase(label, secs):
+        time.sleep(secs)
+        phases.append([label, page.evaluate("stepper.steps"), page.evaluate("mkbFollow.draws." + ("context" if tab == "debugger" else "listing"))])
+
+    phase("1/s", 6)
+    page.select_option("#dbg_speed", "10")
+    phase("10/s", 4)
+    # 1k/s for 4 s or a few instructions: hello's run ends about 450 after
+    # its entry (and a click takes a while at 4x).
+    s0 = page.evaluate("stepper.steps")
+    page.select_option("#dbg_speed", "1000")
+    wait_for(lambda: page.evaluate("stepper.steps") - s0 > (20 if kernel.startswith("hello") else 100), 4, 0.02)
+    phase("1000/s", 0)
+
+    def act(sel):
+        # From either tab (Step N and Run to are in the Debugger tab); a
+        # control the end of the run has disabled is left alone.
+        page.evaluate("s => { const b = document.querySelector(s); if (!b.disabled) b.click(); }", sel)
+
+    act("#dbg_pause")
+    phase("Pause", 2)
+    page.select_option("#dbg_speed", "1")
+    act("#dbg_step")
+    phase("Step", 1.5)
+    act("#dbg_stepn")
+    phase("Step 100", 2)
+    act("#dbg_continue")
+    phase("Continue at 1/s", 4)
+    # Not in the kernel: no breakpoint, the Run to steps to the end of the run.
+    page.evaluate("() => { document.getElementById('dbg_addr').value = '0x1000'; }")
+    act("#dbg_runto")
+    wait_for(lambda: page.evaluate("runState === 'paused' && runTo === null && !ffActive && !!stepper.end"), 300)
+    phase("Run to 0x1000 (stepped to the end)", 2)
+    # Boot at full speed: the boot is stepped and counted from the reset
+    # vector to the gate lines, then the JIT runs it to its end.
+    page.select_option("#dbg_speed", "full")
+    page.click("#boot")
+    wait_for(lambda: page.evaluate("runState === 'paused' && !ffActive && !!stepper && !!stepper.end"), 300)
+    phase("Boot at full speed (counting), to the end", 2)
+    viol = page.evaluate("mkbFollow.viol")
+    page.screenshot(path=str(shots / f"follow-eip-{kernel}-{tab}-{throttle}x.png"))
+    problems = [{"follow EIP": viol[:4]}] if viol else []
+    if errors:
+        problems.append({"page errors": errors})
+    ctx.close()
+    return problems, {"phases": phases}
+
+
+FOLLOW_FUZZ_HIDE = """() => {
+    Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+    Object.defineProperty(document, 'hidden', { value: true, configurable: true });
+    window.mkbRaf = [window.requestAnimationFrame, window.cancelAnimationFrame];
+    window.mkbHeld = new Map(); let id = 1e9;
+    window.requestAnimationFrame = (cb) => { window.mkbHeld.set(++id, cb); return id; };
+    window.cancelAnimationFrame = (i) => { if (!window.mkbHeld.delete(i)) window.mkbRaf[1].call(window, i); };
+    document.dispatchEvent(new Event('visibilitychange')); }"""
+FOLLOW_FUZZ_SHOW = """() => { delete document.visibilityState; delete document.hidden;
+    document.dispatchEvent(new Event('visibilitychange'));
+    [window.requestAnimationFrame, window.cancelAnimationFrame] = window.mkbRaf;
+    const held = [...window.mkbHeld.values()]; window.mkbHeld.clear();
+    for (const cb of held) window.requestAnimationFrame(cb); }"""
+FOLLOW_FUZZ_TARGETS = ["start_kernel", "printk", "rest_init", "kernel_init", "0x100000", "0x1000", "hello_main"]
+
+
+def follow_fuzz_action(page, cdp, rng):
+    """One random action for follow_fuzz_case, as a short description."""
+    r = rng.random()
+
+    def click(sel):
+        what = page.evaluate(RUN_FUZZ_PICK, [sel, rng.random()])
+        if what is None:
+            return "nothing for " + sel
+        try:
+            page.locator("[data-fz]").first.click(timeout=1500)
+            return "click " + what
+        except PlaywrightError:
+            return "could not click " + what
+    if r < 0.18:
+        return click(rng.choice(["#tab_debugger", "#tab_debugger", "#tab_page", "#tab_page", "#tab_memory", "#tab_graph", "#tab_coverage"]))
+    if r < 0.32:
+        v = rng.choice(["1", "10", "10", "1000", "100000", "1000000", "full"])
+        page.select_option("#dbg_speed", v)
+        return "speed " + v
+    if r < 0.45:
+        return click(rng.choice(["#dbg_pause", "#dbg_continue", "#dbg_step", "#dbg_stepn", "#vm_continue"]))
+    if r < 0.50:
+        v = rng.choice(FOLLOW_FUZZ_TARGETS)
+        page.evaluate("v => { document.getElementById('dbg_addr').value = v; }", v)
+        return "Run to " + v + ": " + click("#dbg_runto")
+    if r < 0.60:
+        return click(rng.choice([".srclink", ".srclink", "#src_close"]))
+    if r < 0.70:
+        return click(rng.choice(["#nav_back", "#nav_fwd"]))
+    if r < 0.73:
+        # The browser's back, only inside the page's jump history (past it
+        # the browser leaves the page, as for any page).
+        if page.evaluate("!!(history.state && history.state.nav > 0)"):
+            page.go_back()
+            return "browser back"
+        return "no browser back (would leave the page)"
+    if r < 0.78:
+        return click(rng.choice(["#listing [data-addr]", "#context [data-addr]", ".symlink"]))
+    if r < 0.81:
+        v = rng.choice(["minified-linux", "minified-linux-os", "hello"])
+        page.select_option("#kernel", v)
+        return "kernel " + v
+    if r < 0.84:
+        return click("#boot")
+    if r < 0.89:
+        page.evaluate(FOLLOW_FUZZ_HIDE)
+        h = rng.choice([1, 3, 6])
+        time.sleep(h)
+        page.evaluate(FOLLOW_FUZZ_SHOW)
+        return f"hidden {h} s"
+    if r < 0.93:
+        t = rng.choice([1, 4])
+        cdp.send("Emulation.setCPUThrottlingRate", {"rate": t})
+        return f"CPU {t}x slower"
+    time.sleep(3)
+    return "wait 3 s"
+
+
+def follow_fuzz_case(browser, base, shots, kernel, seed, actions, verbose=False):
+    """Seeded random actions (tabs, speeds, Pause, Step, Run to, the Source
+    panel, Back and Forward, links into the listings, kernel switch, Boot
+    during the fast-forward, a hidden tab, CPU throttling 1x/4x) with the
+    follow-EIP invariant watched all along; stops at the first broken one."""
+    rng = random.Random(seed)
+    ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+    page = ctx.new_page()
+    cdp = ctx.new_cdp_session(page)
+    if rng.choice([1, 4]) > 1:
+        cdp.send("Emulation.setCPUThrottlingRate", {"rate": 4})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel={kernel}&speed={rng.choice(['1', '10'])}#{rng.choice(['debugger', 'page'])}")
+    wait_for(lambda: page.evaluate("typeof entryPhase !== 'undefined' && runState === 'stepped' && !entryPhase && !ffActive"), 180)
+    follow_install(page)
+    log, problems = [], []
+    for _ in range(actions):
+        for extra in ctx.pages[1:]:
+            extra.close()
+        log.append(follow_fuzz_action(page, cdp, rng))
+        time.sleep(rng.choice([0, 0.3, 1, 2, 3]))
+        viol = page.evaluate("mkbFollow.viol")
+        if viol or errors:
+            problems.append({"after": log[-8:], "follow EIP": viol[:3], "page errors": errors})
+            page.screenshot(path=str(shots / f"follow-fuzz-{kernel}-{seed}.png"))
+            break
+    ctx.close()
+    return problems, {"actions": len(log), **({"log": log} if verbose else {})}
+
+
+# (kernel, tab, CPU throttling) for follow_eip_case.
+FOLLOW_EIP_CASES = [(k, t, c) for k in ("minified-linux", "minified-linux-os", "hello") for t in ("debugger", "page") for c in (1, 4)]
+# (kernel, seed): fixed, so CI runs the same sequences every time.
+FOLLOW_FUZZ_SEEDS = [("minified-linux", 1), ("minified-linux-os", 2), ("minified-linux", 3), ("hello", 4)]
+
+
+def suite_followeip(ctx):
+    failed = False
+    for kernel, tab, throttle in [c for c in FOLLOW_EIP_CASES if c[0] in ctx.entries]:
+        t0 = time.monotonic()
+        p, r = follow_eip_case(ctx.browser, ctx.base, ctx.shots, kernel, tab, throttle)
+        failed |= report("follow_eip", p, r, kernel=kernel, tab=tab, throttle=throttle, seconds=round(time.monotonic() - t0))
+    return failed
+
+
+def suite_followfuzz(ctx):
+    failed = False
+    seeds = [s for s in FOLLOW_FUZZ_SEEDS if s[0] in ctx.entries]
+    if ctx.args.fuzz_seeds:
+        seeds = [(["minified-linux", "minified-linux-os", "hello"][s % 3], s)
+                 for s in range(ctx.args.fuzz_from, ctx.args.fuzz_from + ctx.args.fuzz_seeds)]
+    for kernel, seed in seeds:
+        t0 = time.monotonic()
+        p, r = follow_fuzz_case(ctx.browser, ctx.base, ctx.shots, kernel, seed, ctx.args.fuzz_actions,
+                                verbose=bool(ctx.args.fuzz_seeds))
+        failed |= report("follow_fuzz", p, r, kernel=kernel, seed=seed, seconds=round(time.monotonic() - t0))
+    return failed
+
+
 # ---- run state: random clicks at 1/s ---------------------------------------
 # The operator's report: clicking around at 1 instruction per second reached
 # a state where the page was not paused yet nothing ran. run_state_problem()
@@ -7426,6 +7711,8 @@ SUITES = {
     "speedline": (suite_speedline, True),
     "speedasm": (suite_speedasm, True),
     "navhist": (suite_navhist, False),
+    "followeip": (suite_followeip, False),
+    "followfuzz": (suite_followfuzz, False),
 }
 
 
@@ -7436,9 +7723,9 @@ def main():
     ap.add_argument("--timeout", type=float, default=120)
     ap.add_argument("--probe", action="store_true", help="report, do not assert")
     ap.add_argument("--shots", default=str(SITE / "test-screenshots"))
-    ap.add_argument("--fuzz-seeds", type=int, default=0, help="runstate: this many seeds per kernel and device instead of the fixed ones")
-    ap.add_argument("--fuzz-from", type=int, default=100, help="runstate: first seed with --fuzz-seeds")
-    ap.add_argument("--fuzz-actions", type=int, default=30, help="runstate: actions per seed")
+    ap.add_argument("--fuzz-seeds", type=int, default=0, help="runstate, followfuzz: this many seeds instead of the fixed ones")
+    ap.add_argument("--fuzz-from", type=int, default=100, help="runstate, followfuzz: first seed with --fuzz-seeds")
+    ap.add_argument("--fuzz-actions", type=int, default=30, help="runstate, followfuzz: actions per seed")
     ap.add_argument("--base", help="test this deployed site (e.g. https://d33.pl/minimal-kernel-build) instead of serving site/")
     args = ap.parse_args()
 

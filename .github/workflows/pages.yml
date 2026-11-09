@@ -365,6 +365,8 @@ jobs:
         - runstate
         - speedline
         - speedasm
+        - followeip
+        - followfuzz
     name: browser-test (${{ matrix.suites }})
     steps:
     - uses: actions/checkout@v4

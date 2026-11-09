@@ -386,8 +386,11 @@ jobs:
     - name: Install the local copy, the broken copies must fail
       run: xvfb-run -a -s "-screen 0 1400x1000x24" "$RUNNER_TEMP/venv/bin/python" site/test_pwa_install.py
 
+    # page_url is http:// for a custom domain; installing needs https.
     - name: Install the live site
-      run: xvfb-run -a -s "-screen 0 1400x1000x24" "$RUNNER_TEMP/venv/bin/python" site/test_pwa_install.py --base "${{ needs.deploy.outputs.page_url }}"
+      env:
+        PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+      run: xvfb-run -a -s "-screen 0 1400x1000x24" "$RUNNER_TEMP/venv/bin/python" site/test_pwa_install.py --base "https://${PAGE_URL#*://}"
 
     - uses: actions/upload-artifact@v4
       if: always()

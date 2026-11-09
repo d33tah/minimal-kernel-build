@@ -172,10 +172,13 @@ def run_case(pw, exe, base, label, shots, timeout, boot=True):
         r["chromium"] = ctx.browser.version if ctx.browser else None
         start = base + "/"
         page.goto(start)
+        if not page.evaluate("isSecureContext"):
+            problems.append(f"{start} is not a secure context (https or localhost): nothing can be installed")
+            return problems, r
 
         # Our own requirement: a service worker controls the page (pwa.js
         # registers it after the page's own loads; sw.js claims the page).
-        r["sw_controls"] = tb.wait_for(lambda: page.evaluate("!!navigator.serviceWorker.controller"), 60)
+        r["sw_controls"] = tb.wait_for(lambda: page.evaluate("!!navigator.serviceWorker?.controller"), 60)
         if not r["sw_controls"]:
             problems.append("no service worker controls the page (no offline use)")
 

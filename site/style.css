@@ -234,6 +234,17 @@ svg.jarcs { position: absolute; left: 0; top: 0; pointer-events: none; overflow:
 .jc:hover, .jc:focus-visible { border-color: var(--accent); }
 .jnone { color: var(--warn-fg); background: var(--warn-bg); border-radius: 3px; padding: 0 0.15em; cursor: help; }
 .ins.jhit { outline: 2px dashed var(--accent); outline-offset: 0; }
+/* The sources above an instruction and its targets after it (jumps.js
+   jumpInlineHtml): a block indented past the address, so a wrapped line
+   keeps the address column clear. */
+.jsrc { display: block; padding-left: 9ch; color: var(--muted); white-space: normal; }
+.jdst { color: var(--muted); }
+/* No underline at rest: it would hide the underscores of names. */
+.jto, .jmore { font: inherit; border: none; border-radius: 2px; padding: 0; margin: 0; background: none; color: var(--accent); cursor: pointer; }
+.jto:hover, .jmore:hover { text-decoration: underline; text-underline-offset: 3px; }
+.jto:focus-visible, .jmore:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.jstub { fill: none; stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 2 1.5; }
+.jstubend { fill: none; stroke: var(--accent); stroke-width: 1; }
 @media (pointer: coarse) {
 	.jc { padding: 0.15em 0.4em; }
 }

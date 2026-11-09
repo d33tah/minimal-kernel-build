@@ -586,6 +586,7 @@ function listPage(p, bytes, base, cur, chars) {
 	// Jump paths: the build's (whole kernel) or, decoded live, this page's.
 	const jS = !insns.size ? null : source === "build" ? jumpsFor(disasm.insns) : jumpsFor([...insns.values()].sort((x, y) => x[0] - y[0]));
 	const paths = new Map();
+	const inView = (x) => insns.has(x), imax = jumpInlineMax($("listing"));
 	const out = [];
 	let si = 0, nIns = 0, nBad = 0, nNx = 0, nRows = 0, nonzero = 0, changed = 0, curLine = -1;
 	let prevRow = null, starred = false;
@@ -648,9 +649,10 @@ function listPage(p, bytes, base, cur, chars) {
 				cls += " jhit";
 			const P = jumpPaths(jS, stepper, pa);
 			paths.set(pa, P);
-			out.push('<span class="' + cls + '" data-addr="' + pa + '">' + pa.toString(16).padStart(8, "0") +
+			const J = jumpInlineHtml(jS, P, pa, inView, imax);
+			out.push(J.src + '<span class="' + cls + '" data-addr="' + pa + '"' + jumpStubAttrs(J) + ">" + pa.toString(16).padStart(8, "0") +
 				" " + rawHtml + " " + insnHtml(pa, text, ops, opStat) +
-				(wide && where ? ' <span class="dim">' + escHtml(where) + "</span>" : "") + "</span>" + jumpBadgesHtml(P, pa));
+				(wide && where ? ' <span class="dim">' + escHtml(where) + "</span>" : "") + "</span>" + J.dst + jumpBadgesHtml(P, pa));
 			nIns++;
 			if (!ok)
 				nBad++;
@@ -734,6 +736,10 @@ function renderSymbolIndex(p) {
 
 function scrollListingTo(line) {
 	const box = $("listing");
+	// An instruction's sources line above it comes into view with it.
+	const prev = line.previousElementSibling;
+	if (prev && prev.matches(".jsrc"))
+		line = prev;
 	// Measured, not offsetTop: the listing is the lines' offsetParent (it
 	// holds the jump arcs, position: relative).
 	box.scrollTop += line.getBoundingClientRect().top - box.getBoundingClientRect().top - box.clientHeight / 3;
@@ -761,7 +767,7 @@ function renderJumpInfo(r, dropped) {
 	const jit = jumpsJitNote();
 	el.textContent = "Jump paths: " + arcs + " jumps inside the page drawn as arcs" + (dropped ? " (" + dropped + " more not drawn: the gutter is full)" : "") +
 		"; " + into + " instructions with paths in (\u2190), " + outs + " with paths out (\u2192), " + seen.toLocaleString("en") +
-		" transfers from here observed while stepping; " + none + " without a direct path in (\u2298)" +
+		" transfers from here observed while stepping, the sources named above each instruction and targets out of view after it; " + none + " without a direct path in (\u2298)" +
 		(r.source === "live" ? " from this page's live decode (static paths only from the " + r.jS.local.toLocaleString("en") +
 			" instructions decoded here: jumps and calls from other code are not known)" : "") + (jit ? "; " + jit : "") + ".";
 }
@@ -1857,6 +1863,8 @@ function drawContext() {
 			const srcState = { key: null };
 			const ops = live && bitnessAt(phys) === 16 ? null : opEnv(), opStat = {};
 			jS = jumpsFor(ins);
+			const shown = new Set(ins.slice(from, to).map((x) => x[0]));
+			const inView = (x) => shown.has(x), imax = jumpInlineMax(el);
 			for (let k = from; k < to; k++) {
 				const [pa, raw, text] = ins[k];
 				const srcLine = srcLineHtml(pa, srcState);
@@ -1876,10 +1884,11 @@ function drawContext() {
 				const cls = "ins" + (pa === phys ? " cur" : "") + (ok ? "" : " bad");
 				const P = jumpPaths(jS, stepper, pa);
 				paths.set(pa, P);
-				lines.push('<span class="' + cls + '" data-addr="' + pa + '">' + (pa === phys ? "▶" : " ") +
+				const J = jumpInlineHtml(jS, P, pa, inView, imax);
+				lines.push(J.src + '<span class="' + cls + '" data-addr="' + pa + '"' + jumpStubAttrs(J) + ">" + (pa === phys ? "▶" : " ") +
 					pa.toString(16).padStart(8, "0") + " " + bytes + " " + insnHtml(pa, text, ops, opStat) +
 					(sym ? ' <span class="dim">' + escHtml(sym.name) + "+0x" + (pa - sym.paddr).toString(16) + "</span>" : "") +
-					"</span>" + jumpBadgesHtml(P, pa));
+					"</span>" + J.dst + jumpBadgesHtml(P, pa));
 			}
 		}
 	}

@@ -258,6 +258,152 @@ function jumpBadgesHtml(P, pa) {
 	return h;
 }
 
+// ---- inline: the sources above an instruction, its targets after it ----
+//
+// Without a click: above each instruction that a jump, call, return,
+// interrupt or exception reaches, "← n paths in:" and the first few
+// sources (the instruction's word, its name as llvm-objdump writes a
+// target, file:line, how often taken), "+k more" opening the list; after
+// an instruction its targets the text does not name (observed returns,
+// indirect jumps and calls, exceptions) and, for a direct one out of
+// view, a button to it. Each named end says where it is: ↑ or ↓ in the
+// same function out of view, ↗ another function; the ends in view have
+// their arc. Out-of-view ends also get a stub at the gutter edge.
+
+// Kind words for observed ends (a static end shows its own mnemonic).
+const JK_WORD = ["", "jcc", "jmp", "call", "ret", "loop", "int", "iret", "sysenter/sysexit", "jmp *", "call *", "ljmp",
+	"lcall", "lret", "exception", "interrupt", "ud2"];
+const JUMP_GLYPH = { up: "↑", down: "↓", far: "↗", view: "" };
+const JUMP_WHERE_TEXT = { up: "earlier in this function, out of view", down: "later in this function, out of view",
+	far: "in another function", view: "in view (its arc)" };
+
+// Ends named inline before "+n more" in box.
+const jumpInlineMax = (box) => (box.clientWidth < 520 ? 2 : 3);
+
+// The word for the transfer at x along e: x's mnemonic when e is of its
+// kind (jne, calll, retl), then the other kinds observed there
+// (interrupt, exception).
+function jumpWord(S, e, x) {
+	const i = S && x >= 0 ? jumpsIndex(S, x) : -1;
+	const own = i >= 0 && S.kind[i] && e.mask & 1 << S.kind[i] ? S.kind[i] : 0;
+	const m = own ? JUMP_TEXT.exec(S.insns[i][2]) : null;
+	const words = m ? [m[1]] : [];
+	for (let k = 1; k < JK_WORD.length; k++)
+		if (e.mask & 1 << k && k !== own)
+			words.push(JK_WORD[k]);
+	return words.join("/");
+}
+
+// Where at is seen from pa: "view" (in the listing), "up" or "down" (the
+// same function), "far" (another function, or outside the image).
+function jumpWhere(pa, at, inView, lookup) {
+	if (at < 0)
+		return "far";
+	if (inView(at))
+		return "view";
+	if (!lookup)
+		return at < pa ? "up" : "down";
+	const a = lookup(pa), b = lookup(at);
+	return a && b && a.paddr === b.paddr && a.name === b.name ? (at < pa ? "up" : "down") : "far";
+}
+
+// One named end: "jne from ↑put_line+0x20 hello.c:16 ×3".
+function jumpEndHtml(S, e, pa, dir, inView, lookup) {
+	const where = jumpWhere(pa, e.at, inView, lookup);
+	const name = e.at === -2 ? hex(e.va) : asmTargetName(e.at, lookup) || hex(e.at);
+	let h = '<span class="je" data-at="' + e.at + '" data-where="' + where + '">' + escHtml(jumpWord(S, e, dir === "in" ? e.at : pa)) +
+		(dir === "in" ? " from " : " to ");
+	const label = (JUMP_GLYPH[where] ? JUMP_GLYPH[where] + "\u2009" : "") + name;
+	h += e.at >= 0 ? '<button type="button" class="jto" data-go="' + e.at + '" title="' + escHtml(name + " (" + hex(e.at) + "), " +
+		JUMP_WHERE_TEXT[where] + ": go there in the Page tab") + '">' + escHtml(label) + "</button>" : escHtml(label);
+	if (e.at >= 0 && typeof dbgHas === "function" && dbgHas()) {
+		const r = dbgFrames(e.at);
+		if (r.state === "ok" && r.frames[0].file && r.frames[0].line)
+			h += " " + srcLinkHtml(r.frames[0].file, r.frames[0].line, "", e.at);
+	}
+	if (e.count)
+		h += " ×" + e.count.toLocaleString("en");
+	return h + "</span>";
+}
+
+// The inline parts of the instruction at pa (P from jumpPaths, S its
+// static paths, inView(addr): whether the listing shows that
+// instruction, max: ends named before "+n more"): { src: the line above
+// it ("" if no path comes in), dst: after it, sin and sout: the ways of
+// its ends out of view (for the gutter stubs) }.
+function jumpInlineHtml(S, P, pa, inView, max) {
+	const lookup = typeof kernelSymLookup === "function" ? kernelSymLookup() : null;
+	const r = { src: "", dst: "", sin: "", sout: "" };
+	const ways = (list) => [...new Set(list.map((e) => jumpWhere(pa, e.at, inView, lookup)).filter((w) => w !== "view"))].join(" ");
+	const more = (n, dir) => '<button type="button" class="jmore" data-pa="' + pa + '" data-dir="' + dir + '" title="All ' + n +
+		" paths " + (dir === "in" ? "into" : "out of") + ' this instruction">+' + n + " more</button>";
+	if (P.into.length) {
+		const n = P.into.length, shown = P.into.slice(0, max);
+		r.src = '<span class="jsrc" data-addr="' + pa + '" data-n="' + n + '">← ' + n + " path" + (n > 1 ? "s" : "") + " in: " +
+			shown.map((e) => jumpEndHtml(S, e, pa, "in", inView, lookup)).join(", ") + (n > shown.length ? ", " + more(n - shown.length, "in") : "") + "</span>";
+		r.sin = ways(P.into);
+	}
+	// Out: the static direct target is in the instruction's text (its
+	// <name>); out of view it gets a button. Other targets are named.
+	const i = S ? jumpsIndex(S, pa) : -1;
+	const direct = i >= 0 && S.target[i] !== -1 ? P.out.find((e) => e.stat) : null;
+	const rest = P.out.filter((e) => e !== direct);
+	let d = "";
+	if (direct && direct.at >= 0) {
+		const where = jumpWhere(pa, direct.at, inView, lookup);
+		if (where !== "view") {
+			const name = asmTargetName(direct.at, lookup) || hex(direct.at);
+			d += '<span class="je" data-at="' + direct.at + '" data-where="' + where + '"><button type="button" class="jto" data-go="' + direct.at +
+				'" title="' + escHtml("Target " + name + " (" + hex(direct.at) + "), " + JUMP_WHERE_TEXT[where] + ": go there in the Page tab") + '">' +
+				JUMP_GLYPH[where] + "</button></span>";
+		}
+	}
+	if (rest.length) {
+		const shown = rest.slice(0, max);
+		d += (d ? " " : "") + "→ " + shown.map((e) => jumpEndHtml(S, e, pa, "out", inView, lookup)).join(", ") +
+			(rest.length > shown.length ? ", " + more(rest.length - shown.length, "out") : "");
+	}
+	if (d)
+		r.dst = ' <span class="jdst" data-addr="' + pa + '">' + d + "</span>";
+	r.sout = ways(P.out);
+	return r;
+}
+
+// The .ins attributes that ask drawJumpArcs for gutter stubs.
+const jumpStubAttrs = (J) => (J.sin ? ' data-sin="' + J.sin + '"' : "") + (J.sout ? ' data-sout="' + J.sout + '"' : "");
+
+// Stubs at the gutter edge for the ends out of view (.ins data-sin and
+// data-sout, from jumpInlineHtml): into the line from above, below or
+// afar (a circle), and out of it the same ways.
+function jumpStubsSvg(box, y, xR) {
+	let out = "";
+	const xS = xR - 10;
+	for (const el of box.querySelectorAll(".ins[data-sin], .ins[data-sout]")) {
+		const pa = Number(el.dataset.addr), yl = y(pa);
+		if (yl === null)
+			continue;
+		const path = (way, d) => '<path class="jstub" data-addr="' + pa + '" data-way="' + way + '" d="' + d + '"/>';
+		for (const w of (el.dataset.sin || "").split(" ").filter(Boolean)) {
+			if (w === "far")
+				out += path(w, "M" + (xS - 2) + " " + yl + "H" + (xR - 3)) + '<circle class="jstubend" cx="' + (xS - 3) + '" cy="' + yl + '" r="1.6"/>';
+			else
+				out += path(w, "M" + xS + " " + (yl + (w === "up" ? -8 : 8)) + "V" + yl + "H" + (xR - 3));
+			out += '<path class="jarrow" d="M' + xR + " " + yl + 'l-4 -3v6z"/>';
+		}
+		const yo = yl + 2;
+		for (const w of (el.dataset.sout || "").split(" ").filter(Boolean)) {
+			if (w === "far")
+				out += path("out-far", "M" + (xR - 3) + " " + yo + "H" + (xS - 1)) + '<path class="jarrow" d="M' + (xS - 4) + " " + yo + 'l4 -3v6z"/>';
+			else {
+				const e = yo + (w === "up" ? -9 : 9);
+				out += path("out-" + w, "M" + (xR - 3) + " " + yo + "H" + xS + "V" + e) +
+					'<path class="jarrow" d="M' + xS + " " + (e + (w === "up" ? -1 : 1)) + "l-3 " + (w === "up" ? 4 : -4) + "h6z\"/>";
+			}
+		}
+	}
+	return out;
+}
+
 // The arcs of a listing: jumps (JK_ARC) between instructions it shows.
 function jumpArcs(paths) {
 	const arcs = [];
@@ -291,12 +437,14 @@ function drawJumpArcs(box, arcs) {
 		(cols[c] = cols[c] || []).push([v.lo, v.hi]);
 		v.col = c;
 	}
-	const gutter = cols.length ? cols.length * COL + 9 : 0;
+	const stubs = box.querySelector(".ins[data-sin], .ins[data-sout]") !== null;
+	const STUB = stubs ? 13 : 0;
+	const gutter = cols.length || stubs ? cols.length * COL + 9 + STUB : 0;
 	box.style.setProperty("--jgutter", gutter + "px");
 	box.dataset.arcs = arcs.length - dropped;
 	box.dataset.arcsDropped = dropped;
 	let svg = box.querySelector(":scope > svg.jarcs");
-	if (!cols.length) {
+	if (!cols.length && !stubs) {
 		if (svg)
 			svg.remove();
 		return dropped;
@@ -326,12 +474,13 @@ function drawJumpArcs(box, arcs) {
 		const y1 = y(v.a.from), y2 = y(v.a.to);
 		if (y1 === null || y2 === null)
 			continue;
-		const x = xR - 6 - v.col * COL, d = y2 > y1 ? 1 : -1, r = Math.min(3, Math.abs(y2 - y1) / 2);
+		const x = xR - 6 - STUB - v.col * COL, d = y2 > y1 ? 1 : -1, r = Math.min(3, Math.abs(y2 - y1) / 2);
 		const cls = "jarc" + (v.a.taken ? " taken" : "") + (v.a.stat ? "" : " dyn");
 		out += '<path class="' + cls + '" data-from="' + v.a.from + '" data-to="' + v.a.to + '" d="M' + xR + " " + y1 + "H" + (x + r) +
 			"Q" + x + " " + y1 + " " + x + " " + (y1 + d * r) + "V" + (y2 - d * r) + "Q" + x + " " + y2 + " " + (x + r) + " " + y2 + "H" + (xR - 3) + '"/>' +
 			'<path class="jarrow' + (v.a.taken ? " taken" : "") + '" d="M' + xR + " " + y2 + "l-4 -3v6z\"/>";
 	}
+	out += jumpStubsSvg(box, y, xR);
 	svg.setAttribute("width", pad);
 	svg.setAttribute("height", box.scrollHeight);
 	svg.innerHTML = out;
@@ -496,7 +645,15 @@ function renderEipJumps(S, pa) {
 
 function initJumps() {
 	document.addEventListener("click", (ev) => {
-		const b = ev.target.closest ? ev.target.closest("button.jc") : null;
+		const go = ev.target.closest ? ev.target.closest("button.jto") : null;
+		if (go) {
+			ev.stopPropagation();
+			ev.preventDefault();
+			jumpPopClose(false);
+			jumpGo(Number(go.dataset.go));
+			return;
+		}
+		const b = ev.target.closest ? ev.target.closest("button.jc, button.jmore") : null;
 		if (b) {
 			ev.stopPropagation();
 			ev.preventDefault();
@@ -514,7 +671,7 @@ function initJumps() {
 	// v86 takes every key on the window (preventDefault): Enter and Space
 	// click the buttons here first, Escape closes the list.
 	document.addEventListener("keydown", (ev) => {
-		const b = ev.target.closest ? ev.target.closest("button.jc, #jump_pop button") : null;
+		const b = ev.target.closest ? ev.target.closest("button.jc, button.jmore, button.jto, #jump_pop button") : null;
 		if (b && (ev.key === "Enter" || ev.key === " ")) {
 			ev.preventDefault();
 			ev.stopPropagation();

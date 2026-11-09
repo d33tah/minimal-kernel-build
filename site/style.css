@@ -233,6 +233,12 @@ svg.jarcs { position: absolute; left: 0; top: 0; pointer-events: none; overflow:
 	background: var(--bg); color: var(--accent); cursor: pointer; }
 .jc:hover, .jc:focus-visible { border-color: var(--accent); }
 .jnone { color: var(--warn-fg); background: var(--warn-bg); border-radius: 3px; padding: 0 0.15em; cursor: help; }
+/* Marks whose popover a tap shows (app.js initTips): ⊘, the EIP mark, the tint key. */
+.tipmark { cursor: help; }
+.tipmark:focus-visible, .tipmark[aria-expanded="true"] { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ins.cur.tipmark[aria-expanded="true"] { outline-style: dashed; }
+/* A long press shows a button's popover: no callout or selection. */
+#listing [data-tip], #context [data-tip] { -webkit-touch-callout: none; }
 .ins.jhit { outline: 2px dashed var(--accent); outline-offset: 0; }
 /* The sources above an instruction and its targets after it (jumps.js
    jumpInlineHtml): a block indented past the address, so a wrapped line
@@ -245,8 +251,10 @@ svg.jarcs { position: absolute; left: 0; top: 0; pointer-events: none; overflow:
 .jto:focus-visible, .jmore:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .jstub { fill: none; stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 2 1.5; }
 .jstubend { fill: none; stroke: var(--accent); stroke-width: 1; }
+/* The pointer target of a stub: invisible and wider than it. */
+.jstubhit { fill: none; stroke: transparent; stroke-width: 9; pointer-events: stroke; cursor: help; }
 @media (pointer: coarse) {
-	.jc { padding: 0.15em 0.4em; }
+	.jc, .jnone { padding: 0.15em 0.4em; }
 }
 .jump-pop {
 	position: fixed; z-index: 11; max-width: calc(100vw - 16px); max-height: 60vh; overflow: auto;
@@ -300,7 +308,7 @@ svg.jarcs { position: absolute; left: 0; top: 0; pointer-events: none; overflow:
 	position: fixed; z-index: 10; max-width: calc(100vw - 16px);
 	background: var(--bg); color: var(--fg); border: 1px solid var(--accent); border-radius: 4px;
 	padding: 0.4rem 0.55rem; font-size: 0.8rem; line-height: 1.35; font-weight: 400;
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25); white-space: normal; text-align: left;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25); white-space: pre-line; text-align: left;
 }
 .tip-pop[hidden] { display: none; }
 

@@ -641,7 +641,7 @@ function listPage(p, bytes, base, cur, chars) {
 			// startup_32); the line holding EIP gets the mark.
 			const inside = cur > pa && cur < pa + n;
 			if (pa === cur || inside) {
-				cls += inside ? " cur mid" : " cur";
+				cls += inside ? " cur mid tipmark" : " cur";
 				curLine = out.length;
 			}
 			const srcLine = srcLineHtml(pa, srcState);
@@ -654,7 +654,7 @@ function listPage(p, bytes, base, cur, chars) {
 			const P = jumpPaths(jS, stepper, pa);
 			paths.set(pa, P);
 			const J = jumpInlineHtml(jS, P, pa, inView, imax);
-			out.push(J.src + '<span class="' + cls + '" data-addr="' + pa + '"' + (inside ? ' data-eip="' + cur + '" title="' + midTitle(cur) + '"' : "") +
+			out.push(J.src + '<span class="' + cls + '" data-addr="' + pa + '"' + (inside ? ' data-eip="' + cur + '" data-tip="' + midTitle(cur) + '"' : "") +
 				jumpStubAttrs(J) + ">" + pa.toString(16).padStart(8, "0") +
 				" " + rawHtml + " " + insnHtml(pa, text, ops, opStat) +
 				(wide && where ? ' <span class="dim">' + escHtml(where) + "</span>" : "") + "</span>" + J.dst + jumpBadgesHtml(P, pa));
@@ -824,8 +824,13 @@ function renderCovInfo(r) {
 	key.textContent = "";
 	if (r.nIns && r.cov.tint) {
 		const sw = document.createElement("span");
-		sw.className = "nxkey";
+		sw.className = "nxkey tipmark";
 		sw.textContent = "tinted";
+		sw.tabIndex = 0;
+		sw.setAttribute("role", "button");
+		sw.dataset.tip = "Tinted lines: instructions that have not executed in this boot. The page records the address of every " +
+			"instruction it steps; lines without the tint have executed. Code v86's JIT runs (the fast-forward to the kernel entry, " +
+			"full speed) is not recorded" + (r.cov.partial ? ", and the JIT has run since the kernel entry, so tinted code may have run." : ".");
 		key.append(sw, ": " + r.nNx + " of " + r.nIns + " instructions have not executed in this boot (recorded while stepping)" +
 			(r.cov.partial ? "; v86's JIT has run since the kernel entry and records nothing, so tinted code may have run" : ""));
 	} else if (r.nIns)
@@ -866,17 +871,17 @@ function listingFollow() {
 	if (!line || !line.isConnected)
 		return false;
 	for (const el of box.querySelectorAll(".cur")) {
-		el.classList.remove("cur", "mid");
+		el.classList.remove("cur", "mid", "tipmark");
 		if (el.dataset.eip !== undefined) {
 			delete el.dataset.eip;
-			el.removeAttribute("title");
+			delete el.dataset.tip;
 		}
 	}
 	line.classList.add("cur");
 	if (mid) {
-		line.classList.add("mid");
+		line.classList.add("mid", "tipmark");
 		line.dataset.eip = cur;
-		line.title = midTitle(cur);
+		line.dataset.tip = midTitle(cur);
 	}
 	if (d.r.cov.tint) {
 		for (const el of box.querySelectorAll(".ins.nx"))
@@ -1152,6 +1157,12 @@ function initNav() {
 	};
 	document.addEventListener("pointerdown", vmFocus, true);
 	document.addEventListener("focusin", vmFocus, true);
+	// Tab moves the focus through the page unless the VM screen has the keys.
+	for (const type of ["keydown", "keyup"])
+		document.addEventListener(type, (ev) => {
+			if (ev.key === "Tab" && !vmHasKeys && !ev.altKey && !ev.ctrlKey && !ev.metaKey)
+				ev.stopPropagation();
+		});
 	document.addEventListener("keydown", (ev) => {
 		const nav = ev.target.closest ? ev.target.closest("#nav_hist button") : null;
 		if (nav && (ev.key === "Enter" || ev.key === " ")) {
@@ -2106,6 +2117,10 @@ function syncSrcToggle() {
 }
 
 // The Debugger tab drawn again (its file:line links keep the keyboard focus).
+// The mark of the EIP line in Code at EIP, with its popover.
+const EIP_MARK = '<span class="eipmark tipmark" tabindex="0" role="button" aria-label="EIP" data-tip="EIP: the next instruction the CPU ' +
+	'runs (the boxed line). Tap the line itself to open it in the Page tab.">▶</span>';
+
 function renderContext() {
 	srcFocusKeep(drawContext);
 }
@@ -2208,7 +2223,7 @@ function drawContext() {
 				const P = jumpPaths(jS, stepper, pa);
 				paths.set(pa, P);
 				const J = jumpInlineHtml(jS, P, pa, inView, imax);
-				lines.push(J.src + '<span class="' + cls + '" data-addr="' + pa + '"' + jumpStubAttrs(J) + ">" + (pa === phys ? "▶" : " ") +
+				lines.push(J.src + '<span class="' + cls + '" data-addr="' + pa + '"' + jumpStubAttrs(J) + ">" + (pa === phys ? EIP_MARK : " ") +
 					pa.toString(16).padStart(8, "0") + " " + bytes + " " + insnHtml(pa, text, ops, opStat) +
 					(sym ? ' <span class="dim">' + escHtml(sym.name) + "+0x" + (pa - sym.paddr).toString(16) + "</span>" : "") +
 					"</span>" + J.dst + jumpBadgesHtml(P, pa));
@@ -2963,12 +2978,23 @@ async function loadKernel(entry, memFromUrl) {
 
 // ---- popovers --------------------------------------------------------------
 
-// Every "?" marker: title attributes never show on touch screens, so the
-// text moves into data-tip and a popover shows it. Click, tap, Enter or
-// Space toggles it, hover shows it on devices that hover; a tap elsewhere
-// or Esc closes it. One popover at a time.
-let tipOpen = null;    // marker whose popover is shown
-let tipPinned = false; // opened by click/key (stays until closed)
+// Title attributes never show on touch screens, so explanations are in
+// data-tip and one popover (#tip_pop) shows them. Two kinds:
+// - marks (the "?" markers, .tip, and in the listings .tipmark: ⊘, the
+//   EIP mark, the gutter stubs, the tint key): a click, tap, Enter or
+//   Space toggles the popover, hover shows it on devices that hover;
+// - other elements with data-tip (buttons that go somewhere or open a
+//   list on a tap: ↑ ↓ ↗, ←n, file:line): hover, keyboard focus and a
+//   long press show it, and a tap still acts.
+// A tap elsewhere or Esc closes it. The listings are drawn again while
+// the CPU steps: the listeners are delegated, and an open popover moves
+// to the same mark in the new drawing (tipReanchor).
+let tipOpen = null;    // element whose popover is shown
+let tipPinned = false; // opened by click/key/long press (stays until closed)
+let tipKey = "";       // tipOpen's identity across drawings
+let tipLong = null;    // { el, at }: shown by a long press, swallow the click that may follow
+const TIP_MARK = ".tip, .tipmark";
+const TIP_LONG_MS = 500;
 
 function placeTip(el) {
 	const pop = $("tip_pop");
@@ -2986,11 +3012,22 @@ function placeTip(el) {
 		pop.style.top = (r.top - h - 6) + "px";
 }
 
+// What finds el again after its box is drawn anew: the box, its class and
+// the address data it carries.
+function tipKeyOf(el) {
+	const box = el.closest("[id]");
+	const d = el.dataset;
+	return [box ? box.id : "", el.getAttribute("class"), d.addr, d.pa, d.go, d.dir, d.way, d.file, d.line].join("|");
+}
+
 function showTip(el, pinned) {
+	if (!el.dataset.tip)
+		return;
 	if (tipOpen && tipOpen !== el)
 		tipOpen.setAttribute("aria-expanded", "false");
 	tipOpen = el;
 	tipPinned = pinned;
+	tipKey = tipKeyOf(el);
 	el.setAttribute("aria-expanded", "true");
 	placeTip(el);
 }
@@ -3000,11 +3037,44 @@ function hideTip() {
 		tipOpen.setAttribute("aria-expanded", "false");
 	tipOpen = null;
 	tipPinned = false;
+	tipKey = "";
 	$("tip_pop").hidden = true;
 }
 
+function toggleTip(el) {
+	if (tipOpen === el && tipPinned)
+		hideTip();
+	else
+		showTip(el, true);
+}
+
+// A box with an open popover's mark was drawn again: show it at the same
+// mark in the new drawing (with its new text), or close it.
+function tipReanchor() {
+	if (!tipOpen || tipOpen.isConnected)
+		return;
+	const box = $(tipKey.split("|")[0]);
+	const el = box ? [...box.querySelectorAll("[data-tip]")].find((e) => tipKeyOf(e) === tipKey) : null;
+	if (!el) {
+		hideTip();
+		return;
+	}
+	tipOpen = el;
+	el.setAttribute("aria-expanded", "true");
+	placeTip(el);
+}
+
+// The element under ev whose popover a tap toggles: a mark, unless a
+// button inside it was hit.
+function tipMarkOf(t) {
+	const mark = t.closest ? t.closest(TIP_MARK) : null;
+	if (!mark)
+		return null;
+	const act = t.closest("button, a, input, select");
+	return act && act !== mark && mark.contains(act) ? null : mark;
+}
+
 function initTips() {
-	const hover = window.matchMedia("(hover: hover)").matches;
 	for (const el of document.querySelectorAll(".tip")) {
 		if (el.title) {
 			el.dataset.tip = el.title;
@@ -3013,28 +3083,125 @@ function initTips() {
 		el.setAttribute("aria-expanded", "false");
 		el.setAttribute("aria-label", "Explain");
 		el.setAttribute("aria-controls", "tip_pop");
-		const toggle = (ev) => {
-			ev.preventDefault(); // inside a label: do not activate its control
-			ev.stopPropagation();
-			if (tipOpen === el && tipPinned)
-				hideTip();
-			else
-				showTip(el, true);
-		};
-		el.addEventListener("click", toggle);
-		el.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") toggle(ev); });
-		if (hover) {
-			el.addEventListener("mouseenter", () => { if (!tipPinned) showTip(el, false); });
-			el.addEventListener("mouseleave", () => { if (!tipPinned && tipOpen === el) hideTip(); });
-		}
 	}
+	// Before the listings' own handlers (capture): a tap on a mark only
+	// toggles its popover (inside a label it must not activate the control).
 	document.addEventListener("click", (ev) => {
-		if (tipOpen && !$("tip_pop").contains(ev.target))
+		const t = ev.target;
+		if (tipLong) {
+			const long = tipLong;
+			tipLong = null;
+			const el = t.closest ? t.closest("[data-tip]") : null;
+			if (el && (el === long.el || tipKeyOf(el) === long.key) && realNow() - long.at < 1500) {
+				ev.preventDefault();
+				ev.stopImmediatePropagation(); // jumps.js and source.js listen on document too
+				return;
+			}
+		}
+		const mark = tipMarkOf(t);
+		if (mark) {
+			ev.preventDefault();
+			ev.stopImmediatePropagation(); // jumps.js and source.js listen on document too
+			toggleTip(mark);
+			return;
+		}
+		if (tipOpen && !$("tip_pop").contains(t))
+			hideTip();
+	}, true);
+	// v86 takes every key on the window: Enter and Space on a mark here first.
+	document.addEventListener("keydown", (ev) => {
+		const mark = ev.key === "Enter" || ev.key === " " ? tipMarkOf(ev.target) : null;
+		if (mark) {
+			ev.preventDefault();
+			ev.stopImmediatePropagation(); // jumps.js and source.js listen on document too
+			toggleTip(mark);
+		} else if (ev.key === "Escape" && tipOpen)
+			hideTip();
+	}, true);
+	// Hover: a mouse on a device that hovers (a phone sends pointerover on
+	// a tap, and mouse ones when the page changes under the last tap).
+	const hover = window.matchMedia("(hover: hover)");
+	document.addEventListener("pointerover", (ev) => {
+		if (ev.pointerType !== "mouse" || !hover.matches || tipPinned)
+			return;
+		const el = ev.target.closest ? ev.target.closest("[data-tip]") : null;
+		if (el && el !== tipOpen)
+			showTip(el, false);
+		else if (!el && tipOpen) // its mark may have been drawn again under the pointer
 			hideTip();
 	});
-	document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") hideTip(); });
-	window.addEventListener("scroll", () => { if (tipOpen) placeTip(tipOpen); }, { passive: true });
-	window.addEventListener("resize", () => { if (tipOpen) placeTip(tipOpen); });
+	document.addEventListener("pointerout", (ev) => {
+		if (ev.pointerType !== "mouse" || !hover.matches || tipPinned || !tipOpen)
+			return;
+		const el = ev.target.closest ? ev.target.closest("[data-tip]") : null;
+		if (el === tipOpen && !(ev.relatedTarget && el.contains(ev.relatedTarget)))
+			hideTip();
+	});
+	// Keyboard focus (Tab) on a button with an explanation shows it; focus
+	// moved by the page after a tap or click does not.
+	let byKey = false;
+	document.addEventListener("keydown", (ev) => { byKey = ev.key === "Tab"; }, true);
+	document.addEventListener("pointerdown", () => { byKey = false; }, true);
+	document.addEventListener("focusin", (ev) => {
+		const el = ev.target;
+		if (!byKey || tipPinned || !el.dataset || !el.dataset.tip || el.matches(TIP_MARK))
+			return;
+		showTip(el, false);
+	});
+	document.addEventListener("focusout", (ev) => {
+		if (!tipPinned && tipOpen === ev.target)
+			hideTip();
+	});
+	// A long press on a button with an explanation shows it; the click
+	// that may follow does nothing.
+	let press = null;
+	const unpress = () => {
+		if (press)
+			clearTimeout(press.timer);
+		press = null;
+	};
+	document.addEventListener("pointerdown", (ev) => {
+		unpress();
+		if (ev.pointerType === "mouse")
+			return;
+		const el = ev.target.closest ? ev.target.closest("[data-tip]") : null;
+		if (!el || el.matches(TIP_MARK))
+			return;
+		press = { x: ev.clientX, y: ev.clientY, timer: setTimeout(() => {
+			press = null;
+			showTip(el, true);
+			tipLong = { el, key: tipKeyOf(el), at: realNow() };
+		}, TIP_LONG_MS) };
+	}, true);
+	document.addEventListener("pointermove", (ev) => {
+		if (press && Math.hypot(ev.clientX - press.x, ev.clientY - press.y) > 10)
+			unpress();
+	}, true);
+	document.addEventListener("pointerup", unpress, true);
+	document.addEventListener("pointercancel", unpress, true);
+	document.addEventListener("contextmenu", (ev) => {
+		if (tipLong && ev.target.closest && ev.target.closest("[data-tip]"))
+			ev.preventDefault();
+	});
+	// The listings are drawn again while the CPU runs.
+	const mo = new MutationObserver(tipReanchor);
+	for (const id of ["listing", "context", "cov_info", "eip_jumps", "cur_src", "src_body"])
+		if ($(id))
+			mo.observe($(id), { childList: true, subtree: true });
+	const follow = () => {
+		if (!tipOpen)
+			return;
+		// Hidden when its mark leaves the window or its scrolling listing.
+		const r = tipOpen.getBoundingClientRect();
+		const box = tipOpen.closest("#listing, #src_body");
+		const b = box ? box.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+		if (r.bottom < Math.max(0, b.top) || r.top > Math.min(window.innerHeight, b.bottom))
+			hideTip();
+		else
+			placeTip(tipOpen);
+	};
+	window.addEventListener("scroll", follow, { passive: true, capture: true });
+	window.addEventListener("resize", follow);
 }
 
 async function init() {

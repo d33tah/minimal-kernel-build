@@ -262,25 +262,38 @@ function jumpCountText(e) {
 		"observed " + e.count.toLocaleString("en") + "×";
 }
 
-// What ⊘ means at an instruction (P.noDirect): the tooltip, the list's
-// note and the Debugger's paths at EIP.
+// What ⊘ means at an instruction (P.noDirect): the popover, the list's
+// note and the Debugger's paths at EIP. The first line says what the mark
+// means, then what that rests on (the whole disassembly or the
+// instructions decoded live) and what the run has shown.
 function jumpNoneText(P) {
 	const jit = jumpsJitNote();
-	return (P.local ? "No direct path into this instruction " + jumpNoneScope(P) + " (" + JUMP_NONE_OTHER +
-		"): none of them jumps or calls here, the one before it does not fall through (a jmp, ret or iret), it is no function's entry" :
-		"No path leads here: no jump or call in the disassembly goes here, its address is nowhere in the kernel " +
-		"(no function pointer, jump table or exception fixup), the instruction before it does not fall through (a jmp, ret or iret)") +
-		" and it has not run while stepping. Typically alignment padding, or a function nothing calls" +
-		(jit && jit.startsWith("v86") ? "; " + jit.replace("paths taken there are missing", "code run there is not known") : "") + ".";
+	const lines = P.local ? [
+		"No path leads here: none of the instructions decoded live jumps or calls to this one, and the one before it does not fall through.",
+		"Only " + P.local.toLocaleString("en") + " instruction" + (P.local > 1 ? "s were" : " was") + " decoded live (no disasm.json), so " +
+			JUMP_NONE_OTHER + ".",
+	] : [
+		"No path leads here: nothing jumps or calls to this instruction, and the one before it does not fall through.",
+		"Checked in the whole disassembly. Its address is not stored anywhere in the kernel either (no function pointer, jump table or exception fixup).",
+	];
+	lines.push(!stepper ? "Nothing has run yet." :
+		"It has not run while stepping, and no jump into it has been seen" +
+		(jit && jit.startsWith("v86") ? "; " + jit.replace("paths taken there are missing", "code run there is not known") : "") + ".");
+	if (!P.local)
+		lines.push("Usually alignment padding after a ret or jmp, or a function nothing calls.");
+	return lines.join("\n");
 }
 
 // The count buttons after an instruction line (and the mark of an
-// instruction no path is known to reach); P from jumpPaths.
+// instruction no path is known to reach); P from jumpPaths. Their texts
+// are in data-tip: the page's popover (initTips) shows them on a tap of
+// ⊘, and on hover, keyboard focus or a long press of a button.
 function jumpBadgesHtml(P, pa) {
 	let h = "";
 	if (P.noDirect)
-		h += ' <span class="jnone" title="' + escHtml(jumpNoneText(P)) + '">⊘</span>';
-	const btn = (dir, n, seen, title) => ' <button type="button" class="jc" data-pa="' + pa + '" data-dir="' + dir + '" title="' + escHtml(title) + '">' +
+		h += ' <span class="jnone tipmark" tabindex="0" role="button" aria-label="No path leads here" data-pa="' + pa + '" data-tip="' +
+			escHtml(jumpNoneText(P)) + '">⊘</span>';
+	const btn = (dir, n, seen, title) => ' <button type="button" class="jc" data-pa="' + pa + '" data-dir="' + dir + '" data-tip="' + escHtml(title) + '">' +
 		(dir === "in" ? "←" : "→") + n + (seen ? "·" + seen.toLocaleString("en") + "×" : "") + "</button>";
 	const summary = (list, dir) => {
 		const st = list.filter((e) => e.stat).length, seen = jumpSeen(list);
@@ -352,7 +365,7 @@ function jumpEndHtml(S, e, pa, dir, inView, lookup) {
 	let h = '<span class="je" data-at="' + e.at + '" data-where="' + where + '">' + escHtml(jumpWord(S, e, dir === "in" ? e.at : pa)) +
 		(dir === "in" ? " from " : " to ");
 	const label = (JUMP_GLYPH[where] ? JUMP_GLYPH[where] + "\u2009" : "") + name;
-	h += e.at >= 0 ? '<button type="button" class="jto" data-go="' + e.at + '" title="' + escHtml(name + " (" + hex(e.at) + "), " +
+	h += e.at >= 0 ? '<button type="button" class="jto" data-go="' + e.at + '" data-tip="' + escHtml(name + " (" + hex(e.at) + "), " +
 		JUMP_WHERE_TEXT[where] + ": go there in the Page tab") + '">' + escHtml(label) + "</button>" : escHtml(label);
 	if (e.at >= 0 && typeof dbgHas === "function" && dbgHas()) {
 		const r = dbgFrames(e.at);
@@ -373,7 +386,7 @@ function jumpInlineHtml(S, P, pa, inView, max) {
 	const lookup = typeof kernelSymLookup === "function" ? kernelSymLookup() : null;
 	const r = { src: "", dst: "", sin: "", sout: "" };
 	const ways = (list) => [...new Set(list.map((e) => jumpWhere(pa, e.at, inView, lookup)).filter((w) => w !== "view"))].join(" ");
-	const more = (n, dir) => '<button type="button" class="jmore" data-pa="' + pa + '" data-dir="' + dir + '" title="All ' + n +
+	const more = (n, dir) => '<button type="button" class="jmore" data-pa="' + pa + '" data-dir="' + dir + '" data-tip="All ' + n +
 		" paths " + (dir === "in" ? "into" : "out of") + ' this instruction">+' + n + " more</button>";
 	if (P.into.length) {
 		const n = P.into.length, shown = P.into.slice(0, max);
@@ -391,9 +404,9 @@ function jumpInlineHtml(S, P, pa, inView, max) {
 		const where = jumpWhere(pa, direct.at, inView, lookup);
 		if (where !== "view") {
 			const name = asmTargetName(direct.at, lookup) || hex(direct.at);
+			const t = "Target " + name + " (" + hex(direct.at) + "), " + JUMP_WHERE_TEXT[where] + ": go there in the Page tab";
 			d += '<span class="je" data-at="' + direct.at + '" data-where="' + where + '"><button type="button" class="jto" data-go="' + direct.at +
-				'" title="' + escHtml("Target " + name + " (" + hex(direct.at) + "), " + JUMP_WHERE_TEXT[where] + ": go there in the Page tab") + '">' +
-				JUMP_GLYPH[where] + "</button></span>";
+				'" data-tip="' + escHtml(t) + '" aria-label="' + escHtml(t) + '">' + JUMP_GLYPH[where] + "</button></span>";
 		}
 	}
 	if (rest.length) {
@@ -410,6 +423,16 @@ function jumpInlineHtml(S, P, pa, inView, max) {
 // The .ins attributes that ask drawJumpArcs for gutter stubs.
 const jumpStubAttrs = (J) => (J.sin ? ' data-sin="' + J.sin + '"' : "") + (J.sout ? ' data-sout="' + J.sout + '"' : "");
 
+// What a gutter stub means, by its way (jumpStubsSvg).
+const JUMP_STUB_TEXT = {
+	up: "A path comes into this line from earlier in this function, out of view: the line above it names the source (↑).",
+	down: "A path comes into this line from later in this function, out of view: the line above it names the source (↓).",
+	far: "A path comes into this line from another function: the line above it names the source (↗).",
+	"out-up": "This line jumps to an earlier place in this function, out of view: ↑ after the line goes there.",
+	"out-down": "This line jumps to a later place in this function, out of view: ↓ after the line goes there.",
+	"out-far": "This line jumps or calls into another function, or its target is known only at run time: ↗ or the name after the line goes there.",
+};
+
 // Stubs at the gutter edge for the ends out of view (.ins data-sin and
 // data-sout, from jumpInlineHtml): into the line from above, below or
 // afar (a circle), and out of it the same ways.
@@ -420,7 +443,10 @@ function jumpStubsSvg(box, y, xR) {
 		const pa = Number(el.dataset.addr), yl = y(pa);
 		if (yl === null)
 			continue;
-		const path = (way, d) => '<path class="jstub" data-addr="' + pa + '" data-way="' + way + '" d="' + d + '"/>';
+		// Each stub also gets a wider invisible stroke on top that takes
+		// the pointer: its popover says what the stub is.
+		const path = (way, d) => '<path class="jstub" data-addr="' + pa + '" data-way="' + way + '" d="' + d + '"/>' +
+			'<path class="jstubhit tipmark" data-addr="' + pa + '" data-way="' + way + '" data-tip="' + JUMP_STUB_TEXT[way] + '" d="' + d + '"/>';
 		for (const w of (el.dataset.sin || "").split(" ").filter(Boolean)) {
 			if (w === "far")
 				out += path(w, "M" + (xS - 2) + " " + yl + "H" + (xR - 3)) + '<circle class="jstubend" cx="' + (xS - 3) + '" cy="' + yl + '" r="1.6"/>';

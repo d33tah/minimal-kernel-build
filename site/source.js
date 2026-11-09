@@ -403,13 +403,13 @@ function srcLinkEl(path, line, text, pa = -1) {
 	b.type = "button";
 	b.className = "srcloc srclink";
 	b.textContent = text || srcName({ file: path, line });
-	b.title = srcLinkTitle(path, line);
+	b.dataset.tip = srcLinkTitle(path, line);
 	Object.assign(b.dataset, { file: path, line, pa });
 	return b;
 }
 
 const srcLinkHtml = (path, line, text, pa = -1) => '<button type="button" class="srcloc srclink" data-file="' + escHtml(path) +
-	'" data-line="' + line + '" data-pa="' + pa + '" title="' + escHtml(srcLinkTitle(path, line)) + '">' + escHtml(text || srcName({ file: path, line })) + "</button>";
+	'" data-line="' + line + '" data-pa="' + pa + '" data-tip="' + escHtml(srcLinkTitle(path, line)) + '">' + escHtml(text || srcName({ file: path, line })) + "</button>";
 
 // Views are drawn again when DWARF or source text arrives and at every
 // stop, which replaces their links. srcFocusKeep(draw) keeps the keyboard
@@ -501,7 +501,7 @@ function srcLineHtml(pa, state) {
 		if (state.key === null || state.key === "none")
 			return null;
 		state.key = "none";
-		return '<span class="src nol" data-addr="' + pa + '" title="' + escHtml(r.why) + '">(no line information)</span>';
+		return '<span class="src nol" data-addr="' + pa + '" data-tip="' + escHtml(r.why) + '">(no line information)</span>';
 	}
 	const fr = r.frames;
 	const f = fr[0];
@@ -510,12 +510,12 @@ function srcLineHtml(pa, state) {
 		return null;
 	state.key = key;
 	if (!f.file || !f.line)
-		return '<span class="src nol" data-addr="' + pa + '" title="' + escHtml(dbgChainText(fr)) + '">(no line information' +
+		return '<span class="src nol" data-addr="' + pa + '" data-tip="' + escHtml(dbgChainText(fr)) + '">(no line information' +
 			(f.func ? " in " + escHtml(f.func) : "") + ")</span>";
 	const text = srcText(f.file, f.line);
 	const why = text === null ? srcWhyNot(f) : "";
 	const inl = fr.length > 1 ? " [" + escHtml(f.func || "?") + " inlined into " + escHtml(fr[fr.length - 1].func || "?") + "]" : "";
-	return '<span class="src" data-addr="' + pa + '" title="' + escHtml(dbgChainText(fr) + (why ? "\n" + why : "")) + '">' +
+	return '<span class="src" data-addr="' + pa + '" data-tip="' + escHtml(dbgChainText(fr) + (why ? "\n" + why : "")) + '">' +
 		srcLinkHtml(f.file, f.line, srcName(f), pa) + "  " + (text === null ? '<span class="dim">' + escHtml(f.file) + "</span>" : '<span class="srctext">' + escHtml(text.trim()) + "</span>") +
 		inl + "</span>";
 }

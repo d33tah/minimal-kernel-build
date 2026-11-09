@@ -12,7 +12,7 @@ from pathlib import Path
 
 site = Path(__file__).resolve().parent
 # every page script that looks up elements
-js = "\n".join((site / f).read_text() for f in ("app.js", "graph.js", "source.js", "coverage.js", "symimport.js", "livedis.js", "fastforward.js", "vars.js", "dbginfo.js", "jumps.js", "pwa.js"))
+js = "\n".join((site / f).read_text() for f in ("app.js", "graph.js", "source.js", "coverage.js", "symimport.js", "livedis.js", "fastforward.js", "vars.js", "dbginfo.js", "jumps.js", "pwa.js", "settings.js"))
 html = (site / "index.html").read_text()
 ids = set(re.findall(r'\bid="([^"]+)"', html))
 # an id must be unique: $() finds the first one only, so a second element

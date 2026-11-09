@@ -297,7 +297,7 @@ def memory_lab(page, name, has_symbols, problems, shots, tag):
     for w in (390, 800, 1000, 1280):
         page.set_viewport_size({"width": w, "height": 900})
         time.sleep(0.4)
-        for t in ("page", "memory", "debugger", "calls", "snapshots", "about"):
+        for t in ("page", "memory", "debugger", "calls", "snapshots", "settings", "about"):
             show_tab(page, t)
             if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
                 problems.append(f"page scrolls horizontally at {w} px on the {t} tab")
@@ -8093,19 +8093,35 @@ def suite_navhist(ctx):
 # zarządzanie symulacją niech będzie kolejną kartą". The tab bar names the
 # tabs with an emoji (aria-hidden) and the word (the accessible name); the
 # old hashes and ?tab= values still open the renamed tabs; "Compact tabs"
-# (Machine tab, Settings) shows the emoji only, remembered across a reload;
+# (Settings tab since U4) shows the emoji only, remembered across a reload;
 # the Machine tab holds the kernel, RAM, file, symbol, initrd, cmdline and
 # offset controls and Boot, and the header keeps the screen, the run bar
 # and the counters, so it is shorter at 390 px than before (TABS_HEADER_390_BEFORE).
+# U4 (operator: "settings jako oddzielna zakładka", "wymyśl mniej
+# metaforyczne emoji"): a Settings tab before About holds Compact tabs and
+# every preference the page remembers (each localStorage key it wrote and
+# the IndexedDB of imported DWARF), each with an explanation, a way to
+# change or forget it, and "Reset all settings"; the Machine tab keeps
+# only machine controls. The emoji show what each tab holds (TABS_EMOJI)
+# and render as colour emoji, not as text glyphs, in two font stacks.
 
+# In the order of the tab bar.
 TABS_WORDS = {"machine": "Machine", "memory": "Memory", "page": "Page", "debugger": "Debugger",
-              "calls": "Calls", "source": "Source", "snapshots": "Snapshots", "about": "About"}
+              "calls": "Calls", "source": "Source", "snapshots": "Snapshots", "settings": "Settings",
+              "about": "About"}
+TABS_EMOJI = {"machine": "\U0001F5A5\uFE0F", "memory": "\U0001F5FA\uFE0F", "page": "\U0001F522",
+              "debugger": "\U0001F41E", "calls": "\U0001F4CA", "source": "\U0001F4DD", "snapshots": "\U0001F4BE",
+              "settings": "\u2699\uFE0F", "about": "\u2139\uFE0F"}
 TABS_ALIASES = {"graph": "calls", "coverage": "source"}
 # The header's height at 390 px (hello booted, light) on 8dc5c89c7, before
 # the Machine tab took its controls: measured in this suite's setting.
 TABS_HEADER_390_BEFORE = 1003
 TABS_MACHINE_IDS = ["kernel", "memory", "file", "symfile", "initrd_file", "cmdline", "sym_offset", "boot",
-                    "kinfo", "build_info", "sym_status", "initrd_status", "compact_tabs"]
+                    "kinfo", "build_info", "sym_status", "initrd_status"]
+TABS_SETTINGS_IDS = ["compact_tabs", "set_speed", "set_mips", "set_count", "settings_stored", "settings_reset"]
+# The preferences with a control of their own in the Settings tab: key, control, default at 1280 px.
+TABS_PREFS = [("mkb-compact-tabs", "compact_tabs", False), ("mkb-speed", "set_speed", "1000"),
+              ("mkb-mips", "set_mips", "10"), ("mkb-count", "set_count", True)]
 TABS_HEADER_IDS = ["screen_container", "dbg_pause", "dbg_continue", "dbg_step", "dbg_speed", "clock_mips",
                    "count", "counters", "status", "dbg_state"]
 
@@ -8129,6 +8145,161 @@ def tabs_where(page, ids):
       return [id, p ? p.id : e.closest('header.top') ? 'header' : 'elsewhere']; }))""", ids)
 
 
+# Each tab's emoji drawn on a canvas in magenta, in the tab button's font and
+# in a serif stack: a colour emoji ignores the fill colour, a text-style glyph
+# (or a missing-glyph box) comes out magenta.
+TABS_EMOJI_DRAW_JS = """(fonts) => [...document.querySelectorAll('.tabbar [role=tab] [aria-hidden=true]')].map((e) => {
+  const out = { id: e.closest('[role=tab]').id };
+  for (const [name, fam] of Object.entries(fonts)) {
+    const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
+    g.font = '40px ' + (fam || getComputedStyle(e).fontFamily); g.fillStyle = 'rgb(255,0,255)'; g.textBaseline = 'top';
+    g.fillText(e.textContent.trim(), 4, 8);
+    const d = g.getImageData(0, 0, 64, 64).data; let ink = 0, magenta = 0;
+    for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 128) { ink++;
+      if (d[i] > 200 && d[i + 1] < 80 && d[i + 2] > 200) magenta++; }
+    out[name] = { ink, magenta };
+  }
+  return out; })"""
+
+TABS_STORED_JS = """() => Object.keys(localStorage).filter((k) => k.startsWith('mkb-')).sort()"""
+# What the Settings tab shows for a key: its row (or control) and the explanation next to it.
+TABS_ROW_JS = """(k) => { const e = [...document.querySelectorAll('#panel_settings [data-key]')].find((x) => x.dataset.key === k);
+  if (!e) return null; const row = e.closest('.setrow') || e;
+  return { text: row.textContent.trim(), visible: !!row.getClientRects().length }; }"""
+TABS_IDB_JS = """(op) => new Promise((res) => { const rq = indexedDB.open('mkb-dwarf', 1);
+  rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
+  rq.onerror = () => res(-1);
+  rq.onsuccess = () => { const db = rq.result; const tx = db.transaction('kv', op ? 'readwrite' : 'readonly');
+    const s = tx.objectStore('kv'); if (op) s.put(new Uint8Array(8), op);
+    const n = s.count(); tx.oncomplete = () => { db.close(); res(n.result); }; }; })"""
+
+
+def tabs_settings(page, problems, r, shots):
+    """The Settings tab: every remembered key shown with an explanation,
+    changing a preference takes effect and is remembered, forget and reset
+    clear them (hello booted at 1280 px)."""
+    other = "mkb-map-" + "0" * 64
+    page.evaluate("""(other) => { localStorage.setItem('mkb-watch:hello', JSON.stringify(['msg']));
+      localStorage.setItem(other, JSON.stringify({ name: 'other.map', source: 'System.map', symbols: [], sections: [] }));
+      localStorage.setItem('mkb-later-step', 'x'); }""", other)
+    page.evaluate(TABS_IDB_JS, other + ":index")
+    page.reload()
+    wait_for(lambda: "Running hello " in (page.text_content("#status") or "") and ALIVE in page.inner_text("#screen_container"), 60)
+    show_tab(page, "machine")
+    page.fill("#cmdline", "console=tty0 u4=1")
+    page.press("#cmdline", "Enter")
+    wait_for(lambda: any(k.startswith("mkb-cmdline-") for k in page.evaluate(TABS_STORED_JS)), 10)
+    wait_for(lambda: ALIVE in page.inner_text("#screen_container"), 60)
+    if not page.locator("#tab_settings").count():
+        problems.append("no Settings tab")
+        return
+    show_tab(page, "settings")
+    stored = page.evaluate(TABS_STORED_JS)
+    r["stored_keys"] = stored
+    for want in ("mkb-watch:hello", other, "mkb-later-step", "mkb-ref-hello-10"):
+        if want not in stored:
+            problems.append(f"setup: {want} not in localStorage ({stored})")
+    if not any(k.startswith("mkb-cmdline-") for k in stored):
+        problems.append(f"setup: no remembered cmdline after Boot with one ({stored})")
+    for k in stored:
+        row = page.evaluate(TABS_ROW_JS, k)
+        if not row or not row["visible"]:
+            problems.append(f"Settings does not show the remembered {k}")
+        elif len(row["text"]) < 25:
+            problems.append(f"Settings row of {k} has no explanation: {row['text']!r}")
+    row = page.evaluate(TABS_ROW_JS, "idb:mkb-dwarf")
+    if not row or "1" not in row["text"]:
+        problems.append(f"Settings does not show the imported DWARF kept in IndexedDB: {row}")
+    for key, ctl, default in TABS_PREFS:
+        if not page.locator(f"#{ctl}").count():
+            problems.append(f"no #{ctl} in Settings for {key}")
+        elif page.get_attribute(f"#{ctl}", "data-key") != key:
+            problems.append(f"#{ctl}: data-key {page.get_attribute(f'#{ctl}', 'data-key')!r}, want {key}")
+    page.screenshot(path=str(shots / "tabs-1280-settings.png"), full_page=True)
+
+    # Each preference takes effect and is remembered.
+    if page.locator("#set_speed").count():
+        page.select_option("#set_speed", "100")
+        if page.input_value("#dbg_speed") != "100" or page.evaluate("localStorage.getItem('mkb-speed')") != "100":
+            problems.append(f"Settings speed 100/s: header {page.input_value('#dbg_speed')}, "
+                            f"stored {page.evaluate('localStorage.getItem(\'mkb-speed\')')}")
+        page.select_option("#dbg_speed", "10")
+        show_tab(page, "memory")
+        show_tab(page, "settings")
+        if page.input_value("#set_speed") != "10":
+            problems.append(f"after the header's speed 10/s Settings shows {page.input_value('#set_speed')}")
+    if page.locator("#set_mips").count():
+        page.select_option("#set_mips", "100")
+        if page.input_value("#clock_mips") != "100" or page.evaluate("localStorage.getItem('mkb-mips')") != "100":
+            problems.append(f"Settings clock 100/us: header {page.input_value('#clock_mips')}")
+    if page.locator("#set_count").count():
+        page.uncheck("#set_count")
+        if page.is_checked("#count") or page.evaluate("localStorage.getItem('mkb-count')") != "0":
+            problems.append("Settings count off: the header's count stays on or is not remembered")
+    page.reload()
+    wait_for(lambda: page.locator("#tab_settings").count() and "Running hello " in (page.text_content("#status") or ""), 60)
+    after = {"speed": page.evaluate("prefSpeed"), "clock": page.input_value("#clock_mips"), "count": page.is_checked("#count")}
+    r["after_reload"] = after
+    if after != {"speed": "10", "clock": "100", "count": False}:
+        problems.append(f"preferences after a reload: {after}, want speed 10, clock 100, count off")
+    show_tab(page, "settings")
+    if page.locator("#set_count").count() and page.is_checked("#set_count"):
+        problems.append("Settings count shows on after a reload with count off")
+
+    # Forget single entries: each goes, with its effect.
+    def forget(k):
+        b = page.locator("#panel_settings .setrow").filter(has=page.locator(f'[data-key="{k}"]')).locator("button.forget")
+        if not b.count():
+            problems.append(f"no Forget button for {k}")
+            return False
+        b.first.click()
+        if not wait_for(lambda: k not in page.evaluate(TABS_STORED_JS) and not page.evaluate(TABS_ROW_JS, k), 10):
+            problems.append(f"Forget {k}: still stored or shown")
+            return False
+        return True
+    show_tab(page, "debugger")  # loads the kernel's watch list
+    show_tab(page, "settings")
+    if page.evaluate("watchList") != ["msg"]:
+        problems.append(f"setup: the watch list of hello is {page.evaluate('watchList')}")
+    if forget("mkb-watch:hello") and page.evaluate("watchList") != []:
+        problems.append(f"after Forget the watch list of hello is {page.evaluate('watchList')}")
+    cmd = next((k for k in page.evaluate(TABS_STORED_JS) if k.startswith("mkb-cmdline-")), None)
+    if cmd and forget(cmd) and page.input_value("#cmdline") != "nokaslr cryptomgr.notests":
+        problems.append(f"after Forget the command line is {page.input_value('#cmdline')!r}, want the default")
+    forget(other)
+    forget("mkb-later-step")
+    if page.evaluate(TABS_IDB_JS, "") != 0:
+        problems.append("Forget the other bzImage's symbols left its DWARF in IndexedDB")
+
+    # Reset all settings: nothing of ours stays, the defaults are back. The
+    # boot (10/s after the reload) ends first: its "Still alive" count is a
+    # new measurement, remembered again when it arrives.
+    page.select_option("#set_speed", "1000")
+    if not wait_for(lambda: ALIVE in page.inner_text("#screen_container"), 60):
+        problems.append("hello did not reach Still alive at 1k/s set in Settings")
+    page.evaluate("(k) => localStorage.setItem(k, '{}')", other)
+    page.evaluate(TABS_IDB_JS, other + ":index")
+    page.check("#compact_tabs")
+    if not page.locator("#settings_reset").count():
+        problems.append("no Reset all settings button")
+        return
+    page.click("#settings_reset")
+    time.sleep(0.5)
+    left = page.evaluate(TABS_STORED_JS)
+    r["after_reset"] = left
+    if left:
+        problems.append(f"Reset all settings left {left}")
+    if page.evaluate(TABS_IDB_JS, "") != 0:
+        problems.append("Reset all settings left the IndexedDB of imported DWARF")
+    now = {"compact": page.is_checked("#compact_tabs"), "speed": page.evaluate("prefSpeed"),
+           "clock": page.input_value("#clock_mips"), "count": page.is_checked("#count"),
+           "words": all(t["wordShown"] for t in tabs_look(page))}
+    if now != {"compact": False, "speed": "1000", "clock": "10", "count": True, "words": True}:
+        problems.append(f"after Reset all settings: {now}, want the defaults")
+    if page.locator("#panel_settings .setrow button.forget").count():
+        problems.append("after Reset all settings Settings still lists remembered entries")
+
+
 def tabs_case(browser, base, shots):
     problems, r = [], {}
     errors = []
@@ -8150,8 +8321,20 @@ def tabs_case(browser, base, shots):
     look = tabs_look(page)
     r["labels"] = [(t["emoji"], t["label"] or t["text"]) for t in look]
     want_ids = ["tab_" + k for k in TABS_WORDS]
-    if sorted(t["id"] for t in look) != sorted(want_ids):
+    if [t["id"] for t in look] != want_ids:
         problems.append(f"tab ids {[t['id'] for t in look]}, want {want_ids}")
+    for t in look:
+        want = TABS_EMOJI.get(t["id"][4:])
+        if want and t["emoji"] != want:
+            problems.append(f"{t['id']}: emoji {t['emoji']!r}, want {want!r}")
+    drawn = page.evaluate(TABS_EMOJI_DRAW_JS, {"tab font": "", "serif": "serif"})
+    r["emoji_drawn"] = drawn
+    for d in drawn:
+        for stack in ("tab font", "serif"):
+            ink, magenta = d[stack]["ink"], d[stack]["magenta"]
+            if ink < 100 or magenta > ink * 0.2:
+                problems.append(f"{d['id']} emoji in the {stack} stack: {ink} px drawn, {magenta} in the text colour "
+                                f"(want a colour emoji)")
     for t in look:
         word = TABS_WORDS.get(t["id"][4:])
         if not t["emoji"]:
@@ -8181,6 +8364,14 @@ def tabs_case(browser, base, shots):
     for i in TABS_HEADER_IDS:
         if where.get(i) != "header":
             problems.append(f"#{i} is in {where.get(i)}, want the header")
+    for i in TABS_SETTINGS_IDS:
+        w = tabs_where(page, [i])[i]
+        if w != "panel_settings":
+            problems.append(f"#{i} is in {w}, want the Settings tab")
+    heads = page.evaluate("[...document.querySelectorAll('#panel_machine h2, #panel_machine h3, #panel_machine legend')]"
+                          ".map((e) => e.textContent.trim())")
+    if any("Settings" in h for h in heads) or page.locator("#panel_machine input[type=checkbox]").count():
+        problems.append(f"the Machine tab still has a Settings section: {heads}")
     r["header_1280"] = round(page.evaluate("document.querySelector('header.top').getBoundingClientRect().height"))
 
     # Old hashes and ?tab= open the renamed tabs.
@@ -8194,6 +8385,12 @@ def tabs_case(browser, base, shots):
             if not ok:
                 problems.append(f"{url[len(base):]}: the {TABS_WORDS[new]} tab is not shown with #{new} "
                                 f"(hash {page.evaluate('location.hash')!r})")
+    for url in (f"{base}/index.html?kernel=hello&tab=settings", f"{base}/index.html?kernel=hello#settings"):
+        page.goto(url)
+        if not wait_for(lambda: page.locator("#tab_settings").count()
+                        and page.get_attribute("#tab_settings", "aria-selected") == "true"
+                        and page.evaluate("location.hash") == "#settings", 10):
+            problems.append(f"{url[len(base):]} does not open the Settings tab")
     page.goto(f"{base}/index.html?kernel=hello#machine")
     booted(page)
     if page.get_attribute("#tab_machine", "aria-selected") != "true" if page.locator("#tab_machine").count() else True:
@@ -8223,7 +8420,9 @@ def tabs_case(browser, base, shots):
     if not page.locator("#compact_tabs").count():
         problems.append("no Compact tabs setting (#compact_tabs)")
     else:
-        show_tab(page, "machine")
+        # (before U4 the setting was in the Machine tab: the case reports, not crashes)
+        home = "settings" if page.locator("#tab_settings").count() else "machine"
+        show_tab(page, home)
         if page.is_checked("#compact_tabs"):
             problems.append("Compact tabs is on by default at 1280 px")
         page.check("#compact_tabs")
@@ -8244,12 +8443,18 @@ def tabs_case(browser, base, shots):
         page.click("#tab_calls")
         if page.get_attribute("#tab_calls", "aria-selected") != "true":
             problems.append("a click on the compact Calls tab does not open it")
-        show_tab(page, "machine")
+        show_tab(page, home)
         page.uncheck("#compact_tabs")
         page.reload()
         wait_for(lambda: page.locator("#compact_tabs").count(), 10)
         if page.is_checked("#compact_tabs") or not all(t["wordShown"] for t in tabs_look(page)):
             problems.append("Compact tabs off does not stay off after a reload")
+    c.close()
+
+    c, page = fresh()
+    page.goto(f"{base}/index.html?kernel=hello")
+    if booted(page):
+        tabs_settings(page, problems, r, shots)
     c.close()
 
     # 390 px, light and dark: shorter header, no sideways scroll, compact by default.
@@ -8269,7 +8474,7 @@ def tabs_case(browser, base, shots):
         if not compact or rows != 1:
             problems.append(f"390 px {scheme}: compact {compact}, tab bar rows {rows} (want compact by default, one row)")
         page.screenshot(path=str(shots / f"tabs-390-{scheme}.png"))
-        for t in ["machine", "memory", "calls", "source", "about"]:
+        for t in ["machine", "memory", "calls", "source", "settings", "about"]:
             if page.locator(f"#tab_{t}").count():
                 page.tap(f"#tab_{t}")
                 time.sleep(0.3)
@@ -8277,10 +8482,10 @@ def tabs_case(browser, base, shots):
                     problems.append(f"390 px {scheme}: a tap on {t} does not open it")
                 if page.evaluate("document.documentElement.scrollWidth > window.innerWidth + 1"):
                     problems.append(f"390 px {scheme}: horizontal scroll on the {t} tab")
-                if t == "machine":
-                    page.screenshot(path=str(shots / f"tabs-390-{scheme}-machine.png"), full_page=True)
+                if t in ("machine", "settings"):
+                    page.screenshot(path=str(shots / f"tabs-390-{scheme}-{t}.png"), full_page=True)
         if page.locator("#compact_tabs").count():
-            page.tap("#tab_machine")
+            page.tap("#tab_settings" if page.locator("#tab_settings").count() else "#tab_machine")
             page.uncheck("#compact_tabs")
             time.sleep(0.3)
             r[f"rows_390_words_{scheme}"] = len({t["top"] for t in tabs_look(page)})

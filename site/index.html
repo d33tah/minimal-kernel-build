@@ -55,7 +55,7 @@
             <option value="real">real time</option>
           </select>
         </label>
-        <label><input type="checkbox" id="count" checked> count<span class="tip" tabindex="0" role="button" title="At full speed: first step the whole boot from the reset vector in the background until both lines are on the screen, counting, then run the JIT. At the other speeds the boot is always counted live.">?</span></label>
+        <label><input type="checkbox" id="count" checked> count<span class="tip" tabindex="0" role="button" title="At full speed: first step the whole boot from the reset vector in the background until both lines are on the screen, counting, then run the JIT. At the other speeds the boot is always counted live. Remembered in this browser (Settings tab); ?count=0 in the URL turns it off for one visit.">?</span></label>
         <span id="dbg_state" class="note"></span>
       </div>
       <div class="table-wrap">
@@ -78,12 +78,13 @@
 
   <nav class="tabbar" role="tablist" aria-label="Views">
     <button role="tab" type="button" id="tab_machine" data-tab="machine" aria-label="Machine"><span class="temo" aria-hidden="true">🖥️</span> <span class="tword">Machine</span></button>
-    <button role="tab" type="button" id="tab_memory" data-tab="memory" aria-label="Memory"><span class="temo" aria-hidden="true">🧠</span> <span class="tword">Memory</span></button>
-    <button role="tab" type="button" id="tab_page" data-tab="page" aria-label="Page"><span class="temo" aria-hidden="true">📄</span> <span class="tword">Page</span></button>
+    <button role="tab" type="button" id="tab_memory" data-tab="memory" aria-label="Memory"><span class="temo" aria-hidden="true">🗺️</span> <span class="tword">Memory</span></button>
+    <button role="tab" type="button" id="tab_page" data-tab="page" aria-label="Page"><span class="temo" aria-hidden="true">🔢</span> <span class="tword">Page</span></button>
     <button role="tab" type="button" id="tab_debugger" data-tab="debugger" aria-label="Debugger"><span class="temo" aria-hidden="true">🐞</span> <span class="tword">Debugger</span></button>
-    <button role="tab" type="button" id="tab_calls" data-tab="calls" aria-label="Calls"><span class="temo" aria-hidden="true">📞</span> <span class="tword">Calls</span></button>
+    <button role="tab" type="button" id="tab_calls" data-tab="calls" aria-label="Calls"><span class="temo" aria-hidden="true">📊</span> <span class="tword">Calls</span></button>
     <button role="tab" type="button" id="tab_source" data-tab="source" aria-label="Source"><span class="temo" aria-hidden="true">📝</span> <span class="tword">Source</span></button>
-    <button role="tab" type="button" id="tab_snapshots" data-tab="snapshots" aria-label="Snapshots"><span class="temo" aria-hidden="true">📸</span> <span class="tword">Snapshots</span></button>
+    <button role="tab" type="button" id="tab_snapshots" data-tab="snapshots" aria-label="Snapshots"><span class="temo" aria-hidden="true">💾</span> <span class="tword">Snapshots</span></button>
+    <button role="tab" type="button" id="tab_settings" data-tab="settings" aria-label="Settings"><span class="temo" aria-hidden="true">⚙️</span> <span class="tword">Settings</span></button>
     <button role="tab" type="button" id="tab_about" data-tab="about" aria-label="About"><span class="temo" aria-hidden="true">ℹ️</span> <span class="tword">About</span></button>
   </nav>
 </header>
@@ -136,10 +137,6 @@
     <button id="initrd_clear" type="button" hidden>no initrd</button>
     <button id="sym_forget" type="button" hidden title="Forget the imported symbols and use the kernel's own">forget symbols</button>
   </section>
-  <h3>Settings</h3>
-  <div class="scan">
-    <label><input type="checkbox" id="compact_tabs"> Compact tabs: emoji only<span class="tip" tabindex="0" role="button" title="The tab buttons show only their emoji; hover, focus or a long press shows the name. Remembered in this browser. On by default on screens up to 400 px wide, where the names take two rows.">?</span></label>
-  </div>
 </section>
 
 <section class="panel" id="panel_memory" role="tabpanel" aria-labelledby="tab_memory">
@@ -268,11 +265,41 @@
   </div>
 </section>
 
+<section class="panel settings" id="panel_settings" role="tabpanel" aria-labelledby="tab_settings" hidden>
+  <p class="note">What this page remembers in this browser (localStorage, and IndexedDB for imported DWARF). Nothing is sent anywhere. A change takes effect at once.</p>
+  <h3>Tabs</h3>
+  <div class="setrow">
+    <label><input type="checkbox" id="compact_tabs" data-key="mkb-compact-tabs"> Compact tabs: emoji only</label>
+    <span class="note">The tab buttons show only their emoji; hover, focus or a long press shows the name. On by default on screens up to 400 px wide, where the names take three rows.</span>
+  </div>
+  <h3>Running</h3>
+  <div class="setrow">
+    <label>Speed after the kernel entry <select id="set_speed" data-key="mkb-speed"></select></label>
+    <span class="note">The speed above the tabs: BIOS and setup are stepped as fast as possible, then the kernel runs at this speed. Changing it there changes it here. ?speed= in the URL overrides it for one visit.</span>
+  </div>
+  <div class="setrow">
+    <label>Clock <select id="set_mips" data-key="mkb-mips"></select></label>
+    <span class="note">Guest time while the page steps the CPU: a virtual clock of this many instructions per microsecond, or real time (the clock above the tabs). ?mips= in the URL overrides it.</span>
+  </div>
+  <div class="setrow">
+    <label><input type="checkbox" id="set_count" data-key="mkb-count"> Count the boot at full speed</label>
+    <span class="note">The count box above the tabs: at full speed, first step the whole boot in the background, counting, then run the JIT. ?count=0 in the URL turns it off for one visit.</span>
+  </div>
+  <h3>Remembered for each kernel</h3>
+  <div id="settings_stored"></div>
+  <h3>Reset</h3>
+  <div class="setrow">
+    <button id="settings_reset" type="button">Reset all settings</button>
+    <span class="note">Forgets everything on this tab and goes back to the defaults. The offline copy of the site (service worker cache) stays.</span>
+    <span id="settings_status" class="note" role="status"></span>
+  </div>
+</section>
+
 <section class="panel about" id="panel_about" role="tabpanel" aria-labelledby="tab_about" hidden>
   <p>This page boots a Linux-style bzImage in <a href="https://github.com/copy/v86">v86</a>, an x86 emulator compiled to WebAssembly, and lets you look inside the machine while it runs. Four kernels come with it: <b>hello</b>, a toy kernel that prints two lines and halts; <b>minified-linux</b>, the reduced Linux kernel of <a href="https://github.com/d33tah/minimal-kernel-build">minimal-kernel-build</a>; and Debian 6.1 686 (bookworm's linux-image-6.1.0-50-686), once without an initrd (it ends in a root-fs panic) and once with its initramfs (it stops at the BusyBox shell). All four come with their debug info (DWARF): file:line, C source, variables, backtraces, parameters and locals, task names and a coverage tree. Any bzImage can be loaded from disk.</p>
   <h3>Tabs</h3>
   <ul>
-    <li><b>Machine</b>: what runs and how it boots: the kernel, RAM, a bzImage from disk, symbols, C source, initrd, command line, Boot, the loaded bzImage's header and build, and the page's settings (Compact tabs). The screen, Pause, Continue, Step, speed and the counters stay above the tabs.</li>
+    <li><b>Machine</b>: what runs and how it boots: the kernel, RAM, a bzImage from disk, symbols, C source, initrd, command line, Boot, the loaded bzImage's header and build. The screen, Pause, Continue, Step, speed and the counters stay above the tabs.</li>
     <li><b>Memory</b>: the physical memory map from the boot header and one square per 4 KiB page, coloured by region and ELF section.</li>
     <li><b>Page</b>: one page as a single listing, instructions where the kernel has code and hex rows elsewhere, with symbol headers; after each instruction its jump paths in and out (static and observed while stepping, with counts), and the jumps inside the page as arcs.</li>
     <li><b>Debugger</b>: registers, stepping and run-to-address; at a pause the C line and inlined-at chain of EIP, the running task (comm, pid), the call stack unwound with the DWARF call frame information, each frame's parameters and locals, and the kernel's global variables, pretty-printed from guest RAM.</li>
@@ -282,6 +309,7 @@
     <li><b>Calls</b>: the symbols the CPU went through while stepping and the transitions between them, live, with task switches named by task.</li>
     <li><b>Source</b>: all the kernel's code as a tree of directories, files and functions with the lines and instructions that ran while stepping (coverage); a file opens in the Source panel with its executed lines, lcov export.</li>
     <li><b>Snapshots</b>: save, restore and download the whole machine state.</li>
+    <li><b>Settings</b>: what the page remembers in this browser (compact tabs, speed, clock, count, and per kernel imported symbols, command lines, watch expressions and measured boot lengths), each with an explanation and Forget, and Reset all settings.</li>
   </ul>
   <h3>Counting and stepping</h3>
   <p>v86 normally runs guest code through a JIT, at least 100,003 instructions per call, and has no single-step API. The page adds two exports to v86's own <code>v86.wasm</code> at load time (the functions are already in it and named in its name section, the code is unchanged): <code>read_imm8</code>, which fetches the byte at EIP, and the interpreter's <code>run</code>, which executes one instruction. Stepping calls them from JavaScript the way v86's interpreter loop does. By default every boot steps BIOS and setup as fast as possible to the kernel entry at 0x100000, then the kernel runs at 1k instructions per second, counted live, until "Hello, World!" and "Still alive" are both in VGA text memory at 0xb8000 (hello: 154 instructions, a fraction of a second; the minified Linux: about 132,000 instructions, 2 minutes 12 s, with an ETA). With speed set to full (remembered, or <code>?speed=full</code>) and <i>count</i> on, the whole boot is stepped in the background first and then runs on v86's JIT.</p>
@@ -407,6 +435,7 @@
 <script src="cpustate.js"></script>
 <script src="vars.js"></script>
 <script src="fnfacts.js"></script>
+<script src="settings.js"></script>
 <script src="app.js"></script>
 <script src="pwa.js"></script>
 </body>

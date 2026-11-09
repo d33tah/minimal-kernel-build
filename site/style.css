@@ -155,13 +155,22 @@ input[type=file] { max-width: 100%; font-size: 0.75rem; }
 .tabbar button { border: 1px solid var(--line); border-radius: 4px; padding: 0.25rem 0.7rem; min-height: 32px; min-width: 44px; color: var(--muted); }
 .tabbar button[aria-selected="true"] { color: var(--accent); border-color: var(--accent); font-weight: 600; }
 .tabbar .temo { font-weight: 400; }
-/* Compact tabs (Machine tab, Settings): the emoji only, the name in the tooltip. */
+/* Compact tabs (Settings tab): the emoji only, the name in the tooltip. */
 .compact-tabs .tabbar .tword { display: none; }
 .compact-tabs .tabbar button { padding: 0.25rem 0.3rem; min-width: 40px; }
+/* On a phone the nine emoji share one row (38 px each at 390, 30 at 320). */
+@media (max-width: 400px) {
+  .compact-tabs .tabbar button { flex: 1 1 0; min-width: 30px; padding: 0.25rem 0; }
+}
 .panel { padding-top: 0.3rem; }
 .panel[hidden] { display: none; }
 .about { max-width: 46rem; }
 .about p, .about li { margin: 0.3rem 0; }
+.settings { max-width: 46rem; }
+.setrow { display: flex; flex-wrap: wrap; gap: 0.2rem 0.6rem; align-items: baseline; margin: 0.35rem 0; overflow-wrap: anywhere; }
+.setrow > label { display: inline-flex; gap: 0.35rem; align-items: center; font-weight: 600; }
+.setrow .note { flex: 1 1 18rem; min-width: 0; }
+.setkey { font-size: 0.75rem; }
 
 table { border-collapse: collapse; font-size: 0.85rem; }
 td { padding: 0.15rem 0.8rem 0.15rem 0; border-bottom: 1px solid var(--line); }

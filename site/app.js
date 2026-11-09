@@ -1070,7 +1070,7 @@ function setLive() {
 
 // ---- tabs -----------------------------------------------------------------
 
-const TABS = ["machine", "memory", "page", "debugger", "calls", "source", "snapshots", "about"];
+const TABS = ["machine", "memory", "page", "debugger", "calls", "source", "snapshots", "settings", "about"];
 // The names of renamed tabs in old links (#graph, ?tab=coverage).
 const TAB_ALIASES = { graph: "calls", coverage: "source" };
 let tab = "memory";
@@ -1098,13 +1098,17 @@ function showTab(name) {
 		drawGrid();
 	if (tab === "debugger")
 		renderContext();
+	if (tab === "settings")
+		renderSettings();
 	graphShow(tab === "calls");
 	covShow(tab === "source");
 }
 
-// Compact tabs (Machine tab, Settings): the tab buttons show only their
-// emoji, the name is their tooltip and stays their accessible name.
+// Compact tabs (Settings tab): the tab buttons show only their emoji, the
+// name is their tooltip and stays their accessible name.
 const COMPACT_KEY = "mkb-compact-tabs";
+// Default on a phone: at 400 px and less the names take three rows.
+const compactDefault = () => window.matchMedia("(max-width: 400px)").matches;
 
 function setCompactTabs(on) {
 	document.body.classList.toggle("compact-tabs", on);
@@ -1125,8 +1129,7 @@ function initCompactTabs() {
 	} catch (e) {
 		// no storage: the default
 	}
-	// Default on a phone: at 400 px and less the names take two rows.
-	setCompactTabs(saved === null ? window.matchMedia("(max-width: 400px)").matches : saved === "1");
+	setCompactTabs(saved === null ? compactDefault() : saved === "1");
 	$("compact_tabs").addEventListener("change", () => {
 		setCompactTabs($("compact_tabs").checked);
 		try {
@@ -1704,7 +1707,9 @@ let runToMoved = false;  // an instruction has run since
 let entryPhase = false;  // stepping at full stepping speed to the kernel entry, then slow
 let prefSpeed = "1000";  // speed after the entry: ?speed=, else the remembered choice, else 1k/s
 const SPEED_KEY = "mkb-speed";
+const COUNT_KEY = "mkb-count";
 const REF_KEY = "mkb-ref-";
+let refSaved = null;     // the "Still alive" milestone whose count is remembered
 // Instructions from the entry to "Still alive" when no run on this browser
 // measured it yet (for the ETA only).
 // Instructions from the entry to "Still alive" (the same at every clock rate).
@@ -2497,8 +2502,11 @@ function renderCounters() {
 		}
 	}
 	const alive = stepper.milestones.find((m) => m.text === "Still alive");
-	if (alive && alive.found && alive.found.sinceEntry && image)
+	// Once per measurement: after a Reset in the Settings tab the next redraw
+	// does not write it back.
+	if (alive && alive.found && alive.found.sinceEntry && image && refSaved !== alive.found)
 		try {
+			refSaved = alive.found;
 			localStorage.setItem(REF_KEY + image.name + "-" + (clockMips() || "real"), alive.found.sinceEntry);
 		} catch (e) {
 			// no storage: the built-in estimate stays
@@ -3045,6 +3053,11 @@ function initDebugger() {
 		renderClock();
 	});
 	$("count").addEventListener("change", () => {
+		try {
+			localStorage.setItem(COUNT_KEY, $("count").checked ? "1" : "0");
+		} catch (e) {
+			// no storage: until reload
+		}
 		if (!$("count").checked && counting) {
 			counting = false;
 			countNote = "Counting switched off.";
@@ -3422,7 +3435,13 @@ async function init() {
 	loadVersion();
 	if (params.has("cmdline"))
 		cmdlineFromUrl = params.get("cmdline");
-	if (params.get("count") === "0")
+	let storedCount = null;
+	try {
+		storedCount = localStorage.getItem(COUNT_KEY);
+	} catch (e) {
+		storedCount = null;
+	}
+	if (params.get("count") === "0" || (!params.has("count") && storedCount === "0"))
 		$("count").checked = false;
 	initSource();
 	initJumps();
@@ -3440,6 +3459,7 @@ async function init() {
 	});
 	updateDebugUi();
 	initCompactTabs();
+	initSettings();
 	for (const t of TABS)
 		$("tab_" + t).addEventListener("click", () => showTab(t));
 	window.addEventListener("hashchange", readHash);

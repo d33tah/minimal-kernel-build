@@ -16,23 +16,23 @@ with how much RAM), warnings about the bzImage, the VGA screen, the run
 controls (Pause, Continue, Step, speed, clock, count, the state line) and
 the boot counters. Below it are tabs, each an emoji (aria-hidden) and its
 name, kept in the URL hash (`#machine`, `#memory`, `#page/0x100000`,
-`#debugger`, `#calls`, `#source`, `#snapshots`, `#about`; the old names
-`#graph` and `#coverage`, and `?tab=` with any of them when the URL has no
-hash, open Calls and Source):
+`#debugger`, `#calls`, `#source`, `#snapshots`, `#settings`, `#about`; the
+old names `#graph` and `#coverage`, and `?tab=` with any of them when the
+URL has no hash, open Calls and Source). The emoji show what each tab
+holds: 🖥️ Machine (the computer), 🗺️ Memory (the map of RAM), 🔢 Page (one
+page's bytes and code), 🐞 Debugger, 📊 Calls (the call chart), 📝 Source,
+💾 Snapshots (saved state), ⚙️ Settings, ℹ️ About. ⚙️, ℹ️, 🖥️ and 🗺️ carry
+U+FE0F so they never fall back to a text glyph; suite tabs draws each one
+on a canvas in the tab's font and in a serif stack and checks it comes out
+as a colour emoji (also checked once in Firefox and WebKit):
 
 - **Machine.** What runs and how it boots: the kernel and RAM menus, a
   bzImage from disk, Symbols, C source (for an imported vmlinux), initrd,
   cmdline, offset, Boot, the loaded bzImage's header line, the deployed
-  build, and Settings. These were in the top bar; they are set once per
-  kernel, and at 390 px they made the top bar 1,003 px tall (now 660 px,
-  suite tabs). `?kernel=`, `?mem=`, `?speed=`, `?cmdline=` work as before,
-  and a bzImage or symbol file dropped on the page loads from any tab.
-  Settings has "Compact tabs: emoji only": the tab buttons show only their
-  emoji, the name is their tooltip (hover, keyboard focus, long press) and
-  their accessible name. Remembered in this browser (`mkb-compact-tabs`);
-  on by default at 400 px and less, where the names take three rows (one
-  row with the emoji only), off on wider screens. Settings live in this
-  tab, not in a tab of their own, so the bar keeps eight tabs.
+  build. These were in the top bar; they are set once per kernel, and at
+  390 px they made the top bar 1,003 px tall (now 660 px, suite tabs).
+  `?kernel=`, `?mem=`, `?speed=`, `?cmdline=` work as before, and a
+  bzImage or symbol file dropped on the page loads from any tab.
 
 - **Memory.** The region bars and one square per 4 KiB page of guest RAM,
   coloured by region (IVT/BDA/EBDA, real-mode setup and command line, VGA
@@ -960,6 +960,28 @@ hash, open Calls and Source):
   page says so, when the browser lacks it) and keeps the last 8 in memory.
   Each row shows raw and compressed size and the ratio, and has "Restore"
   (`DecompressionStream`, then `emulator.restore_state()`) and "Download".
+- **Settings.** Everything the page remembers in this browser, each with
+  an explanation:
+  - "Compact tabs: emoji only" (`mkb-compact-tabs`): the tab buttons show
+    only their emoji, the name is their tooltip (hover, keyboard focus,
+    long press) and their accessible name. On by default at 400 px and
+    less, where the names take three rows; there the nine emoji share one
+    row (38 px each at 390 px, 30 px at 320 px). Off on wider screens.
+  - Speed after the kernel entry (`mkb-speed`), clock (`mkb-mips`) and
+    count (`mkb-count`): the same controls as in the top bar, which
+    remembers a change made there too; `?speed=`, `?mips=` and `?count=0`
+    override them for one visit.
+  - Remembered for each kernel, listed from localStorage with a Forget
+    button each: imported symbols (`mkb-map-<SHA-256>`; forgetting the
+    current kernel's reboots it with its own symbols), command lines
+    (`mkb-cmdline-<SHA-256>`; the current kernel's goes back to its
+    default for the next Boot), watch expressions (`mkb-watch:<kernel>`),
+    the measured instruction count to Still alive for the ETA
+    (`mkb-ref-<kernel>-<clock>`, written once per boot), and the decoded
+    DWARF of imported vmlinux files in IndexedDB (`mkb-dwarf`). Any other
+    `mkb-` key is listed too, as kept by this page.
+  - "Reset all settings" forgets all of it and goes back to the defaults.
+    The service worker's offline copy of the site stays.
 - **About.** What the page is, how the counting works, and the legend:
   a sample of every colour and mark of the page drawn with the classes
   the page itself uses (so light and dark and later style changes stay
@@ -1446,6 +1468,7 @@ browser-test matrix job named by its suites):
 | B3 slow motion with an asm listing open | suite speedasm (390 px touch with CDP CPU throttling, the tab opened after the kernel entry and watched for 25 s: the minified Linux's Page tab on the kernel-text page holding EIP, about 1,400 instructions, at 4x and 6x, 1/s and 10/s; its Debugger tab (Code at EIP) at 6x, 1/s and 10/s; hello's Page tab at 4x and 1/s. The speed line never shows 0/s and, once the 4 s speed window has passed since the tab was opened (its first drawing holds the main thread up to 2 s at 6x), the set rate within a factor of two; the count moves at a third of the set rate or more; the listing or Code at EIP is drawn at most once per executed instruction plus a full refresh every few seconds; long tasks take under 70 % of the wall time. On 900b6cc2e the Page tab at 4x made 5 instructions in 25 s at 1/s with "speed 0/s") and suite runstate (its phone runs under 4x CPU throttling, with the Page and Debugger tabs watched 3 to 8 s among the actions, and "speed 0/s" while running is a broken invariant: its seeds 2 and 5 found the JIT left running at 0/s after the kernel's end) | speedasm, runstate |
 | R1 the asm views follow EIP | suites followeip and followfuzz. FOLLOW_EIP_JS watches the page: every drawing of Code at EIP and of the Page listing must box the line holding EIP, and once an instruction has executed the view on screen must show the new EIP within max(1 s, twice its last drawing plus 400 ms), while stepping at any speed and paused (not under the JIT or in a hidden tab). Fixed sequences on the minified Linux (-O0 and -Os) and hello, Debugger and Page tabs, CPU 1x and 4x: 1/s from the entry, 10/s, 1k/s, Pause, Step, Step 100, Continue, a Run to that steps to the end of the run, then Boot at full speed (counted, then the JIT) to the end. Then a seeded fuzzer of tab switches, speeds, Pause, Step, Run to, the Source panel, Back and Forward, links, kernel switch, Boot during the fast-forward, a hidden tab and CPU throttling. On d3a2553f0 5 of the 12 sequences fail: Code at EIP kept the box where a stepped Run to or the counted boot had started (0x100000) for over a second while the count went on (minified Linux, CPU 4x), and the Page listing marked nothing while the relocation stub ran inside startup_32's instructions (both minified builds, 1x and 4x) | followeip, followfuzz |
 | U3 tab names, emoji, compact tabs, Machine tab | suite tabs (hello, light and dark at 1280 and 390 px: the eight tabs with an aria-hidden emoji each, distinct, and the word as accessible name; no tab or About text calls a tab Graph or Coverage; #graph, #coverage, ?tab=graph and ?tab=coverage open Calls and Source with the hash rewritten; the kernel, RAM, file, symbol, initrd, cmdline and offset controls, Boot, the header and build lines and the setting are in the Machine tab, the screen, run bar, counters, status and state line in the top bar; picking hello-os and Boot with 4 MB from the Machine tab boot it; a bzImage dropped on the About tab boots; compact tabs hide the words, keep aria-label and tooltip, the hover shows the name, a click opens the tab, the choice survives a reload both ways, off by default at 1280 px, on by default at 390 px with the bar in one row; the top bar at 390 px is shorter than the 1,003 px it had before; no horizontal scroll). On 8dc5c89c7 it fails: no emoji, Graph and Coverage, no Machine tab, no compact setting, top bar 1,003 px | debian,...,legend,tabs |
+| U4 Settings tab, literal emoji | suite tabs (the nine tabs in order with Settings before About and the emoji 🖥️ 🗺️ 🔢 🐞 📊 📝 💾 ⚙️ ℹ️, each drawn as a colour emoji in two font stacks; #settings and ?tab=settings open Settings; Compact tabs, speed, clock, count, the per-kernel list and Reset are in the Settings tab and the Machine tab has no Settings section or checkbox; with a watch list, a cmdline set by Boot, another bzImage's symbols, an unknown mkb- key and an IndexedDB DWARF entry stored, every mkb- key in localStorage and the IndexedDB entry have a row with an explanation; speed, clock and count set in Settings change the top bar's controls and survive a reload, the top bar's speed shows in Settings; Forget removes each entry with its effect (the watch list empties, the cmdline goes back to the default, the other bzImage's DWARF goes); Reset all settings leaves no mkb- key and no IndexedDB entry and restores compact off, 1k/s, 10/us, count on; the compact bar is one row at 390 px light and dark; no horizontal scroll on Settings). On feddeeea8 it fails: no Settings tab, the old emoji, Compact tabs in the Machine tab | debian,...,legend,tabs |
 | P1 installable, offline, update notice | suite pwa (locally the site is deployed twice into a temporary directory with `stamp.py`, served with Pages' caching; offline means the server answers nothing and the context is offline): the manifest is linked and parses, start_url and scope resolve to the site's directory, the icons load at their declared sizes (192, 512, maskable), theme-color for light and dark; Chromium's own parse of the manifest (CDP Page.getAppManifest) meets its install criteria (Page.getInstallabilityErrors is checked too, but Chromium 145 answers [] even for a page without a manifest); a service worker controls the page after the first visit and answers fetches; its version and cache names are the deployed commit. Online, hello paused: Run to hello_main, call stack, locals, Page listing and boot/hello.c in the Source panel. Offline: a reload boots hello to "Hello, World!", the minified Linux (never opened online) boots too, the same Debugger, Page and Source checks pass, Debian (never fetched) says "not available offline yet" with no page error. A second deploy (another commit in sw.js, version.json and the stamps, a marker in app.js): coming back online shows the update notice; Reload runs the new app.js under the new worker with only the new deploy's caches, and the notice does not show on it. Screenshots of the notes light and dark at 1280 and 390 px, no horizontal scroll. With `--base` the offline part aborts every request of the context and the new deploy is a version.json routed to another commit. On 039c91717 it fails: no manifest, no service worker | debian,...,tabs,pwa |
 | K1 boot check reads the screen | `test_qemu_screen_check.py` (the kernels job's -O0 boot output of run 42539920959, where curses drew "H", a backspace, escapes, a cursor-right and "ello, World!": the bytes lack "Hello, World!" and an expect pattern on them ends without a match, while the replayed 80x25 screen shows "Hello, World!" and "Still alive" on rows 9 and 10 for every read size from 1 byte up; output cut before "Still alive", the strings in the wrong order, overwritten or cleared text fail); `qemu_screen_check.py` boots hello and hello-os (18M and the low image at 1M) and the -O0 minified Linux in the workflow | kernels |
 | U1/U2 unoptimized builds | qemu boot of the -O0 hello and minified Linux with both gate lines on the screen (`qemu_screen_check.py`); `check-code-identity.py` for each -O0 and -Os pair; `test_dwarf.py` on both builds of each; suite hello (every instruction of hello_main and put_line), suite unoptimized (minified Linux: eight Run to stops, single steps into calls, no "optimized out" at any address read, values vs gdb at each stop; the -Os entry must show some) | kernels; tasks,operands,runto_phone,srclinks,unoptimized; boot,... |

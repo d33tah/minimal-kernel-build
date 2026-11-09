@@ -364,6 +364,7 @@ jobs:
         - types,covtree,unwind,lineaddr,fnfacts,branches
         - runstate
         - speedline
+        - speedasm
     name: browser-test (${{ matrix.suites }})
     steps:
     - uses: actions/checkout@v4

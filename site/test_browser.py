@@ -6544,14 +6544,19 @@ RUN_STATE_JS = """() => ({
     speed: document.getElementById('dbg_speed').value,
     status: document.getElementById('status').textContent,
     note: document.getElementById('dbg_status').textContent,
+    line: document.getElementById('vclock').textContent.split(' \u00b7 ')[0],
 })"""
 
 
 def run_state_problem(page, budget=3.5):
     """None, or what is wrong with the run state now. Paused: Pause disabled,
     Continue enabled (unless the run has ended), the "VM paused" overlay
-    shown. Running: the opposite, and at 1/s or 10/s the instruction count
-    moves within budget seconds."""
+    shown. Running: the opposite, the speed line never "speed 0/s" (the
+    operator's "not paused and zero instructions per second"), and at 1/s
+    or 10/s the instruction count moves within budget seconds."""
+    bad = run_state_zero_speed(page)
+    if bad:
+        return bad
     s0 = page.evaluate(RUN_STATE_JS)
     if s0["state"] == "paused":
         if not s0["pauseOff"] or (s0["contOff"] and not s0["end"]) or not s0["overlay"]:
@@ -6576,7 +6581,18 @@ def run_state_problem(page, budget=3.5):
     moved = wait_for(lambda: page.evaluate(RUN_STATE_JS)["steps"] != s0["steps"]
                      or page.evaluate(RUN_STATE_JS)["state"] != "stepped"
                      or page.evaluate(RUN_STATE_JS)["speed"] != s0["speed"], budget)
-    return None if moved else {"running at %s/s, no instruction for %s s" % (s0["speed"], budget): page.evaluate(RUN_STATE_JS)}
+    if not moved:
+        return {"running at %s/s, no instruction for %s s" % (s0["speed"], budget): page.evaluate(RUN_STATE_JS)}
+    return run_state_zero_speed(page)
+
+
+def run_state_zero_speed(page):
+    """None, or the state while the speed line says "speed 0/s" with the
+    run going on (stepping, the JIT or a fast-forward)."""
+    s = page.evaluate(RUN_STATE_JS)
+    if s["state"] in ("stepped", "jit", "ff") and re.match(r"speed 0(\.0)?/s\b", s["line"]):
+        return {"running, the speed line says 0/s": s}
+    return None
 
 
 RUN_FUZZ_PICK = """([sel, r]) => {
@@ -6603,10 +6619,23 @@ RUN_FUZZ_CONTROLS = ["#dbg_pause", "#dbg_continue", "#vm_continue", "#dbg_step",
 RUN_FUZZ_TARGETS = ["0x100000", "start_kernel", "hello_main", "rest_init", "printk", "kernel_init", "do_exit",
                     "init/main.c:1000", "hello.c:30", "0x1000", "no_such_symbol"]
 RUN_FUZZ_KERNELS = ["hello", "hello-os", "minified-linux", "minified-linux-os"]
+RUN_FUZZ_THROTTLE = 4
 
 
 def run_fuzz_action(page, rng, touch):
     """One random action, as a short description."""
+    r = rng.random()
+    if r < 0.1:
+        # An asm listing watched for a while (the audit's repro of bug 1:
+        # the Page tab at 1/s on a throttled phone ran 6 instructions in 30 s).
+        t = rng.choice(["#tab_page", "#tab_page", "#tab_debugger"])
+        hold = rng.choice([3, 5, 8])
+        try:
+            (page.tap if touch else page.click)(t, timeout=5000)
+        except PlaywrightError as e:
+            return "could not open " + t + ": " + str(e).splitlines()[0][:60]
+        time.sleep(hold)
+        return f"watch {t} for {hold} s"
     r = rng.random()
     if r < 0.06:
         k = rng.choice(["Escape", "Enter", "ArrowDown", "a", " ", "Tab"])
@@ -6649,10 +6678,13 @@ def run_fuzz_case(browser, base, shots, kernel, touch, seed, actions, verbose=Fa
     rng = random.Random(seed)
     ctx = browser.new_context(**(PHONE if touch else {"viewport": {"width": 1280, "height": 900}}))
     page = ctx.new_page()
+    if touch:
+        # A mid-tier phone (Chrome's "4x slowdown").
+        ctx.new_cdp_session(page).send("Emulation.setCPUThrottlingRate", {"rate": RUN_FUZZ_THROTTLE})
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
     page.goto(f"{base}/index.html?kernel={kernel}&speed=1")
-    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") not in (None, "", "off"), 60)
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") not in (None, "", "off"), 120)
     log, problems = [], []
     for _ in range(actions):
         for extra in ctx.pages[1:]:
@@ -6719,7 +6751,8 @@ def speed_line_bad(s):
         return None
     if s["text"] == "speed: measuring":
         return None
-    m = re.fullmatch(r"speed ([0-9.]+)(k|M)?/s", s["text"])
+    # Below half the set rate the line adds " (set 1/s: too fast for this device)".
+    m = re.fullmatch(r"speed ([0-9.]+)(k|M)?/s( \(set [^)]*\))?", s["text"])
     if not m:
         return "unreadable"
     v = float(m.group(1)) * {"k": 1e3, "M": 1e6}.get(m.group(2), 1)
@@ -6817,6 +6850,79 @@ def speed_line_case(browser, base, shots, touch, rate):
     return problems, {"samples": samples}
 
 
+LONG_TASKS_JS = """() => { window.mkbLong = []; new PerformanceObserver((l) => {
+    for (const e of l.getEntries()) window.mkbLong.push(e.duration); }).observe({ type: 'longtask' }); }"""
+# Page: data-draws counts full drawings and moves of the EIP mark (data-reads,
+# the full ones, on apps from before B3).
+VIEW_DRAWS_JS = """() => ({ page: Number(document.getElementById('listing').dataset.draws || document.getElementById('listing').dataset.reads || 0),
+    debugger: Number(document.getElementById('context').dataset.draws || 0),
+    long: (window.mkbLong || []).reduce((a, b) => a + b, 0), longMax: Math.max(0, ...(window.mkbLong || [])) })"""
+
+
+def speed_line_asm_case(browser, base, shots, kernel, tab, throttle, rate, secs=25):
+    """The operator's bug 1 as the audit reproduced it: slow motion with an
+    asm listing open on a phone-class CPU (390 px touch, CDP CPU throttling).
+    Before the fix the Page tab's listing (about 1,400 instructions) was
+    drawn again on every animation frame and the step credit grew by at most
+    250 ms per frame, so at 4x the run made 6 instructions in 30 s while the
+    page said "slow motion 1/s" and "speed 0/s". Checks over secs seconds
+    after the tab is opened: the speed line as speed_line_bad (never 0/s,
+    the set rate within a factor of two once measured), the count moves at a
+    third of the set rate or more, the listing (Page) or Code at EIP
+    (Debugger) is drawn at most once per executed instruction (plus a
+    full refresh every few seconds), and the main
+    thread is not busy most of the time (long tasks under 70 % of the wall
+    time)."""
+    ctx = browser.new_context(**PHONE)
+    page = ctx.new_page()
+    cdp = ctx.new_cdp_session(page)
+    cdp.send("Emulation.setCPUThrottlingRate", {"rate": throttle})
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel={kernel}&speed={rate}")
+    wait_for(lambda: page.evaluate("typeof entryPhase !== 'undefined' && runState === 'stepped' && !entryPhase && !ffActive"), 180)
+    page.tap("#tab_" + tab)
+    page.evaluate(LONG_TASKS_JS)
+    problems, samples, zero = [], 0, 0
+    d0 = page.evaluate(VIEW_DRAWS_JS)
+    s0 = page.evaluate(SPEED_LINE_JS)
+    t0 = time.monotonic()
+    while time.monotonic() - t0 < secs:
+        s = page.evaluate(SPEED_LINE_JS)
+        samples += 1
+        why = speed_line_bad(s)
+        if why:
+            zero += why.startswith("shows 0/s")
+            if len(problems) < 6:
+                problems.append({"at_s": round(time.monotonic() - t0, 1), "why": why, "line": s["text"]})
+        time.sleep(0.1)
+    wall = (time.monotonic() - t0) * 1000
+    s = page.evaluate(SPEED_LINE_JS)
+    d = page.evaluate(VIEW_DRAWS_JS)
+    ran = s["steps"] - s0["steps"]
+    draws = d[tab] - d0[tab]
+    if s["state"] == "stepped" and not s["end"] and ran < float(rate) * secs / 3:
+        problems.append({"stalled": f"{ran} instructions in {secs} s at {rate}/s"})
+    if draws > ran + secs / 2 + 2:
+        problems.append({"listing drawn": f"{draws} times for {ran} instructions in {secs} s"})
+    if d["long"] > 0.7 * wall:
+        problems.append({"main thread busy": f"long tasks {d['long'] / 1000:.1f} s of {wall / 1000:.1f} s"})
+    shot = f"speed-line-{tab}-{kernel}-{throttle}x-{rate}.png"
+    page.screenshot(path=str(shots / shot))
+    if errors:
+        problems.append({"page errors": errors})
+    ctx.close()
+    return problems, {"samples": samples, "zero_samples": zero, "instructions": ran, "listing_draws": draws,
+                      "long_tasks_s": round(d["long"] / 1000, 1), "longest_ms": round(d["longMax"]), "line": s["text"]}
+
+
+# (kernel, tab, CPU throttling, rate): the asm listings open in slow motion.
+SPEED_LINE_ASM = [("minified-linux-os", "page", 4, "1"), ("minified-linux-os", "page", 4, "10"),
+                  ("minified-linux-os", "page", 6, "1"), ("minified-linux-os", "page", 6, "10"),
+                  ("minified-linux-os", "debugger", 6, "1"), ("minified-linux-os", "debugger", 6, "10"),
+                  ("hello", "page", 4, "1")]
+
+
 # (kernel, touch, seed): fixed, so CI runs the same sequences every time.
 RUN_FUZZ_SEEDS = [("minified-linux", False, 1), ("minified-linux", True, 2), ("hello", False, 3), ("hello", True, 4),
                   ("minified-linux", False, 5), ("minified-linux", True, 6)]
@@ -6861,6 +6967,16 @@ def suite_speedline(ctx):
         t0 = time.monotonic()
         p, r = speed_line_case(ctx.browser, ctx.base, ctx.shots, touch, rate)
         failed |= report("speed_line", p, r, touch=touch, rate=rate, seconds=round(time.monotonic() - t0))
+    return failed
+
+
+def suite_speedasm(ctx):
+    failed = False
+    for kernel, tab, throttle, rate in [c for c in SPEED_LINE_ASM if c[0] in ctx.entries]:
+        t0 = time.monotonic()
+        p, r = speed_line_asm_case(ctx.browser, ctx.base, ctx.shots, kernel, tab, throttle, rate)
+        failed |= report("speed_line_asm", p, r, kernel=kernel, tab=tab, throttle=throttle, rate=rate,
+                         seconds=round(time.monotonic() - t0))
     return failed
 
 
@@ -6914,6 +7030,7 @@ SUITES = {
     "jumps": (suite_jumps, False),
     "runstate": (suite_runstate, False),
     "speedline": (suite_speedline, True),
+    "speedasm": (suite_speedasm, True),
 }
 
 

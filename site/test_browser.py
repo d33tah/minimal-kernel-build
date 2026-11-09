@@ -8295,6 +8295,338 @@ def suite_tabs(ctx):
     return report("tabs", *tabs_case(ctx.browser, ctx.base, ctx.shots))
 
 
+# ---- PWA: manifest, service worker, offline, update notice ----------------
+# Operator 2026-11-09: "make it a PWA". Locally the case deploys the site
+# twice into a temporary directory the way the workflow does (site/stamp.py:
+# ?v=<commit> on the assets, the commit in sw.js and version.json) and
+# serves it with Pages' caching (max-age=600, index.html no-store). Offline
+# means the server answers nothing (and context.set_offline): the page must
+# come from the service worker. Against --base (the live site) the offline
+# part aborts every request of the context and the second deploy is a
+# version.json with another commit.
+
+PWA_V = ("aaaaaaaaaaaa", "bbbbbbbbbbbb")
+PWA_PRECACHED_KERNELS = ("hello", "minified-linux")
+
+PWA_CACHES_JS = "async () => (await caches.keys()).sort()"
+PWA_SW_VERSION_JS = """async () => {
+    const w = navigator.serviceWorker.controller;
+    if (!w) return null;
+    const ch = new MessageChannel();
+    const got = new Promise((res) => { ch.port1.onmessage = (e) => res(e.data); setTimeout(() => res('no answer'), 3000); });
+    w.postMessage({ type: 'version' }, [ch.port2]);
+    return got; }"""
+
+
+def pwa_deploy(root, v, marker=None):
+    """What the workflow does to site/ before Pages uploads it, into root."""
+    for d in ("kernels", "v86", "iced"):
+        if not (root / d).exists():
+            (root / d).symlink_to(SITE / d)
+    files = [f for f in SITE.iterdir() if f.is_file() and f.suffix in (".js", ".css", ".html", ".json", ".webmanifest")
+             and f.name != "version.json"]
+    for f in files:
+        shutil.copy(f, root / f.name)
+    if (SITE / "icons").is_dir():
+        shutil.rmtree(root / "icons", ignore_errors=True)
+        shutil.copytree(SITE / "icons", root / "icons")
+    sha = v + "0" * 28
+    (root / "version.json").write_text(json.dumps({"sha": sha, "date": "2026-11-09T12:00:00Z", "subject": "deploy " + v,
+                                                   "run_id": "1", "run_number": "1", "repo": "d33tah/minimal-kernel-build"}))
+    if (SITE / "stamp.py").exists():
+        subprocess.run([sys.executable, str(SITE / "stamp.py"), str(root), sha], check=True, stdout=subprocess.DEVNULL)
+    else:
+        (root / "index.html").write_text(stamp((root / "index.html").read_text(), v))
+    if marker:
+        with open(root / "app.js", "a") as f:
+            f.write(f'\nwindow.deployMarker = "{marker}";\n')
+
+
+def pwa_server(root):
+    """CachingHandler on root; state["down"] makes it answer nothing (offline)."""
+    state = {"down": False}
+
+    class Handler(CachingHandler):
+        extensions_map = {**CachingHandler.extensions_map, ".webmanifest": "application/manifest+json"}
+
+        def do_GET(self):
+            if state["down"]:
+                self.close_connection = True
+                return
+            super().do_GET()
+
+        do_HEAD = do_GET
+
+    return serve(root, Handler), state
+
+
+def pwa_manifest_check(page, base, problems, r):
+    """The manifest is linked, parses, its start_url and scope are the site's
+    directory, its icons load at the sizes it says (192, 512, a maskable one)."""
+    m = page.evaluate("""async () => {
+        const l = document.querySelector('link[rel="manifest"]');
+        if (!l) return { error: 'no <link rel="manifest">' };
+        const resp = await fetch(l.href);
+        let j = null;
+        try { j = await resp.json(); } catch (e) { return { error: 'manifest is not JSON: ' + e }; }
+        const icons = [];
+        for (const i of j.icons || []) {
+            const url = new URL(i.src, l.href).href;
+            const img = new Image();
+            img.src = url;
+            try { await img.decode(); } catch (e) { icons.push({ ...i, url, error: String(e) }); continue; }
+            icons.push({ ...i, url, w: img.naturalWidth, h: img.naturalHeight });
+        }
+        const themes = [...document.querySelectorAll('meta[name="theme-color"]')].map((e) => [e.content, e.media]);
+        return { href: l.href, j, icons, themes, start: new URL(j.start_url || '', l.href).href,
+                 scope: new URL(j.scope || '', l.href).href, type: resp.headers.get('content-type') }; }""")
+    if m.get("error"):
+        problems.append(m["error"])
+        return
+    j = m["j"]
+    r["manifest"] = {k: j.get(k) for k in ("name", "short_name", "start_url", "scope", "display", "theme_color", "background_color")}
+    site = base + "/"
+    for k in ("name", "short_name", "description", "theme_color", "background_color"):
+        if not j.get(k):
+            problems.append(f"manifest has no {k}")
+    if j.get("display") != "standalone":
+        problems.append(f"manifest display {j.get('display')!r}, want standalone")
+    if j.get("start_url") != "./" or m["start"] != site:
+        problems.append(f"manifest start_url {j.get('start_url')!r} resolves to {m['start']}, want ./ = {site}")
+    if j.get("scope") != "./" or m["scope"] != site:
+        problems.append(f"manifest scope {j.get('scope')!r} resolves to {m['scope']}, want ./ = {site}")
+    sizes = set()
+    for i in m["icons"]:
+        if i.get("error"):
+            problems.append(f"icon {i['src']} does not load: {i['error']}")
+            continue
+        want = i.get("sizes", "")
+        if want != f"{i['w']}x{i['h']}":
+            problems.append(f"icon {i['src']}: sizes {want!r}, the image is {i['w']}x{i['h']}")
+        if not i["url"].startswith(site):
+            problems.append(f"icon {i['src']} is outside the site: {i['url']}")
+        sizes.add((want, "maskable" in i.get("purpose", "any")))
+    for want in (("192x192", False), ("512x512", False)):
+        if want not in sizes:
+            problems.append(f"no {want[0]} icon (purpose any)")
+    if not any(mask for _, mask in sizes):
+        problems.append("no maskable icon")
+    media = sorted(t[1] for t in m["themes"])
+    r["theme_color"] = m["themes"]
+    if media != ["(prefers-color-scheme: dark)", "(prefers-color-scheme: light)"]:
+        problems.append(f"theme-color metas {m['themes']}, want one for light and one for dark")
+
+
+def pwa_controlled(page, timeout=30):
+    return wait_for(lambda: page.evaluate("!!(navigator.serviceWorker && navigator.serviceWorker.controller)"), timeout)
+
+
+def pwa_debug_views(page, base, tag, problems):
+    """hello paused at the reset vector: Run to hello_main, then the
+    Debugger (call stack, locals: DWARF shards), the Page listing
+    (disasm.json) and the Source panel on boot/hello.c (C source)."""
+    page.goto(f"{base}/index.html?kernel=hello&paused=1#debugger")
+    if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60):
+        problems.append(f"{tag}: hello did not start paused: {page.inner_text('#status')!r}")
+        return {}
+    syms = json.loads((SITE / kernel_entries()["hello"]["symbols"]).read_text())["symbols"]
+    hm = next(s for s in syms if s["name"] == "hello_main")
+    page.fill("#dbg_addr", "hello_main")
+    page.click("#dbg_runto")
+    out = {}
+    if not wait_for(lambda: page.get_attribute("#regs", "data-phys") == str(hm["paddr"]), 60):
+        problems.append(f"{tag}: Run to hello_main did not stop there: {page.inner_text('#dbg_status')!r}")
+        return out
+    wait_for(lambda: page.get_attribute("#call_stack", "data-unwind") not in (None, "loading"), 20)
+    out["unwind"] = page.get_attribute("#call_stack", "data-unwind")
+    out["stack"] = page.inner_text("#call_stack")[:80]
+    out["locals"] = "row" in page.inner_text("#locals")
+    if out["unwind"] != "ok" or "hello_main" not in out["stack"] or not out["locals"]:
+        problems.append(f"{tag}: Debugger at hello_main: unwind {out['unwind']}, stack {out['stack']!r}, local row shown {out['locals']}")
+    show_tab(page, "page")
+    wait_for(lambda: page.locator("#listing .cur[data-addr]").count() > 0, 20)
+    out["listing"] = page.locator("#listing .cur[data-addr]").count() > 0 and "hello_main" in page.inner_text("#listing")
+    if not out["listing"]:
+        problems.append(f"{tag}: the Page listing does not show hello_main with EIP marked")
+    show_tab(page, "source")
+    wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok", 20)
+    out["tree"] = page.get_attribute("#cov_tree", "data-state")
+    page.evaluate("openSourceFile('boot/hello.c')")
+    wait_for(lambda: HELLO in (page.text_content("#src_body") or ""), 20)
+    out["source"] = HELLO in (page.text_content("#src_body") or "")
+    if out["tree"] != "ok" or not out["source"]:
+        problems.append(f"{tag}: Source tab tree {out['tree']}, boot/hello.c shown in the Source panel {out['source']}")
+    return out
+
+
+def pwa_case(browser, base, shots, timeout):
+    problems, r = [], {}
+    live = base is not None
+    tmp = None
+    if not live:
+        tmp = tempfile.TemporaryDirectory(dir=os.environ.get("MKB_TMP"))
+        root = pathlib.Path(tmp.name)
+        pwa_deploy(root, PWA_V[0], "A")
+        httpd, state = pwa_server(root)
+        base = f"http://127.0.0.1:{httpd.server_address[1]}"
+    c = browser.new_context(viewport={"width": 1280, "height": 900})
+    errors = []
+    page = c.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    from_sw = []
+    page.on("response", lambda resp: resp.from_service_worker and from_sw.append(resp.url))
+    try:
+        page.goto(f"{base}/index.html?kernel=hello")
+        if not wait_for(lambda: gate_on_screen(page), timeout):
+            problems.append("online: hello did not boot")
+        pwa_manifest_check(page, base, problems, r)
+        if not pwa_controlled(page):
+            problems.append("no service worker controls the page after the first visit")
+            return problems, r
+        # Chromium 145's Page.getInstallabilityErrors answers [] even for a
+        # page without a manifest (checked on the live site before P1), and
+        # headless never fires beforeinstallprompt: check Chromium's own
+        # parse of the manifest against its install criteria instead.
+        cdp = c.new_cdp_session(page)
+        inst = cdp.send("Page.getInstallabilityErrors").get("installabilityErrors", [])
+        if inst:
+            problems.append(f"Chromium's installability errors: {inst}")
+        am = cdp.send("Page.getAppManifest")
+        pm = am.get("manifest") or {}
+        r["chromium_manifest"] = {k: pm.get(k) for k in ("name", "display", "startUrl", "scope")}
+        sizes = {i.get("sizes") for i in pm.get("icons", []) if i.get("type") == "image/png"}
+        why = [w for w, bad in (
+            (f"errors {am.get('errors')}", am.get("errors")),
+            ("no manifest URL", not (am.get("url") or "").endswith("/manifest.webmanifest")),
+            ("no name", not (pm.get("name") or pm.get("shortName"))),
+            (f"display {pm.get('display')}", pm.get("display") not in ("kStandalone", "kFullscreen", "kMinimalUi")),
+            (f"icons {sizes}", not {"192x192", "512x512"} <= sizes),
+            (f"start URL {pm.get('startUrl')} outside the scope {pm.get('scope')}", not (pm.get("startUrl") or "").startswith(pm.get("scope") or "-")),
+            ("prefer_related_applications", pm.get("preferRelatedApplications")),
+            ("not a secure context", not page.evaluate("isSecureContext")),
+        ) if bad]
+        if why:
+            problems.append(f"not installable by Chromium's criteria: {why}")
+        want_v = PWA_V[0] if not live else (page.get_attribute("#build_info", "data-sha") or "")[:12]
+        r["sw_version"] = page.evaluate(PWA_SW_VERSION_JS)
+        if r["sw_version"] != want_v:
+            problems.append(f"the service worker says version {r['sw_version']!r}, the page is {want_v!r}")
+        r["online_views"] = pwa_debug_views(page, base, "online", problems)
+        r["from_service_worker"] = len(from_sw)
+        if not from_sw:
+            problems.append("no response came from the service worker (no fetch handler?)")
+        r["caches_online"] = page.evaluate(PWA_CACHES_JS)
+        if not any(want_v in k for k in r["caches_online"]):
+            problems.append(f"no cache named after the deployed commit: {r['caches_online']}")
+        page.screenshot(path=str(shots / "pwa-1280-online.png"))
+
+        # Offline.
+        if not live:
+            state["down"] = True
+        else:
+            c.route("**/*", lambda route: route.abort("internetdisconnected"))
+        c.set_offline(True)
+        try:
+            page.goto(f"{base}/index.html?kernel=hello")
+        except PlaywrightError as e:
+            problems.append(f"offline: the page does not load: {str(e)[:150]}")
+            return problems, r
+        if not wait_for(lambda: gate_on_screen(page), timeout):
+            problems.append(f"offline: hello did not boot: {page.inner_text('#status')!r}")
+        for k in PWA_PRECACHED_KERNELS:
+            if k == "hello":
+                continue
+            page.goto(f"{base}/index.html?kernel={k}&speed=full")
+            ok = wait_for(lambda: gate_on_screen(page), timeout)
+            r[f"offline_{k}"] = ok
+            if not ok:
+                problems.append(f"offline: {k} did not boot (never opened online): {page.inner_text('#status')!r}")
+        r["offline_views"] = pwa_debug_views(page, base, "offline", problems)
+        # Something never fetched online: a clear note, no page error.
+        page.goto(f"{base}/index.html?kernel=debian-6.1-686")
+        def note():
+            notes = page.text_content("#pwa_notes") if page.locator("#pwa_notes").count() else ""
+            return (page.text_content("#status") or "") + " " + (notes or "")
+        wait_for(lambda: "not available offline yet" in note(), 30)
+        r["offline_note"] = note()[:200]
+        if "not available offline yet" not in r["offline_note"]:
+            problems.append(f"offline, a kernel never opened online: no 'not available offline yet' note: {r['offline_note']!r}")
+        for scheme in ("light", "dark"):
+            for w in (1280, 390):
+                page.emulate_media(color_scheme=scheme)
+                page.set_viewport_size({"width": w, "height": 900})
+                time.sleep(0.3)
+                if page.evaluate("document.documentElement.scrollWidth > window.innerWidth + 1"):
+                    problems.append(f"offline note {w} px {scheme}: horizontal scroll")
+                page.screenshot(path=str(shots / f"pwa-{w}-{scheme}-offline.png"))
+        page.emulate_media(color_scheme="light")
+        page.set_viewport_size({"width": 1280, "height": 900})
+        page.goto(f"{base}/index.html?kernel=hello")
+        if not wait_for(lambda: gate_on_screen(page), timeout):
+            problems.append(f"offline, after the note: hello did not boot again: {page.inner_text('#status')!r}")
+
+        # Back online with a new deploy.
+        if not live:
+            pwa_deploy(root, PWA_V[1], "B")
+            state["down"] = False
+        else:
+            c.unroute("**/*")
+            fake = {"sha": "f" * 40, "date": "2026-11-09T12:00:00Z", "subject": "a newer deploy", "run_id": "1",
+                    "run_number": "1", "repo": "d33tah/minimal-kernel-build"}
+            c.route("**/version.json*", lambda route: route.fulfill(status=200, content_type="application/json",
+                                                                     body=json.dumps(fake),
+                                                                     headers={"Cache-Control": "no-store"}))
+        c.set_offline(False)
+        shown = wait_for(lambda: page.locator("#pwa_update").count() and page.is_visible("#pwa_update"), 30)
+        r["update_note"] = page.text_content("#pwa_update") if page.locator("#pwa_update").count() else None
+        if not shown or "new version" not in (r["update_note"] or "").lower():
+            problems.append(f"no 'new version, reload' notice after a new deploy: {r['update_note']!r}")
+            return problems, r
+        for scheme in ("light", "dark"):
+            for w in (1280, 390):
+                page.emulate_media(color_scheme=scheme)
+                page.set_viewport_size({"width": w, "height": 900})
+                time.sleep(0.3)
+                if page.evaluate("document.documentElement.scrollWidth > window.innerWidth + 1"):
+                    problems.append(f"update notice {w} px {scheme}: horizontal scroll")
+                page.screenshot(path=str(shots / f"pwa-{w}-{scheme}-update.png"))
+        page.emulate_media(color_scheme="light")
+        page.set_viewport_size({"width": 1280, "height": 900})
+        if not live:
+            with page.expect_navigation(timeout=30000):
+                page.click("#pwa_update button")
+            if not wait_for(lambda: gate_on_screen(page), timeout):
+                problems.append("after the update reload hello did not boot")
+            r["after_reload"] = {
+                "marker": page.evaluate("window.deployMarker"),
+                "stamp": page.evaluate("new URL(document.querySelector('script[src*=\"app.js\"]').src).searchParams.get('v')"),
+                "sw": page.evaluate(PWA_SW_VERSION_JS),
+                "caches": page.evaluate(PWA_CACHES_JS),
+            }
+            a = r["after_reload"]
+            if a["marker"] != "B" or a["stamp"] != PWA_V[1] or a["sw"] != PWA_V[1]:
+                problems.append(f"after the update reload: app.js deploy {a['marker']}, stamp {a['stamp']}, service worker {a['sw']}")
+            if any(PWA_V[0] in k for k in a["caches"]) or not any(PWA_V[1] in k for k in a["caches"]):
+                problems.append(f"after the update the old deploy's caches are still there (or no new one): {a['caches']}")
+            time.sleep(3)
+            if page.locator("#pwa_update").count() and page.is_visible("#pwa_update"):
+                problems.append("the update notice shows on the new deploy itself")
+
+    finally:
+        if errors:
+            problems.append(f"page errors: {errors[:3]}")
+        c.close()
+        if tmp:
+            httpd.shutdown()
+            tmp.cleanup()
+    return problems, r
+
+
+def suite_pwa(ctx):
+    base = ctx.base if ctx.args.base else None
+    return report("pwa", *pwa_case(ctx.browser, base, ctx.shots, ctx.args.timeout))
+
+
 # ---- follow EIP: the asm views show the stepper's EIP --------------------
 # The operator's report: on the minified Linux, in the Debugger tab, the
 # instructions went on but Code at EIP no longer moved. FOLLOW_EIP_JS is the
@@ -9096,6 +9428,7 @@ SUITES = {
     "speedasm": (suite_speedasm, True),
     "navhist": (suite_navhist, False),
     "tabs": (suite_tabs, False),
+    "pwa": (suite_pwa, False),
     "followeip": (suite_followeip, False),
     "followfuzz": (suite_followfuzz, False),
     "nopath": (suite_nopath, False),

@@ -318,10 +318,13 @@ jobs:
         site/test_kernel_data.py
         site/fetch-v86.sh
         # Cache busting: Pages serves with max-age=600, and a browser that
-        # keeps an older app.js next to a newer index.html breaks.
-        v=$(echo "$GITHUB_SHA" | cut -c1-12)
-        sed -i -E "s/(href|src)=\"(style\.css|clock\.js|app\.js|jumps\.js|stepper\.js|graph\.js|dwarf\.js|unwind\.js|asmnames\.js|dbginfo\.js|source\.js|coverage\.js|vars\.js|fnfacts\.js|symimport\.js|livedis\.js|fastforward\.js|cpustate\.js|v86\/libv86\.js)\"/\1=\"\2?v=$v\"/g" site/index.html
-        grep -E "\?v=$v" site/index.html
+        # keeps an older app.js next to a newer index.html breaks. stamp.py
+        # puts ?v=<commit> on every script and stylesheet of index.html and
+        # the commit into sw.js (a new service worker and caches per deploy).
+        site/stamp.py site "$GITHUB_SHA"
+        # The web app: every file sw.js precaches is in the site, the
+        # manifest and its icons are valid under the Pages subpath.
+        site/check-pwa.py site --subpath "/$(basename "$GITHUB_REPOSITORY")/"
 
     # The browser test runs in its own job (browser-test below) so the
     # deploy does not wait ~11 minutes for it; a failing test still fails
@@ -360,7 +363,7 @@ jobs:
       matrix:
         suites:
         - boot,symbols,debugger,misc,touch,tasks_minified,hello,firstlook
-        - debian,dwarf,dwarf_import,runto,initramfs,coverage,navhist,tipmarks,legend,tabs
+        - debian,dwarf,dwarf_import,runto,initramfs,coverage,navhist,tipmarks,legend,tabs,pwa
         - tasks,operands,runto_phone,srclinks,unoptimized,jumps
         - types,covtree,unwind,lineaddr,fnfacts,branches,nopath
         - runstate

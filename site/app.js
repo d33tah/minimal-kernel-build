@@ -3115,11 +3115,17 @@ async function loadDisasm(entry) {
 	}
 }
 
+// Why a fetch failed: sw.js answers 503 with X-MKB-Offline for a file it
+// does not have while offline.
+function httpWhy(resp) {
+	return resp.headers.get("X-MKB-Offline") ? "not available offline yet (open it once while online)" : "HTTP " + resp.status;
+}
+
 async function loadKernel(entry, memFromUrl) {
 	setStatus("Fetching " + entry.path + "...");
 	const resp = await fetch(withV(entry.path));
 	if (!resp.ok)
-		throw new Error(entry.path + ": HTTP " + resp.status);
+		throw new Error(entry.path + ": " + httpWhy(resp));
 	disasm = await loadDisasm(entry);
 	await srcUseShipped(entry);
 	dbgUseShards(entry);
@@ -3132,7 +3138,7 @@ async function loadKernel(entry, memFromUrl) {
 		setStatus("Fetching " + entry.initrd + "...");
 		const r = await fetch(withV(entry.initrd));
 		if (!r.ok)
-			throw new Error(entry.initrd + ": HTTP " + r.status);
+			throw new Error(entry.initrd + ": " + httpWhy(r));
 		const name = entry.initrd.split("/").pop();
 		initrd = { name, bytes: new Uint8Array(await r.arrayBuffer()), entry: entry.name };
 		initrd.info = await analyzeInitrd(initrd.bytes, name);

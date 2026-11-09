@@ -1027,6 +1027,53 @@ each Back, and with the listing scrolled into the strip above the open
 Source panel, the buttons cover no text of a listing line on screen (light
 and dark). On 7967b0fc8 they covered the right end of the lines there.
 
+## Offline and installing
+
+The page is a Progressive Web App: browsers offer to install it (Chrome's
+"Install app", "Add to Home Screen" on a phone), and after one visit it
+works without a network.
+
+- `manifest.webmanifest`: name, start_url and scope `./` (the site's
+  directory, `/minimal-kernel-build/` on Pages), standalone display, the
+  light theme's background colour, icons of 192 and 512 px and a maskable
+  512 px one (`icons/`, drawn by `gen-icons.py`: a chip with a prompt in
+  the dark theme's colours). index.html has a theme-color for light and
+  one for dark.
+- `sw.js`, the service worker, at the site's root so its scope is the
+  whole site. At install it keeps the app shell (index.html, the scripts,
+  style.css, kernels.json, v86 with its wasm and BIOSes, the manifest and
+  icons) and the bzImage, symbols.json and disasm.json of hello, hello-os
+  and both minified Linux builds, about 6.6 MB: those kernels boot offline
+  even if only one of them was opened. Everything else (DWARF shards, C
+  source, Debian's bzImage and initrd, the iced disassembler) is kept when
+  the page first fetches it, unless the origin's storage is 80 % full
+  (then the file is not kept and nothing else changes).
+- One cache pair per deploy (`mkb-shell-<commit>`, `mkb-data-<commit>`).
+  The workflow's `stamp.py` puts the commit into sw.js (`const V`) and
+  `?v=<commit>` on every script and stylesheet of index.html, so a deploy
+  is a new service worker; once it takes over it deletes the other
+  deploys' caches. Files with this deploy's stamp come from the cache
+  first; the page itself (a navigation), version.json and anything
+  unstamped come from the network first, the cache only offline, so a
+  deploy is never hidden behind a cached page. A local checkout (`V =
+  "dev"`, nothing stamped) is network first for every file. A Range
+  request answered from the cache gets the bytes it asks for (206).
+- Offline, a file that was never fetched online gets a 503 from the
+  worker; the page says "... is not available offline yet" in the top
+  bar (`#pwa_notes`) and, for a kernel, in the status line.
+- Updates (`pwa.js`): the page compares version.json with its own stamp
+  when it loads, when it comes back online or into view, and every 5
+  minutes. A newer deploy shows "A new version of this page is deployed
+  (build ...)" with Reload, which lets the new worker take over (its
+  caches replace the old ones) and reloads. A page that is already the
+  new deploy lets the new worker take over silently.
+- `check-pwa.py` (workflow, site job, after stamping): every precached
+  file exists in the site, every script and stylesheet of index.html is
+  precached with the stamp the page asks for, sw.js's commit is
+  version.json's, and the manifest is installable under the Pages
+  subpath (start_url and scope resolve to the site's directory, each icon
+  a PNG of the size it claims).
+
 ## Stepping and boot counters
 
 v86 0.5.471 runs guest code in `main_loop()`, at least 100,003 instructions
@@ -1398,6 +1445,7 @@ browser-test matrix job named by its suites):
 | B3 slow motion with an asm listing open | suite speedasm (390 px touch with CDP CPU throttling, the tab opened after the kernel entry and watched for 25 s: the minified Linux's Page tab on the kernel-text page holding EIP, about 1,400 instructions, at 4x and 6x, 1/s and 10/s; its Debugger tab (Code at EIP) at 6x, 1/s and 10/s; hello's Page tab at 4x and 1/s. The speed line never shows 0/s and, once the 4 s speed window has passed since the tab was opened (its first drawing holds the main thread up to 2 s at 6x), the set rate within a factor of two; the count moves at a third of the set rate or more; the listing or Code at EIP is drawn at most once per executed instruction plus a full refresh every few seconds; long tasks take under 70 % of the wall time. On 900b6cc2e the Page tab at 4x made 5 instructions in 25 s at 1/s with "speed 0/s") and suite runstate (its phone runs under 4x CPU throttling, with the Page and Debugger tabs watched 3 to 8 s among the actions, and "speed 0/s" while running is a broken invariant: its seeds 2 and 5 found the JIT left running at 0/s after the kernel's end) | speedasm, runstate |
 | R1 the asm views follow EIP | suites followeip and followfuzz. FOLLOW_EIP_JS watches the page: every drawing of Code at EIP and of the Page listing must box the line holding EIP, and once an instruction has executed the view on screen must show the new EIP within max(1 s, twice its last drawing plus 400 ms), while stepping at any speed and paused (not under the JIT or in a hidden tab). Fixed sequences on the minified Linux (-O0 and -Os) and hello, Debugger and Page tabs, CPU 1x and 4x: 1/s from the entry, 10/s, 1k/s, Pause, Step, Step 100, Continue, a Run to that steps to the end of the run, then Boot at full speed (counted, then the JIT) to the end. Then a seeded fuzzer of tab switches, speeds, Pause, Step, Run to, the Source panel, Back and Forward, links, kernel switch, Boot during the fast-forward, a hidden tab and CPU throttling. On d3a2553f0 5 of the 12 sequences fail: Code at EIP kept the box where a stepped Run to or the counted boot had started (0x100000) for over a second while the count went on (minified Linux, CPU 4x), and the Page listing marked nothing while the relocation stub ran inside startup_32's instructions (both minified builds, 1x and 4x) | followeip, followfuzz |
 | U3 tab names, emoji, compact tabs, Machine tab | suite tabs (hello, light and dark at 1280 and 390 px: the eight tabs with an aria-hidden emoji each, distinct, and the word as accessible name; no tab or About text calls a tab Graph or Coverage; #graph, #coverage, ?tab=graph and ?tab=coverage open Calls and Source with the hash rewritten; the kernel, RAM, file, symbol, initrd, cmdline and offset controls, Boot, the header and build lines and the setting are in the Machine tab, the screen, run bar, counters, status and state line in the top bar; picking hello-os and Boot with 4 MB from the Machine tab boot it; a bzImage dropped on the About tab boots; compact tabs hide the words, keep aria-label and tooltip, the hover shows the name, a click opens the tab, the choice survives a reload both ways, off by default at 1280 px, on by default at 390 px with the bar in one row; the top bar at 390 px is shorter than the 1,003 px it had before; no horizontal scroll). On 8dc5c89c7 it fails: no emoji, Graph and Coverage, no Machine tab, no compact setting, top bar 1,003 px | debian,...,legend,tabs |
+| P1 installable, offline, update notice | suite pwa (locally the site is deployed twice into a temporary directory with `stamp.py`, served with Pages' caching; offline means the server answers nothing and the context is offline): the manifest is linked and parses, start_url and scope resolve to the site's directory, the icons load at their declared sizes (192, 512, maskable), theme-color for light and dark; Chromium's own parse of the manifest (CDP Page.getAppManifest) meets its install criteria (Page.getInstallabilityErrors is checked too, but Chromium 145 answers [] even for a page without a manifest); a service worker controls the page after the first visit and answers fetches; its version and cache names are the deployed commit. Online, hello paused: Run to hello_main, call stack, locals, Page listing and boot/hello.c in the Source panel. Offline: a reload boots hello to "Hello, World!", the minified Linux (never opened online) boots too, the same Debugger, Page and Source checks pass, Debian (never fetched) says "not available offline yet" with no page error. A second deploy (another commit in sw.js, version.json and the stamps, a marker in app.js): coming back online shows the update notice; Reload runs the new app.js under the new worker with only the new deploy's caches, and the notice does not show on it. Screenshots of the notes light and dark at 1280 and 390 px, no horizontal scroll. With `--base` the offline part aborts every request of the context and the new deploy is a version.json routed to another commit. On 039c91717 it fails: no manifest, no service worker | debian,...,tabs,pwa |
 | K1 boot check reads the screen | `test_qemu_screen_check.py` (the kernels job's -O0 boot output of run 42539920959, where curses drew "H", a backspace, escapes, a cursor-right and "ello, World!": the bytes lack "Hello, World!" and an expect pattern on them ends without a match, while the replayed 80x25 screen shows "Hello, World!" and "Still alive" on rows 9 and 10 for every read size from 1 byte up; output cut before "Still alive", the strings in the wrong order, overwritten or cleared text fail); `qemu_screen_check.py` boots hello and hello-os (18M and the low image at 1M) and the -O0 minified Linux in the workflow | kernels |
 | U1/U2 unoptimized builds | qemu boot of the -O0 hello and minified Linux with both gate lines on the screen (`qemu_screen_check.py`); `check-code-identity.py` for each -O0 and -Os pair; `test_dwarf.py` on both builds of each; suite hello (every instruction of hello_main and put_line), suite unoptimized (minified Linux: eight Run to stops, single steps into calls, no "optimized out" at any address read, values vs gdb at each stop; the -Os entry must show some) | kernels; tasks,operands,runto_phone,srclinks,unoptimized; boot,... |
 

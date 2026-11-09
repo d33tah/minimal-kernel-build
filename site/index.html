@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kernel in the browser</title>
 <link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="theme-color" content="#fbfbf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17181a" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Boot the minified Linux, a hello kernel or Debian's kernel in v86 and step through it with a debugger, its memory map, call graph and C source.">
 </head>
 <body>
 <header class="top">
@@ -13,6 +19,7 @@
     <span id="status" role="status">Loading kernel list...</span>
   </div>
   <div id="problems" class="problems"></div>
+  <div id="pwa_notes" class="problems" role="status"></div>
 
   <div class="machine">
     <div class="screenwrap">
@@ -401,5 +408,6 @@
 <script src="vars.js"></script>
 <script src="fnfacts.js"></script>
 <script src="app.js"></script>
+<script src="pwa.js"></script>
 </body>
 </html>

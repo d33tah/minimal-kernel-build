@@ -37,10 +37,18 @@ jobs:
         make -C "$RUNNER_TEMP/hello-os" LLVM=1
         ls -l hello/bzImage "$RUNNER_TEMP/hello-os/bzImage"
 
-    - name: Boot the hello kernels in qemu (vmtest)
+    # The boots below read qemu's curses screen (site/qemu_screen_check.py):
+    # an expect pattern on the raw output timed out in run 42539920959 when
+    # curses drew "H" and "ello, World!" with escapes in between.
+    - name: Test the boot screen check on a captured split output
+      run: site/test_qemu_screen_check.py
+
+    - name: Boot the hello kernels in qemu (screen check)
       run: |
-        make -C hello test OPT=-O0
-        make -C "$RUNNER_TEMP/hello-os" test
+        site/qemu_screen_check.py --qemu=qemu-system-i386 --kernel=hello/bzImage --mem=18M --expect="Hello, World!" --expect="Still alive"
+        site/qemu_screen_check.py --qemu=qemu-system-i386 --kernel=hello/bzImage.low --mem=1M --expect="Hello, World!" --expect="Still alive"
+        site/qemu_screen_check.py --qemu=qemu-system-i386 --kernel="$RUNNER_TEMP/hello-os/bzImage" --mem=18M --expect="Hello, World!" --expect="Still alive"
+        site/qemu_screen_check.py --qemu=qemu-system-i386 --kernel="$RUNNER_TEMP/hello-os/bzImage.low" --mem=1M --expect="Hello, World!" --expect="Still alive"
 
     - name: Build the minified Linux and run the make vm gate
       run: make vm
@@ -50,10 +58,9 @@ jobs:
     # minified/ with site/unoptimized.patch (two things -O0 needs that the
     # -Os build gets from the optimizer) and KCFLAGS=-O0. The product build
     # above (-Os, make vm) is the page's "minified-linux-os" entry.
-    - name: Build the minified Linux with -O0 for the site and boot it in qemu (vmtest)
+    - name: Build the minified Linux with -O0 for the site and boot it in qemu (screen check)
       run: |
         o="$RUNNER_TEMP/o0"
-        w=$PWD
         rm -rf "$o" && mkdir -p "$o"
         cp -a minified "$o/minified"
         make -C "$o/minified" clean
@@ -61,7 +68,7 @@ jobs:
         start=$(date +%s)
         make -C "$o/minified" LLVM=1 -j6 KCFLAGS=-O0
         echo "minified Linux -O0 build: $(( $(date +%s) - start )) s"
-        (cd "$o" && "$w/vmtest.tcl")
+        site/qemu_screen_check.py --qemu=qemu-system-x86_64 --kernel="$o/minified/arch/x86/boot/bzImage" --mem=18M --expect="Hello, World!" --expect="Still alive"
         ls -l "$o/minified/vmlinux" "$o/minified/arch/x86/boot/bzImage" minified/arch/x86/boot/bzImage
 
     - name: Collect kernels

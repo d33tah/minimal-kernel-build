@@ -8,54 +8,10 @@
 </head>
 <body>
 <header class="top">
-  <section class="controls" aria-label="Machine">
-    <h1>Kernel in the browser<span class="tip" tabindex="0" role="button" title="Boots a bzImage in v86, an x86 emulator compiled to WebAssembly (github.com/copy/v86). See the About tab.">?</span></h1>
-    <label>Kernel
-      <select id="kernel"></select>
-    </label>
-    <label>RAM
-      <select id="memory">
-        <option value="2097152">2 MB</option>
-        <option value="4194304">4 MB</option>
-        <option value="18874368">18 MB</option>
-        <option value="33554432">32 MB</option>
-        <option value="67108864">64 MB</option>
-        <option value="100663296">96 MB</option>
-        <option value="134217728">128 MB</option>
-        <option value="268435456">256 MB</option>
-        <option value="536870912">512 MB</option>
-      </select>
-    </label>
-    <label><span>From disk<span class="tip" tabindex="0" role="button" title="Load any bzImage from your disk instead of the list">?</span></span>
-      <input type="file" id="file">
-    </label>
-    <label><span>Symbols<span class="tip" tabindex="0" role="button" title="Import symbols for the current kernel: a System.map (the text llvm-nm -n or nm -n prints: hex address, type letter, name) or an unstripped vmlinux (ELF32: .symtab and section headers are read in the browser). They replace the kernel's symbols.json everywhere (memory grid, Page symbol index, Debugger, Graph, panic detection) and the kernel reboots. A System.map has no sizes: each symbol runs to the next one, capped at the end of its section (_etext, _edata, __bss_stop, ...). Physical address = virtual - offset: auto takes PT_LOAD from an ELF, and for a System.map puts _text at 0x100000 where v86 loads the 32-bit kernel (else vaddr - 0xC0000000, the i386 PAGE_OFFSET, or identity); or type a hex offset. An unstripped vmlinux with DWARF gives file:line; for the text of the lines pick its source folder or .tar under C source. Code is disassembled live in the browser. The map is remembered in this browser for this bzImage (by SHA-256). You can also drop a bzImage and a System.map on the page together.">?</span></span>
-      <input type="file" id="symfile">
-    </label>
-    <span id="src_pick" class="srcpick" hidden><span>C source<span class="tip" tabindex="0" role="button" title="The text of the C lines for an imported vmlinux (or a kernel without shipped source): pick the source tree it was built from, as a folder or an uncompressed .tar (ustar or GNU; a .tar.gz or .tar.xz would have to be decompressed whole in the browser, so unpack it first). The DWARF paths are relative to the tree; a folder or .tar holding it one level down (linux-6.1.176/...) works too. Only the files of the lines shown are read, when they are shown. Nothing is uploaded or remembered: pick it again after a reload.">?</span></span>
-      <span class="row"><input type="file" id="src_tar" accept=".tar,application/x-tar" aria-label="kernel source .tar">
-      <button id="src_dir_btn" type="button">folder…</button></span>
-      <input type="file" id="src_dir" webkitdirectory hidden>
-    </span>
-    <label><span>initrd<span class="tip" tabindex="0" role="button" title="An initrd/initramfs for the kernel, passed to v86 (initrd: {buffer}). v86 0.5.471 always puts it at 64 MiB (src/kernel.js), so RAM must be larger than 64 MiB plus its size: picking one selects enough RAM. The kernel finds it through ramdisk_image/ramdisk_size in the boot header. The minified Linux does not use an external initrd yet.">?</span></span>
-      <input type="file" id="initrd_file">
-    </label>
-    <label><span>cmdline<span class="tip" tabindex="0" role="button" title="Kernel command line, passed to v86 (cmdline). Default: nokaslr cryptomgr.notests (imported System.maps only line up without KASLR; the crypto self-tests take long when stepped), or a kernel's own default; kernels that do not know an option ignore it, and the minified Linux ignores the command line. Add e.g. console=tty0 for a distro kernel. Remembered in this browser for this bzImage (by SHA-256); ?cmdline= in the URL sets it.">?</span></span>
-      <input id="cmdline" size="18" value="nokaslr cryptomgr.notests" aria-label="kernel command line">
-    </label>
-    <label><span>offset<span class="tip" tabindex="0" role="button" title="Physical address = virtual address - offset, for imported symbols. auto: from the ELF program headers (PT_LOAD) of a vmlinux; for a System.map _text is put at 0x100000, where v86 loads the 32-bit kernel. Or type the offset in hex (e.g. 0xc0000000, the i386 PAGE_OFFSET). Read when a symbol file is imported.">?</span></span>
-      <input id="sym_offset" value="auto" size="10" aria-label="symbol offset, auto or hex">
-    </label>
-    <button id="boot" type="button">Boot</button>
+  <div class="headline">
+    <h1>Kernel in the browser<span class="tip" tabindex="0" role="button" title="Boots a bzImage in v86, an x86 emulator compiled to WebAssembly (github.com/copy/v86). The kernel, RAM, files to load and Boot are in the Machine tab; see the About tab.">?</span></h1>
     <span id="status" role="status">Loading kernel list...</span>
-    <span id="kinfo" class="note mono"></span>
-    <span id="build_info" class="note mono"></span>
-    <span id="sym_status" class="note" role="status"></span>
-    <span id="src_status" class="note" role="status"></span>
-    <span id="initrd_status" class="note"></span>
-    <button id="initrd_clear" type="button" hidden>no initrd</button>
-    <button id="sym_forget" type="button" hidden title="Forget the imported symbols and use the kernel's own">forget symbols</button>
-  </section>
+  </div>
   <div id="problems" class="problems"></div>
 
   <div class="machine">
@@ -114,17 +70,71 @@
   </div>
 
   <nav class="tabbar" role="tablist" aria-label="Views">
-    <button role="tab" type="button" id="tab_memory" data-tab="memory">Memory</button>
-    <button role="tab" type="button" id="tab_page" data-tab="page">Page</button>
-    <button role="tab" type="button" id="tab_debugger" data-tab="debugger">Debugger</button>
-    <button role="tab" type="button" id="tab_graph" data-tab="graph">Graph</button>
-    <button role="tab" type="button" id="tab_coverage" data-tab="coverage">Coverage</button>
-    <button role="tab" type="button" id="tab_snapshots" data-tab="snapshots">Snapshots</button>
-    <button role="tab" type="button" id="tab_about" data-tab="about">About</button>
+    <button role="tab" type="button" id="tab_machine" data-tab="machine" aria-label="Machine"><span class="temo" aria-hidden="true">🖥️</span> <span class="tword">Machine</span></button>
+    <button role="tab" type="button" id="tab_memory" data-tab="memory" aria-label="Memory"><span class="temo" aria-hidden="true">🧠</span> <span class="tword">Memory</span></button>
+    <button role="tab" type="button" id="tab_page" data-tab="page" aria-label="Page"><span class="temo" aria-hidden="true">📄</span> <span class="tword">Page</span></button>
+    <button role="tab" type="button" id="tab_debugger" data-tab="debugger" aria-label="Debugger"><span class="temo" aria-hidden="true">🐞</span> <span class="tword">Debugger</span></button>
+    <button role="tab" type="button" id="tab_calls" data-tab="calls" aria-label="Calls"><span class="temo" aria-hidden="true">📞</span> <span class="tword">Calls</span></button>
+    <button role="tab" type="button" id="tab_source" data-tab="source" aria-label="Source"><span class="temo" aria-hidden="true">📝</span> <span class="tword">Source</span></button>
+    <button role="tab" type="button" id="tab_snapshots" data-tab="snapshots" aria-label="Snapshots"><span class="temo" aria-hidden="true">📸</span> <span class="tword">Snapshots</span></button>
+    <button role="tab" type="button" id="tab_about" data-tab="about" aria-label="About"><span class="temo" aria-hidden="true">ℹ️</span> <span class="tword">About</span></button>
   </nav>
 </header>
 
 <main>
+<section class="panel" id="panel_machine" role="tabpanel" aria-labelledby="tab_machine" hidden>
+  <section class="controls" aria-label="Kernel and boot">
+    <label>Kernel
+      <select id="kernel"></select>
+    </label>
+    <label>RAM
+      <select id="memory">
+        <option value="2097152">2 MB</option>
+        <option value="4194304">4 MB</option>
+        <option value="18874368">18 MB</option>
+        <option value="33554432">32 MB</option>
+        <option value="67108864">64 MB</option>
+        <option value="100663296">96 MB</option>
+        <option value="134217728">128 MB</option>
+        <option value="268435456">256 MB</option>
+        <option value="536870912">512 MB</option>
+      </select>
+    </label>
+    <label><span>From disk<span class="tip" tabindex="0" role="button" title="Load any bzImage from your disk instead of the list">?</span></span>
+      <input type="file" id="file">
+    </label>
+    <label><span>Symbols<span class="tip" tabindex="0" role="button" title="Import symbols for the current kernel: a System.map (the text llvm-nm -n or nm -n prints: hex address, type letter, name) or an unstripped vmlinux (ELF32: .symtab and section headers are read in the browser). They replace the kernel's symbols.json everywhere (memory grid, Page symbol index, Debugger, Calls, panic detection) and the kernel reboots. A System.map has no sizes: each symbol runs to the next one, capped at the end of its section (_etext, _edata, __bss_stop, ...). Physical address = virtual - offset: auto takes PT_LOAD from an ELF, and for a System.map puts _text at 0x100000 where v86 loads the 32-bit kernel (else vaddr - 0xC0000000, the i386 PAGE_OFFSET, or identity); or type a hex offset. An unstripped vmlinux with DWARF gives file:line; for the text of the lines pick its source folder or .tar under C source. Code is disassembled live in the browser. The map is remembered in this browser for this bzImage (by SHA-256). You can also drop a bzImage and a System.map on the page together.">?</span></span>
+      <input type="file" id="symfile">
+    </label>
+    <span id="src_pick" class="srcpick" hidden><span>C source<span class="tip" tabindex="0" role="button" title="The text of the C lines for an imported vmlinux (or a kernel without shipped source): pick the source tree it was built from, as a folder or an uncompressed .tar (ustar or GNU; a .tar.gz or .tar.xz would have to be decompressed whole in the browser, so unpack it first). The DWARF paths are relative to the tree; a folder or .tar holding it one level down (linux-6.1.176/...) works too. Only the files of the lines shown are read, when they are shown. Nothing is uploaded or remembered: pick it again after a reload.">?</span></span>
+      <span class="row"><input type="file" id="src_tar" accept=".tar,application/x-tar" aria-label="kernel source .tar">
+      <button id="src_dir_btn" type="button">folder…</button></span>
+      <input type="file" id="src_dir" webkitdirectory hidden>
+    </span>
+    <label><span>initrd<span class="tip" tabindex="0" role="button" title="An initrd/initramfs for the kernel, passed to v86 (initrd: {buffer}). v86 0.5.471 always puts it at 64 MiB (src/kernel.js), so RAM must be larger than 64 MiB plus its size: picking one selects enough RAM. The kernel finds it through ramdisk_image/ramdisk_size in the boot header. The minified Linux does not use an external initrd yet.">?</span></span>
+      <input type="file" id="initrd_file">
+    </label>
+    <label><span>cmdline<span class="tip" tabindex="0" role="button" title="Kernel command line, passed to v86 (cmdline). Default: nokaslr cryptomgr.notests (imported System.maps only line up without KASLR; the crypto self-tests take long when stepped), or a kernel's own default; kernels that do not know an option ignore it, and the minified Linux ignores the command line. Add e.g. console=tty0 for a distro kernel. Remembered in this browser for this bzImage (by SHA-256); ?cmdline= in the URL sets it.">?</span></span>
+      <input id="cmdline" size="18" value="nokaslr cryptomgr.notests" aria-label="kernel command line">
+    </label>
+    <label><span>offset<span class="tip" tabindex="0" role="button" title="Physical address = virtual address - offset, for imported symbols. auto: from the ELF program headers (PT_LOAD) of a vmlinux; for a System.map _text is put at 0x100000, where v86 loads the 32-bit kernel. Or type the offset in hex (e.g. 0xc0000000, the i386 PAGE_OFFSET). Read when a symbol file is imported.">?</span></span>
+      <input id="sym_offset" value="auto" size="10" aria-label="symbol offset, auto or hex">
+    </label>
+    <button id="boot" type="button">Boot</button>
+    <span id="kinfo" class="note mono"></span>
+    <span id="build_info" class="note mono"></span>
+    <span id="sym_status" class="note" role="status"></span>
+    <span id="src_status" class="note" role="status"></span>
+    <span id="initrd_status" class="note"></span>
+    <button id="initrd_clear" type="button" hidden>no initrd</button>
+    <button id="sym_forget" type="button" hidden title="Forget the imported symbols and use the kernel's own">forget symbols</button>
+  </section>
+  <h3>Settings</h3>
+  <div class="scan">
+    <label><input type="checkbox" id="compact_tabs"> Compact tabs: emoji only<span class="tip" tabindex="0" role="button" title="The tab buttons show only their emoji; hover, focus or a long press shows the name. Remembered in this browser. On by default on screens up to 400 px wide, where the names take two rows.">?</span></label>
+  </div>
+</section>
+
 <section class="panel" id="panel_memory" role="tabpanel" aria-labelledby="tab_memory">
   <h3>First MiB <span class="tip" tabindex="0" role="button" title="Regions follow from the boot header and from where v86 puts things: real-mode setup at 0x80000, command line at 0x8e000, the 32-bit part always at 1 MiB. SeaBIOS builds the e820 map from the RAM size: usable RAM with the 0x9fc00-0x100000 hole reserved.">?</span></h3>
   <div class="bar" id="map_low"></div>
@@ -193,7 +203,7 @@
   <div id="watches" class="watches mono"></div>
 </section>
 
-<section class="panel" id="panel_graph" role="tabpanel" aria-labelledby="tab_graph" hidden>
+<section class="panel" id="panel_calls" role="tabpanel" aria-labelledby="tab_calls" hidden>
   <div class="scan">
     <span class="tabs"><button id="gview_timeline" type="button" aria-pressed="true">Timeline</button>
       <button id="gview_tree" type="button" aria-pressed="false">Call tree</button>
@@ -219,7 +229,7 @@
   <div id="graph_info" class="syminfo"></div>
 </section>
 
-<section class="panel" id="panel_coverage" role="tabpanel" aria-labelledby="tab_coverage" hidden>
+<section class="panel" id="panel_source" role="tabpanel" aria-labelledby="tab_source" hidden>
   <div class="scan">
     <input id="cov_filter" type="search" placeholder="filter" aria-label="filter files and functions"><span class="tip" tabindex="0" role="button" title="All the kernel's code, by directory, file and function, from its DWARF: for the kernels built here a -g build of the same tree whose code is byte-identical to the kernel that boots, for Debian its -dbg package. Lines run: of the lines with code (the line table's rows; a line of inlined code and the line of its call both count), those where an instruction started while the page stepped the CPU. Instructions run: of the function's instructions (llvm-objdump of the same ELF, in CI), the addresses where an instruction started while stepping. Only what the page steps is recorded, the same record as the tint in the Page listing: code v86's JIT ran (the fast-forward to the kernel entry, full speed) is not. Tap a directory to open it, a file for the whole file in the Source panel with its executed lines (the other lines of a statement written over several lines, e.g. an asm statement, are marked ┆ with the statement's status and are not counted), a function to open it in the Page tab. The totals come with the kernel; which lines ran is read from the line tables of the code that ran, fetched when needed. An imported vmlinux has no tree: its DWARF is only read around the addresses shown.">?</span>
     <label>sort <select id="cov_sort">
@@ -255,14 +265,15 @@
   <p>This page boots a Linux-style bzImage in <a href="https://github.com/copy/v86">v86</a>, an x86 emulator compiled to WebAssembly, and lets you look inside the machine while it runs. Four kernels come with it: <b>hello</b>, a toy kernel that prints two lines and halts; <b>minified-linux</b>, the reduced Linux kernel of <a href="https://github.com/d33tah/minimal-kernel-build">minimal-kernel-build</a>; and Debian 6.1 686 (bookworm's linux-image-6.1.0-50-686), once without an initrd (it ends in a root-fs panic) and once with its initramfs (it stops at the BusyBox shell). All four come with their debug info (DWARF): file:line, C source, variables, backtraces, parameters and locals, task names and a coverage tree. Any bzImage can be loaded from disk.</p>
   <h3>Tabs</h3>
   <ul>
+    <li><b>Machine</b>: what runs and how it boots: the kernel, RAM, a bzImage from disk, symbols, C source, initrd, command line, Boot, the loaded bzImage's header and build, and the page's settings (Compact tabs). The screen, Pause, Continue, Step, speed and the counters stay above the tabs.</li>
     <li><b>Memory</b>: the physical memory map from the boot header and one square per 4 KiB page, coloured by region and ELF section.</li>
     <li><b>Page</b>: one page as a single listing, instructions where the kernel has code and hex rows elsewhere, with symbol headers; after each instruction its jump paths in and out (static and observed while stepping, with counts), and the jumps inside the page as arcs.</li>
     <li><b>Debugger</b>: registers, stepping and run-to-address; at a pause the C line and inlined-at chain of EIP, the running task (comm, pid), the call stack unwound with the DWARF call frame information, each frame's parameters and locals, and the kernel's global variables, pretty-printed from guest RAM.</li>
     <li><b>C source</b>: the Page listing and the Debugger interleave the C lines (from the DWARF of a -g build with byte-identical code) with the instructions; tap one for the function with its executed lines. The text is shipped for every sample kernel (Debian: its source package); for an imported vmlinux pick its source folder or .tar.</li>
-    <li><b>Symbols</b>: import a System.map or an unstripped vmlinux for the current kernel (next to From disk, or drop it on the page with a bzImage); it replaces the kernel's symbols everywhere.</li>
-    <li><b>initrd, cmdline</b>: pass an initrd and a command line to v86 for third-party 32-bit kernels (v86 puts the initrd at 64 MiB, so RAM is raised to fit). Our kernels ignore a bootloader initrd.</li>
-    <li><b>Graph</b>: the symbols the CPU went through while stepping and the transitions between them, live, with task switches named by task.</li>
-    <li><b>Coverage</b>: all the kernel's code as a tree of directories, files and functions with the lines and instructions that ran while stepping; a file opens with its executed lines, lcov export.</li>
+    <li><b>Symbols</b>: import a System.map or an unstripped vmlinux for the current kernel (Machine tab, or drop it on the page with a bzImage from any tab); it replaces the kernel's symbols everywhere.</li>
+    <li><b>initrd, cmdline</b> (Machine tab): pass an initrd and a command line to v86 for third-party 32-bit kernels (v86 puts the initrd at 64 MiB, so RAM is raised to fit). Our kernels ignore a bootloader initrd.</li>
+    <li><b>Calls</b>: the symbols the CPU went through while stepping and the transitions between them, live, with task switches named by task.</li>
+    <li><b>Source</b>: all the kernel's code as a tree of directories, files and functions with the lines and instructions that ran while stepping (coverage); a file opens in the Source panel with its executed lines, lcov export.</li>
     <li><b>Snapshots</b>: save, restore and download the whole machine state.</li>
   </ul>
   <h3>Counting and stepping</h3>
@@ -317,7 +328,7 @@
 <span class="src nol"><span class="srcloc">include/linux/sched.h:12</span> <span class="srctext">return p;</span></span></span>
       <span><b>C line</b> (italics) above the instructions it compiled to: location in brown, text in purple; tap it for the function in the Source panel. Faded when there is no panel to open. Where: Page listing, Code at EIP (C source on).</span></li>
     <li><span class="lgs plain" inert><button type="button" class="srcloc srclink">init/main.c:960</button> <span class="srctext">set_task_stack_end_magic(&amp;init_task);</span></span>
-      <span><b>file:line</b> with a dotted underline: opens the Source panel at that line. Brown file:line and purple C text are the same everywhere: listings, Debugger, call stack, Source panel, Graph. Where: everywhere C appears.</span></li>
+      <span><b>file:line</b> with a dotted underline: opens the Source panel at that line. Brown file:line and purple C text are the same everywhere: listings, Debugger, call stack, Source panel, Calls. Where: everywhere C appears.</span></li>
   </ul>
   <h4>Debugger</h4>
   <ul class="lgnd">
@@ -328,7 +339,7 @@
     <li><span class="lgs plain" inert><span class="banner">Kernel panic: Attempted to kill init!</span><span class="banner" data-kind="halt">Halted: hlt with interrupts off</span></span>
       <span><b>End of the run</b>: red when the kernel panicked or ran out of its panic budget, amber when the CPU halted for good. Where: under the screen.</span></li>
   </ul>
-  <h4>Source panel and Coverage tab</h4>
+  <h4>Source panel and Source tab</h4>
   <ul class="lgnd">
     <li><span class="lgs srcview" inert><span class="exec">  958 ● <span class="srctext">local_irq_disable();</span></span>
 <span class="exec cont">  959 ┆ <span class="srctext">  early_boot_irqs_disabled = true;</span></span>
@@ -337,12 +348,12 @@
 <span class="code pick">  962 ○ <span class="srctext">page_address_init();</span></span></span>
       <span><b>Green</b> (●): a line whose code has executed; ○ not yet; ┆ and a lighter green: more lines of the statement above or below (not counted). <b>Blue box</b>: the line at EIP or the line opened. <b>Brown bar</b> on the left: the picked line, whose addresses are listed above the text. Recorded while stepping. Where: Source panel.</span></li>
     <li><span class="lgs plain" inert><span class="covbar" style="width: 8rem"><span style="width: 62%"></span></span></span>
-      <span><b>Coverage bar</b>: the share of lines (or instructions) that ran while stepping. Where: Coverage tab.</span></li>
+      <span><b>Coverage bar</b>: the share of lines (or instructions) that ran while stepping. Where: Source tab.</span></li>
   </ul>
   <h4>Memory tab</h4>
   <p class="note">One square per 4 KiB page, coloured by region of the boot memory map or by the kernel's ELF section:</p>
   <ul class="legend" id="legend_mem"></ul>
-  <h4>Graph tab</h4>
+  <h4>Calls tab</h4>
   <p class="note">Symbols are coloured by the top directory of their source file:</p>
   <ul class="legend" id="legend_graph"></ul>
   <h4>Warnings and links</h4>

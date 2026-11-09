@@ -1070,7 +1070,9 @@ function setLive() {
 
 // ---- tabs -----------------------------------------------------------------
 
-const TABS = ["memory", "page", "debugger", "graph", "coverage", "snapshots", "about"];
+const TABS = ["machine", "memory", "page", "debugger", "calls", "source", "snapshots", "about"];
+// The names of renamed tabs in old links (#graph, ?tab=coverage).
+const TAB_ALIASES = { graph: "calls", coverage: "source" };
 let tab = "memory";
 
 // Hash: #memory, #page/0x100000, #debugger, ...
@@ -1083,6 +1085,7 @@ function writeHash() {
 }
 
 function showTab(name) {
+	name = TAB_ALIASES[name] || name;
 	tab = TABS.includes(name) ? name : "memory";
 	for (const t of TABS) {
 		$("panel_" + t).hidden = t !== tab;
@@ -1095,8 +1098,43 @@ function showTab(name) {
 		drawGrid();
 	if (tab === "debugger")
 		renderContext();
-	graphShow(tab === "graph");
-	covShow(tab === "coverage");
+	graphShow(tab === "calls");
+	covShow(tab === "source");
+}
+
+// Compact tabs (Machine tab, Settings): the tab buttons show only their
+// emoji, the name is their tooltip and stays their accessible name.
+const COMPACT_KEY = "mkb-compact-tabs";
+
+function setCompactTabs(on) {
+	document.body.classList.toggle("compact-tabs", on);
+	$("compact_tabs").checked = on;
+	for (const t of TABS) {
+		const b = $("tab_" + t);
+		if (on)
+			b.dataset.tip = b.getAttribute("aria-label");
+		else
+			delete b.dataset.tip;
+	}
+}
+
+function initCompactTabs() {
+	let saved = null;
+	try {
+		saved = localStorage.getItem(COMPACT_KEY);
+	} catch (e) {
+		// no storage: the default
+	}
+	// Default on a phone: at 400 px and less the names take two rows.
+	setCompactTabs(saved === null ? window.matchMedia("(max-width: 400px)").matches : saved === "1");
+	$("compact_tabs").addEventListener("change", () => {
+		setCompactTabs($("compact_tabs").checked);
+		try {
+			localStorage.setItem(COMPACT_KEY, $("compact_tabs").checked ? "1" : "0");
+		} catch (e) {
+			// no storage: until reload
+		}
+	});
 }
 
 // A hash change (typed, or a link) opens that tab and page. Going back
@@ -1105,7 +1143,9 @@ function showTab(name) {
 function readHash() {
 	if (navBuilt && location.hash === navHashNow())
 		return;
-	const [name, addr] = location.hash.slice(1).split("/");
+	let [name, addr] = location.hash.slice(1).split("/");
+	if (!name && !navBuilt)
+		name = new URLSearchParams(location.search).get("tab"); // ?tab=calls when the URL has no hash
 	if (addr) {
 		const a = parseInt(addr, 16);
 		if (Number.isFinite(a))
@@ -1151,7 +1191,7 @@ function navListingAnchor() {
 }
 
 function navLabel(v) {
-	let where = "the " + $("tab_" + v.tab).textContent + " tab";
+	let where = "the " + $("tab_" + v.tab).getAttribute("aria-label") + " tab";
 	if (v.tab === "page") {
 		const at = v.hit >= 0 && Math.floor(v.hit / PAGE) === v.page ? v.hit : navListingAnchor();
 		const name = at >= 0 && symbols ? asmTargetName(at, kernelSymLookup()) : "";
@@ -3393,6 +3433,7 @@ async function init() {
 			renderGraphInfo();
 	});
 	updateDebugUi();
+	initCompactTabs();
 	for (const t of TABS)
 		$("tab_" + t).addEventListener("click", () => showTab(t));
 	window.addEventListener("hashchange", readHash);

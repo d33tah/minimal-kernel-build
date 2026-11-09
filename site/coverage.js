@@ -364,12 +364,12 @@ function initCoverage() {
 		COV.tree = COV.tree && DBG.files === COV.tree.F ? COV.tree : null;
 		if (COV.exporting)
 			covExport();
-		if (!$("panel_coverage").hidden)
+		if (!$("panel_source").hidden)
 			covRender();
 	});
 	// While the kernel is stepped, what ran grows.
 	setInterval(() => {
-		if ($("panel_coverage").hidden || !stepper)
+		if ($("panel_source").hidden || !stepper)
 			return;
 		const k = stepper.unique + ":" + DBG.version;
 		if (k !== COV.key) {

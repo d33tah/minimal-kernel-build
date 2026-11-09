@@ -287,7 +287,7 @@ def memory_lab(page, name, has_symbols, problems, shots, tag):
     for w in (390, 800, 1000, 1280):
         page.set_viewport_size({"width": w, "height": 900})
         time.sleep(0.4)
-        for t in ("page", "memory", "debugger", "graph", "snapshots", "about"):
+        for t in ("page", "memory", "debugger", "calls", "snapshots", "about"):
             show_tab(page, t)
             if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1"):
                 problems.append(f"page scrolls horizontally at {w} px on the {t} tab")
@@ -583,8 +583,8 @@ def timeline_views(page, problems, shots, tag, r):
 
 
 def graph_check(page, name, problems, shots, tag):
-    """Graph tab: flame timeline, call tree, top-30 graph, exports, tap."""
-    show_tab(page, "graph")
+    """Calls tab: flame timeline, call tree, top-30 graph, exports, tap."""
+    show_tab(page, "calls")
     time.sleep(0.4)
     r = {"nodes": int(page.get_attribute("#graph_status", "data-nodes") or 0),
          "edges": int(page.get_attribute("#graph_status", "data-edges") or 0),
@@ -855,6 +855,7 @@ def initrd_case(browser, base, shots):
     if not page.evaluate("pageClass.includes('r-initrd')"):
         problems.append("no grid page is classed as initrd")
     # Too little RAM: the header check says so.
+    show_tab(page, "machine")
     page.select_option("#memory", str(32 << 20))
     r["problem"] = page.inner_text("#problems")
     if "64 MiB" not in r["problem"]:
@@ -935,6 +936,7 @@ def distro_panic_case(browser, base, cache):
     page = browser.new_page(viewport={"width": 1100, "height": 1000})
     page.goto(f"{base}/index.html?kernel=hello&speed=full&count=0")
     wait_for(lambda: gate_on_screen(page), 60)
+    show_tab(page, "machine")
     page.fill("#cmdline", "console=tty0")
     t0 = time.monotonic()
     page.set_input_files("#file", str(kernel))
@@ -951,7 +953,7 @@ def follow_case(browser, base, shots):
     running frame's column on screen; the cmdline default is shown."""
     problems, r = [], {}
     page = browser.new_page(viewport={"width": 390, "height": 900})
-    page.goto(f"{base}/index.html?kernel=minified-linux&speed=100000#graph")
+    page.goto(f"{base}/index.html?kernel=minified-linux&speed=100000#calls")
     if not wait_for(lambda: page.get_attribute("#entry_info", "data-steps"), 60):
         return ["no kernel entry"], r
     r["cmdline"] = page.input_value("#cmdline")
@@ -1157,7 +1159,7 @@ def task_names_check(page, name, shots, r):
     page.emulate_media(color_scheme="light")
     page.set_viewport_size({"width": 1100, "height": 1000})
     # Call tree: one row per task under the root, named like the timeline.
-    page.click("#tab_graph")
+    page.click("#tab_calls")
     page.click("#gview_tree")
     wait_for(lambda: page.locator("#graph_tree .trow[data-task]").count() > 0, 5)
     rows = page.evaluate("[...document.querySelectorAll('#graph_tree .trow[data-task]')].map((r) => [+r.dataset.task, r.dataset.name])")
@@ -1178,7 +1180,7 @@ def tasks_case(browser, base, shots, name):
     task_struct (task_names_check)."""
     problems = []
     page = browser.new_page(viewport={"width": 1100, "height": 1000})
-    page.goto(f"{base}/index.html?kernel={name}&speed=full#graph")
+    page.goto(f"{base}/index.html?kernel={name}&speed=full#calls")
     if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 900, 2):
         return ["no end of the run"], {}
     time.sleep(2)
@@ -1391,6 +1393,7 @@ def phone_flow(browser, base, target, speed="1", phone=True, query="", before=No
     page.goto(f"{base}/index.html?kernel=hello{query}")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") not in (None, "", "off"), 60)
     page.select_option("#dbg_speed", speed)
+    act("#tab_machine")
     act("#boot")
     wait_for(lambda: page.is_enabled("#dbg_pause"), 60)
     act("#dbg_pause")
@@ -1615,7 +1618,7 @@ def dwarf_check(page, name, offset, problems, r, steps=DWARF_STEPS, entry_fn=Non
     r["call_stack_title"] = first.get_attribute("title") if cs else None
     if cs < 1 or not re.search(r"\.[chS]:\d+|no line information", r["call_stack_title"] or ""):
         problems.append(f"{name}: call stack without file:line tooltips: {cs} frames, {r['call_stack_title']!r}")
-    # Graph tab: a frame's hover text has where it was called from.
+    # Calls tab: a frame's hover text has where it was called from.
     t = page.evaluate("""() => { const st = G.stepper; const k = st.stack.length ? st.stack[st.stack.length - 1] : -1;
         return k >= 0 ? frameTitle(st, k) : null; }""")
     r["frame_title"] = t
@@ -1704,7 +1707,7 @@ def src_colour_check(page, name, phys, inl_phys, problems, r, shots):
         page.screenshot(path=str(shots / f"srccolour-{name}-390-{scheme}.png"))
         page.set_viewport_size({"width": 1280, "height": 1000})
         page.click("#src_close")
-        show_tab(page, "graph")
+        show_tab(page, "calls")
         page.evaluate("""() => { const st = G.stepper; G.view = 'timeline';
             G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fStart.length - 1; renderGraphInfo(); }""")
         got["Graph detail"] = page.evaluate(SRC_COLOURS_JS, list(SRC_COLOUR_VIEWS["Graph detail"]))
@@ -1763,8 +1766,8 @@ def dwarf_case(browser, base, shots, name):
     if name != "hello" and not r.get("dwarf_inlined"):
         problems.append(f"{name}: no sample EIP was in inlined code: {r}")
     page.screenshot(path=str(shots / f"dwarf-debugger-{name}-1280-light.png"))
-    # Graph tab: the detail of the innermost open frame names its call site and entry with file:line.
-    show_tab(page, "graph")
+    # Calls tab: the detail of the innermost open frame names its call site and entry with file:line.
+    show_tab(page, "calls")
     page.evaluate("""() => { const st = G.stepper; G.view = 'timeline';
         G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fStart.length - 1; renderGraphInfo(); }""")
     wait_for(lambda: "reading DWARF" not in (page.evaluate("(document.getElementById('graph_src') || {}).innerText") or ""), 15)
@@ -1812,7 +1815,7 @@ def import_source_check(page, problems, r, shots):
     equal to the files' own; the panel opens."""
     src = SITE / kernel_entries()["minified-linux"]["src"]
     r["src_status_before"] = page.inner_text("#src_status")
-    if not page.is_visible("#src_pick") or "file:line only" not in r["src_status_before"] or any(source_texts(page)):
+    if page.get_attribute("#src_pick", "hidden") is not None or "file:line only" not in r["src_status_before"] or any(source_texts(page)):
         problems.append(f"import without source: picker hidden or text shown: {r['src_status_before']!r}")
     with tempfile.TemporaryDirectory() as tmp:
         tree = pathlib.Path(tmp) / "linux-min"
@@ -1907,6 +1910,7 @@ def dwarf_import_case(browser, base, shots):
     r["after_reload"] = f"{same}/{len(samples)} EIPs answer as before the reload"
     if page.get_attribute("#sym_status", "data-dwarf") != "cached" or same != len(samples):
         problems.append(f"after a reload: {r['after_reload']}, status {r['reload_status']!r}")
+    show_tab(page, "machine")
     page.click("#sym_forget")
     wait_for(lambda: page.get_attribute("#sym_status", "data-state") != "imported", 30)
     page.close()
@@ -1922,6 +1926,7 @@ def dwarf_import_case(browser, base, shots):
         r["plain_status"] = page.inner_text("#sym_status")
         if "no DWARF" not in r["plain_status"]:
             problems.append(f"vmlinux without DWARF: not said so: {r['plain_status']!r}")
+        show_tab(page, "machine")
         page.click("#sym_forget")
         page.close()
     # Debian's -dbg vmlinux (GCC forms, 300 MB): only the parts needed are read.
@@ -1951,6 +1956,7 @@ def dwarf_import_case(browser, base, shots):
         r["debian_import"] = f"{len(pas) - len(bad)}/{len(pas)} agree with llvm-symbolizer"
         if bad:
             problems.append(f"Debian vmlinux import: {bad[:3]}")
+        show_tab(page, "machine")
         page.click("#sym_forget")
         page.close()
     elif os.environ.get("CI"):
@@ -2462,6 +2468,7 @@ def types_import_case(browser, base, shots):
             r["reload_status"] = page.inner_text("#watch_status")
             if page.get_attribute("#watches", "data-state") != "ok" or not page.evaluate(same_js, entry["dwarf"] + "types.json"):
                 problems.append(f"after a reload the imported variables are gone: {r['reload_status']!r}")
+        show_tab(page, "machine")
         page.click("#sym_forget")
         page.close()
         if errors:
@@ -2616,13 +2623,13 @@ def debian_source_panel(page, line, src_files, problems, r, shots):
 
 
 def debian_covtree(page, entry, bins, problems, r, shots):
-    """Debian's Coverage tab at start_kernel: the whole tree from files.json
+    """Debian's Source tab at start_kernel: the whole tree from files.json
     without reading every shard (only those with code that ran), totals
     equal files.json, init/main.c has lines that ran."""
     F = json.loads((SITE / entry["dwarf"] / "files.json").read_text())
     shards = json.loads((SITE / entry["dwarf"] / "index.json").read_text())["shards"]
     page.click("#src_close")
-    show_tab(page, "coverage")
+    show_tab(page, "source")
     wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok" and not page.inner_text("#cov_status").startswith("Reading"), 60)
     page.fill("#cov_filter", "init/main.c")
     rows = cov_rows(page)
@@ -2636,7 +2643,7 @@ def debian_covtree(page, entry, bins, problems, r, shots):
         problems.append(f"Debian coverage tree init/main.c: {main}")
     if len(bins) >= len(shards) / 2:
         problems.append(f"Debian coverage tree fetched {len(bins)} of {len(shards)} shards")
-    page.evaluate("document.getElementById('panel_coverage').scrollIntoView()")
+    page.evaluate("document.getElementById('panel_source').scrollIntoView()")
     page.screenshot(path=str(shots / "covtree-debian-1100.png"))
     page.fill("#cov_filter", "")
 
@@ -3494,8 +3501,8 @@ def fnfacts_case(browser, base, shots, name):
     llvm-symbolizer --inlines), the inlined one with its prototype and
     declaration and copy count as llvm-dwarfdump has them and the copy
     there listed. The same facts in the call stack's tooltip, on the Page
-    listing's label line, in the Coverage tab's function detail and (the
-    minified Linux) in the Graph tab's detail of a selected frame.
+    listing's label line, in the Source tab's function detail and (the
+    minified Linux) in the Calls tab's detail of a selected frame.
     Screenshots light/dark at 1280 and 390 px, no horizontal scroll."""
     from test_dwarf import dwarfdump_named, ctype
     problems, r = [], {}
@@ -3643,8 +3650,8 @@ def fnfacts_case(browser, base, shots, name):
         r["label line"] = lbl.first.inner_text()
         if lbl.first.get_attribute("data-proto") != top["facts"]["proto"] or "defined at" not in (lbl.first.get_attribute("title") or ""):
             problems.append(f"{name}: label line {lbl.first.get_attribute('data-proto')!r} / {lbl.first.get_attribute('title')!r}")
-    # The Coverage tab: the function row's arrow shows the same facts.
-    show_tab(page, "coverage")
+    # The Source tab: the function row's arrow shows the same facts.
+    show_tab(page, "source")
     page.fill("#cov_filter", fn)
     path = top["facts"]["file"] + ":" + fn
     tog = page.locator(f'#cov_tree .covrow[data-kind="func"][data-path="{path}"] .ttog')
@@ -3661,16 +3668,16 @@ def fnfacts_case(browser, base, shots, name):
                 problems.append(f"{name}: Coverage facts {cf} differ from the Debugger's {top['facts']}")
             page.emulate_media(color_scheme="dark")
             time.sleep(0.2)
-            page.locator("#panel_coverage").screenshot(path=str(shots / f"fnfacts-{name}-coverage-1280-dark.png"))
+            page.locator("#panel_source").screenshot(path=str(shots / f"fnfacts-{name}-coverage-1280-dark.png"))
             page.emulate_media(color_scheme="light")
     if name == "minified-linux":
-        # The Graph tab: step to record calls, select the widest frame of a DWARF
+        # The Calls tab: step to record calls, select the widest frame of a DWARF
         # function (tapping a box is graph_check's; the detail is the same render).
         show_tab(page, "debugger")
         page.fill("#dbg_n", "3000")
         page.click("#dbg_stepn")
         wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
-        show_tab(page, "graph")
+        show_tab(page, "calls")
         time.sleep(0.5)
         xy = page.evaluate("""() => { const st = G.stepper;
             let best = -1, w = -1;
@@ -3834,6 +3841,7 @@ def unwind_import_case(browser, base, shots, want):
         problems.append(f"after a reload: parameters and locals {lafter}, before {lbefore}")
     if rows != before or sum(1 for x in rows if isinstance(x, str) and x.startswith("CFA=")) < len(rows) - 1:
         problems.append(f"after a reload: CFI rows {rows}, before {before}")
+    show_tab(page, "machine")
     page.click("#sym_forget")
     wait_for(lambda: page.get_attribute("#sym_status", "data-state") != "imported", 30)
     page.close()
@@ -4222,7 +4230,7 @@ def hello_case(browser, base, shots, name="hello"):
     the registers the DWARF location lists give (EAX & 0xff, then EAX)
     and put_line's s is shown as optimized out. Both: Variables says there
     are no global variables, the task row that the DWARF has no
-    current_task (no tasks); the Coverage tab's tree has boot/hello.c
+    current_task (no tasks); the Source tab's tree has boot/hello.c
     with lines run and totals equal to files.json; light/dark at 1280 and
     390 px."""
     problems, r = [], {}
@@ -4385,7 +4393,7 @@ def hello_case(browser, base, shots, name="hello"):
     if "no current_task" not in r["task"]:
         problems.append(f"{name}: the task row does not say the DWARF has no current_task: {r['task']}")
     page.screenshot(path=str(shots / f"{name}-debugger-1280-light.png"), full_page=True)
-    show_tab(page, "coverage")
+    show_tab(page, "source")
     wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok", 30)
     cov_open_all(page)
     rows = {x["path"]: x for x in cov_rows(page)}
@@ -4426,7 +4434,7 @@ FIRSTLOOK_HELP_JS = """() => {
   const tipped = (e) => !!(e.title || e.dataset.tip || e.querySelector('.tip, [title], [data-tip]'));
   for (const t of q('.tip'))
     if (!(t.dataset.tip || t.title || '').trim()) out.push('empty ? tip: ' + t.outerHTML.slice(0, 80));
-  for (const h of q('#panel_debugger h3, #panel_coverage h3')) if (!h.querySelector('.tip')) out.push('heading without ?: ' + h.textContent);
+  for (const h of q('#panel_debugger h3, #panel_source h3')) if (!h.querySelector('.tip')) out.push('heading without ?: ' + h.textContent);
   for (const id of ['cur_sym', 'cur_src', 'cur_task', 'call_stack', 'prev_sym'])
     { const e = document.getElementById(id); if (!e) out.push('no #' + id); else if (!tipped(e)) out.push('#' + id + ' has no title'); }
   for (const e of q('#call_stack button, .fmeth')) if (!e.title && !e.closest('[title]')) out.push('call stack item without title: ' + e.textContent);
@@ -4447,11 +4455,11 @@ def firstlook_case(browser, base, shots, name):
     """A first-time user's look at each kernel (D8): paused at the reset
     vector, Run to a function (JIT and a breakpoint where the page can),
     then every debug feature's element has an explanation (? tip or title),
-    no id is used twice (the Coverage tab's notes once went to the Page
+    no id is used twice (the Source tab's notes once went to the Page
     tab), the entry line says the kernel was entered (it kept saying
     "Stepping BIOS and setup to the kernel entry..."), the symbol history
     says the JIT ran instead of naming the BIOS as the previous symbol,
-    the Coverage tab says its counts are incomplete when the JIT ran kernel
+    the Source tab says its counts are incomplete when the JIT ran kernel
     code and shows its notes, and no tab scrolls sideways at 390 px in
     light or dark."""
     problems, r = [], {}
@@ -4491,23 +4499,23 @@ def firstlook_case(browser, base, shots, name):
         problems.append(f"{name}: the JIT ran kernel code but the path does not say so: {r['path']!r}")
     help_bad = page.evaluate(FIRSTLOOK_HELP_JS)
     problems += [f"{name}: {b}" for b in help_bad]
-    show_tab(page, "coverage")
+    show_tab(page, "source")
     wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok"
              and not page.inner_text("#cov_status").startswith("Reading"), 60)
     r["cov_status"] = page.inner_text("#cov_status")
     info = page.evaluate("(document.getElementById('covtree_info') || {}).innerText || ''")
     r["covtree_info"] = info[:80]
     if not info.startswith("Lines:"):
-        problems.append(f"{name}: the Coverage tab has no notes under the tree: {r['covtree_info']!r}")
+        problems.append(f"{name}: the Source tab has no notes under the tree: {r['covtree_info']!r}")
     if page.evaluate("stepper.jitAfterEntry") and not r["cov_status"].startswith("Incomplete"):
-        problems.append(f"{name}: the JIT ran kernel code, the Coverage tab does not say it is incomplete: {r['cov_status']!r}")
+        problems.append(f"{name}: the JIT ran kernel code, the Source tab does not say it is incomplete: {r['cov_status']!r}")
     if page.is_disabled("#cov_export"):
         problems.append(f"{name}: lcov disabled although the tree is there")
     for scheme in ("light", "dark"):
         page.emulate_media(color_scheme=scheme)
         for w in (1280, 390):
             page.set_viewport_size({"width": w, "height": 900})
-            for t in ("debugger", "page", "coverage", "graph", "memory"):
+            for t in ("debugger", "page", "source", "calls", "memory"):
                 show_tab(page, t)
                 time.sleep(0.3)
                 if not no_hscroll(page, "html"):
@@ -4521,7 +4529,7 @@ def firstlook_case(browser, base, shots, name):
 
 
 def firstlook_import_case(browser, base, shots):
-    """The imported unstripped vmlinux: same explanations; the Coverage tab
+    """The imported unstripped vmlinux: same explanations; the Source tab
     says why there is no tree and lcov is disabled."""
     problems, r = [], {}
     elf = debug_elf("minified-linux")
@@ -4536,11 +4544,11 @@ def firstlook_import_case(browser, base, shots):
     page.set_input_files("#symfile", str(elf))
     wait_for(lambda: "compile units" in page.inner_text("#sym_status"), 60)
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
-    show_tab(page, "coverage")
+    show_tab(page, "source")
     wait_for(lambda: page.get_attribute("#cov_tree", "data-state") not in (None, "loading"), 30)
     r["cov_status"] = page.inner_text("#cov_status")
     if "imported vmlinux" not in r["cov_status"]:
-        problems.append(f"import: the Coverage tab does not say why there is no tree: {r['cov_status']!r}")
+        problems.append(f"import: the Source tab does not say why there is no tree: {r['cov_status']!r}")
     if not page.is_disabled("#cov_export"):
         problems.append("import: lcov is enabled without a tree")
     problems += [f"import: {b}" for b in page.evaluate(FIRSTLOOK_HELP_JS)
@@ -4664,7 +4672,7 @@ def cov_open_all(page):
 
 
 def covtree_case(browser, base, shots):
-    """The Coverage tab after a counted minified boot: init/main.c has lines
+    """The Source tab after a counted minified boot: init/main.c has lines
     that ran, die() (never called in a good boot) has none, the root and every
     directory are the sums of their files, the tree's numbers agree with
     files.json and with the Source panel's whole-file view, a function opens
@@ -4679,7 +4687,7 @@ def covtree_case(browser, base, shots):
     page.goto(f"{base}/index.html?kernel=minified-linux&speed=full")
     if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 120):
         problems.append("the counted boot did not end")
-    show_tab(page, "coverage")
+    show_tab(page, "source")
     wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok"
              and page.get_attribute("#cov_tree", "data-coverage") in ("stepped", "partial"), 30)
     r["coverage"] = page.get_attribute("#cov_tree", "data-coverage")
@@ -4758,7 +4766,7 @@ def covtree_case(browser, base, shots):
         time.sleep(0.3)
         if not page.evaluate("document.documentElement.scrollWidth <= window.innerWidth + 1") or not no_hscroll(page, "#cov_tree"):
             problems.append(f"{scheme}/{width}: horizontal scroll")
-        page.evaluate("document.getElementById('panel_coverage').scrollIntoView()")
+        page.evaluate("document.getElementById('panel_source').scrollIntoView()")
         page.screenshot(path=str(shots / f"covtree-{scheme}-{width}.png"))
     page.fill("#cov_filter", "")
     page.set_viewport_size({"width": 1280, "height": 1000})
@@ -4824,7 +4832,7 @@ def multiline_case(browser, base, shots):
     page.goto(f"{base}/index.html?kernel=minified-linux&speed=full")
     if not wait_for(lambda: page.get_attribute("#end_banner", "data-kind"), 120):
         problems.append("the counted boot did not end")
-    show_tab(page, "coverage")
+    show_tab(page, "source")
     wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok"
              and page.get_attribute("#cov_tree", "data-coverage") in ("stepped", "partial"), 30)
     cov_open_all(page)
@@ -4917,7 +4925,7 @@ def multiline_case(browser, base, shots):
         if hi <= lo:
             problems.append(f"{path}: {func}'s asm statement {lo}-{hi} is one line")
             continue
-        # The whole file (the Coverage tab's view).
+        # The whole file (the Source tab's view).
         panel_open("p => openSourceFile(p)", path)
         code, ran = check(path + " whole file", path, lo, hi)
         tree, lc = files.get(path), lcov.get(path, {})
@@ -5229,7 +5237,7 @@ def srclinks_case(browser, base, shots):
     # Graph detail: where the selected call came from and its entry.
     if page.is_visible("#src_panel"):
         page.click("#src_close")
-    show_tab(page, "graph")
+    show_tab(page, "calls")
     page.evaluate("""() => { const st = G.stepper; G.view = 'timeline';
         G.selected = st.stack.length ? st.stack[st.stack.length - 1] : st.fStart.length - 1; renderGraphInfo(); }""")
     wait_for(lambda: page.locator("#graph_src .srclink").count() > 0, 20)
@@ -5237,13 +5245,13 @@ def srclinks_case(browser, base, shots):
     r["Graph detail"] = want
     if p:
         problems.append(f"{name} Graph detail: {p}")
-    p = srclink_plain_text(page, f"{name} Graph tab")
+    p = srclink_plain_text(page, f"{name} Calls tab")
     if p:
         problems.append(p)
     # Coverage: a function's facts (open its row's arrow).
     if page.is_visible("#src_panel"):
         page.click("#src_close")
-    show_tab(page, "coverage")
+    show_tab(page, "source")
     page.fill("#cov_filter", fn)
     frow = page.locator(f'#cov_tree .covrow[data-kind="func"][data-path$=":{fn}"]').first
     if wait_for(lambda: frow.count() > 0, 30):
@@ -5253,7 +5261,7 @@ def srclinks_case(browser, base, shots):
         r["Coverage facts"] = want
         if p:
             problems.append(f"{name} Coverage facts: {p}")
-        p = srclink_plain_text(page, f"{name} Coverage tab")
+        p = srclink_plain_text(page, f"{name} Source tab")
         if p:
             problems.append(p)
     else:
@@ -5363,6 +5371,7 @@ def touch_case(browser, base, shots):
     # Inside a label the ? must not open the control (file chooser).
     choosers = []
     page.on("filechooser", lambda fc: choosers.append(fc))
+    page.tap("#tab_machine")
     page.locator("label:has(#file) .tip").tap()
     time.sleep(1)
     if choosers:
@@ -7132,7 +7141,7 @@ def legend_case(browser, base, shots, name="minified-linux"):
     """L1: the About tab's legend has a sample of every colour and mark the
     page draws. After stepping, every class with a colour (style.css) on
     an element of the listings, the Debugger, the Source panel, the
-    Coverage tab and the Memory tab is in the legend unless check-legend.py
+    Source tab and the Memory tab is in the legend unless check-legend.py
     calls it page furniture, and each sample looks exactly like the real
     element (computed colour, background, outline, italics, opacity,
     stroke) in light and dark. The generated swatches (memory regions and
@@ -7188,9 +7197,9 @@ def legend_case(browser, base, shots, name="minified-linux"):
     time.sleep(2)
     seen.update(page.evaluate(LEGEND_LIVE_CLASSES_JS, "#src_panel *"))
     page.click("#src_close")
-    show_tab(page, "coverage")
+    show_tab(page, "source")
     time.sleep(2)
-    seen.update(page.evaluate(LEGEND_LIVE_CLASSES_JS, "#panel_coverage *"))
+    seen.update(page.evaluate(LEGEND_LIVE_CLASSES_JS, "#panel_source *"))
     show_tab(page, "memory")
     time.sleep(0.5)
     seen.update(page.evaluate(LEGEND_LIVE_CLASSES_JS, "#panel_memory *, #problems *, .banner"))
@@ -7734,14 +7743,14 @@ def nav_jumps(page, name, problems, r):
 
     def coverage(kind):
         def prep():
-            show_tab(page, "coverage")
+            show_tab(page, "source")
             wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok", 30)
             cov_open_all(page)
             return nav_first(page, f'#cov_tree .covrow[data-kind="{kind}"] .covname')
         return prep
 
     def graph():
-        show_tab(page, "graph")
+        show_tab(page, "calls")
         page.click("#gview_tree")
         wait_for(lambda: page.locator("#graph_tree .tname").count() > 1, 20)
         page.evaluate("document.querySelectorAll('#graph_tree .ttog').forEach((b) => b.textContent === '\u25b8' && b.click())")
@@ -8068,6 +8077,224 @@ def suite_navhist(ctx):
     return report("navhist", *navhist_case(ctx.browser, ctx.base, ctx.shots))
 
 
+# ---- tabs: names, emoji, compact mode, the Machine tab (U3) ---------------
+# The operator: "coverage zamień na Source, Graph na Calls. emoji przed
+# etykietami. w ustawieniach możliwość zwinięcia do samego emoji.
+# zarządzanie symulacją niech będzie kolejną kartą". The tab bar names the
+# tabs with an emoji (aria-hidden) and the word (the accessible name); the
+# old hashes and ?tab= values still open the renamed tabs; "Compact tabs"
+# (Machine tab, Settings) shows the emoji only, remembered across a reload;
+# the Machine tab holds the kernel, RAM, file, symbol, initrd, cmdline and
+# offset controls and Boot, and the header keeps the screen, the run bar
+# and the counters, so it is shorter at 390 px than before (TABS_HEADER_390_BEFORE).
+
+TABS_WORDS = {"machine": "Machine", "memory": "Memory", "page": "Page", "debugger": "Debugger",
+              "calls": "Calls", "source": "Source", "snapshots": "Snapshots", "about": "About"}
+TABS_ALIASES = {"graph": "calls", "coverage": "source"}
+# The header's height at 390 px (hello booted, light) on 8dc5c89c7, before
+# the Machine tab took its controls: measured in this suite's setting.
+TABS_HEADER_390_BEFORE = 1003
+TABS_MACHINE_IDS = ["kernel", "memory", "file", "symfile", "initrd_file", "cmdline", "sym_offset", "boot",
+                    "kinfo", "build_info", "sym_status", "initrd_status", "compact_tabs"]
+TABS_HEADER_IDS = ["screen_container", "dbg_pause", "dbg_continue", "dbg_step", "dbg_speed", "clock_mips",
+                   "count", "counters", "status", "dbg_state"]
+
+# Per tab button: its id, accessible-name inputs, the emoji and the word as drawn.
+TABS_LOOK_JS = """() => [...document.querySelectorAll('.tabbar [role=tab]')].map((b) => {
+  const emo = b.querySelector('[aria-hidden=true]'); const word = b.querySelector('.tword');
+  const r = (word || b).getBoundingClientRect();
+  return { id: b.id, label: b.getAttribute('aria-label'), text: b.textContent.trim(), tip: b.dataset.tip || '',
+    emoji: emo ? emo.textContent.trim() : '', wordShown: !!word && r.width > 0 && getComputedStyle(word).display !== 'none',
+    top: Math.round(b.getBoundingClientRect().top) }; })"""
+
+
+def tabs_look(page):
+    return page.evaluate(TABS_LOOK_JS)
+
+
+def tabs_where(page, ids):
+    """The tab panel (or "header") each element is in."""
+    return page.evaluate("""(ids) => Object.fromEntries(ids.map((id) => { const e = document.getElementById(id);
+      if (!e) return [id, null]; const p = e.closest('[role=tabpanel]');
+      return [id, p ? p.id : e.closest('header.top') ? 'header' : 'elsewhere']; }))""", ids)
+
+
+def tabs_case(browser, base, shots):
+    problems, r = [], {}
+    errors = []
+
+    def fresh(scheme="light", phone=False):
+        c = browser.new_context(color_scheme=scheme, **(PHONE if phone else {"viewport": {"width": 1280, "height": 1000}}))
+        pg = c.new_page()
+        pg.on("pageerror", lambda e: errors.append(str(e)))
+        return c, pg
+
+    def booted(pg, name="hello"):
+        return wait_for(lambda: f"Running {name} " in (pg.text_content("#status") or "")
+                        and ALIVE in pg.inner_text("#screen_container"), 60)
+
+    c, page = fresh()
+    page.goto(f"{base}/index.html?kernel=hello")
+    if not booted(page):
+        problems.append(f"hello did not boot: {page.text_content('#status')!r}")
+    look = tabs_look(page)
+    r["labels"] = [(t["emoji"], t["label"] or t["text"]) for t in look]
+    want_ids = ["tab_" + k for k in TABS_WORDS]
+    if sorted(t["id"] for t in look) != sorted(want_ids):
+        problems.append(f"tab ids {[t['id'] for t in look]}, want {want_ids}")
+    for t in look:
+        word = TABS_WORDS.get(t["id"][4:])
+        if not t["emoji"]:
+            problems.append(f"{t['id']}: no aria-hidden emoji before the label")
+        if word and not t["text"].endswith(word):
+            problems.append(f"{t['id']}: label {t['text']!r}, want the emoji then {word!r}")
+        if word and page.get_by_role("tab", name=word, exact=True).count() != 1:
+            problems.append(f"no tab whose accessible name is {word!r}")
+        if not t["wordShown"]:
+            problems.append(f"{t['id']}: the word is not shown with compact tabs off")
+    if len({t["emoji"] for t in look}) != len(look):
+        problems.append(f"two tabs share an emoji: {r['labels']}")
+    for old in ("Graph", "Coverage"):
+        if page.get_by_role("tab", name=old).count():
+            problems.append(f"a tab is still called {old}")
+    about = page.text_content("#panel_about")
+    for old in ("Graph tab", "Coverage tab", "Graph:", "Coverage:"):
+        if old in about:
+            problems.append(f"the About text still says {old!r}")
+
+    # Where the controls are.
+    where = tabs_where(page, TABS_MACHINE_IDS + TABS_HEADER_IDS)
+    r["where"] = where
+    for i in TABS_MACHINE_IDS:
+        if where.get(i) != "panel_machine":
+            problems.append(f"#{i} is in {where.get(i)}, want the Machine tab")
+    for i in TABS_HEADER_IDS:
+        if where.get(i) != "header":
+            problems.append(f"#{i} is in {where.get(i)}, want the header")
+    r["header_1280"] = round(page.evaluate("document.querySelector('header.top').getBoundingClientRect().height"))
+
+    # Old hashes and ?tab= open the renamed tabs.
+    for old, new in TABS_ALIASES.items():
+        for url in (f"{base}/index.html?kernel=hello#{old}", f"{base}/index.html?kernel=hello&tab={old}",
+                    f"{base}/index.html?kernel=hello#{new}"):
+            page.goto(url)
+            ok = wait_for(lambda: page.locator(f"#tab_{new}").count()
+                          and page.get_attribute(f"#tab_{new}", "aria-selected") == "true"
+                          and page.evaluate("location.hash") == "#" + new, 10)
+            if not ok:
+                problems.append(f"{url[len(base):]}: the {TABS_WORDS[new]} tab is not shown with #{new} "
+                                f"(hash {page.evaluate('location.hash')!r})")
+    page.goto(f"{base}/index.html?kernel=hello#machine")
+    booted(page)
+    if page.get_attribute("#tab_machine", "aria-selected") != "true" if page.locator("#tab_machine").count() else True:
+        problems.append("#machine does not open the Machine tab")
+
+    # Booting another kernel from the Machine tab, and Boot again.
+    if page.locator("#tab_machine").count():
+        show_tab(page, "machine")
+        page.select_option("#kernel", "hello-os")
+        if not booted(page, "hello-os"):
+            problems.append(f"picking hello-os in the Machine tab did not boot it: {page.text_content('#status')!r}")
+        page.select_option("#memory", str(4 << 20))
+        page.click("#boot")
+        if not wait_for(lambda: "4,096 KiB" in (page.text_content("#status") or "") and ALIVE in page.inner_text("#screen_container"), 60):
+            problems.append(f"Boot with 4 MB from the Machine tab: {page.text_content('#status')!r}")
+        page.screenshot(path=str(shots / "tabs-1280-machine.png"))
+
+    # A bzImage dropped on the page boots from any tab (here: About).
+    show_tab(page, "about")
+    page.evaluate("""async () => { const b = await (await fetch('kernels/hello/bzImage')).arrayBuffer();
+      const dt = new DataTransfer(); dt.items.add(new File([b], 'dropped.bzImage'));
+      document.querySelector('#panel_about').dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true })); }""")
+    if not booted(page, "dropped.bzImage"):
+        problems.append(f"a bzImage dropped on the About tab did not boot: {page.text_content('#status')!r}")
+
+    # Compact tabs: emoji only, the word as tooltip and accessible name, kept across a reload.
+    if not page.locator("#compact_tabs").count():
+        problems.append("no Compact tabs setting (#compact_tabs)")
+    else:
+        show_tab(page, "machine")
+        if page.is_checked("#compact_tabs"):
+            problems.append("Compact tabs is on by default at 1280 px")
+        page.check("#compact_tabs")
+        for when in ("checked", "after a reload"):
+            look = tabs_look(page)
+            for t in look:
+                word = TABS_WORDS.get(t["id"][4:])
+                if t["wordShown"] or t["label"] != word or t["tip"] != word:
+                    problems.append(f"compact ({when}) {t['id']}: word shown {t['wordShown']}, aria-label {t['label']!r}, tip {t['tip']!r}")
+            if when == "checked":
+                page.screenshot(path=str(shots / "tabs-1280-compact.png"))
+                r["compact_width_1280"] = page.evaluate("Math.round(document.querySelector('.tabbar').scrollWidth)")
+                page.reload()
+                wait_for(lambda: page.locator("#compact_tabs").count() and page.is_checked("#compact_tabs"), 10)
+        page.hover("#tab_calls")
+        if not wait_for(lambda: page.is_visible("#tip_pop") and page.text_content("#tip_pop") == "Calls", 3):
+            problems.append(f"hovering the compact Calls tab shows {page.text_content('#tip_pop')!r}")
+        page.click("#tab_calls")
+        if page.get_attribute("#tab_calls", "aria-selected") != "true":
+            problems.append("a click on the compact Calls tab does not open it")
+        show_tab(page, "machine")
+        page.uncheck("#compact_tabs")
+        page.reload()
+        wait_for(lambda: page.locator("#compact_tabs").count(), 10)
+        if page.is_checked("#compact_tabs") or not all(t["wordShown"] for t in tabs_look(page)):
+            problems.append("Compact tabs off does not stay off after a reload")
+    c.close()
+
+    # 390 px, light and dark: shorter header, no sideways scroll, compact by default.
+    for scheme in ("light", "dark"):
+        c, page = fresh(scheme, phone=True)
+        page.goto(f"{base}/index.html?kernel=hello")
+        booted(page)
+        time.sleep(0.5)
+        h = round(page.evaluate("document.querySelector('header.top').getBoundingClientRect().height"))
+        r[f"header_390_{scheme}"] = h
+        if h >= TABS_HEADER_390_BEFORE:
+            problems.append(f"390 px {scheme}: header {h} px, not shorter than before ({TABS_HEADER_390_BEFORE} px)")
+        look = tabs_look(page)
+        rows = len({t["top"] for t in look})
+        r[f"rows_390_{scheme}"] = rows
+        compact = page.locator("#compact_tabs").count() and page.is_checked("#compact_tabs")
+        if not compact or rows != 1:
+            problems.append(f"390 px {scheme}: compact {compact}, tab bar rows {rows} (want compact by default, one row)")
+        page.screenshot(path=str(shots / f"tabs-390-{scheme}.png"))
+        for t in ["machine", "memory", "calls", "source", "about"]:
+            if page.locator(f"#tab_{t}").count():
+                page.tap(f"#tab_{t}")
+                time.sleep(0.3)
+                if page.get_attribute(f"#tab_{t}", "aria-selected") != "true":
+                    problems.append(f"390 px {scheme}: a tap on {t} does not open it")
+                if page.evaluate("document.documentElement.scrollWidth > window.innerWidth + 1"):
+                    problems.append(f"390 px {scheme}: horizontal scroll on the {t} tab")
+                if t == "machine":
+                    page.screenshot(path=str(shots / f"tabs-390-{scheme}-machine.png"), full_page=True)
+        if page.locator("#compact_tabs").count():
+            page.tap("#tab_machine")
+            page.uncheck("#compact_tabs")
+            time.sleep(0.3)
+            r[f"rows_390_words_{scheme}"] = len({t["top"] for t in tabs_look(page)})
+            if page.evaluate("document.documentElement.scrollWidth > window.innerWidth + 1"):
+                problems.append(f"390 px {scheme}: horizontal scroll with words")
+            page.screenshot(path=str(shots / f"tabs-390-{scheme}-words.png"))
+        c.close()
+    for scheme in ("light", "dark"):
+        c, page = fresh(scheme)
+        page.goto(f"{base}/index.html?kernel=hello")
+        booted(page)
+        if page.evaluate("document.documentElement.scrollWidth > window.innerWidth + 1"):
+            problems.append(f"1280 px {scheme}: horizontal scroll")
+        page.screenshot(path=str(shots / f"tabs-1280-{scheme}.png"))
+        c.close()
+    if errors:
+        problems.append(f"page errors: {errors[:3]}")
+    return problems, r
+
+
+def suite_tabs(ctx):
+    return report("tabs", *tabs_case(ctx.browser, ctx.base, ctx.shots))
+
+
 # ---- follow EIP: the asm views show the stepper's EIP --------------------
 # The operator's report: on the minified Linux, in the Debugger tab, the
 # instructions went on but Code at EIP no longer moved. FOLLOW_EIP_JS is the
@@ -8207,6 +8434,7 @@ def follow_eip_case(browser, base, shots, kernel, tab, throttle):
     # Boot at full speed: the boot is stepped and counted from the reset
     # vector to the gate lines, then the JIT runs it to its end.
     page.select_option("#dbg_speed", "full")
+    show_tab(page, "machine")
     page.click("#boot")
     wait_for(lambda: page.evaluate("runState === 'paused' && !ffActive && !!stepper && !!stepper.end"), 300)
     phase("Boot at full speed (counting), to the end", 2)
@@ -8249,7 +8477,7 @@ def follow_fuzz_action(page, cdp, rng):
         except PlaywrightError:
             return "could not click " + what
     if r < 0.18:
-        return click(rng.choice(["#tab_debugger", "#tab_debugger", "#tab_page", "#tab_page", "#tab_memory", "#tab_graph", "#tab_coverage"]))
+        return click(rng.choice(["#tab_debugger", "#tab_debugger", "#tab_page", "#tab_page", "#tab_memory", "#tab_calls", "#tab_source"]))
     if r < 0.32:
         v = rng.choice(["1", "10", "10", "1000", "100000", "1000000", "full"])
         page.select_option("#dbg_speed", v)
@@ -8275,9 +8503,11 @@ def follow_fuzz_action(page, cdp, rng):
         return click(rng.choice(["#listing [data-addr]", "#context [data-addr]", ".symlink"]))
     if r < 0.81:
         v = rng.choice(["minified-linux", "minified-linux-os", "hello"])
+        show_tab(page, "machine")
         page.select_option("#kernel", v)
         return "kernel " + v
     if r < 0.84:
+        show_tab(page, "machine")
         return click("#boot")
     if r < 0.89:
         page.evaluate(FOLLOW_FUZZ_HIDE)
@@ -8440,7 +8670,7 @@ RUN_FUZZ_PICK = """([sel, r]) => {
 RUN_FUZZ_ANY = ("button:not(#graph_json):not(#graph_dot):not(#cov_export):not(#src_dir_btn), a[href^='#'], [role=button], "
                 "#listing [data-addr], #context [data-addr], .jc, #pages, #screen_container, input[type=checkbox]")
 RUN_FUZZ_CONTROLS = ["#dbg_pause", "#dbg_continue", "#vm_continue", "#dbg_step", "#dbg_stepn", "#dbg_runto", "#boot",
-                     "#tab_memory", "#tab_page", "#tab_debugger", "#tab_snapshots", "#tab_graph", "#src_close",
+                     "#tab_machine", "#tab_memory", "#tab_page", "#tab_debugger", "#tab_snapshots", "#tab_calls", "#src_close",
                      "#snap_save", "#snapshots .restore", "#count"]
 RUN_FUZZ_TARGETS = ["0x100000", "start_kernel", "hello_main", "rest_init", "printk", "kernel_init", "do_exit",
                     "init/main.c:1000", "hello.c:30", "0x1000", "no_such_symbol"]
@@ -8477,6 +8707,7 @@ def run_fuzz_action(page, rng, touch):
         return "clock " + v
     if r < 0.28:
         v = rng.choice(RUN_FUZZ_KERNELS)
+        show_tab(page, "machine")
         page.select_option("#kernel", v)
         return "kernel " + v
     if r < 0.33:
@@ -8542,6 +8773,7 @@ def double_boot_case(browser, base, shots, touch):
     page.on("pageerror", lambda e: errors.append(str(e)[:200]))
     page.goto(f"{base}/index.html?kernel=minified-linux&speed=1")
     wait_for(lambda: page.evaluate("typeof ffActive !== 'undefined' && ffActive"), 60, 0.01)
+    show_tab(page, "machine")
     if touch:
         page.tap("#boot", no_wait_after=True)
         page.tap("#boot", no_wait_after=True)
@@ -8863,6 +9095,7 @@ SUITES = {
     "speedline": (suite_speedline, True),
     "speedasm": (suite_speedasm, True),
     "navhist": (suite_navhist, False),
+    "tabs": (suite_tabs, False),
     "followeip": (suite_followeip, False),
     "followfuzz": (suite_followfuzz, False),
     "nopath": (suite_nopath, False),

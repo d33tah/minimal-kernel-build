@@ -11,10 +11,28 @@ Every kernel starts with 2 MB of RAM. The menu also has 4, 18 and 32 MB, and
 
 ## Layout
 
-A top bar always shows the kernel and RAM menus, Boot, the status, the VGA
-screen, the run controls (Pause, Continue, Step, speed, count) and the boot
-counters. Below it are tabs, kept in the URL hash (`#memory`,
-`#page/0x100000`, `#debugger`, `#snapshots`, `#about`):
+A top bar always shows the title, the status line (which kernel runs
+with how much RAM), warnings about the bzImage, the VGA screen, the run
+controls (Pause, Continue, Step, speed, clock, count, the state line) and
+the boot counters. Below it are tabs, each an emoji (aria-hidden) and its
+name, kept in the URL hash (`#machine`, `#memory`, `#page/0x100000`,
+`#debugger`, `#calls`, `#source`, `#snapshots`, `#about`; the old names
+`#graph` and `#coverage`, and `?tab=` with any of them when the URL has no
+hash, open Calls and Source):
+
+- **Machine.** What runs and how it boots: the kernel and RAM menus, a
+  bzImage from disk, Symbols, C source (for an imported vmlinux), initrd,
+  cmdline, offset, Boot, the loaded bzImage's header line, the deployed
+  build, and Settings. These were in the top bar; they are set once per
+  kernel, and at 390 px they made the top bar 1,003 px tall (now 660 px,
+  suite tabs). `?kernel=`, `?mem=`, `?speed=`, `?cmdline=` work as before,
+  and a bzImage or symbol file dropped on the page loads from any tab.
+  Settings has "Compact tabs: emoji only": the tab buttons show only their
+  emoji, the name is their tooltip (hover, keyboard focus, long press) and
+  their accessible name. Remembered in this browser (`mkb-compact-tabs`);
+  on by default at 400 px and less, where the names take three rows (one
+  row with the emoji only), off on wider screens. Settings live in this
+  tab, not in a tab of their own, so the bar keeps eight tabs.
 
 - **Memory.** The region bars and one square per 4 KiB page of guest RAM,
   coloured by region (IVT/BDA/EBDA, real-mode setup and command line, VGA
@@ -123,7 +141,7 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   the PT_LOAD program headers are parsed in the browser, as
   `gen-symbols.py` does). They replace the kernel's `symbols.json` for
   everything that uses symbols (grid colours, Page symbol index, Debugger
-  current/previous symbol, Graph, panic detection) and the kernel reboots.
+  current/previous symbol, Calls, panic detection) and the kernel reboots.
   A System.map has no sizes: a symbol runs to the next one, capped at the
   end of its section; sections come from the type letters (T/t text, R/r
   rodata, D/d data, B/b bss; a weak definition W/V takes the section its
@@ -145,7 +163,7 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   symbols stay. With imported symbols the bzImage's relocation stub, which
   runs at the addresses vmlinux code will occupy, is named after those
   vmlinux symbols (there is no build to compare its bytes with), so the
-  call stacks in the Graph tab are one or two levels deeper at the start.
+  call stacks in the Calls tab are one or two levels deeper at the start.
 - **initrd and cmdline.** "initrd" passes a file to v86 as
   `initrd: {buffer}`, "cmdline" as `cmdline` (empty for the kernels on
   this page; remembered per bzImage SHA-256; `?cmdline=` sets it). v86
@@ -243,13 +261,13 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   at a pause, see Backtraces below, with the frames the stepper
   reconstructed as the fallback; each at its instruction: EIP for the
   top, the call for the others; the title has the whole chain), the titles of "previous" and "path", the
-  C lines of both listings, and in the Graph tab the hover text and the
+  C lines of both listings, and in the Calls tab the hover text and the
   detail of a timeline frame ("called from" and "entry", each with its
   chain) and the title of a call-tree name. "no line information" is
   said where the line table has no line (padding, assembly without -g,
   line 0); "reading DWARF…" while a shard or unit loads. Wherever a C
   location or line is shown on the page (both listings, the Debugger's
-  source rows, the source panel, the call stack, the Graph detail), the
+  source rows, the source panel, the call stack, the Calls detail), the
   file:line or line number has one colour and the C text another: one
   class pair, `.srcloc` and `.srctext` (tokens `--src-loc` and
   `--src-text`, light and dark). Hover titles are plain text drawn by the
@@ -260,8 +278,8 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   status and its copy in the "VM paused" overlay on the screen, the source row and its inline
   chain, the call stack, the Code at EIP and Page listing C lines, the
   locals' frame headers, the function facts (defined at, starts at) in
-  the Debugger, Coverage and Graph tabs, a watch's or hovered byte's
-  "defined at", and the Graph detail. It opens the panel at that line,
+  the Debugger, Source and Calls tabs, a watch's or hovered byte's
+  "defined at", and the Calls detail. It opens the panel at that line,
   picked, outlined and scrolled into view: in the function around the
   link's address when that line is in its inline chain (the call site of
   an inlined call opens the caller), else the whole file; an imported
@@ -527,10 +545,10 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   says that it has no prototype or declaration. Shown in the Debugger's
   "function" row for every function of the inline chain at EIP (the
   innermost first, the last one the function whose code it is), in the
-  Coverage tab under a function row's arrow, in the Graph tab's detail of
+  Source tab under a function row's arrow, in the Calls tab's detail of
   a tapped box, on the Page listing's label line of a function (its
   prototype, the rest in the title) and in every symbol tooltip that names
-  the code at an address (call stack, path, previous, call tree, Graph
+  the code at an address (call stack, path, previous, call tree, Calls
   boxes). Data: `dwarf.js DwarfFuncs` collects them with the types (one
   entry per name and declaration, the parameters of the DIE that declares
   them, type ids of types.json); `gen-dwarf.js` writes
@@ -549,7 +567,7 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   function's inlined copy count against a full llvm-dwarfdump (local runs:
   minified all 1,159 functions, Debian 1,000 sampled, hello 2, no
   problems).
-- **Coverage tab.** All the kernel's code as a tree of directories, files
+- **Source tab** (coverage; formerly Coverage). All the kernel's code as a tree of directories, files
   and functions, each with lines run / lines with code and instructions
   run / instructions, a bar, sortable (name, lines run %, lines not run,
   lines with code, instructions run %) and filterable; a file opens in the
@@ -768,7 +786,7 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   code, grey when not taken while stepping, in the accent colour when
   taken, dashed when observed only; up to 10 columns (4 on a phone), and
   the note says how many did not fit. Under the code at EIP the Debugger
-  lists EIP's own paths in and out. The Graph tab lists no instructions,
+  lists EIP's own paths in and out. The Calls tab lists no instructions,
   so it has no arcs.
 - **Debugger.** Step N, Run to address, the registers (EIP, ESP, EBP,
   EAX..EDI, EFLAGS decoded, CS/DS/SS/ES, CR0, CR3, CPL, mode, physical EIP;
@@ -807,7 +825,7 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   32-bit kernel code segment, the master PIC's IMR 0xfa equals the
   kernel's cached_irq_mask, PIT channel 0 reloads 4773 (HZ=250).
 
-- **Graph.** The call structure of the boot, reconstructed from the
+- **Calls** (formerly Graph). The call structure of the boot, reconstructed from the
   symbol transitions the stepper records (stepping, slow motion, Run to,
   the background count with `?speed=full`; not at full JIT speed): a jump
   to the first byte of a symbol is a call, a jump into the middle of a
@@ -946,8 +964,8 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   a sample of every colour and mark of the page drawn with the classes
   the page itself uses (so light and dark and later style changes stay
   in step), with what it means and where it appears. The memory region
-  and section swatches and the Graph's subsystem colours are drawn from
-  the same tables as the Memory tab and the Graph. Code at EIP and the
+  and section swatches and the Calls tab's subsystem colours are drawn from
+  the same tables as the Memory tab and the Calls tab. Code at EIP and the
   Page listing link to it ("Legend"); the link is a jump, so Back returns.
   `check-legend.py` (run with the site build) fails when style.css gives
   a class a colour, background, outline, stroke, dash, decoration,
@@ -984,7 +1002,7 @@ changed since they were last shown.
 history: a symbol, address or branch target link, a jump source's "go
 there", a file:line (Source panel), a Source panel address, the symbol
 index, the page arrows, a page of the Memory grid, a call stack frame, a
-Code at EIP line, a Coverage function or file, a Graph node, Run to
+Code at EIP line, a Source tab function or file, a Calls node, Run to
 file:line from the Source panel. Each entry keeps the view you left: the
 tab, the page, the listing's scroll and marked instruction, the Source
 panel (open or closed, file, picked line, scroll) and the window's
@@ -1138,7 +1156,7 @@ shows "Kernel panic: <message> (stopped by the page)". Debian's
 5.10.0-30-686 without an initrd stops this way about 25 s after it is
 loaded ("VFS: Unable to mount root fs on unknown-block(0,0)").
 
-The header shows which build is deployed: the workflow writes
+The Machine tab shows which build is deployed: the workflow writes
 `version.json` (commit SHA, commit date, subject, run id and number),
 fetched with the same `?v=` stamp; without it the page says "local
 build". The About tab shows the commit subject.
@@ -1263,7 +1281,7 @@ for keyboard users) or a title on the row or item. The Debugger's
 "source", "task", "call stack", "previous" and "path" rows, the method tag
 of each call stack frame and of each "Parameters and locals" frame (EIP,
 CFI, pt_regs, entry ESP, EBP chain, recorded), the C source toggle and
-picker, the Variables watch field, the Coverage filter and lcov export,
+picker, the Variables watch field, the Source tab's filter and lcov export,
 the Source panel's legend (its first line), and the symbol offset field.
 The firstlook suite checks this for every kernel (see below).
 
@@ -1275,9 +1293,9 @@ Things a first-time user runs into, and what the page says:
   freed and reused after boot). Debian's Run to start_kernel took 18 to
   30 s here instead of about 4 minutes of stepping.
 - Code the JIT ran is not recorded: the symbol history marks the gap
-  ("(v86's JIT ran here: not recorded)") and the Coverage tab says its
+  ("(v86's JIT ran here: not recorded)") and the Source tab says its
   counts are incomplete when the JIT ran kernel code.
-- An imported vmlinux has no Coverage tree (the tab says why; lcov is
+- An imported vmlinux has no coverage tree (the tab says why; lcov is
   disabled) and no C text until its source folder or .tar is picked.
 
 Download sizes per kernel and feature (CI run 42270272424; bytes on disk,
@@ -1295,15 +1313,15 @@ hello rows: the -O0 build (the -Os hello-os: bzImage 2,688 bytes, symbols.json +
 | hello | line and inline shards (D1) | 2 | 553 | 394 | first address shown |
 | hello | C source (D2) | 2 | 675 | 669 | first line shown |
 | hello | types.json (D3) | 1 | 139 | 138 | Variables, hover, data page |
-| hello | files.json (V2) | 1 | 199 | 184 | Coverage tab |
+| hello | files.json (V2) | 1 | 199 | 184 | Source tab |
 | hello | CFI (D5) / locals (D4) shards | 1 / 1 | 51 / 134 | 73 / 134 | a pause |
-| hello | function facts (A3) | 1 | 160 | 137 | a function's facts shown (Debugger, Coverage, Graph, tooltips) |
+| hello | function facts (A3) | 1 | 160 | 137 | a function's facts shown (Debugger, Source, Calls, tooltips) |
 | minified Linux | bzImage | 1 | 91,568 | 36,993 | boot |
 | minified Linux | symbols.json + disasm.json | 2 | 813,399 | 172,920 | boot |
 | minified Linux | line and inline shards | 3 | 79,521 | 42,914 | first address shown |
 | minified Linux | C source | 196 | 287,038 | 283,377 | per file shown |
 | minified Linux | types.json | 1 | 37,048 | 12,379 | Variables, hover, data page |
-| minified Linux | files.json | 1 | 24,152 | 8,478 | Coverage tab |
+| minified Linux | files.json | 1 | 24,152 | 8,478 | Source tab |
 | minified Linux | CFI shards | 2 | 9,429 | 3,674 | a pause |
 | minified Linux | locals shards | 2 | 84,605 | 84,605 | a pause |
 | minified Linux | function facts shards | 1 | 107,313 | 28,960 | a function's facts shown |
@@ -1312,7 +1330,7 @@ hello rows: the -O0 build (the -Os hello-os: bzImage 2,688 bytes, symbols.json +
 | Debian 6.1 686 | line and inline shards | 154 | 9,620,444 | 4,885,707 | per 64 KiB of code shown |
 | Debian 6.1 686 | C source | 3,233 | 16,098,216 | 16,026,134 | per file shown |
 | Debian 6.1 686 | types.json | 1 | 3,766,465 | 978,361 | Variables, hover, data page |
-| Debian 6.1 686 | files.json | 1 | 2,159,580 | 651,741 | Coverage tab |
+| Debian 6.1 686 | files.json | 1 | 2,159,580 | 651,741 | Source tab |
 | Debian 6.1 686 | CFI shards | 153 | 1,511,034 | 455,261 | per frame of a pause |
 | Debian 6.1 686 | locals shards | 153 | 16,069,116 | 16,069,116 | per frame of a pause |
 | Debian 6.1 686 | function facts shards | 83 | 9,305,209 | 3,442,705 | per function name shown (32 to 61 KB each) |
@@ -1320,7 +1338,7 @@ hello rows: the -O0 build (the -Os hello-os: bzImage 2,688 bytes, symbols.json +
 
 What a typical first session fetches (local measurement: open the page
 paused, Run to a function, Watch the first quick variable, open the Page
-tab and the Source panel at EIP, then the Coverage tab; files and gzip
+tab and the Source panel at EIP, then the Source tab; files and gzip
 bytes of the debug data, then the total with bzImage, symbols and
 disassembly):
 
@@ -1348,7 +1366,7 @@ browser-test matrix job named by its suites):
 
 | feature | tests | CI job |
 |---|---|---|
-| D1 file:line and inline chains | `test_dwarf.py` (Debian 5,000, minified 5,000, hello 500 random addresses vs llvm-symbolizer --inlines); suites dwarf (minified, hello: Debugger, listing, call stack, Graph vs llvm-symbolizer), debian (start_kernel 12 EIPs), dwarf_import (imported minified -g and Debian -dbg vmlinux, after a reload from IndexedDB) | kernels; debian,dwarf,dwarf_import,... |
+| D1 file:line and inline chains | `test_dwarf.py` (Debian 5,000, minified 5,000, hello 500 random addresses vs llvm-symbolizer --inlines); suites dwarf (minified, hello: Debugger, listing, call stack, Calls vs llvm-symbolizer), debian (start_kernel 12 EIPs), dwarf_import (imported minified -g and Debian -dbg vmlinux, after a reload from IndexedDB) | kernels; debian,dwarf,dwarf_import,... |
 | D2 C source | `gen-src.js` (fails on a line past EOF), `test_kernel_data.py` (every src/ file listed); suites dwarf (line texts), debian (Source panel, files fetched), dwarf_import (folder, ustar, GNU tar, .tar.gz refused) | kernels; site; debian,dwarf,dwarf_import,... |
 | D3 types and globals | `test_dwarf.py --types` (vs gdb; on hello too, whose only variables are unnamed string literals: it says there is nothing to check); suite types (watches vs gdb, hover byte paths, pointer to page, Debian import JSON-identical) | kernels; types,covtree,unwind |
 | V1 C line colours | suite dwarf (`src_colour_check`: loc and text colours differ, contrast at least 4.5, light and dark, every view) | debian,dwarf,dwarf_import,... |
@@ -1360,18 +1378,18 @@ browser-test matrix job named by its suites):
 | D7 minified and hello parity | `check-code-identity.py --self-test` (-g build's code equals the shipped kernel), `test_kernel_data.py` (every kernel has every feature's files); suite hello | kernels; site; boot,... |
 | A1 memory operands named | `test_dwarf.py --operands` (absolute vs gdb info symbol, stack slots vs gdb on a core at the instruction); suite operands (minified and Debian pauses: names with an address vs gdb on a core of the pause, Debugger and Page tab alike, tooltips, 390 px) | kernels; tasks,operands |
 | A2 line to address | `test_dwarf.py --lines` (listed ranges and inlined calls vs llvm-symbolizer, breakpoint addresses vs llvm-dwarfdump is_stmt rows; Debian 2,000, minified 3,000, hello 200 sampled addresses), `test_kernel_data.py` (shards in MKBD 2, breakpoint count); suite lineaddr (minified and Debian: Source panel list, its Run to and a typed main.c:LINE stop where llvm-symbolizer names the line, incl. a line whose code is all inlined; list jumps to the Page tab; the listing's C line lists the same; import of the minified -g vmlinux gives the same breakpoints and Run to works; 390 px light and dark) | kernels; site; types,covtree,unwind,lineaddr |
-| A3 function facts | `test_dwarf.py --funcs` (prototypes, declarations, copy counts vs llvm-dwarfdump --name; ptype, file:line, external vs gdb; frames vs llvm-dwarfdump --debug-frame; inlined copies vs llvm-symbolizer; all copy counts vs a full llvm-dwarfdump for the kernels built here; Debian 1,000, minified 2,000, hello 200 functions), `test_kernel_data.py` (every funcs shard, function count); suite fnfacts (minified and Debian: start_kernel's row vs gdb ptype, symbol, global symbol, info line and llvm-dwarfdump's frame; an inlined copy in it: every function of the chain as llvm-symbolizer names it, the inlined one's prototype and copy count vs llvm-dwarfdump, its copy listed; defined-at opens the Source panel; call stack tooltip, Page label line, Coverage detail and Graph detail say the same; import of the minified -g vmlinux gives identical facts; 390 px light and dark) | kernels; site; types,covtree,unwind,lineaddr,fnfacts |
+| A3 function facts | `test_dwarf.py --funcs` (prototypes, declarations, copy counts vs llvm-dwarfdump --name; ptype, file:line, external vs gdb; frames vs llvm-dwarfdump --debug-frame; inlined copies vs llvm-symbolizer; all copy counts vs a full llvm-dwarfdump for the kernels built here; Debian 1,000, minified 2,000, hello 200 functions), `test_kernel_data.py` (every funcs shard, function count); suite fnfacts (minified and Debian: start_kernel's row vs gdb ptype, symbol, global symbol, info line and llvm-dwarfdump's frame; an inlined copy in it: every function of the chain as llvm-symbolizer names it, the inlined one's prototype and copy count vs llvm-dwarfdump, its copy listed; defined-at opens the Source panel; call stack tooltip, Page label line, Source tab detail and Calls detail say the same; import of the minified -g vmlinux gives identical facts; 390 px light and dark) | kernels; site; types,covtree,unwind,lineaddr,fnfacts |
 | A5 variables defined at | `test_dwarf.py --vars` (defined-at vs gdb's symbol at the address, static locals gdb cannot find by name vs llvm-dwarfdump --name; `&'file'::name` vs the page's pick by path and shortest suffix; unknown and ambiguous files refused; Debian 2,000, minified 134, hello: nothing to check), `test_kernel_data.py` (types.json format 2, every file index valid, every file a variable is defined in shipped in src/ or said to be missing); suite types (watch "defined at" vs gdb and the Source panel line, other definitions listed, file::name vs gdb, refusals, hover text, operand tooltips, Worker's import JSON-identical incl. files; boxed EIP line's underscores drawn, light and dark; 390 px) | kernels; site; types,covtree,unwind,lineaddr,fnfacts,branches |
 | A4 branch targets named | suite branches (Debian start_kernel and setup_arch pages, minified with live decode on, imported minified -g vmlinux: every direct branch to a symbol's code named, equal to gdb info symbol; live names equal disasm.json's llvm-objdump names line for line; Debugger and Page tab alike; callee tooltip prototype vs gdb ptype; click opens the target; BIOS page unnamed; 390 px light and dark) | types,covtree,unwind,lineaddr,fnfacts,branches |
-| D8 help and first look | `check-ids.py` (no duplicate ids); suite firstlook (every kernel incl. Debian with its initramfs and an imported vmlinux: explanations present, entry line, JIT gap, Coverage notes, no sideways scroll at 390 px light and dark) | site; boot,...,firstlook |
+| D8 help and first look | `check-ids.py` (no duplicate ids); suite firstlook (every kernel incl. Debian with its initramfs and an imported vmlinux: explanations present, entry line, JIT gap, Source tab notes, no sideways scroll at 390 px light and dark) | site; boot,...,firstlook |
 | Run to on a phone | suite runto_phone (hello at 390 px touch, 1/s, 10/s and desktop: Boot, Pause, Run to a function stops at its first instruction; `hello`, `.rodata` and mid-instruction targets refused in the status and the paused overlay with the CPU still paused; a Run to right after the slice that printed "Hello, World!" stops there, stepped and with the JIT; light and dark screenshots); `--base https://d33.pl/minimal-kernel-build` for the live site | tasks,operands,runto_phone,srclinks |
-| C1 file:line links | suite srclinks (minified Linux paused in code inlined into setup_arch: each kind of link in the Debugger, Page listing, hovered byte, Graph detail and Coverage facts opens its file with its line picked and in view; no plain file:line text anywhere on the page after a Run to and on the Page, Graph and Coverage tabs (the overlay's copy of the status opens too); after a Run to the state line names the function at EIP with the source row's line; Enter opens one and moves the focus, Escape gives it back; a tap on a 390 px phone, and on the state line's link at a stop in a function with a long name (the link inside the viewport and the state line's box); light and dark at 1280 and 390 px) | tasks,operands,runto_phone,srclinks |
+| C1 file:line links | suite srclinks (minified Linux paused in code inlined into setup_arch: each kind of link in the Debugger, Page listing, hovered byte, Calls detail and Source tab facts opens its file with its line picked and in view; no plain file:line text anywhere on the page after a Run to and on the Page, Calls and Source tabs (the overlay's copy of the status opens too); after a Run to the state line names the function at EIP with the source row's line; Enter opens one and moves the focus, Escape gives it back; a tap on a 390 px phone, and on the state line's link at a stop in a function with a long name (the link inside the viewport and the state line's box); light and dark at 1280 and 390 px) | tasks,operands,runto_phone,srclinks |
 | Screen after a pause | suite debugger, check "screen after a pause" (requestAnimationFrame starved: hello stepped past Hello, World! while paused and minified Linux after its end stop at full speed still show the text on the screen; CI once caught the Debian panic stop without its last line) | boot,symbols,debugger,... |
 | B2 jump sources inline | suite jumps (hello and minified Linux, after the walk, at 1280 and 390 px with no click: a taken jcc's target, a loop head, the function with the most callers in other pages (minified Linux: panic, 32 paths in), a return site and its ret, a timer interrupt's entry (minified Linux) and Code at EIP at the Run to's function entry: the line above reads `← n paths in` with n from jumps.js, whose static sources equal the decoded bytes' (test_jumps.decode); the sources shown are jumps.js's first ones, each with llvm-objdump's symbol+offset, the source's mnemonic (static) or kind (observed) and its count, marked in view, up, down or another function, with a gutter stub for each way out of view, and `+k more` for the rest; the ret names `retl to` its observed return site; a call to a function out of view has its stub; `+k more` lists all paths and a named source opens the Page tab there; no horizontal scroll; screenshots light and dark) | tasks,operands,runto_phone,srclinks,unoptimized,jumps |
 | J1 jump paths | `test_jumps.py` (every instruction of hello, hello-os and both minified Linux builds: kind, target and fall-through from jumps.js over disasm.json equal a decode of the ELF's bytes from a fresh llvm-objdump run, the decoder agrees with objdump's mnemonics, and every target's static sources are the same); suite jumps (hello: 300 single steps from hello_main; minified Linux: from rest_init to the end of the boot, about 95,000 single steps with timer interrupts, iret and an exception: the recorded paths equal the non-fall-through pairs of the stepper's own EIP sequence, count for count, with a fitting kind; a taken jcc's target shows `←n·k×` and its list (source, count, file:line), go there opens the Page tab at the source, Enter and Escape, the taken arc drawn, underscores of the list's names drawn; EIP's paths at a function entry name the static call; the JIT note; 390 px light and dark) | kernels; tasks,operands,runto_phone,srclinks,unoptimized,jumps |
 | J2 live-decode scope | suite jumps, case jumps_live (Debian 6.1 686 and an imported vmlinux on the minified Linux, Run to start_kernel: the ⊘ titles of Code at EIP and the Page listing, the Page note, the list notes and the Debugger's paths at EIP say "no direct path" only with the scope of the instructions decoded live, never "nothing jumps or calls here"; hello with disasm.json keeps the whole-disassembly wording) | tasks,operands,runto_phone,srclinks,unoptimized,jumps |
 | Z1 ⊘ only where no path leads | `test_jumps.py` (every instruction of the four built kernels: the page's ⊘ set, jumpPaths over disasm.json, equals one computed from the ELF alone: no direct jump or call target, an instruction ends before it and does not fall through, not an aligned data word, not a number in llvm-objdump's operand text, not an `__ex_table` fixup, not a stub of Linux's early_idt_handler_array, irq_entries_start or spurious_entries_start; prints what the marks left are: -O0 minified Linux 1,637, all padding; -Os 440: 333 padding, 107 functions nothing calls); suite nopath (hello, hello-os and both minified Linux builds: paused at the start the EIP line has no ⊘; Run to start_kernel or hello_main, then up to 2,000,000 single steps: no instruction that ran or has an observed path in carries ⊘, Code at EIP at the first stop on an instruction reached only indirectly (minified -O0: the jump table of clear_all_debug_regs, -Os: cpu_init+0xc2) has no ⊘, nor the Page listings of those, and the ⊘ title says what it rests on; screenshots 1280 and 390 px, light and dark); suite jumps, case jumps_live (no ⊘ on the first instruction decoded live nor on function entries). On 7f4ebd019 all of these fail: 87 (-O0) and 55 (-Os) wrong marks, startup_32 and EIP marked | kernels; nopath; jumps |
-| L1 legend and yellow lines | `check-legend.py` (every class style.css colours has a sample in the About tab's legend or a page-furniture reason, every colour token is used); suite legend, case legend (minified Linux: entry, Scan, Run to start_kernel, 300 steps, Page listing, Source panel, Coverage, Memory: every coloured class drawn is in the legend, 17 samples compared with the drawn element's computed colour, background, outline, italics, opacity, stroke and dash in light and dark, the memory and Graph swatches equal the page's tables, the Legend links of Code at EIP and the Page tab show it and Back returns; screenshots 1280 and 390 px, light and dark, no horizontal scroll); case yellow (both minified builds, 64 MiB: at the entry every yellow line of Code at EIP and the Page listing names the relocation stub and the 0x79 shift, checked against the shift found in the bzImage file by the test and the build's bytes read from guest memory there; hover, Enter and a 390 px tap show it without moving lines; nothing is yellow after start_kernel; during a fast Run to its HLT breakpoint line is yellow and says so, after it ends it is plain; in slow motion over the relocation stub the Page listing marks the bytes it moved since the last memory scan, and those lines say so). On 6525404db they fail: no legend, no explanation on any yellow line | debian,dwarf,dwarf_import,runto,initramfs,coverage,navhist,tipmarks,legend |
+| L1 legend and yellow lines | `check-legend.py` (every class style.css colours has a sample in the About tab's legend or a page-furniture reason, every colour token is used); suite legend, case legend (minified Linux: entry, Scan, Run to start_kernel, 300 steps, Page listing, Source panel, Source tab, Memory: every coloured class drawn is in the legend, 17 samples compared with the drawn element's computed colour, background, outline, italics, opacity, stroke and dash in light and dark, the memory and Calls swatches equal the page's tables, the Legend links of Code at EIP and the Page tab show it and Back returns; screenshots 1280 and 390 px, light and dark, no horizontal scroll); case yellow (both minified builds, 64 MiB: at the entry every yellow line of Code at EIP and the Page listing names the relocation stub and the 0x79 shift, checked against the shift found in the bzImage file by the test and the build's bytes read from guest memory there; hover, Enter and a 390 px tap show it without moving lines; nothing is yellow after start_kernel; during a fast Run to its HLT breakpoint line is yellow and says so, after it ends it is plain; in slow motion over the relocation stub the Page listing marks the bytes it moved since the last memory scan, and those lines say so). On 6525404db they fail: no legend, no explanation on any yellow line | debian,dwarf,dwarf_import,runto,initramfs,coverage,navhist,tipmarks,legend |
 | T1 popovers on the listing marks | suite tipmarks (hello and minified Linux, Run to hello_main / start_kernel and 30 steps: no ⊘, ←n, ↑ ↓ ↗, name, file:line, C line, EIP-inside line or tint key in the Page listing or Code at EIP relies on a title; at 1280 px hover on ⊘ shows the popover, its first line says what ⊘ means, then the whole disassembly and what ran; it fits on screen and moves no line; Enter, Space and Esc on a focused ⊘; a click pins it and it stays on the mark when the listing is drawn again; tint key, ←n (a click still opens its list), EIP mark, Tab focus and hover on a jump end, hover on a gutter stub; at 390 px touch a tap on ⊘, a long press on a jump end shows its popover without going there, a plain tap still goes there, taps on the EIP mark and a stub; screenshots light and dark); case tipmarks_live (Debian at 390 px, Run to start_kernel, a tap on a live-decode ⊘ says only the instructions decoded live are known). On b9cc4387d it fails: no popover on any mark | debian,dwarf,dwarf_import,runto,initramfs,coverage,navhist,tipmarks |
 | Z2 stub arrays in a live decode | suite jumps, case jumps_live (Debian 6.1 686 and an imported vmlinux on the minified Linux, Run to start_kernel, then the Page listing at early_idt_handler_array, irq_entries_start and spurious_entries_start when the symbol table has them: no ⊘ on any instruction there that is not int3 or nop padding; for each stub after a jmp Paths at EIP names the array, "array + k × stride" and the function that fills the IDT). On ede4e171f it fails: ⊘ on the stubs of early_idt_handler_array (Debian 0x1d86011, 0x1d8601a, ...; imported 11 stubs) and no text on how the stubs are reached | tasks,operands,runto_phone,srclinks,unoptimized,jumps |
 | J3 no em-dashes | `check-text.py` (no U+2014 in the page's .js, .html, .css and README); suite srclinks (the Source panel's title after every file:line click has none) | site; tasks,operands,runto_phone,srclinks,unoptimized,jumps |
@@ -1379,6 +1397,7 @@ browser-test matrix job named by its suites):
 | B1 speed line at slow speeds | suite speedline (minified Linux at 1/s on a desktop, at 1/s and 10/s at 390 px touch with the CPU 5x slower: the speed line sampled every 100 ms for about 60 s through Pause and Continue, a speed change, the tab hidden 6 s with the run going on, frozen 8 s and shown again; while running it shows the set rate within a factor of two or "measuring", never 0/s, and the count moves at a third of the set rate or more) | speedline |
 | B3 slow motion with an asm listing open | suite speedasm (390 px touch with CDP CPU throttling, the tab opened after the kernel entry and watched for 25 s: the minified Linux's Page tab on the kernel-text page holding EIP, about 1,400 instructions, at 4x and 6x, 1/s and 10/s; its Debugger tab (Code at EIP) at 6x, 1/s and 10/s; hello's Page tab at 4x and 1/s. The speed line never shows 0/s and, once the 4 s speed window has passed since the tab was opened (its first drawing holds the main thread up to 2 s at 6x), the set rate within a factor of two; the count moves at a third of the set rate or more; the listing or Code at EIP is drawn at most once per executed instruction plus a full refresh every few seconds; long tasks take under 70 % of the wall time. On 900b6cc2e the Page tab at 4x made 5 instructions in 25 s at 1/s with "speed 0/s") and suite runstate (its phone runs under 4x CPU throttling, with the Page and Debugger tabs watched 3 to 8 s among the actions, and "speed 0/s" while running is a broken invariant: its seeds 2 and 5 found the JIT left running at 0/s after the kernel's end) | speedasm, runstate |
 | R1 the asm views follow EIP | suites followeip and followfuzz. FOLLOW_EIP_JS watches the page: every drawing of Code at EIP and of the Page listing must box the line holding EIP, and once an instruction has executed the view on screen must show the new EIP within max(1 s, twice its last drawing plus 400 ms), while stepping at any speed and paused (not under the JIT or in a hidden tab). Fixed sequences on the minified Linux (-O0 and -Os) and hello, Debugger and Page tabs, CPU 1x and 4x: 1/s from the entry, 10/s, 1k/s, Pause, Step, Step 100, Continue, a Run to that steps to the end of the run, then Boot at full speed (counted, then the JIT) to the end. Then a seeded fuzzer of tab switches, speeds, Pause, Step, Run to, the Source panel, Back and Forward, links, kernel switch, Boot during the fast-forward, a hidden tab and CPU throttling. On d3a2553f0 5 of the 12 sequences fail: Code at EIP kept the box where a stepped Run to or the counted boot had started (0x100000) for over a second while the count went on (minified Linux, CPU 4x), and the Page listing marked nothing while the relocation stub ran inside startup_32's instructions (both minified builds, 1x and 4x) | followeip, followfuzz |
+| U3 tab names, emoji, compact tabs, Machine tab | suite tabs (hello, light and dark at 1280 and 390 px: the eight tabs with an aria-hidden emoji each, distinct, and the word as accessible name; no tab or About text calls a tab Graph or Coverage; #graph, #coverage, ?tab=graph and ?tab=coverage open Calls and Source with the hash rewritten; the kernel, RAM, file, symbol, initrd, cmdline and offset controls, Boot, the header and build lines and the setting are in the Machine tab, the screen, run bar, counters, status and state line in the top bar; picking hello-os and Boot with 4 MB from the Machine tab boot it; a bzImage dropped on the About tab boots; compact tabs hide the words, keep aria-label and tooltip, the hover shows the name, a click opens the tab, the choice survives a reload both ways, off by default at 1280 px, on by default at 390 px with the bar in one row; the top bar at 390 px is shorter than the 1,003 px it had before; no horizontal scroll). On 8dc5c89c7 it fails: no emoji, Graph and Coverage, no Machine tab, no compact setting, top bar 1,003 px | debian,...,legend,tabs |
 | K1 boot check reads the screen | `test_qemu_screen_check.py` (the kernels job's -O0 boot output of run 42539920959, where curses drew "H", a backspace, escapes, a cursor-right and "ello, World!": the bytes lack "Hello, World!" and an expect pattern on them ends without a match, while the replayed 80x25 screen shows "Hello, World!" and "Still alive" on rows 9 and 10 for every read size from 1 byte up; output cut before "Still alive", the strings in the wrong order, overwritten or cleared text fail); `qemu_screen_check.py` boots hello and hello-os (18M and the low image at 1M) and the -O0 minified Linux in the workflow | kernels |
 | U1/U2 unoptimized builds | qemu boot of the -O0 hello and minified Linux with both gate lines on the screen (`qemu_screen_check.py`); `check-code-identity.py` for each -O0 and -Os pair; `test_dwarf.py` on both builds of each; suite hello (every instruction of hello_main and put_line), suite unoptimized (minified Linux: eight Run to stops, single steps into calls, no "optimized out" at any address read, values vs gdb at each stop; the -Os entry must show some) | kernels; tasks,operands,runto_phone,srclinks,unoptimized; boot,... |
 
@@ -1404,14 +1423,15 @@ local of any frame is optimized out, and at the statement boundaries row,
 s and p are the guest's values (the BIOS cursor row, the addresses of the
 two strings, the VGA cell) with the call stack put_line <- hello_main <-
 startup_32. hello-os (-Os): the values from the DWARF location lists
-(registers) and put_line's s shown as optimized out. Both: Coverage tree
+(registers) and put_line's s shown as optimized out. Both: the Source tab's tree
 and the honest "no variables" and "no current_task" lines.
 
 The suites (`SUITES` in test_browser.py) run in four parallel CI jobs
 (the workflow's browser-test matrix), grouped by their measured times;
 each prints `suite NAME: N s`.
 
-The tab bar wraps on narrow screens (every tab a 32 px target); the touch
+The tab bar wraps on narrow screens (every tab a 32 px target; at 400 px
+and less compact tabs keep it to one row); the touch
 case checks every tab is inside a 390 px viewport, the last one opens,
 and a touch swipe outside the graph scrolls the page. A determinism case
 boots hello at 1k/s and at full speed and Linux at full speed twice and
@@ -1502,7 +1522,7 @@ decoded in the page, some pixel row between the box's outline rows has
 ink across the cell of every `_`, light and dark. The types import case imports the minified
 Linux's and Debian's -g vmlinux and checks the Worker's variables equal
 the shipped `types.json`, also after a reload (IndexedDB). The coverage tree case boots the minified Linux counted and checks the
-Coverage tab: the root and every directory are the sums of their files and
+Source tab: the root and every directory are the sums of their files and
 equal `files.json`, init/main.c has lines that ran, die() has none,
 start_kernel's instructions run equal the untinted instructions of its
 listing, sorting and the filter work, the Source panel's whole-file view of

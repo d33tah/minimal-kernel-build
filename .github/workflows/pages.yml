@@ -360,7 +360,7 @@ jobs:
       matrix:
         suites:
         - boot,symbols,debugger,misc,touch,tasks_minified,hello,firstlook
-        - debian,dwarf,dwarf_import,runto,initramfs,coverage,navhist,tipmarks,legend
+        - debian,dwarf,dwarf_import,runto,initramfs,coverage,navhist,tipmarks,legend,tabs
         - tasks,operands,runto_phone,srclinks,unoptimized,jumps
         - types,covtree,unwind,lineaddr,fnfacts,branches,nopath
         - runstate

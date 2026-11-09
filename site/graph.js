@@ -1029,7 +1029,7 @@ function drawGraph() {
 }
 
 function graphTick() {
-	if (!G.stepper || tab !== "graph")
+	if (!G.stepper || tab !== "calls")
 		return;
 	if (G.stepper.graphVersion !== G.version || G.dirty) {
 		// The call tree is DOM: rebuild it at most every 2 s while running.

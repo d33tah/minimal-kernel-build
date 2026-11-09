@@ -92,6 +92,7 @@ body {
 }
 header, main { max-width: 1280px; margin: 0 auto; padding: 0 12px; }
 h1 { font-size: 1.05rem; margin: 0; align-self: center; }
+.headline { display: flex; flex-wrap: wrap; gap: 0.2rem 0.8rem; align-items: baseline; }
 h2 { font-size: 0.95rem; margin: 0.5rem 0 0.25rem; }
 h3 { font-size: 0.85rem; margin: 0.4rem 0 0.2rem; color: var(--muted); }
 a { color: var(--accent); }
@@ -153,6 +154,10 @@ input[type=file] { max-width: 100%; font-size: 0.75rem; }
 .tabbar { display: flex; flex-wrap: wrap; gap: 0.2rem; margin-top: 0.3rem; }
 .tabbar button { border: 1px solid var(--line); border-radius: 4px; padding: 0.25rem 0.7rem; min-height: 32px; min-width: 44px; color: var(--muted); }
 .tabbar button[aria-selected="true"] { color: var(--accent); border-color: var(--accent); font-weight: 600; }
+.tabbar .temo { font-weight: 400; }
+/* Compact tabs (Machine tab, Settings): the emoji only, the name in the tooltip. */
+.compact-tabs .tabbar .tword { display: none; }
+.compact-tabs .tabbar button { padding: 0.25rem 0.3rem; min-width: 40px; }
 .panel { padding-top: 0.3rem; }
 .panel[hidden] { display: none; }
 .about { max-width: 46rem; }

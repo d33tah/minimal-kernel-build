@@ -728,7 +728,7 @@ function renderSymbolIndex(p) {
 		b.addEventListener("click", () => {
 			const target = $("listing").querySelector('[data-addr="' + Math.max(s.paddr, p * PAGE) + '"]');
 			if (target)
-				scrollListingTo(target);
+				navJump(() => scrollListingTo(target));
 		});
 		el.append(b);
 	}
@@ -785,7 +785,10 @@ function renderPage(p, bytes, base, how) {
 	Object.assign(box.dataset, { page: p, insns: r.nIns, hexrows: r.nRows, nonzero: r.nonzero,
 		changed: r.changed, reads: Number(box.dataset.reads || 0) + 1, draws: Number(box.dataset.draws || 0) + 1 });
 	const hit = jumpHitScroll ? box.querySelector(".jhit") : null;
-	if (hit) {
+	const back = navScrollWant && navScrollWant.page === p && realNow() < navScrollWant.until ? navScrollWant : null;
+	if (back)
+		box.scrollTop = back.top;
+	else if (hit) {
 		jumpHitScroll = false;
 		scrollListingTo(hit);
 	} else if (r.curLine >= 0) {
@@ -889,14 +892,16 @@ function inspect() {
 }
 
 function selectPage(p, show = true) {
-	selectedPage = p;
-	drawGrid();
-	inspect();
-	setLive();
-	if (show)
-		showTab("page");
-	else
-		writeHash();
+	navJump(() => {
+		selectedPage = p;
+		drawGrid();
+		inspect();
+		setLive();
+		if (show)
+			showTab("page");
+		else
+			writeHash();
+	});
 }
 
 function setLive() {
@@ -915,10 +920,12 @@ const TABS = ["memory", "page", "debugger", "graph", "coverage", "snapshots", "a
 let tab = "memory";
 
 // Hash: #memory, #page/0x100000, #debugger, ...
+const navHashNow = () => "#" + tab + (tab === "page" && selectedPage >= 0 ? "/" + hex(selectedPage * PAGE) : "");
+
 function writeHash() {
-	const h = "#" + tab + (tab === "page" && selectedPage >= 0 ? "/" + hex(selectedPage * PAGE) : "");
+	const h = navHashNow();
 	if (location.hash !== h)
-		history.replaceState(null, "", h);
+		history.replaceState(history.state, "", h); // keeps the entry's place in the jump history
 }
 
 function showTab(name) {
@@ -938,7 +945,12 @@ function showTab(name) {
 	covShow(tab === "coverage");
 }
 
+// A hash change (typed, or a link) opens that tab and page. Going back
+// through the jump history changes the hash too: navRestore has drawn that
+// view already, with its scroll positions, and the hash says what is shown.
 function readHash() {
+	if (navBuilt && location.hash === navHashNow())
+		return;
 	const [name, addr] = location.hash.slice(1).split("/");
 	if (addr) {
 		const a = parseInt(addr, 16);
@@ -946,6 +958,193 @@ function readHash() {
 			selectedPage = Math.floor(a / PAGE);
 	}
 	showTab(name || "memory");
+}
+
+// ---- jump history ---------------------------------------------------------
+
+// Every jump the user makes (a link to code or to a file:line, a page of
+// the grid, a list's "go there") is an entry of the browser's history:
+// the Back and Forward buttons, Alt+Left/Right, the mouse's back button
+// and a phone's back gesture all go through popstate and stay in this
+// document, so the VM keeps running. navList holds the views (navCapture);
+// the entry left is captured again when the user leaves it, so Forward
+// returns to it as it was left. Following EIP while stepping only replaces
+// the hash (writeHash) and adds nothing.
+const NAV_ID = Math.random().toString(36).slice(2); // this load's entries, not an earlier load's
+// A listing drawn again within this time after Back (the tab's listing
+// gets its width and is drawn again on the next frame) keeps the
+// restored scroll instead of scrolling to EIP.
+const NAV_SCROLL_MS = 1000;
+let navList = [];
+let navAt = 0;
+let navDepth = 0;          // inside navJump: nested jumps (jumpGo -> jumpTo) are one entry
+let navBuilt = false;
+let navScrollWant = null;  // { page, top, until }: the listing's scroll for renderPage after Back
+let vmHasKeys = true;      // the VM screen was clicked last: Alt+Left/Right are its keys
+
+// The instruction near the top third of the Page listing (where a jump
+// puts its target), else -1.
+function navListingAnchor() {
+	const box = $("listing");
+	const y = box.getBoundingClientRect().top + box.clientHeight / 3;
+	let at = -1;
+	for (const el of box.querySelectorAll(".ins[data-addr]")) {
+		if (el.getBoundingClientRect().top > y)
+			break;
+		at = Number(el.dataset.addr);
+	}
+	return at;
+}
+
+function navLabel(v) {
+	let where = "the " + $("tab_" + v.tab).textContent + " tab";
+	if (v.tab === "page") {
+		const at = v.hit >= 0 && Math.floor(v.hit / PAGE) === v.page ? v.hit : navListingAnchor();
+		const name = at >= 0 && symbols ? asmTargetName(at, kernelSymLookup()) : "";
+		where = name || (at >= 0 ? hex(at) : v.page >= 0 ? "page " + hex(v.page * PAGE) : where);
+	}
+	if (v.src)
+		where += ", " + v.src.path.replace(/^.*\//, "") + (v.src.pick || v.src.line ? ":" + (v.src.pick || v.src.line) : "");
+	return where;
+}
+
+function navCapture() {
+	const open = !!srcPanel && !$("src_panel").hidden;
+	const v = { tab, page: selectedPage, top: $("listing").scrollTop, hit: jumpHit, y: window.scrollY,
+		src: open ? { pa: srcPanel.pa, fn: srcPanel.fn, path: srcPanel.path, line: srcPanel.line, pick: srcPanel.pick, whole: srcPanel.whole } : null,
+		srcTop: open ? $("src_body").scrollTop : 0 };
+	v.label = navLabel(v);
+	return v;
+}
+
+function navSame(a, b) {
+	const src = (s) => (s ? [s.path, s.line, s.pick, s.whole, s.pa].join("\0") : "");
+	return a.tab === b.tab && a.page === b.page && a.hit === b.hit && src(a.src) === src(b.src) &&
+		Math.abs(a.top - b.top) < 2 && Math.abs(a.srcTop - b.srcTop) < 2;
+}
+
+// Run a jump the user asked for; a new entry when the view changed.
+function navJump(jump) {
+	if (navDepth || !navBuilt)
+		return jump();
+	const before = navCapture(), url = location.href;
+	navDepth++;
+	try {
+		return jump();
+	} finally {
+		navDepth--;
+		const after = navCapture();
+		if (!navSame(before, after)) {
+			// The first jump also turns the entry the page was loaded in
+			// into a guard: going back past the first view lands there
+			// and shows the first view again instead of leaving the page.
+			if (!navList.length) {
+				history.replaceState({ nav: -1, id: NAV_ID }, "", url);
+				history.pushState({ nav: 0, id: NAV_ID }, "", url);
+			} else
+				history.replaceState({ nav: navAt, id: NAV_ID }, "", url); // the hash it had: the jump replaced it
+			navList.length = navAt + 1;
+			navList[navAt] = before;
+			navList.push(after);
+			navAt++;
+			history.pushState({ nav: navAt, id: NAV_ID }, "", navHashNow());
+			navRender();
+		}
+	}
+}
+
+function navRestore(v) {
+	jumpPopClose(false);
+	jumpHit = v.hit;
+	jumpHitScroll = false;
+	if (v.page !== selectedPage) {
+		selectedPage = v.page;
+		drawGrid();
+		setLive();
+	}
+	navScrollWant = v.tab === "page" ? { page: v.page, top: v.top, until: realNow() + NAV_SCROLL_MS } : null;
+	showTab(v.tab);
+	if (v.tab === "page")
+		$("listing").scrollTop = v.top;
+	if (v.src) {
+		srcPanel = { ...v.src };
+		$("src_panel").hidden = false;
+		renderSourcePanel();
+		if ($("src_body").dataset.state === "ok")
+			$("src_body").scrollTop = v.srcTop;
+		else
+			srcPanel.scrollTo = v.src.pick || v.src.line; // drawn again when the file or DWARF arrives
+	} else if (!$("src_panel").hidden) {
+		$("src_panel").hidden = true;
+		srcPanel = null;
+	}
+	window.scrollTo(window.scrollX, v.y);
+}
+
+function navOnPop(ev) {
+	const s = ev.state;
+	// An entry of an earlier load of the page: its views are gone.
+	if (!s || s.id !== NAV_ID || !navList.length)
+		return;
+	const to = Math.min(Math.max(s.nav, 0), navList.length - 1);
+	navList[navAt] = navCapture();
+	navAt = to;
+	navRestore(navList[to]);
+	navRender();
+}
+
+function navRender() {
+	const box = $("nav_hist"), back = $("nav_back"), fwd = $("nav_fwd");
+	const on = navList.length > 1;
+	box.hidden = !on;
+	document.body.classList.toggle("navhist-on", on);
+	box.dataset.count = navList.length;
+	box.dataset.at = navAt;
+	back.disabled = navAt <= 0;
+	fwd.disabled = navAt >= navList.length - 1;
+	const say = (b, dir, v, key) => {
+		const t = v ? dir + " to " + v.label + " (" + key + ")" : dir + ": no " + (dir === "Back" ? "earlier" : "later") + " view";
+		b.title = t;
+		b.setAttribute("aria-label", t);
+	};
+	say(back, "Back", navList[navAt - 1], "Alt+Left");
+	say(fwd, "Forward", navList[navAt + 1], "Alt+Right");
+}
+
+function initNav() {
+	navBuilt = true;
+	// navRestore sets the window's scroll with the rest of the view; the
+	// browser's own restore would come after it.
+	history.scrollRestoration = "manual";
+	window.addEventListener("popstate", navOnPop);
+	$("nav_back").addEventListener("click", () => navAt > 0 && history.back());
+	$("nav_fwd").addEventListener("click", () => navAt < navList.length - 1 && history.forward());
+	// v86 takes every key on the window for the VM (preventDefault), Alt+Left
+	// too: these go to the history unless the VM screen was clicked last
+	// (or the focus is in a text field). Enter and Space click the buttons.
+	const vmFocus = (ev) => {
+		vmHasKeys = !!ev.target.closest && !!ev.target.closest("#screen_container");
+	};
+	document.addEventListener("pointerdown", vmFocus, true);
+	document.addEventListener("focusin", vmFocus, true);
+	document.addEventListener("keydown", (ev) => {
+		const nav = ev.target.closest ? ev.target.closest("#nav_hist button") : null;
+		if (nav && (ev.key === "Enter" || ev.key === " ")) {
+			ev.preventDefault();
+			ev.stopPropagation();
+			nav.click();
+			return;
+		}
+		if (!ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey || (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight"))
+			return;
+		const a = document.activeElement;
+		if (vmHasKeys || (a && a.matches("input, textarea, select")))
+			return;
+		ev.preventDefault();
+		ev.stopPropagation();
+		$(ev.key === "ArrowLeft" ? "nav_back" : "nav_fwd").click();
+	}, true);
+	navRender();
 }
 
 // ---- page scan ------------------------------------------------------------
@@ -1610,16 +1809,18 @@ function codeSymbols() {
 function jumpTo(a) {
 	if (a < 0 || a >= emuRam)
 		return;
-	selectedPage = Math.floor(a / PAGE);
-	drawGrid();
-	showTab("page");
-	const box = $("listing");
-	let best = null;
-	for (const line of box.querySelectorAll("[data-addr]"))
-		if (Number(line.dataset.addr) <= a)
-			best = line;
-	if (best)
-		scrollListingTo(best);
+	navJump(() => {
+		selectedPage = Math.floor(a / PAGE);
+		drawGrid();
+		showTab("page");
+		const box = $("listing");
+		let best = null;
+		for (const line of box.querySelectorAll("[data-addr]"))
+			if (Number(line.dataset.addr) <= a)
+				best = line;
+		if (best)
+			scrollListingTo(best);
+	});
 }
 
 const symDesc = (st, i, a) => {
@@ -2530,7 +2731,7 @@ async function runToTargets(text) {
 // "Run to file:line" from the Source panel: the Debugger's own Run to.
 function runToLine(where) {
 	$("dbg_addr").value = where;
-	showTab("debugger");
+	navJump(() => showTab("debugger"));
 	doRunTo();
 }
 
@@ -2869,6 +3070,7 @@ async function init() {
 		$("tab_" + t).addEventListener("click", () => showTab(t));
 	window.addEventListener("hashchange", readHash);
 	readHash();
+	initNav();
 	$("page_prev").addEventListener("click", () => selectedPage > 0 && selectPage(selectedPage - 1));
 	$("page_next").addEventListener("click", () => selectedPage >= 0 && selectedPage + 1 < gridRam() / PAGE && selectPage(selectedPage + 1));
 	$("reread").addEventListener("click", inspect);

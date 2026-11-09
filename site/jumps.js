@@ -602,9 +602,11 @@ function jumpPopShow(btn) {
 
 // "go there": the Page tab at pa, its line marked.
 function jumpGo(pa) {
-	jumpHit = pa;
-	jumpHitScroll = true;
-	jumpTo(pa);
+	navJump(() => {
+		jumpHit = pa;
+		jumpHitScroll = true;
+		jumpTo(pa);
+	});
 }
 
 // The Debugger's summary of EIP's own paths.

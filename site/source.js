@@ -445,16 +445,18 @@ function srcFocusKeep(draw) {
 // files.json); an imported vmlinux has no file list, so a function's
 // declaration then opens in the function around pa.
 function srcOpenAt(path, line, pa) {
-	const r = pa >= 0 ? dbgFrames(pa) : { state: "none" };
-	const k = r.state === "ok" ? r.frames.findIndex((f) => f.file === path && f.line === line) : -1;
-	if (k >= 0)
-		openSource(pa, k);
-	else if (pa >= 0 && r.state === "ok" && dbgFiles().state === "none") {
-		openSource(pa);
-		srcPanel.pick = srcPanel.scrollTo = line;
-		renderSourcePanel();
-	} else
-		openSourceLine(path, line);
+	navJump(() => {
+		const r = pa >= 0 ? dbgFrames(pa) : { state: "none" };
+		const k = r.state === "ok" ? r.frames.findIndex((f) => f.file === path && f.line === line) : -1;
+		if (k >= 0)
+			openSource(pa, k);
+		else if (pa >= 0 && r.state === "ok" && dbgFiles().state === "none") {
+			openSource(pa);
+			srcPanel.pick = srcPanel.scrollTo = line;
+			renderSourcePanel();
+		} else
+			openSourceLine(path, line);
+	});
 }
 
 // "func at file:line; inlined into ..." for pa as nodes, file:line a link.
@@ -539,27 +541,33 @@ function openSource(pa, k = 0) {
 	const loc = r.frames[k];
 	if (!loc || !loc.file || !loc.line)
 		return;
-	srcPanel = { pa, fn: loc.func, path: loc.file, line: loc.line, pick: loc.line, scrollTo: loc.line };
-	$("src_panel").hidden = false;
-	renderSourcePanel();
+	navJump(() => {
+		srcPanel = { pa, fn: loc.func, path: loc.file, line: loc.line, pick: loc.line, scrollTo: loc.line };
+		$("src_panel").hidden = false;
+		renderSourcePanel();
+	});
 }
 
 // Open the side panel with a whole file (the Coverage tab): every line of
 // it with code, in any function, and which of them have executed.
 function openSourceFile(path) {
-	srcPanel = { pa: -1, fn: null, path, line: 0, whole: true };
-	renderSourcePanel();
-	$("src_panel").hidden = false;
-	const first = $("src_body").querySelector(".exec") || $("src_body").querySelector(".code");
-	$("src_body").scrollTop = first ? first.offsetTop - $("src_body").clientHeight / 3 : 0;
+	navJump(() => {
+		srcPanel = { pa: -1, fn: null, path, line: 0, whole: true };
+		renderSourcePanel();
+		$("src_panel").hidden = false;
+		const first = $("src_body").querySelector(".exec") || $("src_body").querySelector(".code");
+		$("src_body").scrollTop = first ? first.offsetTop - $("src_body").clientHeight / 3 : 0;
+	});
 }
 
 // Open the side panel with a whole file at one line, picked (a function's
 // declaration): its addresses are listed as for a tapped line.
 function openSourceLine(path, line) {
-	srcPanel = { pa: -1, fn: null, path, line, whole: true, pick: line, scrollTo: line };
-	$("src_panel").hidden = false;
-	renderSourcePanel();
+	navJump(() => {
+		srcPanel = { pa: -1, fn: null, path, line, whole: true, pick: line, scrollTo: line };
+		$("src_panel").hidden = false;
+		renderSourcePanel();
+	});
 }
 
 // A whole file's lines with code: the line rows of every shard that has

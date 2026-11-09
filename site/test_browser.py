@@ -6527,6 +6527,395 @@ def suite_touch(ctx):
     return failed | report("stale_cache", stale_cache_case(ctx.browser, ctx.args.timeout))
 
 
+# ---- jump history: Back and Forward ----------------------------------------
+
+# What a jump changes and Back must restore: the tab, the hash, the Page
+# listing's page, scroll and marked instruction, the Source panel (open or
+# closed, file, picked line, title, scroll) and the window's scroll.
+NAV_VIEW_JS = """() => {
+  const tab = [...document.querySelectorAll('.tabbar [role=tab]')].find((t) => t.getAttribute('aria-selected') === 'true').dataset.tab;
+  const l = document.getElementById('listing'), sp = document.getElementById('src_panel'), sb = document.getElementById('src_body');
+  const hit = l.querySelector('.jhit'), pick = sb.querySelector('.pick');
+  return { tab, hash: location.hash, page: tab === 'page' ? l.dataset.page : null, top: tab === 'page' ? Math.round(l.scrollTop) : 0,
+           hit: tab === 'page' && hit ? hit.dataset.addr : null, y: Math.round(window.scrollY),
+           src: sp.hidden ? null : { file: sb.dataset.file, pick: pick ? pick.dataset.line : null,
+                                     title: document.getElementById('src_title').textContent, top: Math.round(sb.scrollTop) } };
+}"""
+
+
+def nav_view(page):
+    return page.evaluate(NAV_VIEW_JS)
+
+
+def nav_diff(got, want):
+    """What differs between two views (scrolls within 2 px), or None."""
+    out = []
+    for k in ("tab", "hash", "page", "hit", "top", "y"):
+        if k in ("top", "y") and abs(got[k] - want[k]) <= 2:
+            continue
+        if got[k] != want[k]:
+            out.append(f"{k} {got[k]!r} != {want[k]!r}")
+    gs, ws = got["src"], want["src"]
+    if (gs is None) != (ws is None):
+        out.append(f"Source panel {'open' if gs else 'closed'}, want {'open' if ws else 'closed'}")
+    elif gs:
+        for k in ("file", "pick", "title"):
+            if gs[k] != ws[k]:
+                out.append(f"Source panel {k} {gs[k]!r} != {ws[k]!r}")
+        if abs(gs["top"] - ws["top"]) > 2:
+            out.append(f"Source panel scroll {gs['top']} != {ws['top']}")
+    return "; ".join(out) or None
+
+
+def nav_at(page):
+    """(the entry shown, entries); (0, 0) on a page without the history."""
+    return tuple(page.evaluate("""() => { const e = document.getElementById('nav_hist');
+        return e ? [Number(e.dataset.at || 0), Number(e.dataset.count || 0)] : [0, 0]; }"""))
+
+
+def nav_settle(page):
+    """A jump's listing is drawn again on the next frame (its width): wait
+    for that, a little longer than NAV_SCROLL_MS."""
+    time.sleep(1.3)
+
+
+def nav_first(page, sel):
+    loc = page.locator(sel)
+    for i in range(min(loc.count(), 40)):
+        if loc.nth(i).is_visible() and loc.nth(i).is_enabled():
+            return loc.nth(i)
+    return None
+
+
+def nav_watch(page):
+    """Record the view at every pointerdown (window.mkbView): the view a
+    click leaves, after any scrolling Playwright did to reach the target
+    (it scrolls again when the sticky top bar covers it)."""
+    page.evaluate("addEventListener('pointerdown', () => { window.mkbView = (%s)(); }, true)" % NAV_VIEW_JS)
+
+
+def nav_jump(page, views, kinds, kind, prep, problems, act="click"):
+    """One jump: prep() gets to it the way a user does (another tab, a
+    list opened) and returns the locator to click, or a function that
+    clicks. The view the click left (nav_watch) is what Back must restore
+    (views[-1] is replaced with it: tab switches and scrolls are no
+    entries); the view after it is appended."""
+    before = nav_at(page)
+    try:
+        target = prep()
+        if target is None:
+            problems.append(f"{kind}: nothing to click")
+            return
+        if callable(target):
+            page.evaluate("window.mkbView = null")
+            target(None)
+            view = page.evaluate("window.mkbView")
+        else:
+            target.scroll_into_view_if_needed()
+            page.evaluate("window.mkbView = null")
+            target.tap() if act == "tap" else target.click()
+            view = page.evaluate("window.mkbView")
+        views[-1] = view
+    except PlaywrightError as e:
+        problems.append(f"{kind}: {str(e).splitlines()[0]}")
+        return
+    if not wait_for(lambda: nav_at(page)[0] == before[0] + 1, 10):
+        problems.append(f"{kind}: no history entry (at, count {before} -> {nav_at(page)})")
+        return
+    nav_settle(page)
+    if nav_at(page)[1] != nav_at(page)[0] + 1:
+        problems.append(f"{kind}: forward entries kept after a new jump: {nav_at(page)}")
+    views.append(nav_view(page))
+    kinds.append(kind)
+
+
+def nav_jumps(page, name, problems, r):
+    """One jump of every kind; returns the views [before the first jump,
+    before the second, ..., after the last] and the kinds."""
+    views, kinds, probs = [nav_view(page)], [], []
+
+    def on(tab, sel):
+        def prep():
+            show_tab(page, tab)
+            return nav_first(page, sel)
+        return prep
+
+    def go_there():
+        show_tab(page, "page")
+        b = nav_first(page, "#listing button.jto")
+        if b:
+            return b
+        c = nav_first(page, "#listing button.jc")
+        if not c:
+            return None
+        c.scroll_into_view_if_needed()
+        c.click()
+        wait_for(lambda: page.is_visible("#jump_pop"), 5)
+        return nav_first(page, "#jump_pop button.jgo")
+
+    def grid():
+        def click(_):
+            x, y = page_center(page, 0x100)
+            page.mouse.click(x, y)
+        return click
+
+    def coverage(kind):
+        def prep():
+            show_tab(page, "coverage")
+            wait_for(lambda: page.get_attribute("#cov_tree", "data-state") == "ok", 30)
+            cov_open_all(page)
+            return nav_first(page, f'#cov_tree .covrow[data-kind="{kind}"] .covname')
+        return prep
+
+    def graph():
+        show_tab(page, "graph")
+        page.click("#gview_tree")
+        wait_for(lambda: page.locator("#graph_tree .tname").count() > 1, 20)
+        page.evaluate("document.querySelectorAll('#graph_tree .ttog').forEach((b) => b.textContent === '\u25b8' && b.click())")
+        loc = page.locator("#graph_tree .tname")
+        return loc.last if loc.count() else None
+
+    steps = [
+        ("Debugger symbol", on("debugger", "#sym_info button.symlink")),
+        ("branch target name", on("debugger", "#context .brt")),
+        ("jump source (go there)", go_there),
+        ("listing file:line", on("page", "#listing .src .srclink")),
+        ("Source panel address", lambda: nav_first(page, "#src_addrs button.symlink")
+         if wait_for(lambda: page.locator("#src_addrs button.symlink").count() > 0, 30) else None),
+        ("symbol index", lambda: page.locator("#symbol_index button").last if page.locator("#symbol_index button").count() else None),
+        ("next page", on("page", "#page_next")),
+        ("Memory grid page", grid),
+        ("call stack frame", on("debugger", "#call_stack button.symlink")),
+        ("Code at EIP line", on("debugger", "#context .ins[data-addr]")),
+        ("Debugger file:line", on("debugger", "#cur_src .srclink")),
+        ("Coverage function", coverage("func")),
+        ("Coverage file", coverage("file")),
+        ("Graph call tree", graph),
+    ]
+    for kind, prep in steps:
+        nav_jump(page, views, kinds, kind, prep, probs)
+    problems.extend(f"{name} {p}" for p in probs)
+    r["jumps"] = kinds
+    return views, kinds
+
+
+def navhist_case(browser, base, shots, name="hello"):
+    """Jump history (N1). Paused in hello_main, one jump of each kind
+    (a Debugger symbol, a jump source's "go there", file:line links in the
+    listing and the Debugger, a Source panel address, the symbol index,
+    the next page, a branch target, a page of the Memory grid, a call stack
+    frame, a Code at EIP line, a Coverage function and file, a Graph call
+    tree node) adds one entry each; Back through all of them (the button,
+    Enter on it, Alt+Left, the browser's back) restores each earlier view
+    exactly, Forward (button, Alt+Right, browser) each later one; the
+    tooltips name the target; stepping adds nothing; Alt+Left after a
+    click on the VM screen is the VM's; back past the first view stays on
+    the page; the VM keeps running through browser back and forward; the
+    buttons stay on screen while scrolling. Then a 390 px phone: tap, the
+    buttons above the Source panel. Screenshots light/dark at 1280 and
+    390 px."""
+    problems, r = [], {}
+    entry = kernel_entries()[name]
+    syms = {s["name"]: s for s in json.loads((SITE / entry["symbols"]).read_text())["symbols"]}
+    fn = syms["hello_main"]
+    errors = []
+    page = browser.new_page(viewport={"width": 1280, "height": 1000})
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    page.fill("#dbg_addr", hex(fn["vaddr"]))
+    page.click("#dbg_runto")
+    ok, at, status = run_to_wait(page, {fn["paddr"]}, 120)
+    if not ok:
+        page.close()
+        return [f"{name}: Run to hello_main did not stop there: {status}"], r
+    # A few steps in: a call stack and a branch or two recorded.
+    page.fill("#dbg_n", "40")
+    page.click("#dbg_stepn")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 30)
+    time.sleep(1)
+    if page.locator("#nav_hist").count() != 1:
+        page.close()
+        return [f"{name}: no Back and Forward buttons (#nav_hist)"], r
+    if page.is_visible("#nav_hist"):
+        problems.append(f"{name}: the Back button shows before any jump (Run to and stepping are no jumps)")
+    hist0 = page.evaluate("history.length")
+    nav_watch(page)
+    views, kinds = nav_jumps(page, name, problems, r)
+    n = len(views) - 1
+    r["entries"] = nav_at(page)
+    if n < 12:
+        problems.append(f"{name}: only {n} jumps made: {kinds}")
+    r["history.length"] = [hist0, page.evaluate("history.length")]
+
+    # Fixed while the window scrolls, clear of the tab bar and the VM screen.
+    page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight)")
+    time.sleep(0.3)
+    pos = page.evaluate("""() => { const b = document.getElementById('nav_hist').getBoundingClientRect();
+        return { pos: getComputedStyle(document.getElementById('nav_hist')).position, top: b.top, bottom: b.bottom, left: b.left, right: b.right,
+                 vh: innerHeight, vw: innerWidth }; }""")
+    r["buttons"] = pos
+    if pos["pos"] != "fixed" or not (0 <= pos["top"] and pos["bottom"] <= pos["vh"] and pos["left"] >= 0 and pos["right"] <= pos["vw"]):
+        problems.append(f"{name}: the Back button is not fixed on screen while scrolled to the end: {pos}")
+    page.evaluate(f"window.scrollTo(0, {views[-1]['y']})")
+    for scheme in ("light", "dark"):
+        page.emulate_media(color_scheme=scheme)
+        time.sleep(0.3)
+        page.screenshot(path=str(shots / f"navhist-{name}-1280-{scheme}.png"))
+    page.emulate_media(color_scheme="light")
+
+    # Back through every jump, by every means; each earlier view exactly.
+    ways = ["button", "enter", "alt", "browser"]
+    titles = []
+    for k in range(n, 0, -1):
+        title = page.get_attribute("#nav_back", "title") or ""
+        label = page.evaluate("navList[navAt - 1].label")
+        if not title.startswith("Back to ") or label not in title:
+            problems.append(f"{name}: Back's tooltip {title!r} does not name the view it returns to ({label!r})")
+        titles.append(title)
+        way = ways[k % len(ways)]
+        if way == "button":
+            page.click("#nav_back")
+        elif way == "enter":
+            page.focus("#nav_back")
+            page.keyboard.press("Enter")
+        elif way == "alt":
+            page.focus("#nav_back")  # the focus is on the page, not the VM screen
+            page.keyboard.press("Alt+ArrowLeft")
+        else:
+            page.go_back()
+        if not wait_for(lambda: nav_at(page)[0] == k - 1, 10):
+            problems.append(f"{name}: Back ({way}) from {kinds[k - 1]} did not go back: {nav_at(page)}")
+            break
+        nav_settle(page)
+        d = nav_diff(nav_view(page), views[k - 1])
+        if d:
+            problems.append(f"{name}: Back ({way}) from {kinds[k - 1]}: {d}")
+
+    if page.is_enabled("#nav_back"):
+        problems.append(f"{name}: Back is enabled at the first view")
+    r["tooltips"] = titles[:4]
+    if not any(re.match(r"Back to \w+\+0x[0-9a-f]+(, |\s)", t) for t in titles):
+        problems.append(f"{name}: no Back tooltip names an instruction as symbol+offset: {titles}")
+    page.screenshot(path=str(shots / f"navhist-{name}-first-1280.png"))
+    for k in range(1, n + 1):
+        way = ["button", "alt", "browser"][k % 3]
+        if way == "button":
+            page.click("#nav_fwd")
+        elif way == "alt":
+            page.focus("#nav_fwd")
+            page.keyboard.press("Alt+ArrowRight")
+        else:
+            page.go_forward()
+        if not wait_for(lambda: nav_at(page)[0] == k, 10):
+            problems.append(f"{name}: Forward ({way}) to {kinds[k - 1]} did not go forward: {nav_at(page)}")
+            break
+        nav_settle(page)
+        d = nav_diff(nav_view(page), views[k])
+        if d:
+            problems.append(f"{name}: Forward ({way}) to {kinds[k - 1]}: {d}")
+
+    # Stepping follows EIP (the Page tab moves with it) without new entries.
+    show_tab(page, "page")
+    before, hl = nav_at(page), page.evaluate("history.length")
+    p0 = page.get_attribute("#listing", "data-page")
+    for _ in range(12):
+        page.click("#dbg_step")
+        time.sleep(0.2)
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 30)
+    time.sleep(0.5)
+    r["stepping"] = f"page {p0} -> {page.get_attribute('#listing', 'data-page')}, {page.evaluate('stepper.steps')} steps"
+    if nav_at(page) != before or page.evaluate("history.length") != hl:
+        problems.append(f"{name}: stepping added history entries: {before} -> {nav_at(page)}, history.length {hl} -> {page.evaluate('history.length')}")
+
+    # Alt+Left after a click on the VM screen is the VM's key.
+    page.click("#screen_container")
+    page.keyboard.press("Alt+ArrowLeft")
+    time.sleep(0.5)
+    if nav_at(page) != before:
+        problems.append(f"{name}: Alt+Left went back with the VM screen focused: {before} -> {nav_at(page)}")
+
+    # The VM runs on through the browser's back and forward, and back past
+    # the first view stays on the page.
+    page.evaluate("window.mkbEmu = emulator")
+    page.select_option("#dbg_speed", "10")  # hello_main ends in a few hundred instructions
+    page.click("#dbg_continue")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "stepped", 10)
+    r["running"] = page.evaluate("({ state: runState, steps: stepper.steps })")
+    url = page.url.split("#")[0]
+    for _ in range(n + 1):
+        page.go_back()
+        time.sleep(0.3)
+    s0 = page.evaluate("stepper.steps")
+    time.sleep(2)
+    got = page.evaluate("({ same: window.mkbEmu === emulator, steps: stepper.steps, state: runState, url: location.href })")
+    r["after back past the start"] = got
+    if not got["url"].startswith(url) or not got["same"] or got["steps"] <= s0 or got["state"] != "stepped" or nav_at(page)[0] != 0:
+        problems.append(f"{name}: back past the first view: {got}, at {nav_at(page)} (want the page, the same VM running, at 0)")
+    page.go_forward()
+    page.go_forward()
+    time.sleep(0.5)
+    if not page.evaluate("window.mkbEmu === emulator && runState === 'stepped'") or nav_at(page)[0] != 1:
+        problems.append(f"{name}: browser forward: at {nav_at(page)}, VM {page.evaluate('runState')}")
+    if page.is_enabled("#dbg_pause"):
+        page.click("#dbg_pause")
+    if errors:
+        problems.append(f"{name}: page errors: {errors[:3]}")
+    page.close()
+
+    # A 390 px phone: tap jumps and Back; with the Source panel open the
+    # buttons sit above it.
+    ctx = browser.new_context(**PHONE)
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    page.fill("#dbg_addr", "hello_main")
+    page.tap("#dbg_runto")
+    ok, at, status = run_to_wait(page, {fn["paddr"]}, 120)
+    if not ok:
+        ctx.close()
+        return problems + [f"{name} 390 px: Run to hello_main did not stop there: {status}"], r
+    time.sleep(1)
+    nav_watch(page)
+    views, kinds, probs = [nav_view(page)], [], []
+    nav_jump(page, views, kinds, "Debugger symbol", lambda: nav_first(page, "#sym_info button.symlink"), probs, "tap")
+    nav_jump(page, views, kinds, "listing file:line", lambda: nav_first(page, "#listing .src .srclink"), probs, "tap")
+    problems.extend(f"{name} 390 px {p}" for p in probs)
+    wait_for(lambda: page.get_attribute("#src_body", "data-state") == "ok", 30)
+    geo = page.evaluate("""() => { const b = document.getElementById('nav_hist').getBoundingClientRect(),
+        p = document.getElementById('src_panel').getBoundingClientRect();
+        return { nav: [b.left, b.top, b.right, b.bottom], panel: [p.left, p.top, p.right, p.bottom], vw: innerWidth, vh: innerHeight,
+                 hscroll: document.documentElement.scrollWidth > innerWidth + 1 }; }""")
+    r["390 px"] = geo
+    if geo["nav"][3] > geo["panel"][1] + 0.5 or geo["nav"][1] < 0 or geo["nav"][2] > geo["vw"] or geo["hscroll"]:
+        problems.append(f"{name} 390 px: the buttons overlap the Source panel, leave the screen or scroll it sideways: {geo}")
+    for scheme in ("light", "dark"):
+        page.emulate_media(color_scheme=scheme)
+        time.sleep(0.3)
+        page.screenshot(path=str(shots / f"navhist-{name}-390-{scheme}.png"))
+    page.emulate_media(color_scheme="light")
+    for k in range(len(kinds) - 1, -1, -1):
+        want = views[k]
+        page.tap("#nav_back")
+        if not wait_for(lambda: nav_at(page)[0] == k, 10):
+            problems.append(f"{name} 390 px: tapping Back did not go back to {k}: {nav_at(page)}")
+            break
+        nav_settle(page)
+        d = nav_diff(nav_view(page), want)
+        if d:
+            problems.append(f"{name} 390 px: tap Back to {k}: {d}")
+    page.screenshot(path=str(shots / f"navhist-{name}-390-back.png"))
+    if errors:
+        problems.append(f"{name}: page errors: {errors[:3]}")
+    ctx.close()
+    return problems, r
+
+
+def suite_navhist(ctx):
+    return report("navhist", *navhist_case(ctx.browser, ctx.base, ctx.shots))
+
+
 # ---- run state: random clicks at 1/s ---------------------------------------
 # The operator's report: clicking around at 1 instruction per second reached
 # a state where the page was not paused yet nothing ran. run_state_problem()
@@ -7036,6 +7425,7 @@ SUITES = {
     "runstate": (suite_runstate, False),
     "speedline": (suite_speedline, True),
     "speedasm": (suite_speedasm, True),
+    "navhist": (suite_navhist, False),
 }
 
 

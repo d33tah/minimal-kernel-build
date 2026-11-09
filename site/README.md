@@ -912,6 +912,30 @@ counters. Below it are tabs, kept in the URL hash (`#memory`,
   (`DecompressionStream`, then `emulator.restore_state()`) and "Download".
 - **About.** What the page is and how the counting works.
 
+**Back and Forward.** Every jump you make is an entry of the browser's
+history: a symbol, address or branch target link, a jump source's "go
+there", a file:line (Source panel), a Source panel address, the symbol
+index, the page arrows, a page of the Memory grid, a call stack frame, a
+Code at EIP line, a Coverage function or file, a Graph node, Run to
+file:line from the Source panel. Each entry keeps the view you left: the
+tab, the page, the listing's scroll and marked instruction, the Source
+panel (open or closed, file, picked line, scroll) and the window's
+scroll; it is captured again when you leave it, so Forward returns to it
+as you left it. Fixed Back and Forward buttons (bottom right, left of the
+Source panel; on a phone above it, arrows only) appear after the first
+jump, and their tooltips name the view they go to (`Back to
+hello_main+0x1e`). Alt+Left and Alt+Right do the same unless the VM
+screen was clicked last (then the keys are the VM's), and so do the
+mouse's back button and a phone's back gesture: all of them go through
+`popstate` in the same document, so the VM keeps running. The first jump
+also turns the entry the page was loaded in into a guard: going back past
+the first view shows it again instead of leaving the page; a second back
+leaves. Following EIP while stepping only replaces the hash and adds no
+entry. The navhist suite (test_browser.py) makes one jump of each kind in
+hello, goes back through all of them by every means and forward again,
+compares each view, and checks stepping, the VM screen's keys, back past
+the start with the VM running, and a 390 px phone.
+
 ## Stepping and boot counters
 
 v86 0.5.471 runs guest code in `main_loop()`, at least 100,003 instructions

@@ -1161,7 +1161,7 @@ function showVarInfo(pa, pinned) {
 		b.textContent = "Watch " + r.path;
 		b.addEventListener("click", () => {
 			watchAdd(r.path);
-			showTab("debugger");
+			navJump(() => showTab("debugger"));
 		});
 		el.append(" ", b);
 	}

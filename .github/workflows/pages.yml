@@ -349,9 +349,51 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
     - id: deployment
       uses: actions/deploy-pages@v4
+
+  # Install the page as a web app in Chromium with a window (Xvfb):
+  # beforeinstallprompt fires, PWA.install, PWA.launch opens it standalone
+  # and hello boots there. Locally deployed copy plus four broken copies
+  # that must fail; then the live site once it is deployed. Headless
+  # Chromium never offers to install (site/test_pwa_install.py).
+  pwa-install:
+    needs: [site, deploy]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: site
+        path: site
+
+    - uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-chromium-${{ runner.os }}-v1
+
+    - name: Install Playwright, Chromium and Xvfb
+      run: |
+        python3 -m venv "$RUNNER_TEMP/venv"
+        "$RUNNER_TEMP/venv/bin/pip" install playwright pillow
+        "$RUNNER_TEMP/venv/bin/playwright" install --with-deps chromium
+        sudo apt-get install -y xvfb
+
+    - name: Install the local copy, the broken copies must fail
+      run: xvfb-run -a -s "-screen 0 1400x1000x24" "$RUNNER_TEMP/venv/bin/python" site/test_pwa_install.py
+
+    - name: Install the live site
+      run: xvfb-run -a -s "-screen 0 1400x1000x24" "$RUNNER_TEMP/venv/bin/python" site/test_pwa_install.py --base "${{ needs.deploy.outputs.page_url }}"
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: pwa-install-screenshots
+        path: site/test-screenshots/
 
   # The browser test's suites in parallel jobs (test_browser.py --suites),
   # grouped so each job takes about the same time.

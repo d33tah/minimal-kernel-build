@@ -1097,6 +1097,59 @@ works without a network.
   subpath (start_url and scope resolve to the site's directory, each icon
   a PNG of the size it claims).
 
+### Installing it for real (test_pwa_install.py)
+
+Headless Chromium never offers to install a page, and its
+`Page.getInstallabilityErrors` answers `[]` even for a page with no
+manifest, so the `pwa` suite cannot tell an installable page from one
+that is not. `test_pwa_install.py` runs Chromium with a window under Xvfb,
+a fresh profile per case, `--bypass-app-banner-engagement-checks`, and
+asks for four pieces of evidence:
+
+1. `beforeinstallprompt` fires (caught by an init script);
+2. `Page.getInstallabilityErrors` is empty and `Page.getAppManifest`
+   parses the manifest with no errors or warnings, scope and start_url
+   the site's directory;
+3. `PWA.install` installs it, `PWA.getOsAppState` knows its manifest id,
+   and `chrome://web-app-internals` lists it with our name, scope,
+   start_url, manifest id, display standalone and the three icons;
+4. `PWA.launch` opens it in its own window: `(display-mode: standalone)`
+   matches there and hello boots to "Hello, World!". The case saves the
+   app's page and an Xvfb screenshot of the whole display
+   (`test-screenshots/pwa-install-*`), which shows the app window with
+   its own title bar and no tab strip or address bar.
+
+Plus the site's own requirement: a service worker controls the page.
+Two details of the DevTools protocol: the `PWA` domain answers "wasn't
+found" over `--remote-debugging-port` (it works over Playwright's pipe),
+and `PWA.install` records the user's choice as "open in a browser tab", so
+the test sets "open in a window" (`PWA.changeAppUserSettings`) before the
+launch, as the install dialog does by default.
+
+Without `--base` it serves a deployed copy of the site (as the `pwa`
+suite does) at `http://localhost:PORT/minimal-kernel-build/` and four
+broken copies, each of which must fail for its own reason, or the test
+fails as not discriminating:
+
+| copy | Chromium 148 and 156 | the test says |
+|---|---|---|
+| the site | installs, launches standalone | pass |
+| manifest link removed | no beforeinstallprompt, installability error `no-manifest`, no manifest URL | fail |
+| icons 404 | no beforeinstallprompt, installability error `no-acceptable-icon` (`PWA.install` still installs it with a generated icon); the service worker does not install (its precache has the icons) | fail |
+| service worker never registered | installs and launches: Chromium no longer needs a service worker or fetch handler to offer the install | fail on our own check (no service worker controls the page) |
+| start_url `../elsewhere/` | manifest warning "property 'scope' ignored", scope and start_url /elsewhere/, `PWA.launch` refuses the site's URL | fail |
+
+    xvfb-run -a site/test_pwa_install.py
+    xvfb-run -a site/test_pwa_install.py --base https://d33.pl/minimal-kernel-build
+    xvfb-run -a site/test_pwa_install.py --chromium /usr/bin/chromium --only site,icons-404
+
+The workflow's `pwa-install` job runs both (the local copies with
+Playwright's Chromium, then the live site once deployed) with
+`xvfb-run`. Checked on host d-claude (Debian 13) with Debian's Chromium
+156.0.8078.79 and Playwright 1.60's Chromium 148.0.7778.96, the same
+results with both; that host has no colour emoji font, so the tab emoji
+are boxes in its screenshots.
+
 ## Stepping and boot counters
 
 v86 0.5.471 runs guest code in `main_loop()`, at least 100,003 instructions
@@ -1470,6 +1523,7 @@ browser-test matrix job named by its suites):
 | U3 tab names, emoji, compact tabs, Machine tab | suite tabs (hello, light and dark at 1280 and 390 px: the eight tabs with an aria-hidden emoji each, distinct, and the word as accessible name; no tab or About text calls a tab Graph or Coverage; #graph, #coverage, ?tab=graph and ?tab=coverage open Calls and Source with the hash rewritten; the kernel, RAM, file, symbol, initrd, cmdline and offset controls, Boot, the header and build lines and the setting are in the Machine tab, the screen, run bar, counters, status and state line in the top bar; picking hello-os and Boot with 4 MB from the Machine tab boot it; a bzImage dropped on the About tab boots; compact tabs hide the words, keep aria-label and tooltip, the hover shows the name, a click opens the tab, the choice survives a reload both ways, off by default at 1280 px, on by default at 390 px with the bar in one row; the top bar at 390 px is shorter than the 1,003 px it had before; no horizontal scroll). On 8dc5c89c7 it fails: no emoji, Graph and Coverage, no Machine tab, no compact setting, top bar 1,003 px | debian,...,legend,tabs |
 | U4 Settings tab, literal emoji | suite tabs (the nine tabs in order with Settings before About and the emoji 🖥️ 🗺️ 🔢 🐞 📊 📝 💾 ⚙️ ℹ️, each drawn as a colour emoji in two font stacks; #settings and ?tab=settings open Settings; Compact tabs, speed, clock, count, the per-kernel list and Reset are in the Settings tab and the Machine tab has no Settings section or checkbox; with a watch list, a cmdline set by Boot, another bzImage's symbols, an unknown mkb- key and an IndexedDB DWARF entry stored, every mkb- key in localStorage and the IndexedDB entry have a row with an explanation; speed, clock and count set in Settings change the top bar's controls and survive a reload, the top bar's speed shows in Settings; Forget removes each entry with its effect (the watch list empties, the cmdline goes back to the default, the other bzImage's DWARF goes); Reset all settings leaves no mkb- key and no IndexedDB entry and restores compact off, 1k/s, 10/us, count on; the compact bar is one row at 390 px light and dark; no horizontal scroll on Settings). On feddeeea8 it fails: no Settings tab, the old emoji, Compact tabs in the Machine tab | debian,...,legend,tabs |
 | P1 installable, offline, update notice | suite pwa (locally the site is deployed twice into a temporary directory with `stamp.py`, served with Pages' caching; offline means the server answers nothing and the context is offline): the manifest is linked and parses, start_url and scope resolve to the site's directory, the icons load at their declared sizes (192, 512, maskable), theme-color for light and dark; Chromium's own parse of the manifest (CDP Page.getAppManifest) meets its install criteria (Page.getInstallabilityErrors is checked too, but Chromium 145 answers [] even for a page without a manifest); a service worker controls the page after the first visit and answers fetches; its version and cache names are the deployed commit. Online, hello paused: Run to hello_main, call stack, locals, Page listing and boot/hello.c in the Source panel. Offline: a reload boots hello to "Hello, World!", the minified Linux (never opened online) boots too, the same Debugger, Page and Source checks pass, Debian (never fetched) says "not available offline yet" with no page error. A second deploy (another commit in sw.js, version.json and the stamps, a marker in app.js): coming back online shows the update notice; Reload runs the new app.js under the new worker with only the new deploy's caches, and the notice does not show on it. Screenshots of the notes light and dark at 1280 and 390 px, no horizontal scroll. With `--base` the offline part aborts every request of the context and the new deploy is a version.json routed to another commit. On 039c91717 it fails: no manifest, no service worker | debian,...,tabs,pwa |
+| P2 a real install | `test_pwa_install.py` in the `pwa-install` job (headful Chromium under Xvfb: beforeinstallprompt, no installability errors or manifest warnings, PWA.install, chrome://web-app-internals, PWA.launch standalone, hello boots in the app window; four broken copies (no manifest link, icons 404, no service worker, start_url outside the scope) must each fail for their own reason), then against the live site | pwa-install |
 | K1 boot check reads the screen | `test_qemu_screen_check.py` (the kernels job's -O0 boot output of run 42539920959, where curses drew "H", a backspace, escapes, a cursor-right and "ello, World!": the bytes lack "Hello, World!" and an expect pattern on them ends without a match, while the replayed 80x25 screen shows "Hello, World!" and "Still alive" on rows 9 and 10 for every read size from 1 byte up; output cut before "Still alive", the strings in the wrong order, overwritten or cleared text fail); `qemu_screen_check.py` boots hello and hello-os (18M and the low image at 1M) and the -O0 minified Linux in the workflow | kernels |
 | U1/U2 unoptimized builds | qemu boot of the -O0 hello and minified Linux with both gate lines on the screen (`qemu_screen_check.py`); `check-code-identity.py` for each -O0 and -Os pair; `test_dwarf.py` on both builds of each; suite hello (every instruction of hello_main and put_line), suite unoptimized (minified Linux: eight Run to stops, single steps into calls, no "optimized out" at any address read, values vs gdb at each stop; the -Os entry must show some) | kernels; tasks,operands,runto_phone,srclinks,unoptimized; boot,... |
 

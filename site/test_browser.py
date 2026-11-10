@@ -6832,8 +6832,18 @@ def tip_wait(page, shown, timeout=3):
 
 
 def tip_tap_away(page):
-    """Tap the page's left margin (nothing there acts), off the popover."""
-    page.touchscreen.tap(3, page.viewport_size["height"] // 2)
+    """Tap the page's left margin (nothing there acts), off the popover and
+    away from any control: a phone's touch adjustment moves a tap a few px
+    off a control onto it (since H1 the header is shorter and a "?" of the
+    Page tab sat next to the middle of the left margin)."""
+    y = page.evaluate("""() => { const vh = innerHeight, pop = document.getElementById('tip_pop');
+        const act = 'button, a, input, select, textarea, label, summary, [data-tip], .tip, [tabindex], #tip_pop, #runbadge, header';
+        const near = (y) => { for (let dx = 0; dx <= 48; dx += 6) for (let dy = -24; dy <= 24; dy += 6) {
+            const e = document.elementFromPoint(3 + dx, y + dy); if (!e || e.closest(act)) return true; } return false; };
+        for (let k = 0; k < vh / 2; k += 6) for (const y of [vh / 2 + k, vh / 2 - k])
+            if (y > 30 && y < vh - 30 && !near(y)) return Math.round(y);
+        return Math.round(vh / 2); }""")
+    page.touchscreen.tap(3, y)
 
 
 def tip_fits(st, where, problems):

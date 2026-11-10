@@ -718,8 +718,16 @@ function focusFrame(k) {
 // first instruction and the Source panel at its line (app.js openFunction,
 // one history entry: Back returns here as it was). Boxes with no symbol
 // (BIOS, setup, kernel code without a symbol) do nothing: false.
+// One double click or tap can ask twice (the canvas's dblclick and the
+// pointerup double-press detection's timer). An open cancels that timer,
+// and the 600 ms in which a second ask is ignored count from the end of
+// the open: on a slow host the open itself takes longer than that (B2).
 function graphOpen(node) {
 	const st = G.stepper;
+	if (G.openTimer) {
+		clearTimeout(G.openTimer);
+		G.openTimer = 0;
+	}
 	if (!st || node < 0 || node >= st.symName.length || realNow() - (G.openedAt || 0) < 600)
 		return false;
 	G.openedAt = realNow();
@@ -733,11 +741,12 @@ function graphOpen(node) {
 	};
 	for (const t of ["click", "dblclick"])
 		document.addEventListener(t, swallow, true);
+	openFunction(st.symStart[node], st.symName[node]);
+	G.openedAt = realNow();
 	setTimeout(() => {
 		for (const t of ["click", "dblclick"])
 			document.removeEventListener(t, swallow, true);
 	}, 500);
-	openFunction(st.symStart[node], st.symName[node]);
 	return true;
 }
 
@@ -1456,7 +1465,10 @@ function initGraph() {
 			const last = G.lastPress;
 			if (node >= 0 && last && last.node === node && last.view === G.view && t - last.t < 500 && Math.hypot(x - last.x, y - last.y) < 24) {
 				G.lastPress = null;
-				setTimeout(() => graphOpen(node), 0);
+				G.openTimer = setTimeout(() => {
+					G.openTimer = 0;
+					graphOpen(node);
+				}, 0);
 			} else
 				G.lastPress = { node, view: G.view, t, x, y };
 		}

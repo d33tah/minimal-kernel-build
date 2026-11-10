@@ -8939,6 +8939,48 @@ def graphopen_back(page, name, fn, before, how, touch, problems):
         problems.append(f"{tag}: the Calls tab is not as it was: {diff}")
 
 
+# B2: on a slow host one double click or double tap opened the function
+# twice (two history entries). The canvas's dblclick opened it and the timer
+# of the pointerup double-press detection opened it again: the guard against
+# a second open counted from the start of the open, and the open itself takes
+# longer than that window when the CPU is slow. Two ways to be slow: the open
+# takes 900 ms (a wrapper busy-waits after it, in real time), and the CPU is
+# throttled 10x through CDP.
+# The wrapper also counts the opens: at 1280 px the second open of the same
+# place adds no history entry, but it is still a second jump.
+GRAPHOPEN_SLOW_JS = """(ms) => { if (!window.__openFunction0) window.__openFunction0 = openFunction;
+    window.__opens = 0;
+    openFunction = (...a) => { __opens++; __openFunction0(...a); const t = realNow(); while (realNow() - t < ms); }; }"""
+
+
+def graphopen_slow(page, ctx, name, fn, paddr, src_file, phone, problems, r):
+    """A double click / tap while the host is slow: still one history entry."""
+    cdp = ctx.new_cdp_session(page)
+    for slow in ("open takes 900 ms", "CPU 10x slower"):
+        how = ("double tap" if phone else "double click") + ", " + slow
+        xy = graph_box_xy(page, fn)
+        if not xy:
+            problems.append(f"{name} {fn}: no box drawn ({how})")
+            continue
+        time.sleep(0.7)  # the next press starts afresh
+        before = page.evaluate(GRAPH_STATE_JS)
+        entries0 = nav_at(page)
+        page.evaluate(GRAPHOPEN_SLOW_JS, 900 if slow.startswith("open") else 0)
+        if slow.startswith("CPU"):
+            cdp.send("Emulation.setCPUThrottlingRate", {"rate": 10})
+        graph_double(page, xy, phone)
+        time.sleep(4)  # a second open would land within this
+        cdp.send("Emulation.setCPUThrottlingRate", {"rate": 1})
+        opens = page.evaluate("__opens")
+        page.evaluate("() => { openFunction = __openFunction0; }")  # an expression's function value would be called
+        r[f"slow {how}"] = [entries0, nav_at(page), opens]
+        if opens != 1:
+            problems.append(f"{name} {fn} ({how}): opened {opens} times, once expected")
+        if graphopen_opened(page, name, fn, paddr, src_file, how, problems, r, entries0):
+            graphopen_back(page, name, fn, before, "button" if phone else "browser", phone, problems)
+    cdp.detach()
+
+
 def graphopen_run(browser, base, shots, name, scheme, phone):
     fn, steps, src_file = GRAPHOPEN_POINTS[name]
     syms = {s["name"]: s for s in json.loads((SITE / kernel_entries()[name]["symbols"]).read_text())["symbols"]}
@@ -9020,6 +9062,7 @@ def graphopen_run(browser, base, shots, name, scheme, phone):
     if page.evaluate("G.flame"):
         page.click("#graph_flame")
         time.sleep(0.4)
+    graphopen_slow(page, ctx, name, fn, sym["paddr"], src_file, phone, problems, r)
 
     # Enter on the canvas opens the selected box; the arrows move the selection.
     xy = graph_box_xy(page, fn)

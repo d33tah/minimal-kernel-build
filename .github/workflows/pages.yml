@@ -306,6 +306,8 @@ jobs:
         site/check-ids.py
         site/check-text.py
         site/check-legend.py
+        # The vendored LZ4 module (snapshots) is the pinned upstream file.
+        site/gen-lz4.py --check
         # Which commit is deployed: shown in the page header.
         python3 -c 'import json, os, subprocess
         g = lambda f: subprocess.run(["git", "log", "-1", "--format=" + f], capture_output=True, text=True).stdout.strip()
@@ -458,7 +460,8 @@ jobs:
         echo "$sum  $f" | sha256sum -c
         dpkg-deb --fsys-tarfile "$f" | tar -x -O ./usr/lib/debug/boot/vmlinux-6.1.0-50-686 > debug-elfs/debian-6.1-686.elf
         sudo apt-get update
-        sudo apt-get install -y llvm gdb
+        # lz4: snapdiff checks the downloaded snapshot with `lz4 -d`.
+        sudo apt-get install -y llvm gdb lz4
         ls -l debug-elfs
 
     - name: Install Playwright and Chromium

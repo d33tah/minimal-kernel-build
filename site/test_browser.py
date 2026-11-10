@@ -9197,6 +9197,118 @@ def snap_parse_state(raw):
     return ram, st
 
 
+def lz4_frame_decode(data):
+    """The LZ4 frame format (lz4/doc/lz4_Frame_format.md, version 01) and
+    its block format, decoded here independently of the page's lz4frame.js:
+    magic 0x184D2204, FLG and BD bytes, an optional content size and
+    dictionary ID, the header checksum, then blocks (a 32-bit size, the
+    high bit set for a stored block; an optional block checksum) up to a
+    zero size, and an optional content checksum. Blocks may refer back
+    into earlier blocks (FLG bit 5 clear), so the output is one history.
+    The block format's end rules are enforced as the reference decoder
+    does for a full block: the last match starts at least 12 bytes before
+    the block's end and the last 5 bytes are literals (lz4js 0.2.0 broke
+    them and `lz4 -d` refused its 4 MiB blocks)."""
+    import struct
+    if struct.unpack_from("<I", data, 0)[0] != 0x184D2204:
+        raise ValueError(f"not an LZ4 frame: magic {data[:4].hex()}")
+    flg = data[4]
+    if flg >> 6 != 1:
+        raise ValueError(f"LZ4 frame version {flg >> 6}")
+    i = 6 + (8 if flg & 8 else 0) + (4 if flg & 1 else 0) + 1
+    out = bytearray()
+    while True:
+        size = struct.unpack_from("<I", data, i)[0]
+        i += 4
+        if size == 0:
+            break
+        n = size & 0x7fffffff
+        block = data[i:i + n]
+        i += n + (4 if flg & 0x10 else 0)
+        if size & 0x80000000:
+            out += block
+            continue
+        j, base, last_start, last_end = 0, len(out), 0, 0
+        while j < n:
+            token = block[j]
+            j += 1
+            lit = token >> 4
+            if lit == 15:
+                while True:
+                    b = block[j]
+                    j += 1
+                    lit += b
+                    if b != 255:
+                        break
+            out += block[j:j + lit]
+            j += lit
+            if j >= n:
+                break
+            off = block[j] | block[j + 1] << 8
+            j += 2
+            ml = token & 15
+            if ml == 15:
+                while True:
+                    b = block[j]
+                    j += 1
+                    ml += b
+                    if b != 255:
+                        break
+            ml += 4
+            if off == 0 or off > len(out):
+                raise ValueError(f"LZ4 match offset {off} outside the {len(out)} bytes decoded")
+            start = len(out) - off
+            last_start, last_end = len(out) - base, len(out) - base + ml
+            if off >= ml:
+                out += out[start:start + ml]
+            else:
+                for k in range(ml):
+                    out.append(out[start + k])
+        size_out = len(out) - base
+        if last_end and (last_start > size_out - 12 or last_end > size_out - 5):
+            raise ValueError(f"LZ4 block of {size_out} bytes: a match at {last_start}..{last_end} breaks the end rules "
+                             "(last match 12 bytes before the end, last 5 bytes literals)")
+    return bytes(out)
+
+
+def snap_check_download(path, want_ram, codec):
+    """A downloaded snapshot: LZ4 frame (or gzip for an S1 one) of v86's
+    state, decoded in Python (and by the lz4 tool when it is installed;
+    CI installs it). Returns problems and the decoded sizes."""
+    problems = []
+    data = pathlib.Path(path).read_bytes()
+    try:
+        raw = lz4_frame_decode(data) if codec == "lz4" else gzip.decompress(data)
+    except (ValueError, OSError, IndexError, EOFError) as e:
+        return [f"the {codec} download ({len(data)} bytes, starts {data[:6].hex()}) does not decode: {e}"], [len(data)]
+    if codec == "lz4":
+        tool = shutil.which("lz4")
+        if tool:
+            cli = subprocess.run([tool, "-d", "-c", str(path)], capture_output=True)
+            if cli.returncode or cli.stdout != raw:
+                problems.append(f"lz4 -d of the download: exit {cli.returncode}, {len(cli.stdout)} bytes, "
+                                f"same as the Python decoder: {cli.stdout == raw} {cli.stderr[:200]!r}")
+        elif os.environ.get("CI"):
+            problems.append("no lz4 tool on the CI runner to check the download with")
+    ram, _ = snap_parse_state(raw)
+    if bytes(ram) != want_ram:
+        problems.append(f"the downloaded {codec} state's RAM differs from v86's RAM")
+    return problems, [len(data), len(raw), len(ram)]
+
+
+SNAP_ROW_CODEC_JS = """(id) => { const tr = document.querySelector(`#snapshots tr[data-id='${id}']`);
+  return tr ? { codec: tr.dataset.codec || '', text: tr.innerText.replace(/\\s+/g, ' ') } : null; }"""
+
+
+def snap_row_codec(page, tag, row_id, codec):
+    """The row names the compression, its level and how long it took."""
+    x = page.evaluate(SNAP_ROW_CODEC_JS, row_id) or {"codec": "", "text": ""}
+    want = {"lz4": r"LZ4 level 1\b.*\d+ ms", "gzip": r"gzip level 6\b"}[codec]
+    if x["codec"] != codec or not re.search(want, x["text"]):
+        return [f"{tag}: row {row_id} says compression {x['codec']!r}: {x['text'][:200]!r} (want {codec}, /{want}/)"]
+    return []
+
+
 def snapdiff_run(browser, base, shots, name, scheme, phone):
     problems, r, errors = [], {}, []
     w = 390 if phone else 1280
@@ -9286,19 +9398,20 @@ def snapdiff_run(browser, base, shots, name, scheme, phone):
         problems.append(f"{tag}: after renaming B and cancelling A the names are {names}")
     if f"{name}" not in st["store"] or "stored" not in st["store"].lower():
         problems.append(f"{tag}: the storage line {st['store']!r} does not say what is stored")
+    for rid in (a_id, b_id):
+        problems += snap_row_codec(page, tag, rid, "lz4")
     shot("saved")
 
-    # The download is a gzip of v86's state: parsed here independently, its
-    # RAM is what v86 had and its CPU fields are B's.
+    # The download is an LZ4 frame of v86's state (C1): decoded and parsed
+    # here independently, its RAM is what v86 had at B.
     if name == "hello" and not phone:
         with page.expect_download() as dl:
             page.locator(f"#snapshots tr[data-id='{b_id}'] button.snapdl").click()
-        raw = gzip.decompress(pathlib.Path(dl.value.path()).read_bytes())
-        ram, sts = snap_parse_state(raw)
-        mem = base64.b64decode(page.evaluate("mkbSnap.b64('B')"))
-        r["download"] = [len(raw), len(ram)]
-        if bytes(ram) != mem:
-            problems.append(f"{tag}: the downloaded state's RAM differs from v86's RAM at B")
+        fname = dl.value.suggested_filename
+        if not fname.endswith(".v86state.lz4"):
+            problems.append(f"{tag}: the download is named {fname!r}, want *.v86state.lz4")
+        bad, r["download"] = snap_check_download(dl.value.path(), base64.b64decode(page.evaluate("mkbSnap.b64('B')")), "lz4")
+        problems += [f"{tag}: {b}" for b in bad]
 
     # Reload: both are listed with names, sizes and a matching kernel.
     if not start():
@@ -9589,6 +9702,159 @@ def snapdiff_perf(browser, base, shots, mem):
     return problems, r
 
 
+SNAP_LEGACY_JS = """async (id) => {
+  // An S1 (gzip) record of the same state, stored as S1 stored it.
+  const s = snapshots.find((x) => x.id === id);
+  const raw = await snapUnpack(s);
+  const gz = await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
+  const rec = { id: s.id + 'gz', seq: s.seq + 1, name: 'S1 gzip snapshot', time: s.time + 1, kernel: s.kernel,
+    kernelKey: s.kernelKey, ram: s.ram, raw: raw.byteLength, size: gz.byteLength, gzip: true, saveMs: 5, gzipMs: 25,
+    meta: s.meta, data: new Blob([gz]) };
+  await snapTx('readwrite', (st) => st.put(rec));
+  return rec.id; }"""
+
+
+def snapdiff_legacy(browser, base, shots):
+    """Snapshots stored by S1 (gzip, no codec field) still list, restore,
+    diff against an LZ4 one and download as .gz after the switch to LZ4."""
+    problems, r = [], {}
+    ctx = browser.new_context(viewport={"width": 1280, "height": 1000}, accept_downloads=True)
+    page = ctx.new_page()
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    url = f"{base}/index.html?kernel=hello&paused=1#debugger"
+    page.goto(url)
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+    page.evaluate(SNAP_JS)
+    page.fill("#dbg_addr", "hello_main")
+    page.click("#dbg_runto")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and
+             "hello_main" in page.inner_text("#dbg_status"), 120)
+    page.evaluate("mkbSnap.keep('A')")
+    cpu_a = page.evaluate("mkbSnap.cpu()")
+    st = snap_save(page, 1, False)
+    lz_id = st["rows"][0]["id"]
+    gz_id = page.evaluate(SNAP_LEGACY_JS, lz_id)
+    # Step on, so the restore has something to undo.
+    show_tab(page, "debugger")
+    page.fill("#dbg_n", "40")
+    page.click("#dbg_stepn")
+    wait_for(lambda: page.evaluate("mkbSnap.cpu().icount") != cpu_a["icount"] and
+             page.get_attribute("#dbg_state", "data-state") == "paused", 60)
+    page.reload()
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+    page.evaluate(SNAP_JS)
+    show_tab(page, "snapshots")
+    st = snap_wait_rows(page, 2)
+    wait_for(lambda: all(x["kernel"] for x in snap_rows(page)["rows"]), 15)
+    r["rows"] = [(x["name"], x["where"]) for x in snap_rows(page)["rows"]]
+    problems += snap_row_codec(page, "S1 gzip row", gz_id, "gzip")
+    problems += snap_row_codec(page, "LZ4 row", lz_id, "lz4")
+    # Restore the gzip one: v86 is back at A.
+    snap_click(page, f"#snapshots tr[data-id='{gz_id}'] button.restore", False)
+    wait_for(lambda: page.get_attribute("#snap_status", "data-restored") == gz_id, 30)
+    now = page.evaluate("mkbSnap.cpu()")
+    r["restored"] = [hex(now["eip"]), now["icount"]]
+    if now["regs"] != cpu_a["regs"] or now["icount"] != cpu_a["icount"]:
+        problems.append(f"restoring the S1 gzip snapshot: EIP {now['eip']:#x} (want {cpu_a['eip']:#x}), "
+                        f"instructions {now['icount']} (want {cpu_a['icount']})")
+    page.evaluate("mkbSnap.keep('A2')")
+    # The same state twice: the diff gzip -> LZ4 is empty.
+    page.select_option("#snap_a", gz_id)
+    page.select_option("#snap_b", lz_id)
+    page.click("#snap_diff")
+    if not wait_for(lambda: (page.evaluate(SNAP_DIFF_JS) or {}).get("state") == "done", 60):
+        problems.append(f"diff S1 gzip -> LZ4 did not finish: {page.inner_text('#snap_diff_status')!r}")
+    else:
+        d = page.evaluate(SNAP_DIFF_JS)
+        r["gzip -> lz4"] = [len(d["pages"]), d["regs"]]
+        if d["pages"] or d["regs"]:
+            problems.append(f"diff of the same state as gzip and as LZ4 lists pages {d['pages'][:5]} registers {d['regs'][:5]}")
+    # Downloads: .gz for the S1 one, .lz4 for the new one; both are A's RAM.
+    mem = base64.b64decode(page.evaluate("mkbSnap.b64('A2')"))
+    for rid, codec, ext in ((gz_id, "gzip", ".v86state.gz"), (lz_id, "lz4", ".v86state.lz4")):
+        with page.expect_download() as dl:
+            page.locator(f"#snapshots tr[data-id='{rid}'] button.snapdl").click()
+        if not dl.value.suggested_filename.endswith(ext):
+            problems.append(f"the {codec} snapshot downloads as {dl.value.suggested_filename!r}, want *{ext}")
+        bad, r[f"download {codec}"] = snap_check_download(dl.value.path(), mem, codec)
+        problems += bad
+    page.screenshot(path=str(shots / "snapdiff-legacy-1280.png"), full_page=True)
+    if errors:
+        problems.append(f"S1 gzip: page errors {errors[:3]}")
+    ctx.close()
+    return problems, r
+
+
+# 24 MiB of guest RAM filled with random runs, repeated runs and zeros
+# (gzip -6 keeps about 35% of it, LZ4 level 1 too): a state the size of
+# the Debian 64 MiB one at start_kernel (23 MB) that is harder to compress.
+SNAP_FILL_JS = """(mib) => { let x = 12345; const rnd = () => (x = (Math.imul(x, 1103515245) + 12345) >>> 0) >>> 8;
+  const chunk = new Uint8Array(1 << 20);
+  for (let m = 0; m < mib; m++) {
+    for (let i = 0; i < chunk.length;) { const n = 16 + (rnd() & 1023), kind = rnd() % 3, v = rnd() & 255;
+      for (let k = 0; k < n && i < chunk.length; k++, i++) chunk[i] = kind === 0 ? rnd() & 255 : kind === 1 ? v : 0; }
+    emulator.v86.cpu.mem8.set(chunk, (8 + m) << 20); } }"""
+
+
+def snapdiff_bigsave(browser, base, shots, phone):
+    """C1: Save snapshot of a 64 MiB machine with 24 MiB of data is
+    compressed with LZ4 in a Worker: the row says LZ4 level 1 and its
+    times, no task on the page's main thread over 200 ms while saving, the
+    snapshot is smaller than the state; Restore gives the RAM back."""
+    problems, r = [], {}
+    ctx = browser.new_context(color_scheme="dark" if phone else "light",
+                              **(PHONE if phone else {"viewport": {"width": 1280, "height": 1000}}))
+    page = ctx.new_page()
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel=hello&mem={64 << 20}&paused=1#debugger")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
+    page.evaluate(SNAP_JS)
+    # At hello_main: a state taken at the reset vector does not restore in
+    # v86 0.5.471 (its PCI set_state reads a BAR not set up yet).
+    page.fill("#dbg_addr", "hello_main")
+    page.click("#dbg_runto")
+    wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and
+             "hello_main" in page.inner_text("#dbg_status"), 120)
+    page.evaluate(SNAP_FILL_JS, 24)
+    page.evaluate("mkbSnap.keep('F')")
+    time.sleep(1)
+    page.evaluate(SNAP_LONG_JS)
+    t0 = time.monotonic()
+    st = snap_save(page, 1, phone)
+    r["save seconds"] = round(time.monotonic() - t0, 2)
+    time.sleep(1)
+    long = page.evaluate("window.mkbLong")
+    s = page.evaluate("(() => { const { data, meta, ...s } = snapshots[0]; return s; })()")
+    r["snapshot"] = {k: s.get(k) for k in ("raw", "size", "codec", "level", "saveMs", "packMs")}
+    r["long tasks ms (save)"] = sorted(long)[-5:]
+    if long and max(long) > 200:
+        problems.append(f"Save snapshot of {s['raw']} bytes: a {max(long)} ms task on the main thread (want <= 200)")
+    problems += snap_row_codec(page, "big save", st["rows"][0]["id"], "lz4")
+    if not s.get("size") or s["size"] >= s["raw"]:
+        problems.append(f"the LZ4 snapshot is {s.get('size')} bytes for {s['raw']} raw")
+    page.screenshot(path=str(shots / f"snapdiff-bigsave-{390 if phone else 1280}.png"), full_page=True)
+    # Restore after scribbling over the filled RAM.
+    page.evaluate("emulator.v86.cpu.mem8.fill(0x55, 8 << 20, 9 << 20)")
+    page.evaluate(SNAP_LONG_JS)
+    t0 = time.monotonic()
+    snap_click(page, f"#snapshots tr[data-id='{st['rows'][0]['id']}'] button.restore", phone)
+    wait_for(lambda: page.get_attribute("#snap_status", "data-restored") == st["rows"][0]["id"], 60)
+    r["restore seconds"] = round(time.monotonic() - t0, 2)
+    r["restore status"] = page.inner_text("#snap_status")[:200]
+    r["long tasks ms (restore)"] = sorted(page.evaluate("window.mkbLong"))[-5:]
+    page.evaluate("mkbSnap.keep('G')")
+    if page.evaluate("mkbSnap.pages('F', 'G')"):
+        problems.append("after Restore the 64 MiB machine's RAM differs from the snapshot's")
+    if page.evaluate("document.documentElement.scrollWidth > innerWidth + 1"):
+        problems.append(f"horizontal scroll at {390 if phone else 1280} px")
+    if errors:
+        problems.append(f"big save: page errors {errors[:3]}")
+    ctx.close()
+    return problems, r
+
+
 def snapdiff_guard(fn, *args):
     """A step that times out (or finds nothing to look at) is a failure of
     that case, not of the suite."""
@@ -9610,6 +9876,11 @@ def snapdiff_case(browser, base, shots, linux):
                           seconds=round(time.monotonic() - t0)))
     problems, r = snapdiff_guard(snapdiff_storage, browser, base, shots)
     out.append(report("snapdiff storage", problems, r))
+    problems, r = snapdiff_guard(snapdiff_legacy, browser, base, shots)
+    out.append(report("snapdiff S1 gzip", problems, r))
+    for phone in (False, True):
+        problems, r = snapdiff_guard(snapdiff_bigsave, browser, base, shots, phone)
+        out.append(report("snapdiff big save", problems, r, width=390 if phone else 1280))
     for phone in (False, True):
         problems, r = snapdiff_guard(snapdiff_kernels, browser, base, shots, phone)
         out.append(report("snapdiff kernels", problems, r, width=390 if phone else 1280))
@@ -10220,7 +10491,7 @@ PWA_SW_VERSION_JS = """async () => {
 
 def pwa_deploy(root, v, marker=None):
     """What the workflow does to site/ before Pages uploads it, into root."""
-    for d in ("kernels", "v86", "iced"):
+    for d in ("kernels", "v86", "iced", "lz4"):
         if not (root / d).exists():
             (root / d).symlink_to(SITE / d)
     files = [f for f in SITE.iterdir() if f.is_file() and f.suffix in (".js", ".css", ".html", ".json", ".webmanifest")

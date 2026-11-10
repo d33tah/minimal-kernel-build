@@ -1,13 +1,18 @@
 "use strict";
-// Snapshot diffs off the page's main thread (S1). Takes snapshots (v86
-// save_state() output, gzip or raw) and "now" (a copy of guest RAM and the
-// CPU fields read on the page), keeps the last few decoded, and answers:
+// Snapshot work off the page's main thread: compression (C1) and diffs
+// (S1). Snapshots are v86 save_state() output as an LZ4 frame
+// (lz4frame.js: `lz4 -d` reads a download), or gzip for those stored
+// before C1, or raw. Answers:
+//   { op: "pack", id, raw }      { data, ms }: raw (an ArrayBuffer,
+//                                transferred) as an LZ4 frame
+//   { op: "unpack", id, s }      { raw, ms }: snapshot s decompressed
 //   { op: "diff", id, a, b }     changed 4 KiB pages ([page, bytes changed])
 //                                and the CPU fields of both sides
 //   { op: "pages", id, a, b, p } page p of both sides (two 4096-byte arrays)
-// where a and b are { key, blob, gzip } (a stored snapshot) or
+// where s, a and b are { key, blob, codec, size } (a stored snapshot: codec
+// "lz4", "gzip" or "raw", size = the state's length) or
 // { key: "now", raw: ArrayBuffer } (a save_state() taken for the diff,
-// sent once per diff).
+// sent once per diff). Diffs keep the last few snapshots decoded.
 //
 // v86 0.5.471's state layout (src/state.js save_state): a 16-byte header of
 // four int32 (magic 0x86768676, version 6, total length, info block
@@ -22,14 +27,34 @@
 // selectors (ES CS SS DS FS GS), [77] the non-zero pages packed in order,
 // [78] the bitmap of which pages they are (bit p & 7 of byte p >> 3).
 
+importScripts("lz4frame.js" + self.location.search);
+const lz4Ready = () => lz4Init("lz4/lz4_wasm_bg.wasm" + self.location.search);
+
 const PAGE = 4096;
 const STATE_MAGIC = 0x86768676 | 0;
 const KEEP = 2; // decoded snapshots kept besides "now" (64 MiB each for Debian)
 const decoded = new Map(); // key -> { ram: Uint8Array, cpu }
 
 async function gunzip(blob) {
+	if (typeof DecompressionStream !== "function")
+		throw new Error("this browser has no DecompressionStream to read a gzip snapshot");
 	const s = (blob instanceof Blob ? blob : new Blob([blob])).stream().pipeThrough(new DecompressionStream("gzip"));
 	return new Response(s).arrayBuffer();
+}
+
+async function pack(raw) {
+	await lz4Ready();
+	return lz4FramePack(new Uint8Array(raw));
+}
+
+async function unpack(s) {
+	const blob = s.blob instanceof Blob ? s.blob : new Blob([s.blob]);
+	if (s.codec === "gzip")
+		return gunzip(blob);
+	if (s.codec !== "lz4")
+		return blob.arrayBuffer();
+	await lz4Ready();
+	return lz4FrameUnpack(new Uint8Array(await blob.arrayBuffer()), s.size);
 }
 
 function parseState(buf) {
@@ -84,8 +109,7 @@ async function side(s) {
 	}
 	let d = decoded.get(s.key);
 	if (!d) {
-		const buf = s.gzip ? await gunzip(s.blob) : await (s.blob instanceof Blob ? s.blob.arrayBuffer() : s.blob);
-		d = parseState(buf);
+		d = parseState(await unpack(s));
 		decoded.set(s.key, d);
 		const old = [...decoded.keys()].filter((k) => k !== "now");
 		while (old.length > KEEP)
@@ -128,6 +152,13 @@ function changedPages(A, B) {
 self.onmessage = async (ev) => {
 	const m = ev.data;
 	try {
+		if (m.op === "pack" || m.op === "unpack") {
+			const t0 = performance.now();
+			const buf = m.op === "pack" ? await pack(m.raw) : await unpack(m.s);
+			const out = m.op === "pack" ? { data: buf } : { raw: buf };
+			self.postMessage({ id: m.id, ...out, ms: Math.round(performance.now() - t0) }, [buf]);
+			return;
+		}
 		const A = await side(m.a), B = await side(m.b);
 		if (m.op === "diff") {
 			const t0 = performance.now();

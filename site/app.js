@@ -1590,12 +1590,6 @@ function setAutoscan() {
 
 // ---- snapshots ------------------------------------------------------------
 
-const HAVE_GZIP = typeof CompressionStream === "function" && typeof DecompressionStream === "function";
-
-async function pipe(buffer, stream) {
-	return new Response(new Blob([buffer]).stream().pipeThrough(stream)).arrayBuffer();
-}
-
 // saveSnapshot, restoreSnapshot and the rest: snapshots.js.
 
 // ---- boot -----------------------------------------------------------------

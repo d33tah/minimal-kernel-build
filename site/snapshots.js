@@ -4,7 +4,11 @@
 // and now). Uses app.js's globals (emulator, image, initrd, stepper, ...).
 //
 // A snapshot: { id, seq, name, time, kernel, kernelKey, ram, raw, size,
-//   gzip, saveMs, gzipMs, meta, data: Blob, where: "stored" | "memory" }.
+//   codec, level, saveMs, packMs, meta, data: Blob, where: "stored" | "memory" }.
+// codec "lz4" (C1: an LZ4 frame made in snapworker.js, lz4frame.js, with
+// LZ4's fast compressor, the lz4 tool's default level 1) or "raw".
+// Snapshots stored before C1 have no codec but gzip: true and gzipMs
+// (CompressionStream, zlib's default level 6); they are still read.
 // meta is read on the page at save time: v86's instruction counter (icount),
 // the stepper's count (steps), EIP and its physical address and symbol, the
 // registers with get_eflags() (save_state() keeps the arithmetic flags lazy)
@@ -17,6 +21,7 @@ const MAX_SNAPSHOTS = 8;  // kept in memory when they cannot be stored
 const SNAP_DB = "mkb-snapshots";
 const SNAP_STORE = "snaps";
 const SNAP_HEX_ALL = 64;  // the hexdump shows only changed rows above this many
+const SNAP_LZ4_LEVEL = 1; // lz4-wasm has one compressor: LZ4's fast one, what `lz4 -1` (the default) runs
 
 let snapshots = [];
 let snapDb = null;        // IDBDatabase, or null when this browser has no storage for the page
@@ -31,6 +36,17 @@ const snapWaiting = new Map();
 let snapDiff = null;      // { a, b, pages, ... } of the diff shown
 let pageSnapView = null;  // the Page tab shows a snapshot's page: { page, bytes, base, name, against, cur }
 let snapDelAllTimer = null;
+
+const snapCodec = (s) => s.codec || (s.gzip ? "gzip" : "raw");
+const SNAP_EXT = { lz4: ".lz4", gzip: ".gz", raw: "" };
+
+// "LZ4 level 1, 75 ms" (or gzip, or none) with the save_state() time.
+function snapHow(s) {
+	const c = snapCodec(s);
+	const how = c === "lz4" ? "LZ4 level " + (s.level || SNAP_LZ4_LEVEL) + ", " + s.packMs + " ms" :
+		c === "gzip" ? "gzip level 6, " + s.gzipMs + " ms" : "not compressed";
+	return how + "; save_state " + s.saveMs + " ms";
+}
 
 const snapFmtSize = (n) => (n >= 1 << 20 ? (n / (1 << 20)).toLocaleString("en", { maximumFractionDigits: 1 }) + " MiB" : kib(n));
 
@@ -218,9 +234,23 @@ async function saveSnapshot() {
 	try {
 		const meta = snapMeta(em);
 		const t0 = realNow();
-		const raw = await em.save_state();
+		let raw = await em.save_state();
 		const t1 = realNow();
-		const data = HAVE_GZIP ? await pipe(raw, new CompressionStream("gzip")) : raw;
+		const rawLen = raw.byteLength;
+		// LZ4 in the Worker; the state is transferred, not copied.
+		let data, codec = "lz4", packMs = 0, why = "";
+		try {
+			const r = await snapWorker({ op: "pack", raw }, [raw]);
+			data = r.data;
+			packMs = r.ms;
+		} catch (e) {
+			// The worker could not compress (or load the LZ4 module): keep the
+			// state raw (taken again if the failed message took it along).
+			codec = "raw";
+			why = " Not compressed (" + ((e && e.message) || e) + ").";
+			data = raw.byteLength ? raw : await em.save_state();
+		}
+		raw = null;
 		const t2 = realNow();
 		snapKernelKey();
 		const key = image.snapKeyP ? await image.snapKeyP : null;
@@ -229,17 +259,17 @@ async function saveSnapshot() {
 		const s = {
 			id: "s" + time.toString(36) + Math.floor(Math.random() * 36 ** 4).toString(36),
 			seq, name: snapDefaultName(meta, time), time, kernel: snapKernelName(), kernelKey: key, ram: emuRam,
-			raw: raw.byteLength, size: data.byteLength, gzip: HAVE_GZIP, data: new Blob([data]),
-			saveMs: Math.round(t1 - t0), gzipMs: Math.round(t2 - t1), meta, where: "memory",
+			raw: codec === "raw" ? data.byteLength : rawLen, size: data.byteLength, codec, level: codec === "lz4" ? SNAP_LZ4_LEVEL : 0, data: new Blob([data]),
+			saveMs: Math.round(t1 - t0), packMs, packWallMs: Math.round(t2 - t1), meta, where: "memory",
 		};
 		snapshots.push(s);
-		const why = await snapStore(s);
+		why += await snapStore(s);
 		// Without storage only the last few stay.
 		const mem = snapshots.filter((x) => x.where === "memory");
 		while (mem.length > MAX_SNAPSHOTS)
 			snapshots.splice(snapshots.indexOf(mem.shift()), 1);
-		$("snap_status").textContent = "Saved #" + seq + " (" + s.name + ") in " + Math.round(t1 - t0) + " ms" +
-			(HAVE_GZIP ? ", gzip took " + Math.round(t2 - t1) + " ms." : ".") + why;
+		$("snap_status").textContent = "Saved #" + seq + " (" + s.name + "): save_state " + s.saveMs + " ms" +
+			(codec === "lz4" ? ", LZ4 level " + SNAP_LZ4_LEVEL + " " + packMs + " ms in a Worker." : ".") + why;
 	} catch (e) {
 		$("snap_status").textContent = "save_state failed: " + e;
 	}
@@ -257,7 +287,7 @@ async function restoreSnapshot(s) {
 	$("snap_status").textContent = "Restoring “" + s.name + "”...";
 	delete $("snap_status").dataset.restored;
 	try {
-		const raw = s.gzip ? await pipe(s.data, new DecompressionStream("gzip")) : await s.data.arrayBuffer();
+		const raw = await snapUnpack(s);
 		await emulator.restore_state(raw);
 		v86RestoreFix(emulator.v86.cpu);
 		// v86 does not keep its instruction counter in the state: put back the
@@ -282,11 +312,19 @@ async function restoreSnapshot(s) {
 	}
 }
 
+// A stored snapshot as the Worker takes it (snapworker.js).
+const snapBlob = (s) => ({ key: s.id, blob: s.data, codec: snapCodec(s), size: s.raw });
+
+// The state of s, decompressed in the Worker.
+async function snapUnpack(s) {
+	return (await snapWorker({ op: "unpack", s: snapBlob(s) })).raw;
+}
+
 function downloadSnapshot(s) {
 	const a = document.createElement("a");
 	a.href = URL.createObjectURL(s.data);
 	a.download = s.kernel.replace(/[^\w.-]+/g, "_") + "-" + s.ram / 1024 + "k-" + s.seq + "-" +
-		s.name.replace(/[^\w.-]+/g, "_").slice(0, 40) + ".v86state" + (s.gzip ? ".gz" : "");
+		s.name.replace(/[^\w.-]+/g, "_").slice(0, 40) + ".v86state" + SNAP_EXT[snapCodec(s)];
 	a.click();
 	setTimeout(() => URL.revokeObjectURL(a.href), 10000);
 }
@@ -420,7 +458,7 @@ function renderSnapshots() {
 	for (const s of snapshots) {
 		const tr = tbody.insertRow();
 		const match = snapMatch(s);
-		Object.assign(tr.dataset, { id: s.id, raw: s.raw, stored: s.size, kernel: match, where: s.where });
+		Object.assign(tr.dataset, { id: s.id, raw: s.raw, stored: s.size, kernel: match, where: s.where, codec: snapCodec(s) });
 		if (match === "other")
 			tr.className = "snapother";
 		const name = tr.insertCell();
@@ -436,7 +474,8 @@ function renderSnapshots() {
 			(match === "other" ? "for another kernel: " : "") + s.kernel + ", " + kib(s.ram),
 			snapFmtSize(s.size) + (s.where === "stored" ? ", stored" : ", in memory only"),
 			s.raw.toLocaleString("en"),
-			s.gzip ? ratio.toFixed(1) + " : 1 (" + (100 * s.size / s.raw).toFixed(2) + "%)" : "-",
+			snapCodec(s) !== "raw" ? ratio.toFixed(1) + " : 1 (" + (100 * s.size / s.raw).toFixed(2) + "%)" : "-",
+			snapHow(s),
 		];
 		for (const v of cells)
 			tr.insertCell().textContent = v;
@@ -515,7 +554,7 @@ function snapWorker(msg, transfer) {
 		};
 		snapWorkerObj.onerror = (ev) => {
 			for (const w of snapWaiting.values())
-				w.rej(new Error(ev.message || "the diff worker failed"));
+				w.rej(new Error(ev.message || "the snapshot worker failed"));
 			snapWaiting.clear();
 			snapWorkerObj = null;
 		};
@@ -536,7 +575,7 @@ const snapById = (id) => snapshots.find((s) => s.id === id) || null;
 async function snapSide(id, fresh) {
 	if (id !== "now") {
 		const s = snapById(id);
-		return { key: s.id, blob: s.data, gzip: s.gzip };
+		return snapBlob(s);
 	}
 	return fresh ? { key: "now", raw: await emulator.save_state() } : { key: "now" };
 }
@@ -811,11 +850,7 @@ function pageSnapBanner(on) {
 
 function initSnapshots() {
 	$("snap_save").addEventListener("click", saveSnapshot);
-	$("snap_save").title = HAVE_GZIP ?
-		"Compressed in the browser with CompressionStream(\"gzip\")." :
-		"This browser has no CompressionStream: snapshots are kept uncompressed.";
-	if (!HAVE_GZIP)
-		$("snap_note").textContent = "no gzip in this browser: snapshots uncompressed";
+	$("snap_save").title = "save_state(), then LZ4 level " + SNAP_LZ4_LEVEL + " (lz4-wasm 0.9.2) in a Worker; a download is an LZ4 frame (.v86state.lz4) that lz4 -d reads.";
 	$("snap_delall").addEventListener("click", snapDeleteAll);
 	$("snap_diff").addEventListener("click", snapRunDiff);
 	for (const id of ["snap_a", "snap_b"])

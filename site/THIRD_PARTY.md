@@ -1,12 +1,14 @@
 # Third-party files used by the page
 
-None of these are committed. `fetch-v86.sh` downloads them into `site/v86/`
-at build time and checks each against a SHA-256 recorded in the script.
+`fetch-v86.sh` downloads v86, its BIOSes and iced-x86 into `site/v86/` and
+`site/iced/` at build time (never committed) and checks each against a
+SHA-256 recorded in the script. lz4-wasm is committed in `site/lz4/`.
 
 | file | source | pin | licence |
 |---|---|---|---|
 | `libv86.js`, `v86.wasm` | npm package [`v86`](https://www.npmjs.com/package/v86), `build/` | version 0.5.471 (published 2026-10-09) | BSD-2-Clause, copied to `v86/LICENSE.v86` |
 | `iced/iced_x86.js`, `iced/iced_x86_bg.wasm` | npm package [`iced-x86`](https://www.npmjs.com/package/iced-x86) (github.com/icedland/iced), loaded only when a listing needs live disassembly | version 1.21.0 (published 2024-01-20) | MIT, copied to `iced/LICENSE.iced` |
+| `lz4/lz4_wasm_bg.wasm` | npm package [`lz4-wasm`](https://www.npmjs.com/package/lz4-wasm) (lz4_flex's LZ4 block compressor built to WebAssembly, github.com/PSeitz/lz4_flex, `lz4-wasm/`; package gitHead `08ab363930b22745fdbf3c015224a1710d2c4369`), unmodified, written by `gen-lz4.py` (sha512 of the tarball and SHA-256 of each file pinned there; `gen-lz4.py --check` runs in CI). The package's JS glue is an ES module for bundlers and is not used: `lz4frame.js` (this repository) instantiates the module and writes the LZ4 frame format around its blocks. Compresses snapshots in `snapworker.js` | version 0.9.2 (published 2022-04-27) | MIT or Apache-2.0, copied to `lz4/LICENSE_MIT` and `lz4/LICENSE_APACHE` (the package's own files; `package.json` says MIT) |
 | `seabios.bin`, `vgabios.bin` | [copy/v86](https://github.com/copy/v86) `bios/` | commit `94faf3d6b19ecabc53a4010aaa24252fa6a162e2` (the commit npm 0.5.471 was built from) | SeaBIOS and its VGA BIOS: LGPL-3.0, copied to `v86/COPYING.LESSER` |
 
 To move the pin, change `V86_NPM_VERSION`, `V86_COMMIT` and the checksums in

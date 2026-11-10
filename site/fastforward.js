@@ -187,7 +187,7 @@ async function fastForward(target, name) {
 			}
 			if (!snap || gone())
 				break;
-			const at = { steps: st.steps, base: CLOCK.base, baseSteps: CLOCK.baseSteps };
+			const at = { steps: st.steps, base: CLOCK.base, baseSteps: CLOCK.baseSteps, rng: GUEST.rng };
 			ffInfo.slices++;
 			let ran = 0;
 			while (ran < FF_SLICE && !ffAbort && !st.dead()) {
@@ -208,15 +208,18 @@ async function fastForward(target, name) {
 				// from the clock it reads, which had run on through the slice
 				// (by a JIT-dependent number of chunks: Firefox and WebKit then
 				// reached the entry with another TSC, D0/D1).
-				const ranTo = { steps: st.steps, base: CLOCK.base, baseSteps: CLOCK.baseSteps };
+				// RDRAND's generator too: the slice's RDRANDs run again.
+				const ranTo = { steps: st.steps, base: CLOCK.base, baseSteps: CLOCK.baseSteps, rng: GUEST.rng };
 				st.steps = at.steps;
 				CLOCK.base = at.base;
 				CLOCK.baseSteps = at.baseSteps;
+				GUEST.rng = at.rng;
 				try {
 					await v86Restore(em, snap);
 				} catch (e) {
 					Object.assign(CLOCK, { base: ranTo.base, baseSteps: ranTo.baseSteps });
 					st.steps = ranTo.steps;
+					GUEST.rng = ranTo.rng;
 					ffInfo.error = "restore_state failed (" + e + "): stopped past the target";
 					break;
 				}

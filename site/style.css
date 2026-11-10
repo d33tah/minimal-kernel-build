@@ -438,6 +438,7 @@ svg.jarcs { position: absolute; left: 0; top: 0; pointer-events: none; overflow:
 }
 #graph_info button { margin: 0.1rem 0; }
 #vclock { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.2em; margin: 0.1rem 0; }
+#guest_in { min-height: 1.2em; margin: 0.1rem 0; overflow-wrap: anywhere; }
 .asm .src { color: var(--muted); font-style: italic; cursor: pointer; }
 .asm .src.nol { cursor: default; opacity: 0.8; }
 /* C lines everywhere (listings, Debugger source rows, Source panel, call

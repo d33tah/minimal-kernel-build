@@ -1676,6 +1676,7 @@ async function boot() {
 	try {
 		// A new machine starts at virtual time 0 (or real time).
 		CLOCK.reset(clockMips() || 10);
+		GUEST.reset(new URLSearchParams(location.search));
 		if (!clockMips())
 			CLOCK.set(false, null);
 		emulator = new V86({
@@ -1704,6 +1705,7 @@ async function boot() {
 	em.add_listener("emulator-loaded", () => {
 		if (em !== emulator)
 			return;
+		GUEST.install(em.v86.cpu);
 		emuReady = true;
 		vmKeys();
 		setStatus("Running " + image.name + " with " + kib(ram()) +
@@ -2905,6 +2907,21 @@ function renderClock() {
 	el.dataset.irq0 = stepper.irq0;
 	el.dataset.ms = t;
 	el.dataset.virtual = CLOCK.virtual;
+	renderGuestInputs();
+}
+
+// The guest's date and random numbers (clock.js GUEST): from the start
+// date and the seed on the virtual clock, the browser's on real time.
+function renderGuestInputs() {
+	const el = $("guest_in_text");
+	if (!stepper) {
+		el.textContent = "";
+		return;
+	}
+	const iso = (ms) => new Date(ms).toISOString().replace("T", " ").replace(/\.\d+Z$/, " UTC");
+	el.textContent = GUEST.why + (CLOCK.virtual ?
+		"RTC " + iso(GUEST.dateNow()) + " (from " + iso(GUEST.rtcStart) + ") \u00b7 RDRAND seed " + GUEST.seed :
+		"RTC and RDRAND: the browser's date and random numbers (real time)");
 }
 
 // At the kernel's 32-bit entry (or past it): from here on at the chosen speed.

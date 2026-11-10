@@ -213,7 +213,7 @@ function snapMeta(em) {
 			sym = stepper.symName[i] + (phys > stepper.symStart[i] ? "+" + hex(phys - stepper.symStart[i]) : "");
 	}
 	return { icount: c.instruction_counter[0] >>> 0, steps: stepper ? stepper.steps : null, clock: CLOCK.now(), eip: regs.EIP, phys, sym, regs,
-		screen: snapScreen() };
+		screen: snapScreen(), ...(CLOCK.virtual ? GUEST.state() : {}) };
 }
 
 function snapScreen() {
@@ -300,6 +300,13 @@ async function restoreSnapshot(s) {
 			CLOCK.setTime(s.meta.clock);
 		}
 		await v86Restore(emulator, raw);
+		// The RTC's start date and the generator's state (J2). Snapshots
+		// taken on real time or before J2 have neither: the start date then
+		// goes on from the RTC's last update, the date the guest saw last.
+		if (s.meta && typeof s.meta.rtcStart === "number")
+			GUEST.setState(s.meta);
+		else if (CLOCK.virtual)
+			GUEST.rtcStart = emulator.v86.cpu.devices.rtc.last_update - CLOCK.now();
 		// v86 does not keep its instruction counter in the state: put back the
 		// snapshot's, so the count goes on from where it was.
 		if (s.meta && emulator.v86)

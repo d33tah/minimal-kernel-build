@@ -65,3 +65,124 @@ const CLOCK = {
 };
 
 performance.now = () => CLOCK.now();
+
+// ---- the guest's date and random numbers (J2) ------------------------------
+//
+// Two more inputs reach the guest from the browser. v86's RTC reads
+// Date.now() (rtc_time at construction, every timer() call, and register B
+// writes that start the periodic, alarm and update interrupts; SeaBIOS turns
+// the time of day into the BIOS tick count), and RDRAND reads
+// crypto.getRandomValues() (v86's get_rand_int, one Int32Array(1) per call;
+// Debian's kernel uses it). The NIC's MAC is Math.random() at construction.
+// While the clock is virtual the RTC instead runs from a start date on the
+// virtual time and those numbers come from a seeded generator, so a run
+// repeats exactly; snapshots keep the start date and the generator's state.
+// With the real-time clock the browser's date and random numbers are used.
+
+const RealDate = Date;
+const realGetRandomValues = crypto.getRandomValues.bind(crypto);
+
+const GUEST = {
+	DEFAULT_RTC: "2026-01-01T00:00:00Z",
+	DEFAULT_SEED: 1,
+	rtcStart: RealDate.parse("2026-01-01T00:00:00Z"), // the RTC's date at virtual time 0, ms since the epoch
+	seed: 1,
+	rng: 1,        // the generator's state (mulberry32: one 32-bit word)
+	why: "",       // a ?rtc= or ?seed= that could not be read
+	dateNow() { return this.rtcStart + CLOCK.now(); },
+	next() {
+		let t = this.rng = (this.rng + 0x6d2b79f5) >>> 0;
+		t = Math.imul(t ^ (t >>> 15), t | 1);
+		t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+		return (t ^ (t >>> 14)) >>> 0;
+	},
+	// A new machine: start date and seed from the URL (?rtc=ISO, ?seed=N).
+	reset(params) {
+		this.why = "";
+		const rtc = params.get("rtc"), seed = params.get("seed");
+		const t = rtc ? RealDate.parse(rtc) : NaN;
+		if (rtc && !Number.isFinite(t))
+			this.why = "?rtc=" + rtc + " is not a date (ISO 8601, e.g. " + this.DEFAULT_RTC + "). ";
+		this.rtcStart = Number.isFinite(t) ? t : RealDate.parse(this.DEFAULT_RTC);
+		let s = this.DEFAULT_SEED;
+		if (seed !== null && /^\s*(0x[0-9a-f]+|\d+)\s*$/i.test(seed))
+			s = Number(seed) >>> 0;
+		else if (seed !== null)
+			this.why += "?seed=" + seed + " is not a number. ";
+		this.seed = this.rng = s;
+	},
+	// The RTC, the NIC and the VMware port of a machine just built
+	// (emulator-loaded), before its first instruction.
+	install(cpu) {
+		const rtc = cpu.devices.rtc;
+		if (CLOCK.virtual)
+			rtc.rtc_time = rtc.last_update = this.dateNow();
+		const timer = rtc.timer;
+		rtc.timer = function (t, legacy) {
+			if (!CLOCK.virtual)
+				return timer.call(this, t, legacy);
+			const now = RealDate.now;
+			RealDate.now = guestDateNow;
+			try {
+				return timer.call(this, t, legacy);
+			} finally {
+				RealDate.now = now;
+			}
+		};
+		// Register B also reads new Date() (the alarm), and VMware's
+		// GETTIME the time zone: the whole Date for those two port handlers.
+		guestDatePort(cpu.io.ports[0x71], "write8", () => rtc.cmos_index === 0x0b);
+		guestDatePort(cpu.io.ports[0x5658], "read32", () => true);
+		const net = cpu.devices.net;
+		if (CLOCK.virtual && net && net.mac && net.memory) {
+			for (let i = 3; i < 6; i++)
+				net.mac[i] = this.next() & 0xff;
+			for (let i = 0; i < 6; i++)
+				net.memory[i << 1] = net.memory[(i << 1) | 1] = net.mac[i];
+		}
+	},
+	// For snapshots: what a restore needs to go on the same way.
+	state() { return { rtcStart: this.rtcStart, seed: this.seed, rng: this.rng }; },
+	setState(s) {
+		this.rtcStart = s.rtcStart;
+		this.seed = s.seed;
+		this.rng = s.rng;
+	},
+};
+
+const guestDateNow = () => GUEST.dateNow();
+
+class GuestDate extends RealDate {
+	constructor(...a) {
+		if (a.length)
+			super(...a);
+		else
+			super(GUEST.dateNow());
+	}
+	static now() { return GUEST.dateNow(); }
+	getTimezoneOffset() { return 0; }
+}
+
+// v86 calls its port handlers as handler.call(device, value).
+function guestDatePort(entry, fn, when) {
+	const orig = entry[fn];
+	entry[fn] = function (v) {
+		if (!CLOCK.virtual || !when())
+			return orig.call(this, v);
+		globalThis.Date = GuestDate;
+		try {
+			return orig.call(this, v);
+		} finally {
+			globalThis.Date = RealDate;
+		}
+	};
+}
+
+// v86's get_rand_int (RDRAND) is the only caller with an Int32Array(1).
+crypto.getRandomValues = function (a) {
+	if (CLOCK.virtual && a instanceof Int32Array && a.length === 1) {
+		a[0] = GUEST.next() | 0;
+		return a;
+	}
+	return realGetRandomValues(a);
+};

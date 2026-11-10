@@ -153,9 +153,10 @@
   <div class="scan">
     <button id="scan" type="button" disabled>Scan memory</button>
     <label><input type="checkbox" id="autoscan"> auto<span class="tip" tabindex="0" role="button" title="Rescan all pages every second">?</span></label>
-    <span id="footprint"></span> <span class="tip" tabindex="0" role="button" title="Each square is a 4 KiB page of guest RAM, coloured by region (boot header) and, when the kernel has a symbols.json, by ELF section. Filled squares hold data, hollow ones were all zero at the last scan; a dot marks pages that changed between the last two scans (while slow-stepping: since the previous frame). Click a page to open it in the Page tab.">?</span>
+    <span id="footprint"></span> <span class="tip" tabindex="0" role="button" title="Each square is a 4 KiB page of guest RAM, coloured by region (boot header) and, when the kernel has a symbols.json, by ELF section. Filled squares hold data, hollow ones were all zero at the last scan; a dot marks pages that changed between the last two scans (while slow-stepping: since the previous frame). The page of the next instruction (EIP) has a blue box, the stack's page (ESP) a dashed one. Click a page to open it in the Page tab.">?</span>
   </div>
-  <canvas id="pages" width="448" height="14"></canvas>
+  <p class="note mono" id="mem_eip"></p>
+  <div id="pages_wrap"><div id="pages_box"><canvas id="pages" width="448" height="14"></canvas><div id="pages_esp" class="memesp" hidden></div><div id="pages_eip" class="memeip" hidden></div><span id="pages_esp_tag" class="memtag esp tipmark" tabindex="0" role="button" aria-label="ESP: the stack's page" hidden data-tip="ESP: the stack. The dashed box is the page ESP points into, at its physical address (SS base + ESP, through the page tables once paging is on).">ESP</span><span id="pages_eip_tag" class="memtag tipmark" tabindex="0" role="button" aria-label="EIP: the next instruction's page" hidden data-tip="EIP: the page of the next instruction the CPU runs. The blue box is that page's square, at the physical address (CS base + EIP, through the page tables once paging is on), the same one the Debugger shows; the line above the grid opens it in the Page tab. It follows EIP while stepping and when paused; at full speed (JIT) it is drawn again when the CPU stops.">EIP</span></div></div>
   <ul class="legend" id="grid_legend"></ul>
   <p class="note mono" id="focus_info" aria-live="polite"></p>
   <p class="note" id="hover_info" aria-live="polite"></p>
@@ -304,7 +305,7 @@
   <h3>Tabs</h3>
   <ul>
     <li><b>Machine</b>: the VM's screen, Pause, Continue, Step, speed, clock, count, the state line and the counters, then what runs and how it boots: the kernel, RAM, a bzImage from disk, symbols, C source, initrd, command line, Boot, the loaded bzImage's header and build. It opens first. On every tab the menu toggle at the bottom right shows whether the VM runs and how fast; its menu has Back and Forward, the run state with the instructions stepped (a click opens the Machine tab) and Pause or Continue. The VM keeps running and its screen keeps changing while another tab is shown; keys go to the VM only while the Machine tab is shown.</li>
-    <li><b>Memory</b>: the physical memory map from the boot header and one square per 4 KiB page, coloured by region and ELF section.</li>
+    <li><b>Memory</b>: the physical memory map from the boot header and one square per 4 KiB page, coloured by region and ELF section, with the pages of EIP and ESP marked.</li>
     <li><b>Page</b>: one page as a single listing, instructions where the kernel has code and hex rows elsewhere, with symbol headers; after each instruction its jump paths in and out (static and observed while stepping, with counts), and the jumps inside the page as arcs.</li>
     <li><b>Debugger</b>: registers, stepping and run-to-address; at a pause the C line and inlined-at chain of EIP, the running task (comm, pid), the call stack unwound with the DWARF call frame information, each frame's parameters and locals, and the kernel's global variables, pretty-printed from guest RAM.</li>
     <li><b>C source</b>: the Page listing and the Debugger interleave the C lines (from the DWARF of a -g build with byte-identical code) with the instructions; tap one for the function with its executed lines. The text is shipped for every sample kernel (Debian: its source package); for an imported vmlinux pick its source folder or .tar.</li>
@@ -392,6 +393,14 @@
   <h4>Memory tab</h4>
   <p class="note">One square per 4 KiB page, coloured by region of the boot memory map or by the kernel's ELF section:</p>
   <ul class="legend" id="legend_mem"></ul>
+  <ul class="lgnd">
+    <li><span class="lgs plain memsample" inert><span class="memtag tipmark">EIP</span><span class="memcell"><span class="memeip"></span></span></span>
+      <span><b>Blue box</b> around a page's square, with the EIP label left of its row: the page of the next instruction, at its physical address (through the page tables once paging is on), the one the Debugger shows. The line above the grid says where EIP is and opens it in the Page tab. It follows EIP while stepping and when paused; at full speed (JIT) it is drawn when the CPU stops. Where: Memory tab.</span></li>
+    <li><span class="lgs plain memsample" inert><span class="memtag esp tipmark">ESP</span><span class="memcell"><span class="memesp"></span></span></span>
+      <span><b>Dashed box</b>, with the ESP label: the page ESP points into (the stack). Where: Memory tab.</span></li>
+    <li><span class="lgs plain" inert><span class="bar memlgbar"><div style="flex: 1 0 0; background: var(--r-bios)">first MiB</div><div class="eiphere" style="flex: 2 0 0; background: var(--r-kernel)">kernel</div><span class="eiptick" style="left: 55%"></span></span></span>
+      <span><b>Blue frame</b> in a region bar: the region that holds EIP; the <b>tick</b> is where EIP is in it. Where: Memory tab.</span></li>
+  </ul>
   <h4>Calls tab</h4>
   <p class="note">Symbols are coloured by the top directory of their source file:</p>
   <ul class="legend" id="legend_graph"></ul>

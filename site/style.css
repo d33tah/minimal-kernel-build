@@ -211,7 +211,34 @@ th { text-align: left; font-weight: 600; color: var(--muted); padding: 0.15rem 0
 .scan { display: flex; flex-wrap: wrap; gap: 0.3rem 0.7rem; align-items: center; margin-top: 0.3rem; }
 .group { display: inline-flex; gap: 0.25rem; }
 #footprint { font-weight: 600; }
-#pages { max-width: 100%; image-rendering: pixelated; border: 1px solid var(--line); cursor: crosshair; margin-top: 0.3rem; }
+#pages { display: block; max-width: 100%; image-rendering: pixelated; border: 1px solid var(--line); cursor: crosshair; }
+/* M1: where EIP is in the Memory tab. Boxes over the grid's canvas (moving
+   one draws nothing else) around the squares of EIP's and ESP's pages, in
+   the listings' EIP colour with a ring of the background so they read on
+   every region colour; their labels sit in a gutter left of the grid, away
+   from the menu toggle (bottom right). The region bars get a frame around
+   the region holding EIP and a tick where it is. */
+#pages_wrap { padding-left: 2.6rem; margin-top: 0.3rem; max-width: 100%; box-sizing: border-box; }
+#pages_box { position: relative; display: inline-block; max-width: 100%; vertical-align: top; }
+.memeip, .memesp { position: absolute; box-sizing: border-box; pointer-events: none; }
+.memeip { outline: 2px solid var(--accent); outline-offset: 1px; box-shadow: 0 0 0 1px var(--bg), inset 0 0 0 1px var(--bg); }
+.memesp { outline: 2px dashed var(--muted); outline-offset: 1px; box-shadow: 0 0 0 1px var(--bg); }
+.memtag { position: absolute; right: 100%; margin-right: 4px; transform: translateY(-50%); font: 600 0.68rem/1.25 ui-monospace, monospace;
+	color: var(--bg); background: var(--accent); border-radius: 3px; padding: 0 0.25rem; white-space: nowrap; }
+.memtag.esp { color: var(--muted); background: var(--bg); border: 1px dashed var(--muted); padding: 0 0.2rem; }
+/* EIP and ESP in the same row: EIP's label above the row's middle, ESP's below. */
+.memtag.up { transform: translateY(-100%); }
+.memtag.esp.low { transform: translateY(1px); }
+.memsample { display: inline-flex; align-items: center; gap: 6px; }
+.memsample .memtag { position: static; transform: none; margin: 0; }
+.memcell { display: inline-block; position: relative; width: 14px; height: 14px; margin: 3px; background: var(--s-text); }
+.memcell .memeip, .memcell .memesp { inset: 0; }
+.bar { position: relative; }
+.bar .eiphere { box-shadow: inset 0 0 0 2px var(--accent), inset 0 0 0 3px var(--bg); }
+.eiptick { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--accent); box-shadow: 0 0 0 1px var(--bg); pointer-events: none; }
+.memlgbar { width: 9rem; }
+#mem_eip { margin: 0.4rem 0 0; overflow-wrap: anywhere; }
+#mem_eip .symlink { padding: 0 0.15rem; }
 #hover_info { min-height: 1.5em; font-family: ui-monospace, monospace; overflow-wrap: anywhere; }
 
 .symindex { display: flex; flex-wrap: wrap; gap: 0.2rem; margin: 0.35rem 0; max-height: 5.5rem; overflow-y: auto; font-size: 0.75rem; color: var(--muted); }

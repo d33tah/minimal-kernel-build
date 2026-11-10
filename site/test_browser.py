@@ -7291,7 +7291,8 @@ def legend_case(browser, base, shots, name="minified-linux"):
              ("#listing", "jnone tipmark", "*"), ("#listing", "jc", "*"), ("#listing", "jto", "*"), ("#listing", "lbl", "*"),
              ("#listing", "srcloc", "*"), ("#listing", "srctext", "*"), ("#listing", "hex", "*"), ("#listing", "opn", "*"),
              ("#regs", "chg", "*"), ("#listing", "jarc", "path"), ("#listing", "jarc taken", "path"), ("#listing", "jarrow", "path"),
-             ("#context", "src", "*")]
+             ("#context", "src", "*"), ("#panel_memory", "memeip", "*"), ("#panel_memory", "memesp", "*"),
+             ("#panel_memory", "memtag tipmark", "*"), ("#panel_memory", "memtag esp tipmark", "*"), ("#panel_memory", "eiptick", "*")]
     looks = {}
     for scheme in ("light", "dark"):
         page.emulate_media(color_scheme=scheme)
@@ -8473,6 +8474,340 @@ def runbadge_case(browser, base, shots, linux):
 
 def suite_runbadge(ctx):
     return report("runbadge", *runbadge_case(ctx.browser, ctx.base, ctx.shots, "minified-linux" in ctx.entries))
+
+
+# ---- memeip: where EIP is in the Memory tab (M1) --------------------------
+# The operator: "na memory view pokazuj eip". The page square holding the
+# next instruction's physical address (paging-aware) carries a mark of its
+# own (#pages_eip, .memeip; ESP's page a weaker .memesp), labelled in the
+# grid's left gutter (.memtag, with a popover); the region bar holding it is
+# marked (.eiphere, a tick .eiptick); a line above the grid (#mem_eip) says
+# "EIP 0x... (phys 0x...) symbol+0x.., page 0x..." and opens the Page tab at
+# EIP. The checks read the CPU independently: CS base + EIP from v86's
+# registers, then its page tables from guest RAM (2-level, PSE, PAE).
+
+MEMEIP_JS = """() => {
+  if (window.mkbEip) return;
+  const u32 = (a) => { const b = emulator.read_memory(a, 4); return (b[0] | b[1] << 8 | b[2] << 16 | b[3] << 24) >>> 0; };
+  const walk = (lin) => {
+    const c = emulator.v86.cpu;
+    if (!(c.cr[0] & 0x80000000)) return lin >>> 0;
+    const cr3 = c.cr[3] >>> 0, pae = !!(c.cr[4] & 0x20), pse = !!(c.cr[4] & 0x10);
+    if (pae) {
+      const pdpte = u32((cr3 & ~0x1f) + ((lin >>> 30) & 3) * 8); if (!(pdpte & 1)) return -1;
+      const pde = u32((pdpte & ~0xfff) + ((lin >>> 21) & 0x1ff) * 8); if (!(pde & 1)) return -1;
+      if (pde & 0x80) return ((pde & 0xffe00000) | (lin & 0x1fffff)) >>> 0;
+      const pte = u32((pde & ~0xfff) + ((lin >>> 12) & 0x1ff) * 8); if (!(pte & 1)) return -1;
+      return ((pte & ~0xfff) | (lin & 0xfff)) >>> 0;
+    }
+    const pde = u32((cr3 & ~0xfff) + (lin >>> 22) * 4); if (!(pde & 1)) return -1;
+    if (pse && (pde & 0x80)) return ((pde & 0xffc00000) | (lin & 0x3fffff)) >>> 0;
+    const pte = u32((pde & ~0xfff) + ((lin >>> 12) & 0x3ff) * 4); if (!(pte & 1)) return -1;
+    return ((pte & ~0xfff) | (lin & 0xfff)) >>> 0;
+  };
+  const cpu = () => { const c = emulator.v86.cpu, eip = c.get_real_eip() >>> 0, lin = (c.segment_offsets[1] + eip) >>> 0;
+    const pm = !!(c.cr[0] & 1), esp = c.reg32[4] >>> 0, slin = (c.segment_offsets[2] + (pm ? esp : esp & 0xffff)) >>> 0;
+    return { eip, lin, phys: walk(lin), esp, sphys: pm ? walk(slin) : -1, steps: stepper.steps, paging: !!(c.cr[0] & 0x80000000) }; };
+  const M = window.mkbEip = { checks: 0, viol: [], walk, cpu };
+  // Each drawing of the mark: in the same task as the drawing, the CPU is
+  // where the mark says.
+  const seen = new WeakSet();
+  const watch = () => { const e = document.getElementById('pages_eip'); if (!e || seen.has(e)) return; seen.add(e);
+    new MutationObserver(() => { if (e.hidden || e.dataset.page === undefined || e.dataset.page === '') return;
+      const w = cpu(); M.checks++;
+      if (Number(e.dataset.steps) !== w.steps || Number(e.dataset.page) !== Math.floor(w.phys / 4096))
+        if (M.viol.length < 20) M.viol.push({ kind: 'drawn', mark_page: e.dataset.page, mark_steps: e.dataset.steps, ...w });
+    }).observe(e, { attributes: true, attributeFilter: ['data-steps', 'data-page'] }); };
+  watch(); setInterval(watch, 500);
+  // Slow motion: the mark follows within 1.5 s of an instruction.
+  let pend = null;
+  setInterval(() => { const e = document.getElementById('pages_eip');
+    if (!e || typeof stepper === 'undefined' || !stepper || runState !== 'stepped' || entryPhase || ffActive || fastStepping()
+        || document.getElementById('panel_memory').hidden) { pend = null; return; }
+    if (Number(e.dataset.steps) === stepper.steps) { pend = null; return; }
+    const t = Date.now(); if (pend === null) pend = t;
+    else if (t - pend > 1500) { if (M.viol.length < 20) M.viol.push({ kind: 'stale', for_ms: t - pend, mark_steps: e.dataset.steps, steps: stepper.steps }); pend = t; }
+  }, 100);
+}"""
+
+# The marks as drawn: the squares under each mark's centre, the line, the bar.
+MEMEIP_STATE_JS = """() => {
+  const canvas = document.getElementById('pages'), cr = canvas.getBoundingClientRect();
+  const cols = Number(canvas.dataset.cols), pages = Number(canvas.dataset.pages);
+  const shown = (e) => !!e && !e.hidden && e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden';
+  const under = (e) => { const r = e.getBoundingClientRect(), x = (r.left + r.right) / 2, y = (r.top + r.bottom) / 2;
+    const cw = (cr.width - 2) / cols; return Math.floor((y - cr.top - 1) / cw) * cols + Math.floor((x - cr.left - 1) / cw); };
+  const marks = [...document.querySelectorAll('#panel_memory .memeip')].filter(shown);
+  const esps = [...document.querySelectorAll('#panel_memory .memesp')].filter(shown);
+  const line = document.getElementById('mem_eip'), go = document.getElementById('mem_eip_go');
+  const bars = [...document.querySelectorAll('#map_all .eiphere, #map_low .eiphere')].map((d) => [d.parentNode.id, d.title]);
+  const ticks = [...document.querySelectorAll('#map_all .eiptick, #map_low .eiptick')].filter(shown).map((d) => d.parentNode.id);
+  const tags = [...document.querySelectorAll('#panel_memory .memtag')].filter(shown).map((t) => t.textContent.trim());
+  const m = marks[0], cs = m ? getComputedStyle(m) : null, rb = document.getElementById('runbadge_toggle');
+  const rect = (e) => { if (!e) return null; const r = e.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom].map(Math.round); };
+  return { n: marks.length, page: m ? Number(m.dataset.page) : null, steps: m ? Number(m.dataset.steps) : null, under: m ? under(m) : null,
+    esp: esps.map((e) => [Number(e.dataset.page), under(e)]), tags, pages, cols,
+    line: line ? line.textContent.replace(/\\s+/g, ' ').trim() : null, go: !!go && shown(go),
+    lineShown: shown(line), bars, ticks, look: cs ? [cs.outlineColor, cs.borderTopColor, cs.boxShadow].join(' | ') : '',
+    mark: rect(m), toggle: rect(rb), vw: innerWidth, vh: innerHeight,
+    hscroll: document.documentElement.scrollWidth > innerWidth + 1,
+    tokens: Object.fromEntries([...Object.keys(REGION_NAMES), ...Object.keys(SECTION_NAMES), 'accent', 'bg']
+      .map((k) => [k, getComputedStyle(document.documentElement).getPropertyValue('--' + k).trim()])) }; }"""
+
+
+def memeip_syms(name):
+    return json.loads((SITE / kernel_entries()[name]["symbols"]).read_text())["symbols"]
+
+
+def memeip_check(page, tag, syms, problems, r, want_esp=True, shift=0):
+    """Exactly one square has the EIP mark; it is the page of the CPU's
+    phys EIP (read independently); the line above the grid says EIP, phys,
+    the symbol and the page; the region bar holding it is marked."""
+    st = page.evaluate(MEMEIP_STATE_JS)
+    w = page.evaluate("mkbEip.cpu()")
+    r[tag] = {"cpu": [hex(w["eip"]), hex(w["phys"]) if w["phys"] >= 0 else -1, w["steps"]], "marks": st["n"],
+              "page": st["page"], "esp": st["esp"], "line": st["line"], "bars": st["bars"]}
+    if st["n"] != 1:
+        problems.append(f"{tag}: {st['n']} squares carry the EIP mark (want exactly 1)")
+        return st, w
+    want = w["phys"] // 4096
+    if st["page"] != want or st["under"] != want:
+        problems.append(f"{tag}: the EIP mark is on page {st['page']} (drawn over square {st['under']}), "
+                        f"the CPU's EIP {w['eip']:#x} is at phys {w['phys']:#x}, page {want}")
+    if st["steps"] != w["steps"]:
+        problems.append(f"{tag}: the mark was drawn at instruction {st['steps']}, the CPU is at {w['steps']} (paused)")
+    line = st["line"] or ""
+    for part in (f"EIP 0x{w['eip']:08x}", f"phys 0x{w['phys']:08x}", f"page {want:#x}"):
+        if part not in line:
+            problems.append(f"{tag}: the line above the grid {line!r} lacks {part!r}")
+    names = [s["name"] for s in syms or [] if s["size"] > 0 and s["paddr"] <= w["phys"] < s["paddr"] + s["size"]
+             and re.match(r"^\.(head\.|init\.)?text", s.get("section", ".text"))]
+    # The minified Linux's entry runs the bzImage's relocation stub, whose
+    # bytes are not vmlinux's (stub_shift): the line says so.
+    stub = shift and 0x100000 <= w["phys"] < 0x100000 + shift and "relocation stub" in line
+    if names and not stub and not any(n + "+0x" in line or n + "," in line for n in names):
+        problems.append(f"{tag}: the line above the grid {line!r} names none of {names}")
+    if not st["lineShown"] or not st["go"]:
+        problems.append(f"{tag}: the EIP line or its link to the Page tab is not shown ({st['lineShown']}, {st['go']})")
+    if len([b for b in st["bars"] if b[0] == "map_all"]) != 1:
+        problems.append(f"{tag}: the All RAM bar marks {st['bars']} as holding EIP (want one segment)")
+    if (w["phys"] < 0x100000) != any(b[0] == "map_low" for b in st["bars"]):
+        problems.append(f"{tag}: the First MiB bar's EIP mark {st['bars']} does not match phys {w['phys']:#x}")
+    if "map_all" not in st["ticks"]:
+        problems.append(f"{tag}: no EIP tick in the All RAM bar ({st['ticks']})")
+    if "EIP" not in st["tags"]:
+        problems.append(f"{tag}: no EIP label next to the grid ({st['tags']})")
+    if want_esp and w["sphys"] >= 0 and w["sphys"] // 4096 < st["pages"]:
+        sp = w["sphys"] // 4096
+        if [e[0] for e in st["esp"]] != [sp] or st["esp"][0][1] != sp:
+            problems.append(f"{tag}: ESP {w['esp']:#x} is in page {sp}, the stack mark: {st['esp']}")
+    look = st["look"]
+    for k, v in st["tokens"].items():
+        if k not in ("accent", "bg") and v and css_rgb(v) in look.split(" | ")[0:2]:
+            problems.append(f"{tag}: the EIP mark's colour {look} is the {k} region/section colour")
+    if st["hscroll"]:
+        problems.append(f"{tag}: horizontal scroll")
+    return st, w
+
+
+def memeip_clear_of_toggle(page, tag, problems, r):
+    """With the mark in the middle of the screen, the menu toggle (H1) covers
+    neither the mark nor its label."""
+    page.evaluate("document.getElementById('pages_eip').scrollIntoView({ block: 'center' })")
+    time.sleep(0.3)
+    got = page.evaluate("""() => { const t = document.getElementById('runbadge_toggle').getBoundingClientRect();
+      return [...document.querySelectorAll('#pages_eip, #pages_eip_tag')].filter((e) => !e.hidden).map((e) => {
+        const r = e.getBoundingClientRect(); return [e.id, r.right > t.left && r.left < t.right && r.bottom > t.top && r.top < t.bottom]; }); }""")
+    r[f"{tag} clear of the toggle"] = got
+    for id_, hit in got:
+        if hit:
+            problems.append(f"{tag}: the menu toggle covers #{id_}")
+
+
+def memeip_tip(page, tag, phone, problems, r):
+    """The EIP label's popover (T1 style): hover at 1280, tap at 390."""
+    t = page.locator("#pages_eip_tag")
+    if not t.count() or not t.is_visible():
+        problems.append(f"{tag}: no EIP label (#pages_eip_tag) to explain the mark")
+        return
+    t.scroll_into_view_if_needed()
+    if phone:
+        t.tap()
+    else:
+        t.hover()
+    st = tip_wait(page, True)
+    r[f"{tag} popover"] = st["text"][:120]
+    if not st["shown"] or "EIP" not in st["text"] or "next instruction" not in st["text"]:
+        problems.append(f"{tag}: the EIP label's popover {st}")
+    else:
+        tip_fits(st, tag, problems)
+    if phone:
+        tip_tap_away(page)
+    else:
+        page.mouse.move(2, 2)
+    tip_wait(page, False)
+
+
+def memeip_run(browser, base, shots, name, scheme, phone, full):
+    problems, r, errors = [], {}, []
+    tag0 = f"{name} {390 if phone else 1280} {scheme}"
+    ctx = browser.new_context(color_scheme=scheme, **(PHONE if phone else {"viewport": {"width": 1280, "height": 1000}}))
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    syms = memeip_syms(name)
+    shift = stub_shift(name) or 0
+    shot = lambda s: page.screenshot(path=str(shots / f"memeip-{name}-{390 if phone else 1280}-{scheme}-{s}.png"))
+    page.goto(f"{base}/index.html?kernel={name}&paused=1#memory")
+    if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120):
+        ctx.close()
+        return [f"{tag0}: did not start paused at the reset vector"], r
+    wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator"), 30)
+    page.evaluate(MEMEIP_JS)
+    time.sleep(0.5)
+    st, w = memeip_check(page, f"{tag0} reset", syms, problems, r, want_esp=False, shift=shift)
+    if st["n"] != 1:
+        shot("reset")
+        ctx.close()
+        return problems, r
+    shot("reset")
+    memeip_tip(page, tag0, phone, problems, r)
+
+    def runto(addr, label):
+        show_tab(page, "debugger")
+        page.fill("#dbg_addr", hex(addr))
+        page.click("#dbg_runto")
+        ok, at, status = run_to_wait(page, {addr}, 300)
+        show_tab(page, "memory")
+        time.sleep(0.5)
+        if not ok:
+            problems.append(f"{tag0}: Run to {label} did not stop there ({at:#x}: {status})")
+        return ok
+
+    # The kernel entry.
+    runto(0x100000, "the kernel entry")
+    memeip_check(page, f"{tag0} kernel entry", syms, problems, r, want_esp=False, shift=shift)
+    shot("entry")
+    # Mid-boot: 1/s, then 1k/s, on the Memory tab; each drawing checked.
+    page.evaluate("mkbEip.checks = 0")
+    machine_do(page, "select_option", "#dbg_speed", "1")
+    machine_do(page, "click", "#dbg_continue")
+    time.sleep(6)
+    c1 = page.evaluate("mkbEip.checks")
+    machine_do(page, "select_option", "#dbg_speed", "1000")
+    time.sleep(5)
+    c2 = page.evaluate("mkbEip.checks") - c1
+    r[f"{tag0} drawings checked at 1/s, 1k/s"] = [c1, c2]
+    if c1 < 3 or c2 < 5:
+        problems.append(f"{tag0}: the EIP mark was drawn {c1} times in 6 s at 1/s and {c2} times in 5 s at 1k/s")
+    shot("1k")
+    ended = page.evaluate("!!stepper.end")
+    if not ended:
+        machine_do(page, "click", "#dbg_pause")
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 10)
+        time.sleep(0.4)
+        memeip_check(page, f"{tag0} after Pause", syms, problems, r, shift=shift)
+        machine_do(page, "click", "#dbg_step")
+        wait_for(lambda: page.evaluate("mkbEip.cpu().steps") == page.evaluate("Number(document.getElementById('pages_eip').dataset.steps)"), 5)
+        memeip_check(page, f"{tag0} after Step", syms, problems, r, shift=shift)
+    if full:
+        # Run to a function further on.
+        target = next((s for s in syms if s["name"] in ("start_kernel",)), None) if name.startswith("minified") else None
+        if target and not ended:
+            if runto(target["paddr"], target["name"]):
+                memeip_check(page, f"{tag0} after Run to {target['name']}", syms, problems, r, shift=shift)
+                shot("runto")
+        # The line opens the Page tab at EIP; Back returns.
+        before = page.evaluate("mkbEip.cpu()")
+        page.locator("#mem_eip_go").tap() if phone else page.click("#mem_eip_go")
+        ok = wait_for(lambda: shown_tab(page) == "page" and page.get_attribute("#listing", "data-page") == str(before["phys"] // 4096), 10)
+        cur = page.evaluate("(() => { const c = document.querySelector('#listing .ins.cur'); return c ? Number(c.dataset.addr) : null; })()")
+        r[f"{tag0} line -> Page"] = [ok, cur]
+        if not ok or cur != before["phys"]:
+            problems.append(f"{tag0}: the EIP line does not open the Page tab at EIP: tab {shown_tab(page)}, "
+                            f"listing page {page.get_attribute('#listing', 'data-page')}, boxed {cur} (want {before['phys']})")
+        nav_press(page, "#nav_back", "tap" if phone else "click")
+        if not wait_for(lambda: shown_tab(page) == "memory", 5):
+            problems.append(f"{tag0}: Back after the EIP line does not return to the Memory tab ({shown_tab(page)})")
+        memeip_clear_of_toggle(page, tag0, problems, r)
+        shot("mark")
+        # The end of the run: the minified Linux's panic, hello's halt, at full speed.
+        machine_do(page, "select_option", "#dbg_speed", "full")
+        if page.is_enabled("#dbg_continue"):
+            machine_do(page, "click", "#dbg_continue")
+        if not wait_for(lambda: page.evaluate("runState === 'paused' && !ffActive && !!stepper.end"), 180):
+            problems.append(f"{tag0}: the run did not end at full speed")
+        else:
+            time.sleep(0.5)
+            end = page.get_attribute("#end_banner", "data-kind") or ""
+            memeip_check(page, f"{tag0} after the end ({end})", syms, problems, r, shift=shift)
+            shot("end")
+    viol = page.evaluate("mkbEip.viol")
+    if viol:
+        problems.append(f"{tag0}: the mark did not follow EIP: {viol[:4]}")
+    if errors:
+        problems.append(f"{tag0}: page errors: {errors[:3]}")
+    ctx.close()
+    return problems, r
+
+
+def memeip_switch(browser, base, shots):
+    """A kernel switch and Boot: the mark follows the new machine."""
+    problems, r = [], {}
+    ctx = browser.new_context(viewport={"width": 1280, "height": 1000})
+    page = ctx.new_page()
+    page.goto(f"{base}/index.html?kernel=hello&speed=1#memory")
+    wait_for(lambda: page.evaluate("typeof entryPhase !== 'undefined' && runState === 'stepped' && !entryPhase && !ffActive"), 120)
+    page.evaluate(MEMEIP_JS)
+    time.sleep(3)
+    for label, act in (("kernel switch to hello-os", lambda: machine_do(page, "select_option", "#kernel", "hello-os")),
+                       ("Boot", lambda: machine_do(page, "click", "#boot"))):
+        act()
+        wait_for(lambda: page.evaluate("runState === 'stepped' && !entryPhase && !ffActive"), 120)
+        page.evaluate("mkbEip.checks = 0")
+        time.sleep(4)
+        machine_do(page, "click", "#dbg_pause")
+        wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 10)
+        time.sleep(0.4)
+        r[f"{label} drawings"] = page.evaluate("mkbEip.checks")
+        if r[f"{label} drawings"] < 2:
+            problems.append(f"after {label}: the mark was drawn {r[f'{label} drawings']} times in 4 s at 1/s")
+        memeip_check(page, f"after {label}", memeip_syms("hello-os"), problems, r)
+        machine_do(page, "click", "#dbg_continue")
+    viol = page.evaluate("mkbEip.viol")
+    if viol:
+        problems.append(f"kernel switch / Boot: the mark did not follow EIP: {viol[:4]}")
+    # The legend has the marks.
+    show_tab(page, "about")
+    got = page.evaluate("[...document.querySelectorAll('#about_legend .memeip, #about_legend .memesp, #about_legend .eiptick')].length")
+    if got < 3:
+        problems.append(f"the About legend has {got} samples of the EIP/ESP marks (want the EIP and ESP squares and the bar tick)")
+    page.screenshot(path=str(shots / "memeip-legend.png"))
+    ctx.close()
+    return problems, r
+
+
+def memeip_case(browser, base, shots, linux):
+    out = []
+    runs = [("hello", "light", False, True), ("hello", "dark", True, True), ("hello", "dark", False, False), ("hello", "light", True, False)]
+    if linux:
+        runs += [("minified-linux", "light", False, True), ("minified-linux", "dark", True, True)]
+        if "minified-linux-os" in kernel_entries():
+            runs += [("minified-linux-os", "dark", False, True), ("minified-linux-os", "light", True, False)]
+    for name, scheme, phone, full in runs:
+        t0 = time.monotonic()
+        problems, r = memeip_run(browser, base, shots, name, scheme, phone, full)
+        out.append(report("memeip", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280,
+                          seconds=round(time.monotonic() - t0)))
+        if any("squares carry the EIP mark" in p for p in problems) and name == "hello":
+            break
+    else:
+        problems, r = memeip_switch(browser, base, shots)
+        out.append(report("memeip switch", problems, r))
+    return any(out)
+
+
+def suite_memeip(ctx):
+    return memeip_case(ctx.browser, ctx.base, ctx.shots, "minified-linux" in ctx.entries)
 
 
 # ---- tabs: names, emoji, compact mode, the Machine tab (U3) ---------------
@@ -9998,6 +10333,7 @@ LONG_TASKS_JS = """() => { window.mkbLong = []; new PerformanceObserver((l) => {
 # the full ones, on apps from before B3).
 VIEW_DRAWS_JS = """() => ({ page: Number(document.getElementById('listing').dataset.draws || document.getElementById('listing').dataset.reads || 0),
     debugger: Number(document.getElementById('context').dataset.draws || 0),
+    memory: Number(document.getElementById('pages').dataset.draws || 0),
     long: (window.mkbLong || []).reduce((a, b) => a + b, 0), longMax: Math.max(0, ...(window.mkbLong || [])) })"""
 
 
@@ -10026,6 +10362,8 @@ def speed_line_asm_case(browser, base, shots, kernel, tab, throttle, rate, secs=
     wait_for(lambda: page.evaluate("typeof entryPhase !== 'undefined' && runState === 'stepped' && !entryPhase && !ffActive"), 180)
     page.tap("#tab_" + tab)
     page.evaluate(LONG_TASKS_JS)
+    if tab == "memory":
+        page.evaluate(MEMEIP_JS)
     problems, samples, zero = [], 0, 0
     d0 = page.evaluate(VIEW_DRAWS_JS)
     s0 = page.evaluate(SPEED_LINE_JS)
@@ -10052,6 +10390,9 @@ def speed_line_asm_case(browser, base, shots, kernel, tab, throttle, rate, secs=
         problems.append({"listing drawn": f"{draws} times for {ran} instructions in {secs} s"})
     if d["long"] > 0.7 * wall:
         problems.append({"main thread busy": f"long tasks {d['long'] / 1000:.1f} s of {wall / 1000:.1f} s"})
+    eip = page.evaluate("window.mkbEip ? [mkbEip.checks, mkbEip.viol] : null") if tab == "memory" else None
+    if eip and (eip[1] or eip[0] < min(ran, secs) / 2):
+        problems.append({"EIP mark (M1)": f"drawn {eip[0]} times for {ran} instructions; {eip[1][:3]}"})
     shot = f"speed-line-{tab}-{kernel}-{throttle}x-{rate}.png"
     page.screenshot(path=str(shots / shot))
     if errors:
@@ -10067,7 +10408,7 @@ SPEED_WINDOW_SLOW_S = 4
 SPEED_LINE_ASM = [("minified-linux-os", "page", 4, "1"), ("minified-linux-os", "page", 4, "10"),
                   ("minified-linux-os", "page", 6, "1"), ("minified-linux-os", "page", 6, "10"),
                   ("minified-linux-os", "debugger", 6, "1"), ("minified-linux-os", "debugger", 6, "10"),
-                  ("hello", "page", 4, "1")]
+                  ("hello", "page", 4, "1"), ("minified-linux-os", "memory", 6, "10")]
 
 
 # (kernel, touch, seed): fixed, so CI runs the same sequences every time.
@@ -10180,6 +10521,7 @@ SUITES = {
     "speedasm": (suite_speedasm, True),
     "navhist": (suite_navhist, False),
     "runbadge": (suite_runbadge, False),
+    "memeip": (suite_memeip, False),
     "tabs": (suite_tabs, False),
     "pwa": (suite_pwa, False),
     "followeip": (suite_followeip, False),

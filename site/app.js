@@ -241,6 +241,9 @@ function legendItem(cls, label, style) {
 
 function drawBar(el, regions, start, end) {
 	el.textContent = "";
+	el.dataset.lo = start;
+	el.dataset.hi = end;
+	memEipKey = "";
 	for (const [a, b, cls, label] of regions) {
 		const lo = Math.max(a, start), hi = Math.min(b, end);
 		if (hi <= lo)
@@ -248,6 +251,8 @@ function drawBar(el, regions, start, end) {
 		const div = document.createElement("div");
 		div.style.flex = (hi - lo) + " 0 0";
 		div.style.background = "var(--" + cls + ")";
+		div.dataset.lo = lo;
+		div.dataset.hi = hi;
 		div.title = label + ": " + hex(lo) + "–" + hex(hi) + " (" + kib(hi - lo) + ")";
 		div.textContent = label;
 		if (label !== "first MiB")
@@ -382,6 +387,7 @@ function drawGrid() {
 	canvas.dataset.cols = cols;
 	canvas.dataset.cell = cell;
 	canvas.dataset.pages = pages;
+	canvas.dataset.draws = Number(canvas.dataset.draws || 0) + 1;
 	const ctx = canvas.getContext("2d");
 	const css = getComputedStyle(document.documentElement);
 	const colour = {};
@@ -424,6 +430,132 @@ function drawGrid() {
 			cell - 1, cell - 1);
 	}
 	drawGridLegend();
+	renderMemEip();
+}
+
+// ---- EIP in the Memory tab (M1) --------------------------------------------
+// The page square of the next instruction's physical address (the one the
+// Debugger shows, through the page tables) gets a box, the stack's page
+// (SS base + ESP) a dashed one, each labelled left of its row; the region
+// bars a frame around the region holding EIP and a tick where it is; the
+// line above the grid says where EIP is and opens the Page tab there. The
+// boxes are elements over the canvas: following EIP moves them and redraws
+// nothing else. Drawn with the Debugger (drawDebugUi, its redraw budget)
+// and with the grid, only while the Memory tab is shown.
+let memEipKey = "";
+
+function memEipWhere() {
+	if (!stepper || !emulator || runState === "off")
+		return { text: "EIP: no kernel is running." };
+	if (runState === "jit" || ffActive)
+		return { text: "EIP: the CPU runs at full speed (JIT); its page is marked when it stops." };
+	const r = stepper.regs(), c = stepper.cpu;
+	const phys = stepper.nextPhys();
+	const esp = (c.segment_offsets[2] + ((r.cr0 & 1) ? r.esp : r.esp & 0xffff)) >>> 0;
+	const sp = pageWalk(c, esp).phys;
+	return { eip: r.eip, phys, esp: r.esp, sphys: sp === null ? -1 : sp, steps: stepper.steps };
+}
+
+// Left, top, width and height of page p's square in #pages_box (the
+// canvas, its 1 px border inside).
+function memCellStyle(el, p, rows) {
+	const col = p % grid.cols, row = Math.floor(p / grid.cols);
+	el.style.left = "calc(1px + (100% - 2px) * " + col / grid.cols + ")";
+	el.style.top = "calc(1px + (100% - 2px) * " + row / rows + ")";
+	el.style.width = "calc((100% - 2px) / " + grid.cols + ")";
+	el.style.height = "calc((100% - 2px) / " + rows + ")";
+}
+
+function memMarkBars(phys) {
+	for (const id of ["map_low", "map_all"]) {
+		const bar = $(id);
+		for (const d of bar.querySelectorAll(".eiphere, .eiptick"))
+			d.classList.contains("eiptick") ? d.remove() : d.classList.remove("eiphere");
+		if (phys < 0)
+			continue;
+		let hit = null;
+		for (const d of bar.children)
+			if (Number(d.dataset.lo) <= phys && phys < Number(d.dataset.hi))
+				hit = d;
+		if (!hit)
+			continue;
+		hit.classList.add("eiphere");
+		const t = document.createElement("span");
+		t.className = "eiptick";
+		t.style.left = (100 * (phys - Number(bar.dataset.lo)) / (Number(bar.dataset.hi) - Number(bar.dataset.lo))) + "%";
+		bar.append(t);
+	}
+}
+
+function renderMemEip() {
+	if (tab !== "memory")
+		return;
+	const w = memEipWhere();
+	const pages = grid.pages, rows = Math.ceil(pages / grid.cols);
+	const inGrid = (a) => a >= 0 && a < pages * PAGE;
+	const key = [w.text || "", w.steps, w.phys, w.sphys, pages, grid.cols].join(" ");
+	if (key === memEipKey)
+		return;
+	memEipKey = key;
+	const line = $("mem_eip"), mark = $("pages_eip"), tag = $("pages_eip_tag");
+	const smark = $("pages_esp"), stag = $("pages_esp_tag");
+	if (w.text) {
+		line.textContent = w.text;
+		mark.hidden = tag.hidden = smark.hidden = stag.hidden = true;
+		delete mark.dataset.page;
+		memMarkBars(-1);
+		return;
+	}
+	const p = inGrid(w.phys) ? Math.floor(w.phys / PAGE) : -1;
+	const sp = inGrid(w.sphys) ? Math.floor(w.sphys / PAGE) : -1;
+	line.textContent = "";
+	line.append("EIP 0x" + h8(w.eip) + " (" + (w.phys < 0 ? "not mapped: the next fetch faults" :
+		"phys 0x" + h8(w.phys) + (p < 0 ? ", beyond RAM" : "")) + ") ");
+	if (p >= 0) {
+		const i = stepper.symbolOf(w.phys);
+		const off = i >= 0 ? w.phys - stepper.symStart[i] : 0;
+		if (i < 0 && (symbols || w.phys < V86_KERNEL_ADDR))
+			line.append(symDesc(stepper, i, w.phys) + " ");
+		const go = document.createElement("button");
+		go.type = "button";
+		go.id = "mem_eip_go";
+		go.className = "symlink";
+		go.textContent = (i >= 0 ? stepper.symName[i] + (off ? "+" + hex(off) : "") + ", " : "") + "page " + hex(p);
+		go.title = "Open the Page tab at EIP";
+		go.addEventListener("click", () => jumpTo(w.phys));
+		line.append(go);
+	}
+	line.append(" \u00b7 ESP 0x" + h8(w.esp) + (w.sphys < 0 ? " (not mapped)" : " (phys 0x" + h8(w.sphys) + ") "));
+	if (sp >= 0) {
+		const go = document.createElement("button");
+		go.type = "button";
+		go.id = "mem_esp_go";
+		go.className = "symlink";
+		go.textContent = "stack, page " + hex(sp);
+		go.title = "Open the Page tab at ESP";
+		go.addEventListener("click", () => jumpTo(w.sphys));
+		line.append(go);
+	}
+	mark.hidden = tag.hidden = p < 0;
+	if (p >= 0) {
+		memCellStyle(mark, p, rows);
+		tag.style.top = "calc(1px + (100% - 2px) * " + (Math.floor(p / grid.cols) + 0.5) / rows + ")";
+	}
+	smark.hidden = stag.hidden = sp < 0;
+	if (sp >= 0) {
+		memCellStyle(smark, sp, rows);
+		stag.style.top = "calc(1px + (100% - 2px) * " + (Math.floor(sp / grid.cols) + 0.5) / rows + ")";
+		const same = p >= 0 && Math.floor(p / grid.cols) === Math.floor(sp / grid.cols);
+		stag.classList.toggle("low", same);
+		tag.classList.toggle("up", same);
+	} else
+		tag.classList.remove("up");
+	mark.dataset.page = p;
+	mark.dataset.phys = w.phys;
+	smark.dataset.page = sp;
+	// Last: the test's observer checks the CPU when this changes.
+	mark.dataset.steps = w.steps;
+	memMarkBars(p >= 0 ? w.phys : -1);
 }
 
 function drawGridLegend() {
@@ -534,6 +666,10 @@ function showHover(p) {
 		text += usedPages[p] ? ", data" : ", all zero";
 	if (syms.length)
 		text += ": " + syms[0].name + (syms.length > 1 ? " and " + (syms.length - 1) + " more symbols" : "");
+	if (!$("pages_eip").hidden && Number($("pages_eip").dataset.page) === p)
+		text += "; EIP is here";
+	if (!$("pages_esp").hidden && Number($("pages_esp").dataset.page) === p)
+		text += "; ESP (the stack) is here";
 	el.textContent = text;
 }
 
@@ -2943,6 +3079,7 @@ function drawDebugUi() {
 	renderRunBadge();
 	renderRegs();
 	renderCounters();
+	renderMemEip();
 	if (runState !== "stepped")
 		renderContext();
 }

@@ -10200,8 +10200,8 @@ def snapdiff_bigsave(browser, base, shots, phone):
     page.goto(f"{base}/index.html?kernel=hello&mem={64 << 20}&paused=1#debugger")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120)
     page.evaluate(SNAP_JS)
-    # At hello_main: a state taken at the reset vector does not restore in
-    # v86 0.5.471 (its PCI set_state reads a BAR not set up yet).
+    # At hello_main, where the 24 MiB of data goes (the power-on save is
+    # snapdiff_poweron's).
     page.fill("#dbg_addr", "hello_main")
     page.click("#dbg_runto")
     wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and
@@ -10244,6 +10244,94 @@ def snapdiff_bigsave(browser, base, shots, phone):
     return problems, r
 
 
+SNAP_POWERON_TARGET = {"hello": "hello_main", "minified-linux": "start_kernel"}
+
+
+def snapdiff_poweron(browser, base, shots, name, scheme, phone):
+    """B1: a snapshot saved while paused at power-on (the reset vector, before
+    SeaBIOS ran) restores. v86 0.5.471's PCI set_state moved the I/O BARs of
+    every BAR slot with bit 0 set, including slots with no BAR (at power-on
+    the config space still holds the device's initial bytes there), and
+    threw "Cannot read properties of undefined (reading 'original_bar')".
+    Save at 0xF000:0xFFF0, boot on to hello_main / start_kernel, Restore:
+    the registers, the instruction count and the RAM are the snapshot's;
+    then the machine boots on from there to the same target (and hello
+    prints its lines). No page error; screenshots."""
+    problems, r, errors = [], {}, []
+    w = 390 if phone else 1280
+    tag = f"power-on {name} {w} {scheme}"
+    target = SNAP_POWERON_TARGET[name]
+    ctx = browser.new_context(color_scheme=scheme, **(PHONE if phone else {"viewport": {"width": 1280, "height": 1000}}))
+    page = ctx.new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)[:200]))
+    page.goto(f"{base}/index.html?kernel={name}&paused=1#debugger")
+    if not wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused", 120):
+        ctx.close()
+        return [f"{tag}: did not start paused"], r
+    wait_for(lambda: page.evaluate("typeof stepper !== 'undefined' && !!stepper && !!emulator"), 30)
+    page.evaluate(SNAP_JS)
+    cpu_p = page.evaluate("mkbSnap.cpu()")
+    r["at save"] = {"CS:EIP": f"{cpu_p['regs']['CS']:#x}:{cpu_p['eip']:#x}", "icount": cpu_p["icount"]}
+    if cpu_p["regs"]["CS"] != 0xF000 or cpu_p["eip"] != 0xFFF0:
+        problems.append(f"{tag}: not paused at the reset vector: {r['at save']['CS:EIP']} (test setup)")
+    # The slots that broke v86's PCI set_state: no BAR, I/O bit set.
+    r["BAR slots without a BAR, I/O bit set"] = page.evaluate("""() => { const pci = emulator.v86.cpu.devices.pci, out = [];
+      pci.devices.forEach((d, id) => { if (d && d.pci_bars) for (let i = 0; i < d.pci_bars.length; i++)
+        if (!d.pci_bars[i] && pci.device_spaces[id][4 + i] & 1) out.push((d.name || id) + ' BAR' + i); }); return out; }""")
+    page.evaluate("mkbSnap.keep('P')")
+    st = snap_save(page, 1, phone)
+    row = st["rows"][0]["id"]
+    r["saved"] = st["status"][:160]
+
+    def run_to(what):
+        show_tab(page, "debugger")
+        page.fill("#dbg_addr", target)
+        page.click("#dbg_runto")
+        ok = wait_for(lambda: page.get_attribute("#dbg_state", "data-state") == "paused" and
+                      target in page.inner_text("#dbg_status"), 300)
+        if not ok:
+            problems.append(f"{tag}: Run to {target} {what} did not stop there: {page.inner_text('#dbg_status')[:200]}")
+        return ok
+
+    run_to("before Restore")
+    show_tab(page, "snapshots")
+    snap_click(page, f"#snapshots tr[data-id='{row}'] button.restore", phone)
+    wait_for(lambda: page.get_attribute("#snap_status", "data-restored") == row or
+             "failed" in page.inner_text("#snap_status"), 60)
+    r["restore status"] = page.inner_text("#snap_status")[:200]
+    if page.get_attribute("#snap_status", "data-restored") != row:
+        problems.append(f"{tag}: Restore of the power-on snapshot: {r['restore status']}")
+    page.screenshot(path=str(shots / f"snapdiff-poweron-{name}-{w}-{scheme}-restored.png"), full_page=True)
+    cpu_q = page.evaluate("mkbSnap.cpu()")
+    r["after restore"] = {"CS:EIP": f"{cpu_q['regs']['CS']:#x}:{cpu_q['eip']:#x}", "icount": cpu_q["icount"]}
+    bad = {k: (f"{cpu_p['regs'][k]:#x}", f"{cpu_q['regs'][k]:#x}") for k in cpu_p["regs"] if cpu_p["regs"][k] != cpu_q["regs"][k]}
+    if bad:
+        problems.append(f"{tag}: registers after Restore differ from the snapshot's (saved, now): {bad}")
+    if cpu_q["icount"] != cpu_p["icount"]:
+        problems.append(f"{tag}: instruction count after Restore {cpu_q['icount']}, saved {cpu_p['icount']}")
+    page.evaluate("mkbSnap.keep('Q')")
+    diff = page.evaluate("mkbSnap.pages('P', 'Q')")
+    if diff:
+        problems.append(f"{tag}: after Restore {len(diff)} RAM pages differ from the snapshot's, first {diff[:4]}")
+    if page.get_attribute("#dbg_state", "data-state") != "paused":
+        problems.append(f"{tag}: after Restore the machine is {page.get_attribute('#dbg_state', 'data-state')}, want paused")
+    # It boots on from the reset vector.
+    if run_to("after Restore") and name == "hello":
+        machine_do(page, "select_option", "#dbg_speed", "full")
+        machine_do(page, "click", "#dbg_continue")
+        if not wait_for(lambda: ALIVE in page.inner_text("#screen_text"), 60):
+            problems.append(f"{tag}: after Restore and Continue the screen never showed {ALIVE!r}: "
+                            f"{page.inner_text('#screen_text')[:200]!r}")
+    r["status"] = page.inner_text("#dbg_status")[:160]
+    page.screenshot(path=str(shots / f"snapdiff-poweron-{name}-{w}-{scheme}-booted.png"), full_page=True)
+    if page.evaluate("document.documentElement.scrollWidth > innerWidth + 1"):
+        problems.append(f"{tag}: horizontal scroll")
+    if errors:
+        problems.append(f"{tag}: page errors {errors[:3]}")
+    ctx.close()
+    return problems, r
+
+
 def snapdiff_guard(fn, *args):
     """A step that times out (or finds nothing to look at) is a failure of
     that case, not of the suite."""
@@ -10270,6 +10358,10 @@ def snapdiff_case(browser, base, shots, linux):
     for phone in (False, True):
         problems, r = snapdiff_guard(snapdiff_bigsave, browser, base, shots, phone)
         out.append(report("snapdiff big save", problems, r, width=390 if phone else 1280))
+    pw = [("hello", "light", False), ("hello", "dark", True)] + ([("minified-linux", "dark", False)] if linux else [])
+    for name, scheme, phone in pw:
+        problems, r = snapdiff_guard(snapdiff_poweron, browser, base, shots, name, scheme, phone)
+        out.append(report("snapdiff power-on", problems, r, kernel=name, scheme=scheme, width=390 if phone else 1280))
     for phone in (False, True):
         problems, r = snapdiff_guard(snapdiff_kernels, browser, base, shots, phone)
         out.append(report("snapdiff kernels", problems, r, width=390 if phone else 1280))

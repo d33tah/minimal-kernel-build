@@ -513,3 +513,45 @@ function v86RestoreFix(cpu) {
 		cpu[name] = v86View(T, cpu.wasm_memory, offset);
 	}
 }
+
+// v86 0.5.471's PCI.set_state (src/pci.js) moves the I/O ports of every BAR
+// slot whose saved value has bit 0 set, through device.pci_bars[slot]. A
+// slot without a BAR (the IDE controller's primary/secondary channel with
+// no disk on it) still holds its initial config-space bytes, bit 0 included,
+// until SeaBIOS writes the BAR (pci_write32 then zeroes it). So a state saved
+// at power-on, before the BIOS ran, threw "Cannot read properties of
+// undefined (reading 'original_bar')" and did not restore (B1). While
+// set_state runs, an empty BAR (size 0: no port to move) stands in for each
+// missing one; the device's config space is restored as saved.
+function v86PciFix(pci) {
+	if (!pci || pci.mkbSetStateFix)
+		return;
+	const setState = pci.set_state;
+	pci.set_state = function (state) {
+		const holes = [];
+		for (const dev of this.devices) {
+			if (!dev || !dev.pci_bars)
+				continue;
+			for (let i = 0; i < dev.pci_bars.length; i++) {
+				if (!dev.pci_bars[i]) {
+					dev.pci_bars[i] = { size: 0, original_bar: 0, entries: [] };
+					holes.push([dev, i]);
+				}
+			}
+		}
+		try {
+			return setState.call(this, state);
+		} finally {
+			for (const [dev, i] of holes)
+				dev.pci_bars[i] = undefined;
+		}
+	};
+	pci.mkbSetStateFix = true;
+}
+
+// emulator.restore_state() with both v86 0.5.471 restore bugs worked around.
+async function v86Restore(em, state) {
+	v86PciFix(em.v86.cpu.devices.pci);
+	await em.restore_state(state);
+	v86RestoreFix(em.v86.cpu);
+}

@@ -130,8 +130,7 @@ async function fastForward(target, name) {
 			if (reached) {
 				// Back to the slice start and step exactly to the target.
 				try {
-					await em.restore_state(snap);
-					v86RestoreFix(em.v86.cpu);
+					await v86Restore(em, snap);
 				} catch (e) {
 					ffInfo.error = "restore_state failed (" + e + "): stopped past the target";
 					break;

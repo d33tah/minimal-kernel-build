@@ -288,8 +288,7 @@ async function restoreSnapshot(s) {
 	delete $("snap_status").dataset.restored;
 	try {
 		const raw = await snapUnpack(s);
-		await emulator.restore_state(raw);
-		v86RestoreFix(emulator.v86.cpu);
+		await v86Restore(emulator, raw);
 		// v86 does not keep its instruction counter in the state: put back the
 		// snapshot's, so the count goes on from where it was.
 		if (s.meta && emulator.v86)
